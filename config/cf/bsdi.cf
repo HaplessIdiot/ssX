@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.11 94/04/07 15:42:57 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.11 1994/11/19 07:32:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.12 1994/11/26 12:32:18 dawes Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -60,6 +60,7 @@ XCOMM xf86site.def
 
 #define ServerExtraDefines GccGasOption XFree86ServerDefines
 #define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
+#define XFree86ConsoleDefines /**/
 #define AsmDefines -DUSE_GAS
 
 #define StandardDefines	-DCSRG_BASED

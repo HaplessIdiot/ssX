@@ -1,16 +1,16 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.10 1994/12/02 05:38:26 dawes Exp $
 /*
  * To add support for another platform:
  * 
  *     1.  Identify a machine-specific cpp symbol.  If your preprocessor 
  *         does not have any built in, you will need to add the symbol to the
- *         cpp_argv table in config/imakemdep.h and rebuild imake with the
- *         BOOTSTRAPCFLAGS variable set (see the macII for an example).
+ *         cpp_argv table in config/imake/imakemdep.h and rebuild imake with
+ *         the BOOTSTRAPCFLAGS variable set (see the macII for an example).
  *
  *     2.  Add all machine-specific cpp symbols (either defined by you or by
  *         the preprocessor or compiler) to the predefs table in 
- *         config/imakemdep.h.
+ *         config/imake/imakemdep.h.
  *
  *     3.  But a new #ifdef block below that defines MacroIncludeFile and
  *         MacroFile for your new platform and then #undefs the machine-
@@ -103,6 +103,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
 #ifdef sun
 #define MacroIncludeFile <sun.cf>
 #define MacroFile sun.cf
+#ifdef SVR4
+#undef SVR4
+#define SVR4Architecture
+#endif
 #ifdef sparc
 #undef sparc
 #define SparcArchitecture
@@ -130,8 +134,19 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
 #define MacroIncludeFile <usl.cf>
 #define MacroFile usl.cf
 #undef USL
+#undef SVR4
 #define SVR4Architecture
+#define i386Architecture
 #endif /* USL */
+
+#ifdef NCR
+#define MacroIncludeFile <ncr.cf>
+#define MacroFile ncr.cf
+#undef NCR
+#undef SVR4
+#define SVR4Architecture
+#define i386Architecture
+#endif /* NCR */
 
 #ifdef apollo
 #define MacroIncludeFile <apollo.cf>
@@ -273,67 +288,14 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
 # endif
 #endif /* MOTOROLA */
 
-/* SYSV386 is here for backward compatibility only */
-#ifdef SYSV386
-# ifdef SVR4
-#  define i386Architecture
-#  define i386SVR4Architecture
-#  define MacroIncludeFile <svr4.cf>
-#  define MacroFile svr4.cf
-#  undef SVR4
-# else /* ! SVR4 */
-#  ifdef SCO
-#   define i386Architecture
-#   define i386SVR3Architecture
-#   define MacroIncludeFile <sco.cf>
-#   define MacroFile sco.cf
-#   define i386ScoArchitecture
-#   ifdef SCO324
-#    define i386Sco324Architecture
-#    undef SCO324
-#   endif
-#   undef SCO
-#  endif /* SCO */
-#  ifdef ISC
-#   define i386Architecture	
-#   define i386SVR3Architecture	
-#   define MacroIncludeFile <isc.cf>
-#   define MacroFile isc.cf
-#   define i386IscArchitecture
-#   undef ISC
-#   ifdef ISC202
-#    define IscVersion 202
-#    undef ISC202
-#   else
-#    ifdef ISC30
-#     define IscVersion 300
-#     undef ISC30
-#    else
-#     ifdef ISC40
-#      define IscVersion 400
-#      undef ISC40
-#     else
-#      define IscVersion 221
-#     endif /* ISC40 */
-#    endif /* ISC30 */
-#   endif /* ISC202 */
-#  endif /* ISC */
-#  ifndef MacroFile
-#   define i386SVR3Architecture
-#   define MacroIncludeFile <x386.cf>
-#   define MacroFile x386.cf
-#  endif /* MacroFile */
-# endif /* ! SVR4 */
-#endif /* SYSV386 */
-
 #ifdef SVR4
 # ifdef i386
 #  define i386Architecture
-#  define i386SVR4Architecture
-#  define MacroIncludeFile <svr4.cf>
-#  define MacroFile svr4.cf
-#  undef SVR4
 # endif
+# define SVR4Architecture
+# define MacroIncludeFile <svr4.cf>
+# define MacroFile svr4.cf
+# undef SVR4
 #endif
 
 #ifdef SYSV
@@ -382,6 +344,60 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
 # endif /* i386 */
 #endif /* SYSV */
 
+/* SYSV386 is here for backward compatibility only */
+#ifdef SYSV386
+# ifdef SVR4
+#  define i386Architecture
+#  define i386SVR4Architecture
+#  define SVR4Architecture
+#  define MacroIncludeFile <svr4.cf>
+#  define MacroFile svr4.cf
+#  undef SVR4
+# else /* ! SVR4 */
+#  ifdef SCO
+#   define i386Architecture
+#   define i386SVR3Architecture
+#   define MacroIncludeFile <sco.cf>
+#   define MacroFile sco.cf
+#   define i386ScoArchitecture
+#   ifdef SCO324
+#    define i386Sco324Architecture
+#    undef SCO324
+#   endif
+#   undef SCO
+#  endif /* SCO */
+#  ifdef ISC
+#   define i386Architecture	
+#   define i386SVR3Architecture	
+#   define MacroIncludeFile <isc.cf>
+#   define MacroFile isc.cf
+#   define i386IscArchitecture
+#   undef ISC
+#   ifdef ISC202
+#    define IscVersion 202
+#    undef ISC202
+#   else
+#    ifdef ISC30
+#     define IscVersion 300
+#     undef ISC30
+#    else
+#     ifdef ISC40
+#      define IscVersion 400
+#      undef ISC40
+#     else
+#      define IscVersion 221
+#     endif /* ISC40 */
+#    endif /* ISC30 */
+#   endif /* ISC202 */
+#  endif /* ISC */
+#  ifndef MacroFile
+#   define i386SVR3Architecture
+#   define MacroIncludeFile <x386.cf>
+#   define MacroFile x386.cf
+#  endif /* MacroFile */
+# endif /* ! SVR4 */
+#endif /* SYSV386 */
+
 #ifdef DGUX
 #define MacroIncludeFile <DGUX.cf>
 #define MacroFile DGUX.cf
@@ -425,13 +441,6 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.9 1994/11/30 20:26:13 dawes Exp $
 #define MacroFile Win32.cf
 #define Win32Architecture
 #endif /* WIN32 */
-
-#ifdef NCR
-#define MacroIncludeFile <ncr.cf>
-#define MacroFile ncr.cf
-#undef NCR
-#define SVR4Architecture
-#endif /* NCR */
 
 #ifdef linux 
 #define MacroIncludeFile <linux.cf>
