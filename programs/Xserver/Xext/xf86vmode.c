@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.8 1995/07/15 15:00:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.9 1995/07/15 16:00:41 dawes Exp $ */
 
 /*
 
@@ -349,7 +349,7 @@ ProcVGAHelpGetModeLine(client)
     REQUEST_SIZE_MATCH(xVGAHelpGetModeLineReq);
     rep.type = X_Reply;
     rep.length = (SIZEOF(xVGAHelpGetModeLineReply) - SIZEOF(xGenericReply) +
-		  privsize * sizeof(CARD32)) >> 2;
+		  privsize * sizeof(INT32)) >> 2;
     rep.sequenceNumber = client->sequence;
     rep.dotclock = vptr->clock[mptr->Clock];
     rep.hdisplay = mptr->HDisplay;
@@ -380,7 +380,7 @@ ProcVGAHelpGetModeLine(client)
     WriteToClient(client, sizeof(xVGAHelpGetModeLineReply), (char *)&rep);
     if (privsize) {
 	client->pSwapReplyFunc = Swap32Write;
-	WriteSwappedDataToClient(client, privsize * sizeof(CARD32),
+	WriteSwappedDataToClient(client, privsize * sizeof(INT32),
 				 mptr->Private);
     }
     return (client->noClientException);
@@ -432,12 +432,12 @@ ProcVGAHelpModModeLine(client)
 	    return BadValue;
     }
     if (mptr->PrivSize && mptr->Private) {
-	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(CARD32));
+	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(INT32));
 	if (stuff->privsize)
-	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(CARD32));
+	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(INT32));
 	else
 	    memcpy(modetmp.Private, mptr->Private,
-		   mptr->PrivSize * sizeof(CARD32));
+		   mptr->PrivSize * sizeof(INT32));
     }
 
     /* Check that the mode is consistent with the monitor specs */
@@ -486,7 +486,7 @@ ProcVGAHelpModModeLine(client)
 	mptr->CrtcVAdjusted = TRUE;
     }
     if (mptr->PrivSize && stuff->privsize) {
-	memcpy(mptr->Private, &stuff[1], mptr->PrivSize * sizeof(CARD32));
+	memcpy(mptr->Private, &stuff[1], mptr->PrivSize * sizeof(INT32));
     }
 
     (vptr->SwitchMode)(mptr);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.14 1995/07/12 15:43:14 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.15 1995/07/15 15:15:54 dawes Exp $ */
 
 /*
 
@@ -281,7 +281,7 @@ static void ApplyCB (w, client, call)
     XtPointer client, call;
 {
     XF86VidModeModeLine mode_line;
-    CARD32 S3private[4];
+    INT32 S3private[4];
     int i;
     char* string;
     Boolean state;
@@ -304,7 +304,7 @@ static void ApplyCB (w, client, call)
     if (S3Specials) {
 	mode_line.privsize = 4;
 	mode_line.private = S3private;
-	mode_line.private[0] = 0;
+	mode_line.private[0] = (1 << 1) | (1 << 2) | (1 << 3);
 	XtVaGetValues(AppRes.field[InvertVclk].textwidget,
 			XtNstate, &state, NULL);
 	AppRes.field[InvertVclk].val = state ? 1 : 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.6 1995/07/02 07:42:25 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.7 1995/07/15 14:55:02 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -76,7 +76,7 @@ typedef struct {
     unsigned short	vtotal;
     unsigned int	flags;
     int			privsize;
-    CARD32		*private;
+    INT32		*private;
 } XF86VidModeModeLine;
 
 typedef struct {
