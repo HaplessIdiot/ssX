@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.3 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.4 2002/02/14 04:48:10 paulo Exp $ */
 
 #include <dirent.h>
 #include <errno.h>
@@ -436,11 +436,13 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
     host = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    if (host != NIL && !STRING_P(host))
-	LispDestroy(mac, "%s: HOSTNAME %s is not a string",
-		    STRFUN(builtin), STROBJ(host));
+    if (host != NIL) {
+	ERROR_CHECK_STRING(host);
+    }
     if (defaults != NIL) {
 	if (!PATHNAME_P(defaults))
+	    /* XXX this may become unsupported if unamed arguments
+	     * are implemented for faster builtin functions call */
 	    defaults = EXECUTE("(parse-namestring defaults)");
     }
 
@@ -674,6 +676,8 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     if (defaults != NIL && !PATHNAME_P(defaults) &&
 	(host == NIL || device == NIL || directory == NIL ||
 	 name == NIL || type == NIL || version == NIL))
+	/* XXX This may become unsupported if unamed arguments are
+	 * implemented for faster builtin functions call */
 	defaults = EXECUTE("(parse-namestring defaults)");
 
     if (defaults != NIL) {

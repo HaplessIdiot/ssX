@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.27 2002/03/03 05:44:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.28 2002/03/05 03:52:33 dawes Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -97,15 +97,13 @@ Lisp_Append(LispMac *mac, LispBuiltin *builtin)
     lists = ARGUMENT(0);
 
     GCProtect();
-    cons = NIL;		/* fix gcc warning */
+    cons = NIL;
     result = NIL;
     for (; CONS_P(lists); lists = CDR(lists)) {
 	list = CAR(lists);
 	if (list == NIL)
 	    continue;
-	if (!CONS_P(list))
-	    LispDestroy(mac, "%s: %s is not a list",
-			STRFUN(builtin), STROBJ(list));
+	ERROR_CHECK_LIST(list);
 	if (result == NIL) {
 	    result = cons = CONS(CAR(list), CDR(list));
 	}
@@ -256,12 +254,12 @@ Lisp_Apply(LispMac *mac, LispBuiltin *builtin)
     if (function->type != LispLambda_t && !SYMBOL_P(function))
 	LispDestroy(mac, "%s: %s is not a valid function name",
 		    STRFUN(builtin), STROBJ(function));
-    if (more_args != NIL && !CONS_P(more_args))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(more_args));
-    if (more_args == NIL && !CONS_P(arg))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(arg));
+    if (more_args != NIL) {
+ 	ERROR_CHECK_LIST(more_args);
+    }
+    if (more_args == NIL) {
+	ERROR_CHECK_LIST(arg);
+    }
 
     if (length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
@@ -346,12 +344,8 @@ Lisp_Butlast(LispMac *mac, LispBuiltin *builtin)
 
     if (list == NIL)
 	return (NIL);
-    if (!CONS_P(list))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
-    if (!INDEX_P(ocount))
-	LispDestroy(mac, "%s: %s is not a positive number",
-		    STRFUN(builtin), STROBJ(ocount));
+    ERROR_CHECK_LIST(list);
+    ERROR_CHECK_INDEX(ocount);
     count = ocount->data.integer;
     length = olength->data.integer;
 
@@ -382,19 +376,13 @@ Lisp_Car(LispMac *mac, LispBuiltin *builtin)
  car list
  */
 {
-    LispObj *list, *result;
+    LispObj *list, *result = NULL;
 
     list = ARGUMENT(0);
 
-    if (list == NIL)
-	result = NIL;
-    else if (!CONS_P(list)) {
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
-	result = NIL;		/* fix gcc warning */
-    }
-    else
-	result = CAR(list);
+    if (list == NIL)	result = NIL;
+    else ERROR_CHECK_LIST(list);
+    else		result = CAR(list);
 
     return (result);
 }
@@ -417,9 +405,7 @@ Lisp_Case(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(body); body = CDR(body)) {
 	code = CAR(body);
-	if (!CONS_P(code))
-	    LispDestroy(mac, "%s: %s is not a list",
-			STRFUN(builtin), STROBJ(code));
+	ERROR_CHECK_LIST(code);
 	else if (CAR(code) == T ||
 		 (SYMBOL_P(CAR(code)) && ATOMID(CAR(code)) == Sotherwise)) {
 	    if (CONS_P(CDR(body)))
@@ -436,7 +422,7 @@ Lisp_Case(LispMac *mac, LispBuiltin *builtin)
 		    result = CDR(code);
 		    break;
 		}
-	    if (keylist->type == LispCons_t)	/* if found match */
+	    if (CONS_P(keylist))	/* if found match */
 		break;
 	}
 	else if (LispEqual(mac, keyform, CAR(code)) == T) {
@@ -470,7 +456,7 @@ Lisp_Catch(LispMac *mac, LispBuiltin *builtin)
     tag = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
-    *pbody = NIL;	/* fix gcc warning */
+    *pbody = NIL;
     *pres = NIL;
     *pdid_jump = 1;
     block = LispBeginBlock(mac, tag, LispBlockCatch);
@@ -507,19 +493,13 @@ Lisp_Cdr(LispMac *mac, LispBuiltin *builtin)
  cdr list
  */
 {
-    LispObj *list, *result;
+    LispObj *list, *result = NULL;
 
     list = ARGUMENT(0);
 
-    if (list == NIL)
-	result = NIL;
-    else if (!CONS_P(list)) {
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
-	result = NIL;		/* fix gcc warning */
-    }
-    else
-	result = CDR(list);
+    if (list == NIL)	result = NIL;
+    else ERROR_CHECK_LIST(list);
+    else		result = CDR(list);
 
     return (result);
 }
@@ -539,9 +519,7 @@ Lisp_Cond(LispMac *mac, LispBuiltin *builtin)
     for (; CONS_P(body); body = CDR(body)) {
 	code = CAR(body);
 
-	if (!CONS_P(code))
-	    LispDestroy(mac, "%s: %s is a illegal clause",
-			STRFUN(builtin), STROBJ(code));
+	ERROR_CHECK_LIST(code);
 	if (NCONSTANT_P(result = CAR(code)))
 	    result = EVAL(result);
 	if (result == NIL)
@@ -727,12 +705,10 @@ Lisp_Defvar(LispMac *mac, LispBuiltin *builtin)
     name = ARGUMENT(0);
     MACRO_ARGUMENT3();
 
-    if (!SYMBOL_P(name))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(name));
-    if (documentation != NIL && !STRING_P(documentation))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(documentation));
+    ERROR_CHECK_SYMBOL(name);
+    if (documentation != NIL) {
+	ERROR_CHECK_STRING(documentation);
+    }
 
     LispProclaimSpecial(mac, name, EVAL(initial_value), documentation);
 
@@ -763,44 +739,35 @@ Lisp_Documentation(LispMac *mac, LispBuiltin *builtin)
  documentation symbol type
  */
 {
+    Atom_id atom;
     LispObj *symbol, *type;
+    LispDocType_t doc_type = LispDocVariable;
 
     type = ARGUMENT(1);
     symbol = ARGUMENT(0);
 
-    if (SYMBOL_P(symbol)) {
-	LispDocType_t doc_type;
-	Atom_id atom;
+    ERROR_CHECK_SYMBOL(symbol);
+    ERROR_CHECK_SYMBOL(type);
+    atom = ATOMID(type);
 
-	if (!SYMBOL_P(type))
-	    LispDestroy(mac, "%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(symbol));
-	atom = ATOMID(type);
-
-	if (atom == Svariable)
-	    doc_type = LispDocVariable;
-	else if (atom == Sfunction)
-	    doc_type = LispDocFunction;
-	else if (atom == Sstructure)
-	    doc_type = LispDocStructure;
-	else if (atom == Stype)
-	    doc_type = LispDocType;
-	else if (atom == Ssetf)
-	    doc_type = LispDocSetf;
-	else {
-	    LispDestroy(mac, "%s: unknown documentation type %s",
-			STRFUN(builtin), STROBJ(type));
-	    /*NOTREACHED*/
-	    doc_type = 0;
-	}
-
-	return (LispGetDocumentation(mac, symbol, doc_type));
+    if (atom == Svariable)
+	doc_type = LispDocVariable;
+    else if (atom == Sfunction)
+	doc_type = LispDocFunction;
+    else if (atom == Sstructure)
+	doc_type = LispDocStructure;
+    else if (atom == Stype)
+	doc_type = LispDocType;
+    else if (atom == Ssetf)
+	doc_type = LispDocSetf;
+    else {
+	LispDestroy(mac, "%s: unknown documentation type %s",
+		    STRFUN(builtin), STROBJ(type));
+	/*NOTREACHED*/
+	doc_type = 0;
     }
-    else
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(symbol));
 
-    return (NIL);
+    return (LispGetDocumentation(mac, symbol, doc_type));
 }
 
 LispObj *
@@ -829,9 +796,7 @@ Lisp_Elt(LispMac *mac, LispBuiltin *builtin)
     oindex = ARGUMENT(1);
     sequence = ARGUMENT(0);
 
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_INDEX(oindex);
     offset = oindex->data.integer;
     length = olength->data.integer;
 
@@ -987,10 +952,7 @@ Lisp_Fmakunbound(LispMac *mac, LispBuiltin *builtin)
 
     symbol = ARGUMENT(0);
 
-    if (!SYMBOL_P(symbol))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(symbol));
-
+    ERROR_CHECK_SYMBOL(symbol);
     if (symbol->data.atom->a_function)
 	LispRemAtomFunctionProperty(mac, symbol->data.atom);
     else if (symbol->data.atom->a_builtin)
@@ -1066,10 +1028,7 @@ Lisp_Getenv(LispMac *mac, LispBuiltin *builtin)
 
     name = ARGUMENT(0);
 
-    if (!STRING_P(name))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(name));
-
+    ERROR_CHECK_STRING(name);
     value = getenv(THESTR(name));
 
     return (value ? STRING(value) : NIL);
@@ -1196,9 +1155,7 @@ Lisp_Last(LispMac *mac, LispBuiltin *builtin)
     ocount = ARGUMENT(1);
     list = ARGUMENT(0);
 
-    if (!INDEX_P(ocount))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(ocount));
+    ERROR_CHECK_INDEX(ocount);
     count = FIXNUM_VALUE(ocount);
     length = FIXNUM_VALUE(olength);
 
@@ -1267,22 +1224,21 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
 
     cons = NIL;	/* fix gcc warning */
 
-    if (init != NIL && !CONS_P(init))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(init));
-
+    if (init != NIL) {
+	ERROR_CHECK_LIST(init);
+    }
     list = NIL;
     for (; CONS_P(init); init = CDR(init)) {
 	LispObj *var, *val;
 
-	var = val = NIL;	/* fix gcc warning */
-
+	var = val = NIL;
 	pair = CAR(init);
 	if (SYMBOL_P(pair)) {
 	    var = pair;
 	    val = NIL;
 	}
-	else if (CONS_P(pair)) {
+	else ERROR_CHECK_LIST(pair);
+	else {
 	    var = CAR(pair);
 	    if (!SYMBOL_P(var))
 		LispDestroy(mac, "%s: %s cannot be a variable name",
@@ -1299,9 +1255,6 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
 	    else
 		val = NIL;
 	}
-	else
-	    LispDestroy(mac, "%s: %s is not a list",
-			STRFUN(builtin), STROBJ(pair));
 
 	pair = CONS(var, val);
 	if (list == NIL) {
@@ -1348,21 +1301,21 @@ Lisp_LetP(LispMac *mac, LispBuiltin *builtin)
     init = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
-    if (init != NIL && !CONS_P(init))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(init));
+    if (init != NIL) {
+	ERROR_CHECK_LIST(init);
+    }
 
     for (; CONS_P(init); init = CDR(init)) {
 	LispObj *var, *val;
 
-	var = val = NIL;	/* fix gcc warning */
-
+	var = val = NIL;
 	pair = CAR(init);
 	if (SYMBOL_P(pair)) {
 	    var = pair;
 	    val = NIL;
 	}
-	else if (CONS_P(pair)) {
+	else ERROR_CHECK_LIST(pair);
+	else {
 	    var = CAR(pair);
 	    if (!SYMBOL_P(var))
 		LispDestroy(mac, "%s: %s cannot be a variable name",
@@ -1379,9 +1332,6 @@ Lisp_LetP(LispMac *mac, LispBuiltin *builtin)
 	    else
 		val = NIL;
 	}
-	else
-	    LispDestroy(mac, "%s: %s is not a list",
-			STRFUN(builtin), STROBJ(pair));
 
 	LispAddVar(mac, var, val);
 	mac->env.head += 2;
@@ -1741,10 +1691,8 @@ Lisp_MakeList(LispMac *mac, LispBuiltin *builtin)
     initial_element = ARGUMENT(1);
     size = ARGUMENT(0);
 
-    if (!INDEX_P(size))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(size));
-    count = FIXNUM_VALUE(size);
+    ERROR_CHECK_INDEX(size);
+    count = size->data.integer;
 
     GCProtect();
     result = tail = CONS(initial_element, initial_element);
@@ -1766,10 +1714,7 @@ Lisp_Makunbound(LispMac *mac, LispBuiltin *builtin)
 
     symbol = ARGUMENT(0);
 
-    if (!SYMBOL_P(symbol))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(symbol));
-
+    ERROR_CHECK_SYMBOL(symbol);
     LispUnsetVar(mac, symbol);
 
     return (symbol);
@@ -1906,17 +1851,45 @@ Lisp_Member(LispMac *mac, LispBuiltin *builtin)
     list = ARGUMENT(1);
     item = ARGUMENT(0);
 
-    if (list == NIL)
-	return (NIL);
-    else if (!CONS_P(list))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
+    if (list == NIL)	return (NIL);
+    else ERROR_CHECK_LIST(list);
 
     for (; CONS_P(list); list = CDR(list))
 	if (LispEqual(mac, item, CAR(list)) == T)
 	    return (list);
 
     return (NIL);
+}
+
+LispObj *
+Lisp_MultipleValueList(LispMac *mac, LispBuiltin *builtin)
+/*
+ multiple-value-list form
+ */
+{
+    int i, protect;
+    LispObj *form, *result, *cons;
+
+    form = ARGUMENT(0);
+    MACRO_ARGUMENT1();
+
+    result = EVAL(form);
+
+    protect = mac->protect.length;
+    if (protect >= mac->protect.space)
+	LispMoreProtects(mac);
+
+    result = cons = CONS(result, NIL);
+    mac->protect.objects[mac->protect.length++] = result;
+
+    for (i = 0; i < RETURN_COUNT; i++) {
+	CDR(cons) = CONS(RETURN(i), NIL);
+	cons = CDR(cons);
+    }
+
+    mac->protect.length = protect;
+
+    return (result);
 }
 
 LispObj *
@@ -1935,9 +1908,9 @@ Lisp_Nconc(LispMac *mac, LispBuiltin *builtin)
     /* first check if all arguments but last are lists */
     for (tail = lists; CONS_P(CDR(tail)); tail = CDR(tail)) {
 	list = CAR(tail);
-	if (list != NIL && !CONS_P(list))
-	    LispDestroy(mac, "%s: %s is not a list",
-			STRFUN(builtin), STROBJ(list));
+	if (list != NIL) {
+	    ERROR_CHECK_LIST(list);
+	}
     }
 
     /* skip initial NIL lists */
@@ -1974,17 +1947,13 @@ Lisp_Nth(LispMac *mac, LispBuiltin *builtin)
     list = ARGUMENT(1);
     oindex = ARGUMENT(0);
 
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_INDEX(oindex);
     position = oindex->data.integer;
 
     if (list == NIL)
 	return (NIL);
-    if (!CONS_P(list))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
 
+    ERROR_CHECK_LIST(list);
     for (; position > 0; position--) {
 	if (!CONS_P(list))
 	    return (NIL);
@@ -2006,16 +1975,12 @@ Lisp_Nthcdr(LispMac *mac, LispBuiltin *builtin)
     list = ARGUMENT(1);
     oindex = ARGUMENT(0);
 
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_INDEX(oindex);
     position = oindex->data.integer;
 
     if (list == NIL)
 	return (NIL);
-    if (!CONS_P(list))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(list));
+    ERROR_CHECK_LIST(list);
 
     for (; position > 0; position--) {
 	if (!CONS_P(list))
@@ -2122,7 +2087,8 @@ Lisp_Proclaim(LispMac *mac, LispBuiltin *builtin)
 
     declaration = ARGUMENT(0);
 
-    if (CONS_P(declaration)) {
+    ERROR_CHECK_LIST(declaration);
+    else {
 	LispObj *arguments = CAR(declaration), *object = CAR(arguments);
 	char *operation;
 
@@ -2134,9 +2100,7 @@ Lisp_Proclaim(LispMac *mac, LispBuiltin *builtin)
 	    for (arguments = CDR(arguments); CONS_P(arguments);
 		 arguments = CDR(arguments)) {
 		object = CAR(arguments);
-		if (!SYMBOL_P(object))
-		    LispDestroy(mac, "%s: %s is not a symbol",
-				STRFUN(builtin), STROBJ(object));
+		ERROR_CHECK_SYMBOL(object);
 		LispProclaimSpecial(mac, object, NULL, NIL);
 	    }
 	}
@@ -2145,9 +2109,6 @@ Lisp_Proclaim(LispMac *mac, LispBuiltin *builtin)
 	}
 	/* else do nothing */
     }
-    else
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(declaration));
 
     return (NIL);
 }
@@ -2265,9 +2226,7 @@ Lisp_Progv(LispMac *mac, LispBuiltin *builtin)
     for (; CONS_P(symbols); symbols = CDR(symbols)) {
 	if (!CONS_P(values))
 	    break;
-	if (!SYMBOL_P(CAR(symbols)))
-	    LispDestroy(mac, "%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(CAR(symbols)));
+	ERROR_CHECK_SYMBOL(CAR(symbols));
 	if (valist == NIL) {
 	    GCProtect();
 	    valist = cons = CONS(CONS(CAR(symbols), CAR(values)), NIL);
@@ -2307,10 +2266,7 @@ Lisp_Provide(LispMac *mac, LispBuiltin *builtin)
 
     module = ARGUMENT(0);
 
-    if (!STRING_P(module))
-	LispDestroy(mac, "%s: bad argument %s",
-		    STRFUN(builtin), STROBJ(module));
-
+    ERROR_CHECK_STRING(module);
     for (obj = MOD; obj != NIL; obj = CDR(obj)) {
 	if (THESTR(CAR(obj)) == THESTR(module))
 	    return (module);
@@ -2381,22 +2337,21 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
     sequence2 = ARGUMENT(1);
     sequence1 = ARGUMENT(0);
 
-    start1 = end1 = start2 = end2 = 0;	/* fix gcc warning */
-
+    start1 = end1 = start2 = end2 = 0;
     length1 = olength1->data.integer;
     length2 = olength2->data.integer;
 
     if (ostart1 == NIL)
 	start1 = 0;
     else if (!INDEX_P(ostart1))
-	LispDestroy(mac, "%s: :START1 %s is not a positive integer",
+	LispDestroy(mac, "%s: :START1 %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(ostart1));
     else
 	start1 = ostart1->data.integer;
     if (oend1 == NIL)
 	end1 = length1;
     else if (!INDEX_P(oend1))
-	LispDestroy(mac, "%s: :END1 %s is not a positive integer",
+	LispDestroy(mac, "%s: :END1 %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(oend1));
     else
 	end1 = oend1->data.integer;
@@ -2410,14 +2365,14 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
     if (ostart2 == NIL)
 	start2 = 0;
     else if (!INDEX_P(ostart2))
-	LispDestroy(mac, "%s: :START2 %s is not a positive integer",
+	LispDestroy(mac, "%s: :START2 %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(ostart2));
     else
 	start2 = ostart2->data.integer;
     if (oend2 == NIL)
 	end2 = length2;
     else if (!INDEX_P(oend2))
-	LispDestroy(mac, "%s: :END2 %s is not a positive integer",
+	LispDestroy(mac, "%s: :END2 %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(oend2));
     else
 	end2 = oend2->data.integer;
@@ -2562,8 +2517,7 @@ Lisp_Reverse(LispMac *mac, LispBuiltin *builtin)
 
     sequence = ARGUMENT(0);
 
-    list = NIL;		/* fix gcc warning */
-
+    list = NIL;
     switch (sequence->type) {
 	case LispNil_t:
 	    return (NIL);
@@ -2631,10 +2585,7 @@ Lisp_Rplaca(LispMac *mac, LispBuiltin *builtin)
     value = ARGUMENT(1);
     place = ARGUMENT(0);
 
-    if (!CONS_P(place))
-	LispDestroy(mac, "%s: %s is not of type cons",
-		    STRFUN(builtin), STROBJ(place));
-
+    ERROR_CHECK_CONS(place);
     CAR(place) = value;
 
     return (place);
@@ -2651,10 +2602,7 @@ Lisp_Rplacd(LispMac *mac, LispBuiltin *builtin)
     value = ARGUMENT(1);
     place = ARGUMENT(0);
 
-    if (!CONS_P(place))
-	LispDestroy(mac, "%s: %s is not of type cons",
-		    STRFUN(builtin), STROBJ(place));
-
+    ERROR_CHECK_CONS(place);
     CDR(place) = value;
 
     return (place);
@@ -2677,14 +2625,10 @@ Lisp_Setenv(LispMac *mac, LispBuiltin *builtin)
     ovalue = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    if (!STRING_P(oname))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(oname));
+    ERROR_CHECK_STRING_P(oname);
     name = THESTR(oname);
 
-    if (!STRING_P(ovalue))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ovalue));
+    ERROR_CHECK_STRING(ovalue);
     value = THESTR(ovalue);
 
     setenv(name, value, overwrite != NIL);
@@ -2704,10 +2648,7 @@ Lisp_Set(LispMac *mac, LispBuiltin *builtin)
     value = ARGUMENT(1);
     symbol = ARGUMENT(0);
 
-    if (!SYMBOL_P(symbol))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(symbol));
-
+    ERROR_CHECK_SYMBOL(symbol);
     LispSetVar(mac, symbol, value);
 
     return (value);
@@ -2727,9 +2668,7 @@ Lisp_SetQ(LispMac *mac, LispBuiltin *builtin)
     result = NIL;
     for (; CONS_P(form); form = CDR(form)) {
 	variable = CAR(form);
-	if (!SYMBOL_P(variable))
-	    LispDestroy(mac, "%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(variable));
+	ERROR_CHECK_SYMBOL(variable);
 	form = CDR(form);
 	if (!CONS_P(form))
 	    LispDestroy(mac, "%s: odd number of arguments", STRFUN(builtin));
@@ -2828,7 +2767,7 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
     return (result);
 
 invalid_place:
-    LispDestroy(mac, "%s: %s is a invalid place",
+    LispDestroy(mac, "%s: %s is an invalid place",
 		STRFUN(builtin), STROBJ(place));
     /*NOTREACHED*/
     return (NIL);
@@ -2852,7 +2791,7 @@ Lisp_Sleep(LispMac *mac, LispBuiltin *builtin)
 	value = FIXNUM_VALUE(seconds);
 
     if (value < 0.0 || !finite(value) || value > INT_MAX)
-	LispDestroy(mac, "%s: %s is not a positive integer",
+	LispDestroy(mac, "%s: %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(seconds));
 
     msec = modf(value, &dsec) * 1e6;
@@ -3478,9 +3417,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
     oindex = ARGUMENT(1);
     sequence = ARGUMENT(0);
 
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_INDEX(oindex);
     offset = oindex->data.integer;
     length = olength->data.integer;
 
@@ -3491,10 +3428,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
     if (STRING_P(sequence)) {
 	int character;
 
-	if (!CHAR_P(value))
-	    LispDestroy(mac, "%s: %s is not a character",
-			STRFUN(builtin), STROBJ(value));
-
+	ERROR_CHECK_CHARACTER(value);
 	character = value->data.integer;
 	if (character < 0 || character > 255)
 	    LispDestroy(mac, "%s: cannot represent character %d",

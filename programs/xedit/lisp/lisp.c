@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.37 2002/03/01 16:42:44 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.38 2002/03/03 05:44:50 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -279,6 +279,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Error, "error control-string &rest arguments"},
     {LispFunction, Lisp_Eval, "eval form"},
     {LispFunction, Lisp_Evenp, "evenp integer"},
+    {LispFunction, Lisp_Export, "export symbols &optional package"},
     {LispFunction, Lisp_FileNamestring, "file-namestring pathname"},
     {LispFunction, Lisp_Car, "first list"},
     {LispFunction, Lisp_FindAllSymbols, "find-all-symbols string-or-symbol"},
@@ -297,9 +298,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Imagpart, "imagpart number"},
     {LispMacro, Lisp_InPackage, "in-package name"},
     {LispMacro, Lisp_Incf, "incf place &optional delta"},
+    {LispFunction, Lisp_Import, "import symbols &optional package"},
     {LispFunction, Lisp_InputStreamP, "input-stream-p stream"},
     {LispFunction, Lisp_IntChar, "int-char integer"},
     {LispFunction, Lisp_Integerp, "integerp object"},
+    {LispFunction, Lisp_Intern, "intern string &optional package", 1},
     {LispFunction, Lisp_Isqrt, "isqrt natural"},
     {LispFunction, Lisp_Keywordp, "keywordp object"},
     {LispFunction, Lisp_Last, "last list &optional (count 1) &aux (length (length list))"},
@@ -332,6 +335,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Maplist, "maplist function list &rest more-lists"},
     {LispFunction, Lisp_Member, "member item list &key test test-not key"},
     {LispFunction, Lisp_Minusp, "minusp number"},
+    {LispMacro, Lisp_MultipleValueList, "multiple-value-list form"},
     {LispFunction, Lisp_Nconc, "nconc &rest lists"},
     {LispFunction, Lisp_Null, "not arg"},
     {LispFunction, Lisp_Nth, "nth index list"},
@@ -349,7 +353,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_PackageNicknames, "package-nicknames package"},
     {LispFunction, Lisp_PackageUseList, "package-use-list package"},
     {LispFunction, Lisp_PackageUsedByList, "package-used-by-list package"},
-    {LispFunction, Lisp_ParseInteger, "parse-integer string &key start end radix junk-allowed"},
+    {LispFunction, Lisp_ParseInteger, "parse-integer string &key start end radix junk-allowed", 1},
     {LispFunction, Lisp_ParseNamestring, "parse-namestring object &optional host defaults &key start end junk-allowed"},
     {LispFunction, Lisp_PathnameHost, "pathname-host pathname"},
     {LispFunction, Lisp_PathnameDevice, "pathname-device pathname"},
@@ -379,7 +383,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_ReadLine, "read-line &optional input-stream (eof-error-p t) eof-value recursive-p"},
     {LispFunction, Lisp_Realpart, "realpart number"},
     {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2 &aux (length1 (length sequence1)) (length2 (length sequence2))"},
-    {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace"},
+    {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace", 1},
     {LispFunction, Lisp_Require, "require module &optional pathname"},
     {LispFunction, Lisp_Cdr, "rest list"},
     {LispMacro, Lisp_Return, "return &optional result"},
@@ -425,10 +429,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Throw, "throw tag result"},
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
+    {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
     {LispMacro, Lisp_Unless, "unless test &rest body"},
-#ifdef HAVE_SETENV
-    {LispFunction, Lisp_Unsetenv, "unsetenv name"},
-#endif
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
@@ -438,12 +440,12 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_WriteString, "write-string string &optional output-stream &key start end"},
     {LispFunction, Lisp_XeditCharStore, "lisp::char-store string index value &aux (length (length string))", 1},
     {LispFunction, Lisp_XeditEltStore, "lisp::elt-store sequence index value &aux (length (length sequence))", 1},
-    {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 1},
-    {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 1},
-    {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 1},
-    {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 1},
-    {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 1},
-    {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array subscripts value", 1},
+    {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 0, 1},
+    {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 0, 1},
+    {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
+    {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
+    {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
+    {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array subscripts value", 0, 1},
     {LispFunction, Lisp_Zerop, "zerop number"},
 };
 
@@ -456,6 +458,7 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
 #ifdef HAVE_SETENV
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
+    {LispFunction, Lisp_Unsetenv, "unsetenv name"},
 #endif
     {LispMacro, Lisp_Until, "until test &rest body"},
     {LispMacro, Lisp_While, "while test &rest body"},
@@ -659,6 +662,7 @@ LispTopLevel(LispMac *mac)
 
     mac->env.lex = mac->env.base = mac->env.length = mac->env.head = 0;
     mac->dyn.length = 0;
+    RETURN_COUNT = 0;
     mac->protect.length = 0;
 
     mac->savepackage = PACKAGE;
@@ -754,6 +758,11 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     for (pentry = mac->dyn.values, eentry = pentry + mac->dyn.length;
 	 pentry < eentry; pentry++)
 	/* don't need to protect atom, as it is protected in packages step */
+	LispMark(*pentry);
+
+    /* protect multiple return values */
+    for (pentry = mac->returns.values, eentry = pentry + mac->returns.length;
+	 pentry < eentry; pentry++)
 	LispMark(*pentry);
 
     /* protect temporary data used by builtin functions */
@@ -3400,6 +3409,19 @@ LispMoreDynamics(LispMac *mac)
 }
 
 void
+LispMoreReturns(LispMac *mac)
+{
+    LispObj **values = realloc(mac->returns.values,
+			       (mac->returns.space + 32) * sizeof(LispObj*));
+
+    if (values == NULL)
+	LispDestroy(mac, "out of memory");
+
+    mac->returns.values = values;
+    mac->returns.space += 32;
+}
+
+void
 LispMoreProtects(LispMac *mac)
 {
     LispObj **objects = realloc(mac->protect.objects,
@@ -3570,7 +3592,6 @@ key_label:
 		for (karg = values; CONS_P(karg); karg = CDR(karg)) {
 		    val = CAR(karg);
 		    if (val->type == LispQuote_t &&
-			SYMBOL_P(val->data.quote) &&
 			atom == ATOMID(val->data.quote)) {
 			val = CADR(karg);
 			varset = 1;
@@ -3689,7 +3710,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
     LispArgList *alist;
     LispBuiltin *builtin;
     LispObj *lambda, *result;
-    int head, lex, length, dyn, macro;
+    int head, lex, length, dyn, multiple_values, macro;
 
     /* Save state */
     head = mac->env.head;
@@ -3711,6 +3732,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 				    arguments, function, eval && !macro);
 		if (!macro)
 		    mac->env.lex = length;
+		multiple_values = builtin->multiple_values;
 
 		result = builtin->function(mac, builtin);
 	    }
@@ -3723,6 +3745,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 				    arguments, function, eval && !macro);
 		if (!macro)
 		    mac->env.lex = length;
+		multiple_values = 0;
 
 		result = LispRunFunMac(mac, function, lambda, macro);
 	    }
@@ -3746,12 +3769,15 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 					CONS(function, arguments),
 					function, 0);
 		mac->env.lex = length;
+		multiple_values = 0;
 
 		result = builtin->function(mac, builtin);
 	    }
 	    else {
 		LispDestroy(mac, "EVAL: the function %s is not defined",
 			    STROBJ(function));
+		/*NOTREACHED*/
+		multiple_values = 0;
 		result = NIL;
 	    }
 	    break;
@@ -3760,6 +3786,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 	    LispMakeEnvironment(mac, alist, arguments, function, eval);
 	    mac->env.lex = length;
+	    multiple_values = 0;
 
 	    result = LispRunFunMac(mac, function, lambda, 0);
 	    break;
@@ -3776,6 +3803,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 		    LispMakeEnvironment(mac, alist, arguments, NIL, eval);
 		    mac->env.lex = length;
+		    multiple_values = 0;
 
 		    result = LispRunFunMac(mac, NIL, lambda, 0);
 
@@ -3786,6 +3814,8 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	default:
 	    LispDestroy(mac, "EVAL: %s is invalid as a function",
 			STROBJ(function));
+	    /*NOTREACHED*/
+	    multiple_values = 0;
 	    result = NIL;
 	    break;
     }
@@ -3798,6 +3828,9 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
     mac->env.lex = lex;
     mac->env.length = length;
     mac->dyn.length = dyn;
+
+    if (RETURN_COUNT && !multiple_values)
+	RETURN_COUNT = 0;
 
     return (result);
 }
@@ -4060,7 +4093,11 @@ LispMachine(LispMac *mac)
 		    LispDestroy(mac, "dot allowed only on lists");
 		obj = EVAL(cod);
 		if (mac->interactive) {
+		    int i;
+
 		    LispPrint(mac, obj, NIL, 1);
+		    for (i = 0; i < RETURN_COUNT; i++)
+			LispPrint(mac, RETURN(i), NIL, 1);
 		    LispUpdateResults(mac, cod, obj);
 		    if (LispGetColumn(mac, NIL))
 			LispWriteChar(mac, NIL, '\n');
@@ -4197,6 +4234,9 @@ LispBegin(int argc, char *argv[])
     /* Allocate space in LISP package */
     LispMoreGlobals(mac);
     LispMoreSpecials(mac);
+
+    /* Allocate initial space for multiple returns */
+    LispMoreReturns(mac);
 
     /* Now that a package exists, create the very first variable */
     PACKNAM = ATOM2("*PACKAGE*");
@@ -4351,6 +4391,7 @@ LispBegin(int argc, char *argv[])
     /* Reenable gc */
     GCUProtect();
 
+    LispPackageInit(mac);
     LispCoreInit(mac);
     LispMathInit(mac);
     LispPathnameInit(mac);

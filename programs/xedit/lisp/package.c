@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.3 2002/02/15 07:20:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.4 2002/02/27 06:56:36 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -39,15 +39,26 @@ static int LispDoSymbol(LispMac*, LispObj*, LispAtom*, int, int);
 static LispObj *LispReallyDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispFindPackageOrDie(LispMac*, LispBuiltin*, LispObj*);
+static void LispDoExport(LispMac*, LispBuiltin*, LispObj*, LispObj*, int);
+static void LispDoImport(LispMac*, LispBuiltin*, LispObj*);
 
 /*
  * Initialization
  */
 extern LispProperty *NOPROPERTY;
+static LispObj *Kinternal, *Kexternal, *Kinherited;
 
 /*
  * Implementation
  */
+void
+LispPackageInit(LispMac *mac)
+{
+    Kinternal	= KEYWORD("INTERNAL");
+    Kexternal	= KEYWORD("EXTERNAL");
+    Kinherited	= KEYWORD("INHERITED");
+}
+
 LispObj *
 LispFindPackageFromString(LispMac *mac, char *string)
 {
@@ -125,6 +136,56 @@ LispFindPackageOrDie(LispMac *mac, LispBuiltin *builtin, LispObj *name)
     return (package);
 }
 
+/* package must be of type LispPackage_t, symbol type is checked
+   bypass lisp.c:LispExportSymbol() */
+static void
+LispDoExport(LispMac *mac, LispBuiltin *builtin,
+	     LispObj *package, LispObj *symbol, int export)
+{
+    ERROR_CHECK_SYMBOL(symbol);
+    if (!export) {
+	if (package == mac->keyword ||
+	    symbol->data.atom->package == mac->keyword)
+	    LispDestroy(mac, "%s: symbol %s cannot be unexported",
+			STRFUN(builtin), STROBJ(symbol));
+    }
+
+    if (package == PACKAGE)
+	symbol->data.atom->ext = export ? LispTrue_t : LispNil_t;
+    else {
+	int i;
+	char *string;
+	LispAtom *atom;
+	LispPackage *pack;
+
+	string = STRPTR(symbol);
+	pack = package->data.package.package;
+
+	for (i = 0; i < STRTBLSZ; i++) {
+	    atom = pack->atoms[i];
+	    while (atom) {
+		if (strcmp(atom->string, string) == 0) {
+		    atom->ext = export ? LispTrue_t : LispNil_t;
+		    return;
+		}
+
+		atom = atom->next;
+	    }
+	}
+
+	LispDestroy(mac, "%s: the symbol %s is not available in package %s",
+		    STRFUN(builtin), STROBJ(symbol),
+		    THESTR(package->data.package.name));
+    }
+}
+
+static void
+LispDoImport(LispMac *mac, LispBuiltin *builtin, LispObj *symbol)
+{
+    ERROR_CHECK_SYMBOL(symbol);
+    LispImportSymbol(mac, symbol);
+}
+
 static LispObj *
 LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 		    int only_externs, int all_symbols)
@@ -141,13 +202,9 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
     MACRO_ARGUMENT2();
 
     /* Prepare for loop */
-    if (!CONS_P(init))
-	LispDestroy(mac, "%s: %s is not a list",
-		    STRFUN(builtin), STROBJ(init));
+    ERROR_CHECK_LIST(init);
     variable = CAR(init);
-    if (!SYMBOL_P(variable))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(variable));
+    ERROR_CHECK_SYMBOL(variable);
 
     if (!all_symbols) {
 	/* if all_symbols, a package name is not specified in the init form */
@@ -337,6 +394,85 @@ Lisp_FindPackage(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Export(LispMac *mac, LispBuiltin *builtin)
+/*
+ export symbols &optional package
+ */
+{
+    LispObj *list;
+
+    LispObj *symbols, *package;
+
+    package = ARGUMENT(1);
+    symbols = ARGUMENT(0);
+
+    /* If specified, make sure package is available */
+    if (package != NIL)
+	package = LispFindPackageOrDie(mac, builtin, package);
+    else
+	package = PACKAGE;
+
+    /* Export symbols */
+    if (CONS_P(symbols)) {
+	for (list = symbols; CONS_P(list); list = CDR(list))
+	    LispDoExport(mac, builtin, package, CAR(list), 1);
+    }
+    else
+	LispDoExport(mac, builtin, package, symbols, 1);
+
+    return (T);
+}
+
+LispObj *
+Lisp_Import(LispMac *mac, LispBuiltin *builtin)
+/*
+ import symbols &optional package
+ */
+{
+    int restore_package;
+    LispPackage *savepack = NULL;
+    LispObj *list, *savepackage = NULL;
+
+    LispObj *symbols, *package;
+
+    package = ARGUMENT(1);
+    symbols = ARGUMENT(0);
+
+    /* If specified, make sure package is available */
+    if (package != NIL)
+	package = LispFindPackageOrDie(mac, builtin, package);
+    else
+	package = PACKAGE;
+
+    restore_package = package != PACKAGE;
+    if (restore_package) {
+	/* Save package environment */
+	savepackage = PACKAGE;
+	savepack = mac->pack;
+
+	/* Change package environment */
+	PACKAGE = package;
+	mac->pack = package->data.package.package;
+    }
+
+    /* Export symbols */
+    if (CONS_P(symbols)) {
+	for (list = symbols; CONS_P(list); list = CDR(list))
+	    LispDoImport(mac, builtin, CAR(list));
+    }
+    else
+	LispDoImport(mac, builtin, symbols);
+
+    if (restore_package) {
+	/* Restore package environment */
+	PACKAGE = savepackage;
+	mac->pack = savepack;
+    }
+
+    return (T);
+}
+
+LispObj *
 Lisp_InPackage(LispMac *mac, LispBuiltin *builtin)
 /*
  in-package name
@@ -357,6 +493,103 @@ Lisp_InPackage(LispMac *mac, LispBuiltin *builtin)
     LispSetVar(mac, PACKNAM, package);
 
     return (package);
+}
+
+LispObj *
+Lisp_Intern(LispMac *mac, LispBuiltin *builtin)
+/*
+ intern string &optional package
+ */
+{
+    int i;
+    char *ptr;
+    LispAtom *atom;
+    LispObj *symbol;
+    LispPackage *pack;
+
+    LispObj *string, *package;
+
+    package = ARGUMENT(1);
+    string = ARGUMENT(0);
+
+    ERROR_CHECK_STRING(string);
+    if (package != NIL)
+	package = LispFindPackageOrDie(mac, builtin, package);
+    else
+	package = PACKAGE;
+
+    /* If got here, package is a LispPackage_t */
+    pack = package->data.package.package;
+
+    /* Search symbol in specified package */
+    ptr = THESTR(string);
+    for (i = 0, symbol = NULL; i < STRTBLSZ && symbol == NULL; i++) {
+	atom = pack->atoms[i];
+	while (atom) {
+	    if (strcmp(atom->string, ptr) == 0) {
+		symbol = atom->object;
+		break;
+	    }
+	    atom = atom->next;
+	}
+    }
+
+    RETURN_CHECK(1);
+    if (symbol == NULL) {
+	/* symbol does not exist in the specified package, create a new
+	 * internal symbol */
+	int unreadable;
+
+	if (package == PACKAGE)
+	    symbol = ATOM(ptr);
+	else {
+	    LispPackage *savepack;
+	    LispObj *savepackage;
+
+	    /* Save package environment */
+	    savepackage = PACKAGE;
+	    savepack = mac->pack;
+
+	    /* Change package environment */
+	    PACKAGE = package;
+	    mac->pack = package->data.package.package;
+
+	    symbol = ATOM(ptr);
+
+	    /* Restore package environment */
+	    PACKAGE = savepackage;
+	    mac->pack = savepack;
+	}
+
+	/* Check for zero length string */
+	unreadable = *ptr == '\0';
+
+	/* Check if string can be safely read back */
+	for (; *ptr; ptr++)
+	    if (islower(*ptr) || *ptr == '"' || *ptr == '\\' || *ptr == ';' ||
+		*ptr == '#' || *ptr == ',' || *ptr == '@' || *ptr == '(' ||
+		*ptr == ')' || *ptr == '`' || *ptr == '\'' || *ptr == '|' ||
+		*ptr == ':') {
+		unreadable = 1;
+		break;
+	    }
+
+	symbol->data.atom->unreadable = unreadable;
+	/* If symbol being create in the keyword package, make it external */
+	if (package == mac->keyword)
+	    symbol->data.atom->ext = LispTrue_t;
+	RETURN(0) = NIL;
+    }
+    else {
+	if (symbol->data.atom->package == package)
+	    RETURN(0) = symbol->data.atom->ext ? Kexternal : Kinternal;
+	else
+	    RETURN(0) = Kinherited;
+    }
+
+    RETURN_COUNT = 1;
+
+    return (symbol);
 }
 
 LispObj *
@@ -561,4 +794,34 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
     mac->protect.length = protect;
 
     return (used);
+}
+
+LispObj *
+Lisp_Unexport(LispMac *mac, LispBuiltin *builtin)
+/*
+ unexport symbols &optional package
+ */
+{
+    LispObj *list;
+
+    LispObj *symbols, *package;
+
+    package = ARGUMENT(1);
+    symbols = ARGUMENT(0);
+
+    /* If specified, make sure package is available */
+    if (package != NIL)
+	package = LispFindPackageOrDie(mac, builtin, package);
+    else
+	package = PACKAGE;
+
+    /* Export symbols */
+    if (CONS_P(symbols)) {
+	for (list = symbols; CONS_P(list); list = CDR(list))
+	    LispDoExport(mac, builtin, package, CAR(list), 0);
+    }
+    else
+	LispDoExport(mac, builtin, package, symbols, 0);
+
+    return (T);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.4 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.5 2002/02/14 04:48:10 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -115,9 +115,7 @@ Lisp_InputStreamP(LispMac *mac, LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    if (!STREAM_P(stream))
-	LispDestroy(mac, "%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(stream));
+    ERROR_CHECK_STREAM(stream);
 
     return (stream->data.stream.readable ? T : NIL);
 }
@@ -132,9 +130,7 @@ Lisp_OpenStreamP(LispMac *mac, LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    if (!STREAM_P(stream))
-	LispDestroy(mac, "%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(stream));
+    ERROR_CHECK_STREAM(stream);
 
     return (stream->data.stream.readable || stream->data.stream.writable ?
 	    T : NIL);
@@ -150,9 +146,7 @@ Lisp_OutputStreamP(LispMac *mac, LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    if (!STREAM_P(stream))
-	LispDestroy(mac, "%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(stream));
+    ERROR_CHECK_STREAM(stream);
 
     return (stream->data.stream.writable ? T : NIL);
 }
@@ -380,9 +374,7 @@ Lisp_Close(LispMac *mac, LispBuiltin *builtin)
     oabort = ARGUMENT(1);
     stream = ARGUMENT(0);
 
-    if (!STREAM_P(stream))
-	LispDestroy(mac, "%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(stream));
+    ERROR_CHECK_STREAM(stream);
 
     if (stream->data.stream.readable || stream->data.stream.writable) {
 	stream->data.stream.readable = stream->data.stream.writable = 0;
@@ -428,9 +420,7 @@ Lisp_Listen(LispMac *mac, LispBuiltin *builtin)
     stream = ARGUMENT(0);
 
     if (stream != NIL) {
-	if (!STREAM_P(stream))
-	    LispDestroy(mac, "%s: %s is not a stream",
-			STRFUN(builtin), STROBJ(stream));
+	ERROR_CHECK_STREAM(stream);
     }
     else
 	stream = mac->standard_input;
@@ -551,9 +541,7 @@ Lisp_WriteChar(LispMac *mac, LispBuiltin *builtin)
     output_stream = ARGUMENT(1);
     character = ARGUMENT(0);
 
-    if (!CHAR_P(character))
-	LispDestroy(mac, "%s: %s is not a character",
-		    STRFUN(builtin), STROBJ(character));
+    ERROR_CHECK_CHARACTER(character);
     ch = character->data.integer;
 
     LispWriteChar(mac, output_stream, ch);
@@ -579,9 +567,9 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
 
-    if (input_stream != NIL && !STREAM_P(input_stream))
-	LispDestroy(mac, "%s: %s is not a stream",
-		    STRFUN(builtin), STROBJ(input_stream));
+    if (input_stream != NIL) {
+	ERROR_CHECK_STREAM(input_stream);
+    }
 
     result = eof_value;
     string = NULL;
@@ -732,21 +720,14 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    start = end = 0;	/* fix gcc warning */
-
-    if (!STRING_P(ostring))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(ostring));
+    start = end = 0;
+    ERROR_CHECK_STRING(ostring);
     string = THESTR(ostring);
     length = strlen(string);
 
-    if (ostart == NIL)
-	start = 0;
-    else if (!INT_P(ostart) || !INDEX_P(ostart))
-	LispDestroy(mac, "%s: START %s is not a positive integer",
-		    STRFUN(builtin), STRPTR(ostart));
-    else
-	start = ostart->data.integer;
+    if (ostart == NIL)		start = 0;
+    else ERROR_CHECK_INDEX(ostart);
+    else			start = ostart->data.integer;
 
     if (oend == NIL)
 	end = length;

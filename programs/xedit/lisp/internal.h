@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.16 2002/02/15 07:20:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.17 2002/02/27 06:56:36 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -192,6 +192,28 @@
 #define ARGUMENT_NAME(index)				\
 	mac->env.names[mac->env.base + (index)]
 
+/* only extra return values are stored, that is, only
+ *	(cdr (multiple-value-list (<form>)))
+ * is stored in mac->returns.values, the first value is
+ * the value returned by <form>
+ *
+ * when returning multiple values, a function should do
+ * something like:
+ *	RETURN_CHECK(<number-of-return-values>);
+ *	for (RETURN_COUNT = 0; RETURN_COUNT < <number-of-values>; RETURN_COUNT++)
+ *		RETURN(RETURN_COUNT) = <nth-return-value>;
+ */
+#define RETURN(index)					\
+	mac->returns.values[(index)]
+#define RETURN_COUNT					\
+	mac->returns.length
+#define RETURN_CHECK(count)				\
+    if ((count) > mac->returns.space) {			\
+	do						\
+	    LispMoreReturns(mac);			\
+	while (mac->returns.space < (count));		\
+    }
+
 /* unbound builtin macro arguments, but keep objects gc protected,
  * avoid name clashes
 */
@@ -215,6 +237,62 @@
 	for (; i >= mac->env.base; i--)			\
 	    mac->env.names[i] = NIL;			\
     }
+
+/* Error checking, to be called from builtin functions */
+#define ERROR_CHECK_SYMBOL(object)				\
+    if (!SYMBOL_P(object))					\
+	LispDestroy(mac, "%s: %s is not a symbol",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_LIST(object)				\
+    if (!CONS_P(object))					\
+	LispDestroy(mac, "%s: %s is not a list",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_STRING(object)				\
+    if (!STRING_P(object))					\
+	LispDestroy(mac, "%s: %s is not a string",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_REAL(object)				\
+    if (!REAL_P(object))					\
+	LispDestroy(mac, "%s: %s is not a real number",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_INTEGER(object)				\
+    if (!INTEGER_P(object))					\
+	LispDestroy(mac, "%s: %s is not an integer",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_FLOAT(object)				\
+    if (!FLOAT_P(object))					\
+	LispDestroy(mac, "%s: %s is not a float number",	\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_NUMBER(object)				\
+    if (!NUMBER_P(object))					\
+	LispDestroy(mac, "%s: %s is not a number",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_CHARACTER(object)				\
+    if (!CHAR_P(object))					\
+	LispDestroy(mac, "%s: %s is not a character",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_INDEX(object)				\
+    if (!INDEX_P(object))					\
+	LispDestroy(mac, "%s: %s is not a positive fixnum",	\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_CONS(object)				\
+    if (!CONS_P(object))					\
+	LispDestroy(mac, "%s: %s is not of type cons",		\
+		    STRFUN(builtin), STROBJ(object))
+
+#define ERROR_CHECK_STREAM(object)				\
+    if (!STREAM_P(object))					\
+	LispDestroy(mac, "%s: %s is not a stream",		\
+		    STRFUN(builtin), STROBJ(object))
 
 /*
  * Types
@@ -368,7 +446,11 @@ struct _LispBuiltin {
     LispFunPtr function;
     char *declaration;
 
-    /* this field is optional, set if the function should not be exported */
+    /* this field is optional, set if the function returns multiple values.
+     * Note: currently only builtin functions can return multiple values */
+    int multiple_values;
+
+    /* this field is also optional, set if the function should not be exported */
     int internal;
 
     /* this field is set at runtime */

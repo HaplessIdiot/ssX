@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.21 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.22 2002/03/03 05:44:50 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -276,6 +276,12 @@ struct _LispMac {
     } dyn;
 
     struct {
+	LispObj **values;
+	int length;
+	int space;
+    } returns;
+
+    struct {
 	LispObj **objects;
 	int length;
 	int space;
@@ -453,7 +459,10 @@ void LispAddDocumentation(LispMac*, LispObj*, LispObj*, LispDocType_t);
 void LispRemDocumentation(LispMac*, LispObj*, LispDocType_t);
 LispObj *LispGetDocumentation(LispMac*, LispObj*, LispDocType_t);
 
-/* increases storage size for temporarily protected data */
+/* increases storage for functions returning multiple values */
+void LispMoreReturns(LispMac*);
+
+/* increases storage for temporarily protected data */
 void LispMoreProtects(LispMac*);
 
 /* Initialization */

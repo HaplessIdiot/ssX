@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.8 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.9 2002/02/14 04:48:10 paulo Exp $ */
 
 #include "struct.h"
 
@@ -178,8 +178,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     init = ARGUMENT(1);
     struc = ARGUMENT(0);
 
-    field = cons = NIL;		/* fix gcc warning */
-
+    field = cons = NIL;
     if (!SYMBOL_P(struc) ||
 	(atom = struc->data.atom)->a_defstruct == 0 ||
 	 atom->property->structure.function != STRUCT_CONSTRUCTOR)
@@ -193,7 +192,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     /* check for errors in argument list */
     for (list = init, nfld = 0; CONS_P(list); list = CDR(list)) {
 	if (!KEYWORD_P(CAR(list)))
-	    LispDestroy(mac, "%s: %s is a invalid field for %s",
+	    LispDestroy(mac, "%s: %s is an invalid field for %s",
 			STRPTR(struc), STROBJ(field),
 			STRPTR(CAR(definition)));
 	if (!CONS_P(CDR(list)))
