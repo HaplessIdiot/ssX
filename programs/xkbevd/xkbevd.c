@@ -1,4 +1,5 @@
 /* $XConsortium: xkbevd.c /main/2 1995/12/07 21:28:17 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -454,6 +455,16 @@ static char 	buf[1024];
 XkbEvent	ev;
 Bool		ok;
 
+#ifdef Lynx
+{
+    extern FILE *yyin;
+
+    yyin = stdin;
+    uSetEntryFile(NullString);
+    uSetDebugFile(NullString);
+    uSetErrorFile(NullString);
+}
+#endif
     if (!parseArgs(argc,argv))
 	exit(1);
     file= NULL;

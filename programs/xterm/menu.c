@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c,v 1.63 94/04/17 20:23:30 gildea Exp $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.0 1994/04/28 12:46:35 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.1 1994/05/08 05:27:06 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -43,28 +43,56 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xos.h>
 #endif
 
-extern void FindFontSelection();
+#include "xterm.h"
 
 Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 		   { XtNsensitive, (XtArgVal) 0 }};
 
-void do_hangup();
-
-static void do_securekbd(), do_allowsends(), do_visualbell(),
 #ifdef ALLOWLOGGING
-    do_logging(),
+static void do_logging PROTO_XT_CALLBACK_ARGS;
 #endif
-    do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
-    do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
-    do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
-    do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
-    do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
-    do_altscreen(), do_softreset(), do_hardreset(), do_clearsavedlines(),
-    do_tekmode(), do_vthide(), 
-    do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
-    do_tekpage(), do_tekreset(), do_tekcopy(), do_vtshow(), do_vtmode(), 
-    do_tekhide(), do_vtfont();
 
+static void do_allow132        PROTO_XT_CALLBACK_ARGS;
+static void do_allowsends      PROTO_XT_CALLBACK_ARGS;
+static void do_altscreen       PROTO_XT_CALLBACK_ARGS;
+static void do_appcursor       PROTO_XT_CALLBACK_ARGS;
+static void do_appkeypad       PROTO_XT_CALLBACK_ARGS;
+static void do_autolinefeed    PROTO_XT_CALLBACK_ARGS;
+static void do_autowrap        PROTO_XT_CALLBACK_ARGS;
+static void do_clearsavedlines PROTO_XT_CALLBACK_ARGS;
+static void do_continue        PROTO_XT_CALLBACK_ARGS;
+static void do_cursesemul      PROTO_XT_CALLBACK_ARGS;
+static void do_hardreset       PROTO_XT_CALLBACK_ARGS;
+static void do_interrupt       PROTO_XT_CALLBACK_ARGS;
+static void do_jumpscroll      PROTO_XT_CALLBACK_ARGS;
+static void do_kill            PROTO_XT_CALLBACK_ARGS;
+static void do_marginbell      PROTO_XT_CALLBACK_ARGS;
+static void do_quit            PROTO_XT_CALLBACK_ARGS;
+static void do_redraw          PROTO_XT_CALLBACK_ARGS;
+static void do_reversevideo    PROTO_XT_CALLBACK_ARGS;
+static void do_reversewrap     PROTO_XT_CALLBACK_ARGS;
+static void do_scrollbar       PROTO_XT_CALLBACK_ARGS;
+static void do_scrollkey       PROTO_XT_CALLBACK_ARGS;
+static void do_scrollttyoutput PROTO_XT_CALLBACK_ARGS;
+static void do_securekbd       PROTO_XT_CALLBACK_ARGS;
+static void do_softreset       PROTO_XT_CALLBACK_ARGS;
+static void do_suspend         PROTO_XT_CALLBACK_ARGS;
+static void do_tekcopy         PROTO_XT_CALLBACK_ARGS;
+static void do_tekhide         PROTO_XT_CALLBACK_ARGS;
+static void do_tekmode         PROTO_XT_CALLBACK_ARGS;
+static void do_tekpage         PROTO_XT_CALLBACK_ARGS;
+static void do_tekreset        PROTO_XT_CALLBACK_ARGS;
+static void do_tekshow         PROTO_XT_CALLBACK_ARGS;
+static void do_tektext2        PROTO_XT_CALLBACK_ARGS;
+static void do_tektext3        PROTO_XT_CALLBACK_ARGS;
+static void do_tektextlarge    PROTO_XT_CALLBACK_ARGS;
+static void do_tektextsmall    PROTO_XT_CALLBACK_ARGS;
+static void do_terminate       PROTO_XT_CALLBACK_ARGS;
+static void do_visualbell      PROTO_XT_CALLBACK_ARGS;
+static void do_vtfont          PROTO_XT_CALLBACK_ARGS;
+static void do_vthide          PROTO_XT_CALLBACK_ARGS;
+static void do_vtmode          PROTO_XT_CALLBACK_ARGS;
+static void do_vtshow          PROTO_XT_CALLBACK_ARGS;
 
 /*
  * The order entries MUST match the values given in menu.h
@@ -137,7 +165,33 @@ MenuEntry tekMenuEntries[] = {
     { "vtmode",		do_vtmode, NULL },		/* 10 */
     { "tekhide",	do_tekhide, NULL }};		/* 11 */
 
-static Widget create_menu();
+static Bool domenu
+	PROTO((Widget w,
+		XEvent *event,
+		String *params,
+		Cardinal *param_count));
+
+static Widget create_menu
+	PROTO((XtermWidget xtw,
+		Widget toplevelw,
+		char *name,
+		struct _MenuEntry *entries,
+		int nentries));
+
+static void do_tekonoff PROTO_XT_CALLBACK_ARGS;
+static void do_vtonoff PROTO_XT_CALLBACK_ARGS;
+static void handle_send_signal PROTO(( Widget gw, int sig));
+static void handle_tekshow PROTO(( Widget gw, Bool allowswitch));
+static void handle_vtshow PROTO((Widget gw, Bool allowswitch));
+
+static void handle_toggle 
+	PROTO((void (*proc)PROTO_XT_CALLBACK_ARGS,
+		int var,
+		String *params,
+		Cardinal nparams,
+		Widget w,
+		XtPointer closure, XtPointer data));
+
 extern Widget toplevel;
 
 
@@ -332,15 +386,15 @@ static void handle_send_signal (gw, sig)
  */
 
 /* ARGSUSED */
-void DoSecureKeyboard (time)
-    Time time;
+void DoSecureKeyboard (tp)
+    Time tp;
 {
     do_securekbd (term->screen.mainMenu, NULL, NULL);
 }
 
 static void do_securekbd (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
     Time time = CurrentTime;		/* XXX - wrong */
@@ -365,7 +419,7 @@ static void do_securekbd (gw, closure, data)
 
 static void do_allowsends (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -375,7 +429,7 @@ static void do_allowsends (gw, closure, data)
 
 static void do_visualbell (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -386,7 +440,7 @@ static void do_visualbell (gw, closure, data)
 #ifdef ALLOWLOGGING
 static void do_logging (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -401,7 +455,7 @@ static void do_logging (gw, closure, data)
 
 static void do_redraw (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     Redraw ();
 }
@@ -416,7 +470,7 @@ static void do_redraw (gw, closure, data)
 /* ARGSUSED */
 static void do_suspend (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
 #if defined(SIGTSTP) && !defined(AMOEBA)
     handle_send_signal (gw, SIGTSTP);
@@ -426,7 +480,7 @@ static void do_suspend (gw, closure, data)
 /* ARGSUSED */
 static void do_continue (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
 #if defined(SIGCONT) && !defined(AMOEBA)
     handle_send_signal (gw, SIGCONT);
@@ -436,7 +490,7 @@ static void do_continue (gw, closure, data)
 /* ARGSUSED */
 static void do_interrupt (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_send_signal (gw, SIGINT);
 }
@@ -444,7 +498,7 @@ static void do_interrupt (gw, closure, data)
 /* ARGSUSED */
 void do_hangup (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_send_signal (gw, SIGHUP);
 }
@@ -452,7 +506,7 @@ void do_hangup (gw, closure, data)
 /* ARGSUSED */
 static void do_terminate (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_send_signal (gw, SIGTERM);
 }
@@ -460,14 +514,14 @@ static void do_terminate (gw, closure, data)
 /* ARGSUSED */
 static void do_kill (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_send_signal (gw, SIGKILL);
 }
 
 static void do_quit (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     Cleanup (0);
 }
@@ -480,7 +534,7 @@ static void do_quit (gw, closure, data)
 
 static void do_scrollbar (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -495,7 +549,7 @@ static void do_scrollbar (gw, closure, data)
 
 static void do_jumpscroll (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -512,7 +566,7 @@ static void do_jumpscroll (gw, closure, data)
 
 static void do_reversevideo (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->flags ^= REVERSE_VIDEO;
     ReverseVideo (term);
@@ -522,7 +576,7 @@ static void do_reversevideo (gw, closure, data)
 
 static void do_autowrap (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->flags ^= WRAPAROUND;
     update_autowrap();
@@ -531,7 +585,7 @@ static void do_autowrap (gw, closure, data)
 
 static void do_reversewrap (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->flags ^= REVERSEWRAP;
     update_reversewrap();
@@ -540,7 +594,7 @@ static void do_reversewrap (gw, closure, data)
 
 static void do_autolinefeed (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->flags ^= LINEFEED;
     update_autolinefeed();
@@ -549,7 +603,7 @@ static void do_autolinefeed (gw, closure, data)
 
 static void do_appcursor (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->keyboard.flags ^= CURSOR_APL;
     update_appcursor();
@@ -558,7 +612,7 @@ static void do_appcursor (gw, closure, data)
 
 static void do_appkeypad (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     term->keyboard.flags ^= KYPD_APL;
     update_appkeypad();
@@ -567,7 +621,7 @@ static void do_appkeypad (gw, closure, data)
 
 static void do_scrollkey (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -578,7 +632,7 @@ static void do_scrollkey (gw, closure, data)
 
 static void do_scrollttyoutput (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -589,7 +643,7 @@ static void do_scrollttyoutput (gw, closure, data)
 
 static void do_allow132 (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -600,7 +654,7 @@ static void do_allow132 (gw, closure, data)
 
 static void do_cursesemul (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -611,7 +665,7 @@ static void do_cursesemul (gw, closure, data)
 
 static void do_marginbell (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -638,7 +692,7 @@ static void handle_tekshow (gw, allowswitch)
 /* ARGSUSED */
 static void do_tekshow (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_tekshow (gw, True);
 }
@@ -646,7 +700,7 @@ static void do_tekshow (gw, closure, data)
 /* ARGSUSED */
 static void do_tekonoff (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_tekshow (gw, False);
 }
@@ -654,7 +708,7 @@ static void do_tekonoff (gw, closure, data)
 /* ARGSUSED */
 static void do_altscreen (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     /* do nothing for now; eventually, will want to flip screen */
 }
@@ -662,7 +716,7 @@ static void do_altscreen (gw, closure, data)
 
 static void do_softreset (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     VTReset (FALSE);
 }
@@ -670,7 +724,7 @@ static void do_softreset (gw, closure, data)
 
 static void do_hardreset (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     VTReset (TRUE);
 }
@@ -678,7 +732,7 @@ static void do_hardreset (gw, closure, data)
 
 static void do_clearsavedlines (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -690,7 +744,7 @@ static void do_clearsavedlines (gw, closure, data)
 
 static void do_tekmode (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -700,7 +754,7 @@ static void do_tekmode (gw, closure, data)
 /* ARGSUSED */
 static void do_vthide (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     hide_vt_window();
 }
@@ -712,7 +766,7 @@ static void do_vthide (gw, closure, data)
 
 static void do_vtfont (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     char *entryname = (char *) closure;
     int i;
@@ -733,7 +787,7 @@ static void do_vtfont (gw, closure, data)
 
 static void do_tektextlarge (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekSetFontSize (tekMenu_tektextlarge);
 }
@@ -741,7 +795,7 @@ static void do_tektextlarge (gw, closure, data)
 
 static void do_tektext2 (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekSetFontSize (tekMenu_tektext2);
 }
@@ -749,7 +803,7 @@ static void do_tektext2 (gw, closure, data)
 
 static void do_tektext3 (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekSetFontSize (tekMenu_tektext3);
 }
@@ -757,7 +811,7 @@ static void do_tektext3 (gw, closure, data)
 
 static void do_tektextsmall (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
 
     TekSetFontSize (tekMenu_tektextsmall);
@@ -766,7 +820,7 @@ static void do_tektextsmall (gw, closure, data)
 
 static void do_tekpage (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekSimulatePageButton (False);
 }
@@ -774,7 +828,7 @@ static void do_tekpage (gw, closure, data)
 
 static void do_tekreset (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekSimulatePageButton (True);
 }
@@ -782,7 +836,7 @@ static void do_tekreset (gw, closure, data)
 
 static void do_tekcopy (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     TekCopy ();
 }
@@ -799,28 +853,28 @@ static void handle_vtshow (gw, allowswitch)
     } else if (screen->Tshow || allowswitch) {  /* is showing, turn off */
 	set_vt_visibility (FALSE);
 	if (!screen->TekEmu && TekRefresh) dorefresh ();
-	end_vt_mode ();
+	end_vt_mode ();			/* WARNING: this does a longjmp... */
     } else 
       Bell();
 }
 
 static void do_vtshow (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_vtshow (gw, True);
 }
 
 static void do_vtonoff (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     handle_vtshow (gw, False);
 }
 
 static void do_vtmode (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     register TScreen *screen = &term->screen;
 
@@ -831,7 +885,7 @@ static void do_vtmode (gw, closure, data)
 /* ARGSUSED */
 static void do_tekhide (gw, closure, data)
     Widget gw;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     hide_tek_window();
 }
@@ -843,12 +897,12 @@ static void do_tekhide (gw, closure, data)
  */
 
 static void handle_toggle (proc, var, params, nparams, w, closure, data)
-    void (*proc)();
+    void (*proc)PROTO_XT_CALLBACK_ARGS;
     int var;
     String *params;
     Cardinal nparams;
     Widget w;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     int dir = -2;
 
@@ -1204,7 +1258,7 @@ void HandleSetTekText(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    void (*proc)() = NULL;
+    void (*proc)PROTO_XT_CALLBACK_ARGS = 0;
 
     switch (*param_count) {
       case 0:

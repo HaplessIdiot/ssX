@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/19 1995/12/08 17:18:10 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.1 1995/01/21 13:19:18 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.2 1996/01/05 13:23:08 dawes Exp $
  */
 
 /*
@@ -34,11 +34,16 @@
 #include <X11/Xutil.h>
 #include <stdio.h>
 
+#include "xterm.h"
+
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
 static char *cur = "DACB";
 
-static int funcvalue(), sunfuncvalue();
+static int funcvalue PROTO((KeySym keycode));
+static int sunfuncvalue PROTO((KeySym keycode));
+static void AdjustAfterInput PROTO((TScreen *screen));
+
 extern Boolean sunFunctionKeys;
 
 static void
@@ -63,6 +68,7 @@ register TScreen *screen;
 	}
 }
 
+void
 Input (keyboard, screen, event, eightbit)
     register TKeyboard	*keyboard;
     register TScreen	*screen;
@@ -159,10 +165,11 @@ Input (keyboard, screen, event, eightbit)
 	return;
 }
 
+void
 StringInput (screen, string, nbytes)
     register TScreen	*screen;
     register char *string;
-    int nbytes;
+    Size_t nbytes;
 {
 	int	pty	= screen->respond;
 
@@ -171,14 +178,14 @@ StringInput (screen, string, nbytes)
 		TekGINoff();
 		nbytes--;
 	}
-	while (nbytes-- > 0)
+	while (nbytes-- != 0)
 		unparseputc(*string++, pty);
 	if(!screen->TekEmu)
 	        AdjustAfterInput(screen);
 }
 
 static int funcvalue (keycode)
-	int keycode;
+	KeySym  keycode;
 {
 	switch (keycode) {
 		case XK_F1:	return(11);
@@ -219,7 +226,7 @@ static int funcvalue (keycode)
 
 
 static int sunfuncvalue (keycode)
-	int keycode;
+	KeySym  keycode;
   {
   	switch (keycode) {
 		case XK_F1:	return(224);

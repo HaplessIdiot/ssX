@@ -1,4 +1,5 @@
-/* $XConsortium: xkbscan.c,v 1.2 94/04/04 15:28:49 rws Exp $ */
+/* $XConsortium: xkbscan.c /main/4 1995/12/07 21:26:48 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,7 +34,11 @@
 
 #include "tokens.h"
 
+#ifndef Lynx
 FILE	*yyin = stdin;
+#else
+FILE	*yyin = NULL;
+#endif
 
 static char scanFileBuf[1024];
 char *	 scanFile= scanFileBuf;
@@ -83,9 +88,20 @@ static char buf[32];
 	case INTERPRET:		sprintf(buf, "INTERPRET"); break;
 	case ACTION:		sprintf(buf, "ACTION"); break;
 	case KEY:		sprintf(buf, "KEY"); break;
-	case MODIFIER:		sprintf(buf, "MODIFIER"); break;
+	case ALIAS:		sprintf(buf, "ALIAS"); break;
+	case GROUP:		sprintf(buf, "GROUP"); break;
 	case MODIFIER_MAP:	sprintf(buf, "MODIFIER_MAP"); break;
 	case INDICATOR:		sprintf(buf, "INDICATOR"); break;
+	case SHAPE:		sprintf(buf, "SHAPE"); break;
+	case KEYS:		sprintf(buf, "KEYS"); break;
+	case ROW:		sprintf(buf, "ROW"); break;
+	case SECTION:		sprintf(buf, "SECTION"); break;
+	case OVERLAY:		sprintf(buf, "OVERLAY"); break;
+	case TEXT:		sprintf(buf, "TEXT"); break;
+	case OUTLINE:		sprintf(buf, "OUTLINE"); break;
+	case SOLID:		sprintf(buf, "SOLID"); break;
+	case LOGO:		sprintf(buf, "LOGO"); break;
+	case VIRTUAL:		sprintf(buf, "VIRTUAL"); break;
 
 	case EQUALS:		sprintf(buf, "EQUALS");	break;
 	case PLUS:		sprintf(buf, "PLUS");	break;
@@ -105,9 +121,17 @@ static char buf[32];
 	case INVERT:		sprintf(buf, "INVERT");	break;
 
 	case STRING:		sprintf(buf, "STRING (%s)",scanStr);	break;
-	case NUMBER:		sprintf(buf, "NUMBER (0x%x)",scanInt);	break;
+	case INTEGER:		sprintf(buf, "INTEGER (0x%x)",scanInt);	break;
+	case FLOAT:		sprintf(buf, "FLOAT (%d.%d)",
+					     scanInt/XkbGeomPtsPerMM,
+					     scanInt%XkbGeomPtsPerMM);break;
 	case IDENT:		sprintf(buf, "IDENT (%s)",scanStr);	break;
 	case KEYNAME:		sprintf(buf, "KEYNAME (%s)",scanStr);	break;
+
+	case PARTIAL:		sprintf(buf, "PARTIAL"); break;
+	case DEFAULT:		sprintf(buf, "DEFAULT"); break;
+	case HIDDEN:		sprintf(buf, "HIDDEN"); break;
+
 	default:		sprintf(buf, "UNKNOWN");	break;
     }
     return buf;
@@ -269,16 +293,30 @@ struct _Keyword {
     { "override",		OVERRIDE		},
     { "augment",		AUGMENT			},
     { "replace",		REPLACE			},
+    { "partial",		PARTIAL			},
+    { "default",		DEFAULT			},
+    { "hidden",			HIDDEN			},
     { "virtual_modifiers",	VIRTUAL_MODS		},
     { "type",			TYPE			},
     { "interpret",		INTERPRET		},
     { "action",			ACTION			},
     { "key",			KEY			},
-    { "modifier",		MODIFIER		},
+    { "alias",			ALIAS			},
+    { "group",			GROUP			},
     { "modmap",			MODIFIER_MAP		},
     { "mod_map",		MODIFIER_MAP		},
     { "modifier_map",		MODIFIER_MAP		},
-    { "indicator",		INDICATOR		}
+    { "indicator",		INDICATOR		},
+    { "shape",			SHAPE			},
+    { "row",			ROW			},
+    { "keys",			KEYS			},
+    { "section",		SECTION			},
+    { "overlay",		OVERLAY			},
+    { "text",			TEXT			},
+    { "outline",		OUTLINE			},
+    { "solid",			SOLID			},
+    { "logo",			LOGO			},
+    { "virtual",		VIRTUAL			}
 };
 int	numKeywords = sizeof(keywords)/sizeof(struct _Keyword);
 
@@ -323,15 +361,34 @@ int
 yyGetNumber(ch)
     int ch;
 {
-    while ( isspace(ch) && (ch!=EOF)) {
-	ch = getc(yyin);
-	if ( ch=='\n' )
-	    lineNum++;
+int	isFloat= 0;
+
+    buf[0]= ch;
+    nInBuf= 1;
+    while (((ch=getc(yyin))!=EOF)&&(isxdigit(ch)||((nInBuf==1)&&(ch=='x')))) {
+	buf[nInBuf++]= ch;
     }
-    if (ch!=EOF)
-	ungetc(ch,yyin);
-    if ( fscanf(yyin,"%i",&scanInt)==1 )
-	return NUMBER;
+    if (ch=='.') {
+	isFloat= 1;
+	buf[nInBuf++]= ch;
+	while (((ch=getc(yyin))!=EOF)&&(isxdigit(ch))) {
+	    buf[nInBuf++]= ch;
+	}
+    }
+    buf[nInBuf++]= '\0';
+    if ((ch!=EOF)&&(!isspace(ch)))
+	ungetc( ch, yyin );
+
+    if (isFloat) {
+	float tmp;
+	if (sscanf(buf,"%g",&tmp)==1) {
+	    scanInt= tmp*XkbGeomPtsPerMM;
+	    return FLOAT;
+	}
+    }
+    else if ( sscanf(buf,"%i",&scanInt)==1 )
+	return INTEGER;
+    fprintf(stderr,"Malformed number %s\n",buf);
     return ERROR;
 }
 
@@ -346,12 +403,11 @@ int	rtrn;
 	if ( ch == '\n' ) {
 	    lineNum++;
 	}
-	else if ( ch == '#' ) {
-	    if (fscanf(yyin," %d %s",&lineNum,scanFile)!=2)
-		fprintf(stderr,"bad #line directive\n");
-	    else {
-		ch = getc(yyin);
-	    }
+	else if ( ch=='#' ) {	/* handle shell style '#' comments */
+	    do {
+		ch= getc(yyin);
+	    } while ((ch!='\n')&&(ch!=EOF));
+	    lineNum++;
 	}
 	else if ( ch=='/' ) {	/* handle C++ style double-/ comments */
 	    int newch= getc(yyin);

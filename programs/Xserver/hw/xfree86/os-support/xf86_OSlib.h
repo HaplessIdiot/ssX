@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.19 1995/12/23 09:39:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.20 1995/12/26 06:08:47 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -224,6 +224,9 @@ extern int errno;
 
 /* atc drivers ignores argument to VT_RELDISP ioctl */
 # define VT_ACKACQ	2
+
+# include <termios.h>
+# define POSIX_TTY
 
 #endif /* Lynx */
 

@@ -1,6 +1,7 @@
 
   /*\
    * $XConsortium: utils.c /main/1 1995/11/30 19:19:26 kaleb $
+   * $XFree86$
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -102,7 +103,11 @@ uFree(ptr)
 /***                  FUNCTION ENTRY TRACKING                           ***/
 /***====================================================================***/
 
+#ifndef Lynx
 static	FILE	*entryFile=	stderr;
+#else
+static	FILE	*entryFile=	NULL;
+#endif
 	int	 uEntryLevel;
 
 Boolean
@@ -158,7 +163,11 @@ int	i;
 /***			PRINT FUNCTIONS					***/
 /***====================================================================***/
 
+#ifndef Lynx
 	FILE	*uDebugFile=		stderr;
+#else
+	FILE	*uDebugFile=		NULL;
+#endif
 	int	 uDebugIndentLevel=	0;
 	int	 uDebugIndentSize=	4;
 
@@ -208,7 +217,11 @@ int	i;
 
 /***====================================================================***/
 
+#ifndef Lynx
 static	FILE	*errorFile=	stderr;
+#else
+static	FILE	*errorFile=	NULL;
+#endif
 
 Boolean
 uSetErrorFile(name)

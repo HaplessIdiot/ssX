@@ -28,4 +28,3 @@
 #define	DEFFONT			"fixed"
 #define	DEFBOLDFONT		NULL 	/* no bold font uses overstriking */
 #define	DEFBORDER		2
-#define	DEFBORDERWIDTH		2

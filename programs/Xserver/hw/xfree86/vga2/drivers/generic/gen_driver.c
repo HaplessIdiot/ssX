@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c,v 1.3 95/01/16 13:17:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.8 1995/01/28 17:07:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.9 1995/05/27 03:14:00 dawes Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -20,6 +20,13 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+#ifdef PC98_EGC
+/* I/O port address define for extended EGC */
+#define		EGC_READ	0x4a2	/* EGC FGC,EGC,Read Plane  */
+#define		EGC_MASK	0x4a8	/* EGC Mask register       */
+#define		EGC_ADD		0x4ac	/* EGC Dest/Source address */
+#define		EGC_LENGTH	0x4ae	/* EGC Bit length          */
+#endif
 
 typedef struct {
   vgaHWRec std;               /* good old IBM VGA */
@@ -101,6 +108,7 @@ GENERICClockSelect(no)
   static unsigned char save1;
   unsigned char temp;
 
+#ifndef PC98_EGC
   switch(no)
   {
     case CLK_REG_SAVE:
@@ -113,6 +121,7 @@ GENERICClockSelect(no)
       temp = inb(0x3CC);
       outb(0x3C2, (temp & 0xf3) | ((no << 2) & 0x0C));
   }
+#endif /* PC98_EGC */
   return(TRUE);
 }
 
@@ -150,6 +159,7 @@ GENERICProbe()
        * than EGA, so see if we can read/write it.
        */
 
+#ifndef PC98_EGC
       temp = inb(vgaIOBase + 0x0A); /* reset ATC flip-flop */
       outb(0x3C0, 0x14 | 0x20); origVal = inb(0x3C1);
       outb(0x3C0, origVal ^ 0x0F);
@@ -160,6 +170,7 @@ GENERICProbe()
 	  GENERICEnterLeave(LEAVE);
 	  return(FALSE);
 	}
+#endif /* PC98_EGC */
     }
 
   /*
@@ -197,18 +208,56 @@ GENERICEnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+#ifdef PC98_EGC
+  int i;
+#endif
 
   if (enter)
     {
       xf86EnableIOPorts(vga2InfoRec.scrnIndex);
 
+#ifndef PC98_EGC
       vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
       /* Unprotect CRTC[0-7] */
       outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       outb(vgaIOBase + 5, temp & 0x7F);
+#else
+#if 0
+      outb (0x7c, 0x00);
+      /* set to 16color mode */
+      outb(0x6a, 0x01);
+      /* set EGC enable */
+      outb(0x7c, 0xc0); /* GRCG enable, RMW mode */
+      outb(0x6a, 0x07);
+      outb(0x6a, 0x05);
+      outb(0x6a, 0x06);
+
+      for (i = 0; i < 4 ; i++)
+	{
+	  outb (0x7e,0xff);
+	}
+
+      /* set up VGA registers */
+      
+      outw (EGC_READ, 0x0000) ;
+      outw (EGC_MASK, 0xffff) ;
+      outw (EGC_READ ,0x40ff) ;
+      outw (EGC_ADD, 0x0000) ;
+      outw (EGC_LENGTH, 0x000f) ;
+#endif
+#endif
     }
   else
     {
+#ifdef	PC98_EGC
+#if 0
+      outb(0x6a, 0x07);
+      outb(0x6a, 0x04);
+      outb(0x6a, 0x06);
+/*      outb((hiresoflg)?0xa4:0x7c, 0x00); */
+      outb(0x7c, 0x00);
+#endif
+#endif
       xf86DisableIOPorts(vga2InfoRec.scrnIndex);
     }
 }
@@ -270,9 +319,11 @@ GENERICAdjust(x, y)
 {
   int Base = (y * vga2InfoRec.displayWidth + x + 3) >> 3;
 
+#ifndef PC98_EGC
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x030000) >> 8) | 0x33);
+#endif
 }
 
 /*

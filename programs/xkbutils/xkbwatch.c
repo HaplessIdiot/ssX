@@ -1,4 +1,5 @@
 /* $XConsortium: xkbwatch.c /main/2 1995/12/07 21:31:31 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -141,6 +142,11 @@ static char *	fallback_resources[] = {
     NULL
 };
 
+#ifdef Lynx
+    uSetEntryFile(NullString);
+    uSetDebugFile(NullString);
+    uSetErrorFile(NullString);
+#endif
     toplevel = XtOpenApplication(&app_con, "XkbWatch",
 				 options, XtNumber(options), &argc, argv, 
 				 fallback_resources,

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.5 1995/03/11 14:21:37 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.6 1996/01/05 13:23:13 dawes Exp $
  */
 
 /*
@@ -110,12 +110,6 @@
 #include <signal.h>
 #include <pwd.h>
 
-#ifdef SIGNALRETURNSINT
-#define SIGNAL_T int
-#else
-#define SIGNAL_T void
-#endif
-
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
@@ -153,15 +147,15 @@ struct {
 	char *name;
 	int type;
 } shell_list[] = {
-	"csh",		SHELL_C,	/* vanilla cshell */
-	"tcsh",		SHELL_C,
-	"jcsh",		SHELL_C,
-	"sh",		SHELL_BOURNE,	/* vanilla Bourne shell */
-	"ksh",		SHELL_BOURNE,	/* Korn shell (from AT&T toolchest) */
-	"ksh-i",	SHELL_BOURNE,	/* other name for latest Korn shell */
-	"bash",		SHELL_BOURNE,	/* GNU Bourne again shell */
-	"jsh",		SHELL_BOURNE,
-	NULL,		SHELL_BOURNE	/* default (same as xterm's) */
+	{ "csh",	SHELL_C },	/* vanilla cshell */
+	{ "tcsh",	SHELL_C },
+	{ "jcsh",	SHELL_C },
+	{ "sh",		SHELL_BOURNE },	/* vanilla Bourne shell */
+	{ "ksh",	SHELL_BOURNE },	/* Korn shell (from AT&T toolchest) */
+	{ "ksh-i",	SHELL_BOURNE },	/* other name for latest Korn shell */
+	{ "bash",	SHELL_BOURNE },	/* GNU Bourne again shell */
+	{ "jsh",	SHELL_BOURNE },
+	{ NULL,		SHELL_BOURNE }	/* default (same as xterm's) */
 };
 
 char *emuname[EMULATIONS] = {
@@ -212,13 +206,25 @@ char *wsize[EMULATIONS] = {
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
 
-char *strindex ();
+#include "proto.h"
 
-SIGNAL_T onintr();
+extern int main PROTO((int argc, char **argv));
+
+static SIGNAL_T onintr PROTO((int sig));
+static SIGNAL_T resize_timeout PROTO((int sig));
+static int checkdigits PROTO((char *str));
+static void Usage PROTO((void));
+static void readstring PROTO((FILE *fp, char *buf, char *str));
+
+#ifdef USE_TERMCAP
+static char *strindex PROTO((char *s1, char *s2));
+#include <termcap.h>
+#endif
 
 /*
    resets termcap string to reflect current screen size
  */
+int
 main (argc, argv)
     int argc;
     char **argv;
@@ -484,7 +490,9 @@ main (argc, argv)
 	exit(0);
 }
 
-char *strindex (s1, s2)
+#ifdef USE_TERMCAP
+static char *
+strindex (s1, s2)
 /*
    returns a pointer to the first occurrence of s2 in s1, or NULL if there are
    none.
@@ -492,7 +500,7 @@ char *strindex (s1, s2)
 register char *s1, *s2;
 {
 	register char *s3;
-	int s2len = strlen (s2);
+	Size_t s2len = strlen (s2);
 
 	while ((s3 = strchr(s1, *s2)) != NULL)
 	{
@@ -501,7 +509,9 @@ register char *s1, *s2;
 	}
 	return (NULL);
 }
+#endif
 
+static int
 checkdigits(str)
 register char *str;
 {
@@ -513,13 +523,13 @@ register char *str;
 	return(1);
 }
 
+static void
 readstring(fp, buf, str)
     register FILE *fp;
     register char *buf;
     char *str;
 {
 	register int last, c;
-	SIGNAL_T resize_timeout();
 #if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(SCO) && !(__EMX__)
 	/* What is the advantage of setitimer() over alarm()? */
 	struct itimerval it;
@@ -554,6 +564,7 @@ readstring(fp, buf, str)
 	*buf = 0;
 }
 
+static void
 Usage()
 {
 	fprintf(stderr, strcmp(myname, sunname) == 0 ?
@@ -562,7 +573,7 @@ Usage()
 	exit(1);
 }
 
-SIGNAL_T
+static SIGNAL_T
 resize_timeout(sig)
     int sig;
 {
@@ -571,7 +582,7 @@ resize_timeout(sig)
 }
 
 /* ARGSUSED */
-SIGNAL_T
+static SIGNAL_T
 onintr(sig)
     int sig;
 {
