@@ -1,5 +1,5 @@
 /* $XConsortium: miscrinit.c /main/13 1996/08/12 21:51:16 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.2 1996/12/23 07:09:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.3 1998/04/05 16:42:32 robin Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -191,6 +191,8 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* whitePixel, blackPixel */
     pScreen->ModifyPixmapHeader = miModifyPixmapHeader;
     pScreen->CreateScreenResources = miCreateScreenResources;
+    pScreen->GetScreenPixmap = miGetScreenPixmap;
+    pScreen->SetScreenPixmap = miSetScreenPixmap;
     pScreen->numVisuals = numVisuals;
     pScreen->visuals = visuals;
     if (width)
