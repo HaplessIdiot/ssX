@@ -1,5 +1,5 @@
 /*
- * $Id: fboverlay.h,v 1.1 2000/05/06 21:09:33 keithp Exp $
+ * $XFree86$
  *
  * Copyright © 2000 SuSE, Inc.
  *

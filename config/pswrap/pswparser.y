@@ -35,6 +35,9 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
+%expect 1
 
 %{
 

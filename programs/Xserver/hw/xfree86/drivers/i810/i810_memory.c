@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.5 2000/04/19 15:48:34 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,6 +32,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
+#ifdef XFree86LOADER
+/*
+ * Must #include <linux/types.h> before "xf86_ansic.h", but perhaps it would
+ * be a better idea to #include <linux/agpgart.h> instead.
+ */
+#include <linux/types.h>
+#endif
 
 #include "X.h"
 #include "input.h"
@@ -74,11 +81,6 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
 #define XCONFIG_PROBED "()"
 #define NAME "i810"
 
-extern int xf86open(const char *path, int flags, ...);
-extern int xf86close(int fd );
-extern int xf86ioctl(int fd, unsigned long request, pointer argp);
-extern int xf86errno;
-
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
 {
@@ -90,16 +92,16 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    long tom = 0;
    int gartfd = -1;
 
-   gartfd = xf86open("/dev/agpgart", O_RDWR, 0);
+   gartfd = open("/dev/agpgart", O_RDWR, 0);
 
    if (gartfd == -1) {	
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "unable to open /dev/agpgart\n");
       return FALSE;
    }
 
-   if (xf86ioctl(gartfd, AGPIOC_ACQUIRE, 0) != 0) {
+   if (ioctl(gartfd, AGPIOC_ACQUIRE, 0) != 0) {
       if(pI810->agpAcquired2d == TRUE) {
-	 xf86close(gartfd);
+	 close(gartfd);
 	 return TRUE;
       }
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "AGPIOC_ACQUIRE failed\n"); 
@@ -110,9 +112,9 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    pI810->agpAcquired2d = TRUE;
    pI810->gartfd = gartfd;
    
-   if (xf86ioctl(pI810->gartfd, AGPIOC_INFO, &agpinf) != 0) {
+   if (ioctl(pI810->gartfd, AGPIOC_INFO, &agpinf) != 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		 "error doing xf86ioctl(AGPIOC_INFO)\n");
+		 "error doing ioctl(AGPIOC_INFO)\n");
       return FALSE;
    }
    
@@ -131,7 +133,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    alloc.pg_count = pages;
    alloc.type = 0;
 
-   if (xf86ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
+   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		 "AGPGART: allocation of %d pages failed\n", pages);
       return FALSE;
@@ -140,7 +142,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    bind.pg_start = 0;
    bind.key = alloc.key;
 
-   if (xf86ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
+   if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		 "GART: allocation of %d pages failed\n", pages);
       return FALSE;
@@ -171,11 +173,11 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    tom += 0x7ffff;
    tom &= ~0x7ffff;
 
-   if (xf86ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) == 0) {
+   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) == 0) {
       bind.pg_start = tom / 4096;
       bind.key = alloc.key;
 
-      if (xf86ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
+      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: allocation of %d DCACHE pages failed\n", 
 		    alloc.pg_count);
@@ -196,7 +198,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    alloc.type = 2;
 
 
-   if (xf86ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
+   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: No physical memory available for mouse\n", 
 		    alloc.pg_count);
@@ -204,7 +206,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
       bind.pg_start = tom / 4096;
       bind.key = alloc.key;
 
-      if (xf86ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
+      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: allocation of %d physical pages failed\n", 
 		    alloc.pg_count);
@@ -228,7 +230,7 @@ void I810FreeGARTMemory( ScrnInfoPtr pScrn )
    I810Ptr pI810 = I810PTR(pScrn);
 
    if (pI810->gartfd != -1) {
-      xf86close( pI810->gartfd );
+      close( pI810->gartfd );
       pI810->gartfd = -1;
    }
 }

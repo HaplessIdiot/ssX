@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.11 2000/02/23 04:47:09 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.13 2000/05/10 18:55:29 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -54,7 +54,7 @@ static char GLINTKernelDriverName[] = "gamma";
 static char GLINTClientDriverName[] = "gamma";
 
 static void GLINTDestroyContext(ScreenPtr pScreen, drmContext hwContext,
-                                DRIContextType contextStore);
+                                void *contextStore);
 
 static int 
 GLINTDRIControlInit(int drmSubFD, int irq)
@@ -613,7 +613,7 @@ GLINTCreateContext(ScreenPtr pScreen,
                    VisualPtr visual,
                    drmContext hwContext,
                    void *pVisualConfigPriv,
-		   DRIContextType contextStore)
+		   void *contextStore)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -643,7 +643,7 @@ GLINTCreateContext(ScreenPtr pScreen,
 static void
 GLINTDestroyContext(ScreenPtr pScreen,
                     drmContext hwContext,
-                    DRIContextType contextStore)
+                    void *contextStore)
 {
 }
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.74 2000/03/21 23:17:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.76 2000/05/04 20:16:54 alanh Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -915,6 +915,9 @@ TCLIBDIR = TclLibDir
 #ifndef M4Cmd
 #define M4Cmd m4
 #endif
+#ifndef M4Flags
+#define M4Flags /**/
+#endif
 #ifndef LexCmd
 #define LexCmd lex
 #endif
@@ -1356,7 +1359,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      INSTALLFLAGS = InstallFlags
                LD = LdCmd
               LEX = LexCmd
-	       M4 = M4Cmd
+               M4 = M4Cmd
+          M4FLAGS = M4Flags
            LEXLIB = LexLib
              YACC = YaccCmd
            CCYACC = CplusplusYaccCmd

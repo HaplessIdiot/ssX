@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.15 2000/04/07 03:57:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.16 2000/04/23 19:27:01 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -62,7 +62,10 @@ typedef struct _ATIHWRec
           b0, b1, b2, b3,     b5, b6,     b8, b9, ba,         bd, be, bf;
 
     /* Mach64 PLL registers */
-    CARD8 pll_vclk_cntl, pll_ext_vpll_cntl;
+    CARD8 pll_vclk_cntl, pll_vclk_post_div,
+          pll_vclk0_fb_div, pll_vclk1_fb_div,
+          pll_vclk2_fb_div, pll_vclk3_fb_div,
+          pll_xclk_cntl, pll_ext_vpll_cntl;
 
     /* Mach64 CPIO registers */
     CARD32 crtc_h_total_disp, crtc_h_sync_strt_wid,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.66 2000/02/12 23:59:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.68 2000/04/17 16:29:54 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -827,7 +827,7 @@ typedef struct _ScrnInfoRec {
     void		(*EnableDisableFBAccess)(int scrnIndex, Bool enable);
     int			(*SetDGAMode)(int scrnIndex, int num, 
 					DGADevicePtr devRet);
-    int			(*ChangeGamma)(int scrnIndex, Gamma gamma);
+    int			(*ChangeGamma)(int scrnIndex, Gamma newGamma);
     void		(*PointerMoved)(int scrnIndex, int x, int y);
     Bool                (*PMEvent)(int scrnIndex, pmEvent event);
     

@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /*
  * xcalc.c  -  a hand calculator for the X Window system
@@ -110,7 +111,8 @@ static XtResource Resources[] = {
 #undef offset
 
 
-void main(argc, argv)
+int
+main(argc, argv)
     int		argc;
     char	**argv;
 {
@@ -166,6 +168,8 @@ void main(argc, argv)
 #endif
     ResetCalc();
     XtAppMainLoop(xtcontext);
+
+    return 0;
 }
 
 void create_calculator(shell)

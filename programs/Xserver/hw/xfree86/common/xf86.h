@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.136 2000/04/20 21:28:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.137 2000/04/23 19:26:52 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -173,7 +173,7 @@ Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int fbbpp,
 void xf86PrintDepthBpp(ScrnInfoPtr scrp);
 Bool xf86SetWeight(ScrnInfoPtr scrp, rgb weight, rgb mask);
 Bool xf86SetDefaultVisual(ScrnInfoPtr scrp, int visual);
-Bool xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma);
+Bool xf86SetGamma(ScrnInfoPtr scrp, Gamma newGamma);
 void xf86SetDpi(ScrnInfoPtr pScrn, int x, int y);
 void xf86SetBlackWhitePixels(ScreenPtr pScreen);
 void xf86EnableDisableFBAccess(int scrnIndex, Bool enable);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dripriv.h,v 1.1 1999/06/14 07:31:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dripriv.h,v 1.3 2000/05/10 18:55:29 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -43,7 +43,7 @@ extern Bool GLINTCreateContext(ScreenPtr pScreen,
                                VisualPtr visual,
                                drmContext hwContext,
                                void* pVisualConfigPriv,
-			       DRIContextType contextStore);
+			       void* contextStore);
 
 extern void GLINTDRISwapContext( ScreenPtr pScreen,
 				 DRISyncType syncType,

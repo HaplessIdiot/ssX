@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.5 2000/04/17 16:30:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.6 2000/04/19 15:48:36 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -84,10 +84,10 @@ xf86InitInt10(int entityIndex)
      */
 
     MapVRam(pInt);
-    INTPriv(pInt)->sysMem = sysMem;
 #ifdef _PC
     if (!sysMem)
 	sysMem = xf86MapVidMem(screen,VIDMEM_FRAMEBUFFER,SYS_BIOS,BIOS_SIZE);
+    INTPriv(pInt)->sysMem = sysMem;
     
     if (xf86ReadBIOS(0,0,(unsigned char *)base,LOW_PAGE_SIZE) < 0) {
 	xf86DrvMsg(screen,X_ERROR,"Cannot read int vect\n");

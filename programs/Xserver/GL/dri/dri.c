@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.12 2000/03/02 16:07:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.13 2000/03/04 01:53:01 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1320,7 +1320,7 @@ DRICopyWindow(
 }
 
 static void
-DRIGetSecs(unsigned long *secs, unsigned long *usecs)
+DRIGetSecs(long *secs, long *usecs)
 {
 #if XFree86LOADER
     xf86getsecs(secs,usecs);
@@ -1335,8 +1335,7 @@ DRIGetSecs(unsigned long *secs, unsigned long *usecs)
 }
 
 static unsigned long
-DRIComputeMilliSeconds(unsigned long s_secs, unsigned long s_usecs,
-		       unsigned long f_secs, unsigned long f_usecs)
+DRIComputeMilliSeconds(long s_secs, long s_usecs, long f_secs, long f_usecs)
 {
     if (f_usecs < s_usecs) {
 	--f_secs;
@@ -1348,12 +1347,12 @@ DRIComputeMilliSeconds(unsigned long s_secs, unsigned long s_usecs,
 static void
 DRISpinLockTimeout(drmLock *lock, int val, unsigned long timeout /* in mS */)
 {
-    int           count = 10000;
-    char          ret;
-    unsigned long s_secs, s_usecs;
-    unsigned long f_secs, f_usecs;
-    unsigned long msecs;
-    unsigned long prev  = 0;
+    int  count = 10000;
+    char ret;
+    long s_secs, s_usecs;
+    long f_secs, f_usecs;
+    long msecs;
+    long prev  = 0;
 
     DRIGetSecs(&s_secs, &s_usecs);
 
@@ -1532,7 +1531,7 @@ void *DRIGetSAREAPrivate(ScreenPtr pScreen)
 {
   DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
   if (!pDRIPriv) return 0;
-  return ((void*)pDRIPriv->pSAREA)+sizeof(XF86DRISAREARec);
+  return (char *)pDRIPriv->pSAREA + sizeof(XF86DRISAREARec);
 }
 
 drmContext DRIGetContext(ScreenPtr pScreen)

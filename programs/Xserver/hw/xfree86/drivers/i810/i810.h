@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.3 2000/02/23 04:47:15 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.5 2000/04/17 16:30:04 eich Exp $ */
 
 /*
  * Authors:
@@ -61,11 +61,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef struct _I810Rec *I810Ptr;
 
-typedef void (*I810WriteIndexedByteFunc)(I810Ptr pI810, int addr, 
-					 char index, char value);
-typedef char (*I810ReadIndexedByteFunc)(I810Ptr pI810, int addr, char index);
-typedef void (*I810WriteByteFunc)(I810Ptr pI810, int addr, char value);
-typedef char (*I810ReadByteFunc)(I810Ptr pI810, int addr);
+typedef void  (*I810WriteIndexedByteFunc)(I810Ptr pI810, int addr, 
+					  CARD8 index, CARD8 value);
+typedef CARD8 (*I810ReadIndexedByteFunc)(I810Ptr pI810, int addr, CARD8 index);
+typedef void  (*I810WriteByteFunc)(I810Ptr pI810, int addr, CARD8 value);
+typedef CARD8 (*I810ReadByteFunc)(I810Ptr pI810, int addr);
 
 
 extern void I810SetTiledMemory(ScrnInfoPtr pScrn, 

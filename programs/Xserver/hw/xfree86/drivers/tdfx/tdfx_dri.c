@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.5 2000/02/08 17:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.6 2000/02/15 07:13:42 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -27,9 +27,9 @@ static char TDFXClientDriverName[] = "tdfx";
 static Bool TDFXInitVisualConfigs(ScreenPtr pScreen);
 static Bool TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
 			      drmContext hwContext, void *pVisualConfigPriv,
-			      DRIContextType contextStore);
+			      void *contextStore);
 static void TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       DRIContextType contextStore);
+			       void *contextStore);
 static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
@@ -265,23 +265,19 @@ TDFXDRICloseScreen(ScreenPtr pScreen)
 static Bool
 TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
 		  drmContext hwContext, void *pVisualConfigPriv,
-		  DRIContextType contextStore)
+		  void *contextStore)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   TDFXConfigPrivPtr pTDFXConfig = (TDFXConfigPrivPtr)pVisualConfigPriv;
-  TDFXDRIContextPtr ctx;
 
-  ctx=(TDFXDRIContextPtr)contextStore;
   return TRUE;
 }
 
 static void
 TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   DRIContextType contextStore)
+		   void *contextStore)
 {
-  TDFXDRIContextPtr ctx;
-  ctx=(TDFXDRIContextPtr)contextStore;
 }
 
 Bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.8 2000/03/02 16:07:38 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.9 2000/03/04 01:53:02 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -90,10 +90,10 @@ typedef struct {
 				 VisualPtr visual,
 				 drmContext hHWContext,
 				 void* pVisualConfigPriv,
-				 DRIContextType context);
+				 void* contextStore);
     void        (*DestroyContext)(ScreenPtr pScreen,
 				  drmContext hHWContext,
-                                  DRIContextType context);
+                                  void* contextStore);
     void	(*SwapContext)(ScreenPtr pScreen,
 			       DRISyncType syncType,
 			       DRIContextType readContextType,

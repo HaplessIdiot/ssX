@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-
+/* $XFree86$ */
 /*
  * xditview -- 
  *
@@ -205,7 +205,8 @@ XtPointer panner_ptr, report_ptr;
     XtSetValues (panner, args, n);
 }
 
-void main(argc, argv)
+int
+main(argc, argv)
     int argc;
     char **argv;
 {
@@ -302,6 +303,8 @@ void main(argc, argv)
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(xtcontext);
+
+    return 0;
 }
 
 static void

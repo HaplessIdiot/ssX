@@ -16,13 +16,17 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.7 1999/07/17 08:21:32 dawes Exp $ */
+/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.8 1999/08/21 13:48:46 dawes Exp $ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>
+
+#include "os.h"
+
 #include "fntfilst.h"
 #include "FSproto.h"
 #include "FS.h"
@@ -40,8 +44,6 @@
 #include "blues.h"
 #include "t1intf.h"
 #include "t1unicode.h"
-
-#include "os.h"
  
 static void CIDFillVals(FontScalablePtr);
 static Bool DoDirectory(char *dirName);

@@ -23,9 +23,12 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #ifndef _AGP_H
 #define _AGP_H 1
+
+#include <linux/ioctl.h>
 
 #define AGPIOC_BASE       'A'
 #define AGPIOC_INFO       _IOR (AGPIOC_BASE, 0, agp_info*)
@@ -51,7 +54,6 @@
 
 #ifndef __KERNEL__
 #include <linux/types.h>
-#include <asm/types.h>
 
 typedef struct _agp_version {
 	__u16 major;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.1 2000/02/11 17:25:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.2 2000/03/02 16:07:49 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -30,9 +30,9 @@ static char I810ClientDriverName[] = "i810";
 static Bool I810InitVisualConfigs(ScreenPtr pScreen);
 static Bool I810CreateContext(ScreenPtr pScreen, VisualPtr visual, 
 			      drmContext hwContext, void *pVisualConfigPriv,
-			      DRIContextType contextStore);
+			      void *contextStore);
 static void I810DestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       DRIContextType contextStore);
+			       void *contextStore);
 static void I810DRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
@@ -369,9 +369,9 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
       return FALSE;
    }
 
-   xf86memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
-   xf86memset (&pI810->BackBuffer, 0, sizeof(I810MemRange));
-   xf86memset (&pI810->DepthBuffer, 0, sizeof(I810MemRange));
+   memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
+   memset (&pI810->BackBuffer, 0, sizeof(I810MemRange));
+   memset (&pI810->DepthBuffer, 0, sizeof(I810MemRange));
    pI810->CursorPhysical = 0;
    
    /* Dcache - half the speed of normal ram, but has use as a Z buffer
@@ -430,7 +430,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
       /* The Z buffer is always aligned to the 48 mb mark in the aperture */
 
       if(drmAgpBind(pI810->drmSubFD, dcacheHandle, 48*1024*1024) == 0) {
-	 xf86memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
+	 memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: Found 4096K Z buffer memory\n");
 	 pI810->DcacheMem.Start = 48*1024*1024;
@@ -753,14 +753,14 @@ I810DRICloseScreen(ScreenPtr pScreen)
 static Bool
 I810CreateContext(ScreenPtr pScreen, VisualPtr visual, 
 		  drmContext hwContext, void *pVisualConfigPriv,
-		  DRIContextType contextStore)
+		  void *contextStore)
 {
    return TRUE;
 }
 
 static void
 I810DestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   DRIContextType contextStore)
+		   void *contextStore)
 {
 }
 
@@ -769,7 +769,7 @@ Bool
 I810DRIFinishScreenInit(ScreenPtr pScreen)
 {
    drm_i810_sarea_t *sPriv = (drm_i810_sarea_t *)DRIGetSAREAPrivate(pScreen);
-   xf86memset( sPriv, 0, sizeof(sPriv) );
+   memset( sPriv, 0, sizeof(sPriv) );
    return DRIFinishScreenInit(pScreen);
 }
 

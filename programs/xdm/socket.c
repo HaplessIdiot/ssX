@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.4 1998/10/04 09:40:58 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.5 1998/10/10 15:25:39 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -213,7 +213,7 @@ GetChooserAddr (
     int			len;
 
     len = sizeof in_addr;
-    if (getsockname (chooserFd, (struct sockaddr *)&in_addr, &len) < 0)
+    if (getsockname (chooserFd, (struct sockaddr *)&in_addr, (void *)&len) < 0)
 	return -1;
     Debug ("Chooser socket port: %d\n", ntohs(in_addr.sin_port));
     memmove( addr, (char *) &in_addr, len);

@@ -1,6 +1,6 @@
 # This is a shell archive.  Save it in a file, remove anything before
 # this line, and then unpack it by entering "sh file".  Note, it may
-# create directories; files and directories will be owned by you and
+# create directories;  files and directories will be owned by you and
 # have default permissions.
 #
 # This archive contains:
@@ -28,7 +28,7 @@
 #	xf86test/Makefile
 #	xf86test/xf86test.c
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.10 1999/11/19 13:54:53 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.11 1999/12/14 02:40:14 robin Exp $
 #
 echo x - COPYRIGHT
 sed 's/^X//' >COPYRIGHT << 'END-of-COPYRIGHT'
@@ -125,7 +125,7 @@ XVersion 2.0
 X-----------
 X
 XThis module was originally written to help work around the security
-Xfeature of NetBSD that prevents read/write access to /dev/mem. It also
+Xfeature of NetBSD that prevents read/write access to /dev/mem.  It also
 Xprovide Pentium II and AMD K6 MTRR control in order to control
 Xwrite-combining to the framebuffer memory.
 X
@@ -133,24 +133,24 @@ XXFree86 can take advantage of having direct access to video
 Xmemory (especially with VLB and PCI cards) and even requires it for
 Xthe most recent PCI or AGP video boards.
 X
-XThis driver works like the standard /dev/mem driver. It just allows
+XThis driver works like the standard /dev/mem driver.  It just allows
 Xmapping of the VGA framebuffer and BIOS even if kernel security level
 Xis > 0.  The driver only implements the open(), close(), ioctl() and
-Xmmap()  calls. In order not to defeat kernel security, only one open()
-Xat a  time is allowed and only a process with effective user id of 0 can
-Xperform it. So while you're running XFree86, no other process will be
+Xmmap() calls.  In order not to defeat kernel security, only one open()
+Xat a time is allowed and only a process with effective user id of 0 can
+Xperform it.  So while you're running XFree86, no other process will be
 Xallowed to open /dev/xf86.
 X
 XThis work is originally heavily inspired from the Solaris x86 aperture
 Xdriver by Doug Anson (danson@lgc.com) and David Holland
-X(davidh@use.com). MTRR support is derived from FreeBSD. 
+X(davidh@use.com).  MTRR support is derived from FreeBSD. 
 X
 X
 XInstallation:
 X-------------
 X
 Xo Optionnally, edit Makefile.inc to set the APDIR variable to the
-X  directory where you want to install the aperture driver. If you change 
+X  directory where you want to install the aperture driver.  If you change 
 X  this, and want to rebuild XFree86 from source, also define
 X  NetBSDApertureDir in xc/config/cf/host.def before rebuilding it. 
 X
@@ -170,7 +170,7 @@ X  in /etc/rc.conf
 X
 Xo Reboot your system.
 X
-Xo Test the module by running 'aptest' as root. The outpout will look like:
+Xo Test the module by running 'aptest' as root.  The output will look like:
 X
 X  # ./aptest
 X  NOTICE: VGA mapped [0xa0000 ,size=4096) to addr=0x10073000...
@@ -179,7 +179,7 @@ X  DONE displaying memory contents (80 bytes)
 X  UNMAPPING [0xa0000 ,size=4096) to addr=0x10073000... and closing...DONE.
 X  Exiting successful...
 X
-Xo Start the XFree86 server. All XFree86 versions post 3.9.16d have support 
+Xo Start the XFree86 server.  All XFree86 versions post 3.9.16d have support 
 X  for the aperture driver enabled.
 X
 XBug reports, comments, suggestions can be sent to <herrb@XFree86.Org>
@@ -775,7 +775,6 @@ X#endif
 X#include "xf86_reg.h"
 X#include "memrange.h"
 X
-X#define ISA_START 0xA0000
 X#define ISA_END   0xFFFFF
 X#ifdef PC98 
 X#define HOLE16M_START	0xF00000
@@ -842,7 +841,7 @@ X#ifdef XF86_DEBUG
 X	printf("xf86mmap: addr 0x%x\n", offset);
 X#endif
 X	if  ((minor(dev) == 0) 
-X	     && ((offset >= ISA_START && offset <= ISA_END )
+X	     && ((offset <= ISA_END )
 X		 || (unsigned)offset > (unsigned)ctob(physmem)
 X#ifdef PC98
 X		 || ((unsigned)offset >=HOLE16M_START
@@ -1971,8 +1970,8 @@ X	seltrue, xf86mmap, 0};
 X
 XMOD_DEV("xf86", LM_DT_CHAR, -1, &newdev)
 X
-Xchar *xf86_major_version = "1";
-Xchar *xf86_minor_version = "99b";
+Xchar *xf86_major_version = "2";
+Xchar *xf86_minor_version = "0";
 X
 Xstatic int xf86action __P((struct lkm_table *lktmp, int cmd));
 X
@@ -2041,7 +2040,7 @@ sed 's/^X//' >module/xf86_mod.h << 'END-of-module/xf86_mod.h'
 X/*
 X * Copyright (C) 1999, The XFree86 Project Inc.
 X *
-X * $XFree86$
+X * $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.11 1999/12/14 02:40:14 robin Exp $
 X */
 X#ifndef _XF86_MOD_H
 X#define _XF86_MOD_H
@@ -2104,6 +2103,7 @@ X#define MTRR_N64K		8	/* numbers of fixed-size entries */
 X#define MTRR_N16K		16
 X#define MTRR_N4K		64
 X
+X#if defined(__NetBSD__) && (__NetBSD_Version__ < 10424000)
 X/*
 X * XXX - These belong to cpufunc.h
 X */
@@ -2127,6 +2127,7 @@ Xwrmsr(u_int msr, u_int64_t newval)
 X{
 X	__asm __volatile(".byte 0x0f, 0x30" : : "A" (newval), "c" (msr));
 X}
+X#endif /* __NetBSD_Version__ */
 X
 X#ifndef M_MEMDESC
 X#define M_MEMDESC M_TEMP		/* XXX */

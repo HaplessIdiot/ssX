@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.3 1999/09/27 06:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.1 2000/02/11 17:25:55 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -30,9 +30,9 @@ static char MGAClientDriverName[] = "mga";
 static Bool MGAInitVisualConfigs(ScreenPtr pScreen);
 static Bool MGACreateContext(ScreenPtr pScreen, VisualPtr visual, 
 			      drmContext hwContext, void *pVisualConfigPriv,
-			      DRIContextType contextStore);
+			      void *contextStore);
 static void MGADestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       DRIContextType contextStore);
+			       void *contextStore);
 static void MGADRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
@@ -516,20 +516,15 @@ MGADRICloseScreen(ScreenPtr pScreen)
 static Bool
 MGACreateContext(ScreenPtr pScreen, VisualPtr visual, 
 		  drmContext hwContext, void *pVisualConfigPriv,
-		  DRIContextType contextStore)
+		  void *contextStore)
 {
-  MGADRIContextPtr ctx;
-
-  ctx = (MGADRIContextPtr)contextStore;
   return TRUE;
 }
 
 static void
 MGADestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   DRIContextType contextStore)
+		   void *contextStore)
 {
-  MGADRIContextPtr ctx;
-  ctx = (MGADRIContextPtr)contextStore;
 }
 
 Bool
