@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.28 2001/05/10 16:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.29 2001/05/18 23:35:32 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -140,7 +140,7 @@ typedef enum {
   /* FIXME: Disable CRTOnly until it is tested */
   OPTION_CRT,
 #endif
-  OPTION_BIOS_DISPLAY,
+  OPTION_DISPLAY,
   OPTION_PANEL_WIDTH,
   OPTION_PANEL_HEIGHT,
   OPTION_PROG_FP_REGS,
@@ -165,7 +165,7 @@ const OptionInfoRec R128Options[] = {
   { OPTION_BUFFER_SIZE,  "BufferSize",       OPTV_INTEGER, {0}, FALSE },
   { OPTION_USE_CCE_2D,   "UseCCEfor2D",      OPTV_BOOLEAN, {0}, FALSE },
 #endif
-  { OPTION_BIOS_DISPLAY, "UseBIOSDisplay",   OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_DISPLAY,      "Display",          OPTV_STRING,  {0}, FALSE },
   { OPTION_PANEL_WIDTH,  "PanelWidth",       OPTV_INTEGER, {0}, FALSE },
   { OPTION_PANEL_HEIGHT, "PanelHeight",      OPTV_INTEGER, {0}, FALSE },
   { OPTION_PROG_FP_REGS, "ProgramFPRegs",    OPTV_BOOLEAN, {0}, FALSE },
@@ -915,15 +915,31 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
     /* On non-flat panel systems, the default is to display to the CRT,
        and on flat panel systems, the default is to display to the flat
-       panel unless the user explicity enables displaying to the device
-       initialized in the BIOS via the "UseBIOSDisplay" config file
-       setting.  BIOS_5_SCRATCH holds the display device on flat panel
-       systems only. */
+       panel unless the user explicity chooses otherwise using the "Display"
+       config file setting.  BIOS_5_SCRATCH holds the display device on flat
+       panel systems only. */
     if (info->HasPanelRegs) {
-	if (xf86ReturnOptValBool(info->Options, OPTION_BIOS_DISPLAY, FALSE))
-	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
-	else
+        char *display = xf86GetOptValString(info->Options, OPTION_DISPLAY);
+
+	if (info->FBDev)
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		     "Option \"Display\" ignored "
+		     "(framebuffer device determines display type)\n");
+	else if (!display || !xf86NameCmp(display, "FP"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
+	else if (!xf86NameCmp(display, "BIOS"))
+	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
+	else if (!xf86NameCmp(display, "Mirror"))
+	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP_CRT;
+	else if (!xf86NameCmp(display, "CRT"))
+	    info->BIOSDisplay = R128_BIOS_DISPLAY_CRT;
+	else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Unsupported type \"%s\" specified for Option \"Display\".\n"
+		"\tSupported types are: "
+		"\"BIOS\", \"Mirror\", \"CRT\" and \"FP\"\n", display);
+	    return FALSE;
+	}
     } else {
 	info->BIOSDisplay     = R128_BIOS_DISPLAY_CRT;
     }
@@ -1955,7 +1971,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 			     )) return FALSE;
 
-				/* DPMS setup */
+				/* DPMS setup - FIXME: also for mirror mode? - Michel */
     if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
 

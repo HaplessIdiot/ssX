@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx June 2001)
+  22. Add an lv entry to XKB's keymap/xfree86 file (#4685, Nerijus Baliunas).
+  21. Fix some typos in XKB's xfree86.lst file (#4684, Nerijus Baliunas).
+  20. Add DDXOSVERRORF ifdefs to the XFree86 ddx code that make use of the
+      OsVendorVErrorFProc feature (#4678, Michel Dänzer).
+  19. Convert the r128 driver's "UseBIOSDisplay" option into a more general
+      "Display" option (#4678, Michel Dänzer).
   18. Treat GL_POINT like GL_POINTS and GL_LINE like GL_LINES in the sunffb
       DRI driver (#4677, David S. Miller).
   17. Some doc updates related to cross compiling (#A.413, Scott A McConnell).
@@ -13337,4 +13343,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1798 2001/05/24 09:35:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1799 2001/05/24 16:34:50 dawes Exp $
