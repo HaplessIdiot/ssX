@@ -1,11 +1,20 @@
+XFree86 3.1.1Aa (1 June 1995)
+103. Fix SiteIConfigFiles settings for the LinkKit (Marc Aurele La France).
+102. Fix gccmakedep problem with .s files.
+101. Updates to BSDI docs (Hans Nasten).
+100. Updates to Linux ELF config/rules (Orest Zborowski).
+ 99. Check for 868 before 864 in S3 server (Harald Koenig).
+ 98. Add rule for compiling/installing scanpci.
+
 XFree86 3.1.1A (28 May 1995)
- 96. vgawonder driver updates (including fix for VGA2 driver with Mach64)
+ 97. vgawonder driver updates (including fix for VGA2 driver with Mach64)
      (Marc Aurele La France).
- 95. Small TVP3026 fix (Harald Koenig).
- 94. Fix keyboard LEDs not being turned off now that the initial lock state
+ 97. Small TVP3026 fix (Harald Koenig).
+ 95. Fix keyboard LEDs not being turned off now that the initial lock state
      is ignored.
 
 XFree86 3.1.1h (26 May 1995)
+ 94. Support for parallel make (on SVR4) (Robin Cutshaw).
  93. Don't initialise the state of the lock keys based on their state
      prior to server startup.
  92. Untested changes in the AGX server for AGX-010 support (Henry Worth).
