@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.2 2000/05/23 04:47:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.3 2000/06/20 16:01:20 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -436,7 +436,7 @@ xf86MatchSbusInstances(const char *driverName, int sbusDevId,
 	int actualcards = 0;
 	for (i = 0; i < allocatedInstances; i++) {
 	    actualcards++;
-	    pGDev = xf86AddBusDeviceToConfigure(driverName, BUS_SBUS,
+	    pGDev = xf86AddBusDeviceToConfigure(drvp->driverName, BUS_SBUS,
 						instances[i].sbus, -1);
 	    if (pGDev) {
 		/*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.102 2000/11/16 19:44:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.103 2000/11/18 19:37:09 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1645,7 +1645,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	for (i = 0; i < allocatedInstances; i++) {
 	    if (instances[i].foundHW) {
 		actualcards++;
-	    	pGDev = xf86AddDeviceToConfigure(driverName,
+	    	pGDev = xf86AddDeviceToConfigure(drvp->driverName,
 						 instances[i].pci, -1);
 		if (pGDev) {
 		   /*
@@ -1902,7 +1902,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     if (xf86DoProbe || (xf86DoConfigure && xf86DoConfigurePass1)) {
 	if (FindIsaDevice &&
 	    ((foundChip = (*FindIsaDevice)(NULL)) != -1)) {
-	    xf86AddDeviceToConfigure(driverName, NULL, foundChip);
+	    xf86AddDeviceToConfigure(drvp->driverName, NULL, foundChip);
 	    return 1;
 	}
 	return 0;
