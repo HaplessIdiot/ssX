@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.9 1994/09/23 13:38:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.10 1994/12/25 12:23:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -58,64 +58,90 @@ extern Bool xf86Verbose;
 #define MAX_PIXMAP_WIDTH 64
 #define MIN_PIXMAP_WIDTH 8
 #define MIN_FONTCACHE_HEIGHT 13
+#define MIN_FONTCACHE_WIDTH (32 * 6)
 
 void
 s3FontCache8Init()
 {
    static int first = TRUE;
-   int x, y, w, h, pmwidth;
+   int x, y, w, h, pmwidth = 0, pmx, pmy;
+   int x2, y2, w2, h2;
    int BitPlane;
    CachePool FontPool;
 
    /* y now includes the cursor space */
-   x = 0;
-   y = s3CursorStartY + s3CursorLines;
-   h = s3ScissB + 1 - y;
-   w = s3DisplayWidth;
-   /*
-     If the area to the right of the virtual screen is larger than the
-     area below it, then use the area to the right.
-   */
-   if (h*w < y*(s3DisplayWidth-s3InfoRec.virtualX)) {
-     h = y;
-     w = s3DisplayWidth - s3InfoRec.virtualX;
-     x = s3InfoRec.virtualX;
-     y = 0;
-   }
+   x = x2 = 0;
+   y = y2 = s3CursorStartY + s3CursorLines;
+   h = h2 = s3ScissB + 1 - y;
+   w = w2 = s3DisplayWidth;
 
    /*
-    * No pixmap expansion if s3DisplayWidth < 1024 and less than 100 scanlines
-    * available for the font cache.
+    * If a full-size pixmap expansion area will fit to the right, put it
+    * there.
     */
-
-   if ((h < MIN_PIXMAP_WIDTH) ||
-       ((s3DisplayWidth < 1024) && (h < MIN_PIXMAP_WIDTH + 100))) {
-      ErrorF("%s %s: No pixmap expanding area available\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
-   } else {
-      if( h > MAX_PIXMAP_WIDTH )
+   if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH) {
+      /* use area at right of screen */
+      pmwidth = MAX_PIXMAP_WIDTH;
+      pmx = s3InfoRec.virtualX;
+      pmy = 0;
+      /* Decide if font cache goes to the right or at the bottom */
+      if (((s3CursorStartY - pmwidth) * (s3DisplayWidth - s3InfoRec.virtualX) >
+           w * h) &&
+          ((s3DisplayWidth - s3InfoRec.virtualX) > MIN_FONTCACHE_WIDTH)) {
+	 /* There are two possible rectangular areas to the right */
+	 x = s3InfoRec.virtualX;
+	 w = s3DisplayWidth - x;
+	 y = pmwidth;
+	 h = s3CursorStartY - y;
+	 x2 = x + pmwidth;
+	 w2 = w - pmwidth;
+	 y2 = y - pmwidth;
+	 h2 = h + pmwidth;
+      }
+   } else if (h >= MIN_PIXMAP_WIDTH) {
+      /* use area below screen, right most location */
+      if (h > MAX_PIXMAP_WIDTH )
 	pmwidth = MAX_PIXMAP_WIDTH;
       else
 	pmwidth = h;
+      pmx = s3DisplayWidth - pmwidth;
+      pmy = y;
+      /*
+       * If the area to the right is too narrow for the pixmap, it is also
+       * too narrow for the font cache, so it goes at the bottom.  There are
+       * two possible rectangular areas to the bottom.
+       */
+      /* x, y, h unchanged */
+      w -= pmwidth;
+      /* x2, w2 unchanged */
+      y2 += pmwidth;
+      h -= pmwidth;
+   }
 
-      if (s3DisplayWidth < 1024 || x > 0) {
-	 if (first) {
-	    s3InitFrect(x, y, pmwidth);
-	 }
-	 y += pmwidth;
-	 h -= pmwidth;
-      } else {
-	 w -= pmwidth;
-	 if (first) {
-	   s3InitFrect(w, y, pmwidth);
-	 }
-      }
+   /* Initialise the pixmap expansion area */
+   if (pmwidth > 0) {
+      s3InitFrect(pmx, pmy, pmwidth);
       if (first) {
-	 ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
-		XCONFIG_PROBED, s3InfoRec.name, pmwidth, pmwidth);
+	 ErrorF(
+	  "%s %s: Using a single %dx%d area at (%d,%d) for expanding pixmaps\n",
+	  XCONFIG_PROBED, s3InfoRec.name, pmwidth, pmwidth, pmx, pmy);
+      }
+   } else {
+      if (first) {
+	 ErrorF("%s %s: No pixmap expanding area available\n",
+		XCONFIG_PROBED, s3InfoRec.name);
       }
    }
-      
+
+   /* Choose the largest font cache area */
+   if ((w2 * h2 > w * h) && (w2 > MIN_FONTCACHE_WIDTH) &&
+       (h2 > MIN_FONTCACHE_HEIGHT)) {
+      x = x2;
+      w = w2;
+      y = y2;
+      h = h2;
+   }
+
    /*
     * Don't allow a font cache if we don't have room for at least
     * a complete 6x13 font.

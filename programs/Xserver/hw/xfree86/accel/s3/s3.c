@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.64 1995/01/20 04:20:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.65 1995/01/21 07:15:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1888,7 +1888,8 @@ s3Probe()
    } else if ((OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options) &&
 	       DAC_IS_BT485_SERIES) ||
 	      (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) &&
-	       DAC_IS_TI3020_SERIES)) {
+	       DAC_IS_TI3020_SERIES) ||
+	      OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
       maxDisplayWidth = 2048;
       maxDisplayHeight = 4096;
    } else {
@@ -2285,7 +2286,8 @@ s3Probe()
     */
 
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options) ||
-       OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options)) {
+       OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) ||
+       OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
       s3CursorStartY = s3InfoRec.virtualY;
       s3CursorLines = 0;
    } else {
