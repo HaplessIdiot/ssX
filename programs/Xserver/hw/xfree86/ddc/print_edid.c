@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.5 1999/09/25 14:37:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.7 2000/04/17 16:29:56 eich Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -7,8 +7,8 @@
 #include "misc.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
-  #include "xf86_OSproc.h"
-  #include "xf86DDC.h"
+#include "xf86_OSproc.h"
+#include "xf86DDC.h"
   
 static void print_vendor(int scrnIndex, struct vendor *);
 static void print_version(int scrnIndex, struct edid_version *);

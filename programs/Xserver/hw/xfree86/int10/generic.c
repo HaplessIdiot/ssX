@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.3 2000/02/18 16:23:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.5 2000/04/17 16:30:11 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -109,7 +109,7 @@ xf86InitInt10(int entityIndex)
 		}
 	    }
 	}
-	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
+	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
 	
 	set_return_trap(pInt);
 	pInt->BIOSseg = cs;

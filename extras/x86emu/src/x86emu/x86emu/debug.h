@@ -35,6 +35,7 @@
 * Description:  Header file for debug definitions.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #ifndef __X86EMU_DEBUG_H
 #define __X86EMU_DEBUG_H

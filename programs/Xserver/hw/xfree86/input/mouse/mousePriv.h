@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.7 1999/06/05 15:55:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mousePriv.h,v 1.1 2000/04/17 16:30:10 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -6,6 +6,9 @@
 
 #ifndef _X_MOUSEPRIV_H
 #define _X_MOUSEPRIV_H
+
+#include "mouse.h"
+#include "xf86Xinput.h"
 
 /* Private interface for the mouse driver. */
 
