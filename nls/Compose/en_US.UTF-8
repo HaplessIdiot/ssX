@@ -7,6 +7,16 @@ XCOMM Part 1 - Manual definitions
 
 XCOMM ASCII characters that may be difficult to access
 XCOMM on some keyboards.
+<dead_tilde> <space>                    : "~"   asciitilde
+<dead_tilde> <dead_tilde>               : "~"   asciitilde
+<dead_acute> <space>                    : "'"   apostrophe
+<dead_acute> <dead_acute>               : "´"   acute
+<dead_grave> <space>                    : "`"   grave
+<dead_grave> <dead_grave>               : "`"   grave
+<dead_circumflex> <space>               : "^"   asciicircum
+<dead_circumflex> <dead_circumflex>     : "^"   asciicircum
+<dead_abovering> <space>                : "°"   degree
+<dead_abovering> <dead_abovering>       : "°"   degree
 <Multi_key> <plus> <plus>		: "#"	numbersign
 <Multi_key> <apostrophe> <space>	: "'"	apostrophe
 <Multi_key> <space> <apostrophe>	: "'"	apostrophe

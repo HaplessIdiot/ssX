@@ -26,6 +26,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          OBJS = $(SCRNSAVOBJ)
      LINTLIBS = $(LINTXLIB)
 
+#define IncludeSharedObjectInNormalLib
+
 #include <Library.tmpl>
 
 DependTarget()

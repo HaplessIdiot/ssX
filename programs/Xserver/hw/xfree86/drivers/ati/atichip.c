@@ -611,6 +611,7 @@ ATIChipID
         case NewChipID('L', 'X'):
             return ATI_CHIP_RADEONMOBILITY7;
 
+        case NewChipID('Q', 'H'):
         case NewChipID('Q', 'L'):
         case NewChipID('Q', 'N'):
         case NewChipID('Q', 'O'):

@@ -18,8 +18,8 @@ PCIDRVROBJ = axpPci.o
 
 XCOMM Sparc SBUS driver and generic Linux PCI driver
 
-PCIDRVRSRC = linuxPci.c
-PCIDRVROBJ = linuxPci.o
+PCIDRVRSRC = linuxPci.c sparcPci.c
+PCIDRVROBJ = linuxPci.o sparcPci.o
 SBUSDRVSRC = Sbus.c
 SBUSDRVOBJ = Sbus.o
 
