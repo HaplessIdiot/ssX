@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.26 2002/10/14 18:22:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.27 2002/11/26 23:41:59 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -333,8 +333,8 @@ NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
        RIVA_FIFO_FREE(pNv->riva, Blt, 1);
        write_mem_barrier();
        pNv->riva.Blt->TopLeftSrc = 0;
-       write_mem_barrier();
     }
+    write_mem_barrier();
 }
 
 static void

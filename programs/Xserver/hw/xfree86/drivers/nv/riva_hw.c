@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.45 2003/01/02 20:44:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.46 2003/02/05 01:21:11 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -2014,6 +2014,7 @@ static void nv10GetConfig
     case 0x0310:
     case 0x0320:
     case 0x0330:
+    case 0x0340:
        if(chip->PEXTDEV[0x0000/4] & (1 << 22))
            chip->CrystalFreqKHz = 27000;
        break;
@@ -2047,6 +2048,7 @@ static void nv10GetConfig
     case 0x0310:
     case 0x0320:
     case 0x0330:
+    case 0x0340:
         chip->twoHeads = TRUE;
         break;
     default:
