@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.53 2001/03/19 11:00:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.54 2001/05/04 19:05:47 dawes Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -426,7 +426,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     MessageType from;
     int i;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
     pointer Base;
 
     if (flags & PROBE_DETECT) return FALSE;
@@ -758,7 +757,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pTga->FbMapSize = pScrn->videoRam * 1024;
 
-    if (mod && xf86LoadSubModule(pScrn, "fb") == NULL) {
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	TGAFreeRec(pScrn);
 	return FALSE;
     }
