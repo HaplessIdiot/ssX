@@ -1,4 +1,5 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 282. Fix sysarch() prototype for FreeBSD/alpha (Bugzilla #1325, Greg Lewis).
  281. Generalise SIGIO handling for silkenMouse (Marc La France).
  280. Fix missing Makefile dependencies for (f)lex source (Marc La France).
  279. Re-instate DMX builds;  Fix glxProxy builds;  By default, disable
@@ -19297,7 +19298,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3393 2005/01/23 17:05:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3394 2005/01/24 21:27:09 tsi Exp $
 
 
 
