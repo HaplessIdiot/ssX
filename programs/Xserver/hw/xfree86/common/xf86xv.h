@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.16 2000/05/29 21:47:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.18 2000/08/04 16:13:26 eich Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -68,7 +68,7 @@ typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn,
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	RegionPtr clipBoxes, pointer data );
-typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, pointer data, Bool exit);
+typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, pointer data, Bool Exit);
 typedef int (* SetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, Atom attribute,
 	INT32 value, pointer data);
 typedef int (* GetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, Atom attribute,
@@ -79,7 +79,7 @@ typedef void (* QueryBestSizeFuncPtr)(ScrnInfoPtr pScrn, Bool motion,
 typedef int (* PutImageFuncPtr)( ScrnInfoPtr pScrn, 
 	short src_x, short src_y, short drw_x, short drw_y,
 	short src_w, short src_h, short drw_w, short drw_h,
-	int image, unsigned char* buf, short width, short height, Bool sync,
+	int image, unsigned char* buf, short width, short height, Bool Sync,
 	RegionPtr clipBoxes, pointer data );
 typedef int (* ReputImageFuncPtr)( ScrnInfoPtr pScrn, short drw_x, short drw_y,
         RegionPtr clipBoxes, pointer data );

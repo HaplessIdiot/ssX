@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.22 2000/02/08 13:13:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.23 2000/02/15 18:01:21 dawes Exp $ */
 
 
 /*
@@ -97,8 +97,8 @@ typedef struct {
 
 typedef struct _vgaHWRec *vgaHWPtr;
 
-typedef void (*vgaHWWriteIndexProcPtr)(vgaHWPtr hwp, CARD8 index, CARD8 value);
-typedef CARD8 (*vgaHWReadIndexProcPtr)(vgaHWPtr hwp, CARD8 index);
+typedef void (*vgaHWWriteIndexProcPtr)(vgaHWPtr hwp, CARD8 indx, CARD8 value);
+typedef CARD8 (*vgaHWReadIndexProcPtr)(vgaHWPtr hwp, CARD8 indx);
 typedef void (*vgaHWWriteProcPtr)(vgaHWPtr hwp, CARD8 value);
 typedef CARD8 (*vgaHWReadProcPtr)(vgaHWPtr hwp);
 typedef void (*vgaHWMiscProcPtr)(vgaHWPtr hwp);
