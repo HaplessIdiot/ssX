@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 744. Fix typo in savage man page (Bugzilla #1065, Nicolas Joly).
  743. Fix for xf86Msg() call with swapped arguments (Bugzilla #1064,
       Nicolas Joly).
  742. Set the dependencies correctly for SCO shared libraries, and use gcc
@@ -18513,7 +18514,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3086 2004/01/07 04:30:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3087 2004/01/07 17:05:18 tsi Exp $
 
 
 
