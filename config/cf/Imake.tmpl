@@ -1,6 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.218 94/03/31 20:11:26 matt Exp $
+XCOMM $XFree86$
 XCOMM
 
 /*
@@ -750,6 +751,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef SiteIConfigFiles
 #define SiteIConfigFiles /**/
 #endif
+#ifndef OtherIConfigFiles
+#define OtherIConfigFiles /**/
+#endif
 #ifndef ExtraFilesToClean
 #define ExtraFilesToClean /**/
 #endif
@@ -1011,7 +1015,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Project.tmpl \
 			$(IRULESRC)/site.def $(IRULESRC)/$(MACROFILE) \
-			SiteIConfigFiles $(EXTRA_ICONFIGFILES)
+			OtherIConfigFiles SiteIConfigFiles $(EXTRA_ICONFIGFILES)
 
 #ifndef LocalRulesFile
 /* need this to make ANSI-style preprocessors happy */
