@@ -24,7 +24,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/common/hwlog.h,v 1.3 2000/11/18 19:37:05 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/common/hwlog.h,v 1.4 2001/10/31 22:50:23 tsi Exp $ */
  
 /* Usage:
  * - use mgaError for error messages. Always write to X error and log file.
@@ -57,15 +57,15 @@ extern hwlog_t hwlog;
 
 /* open and close log file. */
 int  hwOpenLog(const char *filename, char *prefix);
-void hwCloseLog();
+void hwCloseLog(void);
 
 /* return 1 if log file is succesfully opened */
-int  hwIsLogReady();
+int  hwIsLogReady(void);
 
 /* set current log level to 'level'. Messages with level less than or equal
    the current log level will be written to the log file. */
 void hwSetLogLevel(int level);
-int  hwGetLogLevel();
+int  hwGetLogLevel(void);
 
 /* hwLog and hwLogv write a message to the log file.	*/
 /* do not call these directly, use hwMsg() instead	*/
