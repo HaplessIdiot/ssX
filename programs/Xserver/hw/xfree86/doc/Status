@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               11 August 2000
+                               4 December 2000
 
                                   Abstract
 
@@ -341,11 +341,12 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 
       4.0.2:
             Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
-            NM2097, NM2160 and NM2200 chipsets is provided by the "neomagic"
-            driver.
+            NM2097, NM2160, NM2200, NM2230, NM2360 and NM2380 chipsets is
+            provided by the "neomagic" driver.
 
       Summary:
-            All chips supported in 3.3.6 are also supported in 4.0.2.
+            All chips supported in 3.3.6 are also supported in 4.0.2.  The
+            NM2230 and later chips are only supported in 4.0.2.
 
 21.  NVIDIA
 
@@ -356,12 +357,13 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 
       4.0.2:
             Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
-            Vanta, M64), GeForce (DDR, 256) and Quadro is provided by the nv
-            driver.
+            Vanta, M64), GeForce (DDR, 256), GeForce2 (GTS, Ultra, MX),
+            Quadro, and Quadro2 is provided by the nv driver.
 
       Summary:
             All chipsets supported in 3.3.6 except the NV1 are also supported
-            in 4.0.2.
+            in 4.0.2.  Support for the newer chips (GeForce2 and later) is
+            only available in 4.0.2.
 
 22.  Number Nine
 
@@ -566,7 +568,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.2.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.19 2000/11/28 20:59:17 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.21 2000/12/04 19:31:05 dawes Exp $
 
 
 $XFree86$

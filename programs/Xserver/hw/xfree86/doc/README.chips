@@ -277,19 +277,19 @@ Screen, Monitor, Device.
             allows the user to select a different clock for the server to use
             when returning to the text console.
 
-      Option "FPClock8"   "65.0"
-            Option "FPClock16"  "65.0" Option "FPClock24"  "65.0" Option
-            "FPClock32"  "65.0"" In general the LCD panel clock should be set
-            independently of the modelines supplied. Normally the chips BIOS
-            set the flat panel clock correctly and so the default behaviour
-            with HiQV chipset is to leave the flat panel clock alone, or
-            force it to be 90% of the maximum allowable clock if the current
-            panel clock exceeds the dotclock limitation due to a depth
-            change. This option allows the user to force the server the
-            reprogram the flat panel clock independently of the modeline with
-            HiQV chipset. The four options are for 8bpp or less, 16, 24 or
-            32bpp LCD panel clocks, where the options above set the clocks to
-            65MHz.
+      Option "FPClock8"   "65.0MHz"
+            Option "FPClock16"  "65.0MHz" Option "FPClock24"  "65.0MHz"
+            Option "FPClock32"  "65.0MHz"" In general the LCD panel clock
+            should be set independently of the modelines supplied. Normally
+            the chips BIOS set the flat panel clock correctly and so the
+            default behaviour with HiQV chipset is to leave the flat panel
+            clock alone, or force it to be 90% of the maximum allowable clock
+            if the current panel clock exceeds the dotclock limitation due to
+            a depth change. This option allows the user to force the server
+            the reprogram the flat panel clock independently of the modeline
+            with HiQV chipset. The four options are for 8bpp or less, 16, 24
+            or 32bpp LCD panel clocks, where the options above set the clocks
+            to 65MHz.
 
       Option "MMIO"
             This has a different effect depending on the hardware on which it
@@ -376,11 +376,6 @@ Screen, Monitor, Device.
             on your DSTN LCD, try using this option. This option is only rel-
             evant for chipsets more recent than the ct65555 and only when
             used with a DSTN LCD.
-
-      Option "UseFB"
-            Force the new framebuffer (fb) code to be used in place of its
-            older counterpart (cfb). The sense of this option will probably
-            be reversed when fb becomes the default.
 
       Option "Overlay"
             The HiQV chipsets contain a multimedia engine that allow a 16bpp
@@ -808,6 +803,16 @@ cause damage.
             colour depths.  However, 8 and 24 bit colour depths seem to work
             fine.
 
+      My ct69030 machine locks up when starting XFree
+            The ct69030 chipset introduced a new dual channel architecture.
+            In its current form, XFree can not take advantage of this second
+            display channel. In fact if the video BIOS on the machine sets
+            the ct69030 to a dual channel mode by default, XFree will lockup
+            hard at this point. The solution is to use the BIOS setup to
+            change to a single display channel mode, ensuring that both the
+            IOSS and MSS registers are set to a single channel mode. Work is
+            underway to fix this.
+
       I can't start X-windows with 16, 24 or 32bpp
             Firstly, is your machine capable of 16/24/32bpp with the mode
             specified. Many LCD displays are incapable of using a 24bpp mode.
@@ -894,7 +899,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.32 2000/10/27 18:31:02 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.33 2000/12/02 21:52:22 dbateman Exp $
 
 
 $XFree86$

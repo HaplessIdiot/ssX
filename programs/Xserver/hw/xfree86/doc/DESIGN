@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                          Last modified 2 December 2000
+                        Last modified 2 December 2000
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -465,10 +465,12 @@ Probe() function of each registered video driver is called.
 
           The purpose of this is to identify all instances of hard-
           ware supported by the driver.  The flags value is cur-
-          rently either PROBE_DEFAULT or PROBE_DETECT.
+          rently either 0, PROBE_DEFAULT or PROBE_DETECT.
           PROBE_DETECT is used if "-configure" or "-probe" command
           line arguments are given and indicates to the Probe()
-          function that it should not configure the PCI entities.
+          function that it should not configure the bus entities
+          and that no XF86Config information is available.
+
           The probe must find the active device sections that match
           the driver by calling xf86MatchDevice().  The number of
           matches found limits the maximum number of instances for
@@ -3206,9 +3208,7 @@ The XF86VideoAdaptorRec:
           video stream be scaled to rectangle of drw_w by drw_h on
           the screen.  Since it is not expected that all hardware
           will be able to get the target dimensions exactly, it is
-          important that the driver provide this function.  The
-          returned dimensions must be less than or equal to the
-          requested dimension.
+          important that the driver provide this function.
 
      typedef  int (* PutImageFuncPtr)( ScrnInfoPtr pScrn,
                short src_x, short src_y, short drw_x, short drw_y,
@@ -6302,7 +6302,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.34 2000/12/01 19:37:20 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.39 2000/12/04 18:49:54 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.31 2000/12/02 15:45:35 tsi Exp $
+$XFree86$

@@ -791,6 +791,12 @@ ation at 8, 15, 16, and 24 bit depths (limited by some chips at some depths).
 Further information about this driver can be found in the 'glint' driver man
 page.
 
+3.12.10  Trident
+
+The "trident" driver supports all PCI based Trident cards, including one ISA
+based - the 8900D. 3.3.x is still needed for older SVGA ISA/VLB based cards,
+yet 4.0.2 is much faster for the newer boards.
+
 4.  X libraries and clients
 
 4.1  Xaw
@@ -1183,7 +1189,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.42 2000/07/03 16:27:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.43 2000/12/04 16:24:57 alanh Exp $
 
 
 $XFree86$
