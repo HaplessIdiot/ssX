@@ -1,4 +1,4 @@
-XFree86 3.9x (21 November 1997)
+XFree86 3.9x (23 November 1997)
 1465. Updates for SCO (#1211, 1212, J. Kean Johnston).
 1464. Fix netscape plugin core dump when transfer is interrupted (#1209,
       Kaleb Keithley).
@@ -5682,4 +5682,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.548 1997/11/22 00:00:04 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.549 1997/11/22 06:50:27 dawes Exp $
