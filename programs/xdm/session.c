@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.34 2003/07/09 15:27:39 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -604,7 +604,11 @@ StartClient (
 #endif   /* QNX4 doesn't support multi-groups, no initgroups() */
 #ifdef USE_PAM
 	if (thepamh()) {
-	    pam_setcred(thepamh(), PAM_ESTABLISH_CRED);
+	    if (pam_setcred(thepamh(), PAM_ESTABLISH_CRED) != PAM_SUCCESS) {
+		LogError("pam_setcred for %\"s failed, errno=%d\n",
+			 name, errno);
+		return(0);
+	    }
 	}
 #endif
 	if (setuid(verify->uid) < 0)
