@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.7 2004/06/25 15:50:32 tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -281,7 +281,6 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
 {
     ClockRangePtr clockRanges;
     int i;
-    DUMMYPtr dPtr;
     int maxClock = 230000;
     GDevPtr device = xf86GetEntityInfo(pScrn->entityList[0])->device;
 
@@ -297,8 +296,6 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
 			    return FALSE;\
 					     }
     
-    dPtr = DUMMYPTR(pScrn);
-
     pScrn->chipset = (char *)xf86TokenToString(DUMMYChipsets,
 					       DUMMY_CHIP);
 
