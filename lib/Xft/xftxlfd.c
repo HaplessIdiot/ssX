@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.2 2000/12/01 03:27:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.3 2000/12/02 10:02:06 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -203,7 +203,6 @@ XftCoreAddFonts (XftFontSet *set, Display *dpy, Bool ignore_scalable)
 	    }
 	}
     }
-
     XFreeFontNames (xlfds);
     return ret;
 }

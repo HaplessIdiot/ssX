@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfont.c,v 1.3 2000/12/02 10:02:04 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -117,7 +117,7 @@ XftFontOpenPattern (Display *dpy, XftPattern *pattern)
     return font;
 }
 
-static int
+int
 _XftFontDebug (void)
 {
     static int	initialized;
@@ -188,9 +188,28 @@ XftFontOpenName (Display *dpy, int screen, const char *name)
     XftFont   *font;
 
     pat = XftNameParse (name);
+    if (_XftFontDebug ())
+    {
+	printf ("XftFontOpenName \"%s\": ", name);
+	if (pat)
+	    printf ("Invalid name\n");
+	else
+	    XftPatternPrint (pat);
+    }
+			     
     if (!pat)
 	return 0;
     match = XftFontMatch (dpy, screen, pat, &result);
+    if (_XftFontDebug ())
+    {
+	if (match)
+	{
+	    printf ("Match ");
+	    XftPatternPrint (match);
+	}
+	else
+	    printf ("No Match\n");
+    }
     XftPatternDestroy (pat);
     if (!match)
 	return 0;
@@ -211,9 +230,28 @@ XftFontOpenXlfd (Display *dpy, int screen, const char *xlfd)
     XftFont   *font;
 
     pat = XftXlfdParse (xlfd, False, False);
+    if (_XftFontDebug ())
+    {
+	printf ("XftFontOpenXlfd \"%s\": ", xlfd);
+	if (pat)
+	    printf ("Invalid xlfd\n");
+	else
+	    XftPatternPrint (pat);
+    }
+			     
     if (!pat)
 	return 0;
     match = XftFontMatch (dpy, screen, pat, &result);
+    if (_XftFontDebug ())
+    {
+	if (match)
+	{
+	    printf ("Match ");
+	    XftPatternPrint (match);
+	}
+	else
+	    printf ("No Match\n");
+    }
     XftPatternDestroy (pat);
     if (!match)
 	return 0;
