@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.80 2000/12/27 04:57:17 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.82 2001/02/15 17:54:55 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -107,6 +107,10 @@ static int pix24bpp = 0;
 #define TSENG_MAJOR_VERSION 1
 #define TSENG_MINOR_VERSION 0
 #define TSENG_PATCHLEVEL 0
+
+/* CRTC timing limits */
+#define Tseng_HMAX (4096-8)
+#define Tseng_VMAX (2048-1)
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -1677,8 +1681,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	pTseng->Bytesperpixel = 1;  /* this is fake for < 8bpp, but simplifies other code */
 
     /* hardware limits */
-    pScrn->maxHValue = 4096 / pTseng->Bytesperpixel;
-    pScrn->maxVValue = 2048;
+    pScrn->maxHValue = Tseng_HMAX;
+    pScrn->maxVValue = Tseng_VMAX;
 
     /*
      * This must happen after pScrn->display has been set because
@@ -2735,8 +2739,6 @@ TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
 ModeStatus
 TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
-#define Tseng_HMAX (4096-8)
-#define Tseng_VMAX (2048-1)
 
     PDEBUG("	TsengValidMode\n");
 
@@ -2744,7 +2746,7 @@ TsengValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
   is this needed? xf86ValidMode gets HMAX and VMAX variables, so it could deal with this.
   need to recheck hsize with mode->Htotal*mulFactor/divFactor
     /* Check for CRTC timing bits overflow. */
-    if (mode->HTotal * pTseng->Bytesperpixel > Tseng_HMAX) {
+    if (mode->HTotal > Tseng_HMAX) {
 	return MODE_BAD_HVALUE;
     }
     if (mode->VTotal > Tseng_VMAX) {

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.44 2001/04/05 17:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.45 2001/04/05 21:29:14 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -869,7 +869,10 @@ MGAGSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     while( INREG( MGAREG_Status ) & 0x08 );
     
     /* Output position - "only" 12 bits of location documented */
-    OUTREG( RAMDAC_OFFSET + MGA1064_CUR_XLOW, (y << 16) | (x & 0xFFFF));
+    OUTREG8( RAMDAC_OFFSET + MGA1064_CUR_XLOW, (x & 0xFF));
+    OUTREG8( RAMDAC_OFFSET + MGA1064_CUR_XHI, (x & 0xF00) >> 8);
+    OUTREG8( RAMDAC_OFFSET + MGA1064_CUR_YLOW, (y & 0xFF));
+    OUTREG8( RAMDAC_OFFSET + MGA1064_CUR_YHI, (y & 0xF00) >> 8);
 }
 
 static void
