@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.50 2001/11/24 14:38:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.51 2002/01/16 16:22:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2108,9 +2108,11 @@ NoVGAWonder:;
                  * value in the case of Mach64 adapters whose ChipID is
                  * unrecognised.
                  */
+                pVideo = pATI->PCIInfo;
                 if (pGDev->chipID >= 0)
                 {
-                    if (pATI->ChipType != pGDev->chipID)
+                    if ((pATI->ChipType != pGDev->chipID) &&
+                        (!pVideo || (pGDev->chipID != pVideo->chipType)))
                     {
                         if ((pATI->Adapter != ATI_ADAPTER_MACH64) ||
                             (pATI->Chip != ATI_CHIP_Mach64))
@@ -2122,16 +2124,15 @@ NoVGAWonder:;
                             continue;
                     }
                     if ((pGDev->chipRev >= 0) &&
-                        (pATI->ChipRev != pGDev->chipRev))
+                        (pATI->ChipRev != pGDev->chipRev) &&
+                        (!pVideo || (pGDev->chipRev != pVideo->chipRev) ||
+                         (pGDev->chipID != pVideo->chipType)))
                     {
-                        if (pATI->Adapter != ATI_ADAPTER_MACH64)
+                        if (pATI->Chip < ATI_CHIP_264CT)
                             continue;
 
                         if (pATI->Chip != ATI_CHIP_Mach64)
                         {
-                            if (pATI->ChipRev == pATI->ChipRevision)
-                                continue;
-
                             /*
                              * There are two foundry codes for UMC.  Some
                              * adapters will advertise one in CONFIG_CHIP_ID
