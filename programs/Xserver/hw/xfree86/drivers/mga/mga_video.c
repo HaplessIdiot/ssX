@@ -96,14 +96,14 @@ static XF86VideoEncodingRec DummyEncoding[1] =
 
 #define NUM_FORMATS_G 3
 
-XF86VideoFormatRec FormatsG[NUM_FORMATS_G] = 
+static XF86VideoFormatRec FormatsG[NUM_FORMATS_G] = 
 {
    {15, TrueColor}, {16, TrueColor}, {24, TrueColor}
 };
 
 #define NUM_ATTRIBUTES_G 3
 
-XF86AttributeRec AttributesG[NUM_ATTRIBUTES_G] =
+static XF86AttributeRec AttributesG[NUM_ATTRIBUTES_G] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127, "XV_BRIGHTNESS"},
@@ -112,7 +112,7 @@ XF86AttributeRec AttributesG[NUM_ATTRIBUTES_G] =
 
 #define NUM_IMAGES_G 3
 
-XF86ImageRec ImagesG[NUM_IMAGES_G] =
+static XF86ImageRec ImagesG[NUM_IMAGES_G] =
 {
    {
 	0x32595559,
@@ -307,7 +307,7 @@ RegionsEqual(RegionPtr A, RegionPtr B)
    edges inclusive, bottom and right exclusive).  The new dst
    box is returned.  The source boundaries are given (x1, y1 
    inclusive, x2, y2 exclusive) and returned are the new source 
-   boundaries in 16.16 fixed point, all edges INCLUSIVE. 
+   boundaries in 16.16 fixed point. 
 */
 
 static void
@@ -373,9 +373,6 @@ MGAClipVideo(
 	dst->y2 -= diff;
 	*y2 -= diff * vscale;
     }
-    
-    *x2 -= 0x00010000;
-    *y2 -= 0x00010000;
 } 
 
 static void 
@@ -545,6 +542,7 @@ MGAPutImageG(
    int i, j, pitch, Bpp, new_h, offset, offset2, offset3, visHeight;
    FBAreaPtr area;
    int srcPitch, dstPitch, srcPitch2;
+   int top, left, npixels, nlines;
    BoxRec dstBox;
    CARD32 tmp;
 
@@ -633,18 +631,31 @@ MGAPutImageG(
     }
   
     /* copy data */
-    offset = (area->box.y1 * pitch) + (area->box.x1 * Bpp);
-    dst_start = pMga->FbStart + offset;
+    top = y1 >> 16;
+    left = (x1 >> 16) & ~1;
+    npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
+    left <<= 1;
+
+    offset = (area->box.y1 * pitch) + (top * dstPitch);
+    dst_start = pMga->FbStart + offset + left;
 
     switch(id) {
     case 0x32315659:
-	MGACopyMungedData(buf, buf + offset2, buf + offset3, dst_start,
-			  srcPitch, srcPitch2, dstPitch, height, width);
+	top &= ~1;
+	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
+	offset2 += tmp;
+	offset3 += tmp; 
+	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
+	MGACopyMungedData(buf + (top * srcPitch) + (left >> 1), 
+			  buf + offset2, buf + offset3, dst_start,
+			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
 	break;
     case 0x59565955:
     case 0x32595559:
     default:
-	MGACopyData(buf, dst_start, srcPitch, dstPitch, height, width);
+	buf += (top * srcPitch) + left;
+	nlines = ((y2 + 0xffff) >> 16) - top;
+	MGACopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     }
 
@@ -672,7 +683,8 @@ MGAPutImageG(
 	break;
     }
 
-    OUTREG(MGAREG_BESA1ORG, offset + ((y1 >> 16) * dstPitch));
+    OUTREG(MGAREG_BESA1ORG, offset);
+
     if(y1 & 0x00010000)
 	OUTREG(MGAREG_BESCTL, 0x00050c41);
     else 
@@ -682,20 +694,21 @@ MGAPutImageG(
     OUTREG(MGAREG_BESVCOORD, (dstBox.y1 << 16) | (dstBox.y2 - 1));
 
     OUTREG(MGAREG_BESHSRCST, x1 & 0x03fffffc);
-    OUTREG(MGAREG_BESHSRCEND, x2 & 0x03fffffc);
+    OUTREG(MGAREG_BESHSRCEND, (x2 - 0x00010000) & 0x03fffffc);
     OUTREG(MGAREG_BESHSRCLST, (width - 1) << 16);
    
     OUTREG(MGAREG_BESPITCH, dstPitch >> 1);
 
-    OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
-    OUTREG(MGAREG_BESV1SRCLST, height - (y1 >> 16));
 
-    tmp = ((y2 - y1 - 0x00010000)/(dstBox.y2 - dstBox.y1 - 1));
+    OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
+    OUTREG(MGAREG_BESV1SRCLST, height - 1 - (y1 >> 16));
+
+    tmp = ((src_h - 1) << 16)/drw_h;
     if(tmp >= (32 << 16))
 	tmp = (32 << 16) - 1;
     OUTREG(MGAREG_BESVISCAL, tmp & 0x001ffffc);
 
-    tmp = ((x2 - x1 - 0x00010000)/(dstBox.x2 - dstBox.x1 - 1)) << 1;
+    tmp = (((src_w - 1) << 16)/drw_w) << 1;
     if(tmp >= (32 << 16))
 	tmp = (32 << 16) - 1;
     OUTREG(MGAREG_BESHISCAL, tmp & 0x001ffffc);
