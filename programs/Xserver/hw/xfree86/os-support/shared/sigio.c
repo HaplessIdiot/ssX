@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.14 2002/05/05 19:18:14 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.15 2003/08/24 17:37:06 dawes Exp $ */
 
 /* sigio.c -- Support for SIGIO handler installation and removal
  * Created: Thu Jun  3 15:39:18 1999 by faith@precisioninsight.com
@@ -175,6 +175,7 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 		fprintf(stderr,"fcntl(%d, F_SETOWN): %s\n", 
 			fd, strerror(errno));
 #endif
+		xf86UnblockSIGIO(blocked);
 		return 0;
 	    }
 	    sigemptyset(&sa.sa_mask);
