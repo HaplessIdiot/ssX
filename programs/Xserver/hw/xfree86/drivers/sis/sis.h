@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     7
+#define SISDRIVERVERSIONDAY     8
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -851,6 +851,7 @@ typedef struct {
     int			maxCRT1_X1, maxCRT1_X2, maxCRT1_Y1, maxCRT1_Y2;
     int			maxCRT2_X1, maxCRT2_X2, maxCRT2_Y1, maxCRT2_Y2;
     int			maxClone_X1, maxClone_X2, maxClone_Y1, maxClone_Y2;
+    int			MergedFBXDPI, MergedFBYDPI;
 #ifdef SISXINERAMA
     Bool		UseSiSXinerama;
     Bool		CRT2IsScrn0;

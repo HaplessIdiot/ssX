@@ -61,6 +61,7 @@
 #include "mibank.h"
 #include "micmap.h"
 #include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
 #include "xf86_ansic.h"
@@ -1418,6 +1419,135 @@ SiSRecalcDefaultVirtualSize(ScrnInfoPtr pScrn)
        pScrn->virtualY = max;
        xf86DrvMsg(pScrn->scrnIndex, X_INFO, str, "height", max);
     }
+}
+
+static void
+SiSMergedFBSetDpi(ScrnInfoPtr pScrn1, ScrnInfoPtr pScrn2, SiSScrn2Rel srel)
+{
+   SISPtr pSiS = SISPTR(pScrn1);
+   MessageType from = X_DEFAULT;
+   xf86MonPtr DDC1 = (xf86MonPtr)(pScrn1->monitor->DDC);
+   xf86MonPtr DDC2 = (xf86MonPtr)(pScrn2->monitor->DDC);
+   int ddcWidthmm = 0, ddcHeightmm = 0;
+   const char *dsstr = "MergedFB: Display dimensions: (%d, %d) mm\n";
+
+   /* This sets the DPI for MergedFB mode. The problem is that
+    * this can never be exact, because the output devices may
+    * have different dimensions. This function tries to compromise
+    * through a few assumptions, and it just calculates an average DPI
+    * value for both monitors.
+    */
+
+   /* Given DisplaySize should regard BOTH monitors */
+   pScrn1->widthmm = pScrn1->monitor->widthmm;
+   pScrn1->heightmm = pScrn1->monitor->heightmm;
+
+   /* Get DDC display size; if only either CRT1 or CRT2 provided these,
+    * assume equal dimensions for both, otherwise add dimensions
+    */
+   if( (DDC1 && (DDC1->features.hsize > 0 && DDC1->features.vsize > 0)) &&
+       (DDC2 && (DDC2->features.hsize > 0 && DDC2->features.vsize > 0)) ) {
+      ddcWidthmm = max(DDC1->features.hsize, DDC2->features.hsize) * 10;
+      ddcHeightmm = max(DDC1->features.vsize, DDC2->features.vsize) * 10;
+      switch(srel) {
+      case sisLeftOf:
+      case sisRightOf:
+         ddcWidthmm = (DDC1->features.hsize + DDC2->features.hsize) * 10;
+	 break;
+      case sisAbove:
+      case sisBelow:
+         ddcHeightmm = (DDC1->features.vsize + DDC2->features.vsize) * 10;
+      default:
+	 break;
+      }
+
+   } else if(DDC1 && (DDC1->features.hsize > 0 && DDC1->features.vsize > 0)) {
+      ddcWidthmm = DDC1->features.hsize * 10;
+      ddcHeightmm = DDC1->features.vsize * 10;
+      switch(srel) {
+      case sisLeftOf:
+      case sisRightOf:
+         ddcWidthmm *= 2;
+	 break;
+      case sisAbove:
+      case sisBelow:
+         ddcHeightmm *= 2;
+      default:
+	 break;
+      }
+   } else if(DDC2 && (DDC2->features.hsize > 0 && DDC2->features.vsize > 0) ) {
+      ddcWidthmm = DDC2->features.hsize * 10;
+      ddcHeightmm = DDC2->features.vsize * 10;
+      switch(srel) {
+      case sisLeftOf:
+      case sisRightOf:
+         ddcWidthmm *= 2;
+	 break;
+      case sisAbove:
+      case sisBelow:
+         ddcHeightmm *= 2;
+      default:
+	 break;
+      }
+   }
+
+   if(monitorResolution > 0) {
+
+      /* Set command line given values (overrules given options) */
+      pScrn1->xDpi = monitorResolution;
+      pScrn1->yDpi = monitorResolution;
+      from = X_CMDLINE;
+
+   } else if(pSiS->MergedFBXDPI) {
+
+      /* Set option-wise given values (overrule DisplaySize) */
+      pScrn1->xDpi = pSiS->MergedFBXDPI;
+      pScrn1->yDpi = pSiS->MergedFBYDPI;
+      from = X_CONFIG;
+
+   } else if(pScrn1->widthmm > 0 || pScrn1->heightmm > 0) {
+
+      /* Set values calculated from given DisplaySize */
+      from = X_CONFIG;
+      if(pScrn1->widthmm > 0) {
+	 pScrn1->xDpi = (int)((double)pScrn1->virtualX * 25.4 / pScrn1->widthmm);
+      }
+      if(pScrn1->heightmm > 0) {
+	 pScrn1->yDpi = (int)((double)pScrn1->virtualY * 25.4 / pScrn1->heightmm);
+      }
+      xf86DrvMsg(pScrn1->scrnIndex, from, dsstr, pScrn1->widthmm, pScrn1->heightmm);
+
+    } else if(ddcWidthmm && ddcHeightmm) {
+
+      /* Set values from DDC-provided display size */
+      from = X_PROBED;
+      xf86DrvMsg(pScrn1->scrnIndex, from, dsstr, ddcWidthmm, ddcHeightmm );
+      pScrn1->widthmm = ddcWidthmm;
+      pScrn1->heightmm = ddcHeightmm;
+      if(pScrn1->widthmm > 0) {
+	 pScrn1->xDpi = (int)((double)pScrn1->virtualX * 2.54 / pScrn1->widthmm);
+      }
+      if(pScrn1->heightmm > 0) {
+	 pScrn1->yDpi = (int)((double)pScrn1->virtualY * 2.54 / pScrn1->heightmm);
+      }
+
+    } else {
+
+      pScrn1->xDpi = pScrn1->yDpi = DEFAULT_DPI;
+
+    }
+
+    /* Sanity check */
+    if(pScrn1->xDpi > 0 && pScrn1->yDpi <= 0)
+       pScrn1->yDpi = pScrn1->xDpi;
+    if(pScrn1->yDpi > 0 && pScrn1->xDpi <= 0)
+       pScrn1->xDpi = pScrn1->yDpi;
+
+    pScrn2->xDpi = pScrn1->xDpi;
+    pScrn2->yDpi = pScrn1->yDpi;
+
+    xf86DrvMsg(pScrn1->scrnIndex, from, "MergedFB: DPI set to (%d, %d)\n",
+	       pScrn1->xDpi, pScrn1->yDpi);
 }
 
 /* Pseudo-Xinerama extension for MergedFB mode */
@@ -4928,12 +5058,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     /* Set display resolution */
-    xf86SetDpi(pScrn, 0, 0);
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
-       xf86SetDpi(pSiS->CRT2pScrn, 0, 0);
-    }
+       SiSMergedFBSetDpi(pScrn, pSiS->CRT2pScrn, pSiS->CRT2Position);
+    } else
 #endif
+       xf86SetDpi(pScrn, 0, 0);
 
     /* Load fb module */
     switch(pScrn->bitsPerPixel) {
