@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey                    *
+ * Copyright 1996,1997,1998,1999,2000,2001 by Thomas E. Dickey               *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.68 2001/04/20 09:30:39 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.69 2001/04/28 13:51:56 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -29,7 +29,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997,1998,1999,2000 by <A
+Copyright 1997,1998,1999,2000,2001 by <A
 HREF="mailto:dickey@herndon4.his.com">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_157">Patch #157 - 2001/6/18 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_156">Patch #156 - 2001/4/28 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_154">Patch #154 - 2001/4/11 - XFree86 4.0.3</A>
@@ -201,6 +202,127 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_157">Patch #157 - 2001/6/18 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>patch by Juliusz Chroboczek to clean up button.c and input.c.  The
+	  basic idea is to use a single set of APIs in the XTerm core, and put
+	  a set of workarounds in a separate file.  As you will notice, this
+	  drastically simplifies parts of the code; in particular, the only
+	  remaining ifdefs related to the differences between Xutf8 and legacy
+	  systems are related to the selection provider logic.
+
+	  This defines two new files, xutf8.h and xutf8.c, provide some
+	  half-hearted but fully portable emulation for the three Xutf8*
+	  functions that XTerm uses.
+
+	  Putting these in a separate file will allow people to experiment with
+	  more complex versions without making the core of XTerm more difficult
+	  to maintain.
+
+	  The functionality of the emulation is as follows.
+	  <ul>
+	  <li>Xutf8TextListToTextProperty fully handles XStringstyle and
+	  XUTF8StringStyle.  It will only generate STRING for XStdICCTextStyle,
+	  and wil only generate Latin-1 in XCompoundTextStyle (but label it as
+	  COMPOUND_TEXT, as the spec requires).  (I have hesitated to make this
+	  function fail for XStdICCTextStyle and XCompoundTextStyle; this might
+	  be a smart thing to do, in the hope that the selection requestor will
+	  try UTF8_STRING afterwards; opinions?)
+
+	  <li>Xutf8TextPropertyToTextList fully handles STRING and UTF8_STRING. 
+	  It systematically fails for COMPOUND_TEXT.
+
+	  <li>Xutf8LookupString will properly handle single-keystroke input for
+	  the keysyms covered by Markus' keysym2ucs function.  It will not
+	  handle either compose key input or external input methods.
+	  </ul>
+
+	<li>add an ifdef for <code>SunXK_F36</code>, used in
+	  <code>xtermcapKeycode()</code> (patch by Mark Waggoner
+	  &lt;waggoner@ichips.intel.com&gt;).
+
+	<li>modify check for login name to try <code>getlogin()</code> and
+	  $LOGNAME, $USER environment variables to detect if the user has
+	  logged in under an alias, i.e., an account with the same user id
+	  but a different name (Debian bug report #70084).
+
+	<li>add resource <code>tiXtraScroll</code>, which can be used to
+	  preserve the screen contents in the scrollback rather than erasing
+	  it when starting a fullscreen application such as <code>vi</code>
+	  (patch by Ken Martin &lt;fletcher@catsreach.org&gt;).
+
+	<li>two patches by Denis Zaitsev &lt;zzz@cd-club.ru&gt;:
+	<ul>
+	  <li>added <code>forceBoxChars</code> resource to control the
+	    "line-drawing characters" option.
+
+	  <li>added <code>freeBoldBox</code> resource, which, when set true,
+	    suppresses check in <code>same_font_size()</code>, so xterm does
+	    not attempt to ensure that the bold font is the same size as
+	    the normal font.
+	</ul>
+
+	<li>change the color class for ANSI colors and similar ones such as
+	  bold-color, etc., to follow the convention that the classname is the
+	  instance name with a leading capital (e.g., <code>color0</code> and
+	  <code>Color0</code> rather than <code>color0</code> and
+	  <code>Foreground</code>).  There was little use for Foreground as a
+	  class other than to create occasional confusion and bug reports, most
+	  recently by Nelson Beebe who reports that it disables colors in xterm
+	  but not on Linux, which is probably due to a difference in resource
+	  evaluation order.  A configure script option (--disable-color-class)
+	  is provided for anyone who did use the older behavior.
+
+	<li>fix a signal-handling bug.  When running xterm with
+	  <code>ksh</code> or similar shell such as bash 2.05, xterm will hang
+	  and not respond to keystrokes after the user types
+	  <code>suspend</code>.  Additionally the popup menus do not respond,
+	  so it is not possible to send SIGCONT to the shell.
+	  What is happening is that the shell is sending itself SIGSTOP, and it
+	  is being stopped.  Per specification it also means that the operating
+	  system is sending SIGCHLD to parent to the bash (XTERM).
+	  Now the issue is that xterm assumes it cannot happen and it expects
+	  to receive SIGCHLD only upon <em>termination</em> of its children. 
+	  This causes a deadlock with xterm waiting for the child to
+	  die, and the child waiting for SIGCONT.
+	  (report/patch by Adam Sulmicki), analysis/testing by Sven Mascheck
+	  &lt;sven.mascheck@student.uni-ulm.de&gt;).
+
+	<li>correct some inconsistent checks for <code>XtReleaseGC()</code>
+	  calls in <code>xtermLoadFont()</code> (patch by Nam SungHyun
+	  &lt;namsh@lge.com&gt;).
+
+	<li>updated wcwidth.c and keysym2ucs.c to versions dated 2001/1/12
+	  and 2001/4/18, respectively from
+		http://www.cl.cam.ac.uk/~mgk25/ucs/
+
+	<li>correction to change from patch #90, which was intended to
+	  reset the saved cursor position for normal/alternate screens
+	  on a soft reset, but actually wiped out all of the saved cursor
+	  information.  Just reset the saved position for the current screen
+	  (report by Michael Schroeder).
+
+	<li>modify ShowCursor() and HideCursor() so that if the cursor points
+	  to the second part of a wide character, make the show/hide operate on
+	  the first position of the wide character (patch by Sven Verdoolaege).
+
+	<li>scrolling in the alternate screen just before switching back to the
+	  main screen can cause extra blank lines to be inserted into the
+	  scrollback buffer (patch by Paul Vojta
+	  &lt;vojta@math.berkeley.edu&gt;).
+
+	<li>resync with XFree86 4.1.0:
+	<ul>
+	  <li>Use TermcapLibrary as -lncurses instead of -ltermcap, fixes
+	    problem building xterm/resize on Cygwin/XFree86 (Harold Hunt).
+	  <li> Install xterm.termcap and xterm.terminfo when installing xterm
+	    (Torrey T. Lyons).
+	  <li>Fix some build issues on Cygwin/XFree86 (Suhaib Siddiqi).
+	  <li>Define CBAUD, when it's missing in xterm, on LynxOS
+	    (Stuart Lissaman).
+	</ul>
+</ul>
+
 <H1><A NAME="xterm_156">Patch #156 - 2001/4/28 - XFree86 4.0.3</A></H1>
 <ul>
 	<li>change order of selection-target types to make 8-bit xterm prefer
@@ -215,7 +337,7 @@ xc/programs/Xserver/hw/xfree86).
 
 	<li>modify configure script check for freetype libraries to include
 	  <code>&lt;Xlib.h&gt;</code>, since an older version of the related
-	  headers relies on this (patch by Adam &lt;adam@cfar.umd.edu&gt;).
+	  headers relies on this (patch by Adam Sulmicki).
 </ul>
 
 <H1><A NAME="xterm_155">Patch #155 - 2001/4/20 - XFree86 4.0.3</A></H1>
