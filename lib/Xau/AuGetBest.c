@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuGetBest.c,v 1.4 2001/01/17 19:42:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuGetBest.c,v 1.5 2001/11/19 20:44:15 tsi Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
@@ -100,7 +100,7 @@ XauGetBestAuthByAddr (family, address_length, address,
 
 #ifdef hpux
     if (family == FamilyLocal) {
-#ifdef XTHREADS_NEEEDS_BYNAMEPARAMS
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	_Xgethostbynameparams hparams;
 #endif
 	struct hostent *hostp;
