@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.5 2001/01/27 17:24:27 herrb Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.6 2001/04/19 19:54:51 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -402,7 +402,7 @@ UncompressNamed(ManpageGlobals * man_globals, char * filename, char * output,
 FILE *
 Format(ManpageGlobals * man_globals, char * entry)
 {
-  FILE * file;
+  FILE * file = NULL;
 #ifdef HAS_MKSTEMP
   int fd;
 #endif
