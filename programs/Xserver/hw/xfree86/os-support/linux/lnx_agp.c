@@ -1,10 +1,12 @@
 /*
  * Abstraction of the AGP GART interface.
  *
+ * This version is for both Linux and FreeBSD.
+ *
  * Copyright © 2000 VA Linux Systems, Inc.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.1 2000/08/15 16:05:38 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -12,11 +14,20 @@
 #include "xf86_OSlib.h"
 #include "xf86OSpriv.h"
 
+#if defined(linux)
 #include <asm/ioctl.h>
 #include <linux/agpgart.h>
+#elif defined(__FreeBSD__)
+#include <sys/ioctl.h>
+#include <sys/agpio.h>
+#endif
 
 #ifndef AGP_DEVICE
 #define AGP_DEVICE		"/dev/agpgart"
+#endif
+/* AGP page size is independent of the host page size. */
+#ifndef AGP_PAGE_SIZE
+#define AGP_PAGE_SIZE		4096
 #endif
 #define AGPGART_MAJOR_VERSION	0
 #define AGPGART_MINOR_VERSION	99
@@ -59,6 +70,7 @@ GARTInit()
 		return FALSE;
 	}
 
+#if defined(linux)
 	/* Should this look for version >= rather than version == ? */
 	if (agpinf.version.major != AGPGART_MAJOR_VERSION &&
 	    agpinf.version.minor != AGPGART_MINOR_VERSION) {
@@ -71,6 +83,7 @@ GARTInit()
 		gartFd = -1;
 		return FALSE;
 	}
+#endif
 	
 	return TRUE;
 }
@@ -160,7 +173,7 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 			unsigned long *physical)
 {
 	struct _agp_allocate alloc;
-	int psize, pages;
+	int pages;
 
 	/*
 	 * Allocates "size" bytes of GART memory (rounds up to the next
@@ -171,9 +184,8 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 	if (!GARTInit() || acquiredScreen != screenNum)
 		return -1;
 
-	psize = xf86getpagesize();
-	pages = (size / psize);
-	if (size % psize != 0)
+	pages = (size / AGP_PAGE_SIZE);
+	if (size % AGP_PAGE_SIZE != 0)
 		pages++;
 
 	/* XXX check for pages == 0? */
@@ -199,7 +211,7 @@ Bool
 xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 {
 	struct _agp_bind bind;
-	int psize, pageOffset;
+	int pageOffset;
 
 	if (!GARTInit() || acquiredScreen != screenNum)
 		return FALSE;
@@ -210,14 +222,13 @@ xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 		return FALSE;
 	}
 
-	psize = xf86getpagesize();
-	if (offset % psize != 0) {
+	if (offset % AGP_PAGE_SIZE != 0) {
 		xf86DrvMsg(screenNum, X_WARNING, "xf86BindGARTMemory: "
 			   "offset (0x%x) is not page-aligned (%d)\n",
-			   offset, psize);
+			   offset, AGP_PAGE_SIZE);
 		return FALSE;
 	}
-	pageOffset = offset / psize;
+	pageOffset = offset / AGP_PAGE_SIZE;
 
 	if (ioctl(gartFd, AGPIOC_BIND, &bind) != 0) {
 		xf86DrvMsg(screenNum, X_WARNING, "xf86BindGARTMemory: "

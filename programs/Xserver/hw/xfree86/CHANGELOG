@@ -1,6 +1,9 @@
 XFree86 4.0.1c (17 August 2000)
+ 521. Share common drm files between Linux and FreeBSD.  This fixes
+      DRI-related build problems on FreeBSD (David Dawes).
+ 520. Add Romanian xkb symbols definitions (Cristian Gafton).
  519. First cut at pushing the AGP GART interface into the os-support
-      layer (David Dawes).
+      layer, with support for Linux and FreeBSD (David Dawes).
  518. Fix SHM support in Xv that was broken in 4.0.1b (David Dawes)
  517. Change the Solaris8/x86 keyboard handling to map the raw keycodes to
       the same keycodes that we use on other platforms, and remove the
@@ -11002,4 +11005,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1271 2000/08/14 17:47:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1272 2000/08/15 16:05:33 dawes Exp $
