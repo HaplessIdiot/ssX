@@ -1,4 +1,6 @@
 XFree86 4.0.99.1 (16 February 2001)
+ 202. Gamma correction and DirectColor visual support for NVIDIA RIVA TNT
+      and newer chipsets (Mark Vojkovich).
  201. IA64 fix for generic int10 code (Egbert Eich).
  200. Redadding space as delimiter in locale.alias and locale.dir
       (Egbert Eich).
@@ -12557,4 +12559,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1583 2001/02/16 13:24:07 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1584 2001/02/16 15:35:29 eich Exp $
