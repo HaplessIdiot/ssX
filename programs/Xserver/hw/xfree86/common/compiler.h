@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.60 2000/05/23 04:47:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.61 2000/06/14 00:16:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1808,16 +1808,6 @@ testinx(unsigned short port, unsigned char ind)
 
 /* Some macros to hide the system dependencies for MMIO accesses */
 #ifdef __alpha__
-extern void (*xf86WriteMmio8)(int Value, void *Base, unsigned long Offset);
-extern void (*xf86WriteMmio16)(int Value, void *Base, unsigned long Offset);
-extern void (*xf86WriteMmio32)(int Value, void *Base, unsigned long Offset);
-extern void (*xf86WriteMmioNB8)(int Value, void *Base, unsigned long Offset);
-extern void (*xf86WriteMmioNB16)(int Value, void *Base, unsigned long Offset);
-extern void (*xf86WriteMmioNB32)(int Value, void *Base, unsigned long Offset);
-extern int  (*xf86ReadMmio8)(void *Base, unsigned long Offset);
-extern int  (*xf86ReadMmio16)(void *Base, unsigned long Offset);
-extern int  (*xf86ReadMmio32)(void *Base, unsigned long Offset);
-
 #define MMIO_IN8(base, offset) (*xf86ReadMmio8)(base, offset)
 #define MMIO_IN16(base, offset) (*xf86ReadMmio16)(base, offset)
 # if defined (JENSEN_SUPPORT)
