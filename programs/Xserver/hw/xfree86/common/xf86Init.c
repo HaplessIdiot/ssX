@@ -1429,11 +1429,15 @@ ddxProcessArgument(int argc, char **argv, int i)
 #endif
     return 1;
   }
+#ifdef XFree86LOADER
+  /* Currently doesn't work without modules */
   if (!strcmp(argv[i], "-configure"))
   {
     xf86DoConfigure = TRUE;
+    xf86AllowMouseOpenFail = TRUE;
     return 1;
   }
+#endif
   /* OS-specific processing */
   return xf86ProcessArgument(argc, argv, i);
 }

@@ -23,6 +23,7 @@
 
 /* General parameters */
 extern int xf86DoConfigure;
+extern Bool xf86DoConfigurePass1;
 extern int FoundPciCards;
 extern pciVideoPtr ConfiguredPciCard;
 extern int ConfiguredIsaCard;

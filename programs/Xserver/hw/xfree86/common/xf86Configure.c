@@ -38,12 +38,56 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "Configint.h"
+#include "vbe.h"
+#include "xf86DDC.h"
 
 pciVideoPtr ConfiguredPciCard;
+xf86MonPtr ConfiguredMonitor;
 int ConfiguredIsaCard;
 int FoundPciCards = 0;
 static int haveVGA = -1;
 Bool havePrimary = FALSE;
+Bool xf86DoConfigurePass1 = TRUE;
+Bool foundMouse = FALSE;
+
+static char *
+DDCTimings(unsigned char *c1, unsigned char *c2, unsigned char *c3)
+{
+    /* We just send back the resolutions, as the monitors maximum 
+     * and minimum hsync/vsync values will select the highest possible
+     * refresh rate anyway. 
+     */
+    if (*c2&0x01) {
+	*c2 &= 0xFE;
+	return ("1280x1024");
+    }
+    if (*c3&0x80) {
+	*c3 &= 0x7F;
+	return ("1152x870");
+    }
+    if (*c2&0x1E) {
+	*c2 &= 0xE1;
+	return ("1024x768");
+    }
+    if (*c2&0x20) {
+	*c2 &= 0xCF;
+	return ("832x624");
+    }
+    if ((*c1&0x03) || (*c2&0xC3)) {
+	*c1 &= 0xFC; *c2 &= 0x3C;
+	return ("800x600");
+    }
+    if (*c1&0xC0) {
+	*c1 &= 0x3F;
+	return ("720x400");
+    }
+    if (*c1&0x3C) {
+	*c1 &= 0xC3;
+	return ("640x480");
+    }
+    /* If we get here - no more modes */
+    return NULL;
+}
 
 static void
 GetPciCard(int id, int *vendor1, int *vendor2, int *card)
@@ -78,16 +122,12 @@ XF86ConfInputPtr
 configureInputSection (void)
 {
     XF86ConfInputPtr mouse = NULL;
-    Bool foundMouse = FALSE;
     parsePrologue (XF86ConfInputPtr, XF86ConfInputRec)
 
     ptr->inp_identifier = "Keyboard1";
     ptr->inp_driver = "keyboard";
     ptr->list.next = NULL;
 
-/*
-ErrorF("Supported Mice are : 0x%x\n",SupportedInterfaces());
-*/
     /* Crude mechanism to auto-detect mouse (os dependent) */
     { 
 	int fd;
@@ -98,18 +138,16 @@ ErrorF("Supported Mice are : 0x%x\n",SupportedInterfaces());
 	}
     }
 
-    if (foundMouse) {
-        mouse = xf86confmalloc(sizeof(XF86ConfInputRec));
-    	memset((XF86ConfInputPtr)mouse,0,sizeof(XF86ConfInputRec));
-        mouse->inp_identifier = "Mouse1";
-        mouse->inp_driver = "mouse";
-        mouse->list.next = NULL;
-        mouse->inp_option_lst = 
+    mouse = xf86confmalloc(sizeof(XF86ConfInputRec));
+    memset((XF86ConfInputPtr)mouse,0,sizeof(XF86ConfInputRec));
+    mouse->inp_identifier = "Mouse1";
+    mouse->inp_driver = "mouse";
+    mouse->list.next = NULL;
+    mouse->inp_option_lst = 
 			addNewOption(mouse->inp_option_lst, "Protocol", "auto");
-	mouse->inp_option_lst = 
+    mouse->inp_option_lst = 
 		addNewOption(mouse->inp_option_lst, "Device", "/dev/mouse");
-	ptr = (XF86ConfInputPtr)addListItem((glp)ptr, (glp)mouse);
-    }
+    ptr = (XF86ConfInputPtr)addListItem((glp)ptr, (glp)mouse);
 
     return ptr;
 }
@@ -137,6 +175,9 @@ configureScreenSection (char *driver)
 {
     pciVideoPtr xf86PciCard;
     int i = 0;
+    int depths[4] = { 8, 15, 16, 24 };
+    unsigned char c1, c2, c3;
+    struct established_timings *t;
     int vendor1, vendor2, card;
     parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
 
@@ -162,23 +203,13 @@ configureScreenSection (char *driver)
 	ptr->scrn_device_str = "ISA Card";
     }
 
-    /* Make sure we use depth 4 for vga driver and depth 8 for direct */
-    /* Just to get a usable 640x480 display */
     if ((driver == NULL) && (haveVGA != -1))
+    {
+	XF86ConfDisplayPtr display;
+	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
+    	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
 	ptr->scrn_defaultdepth = 4;
-    else
-	ptr->scrn_defaultdepth = 8;
-
-    {
-	XF86ConfDisplayPtr display;
-	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
-    	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
-	/* Make sure we use depth 4 for vga driver and depth 8 for direct */
-	/* Just to get a usable 640x480 display */
-    	if ((driver == NULL) && (haveVGA != -1))
-	    display->disp_depth = 4;
-	else
-	    display->disp_depth = 8;
+	display->disp_depth = 4;
 	display->disp_mode_lst = 
 	display->list.next = NULL;
 	ptr->scrn_display_lst = (XF86ConfDisplayPtr)addListItem(
@@ -192,58 +223,40 @@ configureScreenSection (char *driver)
 	    display->disp_mode_lst = (XF86ModePtr)addListItem(
 			  (glp)display->disp_mode_lst, (glp)mode);
 	}
+    	/* for VGA we just have a depth 4 screen */
+	return ptr;
     }
 
+    ptr->scrn_defaultdepth = 8;
+
+    for (i=0;i<4;i++)
     {
+	unsigned char *modename;
 	XF86ConfDisplayPtr display;
 	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
     	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
-	display->disp_depth = 15;
+	display->disp_depth = depths[i];
 	display->disp_mode_lst = 
 	display->list.next = NULL;
 	ptr->scrn_display_lst = (XF86ConfDisplayPtr)addListItem(
 				     (glp)ptr->scrn_display_lst, (glp)display);
-	{
-	    XF86ModePtr mode;
-	    mode = xf86confmalloc(sizeof(XF86ModeRec));
-    	    memset((XF86ModePtr)mode,0,sizeof(XF86ModeRec));
-	    mode->mode_name = "640x480";
-	    mode->list.next = NULL;
-	    display->disp_mode_lst = (XF86ModePtr)addListItem(
+    
+	if (ConfiguredMonitor) {
+	    t = &ConfiguredMonitor->timings1;
+    	    c1 = t->t1;
+    	    c2 = t->t2;
+    	    c3 = t->t_manu;
+	    while ((modename = DDCTimings(&c1, &c2, &c3)) != NULL)
+	    {
+	    	XF86ModePtr mode;
+	    	mode = xf86confmalloc(sizeof(XF86ModeRec));
+    	    	memset((XF86ModePtr)mode,0,sizeof(XF86ModeRec));
+		mode->mode_name = modename;
+	    	mode->list.next = NULL;
+	    	display->disp_mode_lst = (XF86ModePtr)addListItem(
 			  (glp)display->disp_mode_lst, (glp)mode);
-	}
-    }
-
-    {
-	XF86ConfDisplayPtr display;
-	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
-    	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
-	display->disp_depth = 16;
-	display->disp_mode_lst = 
-	display->list.next = NULL;
-	ptr->scrn_display_lst = (XF86ConfDisplayPtr)addListItem(
-				     (glp)ptr->scrn_display_lst, (glp)display);
-	{
-	    XF86ModePtr mode;
-	    mode = xf86confmalloc(sizeof(XF86ModeRec));
-    	    memset((XF86ModePtr)mode,0,sizeof(XF86ModeRec));
-	    mode->mode_name = "640x480";
-	    mode->list.next = NULL;
-	    display->disp_mode_lst = (XF86ModePtr)addListItem(
-			  (glp)display->disp_mode_lst, (glp)mode);
-	}
-    }
-
-    {
-	XF86ConfDisplayPtr display;
-	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
-    	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
-	display->disp_depth = 24;
-	display->disp_mode_lst = 
-	display->list.next = NULL;
-	ptr->scrn_display_lst = (XF86ConfDisplayPtr)addListItem(
-				     (glp)ptr->scrn_display_lst, (glp)display);
-	{
+	    }
+	} else {
 	    XF86ModePtr mode;
 	    mode = xf86confmalloc(sizeof(XF86ModeRec));
     	    memset((XF86ModePtr)mode,0,sizeof(XF86ModeRec));
@@ -495,10 +508,48 @@ configureMonitorSection (void)
     return ptr;
 }
 
+XF86ConfMonitorPtr
+configureDDCMonitorSection (void)
+{
+    int i = 0;
+    parsePrologue (XF86ConfMonitorPtr, XF86ConfMonitorRec)
+
+    ptr->mon_identifier = "Monitor1";
+    ptr->mon_vendor = ConfiguredMonitor->vendor.name;
+    ptr->mon_modelname = xalloc(sizeof(ConfiguredMonitor->vendor.prod_id));
+    sprintf(ptr->mon_modelname, "%x", ConfiguredMonitor->vendor.prod_id);
+
+    for (i=0;i<4;i++) {
+	switch (ConfiguredMonitor->det_mon[i].type) {
+	    case DT:
+	    case DS_STD_TIMINGS:
+	    case DS_WHITE_P:
+	    case DS_NAME:
+	    case DS_ASCII_STR:
+	    case DS_SERIAL:
+		break;
+	    case DS_RANGES:
+    		ptr->mon_n_hsync = 1;
+    		ptr->mon_hsync[0].lo = 
+			ConfiguredMonitor->det_mon[i].section.ranges.min_h;
+    		ptr->mon_hsync[0].hi = 
+			ConfiguredMonitor->det_mon[i].section.ranges.max_h;
+    		ptr->mon_n_vrefresh = 1;
+    		ptr->mon_vrefresh[0].lo = 
+			ConfiguredMonitor->det_mon[i].section.ranges.min_v;
+    		ptr->mon_vrefresh[0].hi = 
+			ConfiguredMonitor->det_mon[i].section.ranges.max_v;
+		break;
+	}
+    }
+
+    return ptr;
+}
+
 void
 DoConfigure()
 {
-    int i;
+    int i,j;
     Bool probeResultPci = FALSE;
     Bool probeResultIsa = FALSE;
     char *foundDriver = NULL;
@@ -560,7 +611,6 @@ DoConfigure()
 		if (!probeResultPci)
 	    	    probeResultIsa = xf86DriverList[i]->Probe(xf86DriverList[i],
 						   PROBE_DETECTISA);
-		
 	} else {
 	    haveVGA = i;
 	}
@@ -677,9 +727,65 @@ DoConfigure()
 
     xf86WriteConfigFile(filename, xf86config);
 
-    ErrorF("\nXFree86 has configured your server for your primary card\n");
-    ErrorF("\nYour XF86Config file is located in %s\n",home);
-    ErrorF("\nTo test the server, type 'cd <return>' to take you back to\n");
+    /* Try to get DDC information filled in */
+    xf86ConfigFile = filename;
+    xf86HandleConfigFile();
+    vl = vlist;
+    for (i = 0; i < xf86NumDrivers; i++) {
+	/* Only scan the primary driver (for now) */
+	if (!strcmp(*vl,foundDriver)) {
+
+	    /* Allow probing for DDC - code taken from xf86Init */
+	    /* All this might not be necessary, but for now.... */
+	    xf86DoConfigurePass1 = FALSE;
+	    xf86ResourceBrokerInit();
+	    xf86DriverList[i]->Probe(xf86DriverList[i], 0);
+	    xf86SetPciVideo(NULL,NONE);
+    	    xf86PostProbe();
+    	    xf86EntityInit();
+
+    	    for (j = 0; j < xf86NumScreens - 1; j++) {
+		for (i = 0; i < xf86NumScreens - j - 1; i++) {
+	    	    if (xf86Screens[i + 1]->confScreen->screennum <
+			xf86Screens[i]->confScreen->screennum) {
+			ScrnInfoPtr tmpScrn = xf86Screens[i + 1];
+			xf86Screens[i + 1] = xf86Screens[i];
+			xf86Screens[i] = tmpScrn;
+	    	    }
+		}
+    	    }
+
+    	    for (i = 0; i < xf86NumScreens; i++) {
+		xf86Screens[i]->scrnIndex = i;
+    	    }
+    
+    	    for (i = 0; i < xf86NumScreens; i++) {
+		xf86EnableAccess(xf86Screens[i]);
+		xf86Screens[i]->PreInit(xf86Screens[i], PROBE_DETECT);
+    	    }
+	    xf86DoConfigurePass1 = TRUE;
+	}
+	vl++;
+    }
+
+    ErrorF("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+    if (!foundMouse) {
+	ErrorF("XFree86 is not able to detect your mouse. Edit the file and correct the Device.\n");
+    }
+
+    if (ConfiguredMonitor) {
+	/* Yeah ! - we got some monitor info */
+	/* Write the newer config file with monitor info */
+    	xf86config->conf_monitor_lst = configureDDCMonitorSection();
+    	xf86config->conf_screen_lst = configureScreenSection(foundDriver);
+    	xf86WriteConfigFile(filename, xf86config);
+	ErrorF("XFree86 has added DDC information to the XF86Config file successfully\n");
+    }
+
+    ErrorF("XFree86 has configured the server for your primary card\n");
+    ErrorF("Your XF86Config file is located in %s, and is called XF86Config.new\n\n",home);
+    ErrorF("To test the server, type 'cd <return>' to take you back to\n");
     ErrorF("Your home directory. Then type 'XFree86 -xf86config XF86Config.new'\n");
 
 bail:

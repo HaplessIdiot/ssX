@@ -1449,7 +1449,9 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     confScreenPtr screensecptr;
     int i,j;
     
-if (xf86DoProbe || xf86DoConfigure) return 1;
+    if (xf86DoProbe) return 1;
+  
+    if (xf86DoConfigure && xf86DoConfigurePass1) return 1;
 
     /*
      * This is a very important function that matches the device sections
@@ -1656,7 +1658,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     }
     if (xf86DoProbe) return 1;
 
-    if (xf86DoConfigure) {
+    if (xf86DoConfigure && xf86DoConfigurePass1) {
 	pciVideoPtr ConfCard;
 	int actualcards = 0;
 	ConfiguredPciCard = xnfrealloc((pciVideoPtr)ConfiguredPciCard, sizeof(pciVideoRec) * (allocatedInstances + FoundPciCards));
@@ -1836,7 +1838,6 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 			       pPci->func,drvp,	instances[i].chip,
 			       instances[i].dev,instances[i].dev->active ?
 			       TRUE : FALSE);
-
     }
     xfree(instances);
     if (numFound > 0) {
@@ -1864,7 +1865,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     if (xf86DoProbe)
 	return 0;
 
-    if (xf86DoConfigure) {
+    if (xf86DoConfigure && xf86DoConfigurePass1) {
 	if (FindIsaDevice) ConfiguredIsaCard = (*FindIsaDevice)(NULL);
 	if (ConfiguredIsaCard != -1) return 1;
 	else return 0;
@@ -2613,5 +2614,3 @@ xf86IsUnblank(int mode)
 	return TRUE;
     }
 }
-
-
