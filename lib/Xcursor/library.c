@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/library.c,v 1.2 2003/01/26 03:22:42 eich Exp $
+ * $XFree86: xc/lib/Xcursor/library.c,v 1.3 2003/11/07 17:56:02 dawes Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -110,6 +110,10 @@ _XcursorBuildThemeDir (const char *dir, const char *theme)
 
     len = homelen + dirlen + 1 + themelen + 1;
     
+    /* A '/' gets inserted if dir doesn't start with one. */
+    if (dir[0] != '/')
+	len++;
+
     full = malloc (len);
     if (!full)
 	return 0;
