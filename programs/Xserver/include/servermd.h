@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.52 2002/04/04 14:05:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.54 2003/06/12 14:12:38 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -271,20 +271,6 @@ SOFTWARE.
 #endif
 
 #endif /* ibm */
-
-#ifdef hpux
-
-#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
-#define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		2		/* to match product server */
-#define	GETLEFTBITS_ALIGNMENT	4		/* PA forces longs to 4 */
-						/* byte boundries */
-#define AVOID_MEMORY_READ
-#define FAST_CONSTANT_OFFSET_MODE
-#define LARGE_INSTRUCTION_CACHE
-#define PLENTIFUL_REGISTERS
-
-#endif /* hpux */
 
 #if defined (M4310) || defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
 
