@@ -24,7 +24,7 @@
 !! dealings in this Software without prior written authorization from the
 !! XFree86 Project.
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.4 2001/07/06 07:37:10 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.5 2001/10/02 15:57:32 alanh Exp $
 
 !! XAA options
 xaa.XaaNoCPUToScreenColorExpandFill:\
@@ -227,3 +227,50 @@ vesa.ShadowFB:\
 Enable or disable use of the shadow framebuffer layer. See shadowfb(4)\
 for further information. Default: on.
 
+
+!! SiS Options
+sis.NoAccel:\
+Disable or enable acceleration. \
+Default: acceleration is enabled.
+
+sis.HWcursor:\
+Enable or disable the HW cursor. \
+Default: on.
+
+sis.SWcursor:\
+The opposite of HWCursor. \
+Default: on.
+
+sis.NoXVideo:\
+Disable XV (XVideo) extension support. \
+Default: off.
+
+sis.SetMClk:\
+Set the memory clock in MHz. \
+Default: autodetect.
+
+sis.PciRetry:\
+Enable or disable PCI retries. \
+Default: on.
+
+sis.TurboQueue:\
+Enable or disable TurboQueue mode. \
+Default: off for SIS530, on for the others.
+
+sis.FastVram:\
+Enable or disable FastVram mode. \
+Default: on.
+
+sis.Rotate:\
+Rotate the display clockwise (CW) or counterclockwise (CCW). \
+This mode is unaccelerated, and uses the Shadow Frame Buffer layer \
+Default: no rotation.
+
+sis.ForceCRT2Type:\
+Force display type to one of: TV, LCD or VGA. \
+Default: autodetect.
+
+sis.ShadowFB:\
+Enable or disable use of the shadow framebuffer layer. See shadowfb(4) for \
+further information. Default: off.
+ 
