@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.37 1999/10/13 16:49:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.39 1999/12/03 19:17:35 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -194,6 +194,7 @@ typedef enum {
    OPTION_LCD_CENTER,
    OPTION_LCDCLOCK,
    OPTION_MCLK,
+   OPTION_REFCLK,
    OPTION_SHOWCACHE,
    OPTION_SWCURSOR,
    OPTION_HWCURSOR
@@ -217,6 +218,7 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_LCD_CENTER, 	"lcd_center", 	OPTV_BOOLEAN, 	{0}, FALSE },
    { OPTION_LCDCLOCK, 		"set_lcdclk", 	OPTV_INTEGER, 	{0}, FALSE },
    { OPTION_MCLK, 		"set_mclk", 	OPTV_FREQ, 	{0}, FALSE },
+   { OPTION_REFCLK, 		"set_refclk", 	OPTV_FREQ, 	{0}, FALSE },
    { OPTION_SHOWCACHE,		"show_cache",   OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_HWCURSOR,		"HWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
@@ -356,6 +358,43 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 }
 
 #endif /* XFree86LOADER */
+
+
+static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
+{
+#define BIOS_BSIZE 1024
+#define BIOS_BASE  0xc0000
+
+   static unsigned char bios[BIOS_BSIZE];
+   static int init=0;
+   int i,j,l1,l2;
+
+   if (!init) {
+      init = 1;
+      if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+	 return NULL;
+      if ((bios[0] != 0x55) || (bios[1] != 0xaa))
+	 return NULL;
+   }
+   if (match1 == NULL)
+      return NULL;
+
+   l1 = strlen(match1);
+   if (match2 != NULL) 
+      l2 = strlen(match2);
+   else	/* for compiler-warnings */
+      l2 = 0;
+
+   for (i=0; i<BIOS_BSIZE-l1; i++)
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
+	 if (match2 == NULL) 
+	    return &bios[i+l1];
+	 else
+	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
+	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
+		  return &bios[j+l2];
+   return NULL;
+}
 
 
 static Bool
@@ -698,6 +737,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     } else
    	ps3v->MCLK = 0;
 
+    if (xf86GetOptValFreq(S3VOptions, OPTION_REFCLK, OPTUNITS_MHZ, &real)) {
+	ps3v->REFCLK = (int)(real * 1000.0);
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: set_mclk set to %1.3f Mhz\n",
+		   ps3v->REFCLK / 1000.0 );
+    } else
+   	ps3v->REFCLK = 0;
+
     from = X_DEFAULT;
     ps3v->hwcursor = TRUE;
     if (xf86GetOptValBool(S3VOptions, OPTION_HWCURSOR, &ps3v->hwcursor))
@@ -926,20 +972,16 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       usleep(10000);  /* wait a little bit... */
    }
 
-/*cep*/
-#if 0		/* write find_bios_string... */
-   if (find_bios_string(vga256InfoRec.BIOSbase,"S3 86C325",
+   if (find_bios_string(BIOS_BASE, "S3 86C325",
 			"MELCO WGP-VG VIDEO BIOS") != NULL) {
-      if (xf86Verbose)
-	 ErrorF("%s %s: MELCO BIOS found\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
-      if (vga256InfoRec.MemClk <= 0)       vga256InfoRec.MemClk       =  74000;
+      if (xf86GetVerbosity())
+	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "MELCO BIOS found\n");
+      if (ps3v->MCLK <= 0)      ps3v->MCLK      =  74000;
       if (pScrn->clock[0] <= 0) pScrn->clock[0] = 191500;
       if (pScrn->clock[1] <= 0) pScrn->clock[1] = 162500;
       if (pScrn->clock[2] <= 0) pScrn->clock[2] = 111500;
       if (pScrn->clock[3] <= 0) pScrn->clock[3] =  83500;
    }
-#endif
 
    if (ps3v->Chipset != S3_ViRGE_VX) {
       VGAOUT8(vgaCRIndex, 0x66);
@@ -1021,6 +1063,40 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    n1 = n & 0x1f;
    n2 = (n>>5) & 0x03;
    mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+      MessageType is_probed = X_PROBED;
+      /* 
+       * try to figure out which reference clock is used:
+       * Toshiba Tecra 5x0/7x0 seems to use 28.636 MHz
+       * Compaq Armada 7x00 uses 14.318 MHz
+       */
+      if (find_bios_string(BIOS_BASE, "COMPAQ M5 BIOS", NULL) != NULL) {
+	 if (xf86GetVerbosity())
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "COMPAQ M5 BIOS found\n");
+	 /* ps3v->refclk_fact = 1.0; */
+      }
+      else if (find_bios_string(BIOS_BASE, "TOSHIBA Video BIOS", NULL) != NULL) {
+	 if (xf86GetVerbosity())
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "TOSHIBA Video BIOS found\n");
+	 /* ps3v->refclk_fact = 2.0; */
+      }
+      /* else */ {  /* always use guessed value... */
+	 if (mclk > 60000) 
+	    ps3v->refclk_fact = 1.0;
+	 else
+	    ps3v->refclk_fact = 2.0;  /* don't know why ??? */
+      }
+      if (ps3v->REFCLK != 0) {
+	 ps3v->refclk_fact = ps3v->REFCLK / 14318.0;
+	 is_probed = X_CONFIG;
+      }
+      else
+	 ps3v->REFCLK = (int)(14318.18 * ps3v->refclk_fact);
+
+      mclk = (int)(mclk * ps3v->refclk_fact);
+      xf86DrvMsg(pScrn->scrnIndex, is_probed, "assuming RefCLK value of %1.3f MHz\n",
+		 ps3v->REFCLK / 1000.0);
+   }
    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected current MCLK value of %1.3f MHz\n",
 	     mclk / 1000.0);
 
@@ -1038,7 +1114,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
           sr29 = VGAIN8(0x3c5);
     	  n1 = sr12 & 0x1f;
     	  n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
-          lcdclk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
+          lcdclk = ((int)(ps3v->refclk_fact * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
        }
        VGAOUT8(0x3c4, 0x61);
        h_lcd = VGAIN8(0x3c5);
@@ -1088,9 +1164,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
 
-	/* find BIOS base?  See above, do MELCO bios detect */
-	
-	
   #if 0
   if (ps3v->Chipset == S3_ViRGE_VX ) {
     ps3v->minClock = 220000;
@@ -1419,7 +1492,11 @@ S3VSave (ScrnInfoPtr pScrn)
    save->CR3A = VGAIN8(vgaCRReg);
    VGAOUT8(vgaCRIndex, 0x40);
    save->CR40 = VGAIN8(vgaCRReg);
-   VGAOUT8(vgaCRIndex, 0x42);             
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+     VGAOUT8(vgaCRIndex, 0x41);
+     save->CR41 = VGAIN8(vgaCRReg);
+   }
+   VGAOUT8(vgaCRIndex, 0x42);
    save->CR42 = VGAIN8(vgaCRReg);
    VGAOUT8(vgaCRIndex, 0x45);
    save->CR45 = VGAIN8(vgaCRReg);
@@ -1454,6 +1531,8 @@ S3VSave (ScrnInfoPtr pScrn)
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       VGAOUT8(vgaCRIndex, 0x90);
       save->CR90 = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x91);
+      save->CR91 = VGAIN8(vgaCRReg);
    }
 
    /* Extended mode timings regs */
@@ -1679,6 +1758,10 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRReg, restore->CR34);
    VGAOUT8(vgaCRIndex, 0x40);             
    VGAOUT8(vgaCRReg, restore->CR40);
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+     VGAOUT8(vgaCRIndex, 0x41);
+     VGAOUT8(vgaCRReg, restore->CR41);
+   }
    VGAOUT8(vgaCRIndex, 0x42);             
    VGAOUT8(vgaCRReg, restore->CR42);
    VGAOUT8(vgaCRIndex, 0x45);
@@ -1706,6 +1789,8 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
       VGAOUT8(vgaCRIndex, 0x90);
       VGAOUT8(vgaCRReg, restore->CR90);
+      VGAOUT8(vgaCRIndex, 0x91);
+      VGAOUT8(vgaCRReg, restore->CR91);
    }
 
    /* Unlock extended sequencer regs */
@@ -2377,6 +2462,16 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    
    VGAOUT8(vgaCRIndex, 0x40);
    new->CR40 = VGAIN8(vgaCRReg) & ~0x01;
+
+   if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+     /* fix problems with APM suspend/resume trashing CR90/91 */
+     switch(pScrn->bitsPerPixel) {
+       case  8: new->CR41 = 0x38; break;
+       case 15: new->CR41 = 0x58; break;
+       case 16: new->CR41 = 0x48; break;
+       default: new->CR41 = 0x77;
+     }
+   }
    
     /*cep*/  
     xf86ErrorFVerb(VERBLEV, "	S3VModeInit dclk=%i \n", 
@@ -2415,8 +2510,12 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     */
 
    if(ps3v->MCLK> 0) {
-       S3VCommonCalcClock(ps3v->MCLK, 1, 1, 31, 0, 3,
-	   135000, 270000, &new->SR11, &new->SR10);
+       if (S3_ViRGE_MX_SERIES(ps3v->Chipset))
+	  S3VCommonCalcClock((int)(ps3v->MCLK / ps3v->refclk_fact), 1, 1, 31, 0, 3,
+			     135000, 270000, &new->SR11, &new->SR10);
+       else
+	  S3VCommonCalcClock(ps3v->MCLK, 1, 1, 31, 0, 3,
+			     135000, 270000, &new->SR11, &new->SR10);
        }
    else {
        new->SR10 = 255; /* This is a reserved value, so we use as flag */
@@ -2496,7 +2595,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	       
 	       /* check if first mode has physical LCD resolution */
 	       if (pScrn->modes->HDisplay == h_lcd && pScrn->modes->VDisplay == v_lcd)
-		 ps3v->LCDClk = pScrn->clock[pScrn->modes->Clock];
+		 ps3v->LCDClk = mode->Clock;
 	       else {
 		 int n1, n2, sr12, sr13, sr29;
 		 VGAOUT8(0x3c4, 0x12);
@@ -2507,14 +2606,14 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		 sr29 = VGAIN8(0x3c5);
 		 n1 = sr12 & 0x1f;
 		 n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
-		 ps3v->LCDClk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
+		 ps3v->LCDClk = ((int)(ps3v->refclk_fact * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
 	       }
 	     }
-	     S3VCommonCalcClock(ps3v->LCDClk/2, 1, 1, 31, 0, 4,
+	     S3VCommonCalcClock((int)(ps3v->LCDClk / ps3v->refclk_fact), 1, 1, 31, 0, 4,
 			     170000, 340000, &new->SR13, &ndiv);
 	   }
 	   else
-	     S3VCommonCalcClock(dclk/2, 1, 1, 31, 0, 4,
+	     S3VCommonCalcClock((int)(dclk / ps3v->refclk_fact), 1, 1, 31, 0, 4,
 			     170000, 340000, &new->SR13, &ndiv);
 	   VGAOUT8(0x3c4, 0x08);
 	   VGAOUT8(0x3c5, sr8);
@@ -2631,8 +2730,11 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
       new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
    }
-   if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset)) {
-      new->CR90 = 0x00;  /* disable the stream display fetch length control */
+   if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
+       S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
+      int dbytes = pScrn->displayWidth * ((pScrn->bitsPerPixel+7)/8);
+      new->CR91 =   (dbytes + 7) / 8;
+      new->CR90 = (((dbytes + 7) / 8) >> 8) | 0x80;
    }
 	 
 
