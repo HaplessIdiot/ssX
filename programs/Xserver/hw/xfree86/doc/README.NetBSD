@@ -2,7 +2,7 @@
 
 Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver, Matthieu Herrb
 
-                      Last modified on: 16 January 2002
+                      Last modified on: 9 November 2002
 
 1.  What and Where is XFree86?
 
@@ -16,7 +16,7 @@ The sources for XFree86 are available by anonymous ftp from:
 
 ftp://ftp.XFree86.org/pub/XFree86/4.2.0
 
-Binaries for NetBSD 1.4 and later are available from:
+Binaries for NetBSD 1.5 and later are available from:
 ftp://ftp.XFree86.org/pub/XFree86/4.2.0/binaries/NetBSD
 
 A list of mirror sites is provided by http://www.xfree86.org/MIRRORS.shtml
@@ -374,10 +374,11 @@ __bsdi__ for BSD/386.
 10.  Thanks
 
 Many thanks to all people who contributed to make XFree86 work on *BSD, in
-particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
-Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
+particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
+Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
+vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.63 2002/01/16 22:35:18 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.64 2002/11/09 18:01:53 herrb Exp $
 
 
 $XFree86: $
