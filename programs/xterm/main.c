@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.163 2003/03/09 23:39:13 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.164 2003/03/23 02:01:40 dickey Exp $ */
 
 /* main.c */
 
@@ -3725,10 +3725,10 @@ spawn(void)
 	    /* write out the entry */
 	    if (!resource.utmpInhibit) {
 		errno = 0;
-		rc = (pututline(&utmp) == 0);
+		pututline(&utmp);
 		TRACE(("pututline: %d %d %s\n",
 		       resource.utmpInhibit,
-		       errno, (rc != 0) ? strerror(errno) : ""));
+		       errno, (errno != 0) ? strerror(errno) : ""));
 	    }
 #ifdef WTMP
 #if defined(SVR4) || defined(SCO325)
