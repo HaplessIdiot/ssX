@@ -24,7 +24,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.7 2001/04/19 14:14:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.8 2001/08/06 20:51:19 dawes Exp $ */
 
 # define NEED_EVENTS
 # include   "X.h"
@@ -51,15 +51,17 @@ static unsigned long miPointerGeneration = 0;
 
 static miPointerRec miPointer;
 
-static Bool miPointerRealizeCursor (),	    miPointerUnrealizeCursor ();
-static Bool miPointerDisplayCursor ();
-static void miPointerConstrainCursor (),    miPointerPointerNonInterestBox();
-static void miPointerCursorLimits ();
-static Bool miPointerSetCursorPosition ();
-
-static Bool miPointerCloseScreen();
-
-static void miPointerMove ();
+static Bool miPointerRealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
+static Bool miPointerUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCursor);
+static Bool miPointerDisplayCursor(ScreenPtr pScreen, CursorPtr pCursor);
+static void miPointerConstrainCursor(ScreenPtr pScreen, BoxPtr pBox);
+static void miPointerPointerNonInterestBox(ScreenPtr pScreen, BoxPtr pBox);
+static void miPointerCursorLimits(ScreenPtr pScreen, CursorPtr pCursor,
+				  BoxPtr pHotBox, BoxPtr pTopLeftBox);
+static Bool miPointerSetCursorPosition(ScreenPtr pScreen, int x, int y,
+				       Bool generateEvent);
+static Bool miPointerCloseScreen(int index, ScreenPtr pScreen);
+static void miPointerMove(ScreenPtr pScreen, int x, int y, unsigned long time);
 
 Bool
 miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)

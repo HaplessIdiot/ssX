@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.18 2001/08/01 00:44:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.19 2001/08/27 23:35:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -668,13 +668,6 @@ extern void SetMaskForEvent(
 #endif
 );
 
-#if 0
-extern Bool PointerConfinedToScreen(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-#endif
 
 extern Bool IsParent(
 #if NeedFunctionPrototypes
@@ -695,14 +688,6 @@ extern WindowPtr GetSpriteWindow(
 #endif
 );
 
-#if 0
-extern void GetSpritePosition(
-#if NeedFunctionPrototypes
-    int * /* px */,
-    int * /* py */
-#endif
-);
-#endif
 
 extern void NoticeEventTime(
 #if NeedFunctionPrototypes
@@ -909,13 +894,6 @@ extern void DeleteWindowFromAnyEvents(
 #endif
 );
 
-#if 0
-extern void CheckCursorConfinement(
-#if NeedFunctionPrototypes
-    WindowPtr /* pWin */
-#endif
-);
-#endif
 
 extern Mask EventMaskForClient(
 #if NeedFunctionPrototypes
@@ -935,13 +913,6 @@ extern int DeliverEvents(
 #endif
 );
 
-#if 0
-extern void SetCriticalEvent(
-#if NeedFunctionPrototypes
-    int /*event*/
-#endif
-);
-#endif
 
 extern void WriteEventsToClient(
 #if NeedFunctionPrototypes
@@ -951,7 +922,6 @@ extern void WriteEventsToClient(
 #endif
 );
 
-#if 0
 extern int TryClientEvents(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
@@ -962,42 +932,13 @@ extern int TryClientEvents(
     GrabPtr /*grab*/
 #endif
 );
-#endif
-
-#if 0
-extern int EventSelectForWindow(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/,
-    ClientPtr /*client*/,
-    Mask /*mask*/
-#endif
-);
-
-extern int EventSuppressForWindow(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/,
-    ClientPtr /*client*/,
-    Mask /*mask*/,
-    Bool * /*checkOptional*/
-#endif
-);
-
-extern int MaybeDeliverEventsToClient(
-#if NeedFunctionPrototypes
-    WindowPtr /*pWin*/,
-    xEventPtr /*pEvents*/,
-    int /*count*/,
-    Mask /*filter*/,
-    ClientPtr /*dontClient*/
-#endif
-);
 
 extern void WindowsRestructured(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-#endif
+
 
 #ifdef RANDR
 void
