@@ -4,7 +4,7 @@
 // This file distributed without any expressed or implied warranty
 // Nilgün Belma Bugüner <nilgun@superonline.com>, 2002
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/tr,v 1.4 2003/01/04 02:55:20 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/tr,v 1.5 2003/04/19 12:22:12 pascal Exp $
 
 //Default Layout (Turkish Q)
 default partial
@@ -119,5 +119,35 @@ xkb_symbols "tr_f" {
     key <SPCE>	{ [    space,       space, nobreakspace, nobreakspace ]	};
     key <LSGT>	{ [     less,     greater,          bar,    brokenbar ]	};
    
+    include "level3(ralt_switch_multikey)"
+};
+
+// Turkish Alt-Q Layout
+partial
+xkb_symbols "tr_alt" {
+
+    include "pc/latin"
+
+    name[Group1]="Turkish";
+
+    key <AE07>  { [         7,   ampersand,  lowleftcorner,  upleftcorner ] };
+    key <AE08>  { [         8,    asterisk,          leftt,          topt ] };
+    key <AE09>  { [         9,   parenleft,         rightt,          bott ] };
+    key <AE10>  { [         0,  parenright, lowrightcorner, uprightcorner ] };
+    key <AE11>  { [     minus,  underscore, horizlinescan5,      vertbar  ] };
+    key <AE12>  { [     equal,        plus,  crossinglines  ] };
+
+    key <AD03>  { [         e,           E,     EuroSign,   VoidSymbol ] };
+//    key <AD05>        { [         t,           T,    trademark,   VoidSymbol >
+    key <AD07>  { [         u,           U,   udiaeresis,   Udiaeresis ] };
+    key <AD08>  { [         i,           I,     idotless,    Iabovedot ] };
+    key <AD09>  { [         o,           O,   odiaeresis,   Odiaeresis ] };
+    key <AC01>  { [         a,           A,  acircumflex,  Acircumflex ] };
+    key <AC02>  { [         s,           S,     scedilla,     Scedilla ] };
+    key <AC05>  { [         g,           G,       gbreve,       Gbreve ] };
+
+    key <AB03>  { [         c,           C,     ccedilla,     Ccedilla ] };
+    key <SPCE>  { [     space,       space, nobreakspace, nobreakspace ] };
+
     include "level3(ralt_switch_multikey)"
 };
