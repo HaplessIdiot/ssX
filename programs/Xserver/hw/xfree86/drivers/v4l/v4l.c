@@ -548,6 +548,18 @@ V4LProbe(DriverPtr drv, int flags)
     char dev[16];
     int  fd,i,nenc;
 
+    if (flags & PROBE_DETECT) {
+    	for (i = 0; i < 4; i++) {
+	    sprintf(dev,"/dev/video%d",i);
+	    fd = open(dev, O_RDWR, 0);
+	    if (fd != -1) {
+	        close(fd);
+		return TRUE;
+	    }
+	}
+	return FALSE;
+    }
+
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
     for (i = 0; i < 4; i++) {
