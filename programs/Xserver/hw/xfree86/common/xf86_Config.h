@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.72 1998/01/24 16:57:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.73 1998/01/24 21:42:00 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -189,10 +189,18 @@ static SymTabRec DriverTab[] = {
 #define PS_2		1026
 #define MMHITTAB	1027
 #define GLIDEPOINT	1028
-#define IMSERIAL        1029
-#define IMPS2           1030
-#define XQUE      	1031
-#define OSMOUSE   	1032
+#define IMSERIAL	1029
+#define THINKING	1030
+#define IMPS2		1031
+#define THINKINGPS2	1032
+#define MMANPLUSPS2	1033
+#define GLIDEPOINTPS2	1034
+#define NETPS2		1035
+#define NETSCROLLPS2	1036
+#define SYSMOUSE	1037
+#define AUTOMOUSE	1038
+#define XQUE      	1039
+#define OSMOUSE   	1040
 
 #ifdef INIT_CONFIG
 static SymTabRec MouseTab[] = {
@@ -205,18 +213,26 @@ static SymTabRec MouseTab[] = {
   { PS_2,	"ps/2" },
   { MMHITTAB,	"mmhittab" },
   { GLIDEPOINT,	"glidepoint" },
-  { IMSERIAL,   "intellimouse" },
-  { IMPS2,      "imps/2" },
+  { IMSERIAL,	"intellimouse" },
+  { THINKING,	"thinkingmouse" },
+  { IMPS2,	"imps/2" },
+  { THINKINGPS2,"thinkingmouseps/2" },
+  { MMANPLUSPS2,"mousemanplusps/2" },
+  { GLIDEPOINTPS2,"glidepointps/2" },
+  { NETPS2,	"netmouseps/2" },
+  { NETSCROLLPS2,"netmouseps/2" },
+  { SYSMOUSE,	"sysmouse" },
+  { AUTOMOUSE,	"auto" },
   { XQUE,	"xqueue" },
   { OSMOUSE,	"osmouse" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
 
-#define FONTPATH	1040
-#define RGBPATH		1041
-#define MODULEPATH	1042
-#define LOGFILEPATH	1043
+#define FONTPATH	1045
+#define RGBPATH		1046
+#define MODULEPATH	1047
+#define LOGFILEPATH	1048
 
 #ifdef INIT_CONFIG
 static SymTabRec FilesTab[] = {
@@ -543,9 +559,17 @@ static SymTabRec KeyboardTab[] = {
 						   [CHRIS-211092] */
 #define P_PS2		6			/* PS/2 mouse */
 #define P_MMHIT		7			/* MM_HitTab */
-#define P_GLIDEPOINT	8			/* ALPS GlidePoint */
-#define P_IMSERIAL      9                       /* Microsoft serial IntelliMouse */
-#define P_IMPS2        10                       /* Microsoft PS/2 IntelliMouse */
+#define P_GLIDEPOINT	8		/* ALPS seiral GlidePoint */
+#define P_IMSERIAL      9		/* Microsoft serial IntelliMouse */
+#define P_THINKING	10		/* Kensington serial ThinkingMouse */
+#define P_IMPS2		11		/* Microsoft PS/2 IntelliMouse */
+#define P_THINKINGPS2	12		/* Kensington PS/2 ThinkingMouse */
+#define P_MMANPLUSPS2	13		/* Logitech PS/2 MouseMan+ */
+#define P_GLIDEPOINTPS2	14		/* ALPS PS/2 GlidePoint */
+#define P_NETPS2	15		/* Genius PS/2 NetMouse */
+#define P_NETSCROLLPS2	16		/* Genius PS/2 NetScroll */
+#define P_SYSMOUSE	17		/* SysMouse */
+#define P_AUTO		18		/* automatic */
 
 #define EMULATE3	50
 #define BAUDRATE	51
@@ -561,6 +585,8 @@ static SymTabRec KeyboardTab[] = {
 #define DEVICE_NAME	60
 #define ALWAYSCORE	61
 #define BUTTONS		62
+#define PRESOLUTION	63
+#define ZAXISMAPPING	64
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
@@ -578,12 +604,25 @@ static SymTabRec PointerTab[] = {
   { CLEARRTS,	"clearrts" },
   { CHORDMIDDLE,"chordmiddle" },
   { REPEATEDMIDDLE,"repeatedmiddle" },
+  { PRESOLUTION,"resolution" },
 #endif
   { DEVICE_NAME,"devicename" },
 #ifdef XINPUT
   { ALWAYSCORE,"alwayscore" },
 #endif
   { BUTTONS,"buttons" },
+  { ZAXISMAPPING,"zaxismapping" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+#define XAXIS		65
+#define YAXIS		66
+
+#ifdef INIT_CONFIG
+static SymTabRec ZMapTab[] = {
+  { XAXIS,	"x" },
+  { YAXIS,	"y" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

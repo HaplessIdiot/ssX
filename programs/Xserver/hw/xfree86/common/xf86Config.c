@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.137 1997/10/13 17:16:37 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.138 1998/01/24 16:57:22 hohndel Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -3129,15 +3129,14 @@ configPointerSection(MouseDevPtr	mouse_dev,
 {
   int            token;
   int		 mtoken;
-#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
   int            i;
-#endif
   char *mouseType = "unknown";
 
   /* Set defaults */
   mouse_dev->baudRate        = 1200;
   mouse_dev->oldBaudRate     = -1;
   mouse_dev->sampleRate      = 0;
+  mouse_dev->resolution      = 0;
   mouse_dev->emulate3Buttons = FALSE;
   mouse_dev->emulate3Timeout = 50;
   mouse_dev->chordMiddle     = FALSE;
@@ -3145,6 +3144,9 @@ configPointerSection(MouseDevPtr	mouse_dev,
   mouse_dev->mseProc         = (DeviceProc)0;
   mouse_dev->mseDevice       = NULL;
   mouse_dev->mseType         = -1;
+  mouse_dev->mseModel        = 0;
+  mouse_dev->negativeZ       = 0;
+  mouse_dev->positiveZ       = 0;
       
   while ((token = xf86GetToken(PointerTab)) != end_tag) {
     switch (token) {
@@ -3240,6 +3242,13 @@ configPointerSection(MouseDevPtr	mouse_dev,
 	}
       mouse_dev->sampleRate = val.num;
       break;
+
+    case PRESOLUTION:
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Resolution expected");
+      if (val.num <= 0)
+	    xf86ConfigError("Resolution must be a positive value");
+      mouse_dev->resolution = val.num;
+      break;
 #endif /* OSMOUSE_ONLY */
     case EMULATE3:
       if (mouse_dev->chordMiddle)
@@ -3263,7 +3272,7 @@ configPointerSection(MouseDevPtr	mouse_dev,
         mouse_dev->chordMiddle = TRUE;
       }
       else
-        xf86ConfigError("ChordMiddle is only supported for Microsoft and Logiman");
+        xf86ConfigError("ChordMiddle is only supported for Microsoft and MouseMan");
       break;
 
     case CLEARDTR:
@@ -3310,6 +3319,28 @@ configPointerSection(MouseDevPtr	mouse_dev,
 #endif
 #endif
 	
+    case ZAXISMAPPING:
+      switch (xf86GetToken(ZMapTab)) {
+      case NUMBER:
+        if (val.num <= 0 || val.num > MSE_MAXBUTTONS)
+	  xf86ConfigError("Button number (1..12) expected");
+        mouse_dev->negativeZ = 1 << (val.num - 1);
+        if (xf86GetToken(NULL) != NUMBER || 
+	    val.num <= 0 || val.num > MSE_MAXBUTTONS)
+	  xf86ConfigError("Button number (1..12) expected");
+        mouse_dev->positiveZ = 1 << (val.num - 1);
+        break;
+      case XAXIS:
+        mouse_dev->negativeZ = mouse_dev->positiveZ = MSE_MAPTOX;
+	break;
+      case YAXIS:
+        mouse_dev->negativeZ = mouse_dev->positiveZ = MSE_MAPTOY;
+	break;
+      default:
+	xf86ConfigError("Button number (1..12), X or Y expected");
+      }
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -3341,23 +3372,62 @@ configPointerSection(MouseDevPtr	mouse_dev,
     Bool formatFlag = FALSE;
     ErrorF("%s Mouse: type: %s, device: %s", 
        XCONFIG_GIVEN, mouseType, mouse_dev->mseDevice);
-    if (token != BUSMOUSE && token != PS_2)
+    if (mouse_dev->mseType != P_BM
+	&& mouse_dev->mseType != P_PS2
+	&& mouse_dev->mseType != P_IMPS2
+	&& mouse_dev->mseType != P_THINKINGPS2
+	&& mouse_dev->mseType != P_MMANPLUSPS2
+	&& mouse_dev->mseType != P_GLIDEPOINTPS2
+	&& mouse_dev->mseType != P_NETPS2
+	&& mouse_dev->mseType != P_NETSCROLLPS2
+	&& mouse_dev->mseType != P_SYSMOUSE)
     {
       formatFlag = TRUE;
       ErrorF(", baudrate: %d", mouse_dev->baudRate);
     }
     if (mouse_dev->sampleRate)
     {
-      ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
-             mouse_dev->sampleRate);
+      ErrorF(formatFlag ? "\n%s Mouse: samplerate: %d" : "%ssamplerate: %d", 
+	     formatFlag ? XCONFIG_GIVEN : ", ", mouse_dev->sampleRate);
+      formatFlag = !formatFlag;
+    }
+    if (mouse_dev->resolution)
+    {
+      ErrorF(formatFlag ? "\n%s Mouse: resolution: %d" : "%sresolution: %d", 
+	     formatFlag ? XCONFIG_GIVEN : ", ", mouse_dev->resolution);
       formatFlag = !formatFlag;
     }
     if (mouse_dev->emulate3Buttons)
-      ErrorF("%s3 button emulation (timeout: %dms)",
-             formatFlag ? ",\n       " : ", ", mouse_dev->emulate3Timeout);
+    {
+      ErrorF(formatFlag ? "\n%s Mouse: 3 button emulation (timeout: %dms)" :
+			  "%s3 button emulation (timeout: %dms)",
+             formatFlag ? XCONFIG_GIVEN : ", ", mouse_dev->emulate3Timeout);
+      formatFlag = !formatFlag;
+    }
     if (mouse_dev->chordMiddle)
-      ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
+      ErrorF(formatFlag ? "\n%s Mouse: Chorded middle button" : 
+                          "%sChorded middle button",
+             formatFlag ? XCONFIG_GIVEN : ", ");
     ErrorF("\n");
+
+    switch (mouse_dev->negativeZ) {
+    case 0: /* none */
+      break;
+    case MSE_MAPTOX:
+      ErrorF("%s Mouse: zaxismapping: X\n", XCONFIG_GIVEN);
+      break;
+    case MSE_MAPTOY:
+      ErrorF("%s Mouse: zaxismapping: Y\n", XCONFIG_GIVEN);
+      break;
+    default: /* buttons */
+      for (i = 0; mouse_dev->negativeZ != (1 << i); ++i)
+	;
+      ErrorF("%s Mouse: zaxismapping: (-)%d", XCONFIG_GIVEN, i + 1);
+      for (i = 0; mouse_dev->positiveZ != (1 << i); ++i)
+	;
+      ErrorF(" (+)%d\n", i + 1);
+      break;
+    }
   }
 #ifdef NEED_RETURN_VALUE
   return RET_OKAY;

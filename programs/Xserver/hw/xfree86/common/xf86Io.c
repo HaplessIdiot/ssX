@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.31 1997/11/08 17:07:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.32 1998/01/24 16:57:25 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -444,7 +444,7 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
      int		*fd;
      PtrCtrlProcPtr	ctrl;
 {
-  unsigned char                map[6];
+  unsigned char                map[MSE_MAXBUTTONS + 1];
   int                          nbuttons;
   int                          mousefd;
 
@@ -453,29 +453,16 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
     case DEVICE_INIT: 
       pPointer->public.on = FALSE;
  
-      map[1] = 1;
-      map[2] = 2;
-      map[3] = 3;
-      map[4] = 4;
-      map[5] = 5;
-
       /*
-       * [JCH-96/01/21] The ALPS GlidePoint pad, extends the MS protocol
-       * with a fourth button activated by tapping the pad.
-       *
-       * [TVO-97/03/10] the wheel on the intellimouse is sending us button
-       * 4 and 5 events, hence we have 5 buttons.
+       * [KAZU-241097] We don't know exactly how many buttons the
+       * device has... Assume the maximum number for now.
        */
-      if (mouse->mseType == P_MMHIT || mouse->mseType == P_GLIDEPOINT)
-        nbuttons = 4;
-      else if (mouse->mseType == P_IMSERIAL || mouse->mseType == P_IMPS2)
-	nbuttons = 5;
-      else
-        nbuttons = 3;
+      for (nbuttons = 0; nbuttons < MSE_MAXBUTTONS; ++nbuttons)
+        map[nbuttons + 1] = nbuttons + 1;
 
       InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
-			      nbuttons, 
+			      MSE_MAXBUTTONS, 
 			      miPointerGetMotionEvents,
 			      ctrl, 
 			      miPointerGetMotionBufferSize());

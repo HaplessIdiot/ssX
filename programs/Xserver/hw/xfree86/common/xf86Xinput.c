@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.31 1997/09/19 08:30:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.32 1998/01/24 16:57:29 hohndel Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -200,7 +200,8 @@ Bool
 xf86CheckButton(int	button,
 		int	down)
 {
-    int	state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
+    /* The device may have up to MSE_MAXBUTTONS (12) buttons. */
+    int	state = (inputInfo.pointer->button->state & 0x0fff00) >> 8;
     int	check = (state & (1 << (button - 1)));
     
     if ((check && down) && (!check && !down)) {

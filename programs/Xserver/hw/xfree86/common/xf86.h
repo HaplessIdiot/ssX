@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.68 1997/11/01 15:04:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.69 1998/01/24 16:57:21 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -442,6 +442,10 @@ extern Bool        xf86VTSema;
 
 /* Mouse device private record */
 
+#define MSE_MAPTOX		(-1)
+#define MSE_MAPTOY		(-2)
+#define MSE_MAXBUTTONS		12
+
 typedef struct _MouseDevRec {
     DeviceProc    mseProc;              /* procedure for initializing */
     void          (* mseEvents)(
@@ -453,6 +457,7 @@ typedef struct _MouseDevRec {
     int           mseFd;
     char          *mseDevice;
     int           mseType;
+    int           mseModel;
     int           baudRate;
     int           oldBaudRate;
     int           sampleRate;
@@ -464,6 +469,13 @@ typedef struct _MouseDevRec {
     Bool          chordMiddle;
     int           mouseFlags;		/* Flags to Clear after opening mouse dev */
     int		  truebuttons;		/* Arg to maintain before emulate3buttons timer callback */
+
+    int           resolution;
+    int           negativeZ;
+    int           positiveZ;
+#ifndef MOUSE_PROTOCOL_IN_KERNEL
+    unsigned char protoPara[7];
+#endif
     
 #ifndef CSRG_BASED
     /* xque part */
@@ -828,6 +840,13 @@ void xf86MouseCtrl(
 #endif
 );
 #endif
+
+/* xf86_PnPMouse.c */
+int xf86GetPnPMouseProtocol(
+#if NeedFunctionPrototypes
+    MouseDevPtr mouse
+#endif
+);
 
 /* xf86Kbd.c */
 Bool LegalModifier(

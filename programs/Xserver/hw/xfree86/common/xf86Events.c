@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.48 1997/10/25 13:50:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.49 1998/01/24 16:57:24 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -299,6 +299,8 @@ static char hitachMap[16] = {  0,  2,  1,  3,
 			       8, 10,  9, 11,
 			       4,  6,  5,  7,
 			      12, 14, 13, 15 };
+
+#define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
 
 
 /*
@@ -1076,9 +1078,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
 
   truebuttons = buttons;
   if (private->mseType == P_MMHIT)
-    buttons = hitachMap[buttons];
+    buttons = reverseBits(hitachMap, buttons);
   else
-    buttons = reverseMap[buttons];
+    buttons = reverseBits(reverseMap, buttons);
 
   if (dx || dy) {
     
@@ -1114,9 +1116,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * would nearly double its size, so I'll stick with this fix.  - TJW
        */
       if (private->mseType == P_MMHIT)
-        change = buttons ^ hitachMap[private->lastButtons];
+        change = buttons ^ reverseBits(hitachMap, private->lastButtons);
       else
-        change = buttons ^ reverseMap[private->lastButtons];
+        change = buttons ^ reverseBits(reverseMap, private->lastButtons);
       if (change & 02)
 	{
 #ifndef XINPUT
@@ -1189,9 +1191,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * is the reverse of the button mapping reported to the server.
        */
       if (private->mseType == P_MMHIT)
-        change = buttons ^ hitachMap[private->lastButtons];
+        change = buttons ^ reverseBits(hitachMap, private->lastButtons);
       else
-        change = buttons ^ reverseMap[private->lastButtons];
+        change = buttons ^ reverseBits(reverseMap, private->lastButtons);
       while (change)
 	{
 	  id = ffs(change);
