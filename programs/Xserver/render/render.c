@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.18 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.20 2002/10/10 02:29:06 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1371,6 +1371,8 @@ ProcRenderCreateCursor (ClientPtr client)
     int		    n;
     CursorMetricRec cm;
     CursorPtr	    pCursor;
+    CARD32	    twocolor[3];
+    int		    ncolor;
 
     REQUEST_SIZE_MATCH (xRenderCreateCursorReq);
     LEGAL_NEW_RESOURCE(stuff->cid, client);
@@ -1451,7 +1453,35 @@ ProcRenderCreateCursor (ClientPtr client)
 	FreePicture (pPicture, 0);
     }
     /*
-     * Convert argb image to black/white cursor and mask
+     * Check whether the cursor can be directly supported by 
+     * the core cursor code
+     */
+    ncolor = 0;
+    argb = argbbits;
+    for (y = 0; ncolor <= 2 && y < height; y++)
+    {
+	for (x = 0; ncolor <= 2 && x < width; x++)
+	{
+	    CARD32  p = *argb++;
+	    CARD32  a = (p >> 24);
+
+	    if (a == 0)	    /* transparent */
+		continue;
+	    if (a == 0xff)  /* opaque */
+	    {
+		for (n = 0; n < ncolor; n++)
+		    if (p == twocolor[n])
+			break;
+		if (n == ncolor)
+		    twocolor[ncolor++] = p;
+	    }
+	    else
+		ncolor = 3;
+	}
+    }
+    
+    /*
+     * Convert argb image to two plane cursor
      */
     bzero ((char *) mskbits, n);
     bzero ((char *) srcbits, n);
@@ -1463,31 +1493,56 @@ ProcRenderCreateCursor (ClientPtr client)
 	for (x = 0; x < width; x++)
 	{
 	    CARD32  p = *argb++;
-	    CARD32  a, i, d;
 
-	    a = ((p >> 24) * DITHER_SIZE + 127) / 255;
-	    i = ((CvtR8G8B8toY15(p) >> 7) * DITHER_SIZE + 127) / 255;
-	    d = orderedDither[y&(DITHER_DIM-1)][x&(DITHER_DIM-1)];
-	    /* Set mask from dithered alpha value */
-	    SetBit(mskline, x, a > d);
-	    /* Set src from dithered intensity value */
-	    SetBit(srcline, x, a > d && i <= d);
+	    if (ncolor <= 2)
+	    {
+		CARD32	a = ((p >> 24));
+
+		SetBit (mskline, x, a != 0);
+		SetBit (srcline, x, a != 0 && p == twocolor[0]);
+	    }
+	    else
+	    {
+		CARD32	a = ((p >> 24) * DITHER_SIZE + 127) / 255;
+		CARD32	i = ((CvtR8G8B8toY15(p) >> 7) * DITHER_SIZE + 127) / 255;
+		CARD32	d = orderedDither[y&(DITHER_DIM-1)][x&(DITHER_DIM-1)];
+		/* Set mask from dithered alpha value */
+		SetBit(mskline, x, a > d);
+		/* Set src from dithered intensity value */
+		SetBit(srcline, x, a > d && i <= d);
+	    }
 	}
 	srcline += stride;
 	mskline += stride;
     }
-#ifdef TEST_CORE_COMPAT
-    /* use this code to test core cursor appearance */
-    xfree (argbbits);
-    argbbits = 0;
-#endif
+    /*
+     * Dither to white and black if the cursor has more than two colors
+     */
+    if (ncolor > 2)
+    {
+	twocolor[0] = 0xff000000;
+	twocolor[1] = 0xffffffff;
+    }
+    else
+    {
+	xfree (argbbits);
+	argbbits = 0;
+    }
+    
+#define GetByte(p,s)	(((p) >> (s)) & 0xff)
+#define GetColor(p,s)	(GetByte(p,s) | (GetByte(p,s) << 8))
+    
     cm.width = width;
     cm.height = height;
     cm.xhot = stuff->x;
     cm.yhot = stuff->y;
     pCursor = AllocCursorARGB (srcbits, mskbits, argbbits, &cm,
-			       0x0000, 0x0000, 0x0000,
-			       0xffff, 0xffff, 0xffff);
+			       GetColor(twocolor[0], 16),
+			       GetColor(twocolor[0], 8),
+			       GetColor(twocolor[0], 0),
+			       GetColor(twocolor[1], 16),
+			       GetColor(twocolor[1], 8),
+			       GetColor(twocolor[1], 0));
     if (pCursor && AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
 	return (client->noClientException);
     return BadAlloc;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.18 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.19 2002/09/29 23:39:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -79,14 +79,8 @@ typedef struct _Picture {
 
     DDXPointRec	    clipOrigin;
     pointer	    clientClip;
-    
-    PictTransform   *transform;
 
     Atom	    dither;
-
-    int		    filter;
-    xFixed	    *filter_params;
-    int		    filter_nparams;
 
     unsigned long   stateChanges;
     unsigned long   serialNumber;
@@ -94,6 +88,12 @@ typedef struct _Picture {
     RegionPtr	    pCompositeClip;
     
     DevUnion	    *devPrivates;
+    
+    PictTransform   *transform;
+
+    int		    filter;
+    xFixed	    *filter_params;
+    int		    filter_nparams;
 } PictureRec;
 
 typedef struct {
@@ -227,20 +227,11 @@ typedef struct _PictureScreen {
     PictFormatPtr		formats;
     PictFormatPtr		fallback;
     int				nformats;
-    int				subpixel;
     
-    PictFilterPtr		filters;
-    int				nfilters;
-    PictFilterAliasPtr		filterAliases;
-    int				nfilterAliases;
-
     CreatePictureProcPtr	CreatePicture;
     DestroyPictureProcPtr	DestroyPicture;
     ChangePictureClipProcPtr	ChangePictureClip;
     DestroyPictureClipProcPtr	DestroyPictureClip;
-    ChangePictureTransformProcPtr   ChangePictureTransform;
-    ChangePictureFilterProcPtr	ChangePictureFilter;
-    DestroyPictureFilterProcPtr	DestroyPictureFilter;
     
     ChangePictureProcPtr	ChangePicture;
     ValidatePictureProcPtr	ValidatePicture;
@@ -248,13 +239,7 @@ typedef struct _PictureScreen {
     CompositeProcPtr		Composite;
     GlyphsProcPtr		Glyphs;
     CompositeRectsProcPtr	CompositeRects;
-    TrapezoidsProcPtr		Trapezoids;
-    TrianglesProcPtr		Triangles;
-    TriStripProcPtr		TriStrip;
-    TriFanProcPtr		TriFan;
 
-    RasterizeTrapezoidProcPtr	RasterizeTrapezoid;
-    
     DestroyWindowProcPtr	DestroyWindow;
     CloseScreenProcPtr		CloseScreen;
 
@@ -264,6 +249,23 @@ typedef struct _PictureScreen {
     CloseIndexedProcPtr		CloseIndexed;
     UpdateIndexedProcPtr	UpdateIndexed;
 
+    int				subpixel;
+    
+    PictFilterPtr		filters;
+    int				nfilters;
+    PictFilterAliasPtr		filterAliases;
+    int				nfilterAliases;
+
+    ChangePictureTransformProcPtr   ChangePictureTransform;
+    ChangePictureFilterProcPtr	ChangePictureFilter;
+    DestroyPictureFilterProcPtr	DestroyPictureFilter;
+    
+    TrapezoidsProcPtr		Trapezoids;
+    TrianglesProcPtr		Triangles;
+    TriStripProcPtr		TriStrip;
+    TriFanProcPtr		TriFan;
+
+    RasterizeTrapezoidProcPtr	RasterizeTrapezoid;
 } PictureScreenRec, *PictureScreenPtr;
 
 extern int		PictureScreenPrivateIndex;
