@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.4 2002/01/25 21:56:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.5 2004/02/13 23:58:49 dawes Exp $ */
 /*
- * Copyright 1999-2001 The XFree86 Project, Inc.
+ * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -55,6 +55,8 @@
 #include "xisb.h"
 #include "mipointer.h"
 #include <sys/vuid_event.h>
+
+#define DEFAULT_MOUSE_DEV		"/dev/mouse"
 
 /* Names of protocols that are handled internally here. */
 
@@ -308,6 +310,17 @@ SetupAuto(InputInfoPtr pInfo, int *protoPara)
     return DefaultProtocol();
 }
 
+static const char *
+FindDevice(InputInfoPtr pInfo, const char *protocol, int flags)
+{
+    const char *dev = DEFAULT_MOUSE_DEV;
+
+    pInfo->conf_idev->commonOptions =
+	xf86AddNewOption(pInfo->conf_idev->commonOptions, "Device", dev);
+    xf86Msg(X_INFO, "%s: Setting Device option to \"%s\".\n", pInfo->name, dev);
+    return dev;
+}
+
 #else /* __SOL8__ || !i386 */
 
 #undef MSE_MISC
@@ -337,6 +350,7 @@ xf86OSMouseInit(int flags)
     p->PreInit = sunMousePreInit;
     p->DefaultProtocol = DefaultProtocol;
     p->SetupAuto = SetupAuto;
+    p->FindDevice = FindDevice;
 #endif
     return p;
 }

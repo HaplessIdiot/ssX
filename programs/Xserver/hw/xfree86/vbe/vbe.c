@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.3 2003/11/03 05:11:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.c,v 1.4 2004/12/11 20:38:46 dawes Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -11,7 +11,7 @@
  */
 
 /*
- * Copyright (c) 2002-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2002-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -84,6 +84,7 @@ static Bool vbeProbeDDC(vbeInfoPtr pVbe);
 
 const char *vbe_ddcSymbols[] = {
     "xf86InterpretEDID",
+    "xf86DoEDID_Option",
     NULL
 };
 

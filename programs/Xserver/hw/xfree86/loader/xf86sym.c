@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.246 2005/01/07 23:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.247 2005/01/26 05:31:49 dawes Exp $ */
 
 /*
  *
@@ -200,6 +200,11 @@ extern long __umodsi3(long, long);
 #pragma weak __udivsi3
 #pragma weak __umoddi3
 #pragma weak __umodsi3
+#endif
+
+#if defined(__SUNPRO_C) && defined(__i386)
+extern long __div64(long, long);
+#pragma weak __div64
 #endif
 
 #if defined(__arm__) && defined(__linux__)
@@ -1195,6 +1200,9 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(__udivsi3)
     SYMFUNC(__umoddi3)
     SYMFUNC(__umodsi3)
+#endif
+#if defined(__SUNPRO_C) && defined(__i386)
+    SYMFUNC(__div64)
 #endif
 #if defined(__ia64__)
     SYMFUNC(_outw)
