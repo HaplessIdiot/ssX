@@ -27,12 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.14 2001/10/20 00:19:34 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.17 2002/01/31 04:33:27 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
 #include "read.h"
 #include "stream.h"
+#include "write.h"
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -437,6 +438,8 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 	if ((obj = LispRead(mac)) != NULL) {
 	    if (obj == EOLIST)
 		LispDestroy(mac, "object cannot start with #\\)");
+	    else if (obj == DOT)
+		LispDestroy(mac, "dot allowed only on lists");
 	    mac->protect.objects[length] = obj;
 	    result = EVAL(obj);
 	    if (print)
@@ -837,12 +840,7 @@ LispReadChar(LispMac *mac, LispBuiltin *builtin, int nohang)
 		file = IPSTREAMP(input_stream);
 		break;
 	    case LispStreamString:
-		if (SSTREAMP(input_stream)->input >=
-		    SSTREAMP(input_stream)->length)
-		    character = EOF;		/* EOF reading from string */
-		else
-		    character = SSTREAMP(input_stream)->
-			string[SSTREAMP(input_stream)->input++];
+		character = LispSgetc(SSTREAMP(input_stream));
 		break;
 	    default:
 		break;
@@ -896,7 +894,7 @@ LispReadChar(LispMac *mac, LispBuiltin *builtin, int nohang)
 }
 
 LispObj *
-LispWriteString(LispMac *mac, LispBuiltin *builtin, int newline)
+LispWriteString_(LispMac *mac, LispBuiltin *builtin, int newline)
 /*
  write-line string &optional output-stream &key start end
  write-string string &optional output-stream &key start end
@@ -945,27 +943,18 @@ LispWriteString(LispMac *mac, LispBuiltin *builtin, int newline)
 
     if (end > start) {
 	if (start == 0 && end == length)
-	    LispPrintf(mac, output_stream, "%s", text);
+	    LispWriteStr(mac, output_stream, text);
 	else {
 	    char *ptr = LispMalloc(mac, end - start + 1);
 
 	    strncpy(ptr, text + start, end - start);
 	    ptr[end - start] = '\0';
-	    LispPrintf(mac, output_stream, "%s", ptr);
+	    LispWriteStr(mac, output_stream, ptr);
 	    LispFree(mac, ptr);
 	}
     }
-    if (newline) {
-	LispPrintf(mac, output_stream, "%c", '\n');
-	if (output_stream == NIL) {
-	    mac->column = 0;
-	    mac->newline = 1;
-	}
-    }
-    else if (output_stream == NIL) {
-	mac->newline = 0;
-	mac->column += end - start;
-    }
+    if (newline)
+	LispWriteChar(mac, output_stream, '\n');
 
     return (string);
 }

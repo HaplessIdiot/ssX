@@ -27,13 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.15 2001/10/20 00:19:33 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.19 2002/01/31 04:33:27 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
 #include "format.h"
 #include "helper.h"
 #include "private.h"
+#include "write.h"
 
 /*
  * Prototypes
@@ -2183,15 +2184,16 @@ Lisp_Princ(LispMac *mac, LispBuiltin *builtin)
  princ object &optional output-stream
  */
 {
-    int princ = mac->princ;
+    int escape;
     LispObj *object, *output_stream;
 
     output_stream = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    mac->princ = 1;
+    escape = LispGetEscape(mac, output_stream);
+    LispSetEscape(mac, output_stream, 1);
     LispPrint(mac, object, output_stream, 0);
-    mac->princ = princ;
+    LispSetEscape(mac, output_stream, escape);
 
     return (object);
 }
@@ -3210,12 +3212,11 @@ Lisp_Terpri(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not a stream",
 		    STRFUN(builtin), STROBJ(output_stream));
 
-    LispPrintf(mac, output_stream, "\n");
-    if (output_stream == NIL) {
-	mac->newline = 1;
-	mac->column = 0;
+    LispWriteChar(mac, output_stream, '\n');
+    if (output_stream == NIL ||
+	(output_stream->data.stream.type == LispStreamStandard &&
+	 output_stream->data.stream.source.file == Stdout))
 	LispFflush(Stdout);
-    }
 
     return (NIL);
 }

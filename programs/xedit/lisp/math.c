@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -245,7 +245,6 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
  < number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -260,8 +259,7 @@ Lisp_Less(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, compare, number);
-	if (cmp >= 0)
+	if (math_compare(mac, builtin, compare, number) >= 0)
 	    return (NIL);
 	compare = number;
     }
@@ -275,7 +273,6 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
  <= number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -290,8 +287,7 @@ Lisp_LessEqual(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, compare, number);
-	if (cmp > 0)
+	if (math_compare(mac, builtin, compare, number) > 0)
 	    return (NIL);
 	compare = number;
     }
@@ -305,7 +301,6 @@ Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
  = number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -314,8 +309,7 @@ Lisp_Equal_(LispMac *mac, LispBuiltin *builtin)
     for (; CONS_P(more_numbers); more_numbers = CDR(more_numbers)) {
 	number = CAR(more_numbers);
 
-	cmp = math_compare(mac, builtin, compare, number);
-	if (cmp != 0)
+	if (math_compare(mac, builtin, compare, number) != 0)
 	    return (NIL);
 	compare = number;
     }
@@ -329,7 +323,6 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
  > number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -344,8 +337,7 @@ Lisp_Greater(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, compare, number);
-	if (cmp <= 0)
+	if (math_compare(mac, builtin, compare, number) <= 0)
 	    return (NIL);
 	compare = number;
     }
@@ -359,7 +351,6 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
  >= number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -374,8 +365,7 @@ Lisp_GreaterEqual(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, compare, number);
-	if (cmp < 0)
+	if (math_compare(mac, builtin, compare, number) < 0)
 	    return (NIL);
 	compare = number;
     }
@@ -389,8 +379,6 @@ Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
  /= number &rest more-numbers
  */
 {
-    int cmp;
-
     LispObj *object, *compare, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -402,8 +390,7 @@ Lisp_NotEqual(LispMac *mac, LispBuiltin *builtin)
 	for (object = more_numbers; CONS_P(object); object = CDR(object)) {
 	    number = CAR(object);
 
-	    cmp = math_compare(mac, builtin, compare, number);
-	    if (cmp == 0)
+	    if (math_compare(mac, builtin, compare, number) == 0)
 		return (NIL);
 	}
 	if (CONS_P(more_numbers)) {
@@ -423,7 +410,6 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
  min number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *result, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -438,8 +424,7 @@ Lisp_Min(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, result, number);
-	if (cmp > 0)
+	if (math_compare(mac, builtin, result, number) > 0)
 	    result = number;
     }
 
@@ -452,7 +437,6 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
  max number &rest more-numbers
  */
 {
-    int cmp;
     LispObj *result, *number, *more_numbers;
 
     more_numbers = ARGUMENT(1);
@@ -467,8 +451,7 @@ Lisp_Max(LispMac *mac, LispBuiltin *builtin)
 	if (!REAL_P(number))
 	    LispDestroy(mac, "%s: %s is not a real number",
 			STRFUN(builtin), STROBJ(number));
-	cmp = math_compare(mac, builtin, result, number);
-	if (cmp < 0)
+	if (math_compare(mac, builtin, result, number) < 0)
 	    result = number;
     }
 

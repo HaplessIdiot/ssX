@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.11 2001/10/20 00:19:34 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.12 2002/01/30 21:00:57 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -201,6 +201,7 @@ typedef struct _LispAtom LispAtom;
 typedef struct _LispBuiltin LispBuiltin;
 typedef struct _LispModuleData LispModuleData;
 typedef struct _LispFile LispFile;
+typedef struct _LispString LispString;
 
 typedef enum _LispType {
 	/* simple types, self contained objects first */
@@ -252,14 +253,6 @@ typedef enum _LispStreamType {
     LispStreamStandard,
     LispStreamPipe
 } LispStreamType;
-
-typedef struct {
-    unsigned char *string;
-    int space;			/* number of bytes alocated */
-    int length;			/* number of bytes used */
-    int input;			/* input offset, for read operations */
-    int output;			/* output offset, for write operations */
-} LispString;
 
 typedef struct {
     int pid;			/* process id of program */
@@ -416,7 +409,6 @@ int LispRegisterOpaqueType(LispMac*, char*);
 
 int LispPrintf(LispMac*, LispObj*, char*, ...);
 int LispPrintString(LispMac*, LispObj*, char*);
-int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
 
 void LispProtect(LispMac*, LispObj*, LispObj*);
 void LispUProtect(LispMac*, LispObj*, LispObj*);
@@ -428,7 +420,7 @@ void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
 /*
  * Initialization
  */
-extern LispObj *NIL, *T;
+extern LispObj *NIL, *T, *DOT;
 extern int gcpro;
 
 extern LispFile *Stdout, *Stdin, *Stderr;

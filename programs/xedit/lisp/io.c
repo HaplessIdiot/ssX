@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -42,6 +42,11 @@
 #define APPEND_BIT	0x04
 #define BUFFERED_BIT	0x08
 #define UNBUFFERED_BIT	0x10
+
+/*
+ * Prototypes
+ */
+static int calculate_column(void*, int, int);
 
 /*
  * Initialization
@@ -73,10 +78,7 @@ LispGet(LispMac *mac)
 		file = IPSTREAMP(SINPUT);
 		break;
 	    case LispStreamString:
-		if (SSTREAMP(SINPUT)->input >= SSTREAMP(SINPUT)->length)
-		    ch = EOF;		/* EOF reading from string */
-		else
-		    ch = SSTREAMP(SINPUT)->string[SSTREAMP(SINPUT)->input++];
+		ch = LispSgetc(SSTREAMP(SINPUT));
 		break;
 	    default:
 		ch = EOF;
@@ -150,6 +152,24 @@ LispPopInput(LispMac *mac, LispObj *stream)
 /*
  * Low level functions
  */
+static int
+calculate_column(void *data, int size, int column)
+{
+    char *str, *ptr;
+
+    /* search for newline in data */
+    for (str = (char*)data, ptr = data + size - 1; ptr >= str; ptr--)
+	if (*ptr == '\n')
+	    break;
+
+    /* newline found */
+    if (ptr >= str)
+	return (size - (ptr - str) - 1);
+
+    /* newline not found */
+    return (column + size);
+}
+
 LispFile *
 LispFdopen(int descriptor, int mode)
 {
@@ -320,7 +340,52 @@ LispFputc(LispFile *file, int ch)
 	}
 	else if (write(file->descriptor, &c, 1) != 1)
 	    ch = EOF;
+
+	/* update column number */
+	if (ch == '\n')
+	    file->column = 0;
+	else
+	    ++file->column;
     }
+
+    return (ch);
+}
+
+int
+LispSgetc(LispString *string)
+{
+    if (string->input >= string->length)
+	return (EOF);			/* EOF reading from string */
+
+    return (string->string[string->input++]);
+}
+
+int
+LispSputc(LispString *string, int ch)
+{
+    if (string->output + 1 >= string->space) {
+	if (string->fixed)
+	    return (EOF);
+	else {
+	    unsigned char *tmp = realloc(string->string,
+					 string->space + pagesize);
+
+	    if (tmp == NULL)
+		return (EOF);
+	    string->string = tmp;
+	    string->space += pagesize;
+	}
+    }
+
+    string->string[string->output++] = ch;
+    if (string->length < string->output)
+	string->length = string->output;
+
+    /* update column number */
+    if (ch == '\n')
+	string->column = 0;
+    else
+	++string->column;
 
     return (ch);
 }
@@ -348,9 +413,15 @@ LispFgets(LispFile *file, char *string, int size)
 }
 
 int
-LispFputs(LispFile *file, char *string)
+LispFputs(LispFile *file, char *buffer)
 {
-    return (LispFwrite(file, string, strlen(string)));
+    return (LispFwrite(file, buffer, strlen(buffer)));
+}
+
+int
+LispSputs(LispString *string, char *buffer)
+{
+    return (LispSwrite(string, buffer, strlen(buffer)));
 }
 
 int
@@ -421,15 +492,16 @@ LispFread(LispFile *file, void *data, int size)
 int
 LispFwrite(LispFile *file, void *data, int size)
 {
-    if (!file->writable)
+    if (!file->writable || size < 0)
 	return (EOF);
+
+    file->column = calculate_column(data, size, file->column);
 
     if (file->buffered) {
 	int length, bytes;
 	unsigned char *buffer = (unsigned char*)data;
 
-	length = 0;	/* fix gcc warning */
-
+	length = 0;
 	if (size + file->length > pagesize) {
 	    /* fill remaining space in buffer and flush */
 	    bytes = pagesize - file->length;
@@ -470,49 +542,48 @@ LispFwrite(LispFile *file, void *data, int size)
 }
 
 int
-LispFprintf(LispFile *file, char *fmt, ...)
+LispSwrite(LispString *string, void *data, int size)
 {
-    int size;
-    va_list ap;
+    if (size < 0)
+	return (EOF);
 
-    if (!file->writable)
-	return (0);
-    else {
-	int n;
-	unsigned char stk[1024], *ptr = stk;
+    if (string->output + size >= string->space) {
+	if (string->fixed) {
+	    /* leave space for a ending nul character */
+	    size = string->space - string->output - 1;
 
-	va_start(ap, fmt);
-	size = sizeof(stk);
-	n = vsnprintf((char*)stk, size, fmt, ap);
-	if (n < 0 || n >= size) {
-	    while (1) {
-		char *tmp;
-
-		va_end(ap);
-		if (n > size)
-		    size = n + 1;
-		else
-		    size *= 2;
-		if ((tmp = realloc(ptr == stk ? NULL : ptr, size)) == NULL) {
-		    free(ptr);
-
-		    return (0);
-		}
-		ptr = (unsigned char*)tmp;
-		va_start(ap, fmt);
-		n = vsnprintf((char*)ptr, size, fmt, ap);
-		if (n >= 0 && n < size)
-		    break;
-	    }
+	    if (size <= 0)
+		return (-1);
 	}
-	size = strlen((char*)ptr);
+	else {
+	    unsigned char *tmp = realloc(string->string, string->space +
+					 (size / pagesize) * pagesize + pagesize);
 
-	LispFwrite(file, ptr, size);
+	    if (tmp == NULL)
+		return (-1);
 
-	if (ptr != stk)
-	    free(ptr);
+	    string->string = tmp;
+	    string->space += pagesize;
+	}
     }
-    va_end(ap);
+    memcpy(string->string + string->output, data, size);
+    string->output += size;
+    if (string->length < string->output)
+	string->length = string->output;
+
+    string->column = calculate_column(data, size, string->column);
 
     return (size);
+}
+
+/* it is also possible that the string have nuls */
+char *
+LispGetSstring(LispString *string)
+{
+    if (string->string == NULL)
+	return ("");
+    else if (string->string[string->length] != '\0')
+	string->string[string->length] = '\0';
+
+    return ((char*)string->string);
 }

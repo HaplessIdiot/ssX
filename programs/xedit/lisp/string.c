@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.2 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.5 2002/01/31 04:33:28 paulo Exp $ */
 
 #include "read.h"
 #include "string.h"
@@ -937,6 +937,8 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 
     if (result == EOLIST)
 	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));
+    if (result == DOT)
+	LispDestroy(mac, "dot allowed only on lists");
     if (result == NULL) {
 	if (eof_error_p == NIL)
 	    result = eof_value;

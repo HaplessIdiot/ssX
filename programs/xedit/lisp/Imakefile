@@ -62,7 +62,8 @@ SRCS		= $(SYS_SRCS) \
 		string.c \
 		struct.c \
 		stream.c \
-		time.c
+		time.c \
+		write.c
 OBJS		= $(SYS_OBJS) \
 		core.o \
 		debugger.o \
@@ -77,7 +78,8 @@ OBJS		= $(SYS_OBJS) \
 		string.o \
 		struct.o \
 		stream.o \
-		time.o
+		time.o \
+		write.o
 
 #include <Library.tmpl>
 

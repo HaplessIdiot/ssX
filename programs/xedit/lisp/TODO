@@ -1,4 +1,4 @@
-$XFree86$
+$XFree86: xc/programs/xedit/lisp/TODO,v 1.2 2002/01/31 04:33:27 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -21,11 +21,6 @@ o Finish an "specification" for loadable modules. Write a FFI interface.
   "auto-generate" directly from C header files the interface to the lisp
   code, and from that, dlload a shared library. In some cases, it is required
   to link statically with a new interpreter binary, make it easy.
-o Remove LispSnprintObj. Printing of objects should be done only with
-  LispPrint/LispPrintObj.
-o Fix (format). It does not understand bignums as integers, and float handling
-  is poorly implemented. Modularize it, instead of a huge function, maybe
-  have a read/write function for every object type.
 o Implement a better string type. That should support characters larger than
   8 bits, and that should allow embeded nuls.
 o It does not seen to be very smart to have two functions that do almost the
@@ -90,3 +85,6 @@ o Remove all calls to the macros GCProtect and GCUProtect. Create some
 	mac->protect.objects[mac->protect.length++] = <other-object-to-protect>;
 	...
 	mac->protect.length = protect;
+o Write a set of tests. The interpreter is expected to be only a subset of
+  Common Lisp, but what it understand should generate the expected/acceptable
+  results. Probably there are yet errors in the math code.

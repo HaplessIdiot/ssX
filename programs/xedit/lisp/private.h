@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.15 2001/10/20 00:19:35 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.16 2002/01/30 21:00:58 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -63,6 +63,7 @@
 #define DOC	mac->doclist
 
 #define	EOLIST	(LispObj*)1	/* end-of-list ")" found in LispRun */
+#define INVALID_P(obj) ((obj) == NULL || (obj) == EOLIST || (obj) == DOT)
 
 #define SINPUT	mac->standard_input
 #define SOUTPUT	mac->standard_output
@@ -156,53 +157,6 @@ typedef struct _LispUngetInfo {
 } LispUngetInfo;
 
 struct _LispMac {
-    LispObj *standard_input, *input;
-    LispObj *standard_output, *output;
-    LispObj *error_stream;
-    LispUngetInfo **unget;
-    int iunget, nunget;
-    int eof;
-
-    struct {
-	unsigned int fullbits : 8;	/* how many calls to to do a full gc
-					 * including freeing unused strings */
-	unsigned int expandbits : 3;	/* code doesn't look like reusing cells
-					 * so try to have a larger number of
-					 * free cells */
-	unsigned int immutablebits : 1;	/* need to reset immutable bits */
-	unsigned int timebits : 1;	/* update gctime counter */
-	long gctime;
-	int average;			/* of cells freed after gc calls */
-    } gc;
-
-    int princ;		/* don't quote strings? */
-    int justsize;	/* just calculate size of output,
-			 * needed to calculate formatted output */
-    int newline;	/* at a newline in the output */
-    int column;		/* column number in the output */
-    int interactive;
-    int errexit;
-    LispAtom *strs[STRTBLSZ];
-    LispOpaque *opqs[STRTBLSZ];
-    int opaque;
-    sigjmp_buf jmp;
-    struct {
-	unsigned block_level;
-	unsigned block_size;
-	LispObj *block_ret;
-	LispBlock **block;
-    } block;
-    struct {
-	unsigned mem_level;
-	unsigned mem_size;
-	void **mem;
-    } mem;		/* memory from Lisp*Alloc, to be release in error */
-    LispModule *module;
-    LispObj *modules;
-    char *prompt;
-
-    LispObj *features;
-
     /* ENVIRONMENT */
     struct {
 	LispObj **pairs;	/* value0 name0 ... valueN nameN */
@@ -212,20 +166,6 @@ struct _LispMac {
 	int length;		/* number of used pairs */
 	int space;		/* number of objects in pairs */
     } env;
-
-    /* GLOBAL VARIABLES */
-    struct {
-	LispObj **pairs;	/* name0 ... nameN */
-	int length;		/* number of globals */
-	int space;		/* number of objects in pairs */
-    } glb;
-
-    /* SPECIAL VARIABLES */
-    struct {
-	LispObj **pairs;	/* name0 ... nameN */
-	int length;		/* number of specias */
-	int space;		/* number of objects in pairs */
-    } spc;
 
     /* DYNAMIC VARIABLES */
     struct {
@@ -244,6 +184,69 @@ struct _LispMac {
 	int space;
     } protect;
 
+    /* GLOBAL VARIABLES */
+    struct {
+	LispObj **pairs;	/* name0 ... nameN */
+	int length;		/* number of globals */
+	int space;		/* number of objects in pairs */
+    } glb;
+
+    /* SPECIAL VARIABLES */
+    struct {
+	LispObj **pairs;	/* name0 ... nameN */
+	int length;		/* number of specias */
+	int space;		/* number of objects in pairs */
+    } spc;
+
+    /* &KEY, &OPTIONAL, &REST, &AUX */
+    LispAtom *key_atom, *optional_atom, *rest_atom, *aux_atom;
+
+    struct {
+	unsigned block_level;
+	unsigned block_size;
+	LispObj *block_ret;
+	LispBlock **block;
+    } block;
+
+    sigjmp_buf jmp;
+
+    struct {
+	unsigned int fullbits : 8;	/* how many calls to to do a full gc
+					 * including freeing unused strings */
+	unsigned int expandbits : 3;	/* code doesn't look like reusing cells
+					 * so try to have a larger number of
+					 * free cells */
+	unsigned int immutablebits : 1;	/* need to reset immutable bits */
+	unsigned int timebits : 1;	/* update gctime counter */
+	long gctime;
+	int average;			/* of cells freed after gc calls */
+    } gc;
+
+    LispAtom *strs[STRTBLSZ];
+    LispOpaque *opqs[STRTBLSZ];
+    int opaque;
+
+    LispObj *standard_input, *input;
+    LispObj *standard_output, *output;
+    LispObj *error_stream;
+    LispUngetInfo **unget;
+    int iunget, nunget;
+    int eof;
+
+    int interactive;
+    int errexit;
+
+    struct {
+	unsigned mem_level;
+	unsigned mem_size;
+	void **mem;
+    } mem;		/* memory from Lisp*Alloc, to be release in error */
+    LispModule *module;
+    LispObj *modules;
+    char *prompt;
+
+    LispObj *features;
+
     /* NIL, T */
     LispAtom *nil_atom, *t_atom;
 
@@ -255,9 +258,6 @@ struct _LispMac {
 
     /* VARIABLE, STRUCTURE */
     LispAtom *variable_atom, *structure_atom, *type_atom;
-
-    /* &KEY, &OPTIONAL, &REST, &AUX */
-    LispAtom *key_atom, *optional_atom, *rest_atom, *aux_atom;
 
     /* OTHERWISE */
     LispAtom *otherwise_atom;
@@ -336,8 +336,7 @@ LispObj *LispNewStandardStream(LispMac*, LispFile*, LispObj*, int);
 /* destructive fast reverse, note that don't receive a LispMac* argument */
 LispObj *LispReverse(LispObj *list);
 
-/* reads an expression from the selected stream */
-LispObj *LispRun(LispMac*);
+char *LispIntToOpaqueType(LispMac*, int);
 
 /* (print) */
 void LispPrint(LispMac*, LispObj*, LispObj*, int);

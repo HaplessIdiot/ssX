@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.3 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.4 2002/01/30 21:00:57 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -118,6 +118,6 @@ LispObj *LispReadChar(LispMac*, LispBuiltin*, int);
  write-string string &optional output-stream &key start end
  write-line string &optional output-stream &key start end
  */
-LispObj *LispWriteString(LispMac*, LispBuiltin*, int);
+LispObj *LispWriteString_(LispMac*, LispBuiltin*, int);
 
 #endif	/* Lisp_helper_h */

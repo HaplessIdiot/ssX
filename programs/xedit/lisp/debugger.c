@@ -27,11 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.10 2001/10/20 00:19:34 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.12 2002/01/30 21:00:57 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
 #include "debugger.h"
+#include "write.h"
 
 #define DebuggerHelp		0
 #define DebuggerAbort		1
@@ -55,6 +56,7 @@
 /*
  * Prototypes
  */
+static char *format_integer(int);
 static void LispDebuggerCommand(LispMac*, LispObj *obj);
 
 /*
@@ -188,14 +190,15 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 		    CAR(CDR(CDR(CAR(obj))))->data.integer == LispDebugBreakFunction)
 		    break;
 	    if (obj != NIL) {
-		if (!mac->newline)
+		/* if not at a fresh line */
+		if (LispGetColumn(mac, NIL))
 		    LispFputc(Stdout, '\n');
 		LispFputs(Stdout, "BREAK #");
-		LispPrintObj(mac, NIL, CAR(CDR(CAR(obj))), 1);
+		LispDoWriteObject(mac, NIL, CAR(CDR(CAR(obj))), 1);
 		LispFputs(Stdout, "> (");
-		LispPrintObj(mac, NIL, CAR(CAR(DBG)), 1);
+		LispDoWriteObject(mac, NIL, CAR(CAR(DBG)), 1);
 		LispFputc(Stdout, ' ');
-		LispPrintObj(mac, NIL, CAR(CDR(CAR(DBG))), 0);
+		LispDoWriteObject(mac, NIL, CAR(CDR(CAR(DBG))), 0);
 		LispFputs(Stdout, ")\n");
 		force = 1;
 		/* update hits counter */
@@ -228,10 +231,11 @@ watch_again:
 		if ((sym == NULL && mac->debug_level <= 0) ||
 		    (sym != wat->data.opaque.data &&
 		     frm->data.integer > mac->debug_level)) {
-		    LispFprintf(Stdout, "WATCH #%d> %s deleted. Variable does "
-			    "not exist anymore.\n",
-			    CAR(CDR(CAR(obj)))->data.integer,
-			    STRPTR(CAR(CAR(obj))));
+		    LispFputs(Stdout, "WATCH #");
+		    LispFputs(Stdout, format_integer(CAR(CDR(CAR(obj)))->data.integer));
+		    LispFputs(Stdout, "> ");
+		    LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
+		    LispFputs(Stdout, " deleted. Variable does not exist anymore.\n");
 		    /* force debugger to stop */
 		    force = 1;
 		    if (obj == prev) {
@@ -248,13 +252,17 @@ watch_again:
 		    /* last value */
 		    LispObj *val = CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj)))))));
 		    if (LispEqual(mac, val, cur) == NIL) {
-			LispFprintf(Stdout, "WATCH #%d> %s\n",
-				CAR(CDR(CAR(obj)))->data.integer,
-				STRPTR(CAR(CAR(obj))));
+			LispFputs(Stdout, "WATCH #");
+			LispFputs(Stdout, format_integer(CAR(CDR(CAR(obj)))->data.integer));
+			LispFputs(Stdout, "> ");
+			LispFputs(Stdout, STRPTR(CAR(CAR(obj))));
+			LispFputc(Stdout, '\n');
+
 			LispFputs(Stdout, "OLD: ");
-			LispPrintObj(mac, NIL, val, 1);
+			LispDoWriteObject(mac, NIL, val, 1);
+
 			LispFputs(Stdout, "\nNEW: ");
-			LispPrintObj(mac, NIL, cur, 1);
+			LispDoWriteObject(mac, NIL, cur, 1);
 			LispFputc(Stdout, '\n');
 
 			/* update current value */
@@ -302,23 +310,24 @@ watch_again:
     }
 
     if (call == LispDebugCallBegin) {
-	if (!mac->newline)
+	if (LispGetColumn(mac, NIL))
 	    LispFputc(Stdout, '\n');
-	LispFprintf(Stdout, "#%d> ", mac->debug_level);
-
-	LispFputc(Stdout, '(');
-	LispPrintObj(mac, NIL, CAR(CAR(DBG)), 1);
+	LispFputc(Stdout, '#');
+	LispFputs(Stdout, format_integer(mac->debug_level));
+	LispFputs(Stdout, "> (");
+	LispDoWriteObject(mac, NIL, CAR(CAR(DBG)), 1);
 	LispFputc(Stdout, ' ');
-	LispPrintObj(mac, NIL, CAR(CDR(CAR(DBG))), 0);
+	LispDoWriteObject(mac, NIL, CAR(CDR(CAR(DBG))), 0);
 	LispFputs(Stdout, ")\n");
 	LispDebuggerCommand(mac, NIL);
     }
     else if (call == LispDebugCallEnd) {
-	if (!mac->newline)
+	if (LispGetColumn(mac, NIL))
 	    LispFputc(Stdout, '\n');
-	LispFprintf(Stdout, "#%d= ", mac->debug_level + 1);
-
-	LispPrintObj(mac, NIL, arg, 1);
+	LispFputc(Stdout, '#');
+	LispFputs(Stdout, format_integer(mac->debug_level + 1));
+	LispFputs(Stdout, "= ");
+	LispDoWriteObject(mac, NIL, arg, 1);
 	LispFputc(Stdout, '\n');
 	LispDebuggerCommand(mac, NIL);
     }
@@ -345,7 +354,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
     line[0] = '\0';
     arg = line;
     for (;;) {
-	LispFprintf(Stdout, "%s", DBGPROMPT);
+	LispFputs(Stdout, DBGPROMPT);
 	LispFflush(Stdout);
 	if (LispFgets(Stdin, line, sizeof(line)) == NULL) {
 	    LispFputc(Stdout, '\n');
@@ -412,13 +421,15 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 	    }
 	    if (matches == 0) {
-		LispFprintf(Stdout, "* Command unknown: %s. "
-			"Type help for help.\n", cmd);
+		LispFputs(Stdout, "* Command unknown: ");
+		LispFputs(Stdout, cmd);
+		LispFputs(Stdout, ". Type help for help.\n");
 		continue;
 	    }
 	    else if (matches > 1) {
-		LispFprintf(Stdout, "* Command is ambiguous: %s. "
-			"Type help for help.\n", cmd);
+		LispFputs(Stdout, "* Command is ambiguous: ");
+		LispFputs(Stdout, cmd);
+		LispFputs(Stdout, ". Type help for help.\n");
 		continue;
 	    }
 	}
@@ -453,13 +464,15 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    }
 		}
 		if (matches == 0) {
-		    LispFprintf(Stdout, "* Command unknown: %s. "
-			    "Type info for help.\n", arg);
+		    LispFputs(Stdout, "* Command unknown: ");
+		    LispFputs(Stdout, arg);
+		    LispFputs(Stdout, ". Type info for help.\n");
 		    continue;
 		}
 		else if (matches > 1) {
-		    LispFprintf(Stdout, "* Command is ambiguous: %s. "
-			    "Type info for help.\n", arg);
+		    LispFputs(Stdout, "* Command is ambiguous: ");
+		    LispFputs(Stdout, arg);
+		    LispFputs(Stdout, ". Type info for help.\n");
 		    continue;
 		}
 
@@ -469,12 +482,12 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			for (obj = BRK; obj != NIL; obj = CDR(obj)) {
 			    /* breakpoint number */
 			    LispFputc(Stdout, '#');
-			    LispPrintObj(mac, NIL, CAR(CDR(CAR(obj))), 1);
+			    LispDoWriteObject(mac, NIL, CAR(CDR(CAR(obj))), 1);
 
 			    /* number of hits */
 			    LispFputc(Stdout, '\t');
-			    LispPrintObj(mac, NIL,
-					 CAR(CDR(CDR(CDR(CAR(obj))))), 1);
+			    LispDoWriteObject(mac, NIL,
+					     CAR(CDR(CDR(CDR(CAR(obj))))), 1);
 
 			    /* breakpoint type */
 			    LispFputc(Stdout, '\t');
@@ -489,7 +502,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 
 			    /* breakpoint object */
 			    LispFputc(Stdout, '\t');
-			    LispPrintObj(mac, NIL, CAR(CAR(obj)), 1);
+			    LispDoWriteObject(mac, NIL, CAR(CAR(obj)), 1);
 			    LispFputc(Stdout, '\n');
 			}
 			break;
@@ -501,8 +514,6 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		while (mac->mem.mem_level)
 		    free(mac->mem.mem[--mac->mem.mem_level]);
 		LispTopLevel(mac);
-		mac->column = 0;
-		mac->newline = 1;
 		if (!mac->running) {
 		    LispMessage(mac, "*** Fatal: nowhere to longjmp.");
 		    abort();
@@ -520,8 +531,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 
 		if (!*arg || *ptr || strchr(arg, '(') || strchr(arg, '(') ||
 		    strchr(arg, ';')) {
-		    LispFprintf(Stdout, "* Bad function name "
-			    "'%s' specified.\n", arg);
+		    LispFputs(Stdout, "* Bad function name '");
+		    LispFputs(Stdout, arg);
+		    LispFputs(Stdout, "' specified.\n");
 		}
 		else {
 		    for (obj = frm = BRK; obj != NIL; frm = obj, obj = CDR(obj))
@@ -554,8 +566,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		atom = ATOM2(arg);
 		val = LispGetVar(mac, atom);
 		if (val == NULL) {
-		    LispFprintf(Stdout, "* No variable named '%s' "
-			    "in the selected frame.\n", arg);
+		    LispFputs(Stdout, "* No variable named '");
+		    LispFputs(Stdout, arg);
+		    LispFputs(Stdout, "' in the selected frame.\n");
 		    break;
 		}
 
@@ -644,8 +657,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			    ++ptr;
 			if (*ptr && !isspace(*ptr)) {
 			    *ptr = '\0';
-			    LispFprintf(Stdout, "* Bad breakpoint number "
-				    "'%s' specified.\n", arg);
+			    LispFputs(Stdout, "* Bad breakpoint number '");
+			    LispFputs(Stdout, arg);
+			    LispFputs(Stdout, "' specified.\n");
 			    break;
 			}
 			i = atoi(arg);
@@ -654,8 +668,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			    if (CAR(CDR(CAR(frm)))->data.integer == i)
 				break;
 			if (frm == NIL) {
-			    LispFprintf(Stdout, "* No breakpoint number "
-				    "%d available.\n", i);
+			    LispFputs(Stdout, "* No breakpoint number ");
+			    LispFputs(Stdout, arg);
+			    LispFputs(Stdout, " available.\n");
 			    break;
 			}
 			if (obj == frm)
@@ -688,7 +703,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    goto debugger_print_frame;
 		if (i >= 0 && i <= mac->debug_level)
 		    goto debugger_new_frame;
-		LispFprintf(Stdout, "* No such frame %d.\n", i);
+		LispFputs(Stdout, "* No such frame ");
+		LispFputs(Stdout, format_integer(i));
+		LispFputs(Stdout, ".\n");
 		break;
 	    case DebuggerDown:
 		if (frame + 1 > mac->debug_level) {
@@ -714,12 +731,14 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		obj = LispGetVar(mac, ATOM2(arg));
 		if (obj) {
-		    LispPrintObj(mac, NIL, obj, 1);
+		    LispDoWriteObject(mac, NIL, obj, 1);
 		    LispFputc(Stdout, '\n');
 		}
-		else
-		    LispFprintf(Stdout, "* No variable named '%s' "
-			    "in the selected frame.\n", arg);
+		else {
+		    LispFputs(Stdout, "* No variable named '");
+		    LispFputs(Stdout, arg);
+		    LispFputs(Stdout, "' in the selected frame.\n");
+		}
 		break;
 	    case DebuggerBacktrace:
 debugger_print_backtrace:
@@ -730,10 +749,12 @@ debugger_print_backtrace:
 		DBG = LispReverse(DBG);
 		for (obj = DBG, i = 0; obj != NIL; obj = CDR(obj), i++) {
 		    frm = CAR(obj);
-		    LispFprintf(Stdout, "#%d> (", i);
-		    LispPrintObj(mac, NIL, CAR(frm), 1);
+		    LispFputc(Stdout, '#');
+		    LispFputs(Stdout, format_integer(i));
+		    LispFputs(Stdout, "> (");
+		    LispDoWriteObject(mac, NIL, CAR(frm), 1);
 		    LispFputc(Stdout, ' ');
-		    LispPrintObj(mac, NIL, CAR(CDR(frm)), 0);
+		    LispDoWriteObject(mac, NIL, CAR(CDR(frm)), 0);
 		    LispFputs(Stdout, ")\n");
 		}
 		DBG = LispReverse(DBG);
@@ -774,10 +795,12 @@ debugger_new_frame:
 	    mac->dyn.length = CDR(CDR(CDR(CDR(CDR(curframe)))))->data.integer;
 	}
 debugger_print_frame:
-	LispFprintf(Stdout, "#%d> (", frame);
-	LispPrintObj(mac, NIL, CAR(curframe), 1);
+	LispFputc(Stdout, '#');
+	LispFputs(Stdout, format_integer(frame));
+	LispFputs(Stdout, "> (");
+	LispDoWriteObject(mac, NIL, CAR(curframe), 1);
 	LispFputc(Stdout, ' ');
-	LispPrintObj(mac, NIL, CAR(CDR(curframe)), 0);
+	LispDoWriteObject(mac, NIL, CAR(CDR(curframe)), 0);
 	LispFputs(Stdout, ")\n");
     }
 
@@ -786,4 +809,14 @@ debugger_command_done:
     mac->env.length = envlen;
     mac->env.lex = envlex;
     mac->dyn.length = dynlen;
+}
+
+static char *
+format_integer(int integer)
+{
+    static char buffer[16];
+
+    sprintf(buffer, "%d", integer);
+
+    return (buffer);
 }
