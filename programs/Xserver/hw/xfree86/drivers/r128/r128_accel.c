@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.7 2000/02/23 04:47:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.8 2000/04/04 19:25:14 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -528,7 +528,7 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -628,7 +628,7 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -826,7 +826,7 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -993,9 +993,6 @@ Bool R128AccelInit(ScreenPtr pScreen)
 
 				/* Screen-to-screen Copy */
     a->ScreenToScreenCopyFlags          = 0;
-    /* keithp--r128 doesnt seem to do this right */
-    if (pScrn->bitsPerPixel == 24)
-	a->ScreenToScreenCopyFlags     |= NO_TRANSPARENCY;
     a->SetupForScreenToScreenCopy       = R128SetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy     = R128SubsequentScreenToScreenCopy;
 

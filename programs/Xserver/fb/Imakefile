@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.6 2000/04/04 19:24:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.7 2000/04/05 18:13:31 dawes Exp $
 XCOMM 
 XCOMM 
 XCOMM Id: Imakefile,v 1.1 1999/11/02 03:54:44 keithp Exp $
@@ -33,6 +33,7 @@ SRCS =	$(XFMODSRC) \
 	fbglyph.c \
 	fbimage.c \
 	fbline.c \
+	fboverlay.c \
 	fbpixmap.c \
 	fbpoint.c \
 	fbpush.c \
@@ -63,6 +64,7 @@ OBJS =	$(XFMODOBJ) \
 	fbglyph.o \
 	fbimage.o \
 	fbline.o \
+	fboverlay.o \
 	fbpixmap.o \
 	fbpoint.o \
 	fbpush.o \

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fb24_32.c,v 1.2 2000/04/09 15:03:17 alanh Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -29,41 +29,8 @@
 #endif
 
 #include "fb.h"
-#include "fb24_32.h"
 
 /* X apps don't like 24bpp images, this code exposes 32bpp images */
-
-static int fb24_32GCPrivateIndex;
-static int fb24_32Generation;
-
-/* Track most recent drawable bpp in GC, reset some things when changed */
-#define FB24_32GC_BPP(pGC) ((pGC)->devPrivates[fb24_32GCPrivateIndex].val)
-
-/* 
- * This causes all pixmaps to be 32bpp which exercises this code more,
- * but runs slower
- */
-/* #define FB24_32DEBUG */
-#ifdef FB24_32DEBUG
-#define FB24_32PIX  32
-#else
-#define FB24_32PIX  24
-#endif
-
-static Bool
-fb24_32CreateWindow(WindowPtr pWin)
-{
-    if (pWin->drawable.depth == 24)
-	pWin->drawable.bitsPerPixel = 24;
-    return TRUE;
-}
-
-static PixmapPtr
-fb24_32CreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
-{
-    return fbCreatePixmapBpp (pScreen, width, height, depth,
-			      depth == 24 ? FB24_32PIX : BitsPerPixel(depth));
-}
 
 /*
  * These two functions do a full CopyArea while reformatting
@@ -299,7 +266,7 @@ fb24_32BltUp (CARD8	    *srcLine,
 /*
  * Spans functions; probably unused.
  */
-static void
+void
 fb24_32GetSpans(DrawablePtr	pDrawable, 
 		int		wMax, 
 		DDXPointPtr	ppt, 
@@ -312,18 +279,6 @@ fb24_32GetSpans(DrawablePtr	pDrawable,
     FbStride	    srcStride;
     int		    srcBpp;
     CARD8	    *dst;
-    
-    if (pDrawable->bitsPerPixel != 24)
-    {
-	fbGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
-	return;
-    }
-    /*
-     * XFree86 DDX empties the root borderClip when the VT is
-     * switched away; this checks for that case
-     */
-    if (!fbDrawableEnabled(pDrawable))
-	return;
     
     fbGetDrawable (pDrawable, srcBits, srcStride, srcBpp);
     src = (CARD8 *) srcBits;
@@ -351,7 +306,7 @@ fb24_32GetSpans(DrawablePtr	pDrawable,
     }
 }
 
-static void
+void
 fb24_32SetSpans (DrawablePtr	    pDrawable,
 		 GCPtr		    pGC,
 		 char		    *src,
@@ -370,12 +325,6 @@ fb24_32SetSpans (DrawablePtr	    pDrawable,
     int		    n;
     int		    x1, x2;
 
-    if (pDrawable->bitsPerPixel != 24)
-    {
-	fbSetSpans (pDrawable, pGC, src, ppt, pwidth, nspans, fSorted);
-	return;
-    }
-    
     fbGetDrawable (pDrawable, dstBits, dstStride, dstBpp);
     dst = (CARD8 *) dstBits;
     dstStride *= sizeof (FbBits);
@@ -420,7 +369,7 @@ fb24_32SetSpans (DrawablePtr	    pDrawable,
 /*
  * Clip and put 32bpp Z-format images to a 24bpp drawable
  */
-static void
+void
 fb24_32PutZImage (DrawablePtr	pDrawable,
 		  RegionPtr	pClip,
 		  int		alu,
@@ -479,37 +428,7 @@ fb24_32PutZImage (DrawablePtr	pDrawable,
     }
 }
 
-static void
-fb24_32PutImage (DrawablePtr pDrawable,
-		 GCPtr       pGC,
-		 int         depth,
-		 int         x,
-		 int         y,
-		 int         w,
-		 int         h,
-		 int         leftPad,
-		 int         format,
-		 char        *pImage)
-{
-    /*
-     * Only ZPixmap to 24bpp is special
-     */
-    if (format != ZPixmap || pDrawable->bitsPerPixel != 24)
-    {
-	fbPutImage (pDrawable, pGC, depth, x, y, w, h, leftPad, format, pImage);
-	return;
-    }
-
-    fb24_32PutZImage (pDrawable,
-		      fbGetCompositeClip(pGC),
-		      pGC->alu,
-		      (FbBits) pGC->planemask,
-		      x + pDrawable->x, y + pDrawable->y, w, h,
-		      (CARD8 *) pImage,
-		      PixmapBytePad(w, pDrawable->depth));
-}
-
-static void
+void
 fb24_32GetImage (DrawablePtr     pDrawable,
 		 int             x,
 		 int             y,
@@ -526,21 +445,6 @@ fb24_32GetImage (DrawablePtr     pDrawable,
     FbStride	    dstStride;
     FbBits	    pm;
 
-    /*
-     * Only ZPixmap from 24bpp is special
-     */
-    if (format != ZPixmap || pDrawable->bitsPerPixel != 24)
-    {
-	fbGetImage (pDrawable, x, y, w, h, format, planeMask, d);
-	return;
-    }
-    /*
-     * XFree86 DDX empties the root borderClip when the VT is
-     * switched away; this checks for that case
-     */
-    if (!fbDrawableEnabled(pDrawable))
-	return;
-    
     fbGetDrawable (pDrawable, srcBits, srcStride, srcBpp);
     src = (CARD8 *) srcBits;
     srcStride *= sizeof (FbBits);
@@ -557,7 +461,7 @@ fb24_32GetImage (DrawablePtr     pDrawable,
 		  w, h, GXcopy, pm);
 }
 
-static void
+void
 fb24_32CopyMtoN (DrawablePtr pSrcDrawable,
 		 DrawablePtr pDstDrawable,
 		 GCPtr       pGC,
@@ -611,28 +515,7 @@ fb24_32CopyMtoN (DrawablePtr pSrcDrawable,
     }
 }
 
-static RegionPtr
-fb24_32CopyArea (DrawablePtr pSrcDrawable,
-		 DrawablePtr pDstDrawable,
-		 GCPtr       pGC,
-		 int         xIn, 
-		 int         yIn,
-		 int         widthSrc,
-		 int         heightSrc,
-		 int         xOut, 
-		 int         yOut)
-{
-    fbCopyProc	copy;
-    
-    if (pSrcDrawable->bitsPerPixel != pDstDrawable->bitsPerPixel)
-	copy = fb24_32CopyMtoN;
-    else
-	copy = fbCopyNtoN;
-    return fbDoCopy (pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
-		     widthSrc, heightSrc, xOut, yOut, copy, 0, 0);
-}
-
-static PixmapPtr
+PixmapPtr
 fb24_32ReformatTile(PixmapPtr pOldTile, int bitsPerPixel)
 {
     ScreenPtr	pScreen = pOldTile->drawable.pScreen;
@@ -676,85 +559,12 @@ fb24_32ReformatTile(PixmapPtr pOldTile, int bitsPerPixel)
     return pNewTile;
 }
 
-static void
-fb24_32ValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
-{
-    PixmapPtr	pOldTile, pNewTile;
-
-    if (FB24_32GC_BPP (pGC) != pDrawable->bitsPerPixel)
-    {
-	changes |= GCStipple|GCForeground|GCBackground|GCPlaneMask;
-	FB24_32GC_BPP (pGC) = pDrawable->bitsPerPixel;
-    }
-    if (pGC->fillStyle == FillTiled)
-    {
-	pOldTile = pGC->tile.pixmap;
-	if (pOldTile->drawable.bitsPerPixel != pDrawable->bitsPerPixel)
-	{
-	    pNewTile = fb24_32ReformatTile (pOldTile, pDrawable->bitsPerPixel);
-	    if (pNewTile)
-	    {
-		pGC->tile.pixmap = pNewTile;
-		changes |= GCTile;
-	    }
-	}
-    }
-    fbValidateGC (pGC, changes, pDrawable);
-}
-
-const GCFuncs fb24_32GCFuncs = {
-    fb24_32ValidateGC,
-    miChangeGC,
-    miCopyGC,
-    miDestroyGC,
-    miChangeClip,
-    miDestroyClip,
-    miCopyClip,
-};
-
-const GCOps	fb24_32GCOps = {
-    fbFillSpans,
-    fb24_32SetSpans,
-    fb24_32PutImage,
-    fb24_32CopyArea,
-    fbCopyPlane,
-    fbPolyPoint,
-    fbPolyLine,
-    fbPolySegment,
-    fbPolyRectangle,
-    fbPolyArc,
-    miFillPolygon,
-    fbPolyFillRect,
-    fbPolyFillArc,
-    miPolyText8,
-    miPolyText16,
-    miImageText8,
-    miImageText16,
-    fbImageGlyphBlt,
-    fbPolyGlyphBlt,
-    fbPushPixels
-#ifdef NEED_LINEHELPER
-    ,NULL
-#endif
-};
-
-static Bool
-fb24_32CreateGC(GCPtr pGC)
-{
-    if (!fbCreateGC (pGC))
-	return FALSE;
-    pGC->ops = (GCOps *) &fb24_32GCOps;
-    pGC->funcs = (GCFuncs *) &fb24_32GCFuncs;
-    FB24_32GC_BPP(pGC) = 0;
-    return TRUE;
-}
-
 typedef struct {
     pointer pbits; 
     int width;   
 } miScreenInitParmsRec, *miScreenInitParmsPtr;
 
-static Bool
+Bool
 fb24_32CreateScreenResources(ScreenPtr pScreen)
 {
     miScreenInitParmsPtr pScrInitParms;
@@ -775,7 +585,7 @@ fb24_32CreateScreenResources(ScreenPtr pScreen)
     return retval;
 }
 
-static Bool
+Bool
 fb24_32ModifyPixmapHeader (PixmapPtr   pPixmap,
 			   int         width,
 			   int         height,
@@ -804,96 +614,3 @@ fb24_32ModifyPixmapHeader (PixmapPtr   pPixmap,
     return miModifyPixmapHeader(pPixmap, width, height, depth, bitsPerPixel,
 				devKind, pPixData);	
 }		
-			   
-static Bool
-fb24_32ChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
-{
-    PixmapPtr	pPixmap;
-    
-    if (mask & CWBackPixmap)
-    {
-	if (pWin->backgroundState == BackgroundPixmap)
-	{
-	    pPixmap = pWin->background.pixmap;
-	    if (pPixmap->drawable.bitsPerPixel !=
-		pWin->drawable.bitsPerPixel)
-	    {
-		pPixmap = fb24_32ReformatTile (pPixmap,
-					       pWin->drawable.bitsPerPixel);
-		if (pPixmap)
-		    pWin->background.pixmap = pPixmap;
-	    }
-	}
-    }
-    if (mask & CWBorderPixmap)
-    {
-	if (pWin->borderIsPixel == FALSE)
-	{
-	    pPixmap = pWin->border.pixmap;
-	    if (pPixmap->drawable.bitsPerPixel !=
-		pWin->drawable.bitsPerPixel)
-	    {
-		pPixmap = fb24_32ReformatTile (pPixmap,
-					       pWin->drawable.bitsPerPixel);
-		if (pPixmap)
-		    pWin->border.pixmap = pPixmap;
-	    }
-	}
-    }
-    return fbChangeWindowAttributes (pWin, mask);
-}
-
-Bool
-fb24_32FinishScreenInit(ScreenPtr    pScreen,
-			pointer      pbits,
-			int          xsize,
-			int          ysize,
-			int          dpix,
-			int          dpiy,
-			int          width,
-			int          bpp)
-{
-    if (bpp == 24)
-    {
-	if (fb24_32Generation != serverGeneration)
-	{
-	    fb24_32GCPrivateIndex = AllocateGCPrivateIndex ();
-	    fb24_32Generation = serverGeneration;
-	}
-	pScreen->GetImage = fb24_32GetImage;
-	pScreen->GetSpans = fb24_32GetSpans;
-	pScreen->CreateWindow = fb24_32CreateWindow;
-	pScreen->CreatePixmap = fb24_32CreatePixmap;
-	pScreen->CreateGC = fb24_32CreateGC;
-	pScreen->ChangeWindowAttributes = fb24_32ChangeWindowAttributes;
-    }
-    
-    if (!fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
-			    width, bpp))
-	return FALSE;
-
-    if (bpp == 24)
-    {
-	pScreen->ModifyPixmapHeader = fb24_32ModifyPixmapHeader;
-	pScreen->CreateScreenResources = fb24_32CreateScreenResources;
-    }
-    return TRUE;
-}
-    
-Bool
-fb24_32ScreenInit(ScreenPtr  pScreen,
-		  pointer    pbits,
-		  int        xsize,
-		  int        ysize,
-		  int        dpix,
-		  int        dpiy,
-		  int        width,
-		  int        bpp)
-{
-    if (!fbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp))
-	        return FALSE;
-    if (!fb24_32FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
-				 width, bpp))
-	return FALSE;
-    return TRUE;
-}

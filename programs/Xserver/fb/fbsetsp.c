@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbsetsp.c,v 1.2 2000/02/14 19:20:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbsetsp.c,v 1.3 2000/02/23 20:29:47 dawes Exp $ */
 
 #include "fb.h"
 
@@ -44,6 +44,13 @@ fbSetSpans (DrawablePtr	    pDrawable,
     int		    xoff;
     int		    x1, x2;
     
+#ifdef FB_24_32BIT
+    if (pDrawable->bitsPerPixel != BitsPerPixel(pDrawable->depth))
+    {
+	fb24_32SetSpans (pDrawable, pGC, src, ppt, pwidth, nspans, fSorted);
+	return;
+    }
+#endif
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
     while (nspans--)
     {

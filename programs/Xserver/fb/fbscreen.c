@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.7 2000/02/14 19:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.8 2000/02/23 20:29:46 dawes Exp $ */
 
 #include "fb.h"
 
@@ -146,6 +146,7 @@ fbFinishScreenInit(ScreenPtr	pScreen,
     int		ndepths;
     int		rootdepth;
     VisualID	defaultVisual;
+    int		imagebpp = bpp;
 
 #ifdef FB_DEBUG
     int	stride;
@@ -158,9 +159,43 @@ fbFinishScreenInit(ScreenPtr	pScreen,
     fbSetBits ((FbStip *) ((char *) pbits + stride * ysize),
 			   stride / sizeof (FbStip), FB_TAIL_BITS);
 #endif
+    /*
+     * By default, a 24bpp screen will use 32bpp images, this avoids
+     * problems with many applications which just can't handle packed
+     * pixels.  If you want real 24bit images, include a 24bpp
+     * format in the pixmap formats
+     */
+#ifdef FB_24_32BIT
+    if (bpp == 24)
+    {
+	int	f;
+	
+	imagebpp = 32;
+	/*
+	 * Check to see if we're advertising a 24bpp image format,
+	 * in which case windows will use it in preference to a 32 bit
+	 * format.
+	 */
+	for (f = 0; f < screenInfo.numPixmapFormats; f++)
+	{
+	    if (screenInfo.formats[f].bitsPerPixel == 24)
+	    {
+		imagebpp = 24;
+		break;
+	    }
+	}	    
+    }
+#endif
+#ifdef FB_SCREEN_PRIVATE
+    if (imagebpp == 32)
+    {
+	fbGetScreenPrivate(pScreen)->win32bpp = bpp;
+	fbGetScreenPrivate(pScreen)->pix32bpp = bpp;
+    }
+#endif
     rootdepth = 0;
     if (!fbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
-			&defaultVisual,((unsigned long)1<<(bpp-1)), 8))
+			&defaultVisual,((unsigned long)1<<(imagebpp-1)), 8))
 	return FALSE;
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
@@ -172,6 +207,13 @@ fbFinishScreenInit(ScreenPtr	pScreen,
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = fbCloseScreen;
+#ifdef FB_24_32BIT
+    if (bpp == 24 && imagebpp == 32)
+    {
+	pScreen->ModifyPixmapHeader = fb24_32ModifyPixmapHeader;
+	pScreen->CreateScreenResources = fb24_32CreateScreenResources;
+    }
+#endif
 #if 0
     /* leave backing store initialization to the enclosing code so
      * it can choose the correct order of wrappers

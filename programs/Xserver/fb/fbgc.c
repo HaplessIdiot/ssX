@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.7 2000/04/05 18:13:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.8 2000/04/06 15:27:24 dawes Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -80,6 +80,7 @@ fbCreateGC(GCPtr pGC)
     fbGetExpose(pGC) = 1;
     fbGetFreeCompClip(pGC) = 0;
     fbGetCompositeClip(pGC) = 0;
+    fbGetGCPrivate(pGC)->bpp = BitsPerPixel (pGC->depth);
     return TRUE;
 }
 
@@ -207,6 +208,28 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	pPriv->oneRect = REGION_NUM_RECTS(fbGetCompositeClip(pGC)) == 1;
     }
     
+#ifdef FB_24_32BIT    
+    if (pPriv->bpp != pDrawable->bitsPerPixel)
+    {
+	changes |= GCStipple|GCForeground|GCBackground|GCPlaneMask;
+	pPriv->bpp = pDrawable->bitsPerPixel;
+    }
+    if (pGC->fillStyle == FillTiled)
+    {
+	PixmapPtr	pOldTile, pNewTile;
+
+	pOldTile = pGC->tile.pixmap;
+	if (pOldTile->drawable.bitsPerPixel != pDrawable->bitsPerPixel)
+	{
+	    pNewTile = fb24_32ReformatTile (pOldTile, pDrawable->bitsPerPixel);
+	    if (pNewTile)
+	    {
+		pGC->tile.pixmap = pNewTile;
+		changes |= GCTile;
+	    }
+	}
+    }
+#endif
     if (changes & GCTile)
     {
 	if (!pGC->tileIsPixel && 

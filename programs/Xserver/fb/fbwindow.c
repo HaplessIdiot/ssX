@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.4 2000/04/05 18:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.5 2000/04/06 15:27:25 dawes Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -31,6 +31,14 @@
 Bool
 fbCreateWindow(WindowPtr pWin)
 {
+#ifndef FB_NO_WINDOW_PIXMAPS
+    pWin->devPrivates[fbWinPrivateIndex].ptr = 
+	(pointer) fbGetScreenPixmap(pWin->drawable.pScreen);
+#endif
+#ifdef FB_SCREEN_PRIVATE
+    if (pWin->drawable.bitsPerPixel == 32)
+	pWin->drawable.bitsPerPixel = fbGetScreenPrivate(pWin->drawable.pScreen)->win32bpp;
+#endif
     return TRUE;
 }
 
@@ -143,6 +151,15 @@ fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 	if (pWin->backgroundState == BackgroundPixmap)
 	{
 	    pPixmap = pWin->background.pixmap;
+#ifdef FB_24_32BIT
+	    if (pPixmap->drawable.bitsPerPixel != pWin->drawable.bitsPerPixel)
+	    {
+		pPixmap = fb24_32ReformatTile (pPixmap,
+					       pWin->drawable.bitsPerPixel);
+		if (pPixmap)
+		    pWin->background.pixmap = pPixmap;
+	    }
+#endif
 	    if (FbEvenTile (pPixmap->drawable.width *
 			    pPixmap->drawable.bitsPerPixel))
 		fbPadPixmap (pPixmap);
@@ -153,6 +170,16 @@ fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 	if (pWin->borderIsPixel == FALSE)
 	{
 	    pPixmap = pWin->border.pixmap;
+#ifdef FB_24_32BIT
+	    if (pPixmap->drawable.bitsPerPixel !=
+		pWin->drawable.bitsPerPixel)
+	    {
+		pPixmap = fb24_32ReformatTile (pPixmap,
+					       pWin->drawable.bitsPerPixel);
+		if (pPixmap)
+		    pWin->border.pixmap = pPixmap;
+	    }
+#endif
 	    if (FbEvenTile (pPixmap->drawable.width *
 			    pPixmap->drawable.bitsPerPixel))
 		fbPadPixmap (pPixmap);

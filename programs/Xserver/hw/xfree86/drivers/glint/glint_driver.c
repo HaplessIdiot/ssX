@@ -28,10 +28,9 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.78 2000/04/17 16:30:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.80 2000/05/02 17:15:32 alanh Exp $ */
 
 #include "fb.h"
-#include "fb24_32.h"
 #include "cfb8_32.h"
 #include "micmap.h"
 #include "xf86.h"
@@ -261,7 +260,6 @@ static const char *xaaSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-    "fb24_32ScreenInit",
     "cfb8_32ScreenInit",
     "fbScreenInit",
     "fbBres",
@@ -2455,19 +2453,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     switch (pScrn->bitsPerPixel) {
     case 8:
     case 16:
-	ret = fbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth, pScrn->bitsPerPixel);
-	break;
     case 24:
-	if (pix24bpp == 24)
-	    ret = fbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth, pScrn->bitsPerPixel);
-	else
-	    ret = fb24_32ScreenInit(pScreen, FBStart,
+	ret = fbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);

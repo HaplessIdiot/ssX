@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.5 2000/04/05 18:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.6 2000/04/06 15:27:25 dawes Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -78,8 +78,14 @@ fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp)
 PixmapPtr
 fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
 {
-    return fbCreatePixmapBpp (pScreen, width, height, depth, 
-			      BitsPerPixel(depth));
+    int	bpp;
+
+    bpp = BitsPerPixel (depth);
+#ifdef FB_SCREEN_PRIVATE
+    if (bpp == 32)
+	bpp = fbGetScreenPrivate(pScreen)->pix32bpp;
+#endif
+    return fbCreatePixmapBpp (pScreen, width, height, depth, bpp);
 }
 
 Bool
@@ -138,7 +144,7 @@ fbPixmapToRegion(PixmapPtr pPix)
     register FbBits	mask0 = FB_ALLONES & ~FbScrRight(FB_ALLONES, 1);
     FbBits		*pwLine;
     int			nWidth;
-
+    
     pReg = REGION_CREATE(pPix->drawable.pScreen, NULL, 1);
     if(!pReg)
 	return NullRegion;

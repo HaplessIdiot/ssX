@@ -21,11 +21,17 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fballpriv.c,v 1.2 1999/12/30 02:33:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fballpriv.c,v 1.3 2000/02/23 20:29:41 dawes Exp $ */
 
 #include "fb.h"
 
+#ifdef FB_SCREEN_PRIVATE
+int fbScreenPrivateIndex;
+#endif
 int fbGCPrivateIndex;
+#ifndef FB_NO_WINDOW_PIXMAPS
+int fbWinPrivateIndex;
+#endif
 int fbGeneration;
 
 #ifdef FB_OLD_SCREEN
@@ -38,11 +44,34 @@ fbAllocatePrivates(ScreenPtr pScreen, int *pGCIndex)
     if (fbGeneration != serverGeneration)
     {
 	fbGCPrivateIndex = miAllocateGCPrivateIndex ();
+#ifndef FB_NO_WINDOW_PIXMAPS
+	fbWinPrivateIndex = AllocateWindowPrivateIndex();
+#endif
+#ifdef FB_SCREEN_PRIVATE
+	fbScreenPrivateIndex = AllocateScreenPrivateIndex ();
+	if (fbScreenPrivateIndex == -1)
+	    return FALSE;
+#endif
+	
 	fbGeneration = serverGeneration;
     }
     if (pGCIndex)
 	*pGCIndex = fbGCPrivateIndex;
     if (!AllocateGCPrivate(pScreen, fbGCPrivateIndex, sizeof(FbGCPrivRec)))
 	return FALSE;
+#ifndef FB_NO_WINDOW_PIXMAPS
+    if (!AllocateWindowPrivate(pScreen, fbWinPrivateIndex, 0))
+	return FALSE;
+#endif
+#ifdef FB_SCREEN_PRIVATE
+    {
+	FbScreenPrivPtr	pScreenPriv;
+
+	pScreenPriv = (FbScreenPrivPtr) xalloc (sizeof (FbScreenPrivRec));
+	if (!pScreenPriv)
+	    return FALSE;
+	pScreen->devPrivates[fbScreenPrivateIndex].ptr = (pointer) pScreenPriv;
+    }
+#endif
     return TRUE;
 }
