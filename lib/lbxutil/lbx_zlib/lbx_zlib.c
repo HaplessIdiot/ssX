@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.3 1997/01/18 07:18:17 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.4 1998/10/03 09:07:32 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -65,6 +65,7 @@ extern int errno;
 #endif
 #include "lbxbufstr.h"
 #include "lbx_zlib.h"
+#include "os.h"
 
 void ZlibFree();
 

@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.5 1997/11/16 06:42:31 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.6 1998/10/04 09:40:21 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -1329,7 +1329,7 @@ StartProxyReply(server, rep)
 		      server->lbxNegOpt.serverDeltaMaxLen);
     LBXInitDeltaCache(&server->outdeltas, server->lbxNegOpt.proxyDeltaN,
 		      server->lbxNegOpt.proxyDeltaMaxLen);
-    QueueWorkProc(ProxyWorkProc, NULL, (pointer) server->index);
+    QueueWorkProc(ProxyWorkProc, NULL, (pointer)(long) server->index);
 
 #ifdef OPTDEBUG
     fprintf(stderr, "squishing = %d\n", server->lbxNegOpt.squish);

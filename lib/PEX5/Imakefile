@@ -1,8 +1,9 @@
 XCOMM $XConsortium: Imakefile /main/18 1996/09/28 16:33:26 rws $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/PEX5/Imakefile,v 1.2 1998/09/19 12:14:37 dawes Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
+#define DoExtraLib SharedLibPex
 #define DoDebugLib DebugLibPex
 #define DoProfileLib ProfileLibPex
 #define LibName PEX5

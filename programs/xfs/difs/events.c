@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/events.c,v 3.2 1998/10/04 09:41:09 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/events.c,v 3.3 1998/10/25 07:12:22 dawes Exp $ */
 
 #include	<swaprep.h>
 
@@ -78,7 +78,7 @@ ProcSetEventMask(ClientPtr client)
     REQUEST_AT_LEAST_SIZE(fsSetEventMaskReq);
 
     if (stuff->event_mask & ~AllEventMasks) {
-	SendErrToClient(client, FSBadEventMask, (pointer) stuff->event_mask);
+	SendErrToClient(client, FSBadEventMask, (pointer) &stuff->event_mask);
 	return FSBadEventMask;
     }
     client->eventmask = stuff->event_mask;

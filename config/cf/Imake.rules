@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.48 1998/10/25 07:11:08 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.49 1998/11/15 04:29:53 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1346,21 +1346,28 @@ step:: list								@@\
  * but files that may need to be edited can be stored locally on 
  * read-write media. If someone has an existing installation, be
  * careful and move existing files to the new location in /var.
+ *
+ * Since the link is used in the installation process, we need to
+ * make the link relative in order to honor $(DESTDIR) if it is set.
  */
 #ifndef LinkVarDirectory
-#if HasVarDirectory
+#if HasVarDirectory && HasSymLinks
 #define LinkVarDirectory(mdir,cdir,rdir,ldir)				@@\
 install::								@@\
 	MakeDir(Concat($(DESTDIR)$(LIBDIR)/,cdir))			@@\
-	MakeDir(Concat($(VARDIR)/,mdir))				@@\
+	MakeDir(Concat($(DESTDIR)$(VARDIR)/,mdir))			@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	if [ -d Concat($(DESTDIR)$(LIBDIR)/,cdir) ]; then \		@@\
+	  RELPATH=`echo Concat($(LIBDIR)/,cdir) | \			@@\
+		sed -e 's:^.::' -e 's:[^/.][^/]*:..:'g`; \		@@\
 	  cd Concat($(DESTDIR)$(LIBDIR)/,cdir); \			@@\
 	  if [ -d rdir -a ! -h rdir ]; then \ 				@@\
-	    (cd rdir; tar cf - . | (cd Concat($(VARDIR)/,mdir); tar xf -; exit 0); exit 0); \ @@\
+	    (cd rdir; tar cf - . | \					@@\
+		(cd Concat($(DESTDIR)$(VARDIR)/,mdir);\			@@\
+		 tar xf -; exit 0); exit 0); \				@@\
 	  fi; \								@@\
 	  $(RM) -r rdir; \						@@\
-	  $(LN) Concat($(VARDIR)/,mdir) ldir; \				@@\
+	  $(LN) Concat($${RELPATH}$(VARDIR)/,mdir) ldir; \		@@\
 	fi
 #else
 #define LinkVarDirectory(mdir,cdir,rdir,ldir)

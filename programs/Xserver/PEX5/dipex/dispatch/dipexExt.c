@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.16 1998/09/19 12:14:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.17 1998/10/04 09:34:58 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -123,7 +123,7 @@ PexExtensionInit()
     if (!PEXStructType || !PEXSearchType || !PEXRendType || !PEXWksDrawableType
 	|| !PEXWksType || !PEXPipeType   || !PEXNameType || !PEXFontType 
 	|| !PEXLutType || !PEXPickType   || !PEXClass    || !PEXContextType ) {
-	    ErrorF("PEXExtensionInit: Could not create PEX resource types");
+	    ErrorF("PEXExtensionInit: Could not create PEX resource types\n");
 	    return;
 	}
 

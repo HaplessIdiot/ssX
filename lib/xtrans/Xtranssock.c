@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.34 1998/10/03 09:07:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.35 1998/12/13 07:37:37 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -939,6 +939,7 @@ char *port;
     int			namelen;
     int			oldUmask;
     int			status;
+    unsigned int	mode;
 
     PRMSG (2, "SocketUNIXCreateListener(%s)\n",
 	port ? port : "NULL", 0, 0);
@@ -948,8 +949,13 @@ char *port;
     oldUmask = umask (0);
 
 #ifdef UNIX_DIR
-    if (!mkdir (UNIX_DIR, 0777))
-        chmod (UNIX_DIR, 0777);
+#ifdef HAS_STICKY_DIR_BIT
+    mode = 01777;
+#else
+    mode = 0777;
+#endif
+    mkdir (UNIX_DIR, mode);
+    chmod (UNIX_DIR, mode);
 #endif
 
     sockname.sun_family = AF_UNIX;
@@ -1023,6 +1029,7 @@ XtransConnInfo ciptr;
     struct stat		statb;
     int 		status = TRANS_RESET_NOOP;
     void 		TRANS(FreeConnInfo) ();
+    unsigned int	mode;
 
     PRMSG (3, "SocketUNIXResetListener(%x,%d)\n", ciptr, ciptr->fd, 0);
 
@@ -1037,8 +1044,13 @@ XtransConnInfo ciptr;
 	int oldUmask = umask (0);
 
 #ifdef UNIX_DIR
-	if (!mkdir (UNIX_DIR, 0777))
-	    chmod (UNIX_DIR, 0777);
+#ifdef HAS_STICKY_DIR_BIT
+	mode = 01777;
+#else
+	mode = 0777;
+#endif
+	mkdir (UNIX_DIR, mode);
+	chmod (UNIX_DIR, mode);
 #endif
 
 	close (ciptr->fd);

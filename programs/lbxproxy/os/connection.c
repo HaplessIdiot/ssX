@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.6 1998/08/20 13:59:49 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.7 1998/10/04 09:40:28 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -339,6 +339,15 @@ CreateServerSockets(fds)
      */
     if (!proxyMngr && strcmp (display, "63")) 
 	(void) fprintf (stderr, "Using port number '%s'\n", display);
+}
+
+void
+CloseServerSockets()
+{
+    int i;
+
+    for (i = 0; i < ListenTransCount; i++)
+	_LBXPROXYTransClose (ListenTransConns[i]);
 }
 
 /*****************

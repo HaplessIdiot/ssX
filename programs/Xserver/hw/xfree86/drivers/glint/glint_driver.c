@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.17 1998/12/13 05:32:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.18 1998/12/13 10:33:40 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -835,9 +835,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		       pScrn->rgbBits);
     }
 
-    from = X_DEFAULT;
     if (xf86IsOptionSet(GLINTOptions, OPTION_MEM_CLK)) {
-	from = X_CONFIG;
 	if (xf86GetOptValInteger(GLINTOptions, OPTION_MEM_CLK, 
 				&pGlint->MemClock)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -845,6 +843,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			pGlint->MemClock);
 	}
     }
+    from = X_DEFAULT;
     pGlint->HWCursor = FALSE;
     if (xf86IsOptionSet(GLINTOptions, OPTION_HW_CURSOR)) {
 	from = X_CONFIG;

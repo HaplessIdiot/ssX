@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/85 1997/12/07 18:26:23 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.20 1998/07/26 02:33:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.21 1998/10/04 09:39:40 dawes Exp $
 #include <Server.tmpl>
 
 /*
@@ -95,9 +95,9 @@ BOOTSTRAPCFLAGS =
    KRB5_DEFINES = Krb5Defines
  XALLOC_DEFINES = XallocDefines
   ERROR_DEFINES = ServerErrorDefines
-        DEFINES = -DXSERV_t -DTRANS_SERVER ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES) $(RGB_DEFINES)
+        DEFINES = -DXSERV_t -DTRANS_SERVER $(CONNECTION_FLAGS) $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES) $(RGB_DEFINES)
        INCLUDES = -I.  -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(TOP)/lib/Xau -I../lbx Krb5Includes
- DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) $(TRANS_INCLUDES) ConnectionFlags
+ DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES) $(TRANS_INCLUDES) $(CONNECTION_FLAGS)
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef NEED_ALLOCA_FROM_LIBPW

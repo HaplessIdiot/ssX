@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.2 1998/03/20 21:05:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.3 1998/10/04 09:37:36 dawes Exp $ */
 
 /*
 
@@ -663,7 +663,6 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 #endif
 
 /* shared among all different cfb depths through linker magic */
-RegionPtr   (*cfbPuntCopyPlane)();
 
 RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
@@ -751,7 +750,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     }
     else
 #endif
-    ret = (*cfbPuntCopyPlane) (pSrcDrawable, pDstDrawable,
+    ret = miCopyPlane (pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
     return ret;
 }

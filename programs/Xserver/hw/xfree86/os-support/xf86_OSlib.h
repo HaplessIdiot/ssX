@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.57 1998/12/05 14:40:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.58 1998/12/13 07:37:45 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -105,7 +105,7 @@ extern int xf86GetErrno(void);
 /**************************************************************************/
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
-#if defined(SYSV) || defined(SVR4) && !defined(DGUX)
+#if (defined(SYSV) || defined(SVR4)) && !defined(DGUX)
 # ifdef SCO325
 #  ifndef _SVID3
 #   define _SVID3
@@ -238,7 +238,7 @@ extern int xf86_solx86usleep(unsigned long);
 # define NULL 0
 #endif
 
-#endif /* SYSV || SVR4 */
+#endif /* (SYSV || SVR4) && !DGUX */
 
 
 /**************************************************************************/

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/11 1997/12/11 11:54:43 barstow $
 
 #include <Server.tmpl>
 
- DEFINES = ConnectionFlags $(RPC_DEFINES) \
+ DEFINES = $(CONNECTION_FLAGS) $(RPC_DEFINES) \
                 AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
 DEPEND_DEFINES = $(TRANS_INCLUDES) 
 

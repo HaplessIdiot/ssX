@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.6 1998/11/28 10:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.7 1998/12/06 06:08:28 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -16,6 +16,7 @@
 #define ctTOP2BOTTOM            0x000
 #define ctBOTTOM2TOP            0x200
 #define ctSRCSYSTEM             0x400
+#define ctDSTSYSTEM             0x800
 #define ctSRCMONO               0x1000
 #define ctBGTRANSPARENT         0x22000
 #define ctCOLORTRANSENABLE      0x4000
@@ -52,45 +53,35 @@
 #define ctEXPCOLSEL             0x8000000L
 
 /* Macros to do useful things with the C&T BitBLT engine */
-#if 0
-/* Chips and technologies released an application note saying that
- * with certain batches of chips you couldn't read the blitter registers
- * properly. This could cause some drawing anolomies, use XR20[0] instead
- */
-#define ctBLTWAIT \
-  while(*(volatile unsigned int *)(cPtr->MMIOBase + BR(0x4)) & \
-	(0x80000000)){}
-#else
-#if 0
-#define ctBLTWAIT \
-  outb(0x3D6,0x20); while(inb(0x3D7)&0x1){}
-#else
-/*
- * This version resets the blitter if a timeout occurs
- */
+
 /* For some odd reason the blitter busy bit occasionly "locks up" when 
  * it gets polled to fast. However I have observed this behavior only 
  * when doing ScreenToScreenColorExpandFill on a 65550. This operation
  * was broken anyway (the source offest register is not observed) therefore
  * no action was taken.
+ *
+ * This function uses indirect access to XR20 to test whether the blitter
+ * is busy. If the cost of doing this is too high then other options will
+ * need to be considered.
+ *
+ * Note that BR04[31] can't be used as some C&T chipsets lockup when reading
+ * the BRxx registers.
  */
 #define ctBLTWAIT \
-outb(0x3D6,0x20);   {int timeout; \
+                    {int timeout; \
                      timeout = 0; \
 		     for (;;) { \
-                         if (!(inb(0x3D7) & 0x1)) break; \
+                         if (!((cPtr->readXR(cPtr, 0x20)) & 0x1)) break; \
                          timeout++; \
                          if (timeout == 100000) { \
 			    unsigned char tmp; \
-			    tmp = inb(0x3D7); \
-			    outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
-			    outb(0x3D7, (tmp & 0xFD)); \
+			    tmp = cPtr->readXR(cPtr, 0x20); \
+			    cPtr->writeXR(cPtr, 0x20, ((tmp & 0xFD) | 0x2)); \
+			    cPtr->writeXR(cPtr, 0x20, (tmp & 0xFD)); \
 			    break; \
                          } \
 		      } \
 		    }
-#endif
-#endif
 
 #define ctSETROP(op) \
   *(unsigned int *)(cPtr->MMIOBase + BR(0x4)) = (op)

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.16 1998/06/04 16:43:04 hohndel Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.17 1998/08/29 05:42:53 dawes Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -325,7 +325,8 @@ Carriage Return (Ctrl-M)
 .
 .IP \\*(En
 Return Terminal Status (Ctrl-E).
-Response is the terminal name, e.g., "xterm".
+Default response is the terminal name, e.g., "xterm", but may be overridden
+by a resource \fIanswerbackString\fP.
 .
 .IP \\*(Ff
 Form Feed or New Page (NP) (Ctrl-L) same as LF
@@ -794,6 +795,9 @@ See the section \fBMouse Tracking\fP.
 disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*4\*8 \(-> Save cursor as in DECSC (unless
 disabled by the \fBtiteInhibit\fP resource)
+  \*(Ps = \*1\*0\*4\*9 \(-> Save cursor as in DECSC
+and use Alternate Screen Buffer, clearing it first (unless
+disabled by the \fBtiteInhibit\fP resource)
 .
 .IP \\*(Cs\\*?\\*(Pm\\*s\\*l
 DEC Private Mode Reset (DECRST)
@@ -828,6 +832,9 @@ See the section \fBMouse Tracking\fP.
 first if in the Alternate Screen (unless
 disabled by the \fBtiteInhibit\fP resource)
   \*(Ps = \*1\*0\*4\*8 \(-> Restore cursor as in DECRC (unless
+disabled by the \fBtiteInhibit\fP resource)
+  \*(Ps = \*1\*0\*4\*9 \(-> Use Normal Screen Buffer and restore cursor
+as in DECRC (unless
 disabled by the \fBtiteInhibit\fP resource)
 .
 .IP \\*(Cs\\*?\\*(Pm\\*s\\*r

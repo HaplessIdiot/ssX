@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.14 1997/12/14 02:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.15 1998/10/04 09:41:56 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -412,7 +412,7 @@ for (i = 1; i < argc; ) {
 	      DPMSEnable(dpy);
 	      DPMSSetTimeouts(dpy, standby_timeout, suspend_timeout, off_timeout);
 	  }
-	  else if (strcmp(arg, "force") == 0) {
+	  else if (i+1 < argc && strcmp(arg, "force") == 0) {
 	      i++;
 	      arg = argv[i];
 	      /*

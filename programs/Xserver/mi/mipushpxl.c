@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.7 1997/07/10 08:17:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.8 1998/10/04 09:39:32 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -88,18 +88,20 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     int		width[NPT];
 #ifdef XFree86Server
     PixelType	startmask;
-    /* This is not quite right, but it'll do for now */
     if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
-#ifndef __powerpc__
-	startmask = (unsigned long)(-1) ^
-	    LONG2CHARSSAMEORDER((unsigned long)(-1) << 1);
-#else
-	startmask = (unsigned long)(-1) ^
-	    LONG2CHARSSAMEORDER((unsigned long)(-1) >> 1);
-#endif
+      if (screenInfo.bitmapBitOrder == LSBFirst)
+        startmask = (unsigned long)(-1) ^
+            LONG2CHARSSAMEORDER((unsigned long)(-1) << 1);
+      else
+        startmask = (unsigned long)(-1) ^
+            LONG2CHARSSAMEORDER((unsigned long)(-1) >> 1);
     else
-	startmask = (unsigned long)(-1) ^
-	    LONG2CHARSDIFFORDER((unsigned long)(-1) >> 1);
+      if (screenInfo.bitmapBitOrder == LSBFirst)
+        startmask = (unsigned long)(-1) ^
+            LONG2CHARSDIFFORDER((unsigned long)(-1) << 1);
+      else
+        startmask = (unsigned long)(-1) ^
+            LONG2CHARSDIFFORDER((unsigned long)(-1) >> 1);
 #endif
 
     pwLineStart = (unsigned long *)xalloc(BitmapBytePad(dx));
@@ -160,12 +162,14 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
     		/* This is not quite right, but it'll do for now */
 		if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
-#ifndef __powerpc__
+		  if (screenInfo.bitmapBitOrder == LSBFirst)
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << 1);
-#else
+		  else
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) >> 1);
-#endif
 		else
+		  if (screenInfo.bitmapBitOrder == LSBFirst)
+		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) << 1);
+		  else
 		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> 1);
 #else
 		msk = SCRRIGHT(msk, 1);
@@ -214,12 +218,14 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
     		/* This is not quite right, but it'll do for now */
 		if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
-#ifndef __powerpc__
+		  if (screenInfo.bitmapBitOrder == LSBFirst)
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << 1);
-#else
+		  else
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) >> 1);
-#endif
 		else
+		  if (screenInfo.bitmapBitOrder == LSBFirst)
+		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) << 1);
+		  else
 		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> 1);
 #else
 		msk = SCRRIGHT(msk, 1);

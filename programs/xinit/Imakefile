@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/25 1996/01/15 12:19:07 gildea $
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.3 1996/02/09 08:22:51 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.4 1996/03/10 12:14:19 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -9,7 +9,7 @@ XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.3 1996/02/09 08:22:51 dawes Exp 
 #ifdef OS2Architecture
         DEFFILE = xinit.def
 #endif
-        DEFINES = ConnectionFlags $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
+        DEFINES = $(CONNECTION_FLAGS) $(VFORK_DEFINES) $(SIGNAL_DEFINES) \
 			-DBINDIR=\"$(BINDIR)\" $(OS_DEFS)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)

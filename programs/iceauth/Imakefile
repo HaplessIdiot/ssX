@@ -3,7 +3,7 @@ DEPLIBS = $(DEPICELIB)
 LOCAL_LIBRARIES = $(ICELIB)
            SRCS = iceauth.c process.c
            OBJS = iceauth.o process.o
-   CONN_DEFINES = ConnectionFlags
+   CONN_DEFINES = $(CONNECTION_FLAGS)
 
 ComplexProgramTarget(iceauth)
 

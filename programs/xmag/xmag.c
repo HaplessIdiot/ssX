@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 
 #ifndef X_NOT_STDC_ENV
@@ -123,7 +124,6 @@ static void PopupNewScale(hlPtr);
 static void RedoOldScale(hlPtr);
 static void InitCursors(void);
 static void ParseSourceGeom(void);
-extern void main(int, char **);
 #else
 static void 
   CloseAP(), 
@@ -1131,7 +1131,7 @@ ParseSourceGeom()
 /*
  * Main program.
  */
-void main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {

@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.9 1998/11/28 10:43:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.10 1998/12/13 05:32:47 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -109,6 +109,7 @@ TXInitializeEngine(ScrnInfoPtr pScrn)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     /* Initialize the Accelerator Engine to defaults */
 
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE, ScissorMode);
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	LBReadMode);
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	FBReadMode);
     GLINT_SLOW_WRITE_REG(0, dXSub);
@@ -249,14 +250,10 @@ TXAccelInit(ScreenPtr pScreen)
     infoPtr->WriteBitmap = TXWriteBitmap;
     infoPtr->WritePixmap = TXWritePixmap;
 
-    /* XAA's pixmap cache seems to have problems with depth 30 */
-    if (pScrn->depth == 30) infoPtr->Flags &= ~PIXMAP_CACHE;
-
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    /* X11 can't handle co-ordinates bigger than 32768 */
-    if (memory > (32767*1024)) memory = 32767*1024;
+    if (memory > (16383*1024)) memory = 16383*1024;
     AvailFBArea.y2 = memory / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
 

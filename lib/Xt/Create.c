@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Create.c,v 3.4 1998/04/05 02:28:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Create.c,v 3.5 1998/10/03 09:06:50 dawes Exp $ */
 
 /*
 
@@ -311,7 +311,7 @@ CompileCallbacks(widget)
     offsets = (CallbackTable)
 	widget->core.widget_class->core_class.callback_private;
 
-    for (i = (int) *(offsets++); --i >= 0; offsets++) {
+    for (i = (int)(long) *(offsets++); --i >= 0; offsets++) {
 	cl = (InternalCallbackList *)
 	    ((char *) widget - (*offsets)->xrm_offset - 1);
 	if (*cl)

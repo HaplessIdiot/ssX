@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.14 1997/11/22 09:58:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.15 1998/10/04 09:38:53 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -64,7 +64,8 @@ void InitOutput(screenInfo, argc, argv)
   screenInfo->numPixmapFormats = 0;
   for (i = 0; i < xnestNumPixmapFormats; i++) 
     for (j = 0; j < xnestNumDepths; j++)
-      if (xnestPixmapFormats[i].depth == xnestDepths[j]) {
+      if ((xnestPixmapFormats[i].depth == 1) ||
+          (xnestPixmapFormats[i].depth == xnestDepths[j])) {
 	screenInfo->formats[screenInfo->numPixmapFormats].depth = 
 	  xnestPixmapFormats[i].depth;
 	screenInfo->formats[screenInfo->numPixmapFormats].bitsPerPixel = 

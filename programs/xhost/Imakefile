@@ -11,6 +11,6 @@ KRB5_INCLUDE = Krb5Includes
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xhost.c 
            OBJS = xhost.o 
-        DEFINES = ConnectionFlags $(SIGNAL_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES)
+        DEFINES = $(CONNECTION_FLAGS) $(SIGNAL_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES)
 
 ComplexProgramTarget(xhost)

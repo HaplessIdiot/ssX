@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.34 1998/10/04 09:39:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.35 1998/12/13 07:37:47 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -475,6 +475,15 @@ ResetWellKnownSockets ()
 #ifdef XDMCP
     XdmcpReset ();
 #endif
+}
+
+void
+CloseWellKnownConnections()
+{
+    int i;
+
+    for (i = 0; i < ListenTransCount; i++)
+	_XSERVTransClose (ListenTransConns[i]);
 }
 
 static void

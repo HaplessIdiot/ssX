@@ -63,7 +63,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.14 1998/10/04 09:41:13 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.15 1998/10/25 07:12:34 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	"misc.h"
@@ -288,6 +288,15 @@ CreateSockets(int old_listen_count, OldListenRec *old_listen)
 void
 ResetSockets(void)
 {
+}
+
+void
+CloseSockets()
+{
+    int i;
+
+    for (i = 0; i < ListenTransCount; i++)
+	_FontTransClose (ListenTransConns[i]);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.15 1998/10/04 09:37:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.16 1998/11/22 10:37:03 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -81,7 +81,6 @@ cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int width;			/* pixel width of frame buffer */
 {
     int	i;
-    extern RegionPtr	(*cfbPuntCopyPlane)();
 
     if (!cfbAllocatePrivates(pScreen, (int *) 0, (int *) 0))
 	return FALSE;

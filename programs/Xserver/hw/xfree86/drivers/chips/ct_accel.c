@@ -1,5 +1,4 @@
-#define UNDOCUMENTED_FEATURE
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.28 1998/09/26 08:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.29 1998/11/28 10:43:07 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -22,6 +21,19 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
+/*
+ * When monochrome tiles/stipples are cached on the HiQV chipsets the
+ * pitch of the monochrome data is the displayWidth. The HiQV manuals
+ * state that the source pitch is ignored with monochrome data, and so
+ * "offically" there the XAA cached monochrome data can't be used. But
+ * it appears that by not setting the monochrome source alignment in
+ * BR03, the monochrome source pitch is forced to the displayWidth!!
+ *
+ * To enable the use of this undocumented feature, uncomment the define
+ * below.
+ */
+#define UNDOCUMENTED_FEATURE
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -101,7 +113,7 @@ static void CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 static XAACacheInfoPtr CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn,
 				PixmapPtr pPix);
 #endif
-#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
+#if !defined(CHIPS_HIQV) || defined(UNDOCUMENTED_FEATURE)
 static void CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
 				unsigned int planemask);
@@ -131,7 +143,8 @@ static void CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 static void  CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 		unsigned char *src, int srcwidth, int rop,
 		unsigned int planemask, int trans, int bpp, int depth);
-
+static void  CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+		unsigned char *dst, int dstwidth, int bpp, int depth);
 #endif
 
 
@@ -161,6 +174,10 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      * Set up the main acceleration flags.
      */
     if (cAcl->CacheEnd > cAcl->CacheStart) infoPtr->Flags = PIXMAP_CACHE;
+
+    if (cPtr->Flags & ChipsLinearSupport)
+	infoPtr->Flags |= OFFSCREEN_PIXMAPS | LINEAR_FRAMEBUFFER;
+
     infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
 
     /*
@@ -252,13 +269,13 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	ROP_NEEDS_SOURCE;
-#ifdef TESTING_UNDOCUMENTED_FEATURE
+#ifdef UNDOCUMENTED_FEATURE
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
 	LEFT_EDGE_CLIPPING;
 #endif        
     if (pScrn->bitsPerPixel == 24) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
-#ifdef TESTING_UNDOCUMENTED_FEATURE
+#ifdef UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
 #endif
     }
@@ -282,7 +299,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 #ifndef CHIPS_HIQV 
     if (pScrn->bitsPerPixel != 24) {
 #endif
-#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
+#if !defined(CHIPS_HIQV) || defined(UNDOCUMENTED_FEATURE)
 	infoPtr->SetupForScreenToScreenColorExpandFill = 
 		CTNAME(SetupForScreenToScreenColorExpandFill);
 	infoPtr->SubsequentScreenToScreenColorExpandFill = 
@@ -351,6 +368,14 @@ chips_imagewrite:
 	infoPtr->WritePixmapFlags |= NO_PLANEMASK;
 
     infoPtr->WritePixmap = CTNAME(WritePixmap);
+
+#if 0 /* Not used by XAA as yet, but coming soon */
+    if (cPtr->Flags & ChipsImageReadSupport) {
+	infoPtr->ReadPixmapFlags = CPU_TRANSFER_PAD_QWORD | ROP_NEEDS_SOURCE;
+	infoPtr->ReadPixmap = CTNAME(ReadPixmap);
+    }
+#endif
+
 #else
     infoPtr->SetupForImageWrite = CTNAME(SetupForImageWrite);
     infoPtr->SubsequentImageWriteRect = CTNAME(SubsequentImageWriteRect);
@@ -376,9 +401,7 @@ chips_imagewrite:
 void
 CTNAME(Sync)(ScrnInfoPtr pScrn)
 {
-#ifndef CHIPS_HIQV
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-#endif
     DEBUG_P("sync");
     ctBLTWAIT;
 }
@@ -905,7 +928,7 @@ CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     ctSETHEIGHTWIDTHGO(h, w);
 }
 
-#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
+#if !defined(CHIPS_HIQV) || defined(UNDOCUMENTED_FEATURE)
 static void
 CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
@@ -1095,7 +1118,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     return pCache;
 }
 #endif
-#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
+#if !defined(CHIPS_HIQV) || defined(UNDOCUMENTED_FEATURE)
 static void
 CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
@@ -1120,11 +1143,7 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
-    ctSETMONOCTL(
-#ifdef TESTING_UNDOCUMENTED_FEATURE
-		 ctQWORDALIGN | 
-#endif
-		 ctCLIPLEFT(skipleft & 0x3F));
+    ctSETMONOCTL(ctCLIPLEFT(skipleft & 0x3F));
 #endif
     ctSETHEIGHTWIDTHGO(h, w);
 }
@@ -1382,8 +1401,8 @@ MoveDWORDS(register CARD32* dest, register CARD32* src, register int dwords )
 #endif
  
 static __inline__ void 
-MoveData(unsigned char *src, unsigned char *dest, int srcwidth, int window,
-	 int h, int dwords)
+MoveDataFromCPU(unsigned char *src, unsigned char *dest, int srcwidth,
+	 int window, int h, int dwords)
 {
     if(srcwidth == (dwords << 2)) {
 	int decrement = window / dwords;
@@ -1399,6 +1418,28 @@ MoveData(unsigned char *src, unsigned char *dest, int srcwidth, int window,
 	while(h--) {
 	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords);
 	    src += srcwidth;
+	}
+    }
+}
+
+static __inline__ void 
+MoveDataToCPU(unsigned char *src, unsigned char *dest, int dstwidth,
+	 int window, int h, int dwords)
+{
+    if(dstwidth == (dwords << 2)) {
+	int decrement = window / dwords;
+	while(h > decrement) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords * decrement);
+	    dest += (dstwidth * decrement);
+	    h -= decrement;
+	}
+	if(h) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords * h);
+	}
+    } else {
+	while(h--) {
+	    MoveDWORDS((CARD32*)dest, (CARD32*)src, dwords);
+	    dest += dstwidth;
 	}
     }
 }
@@ -1486,8 +1527,9 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETPITCH(byteWidthSrc, cAcl->PitchInBytes);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
-	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
-		 srcwidth, 16384, h, dwords);
+	MoveDataFromCPU((unsigned char *)src,
+		(unsigned char *)cAcl->BltDataWindow,
+		srcwidth, 16384, h, dwords);
 
     } else {
 	unsigned int vert = h;
@@ -1497,8 +1539,9 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETPITCH(byteWidthSrc << 1, cAcl->PitchInBytes << 1);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
-	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
-		 srcwidth<<1, 16384, h, dwords);
+	MoveDataFromCPU((unsigned char *)src,
+		(unsigned char *)cAcl->BltDataWindow,
+		srcwidth<<1, 16384, h, dwords);
 
 	h = vert  >> 1;
 	src += srcwidth;
@@ -1509,8 +1552,66 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
-	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,
-		 srcwidth<<1, 16384, h, dwords);
+	MoveDataFromCPU((unsigned char *)src,
+		(unsigned char *)cAcl->BltDataWindow,
+		srcwidth<<1, 16384, h, dwords);
+    }
+
+    cPtr->AccelInfoRec->NeedToSync = TRUE;
+}
+
+static void 
+CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+		unsigned char *dst, int dstwidth, int bpp, int depth)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+    unsigned int bytesPerLine;
+    unsigned int byteWidthDst;
+    int dwords; 
+    int srcaddr;
+
+    DEBUG_P("ReadPixmap");
+    bytesPerLine = w * cAcl->BytesPerPixel;
+    byteWidthDst = ((dstwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
+    dwords = (((bytesPerLine + 0x7) & ~0x7)) >> 2;
+    srcaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+
+    ctBLTWAIT;
+    ctSETROP( ctDSTSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM | 
+	      ChipsAluConv[GXcopy & 0xF]);
+    ctSETDSTADDR(0);
+    ctSETSRCADDR(srcaddr);
+
+    if ((byteWidthDst & 0x7) == 0) {  /* quad-word aligned */
+
+	ctSETPITCH(cAcl->PitchInBytes, byteWidthDst);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
+		 (unsigned char *)dst, dstwidth, 16384, h, dwords);
+
+    } else {
+	unsigned int vert = h;
+
+	h = (vert + 1) >> 1;
+
+	ctSETPITCH( cAcl->PitchInBytes << 1, byteWidthDst << 1);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
+		 (unsigned char *)dst, dstwidth<<1, 16384, h, dwords);
+
+	h = vert  >> 1;
+	dst += dstwidth;
+	y++;
+	srcaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+	ctBLTWAIT;
+	ctSETSRCADDR(srcaddr);
+	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
+
+	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
+		 (unsigned char *)dst, dstwidth<<1, 16384, h, dwords);
     }
 
     cPtr->AccelInfoRec->NeedToSync = TRUE;

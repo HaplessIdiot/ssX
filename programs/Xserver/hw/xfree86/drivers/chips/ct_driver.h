@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.14 1998/11/01 12:35:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.15 1998/11/28 10:43:09 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -32,6 +32,7 @@
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xf86Cursor.h"
 #include "xf86i2c.h"
+#include "xf86DDC.h"
 
 /* Supported chipsets */
 typedef enum {
@@ -93,23 +94,25 @@ typedef struct {
 /* The capability flags for the C&T chipsets */
 #define ChipsLinearSupport	0x00000001
 #define ChipsAccelSupport	0x00000002
-#define ChipsMMIOSupport	0x00000004
-#define ChipsHDepthSupport	0x00000008
-#define ChipsDPMSSupport	0x00000010
-#define ChipsTMEDSupport	0x00000020
+#define ChipsFullMMIOSupport	0x00000004
+#define ChipsMMIOSupport	0x00000008
+#define ChipsHDepthSupport	0x00000010
+#define ChipsDPMSSupport	0x00000020
+#define ChipsTMEDSupport	0x00000040
 
 /* Options flags for the C&T chipsets */
-#define ChipsUseVClk1		0x00000040
-#define ChipsHWCursor		0x00000080
+#define ChipsUseVClk1		0x00000100
+#define ChipsHWCursor		0x00000200
 
 /* Architecture type flags */
-#define ChipsHiQV		0x00000100
-#define ChipsWingine		0x00000200
+#define ChipsHiQV		0x00001000
+#define ChipsWingine		0x00002000
 #define IS_Wingine(x)		((x->Flags) & ChipsWingine)
 #define IS_HiQV(x)		((x->Flags) & ChipsHiQV)
 
 /* Acceleration flags for the C&T chipsets */
 #define ChipsColorTransparency	0x0100000
+#define ChipsImageReadSupport	0x0200000
 
 /* Flag Bus Types */
 #define ChipsUnknown	0
@@ -126,12 +129,6 @@ typedef struct {
 #define BR(x) cPtr->Regs32[x]	/* For HiQV naming scheme     */
 #define MMIOmeml(x) *(unsigned int *)(cPtr->MMIOBase + (x))
 #define MMIOmemw(x) *(unsigned short *)(cPtr->MMIOBase + (x))
-
-/* Definitions for IO access to ports */
-#define write_xr(num,val) {outb(0x3D6, num);outb(0x3D7, val);}
-#define read_xr(num,var) {outb(0x3D6, num);var=inb(0x3D7);}
-#define write_fr(num,val) {outb(0x3D0, num);outb(0x3D1, val);}
-#define read_fr(num,var) {outb(0x3D0, num);var=inb(0x3D1);}
 
 /* Monitor or flat panel type flags */
 #define ChipsCRT	0x0010
@@ -207,10 +204,27 @@ typedef struct {
     unsigned char vgaIOBaseFlag;
 } CHIPSSuspendHackRec, *CHIPSSuspendHackPtr;
 
+/* The functions to access the C&T extended registers */
+typedef struct _CHIPSRec *CHIPSPtr;
+typedef CARD8 (*chipsReadXRPtr)(CHIPSPtr cPtr, CARD8 index);
+typedef void (*chipsWriteXRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
+typedef CARD8 (*chipsReadFRPtr)(CHIPSPtr cPtr, CARD8 index);
+typedef void (*chipsWriteFRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
+typedef CARD8 (*chipsReadMRPtr)(CHIPSPtr cPtr, CARD8 index);
+typedef void (*chipsWriteMRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
+
+/* C&T functions to access VGA Input status registers 0 and 1 */
+typedef CARD8 (*chipsReadST00Ptr)(CHIPSPtr cPtr);
+typedef CARD8 (*chipsReadST01Ptr)(CHIPSPtr cPtr);
+
+/* C&T functions to access the VGA feature control register */
+typedef CARD8 (*chipsReadFCRPtr)(CHIPSPtr cPtr);
+typedef void  (*chipsWriteFCRPtr)(CHIPSPtr cPtr, CARD8 value);
+
 /* The privates of the C&T driver */
 #define CHIPSPTR(p)	((CHIPSPtr)((p)->driverPrivate))
 
-typedef struct {
+typedef struct _CHIPSRec {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
@@ -225,6 +239,7 @@ typedef struct {
     int			FrameBufferSize;
     Bool		SyncResetIgn;
     Bool		UseMMIO;
+    Bool		UseFullMMIO;
     int			Monitor;
     int			MinClock;
     int			MaxClock;
@@ -255,11 +270,22 @@ typedef struct {
 #endif
     unsigned char       ddc_mask;
     I2CBusPtr           I2C;
-} CHIPSRec, *CHIPSPtr;
+    chipsReadXRPtr	readXR;
+    chipsWriteXRPtr	writeXR;
+    chipsReadFRPtr	readFR;
+    chipsWriteFRPtr	writeFR;
+    chipsReadMRPtr	readMR;
+    chipsWriteMRPtr	writeMR;
+    chipsReadFCRPtr	readFCR;
+    chipsWriteFCRPtr	writeFCR;
+    chipsReadST00Ptr	readST00;
+    chipsReadST01Ptr	readST01;
+} CHIPSRec;
 
 typedef struct _CHIPSi2c {
   unsigned char i2cClockBit;
   unsigned char i2cDataBit;
+  CHIPSPtr cPtr;
 } CHIPSI2CRec, *CHIPSI2CPtr;
 
 /* External variables */
@@ -270,6 +296,7 @@ extern unsigned int ChipsReg32[];
 extern unsigned int ChipsReg32HiQV[];
 
 /* Prototypes */
+
 /* banking */
 int CHIPSSetRead(ScreenPtr pScreen, int bank);
 int CHIPSSetWrite(ScreenPtr pScreen, int bank);
@@ -294,6 +321,11 @@ void CHIPSMMIOSync(ScrnInfoPtr pScrn);
 Bool CHIPSHiQVAccelInit(ScreenPtr pScreen);
 void CHIPSHiQVSync(ScrnInfoPtr pScrn);
 Bool CHIPSCursorInit(ScreenPtr pScreen);
+
+/* register access functions */
+void CHIPSSetStdExtFuncs(CHIPSPtr cPtr);
+void CHIPSSetMmioExtFuncs(CHIPSPtr cPtr);
+void CHIPSHWSetMmioFuncs(ScrnInfoPtr pScrn, CARD8 *base, int offset);
 
 /* ddc */
 extern void chips_ddc1(ScrnInfoPtr pScrn);

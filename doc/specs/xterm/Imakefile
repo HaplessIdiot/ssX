@@ -1,3 +1,8 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/02/10 21:08:29 rws Exp $
+XCOMM $XFree86$
 
 MakeSimpleDoc(ctlseqs,ctlseqs.ms)
+
+AllTarget(ctlseqs.txt)
+
+InstallRoffDoc(ctlseqs)

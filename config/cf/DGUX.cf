@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/DGUX.cf,v 1.2 1998/12/13 07:37:35 dawes Exp $
 /* Copyright Takis Psarogiannakopoulos <takis@pmms.cam.ac.uk>
  * This is the DG/ux configuration file of X11R6.3 
  */
@@ -67,7 +67,6 @@ XCOMM platform:  $XFree86$
 #define HasBsearch YES
 #define HasSockets YES
 #define BuildServer YES
-#define HasInputExtension NO
 #define HasSharedLibraries YES   /* to build shared libs */
 #define HasGcc YES
 #define HasGcc2 YES
@@ -168,10 +167,8 @@ XCOMM platform:  $XFree86$
 /*
  * The TLI interface is more robust on most SVR4s, so it will be the default.
  */
-#if !defined(SunArchitecture)
 #ifndef ConnectionFlags
 #define ConnectionFlags	-DSTREAMSCONN -DUNIXCONN -DLOCALCONN
-#endif
 #endif
 
 #ifndef ManSuffix

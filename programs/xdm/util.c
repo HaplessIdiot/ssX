@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/util.c,v 3.9 1998/10/04 09:40:58 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.10 1998/10/10 15:25:39 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -152,6 +152,7 @@ parseArgs (char **argv, char *string)
 {
 	char	*word;
 	char	*save;
+	char    **newargv;
 	int	i;
 
 	i = 0;
@@ -168,16 +169,17 @@ parseArgs (char **argv, char *string)
 	for (;;) {
 		if (!*string || isblank (*string)) {
 			if (word != string) {
-				argv = (char **) realloc ((char *) argv,
+				newargv = (char **) realloc ((char *) argv,
 					(unsigned) ((i + 2) * sizeof (char *)));
 				save = malloc ((unsigned) (string - word + 1));
-				if (!argv || !save) {
+				if (!newargv || !save) {
 					LogOutOfMem ("parseArgs");
-					if (argv)
-						free ((char *) argv);
+					free ((char *) argv);
 					if (save)
 						free (save);
 					return 0;
+				} else {
+				    argv = newargv;
 				}
 				argv[i] = strncpy (save, word, string-word);
 				argv[i][string-word] = '\0';

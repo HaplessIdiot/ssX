@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.27 1997/11/16 06:42:44 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.28 1998/10/04 09:40:52 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -184,7 +184,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
-   CONN_DEFINES = ConnectionFlags
+   CONN_DEFINES = $(CONNECTION_FLAGS)
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
 		$(SIGNAL_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \

@@ -1,6 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.10 94/04/07 15:07:44 rws Exp $
+XCOMM $XConsortium: Imakefile /main/11 1995/12/08 11:56:32 dpw $
+XCOMM $XFree86$
 #define DoNormalLib NormalLibXtst
 #define DoSharedLib SharedLibXtst
+#define DoExtraLib SharedLibXtst
 #define DoDebugLib DebugLibXtst
 #define DoProfileLib ProfileLibXtst
 #define LibName Xtst
@@ -15,8 +17,8 @@ REQUIREDLIBS = SharedXtstReqs
 
 INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 
-SRCS = XTest.c
-OBJS = XTest.o
+SRCS = XTest.c XRecord.c
+OBJS = XTest.o XRecord.o
 
 LINTLIBS = $(LINTXLIB)
 
