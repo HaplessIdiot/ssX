@@ -1,5 +1,6 @@
 /*
  * $XConsortium: pvgasolid.c,v 1.5 94/04/17 20:32:39 dpw Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -28,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /* WD90C31 code: Mike Tierney <floyd@eng.umd.edu> */
-
+/* WD90C33 accel code: Bill Morgart <wsm@morticia.ssw.com> */
 
 #include "X.h"
 #include "Xmd.h"

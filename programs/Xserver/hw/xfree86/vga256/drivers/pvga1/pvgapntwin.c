@@ -1,4 +1,5 @@
 /* $XConsortium: pvgapntwin.c,v 1.2 94/04/17 20:32:39 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -49,7 +50,7 @@ SOFTWARE.
 
 
 /* WD90C31 code: Mike Tierney <floyd@eng.umd.edu> */
-
+/* WD90C33 accel code: Bill Morgart <wsm@morticia.ssw.com> */
 
 #include "X.h"
 
@@ -63,6 +64,8 @@ SOFTWARE.
 #include "vgaBank.h"
 
 #include "compiler.h"
+#include "xf86.h"
+#include "vga.h"
 #include "paradise.h"
 
 
@@ -106,26 +109,37 @@ pvgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 
     for (; nBox; nBox--, pBox++)
     {
-      /** wait for last blit to finish **/
-       WAIT_BLIT;
-       SET_BLT_CNTRL2  (0x0);
-       SET_BLT_RAS_OP  ((alu << 8));
-       SET_BLT_MASK    (0XFF);
-       SET_BLT_SRC_LOW (0x00);
-       SET_BLT_SRC_HGH (0x00);
+      switch (WDchipset)
+	{
+	case WD90C31:
+	  wd90c31BitBlt(0, pdstBase,
+			0, widthDst,
+			0, 0,
+			pBox->x1, pBox->y1,
+			pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
+			1, 1,
+			alu,
+			0xff,
+			BLT_SRC_FCOL,
+			fill1);
 
-       pdst = pBox->y1 * widthDst + pBox->x1;
-       SET_BLT_DST_LOW ((pdst & 0xFFF));
-       SET_BLT_DST_HGH ((pdst >> 12));
-       SET_BLT_ROW_PTCH (widthDst);
-
-       h = pBox->y2 - pBox->y1;
-       w = pBox->x2 - pBox->x1;
-       SET_BLT_DIM_X (w);
-       SET_BLT_DIM_Y (h);
-
-       SET_BLT_FOR_COLR (fill1 & 0xFF);
-       SET_BLT_CNTRL1  (BLT_ACT_STAT | BLT_PACKED | BLT_SRC_FCOL);
+	  break;
+	  
+	case WD90C33:
+	  wd90c33BitBlt(0, pdstBase,
+			0, widthDst,
+			0, 0,
+			pBox->x1, pBox->y1,
+			pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
+			1, 1,
+			alu,
+			0xff,
+			FIXED_COLOR,
+			fill1);
+	  break;
+	}
     }
-    WAIT_BLIT; /* must wait since memory writes can mess up as well */
+
+    if (WDchipset == WD90C31)
+      WAIT_BLIT; /* must wait since memory writes can mess up as well */
 }
