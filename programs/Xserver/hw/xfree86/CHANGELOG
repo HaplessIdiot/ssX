@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 228. Xterm patch #167 (Thomas Dickey).
  227. Add CreateCursor request to Render extension (Keith Packard)
  226. Change scanpci to not disable I/O too early (Marc La France).
  225. Better error handling in xfs -ls argument parsing (Mordy Ovits).
@@ -14985,4 +14986,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2282 2002/08/20 09:19:54 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2284 2002/08/23 05:48:22 keithp Exp $
