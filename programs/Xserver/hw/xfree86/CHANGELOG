@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx September 2000)
+ 734. Added support for Number Nine I128 chipsets (Robin Cutshaw).
  733. Added support for softbooting BIOSes on ia64 (Egbert Eich).
  732. Fixed handling of XtMakeGeometryRequest() to test for parent
       belonging to subclass of composite class only if the widget
@@ -11201,7 +11202,7 @@ XFree86 3.0 (26 April 1994)
 
 
 <<<<<<< CHANGELOG
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1322 2000/09/26 00:04:56 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1328 2000/09/29 08:59:43 eich Exp $
 =======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1327 2000/09/29 00:53:58 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1328 2000/09/29 08:59:43 eich Exp $
 >>>>>>> 3.1327
