@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.76 2002/01/05 22:05:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.77 2002/01/06 01:34:24 dickey Exp $ */
 
 /************************************************************
 
@@ -52,6 +52,11 @@ authorization.
 #include <X11/Xos.h>
 
 #ifndef HAVE_CONFIG_H
+
+#ifdef CSRG_BASED
+/* Get definition of BSD */
+#include <sys/param.h>
+#endif
 
 #ifndef HAVE_X11_DECKEYSYM_H
 #define HAVE_X11_DECKEYSYM_H 1
@@ -480,7 +485,6 @@ extern void dorefresh (void);
 
 /* button.c */
 extern Boolean SendMousePosition (Widget w, XEvent* event);
-extern int SetCharacterClassRange (int low, int high, int value);
 extern void DiredButton               PROTO_XT_ACTIONS_ARGS;
 extern void DisownSelection (XtermWidget termw);
 extern void HandleGINInput            PROTO_XT_ACTIONS_ARGS;

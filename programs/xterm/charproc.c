@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.126 2001/12/14 20:02:31 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.127 2002/01/05 22:05:02 dickey Exp $ */
 
 /*
 
@@ -126,6 +126,7 @@ in this Software without prior written authorization from The Open Group.
 #include <main.h>
 #include <fontutils.h>
 #include <xcharmouse.h>
+#include <charclass.h>
 
 #if OPT_ZICONBEEP || OPT_TOOLBAR
 #define HANDLE_STRUCT_NOTIFY 1

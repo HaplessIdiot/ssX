@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.5 2001/06/08 09:48:16 alanh Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.6 2002/01/07 20:38:31 dawes Exp $
  */
 
 /*
@@ -64,7 +64,9 @@
 #endif
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#ifndef USE_POSIX_TERMIOS
 #define USE_POSIX_TERMIOS
+#endif
 #endif
 
 #ifdef linux
