@@ -6,9 +6,9 @@
 
 1.  Introduction
 
-XFree86, a free implementation of X Windows, has been ported to Darwin and
-Mac OS X. This document is a collection of information for anyone experiment-
-ing with running X Windows on Apple's next generation operating system.
+XFree86, a free implementation of the X Window System, has been ported to
+Darwin and Mac OS X. This document is a collection of information for anyone
+experimenting with running X on Apple's next generation operating system.
 Please send any comments on this page to <torrey@mrcla.com>.  If you are also
 working on modifications to the Darwin X server, please let me know.
 
@@ -144,7 +144,7 @@ switch back to the X window system. You can change this behavior in the user
 preferences so that clicking on the XDarwin icon in the Dock switches as
 well.
 
-Customize X Windows
+Customize the X Window System
 
 The X window system is very customizable and you will certainly want to
 change some things. There is a lot you can do to control how your windows
@@ -181,7 +181,7 @@ Things that are broken:
 
    o A screen saver is not supported.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.6 2001/06/07 05:11:41 torrey Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.7 2001/11/23 19:50:44 dawes Exp $
 
 
-$XFree86:$
+$XFree86: xc/config/cf/lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
