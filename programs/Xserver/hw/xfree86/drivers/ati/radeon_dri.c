@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.26 2003/01/29 18:06:06 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.27 2003/01/31 15:43:09 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -731,8 +731,7 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	 * market, so this is not yet a problem.
 	 */
 	if ((info->ChipFamily == CHIP_FAMILY_M6) ||
-	    (info->ChipFamily == CHIP_FAMILY_M7) || 
-	    (info->ChipFamily == CHIP_FAMILY_M9))
+	    (info->ChipFamily == CHIP_FAMILY_M7))
 	    return FALSE;
 
 	/* Disable fast write for AMD 761 chipset, since they cause
