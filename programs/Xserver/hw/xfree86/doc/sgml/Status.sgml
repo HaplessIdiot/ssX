@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.24 2000/12/14 08:00:45 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.25 2000/12/14 17:10:03 dawes Exp $
 </ident>
 
 <abstract>
@@ -672,11 +672,12 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>&relvers;:</tag>
 	Support (accelerated where the chip supports it) for the TVGA8900D,
-	TGUI9420DGi, TGUI9440AGi, TGUI9660, TGUI9680, ProVidia 9682,
-	ProVidia 9685, Cyber9320, Cyber9382, Cyber9385, Cyber9388,
-	Cyber9397, Cyber9520, Cyber9397/DVD, Cyber9525/DVD, 3DImage975,
-	3DImage875, Blade3D, CyberBlade/i7, CyberBlade/DSTN/i7 and
-	CyberBlade/i1 is provided by the "trident" driver.
+	TGUI9440AGi, TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685,
+	Cyber9320, Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9397/DVD,
+	Cyber9520, Cyber9525/DVD, 3DImage975, 3DImage985, Blade3D,
+	CyberBlade/i7, CyberBlade/DSTN/i7, CyberBlade/i1, CyberBlade/DSTN/i1,
+	CyberBlade/Ai1, CyberBlade/DSTN/Ai1 and CyberBlade/e4 is provided
+        by the "trident" driver.
 
 <tag>Summary:</tag>
 	The following (older) chipsets that are supported in &legacyvers;

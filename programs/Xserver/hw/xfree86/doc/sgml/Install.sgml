@@ -9,7 +9,7 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.7 2000/07/03 16:51:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.8 2000/12/14 01:06:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -418,7 +418,7 @@ hand.
 Once that's done, the main part of the installation can be done:
 
 <tscreen><verb>
-./extract -C /usr/X11R6 X[a-df-uw-z]*.tgz
+./extract -C /usr/X11R6 `pwd`/X[a-df-uw-z]*.tgz
 ./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
 ./extract -C /var Xvar.tgz
 /sbin/ldconfig /usr/X11R6/lib       # For Linux
