@@ -212,6 +212,8 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned char CR32, CR36, CR37;
 
+    pSiS->LCDwidth = 0;
+
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
