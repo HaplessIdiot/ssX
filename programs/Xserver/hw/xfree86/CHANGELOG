@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 553. Fix "Non-aligned pointer being freed" warnings on XDarwin startup
+      (Torrey T. Lyons).
  552. Miscellaneous fixes for Panther:
        - Fix spurious #pragma getting inserted by cpp (Martin Costabel).
        - Fix startup failure due to bad keymapping file (Torrey T. Lyons).
@@ -18102,7 +18104,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2933 2003/11/04 01:03:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2934 2003/11/04 23:34:13 torrey Exp $
 
 
 
