@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.c,v 1.2 1999/04/17 07:06:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.c,v 1.4 1999/11/19 13:54:45 hohndel Exp $ */
 /*
  *
  */
@@ -104,7 +104,8 @@ static void risc_continue(vu16 io_base);
  *
  * Start the RISC with its PC set to |pc|.
  */
-void v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc)
+void
+v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu16 io_base=pRendition->board.io_base;
@@ -126,7 +127,8 @@ void v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc)
  *
  * Let the RISC do its work.
  */
-void v1k_continue(ScrnInfoPtr pScreenInfo)
+void
+v1k_continue(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -140,7 +142,8 @@ void v1k_continue(ScrnInfoPtr pScreenInfo)
  *
  * Stop the RISC.
  */
-void v1k_stop(ScrnInfoPtr pScreenInfo)
+void
+v1k_stop(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu8	debugreg, statusreg;
@@ -192,7 +195,8 @@ void v1k_stop(ScrnInfoPtr pScreenInfo)
  * Returns with Icache on, also flushes Pixel engine line buffers 
  * in the Dcache.
  */
-void v1k_flushicache(ScrnInfoPtr pScreenInfo)
+void
+v1k_flushicache(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu32 c, p1, p2;
@@ -240,7 +244,8 @@ void v1k_flushicache(ScrnInfoPtr pScreenInfo)
  *
  * Soft Reset RISC.
  */
-void v1k_softreset(ScrnInfoPtr pScreenInfo)
+void
+v1k_softreset(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu16 io_base=pRendition->board.io_base;
@@ -292,7 +297,8 @@ v1k_getriscprocs(v_board_desc *boardDesc)
  *
  * Loop on IO read until expected data is read or V_MAX_POLLS is reached.
  */
-static void v_iopoll(vu16 port, vu32 data, vu32 mask)
+static void
+v_iopoll(vu16 port, vu32 data, vu32 mask)
 {
   vu32 c, d;
 
@@ -311,7 +317,8 @@ static void v_iopoll(vu16 port, vu32 data, vu32 mask)
  *
  * Loop on IO read until expected data is read or V_MAX_POLLS is reached.
  */
-static void v_iopoll8(vu16 port, vu8 data, vu8 mask)
+static void
+v_iopoll8(vu16 port, vu8 data, vu8 mask)
 {
   vu32 c;
   vu8 d;
@@ -331,7 +338,8 @@ static void v_iopoll8(vu16 port, vu8 data, vu8 mask)
  *
  * Reads data from register file.
  */
-static vu32 readRF(vu16 io_base, vu8 index)
+static vu32
+readRF(vu16 io_base, vu8 index)
 {
   vu32 data, instr;
   vu8 debug, stateindex;
@@ -368,7 +376,8 @@ static vu32 readRF(vu16 io_base, vu8 index)
  *
  * Set RF register, being careful on how to set regs below 64.
  */
-static void writeRF(vu16 io_base, vu8 index, vu32 data)
+static void
+writeRF(vu16 io_base, vu8 index, vu32 data)
 {
   vu8 special=0;
 
@@ -406,7 +415,8 @@ static void writeRF(vu16 io_base, vu8 index, vu32 data)
  *
  * NOTE: Assumes RISC is in hold mode.
  */
-static vu32 risc_readmem(vu16 io_base, vu32 addr, vu8 read_type)
+static vu32
+risc_readmem(vu16 io_base, vu32 addr, vu8 read_type)
 {
   vu32 data;
 
@@ -433,7 +443,8 @@ static vu32 risc_readmem(vu16 io_base, vu32 addr, vu8 read_type)
  *
  * NOTE: Assumes RISC is in hold mode.
  */
-static void risc_writemem(vu16 io_base, vu32 addr, vu32 data, vu8 write_type)
+static void
+risc_writemem(vu16 io_base, vu32 addr, vu32 data, vu8 write_type)
 {
   writeRF(io_base, RISC_RA, addr);          /* point to memory */
   writeRF(io_base, RISC_FP, data);          /* set data */
@@ -452,7 +463,8 @@ static void risc_writemem(vu16 io_base, vu32 addr, vu32 data, vu8 write_type)
  *
  * Single step the RISC. NOTE: Do not force instruction into RISCIR!
  */
-static void risc_step(vu16 io_base, vu32 count)
+static void
+risc_step(vu16 io_base, vu32 count)
 {
   vu32 c, d;
   vu8 debugreg;
@@ -479,7 +491,8 @@ static void risc_step(vu16 io_base, vu32 count)
  *
  * Single step RISC; force instruction; assumes RISC held.
  */
-static void risc_forcestep(vu16 io_base, vu32 instruction)
+static void
+risc_forcestep(vu16 io_base, vu32 instruction)
 {
   vu32 c;
   vu8 debugreg, stateindex;
@@ -509,7 +522,8 @@ static void risc_forcestep(vu16 io_base, vu32 instruction)
  *
  * Turn off hold bit.    
  */
-static void risc_continue(vu16 io_base)
+static void
+risc_continue(vu16 io_base)
 {
   vu8 debugreg;
 

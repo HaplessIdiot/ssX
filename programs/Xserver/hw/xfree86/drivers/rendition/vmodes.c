@@ -1,11 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.4 1999/04/25 10:02:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.6 1999/11/19 13:54:47 hohndel Exp $ */
 /*
  * file vmodes.c
  *
  * Routines that handle mode setting.
  */
-
-
 
 /*
  * includes
@@ -19,6 +17,10 @@
 #include "v1kregs.h"
 #include "v2kregs.h"
 #include "vvga.h"
+
+
+#undef DEBUG
+
 
 /* Options data */
 #include "rendition_options.h"
@@ -202,12 +204,17 @@ static double V2200CalcClock(double target, int *m, int *n, int *p);
  * functions
  */
 
-int v_setmodefixed(ScrnInfoPtr pScreenInfo)
+int
+v_setmodefixed(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
     int iob=pRendition->board.io_base;
     int tmp;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_setmodefixed called\n");
+#endif
 
 #ifdef SAVEVGA
     v_savetextmode(pRendition->board);
@@ -247,7 +254,8 @@ int v_setmodefixed(ScrnInfoPtr pScreenInfo)
     pRendition->board.mode.fifosize=128;
 
     pRendition->board.init=1;
-    v_setframebase(pScreenInfo, 0);
+    (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,
+        pScreenInfo->frameX0, pScreenInfo->frameY0, 0);
 
     v_out32(iob+CRTCCTL, CTL(0, 0, 0)
                          |V_PIXFMT_565 
@@ -261,7 +269,8 @@ int v_setmodefixed(ScrnInfoPtr pScreenInfo)
 
 
 
-int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
+int
+v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -269,6 +278,10 @@ int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
     int doubleclock=0;
     int M, N, P;
     int iob=pRendition->board.io_base;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_setmode called\n");
+#endif
  
     /* switching to native mode */
     v_out8(iob+MODEREG, NATIVE_MODE|VESA_MODE);
@@ -344,7 +357,8 @@ int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
         pRendition->board.mode.virtualwidth=pRendition->board.mode.screenwidth;
 
     pRendition->board.init=1;
-    v_setframebase(pScreenInfo, 0);
+    (*pScreenInfo->AdjustFrame)(pScreenInfo->scrnIndex,
+        pScreenInfo->frameX0, pScreenInfo->frameY0, 0);
 
     /* Need to fix up syncs */
 
@@ -356,14 +370,18 @@ int v_setmode(ScrnInfoPtr pScreenInfo, struct v_modeinfo_t *mode)
                         |CRTCCTL_VSYNCENABLE
                         |CRTCCTL_VIDEOENABLE);
 
+#ifdef DEBUG
     ErrorF ("Interlace mode -> %d\n", mode->flags);
+    xf86sleep(10);ErrorF ("...Exit SetMode...\n");
+#endif
 
    return 0;
 }
 
 
 
-void v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
+void
+v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -376,7 +394,7 @@ void v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
     int fifo_size=pRendition->board.mode.fifosize;
 
 #ifdef DEBUG
-    ErrorF( "w=%d v=%d b=%d f=%d\n", 
+    ErrorF( "Rendition: Debug v_setframebase w=%d v=%d b=%d f=%d\n", 
         swidth, vwidth, bytespp, fifo_size);
 #endif
 
@@ -412,7 +430,8 @@ void v_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
 
 
 
-int v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride1)
+int
+v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride1)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     int bytesperline;
@@ -449,7 +468,8 @@ int v_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *stride
  *
  * Set PLL clock to desired frequency for the V1000.
  */
-void set_PLL(vu16 iob, vu32 value)
+void
+set_PLL(vu16 iob, vu32 value)
 {
     vu32 ulD;
     int b;
@@ -474,7 +494,8 @@ void set_PLL(vu16 iob, vu32 value)
  *                   of a second and the function is only called
  *                   O(1) times during program execution.
  */
-static double V1000CalcClock(double target, int *M, int *N, int *P)
+static double
+V1000CalcClock(double target, int *M, int *N, int *P)
 {
     double mindiff = 1e10;
     double vco, pcf, diff, freq;
@@ -514,7 +535,8 @@ static double V1000CalcClock(double target, int *M, int *N, int *P)
 
 
 
-static double V2200CalcClock(double target, int *m, int *n, int *p)
+static double
+V2200CalcClock(double target, int *m, int *n, int *p)
 {
     double mindiff = 1e10;
     double vco, pcf, diff, freq;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.7 1999/12/30 03:38:35 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.8 2000/01/18 16:35:53 tsi Exp $ */
 /*
  * includes
  */
@@ -12,6 +12,8 @@
 /*
  * defines
  */
+
+#undef DEBUG
 
 /* directly accessable RAMDAC registers */
 #define BT485_WRITE_ADDR        0x00
@@ -115,11 +117,16 @@ int Cursor_size=0;
  * the corresponding field in the v_board_t struct is set), the clock doubling
  * is turned on.
  */
-int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
+int
+v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 cmd3_data=0;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_initdac called\n");
+#endif
 
     if (doubleclock)
         cmd3_data|=BT485_CLOCK_DOUBLER;
@@ -133,8 +140,7 @@ int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 
         case 8:
             v_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
-                                            BT485_CR0_8_BIT_DAC);
-                                           
+             	                            BT485_CR0_8_BIT_DAC);
             v_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_8BPP |
                                             BT485_CR1_PIXEL_PORT_AB);
             v_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
@@ -202,7 +208,8 @@ int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
  * or X-window-like cursor. Valid values are defined in vramdac.h. 
  *
  */
-void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
+void
+v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
@@ -213,6 +220,10 @@ void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
 #ifdef DEBUG
+    ErrorF ("Rendition: Debug v_enablecursor called type=0x%x\n",type);
+#endif
+
+#if 0
     /* ensure proper ranges */
     size=1; /* Enforce 64x64 Cursor */
 #endif
@@ -226,6 +237,11 @@ void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
 
     if (type)
       Cursor_size=(size ? 64 : 32);
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_enablecursor Exit\n");
+#endif
+
 }
 
 
@@ -238,7 +254,8 @@ void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
  * this routine with x=0x0 and y=0x0.
  *
  */
-void v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
+void
+v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
@@ -255,32 +272,43 @@ void v_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
 
 
 /*
- * void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
+ * void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 bg, vu32 fg)
  *
  * Sets the color of the cursor -- should be revised for use with 3 colors!
  *
  */
-void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
+void
+v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_setcursorcolor called FG=0x%x BG=0x%x\n",
+	    fg,bg);
+#endif
+
     v_out8(iob+BT485_CURS_WR_ADDR, 0x00);
+
     /* load the cursor color 0 */
-    v_out8(iob+BT485_CURS_DATA, bg&0xff);
-    v_out8(iob+BT485_CURS_DATA, (bg>>8)&0xff);
-    v_out8(iob+BT485_CURS_DATA, (bg>>16)&0xff);
+    v_out8(iob+BT485_CURS_DATA, 0x00);
+    v_out8(iob+BT485_CURS_DATA, 0x00);
+    v_out8(iob+BT485_CURS_DATA, 0x00);
 
     /* load the cursor color 1 */
-    v_out8(iob+BT485_CURS_DATA, fg&0xff);
-    v_out8(iob+BT485_CURS_DATA, (fg>>8)&0xff);
     v_out8(iob+BT485_CURS_DATA, (fg>>16)&0xff);
+    v_out8(iob+BT485_CURS_DATA, (fg>>8)&0xff);
+    v_out8(iob+BT485_CURS_DATA, fg&0xff);
 
-    /* load the cursor color 2 (not used) */
+    /* load the cursor color 2 */
     v_out8(iob+BT485_CURS_DATA, 0x00);
     v_out8(iob+BT485_CURS_DATA, 0x00);
     v_out8(iob+BT485_CURS_DATA, 0x00);
 
+    /* load the cursor color 3 */
+    v_out8(iob+BT485_CURS_DATA, (bg>>16)&0xff);
+    v_out8(iob+BT485_CURS_DATA, (bg>>8)&0xff);
+    v_out8(iob+BT485_CURS_DATA, bg&0xff);
 }
 
 
@@ -290,7 +318,8 @@ void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
  * But for now I'm happy it works ;) <ml> 
  *
  */
-void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
+void
+v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 {
     int c, bytes, row;
     vu8 *src = cursorimage;
@@ -298,6 +327,10 @@ void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 tmp;
     vu8 memend; /* Added for byte-swap fix */
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_loadcursor called\n");
+#endif
 
     if (NULL == cursorimage) 
         return;
@@ -311,7 +344,7 @@ void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
         bytes=64;
     else
         bytes=32;
-    bytes=(bytes*bytes)/8;
+    bytes=(bytes*bytes)>>3;
 
     if (pRendition->board.chip == V1000_DEVICE) {
       /* now load the cursor data into the cursor ram */
@@ -358,22 +391,27 @@ void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 			  (c&1)?(*(src-2)):(*(src+2)));
 
     }
-#ifdef DEBUG
     /* Following line added for the byte-swap fix */
     v_out8(pRendition->board.io_base + MEMENDIAN, memend);
-#endif
 }
 
 
 
 /* NOTE: count is the actual number of colors decremented by 1 */
 
-void v_setpalette(ScrnInfoPtr pScreenInfo, vu8 start, vu8 count, vu8 *table)
+void
+v_setpalette(ScrnInfoPtr pScreenInfo, int numColors, int *indices,
+		LOCO *colors, VisualPtr pVisual)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base;
     vu32 crtc_status;
+    int i, index;
     int c;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_setpalette called\n");
+#endif
 
     while (1) {
         crtc_status=v_in32(iob+CRTCSTATUS);
@@ -383,16 +421,17 @@ void v_setpalette(ScrnInfoPtr pScreenInfo, vu8 start, vu8 count, vu8 *table)
 
     iob+=RAMDACBASEADDR;
 
-    if (((int)start+count) > 255)
-        count=255-start;
+    for (i = 0; i < numColors; i++) {
+        index = indices[i];
+	v_out8(iob+BT485_WRITE_ADDR, index);
 
-    v_out8(iob+BT485_WRITE_ADDR, start);
-
-    for (c=0; c<=count; c++) {
-        v_out8(iob+BT485_RAMDAC_DATA, *table++);
-        v_out8(iob+BT485_RAMDAC_DATA, *table++);
-        v_out8(iob+BT485_RAMDAC_DATA, *table++);
+        v_out8(iob+BT485_RAMDAC_DATA, colors[index].red);
+        v_out8(iob+BT485_RAMDAC_DATA, colors[index].green);
+        v_out8(iob+BT485_RAMDAC_DATA, colors[index].blue);
     }
+
+
+
 }
 
 
@@ -407,7 +446,8 @@ void v_setpalette(ScrnInfoPtr pScreenInfo, vu8 start, vu8 count, vu8 *table)
  *
  *
  */
-static void Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
+static void
+Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
 {
     vu8 tmp;
 
@@ -422,7 +462,8 @@ static void Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
  *
  *
  */
-static void Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
+static void
+Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
 {
 /*
     Bt485_write_masked(port, BT485_COMMAND_REG_0, 0x7f, 0x80);
@@ -441,7 +482,8 @@ static void Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
  *
  *
  */
-static vu8 Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
+static vu8
+Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
 {
     return v_in8(port+reg)&mask;
 }
@@ -453,7 +495,8 @@ static vu8 Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
  *
  *
  */
-static vu8 Bt485_read_cmd3_masked(vu16 port, vu8 mask)
+static vu8
+Bt485_read_cmd3_masked(vu16 port, vu8 mask)
 {
     vu8 value;
 

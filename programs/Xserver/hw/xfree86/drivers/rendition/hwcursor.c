@@ -13,9 +13,7 @@
  * defines 
  */
 
-#ifdef DEBUG
 #undef DEBUG
-#endif
 
 /* use a 64x64 cursor, 32x32 otherwise    */
 /* note that V2K supports only 64x64 size */
@@ -26,7 +24,7 @@
  */
 
 static Bool RENDITIONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
-static void RENDITIONSetCursorColors(ScrnInfoPtr pScreenInfo, int fg, int bg);
+static void RENDITIONSetCursorColors(ScrnInfoPtr pScreenInfo, int bg, int fg);
 static void RENDITIONSetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y);
 static void RENDITIONHideCursor(ScrnInfoPtr pScreenInfo);
 static void RENDITIONShowCursor(ScrnInfoPtr pScreenInfo);
@@ -40,6 +38,10 @@ void
 RenditionHWCursorPreInit (ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug RenditionHWCursorPreInit called\n");
+#endif
 
     pRendition->board.hwcursor_used = TRUE;
     if (pRendition->board.chip==V1000_DEVICE){
@@ -60,6 +62,10 @@ RenditionHWCursorRelease (ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug RenditionHWCursorRelease called\n");
+#endif
+
     xf86DestroyCursorInfoRec(pRendition->CursorInfoRec);
     pRendition->CursorInfoRec=NULL;
 }
@@ -72,14 +78,14 @@ RenditionHWCursorInit(int scrnIndex, ScreenPtr pScreen)
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     xf86CursorInfoPtr infoPtr;
 
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug RenditionHWCursorInit called\n");
+#endif
+
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
 
     pRendition->CursorInfoRec = infoPtr;
-
-#ifdef DEBUG
-    ErrorF( "RENDITION: RENDITIONHwCursorInit called\n");
-#endif
 
 #ifdef BIGCURSOR
     infoPtr->MaxWidth=64;
@@ -113,6 +119,10 @@ RenditionHWCursorInit(int scrnIndex, ScreenPtr pScreen)
 static Bool
 RENDITIONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug RENDITIONUseHWCursor called\n");
+#endif
+
   /* have this return false for DoubleScan and Interlaced ? */
     return TRUE;
 }
@@ -128,7 +138,7 @@ RENDITIONShowCursor(ScrnInfoPtr pScreenInfo)
 #endif
 
     /* enable cursor - X11 mode */
-    v_enablecursor(pScreenInfo, V_3COLORS, 
+    v_enablecursor(pScreenInfo, V_3COLORS,
 #ifdef BIGCURSOR
         V_CURSOR64
 #else 
@@ -171,7 +181,7 @@ RENDITIONSetCursorColors(ScrnInfoPtr pScreenInfo, int bg, int fg)
     ErrorF( "RENDITION: SetCursorColors(%x, %x) called\n", fg, bg);
 #endif
 
-    v_setcursorcolor(pScreenInfo, fg, bg);
+    v_setcursorcolor(pScreenInfo, bg, fg);
 }
 
 

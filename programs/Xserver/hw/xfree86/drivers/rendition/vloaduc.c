@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.8 1999/12/14 03:12:10 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.9 2000/01/18 16:35:52 tsi Exp $ */
 /*
  * includes
  */
@@ -9,6 +9,7 @@
 #include "vloaduc.h"
 #include "vos.h"
 #include "elf.h"
+
 
 /*
  * defines 
@@ -29,8 +30,10 @@
 /*
  * local function prototypes 
  */
-void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr);
-void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr);
+static void loadSection2board(ScrnInfoPtr pScreenInfo, int fd,
+				Elf32_Shdr *shdr);
+static void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd,
+				Elf32_Phdr *phdr);
 static int seek_and_read_hdr(int fd, void *ptr, long int offset,
 			     int size, int cnt);
 static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
@@ -49,7 +52,8 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
  * 
  * Returns the program's entry point, on error -1;
  */
-int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
+int
+v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 {
   /* renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
 
@@ -60,7 +64,7 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   Elf32_Shdr *pshdr, *orig_pshdr=NULL;
   Elf32_Ehdr ehdr ;
 
-#ifdef DEBUG
+#if 1 /* DEBUG */
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
 
@@ -85,7 +89,6 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   /* read in the program header(s) */
   sz=SW16(ehdr.e_phentsize);
   num=SW16(ehdr.e_phnum);
-
   if (0!=sz && 0!=num) {
 	orig_pphdr=pphdr=(Elf32_Phdr *)xalloc(sz*num);
 	if (!pphdr) {
@@ -155,7 +158,8 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
  * local functions
  */
 
-void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr)
+static void
+loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr)
 {
   /*  renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
    ErrorF("vlib: loadSection2board not implemented yet!\n");
@@ -163,7 +167,8 @@ void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr)
 
 
 
-void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
+static void
+loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 {
   /*  renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
   vu8 *data;
@@ -194,7 +199,8 @@ void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 
 
 
-static int seek_and_read_hdr(int fd, void *ptr, long int offset, int size, 
+static int
+seek_and_read_hdr(int fd, void *ptr, long int offset, int size, 
                              int cnt)
 {
   if (lseek(fd, offset, SEEK_SET) != offset)
@@ -208,7 +214,8 @@ static int seek_and_read_hdr(int fd, void *ptr, long int offset, int size,
 
 
 
-static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
+static void
+mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu8 memend;
@@ -226,8 +233,8 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
 
   while (size > 0) {
     v_write_memory32(vmb, phys_addr, *dataout);
-	phys_addr+=4;
-	dataout++;
+        phys_addr+=4;
+        dataout++;
 	size-=4;
   }
 

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.66 2000/02/21 19:23:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.67 2000/02/23 04:47:11 martin Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -203,7 +203,6 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOWRITEBITMAP,	"NoWriteBitmap",OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1192,11 +1191,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(GLINTOptions, OPTION_NOWRITEBITMAP, FALSE)) {
-	pGlint->WriteBitmap = FALSE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"WriteBitmap() replacement disabled\n");
-    } else pGlint->WriteBitmap = TRUE;
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {
@@ -1841,13 +1835,13 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	
 	if (pGlint->HWCursor) {
 
-		DisplayModePtr mode = pScrn->modes;
-
-		while (mode) {
+		DisplayModePtr mode, first = mode = pScrn->modes;
+		
+		do {	/* We know there is at least the built-in mode */
 			mode->Flags |= V_PHSYNC | V_PVSYNC;
-			if (mode->next != mode) mode = mode->next;
-			else mode = NULL;
-		}
+			mode->Flags &= ~V_NHSYNC | ~V_NVSYNC;
+			mode = mode->next;
+		} while (mode != NULL && mode != first);
 	}
     }
 

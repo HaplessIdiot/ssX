@@ -1,11 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.5 1999/04/25 10:02:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.7 1999/11/19 13:54:48 hohndel Exp $ */
 /*
  * file vvga.c
  *
  * Functions that handle the generic vga part of the Verite chips.
  */
-
-
 
 /*
  * includes
@@ -17,6 +15,8 @@
 #include "vmisc.h"
 #include "v1kregs.h"
 #include "v2kregs.h"
+
+#undef DEBUG
 
 void set_PLL(vu16, vu32);
 
@@ -45,7 +45,8 @@ static void updattr(vu8 index, vu8 value);
  * functions
  */
 
-void v_resetvga(void)
+void
+v_resetvga(void)
 {
     static struct VIDEO_REGS {
         vu8 seq[8];     /* sequencer regs */
@@ -72,6 +73,10 @@ void v_resetvga(void)
     };
     int c;
 
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_resetvga called\n");
+#endif
+
     /* set attribute controller */
     for (c=0; c<0x15; c++)
         updattr(c, mode3.attr[c]);
@@ -92,7 +97,8 @@ void v_resetvga(void)
 
 
 
-void v_loadvgafont(void)
+void
+v_loadvgafont(void)
 {
     int c;
     vu8 b;
@@ -100,6 +106,10 @@ void v_loadvgafont(void)
     vu8 *vidmem;
     vu8 *vbase;
     int fbFlags;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_loadvgafont called\n");
+#endif
 
     /* Assert synchroneous reset while setting the clock mode */
     setvgareg(0x3c4, 0, 1);               /* assert synchronous reset */
@@ -142,10 +152,15 @@ void v_loadvgafont(void)
 
 
 
-void v_textmode(struct v_board_t *board) 
+void
+v_textmode(struct v_board_t *board) 
 {
     vu16 iob=board->io_base;
     int tmp;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_textmode called\n");
+#endif
 
     /* dac */
     v_out8(iob+DACCOMMAND0, 0x80);     /* 6 bit op, enable extended */
@@ -207,10 +222,15 @@ void v_textmode(struct v_board_t *board)
 
 
 
-void v_savetextmode(struct v_board_t *board) 
+void
+v_savetextmode(struct v_board_t *board) 
 {
     vu8 *vbase;
     int fbFlags;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_savetextmode called\n");
+#endif
 
     /* save the cursor position */
     board->cursor_hi=getvgareg(0x3d4, 0xe);
@@ -231,10 +251,15 @@ void v_savetextmode(struct v_board_t *board)
 
 
 
-void v_restoretextmode(struct v_board_t *board) 
+void
+v_restoretextmode(struct v_board_t *board) 
 {
     vu8 *vbase;
     int fbFlags;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_restoretextmode called\n");
+#endif
 
     /* restore the cursor position */
     setvgareg(0x3d4, 0xe, board->cursor_hi);
@@ -255,10 +280,15 @@ void v_restoretextmode(struct v_board_t *board)
 
 
 
-void v_restorepalette(void)
+void
+v_restorepalette(void)
 {
     int c;
     vu8 *pal=vga_pal;
+
+#ifdef DEBUG
+    ErrorF ("Rendition: Debug v_restorepalette called\n");
+#endif
 
     v_out8(0x3c8, 0);
     for (c=0; c<768; c++)
@@ -276,7 +306,8 @@ void v_restorepalette(void)
  *
  * Reads in a vga register.
  */
-static vu8 getvgareg(vu16 port, vu8 index)
+static vu8
+getvgareg(vu16 port, vu8 index)
 {
     v_out8(port, index);
     return v_in8(port+1);
@@ -289,7 +320,8 @@ static vu8 getvgareg(vu16 port, vu8 index)
  *
  * Sets a vga register.
  */
-static void setvgareg(vu16 port, vu8 index, vu8 value)
+static void
+setvgareg(vu16 port, vu8 index, vu8 value)
 {
     v_out8(port, index);
     v_out8(port+1, value);
@@ -302,7 +334,8 @@ static void setvgareg(vu16 port, vu8 index, vu8 value)
  *
  * Used to write the attribute controller registers.
  */
-static void updattr(vu8 index, vu8 value)
+static void
+updattr(vu8 index, vu8 value)
 {
     v_in8(0x3da);           /* points to index register for color adapter */
     v_in8(0x3ba);           /* points to index register for mono */

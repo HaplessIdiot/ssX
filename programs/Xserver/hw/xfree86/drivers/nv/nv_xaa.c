@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.12 2000/01/01 18:32:28 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.13 2000/02/08 17:19:11 dawes Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -49,11 +49,7 @@
 
 #include "nvreg.h"
 #include "nvvga.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
+
 #include "miline.h"
 
 /*
@@ -505,6 +501,9 @@ NVPolylinesThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     NVPtr pNv = NVPTR(infoRec->pScrn);
     pNv->CurrentGC = pGC;
+#ifdef NV_USE_FB    
+    pNv->CurrentDrawable = pDraw;
+#endif    
     if(infoRec->NeedToSync) 
 	while (pNv->riva.Busy(&pNv->riva));
     XAAPolyLines(pDraw, pGC, mode, npt, pPts);
@@ -520,6 +519,9 @@ NVPolySegmentThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     NVPtr pNv = NVPTR(infoRec->pScrn);
     pNv->CurrentGC = pGC;
+#ifdef NV_USE_FB    
+    pNv->CurrentDrawable = pDraw;
+#endif    
     if(infoRec->NeedToSync) 
 	while (pNv->riva.Busy(&pNv->riva));
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
@@ -548,12 +550,14 @@ NVSubsequentSolidHorVertLine(
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
 }
 
+#ifndef NV_USE_FB
 static void (*LineFuncs[4])() = {
   cfbBresS,
   cfb16BresS,
   NULL,
   cfb32BresS
 };
+#endif
 
 static void 
 NVSubsequentSolidBresenhamLine( 
@@ -563,6 +567,7 @@ NVSubsequentSolidBresenhamLine(
    int e, int len, int octant
 ){
     NVPtr pNv = NVPTR(pScrn);
+#ifndef NV_USE_FB
     cfbPrivGCPtr devPriv;
     int Bpp = pScrn->bitsPerPixel >> 3;
 
@@ -578,6 +583,13 @@ NVSubsequentSolidBresenhamLine(
 	(octant & YDECREASING) ? -1 : 1, 
 	(octant & YMAJOR) ? Y_AXIS : X_AXIS,
 	x, y, dmin + e, dmin, dmin - dmaj, len);
+#else
+    fbBres(pNv->CurrentDrawable, pNv->CurrentGC, 0,
+           (octant & XDECREASING) ? -1 : 1,
+           (octant & YDECREASING) ? -1 : 1,
+           (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+           x, y, dmin + e, dmin, -dmaj, len);
+#endif
 }
 
 

@@ -1,4 +1,18 @@
 XFree86 3.9.18a (25 February 2000)
+3865. Fix some rendition driver problems (#3746, Dejan Ilic).
+3864. Add build-time support for using fb instead of cfb with the nv
+      driver (#3744, Jarno Paananen).
+3863. Add missing xf86_ansic.h include for the nv driver, and avoid a
+      gcc 2.96-generated memcpy call in Mesa (#3743, Jarno Paananen).
+3862. Glint driver updates:
+       - removed obsolete NoWriteBitmap option
+       - reworked pm2_accel.c (cleaned up swapping/mirroring, removed
+         obsolete hacks)
+       - fixed setting of mode sync flags
+       - fixed PolySegmentThinSolidWrapper functions
+      (#3742, Michel Dänzer).
+3861. Change the positioning of $(XF86INT10LIB) to fix some static server
+      linking problems (#3741, Kevin Brosius).
 3860. Make xclock's -brief option off by default, and document it in the
       man page (#3740, Nozomi Ytow).
 3859. Improve the default convereters set in libX11, and use it for all
@@ -9827,4 +9841,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1034 2000/02/25 17:23:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1035 2000/02/25 18:28:02 dawes Exp $
