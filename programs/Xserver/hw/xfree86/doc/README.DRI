@@ -477,7 +477,7 @@ bleshooting.
 10.1.1  Dependencies
 
 The Voodoo3 DRI driver requires a special versions of the 3dfx Glide library.
-It can be downloaded from the DRI web site.
+It can be downloaded from the DRI website.
 
 10.1.2  Configuration
 
@@ -507,7 +507,7 @@ The kernel module for the Voodoo3 is named tdfx.o and should be installed in
 /lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
 Xserver if needed.
 
-The DRI 3D driver for the Voodoo3 should be in /usr/X11R6/lib/mod-
+The DRI 3D driver for the Voodoo3 hould be in /usr/X11R6/lib/mod-
 ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
 
 10.1.3  Troubleshooting
@@ -541,7 +541,7 @@ ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
    o SSystem has problems because of poorly set near and far clipping planes.
      The office.unc Performer model also suffers from this problem.
 
-   o The lowest mipmap level is sometimes mis-colored in trilinear- sampled
+   o The lowest mipmap level is sometimes miscolored in trilinear- sampled
      polygons.
 
 10.2  3dfx Voodoo5 Series
@@ -550,7 +550,7 @@ ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
 
 The Voodoo5 DRI driver requires a special versions of the 3dfx Glide library,
 different than that used for Voodoo3 hardware.  It can be downloaded from the
-DRI web site.
+DRI website.
 
 10.2.2  Configuration
 
@@ -585,7 +585,7 @@ The kernel module for the Voodoo5 is named tdfx.o and should be installed in
 /lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
 Xserver if needed.
 
-The DRI 3D driver for the Voodoo5 should be in /usr/X11R6/lib/mod-
+The DRI 3D driver for the Voodoo5 hould be in /usr/X11R6/lib/mod-
 ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
 
 The Voodoo5 supports 3D rendering in 16 and 32 bpp modes.  When running in
@@ -601,7 +601,7 @@ A software-based accumulation buffer is available in both 16 and 32bpp modes.
      3dfx hardware.
 
    o Different versions of Glide are needed for Voodoo3 and Voodoo5.  See the
-     DRI web site's resources page to download the right version of Glide.
+     DRI website's resources page to download the right version of Glide.
 
 10.2.4  Performance
 
@@ -928,7 +928,7 @@ forge.net/resources/resources.html
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.7 2000/08/28 18:24:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.8 2000/09/24 13:51:26 alanh Exp $
 
 
 $XFree86$

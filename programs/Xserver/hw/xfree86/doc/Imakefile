@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.67 2000/03/08 05:38:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.68 2000/06/17 17:44:20 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -54,7 +54,7 @@ HWREADME = \
 	ReadmeFile(DECtga)	\
 	/*ReadmeFile(epson)*/	\
 	/*ReadmeFile(fbdev)*/	\
-	/*ReadmeFile(I128)*/	\
+	ReadmeFile(I128)	\
 	ReadmeFile(i740)	\
 	ReadmeFile(i810)	\
 	/*ReadmeFile(Mach32)*/	\

@@ -374,7 +374,7 @@ This will ensure that you use the new X libraries when you run X programs.
 To update your X locale information do the following:
 
                   cd ~/DRI-CVS/build/xc/nls
-                  xmkmf -a
+                  ../config/util/xmkmf -a
                   make
                   make install
 
@@ -486,7 +486,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.5 2000/08/28 18:24:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.6 2000/09/24 13:51:26 alanh Exp $
 
 
 $XFree86$

@@ -369,6 +369,19 @@ Screen, Monitor, Device.
             improved. Because the rendering is all done into a virtual frame-
             buffer acceleration can not be used.
 
+      Option "NoTMED"
+            The new TMED DSTN dithering scheme available on recent HiQV
+            chipsets gives improved performance. However, some machines
+            appear to have this feature incorrectly setup. If you have snow
+            on your DSTN LCD, try using this option. This option is only rel-
+            evant for chipsets more recent than the ct65555 and only when
+            used with a DSTN LCD.
+
+      Option "UseFB"
+            Force the new framebuffer (fb) code to be used in place of its
+            older counterpart (cfb). The sense of this option will probably
+            be reversed when fb becomes the default.
+
       Option "Overlay"
             The HiQV chipsets contain a multimedia engine that allow a 16bpp
             window to be overlayed on the screen. This driver uses this capa-
@@ -881,7 +894,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.31 2000/06/14 01:43:49 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.32 2000/10/27 18:31:02 dawes Exp $
 
 
 $XFree86$
