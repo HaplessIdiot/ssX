@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.136 2001/11/21 21:31:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.138 2001/12/27 01:15:56 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -471,6 +471,15 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
+#else
+#if     BuildGlxExt && !defined(XFree86Version)
+#undef  BuildXF86DRI
+#undef  BuildXF86DRM
+#undef  BuildXF86DRIDriverSupport
+#define BuildXF86DRI			NO
+#define BuildXF86DRM			NO
+#define BuildXF86DRIDriverSupport	NO
+#endif
 #endif
 #ifndef BuildGLXLibrary
 #define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly)
