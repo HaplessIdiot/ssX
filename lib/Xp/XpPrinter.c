@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -161,7 +162,7 @@ XpGetPrinterList (
 		}
 
 		_XReadPad (dpy, (char *) dataVR, (long) dataLenVR);
-		dataVR[dataLenVR] = NULL;	/* add NULL termination */
+		dataVR[dataLenVR] = '\0';	/* add NULL termination */
 		ptr_list[i].name = (char *) dataVR;
 	    }
 	    else {
@@ -183,7 +184,7 @@ XpGetPrinterList (
 		}
 
 		_XReadPad (dpy, (char *) dataVR, (long) dataLenVR);
-		dataVR[dataLenVR] = NULL;	/* add NULL termination */
+		dataVR[dataLenVR] = '\0';	/* add NULL termination */
 		ptr_list[i].desc = (char *) dataVR;
 	    }
 	    else {

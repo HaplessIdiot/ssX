@@ -44,6 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -1233,7 +1234,7 @@ ReplaceAllKeywords(
     return command;
 }
 
-#if defined(CSRG_BASED) || defined(linux) || (defined(sun) && !defined(SVR4))
+#if defined(CSRG_BASED) || defined(linux) || (defined(sun) && !defined(SVR4)) || (defined(SVR4) && !defined(sun) && !defined(USL))
 #define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
 

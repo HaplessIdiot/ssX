@@ -1,5 +1,5 @@
 /* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.1 1995/01/28 16:17:33 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/miscfuncs.c,v 3.2 1996/06/10 09:18:25 dawes Exp $ */
 
 #include <X11/Xos.h>
 
@@ -169,7 +169,7 @@ ScanDir(Name, List, Selector)
 
     /* Sort? */
     if (i)
-	qsort((char *)names, i, sizeof(char *), StrCmp);
+	qsort((char *)names, i, sizeof(char *), (int (*)())StrCmp);
 
     return(i);
 }

@@ -34,6 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
+/* $XFree86$ */
 
 #define NEED_REPLIES
 
@@ -92,7 +93,7 @@ XpGetAttributes (
 
     _XReadPad (dpy, (char *) buf, (long) rep.stringLen );
 
-    buf[rep.stringLen] = NULL;		/* tack on NULL terminator */
+    buf[rep.stringLen] = '\0';		/* tack on NULL terminator */
 
     UnlockDisplay(dpy);
     SyncHandle();
@@ -153,10 +154,10 @@ XpGetOneAttribute (
         return( (char *) NULL ); /* malloc error */
     }
 
-    buf[rep.valueLen] = NULL;
+    buf[rep.valueLen] = '\0';
 
     _XReadPad (dpy, (char *) buf, (long) rep.valueLen );
-    buf[rep.valueLen] = NULL;		/* tack on NULL terminator */
+    buf[rep.valueLen] = '\0';		/* tack on NULL terminator */
 
     UnlockDisplay(dpy);
     SyncHandle();
