@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftstr.c,v 1.2 2000/12/14 23:03:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftstr.c,v 1.3 2000/12/20 00:28:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -156,9 +156,9 @@ XftUtf8ToUcs4 (XftChar8    *src_orig,
 	       XftChar32   *dst,
 	       int	    len)
 {
-    XftChar8	*src;
+    XftChar8	*src = src_orig;
     XftChar8	s;
-    int		bytelength;
+    int		extra;
     XftChar32	result;
 
     if (len == 0)
@@ -170,51 +170,53 @@ XftUtf8ToUcs4 (XftChar8    *src_orig,
     if (!(s & 0x80))
     {
 	result = s;
+	extra = 0;
     } 
     else if (!(s & 0x40))
     {
-	result = s;
+	return -1;
+    }
+    else if (!(s & 0x20))
+    {
+	result = s & 0x1f;
+	extra = 1;
+    }
+    else if (!(s & 0x10))
+    {
+	result = s & 0xf;
+	extra = 2;
+    }
+    else if (!(s & 0x08))
+    {
+	result = s & 0x07;
+	extra = 3;
+    }
+    else if (!(s & 0x04))
+    {
+	result = s & 0x03;
+	extra = 4;
+    }
+    else if ( ! (s & 0x02))
+    {
+	result = s & 0x01;
+	extra = 5;
     }
     else
     {
-	if (!(s & 0x20))
-	{
-	    result = s & 0x1f;
-	    bytelength = 2;
-	}
-	else if (!(s & 0x10))
-	{
-	    result = s & 0xf;
-	    bytelength = 3;
-	}
-	else if (!(s & 0x08))
-	{
-	    result = s & 0x07;
-	    bytelength = 4;
-	}
-	else if (!(s & 0x04))
-	{
-	    result = s & 0x03;
-	    bytelength = 5;
-	}
-	else if ( ! (s & 0x02))
-	{
-	    result = s & 0x01;
-	    bytelength = 6;
-	}
-	else
-	{
-	    result = s;
-	    bytelength = 1;
-	}
-	if (bytelength > len)
+	return -1;
+    }
+    if (extra > len)
+	return -1;
+    
+    while (extra--)
+    {
+	result <<= 6;
+	s = *src++;
+	
+	if ((s & 0xc0) != 0x80)
 	    return -1;
 	
-	while (--bytelength)
-	{
-	    result <<= 6;
-	    result |= *src++ & 0x3f;
-	}
+	result |= s & 0x3f;
     }
     *dst = result;
     return src - src_orig;
