@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.276 1997/06/11 12:24:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.277 1997/06/15 07:12:15 dawes Exp $ */
 
-#define XF86_VERSION " 3.9e "
+#define XF86_VERSION " 3.9f "
 
 /* The finer points in versions... */
 #define XF86_VERSION_MAJOR	3
@@ -18,6 +18,6 @@
 			XF86_VERSION_BETA,			\
 			XF86_VERSION_ALPHA)
 
-#define XF86_DATE	"June 15 1997"
+#define XF86_DATE	"June 16 1997"
 
 /* $XConsortium: xf86Version.h /main/78 1996/10/28 05:42:10 kaleb $ */
