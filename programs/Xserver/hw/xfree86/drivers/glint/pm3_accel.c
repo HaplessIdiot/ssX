@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.21 2001/02/05 14:24:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.22 2001/02/05 15:10:43 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -846,7 +846,12 @@ Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    if ((pGlint->dwords*h) < pGlint->FIFOSize) {
+#if defined(__alpha__)
+    if (0) /* force Alpha to use indirect always */
+#else
+    if ((pGlint->dwords*h) < pGlint->FIFOSize)
+#endif
+    {
 	/* Turn on direct for less than 120 dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;
@@ -931,7 +936,12 @@ static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    if (pGlint->dwords < pGlint->FIFOSize) {
+#if defined(__alpha__)
+    if (0) /* force Alpha to use indirect always */
+#else
+    if (pGlint->dwords < pGlint->FIFOSize)
+#endif
+    {
 	/* Turn on direct for less than 120 dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;

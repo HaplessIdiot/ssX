@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.83 2001/02/15 18:16:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.84 2001/02/16 15:39:35 alanh Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1605,8 +1605,8 @@ MGANAME(SubsequentScanlineCPUToScreenColorExpandFill)(
     OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | (x & 0xFFFF));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 
-#ifdef __alpha__
-    if(1)
+#if defined(__alpha__)
+    if(1) /* force indirect always on Alpha */
 #else
     if(pMga->expandDWORDs > pMga->FifoSize)
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.44 2000/12/06 18:08:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.45 2001/02/15 11:03:56 alanh Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -612,6 +612,7 @@ readSparse8(pointer Base, register unsigned long Offset)
     register unsigned long result, shift;
     register unsigned long msb;
 
+    mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x3) << 3;
       if (Offset >= (hae_thresh)) {
@@ -634,6 +635,7 @@ readSparse16(pointer Base, register unsigned long Offset)
     register unsigned long result, shift;
     register unsigned long msb;
 
+    mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x2) << 3;
       if (Offset >= hae_thresh) {
@@ -652,6 +654,7 @@ readSparse16(pointer Base, register unsigned long Offset)
 static int
 readSparse32(pointer Base, register unsigned long Offset)
 {
+    mem_barrier();
     return *(vuip)((unsigned long)Base+(Offset));
 }
 
@@ -661,7 +664,7 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
 
-    mem_barrier();
+    write_mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
       msb = Offset & hae_mask;
@@ -680,7 +683,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
 
-    mem_barrier();
+    write_mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
       msb = Offset & hae_mask;
@@ -697,7 +700,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
 static void
 writeSparse32(int Value, pointer Base, register unsigned long Offset)
 {
-    mem_barrier();
+    write_mem_barrier();
     *(vuip)((unsigned long)Base + (Offset)) = Value;
     return;
 }
