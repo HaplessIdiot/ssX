@@ -6,7 +6,7 @@
 // uses the punctuation keys configurations common on PC 
 // keyboards (e.g. key <ABO9> is { [ period greater ] })
 
-// $XFree86: xc/programs/xkbcomp/symbols/dvorak,v 3.8 2002/11/20 04:49:03 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/dvorak,v 3.9 2003/02/04 02:32:48 dawes Exp $
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {
@@ -215,5 +215,24 @@ xkb_symbols "se" {
 partial alphanumeric_keys 
 xkb_symbols "sv" {
     include "dvorak(se)"
+};
+
+
+// Dvorak (UK) keymap (by odaen) allowing the usage of
+// the £ and ? key and swapping the @ and " keys.
+
+partial alphanumeric_keys
+xkb_symbols "gb" {
+    include "dvorak(basic)"
+
+    key <BKSL> {	[  numbersign,  asciitilde	]	};
+    key <AE02> {	[	    2,  quotedbl	],
+			[ twosuperior,  NoSymbol	]	};
+    key <AE03> {	[	    3,  sterling	],
+			[ threesuperior, NoSymbol	]	};
+    key <AE04> {	[	    4,  dollar		],
+			[    EuroSign,  NoSymbol	]	};
+    key <LSGT> {	[   backslash,  bar		]	};
+    key <AD01> {	[  apostrophe,  at		]	};
 };
 
