@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.16 2000/12/04 08:46:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.17 2000/12/07 16:48:05 alanh Exp $ */
 
 #define DEBUG 1
 
@@ -84,16 +84,14 @@
 #define CursorBG4 0x4F
 #define CursorControl 0x50
 #define PCIRetry 0x55
-#define DispPreCont 0x56
-#define DispPreFetch 0x57
+#define PreEndControl 0x56
+#define PreEndFetch 0x57
 #define PCIMaster 0x60
 #define Enhancement0 0x62
 #define NewEDO 0x64
 #define TVinterface 0xC0
 #define TVMode 0xC1
 #define ClockControl 0xCF
-#define PreEndControl 0x56
-#define PreEndFetch 0x57
 
 
 /* 3CE */

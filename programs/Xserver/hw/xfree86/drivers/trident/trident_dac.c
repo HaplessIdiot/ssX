@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.33 2000/11/30 10:19:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.34 2000/12/07 16:48:05 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -170,6 +170,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     OUTB(0x3CE, MiscExtFunc);
     pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF) & 0xF0;
     pReg->tridentRegs3x4[GraphEngReg] = 0x00; 
+    pReg->tridentRegs3x4[PreEndControl] = 0;
+    pReg->tridentRegs3x4[PreEndFetch] = 0;
 
     pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400)>>4) |
  				     (((mode->CrtcVTotal - 2) & 0x400) >> 3) |
@@ -330,8 +332,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case IMAGE985:
 	    if (pScrn->bitsPerPixel >= 8)
     	    	pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
-	    pReg->tridentRegs3x4[DispPreCont] = 0x01;
-	    pReg->tridentRegs3x4[DispPreFetch] = 0xFF;
+	    if (!pReg->tridentRegs3x4[PreEndControl])
+	    	pReg->tridentRegs3x4[PreEndControl] = 0x01;
+	    if (!pReg->tridentRegs3x4[PreEndFetch])
+	    	pReg->tridentRegs3x4[PreEndFetch] = 0xFF;
 	    /* Fall Through */
 	case PROVIDIA9685:
 	    pReg->tridentRegs3x4[Enhancement0] = 0x40;
@@ -531,11 +535,11 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3x4(PixelBusReg);
     OUTW_3x4(PCIReg);
     OUTW_3x4(PCIRetry);
-    OUTW_3x4(DispPreCont);
-    OUTW_3x4(DispPreFetch);
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
+    OUTW_3x4(PreEndControl);
+    OUTW_3x4(PreEndFetch);
     if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      OUTW_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
@@ -559,8 +563,6 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	OUTW_3x4(0x11); 
 	OUTW_3x4(0x16);
 	SHADOW_RESTORE(tmp);
-	OUTW_3x4(PreEndControl);
-	OUTW_3x4(PreEndFetch);
     }
  
     if (Is3Dchip) {
@@ -636,8 +638,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
-    INB_3x4(DispPreCont);
-    INB_3x4(DispPreFetch);
+    INB_3x4(PreEndControl);
+    INB_3x4(PreEndFetch);
     if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
@@ -660,8 +662,6 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	INB_3x4(0x11);
 	INB_3x4(0x16);
 	SHADOW_RESTORE(tmp);
-	INB_3x4(PreEndControl);
-	INB_3x4(PreEndFetch);
     }
 
     /* save cursor registers */
