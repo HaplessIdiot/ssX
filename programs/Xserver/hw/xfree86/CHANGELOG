@@ -1,4 +1,6 @@
 XFree86 4.0a (31 March 2000)
+  74. Allow the v4l driver to use offscreen YUV surfaces exported by the
+      chipset drivers (Gerd Knorr).
   73. Change xf86LoadModules() so that it doesn't quit at the first module
       that fails to load (David Dawes).
   72. SIGIO doesn't work on Linux pipes, so diasble it for input devices
