@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.81 2005/01/31 03:21:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.82 2005/02/01 04:24:36 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -175,8 +175,11 @@ VARDIR=$ROOTDIR/var
 
 OLDFILES=" \
 	$RUNDIR/include/freetype2/ft2build.h \
+	$RUNDIR/lib/X11/fonts/misc/heb6x13.pcf.gz \
 	$RUNDIR/lib/X11/fonts/misc/heb8x13.pcf.gz \
 	$RUNDIR/lib/X11/fonts/misc/7x14rk.pcf.gz \
+	$RUNDIR/lib/X11/fonts/misc/7x13euro.pcf.gz \
+	$RUNDIR/lib/X11/fonts/misc/7x13euroB.pcf.gz \
 	"
 
 OLDDIRS=" \
@@ -210,6 +213,7 @@ UPDATEDIST=" \
 	"
 
 ETCDIST="Xetc.tgz"
+RCDIST="Xrc.tgz"
 
 VARDIST=""
 
@@ -227,7 +231,6 @@ OPTDIST=" \
 	Xfcyr.tgz \
 	Xfscl.tgz \
 	Xhtml.tgz \
-	Xjdoc.tgz \
 	Xps.tgz \
 	Xpdf.tgz \
 	"
@@ -267,6 +270,7 @@ VERSIONFILE=".XFree86_Version"
 
 WDIR="`pwd`"
 
+NoEtcX11=
 DOUPDATE=
 DOBASE=
 
@@ -945,6 +949,7 @@ GetBindistVersion()
 	fi
 	if [ -f $VERSIONFILE ]; then
 		BINDISTVERSION=`cat $VERSIONFILE`
+		echo ""
 		echo "Bindist version is $BINDISTVERSION"
 		BINDISTFULLPREFIX=`expr $BINDISTVERSION : '\([0-9]*\.[0-9]*\)\.'`
 		BINDISTPATCHLEVEL=`expr $BINDISTVERSION : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
@@ -1177,6 +1182,7 @@ OpenBSD)
 	;;
 NetBSD)
 	EXTRAOPTDIST="Xdrm.tgz"
+	NoEtcX11="YES"
 	;;
 Interactive)	# Need the correct name for this
 	EXTRADIST="Xbin1.tgz"
@@ -1282,6 +1288,7 @@ else
 		extract \
 		$BASEDIST \
 		$ETCDIST \
+		$RCDIST \
 		$VARDIST \
 		$SERVDIST \
 		$EXTRADIST \
@@ -1373,7 +1380,7 @@ if [ ! -d $RUNDIR/lib/X11 ]; then
 	echo "Creating $RUNDIR/lib/X11"
 	Mkdir $RUNDIR/lib/X11
 fi
-if [ ! -d $ETCDIR/X11 ]; then
+if [ X$NoEtcX11 != XYES -a ! -d $ETCDIR/X11 ]; then
 	NewEtcDir=YES
 	echo "Creating $ETCDIR/X11"
 	Mkdir $ETCDIR/X11
@@ -1411,7 +1418,7 @@ fi
 
 EtcDirToMove=
 EtcFileToMove=
-if [ X"$NoSymLinks" != XYES ]; then
+if [ X$NoEtcX11 != XYES -a X"$NoSymLinks" != XYES ]; then
 	for i in $ETCDLINKS; do
 		if [ -d $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
 			EtcDirToMove="$EtcDirToMove $i"
@@ -1425,7 +1432,7 @@ if [ X"$NoSymLinks" != XYES ]; then
 fi
 
 EtcX11IsUsedBy=
-if [ X"$NoSymLinks" != XYES ]; then
+if [ X$NoEtcX11 != XYES -a X"$NoSymLinks" != XYES ]; then
 	for i in $ETCDLINKS; do
 		if [ -d $ETCDIR/X11/$i -a ! $L $ETCDIR/X11/$i ]; then
 			EtcX11IsUsedBy="$EtcX11IsUsedBy $i"
@@ -1490,10 +1497,10 @@ fi
 # Extract Xetc.tgz into a temporary location, and prompt for moving the
 # files.
 
-echo "Extracting $ETCDIST into a temporary location ..."
+echo "Extracting $ETCDIST and $RCDIST into a temporary location ..."
 Rm -fr .etctmp
 Mkdir .etctmp
-(cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST)
+(cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST; "$EXTRACT" "$WDIR"/$RCDIST)
 echo ""
 echo "Configuration files will now be installed.  There are some cases where"
 echo "installing these files over existing files will adversely affect your"
@@ -1562,7 +1569,7 @@ for i in $ETCDLINKS; do
 		fi
 
 		# Create link to other location if necessary
-		if [ X"$NoSymLinks" != XYES ]; then
+		if [ X$NoEtcX11 != XYES -a X"$NoSymLinks" != XYES ]; then
 			if [ -d $ETCDIR/X11/$i -a ! -d $RUNDIR/lib/X11/$i ]; then
 				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 			else

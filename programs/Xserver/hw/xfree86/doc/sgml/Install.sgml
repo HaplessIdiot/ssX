@@ -6,10 +6,10 @@
 
 <title>Installation Details for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>23 February 2004
+<date>2 February 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.19 2004/06/09 18:24:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.20 2005/01/15 04:36:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -146,7 +146,7 @@ distribution.
 
 Assuming that you have run the <tt>Xinstall.sh</tt> script and found the binary
 <![ %updaterel; [update ]]>distribution suitable for your system,
-download the necessary files.  The <![ %fullbinaries [twelve (12)]]><![
+download the necessary files.  The <![ %fullbinaries [thirteen (13)]]><![
 %updaterel [four (4)]]> mandatory files for all installations are listed
 below.  The installer script will complain if you do not have all four (4)
 files in the same directory.
@@ -161,10 +161,11 @@ files in the same directory.
 6.   Xdoc.tgz       XFree86 documentation
 7.   Xfnts.tgz      Base set of fonts
 8.   Xfenc.tgz      Base set of font encoding data
-9.   Xetc.tgz       Run-time configuration files
-10.  Xvar.tgz       Run-time data
-11.  Xxserv.tgz     XFree86 X server
-12.  Xmod.tgz       XFree86 X server modules
+9.   Xetc.tgz       Run-time configuration files, part 1
+10.  Xrc.tgz        Run-time configuration files, part 2
+11.  Xvar.tgz       Run-time data
+12.  Xxserv.tgz     XFree86 X server
+13.  Xmod.tgz       XFree86 X server modules
 </verb></quote>
 ]]>
 
@@ -200,7 +201,7 @@ NOTES:
 </itemize>
 
 <![ %fullbinaries [
-The following eleven (11) tarballs are optional.  You should download
+The following thirteen (13) tarballs are optional.  You should download
 the ones you want to install.
 
 <quote><verb>
@@ -210,13 +211,13 @@ the ones you want to install.
 4.   Xprog.tgz      X header files, config files and compile-time libs
 5.   Xprt.tgz       X Print server
 6.   Xvfb.tgz       Virtual framebuffer X server
-7.   Xf100.tgz      100dpi fonts
-8.   Xfcyr.tgz      Cyrillic fonts
-9.   Xfscl.tgz      Scalable fonts (Speedo, Type1 and TrueType)
-10.  Xhtml.tgz      HTML version of the documentation
-11.  Xps.tgz        PostScript version of the documentation
-12.  Xpdf.tgz       PDF version of the documentation
-13.  Xjdoc.tgz      Documentation in Japanese
+7.   Xtinyx.tgz     TinyX servers
+8.   Xf100.tgz      100dpi fonts
+9.   Xfcyr.tgz      Cyrillic fonts
+10.  Xfscl.tgz      Scalable fonts (Speedo, Type1 and TrueType)
+11.  Xhtml.tgz      HTML version of the documentation
+12.  Xps.tgz        PostScript version of the documentation
+13.  Xpdf.tgz       PDF version of the documentation
 </verb></quote>
 
 NOTES:
@@ -318,9 +319,9 @@ answer "yes" for each of these.  If you have made customisations, you
 can try answering "no".  If you run into problems later, you may need
 to manually merge your customisations into the the new version of the
 configuration files.  The configuration files can all be found in the
-<tt>Xetc.tgz</tt> tarball.  See the <ref id="manual-install" name="section
-below"> about manual installation for information about extracting them
-separately.
+<tt>Xetc.tgz</tt> and <tt>Xrc.tgz</tt> tarballs.  See the <ref
+id="manual-install" name="section below"> about manual installation for
+information about extracting them separately.
 
 After the configuration files have been dealt with, the other mandatory
 components of the binary distribution will be installed.  This should
@@ -425,9 +426,10 @@ installation procedure for this case is as follows:
 chmod +x extract
 mkdir /usr/X11R6
 mkdir /etc/X11
-./extract -C /usr/X11R6 X[a-df-uw-z]*.tgz
+./extract -C /usr/X11R6 X[a-df-qs-uw-z]*.tgz
 ./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
-./extract -C /etc/X11 Xetc.tgz
+./extract -C /etc Xetc.tgz
+./extract -C /etc Xrc.tgz
 ./extract -C /var Xvar.tgz
 ln -s /etc/X11/app-defaults /usr/X11R6/lib/X11
 ln -s /etc/X11/fs /usr/X11R6/lib/X11
@@ -494,11 +496,12 @@ ln -s /etc/X11/subdir /usr/X11R6/lib/X11
 </verb></tscreen>
 
 Once that is done, extract the config files from the <tt>Xetc.tgz</tt>
-tarball into a temporary directory:
+and <tt>Xrc.tgz</tt> tarballs into a temporary directory:
 
 <tscreen><verb>
 mkdir tmpdir
 ./extract -C tmpdir Xetc.tgz
+./extract -C tmpdir Xrc.tgz
 </verb></tscreen>
 
 and then copy each sub-directory over to the installed location:
@@ -515,7 +518,7 @@ hand.
 Once that's done, the main part of the installation can be done:
 
 <tscreen><verb>
-./extract -C /usr/X11R6 `pwd`/X[a-df-uw-z]*.tgz
+./extract -C /usr/X11R6 `pwd`/X[a-df-qs-uw-z]*.tgz
 ./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
 ./extract -C /var Xvar.tgz
 chmod ug-w /usr/X11R6/lib           # Make sure the permissions are OK
