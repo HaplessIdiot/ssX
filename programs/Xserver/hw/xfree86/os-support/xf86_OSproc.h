@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.43 2000/08/04 16:13:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.44 2000/08/15 16:05:37 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -187,8 +187,7 @@ extern int xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 				  unsigned long *physical);
 extern Bool xf86BindGARTMemory(int screenNum, int key, unsigned long offset);
 extern Bool xf86UnbindGARTMemory(int screenNum, int key);
-/* preliminary */
-extern Bool xf86EnableAGP(int screenNum);
+extern Bool xf86EnableAGP(int screenNum, CARD32 mode);
 
 #if defined(__alpha__)
 /* entry points for Mmio memory access routines */
