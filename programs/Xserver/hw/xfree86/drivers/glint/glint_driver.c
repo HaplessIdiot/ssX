@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.1.2.16 1998/07/24 11:36:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.2 1998/07/25 16:55:46 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -235,6 +235,11 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #define PARTPROD(a,b,c) (((a)<<6) | ((b)<<3) | (c))
 
+static char bppand[4] = { 0x03, /* 8bpp */
+			  0x01, /* 16bpp */
+			  0x00, /* 24bpp */
+			  0x00  /* 32bpp */};
+
 static int partprod500TX[] = {
 	-1,
 	PARTPROD(0,0,1), PARTPROD(0,0,2), PARTPROD(0,1,2), PARTPROD(0,0,3),
@@ -306,6 +311,52 @@ static int partprodPermedia[] = {
 	             -1,              -1,              -1,              -1,
 	             -1,              -1,              -1,              -1,
 		     0};
+
+#ifdef DPMSExtension
+static void
+GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+					int flags)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    int videocontrol, vtgpolarity;
+    
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX)
+	vtgpolarity = GLINT_READ_REG(VTGPolarity) & 0xFFFFFFF0;
+    else 
+        videocontrol = GLINT_READ_REG(PMVideoControl) & 0xFFFFFF86;
+
+    switch (PowerManagementMode) {
+	case DPMSModeOn:
+	    /* Screen: On, HSync: On, VSync: On */
+	    videocontrol |= 0x29;
+	    vtgpolarity |= 0x05;
+	    break;
+	case DPMSModeStandby:
+	    /* Screen: Off, HSync: Off, VSync: On */
+	    videocontrol |= 0x20;
+	    vtgpolarity |= 0x04;
+	    break;
+	case DPMSModeSuspend:
+	    /* Screen: Off, HSync: On, VSync: Off */
+	    videocontrol |= 0x08;
+	    vtgpolarity |= 0x01;
+	    break;
+	case DPMSModeOff:
+	    /* Screen: Off, HSync: Off, VSync: Off */
+	    videocontrol |= 0x28;
+	    vtgpolarity |= 0x00;
+	    break;
+	default:
+	    return;
+    }
+
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) {
+    	GLINT_SLOW_WRITE_REG(vtgpolarity, VTGPolarity);
+    } else {
+    	GLINT_SLOW_WRITE_REG(videocontrol, PMVideoControl);
+    }
+}
+#endif
 
 static Bool
 GLINTGetRec(ScrnInfoPtr pScrn)
@@ -777,18 +828,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
 
-#if 0
-    /* Find the PCI slot for this screen */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	GLINTFreeRec(pScrn);
-	return FALSE;
-    }
-#else
     i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
-#endif
 
     pGlint->PciInfo = pciList[0];
     i--;
@@ -1054,10 +1094,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			pGlint->MaxClock = 230000;
 			break;
 		    case 16:
-			pGlint->MaxClock = 170000;
+			pGlint->MaxClock = 230000;
 			break;
 		    case 24:
-			pGlint->MaxClock = 110000;
+			pGlint->MaxClock = 150000;
 			break;
 		    case 32:
 			pGlint->MaxClock = 110000;
@@ -1175,9 +1215,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	pGlint->pprod = partprodPermedia[pScrn->displayWidth >> 5];
+	pGlint->bppalign = bppand[(pScrn->bitsPerPixel>>3)-1];
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
 	pGlint->pprod = partprod500TX[pScrn->displayWidth >> 5];
+	pGlint->bppalign = 0;
 	break;
     }
 
@@ -1469,6 +1511,9 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     glintReg = &pGlint->ModeReg;
     IBMreg = &pIBM->ModeReg;
 
+    if (pGlint->VGAcore)
+	vgaHWRestore(pScrn, vgaReg, FALSE);
+
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
@@ -1493,9 +1538,6 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         }
 	break;
     }
-
-    if (pGlint->VGAcore)
-	vgaHWRestore(pScrn, vgaReg, FALSE);
 
     vgaHWProtect(pScrn, FALSE);
 
@@ -1626,18 +1668,18 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /*
      * Reset cfb's visual list.
      */
-    cfbClearVisualTypes();
+    miClearVisualTypes();
 
     /* Setup the visuals we support. */
 
     /*
      * For bpp > 8, the default visuals are not acceptable because we only
      * support TrueColor and not DirectColor.  To deal with this, call
-     * cfbSetVisualTypes for each visual supported.
+     * miSetVisualTypes for each visual supported.
      */
 
     if (pScrn->bitsPerPixel > 8) {
-	if (!cfbSetVisualTypes(pScrn->depth, 1 << TrueColor, pScrn->rgbBits))
+	if (!miSetVisualTypes(pScrn->depth, 1 << TrueColor, pScrn->rgbBits))
 	    return FALSE;
     }
 
@@ -1653,13 +1695,20 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
-    switch (pScrn->bitsPerPixel) {
+    switch (pScrn->depth) {
+    case 4:
+	ret = xf4bppScreenInit(pScreen, pGlint->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
     case 8:
 	ret = cfbScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
+    case 15:
     case 16:
 	ret = cfb16ScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1729,21 +1778,25 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         }
     }
 
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
     /* Initialise cursor functions */
     if (pGlint->HWCursor &&
 	pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) {
 	Permedia2vHWCursorInit(pScreen);
-    } else {
-	/* SW cursor */
-	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
     }
+
     /* Initialise default colourmap */
-    if (!cfbCreateDefColormap(pScreen))
+    if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
     pGlint->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = GLINTCloseScreen;
     pScreen->SaveScreen = GLINTSaveScreen;
+
+#ifdef DPMSExtension
+    xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);
+#endif
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {

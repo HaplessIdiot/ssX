@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.1.2.5 1998/07/18 17:53:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.3 1998/07/25 16:55:45 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -52,6 +52,9 @@ typedef struct {
     int			HwBpp;
     int			BppShift;
     int			pprod;
+    int			ForeGroundColor;
+    int			BackGroundColor;
+    int			bppalign;
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     IOBase;

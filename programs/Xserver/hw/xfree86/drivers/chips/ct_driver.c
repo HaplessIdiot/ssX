@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.11.2.10 1998/07/24 11:36:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.25 1998/07/25 16:55:40 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1204,6 +1204,15 @@ CHIPSProbe(DriverPtr drv, int flags)
 	 * the chipset is on it. 
 	 */
 	if (xf86GetPciVideoInfo() != NULL) {
+
+	    if (xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
+			CHIPSPciIds, CHIPSPciNames, devicesections,
+			numdevsections, &usedDevs, &usedPci) <= 0) {
+		return FALSE;
+	    }
+
+	    pPci = usedPci[0];
+
 	    if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
 			      PCI_VGA)) {
 

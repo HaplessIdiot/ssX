@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.1.2.2 1998/07/18 17:53:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.2 1998/07/25 16:55:50 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -44,7 +44,6 @@
 extern int pprod;
 extern int coprotype;
 extern GLINTWindowBase;
-extern UsePCIRetry;
 int ScanlineWordCount;
 int savedplanemask = 0xffffffff;
 int savedrop = UNIT_DISABLE;
@@ -194,7 +193,7 @@ TXAccelInit(ScreenPtr pScreen)
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
       					GLINTSubsequent8x8PatternColorExpand;
 
-    if (UsePCIRetry) {
+    if (pGlint->UsePCIRetry) {
 	xf86AccelInfoRec.ImageTextTE = GLINTImageTextTECPUToScreenColorExpand;
 	xf86GCInfoRec.ImageGlyphBltTE = xf86ImageGlyphBltTE;
 	xf86AccelInfoRec.PolyTextTE = GLINTPolyTextTECPUToScreenColorExpand;
