@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 711. Fix neomagic driver default mode selection to match the detected
+      panel size.  This allows it to work correctly with automatic
+      configuration (David Dawes).
  710. Fixes and updates for XKB keyboard maps:
       - Fix Armenian phonetic keymap (Bugzilla #1016, Ani).
       - Fix rules for Brasilian ABNT2 keyboard (Ricardo Y. Igarashi).
@@ -18420,7 +18423,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3058 2003/12/30 01:53:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3059 2003/12/30 13:31:15 pascal Exp $
 
 
 
