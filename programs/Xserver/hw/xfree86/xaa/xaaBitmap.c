@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.6 2000/03/03 18:49:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.8 2000/06/13 02:51:24 mvojkovi Exp $ */
 
 
 #include "xaa.h"
@@ -255,7 +255,7 @@ EXPNAME(XAAWriteBitmapColorExpand3)(
 EXPNAME(XAAWriteBitmapColorExpand)(
 #endif
     ScrnInfoPtr pScrn,
-    int x, int y, int w, int h,
+    int x, int y, int w, int H,
     unsigned char *src,
     int srcwidth,
     int skipleft,
@@ -272,6 +272,7 @@ EXPNAME(XAAWriteBitmapColorExpand)(
     BitmapScanlineProcPtr firstFunc;
     BitmapScanlineProcPtr secondFunc;
     int flag;
+    int h = H;
 
 #ifdef TRIPLE_BITS
     if((bg != -1) && 
@@ -350,6 +351,7 @@ SECOND_PASS:
     }
 
     if(SecondPassColor != -1) {
+	h = H; /* Reset height */
 	fg = SecondPassColor;
 	SecondPassColor = -1;
 	firstFunc = secondFunc;
