@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/rensizetab.c,v 1.4 2003/09/28 20:15:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/rensizetab.c,v 1.5 2004/01/28 18:11:53 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -231,9 +231,9 @@ __GLXrenderSizeData __glXRenderSizeTable[__GLX_MAX_RENDER_OPCODE_EXT - __GLX_MIN
 	/* Translatef          */	{  16, 	0                         },
 	/* Viewport            */	{  20, 	0                         },
 	/* PolygonOffset       */	{  12, 	0                         },
-	/* no such opcode      */	{  0, 	0                         },
+	/* DrawArrays          */	{  16, 	__glXDrawArraysSize       },
 	/* Indexubv            */	{  8, 	0                         },
-	/* ColorSubTable       */       {  44,  __glXColorSubTableReqSize         },
+	/* ColorSubTable       */       {  44,  __glXColorSubTableReqSize },
 	/* CopyColorSubTable   */       {  24,  0                         },
 	/* ActiveTextureARB    */       {  8,   0                         },
 	/* MultiTexCoord1dvARB */       {  16,  0                         },

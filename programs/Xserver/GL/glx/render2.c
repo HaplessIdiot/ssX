@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/render2.c,v 1.6 2003/10/28 22:50:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/render2.c,v 1.7 2004/01/28 18:11:50 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -264,6 +264,5 @@ void __glXDisp_DrawArrays(GLbyte *pc)
 
 void __glXDisp_DrawArraysEXT(GLbyte *pc)
 {
-#ifdef XXX_STUB
-#endif /*XXX_STUB*/
+   __glXDisp_DrawArrays(pc);
 }
