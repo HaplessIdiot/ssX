@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.29 2002/11/21 07:25:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.30 2002/11/23 08:26:48 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -85,6 +85,10 @@ LispObj *Lisp_Equal(LispBuiltin*);
 LispObj *Lisp_Equalp(LispBuiltin*);
 LispObj *Lisp_Error(LispBuiltin*);
 LispObj *Lisp_Eval(LispBuiltin*);
+LispObj *Lisp_Every(LispBuiltin*);
+LispObj *Lisp_Some(LispBuiltin*);
+LispObj *Lisp_Notevery(LispBuiltin*);
+LispObj *Lisp_Notany(LispBuiltin*);
 LispObj *Lisp_Fboundp(LispBuiltin*);
 LispObj *Lisp_Find(LispBuiltin*);
 LispObj *Lisp_FindIf(LispBuiltin*);
@@ -101,6 +105,7 @@ LispObj *Lisp_Go(LispBuiltin*);
 LispObj *Lisp_If(LispBuiltin*);
 LispObj *Lisp_IgnoreErrors(LispBuiltin*);
 LispObj *Lisp_Intersection(LispBuiltin*);
+LispObj *Lisp_Nintersection(LispBuiltin*);
 LispObj *Lisp_Keywordp(LispBuiltin*);
 LispObj *Lisp_Lambda(LispBuiltin*);
 LispObj *Lisp_Last(LispBuiltin*);
@@ -117,12 +122,16 @@ LispObj *Lisp_MakeSymbol(LispBuiltin*);
 LispObj *Lisp_Makunbound(LispBuiltin*);
 LispObj *Lisp_Mapc(LispBuiltin*);
 LispObj *Lisp_Mapcar(LispBuiltin*);
+LispObj *Lisp_Mapcan(LispBuiltin*);
 LispObj *Lisp_Mapl(LispBuiltin*);
 LispObj *Lisp_Maplist(LispBuiltin*);
+LispObj *Lisp_Mapcon(LispBuiltin*);
 LispObj *Lisp_Member(LispBuiltin*);
 LispObj *Lisp_MemberIf(LispBuiltin*);
 LispObj *Lisp_MemberIfNot(LispBuiltin*);
 LispObj *Lisp_MultipleValueBind(LispBuiltin*);
+LispObj *Lisp_MultipleValueCall(LispBuiltin*);
+LispObj *Lisp_MultipleValueProg1(LispBuiltin*);
 LispObj *Lisp_MultipleValueList(LispBuiltin*);
 LispObj *Lisp_MultipleValueSetq(LispBuiltin*);
 LispObj *Lisp_Nconc(LispBuiltin*);
@@ -133,8 +142,10 @@ LispObj *Lisp_NsubstituteIf(LispBuiltin*);
 LispObj *Lisp_NsubstituteIfNot(LispBuiltin*);
 LispObj *Lisp_Nth(LispBuiltin*);
 LispObj *Lisp_Nthcdr(LispBuiltin*);
+LispObj *Lisp_NthValue(LispBuiltin*);
 LispObj *Lisp_Null(LispBuiltin*);
 LispObj *Lisp_Or(LispBuiltin*);
+LispObj *Lisp_Pairlis(LispBuiltin*);
 LispObj *Lisp_Pop(LispBuiltin*);
 LispObj *Lisp_Position(LispBuiltin*);
 LispObj *Lisp_PositionIf(LispBuiltin*);
@@ -185,11 +196,13 @@ LispObj *Lisp_Throw(LispBuiltin*);
 LispObj *Lisp_The(LispBuiltin*);
 LispObj *Lisp_Typep(LispBuiltin*);
 LispObj *Lisp_Union(LispBuiltin*);
+LispObj *Lisp_Nunion(LispBuiltin*);
 LispObj *Lisp_Unless(LispBuiltin*);
 LispObj *Lisp_Until(LispBuiltin*);
 LispObj *Lisp_Unsetenv(LispBuiltin*);
 LispObj *Lisp_UnwindProtect(LispBuiltin*);
 LispObj *Lisp_Values(LispBuiltin*);
+LispObj *Lisp_ValuesList(LispBuiltin*);
 LispObj *Lisp_Vector(LispBuiltin*);
 LispObj *Lisp_When(LispBuiltin*);
 LispObj *Lisp_While(LispBuiltin*);

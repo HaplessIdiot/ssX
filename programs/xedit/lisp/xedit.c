@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.17 2002/11/21 07:25:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.18 2002/11/23 08:26:50 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -1400,6 +1400,8 @@ Xedit_Scan(LispBuiltin *builtin)
     LispObj *ooffset, *otype, *odirection, *ocount, *include;
 
     include = ARGUMENT(4);
+    if (include == UNSPEC)
+	include = NIL;
     ocount = ARGUMENT(3);
     odirection = ARGUMENT(2);
     otype = ARGUMENT(1);
@@ -1436,7 +1438,7 @@ Xedit_Scan(LispBuiltin *builtin)
 
     offset = XawTextSourceScan(XawTextGetSource(textwindow),
 			       offset, type, direction, count,
-			       include != UNSPEC && include != NIL);
+			       include != NIL);
 
     return (FIXNUM(offset));
 }

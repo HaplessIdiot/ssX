@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.74 2002/11/21 08:04:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.75 2002/11/23 08:26:49 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -219,7 +219,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Acons, "acons key datum alist"},
     {LispFunction, Lisp_Adjoin, "adjoin item list &key key test test-not"},
     {LispFunction, Lisp_AlphaCharP, "alpha-char-p char"},
-    {LispMacro, Lisp_And, "and &rest args", 0, 0, Com_And},
+    {LispMacro, Lisp_And, "and &rest args", 1, 0, Com_And},
     {LispFunction, Lisp_Append, "append &rest lists"},
     {LispFunction, Lisp_Apply, "apply function arg &rest more-args", 1},
     {LispFunction, Lisp_Aref, "aref array &rest subscripts"},
@@ -339,6 +339,10 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Evenp, "evenp integer"},
     {LispFunction, Lisp_Export, "export symbols &optional package"},
     {LispFunction, Lisp_Eval, "eval form"},
+    {LispFunction, Lisp_Every, "every predicate sequence &rest more-sequences"},
+    {LispFunction, Lisp_Some, "some predicate sequence &rest more-sequences"},
+    {LispFunction, Lisp_Notevery, "notevery predicate sequence &rest more-sequences"},
+    {LispFunction, Lisp_Notany, "notany predicate sequence &rest more-sequences"},
     {LispFunction, Lisp_Fboundp, "fboundp symbol"},
     {LispFunction, Lisp_Find, "find item sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_FindIf, "find-if predicate sequence &key from-end start end key"},
@@ -380,14 +384,15 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Integerp, "integerp object"},
     {LispFunction, Lisp_Intern, "intern string &optional package", 1},
     {LispFunction, Lisp_Intersection, "intersection list1 list2 &key test test-not key"},
+    {LispFunction, Lisp_Nintersection, "nintersection list1 list2 &key test test-not key"},
     {LispFunction, Lisp_Isqrt, "isqrt natural"},
     {LispFunction, Lisp_Keywordp, "keywordp object"},
     {LispFunction, Lisp_Last, "last list &optional count", 0, 0, Com_Last},
     {LispMacro, Lisp_Lambda, "lambda lambda-list &rest body"},
     {LispFunction, Lisp_Lcm, "lcm &rest integers"},
     {LispFunction, Lisp_Length, "length sequence", 0, 0, Com_Length},
-    {LispMacro, Lisp_Let, "let init &rest body", 0, 0, Com_Let},
-    {LispMacro, Lisp_LetP, "let* init &rest body", 0, 0, Com_Letx},
+    {LispMacro, Lisp_Let, "let init &rest body", 1, 0, Com_Let},
+    {LispMacro, Lisp_LetP, "let* init &rest body", 1, 0, Com_Letx},
     {LispFunction, Lisp_ListP, "list* object &rest more-objects"},
     {LispFunction, Lisp_ListAllPackages, "list-all-packages"},
     {LispFunction, Lisp_List, "list &rest args"},
@@ -414,15 +419,19 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_MakeSymbol, "make-symbol string"},
     {LispFunction, Lisp_Mapc, "mapc function list &rest more-lists"},
     {LispFunction, Lisp_Mapcar, "mapcar function list &rest more-lists"},
+    {LispFunction, Lisp_Mapcan, "mapcan function list &rest more-lists"},
     {LispFunction, Lisp_Maphash, "maphash function hash-table"},
     {LispFunction, Lisp_Mapl, "mapl function list &rest more-lists"},
     {LispFunction, Lisp_Maplist, "maplist function list &rest more-lists"},
+    {LispFunction, Lisp_Mapcon, "mapcon function list &rest more-lists"},
     {LispFunction, Lisp_Member, "member item list &key test test-not key"},
     {LispFunction, Lisp_MemberIf, "member-if predicate list &key key"},
     {LispFunction, Lisp_MemberIfNot, "member-if-not predicate list &key key"},
     {LispFunction, Lisp_Minusp, "minusp number"},
     {LispFunction, Lisp_Mod, "mod number divisor"},
     {LispMacro, Lisp_MultipleValueBind, "multiple-value-bind symbols values &rest body"},
+    {LispMacro, Lisp_MultipleValueCall, "multiple-value-call function &rest form", 1},
+    {LispMacro, Lisp_MultipleValueProg1, "multiple-value-prog1 first-form &rest form", 1},
     {LispMacro, Lisp_MultipleValueList, "multiple-value-list form"},
     {LispMacro, Lisp_MultipleValueSetq, "multiple-value-setq symbols form"},
     {LispFunction, Lisp_Nconc, "nconc &rest lists"},
@@ -433,6 +442,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_NsubstituteIfNot, "nsubstitute-if-not newitem test sequence &key from-end start end count key"},
     {LispFunction, Lisp_Nth, "nth index list"},
     {LispFunction, Lisp_Nthcdr, "nthcdr index list", 0, 0, Com_Nthcdr},
+    {LispMacro, Lisp_NthValue, "nth-value index form"},
     {LispFunction, Lisp_Numerator, "numerator rational"},
     {LispFunction, Lisp_Namestring, "namestring pathname"},
     {LispFunction, Lisp_Null, "not arg", 0, 0, Com_Null},
@@ -441,12 +451,14 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Oddp, "oddp integer"},
     {LispFunction, Lisp_Open, "open filename &key direction element-type if-exists if-does-not-exist external-format"},
     {LispFunction, Lisp_OpenStreamP, "open-stream-p stream"},
-    {LispMacro, Lisp_Or, "or &rest args", 0, 0, Com_Or},
+    {LispMacro, Lisp_Or, "or &rest args", 1, 0, Com_Or},
     {LispFunction, Lisp_OutputStreamP, "output-stream-p stream"},
+    {LispFunction, Lisp_Packagep, "packagep object"},
     {LispFunction, Lisp_PackageName, "package-name package"},
     {LispFunction, Lisp_PackageNicknames, "package-nicknames package"},
     {LispFunction, Lisp_PackageUseList, "package-use-list package"},
     {LispFunction, Lisp_PackageUsedByList, "package-used-by-list package"},
+    {LispFunction, Lisp_Pairlis, "pairlis key data &optional alist"},
     {LispFunction, Lisp_ParseInteger, "parse-integer string &key start end radix junk-allowed", 1},
     {LispFunction, Lisp_ParseNamestring, "parse-namestring object &optional host defaults &key start end junk-allowed"},
     {LispFunction, Lisp_PathnameHost, "pathname-host pathname"},
@@ -553,13 +565,15 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Ftruncate, "ftruncate number &optional divisor", 1},
     {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
     {LispFunction, Lisp_Union, "union list1 list2 &key test test-not key"},
-    {LispMacro, Lisp_Unless, "unless test &rest body", 0, 0, Com_Unless},
+    {LispFunction, Lisp_Nunion, "nunion list1 list2 &key test test-not key"},
+    {LispMacro, Lisp_Unless, "unless test &rest body", 1, 0, Com_Unless},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
     {LispFunction, Lisp_UpperCaseP, "upper-case-p character"},
     {LispFunction, Lisp_Values, "values &rest objects", 1},
+    {LispFunction, Lisp_ValuesList, "values-list list", 1},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
-    {LispMacro, Lisp_When, "when test &rest body", 0, 0, Com_When},
+    {LispMacro, Lisp_When, "when test &rest body", 1, 0, Com_When},
     {LispFunction, Lisp_Write, " write object &key case circle escape length level lines pretty readably right-margin stream"},
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
     {LispFunction, Lisp_WriteLine, "write-line string &optional output-stream &key start end"},
@@ -910,8 +924,6 @@ Lisp__GC(LispObj *car, LispObj *cdr)
 		    if (lisp__data.gc.immutablebits) {
 			if (atom->a_function || atom->a_compiled)
 			    LispProt(atom->property->fun.function);
-			if (atom->a_builtin)
-			    LispProt(atom->property->fun.builtin->data);
 			if (atom->a_defsetf)
 			    LispProt(atom->property->setf);
 			if (atom->a_defstruct)
@@ -1727,6 +1739,7 @@ LispCheckNeedProtect(LispObj *object)
 	switch (OBJECT_TYPE(object)) {
 	    case LispNil_t:
 	    case LispAtom_t:
+	    case LispFunction_t:
 	    case LispFixnum_t:
 	    case LispSChar_t:
 		return (NULL);
@@ -2134,7 +2147,6 @@ LispAddBuiltinFunction(LispBuiltin *builtin)
     atom = name->data.atom;
     alist = LispCheckArguments(builtin->type, CDR(list), atom->string, 1);
     builtin->symbol = CAR(list);
-    builtin->data = LispListProtectedArguments(alist);
     LispSetAtomBuiltinProperty(atom, builtin, alist);
     LispUseArgList(alist);
 
@@ -4423,8 +4435,6 @@ keyword_duplicated_label:;
 			/* Argument not specified. Use default value */
 
 			if (eval && !CONSTANTP(defaults[i])) {
-			    /* XXX BUILTIN FUNCTIONS CANNOT HAVE A DEFAULT VALUE
-			     * THAT IS A VALUE OF ANOTHER FUNCTION ARGUMENT. */
 			    int head = lisp__data.env.head;
 			    int lex = lisp__data.env.lex;
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.43 2002/11/21 08:04:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.44 2002/11/23 08:26:49 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -656,9 +656,6 @@ struct _LispBuiltin {
 
     /* this field is set at runtime */
     LispObj *symbol;
-
-    /* if the builtin function has default values, it is protected here */
-    LispObj *data;
 };
 
 typedef int (*LispLoadModule)(void);

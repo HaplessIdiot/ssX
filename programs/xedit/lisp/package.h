@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.4 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.5 2002/11/23 08:26:49 paulo Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
@@ -51,6 +51,7 @@ LispObj *Lisp_InPackage(LispBuiltin*);
 LispObj *Lisp_Intern(LispBuiltin*);
 LispObj *Lisp_ListAllPackages(LispBuiltin*);
 LispObj *Lisp_MakePackage(LispBuiltin*);
+LispObj *Lisp_Packagep(LispBuiltin*);
 LispObj *Lisp_PackageName(LispBuiltin*);
 LispObj *Lisp_PackageNicknames(LispBuiltin*);
 LispObj *Lisp_PackageUseList(LispBuiltin*);
