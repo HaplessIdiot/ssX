@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.1 1994/06/18 16:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.2 1995/01/28 15:48:38 dawes Exp $ */
 /*
  * $XConsortium: agxCursor.c,v 1.3 95/01/12 19:36:51 kaleb Exp $
  * 
@@ -27,10 +27,8 @@
  * Modified by Amancio Hasty and Jon Tombs
  * Modified for mach32 by Mike Bernson mike@mbsun.mlb.org
  * Modified for VTs and oversized cursors by Mark_Weaver@brown.edu
- * Modified for the AGX by Henry A. Worht (haw30@eng.amdahl.com)
+ * Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  *
- *
- * Header: /home/src/xfree86/server/ddx/x386/accel/s3/RCS/s3Cursor.c,v 2.4 1993/07/06 10:23:47 jon Exp jon 
  */
 
 #include <signal.h>

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.63 1995/12/02 05:05:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.64 1995/12/23 09:38:48 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1041,9 +1041,6 @@ configServerFlagsSection()
     case DONTZOOM:
       xf86Info.dontZoom = TRUE;
       break;
-    case DONTSCALEBITMAP:
-      xf86ConfigError("DontScaleBitmapFonts is no longer valid");
-      break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -1309,9 +1306,6 @@ configPointerSection()
         xf86ConfigError("ChordMiddle is only supported for Microsoft and Logiman");
       break;
 
-    case REPEATEDMIDDLE:
-        xf86ConfigError("The RepeatedMiddle flag is no longer valid");
-      break;
     case CLEARDTR:
 #ifdef CLEARDTR_SUPPORT
       if (xf86Info.mseType + MICROSOFT == MOUSESYS)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.4 95/01/26 15:33:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.10 1995/05/27 03:02:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.11 1995/06/21 11:51:14 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	agx.c agxCmap.c agxCursor.c  agxInit.c vgaHW.c agxIm.c \
@@ -7,8 +7,8 @@ SRCS = 	agx.c agxCmap.c agxCursor.c  agxInit.c vgaHW.c agxIm.c \
         agxBlt.c agxLine.c agxSeg.c agxMap.c \
         agxBCach.c agxFCach.c agxFont.c agxText.c agxFRect.c \
         agxFS.c agxGS.c agxSS.c agxWin.c agxBStor.c agxPntWin.c \
-	xf86RamDac.c Bt481.c Bt485.c xf861502x.c Att490.c\
-	hercRamDac.c agxGtImg.c agxFArc.c agxFPoly.c \
+        xf86RamDac.c Bt481.c Bt485.c xf861502x.c Att490.c \
+        hercRamDac.c agxGtImg.c agxFArc.c agxFPoly.c \
         agxDLine.c agxDSeg.c
 
 OBJS =  agx.o agxCmap.o agxCursor.o  agxInit.o vgaHW.o agxIm.o \
@@ -16,8 +16,8 @@ OBJS =  agx.o agxCmap.o agxCursor.o  agxInit.o vgaHW.o agxIm.o \
         agxBlt.o agxLine.o agxSeg.o agxMap.o \
         agxBCach.o agxFCach.o agxFont.o agxText.o agxFRect.o \
         agxFS.o agxGS.o agxSS.o agxWin.o agxBStor.o agxPntWin.o \
-	xf86RamDac.o Bt481.o Bt485.o xf861502x.o Att490.o\
-	hercRamDac.o agxGtImg.o agxFArc.o agxFPoly.o \
+        xf86RamDac.o Bt481.o Bt485.o xf861502x.o Att490.o \
+        hercRamDac.o agxGtImg.o agxFArc.o agxFPoly.o \
         agxDLine.o agxDSeg.o
 
 DEFINES = -DPSZ=8 -DAGX_SERVER

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.30 1995/12/23 09:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.31 1995/12/26 06:07:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -378,8 +378,10 @@ static ATIInformationBlock *GetATIInformationBlock()
 		    (unsigned char *)bios_signature, 10) != 10) {
       return NULL;
    }
-   if (strncmp( signature, bios_signature, 10 ))
+   if (strncmp( signature, bios_signature, 10 )) {
+	 ErrorF("Mach64 probe failed on BIOS signature\n");
 	 return NULL;
+   }
 
    if (xf86ReadBIOS(mach64InfoRec.BIOSbase, 0x00,
 		    (unsigned char *)bios_data, BIOS_DATA_SIZE)
@@ -404,10 +406,14 @@ static ATIInformationBlock *GetATIInformationBlock()
    outl(ioSCRATCH_REG0, 0x55555555);
    if (inl(ioSCRATCH_REG0) != 0x55555555) {
       info.Mach64_Present = 0;
+      ErrorF("Mach64 probe failed on read 1 of SCRATCH_REG0 %x\n",
+	     ioSCRATCH_REG0);
    } else {
       outl(ioSCRATCH_REG0, 0xaaaaaaaa);
       if (inl(ioSCRATCH_REG0) != 0xaaaaaaaa) {
 	 info.Mach64_Present = 0;
+          ErrorF("Mach64 probe failed on read 2 of SCRATCH_REG0 %x\n",
+	         ioSCRATCH_REG0);
       }
    }
    outl(ioSCRATCH_REG0, tmp);
@@ -709,6 +715,16 @@ mach64Probe()
     xf86EnableIOPorts(mach64InfoRec.scrnIndex);
 
     info = GetATIInformationBlock();
+
+    /* If probe fails when assuming block I/O, try again with sparse I/O */
+    if (pciInfo && pciInfo->BlockIO && info && !info->Mach64_Present) {
+	InitIOAddresses(0x2EC, FALSE);
+	info = GetATIInformationBlock();
+	if (info && info->Mach64_Present) {
+	    ErrorF("PCI reports Block I/O, but really Sparse I/O @ 0x2ec\n");
+	}
+    }
+
     if (!info || !info->Mach64_Present) {
 	xf86DisableIOPorts(mach64InfoRec.scrnIndex);
 	return(FALSE);

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.1 94/10/05 13:29:50 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8line.c,v 3.0 1994/09/11 00:41:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8line.c,v 3.1 1995/01/28 15:50:06 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -25,6 +24,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
+ * $XConsortium: cfb8line.c /main/3 1995/11/12 16:17:17 kaleb $
  * Author:  Keith Packard, MIT X Consortium
  */
 
@@ -220,6 +220,8 @@ FUNC_NAME(W328LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
     BoxPtr	    extents;
     int		    *ppt;
     int		    axis;
+    int		    octant;
+    unsigned int    bias = miGetZeroLineBias(pDrawable->pScreen);
 
     devPriv = cfbGetGCPrivate(pGC);
     cfbGetPixelWidthAndPointer (pDrawable, nwidth, addr);
@@ -414,6 +416,10 @@ FUNC_NAME(W328LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	y1_or_e1 = y1_or_e1 << 1;
 	e3 = e << 1;
 
+#if 0
+	/* XXX
+	   XFree86 needs to put the right stuff in here
+	*/
 	if (axis == X_AXIS)
 	{
 	    FIXUP_X_MAJOR_ERROR(e, stepmajor, stepminor);
@@ -422,6 +428,7 @@ FUNC_NAME(W328LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	{
 	    FIXUP_Y_MAJOR_ERROR(e, stepminor, stepmajor);
 	}
+#endif
 
 #if RROP == GXcopy
 #  define body {\
@@ -827,6 +834,8 @@ RROP_NAME (W328ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     int             new_x1, new_y1, new_x2, new_y2;
     Bool	    pt1_clipped, pt2_clipped;
     int		    changex, changey, result;
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
     cfbGetPixelWidthAndPointer(pDrawable, nwidth, addr);
     addr = 0;
@@ -845,46 +854,21 @@ RROP_NAME (W328ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     if (oc1 & oc2)
 	return;
 
-    signdx = 1;
-    stepx = 1;
-    if ((adx = x2 - x1) < 0)
+    CalcLineDeltas(x1, y2, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
+    if (adx > ady)
     {
-	adx = -adx;
-	signdx = -1;
-	stepx = -1;
-    }
-    signdy = 1;
-    stepy = nwidth;
-    if ((ady = y2 - y1) < 0)
-    {
-	ady = -ady;
-	signdy = -1;
-	stepy = -nwidth;
-    }
-    axis = X_AXIS;
-    if (adx <= ady)
-    {
-	int	t;
-
-	t = adx;
-	adx = ady;
-	ady = t;
-
-	t = stepx;
-	stepx = stepy;
-	stepy = t;
-	
+	axis = X_AXIS;
+	e1 = ady << 1;
+	e3 = e1 - (adx << 1);
+	e = e1 - adx;
+    } else {
 	axis = Y_AXIS;
-	e = - adx;
-	FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+	e1 = adx << 1;
+	e3 = e1 - (ady << 1);
+	e = e1 - ady;
+	SetYMajorOctant(octant);
     }
-    else
-    {
-	e = - adx;
-	FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
-    }
-    e1 = ady << 1;
-    e3 = - (adx << 1);
+    FIXUP_ERROR(e, octant, bias);
 
     new_x1 = x1;
     new_y1 = y1;
@@ -898,8 +882,8 @@ RROP_NAME (W328ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	result = miZeroClipLine(boxp->x1, boxp->y1, boxp->x2 - 1, boxp->y2 - 1,
 				&new_x1, &new_y1, &new_x2, &new_y2,
 				adx, ady,
-				&pt1_clipped, &pt2_clipped, X_AXIS,
-				signdx == signdy, oc1, oc2);
+				&pt1_clipped, &pt2_clipped,
+				octant, bias, oc1, oc2);
 	if (result == -1)
 	    return;
 	
@@ -926,8 +910,8 @@ RROP_NAME (W328ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	result = miZeroClipLine(boxp->x1, boxp->y1, boxp->x2 - 1, boxp->y2 - 1,
 				&new_x1, &new_y1, &new_x2, &new_y2,
 				ady, adx,
-				&pt1_clipped, &pt2_clipped, Y_AXIS,
-				signdx == signdy, oc1, oc2);
+				&pt1_clipped, &pt2_clipped,
+				octant, bias, oc1, oc2);
 	if (result == -1)
 	    return;
 	

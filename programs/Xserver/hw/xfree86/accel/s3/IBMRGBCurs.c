@@ -1,4 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.1 1995/12/17 05:03:18 dawes Exp $ */
+
+/*
+ * Copyright 1995 The XFree86 Project, Inc.
+ */
 
 #define NEED_EVENTS
 #include <X.h>
@@ -190,6 +194,12 @@ s3IBMRGBMoveCursor(pScr, x, y)
 /*   y += 64 - s3hotY; */
    if (y < 0)
       return;
+
+   if (s3InfoRec.modes->Flags & V_DBLSCAN)
+      y <<= 1;
+
+   if (s3InfoRec.modes->Flags & V_INTERLACE)
+      y >>= 1;
 
    UNLOCK_SYS_REGS;
 

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.1 1995/01/28 16:14:38 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -45,8 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: vgalined.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.0 1994/07/24 11:59:03 dawes Exp $ */
+/* $XConsortium: vgalined.c /main/3 1995/11/13 09:26:49 kaleb $ */
 
 #include "vga256.h"
 #include "miline.h"
@@ -93,6 +93,8 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     int x1, x2, y1, y2;
     RegionPtr cclip;
     cfbRRopRec	    rrops[2];
@@ -182,8 +184,7 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 	y2 = ppt->y + yorg;
 #endif
 
-	AbsDeltaAndSign(x2, x1, adx, signdx);
-	AbsDeltaAndSign(y2, y1, ady, signdy);
+	CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
 
 	if (adx > ady)
 	{
@@ -192,7 +193,6 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (adx << 1);
 	    e = e1 - adx;
 	    unclippedlen = adx;
-	    FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
 	}
 	else
 	{
@@ -201,8 +201,10 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (ady << 1);
 	    e = e1 - ady;
 	    unclippedlen = ady;
-	    FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+	    SetYMajorOctant(octant);
 	}
+
+	FIXUP_ERROR(e, octant, bias);
 
 	/* we have bresenham parameters and two points.
 	   all we have to do now is clip and draw.
@@ -249,14 +251,11 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 		int clipdx, clipdy;
 		int err;
     
-		if (miZeroClipLine (pbox->x1, pbox->y1,
-					pbox->x2-1, pbox->y2-1,
-					&new_x1, &new_y1,
-					&new_x2, &new_y2,
-					adx, ady,
-					&clip1, &clip2,
-					axis, (signdx == signdy),
-					oc1, oc2) == -1)
+		if (miZeroClipLine (pbox->x1, pbox->y1, pbox->x2-1, 
+				    pbox->y2-1,
+				    &new_x1, &new_y1, &new_x2, &new_y2,
+				    adx, ady, &clip1, &clip2,
+				    octant, bias, oc1, oc2) == -1)
 		{
 		    pbox++;
 		    continue;

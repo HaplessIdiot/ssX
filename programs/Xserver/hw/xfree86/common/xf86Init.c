@@ -1,6 +1,5 @@
 /*
- * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.29 1995/12/21 11:44:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.30 1995/12/23 09:38:53 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XConsortium: xf86Init.c /main/14 1995/12/09 16:00:09 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -157,6 +157,10 @@ InitOutput(pScreenInfo, argc, argv)
     }
 
     xf86Config(TRUE); /* Probe displays, and resolve modes */
+
+#ifdef XKB
+    xf86InitXkb();
+#endif
 
     /*
      * collect all possible formats

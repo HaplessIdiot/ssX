@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.3 1995/04/09 14:14:35 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -45,8 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cir_line.c,v 1.1.1.1 95/01/27 01:02:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.2 1995/01/28 16:11:56 dawes Exp $ */
+/* $XConsortium: cir_line.c /main/5 1995/11/13 08:21:15 kaleb $ */
 
 /*
  * Modified: Harm Hanemaayer (hhanemaa@cs.ruu.nl)
@@ -150,6 +150,8 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
     int		    alu;
     int	adir, xdir, ydir;
     int destpitch, busy;
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
     if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW ||
     (pGC->planemask & 0xFF) != 0xFF) {
@@ -382,26 +384,13 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 	}
 	else	/* sloped line */
 	{
-	    signdx = 1;
-	    if ((adx = x2 - x1) < 0)
-	    {
-		adx = -adx;
-		signdx = -1;
-	    }
-	    signdy = 1;
-	    if ((ady = y2 - y1) < 0)
-	    {
-		ady = -ady;
-		signdy = -1;
-	    }
-
-	    if (adx >= ady)
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
+	    if (adx > ady)
 	    {
 		axis = X_AXIS;
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
  	    }
 	    else
 	    {
@@ -409,8 +398,10 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -484,8 +475,9 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				       pbox->y2-1,
 				       &new_x1, &new_y1, &new_x2, &new_y2,
-				       adx, ady, &clip1, &clip2, axis,
-				       (signdx == signdy), oc1, oc2) == -1)
+				       adx, ady, 
+				       &clip1, &clip2, 
+				       octant, bias, oc1, oc2) == -1)
 		    {
 			pbox++;
 			continue;

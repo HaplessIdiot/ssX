@@ -1,5 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.20 1995/12/21 11:44:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.21 1995/12/23 09:38:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86Events.c /main/22 1995/12/19 18:01:27 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -45,6 +45,7 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 
+extern Bool noXkbExtension;
 
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
@@ -440,13 +441,6 @@ xf86PostKbdEvent(key)
       break;
 #endif
 #endif /* not PC98 */
-    case KEY_CapsLock:
-#ifndef PC98
-    case KEY_NumLock:
-    case KEY_ScrollLock:
-#endif
-      updateLeds = TRUE;              /* led changes by firmware */
-      break;
     }
 #ifndef PC98
     if (xf86Info.serverNumLock) {
@@ -761,6 +755,9 @@ xf86PostKbdEvent(key)
   keysym = (keyc->curKeySyms.map +
 	    keyc->curKeySyms.mapWidth * 
 	    (keycode - keyc->curKeySyms.minKeyCode));
+#ifdef XKB
+  if (noXkbExtension) {
+#endif
   /*
    * Filter autorepeated caps/num/scroll lock keycodes.
    */
@@ -854,8 +851,6 @@ xf86PostKbdEvent(key)
       (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
     return;
 
-  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
-
   /*
    * normal, non-keypad keys
    */
@@ -873,8 +868,12 @@ xf86PostKbdEvent(key)
       }
 #endif /* !CSRG_BASED && !MACH386 && !MINIX && !__OSF__ */
   }
+  if (updateLeds) xf86KbdLeds();
+#ifdef XKB
+  }
+#endif
 
-
+  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
   /*
    * And now send these prefixes ...
    * NOTE: There cannot be multiple Mode_Switch keys !!!!
@@ -903,8 +902,6 @@ xf86PostKbdEvent(key)
 
       }
     }
-
-  if (updateLeds) xf86KbdLeds();
 }
 #endif /* !__EMX__ */
 
