@@ -21,9 +21,10 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.3 2000/02/14 19:20:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.4 2000/02/23 20:29:43 dawes Exp $ */
 
 #include "fb.h"
+#include <xf86_ansic.h>
 
 void
 fbCopyNtoN (DrawablePtr	pSrcDrawable,

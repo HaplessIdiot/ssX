@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.38 1999/12/28 13:47:43 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.39 2000/03/31 22:55:50 dawes Exp $ */
 
 /*
  *
@@ -69,7 +69,7 @@ int check_unresolved_sema = 0;
 #endif
 
 #ifdef __EMX__
-void * os2loader_calloc(size_t,size_t);
+void * os2ldcalloc(size_t,size_t);
 #endif
 
 #ifdef HANDLE_IN_HASH_ENTRY
@@ -381,7 +381,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     if( (ptr=xf86loadercalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #else
-    if( (ptr=os2loader_calloc(size,1)) == NULL )
+    if( (ptr=os2ldcalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #endif
 

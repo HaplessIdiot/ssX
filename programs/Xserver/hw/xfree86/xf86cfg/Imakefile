@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.1 2000/04/04 22:36:56 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -47,13 +47,13 @@ XPMPICS =\
 	monitor.xpm\
 	mouse.xpm
 
-all	:: $(PROG)
+AllTarget(ProgramTargetName($(PROG)))
 
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) \
-		  $(XKBUILIB) $(XKBFILELIB) -lxf86config -lXxf86misc -lm
+LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config -lXxf86misc \
+		  $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
-InstallMultipleDestFlags(install,$(XBMPICS),$(INCDIR)/X11/bitmaps,$(INSTINCFLAGS))
-InstallMultipleDestFlags(install,$(XPMPICS),$(INCDIR)/X11/pixmaps,$(INSTINCFLAGS))
+InstallMultipleFlags($(XBMPICS),$(INCDIR)/X11/bitmaps,$(INSTINCFLAGS))
+InstallMultipleFlags($(XPMPICS),$(INCDIR)/X11/pixmaps,$(INSTINCFLAGS))
 InstallAppDefaults(XF86Cfg)

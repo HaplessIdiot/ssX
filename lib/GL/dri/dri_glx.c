@@ -42,7 +42,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86dri.h"
 #include "sarea.h"
 #include <stdio.h>
+#ifndef __EMX__
 #include <dlfcn.h>
+#else
+/* hv: quick hack for dlopen emulation, this does not work yet */
+#define RTLD_LAZY 0
+void* dlopen(const char* f,int flg) {
+  return 0;
+}
+int dlclose(void* hndl) { return -1; }
+int dlsym(void* hndl,const char* fn) { return 0; }
+#endif
 #include "dri_glx.h"
 #include <sys/types.h>
 

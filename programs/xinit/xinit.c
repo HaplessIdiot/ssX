@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.20 1999/03/02 10:42:24 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.21 1999/06/27 14:08:33 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -502,13 +502,13 @@ processTimeout(int timeout, char *string)
 static int
 startServer(char *server[])
 {
-#if !defined(X_NOT_POSIX) && !defined(__EMX__)
+#if !defined(X_NOT_POSIX)
 	sigset_t mask, old;
 #else
 	int old;
 #endif
 
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX)
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGUSR1);
 	sigprocmask(SIG_BLOCK, &mask, &old);

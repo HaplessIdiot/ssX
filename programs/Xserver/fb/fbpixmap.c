@@ -21,9 +21,10 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.3 2000/02/23 20:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.4 2000/04/04 19:24:50 dawes Exp $ */
 
 #include "fb.h"
+#include <xf86_ansic.h>
 
 PixmapPtr
 fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp)

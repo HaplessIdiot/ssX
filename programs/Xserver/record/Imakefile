@@ -1,29 +1,24 @@
-XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.7 1999/04/17 09:08:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/record/Imakefile,v 1.8 1999/08/14 10:50:20 dawes Exp $
 XCOMM
 XCOMM
 XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
 
-#define IHaveModules
+#define IHaveSubdirs
 #include <Server.tmpl>
 
-#if DoLoadableServer
-      MSRCS = recordmod.c
-      MOBJS = recordmod.o
-#endif
-
+    SUBDIRS = module
        SRCS = record.c set.c $(MSRCS)
        OBJS = record.o set.o $(MOBJS)
    INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln
     DEFINES = -DNDEBUG
 
-ModuleObjectRule()
-LibraryModuleTarget(record,$(OBJS))
+NormalLibraryObjectRule()
+NormalLibraryTarget(record,$(OBJS))
 LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
 
-InstallLibraryModule(record,$(MODULEDIR),extensions)
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
 
 DependTarget()
-
-InstallDriverSDKLibraryModule(record,$(DRIVERSDKMODULEDIR),extensions)

@@ -36,10 +36,15 @@
 *				emulator.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #include "x86emu/x86emui.h"
+#if IN_MODULE
+#include "xf86_ansic.h"
+#else
 #include <stdarg.h>
 #include <stdlib.h>
+#endif
 
 /*----------------------------- Implementation ----------------------------*/
 

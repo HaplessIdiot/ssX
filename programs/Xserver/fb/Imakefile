@@ -1,8 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.5 2000/03/31 22:55:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.6 2000/04/04 19:24:48 dawes Exp $
 XCOMM 
 XCOMM 
 XCOMM Id: Imakefile,v 1.1 1999/11/02 03:54:44 keithp Exp $
-#define IHaveModule
+
+#define IHaveModules
 #include <Server.tmpl>
 
 #ifdef FbNoPixelAddrCode

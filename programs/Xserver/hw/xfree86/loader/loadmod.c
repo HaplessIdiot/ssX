@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.50 2000/01/25 18:37:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.51 2000/03/18 19:30:50 tsi Exp $ */
 
 /*
  *
@@ -386,12 +386,14 @@ FindModule (const char *module, const char *dir, const char **subdirlist,
 #endif
 	if (strlen(dirpath) > PATH_MAX)
 		return NULL;
+	/*xf86Msg(X_INFO,"OS2DIAG: FindModule: dirpath=%s\n",dirpath);*/
 
 	for (s = subdirs; *s; s++) {
-		if ((dirlen = strlen(dir) + strlen(*s)) > PATH_MAX)
+		if ((dirlen = strlen(dirpath) + strlen(*s)) > PATH_MAX)
 			continue;
 		strcpy(buf, dirpath);
 		strcat(buf, *s);
+		/*xf86Msg(X_INFO,"OS2DIAG: FindModule: buf=%s\n",buf);*/
 		fp = buf + dirlen;
 		if (stat(buf, &stat_buf) == 0 && S_ISDIR(stat_buf.st_mode) &&
 			(d = opendir(buf))) {
@@ -411,6 +413,7 @@ FindModule (const char *module, const char *dir, const char **subdirlist,
 						len = match[1].rm_eo - match[1].rm_so;
 						if (len == strlen(module) &&
 							strncmp(module, dp->d_name + match[1].rm_so, len) == 0) {
+							/*xf86Msg(X_INFO,"OS2DIAG: matching %s\n",buf);*/
 							name = buf;
 							break;
 						}
@@ -837,6 +840,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	int noncanonical = 0;
 	char *m = NULL;
 
+	/*xf86Msg(X_INFO,"OS2DIAG: LoadModule: %s\n",module);*/
 	xf86MsgVerb(X_INFO, 3, "LoadModule: \"%s\"", module);
 
 	patterns = InitPatterns(patternlist);

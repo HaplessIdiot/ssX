@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.12 1997/12/14 02:55:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.13 1998/10/03 09:06:54 dawes Exp $ */
 
 /*
 
@@ -1342,7 +1342,7 @@ static char *implementation_default_path(void)
 static char *implementation_default_path()
 #endif
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
     /* if you know how to pass % thru the compiler let me know */
     static char xfilesearchpath[] = XFILESEARCHPATHDEFAULT;
     static Bool fixed;

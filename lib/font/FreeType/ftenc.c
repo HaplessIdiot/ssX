@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.13 1999/04/25 10:01:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.14 1999/10/13 04:20:49 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -23,7 +23,11 @@ THE SOFTWARE.
 */
 
 /* TrueType-dependent encoding code */
+#ifndef FONTMODULE
 #include <string.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 #include "fontmisc.h"		/* defines xalloc and friends */
 #include "fontenc.h"

@@ -1,5 +1,5 @@
 LIBRARY Xaw INITINSTANCE TERMINSTANCE
-DESCRIPTION "@#XFREE86:4.0#@ $XFree86: xc/lib/Xaw/Xawos2.def,v 3.6 1997/07/19 05:43:02 dawes Exp $"
+DESCRIPTION "@#XFREE86:4.0#@ $XFree86: xc/lib/Xaw/Xawos2.def,v 3.7 1999/04/29 09:13:30 dawes Exp $"
 CODE
 	PRELOAD
 DATA
@@ -191,3 +191,15 @@ EXPORTS
 ;        _XawDefaultTextTranslations4 @ 189
         _XawDefaultTextTranslations @ 190
 	_XawTextSrcUndo @ 191
+	tipClassRec @ 192
+	tipWidgetClass @ 193
+	XawTipEnable @ 194
+	XawTipDisable @ 195
+	XawTextSinkConvertPropertyList @ 196
+	XawTextGetSink @ 197
+	XawTextSourceClearEntities @ 198
+	XawTextSourceFindAnchor @ 199
+	XawTextSourcePrevAnchor @ 200
+	XawTextSourceNextAnchor @ 201
+	XawTextSourceAnchorAndEntity @ 202
+	XawTextSourceAddEntity @ 203

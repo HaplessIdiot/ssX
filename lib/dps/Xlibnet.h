@@ -13,7 +13,7 @@ written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/Xlibnet.h,v 1.3 2000/02/21 20:12:03 dawes Exp $ */
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
@@ -91,7 +91,11 @@ without express or implied warranty.
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
+#if !defined(__EMX__) && !defined(__QNX__)
 #define OPEN_MAX NOFILES_MAX
+#else
+#define OPEN_MAX 256
+#endif
 #endif
 #endif
 #endif
