@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.9 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.10 2001/06/05 10:10:27 alanh Exp $ */
 
 #include "win.h"
 
@@ -116,20 +116,21 @@ OsVendorInit (void)
 void
 ddxUseMsg (void)
 {
-  ErrorF ("-screen n WIDTHxHEIGHT\n"
-	  "\tSet screen n's width and height\n");
-  ErrorF ("-engine n\n"
-	  "\tOverride the server's detected engine type:\n"
+  ErrorF ("-screen scr_num width height\n"
+	  "\tSet screen scr_num's width and height\n");
+  ErrorF ("-engine engine_type_id\n"
+	  "\tOverride the server's automatically selected engine type:\n"
 	  "\t\t1 - GDI blitter\t\t1\n"
 	  "\t\t2 - DirectDraw blitter\t2\n"
 	  "\t\t4 - DirectDraw4 blitter\t4\n");
   ErrorF ("-fullscreen\n"
-	  "\tRun the specified server engine in fullscreen mode\n");
-  ErrorF ("-depth n\n"
+	  "\tRun the server in fullscreen mode\n");
+  ErrorF ("-depth bits_per_pixel\n"
 	  "\tSpecify a bitdepth to use when running in fullscreen\n"
 	  "\twith a DirectDraw engine.\n");
-  ErrorF ("-emulate3buttons [n]\n"
-	  "\tEmulate 3 button mouse with timeout of n milliseconds\n");
+  ErrorF ("-emulate3buttons [timeout]\n"
+	  "\tEmulate 3 button mouse with an optional timeout in "
+	  "milliseconds\n");
 }
 
 /* See Porting Layer Definition - p. 57 */
@@ -153,7 +154,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       int		nScreenNum;
 
       /* Display the usage message if the argument is malformed */
-      if (i + 2 >= argc)
+      if (i + 3 >= argc)
 	{
 	  UseMsg ();
 	  return 0;
@@ -169,8 +170,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
         }
       
-      /* Grab the height, width, and depth parameters */
-      if (2 != sscanf (argv[i+2], "%dx%d",
+      /* Grab the height and width parameters */
+      if (2 != sscanf (argv[i+2], "%d %d",
 		       (int*)&g_ScreenInfo[nScreenNum].dwWidth,
 		       (int*)&g_ScreenInfo[nScreenNum].dwHeight))
         {
@@ -183,7 +184,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       if (nScreenNum >= g_iNumScreens)
         g_iNumScreens = nScreenNum + 1;
       g_iLastScreen = nScreenNum;
-      return 3;
+      return 4;
     }
 
   /*

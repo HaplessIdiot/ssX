@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/Bitmap.h,v 1.2 1999/02/01 11:56:06 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/Bitmap.h,v 1.3 2001/01/17 23:44:51 dawes Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -68,7 +68,7 @@ from The Open Group.
  dashed              Dashed             Boolean         True
  dashes              Dashes             Bitmap          XtUnspecifiedPixmap
  stippled            Stippled           Boolean         True
- stipple             Sripple            Bitmap          XtUnspecifiedPixmap
+ stipple             Stipple            Bitmap          XtUnspecifiedPixmap
  proportional        Proportional       Boolean         True
  axes                Axes               Boolean         True
  button1Function     Button1Function    ButtonFunction  Set  
