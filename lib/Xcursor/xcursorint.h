@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/xcursorint.h,v 1.2 2002/09/05 07:29:55 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/xcursorint.h,v 1.3 2002/11/23 02:34:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -92,4 +92,7 @@ _XcursorCreateGlyphCursor(Display	    *dpy,
 			  XColor _Xconst    *foreground,
 			  XColor _Xconst    *background);
 
+Cursor
+_XcursorCreateFontCursor (Display *dpy, unsigned int shape);
+    
 #endif /* _XCURSORINT_H_ */

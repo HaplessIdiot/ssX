@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xcursor/library.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -192,6 +192,8 @@ _XcursorThemeInherits (const char *full)
     return result;
 }
 
+#define XCURSOR_SCAN_CORE   ((FILE *) 1)
+
 static FILE *
 XcursorScanTheme (const char *theme, const char *name)
 {
@@ -202,6 +204,14 @@ XcursorScanTheme (const char *theme, const char *name)
     char	*inherits = 0;
     const char	*i;
 
+    /*
+     * XCURSOR_CORE_THEME is a magic name; cursors from the core set
+     * are never found in any directory.  Instead, a magic value is
+     * returned which truncates any search so that overlying functions
+     * can switch to equivalent core cursors
+     */
+    if (!strcmp (theme, XCURSOR_CORE_THEME) && XcursorLibraryShape (name) >= 0)
+	return XCURSOR_SCAN_CORE;
     /*
      * Scan this theme
      */
@@ -250,6 +260,8 @@ XcursorLibraryLoadImage (const char *file, const char *theme, int size)
 	f = XcursorScanTheme (theme, file);
     if (!f)
 	f = XcursorScanTheme ("default", file);
+    if (f == XCURSOR_SCAN_CORE)
+	return 0;
     if (f)
     {
 	image = XcursorFileLoadImage (f, size);
@@ -268,12 +280,74 @@ XcursorLibraryLoadImages (const char *file, const char *theme, int size)
 	f = XcursorScanTheme (theme, file);
     if (!f)
 	f = XcursorScanTheme ("default", file);
+    if (f == XCURSOR_SCAN_CORE)
+	return 0;
     if (f)
     {
 	images = XcursorFileLoadImages (f, size);
 	fclose (f);
     }
     return images;
+}
+
+Cursor
+XcursorLibraryLoadCursor (Display *dpy, const char *file)
+{
+    int		    size = XcursorGetDefaultSize (dpy);
+    char	    *theme = XcursorGetTheme (dpy);
+    XcursorImages   *images = XcursorLibraryLoadImages (file, theme, size);
+    Cursor	    cursor;
+
+    if (!images)
+    {
+	int id = XcursorLibraryShape (file);
+
+	if (id >= 0)
+	    return _XcursorCreateFontCursor (dpy, id);
+	else
+	    return 0;
+    }
+    cursor = XcursorImagesLoadCursor (dpy, images);
+    XcursorImagesDestroy (images);
+    return cursor;
+}
+
+XcursorCursors *
+XcursorLibraryLoadCursors (Display *dpy, const char *file)
+{
+    int		    size = XcursorGetDefaultSize (dpy);
+    char	    *theme = XcursorGetTheme (dpy);
+    XcursorImages   *images = XcursorLibraryLoadImages (file, theme, size);
+    XcursorCursors  *cursors;
+    
+    if (!images)
+    {
+	int id = XcursorLibraryShape (file);
+
+	if (id >= 0)
+	{
+	    cursors = XcursorCursorsCreate (dpy, 1);
+	    if (cursors)
+	    {
+		cursors->cursors[0] = _XcursorCreateFontCursor (dpy, id);
+		if (cursors->cursors[0] == None)
+		{
+		    XcursorCursorsDestroy (cursors);
+		    cursors = 0;
+		}
+		else
+		    cursors->ncursor = 1;
+	    }
+	}
+	else
+	    cursors = 0;
+    }
+    else
+    {
+	cursors = XcursorImagesLoadCursors (dpy, images);
+	XcursorImagesDestroy (images);
+    }
+    return cursors;
 }
 
 const static char   *_XcursorStandardNames[] = {
@@ -332,4 +406,55 @@ XcursorShapeLoadImages (unsigned int shape, const char *theme, int size)
 					 theme, size);
     else
 	return 0;
+}
+
+Cursor
+XcursorShapeLoadCursor (Display *dpy, unsigned int shape)
+{
+    unsigned int    id = shape >> 1;
+
+    if (id < NUM_STANDARD_NAMES)
+	return XcursorLibraryLoadCursor (dpy, _XcursorStandardNames[id]);
+    else
+	return 0;
+}
+
+XcursorCursors *
+XcursorShapeLoadCursors (Display *dpy, unsigned int shape)
+{
+    unsigned int    id = shape >> 1;
+
+    if (id < NUM_STANDARD_NAMES)
+	return XcursorLibraryLoadCursors (dpy, _XcursorStandardNames[id]);
+    else
+	return 0;
+}
+
+int
+XcursorLibraryShape (const char *library)
+{
+    int	low, high;
+    int	mid;
+    int	c;
+
+    low = 0;
+    high = NUM_STANDARD_NAMES - 1;
+    while (low < high - 1)
+    {
+	mid = (low + high) >> 1;
+	c = strcmp (library, _XcursorStandardNames[mid]);
+	if (c == 0)
+	    return (mid << 1);
+	if (c > 0)
+	    low = mid;
+	else
+	    high = mid;
+    }
+    while (low <= high)
+    {
+	if (!strcmp (library, _XcursorStandardNames[low]))
+	    return (low << 1);
+	low++;
+    }
+    return -1;
 }
