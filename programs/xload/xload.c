@@ -1,5 +1,5 @@
 /* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
-/* $XFree86: xc/programs/xload/xload.c,v 1.2 2000/05/11 18:14:45 tsi Exp $ */
+/* $XFree86: xc/programs/xload/xload.c,v 1.3 2001/07/23 13:15:54 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -35,6 +35,7 @@ from the X Consortium.
  */
 
 #include <stdio.h> 
+#include <unistd.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
@@ -50,7 +51,7 @@ from the X Consortium.
 
 char *ProgramName;
 
-extern void exit(), GetLoadPoint();
+extern void exit(), InitLoadPoint(void), GetLoadPoint();
 static void quit();
 static void ClearLights();
 static void SetLights();

@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.9 2001/04/01 14:00:20 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.10 2001/06/25 20:40:17 paulo Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -56,6 +56,8 @@ in this Software without prior written authorization from The Open Group.
 #include	"closestr.h"
 #include	"globals.h"
 #include	"difs.h"
+#include	"dispatch.h"
+#include	"swaprep.h"
 
 static FontPathElementPtr *font_path_elements = (FontPathElementPtr *) 0;
 static int  num_fpes = 0;

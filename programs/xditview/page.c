@@ -1,4 +1,5 @@
 /* $XConsortium: page.c,v 1.5 91/07/26 00:40:20 keith Exp $ */
+/* $XFree86$ */
 
 /*
  * page.c
@@ -26,6 +27,7 @@ MapPageNumberToFileMap (dw, number)
 	return m;
 }
 
+void
 DestroyFileMap (m)
 	DviFileMap	*m;
 {
@@ -37,6 +39,7 @@ DestroyFileMap (m)
 	}
 }
 
+void
 ForgetPagePositions (dw)
 	DviWidget	dw;
 {
@@ -44,6 +47,7 @@ ForgetPagePositions (dw)
 	dw->dvi.file_map = 0;
 }
 
+void
 RememberPagePosition(dw, number)
 	DviWidget	dw;
 	int		number;
@@ -62,6 +66,7 @@ RememberPagePosition(dw, number)
 		m->position = ftell (dw->dvi.file);
 }
 
+long
 SearchPagePosition (dw, number)
 	DviWidget	dw;
 	int		number;
@@ -73,6 +78,7 @@ SearchPagePosition (dw, number)
 	return m->position;
 }
 
+void
 FileSeek(dw, position)
 DviWidget	dw;
 long		position;

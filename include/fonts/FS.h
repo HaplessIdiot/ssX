@@ -46,13 +46,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/include/fonts/FS.h,v 1.5 1999/08/22 08:58:48 dawes Exp $ */
+/* $XFree86: xc/include/fonts/FS.h,v 1.6 2001/01/17 17:53:25 dawes Exp $ */
 
 #ifndef _FS_H_
 #define	_FS_H_
 
-#include "X11/Xdefs.h"
-#include "fsmasks.h"
+#include <X11/Xdefs.h>
+#include <X11/fonts/fsmasks.h>
 
 #define	FS_PROTOCOL		2
 #define	FS_PROTOCOL_MINOR	0

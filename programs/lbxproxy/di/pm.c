@@ -21,7 +21,9 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
+/* $XFree86$ */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -29,6 +31,7 @@ from The Open Group.
 #include <netinet/in.h>
 #include <netdb.h>
 #include <X11/Xmd.h>
+#include <X11/Xlib.h>
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICEmsg.h>
 #include <X11/ICE/ICEproto.h>

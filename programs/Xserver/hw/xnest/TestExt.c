@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.2 1996/01/07 10:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/TestExt.c,v 3.3 2001/01/17 22:36:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -23,6 +23,7 @@ is" without express or implied warranty.
 #include "misc.h"
 #include "scrnintstr.h"
 #include "servermd.h"
+#include "mipointer.h"
 #define XTestSERVER_SIDE
 #include "xtestext1.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.6 2001/05/19 00:26:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.7 2001/05/19 18:29:22 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -53,7 +53,7 @@ Bool drmSiSAgpInit(int driSubFD, int offset, int size)
       
    agp.offset = offset;
    agp.size = size;
-   xf86ioctl(driSubFD, SIS_IOCTL_AGP_INIT, &agp);
+   ioctl(driSubFD, SIS_IOCTL_AGP_INIT, &agp);
 
    return TRUE;
 }

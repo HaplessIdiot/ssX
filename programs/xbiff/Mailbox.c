@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.2 2001/04/01 14:00:19 tsi Exp $ */
+/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.3 2001/04/19 19:54:51 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -52,6 +52,7 @@ from the X Consortium.
 #endif
 #include <sys/stat.h>			/* for stat() ** needs types.h ***/
 #include <stdio.h>			/* for printing error messages */
+#include <unistd.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE

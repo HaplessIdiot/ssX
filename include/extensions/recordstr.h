@@ -1,6 +1,6 @@
 /*
 #ifndef lint
-$XConsortium: recordstr.h /main/1 1995/12/08 11:48:26 dpw $
+$Xorg: recordstr.h,v 1.3 2000/08/18 04:05:46 coskrey Exp $
 static char sccsid[ ] = "@(#) recordstr.h 1.5 6/5/95 12:37:44";
 #endif
 */
@@ -24,14 +24,20 @@ static char sccsid[ ] = "@(#) recordstr.h 1.5 6/5/95 12:37:44";
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  **************************************************************************/
+/* $XFree86$ */
 
-#include "record.h"
+#ifndef _RECORDSTR_H_
+#define _RECORDSTR_H_
+
+#include <X11/extensions/record.h>
 
 #define RECORD_NAME			"RECORD"
 #define RECORD_MAJOR_VERSION		1
-#define RECORD_MINOR_VERSION		12
+#define RECORD_MINOR_VERSION		13
 #define RECORD_LOWEST_MAJOR_VERSION	1
 #define RECORD_LOWEST_MINOR_VERSION	12
+/* only difference between 1.12 and 1.13 is byte order of device events,
+   which the library doesn't deal with. */
 
 /*********************************************************
  *
@@ -313,4 +319,4 @@ typedef struct
 #undef RECORD_ELEMENT_HEADER
 #undef RECORD_CLIENTSPEC
 
-
+#endif

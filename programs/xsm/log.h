@@ -19,9 +19,16 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/log.h,v 1.3 1999/03/07 14:23:40 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/log.h,v 1.4 2001/01/17 23:46:29 dawes Exp $ */
+
+#ifndef _LOG_H_
+#define _LOG_H_
+
+#include <X11/Intrinsic.h>
 
 extern void DisplayLogXtProc(Widget w, XtPointer client_data, 
 			     XtPointer callData);
 extern void add_log_text(char *str);
 extern void create_log_popup(void);
+
+#endif

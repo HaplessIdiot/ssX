@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpExtUtil.c,v 1.3 2000/09/26 15:56:57 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpExtUtil.c,v 1.4 2001/01/17 19:43:01 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -337,7 +337,6 @@ XpEventToWire(dpy, re, event, count)
 #endif /* PRINT_SomeEventExample2 */
 
         default:
-            return(_XUnknownNativeEvent(dpy, re, event));
+            return(_XUnknownNativeEvent(dpy, re, *event));
         }
 }
-

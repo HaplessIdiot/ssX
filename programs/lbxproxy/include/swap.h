@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swap.h /main/8 1996/11/17 22:26:32 rws $
+ * $Xorg: swap.h,v 1.3 2000/08/17 19:53:58 cpqbld Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -22,6 +22,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #ifndef _SWAP_H_
 #define _SWAP_H_
@@ -47,9 +48,10 @@ extern void SwapVisual(
 #endif
 );
 
-extern void SwapConnectionInfo(
+extern void WriteSConnSetupPrefix(
 #if NeedFunctionPrototypes
-    xConnSetup * /*pConnSetup*/
+    ClientPtr          /* pClient */,
+    xConnSetupPrefix * /* pcsp */
 #endif
 );
 
@@ -209,15 +211,15 @@ extern void SwapGetProperty(
 #endif
 );
 
-extern void SwapPutImage(
-#if NeedFunctionPrototypes
-    xLbxPutImageReq * /*r*/
-#endif
-);
-
 extern void SwapGetImage(
 #if NeedFunctionPrototypes
     xLbxGetImageReq * /*r*/
+#endif
+);
+
+extern void SwapInternAtoms(
+#if NeedFunctionPrototypes
+    xLbxInternAtomsReq * /* r */
 #endif
 );
 
@@ -245,9 +247,21 @@ extern void SwapLbxConnSetupPrefix(
 #endif
 );
 
-extern void SwapConnSetupPrefix(
+extern void SwapAllocColor(
 #if NeedFunctionPrototypes
-    xConnSetupPrefix * /*csp*/
+    xLbxAllocColorReq * /* r */
+#endif
+);
+
+extern void SwapGrabCmap(
+#if NeedFunctionPrototypes
+    xLbxGrabCmapReq * /* r */
+#endif
+);
+
+extern void SwapReleaseCmap(
+#if NeedFunctionPrototypes
+    xLbxReleaseCmapReq * /* r */
 #endif
 );
 

@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:04 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.15 2001/01/17 22:36:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.16 2001/04/20 15:51:16 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -73,15 +73,17 @@ PSDEF = -DXPPSDDX
 MKTMP_DEFINES = -DHAS_MKSTEMP
 #endif
 
+#if XpRasterDDX || XpColorPclDDX || XpMonoPclDDX || XpPostScriptDDX
+
 SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
+
 #define IHaveSubdirs
 
-   INCLUDES = -I. -I../mfb \
-	      -I../mi \
-	      -I../cfb \
-	      -I../include \
-	      -I$(XINCLUDESRC) -I$(TOP)/include \
-	      -I$(EXTINCSRC) -I$(FONTINCSRC)
+#endif
+
+   INCLUDES = -I$(XINCLUDESRC) -I. -I../mfb -I../mi -I../cfb \
+	      -I../include -I$(TOP)/include \
+	      -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(XLIBSRC)
 
    LINTLIBS = $(TOP)/server/dix/llib-ldix.ln $(TOP)/server/os/llib-los.ln \
 	      $(TOP)/server/ddx/mfb/llib-lmfb.ln \
@@ -89,7 +91,13 @@ SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
 	      $(TOP)/server/ddx/cfb/llib-lcfb.ln
 
 DEFINES = -DXPRINTDIR=\"$(XPRINTDIR)\" $(RASTDEF) $(PCLDEF) $(MPCLDEF) \
-	  $(PSDEF) $(MKTMP_DEFINES) -UXFree86LOADER
+	  $(PSDEF) $(MKTMP_DEFINES) -UXFree86LOADER -D_XP_PRINT_SERVER_
+
+/* Go ahead:  Call me paranoid ... */
+Makefiles::
+	RemoveFiles(Quark.c Xlcint.h Xresource.h Xrm.c XrmI.h)
+
+LinkSourceFile(Quarks.c,$(XLIBSRC))
 
 NormalLibraryObjectRule()
 
@@ -115,8 +123,10 @@ LinkSourceFile(os2_stubs.c,../hw/xfree86/os-support/os2)
 SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT)
 #endif
 
+#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()

@@ -44,7 +44,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.6 2000/05/14 20:27:58 alanh Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.7 2001/01/17 23:44:55 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -131,7 +131,7 @@ GetVisual(vid)
  * beware of too-small buffers
  */
 
-void
+static void
 CopyISOLatin1Lowered(dest, source, length)
     register unsigned char *dest, *source;
     int length;

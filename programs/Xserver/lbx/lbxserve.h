@@ -41,9 +41,13 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.2 2000/05/18 23:46:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxserve.h,v 1.3 2001/01/17 22:37:00 dawes Exp $ */
 
 #ifndef _LBXSERVE_H_
+
+#include "colormap.h"
+#include "property.h"
+
 #define _LBXSERVE_H_
 #define _XLBX_SERVER_
 #include "lbxstr.h"
@@ -135,9 +139,10 @@ extern void LbxForceOutput ( LbxProxyPtr proxy );
 extern void SwitchClientInput ( ClientPtr client, Bool pending );
 extern int PrepareLargeReqBuffer ( ClientPtr client );
 extern Bool AppendFakeRequest ( ClientPtr client, char *data, int count );
-extern int LbxFreeOsBuffers ( LbxProxyPtr proxy );
+extern void LbxFreeOsBuffers ( LbxProxyPtr proxy );
 extern Bool AllocateLargeReqBuffer ( ClientPtr client, int size );
 extern Bool AddToLargeReqBuffer ( ClientPtr client, char *data, int size );
+extern void LbxPrimeInput ( ClientPtr client, LbxProxyPtr proxy );
 
 /* lbxcmap.c */
 extern int LbxCmapInit ( void );

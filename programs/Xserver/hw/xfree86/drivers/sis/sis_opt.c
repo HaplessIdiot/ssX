@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.6 2001/05/04 19:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.7 2001/05/16 13:43:17 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -138,11 +138,11 @@ SiSOptions(ScrnInfoPtr pScrn)
     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
     if (strptr != NULL)
     {
-        if (!xf86strcmp(strptr,"TV"))
+        if (!strcmp(strptr,"TV"))
             pSiS->ForceCRT2Type = CRT2_TV;
-        if (!xf86strcmp(strptr,"LCD"))
+        if (!strcmp(strptr,"LCD"))
             pSiS->ForceCRT2Type = CRT2_LCD;
-        if (!xf86strcmp(strptr,"VGA"))
+        if (!strcmp(strptr,"VGA"))
             pSiS->ForceCRT2Type = CRT2_VGA;
 
         if (pSiS->ForceCRT2Type != CRT2_DEFAULT)

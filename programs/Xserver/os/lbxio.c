@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.12 2001/01/17 22:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.13 2001/07/25 15:05:11 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -463,6 +463,7 @@ UncompressedWriteToClient (who, count, buf)
     return LbxClientOutput(who, (OsCommPtr)who->osPrivate, buf, count, TRUE);
 }
 
+void
 LbxFreeOsBuffers(proxy)
     LbxProxyPtr proxy;
 {

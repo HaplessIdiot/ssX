@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.18 1999/06/20 08:41:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.19 2001/01/17 19:42:34 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -299,6 +299,13 @@ void _XawTextPosToXY
  XawTextPosition	pos,
  Position		*x,
  Position		*y
+ );
+
+void _XawTextNeedsUpdating
+(
+ TextWidget		ctx,
+ XawTextPosition	left,
+ XawTextPosition	right
  );
 
 #endif /* _XawTextP_h */

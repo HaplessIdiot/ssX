@@ -21,13 +21,16 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfilio.h,v 1.3 1999/08/21 13:48:06 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfilio.h,v 1.4 2001/01/17 19:43:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <bufio.h>
+#ifndef _FNTFILIO_H_
+#define _FNTFILIO_H_
+
+#include <bufio.h>
 
 typedef BufFilePtr  FontFilePtr;
 
@@ -45,3 +48,5 @@ extern int FontFileClose ( FontFilePtr f );
 extern FontFilePtr FontFileOpenWrite ( const char *name );
 extern FontFilePtr FontFileOpenWriteFd ( int fd );
 extern FontFilePtr FontFileOpenFd ( int fd );
+
+#endif /* _FNTFILIO_H_ */

@@ -21,10 +21,11 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.1 1998/10/04 09:36:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.2 2001/01/17 22:13:18 dawes Exp $ */
 
 /* dixsleep.c - implement millisecond timeouts for X clients */
 
+#include "sleepuntil.h"
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.9 2001/01/17 19:43:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.10 2001/07/23 13:15:42 dawes Exp $ */
 
 /*
 
@@ -72,6 +72,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xlocale.h>
 #include <X11/ICE/ICElib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef EDITRES
 #include <X11/Xmu/Editres.h>
@@ -1930,7 +1931,7 @@ static Bool isMine(dpy, event, arg)
 	return FALSE;
 }
 
-static _wait_for_response(w, event, request_num)
+static Boolean _wait_for_response(w, event, request_num)
 	ShellWidget	w;
 	XEvent		*event;
         unsigned long	request_num;

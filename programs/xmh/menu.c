@@ -25,6 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  *
  */
+/* $XFree86$ */
 
 #include "xmh.h"
 #include "bboxint.h"
@@ -74,9 +75,7 @@ void SendMenuEntryEnableMsg(button, entry_name, value)
 }
 
 
-void ToggleMenuItem(entry, state)
-    Widget	entry;
-    Boolean	state;
+void ToggleMenuItem(Widget entry, Boolean state)
 {
     Arg		args[1];
 

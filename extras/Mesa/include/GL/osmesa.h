@@ -58,7 +58,7 @@ extern "C" {
 #endif
 
 
-#include "GL/gl.h"
+#include <GL/gl.h>
 
 
 #define OSMESA_MAJOR_VERSION 3

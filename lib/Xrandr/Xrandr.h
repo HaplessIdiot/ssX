@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.5 2001/06/07 17:54:02 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.6 2001/06/11 01:37:53 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -26,7 +26,7 @@
 #ifndef _XRANDR_H_
 #define _XRANDR_H_
 
-#include "randr.h"
+#include <X11/extensions/randr.h>
 
 typedef struct {
     int	    nvisuals;

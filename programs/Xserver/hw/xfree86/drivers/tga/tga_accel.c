@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.12 2001/03/19 11:00:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.13 2001/06/05 17:52:21 alanh Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -152,7 +152,7 @@ DEC21030AccelInit(ScreenPtr pScreen)
     BIT_ORDER_IN_BYTE_LSBFIRST;
 
   TGA_AccelInfoRec->NumScanlineColorExpandBuffers = 1;
-  pTga->buffers[0] = (CARD32 *)xf86malloc(CE_BUFSIZE);
+  pTga->buffers[0] = (CARD32 *)xnfalloc(CE_BUFSIZE);
   TGA_AccelInfoRec->ScanlineColorExpandBuffers =
     (unsigned char **)pTga->buffers;
   TGA_AccelInfoRec->SetupForScanlineCPUToScreenColorExpandFill =

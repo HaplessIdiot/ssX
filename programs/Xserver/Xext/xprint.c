@@ -64,8 +64,9 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.8 2000/01/18 16:35:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.9 2001/01/17 22:13:19 dawes Exp $ */
 
+#define _XP_PRINT_SERVER_
 #include "X.h"
 #include "Xos.h"
 #define NEED_EVENTS
@@ -78,17 +79,12 @@ copyright holders.
 #include "extnsionst.h"
 #include "dixstruct.h"
 #include "Xatom.h"
-#define _XP_PRINT_SERVER_
 #include "Print.h"
 #include "Printstr.h"
-#undef _XP_PRINT_SERVER_
 #include "../Xprint/DiPrint.h"
 #include "../Xprint/attributes.h"
 
 extern WindowPtr *WindowTable; /* declared in dix:globals.c */
-
-extern XpContextPtr XpContextOfClient(ClientPtr);
-extern void XpRegisterInitFunc(ScreenPtr, char *, int (*)(struct _XpContext *));
 
 static void XpResetProc(ExtensionEntry *);
 

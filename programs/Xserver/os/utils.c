@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.70 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.71 2001/07/25 15:05:12 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -60,6 +60,8 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "misc.h"
 #include "X.h"
 #include "input.h"
+#include "dixfont.h"
+#include "osdep.h"
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -99,6 +101,14 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifdef SMART_SCHEDULE
 #include "dixstruct.h"
+#endif
+
+#ifdef XKB
+#include "XKBsrv.h"
+#endif
+#ifdef XCSECURITY
+#define _SECURITY_SERVER
+#include "security.h"
 #endif
 
 #include <errno.h>
@@ -1317,7 +1327,7 @@ XNFstrdup(const char *s)
 
 void
 AuditPrefix(f)
-    char *f;
+    const char *f;
 {
     time_t tm;
     char *autime, *s;

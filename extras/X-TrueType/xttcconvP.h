@@ -32,11 +32,12 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.6 2000/06/27 21:26:32 tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.7 2001/03/06 18:03:12 dawes Exp $ */
 
 #ifndef _XTTCCONVP_H_
 #define _XTTCCONVP_H_ 1
 
+#include <X11/Xdefs.h>
 
 /*************************************
   Data Types

@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.4 1996/12/27 07:07:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.5 2001/01/17 22:36:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -23,6 +23,8 @@ is" without express or implied warranty.
 #include "colormapst.h"
 #include "scrnintstr.h"
 #include "region.h"
+
+#include "mi.h"
 
 #include "Xnest.h"
 

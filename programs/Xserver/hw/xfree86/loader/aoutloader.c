@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.14 1999/01/14 13:04:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.15 1999/03/14 11:18:05 dawes Exp $ */
 
 /*
  *
@@ -35,6 +35,7 @@
 #include <sys/fcntl.h>
 #endif
 #include <sys/stat.h>
+#include <netinet/in.h>
 
 #ifdef DBMALLOC
 #include <debug/malloc.h>

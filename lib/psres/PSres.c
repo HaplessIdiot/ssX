@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 
@@ -605,7 +606,7 @@ static char *ReadFullLine(f)
     return inputline;
 }
 
-static FreeLineBuf()
+static void FreeLineBuf()
 {
     if (inputline != NULL) FREE(inputline);
     inputline = NULL;

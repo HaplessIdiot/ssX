@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfil.h,v 1.6 2001/01/17 19:43:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfil.h,v 1.7 2001/04/05 17:42:28 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -29,6 +29,9 @@ in this Software without prior written authorization from The Open Group.
 
 #ifndef _FONTFILE_H_
 #define _FONTFILE_H_
+
+#include "fontxlfd.h"
+
 typedef struct _FontEntry	    *FontEntryPtr;
 typedef struct _FontTable	    *FontTablePtr;
 typedef struct _FontName	    *FontNamePtr;

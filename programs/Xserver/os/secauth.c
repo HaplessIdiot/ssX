@@ -20,12 +20,13 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.8 2000/06/15 22:10:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.9 2001/01/17 22:37:12 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
 #include "dixstruct.h"
+#include "swaprep.h"
 
 #ifdef XCSECURITY
 #define _SECURITY_SERVER

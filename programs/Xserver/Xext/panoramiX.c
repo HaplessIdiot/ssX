@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.25 2001/01/17 22:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.26 2001/07/17 17:26:53 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -623,9 +623,10 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 #ifdef RENDER
     PanoramiXRenderInit ();
 #endif
-    return;
 }
-extern 
+
+extern Bool CreateConnectionBlock(void);
+
 Bool PanoramiXCreateConnectionBlock(void)
 {
     int i, j, length;

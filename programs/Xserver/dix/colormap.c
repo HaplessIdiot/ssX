@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.4 2000/01/22 01:59:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.5 2001/01/17 22:36:42 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -54,6 +54,9 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "resource.h"
 #include "windowstr.h"
+#ifdef LBX
+#include "lbxserve.h"
+#endif
 
 extern XID clientErrorValue;
 

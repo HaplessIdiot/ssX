@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.5 1998/12/06 13:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.6 2001/01/17 22:13:14 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -32,6 +32,7 @@ in this Software without prior written authorization from The Open Group.
 #include "colormapst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
+#include "swapreq.h"
 #define _XCUP_SERVER_
 #include "Xcupstr.h"
 #include "Xfuncproto.h"
@@ -303,7 +304,7 @@ int SProcGetReservedColormapEntries (client)
 }
 
 static 
-int SProcStoreColors (client)
+int SProcXcupStoreColors (client)
     ClientPtr client;
 {
     register int n;
@@ -332,7 +333,7 @@ int SProcDispatch (client)
     case X_XcupGetReservedColormapEntries:
 	return SProcGetReservedColormapEntries (client);
     case X_XcupStoreColors:
-	return SProcStoreColors (client);
+	return SProcXcupStoreColors (client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.19 2001/04/25 18:21:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.20 2001/07/25 08:04:42 alanh Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -88,6 +88,7 @@ const char *ATIChipNames[] =
     "ATI Radeon VE",
     "ATI Radeon Mobility M6",
     "ATI Radeon Mobility M7",
+    "ATI R200",
     "ATI Rage HDTV"
 };
 
@@ -576,6 +577,9 @@ ATIChipID
         case OldChipID('T', 'F'):  case NewChipID('T', 'F'):
         case OldChipID('T', 'L'):  case NewChipID('T', 'L'):
         case OldChipID('T', 'R'):  case NewChipID('T', 'R'):
+        case OldChipID('T', 'S'):  case NewChipID('T', 'S'):
+        case OldChipID('T', 'T'):  case NewChipID('T', 'T'):
+        case OldChipID('T', 'U'):  case NewChipID('T', 'U'):
             return ATI_CHIP_RAGE128PROULTRA;
 
         case OldChipID('L', 'E'):  case NewChipID('L', 'E'):

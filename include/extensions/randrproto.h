@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randrproto.h,v 1.3 2001/06/03 21:52:44 keithp Exp $
+ * $XFree86: xc/include/extensions/randrproto.h,v 1.4 2001/06/07 17:54:01 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -26,7 +26,7 @@
 #ifndef _XRANDRP_H_
 #define _XRANDRP_H_
 
-#include "randr.h"
+#include <X11/extensions/randr.h>
 
 #define Window CARD32
 #define Drawable CARD32

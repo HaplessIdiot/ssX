@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XShm.h,v 1.5 2001/01/17 17:53:19 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XShm.h,v 1.6 2001/06/23 20:44:10 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -161,6 +161,16 @@ Pixmap XShmCreatePixmap(
 );
 
 _XFUNCPROTOEND
+
+#else /* _XSHM_SERVER_ */
+
+#include "screenint.h"
+
+extern void ShmRegisterFbFuncs(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */
+#endif
+);
 
 #endif
 

@@ -21,10 +21,12 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.8 1999/05/07 02:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.9 2001/04/20 16:32:31 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86Xinput.h"
+#include "extinit.h"
+#include "exevents.h"
 
 /******************************************************************************
  * debugging macro
@@ -152,7 +154,9 @@ xf86SwtProc(pSwt, what)
                                    loop,
                                    0, /* min val */
                                    1000, /* max val */
-                                   1); /* resolution */
+                                   1, /* resolution */
+                                   0, /* min_res */
+                                   1); /* max_res */
           }
 	  /* allocate the motion history buffer if needed */
 	  xf86MotionHistoryAllocate(local);

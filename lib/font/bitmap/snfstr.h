@@ -45,10 +45,12 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfstr.h,v 1.2 1999/07/17 05:30:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfstr.h,v 1.3 2001/01/17 19:43:27 dawes Exp $ */
 
 #ifndef SNFSTR_H
 #define SNFSTR_H 1
+
+#include "fntfilio.h"
 
 /*-
  * This file describes the Server Natural Font format.

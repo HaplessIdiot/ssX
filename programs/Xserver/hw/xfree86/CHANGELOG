@@ -1,4 +1,14 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 168. Fix 16bpp colour maps on Mach64's (Marc La France).
+ 167. Fix Mach64 DPMS bug (Marc La France).
+ 166. Fix bug that prevented hardware cursors on Mach64 CT's (Marc La France).
+ 165. Document what a ChipAdjustFrame() function should to to prevent moving
+      of hardware cursors during mode switches (Marc La France).
+ 164. -Wimplicit warning cleanup [`make World` >required<] (Marc La France).
+ 163. Ensure installed headers can find the headers they, in turn, #include
+      (Marc La France).
+ 162. Make imake pass its -W* flags to cpp (Marc La France).
+ 161. More accomodations for newer GCC's (Mike A. Harris).
  160. Remove a CYGWIN define from Xserver/include/windowstr.h 
       (#4832, Harold Hunt).
  159. Fix a casting problem which causes bdftopcf to write corrupted
@@ -13592,4 +13602,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1891 2001/07/31 16:44:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1892 2001/07/31 19:59:49 alanh Exp $

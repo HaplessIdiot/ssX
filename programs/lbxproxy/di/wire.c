@@ -41,11 +41,14 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.9 2000/06/07 22:03:15 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.10 2001/01/17 23:44:56 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "wire.h"
+#include "tags.h"
+#include "colormap.h"
 #include "init.h"
 #ifndef Lynx
 #include <sys/uio.h>
@@ -408,10 +411,21 @@ SendIncrementPixel(client, cmap, pixel)
 }
 
 void
+#ifdef NeedFunctionPrototypes
+SendAllocColor(
+    ClientPtr	client,
+    XID		cmap,
+    CARD32	pixel,
+    CARD16	red,
+    CARD16	green,
+    CARD16	blue)
+#else
 SendAllocColor(client, cmap, pixel, red, green, blue)
     ClientPtr   client;
     XID         cmap;
+    CARD32      pixel;
     CARD16	red, green, blue;
+#endif
 {
     xLbxAllocColorReq req;
 
@@ -953,7 +967,7 @@ ServerProcStandardEvent(sc)
 		     start, end);
 #endif
 	    if (pmap && pmap->grab_status == CMAP_GRABBED)
-		GotServerFreeCellsEvent (pmap, start, end, 1);
+		GotServerFreeCellsEvent (pmap, start, end);
 	    break;
 	}
 	}

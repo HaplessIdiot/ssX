@@ -26,12 +26,14 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.12 2001/07/19 02:22:52 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.13 2001/07/25 15:05:08 dawes Exp $
  */
 
 #include "config.h"
+#include "cards.h"
 #include "options.h"
 #include "loader.h"
+#include "stubs.h"
 #include <X11/Xresource.h>
 
 #ifdef USE_MODULES

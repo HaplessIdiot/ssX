@@ -1,15 +1,10 @@
-/* $XConsortium: XInput.h,v 1.22 94/04/17 20:11:13 rws Exp $ */
+/* $Xorg: XInput.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
 
 /************************************************************
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,15 +12,15 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
-Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California.
+Copyright 1989 by Hewlett-Packard Company, Palo Alto, California.
 
 			All Rights Reserved
 
@@ -46,19 +41,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 /* Definitions used by the library and client */
 
 #ifndef _XINPUT_H_
 #define _XINPUT_H_
 
-#ifndef _XLIB_H_
 #include <X11/Xlib.h>
-#endif
-
-#ifndef _XI_H_
-#include "XI.h"
-#endif
+#include <X11/extensions/XI.h>
 
 #define _deviceKeyPress		0
 #define _deviceKeyRelease	1
@@ -966,7 +957,7 @@ extern XFeedbackState	*XGetFeedbackControl(
 #endif
 );
 
-extern int	XFreeFeedbackList(
+extern void	XFreeFeedbackList(
 #if NeedFunctionPrototypes
     XFeedbackState*	/* list */
 #endif
@@ -1056,7 +1047,7 @@ extern XDeviceState	*XQueryDeviceState(
 #endif
 );
 
-extern int	XFreeDeviceState(
+extern void	XFreeDeviceState(
 #if NeedFunctionPrototypes
     XDeviceState*	/* list */
 #endif
@@ -1076,7 +1067,7 @@ extern XDeviceInfo	*XListInputDevices(
 #endif
 );
 
-extern int	XFreeDeviceList(
+extern void	XFreeDeviceList(
 #if NeedFunctionPrototypes
     XDeviceInfo*	/* list */
 #endif
@@ -1193,13 +1184,13 @@ extern XDeviceTimeCoord	*XGetDeviceMotionEvents(
 #endif
 );
 
-extern int	XFreeDeviceMotionEvents(
+extern void	XFreeDeviceMotionEvents(
 #if NeedFunctionPrototypes
     XDeviceTimeCoord*	/* events */
 #endif
 );
 
-extern int	XFreeDeviceControl(
+extern void	XFreeDeviceControl(
 #if NeedFunctionPrototypes
     XDeviceControl*	/* control */
 #endif

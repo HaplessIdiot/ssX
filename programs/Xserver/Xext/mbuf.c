@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.10 2001/01/17 22:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.11 2001/07/23 13:15:44 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -36,6 +36,7 @@ in this Software without prior written authorization from The Open Group.
 #include "dixstruct.h"
 #include "resource.h"
 #include "opaque.h"
+#include "sleepuntil.h"
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
 #include "multibufst.h"
 

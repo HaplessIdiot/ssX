@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.15 2001/01/06 20:58:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.16 2001/02/12 03:27:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -105,7 +105,7 @@ ATISetDPMSMode
     switch (pATI->Adapter)
     {
         case ATI_ADAPTER_MACH64:
-            ATIMach64SetDPMSMode(pATI, DPMSMode);
+            ATIMach64SetDPMSMode(pScreenInfo, pATI, DPMSMode);
             break;
 
         default:

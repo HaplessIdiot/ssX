@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.27 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.28 2001/07/25 15:05:11 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -585,6 +585,7 @@ InsertFakeRequest(client, data, count)
  *
  **********************/
 
+void
 ResetCurrentRequest(client)
     ClientPtr client;
 {

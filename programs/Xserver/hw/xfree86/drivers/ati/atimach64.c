@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.38 2001/06/13 02:33:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.39 2001/07/19 02:22:50 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -148,7 +148,7 @@ ATIMach64PreInit
 
     pATIHW->dac_cntl = inr(DAC_CNTL) &
         ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
-    if ((pATI->depth > 8) || (pScreenInfo->rgbBits == 8))
+    if (pATI->rgbBits == 8)
         pATIHW->dac_cntl |= DAC_8BIT_EN;
 
     pATIHW->gen_test_cntl = pATI->LockData.gen_test_cntl & ~GEN_CUR_EN;
@@ -835,8 +835,9 @@ ATIMach64SaveScreen
 void
 ATIMach64SetDPMSMode
 (
-    ATIPtr pATI,
-    int    DPMSMode
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI,
+    int         DPMSMode
 )
 {
     CARD32 crtc_gen_cntl =
@@ -862,6 +863,9 @@ ATIMach64SetDPMSMode
         default:                /* Muffle compiler */
             return;
     }
+
+    if (pATI->pXAAInfo && pATI->pXAAInfo->NeedToSync)
+        (*pATI->pXAAInfo->Sync)(pScreenInfo);
 
     outr(CRTC_GEN_CNTL, crtc_gen_cntl);
 
@@ -909,10 +913,6 @@ ATIMach64SetDPMSMode
                 default:        /* Muffle compiler */
                     return;
             }
-
-            /* Panel power management seems to involve the engine */
-            if (pATI->OptionAccel)
-                ATIMach64WaitForIdle(pATI);
 
             if (pATI->Chip == ATI_CHIP_264LT)
                 outr(POWER_MANAGEMENT, power_management);

@@ -54,11 +54,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "SelectionI.h"
 #include <X11/Xatom.h>
+#include <stdio.h>
 
 void _XtSetDefaultSelectionTimeout(timeout)
 	unsigned long *timeout;

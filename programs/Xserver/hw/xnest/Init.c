@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.21 2001/03/04 17:40:13 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.22 2001/06/11 16:59:03 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -22,6 +22,8 @@ is" without express or implied warranty.
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "servermd.h"
+#include "mi.h"
+#include "fontstruct.h"
 
 #include "Xnest.h"
 
@@ -85,7 +87,7 @@ void InitInput(argc, argv)
      int argc;
      char *argv[];
 {
-  DeviceIntPtr ptr, kbd;
+  pointer ptr, kbd;
 
   ptr = AddInputDevice(xnestPointerProc, TRUE);
   kbd = AddInputDevice(xnestKeyboardProc, TRUE);

@@ -7,7 +7,7 @@ char rcsId_vmwarecurs[] =
 
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 
 #include "vmware.h"
 #include "cursorstr.h"
@@ -404,7 +404,7 @@ vmwareQueryBestSize(class, pwidth, pheight, pScr)
 		*pheight = 64;
 	    break;
 	default:
-	    mfbQueryBestSize(class, pwidth, pheight, pScr);
+	    fbQueryBestSize(class, pwidth, pheight, pScr);
 	    break;
 	}
     }

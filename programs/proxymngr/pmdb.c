@@ -21,13 +21,14 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/pmdb.c,v 1.4 1999/03/14 03:22:22 dawes Exp $ */
+/* $XFree86: xc/programs/proxymngr/pmdb.c,v 1.5 2001/01/17 23:45:02 dawes Exp $ */
 
 #include "pmint.h"
 #include "pmdb.h"
 #include "config.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 
 #if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)

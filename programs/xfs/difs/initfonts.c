@@ -43,13 +43,13 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%E%
  *
  */
-/* $XFree86: xc/programs/xfs/difs/initfonts.c,v 1.4 2000/02/13 06:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/initfonts.c,v 1.5 2001/01/17 23:45:29 dawes Exp $ */
 
 #include        "font.h"
 #include	"difs.h"
 #ifdef FONTCACHE
 #include        "misc.h"
-#include        "fontcacheP.h"
+#include        <X11/extensions/fontcacheP.h>
 
 #define CACHE_HI_MARK	(2048 * 1024)
 #define CACHE_LOW_MARK	(((2048 * 1024) / 4) * 3)

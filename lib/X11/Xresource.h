@@ -42,14 +42,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Xresource.h,v 3.5 2000/11/28 18:49:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xresource.h,v 3.6 2001/01/17 19:41:50 dawes Exp $ */
 
 #ifndef _XRESOURCE_H_
 #define _XRESOURCE_H_
 
-/* You must include <X11/Xlib.h> before including this file */
-
+#ifndef _XP_PRINT_SERVER_
 #include <X11/Xlib.h>
+#endif
 
 /****************************************************************
  ****************************************************************
@@ -282,6 +282,8 @@ extern Bool XrmQGetSearchResource(
  *
  ****************************************************************/
 
+#ifndef _XP_PRINT_SERVER_
+
 extern void XrmSetDatabase(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -294,6 +296,8 @@ extern XrmDatabase XrmGetDatabase(
     Display*		/* display */
 #endif
 );
+
+#endif /* !_XP_PRINT_SERVER_ */
 
 extern XrmDatabase XrmGetFileDatabase(
 #if NeedFunctionPrototypes

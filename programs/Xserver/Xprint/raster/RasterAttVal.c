@@ -1,4 +1,4 @@
-/* $XConsortium: RasterAttVal.c /main/1 1996/09/28 17:06:26 rws $ */
+/* $Xorg: RasterAttVal.c,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,15 +30,15 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
+
 #include <stdio.h>
 #include "X.h"
 #include "misc.h"
 #include "dixstruct.h"
 #include "scrnintstr.h"
 #include "screenint.h"
-#define _XP_PRINT_SERVER_
 #include "extensions/Print.h"
-#undef  _XP_PRINT_SERVER_
 #include "Raster.h"
 
 #include "attributes.h"

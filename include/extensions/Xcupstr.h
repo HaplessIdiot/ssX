@@ -21,11 +21,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifndef _XCUPSTR_H_ /* { */
 #define _XCUPSTR_H_
 
-#include "Xcup.h"
+#include <X11/extensions/Xcup.h>
 
 #define XCUPNAME "TOG-CUP"
 

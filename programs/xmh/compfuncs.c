@@ -24,6 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* comp.c -- action procedures to handle composition buttons. */
 
@@ -112,7 +113,7 @@ void XmhSave(w, event, params, num_params)
 /* Utility routine; creates a composition screen containing a forward message
    of the messages in the given msglist. */
 
-CreateForward(mlist, params, num_params)
+void CreateForward(mlist, params, num_params)
   MsgList mlist;
   String *params;
   Cardinal num_params;

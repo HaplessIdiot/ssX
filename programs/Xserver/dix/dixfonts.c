@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.23 2000/04/04 19:24:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.24 2001/01/17 22:36:43 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -43,6 +43,15 @@ SOFTWARE.
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
+#endif
+
+#ifdef LBX
+#include "lbxserve.h"
+#endif
+
+#ifdef XF86BIGFONT
+#define _XF86BIGFONT_SERVER_
+#include "xf86bigfont.h"
 #endif
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics

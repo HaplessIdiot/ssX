@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.15 1999/05/16 06:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.17 2001/02/16 13:24:06 eich Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -64,6 +64,9 @@ SOFTWARE.
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include "security.h"
+#endif
+#ifdef LBX
+#include "lbxserve.h"
 #endif
 
 #include "dispatch.h"

@@ -48,6 +48,7 @@ dealings in this Software without prior written authorization from the IBM
 Corporation.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include "Intrinsic.h"
 #include "IntrinsicI.h"
@@ -57,10 +58,8 @@ Corporation.
 #include "StringDefs.h"
 #include "ResConfigP.h"
 #include <X11/Xatom.h>
-
-#ifdef DEBUG
 #include <stdio.h>
-#endif
+#include <stdlib.h>
 
 #define MAX_BUFFER 512
 
@@ -988,7 +987,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 	 *      resource and value fields.
 	 */
 		if (data) {
-			resource_len = Strtoul (data, &data_ptr, 10);
+			resource_len = Strtoul ((void *)data, &data_ptr, 10);
 			data_ptr++;
 
 			data_ptr[resource_len] = '\0';

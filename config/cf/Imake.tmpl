@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.102 2001/04/26 21:09:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.103 2001/07/24 08:32:59 alanh Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1122,7 +1122,7 @@ TCLIBDIR = TclLibDir
 #define NeedModuleRanlib NO
 #endif
 #ifndef ModuleRanlibCmd
-#define ModuleRanlibCmd /*won't be used unless NeedModuleRanlib is YES*/
+#define ModuleRanlibCmd RanlibCmd
 #endif
 
 #ifndef StandardIncludes	/* for platform-specifics */

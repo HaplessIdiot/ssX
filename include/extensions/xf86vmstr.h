@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.25 2001/05/06 00:47:35 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.26 2001/05/06 21:59:47 mvojkovi Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -35,7 +35,7 @@ from Kaleb S. KEITHLEY
 #ifndef _XF86VIDMODESTR_H_
 #define _XF86VIDMODESTR_H_
 
-#include "xf86vmode.h"
+#include <X11/extensions/xf86vmode.h>
 
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 

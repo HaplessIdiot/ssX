@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.2 1999/05/09 10:50:24 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 3.3 2001/01/17 19:41:48 dawes Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -50,10 +50,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 
 #endif /* XKB_IN_SERVER */
-
-/* FORWARD DECLARATIONS */
-
-Bool XkbApplyVirtualModChanges();
 
 /***====================================================================***/
 

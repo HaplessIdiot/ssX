@@ -30,7 +30,7 @@
  *     Header file for Xlib-related DBE
  *
  *****************************************************************************/
-
+/* $XFree86$ */
 
 #ifndef XDBE_H
 #define XDBE_H
@@ -39,7 +39,7 @@
 /* INCLUDES */
 
 #include <X11/Xfuncproto.h>
-#include "Xdbeproto.h"
+#include <X11/extensions/Xdbeproto.h>
 
 
 /* DEFINES */

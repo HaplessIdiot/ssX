@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layer.h,v 1.2 2001/06/04 09:45:41 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layer.h,v 1.3 2001/07/20 19:25:01 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -100,10 +100,22 @@ LayerCreate (ScreenPtr		pScreen,
 	     void		*closure);
 
 /*
+ * Create a layer pixmap
+ */
+Bool
+LayerCreatePixmap (ScreenPtr pScreen, LayerPtr pLayer);
+
+/*
  * Change a layer pixmap
  */
 void
 LayerSetPixmap (ScreenPtr pScreen, LayerPtr pLayer, PixmapPtr pPixmap);
+
+/*
+ * Destroy a layer pixmap
+ */
+void
+LayerDestroyPixmap (ScreenPtr pScreen, LayerPtr pLayer);
 
 /*
  * Change a layer kind

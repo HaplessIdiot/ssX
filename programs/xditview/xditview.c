@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xditview/xditview.c,v 1.2 2000/05/11 18:14:41 tsi Exp $ */
 /*
  * xditview -- 
  *
@@ -58,6 +58,7 @@ from the X Consortium.
 #include "xdit.bm"
 #include "xdit_mask.bm"
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef sgi			/* SGI declares popen() in stdio.h */
 extern FILE *popen();
@@ -77,11 +78,13 @@ static XrmOptionDescRec options[] = {
 static char	current_file_name[1024];
 static FILE	*current_file;
 
+static void MakePrompt(Widget, char *, void (*)(char *), char *);
+
 /*
  * Report the syntax for calling xditview.
  */
 
-static
+static void
 Syntax(call)
 	char *call;
 {
@@ -431,6 +434,7 @@ char	*name;
 static char fileBuf[1024];
 static char resolutionBuf[1024];
 
+static void
 ResetMenuEntry (entry)
     Widget  entry;
 {
@@ -592,6 +596,7 @@ void Noop ()
 {
 }
 
+static void
 MakePrompt(centerw, prompt, func, def)
 Widget	centerw;
 char *prompt;

@@ -43,11 +43,12 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.8 2001/01/17 19:43:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.9 2001/07/25 15:04:55 dawes Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
 #include <Xdefs.h>
+#include <Xfuncproto.h>
 /*SHARED*/
 
 #define   Permanent(obj)    t1_Permanent(obj)
@@ -91,6 +92,23 @@ extern char *xiMalloc ( unsigned Size );
 extern void addmemory ( long *addr, long size );
 extern void delmemory ( void );
 
+extern void FatalError(
+#if NeedVarargsPrototypes
+    const char* /*f*/,
+    ...
+#endif
+)
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
+__attribute((noreturn))
+#endif
+;
+
+extern void ErrorF(
+#if NeedVarargsPrototypes
+    const char * /*f*/,
+    ...
+#endif
+);
 
 #undef abort
 #define   abort(line)       FatalError(line)

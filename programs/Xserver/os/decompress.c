@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/decompress.c,v 1.3 2000/09/19 12:46:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/decompress.c,v 1.4 2001/01/17 22:37:10 dawes Exp $ */
 
 /* 
  * decompress - cat a compressed file
@@ -190,6 +190,7 @@ CompressedFontFileDone (fid)
 
 #define getdcchar(file)    ((file)->stackp > (file)->de_stack ? (*--((file)->stackp)) : _filldcbuf (file))
 
+int
 _filldcbuf (file)
     CompressedFile  *file;
 {
@@ -337,6 +338,7 @@ getcode(file)
     return code;
 }
 
+int
 CompressedFontFileRead (buf, itemsize, nitems, fid)
     char	*buf;
     unsigned	itemsize;
@@ -359,6 +361,7 @@ CompressedFontFileRead (buf, itemsize, nitems, fid)
     return nitems - nbytes / itemsize;
 }
 
+int
 CompressedFontFileSkip (bytes, fid)
     unsigned	bytes;
     FID		fid;

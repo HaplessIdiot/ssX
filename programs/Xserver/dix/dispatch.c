@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.22 2000/09/22 06:21:18 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.23 2001/01/17 22:36:42 dawes Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -103,6 +103,9 @@ int ProcInitialConnection();
 #define XKB_IN_SERVER
 #include "inputstr.h"
 #include "XKBsrv.h"
+#endif
+#ifdef LBX
+#include "lbxserve.h"
 #endif
 
 #define mskcnt ((MAXCLIENTS + 31) / 32)

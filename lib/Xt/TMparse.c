@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.4 1998/10/03 09:07:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.5 2001/01/17 19:43:10 dawes Exp $ */
 
 /*
 
@@ -59,6 +59,7 @@ in this Software without prior written authorization from The Open Group.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include <ctype.h>
+#include <stdlib.h>
 #ifndef NOTASCII
 #define XK_LATIN1
 #endif

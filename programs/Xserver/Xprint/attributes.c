@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.11 2000/11/02 02:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.12 2001/01/17 22:36:28 dawes Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -55,9 +55,7 @@ copyright holders.
 
 #include <scrnintstr.h>
 
-#define _XP_PRINT_SERVER_
 #include "extensions/Printstr.h"
-#undef _XP_PRINT_SERVER_
 
 #include "attributes.h"
 #include "Xrm.c"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.37 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.38 2001/07/25 15:05:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -139,7 +139,7 @@ extern Bool InsertFakeRequest(
 #endif
 );
 
-extern int ResetCurrentRequest(
+extern void ResetCurrentRequest(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
@@ -177,6 +177,12 @@ extern void ResetOsBuffers(
 #endif
 );
 
+extern void InitConnectionLimits(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 extern void CreateWellKnownSockets(
 #if NeedFunctionPrototypes
     void
@@ -184,6 +190,12 @@ extern void CreateWellKnownSockets(
 );
 
 extern void ResetWellKnownSockets(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void CloseWellKnownConnections(
 #if NeedFunctionPrototypes
     void
 #endif
@@ -225,49 +237,49 @@ extern void CloseDownConnection(
 #endif
 );
 
-extern int AddEnabledDevice(
+extern void AddEnabledDevice(
 #if NeedFunctionPrototypes
     int /*fd*/
 #endif
 );
 
-extern int RemoveEnabledDevice(
+extern void RemoveEnabledDevice(
 #if NeedFunctionPrototypes
     int /*fd*/
 #endif
 );
 
-extern int OnlyListenToOneClient(
+extern void OnlyListenToOneClient(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
 
-extern int ListenToAllClients(
+extern void ListenToAllClients(
 #if NeedFunctionPrototypes
     void
 #endif
 );
 
-extern int IgnoreClient(
+extern void IgnoreClient(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
 
-extern int AttendClient(
+extern void AttendClient(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
 
-extern int MakeClientGrabImpervious(
+extern void MakeClientGrabImpervious(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
 
-extern int MakeClientGrabPervious(
+extern void MakeClientGrabPervious(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
@@ -451,6 +463,12 @@ extern OsSigHandlerPtr OsSignal(
 );
 
 extern int auditTrailLevel;
+
+extern void AuditPrefix(
+#if NeedFunctionPrototypes
+    const char *
+#endif
+);
 
 extern void AuditF(
 #if NeedVarargsPrototypes

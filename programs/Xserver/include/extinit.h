@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/extinit.h,v 3.0 1996/03/29 22:19:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/extinit.h,v 3.1 1996/04/15 11:34:30 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -30,6 +30,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifndef EXTINIT_H
 #define EXTINIT_H
+
+#include "extnsionst.h"
 
 void
 XInputExtensionInit(

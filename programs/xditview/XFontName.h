@@ -1,3 +1,8 @@
+/* $XFree86$ */
+
+#ifndef _XFONTNAME_H_
+#define _XFONTNAME_H_
+
 typedef struct _xFontName {
 	char		Registry[256];
 	char		Foundry[256];
@@ -43,3 +48,8 @@ typedef struct _xFontName {
 #define SpacingCharacterCell	"C"
 
 typedef char	XFontNameString[256];
+
+extern Bool	XParseFontName(XFontNameString, XFontName *, unsigned int *);
+extern Bool	XFormatFontName(XFontName *, unsigned int, XFontNameString);
+
+#endif

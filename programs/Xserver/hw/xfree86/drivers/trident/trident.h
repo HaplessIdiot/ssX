@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.40 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.41 2001/06/14 02:23:50 keithp Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -173,6 +173,7 @@ Bool TRIDENTClockSelect(ScrnInfoPtr pScrn, int no);
 Bool TRIDENTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 void TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool TRIDENTDGAInit(ScreenPtr pScreen);
+void TRIDENTInitVideo(ScreenPtr pScreen);
 
 unsigned int Tridentddc1Read(ScrnInfoPtr pScrn);
 void TVGARestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);

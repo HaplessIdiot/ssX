@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xditview/parse.c,v 1.3 2000/12/04 21:01:01 dawes Exp $ */
 
 /*
  * parse.c
@@ -44,8 +44,11 @@ from the X Consortium.
 #include "DviP.h"
 
 static int StopSeen = 0;
-static ParseDrawFunction(), ParseDeviceControl();
-static push_env(), pop_env();
+static void ParseDrawFunction(DviWidget dw, char *buf);
+static void ParseDeviceControl(DviWidget dw);
+static void PutCharacters(DviWidget dw, unsigned char *src, int len);
+static void push_env(DviWidget dw);
+static void pop_env(DviWidget dw);
 
 extern char *GetWord(), *GetLine ();
 
@@ -70,8 +73,9 @@ charWidth (DviWidget dw, XftFont *font, char c)
 )
 #endif
     
+int
 ParseInput(dw)
-    register DviWidget	dw;
+    DviWidget	dw;
 {
 	int		n, k;
 	int		c;
@@ -221,7 +225,8 @@ ParseInput(dw)
 			break;
 		case 't':	/* text */
 			GetLine(dw, Buffer, BUFSIZ);
-			PutCharacters (dw, Buffer, strlen (Buffer));
+			PutCharacters (dw, (unsigned char *)Buffer,
+				       strlen (Buffer));
 			dw->dvi.state->x = ToDevice (dw, dw->dvi.cache.x);
 			break;
 		case 'x':	/* device control */
@@ -239,7 +244,7 @@ ParseInput(dw)
 	}
 }
 
-static
+static void
 push_env(dw)
 	DviWidget	dw;
 {
@@ -260,7 +265,7 @@ push_env(dw)
 	dw->dvi.state = new;
 }
 
-static
+static void
 pop_env(dw)
 	DviWidget	dw;
 {
@@ -271,7 +276,7 @@ pop_env(dw)
 	XtFree ((char *) old);
 }
 
-static
+static void
 InitTypesetter (dw)
 	DviWidget	dw;
 {
@@ -282,6 +287,7 @@ InitTypesetter (dw)
 	FlushCharCache (dw);
 }
 
+static void
 SetFont (dw)
     DviWidget	dw;
 {
@@ -292,6 +298,7 @@ SetFont (dw)
 			  dw->dvi.cache.font_size);
 }
 
+static void
 PutCharacters (dw, src, len)
     DviWidget	    dw;
     unsigned char   *src;
@@ -323,7 +330,7 @@ PutCharacters (dw, src, len)
 #endif
 
 	if (!dw->dvi.display_enable)
-	    return FALSE;
+	    return;
 
 	if (yx != dw->dvi.cache.y ||
 	    dw->dvi.cache.char_index + len > DVI_CHAR_CACHE_SIZE)
@@ -387,12 +394,10 @@ PutCharacters (dw, src, len)
 	    if (font)
 		dw->dvi.cache.x += charWidth(dw,font,c);
 	}
-	return TRUE;
     }
-    return FALSE;
 }
 
-static
+static void
 ParseDrawFunction(dw, buf)
 	DviWidget	dw;
 	char		*buf;
@@ -436,7 +441,7 @@ ParseDrawFunction(dw, buf)
 
 extern int LastPage, CurrentPage;
 
-static
+static void
 ParseDeviceControl(dw)				/* Parse the x commands */
 	DviWidget	dw;
 {
@@ -475,5 +480,4 @@ ParseDeviceControl(dw)				/* Parse the x commands */
     while (DviGetC(dw,&c) != '\n')		/* skip rest of input line */
 	    if (c == EOF)
 		    return;
-    return;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.12 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.13 2001/07/25 15:05:12 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -325,8 +325,7 @@ extern void XdmcpRegisterAuthentication (
 extern int XdmcpCheckAuthentication (ARRAY8Ptr Name, ARRAY8Ptr Data, int packet_type);
 extern int XdmcpAddAuthorization (ARRAY8Ptr name, ARRAY8Ptr data);
 
-#if 0
+struct sockaddr_in;
 extern void XdmcpRegisterBroadcastAddress (struct sockaddr_in *addr);
-#endif
 
 #endif /* _OSDEP_H_ */

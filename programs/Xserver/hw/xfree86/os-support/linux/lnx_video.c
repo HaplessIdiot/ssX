@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.53 2001/05/25 18:19:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.54 2001/05/28 18:14:49 tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -50,6 +50,11 @@ static Bool ExtendedEnabled = FALSE;
 
 #ifdef __ia64__
 #include "compiler.h"
+#include <sys/io.h>
+#endif
+
+#ifdef __i386__
+#define _ASM_IO_H	/* don't include asm/io.h */
 #include <sys/io.h>
 #endif
 

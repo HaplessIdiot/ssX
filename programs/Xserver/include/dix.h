@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.16 2001/02/16 13:24:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.17 2001/05/26 01:25:42 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -837,6 +837,15 @@ extern void DeliverGrabbedEvent(
     int /* count */
 #endif
 );
+
+#ifdef XKB
+extern void FixKeyState(
+#if NeedFunctionPrototypes
+    xEvent * /* xE */,
+    DeviceIntPtr /* keybd */
+#endif
+);
+#endif /* XKB */
 
 extern void RecalculateDeliverableEvents(
 #if NeedFunctionPrototypes

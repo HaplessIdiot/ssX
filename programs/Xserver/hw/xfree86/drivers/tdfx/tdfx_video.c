@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.13 2001/06/28 20:35:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.14 2001/07/04 12:18:25 alanh Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -1298,9 +1298,10 @@ TDFXDisplaySurface(
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
-                                        REGION_NUM_RECTS(clipBoxes),
-                                        REGION_RECTS(clipBoxes));
+    (*pTDFX->AccelInfoRec->FillSolidRects)(pScrn, portPriv->colorKey,
+					   GXcopy, ~0, 
+					   REGION_NUM_RECTS(clipBoxes),
+					   REGION_RECTS(clipBoxes));
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */

@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.9 2001/07/23 13:15:53 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.10 2001/07/25 15:05:26 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -153,7 +153,7 @@ extern long lseek();
 #endif
 extern void exit();
 
-static xload_error(
+static void xload_error(
 #if NeedFunctionPrototypes
 char *, char *
 #endif
@@ -1033,7 +1033,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* KVM_ROUTINES else */
 #endif /* SYSV && i386 else */
 
-static xload_error(str1, str2)
+static void xload_error(str1, str2)
 char *str1, *str2;
 {
     (void) fprintf(stderr,"xload: %s %s\n", str1, str2);

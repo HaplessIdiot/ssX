@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.11 2000/05/05 17:53:52 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.12 2001/01/17 22:36:57 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -165,6 +165,13 @@ extern long SmartScheduleMaxSlice;
 extern Bool SmartScheduleDisable;
 #define SMART_MAX_PRIORITY  20
 #define SMART_MIN_PRIORITY  -20
+
+extern Bool SmartScheduleInit(
+#ifdef NeedFunctionPrototypes
+    void
+#endif
+);
+
 #endif
 
 /* This prototype is used pervasively in Xext, dix */

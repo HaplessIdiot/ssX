@@ -1,4 +1,4 @@
-/* $XConsortium: Handlers.c,v 1.1 93/07/12 15:28:29 rws Exp $ */
+/* $Xorg: Handlers.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "screenint.h"
@@ -21,12 +23,10 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
+#include "Events.h"
 #include "Handlers.h"
 
 void xnestBlockHandler(blockData, pTimeout, pReadMask)

@@ -1,6 +1,6 @@
-/* $XFree86: xc/lib/Xp/XpExtUtil.h,v 1.1 2000/09/26 15:56:57 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
+ * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -25,19 +25,23 @@
  * XFree86 Project.
  */
 
-#ifndef _XPEXTUTIL_H
-#define _XPEXTUTIL_H 1
+#ifndef _SLEEPUNTIL_H_
+#define _SLEEPUNTIL_H_ 1
 
-#include <X11/Xfuncproto.h>
-#include "extutil.h"
+#include "dix.h"
 
-extern XEXT_FIND_DISPLAY_PROTO(xp_find_display);
-
-extern int XpCheckExtInit(
+extern int ClientSleepUntil(
 #if NeedFunctionPrototypes
-    Display * /* dpy */,
-    int       /* version_index */
+    ClientPtr client,
+    TimeStamp *revive,
+    void (*notifyFunc)(
+#if NeedNestedPrototypes
+	ClientPtr /* client */,
+	pointer   /* closure */
+#endif
+	),
+    pointer Closure
 #endif
 );
 
-#endif /* _XPEXTUTIL_H */
+#endif

@@ -26,10 +26,12 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XFree86$ */
 
 #ifndef _SAVERPROTO_H_
 #define _SAVERPROTO_H_
-#include "saver.h"
+
+#include <X11/extensions/saver.h>
 
 #define X_ScreenSaverQueryVersion   0
 

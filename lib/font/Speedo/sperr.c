@@ -48,13 +48,15 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/sperr.c,v 1.3 2000/04/05 18:13:24 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/sperr.c,v 1.4 2001/01/17 19:43:20 dawes Exp $ */
 
 #include	"spint.h"
 
 #ifndef FONT_MODULE
 #include <stdarg.h>
 #endif
+
+extern void ErrorF(const char* f, ...);
 
 void
 SpeedoErr(char *str, ...)

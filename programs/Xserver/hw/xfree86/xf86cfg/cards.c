@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.8 2001/07/09 23:45:24 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.9 2001/07/10 21:39:41 paulo Exp $
  */
 
 #define CARDS_PRIVATE
@@ -61,7 +61,6 @@ static void DoReadCardsDatabase(void);
 static char **DoFilterCardNames(char *pattern, int *result);
 
 #ifdef USE_MODULES
-extern int ErrorF(const char*, ...);
 
 typedef struct {
     int ivendor;

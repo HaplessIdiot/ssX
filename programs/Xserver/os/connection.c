@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.47 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.48 2001/07/25 15:05:11 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -1119,7 +1119,7 @@ CloseDownConnection(client)
 	AuditF("client %d disconnected\n", client->index);
 }
 
-
+void
 AddEnabledDevice(fd)
     int fd;
 {
@@ -1129,7 +1129,7 @@ AddEnabledDevice(fd)
 	FD_SET(fd, &SavedAllSockets);
 }
 
-
+void
 RemoveEnabledDevice(fd)
     int fd;
 {
@@ -1149,6 +1149,7 @@ RemoveEnabledDevice(fd)
  *    This routine is "undone" by ListenToAllClients()
  *****************/
 
+void
 OnlyListenToOneClient(client)
     ClientPtr client;
 {
@@ -1181,6 +1182,7 @@ OnlyListenToOneClient(client)
  *    Undoes OnlyListentToOneClient()
  ****************/
 
+void
 ListenToAllClients()
 {
     if (GrabInProgress)
@@ -1198,6 +1200,7 @@ ListenToAllClients()
  *    Must have cooresponding call to AttendClient.
  ****************/
 
+void
 IgnoreClient (client)
     ClientPtr	client;
 {
@@ -1242,6 +1245,7 @@ IgnoreClient (client)
  *    Adds one client back into the input masks.
  ****************/
 
+void
 AttendClient (client)
     ClientPtr	client;
 {
@@ -1275,6 +1279,7 @@ AttendClient (client)
 
 /* make client impervious to grabs; assume only executing client calls this */
 
+void
 MakeClientGrabImpervious(client)
     ClientPtr client;
 {
@@ -1294,6 +1299,7 @@ MakeClientGrabImpervious(client)
 
 /* make client pervious to grabs; assume only executing client calls this */
 
+void
 MakeClientGrabPervious(client)
     ClientPtr client;
 {

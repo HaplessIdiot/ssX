@@ -55,6 +55,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define XK_MISCELLANY
 #define XK_LATIN1
@@ -64,6 +65,9 @@ in this Software without prior written authorization from The Open Group.
 
 #include "IntrinsicI.h"
 #include <X11/keysymdef.h>
+#ifdef XKB
+#include <X11/XKBlib.h>
+#endif
 
 #define FLUSHKEYCACHE(ctx) \
 	bzero((char *)&ctx->keycache, sizeof(TMKeyCache))
@@ -591,9 +595,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
 }
 #else
 {
-    XkbLookupKeySym(dpy, keycode, modifiers, modifiers_return, 
-						    keysym_return);
-    return;
+    XkbLookupKeySym(dpy, keycode, modifiers, modifiers_return, keysym_return);
 }
 #endif
 

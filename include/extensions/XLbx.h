@@ -1,4 +1,4 @@
-/* $XConsortium: XLbx.h /main/21 1996/12/15 21:23:54 rws $ */
+/* $Xorg: XLbx.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,6 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
  
 #ifndef _XLBX_H_
 #define _XLBX_H_
@@ -127,7 +128,19 @@
 
 #ifndef _XLBX_SERVER_
 
+#include <X11/Xdefs.h>
+#include <X11/Xlib.h>
+
 _XFUNCPROTOBEGIN
+
+Bool XLbxQueryExtension(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int*		/* requestp */,
+    int*		/* event_basep */,
+    int*		/* error_basep */
+#endif
+);
 
 Bool XLbxQueryVersion(
 #if NeedFunctionPrototypes

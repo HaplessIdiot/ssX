@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/smproxy/smproxy.c,v 3.5 1999/02/20 15:07:20 hohndel Exp $ */
+/* $XFree86: xc/programs/smproxy/smproxy.c,v 3.6 2001/01/17 23:45:05 dawes Exp $ */
 
 #include "smproxy.h"
 #include <unistd.h>
@@ -572,6 +572,7 @@ WinInfo *winInfo;
 
 
 
+int
 MyErrorHandler (display, event)
 
 Display *display;

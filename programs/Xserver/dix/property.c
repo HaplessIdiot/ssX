@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.7 1999/01/13 08:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.8 2001/01/17 22:36:44 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,6 +55,10 @@ SOFTWARE.
 #ifdef XCSECURITY
 #define _SECURITY_SERVER
 #include "security.h"
+#endif
+#ifdef LBX
+#include "lbxserve.h"
+#include "lbxtags.h"
 #endif
 
 #if defined(LBX) || defined(LBX_COMPAT)

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.3 1998/10/03 09:06:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.4 2001/01/17 19:42:48 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -173,6 +173,7 @@ void _xidevicebusy (dpy, error)
  *
  */
 
+int
 _XiCheckExtInit(dpy, version_index)
     register	Display *dpy;
     register	int	version_index;
