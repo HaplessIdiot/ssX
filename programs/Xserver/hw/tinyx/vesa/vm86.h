@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.h,v 1.2tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.h,v 1.3 2004/08/04 16:33:35 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -51,7 +51,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <sys/vm86.h>
+#include <asm/vm86.h>
 #ifndef MAP_FAILED
 # define MAP_FAILED ((pointer)(1))
 #endif
