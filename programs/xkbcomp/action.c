@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/action.c,v 3.8 2001/01/17 23:45:42 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/action.c,v 3.9 2002/06/05 00:00:37 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -974,6 +974,21 @@ XkbDeviceBtnAction *	act;
 }
 
 static Bool
+HandleDeviceValuator(	XkbDescPtr 	xkb,
+			XkbAnyAction *	action,
+			unsigned	field,
+			ExprDef *	array_ndx,
+			ExprDef *	value)
+{
+ExprResult			rtrn;
+XkbDeviceValuatorAction *	act;
+
+    act= (XkbDeviceValuatorAction *)action;
+    /*  XXX - Not yet implemented */
+    return False;
+}
+
+static Bool
 HandlePrivate(	XkbDescPtr 	xkb,
 		XkbAnyAction *	action,
 		unsigned	field,
@@ -1064,6 +1079,7 @@ static actionHandler	handleAction[XkbSA_NumActions+1] = {
 	HandleRedirectKey		/* RedirectKey	*/,
 	HandleDeviceBtn			/* DeviceBtn	*/,
 	HandleDeviceBtn			/* LockDeviceBtn*/,
+	HandleDeviceValuator		/* DeviceValuatr*/,
 	HandlePrivate			/* Private	*/
 };
 
