@@ -152,7 +152,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.145 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.146 dawes Exp $
 
 
 $XFree86$
