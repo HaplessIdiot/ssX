@@ -12,10 +12,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>8 December 2000
+<date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.108 2000/12/08 19:10:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.109 2000/12/09 03:06:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -31,42 +31,20 @@ operating systems on Intel and other platforms.
 <sect>What is XFree86 &relvers;?
 <p>
 
-<![ %snapshot [
-XFree86 &relvers; is a ``work in progress'' snapshot of the XFree86 4.0
-development code.  It is <![ %latersnap; [one of]]>
-<![ %firstsnap; [the first in]]>
-a series of snapshot releases leading up the the 4.0 release.  The
-plan is to release a new snapshot every four to six weeks.  The target
-audience for this release is developers and others who are comfortable
-on the bleeding edge.  This release is not targeted at beginners.
-Also, most end users will find life easier using our latest 3.3.x release.
-While we welcome bug reports and feedback about this release, we don't
-have the resources to provide user-level support for it.  If you're not
-comfortable dealing with those sorts of things yourself, then the snapshot
-releases are probably not for you.
+XFree86 &relvers; is the third full release in the <![ %earlyrel; [new]]>
+XFree86 4 series.
 
-This code is very much work in progress.  Many of the interfaces may
-change without notice between now and the 4.0 release.  The
-<htmlurl name="driver design" url="DESIGN.html"> has changed significantly
-compared with the 3.3.x versions, and only a small number of drivers have
-been converted so far.  That means that this release does not support a
-wide range of video hardware.  Some of the drivers and new features are
-well developed and reasonably stable, while others are not.
-]]>
-
-<![ %release [
-XFree86 &relvers; is <![ %firstrel; [the first]]>
-<![ %laterrel; [a]]> the upgrade to the first full release in the <![ %earlyrel; [new]]> XFree86 4
-series.  Release 4 is a major re-design of the basic architectural
+<p>
+XFree86 release 4 is a major re-design of the basic architectural
 underpinnings of XFree86's implementation of the original X Consortium's
 X Server.  This re-design allows for a modular interaction between the
-hardware drivers and the XFree86 core X server.  With 4.0, upgrades to
+hardware drivers and the XFree86 core X server.  With 4.x, upgrades to
 the X server with new and unsupported hardware can be easily done and
-installed without undergoing the previous process of rebuilding a X
+installed without undergoing the previous process of rebuilding an X
 server.  All that is required is installing the new driver module and
 updating the configuration file.
 
-The road to XFree86 Release 4 began as an architectural concept in mid
+The road to XFree86 release 4 began as an architectural concept in mid
 1997, with the serious framework being implemented in code the beginning
 of 1998.  There were several snapshots on the road to 4.0 which are now
 part of the 4.0 base release.  The &relvers; version is an upgrade to
@@ -74,16 +52,15 @@ part of the 4.0 base release.  The &relvers; version is an upgrade to
 bug fixes.
 
 Release 4 also included the long-awaited integration of the DRI (Direct
-Rendering Infrastructure).  This upgrade into the code base  gives XFree86
-the abilities of direct 3-D graphics rendering, used widely in games
-and other visualization programs.
+Rendering Infrastructure).  This upgrade into the code base  gives
+XFree86 the abilities of accelerated direct 3-D graphics rendering, used
+widely in games and other visualization programs.
 
-Many drivers used in the old 3.3.x series have not be converted over to
-the 4.0 design and so check first whether your hardware is supported
-before upgrading to the 4.0 series in the <htmlurl name="Driver Status
-document" url="Status.html">.
-
-]]>
+While some driver available in the old 3.3.x release series have not
+been converted over to the 4.x series, those required for most modern
+video hardware are available.  Please check the <htmlurl name="Driver
+Status document" url="Status.html"> first to see whether your hardware
+is supported before upgrading to the 4.x series.
 
 Specific release enhancements can be viewed in the
 <htmlurl name="Release Notes" url="RELNOTES.html">.
@@ -112,9 +89,9 @@ and not XFree86.
 <p>
 
 If you would like to work on the development of XFree86 4, either by
-helping with the conversion of our older drivers to the new 4.0 design,
+helping with the conversion of our older drivers to the new 4.x design,
 or assisting in the addition of new drivers or platforms to the code base
-then send a request to to <url name="join the XFree86 development team"
+then send a request to <url name="join the XFree86 development team"
 url="http://www.xfree86.org:/developer.html">.  This will give you direct
 access to the latest XFree86 related development topics and discussions.
 Include in your note, your name, email address, reason for joining (what
@@ -169,6 +146,7 @@ repository this is the list that will show you those updates.  This list
 is updated dynamically every time the repository is updated after the
 the commit happens.
 
+<!--
 <p>
 A followup to the commit list is the soon to be public, patch archives.
 This archive will be available on our web-site and will show what patches
@@ -176,6 +154,7 @@ have been submitted and will soon be committed.  This is helpful for
 people who are interested in a specific area and want to know what work
 is happening there.  When this goes public we will announce it
 on our web site and our Announce mailing list, so keep watching.
+-->
 
 
 <sect1>  Xpert
