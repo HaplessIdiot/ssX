@@ -193,6 +193,7 @@ static const char *shadowfbSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -1510,5 +1511,6 @@ renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
 
     pVbe = VBEInit(NULL,index);
     ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+    vbeFree(pVbe);
   }
 }

@@ -899,13 +899,13 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	}
     }
     /* Should really do XListFonts, but most servers support this */
-    f = XLoadFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    f = XLoadFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-*");
     if (f != 0)
 	goto Done;
 
     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		    "noFont","cvtStringToFont",XtCXtToolkitError,
-		    "Unable to load any usable ISO8859-1 font",
+		    "Unable to load any usable ISO8859 font",
 		    (String *) NULL, (Cardinal *)NULL);
 
     return False;
@@ -1158,13 +1158,13 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	}
     }
     /* Should really do XListFonts, but most servers support this */
-    f = XLoadQueryFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1");
+    f = XLoadQueryFont(display, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-*");
     if (f != NULL)
 	goto Done;
 
     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     "noFont","cvtStringToFontStruct",XtCXtToolkitError,
-             "Unable to load any usable ISO8859-1 font",
+             "Unable to load any usable ISO8859 font",
               (String *) NULL, (Cardinal *)NULL);
     
     return False;

@@ -716,11 +716,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     if(pMga->ILOADBase) {
 	pMga->ColorExpandBase = pMga->ILOADBase;
     } else {
-#ifdef __alpha__
-	pMga->ColorExpandBase = pMga->IOBaseDense;
-#else
 	pMga->ColorExpandBase = pMga->IOBase;
-#endif
     }
     infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
 		MGANAME(SetupForScanlineCPUToScreenColorExpandFill);

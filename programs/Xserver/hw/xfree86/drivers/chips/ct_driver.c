@@ -569,7 +569,8 @@ typedef enum {
     OPTION_CRT2_MEM,
     OPTION_DUAL_REFRESH,
     OPTION_CRT_CLK_INDX,
-    OPTION_FP_CLK_INDX
+    OPTION_FP_CLK_INDX,
+    OPTION_FP_MODE
 } CHIPSOpts;
 
 static const OptionInfoRec Chips655xxOptions[] = {
@@ -596,6 +597,7 @@ static const OptionInfoRec Chips655xxOptions[] = {
     { OPTION_FP_CLOCK_8,        "FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_MODE,		"FPMode",	OPTV_BOOLEAN,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -645,6 +647,7 @@ static const OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_DUAL_REFRESH,	"DualRefresh",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CRT_CLK_INDX,	"CrtClkIndx",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FP_CLK_INDX,	"FPClkIndx",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_FP_MODE,		"FPMode",	OPTV_BOOLEAN,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1118,7 +1121,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
-	xf86LoaderReqSymLists(vbeSymbols);
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
     
@@ -1357,6 +1360,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (cPtr->MMIOBaseVGA)
  	xf86SetOperatingState(RES_SHARED_VGA, cPtr->pEnt->index, ResDisableOpr);
+    vbeFree(cPtr->pVbe);
+    cPtr->pVbe = NULL;
     return TRUE;
 }
 
@@ -1371,6 +1376,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     double real;
     int val, indx;
     const char *s;
+    pointer pVbeModule = NULL;
 
     vgaHWPtr hwp;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -1667,34 +1673,28 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		&& (cPtr->Flags & ChipsFullMMIOSupport) 
 		&& (cPtr->pEnt->location.type == BUS_PCI)) {
 
-		if (cPtr->Flags & ChipsDualChannelSupport)
-		  /* !!!! Full MMIO doesn't work on the 69030 for now */
-		  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-			     "FULL_MMIO option ignored for Dual Channel\n");
-		else {
-		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-			       "Enabling Full MMIO\n");
-		    cPtr->UseFullMMIO = TRUE;
-		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-			       "Using Full MMIO\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			   "Enabling Full MMIO\n");
+		cPtr->UseFullMMIO = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			   "Using Full MMIO\n");
 
-		    /* 
-		     * We need to map the framebuffer to read/write regs.
-		     * but can't do that without the FbMapSize. So need to
-		     * fake value for PreInit. This isn't a problem as
-		     * framebuffer isn't actually used in PreInit
-		     */
-		    cPtr->FbMapSize = 1024 * 1024;
+		/* 
+		 * We need to map the framebuffer to read/write regs.
+		 * but can't do that without the FbMapSize. So need to
+		 * fake value for PreInit. This isn't a problem as
+		 * framebuffer isn't actually used in PreInit
+		 */
+		cPtr->FbMapSize = 1024 * 1024;
 
-		    /* Map the linear framebuffer */
-		    if (!chipsMapMem(pScrn))
-		      return FALSE;
-	      
-		    /* Setup the MMIO register functions */
-		    if (cPtr->MMIOBaseVGA) {
-		      CHIPSSetMmioExtFuncs(cPtr);
-		      CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBaseVGA, 0x0);
-		    }
+		/* Map the linear framebuffer */
+		if (!chipsMapMem(pScrn))
+		  return FALSE;
+	  
+		/* Setup the MMIO register functions */
+		if (cPtr->MMIOBaseVGA) {
+		  CHIPSSetMmioExtFuncs(cPtr);
+		  CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBaseVGA, 0x0);
 		}
 	    } else {
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -1722,7 +1722,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	     * can result in unexpected behaviour when the config file marks
 	     * the primary CRTC as the second screen.
 	     */
-	    if (xf86IsPrimInitDone(pScrn->entityList[0])) {
+	    if (xf86IsPrimInitDone(pScrn->entityList[0])) 
 #else
 	    /*
 	     * This is an alternative version that determines which is the 
@@ -1730,9 +1730,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	     * It doesn't currently work because there are things that assume
 	     * the primary CRTC is initialised first.
 	     */
-	    if (cPtr->pEnt->device->screen == 1) {
+	    if (cPtr->pEnt->device->screen == 1) 
 		
 #endif
+	    {
 		/* This is the second crtc */
 		cPtr->SecondCrtc = TRUE;
 		cPtr->UseDualChannel = TRUE;
@@ -1870,6 +1871,38 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     cPtr->IOBase = (unsigned int)(cPtr->SuspendHack.vgaIOBaseFlag ?
 				  0x3D0 : 0x3B0);
 
+    /* 
+     * Do DDC here: if VESA BIOS detects an external monitor it
+     * might switch. SetPanelType() will detect this.
+     */
+    if ((pVbeModule = xf86LoadSubModule(pScrn, "ddc"))) {
+	Bool ddc_done = FALSE;
+	xf86MonPtr pMon;
+	
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+	if (cPtr->pVbe) {
+	    if ((pMon 
+		 = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, pVbeModule))) != NULL) {
+		ddc_done = TRUE;
+		xf86SetDDCproperties(pScrn,pMon);
+	    }
+	}
+
+	if (!ddc_done)
+	    if (xf86LoadSubModule(pScrn, "i2c")) {
+		xf86LoaderReqSymLists(i2cSymbols,NULL);
+	    
+		if (chips_i2cInit(pScrn)) {
+		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
+						      cPtr->I2C))) != NULL)
+		       ddc_done = TRUE;
+		       xf86SetDDCproperties(pScrn,pMon);
+		}
+	    }
+	if (!ddc_done)
+	    chips_ddc1(pScrn);
+    }
 
     /*test STN / TFT */
     tmp = cPtr->readFR(cPtr, 0x10);
@@ -1899,17 +1932,31 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
     
     chipsSetPanelType(cPtr);
-    
-    if ((cPtr->PanelType & ChipsLCD) && (cPtr->PanelType & ChipsCRT))
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
-    else if (cPtr->PanelType & ChipsLCD)
-        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
-    else if (cPtr->PanelType & ChipsCRT) {
-        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
-	/* monitor info */
-	cPtr->Monitor = chipsSetMonitor(pScrn);
+    from = X_PROBED;
+    {
+      Bool fp_mode;
+      if (xf86GetOptValBool(cPtr->Options, OPTION_FP_MODE, &fp_mode)) {
+	if (fp_mode) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing FP Mode on\n");
+	  cPtr->PanelType |= ChipsLCD;
+	} else {
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing FP Mode off\n");
+	  cPtr->PanelType = ~ChipsLCD;
+	} 
+	from = X_CONFIG;
+      }
     }
-
+    if ((cPtr->PanelType & ChipsLCD) && (cPtr->PanelType & ChipsCRT))
+	xf86DrvMsg(pScrn->scrnIndex, from, "LCD/CRT\n");
+    else if (cPtr->PanelType & ChipsLCD)
+        xf86DrvMsg(pScrn->scrnIndex, from, "LCD\n");
+    else if (cPtr->PanelType & ChipsCRT) {
+        xf86DrvMsg(pScrn->scrnIndex, from, "CRT\n");
+	/* monitor info */
+#if 1
+	cPtr->Monitor = chipsSetMonitor(pScrn);
+#endif
+    }
     /* screen size */
     /* 
      * In LCD mode / dual mode we want to derive the timing values from
@@ -2331,33 +2378,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor->Modes = &ChipsNTSCMode;
 #endif
 
-    if (xf86LoadSubModule(pScrn, "ddc")) {
-	Bool ddc_done = FALSE;
-	xf86MonPtr pMon;
-	
-	xf86LoaderReqSymLists(ddcSymbols, NULL);
-
-	if (cPtr->pVbe) {
-	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL))) != NULL) {
-		ddc_done = TRUE;
-		xf86SetDDCproperties(pScrn,pMon);
-	    }
-	}
-
-	if (!ddc_done)
-	    if (xf86LoadSubModule(pScrn, "i2c")) {
-		xf86LoaderReqSymLists(i2cSymbols,NULL);
-	    
-		if (chips_i2cInit(pScrn)) {
-		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
-						      cPtr->I2C))) != NULL)
-		       ddc_done = TRUE;
-		       xf86SetDDCproperties(pScrn,pMon);
-		}
-	    }
-	if (!ddc_done)
-	    chips_ddc1(pScrn);
-    }
     
     if (cPtr->Flags & ChipsDualChannelSupport) {
 	if (xf86IsEntityShared(pScrn->entityList[0])) {
@@ -2369,7 +2389,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
 	/* Put IOSS/MSS back to normal */
 	cPtr->writeIOSS(cPtr, cPtr->storeIOSS);
-	cPtr->writeMSS(cPtr, cPtr->storeMSS);
+	cPtr->writeMSS(cPtr, hwp, cPtr->storeMSS);
 
 	xf86SetPrimInitDone(pScrn->entityList[0]);
     }
@@ -3179,13 +3199,26 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     }
 
     chipsSetPanelType(cPtr);
-    
+    from = X_PROBED;
+    {
+        Bool fp_mode;
+	if (xf86GetOptValBool(cPtr->Options, OPTION_FP_MODE, &fp_mode)) {
+	    if (fp_mode) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing FP Mode on\n");
+		cPtr->PanelType |= ChipsLCD;
+	    } else {
+	       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing FP Mode off\n");
+	       cPtr->PanelType = ~ChipsLCD;
+	    } 
+	    from = X_CONFIG;
+	}
+    }
     if ((cPtr->PanelType & ChipsLCD) && (cPtr->PanelType & ChipsCRT))
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
+	xf86DrvMsg(pScrn->scrnIndex, from, "LCD/CRT\n");
     else if (cPtr->PanelType & ChipsLCD)
-        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
+        xf86DrvMsg(pScrn->scrnIndex, from, "LCD\n");
     else if (cPtr->PanelType & ChipsCRT) {
-        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
+        xf86DrvMsg(pScrn->scrnIndex, from, "CRT\n");
 	/* monitor info */
 	cPtr->Monitor = chipsSetMonitor(pScrn);
     }
@@ -3273,6 +3306,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 			   "32Bit IO not supported on 65545 PCI\n");
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "\tenabling MMIO\n");
 		cPtr->UseMMIO = TRUE;
+		cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
 	    }
 	    
 	} else {   /* XR08: Linear addressing base, not for PCI */
@@ -3431,7 +3465,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		       "Using textclock freq: %7.3f.\n",
 		       SaveClk->Clock/1000.0);
 	} else
-	   SaveClk->Clock = ((cPtr->PanelType & ChipsLCD) ? 
+	   SaveClk->Clock = ((cPtr->PanelType & ChipsLCDProbed) ? 
 				 LCD_TEXT_CLK_FREQ : CRT_TEXT_CLK_FREQ);
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using programmable clocks\n");
     } else {  /* TYPE_PROGRAMMABLE */
@@ -3612,12 +3646,13 @@ CHIPSEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
 
-    if (cPtr->Flags & ChipsDualChannelSupport)
+    if (cPtr->Flags & ChipsDualChannelSupport) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALOPEN;
-
+    }
     /* Should we re-save the text mode on each VT enter? */
     if(!chipsModeInit(pScrn, pScrn->currentMode))
       return FALSE;
@@ -3642,8 +3677,7 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
 
     /* Invalidate the cached acceleration registers */
     cAcl->planemask = -1;
@@ -3651,6 +3685,8 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     cAcl->bgColor = -1;
 
     if (cPtr->Flags & ChipsDualChannelSupport) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+				       CHIPSEntityIndex)->ptr;
 	if (cPtr->UseDualChannel)
 	    DUALREOPEN;
        	DUALCLOSE;
@@ -3669,15 +3705,17 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
     int i, index, shift ;
-    
+    CHIPSEntPtr cPtrEnt;    
+
     shift = ((pScrn->depth == 15) && 
 	     (!(cPtr->Flags & ChipsOverlay8plus16))) ? 3 : 0;
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     for (i = 0; i < numColors; i++) {
 	index = indices[i];
@@ -3698,7 +3736,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
 
 	for (i = 0; i < numColors; i++) {
 	    index = indices[i];
@@ -3712,7 +3750,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	    DACDelay(hwp);
 	}
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     }
     
     /* This shouldn't be necessary, but we'll play safe. */
@@ -3725,12 +3763,15 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
+
     int i, index;
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
     
     for (i = 0; i < numColors; i++) {
 	index = indices[i];
@@ -3752,7 +3793,7 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
 
 	for (i = 0; i < numColors; i++) {
 	    index = indices[i];
@@ -3767,7 +3808,7 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 	}
 
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     }
 
     /* This shouldn't be necessary, but we'll play safe. */
@@ -3789,11 +3830,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     unsigned int racflag = 0;
     unsigned char *FBStart;
     int height, width, displayWidth;
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
 #ifdef DEBUG
     ErrorF("CHIPSScreenInit\n");
 #endif    
+
     /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
      * one first thing
@@ -3833,8 +3874,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBaseVGA, 0x0);
     }
 
-    if (cPtr->Flags & ChipsDualChannelSupport)
+    if (cPtr->Flags & ChipsDualChannelSupport) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALOPEN;
+    }
 
 #if defined(__arm32__) && defined(__NetBSD__)
     if (strcmp(pScrn->currentMode->name,"PAL") == 0) {
@@ -3862,14 +3906,14 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 					IOSS_PIPE_A));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_A));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_A));
 	chipsSave(pScrn, &hwp->SavedReg, &cPtr->SavedReg);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
 	chipsSave(pScrn, &cPtr->VgaSavedReg2, &cPtr->SavedReg2);
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     } else
 	chipsSave(pScrn, &hwp->SavedReg, &cPtr->SavedReg);
 
@@ -4091,9 +4135,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		    pScrn->virtualY * (pScrn->bitsPerPixel >> 3);
 
 	if ((cPtr->Flags & ChipsDualChannelSupport) && 
-		(cPtr->SecondCrtc == TRUE))
+	    (cPtr->SecondCrtc == TRUE)) {
 	    currentaddr = allocatebase + cPtrEnt->masterFbMapSize;
-	else
+	} else
 	    currentaddr = allocatebase;
 	if (serverGeneration == 1)
 	    xf86DrvMsg(scrnIndex, X_PROBED,
@@ -4302,13 +4346,15 @@ CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
 
     ErrorF("CHIPSSwitchMode\n");
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     return chipsModeInit(xf86Screens[scrnIndex], mode);
 }
@@ -4319,8 +4365,8 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
+
     int Base;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned char tmp;
@@ -4360,8 +4406,11 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	break;
     }
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     /* write base to chip */
     /*
@@ -4386,7 +4435,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
 
 	chipsFixResume(pScrn);
 	hwp->writeCrtc(hwp, 0x0C, (Base & 0xFF00) >> 8);
@@ -4395,7 +4444,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	    hwp->writeCrtc(hwp, 0x40, ((Base & 0x0F0000) >> 16) | 0x80);
 
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     }
 
     if (cPtr->Flags & ChipsOverlay8plus16) {
@@ -4414,11 +4463,12 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
-    
+    CHIPSEntPtr cPtrEnt;    
+
     if(pScrn->vtSema){   /*§§§*/
 	if (cPtr->Flags & ChipsDualChannelSupport) {
+  	    cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					   CHIPSEntityIndex)->ptr;
 	    if (cPtr->UseDualChannel)
 		DUALREOPEN;
 	    DUALCLOSE;
@@ -4437,9 +4487,6 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	cPtrEnt = pPriv->ptr;
 	cPtrEnt->refCount--;
     }
-    if (cPtr->pVbe)
-	vbeFree(cPtr->pVbe);
-	cPtr->pVbe = NULL;
     if (cPtr->AccelInfoRec)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)
@@ -4473,9 +4520,20 @@ CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
+    if (flags & MODECHECK_FINAL) {
+    /* Don't subtract FrambufferSize here as it should be subtracted already */
+    if ((cPtr->Flags & ChipsOverlay8plus16) 
+      && ((pScrn->videoRam<<10) - pScrn->displayWidth * 3 * pScrn->virtualY 
+	  < 0))
+	return MODE_MEM;
+    }
     /* The tests here need to be expanded */
-    if ((mode->Flags & V_INTERLACE) && (cPtr->Flags & ChipsLCD))
-	return MODE_BAD;
+    if ((mode->Flags & V_INTERLACE) && (cPtr->PanelType & ChipsLCD))
+	return MODE_NO_INTERLACE;
+    if ((cPtr->PanelType & ChipsLCD) 
+	&& ((cPtr->PanelSize.HDisplay < mode->HDisplay)
+	    || (cPtr->PanelSize.VDisplay < mode->VDisplay)))
+      return MODE_PANEL;
 
     return MODE_OK;
 }
@@ -4497,8 +4555,8 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
+
     unsigned char dpmsreg, seqreg, lcdoff, tmp;
     
     if (!pScrn->vtSema)
@@ -4534,8 +4592,11 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	return;
     }
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     seqreg |= hwp->readSeq(hwp, 0x01) & ~0x20;
     hwp->writeSeq(hwp, 0x01, seqreg);
@@ -4548,7 +4609,7 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     }
     
     /* Turn off the flat panel */
-    if (cPtr->PanelType & ChipsLCD) {
+    if (cPtr->PanelType & ChipsLCDProbed) {
 	if (IS_HiQV(cPtr)) {
 	    if (cPtr->Chipset == CHIPS_CT69030) {
 #if 0
@@ -4643,17 +4704,19 @@ chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
     unsigned char tmp;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
     unsigned char Type = cPtr->ClockType;
+    CHIPSEntPtr cPtrEnt;
 
     Clock->msr = hwp->readMiscOut(hwp)&0xFE; /* save standard VGA clock reg */
     switch (Type & GET_STYLE) {
     case HiQV_STYLE:
 	/* save alternate clock select reg.*/
 	/* The 69030 FP clock select is at FR01 instead */
-	if (cPtr->UseDualChannel)
-	    DUALREOPEN;
+      if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
+	DUALREOPEN;
+      }
 
 	if (cPtr->Flags & ChipsDualChannelSupport)
 	    Clock->fr03 = cPtr->readFR(cPtr, 0x01);
@@ -4695,15 +4758,17 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
     unsigned char Type = cPtr->ClockType;
+    CHIPSEntPtr cPtrEnt;
 
     if (no > (pScrn->numClocks - 1))
 	return (FALSE);
 
-    if (cPtr->UseDualChannel)
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     switch (Type & GET_STYLE) {
     case HiQV_STYLE:
@@ -4736,6 +4801,17 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	     * be shared for CRT and LCD.
 	     */
 	    chipsSetPanelType(cPtr);
+	    {
+	      Bool fp_m;
+	      if (cPtr->Options 
+		  && xf86GetOptValBool(cPtr->Options, OPTION_FP_MODE, &fp_m)) {
+		   if (fp_m) 
+		       cPtr->PanelType |= ChipsLCD;
+		   else 
+		       cPtr->PanelType = ~ChipsLCD;
+	      }
+	    }
+
 	    if ((cPtr->PanelType & ChipsLCD) && cPtr->FPclock) 
 		Clock->Clock = cPtr->FPclock;
 	    else
@@ -4795,12 +4871,12 @@ chipsGetHWClock(ScrnInfoPtr pScrn)
 	tmp = ((hwp->readMiscOut(hwp) & 0x04) >> 2);
 	return (tmp > 2) ? 2 : tmp;
     case OLD_STYLE:
-	if (!(cPtr->PanelType & ChipsLCD))
+	if (!(cPtr->PanelType & ChipsLCDProbed))
 	    tmp = hwp->readMiscOut(hwp);
 	else
 	    tmp = cPtr->readXR(cPtr, 0x54);
 	if (tmp & 0x08) {
-	    if (!(cPtr->PanelType & ChipsLCD))
+	    if (!(cPtr->PanelType & ChipsLCDProbed))
 		tmp = hwp->readFCR(hwp) & 0x03;
 	    else 
 		tmp = (tmp >> 4) & 0x03;
@@ -4811,7 +4887,7 @@ chipsGetHWClock(ScrnInfoPtr pScrn)
 	    return (tmp + (tmp1 & 0x02));
 	}
     case NEW_STYLE:
-	if (cPtr->PanelType & ChipsLCD) {
+	if (cPtr->PanelType & ChipsLCDProbed) {
 	    tmp = cPtr->readXR(cPtr, 0x54);
 	} else
 	    tmp = hwp->readMiscOut(hwp);
@@ -5470,12 +5546,11 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->CR[0x3C] = (i & 0xC0);
 	}
 #else
-	ChipsNew->CR[0x3C] = vgaHWHBlankKGA(mode, ChipsStd, 8, 
-				KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO) << 6;
+	ChipsNew->CR[0x3C] = vgaHWHBlankKGA(mode, ChipsStd, 8, 0) << 6;
 #endif
     } else
-      vgaHWHBlankKGA(mode, ChipsStd, 6, KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO);
-    vgaHWVBlankKGA(mode, ChipsStd, 8, KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO);
+      vgaHWHBlankKGA(mode, ChipsStd, 6, 0);
+    vgaHWVBlankKGA(mode, ChipsStd, 8, 0);
 
     ChipsNew->CR[0x40] |= 0x80;
 
@@ -5544,7 +5619,20 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		ChipsNew->FR[0x08] |= 0x80;	/* Alt. CRT Vsync negative */
 	}
     }
-
+    if (mode->Flags & (V_PCSYNC | V_NCSYNC)) {
+	ChipsNew->FR[0x0B] |= 0x20;
+	if (mode->Flags & V_PCSYNC) {
+	    ChipsNew->FR[0x08] &= 0x7F;	/* Alt. CRT Vsync positive */
+	    ChipsNew->FR[0x08] &= 0xBF;	/* Alt. CRT Hsync positive */
+	    ChipsStd->MiscOutReg &= 0x7F;
+	    ChipsStd->MiscOutReg &= 0xBF;
+	} else {
+	    ChipsNew->FR[0x08] |= 0x80;	/* Alt. CRT Vsync negative */
+	    ChipsNew->FR[0x08] |= 0x40;	/* Alt. CRT Hsync negative */
+	    ChipsStd->MiscOutReg |= 0x40;
+	    ChipsStd->MiscOutReg |= 0x80;
+    	}
+    }	    
     /* bpp depend */
     if ((pScrn->bitsPerPixel == 16) && (!(cPtr->Flags & ChipsOverlay8plus16))) {
 	ChipsNew->XR[0x81] = (ChipsNew->XR[0x81] & 0xF0) | 0x4;
@@ -5648,18 +5736,15 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			    - (ChipsNew->FR[0x31] & 0xF0)
 			    - (ChipsNew->FR[0x32] & 0x0F)
 			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
-	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
-				  FALSE)) {
 	if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
 	    cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
 						mode->CrtcHDisplay) / 2;
 	if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
 	    cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay - 
 				   mode->CrtcVDisplay) / 2;
-	}
     } else {
 	cPtr->OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 9;
-	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd - 2;
+	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd - 1;
 	    
 	if (mode->Flags & V_INTERLACE) {
 	    /*
@@ -5769,7 +5854,13 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Program the registers */
     /*vgaHWProtect(pScrn, TRUE);*/
 
-
+    if (cPtr->Chipset <= CHIPS_CT69000) {
+        ChipsNew->FR[0x01] &= ~0x03;
+	if (cPtr->PanelType & ChipsLCD) 
+	    ChipsNew->FR[0x01] |= 0x02;
+	else
+	    ChipsNew->FR[0x01] |= 0x01;
+    }
     if ((cPtr->Flags & ChipsDualChannelSupport) &&
 	(!xf86IsEntityShared(pScrn->entityList[0]))) {
 	unsigned char IOSS, MSS, tmpfr01;
@@ -5779,12 +5870,12 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_A));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) |
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) |
 			      MSS_PIPE_A));
 	chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) |
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) |
 			      MSS_PIPE_B));
 	/* 
 	 * Hack:: Force Pipe-B on for dual refresh, and off elsewise
@@ -5796,7 +5887,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
 	ChipsNew->FR[0x01] = tmpfr01;
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     } else {
 	chipsRestore(pScrn, ChipsStd, ChipsNew, FALSE);
     }
@@ -6509,6 +6600,11 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->XR[0x05] |= 0x80;   /* EDO RAM enable */
 	break;
     }
+    
+    if (cPtr->PanelType & ChipsLCD) 
+        ChipsNew->XR[0x51] |= 0x02;
+    else 
+        ChipsNew->XR[0x51] &= ~0x02;
 
     /* Program the registers */
     /*vgaHWProtect(pScrn, TRUE);*/
@@ -6579,6 +6675,9 @@ chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
      * Anyone care to explain to me why ????
      */
     if (cPtr->Flags & ChipsDualChannelSupport) {
+        /* Enable pipeline if needed */
+        cPtr->writeFR(cPtr, 0x01, ChipsReg->FR[0x01]);
+	cPtr->writeFR(cPtr, 0x02, ChipsReg->FR[0x02]);
 	vgaHWRestore(pScrn, VgaReg, VGA_SR_MODE |
 		(restoreFonts ? VGA_SR_FONTS : 0));
     } else {
@@ -6625,13 +6724,13 @@ chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
     /* Fix resume again here, as Nozomi seems to need it          */
      chipsFixResume(pScrn);
     /*vgaHWProtect(pScrn, FALSE);*/
-
+#if 0
      /* Enable pipeline if needed */
      if (cPtr->Flags & ChipsDualChannelSupport) {
 	cPtr->writeFR(cPtr, 0x01, ChipsReg->FR[0x01]);
 	cPtr->writeFR(cPtr, 0x02, ChipsReg->FR[0x02]);
      }
-
+#endif
 }
 
 static void
@@ -6713,8 +6812,9 @@ chipsRestoreExtendedRegs(ScrnInfoPtr pScrn, CHIPSRegPtr Regs)
 	      cPtr->writeFR(cPtr, i, Regs->FR[i] & 0xFE);
 	      continue ;     /* some registers must be set before FR40/FR48 */
 	    }
-	    if ((cPtr->readFR(cPtr, i)) != Regs->FR[i]) 
+	    if ((cPtr->readFR(cPtr, i)) != Regs->FR[i]) {
 		cPtr->writeFR(cPtr, i, Regs->FR[i]);
+	    }
 	}
 
 	/* set the multimedia regs */
@@ -6863,8 +6963,7 @@ chipsMapMem(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
+    CHIPSEntPtr cPtrEnt;
 
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->UseMMIO) {
@@ -6895,6 +6994,8 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	  
 	  if ((cPtr->Flags & ChipsDualChannelSupport) &&
 	      (xf86IsEntityShared(pScrn->entityList[0]))) {
+	      cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					     CHIPSEntityIndex)->ptr;
 	    if(cPtr->SecondCrtc == FALSE) {
 	      Addr = cPtrEnt->masterFbAddress;
 	      Map = cPtrEnt->masterFbMapSize;
@@ -6915,10 +7016,25 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	  if (cPtr->FbBase == NULL)
 	      return FALSE;
 	}
-	if (cPtr->Flags & ChipsFullMMIOSupport)
-	    cPtr->MMIOBaseVGA = xf86MapPciMem(pScrn->scrnIndex,
-					      VIDMEM_MMIO,cPtr->PciTag,
-					      cPtr->IOAddress, 0x2000L);
+	if (cPtr->Flags & ChipsFullMMIOSupport) {
+		cPtr->MMIOBaseVGA = xf86MapPciMem(pScrn->scrnIndex,
+						  VIDMEM_MMIO,cPtr->PciTag,
+						  cPtr->IOAddress, 0x2000L);
+	    /* 69030 MMIO Fix.
+	     *
+	     * The hardware lets us map the PipeB data registers
+	     * into the MMIO address space normally occupied by PipeA,
+	     * but it doesn't allow remapping of the index registers.
+	     * So we're forced to map a separate MMIO space for each
+	     * pipe and to toggle between them as necessary. -GHB
+	     */
+	    if (cPtr->Flags & ChipsDualChannelSupport)
+	       	cPtr->MMIOBasePipeB = xf86MapPciMem(pScrn->scrnIndex,
+				      VIDMEM_MMIO,cPtr->PciTag,
+				      cPtr->IOAddress + 0x800000, 0x2000L);
+
+	    cPtr->MMIOBasePipeA = cPtr->MMIOBaseVGA;
+	}
     } else {
 	/* In paged mode Base is the VGA window at 0xA0000 */
 	cPtr->FbBase = hwp->Base;
@@ -6967,12 +7083,14 @@ chipsBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    CHIPSEntPtr cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
-					CHIPSEntityIndex)->ptr;
     unsigned char scrn;
-    
-    if (cPtr->UseDualChannel)
+    CHIPSEntPtr cPtrEnt;    
+
+    if (cPtr->UseDualChannel) {
+        cPtrEnt = xf86GetEntityPrivate(pScrn->entityList[0],
+					       CHIPSEntityIndex)->ptr;
 	DUALREOPEN;
+    }
 
     /* fix things that could be messed up by suspend/resume */
     if (!IS_HiQV(cPtr))
@@ -7005,7 +7123,7 @@ chipsBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
 	MSS = cPtr->readMSS(cPtr);
 	cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 			       IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((cPtr->storeMSS & MSS_MASK) | MSS_PIPE_B));
 
 	/* fix things that could be messed up by suspend/resume */
 	if (!IS_HiQV(cPtr))
@@ -7032,7 +7150,7 @@ chipsBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
 	}
 
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
     }
 
 }
@@ -7098,11 +7216,11 @@ chipsHWCursorOn(CHIPSPtr cPtr, ScrnInfoPtr pScrn)
 		MSS = cPtr->readMSS(cPtr);
 		cPtr->writeIOSS(cPtr, ((cPtr->storeIOSS & IOSS_MASK) |
 				       IOSS_PIPE_B));
-		cPtr->writeMSS(cPtr, ((cPtr->storeMSS & MSS_MASK) |
-				      MSS_PIPE_B));
+		cPtr->writeMSS(cPtr, VGAHWPTR(pScrn), ((cPtr->storeMSS &
+					  MSS_MASK) | MSS_PIPE_B));
 		cPtr->writeXR(cPtr, 0xA0, cPtr->HWCursorContents & 0xFF);
 		cPtr->writeIOSS(cPtr, IOSS);
-		cPtr->writeMSS(cPtr, MSS);
+		cPtr->writeMSS(cPtr, VGAHWPTR(pScrn), MSS);
 	    }
 	} else {
 	    HW_DEBUG(0x8);	
@@ -7189,20 +7307,21 @@ chipsProbeMonitor(ScrnInfoPtr pScrn)
 	IOSS = cPtr->readIOSS(cPtr);
 	MSS = cPtr->readMSS(cPtr);
 	tmpfr02 = cPtr->readFR(cPtr,0x02);
-	cPtr->writeFR(cPtr, 0x02, tmpfr02 & 0xCF); /* CRT/FP off */
+	cPtr->writeFR(cPtr, 0x02, (tmpfr02 & 0xCF)); /* CRT/FP off */
 	usleep(1000);
 	cPtr->writeIOSS(cPtr, ((IOSS & IOSS_MASK) | IOSS_PIPE_A));
-	cPtr->writeMSS(cPtr, ((MSS & MSS_MASK) | MSS_PIPE_A));
+	cPtr->writeMSS(cPtr, hwp, ((MSS & MSS_MASK) | MSS_PIPE_A));
 	tmpfr01a = cPtr->readFR(cPtr,0x01);
-	if ((tmpfr01a & 0x3) == 0)
+	if ((tmpfr01a & 0x3) != 0x01)
 	  cPtr->writeFR(cPtr, 0x01, ((tmpfr01a & 0xFC) | 0x1)); 
 	cPtr->writeIOSS(cPtr, ((IOSS & IOSS_MASK) | IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((MSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((MSS & MSS_MASK) | MSS_PIPE_B));
 	tmpfr01b = cPtr->readFR(cPtr,0x01);
-	if ((tmpfr01b & 0x3) == 0)
+	if ((tmpfr01b & 0x3) != 0x01)
 	  cPtr->writeFR(cPtr, 0x01, ((tmpfr01b & 0xFC) | 0x1)); 
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
+	cPtr->writeFR(cPtr, 0x02, (tmpfr02 & 0xCF) | 0x10); /* CRT on/FP off*/ 
     }
 
     dacmask = hwp->readDacMask(hwp);    /* save registers */ 
@@ -7231,7 +7350,7 @@ chipsProbeMonitor(ScrnInfoPtr pScrn)
 		    if (!chipsTestDACComp(pScrn,0x14,0x14,0x2D))
 			if (!chipsTestDACComp(pScrn,0x2D,0x2D,0x2D))
 			    type = 0;    /* color monitor */
-    } else {     
+    } else {
 	if (chipsTestDACComp(pScrn,0x04,0x12,0x04))
 	    if (!chipsTestDACComp(pScrn,0x1E,0x12,0x04))
 		if (!chipsTestDACComp(pScrn,0x04,0x2D,0x04))
@@ -7255,14 +7374,14 @@ chipsProbeMonitor(ScrnInfoPtr pScrn)
 
     if (cPtr->Flags & ChipsDualChannelSupport) {
 	cPtr->writeIOSS(cPtr, ((IOSS & IOSS_MASK) | IOSS_PIPE_A));
-	cPtr->writeMSS(cPtr, ((MSS & MSS_MASK) | MSS_PIPE_A));
+	cPtr->writeMSS(cPtr, hwp, ((MSS & MSS_MASK) | MSS_PIPE_A));
 	cPtr->writeFR(cPtr, 0x01, tmpfr01a);
 	cPtr->writeIOSS(cPtr, ((IOSS & IOSS_MASK) | IOSS_PIPE_B));
-	cPtr->writeMSS(cPtr, ((MSS & MSS_MASK) | MSS_PIPE_B));
+	cPtr->writeMSS(cPtr, hwp, ((MSS & MSS_MASK) | MSS_PIPE_B));
 	cPtr->writeFR(cPtr, 0x01, tmpfr01b);
 	usleep(1000);
 	cPtr->writeIOSS(cPtr, IOSS);
-	cPtr->writeMSS(cPtr, MSS);
+	cPtr->writeMSS(cPtr, hwp, MSS);
 	cPtr->writeFR(cPtr, 0x02, tmpfr02);
     }
 
@@ -7302,7 +7421,7 @@ chipsSetPanelType(CHIPSPtr cPtr)
 		if (tmp & 0x10)
 		    cPtr->PanelType |= ChipsCRT;
 		if (tmp & 0x20)
-		    cPtr->PanelType |= ChipsLCD;
+		    cPtr->PanelType |= ChipsLCD | ChipsLCDProbed;
 	    } else {
 		cPtr->PanelType |= ChipsCRT;
 	    }
@@ -7313,11 +7432,11 @@ chipsSetPanelType(CHIPSPtr cPtr)
 	    /* LCD                                                 */
 	    tmp = cPtr->readFR(cPtr, 0x01);
 	    if ((tmp & 0x03) == 0x02) {
-		cPtr->PanelType |= ChipsLCD;
+	        cPtr->PanelType |= ChipsLCD;
 	    }
 	    tmp = cPtr->readXR(cPtr,0xD0);	
 	    if (tmp & 0x01) {
-		cPtr->PanelType |= ChipsCRT;
+	        cPtr->PanelType |= ChipsCRT;
 	    }
 	}
     } else {
@@ -7326,7 +7445,7 @@ chipsSetPanelType(CHIPSPtr cPtr)
 	/* XR51: DISPLAY TYPE REGISTER                     */
 	/* XR51[2]:   Display Type, 0 = CRT, 1 = FlatPanel */
 	if (tmp & 0x04) {
-	    cPtr->PanelType |= ChipsLCD;
+	    cPtr->PanelType |= ChipsLCD | ChipsLCDProbed;
 	} 
 	if ((cPtr->readXR(cPtr, 0x06)) & 0x02) {
 	    cPtr->PanelType |= ChipsCRT;

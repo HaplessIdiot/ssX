@@ -116,7 +116,7 @@ StartConfig(void)
     /* Read initial configuration */
     if ((filename = xf86openConfigFile(getuid() == 0 ? CONFPATH : USER_CONFPATH,
 				       XF86Config_path, NULL)) == NULL) {
-	fprintf(stderr, "Cannot to open config file.\n");
+	fprintf(stderr, "Cannot open config file.\n");
 	exit(1);
     }
     XF86Config_path = (char *)filename;

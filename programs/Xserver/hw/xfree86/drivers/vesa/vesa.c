@@ -183,6 +183,7 @@ static const char *vbeSymbols[] = {
     "VBESetGetPaletteData",
     "VBESetVBEMode",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -480,8 +481,10 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->progClock = TRUE;
     pScrn->rgbBits = 8;
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb))
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb)) {
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
+    }
     xf86PrintDepthBpp(pScrn);
 
     /* Get the depth24 pixmap format */
@@ -489,12 +492,15 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	pVesa->pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /* color weight */
-    if (pScrn->depth > 8 && !xf86SetWeight(pScrn, rzeros, rzeros))
+    if (pScrn->depth > 8 && !xf86SetWeight(pScrn, rzeros, rzeros)) {
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
-
+    }
     /* visual init */
-    if (!xf86SetDefaultVisual(pScrn, -1))
+    if (!xf86SetDefaultVisual(pScrn, -1)) {
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
+    }
 
     xf86SetGamma(pScrn, gzeros);
 
@@ -506,8 +512,10 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (pVesa->major >= 2) {
 	/* Load ddc module */
-	if ((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL)
+      if ((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL) {
+            vbeFree(pVesa->pVbe);
 	    return (FALSE);
+      }
 
 	if ((pVesa->monitor = vbeDoEDID(pVesa->pVbe, pDDCModule)) != NULL) {
 	    xf86PrintEDID(pVesa->monitor);
@@ -677,6 +685,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pVesa->mapSize = vbe->TotalMemory * 65536;
     if (pScrn->modePool == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No matching modes\n");
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
     for (i = 0; pScrn->modePool != NULL && pScrn->display->modes[i] != NULL; i++) {
@@ -791,18 +800,21 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No modes\n");
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
 
     /* options */
     xf86CollectOptions(pScrn, NULL);
-    if (!(pVesa->Options = xalloc(sizeof(VESAOptions))))
+    if (!(pVesa->Options = xalloc(sizeof(VESAOptions)))) {
+        vbeFree(pVesa->pVbe);
 	return FALSE;
+    }
     memcpy(pVesa->Options, VESAOptions, sizeof(VESAOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pVesa->Options);
 
     /* Use shadow by default */
-    if (xf86ReturnOptValBool(pVesa->Options, OPTION_SHADOW_FB, TRUE))
+    if (xf86ReturnOptValBool(pVesa->Options, OPTION_SHADOW_FB, TRUE)) 
 	pVesa->shadowFB = TRUE;
 
     mode = ((ModeInfoData*)pScrn->modes->Private)->data;
@@ -858,6 +870,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 		default:
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			       "Unsupported bpp: %d", pScrn->bitsPerPixel);
+		    vbeFree(pVesa->pVbe);
 		    return FALSE;
 	    }
 	    break;
@@ -869,13 +882,16 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
             mod = "mfb";
 	    reqSym = "mfbScreenInit";
 	}
-	if (!xf86LoadSubModule(pScrn, "shadow"))
+	if (!xf86LoadSubModule(pScrn, "shadow")) {
+	    vbeFree(pVesa->pVbe);
 	    return (FALSE);
+	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	VESAFreeRec(pScrn);
+        vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
 
@@ -886,6 +902,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86LoaderReqSymLists(fbSymbols, NULL);
 	}
     }
+
+    vbeFree(pVesa->pVbe);
 
     return (TRUE);
 }
@@ -899,6 +917,9 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VbeModeInfoBlock *mode;
     int flags;
     int init_picture = 0;
+
+    if ((pVesa->pVbe = VBEInit(NULL, pVesa->pEnt->index)) == NULL)
+        return (FALSE);
 
     if (pVesa->mapPhys == 0) {
 	mode = ((ModeInfoData*)(pScrn->currentMode->Private))->data;

@@ -247,6 +247,7 @@ static const char *ramdacSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
@@ -451,6 +452,7 @@ I740ProbeDDC(ScrnInfoPtr pScrn, int index)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
@@ -539,6 +541,15 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   memcpy(pI740->Options, I740Options, sizeof(I740Options));
   xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pI740->Options);
 
+  /* 6-BIT dac isn't reasonable for modes with > 8bpp */
+  if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE) &&
+      pScrn->bitsPerPixel>8) {
+    OptionInfoPtr ptr;
+    ptr=xf86TokenToOptinfo(pI740->Options, OPTION_DAC_6BIT);
+    ptr->found=FALSE;
+  }
+
+	    
   pScrn->rgbBits=8;
   if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE))
     pScrn->rgbBits=6;
@@ -562,14 +573,6 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   hwp = VGAHWPTR(pScrn);
   pI740->cpp = pScrn->bitsPerPixel/8;
-
-  /* 6-BIT dac isn't reasonable for modes with > 8bpp */
-  if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE) &&
-      pScrn->bitsPerPixel>8) {
-    OptionInfoPtr ptr;
-    ptr=xf86TokenToOptinfo(pI740->Options, OPTION_DAC_6BIT);
-    ptr->found=FALSE;
-  }
 
   /* We have to use PIO to probe, because we haven't mappend yet */
   I740SetPIOAccess(pI740);

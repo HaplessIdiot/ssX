@@ -125,7 +125,7 @@ static int      neoFindIsaDevice(GDevPtr dev);
 static Bool     neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     neoSave(ScrnInfoPtr pScrn);
 static void     neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg,
-				 NeoRegPtr NeoReg, Bool restoreFonts);
+				 NeoRegPtr NeoReg, Bool restoreText);
 static void     neoLock(ScrnInfoPtr pScrn);
 static void     neoUnlock(ScrnInfoPtr pScrn);
 static Bool	neoMapMem(ScrnInfoPtr pScrn);
@@ -163,14 +163,14 @@ static biosMode bios8[] = {
     { 640, 400, 0x20 },
     { 640, 480, 0x21 },
     { 800, 600, 0x23 },
-    { 1024, 768, 0x25 },
+    { 1024, 768, 0x25 }
 };
 
 static biosMode bios15[] = {
     { 320, 200, 0x2D },
     { 640, 480, 0x30 },
     { 800, 600, 0x33 },
-    { 1024, 768, 0x36 },
+    { 1024, 768, 0x36 }
 };
 
 static biosMode bios16[] = {
@@ -179,7 +179,7 @@ static biosMode bios16[] = {
     { 300, 400, 0x43 },
     { 640, 480, 0x31 },
     { 800, 600, 0x34 },
-    { 1024, 768, 0x37 },
+    { 1024, 768, 0x37 }
 };
 
 static biosMode bios24[] = {
@@ -188,6 +188,46 @@ static biosMode bios24[] = {
     { 1024, 768, 0x38 }
 };
 
+static DisplayModeRec neo800x480Mode = {
+	NULL,           /* prev */
+	NULL,           /* next */   
+	"800x480",      /* identifier of this mode */
+	MODE_OK,        /* mode status */
+	M_T_BUILTIN,    /* mode type */
+	35260,		/* Clock frequency */
+	800,		/* HDisplay */
+	856,		/* HSyncStart */
+	1040,		/* HSyncEnd */
+	1056,		/* HTotal */
+	0,		/* HSkew */
+	480,		/* VDisplay */
+	480,		/* VSyncStart */
+	486,		/* VSyncEnd */
+	488,		/* VTotal */
+	0,		/* VScan */
+	V_PHSYNC | V_PVSYNC,	/* Flags */
+	-1,		/* ClockIndex */
+	35260,		/* SynthClock */
+	800,		/* CRTC HDisplay */
+	800,            /* CRTC HBlankStart */
+	856,            /* CRTC HSyncStart */
+	1040,           /* CRTC HSyncEnd */
+	872,            /* CRTC HBlankEnd */
+	1048,           /* CRTC HTotal */
+	0,              /* CRTC HSkew */
+	480,		/* CRTC VDisplay */
+	480,		/* CRTC VBlankStart */
+	480,		/* CRTC VSyncStart */
+	486,		/* CRTC VSyncEnd */
+	487,		/* CRTC VBlankEnd */
+	488,		/* CRTC VTotal */
+	FALSE,		/* CrtcHAdjusted */
+	FALSE,		/* CrtcVAdjusted */
+	0,		/* PrivSize */
+	NULL,		/* Private */
+	0.0,		/* HSync */
+	0.0		/* VRefresh */
+};
 
 /*
  * This contains the functions needed by the server after loading the driver
@@ -259,7 +299,9 @@ typedef enum {
     OPTION_PROG_LCD_MODE_REGS,
     OPTION_PROG_LCD_MODE_STRETCH,
     OPTION_OVERRIDE_VALIDATE_MODE,
-    OPTION_ROTATE
+    OPTION_ROTATE,
+    OPTION_DISPLAY_HEIGHT_480,
+    OPTION_STRANGE_LOCKUPS
 } NEOOpts;
 
 static const OptionInfoRec NEO_2070_Options[] = {
@@ -294,6 +336,9 @@ static const OptionInfoRec NEOOptions[] = {
     { OPTION_LCD_STRETCH,"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_BURST,	 "pciBurst",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_ROTATE, 	 "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_STRANGE_LOCKUPS, "StrangeLockups", OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_DISPLAY_HEIGHT_480, "DisplayHeight480",
+      OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_PROG_LCD_MODE_REGS, "progLcdModeRegs",
       OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_PROG_LCD_MODE_STRETCH, "progLcdModeStretch",
@@ -616,6 +661,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     unsigned char type, dpy;
     int w;
     int apertureSize;
+    Bool height_480 = FALSE;
     char *s;
     
     if (flags & PROBE_DETECT)  {
@@ -744,11 +790,13 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoPanelHeight = 480;
 	break;
     }
+
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Panel is a %dx%d %s %s display\n",
 	       nPtr->NeoPanelWidth,
 	       nPtr->NeoPanelHeight,
 	       (type & 0x02) ? "color" : "monochrome",
 	       (type & 0x10) ? "TFT" : "dual scan");
+
 
     switch (nPtr->NeoChipset){
     case NM2070:
@@ -905,6 +953,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
     }
 
+    nPtr->strangeLockups = TRUE;
+    
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
@@ -938,6 +988,10 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->progLcdStretchOpt = TRUE;
     xf86GetOptValBool(nPtr->Options,
 		      OPTION_OVERRIDE_VALIDATE_MODE, &nPtr->overrideValidate);
+    xf86GetOptValBool(nPtr->Options, OPTION_DISPLAY_HEIGHT_480,&height_480);
+    xf86GetOptValBool(nPtr->Options, OPTION_STRANGE_LOCKUPS,
+		      &nPtr->strangeLockups);
+    
     nPtr->rotate = 0;
     if ((s = xf86GetOptValString(nPtr->Options, OPTION_ROTATE))) {
 	if(!xf86NameCmp(s, "CW")) {
@@ -961,6 +1015,12 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
       }
     }
 
+    if (height_480 && nPtr->NeoPanelWidth == 800) {
+	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
+		   "Overriding Panel height: Set to 480\n");
+	nPtr->NeoPanelHeight = 480;
+    }
+    
     if (nPtr->internDisp && nPtr->externDisp)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
 		   "Simultaneous LCD/CRT display mode\n");
@@ -1006,6 +1066,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG, "MMIO mode disabled\n");
     if (nPtr->onPciBurst)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG, "using PCI Burst mode\n");
+    if (nPtr->strangeLockups)
+	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
+		   "Option StrangeLockups set: disabling some acceleration\n");
     if (nPtr->shadowFB) {
 	if (nPtr->noLinear) {
     	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
@@ -1145,6 +1208,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     else
 	nPtr->NeoCursorMem = 0;
     apertureSize = (pScrn->videoRam * 1024) - nPtr->NeoCursorMem;
+
+   if ((nPtr->NeoPanelWidth == 800) && (nPtr->NeoPanelHeight == 480)) {
+    neo800x480Mode.next = pScrn->monitor->Modes;
+    pScrn->monitor->Modes = &neo800x480Mode;
+}
     /*
      * For external displays, limit the width to 1024 pixels or less.
      */
@@ -1211,7 +1279,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    RETURN;
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-
     return TRUE;
 }
 #undef RETURN
@@ -1229,6 +1296,7 @@ NEOEnterVT(int scrnIndex, int flags)
     if (nPtr->NeoHWCursorShown) 
 	NeoShowCursor(pScrn);
     NEOAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
+
     return TRUE;
 }
 
@@ -1238,7 +1306,7 @@ NEOLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     NEOPtr nPtr = NEOPTR(pScrn);
-    
+   
     /* Invalidate the cached acceleration registers */
     if (nPtr->NeoHWCursorShown) 
 	NeoHideCursor(pScrn);
@@ -1730,7 +1798,9 @@ NEOValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 		    return(MODE_OK);
 		break;
 	    case  800 :
-		if (mode->VDisplay == 600)
+		if (mode->VDisplay == 600) 
+		    return(MODE_OK);
+		if ((mode->VDisplay == 480) && (nPtr->NeoPanelHeight == 480))
 		    return(MODE_OK);
 		break;
 	    case  640 :
@@ -2009,33 +2079,67 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 	    VGAwCR(0x4F,0xA0);
 	    break;
 	case 800 :
-	    VGAwCR(0x40,0x7F);
-	    VGAwCR(0x41,0x63);
-	    VGAwCR(0x42,0x02);
-	    VGAwCR(0x43,0x6C);
-	    VGAwCR(0x44,0x1C);
-	    VGAwCR(0x45,0x72);
-	    VGAwCR(0x46,0xE0);
-	    VGAwCR(0x47,0x58);
-	    VGAwCR(0x48,0x0C);
-	    VGAwCR(0x49,0x57);
-	    VGAwCR(0x4A,0x73);
-	    VGAwCR(0x4B,0x3D);
-	    VGAwCR(0x4C,0x31);
-	    VGAwCR(0x4D,0x01);
-	    VGAwCR(0x4E,0x36);
-	    VGAwCR(0x4F,0x1E);
-	    if (nPtr->NeoChipset != NM2070) {
-		VGAwCR(0x50,0x6B);
-		VGAwCR(0x51,0x4F);
-		VGAwCR(0x52,0x0E);
-		VGAwCR(0x53,0x58);
-		VGAwCR(0x54,0x88);
-		VGAwCR(0x55,0x33);
-		VGAwCR(0x56,0x27);
-		VGAwCR(0x57,0x16);
-		VGAwCR(0x58,0x2C);
-		VGAwCR(0x59,0x94);
+	    switch (nPtr->NeoPanelHeight) {
+		case 600:
+		    VGAwCR(0x40,0x7F);
+		    VGAwCR(0x41,0x63);
+		    VGAwCR(0x42,0x02);
+		    VGAwCR(0x43,0x6C);
+		    VGAwCR(0x44,0x1C);
+		    VGAwCR(0x45,0x72);
+		    VGAwCR(0x46,0xE0);
+		    VGAwCR(0x47,0x58);
+		    VGAwCR(0x48,0x0C);
+		    VGAwCR(0x49,0x57);
+		    VGAwCR(0x4A,0x73);
+		    VGAwCR(0x4B,0x3D);
+		    VGAwCR(0x4C,0x31);
+		    VGAwCR(0x4D,0x01);
+		    VGAwCR(0x4E,0x36);
+		    VGAwCR(0x4F,0x1E);
+		    if (nPtr->NeoChipset != NM2070) {
+			VGAwCR(0x50,0x6B);
+			VGAwCR(0x51,0x4F);
+			VGAwCR(0x52,0x0E);
+			VGAwCR(0x53,0x58);
+			VGAwCR(0x54,0x88);
+			VGAwCR(0x55,0x33);
+			VGAwCR(0x56,0x27);
+			VGAwCR(0x57,0x16);
+			VGAwCR(0x58,0x2C);
+			VGAwCR(0x59,0x94);
+		    }
+		    break;
+	    case 480:
+		    VGAwCR(0x40,0x7F);
+		    VGAwCR(0x41,0x63);
+		    VGAwCR(0x42,0x02);
+		    VGAwCR(0x43,0x6B);
+		    VGAwCR(0x44,0x1B);
+		    VGAwCR(0x45,0x72);
+		    VGAwCR(0x46,0xE0);
+		    VGAwCR(0x47,0x1C);
+		    VGAwCR(0x48,0x00);
+		    VGAwCR(0x49,0x57);
+		    VGAwCR(0x4A,0x73);
+		    VGAwCR(0x4B,0x3E);
+		    VGAwCR(0x4C,0x31);
+		    VGAwCR(0x4D,0x01);
+		    VGAwCR(0x4E,0x36);
+		    VGAwCR(0x4F,0x1E);
+		    VGAwCR(0x50,0x6B);
+		    VGAwCR(0x51,0x4F);
+		    VGAwCR(0x52,0x0E);
+		    VGAwCR(0x53,0x57);
+		    VGAwCR(0x54,0x87);
+		    VGAwCR(0x55,0x33);
+		    VGAwCR(0x56,0x27);
+		    VGAwCR(0x57,0x16);
+		    VGAwCR(0x58,0x2C);
+		    VGAwCR(0x59,0x94);
+		    break;
+		break;
+		/* Not done */
 	    }
 	    break;
 	case 1024 :
@@ -2089,7 +2193,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 
 static void 
 neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
-	     Bool restoreFonts)
+	     Bool restoreText)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -2156,8 +2260,8 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     /*
      * This function handles restoring the generic VGA registers.  */
     vgaHWRestore(pScrn, VgaReg,
-		 VGA_SR_MODE | VGA_SR_CMAP 
-		 | (restoreFonts ? VGA_SR_FONTS : 0));
+		 VGA_SR_MODE  
+		 | (restoreText ? (VGA_SR_FONTS | VGA_SR_CMAP) : 0));
 
     VGAwGR(0x0E, restore->ExtCRTDispAddr);
     VGAwGR(0x0F, restore->ExtCRTOffset);
@@ -2507,7 +2611,15 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		break;
 	    case  800 :
 		NeoNew->PanelHorizCenterReg2 = hoffset;
-		NeoNew->PanelVertCenterReg4  = voffset;
+		switch (mode->VDisplay) {
+		case 600:
+		    NeoNew->PanelVertCenterReg4  = voffset;
+		    break;
+		case 480:
+		    /* Not sure if this is correct */
+		    NeoNew->PanelVertCenterReg3  = voffset;
+		    break;
+		}
 		break;
 	    case 1024 :
 		NeoNew->PanelHorizCenterReg5 = hoffset;

@@ -38,6 +38,7 @@
 
 #define DEBUG(x) 
 #include "xf86.h"
+#include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
 #include "vgaHW.h"
@@ -55,6 +56,7 @@
 
 #include "xf86RAC.h"
 #include "xf86Resources.h"
+#include "xf86int10.h"
 
 /* Some systems define VGA for their own purposes */
 #undef VGA
@@ -82,6 +84,9 @@ static Bool       GenericEnterVT(int, int);
 static void       GenericLeaveVT(int, int);
 static void       GenericFreeScreen(int, int);
 static int        VGAFindIsaDevice(GDevPtr dev);
+#ifdef SPECIAL_FB_BYTE_ACCESS
+static Bool       genericMapMem(ScrnInfoPtr scrp);
+#endif
 
 static int GenericValidMode(int, DisplayModePtr, Bool, int);
 
@@ -148,6 +153,12 @@ static const char *shadowfbSymbols[] = {
     NULL
 };
 
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 /* Module loader interface */
@@ -184,7 +195,7 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
         Initialised = TRUE;
         xf86AddDriver(&VGA, Module, 0);
 	LoaderRefSymLists(vgahwSymbols, miscfbSymbols, fbSymbols,
-			  shadowfbSymbols, NULL);
+			  shadowfbSymbols, int10Symbols,NULL);
         return (pointer)TRUE;
     }
 
@@ -482,6 +493,15 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (pEnt->resources)
 	return FALSE;
 
+    if (xf86LoadSubModule(pScreenInfo, "int10")) {
+ 	xf86Int10InfoPtr pInt;
+ 	xf86LoaderReqSymLists(int10Symbols, NULL);
+	xf86DrvMsg(pScreenInfo->scrnIndex,X_INFO,"initializing int10\n");
+	pInt = xf86InitInt10(pEnt->index);
+	xf86FreeInt10(pInt);
+    }
+
+    
     {
 	resRange unusedmem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
 				  {ResShrMemBlock,0xB8000,0xBFFFF},
@@ -679,17 +699,25 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     xf86SetDpi(pScreenInfo, 0, 0);
 
     if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_SHADOW_FB,FALSE)) {
-        pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-        pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	pGenericPriv->ShadowFB = TRUE;
         xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\"\n");
+    }
+#ifdef SPECIAL_FB_BYTE_ACCESS
+     if (!pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
+       xf86DrvMsg(pScreenInfo->scrnIndex,X_INFO,"Architecture requires "
+ 		 "special FB access for this depth: ShadowFB enabled\n");
+ 	pGenericPriv->ShadowFB = TRUE;
+ 	}
+#endif
+     if (pGenericPriv->ShadowFB) {
+        pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+        pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	Module = "fb";
 	if (!xf86LoadSubModule(pScreenInfo, "shadowfb"))
 	    return FALSE;
 	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
     }
-
     /* Ensure depth-specific entry points are available */
     if (Module && !xf86LoadSubModule(pScreenInfo, Module))
 	return FALSE;
@@ -893,6 +921,8 @@ GenericRefreshArea1bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 } 
 
+#ifndef SPECIAL_FB_BYTE_ACCESS
+
 static void
 GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
@@ -1054,6 +1084,183 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 } 
 
+#else 
+
+static void
+GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    GenericPtr pPriv = GenericGetRec(pScrn);
+    vgaHWPtr pvgaHW = VGAHWPTR(pScrn);
+    int width, height, FBPitch, left, i, j, SRCPitch, phase;
+    register CARD32 m;
+    CARD8  s1, s2, s3, s4;
+    CARD32 *src, *srcPtr;
+    int  dst, dstPtr;
+   
+    FBPitch = pScrn->displayWidth >> 3;
+    SRCPitch = pPriv->ShadowPitch >> 2;
+
+    pvgaHW->writeGr(pvgaHW, 0x05, 0x00);
+    pvgaHW->writeGr(pvgaHW, 0x01, 0x00);
+    pvgaHW->writeGr(pvgaHW, 0x08, 0xFF);
+
+    while(num--) {
+	left = pbox->x1 & ~7;
+        width = ((pbox->x2 - left) + 7) >> 3;
+        height = pbox->y2 - pbox->y1;
+        src = (CARD32*)pPriv->ShadowPtr + (pbox->y1 * SRCPitch) + (left >> 2); 
+        dst = (pbox->y1 * FBPitch) + (left >> 3);
+
+	if((phase = (long)dst & 3L)) {
+	    phase = 4 - phase;
+	    if(phase > width) phase = width;
+	    width -= phase;
+	}
+
+        while(height--) {
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 24) | (m >> 15) | (m >> 6) | (m << 3));
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+ 		s1 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[3] & 0x01010101) | ((srcPtr[2] & 0x01010101) << 4);
+ 		s2 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[5] & 0x01010101) | ((srcPtr[4] & 0x01010101) << 4);
+ 		s3 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[7] & 0x01010101) | ((srcPtr[6] & 0x01010101) << 4);
+ 		s4 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		MMIO_OUT32((CARD32*)pvgaHW->Base,dstPtr,
+			   s1 | (s2 << 8) | (s3 << 16) | (s4 << 24));
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 24) | (m >> 15) | (m >> 6) | (m << 3));
+		srcPtr += 2;
+	    }
+
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 1);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 25) | (m >> 16) | (m >> 7) | (m << 2));
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+ 		s1 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[3] & 0x02020202) | ((srcPtr[2] & 0x02020202) << 4);
+ 		s2 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[5] & 0x02020202) | ((srcPtr[4] & 0x02020202) << 4);
+ 		s3 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[7] & 0x02020202) | ((srcPtr[6] & 0x02020202) << 4);
+ 		s4 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		MMIO_OUT32((CARD32*)pvgaHW->Base,dstPtr,
+			   s1 | (s2 << 8) | (s3 << 16) | (s4 << 24));
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 25) | (m >> 16) | (m >> 7) | (m << 2));
+		srcPtr += 2;
+	    }
+
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 2);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 26) | (m >> 17) | (m >> 8) | (m << 1));
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+ 		s1 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[3] & 0x04040404) | ((srcPtr[2] & 0x04040404) << 4);
+ 		s2 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[5] & 0x04040404) | ((srcPtr[4] & 0x04040404) << 4);
+ 		s3 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[7] & 0x04040404) | ((srcPtr[6] & 0x04040404) << 4);
+ 		s4 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		MMIO_OUT32((CARD32*)pvgaHW->Base,dstPtr,
+			   s1 | (s2 << 8) | (s3 << 16) | (s4 << 24));
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 26) | (m >> 17) | (m >> 8) | (m << 1));
+		srcPtr += 2;
+	    }
+	    
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 3);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 27) | (m >> 18) | (m >> 9) | m);
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+ 		s1 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[3] & 0x08080808) | ((srcPtr[2] & 0x08080808) << 4);
+ 		s2 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[5] & 0x08080808) | ((srcPtr[4] & 0x08080808) << 4);
+ 		s3 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[7] & 0x08080808) | ((srcPtr[6] & 0x08080808) << 4);
+ 		s4 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		MMIO_OUT32((CARD32*)pvgaHW->Base,dstPtr,
+			   s1 | (s2 << 8) | (s3 << 16) | (s4 << 24));
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+		MMIO_OUT8((CARD8*)pvgaHW->Base,dstPtr++,
+			  (m >> 27) | (m >> 18) | (m >> 9) | m);
+		srcPtr += 2;
+	    }
+
+            dst += FBPitch;
+            src += SRCPitch;
+        }
+        
+        pbox++;
+    }
+
+} 
+
+#endif /* SPECIAL_FB_BYTE_ACCESS */
+
 static Bool
 GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
@@ -1067,8 +1274,16 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pGenericPriv = GenericGetRec(pScreenInfo);
 
     /* Map VGA aperture */
-    if (!vgaHWMapMem(pScreenInfo))
-        return FALSE;
+#ifdef SPECIAL_FB_BYTE_ACCESS
+    if (pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
+      if (!genericMapMem(pScreenInfo))
+	return FALSE;
+    } else 
+#endif
+      {
+	if (!vgaHWMapMem(pScreenInfo))
+	  return FALSE;
+      }
 
     /* Initialise graphics mode */
     if (!GenericEnterGraphics(pScreen, pScreenInfo))
@@ -1242,3 +1457,27 @@ GenericValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 
     return MODE_OK;
 }
+
+#ifdef SPECIAL_FB_BYTE_ACCESS
+
+static Bool
+genericMapMem(ScrnInfoPtr scrp)
+{
+    vgaHWPtr hwp = VGAHWPTR(scrp);
+    int scr_index = scrp->scrnIndex;
+    
+    if (hwp->Base)
+	return TRUE;
+
+    /* If not set, initialise with the defaults */
+    if (hwp->MapSize == 0)
+	hwp->MapSize = VGA_DEFAULT_MEM_SIZE;
+    if (hwp->MapPhys == 0)
+	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
+
+    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO,
+			      hwp->MapPhys, hwp->MapSize);
+    return hwp->Base != NULL;
+}
+
+#endif

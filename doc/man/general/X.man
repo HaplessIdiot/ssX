@@ -1272,7 +1272,7 @@ the appropriate instance name can be placed before the asterisk:
 .BR xinit (1),
 .BR xkbbell (1),
 .BR xkbcomp (1),
-.BR xbkevd (1),
+.BR xkbevd (1),
 .BR xkbprint (1),
 .BR xkbvleds (1),
 .BR xkbwatch (1),

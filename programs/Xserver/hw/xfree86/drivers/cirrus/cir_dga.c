@@ -78,7 +78,6 @@ CirDGAInit(ScreenPtr pScreen)
 
   
   if (!pCir->DGAnumModes) {
-    ErrorF("DGAINIT\n");
     pMode = firstMode = pScrn->modes;
     while (pMode) {
       newmodes = xrealloc(modes, (num + 1) * sizeof (DGAModeRec));

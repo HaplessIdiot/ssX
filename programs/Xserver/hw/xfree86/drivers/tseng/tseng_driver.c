@@ -1104,7 +1104,9 @@ TsengLimitMem(ScrnInfoPtr pScrn, int ram)
     TsengPtr pTseng = TsengPTR(pScrn);
 
     if (pTseng->UseLinMem && pTseng->Linmem_1meg) {
-	TsengDoMemLimit(pScrn, ram, 1024, "in linear mode on this VGA board/bus configuration");
+	ram = TsengDoMemLimit(pScrn, ram, 1024,
+			      "in linear mode on "
+			      "this VGA board/bus configuration");
     }
     if (pTseng->UseAccel && pTseng->UseLinMem) {
 	if (Is_W32_any) {
@@ -1114,19 +1116,33 @@ TsengLimitMem(ScrnInfoPtr pScrn, int ram)
 	     *   2*1MB via apertures MBP0 and MBP1
 	     */
 	    if (Is_W32p_cd)
-		TsengDoMemLimit(pScrn, ram, 2048, "in linear + accelerated mode on W32p rev c and d");
+		ram = TsengDoMemLimit(pScrn, ram, 2048,
+				      "in linear + accelerated mode "
+				      "on W32p rev c and d");
 
-	    TsengDoMemLimit(pScrn, ram, 2048 + 1024, "in linear + accelerated mode on W32/W32i/W32p");
+	    ram = TsengDoMemLimit(pScrn, ram, 2048 + 1024,
+				  "in linear + accelerated mode "
+				  "on W32/W32i/W32p");
 
-	    /* upper 516kb of 4MB linear map used for "externally mapped registers" */
-	    TsengDoMemLimit(pScrn, ram, 4096 - 516, "in linear + accelerated mode on W32/W32i/W32p");
+	    /*
+	     * upper 516kb of 4MB linear map used for
+	     *  "externally mapped registers"
+	     */
+	    ram = TsengDoMemLimit(pScrn, ram, 4096 - 516,
+				  "in linear + accelerated mode "
+				  "on W32/W32i/W32p");
 	}
 	if (Is_ET6K) {
-	    /* upper 8kb used for externally mapped and memory mapped registers */
-	    TsengDoMemLimit(pScrn, ram, 4096 - 8, "in linear + accelerated mode on ET6000/6100");
+	    /*
+	     * upper 8kb used for externally mapped and
+	     * memory mapped registers
+	     */
+	    ram = TsengDoMemLimit(pScrn, ram, 4096 - 8,
+				  "in linear + accelerated mode "
+				  "on ET6000/6100");
 	}
     }
-    TsengDoMemLimit(pScrn, ram, 4096, "on any Tseng card");
+    ram = TsengDoMemLimit(pScrn, ram, 4096, "on any Tseng card");
     return ram;
 }
 

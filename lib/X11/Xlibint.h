@@ -1463,6 +1463,15 @@ extern int _XAccessFile(
 /* EvToWire.c */
 extern Status _XEventToWire(Display *dpy, XEvent *re, xEvent *event);
 
+extern int _XF86LoadQueryLocaleFont(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    _Xconst char*	/* name*/,
+    XFontStruct**	/* xfp*/,
+    Font*		/* fidp */
+#endif
+);
+
 _XFUNCPROTOEND
 
 #endif /* _XLIBINT_H_ */
