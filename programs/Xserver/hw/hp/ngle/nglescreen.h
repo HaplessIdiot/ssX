@@ -1,4 +1,4 @@
-/* $XConsortium: nglescreen.h,v 1.1 93/08/08 12:58:00 rws Exp $ */
+/* $XConsortium: nglescreen.h,v 1.2 95/01/24 02:10:27 dpw Exp $ */
 
 /*************************************************************************
  * 
@@ -23,6 +23,8 @@ performance, or use of this material.
 
  *
  *************************************************************************/
+
+/* $XFree86: xc/programs/Xserver/hw/hp/ngle/nglescreen.h,v 1.0tsi Exp $ */
 
 /******************************************************************************
  *
@@ -54,6 +56,11 @@ typedef struct _NgleScreenPrivRec
     Card32			deviceID;	/* Is this an Elk or Rattler */
     NgleHdwPtr			pDregs;		/* Pointer to the hardware */
     pointer			fbaddr;		/* Pointer to the framebuffer */
+    char                        *crt_region[CRT_MAX_REGIONS]; /* Other regions
+                                                 * associated with frame buffer
+                                                 * that might be mapped in.
+                                                 * Obtained from GCDESCRIBE.
+                                                 */
     NgleDevRomDataPtr           pDevRomData;	/* Pointer to the ROM */
     Bool			isGrayScale;	/* GRX (Not color device) */
 
@@ -82,12 +89,17 @@ typedef struct _NgleScreenPrivRec
      */
     Bool			lastDeviceOnThisSgcToClose;
 
+    /* Hyperdrive (and probably other future devices) has configuration bits */
+    /* to tell frame buffer depth (8:88 or 8:24) and accelerator present
+    */
+    unsigned Int32              deviceSpecificConfig;
+
     /* 
      * Pointers to various functions returned from cfbScreenInit(),
      * used for wrapper routines.
      */
-    Bool (* CreateGC)();
-
+    CloseScreenProcPtr		CloseScreen;
+    CreateGCProcPtr		CreateGC;
 
 } NgleScreenPrivRec, *NgleScreenPrivPtr;
 
@@ -116,6 +128,11 @@ extern Int32	ngleScreenPrivIndex;
 #define CURSOR_AT_VBLANK_ALWAYS		1
 #define CURSOR_AT_VBLANK_DRIVEROPTION	0
 #define CURSOR_AT_VBLANK_NEVER		-1
+
+/* Server state values used by hyperResetPlanes() */
+#define SERVER_INIT             1
+#define SERVER_EXIT             2
+#define SERVER_RECOVERY         3
 
 
 #endif /* NGLESCREEN */

@@ -2,7 +2,13 @@ XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
 
 #include <Server.tmpl>
 
+#if DoLoadableServer
+XFMODSRC = type1mod.c
+XFMODOBJ = type1mod.o
+INCLUDES = -I$(FONTINCSRC) -I../include -I$(XTOP)/include -I$(XF86COMSRC) -I$(SERVERSRC)/include
+#else
 INCLUDES = -I$(FONTINCSRC) -I../include
+#endif
 
 SRCS =          \
        arith.c         \
@@ -23,7 +29,8 @@ SRCS =          \
        t1stub.c       \
        token.c         \
        type1.c         \
-       util.c
+       util.c		\
+       $(XFMODSRC)
 
 OBJS =          \
        arith.o         \
@@ -44,10 +51,15 @@ OBJS =          \
        t1stub.o       \
        token.o         \
        type1.o         \
-       util.o
+       util.o		\
+       $(XFMODOBJ)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 DependTarget()
+#if DoLoadableServer
+NormalLibraryTarget(type1,?*.o)
+InstallDynamicModule(LibraryTargetName(type1),$(MODULEDIR))
+#endif

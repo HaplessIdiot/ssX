@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.2 1998/04/19 11:11:06 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -34,6 +34,14 @@ in this Software without prior written authorization from the X Consortium.
 /* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
 #include    "fntfilst.h"
+
+#ifdef XFree86LOADER
+typedef void (*InitFont)();
+typedef struct FontModule {
+	InitFont initFunc;
+} FontModule;
+extern FontModule font[];
+#endif
 
 /*
  * Map FPE functions to renderer functions
@@ -151,6 +159,7 @@ static int  font_file_check_type;
 
 FontFileCheckRegisterFpeFunctions ()
 {
+#ifndef XFree86LOADER
     BitmapRegisterFontFileFunctions ();
 #ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
@@ -158,6 +167,16 @@ FontFileCheckRegisterFpeFunctions ()
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();
 #endif
+#endif
+#else
+    {
+	int i = 0;
+
+	while (font[i].initFunc != NULL) {
+		(*font[i].initFunc)();
+		i++;
+	}
+    }
 #endif
     RegisterFPEFunctions(FontFileNameCheck,
 				  FontFileInitFPE,

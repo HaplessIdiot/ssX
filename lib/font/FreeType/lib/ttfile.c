@@ -39,7 +39,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttfile.c,v 1.2 1998/04/28 13:30:56 robin Exp $ */
   
 #include "ttconfig.h"
 
@@ -58,6 +58,10 @@
 #include "ttmutex.h"
 #include "ttmemory.h"
 #include "ttfile.h"     /* our prototypes */
+
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 
 
 /* For now, we don't define additional error messages in the core library */

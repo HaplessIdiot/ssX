@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.38 1997/10/25 13:49:51 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.39 1998/04/25 12:31:33 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -582,7 +582,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.38 1997/10/25 13:49:51 hohndel Exp $
 #  undef __x86__
 # endif
 # ifdef __powerpc__
-#  define ppcArchitecture
+#  define PpcArchitecture
 #  undef __powerpc__
 # endif
 # if defined(sparc) || defined(__sparc__)

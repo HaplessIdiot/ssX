@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.7 1996/12/23 06:02:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.8 1997/10/26 13:24:54 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -112,10 +112,10 @@ FontFileMakeDir(dirName, size)
 
 #ifdef FONTDIRATTRIB
 #ifndef __EMX__
-    attrib = strchr(dirName, ':');
+    attrib = (char *)strchr(dirName, ':');
 #else
     /* OS/2 uses the colon in the drive letter descriptor, skip this */
-    attrib = strchr(dirName+2, ':');
+    attrib = (char *)strchr(dirName+2, ':');
 #endif
     if (attrib) {
 	dirlen = attrib - dirName;
@@ -648,7 +648,7 @@ FontFileAddFontFile (dir, fontName, fileName)
 	int uslength = strlen(UNSCALED_ATTRIB);
 
 	do {
-	    ptr2 = strchr(ptr1, ':');
+	    ptr2 = (char *)strchr(ptr1, ':');
 	    if (ptr2)
 		length = ptr2 - ptr1;
 	    else

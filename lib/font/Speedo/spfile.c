@@ -202,7 +202,7 @@ sp_open_master(filename, master)
     spmf->fname = (char *) xalloc(strlen(filename) + 1);
     if (!spmf->fname)
 	return AllocError;
-    fp = fopen(filename, "r");
+    fp = (pointer) fopen(filename, "r");
     if (!fp) {
 	ret = BadFontName;
 	goto cleanup;
@@ -343,7 +343,7 @@ sp_reset_master(spmf)
 {
     sp_set_key(spmf->key);
     if (!(spmf->state & MasterFileOpen)) {
-	spmf->fp = fopen(spmf->fname, "r");
+	spmf->fp = (pointer) fopen(spmf->fname, "r");
 	/* XXX -- what to do if we can't open the file? */
 	spmf->state |= MasterFileOpen;
     }

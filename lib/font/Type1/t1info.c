@@ -342,7 +342,8 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
 	if (*ptr2)
 	{
 	    ptr1 = ptr2 + 1;
-	    if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
+	    if (!(ptr2 = (char *)strchr(ptr1, '-'))) 
+			ptr2 = (char *)strchr(ptr1, '\0');
 	}
 
         pp->name = fpt->atom;

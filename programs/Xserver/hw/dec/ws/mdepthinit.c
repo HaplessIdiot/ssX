@@ -29,7 +29,7 @@ from the X Consortium.
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/dec/ws/mdepthinit.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dec/ws/mdepthinit.c,v 1.2 1998/04/05 16:42:05 robin Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -155,6 +155,7 @@ mcfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
 
 extern int  cfb16ScreenPrivateIndex, cfb32ScreenPrivateIndex;
 
+Bool
 mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
@@ -201,7 +202,6 @@ mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth
 	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
 	break;
     }
-    miInitializeBackingStore (pScreen);
     return TRUE;
 }
 

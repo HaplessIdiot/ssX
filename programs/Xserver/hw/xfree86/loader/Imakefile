@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.9 1997/07/06 05:30:58 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.10 1998/03/20 21:06:59 hohndel Exp $ */
 
 
 
@@ -27,7 +27,7 @@ MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 		-I$(SERVERSRC)/dbe \
 		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/os -I$(XINCLUDESRC) -I$(FONTINCSRC) \
-		-I$(EXTINCSRC)
+		-I$(EXTINCSRC) -I$(XTOP)/lib/font/include
 
 #ifdef OS2Architecture
 SRCS1 = os2funcs.c
@@ -35,9 +35,9 @@ OBJS1 = os2funcs.o
 #endif
 
 SRCS = aoutloader.c coffloader.c $(DLSRC) elfloader.c hash.c loader.c \
-	loadmod.c dixsym.c misym.c xf86sym.c $(SRCS1)
+	loadmod.c dixsym.c misym.c xf86sym.c fontsym.c $(SRCS1)
 OBJS = aoutloader.o coffloader.o $(DLOBJ) elfloader.o hash.o loader.o \
-	loadmod.o dixsym.o misym.o xf86sym.o $(OBJS1)
+	loadmod.o dixsym.o misym.o xf86sym.o fontsym.o $(OBJS1)
 
 NormalAsmObjectRule()
 

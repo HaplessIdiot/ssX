@@ -21,11 +21,15 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.2 1998/04/28 13:48:43 robin Exp $ */
 
 #include "font.h"
 #include "freetype.h"
 #include "ft.h"
+
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 
 #ifndef LSBFirst
 #define LSBFirst 0

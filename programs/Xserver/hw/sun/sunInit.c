@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.4 1997/11/22 06:50:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.5 1998/04/05 16:42:05 robin Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -894,7 +894,6 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
 	break;
     }
-    miInitializeBackingStore (pScreen);
     return TRUE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.18 1998/04/05 00:45:57 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.19 1998/04/26 16:04:54 robin Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -25,6 +25,8 @@
  * 
  * Modified for MGA Millennium by Xavier Ducoin <xavier@rd.lectra.fr>
  *
+ * Doug Merritt <doug@netcom.com>
+ * 24bpp: fixed high res stripe glitches, clock glitches on all res
  */
 
 
@@ -91,7 +93,19 @@ static unsigned char MGADACbpp16[] = {
 	   0
 };
 static unsigned char MGADACbpp24[] = {
+#if 1 /* DRM */
+	/*
+	 * I did this fix without documentation, by trial and error.
+	 * Someone may want to confirm it against docs, and then remove
+	 * the #if stuff.
+	 *
+	 * 24bpp: fixed high res stripe glitches, clock glitches on all res
+	 * (i.e. 24bpp was badly broken, now seems just fine.)
+	 */
+	0x06, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+#else
 	0x07, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+#endif
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };

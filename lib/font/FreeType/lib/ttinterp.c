@@ -42,7 +42,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttinterp.c,v 1.2 1998/04/28 13:30:57 robin Exp $ */
   
 #include "freetype.h"
 #include "tttypes.h"
@@ -59,6 +59,10 @@
 #endif
 
 #endif /* DEBUG */
+
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 
 
 /* There are two kinds of implementations there:              */

@@ -1,4 +1,4 @@
-/* $XConsortium: nglescreen.c,v 1.1 93/08/08 12:57:53 rws Exp $ */
+/* $XConsortium: nglescreen.c,v 1.3 95/01/24 02:15:14 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -23,6 +23,8 @@ performance, or use of this material.
  *
  *************************************************************************/
 
+/* $XFree86: xc/programs/Xserver/hw/hp/ngle/nglescreen.c,v 1.0tsi Exp $ */
+
 /******************************************************************************
  *
  *	This file contains various global variables and routines concerning
@@ -35,6 +37,11 @@ performance, or use of this material.
 
 #define DEFAULT_CRX_MONITOR_DIAGONAL 19	/* inches */
 #define LOWRES_CRX_MONITOR_DIAGONAL  16 /* inches */
+
+#define HYPERBOWL_MODE_FOR_8_OVER_88_LUT0_NO_TRANSPARENCIES	4
+#define HYPERBOWL_MODE01_8_24_LUT0_TRANSPARENT_LUT1_OPAQUE	8
+#define HYPERBOWL_MODE01_8_24_LUT0_OPAQUE_LUT1_OPAQUE		10
+#define HYPERBOWL_MODE2_8_24					15
 
 /* Can this graphics device be an ITE console?
  * Most all NGLE graphics devices can be.
@@ -83,13 +90,14 @@ extern GCOps cfb32NonTEOps;
 
 extern Bool 		(*ddxScreenInitPointer[])();
 extern hpPrivPtr	hpPrivates[MAXSCREENS];
+extern Bool 		hyperResetPlanes();
 
 Int32			ngleScreenPrivIndex = 0;
 
 /* FORWARD (procedures defined below in this file) */
 
-static void elkSetupPlanes(
-    NgleScreenPrivPtr       pScreenPriv);
+static void hyperSetupPlanes(
+    NgleScreenPrivPtr	    pScreenPriv);
 
 static void rattlerSetupPlanes(
     NgleScreenPrivPtr	    pScreenPriv);
@@ -97,6 +105,9 @@ static void rattlerSetupPlanes(
 static void ngleSetupAttrPlanes(
     NgleScreenPrivPtr	    pScreenPriv,
     Card32		    BufferNumber);
+
+static void elkSetupPlanes(
+    NgleScreenPrivPtr       pScreenPriv);
 
 static Bool ngleClearScreen(
     ScreenPtr	pScreen);
@@ -111,6 +122,11 @@ static void ngleBlankOrUnblankScreen(
 
 static Bool ngleCloseScreen();
 
+static void nglePolyPaintAttr(
+    NgleScreenPrivPtr           pScreenPriv,
+    Card32			ctlPlaneReg,
+    Int32			nBoxes,
+    BoxPtr			pBoxes);
 
 /* OWN */
 
@@ -184,7 +200,6 @@ static Bool duplicateDeviceFileInScreensFile(
 static int calculateDPI(
     int xsize, int ysize,
     int diagonal_length)
-   
 {
     static int old_diagonal_length = 0;
     int dpi = 0;
@@ -251,8 +266,7 @@ static int calculateDPI(
  ******************************************************************************/
 
 static NgleDevRomDataPtr ngleGetDeviceRomData(
-    NgleScreenPrivPtr	pScreenPriv
-)
+    NgleScreenPrivPtr	pScreenPriv)
 {
     crt_frame_buffer_t	gcDescribe;
     Card32		*pBytePerLongDevDepData;/* data byte == LSB */
@@ -280,44 +294,52 @@ static NgleDevRomDataPtr ngleGetDeviceRomData(
 	    __FILE__);
     }
 
-    /* Get pointer to unpacked byte/long data in ROM */
-    pBytePerLongDevDepData = (Card32 *)
-			    gcDescribe.crt_region[NGLEDEVDEPROM_CRT_REGION];
-
     SETUP_HW(pDregs);
 
-    /* Tomcat supports several resolutions: 1280x1024, 1024x768, 640x480.
-     * This code reads the index into a device dependent ROM array containing
-     * the device's currently selected resolution.
-     */
-    if (pScreenPriv->deviceID == S9000_ID_TOMCAT)
+    if (pScreenPriv->deviceID == S9000_ID_ARTIST)
     {
-        /*  jump to the correct ROM table  */
-        GET_ROMTABLE_INDEX(romTableIdx);
-        while  (romTableIdx > 0)
-        {
-            pCard8 = (Card8 *) pPackedDevRomData;
-            pRomTable = pBytePerLongDevDepData;
-            /* Pack every fourth byte from ROM into structure */
-            for (i = 0; i < sizePackedDevRomData; i++)
-            {
-	        *pCard8++ = (Card8) (*pRomTable++);
-            }
-
-            pBytePerLongDevDepData = (Card32 *)
-                ((Card8 *) pBytePerLongDevDepData +
-                           pPackedDevRomData->sizeof_ngle_data);
-
-            romTableIdx--;
-        }
+	pPackedDevRomData->cursor_pipeline_delay = 4;
+	pPackedDevRomData->video_interleaves     = 4;
     }
-
-    pCard8 = (Card8 *) pPackedDevRomData;
-
-    /* Pack every fourth byte from ROM into structure */
-    for (i = 0; i < sizePackedDevRomData; i++)
+    else
     {
-	*pCard8++ = (Card8) (*pBytePerLongDevDepData++);
+	/* Get pointer to unpacked byte/long data in ROM */
+	pBytePerLongDevDepData = (Card32 *)
+				gcDescribe.crt_region[NGLEDEVDEPROM_CRT_REGION];
+
+	/* Tomcat supports several resolutions: 1280x1024, 1024x768, 640x480.
+	 * This code reads the index into a device dependent ROM array
+	 * containing the device's currently selected resolution.
+	 */
+	if (pScreenPriv->deviceID == S9000_ID_TOMCAT)
+	{
+	    /*  jump to the correct ROM table  */
+	    GET_ROMTABLE_INDEX(romTableIdx);
+	    while  (romTableIdx > 0)
+	    {
+		pCard8 = (Card8 *) pPackedDevRomData;
+		pRomTable = pBytePerLongDevDepData;
+		/* Pack every fourth byte from ROM into structure */
+		for (i = 0; i < sizePackedDevRomData; i++)
+		{
+		    *pCard8++ = (Card8) (*pRomTable++);
+		}
+
+		pBytePerLongDevDepData = (Card32 *)
+			((Card8 *) pBytePerLongDevDepData +
+			       pPackedDevRomData->sizeof_ngle_data);
+
+		romTableIdx--;
+	    }
+	}
+
+	pCard8 = (Card8 *) pPackedDevRomData;
+
+	/* Pack every fourth byte from ROM into structure */
+	for (i = 0; i < sizePackedDevRomData; i++)
+	{
+	    *pCard8++ = (Card8) (*pBytePerLongDevDepData++);
+	}
     }
 
     SETUP_FB(pDregs,pScreenPriv->deviceID,pScreenPriv->devDepth);
@@ -554,6 +576,8 @@ Bool ngleScreenInit(
 	&&  (gcDescribe.crt_id != S9000_ID_TIMBER)	/* 710 Any */
 	&&  (gcDescribe.crt_id != S9000_ID_TOMCAT)	/* Dual CRX */
 	&&  (gcDescribe.crt_id != S9000_ID_A1439A)	/* CRX24 */
+	&&  (gcDescribe.crt_id != S9000_ID_ARTIST)	/* Artist */
+	&&  (gcDescribe.crt_id != S9000_ID_HCRX)	/* Hyperdrive */
 	)
     {
 	ioctl(fildes, GCUNMAP, &mapOrigin);
@@ -586,14 +610,20 @@ Bool ngleScreenInit(
     pScreenPriv->devWidth 	= gcDescribe.crt_total_x; 
     pScreenPriv->screenWidth 	= gcDescribe.crt_x; 
     pScreenPriv->screenHeight 	= gcDescribe.crt_y; 
+
+    for (i=0; i < CRT_MAX_REGIONS; i++)
+    {
+	pScreenPriv->crt_region[i]   = gcDescribe.crt_region[i];
+    }
     
     /* Set the device frame buffer depth.  The default depth is set to
      * 8, but can be changed by setting the depth parameter in the
-     * Xnscreens file.  Currently, we only support depth 24 on CRX24,
+     * Xnscreens file.  Currently, we only support depth 24 on CRX24 & HCRX24,
      * and depth 8 on the remaining displays.
      */
     
-    if (pScreenPriv->deviceID == S9000_ID_A1439A)
+    if ((pScreenPriv->deviceID == S9000_ID_A1439A) ||
+	(pScreenPriv->deviceID == S9000_ID_HCRX))
         pScreenPriv->devDepth = php->depth;
     else
 	pScreenPriv->devDepth = 8;
@@ -655,9 +685,58 @@ Bool ngleScreenInit(
 	pScreenPriv->deviceID   = S9000_ID_A1659A;
 	break;
 
+    case S9000_ID_HCRX:		/* Hyperdrive */
+	/* Hyperdrive doesn't use STI ROM info so don't bother reading it */
+	pScreenPriv->pDevRomData = NULL; /* #### strange #### */
+	NGLE_LOCK(pScreenPriv);
+	{
+	    CARD32          *sti_rom_address;
+	    CARD32          temp;
+	    /*
+	     * In order to read the Hyperdrive configuration bits, we need to
+	     * read the STI ROM.  But, the STI ROM is not always mapped into
+	     * the STI ROM space.  Sometimes the STI ROM is mapped into the
+	     * BOOT ROM space.  To find the true STI ROM space, we need to
+	     * look at the crt_region array in the gcDescribe structure.
+	     * The STI ROM address will either be in entry 0 or entry 1.
+	     * If entry 0 is mapped into the same space as the control space,
+	     * then this is the true STI ROM space.  If entry 0 is in another
+	     * space, then entry 1 has the true STI ROM space.  The space bits
+	     * of the address are the upper 6 bits of the address.  For example,
+	     * if the address is 0xf4100000, then the space is 0xf4000000.
+	     */
+	    if (((CARD32) pScreenPriv->pDregs & 0xfc000000) ==
+		((CARD32) pScreenPriv->crt_region[0] & 0xfc000000))
+	    {
+		sti_rom_address = (CARD32 *) pScreenPriv->crt_region[0];
+	    }
+	    else
+	    {
+		sti_rom_address = (CARD32 *) pScreenPriv->crt_region[1];
+	    }
+
+	    /*
+	     * Ok, grab the configuration bits from the hardware.  These bits
+	     * come from Dodger and are added to any data read from the STI ROM.
+	     * When reading the STI ROM, we need to avoid a potential race
+	     * condition by doing a couple of things.  We first need to read
+	     * some unbuffered register like BIFF status.  Next we need to wait
+	     * for Dodger to go not busy.  Then we can safely read the STI ROM.
+	     */
+	    temp = NGLE_READ32(pDregs->reg15.all);
+	    SETUP_HW(pDregs);
+	    pScreenPriv->deviceSpecificConfig = *sti_rom_address;
+	}
+	NGLE_UNLOCK(pScreenPriv);
+	
+	pScreenPriv->isGrayScale = FALSE;   /* No grayscale version */
+	break;
+
+    case S9000_ID_ARTIST:	/* Artist */
+    case S9000_ID_A1439A:	/* CRX24 */
     case S9000_ID_A1659A:	/* CRX */
 	
-	pScreenPriv->isGrayScale = FALSE;
+	pScreenPriv->isGrayScale = FALSE;   /* No grayscale version */
 	break;
 
     case S9000_ID_TIMBER:	/* HP9000/710 Graphics */
@@ -717,14 +796,10 @@ Bool ngleScreenInit(
 	pScreenPriv->deviceID   = S9000_ID_A1659A;
 	break;
 
-    case S9000_ID_A1439A:	/* CRX24 */
-	pScreenPriv->isGrayScale = FALSE;   /* No grayscale version */
-	break;
-
     default:
 	FatalError("Undefined device id!\n");
 	break;
-    }
+    } /* switch (pScreenPriv->deviceID) */
 
 
     /*
@@ -813,6 +888,58 @@ Bool ngleScreenInit(
     /*
      **************************************************************************
      **
+     ** 11.     Call pNgleScreenInit->InitMiscConfig to perform
+     **         device-dependent configuration and initialization
+     **         that does not change the hardware state.
+     **
+     **             FIRST READ-ONLY ACCESS TO HARDWARE BY SERVER
+     **     (not counting indirect access via kernel ioctl calls)
+     **************************************************************************
+     */
+    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+    {
+	Card32          hyperbowl;
+        Int32           nFreeFifoSlots = 0;
+
+	/* Initialize Hyperbowl registers */
+        GET_FIFO_SLOTS(nFreeFifoSlots, 7);
+        if (IS_24_DEVICE(pScreenPriv))
+        {
+            if (pScreenPriv->devDepth == 24)
+                hyperbowl = HYPERBOWL_MODE01_8_24_LUT0_TRANSPARENT_LUT1_OPAQUE;
+            else
+                hyperbowl = HYPERBOWL_MODE01_8_24_LUT0_OPAQUE_LUT1_OPAQUE;
+
+	    /* First write to Hyperbowl must happen twice (bug) */
+	    NGLE_WRITE32(pDregs->reg40, hyperbowl);
+	    NGLE_WRITE32(pDregs->reg40, hyperbowl);
+
+	    NGLE_WRITE32(pDregs->reg39, HYPERBOWL_MODE2_8_24);
+
+	    NGLE_WRITE32(pDregs->reg42, 0x014c0148); /* Set lut 0 to be the direct color */
+	    NGLE_WRITE32(pDregs->reg43, 0x404c4048);
+	    NGLE_WRITE32(pDregs->reg44, 0x034c0348);
+	    NGLE_WRITE32(pDregs->reg45, 0x444c4448);
+        }
+        else
+        {
+            hyperbowl = HYPERBOWL_MODE_FOR_8_OVER_88_LUT0_NO_TRANSPARENCIES;
+
+	    /* First write to Hyperbowl must happen twice (bug) */
+	    NGLE_WRITE32(pDregs->reg40, hyperbowl);
+	    NGLE_WRITE32(pDregs->reg40, hyperbowl);
+
+	    NGLE_WRITE32(pDregs->reg42, 0);
+	    NGLE_WRITE32(pDregs->reg43, 0);
+	    NGLE_WRITE32(pDregs->reg44, 0);
+	    NGLE_WRITE32(pDregs->reg45, 0x444c4048);
+        }
+    }
+
+
+    /*
+     **************************************************************************
+     **
      **		Call CFB routines to begin setting up of screen and
      **		visual default values.
      **
@@ -842,6 +969,8 @@ Bool ngleScreenInit(
 		  pScreenPriv->screenHeight, dpi, dpi,
 		  pScreenPriv->devWidth);
     }
+
+    miInitializeBackingStore(pScreen);
 
     /*
      * The following section of code is to correct a bug in the MIT-provided
@@ -907,17 +1036,18 @@ Bool ngleScreenInit(
      */
 
     /**** Random screen procedures: ****/
+    pScreenPriv->CloseScreen		= pScreen->CloseScreen;
     pScreen->CloseScreen		= ngleCloseScreen;
     pScreen->SaveScreen			= ngleSaveScreen;
 
     /**** Colormap Procedures: ****/
-    pScreen->CreateColormap = ngleCreateColormap;
-    pScreen->DestroyColormap = ngleDestroyColormap; 
-    pScreen->InstallColormap = ngleInstallColormap;
-    pScreen->UninstallColormap = ngleUninstallColormap;
-    pScreen->ListInstalledColormaps = ngleListInstalledColormaps;
-    pScreen->StoreColors = ngleStoreColors;
-    pScreen->ResolveColor = ngleResolvePseudoColor;
+    pScreen->CreateColormap		= ngleCreateColormap;
+    pScreen->DestroyColormap		= ngleDestroyColormap; 
+    pScreen->InstallColormap		= ngleInstallColormap;
+    pScreen->UninstallColormap		= ngleUninstallColormap;
+    pScreen->ListInstalledColormaps	= ngleListInstalledColormaps;
+    pScreen->StoreColors		= ngleStoreColors;
+    pScreen->ResolveColor		= ngleResolvePseudoColor;
 
 
     /*
@@ -1004,15 +1134,31 @@ Bool ngleScreenInit(
      **************************************************************************
      */
 
-    ngleInitSprite(pScreen);
+    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+    {
+	hyperInitSprite(pScreen);
+    }
+    else
+    {
+	ngleInitSprite(pScreen);
+    }
 
     /*
      **************************************************************************
      **
-     ** 	Initialize the image planes.
+     ** 20.     Call hyperResetPlanes() to initialize the image,
+     **         overlay and attribute planes.  This includes doing what is
+     **         necessary to counteract what the ITE has done
      **
      **************************************************************************
      */
+
+    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+    {
+	hyperResetPlanes(pScreenPriv, SERVER_INIT);
+    }
+
+     /* Initialize the non HCRX image planes. */
 
     /* On CRX24, ITE has set up overlay planes to be 3-plane
      * device.  Set up overlays to be 8 planes and write all
@@ -1023,27 +1169,32 @@ Bool ngleScreenInit(
      * all 8 bits.
      */
     
-    if (pScreenPriv->deviceID == S9000_ID_A1439A)
+    else if (pScreenPriv->deviceID == S9000_ID_A1439A)	/* CRX24 */
     {
 	rattlerSetupPlanes(pScreenPriv);
     }
-    else
+    else if ((pScreenPriv->deviceID == S9000_ID_A1659A) || /* CRX or GRX */
+	     (pScreenPriv->deviceID == S9000_ID_ARTIST)    /* Artist */
+	)
     {
 	elkSetupPlanes(pScreenPriv);
     }
 
-    /* Clear attribute planes on CRX, CRX24 and GRX devices.
+    /* Clear attribute planes on non HCRX devices.
      */
     if ((pScreenPriv->deviceID == S9000_ID_A1659A) ||	/* CRX or GRX */
-	(pScreenPriv->deviceID == S9000_ID_A1439A))
+	(pScreenPriv->deviceID == S9000_ID_A1439A) ||	/* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_ARTIST)	/* Artist */
+       )
     {
 	if (pScreenPriv->devDepth == 24)
-	    ngleSetupAttrPlanes(pScreenPriv,BUFF1_CMAP3);
+	    ngleSetupAttrPlanes(pScreenPriv, BUFF1_CMAP3);
 	else  /* depth = 8 */
-	    ngleSetupAttrPlanes(pScreenPriv,BUFF1_CMAP0);
-	
+	    if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+		ngleSetupAttrPlanes(pScreenPriv, ARTIST_CMAP0);
+	    else
+		ngleSetupAttrPlanes(pScreenPriv, BUFF1_CMAP0);
     }
-
 
     /*
      **************************************************************************
@@ -1105,7 +1256,7 @@ static void elkSetupPlanes(
      **********************************************/
     SETUP_RAMDAC(pDregs);
     
-    SETUP_FB(pDregs,pScreenPriv->deviceID,pScreenPriv->devDepth);
+    SETUP_FB(pDregs, pScreenPriv->deviceID, pScreenPriv->devDepth);
 
 }   /* elkSetupPlanes() */
 
@@ -1133,12 +1284,12 @@ static void rattlerSetupPlanes(
      **********************************************/
     CRX24_SETUP_RAMDAC(pDregs);
     
-	
-    SETUP_FB(pDregs, CRX24_OVERLAY_PLANES,pScreenPriv->devDepth);
+    SETUP_FB(pDregs, CRX24_OVERLAY_PLANES, pScreenPriv->devDepth);
 	
     for (y=0; y < pScreenPriv->screenHeight; y++)
     {
-	bits = (Card32 *) ((char *)pScreenPriv->fbaddr + y * pScreenPriv->devWidth);
+	bits = (Card32 *) ((char *)pScreenPriv->fbaddr + y * 
+					pScreenPriv->devWidth);
 	x = pScreenPriv->screenWidth >> 2;
 	do 
 	{
@@ -1155,24 +1306,76 @@ static void rattlerSetupPlanes(
 
 /******************************************************************************
  *
+ * NGLE DDX Utility Procedure:	hyperSetupPlanes
+ *
+ ******************************************************************************/
+
+static void hyperSetupPlanes(
+    NgleScreenPrivPtr       pScreenPriv)
+{
+    NgleHdwPtr		pDregs;
+    Int32		x, y;
+    Card32		*bits;
+
+    pDregs 	= (NgleHdwPtr) pScreenPriv->pDregs;
+
+    /**************************************************
+     ** Need to clear screen
+     **************************************************/
+/*
+    if (IS_24_DEVICE(pScreenPriv))
+	ngleDepth24_ClearImagePlanes(pScreenPriv);
+    else
+	ngleDepth8_ClearImagePlanes(pScreenPriv);
+
+*/
+    /**********************************************
+     * Write RAMDAC pixel read mask register so all overlay
+     * planes are display-enabled.  (CRX24 uses Bt462 pixel
+     * read mask register for overlay planes, not image planes).
+     **********************************************/
+    HCRX_SETUP_RAMDAC(pDregs);
+    
+	
+    SETUP_FB(pDregs, S9000_ID_HCRX, pScreenPriv->devDepth);
+	
+    for (y=0; y < pScreenPriv->screenHeight; y++)
+    {
+	bits = (Card32 *) ((char *)pScreenPriv->fbaddr + y * 
+					pScreenPriv->devWidth);
+	x = pScreenPriv->screenWidth >> 2;
+	do 
+	{
+	    *bits++ = 0xffffffff;
+	}  while (x--);
+    }
+    
+    CRX24_SET_OVLY_MASK(pDregs);
+    SETUP_FB(pDregs,pScreenPriv->deviceID,pScreenPriv->devDepth);
+
+}   /* hyperSetupPlanes() */
+
+
+
+/******************************************************************************
+ *
  * NGLE DDX Utility Procedure:	ngleSetupAttrPlanes
  *
  ******************************************************************************/
 
 static void ngleSetupAttrPlanes(
-
     NgleScreenPrivPtr	    pScreenPriv,
     Card32		    BufferNumber)
 {
     NgleHdwPtr	    pDregs = pScreenPriv->pDregs;
 
-    SETUP_ATTR_ACCESS(pDregs,BufferNumber);
+    SETUP_ATTR_ACCESS(pDregs, BufferNumber);
 
-    SET_ATTR_SIZE(pDregs,pScreenPriv->screenWidth,pScreenPriv->screenHeight);
+    SET_ATTR_SIZE(pDregs, pScreenPriv->screenWidth, pScreenPriv->screenHeight);
 
     FINISH_ATTR_ACCESS(pDregs);
 
-    SETUP_FB(pDregs,pScreenPriv->deviceID,pScreenPriv->devDepth);
+    SETUP_FB(pDregs, pScreenPriv->deviceID, pScreenPriv->devDepth);
 
 } /* ngleSetupAttrPlanes() */
 
@@ -1192,7 +1395,6 @@ static void ngleSetupAttrPlanes(
  ******************************************************************************/
 
 static Bool ngleClearScreen(
-
     ScreenPtr	pScreen)
 {
     NgleScreenPrivPtr       pScreenPriv;
@@ -1225,14 +1427,17 @@ static Bool ngleClearScreen(
         } 
     }
 
-    /* Clear attribute planes on CRX, CRX24 and GRX devices.
+    /* Clear attribute planes on Hyperdrive, Artist, CRX, CRX24 and GRX devices.
      */
     if ((pScreenPriv->deviceID == S9000_ID_A1659A) ||	/* CRX or GRX */
-	(pScreenPriv->deviceID == S9000_ID_A1439A))     /* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_A1439A) ||   /* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_ARTIST) ||   /* Artist */
+	(pScreenPriv->deviceID == S9000_ID_HCRX)	/* Hyperdrive */
+       )
     {
-	ngleSetupAttrPlanes(pScreenPriv,BUFF0_CMAP0);
+	ngleSetupAttrPlanes(pScreenPriv, BUFF0_CMAP0);
     }
-}
+} /* ngleClearScreen() */
 
 
 
@@ -1274,12 +1479,20 @@ static void ngleBlankOrUnblankScreen(
 
 	    CRX24_DISABLE_DISPLAY(pDregs);
 	}
+	else if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+	{
+	    ARTIST_DISABLE_DISPLAY(pDregs);
+	}
+	else if (pScreenPriv->deviceID == S9000_ID_HCRX)
+	{
+	    HYPER_DISABLE_DISPLAY(pDregs);
+	}
 	else
-	{   /* CRX and like ilk */
+	{   /* CRX and like elk */
 	    DISABLE_DISPLAY(pDregs);
 	}
     }
-    else
+    else /* if (blankOrUnblank == SCREEN_SAVER_OFF) */
     {	/* Turn off screen blanking */
 
 	/* If the cursor is on this screen, display it.
@@ -1289,8 +1502,16 @@ static void ngleBlankOrUnblankScreen(
 	extern int hpActiveScreen; /* active screen index in x_hil.c */
     	if (pScreenPriv->myNum == hpActiveScreen)
 	{
-	    ngleDisplayCursor(pScreenPriv->pScreen,
-		pScreenPriv->sprite.pCursor);
+	    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+	    {
+		hyperDisplayCursor(pScreenPriv->pScreen,
+		    pScreenPriv->sprite.pCursor);
+	    }
+	    else
+	    {
+		ngleDisplayCursor(pScreenPriv->pScreen,
+		    pScreenPriv->sprite.pCursor);
+	    }
 	}
 
 	/* Enable image display by disabling display of
@@ -1300,8 +1521,16 @@ static void ngleBlankOrUnblankScreen(
 	{   /* CRX24 */
 	    CRX24_ENABLE_DISPLAY(pDregs);
 	}
+	else if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+	{
+	    ARTIST_ENABLE_DISPLAY(pDregs);
+	}
+	else if (pScreenPriv->deviceID == S9000_ID_HCRX)
+	{
+	    HYPER_ENABLE_DISPLAY(pDregs);
+	}
 	else
-	{   /* CRX and like ilk */
+	{   /* CRX and like elk */
 	    ENABLE_DISPLAY(pDregs);
 	}
     }
@@ -1389,7 +1618,14 @@ static Bool ngleCloseScreen(index, pScreen)
     if (hpGivingUp)
     {
 	(*php->CursorOff)(pScreen);
-	ngleClearScreen(pScreen);
+	if (pScreenPriv->deviceID == S9000_ID_HCRX)
+	{
+	    hyperResetPlanes(pScreenPriv, SERVER_EXIT);
+	}
+	else
+	{
+	    ngleClearScreen(pScreen);
+	}
     }
 
     /* Turn off screen saver (if on) */
@@ -1407,8 +1643,8 @@ static Bool ngleCloseScreen(index, pScreen)
      * (which is only head that can be an ITE console on Tomcat).
      */
 #define GCTERM _IOWR('G',20,int)
-    if ((hpGivingUp)
-    && (!IS_NOT_FIRST_HEAD_ON_THIS_SGC_SLOT(pScreenPriv->dev_sc)))
+    if ((hpGivingUp) && 
+	(!IS_NOT_FIRST_HEAD_ON_THIS_SGC_SLOT(pScreenPriv->dev_sc)))
     {
 	int garbage=0;
 	ioctl(pScreenPriv->fildes, GCTERM, &garbage);
@@ -1434,8 +1670,407 @@ static Bool ngleCloseScreen(index, pScreen)
     close(pScreenPriv->fildes);
 
     /* Free NGLE private structure */
+    pScreen->CloseScreen = pScreenPriv->CloseScreen;
     Xfree(pScreenPriv);
 
-    return(TRUE);
+    return (*pScreen->CloseScreen)(index, pScreen);
 
 } /* ngleCloseScreen() */
+
+
+/******************************************************************************
+ *
+ *  And now for some new routines to handle HCRX8 and HCRX24
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+ *
+ * NGLE DDX Procedure:		ngleDepth8_ClearImagePlanes()
+ *
+ * Description:
+ *
+ *	This routine clears the image planes for depth 8 devices.
+ *
+ * Assumptions:
+ *	Assumptions fast-locking has been initialized.
+ *	Does not assume a lock is in effect.
+ *
+ ******************************************************************************/
+
+void ngleDepth8_ClearImagePlanes(
+    NgleScreenPrivPtr       pScreenPriv)
+{
+    NgleHdwPtr              pDregs;
+    NGLE_MFGP_REGISTER_TYPE packedLenXY;
+    NGLE_MFGP_REGISTER_TYPE packedDstXY;
+    Int32		    nFreeFifoSlots = 0;
+
+    pDregs 	= (NgleHdwPtr) pScreenPriv->pDregs;
+
+    NGLE_LOCK(pScreenPriv);
+
+    /* Common Hardware setup */
+    GET_FIFO_SLOTS(nFreeFifoSlots, 5);
+
+    /* Re-use dstX/Y and transfer data for multiple recfills.  */
+    NGLE_SET_SCOREBOARD_OVERRIDE(0x30003);
+    NGLE_SET_TRANSFERDATA(0xffffffff);   /* Write foreground color */
+
+    NGLE_REALLY_SET_IMAGE_FG_COLOR(0);	
+    NGLE_REALLY_SET_IMAGE_PLANEMASK(0xff);
+
+    PACK_2CARD16(packedDstXY, 0, 0);
+    PACK_2CARD16(packedLenXY, pScreenPriv->screenWidth,
+		 pScreenPriv->screenHeight);
+    NGLE_SET_DSTXY(NGLE_MFGP_REGISTER_TYPE_ASLONG(packedDstXY));
+
+    /* Device-specific image buffer clear */
+    switch(pScreenPriv->deviceID)
+    {
+    case S9000_ID_ARTIST:
+	/* Write zeroes to buffer */
+	GET_FIFO_SLOTS(nFreeFifoSlots, 3);
+	NGLE_QUICK_SET_IMAGE_BITMAP_OP(
+	    IBOvals(RopSrc, MaskAddrOffset(0),
+		    BitmapExtent08, StaticReg(FALSE),
+		    DataDynamic, MaskOtc, BGx(FALSE), FGx(FALSE)));
+	NGLE_QUICK_SET_DST_BM_ACCESS(
+	    BA(     IndexedDcd, Otc32, OtsIndirect, AddrLong,
+		BAJustPoint(0), BINapp0I, BAIndexBase(0)));
+	SET_LENXY_START_RECFILL(packedLenXY);
+	break;
+
+    case S9000_ID_A1659A:   /* ELK_DEVICE_ID */
+	/* Write zeroes to buffer 0 */
+	GET_FIFO_SLOTS(nFreeFifoSlots, 3);
+	NGLE_QUICK_SET_IMAGE_BITMAP_OP(
+	    IBOvals(RopSrc, MaskAddrOffset(0),
+		    BitmapExtent08, StaticReg(FALSE),
+		    DataDynamic, MaskOtc, BGx(FALSE), FGx(FALSE)));
+	NGLE_QUICK_SET_DST_BM_ACCESS(
+	    BA(	IndexedDcd, Otc32, OtsIndirect, AddrLong,
+		BAJustPoint(0), BINapp0I, BAIndexBase(0)));
+	SET_LENXY_START_RECFILL(packedLenXY);
+
+	/* Write zeroes to buffer 1 */
+	GET_FIFO_SLOTS(nFreeFifoSlots, 2);
+	NGLE_QUICK_SET_DST_BM_ACCESS(
+	    BA(	IndexedDcd, Otc32, OtsIndirect, AddrLong,
+		BAJustPoint(0), BINapp1I, BAIndexBase(0)));
+	SET_LENXY_START_RECFILL(packedLenXY);
+	break;
+
+    case S9000_ID_HCRX:
+	/* Write zeroes to buffer 0 */
+	GET_FIFO_SLOTS(nFreeFifoSlots, 3);
+	NGLE_QUICK_SET_IMAGE_BITMAP_OP(IBOvals(RopSrc, MaskAddrOffset(0),
+				  BitmapExtent08, StaticReg(FALSE),
+				  MaskDynamic, MaskOtc,
+				  BGx(TRUE), FGx(FALSE)));
+	NGLE_QUICK_SET_DST_BM_ACCESS(
+	    BA(	IndexedDcd, Otc32, OtsIndirect, AddrLong,
+	    BAJustPoint(0), BINapp0I, BAIndexBase(0)));
+	HYPER_SET_LENXY_START_FAST_RECFILL(packedLenXY.all);
+
+	/* Write zeroes to buffer 1 */
+	GET_FIFO_SLOTS(nFreeFifoSlots, 2);
+	NGLE_QUICK_SET_DST_BM_ACCESS(
+	    BA(	IndexedDcd, Otc32, OtsIndirect, AddrLong,
+		    BAJustPoint(0), BINapp1I, BAIndexBase(0)));
+	HYPER_SET_LENXY_START_FAST_RECFILL(packedLenXY.all);
+	break;
+
+    /* There is no default */
+    }   /* Device-specific image buffer clear */
+
+    NGLE_UNLOCK(pScreenPriv);
+
+} /* ngleDepth8_ClearImagePlanes() */
+
+
+
+/******************************************************************************
+ *
+ * NGLE DDX Utility Procedure:		ngleDepth24_ClearImagePlanes
+ *
+ * Description:
+ *
+ *	This routine clears all 24 image planes to zeroes.
+ *
+ * Assumptions:
+ *	Assumptions fast-locking has been initialized.
+ *	Does not assume a lock is in effect.
+ *
+ ******************************************************************************/
+
+void ngleDepth24_ClearImagePlanes(
+    NgleScreenPrivPtr       pScreenPriv)
+{
+    NgleHdwPtr              pDregs;
+    NGLE_MFGP_REGISTER_TYPE packedLenXY;
+    NGLE_MFGP_REGISTER_TYPE packedDstXY;
+    Int32		    nFreeFifoSlots = 0;
+
+    pDregs 	= (NgleHdwPtr) pScreenPriv->pDregs;
+
+    NGLE_LOCK(pScreenPriv);
+
+    /* Hardware setup */
+    GET_FIFO_SLOTS(nFreeFifoSlots, 8);
+    NGLE_QUICK_SET_DST_BM_ACCESS(
+	BA(IndexedDcd, Otc32, OtsIndirect, AddrLong,
+	   BAJustPoint(0), BINapp0F8, BAIndexBase(0)));
+    NGLE_SET_SCOREBOARD_OVERRIDE(0);
+    NGLE_SET_TRANSFERDATA(0xffffffff);   	/* Write foreground color */
+
+    NGLE_REALLY_SET_IMAGE_FG_COLOR(0);		/* load with zero */
+    NGLE_REALLY_SET_IMAGE_PLANEMASK(0xffffff);
+
+    PACK_2CARD16(packedDstXY, 0, 0);
+    PACK_2CARD16(packedLenXY, pScreenPriv->screenWidth,
+		 pScreenPriv->screenHeight);
+    NGLE_SET_DSTXY(NGLE_MFGP_REGISTER_TYPE_ASLONG(packedDstXY));
+
+    /* Write zeroes to all 24 planes of image buffer */
+    NGLE_QUICK_SET_IMAGE_BITMAP_OP(IBOvals(RopSrc, MaskAddrOffset(0),
+	    BitmapExtent32, StaticReg(FALSE),
+	    DataDynamic, MaskOtc, BGx(FALSE), FGx(FALSE)));
+    SET_LENXY_START_RECFILL(packedLenXY);
+
+    NGLE_UNLOCK(pScreenPriv);
+
+} /* ngleDepth24_ClearImagePlanes */
+
+
+
+/******************************************************************************
+ *
+ * NGLE DDX Procedure:		ngleClearOverlayPlanes()
+ *
+ * Description:
+ *
+ *	This routine "clears" the overlay planes to the pased in value.
+ *
+ * Assumptions:
+ *	Assumptions fast-locking has been initialized.
+ *	Does not assume a lock is in effect.
+ *
+ ******************************************************************************/
+
+void ngleClearOverlayPlanes(
+    NgleScreenPrivPtr       pScreenPriv,
+    Card32                  planeMask,
+    Card32                  planeData)
+{
+    NgleHdwPtr              pDregs;
+    NGLE_MFGP_REGISTER_TYPE packedLenXY;
+    NGLE_MFGP_REGISTER_TYPE packedDstXY;
+    Int32		    nFreeFifoSlots = 0;
+
+    pDregs 	= (NgleHdwPtr) pScreenPriv->pDregs;
+
+    NGLE_LOCK(pScreenPriv);
+
+    /* Hardware setup */
+    GET_FIFO_SLOTS(nFreeFifoSlots, 8);
+    NGLE_QUICK_SET_DST_BM_ACCESS(
+	BA( IndexedDcd, Otc32, OtsIndirect, AddrLong,
+	    BAJustPoint(0), BINovly, BAIndexBase(0)));
+    NGLE_SET_SCOREBOARD_OVERRIDE(0);
+    NGLE_SET_TRANSFERDATA(0xffffffff);	/* Write foreground color */
+
+    NGLE_REALLY_SET_IMAGE_FG_COLOR(planeData);	/* fill with input data value */
+    NGLE_REALLY_SET_IMAGE_PLANEMASK(planeMask);
+
+    PACK_2CARD16(packedDstXY, 0, 0);
+    PACK_2CARD16(packedLenXY, pScreenPriv->screenWidth,
+		 pScreenPriv->screenHeight);
+    NGLE_SET_DSTXY(NGLE_MFGP_REGISTER_TYPE_ASLONG(packedDstXY));
+
+    /* Write zeroes to overlay planes. */
+    NGLE_QUICK_SET_IMAGE_BITMAP_OP(
+	IBOvals(RopSrc, MaskAddrOffset(0),
+		BitmapExtent08, StaticReg(FALSE),
+		DataDynamic, MaskOtc, BGx(FALSE), FGx(FALSE)));
+    SET_LENXY_START_RECFILL(packedLenXY);
+
+    NGLE_UNLOCK(pScreenPriv);
+
+} /* ngleClearOverlayPlanes() */
+
+
+
+/******************************************************************************
+ *
+ * NGLE DDX Procedure:		ngleResetAttrPlanes()
+ *
+ * Description:
+ *
+ *	This routine resets the attribute planes to an initial state.
+ *
+ * Assumptions:
+ *	Assumptions fast-locking has been initialized.
+ *	Does not assume a lock is in effect.
+ *
+ ******************************************************************************/
+
+void ngleResetAttrPlanes(
+    NgleScreenPrivPtr       pScreenPriv,
+    Card32                  controlPlaneReg)
+{
+    BoxRec		    box;
+
+
+    box.x1 = 0;
+    box.y1 = 0;
+    box.x2 = pScreenPriv->screenWidth;
+    box.y2 = pScreenPriv->screenHeight;
+    nglePolyPaintAttr(pScreenPriv, controlPlaneReg, 1, &box);
+
+} /* ngleResetAttrPlanes() */
+
+
+
+/******************************************************************************
+ *
+ * NGLE DDX Procedure:		nglePolyPaintAttr()
+ *
+ * Description:
+ *
+ *	This routine is called by other NGLE DDX driver routines to perform
+ *	a series of solid color, rectangle fills of the attribute plane(s).
+ *
+ * 	Useful comments about attribute painting:
+ *
+ *	    The Control Plane Register (CPR) is the equivalent of
+ *	    foreground and background pixel registers for the attribute
+ *	    planes.
+ *
+ *	    The most significant byte (CFC:  Control Foreground Color)
+ *	    determines what's written if the foreground color is written
+ *	    to the attribute planes.
+ *
+ *	    The next most significant byte (CBC:  Control Background
+ *	    Color) determines what's written if a zero is written.
+ *
+ *	    The third byte (CPM:  Control Plane Mask Byte) indicates
+ *	    which group of planes is active.
+ *
+ *	    Control Bitmap Operation (CBO) determines whether foreground
+ *	    or background color is transparent or opaque.  Here, we
+ *	    choose opaque for foreground and background (the latter is a
+ *	    don't-care).
+ *
+ *          The ctlPlaneReg parameter which is passed into this routine
+ *	    represents the value to be loaded into the CPR.  The CPR
+ *	    value is device specific, as each device has its own
+ *	    particular mapping of bits in the CPR fields to the devices
+ *	    attribute planes.  But, the CPR register appears at the same
+ *	    address in each of the devices control register space.
+ *	    Therefore, each device can use this common routine to paint
+ *	    attribute planes.
+ *
+ ******************************************************************************/
+
+static void nglePolyPaintAttr(
+    NgleScreenPrivPtr           pScreenPriv,
+    Card32			ctlPlaneReg,
+    Int32			nBoxes,
+    BoxPtr			pBoxes)
+{
+    Int32			nFreeFifoSlots = 0;
+/*## For now, treat as 32-bit integers so that we don't have to unpack: ##*/
+/*##    Int16			*pBox;##*/
+    Int32			*pBox;
+    NgleHdwPtr			pDregs;
+    NGLE_MFGP_REGISTER_TYPE	packedDstXY;
+    NGLE_MFGP_REGISTER_TYPE	packedLenXY;
+
+
+    /* Return early if there's nothing to do: */
+    if (nBoxes <= 0)
+	return;
+
+    pDregs = pScreenPriv->pDregs; 
+    NGLE_LOCK(pScreenPriv);
+
+
+    /*
+     **************************************************************************
+     **
+     ** Paint the Boxes in the Attribute Planes:
+     **
+     **************************************************************************
+     */
+
+    GET_FIFO_SLOTS(nFreeFifoSlots, 4);
+    NGLE_QUICK_SET_DST_BM_ACCESS(BA(IndexedDcd, Otc32, OtsIndirect,
+					AddrLong, BAJustPoint(0),
+					BINattr, BAIndexBase(0)));
+    NGLE_QUICK_SET_CTL_PLN_REG(ctlPlaneReg);
+    NGLE_SET_TRANSFERDATA(0xffffffff);
+
+    /* Loop on boxes: */
+    pBox = (Int32 *) pBoxes;
+    NGLE_QUICK_SET_IMAGE_BITMAP_OP(IBOvals(RopSrc, MaskAddrOffset(0),
+					BitmapExtent08, StaticReg(TRUE),
+					DataDynamic, MaskOtc,
+					BGx(TRUE), FGx(FALSE)));
+    do
+    {
+	packedDstXY.all = *pBox++;
+	packedLenXY.all = (*pBox++) - packedDstXY.all;
+	GET_FIFO_SLOTS(nFreeFifoSlots, 2);
+	NGLE_SET_DSTXY(NGLE_MFGP_REGISTER_TYPE_ASLONG(packedDstXY));
+	SET_LENXY_START_RECFILL(packedLenXY);
+    } while (--nBoxes > 0);
+
+
+    /*
+     **************************************************************************
+     **
+     ** In order to work around an ELK hardware problem (Buffy doesn't
+     ** always flush it's buffers when writing to the attribute
+     ** planes), at least 4 pixels must be written to the attribute
+     ** planes starting at (X == 1280) and (Y != to the last Y written
+     ** by BIF):
+     **
+     **************************************************************************
+    */
+
+    if (pScreenPriv->deviceID == S9000_ID_A1659A)   /* ELK_DEVICE_ID */
+    {
+	/*## NOTE: This may cause problems on a 2K-wide device: ##*/
+	if (packedLenXY.xy.y > 0)
+	{
+	    /* It's safe to use scanline zero: */
+	    PACK_2CARD16(packedDstXY, 1280, 0);
+	}
+	else
+	{
+	    /* Must generate a safe scanline: */
+	    if (packedDstXY.xy.y > 0)
+	    {
+		PACK_2CARD16(packedDstXY, 1280, 0);
+	    }
+	    else
+	    {
+		PACK_2CARD16(packedDstXY, 1280, 1);
+	    }
+	}
+
+	GET_FIFO_SLOTS(nFreeFifoSlots, 2);
+	NGLE_SET_DSTXY(NGLE_MFGP_REGISTER_TYPE_ASLONG(packedDstXY));
+	PACK_2CARD16(packedLenXY, 4, 1);
+	SET_LENXY_START_RECFILL(packedLenXY);
+    }   /* ELK Hardware Kludge */
+
+
+    /**** Finally, set the Control Plane Register back to zero: ****/
+    GET_FIFO_SLOTS(nFreeFifoSlots, 1);
+    NGLE_QUICK_SET_CTL_PLN_REG(0);
+
+    NGLE_UNLOCK(pScreenPriv);
+
+} /* nglePolyPaintAttr() */

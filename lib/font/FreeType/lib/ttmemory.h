@@ -26,7 +26,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttmemory.h,v 1.2 1998/04/28 13:30:59 robin Exp $ */
   
 #ifndef TTMEMORY_H
 #define TTMEMORY_H
@@ -34,6 +34,9 @@
 #include "tttypes.h"
 #include "string.h"
 
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 
 #ifdef __cplusplus
   extern "C" {

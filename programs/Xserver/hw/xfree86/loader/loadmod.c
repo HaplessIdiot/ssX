@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.22 1998/03/27 23:23:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.23 1998/04/26 18:31:59 robin Exp $ */
 
 /* 
  *
@@ -67,6 +67,14 @@ static char *FindModule (const char *, const char *);
 static void CheckVersion (const char *, XF86ModuleVersionInfo *, int);
 static void UnloadModuleOrDriver (ModuleDescPtr mod);
 
+FontModule font[] = {
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};
+
 void
 LoaderFixups (void)
 {
@@ -81,6 +89,7 @@ static char *subdirs[] =
 	"",
 	"drivers/",
 	"extensions/",
+	"fonts/",
 	"internal/",
 };
 static char *prefixes[] =
@@ -178,10 +187,11 @@ int cnt;
 		modcode[1] = mod & 0xffff;
 		mod >>= 16;
 		modcode[0] = mod;
-		ErrorF ("\t  compiled for %d.%d.%d%s%s, module version = %d.%d\n",
-				vercode[0], vercode[1], vercode[2],
-				verstr, verstr + 2,
-				modcode[0], modcode[1]);
+		ErrorF ("\t  compiled for %d.%d", vercode[0], vercode[1]);
+		if (vercode[2])
+			ErrorF (".%d", vercode[2]);
+		ErrorF ("%s%s, module version = %d.%d\n", verstr, verstr + 2,
+			modcode[0], modcode[1]);
 
 #if NOTYET
 		if (data->checksum)
@@ -195,6 +205,19 @@ int cnt;
 		}
 #endif
 	}
+}
+
+void
+LoadFont (e)
+{
+	int i = 0;
+
+	while (font[i].initFunc != NULL)
+		i++;
+
+	if (i >= 5) FatalError("No Font Slots left\n");
+
+	font[i].initFunc = (pointer)e;
 }
 
 void
@@ -360,6 +383,9 @@ int *errmin;
 				break;
 			case MAGIC_LOAD_EXTENSION:
 				LoadExtension ((ExtensionModule *) data);
+				break;
+			case MAGIC_LOAD_FONT:
+				LoadFont (data);
 				break;
 			case MAGIC_VERSION:
 				version++;

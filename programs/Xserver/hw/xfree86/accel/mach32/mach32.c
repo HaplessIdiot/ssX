@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.78 1998/03/20 21:05:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.79 1998/03/27 23:23:16 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -134,6 +134,7 @@ ScrnInfoRec mach32InfoRec = {
     mach32AdjustFrame,	/* void (* AdjustFrame)() */
     mach32SwitchMode,	/* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach32PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -289,6 +290,7 @@ short mach32WeightMask;
 static mach32CRTCRegRec mach32CRTCRegs;
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 
 /*
  * ATI Hardware Probe
@@ -1073,7 +1075,7 @@ mach32Initialize (scr_index, pScreen, argc, argv)
 		return(FALSE);
 
     savepScreen = pScreen;
-
+    saveCloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = mach32CloseScreen;
     pScreen->SaveScreen = mach32SaveScreen;
 
@@ -1280,16 +1282,13 @@ mach32CloseScreen(screen_idx, pScreen)
     /* 7-Jan-94 CEG: The server is not running on the current vt.
      * Free the screen snapshot taken when the server vt was left.
      */
-	    (savepScreen->DestroyPixmap)(ppix);
+	    (*pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
     }
     mach32ClearSavedCursor(screen_idx);
-    if (mach32InfoRec.bitsPerPixel == 8)
-	cfbCloseScreen(screen_idx, savepScreen);
-    else
-	cfb16CloseScreen(screen_idx, savepScreen);
     savepScreen = NULL;
-    return(TRUE);
+    pScreen->CloseScreen = saveCloseScreen;
+    return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

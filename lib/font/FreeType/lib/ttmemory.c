@@ -26,7 +26,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttmemory.c,v 1.2 1998/04/28 13:30:59 robin Exp $ */
   
 #include "tterror.h"
 #include "ttmemory.h"
@@ -36,6 +36,10 @@
 #ifdef DEBUG_MEMORY
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 
   #define MAX_TRACKED_BLOCKS  1024
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.4 1997/08/26 10:01:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.5 1998/01/24 16:58:09 hohndel Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -458,7 +458,7 @@ OAKClockSelect(no)
 	case OTI77:
 	default:
       	  outb(0x3C2, save1);
-	  outb(OTI_INDEX, OTI_MISC | (save2 << 8));
+	  outw(OTI_INDEX, OTI_MISC | (save2 << 8));
 	  break;
 	}
       break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.1 1998/03/20 21:08:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.2 1998/04/05 16:42:24 robin Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -214,7 +214,6 @@ ilbmScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->CloseScreen = ilbmCloseScreen;
 	pScreen->CreateScreenResources = ilbmCreateScreenResources;
 	pScreen->BackingStoreFuncs = ilbmBSFuncRec;
-	miInitializeBackingStore(pScreen);
 
 	pScreen->devPrivates[ilbmScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;

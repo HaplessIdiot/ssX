@@ -13,7 +13,7 @@
  * express or implied warranty.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.5 1996/12/23 06:30:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.6 1997/11/16 06:18:37 dawes Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
@@ -157,6 +157,7 @@ extern int gettimeofday();
 #define PSZ 8
 #endif
 
+#include "mi/mibstore.h"
 #include "mi/mipointer.h"
 
 extern int monitorResolution;

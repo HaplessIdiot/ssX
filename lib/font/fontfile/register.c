@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.2 1998/04/19 11:11:07 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs
@@ -34,8 +34,18 @@ in this Software without prior written authorization from the X Consortium.
  * end up dragging in code from all the renderers, which is not small.
  */
 
+#ifdef XFree86LOADER
+#include <stdio.h>
+typedef void (*InitFont)();
+typedef struct FontModule {
+	InitFont initFunc;
+} FontModule;
+extern FontModule font[];
+#endif
+
 FontFileRegisterFpeFunctions()
 {
+#ifndef XFree86LOADER
     BitmapRegisterFontFileFunctions ();
 #ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
@@ -43,6 +53,16 @@ FontFileRegisterFpeFunctions()
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();
 #endif
+#endif
+#else
+    {
+	int i = 0;
+
+	while (font[i].initFunc != NULL) {
+		(*font[i].initFunc)();
+		i++;
+	}
+    }
 #endif
 
     FontFileRegisterLocalFpeFunctions ();

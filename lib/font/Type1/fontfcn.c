@@ -35,6 +35,9 @@
 #include "util.h"
 #include "fontfcn.h"
 #include "fontmisc.h"
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
  
 extern xobject Type1Char();
 /***================================================================***/

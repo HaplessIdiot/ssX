@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.17 1998/01/24 16:57:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.18 1998/06/04 16:43:24 hohndel Exp $ */
 /*
  * Copyright 1996, 1997 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -1362,6 +1362,7 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
 		ctBLTWAIT;
 	    }
 	    else{
+#if 0
 	      while (h--) {
 		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
 		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
@@ -1378,6 +1379,49 @@ void CTNAME(DoImageWrite)(pSrc, pDst, alu, prgnDst,
 		dst += byteWidthDst;
 		ctBLTWAIT;
 	      }
+#else
+	      unsigned int vert = h;
+	      
+	      h = (vert + 1) >> 1;
+	      ctBLTWAIT;
+	      ctSETPITCH(byteWidthSrc << 1, byteWidthDst << 1);
+	      ctSETSRCADDR((unsigned int)src);
+	      ctSETDSTADDR((unsigned int)dst);
+	      ctSETHEIGHTWIDTHGO(h, bytesperline);
+	      while (h--) {
+		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
+		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
+		
+		while (qwords--) {
+		  *(unsigned long long *)ctBltDataWindow = *qwa_src++;
+		}
+		src += (byteWidthSrc << 1);
+	      }
+		
+
+	      h = vert  >> 1;
+	      psrc = pptSrc->x * vgaBytesPerPixel + (pptSrc->y + 1)* byteWidthSrc;
+
+	      pdst = pbox->x1 * vgaBytesPerPixel + (pbox->y1 + 1) * byteWidthDst;
+	      src = (unsigned char *)psrcBase + psrc;
+	      dst = (unsigned char *)pdst;
+
+	      ctBLTWAIT;
+	      ctSETPITCH(byteWidthSrc << 1, byteWidthDst << 1);
+	      ctSETSRCADDR((unsigned int)src);
+	      ctSETDSTADDR((unsigned int)dst);
+	      ctSETHEIGHTWIDTHGO(h, bytesperline);
+	      while (h--) {
+		register unsigned long long *qwa_src = (unsigned long long *)((unsigned int)src & (~0x7));
+		unsigned int qwords = (((unsigned int)src & 0x7) + bytesperline + 0x7) >> 3;
+		
+		while (qwords--) {
+		  *(unsigned long long *)ctBltDataWindow = *qwa_src++;
+		}
+		src += (byteWidthSrc << 1);
+	      }
+		
+#endif
 	    }
 
 	}

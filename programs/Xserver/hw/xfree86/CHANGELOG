@@ -1,3 +1,27 @@
+XFree86 3.9Aj (28 June 1998)
+1696. Fix rendering errors in the generic bit expansion code (#1746,
+      Jens Owen).
+1695. Fix problem in Oak clock setting routines (#1744, Kevin Buhr).
+1694. Clean up vga16 (remove unused code, remove vga16's mfb (vga2 is used
+      instead), clean up vga16's external name space). Minor fix to ATI
+      driver. (#1742, Marc LaFrance).
+1693. Fix macro expansion in xf86Config.c (#1730, Jens Maurer).
+1692. Increase performance for 24bpp bitblt (#1724, Nozomi Ytow).
+1691. Modularize fonts. You must at least add LoadModule "bitmap" or the
+      server will abort failing to find fixed (#1723, Alan Hourihane).
+1690. Add APM event handler to the XF86Misc extension (#1721, Egbert Eich).
+1689. On Linux, default the use of special or internal malloc's to NO
+      (instead of forcing it to NO). Allow CloseScreen to free wrapper
+      private storage in most servers. Push out backing store initialisation
+      to the callers of the various <framebuffer>ScreenInit()'s. Change
+      m68k's XF68_FBDev to use backing store low-level functions to
+      save/restore the screen during VT switches. Minor fixup to loader
+      message. (#1719, Marc LaFrance).
+1688. Fixes for 24bpp and 32bpp on Matrox Millenium II. This fixes the 
+      horizontal stripe for modes using > 4MB (#1715,1716, Doug Merritt).
+1687. Fix build problems on LynxOS and enable keyboard LEDs on LynxOS 2.5.1
+      (1712, Thomas Mueller).
+
 XFree86 3.9Ai (05 June 1998)
 1686. Add rendition directory. This is not included in the build process, yet
       (#1707, Marc Langenbach).
@@ -6157,4 +6181,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.593 1998/06/04 16:43:11 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.594 1998/06/05 14:32:46 robin Exp $

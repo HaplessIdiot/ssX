@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulOpStip.c,v 3.4 1996/12/23 06:52:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulOpStip.c,v 3.5 1997/03/13 15:10:48 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,7 +30,7 @@
  *
  */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
@@ -39,8 +39,6 @@
 #include "ppc.h"
 #include "OScompiler.h"
 #include "ibmTrace.h"
-
-extern PixmapPtr ppcCopyPixmap();
 
 void 
 ppcOpaqueStipple( pWin, pStipple, fg, bg, alu, planes, x, y, w, h, xSrc, ySrc )
@@ -53,8 +51,6 @@ unsigned long int planes ;
 register int x, y, w, h ;
 int xSrc, ySrc ;
 {
-    ppcScrnPriv *devPriv =(ppcScrnPriv *)pStipple->drawable.pScreen->devPrivate;
-
     /* DO BACKGROUND */
     switch ( alu ) {
 	/* Easy Cases -- i.e. Final Result Doesn't Depend On Initial Dest. */

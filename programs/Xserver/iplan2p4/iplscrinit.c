@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.0 1996/08/18 01:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.1 1998/04/05 16:42:26 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -140,6 +140,7 @@ iplCreateScreenResources(pScreen)
 }
 #endif
 
+Bool
 iplFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
@@ -176,10 +177,7 @@ iplFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->devPrivates[iplScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
     pScreen->BackingStoreFuncs = iplBSFuncRec;
-    miInitializeBackingStore (pScreen);
     pScreen->GetScreenPixmap = iplGetScreenPixmap;
     pScreen->SetScreenPixmap = iplSetScreenPixmap;
     return TRUE;

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbscrinit.c,v 5.17 94/04/17 20:28:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.3 1998/03/20 21:08:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.4 1998/04/05 16:42:27 robin Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -161,7 +161,6 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			1, 1, &depth, VID, 1, &visual))
 	return FALSE;
     pScreen->BackingStoreFuncs = mfbBSFuncRec;
-    miInitializeBackingStore(pScreen);
     return TRUE;
 }
 

@@ -79,6 +79,7 @@ SOFTWARE.
 #include "ws.h"
 
 #include "mfb.h"
+#include "mibstore.h"
 
 extern int wsScreenPrivateIndex;
 extern CARD32 lastEventTime;
@@ -416,6 +417,8 @@ fbInitProc(index, pScreen, argc, argv)
     {
 	return FALSE;
     }
+
+    miInitializeBackingStore(pScreen);
  
     if (dd->depth == 1)
     {

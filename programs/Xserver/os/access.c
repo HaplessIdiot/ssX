@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.23 1998/01/25 04:00:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.24 1998/03/20 21:08:23 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -158,10 +158,6 @@ SOFTWARE.
 #if (BSD >= 199103)
 #define VARIABLE_IFREQ
 #endif
-#endif
-
-#if defined(Lynx) && defined(__Lynx__)
-#define VARIABLE_IFREQ
 #endif
 
 #ifdef BSD44SOCKETS

@@ -1,11 +1,16 @@
 XCOMM $XConsortium: Imakefile,v 1.10 93/09/04 16:42:59 rws Exp $
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include
+#if DoLoadableServer
+XFMODSRC = speedomod.c
+XFMODOBJ = speedomod.o
+#endif
+
+        INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include -I$(XTOP)/include -I$(XF86OSSRC) -I$(XF86COMSRC)
          HEADERS = 
-      SPEEDOSRCS = do_char.c do_trns.c out_bl2d.c out_blk.c \
+      SPEEDOSRCS = do_char.c do_trns.c out_bl2d.c out_blk.c $(XFMODSRC) \
 		   out_scrn.c out_util.c reset.c set_spcs.c set_trns.c 
-      SPEEDOOBJS = do_char.o do_trns.o out_bl2d.o out_blk.o \
+      SPEEDOOBJS = do_char.o do_trns.o out_bl2d.o out_blk.o $(XFMODOBJ) \
 		   out_scrn.o out_util.o reset.o set_spcs.o set_trns.o
 
             SRCS = spfuncs.c spfile.c spinfo.c sperr.c spfont.c spglyph.c \
@@ -20,3 +25,8 @@ NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 DependTarget()
+
+#if DoLoadableServer
+NormalLibraryTarget(speedo,?*.o)
+InstallDynamicModule(LibraryTargetName(speedo),$(MODULEDIR))
+#endif

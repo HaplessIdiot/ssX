@@ -18,7 +18,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sunAmInit.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sunAmInit.c,v 1.3 1998/04/05 16:42:07 robin Exp $ */
 
 /* This file was partly derived from sunInit.c (5.49 94/02/21 10:21:02) */
 
@@ -419,7 +419,6 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
 	break;
     }
-    miInitializeBackingStore (pScreen);
     return TRUE;
 }
 

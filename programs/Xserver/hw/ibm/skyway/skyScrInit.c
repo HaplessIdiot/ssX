@@ -59,6 +59,7 @@
 #include "ibmTrace.h"
 
 #include "aixCursor.h"
+#include "mibstore.h"
 #include "mipointer.h"
 #include "misprite.h"
 #include "OSio.h"
@@ -274,10 +275,10 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
 	return FALSE;
 #endif
 
+    miInitializeBackingStore(pScreen);
 
     if (!cfbCreateDefColormap(pScreen))
 	return FALSE;
-
 
     /* XXX - Should wrap or else BackingStore will leak memory */
     pScreen->CloseScreen = skyScreenClose;
