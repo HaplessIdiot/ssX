@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.58 1996/12/31 04:14:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.59 1997/02/17 11:03:59 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -136,8 +136,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasMakefileSafeInclude	YES
 #define IncludeMakefile(file) @@# dependencies are in .depend
 #define DependFileName		.depend
+#ifndef DoLoadableServer
+#define DoLoadableServer	YES
+#endif
 #ifndef BuildDynamicLoading
+#if DoLoadableServer
+#define BuildDynamicLoading	NO
+#else
 #define BuildDynamicLoading	YES
+#endif
 #endif
 #ifndef ForceNormalLib
 #define ForceNormalLib		YES
