@@ -763,8 +763,8 @@ source files.
       New Features, Enhancements and Updates:
 
                   IPv6 support:
-                        Alan Coopersmith, Marc Aurele La France, Matthieu
-                        Herrb, David H. Dawes.
+                        Alan Coopersmith, Fabio Massimo Di Nitto, Marc Aurele
+                        La France, Matthieu Herrb, David H. Dawes.
 
                   NVIDIA 'nv' driver rewrite:
                         Mark Vojkovich.
@@ -851,21 +851,21 @@ source files.
             Romanick, Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin,
             Supphachoke Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
             Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, JungShik
-            Shin, Jungshik Shin, Nikola Smolenski, Paul Stewart, Alexander
-            Stohr, Alan Strohm, Will Styles, James Su, Mike Sulivan, Ville
-            Syrjala, Slava Sysoltsev, Akira TAGOH, Toshimitsu Tanaka, Akira
-            Taniguchi, Owen Taylor, Neil Terry, Adam Tlalka, Linus Torvalds,
-            Christian Tosta, Warren Turkal, Stephen J. Turnbull, Ted Unangst,
-            Mike Urban, Simon Vallet, Thuraiappah Vaseeharan, Luc Verhaegen,
-            Michail Vidiassov, Sebastiano Vigna, Mark Vojkovich, Stephane
-            Voltz, Boris Weissman, Keith Whitwell, Thomas Winischhofer, Kim
-            Woelders, Roy Wood, Jason L. Wright, Joerg Wunsch, Chisato
-            Yamauchi, Hui Yu.
+            Shin, Jungshik Shin, Nikola Smolenski, Andreas Stenglein, Paul
+            Stewart, Alexander Stohr, Alan Strohm, Will Styles, James Su,
+            Mike Sulivan, Ville Syrjala, Slava Sysoltsev, Akira TAGOH,
+            Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor, Neil Terry, Adam
+            Tlalka, Linus Torvalds, Christian Tosta, Warren Turkal, Stephen
+            J. Turnbull, Ted Unangst, Mike Urban, Simon Vallet, Thuraiappah
+            Vaseeharan, Luc Verhaegen, Michail Vidiassov, Sebastiano Vigna,
+            Mark Vojkovich, Stephane Voltz, Boris Weissman, Keith Whitwell,
+            Thomas Winischhofer, Kim Woelders, Roy Wood, Jason L. Wright,
+            Joerg Wunsch, Chisato Yamauchi, Hui Yu.
 
       Webmaster:
             Georgina O. Economou
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.93 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.95 dawes Exp $
 
 
 $XFree86: $
