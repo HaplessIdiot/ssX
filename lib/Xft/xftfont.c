@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfont.c,v 1.2 2000/12/01 03:27:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.3 2000/12/02 10:02:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include "xftint.h"
+#include <stdio.h>
 
 XftPattern *
 XftFontMatch (Display *dpy, int screen, XftPattern *pattern, XftResult *result)
@@ -116,6 +117,22 @@ XftFontOpenPattern (Display *dpy, XftPattern *pattern)
     return font;
 }
 
+static int
+_XftFontDebug (void)
+{
+    static int	initialized;
+    static int	debug;
+
+    if (!initialized)
+    {
+	initialized = 1;
+	debug = getenv ("XFT_DEBUG") != 0;
+	if (debug)
+	    printf ("XFT_DEBUG found\n");
+    }
+    return debug;
+}
+
 XftFont *
 XftFontOpen (Display *dpy, int screen, ...)
 {
@@ -129,15 +146,35 @@ XftFontOpen (Display *dpy, int screen, ...)
     pat = XftPatternVaBuild (0, va);
     va_end (va);
     if (!pat)
+    {
+	if (_XftFontDebug ())
+	    printf ("XftFontOpen: Invalid pattern argument\n");
 	return 0;
+    }
     match = XftFontMatch (dpy, screen, pat, &result);
+    if (_XftFontDebug ())
+    {
+	printf ("Pattern ");
+	XftPatternPrint (pat);
+	if (match)
+	{
+	    printf ("Match ");
+	    XftPatternPrint (match);
+	}
+	else
+	    printf ("No Match\n");
+    }
     XftPatternDestroy (pat);
     if (!match)
 	return 0;
     
     font = XftFontOpenPattern (dpy, match);
     if (!font)
+    {
+	if (_XftFontDebug ())
+	    printf ("No Font\n");
 	XftPatternDestroy (match);
+    }
 
     return font;
 }
@@ -201,7 +238,7 @@ XftFontClose (Display *dpy, XftFont *font)
 }
 
 Bool
-XftGlyphExists (Display *dpy, XftFont *font, unsigned int glyph)
+XftGlyphExists (Display *dpy, XftFont *font, XftChar32 glyph)
 {
     if (font->core)
 	return XftCoreGlyphExists (dpy, font->u.core.font, glyph);

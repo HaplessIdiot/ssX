@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.2 2000/12/01 21:32:01 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.3 2000/12/02 10:02:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,9 +26,9 @@
 #include "xftint.h"
 
 XChar2b *
-XftCoreConvert16 (unsigned short    *string,
-		  int		    len,
-		  XChar2b	    xcloc[XFT_CORE_N16LOCAL])
+XftCoreConvert16 (XftChar16	*string,
+		  int		len,
+		  XChar2b	xcloc[XFT_CORE_N16LOCAL])
 {
     XChar2b *xc;
     int	    i;
@@ -46,7 +46,7 @@ XftCoreConvert16 (unsigned short    *string,
 }
 
 XChar2b *
-XftCoreConvert32 (unsigned int	    *string,
+XftCoreConvert32 (XftChar32	    *string,
 		  int		    len,
 		  XChar2b	    xcloc[XFT_CORE_N16LOCAL])
 {
@@ -68,7 +68,7 @@ XftCoreConvert32 (unsigned int	    *string,
 void
 XftCoreExtents8 (Display	*dpy,
 		 XFontStruct	*fs,
-		 unsigned char  *string, 
+		 XftChar8	*string, 
 		 int		len,
 		 XGlyphInfo	*extents)
 {
@@ -97,7 +97,7 @@ XftCoreExtents8 (Display	*dpy,
 void
 XftCoreExtents16 (Display	    *dpy,
 		  XFontStruct	    *fs,
-		  unsigned short    *string, 
+		  XftChar16	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents)
 {
@@ -128,7 +128,7 @@ XftCoreExtents16 (Display	    *dpy,
 void
 XftCoreExtents32 (Display	    *dpy,
 		  XFontStruct	    *fs,
-		  unsigned int	    *string, 
+		  XftChar32	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents)
 {
@@ -159,7 +159,7 @@ XftCoreExtents32 (Display	    *dpy,
 Bool
 XftCoreGlyphExists (Display	    *dpy,
 		    XFontStruct	    *fs,
-		    unsigned int    glyph)
+		    XftChar32	    glyph)
 {
     int		direction;
     int		ascent, descent;

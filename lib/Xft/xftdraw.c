@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.6 2000/12/05 07:42:30 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.7 2000/12/06 18:03:24 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -238,7 +238,7 @@ XftDrawString8 (XftDraw		*draw,
 		XftFont		*font,
 		int		x,
 		int		y,
-		unsigned char	*string,
+		XftChar8	*string,
 		int		len)
 {
     if (font->core)
@@ -262,7 +262,7 @@ XftDrawString16 (XftDraw	*draw,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
-		 unsigned short	*string,
+		 XftChar16	*string,
 		 int		len)
 {
     if (font->core)
@@ -290,7 +290,7 @@ XftDrawString32 (XftDraw	*draw,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
-		 unsigned int	*string,
+		 XftChar32	*string,
 		 int		len)
 {
     if (font->core)
