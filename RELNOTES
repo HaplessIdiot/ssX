@@ -16,6 +16,15 @@ XFree86 4 represents a significant redesign of the XFree86 X server, with a
 strong focus on modularity and clean interfaces compared with the previous
 XFree86 3.x series.
 
+1.1  4.5.0 RC1
+
+This is release candidate 1 for the 4.5.0 release.  This release candidate is
+feature-complete.  Known problems with this release candidate include:
+
+   o The DRM kernel source is incomplete/broken.
+
+   o The documentation is not up to date.
+
 2.  Configuration: a Quick Synopsis
 
 XFree86 4.4 introduced an automatic configuration mechanism for the XFree86
@@ -963,7 +972,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.121 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.122 dawes Exp $
 
 
 $XFree86$
