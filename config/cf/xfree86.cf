@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.491 2005/02/28 05:09:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.492 2005/02/28 23:19:12 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2137,7 +2137,8 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
  * module and native object formats are different (e.g., OS/2).
  */
 #ifndef BuildModuleInSubdir
-#if TinyXServer || XVirtualFramebufferServer
+#if TinyXServer || XVirtualFramebufferServer || XdmxServer || XnestServer || \
+	XprtServer
 #define BuildModuleInSubdir	YES
 #else
 #define BuildModuleInSubdir	NO
