@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.36 1996/01/21 08:26:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.37 1996/01/21 08:30:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -365,7 +365,7 @@ InitInput(argc, argv)
 /*
  * OsVendorInit --
  *      OS/Vendor-specific initialisations.  Called from OsInit(), which
- *      is called by dix eefore establishing the well known sockets.
+ *      is called by dix before establishing the well known sockets.
  */
  
 void
