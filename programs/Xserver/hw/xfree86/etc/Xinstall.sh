@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.58 2003/10/19 03:02:19 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.59 2003/12/03 04:40:49 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -153,8 +153,6 @@ OPTDIST=" \
 	Xvfb.tgz \
 	Xf100.tgz \
 	Xfcyr.tgz \
-	Xflat2.tgz \
-	Xfnon.tgz \
 	Xfscl.tgz \
 	Xhtml.tgz \
 	Xjdoc.tgz \
@@ -267,14 +265,12 @@ Description()
 		echo "X print server";;
 	Xvfb*)
 		echo "Virtual framebuffer X server";;
+	Xdrm*)
+		echo "DRM kernel module source";;
 	Xf100*)
 		echo "100dpi fonts";;
 	Xfcyr*)
 		echo "Cyrillic fonts";;
-	Xflat2*)
-		echo "Latin-2 fonts";;
-	Xfnon*)
-		echo "Some large fonts";;
 	Xfscl*)
 		echo "Scaled fonts (Speedo, Type1 and TTF)";;
 	Xhtml*)
@@ -1024,9 +1020,17 @@ Darwin)
             SERVDIST="Xxserv.tgz"
         fi
 	;;
-FreeBSD|OpenBSD)
+FreeBSD)
 	VARDIST="Xvar.tgz"
 	XKBDBDIR="$VARDIR/db/xkb"
+	EXTRAOPTDIST="Xdrm.tgz"
+	;;
+OpenBSD)
+	VARDIST="Xvar.tgz"
+	XKBDBDIR="$VARDIR/db/xkb"
+	;;
+NetBSD)
+	EXTRAOPTDIST="Xdrm.tgz"
 	;;
 Interactive)	# Need the correct name for this
 	EXTRADIST="Xbin1.tgz"
@@ -1035,6 +1039,7 @@ Interactive)	# Need the correct name for this
 Linux)
 	VARDIST="Xvar.tgz"
 	XKBDBDIR="$VARDIR/lib/xkb"
+	EXTRAOPTDIST="Xdrm.tgz"
 	;;
 esac
 
