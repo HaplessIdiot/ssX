@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.13 2001/09/26 12:54:57 alanh Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.14 2002/01/15 01:22:47 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -114,14 +114,12 @@ MANUALS = \
   $(TOP)/programs/xcmsdb/xcmsdb.man \
   $(TOP)/programs/xconsole/xconsole.man \
   $(TOP)/programs/xclipboard/xcutsel.man \
-  $(TOP)/programs/Xserver/hw/dec/ws/Xdec.man \
   $(TOP)/programs/xdm/xdm.man \
   $(TOP)/programs/xdpyinfo/xdpyinfo.man \
   $(XFREE86_MANUALS) \
   $(TOP)/programs/xfd/xfd.man \
   $(TOP)/programs/xfs/xfs.man \
   $(TOP)/programs/xhost/xhost.man \
-  $(TOP)/programs/Xserver/hw/hp/Xhp.man \
   $(TOP)/programs/xieperf/xieperf.man \
   $(TOP)/programs/xinit/xinit.man \
   $(TOP)/programs/xkbcomp/xkbcomp.man \
