@@ -133,8 +133,8 @@ method, with the second located to the right of the first:
 
            Section "ServerLayout"
              Identifier "Main Layout"
-             Screen     "Screen 1" 0 ""  ""  ""  "Screen 2"
-             Screen     "Screen 2" 1
+             Screen     0 "Screen 1" ""  ""  ""  "Screen 2"
+             Screen     1 "Screen 2"
              Screen     "Screen 3"
            EndSection
 
@@ -147,8 +147,8 @@ assumed.  An example of absolute positioning follows:
 
            Section "ServerLayout"
              Identifier "Main Layout"
-             Screen     "Screen 1" 0 Absolute 0 0
-             Screen     "Screen 2" 1 Absolute 1024 0
+             Screen     0 "Screen 1" Absolute 0 0
+             Screen     1 "Screen 2" Absolute 1024 0
              Screen     "Screen 3" Absolute 2048 0
            EndSection
 
@@ -171,8 +171,8 @@ following example shows how to use some of the relative positioning options.
 
            Section "ServerLayout"
              Identifier "Main Layout"
-             Screen     "Screen 1" 0
-             Screen     "Screen 2" 1 RightOf "Screen 1"
+             Screen     0 "Screen 1"
+             Screen     1 "Screen 2" RightOf "Screen 1"
              Screen     "Screen 3" Relative "Screen 1" 2048 0
            EndSection
 
@@ -700,11 +700,11 @@ ChipPreInit() function.
           before the end of this function.  The xf86LoadSubModule()
           function should be used to load modules.  A driver may
           unload a module within this function if it was only
-          needed temporarily, and the UnloadSubModule() function
-          should be used to do that.  Otherwise there is no need to
-          explicitly unload modules because the loader takes care
-          of module dependencies and will unload submodules auto-
-          matically if/when the driver module is unloaded.
+          needed temporarily, and the xf86UnloadSubModule() func-
+          tion should be used to do that.  Otherwise there is no
+          need to explicitly unload modules because the loader
+          takes care of module dependencies and will unload submod-
+          ules automatically if/when the driver module is unloaded.
 
           The bulk of the ScrnInfoRec fields should be filled out
           in this function.
@@ -776,9 +776,9 @@ going to use them:
           the load fails, the return value will be NULL.  If a
           driver needs to explicitly unload a module it has loaded
           in this way, the return value must be saved and passed to
-          UnloadSubModule() when unloading.
+          xf86UnloadSubModule() when unloading.
 
-     void UnloadSubModule(pointer module)
+     void xf86UnloadSubModule(pointer module)
 
           Unloads the module referenced by module.  module should
           be a pointer returned previously by xf86LoadSubModule().
@@ -2196,6 +2196,8 @@ The following include files are typically required by video drivers:
 
           "compiler.h"
 
+     Note: in drivers, this must be included after "xf86_ansic.h".
+
      Drivers that need to access PCI vendor/device definitions need
      this:
 
@@ -3117,7 +3119,7 @@ The XF86VideoAdaptorRec:
      typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn,
                pointer data, Bool cleanup)
 
-          This indicates the the driver should stop displaying the
+          This indicates the driver should stop displaying the
           video.  This is used to stop both input and output video.
           The cleanup field indicates that the video is being
           stopped because the client requested it to stop or
@@ -3488,8 +3490,8 @@ XFree86 common layer.
                in other situations.
 
                When loading ``external'' modules (modules that
-               don't have the the standard entry point, for
-               example a special shared library) the options
+               don't have the standard entry point, for exam-
+               ple a special shared library) the options
                parameter can be set to EXTERN_MODULE to tell
                the loader not to reject the module when it
                doesn't find the standard entry point.
@@ -5246,6 +5248,8 @@ included:
 
      "compiler.h"
 
+Note: in drivers, this must be included after "xf86_ansic.h".
+
 Drivers that need to access PCI vendor/device definitions need this:
 
      "xf86PciInfo.h"
@@ -6253,7 +6257,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.23 2000/02/15 18:00:57 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.26 2000/04/16 04:34:53 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.21 2000/03/01 01:47:59 dawes Exp $
