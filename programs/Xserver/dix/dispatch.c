@@ -1,5 +1,4 @@
 /* $XConsortium: dispatch.c,v 5.65 94/04/17 20:26:25 dpw Exp $ */
-/* $XFree86$ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -266,16 +265,6 @@ Dispatch()
 		/* KillClient can cause this to happen */
 		continue;
 	    }
-#ifdef LBX
-	    /*
-	     * Hack to stop some server crashes when LBX client dies
-	     * Real fix is probably to set client to NULL when free'd
-	     */
-	    else if (! client->public.readRequest)
-	    {
-		continue;
-	    }
-#endif
 	    /* GrabServer activation can cause this to be true */
 	    if (grabState == GrabKickout)
 	    {
