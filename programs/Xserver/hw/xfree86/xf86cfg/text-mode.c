@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.18 2002/11/18 05:24:18 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.19 2002/11/19 03:37:53 paulo Exp $
  */
 
 #include <stdio.h>
@@ -334,6 +334,10 @@ static char *protocols[] = {
     "OsMouse",
 #endif
     "Auto",
+#ifdef WSCONS_SUPPORT
+    "wsmouse",
+#endif
+    "SysMouse",
     "Microsoft",
     "PS/2",
     "AceCad",
@@ -351,12 +355,8 @@ static char *protocols[] = {
     "MouseSystems",
     "NetMousePS/2",
     "NetScrollPS/2",
-    "SysMouse",
     "ThinkingMouse",
     "ThinkingMousePS/2",
-#ifdef WSCONS_SUPPORT
-    "wsmouse",
-#endif
 };
 
 static int
@@ -517,6 +517,8 @@ MouseConfig(void)
     if (str == NULL)
 #ifdef WSCONS_SUPPORT
 	str = "/dev/wsmouse";
+#elif defined(__FreeBSD__)
+	str = "/dev/sysmouse";
 #else
 	str = "/dev/mouse";
 #endif

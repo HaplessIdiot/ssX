@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.59 2001/10/28 03:34:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.62 2002/11/18 05:42:41 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -364,50 +364,52 @@ getstring(char *s)
  */
 
 static char *mousetype_identifier[] = {
-#define M_PS2			0
-	"PS/2",
-#define M_IMPS2			1
-	"IMPS/2",
-#define M_EXPLORER_PS2		2
-	"ExplorerPS/2",
-#define M_THINKINGMOUSE_PS2	3
-	"ThinkingMousePS/2",
-#define M_MOUSEMAN_PS2		4
-	"MouseManPlusPS/2",
-#define M_GLIDEPOINT_PS2	5
-	"GlidePointPS/2",
-#define M_NETMOUSE_PS2		6
-	"NetMousePS/2",
-#define M_NETSCROLL_PS2		7
-	"NetScrollPS/2",
-#define M_MICROSOFT		8
-	"Microsoft",
-#define M_MOUSESYSTEMS		9
-	"MouseSystems",
-#define M_BUSMOUSE		10
-	"Busmouse",
-#define M_LOGITECH		11
-	"Logitech",
-#define M_MOUSEMAN		12
-	"MouseMan",
-#define M_MMSERIES		13
-	"MMSeries",
-#define M_MMHITTAB		14
-	"MMHitTab",
-#define M_INTELLIMOUSE		15
-	"IntelliMouse",
 #if defined(__UNIXOS2__) || defined(QNX4)
-#define M_OSMOUSE		16
+# define M_OSMOUSE		0
 	"OSMOUSE",
-#endif
-#ifdef WSCONS_SUPPORT
-#ifdef M_OSMOUSE
-#define M_WSMOUSE		17
+# define M_AUTO			(M_OSMOUSE + 1)
 #else
-#define M_WSMOUSE		16
+# define M_AUTO			0
 #endif
-    	"wsmouse",
+	"Auto",
+#ifdef WSCONS_SUPPORT
+# define M_WSMOUSE		(M_AUTO + 1)
+	"wsmouse",
+# define M_MOUSESYSTEMS		(M_WSMOUSE + 1)
+#else
+# define M_MOUSESYSTEMS		(M_AUTO + 1)
 #endif
+	"MouseSystems",
+#define M_PS2			(M_MOUSESYSTEMS + 1)
+	"PS/2",
+#define M_IMPS2			(M_PS2 + 1)
+	"IMPS/2",
+#define M_EXPLORER_PS2		(M_IMPS2 + 1)
+	"ExplorerPS/2",
+#define M_THINKINGMOUSE_PS2	(M_EXPLORER_PS2 + 1)
+	"ThinkingMousePS/2",
+#define M_MOUSEMAN_PS2		(M_THINKINGMOUSE_PS2 + 1)
+	"MouseManPlusPS/2",
+#define M_GLIDEPOINT_PS2	(M_MOUSEMAN_PS2 + 1)
+	"GlidePointPS/2",
+#define M_NETMOUSE_PS2		(M_GLIDEPOINT_PS2 + 1)
+	"NetMousePS/2",
+#define M_NETSCROLL_PS2		(M_NETMOUSE_PS2 + 1)
+	"NetScrollPS/2",
+#define M_MICROSOFT		(M_NETSCROLL_PS2 + 1)
+	"Microsoft",
+#define M_BUSMOUSE		(M_MICROSOFT + 1)
+	"Busmouse",
+#define M_LOGITECH		(M_BUSMOUSE + 1)
+	"Logitech",
+#define M_MOUSEMAN		(M_LOGITECH + 1)
+	"MouseMan",
+#define M_MMSERIES		(M_MOUSEMAN + 1)
+	"MMSeries",
+#define M_MMHITTAB		(M_MMSERIES + 1)
+	"MMHitTab",
+#define M_INTELLIMOUSE		(M_MMHITTAB + 1)
+	"IntelliMouse",
 };
 
 #ifndef __UNIXOS2__
@@ -416,6 +418,14 @@ static char *mouseintro_text =
 "\n";
 
 static char *mousetype_name[] = {
+#ifdef M_OSMOUSE
+	"OSMOUSE",
+#endif
+	"Auto detect",
+#ifdef WSCONS_SUPPORT
+        "wsmouse protocol",
+#endif
+	"Mouse Systems (3-button protocol) & FreeBSD moused protocol",
 	"PS/2 Mouse",
 	"IntelliMouse PS/2",
 	"Explorer PS/2",
@@ -425,19 +435,12 @@ static char *mousetype_name[] = {
 	"NetMouse PS/2",
 	"NetScroll PS/2",
 	"Microsoft compatible (2-button protocol)",
-	"Mouse Systems (3-button protocol)",
 	"Bus Mouse",
 	"Logitech Mouse (serial, old type, Logitech protocol)",
 	"Logitech MouseMan (Microsoft compatible)",
 	"MM Series",	/* XXXX These descriptions should be improved. */
 	"MM HitTablet",
 	"Microsoft IntelliMouse",
-#ifdef M_OSMOUSE
-	"OSMOUSE",
-#endif
-#ifdef WSCONS_SUPPORT
-        "wsmouse protocol",
-#endif
 };
 
 static char *mousedev_text =
@@ -445,6 +448,9 @@ static char *mousedev_text =
 "/dev/tty00. Just pressing enter will use the default, /dev/mouse.\n"
 #ifdef WSCONS_SUPPORT
 "On systems with wscons, the default is /dev/wsmouse.\n"
+#endif
+#ifdef __FreeBSD__
+"On FreeBSD, the default is /dev/sysmouse.\n"
 #endif
 "\n";
 
@@ -497,8 +503,9 @@ mouse_configuration(void) {
 	int i;
 	char s[80];
 	printf("%s", mouseintro_text);
-	
-	for (i = 0; i < sizeof(mousetype_name)/sizeof(char *); i++)
+
+#define MOUSETYPE_COUNT sizeof(mousetype_name)/sizeof(char *)	
+	for (i = 0; i < MOUSETYPE_COUNT; i++)
 		printf("%2d.  %s\n", i + 1, mousetype_name[i]);
 
 	printf("\n");
@@ -508,8 +515,8 @@ mouse_configuration(void) {
 	printf("Enter a protocol number: ");
 	getstring(s);
 	config_mousetype = atoi(s) - 1;
-	if (config_mousetype < 0)
-		config_mousetype = M_PS2;
+	if (config_mousetype < 0 || config_mousetype >= MOUSETYPE_COUNT)
+		config_mousetype = M_AUTO;
 
 	printf("\n");
 
@@ -585,10 +592,12 @@ mouse_configuration(void) {
 	printf("Mouse device: ");
 	getstring(s);
 	if (strlen(s) == 0)
-#ifndef WSCONS_SUPPORT
-		config_pointerdevice = "/dev/mouse";
-#else
+#ifdef WSCONS_SUPPORT
 		config_pointerdevice = "/dev/wsmouse";
+#elif defined(__FreeBSD__)
+		config_pointerdevice = "/dev/sysmouse";
+#else
+		config_pointerdevice = "/dev/mouse";
 #endif
 	else {
 		config_pointerdevice = Malloc(strlen(s) + 1);

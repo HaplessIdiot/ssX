@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.76 2002/11/18 05:24:20 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.77 2002/11/27 11:42:59 alanh Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -79,6 +79,9 @@ static char *DFLT_MOUSE_DEV = "/dev/mouse";
 #elif defined(__QNXNTO__)
 static char *DFLT_MOUSE_PROTO = "OSMouse";
 static char *DFLT_MOUSE_DEV = "/dev/devi/mouse0";
+#elif defined(__FreeBSD__)
+static char *DFLT_MOUSE_DEV = "/dev/sysmouse";
+static char *DFLT_MOUSE_PROTO = "auto";
 #else
 static char *DFLT_MOUSE_DEV = "/dev/mouse";
 static char *DFLT_MOUSE_PROTO = "auto";
