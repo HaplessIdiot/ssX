@@ -1,4 +1,5 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 175. Don't ship xf86Bus.h and xf86pciBus.h with the SDK (Marc La France).
  174. Restore VGA driver's checking for depths 1, 4 & 8 (Marc La France).
  173. Fix a problem with savage driver when UseBIOS is off, such that the
       performance drops dramatically. Now the performance matches or
@@ -16964,7 +16965,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2694 2003/05/16 14:44:14 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2695 2003/05/17 22:36:16 tsi Exp $
 
 
 
