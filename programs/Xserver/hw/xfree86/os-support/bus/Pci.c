@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.77tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -528,11 +528,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
   }
   /* I/O maps can be no larger than 8 bits */
 
-#if defined(Lynx) && defined(__powerpc__)
-  if (PCI_MAP_IS_IO(addr1) && bits > 8)
-#else
   if ((index < 6) && PCI_MAP_IS_IO(addr1) && bits > 8)
-#endif
     bits = 8;
   /* ROM maps can be no larger than 24 bits */
   if (index == 6 && bits > 24)
@@ -556,7 +552,7 @@ pciMfDev(int busnum, int devnum)
 
     tag0 = PCI_MAKE_TAG(busnum, devnum, 0);
     id0  = pciReadLong(tag0, PCI_ID_REG);
-    if (id0 == 0xffffffff)
+    if ((CARD16)(id0 + 1) <= (CARD16)1UL)
 	return FALSE;
 
     val = pciReadLong(tag0, PCI_HEADER_MISC) & 0x00ff0000;
@@ -571,7 +567,11 @@ pciMfDev(int busnum, int devnum)
      */
     tag1 = PCI_MAKE_TAG(busnum, devnum, 1);
     id1  = pciReadLong(tag1, PCI_ID_REG);
-    if (id1 == 0xffffffff || id1 == 0x00000000)
+    if ((CARD16)(id1 + 1) <= (CARD16)1UL)
+	return FALSE;
+
+    /* Vendor IDs should match */
+    if ((id0 ^ id1) & 0x0000ffff)
 	return FALSE;
 
     if ((id0 != id1) ||
@@ -692,7 +692,7 @@ pciGenFindNext(void)
 #endif
 	pciDeviceTag = PCI_MAKE_TAG(pciBusNum, pciDevNum, pciFuncNum);
 	inProbe = TRUE;
-	devid = pciReadLong(pciDeviceTag, 0);
+	devid = pciReadLong(pciDeviceTag, PCI_ID_REG);
 	inProbe = FALSE;
 #ifdef DEBUGPCI
 	ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, devid);
