@@ -1,4 +1,4 @@
-/* $XConsortium: include.c,v 1.16 94/04/17 20:10:34 gildea Exp $ */
+/* $XConsortium: include.c,v 1.17 94/12/05 19:33:08 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -118,7 +118,7 @@ struct inclist *inc_path(file, include, dot)
 }
 
 /*
- * Ocaisionally, pathnames are created that look like ../x/../y
+ * Occasionally, pathnames are created that look like .../x/../y
  * Any of the 'x/..' sequences within the name can be eliminated.
  * (but only if 'x' is not a symbolic link!!)
  */
@@ -150,24 +150,37 @@ remove_dotdot(path)
 	*cp = NULL;
 
 	/*
-	 * Now copy the path, removing all 'x/..' components.
+	 * Recursively remove all 'x/..' component pairs.
+	 */
+	cp = components;
+	while(*cp) {
+		if (!isdot(*cp) && !isdotdot(*cp) && isdotdot(*(cp+1))
+		    && !issymbolic(newpath, *cp))
+		{
+		    char **fp = cp + 2;
+		    char **tp = cp;
+
+		    do 
+			*tp++ = *fp; /* move all the pointers down */
+		    while (*fp++);
+		    if (cp != components)
+			cp--;	/* go back and check for nested ".." */
+		} else {
+		    cp++;
+		}
+	}
+	/*
+	 * Concatenate the remaining path elements.
 	 */
 	cp = components;
 	component_copied = FALSE;
 	while(*cp) {
-		if (!isdot(*cp) && !isdotdot(*cp) && isdotdot(*(cp+1))) {
-			if (issymbolic(newpath, *cp))
-				goto dont_remove;
-			cp++;
-		} else {
-		dont_remove:
-			if (component_copied)
-				*to++ = '/';
-			component_copied = TRUE;
-			for (from = *cp; *from; )
-				*to++ = *from++;
-			*to = '\0';
-		}
+		if (component_copied)
+			*to++ = '/';
+		component_copied = TRUE;
+		for (from = *cp; *from; )
+			*to++ = *from++;
+		*to = '\0';
 		cp++;
 	}
 	*to++ = '\0';

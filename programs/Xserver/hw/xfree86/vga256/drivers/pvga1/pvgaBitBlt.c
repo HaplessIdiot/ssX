@@ -1,5 +1,5 @@
 /* $XConsortium: pvgaBitBlt.c,v 1.1 94/03/28 21:52:37 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.0 1994/07/24 11:57:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -73,7 +73,7 @@ pvgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
 		    alu,
 		    planemask,
 		    BLT_SRC_COLR,
-		    (int)NULL);
+		    0);
       WAIT_BLIT; /* must wait, since memory writes can mess up as well */
     }
   else if (WDchipset == WD90C33)
@@ -87,7 +87,7 @@ pvgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
 		    alu,
 		    planemask,
 		    COLOR_FORMAT,
-		    (int)NULL);
+		    0);
     }
 }
 
@@ -127,9 +127,9 @@ wd90c31BitBlt(unsigned char *psrcBase, unsigned char *pdstBase,
   
   WAIT_BLIT;
   SET_BLT_SRC_LOW ((psrc & 0xFFF));
-  SET_BLT_SRC_HGH ((psrc >> 12));
+  SET_BLT_SRC_HGH (((psrc >> 12) & 0xFF));
   SET_BLT_DST_LOW ((pdst & 0xFFF));
-  SET_BLT_DST_HGH ((pdst >> 12));
+  SET_BLT_DST_HGH (((pdst >> 12) & 0xFF));
   SET_BLT_ROW_PTCH (widthDst);
   SET_BLT_DIM_X    (w);
   SET_BLT_DIM_Y    (h);
