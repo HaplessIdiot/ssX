@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.2 1999/01/03 08:06:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.3 1999/01/11 12:09:40 dawes Exp $ */
 
 
 #include "X.h"
@@ -23,6 +23,11 @@ extern WindowPtr *WindowTable;
 Bool
 cfb8_32CreateWindow(WindowPtr pWin)
 {
+    cfbPrivWin *pPrivWin = cfbGetWindowPrivate(pWin);
+
+    pPrivWin->fastBackground = FALSE;
+    pPrivWin->fastBorder = FALSE;
+
     pWin->drawable.bitsPerPixel = 32;
     return TRUE;
 }

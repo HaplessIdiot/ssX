@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_blitter.c,v 1.1 1997/01/12 10:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_blitter.c,v 1.1 1997/03/06 23:16:50 hohndel Exp $ */
 
 /*
  *

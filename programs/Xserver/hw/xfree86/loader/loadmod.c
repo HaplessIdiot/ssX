@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.35 1999/01/15 02:51:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.36 1999/01/17 10:54:11 dawes Exp $ */
 
 /*
  *
@@ -109,6 +109,8 @@ FreeStringList(char **paths)
 	xfree(paths);
 }
 
+static char **defaultPathList = NULL;
+
 /*
  * Convert a comma-separated path into a NULL-terminated array of path
  * elements, rejecting any that are not full absolute paths, and appending
@@ -123,6 +125,9 @@ InitPathList(const char *path)
 	int len;
 	int addslash;
 	int n = 0;
+
+	if (!path)
+		return defaultPathList;
 
 	fullpath = xstrdup(path);
 	if (!fullpath)
@@ -170,7 +175,21 @@ InitPathList(const char *path)
 	return list;
 }
 
-#ifndef OLD_FINDMODULE
+static void
+FreePathList(char **pathlist)
+{
+	if (pathlist && pathlist != defaultPathList)
+		FreeStringList(pathlist);
+}
+
+void
+LoaderSetPath(const char *path)
+{
+	if (!path)
+		return;
+
+	defaultPathList = InitPathList(path);
+}
 
 /* Standard set of module subdirectories to search, in order of preference */
 static const char *stdSubdirs[] =
@@ -265,10 +284,24 @@ InitSubdirs(const char **subdirlist)
 	const char **s;
 
 	if (subdirlist) {
-		/* Count number of entries */
-		for (i = 0, s = subdirlist; *s; i++, s++)
-			if (*s == DEFAULT_LIST)
+		/* Count number of entries and check for invalid paths */
+		for (i = 0, s = subdirlist; *s; i++, s++) {
+			if (*s == DEFAULT_LIST) {
 				i += sizeof(stdSubdirs) / sizeof(stdSubdirs[0]) - 1 - 1;
+			} else {
+				/*
+				 * Path validity check.  Don't allow absolute paths, or
+				 * paths containing "..".  To catch absolute paths on
+				 * platforms that use driver letters, don't allow the ':'
+				 * character to appear at all.
+				 */
+				if (**s == '/' || **s == '\\' || strchr(*s, ':') ||
+					strstr(*s, "..")) {
+					xf86Msg(X_ERROR, "InitSubdirs: Bad subdir: \"%s\"\n", *s);
+					return NULL;
+				}
+			}
+		}
 		subdirs = xalloc((i + 1) * sizeof(char *));
 		if (!subdirs)
 			return NULL;
@@ -392,17 +425,14 @@ LoaderListDirs(const char *path, const char **subdirlist,
 	char **save;
 	int n = 0;
 
-	if (!path)
-		return NULL;
-
 	if (!(pathlist = InitPathList(path)))
 		return NULL;
 	if (!(subdirs = InitSubdirs(subdirlist))) {
-		FreeStringList(pathlist);
+		FreePathList(pathlist);
 		return NULL;
 	}
 	if (!(patterns = InitPatterns(patternlist))) {
-		FreeStringList(pathlist);
+		FreePathList(pathlist);
 		FreeSubdirs(subdirs);
 		return NULL;
 	}
@@ -439,7 +469,7 @@ LoaderListDirs(const char *path, const char **subdirlist,
 									save[n] = NULL;
 									FreeStringList(save);
 								}
-								FreeStringList(pathlist);
+								FreePathList(pathlist);
 								FreeSubdirs(subdirs);
 								FreePatterns(patterns);
 								return NULL;
@@ -447,7 +477,7 @@ LoaderListDirs(const char *path, const char **subdirlist,
 							listing[n] = xalloc(len + 1);
 							if (!listing[n]) {
 								FreeStringList(listing);
-								FreeStringList(pathlist);
+								FreePathList(pathlist);
 								FreeSubdirs(subdirs);
 								FreePatterns(patterns);
 								return NULL;
@@ -475,65 +505,6 @@ LoaderFreeDirList(char **list)
 	FreeStringList(list);
 }
 
-#else
-
-static char *subdirs[] =
-{
-	"",
-	"drivers/",
-	"extensions/",
-	"fonts/",
-	"internal/",
-};
-static char *prefixes[] =
-{
-	"",
-	"lib",
-};
-static char *suffixes[] =
-{
-	"",
-	".so",
-	"_drv.so",
-	".o",
-	"_drv.o",
-	".a",
-};
-
-static char *
-FindModule (const char *module, const char *dir, const char **subdirlist,
-			const char **patternlist)
-{
-	char *buf;
-	int d, p, s;
-	struct stat stat_buf;
-
-	buf = xcalloc (1, strlen (module) + strlen (dir) + 40);
-	for (d = 0; d < sizeof (subdirs) / sizeof (char *); d++)
-		for (p = 0; p < sizeof (prefixes) / sizeof (char *); p++)
-			for (s = 0; s < sizeof (suffixes) / sizeof (char *); s++)
-			{
-				/* 
-				 * put together a possible filename
-				 */
-				strcpy (buf, dir);
-				strcat (buf, subdirs[d]);
-				strcat (buf, prefixes[p]);
-				strcat (buf, module);
-				strcat (buf, suffixes[s]);
-#ifdef __EMX__
-				strcpy (buf, (char *) __XOS2RedirRoot (buf));
-#endif
-				if ((stat (buf, &stat_buf) == 0) &&
-					S_ISREG(stat_buf.st_mode))
-				{
-					return (buf);
-				}
-			}
-	xfree (buf);
-	return (NULL);
-}
-#endif
 
 static Bool
 CheckVersion (const char *module, XF86ModuleVersionInfo *data,
@@ -844,9 +815,6 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 
 	xf86MsgVerb(X_INFO, 3, "LoadModule: \"%s\"", module);
 
-	if (!path)
-		goto LoadModule_fail;
-
 	patterns = InitPatterns(patternlist);
 	name = LoaderGetCanonicalName(module, patterns);
 	noncanonical = (name && strcmp(module, name) != 0);
@@ -863,15 +831,31 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		xf86ErrorFVerb(3, "\n");
 		m = (char *)module;
 	}
-	if (!name)
+	if (!name) {
+		if (errmaj)
+			*errmaj = LDR_BADUSAGE;
+		if (errmin)
+			*errmin = 0;
 		goto LoadModule_fail;
+	}
 	ret = NewModuleDesc (name);
-	if (!ret)
+	if (!ret) {
+		if (errmaj)
+			*errmaj = LDR_NOMEM;
+		if (errmin)
+			*errmin = 0;
 		goto LoadModule_fail;
+	}
 
 	pathlist = InitPathList(path);
-	if (!pathlist)
+	if (!pathlist) {
+		/* This could be a malloc failure too */
+		if (errmaj)
+			*errmaj = LDR_BADUSAGE;
+		if (errmin)
+			*errmin = 1;
 		goto LoadModule_fail;
+	}
 
 	/* 
 	 * if the module name is not a full pathname, we need to
@@ -888,7 +872,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	path_elem = pathlist;
 	while (!found && *path_elem != NULL)
 	{
-		found = FindModule (m, *path_elem, NULL, patterns);
+		found = FindModule (m, *path_elem, subdirlist, patterns);
 		path_elem++;
 		/*
 		 * When the module name isn't the canonical name, search for the
@@ -908,6 +892,10 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	{
 		xf86Msg (X_WARNING, "Warning, couldn't open module %s\n",
 				module);
+		if (errmaj)
+			*errmaj = LDR_NOENT;
+		if (errmin)
+			*errmin = 0;
 		goto LoadModule_fail;
 	}
 	ret->handle = LoaderOpen (found, name, 0, errmaj, errmin, &wasLoaded);
@@ -921,8 +909,13 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	 * and if yes, call it.
 	 */
 	p = xalloc (strlen (name) + strlen ("ModuleInit") + 1);
-	if (!p)
+	if (!p) {
+		if (errmaj)
+			*errmaj = LDR_NOMEM;
+		if (errmin)
+			*errmin = 0;
 		goto LoadModule_fail;
+	}
 	strcpy (p, name);
 	strcat (p, "ModuleInit");
 	initfunc = (ModuleInitProc) LoaderSymbol (p);
@@ -994,7 +987,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	ret = NULL;
 
   LoadModule_exit:
-	FreeStringList(pathlist);
+	FreePathList(pathlist);
 	FreePatterns(patterns);
 	TestFree (found);
 	TestFree (name);
@@ -1188,6 +1181,9 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 		break;
 	case LDR_MISMATCH:
 		msg = "module requirement mismatch";
+		break;
+	case LDR_BADUSAGE:
+		msg = "invalid argument(s) to LoadModule()";
 		break;
 	default:
 		msg = "uknown error";

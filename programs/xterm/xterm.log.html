@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.14 1998/11/22 10:37:51 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.15 1998/12/20 11:58:39 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>
 <LI><A HREF="#xterm_90">Patch #90 - 1998/12/13 - XFree86 3.9Nq</A>
 <LI><A HREF="#xterm_89">Patch #89 - 1998/11/20 - XFree86 3.9Nm</A>
 <LI><A HREF="#xterm_88">Patch #88 - 1998/10/31 - XFree86 3.9Nk and 3.3.2h</A>
@@ -133,6 +134,19 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>/<H1>
+<ul>
+	<li>Implement logic to translate input characters which are mapped
+	  when in vt220 National Replacement Character mode (requested by
+	  Tomas Vanhala).
+	<li>Resync configure scripts with my patches to autoconf 2.13
+	<li>Change order of -lXmu and -lXext to accommodate cygwin32
+	  (reported by Vikas Vikas Agnihotri).
+	<li>Add "-ti" option to set terminal emulation level from command
+	  line rather than via resource.
+	<li>Simplify some of the preprocessor logic using #elif.
+</ul>
 
 <H1><A NAME="xterm_90">Patch #90 - 1998/12/13 - XFree86 3.9Nq</A></H1>
 This implements several small fixes and enhancements.  The chief one implements

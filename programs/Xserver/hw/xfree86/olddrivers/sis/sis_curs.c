@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_curs.c,v 1.2 1997/05/31 13:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_curs.c,v 1.3 1998/01/24 16:58:22 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbgc.c,v 1.1 1999/01/03 03:58:56 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -48,7 +48,7 @@ SOFTWARE.
 PSZ		8	16	24	32
 PIXEL_ADDR	True	True	True	True
 NO_ONE_RECT	False	False	False	False
-WriteBitGroup	False	False	False	False (because cfb cheats ?)
+WriteBitGroup	True	True	True	True
 FOUR_BIT_CODE	True	False	False	False
 LOWMEMFTPT	False	False	False	False
 
@@ -81,31 +81,35 @@ LOWMEMFTPT	False	False	False	False
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
 #else
-# define useTEGlyphBlt	cfbTEGlyphBlt
+# ifdef WriteBitGroup
+#  define useTEGlyphBlt cfbImageGlyphBlt8
+# else
+#  define useTEGlyphBlt cfbTEGlyphBlt
+# endif
 #endif
 
 #ifdef WriteBitGroup
-# define useImageGlyphBlt	cfbImageGlyphBlt8
-# define usePolyGlyphBlt	cfbPolyGlyphBlt8
+# define useImageGlyphBlt       cfbImageGlyphBlt8
+# define usePolyGlyphBlt        cfbPolyGlyphBlt8
 #else
-# define useImageGlyphBlt	miImageGlyphBlt
-# define usePolyGlyphBlt	miPolyGlyphBlt
+# define useImageGlyphBlt       miImageGlyphBlt
+# define usePolyGlyphBlt        miPolyGlyphBlt
 #endif
 
 #ifdef FOUR_BIT_CODE
-# define usePushPixels	cfbPushPixels8
+# define usePushPixels  cfbPushPixels8
 #else
 #ifndef LOWMEMFTPT
-# define usePushPixels	mfbPushPixels
+# define usePushPixels  mfbPushPixels
 #else
-# define usePushPixels	miPushPixels
+# define usePushPixels  miPushPixels
 #endif /* ifndef LOWMEMFTPT */
 #endif
 
 #ifdef PIXEL_ADDR
-# define ZeroPolyArc	cfbZeroPolyArcSS8Copy
+# define ZeroPolyArc    cfbZeroPolyArcSS8Copy
 #else
-# define ZeroPolyArc	miZeroPolyArc
+# define ZeroPolyArc    miZeroPolyArc
 #endif
 
 

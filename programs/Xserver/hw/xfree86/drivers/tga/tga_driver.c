@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.11 1999/01/14 13:04:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.12 1999/01/17 10:54:05 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -363,7 +363,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     int *linePitches = NULL;
     int i, n = 0;
     int *linep = NULL;
-    TGAPtr pTga = TGAPTR(pScrn);
+    /*     TGAPtr pTga = TGAPTR(pScrn); */
 	
     for (i = 0; linep[i] != 0; i++) {
 	if (linep[i] != -1) {
@@ -519,6 +519,10 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pTga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
+    if(pScrn->depth > 8) {
+      pTga->NoAccel = TRUE;
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "No acceleration for >8bpp cards yet\n");
+    }
 
     /* Find the PCI slot for this screen */
     if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
@@ -583,7 +587,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pTga->FbAddress = pScrn->device->MemBase;
 	from = X_CONFIG;
     } else {
-	pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
+      pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
     }
 
     /* Adjust MMIO region */
@@ -593,11 +597,11 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 			 pTga->PciTag, (pointer)pTga->IOAddress, 4);
     pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
-    xf86UnMapVidMem(pScrn->scrnIndex, Base, 4); 
+    xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
 
     /* Adjust framebuffer for card type */
     pTga->FbAddress += fb_offset_presets[pTga->CardType];
-
+    
     switch (pTga->CardType) {
         case TYPE_TGA_8PLANE:
         case TYPE_TGA_24PLANE:
@@ -619,6 +623,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 		   pScrn->depth);
 	return FALSE;
     }
+
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pTga->FbAddress);
@@ -679,9 +684,14 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 		RamDacDestroyInfoRec(pTga->RamDacRec);
 		return FALSE;
 	    }
+
             TGAMapMem(pScrn);
+
+	    
 	    pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
-            TGAUnmapMem(pScrn);
+
+	    TGAUnmapMem(pScrn);
+
 	    if (pTga->RamDac == NULL)
 		return FALSE;
 	    break;
@@ -823,14 +833,14 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-#if 0
+
     /* Load XAA if needed */
     if (!pTga->NoAccel || pTga->HWCursor)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    TGAFreeRec(pScrn);
 	    return FALSE;
 	}
-#endif
+
 
     return TRUE;
 }
@@ -900,9 +910,14 @@ TGAMapMem(ScrnInfoPtr pScrn)
      * for Alpha, we need to map DENSE memory as well, for
      * setting CPUToScreenColorExpandBase.
      */
+#if 0
     pTga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					pTga->PciTag, (pointer)pTga->IOAddress,
-					0x10000);
+				      pTga->PciTag, (pointer)pTga->IOAddress,
+				      0x10000);
+#endif
+    pTga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+				      pTga->PciTag,
+				      (pointer)pTga->IOAddress, 0x100000);
     if (pTga->IOBaseDense == NULL)
 	return FALSE;
 #endif /* __alpha__ */
@@ -952,6 +967,7 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pScrn->videoRam);
     pTga->FbBase = NULL;
+
     return TRUE;
 }
 
@@ -1187,15 +1203,27 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         switch (pTga->Chipset)
         {
 	case PCI_CHIP_DEC21030:
-#if 0
-	    TGAAccelInit(pScreen);
-#endif
+
+	    if(DEC21030AccelInit(pScreen) == FALSE)
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "XAA Initialization failed\n");
 	    break;
         }
     }
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+#if 0
+    /* AFAIK, TGA HW cursor doesn't support the features of the X
+       hardware cursor */
+    /* Initialize HW cursor layer. 
+	Must follow software cursor initialization*/
+    if (pTga->HWCursor) { 
+	if(!TGAHWCursorInit(pScreen))
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		"Hardware cursor initialization failed\n");
+    }
+#endif
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -1272,8 +1300,15 @@ TGAEnterVT(int scrnIndex, int flags)
 static void
 TGALeaveVT(int scrnIndex, int flags)
 {
+  TGAPtr pTga;
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+
+    pTga = TGAPTR(pScrn);
     TGARestore(pScrn);
+
+    /* clear the screen...there's probably a better way to do this */
+    memset(pTga->FbBase, 0, pTga->FbMapSize);
+    return;
 }
 
 

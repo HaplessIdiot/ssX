@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillSt.c,v 1.2 1998/01/24 16:58:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillSt.c,v 1.3 1998/03/20 21:06:57 hohndel Exp $ */
 
 /*
  *

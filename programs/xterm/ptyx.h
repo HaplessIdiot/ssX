@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.45 1998/11/22 10:37:48 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.46 1998/12/20 11:58:36 dawes Exp $
  */
 
 /*
@@ -206,7 +206,11 @@ typedef Char **ScrnBuf;
 #define MAX_DECID 420			/* ...through VT420 */
 
 #ifndef DFT_DECID
-#define DFT_DECID 100			/* default VT100 */
+#define DFT_DECID "vt100"		/* default VT100 */
+#endif
+
+#ifndef DFT_KBD_DIALECT
+#define DFT_KBD_DIALECT "B"		/* default USASCII */
 #endif
 
 #define NMENUFONTS 9			/* font entries in fontMenu */
@@ -763,6 +767,7 @@ typedef struct {
 	char		curgl;		/* Current GL setting.		*/
 	char		curgr;		/* Current GR setting.		*/
 	char		curss;		/* Current single shift.	*/
+	String		term_id;	/* resource for terminal_id	*/
 	int		terminal_id;	/* 100=vt100, 220=vt220, etc.	*/
 	int		ansi_level;	/* 0=vt100, 1,2,3 = vt100 ... vt320 */
 	int		scroll_amt;	/* amount to scroll		*/

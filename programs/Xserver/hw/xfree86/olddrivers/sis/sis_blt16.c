@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_blt16.c,v 1.1 1997/01/12 10:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_blt16.c,v 1.1 1997/03/06 23:16:51 hohndel Exp $ */
 
 /*
  * Hooks for cfb16/24 CopyArea

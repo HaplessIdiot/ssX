@@ -1,5 +1,41 @@
-XFree86 3.9Nw (17 January 1999)
+XFree86 3.9Nx (24 January 1999)
+2180. Fix the VT switch screen restore bug introduced a few versions ago
+      (#2406, Mark Vojkovich).
+2179. ND version of the sis driver, currently only for the 6326 chip (#2404,
+      2405, Alan Hourihane).
+2178. xterm patch #91 (#2402, Thomas Dickey).
+2177. Add 32/24 support to the MGA driver (#2401, Mark Vojkovich).
+2176. Add 32bpp->24bpp conversion acceleration to XAA (#2400, Mark Vojkovich).
+2175. Add partial acceleration support to the TGA driver (#2399, 2403,
+      Matt Grossman).
+2174. Fix an 8+32 layer bug introduced in 3.9Nw (#2398, Mark Vojkovich).
+2173. Add a 32/24 conversion layer.  Pixmaps are still 24bpp internally,
+      but the interfaces visible to clients are all 32bpp (#2397,
+      Mark Vojkovich).
+2172. Fix trident driver panning at 24bpp (#2395, Alan Hourihane).
+2171. Add DDC1 and DDC2 (the latter not working yet) to the trident driver
+      (#2395, Alan Hourihane).
+2170. Add MCLK override to the trident driver (#2395, Alan Hourihane).
+2169. Enable pixel multiplexing to the trident drive for high resolution
+      8bpp modes (#2395, Alan Hourihane).
+2168. Add clipping for the Trident 9682 and 9685 and Mono8x8 and CPUToScreen
+      support for the 9685 (#2395, Alan Hourihane).
+2167. Add offscreen pixmap support for the Trident Image series (#2395,
+      Alan Hourihane).
+2166. Fix some cfb problems that showed up after the previous changes
+      (#2396, Nozomi Ytow).
+2165. Update the C&T HW cursor defaults to only disable them by default when
+      necessary (#2394, David Bateman).
+2164. Add some sanity checking for the subdirs argument to LoadSubModule, etc.
+2163. Fix a bug in the verbose Mode handling in the parser that can result
+      in an infinite loop when the "Mode" keyword is used incorrectly in
+      a config file.
+2162. Add a global default module path to the loader, and a function that
+      the common layer can call to set it.
+2161. LoadModule was ignoring the subdir list argument (Nozomi Ytow).
 2160. Add printing of subsystem ids to scanpci (Dirk Hohndel).
+
+XFree86 3.9Nw (17 January 1999)
 2159. Add functions for finding the pixmap format and pixmap bpp for a
       given depth, and fix a crash in xf86ValidateModes() caused by recent
       changes in this area.
@@ -7106,4 +7142,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: /home/ftp/pub/xf86/CVS/xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.672 1999/01/17 11:25:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.673 1999/01/21 06:55:12 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.46 1999/01/15 02:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.47 1999/01/17 10:53:58 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -4049,6 +4049,15 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew = &cPtr->ModeReg;
     ChipsStd = &hwp->ModeReg;
 
+    /*
+     * Possibly fix up the panel size, if the manufacture is stupid
+     * enough to set it incorrectly in text modes
+     */
+    if (xf86IsOptionSet(cPtr->Options, OPTION_PANEL_SIZE)) {
+	cPtr->PanelSize.HDisplay = mode->CrtcHDisplay;
+	cPtr->PanelSize.VDisplay = mode->CrtcVDisplay;
+    }
+
     /* generic init */
     if (!vgaHWInit(pScrn, mode)) {
 	ErrorF("bomb 1\n");
@@ -4201,10 +4210,13 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
 		cPtr->Accel.UseHWCursor = TRUE;      /* H/W  cursor forced */
 	    else {
-	        if(cPtr->Accel.UseHWCursor)
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-			       "Disabling HW Cursor\n");
-		cPtr->Accel.UseHWCursor = FALSE;     /* Possible H/W bug? */
+		if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay) && 
+			(cPtr->PanelSize.VDisplay != mode->CrtcVDisplay)) {
+		    if(cPtr->Accel.UseHWCursor)
+			xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			    "Disabling HW Cursor on stretched LCD\n");
+		    cPtr->Accel.UseHWCursor = FALSE;   /* Possible H/W bug? */
+		}
 	    }
 	}
     }
@@ -4864,10 +4876,14 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
 			cPtr->Accel.UseHWCursor = TRUE; /* H/W cursor forced */
 		    else {
-			if(cPtr->Accel.UseHWCursor)
-			    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-					"Disabling HW Cursor\n");
-			cPtr->Accel.UseHWCursor = FALSE;
+			if ((cPtr->PanelSize.HDisplay != mode->CrtcHDisplay)
+			 && (cPtr->PanelSize.VDisplay != mode->CrtcVDisplay)) {
+			    /* Possible H/W bug? */
+			    if(cPtr->Accel.UseHWCursor)
+				xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+				    "Disabling HW Cursor on stretched LCD\n");
+			    cPtr->Accel.UseHWCursor = FALSE;   
+			}
 		    }
 		else
 		    cPtr->Accel.UseHWCursor = TRUE;

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/configure.in,v 3.18 1998/08/29 05:44:14 dawes Exp $
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.19 1998/12/20 11:58:32 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -126,7 +126,7 @@ case $default_termid in
 vt*)	default_termid=`echo $default_termid | sed -e 's/^..//'`
 	;;
 esac
-AC_DEFINE_UNQUOTED(DFT_DECID,$default_termid)
+AC_DEFINE_UNQUOTED(DFT_DECID,"$default_termid")
 
 AC_MSG_CHECKING(for default terminal-type)
 AC_ARG_WITH(terminal-type,

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.3 1998/11/15 04:30:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.4 1999/01/11 05:13:31 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -45,6 +45,7 @@ typedef struct {
 #define TRIDENTPTR(p)	((TRIDENTPtr)((p)->driverPrivate))
 
 typedef struct {
+    ScrnInfoPtr		pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
@@ -67,19 +68,22 @@ typedef struct {
     Bool		NoMMIO;
     Bool		HWCursor;
     Bool		UsePCIRetry;
+    Bool		UseGERetry;
     Bool		NewClockCode;
     Bool		IsCyber;
     Bool		Clipping;
     Bool		DstEnable;
     Bool		ROP;
     Bool		HasSGRAM;
+    Bool		MUX;
     float		frequency;
     int			MinClock;
     int			MaxClock;
+    int			MUXThreshold;
+    int			MCLK;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
-    I2CBusPtr		I2CPtr1;
-    I2CBusPtr		I2CPtr2;
+    I2CBusPtr		DDC;
     short		EngineOperation;
     CARD32		AccelFlags;
     CARD32		BltScanDirection;
@@ -87,10 +91,12 @@ typedef struct {
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    unsigned int	(*ddc1Read)(ScrnInfoPtr);
 } TRIDENTRec, *TRIDENTPtr;
 
 /* Prototypes */
 
+unsigned int Tridentddc1Read(ScrnInfoPtr pScrn);
 void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -145,8 +151,7 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 #define IMAGE985	26
 #define CYBER939A	27
 
-#define HAS_DST_TRANS	((pTrident->Chipset == PROVIDIA9682) || \
-			 (pTrident->Chipset == PROVIDIA9685))
+#define HAS_DST_TRANS	(pTrident->Chipset == PROVIDIA9682) 
 
 #define Is3Dchip	((pTrident->Chipset == CYBER9388) || \
 			 (pTrident->Chipset == CYBER9397) || \

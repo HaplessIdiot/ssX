@@ -23,11 +23,9 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/bitmap/module/bitmapmod.c,v 1.4 1998/12/13 10:33:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/module/bitmapmod.c,v 1.5 1999/01/17 10:53:46 dawes Exp $ */
 
-#include "X.h"
 #include "misc.h"
-#include "xf86_ansic.h"
 
 #include "fontmod.h"
 #include "xf86Module.h"

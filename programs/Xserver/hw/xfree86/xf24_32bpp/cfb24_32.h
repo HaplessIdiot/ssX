@@ -1,0 +1,172 @@
+/* $XFree86$ */
+
+#ifndef _CFB24_32_H
+#define _CFB24_32_H
+
+#include "gcstruct.h"
+
+typedef struct {
+   GCOps		*Ops24bpp;
+   GCOps 		*Ops32bpp;
+   unsigned long	changes;	
+   Bool			OpsAre24bpp;  
+} cfb24_32GCRec, *cfb24_32GCPtr;
+
+
+extern int cfb24_32GCIndex;
+extern int cfb24_32PixmapIndex;
+
+typedef struct {
+   PixmapPtr		pix;
+   Bool			freePrivate;
+} cfb24_32PixmapRec, *cfb24_32PixmapPtr;
+
+
+void
+cfb24_32SaveAreas(
+    PixmapPtr	  	pPixmap,
+    RegionPtr	  	prgnSave, 
+    int	    	  	xorg,
+    int	    	  	yorg,
+    WindowPtr		pWin
+);
+
+void
+cfb24_32RestoreAreas(
+    PixmapPtr	  	pPixmap, 
+    RegionPtr	  	prgnRestore,
+    int	    	  	xorg,
+    int	    	  	yorg,
+    WindowPtr		pWin
+);
+
+RegionPtr
+cfb24_32CopyArea(
+    DrawablePtr pSrcDraw,
+    DrawablePtr pDstDraw,
+    GC *pGC,
+    int srcx, int srcy,
+    int width, int height,
+    int dstx, int dsty 
+);
+
+void 
+cfbDoBitblt24To32(
+    DrawablePtr pSrc, 
+    DrawablePtr pDst, 
+    int rop,
+    RegionPtr prgnDst, 
+    DDXPointPtr pptSrc,
+    unsigned long planemask,
+    unsigned long bitPlane
+);
+
+void 
+cfbDoBitblt32To24(
+    DrawablePtr pSrc, 
+    DrawablePtr pDst, 
+    int rop,
+    RegionPtr prgnDst, 
+    DDXPointPtr pptSrc,
+    unsigned long planemask,
+    unsigned long bitPlane
+);
+
+
+void
+cfb24_32ValidateGC24(
+    GCPtr  		pGC,
+    unsigned long 	changes,
+    DrawablePtr		pDrawable
+);
+
+void
+cfb24_32ValidateGC32(
+    GCPtr  		pGC,
+    unsigned long 	changes,
+    DrawablePtr		pDrawable
+);
+
+Bool cfb24_32CreateGC(GCPtr pGC);
+
+void
+cfb24_32GetSpans(
+   DrawablePtr pDraw,
+   int wMax,
+   DDXPointPtr ppt,
+   int *pwidth,
+   int nspans,
+   char *pchardstStart
+);
+
+void
+cfb24_32PutImage (
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int depth, 
+    int x, int y, int w, int h,
+    int leftPad,
+    int format,
+    char *pImage
+);
+
+void
+cfb24_32GetImage (
+    DrawablePtr pDraw,
+    int sx, int sy, int w, int h,
+    unsigned int format,
+    unsigned long planeMask,
+    char *pdstLine
+);
+
+Bool
+cfb24_32ScreenInit (
+    ScreenPtr pScreen,
+    pointer pbits,
+    int xsize, int ysize,
+    int dpix, int dpiy,	
+    int width
+);
+
+
+Bool cfb24_32CreateWindow(WindowPtr pWin);
+Bool cfb24_32DestroyWindow(WindowPtr pWin);
+
+Bool
+cfb24_32PositionWindow(
+    WindowPtr pWin,
+    int x, int y
+);
+
+void
+cfb24_32CopyWindow(
+    WindowPtr pWin,
+    DDXPointRec ptOldOrg,
+    RegionPtr prgnSrc
+);
+
+Bool
+cfb24_32ChangeWindowAttributes(
+    WindowPtr pWin,
+    unsigned long mask
+);
+
+PixmapPtr
+cfb24_32CreatePixmap (
+    ScreenPtr	pScreen,
+    int		width,
+    int		height,
+    int		depth
+);
+
+Bool cfb24_32DestroyPixmap(PixmapPtr pPixmap);
+
+PixmapPtr cfb24_32RefreshPixmap(PixmapPtr pix);
+
+#define CFB24_32_GET_GC_PRIVATE(pGC)\
+   (cfb24_32GCPtr)((pGC)->devPrivates[cfb24_32GCIndex].ptr)
+
+#define CFB24_32_GET_PIXMAP_PRIVATE(pPix) \
+    (cfb24_32PixmapPtr)((pPix)->devPrivates[cfb24_32PixmapIndex].ptr)
+
+#endif /* _CFB24_32_H */

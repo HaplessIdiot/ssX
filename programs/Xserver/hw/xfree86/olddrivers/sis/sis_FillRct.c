@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillRct.c,v 1.1 1997/03/06 23:16:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillRct.c,v 1.2 1998/03/20 21:06:56 hohndel Exp $ */
 
 /*
  * 
