@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.2 1994/08/20 07:38:09 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.3 1994/11/19 08:00:57 dawes Exp $
  */
 
 /*
@@ -68,6 +68,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
+#ifdef I18N
+#include <X11/Xaw/XawImP.h>
+#endif
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -526,6 +529,17 @@ static XtResource resources[] = {
 {"font6", "Font6", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font6]),
 	XtRString, (XtPointer) NULL},
+#ifdef I18N
+  {XtNinputMethod, XtCInputMethod, XtRString, sizeof(char*),
+                XtOffsetOf(XtermWidgetRec, misc.input_method),
+                XtRString, (XtPointer)NULL},
+  {XtNpreeditType, XtCPreeditType, XtRString, sizeof(char*),
+                XtOffsetOf(XtermWidgetRec, misc.preedit_type),
+                XtRString, (XtPointer)"Root"},
+  {XtNopenIm, XtCOpenIm, XtRBoolean, sizeof(Boolean),
+                XtOffsetOf(XtermWidgetRec, misc.open_im),
+                XtRImmediate, (XtPointer)TRUE},
+#endif
 };
 
 static void VTClassInit();
@@ -535,6 +549,9 @@ static void VTExpose();
 static void VTResize();
 static void VTDestroy();
 static Boolean VTSetValues();
+#ifdef I18N
+static void VTInitI18N();
+#endif
 
 static WidgetClassRec xtermClassRec = {
   {
@@ -2535,6 +2552,10 @@ static void VTRealize (w, valuemask, values)
 		InputOutput, CopyFromParent,	
 		*valuemask|CWBitGravity, values);
 
+#ifdef I18N
+	VTInitI18N();
+#endif
+
 	set_cursor_gcs (screen);
 
 	/* Reset variables used by ANSI emulation. */
@@ -2577,6 +2598,129 @@ static void VTRealize (w, valuemask, values)
 	CursorSave (term, &screen->sc);
 	return;
 }
+
+#ifdef I18N
+
+static void VTInitI18N()
+{
+    int		i,
+		ic_cnt = 0;
+    char       *p,
+	       *s,
+	       *ns,
+	       *end,
+		tmp[1024],
+	  	buf[32];
+    XIM		xim;
+    XIMStyles  *xim_styles;
+    XIMStyle	input_style;
+    Boolean	found;
+
+    term->screen.xic = NULL;
+
+    if (!term->misc.open_im) return;
+
+    if (term->misc.input_method) {
+	strcpy(tmp, term->misc.input_method);
+	for(s=tmp; *s;) {
+	    while (*s && isspace(*s)) s++;
+	    if (!*s) break;
+	    if (!(ns = end = index(s, ',')))
+		end = s + strlen(s);
+	    while (isspace(*end)) end--;
+	    *end = '\0';
+
+	    strcpy(buf, "@im=");
+	    strcat(buf, s);
+	    if ((p = XSetLocaleModifiers(buf)) != NULL && *p
+		&& (xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL)) != NULL)
+		break;
+
+	    s = ns + 1;
+	}
+    } else {
+	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
+	    xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL);
+    }
+
+    if (xim == NULL && (p = XSetLocaleModifiers("")) != NULL && *p)
+	xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL);
+    
+    if (!xim) {
+	fprintf(stderr, "Failed to open input method");
+	return;
+    }
+
+    if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL)
+        || !xim_styles) {
+	fprintf(stderr, "input method doesn't support any style\n");
+        XCloseIM(xim);
+        return;
+    }
+
+    found = False;
+    strcpy(tmp, term->misc.preedit_type);
+    for(s = tmp; s && !found;) {
+	while (*s && isspace(*s)) s++;
+	if (!*s) break;
+	if (ns = end = index(s, ','))
+	    ns++;
+	else
+	    end = s + strlen(s);
+	while (isspace(*end)) end--;
+	*end = '\0';
+
+	if (!strcmp(s, "OverTheSpot")) {
+	    input_style = (XIMPreeditPosition | XIMStatusArea);
+	} else if (!strcmp(s, "OffTheSpot")) {
+	    input_style = (XIMPreeditArea | XIMStatusArea);
+	} else if (!strcmp(s, "Root")) {
+	    input_style = (XIMPreeditNothing | XIMStatusNothing);
+	}
+	for (i = 0; (unsigned short)i < xim_styles->count_styles; i++)
+	    if (input_style == xim_styles->supported_styles[i]) {
+		found = True;
+		break;
+	    }
+
+	s = ns;
+    }
+    XFree(xim_styles);
+
+    if (!found) {
+	fprintf(stderr, "input method doesn't support my preedit type\n");
+	XCloseIM(xim);
+	return;
+    }
+
+    /*
+     * This program only understands the Root preedit_style yet
+     * Then misc.preedit_type should default to:
+     *		"OverTheSpot,OffTheSpot,Root"
+     *
+     *	/MaF
+     */
+    if (input_style != (XIMPreeditNothing | XIMStatusNothing)) {
+	fprintf(stderr,"This program only supports the 'Root' preedit type\n");
+	XCloseIM(xim);
+	return;
+    }
+
+    term->screen.xic = XCreateIC(xim, XNInputStyle, input_style,
+				      XNClientWindow, term->core.window,
+				      XNFocusWindow, term->core.window,
+				      NULL);
+
+    if (!term->screen.xic) {
+	fprintf(stderr,"Failed to create input context\n");
+	XCloseIM(xim);
+    }
+
+    return;
+}
+
+#endif
+
 
 static Boolean VTSetValues (cur, request, new, args, num_args)
     Widget cur, request, new;

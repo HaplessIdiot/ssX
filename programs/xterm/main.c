@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.8 1994/12/10 02:19:21 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.9 1994/12/17 10:11:41 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -74,6 +74,9 @@ SOFTWARE.
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#ifdef I18N
+#include <X11/Xlocale.h>
+#endif
 
 #include <X11/Xos.h>
 #include <X11/cursorfont.h>
@@ -924,6 +927,10 @@ char **argv;
 	int Xsocket, mode;
 	char *base_name();
 	int xerror(), xioerror();
+
+#ifdef I18N
+	setlocale(LC_ALL, NULL);
+#endif
 
 	ProgramName = argv[0];
 

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.0 1994/04/28 12:46:37 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.1 1994/08/31 04:57:20 dawes Exp $
  */
 
 /*
@@ -279,6 +279,10 @@ register int flag;
 			TCursorToggle(TOGGLE);
 		return;
 	} else {
+#ifdef I18N
+		if (screen->xic)
+		    XSetICFocus(screen->xic);
+#endif
 		if(screen->cursor_state &&
 		   (screen->cursor_col != screen->cur_col ||
 		    screen->cursor_row != screen->cur_row))
@@ -301,6 +305,10 @@ register int flag;
 	screen->select &= ~flag;
 	if(!Ttoggled) TCursorToggle(TOGGLE);
     } else {
+#ifdef I18N
+		if (screen->xic)
+		    XUnsetICFocus(screen->xic);
+#endif
 	screen->select &= ~flag;
 	if(screen->cursor_state &&
 	   (screen->cursor_col != screen->cur_col ||

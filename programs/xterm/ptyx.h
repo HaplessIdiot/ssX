@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.0 1994/04/28 12:46:40 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.1 1994/08/20 07:38:13 dawes Exp $
  */
 
 /*
@@ -373,6 +373,9 @@ typedef struct {
 	Widget		mainMenu, vtMenu, tekMenu, fontMenu;
 	char*		menu_font_names[NMENUFONTS];
 	int		menu_font_number;
+#ifdef I18N
+	XIC		xic;
+#endif
 } TScreen;
 
 typedef struct _TekPart {
@@ -416,6 +419,12 @@ typedef struct _Misc {
     Boolean tekSmall;	/* start tek window in small size */
     Boolean appcursorDefault;
     Boolean appkeypadDefault;
+#ifdef I18N
+    char *input_method;
+    char *preedit_type;
+    Boolean open_im;
+    Boolean shared_ic;
+#endif
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;
