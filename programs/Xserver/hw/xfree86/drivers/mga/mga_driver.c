@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.2 1997/04/12 13:45:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.3 1997/05/03 09:18:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -623,83 +623,68 @@ static int
 TestAndSetRounding(pitch)
 	int pitch;
 {
-	int size;
-
-	if (vga256InfoRec.videoRam <= 2048)
-		/* we can't use interleave mode on 2MB board */
-		size = 0;
-	else
-		/* we can't display more than 2MB in non-interleave */
-		size = pitch * vga256InfoRec.virtualY / 1024;
+	MGAinterleave = (vga256InfoRec.videoRam > 2048);
 		
 	/* we can't use interleave on Mystique */
-	if (MGAchipset == PCI_CHIP_MGA1064)
-		size = 0;
+	if (MGAchipset == PCI_CHIP_MGA1064) {
+		MGAinterleave = 0;
+	}
 		
-	if (vgaBitsPerPixel == 32)
+	switch (vgaBitsPerPixel)
 	{
-		if (((pitch % 32) && (size * 4 <= 2048)) || !size)
-		{
+	case 8:
+		if (MGAinterleave) {
+			MGA.ChipRounding = 128;
+			MGABppShft = 0;
+		} else {
+			MGA.ChipRounding = 64;
+			MGABppShft = 1;
+		}
+		break;
+	case 16:
+		if (MGAinterleave) {
+			MGA.ChipRounding = 64;
+			MGABppShft = 1;
+		} else {
+			MGA.ChipRounding = 32;
+			MGABppShft = 2;
+		}
+		break;
+	case 32:
+		if (MGAinterleave) {
+			MGA.ChipRounding = 32;
+			MGABppShft = 2;
+		} else {
 			MGA.ChipRounding = 16;
 			MGABppShft = 3;
-			MGAinterleave = 0;          /* non-interleave */
 		}
-		else
-                {
-			MGA.ChipRounding = 32;
-			MGABppShft = 2;
-			MGAinterleave = 1;          /* interleave */
-		}
-	}
-	if (vgaBitsPerPixel == 24)
-	{
-		if (((pitch % 128) && (size * 3 <= 2048)) || !size)
-		{
-			MGA.ChipRounding = 64;
-			MGABppShft = 1;
-			MGAinterleave = 0;          /* non-interleave */
-		}
-		else
-                {
+		break;
+	case 24:
+		if (MGAinterleave) {
 			MGA.ChipRounding = 128;
 			MGABppShft = 0;
-			MGAinterleave = 1;          /* interleave */
-		}
-	}
-	if (vgaBitsPerPixel == 16)
-	{
-		if (((pitch % 64) && (size * 2 <= 2048)) || !size)
-		{
-			MGA.ChipRounding = 32;
-			MGABppShft = 2;
-			MGAinterleave = 0;          /* non-interleave */
-                }
-                else
-                {
-                	MGA.ChipRounding = 64;
-                	MGABppShft = 1;
-                	MGAinterleave = 1;          /* interleave */
-		}
-	}
-	if (vgaBitsPerPixel == 8)
-	{
-		if (((pitch % 128) && (size <= 2048)) || !size)
-		{
+		} else {
 			MGA.ChipRounding = 64;
 			MGABppShft = 1;
-			MGAinterleave = 0;          /* non-interleave */
 		}
-		else
-		{
-			MGA.ChipRounding = 128;
-			MGABppShft = 0;
-			MGAinterleave = 1;          /* interleave */
-		}
+		break;
 	}
 
+	if (MGAchipset == PCI_CHIP_MGA1064) {
+		MGABppShft--;
+		
+		/* I think we don't need this but I can't test [rdk] */
+		if (vgaBitsPerPixel == 8) { 
+			MGA.ChipRounding = 128;
+		}
+	}
+	
 	if (pitch % MGA.ChipRounding)
 		pitch = pitch + MGA.ChipRounding - (pitch % MGA.ChipRounding);
 
+#ifdef DEBUG
+	ErrorF("pitch= %x MGA.ChipRounding= %x MGAinterleave= %x MGABppShft= %x\n",pitch ,MGA.ChipRounding,MGAinterleave,MGABppShft);
+#endif
 	return pitch;
 }
 
@@ -979,11 +964,14 @@ static void
 MGAEnterLeave(enter)
 Bool enter;
 {
+	unsigned char misc_ctrl;
 	unsigned char temp;
 
 #ifdef XFreeXDGA
       	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
-       		/* Hide the cursor once it's implemented */
+       		if (MGAdac.isHwCursor) {
+       			MGAdac.CursorOff();
+       		}
        		return;
    	}
 #endif 
@@ -1015,6 +1003,11 @@ Bool enter;
  			MGAWaitForBlitter();
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
+		if (MGAchipset == PCI_CHIP_MGA1064 )  {
+			misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
+			misc_ctrl &= ~MGA1064_MISC_CTL_VGA8;
+			outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
+			}
 		}
 		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
