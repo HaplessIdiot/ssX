@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.61 2001/02/08 23:36:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.62 2001/02/10 00:24:24 dawes Exp $ */
 
 /*
  *
@@ -72,6 +72,7 @@ ModuleVersions LoaderVersionInfo = {
 	ABI_FONT_VERSION
 };
 
+#if 0
 void
 LoaderFixups (void)
 {
@@ -80,6 +81,7 @@ LoaderFixups (void)
 
 	LoaderResolveSymbols ();
 }
+#endif
 
 static void
 FreeStringList(char **paths)

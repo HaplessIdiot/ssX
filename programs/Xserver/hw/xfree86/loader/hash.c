@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.13 2000/09/26 15:57:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.14 2001/02/16 01:36:06 dawes Exp $ */
 
 /*
  *
@@ -147,34 +147,6 @@ LOOKUP	*list ;
     while ( l->symName ) {
 	i = xf86loadermalloc( sizeof( itemRec )) ;
 	i->name = l->symName ;
-#if 0
-	if( strcmp(i->name,"ModuleInit") == 0
-#if defined(__powerpc__) && defined(Lynx)
-	  || strcmp(i->name,".ModuleInit") == 0
-#endif
-	  )
-	{
-		char *origname=i->name;
-		/*
-		 * special handling for symbol name "ModuleInit"
-		 */
-		modname = _LoaderHandleToCanonicalName(handle);
-		if (modname) 
-		{
-			i->name = xf86loadermalloc(strlen(modname) +
-						strlen(origname) + 1);
-			if( i->name )
-			    {
-				/* XXX Is this right for PPC? */
-				strcpy(i->name,modname);
-				strcat(i->name,origname);
-			    }
-		}
-#ifdef DEBUG
-		ErrorF("Add module init function %s at %lx\n",i->name, l->offset);
-#endif
-	}
-#endif
 	i->address = (char *) l->offset ;
 	i->handle = handle ;
 	i->module = module ;
