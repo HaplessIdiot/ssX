@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.23 2001/03/23 19:18:35 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.24 2001/03/23 20:56:32 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -9,14 +9,14 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.23 2001/03/23 19:18:35 dawes Ex
 #if BuildXF86DRI && !GlxUseSGISI && \
         (GlxUseBuiltInDRIDriver || \
 	 !GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
-#define DoSharedLib YES
-#define DoNormalLib NO
+#define DoNormalLib SharedLibGlxWithoutPIC
+#define DoSharedLib !SharedLibGlxWithoutPIC
 #define DoExtraLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO

@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 320. Build shared libGL and DRI client modules on Linux without PIC for
+      performance reasons.
  319. Updates to glxinfo (Brian Paul).
  318. Add glxgears (Brian Paul).
  317. glxinfo needs libGLU (Marc La France).
@@ -12783,4 +12785,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1653 2001/04/02 21:12:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1654 2001/04/02 21:22:02 dawes Exp $

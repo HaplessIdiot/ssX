@@ -1,14 +1,14 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.13 2001/03/23 19:18:32 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.14 2001/03/23 20:56:31 dawes Exp $
 
 #if GlxUseBuiltInDRIDriver
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
-#define DoNormalLib NO
-#define DoSharedLib YES
+#define DoNormalLib SharedLibGlxWithoutPIC
+#define DoSharedLib !SharedLibGlxWithoutPIC
 #define DoExtraLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO

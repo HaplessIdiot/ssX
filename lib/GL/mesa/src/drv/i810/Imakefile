@@ -1,16 +1,16 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.16 2001/03/23 19:18:40 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.17 2001/03/23 20:56:34 dawes Exp $
 
 #include <Threads.tmpl>
 
 #if GlxUseBuiltInDRIDriver
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
-#define DoSharedLib YES
-#define DoNormalLib NO
+#define DoNormalLib SharedLibGlxWithoutPIC
+#define DoSharedLib !SharedLibGlxWithoutPIC
 #define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
