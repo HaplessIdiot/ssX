@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.2 2002/10/13 16:10:41 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.3 2002/10/21 20:38:04 herrb Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -168,8 +168,8 @@ KbdOn(InputInfoPtr pInfo)
 		 cfsetospeed(&nTty, 9600);
 		 tcsetattr(pInfo->fd, TCSANOW, &nTty);
                  break; 
-        }
 #endif 
+        }
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT) || defined (WSCONS_SUPPORT)
         switch (pKbd->consType) {
 	    case SYSCONS:
