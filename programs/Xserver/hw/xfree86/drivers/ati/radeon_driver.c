@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.35 2001/09/14 13:54:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.36 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -172,6 +172,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWRestore",
     "vgaHWSave",
     "vgaHWUnlock",
+    "vgaHWGetIOBase",
     NULL
 };
 
@@ -928,11 +929,15 @@ static Bool RADEONGetPLLParameters(ScrnInfoPtr pScrn)
 				   the card you are using.  Specifically,
 				   reference freq can be 29.50MHz,
 				   28.63MHz, or 14.32MHz.  YMMV. */
-	pll->reference_freq = 2950;
-	pll->reference_div  = 65;
+ 	/*
+	 * these are somewhat sane defaults for Mac boards, we will
+	 * need to find a good way of getting these from OpenFirmware
+	 */
+	pll->reference_freq = 2700;
+	pll->reference_div  = 67;
 	pll->min_pll_freq   = 12500;
 	pll->max_pll_freq   = 35000;
-	pll->xclk           = 10300;
+	pll->xclk           = 16615;
     } else {
 	bios_header    = RADEON_BIOS16(0x48);
 	pll_info_block = RADEON_BIOS16(bios_header + 0x30);
@@ -1820,11 +1825,13 @@ static Bool RADEONPreInitInt10(ScrnInfoPtr pScrn, xf86Int10InfoPtr *ppInt10)
 {
     RADEONInfoPtr   info = RADEONPTR(pScrn);
 
+#if !defined(__powerpc__)
     if (xf86LoadSubModule(pScrn, "int10")) {
 	xf86LoaderReqSymLists(int10Symbols, NULL);
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	*ppInt10 = xf86InitInt10(info->pEnt->index);
     }
+#endif
     return TRUE;
 }
 
@@ -2149,6 +2156,8 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
+
     info->PciInfo      = xf86GetPciInfoForEntity(info->pEnt->index);
     info->PciTag       = pciTag(info->PciInfo->bus,
 				info->PciInfo->device,
@@ -2213,7 +2222,15 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!RADEONPreInitConfig(pScrn))             goto fail;
 
+#if !defined(__powerpc__)
     if (!RADEONGetBIOSParameters(pScrn, pInt10)) goto fail;
+#else
+    /*
+     * force type to CRT since we currently can't read BIOS to
+     * tell us what kind of heads we have
+     */
+    info->DisplayType = MT_CRT;
+#endif
 
     RADEONPreInitDDC(pScrn);
     info->HasEDID =
@@ -2834,6 +2851,7 @@ static void RADEONRestoreCommonRegisters(ScrnInfoPtr pScrn,
     OUTREG(RADEON_CAP0_TRIG_CNTL,       restore->cap0_trig_cntl);
     OUTREG(RADEON_CAP1_TRIG_CNTL,       restore->cap1_trig_cntl);
     OUTREG(RADEON_BUS_CNTL,             restore->bus_cntl);
+    OUTREG(RADEON_SURFACE_CNTL,		restore->surface_cntl);
 }
 
 /* Write CRTC registers. */
@@ -3287,6 +3305,7 @@ static void RADEONSaveCommonRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save)
     save->cap0_trig_cntl     = INREG(RADEON_CAP0_TRIG_CNTL);
     save->cap1_trig_cntl     = INREG(RADEON_CAP1_TRIG_CNTL);
     save->bus_cntl           = INREG(RADEON_BUS_CNTL);
+    save->surface_cntl	     = INREG(RADEON_SURFACE_CNTL);
 }
 
 /* Read CRTC registers. */
@@ -3455,7 +3474,15 @@ static void RADEONSave(ScrnInfoPtr pScrn)
     if(!info->IsSecondary)
     {
     vgaHWUnlock(hwp);
-        vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* save mode, fonts,cmap */
+#if defined(__powerpc__)
+    /* temporary hack to prevent crashing on PowerMacs when trying to
+     * read VGA fonts and colormap, will find a better solution
+     * in the future
+     */
+    vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_MODE); /* save mode only */
+#else
+    vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* save mode, fonts,cmap */
+#endif
     vgaHWLock(hwp);
     save->dp_datatype      = INREG(RADEON_DP_DATATYPE);
     save->rbbm_soft_reset  = INREG(RADEON_RBBM_SOFT_RESET);
@@ -3464,9 +3491,7 @@ static void RADEONSave(ScrnInfoPtr pScrn)
     save->amcgpio_mask     = INREG(RADEON_AMCGPIO_MASK);
     }
         
-        
     RADEONSaveMode(pScrn, save);
-
 }
 
 /* Restore the original (text) mode. */
@@ -3499,7 +3524,14 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
     if(!info->IsSecondary)
     {
     vgaHWUnlock(hwp);
+#if defined(__powerpc__)
+    /* temporary hack to prevent crashing on PowerMacs when trying to
+     * write VGA fonts, will find a better solution in the future
+     */
+    vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_MODE );
+#else
     vgaHWRestore(pScrn, &hwp->SavedReg, VGA_SR_MODE | VGA_SR_FONTS );
+#endif
     vgaHWLock(hwp);
 
     }
@@ -3669,6 +3701,18 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 			 ((pScrn->bitsPerPixel * 8) -1)) /
 			 (pScrn->bitsPerPixel * 8);
     save->crtc_pitch |= save->crtc_pitch << 16;
+
+    save->surface_cntl = RADEON_SURF_TRANSLATION_DIS;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    switch (pScrn->bitsPerPixel) {
+	case 16:
+		save->surface_cntl |= RADEON_NONSURF_AP0_SWP_16BPP;
+		break;
+	case 32:
+		save->surface_cntl |= RADEON_NONSURF_AP0_SWP_32BPP;
+		break;
+    }
+#endif
 
     RADEONTRACE(("Pitch = %d bytes (virtualX = %d, displayWidth = %d)\n",
 		 save->crtc_pitch, pScrn->virtualX,

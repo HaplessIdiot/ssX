@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.21 2001/07/25 08:04:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.22 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -116,6 +116,7 @@ typedef struct {
     CARD32     cap0_trig_cntl;
     CARD32     cap1_trig_cntl;
     CARD32     bus_cntl;
+    CARD32     surface_cntl;
 
 				/* Other registers to save for VT switches */
     CARD32     dp_datatype;

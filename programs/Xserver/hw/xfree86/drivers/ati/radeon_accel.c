@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.17 2001/08/17 22:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.18 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -74,6 +74,7 @@
 #include "radeon.h"
 #include "radeon_probe.h"
 #include "radeon_reg.h"
+#include "radeon_version.h"
 #ifdef XF86DRI
 #define _XF86DRI_SERVER_
 #include "radeon_dri.h"
@@ -316,6 +317,9 @@ void RADEONEngineRestore(ScrnInfoPtr pScrn)
     OUTREGP(RADEON_DP_DATATYPE, 0, ~RADEON_HOST_BIG_ENDIAN_EN);
 #endif
 
+    /* restore SURFACE_CNTL */
+    OUTREG(RADEON_SURFACE_CNTL, info->ModeReg.surface_cntl);
+
     RADEONWaitForFifo(pScrn, 1);
     OUTREG(RADEON_DEFAULT_SC_BOTTOM_RIGHT, (RADEON_DEFAULT_SC_RIGHT_MAX
 					    | RADEON_DEFAULT_SC_BOTTOM_MAX));
@@ -405,6 +409,15 @@ static void RADEONEngineInit(ScrnInfoPtr pScrn)
 		 info->CurrentLayout.bitsPerPixel));
 
     OUTREG(RADEON_RB3D_CNTL, 0);
+#if defined(__powerpc__)
+#if defined(XF86_DRI)
+    if(!info->directRenderinEnabled)
+#endif
+    {
+	OUTREG(RADEON_MC_FB_LOCATION, 0xffff0000);
+    	OUTREG(RADEON_MC_AGP_LOCATION, 0xfffff000);
+    }
+#endif
     RADEONEngineReset(pScrn);
 
     switch (info->CurrentLayout.pixel_code) {
