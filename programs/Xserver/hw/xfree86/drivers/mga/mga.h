@@ -70,6 +70,18 @@ typedef struct {
 } MGARegRec, *MGARegPtr;
 
 typedef struct {
+   unsigned char brightness;
+   unsigned char contrast;
+   FBAreaPtr	area;
+   RegionRec	clip;
+   CARD32	colorKey;
+   CARD32	videoStatus;
+   Time		offTime;
+   Time		freeTime;
+   int		lastPort;
+} MGAPortPrivRec, *MGAPortPrivPtr;
+
+typedef struct {
     Bool	isHwCursor;
     int		CursorMaxWidth;
     int 	CursorMaxHeight;
@@ -102,7 +114,6 @@ typedef struct {
     Bool Overlay8Plus24;
     DisplayModePtr mode;
 } MGAFBLayout;
-
 
 /* Card-specific driver information */
 
@@ -206,6 +217,8 @@ typedef struct {
     MGAFBLayout		CurrentLayout;
     Bool		DrawTransparent;
     int			MaxBlitDWORDS;
+    Bool		TexturedVideo;
+    MGAPortPrivPtr	portPrivate;
 
 #ifdef XF86DRI
    Bool directRenderingEnabled;

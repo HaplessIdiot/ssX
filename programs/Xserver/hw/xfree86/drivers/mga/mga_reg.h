@@ -406,5 +406,29 @@
 #define MGAREG_BESVCOORD	0x3d2c
 #define MGAREG_BESVISCAL	0x3d34
 
+/* texture engine registers */
+
+#define MGAREG_TMR0		0x2c00
+#define MGAREG_TMR1		0x2c04
+#define MGAREG_TMR2		0x2c08
+#define MGAREG_TMR3		0x2c0c
+#define MGAREG_TMR4		0x2c10
+#define MGAREG_TMR5		0x2c14
+#define MGAREG_TMR6		0x2c18
+#define MGAREG_TMR7		0x2c1c
+#define MGAREG_TMR8		0x2c20
+#define MGAREG_TEXORG		0x2c24
+#define MGAREG_TEXWIDTH		0x2c28
+#define MGAREG_TEXHEIGHT	0x2c2c
+#define MGAREG_TEXCTL		0x2c30
+#define MGAREG_TEXCTL2		0x2c3c
+#define MGAREG_TEXTRANS		0x2c34
+#define MGAREG_TEXTRANSHIGH	0x2c38
+#define MGAREG_TEXFILTER	0x2c58
+#define MGAREG_ALPHACTRL	0x2c7c
+
+#define MGAREG_DWGSYNC		0x2c4c
+
+
 #endif
 

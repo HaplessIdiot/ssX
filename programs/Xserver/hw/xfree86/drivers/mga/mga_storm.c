@@ -479,8 +479,9 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     case 8:
         break;
     case 16:
-	/* set 16 bpp, turn off dithering, turn on 5:5:5 pixels */
-        maccess |= 1 + (1 << 30) + (1 << 31);
+        maccess |= 1;
+	if(pLayout->depth == 15)
+	   maccess |= (1 << 31);
         break;
     case 24:
         maccess |= 3;
