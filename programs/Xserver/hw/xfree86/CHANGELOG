@@ -1,12 +1,24 @@
+XFree86 3.1.0Ae (xx December 1994)
+157. Add an "s3_964_bt485_vclk" option to fix a problem with 964+Bt485.
+     Also added code to detect the MIRO 20SV board revision (Harald Koenig).
+156. Add an S3Mclk entry to XF86Config to allow the MCLK value to be specified
+     in order to aid the calculation of the optimal M parameter
+     (Harald Koenig).
+155. Fix S3 linear fb check and allow membase to work for 864/964 boards
+     (Harald Koenig).
+154. Move server lock code back into Xserver/os so that it gets used by
+     Xnest and Xvfb.
+
 XFree86 3.1.0Ad (26 December 1994)
 153. Fix problems with DBLSCAN code introduced in 3.1.0Aa (Harm Hanemaayer).
 152. Support for adding LBX via the LinkKit.
 151. Fix some LinkKit config problems.
 150. Fix LinkKit Imakefile bug introduced in 3.1.0A.
 149. Support for SPEA Mercury P64 (Bt485 + 964) (Norbert Distler).
-148. Enable ICD2061A clockchip by default for S3 server when a BT485 is
-     detected (doesn't happen if an XF86Config for either ramdac or
-     clockchip is present) (Norbert Distler).
+148. Enable ICD2061A/SC11412 clockchip by default for S3 server if the
+     the "SPEA_Mercury" option is given and Bt485 + 964/928 is detected
+     (doesn't happen if an XF86Config entry for either ramdac or clockchip
+     is present) (Norbert Distler).
 147. Fix for PCI Type 2 probe for I128 SuperProbe code (Robin Cutshaw).
 146. Major Cirrus update.  Includes new acceleration using mmio (lines
      tilefill and rectangles), and more acceleration for 16/32bpp

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c,v 5.30 94/04/17 20:26:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.1 1994/10/23 13:26:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.2 1994/12/17 09:42:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -354,6 +354,7 @@ main(argc, argv)
 
 	if (dispatchException & DE_TERMINATE)
 	{
+	    OsCleanup();
 	    ddxGiveUp();
 	    break;
 	}
