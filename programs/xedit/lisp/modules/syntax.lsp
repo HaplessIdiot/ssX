@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.9 2002/11/02 22:58:10 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.10 2002/11/05 06:57:06 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -84,9 +84,10 @@ o Fix problems matching EOL. Since EOL is an empty string match, if there
   input is at EOL.
   One possible solution would be to add the ending newline to the input,
   and then instead of matching "$", should match "\\n".
-o Allow both, :switch and :begin to the be specified for tokens, it is
-  almost mandatory for a file format with sections that automatically ends
-  the previous one.
+o XXX Usage of the variable newline-property must be reviewed in function
+  syntax-highlight, if the text property has a background attribute,
+  visual effect will look "strange", will paint a square with the
+  background attribute at the end of every line in the matched text.
 |#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,11 +255,6 @@ is used.
     begin		;;  NIL or a keyword (like switch), but instead of
 			;; popping the stack, it pushes the current syntax
 			;; table to the stack and sets a new current one.
-
-    ;; Note: Either "switch" or "begin" may be specified, not both.
-    ;;       Also, after "compile" time, switch and begin will be a
-    ;;	     a pointer to the syntable, not a keyword (unless it is
-    ;;	     a switch with a negative integer argument).
 )
 
 
@@ -547,13 +543,6 @@ is used.
 	;; this is done to avoid the need of removing duplicates here.
 	tables
 	(cons main-table (cdr elements))
-    )
-
-    ;; Check for elements with switch and begin specified.
-    (dolist (item switches)
-	(if (syntoken-begin item)
-	    (error "COMPILE-SYNTAX-TABLE: :SWITCH and :BEGIN specified")
-	)
     )
 
     ;; Check for typos in the keywords, or for not defined syntax tables.
@@ -1256,82 +1245,79 @@ is used.
 
 	;;  When changing the current syntax table.
 	(when change
-	    (if switch
-		(progn
-#+debug-verbose	    (format t "switching to ")
-		    (if (numberp switch)
+	    (when switch
+		(if (numberp switch)
 
-			;;  If returning to a previous state.
-			;;  Don't generate an error if the stack
-			;; becomes empty?
-			(while
-			    (< switch 0)
+		    ;;	If returning to a previous state.
+		    ;;	Don't generate an error if the stack
+		    ;; becomes empty?
+		    (while
+			(< switch 0)
+
+			(setq
+			    syntax-table	(pop stack)
+			    token-list		(pop token-list-stack)
+			    switch		(1+ switch)
+			)
+		    )
+
+		    ;;	Else, not to a previous state, but
+		    ;; returning to a named syntax table,
+		    ;; search for it in the stack.
+		    (while
+			(and
 
 			    (setq
-				change	    (pop stack)
-				token-list  (pop token-list-stack)
-				switch	    (1+ switch)
+				token-list	(pop token-list-stack)
+				syntax-table	(pop stack)
 			    )
+
+			    (not (eq switch syntax-table))
 			)
-
-			;;  Else, not to a previous state, but
-			;; returning to a named syntax table,
-			;; search for it in the stack.
-			(while
-			    (and
-
-				(setq
-				    token-list (pop token-list-stack)
-				    change     (pop stack)
-				)
-
-				(not (eq switch change))
-			    )
-			    ;;	Empty loop.
-			)
-		    )
-
-		    ;;	If no match found while popping
-		    ;; the stack.
-		    (unless change
-
-			;;  Return to the topmost syntax table.
-			(setq
-			    change
-			    (car (syntax-labels *syntax*))
-			)
-		    )
-
-		    (if (null token-list)
-			(setq token-list (syntable-tokens change))
+			;;  Empty loop.
 		    )
 		)
 
-		;;  Else, it is a begin.
-		(progn
-#+debug-verbose	    (format t "begining ")
+		;;  If no match found while popping
+		;; the stack.
+		(unless syntax-table
 
-		    ;;	Save state for a possible
-		    ;; :SWITCH later.
+		    ;;	Return to the topmost syntax table.
 		    (setq
-			stack		 (cons syntax-table stack)
-			token-list-stack (cons token-list token-list-stack)
-			token-list	 (syntable-tokens change)
+			syntax-table
+			(car (syntax-labels *syntax*))
 		    )
+		)
+
+#+debug-verbose	(format t "switching to ~A offset: ~D~%"
+		    (syntable-label syntax-table)
+		    start
+		)
+
+		(if (null token-list)
+		    (setq token-list (syntable-tokens syntax-table))
 		)
 	    )
 
-#+debug-verbose
-	    (format t "~A offset: ~D~%"
-		(syntable-label change)
-		start
+	    (when begin
+		;;  Save state for a possible
+		;; :SWITCH later.
+		(setq
+		    stack	     (cons syntax-table stack)
+		    token-list-stack (cons token-list token-list-stack)
+		    token-list	     (syntable-tokens begin)
+		    syntax-table     begin
+		)
+#+debug-verbose	(format t "begining ~A offset: ~D~%"
+		    (syntable-label syntax-table)
+		    start
+		)
 	    )
 
 	    ;;	Change current syntax table.
 	    (setq
-		syntax-table	    change
-		default-property    (syntable-property change)
-		current-token-list  (syntable-tokens change)
+		default-property    (syntable-property syntax-table)
+		current-token-list  (syntable-tokens syntax-table)
 	    )
 
 	    ;;  Set newline property, to help interactive callback

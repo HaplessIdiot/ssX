@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.4 2002/12/16 03:59:28 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.5 2002/12/20 04:32:47 paulo Exp $
 ;;
 
 (provide "indent")
@@ -363,9 +363,6 @@
     (setq pattern (re-comp pattern :icase icase :nospec nospec :nosub nosub))
     (when (consp (re-exec pattern "" :notbol t :noteol t))
 	(error "INDTOKEN: regex ~A matches empty string" pattern)
-    )
-    (when (and begin switch)
-	(error "INDTOKEN: :SWITCH and :BEGIN specified")
     )
 
     ;; result of macro, return token structure
@@ -1215,57 +1212,57 @@
 	    ,(indent-token-code (eval ind-definition))
 	)
 
-	(if (setq ind-change (indtoken-begin ind-token))
-	    ;; Need to start a new table
-	    (progn
-		(setq
-		    ind-stack	(cons ind-table ind-stack)
-		    ind-table	ind-change
-		    ind-tokens	(indtable-tokens ind-table)
-		    ind-cache	(nreverse ind-cache)
-		    ind-end	(cadr ind-match)
-		    ind-noteol	(> ind-length ind-end)
-		)
-		(go :ind-loop)
-	    )
-	    ;; Check if needs to switch to another table
-	    (when (setq ind-change (indtoken-switch ind-token))
-		;; Need to switch to a previous table
-		(if (integerp ind-change)
-		    ;; Relative switch
-		    (while (and ind-stack (minusp ind-change))
-			(setq
-			    ind-table	    (pop ind-stack)
-			    ind-change	    (1+ ind-change)
-			)
-		    )
-		    ;; Search table in the stack
-		    (until
-			(or
-			    (null ind-stack)
-			    (eq
-				(setq ind-table (pop ind-stack))
-				ind-change
-			    )
-			)
-		    )
-		)
-
-		;; If no match or stack became empty
-		(and (null ind-table)
+	;; Check if needs to switch to another table
+	(when (setq ind-change (indtoken-switch ind-token))
+	    ;; Need to switch to a previous table
+	    (if (integerp ind-change)
+		;; Relative switch
+		(while (and ind-stack (minusp ind-change))
 		    (setq
-			ind-table
-			(car (indent-tables ,ind-definition))
+			ind-table	(pop ind-stack)
+			ind-change	(1+ ind-change)
 		    )
 		)
-		(setq
-		    ind-tokens	(indtable-tokens ind-table)
-		    ind-cache	(nreverse ind-cache)
-		    ind-end	(cadr ind-match)
-		    ind-noteol	(> ind-length ind-end)
+		;; Search table in the stack
+		(until
+		    (or
+			(null ind-stack)
+			(eq
+			    (setq ind-table (pop ind-stack))
+			    ind-change
+			)
+		    )
 		)
-		(go :ind-loop)
 	    )
+
+	    ;; If no match or stack became empty
+	    (and (null ind-table)
+		(setq
+		    ind-table
+		    (car (indent-tables ,ind-definition))
+		)
+	    )
+	)
+
+	;; Check if needs to start a new table
+	;; XXX use ind-tleft to reduce number of local variables
+	(when (setq ind-tleft (indtoken-begin ind-token))
+	    (setq
+		ind-change  ind-tleft
+		ind-stack   (cons ind-table ind-stack)
+		ind-table   ind-change
+	    )
+	)
+
+	;; If current "indent pattern table" changed
+	(when ind-change
+	    (setq
+		ind-tokens  (indtable-tokens ind-table)
+		ind-cache   (nreverse ind-cache)
+		ind-end     (cadr ind-match)
+		ind-noteol  (> ind-length ind-end)
+	    )
+	    (go :ind-loop)
 	)
 
 	(and ind-cache (go :ind-parse-loop))
