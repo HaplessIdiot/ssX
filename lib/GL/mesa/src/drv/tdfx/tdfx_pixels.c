@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_pixels.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -43,7 +43,7 @@
 #include "tdfx_pixels.h"
 #include "tdfx_render.h"
 
-#include "../../image.h"
+#include "image.h"
 
 #if 0
 /* test if window coord (px,py) is visible */
