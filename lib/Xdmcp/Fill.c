@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Fill.c,v 1.9 94/04/17 20:16:35 rws Exp $
- * $XFree86$
+ * $XFree86: xc/lib/Xdmcp/Fill.c,v 3.0 1994/05/08 05:15:39 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -28,12 +28,6 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Keith Packard, MIT X Consortium
  */
-
-/* Hack for SVR4  -- use TCPCONN */
-#ifdef STREAMSCONN
-#undef STREAMSCONN
-#define TCPCONN
-#endif
 
 #ifdef WIN32
 #define _WILLWINSOCK_
