@@ -5,10 +5,10 @@
 <article>
 <title>XFree86 on Darwin and Mac OS X
 <author>Torrey T. Lyons
-<date>7 December 2000
+<date>11 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.1 2000/12/11 07:25:59 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.2 2000/12/11 16:09:04 dawes Exp $
 </ident>
 
 <toc>
@@ -25,6 +25,29 @@ experimenting with running X Windows on Apple's next generation operating
 system. Please send any comments on this page to
 <email/torrey@mrcla.com/.  If you are also 
 working on modifications to the Darwin X server, please let me know.
+
+<sect>Hardware Support and Configuration
+<p>
+The Darwin port of XFree86 uses the IOKit for device driver loading
+and discovery, rather than the XFree86 module loader. Because of this,
+the XFree86 configuration file is not used on Darwin systems. The
+descriptions found elsewhere of devices supported by XFree86 for other
+operating systems also do not apply.
+
+<p>
+XFree86 for Darwin will work with any video card that you have an
+IOKit driver for. If you are running Mac OS X, this typically means
+any card that has been shipped by Apple. If a card works for you with
+the Mac OS X GUI, it will work on the same machine with XFree86. If
+you have a pure Darwin installation, your hardware support may be
+somewhat limited because Apple does not include all its hardware
+drivers with Darwin. IOKit drivers are typically found in
+/System/Library/Extensions/ or /Library/Extensions/.
+
+<p>
+Multi-button and scroll wheel mouse support works well with all
+USB mice that I have tested. I have done no testing with serial
+mice.
 
 <sect>Getting Started
 <p>
@@ -141,7 +164,7 @@ following two lines to a file in your home directory called <tt/.cshrc/
 setenv MANPATH "${MANPATH}:/usr/X11R6/man:/usr/local/man" 
 setenv PATH "${PATH}:/usr/X11R6/bin"
 </verb></tscreen>
-Now type ``<tt>source ~/.cshrc</tt>'' to
+Now type ``<tt>source ~/.cshrc;rehash</tt>'' to
 get these changes to take effect. On future logins, this file will be
 executed automatically.
 
@@ -214,9 +237,7 @@ beachball cursor reappears, but the screen never returns to the
 console display. The console is accepting input however, so typing
 ``logout'' will return you to the login prompt.
 
-<item><tt/shmat()/ problem: The <tt/shmat()/ function fails in
-<tt>Xserver/Xext/xf86bigfont.c</tt> because of error EMFILE. This
-presumably renders the BigFont extension nonfunctional.
+<item>Only one display is currently supported.
 
 <item>Screen saver not supported. 
 
@@ -225,9 +246,8 @@ presumably renders the BigFont extension nonfunctional.
 
 <bf/Things I am working on:/
 <itemize>
-<item> Hardware cursor support
-<item> More IOKit HeaderDoc documentation
-<item> Darwin port in the official XFree86 distribution
+<item> Allowing rootless use on Mac OS X
+<item> Correct wake from sleep behavior
 </itemize>
 
 <sect>Appendix
@@ -310,7 +330,7 @@ Now, run ``make'' while in the IOKitUser directory. It will likely not
 finish building since the IOKitUser project relies on some stuff that
 Apple hasn't really made public yet, but it should finish populating
 the new IOKit framework with headers and start compiling. (Strangely
-enough the headers installed in your new IOKit framework don't contain
+enough, the headers installed in your new IOKit framework don't contain
 the real header files. They are just single line files with an #import
 of the file in your IOKitUser project. This works fine as long as you
 don't ever delete or move your IOKitUser project. I imagine that using
