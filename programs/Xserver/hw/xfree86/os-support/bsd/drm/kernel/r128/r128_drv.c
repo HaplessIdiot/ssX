@@ -48,8 +48,8 @@
 #define DRIVER_DESC		"ATI Rage 128"
 #define DRIVER_DATE		"20010405"
 
-#define DRIVER_MAJOR		3
-#define DRIVER_MINOR		0
+#define DRIVER_MAJOR		2
+#define DRIVER_MINOR		2
 #define DRIVER_PATCHLEVEL	0
 
 /* List acquired from http://www.yourvote.com/pci/pcihdr.h and xc/xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h
