@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.7 2001/10/10 07:02:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.8 2001/10/11 06:34:50 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -38,6 +38,8 @@
  */
 static char *BadArgument = "bad argument to directive, at %s";
 /* not very descriptive... */
+
+extern char *LispCharNames[];
 
 /*
  * Implementation
@@ -89,10 +91,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
     plural = NIL;
     len = 0;
-    fmt = format->data.atom;
+    fmt = STRPTR(format);
     while (1) {
 	if (*fmt == '\0') {
-	    if (iteration >= 0 && CAR(CAR(ilist))->data.atom[0] == '{') {
+	    if (iteration >= 0 && STRPTR(CAR(CAR(ilist)))[0] == '{') {
 		int done = 0;
 
 		if (iteration != 0 && --iteration == 0) {
@@ -100,9 +102,9 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    done = 1;
 		}
 		fmt = indirection[(int)CAR(alist)->data.real + 1];
-		if (CAR(CAR(ilist))->data.atom[1] == '@') {
+		if (STRPTR(CAR(CAR(ilist)))[1] == '@') {
 		    /* using normal arguments */
-		    if (CAR(CAR(ilist))->data.atom[2] == ':') {
+		    if (STRPTR(CAR(CAR(ilist)))[2] == ':') {
 			if (CDR(CAR(alist))->type == LispCons_t) {
 			    CAR(alist) = CDR(CAR(alist));
 			    plural = NIL;
@@ -123,7 +125,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			done = 1;
 		}
 		else {
-		    if (CAR(CAR(ilist))->data.atom[1] == ':') {
+		    if (STRPTR(CAR(CAR(ilist)))[1] == ':') {
 			if (CDR(CAR(CAR(alist)))->type == LispCons_t) {
 			    CAR(CAR(alist)) = CDR(CAR(CAR(alist)));
 			    arg = CAR(CAR(CAR(alist)));
@@ -150,8 +152,8 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    iteration = -1;
 		    nindirection = (int)CAR(alist)->data.real;
 		    fmt = indirection[nindirection];
-		    if (CAR(CAR(ilist))->data.atom[1] == ':' ||
-			CAR(CAR(ilist))->data.atom[2] == ':') {
+		    if (STRPTR(CAR(CAR(ilist)))[1] == ':' ||
+			STRPTR(CAR(CAR(ilist)))[2] == ':') {
 			arg = CDR(CDR(CAR(ilist)));
 			plural = NIL;
 			arguments = CAR(CAR(sargs));
@@ -301,6 +303,28 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			if (atsign)
 			    mac->column += LispPrintf(mac, stream, "y");
 		    }
+		    break;
+		case 'c':	/* Character */
+		case 'C':
+		    if (arg->type != LispCons_t)
+			goto not_enough_args;
+		    if (CAR(arg)->type != LispCharacter_t)
+			LispDestroy(mac, "expecting character, at %s", fname);
+		    mac->newline = atsign || collon ||
+				   CAR(arg)->data.integer != '\n';
+		    if (atsign && !collon)
+			mac->column += LispPrintf(mac, stream, "#\\");
+		    if ((atsign || collon) &&
+			(CAR(arg)->data.integer <= ' ' ||
+			 CAR(arg)->data.integer == 0177))
+			mac->column +=
+			    LispPrintf(mac, stream, "%s",
+				       CAR(arg)->data.integer == 0177 ?
+				       "Rubout" :
+				       LispCharNames[CAR(arg)->data.integer]);
+		    else
+			mac->column += LispPrintf(mac, stream, "%c",
+						  CAR(arg)->data.integer);
 		    break;
 		case 'f':	/* Floating-point */
 		case 'F':	/* ~w,d,k,overflowchar,padcharF */
@@ -478,7 +502,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 						  sizeof(char*) *
 						  (nindirection + 1));
 			indirection[nindirection++] = ++fmt;
-			fmt = CAR(arg)->data.atom;
+			fmt = STRPTR(CAR(arg));
 			plural = arg;
 			arg = CDR(arg);
 			++cur_arg;
@@ -531,10 +555,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    if (argc)
 			LispDestroy(mac, BadArgument, fname);
 		    if (CAR(CAR(ilist)) == NIL ||
-			CAR(CAR(ilist))->data.atom[0] != '(')
+			STRPTR(CAR(CAR(ilist)))[0] != '(')
 			LispDestroy(mac, "mismatched ~), at %s", fname);
 		    /* remember if atsign and/or collon was set */
-		    strcpy(stk, CAR(CAR(ilist))->data.atom);
+		    strcpy(stk, STRPTR(CAR(CAR(ilist))));
 		    len = 1;
 		    if (stk[len] == '@') {
 			atsign = 1;
@@ -725,7 +749,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 						  (nindirection + 1));
 			indirection[nindirection++] = fmt;
 			GCProtect();
-			fmt = STRING(fields[field])->data.atom;
+			fmt = STRPTR(STRING(fields[field]));
 			GCUProtect();
 		    }
 		    while (--nfields >= 0)
@@ -844,14 +868,14 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			    goto not_enough_args;
 			else if (CAR(arg)->type != LispString_t)
 			    LispDestroy(mac, "expecting string, at %s", fname);
-			ptr = CAR(arg)->data.atom;
+			ptr = STRPTR(CAR(arg));
 			plural = arg;
 			arg = CDR(arg);
 			++cur_arg;
 		    }
 		    else {
 			GCProtect();
-			ptr = STRING(str)->data.atom;
+			ptr = STRPTR(STRING(str));
 			LispFree(mac, str);
 			GCUProtect();
 		    }
@@ -949,7 +973,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		case ';':	/* separator for ~[ and ~<, in this code,
 				 * only used for ~< */
 		    if (CAR(CAR(ilist))->type != LispString_t ||
-			CAR(CAR(ilist))->data.atom[0] != '<')
+			STRPTR(CAR(CAR(ilist)))[0] != '<')
 			LispDestroy(mac, "~; not allowed here, at %s", fname);
 
 		    GCProtect();
@@ -986,11 +1010,11 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
     		    if (argc)
 			LispDestroy(mac, BadArgument, fname);
 		    if (CAR(CAR(ilist)) == NIL ||
-			CAR(CAR(ilist))->data.atom[0] != '<')
+			STRPTR(CAR(CAR(ilist)))[0] != '<')
 			LispDestroy(mac, "mismatched ~>, at %s", fname);
 
 		    /* remember if atsign and/or collon was set */
-		    strcpy(stk, CAR(CAR(ilist))->data.atom);
+		    strcpy(stk, STRPTR(CAR(CAR(ilist))));
 		    len = 1;
 		    if (stk[len] == '@') {
 			atsign = 1;
@@ -1190,14 +1214,14 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    len = 0;
 
 		    if (CAR(CAR(ilist)) != NIL &&
-			CAR(CAR(ilist))->data.atom[0] == '{' && collon) {
+			STRPTR(CAR(CAR(ilist)))[0] == '{' && collon) {
 			/* needs special handling */
 			LispObj *next = T;
 
-			if (CAR(CAR(ilist))->data.atom[1] == '@' &&
-			    CAR(CAR(ilist))->data.atom[2] == ':')
+			if (STRPTR(CAR(CAR(ilist)))[1] == '@' &&
+			    STRPTR(CAR(CAR(ilist)))[2] == ':')
 			    next = CDR(CAR(alist));
-			else if (CAR(CAR(ilist))->data.atom[1] == ':')
+			else if (STRPTR(CAR(CAR(ilist)))[1] == ':')
 			    next = CDR(CAR(CAR(alist)));
 
 			if (hash != -1 || next == NIL) {
@@ -1216,7 +1240,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 
 		    if (tmp == 0 || (tmp == -1 && arg->type != LispCons_t)) {
 			if (CAR(CAR(ilist)) != NIL) {
-			    if (CAR(CAR(ilist))->data.atom[0] == '{') {
+			    if (STRPTR(CAR(CAR(ilist)))[0] == '{') {
 				if (collon) {
 				    /* passed the test above */
 				    ++fmt;
@@ -1225,10 +1249,10 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 				while (*fmt)
 				    ++fmt;
 			    }
-			    else if (CAR(CAR(ilist))->data.atom[0] == '(')
+			    else if (STRPTR(CAR(CAR(ilist)))[0] == '(')
 				fmt = "~)";	/* make the loop find
 						 * the end... */
-			    else if (CAR(CAR(ilist))->data.atom[0] == '<') {
+			    else if (STRPTR(CAR(CAR(ilist)))[0] == '<') {
 				/* need to remove the last stream, to
 				 * format correctly */
 				if (CDR(CAR(alist)) != NIL)
@@ -1981,7 +2005,7 @@ format_done:
     if (CAR(CAR(ilist)) != NIL) {
 	char c;
 
-	switch (CAR(CAR(ilist))->data.atom[0]) {
+	switch (STRPTR(CAR(CAR(ilist)))[0]) {
 	    case '(':
 		c = ')';
 		break;

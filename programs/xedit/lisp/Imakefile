@@ -34,6 +34,7 @@ SRCS		=\
 		format.c \
 		helper.c \
 		lisp.c \
+		string.c \
 		struct.c \
 		require.c \
 		time.c
@@ -43,15 +44,12 @@ OBJS		=\
 		format.o \
 		helper.o \
 		lisp.o \
+		string.o \
 		struct.o \
 		require.o \
 		time.o
 
 #include <Library.tmpl>
-
-INC		= table.c
-TBL		= table.gperf
-GPERFFLAGS	= -T -n -a -c -p -j1 -o -t -N LispFindBuiltin -k 1,2,4,$$
 
 AllTarget(ProgramTargetName($(SAMP)))
 
@@ -66,8 +64,6 @@ DEFINES		= -DLISPDIR='"$(LISPDIR)"' -DNEED_SNPRINTF
 
        INCLUDES = $(MISC_INCLUDES)
 LOCAL_LIBRARIES = -L. -llisp -lm $(DLLIB)
-
-GperfLispFile(lisp,table,$(GPERFFLAGS))
 
 NormalProgramTarget($(SAMP),$(SAMPOBJ),,$(LOCAL_LIBRARIES),)
 

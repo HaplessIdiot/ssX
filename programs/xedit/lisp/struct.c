@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.2 2001/09/21 05:08:43 paulo Exp $ */
 
 #include "struct.h"
 
@@ -72,34 +72,36 @@ Lisp_MakeStruct(LispMac *mac, LispObj *list, char *fname)
 	else
 	    val = EVAL(CAR(CDR(CAR(obj))));
 
-	if (fld == NIL)
+	if (fld == NIL) {
 	    fld = CONS(val, NIL);
+	    FRM = CONS(fld, FRM);	/* GC protect fld linking to FRM */
+	}
 	else {
 	    CDR(fld) = CONS(CAR(fld), CDR(fld));
 	    CAR(fld) = val;
 	}
     }
-    fld = LispReverse(fld);
+    fld = CAR(FRM) = LispReverse(fld);
 
     for (; list != NIL; list = CDR(list)) {
 	if ((nam = EVAL(CAR(list)))->type != LispAtom_t ||
-	    nam->data.atom[0] != ':')
+	    STRPTR(nam)[0] != ':')
 	    LispDestroy(mac, "%s is a illegal field for %s",
 			LispStrObj(mac, nam), fname);
 
 	/* check if field name is a valid field name */
 	for (count = 0, obj = CDR(str); obj != NIL; ++count, obj = CDR(obj)) {
 	    if ((CAR(obj)->type == LispAtom_t &&
-		 strcmp(CAR(obj)->data.atom, nam->data.atom + 1) == 0) ||
+		 strcmp(STRPTR(CAR(obj)), STRPTR(nam) + 1) == 0) ||
 		(CAR(obj)->type == LispCons_t &&
-		 strcmp(CAR(CAR(obj))->data.atom, nam->data.atom + 1) == 0))
+		 strcmp(STRPTR(CAR(CAR(obj))), STRPTR(nam) + 1) == 0))
 		break;
 	}
 
 	/* check if structure has named field */
 	if (obj == NIL)
 	    LispDestroy(mac, ":%s is not a %s field, at %s",
-			nam->data.atom, CAR(str)->data.atom, fname);
+			STRPTR(nam), STRPTR(CAR(str)), fname);
 
 	/* value supplied? */
 	if ((list = CDR(list)) == NIL)
@@ -119,6 +121,8 @@ Lisp_MakeStruct(LispMac *mac, LispObj *list, char *fname)
     for (obj = fld; obj != NIL; obj = CDR(obj))
 	obj->prot = LispNil_t;
 
+    FRM = CDR(FRM);	/* GC Uprotect fld */
+
     return (STRUCT(fld, str));
 }
 
@@ -133,13 +137,13 @@ Lisp_StructAccess(LispMac *mac, LispObj *list, char *fname)
     /* check if the object is of the required type */
     if (obj->type != LispStruct_t || obj->data.struc.def != str)
 	LispDestroy(mac, "%s is not a %s",
-		    LispStrObj(mac, obj), CAR(str)->data.atom);
+		    LispStrObj(mac, obj), STRPTR(CAR(str)));
 
     for (res = CAR(obj); len; res = CDR(res))
 	--len;
 
     mac->setf = res;
-    mac->cdr = 0;
+    mac->setflag = SETFCAR;
 
     return (CAR(res));
 }

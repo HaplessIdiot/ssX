@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.10 2001/10/10 07:02:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.11 2001/10/11 06:34:50 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -65,7 +65,7 @@ _LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		break;
 	    case LispAtom_t:
 	    case LispString_t:
-		if (left->data.atom == right->data.atom)
+		if (STRPTR(left) == STRPTR(right))
 		    res = T;
 		break;
 	    case LispCons_t:
@@ -76,16 +76,16 @@ _LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 	    case LispQuote_t:
 		res = _LispEqual(mac, left->data.quote, right->data.quote);
 		break;
-	    case LispSymbol_t:
-		if (left->data.symbol.name == right->data.symbol.name)
-		    res = T;
-		break;
 	    case LispLambda_t:
 		res = _LispEqual(mac, left->data.lambda.name,
 				 right->data.lambda.name);
 		break;
 	    case LispOpaque_t:
 		if (left->data.opaque.data == right->data.opaque.data)
+		    res = T;
+		break;
+	    default:
+		if (left == right)
 		    res = T;
 		break;
 	}
@@ -95,7 +95,7 @@ _LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 }
 
 LispObj *
-_LispNth(LispMac *mac, LispObj *list, char *name, int cdr)
+_LispNth(LispMac *mac, LispObj *list, char *name, int setflag)
 {
     int count;
     LispObj *nth = CAR(list), *seq = CDR(list), *setf = list;
@@ -112,9 +112,9 @@ _LispNth(LispMac *mac, LispObj *list, char *name, int cdr)
 	;
 
     if (count == nth->data.real) {
-	mac->cdr = cdr;
-	mac->setf = cdr ? setf : seq;
-	return ((cdr || seq == NIL) ? seq : CAR(seq));
+	mac->setflag = setflag;
+	mac->setf = setflag == SETFCDR ? setf : seq;
+	return ((setflag == SETFCDR || seq == NIL) ? seq : CAR(seq));
     }
     return (NIL);
 }
@@ -166,10 +166,39 @@ _LispBoolCond(LispMac *mac, LispObj *list, char *name, int op)
     int cond;
 
     cond = 1;
-    obj = EVAL(CAR(list));
+    obj = op == NOT_EQUAL ? CAR(list) : EVAL(CAR(list));
     if (obj->type != LispReal_t)
 	LispDestroy(mac, ExpectingNumberAt, name);
     value = obj->data.real;
+
+    /* special handling, as (/= 3 6 5 2) => T, but (/= 3 3 5 3) => NIL
+     * all elements must be different to be True
+     * Also, for NOT_EQUAL, arguments must be evaluated before calling
+     * this function.
+     */
+    if (op == NOT_EQUAL) {
+	LispObj *cmp;
+
+	list = CDR(list);
+	if (list == NIL)
+	    return (T);
+
+	/* check if numbers first */
+	for (obj = list; obj != NIL; obj = CDR(obj))
+	    if (CAR(obj)->type != LispReal_t)
+		LispDestroy(mac, ExpectingNumberAt, name);
+
+	do {
+	    for (cmp = list; cmp != NIL; cmp = CDR(cmp)) {
+		obj = CAR(cmp);
+		if (value == obj->data.real)
+		    return (NIL);
+	    }
+	    value = CAR(list)->data.real;
+	    list = CDR(list);
+	} while (list != NIL);
+	return (T);
+    }
 
     for (list = CDR(list); list != NIL; list = CDR(list)) {
 	obj = EVAL(CAR(list));
@@ -205,6 +234,87 @@ _LispBoolCond(LispMac *mac, LispObj *list, char *name, int op)
 }
 
 LispObj *
+_LispCharBoolCond(LispMac *mac, LispObj *list, char *name, int op, int cas)
+{
+    LispObj *obj;
+    long value, comp;
+    int cond;
+
+    cond = 1;
+    obj = op == NOT_EQUAL ? CAR(list) : EVAL(CAR(list));
+    if (obj->type != LispCharacter_t)
+	LispDestroy(mac, "expecting character, at %s", name);
+    value = obj->data.integer;
+    if (cas)
+	value = toupper(value);
+
+    if (op == NOT_EQUAL) {
+	LispObj *cmp;
+
+	list = CDR(list);
+	if (list == NIL)
+	    return (T);
+
+	for (obj = list; obj != NIL; obj = CDR(obj))
+	    if (CAR(obj)->type != LispCharacter_t)
+		LispDestroy(mac, "expecting character, at %s", name);
+
+	do {
+	    for (cmp = list; cmp != NIL; cmp = CDR(cmp)) {
+		obj = CAR(cmp);
+		comp = obj->data.integer;
+		if (cas)
+		    comp = toupper(comp);
+		if (value == comp)
+		    return (NIL);
+	    }
+	    value = CAR(list)->data.integer;
+	    if (cas)
+		value = toupper(value);
+	    list = CDR(list);
+	} while (list != NIL);
+	return (T);
+    }
+
+    for (list = CDR(list); list != NIL; list = CDR(list)) {
+	obj = EVAL(CAR(list));
+	if (obj->type != LispCharacter_t)
+	    LispDestroy(mac, "expecting character, at %s", name);
+	comp = obj->data.integer;
+	if (cas)
+	    comp = toupper(comp);
+	switch (op) {
+	    case LESS:
+		if (value >= comp)
+		    cond = 0;
+		break;
+	    case LESS_EQUAL:
+		if (value > comp)
+		    cond = 0;
+		break;
+	    case EQUAL:
+		if (value != comp)
+		    cond = 0;
+		break;
+	    case GREATER:
+		if (value <= comp)
+		    cond = 0;
+		break;
+	    case GREATER_EQUAL:
+		if (value < comp)
+		    cond = 0;
+		break;
+	}
+	if (!cond)
+	    break;
+	value = obj->data.integer;
+	if (cas)
+	    value = toupper(value);
+    }
+    return (cond ? T : NIL);
+}
+
+LispObj *
 _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 {
     LispObj *name = NIL, *args, *code, *obj = NIL, *fun;
@@ -217,10 +327,6 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 	if ((name = CAR(list))->type != LispAtom_t)
 	    LispDestroy(mac, "%s cannot be a %s name, at %s",
 			LispStrObj(mac, name), types[type], fnames[type]);
-
-	if (LispFindBuiltin(name->data.atom, strlen(name->data.atom)) != NULL)
-	    LispDestroy(mac, "cannot redefine %s", name->data.atom);
-
 	list = CDR(list);
     }
 
@@ -236,110 +342,98 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 		    LispDestroy(mac, "%s cannot be a %s argument name, at %s %s",
 				LispStrObj(mac, CAR(CAR(obj))), types[type],
 				fnames[type],
-				type == LispLambda ? "..." : name->data.atom);
+				type == LispLambda ? "..." : STRPTR(name));
 		else if (CDR(CAR(obj)) != NIL &&
 			 (CDR(CAR(obj))->type != LispCons_t ||
 			  CDR(CDR(CAR(obj))) != NIL))
 		    LispDestroy(mac, "bad argument specification %s, at %s %s",
 				LispStrObj(mac, CAR(obj)), types[type],
 				fnames[type],
-				type == LispLambda ? "..." : name->data.atom);
+				type == LispLambda ? "..." : STRPTR(name));
 	    }
 	    else if (CAR(obj)->type != LispAtom_t ||
-		CAR(obj)->data.atom[0] == ':')
+		STRPTR(CAR(obj))[0] == ':')
 		LispDestroy(mac, "%s cannot be a %s argument name, at %s %s",
 			    LispStrObj(mac, CAR(obj)), types[type], fnames[type],
-			    type == LispLambda ? "..." : name->data.atom);
-	    else if (CAR(obj)->data.atom[0] == '&') {
-		if (strcmp(CAR(obj)->data.atom + 1, "REST") == 0) {
+			    type == LispLambda ? "..." : STRPTR(name));
+	    else if (STRPTR(CAR(obj))[0] == '&') {
+		if (strcmp(STRPTR(CAR(obj)) + 1, "REST") == 0) {
 		    if (rest || CDR(obj) == NIL || CDR(CDR(obj)) != NIL)
 			LispDestroy(mac, "syntax error parsing &REST,"
 				    " at %s %s", fnames[type],
 				    type == LispLambda ?
-				    "..." : name->data.atom);
+				    "..." : STRPTR(name));
 		    rest = 1;
 		}
-		else if (strcmp(CAR(obj)->data.atom + 1, "KEY") == 0) {
+		else if (strcmp(STRPTR(CAR(obj)) + 1, "KEY") == 0) {
 		    if (rest)
 			LispDestroy(mac, "&KEY not allowed after &REST,"
 				    " at %s %s", fnames[type],
 				    type == LispLambda ?
-				    "..." : name->data.atom);
+				    "..." : STRPTR(name));
 		    if (key || optional || CDR(obj) == NIL)
 			LispDestroy(mac, "syntax error parsing &KEY,"
 				    " at %s %s", fnames[type],
 				    type == LispLambda ?
-				    "..." : name->data.atom);
+				    "..." : STRPTR(name));
 		    key = 1;
 		}
-		else if (strcmp(CAR(obj)->data.atom + 1, "OPTIONAL") == 0) {
+		else if (strcmp(STRPTR(CAR(obj)) + 1, "OPTIONAL") == 0) {
 		    if (rest)
 			LispDestroy(mac, "&OPTIONAL not allowed after &REST,"
 				    " at %s %s", fnames[type],
 				    type == LispLambda ?
-				    "..." : name->data.atom);
+				    "..." : STRPTR(name));
 		    if (key || optional || CDR(obj) == NIL)
 			LispDestroy(mac, "syntax error parsing &OPTIONAL,"
 				    " at %s %s", fnames[type],
 				    type == LispLambda ?
-				    "..." : name->data.atom);
+				    "..." : STRPTR(name));
 		    optional = 1;
 		}
 		else
 		    LispDestroy(mac, "%s not allowed %at %s %s",
-				CAR(obj)->data.atom, fnames[type],
-				type == LispLambda ? "..." : name->data.atom);
+				STRPTR(CAR(obj)), fnames[type],
+				type == LispLambda ? "..." : STRPTR(name));
 	    }
     }
     else if (args != NIL)
 	LispDestroy(mac, "%s cannot be a %s argument list, at %s %s",
 		    LispStrObj(mac, args), types[type], fnames[type],
-		    type == LispLambda ? "..." : name->data.atom);
+		    type == LispLambda ? "..." : STRPTR(name));
 
     /* code */
     code = CDR(list);
 
-    if (type != LispLambda) {
-	for (obj = FUN; obj != NIL; obj = CDR(obj))
-	    if (CAR(obj)->data.lambda.name->data.atom == name->data.atom) {
-		fprintf(lisp_stderr, "*** Warning: %s is being redefined\n",
-			name->data.atom);
-		break;
-	    }
-    }
-
     GCProtect();
     fun = LispNewLambda(mac, name, args, code, num_args, type,
 			key, optional, rest);
-
-    if (type != LispLambda) {
-	if (obj != NIL)
-	    CAR(obj) = fun;
-	else if (FUN == NIL)
-	    FUN = CONS(fun, NIL);
-	else {
-	    CDR(FUN) = CONS(CAR(FUN), CDR(FUN));
-	    CAR(FUN) = fun;
-	}
-	GCUProtect();
-
-	return (name);
-    }
     GCUProtect();
 
-    return (fun);
+    if (type != LispLambda) {
+	if (name->data.atom->property) {
+	    if ((name->data.atom->property->function ||
+		name->data.atom->property->builtin))
+		fprintf(lisp_stderr, "*** Warning: %s is being redefined\n",
+			STRPTR(name));
+
+	    if (name->data.atom->property->builtin)
+		LispRemAtomBuiltinProperty(mac, name->data.atom);
+	}
+	LispSetAtomFunctionProperty(mac, name->data.atom, fun);
+    }
+
+    return (type != LispLambda ? name : fun);
 }
 
 static LispObj *
 _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
 {
-    LispObj *old_frm, *old_env, *old_sym, *env, *res,
-	    *args, *test, *body, *obj;
+    LispObj *old_frm, *old_env, *env, *res, *args, *test, *body, *obj;
 
     env = res = NIL;
     old_frm = FRM;
     old_env = ENV;
-    old_sym = SYM;
     args = CAR(list);
     test = CAR(CDR(list));
     body = CDR(CDR(list));
@@ -389,7 +483,7 @@ _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
 	}
 	GCUProtect();
 	if (refs)
-	    LispAddVar(mac, var->data.atom, val);
+	    LispAddVar(mac, var, val);
     }
 
     /* Need to update CAR(FRM) or will run loop without gc protection! */
@@ -397,7 +491,7 @@ _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
     if (!refs) {
 	for (obj = env; obj != NIL; obj = CDR(obj)) {
 	    list = CAR(obj);
-	    LispAddVar(mac, CAR(list)->data.atom, CAR(CDR(list)));
+	    LispAddVar(mac, CAR(list), CAR(CDR(list)));
 	}
     }
 
@@ -413,12 +507,11 @@ _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
 	for (obj = env; obj != NIL; obj = CDR(obj)) {
 	    list = CAR(obj);
 	    if (CDR(CDR(list)) != NIL)
-		LispSetVar(mac, CAR(list)->data.atom,
-			   EVAL(CAR(CDR(CDR(list)))), 0);
+		LispSetVar(mac, CAR(list),
+			   EVAL(CAR(CDR(CDR(list)))));
 	}
     }
 
-    SYM = old_sym;
     ENV = old_env;
     FRM = old_frm;
 
@@ -450,7 +543,7 @@ static LispObj *
 _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 {
     double count = 0.0;
-    LispObj *var, *val, *res, *body, *old_frm, *old_env, *old_sym;
+    LispObj *var, *val, *res, *body, *old_frm, *old_env;
 
     /* Parse arguments */
     if (CAR(list)->type != LispCons_t)
@@ -465,7 +558,6 @@ _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
     /* Save environment */
     old_frm = FRM;
     old_env = ENV;
-    old_sym = SYM;
 
     if (list == NIL) {
 	if (!times)
@@ -504,9 +596,9 @@ _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 
     /* Initialize counter */
     if (times)
-	LispAddVar(mac, var->data.atom, REAL(count));
+	LispAddVar(mac, var, REAL(count));
     else
-	LispAddVar(mac, var->data.atom, CAR(val));
+	LispAddVar(mac, var, CAR(val));
 
     /* Execute iterations */
     for (;;) {
@@ -522,18 +614,17 @@ _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 
 	/* Update variables */
 	if (times)
-	    LispSetVar(mac, var->data.atom, REAL(count), 0);
+	    LispSetVar(mac, var, REAL(count));
 	else {
 	    val = CDR(val);
 	    if (val == NIL)
 		break;
 	    else if (val->type != LispCons_t)
 		LispDestroy(mac, "true list required, at %s", fname);
-	    LispSetVar(mac, var->data.atom, CAR(val), 0);
+	    LispSetVar(mac, var, CAR(val));
 	}
     }
 
-    SYM = old_sym;
     ENV = old_env;
     FRM = old_frm;
 
@@ -570,14 +661,14 @@ _LispSet(LispMac *mac, LispObj *var, LispObj *val, char *fname, int eval)
 	LispDestroy(mac, "%s is not a symbol, at %s",
 		    LispStrObj(mac, var), fname);
 
-    name = var->data.atom;
+    name = STRPTR(var);
     if (isdigit(name[0]) || name[0] == '(' || name[0] == ')'
 	|| name[0] == ';' || name[0] == '\'' || name[0] == '#')
 	LispDestroy(mac, "bad name %s, at %s", name, fname);
     if (eval)
 	val = EVAL(val);
 
-    return (LispSetVar(mac, name, val, 0));
+    return (LispSetVar(mac, var, val));
 }
 
 LispObj *
@@ -673,11 +764,11 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRun(mac)) != NULL) {
-	    GCProtect();
+	    if (obj == EOLIST)
+		LispDestroy(mac, "object cannot start with #\\)");
 	    res = EVAL(obj);
 	    if (print)
 		LispPrint(mac, res, 1);
-	    GCUProtect();
 	}
 	if (mac->tok == EOF)
 	    break;
@@ -692,4 +783,166 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
     mac->tok = mac->stream.stream[mac->stream.stream_level].tok;
 
     return (res);
+}
+
+void
+_LispGetStringArgs(LispMac *mac, LispObj *list, char *fname,
+		   char **string1, char **string2,
+		   int *start1, int *end1, int *start2, int *end2)
+{
+    int len1, len2;
+    LispObj *lstring1, *lstring2, *lstart1, *lend1, *lstart2, *lend2;
+
+    lstring1 = CAR(list);
+    list = CDR(list);
+    lstring2 = CAR(list);
+    if ((lstring1->type != LispString_t && lstring1->type != LispAtom_t) ||
+	(lstring2->type != LispString_t && lstring2->type != LispAtom_t))
+	LispDestroy(mac, "expecting string, at %s", fname);
+
+    *string1 = STRPTR(lstring1);
+    *string2 = STRPTR(lstring2);
+
+    LispGetKeys(mac, fname, "START1:END1:START2:END2", CDR(list),
+		&lstart1, &lend1, &lstart2, &lend2);
+
+    if ((lstart1 != NIL &&
+	 (lstart1->type != LispReal_t || lstart1->data.real < 0 ||
+	  (int)lstart1->data.real != lstart1->data.real)) ||
+	(lend1 != NIL &&
+	 (lend1->type != LispReal_t || lend1->data.real < 0 ||
+	  (int)lend1->data.real != lend1->data.real)) ||
+	(lstart2 != NIL &&
+	 (lstart2->type != LispReal_t || lstart2->data.real < 0 ||
+	  (int)lstart2->data.real != lstart2->data.real)) ||
+	(lend2 != NIL &&
+	 (lend2->type != LispReal_t || lend2->data.real < 0 ||
+	  (int)lend2->data.real != lend2->data.real)))
+	LispDestroy(mac, "expecting positive integer, at %s", fname);
+
+    len1 = strlen(*string1);
+    *start1 = lstart1 == NIL ? 0 : lstart1->data.real;
+    *end1 = lend1 == NIL ? len1 : lend1->data.real;
+    len2 = strlen(*string2);
+    *start2 = lstart2 == NIL ? 0 : lstart2->data.real;
+    *end2 = lend2 == NIL ? len2 : lend2->data.real;
+
+    if (*start1 > *end1 || *end1 > len1 || *start2 > *end2 || *end2 > len2)
+	LispDestroy(mac, "bad string index, at %s", fname);
+}
+
+void
+_LispGetStringCaseArgs(LispMac *mac, LispObj *list, char *fname,
+		       char **string, int *start, int *end)
+{
+    int len;
+    LispObj *lstring, *lstart, *lend;
+
+    lstring = CAR(list);
+    if (lstring->type != LispString_t && lstring->type != LispAtom_t)
+	LispDestroy(mac, "expecting string, at %s", fname);
+
+    *string = STRPTR(lstring);
+
+    LispGetKeys(mac, fname, "START:END", CDR(list), &lstart, &lend);
+
+    if ((lstart != NIL &&
+	 (lstart->type != LispReal_t || lstart->data.real < 0 ||
+	  (int)lstart->data.real != lstart->data.real)) ||
+	(lend != NIL &&
+	 (lend->type != LispReal_t || lend->data.real < 0 ||
+	  (int)lend->data.real != lend->data.real)))
+	LispDestroy(mac, "expecting positive integer, at %s", fname);
+
+    len = strlen(*string);
+    *start = lstart == NIL ? 0 : lstart->data.real;
+    *end = lend == NIL ? len : lend->data.real;
+
+    if (*start > *end || *end > len)
+	LispDestroy(mac, "bad string index, at %s", fname);
+}
+
+LispObj *
+_LispStringDoTrim(LispMac *mac, LispObj *list, char *fname, int left, int right)
+{
+    char *str;
+    int start, end, sstart, send, len;
+    LispObj *chars, *string;
+
+    chars = CAR(list);
+    if (chars->type != LispString_t && chars->type != LispCons_t)
+	LispDestroy(mac, "%s is not a sequence, at %s",
+		    LispStrObj(mac, chars), fname);
+    string = CAR(CDR(list));
+    if (string->type != LispString_t && string->type != LispAtom_t)
+	LispDestroy(mac, "expecting string, at %s", fname);
+
+    sstart = start = 0;
+    send = end = strlen(STRPTR(string));
+
+    if (chars->type == LispString_t) {
+	char *cmp;
+
+	if (left) {
+	    for (str = STRPTR(string); *str; str++) {
+		for (cmp = STRPTR(chars); *cmp; cmp++)
+		    if (*str == *cmp)
+			break;
+		if (*cmp == '\0')
+		    break;
+		++start;
+	    }
+	}
+	if (right) {
+	    for (str = STRPTR(string) + end - 1; end > 0; str--) {
+		for (cmp = STRPTR(chars); *cmp; cmp++)
+		    if (*str == *cmp)
+			break;
+		if (*cmp == '\0')
+		    break;
+		--end;
+	    }
+	}
+    }
+    else {
+	LispObj *obj;
+
+	if (left) {
+	    for (str = STRPTR(string); *str; str++) {
+		for (obj = chars; obj != NIL; obj = CDR(obj))
+		    /* Should really ignore non character input ? */
+		    if (CAR(obj)->type == LispCharacter_t &&
+			*str == CAR(obj)->data.integer)
+			break;
+		if (obj == NIL)
+		    break;
+		++start;
+	    }
+	}
+	if (right) {
+	    for (str = STRPTR(string) + end - 1; end > 0; str--) {
+		for (obj = chars; obj != NIL; obj = CDR(obj))
+		    /* Should really ignore non character input ? */
+		    if (CAR(obj)->type == LispCharacter_t &&
+			*str == CAR(obj)->data.integer)
+			break;
+		if (obj == NIL)
+		    break;
+		--end;
+	    }
+	}
+    }
+
+    if (sstart == start && send == end)
+	return (string);
+
+    len = end - start;
+    str = LispMalloc(mac, len + 1);
+    strncpy(str, STRPTR(string) + start, len);
+    str[len] = '\0';
+
+    string = STRING(str);
+    LispFree(mac, str);
+
+    return (string);
 }

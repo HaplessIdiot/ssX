@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.4 2001/09/29 04:46:05 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -81,10 +81,19 @@ LispObj *Lisp_XawTextSetInsertionPoint(LispMac*, LispObj*, char*);
 /*
  * Initialization
  */
-#include "xawtable.c"
+
+static LispBuiltin lispbuiltins[] = {
+    {"XAW-COERCE-TO-LIST-RETURN-STRUCT",Lisp_XawCoerceToListReturnStruct,1,1,1,},
+    {"XAW-LIST-HIGHLIGHT",		Lisp_XawListHighlight,		 1,2,2,},
+    {"XAW-LIST-UNHIGHLIGHT",		Lisp_XawListUnhighlight,	 1,1,1,},
+    {"XAW-TEXT-GET-SOURCE",		Lisp_XawTextGetSource,		 1,1,1,},
+    {"XAW-TEXT-LAST-POSITION",		Lisp_XawTextLastPosition,	 1,1,1,},
+    {"XAW-TEXT-GET-INSERTION-POINT",	Lisp_XawTextGetInsertionPoint,	 1,1,1,},
+    {"XAW-TEXT-SET-INSERTION-POINT",	Lisp_XawTextSetInsertionPoint,	 1,2,2,},
+};
 
 LispModuleData xawLispModuleData = {
-    xawFindFun,
+    LISP_MODULE_VERSION,
     xawLoadModule
 };
 
@@ -96,6 +105,7 @@ static int xawWidget_t, xawWidgetClass_t, xawListReturnStruct_t, charpp_t;
 int
 xawLoadModule(LispMac *mac)
 {
+    int i;
     char *fname = "INTERNAL:XAW-LOAD-MODULE";
 
     xawWidget_t = LispRegisterOpaqueType(mac, "Widget");
@@ -105,7 +115,7 @@ xawLoadModule(LispMac *mac)
 
     LispExecute(mac, "(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
 
-    GCPRO();
+    GCProtect();
     (void)LispSetVariable(mac, ATOM2("ASCII-SINK-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
@@ -202,7 +212,10 @@ xawLoadModule(LispMac *mac)
     (void)LispSetVariable(mac, ATOM2("VENDOR-SHELL-WIDGET-CLASS"),
 			  OPAQUE(vendorShellWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    GCUPRO();
+    GCUProtect();
+
+    for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
+	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     return (1);
 }

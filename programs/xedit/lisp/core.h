@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.3 2001/09/29 06:37:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.4 2001/10/02 06:38:37 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -45,6 +45,7 @@ LispObj *Lisp_LessEqual(LispMac*, LispObj*, char*);	/* <= */
 LispObj *Lisp_Equal_(LispMac*, LispObj*, char*);	/* = */
 LispObj *Lisp_Greater(LispMac*, LispObj*, char*);	/* > */
 LispObj *Lisp_GreaterEqual(LispMac*, LispObj*, char*);	/* >= */
+LispObj *Lisp_NotEqual(LispMac*, LispObj*, char*);	/* /= */
 LispObj *Lisp_Aref(LispMac*, LispObj*, char*);		/* aref */
 LispObj *Lisp_Assoc(LispMac*, LispObj*, char*);		/* assoc */
 LispObj *Lisp_And(LispMac*, LispObj*, char*);		/* and */
@@ -60,6 +61,7 @@ LispObj *Lisp_Cdr(LispMac*, LispObj*, char*);		/* cdr */
 LispObj *Lisp_Coerce(LispMac*, LispObj*, char*);	/* coerce */
 LispObj *Lisp_Cond(LispMac*, LispObj*, char*);		/* cond */
 LispObj *Lisp_Cons(LispMac*, LispObj*, char*);		/* cons */
+LispObj *Lisp_Decf(LispMac*, LispObj*, char*);		/* decf */
 LispObj *Lisp_Defmacro(LispMac*, LispObj*, char*);	/* defmacro */
 LispObj *Lisp_Defun(LispMac*, LispObj*, char*);		/* defun */
 LispObj *Lisp_Defstruct(LispMac*, LispObj*, char*);	/* defstruct */
@@ -69,10 +71,12 @@ LispObj *Lisp_DoList(LispMac*, LispObj*, char*);	/* dolist */
 LispObj *Lisp_DoTimes(LispMac*, LispObj*, char*);	/* dotimes */
 LispObj *Lisp_Equal(LispMac*, LispObj*, char*);		/* equal */
 LispObj *Lisp_Eval(LispMac*, LispObj*, char*);		/* eval */
+LispObj *Lisp_FMakunbound(LispMac*, LispObj*, char*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispObj*, char*);	/* funcall */
 LispObj *Lisp_Gc(LispMac*, LispObj*, char*);		/* gc */
 LispObj *Lisp_Get(LispMac*, LispObj*, char*);		/* get */
 LispObj *Lisp_If(LispMac*, LispObj*, char*);		/* if */
+LispObj *Lisp_Incf(LispMac*, LispObj*, char*);		/* incf */
 LispObj *Lisp_Lambda(LispMac*, LispObj*, char*);	/* lambda */
 LispObj *Lisp_Last(LispMac*, LispObj*, char*);		/* last */
 LispObj *Lisp_Length(LispMac*, LispObj*, char*);	/* length */
@@ -83,6 +87,8 @@ LispObj *Lisp_ListP(LispMac*, LispObj*, char*);		/* list* */
 LispObj *Lisp_Listp(LispMac*, LispObj*, char*);		/* listp */
 LispObj *Lisp_Loop(LispMac*, LispObj*, char*);		/* loop */
 LispObj *Lisp_Makearray(LispMac*, LispObj*, char*);	/* make-array */
+LispObj *Lisp_Makelist(LispMac*, LispObj*, char*);	/* make-list */
+LispObj *Lisp_Makunbound(LispMac*, LispObj*, char*);	/* makunbound */
 LispObj *Lisp_Mapcar(LispMac*, LispObj*, char*);	/* mapcar */
 LispObj *Lisp_Max(LispMac*, LispObj*, char*);		/* max */
 LispObj *Lisp_Member(LispMac*, LispObj*, char*);	/* member */

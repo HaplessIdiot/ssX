@@ -3,14 +3,7 @@
 
 INCLUDES	= -I..  -I$(XINCLUDESRC)
 
-GPERFFLAGS	= -T -n -a -c -p -j1 -o -t -D -N
-
 #if BuildSharedLispModules
-GperfLispFile(x11,x11table,$(GPERFFLAGS) x11FindFun)
-GperfLispFile(xt,xttable,$(GPERFFLAGS) xtFindFun)
-GperfLispFile(xaw,xawtable,$(GPERFFLAGS) xawFindFun)
-GperfLispFile(psql,psqltable,$(GPERFFLAGS) psqlFindFun)
-
 LispModuleTarget(x11, $(XLIB),)
 LispModuleTarget(xt, $(XTOOLLIB) $(XLIB),)
 LispModuleTarget(xaw, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),)

@@ -1,13 +1,3 @@
-#define GperfLispFile(dep,file,flags)					@@\
-dep.c:	file.c								@@\
-									@@\
-file.c: file.gperf							@@\
-	RemoveFile($@)							@@\
-	$(GPERF) flags $? > $@						@@\
-									@@\
-clean::									@@\
-	RemoveFile(file.c)
-
 #ifndef LispModuleTarget
 #define LispModuleTarget(module,liblist,options)			@@\
 AllTarget(module.so)							@@\

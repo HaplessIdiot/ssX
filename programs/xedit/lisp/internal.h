@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.7 2001/10/10 07:02:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.8 2001/10/11 06:34:50 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -39,7 +39,9 @@
  * Defines
  */
 #define	CAR(list)		(list->data.cons.car)
+#define	CAAR(list)		(list->data.cons.car->data.cons.car)
 #define CDR(list)		(list->data.cons.cdr)
+#define CDAR(list)		(list->data.cons.car->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
 #define ATOM(atom)		LispNewAtom(mac, atom)
@@ -52,18 +54,19 @@
 #define CHECKO(obj, typ)						\
 	obj->type == LispOpaque_t && 					\
 	(obj->data.opaque.type == typ || obj->data.opaque.type == 0)
-#define GCPRO()			LispGC(mac, NIL, NIL); GCProtect()
-#define GCUPRO()		GCUProtect()
 #define PROTECT(key, list)	LispProtect(mac, key, list)
 #define UPROTECT(key, list)	LispUProtect(mac, key, list)
 
 #define	GCProtect()		++gcpro
 #define	GCUProtect()		--gcpro
 
+#define	STRPTR(obj)		(obj)->data.atom->string
+
 /*
  * Types
  */
 typedef struct _LispObj LispObj;
+typedef struct _LispAtom LispAtom;
 typedef struct _LispBuiltin LispBuiltin;
 typedef struct _LispModuleData LispModuleData;
 
@@ -77,7 +80,6 @@ typedef enum _LispType {
     LispQuote_t,
     LispCharacter_t,
     LispString_t,
-    LispSymbol_t,
     LispLambda_t,
     LispArray_t,
     LispStruct_t,
@@ -97,7 +99,7 @@ struct _LispObj {
     unsigned int dirty : 1;
     unsigned int prot: 1;	/* protection for constant/unamed variables */
     union {
-	char *atom;
+	LispAtom *atom;
 	long integer;
 	double real;
 	LispObj *quote;
@@ -105,11 +107,6 @@ struct _LispObj {
 	    LispObj *car;
 	    LispObj *cdr;
 	} cons;
-	struct {
-	    char *name;
-	    LispObj *obj;
-	    LispObj *plist;
-	} symbol;
 	struct {
 	    LispObj *name;
 	    LispObj *code;
@@ -157,12 +154,12 @@ struct _LispBuiltin {
 };
 
 typedef	LispObj *(*LispFunPtr)(LispMac*, LispObj*, char*);
-typedef LispBuiltin *(*LispFindFunPtr)(char*, int);
 typedef int (*LispLoadModule)(LispMac*);
 typedef int (*LispUnloadModule)(LispMac*);
 
+#define LISP_MODULE_VERSION		1
 struct _LispModuleData {
-    LispFindFunPtr find_fun;
+    int version;
     LispLoadModule load;
     LispUnloadModule unload;
 };
@@ -226,6 +223,10 @@ void LispUProtect(LispMac*, LispObj*, LispObj*);
  * values specified more than once get only the first specification,
  * and if an unknown is on the argument list, a fatal error happens. */
 void LispGetKeys(LispMac*, char*, char*, LispObj*, ...);
+
+/* this function should be called when a module is loaded, and is called
+ * when loading the interpreter */
+void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
 
 /*
  * Initialization
