@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.6 2001/07/06 00:37:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.7 2001/07/15 01:57:35 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -47,6 +47,7 @@
 + (void)setModeWindow:(BOOL)newModeWindow;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
++ (void)setXinerama:(BOOL)newXinerama;
 + (void)saveToDisk;
 
 + (BOOL)useKeymapFile;
@@ -62,5 +63,6 @@
 + (BOOL)modeWindow;
 + (BOOL)startupHelp;
 + (BOOL)systemBeep;
++ (BOOL)xinerama;
 
 @end

@@ -7,7 +7,7 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.6 2001/07/06 00:37:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.7 2001/09/23 04:04:49 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -16,6 +16,7 @@
 
 extern void FatalError(const char *, ...);
 extern char *display;
+extern int noPanoramiXExtension;
 
 // Read the user preferences from the Cocoa front end
 void QuartzReadPreferences(void)
@@ -25,6 +26,7 @@ void QuartzReadPreferences(void)
     darwinFakeButtons = [Preferences fakeButtons];
     quartzMouseAccelChange = [Preferences mouseAccelChange];
     quartzUseSysBeep = [Preferences systemBeep];
+    noPanoramiXExtension = ![Preferences xinerama];
 
     if ([Preferences useKeymapFile]) {
         fileString = (char *) [[Preferences keymapFile] lossyCString];

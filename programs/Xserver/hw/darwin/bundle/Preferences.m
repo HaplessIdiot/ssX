@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.9 2001/08/11 23:14:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.10 2001/09/23 04:04:49 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzCommon.h"
@@ -16,7 +16,7 @@
     NSDictionary *appDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
                     [NSNumber numberWithInt:0], @"Display",
                     @"YES", @"FakeButtons",
-                    @"/System/Library/Keyboards/USA.keymapping", @"KeymappingFile",
+                    @"USA.keymapping", @"KeymappingFile",
                     @"YES", @"UseKeymappingFile",
                     @"Cmd-Opt-a", @"SwitchString",
                     @"NO", @"UseRootlessMode",
@@ -26,7 +26,8 @@
                     [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
                     @"SwitchModifiers", @"NO", @"UseSystemBeep", 
                     @"NO", @"DockSwitch", 
-                    @"NO", @"AllowMouseAccelChange", nil];
+                    @"NO", @"AllowMouseAccelChange",
+                    @"YES", @"Xinerama", nil];
 
     [super initialize];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
@@ -256,6 +257,12 @@
     quartzUseSysBeep = newSystemBeep;
 }
 
++ (void)setXinerama:(BOOL)newXinerama
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newXinerama
+            forKey:@"Xinerama"];
+}
+
 + (void)saveToDisk
 {
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -334,6 +341,11 @@
 + (BOOL)systemBeep
 {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"UseSystemBeep"];
+}
+
++ (BOOL)xinerama
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"Xinerama"];
 }
 
 @end

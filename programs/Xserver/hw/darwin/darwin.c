@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.34 2001/09/20 19:35:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.35 2001/09/23 04:04:49 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -65,7 +65,7 @@ UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
 UInt32                  darwinScreenNumber = 0;
-char                    *darwinKeymapFile = NULL;
+char                    *darwinKeymapFile = "USA.keymapping";
 
 // modifier masks for faking mouse buttons
 int                     darwinFakeMouse2Mask = NX_COMMANDMASK;
@@ -1007,11 +1007,22 @@ void OsVendorFatalError( void )
 /*
  * OsVendorInit
  *  Initialization of Darwin OS support.
- *  Nothing special to do here.
  */
 void OsVendorInit(void)
 {
     DarwinPrintBanner();
+
+    // Find the full path to the keymapping file.
+    if ( darwinKeymapFile ) {
+        char *tempStr = DarwinFindLibraryFile(darwinKeymapFile, "Keyboards");
+        if ( !tempStr )
+            FatalError("Could not find keymapping file %s.\n",
+                       darwinKeymapFile);
+        darwinKeymapFile = tempStr;
+        ErrorF("Using keymapping provided in %s.\n", darwinKeymapFile);
+    } else {
+        ErrorF("Reading keymapping from the kernel.\n");
+    }
 }
 
 /*
@@ -1080,11 +1091,13 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         if ( i == argc-1 ) {
             FatalError( "-keymap must be followed by a filename\n" );
         }
-        darwinKeymapFile = DarwinFindLibraryFile(argv[i+1], "Keyboards");
-        if ( !darwinKeymapFile )
-            FatalError( "Could not find keymapping file %s.\n", argv[i+1] );
-        ErrorF( "Using keymapping provided in %s.\n", darwinKeymapFile );
+        darwinKeymapFile = argv[i+1];
         return 2;
+    }
+
+    if ( !strcmp( argv[i], "-nokeymap" ) ) {
+        darwinKeymapFile = NULL;
+        return 1;
     }
 
     if ( !strcmp( argv[i], "-size" ) ) {
