@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.30 2001/12/10 21:11:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.31 2002/05/17 10:21:10 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -692,7 +692,9 @@ void Permedia3LoadPalette(
     LOCO *colors,
     VisualPtr pVisual
 ){
+#if 0
     GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
     int i, index, shift = 0, j, repeat = 1;
 
     if (pScrn->depth == 15) {
@@ -708,11 +710,13 @@ void Permedia3LoadPalette(
 	    Permedia2WriteData(pScrn, colors[index].green);
 	    Permedia2WriteData(pScrn, colors[index].blue);
 	}
+#if 0
         GLINT_SLOW_WRITE_REG(index, PM3LUTIndex);
 	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
 			     ((colors[index].green & 0xFF) << 8) |
 			     ((colors[index].blue & 0xFF) << 16),
 			     PM3LUTData);
+#endif
     }
 }
 
@@ -724,7 +728,9 @@ void Permedia3LoadPalette16(
     LOCO *colors,
     VisualPtr pVisual
 ){
+#if 0
     GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
     int i, index, j;
 
     for(i = 0; i < numColors; i++) {
@@ -735,11 +741,13 @@ void Permedia3LoadPalette16(
 	    Permedia2WriteData(pScrn, colors[index].green);
 	    Permedia2WriteData(pScrn, colors[index >> 1].blue);
 	}
+#if 0
         GLINT_SLOW_WRITE_REG(index, PM3LUTIndex);
 	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
 			     ((colors[index].green & 0xFF) << 8) |
 			     ((colors[index].blue & 0xFF) << 16),
 			     PM3LUTData);
+#endif
 
 	if(index <= 31) {
 	    for (j = 0; j < 4; j++) {
