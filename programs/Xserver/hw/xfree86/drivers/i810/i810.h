@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.13 2000/08/03 02:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.14 2000/08/15 16:05:36 dawes Exp $ */
 
 /*
  * Authors:
@@ -160,7 +160,7 @@ typedef struct _I810Rec {
    unsigned long CursorStart;
    unsigned long OverlayPhysical;
    unsigned long OverlayStart;
-
+   int colorKey;
 
    DGAModePtr DGAModes;
    int numDGAModes;
@@ -294,6 +294,8 @@ extern void I810EmitFlush(ScrnInfoPtr pScrn);
 extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
 
 extern Bool I810DGAInit(ScreenPtr pScreen);
+
+extern void I810InitVideo(ScreenPtr pScreen);
 
 #define minb(p) *(volatile CARD8 *)(pI810->MMIOBase + (p))
 #define moutb(p,v) *(volatile CARD8 *)(pI810->MMIOBase + (p)) = (v)
