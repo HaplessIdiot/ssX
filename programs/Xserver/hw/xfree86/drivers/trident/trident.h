@@ -76,6 +76,9 @@ typedef struct {
     Bool		IsCyber;
     Bool		CyberShadow;
     Bool		NoMMIO;
+    Bool		ShadowFB;
+    unsigned char *	ShadowPtr;
+    int			ShadowPitch;
     float		frequency;
     unsigned char	REGPCIReg;
     unsigned char	REGNewMode1;

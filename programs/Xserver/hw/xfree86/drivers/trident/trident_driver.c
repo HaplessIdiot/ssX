@@ -58,7 +58,7 @@
 #include "mipointer.h"
 
 #include "mibstore.h"
-
+#include "shadowfb.h"
 #include "trident.h"
 #include "trident_regs.h"
 
@@ -201,6 +201,7 @@ typedef enum {
     OPTION_NOACCEL,
     OPTION_SETMCLK,
     OPTION_MUX_THRESHOLD,
+    OPTION_SHADOW_FB,
     OPTION_CYBER_SHADOW,
     OPTION_NOMMIO
 } TRIDENTOpts;
@@ -212,6 +213,7 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SETMCLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -433,6 +435,11 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tridentSetup);
@@ -462,7 +469,7 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
-			  xaaSymbols, NULL);
+			  xaaSymbols, shadowSymbols, NULL);
 	return (pointer)TRUE;
     } 
 
@@ -740,6 +747,33 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     return linePitches;
 }
 
+void
+TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int width, height, Bpp, FBPitch;
+    unsigned char *src, *dst;
+   
+    Bpp = pScrn->bitsPerPixel >> 3;
+    FBPitch = BitmapBytePad(pScrn->displayWidth * pScrn->bitsPerPixel);
+
+    while(num--) {
+	width = (pbox->x2 - pbox->x1) * Bpp;
+	height = pbox->y2 - pbox->y1;
+	src = pTrident->ShadowPtr + (pbox->y1 * pTrident->ShadowPitch) + 
+						(pbox->x1 * Bpp);
+	dst = pTrident->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+
+	while(height--) {
+	    memcpy(dst, src, width);
+	    dst += FBPitch;
+	    src += pTrident->ShadowPitch;
+	}
+	
+	pbox++;
+    }
+} 
+
 /* Mandatory */
 static Bool
 TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
@@ -959,6 +993,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
 						pTrident->MUXThreshold);
+    }
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SHADOW_FB, FALSE)) {
+	pTrident->ShadowFB = TRUE;
+	pTrident->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
 
     /* FIXME ACCELERATION */
@@ -1562,6 +1602,15 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86LoaderReqSymLists(i2cSymbols, NULL);
 
+    /* Load shadowfb if needed */
+    if (pTrident->ShadowFB) {
+	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    TRIDENTFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(shadowSymbols, NULL);
+    }
+
     /* Load XAA if needed */
     if (!pTrident->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1821,6 +1870,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TRIDENTPtr pTrident;
     int ret;
     VisualPtr visual;
+    unsigned char *FBStart;
 
     /* 
      * First get the ScrnInfoRec
@@ -1895,6 +1945,18 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
 
+    /* FIXME - we don't do shadowfb for < 4 */
+    if(pTrident->ShadowFB && (pScrn->bitsPerPixel >= 8)) {
+ 	pTrident->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * pScrn->virtualX);
+        pTrident->ShadowPtr = xalloc(pTrident->ShadowPitch * pScrn->virtualY);
+	pScrn->displayWidth = pTrident->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+        FBStart = pTrident->ShadowPtr;
+    } else {
+	pTrident->ShadowFB = FALSE;
+	pTrident->ShadowPtr = NULL;
+	FBStart = pTrident->FbBase;
+    }
+
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
@@ -1902,37 +1964,37 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	ret = xf1bppScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	ret = xf4bppScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
     case 8:
-	ret = cfbScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	ret = cfbScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	ret = cfb16ScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	    ret = cfb24ScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	else
-	    ret = cfb24_32ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	    ret = cfb24_32ScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	ret = cfb32ScreenInit(pScreen, FBStart, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
@@ -2025,6 +2087,11 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(!xf86HandleColormaps(pScreen, 256, 6, TridentLoadPalette,
 		NULL, CMAP_RELOAD_ON_MODE_SWITCH|CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
+
+    if(pTrident->ShadowFB) {
+	RefreshAreaFuncPtr refreshArea = TRIDENTRefreshArea;
+	ShadowFBInit(pScreen, refreshArea);
+    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);

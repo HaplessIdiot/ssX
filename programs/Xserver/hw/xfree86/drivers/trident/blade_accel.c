@@ -43,6 +43,9 @@
 static void BladeSync(ScrnInfoPtr pScrn);
 static void BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
+static void BladeSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
 static void BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
         			int x1, int y1, int x2, int y2, int flags); 
 static void BladeSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg,
@@ -372,20 +375,68 @@ BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 }
 
 static void 
+BladeSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int tmp;
+    int D = 0, E = 0, ymajor = 0;
+
+
+    BLADE_OUT(0x2144, 0x20000000 | 3<<19 | 1<<4 | 2<<2 | (pTrident->Clipping ? 1: 0));
+
+    if (!(octant & YMAJOR)) {
+    	if ((!(octant&XDECREASING)) && (!(octant&YDECREASING))) {E = 1; D = 0;}
+    	if ((!(octant&XDECREASING)) && ( (octant&YDECREASING))) {E = 1; D = 1;}
+    	if (( (octant&XDECREASING)) && (!(octant&YDECREASING))) {E = 1; D = 2;}
+    	if (( (octant&XDECREASING)) && ( (octant&YDECREASING))) {E = 1; D = 3;}
+	ymajor = 0;
+    } else {
+    	if ((!(octant&XDECREASING)) && (!(octant&YDECREASING))) {E = 0; D = 0;}
+    	if ((!(octant&XDECREASING)) && ( (octant&YDECREASING))) {E = 0; D = 2;}
+    	if (( (octant&XDECREASING)) && (!(octant&YDECREASING))) {E = 0; D = 1;}
+    	if (( (octant&XDECREASING)) && ( (octant&YDECREASING))) {E = 0; D = 3;}
+	ymajor = 1<<21;
+    }
+
+    if (E) { 
+	tmp = x; x = y; y = tmp; 
+    }
+    BLADE_OUT(0x2130, 0x00000001);
+    if (D&0x02) {
+    BLADE_OUT(0x213C, 0x10000000 | 1<<25 | 1<<19 | 1<<17 | ymajor | ((x+len-1)<<4));
+    } else {
+    BLADE_OUT(0x213C, 0x10000000 | 1<<25 | 1<<19 | 1<<17 | ymajor | ((y+len-1)<<4));
+    }
+    BLADE_OUT(0x2140, E<<30 | (y&0xfff)<<20 | ((x&0xfff)<<4));
+    BLADE_OUT(0x2144, D<<30 | (((dmaj-dmin)&0xfff) << 16) | (-dmin&0xfff));
+    BLADE_OUT(0x2148, ((-(dmin+e)&0xfff) << 16));
+
+    if (!pTrident->UsePCIRetry)
+    	BladeSyncClip(pScrn);
+}
+
+
+static void 
 BladeSubsequentSolidTwoPointLine( ScrnInfoPtr pScrn,
         int x1, int y1, int x2, int y2, int flags)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+#if 0
     if (flags & OMIT_LAST)
 	BladeSetClippingRectangle(pScrn,x1,y1,x2-1,y2-1);
+#endif
 
     BLADE_OUT(0x2144, 0x20000000 | pTrident->BltScanDirection | 1<<19 | 1<<4 | 2<<2);
+    BLADE_OUT(0x2130, 0x3);
     BLADE_OUT(0x2108, y1<<16 | x1);
     BLADE_OUT(0x210C, (y2&0xfff)<<16 | (x2&0xfff));
 
+#if 0
     if (flags & OMIT_LAST)
 	BladeDisableClipping(pScrn);
+#endif
 
     if (!pTrident->UsePCIRetry)
     	BladeSyncClip(pScrn);
