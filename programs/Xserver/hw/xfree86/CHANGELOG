@@ -1,4 +1,6 @@
 XFree86 4.4.99.10 (xx July 2004)
+ 149. Fix a problem with wsmouse driver loosing events on 64bit 
+      architectures (Bugzilla #1438, John Heasley).
  148. Xterm patch #193 (Thomas Dickey).
  147. Modify CppRawFileTarget() to transform trailing backslashes in the input
       manpages so the backslash is followed by a blank, defeating the C
@@ -19035,7 +19037,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3294 2004/07/18 15:10:26 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3295 2004/07/20 01:14:40 dickey Exp $
 
 
 
