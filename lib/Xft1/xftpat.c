@@ -209,7 +209,10 @@ XftPatternGetBool (XftPattern *p, const char *object, int id, Bool *b)
 XftPatternElt *
 XftPatternFind (XftPattern *p, const char *object, FcBool insert)
 {
-    return FcPatternFind (p, object, insert);
+    if (insert)
+	return FcPatternInsertElt (p, object);
+    else
+	return FcPatternFindElt (p, object);
 }
 
     
