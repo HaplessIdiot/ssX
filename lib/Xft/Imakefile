@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.12 2001/03/30 18:50:18 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.13 2001/04/19 16:07:08 dawes Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -62,6 +62,8 @@ YaccFilePrefix(xftgram,$(YFLAGS),XftConfig)
 #if DoSharedLib && SharedDataSeparation
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
+
+all:: XftConfig
 
 CppFileTarget(XftConfig,XftConfig.cpp,$(CONFIG_DEFS),$(ICONFIGFILES))
 
