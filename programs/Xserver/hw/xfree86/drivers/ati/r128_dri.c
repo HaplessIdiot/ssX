@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.1 2000/11/02 16:55:33 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario
  *		    and Precision Insight, Inc., Cedar Park, Texas.
@@ -1005,7 +1005,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     if (!(pDRIInfo = DRICreateInfoRec())) return FALSE;
 
     info->pDRIInfo			 = pDRIInfo;
-    pDRIInfo->drmDriverName		 = R128_NAME;
+    pDRIInfo->drmDriverName		 = R128_DRIVER_NAME;
     pDRIInfo->clientDriverName		 = R128_DRIVER_NAME;
     pDRIInfo->busIdString		 = xalloc(64);
     sprintf(pDRIInfo->busIdString,

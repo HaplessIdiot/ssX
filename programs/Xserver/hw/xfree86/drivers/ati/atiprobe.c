@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.32 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.33 2000/11/02 16:55:29 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1025,7 +1025,14 @@ ATIProbe
          * specify a "ChipRev" without a "ChipID" are also weeded out.
          */
         if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) <= 0)
-            return FALSE;
+        {
+            if (xf86MatchDevice(R128_NAME, NULL))
+                DoRage128 = TRUE;
+            else if (xf86MatchDevice(RADEON_NAME, NULL))
+                DoRadeon = TRUE;
+            else
+                return FALSE;
+        }
 
         nATIGDev = 0;
         ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
@@ -1076,11 +1083,6 @@ ATIProbe
         }
 
         xfree(GDevs);
-
-        if (xf86MatchDevice(R128_NAME, NULL))
-            DoRage128 = TRUE;
-        if (xf86MatchDevice(RADEON_NAME, NULL))
-            DoRadeon = TRUE;
 
         if (!nATIGDev)
         {
