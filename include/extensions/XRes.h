@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: $ */
+/* $XFree86: xc/include/extensions/XRes.h,v 1.1 2002/03/04 19:31:35 mvojkovi Exp $ */
 
 #ifndef _XRES_H
 #define _XRES_H
@@ -41,6 +41,7 @@ Status XResQueryClients (
 
 Status XResQueryClientResources (
    Display *dpy,
+   XID xid,
    int *num_types,
    XResType **types
 );
