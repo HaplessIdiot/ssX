@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.3 2002/07/24 05:58:33 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -162,16 +162,17 @@ RootlessCreateGC(GCPtr pGC)
 static void
 RootlessValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
-
     GCFUNC_UNWRAP(pGC);
 
     gcrec->originalOps = NULL;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
+        int depth = pDrawable->depth;
+
         // We force a planemask so fb doesn't overwrite the alpha channel.
         // Left to its own devices, fb will optimize away the planemask.
-        int depth = pDrawable->depth;
+        changes |= GCPlaneMask;
         pDrawable->depth = pDrawable->bitsPerPixel;
         pGC->planemask &= ~AquaAlphaMask(pDrawable->bitsPerPixel);
         pGC->funcs->ValidateGC(pGC, changes, pDrawable);
