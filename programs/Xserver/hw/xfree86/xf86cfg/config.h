@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.20 2003/12/30 18:55:11 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.21 2004/02/13 23:58:52 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -37,16 +37,12 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
-<<<<<<< config.h
-#include <unistd.h>
-=======
 #ifdef sun
 #undef index
 #undef rindex
 #include <strings.h>
 #endif
 #include <unistd.h>
->>>>>>> 1.20
 
 #include <stdarg.h>
 
