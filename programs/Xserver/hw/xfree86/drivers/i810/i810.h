@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.26 2001/12/21 21:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.27 2002/01/08 18:59:28 dawes Exp $ */
 
 /*
  * Authors:
@@ -68,7 +68,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I810_MINOR_VERSION 1
 #define I810_PATCHLEVEL 0
 
+#ifdef __GNUC__
 #define PFX __FILE__,__LINE__,__FUNCTION__
+#define FUNCTION_NAME __FUNCTION__
+#else
+#define PFX __FILE__,__LINE__,""
+#define FUNCTION_NAME ""
+#endif
 
 #ifdef I830DEBUG
 #define MARKER() fprintf(stderr,"\n### %s:%d: >>> %s <<< ###\n\n",__FILE__,__LINE__,__FUNCTION__)
@@ -126,6 +132,10 @@ typedef struct _ModeInfoData
    ModeInfoBlock *data;
    CRTCInfoBlock *block;
 } ModeInfoData;
+
+#ifndef __GNUC__
+#define __attribute(a)__ /**/
+#endif
 
 /*
  * INT 0
@@ -719,7 +729,7 @@ void DPRINTF_stub (const char *filename,int line,const char *function,const char
    if (pI810->LpRing.space < n*4) I810WaitLpRing( pScrn, n*4, 0);	\
    pI810->LpRing.space -= n*4;										\
    if (I810_DEBUG & DEBUG_VERBOSE_RING)								\
-	 ErrorF( "BEGIN_LP_RING %d in %s\n", n, __FUNCTION__);			\
+	 ErrorF( "BEGIN_LP_RING %d in %s\n", n, FUNCTION_NAME);			\
    outring = pI810->LpRing.tail;									\
    ringmask = pI810->LpRing.tail_mask;								\
    virt = pI810->LpRing.virtual_start;
@@ -734,7 +744,7 @@ void DPRINTF_stub (const char *filename,int line,const char *function,const char
 	   *(volatile CARD8 *)(pI810->MMIOBase  + (addr)) = (val);						\
 	   if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {										\
 		  char *_name = i810_outreg_get_addr_name(addr, 8);							\
-		  ErrorF( "OUTREG8(%s, %x, %x) in %s\n", _name, addr, val, __FUNCTION__);	\
+		  ErrorF( "OUTREG8(%s, %x, %x) in %s\n", _name, addr, val, FUNCTION_NAME);	\
 		  i810_outreg_decode_register(addr, val, 8);								\
 	   }																			\
 	} while (0)
@@ -744,7 +754,7 @@ void DPRINTF_stub (const char *filename,int line,const char *function,const char
 	   *(volatile CARD16 *)(pI810->MMIOBase + (addr)) = (val);						\
 	   if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {										\
 		  char *_name = i810_outreg_get_addr_name(addr, 16);						\
-		  ErrorF( "OUTREG16(%s, %x, %x) in %s\n", _name, addr, val, __FUNCTION__);	\
+		  ErrorF( "OUTREG16(%s, %x, %x) in %s\n", _name, addr, val, FUNCTION_NAME);	\
 		  i810_outreg_decode_register(addr, val, 16);								\
 	   }																			\
 	} while (0)
@@ -754,7 +764,7 @@ void DPRINTF_stub (const char *filename,int line,const char *function,const char
 	   *(volatile CARD32 *)(pI810->MMIOBase + (addr)) = (val);						\
 	   if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {										\
 		  char *_name = i810_outreg_get_addr_name(addr, 32);						\
-		  ErrorF( "OUTREG(%s, %x, %x) in %s\n", _name, addr, val, __FUNCTION__);	\
+		  ErrorF( "OUTREG(%s, %x, %x) in %s\n", _name, addr, val, FUNCTION_NAME);	\
 		  i810_outreg_decode_register(addr, val, 32);								\
 	   }																			\
 	} while (0)

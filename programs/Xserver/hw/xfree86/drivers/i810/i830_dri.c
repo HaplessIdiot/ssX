@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.2 2001/10/28 03:33:32 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -355,7 +355,7 @@ Bool I830DRIScreenInit(ScreenPtr pScreen)
    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "[dri] %s failed (libdri.a too old)\n",__FUNCTION__);
+                 "[dri] %s failed (libdri.a too old)\n","I830DRIScreenInit");
       return FALSE;
    }
    
@@ -368,7 +368,7 @@ Bool I830DRIScreenInit(ScreenPtr pScreen)
                     "[dri] %s failed because of a version mismatch.\n"
 					"[dri] libDRI version is %d.%d.%d bug version 4.0.x is needed.\n"
 					"[dri] Disabling DRI.\n",
-					__FUNCTION__, major, minor, patch);
+					"I830DRIScreenInit", major, minor, patch);
          return FALSE;
       }
    }
@@ -456,7 +456,7 @@ Bool I830DRIScreenInit(ScreenPtr pScreen)
                        "[dri] %s failed because of a version mismatch.\n"
 					   "[dri] i830.o kernel module version is %d.%d.%d but version 1.2 or greater is needed.\n"
 					   "[dri] Disabling DRI.\n",
-					   __FUNCTION__,
+					   "I830DRIScreenInit",
                        version->version_major,
                        version->version_minor,
                        version->version_patchlevel);
