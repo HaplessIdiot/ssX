@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.22 2002/08/06 13:13:15 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.23 2002/09/16 16:55:33 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -116,8 +116,8 @@ PCIARCHOBJ = sparcPci.o
 # endif
 #endif
 
-SRCS = Pci.c $(PCIDRVRSRC) $(SBUSDRVSRC) $(ARCHPCISRC)
-OBJS = Pci.o $(PCIDRVROBJ) $(SBUSDRVOBJ) $(ARCHPCIOBJ)
+SRCS = Pci.c $(PCIDRVRSRC) $(SBUSDRVSRC) $(PCIARCHSRC)
+OBJS = Pci.o $(PCIDRVROBJ) $(SBUSDRVOBJ) $(PCIARCHOBJ)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
