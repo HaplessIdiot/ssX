@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.77 2001/06/15 21:54:45 paulo Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.78 2001/06/23 01:55:12 paulo Exp $
 
 # VGA
 
@@ -2317,7 +2317,7 @@ DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 NOCLOCKPROBE
 
 NAME SiS SG86C215
@@ -2329,7 +2329,7 @@ LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "no_BitBlt" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 NOCLOCKPROBE
 
 NAME SiS SG86C225
@@ -2339,7 +2339,7 @@ DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 NOCLOCKPROBE
 
 NAME SiS 5597
@@ -2349,7 +2349,7 @@ DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 LINE     # Option "fast_vram"
 LINE     # Option "pci_burst_on"
 LINE     # Option "xaa_benchmark" # DON'T use with "ext_eng_queue" !!!
@@ -2364,7 +2364,7 @@ DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 LINE     # Option "fast_vram"
 LINE     # Option "pci_burst_on"
 LINE     # Option "xaa_benchmark" # DON'T use with "ext_eng_queue" !!!
@@ -2379,7 +2379,7 @@ DRIVER sis
 LINE     # Option "no_accel" # Use this if acceleration is causing problems
 LINE     # Option "fifo_moderate" 
 LINE     # Option "fifo_conserv" 
-LINE     # Option "fifo_aggresive" 
+LINE     # Option "fifo_aggressive" 
 LINE     # Option "fast_vram"
 LINE     # Option "pci_burst_on"
 LINE     # Option "xaa_benchmark" # DON'T use with "ext_eng_queue" !!!
