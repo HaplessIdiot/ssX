@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.36 2003/06/19 11:01:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.38 2003/07/02 10:49:07 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1289,7 +1289,10 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
 	case CYBERBLADEI1D:
-	    pTrident->hsync -= 8;
+	    if (pScrn->depth == 24)
+		pTrident->hsync -= 7;
+	    else
+		pTrident->hsync -= 6;
 	    break;
 	case CYBERBLADEAI1:
 	    pTrident->hsync -= 7;
