@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.36 2000/12/06 15:35:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.38 2001/02/15 20:31:51 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1736,9 +1736,12 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	desc = desc2 = "";
 	if (p->HSync > 0.0)
 	    hsync = p->HSync;
-	else
+	else if (p->HTotal > 0)
 	    hsync = (float)p->Clock / (float)p->HTotal;
-	refresh = hsync * 1000.0 / p->VTotal;
+	else
+	    hsync = 0.0;
+	if (p->VTotal > 0)
+	    refresh = hsync * 1000.0 / p->VTotal;
 	if (p->Flags & V_INTERLACE) {
 	    refresh *= 2.0;
 	    desc = " (I)";
@@ -1759,7 +1762,10 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    prefix = "Default mode";
 	else
 	    prefix = "Mode";
-	if (p->Clock == p->SynthClock) {
+	if (hsync == 0 || refresh == 0) {
+	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
+			"%s \"%s\"\n", prefix, p->name);
+	} else if (p->Clock == p->SynthClock) {
 	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
 			"%s \"%s\": %.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
 			prefix, p->name, p->Clock / 1000.0, hsync, refresh,
@@ -1771,7 +1777,8 @@ xf86PrintModes(ScrnInfoPtr scrp)
 			prefix, p->name, p->Clock / 1000.0,
 			p->SynthClock / 1000.0, hsync, refresh, desc, desc2);
 	}
-	PrintModeline(scrp->scrnIndex,p);
+	if (hsync != 0 && refresh != 0)
+	    PrintModeline(scrp->scrnIndex,p);
 	p = p->next;
     } while (p != NULL && p != scrp->modes);
 }
