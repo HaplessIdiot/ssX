@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.9 1999/03/21 07:35:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.10 1999/03/28 15:32:46 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -36,9 +36,7 @@ in this Software without prior written authorization from the XFree86 Project.
 
 static void S3VWriteMask(CARD32*, int);
 
-void S3VEngineReset(ScrnInfoPtr pScrn);
-Bool S3VAccelInit(ScreenPtr);
-Bool S3VAccelInit32(ScreenPtr);
+static void S3VEngineReset(ScrnInfoPtr pScrn);
 static void S3VAccelSync(ScrnInfoPtr);
 static void S3VSetupForSolidFill(ScrnInfoPtr, int, int, unsigned);
 static void S3VSubsequentSolidFillRect(ScrnInfoPtr, int, int, int, int);
@@ -311,7 +309,7 @@ S3VAccelSync(ScrnInfoPtr pScrn)
 }
 
 
-void
+static void
 S3VEngineReset(ScrnInfoPtr pScrn)
 {
     S3VPtr ps3v = S3VPTR(pScrn);

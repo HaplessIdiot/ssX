@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.3 1999/03/14 03:22:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.4 1999/03/21 07:35:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -39,6 +39,10 @@ in this Software without prior written authorization from the XFree86 Project.
 #define MIU_CONTROL_REG 0x8204
 #define STREAMS_TIMEOUT_REG 0x8208
 #define MISC_TIMEOUT_REG 0x820c
+
+/* Cursor Registers */
+#define HWCURSOR_MODE_CR45 0x45
+#define EXT_RAMDAC_CNTL_CR55 0x55
 
 /* streams registers */
 #define PSTREAM_CONTROL_REG 0x8180

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dac.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dac.c,v 1.2 1999/03/14 03:22:03 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1998 The XFree86 Project, Inc.  All Rights Reserved.
@@ -32,7 +32,7 @@ in this Software without prior written authorization from the XFree86 Project.
  * S3 ViRGE driver
  *
  *
- * commonCalcClock from S3gendac.c in pre 4.0 tree.
+ * s3vcommonCalcClock from S3gendac.c in pre 4.0 tree.
  *
  */
 
@@ -41,17 +41,10 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #define BASE_FREQ         14.31818   /* MHz */
 
-	/* proto */
-void
-commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int max_n2, 
-		long freq_min, long freq_max,
-		unsigned char * mdiv, unsigned char * ndiv);
-
-
 
 	/* function */
 void
-commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int max_n2, 
+S3VCommonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, int max_n2, 
 		long freq_min, long freq_max,
 		unsigned char * mdiv, unsigned char * ndiv)
 {

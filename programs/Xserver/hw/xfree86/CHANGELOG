@@ -1,4 +1,8 @@
 XFree86 3.9Pg (29 March 1999)
+2456. Fix an off-by-one clipping error in the XAA wide line code (#2624,
+      Mark Vojkovich).
+2455. Add HW cursor support to the s3virge driver and make it the default
+      (#2623, Kevin Brosius).
 2454. Add OS-specific subdirectories to the loader subdirectory search lists,
       and install OS-specific modules in such directories (David Dawes).
 2453. Set the screen numbering in multihead configurations based on the
@@ -7640,4 +7644,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.716 1999/03/29 07:06:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.717 1999/03/29 09:41:22 dawes Exp $
