@@ -1,4 +1,6 @@
 
+#include <Threads.tmpl>
+
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
 #define DoExtraLib SharedLibGlx
@@ -49,7 +51,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) \
-		-I/usr/include/glide
+		-I/usr/include/glide3
 
       DRISRCS = ../../../dri/dri_mesa.c \
 		../../../../dri/dri_tmm.c
@@ -84,6 +86,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../bbox.c \
 		../../bitmap.c \
 		../../blend.c \
+		../../buffers.c \
 		../../clip.c \
 		../../colortab.c \
 		../../config.c \
@@ -92,7 +95,6 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../cva.c \
 		../../debug_xform.c \
 		../../depth.c \
-		../../dispatch.c \
 		../../dlist.c \
 		../../drawpix.c \
 		../../enable.c \
@@ -104,7 +106,6 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../get.c \
 		../../glapi.c \
 		../../glapinoop.c \
-		../../glmisc.c \
 		../../glthread.c \
 		../../hash.c \
 		../../image.c \
@@ -129,6 +130,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../shade.c \
 		../../span.c \
 		../../stages.c \
+		../../state.c \
 		../../stencil.c \
 		../../teximage.c \
 		../../texobj.c \
@@ -157,6 +159,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../bbox.o \
 		../../bitmap.o \
 		../../blend.o \
+		../../buffers.o \
 		../../clip.o \
 		../../colortab.o \
 		../../config.o \
@@ -165,7 +168,6 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../cva.o \
 		../../debug_xform.o \
 		../../depth.o \
-		../../dispatch.o \
 		../../dlist.o \
 		../../drawpix.o \
 		../../enable.o \
@@ -175,8 +177,8 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../feedback.o \
 		../../fog.o \
 		../../get.o \
-		../../glmisc.o \
 		../../hash.o \
+		../../hint.o \
 		../../image.o \
 		../../imaging.o \
 		../../light.o \
@@ -199,6 +201,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../shade.o \
 		../../span.o \
 		../../stages.o \
+		../../state.o \
 		../../stencil.o \
 		../../teximage.o \
 		../../texobj.o \

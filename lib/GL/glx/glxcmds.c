@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.4 1999/12/14 01:32:23 robin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.5 2000/02/08 17:18:31 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -25,8 +25,7 @@
  *
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
- *
- * $PI: xc/lib/GL/glx/glxcmds.c,v 1.8 1999/06/10 04:39:13 martin Exp $
+ *   Brian Paul <brian@precisioninsight.com>
  */
 
 #include "packsingle.h"
@@ -34,6 +33,7 @@
 #include <extutil.h>
 #include <Xext.h>
 #include <string.h>
+#include "glapi.h"
 #ifdef GLX_DIRECT_RENDERING
 #include "indirect_init.h"
 #endif
@@ -1487,3 +1487,95 @@ void glXFreeContextEXT(Display *dpy, GLXContext ctx)
     DestroyContext(dpy, ctx);
 }
 
+
+/*
+** glXGetProcAddress support
+*/
+
+
+struct name_address_pair {
+   const char *Name;
+   GLvoid *Address;
+};
+
+static struct name_address_pair GLX_functions[] = {
+   { "glXChooseVisual", (GLvoid *) glXChooseVisual },
+   { "glXCopyContext", (GLvoid *) glXCopyContext },
+   { "glXCreateContext", (GLvoid *) glXCreateContext },
+   { "glXCreateGLXPixmap", (GLvoid *) glXCreateGLXPixmap },
+   { "glXDestroyContext", (GLvoid *) glXDestroyContext },
+   { "glXDestroyGLXPixmap", (GLvoid *) glXDestroyGLXPixmap },
+   { "glXGetConfig", (GLvoid *) glXGetConfig },
+   { "glXGetCurrentContext", (GLvoid *) glXGetCurrentContext },
+   { "glXGetCurrentDrawable", (GLvoid *) glXGetCurrentDrawable },
+   { "glXIsDirect", (GLvoid *) glXIsDirect },
+   { "glXMakeCurrent", (GLvoid *) glXMakeCurrent },
+   { "glXQueryExtension", (GLvoid *) glXQueryExtension },
+   { "glXQueryVersion", (GLvoid *) glXQueryVersion },
+   { "glXSwapBuffers", (GLvoid *) glXSwapBuffers },
+   { "glXUseXFont", (GLvoid *) glXUseXFont },
+   { "glXWaitGL", (GLvoid *) glXWaitGL },
+   { "glXWaitX", (GLvoid *) glXWaitX },
+
+   { "glXGetClientString", (GLvoid *) glXGetClientString },
+   { "glXQueryExtensionsString", (GLvoid *) glXQueryExtensionsString },
+   { "glXQueryServerString", (GLvoid *) glXQueryServerString },
+
+   { "glXGetCurrentDisplay", (GLvoid *) glXGetCurrentDisplay },
+
+#if 0  /* enable this when GLX 1.3 is implemented */
+   { "glXChooseFBConfig", (GLvoid *) glXChooseFBConfig },
+   { "glXCreateNewContext", (GLvoid *) glXCreateNewContext },
+   { "glXCreatePbuffer", (GLvoid *) glXCreatePbuffer },
+   { "glXCreatePixmap", (GLvoid *) glXCreatePixmap },
+   { "glXCreateWindow", (GLvoid *) glXCreateWindow },
+   { "glXDestroyPbuffer", (GLvoid *) glXDestroyPbuffer },
+   { "glXDestroyPixmap", (GLvoid *) glXDestroyPixmap },
+   { "glXDestroyWindow", (GLvoid *) glXDestroyWindow },
+   { "glXGetCurrentReadDrawable", (GLvoid *) glXGetCurrentReadDrawable },
+   { "glXGetFBConfigAttrib", (GLvoid *) glXGetFBConfigAttrib },
+   { "glXGetSelectedEvent", (GLvoid *) glXGetSelectedEvent },
+   { "glXGetVisualFromFBConfig", (GLvoid *) glXGetVisualFromFBConfig },
+   { "glXMakeContextCurrent", (GLvoid *) glXMakeContextCurrent },
+   { "glXQueryContext", (GLvoid *) glXQueryContext },
+   { "glXQueryDrawable", (GLvoid *) glXQueryDrawable },
+   { "glXSelectEvent", (GLvoid *) glXSelectEvent },
+#endif
+
+   /* extension functions */
+   { "glXGetContextIDEXT", (GLvoid *) glXGetContextIDEXT },
+   { "glXGetCurrentDrawableEXT", (GLvoid *) glXGetCurrentDrawableEXT },
+   { "glXImportContextEXT", (GLvoid *) glXImportContextEXT },
+   { "glXFreeContextEXT", (GLvoid *) glXFreeContextEXT },
+   { "glXQueryContextInfoEXT", (GLvoid *) glXQueryContextInfoEXT },
+   { "glXGetProcAddressARB", (GLvoid *) glXGetProcAddressARB },
+
+   { NULL, NULL }   /* end of list */
+};
+
+
+static const GLvoid *
+get_glx_proc_address(const char *funcName)
+{
+   GLuint i;
+   for (i = 0; GLX_functions[i].Name; i++) {
+      if (strcmp(GLX_functions[i].Name, funcName) == 0)
+         return GLX_functions[i].Address;
+   }
+   return NULL;
+}
+
+
+void (*glXGetProcAddressARB(const GLubyte *procName))()
+{
+   typedef void (*gl_function)();
+   gl_function f;
+
+   f = (gl_function) get_glx_proc_address((const char *) procName);
+   if (f) {
+      return f;
+   }
+
+   f = (gl_function) _glapi_get_proc_address((const char *) procName);
+   return f;
+}

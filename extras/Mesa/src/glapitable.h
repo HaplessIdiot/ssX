@@ -1,4 +1,3 @@
-/* $Id: glapitable.h,v 1.1 2000/02/08 17:17:16 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -42,9 +41,6 @@
 
 
 #include "GL/gl.h"
-
-
-#define _GLAPI_EXTRA_SLOTS 1000
 
 
 /*
@@ -511,7 +507,7 @@ struct _glapi_table
 
    /* 6. GL_EXT_texture3D */
    void (*CopyTexSubImage3DEXT)(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei);
-   void (*TexImage3DEXT)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
+   void (*TexImage3DEXT)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
    void (*TexSubImage3DEXT)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
 
    /* 7. GL_SGI_texture_filter4 */
@@ -594,7 +590,7 @@ struct _glapi_table
 
    /* 21. GL_SGIS_detail_texture */
    void (*DetailTexFuncSGIS)(GLenum, GLsizei, const GLfloat *);
-   void (*GetDetailTexFuncSGIS)(GLenum target, GLfloat *);
+   void (*GetDetailTexFuncSGIS)(GLenum, GLfloat *);
 
    /* 22. GL_SGIS_sharpen_texture */
    void (*GetSharpenTexFuncSGIS)(GLenum, GLfloat *);
@@ -714,6 +710,10 @@ struct _glapi_table
    /* 65. GL_SGIX_fog_offset - no functions */
 
    /* 66. GL_HP_image_transform */
+#ifdef VMS
+#define glGetImageTransformParameterfvHP glGetImageTransformParameterfvH
+#define glGetImageTransformParameterivHP glGetImageTransformParameterivH
+#endif
    void (*GetImageTransformParameterfvHP)(GLenum, GLenum, GLfloat *);
    void (*GetImageTransformParameterivHP)(GLenum, GLenum, GLint *);
    void (*ImageTransformParameterfHP)(GLenum, GLenum, const GLfloat);
@@ -813,7 +813,30 @@ struct _glapi_table
    void (*BlendFuncSeparateINGR)(GLenum, GLenum, GLenum, GLenum);
 
    /* GL_MESA_window_pos */
-   void (*WindowPos4fMESA)(GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+   void (*WindowPos2dMESA)(GLdouble, GLdouble);
+   void (*WindowPos2dvMESA)(const GLdouble *);
+   void (*WindowPos2fMESA)(GLfloat, GLfloat);
+   void (*WindowPos2fvMESA)(const GLfloat *);
+   void (*WindowPos2iMESA)(GLint, GLint);
+   void (*WindowPos2ivMESA)(const GLint *);
+   void (*WindowPos2sMESA)(GLshort, GLshort);
+   void (*WindowPos2svMESA)(const GLshort *);
+   void (*WindowPos3dMESA)(GLdouble, GLdouble, GLdouble);
+   void (*WindowPos3dvMESA)(const GLdouble *);
+   void (*WindowPos3fMESA)(GLfloat, GLfloat, GLfloat);
+   void (*WindowPos3fvMESA)(const GLfloat *);
+   void (*WindowPos3iMESA)(GLint, GLint, GLint);
+   void (*WindowPos3ivMESA)(const GLint *);
+   void (*WindowPos3sMESA)(GLshort, GLshort, GLshort);
+   void (*WindowPos3svMESA)(const GLshort *);
+   void (*WindowPos4dMESA)(GLdouble, GLdouble, GLdouble, GLdouble);
+   void (*WindowPos4dvMESA)(const GLdouble *);
+   void (*WindowPos4fMESA)(GLfloat, GLfloat, GLfloat, GLfloat);
+   void (*WindowPos4fvMESA)(const GLfloat *);
+   void (*WindowPos4iMESA)(GLint, GLint, GLint, GLint);
+   void (*WindowPos4ivMESA)(const GLint *);
+   void (*WindowPos4sMESA)(GLshort, GLshort, GLshort, GLshort);
+   void (*WindowPos4svMESA)(const GLshort *);
 
    /* GL_MESA_resize_buffers */
    void (*ResizeBuffersMESA)(void);
@@ -824,9 +847,6 @@ struct _glapi_table
    void (*MultTransposeMatrixdARB)(const GLdouble m[16]);
    void (*MultTransposeMatrixfARB)(const GLfloat m[16]);
 
-#if 0
-   void *ExtensionFuncs[_GLAPI_EXTRA_SLOTS];
-#endif
 };
 
 

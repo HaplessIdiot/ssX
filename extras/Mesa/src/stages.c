@@ -1,4 +1,3 @@
-/* $Id: stages.c,v 1.2 2000/02/08 17:17:36 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -744,7 +743,7 @@ CONST struct gl_pipeline_stage gl_default_pipeline[] = {
      0, 0,
      DYN_STATE,
      check_fog,
-     gl_fog_vertices },
+     _mesa_fog_vertices },
 
    { "texture gen/transform 0",
      PIPE_OP_TEX0,

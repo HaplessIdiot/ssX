@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.4 1999/12/14 01:33:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.5 2000/02/08 17:19:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -56,7 +56,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     break;
   case 16:
-    numConfigs = 1;
+    numConfigs = 2;
 
     if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
@@ -104,6 +104,36 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     pConfigs[0].transparentBlue = 0;
     pConfigs[0].transparentAlpha = 0;
     pConfigs[0].transparentIndex = 0;
+
+    pConfigs[1].vid = -1;
+    pConfigs[1].class = -1;
+    pConfigs[1].rgba = TRUE;
+    pConfigs[1].redSize = 5;
+    pConfigs[1].greenSize = 6;
+    pConfigs[1].blueSize = 5;
+    pConfigs[1].redMask = 0x0000F800;
+    pConfigs[1].greenMask = 0x000007E0;
+    pConfigs[1].blueMask = 0x0000001F;
+    pConfigs[1].alphaMask = 0;
+    pConfigs[1].accumRedSize = 0;
+    pConfigs[1].accumGreenSize = 0;
+    pConfigs[1].accumBlueSize = 0;
+    pConfigs[1].accumAlphaSize = 0;
+    pConfigs[1].doubleBuffer = FALSE;
+    pConfigs[1].stereo = FALSE;
+    pConfigs[1].bufferSize = 16;
+    pConfigs[1].depthSize = 16;
+    pConfigs[1].stencilSize = 0;
+    pConfigs[1].auxBuffers = 0;
+    pConfigs[1].level = 0;
+    pConfigs[1].visualRating = 0;
+    pConfigs[1].transparentPixel = 0;
+    pConfigs[1].transparentRed = 0;
+    pConfigs[1].transparentGreen = 0;
+    pConfigs[1].transparentBlue = 0;
+    pConfigs[1].transparentAlpha = 0;
+    pConfigs[1].transparentIndex = 0;
+
     break;
   }
   pTDFX->numVisualConfigs = numConfigs;
@@ -119,6 +149,14 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   TDFXDRIPtr pTDFXDRI;
+
+#if XFree86LOADER
+    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
+       for canonical symbols in each module. */
+    if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
+    if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
+    if (!LoaderSymbol("drmAvailable"))        return FALSE;
+#endif
 
   pDRIInfo = DRICreateInfoRec();
   if (!pDRIInfo) return FALSE;
@@ -252,10 +290,8 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   TDFXDRIPtr pTDFXDRI;
-  int size;
 
   pTDFX->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
-  /* pTDFX->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
   pTDFXDRI=(TDFXDRIPtr)pTDFX->pDRIInfo->devPrivate;
   pTDFXDRI->deviceID=pTDFX->PciInfo->chipType;
@@ -264,16 +300,13 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   pTDFXDRI->mem=pScrn->videoRam*1024;
   pTDFXDRI->cpp=pTDFX->cpp;
   pTDFXDRI->stride=pTDFX->stride;
-#ifdef PROP_3DFX
-  TDFXFillPrivateDRI(pTDFX, pTDFXDRI);
-#endif
+  pTDFXDRI->fifoOffset=pTDFX->fifoOffset;
+  pTDFXDRI->fifoSize=pTDFX->fifoSize;
   pTDFXDRI->textureOffset=pTDFX->texOffset;
   pTDFXDRI->textureSize=pTDFX->texSize;
   pTDFXDRI->fbOffset=pTDFX->fbOffset;
-  pTDFXDRI->backOffset=pTDFX->backOffset=(pTDFX->lowMemLoc+4095)&~0xFFF;
-  size=(pScrn->virtualX*pScrn->virtualY+4095)&~0xFFF;
-  size*=2;
-  pTDFXDRI->depthOffset=pTDFX->depthOffset=(pTDFXDRI->backOffset+size+4095)&~0xFFF;
+  pTDFXDRI->backOffset=pTDFX->backOffset;
+  pTDFXDRI->depthOffset=pTDFX->depthOffset;
   return DRIFinishScreenInit(pScreen);
 }
 
@@ -337,7 +370,7 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
   DDXPointPtr pptTmp, pptNew1, pptNew2;
   int xdir, ydir;
-  int dx, dy, w, h;
+  int dx, dy, x, y, w, h;
   DDXPointPtr pptSrc;
 
   pbox = REGION_RECTS(prgnSrc);
@@ -429,12 +462,32 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   while (nbox--) {
     w=pbox->x2-pbox->x1+1;
     h=pbox->y2-pbox->y1+1;
+
+    /* Unlike XAA, we don't get handed clipped values */
+    if (pbox->x1+dx<0) {
+      x=-dx;
+      w-=x-pbox->x1;
+    } else {
+      if (pbox->x1+dx+w>pScrn->virtualX) {
+        x=pScrn->virtualX-dx-w-1;
+        w-=pbox->x1-x;
+      } else x=pbox->x1;
+    }
+    if (pbox->y1+dy<0) {
+      y=-dy;
+      h-=y-pbox->y1;
+    } else {
+      if (pbox->y1+dy+h>pScrn->virtualY) {
+        y=pScrn->virtualY-dy-h-1;
+        h-=pbox->y1-y;
+      } else y=pbox->y1;
+    }
+    if (w<0 || h<0 || x>pScrn->virtualX || y>pScrn->virtualY) continue;
+
     TDFXSelectBuffer(pTDFX, TDFX_BACK);
-    TDFXSubsequentScreenToScreenCopy(pScrn, pbox->x1, pbox->y1, 
-				     pbox->x1+dx, pbox->y1+dy, w, h);
+    TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, w, h);
     TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
-    TDFXSubsequentScreenToScreenCopy(pScrn, pbox->x1, pbox->y1, 
-				     pbox->x1+dx, pbox->y1+dy, w, h);
+    TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, w, h);
     pbox++;
   }
   TDFXSelectBuffer(pTDFX, TDFX_FRONT);

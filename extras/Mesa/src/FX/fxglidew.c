@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -55,7 +55,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static FxI32 FX_grGetInteger_NoLock(FxU32 pname)
+FxI32 FX_grGetInteger_NoLock(FxU32 pname)
 {
 #if !defined(FX_GLIDE3)
   switch (pname) 
@@ -241,6 +241,13 @@ void FX_grAADrawPoint(GrVertex *a)
 {
   BEGIN_CLIP_LOOP();
   grDrawPoint(a);
+  END_CLIP_LOOP();
+}
+
+void FX_grDrawPolygonVertexList(int n, GrVertex *verts) 
+{
+  BEGIN_CLIP_LOOP();
+  grDrawVertexArrayContiguous(GR_POLYGON, n, verts, sizeof(GrVertex));
   END_CLIP_LOOP();
 }
 

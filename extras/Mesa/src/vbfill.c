@@ -1,10 +1,9 @@
-/* $Id: vbfill.c,v 1.2 2000/02/08 17:17:43 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,6 +34,7 @@
 #include "macros.h"
 #include "matrix.h"
 #include "mmath.h"
+#include "state.h"
 #include "types.h"
 #include "varray.h"
 #include "vb.h"

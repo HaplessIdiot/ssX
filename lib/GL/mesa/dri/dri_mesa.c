@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.2 2000/02/11 17:25:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.3 2000/02/14 06:27:12 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -142,6 +142,7 @@ static void driMesaInitAPI(__XMESAapi *XMesaAPI)
     XMesaAPI->DestroyBuffer = XMesaDestroyBuffer;
     XMesaAPI->SwapBuffers = XMesaSwapBuffers;
     XMesaAPI->MakeCurrent = XMesaMakeCurrent;
+    XMesaAPI->UnbindContext = XMesaUnbindContext;
 }
 
 /*****************************************************************/
@@ -170,7 +171,17 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 	return GL_FALSE;
     }
 
+    pcp = (__DRIcontextPrivate *)gc->driContext.private;
     pdp = (__DRIdrawablePrivate *)pdraw->private;
+    psp = pdp->driScreenPriv;
+    if (!psp) {
+	/* ERROR!!! */
+	return GL_FALSE;
+    }
+
+    /* Unbind Mesa's drawable from Mesa's context */
+    (*psp->XMesaAPI.UnbindContext)(pcp->xm_ctx);
+
     if (pdp->refcount == 0) {
 	/* ERROR!!! */
 	return GL_FALSE;
@@ -196,14 +207,7 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 #endif
     }
 
-    psp = pdp->driScreenPriv;
-    if (!psp) {
-	/* ERROR!!! */
-	return GL_FALSE;
-    }
-
     /* Unbind the drawable */
-    pcp = (__DRIcontextPrivate *)gc->driContext.private;
     pcp->driDrawablePriv = NULL;
     pdp->driContextPriv = &psp->dummyContextPriv;
 

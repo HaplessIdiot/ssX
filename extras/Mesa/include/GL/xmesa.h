@@ -1,4 +1,3 @@
-/* $Id: xmesa.h,v 1.1 2000/02/08 17:16:54 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -243,6 +242,12 @@ extern GLboolean XMesaMakeCurrent( XMesaContext c,
 extern GLboolean XMesaMakeCurrent2( XMesaContext c,
                                     XMesaBuffer drawBuffer,
                                     XMesaBuffer readBuffer );
+
+
+/*
+ * Unbind the current context from its buffer.
+ */
+extern GLboolean XMesaUnbindContext( XMesaContext c );
 
 
 /*

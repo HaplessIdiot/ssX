@@ -1,4 +1,3 @@
-/* $Id: imaging.h,v 1.1 2000/02/08 17:17:20 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

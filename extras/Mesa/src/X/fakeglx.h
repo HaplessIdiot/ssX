@@ -1,4 +1,3 @@
-/* $Id: fakeglx.h,v 1.2 2000/02/08 17:18:11 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -57,8 +57,8 @@ static void performMagic(__DRIscreenPrivate *driScrnPriv)
     gPriv->mem=gDRIPriv->mem;
     gPriv->cpp=gDRIPriv->cpp;
     gPriv->stride=gDRIPriv->stride;
-    gPriv->fifoOffset=gDRIPriv->priv1;
-    gPriv->fifoSize=gDRIPriv->priv2;
+    gPriv->fifoOffset=gDRIPriv->fifoOffset;
+    gPriv->fifoSize=gDRIPriv->fifoSize;
     gPriv->fbOffset=gDRIPriv->fbOffset;
     gPriv->backOffset=gDRIPriv->backOffset;
     gPriv->depthOffset=gDRIPriv->depthOffset;

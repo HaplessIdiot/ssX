@@ -1,10 +1,9 @@
-/* $Id: enums.c,v 1.2 2000/02/08 17:17:10 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -795,8 +794,8 @@ enum_elt all_enums[] =
    { "GL_NATIVE_GRAPHICS_HANDLE_PGI", 107010 },
 
    /* GL_EXT_compiled_vertex_array */
-   { "GL_ARRAY_ELEMENT_LOCK_FIRST_SGI", 0x81A8},
-   { "GL_ARRAY_ELEMENT_LOCK_COUNT_SGI", 0x81A9},
+   { "GL_ARRAY_ELEMENT_LOCK_FIRST_EXT", 0x81A8},
+   { "GL_ARRAY_ELEMENT_LOCK_COUNT_EXT", 0x81A9},
 
    /* GL_EXT_clip_volume_hint */
    { "GL_CLIP_VOLUME_CLIPPING_HINT_EXT", 0x80F0}

@@ -1,10 +1,9 @@
-/* $Id: drawpix.c,v 1.2 2000/02/08 17:17:09 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -37,6 +36,7 @@
 #include "mmath.h"
 #include "pixel.h"
 #include "span.h"
+#include "state.h"
 #include "stencil.h"
 #include "types.h"
 #include "zoom.h"
@@ -702,9 +702,9 @@ _mesa_DrawPixels( GLsizei width, GLsizei height,
 	    break;
 	 case GL_COLOR_INDEX:
             if (ctx->Visual->RGBAflag)
-               draw_index_pixels(ctx, x, y, width, height, type, pixels);
-            else
                draw_rgba_pixels(ctx, x,y, width, height, format, type, pixels);
+            else
+               draw_index_pixels(ctx, x, y, width, height, type, pixels);
 	    break;
 	 case GL_RED:
 	 case GL_GREEN:

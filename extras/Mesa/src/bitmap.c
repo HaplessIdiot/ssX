@@ -1,4 +1,3 @@
-/* $Id: bitmap.c,v 1.2 2000/02/08 17:17:00 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -36,6 +35,7 @@
 #include "macros.h"
 #include "pb.h"
 #include "pixel.h"
+#include "state.h"
 #include "types.h"
 #include "vbrender.h"
 #endif

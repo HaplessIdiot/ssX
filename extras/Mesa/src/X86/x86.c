@@ -1,4 +1,3 @@
-/* $Id: x86.c,v 1.2 2000/02/08 17:18:21 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

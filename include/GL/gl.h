@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-/* $XFree86: xc/include/GL/gl.h,v 1.4 2000/01/20 21:46:16 dawes Exp $ */
+/* $XFree86: xc/include/GL/gl.h,v 1.5 2000/02/08 17:18:24 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -27,16 +27,16 @@ extern "C" {
 ** $SGI$
 */
 
-typedef unsigned int GLenum;
+typedef unsigned long GLenum;
 typedef unsigned char GLboolean;
-typedef unsigned int GLbitfield;
+typedef unsigned long GLbitfield;
 typedef signed char GLbyte;
 typedef short GLshort;
-typedef int GLint;
-typedef int GLsizei;
+typedef long GLint;
+typedef long GLsizei;
 typedef unsigned char GLubyte;
 typedef unsigned short GLushort;
-typedef unsigned int GLuint;
+typedef unsigned long GLuint;
 typedef float GLfloat;
 typedef float GLclampf;
 typedef double GLdouble;

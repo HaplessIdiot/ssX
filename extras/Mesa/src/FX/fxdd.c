@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -56,7 +56,7 @@
 #include "fxdrv.h"
 #include "enums.h"
 #include "extensions.h"
-
+#include "pb.h"
 
 /* These lookup table are used to extract RGB values in [0,255] from
  * 16-bit pixel values.
@@ -102,7 +102,7 @@ void fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder)
 /**********************************************************************/
 
 /* Enalbe/Disable dithering */
-void fxDDDither(GLcontext *ctx, GLboolean enable)
+static void fxDDDither(GLcontext *ctx, GLboolean enable)
 {
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
     fprintf(stderr,"fxmesa: fxDDDither()\n");
@@ -117,7 +117,7 @@ void fxDDDither(GLcontext *ctx, GLboolean enable)
 
 
 /* Return buffer size information */
-void fxDDBufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
+static void fxDDBufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
 
@@ -178,9 +178,9 @@ static GLbitfield fxDDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
   GLbitfield softwareMask = mask & (DD_STENCIL_BIT | DD_ACCUM_BIT);
   GLbitfield newMask = mask & ~(DD_STENCIL_BIT | DD_ACCUM_BIT);
 
-
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-    fprintf(stderr,"fxmesa: fxDDClear(%d,%d,%d,%d)\n",x,y,width,height);
+    fprintf(stderr,"fxmesa: fxDDClear(%d,%d,%d,%d)\n", (int) x, (int) y,
+            (int) width, (int) height);
   }
 
   if (mask == (DD_BACK_LEFT_BIT | DD_DEPTH_BIT)
@@ -209,6 +209,20 @@ static GLbitfield fxDDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
 
   if (newMask & (DD_FRONT_LEFT_BIT | DD_BACK_LEFT_BIT)) {
     if (newMask & DD_FRONT_LEFT_BIT) {
+      if (mask & DD_DEPTH_BIT) {
+        /* XXX it appears that the depth buffer isn't cleared when
+         * glRenderBuffer(GR_BUFFER_FRONTBUFFER) is set.
+         * This is a work-around/
+         */
+        FX_grRenderBuffer(GR_BUFFER_BACKBUFFER);
+        FX_grColorMask(FXFALSE,FXFALSE);
+        FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
+                         (FxU16)(ctx->Depth.Clear*0xffff));
+        FX_grColorMask(ctx->Color.ColorMask[RCOMP] ||
+                       ctx->Color.ColorMask[GCOMP] ||
+                       ctx->Color.ColorMask[BCOMP],
+                       ctx->Color.ColorMask[ACOMP] && fxMesa->haveAlphaBuffer);
+      }
       FX_grRenderBuffer(GR_BUFFER_FRONTBUFFER);
       FX_grBufferClear(fxMesa->clearC, fxMesa->clearA,
                        (FxU16)(ctx->Depth.Clear*0xffff));
@@ -254,7 +268,7 @@ static GLboolean fxDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-    fprintf(stderr,"fxmesa: fxDDSetBuffer(%x)\n",mode);
+    fprintf(stderr,"fxmesa: fxDDSetBuffer(%x)\n", (int) mode);
   }
 
   if (mode == GL_FRONT_LEFT) {
@@ -282,7 +296,7 @@ static void fxDDSetReadBuffer(GLcontext *ctx, GLframebuffer *buffer,
   (void) buffer;
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-    fprintf(stderr,"fxmesa: fxDDSetBuffer(%x)\n",mode);
+    fprintf(stderr,"fxmesa: fxDDSetBuffer(%x)\n", (int) mode);
   }
 
   if (mode == GL_FRONT_LEFT) {
@@ -455,7 +469,7 @@ static GLint fxDDGetParameteri(const GLcontext *ctx, GLint param)
   case DD_HAVE_HARDWARE_FOG:
     return 1;
   default:
-    fprintf(stderr,"fx Driver: internal error in fxDDGetParameteri(): %x\n",param);
+    fprintf(stderr,"fx Driver: internal error in fxDDGetParameteri(): %x\n", (int) param);
     fxCloseHardware();
     exit(-1);
     return 0;
@@ -475,53 +489,79 @@ void fxDDSetNearFar(GLcontext *ctx, GLfloat n, GLfloat f)
  */
 static const GLubyte *fxDDGetString(GLcontext *ctx, GLenum name)
 {
-   switch (name) {
-   case GL_RENDERER:
 #if defined(GLX_DIRECT_RENDERING)
-      return "Mesa Glide - DRI VB/V3";
-#else
+  /* Building for DRI driver */
+  switch (name) {
+    case GL_RENDERER:
       {
-	 static char buf[80];
-
-	 if (glbHWConfig.SSTs[glbCurrentBoard].type==GR_SSTTYPE_VOODOO) 
-	 {
-	    GrVoodooConfig_t *vc = 
-	       &glbHWConfig.SSTs[glbCurrentBoard].sstBoard.VoodooConfig;
-
-	    sprintf(buf,
-		    "Mesa Glide v0.30 Voodoo_Graphics %d "
-		    "CARD/%d FB/%d TM/%d TMU/%s",
-		    glbCurrentBoard,
-		    (vc->sliDetect ? (vc->fbRam*2) : vc->fbRam),
-		    (vc->tmuConfig[GR_TMU0].tmuRam +
-		     ((vc->nTexelfx>1) ? vc->tmuConfig[GR_TMU1].tmuRam : 0)),
-		    vc->nTexelfx,
-		    (vc->sliDetect ? "SLI" : "NOSLI"));
-	 }
-	 else if (glbHWConfig.SSTs[glbCurrentBoard].type==GR_SSTTYPE_SST96)
-	 {
-	    GrSst96Config_t *sc = 
-	       &glbHWConfig.SSTs[glbCurrentBoard].sstBoard.SST96Config;
-
-	    sprintf(buf,
-		    "Glide v0.30 Voodoo_Rush %d "
-		    "CARD/%d FB/%d TM/%d TMU/NOSLI",
-		    glbCurrentBoard,
-		    sc->fbRam,
-		    sc->tmuConfig.tmuRam,
-		    sc->nTexelfx);
-	 }
-	 else
-	 {
-	    strcpy(buf, "Glide v0.30 UNKNOWN");
-	 }
-
-	 return (GLubyte *) buf;
+        static char buffer[100];
+        char hardware[100];
+        strcpy(hardware, grGetString(GR_HARDWARE));
+        if (strcmp(hardware, "Voodoo3 (tm)") == 0)
+          strcpy(hardware, "Voodoo3");
+        else if (strcmp(hardware, "Voodoo Banshee (tm)") == 0)
+          strcpy(hardware, "VoodooBanshee");
+        else {
+          /* unexpected result: replace spaces with hyphens */
+          int i;
+          for (i = 0; hardware[i]; i++) {
+            if (hardware[i] == ' ' || hardware[i] == '\t')
+              hardware[i] = '-';
+          }
+        }
+        /* now make the GL_RENDERER string */
+        sprintf(buffer, "Mesa DRI %s 20000208", hardware);
+        return buffer;
       }
-#endif
-   default:
+    case GL_VENDOR:
+      return "Precision Insight, Inc.";
+    default:
       return NULL;
-   }
+  }
+
+#else
+
+  /* Building for Voodoo1/2 stand-alone Mesa */
+  switch (name) {
+    case GL_RENDERER:
+      {
+        static char buf[80];
+
+        if (glbHWConfig.SSTs[glbCurrentBoard].type==GR_SSTTYPE_VOODOO) {
+          GrVoodooConfig_t *vc = 
+            &glbHWConfig.SSTs[glbCurrentBoard].sstBoard.VoodooConfig;
+
+          sprintf(buf,
+                  "Mesa Glide v0.30 Voodoo_Graphics %d "
+                  "CARD/%d FB/%d TM/%d TMU/%s",
+                  glbCurrentBoard,
+                  (vc->sliDetect ? (vc->fbRam*2) : vc->fbRam),
+                  (vc->tmuConfig[GR_TMU0].tmuRam +
+                   ((vc->nTexelfx>1) ? vc->tmuConfig[GR_TMU1].tmuRam : 0)),
+                  vc->nTexelfx,
+                  (vc->sliDetect ? "SLI" : "NOSLI"));
+        }
+        else if (glbHWConfig.SSTs[glbCurrentBoard].type==GR_SSTTYPE_SST96) {
+          GrSst96Config_t *sc = 
+            &glbHWConfig.SSTs[glbCurrentBoard].sstBoard.SST96Config;
+
+          sprintf(buf,
+                  "Glide v0.30 Voodoo_Rush %d "
+                  "CARD/%d FB/%d TM/%d TMU/NOSLI",
+                  glbCurrentBoard,
+                  sc->fbRam,
+                  sc->tmuConfig.tmuRam,
+                  sc->nTexelfx);
+        }
+        else {
+          strcpy(buf, "Glide v0.30 UNKNOWN");
+        }
+        return (GLubyte *) buf;
+      }
+    default:
+      return NULL;
+  }
+#endif
 }
 
 
@@ -548,6 +588,11 @@ int fxDDInitFxMesaContext( fxMesaContext fxMesa )
    else
       fxMesa->maxPendingSwapBuffers=2;
    
+   if(getenv("MESA_FX_INFO"))
+      fxMesa->verbose=GL_TRUE;
+   else
+      fxMesa->verbose=GL_FALSE;
+
    fxMesa->color=0xffffffff;
    fxMesa->clearC=0;
    fxMesa->clearA=0;
@@ -669,18 +714,6 @@ void fxDDInitExtensions( GLcontext *ctx )
   window. This modifies the viewport command to add our X,Y offset to all
   drawn objects that go through the viewport transformation.
 */
-
-/************************************************************************/
-/************************************************************************/
-/************************************************************************/
-
-/* This is a no-op, since the z-buffer is in hardware */
-static void fxAllocDepthBuffer(GLcontext *ctx)
-{
-   if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxAllocDepthBuffer()\n");
-   }
-}
 
 /************************************************************************/
 /************************************************************************/
@@ -814,6 +847,16 @@ static void fxDDUpdateDDPointers(GLcontext *ctx)
   }
 }
 
+static void fxDDReducedPrimitiveChange(GLcontext *ctx, GLenum prim)
+{
+  if (ctx->Polygon.CullFlag) {
+    if (ctx->PB->primitive != GL_POLYGON) { /* Lines or Points */
+      FX_grCullMode(GR_CULL_DISABLE);
+      FX_CONTEXT(ctx)->cullMode=GR_CULL_DISABLE;
+    }
+  }
+}
+
 void fxSetupDDPointers(GLcontext *ctx)
 {
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
@@ -877,6 +920,7 @@ void fxSetupDDPointers(GLcontext *ctx)
   ctx->Driver.CullFace=fxDDCullFace;
   ctx->Driver.ShadeModel=fxDDShadeModel;
   ctx->Driver.Enable=fxDDEnable;
+  ctx->Driver.ReducedPrimitiveChange=fxDDReducedPrimitiveChange;
 
   ctx->Driver.RegisterVB=fxDDRegisterVB;
   ctx->Driver.UnregisterVB=fxDDUnregisterVB;

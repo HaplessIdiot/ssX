@@ -1,4 +1,3 @@
-/* $Id: vbrender.c,v 1.2 2000/02/08 17:17:44 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -350,10 +349,12 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 }
 
 
+#if 0
 static void null_quad( GLcontext *ctx, GLuint v0, GLuint v1,
 		       GLuint v2, GLuint v3, GLuint pv )
 {
 }
+#endif
 
 
 extern const char *gl_prim_name[];

@@ -1,4 +1,3 @@
-/* $Id: bbox.c,v 1.2 2000/02/08 17:16:58 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

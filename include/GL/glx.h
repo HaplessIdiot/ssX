@@ -1,7 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
-/* $XFree86: xc/include/GL/glx.h,v 1.2 1999/06/14 07:23:28 dawes Exp $ */
+/* $XFree86: xc/include/GL/glx.h,v 1.3 2000/01/20 21:46:17 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -49,7 +49,7 @@ typedef struct __GLXcontextRec *GLXContext;
 /************************************************************************/
 
 extern XVisualInfo* glXChooseVisual (Display *dpy, int screen, int *attribList);
-extern void glXCopyContext (Display *dpy, GLXContext src, GLXContext dst, GLuint mask);
+extern void glXCopyContext (Display *dpy, GLXContext src, GLXContext dst, unsigned long mask);
 extern GLXContext glXCreateContext (Display *dpy, XVisualInfo *vis, GLXContext shareList, Bool direct);
 extern GLXPixmap glXCreateGLXPixmap (Display *dpy, XVisualInfo *vis, Pixmap pixmap);
 extern void glXDestroyContext (Display *dpy, GLXContext ctx);
@@ -75,6 +75,7 @@ extern GLXDrawable glXGetCurrentDrawableEXT (void);
 extern GLXContext glXImportContextEXT (Display *dpy, GLXContextID contextID);
 extern void glXFreeContextEXT (Display *dpy, GLXContext ctx);
 extern int glXQueryContextInfoEXT (Display *dpy, GLXContext ctx, int attribute, int *value);
+extern void (*glXGetProcAddressARB(const GLubyte *procName))();
 
 
 

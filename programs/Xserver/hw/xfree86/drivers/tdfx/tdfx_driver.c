@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.15 2000/01/30 01:15:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.16 2000/02/08 17:19:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -111,8 +111,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Required Functions: */
 
-static OptionInfoPtr TDFXAvailableOptions(int chipid, int busid);
-
 /* Print a driver identifying message. */
 static void TDFXIdentify(int flags);
 
@@ -165,7 +163,6 @@ DriverRec TDFX = {
 #endif
   TDFXIdentify,
   TDFXProbe,
-  TDFXAvailableOptions,
   NULL,
   0
 };
@@ -189,7 +186,7 @@ static PciChipsets TDFXPciChipsets[] = {
 typedef enum {
   OPTION_NOACCEL,
   OPTION_SW_CURSOR,
-  OPTION_USE_PIO
+  OPTION_USE_PIO,
 } TDFXOpts;
 
 static OptionInfoRec TDFXOptions[] = {
@@ -280,6 +277,7 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
+
 #endif
 
 #ifdef XFree86LOADER
@@ -365,13 +363,6 @@ TDFXFreeRec(ScrnInfoPtr pScrn) {
   pScrn->driverPrivate=0;
 }
 
-static
-OptionInfoPtr
-TDFXAvailableOptions(int chipid, int busid)
-{
-   return TDFXOptions;
-}
-
 /*
  * TDFXIdentify --
  *
@@ -398,8 +389,6 @@ TDFXProbe(DriverPtr drv, int flags) {
   Bool foundScreen = FALSE;
 
   TDFXTRACE("TDFXProbe start\n");
-  if (flags & PROBE_DETECTISA) return FALSE;
-  if (flags & PROBE_DETECTFBDEV) return FALSE;
   /*
    Find the config file Device sections that match this
    driver, and return if there are none.
@@ -423,7 +412,7 @@ TDFXProbe(DriverPtr drv, int flags) {
   devSections=NULL;
   if (numUsed<=0) return FALSE;
 
-  if (flags & PROBE_DETECTPCI)
+  if (flags & PROBE_DETECT)
     return TRUE;
 
   for (i=0; i<numUsed; i++) {
@@ -564,6 +553,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   pTDFX = TDFXPTR(pScrn);
 
   pTDFX->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
   if (xf86LoadSubModule(pScrn, "int10")) {
@@ -1393,6 +1383,129 @@ TDFXLoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
   }
 }
 
+#define TILE_WIDTH 128
+#define TILE_HEIGHT 32
+
+static int
+calcBufferStride(int xres, Bool tiled)
+{
+  int strideInTiles;
+
+  if (tiled == TRUE) {
+    /* Calculate tile width stuff */
+    strideInTiles = (xres << 1) >> 7;
+    if ((xres << 1) & (TILE_WIDTH - 1))
+      strideInTiles++;
+    
+    return (strideInTiles * TILE_WIDTH);
+
+  } else {
+    return (xres << 1);
+  }
+} /* calcBufferStride */
+
+static int
+calcBufferHeightInTiles(int yres)
+{
+  int heightInTiles;            /* Height of buffer in tiles */
+
+
+  /* Calculate tile height stuff */
+  heightInTiles = yres >> 5;
+  
+  if (yres & (TILE_HEIGHT - 1))
+    heightInTiles++;
+
+  return heightInTiles;
+
+} /* calcBufferHeightInTiles */
+
+static int
+calcBufferSizeInTiles(int xres, int yres) {
+  int bufSizeInTiles;           /* Size of buffer in tiles */
+
+  bufSizeInTiles =
+    calcBufferHeightInTiles(yres) * (calcBufferStride(xres, TRUE) >> 7);
+
+  return bufSizeInTiles;
+
+} /* calcBufferSizeInTiles */
+
+static int
+calcBufferSize(int xres, int yres, Bool tiled)
+{
+  int stride, height, bufSize;
+
+  if (tiled) {
+    stride = calcBufferStride(xres, tiled);
+    height = TILE_HEIGHT * calcBufferHeightInTiles(yres);
+  } else {
+    stride = xres << 1;
+    height = yres;
+  }
+
+  bufSize = stride * height;
+  
+  return bufSize;
+
+} /* calcBufferSize */
+
+static void allocateMemory(ScrnInfoPtr pScrn) {
+  TDFXPtr pTDFX;
+  int memRemaining, texSize, fifoSize, screenSizeInTiles;
+
+  pTDFX = TDFXPTR(pScrn);
+  pTDFX->stride = pScrn->displayWidth*pTDFX->cpp;
+
+  /* Layout the memory.  Start with all the ram */
+  memRemaining=pScrn->videoRam<<10;
+  /* Remove the cursor space */
+  memRemaining-=4096;
+  /* Remove the main screen and offscreen pixmaps */
+  memRemaining-=pTDFX->stride*(pScrn->virtualY+128);
+  /* Remove one scanline for page alignment */
+  memRemaining-=4095;
+  /* Remove the back and Z buffers */
+  screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY, TRUE);
+  memRemaining-=screenSizeInTiles*2;
+
+  /* Give all the rest to textures, rounded down to a page */
+  texSize=memRemaining&~0xFFF;
+
+  /* Make sure fifo has CMDFIFO_PAGES<fifoSize<255 pages */
+  if (memRemaining-texSize<CMDFIFO_PAGES<<12)
+    texSize=(memRemaining-(CMDFIFO_PAGES<<12))&~0xFFF;
+  /* Fifo uses the remaining space up to 255 pages */
+  fifoSize = (memRemaining-texSize)&~0xFFF;
+  if (fifoSize>255<<12) fifoSize=255<<12;
+
+  /* Assign the variables */
+  /* Cursor */
+  pTDFX->cursorOffset=0; /* Size 1024 bytes */
+
+  /* Point the fifo at the first page */
+  pTDFX->fifoOffset = 4096;
+  pTDFX->fifoSize = fifoSize;
+
+  /* Textures */
+  pTDFX->texOffset = pTDFX->fifoOffset+fifoSize;
+  pTDFX->texSize = texSize;
+
+  /* Frame buffer */
+  pTDFX->fbOffset=pTDFX->texOffset+pTDFX->texSize;
+
+  /* Back buffer */
+  pTDFX->backOffset=pTDFX->fbOffset+(pScrn->virtualY+128)*pTDFX->stride;
+  /* Round off to a page */
+  pTDFX->backOffset=(pTDFX->backOffset+4095)&~0xFFF;
+
+  /* Depth buffer */
+  pTDFX->depthOffset=pTDFX->backOffset+screenSizeInTiles;
+
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Textures Memory %0.02f MB\n",
+	     (float)texSize/1024.0/1024.0);
+}
+
 static Bool
 TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   ScrnInfoPtr pScrn;
@@ -1410,20 +1523,17 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   if (!TDFXMapMem(pScrn)) return FALSE;
   pScrn->memPhysBase = (int)pTDFX->LinearAddr;
-  pTDFX->lowMemLoc=0;
 
   if (!pTDFX->usePIO) {
     TDFXSetMMIOAccess(pTDFX);
     hwp->IOBase = ((hwp->readMiscOut(hwp) & 0x01) ? 
-      VGA_IOBASE_COLOR : VGA_IOBASE_MONO) +
-      (unsigned long)pTDFX->MMIOBase - 0x300;
+      VGA_IOBASE_COLOR : VGA_IOBASE_MONO) + pTDFX->MMIOBase - 0x300;
   } else {
     vgaHWGetIOBase(hwp);
   }
   if (!vgaHWMapMem(pScrn)) return FALSE;
-  pTDFX->stride = pScrn->displayWidth*pTDFX->cpp;
 
-  TDFXCursorGrabMemory(pScreen);
+  allocateMemory(pScrn);
 
 #ifdef PROP_3DFX
   if (!TDFXInitPrivate(pScreen)) {
@@ -1434,15 +1544,12 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->sync=TDFXSync;
 #endif
 
-  pTDFX->lowMemLoc=((pTDFX->lowMemLoc+pTDFX->stride-1)/pTDFX->stride)*pTDFX->stride; 
-  pTDFX->fbOffset=pTDFX->lowMemLoc;
   maxy=pScrn->virtualY+128;
   MemBox.y1 = pScrn->virtualY;
   MemBox.x1 = 0;
   MemBox.x2 = pScrn->displayWidth;
   MemBox.y2 = maxy;
 
-  pTDFX->lowMemLoc += maxy*pTDFX->stride;
   pTDFX->maxClip=((pScrn->virtualX+1)&0xFFF) | (((maxy+1)&0xFFF)<<16);
 
   TDFXSave(pScrn);
@@ -1541,8 +1648,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE) &&
-      pScrn->displayWidth < HW_CURSOR_MAX_DISPLAYWIDTH) {
+  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
     if (!TDFXCursorInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Hardware cursor initialization failed\n");

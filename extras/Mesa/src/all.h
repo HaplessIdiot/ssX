@@ -1,10 +1,9 @@
-/* $Id: all.h,v 1.2 2000/02/08 17:16:55 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -49,11 +48,11 @@
 #include "accum.h"
 #include "alpha.h"
 #include "alphabuf.h"
-#include "asm-386.h"
 #include "attrib.h"
 #include "bbox.h"
 #include "bitmap.h"
 #include "blend.h"
+#include "buffers.h"
 #include "clip.h"
 #include "colortab.h"
 #include "config.h"
@@ -75,8 +74,9 @@
 #include "get.h"
 #include "glapi.h"
 #include "glapinoop.h"
-#include "glmisc.h"
+#include "glthread.h"
 #include "hash.h"
+#include "hint.h"
 #include "image.h"
 #include "imaging.h"
 #include "light.h"
@@ -89,6 +89,7 @@
 #include "mmath.h"
 #include "pb.h"
 #include "pixel.h"
+#include "pipeline.h"
 #include "points.h"
 #include "polygon.h"
 #include "quads.h"
@@ -99,11 +100,13 @@
 #include "shade.h"
 #include "span.h"
 #include "stages.h"
+#include "state.h"
 #include "stencil.h"
 #include "teximage.h"
 #include "texobj.h"
 #include "texstate.h"
 #include "texture.h"
+#include "translate.h"
 #include "triangle.h"
 #include "types.h"
 #include "varray.h"

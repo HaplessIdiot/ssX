@@ -1,4 +1,3 @@
-/* $Id: texobj.c,v 1.2 2000/02/08 17:17:38 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -84,8 +83,10 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 
       /* insert into linked list */
       if (shared) {
+         _glthread_LOCK_MUTEX(shared->Mutex);
          obj->Next = shared->TexObjectList;
          shared->TexObjectList = obj;
+         _glthread_UNLOCK_MUTEX(shared->Mutex);
       }
 
       if (name > 0) {
@@ -118,6 +119,7 @@ void gl_free_texture_object( struct gl_shared_state *shared,
 
    /* unlink t from the linked list */
    if (shared) {
+      _glthread_LOCK_MUTEX(shared->Mutex);
       tprev = NULL;
       tcurr = shared->TexObjectList;
       while (tcurr) {
@@ -133,6 +135,7 @@ void gl_free_texture_object( struct gl_shared_state *shared,
          tprev = tcurr;
          tcurr = tcurr->Next;
       }
+      _glthread_UNLOCK_MUTEX(shared->Mutex);
    }
 
    if (t->Name) {
@@ -372,26 +375,29 @@ _mesa_DeleteTextures( GLsizei n, const GLuint *texName)
          t = (struct gl_texture_object *)
             _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
          if (t) {
+            /* First check if this texture is currently bound.
+             * If so, unbind it and decrement the reference count.
+             */
             GLuint u;
-            for (u=0; u<MAX_TEXTURE_UNITS; u++) {
+            for (u = 0; u < MAX_TEXTURE_UNITS; u++) {
                struct gl_texture_unit *unit = &ctx->Texture.Unit[u];
 	       GLuint d;
 	       for (d = 1 ; d <= 3 ; d++) {
-		  if (unit->CurrentD[d]==t) {
+		  if (unit->CurrentD[d] == t) {
 		     unit->CurrentD[d] = ctx->Shared->DefaultD[d];
 		     ctx->Shared->DefaultD[d]->RefCount++;
 		     t->RefCount--;
-		     assert( t->RefCount >= 0 );
+		     ASSERT( t->RefCount >= 0 );
 		  }
 	       }
             }
 
-            /* tell device driver to delete texture */
-            if (ctx->Driver.DeleteTexture) {
-               (*ctx->Driver.DeleteTexture)( ctx, t );
-            }
-
-            if (t->RefCount==0) {
+            /* Decrement reference count and delete if zero */
+            t->RefCount--;
+            ASSERT( t->RefCount >= 0 );
+            if (t->RefCount == 0) {
+               if (ctx->Driver.DeleteTexture)
+                  (*ctx->Driver.DeleteTexture)( ctx, t );
                gl_free_texture_object(ctx->Shared, t);
             }
          }

@@ -1,10 +1,9 @@
-/* $Id: fog.c,v 1.3 2000/02/08 17:17:13 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -72,7 +71,7 @@ _mesa_Fogiv(GLenum pname, const GLint *params )
 	 p[3] = INT_TO_FLOAT( params[3] );
 	 break;
       default:
-         /* Error will be caught later in gl_Fogfv */
+         /* Error will be caught later in _mesa_Fogfv */
          ;
    }
    _mesa_Fogfv(pname, p);
@@ -172,16 +171,20 @@ static fog_func fog_rgba_tab[2];
 #define IDX 1
 #include "fog_tmp.h"
 
-void gl_init_fog( void )
+
+void
+_mesa_init_fog( void )
 {
    init_fog_tab_masked();
    init_fog_tab_raw();
 }
 
+
 /*
  * Compute fog for the vertices in the vertex buffer.
  */
-void gl_fog_vertices( struct vertex_buffer *VB )
+void
+_mesa_fog_vertices( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
    GLuint i = VB->CullMode & 1;
@@ -213,8 +216,9 @@ void gl_fog_vertices( struct vertex_buffer *VB )
  *         red, green, blue, alpha - pixel colors
  * Output:  red, green, blue, alpha - fogged pixel colors
  */
-void gl_fog_rgba_pixels( const GLcontext *ctx,
-                         GLuint n, const GLdepth z[], GLubyte rgba[][4] )
+void
+_mesa_fog_rgba_pixels( const GLcontext *ctx,
+                       GLuint n, const GLdepth z[], GLubyte rgba[][4] )
 {
    GLfloat c = ctx->ProjectionMatrix.m[10];
    GLfloat d = ctx->ProjectionMatrix.m[14];
@@ -283,7 +287,7 @@ void gl_fog_rgba_pixels( const GLcontext *ctx,
          }
 	 break;
       default:
-         gl_problem(ctx, "Bad fog mode in gl_fog_rgba_pixels");
+         gl_problem(ctx, "Bad fog mode in _mesa_fog_rgba_pixels");
          return;
    }
 }
@@ -298,8 +302,9 @@ void gl_fog_rgba_pixels( const GLcontext *ctx,
  *         index - pixel color indexes
  * Output:  index - fogged pixel color indexes
  */
-void gl_fog_ci_pixels( const GLcontext *ctx,
-                       GLuint n, const GLdepth z[], GLuint index[] )
+void
+_mesa_fog_ci_pixels( const GLcontext *ctx,
+                     GLuint n, const GLdepth z[], GLuint index[] )
 {
    GLfloat c = ctx->ProjectionMatrix.m[10];
    GLfloat d = ctx->ProjectionMatrix.m[14];
@@ -359,7 +364,7 @@ void gl_fog_ci_pixels( const GLcontext *ctx,
 	 }
 	 break;
       default:
-         gl_problem(ctx, "Bad fog mode in gl_fog_ci_pixels");
+         gl_problem(ctx, "Bad fog mode in _mesa_fog_ci_pixels");
          return;
    }
 }

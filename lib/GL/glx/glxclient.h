@@ -544,9 +544,14 @@ extern __GLXdisplayPrivate *__glXInitialize(Display*);
 extern int __glXDebug;
 
 /* This is per-thread storage in an MT environment */
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+extern __GLXcontext *__glXGetCurrentContext(void);
+extern void __glXSetCurrentContext(__GLXcontext *c);
+#else
 extern __GLXcontext *__glXcurrentContext;
 #define __glXGetCurrentContext()	__glXcurrentContext
 #define __glXSetCurrentContext(gc)	__glXcurrentContext = gc
+#endif
 
 
 /*

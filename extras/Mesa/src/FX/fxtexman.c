@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -722,7 +722,7 @@ fxTMRestoreTextures_NoLock(fxMesaContext ctx) {
 	if (ctx->glCtx->Texture.Unit[i].Current==tObj) {
 	  /* Force the texture onto the board, as it could be in use */
 	  where=ti->whichTMU;
-	  ti->whichTMU=FX_TMU_NONE;
+	  fxTMMoveOutTM_NoLock(ctx, tObj);
 	  fxTMMoveInTM_NoLock(ctx, tObj, where);
 	  break;
 	}

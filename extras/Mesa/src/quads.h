@@ -1,4 +1,3 @@
-/* $Id: quads.h,v 1.2 2000/02/08 17:17:32 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

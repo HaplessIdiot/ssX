@@ -1,4 +1,3 @@
-/* $Id: alphabuf.c,v 1.2 2000/02/08 17:16:56 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

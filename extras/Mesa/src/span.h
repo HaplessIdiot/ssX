@@ -1,4 +1,3 @@
-/* $Id: span.h,v 1.2 2000/02/08 17:17:35 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

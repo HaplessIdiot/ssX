@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -95,6 +95,41 @@
 #define VARS V4
 #define SETUP S4
 
+#define DRAW_LINE(tmp0, tmp1, width)	\
+  do {					\
+    GrVertex verts[4];			\
+    float dx, dy, ix, iy;		\
+					\
+    dx = tmp0->x - tmp1->x;		\
+    dy = tmp0->y - tmp1->y;		\
+					\
+    if (dx * dx > dy * dy) {		\
+      iy = width * .5;			\
+      ix = 0;				\
+    } else {				\
+      iy = 0;				\
+      ix = width * .5;			\
+    }					\
+					\
+   verts[0] = *tmp0;			\
+   verts[1] = *tmp0;			\
+   verts[2] = *tmp1;			\
+   verts[3] = *tmp1;			\
+					\
+   verts[0].x = tmp0->x - ix;		\
+   verts[0].y = tmp0->y - iy;		\
+					\
+   verts[1].x = tmp0->x + ix;		\
+   verts[1].y = tmp0->y + iy;		\
+					\
+   verts[2].x = tmp1->x + ix;		\
+   verts[2].y = tmp1->y + iy;		\
+					\
+   verts[3].x = tmp1->x - ix;		\
+   verts[3].y = tmp1->y - iy;		\
+	 				\
+   FX_grDrawPolygonVertexList(4, verts); \
+  } while (0)
 
 static void TAG(fx_tri_view_clip)( struct vertex_buffer *VB, 
 				   GLuint v[],
@@ -228,6 +263,7 @@ static void TAG(fx_line_clip)( struct vertex_buffer *VB,
    GLfloat *vlist[VB_MAX_CLIPPED_VERTS];
    GLfloat *out = data;
    GLfloat *mat = ctx->Viewport.WindowMap.m;
+   GLfloat w = ctx->Line.Width*.5;
    GLuint  e, n;
 
    GLuint tmu0_source = fxMesa->tmu_source[0];				
@@ -271,7 +307,7 @@ static void TAG(fx_line_clip)( struct vertex_buffer *VB,
       data = vlist[1];
       SETUP;
 
-      FX_grDrawLine(gWin, v);      
+      DRAW_LINE(gWin, v, w);      
    }
 }
 

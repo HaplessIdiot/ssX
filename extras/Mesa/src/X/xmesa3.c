@@ -1,4 +1,3 @@
-/* $Id: xmesa3.c,v 1.2 2000/02/08 17:18:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,10 +1,9 @@
-/* $Id: teximage.h,v 1.2 2000/02/08 17:17:37 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -63,6 +62,13 @@ extern void
 _mesa_TexImage3D( GLenum target, GLint level, GLint internalformat,
                   GLsizei width, GLsizei height, GLsizei depth, GLint border,
                   GLenum format, GLenum type, const GLvoid *pixels );
+
+
+extern void
+_mesa_TexImage3DEXT( GLenum target, GLint level, GLenum internalformat,
+                     GLsizei width, GLsizei height, GLsizei depth,
+                     GLint border, GLenum format, GLenum type,
+                     const GLvoid *pixels );
 
 
 extern void

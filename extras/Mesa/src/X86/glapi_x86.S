@@ -1,4 +1,3 @@
-/* $Id: glapi_x86.S,v 1.1 2000/02/08 17:18:18 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

@@ -1,4 +1,3 @@
-/* $Id: vbxform.c,v 1.2 2000/02/08 17:17:45 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -44,6 +43,7 @@
 #include "mmath.h"
 #include "pipeline.h"
 #include "shade.h"
+#include "state.h"
 #include "texture.h"
 #include "types.h"
 #include "varray.h"

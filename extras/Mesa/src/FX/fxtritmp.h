@@ -2,9 +2,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -249,8 +249,41 @@ static void TAG(fx_quad)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint e3,
    }   
 }
 
-
-
+#define DRAW_LINE(tmp0, tmp1, width)	\
+  do {					\
+    GrVertex verts[4];			\
+    float dx, dy, wx, wy;		\
+					\
+    dx = tmp0->x - tmp1->x;		\
+    dy = tmp0->y - tmp1->y;		\
+					\
+    if (dx * dx > dy * dy) {		\
+      wx = 0;				\
+      wy = width;			\
+    } else {				\
+      wx = width;			\
+      wy = 0;				\
+    }					\
+					\
+   verts[0] = *tmp0;			\
+   verts[1] = *tmp0;			\
+   verts[2] = *tmp1;			\
+   verts[3] = *tmp1;			\
+					\
+   verts[0].x = tmp0->x - wx;		\
+   verts[0].y = tmp0->y - wy;		\
+					\
+   verts[1].x = tmp0->x + wx;		\
+   verts[1].y = tmp0->y + wy;		\
+					\
+   verts[2].x = tmp1->x + wx;		\
+   verts[2].y = tmp1->y + wy;		\
+					\
+   verts[3].x = tmp1->x - wx;		\
+   verts[3].y = tmp1->y - wy;		\
+	 				\
+   FX_grDrawPolygonVertexList(4, verts); \
+  } while (0)
 
 #if (IND & FX_OFFSET) == 0
 static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
@@ -261,6 +294,7 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
    GLubyte (* const color)[4] = VB->Color[0]->data;
    GrVertex *v1 = (GrVertex *)gWin[e1].f; 
    GrVertex *v2 = (GrVertex *)gWin[e2].f;
+   GLfloat w = ctx->Line.Width*.5;
 
    if (IND & FX_FLAT) 
    {
@@ -295,7 +329,7 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
    if (IND & FX_ANTIALIAS)
       FX_grAADrawLine(v1,v2);
    else
-      FX_grDrawLine(v1,v2);
+      DRAW_LINE(v1,v2,w);
 
    if (IND & FX_FRONT_BACK) 
    {
@@ -312,7 +346,7 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
       if (IND & FX_ANTIALIAS)
 	 FX_grAADrawLine(v1,v2);
       else
-	 FX_grDrawLine(v1,v2);
+	 DRAW_LINE(v1,v2,w);
    }
 }
 #endif
@@ -335,12 +369,23 @@ static void TAG(fx_line)(GLcontext *ctx, GLuint e1, GLuint e2, GLuint pv)
 #define FLAT_COLOR(x,y)
 #endif
 
-#if IND & FX_ANTIALIAS
-#define DRAW_POINT(i) FX_grAADrawPoint((GrVertex *)gWin[i].f);
-#else
-#define DRAW_POINT(i) FX_grDrawPoint((GrVertex *)gWin[i].f);
-#endif
 
+#define DRAW_POINT(i, sz)			\
+  do {						\
+    GrVertex verts[4], *tmp;			\
+						\
+    tmp = (GrVertex*)gWin[i].f;			\
+    verts[0] = *tmp;				\
+    verts[1] = *tmp;				\
+    verts[2] = *tmp;				\
+    verts[3] = *tmp;				\
+    verts[0].x = verts[3].x = tmp->x + sz;	\
+    verts[0].y = verts[1].y = tmp->y + sz;	\
+    verts[2].x = verts[1].x = tmp->x - sz;	\
+    verts[2].y = verts[3].y = tmp->y - sz;	\
+						\
+    FX_grDrawPolygonVertexList(4, verts);	\
+  } while (0)
 
 static void TAG(fx_points)(GLcontext *ctx, GLuint first, GLuint last)
 {
@@ -349,6 +394,7 @@ static void TAG(fx_points)(GLcontext *ctx, GLuint first, GLuint last)
    fxVertex *gWin = FX_DRIVER_DATA(VB)->verts;
    GLubyte (*color)[4] = VB->ColorPtr->data;
    GLuint i;
+   GLfloat sz = ctx->Point.Size * .5;
 
    (void) color; (void) fxMesa;
 
@@ -365,13 +411,13 @@ static void TAG(fx_points)(GLcontext *ctx, GLuint first, GLuint last)
    if(!VB->ClipOrMask) {
       for(i=first;i<=last;i++) {
 	 FLAT_COLOR(fxMesa, color[i]);
-	 DRAW_POINT(i);
+	 DRAW_POINT(i, sz);
       }
    } else {
       for(i=first;i<=last;i++) {
 	 if(VB->ClipMask[i]==0) {
 	    FLAT_COLOR(fxMesa, color[i]);
-	    DRAW_POINT(i);
+	    DRAW_POINT(i, sz);
 	 }
       }
    }
@@ -389,13 +435,13 @@ static void TAG(fx_points)(GLcontext *ctx, GLuint first, GLuint last)
       if(!VB->ClipOrMask) {
 	 for(i=first;i<=last;i++) {
 	    FLAT_COLOR(fxMesa, color[i]);
-	    DRAW_POINT(i);
+	    DRAW_POINT(i, sz);
 	 }
       } else {
 	 for(i=first;i<=last;i++) {
 	    if(VB->ClipMask[i]==0) {
 	       FLAT_COLOR(fxMesa, color[i]);
-	       DRAW_POINT(i);
+	       DRAW_POINT(i, sz);
 	    }
 	 }
       }

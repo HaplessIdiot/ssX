@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.2 1999/12/16 02:26:29 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.3 2000/02/08 17:19:18 dawes Exp $ */
 
 
 #include <sys/time.h>
@@ -139,51 +139,17 @@ Bool TDFXInitPrivate(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
-  int memRemaining, texSize, fifoSize, screenSizeInTiles;
 
   pScrn = xf86Screens[pScreen->myNum];
   pTDFX=TDFXPTR(pScrn);
 #ifdef DEBUG_FIFO
   pTDFX->fifoMirrorBase=0;
 #endif
-  pTDFX->fifoOffset = (pTDFX->lowMemLoc+4095)&~0xFFF;
-  /* Start with all the ram */
-  memRemaining=pScrn->videoRam<<10;
-  /* Remove the cursor space */
-  memRemaining-=pTDFX->fifoOffset;
-  /* Remove one scanline for scanline alignment of front buffer */
-  memRemaining-=pScrn->virtualX*2;
-  /* Remove the main screen and offscreen pixmaps */
-  memRemaining-=pScrn->virtualX*(pScrn->virtualY+128)*2;
-  /* Bump down to the next page */
-  memRemaining=memRemaining&~0xFFF;
-  /* Remove the back and Z buffers */
-  screenSizeInTiles=(pScrn->virtualX*pScrn->virtualY+4095)&~0xFFF;
-  screenSizeInTiles*=2;
-  memRemaining-=screenSizeInTiles*2;
-
-  /* Make it round down */
-  texSize=memRemaining&~0xFFFFF;
-  /* Make sure there's enough room for the fifo */
-  if (memRemaining-texSize<CMDFIFO_PAGES<<12)
-    texSize=(memRemaining-(CMDFIFO_PAGES<<12))&~0xFFFFF;
-  /* Fifo uses the remaining space up to 255 pages */
-  fifoSize = (memRemaining-texSize)&~0xFFF;
-  if (fifoSize>255<<12) fifoSize=255<<12;
-  pTDFX->lowMemLoc = pTDFX->fifoOffset+fifoSize;
-  pTDFX->texOffset = pTDFX->lowMemLoc;
-  xf86DrvMsg(pScreen->myNum, X_INFO, "Textures Memory %0.02f MB\n",
-	     (float)texSize/1024.0/1024.0);
-  pTDFX->texSize = texSize;
-  pTDFX->lowMemLoc += pTDFX->texSize;
-
-  pTDFX->fifoSize = fifoSize;
   pTDFX->fifoBase = (uint32*)(pTDFX->FbBase+pTDFX->fifoOffset);
 #ifdef DEBUG_FIFO
   pTDFX->fifoMirrorBase = xalloc(pTDFX->fifoSize);
   pTDFX->fifoMirrorPtr = pTDFX->fifoMirrorBase;
 #endif
-
   pTDFX->sync=TDFXSyncFifo;
   InstallFifo(pTDFX);
   return TRUE;
@@ -202,12 +168,6 @@ void TDFXShutdownPrivate(ScreenPtr pScreen)
   if (pTDFX->fifoMirrorBase) xfree(pTDFX->fifoMirrorBase);
   pTDFX->fifoMirrorBase=0;
 #endif
-}
-
-void TDFXFillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI)
-{
-  pTDFXDRI->priv1=pTDFX->fifoOffset;
-  pTDFXDRI->priv2=pTDFX->fifoSize;
 }
 
 static uint32 
