@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/Xrandr/Xrandr.man,v 1.6 2003/06/12 14:12:28 eich Exp $
+.\" $XFree86: xc/lib/Xrandr/Xrandr.man,v 1.7 2003/08/04 10:32:21 eich Exp $
 .\"
 .\" Copyright 2002 Hewlett-Packard Company.\"
 .\" Permission to use, copy, modify, distribute, and sell this software and its
@@ -96,14 +96,14 @@ XRRScreenConfiguration *XRRConfig\^(\^Screen *\fIscreen\fP\^);
 .sp
 void XRRSelectInput\^(\^Display *\fIdpy\fP, Window \fIwindow\fP, int \fImask\fP\^);
 .sp
-/* 
+/\(** 
  * intended to take RRScreenChangeNotify,  or 
  * ConfigureNotify \^(\^\fIon the root window\fP\^)
  * returns 1 if it is an event type it understands, 0 if not
  */
 int XRRUpdateConfiguration\^(\^XEvent *\fIevent\fP^);
 .sp
-/* 
+/\(** 
  * the following are always safe to call, even if RandR is 
  * not implemented on a screen 
  */
@@ -154,8 +154,8 @@ Can be any of:
 #define RR_Rotate_180           4
 #define RR_Rotate_270           8
 
-/* new in 1.0 protocol, to allow reflection of screen */
-/* reflection is applied after rotation */
+/\(** new in 1.0 protocol, to allow reflection of screen */
+/\(** reflection is applied after rotation */
 
 #define RR_Reflect_X            16
 #define RR_Reflect_Y            32
@@ -167,14 +167,14 @@ typedef struct {
 } XRRScreenSize;
 
 typedef struct {
-    int type;				/* event base */
-    unsigned long serial;	/* # of last request processed by server */
-    Bool send_event;		/* true if this came from a SendEvent request */
-    Display *display;		/* Display the event was read from */
-    Window window;			/* window which selected for this event */
-    Window root;			/* Root window for changed screen */
-    Time timestamp;			/* when the screen change occurred */
-    Time config_timestamp;	/* when the last configuration change */
+    int type;				/\(** event base */
+    unsigned long serial;	/\(** # of last request processed by server */
+    Bool send_event;		/\(** true if this came from a SendEvent request */
+    Display *display;		/\(** Display the event was read from */
+    Window window;			/\(** window which selected for this event */
+    Window root;			/\(** Root window for changed screen */
+    Time timestamp;			/\(** when the screen change occurred */
+    Time config_timestamp;	/\(** when the last configuration change */
     SizeID size_index;
     SubpixelOrder subpixel_order;
     Rotation rotation;
