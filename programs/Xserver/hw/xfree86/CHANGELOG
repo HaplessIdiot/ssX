@@ -1,4 +1,9 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 894. Add some more HP keyboard layouts (Peter Soos).
+ 893. Remove XFree86-specific keysyms that already have generic equivalents
+      (Menu, Redo, Print, Undo).
+ 892. Add keyboard layout information for the HP 5181 Internet/Multimedia
+      keyboard (#A.1603, John Mitchell).
  891. Fix a problem where two-color render cursors have extra pixels set
       (#A.1607, Keith Packard).
  890. Fix for corruption when using video modes requiring more than 2MB on
@@ -16366,4 +16371,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2551 2003/02/14 13:28:26 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2552 2003/02/14 18:17:19 dawes Exp $
