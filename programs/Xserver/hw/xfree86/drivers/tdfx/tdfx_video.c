@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.10 2001/04/05 21:29:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.11 2001/05/21 21:43:55 dawes Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -994,7 +994,7 @@ TDFXPutImageOverlay(
         buf += (top * srcPitch) + left;
         nlines = ((yb + 0xffff) >> 16) - top;
         dst_start += left;
-        TDFXCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels << 1);
+        TDFXCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     }
 
