@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.224 2005/01/26 05:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.225 2005/01/26 18:22:54 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -362,7 +362,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   Bool			 pix24Fail = FALSE;
   Bool			 autoretry = FALSE;
   int			 found = 0;
-  
+
 #ifdef __UNIXOS2__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
@@ -668,16 +668,17 @@ retry:
      * needed at this early stage.
      */
 
-    for (i = 0; i < xf86NumDrivers; i++)
+    for (i = 0; i < xf86NumDrivers; i++) {
       if (xf86DriverList[i]) {
 	/* The Identify function is mandatory, but if it isn't there continue */
 	if (xf86DriverList[i]->Identify != NULL)
 	  xf86DriverList[i]->Identify(0);
 	else {
 	  xf86Msg(X_WARNING, "Driver `%s' has no Identify function\n",
-	         xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
-					     : "noname");
+		  xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+						: "noname");
 	}
+      }
     }
 
     if (!noHardware) {
@@ -708,13 +709,14 @@ retry:
 	if (xf86DriverList[i]->Probe != NULL) {
 	  if (xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DEFAULT))
 	    found++;
-	  if (!found)
-	    xf86DeleteDriver(i);
+	  if (!found) {
+	    xf86DeleteDriver(i, TRUE);
+	  }
 	} else {
 	  xf86MsgVerb(X_WARNING, 0,
-		  "Driver `%s' has no Probe function (ignoring)\n",
-		  xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
-					     : "noname");
+		      "Driver `%s' has no Probe function (ignoring)\n",
+		      xf86DriverList[i]->driverName ?
+			xf86DriverList[i]->driverName : "noname");
 	}
 	xf86SetPciVideo(NULL,NONE);
       }
@@ -820,14 +822,11 @@ retry:
 	    xf86Screens[i]->PreInit(xf86Screens[i], 0))
 	    xf86Screens[i]->configured = TRUE;
     }
+
     for (i = 0; i < xf86NumScreens; i++)
 	if (!xf86Screens[i]->configured)
 	    xf86DeleteScreen(i--, 0);
     
-    /*
-     * If no screens left, return now.
-     */
-
     /*
      * If autoconfig, try again.  The first driver remaining in the list
      * must be the one that had a successful Probe() but an unsuccessful
@@ -836,7 +835,7 @@ retry:
     if (xf86NumScreens == 0 && autoconfig) {
 	for (i = 0; i < xf86NumDrivers; i++) {
 	    if (xf86DriverList[i]) {
-		xf86DeleteDriver(i);
+		xf86DeleteDriver(i, TRUE);
 		autoretry = TRUE;
 		/* Clear claimed config sections. */
 		for (j = 0; j < xf86Info.serverLayout->numScreens; j++) {
@@ -910,10 +909,12 @@ retry:
     }
 
 #ifdef XFree86LOADER
-    /* Remove (unload) drivers that are not required */
+    xf86DoDeferredUnloads();
+    /* Remove (unload) drivers that are not required. */
     for (i = 0; i < xf86NumDrivers; i++)
-	if (xf86DriverList[i] && xf86DriverList[i]->refCount <= 0)
-	    xf86DeleteDriver(i);
+	if (xf86DriverList[i] && xf86DriverList[i]->refCount <= 0) {
+	    xf86DeleteDriver(i, FALSE);
+}
 #endif
 
     /*

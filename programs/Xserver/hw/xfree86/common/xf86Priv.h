@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.87 2004/12/31 03:30:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.88 2005/01/26 05:31:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -259,6 +259,7 @@ void xf86GrabServerCallback(CallbackListPtr *, pointer, pointer);
 /* xf86Helper.c */
 void xf86LogInit(void);
 void xf86CloseLog(void);
+void xf86DoDeferredUnloads(void);
 
 /* xf86Init.c */
 Bool xf86LoadModules(const char **list, pointer *optlist);

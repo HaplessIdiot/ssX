@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.85tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.86 2004/12/31 03:30:40 tsi Exp $ */
 /*
- * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -437,6 +437,7 @@ xf86ClearEntityListForScreen(int scrnIndex)
 	pScrn->CurrentAccess->pMemAccess = NULL;
     pScrn->entityList = NULL;
     pScrn->entityInstanceList = NULL;
+    pScrn->numEntities = 0;
 }
 
 void
