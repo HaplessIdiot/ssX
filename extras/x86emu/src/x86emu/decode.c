@@ -37,7 +37,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/decode.c,v 1.6 2000/06/07 21:58:25 tsi Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -829,7 +829,7 @@ decoding of instructions.
 unsigned decode_rm10_address(
 	int rm)
 {
-	int displacement = (s16)fetch_word_imm();
+	unsigned displacement = (s16)fetch_word_imm();
 	switch (rm) {
       case 0:
 		DECODE_PRINTF2("%d[BX+SI]", displacement);
