@@ -113,5 +113,5 @@ the rectangle is constructed with a counterclockwise winding.
 is executed between the execution of \%\f3glBegin\fP
 and the corresponding execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glBegin\fP,
-\%\f3glVertex\fP
+\%\f3glBegin(3G)\fP,
+\%\f3glVertex(3G)\fP

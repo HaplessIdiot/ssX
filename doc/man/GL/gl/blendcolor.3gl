@@ -47,6 +47,6 @@ execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with an argument of \%\f3GL_BLEND_COLOR\fP
 .SH SEE ALSO
-\%\f3glBlendEquation\fP,
-\%\f3glBlendFunc\fP,
-\%\f3glGetString\fP
+\%\f3glBlendEquation(3G)\fP,
+\%\f3glBlendFunc(3G)\fP,
+\%\f3glGetString(3G)\fP

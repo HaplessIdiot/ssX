@@ -275,12 +275,12 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_RASTER_TEXTURE_COORDS\fP
 .SH SEE ALSO
-\%\f3glBitmap\fP,
-\%\f3glCopyPixels\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glDrawElements\fP,
-\%\f3glDrawRangeElements\fP,
-\%\f3glDrawPixels\fP,
-\%\f3glTexCoord\fP,
-\%\f3glTexGen\fP,
-\%\f3glVertex\fP
+\%\f3glBitmap(3G)\fP,
+\%\f3glCopyPixels(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glDrawElements(3G)\fP,
+\%\f3glDrawRangeElements(3G)\fP,
+\%\f3glDrawPixels(3G)\fP,
+\%\f3glTexCoord(3G)\fP,
+\%\f3glTexGen(3G)\fP,
+\%\f3glVertex(3G)\fP

@@ -58,13 +58,13 @@ the array pointers and enables are client-side state, their values
 affect display lists when the lists are created, not when the lists
 are executed.
 .SH SEE ALSO 
-\%\f3glClientActiveTextureARB\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glEdgeFlagPointer\fP,
-\%\f3glGetPointerv\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glInterleavedArrays\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glClientActiveTextureARB(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glEdgeFlagPointer(3G)\fP,
+\%\f3glGetPointerv(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glInterleavedArrays(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

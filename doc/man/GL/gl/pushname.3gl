@@ -62,7 +62,7 @@ is executed between a call to \%\f3glBegin\fP and the corresponding call to
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAX_NAME_STACK_DEPTH\fP
 .SH SEE ALSO
-\%\f3glInitNames\fP,
-\%\f3glLoadName\fP,
-\%\f3glRenderMode\fP,
-\%\f3glSelectBuffer\fP
+\%\f3glInitNames(3G)\fP,
+\%\f3glLoadName(3G)\fP,
+\%\f3glRenderMode(3G)\fP,
+\%\f3glSelectBuffer(3G)\fP

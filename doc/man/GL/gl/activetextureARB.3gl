@@ -46,8 +46,8 @@ string returned by \%\f3glGetString\fP when called with the argument
 .br
 where 0 \(<= $ i $ < \%\f3GL_MAX_TEXTURE_UNITS_ARB\fP.
 .SH SEE ALSO
-\%\f3glClientActiveTextureARB\fP,
-\%\f3glGetIntegerv\fP,
-\%\f3glMultiTexCoordARB\fP,
-\%\f3glTexParameter\fP
+\%\f3glClientActiveTextureARB(3G)\fP,
+\%\f3glGetIntegerv(3G)\fP,
+\%\f3glMultiTexCoordARB(3G)\fP,
+\%\f3glTexParameter(3G)\fP
 

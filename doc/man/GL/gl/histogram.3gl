@@ -134,5 +134,5 @@ execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGetHistogramParameter\fP
 .SH SEE ALSO
-\%\f3glGetHistogram\fP,
-\%\f3glResetHistogram\fP
+\%\f3glGetHistogram(3G)\fP,
+\%\f3glResetHistogram(3G)\fP

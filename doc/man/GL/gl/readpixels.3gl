@@ -338,10 +338,10 @@ is 1.2 or greater.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_INDEX_MODE\fP
 .SH SEE ALSO
-\%\f3glCopyPixels\fP,
-\%\f3glDrawPixels\fP,
-\%\f3glPixelMap\fP,
-\%\f3glPixelStore\fP,
-\%\f3glPixelTransfer\fP,
+\%\f3glCopyPixels(3G)\fP,
+\%\f3glDrawPixels(3G)\fP,
+\%\f3glPixelMap(3G)\fP,
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP,
 .br
-\%\f3glReadBuffer\fP
+\%\f3glReadBuffer(3G)\fP

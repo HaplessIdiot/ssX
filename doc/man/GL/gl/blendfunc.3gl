@@ -240,11 +240,11 @@ and the corresponding execution of \%\f3glEnd\fP.
 \%\f3glIsEnabled\fP with argument \%\f3GL_BLEND\fP
 .br
 .SH SEE ALSO
-\%\f3glAlphaFunc\fP,
-\%\f3glBlendColor\fP,
-\%\f3glBlendEquation\fP,
-\%\f3glClear\fP,
-\%\f3glDrawBuffer\fP,
-\%\f3glEnable\fP,
-\%\f3glLogicOp\fP,
-\%\f3glStencilFunc\fP
+\%\f3glAlphaFunc(3G)\fP,
+\%\f3glBlendColor(3G)\fP,
+\%\f3glBlendEquation(3G)\fP,
+\%\f3glClear(3G)\fP,
+\%\f3glDrawBuffer(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glLogicOp(3G)\fP,
+\%\f3glStencilFunc(3G)\fP

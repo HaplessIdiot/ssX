@@ -67,7 +67,7 @@ or \%\f3GL_POLYGON_OFFSET_POINT\fP.
 \%\f3glGet\fP with argument \%\f3GL_POLYGON_OFFSET_FACTOR\fP or 
 \%\f3GL_POLYGON_OFFSET_UNITS\fP.
 .SH SEE ALSO
-\%\f3glDepthFunc\fP,
-\%\f3glEnable\fP,
-\%\f3glGet\fP,
-\%\f3glIsEnabled\fP
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glGet(3G)\fP,
+\%\f3glIsEnabled(3G)\fP

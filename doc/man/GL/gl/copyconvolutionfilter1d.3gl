@@ -159,6 +159,6 @@ execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGetConvolutionParameter\fP, \%\f3glGetConvolutionFilter\fP
 .SH SEE ALSO
-\%\f3glConvolutionFilter1D\fP,
-\%\f3glConvolutionParameter\fP,
-\%\f3glPixelTransfer\fP
+\%\f3glConvolutionFilter1D(3G)\fP,
+\%\f3glConvolutionParameter(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP

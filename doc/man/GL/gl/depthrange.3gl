@@ -60,6 +60,6 @@ and the corresponding execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_DEPTH_RANGE\fP
 .SH SEE ALSO
-\%\f3glDepthFunc\fP,
-\%\f3glPolygonOffset\fP,
-\%\f3glViewport\fP
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glPolygonOffset(3G)\fP,
+\%\f3glViewport(3G)\fP

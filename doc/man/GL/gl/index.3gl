@@ -94,5 +94,5 @@ call to \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_INDEX\fP
 .SH SEE ALSO
-\%\f3glColor\fP,
-\%\f3glIndexPointer\fP
+\%\f3glColor(3G)\fP,
+\%\f3glIndexPointer(3G)\fP

@@ -68,8 +68,8 @@ execution of \%\f3glEnd\fP.
 \%\f3glGetColorTable\fP,
 \%\f3glGetColorTableParameter\fP
 .SH SEE ALSO
-\%\f3glColorSubTable\fP,
-\%\f3glColorTableParameter\fP,
-\%\f3glCopyColorTable\fP,
-\%\f3glCopyColorSubTable\fP,
-\%\f3glGetColorTable\fP
+\%\f3glColorSubTable(3G)\fP,
+\%\f3glColorTableParameter(3G)\fP,
+\%\f3glCopyColorTable(3G)\fP,
+\%\f3glCopyColorSubTable(3G)\fP,
+\%\f3glGetColorTable(3G)\fP

@@ -147,6 +147,6 @@ and \f2format\fP is neither \%\f3GL_RGBA\fP nor \%\f3GL_BGRA\fP.
 .SH ASSOCIATED GETS
 \%\f3glGetConvolutionParameter\fP
 .SH SEE ALSO
-\%\f3glGetConvolutionFilter\fP,
-\%\f3glConvolutionParameter\fP,
-\%\f3glSeparableFilter2D\fP
+\%\f3glGetConvolutionFilter(3G)\fP,
+\%\f3glConvolutionParameter(3G)\fP,
+\%\f3glSeparableFilter2D(3G)\fP

@@ -135,9 +135,9 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_STENCIL_TEST\fP
 .SH SEE ALSO
-\%\f3glAlphaFunc\fP,
-\%\f3glBlendFunc\fP,
-\%\f3glDepthFunc\fP,
-\%\f3glEnable\fP,
-\%\f3glLogicOp\fP,
-\%\f3glStencilFunc\fP
+\%\f3glAlphaFunc(3G)\fP,
+\%\f3glBlendFunc(3G)\fP,
+\%\f3glDepthFunc(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glLogicOp(3G)\fP,
+\%\f3glStencilFunc(3G)\fP

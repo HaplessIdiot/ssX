@@ -134,8 +134,8 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_AUX_BUFFERS\fP
 .SH SEE ALSO
-\%\f3glBlendFunc\fP,
-\%\f3glColorMask\fP,
-\%\f3glIndexMask\fP,
-\%\f3glLogicOp\fP,
-\%\f3glReadBuffer\fP
+\%\f3glBlendFunc(3G)\fP,
+\%\f3glColorMask(3G)\fP,
+\%\f3glIndexMask(3G)\fP,
+\%\f3glLogicOp(3G)\fP,
+\%\f3glReadBuffer(3G)\fP

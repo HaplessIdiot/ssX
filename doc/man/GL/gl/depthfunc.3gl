@@ -83,6 +83,6 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glIsEnabled\fP with argument \%\f3GL_DEPTH_TEST\fP
 .SH SEE ALSO
-\%\f3glDepthRange\fP,
-\%\f3glEnable\fP,
-\%\f3glPolygonOffset\fP
+\%\f3glDepthRange(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glPolygonOffset(3G)\fP

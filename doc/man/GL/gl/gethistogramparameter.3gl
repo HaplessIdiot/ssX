@@ -99,5 +99,5 @@ values.
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glGetHistogram\fP,
-\%\f3glHistogram\fP
+\%\f3glGetHistogram(3G)\fP,
+\%\f3glHistogram(3G)\fP

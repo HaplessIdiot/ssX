@@ -81,7 +81,7 @@ and the corresponding execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_SHADE_MODEL\fP
 .SH SEE ALSO
-\%\f3glBegin\fP,
-\%\f3glColor\fP,
-\%\f3glLight\fP,
-\%\f3glLightModel\fP
+\%\f3glBegin(3G)\fP,
+\%\f3glColor(3G)\fP,
+\%\f3glLight(3G)\fP,
+\%\f3glLightModel(3G)\fP

@@ -106,8 +106,8 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGetPointerv\fP with argument \%\f3GL_SELECTION_BUFFER_POINTER\fP
 .SH SEE ALSO
-\%\f3glFeedbackBuffer\fP,
-\%\f3glInitNames\fP,
-\%\f3glLoadName\fP,
-\%\f3glPushName\fP,
-\%\f3glRenderMode\fP
+\%\f3glFeedbackBuffer(3G)\fP,
+\%\f3glInitNames(3G)\fP,
+\%\f3glLoadName(3G)\fP,
+\%\f3glPushName(3G)\fP,
+\%\f3glRenderMode(3G)\fP

@@ -233,5 +233,5 @@ updates texture unit \%\f3GL_TEXTURE0_ARB\fP.
 .SH ASSOCIATED GETS
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_TEXTURE_COORDS\fP
 .SH SEE ALSO
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertex\fP
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertex(3G)\fP

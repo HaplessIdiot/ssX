@@ -96,15 +96,15 @@ update, regardless if they are enabled or not.
 .P
 \%\f3GL_INVALID_VALUE\fP is generated if \f2stride\fP is negative.
 .SH SEE ALSO 
-\%\f3glArrayElement\fP,
-\%\f3glClientActiveTextureARB\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glDrawElements\fP,
-\%\f3glEdgeFlagPointer\fP,
-\%\f3glEnableClientState\fP,
-\%\f3glGetPointer\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glArrayElement(3G)\fP,
+\%\f3glClientActiveTextureARB(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glDrawElements(3G)\fP,
+\%\f3glEdgeFlagPointer(3G)\fP,
+\%\f3glEnableClientState(3G)\fP,
+\%\f3glGetPointer(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

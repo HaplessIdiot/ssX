@@ -208,6 +208,6 @@ an accepted value.
 .SH ASSOCIATED GETS
 \%\f3glGetMaterial\fP
 .SH SEE ALSO
-\%\f3glColorMaterial\fP,
-\%\f3glLight\fP,
-\%\f3glLightModel\fP
+\%\f3glColorMaterial(3G)\fP,
+\%\f3glLight(3G)\fP,
+\%\f3glLightModel(3G)\fP

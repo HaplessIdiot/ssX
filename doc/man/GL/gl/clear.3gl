@@ -86,13 +86,13 @@ and the corresponding execution of \%\f3glEnd\fP.
 .br
 \%\f3glGet\fP with argument \%\f3GL_STENCIL_CLEAR_VALUE\fP
 .SH SEE ALSO
-\%\f3glClearAccum\fP,
-\%\f3glClearColor\fP,
-\%\f3glClearDepth\fP,
-\%\f3glClearIndex\fP,
-\%\f3glClearStencil\fP,
-\%\f3glColorMask\fP,
-\%\f3glDepthMask\fP,
-\%\f3glDrawBuffer\fP,
-\%\f3glScissor\fP,
-\%\f3glStencilMask\fP
+\%\f3glClearAccum(3G)\fP,
+\%\f3glClearColor(3G)\fP,
+\%\f3glClearDepth(3G)\fP,
+\%\f3glClearIndex(3G)\fP,
+\%\f3glClearStencil(3G)\fP,
+\%\f3glColorMask(3G)\fP,
+\%\f3glDepthMask(3G)\fP,
+\%\f3glDrawBuffer(3G)\fP,
+\%\f3glScissor(3G)\fP,
+\%\f3glStencilMask(3G)\fP

@@ -94,8 +94,8 @@ $i ^cdot^DELTA v ~+~ v sub 1$ is exactly $v sub 2$.
 .br
 \%\f3glGet\fP with argument \%\f3GL_MAP2_GRID_SEGMENTS\fP
 .SH SEE ALSO
-\%\f3glEvalCoord\fP,
-\%\f3glEvalMesh\fP,
-\%\f3glMap1\fP,
-\%\f3glMap2\fP,
-\%\f3glMapGrid\fP
+\%\f3glEvalCoord(3G)\fP,
+\%\f3glEvalMesh(3G)\fP,
+\%\f3glMap1(3G)\fP,
+\%\f3glMap2(3G)\fP,
+\%\f3glMapGrid(3G)\fP

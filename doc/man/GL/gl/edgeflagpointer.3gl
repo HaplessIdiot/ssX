@@ -85,16 +85,16 @@ Use \%\f3glPushClientAttrib\fP and
 .br
 \%\f3glGetPointerv\fP with argument \%\f3GL_EDGE_FLAG_ARRAY_POINTER\fP
 .SH SEE ALSO 
-\%\f3glArrayElement\fP,
-\%\f3glColorPointer\fP,
-\%\f3glDrawArrays\fP,
-\%\f3glDrawElements\fP,
-\%\f3glEnable\fP,
-\%\f3glGetPointerv\fP,
-\%\f3glIndexPointer\fP,
-\%\f3glNormalPointer\fP,
-\%\f3glPopClientAttrib\fP,
+\%\f3glArrayElement(3G)\fP,
+\%\f3glColorPointer(3G)\fP,
+\%\f3glDrawArrays(3G)\fP,
+\%\f3glDrawElements(3G)\fP,
+\%\f3glEnable(3G)\fP,
+\%\f3glGetPointerv(3G)\fP,
+\%\f3glIndexPointer(3G)\fP,
+\%\f3glNormalPointer(3G)\fP,
+\%\f3glPopClientAttrib(3G)\fP,
 .br
-\%\f3glPushClientAttrib\fP,
-\%\f3glTexCoordPointer\fP,
-\%\f3glVertexPointer\fP
+\%\f3glPushClientAttrib(3G)\fP,
+\%\f3glTexCoordPointer(3G)\fP,
+\%\f3glVertexPointer(3G)\fP

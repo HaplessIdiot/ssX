@@ -47,14 +47,14 @@ execution of \%\f3glEnd\fP.
 .SH ASSOCIATED GETS
 \%\f3glIsTexture\fP
 .SH SEE ALSO
-\%\f3glAreTexturesResident\fP, 
-\%\f3glBindTexture\fP,
-\%\f3glCopyTexImage1D\fP,
-\%\f3glCopyTexImage2D\fP,
-\%\f3glGenTextures\fP,
-\%\f3glGet\fP,
-\%\f3glGetTexParameter\fP,
-\%\f3glPrioritizeTextures\fP,
-\%\f3glTexImage1D\fP,
-\%\f3glTexImage2D\fP,
-\%\f3glTexParameter\fP
+\%\f3glAreTexturesResident(3G)\fP, 
+\%\f3glBindTexture(3G)\fP,
+\%\f3glCopyTexImage1D(3G)\fP,
+\%\f3glCopyTexImage2D(3G)\fP,
+\%\f3glGenTextures(3G)\fP,
+\%\f3glGet(3G)\fP,
+\%\f3glGetTexParameter(3G)\fP,
+\%\f3glPrioritizeTextures(3G)\fP,
+\%\f3glTexImage1D(3G)\fP,
+\%\f3glTexImage2D(3G)\fP,
+\%\f3glTexParameter(3G)\fP

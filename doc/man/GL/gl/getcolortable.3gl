@@ -137,6 +137,6 @@ and \f2format\fP is neither \%\f3GL_RGBA\fP nor \%\f3GL_BGRA\fP.
 between the execution of \%\f3glBegin\fP and the corresponding
 execution of \%\f3glEnd\fP.
 .SH SEE ALSO
-\%\f3glColorTable\fP,
-\%\f3glColorTableParameter\fP,
-\%\f3glGetColorTableParameter\fP
+\%\f3glColorTable(3G)\fP,
+\%\f3glColorTableParameter(3G)\fP,
+\%\f3glGetColorTableParameter(3G)\fP

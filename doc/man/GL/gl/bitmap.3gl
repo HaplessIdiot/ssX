@@ -125,8 +125,8 @@ is executed between the execution of \%\f3glBegin\fP and the corresponding execu
 .br
 \%\f3glGet\fP with argument \%\f3GL_CURRENT_RASTER_POSITION_VALID\fP
 .SH SEE ALSO
-\%\f3glDrawPixels\fP,
-\%\f3glPixelStore\fP,
-\%\f3glPixelTransfer\fP,
-\%\f3glRasterPos\fP
+\%\f3glDrawPixels(3G)\fP,
+\%\f3glPixelStore(3G)\fP,
+\%\f3glPixelTransfer(3G)\fP,
+\%\f3glRasterPos(3G)\fP
 
