@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.14tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.16 2002/11/25 14:04:50 eich Exp $
 
 #include <Threads.tmpl>
 
@@ -54,7 +54,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/OSmesa -I$(MESASRCDIR)/src \
   THREADOBJS = $(THREADS_LIBS)
 #endif
 
-#if BuildXF86DRI && !GlxUseBuiltInDRIDriver
+#if !GlxUseBuiltInDRIDriver
  REQUIREDLIBS = $(LDPRELIB) $(GLXLIB)
 #endif
 
