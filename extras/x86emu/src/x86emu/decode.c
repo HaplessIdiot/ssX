@@ -37,6 +37,8 @@
 *
 ****************************************************************************/
 
+/* $XFree86$ */
+
 #include "x86emu/x86emui.h"
 
 /*----------------------------- Implementation ----------------------------*/
@@ -51,7 +53,7 @@ static void x86emu_intr_handle(void)
 
 	if (M.x86.intr & INTR_SYNCH) {
 		intno = M.x86.intno;
-		if (*_X86EMU_intrTab[intno]) {
+		if (_X86EMU_intrTab[intno]) {
 			(*_X86EMU_intrTab[intno])(intno);
 		} else {
 			push_word((u16)M.x86.R_FLG);
