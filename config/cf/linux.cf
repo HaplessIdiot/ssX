@@ -101,13 +101,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define XF86SetupUsesStaticTcl	NO
 /* un-comment this when it is un-broken */
 /* # define JoystickSupport YES */
-# define InstallXinitConfig	YES
-# define InstallXdmConfig	YES
-# define InstallFSConfig	YES
-# define DebuggableLibraries	YES
-# define ForceNormalLib		YES
-# define BuildSpecsDocs		YES
-# define SpecsDocDirs		CTEXT GL ICCCM X11 Xext Xv i18n xterm
 # define XAppLoadDir		EtcX11Directory/app-defaults
 # define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
 /* the relative symlink created by this rule causes problems for us */
@@ -125,8 +118,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define HasZlib		YES
 # define SharedLibGlu		YES
 # define NormalLibGlu		YES
-# define BuildRman		NO
-# define BuildHtmlManPages	NO
 # define FSUseSyslog		YES
 
 /*
@@ -141,6 +132,16 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define BuilderEMailAddr	"submit@bugs.debian.org"
 #  define XFree86Devel		YES
 #  define BuildAllSpecsDocs	YES
+# define InstallXinitConfig	YES
+# define InstallXdmConfig	YES
+# define InstallFSConfig	YES
+# define DebuggableLibraries	YES
+# define ForceNormalLib		YES
+# define BuildSpecsDocs		YES
+# define SpecsDocDirs		CTEXT GL ICCCM X11 Xext Xv i18n xterm
+# define BuildRman		NO
+# define BuildHtmlManPages	NO
+
 /* we build-depend on libfreetype6-dev (FreeType 2.x) */
 #  define BuildFreetype2Library	NO
 #  define HasFreetype2		YES
