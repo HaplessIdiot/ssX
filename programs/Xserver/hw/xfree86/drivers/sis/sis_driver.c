@@ -2275,6 +2275,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     static const char *subsvstr = "Substituting missing CRT%d monitor VRefresh data by DDC data\n";
 #endif
 #ifdef SISMERGED
+    static const char *mergednocrt1 = "CRT1 not detected or forced off. %s.\n";
+    static const char *mergednocrt2 = "No CRT2 output selected or no bridge detected. %s.\n";
     static const char *mergeddisstr = "MergedFB mode disabled";
     static const char *modesforstr = "Modes for CRT%d: *********************************************\n";
     static const char *crtsetupstr = "------------------------ CRT%d setup -------------------------\n";
@@ -3159,7 +3161,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Due to palette & timing problems we don't support 8bpp in MFBM */
     if((pSiS->MergedFB) && (pScrn->bitsPerPixel == 8)) {
        SISErrorLog(pScrn, "Color depth 8 not supported in MergedFB mode, %s\n", mergeddisstr);
-       pSiS->MergedFB = FALSE;
+       pSiS->MergedFB = pSiS->MergedFBAuto = FALSE;
     }
 #endif
 
@@ -3771,7 +3773,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* LCDA only supported on these chips and briges */
     if( (pSiS->sishw_ext.jChipType != SIS_650) ||
-    /*  (!(pSiS->ChipFlags & (SiSCF_Is65x))) ||  */
 	(!(pSiS->VBFlags & (VB_302B | VB_301LV | VB_302LV))) ) {
        pSiS->ForceCRT1Type = CRT1_VGA;
     }
@@ -3804,7 +3805,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if( (pSiS->sishw_ext.jChipType == SIS_650)            &&
-      /*(pSiS->ChipFlags & (SiSCF_Is65x))                 && */ /* Seems to work on any 650 */
         (pSiS->VBFlags & (VB_302B | VB_301LV | VB_302LV)) &&
         (pSiS->VBFlags & CRT2_LCD) 			  &&
 	(pSiS->VBLCDFlags & (VB_LCD_1024x768|VB_LCD_1280x1024|VB_LCD_1400x1050|VB_LCD_1600x1200)) &&
@@ -4107,7 +4107,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 #ifdef SISMERGED
 	     if(pSiS->MergedFB) {
-	     	SISErrorLog(pScrn, "CRT1 not detected or forced off. %s.\n", mergeddisstr);
+	        if(pSiS->MergedFBAuto) {
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, mergednocrt1, mergeddisstr);
+		} else {
+	     	   SISErrorLog(pScrn, mergednocrt1, mergeddisstr);
+		}
 		if(pSiS->CRT2pScrn) xfree(pSiS->CRT2pScrn);
 		pSiS->CRT2pScrn = NULL;
 		pSiS->MergedFB = FALSE;
@@ -4155,8 +4159,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 #ifdef SISMERGED
 	     if(pSiS->MergedFB) {
-	     	SISErrorLog(pScrn,
-		    "No CRT2 output selected or no bridge detected. %s.\n", mergeddisstr);
+	        if(pSiS->MergedFBAuto) {
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, mergednocrt2, mergeddisstr);
+		} else {
+	     	   SISErrorLog(pScrn, mergednocrt2, mergeddisstr);
+		}
 		if(pSiS->CRT2pScrn) xfree(pSiS->CRT2pScrn);
 		pSiS->CRT2pScrn = NULL;
 		pSiS->MergedFB = FALSE;
