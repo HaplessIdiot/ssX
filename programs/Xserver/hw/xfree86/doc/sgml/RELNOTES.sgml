@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>23 February 2004
+<date>29 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.114 2004/02/20 21:46:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.115 2004/02/24 03:41:40 dawes Exp $
 </ident>
 
 <abstract>
@@ -602,6 +602,38 @@ XFree86 &relvers; includes the following input drivers:
 </table>
 
 Drivers marked with (*) are available for Linux only.
+
+<sect>Known Problems
+<p>
+
+<itemize>
+<item>Known issues with this version of the SiS driver:
+
+	<itemize>
+	<item>The driver will not work with upcoming laptops/notebooks
+	with 661/741/760 and 30xLV bridges as regards LCD output. This
+	is due folks at SiS at the very moment writing an entirely new
+	VBIOS for such machines whose data layout is not decided yet.
+	(This might affect machines with 650/740 as well within the next
+	year.)
+
+	<item>Xv does not work correctly in TV NTSC 1024x768 mode, if
+	the overlay is very large (or full screen). The effect are
+	flickering lines on the screen. This is a hardware problem. Do
+	not use this mode for video.
+
+	<item>YPbPr 720p output is blurry (at least at 1024x768; unknown
+	for other modes). This is a driver problem; solution currently
+	unknown.
+
+	</itemize>
+
+<item>We have received a late report that enabling DPMS support with
+the radeon driver can damage some Viewsonic monitors.  DPMS is usually
+disabled by default.  You can verify whether or not DPMS is enabled by
+running 'xset q' from within your X session.
+
+</itemize>
 
 <sect>Overview of XFree86 4.x.
 <p>
