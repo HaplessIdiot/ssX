@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.23 1994/12/19 12:52:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.24 1994/12/20 12:14:39 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -264,12 +264,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.23 1994/12/19 12:52:09 dawes Exp $
  * LinuxDoc stuff.  Uncomment those of these you want.  Check in
  * lnxdoc.tmpl for other things you might need to define/change here.
  *
+ */
 #define HasLinuxDoc		YES
 #define HasLatex		YES
 #define HasDvips		YES
 #define BuildLinuxDocHtml	YES
 #define BuildAllDocs		YES
- */
 
 /*
  * Define to build only those parts of contrib supported by XFree86

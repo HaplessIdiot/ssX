@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.0 1994/12/19 12:52:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.1 1994/12/20 11:32:34 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -23,7 +23,7 @@ clean::									@@\
 	RemoveFile(base.dvi)						@@\
 	RemoveFile(base.ps)
 #else
-#define LinuxDocDviToPs(sgmlfile,base) /**/
+#define LinuxDocSgmlToPs(sgmlfile,base) /**/
 #endif
 
 #if BuildLinuxDocText

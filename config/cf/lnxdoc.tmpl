@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.tmpl,v 3.0 1994/12/19 12:52:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.tmpl,v 3.1 1994/12/20 11:32:37 dawes Exp $
 XCOMM
 
 #ifndef HasLinuxDoc
@@ -22,7 +22,7 @@ XCOMM
 #endif
 
 #ifndef XFree86IdentFix
-#define XFree86IdentFix		sed '/\$$XFree86:/s/\$$/Generated from /'
+#define XFree86IdentFix		sed '/\$$\XFree86:/s/\$$/Generated from /'
 #endif
 
 #ifndef LinuxDocFixrefCmd
