@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.14 1999/04/17 07:06:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.15 1999/05/03 12:16:03 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -597,7 +597,7 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 
   
    GrabEvent = FALSE;
-   if(pScreenPriv->client & !pScreenPriv->client->clientGone) {
+   if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
 	switch(e->u.u.type) {
 	case MotionNotify:
 	     if(pScreenPriv->input & PointerMotionMask) 
