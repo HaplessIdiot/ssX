@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX January 2002)
+  10. Temporary workaround for IA-64 (Marc La France).
    9. Fix SIGSEGV when printing modes that have no modifiers (Marc La France).
    8. Revert the ATI driver's composite sync default to off (Marc La France).
    7. Add a note to the messages that get printed when a signal is caught
@@ -14575,4 +14576,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2149 2002/01/23 19:26:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2150 2002/01/25 16:10:46 tsi Exp $
