@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.199 2003/03/27 11:38:38 alanh Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.200 2003/04/10 20:22:12 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3156,9 +3156,9 @@ EXPATDEFINES = -DEXPAT
 #ifndef SharedXft1Rev
 #define SharedXft1Rev 1.1
 #endif
-SharedLibReferences(XFT1,Xft1,$(XFT1LIBSRC),SOXFT1REV,SharedXft1Rev)
+SharedLibReferences(XFT1,Xft,$(XFT1LIBSRC),SOXFT1REV,SharedXft1Rev)
 #else
-ProjectUnsharedLibReferences(XFT1,Xft1,$(XFT1LIBSRC),XBuildLibDir)
+ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1LIBSRC),XBuildLibDir)
 #endif
 
 #ifndef Xft1ClientDepLibs
