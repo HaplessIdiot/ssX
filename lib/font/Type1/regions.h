@@ -95,8 +95,10 @@ void t1_UnJumble();           /* sort the edges and reset the jumbled flag    */
    else if (x2 > R->edgexmax) R->edgexmax = x2; \
 }
  
+#ifndef FONTMODULE
 #ifndef __sxg__
 #include <limits.h>
+#endif
 #endif
 #ifdef SHRT_MIN
 #define MINPEL SHRT_MIN
