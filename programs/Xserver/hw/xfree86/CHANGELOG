@@ -1,3 +1,5 @@
+3979. Fix some problems with layers forgetting that SwitchMode is an
+      optional function (Mark Vojkovich).
 3978. Parser bug fix for hexadecimal numbers (Marc La France).
 3977. Fix scanpci (Marc La France).
 3976. DPMS #include fix (Marc La France).
