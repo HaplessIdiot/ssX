@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              26 February 2003
+                              11 December 2003
 
                                   Abstract
 
@@ -45,7 +45,21 @@ While the XFree86 License doesn't prohibit vendors and others redistributing
 binaries of this snapshot release, we don't recommend including them in pro-
 duction releases.
 
-3.  Pointers to additional information
+3.  Licensing
+
+XFree86 source code is covered by many licenses.  All of these licenses have
+in common the fact that they do not impose conditions on the modification or
+redistribution or either source code or binaries other than requiring that
+the copyright and/or license notices are left intact, and in some cases, that
+attributions are included with documentation accompanying binaries.  Most of
+these licenses are based on the MIT or BSD licenses, and all of them are con-
+sistent with the Open Source definition.
+
+Copyright and Licensing information for XFree86, including the attributions
+required by some of the licenses for binary distributions, can be found in
+the License Document.
+
+4.  Pointers to additional information
 
 The documentation for this release can be found online at the XFree86 web
 site <URL:http://www.xfree86.org/4.3.99.901/>.  Documentation for the latest
@@ -57,9 +71,6 @@ is a good way of finding out the latest versions available from XFree86.
 Information about binary distributions and the attendant installation
 instructions can be found in the Installation Document.
 
-Copyright and Licensing information for this release and all XFree86 releases
-can be found in the License Document.
-
 The XFree86 version numbering system (including historical information) can
 be found in the Versions Document.
 
@@ -67,35 +78,35 @@ Additional information may be available at the XFree86 web site
 <URL:http://www.xfree86.org/>, and pointers to other information are avail-
 able at the XFree86 support page <URL:http://www.xfree86.org/support.html>.
 
-4.  The Public Mailing Lists
+5.  The Public Mailing Lists
 
-4.1  CVS Commit
+5.1  CVS Commit
 
 For those who want to see what has been committed recently to our CVS reposi-
 tory this is the list that will show you those updates.  This list is updated
 dynamically every time the repository is updated after the the commit hap-
 pens.
 
-4.2  Devel
+5.2  Devel
 
 This list is available for discussions about XFree86 development and for fol-
 lowing up well-defined bug reports.  Many experienced XFree86 developers are
 present on this list.
 
-4.3  XFree86
+5.3  XFree86
 
 This list is available for any discussions and questions related to XFree86.
 Support related questions should be sent here.  Many experienced XFree86
 developers monitor this list.
 
-5.  Contributing to XFree86
+6.  Contributing to XFree86
 
 If you have any new work or enhancements/bug fixes for existing work, please
 submit them to <fixes@XFree86.org>.  This will ensure that they are included
 in future releases.  For new work, it's usually a good idea to discuss it
 first on the <devel@XFree86.org> list.
 
-6.  How to get XFree86 4.3.99.901
+7.  How to get XFree86 4.3.99.901
 
 XFree86 4.3.99.901 can be found at the XFree86 ftp server
 <URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/4.3.99.901/>, and at mirrors
@@ -111,7 +122,7 @@ browse the XFree86 CVS repository at our CVSWeb server
 "xf-4_3_99_901".  To check out the latest development version, don't specify
 any tag.
 
-7.  Reporting Bugs
+8.  Reporting Bugs
 
 Bugs should be reported to <XFree86@XFree86.org>.  Before reporting bugs,
 please check the XFree86 server log file, which can be found at
