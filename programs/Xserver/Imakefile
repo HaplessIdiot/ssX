@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.94 1997/02/21 09:04:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.95 1997/02/23 09:24:54 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1610,7 +1610,7 @@ $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 #if DoLoadableServer
-ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(MIINITEXTOBJ),$(XNESTLIBS),$(XNESTSYSLIBS))
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(MIINITEXTOBJ),$(XNESTLIBS) $(XF86OSLIB),$(XNESTSYSLIBS))
 #else
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif

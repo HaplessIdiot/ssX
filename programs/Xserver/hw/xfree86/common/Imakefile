@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.50 1997/02/18 04:33:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.51 1997/02/20 10:01:16 hohndel Exp $
 
 
 
@@ -74,13 +74,14 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.50 1997/02/1
 # endif
 #endif
 
-#if BuildDynamicLoading
-#  if PexDynamicModule
+#if PexModule
    PEX_MODULE_DEFINES = -DPEX_MODULE
-#  endif
-#  if XieDynamicModule
+#endif
+#if XieModule
    XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
+
+#if BuildDynamicLoading
 #ifndef OS2Architecture
    XF86DL_SRC = xf86Dl.c
    XF86DL_OBJ = xf86Dl.o

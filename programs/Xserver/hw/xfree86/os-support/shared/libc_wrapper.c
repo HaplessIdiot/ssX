@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.5 1997/02/19 06:04:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.6 1997/02/23 09:25:24 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -329,9 +329,15 @@ f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 #endif
 }
 
+#if NeedVarargsPrototypes
+#if !defined(SYSV) && !defined(SVR4)
+#define HAVE_VFSCANF
+#endif
+#endif
+
 int
 xf86fscanf(
-#if NeedVarargsPrototypes
+#ifdef HAVE_VFSCANF
 XF86FILE f, char *s, const char *format, ...)
 #else
 f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
@@ -343,7 +349,7 @@ f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
-#if NeedVarargsPrototypes
+#ifdef HAVE_VFSCANF
 	int ret;
 	va_list args;
 	va_start(args, format);
