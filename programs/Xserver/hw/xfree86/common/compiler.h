@@ -1586,13 +1586,24 @@ testinx(unsigned short port, unsigned char ind)
 #ifdef __alpha__
 #define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
 #define MMIO_IN16(base, offset) xf86ReadMmio16(base, offset)
+# if defined (JENSEN_SUPPORT)
 #define MMIO_IN32(base, offset) xf86ReadMmio32(base, offset)
+#define MMIO_OUT32(base, offset, val) xf86WriteMmio32(val, base, offset)
+#define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32(val, base, offset)
+# else
+#define MMIO_IN32(base, offset) \
+                   *(volatile CARD32 *)(((CARD8*)(base)) + (offset))
+#define MMIO_OUT32(base, offset, val) do { \
+                   *(volatile CARD32 *)(((CARD8*)(base)) + (offset)) = (val);\
+                   write_mem_barrier();\
+                  } while (0)
+#define MMIO_ONB32(base, offset, val) \
+                   *(volatile CARD32 *)(((CARD8*)(base)) + (offset)) = (val)
+# endif
 #define MMIO_OUT8(base, offset, val) xf86WriteMmio8(val, base, offset)
 #define MMIO_OUT16(base, offset, val) xf86WriteMmio16(val, base, offset)
-#define MMIO_OUT32(base, offset, val) xf86WriteMmio32(val, base, offset)
 #define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(val, base, offset)
 #define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16(val, base, offset)
-#define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32(val, base, offset)
 #else /* !__alpha__ */
 #define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))

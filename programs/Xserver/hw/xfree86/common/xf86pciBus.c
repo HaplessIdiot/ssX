@@ -975,6 +975,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     int *p_size;
     unsigned char p_type;
     resPtr AccTmp = NULL;
+    resPtr orgAcc = NULL;
     resPtr *pAcc = &AccTmp;
     resPtr avoid = NULL;
     resRange range;
@@ -1126,10 +1127,11 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 #ifdef DEBUG
 	    ErrorF("removing old resource\n");
 #endif
-	xf86FreeResList(Acc);
+	orgAcc = Acc;
 	Acc = AccTmp;
     }
 #else
+    orgAcc = xf86DupResList(Acc);
     pAcc = &Acc;
     while ((*pAcc)) {
 	if ((((*pAcc)->res_type & (type & ~ResAccMask))
@@ -1197,8 +1199,11 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 
     if (range.type == ResEnd) {
 	xf86MsgVerb(X_ERROR,3,"Cannot find a replacement memory range\n");
+	xf86FreeResList(Acc);
+	Acc = orgAcc;
 	return FALSE;
     }
+    xf86FreeResList(orgAcc);
 #ifdef DEBUG
     ErrorF("begin: 0x%lx, end: 0x%lx\n",range.a,range.b);
 #endif

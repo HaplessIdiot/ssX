@@ -35,7 +35,7 @@ DEFINES =-D_PC
 
 /* XXX keep this temporarily for reference */
 #if 0
-#if defined(X86EMU_LIBPATH) && (XF86INT10_BUILD == X86EMU_GENERIC) 
+#if (XF86INT10_BUILD == X86EMU_GENERIC) 
 
 SRCS = $(SRCS1) xf86x86emu.c generic.c
 OBJS = $(OBJS1) xf86x86emu.o generic.o x86emu.o
@@ -57,15 +57,35 @@ SpecialObjectRule(helper_exec.o, helper_exec.c, -D_VM86_LINUX)
 SpecialObjectRule(xf86int10.o, xf86int10.c, -D_VM86_LINUX -DSHOW_ALL_DEVICES)
 SpecialObjectRule(linux.o, linux.c, -D_VM86_LINUX -DHAVE_SYSV_IPC)
 
-#elif defined(X86EMU_LIBPATH) && (XF86INT10_BUILD == X86EMU_OS)
+#elif (XF86INT10_BUILD == X86EMU_OS)
 
-SRCS = $(SRCS1) xf86x86emu.c linux.c
-OBJS = $(OBJS1) xf86x86emu.o linux.o x86emu.o
 SpecialObjectRule(pci.o, pci.c, -D_X86EMU)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
 SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU -DSHOW_ALL_DEVICES)
 SpecialObjectRule(linux.o, linux.c, -D_X86EMU -DHAVE_SYSV_IPC)
+
+X86TOPDIR = $(TOP)/extras/x86emu
+X86SRCDIR = $(X86TOPDIR)/src/x86emu
+X86EMUINCLUDES = -I$(X86TOPDIR)/include -I$(X86SRCDIR)
+
+# if !defined(X86EMU_LIBPATH) 
+X86EMUSRCS = debug.c decode.c fpu.c ops.c ops2.c prim_ops.c sys.c
+X86EMUOBJS = debug.o decode.o fpu.o ops.o ops2.o prim_ops.o sys.o
+
+LinkSourceFile(debug.c,$(X86SRCDIR))
+LinkSourceFile(decode.c,$(X86SRCDIR))
+LinkSourceFile(fpu.c,$(X86SRCDIR))
+LinkSourceFile(ops.c,$(X86SRCDIR))
+LinkSourceFile(ops2.c,$(X86SRCDIR))
+LinkSourceFile(prim_ops.c,$(X86SRCDIR))
+LinkSourceFile(sys.c,$(X86SRCDIR))
+# else
 BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
+X86EMUOBJS = x86emu.o
+# endif 
+
+SRCS = $(SRCS1) xf86x86emu.c linux.c $(X86EMUSRCS)
+OBJS = $(OBJS1) xf86x86emu.o linux.o $(X86EMUOBJS)
 
 #endif
 

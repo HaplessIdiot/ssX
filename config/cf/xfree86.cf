@@ -11,6 +11,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /*
  * settings for the config file parser
  */
+
 #ifndef XConfigFile
 #define XConfigFile		XF86Config
 #endif
@@ -49,142 +50,126 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * are supported on this platform.
  */
 #ifdef i386Architecture
-#ifndef XF86Server
-#define XF86Server		YES
-#endif
+# ifndef XF86Server
+#  define XF86Server		YES
+# endif
 /* 1bpp module */
-#ifndef XF1Bpp
-#define XF1Bpp			YES
-#endif
+# ifndef XF1Bpp
+#  define XF1Bpp		YES
+# endif
 /* 4bpp module */
-#ifndef XF4Bpp
-#define XF4Bpp			YES
-#endif
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
 /* 8/32bpp overlay module */
-#ifndef XF8_32Bpp
-#define XF8_32Bpp		YES
-#endif
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
 /* 8/16bpp dual fb module */
-#ifndef XF8_16Bpp
-#define XF8_16Bpp		YES
-#endif
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
+# endif
 /* 24/32bpp conversion module */
-#ifndef XF24_32Bpp
-#define XF24_32Bpp		YES
-#endif
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
 /* shadow fb module */
-#ifndef XFShadowFB
-#define XFShadowFB		YES
-#endif
+# ifndef XFShadowFB
+#  define XFShadowFB		YES
+# endif
 /* vgahw module */
-#ifndef XF86VgaHw
-#define XF86VgaHw		YES
-#endif
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
+# endif
 /* fbdevhw module */
-#ifndef XF86FBDevHw
-#define XF86FBDevHw		YES
-#endif
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
+# endif
 /* XAA module */
-#ifndef XF86XAA
-#define XF86XAA			YES
-#endif
+# ifndef XF86XAA
+#  define XF86XAA		YES
+# endif
 /* ramdac module */
-#ifndef XF86Ramdac
-#define XF86Ramdac		YES
-#endif
+# ifndef XF86Ramdac
+#  define XF86Ramdac		YES
+# endif
 /* I2C module */
-#ifndef XF86I2C
-#define XF86I2C			YES
-#endif
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
 /* DDC module */
-#ifndef XF86DDC
-#define XF86DDC			YES
-#endif
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
 /* RAC (Resource Access Control) module */
-#ifndef XF86RAC
-#define XF86RAC			YES
-#endif
+# ifndef XF86RAC
+#  define XF86RAC		YES
+# endif
 
 /* int10 module */
-#ifndef XF86Int10
-#define XF86Int10		YES
-#endif
-
-#ifndef UseX86Emu
-#define UseX86Emu		YES
-#endif
-
-#define X86EMU_GENERIC  1
-#define X86VM           2
-#define X86EMU_OS       3
-
-#ifndef XF86INT10_BUILD
-#if UseX86Emu
-#define XF86INT10_BUILD		X86EMU_GENERIC
-#else
-#define XF86Int10		NO
-#endif
-#endif
+# ifndef XF86Int10
+#  define XF86Int10		YES
+# endif
 
 /*
  * Amiga framebuffer module.
  * This is for build testing only.  It isn't actually used on this platform.
  */
-#ifndef XF86AFB
-#define XF86AFB			YES
-#endif
+# ifndef XF86AFB
+#  define XF86AFB		YES
+# endif
 
 /*
  * XXX Should change this to allow such drivers to be built without agpgart
  * support (when it is useful to do so).
  */
-#if HasAgpGart
-#define AgpGartDrivers		i810
-#else
-#define AgpGartDrivers		/**/
-#endif
+# if HasAgpGart
+#  define AgpGartDrivers		i810
+# else
+#  define AgpGartDrivers		/**/
+# endif
 
 /* Pure PCI drivers should go first */
-#ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint nv tga s3virge sis rendition \
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers	mga glint nv tga s3virge sis rendition \
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
 				ati r128 AgpGartDrivers cyrix \
 				vga XF86ExtraCardDrivers
-#endif
+# endif
 #endif
 
 /* Sparc drivers */
 
 #if defined(SparcArchitecture) && !defined(LynxOSArchitecture)
-#ifndef XF86Server
-#define XF86Server              YES
-#endif
+# ifndef XF86Server
+#  define XF86Server            YES
+# endif
 /* 1bpp module */
-#ifndef XF1Bpp
-#define XF1Bpp                  YES
-#endif
+# ifndef XF1Bpp
+#  define XF1Bpp                YES
+# endif
 /* shadow fb module */
-#ifndef XFShadowFB
-#define XFShadowFB		YES
-#endif
+# ifndef XFShadowFB
+#  define XFShadowFB		YES
+# endif
 /* fbdevhw module */
-#ifndef XF86FBDevHw
-#define XF86FBDevHw		YES
-#endif
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
+# endif
 /* XAA module */
-#ifndef XF86XAA
-#define XF86XAA                 YES
-#endif
+# ifndef XF86XAA
+#  define XF86XAA               YES
+# endif
 /* DDC module */
-#ifndef XF86DDC
-#define XF86DDC			YES
-#endif
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
 
-#ifndef XF86CardDrivers
-#define XF86CardDrivers		fbdev XF86ExtraCardDrivers
-#endif
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers	fbdev XF86ExtraCardDrivers
+# endif
 
 #endif
 
@@ -193,138 +178,138 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * are supported on this platform.
  */
 #ifdef AlphaArchitecture
-#ifndef XF86Server
-#define XF86Server		YES
-#endif
+# ifndef XF86Server
+#  define XF86Server		YES
+# endif
 /* 1bpp module */
-#ifndef XF1Bpp
-#define XF1Bpp			NO
-#endif
+# ifndef XF1Bpp
+#  define XF1Bpp		NO
+# endif
 /* 4bpp module */
-#ifndef XF4Bpp
-#define XF4Bpp			YES
-#endif
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
 /* 8/32bpp overlay module */
-#ifndef XF8_32Bpp
-#define XF8_32Bpp		YES
-#endif
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
 /* 8/16bpp dual fb module */
-#ifndef XF8_16Bpp
-#define XF8_16Bpp		YES
-#endif
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
+# endif
 /* 24/32bpp conversion module */
-#ifndef XF24_32Bpp
-#define XF24_32Bpp		YES
-#endif
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
 /* shadow fb module */
-#ifndef XFShadowFB
-#define XFShadowFB		YES
-#endif
+# ifndef XFShadowFB
+#  define XFShadowFB		YES
+# endif
 /* vgahw module */
-#ifndef XF86VgaHw
-#define XF86VgaHw		YES
-#endif
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
+# endif
 /* fbdevhw module */
-#ifndef XF86FBDevHw
-#define XF86FBDevHw		YES
-#endif
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
+# endif
 /* XAA module */
-#ifndef XF86XAA
-#define XF86XAA			YES
-#endif
+# ifndef XF86XAA
+#  define XF86XAA		YES
+# endif
 /* ramdac module */
-#ifndef XF86Ramdac
-#define XF86Ramdac		YES
-#endif
+# ifndef XF86Ramdac
+#  define XF86Ramdac		YES
+# endif
 /* I2C module */
-#ifndef XF86I2C
-#define XF86I2C			YES
-#endif
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
 /* DDC module */
-#ifndef XF86DDC
-#define XF86DDC			YES
-#endif
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
 /* RAC (Resource Access Control) module */
-#ifndef XF86RAC
-#define XF86RAC			YES
-#endif
+# ifndef XF86RAC
+#  define XF86RAC		YES
+# endif
 
 /* Pure PCI drivers should go first */
-#ifndef XF86CardDrivers
-#define XF86CardDrivers		mga tdfx glint s3virge rendition tga \
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers	mga tdfx glint s3virge rendition tga \
 				r128 vga XF86ExtraCardDrivers
-#endif
+# endif
 #endif
 
 /*
  * For Motorola 68k and PPC (currently Linux & LynxOS)
  */
 #if defined(PpcArchitecture) || defined(Mc68020Architecture)
-#ifndef XF86Server
-#define XF86Server		YES
-#endif
+# ifndef XF86Server
+#  define XF86Server		YES
+# endif
 /* Amiga framebuffer module */
-#ifndef XF86AFB
-#define XF86AFB			YES
-#endif
+# ifndef XF86AFB
+#  define XF86AFB		YES
+# endif
 /* 1bpp module */
-#ifndef XF1Bpp
-#define XF1Bpp			YES
-#endif
+# ifndef XF1Bpp
+#  define XF1Bpp		YES
+# endif
 /* 4bpp module */
-#ifndef XF4Bpp
-#define XF4Bpp			YES
-#endif
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
 /* 8/32bpp overlay module */
-#ifndef XF8_32Bpp
-#define XF8_32Bpp		YES
-#endif
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
 /* 8/16bpp dual fb module */
-#ifndef XF8_16Bpp
-#define XF8_16Bpp		YES
-#endif
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
+# endif
 /* 24/32bpp conversion module */
-#ifndef XF24_32Bpp
-#define XF24_32Bpp		YES
-#endif
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
 /* shadow fb module */
-#ifndef XFShadowFB
-#define XFShadowFB		YES
-#endif
+# ifndef XFShadowFB
+#  define XFShadowFB		YES
+# endif
 /* vgahw module */
-#ifndef XF86VgaHw
-#define XF86VgaHw		YES
-#endif
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
+# endif
 /* fbdevhw module */
-#ifndef XF86FBDevHw
-#define XF86FBDevHw		YES
-#endif
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
+# endif
 /* XAA module */
-#ifndef XF86XAA
-#define XF86XAA			YES
-#endif
+# ifndef XF86XAA
+#  define XF86XAA		YES
+# endif
 /* ramdac module */
-#ifndef XF86Ramdac
-#define XF86Ramdac		YES
-#endif
+# ifndef XF86Ramdac
+#  define XF86Ramdac		YES
+# endif
 /* I2C module */
-#ifndef XF86I2C
-#define XF86I2C			YES
-#endif
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
 /* DDC module */
-#ifndef XF86DDC
-#define XF86DDC			YES
-#endif
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
 /* RAC (Resource Access Control) module */
-#ifndef XF86RAC
-#define XF86RAC			YES
-#endif
+# ifndef XF86RAC
+#  define XF86RAC		YES
+# endif
 
 /* Pure PCI drivers should go first */
-#ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint s3virge sis cirrus tseng \
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers	mga glint s3virge sis cirrus tseng \
 				trident chips fbdev vga XF86ExtraCardDrivers
-#endif
+# endif
 #endif
 
 
@@ -332,10 +317,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * For Mips/Arc platforms, the default is to build all modules which
  * are supported on this platform. 
  */
-#ifdef ArcArchitecture
-#ifndef XF86Server
-#define XF86Server		YES
-#endif
+# ifdef ArcArchitecture
+#  ifndef XF86Server
+# define XF86Server		YES
+# endif
 #endif
 
 
@@ -344,19 +329,19 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * on different architectures.
  */
 #ifndef XF86AFB
-#define XF86AFB NO
+# define XF86AFB NO
 #endif
 #ifndef XF86ILBM
-#define XF86ILBM NO
+# define XF86ILBM NO
 #endif
 #ifndef XF86IPLAN2P2
-#define XF86IPLAN2P2 NO
+# define XF86IPLAN2P2 NO
 #endif
 #ifndef XF86IPLAN2P4
-#define XF86IPLAN2P4 NO
+# define XF86IPLAN2P4 NO
 #endif
 #ifndef XF86IPLAN2P8
-#define XF86IPLAN2P8 NO
+# define XF86IPLAN2P8 NO
 #endif
 #if XF86AFB
 AFB_DEFS = -DUSE_AFB
@@ -374,7 +359,7 @@ IPLAN2P4_DEFS = -DUSE_IPLAN2P4
 IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #ifndef FbdevDefines
-#define FbdevDefines $(AFB_DEFS) $(ILBM_DEFS) $(IPLAN2P2_DEFS) \
+# define FbdevDefines $(AFB_DEFS) $(ILBM_DEFS) $(IPLAN2P2_DEFS) \
 		     $(IPLAN2P4_DEFS) $(IPLAN2P8_DEFS)
 #endif
 
@@ -383,20 +368,20 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * It the servers are only started by xdm, they should not be setuid-root.
  */
 #if !defined(i386MachArchitecture) && !defined(OS2Architecture)
-#ifndef InstallXserverSetUID
-#define InstallXserverSetUID	YES
-#endif
+# ifndef InstallXserverSetUID
+#  define InstallXserverSetUID	YES
+# endif
 #endif
 
 /*
  * The server-side of PEX is not 64-bit clean.
  */
 #if !defined(BuildPexExt)
-#if XF86Server && !defined(AlphaArchitecture)
-#define BuildPexExt		YES
-#else
-#define BuildPexExt		NO
-#endif
+# if XF86Server && !defined(AlphaArchitecture)
+#  define BuildPexExt		YES
+# else
+#  define BuildPexExt		NO
+# endif
 #endif
 
 
@@ -451,7 +436,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * DRI.
  */
 #ifndef BuildXF86DRIDriverSupport
-#define BuildXF86DRIDriverSupport NO
+# define BuildXF86DRIDriverSupport NO
 #endif
 
 #if BuildGlxExt
@@ -486,60 +471,76 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #endif
 
+# ifndef UseX86Emu
+#  define UseX86Emu		YES
+# endif
+
+#define X86INT10_STUB   0
+#define X86EMU_GENERIC  1
+#define X86VM           2
+#define X86EMU_OS       3
+
+#ifndef XF86INT10_BUILD
+# if UseX86Emu
+#  define XF86INT10_BUILD		X86EMU_GENERIC
+# else
+#  define XF86INT10_BUILD		X86INT10_STUB
+# endif
+#endif
 /*
  * Build the Rush extension library (non standard extension for cooperation
  * between glide library and X server). Enabled by default only for Linux.
  */
 #ifndef BuildXF86RushExt
-#define BuildXF86RushExt	NO
+# define BuildXF86RushExt	NO
 #endif
 
 /*
  * XIE
  */
 #ifndef BuildXIE
-#if XF86Server
-#define BuildXIE		YES
-#else
-#define BuildXIE		NO
-#endif
+# if XF86Server
+#  define BuildXIE		YES
+# else
+#  define BuildXIE		NO
+# endif
 #endif
 
 #ifndef BuildXIElib
-#define BuildXIElib	YES
+# define BuildXIElib	YES
 #endif
 
 #ifndef BuildDBElib
-#define BuildDBElib	YES
+# define BuildDBElib	YES
 #endif
 
 #ifndef BuildRECORDlib
-#define BuildRECORDlib	YES
+# define BuildRECORDlib	YES
 #endif
 
 #ifndef BuildXKBlib
-#define BuildXKBlib	YES
+# define BuildXKBlib	YES
 #endif
 
 #ifndef BuildScreenSaverExt
-#define BuildScreenSaverExt	YES
+# define BuildScreenSaverExt	YES
 #endif
 
 /*
  * Build XInput support
  */
 #ifndef BuildXInputExt
-#define BuildXInputExt		YES
+# define BuildXInputExt		YES
 #endif
 
 /* Build Xinerama (aka panoramiX) extension */
 #ifndef BuildXinerama
-#define BuildXinerama		YES
+# define BuildXinerama		YES
 #endif
 
 #if 0
 #ifndef JoystickSupport
-#define JoystickSupport		NO
+# define JoystickSupport	NO
 #endif
 #endif
 
@@ -548,32 +549,32 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * in the servers
  */
 #ifndef BuildScreenSaverLibrary
-#define BuildScreenSaverLibrary	YES
+# define BuildScreenSaverLibrary   YES
 #endif
 #ifndef BuildXF86MiscLibrary
-#define BuildXF86MiscLibrary	YES
+# define BuildXF86MiscLibrary	YES
 #endif
 #ifndef BuildXF86DGALibrary
-#define BuildXF86DGALibrary	YES
+# define BuildXF86DGALibrary	YES
 #endif
 #ifndef BuildXF86VidModeLibrary
-#define BuildXF86VidModeLibrary	YES
+# define BuildXF86VidModeLibrary YES
 #endif
 #ifndef BuildXvLibrary
-#define BuildXvLibrary		YES
+# define BuildXvLibrary		YES
 #endif
 #ifndef BuildXantiLibrary
-#define BuildXantiLibrary	NO	/* See the note for BuildXantiExt */
+# define BuildXantiLibrary	NO	/* See the note for BuildXantiExt */
 #endif
 #ifndef BuildGLXLibrary
-#define BuildGLXLibrary		YES
+# define BuildGLXLibrary	YES
 #endif
 
 /*
  * Build the XFree86-VidMode extension
  */
 #ifndef BuildXF86VidModeExt
-#define BuildXF86VidModeExt		YES
+# define BuildXF86VidModeExt		YES
 #endif
 
 /* Don't build this now because the interface hasn't been done yet */
@@ -581,14 +582,14 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * Build the XFree86-Misc extension
  */
 #ifndef BuildXF86MiscExt
-#define BuildXF86MiscExt		NO
+# define BuildXF86MiscExt		NO
 #endif
 
 /*
  * Build the XFree86-Bigfont extension
  */
 #ifndef BuildXF86BigfontExt
-#define BuildXF86BigfontExt		YES
+# define BuildXF86BigfontExt		YES
 #endif
 
 /*
@@ -596,43 +597,43 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 /* There are problems building XF86Setup, so turn it off for now */
 #ifndef BuildXF86Setup
-#define BuildXF86Setup NO
+# define BuildXF86Setup NO
 #endif
 
 #ifndef BuildXF86Setup
-#if HasTk && HasTcl && BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
-#define BuildXF86Setup			YES
-#else
-#define BuildXF86Setup			NO
-#endif
+# if HasTk && HasTcl && BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
+#  define BuildXF86Setup		YES
+# else
+#  define BuildXF86Setup		NO
+# endif
 #endif
 
 #ifndef XF86SetupUsesStaticTk
-#define XF86SetupUsesStaticTk		YES
+# define XF86SetupUsesStaticTk		YES
 #endif
 #ifndef XF86SetupUsesStaticTcl
-#define XF86SetupUsesStaticTcl		YES
+# define XF86SetupUsesStaticTcl		YES
 #endif
 
 /*
  * Build the XFree86 DGA support
  */
 #ifndef BuildXF86DGA
-#define BuildXF86DGA			YES
+# define BuildXF86DGA			YES
 #endif
 
 /*
  * Build the DPMS extension support
  */
 #ifndef BuildDPMSExt
-#define BuildDPMSExt			YES
+# define BuildDPMSExt			YES
 #endif
 
 /*
  * Build the X Video Extension 
  */
 #ifndef BuildXvExt
-#define BuildXvExt			YES
+# define BuildXvExt			YES
 #endif
 
 /*
@@ -640,27 +641,27 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * temporarily)
  */
 #ifndef BuildXantiExt
-#define BuildXantiExt			NO
+# define BuildXantiExt			NO
 #endif
 
 
 
 #if Malloc0ReturnsNull
-#ifndef XtMalloc0ReturnsNullDefines
-#define XtMalloc0ReturnsNullDefines	Malloc0ReturnsNullDefines -DXTMALLOC_BC
-#endif
+# ifndef XtMalloc0ReturnsNullDefines
+#  define XtMalloc0ReturnsNullDefines	Malloc0ReturnsNullDefines -DXTMALLOC_BC
+# endif
 #endif
 
 #ifndef UseInternalMalloc
-#define UseInternalMalloc	YES
+# define UseInternalMalloc	YES
 #endif
 
 #ifndef HasDlsymBug
-#define HasDlsymBug		NO
+# define HasDlsymBug		NO
 #endif
 
 #ifndef HasMTRRSupport
-#define HasMTRRSupport		NO
+# define HasMTRRSupport		NO
 #endif
 
 /*
@@ -671,99 +672,99 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  * 866332800 is Sun Jun 15 00:00:00 1997 GMT
  */
 #ifndef XF86ServerExpiry
-#define XF86ServerExpiry 866332800
+# define XF86ServerExpiry 866332800
 #endif
 
 /*
  * Build the font server
  */
 #ifndef BuildFontServer
-#define BuildFontServer		YES
+# define BuildFontServer	YES
 #endif
 
 /*
  * Include fonts support
  */
 #ifndef BuildSpeedo
-#define BuildSpeedo		YES
+# define BuildSpeedo		YES
 #endif
 
 #ifndef BuildType1
-#define BuildType1		YES
+# define BuildType1		YES
 #endif
 
 #ifndef BuildCID
-#define BuildCID		YES
+# define BuildCID		YES
 #endif
 
 #ifndef BuildFreeType
-#define BuildFreeType		YES
+# define BuildFreeType		YES
 #endif
 
 #ifndef BuildXTrueType
-#define BuildXTrueType		YES
+# define BuildXTrueType		YES
 #endif
 
 /*
  * By default, build all of the fonts.
  */
 #ifndef Build75DpiFonts
-#define Build75DpiFonts		YES
+# define Build75DpiFonts	YES
 #endif
 #ifndef Build100DpiFonts
-#define Build100DpiFonts	YES
+# define Build100DpiFonts	YES
 #endif
 #ifndef BuildSpeedoFonts
-#define BuildSpeedoFonts	YES
+# define BuildSpeedoFonts	YES
 #endif
 #ifndef BuildType1Fonts
-#define BuildType1Fonts		YES
+# define BuildType1Fonts	YES
 #endif
 #ifndef BuildCIDFonts
-#define BuildCIDFonts		YES
+# define BuildCIDFonts		YES
 #endif
 #ifndef BuildCyrillicFonts
-#define BuildCyrillicFonts	YES
+# define BuildCyrillicFonts	YES
 #endif
 #ifndef BuildLatin2Fonts
-#define BuildLatin2Fonts	YES
+# define BuildLatin2Fonts	YES
 #endif
 #ifndef UseKoi8RForCyrillic
-#define UseKoi8RForCyrillic	YES
+# define UseKoi8RForCyrillic	YES
 #endif
 
 /*
  * By default, create the local font directory
  */
 #ifndef MakeLocalFontDir
-#define MakeLocalFontDir	YES
+# define MakeLocalFontDir	YES
 #endif
 
 /*
  * Build scanpci?
  */
 #ifndef BuildScanpci
-#if SystemV || SystemV4 || \
+# if SystemV || SystemV4 || \
     (defined(LinuxArchitecture) && !defined(Mc68020Architecture) && \
      !defined(PpcArchitecture)) || \
     defined(i386BsdArchitecture) || defined(LynxOSArchitecture) || \
     defined(OS2Architecture)
-#define BuildScanpci		YES
-#else
-#define BuildScanpci		NO
-#endif
+#   define BuildScanpci		YES
+# else
+#   define BuildScanpci		NO
+# endif
 #endif
 
 #ifndef CompressAllFonts
-#define CompressAllFonts	YES
+# define CompressAllFonts	YES
 #endif
 
 #ifndef GzipFontCompression
-#define GzipFontCompression	YES
+# define GzipFontCompression	YES
 #endif
 
 #ifndef StripInstalledPrograms
-#define StripInstalledPrograms	YES
+# define StripInstalledPrograms	YES
 #endif
 
 #ifndef InstallJapaneseDocs
@@ -771,52 +772,52 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #if BuildXF86DGA
-#define XFree86DGADefines	-DXFreeXDGA
+# define XFree86DGADefines	-DXFreeXDGA
 #else
-#define XFree86DGADefines	/**/
+# define XFree86DGADefines	/**/
 #endif
 
 #if BuildXvExt
-#define XFree86XvDefines	-DXvExtension
+# define XFree86XvDefines	-DXvExtension
 #else
-#define XFree86XvDefines	/**/
+# define XFree86XvDefines	/**/
 #endif
 
 #ifndef DlopenHack
-#define DlopenHack		-DDLOPEN_HACK
+# define DlopenHack		-DDLOPEN_HACK
 #endif
 
 #ifndef LoaderDefines
-#if MakeDllModules
-#define ExtraLoaderDefines	DlopenHack
-#else
-#define ExtraLoaderDefines	/**/
-#endif
+# if MakeDllModules
+#  define ExtraLoaderDefines	DlopenHack
+# else
+#  define ExtraLoaderDefines	/**/
+# endif
 #endif
 
 #if DoLoadableServer
-#define XFree86LoaderDefines	-DXFree86LOADER ExtraLoaderDefines
+# define XFree86LoaderDefines	-DXFree86LOADER ExtraLoaderDefines
 #else
-#define XFree86LoaderDefines	/**/
+# define XFree86LoaderDefines	/**/
 #endif
 
 #ifndef MakeHasPosixVariableSubstitutions
-#if !HasBsdMake && !defined(SunArchitecture)
-#define MakeHasPosixVariableSubstitutions	NO
-#else
-#define MakeHasPosixVariableSubstitutions	YES
-#endif
+# if !HasBsdMake && !defined(SunArchitecture)
+#  define MakeHasPosixVariableSubstitutions	NO
+# else
+#  define MakeHasPosixVariableSubstitutions	YES
+# endif
 #endif
 
 #if !HasSnprintf
-#define ServerSnprintfDefines -DNEED_SNPRINTF
+# define ServerSnprintfDefines -DNEED_SNPRINTF
 #else
-#define ServerSnprintfDefines /**/
+# define ServerSnprintfDefines /**/
 #endif
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
+# define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH \
 				XFree86DGADefines XFree86XvDefines \
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
@@ -826,59 +827,59 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #ifndef XFree86ServerOSDefines
-#define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR \
+# define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK -DDDXOSFATALERROR \
 				-DDDXOSVERRORF -DSMART_SCHEDULE
 #endif
 
 #ifndef XFree86ConsoleDefines
-#if defined(i386BsdArchitecture) || defined(AlphaBsdArchitecture)
-#define XFree86ConsoleDefines	-DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
-#else
-#define XFree86ConsoleDefines	/**/
-#endif
+# if defined(i386BsdArchitecture) || defined(AlphaBsdArchitecture)
+#  define XFree86ConsoleDefines	-DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
+# else
+#  define XFree86ConsoleDefines	/**/
+# endif
 #endif
 
 /* Support for USB mouse */
 #ifndef UsbMouseSupport
-#define UsbMouseSupport	NO
+# define UsbMouseSupport NO
 #endif
 /* Does this OS have libusb ? */
 #ifndef HasLibUsb
-#define HasLibUsb	NO
+# define HasLibUsb	NO
 #endif
 
 #ifndef UseServerLock
-#define UseServerLock	YES
+# define UseServerLock	YES
 #endif
 
 #ifndef XnestServer
-#define XnestServer			YES
+# define XnestServer		YES
 #endif
 #ifndef XVirtualFramebufferServer
-#define XVirtualFramebufferServer	YES
+# define XVirtualFramebufferServer	YES
 #endif
 #ifndef XprtServer
-#define XprtServer			YES
+# define XprtServer			YES
 #endif
 
 #ifndef ServerExtraDefines
-#define ServerExtraDefines	XFree86ServerDefines
+# define ServerExtraDefines	XFree86ServerDefines
 #endif
 
 #ifndef ServerOSDefines
-#define ServerOSDefines		XFree86ServerOSDefines
+# define ServerOSDefines	XFree86ServerOSDefines
 #endif
 
 #ifndef DriverSDKDir
-#define DriverSDKDir     $(USRLIBDIR)/Server
+# define DriverSDKDir     $(USRLIBDIR)/Server
 #endif
 
 #ifndef DriverSDKModuleDir
-#define DriverSDKModuleDir     $(USRLIBDIR)/Server/modules
+# define DriverSDKModuleDir     $(USRLIBDIR)/Server/modules
 #endif
 
 #ifndef DriverSDKIncludeDir
-#define DriverSDKIncludeDir     $(USRLIBDIR)/Server/include
+# define DriverSDKIncludeDir     $(USRLIBDIR)/Server/include
 #endif
 
 DRIVERSDKDIR = DriverSDKDir
@@ -932,88 +933,88 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
  */
 
 #ifndef AsmDefines
-#define AsmDefines /**/
+# define AsmDefines /**/
 #endif
 
 #ifndef OtherIConfigFiles
-#define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
+# define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3918
+# define XFree86Version	3918
 #endif
 
 #ifndef XVendorString
-#define XVendorString	"The XFree86 Project, Inc"
+# define XVendorString	"The XFree86 Project, Inc"
 #endif
 
 #ifndef XVendorRelease
-#define XVendorRelease	XFree86Version
+# define XVendorRelease	XFree86Version
 #endif
 
 #ifndef UseRgbTxt
-#define UseRgbTxt	YES
+# define UseRgbTxt	YES
 #endif
 
 #ifndef ManSuffix
-#define ManSuffix	1
+# define ManSuffix	1
 #endif
 
 /*
  * GNU Compiler stuff
  */
 #ifndef HasGcc2
-#define HasGcc2 NO
+# define HasGcc2 NO
 #endif
 #ifndef HasGcc
-#define HasGcc HasGcc2
+# define HasGcc HasGcc2
 #endif
 #ifndef HasGcc2ForCplusplus
-#define HasGcc2ForCplusplus HasGcc2
+# define HasGcc2ForCplusplus HasGcc2
 #endif
 
 #if HasGcc
-#ifndef GccWarningOptions
-#define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
+# ifndef GccWarningOptions
+#  define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wmissing-declarations \
 			  -Wredundant-decls -Wnested-externs
-#endif
-#ifndef DefaultCCOptions
-#if defined(UseInstalled)
-#define DefaultCCOptions /* -ansi */
-#else
-#define DefaultCCOptions -ansi -pedantic GccWarningOptions
-#endif
-#endif
-#if defined(UseInstalled)
-#ifndef UseGccMakeDepend
-#define UseGccMakeDepend YES
-#endif
-#endif
+# endif
+# ifndef DefaultCCOptions
+#  if defined(UseInstalled)
+#   define DefaultCCOptions /* -ansi */
+#  else
+#   define DefaultCCOptions -ansi -pedantic GccWarningOptions
+#  endif
+# endif
+# if defined(UseInstalled)
+#  ifndef UseGccMakeDepend
+#   define UseGccMakeDepend YES
+#  endif
+# endif
 #endif
 
 #if HasGcc2 && defined(i386Architecture)
-#ifndef DefaultGcc2i386Opt
-#define DefaultGcc2i386Opt -O2 -fno-strength-reduce
-#endif
+# ifndef DefaultGcc2i386Opt
+#  define DefaultGcc2i386Opt -O2 -fno-strength-reduce
+# endif
 #endif
 
 #if HasGcc2 && defined(AlphaArchitecture)
-#ifndef DefaultGcc2AxpOpt
-#define DefaultGcc2AxpOpt -O2
-#endif
+# ifndef DefaultGcc2AxpOpt
+#  define DefaultGcc2AxpOpt -O2
+# endif
 #endif
 
 #ifndef DefaultGcc2DebugOpt
-#define DefaultGcc2DebugOpt -g
+# define DefaultGcc2DebugOpt -g
 #endif
 
 #if HasGcc2 && DebuggableLibraries
-#define LibraryDebugOpt DefaultGcc2DebugOpt
+# define LibraryDebugOpt DefaultGcc2DebugOpt
 #endif
 
 #ifndef DontDefineXF86Contrib
-#define XF86Contrib
+# define XF86Contrib
 #endif
 
 #include <xf86.rules>

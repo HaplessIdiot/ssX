@@ -33,15 +33,10 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86OSpriv.h"
-
+#include "lnx.h"
 
 #ifdef HAS_MTRR_SUPPORT
 #include <asm/mtrr.h>
-#endif
-#ifdef __alpha__
-extern unsigned long _bus_base __P ((void)) __attribute__ ((const));
-extern unsigned long _bus_base_sparse __P ((void)) __attribute__ ((const));
-extern int iopl __P ((int __level));
 #endif
 
 #ifndef MAP_FAILED
@@ -52,36 +47,29 @@ static Bool ExtendedEnabled = FALSE;
 
 #ifdef __alpha__
 
-/*
- * The Jensen lacks dense memory, thus we have to address the bus via
- * the sparse addressing scheme.
- *
- * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
- */
-
-#ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
-#define SPARSE (5)
-#define isJensen (1)
-#else
-#define isJensen (!_bus_base())
-#define SPARSE (7)
-#endif
-
-#define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
-#define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
-
-#ifdef LIBC_IS_FIXED
+# ifdef LIBC_IS_FIXED
 extern void sethae(unsigned long hae);
-#else
-#include <unistd.h>
-#define sethae(x) syscall(301,x);
-#endif
+# else
+#  include <unistd.h>
+#  define sethae(x) syscall(301,x);
+# endif
 
-#else /* ! __alpha__ */
-#define BUS_BASE 0
-#define JENSEN_SHIFT(x) (x)
+/* define to test the Sparse addressing on a non-Jensen */
+# ifdef TEST_JENSEN_CODE 
+#  define isJensen (1)
+# else
+#  define isJensen (!_bus_base())
+# endif
 
-#endif /* ! __alpha__ */
+# define needSparse (_bus_base_sparse() != 0)
+
+# define BUS_BASE _bus_base()
+
+#else 
+
+#define BUS_BASE (0)
+
+#endif /*  __alpha__ */
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -89,9 +77,13 @@ extern void sethae(unsigned long hae);
 
 static pointer mapVidMem(int, unsigned long, unsigned long);
 static void unmapVidMem(int, pointer, unsigned long);
-#ifdef __alpha__
+#if defined (__alpha__) 
 static pointer mapVidMemSparse(int, unsigned long, unsigned long);
 static void unmapVidMemSparse(int, pointer, unsigned long);
+# if defined(JENSEN_SUPPORT)
+static pointer mapVidMemJensen(int, unsigned long, unsigned long);
+static void unmapVidMemJensen(int, pointer, unsigned long);
+# endif
 #endif
 
 #ifdef HAS_MTRR_SUPPORT
@@ -293,17 +285,36 @@ undoWC(int screenNum, pointer regioninfo)
 
 #endif /* HAS_MTRR_SUPPORT */
 
-
 void
 xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 {
 	pVidMem->linearSupported = TRUE;
+#ifdef __alpha__
+	if (isJensen) {
+# ifndef JENSEN_SUPPORT
+	  FatalError("Jensen is not supported any more\n"
+		     "If you are interesetd in fixing Jensen support\n"
+		     "please contact xfree86@xfree86.org\n");
+# else
+	  xf86Msg(X_INFO,"Machine type is Jensen\n");
+	  pVidMem->mapMem = mapVidMemJensen;
+	  pVidMem->unmapMem = unmapVidMemJensen;
+# endif /* JENSEN_SUPPORT */
+	} else if (needSparse) {
+	  xf86Msg(X_INFO,"Machine needs sparse mapping\n");
+	  pVidMem->mapMem = mapVidMemSparse;
+	  pVidMem->unmapMem = unmapVidMemSparse;
+	} else {
+	  xf86Msg(X_INFO,"Machine type has 8/16 bit access\n");
+	  pVidMem->mapMem = mapVidMem;
+	  pVidMem->unmapMem = unmapVidMem;
+	}	
+#else
 	pVidMem->mapMem = mapVidMem;
 	pVidMem->unmapMem = unmapVidMem;
-#ifdef __alpha__
-	pVidMem->mapMemSparse = mapVidMemSparse;
-	pVidMem->unmapMemSparse = unmapVidMemSparse;
-#endif
+#endif /* __alpha__ */
+
+
 #ifdef HAS_MTRR_SUPPORT
 	pVidMem->setWC = setWC;
 	pVidMem->undoWC = undoWC;
@@ -311,7 +322,6 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 	pVidMem->initialised = TRUE;
 }
 
-#ifndef __alpha__
 
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
@@ -327,7 +337,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
     base = mmap((caddr_t)0, Size,
 		PROT_READ|PROT_WRITE,
 		MAP_SHARED, fd,
-		(off_t)(off_t)Base);
+		(off_t)(off_t)Base + BUS_BASE);
     close(fd);
     if (base == MAP_FAILED) {
       FatalError("xf86MapVidMem: Could not mmap framebuffer"
@@ -340,66 +350,8 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 static void
 unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
-	munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
+    munmap((caddr_t)Base, Size);
 }
-
-#else
-pointer xf86LinuxSBase = 0;
-pointer xf86LinuxBase = 0;
-
-static pointer
-mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
-{
-  pointer base;
-  int fd;
-  if (isJensen) {
-    if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-      FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-		 strerror(errno));
-    }
-    /* This requires linux-0.99.pl10 or above */
-    base = mmap((caddr_t)0, JENSEN_SHIFT(Size),
-		PROT_READ|PROT_WRITE,
-		MAP_SHARED, fd,
-		(off_t)(JENSEN_SHIFT((off_t)Base) + BUS_BASE));
-    close(fd);
-    if (base == MAP_FAILED) {
-      FatalError("xf86MapVidMem: Could not mmap framebuffer"
-		 " (0x%08x,0x%x) (%s)\n", Base, Size,
-		 strerror(errno));
-    }
-    return base;
-  }
-
-  if (!xf86LinuxBase) {
-    if ((fd = open("/dev/mem", O_RDWR)) < 0)
-      {
-	FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-		   strerror(errno));
-      }
-    /* This requires linux-0.99.pl10 or above */
-    xf86LinuxBase = mmap((caddr_t)0, 0x100000000,
-		   PROT_READ|PROT_WRITE,
-		   MAP_SHARED, fd,
-		   (off_t)(BUS_BASE));
-    close(fd);
-    if (xf86LinuxBase == MAP_FAILED) {
-      FatalError("xf86MapVidMem: Could not mmap framebuffer"
-		 " (0x%08x,0x%x) (%s)\n", Base, Size,
-		 strerror(errno));
-    }
-  }
-  return (void*)((CARD8*)xf86LinuxBase + Base);
-}
-
-static void
-unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
-{
-  if (isJensen)
-	munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
-}
-
-#endif
 
 /***************************************************************************/
 /* I/O Permissions section                                                 */
@@ -503,101 +455,87 @@ xf86EnableInterrupts()
 	return;
 }
 
-#if defined(__alpha__)
+#if defined (__alpha__)
 
-static int xf86SparseShift = 5; /* default to all but JENSEN */
-static int
-readSparseJensen8(pointer Base, register unsigned long Offset);
-static int
-readSparseJensen16(pointer Base, register unsigned long Offset);
-static int
-readSparseJensen32(pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensen32(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset);
-static void
-writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset);
-int readDense8(pointer Base, register unsigned long Offset);
-int readDense16(pointer Base, register unsigned long Offset);
-int readDense32(pointer Base, register unsigned long Offset);
-void
+#define vuip    volatile unsigned int *
+
+static unsigned long msb_set = 0;
+static pointer lnxSBase = 0;
+static pointer lnxBase = 0;
+
+extern int readDense8(pointer Base, register unsigned long Offset);
+extern int readDense16(pointer Base, register unsigned long Offset);
+extern int readDense32(pointer Base, register unsigned long Offset);
+extern void
 writeDenseNB8(int Value, pointer Base, register unsigned long Offset);
-void
+extern void
 writeDenseNB16(int Value, pointer Base, register unsigned long Offset);
-void
+extern void
 writeDenseNB32(int Value, pointer Base, register unsigned long Offset);
-void
+extern void
 writeDense8(int Value, pointer Base, register unsigned long Offset);
-void
+extern void
 writeDense16(int Value, pointer Base, register unsigned long Offset);
-void
+extern void
 writeDense32(int Value, pointer Base, register unsigned long Offset);
+
+static int readSparse8(pointer Base, register unsigned long Offset);
+static int readSparse16(pointer Base, register unsigned long Offset);
+static int readSparse32(pointer Base, register unsigned long Offset);
+static void
+writeSparseNB8(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseNB16(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseNB32(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparse8(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparse16(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparse32(int Value, pointer Base, register unsigned long Offset);
 
 static pointer
 mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
 {
     int fd;
-    
-    if (!_bus_base()) xf86SparseShift = 7; /* Uh, oh, JENSEN... */
-    if (!_bus_base_sparse()) xf86SparseShift = 0; /* no sparse  */
-    
-    if (!xf86LinuxSBase) {
-	if (isJensen) {
-	    xf86WriteMmio8 = writeSparseJensen8;
-	    xf86WriteMmio16 = writeSparseJensen16;
-	    xf86WriteMmio32 = writeSparseJensen32;
-	    xf86WriteMmioNB8 = writeSparseJensenNB8;
-	    xf86WriteMmioNB16 = writeSparseJensenNB16;
-	    xf86WriteMmioNB32 = writeSparseJensenNB32;
-	    xf86ReadMmio8 = readSparseJensen8;
-	    xf86ReadMmio16 = readSparseJensen16;
-	    xf86ReadMmio32 = readSparseJensen32;
-	} else if (xf86SparseShift == 0) {
-	    xf86WriteMmio8 = writeDense8;
-	    xf86WriteMmio16 = writeDense16;
-	    xf86WriteMmio32 = writeDense32;
-	    xf86WriteMmioNB8 = writeDenseNB8;
-	    xf86WriteMmioNB16 = writeDenseNB16;
-	    xf86WriteMmioNB32 = writeDenseNB32;
-	    xf86ReadMmio8 = readDense8;
-	    xf86ReadMmio16 = readDense16;
-	    xf86ReadMmio32 = readDense32;
-	}
+    static Bool was_here = FALSE;
+
+    if (!was_here) {
+      was_here = TRUE;
+
+      xf86WriteMmio8 = writeSparse8;
+      xf86WriteMmio16 = writeSparse16;
+      xf86WriteMmio32 = writeSparse32;
+      xf86WriteMmioNB8 = writeSparseNB8;
+      xf86WriteMmioNB16 = writeSparseNB16;
+      xf86WriteMmioNB32 = writeSparseNB32;
+      xf86ReadMmio8 = readSparse8;
+      xf86ReadMmio16 = readSparse16;
+      xf86ReadMmio32 = readSparse32;
 	
-	
-	if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-	    FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-		       strerror(errno));
-	}
-	/* This requirers linux-0.99.pl10 or above */
-	if (!isJensen && !xf86LinuxBase)
-	    xf86LinuxBase = mmap((caddr_t)0, 0x100000000,
-			   PROT_READ | PROT_WRITE,
-			   MAP_SHARED, fd,
-			   (off_t) _bus_base());
-	if (xf86SparseShift != 0) {
-	    xf86LinuxSBase = mmap((caddr_t)0, 0x100000000,
-			    PROT_READ | PROT_WRITE,
-			    MAP_SHARED, fd,
-			    (off_t) _bus_base_sparse());
-	} else
-	    xf86LinuxSBase = xf86LinuxBase;
-	
-	close(fd);
-	
-	if (xf86LinuxSBase == MAP_FAILED || xf86LinuxBase == MAP_FAILED)	{
-		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
-			   strerror(errno));
-	}
+      if ((fd = open("/dev/mem", O_RDWR)) < 0) {
+	FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
+		   strerror(errno));
+      }
+      /* This requirers linux-0.99.pl10 or above */
+      lnxBase = mmap((caddr_t)0, 0x100000000,
+		     PROT_READ | PROT_WRITE,
+		     MAP_SHARED, fd,
+		     (off_t) _bus_base());
+      lnxSBase = mmap((caddr_t)0, 0x100000000,
+		      PROT_READ | PROT_WRITE,
+		      MAP_SHARED, fd,
+		      (off_t) _bus_base_sparse());
+      
+      close(fd);
+      
+      if (lnxSBase == MAP_FAILED || lnxBase == MAP_FAILED)	{
+	FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
+		   strerror(errno));
+      }
     }
-    return (pointer)Base;
+    return (pointer)((unsigned long)lnxBase + Base);
 }
 
 static void
@@ -605,17 +543,13 @@ unmapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
 {
 }
 
-#define vuip    volatile unsigned int *
-
-static unsigned long msb_set = 0;
-
 static int
 readSparse8(pointer Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
     register unsigned long msb;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x3) << 3;
       if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000UL;
@@ -637,7 +571,7 @@ readSparse16(pointer Base, register unsigned long Offset)
     register unsigned long result, shift;
     register unsigned long msb;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x2) << 3;
     if (Offset >= (1UL << 24)) {
         msb = Offset & 0xf8000000UL;
@@ -655,22 +589,7 @@ readSparse16(pointer Base, register unsigned long Offset)
 static int
 readSparse32(pointer Base, register unsigned long Offset)
 {
-    register unsigned long result;
-    register unsigned long msb;
-#if 1
-    return *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset));
-#endif
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-    if (Offset >= (1UL << 24)) {
-      msb = Offset & 0xf8000000UL;
-      Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
-      }
-    }
-    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(3<<(5-2)));
-    return result;
+    return *(vuip)((unsigned long)Base+(Offset));
 }
 
 static void
@@ -679,7 +598,7 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= (1UL << 24)) {
       msb = Offset & 0xf8000000;
       Offset -= msb;
@@ -688,13 +607,8 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5)) = b * 0x01010101;
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
+    *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
     mem_barrier();
-#endif
-
 }
 
 static void
@@ -703,7 +617,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= (1UL << 24)) {
       msb = Offset & 0xf8000000;
       Offset -= msb;
@@ -714,23 +628,15 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     }
     *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
     mem_barrier();
-#endif
 
 }
 
 static void
 writeSparse32(int Value, pointer Base, register unsigned long Offset)
 {
-    *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset)) = Value;
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
+    *(vuip)((unsigned long)Base + (Offset)) = Value;
     mem_barrier();
-#endif
     return;
 }
 
@@ -740,7 +646,7 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= (1UL << 24)) {
       msb = Offset & 0xf8000000;
       Offset -= msb;
@@ -758,7 +664,7 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
+    Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= (1UL << 24)) {
       msb = Offset & 0xf8000000;
       Offset -= msb;
@@ -774,20 +680,113 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
 static void
 writeSparseNB32(int Value, pointer Base, register unsigned long Offset)
 {
-    *(vuip)((unsigned long)xf86LinuxBase+(unsigned long)Base+(Offset)) = Value;
+    *(vuip)((unsigned long)Base + (Offset)) = Value;
     return;
 }
 
+void (*xf86WriteMmio8)(int Value, pointer Base, unsigned long Offset) 
+     = writeDense8;
+void (*xf86WriteMmio16)(int Value, pointer Base, unsigned long Offset)
+     = writeDense16;
+void (*xf86WriteMmio32)(int Value, pointer Base, unsigned long Offset)
+     = writeDense32;
+void (*xf86WriteMmioNB8)(int Value, pointer Base, unsigned long Offset) 
+     = writeDenseNB8;
+void (*xf86WriteMmioNB16)(int Value, pointer Base, unsigned long Offset)
+     = writeDenseNB16;
+void (*xf86WriteMmioNB32)(int Value, pointer Base, unsigned long Offset)
+     = writeDenseNB32;
+int  (*xf86ReadMmio8)(pointer Base, unsigned long Offset) 
+     = readDense8;
+int  (*xf86ReadMmio16)(pointer Base, unsigned long Offset)
+     = readDense16;
+int  (*xf86ReadMmio32)(pointer Base, unsigned long Offset)
+     = readDense32;
+
+#ifdef JENSEN_SUPPORT
+
+static int
+readSparseJensen8(pointer Base, register unsigned long Offset);
+static int
+readSparseJensen16(pointer Base, register unsigned long Offset);
+static int
+readSparseJensen32(pointer Base, register unsigned long Offset);
+static void
+writeSparseJensen8(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseJensen16(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseJensen32(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset);
+static void
+writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset);
+
+/*
+ * The Jensen lacks dense memory, thus we have to address the bus via
+ * the sparse addressing scheme.
+ *
+ * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
+ */
+
+#ifdef TEST_JENSEN_CODE 
+#define SPARSE (5)
+#else
+#define SPARSE (7)
+#endif
+
+#define JENSEN_SHIFT(x) ((long)x<<SPARSE)
+
+static pointer
+mapVidMemJensen(int ScreenNum, unsigned long Base, unsigned long Size)
+{
+  pointer base;
+  int fd;
+
+  xf86WriteMmio8 = writeSparseJensen8;
+  xf86WriteMmio16 = writeSparseJensen16;
+  xf86WriteMmio32 = writeSparseJensen32;
+  xf86WriteMmioNB8 = writeSparseJensenNB8;
+  xf86WriteMmioNB16 = writeSparseJensenNB16;
+  xf86WriteMmioNB32 = writeSparseJensenNB32;
+  xf86ReadMmio8 = readSparseJensen8;
+  xf86ReadMmio16 = readSparseJensen16;
+  xf86ReadMmio32 = readSparseJensen32;
+
+  if ((fd = open("/dev/mem", O_RDWR)) < 0) {
+    FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
+	       strerror(errno));
+  }
+  /* This requires linux-0.99.pl10 or above */
+  base = mmap((caddr_t)0, JENSEN_SHIFT(Size),
+	      PROT_READ|PROT_WRITE,
+	      MAP_SHARED, fd,
+	      (off_t)(JENSEN_SHIFT((off_t)Base) + _bus_base_sparse()));
+  close(fd);
+  if (base == MAP_FAILED) {
+    FatalError("xf86MapVidMem: Could not mmap framebuffer"
+	       " (0x%08x,0x%x) (%s)\n", Base, Size,
+	       strerror(errno));
+  }
+  return base;
+}
+
+static void
+unmapVidMemJensen(int ScreenNum, pointer Base, unsigned long Size)
+{
+  munmap((caddr_t)Base, JENSEN_SHIFT(Size));
+}
 
 static int
 readSparseJensen8(pointer Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
     shift = (Offset & 0x3) << 3;
 
-    result = *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7));
+    result = *(vuip) ((unsigned long)Base + (Offset << SPARSE));
 
     result >>= shift;
     return 0xffUL & result;
@@ -798,10 +797,9 @@ readSparseJensen16(pointer Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
     shift = (Offset & 0x2) << 3;
 
-    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2)));
+    result = *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(1<<(SPARSE-2)));
 
     result >>= shift;
     return 0xffffUL & result;
@@ -812,9 +810,7 @@ readSparseJensen32(pointer Base, register unsigned long Offset)
 {
     register unsigned long result;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-
-    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2)));
+    result = *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2)));
 
     return result;
 }
@@ -824,15 +820,9 @@ writeSparseJensen8(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int b = Value & 0xffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7)) = b * 0x01010101;
+    *(vuip) ((unsigned long)Base + (Offset << SPARSE)) = b * 0x01010101;
 
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
     mem_barrier();
-#endif
-
 }
 
 static void
@@ -840,31 +830,18 @@ writeSparseJensen16(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int w = Value & 0xffffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2))) =
+    *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(1<<(SPARSE-2))) =
       w * 0x00010001;
 
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
     mem_barrier();
-#endif
-
 }
 
 static void
 writeSparseJensen32(int Value, pointer Base, register unsigned long Offset)
 {
+    *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2))) = Value;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2))) = Value;
-
-#if defined(__alpha__)
-    /* CAUTION: if you make changes inside this block you need to */
-    /* make them to the other two identical blocks in this file   */
     mem_barrier();
-#endif
 }
 
 static void
@@ -872,9 +849,7 @@ writeSparseJensenNB8(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int b = Value & 0xffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 7)) = b * 0x01010101;
-
+    *(vuip) ((unsigned long)Base + (Offset << SPARSE)) = b * 0x01010101;
 }
 
 static void
@@ -882,40 +857,15 @@ writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int w = Value & 0xffffU;
 
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(1<<(7-2))) =
+    *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(1<<(SPARSE-2))) =
       w * 0x00010001;
-
 }
 
 static void
 writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset)
 {
-
-    Offset = (unsigned long)((CARD8*)Base + Offset);
-
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<7)+(3<<(7-2))) = Value;
-
+    *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2))) = Value;
 }
-
-void (*xf86WriteMmio8)(int Value, pointer Base, unsigned long Offset) 
-     = writeSparse8;
-void (*xf86WriteMmio16)(int Value, pointer Base, unsigned long Offset)
-     = writeSparse16;
-void (*xf86WriteMmio32)(int Value, pointer Base, unsigned long Offset)
-     = writeSparse32;
-void (*xf86WriteMmioNB8)(int Value, pointer Base, unsigned long Offset) 
-     = writeSparseNB8;
-void (*xf86WriteMmioNB16)(int Value, pointer Base, unsigned long Offset)
-     = writeSparseNB16;
-void (*xf86WriteMmioNB32)(int Value, pointer Base, unsigned long Offset)
-     = writeSparseNB32;
-int  (*xf86ReadMmio8)(pointer Base, unsigned long Offset) 
-     = readSparse8;
-int  (*xf86ReadMmio16)(pointer Base, unsigned long Offset)
-     = readSparse16;
-int  (*xf86ReadMmio32)(pointer Base, unsigned long Offset)
-     = readSparse32;
-
+#endif /* JENSEN_SUPPORT */
 
 #endif /* __alpha__ */

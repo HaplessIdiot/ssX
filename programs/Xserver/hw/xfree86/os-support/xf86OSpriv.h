@@ -15,8 +15,6 @@ typedef struct {
 	Bool			initialised;
 	MapMemProcPtr		mapMem;
 	UnmapMemProcPtr		unmapMem;
-	MapMemProcPtr		mapMemSparse;
-	UnmapMemProcPtr		unmapMemSparse;
 	ProtectMemProcPtr	protectMem;
 	SetWCProcPtr		setWC;
 	UndoWCProcPtr		undoWC;
