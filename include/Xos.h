@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.35 2001/08/30 21:51:02 alanh Exp $ */
+/* $XFree86: Xos.h,v 3.36 2001/12/14 19:53:26 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -154,11 +154,6 @@ extern int sys_nerr;
 #include <unistd.h>
 #endif
 #endif /* X_NOT_POSIX else */
-
-#ifdef CSRG_BASED
-#include <stdlib.h>
-#include <unistd.h>
-#endif /* CSRG_BASED */
 
 /*
  * Get struct timeval and struct tm
