@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.46 2003/11/03 17:02:51 twini Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -4885,9 +4885,8 @@ static void
 SiS_SetCRT2Sync(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT RefreshRateTableIndex,
                 PSIS_HW_INFO HwInfo)
 {
-  USHORT tempah=0,tempbl,infoflag,flag;
+  USHORT tempah=0,tempbl,infoflag;
 
-  flag = 0;
   tempbl = 0xC0;
 
   if(SiS_Pr->UseCustomMode) {
