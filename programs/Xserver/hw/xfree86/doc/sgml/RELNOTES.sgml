@@ -9,7 +9,7 @@
 <date>7 June 30 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.38 2000/07/01 02:28:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.39 2000/07/01 04:18:49 dawes Exp $
 </ident>
 
 <abstract>
@@ -23,16 +23,15 @@ in XFree86 &relvers; and their status.
 
 <sect>Introduction to the 4.x Release Series
 <p>
-XFree86 4.0 is the first official release of the new XFree86 4.  XFree86
-4 represents a significant redesign of the XFree86 X server and as such  
-not all the hardware combinations that could run on  the 3.3.x releases
- run on the 4.x series.  
+XFree86 4.0 was the first official release of the new XFree86 4.  XFree86
+4 represents a significant redesign of the XFree86 X server.
+Not all of the hardware drivers from 3.3.x have been ported to 4.x yet.
 
 <sect1>Differences Between the 4.x series and the 3.3 series
 <p>
-The 4.x0 release series is also missing
-a nice configuration tool and some previously  supported
-hardware. This means that configuring the Xserver might be trickier than usual.
+The 4.x release series is also missing
+a nice configuration tool.
+This means that configuring the Xserver might be trickier than usual.
 The second point is that is that your hardware might not 
 be supported by &relvers;, or it
 might be supported at a lesser level (conversely, some hardware is better
@@ -55,68 +54,157 @@ further information.
 
 Oh, another thing you might notice is that our documentation is rather
 patchy.  Most of what is present should be in reasonable shape, but
-there are gaps.  We thought it better to leave out docs that were
-very out of date rather than providing inaccurate and misleading
-information.  We are looking for people to also help fill those gaps in &lt;hint
-hint :-&gt;
+there are gaps.  We thought it better to leave out docs that were very
+out of date rather than providing inaccurate and misleading information.
+We are looking for people to also help fill those gaps in &lt;hint hint
+:-&gt;.
 
 Finally, before you download and install the binary distributions for
 this release, please have a quick read through the <htmlurl
 name="Installation Document" url="Install.html">.  It may save you some
 time.
 
-The sections below describe some of the new
-features and changes between 3.3.x and &relvers;.  There is a lot of new
-features, and we definitely don't have enough space to cover it all here.
+The next section describes what is new in the latest version (&relvers;).
+The other sections below describe some of the new features and changes
+between 3.3.x and 4.0.  There is a lot of new features, and we definitely
+don't have enough space to cover it all here.
+
 </sect>
-<sect>Summary of new features in &relvers categorized.
+
+<sect>Summary of new features in &relvers;.
 <p>
-<sect1>XServer
+<sect1>X server
 <p>
 <itemize>
-  <item>New DRI drivers for Intel i810, Matrox G400 and G200 and 
-the ATI Rage 128.
-<item>The XServer now runs on Linux /Sparc including drivers for most video cards used on SUN hardware.
-<item>DRI support for the Linux /Sparc implementation that allows 3-D rendering with Creator 3D cards.
-<item>Fixed recently publicized security issues.
-<item>Xinerama updates and fixes.
-<item>Xv updates and fixes.
+  <item>New DRI drivers for Intel i810, Matrox G400 and G200 (AGP only) and 
+	the ATI Rage 128, and updates to the 3Dfx DRI driver.
+
+  <item>The X server now runs on Linux/Sparc including drivers for many
+	video cards used on SUN hardware.
+
+  <item>DRI support for the Linux/Sparc implementation that allows 3D direct
+	rendering with Creator3D cards.
+
+  <item>Fixed recently publicized security issues.
+
+  <item>Xinerama updates and fixes.
+
+  <item>Xv updates and fixes.
+
+  <item>Mouse support in DGA 1.0 compatibility mode should now work correctly
+	for most games that make use of it.
+
+  <item>Some bugs with 8+24 overlay support have been fixed.
+
+  <item>Some XKEYBOARD extension problems have been fixed, including
+	improvements to the MouseKeys support.
+
 </itemize>
 </sect1>
-<sect1>XTerm
+
+<sect1>X libraries and clients.
 <p>
 <itemize>
-<item>Improve logfile security.
-<item>Workaround for fixed fonts which are generated from Unicode fonts,
-<item>Limit numeric parameters of control sequences to 65535 to simplify checks
-for numeric overflow.
-<item>Correct potential out-of-bounds indexing.
-<item>Change Sun function keys to workaround redefinition of the token sun
- by xrdb on Solaris.
-<item>Change line speed from 9600bd to 38400bd to accommodate users who mistakenly use $TERM set to vt100 and reduce padding.
-<item>Portability fixes for os390, AIX 4.2, Digital Unix 4.0 and IRIS 6.5.
+  <item>Thread safety issues have been resolved in a few places in the
+	libraries.  Upgrading to the latest libraries is essential for
+	multi-threaded X applications.
+
+  <item>Some fatal bugs in the big font support have been fixed.  Upgrading
+	to the latest libraries will fix this too.
+
+  <item>Fixed recently publicized security issues in some of the X libraries.
+
+  <item>XTerm updates.  These include:
+	<itemize>
+	  <item>Improve logfile security.
+
+	  <item>Workaround for fixed fonts which are generated from
+		Unicode fonts.
+
+	  <item>Limit numeric parameters of control sequences to 65535
+		to simplify checks for numeric overflow.
+
+	  <item>Correct potential out-of-bounds indexing.
+
+	  <item>Change Sun function keys to workaround redefinition of
+		the token sun by xrdb on Solaris.
+
+	  <item>Change line speed from 9600bd to 38400bd to accommodate
+		users who mistakenly use $TERM set to vt100 and reduce
+		padding.
+
+	  <item>Fix a problem with color support that showed up on some
+		platforms.
+
+	  <item>Modify logic for deleteIsDEL resource so it has internally
+		3 states:  unspecified, true and false.  If unspecified,
+		the keyboard type determines whether the Delete key
+		transmits <tt>&lt;esc&gt;[3~</tt> or <tt>\177</tt>, and
+		the popup menu entry reflects the internal state.
+		Otherwise, the popup menu entry overrides the keyboard
+		type.
+	
+	  <item>Portability fixes for os390, AIX 4.2, Digital Unix 4.0
+		and IRIX 6.5.
+
+	</itemize>
+
 </itemize>
-</p>
+
+<sect1>Fonts and Internationalisation
+<p>
+<itemize>
+  <item>Many of the "misc" bdf fonts have been updated and extended, and
+	a wider range of ISO-8859 subsets have been added.  Oblique/italic
+	versions of some of them have also been added.
+
+  <item>The converters in Xlib have been imrpoved and reworked.  UTF-8
+	support has been added.
+
+  <item>Support for ISO-8859-13 has been added to Xlib and to the UTF-8
+	converters.
+
+  <item>XKB keyboard definitions have been added and updated for some
+	countries.
+
+  <item>Locale support for Celtic languages has been updated, and a Compose
+	file for ISO-8859-14 added.
+
+</itemize>
+</sect1>
+
+<sect1>Miscellaneous
+<p>
+<itemize>
+  <item>Preliminary support for Linux/mips (no X servers yet).
+
+</itemize>
+</sect1>
+
 <sect1>a sample section heading copy and item your bullets and proper heading
 <p>
 <itemize>
-<item>
-<item>
-<item>
+  <item>
+  <item>
+  <item>
 </itemize>
+</sect1>
+
 </sect>
+
 <sect>The new X server
 <p>
 Unlike XFree86 3.3.x where there are multiple X server binaries, each
-of which drive different hardware, XFree86 &relvers; has a single X server
-binary called <tt>XFree86</tt>.  This binary can either have one or
-more video drivers linked in statically, or, more usually, dynamically
+of which drive different hardware, XFree86 &relvers; has a single X
+server binary called <tt>XFree86</tt>.  This binary can either have one
+or more video drivers linked in statically, or, more usually, dynamically
 load the video drivers and other modules that are needed.
 
 XFree86 &relvers; has X server support for most UNIX(R) and UNIX-like
 operating systems on Intel/x86 platforms, plus support for Linux on
-Alpha and PowerPC platforms.  Work on support for additional architectures
-and operating systems is in progress, and is planned for future releases.
+Alpha, PowerPC and Sparc platforms.  Work on support for additional
+architectures and operating systems is in progress, and is planned for
+future releases.
 
 <sect1>Loader and Modules
 <p>
@@ -672,6 +760,13 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
    <tabrow><tt>sis</tt><colsep>SiS</tabrow>
+   <tabrow><tt>sunbw2</tt> (+)<colsep>Sun bw2</tabrow>
+   <tabrow><tt>suncg14</tt> (+)<colsep>Sun cg14</tabrow>
+   <tabrow><tt>suncg3</tt> (+)<colsep>Sun cg3</tabrow>
+   <tabrow><tt>suncg6</tt> (+)<colsep>Sun GX and Turbo GX</tabrow>
+   <tabrow><tt>sunffb</tt> (+)<colsep>Sun Creator, Creator3D and Elite 3D</tabrow>
+   <tabrow><tt>sunleo</tt> (+)<colsep>Sun Leo (ZX)</tabrow>
+   <tabrow><tt>suntcx</tt> (+)<colsep>Sun TCX</tabrow>
    <tabrow><tt>tdfx</tt><colsep>3Dfx</tabrow>
    <tabrow><tt>tga</tt><colsep>DEC TGA</tabrow>
    <tabrow><tt>trident</tt><colsep>Trident</tabrow>
@@ -682,6 +777,9 @@ XFree86 &relvers; includes the following drivers:
 
 Drivers marked with (*) are present in a preliminary form in this release,
 but are not complete and/or stable yet.
+<p>
+
+Drivers marked with (+) are for Linux/Sparc only.
 
 <sect2>APM <label id="apm">
 <p>
