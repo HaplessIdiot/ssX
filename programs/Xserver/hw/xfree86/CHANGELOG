@@ -1,4 +1,6 @@
-XFree86 3.9Nd (5 September 1998)
+XFree86 3.9Nd (6 September 1998)
+1813. Preliminary port of the trident driver for the ND (the old version
+      has been moved to the olddrivers directory (#1956, Alan Hourihane).
 1812. Document the offscreen memory managers new ResizeArea function
       (#1955, Mark Vojkovich).
 1810. Allow the FreeType code to be build as an X server font module.
@@ -6454,4 +6456,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.620 1998/09/06 07:32:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.621 1998/09/06 12:56:48 dawes Exp $

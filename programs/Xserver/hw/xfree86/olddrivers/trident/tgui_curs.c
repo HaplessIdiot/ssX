@@ -24,7 +24,7 @@
  * Written by Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.5 1997/10/13 17:16:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.6 1997/11/08 16:24:28 hohndel Exp $ */
 
 
 
