@@ -1,4 +1,5 @@
-/* $XConsortium: AuFileName.c,v 1.4 94/04/17 20:15:42 rws Exp $ */
+/* $XConsortium: AuFileName.c,v 1.5 95/07/10 21:18:07 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -28,12 +29,18 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 #include <X11/Xauth.h>
+#include <X11/Xos.h>
+
+#ifdef X_NOT_STDC_ENV
+char *malloc (), *getenv ();
+#else
+#include <stdlib.h>
+#endif
 
 char *
 XauFileName ()
 {
-    char    *name, *malloc (), *getenv ();
-    char    *strcat (), *strcpy ();
+    char    *name;
     static char	*buf;
     static int	bsize;
 #ifdef WIN32
