@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.8 2001/09/29 04:46:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.9 2001/09/29 06:37:26 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -996,8 +996,9 @@ LispReverse(LispObj *list)
 LispObj *
 LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 {
-    LispObj *old_env, *old_sym, *env, *res, *list, *pair;
+    LispObj *old_frm, *old_env, *old_sym, *env, *res, *list, *pair;
 
+    old_frm = FRM;
     old_env = ENV;
     old_sym = SYM;
     env = CAR(args);
@@ -1009,6 +1010,7 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 			LispStrObj(mac, env), fname);
     }
 
+    GCProtect();
     for (; env != NIL; env = CDR(env)) {
 	LispObj *var = NIL, *val = NIL;
 
@@ -1037,7 +1039,6 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 			LispStrObj(mac, pair), fname);
 	if (!refs) {
 	    pair = CONS(var, EVAL(val));
-	    GCProtect();
 	    if (list == NIL) {
 		list = CONS(pair, NIL);
 		FRM = CONS(list, FRM);
@@ -1046,7 +1047,6 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 		CDR(list) = CONS(CAR(list), CDR(list));
 		CAR(list) = pair;
 	    }
-	    GCUProtect();
 	}
 	else
 	    LispAddVar(mac, var->data.atom, EVAL(val));
@@ -1058,13 +1058,14 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 	    pair = CAR(list);
 	    LispAddVar(mac, CAR(pair)->data.atom, CDR(pair));
 	}
-	FRM = CDR(FRM);
     }
+    GCUProtect();
 
     res = fn(mac, CDR(args), fname);
 
     SYM = old_sym;
     ENV = old_env;
+    FRM = old_frm;
 
     return (res);
 }
