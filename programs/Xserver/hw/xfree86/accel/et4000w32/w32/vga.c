@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.17 1995/07/02 07:47:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.18 1995/07/03 10:06:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -237,6 +237,14 @@ vgaProbe()
   int            maxX, maxY;
   int            needmem, rounding;
   int            tx,ty;
+  
+  /* pixel multiplexing variables */
+  Bool pixMuxPossible = FALSE;
+  int nonMuxMaxClock = 0;
+  int pixMuxMinClock = 0;
+  int pixMuxNeeded = FALSE;
+  int pixMuxMinWidth = 1024;
+             
 
   /* Only supports 8bpp.  Check if someone is trying a different depth */
   if (vga256InfoRec.depth != 8)
@@ -281,6 +289,62 @@ vgaProbe()
 	    ErrorF(" %6.2f", (double)vga256InfoRec.clock[j]/1000.0);
 	  }
 	  ErrorF("\n");
+        }
+
+        /* dacSpeed option processing */
+        
+        if (vga256InfoRec.dacSpeed <= 0) {
+          switch(W32RamdacType) {
+            case NORMAL_DAC:
+            case ATT20C47xA_DAC:
+            case Sierra1502X_DAC:
+            case ATT20C497_DAC:
+            case ATT20C490_DAC:
+            case ATT20C493_DAC:
+            case ATT20C491_DAC:
+            case ATT20C492_DAC:
+                                vga256InfoRec.dacSpeed = MAX_W32_CLOCK;
+                                break;
+            case GENDAC_DAC:
+            case ICS5341_DAC:
+                                vga256InfoRec.dacSpeed = 135000;
+                                break;
+            default:
+               vga256InfoRec.dacSpeed = MAX_W32_CLOCK;
+          }
+        }
+
+        if (xf86Verbose) {
+          ErrorF("%s %s: Ramdac speed: %d\n",
+                 OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
+                 XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
+                 vga256InfoRec.dacSpeed / 1000);
+        }
+
+        /* Check that maxClock is not higher than dacSpeed */
+        if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeed)
+          vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+
+        /* maxClock  = dacSpeed , unless we use pixel multiplexing (?) */
+          vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+
+        if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+          if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
+          {
+            ErrorF("%s %s: Using W32p programmable clock chip ICS5341\n",
+                   OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions) ?
+                   XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+            pixMuxPossible = TRUE;
+            nonMuxMaxClock = MAX_W32_CLOCK;  /* or 75000 ? */ 
+            pixMuxMinClock = 67500;
+            pixMuxMinWidth = 1024;   /* seems to be this way: 1024x768 is wrong with pixmux -- something to do with byte/word/dword modes */
+          }
+          else
+          {
+            ErrorF("%s %s: Unsupported clock chip given for ET4000 W32\n",
+                   XCONFIG_GIVEN, vga256InfoRec.name);
+            return(FALSE);
+          }
         }
 
 	vgaEnterLeaveFunc = Drivers[i]->ChipEnterLeave;
@@ -345,6 +409,27 @@ vgaProbe()
               maxY = pMode->VDisplay;
               pmaxY = pMode;
             }
+            
+#ifdef USE_PIXMUX
+         /*
+          * Check what impact each mode has on pixel multiplexing,
+          * and mark those modes for which pixmux must be used.
+          */
+           
+         if (pixMuxPossible) {
+           if ((vga256InfoRec.clock[pMode->Clock] / 1000) > (nonMuxMaxClock / 1000)) {
+               if (pMode->HDisplay >= pixMuxMinWidth)
+                  /* pixmux SHOULD work in interlaced mode, but I don't know how to do it :-( */
+                  if (!(pMode->Flags & V_INTERLACE))
+                    {
+                      pMode->Flags |= V_PIXMUX;
+                      pixMuxNeeded = TRUE;
+                      ErrorF("%s %s: Mode \"%s\" will use pixel multiplexing.\n",
+                              XCONFIG_PROBED, vga256InfoRec.name, pMode->name);
+                    }
+            }
+          }
+#endif
 	  pMode = pMode->next;
 	}
 	while (pMode != pEnd);
@@ -388,6 +473,49 @@ vgaProbe()
 	}
 	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY))
             OFLG_CLR(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag);
+
+#ifdef USE_PIXMUX
+        if (pixMuxNeeded) {
+           if (xf86Verbose)
+           ErrorF("%s %s: Operating RAMDAC in pixel multiplex mode\n",
+                  XCONFIG_PROBED, vga256InfoRec.name);
+        }
+#endif
+        /*
+         * For programmable clocks, fill in the SynthClock value
+         * and set V_DBLCLK as required for each mode
+         */
+
+        if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+           /* First just copy the pixel values */
+           pEnd = pMode = vga256InfoRec.modes;
+           do {
+              pMode->SynthClock = vga256InfoRec.clock[pMode->Clock];
+              pMode = pMode->next;
+           } while (pMode != pEnd);
+
+#ifdef USE_PIXMUX
+          /* Now make adjustments */
+          pEnd = pMode = vga256InfoRec.modes;
+          do {
+             switch(W32RamdacType) {
+             case ICS5341_DAC:
+                /*
+                 * This one depend on pixel multiplexing for 8bpp.
+                 */
+                if (pMode->SynthClock >= nonMuxMaxClock) {
+                   pMode->SynthClock /= 2;
+                   pMode->Flags |= V_DBLCLK;
+                }
+                break;
+             default:
+                /* Do nothing */
+                break;
+             }
+             pMode = pMode->next;
+          } while (pMode != pEnd);
+#endif
+        }      
 
         vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
         if (xf86Verbose)

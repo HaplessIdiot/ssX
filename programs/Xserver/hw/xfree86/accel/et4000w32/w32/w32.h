@@ -1,5 +1,5 @@
 /* $XConsortium: w32.h,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.4 1995/01/27 02:32:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.5 1995/01/28 15:51:06 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -40,6 +40,21 @@ typedef unsigned char *ByteP;
 typedef volatile unsigned char *VByteP;
 typedef unsigned short *WordP;
 typedef unsigned *LongP;
+
+extern
+int W32RamdacType;
+
+#define UNKNOWN_DAC    -1
+#define NORMAL_DAC      0
+#define ATT20C47xA_DAC  1
+#define Sierra1502X_DAC 2
+#define ATT20C497_DAC   3
+#define ATT20C490_DAC   4
+#define ATT20C493_DAC   5
+#define ATT20C491_DAC   6
+#define ATT20C492_DAC   7
+#define ICS5341_DAC 10
+#define GENDAC_DAC  11
 
 
 extern

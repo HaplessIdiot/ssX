@@ -1,5 +1,5 @@
 /* $XConsortium: ramdac.c,v 1.4 95/01/06 20:56:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.5 1995/01/28 15:51:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.6 1995/06/14 07:34:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -29,6 +29,10 @@
 #include "compiler.h"
 
 #include "xf86.h"
+#define XCONFIG_FLAGS_ONLY
+#include "xf86_Config.h"
+
+#include "xf86.h"
 #include "vga.h"
 #include "w32.h"
 #include "xf86_Config.h"
@@ -37,6 +41,21 @@
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
 				/* current colormap for each screen */
+
+static SymTabRec W32DacTable[] = {
+   { NORMAL_DAC,         "normal" },
+   { ATT20C47xA_DAC,     "att20c47xa" },
+   { Sierra1502X_DAC,    "sc1502x" },
+   { ATT20C497_DAC,      "att20c497" },
+   { ATT20C490_DAC,      "att20c490" },
+   { ATT20C493_DAC,      "att20c493" },
+   { ATT20C491_DAC,      "att20c491" },
+   { ATT20C492_DAC,      "att20c492" },
+   { ICS5341_DAC,        "ics5341" },
+   { GENDAC_DAC,         "gendac" },
+   { -1,                "" },
+};
+
 
 int
 vgaListInstalledColormaps(pScreen, pmaps)
@@ -376,6 +395,98 @@ W32SaveScreen (pScreen, on)
     return(TRUE);
 }
 
+int W32RamdacType = UNKNOWN_DAC;
+
+static Bool
+ProbeGenDAC(Bool quiet)
+{
+   /* probe for ICS GENDAC (ICS5341) */
+   /*
+    * GENDAC and SDAC have two fixed read only PLL clocks
+    *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
+    *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
+    * which can be used to detect GENDAC and SDAC since there is no chip-id
+    * for the GENDAC.
+    *
+    * code was taken from S3 XFree86 driver.
+    * NOTE: for the GENDAC on a ET4000W32p, reading PLL values
+    * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only")
+    * In fact, all "read only" registers return 0x7f
+    */
+   
+   unsigned char saveCR31, savelut[6];
+   int i;
+   long clock01, clock23;
+   Bool found = FALSE;
+   unsigned char dbyte=0;
+   float mclk=0.0;
+
+   outb(vgaIOBase + 4, 0x31);
+   saveCR31 = inb(vgaIOBase + 5);
+
+   outb(vgaIOBase + 5, saveCR31 & ~0x40);
+   
+   outb(0x3c7,0);
+   for(i=0; i<2*3; i++)		/* save first two LUT entries */
+      savelut[i] = inb(0x3c9);
+   outb(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
+      outb(0x3c9,0);
+
+   outb(vgaIOBase + 4, 0x31);
+   outb(vgaIOBase + 5, saveCR31 | 0x40);
+
+   outb(0x3c7,0);
+   for(i=clock01=0; i<4; i++)
+      clock01 = (clock01 << 8) | (inb(0x3c9) & 0xff);
+   for(i=clock23=0; i<4; i++)
+      clock23 = (clock23 << 8) | (inb(0x3c9) & 0xff);
+
+   /* get MClk value */     
+   outb(0x3c7,0x0a);
+   mclk = (inb(0x3c9)+2)*14.31818;
+   dbyte = inb(0x3c9);
+   mclk /= (((dbyte & 0x1f)+2) * 1<<((dbyte & 0x60)>>5));
+
+   outb(vgaIOBase + 4, 0x31);
+   outb(vgaIOBase + 5, saveCR31 & ~0x40);
+
+   outb(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* restore first two LUT entries */
+      outb(0x3c9,savelut[i]);
+
+   outb(vgaIOBase + 4, 0x31);
+   outb(vgaIOBase + 5, saveCR31);
+
+   if ( clock01 == 0x28613d62 ||
+       (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {
+      found = TRUE;
+
+      if (!quiet) {
+	 xf86dactopel();
+	 inb(0x3c6);
+	 inb(0x3c6);
+	 inb(0x3c6);
+
+         dbyte = inb(0x3c6);
+	 /* the fourth read will show the SDAC chip ID and revision */
+	 if ((dbyte & 0xf0) == 0xb0) {
+	    ErrorF("%s %s: Ramdac: ICS 5341 GenDAC ,and programmable clock (MClk = %1.2f MHz)\n",
+		   XCONFIG_PROBED, vga256InfoRec.name, mclk);
+	    W32RamdacType = ICS5341_DAC;
+	 }
+	 else {
+	    ErrorF("%s %s: Ramdac: unknown GENDAC and programmable clock (ID code = 0x%02x)\n",
+		   XCONFIG_PROBED, vga256InfoRec.name, dbyte);
+	    W32RamdacType = GENDAC_DAC;
+	 }
+      }
+      xf86dactopel();
+   }
+   return found;
+}
+
+
 
 /*
  *  For a description of the following, see AT&T's data sheet for ATT20C490/491
@@ -420,65 +531,118 @@ static void check_ramdac()
 
     RamdacShift = 10;
     vgaRamdacMask = 0x3f;
-
+    
     rmr = inb(RMR);
     saved_cr = read_cr();
     cr_saved = TRUE;
 
-    outb(RMR, 0xff); GlennsIODelay();
-    inb(RMR); GlennsIODelay();
-    inb(RMR); GlennsIODelay();
-    inb(RMR); GlennsIODelay();
-    inb(RMR); GlennsIODelay();
-    outb(RMR, 0x1c); GlennsIODelay();
-
-    if (inb(RMR) != 0xff)
+    /* first see if ramdac type was given in XF86Config. If so, assume that is 
+     * correct, and don't probe for it.
+     */
+    if (vga256InfoRec.ramdac) 
     {
-	cr_saved = FALSE;
-	ErrorF("Ramdac:  ATT20C47xA or Sierra 1502[5-6]\n");
-	return;
+       W32RamdacType = xf86StringToToken(W32DacTable, vga256InfoRec.ramdac);
+       if (W32RamdacType < 0) {
+          ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+                 vga256InfoRec.name, vga256InfoRec.ramdac);
+          return ;
+       }
+       else
+       {
+          switch(W32RamdacType)
+          {
+            case  ATT20C490_DAC:
+            case  ATT20C491_DAC:
+       	          RamdacShift = 8;
+       	          vgaRamdacMask = 0xff;
+       	          break;
+            case NORMAL_DAC: 
+            case ATT20C47xA_DAC:
+            case Sierra1502X_DAC:
+            case ATT20C497_DAC:
+            case ATT20C493_DAC:
+            case ATT20C492_DAC:
+            case ICS5341_DAC:
+            case GENDAC_DAC:
+            default:
+                  RamdacShift = 10;
+                  vgaRamdacMask = 0x3f;
+          }
+       }
     }
 
-    write_cr(0xe0);
-    if ((read_cr() >> 5) != 0x7)
-    {
-	ErrorF("Ramdac:  ATT20C497\n");
-	return;
-    }
-
-    write_cr(0x60);
-    if ((read_cr() >> 5) == 0)
-    {
-	write_cr(0x2);	
-	if ((read_cr() & 0x2) != 0)
-	{
-	    ErrorF("Ramdac:  ATT20C490\n");
-	    RamdacShift = 8;
-	    vgaRamdacMask = 0xff;
-	}
-	else
-	    ErrorF("Ramdac:  ATT20C493\n");
-    }
     else
     {
-	write_cr(0x2);	
-	outb(RMR, 0xff);
-	read_color(0xff, save_cmap);
+          /* now see if it's an ICS GenDAC */
+          if (!ProbeGenDAC(FALSE))
+          
+          /* if none of the above: start probing for other DAC's */
+          {
+            outb(RMR, 0xff); GlennsIODelay();
+            inb(RMR); GlennsIODelay();
+            inb(RMR); GlennsIODelay();
+            inb(RMR); GlennsIODelay();
+            inb(RMR); GlennsIODelay();
+            outb(RMR, 0x1c); GlennsIODelay();
 
-	write_color(0xff, white_cmap);
-	read_color(0xff, cmap);
+            if (inb(RMR) != 0xff)
+            {
+        	cr_saved = FALSE;
+        	W32RamdacType = ATT20C47xA_DAC;
+        	return;
+            }
 
-	if (cmap[0] == 0xff && cmap[1] == 0xff && cmap[2] == 0xff)
-	{
-	    ErrorF("Ramdac:  ATT20C491\n");
-	    RamdacShift = 8;
-	    vgaRamdacMask = 0xff;
-	}
-	else
-	    ErrorF("Ramdac:  ATT20C492\n");
+            write_cr(0xe0);
+            if ((read_cr() >> 5) != 0x7)
+            {
+        	W32RamdacType = ATT20C497_DAC;
+        	return;
+            }
 
-	write_color(0xff, save_cmap);
+            write_cr(0x60);
+            if ((read_cr() >> 5) == 0)
+            {
+        	write_cr(0x2);	
+        	if ((read_cr() & 0x2) != 0)
+        	{
+        	    W32RamdacType = ATT20C490_DAC;
+        	    RamdacShift = 8;
+        	    vgaRamdacMask = 0xff;
+        	}
+        	else
+        	{
+        	    W32RamdacType = ATT20C493_DAC;
+        	}
+            }
+            else
+            {
+        	write_cr(0x2);	
+        	outb(RMR, 0xff);
+        	read_color(0xff, save_cmap);
+
+        	write_color(0xff, white_cmap);
+        	read_color(0xff, cmap);
+
+        	if (cmap[0] == 0xff && cmap[1] == 0xff && cmap[2] == 0xff)
+        	{
+        	    W32RamdacType = ATT20C491_DAC;
+        	    RamdacShift = 8;
+        	    vgaRamdacMask = 0xff;
+        	}
+        	else
+        	{
+        	    W32RamdacType = ATT20C492_DAC;
+        	}
+        	
+        	write_color(0xff, save_cmap);
+            }
+          }
     }
+  ErrorF("%s %s: Ramdac: %s\n",
+          (vga256InfoRec.ramdac) ? XCONFIG_GIVEN : XCONFIG_PROBED,
+          vga256InfoRec.name, xf86TokenToString(W32DacTable, W32RamdacType));
+  
+    
 }
 
 
@@ -506,6 +670,7 @@ void XRamdac()
 
 void SetupRamdac()
 {
+#if WHY_HARDCODE_THIS
     if (OFLG_ISSET(XCONFIG_RAMDAC, &vga256InfoRec.xconfigFlag))
     {
 	cr_saved = FALSE; 
@@ -526,6 +691,7 @@ void SetupRamdac()
 	}
 	return;
     }
+#endif
 
     check_ramdac();
     if (cr_saved && RamdacShift == 10)

@@ -1,6 +1,6 @@
 /* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.11 1995/06/21 11:52:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.12 1995/06/27 08:32:00 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -59,6 +59,7 @@ extern void     ET4000SetWrite();
 extern void     ET4000SetReadWrite();
 
 extern vgaVideoChipRec ET4000;
+extern Bool (*ClockSelect)();
 
 vgaVideoChipRec ET4000W32 = {
     ET4000W32Probe,
@@ -94,6 +95,7 @@ vgaVideoChipRec ET4000W32 = {
     1,
 };
 
+static et4000w32_initted = FALSE;
 static unsigned ET4000W32_ExtPorts[] = {0x3cb, 0x217a, 0x217b};
 static int Num_ET4000W32_ExtPorts = 
 	(sizeof(ET4000W32_ExtPorts)/sizeof(ET4000W32_ExtPorts[0]));
@@ -104,14 +106,14 @@ static char * w32ChipNames[] = {
 	"et4000w32i",
 	"et4000w32p_rev_a",
 	"et4000w32i_rev_b",
-	"et4000w32i_rev_c",
+	"reserved",
 	"et4000w32p_rev_b",
-	"et4000w32p_rev_c",
 	"et4000w32p_rev_d",
+	"et4000w32p_rev_c",
 	"reserved",
 	"reserved",
 	"reserved",
-	"reserved",
+	"et4000w32i_rev_c",
 	"reserved",
 	"reserved",
 	"reserved",
@@ -246,6 +248,15 @@ ET4000W32Probe()
     W32pCAndLater = W32p && strcmp(et4000w32_id, "et4000w32p_rev_a") != 0
 			 && strcmp(et4000w32_id, "et4000w32p_rev_b") != 0;
 
+
+    /* set ET4000/W32 specific options */
+    OFLG_SET(OPTION_LEGEND, &ET4000W32.ChipOptionFlags);
+    OFLG_SET(OPTION_HIBIT_HIGH, &ET4000W32.ChipOptionFlags);
+    OFLG_SET(OPTION_HIBIT_LOW, &ET4000W32.ChipOptionFlags);
+#ifndef MONOVGA
+    OFLG_SET(OPTION_FAST_DRAM, &ET4000W32.ChipOptionFlags);
+#endif
+
     if (vga256InfoRec.videoRam == 0)
     {
 	outb(vgaIOBase + 0x04, 0x37);
@@ -346,7 +357,6 @@ ET4000W32Init(mode)
 {
     int i;
 
-    static et4000w32_initted = FALSE;
 
     if (!ET4000.ChipInit(mode))
 	return FALSE;
@@ -466,7 +476,7 @@ ET4000W32SaveScreen(start_finish)
 	outb(vgaIOBase + 0x4, 0x36);
 	tmp = inb(vgaIOBase + 0x5);
 	outb(vgaIOBase + 0x5, tmp | 0x28);
-	RESET_ACL
+	if (et4000w32_initted) RESET_ACL;
     }
 }
 
