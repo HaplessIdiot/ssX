@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dseg.c,v 1.2 94/04/17 20:30:44 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.0 1994/05/08 05:19:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dseg.c,v 3.1 1994/06/01 03:18:21 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -190,8 +190,6 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
       y1 = pSeg->y1 + yorg;
       x2 = pSeg->x2 + xorg;
       y2 = pSeg->y2 + yorg;
-
-ErrorF("mach32dseg: %d,%d to %d,%d\n", x1, y1, x2, y2);
 
       pSeg++;
       {			/* sloped line */
