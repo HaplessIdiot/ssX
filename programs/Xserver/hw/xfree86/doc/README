@@ -122,7 +122,7 @@
 
      12.
         16bpp and 32bpp support for more S3 boards (refer to README.S3
-        <S3.html> for details).
+        for details).
 
      13.
         Support for ISC's SVR3 (only tested for 3.x and 4.x).
@@ -402,7 +402,7 @@
   If you are totally at a loss, you can contact the XFree86 Support Team
   at <XFree86@XFree86.Org>.  Before doing so, please make sure that you
   are using the latest release of XFree86.  Check the versions listed on
-  ftp.xfree86.org:/pub/XFree86 <ftp://ftp.xfree86.org/pub/XFree86>.
+  ftp://ftp.xfree86.org/pub/XFree86.
 
   There is a Usenet news group comp.windows.x.i386unix that contains
   mostly discussions about XFree86 and related topics. Many questions
@@ -1032,83 +1032,63 @@
   available via anonymous FTP from:
 
 
-     o  ftp.XFree86.org:/pub/XFree86/3.1.2
-        <ftp://ftp.XFree86.org/pub/XFree86/3.1.2>
+     o  ftp://ftp.XFree86.org/pub/XFree86
 
   and the following mirror sites:
 
      o  North America:
 
-        +  XFree86.cdrom.com:/pub/XFree86
-           <ftp://XFree86.cdrom.com/pub/XFree86> (source and binaries)
+        +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
 
-        +  ftp.rge.com:/pub/X/XFree86/XFree86/3.1.2
-           <ftp://ftp.rge.com/pub/X/XFree86/XFree86/3.1.2> (source and
-           binaries)
+        +  ftp://ftp.rge.com/pub/X/XFree86/XFree86 (source and binaries)
 
-        +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2
-           <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2> (source
+        +  ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2 (source
            patches and NetBSD binaries)
 
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
 
-
-        +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.2
-           <ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2>
+        +  ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2
            (Linux binaries and source)
 
-        +  ref.tfs.com:/pub/mirrors/XFree86
-           <ftp://ref.tfs.com/pub/mirrors/XFree86> (source patches and
+        +  ftp://ref.tfs.com/pub/mirrors/XFree86 (source patches and
            FreeBSD binaries)
 
-        +  ftp.eecs.umich.edu:/BSD/XFree86/3.1.2
-           <ftp://ftp.eecs.umich.edu/BSD/XFree86/3.1.2> (source and
-           binaries)
+        +  ftp://ftp.eecs.umich.edu/BSD/XFree86 (source and binaries)
 
 
      o  Europe:
 
-        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.2 <ftp://fvkma.tu-
-           graz.ac.at/pub/XFree86/3.1.2> (source and binaries)
+        +  ftp://fvkma.tu-graz.ac.at/pub/XFree86 (source and binaries)
 
-        +  sunsite.mff.cuni.cz:/X11/XFree86/3.1.2
-           <ftp://sunsite.mff.cuni.cz/X11/XFree86/3.1.2> (source patches
-           and binaries)
-
-        +  ftp.fee.vutbr.cz:/pub/XFree86/3.1.2
-           <ftp://ftp.fee.vutbr.cz/pub/XFree86/3.1.2> (source patches
-           and binaries)
-
-        +  ftp.gwdg.de:/pub/xfree86/XFree86/3.1.2
-           <ftp://ftp.gwdg.de/pub/xfree86/XFree86/3.1.2> (source and
+        +  ftp://sunsite.mff.cuni.cz/X11/XFree86 (source patches and
            binaries)
 
-        +  ftp.uni-erlangen.de:/pub/Linux/MIRROR.xfree86/3.1.2
-           <ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.2>
-           (source patches and Linux binaries)
-
-        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.2 <ftp://ftp.uni-
-           stuttgart.de/pub/X11/Xfree86/3.1.2> (source and binaries)
-
-        +  ftp.funet.fi:/pub/X11/XFree86/3.1.2
-           <ftp://ftp.funet.fi/pub/X11/XFree86/3.1.2> (source and
+        +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
 
-        +  ftp.calvacom.fr:/pub/unix/X/XFree86
-           <ftp://ftp.calvacom.fr/pub/unix/X/XFree86> (source and
+        +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
+
+        +  ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86 (source
+           patches and Linux binaries)
+
+        +  ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86 (source and
            binaries)
 
-        +  ftp.ibp.fr:/pub/X11/XFree86/XFree86-3.1.2
-           <ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2> (source and
+        +  ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
+
+        +  ftp://ftp.calvacom.fr/pub/unix/X/XFree86 (source and
            binaries)
 
-        +  ftp.laas.fr:/pub/ii/netbsd/XFree86-3.1.2
-           <ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2> (NetBSD
+        +  ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2 (source and
+           binaries)
+
+        +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2 (NetBSD
            binaries only)
 
-        +  ftp.pvv.unit.no:/pub/XFree86/3.1.2
-           <ftp://ftp.pvv.unit.no/pub/XFree86/3.1.2> (source and
+        +  ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
+
+        +  ftp://sunsite.doc.ic.ac.uk/packages/XFree86 (source and
            binaries)
 
 
@@ -1116,20 +1096,17 @@
 
      o  Asia/Australia:
 
-        +  x.physics.usyd.edu.au:/pub/XFree86/3.1.2
-           <ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2> (source and
+        +  ftp://x.physics.usyd.edu.au/pub/XFree86 (source and binaries)
+
+        +  ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and
            binaries)
 
-        +  ftp.iij.ad.jp:/pub/X/XFree86/XFree86/3.1.2
-           <ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86/3.1.2> (source and
-           binaries)
+        +  ftp://ftp.sf.co.kr/pub/XFree86 (source and binaries)
 
-        +  ftp.sf.co.kr:/pub/XFree86/3.1.2
-           <ftp://ftp.sf.co.kr/pub/XFree86/3.1.2> (source and binaries)
+        +  ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches
+           and binaries)
 
-        +  ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2
-           <ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2> (source
-           patches and binaries)
+        +  ftp://ftp.edu.tw/X/XFree86 (source and binaries)
 
 
   Refer to the README file under the specified directory for information
@@ -1142,13 +1119,36 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.45 1996/02/09 08:20:40 dawes Exp $
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.46 1996/03/16 12:46:32 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

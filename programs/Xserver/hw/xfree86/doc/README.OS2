@@ -199,13 +199,13 @@
         312DAGX
            the X server for AGX boards
 
-        X312I128
+        312DI128
            the X server for #9 Imagination 128 boards
 
-        X312Ma32
+        312DMa32
            the X server for ATI Mach32 graphics boards
 
-        X312Ma64
+        312DMa64
            the X server for ATI Mach64 graphics boards
 
         312DMa8
@@ -226,7 +226,7 @@
         312Dvg16
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        X312w32
+        312Dw32
            the X server for et4000w32 based boards
 
      OPTIONAL:
@@ -249,7 +249,7 @@
         312Dfsrv
            the font server with man pages.
 
-        312prog
+        312Dprog
            the X11 header files and programmer's utilities for compiling
            other X applications
 
@@ -737,7 +737,7 @@
      o  ME - no, no, forget this: I won't praise myself :-)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.3 1996/02/24 10:19:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.4 1996/03/10 12:05:04 dawes Exp $
 
 
 

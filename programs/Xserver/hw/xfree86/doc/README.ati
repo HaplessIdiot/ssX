@@ -1,6 +1,6 @@
   ATI adapters README
   Marc Aurele La France
-  16 February 1996
+  13 March 1996
 
   This is the README for the XFree86 ATI VGA driver used in the
   XF86_Mono, XF86_VGA16 and XF86_SVGA servers.  Users of ATI adapters
@@ -249,19 +249,20 @@
   Interlaced modes do not work in the monochrome server on 28800-x
   adapters when using a virtual resolution wider than 1024 pixels.
 
-  Interlaced modes do not work on 88800CT & 88800ET adapters (Graphics
-  Xpression PCI).  Support for virtual resolutions using more than 1MB
-  of video memory is still incomplete.  Specifically, such support
-  should work on Mach32 adapters but is untested.  Also, such support
-  *does* work on 88800CT & 88800ET adapters, but not on any other Mach64
-  adapters.
+  Some (particularly low resolution) interlaced modes do not work on
+  88800CT & 88800ET adapters (Graphics Xpression PCI).
+
+  Support for virtual resolutions using more than 1MB of video memory is
+  still incomplete.  Specifically, such support works on Mach32
+  adapters, and on 88800CT & 88800ET adapters, but not on any other
+  Mach64 adapters.
 
   There is some controversy over whether or not clocks higher than
   135MHz should be allowed on CT & ET adapters.  For now, clocks will be
   limited to 135MHz by default.  This limit can only be increased (up to
   a driver-calculated absolute maximum) through the DACSpeed option in
-  XF86Config.  Be aware however that doing this is untested and might
 
+  XF86Config.  Be aware however that doing this is untested and might
   damage the adapter.
 
   Future development plans include addressing the above problems and
@@ -271,14 +272,13 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.9 1996/02/24 10:19:22 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.10 1996/03/17 11:38:44 dawes Exp $
 
 
 
 
 
   $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
-
 
 
 
