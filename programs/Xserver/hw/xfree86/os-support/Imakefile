@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.30 1999/09/25 14:37:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.31 1999/09/27 14:33:48 dawes Exp $
 
 
 
@@ -89,7 +89,7 @@ OS_SUBDIR = sco
 #endif
 
 #if BuildXF86DRI && !DoLoadableServer
-DRM_SRC = $(OS_SUBDIR)/drm/?*.o
+DRM_SRC = $(OS_SUBDIR)/drm/?*.c
 DRM_OBJ = $(OS_SUBDIR)/drm/?*.o
 #endif
 

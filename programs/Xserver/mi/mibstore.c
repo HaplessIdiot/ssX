@@ -38,7 +38,7 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.3 1998/10/04 09:39:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.4 1998/12/20 11:57:57 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -2652,7 +2652,7 @@ miResizeBackingStore(pWin, dx, dy, saveBits)
     if (nw != pBackingPixmap->drawable.width ||
 	nh != pBackingPixmap->drawable.height)
     {
-	if (!saveBits)
+	if (!saveBits || !nw || !nh)
 	{
 	    pNewPixmap = NullPixmap;
 	    pBackingStore->status = StatusNoPixmap;
@@ -2803,6 +2803,15 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	    }
 	}
 	REGION_TRANSLATE(pScreen, pObscured, x, y);
+    }
+    else
+    {
+	if (REGION_BROKEN (pScreen, pObscured))
+	{
+	    REGION_EMPTY( pScreen, &pBackingStore->SavedRegion);
+	    miDestroyBSPixmap (pWin);
+	    return;
+	}
     }
 }
 
@@ -3641,7 +3650,9 @@ miCreateBSPixmap (pWin, pExtents)
 
     extents = REGION_EXTENTS( pScreen, &pBackingStore->SavedRegion);
 
-    if (!pBackingStore->pBackingPixmap)
+    if (!pBackingStore->pBackingPixmap &&
+	extents->x2 != extents->x1 &&
+	extents->y2 != extents->y1)
     {
 	/* the policy here could be more sophisticated */
 	pBackingStore->x = extents->x1;

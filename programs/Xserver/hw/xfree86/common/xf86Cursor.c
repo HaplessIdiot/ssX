@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.18 1999/08/22 05:57:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.19 1999/09/25 14:37:10 dawes Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -14,6 +14,7 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86_OSproc.h"
 
 #ifdef XINPUT
 #include "XIproto.h"
@@ -367,9 +368,12 @@ xf86CrossScreen (ScreenPtr pScreen, Bool entering)
 static void
 xf86WarpCursor (ScreenPtr pScreen, int x, int y)
 {
+    int    sigstate;
+    sigstate = xf86BlockSIGIO ();
   miPointerWarpCursor(pScreen,x,y);
 
   xf86Info.currentScreen = pScreen;
+    xf86UnblockSIGIO (sigstate);
 }
 
 

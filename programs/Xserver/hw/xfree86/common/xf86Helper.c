@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.59 1999/10/13 04:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.60 1999/10/13 16:49:10 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2212,6 +2212,38 @@ xf86SetBackingStore(ScreenPtr pScreen)
 		   useBS ? "enabled" : "disabled");
 }
 
+
+typedef enum {
+   OPTION_SILKEN_MOUSE
+} SMOpts;
+
+static OptionInfoRec SMOptions[] = {
+   { OPTION_SILKEN_MOUSE, "SilkenMouse",   OPTV_BOOLEAN, {0}, FALSE },
+   { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
+};
+
+void 
+xf86SetSilkenMouse (ScreenPtr pScreen)
+{
+    Bool useSM = TRUE;
+    MessageType from = X_DEFAULT;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SMOptions);
+
+    /* check for commandline option here */
+    if (xf86silkenMouseDisableFlag) {
+	from = X_CMDLINE;
+	useSM = FALSE;
+    } else {
+	if (xf86GetOptValBool(SMOptions, OPTION_SILKEN_MOUSE, &useSM))
+	    from = X_CONFIG;
+    }
+    pScrn->silkenMouse = useSM;
+    if (serverGeneration == 1)
+	xf86DrvMsg(pScreen->myNum, from, "Silken mouse %s\n",
+		   useSM ? "enabled" : "disabled");
+}
 
 /* Wrote this function for the PM2 Xv driver, preliminary. */
 

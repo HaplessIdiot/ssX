@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.12 1999/08/01 07:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.13 1999/08/22 05:57:24 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -96,6 +96,8 @@ XFree86DGAExtensionInit(void)
 	DGAReqCode = (unsigned char)extEntry->base;
 	DGAErrorBase = extEntry->errorBase;
 	DGAEventBase = extEntry->eventBase;
+	for (i = KeyPress; i <= MotionNotify; i++)
+	    SetCriticalEvent (DGAEventBase + i);
     }
 
     /*

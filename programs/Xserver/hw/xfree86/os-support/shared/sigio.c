@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/07 13:01:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/14 07:32:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.2 1999/06/14 12:02:11 dawes Exp $
  * 
  */
 
@@ -34,12 +34,15 @@
 # include "X.h"
 # include "xf86.h"
 # include "xf86drm.h"
+# include "xf86Priv.h"
 # include "xf86_OSlib.h"
 # include "xf86drm.h"
 #else
 # include <unistd.h>
 # include <signal.h>
 # include <fcntl.h>
+# include <sys/time.h>
+# include <errno.h>
 #endif
 
 /*
@@ -50,19 +53,75 @@
 #  define O_ASYNC FASYNC
 #endif
 
+#define MAX_FUNCS   16
+
+typedef struct _xf86SigIOFunc {
+    void    (*f) (int, void *);
+    int	    fd;
+    void    *closure;
+} Xf86SigIOFunc;
+
+static Xf86SigIOFunc	xf86SigIOFuncs[MAX_FUNCS];
+static int		xf86SigIOMax;
+static int		xf86SigIOMaxFd;
+static fd_set		xf86SigIOMask;
+
+#define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
+
+/*
+ * SIGIO gives no way of discovering which fd signalled, select
+ * to discover
+ */
+static void
+xf86SIGIO (int sig)
+{
+    int	    i;
+    fd_set  ready;
+    struct timeval  to;
+    int	    r;
+
+    ready = xf86SigIOMask;
+    to.tv_sec = 0;
+    to.tv_usec = 0;
+    SYSCALL (r = select (xf86SigIOMaxFd, &ready, 0, 0, &to));
+    for (i = 0; r > 0 && i < xf86SigIOMax; i++)
+	if (xf86SigIOFuncs[i].f && FD_ISSET (xf86SigIOFuncs[i].fd, &ready))
+	{
+	    (*xf86SigIOFuncs[i].f)(xf86SigIOFuncs[i].fd,
+				   xf86SigIOFuncs[i].closure);
+	    r--;
+	}
+}
+
 int
-xf86InstallSIGIOHandler(int fd, void (*f)(int))
+xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 {
     struct sigaction sa;
     struct sigaction osa;
+    int	i;
 
-    sigemptyset(&sa.sa_mask);
-    sigaddset(&sa.sa_mask, SIGIO);
-    sa.sa_flags   = 0;
-    sa.sa_handler = f;
-    sigaction(SIGIO, &sa, &osa);
-    fcntl(fd, F_SETOWN, getpid());
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_ASYNC);
+    for (i = 0; i < MAX_FUNCS; i++)
+    {
+	if (!xf86SigIOFuncs[i].f)
+	{
+	    sigemptyset(&sa.sa_mask);
+	    sigaddset(&sa.sa_mask, SIGIO);
+	    sa.sa_flags   = 0;
+	    sa.sa_handler = xf86SIGIO;
+	    sigaction(SIGIO, &sa, &osa);
+	    xf86SigIOFuncs[i].fd = fd;
+	    xf86SigIOFuncs[i].closure = closure;
+	    xf86SigIOFuncs[i].f = f;
+	    if (i >= xf86SigIOMax)
+		xf86SigIOMax = i+1;
+	    if (fd >= xf86SigIOMaxFd)
+		xf86SigIOMaxFd = fd + 1;
+	    FD_SET (fd, &xf86SigIOMask);
+	    fcntl(fd, F_SETOWN, getpid());
+	    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_ASYNC);
+	    return 1;
+	}
+    }
     return 0;
 }
 
@@ -71,12 +130,84 @@ xf86RemoveSIGIOHandler(int fd)
 {
     struct sigaction sa;
     struct sigaction osa;
+    int	i;
+    int max;
+    int maxfd;
+    int ret;
 
-    sigemptyset(&sa.sa_mask);
-    sigaddset(&sa.sa_mask, SIGIO);
-    sa.sa_flags   = 0;
-    sa.sa_handler = SIG_DFL;
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_ASYNC);
-    sigaction(SIGIO, &sa, &osa);
-    return 0;
+    max = 0;
+    maxfd = -1;
+    ret = 0;
+    for (i = 0; i < MAX_FUNCS; i++)
+    {
+	if (xf86SigIOFuncs[i].f)
+	{
+	    if (xf86SigIOFuncs[i].fd == fd)
+	    {
+		xf86SigIOFuncs[i].f = 0;
+		xf86SigIOFuncs[i].fd = 0;
+		xf86SigIOFuncs[i].closure = 0;
+		FD_CLR (fd, &xf86SigIOMask);
+		ret = 1;
+	    }
+	    else
+	    {
+		max = i + 1;
+		if (xf86SigIOFuncs[i].fd >= maxfd)
+		    maxfd = xf86SigIOFuncs[i].fd + 1;
+	    }
+	}
+    }
+    if (ret)
+    {
+	fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_ASYNC);
+	xf86SigIOMax = max;
+	xf86SigIOMaxFd = maxfd;
+	if (!max)
+	{
+	    sigemptyset(&sa.sa_mask);
+	    sigaddset(&sa.sa_mask, SIGIO);
+	    sa.sa_flags   = 0;
+	    sa.sa_handler = SIG_DFL;
+	    sigaction(SIGIO, &sa, &osa);
+	}
+    }
+    return ret;
 }
+
+int
+xf86BlockSIGIO (void)
+{
+    sigset_t	set, old;
+
+    sigemptyset (&set);
+    sigaddset (&set, SIGIO);
+    sigprocmask (SIG_BLOCK, &set, &old);
+    return sigismember (&old, SIGIO);
+}
+
+void
+xf86UnblockSIGIO (int wasset)
+{
+    sigset_t	set;
+
+    if (!wasset)
+    {
+	sigemptyset (&set);
+	sigaddset (&set, SIGIO);
+	sigprocmask (SIG_UNBLOCK, &set, NULL);
+    }
+}
+
+#ifdef XFree86Server
+void
+xf86AssertBlockedSIGIO (char *where)
+{
+    sigset_t	set, old;
+
+    sigemptyset (&set);
+    sigprocmask (SIG_BLOCK, &set, &old);
+    if (!sigismember (&old, SIGIO))
+	xf86Msg (X_ERROR, "SIGIO not blocked at %s\n", where);
+}
+#endif

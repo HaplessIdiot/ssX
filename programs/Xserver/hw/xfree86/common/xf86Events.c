@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.76 1999/09/04 13:04:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.77 1999/09/25 14:37:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,6 +34,7 @@
 #include "Xpoll.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
@@ -60,6 +61,18 @@ extern Bool noXkbExtension;
 #define XE_POINTER  1
 #define XE_KEYBOARD 2
 
+#ifdef XINPUT
+#define __EqEnqueue(ev) xf86eqEnqueue(ev)
+#else
+#define __EqEnqueue(ev) mieqEnqueue(ev)
+#endif
+
+#define EqEnqueue(ev) { \
+    int __sigstate = xf86BlockSIGIO (); \
+    __EqEnqueue (ev); \
+    xf86UnblockSIGIO(__sigstate); \
+}
+
 #ifdef XTESTEXT1
 
 #define	XTestSERVER_SIDE
@@ -69,45 +82,19 @@ extern short xtest_mousey;
 extern int   on_steal_input;          
 extern Bool  XTestStealKeyData();
 extern void  XTestStealMotionData();
-
-#ifdef XINPUT
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
   if (!on_steal_input ||  \
       XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
 			xtest_mousex, xtest_mousey)) \
-  xf86eqEnqueue((ev))
-#else
-#define ENQUEUE(ev, code, direction, dev_type) \
-  (ev)->u.u.detail = (code); \
-  (ev)->u.u.type   = (direction); \
-  if (!on_steal_input ||  \
-      XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
-			xtest_mousex, xtest_mousey)) \
-  mieqEnqueue((ev))
-#endif
-
-#define MOVEPOINTER(dx, dy, time) \
-  if (on_steal_input) \
-    XTestStealMotionData(dx, dy, XE_POINTER, xtest_mousex, xtest_mousey); \
-  miPointerDeltaCursor (dx, dy, time)
-
+  EqEnqueue((ev))
 #else /* ! XTESTEXT1 */
 
-#ifdef XINPUT
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
-  xf86eqEnqueue((ev))
-#else
-#define ENQUEUE(ev, code, direction, dev_type) \
-  (ev)->u.u.detail = (code); \
-  (ev)->u.u.type   = (direction); \
-  mieqEnqueue((ev))
-#endif
-#define MOVEPOINTER(dx, dy, time) \
-  miPointerDeltaCursor (dx, dy, time)
+  EqEnqueue((ev))
 
 #endif
 

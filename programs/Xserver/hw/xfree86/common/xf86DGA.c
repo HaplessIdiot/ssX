@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.25 1999/09/25 14:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.26 1999/09/27 06:29:28 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -20,6 +20,7 @@
 #ifdef XKB
 #include "XKBsrv.h"
 #endif
+#include "xf86Xinput.h"
 
 static unsigned long DGAGeneration = 0;
 static int DGAScreenIndex = -1;
@@ -784,17 +785,11 @@ DGAVTSwitch(void)
 
 /* We have the power to steal or modify events that are about to get queued */
 
-extern InputInfo inputInfo;
-
 Bool
 DGAStealKeyEvent(int index, xEvent *e)
 {
    DGAScreenPtr pScreenPriv;
-   DeviceIntPtr keybd;
-   KeyClassPtr keyc;
-   int key, bit, i;
-   BYTE *kptr;
-   CARD8 modifiers, mask;
+    dgaEvent	de;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -804,92 +799,10 @@ DGAStealKeyEvent(int index, xEvent *e)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
 
-   keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-   keyc = keybd->key;
-
-   e->u.keyButtonPointer.state = (keyc->state |
-				  inputInfo.pointer->button->state);
-
-   key = e->u.u.detail;
-   kptr = &keyc->down[key >> 3];
-   bit = 1 << (key & 7);
-   modifiers = keyc->modifierMap[key];
-
-   if(e->u.u.type == KeyPress) {
-	if(!(*kptr & bit)) {
-	    *kptr |= bit;
-	    keyc->prev_state = keyc->state;
-	    keyc->state |= modifiers;
-
-	    for(mask = 0x80, i = 0; mask; mask >>= 1, i++) {
-		if(mask & modifiers)
-		    keyc->modifierKeyCount[i]++;
-	    }
-	}
-   } else {  /* KeyRelease */
-	if(!(*kptr & bit))
-	    return TRUE;
-	*kptr &= ~bit;
-	keyc->prev_state = keyc->state;
-	for(mask = 0x80, i = 0; mask; mask >>= 1, i++) {
-	    if(mask & modifiers) {
-		if(--keyc->modifierKeyCount[i] <= 0) {
-		    keyc->state &= ~mask;
-		    keyc->modifierKeyCount[i] = 0;	
-		}	
-	    }
-	}
-   }
-   
-   if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
-	Bool GrabEvent = FALSE;
-
-        switch(e->u.u.type) {
-        case KeyPress:
-             if(pScreenPriv->input & KeyPressMask) 
-                GrabEvent = TRUE;
-             break;
-        case KeyRelease:
-             if(pScreenPriv->input & KeyReleaseMask) 
-                GrabEvent = TRUE;
-             break;
-        }
-
-        if(GrabEvent){ /* steal this event */
-            dgaEvent de;
-            
-            de.u.u.type = e->u.u.type + *XDGAEventBase;
-	    de.u.u.detail = key;
-            de.u.u.sequenceNumber = pScreenPriv->client->sequence;
-            de.u.event.time = e->u.keyButtonPointer.time;
-            de.u.event.screen = index;
-            de.u.event.state = e->u.keyButtonPointer.state;
-
-            TryClientEvents(pScreenPriv->client, (xEvent*)&de, 1, 
-                        NoEventMask, NoEventMask, NullGrab);
-	}
-	return TRUE;
-    }
-
-
-   /* Not sure how best to handle this stuff. It's only for
-      DGA 1.0 compatibility.  Hopefully, we can remove this
-      some day */
-
-   if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
-	/* these would be non-sense otherwise */
-	e->u.keyButtonPointer.eventX =  0;
-	e->u.keyButtonPointer.eventY =  0;
-	e->u.keyButtonPointer.rootX =   0;
-	e->u.keyButtonPointer.rootY =   0;
-
-	keybd->public.processInputProc(e, keybd, 1);
-   }
-
-   /* Direct mode but the client doesn't want the events.
-      We have to keep them from hitting the other windows. 
-    */
-
+    de.u.u.type = e->u.u.type + *XDGAEventBase;
+    de.u.u.detail = e->u.u.detail;
+    de.u.event.time = e->u.keyButtonPointer.time;
+    xf86eqEnqueue ((xEvent *) &de);
    return TRUE;
 }
 
@@ -898,7 +811,7 @@ Bool
 DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 {
    DGAScreenPtr pScreenPriv;
-   ButtonClassPtr butc;
+    dgaEvent	de;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -907,106 +820,244 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
+    
+    if (e->u.u.type)
+	de.u.u.type = e->u.u.type + *XDGAEventBase;
+    else
+	de.u.u.type = MotionNotify + *XDGAEventBase;
+    de.u.u.detail = e->u.u.detail;
+    de.u.event.time = e->u.keyButtonPointer.time;
+    de.u.event.dx = dx;
+    de.u.event.dy = dy;
+    xf86eqEnqueue ((xEvent *) &de);
+    return TRUE;
+}
 
-   /* I hope this part is correct.  Motion events are different
-	in the sense that the mipointer code is relied on to fill 
-	out the rest of the event info.  We steal the event before 
-	then so we need to fill that info out here */
+Bool
+DGAIsDgaEvent (xEvent *e)
+{
+    int	    coreEquiv;
+    if (DGAScreenIndex < 0)
+	return FALSE;
+    coreEquiv = e->u.u.type - *XDGAEventBase;
+    if (KeyPress <= coreEquiv && coreEquiv <= MotionNotify)
+	return TRUE;
+    return FALSE;
+}
 
-   if(dx | dy) { 
-	e->u.u.type = MotionNotify;
-	e->u.keyButtonPointer.time = GetTimeInMillis();
-   }
+#define NoSuchEvent 0x80000000	/* so doesn't match NoEventMask */
+static Mask filters[] =
+{
+	NoSuchEvent,		       /* 0 */
+	NoSuchEvent,		       /* 1 */
+	KeyPressMask,		       /* KeyPress */
+	KeyReleaseMask,		       /* KeyRelease */
+	ButtonPressMask,	       /* ButtonPress */
+	ButtonReleaseMask,	       /* ButtonRelease */
+	PointerMotionMask,	       /* MotionNotify (initial state) */
+};
 
-   butc = ((DeviceIntPtr)xf86Info.pMouse)->button;
+static void
+DGAProcessKeyboardEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr keybd)
+{
+    int             key, bit;
+    register BYTE   *kptr;
+    register int    i;
+    register CARD8  modifiers;
+    register CARD16 mask;
+    int		    coreEquiv;
+    xEvent	    core;
+    KeyClassPtr	    keyc = keybd->key;
+    DGAScreenPtr    pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+    
+    coreEquiv = de->u.u.type - *XDGAEventBase;
 
-   e->u.keyButtonPointer.state = butc->state | (
-#ifdef XKB
-	!noXkbExtension ? inputInfo.keyboard->key->xkbInfo->state.grab_mods :
-#endif
-	inputInfo.keyboard->key->state);
+    /*
+     * Fill in remaining event state
+     */
+    de->u.event.dx = 0;
+    de->u.event.dy = 0;
+    de->u.event.screen = pScreen->myNum;
+    de->u.event.state = keyc->state | (inputInfo.pointer)->button->state;
+    
+    /*
+     * Keep the core state in sync by duplicating what
+     * CoreProcessKeyboardEvent does
+     */
+    key = de->u.u.detail;
+    kptr = &keyc->down[key >> 3];
+    bit = 1 << (key & 7);
+    modifiers = keyc->modifierMap[key];
+    switch (coreEquiv)
+    {
+    case KeyPress:
+	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
+	*kptr |= bit;
+	keyc->prev_state = keyc->state;
+	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	{
+	    if (mask & modifiers)
+	    {
+		/* This key affects modifier "i" */
+		keyc->modifierKeyCount[i]++;
+		keyc->state |= mask;
+		modifiers &= ~mask;
+	    }
+	}
+	break;
+    case KeyRelease:
+	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
+	*kptr &= ~bit;
+	keyc->prev_state = keyc->state;
+	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	{
+	    if (mask & modifiers) {
+		/* This key affects modifier "i" */
+		if (--keyc->modifierKeyCount[i] <= 0) {
+		    keyc->state &= ~mask;
+		    keyc->modifierKeyCount[i] = 0;
+		}
+		modifiers &= ~mask;
+	    }
+	}
+	break;
+    }
 
-   if(e->u.u.type != MotionNotify) {
-	ButtonClassPtr butc = ((DeviceIntPtr)xf86Info.pMouse)->button;
- 	int key = e->u.u.detail;
-	BYTE *kptr = &butc->down[key >> 3];
-	int bit = 1 << (key & 7);
+    /*
+     * Deliver the DGA event
+     */
+    if (pScreenPriv->client)
+    {
+	/* If the DGA client has selected input, then deliver based on the usual filter */
+	TryClientEvents (pScreenPriv->client, (xEvent *) de, 1, 
+			 filters[coreEquiv], pScreenPriv->input, 0);
+    }
+    else
+    {
+	/* If the keyboard is actively grabbed, deliver a grabbed core event */
+	if (keybd->grab && !keybd->activatingKey)
+	{
+	    core.u.u.type		    = coreEquiv;
+	    core.u.u.detail		    = de->u.u.detail;
+	    core.u.keyButtonPointer.time    = de->u.event.time;
+	    core.u.keyButtonPointer.eventX  = de->u.event.dx;
+	    core.u.keyButtonPointer.eventY  = de->u.event.dy;
+	    core.u.keyButtonPointer.rootX   = de->u.event.dx;
+	    core.u.keyButtonPointer.rootY   = de->u.event.dy;
+	    core.u.keyButtonPointer.state   = de->u.event.state;
+	    DeliverGrabbedEvent (&core, keybd, FALSE, 1);
+	}
+    }
+}
 
-	if(e->u.u.type == ButtonPress) {
+static void
+DGAProcessPointerEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr mouse)
+{
+    ButtonClassPtr  butc = mouse->button;
+    int		    coreEquiv;    
+    DGAScreenPtr    pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+    xEvent	    core;
+
+    coreEquiv = de->u.u.type - *XDGAEventBase;
+    /*
+     * Fill in remaining event state
+     */
+    de->u.event.screen = pScreen->myNum;
+    de->u.event.state = butc->state | inputInfo.keyboard->key->state;
+    /*
+     * Keep the core state in sync by duplicating what
+     * CoreProcessPointerEvent does
+     */
+    if (coreEquiv != MotionNotify)
+    {
+	register int  key;
+	register BYTE *kptr;
+	int           bit;
+	
+	key = de->u.u.detail;
+	kptr = &butc->down[key >> 3];
+	bit = 1 << (key & 7);
+	switch (coreEquiv)
+	{
+	case ButtonPress: 
+	    mouse->valuator->motionHintWindow = NullWindow;
 	    butc->buttonsDown++;
 	    butc->motionMask = ButtonMotionMask;
 	    *kptr |= bit;
-	    if (!e->u.u.detail)
-		return TRUE;
-	    if (e->u.u.detail <= 5)
-		butc->state |= (Button1Mask >> 1) << e->u.u.detail;
-	} else { /* ButtonRelease */
+	    if (key <= 5)
+		butc->state |= (Button1Mask >> 1) << key;
+	    break;
+	case ButtonRelease: 
+	    mouse->valuator->motionHintWindow = NullWindow;
 	    if (!--butc->buttonsDown)
 		butc->motionMask = 0;
 	    *kptr &= ~bit;
-	    if (!e->u.u.detail)
-		return TRUE;
-	    if (e->u.u.detail <= 5)
-		butc->state &= ~((Button1Mask >> 1) << e->u.u.detail);
+	    if (key == 0)
+		return;
+	    if (key <= 5)
+		butc->state &= ~((Button1Mask >> 1) << key);
+	    break;
 	}
-   }
-  
-   if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
-	Bool GrabEvent = FALSE;
-
-	switch(e->u.u.type) {
-	case MotionNotify:
-	     if(pScreenPriv->input & PointerMotionMask) 
-		GrabEvent = TRUE;
-	     break;
-	case ButtonPress:
-	     if(pScreenPriv->input & ButtonPressMask) 
-		GrabEvent = TRUE;
-	     break;
-	case ButtonRelease:
-	     if(pScreenPriv->input & ButtonReleaseMask) 
-		GrabEvent = TRUE;
-	     break;
+    }
+    /*
+     * Deliver the DGA event
+     */
+    if (pScreenPriv->client)
+    {
+	/* If the DGA client has selected input, then deliver based on the usual filter */
+	TryClientEvents (pScreenPriv->client, (xEvent *) de, 1, 
+			 filters[coreEquiv], pScreenPriv->input, 0);
+    }
+    else
+    {
+	/* If the pointer is actively grabbed, deliver a grabbed core event */
+	if (mouse->grab && !mouse->fromPassiveGrab)
+	{
+	    core.u.u.type		    = coreEquiv;
+	    core.u.u.detail		    = de->u.u.detail;
+	    core.u.keyButtonPointer.time    = de->u.event.time;
+	    core.u.keyButtonPointer.eventX  = de->u.event.dx;
+	    core.u.keyButtonPointer.eventY  = de->u.event.dy;
+	    core.u.keyButtonPointer.rootX   = de->u.event.dx;
+	    core.u.keyButtonPointer.rootY   = de->u.event.dy;
+	    core.u.keyButtonPointer.state   = de->u.event.state;
+	    DeliverGrabbedEvent (&core, mouse, FALSE, 1);
 	}
-
-	if(GrabEvent){ /* steal this event */
-	    dgaEvent de;
-	    
-	    de.u.u.type = e->u.u.type + *XDGAEventBase;
-	    de.u.u.detail = e->u.u.detail;
-            de.u.u.sequenceNumber = pScreenPriv->client->sequence;
-	    de.u.event.dx = dx;
-	    de.u.event.dy = dy;
-	    de.u.event.time = e->u.keyButtonPointer.time;
-	    de.u.event.screen = index;
-	    de.u.event.state = e->u.keyButtonPointer.state;
-
-	    TryClientEvents(pScreenPriv->client, (xEvent*)&de, 1, 
-			NoEventMask, NoEventMask, NullGrab);
-	}
-	return TRUE;
-   }
-	
-
-   /* Not sure how best to handle this stuff. It's only for
-      DGA 1.0 compatibility.  Hopefully, we can remove this
-      some day */
-
-   if(((DeviceIntPtr)(xf86Info.pMouse))->grab) {
-	e->u.keyButtonPointer.eventX =  dx;
-	e->u.keyButtonPointer.eventY =  dy;
-	e->u.keyButtonPointer.rootX =   dx;
-	e->u.keyButtonPointer.rootY =   dy;
-	DeliverGrabbedEvent(e, (xf86Info.pMouse), FALSE, 1);
-   }
-
-   /* Direct mode but the client doesn't want the events.
-      We have to keep them from hitting the other windows. 
-    */
-
-   return TRUE;
+    }
 }
 
+Bool
+DGADeliverEvent (ScreenPtr pScreen, xEvent *e)
+{
+    dgaEvent	    *de = (dgaEvent *) e;
+    DGAScreenPtr    pScreenPriv;
+    int		    coreEquiv;
+
+    /* no DGA */
+    if (DGAScreenIndex < 0)
+	return FALSE;
+    pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+    
+    /* DGA not initialized on this screen */
+    if (!pScreenPriv)
+	return FALSE;
+    
+    coreEquiv = de->u.u.type - *XDGAEventBase;
+    /* Not a DGA event */
+    if (coreEquiv < KeyPress || coreEquiv > MotionNotify)
+	return FALSE;
+    
+    switch (coreEquiv) {
+    case KeyPress:
+    case KeyRelease:
+	DGAProcessKeyboardEvent (pScreen, de, inputInfo.keyboard);
+	break;
+    default:
+	DGAProcessPointerEvent (pScreen, de, inputInfo.pointer);
+	break;
+    }
+    return TRUE;
+}
 
 Bool 
 DGAOpenFramebuffer(

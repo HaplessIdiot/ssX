@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.17 1999/08/01 07:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.18 1999/09/04 13:04:39 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1327,6 +1327,12 @@ post_event:
     pMse->protoBufTail = pBufP;
 }
 
+static void
+MouseSigioReadInput (int fd, void *closure)
+{
+    MouseReadInput ((InputInfoPtr) closure);
+}
+
 /*
  * MouseCtrl --
  *      Alter the control parameters for the mouse. Note that all special
@@ -1419,7 +1425,8 @@ MouseProc(DeviceIntPtr device, int what)
 		    xf86FlushInput(pInfo->fd);
 		    if (pMse->protocolID == PROT_PS2)
 			xf86WriteSerial(pInfo->fd, "\364", 1);
-		    AddEnabledDevice(pInfo->fd);
+		    if (!xf86InstallSIGIOHandler (pInfo->fd, MouseSigioReadInput, pInfo))
+			AddEnabledDevice(pInfo->fd);
 		}
 	    }
 	}
@@ -1431,7 +1438,8 @@ MouseProc(DeviceIntPtr device, int what)
     case DEVICE_OFF:
     case DEVICE_CLOSE:
 	if (pInfo->fd != -1) {
-	    RemoveEnabledDevice(pInfo->fd);
+	    if (!xf86RemoveSIGIOHandler (pInfo->fd))
+		RemoveEnabledDevice(pInfo->fd);
 	    if (pMse->buffer) {
 		XisbFree(pMse->buffer);
 		pMse->buffer = NULL;
@@ -1472,11 +1480,14 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 {
     InputInfoPtr pInfo;
     MouseDevPtr pMse;
+    int	sigstate;
 
     pInfo = arg;
     pMse = pInfo->private;
 
+    sigstate = xf86BlockSIGIO ();
     pMse->PostEvent(pInfo, pMse->truebuttons, 0, 0, 0);
+    xf86UnblockSIGIO (sigstate);
     return 0;
 }
 

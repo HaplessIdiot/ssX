@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.137 1999/10/13 04:21:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.138 1999/10/13 16:49:11 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1389,6 +1389,11 @@ ddxProcessArgument(int argc, char **argv, int i)
       return 0;
     xf86KeyboardName = argv[i];
     return 2;
+  }
+  if (!strcmp(argv[i], "-nosilk"))
+  {
+    xf86silkenMouseDisableFlag = TRUE;
+    return 1;
   }
   if (!strcmp(argv[i], "-scanpci"))
   {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.17 1999/08/01 07:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.18 1999/08/22 05:57:24 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -117,7 +117,10 @@ int DGAGetModeInfo(int index, XDGAModePtr mode, int num);
 Bool DGAVTSwitch(void);
 Bool DGAStealMouseEvent(int index, xEvent *e, int dx, int dy);
 Bool DGAStealKeyEvent(int index, xEvent *e);
+Bool DGAIsDgaEvent (xEvent *e);
 
+Bool DGADeliverEvent (ScreenPtr pScreen, xEvent *e);
+	    
 Bool DGAOpenFramebuffer(int index, char **name, unsigned char **mem, 
 			int *size, int *offset, int *flags);
 void DGACloseFramebuffer(int index);

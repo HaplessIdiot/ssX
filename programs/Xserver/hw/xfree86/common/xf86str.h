@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.50 1999/09/27 06:29:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.51 1999/10/13 16:49:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -720,6 +720,8 @@ typedef struct _ScrnInfoRec {
     Bool		vtSema;
     PixmapPtr		ppix;			/* Previous screen root pixmap
 						 * while switched out */
+    /* hw cursor moves at SIGIO time */
+    Bool		silkenMouse;
 
     /*
      * These can be used when the minor ABI version is incremented.

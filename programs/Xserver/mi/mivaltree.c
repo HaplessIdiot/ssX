@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.4 1999/04/11 13:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.5 1999/09/27 06:30:07 dawes Exp $ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -330,6 +330,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    REGION_TRANSLATE( pScreen, &pParent->borderClip, dx, dy);
 	    REGION_TRANSLATE( pScreen, &pParent->clipList, dx, dy);
     	} 
+	break;
+    case VTBroken:
+	REGION_EMPTY (pScreen, &pParent->borderClip);
+	REGION_EMPTY (pScreen, &pParent->clipList);
 	break;
     }
 
@@ -592,39 +596,65 @@ miValidateTree (pParent, pChild, kind)
      */
     REGION_INIT(pScreen, &totalClip, NullBox, 0);
     viewvals = 0;
-    if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
-	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
-	 (pChild->drawable.x < pParent->lastChild->drawable.x)))
+    if (REGION_BROKEN (pScreen, &pParent->clipList) &&
+	!REGION_BROKEN (pScreen, &pParent->borderClip))
     {
+	kind = VTBroken;
+	/*
+	 * When rebuilding clip lists after out of memory,
+	 * assume everything is busted.
+	 */
 	forward = TRUE;
+	REGION_COPY (pScreen, &totalClip, &pParent->borderClip);
+	REGION_INTERSECT (pScreen, &totalClip, &totalClip, &pParent->winSize);
+	
+	for (pWin = pParent->firstChild; pWin != pChild; pWin = pWin->nextSib)
+	{
+	    if (pWin->viewable)
+		REGION_SUBTRACT (pScreen, &totalClip, &totalClip, &pWin->borderSize);
+	}
 	for (pWin = pChild; pWin; pWin = pWin->nextSib)
-	{
-	    if (pWin->valdata)
-	    {
-		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
-		if (pWin->viewable)
-		    viewvals++;
-	    }
-	}
+	    if (pWin->valdata && pWin->viewable)
+		viewvals++;
+	
+	REGION_EMPTY (pScreen, &pParent->clipList);
     }
-    else
+    else 
     {
-	forward = FALSE;
-	pWin = pParent->lastChild;
-	while (1)
+	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
+	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
+	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
 	{
-	    if (pWin->valdata)
+	    forward = TRUE;
+	    for (pWin = pChild; pWin; pWin = pWin->nextSib)
 	    {
-		REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
-		if (pWin->viewable)
-		    viewvals++;
+		if (pWin->valdata)
+		{
+		    REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
+		    if (pWin->viewable)
+			viewvals++;
+		}
 	    }
-	    if (pWin == pChild)
-		break;
-	    pWin = pWin->prevSib;
 	}
+	else
+	{
+	    forward = FALSE;
+	    pWin = pParent->lastChild;
+	    while (1)
+	    {
+		if (pWin->valdata)
+		{
+		    REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
+		    if (pWin->viewable)
+			viewvals++;
+		}
+		if (pWin == pChild)
+		    break;
+		pWin = pWin->prevSib;
+	    }
+	}
+	REGION_VALIDATE( pScreen, &totalClip, &overlap);
     }
-    REGION_VALIDATE( pScreen, &totalClip, &overlap);
 
     /*
      * Now go through the children of the root and figure their new

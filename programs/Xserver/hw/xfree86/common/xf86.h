@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.117 1999/09/25 14:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.118 1999/10/13 04:21:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -198,6 +198,7 @@ void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);
 void xf86SetBackingStore(ScreenPtr pScreen);
+void xf86SetSilkenMouse(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);
 pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
 			  char **adaptor_name, pointer *adaptor_options);

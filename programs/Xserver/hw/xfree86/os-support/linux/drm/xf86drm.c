@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.43 1999/08/04 18:14:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.3 1999/06/27 14:08:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.4 1999/09/25 14:37:49 dawes Exp $
  * 
  */
 
@@ -57,7 +57,7 @@
 # ifdef DRM_USE_MALLOC
 #  define _DRM_MALLOC malloc
 #  define _DRM_FREE   free
-extern int xf86InstallSIGIOHandler(int fd, void (*f)(int));
+extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
 # else
 #  include <Xlibint.h>
@@ -833,7 +833,7 @@ void *drmGetContextTag(int fd, drmContext context)
 }
 
 #if defined(XFree86Server) || defined(DRM_USE_MALLOC)
-static void drmSIGIOHandler(int interrupt)
+static void drmSIGIOHandler(int interrupt, void *closure)
 {
     unsigned long key;
     void          *value;
@@ -885,7 +885,7 @@ int drmInstallSIGIOHandler(int fd, void (*f)(int, void *, void *))
     entry     = drmGetEntry(fd);
     entry->f  = f;
 
-    return xf86InstallSIGIOHandler(fd, drmSIGIOHandler);
+    return xf86InstallSIGIOHandler(fd, drmSIGIOHandler, 0);
 }
 
 int drmRemoveSIGIOHandler(int fd)

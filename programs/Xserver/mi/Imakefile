@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.25 1999/08/14 10:50:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.26 1999/09/27 06:30:05 dawes Exp $
 #include <Server.tmpl>
 
 #if ! HasCbrt
@@ -20,7 +20,7 @@ SRCS =  $(CBRT_SRC) mivaltree.c mipolyseg.c mipolyrect.c \
 	miarc.c mizerarc.c mifillarc.c \
 	miwindow.c micursor.c miregion.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c \
-	miexpose.c miglblt.c mizerline.c mifpolycon.c \
+	miexpose.c miglblt.c mizerline.c mizerclip.c mifpolycon.c \
 	midash.c mibstore.c mibank.c $(MIINITEXTSRC) mieq.c \
 	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c \
 	micmap.c
@@ -31,7 +31,7 @@ OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
 	miarc.o mizerarc.o mifillarc.o \
 	miwindow.o micursor.o miregion.o \
 	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o \
-	miexpose.o miglblt.o mizerline.o mifpolycon.o \
+	miexpose.o miglblt.o mizerline.o mizerclip.o mifpolycon.o \
 	midash.o mibstore.o mibank.o $(MIINITEXTOBJ) mieq.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o \
 	micmap.o

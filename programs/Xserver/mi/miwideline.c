@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.5 1998/10/04 09:39:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.6 1999/04/11 13:11:21 dawes Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -2030,12 +2030,14 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     Bool	    endIsFg = FALSE, startIsFg = FALSE;
     Bool            firstIsFg = FALSE, prevIsFg = FALSE;
 
+#ifndef XFree86Server
     /* XXX backward compatibility */
     if (pGC->lineWidth == 0)
     {
 	miZeroDashLine (pDrawable, pGC, mode, npt, pPts);
 	return;
     }
+#endif
     if (pGC->lineStyle == LineDoubleDash && 
 	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
     {

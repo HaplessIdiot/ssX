@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.57 1999/10/13 04:21:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.58 1999/10/13 16:49:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -36,6 +36,7 @@ extern Bool xf86coFlag;
 extern Bool xf86sFlag;
 extern Bool xf86bsEnableFlag;
 extern Bool xf86bsDisableFlag;
+extern Bool xf86silkenMouseDisableFlag;
 extern char *xf86LayoutName;
 extern char *xf86ScreenName;
 extern char *xf86PointerName;

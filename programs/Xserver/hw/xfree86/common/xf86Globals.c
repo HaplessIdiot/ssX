@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.23 1999/10/13 04:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.24 1999/10/13 16:49:10 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -175,6 +175,7 @@ Bool xf86coFlag = FALSE;
 Bool xf86sFlag = FALSE;
 Bool xf86bsEnableFlag = FALSE;
 Bool xf86bsDisableFlag = FALSE;
+Bool xf86silkenMouseDisableFlag = FALSE;
 char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
 char *xf86PointerName = NULL;

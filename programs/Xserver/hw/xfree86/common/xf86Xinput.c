@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.51 1999/06/12 15:37:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.52 1999/06/13 05:18:47 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -668,6 +668,7 @@ xf86eqEnqueue (xEvent *e)
 #ifdef XINPUT
     int		count;
     
+    xf86AssertBlockedSIGIO ("xf86eqEnqueue");
     switch (e->u.u.type) {
     case KeyPress:
     case KeyRelease:
@@ -685,6 +686,13 @@ xf86eqEnqueue (xEvent *e)
         count = 1;
         break;
     default:
+#ifdef XFreeXDGA
+	if (DGAIsDgaEvent (e))
+	{
+	    count = 1;
+	    break;
+	}
+#endif
 	if (!((deviceKeyButtonPointer *) e)->deviceid & MORE_EVENTS) {
             count = 1;
 	}
@@ -740,7 +748,12 @@ xf86eqProcessInputEvents ()
 {
     EventRec	*e;
     int		x, y;
-    xEvent	xe;
+    struct {
+	xEvent	event;
+#ifdef XINPUT
+	deviceValuator	val;
+#endif
+    }		xe;
 #ifdef XINPUT
     DeviceIntPtr                dev;
     int                         id, count;
@@ -770,27 +783,32 @@ xf86eqProcessInputEvents ()
 	    NewCurrentScreen (xf86EventQueue.pDequeueScreen, x, y);
 	}
 	else {
-	    xe = e->event;
+	    xe.event = e->event;
+	    xe.val = e->val;
 	    if (xf86EventQueue.head == QUEUE_SIZE - 1)
 	    	xf86EventQueue.head = 0;
 	    else
 	    	++xf86EventQueue.head;
-	    switch (xe.u.u.type) {
+	    switch (xe.event.u.u.type) {
 	    case KeyPress:
 	    case KeyRelease:
 	    	(*xf86EventQueue.pKbd->processInputProc)
-		    (&xe, (DeviceIntPtr)xf86EventQueue.pKbd, 1);
+		    (&xe.event, (DeviceIntPtr)xf86EventQueue.pKbd, 1);
 	    	break;
 #ifdef XINPUT
             case ButtonPress:
             case ButtonRelease:
             case MotionNotify:
 	    	(*(inputInfo.pointer->public.processInputProc))
-		    (&xe, (DeviceIntPtr)inputInfo.pointer, 1);
+		    (&xe.event, (DeviceIntPtr)inputInfo.pointer, 1);
 		break;
 
 	    default:
-		dev_xe = (deviceKeyButtonPointer *) e;
+#ifdef XFreeXDGA
+		if (DGADeliverEvent (xf86EventQueue.pDequeueScreen, &xe.event))
+		    break;
+#endif
+		dev_xe = (deviceKeyButtonPointer *) &xe.event;
 		id = dev_xe->deviceid & DEVICE_BITS;
 		if (!(dev_xe->deviceid & MORE_EVENTS)) {
 		    count = 1;
@@ -809,11 +827,11 @@ xf86eqProcessInputEvents ()
 		    FatalError("xf86eqProcessInputEvents : device has no input proc.\n");
 		    break;
 		}
-		(*dev->public.processInputProc)(&e->event, dev, count);
+		(*dev->public.processInputProc)(&xe.event, dev, count);
 #else
 	    default:
 	    	(*xf86EventQueue.pPtr->processInputProc)
-		    (&xe, (DeviceIntPtr)xf86EventQueue.pPtr, 1);
+		    (&xe.event, (DeviceIntPtr)xf86EventQueue.pPtr, 1);
 #endif
 	    	break;
 	    }
@@ -1304,16 +1322,10 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	}
     }
 
+    /* removed rootX/rootY as DIX sets these fields */
     if (is_core || is_shared) {
-	/* core pointer */
-	int       cx, cy;
-      
-	GetSpritePosition(&cx, &cy);
-      
 	xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
 	xE->u.u.detail =  device->button->map[button];
-	xE->u.keyButtonPointer.rootY = cx;
-	xE->u.keyButtonPointer.rootX = cy;
 	xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
 	
 #ifdef XFreeXDGA

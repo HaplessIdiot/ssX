@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.3 1999/01/14 13:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.4 1999/03/14 11:18:08 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -307,6 +307,7 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     xf86CursorScreenPtr ScreenPriv = 
 	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
     xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+    miPointerScreenPtr PointPriv;
 
     ScreenPriv->CurrentCursor = pCurs;
     ScreenPriv->x = x;
@@ -325,6 +326,9 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     ScreenPriv->HotX = pCurs->bits->xhot;
     ScreenPriv->HotY = pCurs->bits->yhot;
 	
+    PointPriv = 
+	(miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
+    
     if( infoPtr->pScrn->vtSema &&
 	(pCurs->bits->height <= infoPtr->MaxHeight) &&
 	(pCurs->bits->width <= infoPtr->MaxWidth) &&
@@ -336,9 +340,12 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 	xf86SetCursor(pScreen, pCurs, x, y);
 	ScreenPriv->SWCursor = FALSE;
 	ScreenPriv->isUp = TRUE;
+	PointPriv->waitForUpdate = !infoPtr->pScrn->silkenMouse;
 	return; 
     }
 
+    PointPriv->waitForUpdate = TRUE;
+    
     if(ScreenPriv->isUp) {
 	/* remove the HW cursor */
 	xf86SetCursor(pScreen, 0, x, y);

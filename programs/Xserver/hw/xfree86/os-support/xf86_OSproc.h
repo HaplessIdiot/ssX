@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.30 1999/09/25 14:37:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.31 1999/10/13 16:49:38 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -183,8 +183,10 @@ extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
    module.  These routines are small, and the code if very POSIX-signal (or
    OS-signal) specific, so it seemed better to provide more complex
    wrappers than to wrap each individual function called. */
-extern int xf86InstallSIGIOHandler(int fd, void (*f)(int));
+extern int xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *);
 extern int xf86RemoveSIGIOHandler(int fd);
+extern int xf86BlockSIGIO (void);
+extern void xf86UnblockSIGIO (int);
 
 #ifdef XF86_OS_PRIVS
 extern void xf86OpenConsole(void);
