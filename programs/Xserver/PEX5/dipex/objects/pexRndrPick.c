@@ -1,4 +1,5 @@
 /* $XConsortium: pexRndrPick.c,v 1.9 94/04/17 20:36:13 hersh Exp $ */
+/* $XFree86 $ */
 
 /************************************************************
 
@@ -51,7 +52,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "pexLookup.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #ifdef min

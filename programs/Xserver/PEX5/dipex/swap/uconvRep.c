@@ -1,4 +1,5 @@
 /* $XConsortium: uconvRep.c,v 5.15 94/04/17 20:36:34 mor Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -66,7 +67,7 @@ SOFTWARE.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #undef LOCAL_FLAG

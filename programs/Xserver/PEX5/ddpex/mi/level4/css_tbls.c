@@ -1,4 +1,5 @@
 /* $XConsortium: css_tbls.c,v 5.4 94/04/17 20:37:31 hersh Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,7 +55,7 @@ SOFTWARE.
 #include "miStruct.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /* declarations for procs which handle elements stored in PEX format

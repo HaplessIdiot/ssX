@@ -1,4 +1,5 @@
 /* $XConsortium: Convert.c,v 5.5 94/04/17 20:36:16 hersh Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -54,7 +55,7 @@ SOFTWARE.
 #include "dipex.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 

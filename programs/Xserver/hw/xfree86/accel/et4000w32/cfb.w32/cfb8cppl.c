@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8cppl.c,v 3.2 1996/02/04 08:59:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8cppl.c,v 3.3 1996/12/23 06:34:40 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -113,7 +113,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 
     mfbGetPixelWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
-    bitPos = ffs (bitPlane) - 1;
+    bitPos = xf86ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

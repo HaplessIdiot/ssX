@@ -1,5 +1,5 @@
 /* $XConsortium: pexRndr.c,v 5.29 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.1 1996/01/05 13:16:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.2 1997/02/18 17:50:24 hohndel Exp $ */
 
 /***********************************************************
 
@@ -97,7 +97,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 

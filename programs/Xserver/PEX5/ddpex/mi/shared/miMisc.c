@@ -1,4 +1,5 @@
 /* $XConsortium: miMisc.c,v 5.9 94/04/17 20:37:44 mor Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -55,7 +56,7 @@ SOFTWARE.
 #include "PEXprotost.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /* pex device dependent initialization */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.50 1997/01/20 12:38:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.52 1997/02/17 14:23:19 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -392,7 +392,7 @@ vgaDPMSSet(PowerManagementMode)
   outb(0x3C5, seq1);
   outb(vgaIOBase+4, 0x17); /* Select CRTC17 */
   crtc17 |= inb(vgaIOBase+5) & ~0x80;
-  usleep(10000);
+  xf86usleep(10000);
   outb(vgaIOBase+5, crtc17);
   outw(0x3C4, 0x0300);	/* End Reset */
 #endif
@@ -784,7 +784,7 @@ vgaHWSave(save, size)
       /*			 
        * save the default lookup table
        */
-      xf86memmove(defaultDAC, save->DAC, 768);
+      xf86memmove(save->DAC, defaultDAC, 768);
       ErrorF("%s: Cannot read colourmap from VGA.", vga256InfoRec.name);
       ErrorF("  Will restore with default\n");
     }

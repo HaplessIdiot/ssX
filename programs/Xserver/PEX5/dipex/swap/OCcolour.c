@@ -1,4 +1,5 @@
 /* $XConsortium: OCcolour.c,v 5.2 94/04/17 20:36:18 rws Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -65,7 +66,7 @@ SOFTWARE.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*

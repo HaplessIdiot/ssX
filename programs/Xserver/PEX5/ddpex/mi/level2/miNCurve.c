@@ -1,5 +1,5 @@
 /* $XConsortium: miNCurve.c,v 5.3 94/04/17 20:37:10 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNCurve.c,v 3.1 1996/03/29 22:09:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNCurve.c,v 3.2 1997/02/18 17:48:32 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -67,7 +67,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*++

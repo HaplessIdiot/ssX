@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.4 1997/02/17 12:11:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.5 1997/02/17 15:59:04 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1511,4 +1511,5 @@ extern int cfbScreenPrivateIndex;
 #define memmove(a,b,c)	xf86memmove(a,b,c)
 #define memcpy(a,b,c)	xf86memcpy(a,b,c)
 #define memset(a,b,c)	xf86memset(a,b,c)
+#define ffs(a)		xf86ffs(a)
 #endif

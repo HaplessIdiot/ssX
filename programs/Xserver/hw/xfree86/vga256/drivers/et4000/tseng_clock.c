@@ -154,7 +154,7 @@ Tseng_ET6000ClockSelect(freq)
       {
         ET6000SetClock(freq, 2);
         result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
+        xf86usleep(150000);
       }
    }
    return(result);
@@ -186,7 +186,7 @@ Tseng_ICS5341ClockSelect(freq)
 	 */
         ET4000gendacSetClock(freq, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
+        xf86usleep(150000);
       }
    }
    return(result);
@@ -217,7 +217,7 @@ Tseng_STG1703ClockSelect(freq)
 	 */
         ET4000stg1703SetClock(freq, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
+        xf86usleep(150000);
       }
    }
    return(result);
@@ -244,7 +244,7 @@ Tseng_ICD2061AClockSelect(freq)
       {
         Et4000AltICD2061SetClock((long)freq*1000, 2); /* can't fail */
         result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
+        xf86usleep(150000);
       }
    }
    return(result);

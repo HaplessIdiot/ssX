@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.4 1996/12/23 06:26:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.5 1997/02/18 17:51:06 hohndel Exp $ */
 
 /*
 
@@ -67,7 +67,7 @@ extern char *getenv();
 #include "keysymdef.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #ifndef PEX_DEFAULT_FONTPATH

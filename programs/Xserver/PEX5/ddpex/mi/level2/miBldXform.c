@@ -1,5 +1,5 @@
 /* $XConsortium: miBldXform.c,v 5.7 94/04/17 20:37:01 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miBldXform.c,v 3.0 1995/07/07 15:34:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miBldXform.c,v 3.1 1997/02/18 17:48:19 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -65,7 +65,7 @@ SOFTWARE.
 #include "miRender.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /* External variables and functions */

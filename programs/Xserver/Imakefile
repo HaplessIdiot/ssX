@@ -124,11 +124,17 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
 
+#if DoLoadableServer
+     EXTENSIONS = $(OTHEREXTS) 
+      OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
+                  $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+#else
+     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+#endif
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
-     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
 #if BuildLBX || GzipFontCompression

@@ -1,4 +1,5 @@
 /* $XConsortium: miTraverse.c,v 5.6 94/04/17 20:37:34 hersh Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,7 +59,7 @@ SOFTWARE.
 #include "miStrMacro.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 extern void     InquirePickStatus();

@@ -1,4 +1,5 @@
 /* $XConsortium: convEv.c,v 1.2 94/04/17 20:36:28 hersh Exp $ */
+/* $XFree86 $ */
 
 /************************************************************
 
@@ -42,7 +43,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #undef LOCAL_FLAG

@@ -1,4 +1,5 @@
 /* $XConsortium: OCattr.c,v 5.7 94/04/17 20:36:17 hersh Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -62,7 +63,7 @@ SOFTWARE.
 #include "convertStr.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #undef LOCAL_FLAG

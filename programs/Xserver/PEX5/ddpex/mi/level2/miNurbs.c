@@ -1,5 +1,5 @@
 /* $XConsortium: miNurbs.c,v 5.5 94/04/17 20:37:13 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNurbs.c,v 3.0 1995/07/07 15:34:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNurbs.c,v 3.1 1997/02/18 17:48:36 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -63,7 +63,7 @@ SOFTWARE.
 #include "miNurbs.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*

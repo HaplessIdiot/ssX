@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.4 1997/02/19 06:04:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.5 1997/02/23 09:25:21 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -398,6 +398,8 @@ extern char * xf86strcat(char *, const char *);
 
 extern char * xf86strcpy(char *, const char *);
 
+extern char * xf86strncpy(char *, const char *, INT32);
+
 extern int xf86strcmp(const char *, const char *);
 
 extern int xf86strncmp(const char *, const char *, INT32);
@@ -471,6 +473,8 @@ int xf86rename(const char *old, const char *new);
 void xf86rewind(XF86FILE f);
 
 int xf86ffs(int mask);
+
+char * xf86getenv(const char *);
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.10 1996/10/24 14:24:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.11 1996/12/23 06:38:39 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -699,7 +699,7 @@ mach32ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 	    count = pw - mod;
 	    if (i + count > w)
 		count = w - i;
-	    bcopy(pline + mod * BytesPerPixel, curvm, count * BytesPerPixel);
+	    xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 	    curvm += count * BytesPerPixel;
 	    mod += count;
 	    while(mod >= pw)
@@ -775,7 +775,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > w)
 		    count = w - i;
-		bcopy(pline + mod * BytesPerPixel, curvm, count * BytesPerPixel);
+		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)
@@ -786,7 +786,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > mach32VideoPageBoundary[j]-x)
 		    count = mach32VideoPageBoundary[j] - x - i;
-		bcopy(pline + mod * BytesPerPixel, curvm, count * BytesPerPixel);
+		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)
@@ -799,7 +799,7 @@ mach32ImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 		count = pw - mod;
 		if (i + count > w)
 		    count = w - i;
-		bcopy(pline + mod * BytesPerPixel, curvm, count * BytesPerPixel);
+		xf86memmove(curvm,pline + mod*BytesPerPixel,count * BytesPerPixel);
 		curvm += count * BytesPerPixel;
 		mod += count;
 		while(mod >= pw)

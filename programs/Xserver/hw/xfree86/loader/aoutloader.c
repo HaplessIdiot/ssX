@@ -42,6 +42,8 @@
 #include "sym.h"
 #include "loader.h"
 
+#include "xf86.h"
+#include "xf86Priv.h"
 
 /* #define AOUTDEBUG ErrorF */
 
@@ -69,7 +71,6 @@ typedef struct {
     unsigned long strsize;     /* size of string table */
     unsigned char *common;	/* Start address of the common data */
     unsigned long comsize;	/* size of common data */
-    int aout_flavor;               /* "subtype" of aout object */
 } AOUTModuleRec, *AOUTModulePtr;
 
 /*
@@ -376,26 +377,22 @@ AOUT_DoRelocations(AOUTModulePtr aoutfile)
  * Perform the actual relocation 
  */
 static void
-AOUT_Relocate(unsigned long *destl, unsigned long val, int type,
-	      int aout_flavor, int ext)
+AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
 {
 #ifdef AOUTDEBUG
-    AOUTDEBUG("AOUT_Relocate %p : %08x -> %08x %08x %s\n",
-	      destl, *destl, val, *destl + val, type == 1 ? "rel" : "abs");
+    AOUTDEBUG("AOUT_Relocate %p : %08x %s",
+	      destl, *destl, type == 1 ? "rel" : "abs");  
+
 #endif
-    if (type == 1) {
+    if (pcrel) {
 	/* relative to PC */
-	if (aout_flavor == LD_AOUTOBJECT)
-		*destl -= val;
-        else if (aout_flavor == LD_OS2AOUTOBJECT) 
-               *destl = val - *destl - (unsigned long) destl - 4;
+	*destl = val -  ((unsigned long)destl + sizeof(long));
     } else {
-	/* absolute */
-	if (ext)
-		*destl += val;
-	else
-		*destl = val;
+	*destl += val;
     }
+#ifdef AOUTDEBUG
+    AOUTDEBUG(" -> %08x\n", *destl);
+#endif
 }
 
 
@@ -416,7 +413,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 #ifdef AOUTDEBUG 
     if (rel->r_extern) {
 	AOUTDEBUG("AOUT_RelocateEntry: extern %s\n", 
-		  AOUTGetSymbolName(aoutfile, aoutfile->symtab+symnum));
+		  AOUTGetSymbolName(aoutfile, symtab+symnum));
     } else {
 	AOUTDEBUG("AOUT_RelocateEntry: intern\n");
     }
@@ -464,12 +461,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	symval = AOUTGetSymbolValue(aoutfile, symnum);
 	if (symval != 0) {
 	    /* we've got the value */
-            if (aoutfile->aout_flavor == LD_AOUTOBJECT)
-	        AOUT_Relocate(destl, symval, rel->r_pcrel, LD_AOUTOBJECT,
-			      rel->r_extern);
-            else if (aoutfile->aout_flavor == LD_OS2AOUTOBJECT)
-                AOUT_Relocate(destl, symval + *destl, rel->r_pcrel,
-			      LD_OS2AOUTOBJECT, rel->r_extern);
+	    AOUT_Relocate(destl, symval, rel->r_pcrel);
 	} else {
 	    /* The symbol should be undefined */
 	    switch (symtab[symnum].n_type & AOUT_TYPE) {
@@ -495,24 +487,35 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 #ifdef AOUTDEBUG
 	    AOUTDEBUG("  AOUT_TEXT\n");
 #endif
-	    AOUT_Relocate(destl, (unsigned long)aoutfile->text+*destl, 
-			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
+	    /* Only absolute intern text relocations need to be handled */
+	    if (rel->r_pcrel == 0) 
+		AOUT_Relocate(destl, (unsigned long)aoutfile->text, 
+			      rel->r_pcrel);
 	    return;
 	  case AOUT_DATA:
 #ifdef AOUTDEBUG
 	    AOUTDEBUG("  AOUT_DATA\n");
 #endif
-	    AOUT_Relocate(destl, (unsigned long)aoutfile->data
-			   + *destl - header->a_text, 
-			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
+	    if (rel->r_pcrel == 0) 
+		AOUT_Relocate(destl, (unsigned long)aoutfile->data
+			      - header->a_text, rel->r_pcrel);
+	    else
+		ErrorF("AOUT_RelocateEntry(): "
+		       "don't know how to handle data pc-relative reloc\n");
+	    
 	    return;
 	  case AOUT_BSS:
 #ifdef AOUTDEBUG
 	    AOUTDEBUG("  AOUT_BSS\n");
 #endif
-	    AOUT_Relocate(destl, (unsigned long)aoutfile->bss
-			  + *destl - header->a_text - header->a_data, 
-			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
+	    if (rel->r_pcrel == 0)
+		AOUT_Relocate(destl, (unsigned long)aoutfile->bss
+			      - header->a_text - header->a_data, 
+			      rel->r_pcrel);
+	    else
+		ErrorF("AOUT_RelocateEntry(): "
+		       "don't know how to handle bss pc-relative reloc\n");
+	    
 	    return;
 	  default:
 	    ErrorF("AOUT_RelocateEntry():"
@@ -539,7 +542,7 @@ AOUTLoadModule(int modtype,
     AOUTDEBUG("AOUTLoadModule(%d, %s, %d, %d)\n",
 	      modtype, modname, handle, aoutfd);
 #endif
-    if ((modtype != LD_AOUTOBJECT) && (modtype != LD_OS2AOUTOBJECT)) {
+    if ((modtype != LD_AOUTOBJECT)) {
 	ErrorF( "AOUTLoadModule(): modtype != a.out\n" );
 	return NULL;
     }
@@ -550,7 +553,6 @@ AOUTLoadModule(int modtype,
 
     aoutfile->handle=handle;
     aoutfile->fd=aoutfd;
-    aoutfile->aout_flavor=modtype;
 
     /*
      *  Get the a.out header
@@ -643,6 +645,7 @@ AOUTCheckForUnresolved(void)
 {
     int symnum;
     AOUT_RELOC *crel = listResolve;
+    extern int LoaderDefaultFunc();
 
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTCheckForUnResolved()\n");
@@ -651,10 +654,20 @@ AOUTCheckForUnresolved(void)
 	return 0;
     }
     while (crel) {
+	if (crel->type == AOUT_TEXT) {
+	    /* Attempt to make unresolved  text references 
+	       point to a default function */
+	    AOUT_Relocate((unsigned long *)(crel->file->text 
+					    + crel->rel->r_address) ,
+			  (unsigned long)LoaderDefaultFunc, 
+			  crel->rel->r_pcrel);
+	}
 	symnum = crel->rel->r_symbolnum;
-	ErrorF("Unresolved Symbol %s from %s\n",
-	       AOUTGetSymbolName(crel->file, crel->file->symtab + symnum),
-	       _LoaderHandleToName(crel->file->handle));
+	if (xf86ShowUnresolved) {
+	    ErrorF("Unresolved Symbol %s from %s\n",
+		   AOUTGetSymbolName(crel->file, crel->file->symtab + symnum),
+		   _LoaderHandleToName(crel->file->handle));
+	}
 	crel = crel->next;
     }
     return 1;

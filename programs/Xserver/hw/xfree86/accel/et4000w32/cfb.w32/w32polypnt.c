@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32polypnt.c,v 3.3 1996/02/04 08:59:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32polypnt.c,v 3.4 1996/12/23 06:35:03 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -116,7 +116,7 @@ W32PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     {
 	if (!(npwidth & (npwidth - 1)))
 	{
-	    npwidth = ffs(npwidth) - 1;
+	    npwidth = xf86ffs(npwidth) - 1;
 	    PointLoop(W32_PIXEL(addrp + (intToY(pt) << npwidth) + intToX(pt), xor))
 	}
 	else

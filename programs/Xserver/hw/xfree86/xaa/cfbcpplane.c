@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/cfbcpplane.c,v 3.0 1996/11/18 13:22:05 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -472,7 +472,7 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
     widthSrc <<= 1;
 #endif
 
-    bitPos = ffs (bitPlane) - 1;
+    bitPos = xf86ffs (bitPlane) - 1;
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);

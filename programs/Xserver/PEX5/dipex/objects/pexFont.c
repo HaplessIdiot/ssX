@@ -1,5 +1,5 @@
 /* $XConsortium: pexFont.c /main/8 1996/12/02 10:19:08 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexFont.c,v 3.1 1996/12/23 06:26:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexFont.c,v 3.2 1997/02/18 17:50:17 hohndel Exp $ */
 
 /***********************************************************
 
@@ -89,7 +89,7 @@ SOFTWARE.
 #endif /* PATH_MAX */
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #ifdef min

@@ -153,7 +153,7 @@ static Bool TsengRealizeCursor(pScr, pCurs)
       return FALSE;
 
    /* set to transparent colour*/
-   memset(ram, 0xaa, tsengCursorHeight * tsengCursorWidth * 2 / 8);
+   xf86memset(ram, 0xaa, tsengCursorHeight * tsengCursorWidth * 2 / 8);
 
         /*
           There are two bitmaps for the X cursor:  the Source and

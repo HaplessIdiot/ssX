@@ -38,6 +38,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #define NO_OSLIB_PROTOTYPES
 #include "xf86Procs.h"
 #if NeedVarargsPrototypes
@@ -108,6 +109,12 @@ char *
 xf86strcpy(char * dest, const char * src)
 {
 	return(strcpy(dest,src));
+}
+
+char *
+xf86strncpy(char * dest, const char * src, INT32 n)
+{
+      return(strncpy(dest,src,n));
 }
 
 int
@@ -263,9 +270,14 @@ XF86FILE xf86fopen(const char* fn, const char* mode)
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
+	fp->magic = XF86FILE_magic;
 	fp->filehnd = f;
 	fp->fileno = fileno(f);
 	fp->fname = xf86strdup(fn);
+#ifdef DEBUG
+	ErrorF("xf86fopen(%s,%s) yields FILE %p XF86FILE %p\n",
+		fn,mode,f,fp);
+#endif
 	return (XF86FILE)fp;
 }
 
@@ -318,12 +330,18 @@ f, s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 	va_list args;
 	va_start(args, format);
 
+#ifdef DEBUG
+	ErrorF("xf86fprintf for XF86FILE %p\n", fp);
+#endif
 	_xf86checkhndl(fp,"xf86fprintf");
 
 	ret = vfprintf(fp->filehnd,format,args);
 	va_end(args);
 	return ret;
 #else
+#ifdef DEBUG
+	ErrorF("xf86fprintf for XF86FILE %p\n", fp);
+#endif
 	_xf86checkhndl(fp,"xf86fprintf");
 	return fprintf(fp->filehnd, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
 #endif
@@ -409,6 +427,9 @@ size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
+#ifdef DEBUG
+	ErrorF("xf86fread for XF86FILE %p\n", fp);
+#endif
 	_xf86checkhndl(fp,"xf86fread");
 	return fread(buf,sz,cnt,fp->filehnd);
 }
@@ -509,6 +530,13 @@ int xf86ffs(int mask)
 		mask >>= 1;
 	return n;
 }
+
+char *
+xf86getenv(const char * a)
+{
+	return(getenv(a));
+}
+
 Bool
 xf86setexternclock(pathname, clock_arg, clock_index)
     char *pathname;

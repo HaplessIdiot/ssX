@@ -210,12 +210,6 @@ terms and conditions:
  * The following macros should wrap all calls in XIE
  */
 #ifdef XFree86LOADER
-#define memmove(a,b,c)  xf86memmove(a,b,c)
-#define memcpy(a,b,c)   xf86memcpy(a,b,c)
-#define memset(a,b,c)   xf86memset(a,b,c)
-#define exp(a)		xf86exp(a)
-#define log(a)		xf86log(a)
-#define sqrt(a)		xf86sqrt(a)
-#define pow(a,b)	xf86pow(a,b)
+#include <xf86_libc.h>
 #endif
 #endif /* end _XIEH_MACRO */

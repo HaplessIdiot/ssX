@@ -1,4 +1,5 @@
 /* $XConsortium: pexInfo.c,v 5.6 94/09/09 20:32:50 hersh Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -69,7 +70,7 @@ SOFTWARE.
 #include "pexExtract.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 #ifdef min
 #undef min

@@ -417,7 +417,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
    info.asic_identifier        = bios_data[ 0x43 ];
    info.bios_major             = bios_data[ 0x4c ];
    info.bios_minor             = bios_data[ 0x4d ];
-   strncpy( info.bios_date, bios_data + 0x50, 20 );
+   xf86strncpy( info.bios_date, bios_data + 0x50, 20 );
    
    info.VGA_Wonder_Present     = bios_data[ 0x44 ] & 0x40;
 

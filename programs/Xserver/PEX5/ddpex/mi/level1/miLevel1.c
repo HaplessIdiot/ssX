@@ -1,4 +1,5 @@
 /* $XConsortium: miLevel1.c,v 5.2 94/04/17 20:36:52 rws Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium
@@ -53,7 +54,7 @@ SOFTWARE.
 #include "ddpex.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 ddpex1rtn
