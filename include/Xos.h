@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.0 1994/05/08 05:14:26 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.1 1994/05/29 02:02:45 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -260,6 +260,11 @@ typedef unsigned char u_char;
 
 #ifdef ISC
 #include <sys/bsdtypes.h>
+#endif
+
+/* Get BSD definition */
+#ifndef X_NO_SYS_PARAM
+#include <sys/param.h>
 #endif
 
 #endif /* _XOS_H_ */
