@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.11 2002/11/26 23:41:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.12 2003/03/13 22:29:40 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -616,6 +616,29 @@ static void NVQueryBestSize
 /*
  * CopyData
  */
+
+static void nvMoveDWORDS(
+   CARD32* dest,
+   CARD32* src,
+   int dwords )
+{
+     while(dwords & ~0x03) {
+        *dest = *src;
+        *(dest + 1) = *(src + 1);
+        *(dest + 2) = *(src + 2);
+        *(dest + 3) = *(src + 3);
+        src += 4;
+        dest += 4;
+        dwords -= 4;
+     }
+     if(!dwords) return;
+     *dest = *src;
+     if(dwords == 1) return;
+     *(dest + 1) = *(src + 1);
+     if(dwords == 2) return;
+     *(dest + 2) = *(src + 2);
+}
+
 static void NVCopyData422
 (
   unsigned char *src,
@@ -628,7 +651,7 @@ static void NVCopyData422
 {
     w >>= 1;  /* pixels to DWORDS */
     while(h--) {
-        XAAMoveDWORDS((CARD32*)dst, (CARD32*)src, w);
+        nvMoveDWORDS((CARD32*)dst, (CARD32*)src, w);
         src += srcPitch;
         dst += dstPitch;
     }
