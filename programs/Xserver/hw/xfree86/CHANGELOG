@@ -1,5 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
- 583. Fix uninitialized buffer-count in luit (Semen A. Ustimenko)
+ 584. Xterm patch #171 (Thomas Dickey).
+ 583. Fix uninitialized buffer-count in luit (Semen A. Ustimenko).
  582. Various xdm updates from Debian and Suse (#5358, Branden Robinson, 
       #5511, Sebastian Krahmer).
  581. Flesh out suncg6's SaveScreen() function (Moritz Bunkus).
@@ -15691,4 +15692,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2431 2002/12/07 20:30:59 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2432 2002/12/08 20:28:09 dickey Exp $
