@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.178 2000/11/03 18:46:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.179 2000/11/08 05:03:04 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2217,7 +2217,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 	reqSym = "fbScreenInit";
-	xf86LoaderReqSymbols("fbScreenInit", NULL);
 #ifdef RENDER
 	xf86LoaderReqSymbols("fbPictureInit", NULL);
 #endif
