@@ -348,7 +348,7 @@ EXPNAME(XAATEGlyphRendererScanline)(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int bufferNo;
-    CARD32* base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
+    CARD32* base;
     GlyphScanlineFuncPtr GlyphFunc = glyph_scanline_func[glyphWidth - 1];
 
     if((bg != -1) && 
