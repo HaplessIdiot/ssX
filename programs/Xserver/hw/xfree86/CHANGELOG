@@ -1,4 +1,6 @@
 XFree86 4.4.99.3 (xx March 2004)
+  69. Fix disabling of individual DPMS states (Bugzilla #1252, David Dawes,
+      reported by Sagi Zeevi).
   68. Fix sessreg.c for NetBSD (#6251, Mark Davies).
   67. Fix segfaults that occur in the MGA driver under options
       XaaNoSolidFillRect and/or XaaNoMono8x8PatternFillRect
@@ -18843,7 +18845,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3217 2004/04/06 20:53:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3218 2004/04/06 21:40:15 tsi Exp $
 
 
 
