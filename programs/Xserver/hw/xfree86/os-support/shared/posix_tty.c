@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.9 1997/12/14 10:04:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.10 1998/01/24 16:58:36 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -489,5 +489,12 @@ xf86CloseSerial (int fd)
 
 	SYSCALL (r = close (fd));
 	return (r);
+}
+
+int
+xf86FlushInput(fd)
+int fd;
+{
+	return tcflush(fd, TCIFLUSH);
 }
 
