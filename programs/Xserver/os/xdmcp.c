@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.28 2003/11/11 00:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.29 2003/11/22 04:51:02 dawes Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -1161,7 +1161,7 @@ send_query_msg(void)
 	    socketfd = xdmcpSocket6;
 #endif	
 	XdmcpFlush (socketfd, &buffer, (XdmcpNetaddr) &ManagerAddress,
-		    sizeof (ManagerAddress));
+		    ManagerAddressLen);
     }
 }
 
