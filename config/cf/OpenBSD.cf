@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.100 2004/01/08 22:51:41 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.101 2004/01/09 00:35:00 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -432,6 +432,46 @@ install:: fonts.alias							@@\
 
 #endif /* AlphaArchitecture */
 
+/*
+ * Definitions for the AMD64 architecture
+ */
+#ifdef AMD64Architecture
+
+# define HasWeakSymbols		YES
+# define HasSharedLibraries	YES
+# define HasDlopen		YES
+
+# define XF86Server		YES
+
+# ifndef DoLoadableServer
+#  define DoLoadableServer	NO
+# endif
+
+# ifndef HasNetBSDApertureDriver
+#  define HasNetBSDApertureDriver	YES
+# endif
+
+# define HasAgpGart		YES
+
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+
+# define ServerExtraSysLibs	-lamd64
+# define ServerExtraDefines	GccGasOption -D_XSERVER64 XFree86ServerDefines
+
+# ifndef XFree86ConsoleDefines
+#  define XFree86ConsoleDefines	-DWSCONS_SUPPORT -DPCVT_SUPPORT
+# endif
+
+# ifndef HasMMXSupport
+#   define HasMMXSupport	YES
+# endif
+
+# ifndef HasX86Support
+#  define HasX86Support		YES
+# endif
+# include <xfree86.cf>
+
+#endif /* AMD64Architecture */
 
 /*
  * Definitions for the i386 architecture
