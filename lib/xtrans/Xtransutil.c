@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransutil.c,v 1.15 94/04/17 20:23:07 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xtransutil.c,v 1.16 94/05/02 11:13:42 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.0 1994/05/08 05:16:38 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -221,16 +221,17 @@ Xtransaddr	*addrp;
 #include <signal.h>
 
 char *
-TRANS(GetMyNetworkId) (family, addrlen, addr)
+TRANS(GetMyNetworkId) (ciptr)
 
-int		family;
-int		addrlen;
-Xtransaddr	*addr;
+XtransConnInfo  ciptr;
 
 {
+    int		family = ciptr->family;
+    int		addrlen = ciptr->addrlen;
+    char 	*addr = ciptr->addr;
     char	hostnamebuf[256];
     char 	*networkId = NULL;
-
+    char	*transName = ciptr->transptr->TransName;
 
     if (gethostname (hostnamebuf, sizeof (hostnamebuf)) < 0)
     {
@@ -239,16 +240,17 @@ Xtransaddr	*addr;
 
     switch (family)
     {
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN)
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
-	networkId = (char *) malloc (
-	    8 + strlen (hostnamebuf) + strlen (saddr->sun_path));
-	sprintf (networkId, "local/%s:%s", hostnamebuf, saddr->sun_path);
+	networkId = (char *) malloc (3 + strlen (transName) +
+	    strlen (hostnamebuf) + strlen (saddr->sun_path));
+	sprintf (networkId, "%s/%s:%s", transName,
+	    hostnamebuf, saddr->sun_path);
 	break;
     }
-#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
@@ -257,9 +259,9 @@ Xtransaddr	*addr;
 	char portnumbuf[10];
 
 	sprintf (portnumbuf, "%d", ntohs (saddr->sin_port));
-	networkId = (char *) malloc (
-	    6 + strlen (hostnamebuf) + strlen (portnumbuf));
-	sprintf (networkId, "tcp/%s:%s", hostnamebuf, portnumbuf);
+	networkId = (char *) malloc (3 + strlen (transName) +
+	    strlen (hostnamebuf) + strlen (portnumbuf));
+	sprintf (networkId, "%s/%s:%s", transName, hostnamebuf, portnumbuf);
 	break;
     }
 #endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
@@ -309,30 +311,30 @@ nameserver_lost(sig)
 
 
 char *
-TRANS(GetPeerNetworkId) (family, peer_addrlen, peer_addr)
+TRANS(GetPeerNetworkId) (ciptr)
 
-int		family;
-int		peer_addrlen;
-Xtransaddr	*peer_addr;
+XtransConnInfo  ciptr;
 
 {
+    int		family = ciptr->family;
+    int		peer_addrlen = ciptr->peeraddrlen;
+    char	*peer_addr = ciptr->peeraddr;
     char	*hostname;
     char	*networkId = NULL;
-    char	addrbuf[256], prefix[10];
+    char	addrbuf[256];
     char	*addr = NULL;
 
     switch (family)
     {
     case AF_UNSPEC:
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN)
     case AF_UNIX:
     {
-	strcpy (prefix, "local/");
 	if (gethostname (addrbuf, sizeof (addrbuf)) == 0)
 	    addr = addrbuf;
 	break;
     }
-#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
@@ -342,8 +344,6 @@ Xtransaddr	*peer_addr;
 #ifndef WIN32
  	char *inet_ntoa();
 #endif
-
-	strcpy (prefix, "tcp/");
 
 #ifdef SIGALRM
 	/*
@@ -380,8 +380,6 @@ Xtransaddr	*peer_addr;
 	struct sockaddr_dn *saddr = (struct sockaddr_dn *) peer_addr;
 	struct nodeent *np;
 
-	strcpy (prefix, "decnet/");
-
 	if (np = getnodebyaddr(saddr->sdn_add.a_addr,
 	    saddr->sdn_add.a_len, AF_DECnet)) {
 	    sprintf(addrbuf, "%s:", np->n_name);
@@ -396,7 +394,6 @@ Xtransaddr	*peer_addr;
 #if defined(AMRPCCONN)
     case AF_AMOEBA:
     {
-	strcpy (prefix, "amcon/");
 	addr = "Amoeba"; /* not really used */
 	break;
     }
@@ -404,7 +401,6 @@ Xtransaddr	*peer_addr;
 #if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
     case AF_INET:
     {
-	strcpy (prefix, "tcp/");
 	if (gethostname (addrbuf, sizeof (addrbuf)) == 0) {
 	    addr = addrbuf;
 	} else {
@@ -419,8 +415,10 @@ Xtransaddr	*peer_addr;
     }
 
 
-    hostname = (char *) malloc (strlen (prefix) + strlen (addr) + 1);
-    strcpy (hostname, prefix);
+    hostname = (char *) malloc (
+	strlen (ciptr->transptr->TransName) + strlen (addr) + 2);
+    strcpy (hostname, ciptr->transptr->TransName);
+    strcat (hostname, "/");
     if (addr)
 	strcat (hostname, addr);
 
