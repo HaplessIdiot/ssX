@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.0 1994/06/05 05:52:58 dawes Exp $
 
 #define OSName           Mach 2.5/3.0
 #define OSVendor          /**/
@@ -50,7 +50,6 @@ XCOMM operating system:  OSName
 
 /*#define ExtraLibraries	-lgnumalloc */
 
-#define InstUidFlags		-s -m 4755
 #ifdef InstallCmd
 #undef  InstallCmd
 #endif

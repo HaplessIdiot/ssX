@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.1 1994/05/29 02:01:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.2 1994/06/05 05:52:59 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -27,6 +27,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.1 1994/05/29 02:01:48 dawes Exp $
 #define XF86P9000Server		YES
 
 #define XnestServer             YES
+
+/*
+ * If there are problems with the Mach32 server sharing the "main" cfb
+ * libs, uncomment this.  (This is a temporary option)
+ *
+#define Mach32ShareCfb		NO
+ */
 
 /*
 #define XVirtualFramebufferServer	YES
