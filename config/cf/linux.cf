@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.67 1997/06/11 12:24:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.68 1997/06/22 10:16:47 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -44,7 +44,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.67 1997/06/11 12:24:18 dawe
 #ifndef LinuxCLibMinorVersion
 #define LinuxCLibMinorVersion	DefaultLinuxCLibMinorVersion
 #endif
-#ifndef LinuxCLibMinorVersion
+#ifndef LinuxCLibTeenyVersion
 #define LinuxCLibTeenyVersion	DefaultLinuxCLibTeenyVersion
 #endif
 
