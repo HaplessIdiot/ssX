@@ -43,6 +43,8 @@ for SiS300/305, 540 and 630/730
 .PP
 .B 315/330 series
 for SiS315/H/PRO, 550 and 650/651/M650/661FX/M661FX/740/741, 330
+.PP
+Note: Support for 661FX, M661FX and 741 is untested.
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -70,17 +72,23 @@ The opposite of HWCursor. Default: SWCursor is off.
 .TP
 .BI "Option \*qRotate\*q \*qCW\*q"
 Rotate the display clockwise. This mode is unaccelerated, and uses
-the Shadow Frame Buffer layer.
+the Shadow Frame Buffer layer. Using this option disables
+the Resize and Rotate extension (RandR).
 Default: no rotation.
 .TP
 .BI "Option \*qRotate\*q \*qCCW\*q"
 Rotate the display counterclockwise. This mode is unaccelerated, and
-uses the Shadow Frame Buffer layer.
+uses the Shadow Frame Buffer layer. Using this option disables
+the Resize and Rotate extension (RandR).
 Default: no rotation.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.
 Default: Shadow framebuffer is off.
+.TP
+.BI "Option \*qCRT1Gamma\*q \*q" boolean \*q
+Enable or disable gamma correction.
+Default: Gamma correction is on.
 .PP
 .I "2. Old series specific information"
 .PP
@@ -143,6 +151,12 @@ speeds up CPU to video RAM transfers. Default: Host bus is enabled.
 .BI "Option \*qNoXVideo\*q \*q" boolean \*q
 Disable XV (XVideo) extension support. Default: XVideo is on.
 .TP
+.BI "Option \*qNoYV12\*q \*q" boolean \*q
+Disable YV12 Xv support. This might me required due to hardware
+bugs on some chipsets. Disabling YV12 support forces Xv-aware
+applications to use YUV2 or XShm for video output.
+Default: YV12 support is on.
+.TP
 .BI "Option \*qTVStandard\*q \*q" string \*q
 (6326 only) Possible parameters are
 .B PAL
@@ -151,12 +165,12 @@ or
 The default is set by a jumper on the card.
 .TP
 .BI "Option \*qTVXPosOffset\*q \*q" integer \*q
-(6326 only) This option allows horizontal relocation the TV output.
-The range is from -16 to 16.
+(6326 only) This option allows horizontal relocation of TV output.
+The range is from -16 to 16. Default: 0
 .TP
 .BI "Option \*qTVYPosOffset\*q \*q" integer \*q
-(6326 only) This option allows vertical relocation the TV output.
-The range is from -16 to 16.
+(6326 only) This option allows vertical relocation of TV output.
+The range is from -16 to 16. Default: 0
 .TP
 .BI "Option \*qSIS6326TVEnableYFilter\*q \*q" boolean \*q
 (6326 only) This option allows enabling/disabling the Y filter for
@@ -252,15 +266,12 @@ automatically.
 Default: overlay is used on CRT1
 .TP
 .BI "Option \*qForceCRT1\*q \*q" boolean \*q
-The BIOS detects VGA monitors connected to CRT1 at boot time
-and the X driver by default relies on the information passed
-by the BIOS. However, some old monitors are not detected
-correctly. If this is the case, or if you connected the VGA
-monitor after you booted the machine, you may set this
+Force CRT1 to be on of off. If a monitor is connected, will be
+detected during server start. However, some old monitors are not
+detected correctly. If this is the case, you may set this
 option to
 .B true
-in order to make the X driver ignore the
-information from the BIOS and initialize CRT1 anyway.
+in order to make the X driver initialize CRT1 anyway.
 If this option is set to
 .B false
 , the driver will switch
@@ -289,23 +300,9 @@ are for SiS video bridges only and can be used to force the
 driver to use a specific TV output connector (if present).
 Default: auto detect.
 .TP
-.BI "Option \*qPanelDelayCompensation\*q \*q" integer \*q
-This option is only for machines with a 300 series chipset
-and either a SiS301B-DH video bridge or a LVDS transmitter,
-and a 315 series chipset with a SiS30xLV bridge.
-Different LCD panels require different delay compensation
-values. In most cases, the driver can autodetect this value.
-However, due to bad BIOS design this might fail in rare
-cases. If your LCD shows small horizontal waves, set the
-parameter of this option on the 300 series first to
-.B 4
-,
-.B 32
-or
-.B 24
-and if the problem persists, try using other values between
-4 and 60 in steps of 4. On the 315 series, any value can
-be set.
+.BI "Option \*qCRT2Gamma\*q \*q" boolean \*q
+Enable or disable gamma correction for CRT2. Only supported
+on SiS video bridges. Default: Gamma correction for CRT2 is on.
 .TP
 .BI "Option \*qTVStandard\*q \*q" string \*q
 Force the TV standard to either
@@ -319,14 +316,25 @@ and
 are supported as well. Default: BIOS setting.
 .TP
 .BI "Option \*qTVXPosOffset\*q \*q" integer \*q
-This option allows horizontal relocation the TV output.
+This option allows horizontal relocation of TV output.
 The range is from -32 to 32. Not supported on the Chrontel
-7019.
+7019. Default: 0
 .TP
 .BI "Option \*qTVYPosOffset\*q \*q" integer \*q
-This option allows vertical relocation the TV output.
+This option allows vertical relocation of TV output.
 The range is from -32 to 32. Not supported on the Chrontel
-7019.
+7019. Default: 0
+.TP
+.BI "Option \*qTVXScale\*q \*q" integer \*q
+This option allows horizontal zooming of TV output.
+The range is from -16 to 16. Only supported on SiS video
+bridges. Default: 0
+.TP
+.BI "Option \*qTVYScale\*q \*q" integer \*q
+This option allows vertical zooming of TV output in the following
+modes: 640x480, 800x600. On the 315/330 series, also 720x480,
+720x576 and 768x576. The range is from -4 to 3. Only supported on
+SiS video bridges. Default: 0
 .TP
 .BI "Option \*qCHTVOverscan\*q \*q" boolean \*q
 On machines with a Chrontel TV encoder, this can be used to
@@ -343,8 +351,8 @@ enables a super-overscan mode. This is only supported if
 the TV standard is PAL. Super overscan will produce an
 image on the TV which is larger than the viewable area.
 .PP
-The driver supports many more TV related options. Please
-see http://www.winischhofer.net/linuxsisvga.shtml for
+The driver supports many more options. Please see
+http://www.winischhofer.net/linuxsisvga.shtml for
 more information.
 .PP
 .I "3. 300 series specific information"
@@ -368,14 +376,13 @@ amount of RAM sisfb reserved. For this purpose, the
 .PP
 exists.
 .PP
-XFree 4.3.0 disabled SiS DRI support. Old information follows:
+XFree 4.3.0 disabled SiS DRI support due to a lack of
+maintainance of the SiS DRI driver. XFree86 4.4 contains
+a newly written SiS DRI driver by Eric Anholt.
 .PP
-At the moment (2003), the SiS DRI driver is not
-maintained, lacks support for memory swapping and
-has a few bugs. If you intend to use DRI, I recommend
-setting the total video memory in the BIOS to 64MB
-in order to at least overcome the lack of memory
-swap functions.
+If you intend to use DRI, I recommend setting the total
+video memory in the BIOS to 64MB in order to at least
+overcome the lack of memory swap functions.
 .PP
 Sisfb can be used for memory management only, or as
 a complete framebuffer driver. If you start sisfb
@@ -405,6 +412,10 @@ Then you need to specify any of these amounts as the
 parameter for the
 .B \*qMaxXFBMem\*q
 option. The value is to be given without 'KB'.
+.TP
+.BI "Option \*qDRI\*q \*q" boolean \*q
+This option allows enabling or disabling DRI. By default,
+DRI is on.
 .SH "KNOWN BUGS"
 none.
 .SH "SEE ALSO"
