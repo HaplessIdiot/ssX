@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -262,6 +262,61 @@ AllocateRingBuffer(ScrnInfoPtr pScrn, Bool forceLow)
    return TRUE;
 }
 
+#ifdef I830_XV
+/*
+ * Note, the forceLow argument is currently not used or supported.
+ */
+static Bool
+AllocateOverlay(ScrnInfoPtr pScrn, Bool forceLow)
+{
+   I830Ptr pI830 = I830PTR(pScrn);
+   unsigned long size, alloced;
+   int flags;
+
+   /* Clear overlay info */
+   memset(&(pI830->OverlayMem), 0, sizeof(pI830->OverlayMem));
+   pI830->OverlayMem.Key = -1;
+
+   if (!pI830->XvEnabled)
+      return TRUE;
+
+   /*
+    * The overlay register space needs a physical address in
+    * system memory.  We get this from the agpgart module using
+    * a special memory type.
+    */
+
+   size = OVERLAY_SIZE;
+   if (forceLow)
+      flags = FROM_POOL_ONLY | ALLOCATE_AT_BOTTOM | NEED_PHYSICAL_ADDR;
+   else
+      flags = FROM_ANYWHERE | ALLOCATE_AT_TOP | NEED_PHYSICAL_ADDR;
+
+   alloced = I830AllocVidMem(pScrn, &(pI830->OverlayMem),
+			     &(pI830->StolenPool), size, GTT_PAGE_SIZE, flags);
+
+   /*
+    * XXX For testing only.  Don't enable this unless you know how to set
+    * physBase.
+    */
+   if (forceLow) {
+      ErrorF("AllocateOverlay() doesn't support setting forceLow\n");
+      return FALSE;
+   }
+
+   if (alloced < size) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "Failed to allocate Overlay register space.\n");
+	 /* This failure isn't fatal. */
+   } else {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		 "Allocated %d kB for Overlay registers at 0x%x (0x%08x).\n",
+		 alloced / 1024, pI830->OverlayMem.Start,
+		 pI830->OverlayMem.Physical);
+   }
+   return TRUE;
+}
+#endif
 
 static unsigned long
 GetFreeSpace(ScrnInfoPtr pScrn)
@@ -515,6 +570,9 @@ I830Allocate2DMemory(ScrnInfoPtr pScrn, Bool initial)
    if (!pI830->NeedRingBufferLow)
       AllocateRingBuffer(pScrn, FALSE);
 
+#ifdef I830_XV
+   AllocateOverlay(pScrn, FALSE);
+#endif
 
    /* Clear scratch info */
    memset(&(pI830->Scratch), 0, sizeof(pI830->Scratch));
@@ -880,6 +938,11 @@ I830FixupOffsets(ScrnInfoPtr pScrn)
    FixOffset(pScrn, &(pI830->CursorMem));
    FixOffset(pScrn, &(pI830->LpRing.mem));
    FixOffset(pScrn, &(pI830->Scratch));
+#ifdef I830_XV
+   if (pI830->XvEnabled) {
+      FixOffset(pScrn, &(pI830->OverlayMem));
+   }
+#endif
 #ifdef XF86DRI
    if (pI830->directRenderingEnabled) {
       FixOffset(pScrn, &(pI830->BackBuffer));
@@ -1112,6 +1175,10 @@ I830BindGARTMemory(ScrnInfoPtr pScrn)
 	 return FALSE;
       if (!BindMemRange(pScrn, &(pI830->Scratch)))
 	 return FALSE;
+#ifdef I830_XV
+      if (!BindMemRange(pScrn, &(pI830->OverlayMem)))
+	 return FALSE;
+#endif
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {
 	 if (!BindMemRange(pScrn, &(pI830->BackBuffer)))
@@ -1174,6 +1241,10 @@ I830UnbindGARTMemory(ScrnInfoPtr pScrn)
 	 return FALSE;
       if (!UnbindMemRange(pScrn, &(pI830->Scratch)))
 	 return FALSE;
+#ifdef I830_XV
+      if (!UnbindMemRange(pScrn, &(pI830->OverlayMem)))
+	 return FALSE;
+#endif
 #ifdef XF86DRI
       if (pI830->directRenderingEnabled) {
 	 if (!UnbindMemRange(pScrn, &(pI830->BackBuffer)))

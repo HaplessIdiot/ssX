@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.13 2002/08/05 22:47:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.14 2002/09/11 00:29:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -123,6 +123,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *    08/2002 Keith Whitwell
  *        - Fix DRI initialisation.
  */
+/*
+ *    08/2002 Alan Hourihane and David Dawes
+ *        - Add XVideo support.
+ */
 
 #define DEBUG
 
@@ -140,6 +144,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "fb.h"
 #include "miscstruct.h"
+#include "xf86xv.h"
+#include "Xv.h"
 #include "vbe.h"
 #include "vbeModes.h"
 
@@ -166,12 +172,20 @@ static PciChipsets I830BIOSPciChipsets[] = {
    {-1,				-1,			RES_UNDEFINED}
 };
 
+/*
+ * Note: "ColorKey" is provided for compatibility with the i810 driver.
+ * However, the correct option name is "VideoKey".  "ColorKey" usually
+ * refers to the tranparency key for 8+24 overlays, not for video overlays.
+ */
 
 typedef enum {
    OPTION_NOACCEL,
    OPTION_SW_CURSOR,
    OPTION_CACHE_LINES,
    OPTION_DRI,
+   OPTION_XVIDEO,
+   OPTION_VIDEO_KEY,
+   OPTION_COLOR_KEY,
    OPTION_STRETCH,
    OPTION_CENTER
 } I830Opts;
@@ -181,6 +195,9 @@ static OptionInfoRec I830BIOSOptions[] = {
    {OPTION_SW_CURSOR,	"SWcursor",	OPTV_BOOLEAN,	{0},	FALSE},
    {OPTION_CACHE_LINES,	"CacheLines",	OPTV_INTEGER,	{0},	FALSE},
    {OPTION_DRI,		"DRI",		OPTV_BOOLEAN,	{0},	TRUE},
+   {OPTION_XVIDEO,	"XVideo",	OPTV_BOOLEAN,	{0},	TRUE},
+   {OPTION_COLOR_KEY,	"ColorKey",	OPTV_INTEGER,	{0},	FALSE},
+   {OPTION_VIDEO_KEY,	"VideoKey",	OPTV_INTEGER,	{0},	FALSE},
    {OPTION_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0},	FALSE},
    {OPTION_CENTER,	"Center",	OPTV_BOOLEAN,	{0},	FALSE},
    {-1,			NULL,		OPTV_NONE,	{0},	FALSE}
@@ -1019,6 +1036,23 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       pI830->CacheLines = -1;
    }
 
+#ifdef I830_XV
+   if (xf86GetOptValInteger(pI830->Options, OPTION_VIDEO_KEY,
+			    &(pI830->colorKey))) {
+      from = X_CONFIG;
+   } else if (xf86GetOptValInteger(pI830->Options, OPTION_COLOR_KEY,
+			    &(pI830->colorKey))) {
+      from = X_CONFIG;
+   } else {
+      pI830->colorKey = (1 << pScrn->offset.red) |
+			(1 << pScrn->offset.green) |
+			(((pScrn->mask.blue >> pScrn->offset.blue) - 1) <<
+			 pScrn->offset.blue);
+      from = X_DEFAULT;
+   }
+   xf86DrvMsg(pScrn->scrnIndex, from, "video overlay key set to 0x%x\n",
+	      pI830->colorKey);
+#endif
    
 
    /* Check if the HW cursor needs physical address. */
@@ -2081,6 +2115,20 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (!miSetPixmapDepths())
       return FALSE;
 
+   pI830->XvEnabled =
+	xf86ReturnOptValBool(pI830->Options, OPTION_XVIDEO, TRUE);
+
+#ifdef I830_XV
+   if (pI830->XvEnabled) {
+      if (pI830->noAccel || pI830->StolenOnly) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Xv is disabled because it "
+		    "needs 2D accel and AGPGART.\n");
+	 pI830->XvEnabled = FALSE;
+      }
+   }
+#else
+   pI830->XvEnabled = FALSE;
+#endif
 
    /* Allocate 2D memory */
    pI830->FreeMemory = pI830->TotalVideoRam - pI830->StolenMemory.Size;
@@ -2117,6 +2165,21 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       }
    }
 
+#ifdef I830_XV
+   if (pI830->XvEnabled) {
+      if (pI830->noAccel) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Disabling Xv because it "
+		    "needs 2D acceleration.\n");
+	 pI830->XvEnabled = FALSE;
+      }
+      if (pI830->OverlayMem.Physical == 0) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		     "Disabling Xv because the overlay register buffer "
+		      "allocation failed.\n");
+	 pI830->XvEnabled = FALSE;
+      }
+   }
+#endif
 
    InitRegisterRec(pScrn);
 
@@ -2265,6 +2328,11 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    xf86DPMSInit(pScreen, I830DisplayPowerManagementSet, 0);
 #endif
 
+#ifdef I830_XV
+   /* Init video */
+   if (pI830->XvEnabled)
+      I830InitVideo(pScreen);
+#endif
 
 #ifdef XF86DRI
    if (pI830->directRenderingEnabled) {

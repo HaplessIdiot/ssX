@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.6 2001/10/28 03:33:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.7 2002/09/11 00:29:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -833,6 +833,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Dword 1 */
 #define MI_VERTEX_BUFFER_DISABLE	(1)
 
+/* Overlay Flip */
+#define MI_OVERLAY_FLIP			(0x11<<23)
+#define MI_OVERLAY_FLIP_CONTINUE	(0<<21)
+#define MI_OVERLAY_FLIP_ON		(1<<21)
+#define MI_OVERLAY_FLIP_OFF		(2<<21)
+
+/* Wait for Events */
+#define MI_WAIT_FOR_EVENT		(0x03<<23)
+#define MI_WAIT_FOR_OVERLAY_FLIP	(1<<16)
 
 /* Flush */
 #define MI_FLUSH			(0x04<<23)
@@ -880,6 +889,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define SWF5			0x71424
 #define SWF6			0x71428
 
+
+/*
+ * Overlay registers.  These are overlay registers accessed via MMIO.
+ * Those loaded via the overlay register page are defined in i830_video.c.
+ */
+#define OVADD			0x30000
+
+#define DOVSTA			0x30008
+#define OC_BUF			(0x3<<20)
+
+#define OGAMC5			0x30010
+#define OGAMC4			0x30014
+#define OGAMC3			0x30018
+#define OGAMC2			0x3001c
+#define OGAMC1			0x30020
+#define OGAMC0			0x30024
 
 
 /*
