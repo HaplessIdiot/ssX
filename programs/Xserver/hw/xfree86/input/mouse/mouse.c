@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.1 1999/05/09 06:06:26 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -187,6 +187,9 @@ static MouseProtocolRec mouseProtocols[] = {
     /* Auto-detect (PnP) */
     { "Auto",			MSE_AUTO,	NULL,		PROT_AUTO },
 
+    /* Misc (usually OS-specific) */
+    { "SysMouse",		MSE_MISC	mscDefaults,	PROT_SYSMOUSE },
+
     /* end of list */
     { NULL,			MSE_NONE,	NULL,		PROT_UNKNOWN }
 };
@@ -222,6 +225,24 @@ ProtocolIDToName(ProtocolID id)
     }
 }
 
+static int
+ProtocolIDToClass(ProtocolID id)
+{
+    int i;
+
+    switch (id) {
+    case PROT_UNKNOWN:
+    case PROT_UNSUP:
+	return MSE_NONE;
+	break;
+    default:
+	for (i = 0; mouseProtocols[i].name; i++)
+	    if (id == mouseProtocols[i].id)
+		return mouseProtocols[i].class;
+	return MSE_NONE;
+    }
+}
+
 static MouseProtocolPtr
 GetProtocol(ProtocolID id) {
     int i;
@@ -246,11 +267,9 @@ InitProtocols(void)
 {
     int classes;
     int i;
-#if 0
     const char **names = NULL;
     int j;
     Bool found;
-#endif
 
     if (osInfo)
 	return TRUE;
@@ -269,6 +288,23 @@ InitProtocols(void)
     for (i = 0; mouseProtocols[i].name; i++)
 	if (!(mouseProtocols[i].class & classes))
 	    mouseProtocols[i].id = PROT_UNSUP;
+
+    if (osInfo->CheckProtocol)
+	names = osInfo->CheckProtocol();
+
+    for (i = 0; mouseProtocols[i].name; i++)
+	if (mouseProtocols[i].class & MSE_MISC) {
+	    found = FALSE;
+	    for (j = 0; names && names[j]; j++)
+		if (xf86NameCmp(names[j], mouseProtocols[i].name) == 0) {
+		    found = TRUE;
+		    break;
+		}
+	    if (!found)
+		mouseProtocols[i].id = PROT_UNSUP;
+	}
+
+    /* XXX Handle NetBSD's use of PROT_BM for "PS/2" */
 
     return TRUE;
 }
@@ -359,6 +395,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->private = pMse;
     pMse->protocol = protocol;
     pMse->protocolID = protocolID;
+    pMse->class = ProtocolIDToClass(protocolID);
     pMse->automatic = (protocolID == PROT_AUTO);
 
     /* Check if the device can be opened. */
@@ -514,7 +551,6 @@ SetupMouse(InputInfoPtr pInfo)
     MouseDevPtr pMse;
     unsigned char *param;
     int paramlen;
-    int ps2param;
     int i;
     int speed;
     int protoPara[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
@@ -587,7 +623,6 @@ SetupMouse(InputInfoPtr pInfo)
     xf86SetSerial(pInfo->fd, pInfo->options);
     param = NULL;
     paramlen = 0;
-    ps2param = FALSE;
     switch (pMse->protocolID) {
     case PROT_LOGI:		/* Logitech Mice */
         /* 
@@ -734,13 +769,6 @@ SetupMouse(InputInfoPtr pInfo)
 	write(pInfo->fd, "@EeI!", 5);
 	break;
 
-    case PROT_PS2:		/* standard PS/2 mouse */
-	if (osInfo->SetPS2Res)
-	    osInfo->SetPS2Res(pInfo, pMse->sampleRate, pMse->resolution);
-	else
-	    ps2param = TRUE;
-	break;
-
     case PROT_BM:		/* bus/InPort mouse */
 	if (osInfo->SetBMRes)
 	    osInfo->SetBMRes(pInfo, pMse->sampleRate, pMse->resolution);
@@ -752,7 +780,6 @@ SetupMouse(InputInfoPtr pInfo)
 
 	    param = s;
 	    paramlen = sizeof(s);
-	    ps2param = TRUE;
 	}
 	break;
 
@@ -763,7 +790,6 @@ SetupMouse(InputInfoPtr pInfo)
 
 	    param = s;
 	    paramlen = sizeof(s);
-	    ps2param = TRUE;
 	}
 	break;
 
@@ -773,12 +799,7 @@ SetupMouse(InputInfoPtr pInfo)
 					 230, 232, 3, 232, 1, 232, 2, 232, 3, };
 	    param = s;
 	    paramlen = sizeof(s);
-	    ps2param = TRUE;
 	}
-	break;
-
-    case PROT_GLIDEPS2:		/* GlidePoint */
-	ps2param = TRUE;
 	break;
 
     case PROT_THINKPS2:		/* ThinkingMouse */
@@ -788,9 +809,13 @@ SetupMouse(InputInfoPtr pInfo)
 					 243, 40, 243, 20, 243, 20, };
 	    param = s;
 	    paramlen = sizeof(s);
-	    ps2param = TRUE;
 	}
+
+    case PROT_SYSMOUSE:
+	if (osInfo->SetMiscRes)
+	    osInfo->SetMiscRes(pInfo, pMse->sampleRate, pMse->resolution);
 	break;
+
     default:
 	/* Nothing to do. */
 	break;
@@ -813,43 +838,47 @@ SetupMouse(InputInfoPtr pInfo)
  	usleep(30000);
  	xf86FlushInput(pInfo->fd);
     }
-    if (ps2param) {
-	unsigned char c2[2];
+    if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
+	if (osInfo->SetPS2Res) {
+	    osInfo->SetPS2Res(pInfo, pMse->sampleRate, pMse->resolution);
+	} else {
+	    unsigned char c2[2];
 
-	c = 246;		/* default settings */
-	xf86WriteSerial(pInfo->fd, &c, 1);
-	c = 230;		/* 1:1 scaling */
-	xf86WriteSerial(pInfo->fd, &c, 1);
-	c = 244;		/* enable mouse */
-	xf86WriteSerial(pInfo->fd, &c, 1);
-	if (pMse->sampleRate > 0) {
-	    c2[0] = 243;	/* set sampling rate */
- 	    if (pMse->sampleRate >= 200)
- 		c2[1] = 200;
- 	    else if (pMse->sampleRate >= 100)
- 		c2[1] = 100;
- 	    else if (pMse->sampleRate >= 60)
- 		c2[1] = 60;
- 	    else if (pMse->sampleRate >= 40)
- 		c2[1] = 40;
- 	    else
- 		c2[1] = 20;
-	    xf86WriteSerial(pInfo->fd, c2, 2);
+	    c = 246;		/* default settings */
+	    xf86WriteSerial(pInfo->fd, &c, 1);
+	    c = 230;		/* 1:1 scaling */
+	    xf86WriteSerial(pInfo->fd, &c, 1);
+	    c = 244;		/* enable mouse */
+	    xf86WriteSerial(pInfo->fd, &c, 1);
+	    if (pMse->sampleRate > 0) {
+		c2[0] = 243;	/* set sampling rate */
+ 		if (pMse->sampleRate >= 200)
+ 		    c2[1] = 200;
+ 		else if (pMse->sampleRate >= 100)
+ 		    c2[1] = 100;
+ 		else if (pMse->sampleRate >= 60)
+ 		    c2[1] = 60;
+ 		else if (pMse->sampleRate >= 40)
+ 		    c2[1] = 40;
+ 		else
+ 		    c2[1] = 20;
+		xf86WriteSerial(pInfo->fd, c2, 2);
+	    }
+	    if (pMse->resolution > 0) {
+		c2[0] = 232;	/* set device resolution */
+		if (pMse->resolution >= 200)
+		    c2[1] = 3;
+		else if (pMse->resolution >= 100)
+		    c2[1] = 2;
+		else if (pMse->resolution >= 50)
+		    c2[1] = 1;
+		else
+		    c2[1] = 0;
+		xf86WriteSerial(pInfo->fd, c2, 2);
+	    }
+	    usleep(30000);
+	    xf86FlushInput(pInfo->fd);
 	}
-	if (pMse->resolution > 0) {
-	    c2[0] = 232;	/* set device resolution */
-	    if (pMse->resolution >= 200)
-		c2[1] = 3;
-	    else if (pMse->resolution >= 100)
-		c2[1] = 2;
-	    else if (pMse->resolution >= 50)
-		c2[1] = 1;
-	    else
-		c2[1] = 0;
-	    xf86WriteSerial(pInfo->fd, c2, 2);
-	}
-	usleep(30000);
-	xf86FlushInput(pInfo->fd);
     }
 
     pMse->protoBufTail = 0;
@@ -1127,7 +1156,6 @@ MouseReadInput(InputInfoPtr pInfo)
 	    break;
 
 	case PROT_BM:		/* BusMouse */
-	    /* XXX Need to handle NetBSD's use of this for PS/2 mice. */
 	    buttons = (~pBuf[0]) & 0x07;
 	    dx =   (char)pBuf[1];
 	    dy = - (char)pBuf[2];
@@ -1199,6 +1227,17 @@ MouseReadInput(InputInfoPtr pInfo)
 	    pBuf[1] |= (pBuf[0] & 0x40) ? 0x80 : 0x00;
 	    dx = (pBuf[0] & 0x10) ?   (pBuf[1] & 0x7f)-128 :  pBuf[1];
 	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256)        : -pBuf[2];
+	    break;
+
+	case PROT_SYSMOUSE:	/* sysmouse */
+	    buttons = (~pBuf[0]) & 0x07;
+	    dx =    (char)(pBuf[1]) + (char)(pBuf[3]);
+	    dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
+	    /* FreeBSD sysmouse sends additional data bytes */
+	    if (pMse->protoPara[4] >= 8) {
+		dz = ((char)(pBuf[5] << 1) + (char)(pBuf[6] << 1)) / 2;
+		buttons |= (int)(~pBuf[7] & 0x07) << 3;
+	    }
 	    break;
 
 	default: /* There's a table error */
