@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/1 1996/09/21 11:17:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/doc/sgml/Imakefile,v 3.2 1996/12/27 06:52:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/doc/sgml/Imakefile,v 3.3 1997/01/25 04:14:19 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -42,7 +42,7 @@ LinuxDocReadmeTarget(isc)
 # endif
 # if defined(OS2Architecture) || BuildAllDocs
 LinuxDocReadmeTarget(OS2)
-LinuxDocTargetLong(OS2note.sgml,OS2.Notes,OS2.Notes)
+LinuxDocTargetLong(OS2note.sgml,OS2.Notes,OS2Notes)
 # endif
 # if 0
 LinuxDocReadmeTarget(SVR3)

@@ -1,7 +1,17 @@
+XFree86 3.2Ab (10 February 1997)
+ 395. Much additional acceleration for the HiQV chips (David Bateman).
+ 394. Print the PCI retry setting in MGA server (Radoslav Kapitan).
+ 393. OpenBSD fixes (Matthieu Herrb).
+ 392. Small fix for doc naming.
+ 391. Actually include change 387.
+ 390. Change CHANGELOG numbering to continue after 3.2A; reset to 1 is
+      only done after a full release.
+
 XFree86 3.2Aa (10 February 1997)
-   3. Fix 24bpp clock limit for ViRGE (Harald Koenig).
-   2. Fix 16bpp 6554x 8x8 pattern fill problem (David Bateman).
-   1. Fix core dump in C&T driver (David Bateman).
+ 389. Fix 24bpp clock limit for ViRGE (Harald Koenig).
+ 388. Fix 16bpp 6554x 8x8 pattern fill problem (David Bateman).
+ 387. Fix core dump in C&T driver (Egbert Eich).
+
 XFree86 3.2A (28 January 1997)
  386. Updates to the OS/2 pipe xtrans code (Sebastien Marineau).
  385. Update the max clock for the TGUI ProVidia 968x (Alan Hourihane).

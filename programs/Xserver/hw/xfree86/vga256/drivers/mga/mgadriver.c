@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.23 1997/01/20 12:37:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.24 1997/01/28 10:55:21 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1507,6 +1507,9 @@ vgaMGAPtr restore;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
+	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
+		restore->DAClong & 0x20000000);
+		 
 	MGAWaitForBlitter();
 	MGAEngineInit();
 

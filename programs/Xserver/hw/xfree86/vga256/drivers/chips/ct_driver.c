@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.34 1997/01/18 06:56:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.35 1997/01/22 11:08:48 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -73,6 +73,10 @@
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
+#endif
+
+#ifndef  CT_OLD_ACCL_CODE
+#include "xf86xaa.h"
 #endif
 
 #include "ct_driver.h"
@@ -186,6 +190,7 @@ static void ctScaleClock();
 unsigned int ctBLTPatternAddress = 0; /*address in video ram of tile pattern*/
 unsigned char *ctBltDataWindow = NULL;
 Bool ctAvoidImageBLT = FALSE;
+Bool ctColorTransparency = FALSE;
 int ctReg32MMIO[]={0x83D0,0x87D0,0x8BD0,0x8FD0,0x93D0,0x97D0,0x9BD0,0x9FD0,
 		   0xA3D0,0xA7D0,0xABD0,0xAFD0,0xB3D0};
 int ctReg32HiQV[]={0x00,0x04,0x08,0x0C,0x10,0x14,0x18,0x1C,0x20};
@@ -962,6 +967,7 @@ CHIPSProbe()
 	}
 	ErrorF("%s %s: Chipset: %s \n", XCONFIG_GIVEN,
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
+	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
     } else if ((tmp=ctPCIChipset()) > -1) {
 	if (tmp == 0)
 	    return(0);  /* wrong chipset */
@@ -988,6 +994,7 @@ CHIPSProbe()
 	ctHDepth = TRUE;
 	ErrorF("%s %s: Chipset: %s \n", XCONFIG_PROBED,
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
+	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
     } else {
       xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 	temp = rdinx(0x3D6, 0x00);
@@ -1428,6 +1435,14 @@ Bool ctProbeHiQV()
 	    /*3.3V Vcc */
 	    vga256InfoRec.maxClock = 80000;
 	}
+
+    /* Set the flags for Colour transparency. This is dependent
+     * on the revision on the chip. Until exactly which chips
+     * have this bug are found, only allow 8bpp Colour transparency */
+    if (vgaBitsPerPixel == 8) 
+        ctColorTransparency = TRUE;
+    else
+        ctColorTransparency = FALSE;
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = FALSE;
@@ -2996,6 +3011,15 @@ CHIPSInit655xx(mode)
 	 * system to the screen colour expansion.
 	 */
 	ctBltDataWindow = vgaLinearBase;
+
+#ifndef  CT_OLD_ACCL_CODE
+	/*
+	 * We have to fix up the XAA Blitter Data Window, because XAA
+	 * was initialised with CtBltDataWindow set to NULL
+	 */
+	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+	    (unsigned int *)ctBltDataWindow;
+#endif
     }
 
     /* common general setup */
@@ -3271,6 +3295,15 @@ CHIPSInitWINGINE(mode)
 	 * system to the screen colour expansion.
 	 */
 	ctBltDataWindow = vgaLinearBase;
+
+#ifndef  CT_OLD_ACCL_CODE
+	/*
+	 * We have to fix up the XAA Blitter Data Window, because XAA
+	 * was initialised with CtBltDataWindow set to NULL
+	 */
+	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+	    (unsigned int *)ctBltDataWindow;
+#endif
     }
 
     /* common general setup */
@@ -3562,12 +3595,21 @@ CHIPSInitHiQV32(mode)
     if (ctUseMMIO && ctMMIOBase == NULL) {
 	ctMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
 	    (pointer) (CHIPS.ChipLinearBase + 0x400000L),
-	    0x20000L);
+	    0x10000L);
 	/*
 	 * Setup the address to write monochrome source data to, for 
 	 * system to the screen colour expansion.
 	 */
-	ctBltDataWindow = ctMMIOBase + 0x10000;
+	ctBltDataWindow = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
+	    (pointer) (CHIPS.ChipLinearBase + 0x410000L),
+	    0x10000L);
+	/*
+	 * We have to fix up the XAA Blitter Data Window, because XAA
+	 * was initialised with CtBltDataWindow set to NULL
+	 */
+	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+	    (unsigned int *)ctBltDataWindow;
+
     }
 
     return (TRUE);
@@ -3719,6 +3761,7 @@ CHIPSFbInit()
 	}
 	
 #ifndef CT_OLD_ACCL_CODE
+#if 0 /* Disable ping-pong buffers as no ScreenToScreenColorExpand */
 	/* Setup the ping-pong buffer for ScreenToScreen colour expansion */
 	ctColorExpandScratchAddr = ctAllocate(1024, 0x0);
 	if (ctColorExpandScratchAddr == -1) {
@@ -3728,6 +3771,7 @@ CHIPSFbInit()
 	    ctColorExpandScratchSize = 0;
 	} else
 	    ctColorExpandScratchSize = 1024;
+#endif
 
 	/* Use the allocation function to now get an address that
 	 * points to the top of ram. As it won't be used again in

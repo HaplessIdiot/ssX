@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.7 1997/01/12 10:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.8 1997/01/22 11:08:50 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -44,6 +44,7 @@ extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
 extern unsigned int ctBLTPatternAddress;
 extern Bool ctUseMMIO;
 extern Bool ctAvoidImageBLT;
+extern Bool ctColorTransparency;
 extern unsigned char *ctMMIOBase;
 extern unsigned char *ctBltDataWindow;
 

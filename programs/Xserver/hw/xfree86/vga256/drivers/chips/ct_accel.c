@@ -70,9 +70,12 @@ void _ctAccelInit() {
 	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
 	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
-    /* I believe this is possible for the HiQV architecture */
+#if 0
+    /* I believe this is possible for the HiQV architecture. Anyone want
+     * to test it? */
     xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
-    if (vga256InfoRec.bitsPerPixel == 8)
+#endif
+    if (ctColorTransparency)
 	xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_TRANSPARENCY;
 #endif
 
@@ -92,9 +95,9 @@ void _ctAccelInit() {
     /* A Chips and Technologies application notes says that some
      * 65550 have a bug that prevents 16bpp transparency. It probably
      * applies to 24 bpp as well (Someone with a 65550 care to check?).
-     * Hence for now only allow transparency at 8 bpp. 
+     * Selection of this controlled in Probe.
      */
-    if (vga256InfoRec.bitsPerPixel != 8)
+    if (!ctColorTransparency)
 	xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
 #endif
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
@@ -141,9 +144,6 @@ void _ctAccelInit() {
         break;
     }
 
-
-#ifndef CHIPS_HIQV /* Disable colour expansion and pattern for 65550 !! */
-
     /*
      * Setup the functions that perform monochrome colour expansion
      */
@@ -161,6 +161,9 @@ void _ctAccelInit() {
 	    RGB_EQUAL;
 #endif
 
+#if 0 /* I have trouble with these, on both a 65545 and 65550. So Disable
+       * for now. Fixup scratch buffer if re-enabled
+       */
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
 	CTNAME(SetupForScanlineScreenToScreenColorExpand);
     xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
@@ -171,6 +174,7 @@ void _ctAccelInit() {
 	CTNAME(SubsequentScreenToScreenColorExpand);
     xf86AccelInfoRec.ScratchBufferAddr = ctColorExpandScratchAddr;
     xf86AccelInfoRec.ScratchBufferSize = ctColorExpandScratchSize;
+#endif
 
     xf86AccelInfoRec.SetupForScanlineCPUToScreenColorExpand =
 	CTNAME(SetupForScanlineCPUToScreenColorExpand);
@@ -190,25 +194,17 @@ void _ctAccelInit() {
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
             CTNAME(SubsequentFill8x8Pattern);
+#ifndef CHIPS_HIQV /* Didn't get a chance to test these */
         xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    CTNAME(SetupFor8x8PatternColorExpand);
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CTNAME(Subsequent8x8PatternColorExpand);
+#endif
     }
-#endif /* Disable for CHIPS_HIQV */
 
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
         ctCacheEnd);
-
-#ifdef CHIPS_HIQV
-    /* This just disables a few features that might cause troubles for
-     * the 65550. After testing they might be renabled.
-     */
-    xf86AccelInfoRec.Flags &= ~COP_FRAMEBUFFER_CONCURRENCY;
-    xf86AccelInfoRec.Flags &= ~HARDWARE_PATTERN_TRANSPARENCY;
-    xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
-#endif
 
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.9 1996/10/16 14:39:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.10 1996/12/23 06:31:20 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -67,7 +67,7 @@
 #define MAP_FILE 0
 #endif
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) && !defined(__OpenBSD__)
 #  include <sys/param.h>
 #  ifdef NetBSD1_1
 #    include <machine/sysarch.h>
