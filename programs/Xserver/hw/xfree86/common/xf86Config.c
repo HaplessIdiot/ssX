@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.196 1999/12/03 19:17:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.199 2000/01/17 23:42:25 alanh Exp $ */
 
 
 /*
@@ -36,7 +36,7 @@ extern DeviceAssocRec mouse_assoc;
 
 #if (defined(i386) || defined(__i386__)) && \
     (defined(__FreeBSD__) || defined(__NetBSD__) || defined(linux) || \
-     defined(SVR4))
+     (defined(SVR4) && !defined(sun))
 #define SUPPORT_PC98
 #endif
 
