@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.6 2001/11/17 16:05:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.7 2003/03/23 05:14:35 mvojkovi Exp $ */
 
 /*
  *
- * Copyright 1999 by The XFree86 Project, Inc.
+ * Copyright 1999-2003 by The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

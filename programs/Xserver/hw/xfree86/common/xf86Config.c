@@ -1,17 +1,48 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.269 2003/02/20 04:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.270 2003/03/25 04:18:20 dawes Exp $ */
 
 
 /*
- * Copyright 1991-2002 by The XFree86 Project, Inc.
- * Copyright 1997 by Metro Link, Inc.
- *
  * Loosely based on code bearing the following copyright:
  *
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
+ */
+
+/*
+ * Copyright 1992-2003 by The XFree86 Project, Inc.
+ * Copyright 1997 by Metro Link, Inc.
  *
- *  <Put copyright message here>
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Author: Dirk Hohndel <hohndel@XFree86.Org> and others.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER(S) OR AUTHOR(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the copyright holder(s)
+ * and author(s) shall not be used in advertising or otherwise to promote
+ * the sale, use or other dealings in this Software without prior written
+ * authorization from the copyright holder(s) and author(s).
+ */
+
+/*
+ *
+ * Authors:
+ *	Dirk Hohndel <hohndel@XFree86.Org>
+ *	David Dawes <dawes@XFree86.Org>
+ *      Marc La France <tsi@XFree86.Org>
+ *      Egbert Eich <eich@XFree86.Org>
+ *      ... and others
  */
 
 #ifdef XF86DRI

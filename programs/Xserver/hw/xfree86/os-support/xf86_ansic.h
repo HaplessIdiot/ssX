@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.50 2003/03/12 16:40:27 tsi Exp $ */
 /*
- * Copyright 1997-2000 by The XFree86 Project, Inc
+ * Copyright 1997-2003 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,8 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.49tsi Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H

@@ -1,5 +1,6 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.3 2003/03/08 19:14:58 herrb Exp $ */
 /*
- * Copyright (C) 1994-2002 The XFree86 Project, Inc.  All Rights Reserved.
+ * Copyright (C) 1994-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -25,7 +26,6 @@
  * use or other dealings in this Software without prior written
  * authorization from the XFree86 Project.
  */
-/* $XFree86: netbsdPci.c,v 1.2 2002/08/27 22:07:07 tsi Exp $ */
 
 #include <sys/types.h>
 #include <sys/mman.h>

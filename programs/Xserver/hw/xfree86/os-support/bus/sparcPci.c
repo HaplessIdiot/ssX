@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.12 2003/01/02 18:11:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.13 2003/07/17 15:08:22 tsi Exp $ */
 /*
- * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
+ * Copyright (C) 2001-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
