@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.105 2005/02/18 02:55:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.106 2005/02/26 01:07:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -207,15 +207,16 @@ typedef enum {
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
 
-# define M_T_BUILTIN 0x01        /* built-in mode */
-# define M_T_CLOCK_C (0x02 | M_T_BUILTIN) /* built-in mode - configure clock */
-# define M_T_CRTC_C  (0x04 | M_T_BUILTIN) /* built-in mode - configure CRTC  */
+# define M_T_BUILTIN  0x001        /* built-in mode */
+# define M_T_CLOCK_C (0x002 | M_T_BUILTIN) /* built-in mode - configure clock */
+# define M_T_CRTC_C  (0x004 | M_T_BUILTIN) /* built-in mode - configure CRTC  */
 # define M_T_CLOCK_CRTC_C  (M_T_CLOCK_C | M_T_CRTC_C)
                                /* built-in mode - configure CRTC and clock */
-# define M_T_DEFAULT 0x10	/* (VESA) default modes */
-# define M_T_USERDEF 0x20	/* One of the modes from the config file */
-# define M_T_EDID    0x40	/* Mode from EDID detailed timings data. */
-# define M_T_PREFER  0x80	/* Preferred mode from EDID data. */
+# define M_T_DEFAULT  0x010	/* (VESA) default modes */
+# define M_T_USERDEF  0x020	/* One of the modes from the config file */
+# define M_T_EDID     0x040	/* Mode from EDID detailed timings data. */
+# define M_T_PREFER   0x080	/* Preferred mode from EDID data. */
+# define M_T_LOWPREF  0x100	/* A low preference mode. */
 
 /* Video mode */
 typedef struct _DisplayModeRec {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.79 2005/02/26 01:07:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.80 2005/02/26 18:31:48 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2101,7 +2101,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
     /*
      * Check the mode pool against a preferred refresh rate and preferred
-     * mode size.
+     * mode size.  Mark those modes that do not match as "low preference"
+     * modes.  Low preference modes may be used, but will not be selected
+     * by default.
      */
     for (q = scrp->modePool;  q != NULL;  q = q->next) {
 	if (q->status != MODE_OK)
@@ -2110,22 +2112,22 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	if (ModeVRefresh(q) < (1.0 - SYNC_TOLERANCE) * targetRefresh) {
 	    if (preferredH <= 0 || preferredV <= 0) {
 		xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			   "Not using %s \"%s\" because its refresh (%.1f) "
-			   "is below the target (%.1f).\n",
+			   "Low preference %s \"%s\" because its "
+			   "refresh (%.1f) is below the target (%.1f).\n",
 			   xf86ModeTypeToString(q->type),
 			   q->name, ModeVRefresh(q), targetRefresh);
-		q->status = MODE_REFRESH_LOW;
+		q->type |= M_T_LOWPREF;
 	    }
 	}
 
 	if (preferredH > 0 && preferredV > 0 &&
 	    (q->HDisplay > preferredH || q->VDisplay > preferredV)) {
 	    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-		       "Not using %s \"%s\" because it is "
+		       "Low preference %s \"%s\" because it is "
 		       "larger than the preferred mode (%dx%d).\n",
 		       xf86ModeTypeToString(q->type), q->name,
 		       preferredH, preferredV);
-	    q->status = MODE_TOO_BIG;
+	    q->type |= M_T_LOWPREF;
 	}
     }
 
@@ -2201,9 +2203,15 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			    ((double)q->HTotal / (double)q->HDisplay) < 1.15)
 			    continue;
 
-			if (modeSize < (q->HDisplay * q->VDisplay)) {
-			    r = q;
-			    modeSize = q->HDisplay * q->VDisplay;
+			/*
+			 * Do not allow low preference modes to influence the
+			 * the default mode choice.
+			 */
+			if (!(q->type & M_T_LOWPREF)) {
+			    if (modeSize < (q->HDisplay * q->VDisplay)) {
+				r = q;
+				modeSize = q->HDisplay * q->VDisplay;
+			    }
 			}
 		    }
 		}
