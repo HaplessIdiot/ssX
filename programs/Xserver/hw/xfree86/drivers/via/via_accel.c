@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.6 2003/12/17 19:01:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.7 2003/12/31 05:42:04 dawes Exp $ */
 
 /*************************************************************************
  *
@@ -346,7 +346,9 @@ VIAInitAccel(ScreenPtr pScreen)
     ScrnInfoPtr     pScrn = xf86Screens[pScreen->myNum];
     VIAPtr          pVia = VIAPTR(pScrn);
     XAAInfoRecPtr   xaaptr;
-    BoxRec AvailFBArea;
+    BoxRec 	    AvailFBArea;
+    unsigned long   cacheEnd;
+    unsigned long   cacheEndDRI;
 
     pVia->VQStart = 0;
     if (((pVia->FBFreeEnd - pVia->FBFreeStart) >= VIA_VQ_SIZE) &&
@@ -495,55 +497,73 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->ImageWriteRange = VIA_MMIO_BLTSIZE;
 
     /* We reserve space for pixel cache */
-    pVia->ScissB = (pVia->FBFreeStart + VIA_PIXMAP_CACHE_SIZE) / pVia->Bpl;
-    pVia->FBFreeStart += VIA_PIXMAP_CACHE_SIZE;
+    
+    cacheEnd = pVia->FBFreeEnd / pVia->Bpl;
+    cacheEndDRI = (pVia->FBFreeStart + VIA_PIXMAP_CACHE_SIZE + pVia->Bpl-1) / pVia->Bpl;
+    
+    /*
+     *	Old DRI has some assumptions here that we need to work through
+     *  and fix
+     */
+    if(cacheEnd > cacheEndDRI)
+    {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+        	"Clipping pixmap cache for old DRI/DRM module.\n");
+        cacheEnd = cacheEndDRI;
+    }
+    
+    /*
+     *	Clip to the blitter limit
+     */
+    pVia->ScissB = cacheEnd;;
 
     if (pVia->ScissB > 2047)
         pVia->ScissB = 2047;
 
+    pVia->FBFreeStart += (pVia->ScissB + 1) *pVia->Bpl;
+
     /*
      * Finally, we set up the video memory space available to the pixmap
-     * cache. In this case, all memory from the end of the virtual screen
-     * to the end of the command overflow buffer can be used. If you haven't
-     * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
+     * cache
      */
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = (pVia->FBFreeEnd) / pVia->Bpl;
+    AvailFBArea.y2 = pVia->ScissB;
 
     /*
      * The pixmap cache must stay within the lowest 2048 lines due
      * to hardware blitting limits. The rest is available for offscreen
-     * allocations
+     * allocations unless DRI stole it.
      */
      
-    if(AvailFBArea.y2 > 2047)
-    {
-	unsigned long offset = 2048 * pVia->Bpl;
-	unsigned long size = (pVia->FBFreeEnd - offset);
-#ifdef XFREE_44	
-	int bpp = (pScrn->bitsPerPixel + 7) / 8;
-#endif
-	AvailFBArea.y2 = 2047;
-	xf86InitFBManager(pScreen, &AvailFBArea);
-#ifdef XFREE_44	
-	xf86InitFBManagerLinear(pScreen, offset/bpp, size/bpp);
-#else
-	VIAInitPool(pVia, offset, size);
-#endif	
-    }
-    else
-	xf86InitFBManager(pScreen, &AvailFBArea);
-    
-    
+    xf86InitFBManager(pScreen, &AvailFBArea);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 					 "Using %d lines for offscreen memory.\n",
 					 AvailFBArea.y2 - pScrn->virtualY ));
 
     return XAAInit(pScreen, xaaptr);
 }
+
+void VIAInitLinear(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    VIAPtr pVia = VIAPTR(pScrn);
+    unsigned long offset = 2048 * pVia->Bpl;
+    unsigned long size = (pVia->FBFreeEnd - offset);
+
+    if(pVia->FBFreeEnd / pVia->Bpl > 2047)
+    {
+#ifdef XFREE_44	
+	int bpp = (pScrn->bitsPerPixel + 7) / 8;
+	xf86InitFBManagerLinear(pScreen, offset/bpp, size/bpp);
+#else
+	VIAInitPool(pVia, offset, size);
+#endif	
+    }
+}
+    
 
 
 /* The sync function for the GE */
