@@ -19,6 +19,8 @@ HEADERS= \
         internal.h \
         pcftypes.h \
         psaux.h \
+        psglobal.h \
+        pshints.h \
         psnames.h \
         sfnt.h \
         t1errors.h \
@@ -43,6 +45,8 @@ LinkSourceFile(ftstream.h,$(FREETYPEINC)/internal)
 LinkSourceFile(internal.h,$(FREETYPEINC)/internal)
 LinkSourceFile(pcftypes.h,$(FREETYPEINC)/internal)
 LinkSourceFile(psaux.h,$(FREETYPEINC)/internal)
+LinkSourceFile(pshints.h,$(FREETYPEINC)/internal)
+LinkSourceFile(psglobal.h,$(FREETYPEINC)/internal)
 LinkSourceFile(psnames.h,$(FREETYPEINC)/internal)
 LinkSourceFile(sfnt.h,$(FREETYPEINC)/internal)
 LinkSourceFile(t1errors.h,$(FREETYPEINC)/internal)
