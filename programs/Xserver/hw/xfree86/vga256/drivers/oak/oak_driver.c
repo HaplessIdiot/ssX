@@ -1,4 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -55,6 +56,10 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XF86VGA16
+#define MONOVGA
+#endif
 
 /*
  * Driver data structures.
