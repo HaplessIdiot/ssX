@@ -1,3 +1,5 @@
+$XConsortium: README,v 1.2 95/01/06 19:12:51 gildea Exp $
+
 				Low Bandwidth X
 				     (LBX)
 
@@ -108,27 +110,17 @@ many X clients onto a single connection.
 
 				  Building LBX
 
-To use it, you need both an R6 Xserver and the lbxproxy.  The easiest
-way to build it is to add these 5 lines to $(TOP)/config/cf/site.def:
+To use it, you need both an R6 Xserver and the lbxproxy.
 
-#define SitePervasiveExtensionDefines -DLBX
-#define SiteExtensionLibs $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
-#define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/Xext $(TOP)/workInProgress/lbx/programs/Xserver/lbx
-#define BigReqDefines /**/
+Add this line to $(TOP)/config/cf/site.def:
+
 #define	BuildLBX YES
 
-Next, from the $(TOP)/workInProgress directory, remake the Makefiles:
+You may then do a "make World" or "make Everything" at top level.
 
-    %  cd ../workInProgress
-    %  make Makefile
-    %  make Makefiles SUBDIRS=lbx
-    %  cd lbx
-    %  make includes
-    %  make depend
+To rebuild just the X server:
 
-Then, rebuild the X server:
-
-    %  cd ../../programs/Xserver
+    %  cd programs/Xserver
     %  make clean
     %  make Makefile
     %  make Makefiles
@@ -136,6 +128,15 @@ Then, rebuild the X server:
     %  make depend
     %  make
 
+To build lbxproxy:
+
+    %  cd workInProgress
+    %  make Makefile
+    %  make Makefiles SUBDIRS=lbx
+    %  cd lbx
+    %  make includes
+    %  make depend
+    %  make
 
 
 				     Usage
