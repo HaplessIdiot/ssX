@@ -888,7 +888,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     DisplayModePtr realmode2 = NULL;
 #endif
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "SIS300Init()\n");
+    PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "SIS300Init()\n"));
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
         "virtualX = %d depth = %d Logical width = %d\n",

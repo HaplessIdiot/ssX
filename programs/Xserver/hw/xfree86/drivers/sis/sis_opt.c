@@ -127,6 +127,7 @@ typedef enum {
     OPTION_NOSISXINERAMA,
     OPTION_NOSISXINERAMA2,
     OPTION_CRT2ISSCRN0,
+    OPTION_MERGEDDPI,
     OPTION_ENABLESISCTRL,
     OPTION_STOREDBRIR,
     OPTION_STOREDBRIG,
@@ -229,6 +230,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_CRT2VREFRESH,		"CRT2VRefresh",		  OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_CRT2POS,   		"CRT2Position",		  OPTV_ANYSTR,	  {0}, FALSE },
     { OPTION_METAMODES,   		"MetaModes",  		  OPTV_ANYSTR,	  {0}, FALSE },
+    { OPTION_MERGEDDPI,			"MergedDPI", 		  OPTV_ANYSTR,	  {0}, FALSE },
     { OPTION_MERGEDFB2,			"TwinView",		  OPTV_BOOLEAN,	  {0}, FALSE },		/* alias */
     { OPTION_CRT2HSYNC2,		"SecondMonitorHorizSync", OPTV_ANYSTR,	  {0}, FALSE }, 	/* alias */
     { OPTION_CRT2VREFRESH2,		"SecondMonitorVertRefresh",	  OPTV_ANYSTR,    {0}, FALSE }, /* alias */
@@ -361,6 +363,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->CRT2HSync = NULL;
     pSiS->CRT2VRefresh = NULL;
     pSiS->MetaModes = NULL;
+    pSiS->MergedFBXDPI = pSiS->MergedFBYDPI = 0;
 #ifdef SISXINERAMA
     pSiS->UseSiSXinerama = TRUE;
     pSiS->CRT2IsScrn0 = FALSE;
@@ -649,6 +652,17 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  if(strptr) {
 	     pSiS->CRT2VRefresh = xalloc(strlen(strptr) + 1);
 	     if(pSiS->CRT2VRefresh) memcpy(pSiS->CRT2VRefresh, strptr, strlen(strptr) + 1);
+	  }
+	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_MERGEDDPI);
+	  if(strptr) {
+	     int val1 = 0, val2 = 0;
+	     sscanf(strptr, "%d %d", &val1, &val2);
+	     if(val1 && val2) {
+	        pSiS->MergedFBXDPI = val1;
+		pSiS->MergedFBYDPI = val2;
+	     } else {
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "MergedDPI");
+	     }
 	  }
 #ifdef SISXINERAMA
 	  if(pSiS->MergedFB) {
