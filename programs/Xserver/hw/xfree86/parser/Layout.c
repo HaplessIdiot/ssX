@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.7 1999/05/23 14:38:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.8 1999/05/30 14:04:24 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -47,6 +47,16 @@ static xf86ConfigSymTabRec LayoutTab[] =
 	{-1, ""},
 };
 
+static xf86ConfigSymTabRec AdjTab[] =
+{
+	{RIGHTOF, "rightof"},
+	{LEFTOF, "leftof"},
+	{ABOVE, "above"},
+	{BELOW, "below"},
+	{RELATIVE, "relative"},
+	{-1, ""},
+};
+
 #define CLEANUP freeLayoutList
 
 XF86ConfLayoutPtr
@@ -85,31 +95,84 @@ parseLayoutSection (void)
 				aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
 				aptr->list.next = NULL;
 				aptr->adj_scrnum = -1;
+				aptr->adj_where = CONF_ADJ_OBSOLETE;
+				aptr->adj_x = -1;
+				aptr->adj_y = -1;
+				aptr->adj_refscreen = NULL;
 				if ((token = xf86GetToken (NULL)) == NUMBER)
-				{
 					aptr->adj_scrnum = val.num;
-					if ((token = xf86GetToken (NULL)) != STRING)
-						Error (SCREEN_MSG, NULL);
-				}
-				else if (token != STRING)
+				else
+					xf86UnGetToken (token);
+				token = xf86GetToken(NULL);
+				if (token != STRING)
 					Error (SCREEN_MSG, NULL);
 				aptr->adj_screen_str = val.str;
 
-				/* top */
-				if ((token = xf86GetToken (NULL)) != STRING)
+				token = xf86GetToken(AdjTab);
+				switch (token)
 				{
-				/* 
-				 * if there are no other values after the
-				 * first screen name assume "" "" "" ""
-				 */
+				case RIGHTOF:
+					aptr->adj_where = CONF_ADJ_RIGHTOF;
+					break;
+				case LEFTOF:
+					aptr->adj_where = CONF_ADJ_LEFTOF;
+					break;
+				case ABOVE:
+					aptr->adj_where = CONF_ADJ_ABOVE;
+					break;
+				case BELOW:
+					aptr->adj_where = CONF_ADJ_BELOW;
+					break;
+				case RELATIVE:
+					aptr->adj_where = CONF_ADJ_RELATIVE;
+					break;
+				case EOF_TOKEN:
+					Error (UNEXPECTED_EOF_MSG, NULL);
+					break;
+				default:
 					xf86UnGetToken (token);
-					aptr->adj_top_str = ConfigStrdup ("");
-					aptr->adj_bottom_str = ConfigStrdup ("");
-					aptr->adj_left_str = ConfigStrdup ("");
-					aptr->adj_right_str = ConfigStrdup ("");
+					token = xf86GetToken(NULL);
+					if (token == STRING)
+						aptr->adj_where = CONF_ADJ_OBSOLETE;
+					else
+						aptr->adj_where = CONF_ADJ_ABSOLUTE;
 				}
-				else
+				switch (aptr->adj_where)
 				{
+				case CONF_ADJ_ABSOLUTE:
+					if (token == NUMBER)
+					{
+						aptr->adj_x = val.num;
+						token = xf86GetToken(NULL);
+						if (token != NUMBER)
+							Error(INVALID_SCR_MSG, NULL);
+						aptr->adj_y = val.num;
+					} else
+						xf86UnGetToken (token);
+					break;
+				case CONF_ADJ_RIGHTOF:
+				case CONF_ADJ_LEFTOF:
+				case CONF_ADJ_ABOVE:
+				case CONF_ADJ_BELOW:
+				case CONF_ADJ_RELATIVE:
+					token = xf86GetToken(NULL);
+					if (token != STRING)
+						Error(INVALID_SCR_MSG, NULL);
+					aptr->adj_refscreen = val.str;
+					if (aptr->adj_where == CONF_ADJ_RELATIVE)
+					{
+						token = xf86GetToken(NULL);
+						if (token != NUMBER)
+							Error(INVALID_SCR_MSG, NULL);
+						aptr->adj_x = val.num;
+						token = xf86GetToken(NULL);
+						if (token != NUMBER)
+							Error(INVALID_SCR_MSG, NULL);
+						aptr->adj_y = val.num;
+					}
+					break;
+				case CONF_ADJ_OBSOLETE:
+					/* top */
 					aptr->adj_top_str = val.str;
 
 					/* bottom */
@@ -199,7 +262,7 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 {
 	XF86ConfAdjacencyPtr aptr;
 	XF86ConfInactivePtr iptr;
-    XF86ConfInputrefPtr inptr;
+	XF86ConfInputrefPtr inptr;
 	XF86OptionPtr optr;
 
 	while (ptr)
@@ -210,11 +273,43 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 
 		for (aptr = ptr->lay_adjacency_lst; aptr; aptr = aptr->list.next)
 		{
-			fprintf (cf, "\tScreen         \"%s\"", aptr->adj_screen_str);
-			fprintf (cf, " \"%s\"", aptr->adj_top_str);
-			fprintf (cf, " \"%s\"", aptr->adj_bottom_str);
-			fprintf (cf, " \"%s\"", aptr->adj_right_str);
-			fprintf (cf, " \"%s\"\n", aptr->adj_left_str);
+			fprintf (cf, "\tScreen     ");
+			if (aptr->adj_scrnum >= 0)
+				fprintf (cf, "%2d", aptr->adj_scrnum);
+			else
+				fprintf (cf, "  ");
+			fprintf (cf, "  \"%s\"", aptr->adj_screen_str);
+			switch(aptr->adj_where)
+			{
+			case CONF_ADJ_OBSOLETE:
+				fprintf (cf, " \"%s\"", aptr->adj_top_str);
+				fprintf (cf, " \"%s\"", aptr->adj_bottom_str);
+				fprintf (cf, " \"%s\"", aptr->adj_right_str);
+				fprintf (cf, " \"%s\"\n", aptr->adj_left_str);
+				break;
+			case CONF_ADJ_ABSOLUTE:
+				if (aptr->adj_x != -1)
+					fprintf (cf, " %d %d\n", aptr->adj_x, aptr->adj_y);
+				else
+					fprintf (cf, "\n");
+				break;
+			case CONF_ADJ_RIGHTOF:
+				fprintf (cf, " RightOf \"%s\"\n", aptr->adj_refscreen);
+				break;
+			case CONF_ADJ_LEFTOF:
+				fprintf (cf, " LeftOf \"%s\"\n", aptr->adj_refscreen);
+				break;
+			case CONF_ADJ_ABOVE:
+				fprintf (cf, " Above \"%s\"\n", aptr->adj_refscreen);
+				break;
+			case CONF_ADJ_BELOW:
+				fprintf (cf, " Below \"%s\"\n", aptr->adj_refscreen);
+				break;
+			case CONF_ADJ_RELATIVE:
+				fprintf (cf, " Relative \"%s\" %d %d\n", aptr->adj_refscreen,
+						 aptr->adj_x, aptr->adj_y);
+				break;
+			}
 		}
 		for (iptr = ptr->lay_inactive_lst; iptr; iptr = iptr->list.next)
 			fprintf (cf, "\tInactive       \"%s\"\n", iptr->inactive_device_str);
@@ -229,7 +324,7 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 		}
 		for (optr = ptr->lay_option_lst; optr; optr = optr->list.next)
 		{
-			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
+			fprintf (cf, "\tOption         \"%s\"", optr->opt_name);
 			if (optr->opt_val)
 				fprintf (cf, " \"%s\"", optr->opt_val);
 			fprintf (cf, "\n");
@@ -332,10 +427,12 @@ validateLayout (XF86ConfigPtr p)
 			else
 				adj->adj_screen = screen;
 
+#if 0
 			CheckScreen (adj->adj_top_str, adj->adj_top);
 			CheckScreen (adj->adj_bottom_str, adj->adj_bottom);
 			CheckScreen (adj->adj_left_str, adj->adj_left);
 			CheckScreen (adj->adj_right_str, adj->adj_right);
+#endif
 
 			adj = adj->list.next;
 		}

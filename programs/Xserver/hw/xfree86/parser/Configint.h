@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.12 1999/05/30 07:18:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.13 1999/06/06 15:23:03 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -148,6 +148,8 @@ else\
 "The White keyword must be followed by red, green and blue values."
 #define SCREEN_MSG \
 "The Screen keyword must be followed by an optional number and 1 or 5 \n\tscreen names in quotes."
+#define INVALID_SCR_MSG \
+"Invalid Screen line."
 #define INPUTDEV_MSG \
 "The InputDevice keyword must be followed by an input device name in quotes."
 #define INACTIVE_MSG \

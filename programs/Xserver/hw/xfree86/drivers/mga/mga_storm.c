@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.58 1999/08/22 05:57:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.59 1999/08/29 12:21:01 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1259,32 +1259,35 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     MGAPtr pMga = MGAPTR(pScrn);
     int pitch = pScrn->displayWidth * PSZ;
     int start, end, next, num;
-    int SrcOrg = 0, DstOrg = 0;
+    Bool resetDstOrg = FALSE;
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
-        DstOrg = ((y & ~1023) * pScrn->displayWidth * PSZ) >> 9;
-        SrcOrg = ((srcy & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+        int DstOrg = ((y & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+        int SrcOrg = ((srcy & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+
 	y &= 1023;
+	srcy &= 1023;
 
 	WAITFIFO(2);
-	if(DstOrg)
+	if(DstOrg) {
             OUTREG(MGAREG_DSTORG, DstOrg << 6);
+	    resetDstOrg = TRUE;
+	}
         if(SrcOrg != pMga->SrcOrg) {
             pMga->SrcOrg = SrcOrg;
             OUTREG(MGAREG_SRCORG, SrcOrg << 6);
         }
-	SrcOrg <<= 9;
     }
 
     w--;
     start = (XYADDRESS(srcx, srcy) * PSZ) + skipleft;
     end = start + w + (pitch * (h - 1));
 
-    /* src cannot split a 2 Meg boundary */
+    /* src cannot split a 2 Meg boundary from SrcOrg */
     if(!((start ^ end) & 0xff000000)) {
 	WAITFIFO(4);
-	OUTREG(MGAREG_AR3, start - SrcOrg);
-	OUTREG(MGAREG_AR0, start + w - SrcOrg);
+	OUTREG(MGAREG_AR3, start);
+	OUTREG(MGAREG_AR0, start + w);
 	OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     } else {
@@ -1294,13 +1297,13 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		num = next - start - 1;
 
 		WAITFIFO(7);
-		OUTREG(MGAREG_AR3, start - SrcOrg);
-		OUTREG(MGAREG_AR0, start + num - SrcOrg);
+		OUTREG(MGAREG_AR3, start);
+		OUTREG(MGAREG_AR0, start + num);
 		OUTREG(MGAREG_FXBNDRY, ((x + num) << 16) | (x & 0xffff));
-		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | 1);
 		
-		OUTREG(MGAREG_AR3, next - SrcOrg);
-		OUTREG(MGAREG_AR0, start + w - SrcOrg);
+		OUTREG(MGAREG_AR3, next);
+		OUTREG(MGAREG_AR0, start + w );
 		OUTREG(MGAREG_FXBNDRY + MGAREG_EXEC, ((x + w) << 16) | 
                                                      ((x + num + 1) & 0xffff));
 		start += pitch;
@@ -1310,8 +1313,8 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		if(num > h) num = h;
 
 		WAITFIFO(4);
-		OUTREG(MGAREG_AR3, start - SrcOrg);
-		OUTREG(MGAREG_AR0, start + w - SrcOrg);
+		OUTREG(MGAREG_AR3, start);
+		OUTREG(MGAREG_AR0, start + w);
 		OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | num);
 
@@ -1321,7 +1324,7 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 	}
     }
 
-    if(DstOrg) {
+    if(resetDstOrg) {
 	WAITFIFO(1);
 	OUTREG(MGAREG_DSTORG, 0);
     }
