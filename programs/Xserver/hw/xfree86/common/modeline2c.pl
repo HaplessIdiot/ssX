@@ -5,19 +5,20 @@
 #
 # run as 
 #
-# perl /modeline2c.pl < [modesfile] > xf86DefaultModes.c
+# perl /modeline2c.pl < [modesfile] > xf86DefModes.c
 #
 # hackish perl - author Dirk Hohndel
 # Copyright 1999 by The XFree86 Project, Inc.
 #
-# $XFree86: $
+# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.1 1999/03/21 16:20:54 hohndel Exp $
 
 my %flagshash;
-$flagshash{"Interlace"} = V_INTERLACE;
-$flagshash{"+hsync"} = V_PHSYNC;
-$flagshash{"-hsync"} = V_NHSYNC;
-$flagshash{"+vsync"} = V_PVSYNC;
-$flagshash{"-vsync"} = V_NVSYNC;
+$flagshash{""} = "0";
+$flagshash{"Interlace"} = "V_INTERLACE";
+$flagshash{"+hsync"} = "V_PHSYNC";
+$flagshash{"-hsync"} = "V_NHSYNC";
+$flagshash{"+vsync"} = "V_PVSYNC";
+$flagshash{"-vsync"} = "V_NVSYNC";
 
 # stop CVS from expanding the XFree86 Id here...
 
@@ -48,15 +49,16 @@ DisplayModeRec xf86DefaultModes [] = {
 ");
 while (<>) {
   if (/^\#/) {
-    chop($_);
-    print "/*" . $_ . "*/\n";
+    s/^\#//;
+    chop;
+    print "/*" . $_ . " */\n";
   }
   if (/^ModeLine\s+(\S+)\s+([\d.\s]+)(.*)/) {
     my $name = $1;
     my $values = $2;
     my $flags = $3;
     $values =~ /([\d.]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
-    printf("\t{MODEPREFIX(%s),%d, %d,%d,%d,%d,0, %d,%d,%d,%d,0, %d,MODESUFFIX},\n",
+    printf("\t{MODEPREFIX(%s),%d, %d,%d,%d,%d,0, %d,%d,%d,%d,0, %s, MODESUFFIX},\n",
 	   $name,$1*1000,$2,$3,$4,$5,$6,$7,$8,$9,$flagshash{$flags});
   }
 
