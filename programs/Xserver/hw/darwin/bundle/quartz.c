@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.21 2001/10/26 06:13:59 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.22 2001/12/05 06:19:20 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -13,6 +13,7 @@
 #include "quartzAudio.h"
 #include "quartzCursor.h"
 #include "rootlessAqua.h"
+#include "pseudoramiX.h"
 
 // X headers
 #include "scrnintstr.h"
@@ -32,6 +33,7 @@ int                     quartzUseSysBeep = 0;
 int                     quartzServerVisible = TRUE;
 int                     quartzScreenIndex = 0;
 int                     aquaMenuBarHeight = 0;
+int                     noPseudoramiXExtension = TRUE;
 
 // Full screen specific per screen storage structure
 typedef struct {
@@ -109,7 +111,7 @@ static void *QuartzPMThread(void *arg)
                 int i;
 
                 for (i = 0; i < screenInfo.numScreens; i++) {
-                    if (screenInfo.screens[i]) 
+                    if (screenInfo.screens[i])
                         xf86SetRootClip(screenInfo.screens[i], true);
                 }
             }
@@ -120,7 +122,7 @@ static void *QuartzPMThread(void *arg)
 #endif
 
 
-/* 
+/*
  * QuartzFSFindDisplayMode
  *  Find the appropriate display mode to use in full screen mode.
  *  If display mode is not the same as the current Aqua mode, switch
@@ -186,7 +188,7 @@ static Bool QuartzFSFindDisplayMode(
 }
 
 
-/* 
+/*
  * QuartzFSAddScreen
  *  Do initialization of each screen for Quartz in full screen mode.
  */
@@ -204,7 +206,11 @@ static Bool QuartzFSAddScreen(
     fsDisplayInfo = xalloc(sizeof(QuartzFSScreenRec));
     FULLSCREEN_PRIV(pScreen) = fsDisplayInfo;
 
-    displayInfo->displayID = cgID;
+    displayInfo->displayCount = 1;
+    displayInfo->displayIDs = xrealloc(displayInfo->displayIDs,
+                                      1 * sizeof(CGDirectDisplayID));
+    displayInfo->displayIDs[0] = cgID;
+
     fsDisplayInfo->displayID = cgID;
     fsDisplayInfo->xDisplayMode = 0;
     fsDisplayInfo->aquaDisplayMode = 0;
@@ -244,7 +250,7 @@ static Bool QuartzFSAddScreen(
     } else {
         dfb->pixelInfo.pixelType = kIORGBDirectPixels;
         dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
-        dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount * 
+        dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount *
                                   dfb->pixelInfo.bitsPerComponent);
     }
 
@@ -263,14 +269,14 @@ Bool QuartzAddScreen(
     ScreenPtr pScreen)
 {
     // allocate space for private per screen Quartz specific storage
-    QuartzScreenPtr displayInfo = xalloc(sizeof(QuartzScreenRec));
+    QuartzScreenPtr displayInfo = xcalloc(sizeof(QuartzScreenRec), 1);
     QUARTZ_PRIV(pScreen) = displayInfo;
 
     // do full screen or rootless specific initialization
     if (quartzRootless) {
         return AquaAddScreen(index, pScreen);
     } else {
-        return QuartzFSAddScreen(index, pScreen); 
+        return QuartzFSAddScreen(index, pScreen);
     }
 }
 
@@ -354,7 +360,7 @@ void QuartzCapture(void)
 }
 
 
-/* 
+/*
  * QuartzRelease
  *  Release the screen so others can draw.
  */
@@ -382,7 +388,7 @@ void QuartzRelease(void)
  * QuartzFSDisplayInit
  *  Full screen specific initialization called from InitOutput.
  */
-static void QuartzFSDisplayInit(void) 
+static void QuartzFSDisplayInit(void)
 {
     static unsigned long generation = 0;
 
@@ -395,7 +401,7 @@ static void QuartzFSDisplayInit(void)
     // Find all the CoreGraphics displays
     CGGetActiveDisplayList(0, NULL, &quartzDisplayCount);
     quartzDisplayList = xalloc(quartzDisplayCount * sizeof(CGDirectDisplayID));
-    CGGetActiveDisplayList(quartzDisplayCount, quartzDisplayList, 
+    CGGetActiveDisplayList(quartzDisplayCount, quartzDisplayList,
                            &quartzDisplayCount);
 
     darwinScreensFound = quartzDisplayCount;
@@ -407,7 +413,9 @@ static void QuartzFSDisplayInit(void)
  * QuartzInitOutput
  *  Quartz display initialization.
  */
-void QuartzInitOutput(void)
+void QuartzInitOutput(
+    int argc,
+    char **argv )
 {
     static unsigned long generation = 0;
 
@@ -428,10 +436,17 @@ void QuartzInitOutput(void)
         ErrorF("Display mode: Full screen Quartz\n");
         QuartzFSDisplayInit();
     }
+
+    // Init PseudoramiX implementation of Xinerama.
+    // This should be in InitExtensions, but that causes link errors
+    // for servers that don't link in pseudoramiX.c.
+    if (!noPseudoramiXExtension) {
+        PseudoramiXExtensionInit(argc, argv);
+    }
 }
 
 
-/* 
+/*
  * QuartzShow
  *  Show the X server on screen. Does nothing if already shown.
  *  Restore the X clip regions the X server cursor state.
@@ -455,7 +470,7 @@ void QuartzShow(
 }
 
 
-/* 
+/*
  * QuartzHide
  *  Remove the X server display from the screen. Does nothing if already
  *  hidden. Set X clip regions to prevent drawing, and restore the Aqua
@@ -473,7 +488,7 @@ void QuartzHide(void)
                     xf86SetRootClip(screenInfo.screens[i], FALSE);
             }
         }
-    } 
+    }
     quartzServerVisible = FALSE;
     QuartzMessageMainThread(kQuartzServerHidden);
 }

@@ -3,7 +3,7 @@
  * Startup code for the IOKit Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.5 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.6 2001/08/07 01:53:58 torrey Exp $ */
 
 #include "bundle/quartz.h"
 
@@ -44,7 +44,7 @@ Bool QuartzSetupScreen(int index, ScreenPtr pScreen) {
     FatalError("QuartzInitCursor called without Quartz support.\n");
 }
 
-void QuartzInitOutput(void) {
+void QuartzInitOutput(int argc, char **argv) {
     FatalError("QuartzInitOutput called without Quartz support.\n");
 }
 

@@ -7,7 +7,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.5 2001/09/23 06:10:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.6 2001/11/05 05:12:16 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -173,8 +173,9 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     QuartzScreenPtr displayInfo = QUARTZ_PRIV(pScreen);
     CGRect cgRect;
     CGDisplayCount numDisplays;
+    CGDisplayCount allocatedDisplays = 0;
+    CGDirectDisplayID *displays = NULL;
     CGDisplayErr cgErr;
-    CGDirectDisplayID cgID;
 
     dfb->pixelInfo.pixelType = kIORGBDirectPixels;
     AquaScreenInit(index, &dfb->x, &dfb->y, &dfb->width, &dfb->height,
@@ -186,22 +187,30 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     // No frame buffer - it's all in window pixmaps.
     dfb->framebuffer = NULL; // malloc(dfb.pitch * dfb.height);
 
-    // We need to find which CGDirectDisplayID corresponds to this screen.
-    // It would be nice if there was a more reliable way....
+    // Get all CoreGraphics displays covered by this X11 display.
     cgRect = CGRectMake(dfb->x, dfb->y, dfb->width, dfb->height);
-    cgErr = CGGetDisplaysWithRect(cgRect, 0, NULL, &numDisplays);
+    do {
+        cgErr = CGGetDisplaysWithRect(cgRect, 0, NULL, &numDisplays);
+        if (cgErr) break;
+        allocatedDisplays = numDisplays;
+        displays = xrealloc(displays,
+                            numDisplays * sizeof(CGDirectDisplayID));
+        cgErr = CGGetDisplaysWithRect(cgRect, allocatedDisplays, displays,
+                                      &numDisplays);
+        if (cgErr != CGDisplayNoErr) break;
+    } while (numDisplays > allocatedDisplays);
+
     if (cgErr != CGDisplayNoErr || numDisplays == 0) {
-        ErrorF("Could not find CGDirectDisplayID for screen %dx%d @ (%d,%d).\n",
-               dfb->width, dfb->height, dfb->x, dfb->y);
+        ErrorF("Could not find CGDirectDisplayID(s) for X11 screen %d: %dx%d @ %d,%d.\n",
+               index, dfb->width, dfb->height, dfb->x, dfb->y);
         return FALSE;
-    } else if (numDisplays > 1) {
-        ErrorF("More than one screen occupies %dx%d @ (%d,%d).\n",
-               dfb->width, dfb->height, dfb->x, dfb->y);
-        ErrorF("If you notice cursor problems, turn off video mirroring.\n");
     }
 
-    CGGetDisplaysWithRect(cgRect, 1, &cgID, &numDisplays);
-    displayInfo->displayID = cgID;
+    // This X11 screen covers all CoreGraphics displays we just found.
+    // If there's more than one CG display, then video mirroring is on
+    // or PseudoramiX is on.
+    displayInfo->displayCount = allocatedDisplays;
+    displayInfo->displayIDs = displays;
 
     return TRUE;
 }

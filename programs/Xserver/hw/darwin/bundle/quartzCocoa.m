@@ -7,12 +7,13 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.9 2001/10/07 18:47:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.10 2001/10/14 03:02:18 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
 #import "Preferences.h"
 #include "quartzCommon.h"
+#include "pseudoramiX.h"
 
 extern void FatalError(const char *, ...);
 extern char *display;
@@ -28,7 +29,15 @@ void QuartzReadPreferences(void)
     darwinFakeMouse3Mask = [Preferences button3Mask];
     quartzMouseAccelChange = [Preferences mouseAccelChange];
     quartzUseSysBeep = [Preferences systemBeep];
-    noPanoramiXExtension = ![Preferences xinerama];
+
+    // Rootless: use PseudoramiX not Xinerama (quartzRootless already set)
+    if (quartzRootless) {
+        noPanoramiXExtension = TRUE;
+        noPseudoramiXExtension = ![Preferences xinerama];
+    } else {
+        noPanoramiXExtension = ![Preferences xinerama];
+        noPseudoramiXExtension = TRUE;
+    }
 
     if ([Preferences useKeymapFile]) {
         fileString = (char *) [[Preferences keymapFile] lossyCString];
@@ -74,8 +83,8 @@ char *QuartzReadCocoaPasteboard(void)
     NSArray *pasteboardTypes;
     NSString *existingType;
     char *text = NULL;
-    
-    pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];    
+
+    pasteboardTypes = [NSArray arrayWithObject:NSStringPboardType];
     pasteboard = [NSPasteboard generalPasteboard];
     if (! pasteboard) return NULL;
 

@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.3 2001/11/05 05:12:16 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.4 2001/12/12 03:52:51 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -170,23 +170,6 @@ extern RegionRec rootlessHugeRoot;
         while (w->parent) w = w->parent; \
         w->winSize = saveRoot; \
     }
-
-
-// PanoramiX/Xinerama creates a copy of every window, one per screen.
-// Windows in rootless mode really can cross screens, so we only want to
-// work with one copy of each.
-#ifdef PANORAMIX
-#include "../Xext/panoramiX.h"
-#include "../Xext/panoramiXsrv.h"
-// LookupIDByType doesn't find root window, but root windows are "real" here.
-// LookupIDByType doesn't find anything when panoramix is off
-#define IS_FAKE_WINDOW(w) \
-    (!noPanoramiXExtension &&  \
-     pWin->parent &&  \
-     !LookupIDByType(w->drawable.id, XRT_WINDOW))
-#else
-#define IS_FAKE_WINDOW(w) (0)
-#endif
 
 
 // Returns TRUE if this window is a top-level window (i.e. child of the root)

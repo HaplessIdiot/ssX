@@ -1,4 +1,7 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 611. Fix various XDarwin crashes in multi-monitor rootless mode by using
+      a new "light" version of PanoramiX/Xinerama called PseudoramiX
+      (Gregory Parker).
  610. Fix some typos in the X.Org INSTALL doc (#5113, Chris Pepper).
  609. Fix an bug that prevented the releasing of XvMC memory on exit (#5112,
       Matthew J. Sottek).
@@ -14402,4 +14405,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2099 2001/12/21 09:53:05 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2100 2001/12/21 21:09:39 dawes Exp $

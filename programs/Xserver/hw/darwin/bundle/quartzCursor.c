@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.13 2001/12/05 01:49:22 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.14 2001/12/05 06:15:41 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -34,11 +34,24 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 
 #define CURSOR_PRIV(pScreen) \
     ((QuartzCursorScreenPtr)pScreen->devPrivates[darwinCursorScreenIndex].ptr)
-#define HIDE_QD_CURSOR(pScreen, visible) \
-    if (visible) { CGDisplayHideCursor(QUARTZ_PRIV(pScreen)->displayID); \
-                   visible = FALSE; }
-#define SHOW_QD_CURSOR(pScreen, visible) \
-    CGDisplayShowCursor(QUARTZ_PRIV(pScreen)->displayID); visible = TRUE;
+
+#define HIDE_QD_CURSOR(pScreen, visible)                                \
+    if (visible) {                                                      \
+        int ix;                                                         \
+        for (ix = 0; ix < QUARTZ_PRIV(pScreen)->displayCount; ix++) {   \
+            CGDisplayHideCursor(QUARTZ_PRIV(pScreen)->displayIDs[ix]);  \
+        }                                                               \
+        visible = FALSE;                                                \
+    } ((void)0)
+
+#define SHOW_QD_CURSOR(pScreen, visible)                                \
+    {                                                                   \
+        int ix;                                                         \
+        for (ix = 0; ix < QUARTZ_PRIV(pScreen)->displayCount; ix++) {   \
+            CGDisplayShowCursor(QUARTZ_PRIV(pScreen)->displayIDs[ix]);  \
+        }                                                               \
+        visible = TRUE;                                                 \
+    } ((void)0)
 
 
 /*
@@ -57,28 +70,28 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 static unsigned short
 interleave(
     unsigned char c1,
-    unsigned char c2 ) 
+    unsigned char c2 )
 {
     return
-        ((c1 & 0x80) << 8) | ((c2 & 0x80) << 7) | 
-        ((c1 & 0x40) << 7) | ((c2 & 0x40) << 6) | 
-        ((c1 & 0x20) << 6) | ((c2 & 0x20) << 5) | 
-        ((c1 & 0x10) << 5) | ((c2 & 0x10) << 4) | 
-        ((c1 & 0x08) << 4) | ((c2 & 0x08) << 3) | 
-        ((c1 & 0x04) << 3) | ((c2 & 0x04) << 2) | 
-        ((c1 & 0x02) << 2) | ((c2 & 0x02) << 1) | 
+        ((c1 & 0x80) << 8) | ((c2 & 0x80) << 7) |
+        ((c1 & 0x40) << 7) | ((c2 & 0x40) << 6) |
+        ((c1 & 0x20) << 6) | ((c2 & 0x20) << 5) |
+        ((c1 & 0x10) << 5) | ((c2 & 0x10) << 4) |
+        ((c1 & 0x08) << 4) | ((c2 & 0x08) << 3) |
+        ((c1 & 0x04) << 3) | ((c2 & 0x04) << 2) |
+        ((c1 & 0x02) << 2) | ((c2 & 0x02) << 1) |
         ((c1 & 0x01) << 1) | ((c2 & 0x01) << 0) ;
 }
 
 /*
  * MakeQDCursor
  * Make a QuickDraw color cursor from the given X11 cursor.
- * Warning: This code is nasty. Color cursors were meant to be read 
+ * Warning: This code is nasty. Color cursors were meant to be read
  * from resources; constructing the structures programmatically is messy.
  */
 /*
-    QuickDraw cursor representation: 
-    Our color cursor is a 2 bit per pixel pixmap. 
+    QuickDraw cursor representation:
+    Our color cursor is a 2 bit per pixel pixmap.
     Each pixel's bits are (source<<1 | mask) from the original X cursor pixel.
     The cursor's color table maps the colors like this:
     (2-bit value | X result    | colortable | Mac result)
@@ -89,7 +102,7 @@ interleave(
 */
 static CCrsrHandle
 MakeQDCursor(
-    CursorPtr pCursor ) 
+    CursorPtr pCursor )
 {
     CCrsrHandle result;
     CCrsrPtr curs;
@@ -119,7 +132,7 @@ MakeQDCursor(
     curs->crsrHotSpot.h = min(CURSORWIDTH,  pCursor->bits->xhot); // hot spot
     curs->crsrHotSpot.v = min(CURSORHEIGHT, pCursor->bits->yhot); // hot spot
     curs->crsrXTable = 0;        // reserved
-    curs->crsrID = GetCTSeed();  // unique ID from Color Manager 
+    curs->crsrID = GetCTSeed();  // unique ID from Color Manager
 
     // Set the b&w data and mask
     w = min(pCursor->bits->width,  CURSORWIDTH);
@@ -131,7 +144,7 @@ MakeQDCursor(
         curs->crsrMask[i] = rowMask &
         ((pCursor->bits->mask[i*4]<<8)   | pCursor->bits->mask[i*4+1]);
     }
-    
+
     // Set the color data and mask
     // crsrMap: defines bit depth and size and colortable only
     pix->rowBytes = (CURSORWIDTH * 2 / 8) | 0x8000; // last bit on means PixMap
@@ -255,7 +268,7 @@ QuartzRealizeCursor(
     }
 
     // make new cursor image
-    qdCursor = MakeQDCursor(pCursor); 
+    qdCursor = MakeQDCursor(pCursor);
     if (!qdCursor) return FALSE;
 
     // save the result
@@ -402,7 +415,7 @@ static void QuartzCrossScreen(ScreenPtr pScreen, Bool entering)
  * QuartzWarpCursor
  *  Change the cursor position without generating an event or motion history.
  *  The input coordinates (x,y) are in pScreen-local X11 coordinates.
- *  
+ *
  */
 static void
 QuartzWarpCursor(
@@ -413,7 +426,7 @@ QuartzWarpCursor(
     static int              neverMoved = TRUE;
 
     if (neverMoved) {
-        // Don't move the cursor the first time. This is the jump-to-center 
+        // Don't move the cursor the first time. This is the jump-to-center
         // initialization, and it's annoying because we may still be in MacOS.
         neverMoved = FALSE;
         return;
@@ -422,7 +435,8 @@ QuartzWarpCursor(
     if (quartzServerVisible) {
         CGDisplayErr        cgErr;
         CGPoint             cgPoint;
-        CGDirectDisplayID   cgID = QUARTZ_PRIV(pScreen)->displayID;
+        // Only need to do this for one display. Any display will do.
+        CGDirectDisplayID   cgID = QUARTZ_PRIV(pScreen)->displayIDs[0];
         CGRect              cgRect = CGDisplayBounds(cgID);
 
         // Convert (x,y) to CoreGraphics screen-local CG coordinates.
@@ -470,7 +484,7 @@ static miPointerScreenFuncRec quartzScreenFuncsRec = {
  */
 static void
 QuartzCursorQueryBestSize(
-   int              class, 
+   int              class,
    unsigned short   *width,
    unsigned short   *height,
    ScreenPtr        pScreen)
@@ -490,7 +504,7 @@ QuartzCursorQueryBestSize(
  * QuartzInitCursor
  * Initialize cursor support
  */
-Bool 
+Bool
 QuartzInitCursor(
     ScreenPtr   pScreen )
 {
@@ -525,7 +539,7 @@ QuartzInitCursor(
                     pScreen->devPrivates[miPointerScreenIndex].ptr;
 
     ScreenPriv->spriteFuncs = PointPriv->spriteFuncs;
-    PointPriv->spriteFuncs = &quartzSpriteFuncsRec; 
+    PointPriv->spriteFuncs = &quartzSpriteFuncsRec;
 
     if (!quartzRootless)
         ScreenPriv->useQDCursor = QuartzFSUseQDCursor(dfb->colorBitsPerPixel);

@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.9 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.10 2001/08/12 00:10:01 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -438,7 +438,9 @@ Bool XFIOKitSetupScreen(
  * XFIOKitInitOutput
  *  One-time initialization of IOKit support.
  */
-void XFIOKitInitOutput(void)
+void XFIOKitInitOutput(
+    int argc,
+    char **argv)
 {
     kern_return_t           kr;
     io_service_t            service;

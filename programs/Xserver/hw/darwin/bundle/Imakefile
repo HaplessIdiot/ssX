@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.19 2001/11/28 02:36:04 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.20 2001/12/04 06:16:57 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -19,7 +19,8 @@ SRCS =  Preferences.m \
         rootlessGC.c \
         rootlessScreen.c \
         rootlessValTree.c \
-        rootlessWindow.c
+        rootlessWindow.c \
+        pseudoramiX.c
 
 OBJS =  Preferences.o \
         XApplication.o \
@@ -37,11 +38,12 @@ OBJS =  Preferences.o \
         rootlessGC.o \
         rootlessScreen.o \
         rootlessValTree.o \
-        rootlessWindow.o
+        rootlessWindow.o \
+        pseudoramiX.o
 
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(EXTINCSRC) -I..
+           -I$(EXTINCSRC) -I.. -I$(SERVERSRC)/Xext
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion

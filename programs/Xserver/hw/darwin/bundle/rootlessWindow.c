@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.7 2001/11/09 00:12:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.8 2001/12/12 03:52:51 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -140,16 +140,6 @@ RootlessRealizeWindow(WindowPtr pWin)
     Bool result = FALSE;
     RegionRec saveRoot;
     ScreenPtr pScreen = pWin->drawable.pScreen;
-
-    if (IS_FAKE_WINDOW(pWin)) {
-        // Don't map fake windows
-        // They won't get a frame or take time to draw (fixme true?)
-        RL_DEBUG_MSG("realize window: skipping fake window\n");
-        pWin->mapped = FALSE;
-        pWin->realized = FALSE;
-        pWin->viewable = FALSE;
-        return Success;
-    }
 
     RL_DEBUG_MSG("realizewindow start ");
 
