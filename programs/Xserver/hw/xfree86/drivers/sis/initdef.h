@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/initdef.h,v 1.6 2002/11/29 13:52:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/initdef.h,v 1.8 2003/01/29 15:42:16 eich Exp $ */
 
 
 #ifndef _INITDEF_
@@ -18,6 +18,7 @@
 #define VB_NoLCD        	0x8000
 #define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS302B|VB_SIS30xLV|VB_SIS30xNEW)
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS302B)
+#define VB_SIS301LV302LV        (VB_SIS30xLV|VB_SIS30xNEW)
 
 #define IS_SIS650740            ((HwDeviceExtension->jChipType >= SIS_650) && (HwDeviceExtension->jChipType < SIS_330))
 

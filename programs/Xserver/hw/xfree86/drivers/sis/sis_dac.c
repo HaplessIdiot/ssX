@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.26 2002/11/29 13:52:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.28 2003/01/29 15:42:16 eich Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -555,8 +555,8 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    /* Save extended SR registers */
-    for (i = 0x06; i <= 0x3D; i++) {
+    /* Save SR registers */
+    for (i = 0x00; i <= 0x3D; i++) {
         inSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
 #ifdef TWDEBUG
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -564,8 +564,8 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
     }
 
-    /* Save extended CR registers */
-    for (i = 0x19; i < 0x40; i++)  {
+    /* Save CR registers */
+    for (i = 0x00; i < 0x40; i++)  {
         inSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
 #ifdef TWDEBUG
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -573,8 +573,10 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
     }
 
-    sisReg->sisRegs3C2 = inSISREG(SISMISCR);	 /* Misc */
+    /* Save Misc register */
+    sisReg->sisRegs3C2 = inSISREG(SISMISCR);	 
     
+    /* Save FQBQ and GUI timer settings */
     if(pSiS->Chipset == PCI_CHIP_SIS630) {
        sisReg->sisRegsPCI50 = pciReadLong(0x00000000, 0x50);
        sisReg->sisRegsPCIA0 = pciReadLong(0x00000000, 0xA0);
@@ -586,6 +588,7 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif       
     }
 
+    /* Save panel link/video bridge registers */
 #ifndef TWDEBUG
     if(!pSiS->UseVESA) {
 #endif
@@ -599,10 +602,16 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     }
 #endif
 
+    /* Save Mode number */
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
     if(!(pSiS->UseVESA))
 #endif
         pSiS->BIOSModeSave = SiS_GetSetModeID(pScrn,0xFF);
+	
+#ifdef TWDEBUG	
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+    	"BIOS mode ds:449 = 0x%x\n", pSiS->BIOSModeSave);
+#endif	
 }
 
 
@@ -708,8 +717,10 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        outSISIDXREG(SISSR,0x2f,sisReg->sisRegs3C4[0x2f]);
     }
     
-    outSISREG(SISMISCW, sisReg->sisRegs3C2);  /* Misc */
+    /* Restore Misc register */
+    outSISREG(SISMISCW, sisReg->sisRegs3C2);  
     
+    /* Restore FQBQ and GUI timer settings */
     if(pSiS->Chipset == PCI_CHIP_SIS630) {
        temp1 = pciReadLong(0x00000000, 0x50);
        if(pciReadLong(0x00000000, 0x00) == 0x06301039) {
@@ -732,12 +743,8 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        pciWriteLong(0x00000000, 0xA0, temp1);
     }
 
+    /* Restore panel link/video bridge registers */
     if (!(pSiS->UseVESA)) {
-      /* TW: These functions REQUIRE that the native mode
-       * switching code has been called and some privates
-       * inside init.c and init301.c have been set. They
-       * must not be called when using VESA!
-       */
       if (pSiS->VBFlags & (VB_LVDS|VB_CHRONTEL))
         (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
       if (pSiS->VBFlags & (VB_301|VB_303))
@@ -750,6 +757,7 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outSISIDXREG(SISSR, 0x00, 0x01);    /* Synchronous Reset */
     outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
 
+    /* Restore mode number */
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
     if(!(pSiS->UseVESA))
 #endif
@@ -770,8 +778,8 @@ SiS310Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    /* Save extended SR registers */
-    for (i = 0x06; i <= 0x3F; i++) {
+    /* Save SR registers */
+    for (i = 0x00; i <= 0x3F; i++) {
         inSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
 #ifdef DEBUG
         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
@@ -786,8 +794,8 @@ SiS310Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     /* TW: Save command queue location */
     sisReg->sisMMIO85C0 = MMIO_IN32(pSiS->IOBase, 0x85C0);
 
-    /* Save extended CR registers */
-    for (i = 0x19; i <= 0x5f; i++)  {
+    /* Save CR registers */
+    for (i = 0x00; i <= 0x5f; i++)  {
         inSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
 #ifdef DEBUG
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
@@ -799,8 +807,10 @@ SiS310Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
     }
 
-    sisReg->sisRegs3C2 = inSISREG(SISMISCR);   /* Misc */
+    /* Save Misc register */
+    sisReg->sisRegs3C2 = inSISREG(SISMISCR);   
 
+    /* Save panel link/video bridge registers */
 #ifndef TWDEBUG
     if (!pSiS->UseVESA) {
 #endif
@@ -814,6 +824,7 @@ SiS310Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     }
 #endif
 
+    /* Save mode number */
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
     if(!(pSiS->UseVESA))
 #endif
@@ -913,8 +924,10 @@ SiS310Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     /* TW: Restore queue location */
     MMIO_OUT32(pSiS->IOBase, 0x85C0, sisReg->sisMMIO85C0);
 
-    outSISREG(SISMISCW, sisReg->sisRegs3C2);   /* Misc */
+    /* Restore Misc register */
+    outSISREG(SISMISCW, sisReg->sisRegs3C2);   
 
+    /* Restore panel link/video bridge registers */
     if (!(pSiS->UseVESA)) {
       if (pSiS->VBFlags & (VB_LVDS|VB_CHRONTEL))
         (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
@@ -928,6 +941,7 @@ SiS310Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outSISIDXREG(SISSR, 0x00, 0x01);    /* Synchronous Reset */
     outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
 
+    /* Restore Mode number */
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
     if(!(pSiS->UseVESA))
 #endif

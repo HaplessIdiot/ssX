@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.9 2003/01/29 15:42:17 eich Exp $ */
 /*
  * Xv driver for SiS 300 and 310/325 series.
  *
@@ -316,8 +316,8 @@ static XF86AttributeRec SISAttributes_325[NUM_ATTRIBUTES_325] =
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127,        "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 7,             "XV_CONTRAST"},
-   {XvSettable | XvGettable, 0, 15,            "XV_SATURATION"},
-   {XvSettable | XvGettable, 0, 15,            "XV_HUE"},	
+   {XvSettable | XvGettable, -7, 7,            "XV_SATURATION"},
+   {XvSettable | XvGettable, -8, 7,            "XV_HUE"},	
    {XvSettable | XvGettable, 0, 1,             "XV_AUTOPAINT_COLORKEY"},
    {XvSettable             , 0, 0,             "XV_SET_DEFAULTS"}
 };
@@ -442,8 +442,8 @@ typedef struct {
     
     char          brightness;
     unsigned char contrast;
-    unsigned char hue;
-    unsigned char saturation;
+    char 	  hue;
+    char          saturation;
 
     RegionRec    clip;
     CARD32       colorKey;
@@ -839,11 +839,11 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         SISSetPortDefaults(pScrn, pPriv);
   } else if(pSiS->VGAEngine == SIS_315_VGA) {
      if(attribute == pSiS->xvHue) {
-       if((value < 0) || (value > 15))
+       if((value < -8) || (value > 7))
          return BadValue;
        pPriv->hue = value;
      } else if(attribute == pSiS->xvSaturation) {
-       if((value < 0) || (value > 15))
+       if((value < -7) || (value > 7))
          return BadValue;
        pPriv->saturation = value;
      } else return BadMatch;
@@ -1220,16 +1220,25 @@ set_contrast(SISPtr pSiS, CARD8 contrast)
 
 /* 310/325 series only */
 static void
-set_saturation(SISPtr pSiS, CARD8 saturation)
+set_saturation(SISPtr pSiS, char saturation)
 {
-    setvideoreg(pSiS, Index_VI_Saturation, saturation);
+    CARD8 temp = 0;
+    
+    if(saturation < 0) {
+    	temp |= 0x88;
+	saturation = -saturation;
+    }
+    temp |= (saturation & 0x07);
+    temp |= ((saturation & 0x07) << 4);
+    
+    setvideoreg(pSiS, Index_VI_Saturation, temp);
 }
 
 /* 310/325 series only */
 static void
 set_hue(SISPtr pSiS, CARD8 hue)
 {
-    setvideoreg(pSiS, Index_VI_Hue, hue);
+    setvideoreg(pSiS, Index_VI_Hue, (hue & 0x08) ? (hue ^ 0x07) : hue);
 }
 
 #ifdef NOT_YET_IMPLEMENTED /* ----------- TW: FOR FUTURE USE -------------------- */
