@@ -1,4 +1,4 @@
-XFree86 3.1.2Gc (22 September 1996)
+XFree86 3.1.2Gc (23 September 1996)
 834. Rename ViRGE driver from s3_generic to s3_virge (Dirk Hohndel).
 833. Don't reference uninitialised s3MmioMem in ViRGE server (Harald Koenig
      and Dirk Hohndel).
