@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsWindow.c,v 1.3 1996/12/25 04:02:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -131,7 +131,7 @@ PsCreateWindow(WindowPtr pWin)
 	        ChangeWindowProperty(pWin, propName, XA_STRING, 8, 
 			             PropModeReplace,  strlen(propVal), 
 			             (pointer)propVal, FALSE);
-	        Xfree(propVal);
+	        xfree(propVal);
 	    }
 	}
     }

@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -144,10 +145,10 @@ PsPolyText16(
     int   i;
     char *str;
     if( !count ) return x;
-    str = malloc(count);
+    str = (char *)xalloc(count);
     for( i=0 ; i<count ; i++ ) str[i] = string[i];
     PsPolyText8(pDrawable, pGC, x, y, count, str);
-    free(str);
+    xfree(str);
   }
   return x;
 }
@@ -242,7 +243,7 @@ PsImageText16(
     int   i;
     char *str;
     if( !count ) return;
-    str = malloc(count);
+    str = (char *)xalloc(count);
     for( i=0 ; i<count ; i++ ) str[i] = string[i];
     PsImageText8(pDrawable, pGC, x, y, count, str);
     free(str);

@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.2 1996/12/26 01:38:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.3 1996/12/28 08:11:10 dawes Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)
@@ -79,13 +79,13 @@ ReplaceAnyString(
         {
 	    char *newString;
     
-	    newString = (char *)Xalloc(strlen(string) + strlen(replacement) - 
+	    newString = (char *)xalloc(strlen(string) + strlen(replacement) - 
 				       strlen(target) + 1);
 	    strncpy(newString, string, pKeyString - string);
 	    newString[pKeyString - string] = '\0';
 	    strcat(newString, replacement);
 	    strcat(newString, pKeyString + strlen(target));
-	    Xfree(string);
+	    xfree(string);
 	    string = newString;
         }
     }
@@ -117,13 +117,13 @@ ReplaceFileString(string, inFileName, outFileName)
         {
 	    char *newString;
     
-	    newString = (char *)Xalloc(strlen(string) + 
+	    newString = (char *)xalloc(strlen(string) + 
 				        strlen(inFileName) + 1);
 	    strncpy(newString, string, pKeyString - string);
 	    newString[pKeyString - string] = '\0';
 	    strcat(newString, inFileName);
 	    strcat(newString, pKeyString + strlen(pInFileString));
-	    Xfree(string);
+	    xfree(string);
 	    string = newString;
         }
     }
@@ -135,13 +135,13 @@ ReplaceFileString(string, inFileName, outFileName)
         {
 	    char *newString;
     
-	    newString = (char *)Xalloc(strlen(string) + 
+	    newString = (char *)xalloc(strlen(string) + 
 				        strlen(outFileName) + 1);
 	    strncpy(newString, string, pKeyString - string);
 	    newString[pKeyString - string] = '\0';
 	    strcat(newString, outFileName);
 	    strcat(newString, pKeyString + strlen(pOutFileString));
-	    Xfree(string);
+	    xfree(string);
 	    string = newString;
         }
     }
@@ -223,7 +223,7 @@ CopyContentsAndDelete(ppSrcFile, pSrcFileName, pDstFile)
     fclose(*ppSrcFile);
     *ppSrcFile = (FILE *)NULL;
     unlink(*pSrcFileName);
-    Xfree(*pSrcFileName);
+    xfree(*pSrcFileName);
     *pSrcFileName = (char *)NULL;
 
     return TRUE;
@@ -246,7 +246,7 @@ XpSendDocumentData(
     if(client->clientGone)
 	return Success;
 
-    pRep = (xPrintGetDocumentDataReply *)malloc(sz_xPrintGetDocumentDataReply+ 
+    pRep = (xPrintGetDocumentDataReply *)xalloc(sz_xPrintGetDocumentDataReply+ 
 	   QUADPAD(maxBufSize));
 
     for(bytesToWrite = min(maxBufSize, fileLen),
@@ -287,7 +287,7 @@ XpSendDocumentData(
 	bytesWritten += bytesToWrite;
     }
 
-    free(pRep);
+    xfree(pRep);
     return result;
 }
 

@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #include "Pcl.h"
 #include "gcstruct.h"
@@ -112,7 +113,7 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
      */
     region = miRegionCreate( NULL, 0 );
     drawRects = (xRectangle *)
-      Xalloc( ( nPoints - 1 ) * sizeof( xRectangle ) );
+      xalloc( ( nPoints - 1 ) * sizeof( xRectangle ) );
 
     /*
      * Calculate the "fudge factor" based on the line width.
@@ -192,7 +193,7 @@ PclPolyLine( pDrawable, pGC, mode, nPoints, pPoints )
      */
     miRegionDestroy( drawRegion );
     miRegionDestroy( region );
-    Xfree( drawRects );
+    xfree( drawRects );
 }
 
 void
@@ -228,7 +229,7 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
      */
     region = miRegionCreate( NULL, 0 );
     drawRects = (xRectangle *)
-      Xalloc( nSegments * sizeof( xRectangle ) );
+      xalloc( nSegments * sizeof( xRectangle ) );
 
     /*
      * Calculate the fudge factor, based on the line width
@@ -309,6 +310,6 @@ PclPolySegment( pDrawable, pGC, nSegments, pSegments )
      */
     miRegionDestroy( drawRegion );
     miRegionDestroy( region );
-    Xfree( drawRects );
+    xfree( drawRects );
 }
 

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.29 1996/12/23 05:50:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.30 1996/12/27 06:50:16 dawes Exp $
 XCOMM
 
 /*
@@ -1030,7 +1030,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
          COMPRESS = CompressCmd
-             GZIP = GzipCmd
+          GZIPCMD = GzipCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd

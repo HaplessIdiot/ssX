@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.2 1996/12/25 04:01:52 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -169,7 +169,7 @@ PclMonoPixmapFragment(FILE *outFile,
     h = y2 - y1;
     w = BitmapBytePad( x2 - x1 );
     
-    bits = (char *)malloc( h * w );
+    bits = (char *)xalloc( h * w );
     mfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h, 
 		XYPixmap, ~0, bits );
 
@@ -202,7 +202,7 @@ PclMonoPixmapFragment(FILE *outFile,
     /*
      * Clean things up a bit
      */
-    free( bits );
+    xfree( bits );
 }
 
 static void
@@ -226,7 +226,7 @@ PclColorPixmapFragment(FILE *outFile,
     h = y2 - y1;
     w = PixmapBytePad( x2 - x1, pix->drawable.depth );
     
-    bits = (char *)malloc( h * w );
+    bits = (char *)xalloc( h * w );
     if (pix->drawable.depth <= 8)
 	cfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h, 
 		ZPixmap, ~0, bits );
@@ -263,7 +263,7 @@ PclColorPixmapFragment(FILE *outFile,
     /*
      * Clean things up a bit
      */
-    free( bits );
+    xfree( bits );
 }
 
 RegionPtr

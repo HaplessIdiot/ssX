@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.def /main/168 1996/12/27 16:33:21 kaleb $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.12 1996/12/25 04:01:12 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.13 1996/12/29 13:37:00 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -40,9 +40,10 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.12 1996/12/25 04:01:12 dawes Ex
 #ifndef SiteIConfigFiles
 #define SiteIConfigFiles $(IRULESRC)/xf86site.def $(IRULESRC)/host.def
 #endif
-#include <xf86site.def>
 
 #include <host.def>
+
+#include <xf86site.def>
 
 /* On systems where cpp doesn't expand correctly macros in include directives
  * the two following macros need to be defined directly (where "X11" is

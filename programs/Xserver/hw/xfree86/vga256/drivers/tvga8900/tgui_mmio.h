@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_mmio.h,v 3.0 1996/12/28 07:42:59 dawes Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
  *
@@ -61,8 +61,14 @@
 		*(unsigned long *)(tguiMMIOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y);
 #define TGUI_PATLOC(addr) \
 		*(unsigned short *)(tguiMMIOBase +GER_PATLOC) = addr;
+#define TGUI_OUTB(addr, c) \
+		*(unsigned char *)(tguiMMIOBase + addr) = c;
 #define TGUI_COMMAND(c) \
-		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c;
+		{ \
+		TGUI_OPERMODE(GE_OP); \
+		TGUISync(); \
+		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c; \
+		}
 #else
 #define BLTBUSY(b) \
 		b = inb(GER_BASE+GER_STATUS) & GE_BUSY;
@@ -90,6 +96,12 @@
 		outl(GER_BASE+GER_DSTCLIP_XY, XY_MERGE(x,y));
 #define TGUI_PATLOC(addr) \
 		outw(GER_BASE+GER_PATLOC, addr);
+#define TGUI_OUTB(addr, c) \
+		outw(GER_BASE+addr, c);
 #define TGUI_COMMAND(c) \
-		outb(GER_BASE+GER_COMMAND, c);
+		{ \
+		TGUI_OPERMODE(GE_OP); \
+		TGUISync(); \
+		outb(GER_BASE+GER_COMMAND, c); \
+		}
 #endif

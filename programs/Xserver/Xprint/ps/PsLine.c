@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -93,7 +94,7 @@ PsPolyLine(
     PsOut_Offset(psOut, pDrawable->x, pDrawable->y);
     PsOut_Color(psOut, PsGetPixelColor(cMap, pGC->fgPixel));
     PsLineAttrs(psOut, pGC, cMap);
-    pts = (PsPointPtr)Xalloc(sizeof(PsPointRec)*nPoints);
+    pts = (PsPointPtr)xalloc(sizeof(PsPointRec)*nPoints);
     if( mode==CoordModeOrigin )
     {
       for( i=0 ; i<nPoints ; i++ )
@@ -109,7 +110,7 @@ PsPolyLine(
       }
     }
     PsOut_Lines(psOut, nPoints, pts);
-    Xfree(pts);
+    xfree(pts);
   }
 }
 

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.4 1996/12/24 08:45:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.5 1996/12/29 13:36:56 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1605,7 +1605,7 @@ FontBaseObj(basename):  FontSrc(basename)				@@\
 #if GzipFontCompression
 #define CompressedFontTarget(basename)					@@\
 FontBaseObj(basename).gz:  FontSrc(basename)				@@\
-	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIP) > $@
+	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIPCMD) > $@
 #else
 #define CompressedFontTarget(basename)					@@\
 FontBaseObj(basename).Z:  FontSrc(basename)				@@\

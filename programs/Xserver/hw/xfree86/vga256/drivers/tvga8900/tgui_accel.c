@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.0 1996/11/18 13:18:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.1 1996/12/28 07:42:30 dawes Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -35,10 +35,9 @@
 #include "xf86xaa.h"
 
 extern unsigned char *tguiMMIOBase;
-extern int TVGAchipset;
-extern int TGUIRops[16];
+extern int TGUIRops_alu[16];
+extern int TGUIRops_Pixalu[16];
 extern int GE_OP;
-#include "t89_driver.h"
 #include "tgui_ger.h"
 #include "tgui_mmio.h"
 
@@ -84,17 +83,18 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
 				HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
+				COP_FRAMEBUFFER_CONCURRENCY |
 				PIXMAP_CACHE;
 
     xf86AccelInfoRec.Sync = TGUISync;
 
-#if 0
     xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
 
     xf86AccelInfoRec.SetupForFillRectSolid = TGUISetupForFillRectSolid;
     xf86AccelInfoRec.SubsequentFillRectSolid = TGUISubsequentFillRectSolid;
 
-    /* Bresenham Lines */
+#if 0
+    xf86AccelInfoRec.ErrorTermBits = 11;
     xf86AccelInfoRec.SubsequentBresenhamLine = TGUISubsequentBresenhamLine;
 #endif
 
@@ -113,7 +113,10 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_DWORD |
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					SCANLINE_PAD_DWORD |
-					CPU_TRANSFER_PAD_DWORD;
+					CPU_TRANSFER_PAD_DWORD |
+					LEFT_EDGE_CLIPPING |
+					NO_PLANEMASK;
+
 #if 0
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand = 
 	TGUISetupForCPUToScreenColorExpand;
@@ -168,8 +171,8 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
     unsigned planemask;
 {
 	TGUI_FCOLOUR(color);
-	TGUI_BCOLOUR(color);
-	TGUI_FMIX(TGUIRops[rop]);
+	TGUI_FMIX(TGUIRops_Pixalu[rop]);
+	TGUI_DRAWFLAG(SOLIDFILL);
 }
 /*
  * This is the implementation of the SubsequentForFillRectSolid function
@@ -180,11 +183,8 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
 void TGUISubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
-	TGUISync();
-	TGUI_DRAWFLAG(SOLIDFILL | SRCMONO | SCR2SCR);
 	TGUI_DIM_XY(w,h);
 	TGUI_DEST_XY(x,y);
-	TGUI_OPERMODE(GE_OP);
 	TGUI_COMMAND(GE_BLT);
 }
 
@@ -213,7 +213,7 @@ transparency_color)
 	direction |= TRANS_ENABLE;
     }
     TGUI_DRAWFLAG(direction | SCR2SCR);
-    TGUI_FMIX(TGUIRops[rop]);
+    TGUI_FMIX(TGUIRops_alu[rop]);
     blitxdir = xdir;
     blitydir = ydir;
 }
@@ -236,11 +236,9 @@ void TGUISubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
 	x1 = x1 + w - 1;
 	x2 = x2 + w - 1;
     }
-    TGUISync();
     TGUI_SRC_XY(x1,y1);
     TGUI_DEST_XY(x2,y2);
     TGUI_DIM_XY(w,h);
-    TGUI_OPERMODE(GE_OP);
     TGUI_COMMAND(GE_BLT);
 }
 
@@ -252,12 +250,10 @@ void TGUISubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	if (octant & YMAJOR)      direction |= YMAJ;
 	if (octant & XDECREASING) direction |= XNEG;
 	if (octant & YDECREASING) direction |= YNEG;
-	TGUISync();
-	TGUI_SRC_XY(e1,e2);
+	TGUI_SRC_XY(e2,e1);
 	TGUI_DEST_XY(x1,y1);
-	TGUI_DIM_XY(err,length);
-	TGUI_DRAWFLAG(STENCIL | SRCMONO | SCR2SCR | direction);
-	TGUI_OPERMODE(GE_OP);
+	TGUI_DIM_XY(err+1,length+1);
+	TGUI_DRAWFLAG(SOLIDFILL | STENCIL | direction);
 	TGUI_COMMAND(GE_BRESLINE);
 }
 
@@ -267,23 +263,21 @@ void TGUISetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 {
 	int drawflag = 0;
 
-	TGUISync();
 	TGUI_FCOLOUR(fg);
         if (bg == -1)
 		drawflag |= TRANS_ENABLE;
 	else
 		TGUI_BCOLOUR(bg);
 	TGUI_DRAWFLAG(SRCMONO | drawflag);
-	TGUI_FMIX(TGUIRops[rop]);
+	TGUI_FMIX(TGUIRops_alu[rop]);
 }
 
 void TGUISubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
     int x, y, w, h, skipleft;
 {
-	TGUISync();
+	TGUI_OUTB(0x2B, skipleft);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
-	TGUI_OPERMODE(GE_OP);
 	TGUI_COMMAND(GE_BLT);
 }
 
@@ -295,25 +289,22 @@ transparency_color)
 {
 	int drawflag = 0;
 
-	TGUISync();
 	if (transparency_color != -1)
 	{
 		TGUI_FCOLOUR(transparency_color);
 		drawflag |= TRANS_ENABLE;
 	}
-	TGUI_FMIX(TGUIRops[rop]); /* ROP */
-	TGUI_DRAWFLAG(drawflag | PAT2SCR | SCR2SCR);
+	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
+	TGUI_DRAWFLAG(drawflag | PATMONO | PAT2SCR);
 }
 
 void TGUISubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     int patternx, patterny;
     int x, y, w, h;
 {
-	TGUISync();
 	TGUI_PATLOC(patterny * vga256InfoRec.displayWidth + patternx);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
-	TGUI_OPERMODE(GE_OP);
 	TGUI_COMMAND(GE_BLT);
 }
 
@@ -323,23 +314,20 @@ void TGUISetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 {
 	int drawflag = 0;
 
-	TGUISync();
 	TGUI_FCOLOUR(fg);
         if (bg == -1)
 		drawflag |= TRANS_ENABLE;
 	else
 		TGUI_BCOLOUR(bg);
 	TGUI_DRAWFLAG(SCR2SCR | SRCMONO | drawflag);
-	TGUI_FMIX(TGUIRops[rop]);
+	TGUI_FMIX(TGUIRops_alu[rop]);
 }
 
 void TGUISubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
     int srcx, srcy, x, y, w, h;
 {
-	TGUISync();
 	TGUI_SRC_XY(srcx,srcy);
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
-	TGUI_OPERMODE(GE_OP);
 	TGUI_COMMAND(GE_BLT);
 }

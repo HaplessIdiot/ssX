@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include <stdio.h>
@@ -131,7 +132,7 @@ GetPropString(
 	    return (char *)NULL;
 
 	n = (pProp->format/8) * pProp->size; /* size (bytes) of prop */
-	retVal = (char *)Xalloc(n + 1);
+	retVal = (char *)xalloc(n + 1);
 	(void)memcpy((void *)retVal, (void *)pProp->data, n);
 	retVal[n] = '\0';
 
@@ -230,7 +231,7 @@ char *ptr;
 
     ptr = pConPriv->figures;
     while ( ( pConPriv->fcount + n) > pConPriv->fcount_max ) {
-	ptr = (char *)realloc(ptr, 1024 + pConPriv->fcount_max);
+	ptr = (char *)xrealloc(ptr, 1024 + pConPriv->fcount_max);
 	if ( !ptr )
 	    return;
 	pConPriv->figures = ptr;

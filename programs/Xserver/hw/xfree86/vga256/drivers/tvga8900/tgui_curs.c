@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.12 1996/11/18 13:18:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.13 1996/12/23 06:58:47 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -43,7 +43,6 @@
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "vga.h"
-#include "t89_driver.h"
 #include "tgui_ger.h"
 
 extern int TVGAchipset;
@@ -502,6 +501,7 @@ TridentRecolorCursor(pScr, pCurs, displayed)
 	outb(GER_BYTE0, 0x00);
 	outb(GER_BYTE1, 0xFF);
    }
+#if 0
    else
    if (TVGAchipset == TGUI96xx)
    {
@@ -516,6 +516,7 @@ TridentRecolorCursor(pScr, pCurs, displayed)
 	wrinx(vgaIOBase + 4, 0x4E, 0x00);
 	wrinx(vgaIOBase + 4, 0x4F, 0x00);
    }
+#endif
 }
 
 /*

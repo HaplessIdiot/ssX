@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -77,7 +78,7 @@ PsFillSpans(
   /*
    * Build a region out of the spans
    */
-  rects   = (xRectangle *)Xalloc(nSpans*sizeof(xRectangle));
+  rects   = (xRectangle *)xalloc(nSpans*sizeof(xRectangle));
   xoffset = pDrawable->x;
   yoffset = pDrawable->y;
 
@@ -121,7 +122,7 @@ PsFillSpans(
    */
   miRegionDestroy(fillRegion);
   miRegionDestroy(region);
-  Xfree(rects);
+  xfree(rects);
 }
 
 void

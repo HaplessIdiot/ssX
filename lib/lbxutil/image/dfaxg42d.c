@@ -22,6 +22,7 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
  * OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xfuncs.h>
@@ -191,7 +192,7 @@ register int x, count;
 
     while (count >= 8)
     {
-	*cp++ = 0xff;
+	*cp++ = (char)0xff;
 	count -= 8;
     }
 

@@ -52,14 +52,9 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	This option may be used to specify the start address of the linear
 	frame buffer. By default for VLBus/EISA cards it is at 60MB.
 	For the 8900CL/D, it is at 15MB.
-<tag>Option &dquot;fast_dram&dquot;</tag>
-	45ns DRAM
-<tag>Option &dquot;med_dram&dquot;</tag>
-	70ns DRAM
-<tag>Option &dquot;slow_dram&dquot;</tag>
-	80ns DRAM.  This is the default for TGUIs.
-	NOTE: The above settings allow for higher dot clocks. Choose
-	the one that matches your DRAM speed.
+<tag>Option &dquot;mmio&dquot;</tag>
+	This option turns on Memory Mapped IO support. It increases speed,
+	but hasn't been extensively tested yet.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
 <tag>Option &dquot;tgui_pci_read_off&dquot;</tag>
@@ -142,7 +137,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.14 1996/10/19 15:15:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.15 1996/12/23 06:46:28 dawes Exp $
 
 
 

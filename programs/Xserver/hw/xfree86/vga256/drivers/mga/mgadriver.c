@@ -33,7 +33,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.14 1996/12/27 07:05:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.15 1996/12/28 08:17:50 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -746,10 +746,24 @@ MGAProbe()
 	 * If the user has specified ramdac speed in the XF86Config
 	 * file, we respect that setting.
 	 */
-	vga256InfoRec.maxClock = ( vga256InfoRec.dacSpeed ) ?
-		vga256InfoRec.dacSpeed :
-		((( MGABios.RamdacType & 0xff ) == 1 ) ?  220000 : 175000 );
-	
+#ifdef DEBUG
+	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
+#endif
+	if( vga256InfoRec.dacSpeed )
+		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	else
+	{
+		switch( MGABios.RamdacType & 0xff )
+		{
+		case 1:	vga256InfoRec.maxClock = 220000;
+			break;
+		case 2:	vga256InfoRec.maxClock = 250000;
+			break;
+		default:	
+			vga256InfoRec.maxClock = 175000;
+			break;
+		}
+	}
 	/*
 	 * Last we fill in the remaining data structures. 
 	 */

@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 
@@ -95,7 +96,7 @@ PsPolyPoint(
     if( PsUpdateDrawableGC(pGC, pDrawable, &psOut, &cMap)==FALSE ) return;
     PsOut_Offset(psOut, pDrawable->x, pDrawable->y);
     PsOut_Color(psOut, PsGetPixelColor(cMap, pGC->fgPixel));
-    pts = (PsPointPtr)Xalloc(sizeof(PsPointRec)*nPoints);
+    pts = (PsPointPtr)xalloc(sizeof(PsPointRec)*nPoints);
     if( mode==CoordModeOrigin )
     {
       for( i=0 ; i<nPoints ; i++ )
@@ -111,7 +112,7 @@ PsPolyPoint(
       }
     }
     PsOut_Points(psOut, nPoints, pts);
-    Xfree(pts);
+    xfree(pts);
   }
 }
 

@@ -44,6 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #include "gcstruct.h"
 
@@ -219,10 +220,10 @@ PclSetDrawablePrivateGC( pDrawable, gc )
 	   * out from under us.
 	   */
 	  if( pPriv->dash != NULL )
-	    Xfree( pPriv->dash );
+	    xfree( pPriv->dash );
 	  if( gc.numInDashList != 0 )
 	    {
-		pPriv->dash = (unsigned char *)Xalloc( sizeof( unsigned char ) 
+		pPriv->dash = (unsigned char *)xalloc( sizeof( unsigned char ) 
 						      * gc.numInDashList );
 		for( i = 0; i < gc.numInDashList; i++ )
 		  pPriv->dash[i] = gc.dash[i];
@@ -236,10 +237,10 @@ PclSetDrawablePrivateGC( pDrawable, gc )
 	   * out from under us.
 	   */
 	  if( pPriv->dash != NULL )
-	    Xfree( pPriv->dash );
+	    xfree( pPriv->dash );
 	  if( gc.numInDashList != 0 )
 	    {
-		pPriv->dash = (unsigned char *)Xalloc( sizeof( unsigned char ) 
+		pPriv->dash = (unsigned char *)xalloc( sizeof( unsigned char ) 
 						      * gc.numInDashList );
 		for( i = 0; i < gc.numInDashList; i++ )
 		  pPriv->dash[i] = gc.dash[i];
@@ -860,7 +861,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 		PclSendPattern( bits, sz, pGC->depth, h, w, 101, *outFile );
 		FreeScratchGC( scratchGC );
 		(*pGC->pScreen->DestroyPixmap)( scratchPix );
-		Xfree( bits );
+		xfree( bits );
 	    }
       }
 

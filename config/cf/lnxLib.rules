@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules /main/13 1996/09/28 16:11:01 rws $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.26 1996/12/23 05:50:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.27 1996/12/25 04:01:10 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -267,13 +267,13 @@ JUMP_IS_HOST_ICE = NO
 JUMP_HOST_ICE = $(JUMP_ROOT_X11)
 JUMP_DIR_ICE = $(JUMP_DIR_X11)
 
-XCOMM libXt.so (Xt, Xmu, Xext, Xi, Xtst)
+XCOMM libXt.so (Xt, Xmu, Xext, Xi, Xtst, Xp)
 JUMP_ROOT_Xt = $(TOOLKITSRC)
 JUMP_IS_HOST_Xt = YES
-JUMP_STUBLIBS_Xt = libXt.sa libXmu.sa libXext.sa libXi.sa libXtst.sa
+JUMP_STUBLIBS_Xt = libXt.sa libXmu.sa libXext.sa libXi.sa libXtst.sa libXp.sa
 JUMP_SUBDIRS_Xt = $(JUMP_ROOT_X11)
 JUMP_SIBDIRS_Xt = $(JUMP_ROOT_Xmu) $(JUMP_ROOT_Xext) \
-	$(JUMP_ROOT_Xi) $(JUMP_ROOT_Xtst)
+	$(JUMP_ROOT_Xi) $(JUMP_ROOT_Xtst) $(JUMP_ROOT_Xp)
 JUMP_DIR_Xt = $(JUMP_ROOT_Xt)/shared
 JUMP_VARS_Xt = $(JUMP_ROOT_Xt)/jump_vars
 JUMP_FUNCS_Xt = $(JUMP_ROOT_Xt)/jump_funcs
@@ -283,9 +283,9 @@ JUMP_IMPORT_Xt = $(JUMP_EXPORT_X11)
 JUMP_ADDRESS_Xt = 0x602a0000
 JUMP_JUMPTABLESIZE_Xt = 0x4000
 JUMP_GOTSIZE_Xt = 4096
-JUMP_STUBNAMES_Xt = libXt libXmu libXext libXi libXtst
+JUMP_STUBNAMES_Xt = libXt libXmu libXext libXi libXtst libXp
 JUMP_STUBS_IMPORT_Xt = $(JUMP_STUBS_IMPORT_X11)
-JUMP_SIBARS_Xt = jump/libXmu.a~ jump/libXext.a~ jump/libXi.a~ jump/libXtst.a~
+JUMP_SIBARS_Xt = jump/libXmu.a~ jump/libXext.a~ jump/libXi.a~ jump/libXtst.a~ jump/libXp.a~
 JUMP_LDLIBS_Xt = $(JUMP_SIBARS_Xt) $(JUMP_ROOT_ICE)/libICE.sa \
 	$(JUMP_ROOT_SM)/libSM.sa $(JUMP_ROOT_X11)/libX11.sa $(JUMP_LDLIBS_libc)
 
@@ -312,6 +312,12 @@ JUMP_ROOT_Xtst = $(XTESTLIBSRC)
 JUMP_IS_HOST_Xtst = NO
 JUMP_HOST_Xtst = $(JUMP_ROOT_Xt)
 JUMP_DIR_Xtst = $(JUMP_DIR_Xt)
+
+XCOMM libXp (part of libXt.so)
+JUMP_ROOT_Xp = $(XPLIBSRC)
+JUMP_IS_HOST_Xp = NO
+JUMP_HOST_Xp = $(JUMP_ROOT_Xt)
+JUMP_DIR_Xp = $(JUMP_DIR_Xt)
 
 XCOMM libXaw.so (Xaw)
 JUMP_ROOT_Xaw = $(AWIDGETSRC)

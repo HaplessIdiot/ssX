@@ -48,6 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -142,7 +143,7 @@ PsFillPolygon(
     if( pGC->fillRule==EvenOddRule ) rule = PsEvenOdd;
     else                             rule = PsNZWinding;
     PsOut_FillRule(psOut, rule);
-    pts = (PsPointPtr)Xalloc(sizeof(PsPointRec)*nPoints);
+    pts = (PsPointPtr)xalloc(sizeof(PsPointRec)*nPoints);
     if( mode==CoordModeOrigin )
     {
       for( i=0 ; i<nPoints ; i++ )
@@ -158,7 +159,7 @@ PsFillPolygon(
       }
     }
     PsOut_Polygon(psOut, nPoints, pts);
-    Xfree(pts);
+    xfree(pts);
   }
 }
 

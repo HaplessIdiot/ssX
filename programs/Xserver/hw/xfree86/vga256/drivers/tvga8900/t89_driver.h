@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.4 1996/11/18 13:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.5 1996/12/23 06:58:46 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -45,6 +45,77 @@
 #define TGUI9430DGi	14
 #define TGUI9440AGi	15
 #define TGUI96xx	16
+
+#ifdef INITIALIZE_LIMITS
+/* Clock Limits */
+int tridentClockLimit[] = {
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000,
+	90000, /* 135000 when Multiplex set (not done yet!) */
+};
+
+int tridentClockLimit16bpp[] = {
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	45000,
+	80000,
+}; 
+
+int tridentClockLimit32bpp[] = {
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	25180,
+	40000,
+};
+
+#else
+
+extern int tridentClockLimit[];
+extern int tridentClockLimit16bpp[];
+extern int tridentClockLimit32bpp[];
+
+#endif
+
 
 /*
  * Trident DAC's

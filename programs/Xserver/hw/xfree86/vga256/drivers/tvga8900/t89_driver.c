@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.55 1996/12/28 07:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.56 1996/12/28 08:29:49 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -67,6 +67,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
+#define INITIALIZE_LIMITS
 #include "t89_driver.h"
 #include "tgui_ger.h"
 #include "vgaPCI.h"
@@ -183,6 +184,7 @@ int tridentHWCursorType = 0;
 int tridentDisplayWidth;
 int tridentDACtype = -1;
 int GE_OP;
+Bool tridentHasAcceleration = FALSE;
 Bool tridentUseLinear = FALSE;
 Bool tridentTGUIProgrammableClocks = FALSE;
 Bool tridentIsTGUI = FALSE;
@@ -196,7 +198,7 @@ static unsigned TGUI_ExtPorts[] = {0x43C6, 0x43C7, 0x43C8, 0x43C9,};
 static int Num_TGUI_ExtPorts =
 	(sizeof(TGUI_ExtPorts)/sizeof(TGUI_ExtPorts[0]));
 
-int TGUIRops[16] = {
+int TGUIRops_alu[16] = {
 	TGUIROP_0,
 	TGUIROP_AND,
 	TGUIROP_SRC_AND_NOT_DST,
@@ -212,6 +214,25 @@ int TGUIRops[16] = {
 	TGUIROP_NOT_SRC,
 	TGUIROP_NOT_SRC_OR_DST,
 	TGUIROP_NAND,
+	TGUIROP_1
+};
+
+int TGUIRops_Pixalu[16] = {
+	TGUIROP_0,
+	TGUIROP_AND_PAT,
+	TGUIROP_PAT_AND_NOT_DST,
+	TGUIROP_PAT,
+	TGUIROP_NOT_PAT_AND_DST,
+	TGUIROP_DST,
+	TGUIROP_XOR_PAT,
+	TGUIROP_OR_PAT,
+	TGUIROP_NOR_PAT,
+	TGUIROP_XNOR_PAT,
+	TGUIROP_NOT_DST,
+	TGUIROP_PAT_OR_NOT_DST,
+	TGUIROP_NOT_PAT,
+	TGUIROP_NOT_PAT_OR_DST,
+	TGUIROP_NAND_PAT,
 	TGUIROP_1
 };
 
@@ -681,6 +702,10 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
+		if (vgaBitsPerPixel == 32)
+			tridentHasAcceleration = FALSE;
+		else
+			tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
 		TVGA8900.ChipHas32bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
@@ -716,6 +741,7 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
+		tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
 		TVGA8900.ChipHas32bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
@@ -902,12 +928,11 @@ TVGA8900Probe()
 	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 
-	if (TVGAchipset >= TGUI9440AGi)
+	if (tridentHasAcceleration)
 	{
 		/* TGUI Accelerator stuff */
 		OFLG_SET(OPTION_NOACCEL, &TVGA8900.ChipOptionFlags);
 		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
-
 		if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 			vgaSetPitchAdjustHook(TGUIPitchAdjust);
 	}
@@ -932,9 +957,6 @@ TVGA8900Probe()
 	
 	if (tridentIsTGUI)
 	{
-		if (TVGAchipset == TGUI96xx)
-			vga256InfoRec.maxClock = 135000;
-
 		/* Enable extra IO ports for the TGUI */
 		xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_TGUI_ExtPorts,
 			       TGUI_ExtPorts);
@@ -953,6 +975,24 @@ TVGA8900Probe()
 		{
 			TVGA8900.ChipClockScaleFactor = 3;
 			vga256InfoRec.maxClock *= 3;
+		}
+	}
+	else
+	{
+		switch (vgaBitsPerPixel) {
+			case 8:
+				vga256InfoRec.maxClock = 
+					tridentClockLimit[TVGAchipset];
+				break;
+			case 16:
+				vga256InfoRec.maxClock = 
+					tridentClockLimit16bpp[TVGAchipset];
+				break;
+			case 24:
+			case 32:
+				vga256InfoRec.maxClock = 
+					tridentClockLimit32bpp[TVGAchipset];
+				break;
 		}
 	}
 
@@ -1067,8 +1107,10 @@ TVGA8900FbInit()
 	  }
 	}
 
-	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+	if (tridentHasAcceleration)
 	{
+	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+	   {
 		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
 			TGUIAccelInitMMIO();
 		else
@@ -1078,11 +1120,12 @@ TVGA8900FbInit()
 		ErrorF("%s %s: Using %d byte display width.\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.displayWidth);
-	}
-	else
-	{
+	   }
+	   else
+	   {
 		ErrorF("%s %s: Disabled Graphics Engine.\n",
 			XCONFIG_GIVEN, vga256InfoRec.name);
+	   }
 	}
 #endif /* MONOVGA */
 }
@@ -1605,7 +1648,8 @@ TVGA8900Init(mode)
 		if (TVGAchipset >= TGUI96xx)
 			new->AddColReg |= (offset & 0x200) >> 4;
 #ifndef MONOVGA
-		if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+		if ((!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) &&
+			tridentHasAcceleration)
 		{
 			if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
 			{

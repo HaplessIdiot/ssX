@@ -25,6 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #include "def.h"
 
@@ -40,7 +41,7 @@ in this Software without prior written authorization from the X Consortium.
 #define QB 16
 #define WB 32
 #define SALT '#'
-#if pdp11 | vax | ns16000 | mc68000 | ibm032
+#if defined(pdp11) || defined(vax) || defined(ns16000) || defined(mc68000) || defined(ibm032)
 #define COFF 128
 #else
 #define COFF 0

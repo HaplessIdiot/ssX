@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.2 1996/12/25 04:01:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -177,7 +177,7 @@ PclCloseScreen(int index,
 #endif
 #endif
 
-    Xfree( pPriv );
+    xfree( pPriv );
     
     return status;
 }
@@ -298,7 +298,7 @@ InitializePclDriver(ndx, pScreen, argc, argv)
     for( i = 0; i < NUM_DEPTHS( Depths ); i++ )
       {
 	  pScreen->allowedDepths[i].vids =
-	    (VisualID *)Xalloc( sizeof(VisualID ) );
+	    (VisualID *)xalloc( sizeof(VisualID ) );
 	  pScreen->allowedDepths[i].vids[0] = i + 1;
       }
     
@@ -345,7 +345,7 @@ AllocatePclPrivates(
         PclGeneration = serverGeneration;
     }
 
-    pScreen->devPrivates[PclScreenPrivateIndex].ptr = (pointer)Xalloc(
+    pScreen->devPrivates[PclScreenPrivateIndex].ptr = (pointer)xalloc(
                 sizeof(PclScreenPrivRec));
 }
 
@@ -425,13 +425,13 @@ PclInitContext( pCon )
     pConPriv->getDocBufSize = 0;
     modelID = XpGetOneAttribute(pCon, XPPrinterAttr, "xp-model-identifier");
     if ( (configDir = XpGetConfigDir(False)) != (char *) NULL ) {
-	pathName = (char *)Xalloc(strlen(configDir) + strlen(MODELDIRNAME) +
+	pathName = (char *)xalloc(strlen(configDir) + strlen(MODELDIRNAME) +
 				strlen(modelID) + strlen("color.map") + 4);
 	if (pathName) {
 	    sprintf(pathName, "%s/%s/%s/%s", configDir, MODELDIRNAME, modelID,
 				"color.map");
 	    pConPriv->ctbl = PclReadMap(pathName, &pConPriv->ctbldim);
-	    Xfree(pathName);
+	    xfree(pathName);
 
 	} else
 	    pConPriv->ctbl = NULL;
@@ -565,7 +565,7 @@ PclDestroyContext( pCon )
     if( pConPriv->pageFileName != (char *)NULL )
       {
 	  unlink( pConPriv->pageFileName );
-	  Xfree( pConPriv->pageFileName );
+	  xfree( pConPriv->pageFileName );
 	  pConPriv->pageFileName = (char *)NULL;
       }
     
@@ -577,15 +577,15 @@ PclDestroyContext( pCon )
     if( pConPriv->jobFileName != (char *)NULL )
       {
 	  unlink( pConPriv->jobFileName );
-	  Xfree( pConPriv->jobFileName );
+	  xfree( pConPriv->jobFileName );
 	  pConPriv->jobFileName = (char *)NULL;
       }
 
-    Xfree( pConPriv->dash );
-    free(pConPriv->ctbl);
+    xfree( pConPriv->dash );
+    xfree(pConPriv->ctbl);
     pConPriv->ctbl = NULL;
 #ifdef XP_PCL_LJ3
-    Xfree( pConPriv->figures );
+    xfree( pConPriv->figures );
 #endif /* XP_PCL_LJ3 */
 
     /*
@@ -596,7 +596,7 @@ PclDestroyContext( pCon )
       {
 	  t = p;
 	  p = p->next;
-	  free( t );
+	  xfree( t );
       }
     pConPriv->palettes = NULL;
 
@@ -625,7 +625,7 @@ PclDestroyContext( pCon )
 			    temp = pCmap->contexts;
 			    pCmap->contexts = con = con->next;
 			}
-		      free( temp );
+		      xfree( temp );
 		  }
 		else
 		  con = con->next;

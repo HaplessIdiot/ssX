@@ -43,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.2 1996/12/25 04:01:56 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -91,7 +91,7 @@ PclStartJob( pCon, sendClientData, client )
 	    pConPriv->pPageFile = (FILE *)NULL;
 	}
 	unlink(pConPriv->pageFileName);
-	Xfree(pConPriv->pageFileName);
+	xfree(pConPriv->pageFileName);
 	pConPriv->pageFileName = (char *)NULL;
     }
 
@@ -179,7 +179,7 @@ PclEndJob( pCon, cancel )
 
 	  fclose( fp );
 	  unlink( fileName );
-	  Xfree( fileName );
+	  xfree( fileName );
 
 	  if( priv->getDocClient != (ClientPtr)NULL ) {
 	      XpFinishDocData( priv->getDocClient );
@@ -220,7 +220,7 @@ PclEndJob( pCon, cancel )
     XpSubmitJob( priv->jobFileName, pCon );
     fclose( priv->pJobFile );
     unlink( priv->jobFileName );
-    Xfree( priv->jobFileName );
+    xfree( priv->jobFileName );
     priv->jobFileName = NULL;
 
     PclDestroySoftFontInfo(priv->pSoftFontInfo);
@@ -476,7 +476,7 @@ SendDocData( PclContextPrivPtr pPriv )
     fclose( pPriv->pJobFile );
     unlink( pPriv->jobFileName );
 
-    Xfree(pPriv->jobFileName);
+    xfree(pPriv->jobFileName);
 
     if (!XpOpenTmpFile("w+", &pPriv->jobFileName, &pPriv->pJobFile))
 	return BadAlloc;
