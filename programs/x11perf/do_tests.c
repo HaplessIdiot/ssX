@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/x11perf/do_tests.c,v 1.5 2000/12/01 03:27:59 keithp Exp $ */
 
 #include "x11perf.h"
 
@@ -909,39 +909,39 @@ Test test[] = {
   {"-aa10text", "Char in 80-char aa line (Charter 10)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 10, "charter-10-antialias=true-rgba=0-pixelsize=10", NULL}},
+		{80, 10, "charter:antialias=true:rgba=0:pixelsize=10", NULL}},
   {"-aa24text", "Char in 30-char aa line (Charter 24)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{30, 24, "charter-24-antialias=true-rgba=0-pixelsize=24", NULL}},
+		{30, 24, "charter:antialias=true:rgba=0:pixelsize=24", NULL}},
   {"-aaftext", "Char in 80-char aa line (Courier 12)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 12, "courier-12-antialias=true-rgba=0-pixelsize=12", NULL}},
+		{80, 12, "courier:antialias=true:rgba=0:pixelsize=12", NULL}},
   {"-a10text", "Char in 80-char a line (Charter 10)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 10, "charter-10-antialias=false-rgba=0-pixelsize=10", NULL}},
+		{80, 10, "charter:antialias=false:rgba=0:pixelsize=10", NULL}},
   {"-a24text", "Char in 30-char a line (Charter 24)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{30, 24, "charter-24-antialias=false-rgba=0-pixelsize=24", NULL}},
+		{30, 24, "charter:antialias=false:rgba=0:pixelsize=24", NULL}},
   {"-aftext", "Char in 80-char a line (Courier 12)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 12, "courier-12-antialias=false-rgba=0-pixelsize=12", NULL}},
+		{80, 12, "courier:antialias=false:rgba=0:pixelsize=12", NULL}},
   {"-rgb10text", "Char in 80-char rgb line (Charter 10)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 10, "charter-10-antialias=true-rgba=rgb-pixelsize=10", NULL}},
+		{80, 10, "charter:antialias=true:rgba=rgb:pixelsize=10", NULL}},
   {"-rgb24text", "Char in 30-char rgb line (Charter 24)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{30, 24, "charter-24-antialias=true-rgba=rgb-pixelsize=24", NULL}},
+		{30, 24, "charter:antialias=true:rgba=rgb:pixelsize=24", NULL}},
   {"-rgbftext", "Char in 80-char rgb line (Courier 12)", NULL,
 	        InitAAText, DoAAText, ClearTextWin, EndAAText,
 		V1_5FEATURE, NONROP, 0,
-		{80, 12, "courier-12-antialias=true-rgba=rgb-pixelsize=12", NULL}},
+		{80, 12, "courier:antialias=true:rgba=rgb:pixelsize=12", NULL}},
 #endif
   {"-scroll10", "Scroll 10x10 pixels", NULL,
 		InitScroll, DoScroll, MidScroll, EndScroll,
