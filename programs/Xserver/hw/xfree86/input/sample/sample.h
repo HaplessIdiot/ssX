@@ -1,3 +1,8 @@
+/*
+ * THIS SAMPLE INPUT DRIVER IS OUT OF DATE.  DO NOT USE IT AS A TEMPLATE
+ * WHEN WRITING A NEW INPUT DRIVER.
+ */
+
 /* 
  * Copyright (c) 1998  Metro Link Incorporated
  *
@@ -24,7 +29,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.h,v 1.2 1999/02/01 12:13:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.h,v 1.3 2002/01/02 15:09:15 herrb Exp $ */
 
 #ifndef	_SAMPLE_H_
 #define _SAMPLE_H_
