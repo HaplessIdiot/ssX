@@ -249,6 +249,9 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	PictureWindowPrivateIndex = AllocateWindowPrivateIndex();
 	PictureGeneration = serverGeneration;
     }
+    if (!AllocateWindowPrivate (pScreen, PictureWindowPrivateIndex, 0))
+	return FALSE;
+    
     if (!formats)
     {
 	formats = PictureCreateDefaultFormats (pScreen, &nformats);
