@@ -1,5 +1,6 @@
-3528. Fix Multiple MX RegisterResources with RAC in glint driver.
-3527. Update loader for Xinerama changes.
+3528. Fix Multiple MX RegisterResources with RAC in glint 
+      driver (Alan Hourihane).
+3527. Update loader for Xinerama changes (Alan Hourihane).
 3526. Massive Xinerama rewrite (Mark Vojkovich).
       - Change the way it deals with resources.
       - Remove broken Xinerama code from the multibuf extension.
