@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xcursor/xcursorint.h,v 1.1 2002/08/29 04:40:34 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,14 +36,47 @@ typedef struct _XcursorFontInfo {
     XcursorBool			is_cursor_font;
 } XcursorFontInfo;
 
+/*
+ * Track a few recently created bitmaps to see
+ * if they get used to create cursors.  This
+ * is done by hooking into Xlib and watching
+ * for XCreatePixmap, XPutImage, XCreatePixmapCursor
+ * with appropriate arguments.  When this happens
+ * Xcursor computes a hash value for the source image
+ * and tries to load a library cursor of that name.
+ */
+ 
+/* large bitmaps are unlikely to be cursors */
+#define MAX_BITMAP_CURSOR_SIZE	64
+/* don't need to remember very many; in fact, 2 is likely sufficient */
+#define NUM_BITMAPS	    8
+
+typedef struct _XcursorBitmapInfo {
+    Pixmap	    bitmap;
+    unsigned long   sequence;
+    unsigned int    width, height;
+    Bool	    has_image;
+    unsigned char   hash[XCURSOR_BITMAP_HASH_SIZE];
+} XcursorBitmapInfo;
+
+typedef enum _XcursorDither {
+    XcursorDitherThreshold,
+    XcursorDitherMedian,
+    XcursorDitherOrdered,
+    XcursorDitherDiffuse
+} XcursorDither;
+
 typedef struct _XcursorDisplayInfo {
     struct _XcursorDisplayInfo	*next;
     Display			*display;
     XExtCodes			*codes;
     XcursorBool			has_render_cursor;
+    XcursorBool			theme_core;
     int				size;
     XcursorFontInfo		*fonts;
     char			*theme;
+    XcursorDither		dither;
+    XcursorBitmapInfo		bitmaps[NUM_BITMAPS];
 } XcursorDisplayInfo;
 
 XcursorDisplayInfo *
