@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.56 2002/05/31 18:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.57 2003/04/27 21:31:08 herrb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -712,7 +712,7 @@ static ClientPtr
 AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time, 
     int (*Flush)(), void (*Close)(), LbxProxyPtr proxy)
 #else
-AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 onn_time)
+AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time)
 #endif
 {
     OsCommPtr	oc;
