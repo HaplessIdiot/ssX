@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/void/void.c,v 1.1 1999/11/19 13:54:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/void/void.c,v 1.2 2000/08/11 19:10:48 dawes Exp $ */
 
 /* Input device which doesn't output any event. This device can be used
  * as a core pointer or as a core keyboard.
@@ -44,9 +44,7 @@
 #include <keysym.h>
 #include <mipointer.h>
 
-#ifdef XFree86LOADER
 #include <xf86Module.h>
-#endif
 
 #define MAXBUTTONS 3
 
