@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
@@ -238,6 +238,7 @@ static void GX2LoadPalette(ScrnInfoPtr pScreenInfo,
 			   LOCO * colors, VisualPtr pVisual);
 static Bool GX2MapMem(ScrnInfoPtr);
 static Bool GX2UnmapMem(ScrnInfoPtr);
+static void gx2_set_DvLineSize(unsigned int pitch);
 
 extern Bool GX2AccelInit(ScreenPtr pScreen);
 extern Bool GX2HWCursorInit(ScreenPtr pScreen);
@@ -1174,6 +1175,33 @@ gx2_clear_screen(int width, int height)
    GFX(pattern_fill(0, 0, width, height));
 }
 
+void
+gx2_set_DvLineSize(unsigned int pitch)
+{
+   unsigned long temp, dv_size = MDC_DV_LINE_SIZE_1024;
+
+   if (pitch > 1024) {
+      dv_size = MDC_DV_LINE_SIZE_2048;
+   }
+   if (pitch > 2048) {
+      dv_size = MDC_DV_LINE_SIZE_4096;
+   }
+   if (pitch > 4096) {
+      dv_size = MDC_DV_LINE_SIZE_8192;
+   }
+
+   /* WRITE DIRTY/VALID CONTROL WITH LINE LENGTH */
+
+#if defined(STB_X)
+   Gal_read_register(GAL_REG, MDC_DV_CTL, &temp, 4);
+   temp = (temp & ~MDC_DV_LINE_SIZE_MASK) | dv_size;
+   Gal_write_register(GAL_REG, MDC_DV_CTL, temp, 4);
+#else
+   temp = READ_REG32(MDC_DV_CTL);
+   WRITE_REG32(MDC_DV_CTL, (temp & ~MDC_DV_LINE_SIZE_MASK) | dv_size);
+#endif
+}
+
 /*----------------------------------------------------------------------------
  * GX2SetMode.
  *
@@ -1264,6 +1292,8 @@ GX2SetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 	 DEBUGMSG(1, (0, X_PROBED, "Compression mode set %d\n",
 		      pGeode->Compression));
 	 /* set the compression parameters,and it will be turned on later. */
+	 gx2_set_DvLineSize(pGeode->Pitch);
+
 #if defined(STB_X)
 	 Gal_set_compression_parameters(GAL_COMPRESSION_ALL,
 					pGeode->CBOffset,

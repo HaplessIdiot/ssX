@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.2 2003/01/14 09:34:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.3 2003/02/05 18:38:43 alanh Exp $ */
 /*
  * $Workfile: disp_gu1.c $
  *
@@ -1275,7 +1275,7 @@ gfx_set_cursor_position(unsigned long memoffset,
 
    if (PanelEnable) {
       if ((ModeWidth > PanelWidth) || (ModeHeight > PanelHeight)) {
-	 gfx_enable_panning(x, y);
+	 gfx_enable_panning(xpos, ypos);
 	 x = x - (short)panelLeft;
 	 y = y - (short)panelTop;
       }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu2.c,v 1.2 2003/01/14 09:34:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu2.c,v 1.3 2003/02/05 18:38:43 alanh Exp $ */
 /*
  * $Workfile: disp_gu2.c $
  *
@@ -1071,6 +1071,21 @@ gfx_set_cursor_position(unsigned long memoffset,
       return;
    if (y < -63)
       return;
+
+   if (PanelEnable) {
+      if ((ModeWidth > PanelWidth) || (ModeHeight > PanelHeight)) {
+	 gfx_enable_panning(xpos, ypos);
+	 x = x - (unsigned short)panelLeft;
+	 y = y - (unsigned short)panelTop;
+      }
+   }
+
+   /* ADJUST OFFSETS */
+   /* Cursor movement and panning work as follows:  The cursor position   */
+   /* refers to where the hotspot of the cursor is located.  However, for */
+   /* non-zero hotspots, the cursor buffer actually begins before the     */
+   /* specified position.                                                 */
+
    if (x < 0) {
       xoffset = -x;
       x = 0;
@@ -1080,14 +1095,6 @@ gfx_set_cursor_position(unsigned long memoffset,
       y = 0;
    }
    memoffset += (unsigned long)yoffset << 4;
-
-   if (PanelEnable) {
-      if ((ModeWidth > PanelWidth) || (ModeHeight > PanelHeight)) {
-	 gfx_enable_panning(x, y);
-	 x = x - (unsigned short)panelLeft;
-	 y = y - (unsigned short)panelTop;
-      }
-   }
 
    /* SET CURSOR POSITION */
 

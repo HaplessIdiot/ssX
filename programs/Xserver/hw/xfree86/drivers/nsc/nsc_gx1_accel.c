@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.2 2003/01/14 09:34:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.3 2003/02/05 18:38:43 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: alanh $
  *
  * File Contents: This file is consists of main Xfree
@@ -636,8 +636,10 @@ GX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
    if (pGeode->TV_Overscan_On) {
-      x1 += pGeode->TVOx;
-      y1 += pGeode->TVOy;
+      if ((x1 < pScreenInfo->virtualX) && (y1 < pScreenInfo->virtualY)) {
+	 x1 += pGeode->TVOx;
+	 y1 += pGeode->TVOy;
+      }
       x2 += pGeode->TVOx;
       y2 += pGeode->TVOy;
    }
@@ -716,19 +718,11 @@ void
 GX1SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
 				    int x, int y, int w, int h, int skipleft)
 {
-   GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
    Geodedstx = x;
    Geodedsty = y;
-
-   if (pGeode->TV_Overscan_On) {
-      Geodedstx += pGeode->TVOx;
-      Geodedsty += pGeode->TVOy;
-   }
-
    Geodewidth = w;
    Geodeheight = h;
-
    GeodeCounter = 0;
 }
 
@@ -1235,8 +1229,10 @@ OPTGX1SubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
    if (pGeode->TV_Overscan_On) {
-      srcx += pGeode->TVOx;
-      srcy += pGeode->TVOy;
+      if ((srcx < pScreenInfo->virtualX) && (srcy < pScreenInfo->virtualY)) {
+	 srcx += pGeode->TVOx;
+	 srcy += pGeode->TVOy;
+      }
       dstx += pGeode->TVOx;
       dsty += pGeode->TVOy;
    }
@@ -1394,12 +1390,7 @@ OPTGX1SubsequentScanlineImageWriteRect(ScrnInfoPtr pScreenInfo,
 				       int x, int y, int w, int h,
 				       int skipleft)
 {
-   GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
-   if (pGeode->TV_Overscan_On) {
-      x += pGeode->TVOx;
-      y += pGeode->TVOy;
-   }
    Geodedstx = x;
    Geodedsty = y;
    Geodewidth = w;
@@ -1625,12 +1616,6 @@ void
 OPTGX1SubsequentHorVertLine(ScrnInfoPtr pScreenInfo,
 			    int x, int y, int len, int dir)
 {
-   GeodePtr pGeode = GEODEPTR(pScreenInfo);
-
-   if (pGeode->TV_Overscan_On) {
-      x += pGeode->TVOx;
-      y += pGeode->TVOy;
-   }
 
    DEBUGMSG(0, (0, 0, "HLine %d, %d, %d, %d\n", x, y, len, dir));
 
