@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.14 2000/06/27 16:42:07 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.15 2000/08/09 14:44:27 alanh Exp $
  * 
  */
 
@@ -596,7 +596,15 @@ int drmMap(int fd,
 	   drmSize size,
 	   drmAddressPtr address)
 {
+    static unsigned long pagesize_mask = 0;
+
     if (fd < 0) return -EINVAL;
+
+    if (!pagesize_mask)
+	pagesize_mask = getpagesize() - 1;
+
+    size = (size + pagesize_mask) & ~pagesize_mask;
+
     *address = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, handle);
     if (*address == MAP_FAILED) return -errno;
     return 0;
