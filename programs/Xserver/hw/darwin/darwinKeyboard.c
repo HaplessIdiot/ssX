@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.9 2001/08/11 23:14:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.10 2001/10/06 20:05:52 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -51,7 +51,7 @@
 
  The modifier map is accessed by the keyCode, but the normal map is
  accessed by keyCode - MIN_KEYCODE.  Sigh.
- 
+
 ===========================================================================
 */
 
@@ -71,19 +71,24 @@
 #include "bundle/quartzShared.h"
 
 #define XK_TECHNICAL		// needed to get XK_Escape
+#define XK_PUBLISHING
 #include "keysym.h"
 
+// Each key can generate 4 glyphs. They are, in order:
+// unshifted, shifted, modeswitch unshifted, modeswitch shifted
 #define GLYPHS_PER_KEY  4
 #define NUM_KEYCODES    248	// NX_NUMKEYCODES might be better
 #define MAX_KEYCODE     NUM_KEYCODES + MIN_KEYCODE - 1
 
 #define AltMask         Mod1Mask
-#define NumLockMask     Mod2Mask
-#define MetaMask        Mod3Mask
+#define MetaMask        Mod2Mask
+#define AltLangMask     Mod3Mask
 #define FunctionMask    Mod4Mask
 
-// FIXME: It would be nice to support some of the extra keys in XF86keysym.h, 
+// FIXME: It would be nice to support some of the extra keys in XF86keysym.h,
 // at least the volume controls that now ship on every Apple keyboard.
+
+#define UK(a)           NoSymbol	// unknown symbol
 
 static KeySym const ascii_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	XK_KP_Enter,
@@ -102,7 +107,7 @@ static KeySym const ascii_to_x[256] = {
 	XK_4,		XK_5,		XK_6,		XK_7,
 	XK_8,		XK_9,		XK_colon,	XK_semicolon,
 	XK_less,	XK_equal,	XK_greater,	XK_question,
-	XK_at,		XK_A,		XK_B,		XK_C,
+	XK_notsign,	XK_A,		XK_B,		XK_C,
 	XK_D,		XK_E,		XK_F,		XK_G,
 	XK_H,		XK_I,		XK_J,		XK_K,
 	XK_L,		XK_M,		XK_N,		XK_O,
@@ -119,41 +124,57 @@ static KeySym const ascii_to_x[256] = {
 	XK_x,		XK_y,		XK_z,		XK_braceleft,
 	XK_bar,		XK_braceright,	XK_asciitilde,	XK_BackSpace,
 // 128
-	XK_Ccedilla,	XK_udiaeresis,	XK_eacute,	XK_acircumflex,
-	XK_adiaeresis,	XK_agrave,	XK_aring,	XK_ccedilla,
-	XK_ecircumflex,	XK_ediaeresis,	XK_egrave,	XK_idiaeresis,
-	XK_icircumflex,	XK_igrave,	XK_Adiaeresis,	XK_Aring,
-	XK_Eacute,	XK_ae,		XK_AE,		XK_ocircumflex,
-	XK_odiaeresis,	XK_ograve,	XK_ntilde,	XK_ugrave,
-	XK_ydiaeresis,	XK_Odiaeresis,	XK_Udiaeresis,	XK_cent,
-	XK_sterling,	XK_yen,		XK_paragraph,	XK_section,
+	NoSymbol,	XK_Agrave,	XK_Aacute,	XK_Acircumflex,
+	XK_Atilde,	XK_Adiaeresis,	XK_Aring,	XK_Ccedilla,
+	XK_Egrave,	XK_Eacute,	XK_Ecircumflex,	XK_Ediaeresis,
+	XK_Igrave,	XK_Iacute,	XK_Icircumflex,	XK_Idiaeresis,
+// 144
+	XK_ETH,		XK_Ntilde,	XK_Ograve,	XK_Oacute,
+	XK_Ocircumflex,	XK_Otilde,	XK_Odiaeresis,	XK_Ugrave,
+	XK_Uacute,	XK_Ucircumflex,	XK_Udiaeresis,	XK_Yacute,
+	XK_THORN,	XK_mu,		XK_multiply,	XK_division,
 // 160
-	XK_aacute,	XK_degree,	XK_cent,	XK_sterling,
-	XK_ntilde,	XK_Ntilde,	XK_paragraph,	XK_Greek_BETA,
-	XK_questiondown,XK_hyphen,	XK_notsign,	XK_onehalf,
-	XK_onequarter,	XK_exclamdown,	XK_guillemotleft,XK_guillemotright,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
+	XK_copyright,	XK_exclamdown,	XK_cent,	XK_sterling,
+	UK(fraction),	XK_yen,		UK(fhook),	XK_section,
+	XK_currency,	XK_rightsinglequotemark,
+					XK_leftdoublequotemark,
+							XK_guillemotleft,
+	XK_leftanglebracket,
+			XK_rightanglebracket,
+					UK(filigature),	UK(flligature),
+// 176
+	XK_registered,	XK_endash,	XK_dagger,	XK_doubledagger,
+	XK_periodcentered,XK_brokenbar,	XK_paragraph,	UK(bullet),
+	XK_singlelowquotemark,
+			XK_doublelowquotemark,
+					XK_rightdoublequotemark,
+							XK_guillemotright,
+	XK_ellipsis,	UK(permille),	XK_at,		XK_questiondown,
 // 192
-	XK_questiondown,XK_exclamdown,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	XK_AE,		XK_ae,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
+	XK_onesuperior,	XK_dead_grave,	XK_dead_acute,	XK_dead_circumflex,
+	XK_dead_tilde,	XK_dead_macron,	XK_dead_breve,	XK_dead_abovedot,
+	XK_dead_diaeresis,
+			XK_twosuperior,	XK_dead_abovering,
+							XK_dead_cedilla,
+	XK_threesuperior,
+			XK_dead_doubleacute,
+					XK_dead_ogonek,	XK_dead_caron,
+// 208
+	XK_emdash,	XK_plusminus,	XK_onequarter,	XK_onehalf,
+	XK_threequarters,
+			XK_agrave,	XK_aacute,	XK_acircumflex,
+	XK_atilde,	XK_adiaeresis,	XK_aring,	XK_ccedilla,
+	XK_egrave,	XK_eacute,	XK_ecircumflex,	XK_ediaeresis,
 // 224
-	XK_Greek_alpha,	XK_ssharp,	XK_Greek_GAMMA,	XK_Greek_pi,
-	XK_Greek_SIGMA,	XK_Greek_sigma,	XK_mu,	        XK_Greek_tau,
-	XK_Greek_PHI,	XK_Greek_THETA,	XK_Greek_OMEGA,	XK_Greek_delta,
-	XK_infinity,	XK_Ooblique,	XK_Greek_epsilon, XK_intersection,
-	XK_identical,	XK_plusminus,	XK_greaterthanequal, XK_lessthanequal,
-	XK_topintegral,	XK_botintegral,	XK_division,	XK_similarequal,
-	XK_degree,	NoSymbol,	NoSymbol,	XK_radical,
-	XK_Greek_eta,	XK_twosuperior,	XK_periodcentered, NoSymbol,
+	XK_igrave,	XK_AE,		XK_iacute,	XK_ordfeminine,
+	XK_icircumflex,	XK_idiaeresis,	XK_eth,		XK_ntilde,
+	XK_Lstroke,	XK_Ooblique,	XK_OE,		XK_masculine,
+	XK_ograve,	XK_oacute,	XK_ocircumflex, XK_otilde,
+// 240
+	XK_odiaeresis,	XK_ae,		XK_ugrave,	XK_uacute,
+	XK_ucircumflex,	XK_idotless,	XK_udiaeresis,	XK_ygrave,
+	XK_lstroke,	XK_ooblique,	XK_oe,		XK_ssharp,
+	XK_thorn,	XK_ydiaeresis,	NoSymbol,	NoSymbol,
   };
 
 #define MIN_SYMBOL		0xAC
@@ -391,7 +412,7 @@ Bool DarwinReadKeymapFile(
         } while (hasInterface);
     } else if (strncmp( inBuffer, "KYMP", 4 ) == 0) {
         ErrorF("This old style keymapping file is intended for use with the original NeXT keyboards.\n");
-        return FALSE;        
+        return FALSE;
     } else {
         ErrorF("The keymapping file has a bad magic number.\n");
         return FALSE;
@@ -505,9 +526,10 @@ void DarwinKeyboardInit(
                                 (left ? XK_Control_L : XK_Control_R);
                         break;
                     case NX_MODIFIERKEY_ALTERNATE:
-                        modMap[keyCode + MIN_KEYCODE] = AltMask;
+                        modMap[keyCode + MIN_KEYCODE] =
+                                (left ? AltLangMask : AltMask);
                         map[keyCode * GLYPHS_PER_KEY] =
-                                (left ? XK_Alt_L : XK_Alt_R);
+                                (left ? XK_Mode_switch : XK_Alt_R);
                         break;
                     case NX_MODIFIERKEY_COMMAND:
                         modMap[keyCode + MIN_KEYCODE] = MetaMask;
@@ -530,55 +552,86 @@ void DarwinKeyboardInit(
     }
 
     // Convert the Darwin keyboard map to an X keyboard map.
-    // A key can have shifted and unshifted character codes.
-    // Other modifiers are ignored although they are
-    // present in the Darwin keyboard map.
+    // A key can have a different character code for each combination of
+    // modifiers. We currently ignore all modifier combinations except
+    // those with Shift, AlphaLock, and Alt.
     numKeys = get_number(keyMapStream);
     for (i = 0, k = map; i < numKeys; i++, k += GLYPHS_PER_KEY) {
         short const     charGenMask = get_number(keyMapStream);
         if (charGenMask != 0xFF) {              // is key bound?
             short       numKeyCodes = 1 << bits_set(charGenMask);
 
-            // If alphalock and shift modifiers produce different codes,
-            // we only need the shift case since X handles alphalock.
-            if (charGenMask & 0x01 && charGenMask & 0x02) {
-                // record unshifted case
-                parse_next_char_code( keyMapStream, k );
-                // skip alphalock case
-                get_number(keyMapStream); get_number(keyMapStream);
-                // record shifted case
-                parse_next_char_code( keyMapStream, k+1 );
-                if (k[1] == k[0]) k[1] = NoSymbol;
-                numKeyCodes -= 3;
-                // skip the rest
-                while (numKeyCodes-- > 0) {
-                    get_number(keyMapStream); get_number(keyMapStream);
-                }
+            // Record unmodified case
+            parse_next_char_code( keyMapStream, k );
+            numKeyCodes--;
 
-            // If alphalock and shift modifiers produce same code, use it.
-            } else if (charGenMask & 0x03) {
-                // record unshifted case
-                parse_next_char_code( keyMapStream, k );
-                // record shifted case
+            // If AlphaLock and Shift modifiers produce different codes,
+            // we record the Shift case since X handles AlphaLock.
+            if (charGenMask & 0x01) {		// AlphaLock
                 parse_next_char_code( keyMapStream, k+1 );
-                if (k[1] == k[0]) k[1] = NoSymbol;
-                numKeyCodes -= 2;
-                // skip the rest
-                while (numKeyCodes-- > 0) {
-                    get_number(keyMapStream); get_number(keyMapStream);
-                }
-
-            // If neither alphalock or shift produce characters,
-            // use only one character code for this key,
-            // but it can be a special character.
-            } else {
-                parse_next_char_code( keyMapStream, k );
                 numKeyCodes--;
-                while (numKeyCodes-- > 0) {     // skip the rest
+            }
+
+            if (charGenMask & 0x02) {		// Shift
+                parse_next_char_code( keyMapStream, k+1 );
+                numKeyCodes--;
+
+                if (charGenMask & 0x01) {	// Shift-AlphaLock
                     get_number(keyMapStream); get_number(keyMapStream);
-                
+                    numKeyCodes--;
                 }
             }
+
+            // Skip the Control cases
+            if (charGenMask & 0x04) {		// Control
+                get_number(keyMapStream); get_number(keyMapStream);
+                numKeyCodes--;
+
+                if (charGenMask & 0x01) {	// Control-AlphaLock
+                    get_number(keyMapStream); get_number(keyMapStream);
+                    numKeyCodes--;
+                }
+
+                if (charGenMask & 0x02) {	// Control-Shift
+                    get_number(keyMapStream); get_number(keyMapStream);
+                    numKeyCodes--;
+
+                    if (charGenMask & 0x01) {	// Shift-Control-AlphaLock
+                        get_number(keyMapStream); get_number(keyMapStream);
+                        numKeyCodes--;
+                    }
+                }
+            }
+
+            // Process Alt cases
+            if (charGenMask & 0x08) {		// Alt
+                parse_next_char_code( keyMapStream, k+2 );
+                numKeyCodes--;
+
+                if (charGenMask & 0x01) {	// Alt-AlphaLock
+                    parse_next_char_code( keyMapStream, k+3 );
+                    numKeyCodes--;
+                }
+
+                if (charGenMask & 0x02) {	// Alt-Shift
+                    parse_next_char_code( keyMapStream, k+3 );
+                    numKeyCodes--;
+
+                    if (charGenMask & 0x01) {	// Alt-Shift-AlphaLock
+                        get_number(keyMapStream); get_number(keyMapStream);
+                        numKeyCodes--;
+                    }
+                }
+            }
+
+            while (numKeyCodes-- > 0) {
+                get_number(keyMapStream); get_number(keyMapStream);
+            }
+
+            if (k[3] == k[2]) k[3] = NoSymbol;
+            if (k[2] == k[1]) k[2] = NoSymbol;
+            if (k[1] == k[0]) k[1] = NoSymbol;
+            if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
         }
     }
 
@@ -696,7 +749,7 @@ int DarwinModifierNXMaskToNXKey(int mask)
  * DarwinModifierNXKeyToNXMask
  *      Returns 0 if key is not a known modifier key.
  */
-int DarwinModifierNXKeyToNXMask(int key) 
+int DarwinModifierNXKeyToNXMask(int key)
 {
     switch (key) {
         case NX_MODIFIERKEY_ALPHALOCK:   return NX_ALPHASHIFTMASK;
