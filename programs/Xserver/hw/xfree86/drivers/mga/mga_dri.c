@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.16 2001/01/08 01:07:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.17 2001/03/21 17:02:24 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -750,7 +750,7 @@ static Bool MGADRIAgpInit(ScreenPtr pScreen)
 	       "[drm] Added %d %d byte DMA buffers\n",
 	       count, MGA_BUFFER_SIZE );
 
-   xf86EnableBusMaster( pMga->PciTag );
+   xf86EnablePciBusMaster( pMga->PciTag );
 
    return TRUE;
 }
