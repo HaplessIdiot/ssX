@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -27,15 +27,19 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
     CARD8 *VDIFrawdata = NULL;
     int  i, ret;
 
+#ifdef DEBUG
     ErrorF("xf86SetXDDCprop(%p, %p)\n", pScrnInfo, DDC);
+#endif
 
     if (pScrnInfo==NULL || pScrnInfo->monitor==NULL || DDC==NULL) {
       return FALSE;
     }
 
+#ifdef DEBUG
     ErrorF("pScrnInfo->scrnIndex %d\n", pScrnInfo->scrnIndex);
 
     ErrorF("pScrnInfo->monitor was %p\n", pScrnInfo->monitor);
+#endif
 
     pScrnInfo->monitor->DDC = DDC;
 
@@ -52,11 +56,13 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 	EDID1rawdata[i] = DDC->rawData[i];
       }
 
+#ifdef DEBUG
       ErrorF("xf86RegisterRootWindowProperty %p(%d,%d,%d,%d,%d,%p)\n",
 	     xf86RegisterRootWindowProperty,
 	     pScrnInfo->scrnIndex,
 	     EDID1Atom, XA_STRING, 8,
 	     128, (unsigned char *)EDID1rawdata  );
+#endif
 
       ret = xf86RegisterRootWindowProperty(pScrnInfo->scrnIndex,
 					   EDID1Atom, XA_INTEGER, 8, 
@@ -68,7 +74,9 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 					   EDID1_DUMMY_STRING 
 #endif
 					   );
+#ifdef DEBUG
       ErrorF("xf86RegisterRootWindowProperty returns %d\n", ret );
+#endif
 
     } else if (DDC->ver.version == 2) {
       if ( (EDID2rawdata = xalloc(256*sizeof(CARD8)))==NULL ) {
@@ -89,12 +97,14 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 
     if (DDC->vdif) {
 #define VDIF_DUMMY_STRING "setting dummy VDIF property - please insert correct values\n"
+#ifdef DEBUG
       ErrorF("xf86RegisterRootWindowProperty %p(%d,%d,%d,%d,%d,%p)\n",
 	     xf86RegisterRootWindowProperty,
 	     pScrnInfo->scrnIndex,
 	     VDIFAtom, XA_STRING, 8,
 	     strlen(VDIF_DUMMY_STRING), VDIF_DUMMY_STRING 
 	     );
+#endif
 
 
       VDIFAtom = MakeAtom(VDIF_ATOM_NAME, sizeof(VDIF_ATOM_NAME), TRUE);
@@ -104,7 +114,9 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 					   strlen(VDIF_DUMMY_STRING),
 					   VDIF_DUMMY_STRING 
 					   );
+#ifdef DEBUG
       ErrorF("xf86RegisterRootWindowProperty returns %d\n", ret );
+#endif
     }
 
     return TRUE;

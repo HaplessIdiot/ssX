@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.12 1999/12/03 19:17:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.14 2000/02/08 13:13:14 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -9,7 +9,9 @@
 #include "xaa.h"
 #include "xf86i2c.h"
 
+#if 0
 #define CIR_DEBUG
+#endif
 
 /* Card-specific driver information */
 #define CIRPTR(p) ((CirPtr)((p)->driverPrivate))

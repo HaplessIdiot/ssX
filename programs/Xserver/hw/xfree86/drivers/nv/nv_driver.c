@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.38 2000/02/29 03:09:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.39 2000/03/01 16:01:15 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -664,7 +664,9 @@ NVdoDDC(ScrnInfoPtr pScrn)
     /* Initialize I2C bus - used by DDC if available */
     if (pNv->i2cInit) {
         pNv->i2cInit(pScrn);
+#if 0
         ErrorF("I2C initialized on %p\n",pNv->I2C);
+#endif
     }
     /* Read and output monitor info using DDC2 over I2C bus */
     if (pNv->I2C) {
