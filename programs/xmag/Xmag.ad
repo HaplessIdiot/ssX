@@ -1,4 +1,5 @@
-.\ "$XConsortium: Xmag.ad,v 1.14 92/05/19 09:43:26 dave Exp $
+! $Xorg: Xmag.ad,v 1.3 2000/08/17 19:54:54 cpqbld Exp $
+! $XFree86$
 *Font: fixed
 *pane2*orientation: horizontal
 *pane2*showGrip: False
@@ -22,6 +23,5 @@
 			<Key>space:set()notify()unset()\n\
 			<Btn2Up>:set()notify()unset()\n\
 			<Btn3Up>:set()notify()unset()
-*pixLabel.Translations:<Enter>:popdown-pixel()
 *helpLabel.font:	8x13bold
 *helpLabel.label:	xmag
