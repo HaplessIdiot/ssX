@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514fc.c,v 1.1 94/03/28 21:03:51 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -92,11 +93,11 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 
 	       blocki = *chars / 32;
 	       if( ( block = fentry->fblock[blocki] ) == NULL) {
-		  WaitQueue(8);
 		  /*
 		   * Reset the GE context to a known state before
 		   * calling the xf86loadfontblock function.
 		   */
+		  WaitQueue(8);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | 1023);
@@ -107,10 +108,10 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
-		  WaitQueue(4);
 		  /*
 		   * Restore the GE context.
 		   */
+		  WaitQueue(4);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
@@ -121,7 +122,6 @@ Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  outw(FRGD_MIX, FSS_FRGDCOL | ibm8514alu[pGC->alu]);
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
 		  outw(WRT_MASK, (short)pGC->planemask);
-		  outw(RD_MASK, pmsk);
 		  height = width = pmsk = 0; /* Invalidate register caches. */
 	       }
 	       WaitQueue(2);

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86bcache.c,v 1.1 94/03/28 21:02:09 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.c,v 3.0 1994/05/30 08:23:21 dawes Exp $ */
 /*
  * Based on the S3 block allocator code in XFree86-2.0 by Jon Tombs.
  * The original copyright is reproduced below.
@@ -40,7 +40,7 @@
  * this pointer as a argument in order to identify the Cache Pool to be
  * affected by the call.
  *
- * The list of Cacherec structures, each points at a linked list of
+ * The list of Cacherec structures each points at a linked list of
  * BitMapRow structures describing a row of memory.
  * A CacheRec structure is allocated for each invocation of the
  * xf86AddToCachePool function and is then linked to the Cache Pool
@@ -49,7 +49,8 @@
  * bitplanes. The caller supplies a 32-bit id number that is stored in
  * the various data structures and is passed on when doing callbacks to
  * hw driver code. ( the only callback from the block allocator is for
- * compacting a memory row ).
+ * compacting a memory row. Callbacks from font cache code etc. must also
+ * pass on this id number when appropriate ).
  * The block allocator does not use the id number internally, it's expected
  * use is to enable hw driver code to identify which bitplanes that are to
  * be affected by hw driver code.
@@ -58,7 +59,13 @@
  * describing a row of cache memory.
  *
  * Each BitMapBlock structure describes a allocated piece of cache memory.
- *
+ * The BitMapBlock struct contains a reference field used when allowing the
+ * cache allocator to reuse already used cache blocks. This is used by the
+ * font cache code to let the cache allocator take care of keeping the most
+ * recently used fonts in the cache. The higher layer ( font cache etc. ) has
+ * to keep the lru field updated if this reallocation scheme is to work.
+ * If the reference field is left untouched, ( it's initialized to NULL ),
+ * the allocator does not attempt to reuse already allocated cache blocks.
  */
 
 #include	"X.h"

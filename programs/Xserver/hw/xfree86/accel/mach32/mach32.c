@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.6 1994/06/18 16:23:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.7 1994/06/19 11:04:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -42,7 +42,7 @@
 #include "cursorstr.h"
 #include "mi.h"
 #include "cfb.h"
-#include "mach32cfb.h"
+#include "cfb16.h"
 #include "gc.h"
 #include "windowstr.h"
 
@@ -871,7 +871,6 @@ mach32EnterLeaveVT(enter, screen_idx)
 
     if (!xf86Exiting && !xf86Resetting) {
 	/* cfbGetScreenPixmap(pScreen) */
-#ifdef MACH32_SHARE_CFB
 	switch (mach32InfoRec.bitsPerPixel) {
 	case 8:
 	    pspix = (PixmapPtr)pScreen->devPrivate;
@@ -883,9 +882,6 @@ mach32EnterLeaveVT(enter, screen_idx)
 	    }
 	    break;
 	}
-#else
-	pspix = (PixmapPtr)pScreen->devPrivate;
-#endif
     }
 
     if (pScreen)

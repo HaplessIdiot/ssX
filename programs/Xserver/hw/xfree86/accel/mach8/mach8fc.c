@@ -1,4 +1,5 @@
 /* $XConsortium: mach8fc.c,v 1.1 94/03/28 21:10:52 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -92,11 +93,11 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 
 	       blocki = *chars / 32;
 	       if( ( block = fentry->fblock[blocki] ) == NULL) {
-		  WaitQueue(8);
 		  /*
 		   * Reset the GE context to a known state before
 		   * calling the xf86loadfontblock function.
 		   */
+		  WaitQueue(8);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | 1023);
@@ -107,21 +108,19 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
-		  WaitQueue(4);
 		  /*
 		   * Restore the GE context.
 		   */
+		  WaitQueue(9);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
 		  outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
-		  WaitQueue(5);
 		  outw(FRGD_COLOR, (short)pGC->fgPixel);
 		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  outw(FRGD_MIX, FSS_FRGDCOL | mach8alu[pGC->alu]);
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
 		  outw(WRT_MASK, (short)pGC->planemask);
-		  outw(RD_MASK, pmsk);
 		  height = width = pmsk = 0; /* Invalidate register caches. */
 	       }
 	       WaitQueue(2);
