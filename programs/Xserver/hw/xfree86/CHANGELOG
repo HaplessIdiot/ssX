@@ -1,4 +1,24 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 330. Fix problem where DRIUnlock was called when DRI fails to load
+      (Kevin Martin)
+ 329. Fix erroneous warnings about removing DRM signal handler when DRI
+      fails to load (Kevin Martin)
+ 328. Add LINE_LIMIT_COORDS option to XAA to work around limited coordinate
+      space for lines on Radeons (Kevin Martin)
+ 327. Fix Radeon DGA code to use XAA sync function (Michel Dänzer)
+ 326. Major rework of Radeon accel code:
+      - Merge CP and MMIO code (Kevin Martin and Michel Dänzer)
+      - Fix indirect buffer CP code (Kevin Martin and Michel Dänzer)
+      - Add CP support for scanline color expansion and image writes
+        (Michel Dänzer)
+      - Fix Mono8x8 problems (Kevin Martin and Michel Dänzer)
+      - Fix clipping routine to properly set transparency and
+        dp_gui_master_cntl reg (Kevin Martin and Michel Dänzer)
+      - Fix clipping calculation errors (Kevin Martin)
+      - Properly set line bias so that sw rendered solid and dashed lines
+        match the accel TwoPoint lines (Kevin Martin)
+      - Fix drawing last point for solid and dashed lines (Kevin Martin)
+      - Remove NoLineAccel option since two point lines work (Kevin Martin)
  325. Export some more Xft symbols (Cygwin) that are needed for qt 3.x
       (#5285, Ralf Habacker).
  324. Don't sleep on Cygwin for ICE directory mode problems (#5284,
@@ -15166,4 +15186,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2300 2002/09/17 01:26:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2301 2002/09/18 01:24:53 dawes Exp $

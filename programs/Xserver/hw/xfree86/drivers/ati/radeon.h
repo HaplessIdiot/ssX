@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.26 2002/05/29 22:48:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.27 2002/07/11 20:11:51 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -327,7 +327,6 @@ typedef struct {
 
     XAAInfoRecPtr     accel;
     Bool              accelOn;
-    Bool              EnableLineAccel;
     xf86CursorInfoPtr cursor;
     unsigned long     cursor_start;
     unsigned long     cursor_end;
@@ -346,6 +345,8 @@ typedef struct {
     int               pitch;
     int               datatype;
     CARD32            dp_gui_master_cntl;
+    CARD32            dp_gui_master_cntl_clip;
+    CARD32            trans_color;
 
 				/* Saved values for ScreenToScreenCopy */
     int               xdir;
@@ -356,11 +357,23 @@ typedef struct {
     unsigned char     *scratch_save;
     int               scanline_x;
     int               scanline_y;
+    int               scanline_w;
     int               scanline_h;
     int               scanline_h_w;
     int               scanline_words;
     int               scanline_direct;
     int               scanline_bpp;     /* Only used for ImageWrite */
+    int               scanline_fg;
+    int               scanline_bg;
+    int               scanline_hpass;
+    int               scanline_x1clip;
+    int               scanline_x2clip;
+
+				/* Saved values for DashedTwoPointLine */
+    int               dashLen;
+    CARD32            dashPattern;
+    int               dash_fg;
+    int               dash_bg;
 
     DGAModePtr        DGAModes;
     int               numDGAModes;
@@ -368,7 +381,7 @@ typedef struct {
     int               DGAViewportStatus;
     DGAFunctionRec    DGAFuncs;
 
-    RADEONFBLayout      CurrentLayout;
+    RADEONFBLayout    CurrentLayout;
 #ifdef XF86DRI
     Bool              directRenderingEnabled;
     DRIInfoPtr        pDRIInfo;
@@ -492,7 +505,10 @@ do {									\
 } while (0)
 
 extern void        RADEONWaitForFifoFunction(ScrnInfoPtr pScrn, int entries);
-extern void        RADEONWaitForIdle(ScrnInfoPtr pScrn);
+extern void        RADEONWaitForIdleMMIO(ScrnInfoPtr pScrn);
+#ifdef XF86DRI
+extern void        RADEONWaitForIdleCP(ScrnInfoPtr pScrn);
+#endif
 
 extern void        RADEONEngineReset(ScrnInfoPtr pScrn);
 extern void        RADEONEngineFlush(ScrnInfoPtr pScrn);
@@ -518,7 +534,7 @@ extern void        RADEONDRICloseScreen(ScreenPtr pScreen);
 extern Bool        RADEONDRIFinishScreenInit(ScreenPtr pScreen);
 
 extern drmBufPtr   RADEONCPGetBuffer(ScrnInfoPtr pScrn);
-extern void        RADEONCPFlushIndirect(ScrnInfoPtr pScrn);
+extern void        RADEONCPFlushIndirect(ScrnInfoPtr pScrn, int discard);
 extern void        RADEONCPReleaseIndirect(ScrnInfoPtr pScrn);
 
 
@@ -581,7 +597,6 @@ do {									\
 #define RADEON_VERBOSE	0
 
 #define RING_LOCALS	CARD32 *__head; int __count;
-#define RING_THRESHOLD	256
 
 #define BEGIN_RING(n) do {						\
     if (RADEON_VERBOSE) {						\
@@ -591,9 +606,9 @@ do {									\
     if (!info->indirectBuffer) {					\
 	info->indirectBuffer = RADEONCPGetBuffer(pScrn);		\
 	info->indirectStart = 0;					\
-    } else if (info->indirectBuffer->used - info->indirectStart +	\
-	       (n) * (int)sizeof(CARD32) > RING_THRESHOLD) {		\
-	RADEONCPFlushIndirect(pScrn);					\
+    } else if (info->indirectBuffer->used + (n) * (int)sizeof(CARD32) >	\
+	       info->indirectBuffer->total) {				\
+	RADEONCPFlushIndirect(pScrn, 1);				\
     }									\
     __head = (pointer)((char *)info->indirectBuffer->address +		\
 		       info->indirectBuffer->used);			\
@@ -603,12 +618,10 @@ do {									\
 #define ADVANCE_RING() do {						\
     if (RADEON_VERBOSE) {						\
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,				\
-		   "ADVANCE_RING() used: %d+%d=%d/%d\n",		\
-		   info->indirectBuffer->used - info->indirectStart,	\
-		   __count * sizeof(CARD32),				\
-		   info->indirectBuffer->used - info->indirectStart +	\
-		   __count * sizeof(CARD32),				\
-		   RING_THRESHOLD);					\
+		   "ADVANCE_RING() start: %d used: %d count: %d\n",	\
+		   info->indirectStart,					\
+		   info->indirectBuffer->used,				\
+		   __count * sizeof(CARD32));				\
     }									\
     info->indirectBuffer->used += __count * (int)sizeof(CARD32);	\
 } while (0)
@@ -633,7 +646,7 @@ do {									\
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,				\
 		   "FLUSH_RING in %s\n", __FUNCTION__);			\
     if (info->indirectBuffer) {						\
-	RADEONCPFlushIndirect(pScrn);					\
+	RADEONCPFlushIndirect(pScrn, 0);				\
     }									\
 } while (0)
 

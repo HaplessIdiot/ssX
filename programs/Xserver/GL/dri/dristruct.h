@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.9 2000/12/07 20:26:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.10 2001/03/21 16:21:40 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -96,6 +96,8 @@ typedef struct _DRIScreenPrivRec
     DRIContextPrivPtr   dummyCtxPriv; /* Pointer to dummy context */
     Bool		createDummyCtx;
     Bool		createDummyCtxPriv;
+    Bool		grabbedDRILock;
+    Bool                drmSIGIOHandlerInstalled;
 } DRIScreenPrivRec, *DRIScreenPrivPtr;
 
 #endif /* DRI_STRUCT_H */

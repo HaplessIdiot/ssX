@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.33 2001/08/23 18:25:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.34 2001/12/10 19:07:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -181,6 +181,9 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     pDRIPriv->createDummyCtx     = pDRIInfo->createDummyCtx;
     pDRIPriv->createDummyCtxPriv = pDRIInfo->createDummyCtxPriv;
 
+    pDRIPriv->grabbedDRILock = FALSE;
+    pDRIPriv->drmSIGIOHandlerInstalled = FALSE;
+
     if ((err = drmSetBusid(pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString)) < 0) {
 	pDRIPriv->directRenderingSupport = FALSE;
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
@@ -315,6 +318,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
      * hardware lock for the X server.
      */
     DRILock(pScreen, 0);
+    pDRIPriv->grabbedDRILock = TRUE;
 
     /* pointers so that we can prevent memory leaks later */
     pDRIPriv->hiddenContextStore    = NULL;
@@ -363,7 +367,8 @@ DRIFinishScreenInit(ScreenPtr pScreen)
         /* For swap methods of DRI_SERVER_SWAP and DRI_HIDE_X_CONTEXT
          * setup signal handler for receiving swap requests from kernel
 	 */
-	if (!drmInstallSIGIOHandler(pDRIPriv->drmFD, DRISwapContext)) {
+	if (!(pDRIPriv->drmSIGIOHandlerInstalled =
+	      drmInstallSIGIOHandler(pDRIPriv->drmFD, DRISwapContext))) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR,
 		      "[drm] failed to setup DRM signal handler\n");
 	    if (pDRIPriv->hiddenContextStore)
@@ -428,7 +433,7 @@ DRICloseScreen(ScreenPtr pScreen)
 	    pDRIPriv->wrap.AdjustFrame = NULL;
 	}
 
-	if (pDRIPriv->pDriverInfo->driverSwapMethod != DRI_KERNEL_SWAP) {
+	if (pDRIPriv->drmSIGIOHandlerInstalled) {
 	    if (!drmRemoveSIGIOHandler(pDRIPriv->drmFD)) {
 		DRIDrvMsg(pScreen->myNum, X_ERROR,
 			  "[drm] failed to remove DRM signal handler\n");
@@ -459,8 +464,11 @@ DRICloseScreen(ScreenPtr pScreen)
 		      reserved_count, reserved_count > 1 ? "s" : "");
 	}
 
-	DRIUnlock(pScreen);
-	lockRefCount=0;
+	if (pDRIPriv->grabbedDRILock) {
+	    DRIUnlock(pScreen);
+	    lockRefCount=0;
+	}
+
 	DRIDrvMsg(pScreen->myNum, X_INFO,
 		  "[drm] unmapping %d bytes of SAREA 0x%08lx at %p\n",
 		  pDRIPriv->pDriverInfo->SAREASize,
