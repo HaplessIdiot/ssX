@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: NetBSD.cf,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.93 2001/04/18 14:52:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.94 2001/04/19 19:54:41 dawes Exp $
 
 
 #ifndef OSName
@@ -531,6 +531,13 @@ sed 's/\.[0-9]*$$//'`
 #define BuildServer	NO
 #endif
 
+/* 
+ * General settings for all platforms 
+ */ 
 #ifndef SharedLibXdmGreet
 #define SharedLibXdmGreet NO
+#endif
+
+#ifndef BuildHtmlManPages 
+#define BuildHtmlManPages NO /* We don't want HTML manpages */ 
 #endif
