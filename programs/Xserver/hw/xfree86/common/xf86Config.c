@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.209 2000/02/18 00:47:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.210 2000/02/24 05:36:49 tsi Exp $ */
 
 
 /*
@@ -309,48 +309,6 @@ xf86DriverlistFromConfig()
 }
 
 
-char **
-xf86DriverlistFromCompile(void)
-{
-    static char drivernames[] = DRIVERS;
-    static char **driverlist = NULL;
-    char *cp;
-    int count;
-
-    if (driverlist)
-	return driverlist;
-
-    /* Count the number needed */
-    count = 0;
-    cp = drivernames;
-    while (*cp) {
-	while (*cp && isspace(*cp)) cp++;
-	if (!*cp) break;
-	count++;
-	while (*cp && !isspace(*cp)) cp++;
-    }
-
-    if (!count)
-	return NULL;
-
-    /* Now allocate the array of pointers to 0-terminated driver names */
-    driverlist = (char **)xnfalloc((count + 1) * sizeof(char *));
-    count = 0;
-    cp = drivernames;
-    while (*cp) {
-	while (*cp && isspace(*cp)) cp++;
-	if (!*cp) break;
-	driverlist[count] = cp;
-	count++;
-	while (*cp && !isspace(*cp)) cp++;
-	if (!*cp) break;
-	*cp++ = 0;
-    }
-    driverlist[count] = NULL;
-    return driverlist;
-}
-
-
 Bool
 xf86BuiltinInputDriver(const char *name)
 {
@@ -423,16 +381,16 @@ xf86InputDriverlistFromConfig()
 }
 
 
-char **
-xf86InputDriverlistFromCompile(void)
+/*
+ * Generate a compiled-in list of driver names.  This is used to produce a
+ * consistent probe order.  For the loader server, we also look for vendor-
+ * provided modules, pre-pending them to our own list.
+ */
+static char **
+GenerateDriverlist(char * dirname, char * drivernames)
 {
-    static char drivernames[] = IDRIVERS;
-    static char **driverlist = NULL;
-    char *cp;
+    char *cp, **driverlist;
     int count;
-
-    if (driverlist)
-	return driverlist;
 
     /* Count the number needed */
     count = 0;
@@ -454,13 +412,99 @@ xf86InputDriverlistFromCompile(void)
     while (*cp) {
 	while (*cp && isspace(*cp)) cp++;
 	if (!*cp) break;
-	driverlist[count] = cp;
-	count++;
+	driverlist[count++] = cp;
 	while (*cp && !isspace(*cp)) cp++;
 	if (!*cp) break;
 	*cp++ = 0;
     }
     driverlist[count] = NULL;
+
+#ifdef XFree86LOADER
+    {
+        const char *subdirs[] = {NULL, NULL};
+        static const char *patlist[] = {"(.*)_drv\\.so", "(.*)_drv\\.o", NULL};
+        char **dlist, **clist, **dcp, **ccp;
+
+        subdirs[0] = dirname;
+
+        /* Get module list */
+        dlist = LoaderListDirs(subdirs, patlist);
+        if (!dlist) {
+            xfree(driverlist);
+            return NULL;        /* No modules, no list */
+        }
+
+        clist = driverlist;
+
+        /* The resulting list cannot be longer than the module list */
+        for (dcp = dlist, count = 0;  *dcp++;  count++);
+        driverlist = (char **)xnfalloc((count + 1) * sizeof(char *));
+
+        /* First, add modules not in compiled-in list */
+        for (count = 0, dcp = dlist;  *dcp;  dcp++) {
+            for (ccp = clist;  ;  ccp++) {
+                if (!*ccp) {
+                    driverlist[count++] = *dcp;
+                    break;
+                }
+                if (!strcmp(*ccp, *dcp))
+                    break;
+            }
+        }
+
+        /* Next, add compiled-in names that are also modules */
+        for (ccp = clist;  *ccp;  ccp++) {
+            for (dcp = dlist;  *dcp;  dcp++) {
+                if (!strcmp(*ccp, *dcp)) {
+                    driverlist[count++] = *ccp;
+                    break;
+                }
+            }
+        }
+
+        driverlist[count++] = NULL;
+        xfree(clist);
+        xfree(dlist);
+        driverlist = xnfrealloc(driverlist, count * sizeof(char *));
+    }
+#endif /* XFree86LOADER */
+
+    return driverlist;
+}
+
+
+char **
+xf86DriverlistFromCompile(void)
+{
+    static char **driverlist = NULL;
+    static Bool generated = FALSE;
+
+    /* This string is modified in-place */
+    static char drivernames[] = DRIVERS;
+
+    if (!generated) {
+        generated = TRUE;
+        driverlist = GenerateDriverlist("drivers", drivernames);
+    }
+
+    return driverlist;
+}
+
+
+char **
+xf86InputDriverlistFromCompile(void)
+{
+    static char **driverlist = NULL;
+    static Bool generated = FALSE;
+
+    /* This string is modified in-place */
+    static char drivernames[] = IDRIVERS;
+
+    if (!generated) {
+        generated = TRUE;
+	driverlist = GenerateDriverlist("input", drivernames);
+    }
+
     return driverlist;
 }
 
