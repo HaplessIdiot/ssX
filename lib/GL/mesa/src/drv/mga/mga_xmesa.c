@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.14 2002/02/22 21:33:05 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.15 2002/02/26 23:37:34 tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -515,15 +515,15 @@ mgaMakeCurrent(__DRIcontextPrivate *driContextPriv,
    if (driContextPriv) {
       mgaContextPtr mmesa = (mgaContextPtr) driContextPriv->driverPrivate;
 
-      _mesa_make_current2(mmesa->glCtx,
-                          (GLframebuffer *) driDrawPriv->driverPrivate,
-                          (GLframebuffer *) driReadPriv->driverPrivate);
-
       if (mmesa->driDrawable != driDrawPriv) {
 	 mmesa->driDrawable = driDrawPriv;
 	 mmesa->dirty = ~0; 
 	 mmesa->dirty_cliprects = (MGA_FRONT|MGA_BACK); 
       }
+
+      _mesa_make_current2(mmesa->glCtx,
+                          (GLframebuffer *) driDrawPriv->driverPrivate,
+                          (GLframebuffer *) driReadPriv->driverPrivate);
 
       if (!mmesa->glCtx->Viewport.Width)
 	 _mesa_set_viewport(mmesa->glCtx, 0, 0,
