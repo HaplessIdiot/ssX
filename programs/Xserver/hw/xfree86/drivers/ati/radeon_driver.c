@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.115 2003/11/10 18:41:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.116 2003/11/19 02:08:15 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6064,13 +6064,16 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
     save->disp_merge_cntl &= ~RADEON_DISP_RGB_OFFSET_EN;
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* Alhought we current onlu use aperture 0, also setting aperture 1 should not harm -ReneR */
     switch (pScrn->bitsPerPixel) {
     case 16:
 	save->surface_cntl |= RADEON_NONSURF_AP0_SWP_16BPP;
+	save->surface_cntl |= RADEON_NONSURF_AP1_SWP_16BPP;
 	break;
 
     case 32:
 	save->surface_cntl |= RADEON_NONSURF_AP0_SWP_32BPP;
+	save->surface_cntl |= RADEON_NONSURF_AP1_SWP_32BPP;
 	break;
     }
 #endif
