@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.2 1999/09/27 06:29:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.3 1999/12/14 01:33:50 robin Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -177,5 +177,9 @@
 /* 3D Registers */
 #define SST_3D_OFFSET           0x200000
 #define SST_3D_COMMAND SST_3D_OFFSET+0x120
+
+/* If the displayWidth is greater than this, the hardware cursor
+ * Can't reach the right edge of the screen */
+#define HW_CURSOR_MAX_DISPLAYWIDTH (2048-64)
 
 #endif

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.9 1999/12/30 03:25:24 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.10 2000/01/18 16:35:53 tsi Exp $ */
 
 /*
  * Authors:
@@ -1535,7 +1535,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
+  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE) &&
+      pScrn->displayWidth < HW_CURSOR_MAX_DISPLAYWIDTH) {
     if (!TDFXCursorInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Hardware cursor initialization failed\n");
