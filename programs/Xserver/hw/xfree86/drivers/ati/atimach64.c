@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.16 2000/03/30 15:41:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.17 2000/04/07 03:57:46 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1520,16 +1520,6 @@ ATIMach64AccelInit
     pXAAInfo->SubsequentMono8x8PatternFillRect =
         ATIMach64SubsequentMono8x8PatternFillRect;
 
-    /* The engine does not support the following primitives for 24bpp */
-    if (pATI->XModifier != 1)
-        return TRUE;
-
-    /* Solid lines */
-    pXAAInfo->SetupForSolidLine = ATIMach64SetupForSolidLine;
-    pXAAInfo->SubsequentSolidHorVertLine = ATIMach64SubsequentSolidHorVertLine;
-    pXAAInfo->SubsequentSolidBresenhamLine =
-        ATIMach64SubsequentSolidBresenhamLine;
-
     /*
      * Use scanline version of colour expansion, not only for the non-ix86
      * case, but also to avoid PCI retries.
@@ -1538,6 +1528,8 @@ ATIMach64AccelInit
         LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
         BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD |
         SCANLINE_PAD_DWORD;
+    if (pATI->XModifier != 1)
+        pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP;
     pXAAInfo->NumScanlineColorExpandBuffers = 1;
     pATI->ExpansionBitmapScanlinePtr = pATI->ExpansionBitmapScanline;
     pXAAInfo->ScanlineColorExpandBuffers =
@@ -1548,6 +1540,16 @@ ATIMach64AccelInit
         ATIMach64SubsequentScanlineCPUToScreenColorExpandFill;
     pXAAInfo->SubsequentColorExpandScanline =
         ATIMach64SubsequentColorExpandScanline;
+
+    /* The engine does not support the following primitives for 24bpp */
+    if (pATI->XModifier != 1)
+        return TRUE;
+
+    /* Solid lines */
+    pXAAInfo->SetupForSolidLine = ATIMach64SetupForSolidLine;
+    pXAAInfo->SubsequentSolidHorVertLine = ATIMach64SubsequentSolidHorVertLine;
+    pXAAInfo->SubsequentSolidBresenhamLine =
+        ATIMach64SubsequentSolidBresenhamLine;
 
     return TRUE;
 }

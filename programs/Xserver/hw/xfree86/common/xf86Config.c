@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.216 2000/04/04 19:24:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.217 2000/04/05 18:13:43 dawes Exp $ */
 
 
 /*
@@ -481,7 +481,7 @@ GenerateDriverlist(char * dirname, char * drivernames)
             }
         }
 
-        driverlist[count++] = NULL;
+        driverlist[count] = NULL;
         xfree(clist);
         xfree(dlist);
     }

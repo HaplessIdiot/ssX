@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.18 1999/03/06 13:12:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.20 2000/04/01 22:42:04 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -519,8 +519,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if(infoRec->FillColorExpandRects) {
 	XAAMSG("\tDriver provided FillColorExpandRects replacement\n");
     } else if(HaveColorExpansion) {
-#if 0
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
+#if 0
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -539,9 +539,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->FillColorExpandRects = 
 			XAAFillColorExpandRects3LSBFirst;
 	    }
-	} else 
 #endif
-	{
+	} else {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -562,21 +561,20 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    }
 	}
 	infoRec->FillColorExpandRectsFlags = 
-	  infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
+	    infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
     } else if(HaveScanlineColorExpansion) {
-#if 0
 	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					TRIPLE_BITS_24BPP) {
+#if 0
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandRects = 
-		    XAAFillColorExpandRects3MSBFirst;
+		    XAAFillScanlineColorExpandRects3MSBFirst;
 	    else
 		infoRec->FillColorExpandRects = 
-		    XAAFillColorExpandRects3LSBFirst;
-	} else 
+		    XAAFillScanlineColorExpandRects3LSBFirst;
 #endif
-	{
+	} else {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandRects = 
@@ -586,7 +584,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    XAAFillScanlineColorExpandRectsLSBFirst;
 	}
 	infoRec->FillColorExpandRectsFlags = ~TRANSPARENCY_ONLY &
-		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
+	    infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
 
     /**** FillColorExpandSpans ****/
@@ -594,8 +592,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if(infoRec->FillColorExpandSpans) {
 	XAAMSG("\tDriver provided FillColorExpandSpans replacement\n");
     } else if(HaveColorExpansion) {
-#if 0
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
+#if 0
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -614,9 +612,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    infoRec->FillColorExpandSpans = 
 			XAAFillColorExpandSpans3LSBFirst;
 	    }
-	} else 
 #endif
-	{
+	} else {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST) {
 		if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -637,21 +634,20 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    }
 	}
 	infoRec->FillColorExpandSpansFlags = 
-	  infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
+	    infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
     } else if(HaveScanlineColorExpansion) {
-#if 0
 	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					TRIPLE_BITS_24BPP) {
+#if 0
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandSpans = 
-		    XAAFillColorExpandSpans3MSBFirst;
+		    XAAFillScanlineColorExpandSpans3MSBFirst;
 	    else
 		infoRec->FillColorExpandSpans = 
-		    XAAFillColorExpandSpans3LSBFirst;
-	} else 
+		    XAAFillScanlineColorExpandSpans3LSBFirst;
 #endif
-	{
+	} else {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->FillColorExpandSpans = 
@@ -661,7 +657,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		    XAAFillScanlineColorExpandSpansLSBFirst;
 	}
 	infoRec->FillColorExpandSpansFlags = ~TRANSPARENCY_ONLY &
-		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
+	    infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
 
 
@@ -719,7 +715,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->WriteBitmapFlags = 
 	  infoRec->CPUToScreenColorExpandFillFlags & ~TRANSPARENCY_ONLY;
     } else if(HaveScanlineColorExpansion) {
-	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
+	if (infoRec->ScanlineCPUToScreenColorExpandFillFlags &
+					TRIPLE_BITS_24BPP) {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->WriteBitmap = 
@@ -789,7 +786,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	   infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
 
     } else if(HaveScanlineColorExpansion) {
-        if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
+        if (infoRec->ScanlineCPUToScreenColorExpandFillFlags &
+					TRIPLE_BITS_24BPP) {
 	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
 					BIT_ORDER_IN_BYTE_MSBFIRST)
 		infoRec->TEGlyphRenderer = 

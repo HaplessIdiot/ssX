@@ -650,8 +650,7 @@ void SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
       are expected to require three times the amount of bits to be
       transferred so that 24bpp grayscale colors can be used with color
       expansion in 8bpp coprocessor mode. Each bit is expanded to 3
-      bits when writing the monochrome data. When definining this
-      flag, also define RGB_EQUAL.  
+      bits when writing the monochrome data.
 
 
  2.5.1 The Direct Method 
@@ -1429,4 +1428,4 @@ void DisableClipping (ScrnInfoPtr pScrn)
      pixmap with a particular dimension is allowed, then your driver will be
      expected to render primitives as large as that pixmap.  
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.9 1999/01/31 12:22:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.11 2000/04/01 22:42:03 mvojkovi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.8 1999/11/18 16:52:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.9 2000/02/18 12:19:42 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -96,8 +96,14 @@ ATIValidMode
             (pMode->CrtcVDisplay > pATI->LCDVertical))
             return MODE_PANEL;
 
-        if (!pATI->OptionSync)
+        if (!pATI->OptionSync || (pMode->type & M_T_BUILTIN))
+        {
+            if ((pMode->HDisplay > pATI->LCDHorizontal) ||
+                (pMode->VDisplay > pATI->LCDVertical))
+                return MODE_PANEL;
+
             return MODE_OK;
+        }
 
         /*
          * Adjust effective timings for monitor checks.  Here the modeline
