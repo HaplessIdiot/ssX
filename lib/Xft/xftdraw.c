@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.13 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.14 2001/04/01 14:00:01 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -414,7 +414,7 @@ XftDrawRect (XftDraw	    *draw,
 {
     if (XftDrawRenderPrepare (draw, color, 0, XFT_DRAW_SRC_RECT))
     {
-	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.pict,
+	XRenderFillRectangle (draw->dpy, PictOpOver, draw->render.pict,
 			      &color->color, x, y, width, height);
     }
     else
