@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.63 2002/10/03 02:04:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.65 2002/11/25 14:05:03 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1023,15 +1023,12 @@ xf86scanpci(int flags)
 	case 2:
 	    i = PCI_SECONDARY_BUS_EXTRACT(devp->pci_pp_bus_register, devp->tag);
 	    if (i > devp->busnum) {
-		pciBusInfo[i]->bridge = devp;
-		/*
-		 * The back link needs to be set here, and is unlikely to
-		 * change.
-		 */
 		if (pciBusInfo[i]) {
 		    pciBusInfo[i]->bridge = devp;
-		    /* The back link needs to be set here,
-		       and is unlikely to change*/
+		    /*
+                     * The back link needs to be set here, and is unlikely to
+		     * change.
+		     */
 		    devp->businfo = pciBusInfo[i];
 		}
 #ifdef ARCH_PCI_PCI_BRIDGE
