@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.10 2001/09/17 03:08:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.11 2001/09/19 01:44:41 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -39,6 +39,7 @@
 + (void)append:(NSString*)value toEnv:(NSString*)name;
 
 - (void)startX;
+- (BOOL)startXClients;
 - (void)run;
 - (void)toggle;
 - (void)show;
