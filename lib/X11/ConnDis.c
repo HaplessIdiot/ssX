@@ -1,5 +1,5 @@
 /* $XConsortium: ConnDis.c,v 11.121 94/04/17 20:18:53 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.0 1994/04/28 12:31:02 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 #include <ctype.h>
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(MINIX)
 #include <sys/socket.h>
 #endif
 
@@ -227,7 +227,8 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * is "unix", then choose BSD UNIX domain sockets (if configured).
      */
 
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN) || \
+	defined(MNX_TCPCONN)
     if (!pprotocol) {
 	if (!phostname)
 #if defined(UNIXCONN) || defined(LOCALCONN)

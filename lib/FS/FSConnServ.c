@@ -1,5 +1,5 @@
 /* $XConsortium: FSConnServ.c,v 1.26 94/04/17 20:15:10 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.1 1994/04/28 14:42:10 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -62,6 +62,11 @@ in this Software without prior written authorization from the X Consortium.
 #define ECHECK(err) (WSAGetLastError() == err)
 #else
 #define ECHECK(err) (errno == err)
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 /*

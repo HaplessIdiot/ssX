@@ -1,4 +1,5 @@
 /* $XConsortium: transport.c,v 1.6 94/04/17 20:23:07 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -68,6 +69,9 @@ from the X Consortium.
 #endif
 #if defined(AMRPCCONN) || defined(AMTCPCONN)
 #include "Xtransam.c"
+#endif
+#if defined(MNX_TCPCONN)
+#include "Xtransmnx.c"
 #endif
 #include "Xtrans.c"
 #include "Xtransutil.c"

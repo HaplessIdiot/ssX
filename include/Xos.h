@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
+ * $XFree86$
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -66,6 +67,13 @@ in this Software without prior written authorization from the X Consortium.
  * index/rindex and strchr/strrchr, so any systems that don't provide them all
  * need to have #defines here.
  */
+
+#ifdef MINIX
+/* Prevent accidents with struct members called 'index' */
+#include <string.h>
+#define index(s,c) (strchr((s),(c)))
+#define rindex(s,c) (strrchr((s),(c)))
+#endif
 
 #ifndef X_NOT_STDC_ENV
 
@@ -189,7 +197,11 @@ struct timeval {
 #ifdef _SEQUENT_
 #include <time.h>
 #else /* _SEQUENT_ */
+#ifdef MINIX
+#include <time.h>
+#else /* !MINIX */
 #include <sys/time.h>
+#endif /* MINIX */
 #endif /* _SEQUENT_ */
 #endif /* WIN32 else */
 #endif /* defined(_POSIX_SOURCE) && defined(SVR4) */
@@ -202,6 +214,39 @@ struct timeval {
 #else
 #define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
 #endif
+
+#ifdef MINIX
+#include <errno.h>
+#include <net/gen/in.h>
+#include <net/gen/socket.h>
+#include <net/gen/udp.h>
+#include <net/gen/udp_hdr.h>
+
+struct sockaddr
+{
+	u16_t sa_family;
+	char sa_data[14];
+};
+
+struct sockaddr_in
+{
+	u16_t sin_family;
+	u16_t sin_port;
+	struct
+	{
+		ipaddr_t s_addr;
+	} sin_addr;
+	char sin_zero[8];
+};
+
+struct in_addr
+{
+	ipaddr_t s_addr;
+};
+
+typedef char *caddr_t;
+typedef unsigned char u_char;
+#endif /* MINIX */
 
 /* use POSIX name for signal */
 #if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD)

@@ -1,4 +1,5 @@
 /* $XConsortium: sync.c,v 1.10 94/04/17 20:32:58 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium
@@ -2205,7 +2206,9 @@ SyncExtensionInit()
  */
 
 
+#ifndef MINIX
 #include <sys/time.h>
+#endif
 
 static pointer ServertimeCounter;
 static XSyncValue Now;

@@ -1,5 +1,5 @@
 /* $XConsortium: Xlibnet.h,v 1.39 94/04/17 20:21:51 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/Xlibnet.h,v 3.0 1994/04/28 12:31:12 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -221,3 +221,8 @@ typedef fd_set FdSet;
 #define _XANYSET(set) set.fd_count
 
 #endif /* WIN32 */
+
+#ifdef MINIX
+#define select(nr, r_set, w_set, x_set, tvp) \
+	nbio_select(nr, r_set, w_set, x_set, tvp)
+#endif /* MINIX */

@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: mbuf.c,v 1.24 94/04/17 20:32:52 dpw Exp $ */
+/* $XFree86$ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -45,7 +46,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "regionstr.h"
 #include "gcstruct.h"
 #include "inputstr.h"
+#ifndef MINIX
 #include <sys/time.h>
+#endif
 
 /* given an OtherClientPtr obj, get the ClientPtr */
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])

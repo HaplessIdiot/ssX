@@ -1,4 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.22 94/04/17 20:22:59 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -80,6 +81,8 @@ from the X Consortium.
 #define TRANS_LOCAL_ISC_INDEX		12
 #define TRANS_LOCAL_SCO_INDEX		13
 #define TRANS_AMOEBA_INDEX		14
+#define TRANS_MNX_INET_INDEX		15
+#define TRANS_MNX_TCP_INDEX		16
 
 
 static
@@ -112,6 +115,10 @@ Xtransport_table Xtransports[] = {
 #if defined(AMRPCCONN) || defined(AMTCPCONN)
     &TRANS(AmConnFuncs),	TRANS_AMOEBA_INDEX,
 #endif /* AMRPCCONN || AMTCPCONN */
+#if defined(MNX_TCPCONN)
+    &TRANS(MnxINETFuncs),	TRANS_MNX_INET_INDEX,
+    &TRANS(MnxTCPFuncs),	TRANS_MNX_TCP_INDEX,
+#endif /* MNX_TCPCONN */
 };
 
 #define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport_table))
@@ -669,6 +676,10 @@ int		arg;
      * ret = ciptr->transptr->SetOption (ciptr, option, arg);
      */
 
+#ifdef MINIX
+    return ciptr->transptr->SetOption(ciptr, option, arg);
+#else /* !MINIX */
+
     switch (option)
     {
     case TRANS_NONBLOCKING:
@@ -721,6 +732,7 @@ int		arg;
     }
     
     return ret;
+#endif /* MINIX */
 }
 
 #ifdef TRANS_SERVER
