@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.17 1999/04/28 05:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.18 1999/05/14 14:11:22 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -73,6 +73,7 @@ void InitOutput(screenInfo, argc, argv)
 	screenInfo->formats[screenInfo->numPixmapFormats].scanlinePad = 
 	  xnestPixmapFormats[i].scanline_pad;
 	screenInfo->numPixmapFormats++;
+	break;
       }
   
   xnestWindowPrivateIndex = AllocateWindowPrivateIndex();

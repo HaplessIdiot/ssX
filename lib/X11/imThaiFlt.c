@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.2 1999/05/09 10:50:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.3 2000/01/29 18:58:16 dawes Exp $ */
 
 /*
 **++ 
@@ -557,9 +557,11 @@ Private Bool ThaiComposeConvert();
  * Macros to save and recall last input character in XIC
  */
 #define IC_SavePreviousChar(ic,ch) \
-		*((ic)->private.local.context->mb) = (char) (ch)
+		(*((ic)->private.local.context->mb) = (char) (ch))
 #define IC_GetPreviousChar(ic,ch) \
-		(ch) = (unsigned char) *((ic)->private.local.context->mb)
+		((ch) = (unsigned char) *((ic)->private.local.context->mb))
+#define IC_ClearPreviousChar(ic) \
+		(*((ic)->private.local.context->mb) = 0)
 /*
  * Input sequence check mode in XIC
  */
@@ -1161,6 +1163,33 @@ XPointer	client_data;
 
     if (!IC_IscMode(ic)) InitIscMode(ic);
 
+    count = XmbLookupString(ic, &ev->xkey, buf, sizeof(buf), &symbol, NULL);
+
+    if (((symbol >> 8 == 0xFF) &&
+         ((XK_BackSpace <= symbol && symbol <= XK_Clear) ||
+           (symbol == XK_Return) ||
+           (symbol == XK_Pause) ||
+           (symbol == XK_Scroll_Lock) ||
+           (symbol == XK_Sys_Req) ||
+           (symbol == XK_Escape) ||
+           (symbol == XK_Delete) ||
+           (XK_Home <= symbol && symbol <= XK_Begin) ||
+           (XK_Select <= symbol && symbol <= XK_Insert) ||
+           (XK_Undo <= symbol && symbol <= XK_Break) ||
+           (symbol == XK_Num_Lock) ||
+           (symbol == XK_KP_Space) ||
+           (symbol == XK_KP_Tab) ||
+           (symbol == XK_KP_Enter) ||
+           (XK_KP_F1 <= symbol && symbol <= XK_KP_Delete) ||
+           (XK_KP_Multiply <= symbol && symbol <= XK_KP_9) ||
+           (XK_F1 <= symbol && symbol <= XK_F35) ||
+           (symbol == XK_KP_Equal) ||
+           (symbol == NoSymbol))))
+        {
+            IC_ClearPreviousChar(ic); 
+            return False;
+        }
+#if 0
     if (! XThaiTranslateKey(ev->xkey.display, ev->xkey.keycode, ev->xkey.state,
 	 		&modifiers, &symbol, &lsym, &usym))
 	return False;
@@ -1188,17 +1217,17 @@ XPointer	client_data;
     /* Return symbol if cannot convert to character */
     if (!count)
 	return False;
+#endif
 
     /*
      *  Thai Input sequence check
      */
     isc_mode = IC_IscMode(ic);
-    if ((IC_GetPreviousChar(ic, previous_char))) {
-	if (!THAI_isaccepted(buf[0],previous_char, isc_mode)) {
-	    /* reject character */
-            XBell(ev->xkey.display, BellVolume);
-    	    return True;
-        }
+    if (!IC_GetPreviousChar(ic, previous_char)) previous_char = ' ';
+    if (!THAI_isaccepted(buf[0],previous_char, isc_mode)) {
+        /* reject character */
+        XBell(ev->xkey.display, BellVolume);
+        return True;
     }
     /* Remember the last character inputted. */
     IC_SavePreviousChar(ic, buf[count-1]);

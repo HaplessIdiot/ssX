@@ -1,4 +1,15 @@
 XFree86 4.0.1g (28 November 2000)
+ 993. Updates to Big5 encodings for the TrueType font backends (#4265,
+      Jacky Bryant).
+ 992. Fixes for Thai (th_TH) locale support in Xlib (#4264,
+      Theppitak Karoonboonyanan)
+ 991. Fix a segv in Xnest caused by overflowing the pixmap formats array
+      (based on #4262, Matthieu Herrb).
+ 990. Fix an xdm problem that prevents the chooser from working (#4261,
+      Matthieu Herrb).
+ 989. Update the Cards file (#4260, Paulo Cesar Pereira de Andrade).
+ 988. Update Macedonian xkb symbols, and add mk_MK.utf8 to locale.alias
+      (#4258, 4259, Damjan Georgievski).
  987. Safe tempfile handline for imake's probing of glibc version (based on
       #4257, Colin Phipps).
  986. Fix typo in dvorak xkb symbols file, plus white space cleanup (#4256,
@@ -11638,4 +11649,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1409 2000/11/27 00:10:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1410 2000/11/27 05:06:44 dawes Exp $

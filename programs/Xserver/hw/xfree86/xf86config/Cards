@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.70 2000/10/20 14:59:09 alanh Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.71 2000/11/02 21:45:14 robin Exp $
 
 # VGA
 
@@ -1437,7 +1437,10 @@ SEE Unsupported VGA compatible
 NAME S3 Savage3D
 SEE Unsupported VGA compatible
 
-
+NAME S3 Savage4
+SERVER SVGA
+DRIVER vga
+UNSUPPORTED
 
 # ET4000/ET6000
 
@@ -1639,39 +1642,44 @@ SEE ET6000 (generic)
 
 # ATI
 
+NAME ATI Rage 128
+CHIPSET ati
+SERVER SVGA
+DRIVER r128
+
 NAME ATI 8514 Ultra (no VGA)
-CHIPSET ATI-Mach8
+CHIPSET ati
 SERVER Mach8
 DRIVER vga
 UNSUPPORTED
 
 NAME ATI Graphics Ultra
-CHIPSET ATI-Mach8
+CHIPSET ati
 SERVER Mach8
 DRIVER ati
 
 NAME ATI Graphics Ultra Pro
-CHIPSET ATI-Mach32
+CHIPSET ati
 SERVER Mach32
 DRIVER ati
 
 NAME ATI Wonder SVGA
-CHIPSET ATI vgawonder
+CHIPSET ati
 SERVER SVGA
 DRIVER ati
 
 NAME ATI Ultra Plus
-CHIPSET ATI-Mach32
+CHIPSET ati
 SERVER Mach32
 DRIVER ati
 
 NAME ATI Mach32
-CHIPSET ATI-Mach32
+CHIPSET ati
 SERVER Mach32
 DRIVER ati
 
 NAME ATI Mach64
-CHIPSET ATI-Mach64
+CHIPSET ati
 SERVER Mach64
 DRIVER ati
 NOCLOCKPROBE
@@ -2278,6 +2286,18 @@ SEE Generic VGA compatible
 NAME Trident TVGA 8800CS
 SEE Generic VGA compatible
 
+NAME Trident CyberBlade (generic)
+CHIPSET CyberBlade
+SERVER SVGA
+DRIVER trident
+NOCLOCKPROBE
+
+NAME Trident Blade3D (generic)
+CHIPSET Blade3D
+SERVER SVGA
+DRIVER trident
+NOCLOCKPROBE
+
 # SiS
 
 NAME SiS 530
@@ -2537,6 +2557,12 @@ DRIVER mga
 LINE VideoRam 8192
 NOCLOCKPROBE
 
+NAME Matrox Millennium G400
+CHIPSET mgag400
+SERVER SVGA
+DRIVER mga
+NOCLOCKPROBE
+
 NAME Matrox Mystique G200 16MB
 CHIPSET mgag200
 SERVER SVGA
@@ -2632,6 +2658,29 @@ SEE RIVA TNT
 
 NAME Creative Graphics Blaster TNT2
 SEE RIVA TNT2
+
+# 3Dfx
+NAME Voodoo Banshee (generic)
+SERVER SVGA
+CHIPSET Voodo Banshee
+DRIVER tdfx
+
+NAME Voodoo3 (generic)
+SERVER SVGA
+CHIPSET Voodoo3
+DRIVER tdfx
+
+NAME Elsa Victory II
+SEE Voodoo Banshee (generic)
+
+NAME Diamond Monster Fusion
+SEE Voodoo Banshee (generic)
+
+NAME AOpen PA2010
+SEE Voodoo Banshee (generic)
+
+NAME Chaintech Desperado 3F10
+SEE Voodoo Banshee (generic)
 
 # 3DLabs
 
@@ -2751,8 +2800,7 @@ SEE AT3D
 NAME NeoMagic (laptop/notebook)
 CHIPSET MagicGraph 128 series
 SERVER SVGA
-DRIVER vga
-UNSUPPORTED
+DRIVER neomagic
 LINE #    Chipset    "NM2160"
 LINE #    IOBase     0xfea00000
 LINE #    MemBase    0xfd000000
@@ -2847,6 +2895,18 @@ CHIPSET TGA
 SERVER TGA
 DRIVER tga
 RAMDAC Bt463
+
+# i810
+
+NAME Intel 810
+SERVER SVGA
+DRIVER i810
+
+# i740
+
+NAME Intel 740 (generic)
+SERVER SVGA
+DRIVER i740
 
 # Misc
 
