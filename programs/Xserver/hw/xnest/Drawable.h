@@ -1,4 +1,4 @@
-/* $XConsortium: Drawable.h,v 1.1 93/07/12 15:28:11 rws Exp $ */
+/* $Xorg: Drawable.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -16,8 +16,8 @@ is" without express or implied warranty.
 #ifndef XNESTDRAWABLE_H
 #define XNESTDRAWABLE_H
 
-#include "Window.h"
-#include "Pixmap.h"
+#include "XNWindow.h"
+#include "XNPixmap.h"
 
 #define xnestDrawable(pDrawable) \
   ((pDrawable)->type == DRAWABLE_WINDOW ? \

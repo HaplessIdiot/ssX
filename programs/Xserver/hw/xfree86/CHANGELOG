@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 501. Fix xnest build on file systems that are not case sensitive
+      (Torrey T. Lyons).
  500. Use unique local Imake define for fonts.conf dir (#5482, Mike A. Harris)
  499. Fix xc/lib/Imakefile to not break HasFontconfig (#5481, Mike A. Harris)
  498. Refresh screen after wake from sleep in XDarwin full screen mode
@@ -15534,4 +15536,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2397 2002/11/20 23:51:56 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2399 2002/11/21 16:53:00 keithp Exp $

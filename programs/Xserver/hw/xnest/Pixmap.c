@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.3 2001/10/28 03:34:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.4 2002/05/14 21:59:38 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -28,7 +28,7 @@ is" without express or implied warranty.
 
 #include "Display.h"
 #include "Screen.h"
-#include "Pixmap.h"
+#include "XNPixmap.h"
 
 PixmapPtr xnestCreatePixmap(pScreen, width, height, depth)
     ScreenPtr   pScreen;
