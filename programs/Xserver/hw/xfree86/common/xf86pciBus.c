@@ -1406,7 +1406,7 @@ xf86PciProbe(void)
 
     DataSetupFunc = LoaderSymbol("xf86SetupPciData");
 #else
-    DataSetupFunc = xf86SetupPciData;
+    DataSetupFunc = xf86SetupScanPci;
 #endif
 
     (*DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo, &
