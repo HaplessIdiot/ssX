@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.15 1995/01/04 04:41:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.16 1995/01/07 04:11:05 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -232,6 +232,7 @@ static char *   ATIIdent();
 static Bool     ATIClockSelect();
 static void     ATIEnterLeave();
 static Bool     ATIInit();
+static Bool     ATIValidMode();
 static void *   ATISave();
 static void     ATIRestore();
 static void     ATIAdjust();
@@ -265,6 +266,7 @@ vgaVideoChipRec ATI =
         ATIIdent,               /* Ident */
         ATIEnterLeave,          /* EnterLeave */
         ATIInit,                /* Init */
+        ATIValidMode,           /* ValidMode */
         ATISave,                /* Save */
         ATIRestore,             /* Restore */
         ATIAdjust,              /* Adjust */
@@ -2764,4 +2766,15 @@ DisplayModePtr mode;
                 mode->VSyncEnd >>= -ShiftCount;
                 mode->VTotal >>= -ShiftCount;
         }
+}
+
+/*
+ * ATIValidMode --
+ *
+ */
+static Bool
+ATIValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }

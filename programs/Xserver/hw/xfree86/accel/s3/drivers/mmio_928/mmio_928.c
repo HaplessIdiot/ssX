@@ -1,5 +1,5 @@
 /* $XConsortium: mmio_928.c,v 1.1 94/03/28 21:17:36 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.2 1994/08/02 04:19:40 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -32,6 +32,7 @@ static Bool MMIO_928Probe();
 static char *MMIO_928Ident();
 extern void mmio928_s3EnterLeaveVT();
 extern Bool mmio928_s3Initialize();
+extern Bool mmio928_s3ValidMode();
 extern void mmio928_s3AdjustFrame();
 extern Bool mmio928_s3SwitchMode();
 extern Bool s3Mmio928;
@@ -50,9 +51,11 @@ s3VideoChipRec MMIO_928 = {
 #ifdef HAVE_VOLATILE
   mmio928_s3EnterLeaveVT,
   mmio928_s3Initialize,
+  mmio928_s3ValidMode,
   mmio928_s3AdjustFrame,
   mmio928_s3SwitchMode,
 #else
+  NULL,
   NULL,
   NULL,
   NULL,
@@ -101,3 +104,15 @@ MMIO_928Probe()
    return(FALSE);
 #endif
 }
+
+/*
+ * mmio928_s3ValidMode --
+ *
+ */
+static Bool
+mmio928_s3ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

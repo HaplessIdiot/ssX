@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c,v 1.1 94/03/28 21:50:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.3 1994/09/11 00:52:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.4 1994/12/11 10:57:09 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -57,6 +57,7 @@ static char *   ET3000Ident();
 static Bool     ET3000ClockSelect();
 static void     ET3000EnterLeave();
 static Bool     ET3000Init();
+static Bool     ET3000ValidMode();
 static void *   ET3000Save();
 static void     ET3000Restore();
 static void     ET3000Adjust();
@@ -69,6 +70,7 @@ vgaVideoChipRec ET3000 = {
   ET3000Ident,
   ET3000EnterLeave,
   ET3000Init,
+  ET3000ValidMode,
   ET3000Save,
   ET3000Restore,
   ET3000Adjust,
@@ -428,4 +430,15 @@ ET3000Adjust(x, y)
   outb(0x3C0, 0x33);
   outb(0x3C0, wants_pan ? 3 : 0);
 #endif
+}
+
+/*
+ * ET3000ValidMode --
+ *
+ */
+static Bool
+ET3000ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }

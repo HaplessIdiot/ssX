@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.12 1994/11/26 12:43:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.13 1994/12/29 10:03:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -69,6 +69,7 @@ ScrnInfoRec mach8InfoRec = {
     -1,			/* int scrnIndex */
     mach8Probe,      	/* Bool (* Probe)() */
     mach8Initialize,	/* Bool (* Init)() */
+    mach8ValidMode,	/* Bool (* ValidMode)() */
     mach8EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -807,3 +808,15 @@ mach8ClockSelect(no)
   }
   return(TRUE);
 }
+
+/*
+ * mach8ValidMode --
+ *
+ */
+static Bool
+mach8ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

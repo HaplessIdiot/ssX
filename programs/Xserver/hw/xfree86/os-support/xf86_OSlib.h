@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.10 1994/12/17 10:07:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.11 1994/12/18 11:02:02 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -184,7 +184,7 @@ extern int errno;
 #endif /* linux */
 
 /**************************************************************************/
-/* 386BSD and BSD/386                                                     */
+/* 386BSD and derivatives,  BSD/386                                       */
 /**************************************************************************/
 #ifdef __BSD__
 # undef __BSD__
@@ -212,11 +212,6 @@ extern int errno;
 # include <errno.h>
 extern int errno;
 
-/* PCVT support requires SYSCONS support */
-# if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
-#  define SYSCONS_SUPPORT
-# endif
-
 # if !defined(LINKKIT)
   /* Don't need this stuff for the Link Kit */
 #  if defined(__bsdi__)
@@ -241,12 +236,21 @@ extern int errno;
 #     include <sys/console.h>
 #    endif /* __FreeBSD__ || __NetBSD__ */
 #   endif /* SYSCONS_SUPPORT */
-#   if defined(PCVT_SUPPORT) && !defined(VGAPCVTID)
-#    define VGAPCVTID _IOWR('V',113, struct pcvtid)
-     struct pcvtid {
+#   if defined(PCVT_SUPPORT)
+#    if !defined(SYSCONS_SUPPORT)
+#     /* no syscons, so include pcvt specific header file */
+#     if defined(__FreeBSD__) || defined(__NetBSD__)
+#      include <machine/pcvt_ioctl.h>
+#     else
+#      include <sys/pcvt_ioctl.h>
+#     endif /* __FreeBSD__ || __NetBSD__ */
+#    else /* pcvt and syscons: hard-code the ID magic */
+#     define VGAPCVTID _IOWR('V',113, struct pcvtid)
+      struct pcvtid {
 	char name[16];
 	int rmajor, rminor;
-     };
+      };
+#    endif /* PCVT_SUPPORT && SYSCONS_SUPPORT */
 #   endif /* PCVT_SUPPORT */
     /* Include these definitions in case ioctl_pc.h didn't get included */
 #   ifndef CONSOLE_X_MODE_ON
@@ -271,7 +275,7 @@ extern int errno;
 
 # define CLEARDTR_SUPPORT
 
-# if !defined(__bsdi__)
+# if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 #  define USE_VT_SYSREQ
 # endif
 

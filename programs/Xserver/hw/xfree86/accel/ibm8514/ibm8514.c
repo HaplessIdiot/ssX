@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.8 1994/10/23 12:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.9 1994/12/29 09:45:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,7 @@ ScrnInfoRec ibm8514InfoRec = {
     -1,			/* int scrnIndex */
     ibm8514Probe,      	/* Bool (* Probe)() */
     ibm8514Initialize,	/* Bool (* Init)() */
+    ibm8514ValidMode,	/* Bool (* ValidMode)() */
     ibm8514EnterLeaveVT,/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -414,3 +415,15 @@ ibm8514SaveScreen (pScreen, on)
     }
     return(TRUE);
 }
+
+/*
+ * ibm8514ValidMode --
+ *
+ */
+static Bool
+ibm8514ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+
