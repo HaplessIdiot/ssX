@@ -37,13 +37,18 @@
 /* Define if you have the memmove function.  */
 #define HAVE_MEMMOVE 1
 
-#if 0
-/* XXX these are apparently unused by the library in 1.95.2*/
-/* whether byteorder is bigendian */
-/* #undef WORDS_BIGENDIAN */
-
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #define BYTEORDER 1234
+
+#if X_BYTE_ORDER==X_BIG_ENDIAN
+#define BYTEORDER 4321
+#endif
+
+#if X_BYTE_ORDER==X_LITTLE_ENDIAN
+#define BYTEORDER 1234
+#endif
+
+#ifndef BYTEORDER
+#error "Unkown byte order"
 #endif
 
 #define XML_NS
