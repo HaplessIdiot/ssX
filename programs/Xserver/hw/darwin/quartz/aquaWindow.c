@@ -31,7 +31,7 @@
  *
  * Copyright © 1998 Keith Packard
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaWindow.c,v 1.1 2002/07/24 05:58:33 torrey Exp $ */
 
 #include "fb.h"
 #include "aqua.h"
@@ -83,6 +83,8 @@ AquaFillRegionTiled(
                    tileXoff, tileYoff);
     tileWidth = pTile->drawable.width;
     tileHeight = pTile->drawable.height;
+    xRot += dstXoff;
+    yRot += dstYoff;
     planeMask = FB_ALLONES & ~AquaAlphaMask(dstBpp);
 
     while (n--)

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.8 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.9 2001/07/16 05:05:41 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -262,6 +262,8 @@ fbFillRegionTiled (DrawablePtr	pDrawable,
     fbGetDrawable (&pTile->drawable, tile, tileStride, tileBpp, tileXoff, tileYoff);
     tileWidth = pTile->drawable.width;
     tileHeight = pTile->drawable.height;
+    xRot += dstXoff;
+    yRot += dstYoff;
     
     while (n--)
     {

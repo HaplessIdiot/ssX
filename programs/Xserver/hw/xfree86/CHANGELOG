@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 815. Fix fb's rotation of tiles and stipples when using non-zero PixOrigin
+      macros (Torrey T. Lyons).
  814. Fix Radeon native FP mode initializion (Hui Yu@ATI).
  813. Resync with DRI mesa-4-0-4 branch:
        - Fix Q3A mode change prolbem in thr r200 driver (Keith Whitwell).
@@ -16183,4 +16185,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2512 2003/01/30 16:22:16 tsi Exp $
