@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.15 2001/05/04 00:38:23 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.16 2001/05/06 06:28:46 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -130,12 +130,41 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.15 2001/05/04 00:38:23 ala
  */
 #define BuildDebug		NO
 #define XFree86Devel		NO
-#define BuildPexExt		YES
+
+/*
+ * Xinerama is multiple monitor support and will require special code,
+ * if it even makes sense to enable such a beast in Cygwin/XFree86.
+ */
 #define BuildXinerama		NO
+
+/*
+ * PEX and XIE were deprecated on 2001-05-29, as Keith Packard says,
+ * "they are so broken as to be unusable in real applications," furthermore,
+ * "neither PEX nor XIE have seen any development for almost a decade".
+ * 
+ * XIE is the X Image Extension Protocol, not to be confused with
+ * XInputExt, which is the X Input Extension.
+ */
+#define BuildPexExt		NO
+#define BuildXIE		NO
+
+/*
+ * Rush is a non standard extension for cooperation between the glide
+ * library and the X server.  Cygwin/XFree86 will never need Rush,
+ * as all graphics requests are processed through GDI or DirectDraw.
+ */
+#define BuildXF86RushExt	NO
+
+/*
+ * DPMS is the Display Power Management System.  Cygwin/XFree86 doesn't
+ * own the display hardware, Windows does, so it doesn't make sense
+ * for Cygwin/XFree86 to try to provide power management.
+ */
+#define BuildDPMS		NO
+#define BuildDPMSExt		NO
+#define DPMSDefines		/**/
+
 #define BuildGlxExt             YES
-#define BuildXIE		YES
-#define BuildXF86RushExt	YES
-#define BuildXF86RushLibrary	YES
 #define BuildXInputExt		YES
 #define BuildXF86VidModeExt     YES
 #define BuildXF86DGA		NO
@@ -161,9 +190,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.15 2001/05/04 00:38:23 ala
 #define BuildAppgroup		YES
 #define BuildShapeExt		YES
 #define BuildScanpci		NO
-#define BuildDPMS		NO
-#define BuildDPMSExt		NO
-#define DPMSDefines		/**/
+
 #define BuildScreenSaverExt	NO
 
 /*
@@ -171,10 +198,14 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.15 2001/05/04 00:38:23 ala
  */
 #define BuildPlugin		NO
 
-/* DPS is the Adobe Display Postscript library */
-#define BuildDPS		YES
-#define BuildDPSLibraries	YES
-#define BuildDPSLibrary		YES
+/*
+ * DPS is the Adobe Display Postscript (r) library.
+ * It seems that we do not yet have a postscript client library
+ * to work in conjunction with DPS; the remedy to this may be
+ * as simple as flipping a build switch or instaling Ghostscript.
+ * In any case, some work needs to be done before DPS will work. 
+ */
+#define BuildDPS		NO
 
 /*
  * Doing a loadable server would probably take some extra work.
