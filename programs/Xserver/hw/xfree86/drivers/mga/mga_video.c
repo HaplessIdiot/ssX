@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.19 2000/11/02 19:10:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.20 2000/11/08 00:51:10 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -439,7 +439,7 @@ MGAClipVideo(
 } 
 
 static void 
-MGAStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+MGAStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
   MGAPtr pMga = MGAPTR(pScrn);
   MGAPortPrivPtr pPriv = pMga->portPrivate;
@@ -448,7 +448,7 @@ MGAStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
-  if(exit) {
+  if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON)
 	OUTREG(MGAREG_BESCTL, 0);
      if(pPriv->linear) {
@@ -592,23 +592,37 @@ MGACopyMungedData(
    int h,
    int w
 ){
-   CARD32 *dst = (CARD32*)dst1;
+   CARD32 *dst;
+   CARD8 *s1, *s2, *s3;
    int i, j;
 
-   dstPitch >>= 2;
    w >>= 1;
 
    for(j = 0; j < h; j++) {
-	for(i = 0; i < w; i++) {
-	    dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		     (src3[i] << 8) | (src2[i] << 24);
-	}
-	dst += dstPitch;
-	src1 += srcPitch;
-	if(j & 1) {
-	    src2 += srcPitch2;
-	    src3 += srcPitch2;
-	}
+        dst = (CARD32*)dst1;
+        s1 = src1;  s2 = src2;  s3 = src3;
+        i = w;
+        while(i > 4) {
+           dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+           dst[1] = s1[2] | (s1[3] << 16) | (s3[1] << 8) | (s2[1] << 24);
+           dst[2] = s1[4] | (s1[5] << 16) | (s3[2] << 8) | (s2[2] << 24);
+           dst[3] = s1[6] | (s1[7] << 16) | (s3[3] << 8) | (s2[3] << 24);
+           dst += 4; s2 += 4; s3 += 4; s1 += 8;
+           i -= 4;
+        }
+
+        while(i--) {
+           dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+           dst++; s2++; s3++;
+           s1 += 2;
+        }
+
+        dst1 += dstPitch;
+        src1 += srcPitch;
+        if(j & 1) {
+            src2 += srcPitch2;
+            src3 += srcPitch2;
+        }
    }
 }
 
@@ -729,7 +743,7 @@ MGADisplayVideoTexture(
     short drw_w, short drw_h
 ){
     MGAPtr pMga = MGAPTR(pScrn);
-    int log2w, log2h, i, incx, incy, padw, padh;
+    int log2w = 0, log2h = 0, i, incx, incy, padw, padh;
     
     pitch >>= 1;
 
@@ -813,15 +827,15 @@ MGAPutImage(
   short drw_w, short drw_h,
   int id, unsigned char* buf, 
   short width, short height, 
-  Bool sync,
+  Bool Sync,
   RegionPtr clipBoxes, pointer data
 ){
    MGAPtr pMga = MGAPTR(pScrn);
    MGAPortPrivPtr pPriv = pMga->portPrivate;
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_size, offset, offset2, offset3;
-   int srcPitch, srcPitch2, dstPitch;
+   int pitch, new_size, offset, offset2 = 0, offset3 = 0;
+   int srcPitch, srcPitch2 = 0, dstPitch;
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
    CARD32 tmp;
