@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.13 1995/06/08 06:26:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.14 1995/06/10 13:30:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -614,7 +614,6 @@ mach64Probe()
     }
 
     if (xf86Verbose) {
-	       mach64ClockTypeTable[mach64ClockType]);
 	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
 	       mach64ClockType < NUM_CLOCK_TYPES ?
 		mach64ClockTypeTable[mach64ClockType] : "Unknown");
