@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.16 1999/12/30 03:29:22 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.17 2000/03/03 20:02:17 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -2252,7 +2252,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {
@@ -2305,7 +2305,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {

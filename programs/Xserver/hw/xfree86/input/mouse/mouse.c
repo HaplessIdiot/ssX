@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.25 2000/02/10 22:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.26 2000/02/17 15:20:17 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -68,7 +68,6 @@ static void MouseUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
 #endif
 
 static int MouseProc(DeviceIntPtr device, int what);
-static void MouseNoSigioReadInput(InputInfoPtr pInfo);
 static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int v1, int v2, int v3, int v4, int v5, int *x,
 		 	     int *y);
