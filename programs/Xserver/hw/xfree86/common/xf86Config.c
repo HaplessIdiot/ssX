@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.237 2001/01/06 20:19:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.239 2001/02/15 20:31:46 eich Exp $ */
 
 
 /*
@@ -938,9 +938,9 @@ static Bool
 configInputKbd(IDevPtr inputp)
 {
   char *s;
-#ifdef XKB
   MessageType from = X_DEFAULT;
-#endif
+  Bool customKeycodesDefault = FALSE;
+  int verb = 0;
 
   /* Initialize defaults */
   xf86Info.xleds         = 0L;
@@ -953,6 +953,7 @@ configInputKbd(IDevPtr inputp)
 #if defined(SVR4) && defined(i386)
   xf86Info.panix106      = FALSE;
 #endif
+  xf86Info.kbdCustomKeycodes = FALSE;
 #ifdef XKB
   if (!xf86IsPc98()) {
     xf86Info.xkbrules      = "xfree86";
@@ -1134,6 +1135,39 @@ configInputKbd(IDevPtr inputp)
     xf86Msg(X_CONFIG, "PANIX106: enabled\n");
   }
 #endif
+
+  /*
+   * This was once a compile time option (ASSUME_CUSTOM_KEYCODES)
+   * defaulting to 1 on Linux/PPC. It is no longer necessary, but for
+   * backwards compatibility we provide 'Option "CustomKeycodes"'
+   * and try to autoprobe on Linux/PPC.
+   */
+  from = X_DEFAULT;
+  verb = 2;
+#if defined(__linux__) && defined(__powerpc__)
+  {
+    FILE *f;
+
+    f = fopen("/proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes","r");
+    if (f) {
+      if (fgetc(f) == '0') {
+	customKeycodesDefault = TRUE;
+	from = X_PROBED;
+	verb = 1;
+      }
+      fclose(f);
+    }
+  }
+#endif
+  if (xf86FindOption(inputp->commonOptions, "CustomKeycodes")) {
+    from = X_CONFIG;
+    verb = 1;
+  }
+  xf86Info.kbdCustomKeycodes =
+	xf86SetBoolOption(inputp->commonOptions, "CustomKeycodes",
+			  customKeycodesDefault);
+  xf86MsgVerb(from, verb, "Keyboard: CustomKeycode %s\n",
+		xf86Info.kbdCustomKeycodes ? "enabled" : "disabled");
 
   return TRUE;
 }

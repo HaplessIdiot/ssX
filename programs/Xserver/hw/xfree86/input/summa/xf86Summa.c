@@ -1,6 +1,10 @@
 /*
  * Copyright 1996 by Steven Lang <tiger@tyger.org>
  *
+ * AceCad tablet support ported by Arpad Gereoffy <arpi@esp-team.scene.hu>
+ * originally written by Shane Watts <shane@bofh.asn.au>
+ *                   and Fredrik Chabot <fhc@f6.nl>
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
@@ -20,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.4 2000/08/11 19:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.5 2001/03/03 22:46:31 tsi Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -158,14 +162,19 @@ static int      debug_level = 5;
 */
 #define ABSOLUTE_FLAG		1
 #define STYLUS_FLAG		2
+#define COMPATIBLE_FLAG		4
+/*#define H1217D_FLAG		8*/
+#define Z_AXIS_FLAG		16
 
 typedef struct 
 {
     char	*sumDevice;	/* device file name */
     int		sumInc;		/* increment between transmits */
+    int         sumLPI;         /* resolution */
     int		sumButTrans;	/* button translation flags */
     int		sumOldX;	/* previous X position */
     int		sumOldY;	/* previous Y position */
+    int		sumOldZ;	/* previous Z position */
     int		sumOldProximity; /* previous proximity */
     int		sumOldButtons;	/* previous buttons state */
     int		sumMaxX;	/* max X value */
@@ -177,7 +186,7 @@ typedef struct
     int		sumRes;		/* resolution in lines per inch */
     int		flags;		/* various flags */
     int		sumIndex;	/* number of bytes read */
-    unsigned char sumData[5];	/* data read on the device */
+    unsigned char sumData[7];	/* data read on the device */
 } SummaDeviceRec, *SummaDevicePtr;
 
 /*
@@ -254,7 +263,14 @@ static SymTabRec SumPointTabRec[] = {
 #define SS_RELATIVE	'E'	/* Relative mode */
 
 #define SS_UPPER_ORIGIN	"b"	/* Origin upper left */
-#define SS_500LPI	"h"	/* 500 lines per inch */
+
+#define SS_100LPI	'd'	/* 100 lines per inch */
+#define SS_200LPI	'e'	/* 200 lines per inch */
+#define SS_254LPI	'f'	/* 254 lines per inch (10 lines/mm)*/
+#define SS_400LPI	'g'	/* 400 lines per inch */
+#define SS_500LPI	'h'	/* 500 lines per inch */
+#define SS_508LPI	'i'	/* 508 lines per inch (20 lines/mm)*/
+#define SS_1000LPI	'j'	/* 1000 lines per inch */
 
 #define SS_PROMPT_MODE	"B"	/* Prompt mode */
 #define SS_STREAM_MODE	"@"	/* Stream mode */
@@ -513,8 +529,8 @@ xf86SumReadInput(LocalDevicePtr local)
 {
     SummaDevicePtr	priv = (SummaDevicePtr) local->private;
     int			len, loop;
-    int			is_absolute;
-    int			x, y, buttons, prox;
+    int			is_absolute, num_ax;
+    int			x, y, z, buttons, prox;
     DeviceIntPtr	device;
     unsigned char	buffer[BUFFER_SIZE];
   
@@ -554,6 +570,23 @@ xf86SumReadInput(LocalDevicePtr local)
        Byte 5 (Absolute mode only)
        bit 7  Always 0
        bits 6-0 = Y13 - Y7
+   ---------------------------------
+     Flair extends this with
+   ---------------------------------
+       Byte 6
+       bit 7  Always 0
+       bits 6-0 = Z8-2
+
+       Byte 7
+       bit 7-5  Always 0
+       bit 4 = Z0
+       bit 3-2 = Cr1-0
+         Controler 00 =  4 button puck
+                   01 =  3 button stylus (default)
+                   10 = 16 button puck (how? only 4bits)
+                   11 = reserved
+       bit 1 = Button status  
+       bit 0 = Z1
 */
   
 	if ((priv->sumIndex == 0) && !(buffer[loop] & PHASING_BIT)) { /* magic bit is not OK */
@@ -563,38 +596,46 @@ xf86SumReadInput(LocalDevicePtr local)
 
 	priv->sumData[priv->sumIndex++] = buffer[loop];
 
-	if (priv->sumIndex == (priv->flags & ABSOLUTE_FLAG? 5: 3)) {
+	if (priv->sumIndex == ( (priv->flags & ABSOLUTE_FLAG) ?
+          ((priv->flags & Z_AXIS_FLAG)?7:5) : 3)) {
 /* the packet is OK */
 /* reset char count for next read */
 	    priv->sumIndex = 0;
 
+	    prox = (priv->sumData[0] & PROXIMITY_BIT)? 0: 1;
+	    buttons = (priv->sumData[0] & BUTTON_BITS);
 	    if (priv->flags & ABSOLUTE_FLAG) {
 		x = (int)priv->sumData[1] + ((int)priv->sumData[2] << 7);
 		y = (int)priv->sumData[3] + ((int)priv->sumData[4] << 7);
+                if(priv->flags & Z_AXIS_FLAG){
+	            z = ((int)priv->sumData[5] << 2) |
+			((int)priv->sumData[6] & 0x01 << 1) |
+			((int)priv->sumData[6] & 0x10);
+		    buttons |= ((int)priv->sumData[6] & 0x02 << 2);
+                } else z = 0;
 	    } else {
 		x = priv->sumData[0] & XSIGN_BIT? priv->sumData[1]: -priv->sumData[1];
 		y = priv->sumData[0] & YSIGN_BIT? priv->sumData[2]: -priv->sumData[2];
+                z = 0;
 	    }
-	    prox = (priv->sumData[0] & PROXIMITY_BIT)? 0: 1;
-
-	    buttons = (priv->sumData[0] & BUTTON_BITS);
 
 	    device = local->dev;
 
-	    DBG(6, ErrorF("prox=%s\tx=%d\ty=%d\tbuttons=%d\n",
-		   prox ? "true" : "false", x, y, buttons));
+	    DBG(6, ErrorF("prox=%s\tx=%d\ty=%d\tz=%d\tbuttons=%d\n",
+		   prox ? "true" : "false", x, y, z, buttons));
 
 	    is_absolute = (priv->flags & ABSOLUTE_FLAG);
+	    num_ax = (priv->flags & Z_AXIS_FLAG)? 3 : 2;
 
 /* coordonates are ready we can send events */
 	    if (prox) {
 		if (!(priv->sumOldProximity))
-		    xf86PostProximityEvent(device, 1, 0, 2, x, y);
+		    xf86PostProximityEvent(device, 1, 0, num_ax, x, y, z);
 
-		if ((is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y)))
+		if ((is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y) || (priv->sumOldZ != z)))
 		       || (!is_absolute && (x || y))) {
 		    if (is_absolute || priv->sumOldProximity) {
-			xf86PostMotionEvent(device, is_absolute, 0, 2, x, y);
+			xf86PostMotionEvent(device, is_absolute, 0, num_ax, x, y, z);
 		    }
 		}
 		if (priv->sumOldButtons != buttons) {
@@ -610,17 +651,18 @@ xf86SumReadInput(LocalDevicePtr local)
 			       delta));
 
 			xf86PostButtonEvent(device, is_absolute, button,
-			       (delta > 0), 0, 2, x, y);
+			       (delta > 0), 0, num_ax, x, y, z);
 		    }
 		}
 		priv->sumOldButtons = buttons;
 		priv->sumOldX = x;
 		priv->sumOldY = y;
+		priv->sumOldZ = z;
 		priv->sumOldProximity = prox;
 	    } else { /* !PROXIMITY */
 /* Any changes in buttons are ignored when !proximity */
 		if (priv->sumOldProximity)
-		    xf86PostProximityEvent(device, 0, 0, 2, x, y);
+		    xf86PostProximityEvent(device, 0, 0, num_ax, x, y, z);
 		priv->sumOldProximity = 0;
 	    }
 	}
@@ -669,7 +711,7 @@ xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
 
 	SYSCALL(err = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout));
 #else
-	err = xf86WaitForInput(fd, 1000);
+	err = xf86WaitForInput(fd, 200000);
 #endif
 	if (err == -1) {
 	    Error("SummaSketch select");
@@ -814,17 +856,38 @@ xf86SumOpen(LocalDevicePtr local)
 #else
     xf86FlushInput(local->fd);
 #endif  
+
+if(!(priv->flags&COMPATIBLE_FLAG)){
     DBG(2, ErrorF("reading firmware ID\n"));
     if (!xf86SumWriteAndRead(local->fd, SS_FIRMID, buffer, 255, 1))
       return !Success;
-
     DBG(2, ErrorF("%s\n", buffer));
-
     if (xf86Verbose)
 	ErrorF("%s SummaSketch firmware ID : %s\n", XCONFIG_PROBED, buffer);
+}
+
+    DBG(2, ErrorF("setting up resolution\n"));
+    switch(priv->sumLPI){
+    case 100: buffer[0]=SS_100LPI;break;
+    case 200: buffer[0]=SS_200LPI;break;
+    case 254: buffer[0]=SS_254LPI;break;
+    case 400: buffer[0]=SS_400LPI;break;
+    case 500: buffer[0]=SS_500LPI;break;
+    case 508: buffer[0]=SS_508LPI;break;
+    case 1000: buffer[0]=SS_1000LPI;break;
+    default:
+      ErrorF("Invalid LPI! Using default (500)\n");
+      buffer[0]=SS_500LPI;
+    }
+    SYSCALL(err = write(local->fd, buffer, 1));
+    if (err == -1) {
+	Error("SummaSketch LPI write");
+	return !Success;
+    }
 
     DBG(2, ErrorF("reading max coordinates\n"));
-    if (!xf86SumWriteAndRead(local->fd, SS_500LPI SS_CONFIG, buffer, 5, 0))
+    if (!xf86SumWriteAndRead(local->fd, SS_CONFIG, buffer, 
+                             (priv->flags&Z_AXIS_FLAG)?7:5, 0))
 	return !Success;
     priv->sumMaxX = (int)buffer[1] + ((int)buffer[2] << 7);
     priv->sumMaxY = (int)buffer[3] + ((int)buffer[4] << 7);
@@ -832,8 +895,8 @@ xf86SumOpen(LocalDevicePtr local)
     if (xf86Verbose)
 	ErrorF("%s SummaSketch tablet size is %d.%1dinx%d.%1din, %dx%d "
 	       "lines of resolution\n", XCONFIG_PROBED, 
-	       priv->sumMaxX / 500, (priv->sumMaxX / 50) % 10,
-	       priv->sumMaxY / 500, (priv->sumMaxY / 50) % 10,
+	       priv->sumMaxX / priv->sumLPI, (10*priv->sumMaxX / priv->sumLPI) % 10,
+	       priv->sumMaxY / priv->sumLPI, (10*priv->sumMaxY / priv->sumLPI) % 10,
 	       priv->sumMaxX, priv->sumMaxY);
 
     if (priv->sumXSize > 0 && priv->sumYSize > 0) {
@@ -940,6 +1003,15 @@ xf86SumOpenDevice(DeviceIntPtr pSum)
 			   500000, /* resolution */
 			   0, /* min_res */
 			   500000); /* max_res */
+    if(priv->flags&Z_AXIS_FLAG)
+    InitValuatorAxisStruct(pSum,
+			   2,
+			   0,			/* min val */
+			   512,			/* max val */
+			   500000,		/* resolution */
+			   0,			/* min_res */
+			   500000);		/* max_res */
+
     return (local->fd != -1);
 }
 
@@ -963,8 +1035,8 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	case DEVICE_INIT:
 	    DBG(1, ErrorF("xf86SumProc pSum=0x%x what=INIT\n", pSum));
 
-	    nbaxes = 2;			/* X, Y */
-	    nbbuttons = (priv->flags & STYLUS_FLAG)? 2: 4;
+	    nbaxes = (priv->flags & Z_AXIS_FLAG)?3:2;	/* X, Y [,Z] */
+	    nbbuttons = (priv->flags & STYLUS_FLAG)? ((priv->flags & Z_AXIS_FLAG)?3:2): 4;
 
 	    for(loop=1; loop<=nbbuttons; loop++) map[loop] = loop;
 
@@ -1308,7 +1380,14 @@ xf86SumInit(InputDriverPtr	drv,
 	xf86Msg(X_CONFIG, "Summa: debug level set to %d\n", debug_level);
     }
 
-
+#if 0
+    if(!xf86GetOptValInteger(local->options, "LPI", &priv->sumLPI))
+        priv->sumLPI=500;
+#else
+    s = xf86FindOptionValue(local->options, "LPI");
+    if(s) priv->sumLPI=atoi(s); else priv->sumLPI=500;
+#endif
+    xf86Msg(X_CONFIG, "%s resolution is %d LPI\n", local->name, priv->sumLPI);
 
     s = xf86FindOptionValue(local->options, "Mode");
 
@@ -1325,6 +1404,17 @@ xf86SumInit(InputDriverPtr	drv,
     xf86Msg(X_CONFIG, "%s is in %s mode\n", local->name,
 	    (priv->flags & ABSOLUTE_FLAG) ? "absolute" : "relative");	    
 
+    s = xf86FindOptionValue(local->options, "Compatible");
+    if(s){
+       priv->flags|=COMPATIBLE_FLAG;
+       xf86Msg(X_CONFIG, "SummaSketch compatible - will not query firmware ID\n");
+    }
+
+    s = xf86FindOptionValue(local->options, "ZAxis");
+    if(s){
+       priv->flags|=Z_AXIS_FLAG;
+       xf86Msg(X_CONFIG, "Tablet has Z axis (AceCad Flair or compatible)\n");
+    }
 
     s = xf86FindOptionValue(local->options, "Cursor");
 

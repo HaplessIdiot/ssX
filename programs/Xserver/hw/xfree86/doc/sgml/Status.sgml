@@ -9,14 +9,16 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.25 2000/12/14 17:10:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.26 2000/12/14 22:15:48 dawes Exp $
 </ident>
 
 <abstract>
 
 This document provides information about the status of the driver and
 hardware support in XFree86 &relvers; compared with that in XFree86
-&legacyvers;.  Please send updates for this document to
+&legacyvers;.  Unless otherwise stated, hardware is classified as "supported"
+if its driver provides basic 2D support.  Support for additional features
+may or may not be present.  Please send updates for this document to
 <email>fixes@xfree86.org</email>
 
 </abstract>

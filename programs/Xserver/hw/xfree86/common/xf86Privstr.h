@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.21 2000/11/06 19:24:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.22 2001/01/06 20:19:08 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -124,6 +124,7 @@ typedef struct {
 #endif
     Bool                pmFlag;
     int                 estimateSizesAggressively;
+    Bool                kbdCustomKeycodes;
 } xf86InfoRec, *xf86InfoPtr;
 
 #ifdef DPMSExtension

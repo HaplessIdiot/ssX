@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.45 2001/02/15 11:03:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.46 2001/02/27 23:05:01 alanh Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -100,6 +100,9 @@ static unsigned long sparse_size;
 #endif
 
 #ifdef HAS_MTRR_SUPPORT
+
+#define SPLIT_WC_REGIONS 1
+
 static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
 static void undoWC(int, pointer);
 
@@ -238,6 +241,57 @@ mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
 	wcr->sentry.type = MTRR_TYPE_WRCOMB;
 	wcr->added = TRUE;
 	wcr->next = NULL;
+
+#if SPLIT_WC_REGIONS
+	/*********************************** by _usul ********************/
+	/*
+	 * Splits up the write-combining region if it is not aligned on a
+ 	 * size boundary.
+	 */
+
+	if (base % size) {
+		struct mtrr_wc_region *wcrc = wcr;
+		int rgs = 1;
+		int srem, sdiv, bcurr;
+	    
+		xf86DrvMsgVerb(screenNum, X_INFO, 2,
+		    "WC region has to be split (0x%lx,0x%lx)\n", base, size);
+
+		bcurr = base;
+		srem = size;
+
+		do {
+			for (sdiv = size; sdiv /= 2; sdiv) {
+				while(sdiv > srem) {
+					sdiv /= 2;
+				}
+				if (!(bcurr % sdiv)) {
+					mtrr_add_wc_region(screenNum, bcurr,
+							   sdiv, from);
+					break;
+				}
+			}
+			if (!sdiv) {
+				xf86DrvMsg(screenNum, X_ERROR,
+					"Serious error in region splitting!\n");
+			}
+			wcrc->sentry.base = bcurr;
+			wcrc->sentry.size = sdiv;
+			wcrc->sentry.type = MTRR_TYPE_WRCOMB;
+			wcrc->added = TRUE;
+			if ((srem - sdiv)) {
+				wcrc->next = xalloc(sizeof(*wcrc));
+				wcrc = wcrc->next;
+			} else {
+				wcrc->next = NULL;
+			}
+			srem -= sdiv;
+			bcurr += sdiv;
+		} while (srem);
+		return wcr;
+	}
+	/*****************************************************************/
+#endif /* SPLIT_WC_REGIONS */
 
 	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &wcr->sentry) >= 0) {
 		/* Avoid printing on every VT switch */

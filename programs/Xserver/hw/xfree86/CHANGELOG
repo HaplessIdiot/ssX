@@ -1,4 +1,9 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 246. Make the Linux/PPC "custom keycodes" choice a run-time option instead
+      of a build-time option (#A.240, Franz Sirl).
+ 245. Add support to splitting WC MTRR regions on Linux when the regions is
+      not aligned on a size boudary (#A.238, _Usul John Obscurant).
+ 244. Add Acecad support to the "summa" input driver (#A.237, Arpad Gereoffy).
  243. Don't try to map 64K blit window aperture on older trident chips 
       (Alan Hourihane).
  242. V4L driver cleanups and Xineramification (#4502, Gerd Knorr).
@@ -12658,4 +12663,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1612 2001/03/04 22:00:17 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1613 2001/03/05 08:51:38 alanh Exp $

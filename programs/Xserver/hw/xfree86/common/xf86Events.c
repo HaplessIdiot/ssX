@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.103 2000/12/07 20:26:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.104 2000/12/07 20:32:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -295,9 +295,7 @@ ProcessInputEvents ()
  *  ifdefs further (hv).
  */
 
-#ifdef ASSUME_CUSTOM_KEYCODES
 extern u_char SpecialServerMap[];
-#endif /* ASSUME_CUSTOM_KEYCODES */
 
 #if !defined(__EMX__) && !defined(__SOL8__) && !defined(__CYGWIN__)
 void
@@ -370,7 +368,11 @@ xf86PostKbdEvent(unsigned key)
   }
 #endif  /* i386 && SVR4 */
 
-#ifndef ASSUME_CUSTOM_KEYCODES
+  if (xf86Info.kbdCustomKeycodes) {
+    specialkey = SpecialServerMap[scanCode];
+    goto customkeycodes;
+  }
+
   /*
    * First do some special scancode remapping ...
    */
@@ -457,18 +459,14 @@ xf86PostKbdEvent(unsigned key)
       if (scanCode != KEY_NumLock) return;
       scanCode = KEY_Pause;       /* pause */
     }
-#endif /* !ASSUME_CUSTOM_KEYCODES */
 
   /*
    * and now get some special keysequences
    */
 
-#ifdef ASSUME_CUSTOM_KEYCODES
-  specialkey = SpecialServerMap[scanCode];
-#else /* ASSUME_CUSTOM_KEYCODES */
   specialkey = scanCode;
-#endif /* ASSUME_CUSTOM_KEYCODES */
 
+customkeycodes:
   if (xf86IsPc98()) {
     switch (scanCode) {
       case 0x0e: specialkey = 0x0e; break; /* KEY_BackSpace */
@@ -859,25 +857,25 @@ special:
       updateLeds = TRUE;
     }
 
-#ifndef ASSUME_CUSTOM_KEYCODES
-  /*
-   * normal, non-keypad keys
-   */
-  if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__) && !defined(__GNU__) && !defined(__CYGWIN__)
+  if (!xf86Info.kbdCustomKeycodes) {
     /*
-     * magic ALT_L key on AT84 keyboards for multilingual support
+     * normal, non-keypad keys
      */
-    if (xf86Info.kbdType == KB_84 &&
-	ModifierDown(AltMask) &&
-	keysym[2] != NoSymbol)
-      {
-	UsePrefix = TRUE;
-	Direction = TRUE;
-      }
+    if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
+#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__) && !defined(__GNU__)
+      /*
+       * magic ALT_L key on AT84 keyboards for multilingual support
+       */
+      if (xf86Info.kbdType == KB_84 &&
+	  ModifierDown(AltMask) &&
+	  keysym[2] != NoSymbol)
+	{
+	  UsePrefix = TRUE;
+	  Direction = TRUE;
+	}
 #endif /* !CSRG_BASED && !MACH386 && !MINIX && !__OSF__ */
+    }
   }
-#endif /* !ASSUME_CUSTOM_KEYCODES */
   if (updateLeds) xf86KbdLeds();
 #ifdef XKB
   }
