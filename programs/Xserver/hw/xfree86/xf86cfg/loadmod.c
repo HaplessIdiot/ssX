@@ -26,10 +26,11 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.10 2002/04/04 14:05:56 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.11 2003/02/16 05:23:45 paulo Exp $
  */
 
 #ifdef USE_MODULES
+#include <setjmp.h>
 #define LOADER_PRIVATE
 #include "loader.h"
 
@@ -264,8 +265,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
-   SYMFUNC(xf86setjmp)
-   SYMFUNC(xf86longjmp)
+   SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNCALIAS("xf86longjmp",longjmp)
 
     SYMFUNC(xf86AddDriver)
     SYMFUNC(xf86ServerIsOnlyDetecting)

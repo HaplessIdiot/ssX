@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.54 2002/09/19 13:22:02 tsi Exp $ */
 
 
 
@@ -71,7 +71,7 @@ struct xf86stat {
 typedef int xf86key_t;
 
 /* setjmp/longjmp */
-typedef int xf86jmp_buf[20];
+typedef int xf86jmp_buf[1024];
 
 /* for setvbuf */
 #define XF86_IONBF    1

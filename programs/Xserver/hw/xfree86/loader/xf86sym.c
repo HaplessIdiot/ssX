@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.223 2002/12/20 02:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.224 2003/02/09 00:18:18 dawes Exp $ */
 
 /*
  *
@@ -26,6 +26,7 @@
 #define INCLUDE_DEPRECATED 1
 
 #include <fcntl.h>
+#include <setjmp.h>
 #include "sym.h"
 #include "misc.h"
 #include "mi.h"
@@ -887,8 +888,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
-   SYMFUNC(xf86setjmp)
-   SYMFUNC(xf86longjmp)
+   SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNCALIAS("xf86longjmp",longjmp)
 #ifdef XF86DRI
 				/* These may have more general uses, but
                                    for now, they are only used by the DRI.
