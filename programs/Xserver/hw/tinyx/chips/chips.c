@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/chips/chips.c,v 1.1 2001/09/05 07:12:41 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/chips/chips.c,v 1.1 2004/06/02 22:43:01 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -68,6 +68,7 @@
  */
 
 #include "chips.h"
+#define inline __inline__
 #include <sys/io.h>
 
 #undef CHIPS_DEBUG
