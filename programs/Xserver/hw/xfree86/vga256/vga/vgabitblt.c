@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.6 1998/03/20 21:07:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabitblt.c,v 3.7 1998/06/27 12:54:59 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -459,12 +459,6 @@ vga256CopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask
 	}
 
 	/*
-         * compute the remaining pixels before adjusting dstx for startmask
-         */
-	pixelsRemainingOnRightEdge = (nlMiddle & 7) * PPW +
-                                        ((dstx + width) & PIM);
-
-	/*
 	 * compute constants for the first four bits to be
 	 * copied.  This avoids troubles with partial first
 	 * writes, and difficult shift computation
@@ -477,12 +471,14 @@ vga256CopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask
 	    if (xoffDst)
 	    {
 	    	srcx += (PPW-xoffDst);
-	    	dstx += (PPW-xoffDst);
 	    	xoffSrc = srcx & MFB_PIM;
 	    }
 	}
 	leftShift = xoffSrc;
 	rightShift = MFB_PPW - leftShift;
+
+	pixelsRemainingOnRightEdge = (nlMiddle & 7) * PPW +
+                                        ((dstx + width) & PIM);
 
         /* setup is done; now let's move some bits */
 
