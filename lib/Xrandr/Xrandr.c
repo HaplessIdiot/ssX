@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.9 2002/11/04 00:21:56 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.10 2002/11/27 05:37:43 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  * Copyright © 2002 Hewlett Packard Company, Inc.
@@ -37,6 +37,8 @@ char XRRExtensionName[] = RANDR_NAME;
 
 static Bool     XRRWireToEvent(Display *dpy, XEvent *event, xEvent *wire);
 static Status   XRREventToWire(Display *dpy, XEvent *event, xEvent *wire);
+
+static XRRScreenConfiguration *_XRRGetScreenInfo (Display *dpy, Window window);
 
 static int
 XRRCloseDisplay (Display *dpy, XExtCodes *codes);
