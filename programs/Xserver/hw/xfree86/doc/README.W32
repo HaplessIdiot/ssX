@@ -12,7 +12,7 @@
 Glenn G. Lai <glenn@cs.utexas.edu>, Dirk H. Hohndel <hohndel@XFree86.Org>, Koen
 		       Gadeyne <koen.gadeyne@barco.com>
 
-			       November 13, 1995
+				 May 16, 1997
 
 
 
@@ -21,9 +21,18 @@ Glenn G. Lai <glenn@cs.utexas.edu>, Dirk H. Hohndel <hohndel@XFree86.Org>, Koen
 XF86_W32 gets phased out, now that the SVGA server with XAA acceleration is at
 least as fast as the W32 server but supports more cards and for some even
 higher color depths. For details about using the XF86_SVGA with W32 cards, look
-below. Note that currently not all accelerated cards that are supported by
-XF86_W32 are supported by XF86_SVGA at this moment (only ET6000 and ET4000W32p
-to be exact).
+below. Note that currently not all cards that are accelerated by XF86_W32 are
+accelerated by XF86_SVGA at this moment (only ET6000 and ET4000W32p to be
+exact).
+
+XF86_W32 is supposed to be the stable server for cards that worked before and
+have trouble with the new XF86_SVGA. Use this server when the SVGA server fails
+to work for you (this happens on some ET4000W32 ISA cards), or when it refuses
+to accelerate anything (on ET4000W32i for example).
+
+Since XFree 3.2A, this server has not been updated. This means that some
+(known) bugs have not been fixed. They are fixed in the SVGA Tseng driver (or
+replaced by others...), so if you have problems, try the SVGA server instead.
 
 XF86_W32 is basically XF86_SVGA with the drawing code completely replaced with
 one based on X11R6's mi/cfb code and modified for the ET4000/W32 series.  Even
@@ -50,6 +59,18 @@ quencies around 90MHz.
 
 If you have problems with the server.  Try the following:
 
+
+
+ Information for W32 and ET6000 Chipset Users
+
+
+
+
+
+ Information for W32 and ET6000 Chipset Users
+
+
+
    o Put Option "slow_dram" in the Device Section.
 
    o Put Option "pci_burst_off" in the Device Section.
@@ -58,18 +79,6 @@ If you have problems with the server.  Try the following:
 
    o Take out the Hercules monochrome adapter, if you have one.  Many configu-
      rations of the ET4000/W32 series do not allow one in the system.
-
-
-
- Information for W32 and ET6000 Chipset Users
-
-
-
-
-
- Information for W32 and ET6000 Chipset Users
-
-
 
    o Get a motherboard with its local bus running at 33 MHz.  Many, if not all,
      ET4000/W32 boards will surely behave in a funny way on a 50-MHz bus.  You
@@ -89,11 +98,11 @@ If you have problems with the server.  Try the following:
 	  Ramdac "generic"
 
 
-
-Note that the built-in power saver (for a "green" monitor) has not been tested.
-Also do not expect it to work on a board without a w32p_rev_c or later chip.
-This option is currently disabled completely, because it causes video memory
-corruption.
+ Note that the built-in power saver (for a "green" monitor) has not been
+tested. Also do not expect it to work on a board without a w32p_rev_c or later
+chip. This option is currently disabled completely, because it causes video
+memory corruption (or even a crash). The SVGA server (XF86_SVGA) supports VESA
+DPMS, and doesn't corrupt the screen.
 
 
 2.  Using XF86_W32 on a board with an ICS5341 GENDAC
@@ -117,15 +126,6 @@ boards show a small band of clock values in the area between 86MHz and about
 as well as lower clocks work just fine. I'm working on it. (DHH)
 
 
-3.  Using XF86_W32 on a board with an STG1703 GENDAC
-
-Even though the STG1703 provides a set of standard clocks that can be found
-with the normal clock probing procedure, it is mandatory to put a
-
-     ClockChip	"stg1703"
-
-
-
 
 
 
@@ -135,6 +135,14 @@ with the normal clock probing procedure, it is mandatory to put a
 
  Information for W32 and ET6000 Chipset Users
 
+
+
+3.  Using XF86_W32 on a board with an STG1703 GENDAC
+
+Even though the STG1703 provides a set of standard clocks that can be found
+with the normal clock probing procedure, it is mandatory to put a
+
+     ClockChip	"stg1703"
 
 
 line into the Device Section to be able to use the programmable clocks that the
@@ -168,6 +176,14 @@ provided, with some changes due to incompatibilities between the two devices.
 Major speed improvements should be possible.  Tseng Labs specifies a maximum
 pixel clock of 135 MHz for the ET6000 chips (with higher clocks to come).
 
+There is a known bug in this server when using it with ET6000 cards with 2.25
+MB MDRAM: the server will detect 2.5 MB instead, and as a result, most acceler-
+ated operations won't work. On cards with 2.25 MB MDRAM, you must insert a
+
+      VideoRam 2304
+
+ line in your XF86Config.
+
 
 5.  Using XF86_SVGA with ET4000/W32 and ET6000 cards
 
@@ -175,6 +191,18 @@ Starting with XFree86-3.2A, the SVGA server uses the new XFree86 Acceleration
 Architecture (XAA). With this technology XF86_SVGA is at least as fast if not
 faster than the XF86_W32 with the same hardware. Additionally, it supports
 higher color depths with some cards. On the downside, some special RAMDACs and
+
+
+
+
+
+
+
+
+ Information for W32 and ET6000 Chipset Users
+
+
+
 clock chips that are supported in XF86_W32 for W32 cards are not supported in
 the SVGA server at this point.
 
@@ -191,18 +219,6 @@ ing:
 
    o Cold-boot your machine. Sometimes it is even necessary to physically turn
      of the power for the W32 chip to get in a sane state again.  Do not run
-
-
-
-
-
-
-
-
- Information for W32 and ET6000 Chipset Users
-
-
-
      anything that messes with the video hardware, including other X servers,
      before running XF86_SVGA.
 
@@ -241,6 +257,18 @@ of the people involved with the XF86_W32 testing are listed below:
 
 	    jdooley@dbp.caltech.edu (James Dooley)
 
+
+
+
+
+
+
+
+
+ Information for W32 and ET6000 Chipset Users
+
+
+
 	    thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
 
 	    klatta@pkdla5.syntex.com (Ken Latta)
@@ -257,46 +285,18 @@ of the people involved with the XF86_W32 testing are listed below:
 
 	    are1@cec.wustl.edu (Andy Ellsworth)
 
-
-
-
-
-
-
-
-
- Information for W32 and ET6000 Chipset Users
-
-
-
 	    bill@celtech.com (Bill Foster)
 
       FreeBSD:
 	    ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.16 1997/01/25 03:22:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.17 1997/06/03 14:11:55 hohndel Exp $
 
 
 
 
 
      $XConsortium: W32.sgml /main/11 1996/10/19 18:03:45 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -409,7 +409,7 @@ of the people involved with the XF86_W32 testing are listed below:
 
 2. Using XF86_W32 on a board with an ICS5341 GENDAC  ........................ 2
 
-3. Using XF86_W32 on a board with an STG1703 GENDAC  ........................ 2
+3. Using XF86_W32 on a board with an STG1703 GENDAC  ........................ 3
 
 4. Using XF86_W32 on an ET6000-based board  ................................. 3
 

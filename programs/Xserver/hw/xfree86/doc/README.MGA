@@ -82,8 +82,9 @@ Information for Matrox Millennium/Mystique Users
 
 	o it should be possible to reach resolutions up to 1280x1024
 
-	o for this release, it is only possible to use only pixel depths of 8
-	  bits per pixel (256 pseudo colour).
+	o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+	  per pixel (256 pseudo colour, "high colour", "packed true colour",
+	  "true colour").
 
 	o supports VESA Display Power Management Signaling (DPMS)
 
@@ -121,10 +122,9 @@ This driver only supports:
      have only so far made 175, 220 and 250 MHz boards with these two compo-
      nents, although a 135 MHz RAMDAC part exists.
 
-   o the MGA Storm (MGA1064SG) chipset with integrated 135 MHz RAMDAC
+   o the MGA Storm (MGA1064SG) chipset with integrated 170 MHz RAMDAC
 
-   o We will eventually provide support for the other Matrox chipsets (once the
-     Millennium driver is at a far enough stage and more people with other
+
 
 
 
@@ -137,6 +137,8 @@ Information for Matrox Millennium/Mystique Users
 
 
 
+   o We will eventually provide support for the other Matrox chipsets (once the
+     Millennium driver is at a far enough stage and more people with other
      cards join the effort), including the Impression, Atlas, Genesis etc.
 
      At the moment, however, only the Millennium and Mystique are supported.
@@ -185,9 +187,7 @@ Visit the Matrox Millennium XServer for XFree86 Home Page
 <URL:http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html> to keep up to date with
 the latest news, new sources, etc.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.6 1997/05/17 12:07:03 dawes Exp $
-
-
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.7 1997/06/03 14:11:52 hohndel Exp $
 
 
 

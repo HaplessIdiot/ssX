@@ -285,6 +285,9 @@ Release Notes for XFree86[tm] 3.2A
    o A bug that causes problems when running XF86Setup with cards with less
      than 2MB of video memory has been fixed.
 
+   o Minor shifts in maximum clock rate under 16 bpp, and inclusion of explicit
+     15 "bpp" setting.
+
 5.12  W32 server
 
    o In this version, the separate W32 server (XF86_W32) has not undergone any
@@ -320,9 +323,6 @@ Release Notes for XFree86[tm] 3.2A
      chips. In 3.2A, the ET4000W32p chips are now fully accelerated, and the
      W32p rev C and D also support the higher performing linear memory layout.
      This is the basis for adding hicolor and truecolor support in the future.
-
-
-
 
 
 
@@ -688,7 +688,7 @@ ldconfig supports the -m option, you can run:
 Otherwise for these OSs, check /etc/rc to see how ldconfig gets run at boot
 time.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.60 1997/05/14 10:33:54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.61 1997/06/03 14:11:54 hohndel Exp $
 
 
 

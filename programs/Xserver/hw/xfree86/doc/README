@@ -1094,6 +1094,52 @@ of the corporation, all assets will be turned over to the X Consortium, Inc.
 It is hoped that by doing this, our corporation will be merely a formalization
 of what we have been doing in the past, rather than something entirely new.
 
+As of March 1997, The XFree86 Project has revised its source/binary access and
+release policy.  The main points of the new policy are:
+
+   o There will be no more time-limited public binary-only beta releases.
+     Instead we plan to increase the frequency of full public releases to about
+     four releases per year.
+
+   o The source access/use is divided into three categories:
+
+	o End users.  End users have access to only the source of full public
+	  releases.  The main reason for this restriction is that our develop-
+	  ment code often contains code from other sources which cannot be
+	  released to the public immediately.
+
+	o Active developers (members of the XFree86 ``developer team'').
+	  Active developers must formally become non-voting members of the
+	  XFree86 Project, and have full access to our internal development
+	  source.  They are permitted to make time-limited binaries (in coordi-
+	  nation with the Core Team) of the servers they are actively working
+	  on available to external testers for specific testing.
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
+
+	o Commercial members.  Commercial members are non-voting members of The
+	  XFree86 Project who donate US$5000/year to the Project.  Addition-
+	  ally, companies who contribute significantly to the development
+	  effort of XFree86 can be awarded commercial membership by the Core
+	  Team on a yearly bases.  Commercial members can use the internal
+	  XFree86 development source for derived binary-only products providing
+	  that they take full responsibility for supporting the product, and
+	  don't call it ``XFree86'' (although the derivation of the product
+	  must be acknowledged in any accompanying documentation).  Binary
+	  packages for the OSs we support which are simply compiled from our
+	  internal source without significant added value are explicitly NOT
+	  allowed.
+
 Here is a list of the organizations and individuals who have provided sponsor-
 ship to The XFree86 Project, Inc, either by financial contribution or by the
 donation of equipment and resources.  The XFree86 Project, Inc gratefully
@@ -1113,19 +1159,6 @@ X11R6.
 Also deserving of special mention are the organizers and attendees of the 1st
 German Linux Congress in Heidelberg.  Significant funding to The XFree86 Pro-
 ject has been provided from its proceeds.
-
-
-
-
-
-
-
-
-
-
-README for XFree86[tm] 3.2A
-
-
 
    o AIB Software Corporation <URL:http://www.aib.com/>, Herndon, VA
 
@@ -1147,6 +1180,18 @@ README for XFree86[tm] 3.2A
      (formerly Synergytics)
 
    o Diamond Multimedia Systems, Inc. <URL:http://www.diamondmm.com/>
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
 
    o Digital Equipment Corporation <URL:http://www.digital.com/>
 
@@ -1180,19 +1225,6 @@ README for XFree86[tm] 3.2A
 
    o Rich & Amy Murphey
 
-
-
-
-
-
-
-
-
-
-README for XFree86[tm] 3.2A
-
-
-
    o NCR Corp <URL:http://www.ncr.com/>
 
    o Brett Neumeier
@@ -1214,6 +1246,18 @@ README for XFree86[tm] 3.2A
    o Clifford M Stein
 
    o Joel Storm
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
 
    o S.u.S.E. GmbH <URL:http://www.suse.de>, Fuerth, Germany
 
@@ -1247,18 +1291,6 @@ and the following mirror sites:
 
    o North America:
 
-
-
-
-
-
-
-
-
-README for XFree86[tm] 3.2A
-
-
-
 	o ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
 
 	o ftp://ftp.gw.com/pub/unix/XFree86 (source and NetBSD binaries)
@@ -1280,6 +1312,18 @@ README for XFree86[tm] 3.2A
 	o ftp://ftp.funet.fi/pub/X11/XFree86 (source and binaries)
 
 	o ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86 (source and binaries)
+
+
+
+
+
+
+
+
+
+README for XFree86[tm] 3.2A
+
+
 
 	o ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
 
@@ -1304,13 +1348,35 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.83 1997/05/23 12:28:03 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.84 1997/05/31 13:51:29 dawes Exp $
 
 
 
 
 
      $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1409,7 +1475,7 @@ README for XFree86[tm] 3.2A
 
 7. The XFree86 Project, Inc. ............................................... 16
 
-8. Archive sites ........................................................... 19
+8. Archive sites ........................................................... 20
 
 
 

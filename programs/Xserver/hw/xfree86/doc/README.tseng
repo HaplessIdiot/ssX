@@ -22,6 +22,10 @@ ET6000. Accelerated features of the ET4000/W32p and ET6000 are supported by the
 SVGA driver. For details about the separate accelerated 8bpp (=256 color)
 ET4000/W32 and ET6000 server, refer to README.W32.
 
+Things that are known NOT to work with the SVGA server in this version (XFree86
+3.3) are some ET4000W32 ISA cards (they hang the machine... Use the W32 server
+XF86_W32 for these cards!), and acceleration on ET4000W32i cards.
+
 In the rest of this document, "8bpp" is short for "8 bits per pixel", which
 means a 256-color mode. Similarly, 15bpp refers to 32768 colors, 16bpp to 65536
 colors , 24bpp to a "packed" 16 million color mode, and 32bpp to a "sparse" 16
@@ -55,22 +59,22 @@ Cards with a RAMDAC that is not yet supported will be limited in a similar man-
 ner as the older cards, i.e. to a maximum pixel clock of 86 MHz, whilst they
 actually might be able to go up to 135 MHz. As a result, 1280x1024 modes will
 only be possible when using interlacing, and non-interlaced modes are limited
+
+
+ Information for Tseng Chipset Users
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 to about 1024x768 at 75 Hz refresh.
 
 For a non-interlaced 1280x1024x(256 colors) at say 135-MHz, you need a w32p
 (with its 16-bit RAMDAC bus) with a multiplexing RAMDAC so that the w32p sees
-
-
- Information for Tseng Chipset Users
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
 only (135/2 = 67.5) MHz, not 135 MHz. This requires special code only provided
 for cards using the ICS5341 GENDAC or the STG170x. This code seems to work fine
 for most people, except, with the ICS5341, for a small band of frequencies
@@ -91,25 +95,12 @@ tion of your XF86Config:
 
        Option "linear"
 
-Please note that there are problems when combining both linear memory mode and
-acceleration in 8bpp modes which have forced us to disable acceleration when
-forcing linear memory mode at 8bpp. So you have either accelerated, but banked
-8bpp, or a non-accelerated, linear mode with 256 colors.
-
 Acceleration support is present, and enabled by default, for W32p chips (not
 yet for W32i, but that's being worked on). This is based on the new XFree86
 acceleration interface (XAA). See also README.W32.
 
-Acceleration may not work together with linear memory mode on some cards, and
-will produce a mostly black screen. This combination is disabled at 8bpp, since
-this mode can be run in banked mode, but for 16bpp and up, that cannot be done
-(linear memory is required). If you see a mostly black screen with only a few
-pixmaps visible, disabling acceleration will get rid of that problem. On most
-cards, however, switching modes (CTRL-ALT-+/-) somehow cures the problem (a
-screen refresh is required to repaint the screen).
-
-To disable acceleration, put the following in the Device section of your
-XF86Config:
+If you have problems with acceleration, acceleration can be disabled by putting
+the following in the Device section of your XF86Config:
 
        Option "noaccel"
 
@@ -126,6 +117,15 @@ In addition to the features in the ET4000 driver, the SVGA ET6000 server sup-
 ports all possible color depths in the SVGA server: 8bpp, 16bpp (both at 5-5-5
 and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
+In order to be able to run at a depth of 16bpp, 24bpp, or 32bpp, and to improve
+performance at 8bpp, linear addressing must be enabled.
+
+Linear memory mode (as opposed to the default, banked memory layout) is sup-
+ported. It is required and enabled by default for the 16/24/32 bpp modes.  For
+8bpp, the default is banked mode.
+
+To force linear memory at 8bpp, put the following in the SVGA section of your
+
 
 
 
@@ -137,14 +137,6 @@ and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
 
 
-In order to be able to run at a depth of 16bpp, 24bpp, or 32bpp, and to improve
-performance at 8bpp, linear addressing must be enabled.
-
-Linear memory mode (as opposed to the default, banked memory layout) is sup-
-ported. It is required and enabled by default for the 16/24/32 bpp modes.  For
-8bpp, the default is banked mode.
-
-To force linear memory at 8bpp, put the following in the SVGA section of your
 XF86Config:
 
        Option "linear"
@@ -168,8 +160,8 @@ There is a problem with the hardware cursor at high dotclocks (above approx.
 110MHz) at which point the cursor does strange things when partly off the left-
 hand side of the screen.
 
-Doublescan modes currently don't work with the hardware cursor: only the top
-half of the cursor is visible. If you want to use DoubleSCan modes (320x200 is
+DoubleScan modes currently don't work with the hardware cursor: only the top
+half of the cursor is visible. If you want to use DoubleScan modes (320x200 is
 a popular one), then do not enable the hardware cursor.
 
 On some fast systems, acceleration may cause occasional font corruption. Until
@@ -190,7 +182,15 @@ Device section of the XF86Config file is another option: since the accelerator
 is not being used, there is ample bandwidth to avoid such problems.
 
 
+4.  Clock selection problems with some ET4000 boards
 
+XFree86 has some problems getting the clock selection right with some ET4000
+boards when the server is started from a high-resolution text mode.  The clock
+selection is always correct when the server is started from a standard 80x25
+text mode.
+
+This problem is indicated when the reported clocks are different when the
+server is started from the high-resolution text mode from what they are when it
 
 
 
@@ -203,15 +203,6 @@ is not being used, there is ample bandwidth to avoid such problems.
 
 
 
-4.  Clock selection problems with some ET4000 boards
-
-XFree86 has some problems getting the clock selection right with some ET4000
-boards when the server is started from a high-resolution text mode.  The clock
-selection is always correct when the server is started from a standard 80x25
-text mode.
-
-This problem is indicated when the reported clocks are different when the
-server is started from the high-resolution text mode from what they are when it
 is started from the 80x25 text mode.  To allow the server to work correctly
 from the high-resolution text mode, there are some Option flags that may be set
 in XF86Config.	To find out which flags to set, start the server with the
@@ -259,6 +250,15 @@ If graphics redrawing goes wrong on accelerated chips (ET4000W32p and ET6000),
 first try the "noaccel"; option, which disables all accelerated functions.
 
 
+7.  general options in the XF86Config file
+
+The following options are of particular interest to the Tseng driver. Each of
+them must be specified in the svga' driver section of the XF86Config file,
+within the Screen subsections of the depths to which they are applicable (you
+can enable options for all depths by specifying them in the Device section).
+
+
+
 
 
 
@@ -268,13 +268,6 @@ first try the "noaccel"; option, which disables all accelerated functions.
  Information for Tseng Chipset Users
 
 
-
-7.  general options in the XF86Config file
-
-The following options are of particular interest to the Tseng driver. Each of
-them must be specified in the svga' driver section of the XF86Config file,
-within the Screen subsections of the depths to which they are applicable (you
-can enable options for all depths by specifying them in the Device section).
 
       Option "noaccel"
 	    (ET4000W32p, et6000) This option will disable the use of any accel-
@@ -318,11 +311,18 @@ can enable options for all depths by specifying them in the Device section).
 	    should still be capable of syncing to this frequency, but the
 	    clockchip may already be outside an unstable region.
 
-      Option "linear"  (ET4000W32p, ET6000)
+      Option "linear"  (ET4000W32i, ET4000W32p, ET6000)
 	    This enables linear addressing, which is the mapping of the entire
 	    framebuffer to a high address beyond system memory, making the full
 	    length of the framebuffer directly accessible. In this way, slow
 	    SVGA bank switching (where only a small fraction of the framebuffer
+	    is visible at one time) is not necessary. It enhances performance
+	    at 256 colors, and is currently required for 16bpp, 24bpp, and
+	    32bpp.
+
+      MemBase 0xE0000000. (or a different address) (ET4000W32, ET6000)
+	    This sets the physical memory base address of the linear frame-
+	    buffer. It must be specified in the Device section. It may be
 
 
 
@@ -335,13 +335,6 @@ can enable options for all depths by specifying them in the Device section).
 
 
 
-	    is visible at one time) is not necessary. It enhances performance
-	    at 256 colors, and is currently required for 16bpp, 24bpp, and
-	    32bpp.
-
-      MemBase 0xE0000000. (or a different address) (ET4000W32, ET6000)
-	    This sets the physical memory base address of the linear frame-
-	    buffer. It must be specified in the Device section. It may be
 	    required for non-PCI linear addressing configurations, and might be
 	    useful for PCI-based systems where auto-detection fails. However,
 	    almost all PCI systems will not need this.
@@ -379,6 +372,10 @@ it. Make sure you "sync" all files to disk and close all critical applications.
 Make sure nothing bad will happen to your filesystems if you have to jump for
 the power switch soon.
 
+The most critical cards are the ET4000W32p rev a and rev b on VESA local bus
+(VLB). The server will autodetect a linear base address that doesn't work on
+all systems.
+
 If the server gets it wrong, you may end up with a severe system crash (e.g.
 if it maps the video memory right on top of your system memory). If this hap-
 pens, RESET IMMEDIATELY. Do not try to shut down cleanly, because the X-server,
@@ -389,6 +386,9 @@ end up clean). DO NOT attempt to redirect the server output to a file on the
 system you're testing on (that will write data after you synced).
 
 These are worst-case scenarios, and it is very unlikely this will happen to
+you. The text above is to make sure you are properly prepared, so that nothing
+serious happens.
+
 
 
 
@@ -400,9 +400,6 @@ These are worst-case scenarios, and it is very unlikely this will happen to
  Information for Tseng Chipset Users
 
 
-
-you. The text above is to make sure you are properly prepared, so that nothing
-serious happens.
 
 When the server can't find a working linear memory base, it's time to experi-
 ment. The rest of this section deals with that.
@@ -455,6 +452,9 @@ On ET4000W32i, things are worse: the linear address base is hardwired on the
 card, and there is no reliable way to read it back from the card. You need to
 know the address in some way, and specify it. The current code does an intelli-
 gent guess at it, but this is no guarantee.
+
+
+
 
 
 
@@ -576,7 +576,7 @@ BIOS. The remaining chips are (mostly) 2 or 4 other large square chips on it
 with the following markings:
 
 MDRAM MD9xy	("xy" is a two-digit number) SJ-5-100  (this may differ, but it
-will hava the same layout)
+will have the same layout)
 
 and a nice logo next to all that with 4 diamonds and the name "MoSys" under-
 neath.
@@ -612,7 +612,7 @@ MD920.
 12.  ET6000 memory bandwidth hype and the impact on video modes
 
 Tseng has always had wet dreams about memory bandwidth, and their press
-anouncements about the ET6000 memory bandwidth are no exception.
+announcements about the ET6000 memory bandwidth are no exception.
 
 They claim the ET6000 using MDRAM is capable of reaching an incredible 1.2
 Gbytes/sec of bandwidth. That would surpass just about everything on the market
@@ -636,7 +636,7 @@ Memory bandwidth limits the maximum resolution you can use at a given color
 depth. The ET6000 RAMDAC can cope with 135 MHz in any situation. But the RAM
 cannot. At 32bpp (sparse 16M color mode), using a 135 MHz pixel clock would
 require a memory bandwidth of 135*4 = 540 MB/sec, which the current ET6000
-baords simply cannot cope with. And then you still need some spare bandwidth
+boards simply cannot cope with. And then you still need some spare bandwidth
 for the PCI bus and the accelerator.
 
 That is why some modes will be refused, depending on your MDRAM memory layout,
@@ -865,7 +865,7 @@ horizontal timing parameters).
 
 	    very small slowdown of accelerated operations.
 
-	    The "pci_retry" option apllies not only to the PCI bus systems, but
+	    The "pci_retry" option applies not only to the PCI bus systems, but
 	    has a similar effect on other busses.
 
 For other screen drawing related problems, try the "noaccel" option.
@@ -882,7 +882,7 @@ rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
 beta releases at www.xfree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.24 1997/05/19 10:04:38 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.26 1997/06/06 06:07:13 hohndel Exp $
 
 
 
@@ -1005,13 +1005,13 @@ beta releases at www.xfree86.org.
 
 3.  ET6000 driver features  ................................................. 2
 
-4.  Clock selection problems with some ET4000 boards  ....................... 4
+4.  Clock selection problems with some ET4000 boards  ....................... 3
 
 5.  Text mode restore problems	............................................. 4
 
 6.  Basic configuration  .................................................... 4
 
-7.  general options in the XF86Config file  ................................. 5
+7.  general options in the XF86Config file  ................................. 4
 
 8.  linear memory base address (MemBase) issues  ............................ 6
 
