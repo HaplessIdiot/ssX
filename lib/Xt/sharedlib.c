@@ -1,4 +1,5 @@
 /* $XConsortium: sharedlib.c,v 1.18 95/03/30 19:00:57 converse Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -34,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "VendorP.h"
 
 
-#ifdef AIXSHLIB
+#if defined(AIXSHLIB) || defined(__EMX__)
 WidgetClass vendorShellWidgetClass = (WidgetClass) &vendorShellClassRec;
 
 static void _XtVendorInitialize()

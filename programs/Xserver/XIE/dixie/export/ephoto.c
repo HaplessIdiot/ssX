@@ -1,5 +1,5 @@
 /* $XConsortium: ephoto.c,v 1.7 94/04/17 20:33:31 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/ephoto.c,v 3.0 1996/03/29 22:10:17 dawes Exp $ */
 /**** module ephoto.c ****/
 /******************************************************************************
 
@@ -107,6 +107,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <tables.h>	/* For Server Choice function */
+#include <memory.h>
 
 
 /*

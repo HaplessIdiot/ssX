@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.78 1996/08/14 14:30:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.79 1996/08/18 12:29:00 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -100,7 +100,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.78 1996/08/14 14:30:39 dawes Exp $
  * considerable compile time.
  */
 
-#ifndef Mc68020Architecture
+#ifdef AlphaArchitecture
+#define XF86S3Server		YES
+#define XF86Mach64Server	YES
+#endif
+
+#ifdef i386Architecture
 #define XF86SVGAServer          YES
 #define XF86VGA16Server         YES
 #define XF86VGA16DualServer	YES
@@ -115,8 +120,53 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.78 1996/08/14 14:30:39 dawes Exp $
 #define XF86AGXServer		YES
 #define XF86W32Server		YES
 #define XF86I128Server		YES
-#else
+#endif
+
+#ifdef Mc68020Architecture
 #define XF86FBDevServer		YES
+#endif
+
+#ifndef XF86SVGAServer
+#define XF86SVGAServer          NO
+#endif
+#ifndef XF86VGA16Server
+#define XF86VGA16Server         NO
+#endif
+#ifndef XF86VGA16DualServer
+#define XF86VGA16DualServer	NO
+#endif
+#ifndef XF86MonoServer
+#define XF86MonoServer          NO
+#endif
+#ifndef XF86MonoDualServer
+#define XF86MonoDualServer	NO
+#endif
+#ifndef XF86S3Server
+#define XF86S3Server            NO
+#endif
+#ifndef XF86I8514Server
+#define XF86I8514Server         NO
+#endif
+#ifndef XF86Mach8Server
+#define XF86Mach8Server         NO
+#endif
+#ifndef XF86Mach32Server
+#define XF86Mach32Server        NO
+#endif
+#ifndef XF86Mach64Server
+#define XF86Mach64Server        NO
+#endif
+#ifndef XF86P9000Server
+#define XF86P9000Server		NO
+#endif
+#ifndef XF86AGXServer
+#define XF86AGXServer		NO
+#endif
+#ifndef XF86W32Server
+#define XF86W32Server		NO
+#endif
+#ifndef XF86I128Server
+#define XF86I128Server		NO
 #endif
 
 /*

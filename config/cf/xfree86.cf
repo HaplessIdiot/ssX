@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.97 1996/08/14 14:30:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.98 1996/08/18 03:54:22 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -258,9 +258,9 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF86MonoDrivers	hgc1280 sigma apollo /*hercules*/
 #endif
 
-/* This doesn't do anything (yet) */
+/* This doesn't do everything (yet) */
 #ifndef XF86S3Drivers
-# define XF86S3Drivers		mmio_928 s3_generic
+# define XF86S3Drivers		newmmio mmio_928 s3_generic
 #endif
 
 #ifndef XF86W32Drivers
@@ -317,6 +317,15 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # ifndef XF86FBDevCFB32
 #  define XF86FBDevCFB32	NO
 # endif
+#endif
+
+/*
+ * The server-side of PEX is not 64-bit clean.
+ */
+#ifndef BuildPextExt
+#ifdef AlphaArchitecture
+#define BuildPexExt		NO
+#endif
 #endif
 
 /*

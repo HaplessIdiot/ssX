@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.3 1996/03/10 11:47:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.4 1996/04/15 11:13:55 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -176,7 +176,7 @@ install:: LibraryTargetName(libname)					@@\
 
 #ifndef LibCleanDir
 #define LibCleanDir(dir) 						@@\
-	ImakeIndir dir RemoveFiles(*.Osuf)
+	ImakeIndir dir call RemoveFiles(*.Osuf)
 #endif
 
 #define MakeStaticLibrary(libname) $(AR) libname *.o
@@ -192,7 +192,7 @@ LibraryTargetName(Concat(libname,_s)): objlist				@@\
 	_LinkBuildLibrary($@)						@@\
 									@@\
 install::	LibraryTargetName(Concat(libname,_s))			@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) unshared/LibraryTargetName(Concat(libname,_s)) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) LibraryTargetName(Concat(libname,_s)) $(DESTDIR)$(SHLIBDIR)
 #endif
 
 #ifndef UnsharedLibraryTarget3
@@ -206,5 +206,5 @@ LibraryTargetName(Concat(libname,_s)): objlist1 objlist2 objlist3	@@\
 	_LinkBuildLibrary($@)						@@\
 									@@\
 install::	LibraryTargetName(Concat(libname,_s))			@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) unshared/LibraryTargetName(Concat(libname,_s)) $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) LibraryTargetName(Concat(libname,_s)) $(DESTDIR)$(SHLIBDIR)
 #endif /* UnsharedLibraryTarget3 */

@@ -1,12 +1,8 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.43 1996/08/18 03:54:21 dawes Exp $
 
 #ifndef LinuxElfDefault
-#if defined(i386Architecture) || defined(Mc68020Architecture)
 #define LinuxElfDefault		YES
-#else
-#define LinuxElfDefault		NO
-#endif
 #endif
 
 #ifndef UseElfFormat
@@ -17,9 +13,14 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawe
 #if UseElfFormat
 #define OSName			Linux [ELF]
 #else
+#if AlphaArchitecture
+#define OSName			Linux [ECOFF]
+#else
 #define OSName			Linux [a.out]
 #endif
 #endif
+#endif
+
 #ifndef OSVendor
 #define OSVendor		/**/
 #endif
@@ -77,6 +78,12 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawe
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
 #else
+#ifdef AlphaArchitecture
+#define CcCmd			gcc -b alpha-linuxecoff
+#define AsCmd			/usr/alpha-linuxecoff/bin/as
+#define LdCmd			/usr/alpha-linuxecoff/bin/ld -m alpha
+#define AsmDefines		-DUSE_GAS -U__ELF__
+#endif /* AlphaArchitecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linuxaout
 #define AsCmd			/usr/i486-linuxaout/bin/as
@@ -92,6 +99,13 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawe
 #endif
 #else
 #if UseElfFormat
+#ifdef AlphaArchitecture
+#define CcCmd			gcc -b alpha-linux
+#define AsCmd			/usr/alpha-linux/bin/as
+#define LdCmd			ld -m elf64alpha
+#define AsmDefines		-D__ELF__
+#define CplusplusCmd		c++ -b alpha-linux
+#endif /* AlphaArchitecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linux
 #define AsCmd			/usr/i486-linux/bin/as
@@ -145,15 +159,13 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.42 1996/08/13 11:24:05 dawe
 #ifdef AlphaArchitecture
 #define OptimizedCDebugFlags	-O2
 #define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #define HasWChar32		YES
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
-#define HasSharedLibraries	NO
-#define SharedLibXdmGreet	NO
-#endif /*  AlphaArchitecture */
+#endif /* AlphaArchitecture */
 
 #ifdef Mc68020Architecture
 #define OptimizedCDebugFlags	-O2
