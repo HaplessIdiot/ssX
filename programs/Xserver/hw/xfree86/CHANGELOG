@@ -1,4 +1,6 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 201. Improve fonts width and weight detection (Bugzilla #265-266,
+      Juliusz Chroboczek).
  200. Fix library dependencies for xlibi18n modules (Bugzilla #82, Joe Kelsey,
       Matthieu Herrb).
  199. Fix manual pages typos (Bugzilla #316, Jens Schweikhardt).
@@ -17042,7 +17044,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2721 2003/05/29 21:48:06 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2722 2003/05/29 21:56:58 herrb Exp $
 
 
 
