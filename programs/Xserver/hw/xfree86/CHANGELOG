@@ -1,4 +1,9 @@
 XFree86 4.5.99.1 (xx March 2005)
+   6. Document pswrap's -f option (David Dawes, Bugzilla #1570, reported by
+      Luke Mewburn).
+   5. Fix a problem where pswrap generates a bogus .c file when the -h
+      option is not used (Bugzilla #1569, Christos Zoulas,
+      reported by Luke Mewburn).
    4. Add support for relocation type 10 for Alpha to the ELF loader
       (FreeBSD PR 73257, Ken Stailey, Bugzilla #1568, reported by Will L G).
    3. Some changes to the default behaviour of BSD's xf86OpenConsole:
@@ -19468,7 +19473,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3474 2005/03/21 17:03:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3475 2005/03/21 17:33:34 dawes Exp $
 
 
 
