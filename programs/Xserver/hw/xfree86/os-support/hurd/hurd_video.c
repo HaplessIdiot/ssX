@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_video.c,v 1.1 1998/08/16 10:25:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_video.c,v 1.2 1999/04/18 04:08:52 dawes Exp $ */
 
 #include <mach.h>
 #include <device/device.h>
@@ -161,5 +161,11 @@ void
 xf86EnableInterrupts()
 {
     return;
+}
+
+void
+xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
+	unsigned long Size)
+{
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.6 1998/07/25 16:56:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.7 1999/04/18 04:08:50 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -165,3 +165,11 @@ xf86EnableInterrupts()
 
 	return;
 }
+
+
+void
+xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
+	unsigned long Size)
+{
+}
+
