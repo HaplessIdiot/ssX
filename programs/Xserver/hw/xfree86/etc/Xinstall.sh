@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.43 2003/01/26 01:35:30 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.44 2003/02/06 18:32:47 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -264,7 +264,7 @@ Description()
 	Xaout*)
 		echo "a.out compatibility libraries";;
 	Xquartz*)
-		echo "Mac OS X Quartz compatible X server";;
+		echo "Mac OS X Quartz X server and extensions";;
 	Xupd.tgz)
 		echo "Post-release updates";;
 	*)
@@ -452,8 +452,11 @@ FindDistName()
 			1.4* | 5.*)
 				DistName="Darwin-ppc-5.x"
 				;;
-			[6-9].*)
-				Message="No Darwin/ppc binaries available for this OS version. Try Darwin-ppc-5.x"
+			6.*)
+				DistName="Darwin-ppc-6.x"
+				;;
+			[7-9].*)
+				Message="No Darwin/ppc binaries available for this OS version. Try Darwin-ppc-6.x"
 				;;
 			*)
 				Message="No Darwin/ppc binaries available for this OS version"
@@ -465,8 +468,11 @@ FindDistName()
 			1.4* | 5.*)
 				DistName="Darwin-ix86-5.x"
 				;;
-			[6-9].*)
-				Message="No Darwin/ix86 binaries available for this OS version. Try Darwin-ix86-5.x"
+			6.*)
+				DistName="Darwin-ix86-6.x"
+				;;
+			[7-9].*)
+				Message="No Darwin/ix86 binaries available for this OS version. Try Darwin-ix86-6.x"
 				;;
 			*)
 				Message="No Darwin/ix86 binaries available for this OS version"
@@ -939,7 +945,6 @@ Darwin)
             SERVDIST="Xxserv.tgz Xquartz.tgz"
         else
             SERVDIST="Xxserv.tgz"
-            EXTRAOPTDIST="Xquartz.tgz"
         fi
 	;;
 FreeBSD|NetBSD|OpenBSD)
