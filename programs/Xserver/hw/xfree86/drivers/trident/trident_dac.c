@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.53 2001/09/25 09:01:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.54 2001/09/25 10:25:13 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -163,7 +163,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     /* Unprotect */
     OUTB(0x3C4, 0x11);
-    protect = INB(0x3C4);
+    protect = INB(0x3C5);
     OUTB(0x3C5, 0x92);
 
     OUTB(0x3C4, 0x0B); INB(0x3C5); /* Ensure we are in New Mode */
