@@ -513,6 +513,10 @@ PostKbdEvent(InputInfoPtr pInfo, unsigned int scanCode, Bool down)
   unsigned long changeLock = 0;
   static int  lockkeys = 0;
 
+  /* Disable any keyboard processing while in suspend */
+  if (xf86inSuspend)
+      return;
+
   /*
    * First do some special scancode remapping ...
    */
