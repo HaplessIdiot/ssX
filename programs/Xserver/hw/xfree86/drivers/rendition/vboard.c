@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.3 1999/04/25 10:02:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.4 1999/10/13 04:21:22 dawes Exp $ */
 /*
  * includes
  */
@@ -54,7 +54,11 @@ int v_initboard(ScrnInfoPtr pScreenInfo)
   v1k_flushicache(pScreenInfo);
   v1k_start(pScreenInfo, pRendition->board.csucode_base);
 
+#if 0
   c=v_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
+#else
+  c = -1;
+#endif
   if (c == -1) {
     ErrorF( "Jeuch\n");
   }
