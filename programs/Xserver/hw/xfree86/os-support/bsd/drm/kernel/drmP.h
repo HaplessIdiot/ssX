@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.58 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drmP.h,v 1.1 2000/06/17 00:03:28 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drmP.h,v 1.2 2001/03/02 02:45:38 dawes Exp $
  * 
  */
 
@@ -72,6 +72,11 @@ typedef u_int32_t spinlock_t;
 #define atomic_dec(p)		atomic_subtract_int(p, 1)
 #define atomic_add(n, p)	atomic_add_int(p, n)
 #define atomic_sub(n, p)	atomic_subtract_int(p, n)
+
+/* The version number here is a guess */
+#if __FreeBSD_version >= 500010
+#define callout_init(a)		callout_init(a, 0)
+#endif
 
 /* Fake this */
 static __inline u_int32_t
@@ -595,7 +600,12 @@ extern int	     drm_sysctl_cleanup(drm_device_t *dev);
 
 				/* Memory management support (memory.c) */
 extern void	     drm_mem_init(void);
+
+#if __FreeBSD_version < 411000
+#define DRM_SYSCTL_HANDLER_ARGS SYSCTL_HANDLER_ARGS
+#else
 #define DRM_SYSCTL_HANDLER_ARGS (SYSCTL_HANDLER_ARGS)
+#endif
 extern int	     drm_mem_info DRM_SYSCTL_HANDLER_ARGS;
 extern void	     *drm_alloc(size_t size, int area);
 extern void	     *drm_realloc(void *oldpt, size_t oldsize, size_t size,

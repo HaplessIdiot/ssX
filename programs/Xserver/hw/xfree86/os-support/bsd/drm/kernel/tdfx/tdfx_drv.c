@@ -64,6 +64,9 @@ static int tdfx_probe(device_t dev)
 	case 0x0005121a:
 		s = "3Dfx Voodoo 3 graphics accelerator";
 		break;
+	case 0x0009121a:
+		s = "3Dfx Voodoo 5 graphics accelerator";
+		break;
 	}
 
 	if (s) {
