@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.103 1997/03/22 09:34:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.104 1997/03/24 13:04:59 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -1304,9 +1304,9 @@ DDXDIR2 = hw/xfree98
 XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
                    $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
-                $(XF98NECS3DRIVERSRC)/newmmio/newmmio.o \
-                $(XF98NECS3DRIVERSRC)/mmio_928/mmio_928.o \
-                $(XF98NECS3DRIVERSRC)/s3_generic/s3_generic.o
+                $(XF98NECS3DRIVERSRC)/newmmio/s3nec_newmmio.o \
+                $(XF98NECS3DRIVERSRC)/mmio_928/s3nec_mmio_928.o \
+                $(XF98NECS3DRIVERSRC)/s3_generic/s3nec_s3_generic.o
 XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3nec) \
                 $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3necpio) \
                 $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3nec) \
@@ -1342,9 +1342,9 @@ DDXDIR2 = hw/xfree98
 XF98PWSKBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
                    $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
-                $(XF98PWSKBDRIVERSRC)/newmmio/newmmio.o \
-                $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
-                $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
+                $(XF98PWSKBDRIVERSRC)/newmmio/s3pwskb_newmmio.o \
+                $(XF98PWSKBDRIVERSRC)/mmio_928/s3pwskb_mmio_928.o \
+                $(XF98PWSKBDRIVERSRC)/s3_generic/s3pwskb_s3_generic.o
 XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskb) \
                 $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskbpio) \
                 $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskb) \
@@ -1380,9 +1380,9 @@ DDXDIR2 = hw/xfree98
 XF98PWLBSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
                   $(DDXDIR2) $(DEPDIRS)
 XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
-               $(XF98PWLBDRIVERSRC)/newmmio/newmmio.o \
-               $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
-               $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
+               $(XF98PWLBDRIVERSRC)/newmmio/s3pwlb_newmmio.o \
+               $(XF98PWLBDRIVERSRC)/mmio_928/s3pwlb_mmio_928.o \
+               $(XF98PWLBDRIVERSRC)/s3_generic/s3pwlb_s3_generic.o
 XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlb) \
                $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlbpio) \
                $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlb) \
@@ -1418,9 +1418,9 @@ DDXDIR2 = hw/xfree98
 XF98GA968SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
                    $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98GA968OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3ga968/s3Conf.o \
-                $(XF98GA968DRIVERSRC)/newmmio/newmmio.o \
-                $(XF98GA968DRIVERSRC)/mmio_928/mmio_928.o \
-                $(XF98GA968DRIVERSRC)/s3_generic/s3_generic.o
+                $(XF98GA968DRIVERSRC)/newmmio/s3ga968_newmmio.o \
+                $(XF98GA968DRIVERSRC)/mmio_928/s3ga968_mmio_928.o \
+                $(XF98GA968DRIVERSRC)/s3_generic/s3ga968_s3_generic.o
 XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968) \
                 $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968pio) \
                 $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968) \
