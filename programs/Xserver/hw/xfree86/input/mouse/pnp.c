@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.13 2002/09/16 18:06:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.14 2003/01/18 15:22:34 eich Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -134,7 +134,7 @@ static const char *pnpSerial[] = {
 
 static int pnpgets(InputInfoPtr, char *, Bool *prePNP);
 static int pnpparse(InputInfoPtr, pnpid_t *, char *, int);
-static Bool prepnpparse(InputInfoPtr pInfo, char *buf);
+static int prepnpparse(InputInfoPtr pInfo, char *buf);
 static symtab_t *pnpproto(pnpid_t *);
 static symtab_t *gettoken(symtab_t *, char *, int);
 static MouseProtocolID getPs2ProtocolPnP(InputInfoPtr pInfo);
@@ -334,7 +334,7 @@ pnpgets(InputInfoPtr pInfo, char *buf, Bool *prePNP)
 	/* we haven't seen `Begin ID' in time... */
 	goto connect_idle;
     }
-    if (prePNP)
+    if (*prePNP)
 	return i;
     
     ++c;			/* make it `End ID' */
@@ -491,7 +491,7 @@ pnpparse(InputInfoPtr pInfo, pnpid_t *id, char *buf, int len)
 }
 
 /* We can only identify MS at the moment */
-static Bool
+static int
 prepnpparse(InputInfoPtr pInfo, char *buf)
 {
     if (buf[0] == 'M' && buf[1] == '3')
