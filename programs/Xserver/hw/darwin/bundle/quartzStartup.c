@@ -3,12 +3,14 @@
  * Startup code for the Quartz Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.3 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.4 2001/06/26 23:29:12 torrey Exp $ */
 
 #include <fcntl.h>
 #include "opaque.h"
 #include "darwin.h"
 #include "quartzShared.h"
+
+int NSApplicationMain(int argc, char *argv[]);
 
 char **envpGlobal;      // argcGlobal and argvGlobal
                         // are from dix/globals.c
