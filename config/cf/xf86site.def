@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.157 2000/03/03 23:12:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.158 2000/03/07 14:31:35 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -673,7 +673,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.157 2000/03/03 23:12:21 dawes Exp 
 /*
  * Set the path to your Glide 3 include files.
  *
-#define Glide3IncDir /usr/include/glide
+#define Glide3IncDir /usr/include/glide3
  */
 
 /*
