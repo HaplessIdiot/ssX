@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DA8.c,v 1.3 94/04/17 20:16:34 gildea Exp $
+ * $TOG: DA8.c /main/4 1997/08/12 23:24:59 kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -37,7 +37,7 @@ void
 XdmcpDisposeARRAY8 (array)
     ARRAY8Ptr	array;
 {
-    Xfree (array->data);
+    if (array->data != NULL) Xfree (array->data);
     array->length = 0;
-    array->data = 0;
+    array->data = NULL;
 }

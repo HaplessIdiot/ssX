@@ -1,5 +1,5 @@
-/* $XConsortium: socket.c,v 1.34 94/04/17 20:03:47 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.1 1994/08/31 04:50:53 dawes Exp $ */
+/* $TOG: socket.c /main/36 1997/08/12 23:07:51 kaleb $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.2 1997/01/18 07:02:24 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -222,6 +222,7 @@ GetChooserAddr (addr, lenp)
     len = sizeof in_addr;
     if (getsockname (chooserFd, (struct sockaddr *)&in_addr, &len) < 0)
 	return -1;
+    Debug ("Chooser socket port: %d\n", ntohs(in_addr.sin_port));
     memmove( addr, (char *) &in_addr, len);
     *lenp = len;
     return 0;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DA32.c,v 1.3 94/04/17 20:16:33 gildea Exp $
+ * $TOG: DA32.c /main/4 1997/08/12 23:24:53 kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -37,7 +37,7 @@ void
 XdmcpDisposeARRAY32 (array)
     ARRAY32Ptr	array;
 {
-    Xfree (array->data);
+    if (array->data != NULL) Xfree (array->data);
     array->length = 0;
-    array->data = 0;
+    array->data = NULL;
 }
