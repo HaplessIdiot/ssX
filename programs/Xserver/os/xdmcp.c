@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.30 94/03/31 13:56:50 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.0 1994/05/08 05:25:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.1 1994/05/21 23:59:07 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -923,7 +923,6 @@ get_xdmcp_sock()
     int soopts = 1;
 
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	XdmcpWarning("UDP socket creation failed");
 #else /* MINIX */
     char *udp_device;
     int r, s_errno;
