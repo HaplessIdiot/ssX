@@ -1,7 +1,7 @@
 XCOMM $TOG: Imakefile /main/11 1997/05/25 15:12:09 kaleb $
-XCOMM $XFree86: xc/programs/mkfontdir/Imakefile,v 3.6 1997/07/05 15:16:54 dawes Exp $
-LOCAL_LIBRARIES = $(XFONTLIB)
-DEPLIBS = $(DEPXFONTLIB)
+XCOMM $XFree86: xc/programs/mkfontdir/Imakefile,v 3.7 1999/01/11 05:13:36 dawes Exp $
+LOCAL_LIBRARIES = $(FONTLIB)
+DEPLIBS = $(DEPFONTLIB)
 INCLUDES = -I$(FONTINCSRC) -I$(FONTLIBSRC)/include
 #if GzipFontCompression
 ZLIB = GzipLibrary
