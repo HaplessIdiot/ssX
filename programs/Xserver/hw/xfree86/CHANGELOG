@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 562. Fix RandR initialization problem when default screen resolution is
+      different from the virtual resolution. (Bugzilla #853, Bob Paauwe).
  561. Fix an Xv problem with the via driver where updating a portion of the
       overlay causes excessive CPU usage (#Bugzilla #821, Neil Terry).
  560. Fix an Xnest hang on OS/2 (Bugzilla #852, Frank Giessler).
@@ -18120,7 +18122,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2941 2003/11/06 03:25:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2942 2003/11/06 03:34:24 dawes Exp $
 
 
 
