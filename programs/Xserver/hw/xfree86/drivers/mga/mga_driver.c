@@ -77,7 +77,7 @@
 
 #include "xf86DDC.h"
 #include "xf86RAC.h"
-#include "xf86int10.h"
+#include "vbe.h"
 
 
 /*
@@ -1063,6 +1063,18 @@ VgaIOEnable(void *arg)
 }
 #endif /* DISABLE_VGA_IO */
 
+extern xf86MonPtr ConfiguredMonitor;
+
+void
+MGAProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	pVbe = VBEInit(NULL,index);
+	ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
 /* Mandatory */
 static Bool
 MGAPreInit(ScrnInfoPtr pScrn, int flags)
@@ -1078,8 +1090,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     const char *s;
     int flags24;
 
-    if (flags & PROBE_DETECT) return FALSE;
-  
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -1101,23 +1111,28 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
 
+    pMga = MGAPTR(pScrn);
+
+    /* Get the entity, and make sure it is PCI. */
+    pMga->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pMga->pEnt->location.type != BUS_PCI)
+	return FALSE;
+
+    if (flags & PROBE_DETECT) {
+	MGAProbeDDC(pScrn, pMga->pEnt->index);
+	return TRUE;
+    }
+
+    /* The vgahw module should be loaded here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+	return FALSE;
+
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
      */
     if (!vgaHWGetHWRec(pScrn))
-	return FALSE;
-
-    /* Allocate the MGARec driverPrivate */
-    if (!MGAGetRec(pScrn)) {
-	return FALSE;
-    }
-    pMga = MGAPTR(pScrn);
-
-    /* Get the entity, and make sure it is PCI. */
-    pMga->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
-    if (pMga->pEnt->location.type != BUS_PCI)
 	return FALSE;
 
 #if 0
