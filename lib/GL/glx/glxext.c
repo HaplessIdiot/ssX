@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.17 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.24 2004/04/08 10:07:33 alanh Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -1146,17 +1146,25 @@ static Bool SendMakeCurrentRequest( Display *dpy, CARD8 opcode,
     GLXContextID gc, GLXContextTag old_gc, GLXDrawable draw, GLXDrawable read,
     xGLXMakeCurrentReply * reply );
 
+/**
+ * Sends a GLX protocol message to the specified display to make the context
+ * and the drawables current.
+ *
+ * \param dpy     Display to send the message to.
+ * \param opcode  Major opcode value for the display.
+ * \param gc_id   Context tag for the context to be made current.
+ * \param draw    Drawable ID for the "draw" drawable.
+ * \param read    Drawable ID for the "read" drawable.
+ * \param reply   Space to store the X-server's reply.
+ *
+ * \warning
+ * This function assumes that \c dpy is locked with \c LockDisplay on entry.
+ */
 static Bool SendMakeCurrentRequest( Display *dpy, CARD8 opcode,
 				    GLXContextID gc_id, GLXContextTag gc_tag,
 				    GLXDrawable draw, GLXDrawable read,
 				    xGLXMakeCurrentReply * reply )
 {
-    opcode = __glXSetupForCommand(dpy);
-    if (!opcode) {
-	return GL_FALSE;
-    }
-
-    LockDisplay(dpy);
     if ( draw == read ) {
 	xGLXMakeCurrentReq *req;
 
@@ -1251,11 +1259,12 @@ static Bool MakeContextCurrent(Display *dpy,
 	** unbind the previous context.
 	*/
 	sentRequestToOldDpy = True;
+        LockDisplay(oldGC->currentDpy);
 	if ( ! SendMakeCurrentRequest( oldGC->currentDpy, oldOpcode, None,
 				       oldGC->currentContextTag, None, None,
 				       &reply ) ) {
 	    /* The make current failed.  Just return GL_FALSE. */
-	    UnlockDisplay(dpy);
+	    UnlockDisplay(oldGC->currentDpy);
 	    SyncHandle();
 	    return GL_FALSE;
 	}
@@ -1295,6 +1304,7 @@ static Bool MakeContextCurrent(Display *dpy,
 						  gc ? gc->xid : None,
 						  oldGC->currentContextTag,
 						  draw, read, &reply );
+	UnlockDisplay(dpy);
 #ifdef GLX_DIRECT_RENDERING
     }
 #endif
@@ -1339,7 +1349,7 @@ static Bool MakeContextCurrent(Display *dpy,
 					  oldGC->xid, 0, 
 					  oldGC->currentDrawable,
 					  oldGC->currentReadable, &reply ) ) {
-		UnlockDisplay(dpy);
+		UnlockDisplay(oldGC->currentDpy);
 		SyncHandle();
 		/*
 		** The request failed; this cannot happen with the
@@ -1351,7 +1361,7 @@ static Bool MakeContextCurrent(Display *dpy,
 		*/
 	    }
             else {
-		UnlockDisplay(dpy);
+		UnlockDisplay(oldGC->currentDpy);
             }
 	    oldGC->currentContextTag = reply.contextTag;
 	}

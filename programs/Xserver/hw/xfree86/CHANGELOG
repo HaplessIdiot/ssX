@@ -1,4 +1,5 @@
 XFree86 4.4.99.4 (xx April 2004)
+  79. Fix GLX multithreaded bug (DRI Project).
   78. Xterm patch #186 (Thomas Dickey).
   77. Add an "AllowNoCntl" option to the elographics driver, which allows the
       driver to be used with some other protocols (like the SmartSet 2500s)
@@ -18866,7 +18867,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3228 2004/04/16 21:47:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3229 2004/04/18 21:46:59 dickey Exp $
 
 
 
