@@ -233,6 +233,7 @@ typedef struct {
    Bool FreeCompositeClip;
    XvAdaptorRecPrivatePtr AdaptorRec;
    Bool isOn;
+   Bool moved;
    int vid_x, vid_y, vid_w, vid_h;
    int drw_x, drw_y, drw_w, drw_h;
    DevUnion DevPriv;
@@ -240,7 +241,7 @@ typedef struct {
 
 typedef struct _XF86XVWindowRec{
    XvPortRecPrivatePtr PortRec;
-   struct _XF86XVWindowRec *next; 
+   struct _XF86XVWindowRec *next;
 } XF86XVWindowRec, *XF86XVWindowPtr;
 
 #endif  /* _XVDIX_H_ */

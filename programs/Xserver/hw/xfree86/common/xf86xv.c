@@ -33,6 +33,7 @@
 
 #include "xf86xv.h"
 
+extern void miSendExposures(WindowPtr, RegionPtr, int, int);
 
 /* XvScreenRec fields */
 
@@ -173,7 +174,7 @@ xf86XVScreenInit(
 	XF86XVGeneration = serverGeneration;
   }
 
-  if(!AllocateWindowPrivate(pScreen,XF86XVWindowIndex,sizeof(XF86XVWindowRec)))
+  if(!AllocateWindowPrivate(pScreen,XF86XVWindowIndex, 0))
         return FALSE;
 
   if(!XvGetScreenIndexProc || !XvGetRTPortProc || !XvScreenInitProc)
@@ -1044,6 +1045,24 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
 	    WinPriv = WinPriv->next;
 	    xfree(tmp);
 	    continue;
+	} 
+	else if(pPriv->moved) {
+	    /* This may be controversial.  Send an expose event to
+               this window so clients will know to redraw */
+
+	    if((pWin->eventMask | wOtherEventMasks(pWin)) & ExposureMask) {
+		RegionRec reg;
+		BoxRec box;
+
+		box.x1 = pPriv->drw_x;
+		box.x2 = box.x1 + pPriv->drw_w;
+		box.y1 = pPriv->drw_y;
+		box.y2 = box.y1 + pPriv->drw_h;
+
+		REGION_INIT(pWin->drawable.pScreen, &reg, &box, 1);
+		miSendExposures(pWin, &reg, 0, 0);
+		REGION_UNINIT(pWin->drawable.pScreen, &reg);
+	    }
 	}
 	break;
      }
@@ -1093,6 +1112,9 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
 	    xfree(tmp);
 	    continue;
 	}
+     } else
+     if(!pPriv->type && (dx || dy)) {
+	pPriv->moved = TRUE;
      }
 
      pPrev = WinPriv;
