@@ -1,5 +1,5 @@
 /* $XConsortium: socket.c,v 1.34 94/04/17 20:03:47 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.0 1994/06/28 12:32:40 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -46,7 +46,9 @@ from the X Consortium.
 #ifndef MINIX
 #include <sys/socket.h>
 #include <netinet/in.h>
+#ifndef X_NO_SYS_UN
 #include <sys/un.h>
+#endif
 #include <netdb.h>
 #else /* MINIX */
 #include <net/hton.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c,v 1.1 94/03/28 21:51:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.0 1994/05/31 08:15:28 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -117,6 +117,9 @@ vgaVideoChipRec NCR77C22 = {
   VGA_DIVIDE_VERT,	/* Interlace (77C22E,E+ only) requires divide-by-2 */
   {0,},
   8,
+  FALSE,
+  0,
+  0,
 };
 
 #define new ((vgaNCRPtr)vgaNewVideoState)

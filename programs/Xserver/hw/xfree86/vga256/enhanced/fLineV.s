@@ -1,5 +1,5 @@
 /* $XConsortium: fLineV.s,v 1.2 94/03/29 11:19:15 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineV.s,v 3.0 1994/07/24 11:58:13 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -93,7 +93,8 @@ GLNAME(fastvga256VertS):
 	ADD_L	(tmp,REGOFF(20,EBP))
 .L1:	MOV_B	(xorv,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L1)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L1)			/* len0 is %ecx */
 	CMP_L	(CONTENT(GLNAME(vgaWriteTop)),pdst)
 	JAE	(.checkC)
 .L3:	MOV_B	(xorv,REGIND(pdst))
@@ -107,9 +108,30 @@ GLNAME(fastvga256VertS):
 	CMP_L	(CONST(0),len)
 	JZ	(.allfinish)
 	MOV_L	(len,len0)
+	CMP_L	(CONST(8),ECX)
+	JB	(.L2)
+	/* Unrolled loop */
+.L10:	MOV_B	(xorv,REGIND(pdst))			/* line 0 */
+	MOV_B	(xorv,REGBI(pdst,nlwidth))		/* line 1 */
+	MOV_B	(xorv,REGBISD(pdst,nlwidth,2,0))	/* line 2 */
+	MOV_B	(xorv,REGBISD(pdst,nlwidth,4,0))	/* line 4 */
+	ADD_L	(nlwidth,pdst)
+	MOV_B	(xorv,REGBISD(pdst,nlwidth,2,0))	/* line 3 */
+	MOV_B	(xorv,REGBISD(pdst,nlwidth,4,0))	/* line 5 */
+	ADD_L	(nlwidth,pdst)
+	MOV_B	(xorv,REGBISD(pdst,nlwidth,4,0))	/* line 6 */
+	ADD_L	(nlwidth,pdst)
+	LEA_L	(REGBISD(pdst,nlwidth,4,0),pdst)
+	MOV_B	(xorv,REGIND(pdst))			/* line 7 */
+	ADD_L	(nlwidth,pdst)
+	SUB_L	(CONST(8),ECX)
+	JZ	(.allfinish)
+	CMP_L	(CONST(8),ECX)
+	JAE	(.L10)
 .L2:	MOV_B	(xorv,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L2)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L2)			/* len0 is %ecx */
 .allfinish:
 	POP_L	(EDI)
 	POP_L	(ESI)
@@ -143,7 +165,8 @@ GLNAME(fastvga256VertS):
 	ADD_L	(tmp,REGOFF(20,EBP))
 .L4:	XOR_B	(xorv,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L4)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L4)			/* len0 is %ecx */
 	CMP_L	(CONTENT(GLNAME(vgaWriteTop)),pdst)
 	JAE	(.checkX)
 .L6:	XOR_B	(xorv,REGIND(pdst))
@@ -159,7 +182,8 @@ GLNAME(fastvga256VertS):
 	MOV_L	(len,len0)
 .L5:	XOR_B	(xorv,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L5)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L5)			/* len0 is %ecx */
 	JMP	(.allfinish)
 
 .GXsetloop:
@@ -189,7 +213,8 @@ GLNAME(fastvga256VertS):
 	XOR_B	(xorv,AL)
 	MOV_B	(AL,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L7)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L7)			/* len0 is %ecx */
 	CMP_L	(CONTENT(GLNAME(vgaWriteTop)),pdst)
 	JAE	(.checkS)
 .L9:	MOV_B	(REGIND(pdst),AL)
@@ -211,7 +236,8 @@ GLNAME(fastvga256VertS):
 	XOR_B	(xorv,AL)
 	MOV_B	(AL,REGIND(pdst))
 	ADD_L	(nlwidth,pdst)
-	LOOP	(.L8)			/* len0 is %ecx */
+	DEC_L	(ECX)
+	JNZ	(.L8)			/* len0 is %ecx */
 	JMP	(.allfinish)
 
 

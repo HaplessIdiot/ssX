@@ -1,6 +1,6 @@
 /*
  * $XConsortium: choose.c,v 1.16 94/06/03 16:34:38 mor Exp $
- * $XFree86: xc/programs/xdm/choose.c,v 3.1 1994/06/09 10:56:12 dawes Exp $
+ * $XFree86: xc/programs/xdm/choose.c,v 3.2 1994/06/28 12:32:28 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -43,7 +43,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef MINIX
 #include <sys/socket.h>
 #include <netinet/in.h>
+#ifndef X_NO_SYS_UN
 #include <sys/un.h>
+#endif
 #else /* MINIX */
 #include <sys/ioctl.h>
 #include <net/netlib.h>

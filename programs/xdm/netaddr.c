@@ -1,5 +1,5 @@
 /* $XConsortium: netaddr.c,v 1.8 94/04/17 20:03:41 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/netaddr.c,v 3.0 1994/06/28 12:32:36 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -48,7 +48,9 @@ from the X Consortium.
 #endif
 
 #ifdef UNIXCONN
+#ifndef X_NO_SYS_UN
 #include <sys/un.h>		/* struct sockaddr_un */
+#endif
 #endif
 #ifdef DNETCONN
 #include <netdnet/dn.h>		/* struct sockaddr_dn */

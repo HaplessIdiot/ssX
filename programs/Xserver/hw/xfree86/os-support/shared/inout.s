@@ -1,4 +1,5 @@
 /* $XConsortium: inout.s,v 1.2 94/03/29 10:31:48 dpw Exp $ */
+/* $XFree86$ */
 
 #include "assyntax.h"
 
@@ -70,5 +71,36 @@ GLNAME(outw):
 	MOV_L	(REGOFF(4,ESP),EDX)
 	MOV_L	(REGOFF(8,ESP),EAX)
 	OUT1_W	(DX)
+	RET
+
+/*
+ *-----------------------------------------------------------------------
+ * inl ---
+ *	Input one 32-bit longword.
+ *
+ * Results:
+ *      Word in eax.
+ *-----------------------------------------------------------------------
+ */
+	GLOBL	GLNAME(inl)
+GLNAME(inl):
+	MOV_L	(REGOFF(4,ESP),EDX)
+	IN1_L	(EDX)
+	RET
+
+/*
+ *-----------------------------------------------------------------------
+ * outl ---
+ *	Output one 32-bit longword.
+ *
+ * Results:
+ *      None.
+ *-----------------------------------------------------------------------
+ */
+	GLOBL	GLNAME(outl)
+GLNAME(outl):
+	MOV_L	(REGOFF(4,ESP),EDX)
+	MOV_L	(REGOFF(8,ESP),EAX)
+	OUT1_L	(EDX)
 	RET
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.14 94/04/17 20:03:50 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.0 1994/06/28 12:32:43 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -49,7 +49,9 @@ from the X Consortium.
 #ifndef MINIX
 #include	<sys/socket.h>
 #include	<netinet/in.h>
+#ifndef X_NO_SYS_UN
 #include	<sys/un.h>
+#endif
 #include	<netdb.h>
 #else /* MINIX */
 #include <net/hton.h>
