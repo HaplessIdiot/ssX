@@ -1,4 +1,13 @@
 XFree86 4.2.99.1 (XX January 2002)
+   7. Add a note to the messages that get printed when a signal is caught
+      during initialization (which includes X -configure) that reported
+      unresolved symbols might not be the reason for the server aborting
+      (David Dawes).
+   6. Fix symbol registration in some drivers, which reduces the number of
+      symbols reported as "unresolved" when 'X -configure' crashes
+      (David Dawes).
+   5. Fill in names for BIOS modes in the vesa driver's mode pool that weren't
+      otherwise assigned names (David Dawes).
    4. Fix an unresolved symbol in libGLU.so that shows up when building it
       with gcc-3 (David Dawes).
    3. Fix invalid code caused by a memcpy() macro being split by a directive
@@ -14564,4 +14573,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2147 2002/01/23 16:26:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2148 2002/01/23 17:16:30 dawes Exp $
