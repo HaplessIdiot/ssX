@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX January 2002)
+  24. Localize a few missing strings in XDarwin preferences (Torrey T. Lyons).
   23. GeForce4 support (Mark Vojkovich).
   22. Add IA-64 460GX PCI IDs (Marc La France).
   21. Some vesa driver updates:
@@ -14603,4 +14604,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2158 2002/01/29 22:40:32 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2159 2002/01/30 01:36:40 mvojkovi Exp $

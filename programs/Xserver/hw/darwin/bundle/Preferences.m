@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.12 2001/10/07 18:47:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.13 2001/10/14 03:02:18 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzCommon.h"
@@ -27,9 +27,9 @@
         @"YES", @"FakeButtons",
         [NSNumber numberWithInt:NX_COMMANDMASK], @"Button2Mask",
         [NSNumber numberWithInt:NX_ALTERNATEMASK], @"Button3Mask",
-        @"USA.keymapping", @"KeymappingFile",
+        NSLocalizedString(@"USA.keymapping",@""), @"KeymappingFile",
         @"YES", @"UseKeymappingFile",
-        @"Cmd-Opt-a", @"SwitchString",
+        NSLocalizedString(@"Cmd-Opt-a",@""), @"SwitchString",
         @"NO", @"UseRootlessMode",
         @"YES", @"ShowModePickWindow",
         @"YES", @"ShowStartupHelp",
@@ -201,7 +201,7 @@
 
 - (IBAction)setKey:(id)sender
 {
-    [switchKeyButton setTitle:@"Press key"];
+    [switchKeyButton setTitle:NSLocalizedString(@"Press key",@"")];
     isGettingKeyCode=YES;
     [switchString setString:@""];
 }
@@ -209,7 +209,7 @@
 - (BOOL)sendEvent:(NSEvent*)anEvent
 {
     if(isGettingKeyCode) {
-        if([anEvent type]==NSKeyDown) //wait for keyup
+        if([anEvent type]==NSKeyDown) // wait for keyup
             return YES;
         if([anEvent type]!=NSKeyUp)
             return NO;
