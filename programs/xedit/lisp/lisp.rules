@@ -1,5 +1,5 @@
 #define GperfLispFile(dep,file,flags)					@@\
-dep.c::	file.c								@@\
+dep.o::	file.c								@@\
 									@@\
 file.c: file.gperf							@@\
 	RemoveFile($@)							@@\

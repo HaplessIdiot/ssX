@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 263. Fix build dependency problem in xedit/lisp/lisp.rules
+      (#4930, Harald Koenig).
  262. Fix a fontenc-related problem that can cause the TrueType backend
       to crash (#4909, Juliusz Chroboczek).
  261. Fix DPMS support for I128 driver (Robin Cutshaw).
@@ -13777,4 +13779,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1929 2001/09/03 03:23:03 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1930 2001/09/04 13:49:16 dawes Exp $
