@@ -191,7 +191,7 @@ about either axis (if supported by the impementation).  Rotation and
 reflection may be implemented by software and may result in slower
 performance if rotation and reflection are implemented in this fashion 
 (as are all implementations as of October 2002).
-.P
+.PP
 The Xrandr library does some minimal caching to avoid roundtrips to
 provide clients frequently used information.  See "The X Resize and
 Rotate Extension" for a detailed description; also note that depth
@@ -202,6 +202,14 @@ need for depth switching.  If it is implemented in the future, we
 expect to do so via an upward compatible extension to the
 current library/protocol; functionality described here should continue
 to work.
+.PP
+Rotation and reflection and how they interact can be confusing.  In
+Randr, the coordinate system is rotated in a counter-clockwise
+direction relative to the normal orientation.  Reflection is along the
+window system coordinate system, not the physical screen X and Y axis,
+so that rotation and reflection do not interact.  The other way to
+consider reflection is to is specified in the "normal" orientation,
+before rotation, if you find the other way confusing.
 .PP
 The 
 .B XRRScreenChangeNotify 
