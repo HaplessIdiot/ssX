@@ -1,4 +1,4 @@
-/* $TOG: session.c /main/79 1998/02/09 13:56:17 kaleb $ */
+/* $Xorg: session.c,v 1.7 2000/08/17 19:54:15 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.25 2000/11/15 01:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.26 2000/11/30 23:30:07 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -324,6 +324,12 @@ ManageSession (struct display *d)
 	     */
 	    if (StartClient (&verify, d, &clientPid, greet.name, greet.password)) {
 		Debug ("Client Started\n");
+
+#ifndef GREET_USER_STATIC
+                /* Save memory; close library */
+                dlclose(greet_lib_handle);
+#endif
+ 
 		/*
 		 * Wait for session to end,
 		 */
@@ -877,7 +883,7 @@ execute (char **argv, char **environ)
 	if (optarg)
 	    *av++ = optarg;
 	/* SUPPRESS 560 */
-	while ((*av++ = *argv++) != 0)
+	while ((*av++ = *argv++))
 	    /* SUPPRESS 530 */
 	    ;
 	execve (newargv[0], newargv, environ);

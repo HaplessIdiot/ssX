@@ -1,4 +1,4 @@
-/* $TOG: utils.c /main/21 1998/02/11 10:07:08 kaleb $ */
+/* $Xorg: utils.c,v 1.3 2000/08/17 19:54:23 cpqbld Exp $ */
 /*
  * misc os utilities
  */
@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.10 2000/11/14 18:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.11 2000/11/30 23:30:11 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>

@@ -1,4 +1,4 @@
-.\" $TOG: xwd.man /main/23 1998/02/09 14:20:45 kaleb $
+.\" $Xorg: xwd.man,v 1.3 2000/08/17 19:55:14 cpqbld Exp $
 .\" Copyright 1988, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

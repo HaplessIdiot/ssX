@@ -1,4 +1,4 @@
-/* $TOG: dm.h /main/67 1998/02/09 13:55:01 kaleb $ */
+/* $Xorg: dm.h,v 1.3 2000/08/17 19:54:14 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.20 2000/11/14 18:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.21 2000/11/14 21:59:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

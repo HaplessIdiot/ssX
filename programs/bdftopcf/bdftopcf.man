@@ -1,4 +1,4 @@
-.\" $TOG: bdftopcf.man /main/10 1998/02/09 13:39:47 kaleb $
+.\" $Xorg: bdftopcf.man,v 1.3 2000/08/17 19:53:49 cpqbld Exp $
 .\" Copyright 1993, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

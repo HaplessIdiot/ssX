@@ -1,4 +1,4 @@
-/* $TOG: xclock.c /main/41 1998/02/09 13:53:27 kaleb $ */
+/* $Xorg: xclock.c,v 1.3 2000/08/17 19:54:12 cpqbld Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.4 2000/01/21 01:12:26 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.5 2000/11/02 02:51:24 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>

@@ -1,4 +1,4 @@
-/* $TOG: verify.c /main/37 1998/02/11 10:00:45 kaleb $ */
+/* $Xorg: verify.c,v 1.3 2000/08/17 19:54:17 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.9 2000/06/14 00:16:16 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.10 2000/11/14 21:59:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

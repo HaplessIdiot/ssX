@@ -1,4 +1,4 @@
-/* $TOG: xhost.c /main/57 1998/02/09 13:59:01 kaleb $ */
+/* $Xorg: xhost.c,v 1.3 2000/08/17 19:54:24 cpqbld Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.11 1999/03/14 03:22:29 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.12 2000/08/10 17:40:41 dawes Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS

@@ -1,4 +1,4 @@
-/* $TOG: math.c /main/7 1998/02/09 14:01:01 kaleb $ */
+/* $Xorg: math.c,v 1.3 2000/08/17 19:54:26 cpqbld Exp $ */
 
 /**** module math.c ****/
 /******************************************************************************
@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xieperf/math.c,v 1.4 1999/03/02 11:49:50 dawes Exp $ */
 
 #include "xieperf.h"
 #include <stdio.h>

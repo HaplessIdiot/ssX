@@ -1,7 +1,8 @@
 /*
- *	$XConsortium: main.h,v 1.5 91/02/06 16:00:15 gildea Exp $
- *	$XFree86: xc/programs/xterm/main.h,v 3.3 2000/10/05 18:06:36 keithp Exp $
+ *	$Xorg: main.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
+
+/* $XFree86: xc/programs/xterm/main.h,v 3.4 2000/11/01 01:12:40 dawes Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

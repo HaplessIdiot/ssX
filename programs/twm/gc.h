@@ -44,12 +44,12 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/gc.h,v 1.3 1999/02/20 15:07:22 hohndel Exp $ */
 
 
 /**********************************************************************
  *
- * $TOG: gc.h /main/6 1998/02/09 13:48:05 kaleb $
+ * $Xorg: gc.h,v 1.3 2000/08/17 19:54:06 cpqbld Exp $
  *
  * GC related externs
  *

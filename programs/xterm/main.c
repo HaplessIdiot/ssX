@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$TOG: main.c /main/249 1997/08/26 14:13:43 kaleb $";
+static char *rid="$Xorg: main.c,v 1.6 2000/08/18 11:04:49 xorgcvs Exp $";
 #endif /* lint */
 
 /*
@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.123 2000/12/28 00:51:50 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.124 2000/12/30 19:15:46 dickey Exp $ */
 
 
 /* main.c */

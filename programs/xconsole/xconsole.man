@@ -1,4 +1,4 @@
-.\" $TOG: xconsole.man /main/12 1998/02/09 13:54:09 kaleb $
+.\" $Xorg: xconsole.man,v 1.3 2000/08/17 19:54:13 cpqbld Exp $
 .\" Copyright 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

@@ -1,4 +1,4 @@
-.\" $TOG: xmag.man /main/13 1998/02/09 14:11:11 kaleb $
+.\" $Xorg: xmag.man,v 1.3 2000/08/17 19:54:54 cpqbld Exp $
 .\" Copyright 1991, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

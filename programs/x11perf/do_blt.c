@@ -1,4 +1,4 @@
-/* $XConsortium: do_blt.c,v 2.17 94/03/17 20:23:46 dpw Exp $ */
+/* $Xorg: do_blt.c,v 1.3 2000/08/17 19:54:09 cpqbld Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_blt.c,v 1.4 1999/02/28 11:19:52 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/do_blt.c,v 1.6 2000/11/29 08:58:19 keithp Exp $ */
 
 #include "x11perf.h"
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $TOG: handle.c /main/29 1998/02/09 14:11:20 kaleb $ */
+/* $Xorg: handle.c,v 1.5 2000/08/17 19:54:54 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/handle.c,v 3.2 1998/12/13 05:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/xmodmap/handle.c,v 3.3 1999/03/07 11:41:15 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

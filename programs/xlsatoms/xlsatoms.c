@@ -1,5 +1,5 @@
 /*
- * $TOG: xlsatoms.c /main/6 1998/02/09 14:09:48 kaleb $
+ * $Xorg: xlsatoms.c,v 1.3 2000/08/17 19:54:52 cpqbld Exp $
  *
 Copyright 1989, 1998  The Open Group
 
@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xlsatoms/xlsatoms.c,v 1.3 1999/03/07 14:23:35 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>

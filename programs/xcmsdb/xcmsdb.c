@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.12 94/02/07 23:29:38 rws Exp $ */
+/* $Xorg: xcmsdb.c,v 1.3 2000/08/17 19:54:13 cpqbld Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -29,7 +29,7 @@
  *		Characterization Data from the root window of the screen.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xcmsdb/xcmsdb.c,v 1.4 1999/03/02 11:49:36 dawes Exp $ */
 
 /*
  *      INCLUDES

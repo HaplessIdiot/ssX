@@ -1,4 +1,4 @@
-.\" $TOG: xkill.man /main/19 1998/02/09 14:09:15 kaleb $
+.\" $Xorg: xkill.man,v 1.3 2000/08/17 19:54:51 cpqbld Exp $
 .\" Copyright 1988, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.
