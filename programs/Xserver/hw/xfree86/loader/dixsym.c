@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.38 2001/04/05 17:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.39 2001/08/06 20:51:10 dawes Exp $ */
 
 
 /*
@@ -34,6 +34,7 @@
 #include "misc.h"
 #include "globals.h"
 #include "os.h"
+#include "osdep.h"
 #include "resource.h"
 #include "servermd.h"
 #include "scrnintstr.h"
@@ -95,6 +96,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(SendErrorToClient)
   SYMFUNC(UpdateCurrentTime)
   SYMFUNC(UpdateCurrentTimeIf)
+  SYMFUNC(ProcBadRequest)
   SYMVAR(dispatchException)
   SYMVAR(isItTimeToYield)
   SYMVAR(ClientStateCallback)
@@ -184,6 +186,8 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(screenInfo)
   SYMVAR(serverClient)
   SYMVAR(serverGeneration)
+  /* main.c */
+  SYMFUNC(NotImplemented)
   /* pixmap.c */
   SYMFUNC(AllocatePixmap)
   SYMFUNC(GetScratchPixmapHeader)
@@ -224,6 +228,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(SwapColorItem)
   /* tables.c */
   SYMVAR(EventSwapVector)
+  SYMVAR(ReplySwapVector)
+  SYMVAR(ProcVector)
   /* window.c */
   SYMFUNC(ChangeWindowAttributes)
   SYMFUNC(CheckWindowOptionalNeed)
@@ -282,15 +288,22 @@ LOOKUP dixLookupTab[] = {
   /* connection.c */
   SYMFUNC(IgnoreClient)
   SYMFUNC(AttendClient)
+  SYMFUNC(ListenToAllClients)
   SYMFUNC(AddEnabledDevice)
   SYMFUNC(RemoveEnabledDevice)
+  SYMVAR(AllClients)
+  SYMVAR(AllSockets)
+  SYMVAR(ClientsWithInput)
   SYMVAR(GrabInProgress)
+  SYMVAR(LastSelectMask)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)
   SYMVAR(noTestExtensions)
 
   /* devices.c */
   SYMFUNC(InitPointerDeviceStruct)
+  SYMFUNC(LookupKeyboardDevice)
+  SYMFUNC(LookupPointerDevice)
 #ifdef XINPUT
   /* Xi */
   /* exevents.c */
