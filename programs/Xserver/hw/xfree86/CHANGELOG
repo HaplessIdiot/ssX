@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 537. Limit the rate of duplicate audit messages in the X server. (Matthieu 
+      Herrb, David Dawes).
  536. Fix ChipValidMode() return type (Marc La France).
  535. Fix for AGP8x support on HP zx1-based systems (Marc La France). 
  534. Workaround for mysterious segfault related to mkfontscale's use of
@@ -18062,7 +18064,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2913 2003/10/30 15:26:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2914 2003/10/30 17:36:52 tsi Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.41 2003/09/25 13:26:21 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.42 2003/10/29 04:17:20 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -472,6 +472,7 @@ main(int argc, char *argv[], char *envp[])
 #ifdef DPMSExtension
 	FreeDPMSTimers();
 #endif
+	FreeAuditTimer();
 
 	xfree(serverClient->devPrivates);
 	serverClient->devPrivates = NULL;

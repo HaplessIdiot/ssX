@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.63 2003/09/24 02:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.64 2003/10/07 22:50:42 herrb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -498,17 +498,15 @@ AuthAudit (ClientPtr client, Bool letin,
 	    break;
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	case AF_INET:
-	    sprintf(out, "IP %s port %d",
-		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
-		    ntohs(((struct sockaddr_in *) saddr)->sin_port));
+	    sprintf(out, "IP %s",
+		inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr));
 	    break;
 #if defined(IPv6) && defined(AF_INET6)
 	case AF_INET6: {
 	    char ipaddr[INET6_ADDRSTRLEN];
 	    inet_ntop(AF_INET6, &((struct sockaddr_in6 *) saddr)->sin6_addr,
 	      ipaddr, sizeof(ipaddr));
-	    sprintf(out, "IP %s port %d", ipaddr,		    
-		    ((struct sockaddr_in6 *) saddr)->sin6_port);
+	    sprintf(out, "IP %s", ipaddr);
 	}
 	    break;
 #endif
@@ -532,12 +530,14 @@ AuthAudit (ClientPtr client, Bool letin,
 	default:
 	    strcpy(out, "unknown address");
 	}
-    if (letin)
-	AuditF("client %d connected from %s\n", client->index, addr);
-    else
-	AuditF("client %d rejected from %s\n", client->index, addr);
+    
     if (proto_n)
-	AuditF("  Auth name: %.*s ID: %d\n", (int)proto_n, auth_proto, auth_id);
+	AuditF("client %d %s from %s\n  Auth name: %.*s ID: %d\n", 
+	       client->index, letin ? "connected" : "rejected", addr,
+	       (int)proto_n, auth_proto, auth_id);
+    else 
+	AuditF("client %d %s from %s\n", 
+	       client->index, letin ? "connected" : "rejected", addr);
 }
 
 XID
