@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.8 2002/07/16 05:19:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.9 2002/07/22 07:26:28 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -211,7 +211,7 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 
 	init = CDR(init);
 	if (!CONS_P(init))
-	    LispDestroy(mac, "%s: missing package name");
+	    LispDestroy(mac, "%s: missing package name", STRFUN(builtin));
 
 	/* Evaluate package specification */
 	package = EVAL(CAR(init));

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.8 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.10 2002/07/16 05:19:39 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -156,7 +156,7 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
     length = strlen(string);
 
     if (offset >= length)
-	LispDestroy(mac, "%s: index %d too large for string length %d",
+	LispDestroy(mac, "%s: index %ld too large for string length %ld",
 		    STRFUN(builtin), offset, length);
 
     character = *(unsigned char*)(string + offset);
@@ -170,24 +170,23 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
 /*
- xedit::char-store string index value &aux (length (length string))
+ xedit::char-store string index value
  */
 {
     int character;
     long offset, length;
-    LispObj *ostring, *oindex, *ovalue, *olength;
+    LispObj *ostring, *oindex, *ovalue;
 
-    olength = ARGUMENT(3);
     ovalue = ARGUMENT(2);
     oindex = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
     ERROR_CHECK_STRING(ostring);
     ERROR_CHECK_INDEX(oindex);
-    length = olength->data.integer;
+    length = LispLength(mac, ostring);
     offset = oindex->data.integer;
     if (offset >= length)
-	LispDestroy(mac, "%s: index %d too large for string length %d",
+	LispDestroy(mac, "%s: index %ld too large for string length %ld",
 		    STRFUN(builtin), offset, length);
     ERROR_CHECK_CHARACTER(ovalue);
 
@@ -415,7 +414,7 @@ Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
     }
 
     if (radix < 2 || radix > 36)
-	LispDestroy(mac, "radix must be >= 2 and <= 36, not %d",
+	LispDestroy(mac, "%s: radix must be >= 2 and <= 36, not %d",
 		    STRFUN(builtin), radix);
 
     if (character >= '0' && character <= '9') {
@@ -497,13 +496,13 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     else		radix = oradix->data.integer;
 
     if (start > end)
-	LispDestroy(mac, "%s: :START %d larger than :END %d",
+	LispDestroy(mac, "%s: :START %ld larger than :END %ld",
 		    STRFUN(builtin), start, end);
     if (end > length)
-	LispDestroy(mac, "%s: :END %d larger than string length %d",
+	LispDestroy(mac, "%s: :END %ld larger than string length %ld",
 		    STRFUN(builtin), end, length);
     if (radix < 2 || radix > 36)
-	LispDestroy(mac, "%s: :RADIX %d must be in the range 2 to 36",
+	LispDestroy(mac, "%s: :RADIX %ld must be in the range 2 to 36",
 		    STRFUN(builtin), radix);
 
     integer = check = 0;
@@ -627,7 +626,7 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 {
     char *string;
     LispObj *stream, *result;
-    int eof = mac->eof, length, start, end, bytes_read;
+    int length, start, end, bytes_read;
 
     LispObj *ostring, *eof_error_p, *eof_value,
 	    *ostart, *oend, *preserve_white_space;
@@ -676,8 +675,6 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
      * the offset of the last byte read in string */
     bytes_read = stream->data.stream.source.string->input;
     LispPopInput(mac, stream);
-
-    mac->eof = eof;
 
     if (result == EOLIST)
 	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));

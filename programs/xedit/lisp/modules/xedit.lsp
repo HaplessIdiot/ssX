@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.1 2002/07/22 07:26:30 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -242,10 +242,6 @@
 ;;  Remove XawTextEntity structures in a given text region.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun CLEAR-ENTITIES (left right)
-#-debug
-    (check-if-positive-integer 'clear-entities left)
-#-debug
-    (check-if-positive-integer 'clear-entities right)
     (format *OUTPUT* "~Cclear-entities ~D ~D~%"
 	*ESCAPE*
 	left
@@ -263,9 +259,6 @@
 ;;     with the entity.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ADD-ENTITY (offset length identifier)
-    (check-if-positive-integer 'add-entity offset)
-    (check-if-positive-integer 'add-entity length)
-    (check-if-positive-integer 'add-entity identifier)
     (format *OUTPUT* "~Cadd-entity ~D ~D ~D~%"
 	*ESCAPE*
 	offset
@@ -351,37 +344,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Print formatted output for some type checking of exported functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun CHECK-IF-STRING (function value)
-    (unless (stringp value)
-	(error "~A: ~A is not a string" function value)
-    )
-)
-
-
-(defun CHECK-IF-POSITIVE-INTEGER (function value)
-    (unless (and (integerp value) (>= value 0))
-	(error "~A: ~A is not a positive integer" function value)
-    )
-)
-
-
-(defun CHECK-IF-PATHNAME (function value)
-    (unless (or (stringp value) (pathnamep value))
-	(error "~A: ~A is not a pathname" function value)
-    )
-)
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generic functions.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun BACKGROUND (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'background value)
 	    (format *OUTPUT* "~Cset-background ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -397,7 +364,6 @@
 (defun FOREGROUND (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'foreground value)
 	    (format *OUTPUT* "~Cset-foreground ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -413,7 +379,6 @@
 (defun FONT (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'font value)
 	    (format *OUTPUT* "~Cset-font ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -429,7 +394,6 @@
 (defun POINT (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-positive-integer 'point value)
 	    (format *OUTPUT* "~Cset-point ~D~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -459,7 +423,6 @@
 
 
 (defun INSERT (string)
-    (check-if-string 'insert string)
     (format *OUTPUT* "~Cinsert ~S~%" *ESCAPE* string)
 #-debug
     (read *INPUT*)
@@ -468,8 +431,6 @@
 
 
 (defun READ-TEXT (offset length)
-    (check-if-positive-integer 'read-text offset)
-    (check-if-positive-integer 'read-text length)
     (format *OUTPUT* "~Cread-text ~D ~D~%"
 	*ESCAPE*
 	offset
@@ -483,9 +444,6 @@
 
 
 (defun REPLACE-TEXT (left right string)
-    (check-if-positive-integer 'replace-text left)
-    (check-if-positive-integer 'replace-text right)
-    (check-if-string 'replace value)
     (format *OUTPUT* "~Creplace-text ~D ~D ~S~%"
 	*ESCAPE*
 	left
@@ -499,7 +457,6 @@
 
 
 (defun SCAN (offset type direction &key (count 1) include)
-    (check-if-positive-integer 'scan offset)
     (unless (setq type (position type *SCAN-TYPE*))
 	(error
 	    "SCAN: type must be one of ~A, not ~A"
@@ -514,7 +471,6 @@
 	    direction
 	)
     )
-    (check-if-positive-integer 'scan count)
     (format *OUTPUT* "~Cscan ~D ~D ~D ~D ~D~%"
 	*ESCAPE*
 	offset
@@ -531,7 +487,6 @@
 
 
 (defun SEARCH-FORWARD (string &optional case-sensitive)
-    (check-if-string 'search-forward value)
     (format *OUTPUT* "~Csearch-forward ~S ~D~%"
 	*ESCAPE* string (if case-sensitive 1 0)
     )
@@ -541,7 +496,6 @@
 
 
 (defun SEARCH-BACKWARD (string &optional case-sensitive)
-    (check-if-string 'search-backward value)
     (format *OUTPUT* "~Csearch-backward ~S ~D~%"
 	*ESCAPE* string (if case-sensitive 1 0)
     )
@@ -578,9 +532,9 @@
 (defun AUTO-FILL (&optional (value NIL specified))
     (if specified
 	(progn
-	    (format *OUTPUT* "~Cset-auto-fill ~A~%"
+	    (format *OUTPUT* "~Cset-auto-fill ~S~%"
 		*ESCAPE*
-		(if value T NIL)
+		(if value "true" "false")
 	    )
 #-debug	    (read *INPUT*)
 	)
@@ -621,7 +575,6 @@
 (defun LEFT-COLUMN (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-positive-integer 'left-column value)
 	    (format *OUTPUT* "~Cset-left-column ~D~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -637,7 +590,6 @@
 (defun RIGHT-COLUMN (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-positive-integer 'right-column right)
 	    (format *OUTPUT* "~Cset-right-column ~D~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -687,14 +639,12 @@
 
 
 (defun CREATE-BUFFER (name)
-    (check-if-string 'create-buffer name)
     (format *OUTPUT* "~Ccreate-buffer ~S~%" *ESCAPE* name)
     (read *INPUT*)
 )
 
 
 (defun REMOVE-BUFFER (name)
-    (check-if-string 'remove-buffer value)
     (format *OUTPUT* "~Cremove-buffer ~S~%" *ESCAPE* name)
 #-debug
     (read *INPUT*)
@@ -704,7 +654,6 @@
 (defun BUFFER-NAME (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'buffer-name value)
 	    (format *OUTPUT* "~Cset-buffer-name ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -720,7 +669,6 @@
 (defun BUFFER-FILENAME (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-pathname 'buffer-filename value)
 	    (format *OUTPUT* "~Cset-buffer-filename ~S~%"
 		*ESCAPE*
 		(namestring value)
@@ -739,7 +687,6 @@
 (defun CURRENT-BUFFER (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'current-buffer value)
 	    (format *OUTPUT* "~Cset-current-buffer ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
@@ -755,7 +702,6 @@
 (defun OTHER-BUFFER (&optional (value NIL specified))
     (if specified
 	(progn
-	    (check-if-string 'other-buffer value)
 	    (format *OUTPUT* "~Cset-other-buffer ~S~%" *ESCAPE* value)
 #-debug	    (read *INPUT*)
 	)
