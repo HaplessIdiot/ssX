@@ -6,7 +6,7 @@
 
 <title>Release Notes for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>4 July 1999 (this document needs work!)
+<date>6 July 1999 (this document needs work!)
 
 <abstract>
 
@@ -22,14 +22,42 @@ in XFree86 &relvers; and their status.
 
 <sect>X server
 <p>
-Unlike the 3.3.x versions, there is now a single X server binary (called
-<tt>XFree86</tt>.  This binary can either have one or more video drivers
-linked in statically, or, more usually, dynamically load the video drivers
-and other modules that are needed.
+Unlike XFree86 3.3.x where there are multiple X server binaries, each
+of which drive different hardware, XFree86 &relvers; has a single X server
+binary (called <tt>XFree86</tt>).  This binary can either have one or
+more video drivers linked in statically, or, more usually, dynamically
+load the video drivers and other modules that are needed.
 
-<em>more intro details here</em>
+XFree86 &relvers; has X server support for most UNIX(R) and UNIX-like
+operating systems on Intel/x86 platforms, plus support for Linux on
+Alpha and PowerPC platforms.  Support for additional architectures and
+operating systems is planned for future releases.
 
-<sect1>Sections for specific drivers go here
+<sect1>Loader and Modules
+<p>
+The XFree86 X server has a built-in run-time loader, donated by <url
+name="Metro Link" url="http://www.metrolink.com">.  This loader can load
+normal object files and libraries in most of the commonly used formats.
+Since the loader doesn't rely on an operating system's native dynamic
+loader support, it works on platforms that don't provide this feature,
+and makes it possible for the modules to be operating system independent
+(although not, of course, independent of CPU architecture).  This means
+that, for example, a module compiled on Linux/x86 can be loaded by an
+X server running on Solaris/x86, or FreeBSD, or even OS/2.  One of the
+main benefits of this is that when modules are updated, they don't need
+to be recompiled for each different operating system.
+
+The loader in version &relvers; has support for Intel (x86), Alpha and
+PowerPC platforms.  It also has preliminary support for Sparc platforms.
+
+The X server makes use of modules for video drivers, X server extensions,
+font rasterisers, input device drivers, framebuffer layers (like mfb,
+cfb, etc), and internal components used by some drivers (like XAA),
+
+<sect1>Configuration File
+<p>
+
+<sect1>Command Line Options
 <p>
 
 <sect1>XAA
@@ -37,9 +65,52 @@ and other modules that are needed.
 
 <sect1>Multi-head
 <p>
+Some multi-head configurations are supported in this release, primarily
+with multiple PCI/AGP cards.  However, this is an area that is still
+being worked on, and we expect that the range of configurations where
+it works well will increase in future snapshots.  A configuration that
+is known to work well in most cases is multiple (supported) Matrox cards.
+
+One of the main problems is with drivers not sufficiently initialising
+cards that were not initialised at boot time.  Normally only the primary
+video card gets initialised at boot time.  Some combinations can be made
+to work better by changing which card is the primary card (either by
+changing which PCI slot, or by changing the system BIOS's preference for
+the primary card).  We are investigating options for ``soft-booting''
+secondary video cards to deal with this problem, and we've had some very
+encouraging results.
 
 <sect1>Xinerama
 <p>
+Xinerama is an X server extension that allows multiple physical screens
+to behave as a single screen.  With traditional multi-head in X11,
+windows cannot span or cross physical screens.  Xinerama removes this
+limitation.  Xinerama does, however, require that the physical screens
+all have the same root depth, so it isn't possible, for example, to use
+an 8-bit screen together with a 16-bit screen in Xinerama mode.
+
+Xinerama is not enabled by default, and can be enabled with the
+<tt>+xinerama</tt> command line option for the X server.
+
+Xinerama was included with X11R6.4.  The version included in this shapshot
+contains many bug fixes.  This is an area that we are still working on, and
+we expect it to be improved further in future snapshots.
+
+Known problems:
+<itemize>
+  <item>The Xinerama layout doesn't match the layout specified in the
+	config file's ServerLayout section.
+
+  <item>It appears that there are still some bugs that cause unexpected
+	behaviour from time to time.
+
+  <item>Most (all?) window managers are not Xinerama-aware, and so some
+	operations like window placement and resizing might not behave
+	in an ideal way.  This is an issue that needs to be dealt with
+	in the individual window managers, and isn't specifically an
+	XFree86 problem.
+
+</itemize>
 
 <sect1>XVideo extension
 <p>
@@ -51,6 +122,9 @@ and other modules that are needed.
 <p>
 
 <sect1>Other extensions
+<p>
+
+<sect1>Sections for specific drivers go here
 <p>
 
 
@@ -81,31 +155,43 @@ and other modules that are needed.
 What is included:
 
 <itemize>
-   <item>ISO 10646-1 extension of ``fixed'' BDF fonts added that cover
-    over 2000 characters including all Latin, Greek, Cyrillic,
-    Armenian, and Gregorian characters, plus numerous scientific
-    and technical symbols (further fonts are under preparation).
-   <item>ISO 10646/Unicode UTF-8 Level 1 support added to xterm
-    (enabled with the <tt>-u8</tt> option).
+  <item>ISO 10646-1 extension of ``fixed'' BDF fonts added that cover
+	over 2000 characters including all Latin, Greek, Cyrillic,
+	Armenian, and Gregorian characters, plus numerous scientific
+	and technical symbols (further fonts are under preparation).
+
+  <item>Mark Leisher's ClearlyU proportional font (similar to Computer
+	Modern).
+
+  <item>ISO 10646/Unicode UTF-8 Level 1 support added to xterm
+	(enabled with the <tt>-u8</tt> option).
+
+  <item>Both the xfsft (the <tt>"freetype"</tt> module) and the X-TrueType
+	(the <tt>"xtt"</tt> module) TrueType font backends support
+	Unicode-encoded fonts.
+
 </itemize>
 
 Known problems:
 
 <itemize>
    <item>Xlib does not yet support UTF-8 as a locale, which means that
-    xterm UTF-8 keyboard support is at the moment a temporary hack.
+	xterm UTF-8 keyboard support is at the moment a temporary hack.
+
    <item>ISO 10646-1 cell-spaced fonts such as ``fixed'' work nicely, but
-    mono-spaced and proportional fonts are handled inefficiently
-    by the X protocol, resulting in metrics for 64k glyphs even if
-    only 2000 glyphs are used.
+	mono-spaced and proportional fonts are handled inefficiently
+	by the X protocol, resulting in metrics for 64k glyphs even if
+	only 2000 glyphs are used.
+
    <item>ISO 10646 Level 2 combining characters not yet supported by
-    xterm (will be needed for instance for the Thai script).
+	xterm (will be needed for instance for the Thai script).
+
 </itemize>
 
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.63 1998/04/12 12:43:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.1 1999/07/04 12:49:11 dawes Exp $
 </verb>
 
 </article>
