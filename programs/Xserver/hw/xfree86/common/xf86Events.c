@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.66 1999/05/16 06:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.67 1999/05/18 04:24:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1199,7 +1199,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     InputInfoPtr pInfo;
 #endif
 
-    if (err >= 0 {
+    if (err >= 0) {
 
     XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
 #ifdef	__OSF__
