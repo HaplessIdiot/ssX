@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.42 2002/11/15 07:01:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.43 2002/11/17 07:51:28 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -35,6 +35,7 @@
 #include "read.h"
 #include "stream.h"
 #include "write.h"
+#include "hash.h"
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -105,6 +106,71 @@ LispObjectCompare(LispObj *left, LispObj *right, int function)
 			if (toupper(sl[i]) != toupper(sr[i]))
 			    break;
 		    if (i < 0)
+			result = T;
+		}
+		goto compare_done;
+	    case LispArray_t:
+		if (rtype == LispArray_t &&
+		    left->data.array.type == right->data.array.type &&
+		    left->data.array.rank == right->data.array.rank &&
+		    LispObjectCompare(left->data.array.dim,
+				      right->data.array.dim,
+				      FEQUAL) != NIL) {
+		    LispObj *llist = left->data.array.list,
+		    	    *rlist = right->data.array.list;
+
+		    for (; CONSP(llist); llist = CDR(llist), rlist = CDR(rlist))
+			if (LispObjectCompare(CAR(llist), CAR(rlist),
+					      FEQUALP) == NIL)
+			    break;
+		    if (!CONSP(llist))
+			result = T;
+		}
+		goto compare_done;
+	    case LispStruct_t:
+		if (rtype == LispStruct_t &&
+		    left->data.struc.def == right->data.struc.def) {
+		    LispObj *lfield = left->data.struc.fields,
+		    	    *rfield = right->data.struc.fields;
+
+		    for (; CONSP(lfield);
+			 lfield = CDR(lfield), rfield = CDR(rfield)) {
+			if (LispObjectCompare(CAR(lfield), CAR(rfield),
+					      FEQUALP) != T)
+			    break;
+		    }
+		    if (!CONSP(lfield))
+			result = T;
+		}
+		goto compare_done;
+	    case LispHashTable_t:
+		if (rtype == LispHashTable_t &&
+		    left->data.hash.table->count ==
+		    right->data.hash.table->count &&
+		    left->data.hash.test == right->data.hash.test) {
+		    unsigned long i;
+		    LispObj *test = left->data.hash.test;
+		    LispHashEntry *lentry = left->data.hash.table->entries,
+				  *llast = lentry +
+					   left->data.hash.table->num_entries,
+				  *rentry = right->data.hash.table->entries;
+
+		    for (; lentry < llast; lentry++, rentry++) {
+			if (lentry->count != rentry->count)
+			    break;
+			for (i = 0; i < lentry->count; i++) {
+			    if (APPLY2(test,
+				       lentry->keys[i],
+				       rentry->keys[i]) == NIL ||
+				LispObjectCompare(lentry->values[i],
+						  rentry->values[i],
+						  FEQUALP) == NIL)
+				break;
+			}
+			if (i < lentry->count)
+			    break;
+		    }
+		    if (lentry == llast)
 			result = T;
 		}
 		goto compare_done;
@@ -285,6 +351,8 @@ LispCharacterCoerce(LispBuiltin *builtin, LispObj *object)
 	if (c <= 0xff)
 	    return (SCHAR(c));
     }
+    else if (object == T)
+	return (SCHAR('T'));
 
     LispDestroy("%s: cannot convert %s to character",
 		STRFUN(builtin), STROBJ(object));
@@ -422,7 +490,6 @@ LispCoerce(LispBuiltin *builtin,
 			    goto coerce_fail;
 			}
 			result = BIGNUM(integer);
-			LispMused(integer);
 		    }
 		}
 		else
@@ -440,10 +507,8 @@ LispCoerce(LispBuiltin *builtin,
 			mpr_clear(ratio);
 			LispFree(ratio);
 		    }
-		    else {
+		    else
 			result = BIGRATIO(ratio);
-			LispMused(ratio);
-		    }
 		}
 		else if (RATIONALP(object))
 		    result = object;
@@ -817,10 +882,6 @@ LispLoadFile(LispObj *filename, int verbose, int print, int ifdoesnotexist)
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRead()) != NULL) {
-	    if (obj == EOLIST)
-		LispDestroy("object cannot start with #\\)");
-	    else if (obj == DOT)
-		LispDestroy("dot allowed only on lists");
 	    result = EVAL(obj);
 	    COD = cod;
 	    if (print) {

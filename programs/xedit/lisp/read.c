@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.28 2002/11/19 15:35:39 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.29 2002/11/20 07:44:42 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -271,10 +271,6 @@ Lisp_Read(LispBuiltin *builtin)
     }
 
     result = LispRead();
-    if (result == EOLIST)
-	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
-    else if (result == DOT)
-	LispDestroy("dot allowed only on lists");
     if (input_stream != NIL)
 	LispPopInput(input_stream);
 
@@ -516,6 +512,7 @@ read_line_done:
 LispObj *
 LispRead(void)
 {
+    READ_ENTER();
     read_info info;
     LispObj *result;
 
@@ -539,6 +536,11 @@ LispRead(void)
 	}
 	LispFree(info.objects);
     }
+
+    if (result == EOLIST)
+	READ_ERROR0("object cannot start with #\\)");
+    else if (result == DOT)
+	READ_ERROR0("dot allowed only on lists");
 
     return (result);
 }
@@ -645,6 +647,7 @@ fix_again:
 	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
+	case LispFunctionQuote_t:
 	    if (READLABELP(object->data.quote))
 		object->data.quote =
 		    LispReadLabelCircle(object->data.quote, info);
@@ -1493,10 +1496,8 @@ LispParseNumber(char *str, int radix, LispObj *read__stream, int read__line)
 		else
 		    number = RATIO(integer, denominator);
 	    }
-	    else {
+	    else
 		number = BIGRATIO(bigratio);
-		LispMused(bigratio);
-	    }
 	}
 	else {
 	    long num = integer, den = denominator, rest;
@@ -1523,10 +1524,8 @@ LispParseNumber(char *str, int radix, LispObj *read__stream, int read__line)
 		number = RATIO(integer, denominator);
 	}
     }
-    else if (bignum) {
+    else if (bignum)
 	number = BIGNUM(bignum);
-	LispMused(bignum);
-    }
     else
 	number = INTEGER(integer);
 
@@ -1581,9 +1580,6 @@ LispReadVector(read_info *info)
     return (VECTOR(objects));
 }
 
-/* XXX The interpreter probably needs a new object type, a function reference
- * must evaluate to itself, returning a quoted symbol isn't correct as the
- * returned value may be evaluated more than once. */
 static LispObj *
 LispReadFunction(read_info *info)
 {
@@ -1604,12 +1600,12 @@ LispReadFunction(read_info *info)
 	if (CAR(function) != Olambda)
 	    READ_ERROR_INVARG();
 
-	return (EVAL(function));
+	return (FUNCTION_QUOTE(function));
     }
     else if (!SYMBOLP(function))
 	READ_ERROR_INVARG();
 
-    return (QUOTE(function));
+    return (FUNCTION_QUOTE(function));
 }
 
 static LispObj *

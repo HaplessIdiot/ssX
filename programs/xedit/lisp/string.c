@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.15 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.16 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -42,10 +42,19 @@
 #define CHAR_GREATER		5
 #define CHAR_NOT_EQUAL		6
 
+#define CHAR_ALPHAP		1
+#define CHAR_DOWNCASE		2
+#define CHAR_UPCASE		3
+#define CHAR_INT		4
+#define CHAR_BOTHP		5
+#define CHAR_UPPERP		6
+#define CHAR_LOWERP		7
+
 /*
  * Prototypes
  */
 static LispObj *LispCharCompare(LispBuiltin*, int, int);
+static LispObj *LispCharOp(LispBuiltin*, int);
 
 /*
  * Implementation
@@ -116,86 +125,6 @@ LispCharCompare(LispBuiltin *builtin, int operation, int ignore_case)
     }
 
     return (T);
-}
-
-LispObj *
-Lisp_AlphaCharP(LispBuiltin *builtin)
-/*
- alpha-char-p char
- */
-{
-    LispObj *character;
-
-    character = ARGUMENT(0);
-
-    CHECK_SCHAR(character);
-
-    return (isalpha(SCHAR_VALUE(character)) ? T : NIL);
-}
-
-LispObj *
-Lisp_Char(LispBuiltin *builtin)
-/*
- char string index
- schar simple-string index
- */
-{
-    char *string;
-    long offset, length;
-
-    LispObj *ostring, *oindex;
-
-    oindex = ARGUMENT(1);
-    ostring = ARGUMENT(0);
-
-    CHECK_STRING(ostring);
-    CHECK_INDEX(oindex);
-    offset = FIXNUM_VALUE(oindex);
-    string = THESTR(ostring);
-    length = STRLEN(ostring);
-
-    if (offset >= length)
-	LispDestroy("%s: index %ld too large for string length %ld",
-		    STRFUN(builtin), offset, length);
-
-    return (SCHAR(string[offset]));
-}
-
-/* helper function for setf
- *	DONT explicitly call. Non standard function
- */
-LispObj *
-Lisp_XeditCharStore(LispBuiltin *builtin)
-/*
- xedit::char-store string index value
- */
-{
-    int character;
-    long offset, length;
-    LispObj *ostring, *oindex, *ovalue;
-
-    ovalue = ARGUMENT(2);
-    oindex = ARGUMENT(1);
-    ostring = ARGUMENT(0);
-
-    CHECK_STRING(ostring);
-    CHECK_INDEX(oindex);
-    length = STRLEN(ostring);
-    offset = FIXNUM_VALUE(oindex);
-    if (offset >= length)
-	LispDestroy("%s: index %ld too large for string length %ld",
-		    STRFUN(builtin), offset, length);
-    CHECK_SCHAR(ovalue);
-
-    character = SCHAR_VALUE(ovalue);
-
-    if (character < 0 || character > 255)
-	LispDestroy("%s: cannot represent character %d",
-		    STRFUN(builtin), character);
-
-    THESTR(ostring)[offset] = character;
-
-    return (ovalue);
 }
 
 LispObj *
@@ -306,6 +235,172 @@ Lisp_CharNotEqual(LispBuiltin *builtin)
     return (LispCharCompare(builtin, CHAR_NOT_EQUAL, 1));
 }
 
+static LispObj *
+LispCharOp(LispBuiltin *builtin, int operation)
+{
+    int value;
+    LispObj *result, *character;
+
+    character = ARGUMENT(0);
+    CHECK_SCHAR(character);
+    value = (int)SCHAR_VALUE(character);
+
+    switch (operation) {
+	case CHAR_ALPHAP:
+	    result = isalpha(value) ? T : NIL;
+	    break;
+	case CHAR_DOWNCASE:
+	    result = SCHAR(tolower(value));
+	    break;
+	case CHAR_UPCASE:
+	    result = SCHAR(toupper(value));
+	    break;
+	case CHAR_INT:
+	    result = FIXNUM(value);
+	    break;
+	case CHAR_BOTHP:
+	    result = isupper(value) || islower(value) ? T : NIL;
+	    break;
+	case CHAR_UPPERP:
+	    result = isupper(value) ? T : NIL;
+	    break;
+	case CHAR_LOWERP:
+	    result = islower(value) ? T : NIL;
+	    break;
+    }
+
+    return (result);
+}
+
+LispObj *
+Lisp_AlphaCharP(LispBuiltin *builtin)
+/*
+ alpha-char-p char
+ */
+{
+    return (LispCharOp(builtin, CHAR_ALPHAP));
+}
+
+LispObj *
+Lisp_CharDowncase(LispBuiltin *builtin)
+/*
+ char-downcase character
+ */
+{
+    return (LispCharOp(builtin, CHAR_DOWNCASE));
+}
+
+LispObj *
+Lisp_CharInt(LispBuiltin *builtin)
+/*
+ char-int character
+ char-code character
+ */
+{
+    return (LispCharOp(builtin, CHAR_INT));
+}
+
+LispObj *
+Lisp_CharUpcase(LispBuiltin *builtin)
+/*
+ char-upcase character
+ */
+{
+    return (LispCharOp(builtin, CHAR_UPCASE));
+}
+
+LispObj *
+Lisp_BothCaseP(LispBuiltin *builtin)
+/*
+ both-case-p character
+ */
+{
+    return (LispCharOp(builtin, CHAR_BOTHP));
+}
+
+LispObj *
+Lisp_UpperCaseP(LispBuiltin *builtin)
+/*
+ upper-case-p character
+ */
+{
+    return (LispCharOp(builtin, CHAR_UPPERP));
+}
+
+LispObj *
+Lisp_LowerCaseP(LispBuiltin *builtin)
+/*
+ upper-case-p character
+ */
+{
+    return (LispCharOp(builtin, CHAR_LOWERP));
+}
+
+LispObj *
+Lisp_Char(LispBuiltin *builtin)
+/*
+ char string index
+ schar simple-string index
+ */
+{
+    char *string;
+    long offset, length;
+
+    LispObj *ostring, *oindex;
+
+    oindex = ARGUMENT(1);
+    ostring = ARGUMENT(0);
+
+    CHECK_STRING(ostring);
+    CHECK_INDEX(oindex);
+    offset = FIXNUM_VALUE(oindex);
+    string = THESTR(ostring);
+    length = STRLEN(ostring);
+
+    if (offset >= length)
+	LispDestroy("%s: index %ld too large for string length %ld",
+		    STRFUN(builtin), offset, length);
+
+    return (SCHAR(string[offset]));
+}
+
+/* helper function for setf
+ *	DONT explicitly call. Non standard function
+ */
+LispObj *
+Lisp_XeditCharStore(LispBuiltin *builtin)
+/*
+ xedit::char-store string index value
+ */
+{
+    int character;
+    long offset, length;
+    LispObj *ostring, *oindex, *ovalue;
+
+    ovalue = ARGUMENT(2);
+    oindex = ARGUMENT(1);
+    ostring = ARGUMENT(0);
+
+    CHECK_STRING(ostring);
+    CHECK_INDEX(oindex);
+    length = STRLEN(ostring);
+    offset = FIXNUM_VALUE(oindex);
+    if (offset >= length)
+	LispDestroy("%s: index %ld too large for string length %ld",
+		    STRFUN(builtin), offset, length);
+    CHECK_SCHAR(ovalue);
+
+    character = SCHAR_VALUE(ovalue);
+
+    if (character < 0 || character > 255)
+	LispDestroy("%s: cannot represent character %d",
+		    STRFUN(builtin), character);
+
+    THESTR(ostring)[offset] = character;
+
+    return (ovalue);
+}
+
 LispObj *
 Lisp_Character(LispBuiltin *builtin)
 /*
@@ -333,99 +428,78 @@ Lisp_Characterp(LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_CharDowncase(LispBuiltin *builtin)
+Lisp_DigitChar(LispBuiltin *builtin)
 /*
- char-downcase character
+ digit-char weight &optional radix
  */
 {
-    LispObj *character;
+    long radix = 10, weight;
+    LispObj *oweight, *oradix, *result = NIL;
 
-    character = ARGUMENT(0);
+    oradix = ARGUMENT(1);
+    oweight = ARGUMENT(0);
 
-    CHECK_SCHAR(character);
+    CHECK_FIXNUM(oweight);
+    weight = FIXNUM_VALUE(oweight);
 
-    return (SCHAR(tolower((int)SCHAR_VALUE(character))));
-}
+    if (oradix != NIL) {
+	CHECK_INDEX(oradix);
+	radix = FIXNUM_VALUE(oradix);
+    }
+    if (radix < 2 || radix > 36)
+	LispDestroy("%s: radix must be >= 2 and <= 36, not %ld",
+		    STRFUN(builtin), radix);
 
-LispObj *
-Lisp_CharInt(LispBuiltin *builtin)
-/*
- char-int character
- */
-{
-    LispObj *character;
+    if (weight >= 0 && weight < radix) {
+	if (weight < 9)
+	    weight += '0';
+	else
+	    weight += 'A' - 10;
+	result = SCHAR(weight);
+    }
 
-    character = ARGUMENT(0);
-
-    CHECK_SCHAR(character);
-
-    return (FIXNUM(SCHAR_VALUE(character)));
-}
-
-LispObj *
-Lisp_CharUpcase(LispBuiltin *builtin)
-/*
- char-upcase character
- */
-{
-    LispObj *character;
-
-    character = ARGUMENT(0);
-
-    CHECK_SCHAR(character);
-
-    return (SCHAR(toupper((int)SCHAR_VALUE(character))));
+    return (result);
 }
 
 LispObj *
 Lisp_DigitCharP(LispBuiltin *builtin)
 /*
- digit-char-p character &optional (radix 10)
+ digit-char-p character &optional radix
  */
 {
-    int radix = 10, character;
+    long radix = 10, character;
     LispObj *ochar, *oradix, *result = NIL;
 
     oradix = ARGUMENT(1);
     ochar = ARGUMENT(0);
 
     CHECK_SCHAR(ochar);
-
     character = SCHAR_VALUE(ochar);
-
     if (oradix != NIL) {
 	CHECK_INDEX(oradix);
 	radix = FIXNUM_VALUE(oradix);
     }
-
     if (radix < 2 || radix > 36)
-	LispDestroy("%s: radix must be >= 2 and <= 36, not %d",
+	LispDestroy("%s: radix must be >= 2 and <= 36, not %ld",
 		    STRFUN(builtin), radix);
 
-    if (character >= '0' && character <= '9') {
-	if (character - '0' < radix) {
-	    character -= '0';
-	    result = T;
-	}
-    }
-    else {
-	if (islower(character))
-	    character = toupper(character);
-	if (character >= 'A' && character <= 'Z') {
-	    if (character - 'A' + 10 < radix) {
-		character -= 'A' - 10;
-		result = T;
-	    }
-	}
-    }
+    if (character >= '0' && character <= '9')
+	character -= '0';
+    else if (character >= 'A' && character <= 'Z')
+	character -= 'A' - 10;
+    else if (character >= 'a' && character <= 'z')
+	character -= 'a' - 10;
+    if (character < radix)
+	result = FIXNUM(character);
 
-    return (result != NIL ? FIXNUM(character) : NIL);
+    return (result);
 }
 
 LispObj *
 Lisp_IntChar(LispBuiltin *builtin)
 /*
  int-char integer
+ code-char integer
  */
 {
     long character = 0;
@@ -433,7 +507,7 @@ Lisp_IntChar(LispBuiltin *builtin)
 
     integer = ARGUMENT(0);
 
-    CHECK_INDEX(integer);
+    CHECK_FIXNUM(integer);
     character = FIXNUM_VALUE(integer);
 
     return (character >= 0 && character < 0xff ? SCHAR(character) : NIL);
@@ -574,7 +648,6 @@ Lisp_ParseInteger(LispBuiltin *builtin)
 	mpi_setstr(bigi, str, radix);
 	LispFree(str);
 	result = BIGNUM(bigi);
-	LispMused(bigi);
     }
     else
 	result = INTEGER(sign ? -integer : integer);
@@ -651,10 +724,6 @@ Lisp_ReadFromString(LispBuiltin *builtin)
     bytes_read = stream->data.stream.source.string->input;
     LispPopInput(stream);
 
-    if (result == EOLIST)
-	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
-    if (result == DOT)
-	LispDestroy("dot allowed only on lists");
     if (result == NULL) {
 	if (eof_error_p == NIL)
 	    result = eof_value;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.23 2002/11/17 07:51:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.24 2002/11/20 07:44:42 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -103,6 +103,7 @@ static void LispBuildCircle(LispObj*, write_info*);
 static void LispDoBuildCircle(LispObj*, write_info*);
 static long LispCheckCircle(LispObj*, write_info*);
 static int LispPrintCircle(LispObj*, LispObj*, long, int*, write_info*);
+static int LispWriteAlist(LispObj*, LispArgList*, write_info*);
 
 /*
  * Initialization
@@ -346,6 +347,7 @@ LispBuildCircle(LispObj *object, write_info *info)
 	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
+	case LispFunctionQuote_t:
 	    LispDoBuildCircle(object, info);
 	    LispBuildCircle(object->data.quote, info);
 	    break;
@@ -431,6 +433,118 @@ LispPrintCircle(LispObj *stream, LispObj *object, long circle,
     *length += LispWriteStr(stream, stk, strlen(stk));
 
     return (0);
+}
+
+static int
+LispWriteAlist(LispObj *stream, LispArgList *alist, write_info *info)
+{
+    char *name;
+    int i, length = 0, need_space = 0;
+
+#define WRITE_ATOM(object)						\
+    name = ATOMID(object);						\
+    length += LispDoWriteAtom(stream, name, strlen(name),		\
+			      info->print_case)
+#define WRITE_STRING(string)						\
+    length += LispDoWriteAtom(stream, string, strlen(string),		\
+			      info->print_case)
+#define WRITE_OBJECT(object)						\
+    length += LispDoWriteObject(stream, object, info, 1)
+#define WRITE_OPAREN()							\
+    length += LispWriteChar(stream, '(')
+#define WRITE_SPACE()							\
+    length += LispWriteChar(stream, ' ')
+#define WRITE_CPAREN()							\
+    length += LispWriteChar(stream, ')')
+
+    WRITE_OPAREN();
+    for (i = 0; i < alist->normals.num_symbols; i++) {
+	WRITE_ATOM(alist->normals.symbols[i]);
+	if (i + 1 < alist->normals.num_symbols)
+	    WRITE_SPACE();
+	else
+	    need_space = 1;
+    }
+    if (alist->optionals.num_symbols) {
+	if (need_space)
+	    WRITE_SPACE();
+	WRITE_STRING(Soptional);
+	WRITE_SPACE();
+	for (i = 0; i < alist->optionals.num_symbols; i++) {
+	    WRITE_OPAREN();
+	    WRITE_ATOM(alist->optionals.symbols[i]);
+	    WRITE_SPACE();
+	    WRITE_OBJECT(alist->optionals.defaults[i]);
+	    if (alist->optionals.sforms[i]) {
+		WRITE_SPACE();
+		WRITE_ATOM(alist->optionals.sforms[i]);
+	    }
+	    WRITE_CPAREN();
+	    if (i + 1 < alist->optionals.num_symbols)
+		WRITE_SPACE();
+	}
+	need_space = 1;
+    }
+    if (alist->keys.num_symbols) {
+	if (need_space)
+	    WRITE_SPACE();
+	length += LispDoWriteAtom(stream, Skey, 4, info->print_case);
+	WRITE_SPACE();
+	for (i = 0; i < alist->keys.num_symbols; i++) {
+	    WRITE_OPAREN();
+	    if (alist->keys.keys[i]) {
+		WRITE_OPAREN();
+		WRITE_ATOM(alist->keys.keys[i]);
+		WRITE_SPACE();
+	    }
+	    WRITE_ATOM(alist->keys.symbols[i]);
+	    if (alist->keys.keys[i])
+		WRITE_CPAREN();
+	    WRITE_SPACE();
+	    WRITE_OBJECT(alist->keys.defaults[i]);
+	    if (alist->keys.sforms[i]) {
+		WRITE_SPACE();
+		WRITE_ATOM(alist->keys.sforms[i]);
+	    }
+	    WRITE_CPAREN();
+	    if (i + 1 < alist->keys.num_symbols)
+		WRITE_SPACE();
+	}
+	need_space = 1;
+    }
+    if (alist->rest) {
+	if (need_space)
+	    WRITE_SPACE();
+	WRITE_STRING(Srest);
+	WRITE_SPACE();
+	WRITE_ATOM(alist->rest);
+	need_space = 1;
+    }
+    if (alist->auxs.num_symbols) {
+	if (need_space)
+	    WRITE_SPACE();
+	WRITE_STRING(Saux);
+	WRITE_SPACE();
+	for (i = 0; i < alist->auxs.num_symbols; i++) {
+	    WRITE_OPAREN();
+	    WRITE_ATOM(alist->auxs.symbols[i]);
+	    WRITE_SPACE();
+	    WRITE_OBJECT(alist->auxs.initials[i]);
+	    WRITE_CPAREN();
+	    if (i + 1 < alist->auxs.num_symbols)
+		WRITE_SPACE();
+	}
+    }
+    WRITE_CPAREN();
+
+#undef WRITE_ATOM
+#undef WRITE_STRING
+#undef WRITE_OBJECT
+#undef WRITE_OPAREN
+#undef WRITE_SPACE
+#undef WRITE_CPAREN
+
+    return (length);
 }
 
 static void
@@ -691,6 +805,25 @@ write_again:
 	case LispAtom_t:
 	    length += LispWriteAtom(stream, object, info);
 	    break;
+	case LispFunction_t:
+	    if (object->data.atom->a_function) {
+		object = object->data.atom->property->fun.function;
+		goto write_lambda;
+	    }
+	    length += LispWriteStr(stream, "#<", 2);
+	    if (object->data.atom->a_compiled)
+		LispDoWriteAtom(stream, "COMPILED", 8, info->print_case);
+	    else if (object->data.atom->a_builtin)
+		LispDoWriteAtom(stream, "BUILTIN", 7, info->print_case);
+	    /* XXX the function does not exist anymore */
+	    /* FIXME not sure if I want this fixed... */
+	    else
+		LispDoWriteAtom(stream, "UNBOUND", 7, info->print_case);
+	    LispDoWriteAtom(stream, "-FUNCTION", 9, info->print_case);
+	    length += LispWriteChar(stream, ' ');
+	    length += LispWriteAtom(stream, object->data.atom->object, info);
+	    length += LispWriteChar(stream, '>');
+	    break;
 	case LispString_t:
 	    length += LispWriteString(stream, object, info);
 	    break;
@@ -762,6 +895,11 @@ write_again:
 	    object = object->data.comma.eval;
 	    goto write_again;
 	    break;
+	case LispFunctionQuote_t:
+	    length += LispWriteStr(stream, "#'", 2);
+	    paren = 1;
+	    object = object->data.quote;
+	    goto write_again;
 	case LispArray_t:
 	    length += LispWriteArray(stream, object, info);
 	    break;
@@ -769,6 +907,7 @@ write_again:
 	    length += LispWriteStruct(stream, object, info);
 	    break;
 	case LispLambda_t:
+	write_lambda:
 	    switch (object->funtype) {
 		case LispLambda:
 		    string = "#<LAMBDA ";
@@ -788,7 +927,17 @@ write_again:
 	    if (object->funtype != LispLambda) {
 		length += LispWriteAtom(stream, object->data.lambda.name, info);
 		length += LispWriteChar(stream, ' ');
+		length += LispWriteAlist(stream, object->data.lambda.name
+					 ->data.atom->property->alist, info);
 	    }
+	    else {
+		length += LispDoWriteAtom(stream, Snil, 3, info->print_case);
+		length += LispWriteChar(stream, ' ');
+		length += LispWriteAlist(stream, (LispArgList*)object->
+					 data.lambda.name->data.opaque.data,
+					 info);
+	    }
+	    length += LispWriteChar(stream, ' ');
 	    length += LispDoWriteObject(stream,
 					object->data.lambda.code, info, 0);
 	    length += LispWriteChar(stream, '>');

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.40 2002/11/15 17:20:06 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.41 2002/11/20 07:44:41 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -65,6 +65,8 @@ typedef struct _LispMac LispMac;
 #define SYMBOL(atom)		LispNewSymbol(atom)
 #define ATOM(string)		LispNewAtom(string, 1)
 #define UNINTERNED_ATOM(string)	LispNewAtom(string, 0)
+#define FUNCTION(symbol)	LispNewFunction(symbol)
+#define FUNCTION_QUOTE(symbol)	LispNewFunctionQuote(symbol)
 
 	/* atom string is a static variable */
 #define ATOM2(string)		LispNewSymbol(LispGetPermAtom(string))
@@ -489,6 +491,8 @@ typedef enum _LispType {
     LispBigratio_t,
 
     LispAtom_t,
+    LispFunction_t,
+    LispFunctionQuote_t,
 
     LispLambda_t,
 
@@ -666,6 +670,8 @@ LispObj *LispApply2(LispObj*, LispObj*, LispObj*);
 LispObj *LispNew(LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispAtom*);
 LispObj *LispNewAtom(char*, int);
+LispObj *LispNewFunction(LispObj*);
+LispObj *LispNewFunctionQuote(LispObj*);
 LispObj *LispNewStaticAtom(char*);
 LispObj *LispNewDFloat(double);
 LispObj *LispNewString(char*, long, int);

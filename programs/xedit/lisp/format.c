@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.25 2002/11/10 16:29:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.26 2002/11/13 04:35:46 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -532,7 +532,7 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
     /* left padding */
     if (atsign) {
 	/* if length not yet known */
-	if (object != NIL && !SCHARP(object)) {
+	if (object != NIL) {
 	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
 	    GC_PROTECT(string);
 	    length = LispWriteObject(string, object);
@@ -561,19 +561,15 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 	    LispWriteStr(stream,  Snil, 3);
     }
     else {
-	if (SCHARP(object))
-	    LispWriteChar(stream, SCHAR_VALUE(object));
+	/* if string is not NIL, atsign was specified
+	 * and object printed to string */
+	if (string == NIL)
+	    length = format_object(stream, object);
 	else {
-	    /* if string is not NIL, atsign was specified
-	     * and object printed to string */
-	    if (string == NIL)
-		length = format_object(stream, object);
-	    else {
-		int size;
-		char *str = LispGetSstring(SSTREAMP(string), &size);
+	    int size;
+	    char *str = LispGetSstring(SSTREAMP(string), &size);
 
-		LispWriteStr(stream, str, size);
-	    }
+	    LispWriteStr(stream, str, size);
 	}
     }
 
