@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.118 1999/12/13 23:38:16 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.119 1999/12/14 01:33:52 robin Exp $ */
 
 /*
  *
@@ -439,6 +439,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ResizeOffscreenArea)
    SYMFUNC(xf86FBManagerRunning)
    SYMFUNC(xf86QueryLargestOffscreenArea)
+   SYMFUNC(xf86PurgeUnlockedOffscreenAreas)
 
    /* xf86cmap.c */
    SYMFUNC(xf86HandleColormaps)

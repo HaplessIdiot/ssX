@@ -1,4 +1,5 @@
-XFree86 3.9.16Z (27 December 1999)
+XFree86 3.9.16Z (28 December 1999)
+3405. Fix unresolved symbols for the loader (#3501, Matthieu Herrb).
 3404. Fix compiles on non-NetBSD systems (#3499, Matthieu Herrb).
 3403. Fix XKB XlookupString usage (#3511, Ivan Pascal).
 3402. Use ForceLatin1Lookup mode after XmbLookupString/XwcLookupString
@@ -9198,4 +9199,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.900 1999/12/27 02:30:31 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.901 1999/12/27 03:36:01 robin Exp $

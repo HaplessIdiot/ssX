@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.23 1999/10/11 00:32:13 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.24 1999/12/27 02:22:36 robin Exp $ */
 
 /*
  *
@@ -42,14 +42,6 @@
 /* mi things */
 
 extern miPointerSpriteFuncRec miSpritePointerFuncs;
-
-#ifdef PANORAMIX
-extern PanoramiXWindow *PanoramiXWinRoot;
-extern Bool noPanoramiXExtension;
-extern int PanoramiXNumScreens;
-extern PanoramiXPmap *PanoramiXPmapRoot;
-extern PanoramiXData *panoramiXdataPtr;
-#endif
 
 LOOKUP miLookupTab[] = {
    SYMFUNC(miClearToBackground)
@@ -162,13 +154,6 @@ LOOKUP miLookupTab[] = {
    SYMVAR(miPointerScreenIndex)
    SYMVAR(miInstalledMaps)
    SYMVAR(miInitVisualsProc)
-#ifdef PANORAMIX
-   SYMVAR(PanoramiXWinRoot)
-   SYMVAR(noPanoramiXExtension)
-   SYMVAR(PanoramiXNumScreens)
-   SYMVAR(PanoramiXPmapRoot)
-   SYMVAR(panoramiXdataPtr)
-#endif
 
   { 0, 0 },
 
