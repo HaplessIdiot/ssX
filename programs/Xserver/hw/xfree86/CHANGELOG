@@ -1,32 +1,32 @@
 XFree86 4.X.Ya (?? January 2001)
-1279. Disable RENDER extension support in the ATI(misc) driver when mibank
+  68. Disable RENDER extension support in the ATI(misc) driver when mibank
       and/or shadowfb is used (Marc La France).
-1278. Remove cfb & friends from the ATI driver (Marc La France).
-1277. Some additional ATI PCI IDs (Marc La France).
-1276. Make compilation of drivers produce the same object whether or not
+  67. Remove cfb & friends from the ATI driver (Marc La France).
+  66. Some additional ATI PCI IDs (Marc La France).
+  65. Make compilation of drivers produce the same object whether or not
       DPMS and DGA extensions are being built.  Partial changes to do the same
       for RENDER (Marc La France).
-1275. Ensure `make depend` goes through the same set of subdirectories as
+  64. Ensure `make depend` goes through the same set of subdirectories as
       `make all` does.  Allows MakefileAdditions to contain depend rule(s)
       (Marc La France).
-1274. Move $(EXTRA_DEFINES) to the end of ALLDEFINES.  Ditto for
+  63. Move $(EXTRA_DEFINES) to the end of ALLDEFINES.  Ditto for
       $(CXXEXTRA_DEFINES) and CXXDEFINES.  Allows easier overrides at the
       subdirectory level (Marc La France).
-1273. Add a pre-clean phase to `make World` if xc/xmakefile already exists
+  62. Add a pre-clean phase to `make World` if xc/xmakefile already exists
       (Marc La France).
-1272. Import X.Org's X11R6.5.1 (David Dawes)
-1271. Change identification of Trident 8400(CyberBlade/i7) so that it is not
+  61. Import X.Org's X11R6.5.1 (David Dawes)
+  60. Change identification of Trident 8400(CyberBlade/i7) so that it is not
       a Cyber chipset (integrated Desktop version) (Alan Hourihane).
-1270. Use the wsmouse protocol in XFree86 -configure if wsmouse is available
+  59. Use the wsmouse protocol in XFree86 -configure if wsmouse is available
       (Matthieu Herrb, lha at stacken.kth.se). 
-1269. Sync Xdarwin with XonX version (#4428 Torrey T. Lyons):
+  58. Sync Xdarwin with XonX version (#4428 Torrey T. Lyons):
       - add a working WarpCursor
       - add 15 bit pixel depth to the Quartz mode.
-1268. New version of Xmaster, a Mac OS X application that controls the 
+  57. New version of Xmaster, a Mac OS X application that controls the 
       X server (#4427, Torrey T. Lyons, Andreas Monitzer).
-1267. Add external CRT support for the Rage 128 Mobility (Kevin Martin
+  56. Add external CRT support for the Rage 128 Mobility (Kevin Martin
       and ATI).
-1266. Radeon DRI fixes (VA Linux Systems).
+  55. Radeon DRI fixes (VA Linux Systems).
       - Re-enable freeing resources when the screen is destroyed (Kevin
         Martin)
       - Use screen-relative instead of window-relative coordiantes to
@@ -45,18 +45,18 @@ XFree86 4.X.Ya (?? January 2001)
         Martin)
       - Fix offscreen memory allocation calculation for textures (Kevin
         Martin)
-1265. Allow libGLU to be built (Craig Dunwoody, SGI, David Dawes,
+  54. Allow libGLU to be built (Craig Dunwoody, SGI, David Dawes,
       Alan Hourihane).
-1264. Import the GLU parts of ogl-sample.
-1263. Add an imake control for determining when xload should be installed
+  53. Import the GLU parts of ogl-sample.
+  52. Add an imake control for determining when xload should be installed
       set-gid (David Dawes).
-1262. Add some imake controls for installing Xkb and app-defaults files
+  51. Add some imake controls for installing Xkb and app-defaults files
       in the traditional location rather than under /etc/X11 (Red Hat does
       that) (David Dawes).
-1261. Add compressed man page functionality to the rules in Imake.rules,
+  50. Add compressed man page functionality to the rules in Imake.rules,
       so it should be usable on most platforms (David Dawes).
-1260. Make acceleration work on the Trident Cyber9388 (Alan Hourihane).
-1259. - Various small changes to accomodate Mac OS X support and fix a 
+  49. Make acceleration work on the Trident Cyber9388 (Alan Hourihane).
+  48. - Various small changes to accomodate Mac OS X support and fix a 
         problem people were having with uninitialized globals in X 
         libraries,
       - Allow XFree86 to run on Mac OS X as a full screen client of
@@ -64,31 +64,31 @@ XFree86 4.X.Ya (?? January 2001)
       - Add a Mac OS X application that controls the X server and feeds it 
         events when running on Mac OS X. Currently must be built by 
         ProjectBuilder (#4409, #4410, #4411, Torrey T. Lyons).
-1258. Fix Mach64 Mono 8x8 Pattern acceleration (Marc La France).
-1257. Experiment with setting the server's "vendor release" value from
+  47. Fix Mach64 Mono 8x8 Pattern acceleration (Marc La France).
+  46. Experiment with setting the server's "vendor release" value from
       the information in xf86Version.h, and modify xdpyinfo to show the
       server version in an easily readable format (David Dawes).
-1256. Fix 1bpp colour map in vgaHW (Marc La France).
-1255. More IA64 loader fixes and make xf86sym.c compile again
+  45. Fix 1bpp colour map in vgaHW (Marc La France).
+  44. More IA64 loader fixes and make xf86sym.c compile again
       (Michael Madore, Marc La France).
-1254. Add missing symbols in vesa driver (Marc La France).
-1253. Fix multihead pointer problem on Rage 128 (Mark Vojkovich).
-1252. Resync with DRI CVS trunk (Kevin Martin, VA Linux Systems)
+  43. Add missing symbols in vesa driver (Marc La France).
+  42. Fix multihead pointer problem on Rage 128 (Mark Vojkovich).
+  41. Resync with DRI CVS trunk (Kevin Martin, VA Linux Systems)
       - Add Radeon 3D driver (Kevin Martin and Gareth Hughes)
       - Improve Rage 128 3D driver support (Gareth Hughes)
       - Add fast AGP read/drawpixels support in MGA driver (Keith Whitwell)
       - Update DRI docs (Kevin Martin, Brian Paul)
       - Fix various bugs (Keith Whitwell, Brian Paul, Kevin Martin)
-1251. Rename fsinfo to xfsinfo to avoid a name clash with the fsinfo utility
+  40. Rename fsinfo to xfsinfo to avoid a name clash with the fsinfo utility
       in the Berkeley automounter amd (Matthieu Herrb).
-1250. Invert NO_COMPILER_H_EXTRAS to prevent unintentional references to inx()/
+  39. Invert NO_COMPILER_H_EXTRAS to prevent unintentional references to inx()/
       outx() on the likes of SunOS (Marc La France).
-1249. Change the os-support layer to only claim a bare minimum of I/O resources
+  38. Change the os-support layer to only claim a bare minimum of I/O resources
       rather than a larger estimate (Marc La France).
-1248. Loader work:  Fix handling of shared GOTs on IA-64 and Alpha's, and of
+  37. Loader work:  Fix handling of shared GOTs on IA-64 and Alpha's, and of
       PLT and OPD entries on IA-64;  Cleanup debug messages and #if testing
       (Marc La France).
-1247. Extensive int10 rework to address lockups, spontaneous reboots and tight
+  36. Extensive int10 rework to address lockups, spontaneous reboots and tight
       CPU loops on various architectures (Marc La France):
       - Use intialised BIOS to softboot primary adapters on non-PC's;
       - Fix endianness problems;
@@ -97,65 +97,65 @@ XFree86 4.X.Ya (?? January 2001)
         (i.e. RTC, keyboard, speaker, chipset, etc.);
       - Flesh out int 0x42 emulation on non-PC's;
       - Emulate BIOS data area on non-PC's;
-1246. Add missing symbols in i810 and sis drivers (Marc La France).
-1245. Optionally disable, at compile time, loader bug workarounds in ATI driver
+  35. Add missing symbols in i810 and sis drivers (Marc La France).
+  34. Optionally disable, at compile time, loader bug workarounds in ATI driver
       (Marc La France).
-1244. Prevent the Rage 128 and Radeon drivers from initialising an adapter more
+  33. Prevent the Rage 128 and Radeon drivers from initialising an adapter more
       than once (Marc La France).
-1243. Move support for >64kB BIOS'es from int10 into the os-support/bus layer
+  32. Move support for >64kB BIOS'es from int10 into the os-support/bus layer
       (Marc La France).
-1242. When retrieving PCI BIOS'es, only use another PCI base when a previous
+  31. When retrieving PCI BIOS'es, only use another PCI base when a previous
       retrieval attempt fails (Marc La France).
-1241. Temporary kludge to not consider any adapter as primary if more than one
+  30. Temporary kludge to not consider any adapter as primary if more than one
       candidate can be found (Marc La France).
-1240. Make deleted mode message less fearsome (Marc La France).
-1239. Fix -configure to retrieve the correct set of options for ATI, C&T,
+  29. Make deleted mode message less fearsome (Marc La France).
+  28. Fix -configure to retrieve the correct set of options for ATI, C&T,
       Cirrus and NeoMagic adapters (Marc La France).
-1238. When removing PCI resource overlaps, always consider resources whose size
+  27. When removing PCI resource overlaps, always consider resources whose size
       can be accurately determined, whether active or not (Marc La France).
-1237. Real 4:2:0 YUV support for the Rage 128 (Mark Vojkovich).
-1236. Xinerama support for Render extension (Keith Packard).
-1235. Make some changes to the clock selection for trident driver
+  26. Real 4:2:0 YUV support for the Rage 128 (Mark Vojkovich).
+  25. Xinerama support for Render extension (Keith Packard).
+  24. Make some changes to the clock selection for trident driver
       (Alan Hourihane).
-1234. Switch savage driver to fb (+Render), correct maxHValue (Keith Packard).
-1233. Add font property caching in Xft (Keith Packard).
-1232. Xterm patch #150 (Thomas Dickey).
-1231. Fix 24/8 Overlay support on Permedia2v and Permedia3 chipsets 
+  23. Switch savage driver to fb (+Render), correct maxHValue (Keith Packard).
+  22. Add font property caching in Xft (Keith Packard).
+  21. Xterm patch #150 (Thomas Dickey).
+  20. Fix 24/8 Overlay support on Permedia2v and Permedia3 chipsets 
       (Alan Hourihane).
-1230. Add CyberStretch option to the trident driver for Cyber chipsets that
+  19. Add CyberStretch option to the trident driver for Cyber chipsets that
       allows Graphics modes to stretch to the full display (Alan Hourihane).
-1229. Xterm patch #149 (#4351, Thomas Dickey).
-1228. Fix Y offsets passed to pixmap cache when DRI disabled in R128 driver
+  18. Xterm patch #149 (#4351, Thomas Dickey).
+  17. Fix Y offsets passed to pixmap cache when DRI disabled in R128 driver
       (Alan Hourihane).
-1227. Add BlockFills to Permedia3 (Alan Hourihane).
-1226. Fix pixmap cache when more than 16MB of memory on Permedia 3
+  16. Add BlockFills to Permedia3 (Alan Hourihane).
+  15. Fix pixmap cache when more than 16MB of memory on Permedia 3
       (Alan Hourihane).
-1225. Fix colourmap problems at depth15/16 on Permedia3 (Alan Hourihane).
-1224. Bump xc/programs/Xserver/GL/dri (libdri.a) version to 3.1.0 to
+  14. Fix colourmap problems at depth15/16 on Permedia3 (Alan Hourihane).
+  13. Bump xc/programs/Xserver/GL/dri (libdri.a) version to 3.1.0 to
       correspond with change 1212, and modify drivers accordingly
       (Alan Hourihane).
-1223. Enable ImageWrites on Rage128 and Radeon (Alan Hourihane).
-1222. Add DRIMoveBuffersHelper function to prevent code duplication in
+  12. Enable ImageWrites on Rage128 and Radeon (Alan Hourihane).
+  11. Add DRIMoveBuffersHelper function to prevent code duplication in
       the drivers (Mark Vojkovich).
-1221. Bug fixes for endianness problems in Permedia3 driver 
+  10. Bug fixes for endianness problems in Permedia3 driver 
       (#4404, Sven Luther).
-1220. Add Appian Jeronimo 4x8Mb (PM2v) support to the glint driver
+   9. Add Appian Jeronimo 4x8Mb (PM2v) support to the glint driver
       (Alan Hourihane).
-1219. Add render support to i810 driver (Keith Packard with testing
+   8. Add render support to i810 driver (Keith Packard with testing
       by Christien Bunting)
-1218. Switch misc (non-radeon, non-r128) ATI driver to fb (Keith Packard).
-1217. 3DFX driver changes (Mark Vojkovich).
+   7. Switch misc (non-radeon, non-r128) ATI driver to fb (Keith Packard).
+   6. 3DFX driver changes (Mark Vojkovich).
       - fix some DGA issues.
       - 2D and 3D now share offscreen memory (much faster 2D now).
       - rewrite Xv support to use the video overlay.
       - add new Options "VideoKey" and "ShowCache".
-1216. Change xterm from simple face name to full Xft font name so
+   5. Change xterm from simple face name to full Xft font name so
       that options can be provide (like minspace) (Keith Packard)
-1215. Add UTF-8 support to Xft (Keith Packard)
-1214. Add font/face sharing and a minumum vertical space option
+   4. Add UTF-8 support to Xft (Keith Packard)
+   3. Add font/face sharing and a minumum vertical space option
       to Xft (Keith Packard)
-1213. Fix 64 bit DGA bug (Mark Vojkovich).
-1212. Rewrite DRI back buffer handling to minimize the impact on 2D
+   2. Fix 64 bit DGA bug (Mark Vojkovich).
+   1. Rewrite DRI back buffer handling to minimize the impact on 2D
       performance (Mark Vojkovich).
 
 XFree86 4.0.2 (18 December 2000)
@@ -12274,4 +12274,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1528 2001/01/19 08:13:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1529 2001/01/21 21:19:09 tsi Exp $
