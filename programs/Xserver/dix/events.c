@@ -2120,11 +2120,6 @@ DeliverFocusedEvent(keybd, xE, window, count)
 {
     WindowPtr focus = keybd->focus->win;
     int mskidx = 0;
-#ifdef PANORAMIX
-    register int 	k;
-    WindowPtr 		orig_focus;
-    PanoramiXRes	*win;
-#endif
 
     if (focus == FollowKeyboardWin)
 	focus = inputInfo.keyboard->focus->win;
@@ -2136,14 +2131,18 @@ DeliverFocusedEvent(keybd, xE, window, count)
 	return;
     }
 #ifdef PANORAMIX
-    if (!noPanoramiXExtension) {
-        k = (ROOT->drawable.pScreen)->myNum;
-	orig_focus = focus;
+    /* Put focus and window on the same screen */
+    if (!noPanoramiXExtension &&
+	(focus->drawable.pScreen->myNum != window->drawable.pScreen->myNum)) 
+    {
+	PanoramiXRes	*win;
 
-	win = (PanoramiXRes *)LookupIDByType(focus->drawable.id, XRT_WINDOW);
+	win = PanoramiXFindIDByScrnum(XRT_WINDOW, focus->drawable.id,
+				focus->drawable.pScreen->myNum); 
 
         if (win) 
-            focus = (WindowPtr) LookupIDByType(win->info[k].id, RT_WINDOW);
+            focus = (WindowPtr) LookupIDByType(
+		win->info[window->drawable.pScreen->myNum].id, RT_WINDOW);
     }
 #endif
     if ((focus == window) || IsParent(focus, window))
@@ -2152,10 +2151,6 @@ DeliverFocusedEvent(keybd, xE, window, count)
 	    return;
     }
     /* just deliver it to the focus window */
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension)
-	focus = orig_focus;
-#endif
     FixUpEventFromWindow(xE, focus, None, FALSE);
     if (xE->u.u.type & EXTENSION_EVENT_BASE)
 	mskidx = keybd->id;
@@ -2408,18 +2403,11 @@ ProcessPointerEvent (xE, mouse, count)
 #ifdef PANORAMIX
         int	      j;
 	PanoramiXRes *win;
-#endif
 
-#ifdef PANORAMIX
         if ( !noPanoramiXExtension ) {
-           for (j = PanoramiXNumScreens - 1; j; j--) {
-                if (XE_KBPTR.root == WindowTable[j]->drawable.id)
-                    break;
-	   }
-           if (j) {
-               XE_KBPTR.root = WindowTable[0]->drawable.id;
-               XE_KBPTR.sameScreen = xTrue;
-           }
+
+	   XE_KBPTR.root = WindowTable[0]->drawable.id;
+	   XE_KBPTR.sameScreen = xTrue;
 	
 	   win = (PanoramiXRes *)LookupIDByType(XE_KBPTR.event, XRT_WINDOW);
 
@@ -2870,6 +2858,22 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
     int mode;
 #endif
 {
+#ifdef PANORAMIX
+    /* stick both on the same screen */
+    if(!noPanoramiXExtension &&
+	(fromWin->drawable.pScreen->myNum != toWin->drawable.pScreen->myNum)) 
+    {
+	PanoramiXRes *win;
+   
+	win = PanoramiXFindIDByScrnum(XRT_WINDOW, fromWin->drawable.id,
+                                fromWin->drawable.pScreen->myNum); 
+
+        if (win) 
+            fromWin = (WindowPtr) LookupIDByType(
+                win->info[toWin->drawable.pScreen->myNum].id, RT_WINDOW);
+    }
+#endif
+
     if (fromWin == toWin)
 	return;
     if (IsParent(fromWin, toWin))
