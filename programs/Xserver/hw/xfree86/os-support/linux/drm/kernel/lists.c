@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.4 2000/02/14 06:27:27 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.5 2000/02/23 04:47:29 martin Exp $
  *
  */
 
@@ -153,7 +153,7 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 	buf->list	= DRM_LIST_FREE;
 	do {
 		old       = bl->next;
-		bl->next  = old;
+		buf->next = old;
 		prev      = cmpxchg(&bl->next, old, buf);
 		if (++count > DRM_LOOPING_LIMIT) {
 			DRM_ERROR("Looping\n");
