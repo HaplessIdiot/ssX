@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.30tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.32 2002/11/25 14:04:50 eich Exp $
 
 #include <Threads.tmpl>
 
@@ -25,6 +25,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.30tsi Exp $
 #define DoDebugLib NO
 #define DoProfileLib NO
 #endif
+
+#define LargePICTable YES
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL

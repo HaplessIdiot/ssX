@@ -3,7 +3,7 @@ XCOMM platform:  $Xorg: sun.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.70 2004/01/13 02:42:51 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.71 2004/02/02 03:55:26 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -443,6 +443,12 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 
 
 # define PexCCOptions DefaultCCOptions
+
+# ifndef AsCmd
+#  ifdef SparcArchitecture
+#   define AsCmd as -xarch=v8plus
+#  endif
+# endif
 
 #endif /* HasGcc (else) */
 

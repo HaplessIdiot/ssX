@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile,v 1.8 2002/11/25 12:58:55 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile,v 1.9 2002/11/25 14:04:50 eich Exp $
 
 #include <Threads.tmpl>
 
@@ -26,6 +26,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/array_cache/Imakefile,v 1.8 2002/11/25 12:58:
 #define DoProfileLib NO
 #endif
 
+#define LargePICTable YES
 
 #define MesaACBuildDir /**/
 #define NeedToLinkMesaSrc
