@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.6 2001/10/10 19:06:36 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.7 2001/11/01 23:35:25 dawes Exp $ */
 
 /*****************************************************************************\
 * XpmI.h:                                                                     *
@@ -56,42 +56,8 @@
 extern FILE *popen();
 #endif
 
-#if defined(SYSV) || defined(SVR4) || defined(VMS) || defined(WIN32) || defined(linux)
-#include <string.h>
-
-#ifndef index
-#define index strchr
-#endif
-
-#ifndef rindex
-#define rindex strrchr
-#endif
-
-#else  /* defined(SYSV) || defined(SVR4) || defined(VMS) */
-#include <strings.h>
-#endif
-
-
-
-#if defined(SYSV) || defined(SVR4) || defined(VMS) || defined(WIN32)
-#ifndef bcopy
-#define bcopy(source, dest, count) memcpy(dest, source, count)
-#endif
-#ifndef bzero
-#define bzero(b, len) memset(b, 0, len)
-#endif
-#endif
-
-/* the following is defined in X11R6 but not in previous versions */
-#if defined(__alpha) || defined(__alpha__) || \
-    defined(ia64) || defined(__ia64__) || \
-    defined(__sparc64__) || \
-    defined(__s390x__) || \
-    (defined(__hppa__) && defined(__LP64__))
-#ifndef LONG64
-#define LONG64
-#endif
-#endif
+#include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 
 #ifdef VMS
 #include <unixio.h>
