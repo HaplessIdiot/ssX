@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/nls/Imakefile,v 1.5 2000/12/02 01:16:04 dawes Exp $
+XCOMM $XFree86: xc/nls/Imakefile,v 1.6 2001/01/17 19:37:04 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -12,30 +12,55 @@ XCOMM $XFree86: xc/nls/Imakefile,v 1.5 2000/12/02 01:16:04 dawes Exp $
 #if defined(FreeBSDArchitecture)
   RU_SU_DEFINES = -DINCLUDE_ru_SU
 #endif
-        DEFINES = -DR63_COMPAT $(RU_SU_DEFINES)
+        DEFINES = $(RU_SU_DEFINES)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
+all::
+
+#ifndef R63Compat
+#define R63Compat YES
+#endif
+
 #ifndef Win32Architecture
 #ifndef OS2Architecture
+#if R63Compat
 # define LTarget(name)							@@\
-all:: name.lt								@@\
+CppFileTarget(name.l1,name,$(DEFINES),NullParameter)			@@\
 									@@\
+name.l2: name.l1							@@\
+	rm -f name.l2							@@\
+	sed -e '/^[^#][^ 	]*:/s/://' -e '/^[^#].*[ 	].*:/d' \ @@\
+		< name.l1 > name.l2					@@\
+									@@\
+name.lt: name.l1 name.l2						@@\
+	rm -f name.lt							@@\
+	cat name.l2 name.l1 > name.lt					@@\
+									@@\
+AllTarget(name.lt)							@@\
+	MakeDir($(BUILDLIBDIR)/locale)					@@\
+	RemoveFile($(BUILDLIBDIR)/locale/name)				@@\
+	cd $(BUILDLIBDIR)/locale && $(LN) $(BUILDLIBTOP)/../$(CURRENT_DIR)/name.lt name @@\
+InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))				@@\
+									@@\
+clean::									@@\
+	RemoveFiles(name.l1 name.l2)
+#else
+# define LTarget(name)							@@\
 CppFileTarget(name.lt,name,$(DEFINES),NullParameter)			@@\
 									@@\
-all:: name.lt								@@\
+AllTarget(name.lt)							@@\
 	MakeDir($(BUILDLIBDIR)/locale)					@@\
 	RemoveFile($(BUILDLIBDIR)/locale/name)				@@\
 	cd $(BUILDLIBDIR)/locale && $(LN) $(BUILDLIBTOP)/../$(CURRENT_DIR)/name.lt name @@\
 InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))
+#endif
 #else
 # define LTarget(name)							@@\
-all:: name.lt								@@\
-									@@\
 CppFileTarget(name.lt,name,$(DEFINES),NullParameter)			@@\
 									@@\
-all:: name.lt								@@\
+AllTarget(name.lt)							@@\
 	MakeDir($(BUILDLIBDIR)/locale)					@@\
 	LinkFileSpecial($(BUILDLIBDIR)/locale,name,$(BUILDLIBTOP)/../../$(CURRENT_DIR)/name.lt) @@\
 									@@\
@@ -43,11 +68,9 @@ InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))
 #endif
 #else
 # define LTarget(name)							@@\
-all:: name.lt								@@\
-									@@\
 CppFileTarget(name.lt,name,$(DEFINES),NullParameter)			@@\
 									@@\
-all:: name.lt								@@\
+AllTargetName(name.lt)							@@\
 	MakeDir($(BUILDLIBDIR:/=\)\locale)				@@\
 	RemoveFile(Concat($(BUILDLIBDIR:/=\)\locale\,name))		@@\
 	cd $(BUILDLIBDIR:/=\)\locale && $(LN) Concat($(BUILDLIBTOP:/=\)\..\$(CURRENT_DIR:/=\)\,name.lt) name @@\
