@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.7 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.8 2001/08/06 04:14:36 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -87,7 +87,7 @@
 static KeySym const ascii_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	XK_KP_Enter,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
-	XK_Delete,	XK_Tab,		XK_Linefeed,	NoSymbol,
+	XK_BackSpace,	XK_Tab,		XK_Linefeed,	NoSymbol,
 	NoSymbol,	XK_Return,	NoSymbol,	NoSymbol,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
@@ -454,7 +454,9 @@ void DarwinKeyboardInit(
         // get the Darwin keyboard map
         keyMap.size = NXKeyMappingLength( hid.paramConnect );
         keyMap.mapping = (char*) xalloc( keyMap.size );
-        assert( NXGetKeyMapping( hid.paramConnect, &keyMap ));
+        if (!NXGetKeyMapping( hid.paramConnect, &keyMap )) {
+            FatalError("Could not get kernel keymapping! Load keymapping from file instead.\n");
+        }
     }
 
     keyMapStream = new_data_stream( (unsigned char const*)keyMap.mapping,

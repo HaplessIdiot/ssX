@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.7 2001/07/06 00:37:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.8 2001/07/15 01:57:35 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
@@ -17,7 +17,7 @@
                     [NSNumber numberWithInt:0], @"Display",
                     @"YES", @"FakeButtons",
                     @"/System/Library/Keyboards/USA.keymapping", @"KeymappingFile",
-                    @"NO", @"UseKeymappingFile",
+                    @"YES", @"UseKeymappingFile",
                     @"Cmd-Opt-a", @"SwitchString",
                     @"NO", @"UseRootlessMode",
                     @"YES", @"ShowModePickWindow",
