@@ -261,22 +261,6 @@
 //042
 //043
 //044
-//060
-//061
-//062
-//063
-//064
-		06EB6C3B004099E7CE6F79C2 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			path = quartzShared.h;
-			refType = 4;
-		};
-//060
-//061
-//062
-//063
-//064
 //080
 //081
 //082
@@ -579,7 +563,7 @@
 			);
 			isa = PBXGroup;
 			name = IOKit;
-			path = ..;
+			path = ../iokit;
 			refType = 4;
 		};
 //170
@@ -991,7 +975,6 @@
 				43B962D100617089416877C2,
 				43B962CF00617089416877C2,
 				F5582948015DAD3B01000001,
-				06EB6C3B004099E7CE6F79C2,
 				02A1FEA8006D38F0416877C2,
 			);
 			isa = PBXGroup;

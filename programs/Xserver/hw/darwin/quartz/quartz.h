@@ -5,7 +5,7 @@
  * independent parts of the Darwin X server.
  */
 /*
- * Copyright (c) 2001-2002 Greg Parker and Torrey T. Lyons.
+ * Copyright (c) 2001-2003 Greg Parker and Torrey T. Lyons.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,21 +30,11 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.3 2002/11/15 00:55:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.4 2002/11/20 23:51:58 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
 
-#include "screenint.h"
-#include "Xproto.h"
 #include "quartzPasteboard.h"
-
-int QuartzProcessArgument(int argc, char *argv[], int i);
-void QuartzInitOutput(int argc, char **argv);
-void QuartzInitInput(int argc, char **argv);
-Bool QuartzAddScreen(int index, ScreenPtr pScreen);
-Bool QuartzSetupScreen(int index, ScreenPtr pScreen);
-void QuartzGiveUp(void);
-void QuartzProcessEvent(xEvent *xe);
 
 #endif

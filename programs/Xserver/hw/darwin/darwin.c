@@ -1,7 +1,7 @@
 /**************************************************************
  *
  * Shared code for the Darwin X Server
- * running with Quartz or the IOKit
+ * running with Quartz or IOKit display mode
  *
  **************************************************************/
 /*
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.50 2003/02/26 09:21:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.51 2003/04/30 23:15:37 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -52,6 +52,7 @@
 #include <sys/syslimits.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define NO_CFPLUGIN
 #include <IOKit/IOKitLib.h>
@@ -60,8 +61,6 @@
 
 #include "darwin.h"
 #include "darwinClut8.h"
-#include "quartz/quartz.h"
-#include "xfIOKit.h"
 
 /*
  * X server shared global variables
@@ -70,8 +69,7 @@ int                     darwinScreensFound = 0;
 int                     darwinScreenIndex = 0;
 io_connect_t            darwinParamConnect = 0;
 int                     darwinEventFD = -1;
-Bool                    quartz = FALSE;
-int                     quartzMouseAccelChange = 1;
+int                     darwinMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
 
 // location of X11's (0,0) point in global screen coordinates
@@ -193,11 +191,7 @@ static Bool DarwinAddScreen(
     SCREEN_PRIV(pScreen) = dfb;
 
     // setup hardware/mode specific details
-    if (quartz) {
-        ret = QuartzAddScreen(foundIndex, pScreen);
-    } else {
-        ret = XFIOKitAddScreen(foundIndex, pScreen);
-    }
+    ret = DarwinModeAddScreen(foundIndex, pScreen);
     foundIndex++;
     if (! ret)
         return FALSE;
@@ -276,14 +270,8 @@ static Bool DarwinAddScreen(
     pScreen->SaveScreen = DarwinSaveScreen;
 
     // finish mode dependent screen setup including cursor support
-    if (quartz) {
-        if (! QuartzSetupScreen(index, pScreen)) {
-            return FALSE;
-        }
-    } else {
-        if (! XFIOKitSetupScreen(index, pScreen)) {
-            return FALSE;
-        }
+    if (!DarwinModeSetupScreen(index, pScreen)) {
+        return FALSE;
     }
 
     // create and install the default colormap and
@@ -337,7 +325,7 @@ static void DarwinChangePointerControl(
     kern_return_t   kr;
     double          acceleration;
 
-    if (!quartzMouseAccelChange)
+    if (!darwinMouseAccelChange)
         return;
 
     acceleration = ctrl->num / ctrl->den;
@@ -531,11 +519,7 @@ void InitInput( int argc, char **argv )
 
     DarwinEQInit( (DevicePtr)darwinKeyboard, (DevicePtr)darwinPointer );
 
-    if (quartz) {
-        QuartzInitInput(argc, argv);
-    } else {
-        XFIOKitInitInput(argc, argv);
-    }
+    DarwinModeInitInput(argc, argv);
 }
 
 
@@ -625,11 +609,7 @@ void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
     }
 
     // Discover screens and do mode specific initialization
-    if (quartz) {
-        QuartzInitOutput(argc, argv);
-    } else {
-        XFIOKitInitOutput(argc, argv);
-    }
+    DarwinModeInitOutput(argc, argv);
 
     // Add screens
     for (i = 0; i < darwinScreensFound; i++) {
@@ -681,12 +661,10 @@ void OsVendorInit(void)
  */
 int ddxProcessArgument( int argc, char *argv[], int i )
 {
-#ifdef DARWIN_WITH_QUARTZ
     int numDone;
 
-    if ((numDone = QuartzProcessArgument( argc, argv, i )))
+    if ((numDone = DarwinModeProcessArgument( argc, argv, i )))
         return numDone;
-#endif
 
     if ( !strcmp( argv[i], "-fakebuttons" ) ) {
         darwinFakeButtons = TRUE;
@@ -847,11 +825,7 @@ void ddxGiveUp( void )
 {
     ErrorF( "Quitting XDarwin...\n" );
 
-    if (quartz) {
-        QuartzGiveUp();
-    } else {
-        XFIOKitGiveUp();
-    }
+    DarwinModeGiveUp();
 }
 
 

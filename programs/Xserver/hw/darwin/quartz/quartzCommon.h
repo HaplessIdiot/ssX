@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.8 2003/01/23 00:34:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.9 2003/04/30 23:15:39 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -47,8 +47,6 @@
 #undef Cursor
 #undef WindowPtr
 #undef Picture
-
-#include "quartzShared.h"
 
 // Quartz specific per screen storage structure
 typedef struct {
@@ -83,7 +81,7 @@ void QuartzReadPreferences(void);
 void QuartzMessageMainThread(unsigned msg, void *data, unsigned length);
 void QuartzFSCapture(void);
 void QuartzFSRelease(void);
-int QuartzFSUseQDCursor(int depth);
+int  QuartzFSUseQDCursor(int depth);
 void QuartzBlockHandler(void *blockData, void *pTimeout, void *pReadmask);
 void QuartzWakeupHandler(void *blockData, int result, void *pReadmask);
 

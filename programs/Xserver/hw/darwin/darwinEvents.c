@@ -42,7 +42,6 @@ in this Software without prior written authorization from The Open Group.
 #include   "mipointer.h"
 
 #include "darwin.h"
-#include "quartz/quartz.h"
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -425,11 +424,8 @@ void ProcessInputEvents(void)
             }
 
             default:
-                if (quartz) {
-                    QuartzProcessEvent(&xe);
-                } else {
-                    ErrorF("Unknown X event caught: %d\n", xe.u.u.type);
-                }
+                // Check for mode specific event
+                DarwinModeProcessEvent(&xe);
 	    }
 	}
     }
