@@ -4,6 +4,10 @@
 #define __NV_STRUCT_H__
 
 #include "riva_hw.h"
+#include "colormapst.h"
+#include "vgaHW.h"
+#include "xaa.h"
+#include "xf86Cursor.h"
 
 #define SetBitField(value,from,to) SetBF(to, GetBF(value,from))
 #define SetBit(n) (1<<(n))
@@ -26,10 +30,6 @@ typedef struct {
     void        (*SetCursorPosition)(ScrnInfoPtr, int, int);
     void        (*SetCursorColors)(ScrnInfoPtr, int, int);
     long        maxPixelClock;
-    long        MemoryClock;
-    MessageType ClockFrom;
-    MessageType MemClkFrom;
-    Bool        SetMemClk;
     void        (*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
     void        (*PreInit)(ScrnInfoPtr);
     void        (*Save)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
@@ -37,6 +37,13 @@ typedef struct {
     Bool        (*ModeInit)(ScrnInfoPtr, DisplayModePtr);
 } NVRamdacRec, *NVRamdacPtr;
 
+typedef struct {
+    int bitsPerPixel;
+    int depth;
+    int displayWidth;
+    rgb weight;
+    DisplayModePtr mode;
+} NVFBLayout;
 
 typedef struct {
     RIVA_HW_INST        riva;
@@ -49,15 +56,6 @@ typedef struct {
     int                 Chipset;
     int                 ChipRev;
     Bool                Primary;
-    Bool                Interleave;
-    int                 HwBpp;
-    int                 Rounding;
-    int                 BppShift;
-    Bool                HasFBitBlt;
-    Bool                OverclockMem;
-    int                 YDstOrg;
-    int                 DstOrg;
-    int                 SrcOrg;
     CARD32              IOAddress;
     CARD32              FbAddress;
     int                 FbBaseReg;
@@ -66,57 +64,39 @@ typedef struct {
     unsigned char *     FbStart;
     long                FbMapSize;
     long                FbUsableSize;
-    long                FbCursorOffset;
     NVRamdacRec         Dac;
     Bool                NoAccel;
-    Bool                SyncOnGreen;
-    Bool                Dac6Bit;
     Bool                HWCursor;
-    Bool                UsePCIRetry;
     Bool                ShowCache;
-    Bool                Overlay8Plus24;
     Bool                ShadowFB;
     unsigned char *     ShadowPtr;
     int                 ShadowPitch;
-    int                 MemClk;
     int                 MinClock;
     int                 MaxClock;
-    CARD32              BltScanDirection;
-    CARD32              FilledRectCMD;
-    CARD32              SolidLineCMD;
-    CARD32              PatternRectCMD;
-    CARD32              DashCMD;
-    CARD32              NiceDashCMD;
-    CARD32              AccelFlags;
-    CARD32              PlaneMask;
-    CARD32              FgColor;
-    CARD32              BgColor;
-    int                 StyleLen;
     XAAInfoRecPtr       AccelInfoRec;
     xf86CursorInfoPtr   CursorInfoRec;
     DGAModePtr          DGAModes;
     int                 numDGAModes;
     Bool                DGAactive;
     int                 DGAViewportStatus;
-    CARD32              *Atype;
-    CARD32              *AtypeNoBLK;
     void                (*PreInit)(ScrnInfoPtr pScrn);
     void                (*Save)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     void                (*Restore)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     Bool                (*ModeInit)(ScrnInfoPtr, DisplayModePtr);
+    void		(*PointerMoved)(int index, int x, int y);
     CloseScreenProcPtr  CloseScreen;
-/*    unsigned int        (*ddc1Read)(ScrnInfoPtr);
-    void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
-    Bool                (*i2cInit)(ScrnInfoPtr);
-    I2CBusPtr           I2C;*/
     Bool                FBDev;
-    int                 colorKey;
     /* Color expansion */
     Bool                useFifo;
     unsigned char       *expandBuffer;
     unsigned char       *expandFifo;
     int                 expandWidth;
     int                 expandRows;
+    CARD32		FgColor;
+    CARD32		BgColor;
+    int			Rotate;
+    NVFBLayout		CurrentLayout;
+    GCPtr		CurrentGC;
     /* Cursor */
     unsigned short      curFg, curBg;
     unsigned int        curImage[MAX_CURS*2];
@@ -127,18 +107,20 @@ typedef struct {
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))
 
+void NVRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void NVRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void NVRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void NVRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void NVRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void NVPointerMoved(int index, int x, int y);
 
-typedef enum {
-    OPTION_SW_CURSOR,
-    OPTION_HW_CURSOR,
-    OPTION_PCI_RETRY,
-    OPTION_RGB_BITS,
-    OPTION_NOACCEL,
-    OPTION_SHOWCACHE,
-    OPTION_SHADOW_FB,
-    OPTION_FBDEV,
-    OPTION_COLOR_KEY,
-    OPTION_SET_MCLK
-} NVOpts;
+#define NV_CHIP_RIVA128 ((PCI_VENDOR_NVIDIA_SGS << 16)| PCI_CHIP_RIVA128)
+#define NV_CHIP_TNT     ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT)
+#define NV_CHIP_TNT2    ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT2)
+#define NV_CHIP_UTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UTNT2)
+#define NV_CHIP_VTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_VTNT2)
+#define NV_CHIP_ITNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_ITNT2)
+
+
 
 #endif /* __NV_STRUCT_H__ */

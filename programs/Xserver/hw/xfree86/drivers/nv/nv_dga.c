@@ -1,165 +1,219 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.1 1999/08/01 07:20:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.12 1999/08/22 05:57:34 dawes Exp $ */
 
-/* Straight theft from mga-driver */
-
-#include "nv_include.h"
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+#include "xf86Pci.h"
+#include "xf86PciInfo.h"
+#include "xaa.h"
 #include "xaalocal.h"
+#include "nv_type.h"
+#include "nv_proto.h"
 #include "dgaproc.h"
 
 
 static Bool NV_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-			       int *, int *, int *);
+					int *, int *, int *);
 static Bool NV_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  NV_GetViewport(ScrnInfoPtr);
 static void NV_SetViewport(ScrnInfoPtr, int, int, int);
 static void NV_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void NV_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static void NV_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-			     unsigned long);
+					unsigned long);
 
 static
 DGAFunctionRec NV_DGAFuncs = {
-    NV_OpenFramebuffer,
-    NULL,
-    NV_SetMode,
-    NV_SetViewport,
-    NV_GetViewport,
-    NVSync,
-    NV_FillRect,
-    NV_BlitRect,
-    NV_BlitTransRect
+   NV_OpenFramebuffer,
+   NULL,
+   NV_SetMode,
+   NV_SetViewport,
+   NV_GetViewport,
+   NVSync,
+   NV_FillRect,
+   NV_BlitRect,
+   NV_BlitTransRect
 };
+
+
+
+static DGAModePtr
+NVSetupDGAMode(
+   ScrnInfoPtr pScrn,
+   DGAModePtr modes,
+   int *num,
+   int bitsPerPixel,
+   int depth,
+   Bool pixmap,
+   int secondPitch,
+   unsigned long red,
+   unsigned long green,
+   unsigned long blue,
+   short visualClass
+){
+   DisplayModePtr firstMode, pMode;
+   NVPtr pNv = NVPTR(pScrn);
+   DGAModePtr mode, newmodes;
+   int size, pitch, Bpp = bitsPerPixel >> 3;
+
+SECOND_PASS:
+
+   pMode = firstMode = pScrn->modes;
+
+   while(1) {
+
+	pitch = (pMode->HDisplay + 31) & ~31;
+	size = pitch * Bpp * pMode->VDisplay;
+
+	if((!secondPitch || (pitch != secondPitch)) &&
+		(size <= pNv->FbUsableSize)) {
+
+	    if(secondPitch)
+		pitch = secondPitch; 
+
+	    if(!(newmodes = xrealloc(modes, (*num + 1) * sizeof(DGAModeRec))))
+		break;
+
+	    modes = newmodes;
+	    mode = modes + *num;
+
+	    mode->mode = pMode;
+	    mode->flags = DGA_CONCURRENT_ACCESS;
+
+	    if(pixmap)
+		mode->flags |= DGA_PIXMAP_AVAILABLE;
+	    if(!pNv->NoAccel)
+		mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
+	    if(pMode->Flags & V_DBLSCAN)
+		mode->flags |= DGA_DOUBLESCAN;
+	    if(pMode->Flags & V_INTERLACE)
+		mode->flags |= DGA_INTERLACED;
+	    mode->byteOrder = pScrn->imageByteOrder;
+	    mode->depth = depth;
+	    mode->bitsPerPixel = bitsPerPixel;
+	    mode->red_mask = red;
+	    mode->green_mask = green;
+	    mode->blue_mask = blue;
+	    mode->visualClass = visualClass;
+	    mode->viewportWidth = pMode->HDisplay;
+	    mode->viewportHeight = pMode->VDisplay;
+	    mode->xViewportStep = 4 / Bpp;
+	    mode->yViewportStep = 1;
+	    mode->viewportFlags = DGA_FLIP_RETRACE;
+	    mode->offset = 0;
+	    mode->address = pNv->FbStart;
+	    mode->bytesPerScanline = pitch * Bpp;
+	    mode->imageWidth = pitch;
+	    mode->imageHeight =  pNv->FbUsableSize / mode->bytesPerScanline; 
+	    mode->pixmapWidth = mode->imageWidth;
+	    mode->pixmapHeight = mode->imageHeight;
+	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
+	   /* this might need to get clamped to some maximum */
+	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+
+	    (*num)++;
+	}
+
+	pMode = pMode->next;
+	if(pMode == firstMode)
+	   break;
+    }
+
+    if(secondPitch) {
+	secondPitch = 0;
+	goto SECOND_PASS;
+    }
+
+    return modes;
+}
 
 
 Bool
 NVDGAInit(ScreenPtr pScreen)
 {   
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    NVPtr pNv = NVPTR(pScrn);
-    DGAModePtr modes = NULL, newmodes = NULL, currentMode;
-    DisplayModePtr pMode, firstMode;
-    int Bpp = pScrn->bitsPerPixel >> 3;
-    int num = 0;
-    Bool oneMore;
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   NVPtr pNv = NVPTR(pScrn);
+   DGAModePtr modes = NULL;
+   int num = 0;
 
-    pMode = firstMode = pScrn->modes;
+   /* 8 */
+   modes = NVSetupDGAMode (pScrn, modes, &num, 8, 8, 
+		(pScrn->bitsPerPixel == 8),
+		(pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
+		0, 0, 0, PseudoColor);
 
-    while(pMode) {
-	/* The NV driver wasn't designed with switching depths in
-	   mind.  Subsequently, large chunks of it will probably need
-	   to be rewritten to accommodate depth changes in DGA mode */
+   /* 15 */
+   modes = NVSetupDGAMode (pScrn, modes, &num, 16, 15, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
+		0x7c00, 0x03e0, 0x001f, TrueColor);
 
-	if(0 /*pScrn->displayWidth != pMode->HDisplay*/) {
-	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
-	    oneMore = TRUE;
-	} else {
-	    newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
-	    oneMore = FALSE;
-	}
+   /* 16 */
+   modes = NVSetupDGAMode (pScrn, modes, &num, 16, 16, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
+		0xf800, 0x07e0, 0x001f, TrueColor);
 
-	if(!newmodes) {
-	    xfree(modes);
-	    return FALSE;
-	}
-	modes = newmodes;
+   /* 32 */
+   modes = NVSetupDGAMode (pScrn, modes, &num, 32, 24, 
+		(pScrn->bitsPerPixel == 32),
+		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
+		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
 
-SECOND_PASS:
+   pNv->numDGAModes = num;
+   pNv->DGAModes = modes;
 
-	currentMode = modes + num;
-	num++;
-
-	currentMode->mode = pMode;
-	currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-	if(!pNv->NoAccel)
-	    currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
-	if(pMode->Flags & V_DBLSCAN)
-	    currentMode->flags |= DGA_DOUBLESCAN;
-	if(pMode->Flags & V_INTERLACE)
-	    currentMode->flags |= DGA_INTERLACED;
-	currentMode->byteOrder = pScrn->imageByteOrder;
-	currentMode->depth = pScrn->depth;
-	currentMode->bitsPerPixel = pScrn->bitsPerPixel;
-	currentMode->red_mask = pScrn->mask.red;
-	currentMode->green_mask = pScrn->mask.green;
-	currentMode->blue_mask = pScrn->mask.blue;
-	currentMode->visualClass = (Bpp == 1) ? PseudoColor : TrueColor;
-	currentMode->viewportWidth = pMode->HDisplay;
-	currentMode->viewportHeight = pMode->VDisplay;
-	currentMode->xViewportStep = (3 - pNv->BppShift);
-	currentMode->yViewportStep = 1;
-	currentMode->viewportFlags = DGA_FLIP_RETRACE;
-	currentMode->offset = pNv->YDstOrg * Bpp;
-	currentMode->address = pNv->FbStart;
-
-	if(oneMore) { /* first one is narrow width */
-	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pMode->HDisplay;
-	    currentMode->imageHeight =  pNv->FbUsableSize /
-		currentMode->bytesPerScanline; 
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-		currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-		currentMode->viewportHeight;
-	    oneMore = FALSE;
-	    goto SECOND_PASS;
-	} else {
-	    currentMode->bytesPerScanline = 
-		((pScrn->displayWidth * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pScrn->displayWidth;
-	    currentMode->imageHeight =  pNv->FbUsableSize /
-		currentMode->bytesPerScanline; 
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-		currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-		currentMode->viewportHeight;
-	}
-	
-	pMode = pMode->next;
-	if(pMode == firstMode)
-	    break;
-    }
-
-    pNv->numDGAModes = num;
-    pNv->DGAModes = modes;
-
-    return DGAInit(pScreen, &NV_DGAFuncs, modes, num);  
+   return DGAInit(pScreen, &NV_DGAFuncs, modes, num);  
 }
 
 
+static int 
+BitsSet(unsigned long data)
+{
+   unsigned long mask;
+   int set = 0;
+
+   for(mask = 1; mask; mask <<= 1)
+        if(mask & data) set++;   
+
+   return set;
+}
+
 static Bool
 NV_SetMode(
-    ScrnInfoPtr pScrn,
-    DGAModePtr pMode
+   ScrnInfoPtr pScrn,
+   DGAModePtr pMode
 ){
-    static int OldDisplayWidth[MAXSCREENS];
-    int index = pScrn->pScreen->myNum;
+   static NVFBLayout SavedLayouts[MAXSCREENS];
+   int index = pScrn->pScreen->myNum;
 
-    NVPtr pNv = NVPTR(pScrn);
+   NVPtr pNv = NVPTR(pScrn);
 
-    if(!pMode) { /* restore the original mode */
-	/* put the ScreenParameters back */
-	
-	pScrn->displayWidth = OldDisplayWidth[index];
-	
-        NVSwitchMode(index, pScrn->currentMode, 0);
-	pNv->DGAactive = FALSE;
+   if(!pMode) { /* restore the original mode */
+      if(pNv->DGAactive)
+        memcpy(&pNv->CurrentLayout, &SavedLayouts[index], sizeof(NVFBLayout));
+                
+      pScrn->currentMode = pNv->CurrentLayout.mode;
+      NVSwitchMode(index, pScrn->currentMode, 0);
+      NVAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
+      pNv->DGAactive = FALSE;
    } else {
-	if(!pNv->DGAactive) {  /* save the old parameters */
-	    OldDisplayWidth[index] = pScrn->displayWidth;
+      if(!pNv->DGAactive) {  /* save the old parameters */
+	memcpy(&SavedLayouts[index], &pNv->CurrentLayout, sizeof(NVFBLayout));
+	pNv->DGAactive = TRUE;
+      }
 
-	    pNv->DGAactive = TRUE;
-	}
+      /* update CurrentLayout */
+      pNv->CurrentLayout.bitsPerPixel = pMode->bitsPerPixel;
+      pNv->CurrentLayout.depth = pMode->depth;
+      pNv->CurrentLayout.displayWidth = pMode->bytesPerScanline / 
+                              (pMode->bitsPerPixel >> 3);
+      pNv->CurrentLayout.weight.red = BitsSet(pMode->red_mask);
+      pNv->CurrentLayout.weight.green = BitsSet(pMode->green_mask);
+      pNv->CurrentLayout.weight.blue = BitsSet(pMode->blue_mask);
+      /* NVModeInit() will set the mode field */
 
-	pScrn->displayWidth = pMode->bytesPerScanline / 
-			      (pMode->bitsPerPixel >> 3);
-
-        NVSwitchMode(index, pMode->mode, 0);
+      NVSwitchMode(index, pMode->mode, 0);
    }
    
    return TRUE;
@@ -169,7 +223,7 @@ NV_SetMode(
 
 static int  
 NV_GetViewport(
-    ScrnInfoPtr pScrn
+  ScrnInfoPtr pScrn
 ){
     NVPtr pNv = NVPTR(pScrn);
 
@@ -178,82 +232,78 @@ NV_GetViewport(
 
 static void 
 NV_SetViewport(
-    ScrnInfoPtr pScrn, 
-    int x, int y, 
-    int flags
+   ScrnInfoPtr pScrn, 
+   int x, int y, 
+   int flags
 ){
-    NVPtr pNv = NVPTR(pScrn);
+   NVPtr pNv = NVPTR(pScrn);
 
-    NVSync(pScrn);
-    
-    if ( flags & DGA_FLIP_RETRACE )
-    {
-	/* Wait for retrace */
-	while ( !(inb(0x3da) & 8) );
-    }
-    
-    NVAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-    pNv->DGAViewportStatus = 0;
+   NVAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
+   while(pNv->riva.PCRTC[0x202] & 0x00010000); 
+   while(!(pNv->riva.PCRTC[0x202] & 0x00010000));
+
+   pNv->DGAViewportStatus = 0;  
 }
 
 static void 
 NV_FillRect (
-    ScrnInfoPtr pScrn, 
-    int x, int y, int w, int h, 
-    unsigned long color
+   ScrnInfoPtr pScrn, 
+   int x, int y, int w, int h, 
+   unsigned long color
 ){
     NVPtr pNv = NVPTR(pScrn);
 
-    if(pNv->AccelInfoRec) {
-	(*pNv->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
-	(*pNv->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
-	SET_SYNC_FLAG(pNv->AccelInfoRec);
-    }
+    if(!pNv->AccelInfoRec) return;
+
+    (*pNv->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
+    (*pNv->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
+
+    SET_SYNC_FLAG(pNv->AccelInfoRec);
 }
 
 static void 
 NV_BlitRect(
-    ScrnInfoPtr pScrn, 
-    int srcx, int srcy, 
-    int w, int h, 
-    int dstx, int dsty
+   ScrnInfoPtr pScrn, 
+   int srcx, int srcy, 
+   int w, int h, 
+   int dstx, int dsty
 ){
     NVPtr pNv = NVPTR(pScrn);
+    int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
+    int ydir = (srcy < dsty) ? -1 : 1;
 
-    if(pNv->AccelInfoRec) {
-	int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
-	int ydir = (srcy < dsty) ? -1 : 1;
+    if(!pNv->AccelInfoRec) return;
 
-	(*pNv->AccelInfoRec->SetupForScreenToScreenCopy)(
+    (*pNv->AccelInfoRec->SetupForScreenToScreenCopy)(
 		pScrn, xdir, ydir, GXcopy, ~0, -1);
-	(*pNv->AccelInfoRec->SubsequentScreenToScreenCopy)(
+
+    (*pNv->AccelInfoRec->SubsequentScreenToScreenCopy)(
 		pScrn, srcx, srcy, dstx, dsty, w, h);
-	SET_SYNC_FLAG(pNv->AccelInfoRec);
-    }
+
+    SET_SYNC_FLAG(pNv->AccelInfoRec);
 }
 
 
 static void 
 NV_BlitTransRect(
-    ScrnInfoPtr pScrn, 
-    int srcx, int srcy, 
-    int w, int h, 
-    int dstx, int dsty,
-    unsigned long color
+   ScrnInfoPtr pScrn, 
+   int srcx, int srcy, 
+   int w, int h, 
+   int dstx, int dsty,
+   unsigned long color
 ){
-    /* this one should be separate since the XAA function would
-       prohibit usage of ~0 as the key */
+   /* not implemented... yet */
 }
 
 
 static Bool 
 NV_OpenFramebuffer(
-    ScrnInfoPtr pScrn, 
-    char **name,
-    unsigned char **mem,
-    int *size,
-    int *offset,
-    int *flags
+   ScrnInfoPtr pScrn, 
+   char **name,
+   unsigned char **mem,
+   int *size,
+   int *offset,
+   int *flags
 ){
     NVPtr pNv = NVPTR(pScrn);
 

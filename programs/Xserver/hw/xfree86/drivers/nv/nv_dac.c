@@ -46,6 +46,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     NVPtr pNv = NVPTR(pScrn);
     NVRegPtr nvReg = &pNv->ModeReg;
+    NVFBLayout *pLayout = &pNv->CurrentLayout;
     vgaRegPtr   pVga;
     
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACInit\n"));
@@ -85,50 +86,23 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pVga->CRTC[0x10] = Set8Bits(vertStart);
     pVga->CRTC[0x11] = SetBitField(vertEnd,3:0,3:0) | SetBit(5);
     pVga->CRTC[0x12] = Set8Bits(vertDisplay);
-    pVga->CRTC[0x13] = ((pScrn->displayWidth/8)*(pScrn->bitsPerPixel/8)) & 0xFF;
+    pVga->CRTC[0x13] = 0xFF &  
+	((pLayout->displayWidth/8)*(pLayout->bitsPerPixel/8));
     pVga->CRTC[0x15] = Set8Bits(vertDisplay);
     pVga->CRTC[0x16] = Set8Bits(vertTotal + 1);
     
     /*
-     * Initialize DAC palette.
-     */
-    if(pScrn->bitsPerPixel != 8 )
-    {
-        if (pNv->riva.Architecture == 3)
-            for (i = 0; i < 256; i++)
-            {
-                pVga->DAC[i*3]     = i >> 2;
-                pVga->DAC[(i*3)+1] = i >> 2;
-                pVga->DAC[(i*3)+2] = i >> 2;
-            }
-        else
-            for (i = 0; i < 256; i++)
-            {
-                pVga->DAC[i*3]     = i;
-                pVga->DAC[(i*3)+1] = i;
-                pVga->DAC[(i*3)+2] = i;
-            }
-    }
-    /*
      * Calculate the extended registers.
      */
-    switch (pScrn->bitsPerPixel)
-    {
-        case 8:
-            i = 8;
-            break;
-        case 15:
-        case 16:
-            i = (pScrn->weight.green == 6) ? 16 : 15;
-            break;
-        default:
-            i = 32;
-    }
+
+    if(pLayout->depth < 24) 
+	i = pLayout->depth;
+    else i = 32;
 
     pNv->riva.CalcStateExt(&pNv->riva, 
                            nvReg,
-                           i, /* BPP */
-                           pScrn->displayWidth,
+                           i,
+                           pLayout->displayWidth,
                            mode->CrtcHDisplay,
                            horizDisplay,
                            horizStart,
@@ -183,27 +157,19 @@ void
 NVDACLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
                  VisualPtr pVisual )
 {
-    NVPtr pNv = NVPTR(pScrn);
     int i, index;
     vgaRegPtr   pVga;
 
     pVga = &VGAHWPTR(pScrn)->ModeReg;
 
+    if(pVisual->nplanes != 8) return;
+
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACLoadPalette\n"));
     for(i = 0; i < numColors; i++) {
         index = indices[i];
-        if (pNv->riva.Architecture == 3)
-        {
-            pVga->DAC[index*3]     = colors[index].red >> 2;
-            pVga->DAC[(index*3)+1] = colors[index].green >> 2;
-            pVga->DAC[(index*3)+2] = colors[index].blue >> 2;
-        }
-        else
-        {
-            pVga->DAC[index*3]     = colors[index].red;
-            pVga->DAC[(index*3)+1] = colors[index].green;
-            pVga->DAC[(index*3)+2] = colors[index].blue;
-        }
+	pVga->DAC[index*3]     = colors[index].red;
+	pVga->DAC[(index*3)+1] = colors[index].green;
+	pVga->DAC[(index*3)+2] = colors[index].blue;
     }
     vgaHWRestore(pScrn, pVga, VGA_SR_CMAP);
 }
