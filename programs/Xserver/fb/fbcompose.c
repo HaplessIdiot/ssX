@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.9 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.10 2001/07/19 04:41:12 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -578,17 +578,17 @@ fbCombineAtopU (FbCompositeOperand   *src,
 {
     CARD32  s, d;
     CARD16  ad, as;
-    CARD16  t;
+    CARD16  t,u,v;
     CARD32  m,n,o,p;
     
     s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst);
     ad = ~s >> 24;
     as = d >> 24;
-    m = FbGen(s,d,0,as,ad,t);
-    n = FbGen(s,d,8,as,ad,t);
-    o = FbGen(s,d,16,as,ad,t);
-    p = FbGen(s,d,24,as,ad,t);
+    m = FbGen(s,d,0,as,ad,t,u,v);
+    n = FbGen(s,d,8,as,ad,t,u,v);
+    o = FbGen(s,d,16,as,ad,t,u,v);
+    p = FbGen(s,d,24,as,ad,t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -601,7 +601,7 @@ fbCombineAtopC (FbCompositeOperand   *src,
     CARD32  s, d;
     CARD32  ad;
     CARD16  as;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     cs = fbCombineMaskC (src, msk);
@@ -609,10 +609,10 @@ fbCombineAtopC (FbCompositeOperand   *src,
     s = cs.value;
     ad = cs.alpha;
     as = d >> 24;
-    m = FbGen(s,d,0,as,FbGet8(ad,0),t);
-    n = FbGen(s,d,8,as,FbGet8(ad,8),t);
-    o = FbGen(s,d,16,as,FbGet8(ad,16),t);
-    p = FbGen(s,d,24,as,FbGet8(ad,24),t);
+    m = FbGen(s,d,0,as,FbGet8(ad,0),t,u,v);
+    n = FbGen(s,d,8,as,FbGet8(ad,8),t,u,v);
+    o = FbGen(s,d,16,as,FbGet8(ad,16),t,u,v);
+    p = FbGen(s,d,24,as,FbGet8(ad,24),t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -623,17 +623,17 @@ fbCombineAtopReverseU (FbCompositeOperand    *src,
 {
     CARD32  s, d;
     CARD16  ad, as;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst);
     ad = s >> 24;
     as = ~d >> 24;
-    m = FbGen(s,d,0,as,ad,t);
-    n = FbGen(s,d,8,as,ad,t);
-    o = FbGen(s,d,16,as,ad,t);
-    p = FbGen(s,d,24,as,ad,t);
+    m = FbGen(s,d,0,as,ad,t,u,v);
+    n = FbGen(s,d,8,as,ad,t,u,v);
+    o = FbGen(s,d,16,as,ad,t,u,v);
+    p = FbGen(s,d,24,as,ad,t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -645,7 +645,7 @@ fbCombineAtopReverseC (FbCompositeOperand    *src,
     FbCompSrc	cs;
     CARD32  s, d, ad;
     CARD16  as;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     cs = fbCombineMaskC (src, msk);
@@ -653,10 +653,10 @@ fbCombineAtopReverseC (FbCompositeOperand    *src,
     s = cs.value;
     ad = cs.alpha;
     as = ~d >> 24;
-    m = FbGen(s,d,0,as,FbGet8(ad,0),t);
-    n = FbGen(s,d,8,as,FbGet8(ad,8),t);
-    o = FbGen(s,d,16,as,FbGet8(ad,16),t);
-    p = FbGen(s,d,24,as,FbGet8(ad,24),t);
+    m = FbGen(s,d,0,as,FbGet8(ad,0),t,u,v);
+    n = FbGen(s,d,8,as,FbGet8(ad,8),t,u,v);
+    o = FbGen(s,d,16,as,FbGet8(ad,16),t,u,v);
+    p = FbGen(s,d,24,as,FbGet8(ad,24),t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -667,17 +667,17 @@ fbCombineXorU (FbCompositeOperand    *src,
 {
     CARD32  s, d;
     CARD16  ad, as;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     s = fbCombineMaskU (src, msk);
     d = (*dst->fetch) (dst);
     ad = ~s >> 24;
     as = ~d >> 24;
-    m = FbGen(s,d,0,as,ad,t);
-    n = FbGen(s,d,8,as,ad,t);
-    o = FbGen(s,d,16,as,ad,t);
-    p = FbGen(s,d,24,as,ad,t);
+    m = FbGen(s,d,0,as,ad,t,u,v);
+    n = FbGen(s,d,8,as,ad,t,u,v);
+    o = FbGen(s,d,16,as,ad,t,u,v);
+    p = FbGen(s,d,24,as,ad,t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -689,7 +689,7 @@ fbCombineXorC (FbCompositeOperand    *src,
     FbCompSrc	cs;
     CARD32  s, d, ad;
     CARD16  as;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     cs = fbCombineMaskC (src, msk);
@@ -697,10 +697,10 @@ fbCombineXorC (FbCompositeOperand    *src,
     s = cs.value;
     ad = ~cs.alpha;
     as = ~d >> 24;
-    m = FbGen(s,d,0,as,ad,t);
-    n = FbGen(s,d,8,as,ad,t);
-    o = FbGen(s,d,16,as,ad,t);
-    p = FbGen(s,d,24,as,ad,t);
+    m = FbGen(s,d,0,as,ad,t,u,v);
+    n = FbGen(s,d,8,as,ad,t,u,v);
+    o = FbGen(s,d,16,as,ad,t,u,v);
+    p = FbGen(s,d,24,as,ad,t,u,v);
     (*dst->store) (dst, m|n|o|p);
 }
 
@@ -768,6 +768,7 @@ fbCombineSaturateU (FbCompositeOperand   *src,
     CARD32  m,n,o,p;
     
     s = fbCombineMaskU (src, msk);
+#if 0
     d = (*dst->fetch) (dst);
     sa = s >> 24;
     da = ~d >> 24;
@@ -782,12 +783,22 @@ fbCombineSaturateU (FbCompositeOperand   *src,
     {
 	as = (da << 8) / sa;
 	ad = 0xff;
-	m = FbGen(s,d,0,as,ad,t);
-	n = FbGen(s,d,8,as,ad,t);
-	o = FbGen(s,d,16,as,ad,t);
-	p = FbGen(s,d,24,as,ad,t);
+	m = FbGen(s,d,0,as,ad,t,u,v);
+	n = FbGen(s,d,8,as,ad,t,u,v);
+	o = FbGen(s,d,16,as,ad,t,u,v);
+	p = FbGen(s,d,24,as,ad,t,u,v);
     }
     (*dst->store) (dst, m|n|o|p);
+#else
+    if ((s >> 24) == 0xff)
+	(*dst->store) (dst, s);
+    else
+    {
+	d = (*dst->fetch) (dst);
+	if ((s >> 24) > (d >> 24))
+	    (*dst->store) (dst, s);
+    }
+#endif
 }
 
 void
@@ -798,7 +809,7 @@ fbCombineSaturateC (FbCompositeOperand   *src,
     FbCompSrc	cs;
     CARD32  s, d;
     CARD16  sa, sr, sg, sb, da;
-    CARD16  t;
+    CARD16  t, u, v;
     CARD32  m,n,o,p;
     
     cs = fbCombineMaskC (src, msk);
@@ -813,24 +824,686 @@ fbCombineSaturateC (FbCompositeOperand   *src,
     if (sb <= da)
 	m = FbAdd(s,d,0,t);
     else
-	m = FbGen (s, d, 0, (da << 8) / sb, 0xff, t);
+	m = FbGen (s, d, 0, (da << 8) / sb, 0xff, t, u, v);
     
     if (sg <= da)
 	n = FbAdd(s,d,8,t);
     else
-	n = FbGen (s, d, 8, (da << 8) / sg, 0xff, t);
+	n = FbGen (s, d, 8, (da << 8) / sg, 0xff, t, u, v);
     
     if (sr < da)
 	o = FbAdd(s,d,16,t);
     else
-	o = FbGen (s, d, 16, (da << 8) / sr, 0xff, t);
+	o = FbGen (s, d, 16, (da << 8) / sr, 0xff, t, u, v);
 
     if (sa <= da)
 	p = FbAdd(s,d,24,t);
     else
-	p = FbGen (s, d, 24, (da << 8) / sa, 0xff, t);
+	p = FbGen (s, d, 24, (da << 8) / sa, 0xff, t, u, v);
     
     (*dst->store) (dst, m|n|o|p);
+}
+
+/*
+ * All of the disjoint composing functions
+
+ The four entries in the first column indicate what source contributions
+ come from each of the four areas of the picture -- areas covered by neither
+ A nor B, areas covered only by A, areas covered only by B and finally
+ areas covered by both A and B.
+ 
+		Disjoint			Conjoint
+		Fa		Fb		Fa		Fb
+(0,0,0,0)	0		0		0		0
+(0,A,0,A)	1		0		1		0
+(0,0,B,B)	0		1		0		1
+(0,A,B,A)	1		min((1-a)/b,1)	1		max(1-a/b,0)
+(0,A,B,B)	min((1-b)/a,1)	1		max(1-b/a,0)	1		
+(0,0,0,A)	max(1-(1-b)/a,0) 0		min(1,b/a)	0
+(0,0,0,B)	0		max(1-(1-a)/b,0) 0		min(a/b,1)
+(0,A,0,0)	min(1,(1-b)/a)	0		max(1-b/a,0)	0
+(0,0,B,0)	0		min(1,(1-a)/b)	0		max(1-a/b,0)
+(0,0,B,A)	max(1-(1-b)/a,0) min(1,(1-a)/b)	 min(1,b/a)	max(1-a/b,0)
+(0,A,0,B)	min(1,(1-b)/a)	max(1-(1-a)/b,0) max(1-b/a,0)	min(1,a/b)
+(0,A,B,0)	min(1,(1-b)/a)	min(1,(1-a)/b)	max(1-b/a,0)	max(1-a/b,0)
+
+ */
+
+#define CombineAOut 1
+#define CombineAIn  2
+#define CombineBOut 4
+#define CombineBIn  8
+
+#define CombineClear	0
+#define CombineA	(CombineAOut|CombineAIn)
+#define CombineB	(CombineBOut|CombineBIn)
+#define CombineAOver	(CombineAOut|CombineBOut|CombineAIn)
+#define CombineBOver	(CombineAOut|CombineBOut|CombineBIn)
+#define CombineAAtop	(CombineBOut|CombineAIn)
+#define CombineBAtop	(CombineAOut|CombineBIn)
+#define CombineXor	(CombineAOut|CombineBOut)
+
+/* portion covered by a but not b */
+CARD8
+fbCombineDisjointOutPart (CARD8 a, CARD8 b)
+{
+    /* min (1, (1-b) / a) */
+    
+    b = ~b;		    /* 1 - b */
+    if (b >= a)		    /* 1 - b >= a -> (1-b)/a >= 1 */
+	return 0xff;	    /* 1 */
+    return FbIntDiv(b,a);   /* (1-b) / a */
+}
+
+/* portion covered by both a and b */
+CARD8
+fbCombineDisjointInPart (CARD8 a, CARD8 b)
+{
+    /* max (1-(1-b)/a,0) */
+    /*  = - min ((1-b)/a - 1, 0) */
+    /*  = 1 - min (1, (1-b)/a) */
+
+    b = ~b;		    /* 1 - b */
+    if (b >= a)		    /* 1 - b >= a -> (1-b)/a >= 1 */
+	return 0;	    /* 1 - 1 */
+    return ~FbIntDiv(b,a);  /* 1 - (1-b) / a */
+}
+
+void
+fbCombineDisjointGeneralU (FbCompositeOperand   *src,
+			   FbCompositeOperand   *msk,
+			   FbCompositeOperand   *dst,
+			   CARD8		combine)
+{
+    CARD32  s, d;
+    CARD32  m,n,o,p;
+    CARD16  Fa, Fb, t, u, v;
+    CARD8   sa, da;
+
+    s = fbCombineMaskU (src, msk);
+    sa = s >> 24;
+    
+    d = (*dst->fetch) (dst);
+    da = d >> 24;
+    
+    switch (combine & CombineA) {
+    case 0:
+	Fa = 0;
+	break;
+    case CombineAOut:
+	Fa = fbCombineDisjointOutPart (sa, da);
+	break;
+    case CombineAIn:
+	Fa = fbCombineDisjointInPart (sa, da);
+	break;
+    case CombineA:
+	Fa = 0xff;
+	break;
+    }
+    
+    switch (combine & CombineB) {
+    case 0:
+	Fb = 0;
+	break;
+    case CombineBOut:
+	Fb = fbCombineDisjointOutPart (da, sa);
+	break;
+    case CombineBIn:
+	Fb = fbCombineDisjointInPart (da, sa);
+	break;
+    case CombineB:
+	Fb = 0xff;
+	break;
+    }
+    m = FbGen (s,d,0,Fa,Fb,t,u,v);
+    n = FbGen (s,d,8,Fa,Fb,t,u,v);
+    o = FbGen (s,d,16,Fa,Fb,t,u,v);
+    p = FbGen (s,d,24,Fa,Fb,t,u,v);
+    s = m|n|o|p;
+    (*dst->store) (dst, s);
+}
+
+void
+fbCombineDisjointGeneralC (FbCompositeOperand   *src,
+			   FbCompositeOperand   *msk,
+			   FbCompositeOperand   *dst,
+			   CARD8		combine)
+{
+    FbCompSrc	cs;
+    CARD32  s, d;
+    CARD32  m,n,o,p;
+    CARD32  Fa;
+    CARD16  Fb, t, u, v;
+    CARD32  sa;
+    CARD8   da;
+
+    cs = fbCombineMaskC (src, msk);
+    s = cs.value;
+    sa = cs.alpha;
+    
+    d = (*dst->fetch) (dst);
+    da = d >> 24;
+    
+    switch (combine & CombineA) {
+    case 0:
+	Fa = 0;
+	break;
+    case CombineAOut:
+	m = fbCombineDisjointOutPart ((CARD8) (sa >> 0), da);
+	n = fbCombineDisjointOutPart ((CARD8) (sa >> 8), da) << 8;
+	o = fbCombineDisjointOutPart ((CARD8) (sa >> 16), da) << 16;
+	p = fbCombineDisjointOutPart ((CARD8) (sa >> 24), da) << 24;
+	Fa = m|n|o|p;
+	break;
+    case CombineAIn:
+	m = fbCombineDisjointOutPart ((CARD8) (sa >> 0), da);
+	n = fbCombineDisjointOutPart ((CARD8) (sa >> 8), da) << 8;
+	o = fbCombineDisjointOutPart ((CARD8) (sa >> 16), da) << 16;
+	p = fbCombineDisjointOutPart ((CARD8) (sa >> 24), da) << 24;
+	Fa = m|n|o|p;
+	break;
+    case CombineA:
+	Fa = 0xffffffff;
+	break;
+    }
+    
+    switch (combine & CombineB) {
+    case 0:
+	Fb = 0;
+	break;
+    case CombineBOut:
+	Fb = fbCombineDisjointOutPart (da, sa);
+	break;
+    case CombineBIn:
+	Fb = fbCombineDisjointInPart (da, sa);
+	break;
+    case CombineB:
+	Fb = 0xff;
+	break;
+    }
+    m = FbGen (s,d,0,FbGet8(Fa,0),Fb,t,u,v);
+    n = FbGen (s,d,8,FbGet8(Fa,8),Fb,t,u,v);
+    o = FbGen (s,d,16,FbGet8(Fa,16),Fb,t,u,v);
+    p = FbGen (s,d,24,FbGet8(Fa,24),Fb,t,u,v);
+    s = m|n|o|p;
+    (*dst->store) (dst, s);
+}
+
+void
+fbCombineDisjointOverU (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    CARD32  s, d;
+    CARD16  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskU (src, msk);
+    a = s >> 24;
+    if (a != 0x00)
+    {
+	if (a != 0xff)
+	{
+	    d = (*dst->fetch) (dst);
+	    a = fbCombineDisjointOutPart (d >> 24, a);
+	    m = FbOverU(s,d,0,a,t);
+	    n = FbOverU(s,d,8,a,t);
+	    o = FbOverU(s,d,16,a,t);
+	    p = FbOverU(s,d,24,a,t);
+	    s = m|n|o|p;
+	}
+	(*dst->store) (dst, s);
+    }
+}
+
+void
+fbCombineDisjointOverC (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineAOver);
+}
+
+void
+fbCombineDisjointOverReverseU (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineBOver);
+}
+
+void
+fbCombineDisjointOverReverseC (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineBOver);
+}
+
+void
+fbCombineDisjointInU (FbCompositeOperand	    *src,
+		      FbCompositeOperand	    *msk,
+		      FbCompositeOperand	    *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineAIn);
+}
+
+void
+fbCombineDisjointInC (FbCompositeOperand	    *src,
+		      FbCompositeOperand	    *msk,
+		      FbCompositeOperand	    *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineAIn);
+}
+
+void
+fbCombineDisjointInReverseU (FbCompositeOperand  *src,
+			     FbCompositeOperand  *msk,
+			     FbCompositeOperand  *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineBIn);
+}
+
+void
+fbCombineDisjointInReverseC (FbCompositeOperand  *src,
+			     FbCompositeOperand  *msk,
+			     FbCompositeOperand  *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineBIn);
+}
+
+void
+fbCombineDisjointOutU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineAOut);
+}
+
+void
+fbCombineDisjointOutC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineAOut);
+}
+
+void
+fbCombineDisjointOutReverseU (FbCompositeOperand *src,
+			      FbCompositeOperand *msk,
+			      FbCompositeOperand *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineBOut);
+}
+
+void
+fbCombineDisjointOutReverseC (FbCompositeOperand *src,
+			      FbCompositeOperand *msk,
+			      FbCompositeOperand *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineBOut);
+}
+
+void
+fbCombineDisjointAtopU (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineAAtop);
+}
+
+void
+fbCombineDisjointAtopC (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineAAtop);
+}
+
+void
+fbCombineDisjointAtopReverseU (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineBAtop);
+}
+
+void
+fbCombineDisjointAtopReverseC (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineBAtop);
+}
+
+void
+fbCombineDisjointXorU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralU (src, msk, dst, CombineXor);
+}
+
+void
+fbCombineDisjointXorC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineDisjointGeneralC (src, msk, dst, CombineXor);
+}
+
+/* portion covered by a but not b */
+CARD8
+fbCombineConjointOutPart (CARD8 a, CARD8 b)
+{
+    /* max (1-b/a,0) */
+    /* = 1-min(b/a,1) */
+    
+    /* min (1, (1-b) / a) */
+    
+    if (b >= a)		    /* b >= a -> b/a >= 1 */
+	return 0x00;	    /* 0 */
+    return ~FbIntDiv(b,a);   /* 1 - b/a */
+}
+
+/* portion covered by both a and b */
+CARD8
+fbCombineConjointInPart (CARD8 a, CARD8 b)
+{
+    /* min (1,b/a) */
+
+    if (b >= a)		    /* b >= a -> b/a >= 1 */
+	return 0xff;	    /* 1 */
+    return FbIntDiv(b,a);   /* b/a */
+}
+
+void
+fbCombineConjointGeneralU (FbCompositeOperand   *src,
+			   FbCompositeOperand   *msk,
+			   FbCompositeOperand   *dst,
+			   CARD8		combine)
+{
+    CARD32  s, d;
+    CARD32  m,n,o,p;
+    CARD16  Fa, Fb, t, u, v;
+    CARD8   sa, da;
+    CARD32  rp;
+
+    s = fbCombineMaskU (src, msk);
+    sa = s >> 24;
+    
+    d = (*dst->fetch) (dst);
+    da = d >> 24;
+    
+    switch (combine & CombineA) {
+    case 0:
+	Fa = 0;
+	break;
+    case CombineAOut:
+	Fa = fbCombineConjointOutPart (sa, da);
+	break;
+    case CombineAIn:
+	Fa = fbCombineConjointInPart (sa, da);
+	break;
+    case CombineA:
+	Fa = 0xff;
+	break;
+    }
+    
+    switch (combine & CombineB) {
+    case 0:
+	Fb = 0;
+	break;
+    case CombineBOut:
+	Fb = fbCombineConjointOutPart (da, sa);
+	break;
+    case CombineBIn:
+	Fb = fbCombineConjointInPart (da, sa);
+	break;
+    case CombineB:
+	Fb = 0xff;
+	break;
+    }
+    m = FbGen (s,d,0,Fa,Fb,t,u,v);
+    n = FbGen (s,d,8,Fa,Fb,t,u,v);
+    o = FbGen (s,d,16,Fa,Fb,t,u,v);
+    p = FbGen (s,d,24,Fa,Fb,t,u,v);
+    s = m|n|o|p;
+    (*dst->store) (dst, s);
+}
+
+void
+fbCombineConjointGeneralC (FbCompositeOperand   *src,
+			   FbCompositeOperand   *msk,
+			   FbCompositeOperand   *dst,
+			   CARD8		combine)
+{
+    FbCompSrc	cs;
+    CARD32  s, d;
+    CARD32  m,n,o,p;
+    CARD32  Fa;
+    CARD16  Fb, t, u, v;
+    CARD32  sa;
+    CARD8   da;
+
+    cs = fbCombineMaskC (src, msk);
+    s = cs.value;
+    sa = cs.alpha;
+    
+    d = (*dst->fetch) (dst);
+    da = d >> 24;
+    
+    switch (combine & CombineA) {
+    case 0:
+	Fa = 0;
+	break;
+    case CombineAOut:
+	m = fbCombineConjointOutPart ((CARD8) (sa >> 0), da);
+	n = fbCombineConjointOutPart ((CARD8) (sa >> 8), da) << 8;
+	o = fbCombineConjointOutPart ((CARD8) (sa >> 16), da) << 16;
+	p = fbCombineConjointOutPart ((CARD8) (sa >> 24), da) << 24;
+	Fa = m|n|o|p;
+	break;
+    case CombineAIn:
+	m = fbCombineConjointOutPart ((CARD8) (sa >> 0), da);
+	n = fbCombineConjointOutPart ((CARD8) (sa >> 8), da) << 8;
+	o = fbCombineConjointOutPart ((CARD8) (sa >> 16), da) << 16;
+	p = fbCombineConjointOutPart ((CARD8) (sa >> 24), da) << 24;
+	Fa = m|n|o|p;
+	break;
+    case CombineA:
+	Fa = 0xffffffff;
+	break;
+    }
+    
+    switch (combine & CombineB) {
+    case 0:
+	Fb = 0;
+	break;
+    case CombineBOut:
+	Fb = fbCombineConjointOutPart (da, sa);
+	break;
+    case CombineBIn:
+	Fb = fbCombineConjointInPart (da, sa);
+	break;
+    case CombineB:
+	Fb = 0xff;
+	break;
+    }
+    m = FbGen (s,d,0,FbGet8(Fa,0),Fb,t,u,v);
+    n = FbGen (s,d,8,FbGet8(Fa,8),Fb,t,u,v);
+    o = FbGen (s,d,16,FbGet8(Fa,16),Fb,t,u,v);
+    p = FbGen (s,d,24,FbGet8(Fa,24),Fb,t,u,v);
+    s = m|n|o|p;
+    (*dst->store) (dst, s);
+}
+
+void
+fbCombineConjointOverU (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineAOver);
+/*
+    CARD32  s, d;
+    CARD16  a;
+    CARD16  t;
+    CARD32  m,n,o,p;
+
+    s = fbCombineMaskU (src, msk);
+    a = s >> 24;
+    if (a != 0x00)
+    {
+	if (a != 0xff)
+	{
+	    d = (*dst->fetch) (dst);
+	    a = fbCombineConjointOutPart (d >> 24, a);
+	    m = FbOverU(s,d,0,a,t);
+	    n = FbOverU(s,d,8,a,t);
+	    o = FbOverU(s,d,16,a,t);
+	    p = FbOverU(s,d,24,a,t);
+	    s = m|n|o|p;
+	}
+	(*dst->store) (dst, s);
+    }
+ */
+}
+
+void
+fbCombineConjointOverC (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineAOver);
+}
+
+void
+fbCombineConjointOverReverseU (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineBOver);
+}
+
+void
+fbCombineConjointOverReverseC (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineBOver);
+}
+
+void
+fbCombineConjointInU (FbCompositeOperand	    *src,
+		      FbCompositeOperand	    *msk,
+		      FbCompositeOperand	    *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineAIn);
+}
+
+void
+fbCombineConjointInC (FbCompositeOperand	    *src,
+		      FbCompositeOperand	    *msk,
+		      FbCompositeOperand	    *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineAIn);
+}
+
+void
+fbCombineConjointInReverseU (FbCompositeOperand  *src,
+			     FbCompositeOperand  *msk,
+			     FbCompositeOperand  *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineBIn);
+}
+
+void
+fbCombineConjointInReverseC (FbCompositeOperand  *src,
+			     FbCompositeOperand  *msk,
+			     FbCompositeOperand  *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineBIn);
+}
+
+void
+fbCombineConjointOutU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineAOut);
+}
+
+void
+fbCombineConjointOutC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineAOut);
+}
+
+void
+fbCombineConjointOutReverseU (FbCompositeOperand *src,
+			      FbCompositeOperand *msk,
+			      FbCompositeOperand *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineBOut);
+}
+
+void
+fbCombineConjointOutReverseC (FbCompositeOperand *src,
+			      FbCompositeOperand *msk,
+			      FbCompositeOperand *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineBOut);
+}
+
+void
+fbCombineConjointAtopU (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineAAtop);
+}
+
+void
+fbCombineConjointAtopC (FbCompositeOperand   *src,
+			FbCompositeOperand   *msk,
+			FbCompositeOperand   *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineAAtop);
+}
+
+void
+fbCombineConjointAtopReverseU (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineBAtop);
+}
+
+void
+fbCombineConjointAtopReverseC (FbCompositeOperand    *src,
+			       FbCompositeOperand    *msk,
+			       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineBAtop);
+}
+
+void
+fbCombineConjointXorU (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralU (src, msk, dst, CombineXor);
+}
+
+void
+fbCombineConjointXorC (FbCompositeOperand    *src,
+		       FbCompositeOperand    *msk,
+		       FbCompositeOperand    *dst)
+{
+    fbCombineConjointGeneralC (src, msk, dst, CombineXor);
 }
 
 FbCombineFunc	fbCombineFuncU[] = {
@@ -847,7 +1520,37 @@ FbCombineFunc	fbCombineFuncU[] = {
     fbCombineAtopReverseU,
     fbCombineXorU,
     fbCombineAddU,
-    fbCombineSaturateU,
+    fbCombineDisjointOverU, /* Saturate */
+    0,
+    0,
+    fbCombineClear,
+    fbCombineSrcU,
+    fbCombineDst,
+    fbCombineDisjointOverU,
+    fbCombineDisjointOverReverseU,
+    fbCombineDisjointInU,
+    fbCombineDisjointInReverseU,
+    fbCombineDisjointOutU,
+    fbCombineDisjointOutReverseU,
+    fbCombineDisjointAtopU,
+    fbCombineDisjointAtopReverseU,
+    fbCombineDisjointXorU,
+    0,
+    0,
+    0,
+    0,
+    fbCombineClear,
+    fbCombineSrcU,
+    fbCombineDst,
+    fbCombineConjointOverU,
+    fbCombineConjointOverReverseU,
+    fbCombineConjointInU,
+    fbCombineConjointInReverseU,
+    fbCombineConjointOutU,
+    fbCombineConjointOutReverseU,
+    fbCombineConjointAtopU,
+    fbCombineConjointAtopReverseU,
+    fbCombineConjointXorU,
 };
 
 FbCombineFunc	fbCombineFuncC[] = {
@@ -864,7 +1567,37 @@ FbCombineFunc	fbCombineFuncC[] = {
     fbCombineAtopReverseC,
     fbCombineXorC,
     fbCombineAddC,
-    fbCombineSaturateC,
+    fbCombineDisjointOverC, /* Saturate */
+    0,
+    0,
+    fbCombineClear,	    /* 0x10 */
+    fbCombineSrcC,
+    fbCombineDst,
+    fbCombineDisjointOverC,
+    fbCombineDisjointOverReverseC,
+    fbCombineDisjointInC,
+    fbCombineDisjointInReverseC,
+    fbCombineDisjointOutC,
+    fbCombineDisjointOutReverseC,
+    fbCombineDisjointAtopC,
+    fbCombineDisjointAtopReverseC,
+    fbCombineDisjointXorC,  /* 0x1b */
+    0,
+    0,
+    0,
+    0,
+    fbCombineClear,
+    fbCombineSrcC,
+    fbCombineDst,
+    fbCombineConjointOverC,
+    fbCombineConjointOverReverseC,
+    fbCombineConjointInC,
+    fbCombineConjointInReverseC,
+    fbCombineConjointOutC,
+    fbCombineConjointOutReverseC,
+    fbCombineConjointAtopC,
+    fbCombineConjointAtopReverseC,
+    fbCombineConjointXorC,
 };
 
 /*
@@ -1676,7 +2409,7 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
     {
 	if (!fbBuildOneCompositeOperand (pPict, &op[1], x, y))
 	    return FALSE;
-	if (!fbBuildOneCompositeOperand (pPict, &op[2],
+	if (!fbBuildOneCompositeOperand (pPict->alphaMap, &op[2],
 					 x - pPict->alphaOrigin.x,
 					 y - pPict->alphaOrigin.y))
 	    return FALSE;
