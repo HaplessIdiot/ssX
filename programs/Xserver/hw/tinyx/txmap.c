@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/txmap.c,v 1.10 2001/07/24 21:26:17 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/txmap.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -147,14 +147,15 @@ KdUnmapDevice (void *addr, CARD32 size)
 #endif
 }
 
-#ifdef HAS_MTRR
+#if defined(HAS_MTRR) && \
+    (defined(MTRRIOC_ADD_ENTRY) || defined(MTRRIOC_DEL_ENTRY))
 static int  mtrr;
 #endif
 
 void
 KdSetMappedMode (CARD32 addr, CARD32 size, int mode)
 {
-#ifdef HAS_MTRR
+#if defined(HAS_MTRR) && defined(MTRRIOC_ADD_ENTRY)
     struct mtrr_sentry  sentry;
     unsigned long    	base, bound;
     unsigned int	type;
@@ -192,7 +193,7 @@ KdSetMappedMode (CARD32 addr, CARD32 size, int mode)
 void
 KdResetMappedMode (CARD32 addr, CARD32 size, int mode)
 {
-#ifdef HAS_MTRR
+#if defined(HAS_MTRR) && defined(MTRRIOC_DEL_ENTRY)
     struct mtrr_sentry  sentry;
     unsigned long    	base, bound;
     unsigned int	type;

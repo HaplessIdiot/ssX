@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/renderpixswap.c,v 1.5 2001/03/21 16:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/renderpixswap.c,v 1.1tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -70,7 +70,6 @@ void __glXDispSwap_Bitmap(GLbyte *pc)
     __GLX_SWAP_FLOAT((GLbyte *)&hdr->ymove);
 
     hdr->swapBytes = !hdr->swapBytes;
-
 }
 
 void __glXDispSwap_TexImage1D(GLbyte *pc)
@@ -365,7 +364,7 @@ void __glXDispSwap_SeparableFilter2D(GLbyte *pc)
 {
     __GLXdispatchConvolutionFilterHeader *hdr =
 				(__GLXdispatchConvolutionFilterHeader *) pc;
-    GLint hdrlen, image1len;
+    GLint hdrlen;
     __GLX_DECLARE_SWAP_VARIABLES;
 
     hdrlen = __GLX_PAD(__GLX_CONV_FILT_CMD_HDR_SIZE);

@@ -1,14 +1,15 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.1tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
-#ifdef __linux__
+#ifdef LinuxArchitecture
 RAWSRCS = lnx-keyboard.c lnx-ms.c lnx-ps2.c
 RAWOBJS = lnx-keyboard.o lnx-ms.o lnx-ps2.o
 #endif
 
-#ifndef __sgi
+#if HasLinuxInput
+USB_DEFINES = -DHAS_LINUX_INPUT
 USBSRCS = usb-keyboard.c usb-mouse.c usb-other.c usb-common.c
 USBOBJS = usb-keyboard.o usb-mouse.o usb-other.o usb-common.o
 #endif
@@ -33,7 +34,7 @@ INCLUDES = -I. -I.. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I../../../mi \
 	-I../../../include -I../../../render -I$(EXTINCSRC) \
 	-I$(SERVERSRC)/Xext -I$(SERVERSRC)/Xi
 
-DEFINES = $(OS_DEFINES) $(EXT_DEFINES) $(DMX_DEFINES)
+DEFINES = $(OS_DEFINES) $(EXT_DEFINES) $(DMX_DEFINES) $(USB_DEFINES)
 
 all:: $(OBJS)
 

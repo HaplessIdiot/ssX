@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -22,7 +23,7 @@
 
 
 
-
+#undef  PI
 #define PI 3.141592
 
 

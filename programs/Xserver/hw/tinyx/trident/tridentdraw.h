@@ -19,14 +19,13 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.h,v 1.4 2000/10/11 06:04:40 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.h,v 1.1tsi Exp $ */
 
 #ifndef _TRIDENTDRAW_H_
 #define _TRIDENTDRAW_H_
 
 #define SetupTrident(s) KdScreenPriv(s); \
-		    tridentCardInfo(pScreenPriv); \
-		    Cop	    *cop = tridentc->cop
+			tridentCardInfo(pScreenPriv)
 
 #define TridentAlpha	(COP_MULTI_ALPHA|COP_ALPHA_WRITE_ENABLE)
 

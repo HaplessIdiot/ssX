@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sis.c,v 1.6 2000/09/03 05:11:19 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/sis530/sis.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -68,7 +68,9 @@
  */
 
 #include "sis.h"
+#ifdef __GLIBC__
 #include <sys/perm.h>
+#endif
 
 #define MAX_FB_SIZE	(4096 * 1024)
 

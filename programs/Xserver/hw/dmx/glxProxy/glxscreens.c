@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.6 2001/03/21 16:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxscreens.c,v 1.1tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -227,7 +227,6 @@ static void CalcServerVersionAndExtensions( void )
 	   }
        }
    }
-
 }
 
 void __glXScreenInit(GLint numscreens)
@@ -263,7 +262,6 @@ void __glXScreenInit(GLint numscreens)
 	 if (numscreens > 1) {
 	    for (s=1; s<numscreens; s++) {
 	       DMXScreenInfo *dmxScreen = &dmxScreens[s];
-	       __GLXscreenInfo *glxScreen = &__glXActiveScreens[s];
 	  
 	       cfg = FindMatchingFBConfig( &dmxScreen0->fbconfigs[c],
 		                           dmxScreen->fbconfigs, 
@@ -307,7 +305,6 @@ void __glXScreenInit(GLint numscreens)
       }
 
     }
-
 }
 
 void __glXScreenReset(void)
@@ -338,7 +335,6 @@ char *__glXGetServerString( unsigned int name )
    }
 
    return( ret );
-
 }
 
 
@@ -377,7 +373,6 @@ __GLXFBConfig *glxLookupBackEndFBConfig( GLXFBConfigID id, int screen )
    }
 
    return(NULL);
-
 }
 
 int glxIsExtensionSupported( char *ext )

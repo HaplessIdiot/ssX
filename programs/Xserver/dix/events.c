@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.52 2004/01/23 07:23:34 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.53tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2036,7 +2036,6 @@ WindowsRestructured()
  * compute correctly. */
 void ReinitializeRootWindow(WindowPtr win, int xoff, int yoff)
 {
-    ScreenPtr pScreen = win->drawable.pScreen;
     GrabPtr   grab;
 
     if (noPanoramiXExtension) return;

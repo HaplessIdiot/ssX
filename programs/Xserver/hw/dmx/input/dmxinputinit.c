@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -177,7 +177,7 @@ static DMXLocalInputInfoRec DMXLocalDevices[] = {
         ps2LinuxRead
     },
 #endif
-#ifndef __sgi
+#ifdef HAS_LINUX_INPUT
                                 /* USB drivers, currently only for
                                    Linux, but relatively easy to port to
                                    other OSs */

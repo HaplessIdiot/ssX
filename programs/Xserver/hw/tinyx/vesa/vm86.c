@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.c,v 1.4 2003/11/01 04:49:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.c,v 1.1tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -95,7 +95,7 @@ THE SOFTWARE.
 { vi->vms.regs.esp -= 2;\
   LMW(vi,MAKE_POINTER(vi->vms.regs.ss, vi->vms.regs.esp)) = i;}
 
-static int vm86old(struct vm86_struct *vms);
+static int dovm86(struct vm86_struct *vms);
 static int vm86_loop(Vm86InfoPtr vi);
 
 static const U8 rev_ints[32] =
@@ -554,7 +554,7 @@ vm86_loop(Vm86InfoPtr vi)
     int code;
     
     while(1) {
-        code = vm86old(&vi->vms);
+        code = dovm86(&vi->vms);
         switch(VM86_TYPE(code)) {
         case VM86_SIGNAL:
             continue;
@@ -720,7 +720,7 @@ Vm86ReleaseMemory (Vm86InfoPtr vi, int mark)
 }
 
 static int
-vm86old(struct vm86_struct *vm)
+dovm86(struct vm86_struct *vm)
 {
     int res;
     
