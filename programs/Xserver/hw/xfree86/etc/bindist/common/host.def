@@ -15,6 +15,6 @@
 #define InstallJapaneseDocs	YES
 
 #define BuildSpecsDocs		YES
-#define SpecsDocDirs		DPMS xterm
+#define SpecsDocDirs		GL Xext Xv xterm
 
 

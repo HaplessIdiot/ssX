@@ -1,3 +1,6 @@
+XFree86 3.9.18c (2 March 2000)
+3906. Add an extra file name to the server config file search path --
+      XF86Config-M, where M is the major version number (David Dawes).
 3905. DRI megapatch II.  This includes DRI enhancements, 3dfx fixes and
       updates, updates Mesa to version 3.3 beta, adds new GLX dispatch
       code and adds i810 2D support (Precision Insight).
@@ -9919,4 +9922,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1050 2000/03/02 02:35:17 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1051 2000/03/02 16:07:41 martin Exp $

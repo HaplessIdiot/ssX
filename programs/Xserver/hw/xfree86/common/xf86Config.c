@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.210 2000/02/24 05:36:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.211 2000/02/25 17:23:10 tsi Exp $ */
 
 
 /*
@@ -50,15 +50,19 @@ extern DeviceAssocRec mouse_assoc;
 			"%E," "%F," \
 			"/etc/X11/%F," "%P/etc/X11/%F," \
 			"%D/%X," \
-			"/etc/X11/%X," "/etc/%X," "%P/etc/X11/%X.%H," \
-			"%P/etc/X11/%X," "%P/lib/X11/%X.%H," \
+			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
 			"%P/lib/X11/%X"
 #endif
 #ifndef USER_CONFIGPATH
 #define USER_CONFIGPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
 			"/etc/X11/%G," "%P/etc/X11/%G," \
-			"/etc/X11/%X," "/etc/%X," "%P/etc/X11/%X.%H," \
-			"%P/etc/X11/%X," "%P/lib/X11/%X.%H," \
+			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
 			"%P/lib/X11/%X"
 #endif
 #ifndef PROJECTROOT

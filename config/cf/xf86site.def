@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.153 1999/12/03 19:17:17 eich Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.154 2000/02/29 15:24:13 tsi Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -628,11 +628,19 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.153 1999/12/03 19:17:17 eich Exp $
  */
 
 /*
- * By default, XF86Contrib is defined so build only those parts of
- * of the contrib distribution supported by XFree86.  To prevent this
- * from being defined, uncomment the following.
+ * To build/install X specs docs, uncomment the following.
+ * The SpecsDocDirs setting here is recommended because it covers
+ * the docs that XFree86 has changed or added.
  *
-#define DontDefineXF86Contrib
+#define BuildSpecsDocs		YES
+#define SpecsDocDirs		GL Xext Xv xterm
+ */
+
+/*
+ * To build all specs docs, not just those listed in SpecsDocDirs, uncomment
+ * the following.
+ *
+#define BuildAllSpecsDocs	YES
  */
 
 /* 
@@ -655,3 +663,5 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.153 1999/12/03 19:17:17 eich Exp $
  *
 #define X86EMU_LIBPATH /usr/local/lib
  */ 
+
+

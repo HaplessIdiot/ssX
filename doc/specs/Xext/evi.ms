@@ -267,7 +267,7 @@ The include file for this extension is:
 .Pn < X11/extensions/XEVI.h >.
 .LP
 .sM
-.FD0
+.FD 0
 .PN Bool XeviQueryVersion(
 .br
     Display *\fIdisplay\fP\^,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.9 1999/07/04 06:39:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Imakefile,v 1.10 1999/09/04 13:04:53 dawes Exp $ */
 
 
 
@@ -25,6 +25,7 @@ SYS_LIBRARIES = MathLibrary
 
 XCONFIGFILE = XConfigFile
 XCONFIGDIR = XConfigDir
+XVERS = XFree86Version
 
 INCLUDES = -I. -I$(XF86OSSRC)
 
@@ -36,7 +37,9 @@ OBJS = Device.o Files.o Flags.o Input.o Keyboard.o Layout.o Module.o \
 	Video.o Monitor.o Pointer.o Screen.o Vendor.o read.o scan.o write.o \
 	DRI.o
 
-CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" -DXCONFIGFILE=\"$(XCONFIGFILE)\"
+CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" \
+		 -DXCONFIGFILE=\"$(XCONFIGFILE)\" \
+		 -DXVERSION=$(XVERS)
 
 #include <Library.tmpl>
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.274 2000/02/29 15:59:23 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.275 2000/03/02 16:06:53 martin Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1087,8 +1087,5 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # define LibraryDebugOpt DefaultGcc2DebugOpt
 #endif
 
-#ifndef DontDefineXF86Contrib
-# define XF86Contrib
-#endif
-
 #include <xf86.rules>
+
