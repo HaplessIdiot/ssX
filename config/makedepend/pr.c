@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/pr.c,v 1.2 1998/10/05 13:21:50 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/pr.c,v 1.3 2001/01/17 16:39:00 dawes Exp $ */
 
 #include "def.h"
 
@@ -35,7 +35,7 @@ extern boolean	show_where_not;
 
 void
 add_include(struct filepointer *filep, struct inclist *file, 
-	    struct inclist *file_red, char *include, boolean dot, 
+	    struct inclist *file_red, char *include, int type,
 	    boolean failOK)
 {
 	register struct inclist	*newfile;
@@ -44,7 +44,7 @@ add_include(struct filepointer *filep, struct inclist *file,
 	/*
 	 * First decide what the pathname of this include file really is.
 	 */
-	newfile = inc_path(file->i_file, include, dot);
+	newfile = inc_path(file->i_file, include, type);
 	if (newfile == NULL) {
 		if (failOK)
 		    return;
@@ -55,7 +55,7 @@ add_include(struct filepointer *filep, struct inclist *file,
 			warning("%s, line %d: ", file->i_file, filep->f_line);
 		warning1("cannot find include file \"%s\"\n", include);
 		show_where_not = TRUE;
-		newfile = inc_path(file->i_file, include, dot);
+		newfile = inc_path(file->i_file, include, type);
 		show_where_not = FALSE;
 	}
 

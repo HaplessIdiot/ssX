@@ -1,4 +1,6 @@
 XFree86 4.0.99.x (xx April 2001)
+ 457. Fix makedepend's integer value parsing and make it understand GCC's
+      #include_next directive as found in glibc & libc5 (Marc La France).
  456. Xterm patch #156 (Thomas Dickey):  change preference of types for
       selection-target between UTF8_STRING and STRING (Juliusz Chroboczek),
       fixes for configure script and documentation (report by Adam
@@ -13113,4 +13115,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1728 2001/04/28 20:42:17 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1729 2001/04/28 21:02:20 dickey Exp $

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.18 2001/01/17 16:38:59 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.19 2001/04/25 16:44:55 tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -72,6 +72,7 @@ char	*directives[] = {
 	"elif",
 	"eject",
 	"warning",
+	"include_next",
 	NULL
 };
 
@@ -81,10 +82,12 @@ char	*directives[] = {
 
 struct	inclist inclist[ MAXFILES ],
 		*inclistp = inclist,
+		*inclistnext = inclist,
 		maininclist;
 
 char	*filelist[ MAXFILES ];
-char	*includedirs[ MAXDIRS + 1 ];
+char	*includedirs[ MAXDIRS + 1 ],
+	**includedirsnext = includedirs;
 char	*notdotdot[ MAXDIRS ];
 char	*objprefix = "";
 char	*objsuffix = OBJSUFFIX;
