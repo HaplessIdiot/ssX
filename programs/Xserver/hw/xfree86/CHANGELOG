@@ -1,3 +1,8 @@
+XFree86 3.1.2Fb (1 September 1996)
+767. S3 support for the Diamond SS2410 RAMDAC (eriks).
+746. Fix resize on Linux (for terminfo) (Rik Faith).
+745. Updates to Cyrillic fonts (Andrey Chernov).
+
 XFree86 3.1.2Fa (31 August 1996)
 744. Fix xterm's handling of SGR 22, 24 and 25 in combination with colorUL
      and colorBD resources.  Also noted & fixed reset of colored
