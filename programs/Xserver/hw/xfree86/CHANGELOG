@@ -1,4 +1,7 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 381. Allow a Display subsection with no depth or fbbpp specified to match
+      any depth/fbbpp, and make Display subsections optional, creating one
+      with default parameters when no suitable one can be found (David Dawes).
  380. Include <sys/param.h> to get the BSD macro for luit (ITO Tsuyoshi).
  379. DRM resync from the DRI trunk...
        - Lots of misc fixes/cleanups, and some resyncs with 2.4 and 2.6
@@ -17557,7 +17560,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2812 2003/08/16 20:33:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2813 2003/08/17 20:39:55 dawes Exp $
 
 
 

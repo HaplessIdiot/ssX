@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.128 2003/02/26 23:45:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.129 2003/03/25 04:18:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -610,11 +610,46 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 	    break;
 	}
     }
+
+    /*
+     * If an exact match can't be found, see if there is one with no
+     * depth or fbbpp specified.
+     */
     if (i == scrp->confScreen->numdisplays) {
-	xf86DrvMsg(scrp->scrnIndex, X_ERROR, "No Display subsection "
-		   "in Screen section \"%s\" for depth/fbbpp %d/%d\n",
+	for (i = 0, disp = scrp->confScreen->displays;
+	     i < scrp->confScreen->numdisplays; i++, disp++) {
+	    if (disp->depth <= 0 && disp->fbbpp <= 0) {
+		scrp->display = disp;
+		break;
+	    }
+	}
+    }
+
+    /*
+     * If all else fails, create a default one.
+     */
+    if (i == scrp->confScreen->numdisplays) {
+	scrp->confScreen->numdisplays++;
+	scrp->confScreen->displays =
+		xnfrealloc(scrp->confScreen->displays,
+			   scrp->confScreen->numdisplays * sizeof(DispRec));
+	xf86DrvMsg(scrp->scrnIndex, X_INFO,
+		   "Creating default Display subsection in Screen section\n"
+		   "\t\"%s\" for depth/fbbpp %d/%d\n",
 		   scrp->confScreen->id, scrp->depth, scrp->bitsPerPixel);
-	return FALSE;
+	memset(&scrp->confScreen->displays[i], 0, sizeof(DispRec));
+	scrp->confScreen->displays[i].blackColour.red = -1;
+	scrp->confScreen->displays[i].blackColour.green = -1;
+	scrp->confScreen->displays[i].blackColour.blue = -1;
+	scrp->confScreen->displays[i].whiteColour.red = -1;
+	scrp->confScreen->displays[i].whiteColour.green = -1;
+	scrp->confScreen->displays[i].whiteColour.blue = -1;
+	scrp->confScreen->displays[i].defaultVisual = -1;
+	scrp->confScreen->displays[i].modes = xnfalloc(sizeof(char *));
+	scrp->confScreen->displays[i].modes[0] = NULL;
+	scrp->confScreen->displays[i].depth = depth;
+	scrp->confScreen->displays[i].fbbpp = fbbpp;
+	scrp->display = &scrp->confScreen->displays[i];
     }
 
     /*

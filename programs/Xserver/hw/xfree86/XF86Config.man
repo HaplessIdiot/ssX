@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.15 2003/04/13 15:14:22 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.16 2003/05/29 21:48:08 herrb Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -1369,7 +1369,7 @@ Disables accelerated solid line draws between two arbitrary points.
 .PP
 Each
 .B Screen
-section must contain one or more
+section may optionally contain one or more
 .B Display
 subsections.  Those subsections provide depth/fbbpp specific configuration
 information, and the one chosen depends on the depth and/or fbbpp that
@@ -1382,11 +1382,16 @@ Each
 .B Screen
 section may have multiple
 .B Display
-subsections.  There must be at least one, which matches the depth
-and/or fbbpp values that are being used for the screen.  The "active"
+subsections.  
+The "active"
 .B Display
 subsection is the first that matches the depth and/or fbbpp values being
-used.
+used, or failing that, the first that has neither a depth or fbbpp value
+specified.  The
+.B Display
+subsections are optional.  When there isn't one that matches the depth
+and/or fbbpp values being used, all the parameters that can be specified
+here fall back to their defaults.
 .PP
 .B Display
 subsections have the following format:
@@ -1405,10 +1410,12 @@ subsections have the following format:
 .BI "Depth  " depth
 This entry specifies what colour depth the
 .B Display
-subsection is to be used for.  This entry is usually mandatory,
-but it may be omitted in some cases providing an
+subsection is to be used for.  This entry is usually specified,
+but it may be omitted to create a match-all
+.B Display
+subsection or when wishing to match only against the
 .B FbBpp
-entry is present.  The range of
+parameter.  The range of
 .I depth
 values that are allowed depends on the driver.  Most driver support
 8, 15, 16 and 24.  Some also support 1 and/or 4, and some may support
@@ -1458,8 +1465,7 @@ given, then the initial display will be centered in the virtual display
 area.
 .TP 7
 .BI "Modes  \*q" mode-name \*q " ..."
-This entry is highly desirable for most drivers, and it specifies the list
-of video modes to use.  Each
+This optional entry specifies the list of video modes to use.  Each
 .I mode-name
 specified must be in double quotes.  They must correspond to those
 specified or referenced in the appropriate
@@ -1472,10 +1478,13 @@ into a circular list.  It is possible to switch to the next mode with
 .B Ctrl+Alt+Keypad-Plus
 and to the previous mode with
 .BR Ctrl+Alt+Keypad-Minus .
-When this entry is omitted, the largest valid mode referenced by the
+When this entry is omitted, the valid modes referenced by the
 appropriate
 .B Monitor
-section will be used.
+section will be used.  If the
+.B Monitor
+section contains no modes, then the selection will be taken from
+the built-in VESA standard modes.
 .TP 7
 .BI "Visual  \*q" visual-name \*q
 This optional entry sets the default root visual type.  This may also
