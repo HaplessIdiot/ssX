@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.5 1998/10/25 07:11:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.6 1999/01/31 12:21:26 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -93,6 +93,7 @@ extern char	    *NameForAtom ();
 extern pointer Xalloc(unsigned long);
 extern pointer Xrealloc(pointer, unsigned long);
 extern void Xfree(pointer);
+extern int f_strcasecmp(const char *s1, const char *s2);
 
 #ifndef xalloc
 #define xalloc(n)   Xalloc ((unsigned) n)
@@ -102,6 +103,12 @@ extern void Xfree(pointer);
 #define lowbit(x) ((x) & (~(x) + 1))
 
 #define assert(x)	((void)0)
+
+#ifndef strcasecmp
+#if defined(NEED_STRCASECMP) && !defined(FONTMODULE)
+#define strcasecmp(s1,s2) f_strcasecmp(s1,s2)
+#endif
+#endif
 
 extern void
 BitOrderInvert(

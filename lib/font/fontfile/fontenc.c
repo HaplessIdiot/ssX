@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.4 1999/02/28 11:19:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.5 1999/04/25 10:01:42 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -742,30 +742,4 @@ font_encoding_undefined_name(unsigned code, void *client_data)
   return NULL;
 }
 
-
-#ifdef NEED_STRCASECMP
-int
-f_strcasecmp(const char *s1, const char *s2)
-{
-  char c1, c2;
-
-  if (*s1 == 0)
-    if (*s2 == 0)
-      return 0;
-    else
-      return 1;
-
-  c1 = (isupper (*s1) ? tolower (*s1) : *s1);
-  c2 = (isupper (*s2) ? tolower (*s2) : *s2);
-  while (c1 == c2) {
-    if (c1 == '\0')
-      return 0;
-    s1++;
-    s2++;
-    c1 = (isupper (*s1) ? tolower (*s1) : *s1);
-    c2 = (isupper (*s2) ? tolower (*s2) : *s2);
-  }
-  return c1 - c2;
-}
-#endif
 

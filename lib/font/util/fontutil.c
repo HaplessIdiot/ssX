@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontutil.c,v 3.1 1996/12/23 06:02:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontutil.c,v 3.2 1998/10/03 09:07:31 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -411,3 +411,31 @@ Bool charset_subset;
 
     return Successful;
 }
+
+/* It is difficult to find a good place for this. */
+#ifdef NEED_STRCASECMP
+int
+f_strcasecmp(const char *s1, const char *s2)
+{
+  char c1, c2;
+
+  if (*s1 == 0)
+    if (*s2 == 0)
+      return 0;
+    else
+      return 1;
+
+  c1 = (isupper (*s1) ? tolower (*s1) : *s1);
+  c2 = (isupper (*s2) ? tolower (*s2) : *s2);
+  while (c1 == c2) {
+    if (c1 == '\0')
+      return 0;
+    s1++;
+    s2++;
+    c1 = (isupper (*s1) ? tolower (*s1) : *s1);
+    c2 = (isupper (*s2) ? tolower (*s2) : *s2);
+  }
+  return c1 - c2;
+}
+#endif
+

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/include/fontenc.h,v 1.3 1999/02/07 06:18:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontenc.h,v 1.4 1999/04/25 10:01:43 dawes Exp $ */
 
 /* Header for backend-independent encoding code */
 
@@ -90,10 +90,5 @@ unsigned font_encoding_recode(unsigned,
 char *font_encoding_name(unsigned,
                          struct font_encoding*,
                          struct font_encoding_mapping*);
-
-#if defined(NEED_STRCASECMP) && !defined(FONTMODULE)
-#define strcasecmp(s1,s2) f_strcasecmp(s1,s2)
-int f_strcasecmp(const char*, const char*);
-#endif
 
 #endif
