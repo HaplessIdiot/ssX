@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.86 2002/07/26 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.87 2002/07/31 04:24:13 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -188,16 +188,17 @@ main(int argc, char *argv[])
 
     xf86EnableIO();
     pcrpp = xf86scanpci(0);
-    xf86DisableIO();
 
     if (!pcrpp) {
 	printf("No PCI devices found\n");
+	xf86DisableIO();
 	exit (1);
     }
 
     while (pcrpp[i])
 	identify_card(pcrpp[i++],Verbose);
 
+    xf86DisableIO();
     exit(0);
 }
 

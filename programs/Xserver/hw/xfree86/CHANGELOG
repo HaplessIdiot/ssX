@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 226. Change scanpci to not disable I/O too early (Marc La France).
  225. Better error handling in xfs -ls argument parsing (Mordy Ovits).
  224. Make loader ignore ELF objects that don't define any symbols (H. J. Lu)
  223. Add a HasGcc3 imake symbol (Marc La France).
@@ -14983,4 +14984,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2281 2002/08/20 04:10:57 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2282 2002/08/20 09:19:54 herrb Exp $
