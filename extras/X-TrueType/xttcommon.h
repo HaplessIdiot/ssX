@@ -31,6 +31,7 @@
 
 Notice===
 */
+/* $XFree86$ */
 
 #ifndef _XTTCOMMON_H_
 #define _XTTCOMMON_H_ (1)

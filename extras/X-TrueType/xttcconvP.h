@@ -32,6 +32,7 @@
 
 Notice===
  */
+/* $XFree86$ */
 
 #ifndef _XTTCCONVP_H_
 #define _XTTCCONVP_H_ 1
