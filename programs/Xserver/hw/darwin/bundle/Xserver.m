@@ -6,6 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
+/* $XFree86: $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -72,36 +73,36 @@ extern char **envpGlobal;
     ev.type=[anEvent type];
     ev.flags=[anEvent modifierFlags];
     switch(ev.type) {
-      case NSLeftMouseDown:
-      case NSLeftMouseUp:
-      case NSMouseMoved:
-        break;
-      case NSLeftMouseDragged:
-      case NSRightMouseDragged:
-        ev.type=NSMouseMoved;
-        break;
-      case NSSystemDefined:
-        if(([anEvent subtype]==7) && ([anEvent data1] & 1))
-            return YES; // skip mouse button 1 events
-        if(mouseState==[anEvent data2])
-            return YES; // ignore double events
-        ev.data.compound.subType=[anEvent subtype];
-        ev.data.compound.misc.L[0]=[anEvent data1];
-        ev.data.compound.misc.L[1]=mouseState=[anEvent data2];
-        break;
-      case NSScrollWheel:
-        ev.data.scrollWheel.deltaAxis1=[anEvent deltaY];
-        break;
-      case NSKeyDown:
-      case NSKeyUp:
-        ev.data.key.keyCode = [anEvent keyCode];
-        ev.data.key.repeat = [anEvent isARepeat];
-        break;
-      case NSFlagsChanged:
-        ev.data.key.keyCode = [anEvent keyCode];
-        break;
-      default:
-        return YES;
+        case NSLeftMouseDown:
+        case NSLeftMouseUp:
+        case NSMouseMoved:
+            break;
+        case NSLeftMouseDragged:
+        case NSRightMouseDragged:
+            ev.type=NSMouseMoved;
+            break;
+        case NSSystemDefined:
+            if(([anEvent subtype]==7) && ([anEvent data1] & 1))
+                return YES; // skip mouse button 1 events
+            if(mouseState==[anEvent data2])
+                return YES; // ignore double events
+            ev.data.compound.subType=[anEvent subtype];
+            ev.data.compound.misc.L[0]=[anEvent data1];
+            ev.data.compound.misc.L[1]=mouseState=[anEvent data2];
+            break;
+        case NSScrollWheel:
+            ev.data.scrollWheel.deltaAxis1=[anEvent deltaY];
+            break;
+        case NSKeyDown:
+        case NSKeyUp:
+            ev.data.key.keyCode = [anEvent keyCode];
+            ev.data.key.repeat = [anEvent isARepeat];
+            break;
+        case NSFlagsChanged:
+            ev.data.key.keyCode = [anEvent keyCode];
+            break;
+        default:
+            return YES;
     }
 
     [self sendNXEvent:&ev];
@@ -140,10 +141,13 @@ extern char **envpGlobal;
 
 // Run the X server thread
 - (void)run {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
     [serverLock lock];
     main(argcGlobal, argvGlobal, envpGlobal);
     serverVisible = NO;
     [serverLock unlock];
+    [pool release];
     if (!appQuitting)
         [NSApp terminate:nil];	// quit if we aren't already
 }
@@ -211,12 +215,37 @@ extern char **envpGlobal;
         ev.data.compound.subType = kXDarwinUpdateModifiers;
         [self sendNXEvent:&ev];
 
+        // put the pasteboard into the X cut buffer
+        [self readPasteboard];
     } else {
+        // put the X cut buffer on the pasteboard
+        [self writePasteboard];
+
         ev.data.compound.subType = kXDarwinHide;
         [self sendNXEvent:&ev];
     }
 
     serverVisible = show;
+}
+
+// Tell the X server to read from the pasteboard into the X cut buffer
+- (void)readPasteboard 
+{
+    NXEvent ev;
+
+    ev.type = NX_APPDEFINED;
+    ev.data.compound.subType = kXDarwinReadPasteboard;
+    [self sendNXEvent:&ev];
+}
+
+// Tell the X server to write the X cut buffer into the pasteboard
+- (void)writePasteboard 
+{
+    NXEvent ev;
+
+    ev.type = NX_APPDEFINED;
+    ev.data.compound.subType = kXDarwinWritePasteboard;
+    [self sendNXEvent:&ev];
 }
 
 - (void)sendNXEvent:(NXEvent*)ev {
@@ -233,6 +262,10 @@ extern char **envpGlobal;
 
 - (void)applicationWillResignActive:(NSNotification *)aNotification {
     [self hide];
+}
+
+- (void)applicationWillBecomeActive:(NSNotification *)aNotification {
+    [self readPasteboard];
 }
 
 @end

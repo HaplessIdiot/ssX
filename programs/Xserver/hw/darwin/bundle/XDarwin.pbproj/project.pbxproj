@@ -516,7 +516,7 @@
 		};
 		29B97315FDCFA39411CA2CEA = {
 			children = (
-				06EB6C3B004099E7CE6F79C2,
+				43B962CE00617089416877C2,
 				018F40F2003E1902CE6F79C2,
 			);
 			isa = PBXGroup;
@@ -573,6 +573,32 @@
 			name = Foundation.framework;
 			path = /System/Library/Frameworks/Foundation.framework;
 			refType = 0;
+		};
+		43B962CE00617089416877C2 = {
+			children = (
+				43B962CF00617089416877C2,
+				43B962D000617089416877C2,
+				43B962D100617089416877C2,
+				06EB6C3B004099E7CE6F79C2,
+			);
+			isa = PBXGroup;
+			name = "Quartz Support";
+			refType = 4;
+		};
+		43B962CF00617089416877C2 = {
+			isa = PBXFileReference;
+			path = quartzCocoa.m;
+			refType = 4;
+		};
+		43B962D000617089416877C2 = {
+			isa = PBXFileReference;
+			path = quartzPasteboard.c;
+			refType = 4;
+		};
+		43B962D100617089416877C2 = {
+			isa = PBXFileReference;
+			path = quartzPasteboard.h;
+			refType = 4;
 		};
 		618092480041B0E4CE6F79C2 = {
 			children = (

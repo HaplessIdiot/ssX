@@ -3,6 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
+/* $XFree86: $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -36,6 +37,8 @@
 - (void)show;
 - (void)hide;
 - (void)kill;
+- (void)readPasteboard;
+- (void)writePasteboard;
 - (void)sendNXEvent:(NXEvent*)ev;
 - (void)sendShowHide:(BOOL)show;
 
@@ -46,6 +49,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 - (void)applicationWillResignActive:(NSNotification *)aNotification;
+- (void)applicationWillBecomeActive:(NSNotification *)aNotification;
 
 @end
 
