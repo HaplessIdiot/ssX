@@ -1,4 +1,4 @@
-
+/* $XFree86: $ */
 /*
  * ET4/6K acceleration interface -- color expansion primitives.
  *
