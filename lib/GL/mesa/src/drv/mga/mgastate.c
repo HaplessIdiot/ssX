@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.9 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.10 2001/05/19 00:26:42 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -395,13 +395,31 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
       a |= AC_alphasel_diffused;
    }
    else {
-      /* Regardless of texture env mode, we use the alpha from the
+      /* G400: Regardless of texture env mode, we use the alpha from the
        * texture unit (AC_alphasel_fromtex) since it will have already
        * been modulated by the incoming fragment color, if needed.
        * We don't want (AC_alphasel_modulate) since that'll effectively
        * do the modulation twice.
        */
-      a |= AC_alphasel_fromtex;
+      if (MGA_IS_G400(mmesa)) {
+         a |= AC_alphasel_fromtex;
+      }
+      else {
+         /* G200 */
+         switch (ctx->Texture.Unit[0].EnvMode) {
+         case GL_DECAL:
+            a |= AC_alphasel_diffused;
+         case GL_REPLACE:
+            a |= AC_alphasel_fromtex;
+            break;
+         case GL_BLEND:
+         case GL_MODULATE:
+            a |= AC_alphasel_modulated;
+            break;
+         default:
+            break;
+         }
+      }
    }
 
 

@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.9 2001/03/21 16:14:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.10 2001/04/10 16:07:51 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -427,6 +427,8 @@ static void mgaUpdateTextureEnvG200( GLcontext *ctx )
 
    t = (mgaTextureObjectPtr)tObj->DriverData;
 
+   t->setup.texctl2 &= ~TMC_decalblend_enable;
+
    switch (ctx->Texture.Unit[0].EnvMode) {
    case GL_REPLACE:
       t->setup.texctl &= ~TMC_tmodulate_enable;
@@ -436,6 +438,7 @@ static void mgaUpdateTextureEnvG200( GLcontext *ctx )
       break;
    case GL_DECAL:
       t->setup.texctl &= ~TMC_tmodulate_enable;
+      t->setup.texctl2 |= TMC_decalblend_enable;
       break;
    case GL_BLEND:
       t->ctx->Fallback |= MGA_FALLBACK_TEXTURE;
