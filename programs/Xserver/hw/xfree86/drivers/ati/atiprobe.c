@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.12 1999/10/13 16:49:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.15 2000/02/11 21:16:23 alanh Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -825,6 +825,13 @@ ATIProbe
 #   define              BIOSWord(_n)  (*((CARD16 *)(BIOS + (_n))))
 
 #   define              AddAdapter(_p)                                     \
+    do                                                                     \
+    {                                                                      \
+        nATIPtr++;                                                         \
+        ATIPtrs = (ATIPtr *)xnfrealloc(ATIPtrs, SizeOf(ATIPtr) * nATIPtr); \
+        ATIPtrs[nATIPtr - 1] = (_p);                                       \
+        (_p)->iEntity = -2;                                                \
+    } while(0)
 
     if (flags & PROBE_DETECTFBDEV) return FALSE; /* we don't do fbdev */
 
@@ -833,14 +840,6 @@ ATIProbe
      * TEMPORARY for 3.9.18 */
     if (flags & PROBE_DETECTPCI) return FALSE;
     if (flags & PROBE_DETECTISA) return FALSE;
-
-    do                                                                     \
-    {                                                                      \
-        nATIPtr++;                                                         \
-        ATIPtrs = (ATIPtr *)xnfrealloc(ATIPtrs, SizeOf(ATIPtr) * nATIPtr); \
-        ATIPtrs[nATIPtr - 1] = (_p);                                       \
-        (_p)->iEntity = -2;                                                \
-    } while(0)
 
     if (!(flags & PROBE_DETECT))
     {
