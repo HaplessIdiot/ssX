@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.12 1999/03/14 03:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.13 2000/09/26 15:57:18 tsi Exp $ */
 
 /*
  *
@@ -147,6 +147,7 @@ LOOKUP	*list ;
     while ( l->symName ) {
 	i = xf86loadermalloc( sizeof( itemRec )) ;
 	i->name = l->symName ;
+#if 0
 	if( strcmp(i->name,"ModuleInit") == 0
 #if defined(__powerpc__) && defined(Lynx)
 	  || strcmp(i->name,".ModuleInit") == 0
@@ -173,6 +174,7 @@ LOOKUP	*list ;
 		ErrorF("Add module init function %s at %lx\n",i->name, l->offset);
 #endif
 	}
+#endif
 	i->address = (char *) l->offset ;
 	i->handle = handle ;
 	i->module = module ;
