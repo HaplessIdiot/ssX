@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.40 2001/01/06 20:58:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.41 2001/01/30 22:06:19 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -403,7 +403,7 @@ ATIPreInit
     pciVideoPtr      pVideo;
     DisplayModePtr   pMode;
     unsigned long    Block0Base;
-    CARD32           IOValue1, IOValue2 = 0, IOValue3 = 0, IOValue4 = 0;
+    CARD32           IOValue;
     int              i, j, AcceleratorVideoRAM = 0;
     int              Numerator, Denominator;
     int              MinX, MinY;
@@ -411,6 +411,8 @@ ATIPreInit
     int              minPitch, maxPitch = 0xFFU, maxHeight = 0;
     int              ApertureSize = 0x00010000U;
     LookupModeFlags  Strategy = LOOKUP_CLOSEST_CLOCK;
+
+#   define           pATIHW     (&pATI->OldHW)
 
 #ifndef AVOID_CPIO
 
@@ -514,11 +516,15 @@ ATIPreInit
         {
             static const CARD8 AllowedDepthBpp[][2] =
             {
+
 #ifndef AVOID_CPIO
+
                 { 1,  1},
                 { 4,  4},
                 { 4,  8},
+
 #endif /* AVOID_CPIO */
+
                 { 8,  8},
                 {15, 16},
                 {16, 16},
@@ -563,7 +569,7 @@ ATIPreInit
 
 #ifdef AVOID_CPIO
 
-    else
+    else /* if (flags & PROBE_DETECT) */
         return TRUE;
 
 #else /* AVOID_CPIO */
@@ -749,13 +755,13 @@ ATIPreInit
             break;
 
         case ATI_ADAPTER_MACH32:
-            IOValue1 = inw(CONFIG_STATUS_1);
-            pATI->DAC = ATI_DAC(GetBits(IOValue1, DACTYPE), 0);
-            pATI->MemoryType = GetBits(IOValue1, MEM_TYPE);
+            IOValue = inw(CONFIG_STATUS_1);
+            pATI->DAC = ATI_DAC(GetBits(IOValue, DACTYPE), 0);
+            pATI->MemoryType = GetBits(IOValue, MEM_TYPE);
 
-            IOValue1 = inw(MISC_OPTIONS);
+            IOValue = inw(MISC_OPTIONS);
             pATI->VideoRAM =
-                videoRamSizes[GetBits(IOValue1, MEM_SIZE_ALIAS) + 2];
+                videoRamSizes[GetBits(IOValue, MEM_SIZE_ALIAS) + 2];
 
             /*
              * The 68800-6 doesn't necessarily report the correct video memory
@@ -812,8 +818,9 @@ ATIPreInit
 
 #endif /* AVOID_CPIO */
 
-            IOValue1 = inr(CRTC_GEN_CNTL);
-            if (!(IOValue1 & CRTC_EN) && (pATI->Chip >= ATI_CHIP_264CT))
+            pATIHW->crtc_gen_cntl = inr(CRTC_GEN_CNTL);
+            if (!(pATIHW->crtc_gen_cntl & CRTC_EN) &&
+                (pATI->Chip >= ATI_CHIP_264CT))
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                     "Adapter has not been initialised.\n");
@@ -824,7 +831,7 @@ ATIPreInit
 
 #ifdef AVOID_CPIO
 
-            if (!(IOValue1 & CRTC_EXT_DISP_EN))
+            if (!(pATIHW->crtc_gen_cntl & CRTC_EXT_DISP_EN))
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                     "Adapters found to be in VGA mode on server entry are not"
@@ -836,49 +843,51 @@ ATIPreInit
 
 #endif /* AVOID_CPIO */
 
-            IOValue1 = inr(MEM_CNTL);
+            IOValue = inr(MEM_CNTL);
             if (pATI->Chip < ATI_CHIP_264VTB)
                 pATI->VideoRAM =
-                    videoRamSizes[GetBits(IOValue1, CTL_MEM_SIZE) + 2];
+                    videoRamSizes[GetBits(IOValue, CTL_MEM_SIZE) + 2];
             else
             {
                 pATI->nFIFOEntries =            /* Don't care */
                     (unsigned int)(-1) >> 1;
 
-                IOValue1 = GetBits(IOValue1, CTL_MEM_SIZEB);
-                if (IOValue1 < 8)
-                    pATI->VideoRAM = (IOValue1 + 1) * 512;
-                else if (IOValue1 < 12)
-                    pATI->VideoRAM = (IOValue1 - 3) * 1024;
+                IOValue = GetBits(IOValue, CTL_MEM_SIZEB);
+                if (IOValue < 8)
+                    pATI->VideoRAM = (IOValue + 1) * 512;
+                else if (IOValue < 12)
+                    pATI->VideoRAM = (IOValue - 3) * 1024;
                 else
-                    pATI->VideoRAM = (IOValue1 - 7) * 2048;
+                    pATI->VideoRAM = (IOValue - 7) * 2048;
             }
 
             pATI->DAC = GetBits(inr(DAC_CNTL), DAC_TYPE);
 
-            IOValue1 = inr(CONFIG_STATUS64_0);
+            IOValue = inr(CONFIG_STATUS64_0);
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
-                pATI->MemoryType = GetBits(IOValue1, CFG_MEM_TYPE_T);
+                pATI->MemoryType = GetBits(IOValue, CFG_MEM_TYPE_T);
 
                 /* Get LCD panel id and set LCD & TV I/O port numbers */
                 if (pATI->Chip == ATI_CHIP_264LT)
                 {
-                    pATI->LCDPanelID = GetBits(IOValue1, CFG_PANEL_ID);
+                    pATI->LCDPanelID = GetBits(IOValue, CFG_PANEL_ID);
 
-                    IOValue2 = inr(HORZ_STRETCHING);
-                    IOValue3 = inr(VERT_STRETCHING);
-                    IOValue4 = inr(LCD_GEN_CTRL);
+                    pATIHW->horz_stretching = inr(HORZ_STRETCHING);
+                    pATIHW->vert_stretching = inr(VERT_STRETCHING);
+                    pATIHW->lcd_gen_ctrl = inr(LCD_GEN_CTRL);
                 }
                 else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                          (pATI->Chip == ATI_CHIP_264XL) ||
                          (pATI->Chip == ATI_CHIP_MOBILITY))
                 {
-                    pATI->LCDPanelID = GetBits(IOValue1, CFG_PANEL_ID);
+                    pATI->LCDPanelID = GetBits(IOValue, CFG_PANEL_ID);
 
-                    IOValue1 = inr(LCD_INDEX);
-                    IOValue2 = ATIGetMach64LCDReg(LCD_HORZ_STRETCHING);
-                    pATI->LCDHorizontal = GetBits(IOValue2, HORZ_PANEL_SIZE);
+                    pATIHW->lcd_index = inr(LCD_INDEX);
+                    pATIHW->horz_stretching =
+                        ATIGetMach64LCDReg(LCD_HORZ_STRETCHING);
+                    pATI->LCDHorizontal =
+                        GetBits(pATIHW->horz_stretching, HORZ_PANEL_SIZE);
                     if (pATI->LCDHorizontal)
                     {
                         if (pATI->LCDHorizontal == MaxBits(HORZ_PANEL_SIZE))
@@ -887,8 +896,10 @@ ATIPreInit
                             pATI->LCDHorizontal =
                                 (pATI->LCDHorizontal + 1) << 3;
                     }
-                    IOValue3 = ATIGetMach64LCDReg(LCD_EXT_VERT_STRETCH);
-                    pATI->LCDVertical = GetBits(IOValue3, VERT_PANEL_SIZE);
+                    pATIHW->ext_vert_stretch =
+                        ATIGetMach64LCDReg(LCD_EXT_VERT_STRETCH);
+                    pATI->LCDVertical =
+                        GetBits(pATIHW->ext_vert_stretch, VERT_PANEL_SIZE);
                     if (pATI->LCDVertical)
                     {
                         if (pATI->LCDVertical == MaxBits(VERT_PANEL_SIZE))
@@ -896,9 +907,10 @@ ATIPreInit
                         else
                             pATI->LCDVertical++;
                     }
-                    IOValue3 = ATIGetMach64LCDReg(LCD_VERT_STRETCHING);
-                    IOValue4 = ATIGetMach64LCDReg(LCD_GEN_CNTL);
-                    outr(LCD_INDEX, IOValue1);
+                    pATIHW->vert_stretching =
+                        ATIGetMach64LCDReg(LCD_VERT_STRETCHING);
+                    pATIHW->lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+                    outr(LCD_INDEX, pATIHW->lcd_index);
                 }
 
                 /*
@@ -908,14 +920,14 @@ ATIPreInit
                 if ((pATI->LCDPanelID >= 0) &&
                     !pATI->LCDHorizontal &&
                     !pATI->LCDVertical &&
-                    !(IOValue2 & HORZ_STRETCH_EN) &&
-                    !(IOValue3 & VERT_STRETCH_EN) &&
-                    !(IOValue4 & LCD_ON))
+                    !(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
+                    !(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
+                    !(pATIHW->lcd_gen_ctrl & LCD_ON))
                         pATI->LCDPanelID = -1;
             }
             else
             {
-                pATI->MemoryType = GetBits(IOValue1, CFG_MEM_TYPE);
+                pATI->MemoryType = GetBits(IOValue, CFG_MEM_TYPE);
 
                 /* Factor in what the BIOS says the DAC is */
                 pATI->DAC = ATI_DAC(pATI->DAC,
@@ -1219,10 +1231,10 @@ ATIPreInit
     /* Sometimes, the BIOS lies about the chip */
     if ((pATI->Chip >= ATI_CHIP_28800_4) && (pATI->Chip <= ATI_CHIP_28800_6))
     {
-        IOValue1 = GetBits(ATIGetExtReg(0xAAU), 0x0FU) +
+        IOValue = GetBits(ATIGetExtReg(0xAAU), 0x0FU) +
             (ATI_CHIP_28800_4 - 4);
-        if ((IOValue1 <= ATI_CHIP_28800_6) && (IOValue1 > pATI->Chip))
-            pATI->Chip = IOValue1;
+        if ((IOValue <= ATI_CHIP_28800_6) && (IOValue > pATI->Chip))
+            pATI->Chip = IOValue;
     }
 
 #endif /* AVOID_CPIO */
@@ -1521,7 +1533,233 @@ ATIPreInit
      */
     if (pATI->LCDPanelID >= 0)
     {
+        int HDisplay, VDisplay;
         CARD8 ClockMask, PostMask;
+
+        /*
+         * Determine porch data.  The following is inaccurate (but still good
+         * enough) when BIOS initialisation has set things up so that the
+         * registers read here are not the ones actually in use by the panel.
+         * Thus, a further refinement here would be to flip back and forth
+         * between shadow and non-shadow registers as dictated by the various
+         * LCD_GEN_CNTL and CONFIG_PANEL bits involved.
+         *
+         * This groks the mode on entry to extract the width and position of
+         * its sync and blanking pulses, and considers any overscan as part of
+         * the displayed area, given that the overscan is also stretched.
+         *
+         * This also attempts to determine panel dimensions but cannot do so
+         * for one that is "auto-stretched".
+         */
+
+#ifndef AVOID_CPIO
+
+        if (!(pATIHW->crtc_gen_cntl & CRTC_EXT_DISP_EN))
+        {
+            pATIHW->clock = (inb(R_GENMO) & 0x0CU) >> 2;
+
+            pATIHW->crt[0] = GetReg(CRTX(pATI->CPIO_VGABase), 0x00U);
+            pATIHW->crt[2] = GetReg(CRTX(pATI->CPIO_VGABase), 0x02U);
+            pATIHW->crt[3] = GetReg(CRTX(pATI->CPIO_VGABase), 0x03U);
+            pATIHW->crt[4] = GetReg(CRTX(pATI->CPIO_VGABase), 0x04U);
+            pATIHW->crt[5] = GetReg(CRTX(pATI->CPIO_VGABase), 0x05U);
+            pATIHW->crt[6] = GetReg(CRTX(pATI->CPIO_VGABase), 0x06U);
+            pATIHW->crt[7] = GetReg(CRTX(pATI->CPIO_VGABase), 0x07U);
+            pATIHW->crt[9] = GetReg(CRTX(pATI->CPIO_VGABase), 0x09U);
+            pATIHW->crt[16] = GetReg(CRTX(pATI->CPIO_VGABase), 0x10U);
+            pATIHW->crt[17] = GetReg(CRTX(pATI->CPIO_VGABase), 0x11U);
+            pATIHW->crt[21] = GetReg(CRTX(pATI->CPIO_VGABase), 0x15U);
+            pATIHW->crt[22] = GetReg(CRTX(pATI->CPIO_VGABase), 0x16U);
+
+            pATI->LCDHSyncWidth = (pATIHW->crt[5] - pATIHW->crt[4]) & 0x1FU;
+            pATI->LCDHBlankWidth = (((pATIHW->crt[3] & 0x1FU) |
+                                     ((pATIHW->crt[5] >> 2) & 0x20U)) -
+                                    pATIHW->crt[2]) & 0x3FU;
+            pATI->LCDVSyncWidth = (pATIHW->crt[17] - pATIHW->crt[16]) & 0x0FU;
+            pATI->LCDVBlankWidth = (pATIHW->crt[22] - pATIHW->crt[21]) & 0xFFU;
+
+            HDisplay = pATIHW->crt[0] + 5 - pATI->LCDHBlankWidth;
+            VDisplay = (((pATIHW->crt[7] << 4) & 0x0200U) |
+                        ((pATIHW->crt[7] << 8) & 0x0100U) |
+                        pATIHW->crt[6]) + 2 - pATI->LCDVBlankWidth;
+
+            pATI->LCDHSyncStart =
+                ((pATIHW->crt[4] - pATIHW->crt[2]) & 0xFFU) + 1;
+            pATI->LCDVSyncStart = (((((pATIHW->crt[7] << 2) & 0x0200U) |
+                                     ((pATIHW->crt[7] << 6) & 0x0100U) |
+                                     pATIHW->crt[16]) -
+                                    (((pATIHW->crt[9] << 4) & 0x0200U) |
+                                     ((pATIHW->crt[7] << 5) & 0x0100U) |
+                                     pATIHW->crt[21])) & 0xFFU) + 1;
+        }
+        else
+
+#endif /* AVOID_CPIO */
+
+        {
+            pATIHW->clock = inr(CLOCK_CNTL) & 0x03U;
+
+            pATIHW->crtc_h_total_disp = inr(CRTC_H_TOTAL_DISP);
+            pATIHW->crtc_h_sync_strt_wid = inr(CRTC_H_SYNC_STRT_WID);
+            pATIHW->crtc_v_total_disp = inr(CRTC_V_TOTAL_DISP);
+            pATIHW->crtc_v_sync_strt_wid = inr(CRTC_V_SYNC_STRT_WID);
+            pATIHW->ovr_wid_left_right = inr(OVR_WID_LEFT_RIGHT);
+            pATIHW->ovr_wid_top_bottom = inr(OVR_WID_TOP_BOTTOM);
+
+            HDisplay = GetBits(pATIHW->crtc_h_total_disp, CRTC_H_DISP) +
+                GetBits(pATIHW->ovr_wid_left_right, OVR_WID_LEFT) +
+                GetBits(pATIHW->ovr_wid_left_right, OVR_WID_RIGHT);
+            VDisplay = GetBits(pATIHW->crtc_v_total_disp, CRTC_V_DISP) +
+                GetBits(pATIHW->ovr_wid_top_bottom, OVR_WID_TOP) +
+                GetBits(pATIHW->ovr_wid_top_bottom, OVR_WID_BOTTOM);
+
+            pATI->LCDHSyncStart =
+                (GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_STRT_HI) *
+                 (MaxBits(CRTC_H_SYNC_STRT) + 1)) +
+                GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_STRT) -
+                HDisplay;
+            pATI->LCDHSyncWidth =
+                GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_WID);
+            pATI->LCDHBlankWidth =
+                GetBits(pATIHW->crtc_h_total_disp, CRTC_H_TOTAL) - HDisplay;
+            pATI->LCDVSyncStart =
+                GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_STRT) -
+                VDisplay;
+            pATI->LCDVSyncWidth =
+                GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_WID);
+            pATI->LCDVBlankWidth =
+                GetBits(pATIHW->crtc_v_total_disp, CRTC_V_TOTAL) - VDisplay;
+
+            HDisplay++;
+            VDisplay++;
+        }
+
+        HDisplay <<= 3;
+        pATI->LCDHSyncStart <<= 3;
+        pATI->LCDHSyncWidth <<= 3;
+        pATI->LCDHBlankWidth <<= 3;
+
+        /* Calculate panel dimensions implied by the input timing */
+        if ((pATIHW->horz_stretching & (HORZ_STRETCH_EN | AUTO_HORZ_RATIO)) ==
+            HORZ_STRETCH_EN)
+        {
+            if (pATIHW->horz_stretching & HORZ_STRETCH_MODE)
+            {
+                if (pATIHW->horz_stretching & HORZ_STRETCH_BLEND)
+                {
+                    HDisplay = (HDisplay * (MaxBits(HORZ_STRETCH_BLEND) + 1)) /
+                        GetBits(pATIHW->horz_stretching, HORZ_STRETCH_BLEND);
+                }
+            }
+            else if (((pATIHW->horz_stretching & HORZ_STRETCH_LOOP) >
+                      HORZ_STRETCH_LOOP15) ||
+                     (pATIHW->horz_stretching &
+                      SetBits(1, HORZ_STRETCH_RATIO)))
+            {
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Ignoring invalid horizontal stretch ratio in mode on"
+                    " server entry.\n");
+            }
+            else
+            {
+                IOValue = GetBits(pATIHW->horz_stretching, HORZ_STRETCH_RATIO);
+
+                switch (GetBits(pATIHW->horz_stretching, HORZ_STRETCH_LOOP))
+                {
+                    case GetBits(HORZ_STRETCH_LOOP09, HORZ_STRETCH_LOOP):
+                        i = 9;
+                        IOValue &= (1 << 9) - 1;
+                        break;
+
+                    case GetBits(HORZ_STRETCH_LOOP11, HORZ_STRETCH_LOOP):
+                        i = 11;
+                        IOValue &= (1 << 11) - 1;
+                        break;
+
+                    case GetBits(HORZ_STRETCH_LOOP12, HORZ_STRETCH_LOOP):
+                        i = 12;
+                        IOValue &= (1 << 12) - 1;
+                        break;
+
+                    case GetBits(HORZ_STRETCH_LOOP14, HORZ_STRETCH_LOOP):
+                        i = 14;
+                        IOValue &= (1 << 14) - 1;
+                        break;
+
+                    case GetBits(HORZ_STRETCH_LOOP15, HORZ_STRETCH_LOOP):
+                    default:    /* Muffle compiler */
+                        i = 15;
+                        IOValue &= (1 << 15) - 1;
+                        break;
+                }
+
+                if (IOValue)
+                {
+                    /* Count the number of bits in IOValue */
+                    j = (IOValue >> 1) & 0x36DBU;
+                    j = IOValue - j - ((j >> 1) & 0x36DBU);
+                    j = ((j + (j >> 3)) & 0x71C7U) % 0x3FU;
+
+                    HDisplay = (HDisplay * i) / j;
+                }
+            }
+        }
+
+        if ((pATIHW->vert_stretching & VERT_STRETCH_EN) &&
+            !(pATIHW->ext_vert_stretch & AUTO_VERT_RATIO))
+        {
+            if ((pATIHW->vert_stretching & VERT_STRETCH_USE0) ||
+                (VDisplay <= 350))
+                IOValue =
+                    GetBits(pATIHW->vert_stretching, VERT_STRETCH_RATIO0);
+            else if (VDisplay <= 400)
+                IOValue =
+                    GetBits(pATIHW->vert_stretching, VERT_STRETCH_RATIO1);
+            else if ((VDisplay <= 480) ||
+                     !(pATIHW->ext_vert_stretch & VERT_STRETCH_RATIO3))
+                IOValue =
+                    GetBits(pATIHW->vert_stretching, VERT_STRETCH_RATIO2);
+            else
+                IOValue =
+                    GetBits(pATIHW->ext_vert_stretch, VERT_STRETCH_RATIO3);
+
+            if (IOValue)
+                VDisplay =
+                    (VDisplay * (MaxBits(VERT_STRETCH_RATIO0) + 1)) / IOValue;
+        }
+
+        /* Match calculated dimensions to probed dimensions */
+        if (!pATI->LCDHorizontal)
+        {
+            if ((pATIHW->horz_stretching & (HORZ_STRETCH_EN | AUTO_HORZ_RATIO))
+                != (HORZ_STRETCH_EN | AUTO_HORZ_RATIO))
+                pATI->LCDHorizontal = HDisplay;
+        }
+        else if (pATI->LCDHorizontal != HDisplay)
+        {
+            if ((pATIHW->horz_stretching & (HORZ_STRETCH_EN | AUTO_HORZ_RATIO))
+                != (HORZ_STRETCH_EN | AUTO_HORZ_RATIO))
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Inconsistent panel horizontal dimension:  %d and %d.\n",
+                    pATI->LCDHorizontal, HDisplay);
+            HDisplay = pATI->LCDHorizontal;
+        }
+
+        if (!pATI->LCDVertical)
+        {
+            if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) ||
+                !(pATIHW->ext_vert_stretch & AUTO_VERT_RATIO))
+                pATI->LCDVertical = VDisplay;
+        }
+        else if (pATI->LCDVertical != VDisplay)
+        {
+            if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) ||
+                !(pATIHW->ext_vert_stretch & AUTO_VERT_RATIO))
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Inconsistent panel vertical dimension:  %d and %d.\n",
+                    pATI->LCDVertical, VDisplay);
+            VDisplay = pATI->LCDVertical;
+        }
 
         if (!pATI->LCDHorizontal || !pATI->LCDVertical)
         {
@@ -1537,6 +1775,29 @@ ATIPreInit
             ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
             ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
+        }
+
+        /* If the mode on entry wasn't stretched, adjust timings */
+        if (!(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
+            ((HDisplay = pATI->LCDHorizontal - HDisplay) > 0))
+        {
+            if ((pATI->LCDHSyncStart -= HDisplay) < 0)
+                pATI->LCDHSyncStart = 0;
+            pATI->LCDHBlankWidth -= HDisplay;
+            HDisplay = pATI->LCDHSyncStart + pATI->LCDHSyncWidth;
+            if (pATI->LCDHBlankWidth < HDisplay)
+                pATI->LCDHBlankWidth = HDisplay;
+        }
+
+        if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
+            ((VDisplay = pATI->LCDVertical - VDisplay) > 0))
+        {
+            if ((pATI->LCDVSyncStart -= VDisplay) < 0)
+                pATI->LCDVSyncStart = 0;
+            pATI->LCDVBlankWidth -= VDisplay;
+            VDisplay = pATI->LCDVSyncStart + pATI->LCDVSyncWidth;
+            if (pATI->LCDVBlankWidth < VDisplay)
+                pATI->LCDVBlankWidth = VDisplay;
         }
 
         if (pATI->LCDPanelID || (pATI->Chip <= ATI_CHIP_264LTPRO))
@@ -1565,35 +1826,21 @@ ATIPreInit
         /*
          * Determine panel clock.  This must be done after option processing so
          * that the adapter's reference frequency is always available.
-         */
-
-#ifndef AVOID_CPIO
-
-        if (!(pATI->LockData.crtc_gen_cntl & CRTC_EXT_DISP_EN))
-            i = (inb(R_GENMO) & 0x0CU) >> 2;
-        else
-
-#endif /* AVOID_CPIO */
-
-        {
-            i = inr(CLOCK_CNTL) & 0x03U;
-        }
-
-        /*
+         *
          * Get post divider.  A GCC bug has caused the following expression to
          * be broken down into its individual components.
          */
-        ClockMask = PLL_VCLK0_XDIV << i;
-        PostMask = PLL_VCLK0_POST_DIV << (i * 2);
-        j = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
-        j *= MaxBits(PLL_VCLK0_POST_DIV) + 1;
-        j |= GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
+        ClockMask = PLL_VCLK0_XDIV << pATIHW->clock;
+        PostMask = PLL_VCLK0_POST_DIV << (pATIHW->clock * 2);
+        i = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
+        i *= MaxBits(PLL_VCLK0_POST_DIV) + 1;
+        i |= GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
 
         /* Calculate clock of mode on entry */
-        Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + i) *
+        Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + pATIHW->clock) *
             pATI->ReferenceNumerator;
         Denominator = pATI->ClockDescriptor.MinM * pATI->ReferenceDenominator *
-            pATI->ClockDescriptor.PostDividers[j];
+            pATI->ClockDescriptor.PostDividers[i];
         pATI->LCDClock = ATIDivide(Numerator, Denominator, 1, 0);
 
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
@@ -1641,10 +1888,10 @@ ATIPreInit
         }
         else
         {
-            IOValue1 = ATIGetExtReg(0xB0U);
-            if (IOValue1 & 0x08U)
+            IOValue = ATIGetExtReg(0xB0U);
+            if (IOValue & 0x08U)
                 VGAVideoRAM = 1024;
-            else if (IOValue1 & 0x10U)
+            else if (IOValue & 0x10U)
                 VGAVideoRAM = 512;
             else
                 VGAVideoRAM = 256;
@@ -1706,12 +1953,13 @@ ATIPreInit
 
             {
                 /* Get adapter's linear aperture configuration */
-                IOValue1 = inr(CONFIG_CNTL);
-                pATI->LinearBase = GetBits(IOValue1, CFG_MEM_AP_LOC) << 22;
-                if ((IOValue1 & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
+                pATIHW->config_cntl = inr(CONFIG_CNTL);
+                pATI->LinearBase =
+                    GetBits(pATIHW->config_cntl, CFG_MEM_AP_LOC) << 22;
+                if ((pATIHW->config_cntl & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
                 {
                     pATI->LinearSize =
-                        GetBits(IOValue1, CFG_MEM_AP_SIZE) << 22;
+                        GetBits(pATIHW->config_cntl, CFG_MEM_AP_SIZE) << 22;
 
                     /*
                      * Linear aperture could have been disabled (but still
@@ -1732,17 +1980,17 @@ ATIPreInit
                 if (!pATI->PCIInfo)
                 {
                     if (pATI->Chip == ATI_CHIP_88800CX)
-                        IOValue2 = ~((CARD32)((1 << 23) - 1));
+                        IOValue = ~((CARD32)((1 << 23) - 1));
                     else if (pATI->Chip >= ATI_CHIP_88800GXE)
-                        IOValue2 = ~((CARD32)((1 << 24) - 1));
+                        IOValue = ~((CARD32)((1 << 24) - 1));
                     else if (pATI->VideoRAM >= 4096)
-                        IOValue2 = ~((CARD32)((1 << 23) - 1));
+                        IOValue = ~((CARD32)((1 << 23) - 1));
                     else
-                        IOValue2 = ~((CARD32)((1 << 22) - 1));
+                        IOValue = ~((CARD32)((1 << 22) - 1));
 
-                    if ((IOValue2 &= pGDev->MemBase) &&
-                        (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
-                        pATI->LinearBase = IOValue2;
+                    if ((IOValue &= pGDev->MemBase) &&
+                        (IOValue <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
+                        pATI->LinearBase = IOValue;
 
                     if (!pATI->LinearBase)
                         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,

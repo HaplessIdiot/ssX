@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.1 2000/10/11 22:52:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.2 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -243,7 +243,6 @@ ATIModePreInit
 )
 {
     CARD32 lcd_index;
-    int HDisplay, VDisplay;
 
 #ifndef AVOID_CPIO
 
@@ -291,8 +290,6 @@ ATIModePreInit
     {
         if (pATI->Chip == ATI_CHIP_264LT)
         {
-            pATIHW->horz_stretching = inr(HORZ_STRETCHING);
-            pATIHW->vert_stretching = inr(VERT_STRETCHING);
             pATIHW->lcd_gen_ctrl = inr(LCD_GEN_CTRL);
         }
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
@@ -306,8 +303,6 @@ ATIModePreInit
             pATIHW->config_panel =
                 ATIGetMach64LCDReg(LCD_CONFIG_PANEL) | DONT_SHADOW_HEND;
             pATIHW->lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
-            pATIHW->horz_stretching = ATIGetMach64LCDReg(LCD_HORZ_STRETCHING);
-            pATIHW->vert_stretching = ATIGetMach64LCDReg(LCD_VERT_STRETCHING);
             outr(LCD_INDEX, lcd_index);
         }
 
@@ -330,112 +325,6 @@ ATIModePreInit
         {
             /* Use primary CRTC to drive the panel */
             pATIHW->lcd_gen_ctrl |= LCD_ON;
-
-            /*
-             * Determine porch data.  The following is inaccurate (but still
-             * good enough) when BIOS initialisation has set things up so that
-             * the registers read here are not the ones actually in use by the
-             * panel.
-             */
-
-#ifndef AVOID_CPIO
-
-            if (pATI->LockData.crtc_gen_cntl & CRTC_EXT_DISP_EN)
-
-#endif /* AVOID_CPIO */
-
-            {
-                pATIHW->crtc_h_total_disp = inr(CRTC_H_TOTAL_DISP);
-                pATIHW->crtc_h_sync_strt_wid = inr(CRTC_H_SYNC_STRT_WID);
-                pATIHW->crtc_v_total_disp = inr(CRTC_V_TOTAL_DISP);
-                pATIHW->crtc_v_sync_strt_wid = inr(CRTC_V_SYNC_STRT_WID);
-
-                HDisplay = GetBits(pATIHW->crtc_h_total_disp, CRTC_H_DISP);
-                VDisplay = GetBits(pATIHW->crtc_v_total_disp, CRTC_V_DISP);
-
-                pATI->LCDHSyncStart =
-                    (GetBits(pATIHW->crtc_h_sync_strt_wid,
-                             CRTC_H_SYNC_STRT_HI) *
-                     (MaxBits(CRTC_H_SYNC_STRT) + 1)) +
-                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_STRT) -
-                    HDisplay;
-                pATI->LCDHSyncWidth =
-                    GetBits(pATIHW->crtc_h_sync_strt_wid, CRTC_H_SYNC_WID);
-                pATI->LCDHBlankWidth =
-                    GetBits(pATIHW->crtc_h_total_disp, CRTC_H_TOTAL) -
-                    HDisplay;
-                pATI->LCDVSyncStart =
-                    GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_STRT) -
-                    VDisplay;
-                pATI->LCDVSyncWidth =
-                    GetBits(pATIHW->crtc_v_sync_strt_wid, CRTC_V_SYNC_WID);
-                pATI->LCDVBlankWidth =
-                    GetBits(pATIHW->crtc_v_total_disp, CRTC_V_TOTAL) -
-                    VDisplay;
-            }
-
-#ifndef AVOID_CPIO
-
-            else
-            {
-                pATIHW->crt[0] = GetReg(CRTX(pATI->CPIO_VGABase), 0x00U);
-                pATIHW->crt[1] = GetReg(CRTX(pATI->CPIO_VGABase), 0x01U);
-                pATIHW->crt[4] = GetReg(CRTX(pATI->CPIO_VGABase), 0x04U);
-                pATIHW->crt[5] = GetReg(CRTX(pATI->CPIO_VGABase), 0x05U);
-                pATIHW->crt[6] = GetReg(CRTX(pATI->CPIO_VGABase), 0x06U);
-                pATIHW->crt[7] = GetReg(CRTX(pATI->CPIO_VGABase), 0x07U);
-                pATIHW->crt[16] = GetReg(CRTX(pATI->CPIO_VGABase), 0x10U);
-                pATIHW->crt[17] = GetReg(CRTX(pATI->CPIO_VGABase), 0x11U);
-                pATIHW->crt[18] = GetReg(CRTX(pATI->CPIO_VGABase), 0x12U);
-
-                HDisplay = pATIHW->crt[1] + 1;
-                VDisplay = (((pATIHW->crt[7] << 3) & 0x0200U) |
-                            ((pATIHW->crt[7] << 7) & 0x0100U) |
-                            pATIHW->crt[18]) + 1;
-
-                pATI->LCDHSyncStart = pATIHW->crt[4] - HDisplay;
-                pATI->LCDHSyncWidth =
-                    (pATIHW->crt[5] - pATIHW->crt[4]) & 0x1FU;
-                pATI->LCDHBlankWidth = pATIHW->crt[0] + 5 - HDisplay;
-                pATI->LCDVSyncStart = (((pATIHW->crt[7] << 2) & 0x0200U) |
-                                       ((pATIHW->crt[7] << 6) & 0x0100U) |
-                                       pATIHW->crt[16]) - VDisplay;
-                pATI->LCDVSyncWidth =
-                    (pATIHW->crt[17] - pATIHW->crt[16]) & 0x0FU;
-                pATI->LCDVBlankWidth = (((pATIHW->crt[7] << 4) & 0x0200U) |
-                                        ((pATIHW->crt[7] << 8) & 0x0100U) |
-                                        pATIHW->crt[6]) + 2 - VDisplay;
-            }
-
-#endif /* AVOID_CPIO */
-
-            HDisplay <<= 3;
-            pATI->LCDHSyncStart <<= 3;
-            pATI->LCDHSyncWidth <<= 3;
-            pATI->LCDHBlankWidth <<= 3;
-
-            /* If the mode on entry wasn't stretched, adjust timings */
-            if (!(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
-                ((HDisplay = pATI->LCDHorizontal - HDisplay) > 0))
-            {
-                if ((pATI->LCDHSyncStart -= HDisplay) < 0)
-                    pATI->LCDHSyncStart = 0;
-                pATI->LCDHBlankWidth -= HDisplay;
-                HDisplay = pATI->LCDHSyncStart + pATI->LCDHSyncWidth;
-                if (pATI->LCDHBlankWidth < HDisplay)
-                    pATI->LCDHBlankWidth = HDisplay;
-            }
-
-            if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
-                ((VDisplay = pATI->LCDVertical - VDisplay) > 0))
-            {
-                if ((pATI->LCDVSyncStart -= VDisplay) < 0)
-                    pATI->LCDVSyncStart = 0;
-                pATI->LCDVBlankWidth -= VDisplay;
-                VDisplay = pATI->LCDVSyncStart + pATI->LCDVSyncWidth;
-                if (pATI->LCDVBlankWidth < VDisplay)
-                    pATI->LCDVBlankWidth = VDisplay;
-            }
         }
     }
 
