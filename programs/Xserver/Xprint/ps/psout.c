@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.9 2001/12/14 19:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.10 2001/12/19 21:28:44 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  
@@ -90,8 +90,6 @@ in this Software without prior written authorization from The Open Group.
 #include "os.h"
 #include "Ps.h"
 #include "psout.h"
-
-PsElmPtr PsCloneFillElementList(int nElms, PsElmPtr elms);
 
 typedef void *voidPtr;
 

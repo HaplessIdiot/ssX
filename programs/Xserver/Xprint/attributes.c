@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.15 2001/10/28 03:32:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.16 2001/10/31 22:50:28 tsi Exp $ */
 
 #include <X11/Xproto.h>
 #include <string.h>
@@ -1154,7 +1154,6 @@ SendFileToCommand(
  * store for the supplied print context.  The ReplaceAnyString utility
  * routine is used to perform the actual replacements.
  */
-extern char *ReplaceAnyString(char *, char *, char *);
 
 static char *
 ReplaceAllKeywords(

@@ -1,8 +1,10 @@
 XFree86 4.1.99.3 (19 December 2001)
+ 601. Change the property Xprint uses to identify pmf printer internal fonts
+      to avoid a clash with DPS (#5106, Chris Bare, from X11R6.6).
  600. Fix a C type aliasing bug in xkbcomp (#5104, Jakub Jelinek).
  599. Fix a bug in Xprint's PS output code that was over-optimizing out
       clip change requests (#5102, Chris Bare, from X11R6.6).
- 598. Improved error handling for Xprint's -XpFile option (#5101,
+ 598. Improved error handling for Xprint's -XpFile option (#5101, 5105,
       Chris Bare, from X11R6.6).
  597. Add higher resolution options to the Xprint postscript printer support
       (#5096, Chris Bare, from X11R6.6).
@@ -14387,4 +14389,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2095 2001/12/19 21:12:47 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2096 2001/12/19 21:37:32 dawes Exp $
