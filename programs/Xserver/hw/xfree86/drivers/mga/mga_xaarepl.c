@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 #define PSZ 8
 
 #include "vga256.h"

@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /*
  * Copyright 1997
  * Digital Equipment Corporation. All rights reserved.
