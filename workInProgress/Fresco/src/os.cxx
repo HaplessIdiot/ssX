@@ -1,5 +1,6 @@
 /*
- * $XConsortium: os.cxx,v 1.9 94/04/01 16:48:03 matt Exp $
+ * $XConsortium: os.cxx,v 1.12 94/08/17 21:48:05 matt Exp $
+ * $XFree86$
  */
 
 /*
@@ -57,20 +58,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sysent.h>
-#include <unistd.h>
-
-/*
- * DEC C++ headers don't prototype getpw* functions?
- */
-
-#ifdef __DECCXX
-extern "C" {
-    extern struct passwd* getpwent();
-    extern struct passwd* getpwnam(const char*);
-    extern struct passwd* getpwuid(uid_t);
-}
+#if !defined(__osf__) && !defined(__hpux) && !defined(__GNUC__)
+#include <sysent.h>		/* DEC, HP and g++ don't have sysent.h */
 #endif
+#include <unistd.h>
 
 #ifndef S_ISDIR
 #define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
@@ -92,10 +83,12 @@ extern "C" {
 #include <sys/utsname.h>
 #endif
 
-#if !defined(NEED_UTSNAME) && (defined(AIXV3) || defined(__alpha))
+#if !defined(NEED_UTSNAME) && !defined (__linux__)
+#if defined(AIXV3) || defined(__osf__) || defined(__GNUC__)
 extern "C" {
     int gethostname(char *, int);
 }
+#endif
 #endif
 
 /*
@@ -480,7 +473,7 @@ Boolean DirectoryImpl::ifdir(const char* path) {
 
 /* class File */
 
-#ifdef sgi
+#ifdef __sgi
 #include <sys/mman.h>
 #endif
 
@@ -537,7 +530,7 @@ void File::close() {
     FileInfo* i = rep_;
     if (i->fd_ >= 0) {
 	if (i->map_ != nil) {
-#ifdef sgi
+#ifdef __sgi
 	    munmap(i->map_, int(i->info_.st_size));
 #endif
 	}
@@ -583,7 +576,7 @@ long InputFile::read(const char*& start) {
     if (i->limit_ != 0 && len > i->limit_) {
 	len = i->limit_;
     }
-#ifdef sgi
+#ifdef __sgi
     i->map_ = (char*)mmap(
 	0, (int)len, PROT_READ, MAP_PRIVATE, i->fd_, i->pos_
     );
