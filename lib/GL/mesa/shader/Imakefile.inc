@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/shader/Imakefile.inc,v 1.1 2004/12/10 16:06:58 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/shader/Imakefile.inc,v 1.2 2004/12/10 18:26:36 alanh Exp $
 
 #ifndef MesaShaderBuildDir
 #define MesaShaderBuildDir $(GLXLIBSRC)/mesa/shader/
@@ -14,6 +14,7 @@ MESASHADERBUILDDIR = MesaShaderBuildDir
 		     $(MESASHADERBUILDDIR)nvfragparse.c \
 		     $(MESASHADERBUILDDIR)nvprogram.c \
 		     $(MESASHADERBUILDDIR)nvvertexec.c \
+		     $(MESASHADERBUILDDIR)nvvertparse.c \
 		     $(MESASHADERBUILDDIR)program.c
 
 #ifdef NeedToLinkMesaSrc
@@ -38,6 +39,7 @@ LinkSourceFile(nvprogram.c, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(nvprogram.h, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(nvvertexec.c, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(nvvertexec.h, $(MESASRCDIR)/src/mesa/shader)
+LinkSourceFile(nvvertparse.c, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(nvvertparse.h, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(nvvertprog.h, $(MESASRCDIR)/src/mesa/shader)
 LinkSourceFile(program.c, $(MESASRCDIR)/src/mesa/shader)
@@ -52,6 +54,7 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)nvfragparse.o \
 		     $(MESASHADERBUILDDIR)nvprogram.o \
 		     $(MESASHADERBUILDDIR)nvvertexec.o \
+		     $(MESASHADERBUILDDIR)nvvertparse.o \
 		     $(MESASHADERBUILDDIR)program.o
 
  MESA_SHADER_EOBJS = $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/arbfragparse.o \
@@ -62,6 +65,7 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvprogram.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvvertexec.o \
+		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/nvvertparse.o \
 		     $(MESASHADERBUILDDIR)$(EXTRASUBDIR)/program.o
 
 #if defined(DoSharedLib) && DoSharedLib
@@ -73,6 +77,7 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)unshared/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)unshared/nvprogram.o \
 		     $(MESASHADERBUILDDIR)unshared/nvvertexec.o \
+		     $(MESASHADERBUILDDIR)unshared/nvvertparse.o \
 		     $(MESASHADERBUILDDIR)unshared/program.o
 #else
  MESA_SHADER_UOBJS = $(MESA_SHADER_OBJS)
@@ -86,6 +91,7 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)debugger/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)debugger/nvprogram.o \
 		     $(MESASHADERBUILDDIR)debugger/nvvertexec.o \
+		     $(MESASHADERBUILDDIR)debugger/nvvertparse.o \
 		     $(MESASHADERBUILDDIR)debugger/program.o
 
  MESA_SHADER_POBJS = $(MESASHADERBUILDDIR)profiled/arbfragparse.o \
@@ -96,4 +102,5 @@ LinkSourceFile(program.h, $(MESASRCDIR)/src/mesa/shader)
 		     $(MESASHADERBUILDDIR)profiled/nvfragparse.o \
 		     $(MESASHADERBUILDDIR)profiled/nvprogram.o \
 		     $(MESASHADERBUILDDIR)profiled/nvvertexec.o \
+		     $(MESASHADERBUILDDIR)profiled/nvvertparse.o \
 		     $(MESASHADERBUILDDIR)profiled/program.o
