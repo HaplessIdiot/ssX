@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.230 2001/05/23 03:29:38 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.231 2001/05/23 08:56:05 alanh Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -310,13 +310,6 @@ XCOMM
  *  If a server does not need all of the above components, simply
  *  omit the relevant lines from the build block.
  *  
- *  Additional ddx directories can be split across three variables:
- *  DDXDIR1, DDXDIR2, and DDXDIR3.  Most servers only use DDXDIR1,
- *  but if two servers can be built on a platform then DDXDIR1 is
- *  typically set to the ddx directories that are shared by both
- *  servers, DDXDIR2 is the directories unique to one of the servers,
- *  and DDXDIR3 is the directories unique to the other server.
- *  
  *  If these guidelines are followed, a make at the top of the server
  *  tree should result in each subdirectory being built only once,
  *  even if multiple servers that share subdirectories are being built.
@@ -332,11 +325,11 @@ XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
-DDXDIR1 = hw/dec/ws
+DECWSDDXDIR = hw/dec/ws
 #if BuildLowMem
-DECDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+DECDIRS = $(STDDIRS) $(LMFCFBDIR) $(DECWSDDXDIR) $(DEPDIRS)
 #else
-DECDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+DECDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DECWSDDXDIR) $(DEPDIRS)
 #endif
 DECOBJS = hw/dec/ws/init.o hw/dec/ws/sdepthinit.o
 #if BuildLowMem
@@ -362,10 +355,10 @@ CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
-DDXDIR1  = hw/dec/ws
+DECWSDDXDIR  = hw/dec/ws
 DECDIRS1 = $(STDDIRS) $(MFBDIR) \
 	   $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-	   $(DDXDIR1) $(DEPDIRS)
+	   $(DECWSDDXDIR) $(DEPDIRS)
 DECOBJS1 = hw/dec/ws/init.o hw/dec/ws/mdepthinit.o
 DECLIBS1 = hw/dec/ws/LibraryTargetName(dec) CFBLibs
 ServerTarget(Xdec_md,$(DECDIRS1),$(DECOBJS1), \
@@ -382,22 +375,24 @@ XCOMM Sun server
 XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
-DDXDIR1 = hw/sun
-#ifndef AmoebaArchitecture
-SUNOBJS = hw/sun/sunInit.o
+SUNDDXDIR = hw/sun
+#if DoLoadableServer
+SUNOBJS = hw/sun/sunInit.o hw/sun/sunInitExt.o hw/sun/stubs.o
+#elif XF86Server
+SUNOBJS = hw/sun/sunInit.o hw/sun/stubs.o
 #else
-SUNOBJS = hw/sun/sunInitColor.o
+SUNOBJS = hw/sun/sunInit.o
 #endif
 #if BuildLowMem
-SUNDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+SUNDIRS = $(STDDIRS) $(LMFCFBDIR) $(SUNDDXDIR) $(DEPDIRS)
 SUNLIBS = hw/sun/LibraryTargetName(sun) LMFCFBLibs
 #else
-SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(SUNDDXDIR) $(DEPDIRS)
 SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
 #endif
 SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
 SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
-	$(SUNLIBS),$(SUNSYSLIBS))
+	$(SUNLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(SUNSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun
 #endif
@@ -413,14 +408,20 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
-DDXDIR1 = hw/sun
+SUNDDXDIR = hw/sun
 SUN24DIRS = $(STDDIRS) $(MFBDIR) \
 	    $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-	    $(DDXDIR1) $(DEPDIRS)
+	    $(SUNDDXDIR) $(DEPDIRS)
+#if DoLoadableServer
+SUN24OBJS = hw/sun/sunInitMulti.o hw/sun/sunInitExt.o hw/sun/stubs.o
+#elif XF86Server
+SUN24OBJS = hw/sun/sunInitMulti.o hw/sun/stubs.o
+#else
 SUN24OBJS = hw/sun/sunInitMulti.o
+#endif
 SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
 SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS), \
-	$(SUN24LIBS),$(FONTLIBS) $(SYSLIBS))
+	$(SUN24LIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xsun24
 #endif
@@ -432,12 +433,16 @@ XCOMM
 XCOMM Sun monochrome server
 XCOMM
 MFBDIR = mfb
-DDXDIR1 = hw/sun
-SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
+SUNDDXDIR = hw/sun
+SUNMDIRS = $(STDDIRS) $(MFBDIR) $(SUNDDXDIR) $(DEPDIRS)
+#if XF86Server
+SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o hw/sun/stubs.o
+#else
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
+#endif
 SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBBareLibs $(EXTENSIONS)
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
-	$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
+	$(SUNMLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall XsunMono
 #endif
@@ -450,8 +455,8 @@ XCOMM Sun server for Amoeba
 XCOMM
 MFBDIR = mfb
 CFB8DIR = cfb
-DDXDIR1 = hw/sunAmoeba
-SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+AMOEBADDXDIR = hw/sunAmoeba
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(AMOEBADDXDIR) $(DEPDIRS)
 SUNOBJS = hw/sunAmoeba/sunInitColor.o
 SUNLIBS = hw/sunAmoeba/LibraryTargetName(sun) CFB8Libs
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
@@ -467,8 +472,8 @@ XCOMM
 XCOMM Sun monochrome server for Amoeba
 XCOMM
 MFBDIR = mfb
-DDXDIR1 = hw/sunAmoeba
-SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
+AMOEBADDXDIR = hw/sunAmoeba
+SUNMDIRS = $(STDDIRS) $(MFBDIR) $(AMOEBADDXDIR) $(DEPDIRS)
 SUNMOBJS = hw/sunAmoeba/sunInitMono.o hw/sunAmoeba/sunInExMono.o
 SUNMLIBS = hw/sunAmoeba/LibraryTargetName(sun) MFBBareLibs $(OTHEREXTS)
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
@@ -485,8 +490,8 @@ XCOMM Sun server for LynxOS microSPARC 2.4.0
 XCOMM
 MFBDIR = mfb
 CFB8DIR = cfb
-DDXDIR1 = hw/sunLynx
-SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
+LYNXDDXDIR = hw/sunLynx
+SUNDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(LYNXDDXDIR) $(DEPDIRS)
 SUNOBJS = hw/sunLynx/sunLyInit.o
 SUNLIBS = hw/sunLynx/libsun.a CFB8Libs
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
@@ -502,8 +507,8 @@ XCOMM
 XCOMM Sun monochrome server for LynxOS microSPARC 2.4.0
 XCOMM
 MFBDIR = mfb
-DDXDIR1 = hw/sunLynx
-SUNMDIRS = $(STDDIRS) $(MFBDIR) $(DDXDIR1) $(DEPDIRS)
+LYNXDDXDIR = hw/sunLynx
+SUNMDIRS = $(STDDIRS) $(MFBDIR) $(LYNXDDXDIR) $(DEPDIRS)
 SUNMOBJS = hw/sunLynx/sunInitMono.o hw/sunLynx/sunInExMono.o
 SUNMLIBS = hw/sunLynx/libsun.a MFBBareLibs $(OTHEREXTS)
 ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
@@ -521,13 +526,13 @@ XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB32DIR = cfb32
-DDXDIR1 = hw/hp
+HPDDXDIR = hw/hp
 HPOBJS = hw/hp/hp.o
 #if BuildLowMem
-HPSUBDIRS = $(STDDIRS) $(LMFCFBDIR) $(DDXDIR1) $(DEPDIRS)
+HPSUBDIRS = $(STDDIRS) $(LMFCFBDIR) $(HPDDXDIR) $(DEPDIRS)
 HPLIBS = LMFCFBLibs
 #else
-HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(HPDDXDIR) $(DEPDIRS)
 HPLIBS = CFB32Libs
 #endif
 HPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
@@ -579,10 +584,10 @@ SHADOWDIR = miext/shadow
 #if XF86AFB
 AFBDIR = afb
 #endif
-DDXDIR1  = hw/xfree86
+XFREE86DDXDIR  = hw/xfree86
 XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(FBDIR) $(AFBDIR) \
 		    $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-		    $(SHADOWDIR) $(DDXDIR1) $(DEPDIRS)
+		    $(SHADOWDIR) $(XFREE86DDXDIR) $(DEPDIRS)
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
@@ -1165,17 +1170,16 @@ XCOMM X Server for MS Windows
 XCOMM
 FBDIR = fb
 SHADOWDIR = miext/shadow
-XWINDIR = hw/xwin
+XWINDDXDIR = hw/xwin
 XWIN = $(XWINDIR)/LibraryTargetName(Xwin)
 XWINGDI32 = -lgdi32
 XWINDDRAW = -lddraw
-DDXDIR1 = $(XWINDIR)
-XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(XWINDIR) $(DEPDIRS)
+XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(XWINDDXDIR) $(DEPDIRS)
 
-XWINOBJSA = $(XWINDIR)/stubs.o
+XWINOBJSA = $(XWINDDXDIR)/stubs.o
 
 #if BuildDPMS
-XWINOBJSB = $(XWINDIR)/dpmsstubs.o
+XWINOBJSB = $(XWINDDXDIR)/dpmsstubs.o
 #endif
 
 XWINOBJS = $(XWINOBJSA) $(XWINOBJSB)
@@ -1209,11 +1213,10 @@ XCOMM
 XCOMM X Darwin server for Mac OS X / Darwin
 XCOMM
 FBDIR    = fb
-DDXDIR1  = hw/darwin
-DDXDIR2  = hw/darwin/bundle
-DARWINDIRS = $(STDDIRS) $(FBDIR) $(DDXDIR1) $(DEPDIRS)
-DARWINOBJS = $(DDXDIR1)/xfIOKitStartup.o
-DARWINLIBS = PreFbLibs $(DDXDIR1)/LibraryTargetName(darwin) FbPostFbLibs
+DARWINDDXDIR = hw/darwin
+DARWINDIRS = $(STDDIRS) $(FBDIR) $(DARWINDDXDIR) $(DEPDIRS)
+DARWINOBJS = $(DARWINDDXDIR)/xfIOKitStartup.o
+DARWINLIBS = PreFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin) PostFbLibs
 DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 
 /*
@@ -1231,7 +1234,7 @@ SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
  */
 QUARTZSYSLIBS = -framework ApplicationServices -framework Cocoa \
                 -framework CoreAudio -framework Carbon -ObjC
-QUARTZOBJS = $(DDXDIR2)/quartzStartup.o
+QUARTZOBJS = $(DARWINDDXDIR)/bundle/quartzStartup.o
 #if NothingOutsideProjectRoot
 XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents/MacOS
 #else
@@ -1242,7 +1245,7 @@ XDARWINAPPDIR = /Applications/XDarwin.app/Contents/MacOS
  * Quartz X server (installed in its application bundle)
  */
 SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
-	$(DARWINLIBS) $(DDXDIR2)/LibraryTargetName(XQuartz), \
+	$(DARWINLIBS) $(DARWINDDXDIR)/bundle/LibraryTargetName(XQuartz), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
 
 install::
@@ -1263,7 +1266,9 @@ install::
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 MIEXTDIRS = $(SHADOWDIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
-DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
+DDXDIRS = $(DECWSDDXDIR) $(SUNDDXDIR) $(AMOEBADDXDIR) $(LYNXDDXDIR) \
+	  $(HPDDXDIR) $(XFREE86DDXDIR) $(XWINDDXDIR) $(DARWINDDXDIR) \
+	  $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
           $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS) $(MIEXTDIRS)
 

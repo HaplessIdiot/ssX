@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.8 2001/01/17 22:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.9 2001/01/30 22:06:15 tsi Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -560,6 +560,12 @@ void OsVendorInit(
 	inited = 1;
     }
 }
+
+#ifdef DDXOSFATALERROR
+void OsVendorFatalError(void)
+{
+}
+#endif
 
 /*-
  *-----------------------------------------------------------------------

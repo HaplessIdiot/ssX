@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.133 2001/04/21 20:08:06 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.134 2001/05/07 21:42:31 tsi Exp $
 
 
 
@@ -24,11 +24,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.133 2001/04/
 #  ifdef LinuxArchitecture
         KBD = xf86KbdLnx
 #  else
-#  if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
-        KBD = xf86KbdSol8
-#else
         KBD = xf86Kbd
-#  endif
 #  endif
 # endif
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_io.c,v 1.1 1999/09/25 14:38:08 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -7,33 +7,25 @@
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Thomas Roell and David Dawes 
- * not be used in advertising or publicity pertaining to distribution of 
+ * documentation, and that the names of Thomas Roell and David Dawes
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  Thomas Roell and
- * David Dawes makes no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * David Dawes makes no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THOMAS ROELL AND DAVID DAWES DISCLAIMS ALL WARRANTIES WITH REGARD TO 
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND 
- * FITNESS, IN NO EVENT SHALL THOMAS ROELL OR DAVID DAWES BE LIABLE FOR 
- * ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF 
- * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THOMAS ROELL AND DAVID DAWES DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL THOMAS ROELL OR DAVID DAWES BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: sysv_io.c /main/8 1996/10/19 18:08:06 kaleb $ */
 
-#include "X.h"
-
-#include "compiler.h"
-
-#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86Xinput.h"
-#include "xf86OSmouse.h"
 
 void
 xf86SoundKbdBell(int loudness, int pitch, int duration)
