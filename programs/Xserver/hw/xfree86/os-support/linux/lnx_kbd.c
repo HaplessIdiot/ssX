@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.1 2002/10/11 01:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.2tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -93,10 +93,18 @@ GetKbdLeds(InputInfoPtr pInfo)
 /* kbd rate stuff based on kbdrate.c from Rik Faith <faith@cs.unc.edu> et.al.
  * from util-linux-2.9t package */
 
-
+#include <linux/kd.h>
+#include <linux/version.h>
 #ifdef __sparc__
 #include <asm/param.h>
 #include <asm/kbio.h>
+#endif
+
+/* Deal with spurious kernel header change */
+#if defined(LINUX_VERSION_CODE) && defined(KERNEL_VERSION)
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,42)
+#  define rate period
+# endif
 #endif
 
 static int
@@ -159,6 +167,8 @@ KIOCSRATE_ioctl_ok(int rate, int delay) {
    return 0;
 #endif /* KIOCSRATE */
 }
+
+#undef rate
 
 static void
 SetKbdRepeat(InputInfoPtr pInfo, char rad)
