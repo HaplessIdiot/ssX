@@ -35,9 +35,7 @@
  *		    4. RGB intensity to CIE XYZ
  *
  */
-/* $XFree86: xc/lib/X11/LRGB.c,v 3.5 2001/07/25 15:04:44 dawes Exp $ */
-
-#define XCMS_CONVERSION_HARDWARE /* FIXME XXX */
+/* $XFree86: xc/lib/X11/LRGB.c,v 3.6 2003/04/13 19:22:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -125,8 +123,8 @@ static unsigned short const MASK[17] = {
      * to XcmsCIEXYZFormat.
      */
 static XcmsConversionProc Fl_RGB_to_CIEXYZ[] = {
-    XcmsRGBToRGBi,
-    XcmsRGBiToCIEXYZ,
+    (XcmsConversionProc)XcmsRGBToRGBi,
+    (XcmsConversionProc)XcmsRGBiToCIEXYZ,
     NULL
 };
 
@@ -136,8 +134,8 @@ static XcmsConversionProc Fl_RGB_to_CIEXYZ[] = {
      * to XcmsRGBFormat.
      */
 static XcmsConversionProc Fl_CIEXYZ_to_RGB[] = {
-    XcmsCIEXYZToRGBi,
-    XcmsRGBiToRGB,
+    (XcmsConversionProc)XcmsCIEXYZToRGBi,
+    (XcmsConversionProc)XcmsRGBiToRGB,
     NULL
 };
 
@@ -147,7 +145,7 @@ static XcmsConversionProc Fl_CIEXYZ_to_RGB[] = {
      * to XcmsCIEXYZFormat.
      */
 static XcmsConversionProc Fl_RGBi_to_CIEXYZ[] = {
-    XcmsRGBiToCIEXYZ,
+    (XcmsConversionProc)XcmsRGBiToCIEXYZ,
     NULL
 };
 
@@ -157,7 +155,7 @@ static XcmsConversionProc Fl_RGBi_to_CIEXYZ[] = {
      * to XcmsRGBiFormat.
      */
 static XcmsConversionProc Fl_CIEXYZ_to_RGBi[] = {
-    XcmsCIEXYZToRGBi,
+    (XcmsConversionProc)XcmsCIEXYZToRGBi,
     NULL
 };
 

@@ -33,9 +33,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/CvCols.c,v 1.3 2001/01/17 19:41:34 dawes Exp $ */
-
-/* #define XCMS_CONVERSION_HARDWARE */ /* FIXME XXX */
+/* $XFree86: xc/lib/X11/CvCols.c,v 1.4 2003/04/13 19:22:15 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -429,10 +427,10 @@ _XcmsDIConvertColors(
  */
 {
     XcmsColorSpace *pFrom, *pTo;
-    XcmsConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
-    XcmsConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
-    XcmsConversionProc *to_CIEXYZ_stop, *from_CIEXYZ_start;
-    XcmsConversionProc *tmp;
+    XcmsDIConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
+    XcmsDIConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
+    XcmsDIConversionProc *to_CIEXYZ_stop, *from_CIEXYZ_start;
+    XcmsDIConversionProc *tmp;
 
     /*
      * Allow pWhitePt to equal NULL.  This appropriate when converting
@@ -580,10 +578,10 @@ _XcmsDDConvertColors(
  */
 {
     XcmsColorSpace *pFrom, *pTo;
-    XcmsConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
-    XcmsConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
-    XcmsConversionProc *from_CIEXYZ_start, *to_CIEXYZ_stop;
-    XcmsConversionProc *tmp;
+    XcmsDDConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
+    XcmsDDConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
+    XcmsDDConversionProc *from_CIEXYZ_start, *to_CIEXYZ_stop;
+    XcmsDDConversionProc *tmp;
     int	retval;
     int hasCompressed = 0;
 
@@ -623,10 +621,10 @@ _XcmsDDConvertColors(
 	return(XcmsFailure);
     }
 
-    src_to_CIEXYZ = pFrom->to_CIEXYZ;
-    src_from_CIEXYZ = pFrom->from_CIEXYZ;
-    dest_to_CIEXYZ = pTo->to_CIEXYZ;
-    dest_from_CIEXYZ = pTo->from_CIEXYZ;
+    src_to_CIEXYZ = (XcmsDDConversionProc *)pFrom->to_CIEXYZ;
+    src_from_CIEXYZ = (XcmsDDConversionProc *)pFrom->from_CIEXYZ;
+    dest_to_CIEXYZ = (XcmsDDConversionProc *)pTo->to_CIEXYZ;
+    dest_from_CIEXYZ = (XcmsDDConversionProc *)pTo->from_CIEXYZ;
 
     if (pTo->inverse_flag && pFrom->inverse_flag) {
 	/*
@@ -645,12 +643,8 @@ Continue:
 	 * Execute the functions
 	 */
 	while (src_to_CIEXYZ != to_CIEXYZ_stop) {
-#ifdef XCMS_CONVERSION_HARDWARE
 	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
-#else
-	    retval = (*src_to_CIEXYZ++)(ccc, NULL, pColors_in_out, nColors);
-#endif
 	    if (retval == XcmsFailure) {
 		return(XcmsFailure);
 	    }
@@ -677,12 +671,8 @@ Continue:
 	 * Execute the functions all the way to CIEXYZ
 	 */
 	while (*src_to_CIEXYZ) {
-#ifdef XCMS_CONVERSION_HARDWARE
 	    retval = (*src_to_CIEXYZ++)(ccc, pColors_in_out, nColors,
 		    pCompressed);
-#else
-	    retval = (*src_to_CIEXYZ++)(ccc, NULL, pColors_in_out, nColors);
-#endif
 	    if (retval == XcmsFailure) {
 		return(XcmsFailure);
 	    }
@@ -696,12 +686,8 @@ Continue:
     }
 
     while (*from_CIEXYZ_start) {
-#ifdef XCMS_CONVERSION_HARDWARE
 	retval = (*from_CIEXYZ_start++)(ccc, pColors_in_out, nColors,
 		pCompressed);
-#else
-	retval = (*from_CIEXYZ_start++)(ccc, NULL, pColors_in_out, nColors);
-#endif
 	if (retval == XcmsFailure) {
 	    return(XcmsFailure);
 	}
