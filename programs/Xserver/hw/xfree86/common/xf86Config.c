@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.152 1998/10/05 13:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.153 1998/11/22 10:37:13 dawes Exp $ */
 
 
 /*
@@ -1294,7 +1294,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
 	 monitorp->gamma.blue > GAMMA_MAX)) {
 	badgamma = monitorp->gamma.blue;
     }
-    if (badgamma > GAMMA_MIN) {
+    if (badgamma > GAMMA_ZERO) {
 	xf86ConfigError("Gamma value %.f is out of range (%.2f - %.1f)\n",
 			badgamma, GAMMA_MIN, GAMMA_MAX);
 	    return FALSE;
