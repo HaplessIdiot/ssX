@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.36 1999/04/04 13:51:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.37 1999/05/04 11:27:13 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -269,54 +269,65 @@ EndSection
 
 
 XCOMM **********************************************************************
-XCOMM Pointer section
+XCOMM Core Pointer's InputDevice section
 XCOMM **********************************************************************
 
-Section "Pointer"
+Section "InputDevice"
+
+XCOMM Identifier and driver
+
+    Identifier	"Mouse1"
+    Driver	"mouse"
 
 XCOMM The mouse protocol and device.  The device is normally set to /dev/mouse,
 XCOMM which is usually a symbolic link to the real device.
 
-    Protocol	"Microsoft"
-    Device	"/dev/mouse"
+    Option	"Protocol"	"Microsoft"
+    Option	"Device"	"/dev/mouse"
 
 XCOMM On platforms where PnP mouse detection is supported the following
 XCOMM protocol setting can be used when using a newer PnP mouse:
 
-XCOMM    Protocol	"Auto"
+XCOMM    Option	"Protocol"	"Auto"
 
 XCOMM When using mouse connected to a PS/2 port (aka "MousePort), set the
 XCOMM the protocol as follows.  On some platforms some other settings may
 XCOMM be available.
 
-XCOMM    Protocol	"PS/2"
+XCOMM    Option "Protocol"	"PS/2"
 
 XCOMM When using XQUEUE (only for SVR3 and SVR4, but not Solaris), use
 XCOMM the following instead of any of the lines above.  The Device line
 XCOMM is not required in this case.
 
-XCOMM    Protocol	"Xqueue"
+XCOMM    Option	"Protocol"	"Xqueue"
 
 XCOMM Baudrate and SampleRate are only for some older Logitech mice.  In
 XCOMM almost every case these lines should be omitted.
 
-XCOMM    BaudRate	9600
-XCOMM    SampleRate	150
+XCOMM    Option	"BaudRate"	"9600"
+XCOMM    Option	"SampleRate"	"150"
 
 XCOMM Emulate3Buttons is an option for 2-button mice
 XCOMM Emulate3Timeout is the timeout in milliseconds (default is 50ms)
 
-XCOMM    Emulate3Buttons
-XCOMM    Emulate3Timeout	50
+XCOMM    Option	"Emulate3Buttons"
+XCOMM    Option	"Emulate3Timeout"	"50"
 
 XCOMM ChordMiddle is an option for some 3-button Logitech mice, or any
 XCOMM 3-button mouse where the middle button generates left+right button
 XCOMM events.
 
-XCOMM    ChordMiddle
+XCOMM    Option	"ChordMiddle"
 
 EndSection
 
+Section "InputDevice"
+    Identifier	"Mouse2"
+    Driver	"mouse"
+    Option	"Protocol"	"MouseMan"
+    Option	"Device"	"/dev/mouse2"
+EndSection
 
 XCOMM **********************************************************************
 XCOMM Monitor section
@@ -576,6 +587,16 @@ XCOMM right of screen 1.
     Screen	"Screen MGA 1"	""	""	""	"Screen MGA 2"
     Screen	"Screen MGA 2"	""	""	"Screen MGA 1"	""
 
+XCOMM Each InputDevice line specifies an InputDevice section name and
+XCOMM optionally some options to specify the way the device is to be
+XCOMM used.  Those options include "CorePointer", "CoreKeyboard" and
+XCOMM "SendCoreEvents".  In this example, "Mouse1" is the core pointer,
+XCOMM and "Mouse2" is an extended input device that also generates core
+XCOMM pointer events (i.e., both mice will move the standard pointer).
+
+    InputDevice	"Mouse1" "CorePointer"
+    InputDevice	"Mouse2" "SendCoreEvents"
+
 EndSection
 
 
@@ -583,11 +604,13 @@ Section "ServerLayout"
     Identifier	"another layout"
     Screen	"Screen 1"
     Screen	"Screen MGA 1"
+    InputDevice	"Mouse1" "CorePointer"
 EndSection
 
 
 Section "ServerLayout"
     Identifier	"simple layout"
     Screen	"Screen 1"
+    InputDevice	"Mouse1" "CorePointer"
 EndSection
 
