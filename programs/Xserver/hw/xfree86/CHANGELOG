@@ -1,3 +1,5 @@
+XFree86 3.9Ph (5 April 1999)
+
 XFree86 3.9Pg (29 March 1999)
 2456. Fix an off-by-one clipping error in the XAA wide line code (#2624,
       Mark Vojkovich).
@@ -7644,4 +7646,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.717 1999/03/29 09:41:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.718 1999/03/29 12:17:51 dawes Exp $

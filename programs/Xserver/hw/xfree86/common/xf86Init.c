@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.105 1999/03/21 12:46:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.106 1999/03/29 09:41:29 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -208,6 +208,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
     xf86BusProbe();
+
+    /* Initialise the resource broker */
+    xf86ResourceBrokerInit();
 
 #ifdef XFree86LOADER
     /* Load all modules specified explicitly in the config file */

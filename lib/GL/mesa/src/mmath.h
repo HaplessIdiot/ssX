@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/mmath.h,v 1.0tsi Exp $ */
 
 /*
  * Log: mmath.h,v $
@@ -61,10 +61,6 @@
 
 #ifndef MMATH_H
 #define MMATH_H
-
-
-#include <math.h>
-
 
 
 /*

@@ -108,7 +108,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/get.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/get.c,v 1.2 1999/03/14 03:20:44 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -116,15 +116,16 @@
 #ifndef XFree86Server
 #include <assert.h>
 #include <string.h>
+#else
+#ifdef XFree86Server
+#include "GL/xf86glx.h"
+#endif
 #endif
 #include "context.h"
 #include "get.h"
 #include "macros.h"
 #include "types.h"
 #include "vb.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

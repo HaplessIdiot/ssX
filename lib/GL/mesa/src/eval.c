@@ -53,7 +53,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/eval.c,v 1.2 1999/03/14 03:20:43 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/eval.c,v 1.3 1999/03/14 05:50:54 dawes Exp $ */
 
 /*
  * eval.c was written by
@@ -72,19 +72,18 @@
 #include "all.h"
 #else
 #ifndef XFree86Server
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
-#include <math.h>
 #include "context.h"
 #include "eval.h"
 #include "macros.h"
 #include "mmath.h"
 #include "types.h"
 #include "vbfill.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

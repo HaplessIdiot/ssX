@@ -47,7 +47,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/hash.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/hash.c,v 1.2 1999/03/14 03:20:45 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -56,11 +56,10 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#endif
-#include "hash.h"
-#ifdef XFree86Server
+#else
 #include "GL/xf86glx.h"
 #endif
+#include "hash.h"
 #endif
 
 

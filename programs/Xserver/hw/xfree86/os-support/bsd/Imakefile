@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.20 1998/09/13 05:23:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.21 1999/02/14 03:20:40 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -41,22 +41,23 @@ IOPERM_OBJ = ioperm_noop.o
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c bios_mmap.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c std_mouse.c \
-       std_mseEv.c $(JOYSTICK_SRC)
+       std_mseEv.c stdResource.c $(JOYSTICK_SRC)
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_mmap.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o std_mouse.o \
-       std_mseEv.o $(JOYSTICK_OBJ)
+       std_mseEv.o stdResource.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
 
 CONSDEFINES = XFree86ConsoleDefines
+RESDEFINES = -DUSESTDRES
 
 #if HasNetBSDApertureDriver
 APDEFINES = -DHAS_APERTURE_DRV
 #endif
 
-DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES)
+DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES) $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -77,5 +78,6 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 DependTarget()

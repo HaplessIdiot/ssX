@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.9 1999/03/14 05:51:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.10 1999/03/28 15:32:57 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -367,7 +367,7 @@ typedef struct pci_cfg_regs {
     } bhlc;
     
     union {	/* Offset 0x10 - 0x27 */ 
-	struct {
+	struct {	/* header type 0 */
 	    CARD32 dv_base0;
 	    CARD32 dv_base1;
 	    CARD32 dv_base2;
@@ -375,7 +375,7 @@ typedef struct pci_cfg_regs {
 	    CARD32 dv_base4;
 	    CARD32 dv_base5;
 	} dv;
-	struct {
+	struct {	/* header type 1 */
 	    CARD32 bg_rsrvd[2];
 #if X_BYTE_ORDER == X_BIG_ENDIAN	    
 	    CARD8 secondary_latency_timer;
@@ -431,21 +431,36 @@ typedef struct pci_cfg_regs {
     CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
     CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
     union {	/* Offset 0x3c - 0x3f */
-        CARD32 max_min_ipin_iline;
-	struct {
+	union {	/* header type 0 */
+            CARD32 max_min_ipin_iline;
+	    struct {
 #if X_BYTE_ORDER == X_BIG_ENDIAN		
-	    CARD8 max_lat;
-	    CARD8 min_gnt;
-	    CARD8 int_pin;
-	    CARD8 int_line;
+		CARD8 max_lat;
+		CARD8 min_gnt;
+		CARD8 int_pin;
+		CARD8 int_line;
 #else
-	    CARD8 int_line;
-	    CARD8 int_pin;
-	    CARD8 min_gnt;
-	    CARD8 max_lat;
+		CARD8 int_line;
+		CARD8 int_pin;
+		CARD8 min_gnt;
+		CARD8 max_lat;
 #endif	    
+	    } mmii;
 	} mmii;
-    } mmii;
+	struct {	/* header type 1 */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    CARD8 rsvd4;
+	    CARD8 bridge_control;
+	    CARD8 rsvd2;
+	    CARD8 rsvd1;
+#else
+	    CARD8 rsvd1;
+	    CARD8 rsvd2;
+	    CARD8 bridge_control;
+	    CARD8 rsvd4;
+#endif
+	} bctrl;
+    } bm;
     union {    /* Offset 0x40 - 0xff */
 	    CARD32 dwords[48];
 	    CARD32 bytes[192];
@@ -511,11 +526,12 @@ typedef struct pci_device {
 #define _prefetch_mem_limit	   cfgspc.regs.bc.bg.prefetch_mem_limit
 #define _rsvd1			   cfgspc.regs.c_cis.rsvd1;
 #define _rsvd2			   cfgspc.regs.ssys_id.rsvd2;
-#define _int_line		   cfgspc.regs.mmii.mmii.int_line
-#define _int_pin		   cfgspc.regs.mmii.mmii.int_pin
-#define _min_gnt		   cfgspc.regs.mmii.mmii.min_gnt
-#define _max_lat		   cfgspc.regs.mmii.mmii.max_lat
-#define _max_min_ipin_iline	   cfgspc.regs.mmii.max_min_ipin_iline
+#define _int_line		   cfgspc.regs.bm.mmii.mmii.int_line
+#define _int_pin		   cfgspc.regs.bm.mmii.mmii.int_pin
+#define _min_gnt		   cfgspc.regs.bm.mmii.mmii.min_gnt
+#define _max_lat		   cfgspc.regs.bm.mmii.mmii.max_lat
+#define _max_min_ipin_iline	   cfgspc.regs.bm.mmii.max_min_ipin_iline
+#define _bridge_control		   cfgspc.regs.bm.bctrl.bridge_control
 #define _user_config		   cfgspc.regs.devspf.dwords[0]
 #define _user_config_0		   cfgspc.regs.devspf.bytes[0]
 #define _user_config_1		   cfgspc.regs.devspf.bytes[1]
@@ -536,7 +552,7 @@ void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);
-int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive);
+int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 pointer       xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag,
 				pointer Base, unsigned long Size);
 pointer       xf86MapPciMemSparse(int ScreenNum, int Region, PCITAG Tag,

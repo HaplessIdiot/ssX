@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/winpos.c,v 1.0tsi Exp $ */
 
 /*
  * Log: winpos.c,v $
@@ -77,11 +77,11 @@
 
 
 #ifndef PC_HEADER
-#include "rastpos.h"
-#include "winpos.h"
 #ifdef XFree86Server
 #include "GL/xf86glx.h"
 #endif
+#include "rastpos.h"
+#include "winpos.h"
 #endif
 
 

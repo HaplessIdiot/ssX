@@ -1,20 +1,24 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.1.2.1 1998/06/09 14:41:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.2 1998/07/25 16:56:54 dawes Exp $
 
 #include <Server.tmpl>
 
 SRCS =  pmax_devs.c pmax_init.c pmax_map.c pmax_pci.c pmax_ppc.c \
 	bios_V4mmap.c VTsw_usl.c sysv_kbd.c std_kbdEv.c \
 	posix_tty.c std_mouse.c std_mseEv.c xqueue.c ioperm_noop.c \
-	libc_wrapper.c
+	libc_wrapper.c stdResource.c
 
 OBJS =  pmax_devs.o pmax_init.o pmax_map.o pmax_pci.o pmax_ppc.o \
 	bios_V4mmap.o VTsw_usl.o sysv_kbd.o std_kbdEv.o \
 	posix_tty.o std_mouse.o std_mseEv.o xqueue.o ioperm_noop.o \
-	libc_wrapper.o
+	libc_wrapper.o stdResource.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I. \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -27,6 +31,7 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 LinkSourceFile(bios_V4mmap.c,../sysv)
 LinkSourceFile(xqueue.c,../sysv)

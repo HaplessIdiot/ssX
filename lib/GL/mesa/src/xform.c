@@ -77,7 +77,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/xform.c,v 1.2 1999/03/14 03:20:55 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/xform.c,v 1.3 1999/03/14 05:50:58 dawes Exp $ */
 
 /*
  * Matrix/vertex/vector transformation stuff
@@ -96,16 +96,17 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <math.h>
+#else
+#include "GL/xf86glx.h"
+#endif
 #include "asm_386.h"
-#include "vb.h"
 #include "context.h"
 #include "mmath.h"
 #include "types.h"
+#include "vb.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.18 1999/03/29 07:06:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.19 1999/03/29 09:41:26 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -21,6 +21,10 @@
 #include "xf86Bus.h"
 #define DECLARE_CARD_DATASTRUCTURES TRUE
 #include "xf86PciInfo.h"
+
+#define XF86_OS_PRIVS
+#define NEED_OS_RAC_PROTOS
+#include "xf86_OSproc.h"
 
 /* Bus-specific globals */
 
@@ -55,6 +59,24 @@ struct {
 	exclusive_mono :1,
 	exclusive_mono_taken :1;
 } Resources = {0,0,0,0,0,0};
+
+
+/* new RAC */
+
+typedef struct _accRec {
+    resPtr exclusive;
+    resPtr shared;
+    resPtr scratch;
+} accRec, *accPtr;
+
+/* resource lists */
+static accRec Mem = { NULL, NULL, NULL };
+static accRec Io = { NULL, NULL, NULL };
+
+/* allocatable ranges */
+static resPtr MemRange;
+static resPtr IoRange;
+
 
 /* Bus-specific probe/sorting functions */
 
@@ -120,15 +142,15 @@ xf86FindPCIVideoInfo(void)
 	    info->subclass = pcrp->_sub_class;
 	    info->interface = pcrp->_prog_if;
 	    info->biosBase = pcrp->_baserom;
-	    info->biosSize = pciGetBaseSize(pcrp->tag, 6, TRUE);
+	    info->biosSize = pciGetBaseSize(pcrp->tag, 6, TRUE, NULL);
 	    info->thisCard = pcrp;
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
 		if (PCINONSYSTEMCLASSES(info->class, info->subclass))
-		    info->size[j] = pciGetBaseSize(pcrp->tag, j, TRUE);
+		    info->size[j] = pciGetBaseSize(pcrp->tag, j, TRUE, NULL);
 		else
-		    info->size[j] = pciGetBaseSize(pcrp->tag, j, FALSE);
+		    info->size[j] = pciGetBaseSize(pcrp->tag, j, FALSE, NULL);
 		info->type[j] = 0;
 	    }
 
@@ -1441,3 +1463,427 @@ xf86CheckPciGAType(pciVideoPtr pPci)
     }
     return -1;
 }
+
+
+
+/* new RAC */
+
+/*
+ * checkConflict() -- if conflict found return end of conflicting
+ * region; else return 0.
+ */
+static unsigned long
+checkConflict(unsigned long start, unsigned long size, resPtr pRes)
+{
+    while (pRes)
+    {
+	if (start < pRes->end && (start + size) > pRes->begin)
+	    return pRes->end;
+	pRes = pRes->next;
+    }
+    return 0;
+}
+
+
+resPtr
+xf86JoinResLists(resPtr rlist1, resPtr rlist2)
+{
+    resPtr pRes;
+
+    if (!rlist1)
+	return rlist2;
+
+    if (!rlist2)
+	return rlist1;
+
+    for (pRes = rlist1; pRes->next; pRes = pRes->next)
+	;
+    pRes->next = rlist2;
+    return rlist1;
+}
+
+resPtr
+xf86AddResToList(resPtr rlist, unsigned long begin, unsigned long end,
+		 int type, int busIndex)
+{
+    resPtr new;
+
+    new = xnfalloc(sizeof(resRec));
+    new->begin = begin;
+    new->end = end;
+    new->type = type;
+    new->busIndex = busIndex;
+    new->next = rlist;
+    return new;
+}
+
+void
+xf86FreeResList(resPtr rlist)
+{
+    resPtr pRes;
+
+    if (!rlist)
+	return;
+
+    for (pRes = rlist->next; pRes; rlist = pRes, pRes = pRes->next)
+	xfree(rlist);
+    xfree(rlist);
+}
+
+resPtr
+xf86DupResList(const resPtr rlist)
+{
+    resPtr pRes, ret, prev, new;
+
+    if (!rlist)
+	return NULL;
+
+    ret = xnfalloc(sizeof(resRec));
+    *ret = *rlist;
+    prev = ret;
+    for (pRes = rlist->next; pRes; pRes = pRes->next) {
+	new = xnfalloc(sizeof(resRec));
+	*new = *pRes;
+	prev->next = new;
+	prev = new;
+    }
+    return ret;
+}
+
+void
+xf86PrintResList(int verb, resPtr list)
+{
+    int i = 0;
+    const char *s;
+
+    if (!list)
+	return;
+
+    while (list) {
+	xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x (0x%x)",
+		       i, list->busIndex, list->begin, list->end,
+		       list->end - list->begin + 1);
+	switch (list->type & ResPhysMask) {
+	case ResMem:
+	    s = "M";
+	    break;
+	case ResIo:
+	    s = "I";
+	    break;
+	default:
+	    s = "?";
+	}
+	xf86ErrorFVerb(verb, " %s", s);
+	switch (list->type & ResAccMask) {
+	case ResExclusive:
+	    s = "X";
+	    break;
+	case ResShared:
+	    s = "S";
+	    break;
+	case ResScratch:
+	    s = "T";	/* T for Tmp */
+	    break;
+	default:
+	    s = "?";
+	}
+	xf86ErrorFVerb(verb, "%s", s);
+	switch (list->type & ResExtMask) {
+	case ResMem:
+	    s = "B";
+	    break;
+	case ResIo:
+	    s = "S";
+	    break;
+	default:
+	    s = "?";
+	}
+	xf86ErrorFVerb(verb, "%s", s);
+	switch (list->type & ResMiscMask) {
+	case ResMinimised:
+	    s = "M";
+	    break;
+	default:
+	    s = "";
+	}
+	xf86ErrorFVerb(verb, "%s\n", s);
+	list = list->next;
+	i++;
+    }
+}
+
+#define MEM_ALIGN (1024 * 1024)
+
+static void
+RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
+{
+    resPtr pRes;
+    unsigned long size, newsize, adjust;
+
+    for (pRes = list; pRes; pRes = pRes->next) {
+	if (pRes != target &&
+		pRes->begin <= target->end && pRes->end >= target->begin) {
+	    /*
+	     * target should be a larger region than pRes.  If pRes fully
+	     * contains target, don't do anything.
+	     */
+	    if (pRes->begin <= target->begin && pRes->end >= target->end)
+		continue;
+	    /* Otherwise, trim target to remove the overlap */
+	    if (pRes->begin <= target->end) {
+		target->end = pRes->begin - 1;
+	    } else if (!pciAlignment && pRes->end >= target->begin) {
+		target->begin = pRes->end + 1;
+	    } if (pciAlignment) {
+		/*
+		 * Align to a power of two.  This requires finding the
+		 * largest power of two that is smaller than the adjusted
+		 * size.
+		 */
+		size = target->end - target->begin + 1;
+		newsize = 1UL << (sizeof(unsigned long) * 8 - 1);
+		while (!(newsize & size))
+		    newsize >>= 1;
+		target->end = target->begin + newsize - 1;
+	    } else if (target->end > MEM_ALIGN) {
+		/* Align the end to MEM_ALIGN */
+		if ((adjust = (target->end + 1) % MEM_ALIGN))
+		    target->end -= adjust;
+	    }
+	}
+    }
+}
+
+#define PSR_SYS			0x01
+#define PSR_NONSYS		0x02
+#define PSR_ALL			(PSR_SYS | PSR_NONSYS)
+#define PSR_VIDEO		0x04
+#define PSR_NO_OVERLAP		0x08
+
+static void
+xf86GetPciSysRes(resPtr *mem, resPtr *io, int flags)
+{
+    pciConfigPtr pcrp, *pcrpp;
+    pciVideoPtr pvp, *pvpp;
+    CARD32 *basep;
+    unsigned long begin, end, size;
+    resPtr sysIo = NULL, sysMem = NULL, nonsysIo = NULL, nonsysMem = NULL;
+    int i;
+    resPtr pRes;
+    int verb;
+    static Bool printed = FALSE;
+
+    if (!mem || !io || !xf86PciInfo)
+	return;
+
+    for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
+	if (!(flags & PSR_VIDEO) &&
+	    !PCINONSYSTEMCLASSES(pvp->class, pvp->subclass))
+	    continue;
+	for (i = 0; i < 6; i++) {
+	    if (pvp->ioBase[i]) {
+		begin = pvp->ioBase[i];
+		end = pvp->ioBase[i] + (1 << pvp->size[i]) - 1;
+		nonsysIo = xf86AddResToList(nonsysIo, begin, end,
+					ResExcIoBlock | ResMinimised, -1);
+	    } else if (pvp->memBase[i]) {
+		begin = pvp->memBase[i];
+		end = pvp->memBase[i] + (1 << pvp->size[i]) - 1;
+		nonsysMem = xf86AddResToList(nonsysMem, begin, end,
+					ResExcMemBlock | ResMinimised, -1);
+	    }
+	}
+	if (pvp->biosBase) {
+	    begin = pvp->biosBase;
+	    end = pvp->biosBase + (1 << pvp->biosSize) - 1;
+	    nonsysMem = xf86AddResToList(nonsysMem, begin, end,
+					ResExcMemBlock | ResMinimised, -1);
+	}
+    }
+
+    /* No need to resolve overlaps for NONSYS, so can return here */
+    if (!(flags & PSR_SYS)) {
+	*io = nonsysIo;
+	*mem = nonsysMem;
+	return;
+    }
+
+    /* XXX Needs to be updated for 64 bit mappings */
+    for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
+	if (PCINONSYSTEMCLASSES(pcrp->_base_class, pcrp->_sub_class))
+	    continue;
+	/* Only process devices with type 0 headers */
+	if ((pcrp->_header_type & 0x7f) != 0)
+	    continue;
+	basep = &pcrp->_base0;
+	for (i = 0; i < 6; i++) {
+	    if (basep[i]) {
+		if (PCI_MAP_IS_IO(basep[i])) {
+		    begin = PCIGETIO(basep[i]);
+		    end = begin + (1 << pcrp->basesize[i]) - 1;
+		    sysIo = xf86AddResToList(sysIo, begin, end,
+						ResExcIoBlock, -1);
+		} else {
+		    begin = PCIGETMEMORY(basep[i]);
+		    end = begin + (1 << pcrp->basesize[i]) - 1;
+		    sysMem = xf86AddResToList(sysMem, begin, end,
+						ResExcMemBlock, -1);
+		}
+	    }
+	}
+	if (pcrp->_baserom) {
+	    begin = PCIGETROM(pcrp->_baserom);
+	    end = begin + (1 << pcrp->basesize[6]) - 1;
+	    sysMem = xf86AddResToList(sysMem, begin, end, ResExcIoBlock, -1);
+	}
+    }
+
+    /* Only print the messages once unless very verbose */
+    if (!printed) {
+	printed = TRUE;
+	verb = 3;
+    } else {
+	verb = 5;
+    }
+    /* Check for overlaps */
+    if (flags & PSR_NO_OVERLAP) {
+	for (pRes = sysMem; pRes; pRes = pRes->next) {
+	    size = pRes->end - pRes->begin + 1;
+	    if ((end = checkConflict(pRes->begin, size, pRes->next)))
+		xf86MsgVerb(X_INFO, verb,
+			"PCI Memory overlap for 0x%08x at 0x%08x\n",
+			pRes->begin, end);
+	    if ((end = checkConflict(pRes->begin, size, nonsysMem)))
+		xf86MsgVerb(X_INFO, verb,
+			"PCI Memory overlap for 0x%08x at 0x%08x\n",
+			pRes->begin, end);
+	}
+	for (pRes = sysIo; pRes; pRes = pRes->next) {
+	    size = pRes->end - pRes->begin + 1;
+	    if ((end = checkConflict(pRes->begin, size, pRes->next)))
+		xf86MsgVerb(X_INFO, verb,
+			"PCI I/O overlap for 0x%08x at 0x%08x\n",
+			pRes->begin, end);
+	    if ((end = checkConflict(pRes->begin, size, nonsysIo)))
+		xf86MsgVerb(X_INFO, verb,
+			"PCI I/O overlap for 0x%08x at 0x%08x\n",
+			pRes->begin, end);
+	}
+    }
+
+    xf86MsgVerb(X_INFO, verb, "Non-system PCI memory ranges:\n");
+    xf86PrintResList(verb, nonsysMem);
+    xf86MsgVerb(X_INFO, verb, "Non-system PCI I/O ranges:\n");
+    xf86PrintResList(verb, nonsysIo);
+
+    /*
+     * Adjust ranges based on the assumption that there are no real
+     * overlaps in the PCI base allocations.  This assumption should be
+     * reasonable in most cases.  It may be possible to refine the
+     * approximated PCI base sizes by considering bus mapping information
+     * from PCI-PCI bridges.
+     */
+    xf86MsgVerb(X_INFO, verb, "System PCI memory ranges:\n");
+    xf86PrintResList(verb, sysMem);
+    if (flags & PSR_NO_OVERLAP) {
+	for (pRes = sysMem; pRes; pRes = pRes->next) {
+	    if (!ResIsMinimised(pRes)) {
+		RemoveOverlaps(pRes, nonsysMem, TRUE);
+		RemoveOverlaps(pRes, sysMem, TRUE);
+	    }
+	}
+	xf86MsgVerb(X_INFO, verb,
+			"System PCI memory ranges after removing overlaps:\n");
+	xf86PrintResList(verb, sysMem);
+    }
+
+    xf86MsgVerb(X_INFO, verb, "System PCI I/O ranges:\n");
+    xf86PrintResList(verb, sysIo);
+    if (flags & PSR_NO_OVERLAP) {
+	for (pRes = sysIo; pRes; pRes = pRes->next) {
+	    if (!ResIsMinimised(pRes)) {
+		RemoveOverlaps(pRes, nonsysIo, TRUE);
+		RemoveOverlaps(pRes, sysIo, TRUE);
+	    }
+	}
+	xf86MsgVerb(X_INFO, verb,
+			"System PCI I/O ranges after removing overlaps:\n");
+	xf86PrintResList(verb, sysIo);
+    }
+
+    if (flags & (PSR_NONSYS | PSR_VIDEO)) {
+	*io = xf86JoinResLists(sysIo, nonsysIo);
+	*mem = xf86JoinResLists(sysMem, nonsysMem);
+    } else {
+	*io = sysIo;
+	*mem = sysMem;
+    }
+}
+
+
+void
+xf86ResourceBrokerInit(void)
+{
+    unsigned long memStart, memEnd, ioStart, ioEnd;
+    resPtr memPci = NULL, ioPci = NULL;
+    resPtr pRes;
+
+    /* Get the addressable ranges */
+    xf86MemWindowFromOS(&memStart, &memEnd);
+    MemRange = xf86AddResToList(NULL, memStart, memEnd, ResExcMemBlock, -1);
+    xf86IoWindowFromOS(&ioStart, &ioEnd);
+    IoRange = xf86AddResToList(NULL, ioStart, ioEnd, ResExcIoBlock, -1);
+
+    xf86MsgVerb(X_INFO, 3, "Addressable memory range is\n");
+    xf86PrintResList(3, MemRange);
+    xf86MsgVerb(X_INFO, 3, "Addressable I/O range is\n");
+    xf86PrintResList(3, IoRange);
+
+    /* Get the ranges used exclusively by the system */
+    Mem.exclusive = xf86MemResFromOS();
+    Io.exclusive = xf86IoResFromOS();
+
+    /* Get bus-specific system resources (PCI) */
+    xf86GetPciSysRes(&memPci, &ioPci, PSR_SYS | PSR_NO_OVERLAP);
+
+    /*
+     * Adjust OS-reported memory ranges based on the assumption that there
+     * are no overlaps with the PCI base allocations.  This should be a good
+     * assumption because writes to PCI address space won't be routed directly
+     * host memory.
+     */
+    xf86MsgVerb(X_INFO, 3, "OS-reported memory ranges:\n");
+    xf86PrintResList(3, Mem.exclusive);
+
+    for (pRes = Mem.exclusive; pRes; pRes = pRes->next)
+	RemoveOverlaps(pRes, memPci, FALSE);
+
+    xf86MsgVerb(X_INFO, 3, "OS-reported memory ranges after removing"
+		" overlaps with PCI:\n");
+    xf86PrintResList(3, Mem.exclusive);
+
+    xf86MsgVerb(X_INFO, 3, "OS-reported I/O ranges:\n");
+    xf86PrintResList(3, Io.exclusive);
+
+    for (pRes = Io.exclusive; pRes; pRes = pRes->next)
+	RemoveOverlaps(pRes, ioPci, FALSE);
+
+    xf86MsgVerb(X_INFO, 3, "OS-reported I/O ranges after removing"
+		" overlaps with PCI:\n");
+    xf86PrintResList(3, Io.exclusive);
+
+    Mem.exclusive = xf86JoinResLists(Mem.exclusive, memPci);
+    Io.exclusive = xf86JoinResLists(Io.exclusive, ioPci);
+    xf86MsgVerb(X_INFO, 3, "All system memory ranges:\n");
+    xf86PrintResList(3, Mem.exclusive);
+    xf86MsgVerb(X_INFO, 3, "All system I/O ranges:\n");
+    xf86PrintResList(3, Io.exclusive);
+
+    memPci = NULL;
+    ioPci = NULL;
+    xf86GetPciSysRes(&memPci, &ioPci, PSR_NONSYS);
+    /* Initialise the OS-layer PCI allocator */
+    xf86InitOSPciAllocator(xf86PciInfo, &Mem.exclusive, &Io.exclusive,
+			   memPci, ioPci);
+}
+

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.11 1998/07/25 16:57:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.12 1998/09/13 05:23:53 dawes Exp $
 
 
 
@@ -16,14 +16,18 @@ BIOS_MOD = bios_devmem
 
 SRCS = sysv_init.c sysv_video.c sysv_io.c $(BIOS_MOD).c VTsw_usl.c \
        sysv_kbd.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c xqueue.c \
-       libc_wrapper.c
+       libc_wrapper.c stdResource.c
 
 OBJS = sysv_init.o sysv_video.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
        sysv_kbd.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o xqueue.o \
-       libc_wrapper.o
+       libc_wrapper.o stdResource.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(DEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -40,5 +44,6 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.24 1999/01/13 08:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.25 1999/01/31 12:22:18 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -437,14 +437,14 @@ extern int auditTrailLevel;
 
 extern void AuditF(
 #if NeedVarargsPrototypes
-    char* /*f*/,
+    const char* /*f*/,
     ...
 #endif
 );
 
 extern void FatalError(
 #if NeedVarargsPrototypes
-    char* /*f*/,
+    const char* /*f*/,
     ...
 #endif
 )

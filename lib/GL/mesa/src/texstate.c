@@ -101,13 +101,15 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/texstate.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/texstate.c,v 1.2 1999/03/14 03:20:52 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
 #ifndef XFree86Server
 #include <assert.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "context.h"
 #include "macros.h"
@@ -117,9 +119,6 @@
 #include "texture.h"
 #include "types.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

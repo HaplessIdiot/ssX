@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.36 1999/03/14 03:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.37 1999/03/21 16:20:56 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -97,6 +97,8 @@ void xf86AccessEnter(void);
 void xf86AccessLeave(void);
 void xf86AccessSetup(void);
 void xf86FindPrimaryDevice(void);
+/* new RAC */
+void xf86ResourceBrokerInit(void);
 
 /* xf86DefaultModes */
 

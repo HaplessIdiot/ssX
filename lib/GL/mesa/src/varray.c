@@ -83,7 +83,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/varray.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/varray.c,v 1.2 1999/03/14 03:20:54 dawes Exp $ */
 
 
 /*
@@ -102,6 +102,8 @@
 #ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "context.h"
 #include "enable.h"
@@ -116,9 +118,6 @@
 #include "vbrender.h"
 #include "vbxform.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

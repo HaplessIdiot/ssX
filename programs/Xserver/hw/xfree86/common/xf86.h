@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.98 1999/03/29 07:06:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.99 1999/03/29 07:08:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -74,6 +74,14 @@ void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
 Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 Bool xf86IsPrimaryIsa(void);
 int xf86CheckPciGAType(pciVideoPtr pPci);
+/* new RAC */
+resPtr xf86AddResToList(resPtr rlist, unsigned long begin, unsigned long end,
+			int type, int busIndex);
+resPtr xf86JoinResLists(resPtr rlist1, resPtr rlist2);
+resPtr xf86DupResList(const resPtr rlist);
+void xf86FreeResList(resPtr rlist);
+void xf86PrintResList(int verb, resPtr list);
+
 
 /* xf86Cursor.c */
 

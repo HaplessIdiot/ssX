@@ -71,7 +71,7 @@
  * maximize the number of pixels processed inside loops and to minimize
  * the number of function calls.
  */
-/* $XFree86: xc/lib/GL/mesa/src/pb.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/pb.c,v 1.2 1999/03/14 03:20:49 dawes Exp $ */
 
 
 #ifdef PC_HEADER
@@ -80,6 +80,8 @@
 #ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "alpha.h"
 #include "alphabuf.h"
@@ -94,9 +96,6 @@
 #include "stencil.h"
 #include "texture.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

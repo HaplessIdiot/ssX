@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.19 1998/12/05 14:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.20 1999/03/06 13:12:44 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -185,6 +185,28 @@ extern void xf86XqueEvents(void);
 extern int  xf86OsMouseProc(DeviceIntPtr, int);
 extern void xf86OsMouseEvents(void);
 extern void xf86OsMouseOption(int, pointer);
+
+#ifdef NEED_OS_RAC_PROTOS
+/* RAC-related privs */
+/* internal to os-support layer */
+void xf86StdMemWindowFromOS(unsigned long *begin, unsigned long *end);
+void xf86StdIoWindowFromOS(unsigned long *begin, unsigned long *end);
+resPtr xf86StdMemResFromOS(void);
+resPtr xf86StdIoResFromOS(void);
+void xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo,
+				resPtr *sysMem, resPtr *sysIo,
+				const resPtr pciMem, const resPtr pciIo);
+
+/* available to the common layer */
+void xf86MemWindowFromOS(unsigned long *begin, unsigned long *end);
+void xf86IoWindowFromOS(unsigned long *begin, unsigned long *end);
+resPtr xf86MemResFromOS(void);
+resPtr xf86IoResFromOS(void);
+void xf86InitOSPciAllocator(const pciConfigPtr *pciInfo,
+				resPtr *sysMem, resPtr *sysIo,
+				const resPtr pciMem, const resPtr pciIo);
+#endif /* NEED_OS_RAC_PROTOS */
+
 
 #endif /* XF86_OS_PRIVS */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.9 1999/03/14 05:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.10 1999/03/28 15:32:56 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -419,8 +419,21 @@ pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr)
 	  return(addr);
 }
 
+
+/*
+ * pciGetBaseSize() returns the size of a PCI base address mapping in bits.
+ * The index identifies the base register: 0-5 are the six standard registers,
+ * and 6 is the ROM base register.  If destructive is TRUE, it will write
+ * to the base address register to get an accurate result.  Otherwise it
+ * makes a conservative guess based on the alignment of the already allocated
+ * address.  If the result is accurate (ie, not an over-estimate), this is
+ * indicated by setting *min to TRUE (when min is non-NULL).  This currently
+ * only happens when the destructive flag is set, but in future it may be
+ * possible to get the information from the OS when supported.
+ */
+
 int
-pciGetBaseSize(PCITAG tag, int index, Bool destructive)
+pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
 {
   int offset;
   CARD32 addr1;
@@ -444,6 +457,9 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive)
 
   if (!pciInitialized)
     pciInit();
+
+  if (min)
+    *min = destructive;
 
   /* Get the PCI offset */
   if (index == 6) 
@@ -883,8 +899,11 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 	    for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 		    devp->cfgspc.dwords[i] =
 				pciReadLong(tag, i * sizeof(CARD32));
-	    for (i = 0; i < 7; i++)
-		devp->basesize[i] = pciGetBaseSize(tag, i, FALSE);
+
+	    /* Get base address sizes for type 0 headers */
+	    if ((devp->_header_type & 0x7f) == 0)
+		for (i = 0; i < 7; i++)
+		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, NULL);
 
 #ifdef OLD_FORMAT
 	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.47 1999/03/14 03:22:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.48 1999/03/20 08:59:34 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1389,7 +1389,7 @@ AuditPrefix(f)
 void
 AuditF(
 #if NeedVarargsPrototypes
-    char * f, ...)
+    const char * f, ...)
 #else
     f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
@@ -1415,10 +1415,10 @@ AuditF(
 void
 FatalError(
 #if NeedVarargsPrototypes
-    char *f, ...)
+    const char *f, ...)
 #else
 f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
+    const char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 #endif
 {

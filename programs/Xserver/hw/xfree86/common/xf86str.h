@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.24 1999/03/28 15:32:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.25 1999/03/29 09:41:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -373,6 +373,50 @@ typedef struct _ScrnAccessRec {
     xf86CurrentAccessPtr CurrentAccess;
     resType rt;
 } xf86ScrnAccessRec, *xf86ScrnAccessPtr;
+
+/* new RAC */
+
+/* Resource Type values */
+#define ResNone		-1
+
+#define ResMem		0x0000
+#define ResIo		0x0001
+#define ResPhysMask	0x000F
+
+#define ResExclusive	0x0000
+#define ResShared	0x0010
+#define ResScratch	0x0020
+#define ResAccMask	0x00F0
+
+#define ResBlock	0x0000
+#define ResSparse	0x0100
+#define ResExtMask	0x0F00
+
+#define ResMinimised	0x1000
+#define ResMiscMask	0xF000
+
+#define ResExcMemBlock	(ResMem | ResExclusive | ResBlock)
+#define ResExcIoBlock	(ResIo | ResExclusive | ResBlock)
+
+#define ResIsMem(r)		(((r)->type & ResPhysMask) == ResMem)
+#define ResIsIo(r)		(((r)->type & ResPhysMask) == ResIo)
+#define ResIsExclusive(r)	(((r)->type & ResAccMask) == ResExclusive)
+#define ResIsShared(r)		(((r)->type & ResAccMask) == ResShared)
+#define ResIsScratch(r)		(((r)->type & ResAccMask) == ResScratch)
+#define ResIsBlock(r)		(((r)->type & ResExtMask) == ResBlock)
+#define ResIsSparse(r)		(((r)->type & ResExtMask) == ResSparse)
+#define ResIsMinimised(r)	(((r)->type & ResMiscMask) == ResMinimised)
+
+/* XXX Maybe add a mask field for efficient representation of sparse ranges? */
+typedef struct _resRec *resPtr;
+typedef struct _resRec {
+    unsigned	long begin;	/* start of address range */
+    unsigned	long end;	/* end of address range */
+    int		busIndex;	/* who owns the resource */
+    int		type;		/* shared, exclusive, scratch */
+    resPtr	next;
+} resRec;
+
 
 /* DGA */
 

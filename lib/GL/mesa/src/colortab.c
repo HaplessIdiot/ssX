@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/colortab.c,v 1.0tsi Exp $ */
 
 /*
  * Log: colortab.c,v $
@@ -58,12 +58,12 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#include "colortab.h"
-#include "context.h"
-#include "macros.h"
 #ifdef XFree86Server
 #include "GL/xf86glx.h"
 #endif
+#include "colortab.h"
+#include "context.h"
+#include "macros.h"
 #endif
 
 
