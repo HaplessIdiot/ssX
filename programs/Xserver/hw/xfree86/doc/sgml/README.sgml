@@ -15,7 +15,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.110 2000/12/15 16:11:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.111 2001/02/09 04:15:35 dawes Exp $
 </ident>
 
 <abstract>
@@ -227,7 +227,6 @@ gzip -d &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E
 Information about getting the source for &prevrelvers can be found in the
 README file for that version, which can be found on the
 <url name="XFree86 web site" url="http://www.xfree86.org/pub/XFree86/&prevrelvers;/README.html">.
-.
 ]]>
 
 <![ %fullrel [

@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.58 2000/12/17 23:01:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.59 2001/02/09 00:35:03 keithp Exp $
 </ident>
 
 <abstract>
@@ -24,13 +24,20 @@ in XFree86 &relvers; and their status.
 <sect>Introduction to the 4.x Release Series
 <p>
 XFree86 4.0 was the first official release of the new XFree86 4 series.
-The current release (&relvers;) is the latest in that series.  XFree86
+<![ %updaterel [
+XFree86 &relvers; is the &whichupdaterel; update to &fullrelvers;, which
+is the latest full release in that series.
+]]>
+<![ %fullrel [
+The current release (&relvers;) is the latest in that series.
+]]>
+XFree86
 4 represents a significant redesign of the XFree86 X server.
 Not all of the hardware drivers from 3.3.x have been ported to 4.x yet,
 but conversely, 4.x has some hardware support not present in 3.3.x.
 Our <htmlurl name="Driver Status document" url="Status.html"> summarizes
 how the hardware driver support compares between &legacyvers; and &relvers;.
-Please check there first before downloading  &relvers;.
+Please check there first before downloading &relvers;.
 
 The 4.0.1 release introduced a new graphical configuration tool,
 "<tt>xf86cfg</tt>", and a text mode interface was added to it for the
@@ -60,14 +67,27 @@ this release, please have a quick read through the <htmlurl
 name="Installation Document" url="Install.html">.  It may save you some
 time and help you figure out which of the binary releases you need.
 
+<![ %updaterel [
+The next sections describe what has changed in the update release(s)
+as well as what is new in the latest full release (&fullrelvers;).
+]]>
+<![ %fullrel [
 The next section describes what is new in the latest version (&relvers;).
+]]>
 The other sections below describe some of the new features and changes
 between 3.3.x and 4.0.  There are lot's of new features, and we definitely
 don't have enough space to cover them all here.
 
 </sect>
 
-<sect>Summary of new features in &relvers;.
+<![ %updaterel [
+<sect>Summary of updates in &relvers;.
+<p>
+
+</sect>
+]]>
+
+<sect>Summary of new features in &fullrelvers;.
 <p>
 <sect1>X server
 <p>
