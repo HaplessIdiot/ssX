@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.30 1999/12/03 19:17:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.31 1999/12/31 15:14:48 robin Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -267,7 +267,7 @@ DGASetDGAMode(
 	    }
 	    pScreenPriv->dgaColormap = NULL;
 	    (*pScreenPriv->funcs->SetMode)(pScrn, NULL);
-	    (*pScrn->SaveRestoreImage)(index, RestoreImage);
+	    (*pScrn->EnableDisableFBAccess)(index, TRUE);
 
 	    FreeMarkedVisuals(pScreen);
 	}
@@ -287,22 +287,14 @@ DGASetDGAMode(
 
    if(!pScreenPriv->current) {
 	Bool oldVTSema = pScrn->vtSema;
-	Bool result;
 
 	pScrn->vtSema = FALSE;  /* kludge until we rewrite VT switching */
-	result = (*pScrn->SaveRestoreImage)(index, SaveImage);
+	(*pScrn->EnableDisableFBAccess)(index, FALSE);
 	pScrn->vtSema = oldVTSema;
-
-	if(!result) {
-	    xfree(device);
-	    return BadAlloc;
-	}
    } 
 
    if(!(*pScreenPriv->funcs->SetMode)(pScrn, pMode)) {
 	xfree(device);
-	if(!pScreenPriv->current)
-	     (*pScrn->SaveRestoreImage)(index, FreeImage);
 	return BadAlloc;
    }
 

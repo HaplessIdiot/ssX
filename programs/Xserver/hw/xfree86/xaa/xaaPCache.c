@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.21 1999/08/22 05:57:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.23 1999/10/31 23:52:57 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -827,10 +827,15 @@ XAAInitPixmapCache(
 	CacheLinkPtr next;
 	int max = (Num128 > MAX_128) ? MAX_128 : 0;
 
+	/*
+	 * Note: next is set in this way to work around a code generation
+	 * bug in gcc 2.7.2.3.
+	 */
+	next = List128->next;
 	while(Num128 > max) {
-	   next = List128->next;
 	   List128->next = ListPartial;	ListPartial = List128;
 	   List128 = next;
+	   next = List128->next;
 	   NumPartial++; Num128--;
 	}
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: fbstipple.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $
+ * $Id: fbstipple.c,v 1.2 2000/01/21 01:11:59 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -68,9 +68,9 @@ fbEvenStipple (FbBits	*dst,
     /*
      * Compute stip start scanline and rotation parameters
      */
-    stipEnd = stip + 2 * stipHeight;
+    stipEnd = stip + FbBitsStrideToStipStride(1) * stipHeight;
     modulus (- yRot, stipHeight, stipY);
-    s = stip + 2 * stipY;
+    s = stip + FbBitsStrideToStipStride(1) * stipY;
     modulus (- xRot, FB_UNIT, stipX);
     rot = stipX;
     
@@ -87,7 +87,7 @@ fbEvenStipple (FbBits	*dst,
 	 * Extract stipple bits for this scanline;
 	 */
 	bits = *s;
-	s += 2;
+	s += FbBitsStrideToStipStride(1);
 	if (s == stipEnd)
 	    s = stip;
 #if FB_UNIT > 32

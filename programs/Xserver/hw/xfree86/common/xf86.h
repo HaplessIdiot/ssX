@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.118 1999/10/13 04:21:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.120 1999/12/03 19:17:21 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -151,7 +151,7 @@ Bool xf86SetDefaultVisual(ScrnInfoPtr scrp, int visual);
 Bool xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma);
 void xf86SetDpi(ScrnInfoPtr pScrn, int x, int y);
 void xf86SetBlackWhitePixels(ScreenPtr pScreen);
-Bool xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what);
+void xf86EnableDisableFBAccess(int scrnIndex, Bool enable);
 void xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb,
 		     const char *format, va_list args);
 void xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb,

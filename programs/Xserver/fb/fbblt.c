@@ -1,5 +1,5 @@
 /*
- * $Id: fbblt.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $
+ * $Id: fbblt.c,v 1.2 2000/01/21 01:11:56 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.1 1999/11/19 13:53:41 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -308,6 +308,8 @@ fbBlt (FbBits   *srcLine,
     }
 }
 
+#ifdef FB_24BIT
+
 #if 0
 #include <stdio.h>
 
@@ -554,6 +556,7 @@ fbBlt24 (FbBits	    *srcLine,
     fprintf (stderr, "\n");
 #endif
 }
+#endif /* FB_24BIT */
 
 #if FB_SHIFT == FB_STIP_SHIFT + 1
 
@@ -734,6 +737,7 @@ fbBltOdd (FbBits    *srcLine,
     }
 }
 
+#ifdef FB_24BIT
 void
 fbBltOdd24 (FbBits	*srcLine,
 	    FbStride	srcStrideEven,
@@ -778,6 +782,7 @@ fbBltOdd24 (FbBits	*srcLine,
     fprintf (stderr, "\n");
 #endif
 }
+#endif
 
 #endif
 
@@ -866,6 +871,7 @@ fbBltStip (FbStip   *src,
 		     &dstStrideEven, &dstStrideOdd,
 		     &dstXEven, &dstXOdd);
 		     
+#ifdef FB_24BIT
 	if (bpp == 24 && !FbCheck24Pix (pm))
 	{
 	    fbBltOdd24  (s, srcStrideEven, srcStrideOdd,
@@ -877,6 +883,7 @@ fbBltStip (FbStip   *src,
 			 width, height, alu, pm);
 	}
 	else
+#endif
 	{
 	    fbBltOdd (s, srcStrideEven, srcStrideOdd,
 		      srcXEven, srcXOdd,

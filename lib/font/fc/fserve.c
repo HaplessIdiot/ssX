@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.15 1999/12/27 00:39:26 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.16 1999/12/27 01:14:09 robin Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -2997,6 +2997,8 @@ _fs_do_setup_connection (FSFpePtr conn)
 	switch (conn->fs_conn_state) {
 	case FS_CONN_UNCONNECTED:
 	    ret = _fs_open_server (conn);
+	    if (ret == FSIO_BLOCK)
+		conn->fs_conn_state = FS_CONN_CONNECTING;
 	    break;
 	case FS_CONN_CONNECTING:
 	    ret = _fs_check_connect (conn);

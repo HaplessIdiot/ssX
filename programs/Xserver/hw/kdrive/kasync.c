@@ -1,5 +1,5 @@
 /*
- * $Id: kasync.c,v 1.1 1999/12/30 03:03:05 robin Exp $
+ * $Id: kasync.c,v 1.2 2000/01/21 01:12:01 dawes Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -87,25 +87,16 @@ KdCheckPolylines (DrawablePtr pDrawable, GCPtr pGC,
 {
 
     if (pGC->lineWidth == 0)
-    {
 	KdCheckSync (pDrawable->pScreen);
-	fbZeroLine (pDrawable, pGC, mode, npt, ppt);
-    }
-    else
-    {
-	if (pGC->lineStyle != LineSolid)
-	    miWideDash (pDrawable, pGC, mode, npt, ppt);
-	else
-	    miWideLine (pDrawable, pGC, mode, npt, ppt);
-    }
+    fbPolyLine (pDrawable, pGC, mode, npt, ppt);
 }
 
-#if 0
 void
 KdCheckPolySegment (DrawablePtr pDrawable, GCPtr pGC, 
 		    int nsegInit, xSegment *pSegInit)
 {
-    KdCheckSync(pDrawable->pScreen);
+    if (pGC->lineWidth == 0)
+	KdCheckSync(pDrawable->pScreen);
     fbPolySegment (pDrawable, pGC, nsegInit, pSegInit);
 }
 
@@ -113,10 +104,10 @@ void
 KdCheckPolyRectangle (DrawablePtr pDrawable, GCPtr pGC, 
 		      int nrects, xRectangle *prect)
 {
-    KdCheckSync(pDrawable->pScreen);
+    if (pGC->lineWidth == 0)
+	KdCheckSync(pDrawable->pScreen);
     fbPolyRectangle (pDrawable, pGC, nrects, prect);
 }
-#endif
 
 void
 KdCheckPolyArc (DrawablePtr pDrawable, GCPtr pGC, 

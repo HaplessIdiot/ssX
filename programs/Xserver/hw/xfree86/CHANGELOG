@@ -1,4 +1,23 @@
 XFree86 3.9.17a (20 January 2000)
+3554. Fix "controlization" in XLookupString for chars > 127 (#3569,
+      Ivan Pascal).
+3553. Take advantage of FB speedups in Tiny-X (#3568, Keith Packard).
+3552. Speed up FB and do 32bit accesses instead of 64bit accesses
+      (#3567, Keith Packard).
+3551. Eliminate saving the contents of the screen durint VT switching
+      (#3562, Keith Packard).
+3550. Make using fb easier for driver writers (#3561, Keith Packard).
+3549. Fix TCP font server connections (#3560, Keith Packard).
+3548. Implement the "OverclockMem" option for the Millennium and Millennium
+      II (#3558, Andrew Aitchison).
+3547. Speed up some FB performance problems (#3557, 3559, 3560,
+      Keith Packard).
+3546. Work around a bad code generation bug in gcc 2.7.2.3 that shows up
+      in XAA (#3550, Rik Faith).
+3545. Add a -brief option to xclock to show only hours and minutes when in
+      digital mode (#3549, Keith Packard).
+3544. Fix some dead key problems with xkb symbols for Swiss French and
+      Swiss German keyboards (#3546, Charles Lopes).
 3543. Add drm_poll to fix SIGIO problem in the drm kernel modules, and change
       drm to use /{proc,dev}/dri to avoid conflicts with /{proc,dev}/graphics
       (Rik Faith and Daryll Strauss).
@@ -449,7 +468,7 @@ XFree86 3.9.16b (27 September 1999)
 3191. i740 driver updates (#3256, Kurt Olsen).
 3190. Enable image writes in the nv driver for the TNT in 32 bit mode
       (#3255, Jarno Paananen, Neil Burch).
-3189. Remove the last global variables form the nv driver (#3255,
+3189. Remove the last global variables from the nv driver (#3255,
       Jarno Paananen).
 3188. Turn MGA soft reset stuff back on but modified so that it doesn't
       poll for fifos in case the PLLs aren't powered up (#3254,
@@ -9265,4 +9284,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.936 2000/01/20 07:25:28 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.937 2000/01/20 21:46:19 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.21 1999/07/10 12:17:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.23 1999/10/31 23:52:57 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -37,7 +37,7 @@ static void XAASaveAreas (PixmapPtr pPixmap, RegionPtr prgnSave,
 static Bool XAAEnterVT (int index, int flags);
 static void XAALeaveVT (int index, int flags);
 static int  XAASetDGAMode(int index, int num, DGADevicePtr devRet);
-static Bool XAASaveRestoreImage (int index, SaveRestoreFlags what);
+static void XAAEnableDisableFBAccess (int index, Bool enable);
 static Bool XAAChangeWindowAttributes (WindowPtr pWin, unsigned long mask);
 
 int XAAScreenIndex = -1;
@@ -189,8 +189,8 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->LeaveVT = XAALeaveVT;
     pScreenPriv->SetDGAMode = pScrn->SetDGAMode;
     pScrn->SetDGAMode = XAASetDGAMode;
-    pScreenPriv->SaveRestoreImage = pScrn->SaveRestoreImage;
-    pScrn->SaveRestoreImage = XAASaveRestoreImage;
+    pScreenPriv->EnableDisableFBAccess = pScrn->EnableDisableFBAccess;
+    pScrn->EnableDisableFBAccess = XAAEnableDisableFBAccess;
 
     pScreenPriv->WindowExposures = pScreen->WindowExposures;
     if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
@@ -226,7 +226,7 @@ XAACloseScreen (int i, ScreenPtr pScreen)
 
     pScrn->EnterVT = pScreenPriv->EnterVT; 
     pScrn->LeaveVT = pScreenPriv->LeaveVT; 
-    pScrn->SaveRestoreImage = pScreenPriv->SaveRestoreImage;
+    pScrn->EnableDisableFBAccess = pScreenPriv->EnableDisableFBAccess;
    
     pScreen->CreateGC = pScreenPriv->CreateGC;
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
@@ -670,16 +670,15 @@ XAASetDGAMode(int index, int num, DGADevicePtr devRet)
 
 
 
-static Bool 
-XAASaveRestoreImage (int index, SaveRestoreFlags what)
+static void
+XAAEnableDisableFBAccess (int index, Bool enable)
 {
     ScreenPtr pScreen = screenInfo.screens[index];
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
     XAAScreenPtr pScreenPriv = 
 	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
-    Bool ret;
 
-    if(what == SaveImage) {
+    if(!enable) {
 	if((infoRec->Flags & OFFSCREEN_PIXMAPS) && (infoRec->OffscreenPixmaps))
 	    XAAMoveOutOffscreenPixmaps(pScreen);
 	if(infoRec->Flags & PIXMAP_CACHE)
@@ -687,13 +686,11 @@ XAASaveRestoreImage (int index, SaveRestoreFlags what)
 	SwitchedOut = TRUE;
     }
 
-    ret = (*pScreenPriv->SaveRestoreImage)(index, what);
+    (*pScreenPriv->EnableDisableFBAccess)(index, enable);
 
-    if(what == RestoreImage) {
+    if(enable) {
 	if((infoRec->Flags & OFFSCREEN_PIXMAPS) && (infoRec->OffscreenPixmaps))
 	    XAAMoveInOffscreenPixmaps(pScreen);
 	SwitchedOut = FALSE;
     }
-
-    return ret;
 }

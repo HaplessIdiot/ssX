@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.4 1999/03/02 11:49:36 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -110,6 +110,8 @@ static XtResource resources[] = {
         offset(Hipixel), XtRString, XtDefaultForeground},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRImmediate, (XtPointer) TRUE},
+    {XtNbrief, XtCBoolean, XtRBoolean, sizeof(Boolean),
+        offset(brief), XtRImmediate, (XtPointer) TRUE},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset(chime), XtRImmediate, (XtPointer) FALSE },
     {XtNpadding, XtCMargin, XtRInt, sizeof(int),
@@ -204,6 +206,18 @@ ClassInitialize(void)
 		    NULL, 0 );
 }
 
+static char *
+TimeString (ClockWidget w, struct tm *tm)
+{
+   if (w->clock.brief)
+   {
+      static char brief[5];
+      sprintf (brief, "%02d:%02d", tm->tm_hour, tm->tm_min);
+      return brief;
+   }
+   return asctime (tm);
+}
+
 /* ARGSUSED */
 static void 
 Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
@@ -227,7 +241,7 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
 
        (void) time(&time_value);
        tm = *localtime(&time_value);
-       str = asctime(&tm);
+       str = TimeString (w, &tm);
        if (w->clock.font == NULL)
           w->clock.font = XQueryFont( XtDisplay(w),
 				      XGContextFromGC(
@@ -383,7 +397,7 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 	    int	clear_from;
 	    int i, len, prev_len;
 
-	    time_ptr = asctime(&tm);
+	    time_ptr = TimeString (w, &tm);
 	    len = strlen (time_ptr);
 	    if (time_ptr[len - 1] == '\n') time_ptr[--len] = '\0';
 	    prev_len = strlen (w->clock.prev_time_string);
@@ -392,9 +406,9 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 	    strcpy (w->clock.prev_time_string+i, time_ptr+i);
 
 	    XDrawImageString (dpy, win, w->clock.myGC,
-			      (2+w->clock.padding +
+			      (1+w->clock.padding +
 			       XTextWidth (w->clock.font, time_ptr, i)),
-			      2+w->clock.font->ascent+w->clock.padding,
+			      w->clock.font->ascent+w->clock.padding,
 			      time_ptr + i, len - i);
 	    /*
 	     * Clear any left over bits

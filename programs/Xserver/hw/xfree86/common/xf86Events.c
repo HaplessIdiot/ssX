@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.82 1999/12/13 23:38:10 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.83 1999/12/27 00:39:42 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1066,8 +1066,8 @@ xf86VTSwitch()
 #endif
     for (i = 0; i < xf86NumScreens; i++) {
       if (!(dispatchException & DE_TERMINATE))
-	if (xf86Screens[i]->SaveRestoreImage)
-	  xf86Screens[i]->SaveRestoreImage(i, SaveImage);
+	if (xf86Screens[i]->EnableDisableFBAccess)
+	  (*xf86Screens[i]->EnableDisableFBAccess) (i, FALSE);
     }
     xf86EnterServerState(SETUP);
     for (i = 0; i < xf86NumScreens; i++) {
@@ -1103,8 +1103,8 @@ xf86VTSwitch()
       xf86EnterServerState(OPERATING);
       if (!(dispatchException & DE_TERMINATE)) {
 	for (i = 0; i < xf86NumScreens; i++) {
-	  if (xf86Screens[i]->SaveRestoreImage)
-	    xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
+	  if (xf86Screens[i]->EnableDisableFBAccess)
+	    (*xf86Screens[i]->EnableDisableFBAccess) (i, TRUE);
 	}
       }
       SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
@@ -1148,8 +1148,8 @@ xf86VTSwitch()
     }
     xf86EnterServerState(OPERATING);
     for (i = 0; i < xf86NumScreens; i++) {
-      if (xf86Screens[i]->SaveRestoreImage)
-	xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
+      if (xf86Screens[i]->EnableDisableFBAccess)
+	(*xf86Screens[i]->EnableDisableFBAccess)(i, TRUE);
     }
 
     /* Turn screen saver off when switching back */

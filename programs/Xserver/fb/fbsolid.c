@@ -1,5 +1,5 @@
 /*
- * $Id: fbsolid.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $
+ * $Id: fbsolid.c,v 1.2 2000/01/21 01:11:59 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbsolid.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -39,6 +39,9 @@ fbSolid (FbBits	    *dst,
 {
     FbBits  startmask, endmask;
     int	    n, nmiddle;
+    CARD8   *dst8, xor8;
+    CARD16  *dst16, xor16;
+    CARD32  *dst32, xor32;
 
 #ifdef FB_24BIT
     if (bpp == 24 && (!FbCheck24Pix(and) || !FbCheck24Pix(xor)))
@@ -50,6 +53,41 @@ fbSolid (FbBits	    *dst,
 	
     dst += dstX >> FB_SHIFT;
     dstX &= FB_MASK;
+    if (and == 0 && (dstX & width-1) == 0) 
+    {
+	switch (width) {
+	case 8 * sizeof (CARD8):
+	    dst8 = (CARD8 *) dst + (dstX >> 3);
+	    xor8 = xor;
+	    dstStride *= sizeof (FbBits) / sizeof (CARD8);
+	    while (height--)
+	    {
+		*dst8 = xor8;
+		dst8 += dstStride;
+	    }
+	    return;
+	case 8 * sizeof (CARD16):
+	    dst16 = (CARD16 *) dst + (dstX >> 4);
+	    xor16 = xor;
+	    dstStride *= sizeof (FbBits) / sizeof (CARD16);
+	    while (height--)
+	    {
+		*dst16 = xor16;
+		dst16 += dstStride;
+	    }
+	    return;
+	case 8 * sizeof (CARD32):
+	    dst32 = (CARD32 *) dst + (dstX >> 5);
+	    xor32 = xor;
+	    dstStride *= sizeof (FbBits) / sizeof (CARD32);
+	    while (height--)
+	    {
+		*dst32 = xor32;
+		dst32 += dstStride;
+	    }
+	    return;
+	}
+    }
     FbMaskBits (dstX, width, startmask, nmiddle, endmask);
     if (startmask)
 	dstStride--;

@@ -895,7 +895,8 @@ XLookupString (event, buffer, nbytes, keysym, status)
 
     rtrnLen = XkbTranslateKeySym(dpy,keysym,new_mods,buffer,nbytes,NULL);
     if ((event->state&ControlMask)&&(nbytes>0)&&
-			((rtrnLen==0)||((rtrnLen==1)&&(buffer[0]>=' ')))&&
+			((rtrnLen==0)||
+                        ((rtrnLen==1)&&((unsigned char) buffer[0]>=' ')))&&
 			(XkbGroupForCoreState(event->state)!=XkbGroup1Index)&&
 			(dpy->xkb_info->xlib_ctrls&XkbLC_ControlFallback)) {
 	XKeyEvent	tmp_ev;

@@ -1,5 +1,5 @@
 /*
- * $Id: fbgc.c,v 1.2 1999/12/30 02:33:58 robin Exp $
+ * $Id: fbgc.c,v 1.3 2000/01/21 01:11:57 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.1 1999/11/19 13:53:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.2 1999/12/30 02:33:58 robin Exp $ */
 
 #include "fb.h"
 
@@ -43,12 +43,12 @@ const GCOps	fbGCOps = {
     fbCopyPlane,
     fbPolyPoint,
     fbPolyLine,
-    miPolySegment,
-    miPolyRectangle,
+    fbPolySegment,
+    fbPolyRectangle,
     fbPolyArc,
     miFillPolygon,
     fbPolyFillRect,
-    miPolyFillArc,
+    fbPolyFillArc,
     miPolyText8,
     miPolyText16,
     miImageText8,

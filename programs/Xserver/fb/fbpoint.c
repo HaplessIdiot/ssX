@@ -1,5 +1,5 @@
 /*
- * $Id: fbpoint.c,v 1.2 1999/12/30 02:33:59 robin Exp $
+ * $Id: fbpoint.c,v 1.3 2000/01/21 01:11:58 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpoint.c,v 1.1 1999/11/19 13:53:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpoint.c,v 1.2 1999/12/30 02:33:59 robin Exp $ */
 
 #include "fb.h"
 
@@ -31,61 +31,71 @@ typedef void	(*FbDots)  (FbBits	*dst,
 			    BoxPtr	pBox,
 			    xPoint	*pts,
 			    int		npt,
+			    int		xoff,
+			    int		yoff,
 			    FbBits	and,
 			    FbBits	xor);
 
 void
-fbDots (FbBits	    *dst,
+fbDots (FbBits	    *dstOrig,
 	FbStride    dstStride,
 	int	    dstBpp,
 	BoxPtr	    pBox,
 	xPoint	    *pts,
 	int	    npt,
-	FbBits	    and,
-	FbBits	    xor)
+	int	    xoff,
+	int	    yoff,
+	FbBits	    andOrig,
+	FbBits	    xorOrig)
 {
+    FbStip	*dst = (FbStip *) dstOrig;
     int		x1, y1, x2, y2;
     int		x, y;
-    FbBits	*d;
+    FbStip	*d;
+    FbStip	and = andOrig;
+    FbStip	xor = xorOrig;
 
+    dstStride = FbBitsStrideToStipStride (dstStride);
     x1 = pBox->x1;
     y1 = pBox->y1;
     x2 = pBox->x2;
     y2 = pBox->y2;
     while (npt--)
     {
-	x = pts->x;
-	y = pts->y;
+	x = pts->x + xoff;
+	y = pts->y + yoff;
 	pts++;
 	if (x1 <= x && x < x2 && y1 <= y && y < y2)
 	{
 	    x *= dstBpp;
-	    d = dst + (y * dstStride) + (x >> FB_SHIFT);
-	    x &= FB_MASK;
+	    d = dst + (y * dstStride) + (x >> FB_STIP_SHIFT);
+	    x &= FB_STIP_MASK;
+#ifdef FB_24BIT
 	    if (dstBpp == 24)
 	    {
-		FbBits	leftMask, rightMask;
+		FbStip	leftMask, rightMask;
 		int	n, rot;
-		FbBits	andT, xorT;
+		FbStip	andT, xorT;
 		
 		rot = x % 24;
-		andT = FbRot24(and,rot);
-		xorT = FbRot24(xor,rot);
-		FbMaskBits (x, 24, leftMask, n, rightMask);
+		andT = FbRot24Stip(and,rot);
+		xorT = FbRot24Stip(xor,rot);
+		FbMaskStip (x, 24, leftMask, n, rightMask);
 		if (leftMask)
 		{
 		    *d = FbDoMaskRRop (*d, andT, xorT, leftMask);
-		    andT = FbNext24Pix(andT);
-		    xorT = FbNext24Pix(xorT);
+		    andT = FbNext24Stip(andT);
+		    xorT = FbNext24Stip(xorT);
 		    d++;
 		}
 		if (rightMask)
 		    *d = FbDoMaskRRop(*d, andT, xorT, rightMask);
 	    }
 	    else
+#endif
 	    {
-		FbBits	mask;
-		mask = FbBitsMask(x, dstBpp);
+		FbStip	mask;
+		mask = FbStipMask(x, dstBpp);
 		*d = FbDoMaskRRop (*d, and, xor, mask);
 	    }
 	}
@@ -116,23 +126,12 @@ fbPolyPoint (DrawablePtr    pDrawable,
     npt = nptInit;
     if (mode == CoordModePrevious)
     {
-	ppt->x += pDrawable->x;
-	ppt->y += pDrawable->y;
 	npt--;
 	while(npt--)
 	{
 	    ppt++;
 	    ppt->x += (ppt-1)->x;
 	    ppt->y += (ppt-1)->y;
-	}
-    }
-    else
-    {
-	while (npt--)
-	{
-	    ppt->x += pDrawable->x;
-	    ppt->y += pDrawable->y;
-	    ppt++;
 	}
     }
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
@@ -151,5 +150,6 @@ fbPolyPoint (DrawablePtr    pDrawable,
 #endif
     for (nBox = REGION_NUM_RECTS (pClip), pBox = REGION_RECTS (pClip);
 	 nBox--; pBox++)
-	(*dots) (dst, dstStride, dstBpp, pBox, pptInit, nptInit, and, xor);
+	(*dots) (dst, dstStride, dstBpp, pBox, pptInit, nptInit, 
+		 pDrawable->x, pDrawable->y, and, xor);
 }

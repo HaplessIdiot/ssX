@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.19 1999/08/21 13:48:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.20 1999/12/13 02:13:06 robin Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1274,6 +1274,20 @@ extern int cfbScreenPrivateIndex;
 
 #define cfbGetWindowPixelWidthAndPointer(pDrawable, width, pointer) \
     cfbGetWindowTypedWidthAndPointer(pDrawable, width, pointer, PixelType, PixelType)
+
+/*
+ * XFree86 empties the root BorderClip when the VT is inactive,
+ * here's a macro which uses that to disable GetImage and GetSpans
+ */
+extern WindowPtr *WindowTable;
+
+#define cfbWindowEnabled(pWin) \
+    REGION_NOTEMPTY((pWin)->drawable.pScreen, \
+		    &WindowTable[(pWin)->drawable.pScreen->myNum]->borderClip)
+
+#define cfbDrawableEnabled(pDrawable) \
+    ((pDrawable)->type == DRAWABLE_PIXMAP ? \
+     TRUE : cfbWindowEnabled((WindowPtr) pDrawable))
 
 /* Macros which handle a coordinate in a single register */
 

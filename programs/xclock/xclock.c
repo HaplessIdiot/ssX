@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.2 1998/12/20 11:58:13 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.3 1999/02/28 11:20:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -57,6 +57,7 @@ static XrmOptionDescRec options[] = {
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
+{"-brief",      "*clock.brief",	        XrmoptionNoArg,	        "TRUE"},
 };
 
 static void quit ( Widget w, XEvent *event, String *params, 
@@ -74,7 +75,7 @@ static Atom wm_delete_window;
 static void
 Syntax(char *call)
 {
-	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital]\n", call);
+	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital] [-brief]\n", call);
 	(void) printf ("       [-fg <color>] [-bg <color>] [-hd <color>]\n");
 	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");

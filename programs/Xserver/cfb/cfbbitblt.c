@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.6 1999/08/21 13:48:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.7 1999/10/13 04:20:52 dawes Exp $ */
 
 /*
 
@@ -128,7 +128,13 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     {
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    if (!((WindowPtr) pSrcDrawable)->parent)
+	    /*
+	     * XFree86 DDX empties the border clip when the
+	     * VT is inactive
+	     */
+	    if (!((WindowPtr) pSrcDrawable)->parent &&
+		REGION_NOTEMPTY (pSrcDrawable->pScreen,
+				 &((WindowPtr) pSrcDrawable)->borderClip))
 	    {
 		/*
 		 * special case bitblt from root window in

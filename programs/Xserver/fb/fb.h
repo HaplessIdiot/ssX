@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.4 2000/01/20 01:40:14 tsi Exp $
+ * $Id: fb.h,v 1.5 2000/01/21 01:11:55 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.3 1999/12/30 02:33:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.4 2000/01/20 01:40:14 tsi Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -44,11 +44,11 @@
  * This single define controls the basic size of data manipulated
  * by this software; it must be log2(sizeof (FbBits) * 8)
  */
-#ifdef VXWORKS
+
+#ifndef FB_SHIFT
 #define FB_SHIFT    5
-#else
-#define FB_SHIFT    6
 #endif
+    
 #define FB_UNIT	    (1 << FB_SHIFT)
 #define FB_HALFUNIT (1 << (FB_SHIFT-1))
 #define FB_MASK	    (FB_UNIT - 1)
@@ -139,10 +139,18 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #define FbRotLeft(x,n)	FbScrLeft(x,n) | (n ? FbScrRight(x,FB_UNIT-n) : 0)
 #define FbRotRight(x,n)	FbScrRight(x,n) | (n ? FbScrLeft(x,FB_UNIT-n) : 0)
 
+#define FbRotStipLeft(x,n)  FbStipLeft(x,n) | (n ? FbStipRight(x,FB_STIP_UNIT-n) : 0)
+#define FbRotStipRight(x,n)  FbStipRight(x,n) | (n ? FbStipLeft(x,FB_STIP_UNIT-n) : 0)
+
 #define FbLeftMask(x)	    ( ((x) & FB_MASK) ? \
 			     FbScrRight(FB_ALLONES,(x) & FB_MASK) : 0)
 #define FbRightMask(x)	    ( ((FB_UNIT - (x)) & FB_MASK) ? \
 			     FbScrLeft(FB_ALLONES,(FB_UNIT - (x)) & FB_MASK) : 0)
+
+#define FbLeftStipMask(x)   ( ((x) & FB_STIP_MASK) ? \
+			     FbStipRight(FB_STIP_ALLONES,(x) & FB_STIP_MASK) : 0)
+#define FbRightStipMask(x)  ( ((FB_STIP_UNIT - (x)) & FB_STIP_MASK) ? \
+			     FbScrLeft(FB_STIP_ALLONES,(FB_STIP_UNIT - (x)) & FB_STIP_MASK) : 0)
 
 #define FbBitsMask(x,w)	(FbScrRight(FB_ALLONES,(x) & FB_MASK) & \
 			 FbScrLeft(FB_ALLONES,(FB_UNIT - ((x) + (w))) & FB_MASK))
@@ -166,8 +174,24 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
     n >>= FB_SHIFT; \
 }
 
+#define FbMaskStip(x,w,l,n,r) { \
+    n = (w); \
+    r = FbRightStipMask((x)+n); \
+    l = FbLeftStipMask(x); \
+    if (l) { \
+	n -= FB_STIP_UNIT - ((x) & FB_STIP_MASK); \
+	if (n < 0) { \
+	    n = 0; \
+	    l &= r; \
+	    r = 0; \
+	} \
+    } \
+    n >>= FB_STIP_SHIFT; \
+}
+
 /* Rotate a filled pixel value to the specified alignement */
-#define FbRot24(p,b)	(FbScrRight(p,b) | FbScrLeft(p,24-(b)))
+#define FbRot24(p,b)	    (FbScrRight(p,b) | FbScrLeft(p,24-(b)))
+#define FbRot24Stip(p,b)    (FbStipRight(p,b) | FbStipLeft(p,24-(b)))
 
 /* step a filled pixel value to the next/previous FB_UNIT alignment */
 #define FbNext24Pix(p)	(FbRot24(p,(24-FB_UNIT%24)))
@@ -258,6 +282,19 @@ typedef struct {
     (bpp) = _pPix->drawable.bitsPerPixel; \
 }
 
+/*
+ * XFree86 empties the root BorderClip when the VT is inactive,
+ * here's a macro which uses that to disable GetImage and GetSpans
+ */
+
+#define fbWindowEnabled(pWin) \
+    REGION_NOTEMPTY((pWin)->drawable.pScreen, \
+		    &WindowTable[(pWin)->drawable.pScreen->myNum]->borderClip)
+
+#define fbDrawableEnabled(pDrawable) \
+    ((pDrawable)->type == DRAWABLE_PIXMAP ? \
+     TRUE : fbWindowEnabled((WindowPtr) pDrawable))
+
 #ifdef FB_OLD_SCREEN
 #define BitsPerPixel(d) (\
     ((1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
@@ -330,6 +367,8 @@ fbDots8 (FbBits	    *dst,
 	 BoxPtr	    pBox,
 	 xPoint	    *pts,
 	 int	    npt,
+	 int	    xoff,
+	 int	    yoff,
 	 FbBits	    and,
 	 FbBits	    xor);
 
@@ -351,6 +390,19 @@ fbGlyph8 (FbBits    *dstLine,
 	  FbBits    fg,
 	  int	    height,
 	  int	    shift);
+
+void
+fbPolyline8 (DrawablePtr    pDrawable,
+	     GCPtr	    pGC,
+	     int	    mode,
+	     int	    npt,
+	     DDXPointPtr    ptsOrig);
+
+void
+fbPolySegment8 (DrawablePtr pDrawable,
+		GCPtr	    pGC,
+		int	    nseg,
+		xSegment    *pseg);
 
 void	
 fbBresSolid16(DrawablePtr   pDrawable,
@@ -387,6 +439,8 @@ fbDots16(FbBits	    *dst,
 	 BoxPtr	    pBox,
 	 xPoint	    *pts,
 	 int	    npt,
+	 int	    xoff,
+	 int	    yoff,
 	 FbBits	    and,
 	 FbBits	    xor);
 
@@ -408,6 +462,19 @@ fbGlyph16(FbBits    *dstLine,
 	  FbBits    fg,
 	  int	    height,
 	  int	    shift);
+
+void
+fbPolyline16 (DrawablePtr   pDrawable,
+	      GCPtr	    pGC,
+	      int	    mode,
+	      int	    npt,
+	      DDXPointPtr   ptsOrig);
+
+void
+fbPolySegment16 (DrawablePtr	pDrawable,
+		 GCPtr		pGC,
+		 int		nseg,
+		 xSegment	*pseg);
 
 void	
 fbBresSolid32(DrawablePtr   pDrawable,
@@ -444,6 +511,8 @@ fbDots32(FbBits	    *dst,
 	 BoxPtr	    pBox,
 	 xPoint	    *pts,
 	 int	    npt,
+	 int	    xoff,
+	 int	    yoff,
 	 FbBits	    and,
 	 FbBits	    xor);
 
@@ -465,6 +534,19 @@ fbGlyph32(FbBits    *dstLine,
 	  FbBits    fg,
 	  int	    height,
 	  int	    shift);
+void
+fbPolyline32 (DrawablePtr   pDrawable,
+	      GCPtr	    pGC,
+	      int	    mode,
+	      int	    npt,
+	      DDXPointPtr   ptsOrig);
+
+void
+fbPolySegment32 (DrawablePtr	pDrawable,
+		 GCPtr		pGC,
+		 int		nseg,
+		 xSegment	*pseg);
+
 /*
  * fbblt.c
  */
@@ -774,6 +856,8 @@ fbPolyFillRect(DrawablePtr  pDrawable,
 
 #define fbPolyFillArc miPolyFillArc
 
+#define fbFillPolygon miFillPolygon
+
 /*
  * fbfillsp.c
  */
@@ -906,7 +990,17 @@ fbPolyLine (DrawablePtr	pDrawable,
 	    int		npt,
 	    DDXPointPtr	ppt);
 
-#define fbPolySegment	miPolySegment
+void
+fbFixCoordModePrevious (int npt,
+			DDXPointPtr ppt);
+
+void
+fbPolySegment (DrawablePtr  pDrawable,
+	       GCPtr	    pGC,
+	       int	    nseg,
+	       xSegment	    *pseg);
+
+#define fbPolyRectangle	miPolyRectangle
 
 /*
  * fbpixmap.c
@@ -1060,6 +1154,35 @@ fbSetSpans (DrawablePtr	    pDrawable,
 	    int		    *pwidth,
 	    int		    nspans,
 	    int		    fSorted);
+
+FbBres *
+fbSelectBres (DrawablePtr   pDrawable,
+	      GCPtr	    pGC);
+
+void
+fbBres (DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		dashOffset,
+	int		signdx,
+	int		signdy,
+	int		axis,
+	int		x1,
+	int		y1,
+	int		e,
+	int		e1,
+	int		e3,
+	int		len);
+
+void
+fbSegment (DrawablePtr	pDrawable,
+	   GCPtr	pGC,
+	   int		x1,
+	   int		y1,
+	   int		x2,
+	   int		y2,
+	   Bool		drawLast,
+	   int		*dashOffset);
+
 
 /*
  * fbsolid.c

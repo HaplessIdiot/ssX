@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.62 1999/10/14 04:24:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.64 1999/12/03 19:17:23 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -26,6 +26,7 @@
 #include "xf86DDC.h"
 #include "xf86Xinput.h"
 #include "xf86InPriv.h"
+#include "mivalidate.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -120,7 +121,7 @@ xf86AllocateScreen(DriverPtr drv, int flags)
      * Almost everything uses this default, and many of those that don't
      * will wrap it.
      */
-    xf86Screens[i]->SaveRestoreImage = xf86SaveRestoreImage;
+    xf86Screens[i]->EnableDisableFBAccess = xf86EnableDisableFBAccess;
 
     xf86Screens[i]->drv = drv;
     drv->refCount++;
@@ -926,71 +927,151 @@ xf86SetBlackWhitePixels(ScreenPtr pScreen)
 }
 
 /*
- * Create a new serial number for the window.  Used in xf86SaveRestoreImage()
- * to force revalidation of all the GC in the window tree of each screen.
+ * xf86SetRootClip --
+ *	Enable or disable rendering to the screen by
+ *	setting the root clip list and revalidating
+ *	all of the windows
  */
-/*ARGSUSED*/
-int
-xf86NewSerialNumber(WindowPtr pWin, pointer unused)
-{
-    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    return WT_WALKCHILDREN;
-}
 
-/*
- * A second utility function for xf86SaveRestoreImage().  This one finds the
- * pixmaps whose private data is to be exchanged and creates a region that
- * covers the virtual screen.
- */
 static void
-xf86GetPixmapsAndRegion(ScrnInfoPtr pScrnInfo, ScreenPtr pScreen,
-			PixmapPtr *pspix, PixmapPtr *ppix, RegionPtr pRegion)
+xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
 {
-    BoxRec pixBox;
+    WindowPtr	pWin = WindowTable[pScreen->myNum];
+    WindowPtr	pChild;
+    Bool	WasViewable = (Bool)(pWin->viewable);
+    Bool	anyMarked;
+    RegionPtr	pOldClip, bsExposed;
+#ifdef DO_SAVE_UNDERS
+    Bool	dosave = FALSE;
+#endif
+    WindowPtr   pLayerWin;
+    BoxRec	box;
 
-    *pspix = (*pScreen->GetScreenPixmap)(pScreen);
-    *ppix = pScrnInfo->ppix;
+    if (WasViewable)
+    {
+	for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	{
+	    (void) (*pScreen->MarkOverlappedWindows)(pChild,
+						     pChild,
+						     &pLayerWin);
+	}
+	(*pScreen->MarkWindow) (pWin);
+	anyMarked = TRUE;
+	if (pWin->valdata)
+	{
+	    if (HasBorder (pWin))
+	    {
+		RegionPtr	borderVisible;
 
-    pixBox.x1 = pixBox.y1 = 0;
-    pixBox.x2 = pScreen->width;
-    pixBox.y2 = pScreen->height;
-    REGION_INIT(pScreen, pRegion, &pixBox, 1);
+		borderVisible = REGION_CREATE(pScreen, NullBox, 1);
+		REGION_SUBTRACT(pScreen, borderVisible,
+				&pWin->borderClip, &pWin->winSize);
+		pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	    pWin->valdata->before.resized = TRUE;
+	}
+    }
+    
+    /*
+     * Use REGION_BREAK to avoid optimizations in ValidateTree
+     * that assume the root borderClip can't change well, normally
+     * it doesn't...)
+     */
+    if (enable)
+    {
+	box.x1 = 0;
+	box.y1 = 0;
+	box.x2 = pScreen->width;
+	box.y2 = pScreen->height;
+	REGION_RESET(pScreen, &pWin->borderClip, &box);
+	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
+    }
+    else
+    {
+	REGION_EMPTY(pScreen, &pWin->borderClip);
+	REGION_BREAK (pWin->drawable.pScreen, &pWin->clipList);
+    }
+    
+    ResizeChildrenWinSize (pWin, 0, 0, 0, 0);
+    
+    if (WasViewable)
+    {
+	if (pWin->backStorage)
+	{
+	    pOldClip = REGION_CREATE(pScreen, NullBox, 1);
+	    REGION_COPY(pScreen, pOldClip, &pWin->clipList);
+	}
+
+	if (pWin->firstChild)
+	{
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin->firstChild,
+							   pWin->firstChild,
+							   (WindowPtr *)NULL);
+	}
+	else
+	{
+	    (*pScreen->MarkWindow) (pWin);
+	    anyMarked = TRUE;
+	}
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	    (*pScreen->ValidateTree)(pWin, NullWindow, VTOther);
+    }
+
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) || WasViewable))
+    {
+	if (!WasViewable)
+	    pOldClip = &pWin->clipList; /* a convenient empty region */
+	bsExposed = (*pScreen->TranslateBackingStore)
+			     (pWin, 0, 0, pOldClip,
+			      pWin->drawable.x, pWin->drawable.y);
+	if (WasViewable)
+	    REGION_DESTROY(pScreen, pOldClip);
+	if (bsExposed)
+	{
+	    RegionPtr	valExposed = NullRegion;
+    
+	    if (pWin->valdata)
+		valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+		REGION_EMPTY(pScreen, valExposed);
+	    REGION_DESTROY(pScreen, bsExposed);
+	}
+    }
+    if (WasViewable)
+    {
+	if (anyMarked)
+	    (*pScreen->HandleExposures)(pWin);
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin, pLayerWin);
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pWin, NullWindow, VTOther);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+    FlushAllOutput ();
 }
 
 /*
- * A third utility function for xf86SaveRestoreImage().  This one exchanges the
- * private data of two pixmaps.
- */
-static void
-xf86ExchangePixmapData(PixmapPtr pspix, PixmapPtr ppix)
-{
-#ifdef PIXPRIV
-    DevUnion *devPrivates = pspix->devPrivates;
-#endif
-    DevUnion devPrivate = pspix->devPrivate;
-    int devKind = pspix->devKind;
-
-#ifdef PIXPRIV
-    pspix->devPrivates = ppix->devPrivates;
-    ppix->devPrivates = devPrivates;
-#endif
-
-    pspix->devPrivate = ppix->devPrivate;
-    ppix->devPrivate = devPrivate;
-
-    pspix->devKind = ppix->devKind;
-    ppix->devKind = devKind;
-}
-
-/*
- * Function to save/restore the video image and replace the root drawable
- * with a pixmap.
+ * Function to enable/disable access to the frame buffer
  *
  * This is used when VT switching and when entering/leaving DGA direct mode.
  *
- * This has been rewritten compared with the older code, with the intention
- * of making it more general.  It relies on some new functions added to
- * the ScreenRec.
+ * This has been rewritten again to eliminate the saved pixmap.  The
+ * devPrivate field in the screen pixmap is set to NULL to catch code
+ * accidentally referencing the frame buffer while the X server is not
+ * supposed to touch it.
  *
  * Here, we exchange the pixmap private data, rather than the pixmaps
  * themselves to avoid having to find and change any references to the screen
@@ -1001,85 +1082,43 @@ xf86ExchangePixmapData(PixmapPtr pspix, PixmapPtr ppix)
  * whether they are switched in or out by keeping track of the root pixmap's
  * private data, and therefore don't need to access pScrnInfo->vtSema.
  */
-Bool
-xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
+void
+xf86EnableDisableFBAccess(int scrnIndex, Bool enable)
 {
     ScrnInfoPtr pScrnInfo = xf86Screens[scrnIndex];
     ScreenPtr pScreen = pScrnInfo->pScreen;
-    PixmapPtr pspix, ppix;
-    RegionRec pixReg;
+    PixmapPtr pspix;
 
-    switch (what) {
-    case SaveImage:
+    pspix = (*pScreen->GetScreenPixmap) (pScreen);
+    if (enable)
+    {
 	/*
-	 * Create a dummy pixmap to write to while VT is switched out, and
-	 * copy the screen to that pixmap.
+	 * Restore the screen pixmap devPrivate field
 	 */
-	if (!pScrnInfo->ppix) {
-	    pScrnInfo->ppix = (*pScreen->CreatePixmap)(pScreen,
-		pScrnInfo->displayWidth, pScreen->height, pScreen->rootDepth);
-	    if (!pScrnInfo->ppix)
-		return FALSE;
-	}
-
-	/* Determine pixmaps to swap and virtual screen region */
-	xf86GetPixmapsAndRegion(pScrnInfo, pScreen, &pspix, &ppix, &pixReg);
-
-	/* Copy screen to temporary pixmap */
-	(*pScreen->BackingStoreFuncs.SaveAreas)(ppix, &pixReg, 0, 0,
-	    WindowTable[scrnIndex]);
-
-	/* Swap pixmap data */
-	xf86ExchangePixmapData(pspix, ppix);
-
-	/* Cause revalidation of all GC's */
-	WalkTree(pScreen, xf86NewSerialNumber, 0);
-
-	/* Turf region */
-	REGION_UNINIT(pScreen, &pixReg);
-	break;
-
-    case RestoreImage:
+	pspix->devPrivate = pScrnInfo->pixmapPrivate;
 	/*
-	 * Reinstate the screen pixmap and copy the dummy pixmap back
-	 * to the screen.
+	 * Restore all of the clip lists on the screen 
 	 */
-	if (!xf86Resetting) {
-	    if (!pScrnInfo->ppix)
-		return FALSE;
+	if (!xf86Resetting)
+	    xf86SetRootClip (pScreen, TRUE);
 
-	    /* Determine pixmaps to swap and virtual screen region */
-	    xf86GetPixmapsAndRegion(pScrnInfo, pScreen,
-		&pspix, &ppix, &pixReg);
-
-	    /* Swap pixmap data */
-	    xf86ExchangePixmapData(pspix, ppix);
-
-	    /* Restore screen from temporary pixmap */
-	    (*pScreen->BackingStoreFuncs.RestoreAreas)(ppix, &pixReg, 0, 0,
-		WindowTable[scrnIndex]);
-
-	    /* Cause revalidation of all GC's */
-	    WalkTree(pScreen, xf86NewSerialNumber, 0);
-
-	    /* Turf region */
-	    REGION_UNINIT(pScreen, &pixReg);
-	}
-	/* Fall through */
-
-    case FreeImage:
-	if (pScrnInfo->ppix) {
-	    (*pScreen->DestroyPixmap)(pScrnInfo->ppix);
-	    pScrnInfo->ppix = NULL;
-	}
-	break;
-
-    default:
-	ErrorF("xf86SaveRestoreImage: Invalid flag (%d)\n", what);
-	return FALSE;
     }
-    return TRUE;
+    else
+    {
+	/*
+	 * Empty all of the clip lists on the screen 
+	 */
+	xf86SetRootClip (pScreen, FALSE);
+	/*
+	 * save the screen pixmap devPrivate field and
+	 * replace it with NULL so accidental references
+	 * to the frame buffer are caught
+	 */
+	pScrnInfo->pixmapPrivate = pspix->devPrivate;
+	pspix->devPrivate.ptr = NULL;
+    }
 }
+
 /* Buffer to hold log data written before the log file is opened */
 static char *saveBuffer = NULL;
 static int size = 0, unused = 0, pos = 0;

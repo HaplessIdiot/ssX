@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.57 1999/12/03 19:17:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.58 1999/12/13 01:39:47 robin Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -433,13 +433,6 @@ typedef enum {
     Pix24Use32
 } Pix24Flags;
 
-/* flags for SaveRestoreImage */
-typedef enum {
-    SaveImage,
-    RestoreImage,
-    FreeImage
-} SaveRestoreFlags;
-
 /*
  * The IO access enabler struct. This contains the address for 
  * the IOEnable/IODisable funcs for their specific bus along
@@ -747,8 +740,8 @@ typedef struct _ScrnInfoRec {
 
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
-    PixmapPtr		ppix;			/* Previous screen root pixmap
-						 * while switched out */
+    DevUnion		pixmapPrivate;		/* saved devPrivate from pixmap */
+    
     /* hw cursor moves at SIGIO time */
     Bool		silkenMouse;
 
@@ -781,8 +774,7 @@ typedef struct _ScrnInfoRec {
     void		(*FreeScreen)(int scrnIndex, int flags);
     int			(*ValidMode)(int scrnIndex, DisplayModePtr mode,
 				     Bool verbose, int flags);
-    Bool		(*SaveRestoreImage)(int scrnIndex,
-					    SaveRestoreFlags what);
+    void		(*EnableDisableFBAccess)(int scrnIndex, Bool enable);
     int			(*SetDGAMode)(int scrnIndex, int num, 
 					DGADevicePtr devRet);
     int			(*ChangeGamma)(int scrnIndex, Gamma gamma);
