@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.183tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.184 2002/11/22 22:55:56 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1241,6 +1241,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #undef HasKatmaiSupport
 #define HasKatmaiSupport HasSSESupport
 #endif
+#undef MesaUseKatmai
+#define MesaUseKatmai MesaUseSSE
 
 #ifndef UsbMouseSupport
 # define UsbMouseSupport NO

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/swrast/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/swrast/Imakefile,v 1.7 2002/11/22 22:55:59 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -52,7 +52,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if MesaUse3DNow
    3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
-#if MesaUseKatmai
+#if MesaUseSSE
      SSE_DEFS = -DUSE_SSE_ASM
 #endif
      ASM_DEFS = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(SSE_DEFS)
