@@ -1,5 +1,5 @@
 /* $XConsortium: miPck1Prim.c,v 5.3 94/04/17 20:36:53 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miPck1Prim.c,v 3.0 1996/03/29 22:09:21 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -62,6 +62,10 @@ SOFTWARE.
 #include "miClip.h"
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /*++
  |

@@ -60,6 +60,10 @@ SOFTWARE.
 #include "dipex.h"
 #include "pexSwap.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #define LOCAL_FLAG extern
 
 /*	Swap Convert Functions for OC's in Store Elements or Render OC	*/

@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.1 1997/02/17 09:46:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.2 1997/02/18 10:54:52 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -413,6 +413,8 @@ double xf86log(double x);
 double xf86pow(double x, double y);
 
 double xf86sqrt(double x);
+
+double xf86cos(double x);
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

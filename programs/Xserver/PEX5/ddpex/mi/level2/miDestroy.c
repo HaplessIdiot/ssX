@@ -1,5 +1,5 @@
 /* $XConsortium: miDestroy.c,v 5.4 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miDestroy.c,v 3.1 1995/07/07 15:34:33 dawes Exp $ */
 
 /***********************************************************
 
@@ -58,6 +58,10 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miStruct.h"
 #include "pexUtils.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /**  This file contains the definition for the OC Destroy Functions,
  ** each of which takes one parameter: a pointer to the element to be 

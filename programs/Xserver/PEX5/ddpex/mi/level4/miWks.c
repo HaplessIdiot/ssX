@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.14 94/04/17 20:37:35 rws Exp $ */
+/* $XConsortium: miWks.c /main/16 1996/09/28 16:54:30 rws $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,6 +60,10 @@ SOFTWARE.
 #include "Xprotostr.h"
 #include "gcstruct.h"
 #include "resource.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #ifdef MULTIBUFFER
 #define _MULTIBUF_SERVER_
@@ -729,7 +733,7 @@ FreePhigsWks(pWKS, WKSid)
 	WKS_CHECK_BITMASK( type )		\
 		needbytes += (bytes)
 
-static ddULONG  ulNULL = 0;
+static XID  ulNULL = 0;
 
 #define PLUTID( plut ) \
 	(plut)==NULL ? &ulNULL : &(plut)->id

@@ -56,6 +56,10 @@ SOFTWARE.
 #include "miStruct.h"
 #include "miNS.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*++
  |
  |  Function Name:	miDealWithDynamics

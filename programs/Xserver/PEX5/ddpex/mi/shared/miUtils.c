@@ -58,6 +58,10 @@ SOFTWARE.
 #include "miRender.h"
 #include "miWks.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*++
  |
  |  Function Name:	miMatIdent

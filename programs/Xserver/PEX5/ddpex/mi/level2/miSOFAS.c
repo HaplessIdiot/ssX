@@ -1,5 +1,5 @@
 /* $XConsortium: miSOFAS.c,v 5.4 94/04/17 20:37:17 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSOFAS.c,v 3.0 1995/07/07 15:34:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miSOFAS.c,v 3.1 1996/03/29 22:09:49 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -61,6 +61,10 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miLight.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #include <stdio.h>
 

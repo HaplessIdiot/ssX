@@ -54,6 +54,10 @@ SOFTWARE.
 #include "pexUtils.h"
 #include "PEXprotost.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* pex device dependent initialization */
 ddpex43rtn
 ddpexInit()

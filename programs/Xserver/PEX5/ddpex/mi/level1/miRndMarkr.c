@@ -1,5 +1,5 @@
 /* $XConsortium: miRndMarkr.c,v 5.6 94/04/17 20:36:55 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndMarkr.c,v 3.0 1995/07/07 15:34:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndMarkr.c,v 3.1 1996/03/29 22:09:24 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -63,6 +63,10 @@ SOFTWARE.
 #include "miMarkers.h"
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #define FULL_CIRCLE 360*64
 

@@ -77,6 +77,10 @@ static int foo;
 
 #include "pexStruct.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 PEXDumpBlock( block )
 struct structureBlock *block;
 {

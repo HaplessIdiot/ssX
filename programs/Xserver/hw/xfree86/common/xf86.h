@@ -272,6 +272,8 @@ typedef enum {
 #define MAGIC_CCD_DO_BITBLT		3	/* cur.col.depth specific blit*/
 #define MAGIC_CCD_SCREEN_PRIV_IDX	4	/* cur.col.depth specific idx*/
 #define MAGIC_CCD_XAA_SCREEN_INIT	5	/* cur.col.depth specific init*/
+#define MAGIC_PEX_INIT			6	/* PEX init function */
+#define MAGIC_XIE_INIT			7	/* XIE init function */
 
 extern int *xf86ccdScreenPrivateIndex;
 extern void (*xf86ccdDoBitblt)();

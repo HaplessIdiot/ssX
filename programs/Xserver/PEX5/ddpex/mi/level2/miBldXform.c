@@ -1,5 +1,5 @@
 /* $XConsortium: miBldXform.c,v 5.7 94/04/17 20:37:01 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miBldXform.c,v 3.0 1995/07/07 15:34:28 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -63,6 +63,10 @@ SOFTWARE.
 #include "regionstr.h"
 #include "miscstruct.h"
 #include "miRender.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /* External variables and functions */
 extern	void		miMatMult();

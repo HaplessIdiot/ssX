@@ -53,6 +53,10 @@ SOFTWARE.
 #include "mipex.h"
 #include "miRender.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* Rendering procedures for ExecuteOCTable */
 extern	ddpex2rtn	miRenderPolyLine(),
 			miRenderFillArea(),

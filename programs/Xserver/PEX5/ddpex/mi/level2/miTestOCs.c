@@ -56,6 +56,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "PEXprotost.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* Level III Output Command Primitives */
 
 static char        *ptTypeNames[] = {

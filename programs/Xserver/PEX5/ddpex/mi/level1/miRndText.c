@@ -1,5 +1,5 @@
 /* $XConsortium: miRndText.c,v 5.2 94/04/17 20:36:57 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miRndText.c,v 3.0 1996/03/29 22:09:28 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -61,6 +61,10 @@ SOFTWARE.
 #include "ddpex2.h"
 
 #include <stdio.h>
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /*++
  |

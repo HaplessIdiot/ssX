@@ -55,6 +55,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "PEXprotost.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*  Level 4 Shared Resources  */
 /* General Lookup Table Procedures */
 

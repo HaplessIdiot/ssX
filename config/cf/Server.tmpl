@@ -4,7 +4,7 @@
  */
 
 XCOMM $XConsortium: Server.tmpl /main/14 1996/04/30 14:37:27 mw $
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.3 1996/12/23 05:50:11 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.5 1997/02/18 10:46:42 hohndel Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -50,17 +50,21 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #endif
 
 /*
- * ExtensionsDynamicModules - compile server extensions as dynamic modules
+ * ExtensionsModules  - compile server extensions as modules
+ *			either traditional shared libraries, 
+ *			(BuildDynamicLoading) or static libraries 
+ *			that are loaded by a special loader at runtime
+ *			(DoLoadableServer)
  */
-#ifndef ExtensionsDynamicModules
-#define ExtensionsDynamicModules	BuildDynamicLoading && !DoLoadableServer
+#ifndef ExtensionsModules
+#define ExtensionsModules	(BuildDynamicLoading || DoLoadableServer)
 #endif
 
-#ifndef PexDynamicModule
-#define PexDynamicModule	ExtensionsDynamicModules
+#ifndef PexModule
+#define PexModule		ExtensionsModules
 #endif
-#ifndef XieDynamicModule
-#define XieDynamicModule	ExtensionsDynamicModules
+#ifndef XieModule
+#define XieModule		ExtensionsModules
 #endif
 
          CC = ServerCcCmd

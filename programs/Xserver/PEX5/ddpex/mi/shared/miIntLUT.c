@@ -55,6 +55,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "PEXprotost.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* useful definition when testing */
 typedef struct {
     pexEnumTypeIndex    interiorStyle;

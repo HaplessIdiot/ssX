@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.2 1997/02/16 12:13:01 hohndel Exp $ */
 
 
 
@@ -39,6 +39,9 @@ int  *xf86ccdScreenPrivateIndex = NULL;
 void (*xf86ccdDoBitblt)() = NULL;
 int  (*xf86ccdXAAScreenInit)() = NULL;
 void *(*xf86xaacfbfuncs)() = NULL;
+extern void (*PexExtensionInitPtr)(void);
+extern void (*XieInitPtr)(void);
+
 
 LoaderFixups()
 {
@@ -101,6 +104,12 @@ LoadModule(module,path)
 				break;
 			case MAGIC_CCD_XAA_SCREEN_INIT:
 				xf86ccdXAAScreenInit = (int((*)()))data;
+				break;
+			case MAGIC_PEX_INIT:
+				PexExtensionInitPtr = (void((*)()))data;
+				break;
+			case MAGIC_XIE_INIT:
+				XieInitPtr = (void((*)()))data;
 				break;
 			default:
 				ErrorF("Unknown magic action %d\n",magic);

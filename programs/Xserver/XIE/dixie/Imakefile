@@ -7,7 +7,7 @@ SUBDIRS = request import process export
 OBJS = request/?*.o import/?*.o process/?*.o export/?*.o 
 DONES = request/DONE import/DONE process/DONE export/DONE 
 
-#if !XieDynamicModule
+#if !XieModule
 #define	IHaveSubdirs
 
 
@@ -22,7 +22,7 @@ $(DONES): $(SUBDIRS)
 
 NormalDepLibraryTarget(dixie,$(SUBDIRS) $(DONES),$(OBJS))
 
-#if !XieDynamicModule
+#if !XieModule
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))

@@ -64,6 +64,10 @@ SOFTWARE.
 #include "pex_site.h"
 #include "convertStr.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*
 	colour OCs for Requests
  */

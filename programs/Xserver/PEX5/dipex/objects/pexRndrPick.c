@@ -50,6 +50,10 @@ in this Software without prior written authorization from the X Consortium.
 #include "ddpex4.h"
 #include "pexLookup.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #ifdef min
 #undef min
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: miText.c,v 5.13 94/04/17 20:37:19 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miText.c,v 3.0 1995/07/07 15:34:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miText.c,v 3.1 1996/03/29 22:09:52 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -67,6 +67,10 @@ SOFTWARE.
 #include "miText.h"
 #include "miClip.h"
 #include "gcstruct.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #ifndef PADDING
 #define PADDING(n) ( (n)%4 ? (4 - ((n)%4)) : 0)

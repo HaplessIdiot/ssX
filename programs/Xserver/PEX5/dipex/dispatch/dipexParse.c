@@ -57,6 +57,10 @@ SOFTWARE.
 #include "pexError.h"
 #include "pexSwap.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern RequestFunction set_tables[];
 extern pexContext * InitPexClient();
 

@@ -38,6 +38,10 @@ from the X Consortium.
 #include "dipex.h"
 #include "pexLookup.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #ifdef min
 #undef min
 #endif

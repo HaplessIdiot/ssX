@@ -1,4 +1,4 @@
-/* $XConsortium: pexInfo.c,v 5.5 94/04/17 20:36:08 hersh Exp $ */
+/* $XConsortium: pexInfo.c,v 5.6 94/09/09 20:32:50 hersh Exp $ */
 
 /***********************************************************
 
@@ -67,6 +67,10 @@ SOFTWARE.
 #include "pexError.h"
 #include "pexLookup.h"
 #include "pexExtract.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 #ifdef min
 #undef min
 #endif
@@ -195,6 +199,33 @@ pexMatchRendererTargetsReq      *strmPtr;
     return( err );
 
 } /* end-PEXMatchRendererTargets() */
+
+ErrorCode
+PEXQueryColorApprox( cntxtPtr, strmPtr )
+pexContext			*cntxtPtr;
+pexQueryColorApproxReq      	*strmPtr;
+{
+    ErrorCode err = Success;
+    DrawablePtr d;
+    extern ddBuffer *pPEXBuffer;
+
+    LU_DRAWABLE (strmPtr->drawable, d);
+
+    SETUP_INQ(pexQueryColorApproxReply);
+
+  /*
+	Call to query color approximation routine goes here
+  */
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    {
+	SETUP_VAR_REPLY(pexQueryColorApproxReply);
+	WritePEXBufferReply(pexQueryColorApproxReply);
+    }
+    return( err );
+
+} /* end-PEXQueryColorApprox() */
+
 
 ErrorCode
 PEXEscape( cntxtPtr, strmPtr )

@@ -65,6 +65,10 @@ SOFTWARE.
 #include "pex_site.h"
 #include "convertStr.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 #undef LOCAL_FLAG
 #define LOCAL_FLAG extern
 #include "convUtil.h"

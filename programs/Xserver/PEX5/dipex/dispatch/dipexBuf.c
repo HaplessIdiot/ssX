@@ -1,5 +1,5 @@
 /* $XConsortium: dipexBuf.c,v 5.3 94/04/17 20:36:03 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexBuf.c,v 3.0 1995/07/07 15:35:48 dawes Exp $ */
 
 /***********************************************************
 
@@ -49,6 +49,10 @@ SOFTWARE.
 ******************************************************************/
 
 #include "ddpex.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 ddBuffer *pPEXBuffer;
 

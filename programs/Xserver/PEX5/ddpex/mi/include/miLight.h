@@ -145,7 +145,7 @@ SOFTWARE.
  ****/
 #define		NORMALIZE_VECTOR(vector, length)	\
 {							\
-    double sqrt();					\
+    double sqrt(double);				\
     ddFLOAT  *v;					\
     v = (ddFLOAT *) (vector);				\
     DOT_PRODUCT(v, v, (length));			\

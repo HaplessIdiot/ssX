@@ -44,6 +44,10 @@ in this Software without prior written authorization from the X Consortium.
 #include "miWks.h"
 #include "ddpex4.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /* External variables used */
 
 extern  void		mi_set_filters();

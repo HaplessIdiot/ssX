@@ -55,6 +55,10 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "PEXprotost.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 extern	void miMatMult();
 
 /*  Level 4 Shared Resources  */

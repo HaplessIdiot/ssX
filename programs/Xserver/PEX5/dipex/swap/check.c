@@ -57,6 +57,10 @@ SOFTWARE.
 #include "pex_site.h"
 #include "pexError.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*
 	Check floating point format for every request and set the
 	Request and OC tables appropriately.

@@ -1,5 +1,5 @@
 /* $XConsortium: miOCs.c,v 5.6 94/04/17 20:37:14 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miOCs.c,v 3.0 1996/03/29 22:09:44 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,6 +60,10 @@ SOFTWARE.
 #include "miStruct.h"
 #include "gcstruct.h"
 #include "miLight.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 
 /* Level II Output Command Attributes */

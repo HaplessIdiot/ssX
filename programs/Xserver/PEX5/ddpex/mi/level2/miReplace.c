@@ -54,6 +54,10 @@ SOFTWARE.
 #include "pexUtils.h"
 #include "miLight.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /**  Replace functions:
  **	Each takes two parameters: a pointer to the element to be 
  **	parsed (in PEX format) and a pointer to a pointer to return the 

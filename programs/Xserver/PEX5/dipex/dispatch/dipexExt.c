@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.3 1996/10/06 13:11:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.4 1997/02/18 10:49:49 hohndel Exp $ */
 
 /***********************************************************
 
@@ -330,11 +330,9 @@ pexReq *strmPtr;
 
 #ifdef DYNAMIC_MODULE
 /*
- * Entry point of dynamic loading
+ * Entry point of dynamic loading for dlopen type of loading
  */
 extern void (*PexExtensionInitPtr)(void);
-
-#ifndef XFree86LOADER
 
 int
 #ifndef DLSYM_BUG
@@ -351,16 +349,30 @@ unsigned long server_version;
 #endif
   return 1;
 }
-#else /* XFree86LOADER */
+#endif /* DYNAMIC_MODULE */
+
+
+#ifdef XFree86LOADER
+/*
+ * Entry point for the new loading code that can load .a files
+ */
 
 void
 libpex5ModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {
-    PexExtensionInitPtr = PexExtensionInit;
-    * magic= MAGIC_DONE;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	*magic = MAGIC_PEX_INIT;
+        * data = (pointer) PexExtensionInit;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+    }
     return;
 }
 #endif /* XFree86LOADER */
-#endif /* DYNAMIC_MODULE */

@@ -57,6 +57,10 @@ SOFTWARE.
 
 #include <stdio.h>
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 typedef	void	 (*ColorConversionTableType)();
 static void PEXIndexedColour_to_PEXRdrColourModelRGB();
 static void PEXRgb8Colour_to_PEXRdrColourModelRGB();

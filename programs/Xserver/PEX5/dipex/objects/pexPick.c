@@ -1,5 +1,5 @@
 /* $XConsortium: pexPick.c,v 5.3 94/04/17 20:36:11 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPick.c,v 3.0 1995/07/07 15:36:10 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -72,6 +72,10 @@ SOFTWARE.
 #include "pex_site.h"
 #include "ddpex4.h"
 #include "pexLookup.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #ifdef min
 #undef min

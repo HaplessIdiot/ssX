@@ -1,5 +1,5 @@
 /* $XConsortium: pexOCParse.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/pexOCParse.c,v 3.1 1995/07/07 15:35:00 dawes Exp $ */
 
 /***********************************************************
 
@@ -54,6 +54,10 @@ SOFTWARE.
 #include "pexExtract.h"
 #include "pexUtils.h"
 #include "miLight.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /** Parsing functions:
  **	Each function takes two parameters: a pointer to the element to be 

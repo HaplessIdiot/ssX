@@ -1,5 +1,5 @@
 /* $XConsortium: pexUtils.c,v 5.8 94/04/17 20:36:06 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/pexUtils.c,v 3.0 1995/07/07 15:35:51 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,6 +54,10 @@ SOFTWARE.
 #include "ddpex.h"
 #include "pexUtils.h"
 #include "PEX.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 /*++
  |

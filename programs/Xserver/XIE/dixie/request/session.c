@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.2 1996/10/06 13:11:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.3 1997/02/18 10:50:56 hohndel Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -351,11 +351,9 @@ static void XieReset (extEntry)
 
 #ifdef DYNAMIC_MODULE
 /*
- * Entry point of dynamic loading
+ * Entry point of dynamic loading for dlopen type of loading
  */
 extern void (*XieInitPtr)(void);
-
-#ifndef XFree86LOADER
 
 int
 #ifndef DLSYM_BUG
@@ -372,18 +370,31 @@ unsigned long server_version;
 #endif
   return 1;
 }
-#else /* XFree86LOADER */
+#endif /* DYNAMIC_MODULE */
+
+#ifdef XFree86LOADER
+/*
+ * Entry point for the new loading code that can load .a files
+ */
 
 void
 libxieModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {
-    XieInitPtr = XieInit;
-    * magic= MAGIC_DONE;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	*magic = MAGIC_XIE_INIT;
+        * data = (pointer) XieInit;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+    }
     return;
 }
 #endif /* XFree86LOADER */
-#endif /* DYNAMIC_MODULE */
 
 /**** End of session.c ****/

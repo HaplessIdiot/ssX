@@ -56,6 +56,10 @@ SOFTWARE.
 #include "miStrMacro.h"
 #include "pexUtils.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 /*  Level 4 Workstation Support */
 /*  Search Context procedures  */
 

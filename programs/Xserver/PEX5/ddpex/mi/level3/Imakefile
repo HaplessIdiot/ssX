@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/9 1996/09/28 16:54:20 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/Imakefile,v 3.2 1996/10/03 08:30:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/Imakefile,v 3.3 1996/12/23 06:26:08 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -49,7 +49,7 @@ SRCS = miRender.c miRndrPick.c
 
 OBJS = miRender.o miRndrPick.o
 
-#define DoSharedLib	PexDynamicModule
+#define DoSharedLib	BuildDynamicLoading && PexModule
 #include <ServerLib.tmpl>
 #if DoSharedLib
 SubdirLibraryRule($(OBJS))

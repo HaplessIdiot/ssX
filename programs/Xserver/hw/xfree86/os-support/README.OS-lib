@@ -522,10 +522,16 @@ xf86sqrt(double x)
 	return(sqrt(x));
 }
 
+double 
+xf86cos(double x)
+{
+	return(cos(x));
+}
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.3 1997/02/17 09:46:36 hohndel Exp $
+
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.4 1997/02/18 10:54:40 hohndel Exp $
 
 
 

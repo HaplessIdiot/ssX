@@ -1,5 +1,5 @@
 /* $XConsortium: pexLut.c,v 5.5 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexLut.c,v 3.0 1995/07/07 15:36:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexLut.c,v 3.1 1996/01/05 13:16:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -72,6 +72,10 @@ SOFTWARE.
 #include "dipex.h"
 #include "pex_site.h"
 #include "pexLookup.h"
+
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
 
 #define	VALID_TABLETYPE(type)	((type > 0) && (type <= PEXMaxTableType))
 

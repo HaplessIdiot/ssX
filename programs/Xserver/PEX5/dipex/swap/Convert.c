@@ -53,6 +53,10 @@ SOFTWARE.
 #include "pex_site.h"
 #include "dipex.h"
 
+#ifdef XFree86LOADER
+#include "pexlibcwrapper.h"
+#endif
+
 
 extern void SwapIEEEToVax();
 extern void SwapVaxToIEEE();
