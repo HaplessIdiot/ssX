@@ -293,6 +293,10 @@ xf86XVInitAdaptors(
 	 !adaptorPtr->GetPortAttribute || !adaptorPtr->QueryBestSize)
 	   continue;
 
+      /* client libs expect at least one encoding */
+      if(!adaptorPtr->nEncodings || !adaptorPtr->pEncodings)
+	   continue;
+
       pa->type = adaptorPtr->type; 
 
       if(!adaptorPtr->PutVideo && !adaptorPtr->GetVideo)
@@ -310,9 +314,6 @@ xf86XVInitAdaptors(
 
       if(!adaptorPtr->GetVideo && !adaptorPtr->GetStill)
 	 pa->type &= ~XvOutputMask;
-
-      if(!adaptorPtr->nEncodings || !adaptorPtr->pEncodings)
-	 pa->type &= ~(XvVideoMask | XvStillMask);
 	 
       if(!(adaptorPtr->type & (XvPixmapMask | XvWindowMask))) 
 	  continue;
