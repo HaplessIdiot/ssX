@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/doc/man/GL/gl/Imakefile,v 1.2 2002/01/15 03:21:15 dawes Exp $
+XCOMM $XFree86: xc/doc/man/GL/gl/Imakefile,v 1.3 2002/01/15 03:32:03 dawes Exp $
 
 XCOMM License Applicability. Except to the extent portions of this file are
 XCOMM made subject to an alternative license as permitted in the SGI Free
@@ -114,8 +114,8 @@ InstallManPage(glFrontFace,$(MANDIR))
 InstallManPage(glFrustum,$(MANDIR))
 InstallManPage(glGenLists,$(MANDIR))
 InstallManPage(glGenTextures,$(MANDIR))
-InstallManPage(glGetBooleanv,$(MANDIR))
-InstallManPageAliases(glGetBooleanv,$(MANDIR),glGetDoublev glGetFloatv glGetIntegerv)
+InstallManPage(glGet,$(MANDIR))
+InstallManPageAliases(glGet,$(MANDIR),glGetBooleanv glGetDoublev glGetFloatv glGetIntegerv)
 InstallManPage(glGetClipPlane,$(MANDIR))
 InstallManPage(glGetColorTable,$(MANDIR))
 InstallManPage(glGetColorTableParameter,$(MANDIR))
@@ -329,7 +329,7 @@ LinkFile(glFrontFace.$(MSUFF), $(GLMANDIR)/frontface.$(GLSUFFIX))
 LinkFile(glFrustum.$(MSUFF), $(GLMANDIR)/frustum.$(GLSUFFIX))
 LinkFile(glGenLists.$(MSUFF), $(GLMANDIR)/genlists.$(GLSUFFIX))
 LinkFile(glGenTextures.$(MSUFF), $(GLMANDIR)/gentextures.$(GLSUFFIX))
-LinkFile(glGetBooleanv.$(MSUFF), $(GLMANDIR)/get.$(GLSUFFIX))
+LinkFile(glGet.$(MSUFF), $(GLMANDIR)/get.$(GLSUFFIX))
 LinkFile(glGetClipPlane.$(MSUFF), $(GLMANDIR)/getclipplane.$(GLSUFFIX))
 LinkFile(glGetColorTable.$(MSUFF), $(GLMANDIR)/getcolortable.$(GLSUFFIX))
 LinkFile(glGetColorTableParameter.$(MSUFF), $(GLMANDIR)/getcolortableparameter.$(GLSUFFIX))
