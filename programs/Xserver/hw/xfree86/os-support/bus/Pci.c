@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.17 1999/07/04 06:39:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.18 1999/07/06 11:38:51 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1009,7 +1009,7 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
     ADDRESS hostbase;
-    CARD32 romaddr, savebase = 0, romsave = 0;
+    CARD32 romaddr, savebase = 0, romsave = 0, newbase = 0;
     int ret;
 
     /* XXX This assumes that memory access is enabled */
@@ -1020,10 +1020,10 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
      * address.
      */
     romaddr = romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
-    if ((savebase = getValidBIOSBase(Tag,basereg)) != PCIGETROM(romaddr)) {
-	if (PCIGETMEMORY(savebase) != 0 &&
-	    PCIGETMEMORY(savebase) == PCIGETROM(savebase)) {
-	    romaddr = PCIGETROM(savebase);
+    if ((newbase = getValidBIOSBase(Tag,basereg)) != PCIGETROM(romaddr)) {
+	if (PCIGETMEMORY(newbase) != 0 &&
+	    PCIGETMEMORY(newbase) == PCIGETROM(newbase)) {
+	    romaddr = PCIGETROM(newbase);
 #if 0 /*EE*/
 	    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
 #endif
@@ -1044,9 +1044,11 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     /* Restore ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
 
+#if 0
     /* Restore the base register if it was changed. */
     if (savebase)
 	pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), savebase);
+#endif
 
     return ret;
 }

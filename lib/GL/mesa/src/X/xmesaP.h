@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesaP.h,v 1.3 1999/06/14 14:37:11 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesaP.h,v 1.4 1999/06/27 14:07:28 dawes Exp $ */
 
 
 /*
@@ -357,6 +357,7 @@ struct xmesa_buffer {
 #undef _R
 #undef _G
 #undef _B
+#undef _D
 #ifdef DITHER666
 # define _R   6
 # define _G   6
