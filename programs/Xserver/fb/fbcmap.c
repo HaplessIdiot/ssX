@@ -1,5 +1,5 @@
 /* $XConsortium: fbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 3.1.8.2 1997/05/11 05:04:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcmap.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -578,7 +578,13 @@ fbInitVisuals (VisualPtr    *visualp,
 	    break;
     }
     if (i == ndepth) {
-	i = 0;
+	for (i = 0; i < ndepth; i++)
+	{
+	    if (depth[i].numVids)
+		break;
+	}
+	if (i == ndepth)
+	    return FALSE;
 	j = 0;
     }
     *rootDepthp = depth[i].depth;

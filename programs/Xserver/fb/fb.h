@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.1 1999/11/19 13:53:40 hohndel Exp $
+ * $Id: fb.h,v 1.2 1999/12/27 01:26:21 robin Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.1 1999/11/19 13:53:40 hohndel Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -208,7 +208,7 @@ typedef struct {
 	_pPix = (PixmapPtr) (pDrawable); \
     (pointer) = (FbBits *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbBits); \
-    (bpp) = (pDrawable)->bitsPerPixel; \
+    (bpp) = _pPix->drawable.bitsPerPixel; \
 }
 
 #define fbGetStipDrawable(pDrawable, pointer, stride, bpp) { \
@@ -219,7 +219,7 @@ typedef struct {
 	_pPix = (PixmapPtr) (pDrawable); \
     (pointer) = (FbStip *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbStip); \
-    (bpp) = (pDrawable)->bitsPerPixel; \
+    (bpp) = _pPix->drawable.bitsPerPixel; \
 }
 
 #if 0
