@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.10 2001/03/21 17:02:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.11 2001/03/21 17:18:27 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -576,7 +576,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     OUTREG(R128_AGP_BASE, info->ringHandle); /* Ring buf is at AGP offset 0 */
     OUTREG(R128_AGP_CNTL, cntl);
 
-    xf86EnablePciBusMaster(info->PciTag);
+    xf86EnablePciBusMaster(info->PciInfo, TRUE);
 
     return TRUE;
 }
