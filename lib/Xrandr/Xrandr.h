@@ -89,6 +89,15 @@ Status XRRSetScreenConfig (Display *dpy,
 			   Rotation rotation,
 			   Time timestamp);
 
+/* added in v1.1, sorry for the lame name */
+Status XRRSetScreenConfigAndRate (Display *dpy, 
+				  XRRScreenConfiguration *config,
+				  Drawable draw,
+				  int size_index,
+				  Rotation rotation,
+				  short rate,
+				  Time timestamp);
+
 
 Rotation XRRConfigRotations(XRRScreenConfiguration *config, Rotation *current_rotation);
 
@@ -96,9 +105,13 @@ Time XRRConfigTimes (XRRScreenConfiguration *config, Time *config_timestamp);
 
 XRRScreenSize *XRRConfigSizes(XRRScreenConfiguration *config, int *nsizes);
 
+short *XRRConfigRates (XRRScreenConfiguration *config, int sizeID, int *nrates);
+
 SizeID XRRConfigCurrentConfiguration (XRRScreenConfiguration *config, 
 			      Rotation *rotation);
     
+short XRRConfigCurrentRate (XRRScreenConfiguration *config);
+
 int XRRRootToScreen(Display *dpy, Window root);
 
 /* 
@@ -122,6 +135,7 @@ void XRRSelectInput(Display *dpy, Window window, int mask);
 
 Rotation XRRRotations(Display *dpy, int screen, Rotation *current_rotation);
 XRRScreenSize *XRRSizes(Display *dpy, int screen, int *nsizes);
+short *XRRRates (Display *dpy, int screen, int sizeID, int *nrates);
 Time XRRTimes (Display *dpy, int screen, Time *config_timestamp);
 
 

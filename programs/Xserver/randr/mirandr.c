@@ -62,7 +62,7 @@ miRRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 		    return FALSE;
 		if (!setConfig)
 		{
-		    RRSetCurrentConfig (pScreen, RR_Rotate_0, pSize);
+		    RRSetCurrentConfig (pScreen, RR_Rotate_0, 0, pSize);
 		    setConfig = TRUE;
 		}
 	}
@@ -77,6 +77,7 @@ miRRGetInfo (ScreenPtr pScreen, Rotation *rotations)
 Bool
 miRRSetConfig (ScreenPtr	pScreen,
 	       Rotation		rotation,
+	       int		rate,
 	       RRScreenSizePtr	pSize)
 {
     return TRUE;

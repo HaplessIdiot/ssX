@@ -27,17 +27,26 @@
 
 #include "randr.h"
 
+typedef struct _rrScreenRate {
+    int		    rate;
+    Bool	    referenced;
+    Bool	    oldReferenced;
+} RRScreenRate, *RRScreenRatePtr;
 
 typedef struct _rrScreenSize {
-    int		id;
-    short	width, height;
-    short	mmWidth, mmHeight;
-    Bool	referenced;
-    Bool	oldReferenced;
+    int		    id;
+    short	    width, height;
+    short	    mmWidth, mmHeight;
+    RRScreenRatePtr pRates;
+    int		    nRates;
+    int		    nRatesInUse;
+    Bool	    referenced;
+    Bool	    oldReferenced;
 } RRScreenSize, *RRScreenSizePtr;
 
 typedef Bool (*RRSetConfigProcPtr) (ScreenPtr		pScreen,
 				    Rotation		rotation,
+				    int			rate,
 				    RRScreenSizePtr	pSize);
 
 typedef Bool (*RRGetInfoProcPtr) (ScreenPtr pScreen, Rotation *rotations);
@@ -64,7 +73,8 @@ typedef struct _rrScrPriv {
      * Current state
      */
     Rotation		    rotation;
-    RRScreenSizePtr	    pSize;
+    int			    size;
+    int			    rate;
 } rrScrPrivRec, *rrScrPrivPtr;
 
 extern int rrPrivIndex;
@@ -88,6 +98,10 @@ RRRegisterSize (ScreenPtr		pScreen,
 		short			mmWidth,
 		short			mmHeight);
 
+Bool RRRegisterRate (ScreenPtr		pScreen,
+		     RRScreenSizePtr	pSize,
+		     int		rate);
+
 /*
  * Finally, set the current configuration of the screen
  */
@@ -95,6 +109,7 @@ RRRegisterSize (ScreenPtr		pScreen,
 void
 RRSetCurrentConfig (ScreenPtr		pScreen,
 		    Rotation		rotation,
+		    int			rate,
 		    RRScreenSizePtr	pSize);
 
 Bool RRScreenInit(ScreenPtr pScreen);
@@ -108,6 +123,7 @@ miRRGetInfo (ScreenPtr pScreen, Rotation *rotations);
 Bool
 miRRSetConfig (ScreenPtr	pScreen,
 	       Rotation		rotation,
+	       int		rate,
 	       RRScreenSizePtr	size);
 
 Bool
