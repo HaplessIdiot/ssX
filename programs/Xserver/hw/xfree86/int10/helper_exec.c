@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.6 2000/09/29 08:59:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.7 2000/10/10 14:34:58 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -44,7 +44,7 @@ setup_int(xf86Int10InfoPtr pInt)
     X86_ESI = (CARD32) pInt->si;
     X86_EDI = (CARD32) pInt->di;
     X86_ES  = (CARD32) pInt->es;
-    X86_EBP = 0;
+    X86_EBP = (CARD32) pInt->bp;
     X86_EIP = 0;
     X86_CS = 0x60;               /* address of 'hlt' */               
     X86_ESP = 0x100;
@@ -65,6 +65,7 @@ finish_int(xf86Int10InfoPtr pInt)
     pInt->dx = (CARD16) X86_EDX;
     pInt->si = (CARD16) X86_ESI;
     pInt->di = (CARD16) X86_EDI;
+    pInt->bp = (CARD16) X86_EBP;
     pInt->flags = (CARD16) X86_FLAGS;
 }
 

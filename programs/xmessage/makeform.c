@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmessage/makeform.c,v 1.4 2000/02/17 16:53:03 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -258,6 +258,7 @@ Widget make_queryform(parent, msgstr, msglen,
 	Dimension scroll_size, border_width;
 	Widget label, scroll;
 	Position left, right, top, bottom;
+	char *tmp;
 	/*
 	 * A Text widget is used for the automatic scroll bars.
 	 * But Text widget doesn't automatically compute its size.
@@ -288,6 +289,19 @@ Widget make_queryform(parent, msgstr, msglen,
 	    XtDestroyWidget(scroll);
 	    height_addons = scroll_size + border_width;
 	}
+
+	/* This fixes the xmessage assumption that the label widget and the
+	 * text widget have the same size. In Xaw 7, the text widget has
+	 * one extra pixel between lines.
+	 * Xmessage is not internationalized, so the code bellow is harmless.
+	 */
+	tmp = msgstr;
+	while (tmp != NULL && *tmp) {
+	    ++tmp;
+	    ++height;
+	    tmp = strchr(tmp, '\n');
+	}
+
 	if (height > max_height) {
 	    height = max_height;
 	    /* add in the width of any vertical scroll bar */

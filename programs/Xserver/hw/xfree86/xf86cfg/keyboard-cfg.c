@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.6 2000/08/01 20:05:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.7 2000/08/04 03:51:49 tsi Exp $
  */
 
 #include "xf86config.h"
@@ -144,11 +144,11 @@ KeyboardConfig(XtPointer config)
     current_input = keyboard;
 
     if (keyboard != NULL) {
-	if ((option = xf86FindOption(keyboard->inp_option_lst, XkbModel)) != NULL)
+	if ((option = xf86findOption(keyboard->inp_option_lst, XkbModel)) != NULL)
 	    xkb_info->defs.model = model = option->opt_val;
 	else
 	    xkb_info->defs.model = model = xkb_model.name[0];
-	if ((option = xf86FindOption(keyboard->inp_option_lst, XkbLayout)) != NULL)
+	if ((option = xf86findOption(keyboard->inp_option_lst, XkbLayout)) != NULL)
 	    xkb_info->defs.layout = layout = option->opt_val;
 	else
 	    xkb_info->defs.layout = layout = xkb_layout.name[0];
@@ -172,7 +172,7 @@ KeyboardConfig(XtPointer config)
 	    ++nkeyboards;
 	    XmuSnprintf(keyboard_name, sizeof(keyboard_name),
 			"Keyboard%d", nkeyboards);
-	} while (xf86FindInput(keyboard_name,
+	} while (xf86findInput(keyboard_name,
 		 XF86Config->conf_input_lst));
 
 	model = xkb_model.name[0];
@@ -194,7 +194,7 @@ KeyboardConfig(XtPointer config)
 	    keyboard->list.next = NULL;
 	    keyboard->inp_identifier = XtNewString(ident_string);
 	    keyboard->inp_driver = XtNewString("keyboard");
-	    keyboard->inp_option_lst = xf86NewOption(XtNewString(XkbModel),
+	    keyboard->inp_option_lst = xf86newOption(XtNewString(XkbModel),
 						     XtNewString(model));
 	    xf86addNewOption(keyboard->inp_option_lst,
 			     XtNewString(XkbLayout), XtNewString(layout));
@@ -220,37 +220,37 @@ KeyboardConfig(XtPointer config)
 		    break;
 		}
 
-	    if ((option = xf86FindOption(keyboard->inp_option_lst, XkbModel))
+	    if ((option = xf86findOption(keyboard->inp_option_lst, XkbModel))
 		!= NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(model);
 		XtFree(option->opt_comment);
 	    }
-/*	    else {
+	    else {
 		if (keyboard->inp_option_lst == NULL)
-		    keyboard->inp_option_lst = xf86NewOption(XtNewString(XkbModel),
+		    keyboard->inp_option_lst = xf86newOption(XtNewString(XkbModel),
 							     XtNewString(model));
 		else
 		    xf86addNewOption(keyboard->inp_option_lst,
 				     XtNewString(XkbModel), XtNewString(model));
-	    }*/
+	    }
 	    XtFree(xkb_info->config.model);
 	    xkb_info->config.model = XtNewString(model);
 
-	    if ((option = xf86FindOption(keyboard->inp_option_lst, XkbLayout))
+	    if ((option = xf86findOption(keyboard->inp_option_lst, XkbLayout))
 		!= NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(layout);
 		XtFree(option->opt_comment);
 	    }
-	    /*else
+	    else
 		xf86addNewOption(keyboard->inp_option_lst,
-				 XtNewString(XkbLayout), XtNewString(layout));*/
+				 XtNewString(XkbLayout), XtNewString(layout));
 	    XtFree(xkb_info->config.layout);
 	    xkb_info->config.layout = XtNewString(layout);
 	}
 	if (strcasecmp(keyboard->inp_identifier, ident_string))
-	    xf86RenameInput(XF86Config, keyboard, ident_string);
+	    xf86renameInput(XF86Config, keyboard, ident_string);
 
 	xkb_info->conf = keyboard;
 	return ((XtPointer)keyboard);
@@ -434,7 +434,7 @@ InitializeKeyboard(void)
 
     if (xkb_info->config.model != NULL)
 	xkb_info->defs.model = xkb_info->config.model;
-    else if ((option = xf86FindOption(keyboard->inp_option_lst, "XkbModel"))
+    else if ((option = xf86findOption(keyboard->inp_option_lst, "XkbModel"))
 	!= NULL)
 	xkb_info->defs.model = option->opt_val;
     else
@@ -442,7 +442,7 @@ InitializeKeyboard(void)
 
     if (xkb_info->config.layout != NULL)
 	xkb_info->defs.layout = xkb_info->config.layout;
-    else if ((option = xf86FindOption(keyboard->inp_option_lst, "XkbLayout"))
+    else if ((option = xf86findOption(keyboard->inp_option_lst, "XkbLayout"))
 	!= NULL)
 	xkb_info->defs.layout = option->opt_val;
     else

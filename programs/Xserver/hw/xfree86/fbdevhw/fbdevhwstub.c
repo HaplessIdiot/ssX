@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.7 2000/05/18 16:29:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.8 2000/08/11 17:27:14 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86cmap.h"
@@ -42,6 +42,11 @@ int
 fbdevHWGetDepth(ScrnInfoPtr pScrn)
 {
 	return -1;
+}
+
+int
+fbdevHWGetLineLength(ScrnInfoPtr pScrn)
+{
 }
 
 int

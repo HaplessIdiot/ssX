@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.23 2000/08/11 17:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.24 2000/08/14 16:09:33 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -139,6 +139,7 @@ static const char *fbdevHWSymbols[] = {
 
 	"fbdevHWGetName",
 	"fbdevHWGetDepth",
+	"fbdevHWGetLineLength",
 	"fbdevHWGetVidmem",
 
 	/* colormap */
@@ -430,7 +431,14 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	if (NULL == pScrn->modes)
 		fbdevHWUseBuildinMode(pScrn);
 	pScrn->currentMode = pScrn->modes;
-	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+
+	if (fPtr->shadowFB)
+		pScrn->displayWidth = pScrn->virtualX;	/* ShadowFB handles this correctly */
+	else
+		/* FIXME: this doesn't work for all cases, e.g. when each scanline
+			has a padding which is independent from the depth (controlfb) */
+		pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(fbdevHWGetDepth(pScrn) >> 3);
+
 	xf86PrintModes(pScrn);
 
 	/* Set display resolution */
@@ -516,7 +524,7 @@ FBDevRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	unsigned char *src, *dst;
 
 	Bpp = pScrn->bitsPerPixel >> 3;
-	FBPitch = pScrn->displayWidth * Bpp;
+	FBPitch = fbdevHWGetLineLength(pScrn);
 
 	while(num--) {
 		width = (pbox->x2 - pbox->x1) * Bpp;

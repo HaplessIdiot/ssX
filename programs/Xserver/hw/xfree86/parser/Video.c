@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.2 1999/05/23 14:38:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.3 1999/05/30 14:04:26 dawes Exp $ */
 
 /* View/edit this file with tab stops set to 4 */
 
@@ -43,40 +43,40 @@ static xf86ConfigSymTabRec VideoPortTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeVideoPortList
+#define CLEANUP xf86freeVideoPortList
 
 XF86ConfVideoPortPtr
-parseVideoPortSubSection (void)
+xf86parseVideoPortSubSection (void)
 {
 	parsePrologue (XF86ConfVideoPortPtr, XF86ConfVideoPortRec)
 
-	while ((token = xf86GetToken (VideoPortTab)) != ENDSUBSECTION)
+	while ((token = xf86getToken (VideoPortTab)) != ENDSUBSECTION)
 	{
 		switch (token)
 		{
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->vp_identifier = val.str;
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
 					ptr->vp_option_lst =
-					    addNewOption (ptr->vp_option_lst,
+					    xf86addNewOption (ptr->vp_option_lst,
 							  name, val.str);
 				}
 				else
 				{
 					ptr->vp_option_lst =
-					    addNewOption (ptr->vp_option_lst,
+					    xf86addNewOption (ptr->vp_option_lst,
 							  name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
@@ -85,7 +85,7 @@ parseVideoPortSubSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -112,69 +112,69 @@ static xf86ConfigSymTabRec VideoAdaptorTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeVideoAdaptorList
+#define CLEANUP xf86freeVideoAdaptorList
 
 XF86ConfVideoAdaptorPtr
-parseVideoAdaptorSection (void)
+xf86parseVideoAdaptorSection (void)
 {
 	int has_ident = FALSE;
 
 	parsePrologue (XF86ConfVideoAdaptorPtr, XF86ConfVideoAdaptorRec)
 
-	while ((token = xf86GetToken (VideoAdaptorTab)) != ENDSECTION)
+	while ((token = xf86getToken (VideoAdaptorTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->va_identifier = val.str;
 			has_ident = TRUE;
 			break;
 		case VENDOR:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Vendor");
 			ptr->va_vendor = val.str;
 			break;
 		case BOARD:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Board");
 			ptr->va_board = val.str;
 			break;
 		case BUSID:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "BusID");
 			ptr->va_busid = val.str;
 			break;
 		case DRIVER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->va_driver = val.str;
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
-					ptr->va_option_lst = addNewOption (ptr->va_option_lst,
+					ptr->va_option_lst = xf86addNewOption (ptr->va_option_lst,
 									   name, val.str);
 				}
 				else
 				{
-					ptr->va_option_lst = addNewOption (ptr->va_option_lst,
+					ptr->va_option_lst = xf86addNewOption (ptr->va_option_lst,
 									   name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
 		case SUBSECTION:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
-				HANDLE_LIST (va_port_lst, parseVideoPortSubSection,
+				HANDLE_LIST (va_port_lst, xf86parseVideoPortSubSection,
 							 XF86ConfVideoPortPtr);
 			}
 			break;
@@ -183,7 +183,7 @@ parseVideoAdaptorSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -199,7 +199,7 @@ parseVideoAdaptorSection (void)
 }
 
 void
-printVideoAdaptorSection (FILE * cf, XF86ConfVideoAdaptorPtr ptr)
+xf86printVideoAdaptorSection (FILE * cf, XF86ConfVideoAdaptorPtr ptr)
 {
 	XF86ConfVideoPortPtr pptr;
 	XF86OptionPtr optr;
@@ -245,7 +245,7 @@ printVideoAdaptorSection (FILE * cf, XF86ConfVideoAdaptorPtr ptr)
 }
 
 void
-freeVideoAdaptorList (XF86ConfVideoAdaptorPtr ptr)
+xf86freeVideoAdaptorList (XF86ConfVideoAdaptorPtr ptr)
 {
 	XF86ConfVideoAdaptorPtr prev;
 
@@ -256,8 +256,8 @@ freeVideoAdaptorList (XF86ConfVideoAdaptorPtr ptr)
 		TestFree (ptr->va_board);
 		TestFree (ptr->va_busid);
 		TestFree (ptr->va_driver);
-		freeVideoPortList (ptr->va_port_lst);
-		OptionListFree (ptr->va_option_lst);
+		xf86freeVideoPortList (ptr->va_port_lst);
+		xf86optionListFree (ptr->va_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -265,14 +265,14 @@ freeVideoAdaptorList (XF86ConfVideoAdaptorPtr ptr)
 }
 
 void
-freeVideoPortList (XF86ConfVideoPortPtr ptr)
+xf86freeVideoPortList (XF86ConfVideoPortPtr ptr)
 {
 	XF86ConfVideoPortPtr prev;
 
 	while (ptr)
 	{
 		TestFree (ptr->vp_identifier);
-		OptionListFree (ptr->vp_option_lst);
+		xf86optionListFree (ptr->vp_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -280,11 +280,11 @@ freeVideoPortList (XF86ConfVideoPortPtr ptr)
 }
 
 XF86ConfVideoAdaptorPtr
-xf86FindVideoAdaptor (const char *ident, XF86ConfVideoAdaptorPtr p)
+xf86findVideoAdaptor (const char *ident, XF86ConfVideoAdaptorPtr p)
 {
 	while (p)
 	{
-		if (NameCompare (ident, p->va_identifier) == 0)
+		if (xf86nameCompare (ident, p->va_identifier) == 0)
 			return (p);
 
 		p = p->list.next;

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -10,7 +10,7 @@
  * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -26,20 +26,17 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.h,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86$
  */
 
-#include "config.h"
-#ifdef USE_MODULES
-#include "loader.h"
-#endif
+#ifndef _xf86cfg_stubs_h
+#define _xf86cfg_stubs_h
 
-/*
- * Prototypes
- */
-#ifdef USE_MODULES
-void OptionsPopup(XF86OptionPtr*, char*, OptionInfoPtr);
+#if !defined(USE_MODULES)
+int ErrorF(const char*, ...);
+int VErrorF(const char*, va_list);
 #else
-void OptionsPopup(XF86OptionPtr*);
+extern int xf86Verbose;
 #endif
-void OptionsCancelAction(Widget, XEvent*, String*, Cardinal*);
+
+#endif /* _xf86cfg_stubs_h */

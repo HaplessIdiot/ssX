@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.38 2000/06/17 00:27:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.40 2000/08/04 16:13:24 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -291,10 +291,10 @@ configureInputSection (void)
     mouse->inp_identifier = "Mouse0";
     mouse->inp_driver = "mouse";
     mouse->inp_option_lst = 
-		addNewOption(mouse->inp_option_lst, "Protocol", DFLT_MOUSE_PROTO);
+		xf86addNewOption(mouse->inp_option_lst, "Protocol", DFLT_MOUSE_PROTO);
     mouse->inp_option_lst = 
-		addNewOption(mouse->inp_option_lst, "Device", DFLT_MOUSE_DEV);
-    ptr = (XF86ConfInputPtr)addListItem((glp)ptr, (glp)mouse);
+		xf86addNewOption(mouse->inp_option_lst, "Device", DFLT_MOUSE_DEV);
+    ptr = (XF86ConfInputPtr)xf86addListItem((glp)ptr, (glp)mouse);
     return ptr;
 }
 
@@ -338,7 +338,7 @@ configureScreenSection (int screennum)
 	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
     	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
 	display->disp_depth = depths[i];
-	ptr->scrn_display_lst = (XF86ConfDisplayPtr)addListItem(
+	ptr->scrn_display_lst = (XF86ConfDisplayPtr)xf86addListItem(
 				     (glp)ptr->scrn_display_lst, (glp)display);
     }
 
@@ -413,7 +413,7 @@ configureDeviceSection (int screennum)
     	memset((XF86OptionPtr)fbdev,0,sizeof(XF86OptionRec));
     	fbdev->opt_name = "UseFBDev";
 	fbdev->opt_val = "ON";
-	ptr->dev_option_lst = (XF86OptionPtr)addListItem(
+	ptr->dev_option_lst = (XF86OptionPtr)xf86addListItem(
 					(glp)ptr->dev_option_lst, (glp)fbdev);
     }
     */
@@ -439,9 +439,9 @@ configureLayoutSection (void)
 	iptr->iref_option_lst = NULL;
 	iptr->iref_inputdev_str = "Mouse0";
 	iptr->iref_option_lst =
-		addNewOption (iptr->iref_option_lst, "CorePointer", NULL);
+		xf86addNewOption (iptr->iref_option_lst, "CorePointer", NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
-		addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
+		xf86addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
     }
 
     {
@@ -452,9 +452,9 @@ configureLayoutSection (void)
 	iptr->iref_option_lst = NULL;
 	iptr->iref_inputdev_str = "Keyboard0";
 	iptr->iref_option_lst =
-		addNewOption (iptr->iref_option_lst, "CoreKeyboard", NULL);
+		xf86addNewOption (iptr->iref_option_lst, "CoreKeyboard", NULL);
 	ptr->lay_input_lst = (XF86ConfInputrefPtr)
-		addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
+		xf86addListItem ((glp) ptr->lay_input_lst, (glp) iptr);
     }
 
     for (scrnum = 0;  scrnum < nDevToConfig;  scrnum++) {
@@ -477,7 +477,7 @@ configureLayoutSection (void)
 	    sprintf(aptr->adj_refscreen, "Screen%d", scrnum - 1);
 	}
     	ptr->lay_adjacency_lst =
-	    (XF86ConfAdjacencyPtr)addListItem((glp)ptr->lay_adjacency_lst,
+	    (XF86ConfAdjacencyPtr)xf86addListItem((glp)ptr->lay_adjacency_lst,
 					      (glp)aptr);
     }
 
@@ -533,7 +533,7 @@ configureModuleSection (void)
     	    module = xf86confmalloc(sizeof(XF86LoadRec));
     	    memset((XF86LoadPtr)module,0,sizeof(XF86LoadRec));
     	    module->load_name = *el;
-	    ptr->mod_load_lst = (XF86LoadPtr)addListItem(
+	    ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
 					(glp)ptr->mod_load_lst, (glp)module);
     	}
 	xfree(elist);
@@ -674,13 +674,13 @@ DoConfigure()
 	XF86ConfScreenPtr ScreenPtr;
 
 	DevicePtr = configureDeviceSection(screennum);
-    	xf86config->conf_device_lst = (XF86ConfDevicePtr)addListItem(
+    	xf86config->conf_device_lst = (XF86ConfDevicePtr)xf86addListItem(
 			    (glp)xf86config->conf_device_lst, (glp)DevicePtr);
 	MonitorPtr = configureMonitorSection(screennum);
-    	xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)addListItem(
+    	xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)xf86addListItem(
 			    (glp)xf86config->conf_monitor_lst, (glp)MonitorPtr);
 	ScreenPtr = configureScreenSection(screennum);
-    	xf86config->conf_screen_lst = (XF86ConfScreenPtr)addListItem(
+    	xf86config->conf_screen_lst = (XF86ConfScreenPtr)xf86addListItem(
 			    (glp)xf86config->conf_screen_lst, (glp)ScreenPtr);
     }
 
@@ -715,7 +715,7 @@ DoConfigure()
       	sprintf(filename, "%s/XF86Config.new", home);
     }
 
-    xf86WriteConfigFile(filename, xf86config);
+    xf86writeConfigFile(filename, xf86config);
 
     xf86DoConfigurePass1 = FALSE;
     /* Try to get DDC information filled in */
@@ -755,9 +755,9 @@ DoConfigure()
 	xf86Screens[j]->scrnIndex = j;
     }
 
-    freeMonitorList(xf86config->conf_monitor_lst);
+    xf86freeMonitorList(xf86config->conf_monitor_lst);
     xf86config->conf_monitor_lst = NULL;
-    freeScreenList(xf86config->conf_screen_lst);
+    xf86freeScreenList(xf86config->conf_screen_lst);
     xf86config->conf_screen_lst = NULL;
     for (j = 0; j < xf86NumScreens; j++) {
 	XF86ConfMonitorPtr MonitorPtr;
@@ -773,13 +773,13 @@ DoConfigure()
 	    MonitorPtr = configureMonitorSection(j);
 	}
 	ScreenPtr = configureScreenSection(j);
-	xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)addListItem(
+	xf86config->conf_monitor_lst = (XF86ConfMonitorPtr)xf86addListItem(
 		(glp)xf86config->conf_monitor_lst, (glp)MonitorPtr);
-	xf86config->conf_screen_lst = (XF86ConfScreenPtr)addListItem(
+	xf86config->conf_screen_lst = (XF86ConfScreenPtr)xf86addListItem(
 		(glp)xf86config->conf_screen_lst, (glp)ScreenPtr);
     }
 
-    xf86WriteConfigFile(filename, xf86config);
+    xf86writeConfigFile(filename, xf86config);
 
     ErrorF("\n");
 

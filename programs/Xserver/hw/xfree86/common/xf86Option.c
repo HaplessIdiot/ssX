@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.19 2000/08/09 16:30:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.20 2000/08/09 20:33:20 tsi Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -52,38 +52,38 @@ xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts)
 	device = xf86GetDevFromEntity(pScrn->entityList[i],
 					pScrn->entityInstanceList[i]);
 	if (device && device->options) {
-	    tmp = OptionListDup(device->options);
+	    tmp = xf86optionListDup(device->options);
 	    if (pScrn->options)
-		OptionListMerge(pScrn->options,tmp);
+		xf86optionListMerge(pScrn->options,tmp);
 	    else
 		pScrn->options = tmp;
 	}
     }
     if (pScrn->monitor->options) {
-	tmp = OptionListDup(pScrn->monitor->options);
+	tmp = xf86optionListDup(pScrn->monitor->options);
 	if (pScrn->options)
-	    pScrn->options = OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = xf86optionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (pScrn->confScreen->options) {
-	tmp = OptionListDup(pScrn->confScreen->options);
+	tmp = xf86optionListDup(pScrn->confScreen->options);
 	if (pScrn->options)
-	    pScrn->options = OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = xf86optionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (pScrn->display->options) {
-	tmp = OptionListDup(pScrn->display->options);
+	tmp = xf86optionListDup(pScrn->display->options);
 	if (pScrn->options)
-	    pScrn->options = OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = xf86optionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
     if (extras) {
-	tmp = OptionListDup(extras);
+	tmp = xf86optionListDup(extras);
 	if (pScrn->options)
-	    pScrn->options = OptionListMerge(pScrn->options, tmp);
+	    pScrn->options = xf86optionListMerge(pScrn->options, tmp);
 	else
 	    pScrn->options = tmp;
     }
@@ -116,23 +116,23 @@ xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts,
 	pInfo->options = xf86OptionListCreate(defaultOpts, -1, 0);
     }
     if (pInfo->conf_idev->commonOptions) {
-	tmp = OptionListDup(pInfo->conf_idev->commonOptions);
+	tmp = xf86optionListDup(pInfo->conf_idev->commonOptions);
 	if (pInfo->options)
-	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	    pInfo->options = xf86optionListMerge(pInfo->options, tmp);
 	else
 	    pInfo->options = tmp;
     }
     if (pInfo->conf_idev->extraOptions) {
-	tmp = OptionListDup(pInfo->conf_idev->extraOptions);
+	tmp = xf86optionListDup(pInfo->conf_idev->extraOptions);
 	if (pInfo->options)
-	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	    pInfo->options = xf86optionListMerge(pInfo->options, tmp);
 	else
 	    pInfo->options = tmp;
     }
     if (extras) {
-	tmp = OptionListDup(extras);
+	tmp = xf86optionListDup(extras);
 	if (pInfo->options)
-	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	    pInfo->options = xf86optionListMerge(pInfo->options, tmp);
 	else
 	    pInfo->options = tmp;
     }
@@ -212,51 +212,51 @@ xf86AddNewOption(pointer head, char *name, char *val)
 {
     char *tmp = strdup(val);
                                                                                
-    return addNewOption(head, name, tmp);
+    return xf86addNewOption(head, name, tmp);
 }
 
 
 pointer
 xf86NewOption(char *name, char *value)
 {
-    return NewOption(name, value);
+    return xf86newOption(name, value);
 }
 
 
 pointer
 xf86NextOption(pointer list)
 {
-    return NextOption(list);
+    return xf86nextOption(list);
 }
 
 pointer
 xf86OptionListCreate(const char **options, int count, int used)
 {
-	return OptionListCreate(options, count, used);
+	return xf86optionListCreate(options, count, used);
 }
 
 pointer
 xf86OptionListMerge(pointer head, pointer tail)
 {
-	return OptionListMerge(head, tail);
+	return xf86optionListMerge(head, tail);
 }
 
 void
 xf86OptionListFree(pointer opt)
 {
-	OptionListFree(opt);
+	xf86optionListFree(opt);
 }
 
 char *
 xf86OptionName(pointer opt)
 {
-	return OptionName(opt);
+	return xf86optionName(opt);
 }
 
 char *
 xf86OptionValue(pointer opt)
 {
-	return OptionValue(opt);
+	return xf86optionValue(opt);
 }
 
 void
@@ -265,12 +265,12 @@ xf86OptionListReport(pointer parm)
     XF86OptionPtr opts = parm;
 
     while(opts) {
-	if (OptionValue(opts))
+	if (xf86optionValue(opts))
 	    xf86ErrorFVerb(5, "\tOption \"%s\" \"%s\"\n",
-			    OptionName(opts), OptionValue(opts));
+			    xf86optionName(opts), xf86optionValue(opts));
 	else
-	    xf86ErrorFVerb( 5, "\tOption \"%s\"\n", OptionName(opts));
-	opts = NextOption(opts);
+	    xf86ErrorFVerb( 5, "\tOption \"%s\"\n", xf86optionName(opts));
+	opts = xf86nextOption(opts);
     }
 }
 
@@ -279,14 +279,14 @@ xf86OptionListReport(pointer parm)
 pointer
 xf86FindOption(pointer options, const char *name)
 {
-    return FindOption(options, name);
+    return xf86findOption(options, name);
 }
 
 
 char *
 xf86FindOptionValue(pointer options, const char *name)
 {
-    return FindOptionValue(options, name);
+    return xf86findOptionValue(options, name);
 }
 
 
@@ -303,7 +303,7 @@ xf86MarkOptionUsedByName(pointer options, const char *name)
 {
     XF86OptionPtr opt;
 
-    opt = FindOption(options, name);
+    opt = xf86findOption(options, name);
     if (opt != NULL)
 	opt->opt_used = TRUE;
 }
@@ -322,7 +322,7 @@ xf86CheckIfOptionUsedByName(pointer options, const char *name)
 {
     XF86OptionPtr opt;
 
-    opt = FindOption(options, name);
+    opt = xf86findOption(options, name);
     if (opt != NULL)
 	return opt->opt_used;
     else
@@ -378,7 +378,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
     char *s, *end;
     Bool wasUsed;
 
-    if ((s = FindOptionValue(options, p->name)) != NULL) {
+    if ((s = xf86findOptionValue(options, p->name)) != NULL) {
 	wasUsed = xf86CheckIfOptionUsedByName(options, p->name);
 	xf86MarkOptionUsedByName(options, p->name);
 	switch (p->type) {
@@ -520,7 +520,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 	    strcat(n, p->name);
 	    newn = n;
 	}
-	if ((s = FindOptionValue(options, newn)) != NULL) {
+	if ((s = xf86findOptionValue(options, newn)) != NULL) {
 	    xf86MarkOptionUsedByName(options, newn);
 	    if (GetBoolValue(&opt, s)) {
 		p->value.bool = !opt.value.bool;
@@ -727,7 +727,7 @@ xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def)
 int
 xf86NameCmp(const char *s1, const char *s2)
 {
-    return NameCompare(s1, s2);
+    return xf86nameCompare(s1, s2);
 }
 
 char *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.4 1999/05/30 14:04:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.5 2000/04/04 22:36:54 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -51,10 +51,10 @@ static xf86ConfigSymTabRec ModuleTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeModules
+#define CLEANUP xf86freeModules
 
 XF86LoadPtr
-parseModuleSubSection (XF86LoadPtr head, char *name)
+xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 {
 	parsePrologue (XF86LoadPtr, XF86LoadRec)
 
@@ -63,40 +63,40 @@ parseModuleSubSection (XF86LoadPtr head, char *name)
 	ptr->load_opt  = NULL;
 	ptr->list.next = NULL;
 
-	while ((token = xf86GetToken (SubModuleTab)) != ENDSUBSECTION)
+	while ((token = xf86getToken (SubModuleTab)) != ENDSUBSECTION)
 	{
 		switch (token)
 		{
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 				{
-					xf86ParseError (BAD_OPTION_MSG, NULL);
+					xf86parseError (BAD_OPTION_MSG, NULL);
 					xf86conffree(ptr);
 					return NULL;
 				}
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
-					ptr->load_opt = addNewOption (ptr->load_opt,
+					ptr->load_opt = xf86addNewOption (ptr->load_opt,
 														name, val.str);
 				}
 				else
 				{
-					ptr->load_opt = addNewOption (ptr->load_opt,
+					ptr->load_opt = xf86addNewOption (ptr->load_opt,
 														name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
 		case EOF_TOKEN:
-			xf86ParseError (UNEXPECTED_EOF_MSG, NULL);
+			xf86parseError (UNEXPECTED_EOF_MSG, NULL);
 			xf86conffree(ptr);
 			return NULL;
 			break;
 		default:
-			xf86ParseError (INVALID_KEYWORD_MSG, xf86TokenString ());
+			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			xf86conffree(ptr);
 			return NULL;
 			break;
@@ -104,43 +104,43 @@ parseModuleSubSection (XF86LoadPtr head, char *name)
 
 	}
 
-	return ((XF86LoadPtr) addListItem ((glp) head, (glp) ptr));
+	return ((XF86LoadPtr) xf86addListItem ((glp) head, (glp) ptr));
 }
 
 XF86ConfModulePtr
-parseModuleSection (void)
+xf86parseModuleSection (void)
 {
 	parsePrologue (XF86ConfModulePtr, XF86ConfModuleRec)
 
-	while ((token = xf86GetToken (ModuleTab)) != ENDSECTION)
+	while ((token = xf86getToken (ModuleTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case LOAD:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Load");
 			ptr->mod_load_lst =
-				addNewLoadDirective (ptr->mod_load_lst, val.str,
+				xf86addNewLoadDirective (ptr->mod_load_lst, val.str,
 									 XF86_LOAD_MODULE, NULL);
 			break;
 		case LOAD_DRIVER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "LoadDriver");
 			ptr->mod_load_lst =
-				addNewLoadDirective (ptr->mod_load_lst, val.str,
+				xf86addNewLoadDirective (ptr->mod_load_lst, val.str,
 									 XF86_LOAD_DRIVER, NULL);
 			break;
 		case SUBSECTION:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 						Error (QUOTE_MSG, "SubSection");
 			ptr->mod_load_lst =
-				parseModuleSubSection (ptr->mod_load_lst, val.str);
+				xf86parseModuleSubSection (ptr->mod_load_lst, val.str);
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -155,7 +155,7 @@ parseModuleSection (void)
 #undef CLEANUP
 
 void
-printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
+xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 {
 	XF86LoadPtr lptr;
 
@@ -194,7 +194,7 @@ printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 }
 
 XF86LoadPtr
-addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
+xf86addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
 {
 	XF86LoadPtr new;
 
@@ -204,11 +204,11 @@ addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
 	new->load_opt  = opts;
 	new->list.next = NULL;
 
-	return ((XF86LoadPtr) addListItem ((glp) head, (glp) new));
+	return ((XF86LoadPtr) xf86addListItem ((glp) head, (glp) new));
 }
 
 void
-freeModules (XF86ConfModulePtr ptr)
+xf86freeModules (XF86ConfModulePtr ptr)
 {
 	XF86LoadPtr lptr;
 	XF86LoadPtr prev;

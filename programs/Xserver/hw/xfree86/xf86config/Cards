@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.68 2000/03/20 16:36:19 tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.69 2000/03/31 20:13:40 dawes Exp $
 
 # VGA
 
@@ -1462,7 +1462,7 @@ DRIVER tseng
 NAME ET4000 W32i, W32p (generic)
 CHIPSET ET4000/W32(i/p)
 SERVER SVGA
-DRIVER tsemg
+DRIVER tseng
 LINE     #Option "linear"       # for linear mode at 8bpp
 LINE     #Option "noaccel"      # when problems with accelerator
 LINE     #Option "power_saver"  # enable VESA DPMS

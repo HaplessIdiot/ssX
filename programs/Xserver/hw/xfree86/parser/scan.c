@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.11 2000/03/15 17:21:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.12 2000/04/05 18:13:57 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -79,13 +79,13 @@ extern char *__XOS2RedirRoot(char *path);
 #endif
 
 /* 
- * StrToUL --
+ * xf86strToUL --
  *
  *  A portable, but restricted, version of strtoul().  It only understands
  *  hex, octal, and decimal.  But it's good enough for our needs.
  */
 unsigned int
-StrToUL (char *str)
+xf86strToUL (char *str)
 {
 	int base = 10;
 	char *p = str;
@@ -126,12 +126,12 @@ StrToUL (char *str)
 }
 
 /* 
- * xf86GetToken --
+ * xf86getToken --
  *      Read next Token form the config file. Handle the global variable
  *      pushToken.
  */
 int
-xf86GetToken (xf86ConfigSymTabRec * tab)
+xf86getToken (xf86ConfigSymTabRec * tab)
 {
 	int c, i;
 
@@ -211,7 +211,7 @@ xf86GetToken (xf86ConfigSymTabRec * tab)
 				configRBuf[i++] = c;
 			configPos--;		/* GJA -- one too far */
 			configRBuf[i] = '\0';
-			val.num = StrToUL (configRBuf);
+			val.num = xf86strToUL (configRBuf);
 			val.realnum = atof (configRBuf);
 			return (NUMBER);
 		}
@@ -284,7 +284,7 @@ xf86GetToken (xf86ConfigSymTabRec * tab)
 	{
 		i = 0;
 		while (tab[i].token != -1)
-			if (NameCompare (configRBuf, tab[i].name) == 0)
+			if (xf86nameCompare (configRBuf, tab[i].name) == 0)
 				return (tab[i].token);
 			else
 				i++;
@@ -294,20 +294,20 @@ xf86GetToken (xf86ConfigSymTabRec * tab)
 }
 
 void
-xf86UnGetToken (int token)
+xf86unGetToken (int token)
 {
 	pushToken = token;
 }
 
 char *
-xf86TokenString (void)
+xf86tokenString (void)
 {
 	return configRBuf;
 }
 
 #if 1
 int
-PathIsAbsolute(const char *path)
+xf86pathIsAbsolute(const char *path)
 {
 	if (path && path[0] == '/')
 		return 1;
@@ -320,9 +320,9 @@ PathIsAbsolute(const char *path)
 
 /* A path is "safe" if it is relative and if it contains no ".." elements. */
 int
-PathIsSafe(const char *path)
+xf86pathIsSafe(const char *path)
 {
-	if (PathIsAbsolute(path))
+	if (xf86pathIsAbsolute(path))
 		return 0;
 
 	/* Compare with ".." */
@@ -429,7 +429,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 		} else {
 			switch (template[++i]) {
 			case 'A':
-				if (cmdline && PathIsAbsolute(cmdline)) {
+				if (cmdline && xf86pathIsAbsolute(cmdline)) {
 					APPEND_STR(cmdline);
 					if (cmdlineUsed)
 						*cmdlineUsed = 1;
@@ -437,7 +437,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 					BAIL_OUT;
 				break;
 			case 'R':
-				if (cmdline && !PathIsAbsolute(cmdline)) {
+				if (cmdline && !xf86pathIsAbsolute(cmdline)) {
 					APPEND_STR(cmdline);
 					if (cmdlineUsed)
 						*cmdlineUsed = 1;
@@ -445,7 +445,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 					BAIL_OUT;
 				break;
 			case 'S':
-				if (cmdline && PathIsSafe(cmdline)) {
+				if (cmdline && xf86pathIsSafe(cmdline)) {
 					APPEND_STR(cmdline);
 					if (cmdlineUsed)
 						*cmdlineUsed = 1;
@@ -472,7 +472,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 			case 'E':
 				if (!env)
 					env = getenv(XCONFENV);
-				if (env && PathIsAbsolute(env)) {
+				if (env && xf86pathIsAbsolute(env)) {
 					APPEND_STR(env);
 					if (envUsed)
 						*envUsed = 1;
@@ -482,7 +482,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 			case 'F':
 				if (!env)
 					env = getenv(XCONFENV);
-				if (env && !PathIsAbsolute(env)) {
+				if (env && !xf86pathIsAbsolute(env)) {
 					APPEND_STR(env);
 					if (envUsed)
 						*envUsed = 1;
@@ -492,7 +492,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 			case 'G':
 				if (!env)
 					env = getenv(XCONFENV);
-				if (env && PathIsSafe(env)) {
+				if (env && xf86pathIsSafe(env)) {
 					APPEND_STR(env);
 					if (envUsed)
 						*envUsed = 1;
@@ -502,13 +502,13 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 			case 'D':
 				if (!home)
 					home = getenv("HOME");
-				if (home && PathIsAbsolute(home))
+				if (home && xf86pathIsAbsolute(home))
 					APPEND_STR(home);
 				else
 					BAIL_OUT;
 				break;
 			case 'P':
-				if (projroot && PathIsAbsolute(projroot))
+				if (projroot && xf86pathIsAbsolute(projroot))
 					APPEND_STR(projroot);
 				else
 					BAIL_OUT;
@@ -552,7 +552,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 }
 
 /* 
- * xf86OpenConfigFile --
+ * xf86openConfigFile --
  *
  * This function take a config file search path (optional), a command-line
  * specified file name (optional) and the ProjectRoot path (optional) and
@@ -584,7 +584,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 #endif
 
 const char *
-xf86OpenConfigFile(const char *path, const char *cmdline, const char *projroot)
+xf86openConfigFile(const char *path, const char *cmdline, const char *projroot)
 {
 	char *pathcopy;
 	const char *template;
@@ -634,7 +634,7 @@ xf86OpenConfigFile(const char *path, const char *cmdline, const char *projroot)
 }
 #else
 /* 
- * xf86OpenConfigFile --
+ * xf86openConfigFile --
  *
  * Formerly findConfigFile(). This function take a pointer to a location
  * in which to place the actual name of the file that was opened.
@@ -647,7 +647,7 @@ xf86OpenConfigFile(const char *path, const char *cmdline, const char *projroot)
  */
 
 int
-xf86OpenConfigFile (char *filename)
+xf86openConfigFile (char *filename)
 {
 #define MAXPTRIES   6
 	char *home = NULL;
@@ -814,7 +814,7 @@ xf86OpenConfigFile (char *filename)
 #endif
 
 void
-xf86CloseConfigFile (void)
+xf86closeConfigFile (void)
 {
 	xf86conffree (configPath);
 	xf86conffree (configRBuf);
@@ -824,7 +824,7 @@ xf86CloseConfigFile (void)
 }
 
 void
-xf86ParseError (char *format,...)
+xf86parseError (char *format,...)
 {
 	va_list ap;
 
@@ -850,7 +850,7 @@ xf86ParseError (char *format,...)
 }
 
 void
-xf86ParseWarning (char *format,...)
+xf86parseWarning (char *format,...)
 {
 	va_list ap;
 
@@ -875,7 +875,7 @@ xf86ParseWarning (char *format,...)
 }
 
 void
-xf86ValidationError (char *format,...)
+xf86validationError (char *format,...)
 {
 	va_list ap;
 
@@ -899,17 +899,17 @@ xf86ValidationError (char *format,...)
 }
 
 void
-SetSection (char *section)
+xf86setSection (char *section)
 {
 	configSection = section;
 }
 
 /* 
- * xf86GetToken --
+ * xf86getToken --
  *  Lookup a string if it is actually a token in disguise.
  */
 int
-getStringToken (xf86ConfigSymTabRec * tab)
+xf86getStringToken (xf86ConfigSymTabRec * tab)
 {
 	return StringToToken (val.str, tab);
 }
@@ -921,7 +921,7 @@ StringToToken (char *str, xf86ConfigSymTabRec * tab)
 
 	for (i = 0; tab[i].token != -1; i++)
 	{
-		if (!NameCompare (tab[i].name, str))
+		if (!xf86nameCompare (tab[i].name, str))
 			return tab[i].token;
 	}
 	return (ERROR_TOKEN);
@@ -933,7 +933,7 @@ StringToToken (char *str, xf86ConfigSymTabRec * tab)
  * in the comparison.
  */
 int
-NameCompare (const char *s1, const char *s2)
+xf86nameCompare (const char *s1, const char *s2)
 {
 	char c1, c2;
 

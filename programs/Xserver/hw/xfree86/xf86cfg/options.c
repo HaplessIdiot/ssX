@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.1 2000/04/04 22:37:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "options.h"
@@ -35,7 +35,10 @@
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/Command.h>
+#include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/Paned.h>
+#include <X11/Xaw/SimpleMenP.h>
+#include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/Viewport.h>
 
 /*
@@ -47,6 +50,9 @@ static void AddOption(Widget, XtPointer, XtPointer);
 static void RemoveOption(Widget, XtPointer, XtPointer);
 static void UpdateOption(Widget, XtPointer, XtPointer);
 static void UpdateOptionList(void);
+#ifdef USE_MODULES
+static void AddDriverOption(Widget, XtPointer, XtPointer);
+#endif
 
 /*
  * Initialization
@@ -59,10 +65,24 @@ static int option_index, popped = False;
 /*
  * Implementation
  */
+#ifdef USE_MODULES
+void
+OptionsPopup(XF86OptionPtr *opts, char *driver, OptionInfoPtr drv_opts)
+#else
 void
 OptionsPopup(XF86OptionPtr *opts)
+#endif
 {
     static int first = 1;
+#ifdef USE_MODULES
+    static Widget button, menu;
+    static char label[256], menuName[16];
+    Widget sme;
+    char buf[256];
+    int i = 0;
+    Arg args[1];
+    static int menuN;
+#endif
 
     option_str = NULL;
     options = opts;
@@ -111,12 +131,76 @@ OptionsPopup(XF86OptionPtr *opts)
 	XtAddCallback(list, XtNcallback, SelectOptionCallback, NULL);
 	bottom = XtCreateManagedWidget("bottom", formWidgetClass,
 				       pane, NULL, 0);
-	popdown = XtCreateManagedWidget("popdown", commandWidgetClass,
+#ifdef USE_MODULES
+	button = XtCreateManagedWidget("driverOpts", menuButtonWidgetClass,
 					bottom, NULL, 0);
+#endif
+	popdown = XtVaCreateManagedWidget("popdown", commandWidgetClass,
+					bottom, NULL, 0);
+#ifdef USE_MODULES
+	XtVaSetValues(popdown, XtNfromHoriz, button, NULL, 0);
+#endif
+
 	XtAddCallback(popdown, XtNcallback, PopdownCallback, NULL);
 	XtRealizeWidget(shell);
 	XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
+
+#ifdef USE_MODULES
+	{
+	    char *str;
+
+	    XtSetArg(args[0], XtNlabel, &str);
+	    XtGetValues(button, args, 1);
+	    XmuSnprintf(label, sizeof(label), "%s", str);
+	}
+#endif
     }
+
+#ifdef USE_MODULES
+    if (menu)
+	XtDestroyWidget(menu);
+    XmuSnprintf(menuName, sizeof(buf), "optionM%d", menuN);
+    menuN = !menuN;
+    menu = XtCreatePopupShell(menuName, simpleMenuWidgetClass, button,
+			      NULL, 0);
+    XtVaSetValues(button, XtNmenuName, menuName, NULL, 0);
+    if (drv_opts) {
+	int len, longest = 0;
+	char fmt[32];
+	static char *types[] = {
+	    "none", "integer", "(non null) string", "string", "real",
+	    "boolean", "frequency",
+	};
+
+	for (i = 0; drv_opts[i].name != NULL; i++) {
+	    len = strlen(drv_opts[i].name);
+	    if (len > longest)
+		longest = len;
+	}
+	XmuSnprintf(fmt, sizeof(fmt), "%c-%ds  %%s", '%', longest);
+	for (; drv_opts->name != NULL; drv_opts++) {
+	    char *type;
+
+	    if (drv_opts->type >= OPTV_NONE && drv_opts->type <= OPTV_FREQ)
+		type = types[drv_opts->type];
+	    else
+		type = "UNKNOWN";
+
+	    XmuSnprintf(buf, sizeof(buf), fmt, drv_opts->name, type);
+	    sme = XtVaCreateManagedWidget(drv_opts->name, smeBSBObjectClass,
+					  menu, XtNlabel, buf, NULL, 0);
+	    XtAddCallback(sme, XtNcallback, AddDriverOption, (XtPointer)drv_opts);
+	}
+    }
+    if (i) {
+	XmuSnprintf(buf, sizeof(buf), "%s%s", label, driver);
+	XtSetArg(args[0], XtNlabel, buf);
+	XtSetValues(button, args, 1);
+	XtMapWidget(button);
+    }
+    else
+	XtUnmapWidget(button);
+#endif
 
     UpdateOptionList();
     popped = True;
@@ -201,7 +285,7 @@ SelectOptionCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
     option_str = info->string;
     option_index = info->list_index;
-    if ((option = xf86FindOption(*options, info->string)) != NULL) {
+    if ((option = xf86findOption(*options, info->string)) != NULL) {
 	XtSetArg(args[0], XtNstring, option->opt_name);
 	XtSetValues(name, args, 1);
 	XtSetArg(args[0], XtNstring,
@@ -223,7 +307,7 @@ AddOption(Widget w, XtPointer user_data, XtPointer call_data)
     XtGetValues(name, args, 1);
     XtSetArg(args[0], XtNstring, &val);
     XtGetValues(value, args, 1);
-    if (xf86FindOption(*options, nam) != NULL || strlen(nam) == 0)
+    if (xf86findOption(*options, nam) != NULL || strlen(nam) == 0)
 	/* XXX xf86addNewOption will trash the option linked list if
 	 * the options being added already exists.
 	 */
@@ -232,6 +316,25 @@ AddOption(Widget w, XtPointer user_data, XtPointer call_data)
 				val && strlen(val) ? XtNewString(val) : NULL);
     UpdateOptionList();
 }
+
+#ifdef USE_MODULES
+/*ARGSUSED*/
+static void
+AddDriverOption(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Arg args[1];
+    OptionInfoPtr opt = (OptionInfoPtr)user_data;
+    XF86OptionPtr option;
+
+    XtSetArg(args[0], XtNstring, opt->name);
+    XtSetValues(name, args, 1);
+    if ((option = xf86findOption(*options, opt->name)) == NULL)
+	XtSetArg(args[0], XtNstring, "");
+    else
+	XtSetArg(args[0], XtNstring, option->opt_val);
+    XtSetValues(value, args, 1);
+}
+#endif
 
 /*ARGSUSED*/
 static void
@@ -242,7 +345,7 @@ RemoveOption(Widget w, XtPointer user_data, XtPointer call_data)
 
     XtSetArg(args[0], XtNstring, &str);
     XtGetValues(name, args, 1);
-    xf86RemoveOption(options, str);
+    xf86removeOption(options, str);
     UpdateOptionList();
 }
 
@@ -250,7 +353,7 @@ RemoveOption(Widget w, XtPointer user_data, XtPointer call_data)
 static void
 UpdateOption(Widget w, XtPointer user_data, XtPointer call_data)
 {
-/*    xf86RemoveOption(options, option_str);
+/*    xf86removeOption(options, option_str);
     AddOption(w, user_data, call_data);
     UpdateOptionList();*/
 
@@ -262,7 +365,7 @@ UpdateOption(Widget w, XtPointer user_data, XtPointer call_data)
     XtGetValues(name, args, 1);
     XtSetArg(args[0], XtNstring, &val);
     XtGetValues(value, args, 1);
-    if ((option = xf86FindOption(*options, option_str)) == NULL)
+    if ((option = xf86findOption(*options, option_str)) == NULL)
 	return;
     XtFree(option->opt_name);
     option->opt_name = option_str = XtNewString(nam);

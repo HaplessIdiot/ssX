@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.230 2000/09/19 12:46:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.231 2000/09/29 08:59:44 eich Exp $ */
 
 
 /*
@@ -779,11 +779,11 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
      */
     optp = NULL;
     if (flagsconf->flg_option_lst)
-	optp = OptionListDup(flagsconf->flg_option_lst);
+	optp = xf86optionListDup(flagsconf->flg_option_lst);
     if (layoutopts) {
-	tmp = OptionListDup(layoutopts);
+	tmp = xf86optionListDup(layoutopts);
 	if (optp)
-	    optp = OptionListMerge(optp, tmp);
+	    optp = xf86optionListMerge(optp, tmp);
 	else
 	    optp = tmp;
     }
@@ -1127,7 +1127,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
     if (!havePointer) {
 	if (xf86PointerName) {
-	    confInput = xf86FindInput(xf86PointerName,
+	    confInput = xf86findInput(xf86PointerName,
 				      xf86configptr->conf_input_lst);
 	    if (!confInput) {
 		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
@@ -1137,10 +1137,10 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	    from = X_CMDLINE;
 	} else {
 	    from = X_DEFAULT;
-	    confInput = xf86FindInput(CONF_IMPLICIT_POINTER,
+	    confInput = xf86findInput(CONF_IMPLICIT_POINTER,
 				      xf86configptr->conf_input_lst);
 	    if (!confInput && implicitLayout) {
-		confInput = xf86FindInputByDriver("mouse",
+		confInput = xf86findInputByDriver("mouse",
 						xf86configptr->conf_input_lst);
 	    }
 	}
@@ -1149,7 +1149,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     }
     if (!haveKeyboard) {
 	if (xf86KeyboardName) {
-	    confInput = xf86FindInput(xf86KeyboardName,
+	    confInput = xf86findInput(xf86KeyboardName,
 				      xf86configptr->conf_input_lst);
 	    if (!confInput) {
 		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
@@ -1159,10 +1159,10 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	    from = X_CMDLINE;
 	} else {
 	    from = X_DEFAULT;
-	    confInput = xf86FindInput(CONF_IMPLICIT_KEYBOARD,
+	    confInput = xf86findInput(CONF_IMPLICIT_KEYBOARD,
 				      xf86configptr->conf_input_lst);
 	    if (!confInput && implicitLayout) {
-		confInput = xf86FindInputByDriver("keyboard",
+		confInput = xf86findInputByDriver("keyboard",
 						xf86configptr->conf_input_lst);
 	    }
 	}
@@ -1173,7 +1173,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	count++;
 	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
 	indp[count - 1] = Pointer;
-	indp[count - 1].extraOptions = addNewOption(NULL, "CorePointer", NULL);
+	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CorePointer", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
     } else if (!havePointer) {
@@ -1187,7 +1187,7 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	count++;
 	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
 	indp[count - 1] = Keyboard;
-	indp[count - 1].extraOptions = addNewOption(NULL, "CoreKeyboard", NULL);
+	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CoreKeyboard", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
     } else if (!haveKeyboard) {
@@ -1237,7 +1237,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
 	from = X_CONFIG;
     }
     if (xf86LayoutName != NULL) {
-	if ((l = xf86FindLayout(xf86LayoutName, conf_layout)) == NULL) {
+	if ((l = xf86findLayout(xf86LayoutName, conf_layout)) == NULL) {
 	    xf86Msg(X_ERROR, "No ServerLayout section called \"%s\"\n",
 		    xf86LayoutName);
 	    return FALSE;
@@ -1486,7 +1486,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
 
     from = X_CONFIG;
     if (xf86ScreenName != NULL) {
-	if ((s = xf86FindScreen(xf86ScreenName, conf_screen)) == NULL) {
+	if ((s = xf86findScreen(xf86ScreenName, conf_screen)) == NULL) {
 	    xf86Msg(X_ERROR, "No Screen section called \"%s\"\n",
 		    xf86ScreenName);
 	    return FALSE;
@@ -1662,7 +1662,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     {
 	/* We may want to reuse the monitor section */
 	if (!modeslnk->ml_modes) {
-	    modes = xf86FindModes (modeslnk->ml_modes_str, 
+	    modes = xf86findModes (modeslnk->ml_modes_str, 
 				   xf86configptr->conf_modes_lst);
 	    modeslnk->ml_modes = modes;
 	
@@ -1670,9 +1670,8 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
 	    /* now add the modes found in the modes
 	       section to the list of modes for this
 	       monitor */
-	    
 	    conf_monitor->mon_modeline_lst = (XF86ConfModeLinePtr)
-	    addListItem((GenericListPtr)conf_monitor->mon_modeline_lst,
+	    xf86addListItem((GenericListPtr)conf_monitor->mon_modeline_lst,
 			(GenericListPtr)modes->mon_modeline_lst);
 	}
 	modeslnk = modeslnk->list.next;
@@ -1763,7 +1762,7 @@ lookupVisual(const char *visname)
 	return -1;
 
     for (i = 0; i <= DirectColor; i++) {
-	if (!NameCompare(visname, xf86VisualNames[i]))
+	if (!xf86nameCompare(visname, xf86VisualNames[i]))
 	    break;
     }
 
@@ -2011,7 +2010,7 @@ xf86HandleConfigFile(void)
     if (xf86ConfigFile)
 	from = X_CMDLINE;
 
-    filename = xf86OpenConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
+    filename = xf86openConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
     if (filename) {
 	xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
     } else {
@@ -2021,11 +2020,11 @@ xf86HandleConfigFile(void)
 	xf86ErrorFVerb(0, "\n");
 	return FALSE;
     }
-    if ((xf86configptr = xf86ReadConfigFile ()) == NULL) {
+    if ((xf86configptr = xf86readConfigFile ()) == NULL) {
 	xf86Msg(X_ERROR, "Problem parsing the config file\n");
 	return FALSE;
     }
-    xf86CloseConfigFile ();
+    xf86closeConfigFile ();
 
     /* Initialise a few things. */
 
@@ -2124,12 +2123,12 @@ xf86HandleConfigFile(void)
 Bool
 xf86PathIsAbsolute(const char *path)
 {
-    return (PathIsAbsolute(path) != 0);
+    return (xf86pathIsAbsolute(path) != 0);
 }
 
 Bool
 xf86PathIsSafe(const char *path)
 {
-    return (PathIsSafe(path) != 0);
+    return (xf86pathIsSafe(path) != 0);
 }
 

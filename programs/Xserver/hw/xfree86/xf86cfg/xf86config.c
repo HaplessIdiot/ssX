@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.c,v 1.1 2000/04/04 22:37:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.c,v 1.2 2000/05/18 16:30:01 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -35,31 +35,7 @@
  * Implementation
  */
 int
-ErrorF(const char *fmt, ...)
-{
-    int retval;
-    va_list ap;
-
-    Va_start(ap, fmt);
-    retval = vfprintf(stderr, fmt, ap);
-
-    va_end(ap);
-
-    return (retval);
-}
-
-int
-VErrorF(const char *fmt, va_list ap)
-{
-    int retval;
-
-    retval = vfprintf(stderr, fmt, ap);
-
-    return (retval);
-}
-
-int
-xf86RemoveOption(XF86OptionPtr *options, char *name)
+xf86removeOption(XF86OptionPtr *options, char *name)
 {
     XF86OptionPtr opt = *options, prev = opt;
 
@@ -85,7 +61,7 @@ xf86RemoveOption(XF86OptionPtr *options, char *name)
 }
 
 int
-xf86RemoveInput(XF86ConfigPtr config, XF86ConfInputPtr input)
+xf86removeInput(XF86ConfigPtr config, XF86ConfInputPtr input)
 {
     XF86ConfInputPtr prev, inp = config->conf_input_lst;
     XF86ConfLayoutPtr lay = config->conf_layout_lst;
@@ -109,21 +85,21 @@ xf86RemoveInput(XF86ConfigPtr config, XF86ConfInputPtr input)
 
     /* remove references */
     while (lay != NULL) {
-	xf86RemoveInputRef(lay, inp);
+	xf86removeInputRef(lay, inp);
 	lay = (XF86ConfLayoutPtr)(lay->list.next);
     }
 
     XtFree(inp->inp_identifier);
     XtFree(inp->inp_driver);
     XtFree(inp->inp_comment);
-    xf86OptionListFree(inp->inp_option_lst);
+    xf86optionListFree(inp->inp_option_lst);
     XtFree((XtPointer)inp);
 
     return (True);
 }
 
 int
-xf86RemoveInputRef(XF86ConfLayoutPtr layout, XF86ConfInputPtr input)
+xf86removeInputRef(XF86ConfLayoutPtr layout, XF86ConfInputPtr input)
 {
     XF86ConfInputrefPtr prev, iref = layout->lay_input_lst;
 
@@ -131,7 +107,7 @@ xf86RemoveInputRef(XF86ConfLayoutPtr layout, XF86ConfInputPtr input)
     while (iref != NULL) {
 	if (iref->iref_inputdev == input) {
 	    XtFree(iref->iref_inputdev_str);
-	    xf86OptionListFree(iref->iref_option_lst);
+	    xf86optionListFree(iref->iref_option_lst);
 	    if (prev == iref)
 		layout->lay_input_lst =
 		    (XF86ConfInputrefPtr)(iref->list.next);
@@ -149,7 +125,7 @@ xf86RemoveInputRef(XF86ConfLayoutPtr layout, XF86ConfInputPtr input)
 }
 
 int
-xf86RemoveDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
+xf86removeDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
 {
     XF86ConfDevicePtr prev, dev = config->conf_device_lst;
     XF86ConfScreenPtr psc, scr = config->conf_screen_lst;
@@ -175,7 +151,7 @@ xf86RemoveDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
     psc = scr;
     while (scr != NULL) {
 	if (scr->scrn_device == device) {
-	    xf86RemoveScreen(config, scr);
+	    xf86removeScreen(config, scr);
 	    if (scr == psc)
 		scr = config->conf_screen_lst;
 	    else
@@ -196,14 +172,14 @@ xf86RemoveDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
     XtFree(dev->dev_ramdac);
     XtFree(dev->dev_clockchip);
     XtFree(dev->dev_comment);
-    xf86OptionListFree(dev->dev_option_lst);
+    xf86optionListFree(dev->dev_option_lst);
     XtFree((XtPointer)dev);
 
     return (True);
 }
 
 int
-xf86RemoveMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
+xf86removeMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
 {
     XF86ConfMonitorPtr prev, mon = config->conf_monitor_lst;
     XF86ConfScreenPtr psc, scr = config->conf_screen_lst;
@@ -229,7 +205,7 @@ xf86RemoveMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
     psc = scr;
     while (scr != NULL) {
 	if (scr->scrn_monitor == monitor) {
-	    xf86RemoveScreen(config, scr);
+	    xf86removeScreen(config, scr);
 	    if (scr == psc)
 		scr = config->conf_screen_lst;
 	    else
@@ -244,14 +220,14 @@ xf86RemoveMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
     XtFree(mon->mon_vendor);
     XtFree(mon->mon_modelname);
     XtFree(mon->mon_comment);
-    xf86OptionListFree(mon->mon_option_lst);
+    xf86optionListFree(mon->mon_option_lst);
     XtFree((XtPointer)mon);
 
     return (True);
 }
 
 int
-xf86RemoveScreen(XF86ConfigPtr config, XF86ConfScreenPtr screen)
+xf86removeScreen(XF86ConfigPtr config, XF86ConfScreenPtr screen)
 {
     XF86ConfScreenPtr prev, scrn;
     XF86ConfLayoutPtr lay;
@@ -338,14 +314,14 @@ xf86RemoveScreen(XF86ConfigPtr config, XF86ConfScreenPtr screen)
     XtFree(screen->scrn_obso_driver);
     XtFree(screen->scrn_monitor_str);
     XtFree(screen->scrn_device_str);
-    xf86OptionListFree(screen->scrn_option_lst);
+    xf86optionListFree(screen->scrn_option_lst);
     XtFree((XtPointer)screen);
 
     return (True);
 }
 
 int
-xf86RemoveAdjacency(XF86ConfLayoutPtr layout, XF86ConfAdjacencyPtr adjacency)
+xf86removeAdjacency(XF86ConfLayoutPtr layout, XF86ConfAdjacencyPtr adjacency)
 {
     XF86ConfAdjacencyPtr prev, adj = layout->lay_adjacency_lst;
 
@@ -378,7 +354,7 @@ xf86RemoveAdjacency(XF86ConfLayoutPtr layout, XF86ConfAdjacencyPtr adjacency)
 }
 
 int
-xf86RemoveInactive(XF86ConfLayoutPtr layout, XF86ConfInactivePtr inactive)
+xf86removeInactive(XF86ConfLayoutPtr layout, XF86ConfInactivePtr inactive)
 {
     XF86ConfInactivePtr prev, inac = layout->lay_inactive_lst;
 
@@ -406,7 +382,7 @@ xf86RemoveInactive(XF86ConfLayoutPtr layout, XF86ConfInactivePtr inactive)
 }
 
 int
-xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
+xf86removeLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
 {
     XF86ConfLayoutPtr prev, lay = config->conf_layout_lst;
     XF86ConfAdjacencyPtr adj, nadj;
@@ -430,25 +406,25 @@ xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
     adj = lay->lay_adjacency_lst;
     while (adj != NULL) {
 	nadj = (XF86ConfAdjacencyPtr)(adj->list.next);
-	xf86RemoveAdjacency(lay, adj);
+	xf86removeAdjacency(lay, adj);
 	adj = nadj;
     }
 
     inac = lay->lay_inactive_lst;
     while (inac != NULL) {
 	ninac = (XF86ConfInactivePtr)(inac->list.next);
-	xf86RemoveInactive(lay, inac);
+	xf86removeInactive(lay, inac);
 	inac = ninac;
     }
 
     iref = lay->lay_input_lst;
     while (iref != NULL) {
 	niref = (XF86ConfInputrefPtr)(iref->list.next);
-	xf86RemoveInputRef(lay, iref->iref_inputdev);
+	xf86removeInputRef(lay, iref->iref_inputdev);
 	iref = niref;
     }
 
-    xf86OptionListFree(lay->lay_option_lst);
+    xf86optionListFree(lay->lay_option_lst);
 
     if (prev == lay)
 	config->conf_layout_lst = (XF86ConfLayoutPtr)(lay->list.next);
@@ -461,7 +437,7 @@ xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
 }
 
 int
-xf86RenameInput(XF86ConfigPtr config, XF86ConfInputPtr input, char *name)
+xf86renameInput(XF86ConfigPtr config, XF86ConfInputPtr input, char *name)
 {
     XF86ConfLayoutPtr lay = config->conf_layout_lst;
 
@@ -488,7 +464,7 @@ xf86RenameInput(XF86ConfigPtr config, XF86ConfInputPtr input, char *name)
 }
 
 int
-xf86RenameDevice(XF86ConfigPtr config, XF86ConfDevicePtr dev, char *name)
+xf86renameDevice(XF86ConfigPtr config, XF86ConfDevicePtr dev, char *name)
 {
     XF86ConfScreenPtr scr = config->conf_screen_lst;
 
@@ -511,7 +487,7 @@ xf86RenameDevice(XF86ConfigPtr config, XF86ConfDevicePtr dev, char *name)
 }
 
 int
-xf86RenameMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr mon, char *name)
+xf86renameMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr mon, char *name)
 {
     XF86ConfScreenPtr scr = config->conf_screen_lst;
 
@@ -534,7 +510,7 @@ xf86RenameMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr mon, char *name)
 }
 
 int
-xf86RenameLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout, char *name)
+xf86renameLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout, char *name)
 {
     if (config == NULL || layout == NULL || name == NULL || *name == '\0')
 	return (False);
@@ -546,7 +522,7 @@ xf86RenameLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout, char *name)
 }
 
 int
-xf86RenameScreen(XF86ConfigPtr config, XF86ConfScreenPtr scrn, char *name)
+xf86renameScreen(XF86ConfigPtr config, XF86ConfScreenPtr scrn, char *name)
 {
     XF86ConfLayoutPtr lay = config->conf_layout_lst;
 

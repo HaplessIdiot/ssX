@@ -26,44 +26,44 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.h,v 1.1 2000/04/04 22:37:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.h,v 1.2 2000/05/18 16:30:01 dawes Exp $
  */
 
 #include "config.h"
 
-#define xf86OptionListFree OptionListFree
-#define xf86AddInput(head, ptr)		\
-	(XF86ConfInputPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddInputref(head, ptr)	\
-	(XF86ConfInputrefPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddDevice(head, ptr)	\
-	(XF86ConfDevicePtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddMonitor(head, ptr)	\
-	(XF86ConfMonitorPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddScreen(head, ptr)	\
-	(XF86ConfScreenPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddLayout(head, ptr)	\
-	(XF86ConfLayoutPtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86AddModeLine(head, ptr)	\
-	(XF86ConfModeLinePtr)addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
-#define xf86NewOption NewOption
-#define xf86addNewOption addNewOption
-#define xf86FindOption FindOption
+#ifndef _xf86cfg_xf86config_h
+#define _xf86cfg_xf86config_h
 
-int ErrorF(const char*, ...);
-int VErrorF(const char*, va_list);
-int xf86RemoveOption(XF86OptionPtr*, char*);
-int xf86RemoveInput(XF86ConfigPtr, XF86ConfInputPtr);
-int xf86RemoveInputRef(XF86ConfLayoutPtr, XF86ConfInputPtr);
-int xf86RemoveDevice(XF86ConfigPtr, XF86ConfDevicePtr);
-int xf86RemoveMonitor(XF86ConfigPtr, XF86ConfMonitorPtr);
-int xf86RemoveScreen(XF86ConfigPtr, XF86ConfScreenPtr);
-int xf86RemoveAdjacency(XF86ConfLayoutPtr, XF86ConfAdjacencyPtr);
-int xf86RemoveInactive(XF86ConfLayoutPtr, XF86ConfInactivePtr);
-int xf86RemoveLayout(XF86ConfigPtr, XF86ConfLayoutPtr);
+#define xf86addInput(head, ptr)		\
+	(XF86ConfInputPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addInputref(head, ptr)	\
+	(XF86ConfInputrefPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addDevice(head, ptr)	\
+	(XF86ConfDevicePtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addMonitor(head, ptr)	\
+	(XF86ConfMonitorPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addScreen(head, ptr)	\
+	(XF86ConfScreenPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addLayout(head, ptr)	\
+	(XF86ConfLayoutPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addModeLine(head, ptr)	\
+	(XF86ConfModeLinePtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 
-int xf86RenameInput(XF86ConfigPtr, XF86ConfInputPtr, char*);
-int xf86RenameDevice(XF86ConfigPtr, XF86ConfDevicePtr, char*);
-int xf86RenameMonitor(XF86ConfigPtr, XF86ConfMonitorPtr, char*);
-int xf86RenameLayout(XF86ConfigPtr, XF86ConfLayoutPtr, char*);
-int xf86RenameScreen(XF86ConfigPtr, XF86ConfScreenPtr, char*);
+int xf86removeOption(XF86OptionPtr*, char*);
+int xf86removeInput(XF86ConfigPtr, XF86ConfInputPtr);
+int xf86removeInputRef(XF86ConfLayoutPtr, XF86ConfInputPtr);
+int xf86removeDevice(XF86ConfigPtr, XF86ConfDevicePtr);
+int xf86removeMonitor(XF86ConfigPtr, XF86ConfMonitorPtr);
+int xf86removeScreen(XF86ConfigPtr, XF86ConfScreenPtr);
+int xf86removeAdjacency(XF86ConfLayoutPtr, XF86ConfAdjacencyPtr);
+int xf86removeInactive(XF86ConfLayoutPtr, XF86ConfInactivePtr);
+int xf86removeLayout(XF86ConfigPtr, XF86ConfLayoutPtr);
+
+int xf86renameInput(XF86ConfigPtr, XF86ConfInputPtr, char*);
+int xf86renameDevice(XF86ConfigPtr, XF86ConfDevicePtr, char*);
+int xf86renameMonitor(XF86ConfigPtr, XF86ConfMonitorPtr, char*);
+int xf86renameLayout(XF86ConfigPtr, XF86ConfLayoutPtr, char*);
+int xf86renameScreen(XF86ConfigPtr, XF86ConfScreenPtr, char*);
+
+#endif /* _xf86cfg_xf86config_h */
+

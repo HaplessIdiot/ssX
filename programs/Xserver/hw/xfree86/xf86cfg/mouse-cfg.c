@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.3 2000/08/01 20:05:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.4 2000/09/26 15:57:22 tsi Exp $
  */
 
 #include "xf86config.h"
@@ -91,13 +91,13 @@ MouseConfig(XtPointer config)
     current_input = mouse;
 
     if (mouse != NULL) {
-	emulate = xf86FindOption(mouse->inp_option_lst,
+	emulate = xf86findOption(mouse->inp_option_lst,
 				 Emulate3Buttons) != NULL;
-	if ((option = xf86FindOption(mouse->inp_option_lst, Device)) != NULL)
+	if ((option = xf86findOption(mouse->inp_option_lst, Device)) != NULL)
 	    device = option->opt_val;
 	else
 	    device = NULL;
-	if ((option = xf86FindOption(mouse->inp_option_lst, Protocol)) != NULL)
+	if ((option = xf86findOption(mouse->inp_option_lst, Protocol)) != NULL)
 	    protocol = option->opt_val;
 	else
 	    protocol = NULL;
@@ -117,7 +117,7 @@ MouseConfig(XtPointer config)
 	do {
 	    ++nmouses;
 	    XmuSnprintf(mouse_name, sizeof(mouse_name), "Mouse%d", nmouses);
-	} while (xf86FindInput(mouse_name,
+	} while (xf86findInput(mouse_name,
 		 XF86Config->conf_input_lst));
 
 	XtSetArg(args[0], XtNstring, mouse_name);
@@ -143,7 +143,7 @@ MouseConfig(XtPointer config)
 	    mouse->list.next = NULL;
 	    mouse->inp_identifier = XtNewString(ident_string);
 	    mouse->inp_driver = XtNewString("mouse");
-	    mouse->inp_option_lst = xf86NewOption(XtNewString(Device),
+	    mouse->inp_option_lst = xf86newOption(XtNewString(Device),
 						  XtNewString(device));
 	    xf86addNewOption(mouse->inp_option_lst,
 			     XtNewString(Protocol), XtNewString(protocol));
@@ -157,21 +157,21 @@ MouseConfig(XtPointer config)
 	    mouse->inp_comment = NULL;
 	}
 	else {
-	    if ((option = xf86FindOption(mouse->inp_option_lst, Device)) != NULL) {
+	    if ((option = xf86findOption(mouse->inp_option_lst, Device)) != NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(device);
 		XtFree(option->opt_comment);
 	    }
 	    else {
 		if (mouse->inp_option_lst == NULL)
-		    mouse->inp_option_lst = xf86NewOption(XtNewString(Device),
+		    mouse->inp_option_lst = xf86newOption(XtNewString(Device),
 							  XtNewString(device));
 		else
 		    xf86addNewOption(mouse->inp_option_lst,
 				     XtNewString(Device), XtNewString(device));
 	    }
 
-	    if ((option = xf86FindOption(mouse->inp_option_lst, Protocol)) != NULL) {
+	    if ((option = xf86findOption(mouse->inp_option_lst, Protocol)) != NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(protocol);
 		XtFree(option->opt_comment);
@@ -181,8 +181,8 @@ MouseConfig(XtPointer config)
 				 XtNewString(Protocol), XtNewString(protocol));
 
 	    if (emulate == False) {
-		xf86RemoveOption(&(mouse->inp_option_lst), Emulate3Buttons);
-		xf86RemoveOption(&(mouse->inp_option_lst), Emulate3Timeout);
+		xf86removeOption(&(mouse->inp_option_lst), Emulate3Buttons);
+		xf86removeOption(&(mouse->inp_option_lst), Emulate3Timeout);
 	    }
 	    else if (emulate) {
 		xf86addNewOption(mouse->inp_option_lst,
@@ -192,7 +192,7 @@ MouseConfig(XtPointer config)
 	    }
 	}
 	if (strcasecmp(mouse->inp_identifier, ident_string))
-	    xf86RenameInput(XF86Config, mouse, ident_string);
+	    xf86renameInput(XF86Config, mouse, ident_string);
 
 	return ((XtPointer)mouse);
     }
@@ -375,8 +375,8 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
 					NULL, 0);
 	XtAddCallback(listP, XtNcallback, MouseProtocolCallback, NULL);
 
-	emul3 = XtCreateManagedWidget("emulate3", toggleWidgetClass,
-				      mouse_dp, NULL, 0);
+	emul3 = XtVaCreateManagedWidget("emulate3", toggleWidgetClass,
+					mouse_dp, XtNstate, True, NULL, 0);
 	XtAddCallback(emul3, XtNcallback, MouseEmulateCallback, NULL);
 	apply = XtCreateManagedWidget("apply", commandWidgetClass,
 				      mouse_dp, NULL, 0);

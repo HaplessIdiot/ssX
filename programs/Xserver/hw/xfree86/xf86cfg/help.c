@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.1 2000/06/13 23:15:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.2 2000/09/26 15:57:22 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -39,11 +39,13 @@
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/TextSinkP.h>
 #include <X11/Xaw/TextSrcP.h>
+#include <X11/Xmu/SysUtil.h>
 #include <X11/Xmu/Xmu.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>		/* for bsearch() */
 #endif
 #include <ctype.h>
+#include "help.h"
 
 /*
  * Prototypes
@@ -64,7 +66,7 @@ static Bool popped_up = False;
 /*
  * Implementation
  */
-Bool
+void
 Help(char *topic)
 {
     Widget source;
@@ -256,7 +258,6 @@ struct _Html_SourceInfo {
 /*
  * Proptotypes
  */
-void Html_ModeStart(Widget);
 void Html_ModeEnd(Widget);
 static void Html_ModeInit(void);
 static void Html_ParseCallback(Widget, XtPointer, XtPointer);
@@ -269,7 +270,7 @@ static void Html_Commit(Html_Parser*);
 static void Html_AddEntities(Html_Parser*, Html_Item*);
 
 static int Html_Put(Html_Parser*, int);
-static char *Html_Puts(Html_Parser*, char*);
+static void Html_Puts(Html_Parser*, char*);
 static int Html_Format1(Html_Parser*);
 static int Html_Format2(Html_Parser*);
 static int Html_Format3(Html_Parser*);
@@ -1220,7 +1221,7 @@ Html_Put(Html_Parser *parser, int ch)
     return (ch);
 }
 
-static char *
+static void
 Html_Puts(Html_Parser *parser, char *str)
 {
     int len = strlen(str);

@@ -1,6 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.5 2000/05/18 16:29:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.6 2000/06/13 23:15:51 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
+
+#if DoLoadableServer
+LDSRCS	= libc_wrapper.c loader.c
+LDOBJS	= libc_wrapper.o loader.o
+#endif
 
 SRCS	=\
 	accessx.c\
@@ -10,12 +15,14 @@ SRCS	=\
 	help.c\
 	interface.c\
 	keyboard-cfg.c\
+	$(LDSRCS) \
 	monitor-cfg.c\
 	mouse-cfg.c\
 	options.c\
 	screen-cfg.c\
 	screen.c\
 	startx.c\
+	stubs.c\
 	vidmode.c\
 	xf86config.c
 
@@ -27,12 +34,14 @@ OBJS	=\
 	help.o\
 	interface.o\
 	keyboard-cfg.o\
+	$(LDOBJS) \
 	monitor-cfg.o\
 	mouse-cfg.o\
 	options.o\
 	screen-cfg.o\
 	screen.o\
 	startx.o\
+	stubs.o\
 	vidmode.o\
 	xf86config.o
 
@@ -61,9 +70,20 @@ XPMPICS =\
 
 AllTarget(ProgramTargetName($(PROG)))
 
+#if DoLoadableServer
+LOADERLIB      = -L../loader -lxloader -L../dummylib -ldummy
+DEFINES        = -DUSE_MODULES
+INCLUDES       = -I../loader -I$(XF86OSSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
+#endif
+
+#if HasDlopen
+DLLIB = -ldl
+#endif
+
 LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
-		  $(XPMLIB) $(XLIB) -lm
+		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
@@ -73,4 +93,10 @@ InstallAppDefaults(XF86Cfg)
 InstallManPage(xf86cfg,$(MANDIR))
 
 NormalLibraryObjectRule()
+
+#if DoLoadableServer
+LinkSourceFile(libc_wrapper.c, $(XF86OSSRC)/shared)
+SpecialCObjectRule(libc_wrapper,NullParameter,$(WRAPPERDEFINES) $(EXT_DEFINES))
+#endif
+
 DependTarget()

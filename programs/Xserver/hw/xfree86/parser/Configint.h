@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.14 1999/09/06 11:27:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.15 2000/04/04 19:25:20 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -94,11 +94,11 @@ if (p == NULL)\
 }\
 else\
 {\
-	ptr->field = (type) addListItem ((glp) ptr->field, (glp) p);\
+	ptr->field = (type) xf86addListItem ((glp) ptr->field, (glp) p);\
 }\
 }
 
-#define Error(a,b) { xf86ParseError (a, b); CLEANUP (ptr); return NULL; }
+#define Error(a,b) { xf86parseError (a, b); CLEANUP (ptr); return NULL; }
 
 /* 
  * These are defines for error messages to promote consistency.

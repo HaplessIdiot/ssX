@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.5 2000/08/01 20:05:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.6 2000/09/26 15:57:22 tsi Exp $
  */
 
 #include "config.h"
@@ -83,6 +83,10 @@ static void ScaleJumpCallback(Widget, XtPointer, XtPointer);
 
 static void ApplyCallback(Widget, XtPointer, XtPointer);
 static void AccessXInitialize(void);
+
+void CloseAccessXAction(Widget, XEvent*, String*, Cardinal*);
+void AccessXConfigureStart(void);
+void AccessXConfigureEnd(void);
 
 /*
  * Implementation

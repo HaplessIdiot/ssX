@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.5 1999/05/23 14:38:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.7 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -58,21 +58,20 @@ typedef struct
 XF86OptionRec, *XF86OptionPtr;
 
 
-XF86OptionPtr addNewOption(XF86OptionPtr head, char *name, char *val);
-XF86OptionPtr OptionListDup(XF86OptionPtr opt);
-void OptionListFree(XF86OptionPtr opt);
-char *OptionName(XF86OptionPtr opt);
-char *OptionValue(XF86OptionPtr opt);
-XF86OptionPtr NewOption(char *name, char *value);
-XF86OptionPtr NextOption(XF86OptionPtr list);
-XF86OptionPtr FindOption(XF86OptionPtr list, const char *name);
-char *FindOptionValue(XF86OptionPtr list, const char *name);
-XF86OptionPtr OptionListCreate(const char **options, int count, int used);
-XF86OptionPtr OptionListMerge(XF86OptionPtr head, XF86OptionPtr tail);
-int FindOptionBoolean(XF86OptionPtr list, char *name, int default_val);
-char *ConfigStrdup (const char *s);
-int NameCompare (const char *s1, const char *s2);
-char *ULongToString(unsigned long i);
+XF86OptionPtr xf86addNewOption(XF86OptionPtr head, char *name, char *val);
+XF86OptionPtr xf86optionListDup(XF86OptionPtr opt);
+void xf86optionListFree(XF86OptionPtr opt);
+char *xf86optionName(XF86OptionPtr opt);
+char *xf86optionValue(XF86OptionPtr opt);
+XF86OptionPtr xf86newOption(char *name, char *value);
+XF86OptionPtr xf86nextOption(XF86OptionPtr list);
+XF86OptionPtr xf86findOption(XF86OptionPtr list, const char *name);
+char *xf86findOptionValue(XF86OptionPtr list, const char *name);
+XF86OptionPtr xf86optionListCreate(const char **options, int count, int used);
+XF86OptionPtr xf86optionListMerge(XF86OptionPtr head, XF86OptionPtr tail);
+char *xf86configStrdup (const char *s);
+int xf86nameCompare (const char *s1, const char *s2);
+char *xf86uLongToString(unsigned long i);
 
 
 

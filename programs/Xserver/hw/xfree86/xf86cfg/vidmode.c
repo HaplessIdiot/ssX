@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.1 2000/05/18 16:30:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.2 2000/09/26 15:57:22 tsi Exp $
  */
 
 /*
@@ -474,7 +474,6 @@ VideoModeInitialize(void)
     rep = XtCreateManagedWidget("prev", commandWidgetClass, vtune, NULL, 0);
     XtAddCallback(rep, XtNcallback, SwitchCallback, (XtPointer)-1);
     mode = XtCreateManagedWidget("mode", menuButtonWidgetClass, vtune, NULL, 0);
-    menu = XtCreatePopupShell("menu", simpleMenuWidgetClass, vtune, NULL, 0);
     rep = XtCreateManagedWidget("next", commandWidgetClass, vtune, NULL, 0);
     XtAddCallback(rep, XtNcallback, SwitchCallback, (XtPointer)1);
 
@@ -505,8 +504,6 @@ VideoModeInitialize(void)
 	}
     }
     XtRealizeWidget(screenp);
-    monitor = XtCreatePopupShell("monitorP", simpleMenuWidgetClass,
-				 vtune, NULL, 0);
 
     rep = XtCreateManagedWidget("up", repeaterWidgetClass,
 				vtune, NULL, 0);
@@ -580,8 +577,8 @@ VideoModeInitialize(void)
     add = XtCreateManagedWidget("add", commandWidgetClass, vtune, NULL, 0);
     XtAddCallback(add, XtNcallback, AddModeCallback, NULL);
     XtCreateManagedWidget("addto", labelWidgetClass, vtune, NULL, 0);
-    monitorb = XtVaCreateManagedWidget("ident", menuButtonWidgetClass, vtune,
-				       XtNmenuName, "monitorP", NULL, 0);
+    monitorb = XtCreateManagedWidget("ident", menuButtonWidgetClass, vtune,
+				     NULL, 0);
     XtCreateManagedWidget("as", labelWidgetClass, vtune, NULL, 0);
     text = XtVaCreateManagedWidget("text", asciiTextWidgetClass, vtune,
 				   XtNeditType, XawtextEdit, NULL, 0);
@@ -602,10 +599,11 @@ VideoModeConfigureStart(void)
     else
 	XtMapWidget(vtune);
     if (vidtune != NULL) {
-	int i;
 	Arg args[1];
 	Boolean state;
 	XF86ConfMonitorPtr mon;
+	static char menuName[16];
+	static int menuN;
 
 	XtErrorFunc = XSetErrorHandler(VidmodeError);
 	XF86VidModeLockModeSwitch(XtDisplay(toplevel), vidtune->screen, True);
@@ -618,8 +616,14 @@ VideoModeConfigureStart(void)
 	XtSetSensitive(apply, !state);
 	autoflag = state;
 
-	for (i = 0; i < ((CompositeWidget)monitor)->composite.num_children; i++)
-	    XtDestroyWidget(((CompositeWidget)monitor)->composite.children[i]);
+	if (monitor)
+	    XtDestroyWidget(monitor);
+	XmuSnprintf(menuName, sizeof(menuName), "menuP%d", menuN);
+	menuN = !menuN;
+	monitor = XtCreatePopupShell(menuName, simpleMenuWidgetClass,
+				     vtune, NULL, 0);
+	XtVaSetValues(monitorb, XtNmenuName, menuName, NULL, 0);
+
 	mon = XF86Config->conf_monitor_lst;
 	while (mon != NULL) {
 	    Widget sme = XtCreateManagedWidget(mon->mon_identifier,
@@ -1070,13 +1074,19 @@ GetModes(void)
     int i;
     char label[32];
     Arg args[1];
+    static char menuName[16];
+    static int menuN;
 
     XFree(vidtune->infos);
     XF86VidModeGetAllModeLines(XtDisplay(toplevel), vidtune->screen,
 			       &vidtune->num_infos, &vidtune->infos);
 
-    for (i = 0; i < ((CompositeWidget)menu)->composite.num_children; i++)
-	XtDestroyWidget(((CompositeWidget)menu)->composite.children[i]);
+    XmuSnprintf(menuName, sizeof(menuName), "menu%d", menuN);
+    menuN = !menuN;
+    if (menu)
+	XtDestroyWidget(menu);
+    menu = XtCreatePopupShell(menuName, simpleMenuWidgetClass, vtune, NULL, 0);
+    XtVaSetValues(mode, XtNmenuName, menuName, NULL, 0);
     for (i = 0; i < vidtune->num_infos; i++) {
 	Widget sme;
 
@@ -1156,7 +1166,7 @@ AddModeCallback(Widget w, XtPointer call_data, XtPointer client_data)
 	    XBell(XtDisplay(w), 80);
 	    return;
 	}	    
-	if (xf86FindModeLine(label, vidtune->monitor->mon_modeline_lst)
+	if (xf86findModeLine(label, vidtune->monitor->mon_modeline_lst)
 	    != NULL && !ForceAddMode())
 	    return;
 
@@ -1175,7 +1185,7 @@ AddModeCallback(Widget w, XtPointer call_data, XtPointer client_data)
 	mode->ml_flags = modeline.flags;
 	mode->ml_hskew = modeline.hskew;
 	vidtune->monitor->mon_modeline_lst =
-	    xf86AddModeLine(vidtune->monitor->mon_modeline_lst, mode);
+	    xf86addModeLine(vidtune->monitor->mon_modeline_lst, mode);
     }
     else
 	XBell(XtDisplay(w), 80);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.316 2000/09/29 08:59:41 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.317 2000/10/04 13:20:23 robin Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -175,7 +175,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev i128 \
 				r128 ati AgpGartDrivers DevelDrivers cyrix \
-				vga XF86OSCardDrivers XF86ExtraCardDrivers
+				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 

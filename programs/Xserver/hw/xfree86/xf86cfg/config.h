@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.3 2000/04/06 15:48:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.5 2000/08/04 16:13:44 eich Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -112,7 +112,7 @@ struct _XF86SetupInfo {
     XF86SetupFunctionList *lists;
 };
 
-typedef Bool (*ConfigCheckFunction)();
+typedef Bool (*ConfigCheckFunction)(void);
 
 typedef struct _xf86cfgDevice xf86cfgDevice;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.7 2000/09/29 08:59:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.8 2000/10/10 14:34:59 tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -31,6 +31,7 @@ typedef  struct  {
     int si;
     int di;
     int es;
+    int bp;
     int flags;
     } xf86Int10InfoRec, *xf86Int10InfoPtr;
 

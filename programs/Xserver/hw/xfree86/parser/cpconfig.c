@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.4 1999/05/30 14:04:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.5 1999/06/06 15:23:04 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -72,7 +72,7 @@ main (int argc, char *argv[])
 	{
 		cmdline = argv[1];
 	}
-	if ((filename = xf86OpenConfigFile (CONFPATH, cmdline, NULL)))
+	if ((filename = xf86openConfigFile (CONFPATH, cmdline, NULL)))
 	{
 		fprintf (stderr, "Opened %s for the config file\n", filename);
 	}
@@ -82,7 +82,7 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	if ((conf = xf86ReadConfigFile ()) == NULL)
+	if ((conf = xf86readConfigFile ()) == NULL)
 	{
 		fprintf (stderr, "Problem when parsing config file\n");
 	}
@@ -90,11 +90,11 @@ main (int argc, char *argv[])
 	{
 		fprintf (stderr, "Config file parsed OK\n");
 	}
-	xf86CloseConfigFile ();
+	xf86closeConfigFile ();
 
 	if (argc > 2) {
 		fprintf(stderr, "Writing config file to `%s'\n", argv[2]);
-		xf86WriteConfigFile (argv[2], conf);
+		xf86writeConfigFile (argv[2], conf);
 	}
 	exit(0);
 }
