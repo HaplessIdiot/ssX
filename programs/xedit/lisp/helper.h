@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.8 2002/05/17 20:24:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.9 2002/05/23 01:14:32 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -56,7 +56,15 @@ LispObj *LispDo(LispMac*, LispBuiltin*, int);
  */
 LispObj *LispDoListTimes(LispMac*, LispBuiltin*, int);
 
-LispObj *LispEqual(LispMac*, LispObj*, LispObj*);
+#define FEQ	0
+#define FEQL	1
+#define FEQUAL	2
+#define FEQUALP	3
+LispObj *LispObjectCompare(LispMac*, LispObj*, LispObj*, int);
+#define XEQ(x, y)	LispObjectCompare(mac, x, y, FEQ)
+#define XEQL(x, y)	LispObjectCompare(mac, x, y, FEQL)
+#define XEQUAL(x, y)	LispObjectCompare(mac, x, y, FEQUAL)
+#define XEQUALP(x, y)	LispObjectCompare(mac, x, y, FEQUALP)
 
 LispObj *LispLoadFile(LispMac*, LispObj*, int, int, int);
 

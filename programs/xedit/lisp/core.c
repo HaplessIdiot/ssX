@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.40 2002/05/23 01:14:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.41 2002/05/24 01:08:58 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -228,7 +228,7 @@ Lisp_Assoc(LispMac *mac, LispBuiltin *builtin)
 	if (!CONS_P(cmp = CAR(list)))
 	    LispDestroy(mac, "%s: %s is a bad argument",
 			STRFUN(builtin), STROBJ(list));
-	if (LispEqual(mac, item, CAR(cmp)) == T)
+	if (XEQUAL(item, CAR(cmp)) == T)
 	    return (cmp);
     }
 
@@ -456,14 +456,14 @@ Lisp_Case(LispMac *mac, LispBuiltin *builtin)
 	    LispObj *keylist = CAR(code);
 
 	    for (; CONS_P(keylist); keylist = CDR(keylist))
-		if (LispEqual(mac, keyform, CAR(keylist)) == T) {
+		if (XEQUAL(keyform, CAR(keylist)) == T) {
 		    result = CDR(code);
 		    break;
 		}
 	    if (CONS_P(keylist))	/* if found match */
 		break;
 	}
-	else if (LispEqual(mac, keyform, CAR(code)) == T) {
+	else if (XEQUAL(keyform, CAR(code)) == T) {
 	    result = CDR(code);
 	    break;
 	}
@@ -912,14 +912,12 @@ Lisp_Eq(LispMac *mac, LispBuiltin *builtin)
  eq left right
  */
 {
-    LispObj *left, *right, *result;
+    LispObj *left, *right;
 
     right = ARGUMENT(1);
     left = ARGUMENT(0);
 
-    result = left == right ? T : NIL;
-
-    return (result);
+    return (XEQ(left, right));
 }
 
 LispObj *
@@ -928,32 +926,12 @@ Lisp_Eql(LispMac *mac, LispBuiltin *builtin)
  eql left right
  */
 {
-    LispObj *left, *right, *result;
+    LispObj *left, *right;
 
     right = ARGUMENT(1);
     left = ARGUMENT(0);
 
-    result = NIL;
-
-    if (left->type == right->type)
-	switch (left->type) {
-	    case LispAtom_t:
-	    case LispReal_t:
-	    case LispCharacter_t:
-	    case LispInteger_t:
-	    case LispRatio_t:
-	    case LispBigInteger_t:
-	    case LispBigRatio_t:
-	    case LispComplex_t:
-		result = LispEqual(mac, left, right);
-		break;
-	    default:
-		if (left == right)
-		    result = T;
-		break;
-	}
-
-    return (result);
+    return (XEQL(left, right));
 }
 
 LispObj *
@@ -967,7 +945,21 @@ Lisp_Equal(LispMac *mac, LispBuiltin *builtin)
     right = ARGUMENT(1);
     left = ARGUMENT(0);
 
-    return (LispEqual(mac, left, right));
+    return (XEQUAL(left, right));
+}
+
+LispObj *
+Lisp_Equalp(LispMac *mac, LispBuiltin *builtin)
+/*
+ equalp left right
+ */
+{
+    LispObj *left, *right;
+
+    right = ARGUMENT(1);
+    left = ARGUMENT(0);
+
+    return (XEQUALP(left, right));
 }
 
 LispObj *

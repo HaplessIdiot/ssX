@@ -168,4 +168,4 @@ hexa?foreground=OrangeRed3&font=*courier-bold-r*12*&underline,\
 integer?foreground=OrangeRed3&font=*courier-bold-r*12*,\
 float?foreground=OrangeRed3&font=*courier-bold-r*12*&overstrike&underline,\
 punctuation?foreground=gray12&font=*courier-bold-r*12*,\
-error?foreground=yellow&background=red&font=*new century schoolbook-bold*25*
+error?foreground=yellow&background=red&font=*new century schoolbook-bold*24*

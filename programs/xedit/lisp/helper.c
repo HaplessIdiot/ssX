@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.26 2002/05/17 20:24:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.27 2002/05/23 01:14:31 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -54,10 +54,58 @@ extern LispObj *LispFloatCoerce(LispMac*, LispBuiltin*, LispObj*);
  * Implementation
  */
 LispObj *
-LispEqual(LispMac *mac, LispObj *left, LispObj *right)
+LispObjectCompare(LispMac *mac, LispObj *left, LispObj *right, int function)
 {
-    LispObj *result = NIL;
+    LispObj *result = left == right ? T : NIL;
 
+    /* If left and right are the same object, or if function is EQ */
+    if (result == T || function == FEQ)
+	return (result);
+
+    /* Equalp requires that numeric objects be compared by value, and
+     * strings or characters comparison be case insenstive */
+    if (function == FEQUALP) {
+	switch (left->type) {
+	    case LispReal_t:
+	    case LispInteger_t:
+	    case LispRatio_t:
+	    case LispBigInteger_t:
+	    case LispBigRatio_t:
+	    case LispComplex_t:
+		switch (right->type) {
+		    case LispReal_t:
+		    case LispInteger_t:
+		    case LispRatio_t:
+		    case LispBigInteger_t:
+		    case LispBigRatio_t:
+		    case LispComplex_t: {
+			GC_ENTER();
+			LispObj *arguments;
+
+			arguments = CONS(left, CONS(right, NIL));
+			GC_PROTECT(arguments);
+			result = APPLY(Oequal_, arguments);
+			GC_LEAVE();
+		    }	break;
+		    default:
+			break;
+		}
+		goto compare_done;
+	    case LispCharacter_t:
+		if (toupper(left->data.integer) ==
+		    toupper(right->data.integer))
+		    result = T;
+		goto compare_done;
+	    case LispString_t:
+		if (strcasecmp(THESTR(left), THESTR(right)) == 0)
+		    result = T;
+		goto compare_done;
+	    default:
+		break;
+	}
+    }
+
+    /* Function is EQL or EQUAL, or EQUALP on arguments with the same rules */
     if (left->type == right->type) {
 	switch (left->type) {
 	    case LispNil_t:
@@ -81,37 +129,15 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		    result = T;
 		break;
 	    case LispComplex_t:
-		if (LispEqual(mac, left->data.complex.real,
-			      right->data.complex.real) &&
-		    LispEqual(mac, left->data.complex.imag,
-			      right->data.complex.imag))
-		    result = T;
-		break;
-	    case LispString_t:
-		if (strcmp(THESTR(left), THESTR(right)) == 0)
-		    result = T;
-		break;
-	    case LispCons_t:
-		if (LispEqual(mac, CAR(left), CAR(right)) == T &&
-		    LispEqual(mac, CDR(left), CDR(right)) == T)
-		    result = T;
-		break;
-	    case LispQuote_t:
-	    case LispBackquote_t:
-	    case LispPathname_t:
-		result = LispEqual(mac, left->data.pathname,
-				   right->data.pathname);
-		break;
-	    case LispLambda_t:
-		result = LispEqual(mac, CAR(left->data.lambda.name),
-				   CAR(right->data.lambda.name));
-		break;
-	    case LispOpaque_t:
-		if (left->data.opaque.data == right->data.opaque.data)
+		if (LispObjectCompare(mac, left->data.complex.real,
+				      right->data.complex.real, function) &&
+		    LispObjectCompare(mac, left->data.complex.imag,
+				      right->data.complex.imag, function))
 		    result = T;
 		break;
 	    case LispBigInteger_t:
-		if (mpi_cmp(left->data.mp.integer, right->data.mp.integer) == 0)
+		if (mpi_cmp(left->data.mp.integer,
+			    right->data.mp.integer) == 0)
 		    result = T;
 		break;
 	    case LispBigRatio_t:
@@ -119,12 +145,46 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		    result = T;
 		break;
 	    default:
-		if (left == right)
+		break;
+	}
+
+	/* Next types must be the same object for EQL */
+	if (function == FEQL)
+	    goto compare_done;
+
+	switch (left->type) {
+	    case LispString_t:
+		if (strcmp(THESTR(left), THESTR(right)) == 0)
 		    result = T;
+		break;
+	    case LispCons_t:
+		if (LispObjectCompare(mac, CAR(left),
+				      CAR(right), function) == T &&
+		    LispObjectCompare(mac, CDR(left),
+		 		      CDR(right), function) == T)
+		    result = T;
+		break;
+	    case LispQuote_t:
+	    case LispBackquote_t:
+	    case LispPathname_t:
+		result = LispObjectCompare(mac, left->data.pathname,
+					   right->data.pathname, function);
+		break;
+	    case LispLambda_t:
+		result = LispObjectCompare(mac, CAR(left->data.lambda.name),
+					   CAR(right->data.lambda.name),
+					   function);
+		break;
+	    case LispOpaque_t:
+		if (left->data.opaque.data == right->data.opaque.data)
+		    result = T;
+		break;
+	    default:
 		break;
 	}
     }
 
+compare_done:
     return (result);
 }
 

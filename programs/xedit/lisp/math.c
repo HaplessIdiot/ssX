@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.8 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.9 2002/05/16 15:43:30 tsi Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -37,7 +37,7 @@
  */
 static LispObj zero, one, two;
 
-LispObj *Ocomplex;
+LispObj *Ocomplex, *Oequal_;
 
 LispObj *Oshort_float, *Osingle_float, *Odouble_float, *Olong_float;
 
@@ -53,6 +53,7 @@ LispMathInit(LispMac *mac)
 {
     LispObj *object, *result;
 
+    Oequal_		= STATIC_ATOM("=");
     Ocomplex		= STATIC_ATOM(Scomplex);
     Oshort_float	= STATIC_ATOM("SHORT-FLOAT");
     LispExportSymbol(mac, Oshort_float);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.16 2002/03/12 23:28:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.17 2002/03/20 05:12:18 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -249,7 +249,7 @@ watch_again:
 		    LispObj *cur = *(LispObj**)wat->data.opaque.data;
 		    /* last value */
 		    LispObj *val = CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj)))))));
-		    if (LispEqual(mac, val, cur) == NIL) {
+		    if (XEQUAL(val, cur) == NIL) {
 			LispFputs(Stdout, "WATCH #");
 			LispFputs(Stdout, format_integer(CAR(CDR(CAR(obj)))->data.integer));
 			LispFputs(Stdout, "> ");
