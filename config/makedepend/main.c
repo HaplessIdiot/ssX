@@ -1,5 +1,5 @@
 /* $XConsortium: main.c /main/84 1996/12/04 10:11:23 swick $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.10 1996/12/23 05:54:57 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.11 1997/01/12 10:38:18 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -149,6 +149,8 @@ main(argc, argv)
 	struct symtab *psymp = predefs;
 	char *endmarker = NULL;
 	char *defincdir = NULL;
+	char **undeflist = NULL;
+	int numundefs = 0, i;
 
 	ProgramName = argv[0];
 
@@ -243,6 +245,20 @@ main(argc, argv)
 				argc--;
 			}
 			break;
+		case 'U':
+			/* Undef's override all -D's so save them up */
+			numundefs++;
+			if (numundefs == 1)
+			    undeflist = malloc(sizeof(char *));
+			else
+			    undeflist = realloc(undeflist,
+						numundefs * sizeof(char *));
+			if (argv[0][2] == '\0') {
+				argv++;
+				argc--;
+			}
+			undeflist[numundefs - 1] = argv[0] + 2;
+			break;
 		case 'Y':
 			defincdir = argv[0]+2;
 			break;
@@ -322,6 +338,12 @@ main(argc, argv)
 			warning("ignoring option %s\n", argv[0]);
 		}
 	}
+	/* Now do the undefs from the command line */
+	for (i = 0; i < numundefs; i++)
+	    undefine(undeflist[i], &maininclist);
+	if (numundefs > 0)
+	    free(undeflist);
+
 	if (!defincdir) {
 #ifdef PREINCDIR
 	    if (incp >= includedirs + MAXDIRS)
