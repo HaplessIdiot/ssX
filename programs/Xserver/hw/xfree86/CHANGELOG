@@ -1,3 +1,6 @@
+XFree86 3.1.1Bf (27 June 1995)
+167. Back out some LBX fixes that won't be in fix-12.
+
 XFree86 3.1.1Be (25 June 1995)
 166. Some documentation updates.
 165. Fix a few LinkKit problems.
