@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.0 1996/09/22 13:25:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.1 1996/09/23 13:26:34 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1031,32 +1031,36 @@ _XFUNCPROTOEND
 
 #endif /* !LINKKIT */
 
-
-extern __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
+extern __inline__ int s3CheckLSPN(int w)
 {
-   int newwidth, lspn;
-int n1;
-   extern int s3Bpp;
-
-   newwidth = w+1;
-   lspn = ((w+1) * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
+   int lspn = (w * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
 
    if (s3Bpp == 1) {
       if (lspn <= 8*1)
-	 newwidth += 16;
+	 w += 16;
       else if (lspn <= 16*1)
-	 newwidth += 8;
+	 w += 8;
    } else if (s3Bpp == 2) {
       if (lspn <= 4*2)
-	 newwidth += 8;
+	 w += 8;
       else if (lspn <= 8*2)
-	 newwidth += 4;
+	 w += 4;
    } else {  /* s3Bpp == 3 */
       if (lspn <= 3*3) 
-	 newwidth += 6;
+	 w += 6;
       else if (lspn <= 6*3)
-	 newwidth += 3;
+	 w += 3;
    }
+   return w;
+}
+
+
+extern __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
+{
+   int newwidth;
+   int n1;
+
+   newwidth = s3CheckLSPN(w+1);
    n1=newwidth;
 
    if (((inc_x) == INC_X && (sx) > (dx)

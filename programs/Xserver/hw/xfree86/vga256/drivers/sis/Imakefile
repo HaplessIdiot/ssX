@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/01/26 13:59:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.3 1996/07/08 10:33:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.4 1996/08/19 13:38:52 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = sis86c201.c sis_bank.s sis_curs.c
@@ -29,6 +29,7 @@ NormalRelocatableTarget(sis_drv,$(OBJS))
 
 InstallLinkKitNonExecFile(sis86c201.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(sis_bank.s,$(LINKKITDIR)/drivers/vga256/sis)
+InstallLinkKitNonExecFile(sis_curs.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/sis)
 
 DependTarget()

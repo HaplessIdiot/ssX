@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.58 1996/09/14 13:13:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.59 1996/09/15 11:22:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -204,6 +204,7 @@ pointer vgaBase = NULL;
 pointer vgaVirtBase = NULL;
 pointer vgaLinearBase = NULL;
 vgaPCIInformation *vgaPCIInfo = NULL;
+Bool vgaDAC8BitComponents = FALSE;
 
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
@@ -441,6 +442,10 @@ vgaProbe()
           vga256InfoRec.whiteColour.green = 0xff;
           vga256InfoRec.whiteColour.blue = 0xff;
       }
+      ErrorF("%s %s: Using %d bpp.  Color weight: %d%d%d\n",
+          XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel,
+          vga256InfoRec.weight.red, vga256InfoRec.weight.green,
+          vga256InfoRec.weight.blue);
       /* Handle the default visual setting. */
       if (vga256InfoRec.defaultVisual < 0)
           vga256InfoRec.defaultVisual = TrueColor;
@@ -623,10 +628,23 @@ vgaProbe()
 	if (OFLG_ISSET(OPTION_CLGD6225_LCD, &vga256InfoRec.options))
 	    clgd6225Lcd = TRUE;
 
+#if !defined(MONOVGA) && !defined(XF86VGA16)
+	/* We do this after the option has been verified. */
+	if (vgaBitsPerPixel == 8
+	&& OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options)) {
+            ErrorF("%s %s: Using 8 bits per color component\n",
+                XCONFIG_GIVEN, vga256InfoRec.name);
+	    vgaDAC8BitComponents = TRUE;
+            vga256InfoRec.whiteColour.red = 0xff;
+            vga256InfoRec.whiteColour.green = 0xff;
+            vga256InfoRec.whiteColour.blue = 0xff;
+	}
+#endif
+
 	/* if Virtual given: is the virtual size too big? */
 #ifdef BANKEDMONOVGA
 	if (vga256InfoRec.virtualX > (2048)) {
-		ErrorF("%s: Virtual width %i exceeds max. virtual width %i\n",
+ 		ErrorF("%s: Virtual width %i exceeds max. virtual width %i\n",
 		       vga256InfoRec.name, vga256InfoRec.virtualX, (2048));
 		vgaEnterLeaveFunc(LEAVE);
 		return(FALSE);

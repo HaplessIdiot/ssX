@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.3 1996/03/05 05:42:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.4 1996/09/22 05:05:52 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -458,14 +458,10 @@ static void ArkRecolorCursor(pScr, pCurs, displayed)
 
 	switch (vgaBitsPerPixel) {
 	case 8:
-#if 0	/*
-	 * The accel servers replace cfb colormap functions entirely
-	 * and include GetInstalledColormaps. How can we avoid that?
-	 *
-	 * Until GetInstalledColormaps is also added to
-	 * vga256/vga/vgacmap.c, disable hw cursor at 8bpp.
+	/*
+	 * Now that GetInstalledColormaps is also added to
+	 * vga256/vga/vgacmap.c, we can use the hw cursor at 8bpp.
 	 */
-		/* Was s3GetInstalledColormaps. */
 		vgaGetInstalledColormaps(pScr, &pmap);
 		sourceColor.red = pCurs->foreRed;
 		sourceColor.green = pCurs->foreGreen;
@@ -480,10 +476,6 @@ static void ArkRecolorCursor(pScr, pCurs, displayed)
 
 		wrinx(0x3C4, 0x26, sourceColor.pixel);
 		wrinx(0x3C4, 0x29, maskColor.pixel);
-#else
-		wrinx(0x3C4, 0x26, 0);	/* XXXX Fixed colors, debugging only. */
-		wrinx(0x3C4, 0x29, 1);
-#endif
 		break;
 	case 16:
 		if (xf86weight.green == 5) {

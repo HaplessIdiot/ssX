@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.12 1996/06/29 09:09:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.13 1996/09/14 13:13:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -49,23 +49,47 @@
      unsigned char SegSel;
      unsigned char s3reg[10];	/* Video Atribute */
      unsigned char s3sysreg[36];/* Video Atribute */
+     unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
+     unsigned char Trio[14];      /* Trio32/64 ext. sequenzer (PLL) registers */
   }
 vgaS3Rec, *vgaS3Ptr;
+static vgaS3Ptr oldS3 = NULL;
+static Bool AlreadyInited = FALSE;
 
-unsigned short chip_id;
-#define S3_911_ONLY     (chip_id==0x81)
-#define S3_924_ONLY     (chip_id==0x82)
-#define S3_801_ONLY       (chip_id==0xa0)
-#define S3_928_ONLY       (chip_id==0x90)
+unsigned short chip_id, s3ChipRev;
+#define S3_911_ONLY       (chip_id==0x81)
+#define S3_924_ONLY       (chip_id==0x82)
 #define S3_911_SERIES     ((chip_id&0xf0)==0x80)
 #define S3_801_SERIES     ((chip_id&0xf0)==0xa0)
-#define S3_928_SERIES     ((chip_id&0xf0)==0x90)
+#define S3_805_I_SERIES   ((chip_id&0xf8)==0xa8)  /* (S3_801_SERIES && ( & 0x08)) */
+#define S3_801_REV_C      (S3_801_SERIES && (chip_id & 0x07) >= 2)
+#define S3_928_P          ((chip_id&0xf0)==0xb0)
+#define S3_928_ONLY       ((chip_id&0xd0)==0x90)  /* (((chip_id&0xf0)==0x90)||S3_928_P) */
+#define S3_928_REV_E      (S3_928_ONLY && (chip_id & 0x0F) >= 4)
+#define S3_801_928_SERIES (S3_801_SERIES||S3_928_ONLY||S3_x64_SERIES)
+#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES)
 #define S3_864_SERIES     ((chip_id&0xf0)==0xc0)
 #define S3_964_SERIES     ((chip_id&0xf0)==0xd0)
-#define S3_x64_SERIES     (S3_864_SERIES|S3_964_SERIES)
-#define S3_801_928_SERIES (S3_801_SERIES||S3_928_SERIES|S3_x64_SERIES)
-#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES|S3_x64_SERIES)
-#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES|S3_x64_SERIES)
+#define S3_866_SERIES     ((chip_id&0xfff0)==0x80e0)
+#define S3_868_SERIES     ((chip_id&0xfff0)==0x90e0)
+#define S3_86x_SERIES	  ((chip_id&0xf0)==0xc0 || (chip_id&0xeff0)==0x80e0)
+#undef S3_864_SERIES
+#define S3_864_SERIES	  S3_86x_SERIES
+#define S3_968_SERIES     ((chip_id&0xfff0)==0xf0e0)
+#define S3_964_ONLY	  S3_964_SERIES
+#undef S3_964_SERIES
+#define S3_964_SERIES     (((chip_id&0xf0)==0xd0) || S3_968_SERIES)
+#define S3_x66_SERIES     S3_866_SERIES
+#define S3_x68_SERIES     ((chip_id&0x9ff0)==0x90e0)  /* ((S3_868_SERIES || S3_968_SERIES) */
+#define S3_x6x_SERIES     ((chip_id&0x8ff0)==0x80e0)  /* ((S3_x66_SERIES || S3_x68_SERIES) */
+#define S3_TRIO32_SERIES  ((chip_id&0xfff0)==0x10e0)
+#define S3_TRIO64_SERIES  ((chip_id&0xfff0)==0x11e0)
+#define S3_TRIO64V_SERIES (S3_TRIO64_SERIES && (s3ChipRev & 0x400) == 0x400)
+#define S3_TRIOxx_SERIES  ((chip_id&0xfef0)==0x10e0 || S3_ViRGE_SERIES)  /* (S3_TRIO32_SERIES || S3_TRIO64_SERIES || S3_ViRGE_SERIES) */
+#define S3_ViRGE_SERIES   ((chip_id&0xfff0)==0x31e0)
+#define S3_x64_SERIES	  (((chip_id&0xe0)==0xc0) || S3_x6x_SERIES ||  S3_TRIOxx_SERIES)
+#define S3_928_SERIES     (S3_928_ONLY || S3_x64_SERIES)
+#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES || S3_x64_SERIES || S3_x66_SERIES || S3_x68_SERIES || S3_ViRGE_SERIES)
 
 
 static Bool S3ClockSelect ();
@@ -209,6 +233,48 @@ LegendClockSelect (no)
    outw (vgaIOBase + 4, 0x0234);
    outw (vgaIOBase + 4, ((no & 0x08) << 6) | 0x34);
    outb (0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
+
+   return TRUE;
+}
+
+
+/* The GENDAC code also works for the SDAC, used for Trio32/Trio64 
+   and for ViRGE too */
+
+static Bool
+S3GendacClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+   unsigned char tmp;
+ 
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = S3ClockSelect(freq);
+      break;
+   default:
+      {
+
+	 if (S3_TRIOxx_SERIES) {
+	    (void) S3TrioSetClock(freq, 2); /* can't fail */
+	 }
+	 else {
+	    if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &vga256InfoRec.clockOptions))
+	       (void) ICS5342SetClock(freq, 2); /* can't fail */
+	    else
+	       (void) S3gendacSetClock(freq, 2); /* can't fail */
+	    outb(vgaIOBase + 4, 0x42);/* select the clock */
+	    tmp = inb(vgaIOBase + 5) & 0xf0;
+	    outb(vgaIOBase + 5, tmp | 0x02);
+	    usleep(150000);
+	 }
+      }
+   }
+
+   return(result);
 }
 
 
@@ -221,8 +287,8 @@ static Bool
 S3Probe ()
 {
    int numClocks;
-   unsigned char temp;
    unsigned short config;
+   char *clockprobed = XCONFIG_GIVEN;
 
    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -237,41 +303,93 @@ S3Probe ()
 
    outb(0x3d4, 0x30);
    chip_id = inb(0x3d5);
-   old_clock = inb(0x3cc);
+   s3ChipRev = chip_id & 0x0f;
+   if (chip_id >= 0xe0) {
+      outb(vgaIOBase + 4, 0x2e);
+      chip_id |= (inb(vgaIOBase + 5) << 8);
+      outb(vgaIOBase + 4, 0x2f);
+      s3ChipRev |= (inb(vgaIOBase + 5) << 4);      
+   }
 
+
+   old_clock = inb(0x3cc);
    if (!S3_ANY_SERIES) {
       S3EnterLeave(FALSE);
       return(FALSE);
    }
 
-      if (S3_864_SERIES )
-	 ErrorF ("%s %s: S3 chipset is a Vision864.\n",
-		 XCONFIG_PROBED, vga256InfoRec.name);
-      else if (S3_964_SERIES )
-	 ErrorF ("%s %s: S3 chipset is a Vision964.\n",
-		 XCONFIG_PROBED, vga256InfoRec.name);
-      else if (S3_801_928_SERIES ) {
-         if (S3_801_SERIES ) {
-            ErrorF ("%s %s: S3 chipset is an 801 or 805\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-	 } else if (S3_928_SERIES ) {
-            ErrorF ("%s %s: S3 chipset is a 928\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
+   if (xf86Verbose) {
+      if (S3_x64_SERIES) {
+	 char *chipname = "unknown";
+
+	 if (S3_868_SERIES) {
+	    chipname = "868";
+	 } else if (S3_866_SERIES) {
+	    chipname = "866";
+	 } else if (S3_864_SERIES) {
+	    chipname = "864";
+	 } else if (S3_968_SERIES) {
+	    chipname = "968";
+	 } else if (S3_964_SERIES) {
+	    chipname = "964";
+	 } else if (S3_ViRGE_SERIES) {
+	    chipname = "ViRGE";
+	 } else if (S3_TRIO32_SERIES) {
+	    chipname = "Trio32";
+	 } else if (S3_TRIO64V_SERIES) {
+	    chipname = "Trio64V+";
+	 } else if (S3_TRIO64_SERIES) {
+	    chipname = "Trio64";
+	 }
+	 ErrorF("%s %s: chipset:   %s rev. %x\n",
+                XCONFIG_PROBED, vga256InfoRec.name, chipname, s3ChipRev);
+      } else if (S3_801_928_SERIES) {
+	 if (S3_801_SERIES) {
+            if (S3_805_I_SERIES) {
+               ErrorF("%s %s: chipset:   805i",
+                      XCONFIG_PROBED, vga256InfoRec.name);
+               if ((config & 0x03) == 3)
+                  ErrorF(" (ISA)");
+               else
+                  ErrorF(" (VL)");
+            }
+	    else if (!((config & 0x03) == 3))
+	       ErrorF("%s %s: chipset:   805",
+                      XCONFIG_PROBED, vga256InfoRec.name);
+	    else
+	       ErrorF("%s %s: chipset:   801",
+                       XCONFIG_PROBED, vga256InfoRec.name);
+	    ErrorF(", ");
+	    if (S3_801_REV_C)
+	       ErrorF("rev C or above\n");
+	    else
+	       ErrorF("rev A or B\n");
+	 } else if (S3_928_SERIES) {
+	    char *pci = S3_928_P ? "-P" : "";
+	    if (S3_928_REV_E)
+		ErrorF("%s %s: chipset:   928%s, rev E or above\n",
+                   XCONFIG_PROBED, vga256InfoRec.name, pci);
+	    else
+	        ErrorF("%s %s: chipset:   928%s, rev D or below\n",
+                   XCONFIG_PROBED, vga256InfoRec.name, pci);
 	 }
       } else if (S3_911_SERIES) {
-         if (S3_911_ONLY ) {
-            ErrorF ("%s %s: S3 chipset is a 911\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-	 } else if (S3_924_ONLY ) {
-            ErrorF ("%s %s: S3 chipset is a 924\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
+	 if (S3_911_ONLY) {
+	    ErrorF("%s %s: chipset:   911 \n",
+                   XCONFIG_PROBED, vga256InfoRec.name);
+	 } else if (S3_924_ONLY) {
+	    ErrorF("%s %s: chipset:   924\n",
+                   XCONFIG_PROBED, vga256InfoRec.name);
 	 } else {
-            ErrorF ("%s %s: S3 chipset unknown, chip_id = 0x%02x\n",
-		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
+	    ErrorF("%s %s: S3 chipset type unknown, chip_id = 0x%02x\n",
+		   XCONFIG_PROBED, vga256InfoRec.name, chip_id);
 	 }
-      } else
-         ErrorF ("%s %s: Unknown chipset : chip_id is 0x%02x\n",
-		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
+      }
+   }
+   else {
+      ErrorF ("%s %s: Unknown chipset : chip_id is 0x%02x\n",
+	      XCONFIG_PROBED, vga256InfoRec.name, chip_id);
+   }
 
    outb (0x3d4, 0x36);          /* for register CR36 (CONFG_REG1), */
    config = inb (0x3d5);        /* get amount of vram installed */
@@ -318,7 +436,40 @@ S3Probe ()
 #endif
 
 
-   if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options)) {
+   if (S3_TRIOxx_SERIES) {
+      unsigned char sr8;
+      int m,n,n1,n2, mclk;
+
+      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+	 OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	 OFLG_SET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions);
+	 clockprobed = XCONFIG_PROBED;
+      }
+      ClockSelect = S3GendacClockSelect;
+      numClocks = 3;
+
+      outb(0x3c4, 0x08);
+      sr8 = inb(0x3c5);
+      outb(0x3c5, 0x06);
+      
+      outb(0x3c4, 0x11);
+      m = inb(0x3c5);
+      outb(0x3c4, 0x10);
+      n = inb(0x3c5);
+      
+      outb(0x3c4, 0x08);
+      outb(0x3c5, sr8);
+      
+      m &= 0x7f;
+      n1 = n & 0x1f;
+      n2 = (n>>5) & 0x03;
+      mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using Trio32/64/ViRGE programmable clock (MCLK %1.3f MHz)\n"
+		,clockprobed, vga256InfoRec.name
+		,mclk / 1000.0);
+   }
+   else if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options)) {
       ClockSelect = LegendClockSelect;
       numClocks = 32;
    } else {
@@ -326,13 +477,48 @@ S3Probe ()
       numClocks = 16;
    }
 
-   if (!vga256InfoRec.clocks)
+   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)
+       && !vga256InfoRec.clocks)
       vgaGetClocks (numClocks, ClockSelect);
 
   vga256InfoRec.chipset = S3Ident(0);
    return (TRUE);
 }
 
+
+void S3CleanUp()
+{
+   unsigned char tmp;
+
+   /* Restore S3 Trio32/64 ext. sequenzer (PLL) registers */
+   if (S3_TRIOxx_SERIES) {
+      outb(0x3c2, oldS3->Trio[0]);
+      outb(0x3c4, 0x08); outb(0x3c5, 0x06);
+
+      outb(0x3c4, 0x09); outb(0x3c5, oldS3->Trio[2]);
+      outb(0x3c4, 0x0a); outb(0x3c5, oldS3->Trio[3]);
+      outb(0x3c4, 0x0b); outb(0x3c5, oldS3->Trio[4]);
+      outb(0x3c4, 0x0d); outb(0x3c5, oldS3->Trio[5]);
+
+      outb(0x3c4, 0x10); outb(0x3c5, oldS3->Trio[8]); 
+      outb(0x3c4, 0x11); outb(0x3c5, oldS3->Trio[9]); 
+      outb(0x3c4, 0x12); outb(0x3c5, oldS3->Trio[10]); 
+      outb(0x3c4, 0x13); outb(0x3c5, oldS3->Trio[11]); 
+      outb(0x3c4, 0x1a); outb(0x3c5, oldS3->Trio[12]); 
+      outb(0x3c4, 0x1b); outb(0x3c5, oldS3->Trio[13]); 
+      outb(0x3c4, 0x15);
+      tmp = inb(0x3c5);
+      outb(0x3c4, tmp & ~0x20);
+      outb(0x3c4, tmp |  0x20);
+      outb(0x3c4, tmp & ~0x20);
+
+      outb(0x3c4, 0x15); outb(0x3c5, oldS3->Trio[6]); 
+      outb(0x3c4, 0x18); outb(0x3c5, oldS3->Trio[7]);
+
+      outb(0x3c4, 0x08); outb(0x3c5, oldS3->Trio[1]);
+   }
+   AlreadyInited = 1;
+}
 
 
 /*
@@ -381,6 +567,10 @@ S3EnterLeave (enter)
      * outb(0x3BF, 0x01);                            relock S3 special
      * outb(vgaIOBase + 8, 0xA0);
      */
+      if (AlreadyInited) {
+	 S3CleanUp();
+	 /* AlreadyInited = FALSE; */
+      }
 
       xf86DisableIOPorts(vga256InfoRec.scrnIndex);
    }
@@ -436,8 +626,13 @@ S3Restore (restore)
       outb (0x3d5, restore->s3sysreg[i]);
    }
 
-  if (restore->std.NoClock >= 0)
-    (ClockSelect)(restore->std.NoClock);
+  if (restore->std.NoClock >= 0) {
+     if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+	(ClockSelect)(vga256InfoRec.clock[restore->std.NoClock]);
+     else
+	(ClockSelect)(restore->std.NoClock);
+  }
+   
 
   if (xf86Exiting)
    outb(0x3c2, old_clock);
@@ -445,8 +640,6 @@ S3Restore (restore)
 
 
 }
-
-
 
 /*
  * S3Save -- save the current video mode
@@ -483,10 +676,8 @@ S3Save (save)
       outb (0x3d4, 0x40 + i);
       save->s3sysreg[i] = inb (0x3d5);
    }
-  i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
-  outb(0x3C0,0x36); save->Misc = inb(0x3C1); outb(0x3C0, save->Misc);
-
-
+   i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
+   outb(0x3C0,0x36); save->Misc = inb(0x3C1); outb(0x3C0, save->Misc);
 
    return ((void *) save);
 }
@@ -503,7 +694,45 @@ S3Init (mode)
      DisplayModePtr mode;
 {
    int i;
+   static int s3Initialised = 0;
+
    vgaHWInit (mode, sizeof (vgaS3Rec));
+
+   if (!s3Initialised) {
+      s3Initialised = 1;
+
+      outb(0x3d4, 0x38);
+      outb(0x3d5, 0x48);
+      old_clock = inb(0x3CC);
+
+      oldS3 = vgaHWSave((vgaHWPtr)oldS3, sizeof(vgaS3Rec));
+
+      /* Save S3 Trio32/64 ext. sequenzer (PLL) registers */
+      if (S3_TRIOxx_SERIES) {
+	 oldS3->Trio[0] = inb(0x3cc);
+
+	 outb(0x3c4, 0x08); oldS3->Trio[1] = inb(0x3c5);
+	 outb(0x3c5, 0x06);
+
+	 outb(0x3c4, 0x09); oldS3->Trio[2]  = inb(0x3c5);
+	 outb(0x3c4, 0x0a); oldS3->Trio[3]  = inb(0x3c5);
+	 outb(0x3c4, 0x0b); oldS3->Trio[4]  = inb(0x3c5);
+	 outb(0x3c4, 0x0d); oldS3->Trio[5]  = inb(0x3c5);
+	 outb(0x3c4, 0x15); oldS3->Trio[6]  = inb(0x3c5) & 0xfe; 
+	 outb(0x3c5, oldS3->Trio[6]);
+	 outb(0x3c4, 0x18); oldS3->Trio[7]  = inb(0x3c5);
+
+	 outb(0x3c4, 0x10); oldS3->Trio[8]  = inb(0x3c5);
+	 outb(0x3c4, 0x11); oldS3->Trio[9]  = inb(0x3c5);
+	 outb(0x3c4, 0x12); oldS3->Trio[10] = inb(0x3c5);
+	 outb(0x3c4, 0x13); oldS3->Trio[11] = inb(0x3c5);
+	 outb(0x3c4, 0x1a); oldS3->Trio[12] = inb(0x3c5);
+	 outb(0x3c4, 0x1b); oldS3->Trio[13] = inb(0x3c5);
+
+	 outb(0x3c4, 8);
+	 outb(0x3c5, 0x00);
+      }
+   }
 
    new->std.Attribute[16] = 0x01;	/* use the FAST 256 Color Mode */
    new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
@@ -569,6 +798,13 @@ S3Init (mode)
    } else
       outw (0x4ae8, 0x0007);
 #endif
+
+   if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+      (ClockSelect)(vga256InfoRec.clock[new->std.NoClock]);
+   else
+      (ClockSelect)(new->std.NoClock);
+
+
    return TRUE;
 }
 
@@ -584,7 +820,7 @@ S3Adjust (x, y)
 {
   int Base;
 
-  Base = (y * 1024 + x) >> 2;
+  Base = (y * vga256InfoRec.displayWidth + x) >> 2;
 
   outb(0x3d4, 0x31);
   outb(0x3d5, ((Base & 0x030000) >> 12) | 0x8d); 

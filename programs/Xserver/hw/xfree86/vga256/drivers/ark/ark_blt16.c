@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.0 1996/09/22 05:05:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.1 1996/09/23 13:27:17 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -482,15 +482,27 @@ int xdir, ydir;
 		WAITUNTILFINISHED();
 		if (vgaBitsPerPixel == 24) {
 			/* Special case; the COP is in 8bpp pixel mode. */
-			SETSOURCEADDR(srcaddr * 3);
-			SETDESTADDR(destaddr * 3);
+			if (dir & LEFT) {
+				SETSOURCEADDR(srcaddr * 3 + 2);
+				SETDESTADDR(destaddr * 3 + 2);
+			}
+			else {
+				SETSOURCEADDR(srcaddr * 3);
+				SETDESTADDR(destaddr * 3);
+			}
 			SETWIDTH(w * 3);
 		}
 		else
 		if (vgaBitsPerPixel == 32 && arkChip == ARK1000PV) {
 			/* Another special case; COP is in 16bpp pixel mode. */
-			SETSOURCEADDR(srcaddr * 2);
-			SETDESTADDR(destaddr * 2);
+			if (dir & LEFT) {
+				SETSOURCEADDR(srcaddr * 2 + 1);
+				SETDESTADDR(destaddr * 2 + 1);
+			}
+			else {
+				SETSOURCEADDR(srcaddr * 2);
+				SETDESTADDR(destaddr * 2);
+			}
 			SETWIDTH(w * 2);
 		}
 		else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.15 1996/09/01 04:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.0 1996/09/22 13:25:23 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -67,7 +67,6 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"xf86.h"
 #include	"s3.h"
 #include	"regs3.h"
-#include        "s3linear.h"
 
 extern int s3MAX_SLOTS;
 void  s3FindOrdering();
@@ -544,10 +543,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	  (pDstDrawable->type != DRAWABLE_WINDOW)) {
          RegionPtr retVal;
 	 BLOCK_CURSOR;
-         s3EnableLinear();
          retVal = cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 			       width, height, dstx, dsty, bitPlane);
-         s3DisableLinear();
 	 UNBLOCK_CURSOR;
          return retVal;
       }

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/88 1995/10/04 07:48:56 dpw $
-XCOMM $XFree86: xc/include/Imakefile,v 3.6 1996/08/11 12:32:56 dawes Exp $
+XCOMM $XFree86: xc/include/Imakefile,v 3.7tsi Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -41,7 +41,6 @@ InstallLinkKitNonExecFile(Xos.h,$(LINKKITDIR)/include/X11)
 InstallLinkKitNonExecFile(Xosdefs.h,$(LINKKITDIR)/include/X11)
 InstallLinkKitNonExecFile(Xproto.h,$(LINKKITDIR)/include/X11)
 InstallLinkKitNonExecFile(Xprotostr.h,$(LINKKITDIR)/include/X11)
-InstallLinkKitNonExecFile(Xalloca.h,$(LINKKITDIR)/include/X11)
 
 depend::
 

@@ -1,4 +1,5 @@
 /* $XConsortium: xkbActions.c /main/3 1996/03/01 14:31:12 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 1.0tsi Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1307,7 +1308,7 @@ Bool		xiEvent;
     }
 
     if (sendEvent) {
-#if XINPUT
+#ifdef XINPUT
 	if (xiEvent)
 	    ProcessOtherEvent(xE,dev,count);
 	else 

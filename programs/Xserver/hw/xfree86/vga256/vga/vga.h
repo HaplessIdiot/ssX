@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.14 1996/08/16 12:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.15 1996/09/14 13:13:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,6 +48,7 @@ extern void    vgaImageGlyphBlt();
 
 #ifndef MONOVGA
 extern int     vgaListInstalledColormaps();
+extern int     vgaGetInstalledColormaps();
 extern void    vgaStoreColors();
 extern void    vgaInstallColormap();
 extern void    vgaUninstallColormap();
@@ -158,6 +159,7 @@ extern int vgaIOBase;
 extern int vgaInterlaceType;
 extern int vgaBitsPerPixel;
 extern int vgaBytesPerPixel;
+extern Bool vgaDAC8BitComponents;
 
 #if !defined(S3_SERVER) && !defined(MACH32_SERVER) && !defined(MACH64_SERVER)
 #include "vgaBank.h"

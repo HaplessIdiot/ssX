@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.2 1995/01/28 16:14:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.3 1996/02/04 09:15:21 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -30,6 +30,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* $XConsortium: vgascrinit.c /main/2 1995/11/13 09:27:07 kaleb $ */
 
 #include "vga256.h"
+#include "xf86.h"
+#include "vga.h"
 #include "mibstore.h"
 
 /*
@@ -67,7 +69,8 @@ vga256FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     rootdepth = 0;
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
-			 &defaultVisual,((unsigned long)1<<(PSZ-1)), 6))
+			 &defaultVisual,((unsigned long)1<<(PSZ-1)),
+			 vgaDAC8BitComponents ? 8 : 6))
 	return FALSE;
 #ifdef CFB_NEED_SCREEN_PRIVATE
     oldDevPrivate = pScreen->devPrivate;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.14 1996/08/18 01:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.15 1996/08/23 11:03:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -252,9 +252,9 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 
 #else /* defined(linux) && defined(__alpha__) */
 
-#define ldq_u(p)	(*((unsigned long  *)(v)))
-#define ldl_u(p)	(*((unsigned int   *)(v)))
-#define ldw_u(p)	(*((unsigned short *)(v)))
+#define ldq_u(p)	(*((unsigned long  *)(p)))
+#define ldl_u(p)	(*((unsigned int   *)(p)))
+#define ldw_u(p)	(*((unsigned short *)(p)))
 #define stq_u(v,p)	((unsigned long  *)(p)) = (v)
 #define stl_u(v,p)	((unsigned int   *)(p)) = (v)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)

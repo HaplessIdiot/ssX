@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.35 1996/08/18 01:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.36 1996/09/22 05:01:44 dawes Exp $ */
 
 /*
  * Includes
@@ -184,6 +184,7 @@ Bool Probe_Compaq __STDCARGS((int *));
 Bool Probe_HMC __STDCARGS((int *));
 Bool Probe_UMC __STDCARGS((int *));
 Bool Probe_Weitek __STDCARGS((int *));
+Bool Probe_ARK __STDCARGS((int *));
 /* CoProc */
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
@@ -236,6 +237,7 @@ extern Chip_Descriptor Video7_Descriptor;
 extern Chip_Descriptor WD_Descriptor;
 extern Chip_Descriptor Weitek_Descriptor;
 extern Chip_Descriptor Yamaha_Descriptor;
+extern Chip_Descriptor ARK_Descriptor;
 
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
@@ -326,8 +328,9 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_ATT408	47	/* AT&T 20C408 */
 #define DAC_TVP3030	48	/* TI ViewPoint TVP3030 RAMDAC */
 #define DAC_ET6K	49	/* Built-in 15/16/24-bit ET6000 RAMDAC */
+#define DAC_ZOOMDAC	50	/* IC Works w30C516 ZOOMDAC or ATT20C498 */
 
-#define DAC_MAX		DAC_ET6K	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ZOOMDAC	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -390,13 +393,19 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_WEITEK	20
 #define V_YAMAHA	21
 #define V_SIS		22
+#define V_ARK		23
 
-#define NUM_VENDORS	22
+#define NUM_VENDORS	23
 #define CHPS_PER_VENDOR	32
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
 #define CHIP_AHEAD_B	SVGA_TYPE(V_AHEAD,2)	/* Ahead V5000 Version B*/
+#define CHIP_ARK_UNK	SVGA_TYPE(V_ARK,0)	/* ARK Logic unknown	*/
+#define CHIP_ARK1000VL	SVGA_TYPE(V_ARK,1)	/* ARK Logic ARK1000VL	*/
+#define CHIP_ARK1000PV	SVGA_TYPE(V_ARK,2)	/* ARK Logic ARK1000PV	*/
+#define CHIP_ARK2000PV	SVGA_TYPE(V_ARK,3)	/* ARK Logic ARK2000PV	*/
+#define CHIP_ARK2000MT	SVGA_TYPE(V_ARK,4)	/* ARK Logic ARK2000MT	*/
 #define CHIP_ATI_UNK	SVGA_TYPE(V_ATI,0)	/* ATI unknown		*/
 #define CHIP_ATI18800	SVGA_TYPE(V_ATI,1)	/* ATI 18800 		*/
 #define CHIP_ATI18800_1	SVGA_TYPE(V_ATI,2)	/* ATI 18800-1 		*/

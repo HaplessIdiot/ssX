@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.16 1996/06/29 09:06:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.17 1996/08/20 12:26:44 dawes Exp $
 
 
 
@@ -56,8 +56,9 @@ LinkSourceFile(vgaHW.c,../../vga256/vga)
 
 InstallLinkKitLibrary(s3,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confS3.SHsuf,$(LINKKITDIR))
-InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(newmmio.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
 
 #ifndef OS2Architecture
 DependTarget()

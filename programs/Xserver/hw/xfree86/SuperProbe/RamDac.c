@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.21 1996/04/15 11:29:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.22 1996/08/10 13:04:33 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -703,6 +703,34 @@ int *RamDac;
 	return(Found);
 }
 
+static Bool ARK_ZOOMDACCheck(RamDac)
+int *RamDac;
+{
+	/*
+	 * This DAC has the same ID as an AT&T ATT20C498, but
+	 * with an ARK chip it is reasonable to assume it's a ZOOMDAC.
+	 */
+	Byte cid, did, daccomm, readmask;
+	int i;
+	Bool Found = FALSE;
+
+	dactopel();
+	dactocomm();
+	inp(0x3C6);
+	cid = inp(0x3c6);     /* company ID */
+	did = inp(0x3c6);     /* device ID */
+	dactopel();
+
+	if ((cid == 0x84) && (did == 0x98)) {
+	   Found = TRUE;
+	   *RamDac = DAC_ZOOMDAC;
+	   *RamDac |= DAC_6_8_PROGRAM;
+	}
+
+	return(Found);
+}
+
+
 static void CheckMach32(ChipSet, RamDac)
 int ChipSet;
 int *RamDac;
@@ -1005,6 +1033,19 @@ int *RamDac;
 			*RamDac = DAC_TGUIDAC;
 	    	DisableIOPorts(NUMPORTS, Ports);
 	    	return;
+	}
+	else if (SVGA_VENDOR(Chipset) == V_ARK)
+	{
+	    if (ARK_ZOOMDACCheck(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_STG1700Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
 	}
 
 	/*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Weitek.c,v 3.2 1995/01/28 15:47:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Weitek.c,v 3.3 1996/02/04 08:57:18 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -118,7 +118,7 @@ int *Chipset;
 		}
 	}
 
-	wrinx(SEQ_IDX, 0x12, old);
+	wrinx(SEQ_IDX, 0x11, old);
 	DisableIOPorts(NUMPORTS, Ports);
 	return(result);
 }

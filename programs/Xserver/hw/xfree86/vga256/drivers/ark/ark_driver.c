@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.14 1996/09/22 05:05:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.15 1996/09/23 13:27:18 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -183,6 +183,7 @@ typedef struct {
 	unsigned char SR14;
 	unsigned char SR15;
 	unsigned char SR16;
+	unsigned char SR17;
 	unsigned char SR18;
 	unsigned char SR20, SR21, SR22, SR23, SR24;	/* Hardware cursor. */
 	unsigned char SR25, SR26, SR27, SR29, SR2A;
@@ -524,6 +525,7 @@ ArkProbe()
 	char *clockprobed = XCONFIG_GIVEN;
 	int bandwidth_limit;
 	char *ramdac_given_or_probed;
+	int support_8bit_color_components;
 
 	/*
 	 * Set up I/O ports to be used by this card.  Only do the second
@@ -681,6 +683,7 @@ ArkProbe()
 	maxclock32bpp = 0;
 	arkDacPathWidth = 8;
 	arkMultiplexingThreshold = 999999;
+	support_8bit_color_components = FALSE;
 	arkUse8bitColorComponents = FALSE;
 	if (vga256InfoRec.dacSpeed <= 0)
 		vga256InfoRec.dacSpeed = 80000;
@@ -691,6 +694,7 @@ ArkProbe()
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 		maxclock16bpp = maxclock8bpp / 2;
 		maxclock24bpp = maxclock8bpp / 3;
+		support_8bit_color_components = TRUE;
 		break;
 	case ATT498 :	/* Industry-standard 16-bit DAC. */
 	case STG1700 :	/* Same limits as 498. */
@@ -716,6 +720,7 @@ ArkProbe()
 #else
 		arkMultiplexingThreshold = 999999;
 #endif
+		support_8bit_color_components = TRUE;
 		break;
 	case ZOOMDAC :
 		/*
@@ -729,6 +734,7 @@ ArkProbe()
 #else
 		maxclock8bpp = 110000;
 #endif
+		support_8bit_color_components = TRUE;
 		if (arkChip == ARK1000PV) {
 			/* Uses only 8-bit path to 16-bit RAMDAC. */
 			if (xf86weight.green == 6)
@@ -983,6 +989,12 @@ ArkProbe()
 			ARK.ChipHas32bpp = TRUE;
 	}
 
+	if (support_8bit_color_components) {
+		OFLG_SET(OPTION_DAC_8_BIT, &ARK.ChipOptionFlags);
+		if (OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options))
+			arkUse8bitColorComponents = TRUE;
+	}
+
 	/*
 	 * Last we fill in the remaining data structures.  We specify
 	 * the chipset name, using the Ident() function and an appropriate
@@ -1003,6 +1015,28 @@ ArkProbe()
 
   	return TRUE;
 }
+
+
+/*
+ * This function checks whether a certain screen width (pitch)
+ * is supported by the COP XY (coordinate) mode, and if so
+ * returns the value to be be programmed at SR17, bits 0-2.
+ * Otherwise it returns -1.
+ */
+static int ArkMatchXYModePitch(pitch)
+	int pitch;
+{
+	switch (pitch) {
+	case 640 : return 0;
+	case 800 : return 1;
+	case 1024 : return 2;
+	case 1280 : return 4;
+	case 1600 : return 5;
+	case 2048 : return 6;
+	default : return -1;
+	}
+}
+
 
 /*
  * ArkFbInit --
@@ -1032,16 +1066,23 @@ ArkFbInit()
 			vga256InfoRec.chipset, offscreen_available);
     
     	/*
-    	 * Currently, the hardware cursor is not supported at 8bpp
-    	 * due to a framebuffer code architecture issue.
-    	 * At 16bpp, it seems to be buggy. Only allow if specified.
+    	 * There are a number of constraints for using the hardware
+    	 * cursor.
     	 */
 	if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
-		if (offscreen_available < 256)
+		if (offscreen_available < 256) {
 			ErrorF("%s %s: %s: Not enough off-screen video"
 				" memory for hardware cursor\n",
 				XCONFIG_PROBED, vga256InfoRec.name,
 				vga256InfoRec.chipset);
+		}
+		else if (vgaBitsPerPixel == 24 || (arkChip == ARK1000PV
+		&& vgaBitsPerPixel == 32)) {
+			ErrorF("%s %s: %s: Hardware cursor not supported "
+				"at this color depth\n",
+				XCONFIG_PROBED, vga256InfoRec.name,
+				vga256InfoRec.chipset);
+		}
 		else {
 			/*
 			 * OK, there's at least 256 bytes available
@@ -1213,6 +1254,7 @@ vgaArkPtr restore;
 
 	wrinx(0x3C4, 0x15, restore->SR15);
 	wrinx(0x3C4, 0x16, restore->SR16);
+	wrinx(0x3C4, 0x17, restore->SR17);
 	wrinx(0x3C4, 0x18, restore->SR18);
 
 	/* Hardware cursor registers. */
@@ -1241,7 +1283,9 @@ vgaArkPtr restore;
 	/* RAMDAC registers. */
 	if (arkRamdac == ATT490 || arkRamdac == ATT498
 	|| arkRamdac == ZOOMDAC || arkRamdac == STG1700)
-		xf86setdaccomm(restore->DACCOMMAND);
+		if (!(arkChip == ARK1000PV && arkRamdac == ZOOMDAC
+		&& vgaBitsPerPixel == 8))
+			xf86setdaccomm(restore->DACCOMMAND);
 	if (arkRamdac == STG1700) {
 		xf86dactopel();
 		xf86dactocomm();
@@ -1322,6 +1366,7 @@ vgaArkPtr save;
 	/* Set Read and Write aperture index to 0. */
 	wrinx(0x3C4, 0x15, 0x00);
 	wrinx(0x3C4, 0x16, 0x00);
+	outb(0x3C8, 0);	/* Reset DAC register access mode. */
 
 	/*
 	 * This function will handle creating the data structure and filling
@@ -1336,6 +1381,7 @@ vgaArkPtr save;
 	save->SR14 = rdinx(0x3C4, 0x14);
 	save->SR15 = rdinx(0x3C4, 0x15);
 	save->SR16 = rdinx(0x3C4, 0x16);
+	save->SR17 = rdinx(0x3C4, 0x17);
 	save->SR18 = rdinx(0x3C4, 0x18);
 
 	/* Hardware cursor registers. */
@@ -1364,7 +1410,9 @@ vgaArkPtr save;
 	/* RAMDAC registers. */
 	if (arkRamdac == ATT490 || arkRamdac == ATT498
 	|| arkRamdac == ZOOMDAC || arkRamdac == STG1700)
-		save->DACCOMMAND = xf86getdaccomm();
+		if (!(arkChip == ARK1000PV && arkRamdac == ZOOMDAC
+		&& vgaBitsPerPixel == 8))
+			save->DACCOMMAND = xf86getdaccomm();
 	if (arkRamdac == STG1700) {
 		xf86dactopel();
 		xf86dactocomm();
@@ -1410,6 +1458,7 @@ DisplayModePtr mode;
 {
 	int multiplexing;
 	int dac16;
+	int xymodepitch;
 
 	/* 
 	 * Determine if 8bpp clock doubling is to be used
@@ -1543,6 +1592,15 @@ DisplayModePtr mode;
 			 * the COP for 16bpp.
 			 */
 			new->SR11 |= 0x0A;
+
+	/*
+	 * Set the framebuffer pitch for X-Y (coordinate) mode.
+	 * This currently has no effect.
+	 */
+	xymodepitch = ArkMatchXYModePitch(vga256InfoRec.virtualX);
+	new->SR17 &= ~0xC7;
+	if (xymodepitch != -1)
+		new->SR17 |= xymodepitch;
 
 	/*
 	 * Enable VESA Super VGA memory organisation.
@@ -1694,23 +1752,23 @@ DisplayModePtr mode;
 			new->DACCOMMAND = 0xE0;
 	}
 	if (arkRamdac == ATT498 || arkRamdac == ZOOMDAC) {
-		new->DACCOMMAND = 0x00;
+		new->DACCOMMAND = 0x04;
 		if (vgaBitsPerPixel == 8 && multiplexing)
-			new->DACCOMMAND = 0x20;
+			new->DACCOMMAND = 0x24;
 		if (vgaBitsPerPixel == 16 && arkDacPathWidth == 16)
 			if (xf86weight.green == 5)
-				new->DACCOMMAND = 0x10;
+				new->DACCOMMAND = 0x14;
 			else
-				new->DACCOMMAND = 0x30;
+				new->DACCOMMAND = 0x34;
 		if (vgaBitsPerPixel == 16 && arkDacPathWidth == 8)
 			/* Only 5-6-5 supported. */
-			new->DACCOMMAND = 0x60;
+			new->DACCOMMAND = 0x64;
 		if (vgaBitsPerPixel == 24 && arkDacPathWidth == 16)
-			new->DACCOMMAND = 0xB0;	/* Packed. */
+			new->DACCOMMAND = 0xB4;	/* Packed. */
 		if (vgaBitsPerPixel == 24 && arkDacPathWidth == 8)
-			new->DACCOMMAND = 0x70;
+			new->DACCOMMAND = 0x74;
 		if (vgaBitsPerPixel == 32 && arkDacPathWidth == 16)
-			new->DACCOMMAND = 0x50;
+			new->DACCOMMAND = 0x54;
 	}
 	if (arkRamdac == STG1700) {
 		/* This is adapted from accel/s3init.c. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.143 1996/09/03 15:12:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.0 1996/09/22 13:25:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,7 +42,6 @@
 #include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-#include "s3linear.h"
 #include "s3ELSA.h"
 #ifdef XFreeXDGA
 #include "X.h"
@@ -59,7 +58,6 @@
 #endif
 
 extern int s3MaxClock;
-char s3Mbanks;
 int s3Weight = RGB8_PSEUDO;
 extern char *xf86VisualNames[];
 char *clockchip_probed = XCONFIG_GIVEN;
@@ -775,10 +773,6 @@ s3Probe()
               XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.videoRam);
       }
    }
-   if (s3InfoRec.videoRam > 1024)
-      s3Mbanks = -1;
-   else
-      s3Mbanks = 0;
 
    if (xf86bpp < 0) {
       xf86bpp = s3InfoRec.depth;

@@ -1,4 +1,20 @@
-XFree86 3.1.2Gc (23 September 1996)
+XFree86 3.1.2Ge (24 September 1996)
+843. Add Trio/ViRGE clock support to the "s3_svga" driver.  This is still
+     incomplete, and for development use (Harald Koenig).
+842. Add vgaGetInstalledColormaps() and support for 8-bit colour components
+     to the SVGA server (Harm Hanemaayer).
+841. ARK driver updates, including: fix problems with BitBlts at 24bpp,
+     fix hw cursor at 8bpp, fix some ZoomDAC problems, and add support
+     for 8-bit colour components (dac_8_bit) at 8bpp (Harm Hanemaayer).
+840. Fix some typos in compiler.h (Harald Koenig).
+839. Initial ViRGE s3im.c, and remove unneeded s3linear.h and bank switching
+     (Harald Koenig).
+838. Fix some XInput and XKB defines (Marc Aurele La France).
+837. LinkKit fixes (Marc Aurele La France).
+836. Add ARK Logic chipset detection to SuperProbe (Harm Hanemaayer).
+835. Fix a typo in xkbcomp/symbols/de (Thomas Mueller).
+
+XFree86 3.1.2Gd (23 September 1996)
 834. Rename ViRGE driver from s3_generic to s3_virge (Dirk Hohndel).
 833. Don't reference uninitialised s3MmioMem in ViRGE server (Harald Koenig
      and Dirk Hohndel).

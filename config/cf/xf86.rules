@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules,v 1.7 95/01/25 16:34:39 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.13 1996/02/18 03:40:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.14tsi Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
@@ -102,6 +102,8 @@ clean::									@@\
 
 #define ConfigTargetNoDepend(target,dep,script,args) ConfigTargetLong(target,dep,script,args,)
 
+#if !XF86LinkKit
+
 /*
  * Rules for installing LinkKit parts (target is install.linkkit)
  */
@@ -153,6 +155,8 @@ NamedTargetSubdirs(install.linkkit,dirs,"installing link kit",DESTDIR='$(DESTDIR
 #define InstallLinkKitMultipleDestFlags(list,dest,flags) \
 InstallMultipleDestFlags(install.linkkit,list,dest,flags)
 #endif
+
+#endif /* !XF86LinkKit */
 
 /*
  * DynamicModuleTarget - build a module to be dynamically loaded

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.99 1996/09/01 12:29:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.100 1996/09/22 05:03:22 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -79,7 +79,6 @@ static vgaS3Ptr oldS3 = NULL;
 static short savedVgaIOBase;
 
 pointer vgaNewVideoState = NULL;
-static short numPlanes = -1;
 static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
 static short s3Initialised = 0;
@@ -3105,7 +3104,6 @@ s3Init(mode)
 
    i = inw(SUBSYS_STAT);
 
-   numPlanes = 8;
    outw(MULTIFUNC_CNTL, MEM_CNTL | VRTCFG_4 | HORCFG_8);
 
    outb(DAC_MASK, 0xff);
@@ -3121,8 +3119,7 @@ s3Init(mode)
 /* InitLUT() */
 
 /*
- * Loads the Look-Up Table with all black. Assumes 8-bit board is in use.  If
- * 4 bit board, then only the first 16 entries in LUT will be used.
+ * Loads the Look-Up Table with all black. Assumes 8-bit board is in use.
  */
 static void
 InitLUT()
@@ -3138,22 +3135,11 @@ InitLUT()
       
    outb(DAC_W_INDEX, 0);
 
- /* Load the first 16 LUT entries */
-   for (i = 0; i < 16; i++) {
+   /* Load all 256 LUT entries */
+   for (i = 0; i < 256; i++) {
       outb(DAC_DATA, 0);
       outb(DAC_DATA, 0);
       outb(DAC_DATA, 0);
-   }
-
-   if (numPlanes == 8) {
-    /* Load the remaining 240 LUT entries */
-      for (i = 1; i < 16; i++) {
-	 for (j = 0; j < 16; j++) {
-	    outb(DAC_DATA, 0);
-	    outb(DAC_DATA, 0);
-	    outb(DAC_DATA, 0);
-	 }
-      }
    }
 
    if (s3InfoRec.bitsPerPixel > 8 &&

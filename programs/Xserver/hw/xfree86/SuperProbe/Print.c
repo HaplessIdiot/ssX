@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.35 1996/08/18 01:47:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.36 1996/09/22 05:01:42 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -157,6 +157,11 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
                   "Silicon Integrated Systems SG86C201",
 		  "Silicon Integrated Systems SG86C202",
 		  "Silicon Integrated Systems SG86C205" },
+/* ARK */	{ "ARK Logic (chipset unknown)",
+		  "ARK Logic ARK1000VL",
+		  "ARK Logic ARK1000PV",
+		  "ARK Logic ARK2000PV",
+		  "ARK Logic ARK2000MT" },
 };
 
 static CONST char *Herc_Names[] = 
@@ -229,6 +234,8 @@ struct RamDac_Name RamDac_Names[] =
 	  "TI ViewPoint3030 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "ET6000",
 	  "Tseng Labs ET6000 built-in 15/16/24-bit DAC w/pixel-mux,clock" },
+	{ "w30C516",
+	  "IC Works w30C516 ZOOMDAC 15/16/24-bit DAC or AT&T 20C498" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

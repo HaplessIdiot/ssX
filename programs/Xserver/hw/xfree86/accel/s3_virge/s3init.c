@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.0 1996/09/22 13:25:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.1 1996/09/23 13:26:35 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -613,11 +613,7 @@ s3Init(mode)
    outb(vgaCRIndex, 0x40);
    if (s3Localbus) {
       i = (inb(vgaCRReg) & 0xf2);
-      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
-	  OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
-	 /* Set no wait states on STB Pegasus. */
-	 s3Port40 = (i | 0x01);
-      else s3Port40 = (i | 0x05);
+      s3Port40 = (i | 0x05);
       outb(vgaCRReg, s3Port40);
    } else {
       i = (inb(vgaCRReg) & 0xf6);
@@ -683,38 +679,36 @@ s3Init(mode)
    s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
    outb(vgaCRReg, s3Port51);
 
-   outb(vgaCRIndex, 0x58);
+   outb(vgaCRIndex, 0x58);	/* disable linear mode */
    outb(vgaCRReg, s3SAM256);
 
 #ifdef DEBUG
    ErrorF("Writing CR59 0x%02x, CR5A 0x%02x\n", s3Port59, s3Port5A);
 #endif
 
-   outb(vgaCRIndex, 0x59);
-   outb(vgaCRReg, s3Port59);
-   outb(vgaCRIndex, 0x5A);
-   outb(vgaCRReg, s3Port5A);
-
-   outb(vgaCRIndex, 0x53);
+   outb(vgaCRIndex, 0x53);	/* disable mmio mode */
    tmp = inb(vgaCRReg) & ~0x18;
-   if (s3NewMmio) {
-      if (s3InfoRec.MemBase != 0) {
-	 s3Port59 = (s3InfoRec.MemBase >> 24) & 0xfc;
-	 s3Port5A = 0;
-	 outb(vgaCRIndex, 0x59);
-	 outb(vgaCRReg, s3Port59);
-	 outb(vgaCRIndex, 0x5a);
-	 outb(vgaCRReg, s3Port5A);
-	 outb(vgaCRIndex, 0x53);
-      }
-      tmp |= 0x18;
-   }
    outb(vgaCRReg, tmp);
 
-   if (s3NewMmio) {
-      outb (vgaCRIndex, 0x58);
-      outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256); /* window size for linear mode */
+   if (s3InfoRec.MemBase != 0) {
+      s3Port59 = (s3InfoRec.MemBase >> 24) & 0xfc;
+      s3Port5A = 0;
+      outb(vgaCRIndex, 0x59);
+      outb(vgaCRReg, s3Port59);
+      outb(vgaCRIndex, 0x5a);
+      outb(vgaCRReg, s3Port5A);
+   } else {
+      outb(vgaCRIndex, 0x59);
+      outb(vgaCRReg, s3Port59);
+      outb(vgaCRIndex, 0x5A);
+      outb(vgaCRReg, s3Port5A);
    }
+
+   outb(vgaCRIndex, 0x53);	/* enable new mmio mode */
+   outb(vgaCRReg, tmp | 0x08);
+
+   outb (vgaCRIndex, 0x58);	/* enable linear mode */
+   outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256); /* window size for linear mode */
 
    /* XXX m/n calculation should be adopted to EDO-DRAMs */
    n = 255;
@@ -912,7 +906,7 @@ s3Init(mode)
 /* InitLUT() */
 
 /*
- * Loads the Look-Up Table with all black. Assumes 8-bit board is in use. 
+ * Loads the Look-Up Table with all black. Assumes 8-bit board is in use.
  */
 static void
 InitLUT()

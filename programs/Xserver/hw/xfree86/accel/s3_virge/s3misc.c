@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.0 1996/09/22 13:25:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.1 1996/09/23 13:26:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,7 +45,7 @@
 #include "ICD2061A.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-#include "s3linear.h"
+
 
 #ifdef XFreeXDGA
 #include "X.h"
@@ -60,7 +60,6 @@
 #include "s3pc98.h"
 #endif
 
-extern char s3Mbanks;
 extern Bool s3NewMmio;
 extern unsigned long s3MemBase;
 
@@ -113,6 +112,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    unsigned char *pat;
    unsigned short dash_test_pattern = 0xac00;
    Pixel blackPixel;
+   int tmp;
 
    if (xf86FlipPixels && s3Bpp == 1)
       blackPixel = (Pixel) 1;
@@ -249,8 +249,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3LinApOpt=0x17;
 	    }
 	    s3BankSize = s3InfoRec.videoRam * 1024;
-	    if (s3MmioMem != NULL)
-	       s3EnableLinear();
 
 	    /*
 	     * XXXX This is for debugging only.  It attempts to find
@@ -282,25 +280,47 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       if (s3NewMmio)
 		  s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
 					     (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
-	       s3DisableLinear();
+	       outb(vgaCRIndex, 0x53);	/* disable new mmio mode */
+	       tmp = inb(vgaCRReg) & ~0x18;
+	       outb(vgaCRReg, tmp);
+	       outb (vgaCRIndex, 0x58);	/* disable linear mode */
+	       outb (vgaCRReg, s3SAM256);
+
 	       outb(vgaCRIndex, 0x5a);
 	       outb(vgaCRReg, (addr >> 16) & 0xff);
 	       outb(vgaCRIndex, 0x59);
 	       outb(vgaCRReg, (addr >> 24) & 0xff);
-	       s3EnableLinear();
+
+	       outb(vgaCRIndex, 0x53);	/* enable new mmio mode */
+	       tmp = inb(vgaCRReg) & ~0x18;
+	       outb(vgaCRReg, tmp | 0x08);
+	       outb (vgaCRIndex, 0x58);	/* enable linear mode */
+	       outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256);
 
 	       s3LinearAperture = TRUE;
 	       ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n",
 		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 20));
 	    } else {
 	       if (!(/*s3InfoRec.videoRam > 1024 &&*/ s3VLB)) {
-		  s3DisableLinear();
+
+		  outb(vgaCRIndex, 0x53);	/* disable new mmio mode */
+		  tmp = inb(vgaCRReg) & ~0x18;
+		  outb(vgaCRReg, tmp);
+		  outb (vgaCRIndex, 0x58);	/* disable linear mode */
+		  outb (vgaCRReg, s3SAM256);
+
 	          outb(vgaCRIndex, 0x59);
 	          addr = inb(vgaCRReg) << 8;
 	          outb(vgaCRIndex, 0x5a);
 	          addr |= inb(vgaCRReg);
 	          addr <<= 16;
-		  s3EnableLinear();
+
+		  outb(vgaCRIndex, 0x53);	/* enable new mmio mode */
+		  tmp = inb(vgaCRReg) & ~0x18;
+		  outb(vgaCRReg, tmp | 0x08);
+		  outb (vgaCRIndex, 0x58);	/* enable linear mode */
+		  outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256);
+
 
                   if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
 		     ErrorF("Read LAW as 0x%08X \n", addr);
@@ -362,11 +382,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
 			/* We found some ram, but is it ours? */
 
-			s3DisableLinear();
 			/* move it up by 12MB */
 			outb(vgaCRIndex, 0x5a);
 			outb(vgaCRReg, 0xC0);
-			s3EnableLinear();
 
 			if (!s3TryAddress(poker, pVal, addr, 2)) {
 			   addr += (0x0C<<20);
@@ -425,10 +443,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			   ErrorF("\t address range.\n");
 			   CachedFrameBuffer = TRUE;
 			}
-			s3DisableLinear();
 			outb(vgaCRIndex, 0x5a);
 			outb(vgaCRReg, 0x00);	/* reset for next probe */
-			s3EnableLinear();
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
 				     s3BankSize);
@@ -455,7 +471,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3VideoMem = NULL;
 	       addr = 0xA0000;
 	    }
-            s3DisableLinear();
          }
       }
 
@@ -542,7 +557,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       outb(vgaCRReg, 0xa5);
       outb (vgaCRIndex, 0x53);
       tmp = inb(vgaCRReg);
-      outb (vgaCRReg, tmp | 0x18);	/* old and new mmio enabled */
+      outb (vgaCRReg, tmp | 0x08);	/* new mmio enabled */
 
       outb (vgaCRIndex, 0x58);
       outb (vgaCRReg, (s3LinApOpt & ~0x4) | s3SAM256);  /* window size for linear mode */
@@ -900,7 +915,6 @@ s3EnterLeaveVT(enter, screen_idx)
 #ifdef XFreeXDGA
       if (s3InfoRec.directMode & XF86DGADirectGraphics) {
         /* make sure we are in linear mode */
-	s3EnableLinear();
       }
 #endif
 #ifdef PC98
@@ -1135,6 +1149,7 @@ s3AdjustFrame(int x, int y)
    unsigned char tmp;
    extern int s3AdjustCursorXPos;  /* for s3Cursor.c */
    extern int s3HDisplay;
+   extern unsigned char s3Port51;
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &s3InfoRec.options)) {
       if ( debugcache & 1)
@@ -1211,5 +1226,4 @@ s3TryAddress(addr, value, physaddr, stage)
 void s3SetVidPage(vPage)
    int vPage;
 {
-  s3BankSelect(vPage);
 }
