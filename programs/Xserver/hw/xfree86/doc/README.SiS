@@ -188,9 +188,9 @@ card.
             to know about the amount of RAM sisfb reserved. For this purpose,
             the Option "MaxXFBMem" exists.
 
-            XFree 4.3.0 disabled SiS DRI support due to a lack of main-
-            tainance of the SiS DRI driver. XFree86 4.4 contains a newly
-            written SiS DRI driver by Eric Anholt.
+            XFree 4.3.0 disabled SiS DRI support due to a lack of maintenance
+            of the SiS DRI driver. XFree86 4.4 contains a newly written SiS
+            DRI driver by Eric Anholt.
 
             If you intend to use DRI, I recommend setting the total video
             memory in the BIOS to 64MB in order to at least overcome the lack
@@ -230,7 +230,7 @@ card.
 Document based on 4.1 version written by Joanjo Santamarta and 3.3 version
 written by Xavier Ducoin.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.8 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.9 dawes Exp $
 
 
 $XFree86: $

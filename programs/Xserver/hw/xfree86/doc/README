@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              18 December 2003
+                              14 February 2004
 
                                   Abstract
 
@@ -13,14 +13,14 @@
 
 1.  What is XFree86 4.3.99.903?
 
-XFree86 4.3.99.903 is a pre-release snapshot of XFree86 4.5.0.  This snapshot
-is release candidate 3 for version 4.5.0.  Pre-release snapshots are provided
+XFree86 4.3.99.903 is a pre-release snapshot of XFree86 4.4.0.  This snapshot
+is release candidate 3 for version 4.4.0.  Pre-release snapshots are provided
 for beta testing.  You should only install snapshots if you're comfortable
 dealing with possibly unstable beta-level software.  If you find problems
 with this snapshot, you are encouraged to report your findings to the public
 XFree86 mailing list: <devel@XFree86.org>.
 
-XFree86 4.3.99.903 is a feature-complete snapshot of XFree86 4.5.0.
+XFree86 4.3.99.903 is a feature-complete snapshot of XFree86 4.4.0.
 
 XFree86 4.x is the current XFree86 release series.  The first release in this
 series was in early 2000.  The core of XFree86 4.x is a modular X server.
@@ -45,16 +45,26 @@ duction releases.
 3.  Licensing
 
 XFree86 source code is covered by many licenses.  All of these licenses have
-in common the fact that they do not impose conditions on the modification or
-redistribution or either source code or binaries other than requiring that
-the copyright and/or license notices are left intact, and in some cases, that
-attributions are included with documentation accompanying binaries.  Most of
-these licenses are based on the MIT or BSD licenses, and all of them are con-
-sistent with the Open Source definition.
+in common the fact that they do not impose significant conditions on the mod-
+ification or redistribution or either source code or binaries beyond requir-
+ing one or more of the following:
 
-Copyright and Licensing information for XFree86, including the attributions
-required by some of the licenses for binary distributions, can be found in
-the License Document.
+  1.  Copyright and/or license notices are left intact.
+
+  2.  Copyright and/or license notices are reproduced verbatim in documenta-
+      tion accompanying binary distributions.
+
+  3.  Attributions are included with documentation accompanying binaries.
+
+Most of these licenses are based on the MIT, X Consortium, or BSD (original
+and revised) licenses.  All of them are consistent with the Open Source Defi-
+nition, and most are consistent with the Free Software Foundation's Free
+Software Definition.
+
+Copyright and Licensing information for XFree86, including the reproduction
+of copyright and/or license notices and attributions required by some of the
+licenses for binary distributions, can be found in the License Document.  If
+you find any omissions in that document, please contact us with details.
 
 4.  Pointers to additional information
 
@@ -140,7 +150,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.138 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.139 dawes Exp $
 
 
 $XFree86: $

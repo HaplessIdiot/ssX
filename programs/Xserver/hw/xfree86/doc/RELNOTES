@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               28 January 2004
+                              14 February 2004
 
                                   Abstract
 
@@ -22,7 +22,7 @@ loading 4.3.99.903.
 XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
 server.  This makes it possible to start XFree86 in a usable way without
 first creating a configuration file.  The initial automatic configuration
-support is currently targetted towards Linux and FreeBSD.  Automatic configu-
+support is currently targeted towards Linux and FreeBSD.  Automatic configu-
 ration will be supported on other platforms in future releases.  If you're
 running Linux or FreeBSD, try it out if you don't already have a working
 XF86Config file.  If you want to customise things afterwards, you can cut and
@@ -36,7 +36,7 @@ platform that it isn't currently supported on, try one of the older methods
 for getting started.
 
 XFree86 comes with a graphical configuration tool called "xf86cfg".  It also
-has a text mode interface.  It can be used to create an iniital configuration
+has a text mode interface.  It can be used to create an initial configuration
 file, and to customise existing configurations.
 
 Next in the order of configuration preferences is to make use of the XFree86
@@ -81,13 +81,13 @@ don't have enough space to cover them all here.
         o Support added to the nv driver for the GeForce FX 5700, which
           didn't work with XFree86 4.3.
 
-        o The driver now does a much better job of autodetecting which con-
+        o The driver now does a much better job of auto-detecting which con-
           nector of dual output cards the monitor is attached to, which
           should reduce or eliminate the need for manual XF86Config over-
           rides.
 
         o The 2D acceleration for TNT and GeForce was completely rewritten.
-          Performance should be substantiallly improved.
+          Performance should be substantially improved.
 
         o TNT and GeForce cards have a new Xv PutImage adaptor which does
           scaled YUV bit blits.
@@ -117,7 +117,7 @@ don't have enough space to cover them all here.
 
 XFree86 4.4 supports IPv6, based on the code contributed by Sun Microsystems
 to X.Org. See X.org's document <URL:http://www.x.org/IPV6_Spe-
-cific_Changes.html> for a detailled list of the changes.
+cific_Changes.html> for a detailed list of the changes.
 
 2.3.1  Protocol names and aliases.
 
@@ -136,7 +136,7 @@ PLAY to inet6/host:0.
 The IPv6 XDMCP code is not enabled by default on platforms that don't support
 binding a IPv6 socket to a IPv4 address.
 
-The XDM-AUTHORIZATION-1 authentification scheme does not support IPv6
+The XDM-AUTHORIZATION-1 authentication scheme does not support IPv6
 addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
 designed, but is not implemented yet.  Note that  by default XFree86 builds
 do not enable the XDM-AUTHORIZATION-1 code.
@@ -195,8 +195,8 @@ Improved Locale Support:
 
 Improved Font Handling:
 
-   o Document in xterm's manpage how to use XFree86 ":unscaled" keyword to
-     suppress scaling of bold fonts.
+   o Document in xterm's manual page how to use XFree86 ":unscaled" keyword
+     to suppress scaling of bold fonts.
 
    o Improved logic for deriving bold fontname from normal fontname.
 
@@ -291,6 +291,9 @@ Modified terminfo/termcap entries:
    o The Compose file processing mechanism has been improved and made more
      flexible.  See the Xlib Compose  file support and extensions section
      below (section 4.20, page 1).
+
+   o The Bitstream Vera TrueType fonts that Bitstream, Inc donated to the
+     Gnome Foundation are included with this release.
 
 2.7  OS Support Updates
 
@@ -744,7 +747,7 @@ A more flexible Compose file processing system was added to Xlib in XFree86
   1.  If the environment variable $XCOMPOSEFILE is set, its value is used as
       the name of the Compose file.
 
-  2.  If the user's home direcotry has a file named ".XCompose", it is used
+  2.  If the user's home directory has a file named ".XCompose", it is used
       as the Compose file.
 
   3.  The old method is used, and the compose file is "<xlocaledir>/<locale-
@@ -771,9 +774,9 @@ and then rewrite only the few rules that you need to change.  New compose
 rules can be added, and previous ones replaced.
 
 Finally, it is no longer necessary to specify in the right part of a rule a
-locale encoded string in addition to the keysym name.  If the string is
-opmitted, Xlib figures it out from the keysym according to the current
-locale.  I.e., if a rule looks like:
+locale encoded string in addition to the keysym name.  If the string is omit-
+ted, Xlib figures it out from the keysym according to the current locale.
+I.e., if a rule looks like:
 
      <dead_grave> <A> : "\300" Agrave
 
@@ -829,7 +832,7 @@ source files.
                   NVIDIA 'nv' driver rewrite:
                         Mark Vojkovich.
 
-                  SiS driver enhancements:
+                  SiS driver development:
                         Thomas Winischhofer.
 
                   New VIA video driver:
@@ -859,6 +862,9 @@ source files.
                   SCO support updates:
                         Kean Johnston.
 
+                  Bitstream Vera fonts:
+                        Bitstream, Inc, and the Gnome Foundation.
+
       Integration:
 
                   General Integration of Submissions:
@@ -876,59 +882,64 @@ source files.
             Alvarez, Alexandr Andreev, Jack Angel, Eric Anholt, Ani, Juuso
             Åberg, Sergey Babkin, Alexey Baj, Bang Jun-Young, Uberto Barbini,
             Matthew W. S. Bell, Vano Beridze, Hiroyuki Bessho, Andrew Bevitt,
-            Martin Birgmeier, Jakub Bogusz, Le Hong Boi, Paul Bolle, Charl
-            Botha, Stanislav Brabec, Eric Branlund, Rob Braun, Peter Breiten-
-            lohner, Michael Breuer, Kevin Brosius, Frederick Bruckman, Oswald
-            Buddenhagen, Nilgün Belma Bugüner, Yukun Chen, Ping Cheng,
-            Juliusz Chroboczek, Fred Clift, Alan Coopersmith, Martin Costa-
-            bel, Alan Cox, Michel Dänzer, David Dawes, Leif Delgass, Richard
-            Dengler, John Dennis, Thomas Dickey, Randy Dunlap, Chris Edging-
-            ton, Paul Eggert, Paul Elliott, Emmanuel, Visanu Euarchukiati,
-            Mike Fabian, Rik Faith, Brian Feldman, Wu Jian Feng, Kevin P.
-            Fleming, Jose Fonseca, Hugues Fournier, Miguel Freitas, Quentin
-            Garnier, Børre Gaup, Michael Geddes, Frank Giessler, Hansruedi
-            Glauser, Wolfram Gloger, Alexander Gottwald, Guido Guenther, Ralf
-            Habacker, Bruno Haible, Lindsay Haigh, John Harper, James Harris,
-            Mike A. Harris, Bryan W. Headley, John Heasley, Thomas Hellström,
-            Matthieu Herrb, Jonathan Hough, Alan Hourihane, Joel Ray Holveck,
-            Harold L Hunt II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA ,
-            Tsuyoshi ITO, Kean Johnston, Nicolas JOLY, Phil Jones, Roman
-            Kagan, Theppitak Karoonboonyanan, Etsushi Kato, Koike Kazuhiko,
-            Aidan Kehoe, Juergen Keil, Andreas Kies, Thomas Klausner, Mario
-            Klebsch, Egmont Koblinger, Vlatko Kosturjak, Kusanagi Kouichi,
-            Peter Kunzmann, Nick Kurshev, Mashrab Kuvatov, Marc La France,
-            Radics Laszlo, Zarick Lau, Nolan Leake, Michel Lespinasse, Noah
-            Levitt, Dave Love, H.J. Lu, Lubos Lunak, Sven Luther, Torrey T.
-            Lyons, Calum Mackay, Roland Mainz, Kevin Martin, Michal Maruska,
-            Kensuke Matsuzaki, maxim, Stephen McCamant, Ferris McCormick,
-            Luke Mewburn, Nicholas Miell, Robert Millan, Hisashi MIYASHITA,
-            Gregory Mokhin, Patrik Montgomery, Joe Moss, Josselin Mouette,
-            Frank Murphy, Reiko Nakajima, Paul Nasrat, Dan Nelson, Bastien
-            Nocera, Alexandre Oliva, Hideki ONO, Peter Osterlund, Sergey V.
-            Oudaltsov, Séamus Ó Ciardhuáin, Bob Paauwe, Paul Pacheco, Tom
-            Pala, Ivan Pascal, T. M. Pederson, Earle F. Philhower III, Nils
-            Philippsen, Manfred Pohler, Alexander Pohoyda, Arnaud Quette, Jim
-            Radford, Dale Rahn, Lucas Correia Villa Real, René Rebe, Sebas-
-            tian Rittau, Tim Roberts, Alastair M. Robinson, Branden Robinson,
-            Daniel Rock, Ian Romanick, Bernhard Rosenkraenzer, Måns Rullgård,
-            Andriy Rysin, Supphachoke Santiwichaya, Pablo Saratxaga, Matthias
-            Scheler, Jens Schweikhardt, Danilo Segan, Shantonu Sen, Stas
-            Sergeev, JungShik Shin, Jungshik Shin, Nikola Smolenski, Andreas
-            Stenglein, Paul Stewart, Alexander Stohr, Alan Strohm, Will
-            Styles, James Su, Mike Sulivan, Ville Syrjala, Slava Sysoltsev,
-            Akira TAGOH, Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor,
-            Neil Terry, Jonathan Thambidurai, John Tillman, Adam Tlalka,
-            Linus Torvalds, Christian Tosta, Warren Turkal, Stephen J. Turn-
-            bull, Ted Unangst, Mike Urban, Simon Vallet, Thuraiappah Vaseeha-
-            ran, Luc Verhaegen, Michail Vidiassov, Sebastiano Vigna, Mark
+            Christian Biere, Martin Birgmeier, Jakub Bogusz, Le Hong Boi,
+            Paul Bolle, Charl Botha, Stanislav Brabec, Eric Branlund, Rob
+            Braun, Peter Breitenlohner, Michael Breuer, Kevin Brosius, Fred-
+            erick Bruckman, Oswald Buddenhagen, Nilgün Belma Bugüner, Julian
+            Cable, Yukun Chen, Ping Cheng, Juliusz Chroboczek, Fred Clift,
+            Alan Coopersmith, Martin Costabel, Alan Cox, Michel Dänzer, David
+            Dawes, Leif Delgass, Richard Dengler, John Dennis, Thomas Dickey,
+            Randy Dunlap, Chris Edgington, Paul Eggert, Paul Elliott,
+            Emmanuel, Visanu Euarchukiati, Mike Fabian, Rik Faith, Brian
+            Feldman, Wu Jian Feng, Kevin P. Fleming, Jose Fonseca, Hugues
+            Fournier, Miguel Freitas, Quentin Garnier, Børre Gaup, Michael
+            Geddes, Frank Giessler, Hansruedi Glauser, Wolfram Gloger,
+            Alexander Gottwald, Guido Guenther, Ralf Habacker, Bruno Haible,
+            Lindsay Haigh, John Harper, James Harris, Mike A. Harris, Bryan
+            W. Headley, John Heasley, Thomas Hellström, Matthieu Herrb,
+            Jonathan Hough, Alan Hourihane, Joel Ray Holveck, Harold L Hunt
+            II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA , Tsuyoshi ITO, Kean
+            Johnston, Nicolas JOLY, Phil Jones, Roman Kagan, Theppitak
+            Karoonboonyanan, Etsushi Kato, Koike Kazuhiko, Aidan Kehoe, Juer-
+            gen Keil, Andreas Kies, Thomas Klausner, Mario Klebsch, Egmont
+            Koblinger, Vlatko Kosturjak, Kusanagi Kouichi, Peter Kunzmann,
+            Nick Kurshev, Mashrab Kuvatov, Marc La France, Radics Laszlo,
+            Zarick Lau, Nolan Leake, Michel Lespinasse, Noah Levitt, Dave
+            Love, H.J. Lu, Lubos Lunak, Sven Luther, Torrey T. Lyons, Calum
+            Mackay, Paul Mackerras, Roland Mainz, Kevin Martin, Michal
+            Maruska, Kensuke Matsuzaki, maxim, Stephen McCamant, Ferris
+            McCormick, Luke Mewburn, Nicholas Miell, Robert Millan, Hisashi
+            MIYASHITA, Gregory Mokhin, Patrik Montgomery, Joe Moss, Josselin
+            Mouette, Frank Murphy, Reiko Nakajima, Paul Nasrat, Dan Nelson,
+            Bastien Nocera, Alexandre Oliva, Hideki ONO, Peter Osterlund,
+            Sergey V. Oudaltsov, Séamus Ó Ciardhuáin, Bob Paauwe, Paul
+            Pacheco, Tom Pala, Ivan Pascal, T. M. Pederson, Earle F. Phil-
+            hower III, Nils Philippsen, Manfred Pohler, Alexander Pohoyda,
+            Arnaud Quette, Jim Radford, Dale Rahn, Lucas Correia Villa Real,
+            René Rebe, Tyler Retzlaff, Sebastian Rittau, Tim Roberts, Alas-
+            tair M. Robinson, Branden Robinson, Daniel Rock, Ian Romanick,
+            Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin, Supphachoke
+            Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
+            Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, JungShik
+            Shin, Jungshik Shin, Nikola Smolenski, Andreas Stenglein, Paul
+            Stewart, Alexander Stohr, Alan Strohm, Will Styles, James Su,
+            Mike Sulivan, Ville Syrjala, Slava Sysoltsev, Akira TAGOH,
+            Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor, Neil Terry,
+            Jonathan Thambidurai, John Tillman, Adam Tlalka, Linus Torvalds,
+            Christian Tosta, Warren Turkal, Stephen J. Turnbull, Ted Unangst,
+            Mike Urban, Simon Vallet, Thuraiappah Vaseeharan, Luc Verhaegen,
+            Yann Vernier, Michail Vidiassov, Sebastiano Vigna, Mark
             Vojkovich, Stephane Voltz, Boris Weissman, Keith Whitwell, Thomas
             Winischhofer, Eric Wittry, Kim Woelders, Roy Wood, Jason L.
             Wright, Joerg Wunsch, Chisato Yamauchi, Hui Yu.
 
+      Docbook/XML conversion:
+            John Himpel and the XFree86 documentation team.
+
       Webmaster:
             Georgina O. Economou
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.105 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.109 dawes Exp $
 
 
 $XFree86: $

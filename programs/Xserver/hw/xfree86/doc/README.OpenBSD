@@ -18,7 +18,7 @@ other architectures (section 8., page 1) for details.
 
 2.  Bug Reports for This Document
 
-Use the XFree86 bugzilla at <URL:http://bugs.xfree86.org> to submit comments
+Use the XFree86 Bugzilla at <URL:http://bugs.xfree86.org> to submit comments
 or suggestions about this file.
 
 3.  New OS dependent features
@@ -297,7 +297,7 @@ particular: David Dawes, Todd Fries, Rod Grimes, Charles Hannum, Amancio
 Hasty, Christoph Robitschko, Matthias Scheler, Michael Smith, Ignatios Sou-
 vatzis, Jack Velte, Nate Williams and Pace Willison.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.33 dawes Exp $
 
 
 $XFree86: $
