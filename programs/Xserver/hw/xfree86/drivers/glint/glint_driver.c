@@ -27,14 +27,8 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.70 2000/03/01 16:01:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.72tsi Exp $ */
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
 #include "cfb24_32.h"
 #include "cfb8_32.h"
 #include "fb.h"
@@ -265,18 +259,10 @@ static const char *xaaSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
     "cfb24_32ScreenInit",
-    "cfb32ScreenInit",
     "cfb8_32ScreenInit",
-    "cfbGCPrivateIndex",
-    "cfb16GCPrivateIndex",
-    "cfb32GCPrivateIndex",
-    "cfbBresS",
-    "cfb16BresS",
-    "cfb32BresS",
+    "fbScreenInit",
+    "fbBres",
     NULL
 };
 
