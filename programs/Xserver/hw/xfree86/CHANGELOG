@@ -1,4 +1,15 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 395. Document the usage of the -server option in the xfsinfo man page (#4562,
+      Mike Harris).
+ 394. Fix xfs man page problem (#4561, Mike Harris).
+ 393. Fix a crash that happens when a font encoding has no aliases and it is
+      invoked using a non-canonical name (#4560, Takeshi Miyasaka).
+ 392. Fix problems with the LinkBuildBinary rule in cygwin.rules (#4558,
+      Suhaib Siddiqi).
+ 391. Fix some missing exported symbols in ICE-def.cpp for Cygwin compilation
+      (#4557, Suhaib Siddiqi).
+ 390. Add imake/config support for distinguising big endian and little endian
+      MipsArchitecture types (#4556, Florian Lohoff).
  389. Add support to the mga driver for auto-detecting the display type
       (#4555, Stephane Duguay (Matrox)).
  388. Savage driver updates, including:
@@ -12983,4 +12994,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1691 2001/04/18 14:52:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1692 2001/04/18 15:29:14 dawes Exp $

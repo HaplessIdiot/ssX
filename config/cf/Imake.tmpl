@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.97 2001/03/18 14:50:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.98 2001/04/07 16:36:01 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -378,7 +378,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef ByteOrder
 #if defined(VaxArchitecture)
 #define ByteOrder		X_LITTLE_ENDIAN
-#elif defined(MipsArchitecture) && (defined(UltrixArchitecture) || defined(OSF1Architecture))
+#elif defined(MipsArchitecture) && defined(MipselArchitecture)
 #define ByteOrder		X_LITTLE_ENDIAN
 #elif defined(MipsArchitecture)
 #define ByteOrder		X_BIG_ENDIAN
