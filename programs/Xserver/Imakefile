@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.305tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.306tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -65,9 +65,9 @@ INSTPGMFLAGS =
 #define PreFbLibs $(DIX) $(OS) $(XPDDX)
 #define TinyPreFbLibs $(TINY_DIX) $(TINY_OS) $(XPDDX)
 #define PreFbLibsNoFont $(DIX) $(OS)
-#define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
+#define BarePostFbLibs $(MFB) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
-#define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
+#define NoMfbBarePostFbLibs $(MI)
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
@@ -87,7 +87,7 @@ INSTPGMFLAGS =
 #define NoMFBCFBLibs PreFbLibs $(CFB) NoMfbPostFbLibs
 #define NoMFBCFB8Libs PreFbLibs $(CFB8) NoMfbPostFbLibs
 #define FbPostFbLibs  $(FB) NoMfbPostFbLibs
-#define TinyFbPostFbLibs $(FB) $(XPFBLIBS) $(MI) $(TINY_EXTENSIONS)
+#define TinyFbPostFbLibs $(FB) $(MI) $(TINY_EXTENSIONS)
 #define FBLibs PreFbLibs FbPostFbLibs
 
 #define MiExtLibs $(SHADOW)
@@ -162,20 +162,6 @@ INSTPGMFLAGS =
        LIBREGEX = RegexLibrary
 
 #if BuildXprint
-
-#ifndef XpRasterDDX
-#define XpRasterDDX YES
-#endif
-#ifndef XpColorPclDDX
-#define XpColorPclDDX YES
-#endif
-#ifndef XpMonoPclDDX
-#define XpMonoPclDDX NO
-#endif
-#ifndef XpPostScriptDDX
-#define XpPostScriptDDX YES
-#endif
-
 #if XpRasterDDX
 XPRASTLIB = Xprint/raster/LibraryTargetName(raster)
 #endif
@@ -191,10 +177,10 @@ XPPSLIB = Xprint/ps/LibraryTargetName(ps)
 
 XPDDXLIBS = Xprint/LibraryTargetName(printer) \
 	    $(XPRASTLIB) $(XPPCLLIB) $(XPMPCLLIB) $(XPPSLIB)
-XPDDXFBLIBS = $(MFB) $(CFB32)
+XPDDXFBLIBS = $(CFB32) $(MFB)
 #if !PrintOnlyServer
+      XPDDX    = $(XPDDXLIBS)
       XPFBLIBS = $(XPDDXFBLIBS)
-      XPDDX = $(XPDDXLIBS)
 #endif
       XPDDXDIR = Xprint
 #endif
@@ -226,6 +212,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
         MISCEXT = Xext/LibraryTargetName(ext)
    LOADABLEEXTS = $(MISCEXT) $(DBEEXT) $(RECORDEXT) $(GLXEXT) $(XTRAPEXT)
      EXTENSIONS = $(LOADABLEEXTS) $(STATICEXTS) 
+
 #if BuildSeparateTinyDIX
 TINY_STATICEXTS = $(XKBEXT) $(XINPUTEXT) $(LBXEXT) $(SITEEXTS) \
 	$(TINY_RANDRLIB) $(TINY_RENDERLIB)
@@ -237,11 +224,19 @@ TINY_STATICEXTS = $(STATICEXTS)
 TINY_LOADABLEEXTS = $(TINY_MISCEXT) $(DBEEXT) $(RECORDEXT) $(GLXEXT) $(XTRAPEXT)
 TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
 
+ XPLOADABLEEXTS = $(MISCEXT) $(DBEEXT) $(RECORDEXT) $(XTRAPEXT)
+   XPEXTENSIONS = $(XPLOADABLEEXTS) $(STATICEXTS) 
+
 #if DoLoadableServer
  XF86EXTENSIONS = $(BASEEXTS) $(STATICEXTS)
 #else
  XF86EXTENSIONS = $(STATICEXTS) $(LOADABLEEXTS)
 #endif
+
+  DMXSTATICEXTS = $(XKBEXT) $(XINPUTEXT) $(LBXEXT) $(SITEEXTS) $(RENDERLIB)
+DMXLOADABLEEXTS = $(MISCEXT) $(RECORDEXT) $(XTRAPEXT)
+  DMXEXTENSIONS = $(DMXLOADABLEEXTS) $(DMXSTATICEXTS) 
+
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(GLXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS) \
                   $(RANDRDIR) $(RENDERDIR) $(XTRAPDIR)
@@ -258,19 +253,19 @@ TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
 #if DoLoadableServer
             MFB = mfb/ModuleLibraryTargetName(mfb)
              FB = fb/ModuleLibraryTargetName(fb)
-            CFB = cfb/ModuleLibraryTargetName(cfb) \
-		  cfb16/ModuleLibraryTargetName(cfb16) \
+            CFB = cfb16/ModuleLibraryTargetName(cfb16) \
 		  cfb24/ModuleLibraryTargetName(cfb24) \
-		  cfb32/ModuleLibraryTargetName(cfb32)
+		  cfb32/ModuleLibraryTargetName(cfb32) \
+		  cfb/ModuleLibraryTargetName(cfb)
            CFB8 = cfb/ModuleLibraryTargetName(cfb)
-           CFB4 = cfb/ModuleLibraryTargetName(cfb) \
-		  cfb4/ModuleLibraryTargetName(cfb4)
-          CFB16 = cfb/ModuleLibraryTargetName(cfb) \
-		  cfb16/ModuleLibraryTargetName(cfb16)
-          CFB24 = cfb/ModuleLibraryTargetName(cfb) \
-		  cfb24/ModuleLibraryTargetName(cfb24)
-          CFB32 = cfb/ModuleLibraryTargetName(cfb) \
-		  cfb32/ModuleLibraryTargetName(cfb32)
+           CFB4 = cfb4/ModuleLibraryTargetName(cfb4) \
+		  cfb/ModuleLibraryTargetName(cfb)
+          CFB16 = cfb16/ModuleLibraryTargetName(cfb16) \
+		  cfb/ModuleLibraryTargetName(cfb)
+          CFB24 = cfb24/ModuleLibraryTargetName(cfb24) \
+		  cfb/ModuleLibraryTargetName(cfb)
+          CFB32 = cfb32/ModuleLibraryTargetName(cfb32) \
+		  cfb/ModuleLibraryTargetName(cfb)
          SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
           LAYER = miext/layer/ModuleLibraryTargetName(layer) 
 #else 
@@ -315,7 +310,7 @@ TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
       TINY_FONT = $(LDPRELIB) $(XFONTLIB)
 #endif
        FONTLIBS = $(FONT) $(XPFBLIBS)
-  TINY_FONTLIBS = $(TINY_FONT)
+  TINY_FONTLIBS = $(TINY_FONT) $(XPFBLIBS)
 #if UsbMouseSupport 
 #if !HasLibUsb
             USB = $(XF86OSSRC)/bsd/libusb/LibraryTargetName(usb)
@@ -333,7 +328,9 @@ TINY_EXTENSIONS = $(TINY_STATICEXTS) $(TINY_LOADABLEEXTS)
        DBMLIBS = DBMLibrary
 #endif
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(DBMLIBS) $(USB) \
-		  $(PAMLIBS)  $(XAUTHLIB) $(XDMCPLIB) $(EXTRASYSLIBS)
+		  $(PAMLIBS) $(XAUTHLIB) $(XDMCPLIB) $(EXTRASYSLIBS)
+ NOAUTH_SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(DBMLIBS) $(USB) \
+		  $(PAMLIBS) $(XDMCPLIB) $(EXTRASYSLIBS)
 #if !HasCbrt
            CBRT = mi/LibraryTargetName(cbrt)
 #endif
@@ -1137,16 +1134,16 @@ XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
 XPDPMSSTUBOBJS = Xprint/dpmsstubs.o
 #endif
 XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPDPMSSTUBOBJS)
-XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
+XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) $(MI) $(XPEXTENSIONS)
 #else
 XPOBJS = Xprint/ddxInit.o
-XPLIBS = PreFbLibs PostFbLibs
+XPLIBS = PreFbLibs $(XPFBLIBS) BarePostFbLibs $(XPEXTENSIONS)
 #endif
 #if (defined(SunArchitecture) || defined(SparcArchitecture)) && \
     defined(SVR4Architecture)
-XPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS) -lw
+XPSYSLIBS = $(FONT) $(CBRT) $(SYSLIBS) -lw
 #else
-XPSYSLIBS = $(FONTLIBS) $(CBRT) $(SYSLIBS)
+XPSYSLIBS = $(FONT) $(CBRT) $(SYSLIBS)
 #endif
 #if HasParallelMake
 MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
@@ -1178,7 +1175,7 @@ XNESTOBJS = hw/xnest/miinitext.o dix/main.o
 #endif
 XNEST = hw/xnest/LibraryTargetName(xnest)
 XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(XNEST)
-XNESTSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS)
+XNESTSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(NOAUTH_SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
@@ -1227,7 +1224,7 @@ XVFBOBJS = $(XVFBDDXDIR)/stubs.o $(XVFBDDXDIR)/miinitext.o $(XVFBDPMSSTUBOBJS)
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
 XVFB = $(XVFBDDXDIR)/LibraryTargetName(vfb)
-XVFBLIBS = PreFbLibs $(XVFB) $(FB) PostFbLibs $(MI)
+XVFBLIBS = PreFbLibs $(XVFB) $(FB) PostFbLibs
 XVFBSYSLIBS = $(FONTLIBS) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
@@ -1264,15 +1261,15 @@ XDMXOBJS = hw/dmx/miinitext.o $(GLXPROXY_EXTRAOBJS)
 #else
 XDMXOBJS = hw/dmx/miinitext.o $(GLXPROXY_EXTRAOBJS) dix/main.o
 #endif
-XDMX = hw/dmx/LibraryTargetName(dmx) \
-       hw/dmx/input/LibraryTargetName(dmxinput) \
-       hw/dmx/config/LibraryTargetName(dmxconfig) \
-       $(GLXPROXYLIB)
-XDMXLIBS = PreFbLibs $(XDMX) MiExtLibs FbPostFbLibs $(XDMX)
+XDMXINPUT  = hw/dmx/input/LibraryTargetName(dmxinput)
+XDMXCONFIG = hw/dmx/config/LibraryTargetName(dmxconfig)
+XDMX = hw/dmx/LibraryTargetName(dmx) $(XDMXCONFIG) $(GLXPROXYLIB)
+XDMXLIBS = PreFbLibs $(XDMX) MiExtLibs $(FB) $(MI) $(DMXEXTENSIONS) $(XDMXINPUT)
 #if BuildRender
 XDMXRENDERLIB = $(XRENDERLIB)
 #endif
-XDMXSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XILIB) $(XLIB) $(SYSLIBS) $(XMULIB) $(XDMXRENDERLIB)
+XDMXSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XILIB) $(XMULIB) $(XDMXRENDERLIB) \
+	      $(XLIB) $(NOAUTH_SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XDMXDIRS) $(XDMXOBJS) $(XDMXLIBS) $(XDMXSYSLIBS))
 #endif
@@ -1281,7 +1278,7 @@ $(XDMXOBJS) $(XDMXLIBS) $(XDMXSYSLIBS):: $(XDMXDIRS)
 	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xdmx,$(XDMXDIRS),$(XDMXOBJS), \
-       $(LIBCWRAPPER) $(XDMXLIBS) $(LOADABLEEXTS),$(XDMXSYSLIBS))
+       $(LIBCWRAPPER) $(XDMXLIBS),$(XDMXSYSLIBS))
 #endif /* XdmxServer */
 
 #if defined(XWinServer) && XWinServer
