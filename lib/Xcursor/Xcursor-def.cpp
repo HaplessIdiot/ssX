@@ -51,3 +51,4 @@ XcursorLibraryLoadImages
 XcursorShapeLoadImage
 XcursorShapeLoadImages
 XcursorTryShapeCursor
+/* $XFree86$ */
