@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:48:38 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.26 2001/01/24 00:06:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.27 2001/03/04 17:40:10 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -12,7 +12,13 @@ SHMDEF = -DHAS_SHM
 #endif
 
 XCOMM add more architectures here as we discover them
-#if defined(HPArchitecture) || (defined(SparcArchitecture) && !defined(LynxOSArchitecture)) || SystemV4 || defined(OSF1Architecture) || defined(i386BsdArchitecture) || defined(LinuxArchitecture) || defined(DarwinArchitecture)
+#if defined(HPArchitecture) || \
+    (defined(SparcArchitecture) && !defined(LynxOSArchitecture)) || \
+    SystemV4 || \
+    defined(OSF1Architecture) || \
+    defined(i386BsdArchitecture) || \
+    defined(LinuxArchitecture) || \
+    defined(DarwinArchitecture)
 MMAPDEF = -DHAS_MMAP
 #endif
 
@@ -34,7 +40,7 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../fb -I../../mfb -I../../mi -I../../include -I../../os  \
            -I$(EXTINCSRC) -I$(XINCLUDESRC)  -I$(SERVERSRC)/render
 
-DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
+DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
 
 
 #if BuildDPMS
