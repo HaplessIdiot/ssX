@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.28 2002/11/06 22:45:36 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.29 2002/11/23 02:38:15 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -635,6 +635,8 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->nfilters = 0;
     ps->filterAliases = 0;
     ps->nfilterAliases = 0;
+
+    ps->subpixel = SubPixelUnknown;
 
     ps->CloseScreen = pScreen->CloseScreen;
     ps->DestroyWindow = pScreen->DestroyWindow;

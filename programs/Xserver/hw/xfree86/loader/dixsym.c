@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.51 2002/09/26 02:56:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.52 2002/10/11 01:40:33 dawes Exp $ */
 
 
 /*
@@ -355,6 +355,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(PictureTransformPoint)
   SYMFUNC(PictureAddFilter)
   SYMFUNC(PictureSetFilterAlias)
+  SYMFUNC(PictureGetSubpixelOrder)
+  SYMFUNC(PictureSetSubpixelOrder)
 #endif
 
   /* os/utils.c */
