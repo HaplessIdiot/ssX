@@ -2,7 +2,7 @@
  * Shared definitions between the Darwin X Server
  * and the Cocoa front end. 
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.7 2001/07/06 00:37:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.8 2001/08/06 04:14:37 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
@@ -19,6 +19,9 @@ extern int                  darwinFakeButtons;
 extern int                  darwinFakeMouse2Mask;
 extern int                  darwinFakeMouse3Mask;
 extern char                 *darwinKeymapFile;
+
+// Other shared data
+extern int                  aquaMenuBarHeight;
 
 void QuartzCapture(void);
 void QuartzReadPreferences(void);

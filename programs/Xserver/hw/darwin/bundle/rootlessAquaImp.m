@@ -1,11 +1,12 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
 #include "fakeBoxRec.h"
+#include "quartzShared.h"
 
 
 typedef struct {
@@ -32,22 +33,29 @@ void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
     *spp = 3;
     *bpp = 32;
 
-    // set x,y so (0,0) is top left of main screen
-    *x = frame.origin.x;
-    *y = [[NSScreen mainScreen] frame].size.height - 
-            frame.size.height - frame.origin.y;
+    // set x, y so (0,0) is top left of main screen
+    *x = NSMinX(frame);
+    *y = NSHeight([[NSScreen mainScreen] frame]) - NSHeight(frame) -
+         NSMinY(frame);
 
-    *width =  frame.size.width;
-    *height = frame.size.height;
+    *width =  NSWidth(frame);
+    *height = NSHeight(frame);
     *rowBytes = (*width) * (*bpp) / 8;
+
+    // Shift the usable part of screen down to avoid the menu bar
+    // on the main screen.
+    if (NSEqualRects(frame, [[NSScreen mainScreen] frame])) {
+        *y      += aquaMenuBarHeight;
+        *height -= aquaMenuBarHeight;
+    }
 }
 
 void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
 {
     AquaWindowRec *winRec = (AquaWindowRec *)malloc(sizeof(AquaWindowRec));
-    NSRect frame = {{x, y}, {w, h}};
+    NSRect frame = NSMakeRect(x, NSHeight([[NSScreen mainScreen] frame]) -
+                              y - h, w, h);
 
-    frame.origin.y = [[NSScreen mainScreen] frame].size.height - y - h;
     winRec->window = [[XWindow alloc] initWithContentRect:frame isRoot:isRoot];
 
     if (upperw) {
@@ -74,18 +82,18 @@ void AquaDestroyWindow(void *rw)
 void AquaMoveWindow(void *rw, int x, int y)
 {
     AquaWindowRec *winRec = WINREC(rw);
-    NSPoint topLeft = {x, y};
+    NSPoint topLeft = NSMakePoint(x, NSHeight([[NSScreen mainScreen] frame]) -
+                                  y);
 
-    topLeft.y = [[NSScreen mainScreen] frame].size.height - topLeft.y;
     [winRec->window setFrameTopLeftPoint:topLeft];
 }
 
 void AquaStartResizeWindow(void *rw, int x, int y, int w, int h)
 {
     AquaWindowRec *winRec = WINREC(rw);
-    NSRect frame = {{x, y}, {w, h}};
+    NSRect frame = NSMakeRect(x, NSHeight([[NSScreen mainScreen] frame]) -
+                              y - h, w, h);
 
-    frame.origin.y = [[NSScreen mainScreen] frame].size.height - y - h;
     [winRec->window setFrame:frame display:NO];
 }
 
@@ -130,6 +138,7 @@ void AquaGetPixmap(void *rw, char **bits,
 		   int *rowBytes, int *depth, int *bpp)
 {
     AquaWindowRec *winRec = WINREC(rw);
+
     [winRec->window getBits:bits rowBytes:rowBytes depth:depth
                     bitsPerPixel:bpp];
 }

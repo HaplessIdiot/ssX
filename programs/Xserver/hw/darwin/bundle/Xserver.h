@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.9 2001/07/15 01:57:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.10 2001/09/17 03:08:40 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -34,8 +34,8 @@
 - (id)init;
 
 - (BOOL)translateEvent:(NSEvent *)anEvent;
+- (BOOL)getNXMouse:(NXEvent*)ev;
 
-- (void)getNXMouse:(NXEvent*)ev;
 + (void)append:(NSString*)value toEnv:(NSString*)name;
 
 - (void)startX;
