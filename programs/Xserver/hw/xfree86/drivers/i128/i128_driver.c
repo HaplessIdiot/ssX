@@ -1,5 +1,3 @@
-/* $XConsortium: $ */
- 
 /*
  * Copyright 1995-2000 by Robin Cutshaw <robin@XFree86.Org>
  * Copyright 1998 by Number Nine Visual Technology, Inc.
@@ -24,7 +22,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.5 2000/10/23 14:11:39 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -800,7 +798,9 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* This gives us DDC1 */
     if (pI128->ddc1Read || pI128->i2cInit) {
         if (xf86LoadSubModule(pScrn, "ddc")) {
+#ifdef XFree86LOADER
           xf86LoaderReqSymLists(ddcSymbols, NULL);
+#endif
         } else {
           /* ddc module not found, we can do without it */
           pI128->ddc1Read = NULL;
@@ -813,7 +813,9 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* Load I2C if we have the code to use it */
     if (pI128->i2cInit) {
       if ( xf86LoadSubModule(pScrn, "i2c") ) {
+#ifdef XFree86LOADER
         xf86LoaderReqSymLists(i2cSymbols,NULL);
+#endif
       } else {
         /* i2c module not found, we can do without it */
         pI128->i2cInit = NULL;

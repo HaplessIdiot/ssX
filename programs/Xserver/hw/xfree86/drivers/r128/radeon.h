@@ -1,4 +1,4 @@
-/* $XFree86 $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,

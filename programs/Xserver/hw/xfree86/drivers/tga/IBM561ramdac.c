@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"

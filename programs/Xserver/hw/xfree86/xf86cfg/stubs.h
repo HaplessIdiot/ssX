@@ -26,11 +26,13 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/stubs.h,v 1.1 2000/10/20 14:59:08 alanh Exp $
  */
 
 #ifndef _xf86cfg_stubs_h
 #define _xf86cfg_stubs_h
+
+#include <stdarg.h>
 
 #if !defined(USE_MODULES)
 int ErrorF(const char*, ...);

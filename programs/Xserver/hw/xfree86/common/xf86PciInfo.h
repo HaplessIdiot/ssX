@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.73 2000/10/17 16:53:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.74 2000/10/18 17:19:57 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -1086,7 +1086,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_SUN, {
                                 {0x1000,		"EBUS",0 },
 				{0x1001,		"Happy Meal",0 },
-				{0x5000,		"APB P2P bridge",0 },
+				{0x5000,		"Advanced PCI bridge",0 },
 				{0x8000,		"PCI Bus Module",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_CMD, {

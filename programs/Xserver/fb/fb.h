@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.20 2000/09/22 05:58:00 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -152,19 +152,7 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #define FbPatternOffsetBits	(sizeof (FbBits) - 1)
 #endif
 
-#define GetHighWord(x) (((int) (x)) >> 16)
-
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = GetHighWord(i)), ((y) = (int) ((short) (i))))
-#define coordToInt(x,y)	(((x) << 16) | (y))
-#define intToX(i)	(GetHighWord(i))
-#define intToY(i)	((int) ((short) i))
-#else
-#define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = GetHighWord(i)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
-#define intToX(i)	((int) ((short) (i)))
-#define intToY(i)	(GetHighWord(i))
-#endif
+#include "micoord.h"
 
 #define FbStipLeft(x,n)	FbScrLeft(x,n)
 #define FbStipRight(x,n) FbScrRight(x,n)
