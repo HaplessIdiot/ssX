@@ -7,16 +7,18 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
 #include "rootlessAqua.h"
 #include "rootlessAquaImp.h"
 #include "rootless.h"
+#include "aqua.h"
 
 #include "regionstr.h"
 #include "scrnintstr.h"
+#include "picturestr.h"
 #include "globals.h" // dixScreenOrigins[]
 
 
@@ -224,5 +226,13 @@ AquaAddScreen(int index, ScreenPtr pScreen)
 Bool
 AquaSetupScreen(int index, ScreenPtr pScreen)
 {
+    // Add Aqua specific replacements for fb screen functions
+#ifdef RENDER
+    {
+        PictureScreenPtr ps = GetPictureScreen(pScreen);
+        ps->Composite = AquaComposite;
+    }
+#endif /* RENDER */
+
     return RootlessInit(pScreen, &aquaRootlessProcs);
 }
