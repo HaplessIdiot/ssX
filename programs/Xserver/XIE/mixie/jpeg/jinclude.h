@@ -71,7 +71,7 @@ terms and conditions:
 	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.1.1.1.14.2 1998/06/09 15:23:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.2 1998/07/25 08:05:12 dawes Exp $ */
 
 /*
  * jinclude.h
@@ -94,7 +94,7 @@ terms and conditions:
 #if 0
 #include <X11/Xos.h>
 #endif
-#ifndef XFree86_LOADER
+#ifndef XFree86LOADER
 #include <stdio.h>
 #endif
 #include "misc.h" /* for pointer ;*/
