@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xf86.rules /main/9 1996/10/31 14:54:26 kaleb $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.28 1999/08/21 14:43:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.29 1999/08/28 09:00:19 dawes Exp $
 
 /*
  * These rules are needed to build the XFree86 X Servers
@@ -206,9 +206,6 @@ InstallMultipleDestFlags(install.sdk,list,dest,flags)
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		/**/
 #else
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		@@\
-AllTarget(module)							@@\
-	LinkBuildModule(module,subdir)					@@\
-									@@\
 install.sdk:: module							@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
 	$(INSTALL) -c module $(DESTDIR)dest/subdir

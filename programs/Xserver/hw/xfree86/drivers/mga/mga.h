@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.46 1999/08/14 10:49:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.47 1999/08/22 05:57:33 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -14,21 +14,21 @@
 #ifndef MGA_H
 #define MGA_H
 
+#include "compiler.h"
 #include "xaa.h"
 #include "xf86Cursor.h"
 #include "vgaHW.h"
 #include "colormapst.h"
 #include "xf86DDC.h"
 
-#if defined(__alpha__)
-#define INREG8(addr) xf86ReadSparse8(pMga->IOBase, (addr))
-#define INREG16(addr) xf86ReadSparse16(pMga->IOBase, (addr))
-#define INREG(addr) xf86ReadSparse32(pMga->IOBase, (addr))
-#define OUTREG8(addr,val) xf86WriteSparse8((val),pMga->IOBase,(addr))
-#define OUTREG16(addr,val) xf86WriteSparse16((val),pMga->IOBase,(addr))
-#define OUTREG(addr, val) xf86WriteSparse32((val),pMga->IOBase,(addr))
-#else /* __alpha__ */
-#if defined(EXTRADEBUG)
+#if !defined(EXTRADEBUG)
+#define INREG8(addr) MMIO_IN8(pMga->IOBase, addr)
+#define INREG16(addr) MMIO_IN16(pMga->IOBase, addr)
+#define INREG(addr) MMIO_IN32(pMga->IOBase, addr)
+#define OUTREG8(addr, val) MMIO_OUT8(pMga->IOBase, addr, val)
+#define OUTREG16(addr, val) MMIO_OUT16(pMga->IOBase, addr, val)
+#define OUTREG(addr, val) MMIO_OUT32(pMga->IOBase, addr, val)
+#else /* !EXTRADEBUG */
 CARD8 dbg_inreg8(ScrnInfoPtr,int,int);
 CARD16 dbg_inreg16(ScrnInfoPtr,int,int);
 CARD32 dbg_inreg32(ScrnInfoPtr,int,int);
@@ -41,15 +41,7 @@ void dbg_outreg32(ScrnInfoPtr,int,int);
 #define OUTREG8(addr,val) dbg_outreg8(pScrn,addr,val)
 #define OUTREG16(addr,val) dbg_outreg16(pScrn,addr,val)
 #define OUTREG(addr,val) dbg_outreg32(pScrn,addr,val)
-#else /* EXTRADEBUG */
-#define INREG8(addr) *(volatile CARD8 *)(pMga->IOBase + (addr))
-#define INREG16(addr) *(volatile CARD16 *)(pMga->IOBase + (addr))
-#define INREG(addr) *(volatile CARD32 *)(pMga->IOBase + (addr))
-#define OUTREG8(addr, val) *(volatile CARD8 *)(pMga->IOBase + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val)
-#define OUTREG(addr, val) *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val)
 #endif /* EXTRADEBUG */
-#endif /* __alpha__ */
 
 #define PORT_OFFSET 	(0x1F00 - 0x300)
 
@@ -133,9 +125,6 @@ typedef struct {
     CARD32		BiosAddress;
     MessageType		BiosFrom;
     unsigned char *     IOBase;
-#ifdef __alpha__
-    unsigned char *     IOBaseDense;
-#endif
     unsigned char *	FbBase;
     unsigned char *	ILOADBase;
     unsigned char *	FbStart;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.58 1999/09/27 06:29:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.59 1999/10/13 04:21:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1409,6 +1409,8 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     confScreenPtr screensecptr;
     int i,j;
     
+if (xf86DoProbe) return 1;
+
     /*
      * This is a very important function that matches the device sections
      * as they show up in the config file with the drivers that the server
@@ -1611,6 +1613,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	xfree(instances);
 	return 0;
     }
+    if (xf86DoProbe) return 1;
 #ifdef DEBUG
     ErrorF("%s instances found: %d\n", driverName, numClaimedInstances);
 #endif
@@ -1785,7 +1788,11 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int i;
     int numFound = 0;
     int *retEntities = NULL;
-    
+
+    /* For now, bail here when xf86DoProbe is set. */
+    if (xf86DoProbe)
+	return 0;
+
     for (i = 0; i < numDevs; i++) {
 	MessageType from = X_CONFIG;
 	GDevPtr dev = NULL;

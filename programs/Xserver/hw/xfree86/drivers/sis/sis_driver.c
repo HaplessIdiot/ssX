@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.29 1999/06/20 15:02:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.30 1999/10/13 04:21:31 dawes Exp $ */
 
 #define DEBUG
 
@@ -119,7 +119,10 @@ static int pix24bpp = 0;
 
 DriverRec SIS = {
     VERSION,
+    SIS_DRIVER_NAME,
+#if 0
     "accelerated driver for SiS chipsets",
+#endif
     SISIdentify,
     SISProbe,
     NULL,
@@ -375,7 +378,7 @@ static Bool
 SISProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -440,10 +443,14 @@ SISProbe(DriverPtr drv, int flags)
 		   numDevSections, drv, &usedChips);
 
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
+
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;

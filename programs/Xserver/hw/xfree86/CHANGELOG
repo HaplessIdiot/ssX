@@ -1,6 +1,16 @@
 XFree86 3.9.16c (13 October 1999)
+3252. Fix problem with cleanup after XAA offscreen pixmap allocation fails
+      (Mark Vojkovich).
+3251. Fix missing USE_MMIO define in trident driver (Alan Hourihane).
+3250. Blade, image and trident updates for the trident driver (Alan Hourihane).
+3249. A very preliminary "-probe" mode for the X server (David Dawes).
+3248. Remove __alpha__ ifdefs from the mga driver by changing the way
+      sparse MMIO access is handled (David Dawes).
+3247. Fix a WarpPointer bug introduced when "xineramifying" some dix code
+      (Mark Vojkovich).
+3246. Move the BuildObjectFromLibrary rule into Imake.rules.
 3245. Fix text mode restoration when large modes are used in the ATI driver
-      (#3318, Marc La France).
+      (#3318, 3321, Marc La France).
 3244. Rendition driver update, including skeleton HW cursor and accelerated
       support (#3317, Dejan Ilic, Marc Langenbach).
 3243. Change mode validation to allow drivers to modify a mode before it
@@ -8925,4 +8935,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.832 1999/09/27 14:33:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.833 1999/10/13 04:20:54 dawes Exp $

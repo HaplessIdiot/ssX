@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.2 1999/09/27 06:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.3 1999/10/13 04:21:32 dawes Exp $ */
 
 /*
  * Authors:
@@ -156,7 +156,10 @@ static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 
 DriverRec TDFX = {
   VERSION,
+  TDFX_DRIVER_NAME,
+#if 0
   "Accelerated driver for 3dfx Voodoo Banshee and Voodoo3 cards",
+#endif
   TDFXIdentify,
   TDFXProbe,
   NULL,
@@ -374,7 +377,7 @@ TDFXIdentify(int flags) {
 static Bool
 TDFXProbe(DriverPtr drv, int flags) {
   int i, numUsed, numDevSections, *usedChips;
-  GDevPtr *devSections;
+  GDevPtr *devSections = NULL;
   Bool foundScreen = FALSE;
 
   TDFXTRACE("TDFXProbe start\n");
@@ -396,9 +399,13 @@ TDFXProbe(DriverPtr drv, int flags) {
 				  TDFXChipsets, TDFXPciChipsets,
 				  devSections, numDevSections,
 				  drv, &usedChips);
-  xfree(devSections);
-  devSections=0;
+  if (devSections)
+    xfree(devSections);
+  devSections=NULL;
   if (numUsed<=0) return FALSE;
+
+  if (flags & PROBE_DETECT)
+    return TRUE;
 
   for (i=0; i<numUsed; i++) {
     ScrnInfoPtr pScrn;

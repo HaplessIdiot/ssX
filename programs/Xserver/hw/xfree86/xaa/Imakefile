@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.37 1999/08/14 10:50:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.38 1999/09/27 06:30:04 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -63,3 +63,5 @@ InstallDriverSDKLibraryModule(xaa,$(DRIVERSDKMODULEDIR),.)
 InstallDriverSDKNonExecFile(xaa.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xaalocal.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xaarop.h,$(DRIVERSDKINCLUDEDIR))
+
+BuildObjectFromLibraryWithPath(/usr/lib,c,y)

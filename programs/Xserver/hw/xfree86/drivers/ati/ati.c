@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.5 1999/09/25 14:37:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.6 1999/09/27 06:29:39 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -76,7 +76,7 @@
 DriverRec ATI =
 {
     ATI_VERSION_CURRENT,
-    "ATI driver",
+    "ati",
     ATIIdentify,
     ATIProbe,
     NULL,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.136 1999/09/25 14:37:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.137 1999/10/13 04:21:04 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -231,9 +231,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     /* Read and parse the config file */
-    if (!xf86HandleConfigFile()) {
-      xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
-      return;
+    if (!xf86DoProbe) {
+      if (!xf86HandleConfigFile()) {
+	xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
+	return;
+      }
     }
 
     /*
@@ -321,6 +323,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
     xf86BusProbe();
 
+    if (xf86DoProbe)
+	DoProbe();
+
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
 
@@ -391,7 +396,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     for (i = 0; i < xf86NumDrivers; i++) {
       if (xf86DriverList[i]->Probe != NULL)
-	xf86DriverList[i]->Probe(xf86DriverList[i], 0);
+	xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DEFAULT);
       else {
         xf86MsgVerb(X_WARNING, 0,
 		"Driver `%s' has no Probe function (ignoring)\n",
@@ -1388,6 +1393,14 @@ ddxProcessArgument(int argc, char **argv, int i)
   if (!strcmp(argv[i], "-scanpci"))
   {
     DoScanPci(argc, argv, i);
+  }
+  if (!strcmp(argv[i], "-probe"))
+  {
+    xf86DoProbe = TRUE;
+#if 0
+    DoProbe(argc, argv, i);
+#endif
+    return 1;
   }
   /* OS-specific processing */
   return xf86ProcessArgument(argc, argv, i);

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.13 1999/08/28 09:01:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.14 1999/10/13 04:21:18 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -76,7 +76,10 @@ static Bool	NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 DriverRec NV = {
         VERSION,
+	"nv",
+#if 0
         "accelerated driver for NVIDIA RIVA 128, TNT and TNT2 cards",
+#endif
         NVIdentify,
         NVProbe,
         NULL,
@@ -364,7 +367,7 @@ static Bool
 NVProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -423,10 +426,14 @@ NVProbe(DriverPtr drv, int flags)
                                     &usedChips);
                         
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
         return FALSE;
+
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
         ScrnInfoPtr pScrn;

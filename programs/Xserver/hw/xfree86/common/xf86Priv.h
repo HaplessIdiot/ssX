@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.56 1999/09/25 14:37:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.57 1999/10/13 04:21:06 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -85,6 +85,7 @@ extern const char *xf86VisualNames[];
 extern int xf86Verbose;                 /* verbosity level */
 extern int xf86LogVerbose;		/* log file verbosity level */
 extern Bool xf86ProbeOnly;
+extern Bool xf86DoProbe;
 
 #ifndef DEFAULT_VERBOSE
 #define DEFAULT_VERBOSE		1
@@ -142,6 +143,10 @@ extern DisplayModeRec xf86DefaultModes [];
 /* xf86DoScanPci.c */
 
 void DoScanPci(int argc, char **argv, int i);
+
+/* xf86DoProbe.c */
+void DoProbeArgs(int argc, char **argv, int i);
+void DoProbe(void);
 
 /* xf86Events.c */
 

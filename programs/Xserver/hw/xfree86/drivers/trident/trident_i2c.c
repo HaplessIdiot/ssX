@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_i2c.c,v 1.2 1999/01/23 09:55:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_i2c.c,v 1.3 1999/04/25 10:02:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -26,8 +26,8 @@ TRIDENTI2CPutBits(I2CBusPtr b, int clock, int data) {
 
     if(clock) reg |= 2;
     if(data)  reg |= 1;
-    MMIO_OUTB(vgaIOBase + 4, I2C);
-    MMIO_OUTB(vgaIOBase + 5, reg);
+    OUTB(vgaIOBase + 4, I2C);
+    OUTB(vgaIOBase + 5, reg);
 #if 0
     ErrorF("TRIDENTI2CPutBits: %d %d\n", clock, data);
 #endif
@@ -44,8 +44,8 @@ TRIDENTI2CGetBits(I2CBusPtr b, int *clock, int *data) {
         return FALSE;
 #endif
 
-    MMIO_OUTB(vgaIOBase + 4, I2C);
-    reg = MMIO_INB(vgaIOBase + 5);
+    OUTB(vgaIOBase + 4, I2C);
+    reg = INB(vgaIOBase + 5);
     *clock = (reg & 0x02) != 0;
     *data  = (reg & 0x01) != 0;
 #if 0

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.2 1999/08/29 12:42:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.3 1999/09/27 06:29:51 dawes Exp $ */
 
 /*
  * Authors:
@@ -146,7 +146,10 @@ static void I740DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 
 DriverRec I740 = {
   VERSION,
+  I740_DRIVER_NAME,
+#if 0
   "Accelerated driver for Intel i740 cards",
+#endif
   I740Identify,
   I740Probe,
   NULL,
@@ -340,7 +343,7 @@ I740Identify(int flags) {
 static Bool
 I740Probe(DriverPtr drv, int flags) {
   int i, numUsed, numDevSections, *usedChips;
-  GDevPtr *devSections;
+  GDevPtr *devSections = NULL;
   Bool foundScreen = FALSE;
   EntityInfoPtr pEnt;
     
@@ -363,6 +366,9 @@ I740Probe(DriverPtr drv, int flags) {
 				  I740Chipsets, I740PciChipsets,
 				  devSections, numDevSections,
 				  drv, &usedChips);
+
+  if (numUsed > 0 && (flags & PROBE_DETECT))
+    return TRUE;
 
   for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
@@ -399,6 +405,9 @@ I740Probe(DriverPtr drv, int flags) {
 				  devSections, numDevSections,
 				  drv, &usedChips);
 
+  if (numUsed > 0 && (flags & PROBE_DETECT))
+    return TRUE;
+
   for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
 
@@ -428,7 +437,8 @@ I740Probe(DriverPtr drv, int flags) {
   }
   if (numUsed) xfree(usedChips);
 
-  xfree(devSections);
+  if (devSections)
+    xfree(devSections);
 
   return foundScreen;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.42 1999/04/04 08:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.43 1999/06/14 12:02:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1517,4 +1517,22 @@ testinx(unsigned short port, unsigned char ind)
 #endif /* NO_COMPILER_H_EXTRAS */
 
 #endif /* NO_INLINE */
+
+/* Some macros to hide the system dependencies for MMIO accesses */
+#ifdef __alpha__
+#define MMIO_IN8(base, offset) xf86ReadSparse8(base, offset)
+#define MMIO_IN16(base, offset) xf86ReadSparse16(base, offset)
+#define MMIO_IN32(base, offset) xf86ReadSparse32(base, offset)
+#define MMIO_OUT8(base, offset, val) xf86ReadSparse8(val, base, offset)
+#define MMIO_OUT16(base, offset, val) xf86ReadSparse16(val, base, offset)
+#define MMIO_OUT32(base, offset, val) xf86ReadSparse32(val, base, offset)
+#else /* !__alpha__ */
+#define MMIO_IN8(base, offset) *(volatile CARD8 *)((base) + (offset))
+#define MMIO_IN16(base, offset) *(volatile CARD16 *)((base) + (offset))
+#define MMIO_IN32(base, offset) *(volatile CARD32 *)((base) + (offset))
+#define MMIO_OUT8(base, offset, val) *(volatile CARD8 *)((base) + (offset)) = (val)
+#define MMIO_OUT16(base, offset, val) *(volatile CARD16 *)((base) + (offset)) = (val)
+#define MMIO_OUT32(base, offset, val) *(volatile CARD32 *)((base) + (offset)) = (val)
+#endif /* __alpha__ */
+
 #endif /* _COMPILER_H */

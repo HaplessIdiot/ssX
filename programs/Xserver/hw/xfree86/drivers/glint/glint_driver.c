@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.46 1999/07/04 06:38:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.47 1999/10/13 04:21:14 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
 
 #define PSZ 8
@@ -122,7 +122,10 @@ static int pix24bpp = 0;
 
 DriverRec GLINT = {
     VERSION,
+    GLINT_DRIVER_NAME,
+#if 0
     "accelerated driver for 3dlabs and derived chipsets",
+#endif
     GLINTIdentify,
     GLINTProbe,
     NULL,
@@ -512,7 +515,7 @@ GLINTProbe(DriverPtr drv, int flags)
     int i;
     pciVideoPtr pPci, *checkusedPci;
     PCITAG deltatag = 0, chiptag = 0;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int numDevSections;
     int numUsed;
     int *usedChips;
@@ -571,10 +574,13 @@ GLINTProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
 		   GLINTChipsets, GLINTPciChipsets, devSections,
 		   numDevSections, drv, &usedChips);
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;

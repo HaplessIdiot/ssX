@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.60 1999/08/14 10:48:57 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.61 1999/10/13 04:20:40 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3030,3 +3030,22 @@ InstallDynamicModule(ModuleLibraryTargetName(module),dest,subdir)
 InstallGenManPage(module,$(DRIVERMANDIR),$(DRIVERMANSUFFIX))
 #endif
 
+#ifndef BuildObjectFromLibraryWithPath
+#define BuildObjectFromLibraryWithPath(libpath,libname,objname)		@@\
+AllTarget(objname.Osuf)							@@\
+									@@\
+objname.Osuf: Concat3(libpath,/lib,libname.a)				@@\
+	@$(MKDIRHIER) tmp						@@\
+	@$(CP) Concat3(libpath,/lib,libname.a) tmp			@@\
+	@(cd tmp; set -x; ArExtCmd Concat(lib,libname.a); \		@@\
+	  $(LD) $(LDCOMBINEFLAGS) *.Osuf -o ../$@; \			@@\
+	  RemoveFiles(*.Osuf))						@@\
+	@$(RM) -r tmp							@@\
+									@@\
+clean::									@@\
+	RemoveFile(objname.Osuf)
+#endif
+
+#ifndef BuildObjectFromLibrary
+#define BuildObjectFromLibrary(libname,objname) BuildObjectFromLibraryWithPath(.,libname,objname)
+#endif

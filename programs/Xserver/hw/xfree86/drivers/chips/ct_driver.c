@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.65 1999/08/14 10:49:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.66 1999/08/30 14:36:22 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -457,7 +457,10 @@ static DisplayModeRec ChipsNTSCMode = {
 
 DriverRec CHIPS = {
 	VERSION,
+	CHIPS_DRIVER_NAME,
+#if 0
 	"Driver for the Chips and Technologies chipsets",
+#endif
 	CHIPSIdentify,
 	CHIPSProbe,
 	NULL,
@@ -773,7 +776,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int i;
     
@@ -792,6 +795,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 					devSections,numDevSections, drv,
 					&usedChips);
 	if (numUsed > 0) {
+	    if (flags & PROBE_DETECT)
+		return TRUE;
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
@@ -818,7 +823,9 @@ CHIPSProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
 				     drv,chipsFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if(numUsed >= 0)
+    if(numUsed > 0)
+	if (flags & PROBE_DETECT)
+	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    
@@ -838,7 +845,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],CHIPSISAchipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     return foundScreen;
 }
 

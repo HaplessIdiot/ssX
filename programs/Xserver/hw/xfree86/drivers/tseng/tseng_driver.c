@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.55 1999/06/27 09:20:23 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.56 1999/09/25 14:37:32 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -125,7 +125,10 @@ static int pix24bpp = 0;
 DriverRec TSENG =
 {
     VERSION,
+    TSENG_DRIVER_NAME,
+#if 0
     "unaccelerated driver for Tseng Labs ET4000, accelerated driver for Tseng Labs ET4000W32, W32i, W32p, ET6000 and ET6100 cards",
+#endif
     TsengIdentify,
     TsengProbe,
     NULL,
@@ -449,7 +452,7 @@ static Bool
 TsengProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int numDevSections;
     int numUsed;
     int *usedChips;
@@ -499,6 +502,8 @@ TsengProbe(DriverPtr drv, int flags)
 					devSections,numDevSections, drv,
 					&usedChips);
 	if (numUsed > 0) {
+	    if (flags & PROBE_DETECT)
+		return TRUE;
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
@@ -515,7 +520,9 @@ TsengProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
 			TsengIsaChipsets,drv, TsengFindIsaDevice, devSections,
 			numDevSections, &usedChips);
-    if (numUsed >= 0)  {
+    if (numUsed > 0)  {
+	if (flags & PROBE_DETECT)
+	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 	    TsengAssignFPtr(pScrn);
@@ -525,7 +532,8 @@ TsengProbe(DriverPtr drv, int flags)
 	}
 	xfree(usedChips);
     }
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     return foundScreen;
 }
 

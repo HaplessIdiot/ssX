@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.27 1999/07/10 12:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.28 1999/08/14 10:49:55 dawes Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -132,7 +132,10 @@ static void TGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
 
 DriverRec TGA = {
     VERSION,
+    TGA_DRIVER_NAME,
+#if 0
     "accelerated driver for Digital chipsets",
+#endif
     TGAIdentify,
     TGAProbe,
     NULL,
@@ -282,7 +285,7 @@ TGAProbe(DriverPtr drv, int flags)
 {
     int i;
     pciVideoPtr pPci;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
 /*      GDevPtr *usedDevs; */
     int *usedChips;
     int numDevSections;
@@ -340,10 +343,14 @@ TGAProbe(DriverPtr drv, int flags)
 		   TGAChipsets, TGAPciChipsets, devSections, numDevSections,
 		   drv, &usedChips);
 				    
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
+
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	pEnt = xf86GetEntityInfo(usedChips[i]);

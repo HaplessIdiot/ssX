@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.49 1999/09/06 11:27:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.50 1999/09/27 06:29:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -599,6 +599,13 @@ typedef struct {
    DGAModePtr mode;
    PixmapPtr pPix;
 } DGADeviceRec, *DGADevicePtr;
+
+/*
+ * Flags for driver Probe() functions.
+ */
+#define PROBE_DEFAULT	0x00
+#define PROBE_DETECT	0x01
+#define PROBE_TRYHARD	0x02
 
 /*
  * ScrnInfoRec

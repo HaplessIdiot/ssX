@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.35 1999/09/25 14:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.36 1999/09/27 14:33:43 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -132,7 +132,10 @@ static int pix24bpp = 0;
 DriverRec S3VIRGE =
 {
     S3VIRGE_DRIVER_VERSION,
+    S3VIRGE_DRIVER_NAME,
+#if 0
     "driver for S3 ViRGE based cards, including DX, GX, GX2, VX, MX & MX+",
+#endif
     S3VIdentify,
     S3VProbe,
     NULL,
@@ -397,7 +400,7 @@ static Bool
 S3VProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int numDevSections;
     int numUsed;
@@ -421,10 +424,14 @@ S3VProbe(DriverPtr drv, int flags)
 				    S3VChipsets, S3VPciChipsets, devSections,
 				    numDevSections, drv, &usedChips);
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
+
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	/* Allocate a ScrnInfoRec and claim the slot */

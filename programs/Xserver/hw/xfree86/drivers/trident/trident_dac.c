@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.11 1999/07/04 06:39:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.12 1999/07/18 03:27:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -25,10 +25,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pReg->tridentRegs3x4[PixelBusReg] = 0x00;
     pReg->tridentRegsDAC[0x00] = 0x00;
-    MMIO_OUTB(vgaIOBase + 4, NewMode2);
+    OUTB(vgaIOBase + 4, NewMode2);
     pReg->tridentRegs3C4[NewMode2] = 0x20;
-    MMIO_OUTB(0x3CE, MiscExtFunc);
-    pReg->tridentRegs3CE[MiscExtFunc] = MMIO_INB(0x3CF);
+    OUTB(0x3CE, MiscExtFunc);
+    pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF);
     pReg->tridentRegs3x4[GraphEngReg] = 0x00; 
 
     /* Enable Chipset specific options */
@@ -54,9 +54,14 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    	pReg->tridentRegs3x4[Enhancement0] = 0x00;
 	    }
 	    /* Fall Through */
+	case PROVIDIA9682:
+	    if (pTrident->UsePCIRetry) 
+	    	pReg->tridentRegs3x4[PCIRetry] = 0xDF;
+	    else
+	    	pReg->tridentRegs3x4[PCIRetry] = 0x00;
+	    /* Fall Through */
 	case TGUI9660:
 	case TGUI9680:
-	case PROVIDIA9682:
 	    if (pTrident->MUX && pScrn->bitsPerPixel == 8 && mode->CrtcHAdjusted) {
 	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x01; /* 16bit bus */
 	    	pReg->tridentRegs3C4[NewMode2] |= 0x02; /* half clock */
@@ -86,6 +91,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x04;
 	    if (pTrident->Chipset > CYBER9320) 
 		pReg->tridentRegs3x4[PixelBusReg] |= 0x01;
+	    if (pTrident->Chipset == TGUI9440AGi) {
+    	        pReg->tridentRegs3CE[MiscExtFunc] |= 0x08;/*Clock Division / 2*/
+	        clock *= 2;	/* Double the clock */
+	    }
 	    break;
 	case 24:
 	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
@@ -108,7 +117,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	CARD8 a, b;
 
 	TGUISetClock(pScrn, clock, &a, &b);
-	pReg->tridentRegsClock[0x00] = (MMIO_INB(0x3CC) & 0xF3) | 0x08;
+	pReg->tridentRegsClock[0x00] = (INB(0x3CC) & 0xF3) | 0x08;
 	pReg->tridentRegsClock[0x01] = a;
 	pReg->tridentRegsClock[0x02] = b;
 	if (pTrident->MCLK > 0) {
@@ -124,29 +133,34 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					 ((pTrident->FbAddress >> 20) & 0x0F)|
 					 0x20;
     pReg->tridentRegs3x4[CRTHiOrd] = (((mode->CrtcVBlankEnd-1) & 0x400) >> 4) |
- 			(((mode->CrtcVTotal - 2) & 0x400) >> 3) |
- 			((mode->CrtcVSyncStart & 0x400) >> 5) |
- 			(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
- 			0x08;
-    pReg->tridentRegs3x4[CRTCModuleTest] = (mode->Flags & V_INTERLACE ? 0x84 : 0x80);
-    MMIO_OUTB(vgaIOBase+ 4, InterfaceSel);
-    pReg->tridentRegs3x4[InterfaceSel] = MMIO_INB(vgaIOBase + 5) | 0x40;
-    MMIO_OUTB(vgaIOBase+ 4, Performance);
-    pReg->tridentRegs3x4[Performance] = MMIO_INB(vgaIOBase + 5) | 0x10;
-    MMIO_OUTB(vgaIOBase+ 4, DRAMControl);
-    pReg->tridentRegs3x4[DRAMControl] = MMIO_INB(vgaIOBase + 5) | 0x10;
-    MMIO_OUTB(vgaIOBase+ 4, AddColReg);
-    pReg->tridentRegs3x4[AddColReg] = (MMIO_INB(vgaIOBase + 5) & 0xCF) |
+ 				     (((mode->CrtcVTotal - 2) & 0x400) >> 3) |
+ 				     ((mode->CrtcVSyncStart & 0x400) >> 5) |
+ 				     (((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
+ 				     0x08;
+    pReg->tridentRegs3x4[CRTCModuleTest] = 
+				(mode->Flags & V_INTERLACE ? 0x84 : 0x80);
+    OUTB(vgaIOBase+ 4, InterfaceSel);
+    pReg->tridentRegs3x4[InterfaceSel] = INB(vgaIOBase + 5) | 0x40;
+    OUTB(vgaIOBase+ 4, Performance);
+    pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5) | 0x10;
+    OUTB(vgaIOBase+ 4, DRAMControl);
+    pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
+    OUTB(vgaIOBase+ 4, AddColReg);
+    pReg->tridentRegs3x4[AddColReg] = (INB(vgaIOBase + 5) & 0xCF) |
 				      ((offset & 0x300) >> 4);
    
     if (!pTrident->NoAccel)
 	pReg->tridentRegs3x4[GraphEngReg] |= 0x80; 
 
-    MMIO_OUTB(0x3CE, MiscIntContReg);
-    pReg->tridentRegs3CE[MiscIntContReg] = MMIO_INB(0x3CF) | 0x04;
+    OUTB(0x3CE, MiscIntContReg);
+    pReg->tridentRegs3CE[MiscIntContReg] = INB(0x3CF) | 0x04;
 
-    MMIO_OUTB(vgaIOBase+ 4, PCIReg);
-    pReg->tridentRegs3x4[PCIReg] = MMIO_INB(vgaIOBase + 5) & 0xF9; 
+    OUTB(vgaIOBase+ 4, PCIReg);
+#if USE_MMIO
+    pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF9; 
+#else
+    pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF8; 
+#endif
     /* Enable PCI Bursting on capable chips */
     if (pTrident->Chipset >= TGUI96xx) pReg->tridentRegs3x4[PCIReg] |= 0x06;
 
@@ -163,55 +177,56 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     /* Goto New Mode */
-    MMIO_OUTB(0x3C4, 0x0B);
-    temp = MMIO_INB(0x3C5);
+    OUTB(0x3C4, 0x0B);
+    temp = INB(0x3C5);
 
     /* Unprotect registers */
-    MMIO_OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
+    OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
 
-    temp = MMIO_INB(0x3C8);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    MMIO_OUTB(0x3C6, tridentReg->tridentRegsDAC[0x00]);
-    temp = MMIO_INB(0x3C8);
+    temp = INB(0x3C8);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    OUTB(0x3C6, tridentReg->tridentRegsDAC[0x00]);
+    temp = INB(0x3C8);
 
-    MMIO_OUTW_3x4(CursorControl);
-    MMIO_OUTW_3x4(CRTCModuleTest);
-    MMIO_OUTW_3x4(LinearAddReg);
-    MMIO_OUTW_3C4(NewMode2);
-    MMIO_OUTW_3x4(CRTHiOrd);
-    MMIO_OUTW_3x4(AddColReg);
-    MMIO_OUTW_3CE(MiscExtFunc);
-    MMIO_OUTW_3x4(GraphEngReg);
-    MMIO_OUTW_3x4(Performance);
-    MMIO_OUTW_3x4(InterfaceSel);
-    MMIO_OUTW_3x4(DRAMControl);
-    MMIO_OUTW_3x4(PixelBusReg);
-    MMIO_OUTW_3CE(MiscIntContReg);
-    MMIO_OUTW_3x4(Offset);
-    MMIO_OUTW_3x4(PCIReg);
-    if (pTrident->Chipset >= PROVIDIA9685) MMIO_OUTW_3x4(Enhancement0);
+    OUTW_3x4(CursorControl);
+    OUTW_3x4(CRTCModuleTest);
+    OUTW_3x4(LinearAddReg);
+    OUTW_3C4(NewMode2);
+    OUTW_3x4(CRTHiOrd);
+    OUTW_3x4(AddColReg);
+    OUTW_3CE(MiscExtFunc);
+    OUTW_3x4(GraphEngReg);
+    OUTW_3x4(Performance);
+    OUTW_3x4(InterfaceSel);
+    OUTW_3x4(DRAMControl);
+    OUTW_3x4(PixelBusReg);
+    OUTW_3CE(MiscIntContReg);
+    OUTW_3x4(Offset);
+    OUTW_3x4(PCIReg);
+    OUTW_3x4(PCIRetry);
+    if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
  
     if (Is3Dchip) {
-	MMIO_OUTW(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
-	MMIO_OUTW(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
+	OUTW(0x3C4, (tridentReg->tridentRegsClock[0x01])<<8 | ClockLow);
+	OUTW(0x3C4, (tridentReg->tridentRegsClock[0x02])<<8 | ClockHigh);
 	if (pTrident->MCLK > 0) {
-	    MMIO_OUTW(0x3C4,(tridentReg->tridentRegsClock[0x03])<<8 | MCLKLow);
-	    MMIO_OUTW(0x3C4,(tridentReg->tridentRegsClock[0x04])<<8 | MCLKHigh);
+	    OUTW(0x3C4,(tridentReg->tridentRegsClock[0x03])<<8 | MCLKLow);
+	    OUTW(0x3C4,(tridentReg->tridentRegsClock[0x04])<<8 | MCLKHigh);
 	}
     } else {
-	MMIO_OUTB(0x43C8, tridentReg->tridentRegsClock[0x01]);
-	MMIO_OUTB(0x43C9, tridentReg->tridentRegsClock[0x02]);
+	OUTB(0x43C8, tridentReg->tridentRegsClock[0x01]);
+	OUTB(0x43C9, tridentReg->tridentRegsClock[0x02]);
 	if (pTrident->MCLK > 0) {
-	    MMIO_OUTB(0x43C6, tridentReg->tridentRegsClock[0x03]);
-	    MMIO_OUTB(0x43C7, tridentReg->tridentRegsClock[0x04]);
+	    OUTB(0x43C6, tridentReg->tridentRegsClock[0x03]);
+	    OUTB(0x43C7, tridentReg->tridentRegsClock[0x04]);
 	}
     }
-    MMIO_OUTB(0x3C2, tridentReg->tridentRegsClock[0x00]);
+    OUTB(0x3C2, tridentReg->tridentRegsClock[0x00]);
 
-    MMIO_OUTW(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8) | NewMode1);
+    OUTW(0x3C4, ((tridentReg->tridentRegs3C4[NewMode1] ^ 0x02) << 8)| NewMode1);
 }
 
 void
@@ -223,69 +238,70 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    MMIO_OUTB(vgaIOBase + 4, Offset);
+    OUTB(vgaIOBase + 4, Offset);
 
-    tridentReg->tridentRegs3x4[Offset] = MMIO_INB(vgaIOBase + 5);
+    tridentReg->tridentRegs3x4[Offset] = INB(vgaIOBase + 5);
 
     /* Goto New Mode */
-    MMIO_OUTB(0x3C4, 0x0B);
-    temp = MMIO_INB(0x3C5);
+    OUTB(0x3C4, 0x0B);
+    temp = INB(0x3C5);
 
-    MMIO_INB_3C4(NewMode1);
+    INB_3C4(NewMode1);
 
     /* Unprotect registers */
-    MMIO_OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
+    OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
 
-    MMIO_INB_3x4(LinearAddReg);
-    MMIO_INB_3x4(CRTCModuleTest);
-    MMIO_INB_3x4(CRTHiOrd);
-    MMIO_INB_3x4(Performance);
-    MMIO_INB_3x4(InterfaceSel);
-    MMIO_INB_3x4(DRAMControl);
-    MMIO_INB_3x4(AddColReg);
-    MMIO_INB_3x4(PixelBusReg);
-    MMIO_INB_3x4(GraphEngReg);
-    if (pTrident->Chipset >= PROVIDIA9685) MMIO_INB_3x4(Enhancement0);
-    MMIO_INB_3x4(PCIReg);
+    INB_3x4(LinearAddReg);
+    INB_3x4(CRTCModuleTest);
+    INB_3x4(CRTHiOrd);
+    INB_3x4(Performance);
+    INB_3x4(InterfaceSel);
+    INB_3x4(DRAMControl);
+    INB_3x4(AddColReg);
+    INB_3x4(PixelBusReg);
+    INB_3x4(GraphEngReg);
+    if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
+    INB_3x4(PCIReg);
+    INB_3x4(PCIRetry);
 
     /* save cursor registers */
-    MMIO_INB_3x4(CursorControl);
+    INB_3x4(CursorControl);
 
-    MMIO_INB_3CE(MiscExtFunc);
-    MMIO_INB_3CE(MiscIntContReg);
+    INB_3CE(MiscExtFunc);
+    INB_3CE(MiscIntContReg);
 
-    temp = MMIO_INB(0x3C8);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C6);
-    tridentReg->tridentRegsDAC[0x00] = MMIO_INB(0x3C6);
-    temp = MMIO_INB(0x3C8);
+    temp = INB(0x3C8);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    temp = INB(0x3C6);
+    tridentReg->tridentRegsDAC[0x00] = INB(0x3C6);
+    temp = INB(0x3C8);
 
-    tridentReg->tridentRegsClock[0x00] = MMIO_INB(0x3CC);
+    tridentReg->tridentRegsClock[0x00] = INB(0x3CC);
     if (Is3Dchip) {
-	MMIO_OUTB(0x3C4, ClockLow);
-	tridentReg->tridentRegsClock[0x01] = MMIO_INB(0x3C5);
-	MMIO_OUTB(0x3C4, ClockHigh);
-	tridentReg->tridentRegsClock[0x02] = MMIO_INB(0x3C5);
+	OUTB(0x3C4, ClockLow);
+	tridentReg->tridentRegsClock[0x01] = INB(0x3C5);
+	OUTB(0x3C4, ClockHigh);
+	tridentReg->tridentRegsClock[0x02] = INB(0x3C5);
 	if (pTrident->MCLK > 0) {
-	    MMIO_OUTB(0x3C4, MCLKLow);
-	    tridentReg->tridentRegsClock[0x03] = MMIO_INB(0x3C5);
-	    MMIO_OUTB(0x3C4, MCLKHigh);
-	    tridentReg->tridentRegsClock[0x04] = MMIO_INB(0x3C5);
+	    OUTB(0x3C4, MCLKLow);
+	    tridentReg->tridentRegsClock[0x03] = INB(0x3C5);
+	    OUTB(0x3C4, MCLKHigh);
+	    tridentReg->tridentRegsClock[0x04] = INB(0x3C5);
 	}
     } else {
-	tridentReg->tridentRegsClock[0x01] = MMIO_INB(0x43C8);
-	tridentReg->tridentRegsClock[0x02] = MMIO_INB(0x43C9);
+	tridentReg->tridentRegsClock[0x01] = INB(0x43C8);
+	tridentReg->tridentRegsClock[0x02] = INB(0x43C9);
 	if (pTrident->MCLK > 0) {
-	    tridentReg->tridentRegsClock[0x03] = MMIO_INB(0x43C6);
-	    tridentReg->tridentRegsClock[0x04] = MMIO_INB(0x43C7);
+	    tridentReg->tridentRegsClock[0x03] = INB(0x43C6);
+	    tridentReg->tridentRegsClock[0x04] = INB(0x43C7);
 	}
     }
-    MMIO_INB_3C4(NewMode2);
+    INB_3C4(NewMode2);
 
     /* Protect registers */
-    MMIO_OUTW_3C4(NewMode1);
+    OUTW_3C4(NewMode1);
 }
 
 static void 
@@ -297,7 +313,7 @@ TridentShowCursor(ScrnInfoPtr pScrn)
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     /* 64x64 */
-    MMIO_OUTW(vgaIOBase + 4, 0xC150);
+    OUTW(vgaIOBase + 4, 0xC150);
 }
 
 static void 
@@ -307,7 +323,7 @@ TridentHideCursor(ScrnInfoPtr pScrn) {
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    MMIO_OUTW(vgaIOBase + 4, 0x4150);
+    OUTW(vgaIOBase + 4, 0x4150);
 }
 
 static void 
@@ -319,21 +335,21 @@ TridentSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     if (x < 0) {
-    	MMIO_OUTW(vgaIOBase + 4, (-x)<<8 | 0x46);
+    	OUTW(vgaIOBase + 4, (-x)<<8 | 0x46);
 	x = 0;
     } else
-    	MMIO_OUTW(vgaIOBase + 4, 0x0046);
+    	OUTW(vgaIOBase + 4, 0x0046);
  
     if (y < 0) {
-    	MMIO_OUTW(vgaIOBase + 4, (-y)<<8 | 0x47);
+    	OUTW(vgaIOBase + 4, (-y)<<8 | 0x47);
 	y = 0;
     } else
-    	MMIO_OUTW(vgaIOBase + 4, 0x0047);
+    	OUTW(vgaIOBase + 4, 0x0047);
 
-    MMIO_OUTW(vgaIOBase + 4, (x&0xFF)<<8 | 0x40);
-    MMIO_OUTW(vgaIOBase + 4, (x&0x0F00)  | 0x41);
-    MMIO_OUTW(vgaIOBase + 4, (y&0xFF)<<8 | 0x42);
-    MMIO_OUTW(vgaIOBase + 4, (y&0x0F00)  | 0x43);
+    OUTW(vgaIOBase + 4, (x&0xFF)<<8 | 0x40);
+    OUTW(vgaIOBase + 4, (x&0x0F00)  | 0x41);
+    OUTW(vgaIOBase + 4, (y&0xFF)<<8 | 0x42);
+    OUTW(vgaIOBase + 4, (y&0x0F00)  | 0x43);
 }
 
 static void
@@ -344,14 +360,14 @@ TridentSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    MMIO_OUTW(vgaIOBase + 4, (fg & 0x000000FF)<<8  | 0x48);
-    MMIO_OUTW(vgaIOBase + 4, (fg & 0x0000FF00)     | 0x49);
-    MMIO_OUTW(vgaIOBase + 4, (fg & 0x00FF0000)>>8  | 0x4A);
-    MMIO_OUTW(vgaIOBase + 4, (fg & 0xFF000000)>>16 | 0x4B);
-    MMIO_OUTW(vgaIOBase + 4, (bg & 0x000000FF)<<8  | 0x4C);
-    MMIO_OUTW(vgaIOBase + 4, (bg & 0x0000FF00)     | 0x4D);
-    MMIO_OUTW(vgaIOBase + 4, (bg & 0x00FF0000)>>8  | 0x4E);
-    MMIO_OUTW(vgaIOBase + 4, (bg & 0xFF000000)>>16 | 0x4F);
+    OUTW(vgaIOBase + 4, (fg & 0x000000FF)<<8  | 0x48);
+    OUTW(vgaIOBase + 4, (fg & 0x0000FF00)     | 0x49);
+    OUTW(vgaIOBase + 4, (fg & 0x00FF0000)>>8  | 0x4A);
+    OUTW(vgaIOBase + 4, (fg & 0xFF000000)>>16 | 0x4B);
+    OUTW(vgaIOBase + 4, (bg & 0x000000FF)<<8  | 0x4C);
+    OUTW(vgaIOBase + 4, (bg & 0x0000FF00)     | 0x4D);
+    OUTW(vgaIOBase + 4, (bg & 0x00FF0000)>>8  | 0x4E);
+    OUTW(vgaIOBase + 4, (bg & 0xFF000000)>>16 | 0x4F);
 }
 
 static void
@@ -369,8 +385,8 @@ TridentLoadCursorImage(
 			src, pTrident->CursorInfoRec->MaxWidth * 
 			pTrident->CursorInfoRec->MaxHeight / 4);
 
-    MMIO_OUTW(vgaIOBase + 4, (((pScrn->videoRam-4) & 0xFF) << 8) | 0x44);
-    MMIO_OUTW(vgaIOBase + 4, ((pScrn->videoRam-4) & 0xFF00) | 0x45);
+    OUTW(vgaIOBase + 4, (((pScrn->videoRam-4) & 0xFF) << 8) | 0x44);
+    OUTW(vgaIOBase + 4, ((pScrn->videoRam-4) & 0xFF00) | 0x45);
 }
 
 static Bool 
@@ -421,24 +437,24 @@ Tridentddc1Read(ScrnInfoPtr pScrn)
     CARD8 temp;
 
     /* New mode */
-    MMIO_OUTB(0x3C4, 0x0B); temp = MMIO_INB(0x3C5);
+    OUTB(0x3C4, 0x0B); temp = INB(0x3C5);
 
-    MMIO_OUTB(vgaIOBase + 4, NewMode1);
-    temp = MMIO_INB(vgaIOBase + 5);
-    MMIO_OUTB(vgaIOBase + 5, temp | 0x80);
+    OUTB(vgaIOBase + 4, NewMode1);
+    temp = INB(vgaIOBase + 5);
+    OUTB(vgaIOBase + 5, temp | 0x80);
 
     /* Define SDA as input */
-    MMIO_OUTW(vgaIOBase + 4, (0x04 << 8) | I2C);
+    OUTW(vgaIOBase + 4, (0x04 << 8) | I2C);
 
-    MMIO_OUTW(vgaIOBase + 4, (temp << 8) | NewMode1);
+    OUTW(vgaIOBase + 4, (temp << 8) | NewMode1);
 
     /* Wait until vertical retrace is in progress. */
-    while (MMIO_INB(vgaIOBase + 0xA) & 0x08);
-    while (!(MMIO_INB(vgaIOBase + 0xA) & 0x08));
+    while (INB(vgaIOBase + 0xA) & 0x08);
+    while (!(INB(vgaIOBase + 0xA) & 0x08));
 
     /* Get the result */
-    MMIO_OUTB(vgaIOBase + 4, I2C);
-    return ( MMIO_INB(vgaIOBase + 5) & 0x01 );
+    OUTB(vgaIOBase + 4, I2C);
+    return ( INB(vgaIOBase + 5) & 0x01 );
 }
 
 void TridentLoadPalette(
@@ -453,11 +469,10 @@ void TridentLoadPalette(
 
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
-    	MMIO_OUTB(0x3C6, 0xFF);
-        MMIO_OUTB(0x3c8, index);
-        MMIO_OUTB(0x3c9, colors[index].red);
-        MMIO_OUTB(0x3c9, colors[index].green);
-        MMIO_OUTB(0x3c9, colors[index].blue);
+    	OUTB(0x3C6, 0xFF);
+        OUTB(0x3c8, index);
+        OUTB(0x3c9, colors[index].red);
+        OUTB(0x3c9, colors[index].green);
+        OUTB(0x3c9, colors[index].blue);
     }
 }
-

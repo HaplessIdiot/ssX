@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.29 1999/09/04 13:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.30 1999/09/25 14:37:42 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -83,8 +83,11 @@
 
 #define VIDMEM_FRAMEBUFFER	0x01	/* memory for framebuffer use */
 #define VIDMEM_MMIO		0x02	/* memory for I/O use */
-#define VIDMEM_SPARSE		0x04	/* sparse mapping required */
+#define VIDMEM_SPARSE		0x04	/* sparse mapping required (obsolete
+					 * now that it is implied by
+					 * VIDMEM_MMIO) */
 #define VIDMEM_READSIDEEFFECT	0x08	/* reads can have side-effects */
+#define VIDMEM_MMIO_32BIT	0x10	/* memory accesses >= 32bit */
 
 /*
  * OS-independent modem state flags for xf86SetSerialModemState() and
