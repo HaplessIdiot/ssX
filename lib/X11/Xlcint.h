@@ -1,5 +1,5 @@
 /* $XConsortium: Xlcint.h /main/25 1996/09/28 16:35:19 rws $ */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.0 1996/02/09 08:18:45 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.1 1996/12/23 05:59:45 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -834,7 +834,7 @@ _XFUNCPROTOBEGIN
 
 extern XLCd _XOpenLC(
 #if NeedFunctionPrototypes
-    char*		/* name */
+    _Xconst char*	/* name */
 #endif
 );
 
