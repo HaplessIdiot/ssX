@@ -2012,6 +2012,9 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
+    if (pScrn->bitsPerPixel < 8) 
+	pTrident->HWCursor = FALSE;
+
     if (pTrident->HWCursor)
 	TridentHWCursorInit(pScreen);
 
@@ -2027,10 +2030,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);
 #endif
 
-#if 0
     pScrn->memPhysBase = pTrident->FbAddress;
     pScrn->fbOffset = 0;
-#endif
 
 #ifdef XvExtension
     {
