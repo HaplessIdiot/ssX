@@ -1,4 +1,4 @@
-/* $XFree86 */
+/* $XFree86$ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
