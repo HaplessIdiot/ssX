@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.0 1994/10/20 06:12:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.1 1994/12/02 05:48:43 dawes Exp $ */
 
 /*
  * This is a dumb configuration program that will create a base
@@ -1028,7 +1028,9 @@ static char *XF86Config_firstchunk_text =
 "#    Protocol	\"Xqueue\"\n"
 "\n"
 "    AutoRepeat	500 5\n"
-"    ServerNumLock\n"
+"# Let the server do the NumLock processing.  This should only be required\n"
+"# when using pre-R6 clients\n"
+"#    ServerNumLock\n"
 "\n"
 "# Specifiy which keyboard LEDs can be user-controlled (eg, with xset(1))\n"
 "#    Xleds      1 2 3\n"
