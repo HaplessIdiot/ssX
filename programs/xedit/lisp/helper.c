@@ -27,10 +27,16 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.6 2001/09/28 04:38:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.7 2001/09/30 20:32:00 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
+
+/*
+ * Prototypes
+ */
+static LispObj *_LispReallyDo(LispMac*, LispObj*, char*, int);
+static LispObj *_LispReallyDoListTimes(LispMac*, LispObj*, char*, int);
 
 /*
  * Implementation
@@ -68,8 +74,8 @@ _LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		    res = T;
 		break;
 	    case LispLambda_t:
-		if (left->data.lambda.name == right->data.lambda.name)
-		    res = T;
+		res = _LispEqual(mac, left->data.lambda.name,
+				 right->data.lambda.name);
 		break;
 	    case LispOpaque_t:
 		if (left->data.opaque.data == right->data.opaque.data)
@@ -288,7 +294,7 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 
     if (type != LispLambda) {
 	for (obj = FUN; obj != NIL; obj = CDR(obj))
-	    if (CAR(obj)->data.lambda.name == name->data.atom) {
+	    if (CAR(obj)->data.lambda.name->data.atom == name->data.atom) {
 		fprintf(lisp_stderr, "*** Warning: %s is being redefined\n",
 			name->data.atom);
 		break;
@@ -296,8 +302,8 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
     }
 
     GCProtect();
-    fun = LispNewLambda(mac, type == LispLambda ? NULL : name->data.atom,
-			args, code, num_args, type, key, optional, rest);
+    fun = LispNewLambda(mac, name, args, code, num_args, type,
+			key, optional, rest);
 
     if (type != LispLambda) {
 	if (obj != NIL)
@@ -315,6 +321,237 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
     GCUProtect();
 
     return (fun);
+}
+
+static LispObj *
+_LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
+{
+    LispObj *old_frm, *old_env, *old_sym, *env, *res,
+	    *args, *test, *body, *obj;
+
+    env = res = NIL;
+    old_frm = FRM;
+    old_env = ENV;
+    old_sym = SYM;
+    args = CAR(list);
+    test = CAR(CDR(list));
+    body = CDR(CDR(list));
+
+    if (test->type != LispCons_t)
+	LispDestroy(mac, "end test condition must be a list, at %s",
+		    LispStrObj(mac, args), fname);
+
+    /* Add variables */
+    if (args != NIL && args->type != LispCons_t)
+	LispDestroy(mac, "%s is not of type list, at %s",
+		    LispStrObj(mac, args), fname);
+
+    for (obj = args; obj != NIL; obj = CDR(obj)) {
+	LispObj *var, *val, *step;
+
+	var = val = NIL;
+	step = NULL;
+	list = CAR(obj);
+	if (list->type == LispAtom_t)
+	    var = list;
+	else if (list->type != LispCons_t)
+		LispDestroy(mac, "%s is not of type list, at %s",
+			    LispStrObj(mac, list), fname);
+	else {
+	    if ((var = CAR(list))->type != LispAtom_t)
+		LispDestroy(mac, "%s is invalid as a variable name, at %s",
+			    LispStrObj(mac, var), fname);
+	    if ((list = CDR(list)) != NIL) {
+		val = EVAL(CAR(list));
+		if ((list = CDR(list)) != NIL)
+		    step = CAR(list);
+	    }
+	}
+	GCProtect();
+	if (step)
+	    list = CONS(var, CONS(val, CONS(step, NIL)));
+	else
+	    list = CONS(var, CONS(val, NIL));
+	if (env == NIL) {
+	    env = CONS(list, NIL);
+	    FRM = CONS(env, FRM);
+	}
+	else {
+	    CDR(env) = CONS(CAR(env), CDR(env));
+	    CAR(env) = list;
+	}
+	GCUProtect();
+	if (refs)
+	    LispAddVar(mac, var->data.atom, val);
+    }
+
+    env = LispReverse(env);
+    if (!refs) {
+	for (obj = env; obj != NIL; obj = CDR(obj)) {
+	    list = CAR(obj);
+	    LispAddVar(mac, CAR(list)->data.atom, CAR(CDR(list)));
+	}
+    }
+
+    /* Execute iterations */
+    for (;;) {
+	if (EVAL(CAR(test)) != NIL) {
+	    if (CDR(test) != NIL)
+		res = EVAL(CAR(CDR(test)));
+	    break;
+	}
+	(void)Lisp_Progn(mac, body, fname);
+	/* Update variables */
+	for (obj = env; obj != NIL; obj = CDR(obj)) {
+	    list = CAR(obj);
+	    if (CDR(CDR(list)) != NIL)
+		LispSetVar(mac, CAR(list)->data.atom,
+			   EVAL(CAR(CDR(CDR(list)))), 0);
+	}
+    }
+
+    SYM = old_sym;
+    ENV = old_env;
+    FRM = old_frm;
+
+    return (res);
+}
+
+LispObj *
+_LispDo(LispMac *mac, LispObj *list, char *fname, int refs)
+{
+    int did_jump;
+    LispObj *res;
+    LispBlock *block;
+
+    res = NIL;
+    did_jump = 1;
+    block = LispBeginBlock(mac, NIL, 0);
+    if (setjmp(block->jmp) == 0) {
+	res = _LispReallyDo(mac, list, fname, refs);
+	did_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (did_jump)
+	res = mac->block.block_ret;
+
+    return (res);
+}
+
+static LispObj *
+_LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
+{
+    double count = 0.0;
+    LispObj *var, *val, *res, *body, *old_frm, *old_env, *old_sym;
+
+    /* Parse arguments */
+    if (CAR(list)->type != LispCons_t)
+	LispDestroy(mac, "expecting list, at %s", fname);
+    body = CDR(list);
+    list = CAR(list);
+    if ((var = CAR(list))->type != LispAtom_t)
+	LispDestroy(mac, "%s is invalid as a variable name, at %s",
+		    LispStrObj(mac, var), fname);
+    list = CDR(list);
+
+    /* Save environment */
+    old_frm = FRM;
+    old_env = ENV;
+    old_sym = SYM;
+
+    if (list == NIL) {
+	if (!times)
+	    val = res = NIL;
+	else
+	    LispDestroy(mac, "NIL is not a number, at %s", fname);
+    }
+    else {
+	if (list->type == LispCons_t) {
+	    val = CAR(list);
+	    list = CDR(list);
+	    if (list == NIL)
+		res = NIL;
+	    else if (list->type == LispCons_t)
+		res = CAR(list);
+	    else
+		LispDestroy(mac, "expecting list, at %s", fname);
+	}
+	else
+	    LispDestroy(mac, "%s is not a list, at %s",
+			LispStrObj(mac, val), fname);
+
+	val = EVAL(val);
+
+	if (times && (val->type != LispReal_t ||
+	    (int)val->data.real != val->data.real))
+	    LispDestroy(mac, "%s is not an integer, at %s",
+			LispStrObj(mac, val), fname);
+	else if (!times && (val != NIL && val->type != LispCons_t))
+	    LispDestroy(mac, "%s is not a list, at %s",
+			LispStrObj(mac, val), fname);
+
+    }
+
+    /* Protect iteration control from gc */
+    FRM = CONS(val, FRM);
+
+    /* Initialize counter */
+    if (times)
+	LispAddVar(mac, var->data.atom, REAL(count));
+    else
+	LispAddVar(mac, var->data.atom, CAR(val));
+
+    /* Execute iterations */
+    for (;;) {
+	/* Check loop */
+	if (times) {
+	    if ((count += 1.0) > val->data.real)
+		break;
+	}
+	else if (val == NIL)
+	    break;
+
+	(void)Lisp_Progn(mac, body, fname);
+
+	/* Update variables */
+	if (times)
+	    LispSetVar(mac, var->data.atom, REAL(count), 0);
+	else {
+	    val = CDR(val);
+	    if (val == NIL)
+		break;
+	    else if (val->type != LispCons_t)
+		LispDestroy(mac, "true list required, at %s", fname);
+	    LispSetVar(mac, var->data.atom, CAR(val), 0);
+	}
+    }
+
+    SYM = old_sym;
+    ENV = old_env;
+    FRM = old_frm;
+
+    return (res == NIL ? NIL : EVAL(res));
+}
+
+LispObj *
+_LispDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
+{
+    int did_jump;
+    LispObj *res;
+    LispBlock *block;
+
+    res = NIL;
+    did_jump = 1;
+    block = LispBeginBlock(mac, NIL, 0);
+    if (setjmp(block->jmp) == 0) {
+	res = _LispReallyDoListTimes(mac, list, fname, times);
+	did_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (did_jump)
+	res = mac->block.block_ret;
+
+    return (res);
 }
 
 LispObj *
@@ -416,7 +653,7 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
 	    GCProtect();
 	    res = EVAL(obj);
 	    if (print)
-		LispPrint(mac, res);
+		LispPrint(mac, res, 1);
 	    GCUProtect();
 	}
 	if (mac->tok == EOF)

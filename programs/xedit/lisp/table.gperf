@@ -29,7 +29,7 @@ struct _LispBuiltin
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/table.gperf,v 1.4 2001/09/29 06:37:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/table.gperf,v 1.5 2001/09/30 20:32:00 paulo Exp $ */
 %}
 %%
 *,Lisp_Mul,1,0,0
@@ -43,22 +43,28 @@ struct _LispBuiltin
 =,Lisp_Equal_,0,1,0
 >,Lisp_Greater,0,1,0
 >=,Lisp_GreaterEqual,0,1,0
-AREF,Lisp_Aref,1,2,0
-ASSOC,Lisp_Assoc,1,2,2
 APPEND,Lisp_Append,0,0,0
 APPLY,Lisp_Apply,0,2,0
 AND,Lisp_And,0,0,0
+AREF,Lisp_Aref,1,2,0
+ASSOC,Lisp_Assoc,1,2,2
 ATOM,Lisp_Atom,1,0,1
+BLOCK,Lisp_Block,0,1,0
 BUTLAST,Lisp_Butlast,1,1,2
 CAR,Lisp_Car,1,1,1
+CASE,Lisp_Case,0,1,0
 CATCH,Lisp_Catch,0,1,0
 CDR,Lisp_Cdr,1,1,1
 COERCE,Lisp_Coerce,1,2,2
 COND,Lisp_Cond,0,0,0
 CONS,Lisp_Cons,1,2,2
 DEFMACRO,Lisp_Defmacro,0,2,0
-DEFUN,Lisp_Defun,0,2,0
 DEFSTRUCT,Lisp_Defstruct,0,1,0
+DEFUN,Lisp_Defun,0,2,0
+DO,Lisp_Do,0,2,0
+DO*,Lisp_DoP,0,2,0
+DOLIST,Lisp_DoList,0,1,0
+DOTIMES,Lisp_DoTimes,0,1,0
 ENDP,Lisp_Null,1,1,1
 EQUAL,Lisp_Equal,1,2,2
 EVAL,Lisp_Eval,1,1,1
@@ -76,6 +82,7 @@ LIST,Lisp_List,1,0,0
 LIST*,Lisp_ListP,0,1,0
 LISTP,Lisp_Listp,1,1,1
 LOAD,Lisp_Load,1,1,0
+LOOP,Lisp_Loop,0,0,0
 MAKE-ARRAY,Lisp_Makearray,1,1,0
 MAPCAR,Lisp_Mapcar,0,2,0
 MAX,Lisp_Max,0,1,0
@@ -87,6 +94,7 @@ NTHCDR,Lisp_Nthcdr,1,2,2
 NULL,Lisp_Null,1,0,1
 NUMBERP,Lisp_Numberp,1,1,1
 OR,Lisp_Or,0,0,0
+PRIN1,Lisp_Prin1,1,1,1
 PRINC,Lisp_Princ,1,1,1
 PRINT,Lisp_Print,1,1,1
 PROG1,Lisp_Prog1,0,1,0
@@ -97,6 +105,8 @@ QUIT,Lisp_Quit,1,0,1
 QUOTE,Lisp_Quote,0,1,1
 READ,Lisp_Read,1,0,0
 REQUIRE,Lisp_Require,1,1,2
+RETURN,Lisp_Return,0,0,1
+RETURN-FROM,Lisp_ReturnFrom,0,1,2
 REVERSE,Lisp_Reverse,1,1,1
 RPLACA,Lisp_Rplaca,1,2,2
 RPLACD,Lisp_Rplacd,1,2,2

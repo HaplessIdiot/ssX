@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.4 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.5 2001/09/28 04:38:31 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -107,7 +107,7 @@ struct _LispObj {
 	    LispObj *plist;
 	} symbol;
 	struct {
-	    char *name;		/* if name is NULL, it is a lambda expression */
+	    LispObj *name;
 	    LispObj *code;
 	    unsigned int num_args : 12;
 	    LispFunType type : 2;
@@ -177,7 +177,7 @@ LispObj *LispNewString(LispMac*, char*);
 LispObj *LispNewQuote(LispMac*, LispObj*);
 LispObj *LispNewCons(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, char*, LispObj*);
-LispObj *LispNewLambda(LispMac*, char*, LispObj*, LispObj*,
+LispObj *LispNewLambda(LispMac*, LispObj*, LispObj*, LispObj*,
 		       int, LispFunType, int, int, int);
 LispObj *LispNewStruct(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewOpaque(LispMac*, void*, int);
