@@ -9,7 +9,7 @@
 <date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.78 2003/02/25 21:27:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.79 2003/02/26 16:41:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -674,8 +674,9 @@ Section "ServerLayout"
 EndSection
 </verb></quote>
 
-See the XF86Config man page for a more detailed explanation of the format
-of the new ServerLayout section.
+See the <htmlurl name="XF86Config(5)" url="XF86Config.5.html"> man page
+for a more detailed explanation of the format of the new ServerLayout
+section.
 
 
 </itemize>
@@ -1006,7 +1007,7 @@ configuring XFree86 to use an existing FreeType installation.
 The Xft library uses a configuration file, <tt>XftConfig</tt>, which
 contains information about which directories contain font files and also
 provides a sophisticated font aliasing mechanism.  Documentation for that
-file is included in the Xft man page.
+file is included in the <htmlurl name="Xft(3)" url="Xft.3.man"> man page.
 
 </sect2>
 <sect2>FreeType support in Xft
@@ -1014,24 +1015,6 @@ file is included in the Xft man page.
 
 XFree86 &relvers; includes sources for FreeType version 2.1.1, and, by
 default, they are built and installed automatically.
-
-<p>
-
-If you prefer, you can configure XFree86 &relvers; to use an existing
-Freetype2 installation by telling XFree86 not to build the internal copy and
-indicating where that external version has been installed. Edit (or create)
-<tt>config/cf/host.def</tt> to include:
-
-<itemize>
-	<item><tt>#define BuildFreetype2Library NO</tt>
-	<item><tt>#define Freetype2Dir /usr/local</tt>
-</itemize>
-
-Note that XFree86 assumes you'll be using a release FreeType no older than
-version 2.0.1.  Early FreeType version 2 releases used a different header file 
-installation and aren't compatible with XFree86. Instructions for building and
-installing FreeType can be found in the <tt>INSTALL</tt> file included with
-the FreeType release.
 
 </sect2>
 
