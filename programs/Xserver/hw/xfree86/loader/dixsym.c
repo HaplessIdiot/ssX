@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.39 2001/08/06 20:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.40 2001/08/16 15:00:11 dawes Exp $ */
 
 
 /*
@@ -29,6 +29,7 @@
 #include "colormap.h"
 #include "cursor.h"
 #include "dix.h"
+#include "dixevents.h"
 #include "dixfont.h"
 #include "dixstruct.h"
 #include "misc.h"
