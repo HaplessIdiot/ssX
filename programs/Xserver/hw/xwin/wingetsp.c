@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.4 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.5 2001/10/22 15:21:11 alanh Exp $ */
 
 #include "win.h"
 
@@ -47,6 +47,12 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
   int			*piWidth = NULL;
   char			*pDst = pDsts;
   int			iBytesToCopy;
+  HBITMAP		hbmpWindow, hbmpOrig;
+  BYTE			*pbWindow = NULL;
+  HDC			hdcMem;
+  ScreenPtr		pScreen = pDrawable->pScreen;
+  winScreenPriv(pScreen);
+  int			iByteWidth;
 
   /* Branch on the drawable type */
   switch (pDrawable->type)
@@ -81,7 +87,68 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       break;
 
     case DRAWABLE_WINDOW:
-      FatalError ("winGetSpansNativeGDI - DRAWABLE_WINDOW\n");
+      ErrorF ("winGetSpansNativeGDI - DRAWABLE_WINDOW\n");
+
+      /*
+       * FIXME: Making huge assumption here that we are copying the
+       * area behind where the cursor will be display.  We already
+       * know the size of the cursor, so this works, for now.
+       */
+
+      /* Create a bitmap to blit the window data to */
+      hbmpWindow = winCreateDIBNativeGDI (*piWidths,
+					  *piWidths,
+					  pDrawable->depth,
+					  &pbWindow,
+					  NULL);
+
+      /* Open a memory HDC */
+      hdcMem = CreateCompatibleDC (NULL);
+
+      /* Select the window bitmap */
+      hbmpOrig = SelectObject (hdcMem, hbmpWindow);
+			       
+      /* Transfer the window bits to the window bitmap */
+      BitBlt (hdcMem,
+	      0, 0,
+	      *piWidths, *piWidths, /* FIXME: Assuming square */
+	      pScreenPriv->hdcScreen,
+	      pPoints->x, pPoints->y,
+	      SRCCOPY);
+
+      /* Pop the window bitmap out of the HDC */
+      SelectObject (hdcMem, hbmpOrig);
+      
+      /* Delete the memory HDC */
+      DeleteDC (hdcMem);
+      hdcMem = NULL;
+
+      iByteWidth = PixmapBytePad (*piWidths, pDrawable->depth);
+
+      ErrorF ("winGetSpansNativeGDI - DRAWABLE_WINDOW - Looping spans\n");
+
+      /* Loop through spans */
+      for (iSpan = 0; iSpan < iSpans; ++iSpan)
+	{
+	  pPoint = pPoints + iSpan;
+	  piWidth = piWidths + iSpan;
+
+	  iBytesToCopy = PixmapBytePad (*piWidth, pDrawable->depth);
+
+	  memcpy (pDst,
+		  pbWindow + iByteWidth * (pPoint->y - pPoints->y),
+		  iBytesToCopy);
+	  
+	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
+		  pDrawable->width, pDrawable->height, pDrawable->depth,
+		  pPoint->x, pPoint->y, *piWidth);
+
+	  /* Calculate offset of next bit destination */
+	  pDst += 4 * ((*piWidth + 31) / 32);
+	}
+
+      /* Delete the window bitmap */
+      DeleteObject (hbmpWindow);
       break;
 
     case UNDRAWABLE_WINDOW:
