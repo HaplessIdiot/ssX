@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 126. Add option for XDarwin to always use Mac command key equivalents
+      (John Harper and Torrey T. Lyons).
  125. Add support for the NEC PC-9821 with CLGD755x to the Cirrus driver,
       and update the relevant Japanese docs (Satoshi Kimura).
  124. Don't do various keycode conversions on NEC PC-98 platforms
@@ -18969,7 +18971,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3270 2004/06/08 01:17:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3271 2004/06/08 01:28:54 dawes Exp $
 
 
 

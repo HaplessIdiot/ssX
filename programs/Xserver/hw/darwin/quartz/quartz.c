@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2003 Greg Parker and Torrey T. Lyons.
+ * Copyright (c) 2001-2004 Greg Parker and Torrey T. Lyons.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.13 2003/11/12 20:21:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.14 2003/11/24 05:39:02 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -56,6 +56,7 @@ int                     quartzStartClients = 1;
 int                     quartzRootless = -1;
 int                     quartzUseSysBeep = 0;
 int                     quartzUseAGL = 1;
+int                     quartzEnableKeyEquivalents = 1;
 int                     quartzServerVisible = TRUE;
 int                     quartzServerQuitting = FALSE;
 int                     quartzScreenIndex = 0;
@@ -171,7 +172,7 @@ void DarwinModeInitInput(
  *  (if needed) and the X server cursor state.
  */
 static void QuartzShow(
-    int x,	// cursor location
+    int x,      // cursor location
     int y )
 {
     int i;
@@ -251,10 +252,10 @@ QuartzMessageServerThread(
     max_args = 4;
 
     if (argc > 0 && argc <= max_args) {
-	va_start (args, argc);
-	for (i = 0; i < argc; i++)
-	    argv[i] = (int) va_arg (args, int);
-	va_end (args);
+        va_start (args, argc);
+        for (i = 0; i < argc; i++)
+            argv[i] = (int) va_arg (args, int);
+        va_end (args);
     }
 
     DarwinEQEnqueue(&xe);
@@ -307,8 +308,8 @@ void DarwinModeProcessEvent(
         case kXDarwinControllerNotify:
             AppleWMSendEvent(AppleWMControllerNotify,
                              AppleWMControllerNotifyMask,
-			     xe->u.clientMessage.u.l.longs0,
-			     xe->u.clientMessage.u.l.longs1);
+                             xe->u.clientMessage.u.l.longs0,
+                             xe->u.clientMessage.u.l.longs1);
             break;
 
         case kXDarwinPasteboardNotify:
