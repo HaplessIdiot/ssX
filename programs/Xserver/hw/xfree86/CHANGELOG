@@ -1,4 +1,9 @@
 XFree86 4.1.99.2 (xx December 2001)
+ 557. Fix dri module build when BuildXinerama is set to NO (David Dawes,
+      based on #A.599, Pontus Lidman).
+ 556. Fix libXext build when BuildLBX is set to NO (based on #A.582,
+      Didier Gautheron).
+ 555. Fix typo in ms_MY locale name (was ms_NY) (Hasbullah Bin Pit).
  554. Fix incorrect code in signal handlers in most of the clients,
       xterm and xdm not done yet (Matthieu Herrb).
  553. Add Glint R4 and Gamma2 support to the glint driver (Alan Hourihane).
@@ -14300,4 +14305,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2079 2001/12/08 16:01:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2080 2001/12/09 15:54:54 herrb Exp $
