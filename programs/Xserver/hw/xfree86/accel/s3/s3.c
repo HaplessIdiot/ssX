@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.61 1995/01/15 10:32:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.62 1995/01/18 06:06:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1101,7 +1101,7 @@ s3Probe()
        case S3_GENDAC_DAC:
           if (S3_801_SERIES(s3ChipId))
             /* SPEA Mirage Bios 5.x */
-            ErrorF("%s %s: SPEA Mirage with BIOS 5.x detected.\n",
+            ErrorF("%s %s: SPEA Mirage detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);
           break;
       } 
@@ -2339,8 +2339,8 @@ icd2061ClockSelect(freq)
 	 if (!OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    outb(vgaCRIndex, 0x42);/* select the clock */
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
-                S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit3  */
-                 outb(vgaCRReg, 0x0a);   /* for synchronizing reasons   */
+                S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit2/3  */
+                 outb(vgaCRReg, 0x06);   /* for synchronizing reasons (?) */
             else outb(vgaCRReg, 0x02); 
             usleep(150000);
 	 }

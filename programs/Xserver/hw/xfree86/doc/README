@@ -47,18 +47,18 @@
 
      11.
         The `xf86config' utility for generating XF86Config files has
-        been improved and how uses a database of video cards.
+        been improved and now uses a database of video cards.
 
      12.
         The X server LinkKit has been updated to include support for
         LBX.
 
      13.
-        The slow X server startup time on machine without hardware
+        The slow X server startup time on machines without hardware
         floating point has been improved.
 
-  Plus a number of other small.  Refer to the CHANGELOG file in the
-  source distribution for full details.
+  Plus a number of other small items.  Refer to the CHANGELOG file in
+  the source distribution for full details.
 
 
 
@@ -320,19 +320,15 @@
   the display size is limited to approximately 800x600.
 
 
-   Note:
-
-       The Diamond SpeedStar 24 (and possibly recent SpeedStar+)
-       boards are NOT supported, even though they use the ET4000.
-       The Stealth 32 which uses the ET4000/W32p is also not sup-
-       ported.  Most other Diamond boards will work with this
-       release of XFree86.  Historically the information required
-       for this support was only available under non-disclosure.
-  As of September 27, 1994, Diamond has verbally agreed to
-  provide The XFree86 Project, Inc. with detailed information
-  about Diamond products.  This should permit us to better
-  support these in future versions of XFree86.
-
+  Note: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards
+  are NOT supported, even though they use the ET4000.  The Stealth 32
+  which uses the ET4000/W32p is also not supported.  Most other Diamond
+  boards will work with this release of XFree86.  Historically the
+  information required for this support was only available under non-
+  disclosure.  As of September 27, 1994, Diamond has verbally agreed to
+  provide The XFree86 Project, Inc. with detailed information about
+  Diamond products.  This should permit us to better support these in
+  future versions of XFree86.
 
 
 
@@ -394,6 +390,7 @@
   /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in
   the directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the
   source distribution.
+
   If you are totally at a loss, you can contact the XFree86 Support Team
   at <XFree86@XFree86.Org>.
 
@@ -459,7 +456,6 @@
 
      o  Jon Tombs <tombs@XFree86.org>
 
-
      o  Kees Verstoep <versto@cs.vu.nl>
 
      o  Paul Vixie <paul@vix.com>
@@ -524,7 +520,6 @@
         o  Doug Anson <danson@lgc.com>,
 
         o  David Holland <davidh@use.com>
-
 
      ISC SVR3 support by:
 
@@ -596,6 +591,7 @@
 
      Cirrus accelerated code by:
 
+
         o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
@@ -657,10 +653,10 @@
 
      Compaq SVGA driver by:
 
-
         o  Hans Oey <hans@mo.hobby.nl>
 
      Oak SVGA driver by:
+
 
         o  Steve Goldman <sgoldman@encore.com>
 
@@ -790,6 +786,7 @@
   that by doing this, our corporation will be merely a formalization of
   what we have been doing in the past, rather than something entirely
   new.
+
   Here is a list of the organizations and individuals who have provided
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
@@ -854,7 +851,6 @@
      o  S.u.S.E, GmbH, Fuerth, Germany
 
      o  Tekelec Airtronic GmbH, Muenchen, Germany
-
 
      o  Jim Tsillas
 
@@ -925,6 +921,7 @@
         +  ftp.fee.vutbr.cz:/pub/XFree86
            (ftp://ftp.fee.vutbr.cz/pub/XFree86) (source and binaries)
 
+
         +  ftp.gwdg.de:/pub/Xfree86 (ftp://ftp.gwdg.de/pub/Xfree86)
            (source and binaries)
 
@@ -991,7 +988,10 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.8 1995/01/18 06:11:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.9 1995/01/18 10:47:07 dawes Exp $
+
+
+
 
 
 

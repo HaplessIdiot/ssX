@@ -1,4 +1,5 @@
 XFree86 3.1.0Ca (18 January 1995)
+212. S3 update for SPEA Mercury P64 (Norbert Distler).
 211. Late LBX updates from the XC.
 210. Add a "no_imageblt" option for the Cirrus driver (Harm Hanemaayer).
 209. Support for 2:1 pixmux 8bpp RAMDACs on boards with fixed clock chips.
