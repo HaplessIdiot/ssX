@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.8 1997/07/29 12:07:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.9 1997/07/31 07:16:13 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -272,7 +272,7 @@ void _ctAccelInit() {
     }
 
 #ifndef CHIPS_HIQV
-    xf86AccelInfoRec.ImageWrite = CTNAME(ImageWrite);
+/*    xf86AccelInfoRec.ImageWrite = CTNAME(ImageWrite); */
 #endif
 
 chips_pixmap:

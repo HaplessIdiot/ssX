@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_dump_regs/glint_dump_regs.c,v 1.1 1997/06/17 08:17:57 hohndel Exp $ */
 #include <stdio.h>
 #include <X11/Xmd.h>
 
@@ -162,6 +162,8 @@ int main(void)
   char *rlogfilename="/tmp/read_regs.log";
   char symbol[81];
 
+  int failed;
+
   pcrpp = xf86scanpci(scrnIndex);
 
   i = -1;
@@ -302,6 +304,7 @@ int main(void)
     printf(" 4: FrameBuffer Test (32bpp)\n");
     printf(" 5: Write Registers according to config file\n");
     printf(" 6: Dump Registers according to config file\n");
+    printf(" 7: Framebuffer Test (ASUS mainboards)\n");
     printf(" > ");
     scanf("%i",&command);
     
@@ -501,10 +504,29 @@ int main(void)
 	fclose(rfile);
         fclose(rlogfile);
 	break;
+      case 7:
+	/* Test complete FrameBuffer (ASUS mainboards) */
+	failed=1;
+	for (pix_addr=0; pix_addr<(8*1024*1024); pix_addr++)
+	  {
+	    *(unsigned char*)glintVideoMem = 0x00;
+	    if(*(unsigned char*)glintVideoMem == 0x00) {
+	      *(unsigned char*)glintVideoMem = 0xFF;
+	      if(*(unsigned char*)glintVideoMem == 0xFF) {
+		printf("Framebuffer accessed successfully at adress 0x%08x",
+		       pix_addr);
+		failed=0;
+	      }
+	    }
+	  }    
+	if (failed)
+	  printf("Can't access framebuffer on this mainboard at no adress!\n");
+	else
+	  printf("Can access framebuffer at several addressses (listed above).\n");
+	break;
       default:
 	break;
       }
-    
   } while(command);
   
   return 0;

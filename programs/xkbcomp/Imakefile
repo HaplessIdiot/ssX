@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/14 1997/08/11 12:02:08 sekhar $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.3 1996/12/23 07:11:35 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.4 1997/08/12 12:02:14 hohndel Exp $
 #define IHaveSubdirs
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
@@ -24,7 +24,6 @@ ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
 INCLUDES = -I$(EXTINCSRC)
 
-MakeSubdirs($(SUBDIRS))
 
 all::
 
@@ -35,6 +34,7 @@ YaccFile(xkbparse,$(YFLAGS))
 
 install::
 	@echo "Creating $(LIBDIR)/xkb
+	MakeSubdirs($(SUBDIRS))
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
 
 LinkVarDirectory(xkb,xkb,compiled,compiled)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.4 1997/03/27 08:30:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.5 1997/06/10 12:30:31 hohndel Exp $ */
 /*
  * s3reg.h
  * 
@@ -468,14 +468,7 @@ typedef struct {
 
    #define WaitQueue16_32(n16,n32) 		\
 	if(s3Bpp <= 2) { WaitQueue(n16); }	\
-	else if (n32 < 8) { 			\
-	       WaitQueue(n32+1); 		\
-	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
-	} else { 				\
-	       WaitQueue(1); 			\
-	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
-	       WaitQueue(n32); 			\
-	}
+	else { WaitQueue(n32); }
 
   #define S3_OUTW(p,n) outw(p,n)
   #define S3_OUTL(p,n) outl(p,n)
@@ -495,6 +488,8 @@ typedef struct {
 
   #define SET_FRGD_COLOR(col)  	S3_OUTW32(FRGD_COLOR, col)
   #define SET_BKGD_COLOR(col)  	S3_OUTW32(BKGD_COLOR, col)
+
+  #define SET_COLOR_CMP(col)  	S3_OUTW32(COLOR_CMP, col)
 
   #define SET_CUR_X(cur_x) 	S3_OUTW(CUR_X, cur_x)
   #define SET_CUR_Y(cur_y) 	S3_OUTW(CUR_Y, cur_y)
