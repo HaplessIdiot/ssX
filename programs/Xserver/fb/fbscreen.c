@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.1 1999/11/19 13:53:45 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -163,9 +163,14 @@ fbFinishScreenInit(ScreenPtr	pScreen,
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = fbCloseScreen;
+#if 0
+    /* leave backing store initialization to the enclosing code so
+     * it can choose the correct order of wrappers
+     */
     /* init backing store here so we can overwrite CloseScreen without stepping
      * on the backing store wrapped version */
     miInitializeBackingStore (pScreen);
+#endif
     return TRUE;
 }
 
@@ -182,6 +187,9 @@ fbScreenInit(ScreenPtr	pScreen,
 {
     if (!fbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp))
 	return FALSE;
-    return fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
-			      width, bpp);
+    if (!fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
+			    width, bpp))
+	return FALSE;
+    miInitializeBackingStore (pScreen);
+    return TRUE;
 }

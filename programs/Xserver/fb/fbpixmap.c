@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -66,7 +66,7 @@ fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
     pPixmap->drawable.height = height;
     pPixmap->devKind = paddedWidth;
     pPixmap->refcnt = 1;
-    pPixmap->devPrivate.ptr = (pointer) ((char *)(pPixmap + 1) + adjust);
+    pPixmap->devPrivate.ptr = (pointer) ((char *)pPixmap + base + adjust);
 #ifdef FB_DEBUG
     pPixmap->devPrivate.ptr = (void *) ((char *) pPixmap->devPrivate.ptr + paddedWidth);
     fbInitializeDrawable (&pPixmap->drawable);
