@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.13 2000/06/21 17:28:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.14 2000/06/22 10:40:49 alanh Exp $ */
 
 /*
  * Authors:
@@ -85,8 +85,6 @@ static Bool I810EnterVT(int scrnIndex, int flags);
 static void I810LeaveVT(int scrnIndex, int flags);
 static Bool I810CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool I810SaveScreen(ScreenPtr pScreen, Bool unblank);
-static Bool I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-static void I810AdjustFrame(int scrnIndex, int x, int y, int flags);
 static void I810FreeScreen(int scrnIndex, int flags);
 static int I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool
 			 verbose, int flags);
@@ -1670,6 +1668,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    xf86SetBlackWhitePixels(pScreen);
 
+   I810DGAInit(pScreen);
+
    if (pScrn->bitsPerPixel>8) {
       visual = pScreen->visuals + pScreen->numVisuals;
       while (--visual >= pScreen->visuals) {
@@ -1791,7 +1791,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    return TRUE;
 }
 
-static Bool
+Bool
 I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags) {
    ScrnInfoPtr pScrn =xf86Screens[scrnIndex];
 
@@ -1801,7 +1801,7 @@ I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags) {
    return I810ModeInit(pScrn, mode);
 }
 
-static void
+void
 I810AdjustFrame(int scrnIndex, int x, int y, int flags) {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    I810Ptr pI810 = I810PTR(pScrn);
