@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.388 2002/01/03 22:51:54 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.389 2002/01/25 21:55:45 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1492,12 +1492,20 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #if HasGcc
 # ifndef GccWarningOptions
+#  ifndef Gcc28Warnings
+#   if (GccMajorVersion > 2) || \
+       ((GccMajorVersion == 2) && (GccMinorVersion >= 8))
+#    define Gcc28Warnings -Wundef
+#   else
+#    define Gcc28Warnings /* */
+#   endif
+#  endif
 #  if XFree86Devel
 #   define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wmissing-declarations \
-			  -Wredundant-decls -Wnested-externs
+			  -Wredundant-decls -Wnested-externs Gcc28Warnings
 #  else
-#   define GccWarningOptions -Wall -Wpointer-arith
+#   define GccWarningOptions -Wall -Wpointer-arith Gcc28Warnings
 #  endif
 # endif
 # ifndef DefaultCCOptions
