@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.49 1995/01/21 14:07:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.50 1995/01/22 03:05:44 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -66,6 +66,7 @@ int   vgaIOBase = 0x3d0; /* These defaults are overriden in s3Probe() */
 int   vgaCRIndex = 0x3d4;
 int   vgaCRReg = 0x3d5;
 int   s3InitCursorFlag = TRUE;
+int   s3HDisplay;
 extern xf86InfoRec xf86Info;
 
 static vgaS3Ptr oldS3 = NULL;
@@ -379,6 +380,8 @@ s3Init(mode)
    unsigned int itmp;
    extern Bool s3DAC8Bit, s3DACSyncOnGreen;
    int pixMuxShift = 0;
+
+   s3HDisplay = mode->HDisplay;
 
    UNLOCK_SYS_REGS;
 
@@ -1677,34 +1680,36 @@ s3Init(mode)
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
          if (DAC_IS_TI3025) {
-	   if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-             outb(vgaCRIndex, 0x6D);             /* set blank delay */
-             if (s3InfoRec.bitsPerPixel == 32)
-               if (mode->Flags & V_DBLCLK)
-                 outb(vgaCRReg, 0x10);
-               else
-                 outb(vgaCRReg, 0x20);
-             else if (s3InfoRec.bitsPerPixel == 16)
-                 if (mode->Flags & V_DBLCLK) 
-                   outb(vgaCRReg, 0x20);
-                 else
-                   outb(vgaCRReg, 0x31);
-             else
-               outb(vgaCRReg, 0x20);
-           }
-           else {
-             outb(vgaCRIndex, 0x6D);
-	     if (s3Bpp == 1) {
-	        if (mode->Flags & V_DBLCLK) 
-		   outb(vgaCRReg, 0x01); /* 01-04 11-14 21-24 31-34 45-47 55-57 65-67 75-77 */
-	        else
-		   outb(vgaCRReg, 0x51); /* ok: 01-07 11-17 21-27 31-37 41-47 51-57 */
-	     }
-	     else if (s3Bpp == 2)
-	        outb(vgaCRReg, 0x00);	 /* ok: 00-03 10-13 20-24 34-37 44-47 54-57 64-67 */
-	     else /* (s3Bpp == 4) */
-		outb(vgaCRReg, 0x10);	 /* ok: 00-01 10-11 22-23 32-33 54-55 66-67 76-77 */
-	   }
+	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+	       outb(vgaCRIndex, 0x6D);             /* set blank delay */
+	       if (s3InfoRec.bitsPerPixel == 32)
+		  if (mode->Flags & V_DBLCLK)
+		     outb(vgaCRReg, 0x10);
+		  else
+		     outb(vgaCRReg, 0x20);
+	       else if (s3InfoRec.bitsPerPixel == 16)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x20);
+		  else
+		     outb(vgaCRReg, 0x31);
+	       else
+		  outb(vgaCRReg, 0x20);
+	    }
+	    else {
+	       outb(vgaCRIndex, 0x6D);
+	       if (s3Bpp == 1)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x02);
+		  else
+		     outb(vgaCRReg, 0x03);
+	       else if (s3Bpp == 2)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x00);
+		  else
+		     outb(vgaCRReg, 0x01);
+	       else /* (s3Bpp == 4) */
+		  outb(vgaCRReg, 0x00);
+	    }
 	 }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
@@ -2364,4 +2369,3 @@ s3Unlock()
    outb(vgaCRReg, 0x00);
 
 }
-

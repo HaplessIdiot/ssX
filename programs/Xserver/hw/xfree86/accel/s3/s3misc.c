@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.20 1994/12/29 10:07:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.21 1995/01/12 12:03:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -57,6 +57,7 @@ static Bool s3TryAddress();
 extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
 extern Bool  s3Localbus;
+extern Bool  s3VLB;
 extern Bool  s3LinearAperture;
 extern int s3BankSize;
 extern int s3DisplayWidth;
@@ -204,7 +205,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n", 
 		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 20));
 	    } else {
-	       if (S3_x64_SERIES(s3ChipId)) {
+	       if (S3_x64_SERIES(s3ChipId) && 
+		   !(S3_TRIO64_SERIES(s3ChipId) &&
+		     s3InfoRec.videoRam > 1024 && s3VLB)) {
 		  /* So far, only tested for the PCI ELSA W2000Pro */
 		  unsigned long addr;
 
@@ -594,12 +597,16 @@ s3AdjustFrame(int x, int y)
    int   Base, origBase;
    unsigned char tmp;
    extern int s3AdjustCursorXPos;  /* for s3Cursor.c */
+   extern int s3HDisplay;
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &s3InfoRec.options)) {
       if ( debugcache & 1)
          y += 512;
    }
       
+   if (x > s3DisplayWidth - s3HDisplay)
+      x  = s3DisplayWidth - s3HDisplay;
+
    /* so may S3 cards have problems with some odd base addresses, 
     * to catch them all only even base values will be used.
     */
@@ -614,6 +621,18 @@ s3AdjustFrame(int x, int y)
 	 Base = (Base & ~0x3f) | 0x39;
       else if (s3Bpp>2 && (Base & 0x1f) == 0x1a) 
 	 Base = (Base & ~0x1f) | 0x19;
+   }
+
+   if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025) {
+      int px, py, a;
+      miPointerPosition(&px, &py);
+      if (s3Bpp==1)
+	 a = 4-1;
+      else 
+	 a = 8-1;
+      if (px-x > s3HDisplay/2)
+	 Base = ((origBase + a*4) >> 2) & ~1;
+      Base &= ~a;
    }
 
    outb(vgaCRIndex, 0x31);

@@ -1,6 +1,20 @@
+XFree86 3.1.0Z (23 January 1995)
+249. Restore correct key maps for 84-key keyboard, but allow alternate (old)
+     behaviour when "ServerNumLock" is set in the XF86Config.
+248. xf86config updates (Harald Koenig).
+247. Remove stripes when panning with Ti3025 (Harald Koenig).
+246. Enable linear fb probing for VLB Trio64 cards with > 1MB DRAM
+     (Harald Koenig).
+245. Put blank delay values back to what they were for non-#9 Ti3025
+     boards (Harald Koenig).
+244. Fix AGX fill problems and hangs when exiting with an AGX-016 under
+     SVR4 (Henry Worth).
+243. Fix AGX font cache problem, and other updates/cleanups
+     (Henry Worth).
+
 XFree86 3.1.0Ce (22 January 1995)
 242. Updates to vgawonder driver, including fix for 68800-6 memory probe,
-     and a reworking of the clock matching code.
+     and a reworking of the clock matching code (Marc Aurele La France).
 241. Remove most BIOS dependencies in vgawonder probe code
      (Marc Aurele La France).
 240. Change ordering of Mach32 and Mach64 probing in SuperProbe, ati.test

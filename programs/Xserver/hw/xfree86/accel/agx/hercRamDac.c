@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.1 1994/09/07 15:47:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.2 1994/09/11 00:36:48 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -366,8 +366,10 @@ hercSwitchToBigDac(
    xf86OutRamDacData( BT485_COMMAND_REG_2, 0x20 );
    /* 4-1 Multiplexed */
    xf86OutRamDacData( BT485_COMMAND_REG_1, 0x40 );
+
    /* 8-bit dac */ 
-   xf86OutRamDacData( BT485_COMMAND_REG_0, 0x02 );
+   if( xf86Dac8Bit )
+      xf86OutRamDacData( BT485_COMMAND_REG_0, 0x02 );
 
    if( wasLittle ) {
       if( inb(hercDacSw) & 0x01 ) {

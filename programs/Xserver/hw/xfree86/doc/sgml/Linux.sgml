@@ -11,7 +11,7 @@
 XFree86 has been tested with Linux version 1.1.49. It should work
 with any version since 1.0 without change. The binaries and libraries are
 based on the 4.5.26 DLL C libraries, and the 1.4.4 dynamic linker
-<tt>ld.so</tt>.
+<tt>ld.so</tt> (libc-4.5.26 or newer is *REQUIRED* !).
 The DLL X libraries are produced with the 2.16 DLL-tools by Eric Youngdale.
 
 <sect> Backwards Compatibility <p>
@@ -175,7 +175,7 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.2 1995/01/21 07:16:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.3 1995/01/21 10:44:23 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.14 1995/01/07 03:59:08 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.15 1995/01/19 05:18:27 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -274,7 +274,7 @@ XCOMM operating system:  OSName
 #endif
 #ifdef i386Architecture
 #ifndef ServerCCOptions
-#define ServerCCOptions -Xa
+#define ServerCCOptions -Xt
 #endif
 #endif
 #endif	

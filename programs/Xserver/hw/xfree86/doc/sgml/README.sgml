@@ -35,6 +35,7 @@ October 1994:
     <item> A new accelerated server for Mach64 boards.
     <item> Support for the S3 Trio32 and Trio64 chipsets.
     <item> Support in the S3 server for the Chrontel 8391 clock chip.
+    <item> Support for SPEA Mercury P64 and MIRO Crystal 40SV.
     <item> Bug fixes and some performance improvements for most of the
 	accelerated servers.
     <item> Support for `double scan' video modes (most servers).
@@ -672,6 +673,7 @@ involvement in X11R6.
   <item>  <url url="http://www.infomagic.com/"  
 	name="InfoMagic">, Rocky Hill, NJ
   <item>  LunetIX Softfair, Berlin, Germany
+  <item>  MIRO Computer Products AG, Braunschweig, Germany
   <item>  Rich &amp; Amy Murphey
   <item>  Brett Neumeier
   <item>  Number Nine, Lexington, MA
@@ -808,7 +810,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.12 1995/01/21 10:44:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.13 1995/01/22 03:06:29 dawes Exp $
 </verb>
 
 </article>

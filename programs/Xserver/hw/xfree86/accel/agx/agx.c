@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.23 1995/01/10 10:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.24 1995/01/15 10:29:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -477,6 +477,10 @@ agxProbe()
 			((unsigned int)agxGEPhysBase & 0x0FFF));
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
 
+   if( !AGX_SERIES(agxChipId)) {
+      /* until someone with an XGA can complete POS register probing */
+      agxPOSMemBase = agxInfoRec.POSbase;
+   }
    agxMemBase = ( (agxPOSMemBase&0xFE)<<24 | (agxInfoRec.instance&0x07)<<22 );
 
    OFLG_ZERO(&validOptions);
@@ -591,33 +595,46 @@ agxProbe()
       agxInfoRec.maxClock = xf86MaxClock;
    }
 
-   agxSetUpProbeCRTC( &agxProbeCRTC ); 
-   agxSetCRTCRegs(&agxProbeCRTC);
-   agxInitGE();
-   if (!agxInfoRec.videoRam) {
-      agxInfoRec.videoRam = agxGetMemSize();
-      if (agxInfoRec.videoRam == 0 )
-         ErrorF("%s %s: Video memory probe failed, specify the \
-memory size in your XF86Config file.\n",
-                XCONFIG_PROBED, agxInfoRec.name);
-   }
-
-   if (agxClockSelectFunc != xgaNiClockSelect) {
-      if (!agxInfoRec.clocks)
-         agxProbeClocks(1);
-      else if (!hercBigDAC)   /* mask out doubled clocks */
-         if (agxInfoRec.clocks > 16)         
-            agxInfoRec.clocks = 16;
-   }
-
-
-   outb(agxIdxReg, 0);
-   if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_PAL_MASK);
-      outb(agxByteData, 0xFF);
-   }
-   else {
-      outb(VGA_PAL_MASK, 0xFF);
+   if( !agxInfoRec.videoRam
+       || agxClockSelectFunc != xgaNiClockSelect ) {
+      /* we'll have to go into XGA mode and probe */
+      agxClearColor0();
+      outb(agxIdxReg, 0);
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0x00);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0x00);
+      }
+      agxSetUpProbeCRTC( &agxProbeCRTC ); 
+      agxSetCRTCRegs(&agxProbeCRTC);
+      agxInitGE();
+      if (!agxInfoRec.videoRam) {
+         agxInfoRec.videoRam = agxGetMemSize();
+         if (agxInfoRec.videoRam == 0 )
+            ErrorF("%s %s: Video memory probe failed, specify the \
+   memory size in your XF86Config file.\n",
+                   XCONFIG_PROBED, agxInfoRec.name);
+      }
+   
+      if (agxClockSelectFunc != xgaNiClockSelect) {
+         if (!agxInfoRec.clocks)
+            agxProbeClocks(1);
+         else if (!hercBigDAC)   /* mask out doubled clocks */
+            if (agxInfoRec.clocks > 16)         
+               agxInfoRec.clocks = 16;
+      }
+   
+   
+      outb(agxIdxReg, 0);
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0xFF);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0xFF);
+      }
    }
 
    /*
@@ -698,6 +715,11 @@ memory size in your XF86Config file.\n",
       agx128WidthAdjust = FALSE;
       agx256WidthAdjust = FALSE;
       agx288WidthAdjust = FALSE;
+      if (agxVirtX <= 512) {
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 512;
+      }
+      else
       if (AGX_16_ONLY(agxChipId) && agxVirtX <= 640) {
          agx128WidthAdjust = TRUE;
          agxAdjustedVirtX = 512;

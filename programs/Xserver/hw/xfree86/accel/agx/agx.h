@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.8 1995/01/10 10:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.9 1995/01/15 10:29:49 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -950,6 +950,8 @@ extern unsigned int agxBankSize;
 extern int agxDac8Bit;
 extern int agxPixMux;
 extern int agxBusType;
+
+extern unsigned char agxVideoMapFormat;
 
 extern agxCRTCRegRec agxCRTCRegs;
 extern agxSaveBlock  *agxSavedState;

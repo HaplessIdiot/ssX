@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.9 1994/11/30 20:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.10 1994/11/30 21:49:05 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -84,9 +84,9 @@ static	void	agxImageWriteNoMem(
 );
 
 static unsigned long PMask;
-static int BytesPerPixelShift;
+int BytesPerPixelShift;
 static int screenStride;
-unsigned char agxVideoMapFormat;
+unsigned char agxVideoMapFormat = GE_MF_8BPP | GE_MF_INTEL_FORMAT;
 
 #define MAP_MNG 1
 
@@ -125,11 +125,8 @@ agxImageInit()
     int i;
 
     PMask = (1UL << agxInfoRec.depth) - 1;
-    for( BytesPerPixelShift = 0, i = 1; 
-         i < agxInfoRec.bitsPerPixel;
-         BytesPerPixelShift++, i <<= 1   );
-    agxVideoMapFormat = (BytesPerPixelShift & 0x07) | GE_MF_MOTO_FORMAT;
-    BytesPerPixelShift -= 3;
+    agxVideoMapFormat = ((BytesPerPixelShift+3) & 0x07) 
+                        | GE_MF_INTEL_FORMAT;
     screenStride = agxDisplayWidth << BytesPerPixelShift;
 
 
@@ -193,7 +190,7 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
    int  h;
 #endif
 {
-    char *curvm;
+    volatile char *curvm;
     unsigned int offset;
     unsigned int bank;
     unsigned int cpyWidth;
@@ -203,7 +200,7 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
     offset = dst & (agxBankSize-1);
     bank   = (dst >> 16) & 0x7F;
     agxSetVGAPage(bank);
-    curvm = (char*)agxVideoMem + offset;
+    curvm = (volatile char*)agxVideoMem + offset;
     cpyWidth = dstWidth < srcWidth ? dstWidth : srcWidth;
 
     while(h) {
@@ -229,14 +226,14 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
          */
         if( srcWidth == dstWidth ) {
            unsigned int size = count * dstWidth;
-           MemToBus( curvm, src, size );
+           MemToBus( (pointer)curvm, src, size );
            count = 0;
            curvm += size;
            src += size;
         }
         else {
            while(count--) {
-              MemToBus( curvm, src, cpyWidth);
+              MemToBus( (pointer)curvm, src, cpyWidth);
               curvm += dstWidth;
               src += srcWidth;
            }
@@ -246,7 +243,7 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
            if (offset < agxBankSize) {
                 h--;
                 left = agxBankSize - offset;
-                MemToBus( curvm, src, left);
+                MemToBus( (pointer)curvm, src, left);
                 bank++;
                 agxSetVGAPage(bank);
 
@@ -257,8 +254,8 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
                 bank++;
                 agxSetVGAPage(bank);
             }
-        offset &= (agxBankSize-1);
-        curvm = (char*)agxVideoMem + offset;
+            offset &= (agxBankSize-1);
+            curvm = (char*)agxVideoMem + offset;
         }
     }
 }
@@ -387,9 +384,10 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     unsigned long	planemask;
 #endif
 {
-    pointer curvm;
+    volatile unsigned char *curvm;
     int offset;
     int bank;
+    int bankMask = agxBankSize-1;
     int left;
     int count;
 
@@ -399,65 +397,50 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     if (alu == MIX_DST)
 	  return;
 
-    if ((alu != MIX_SRC) || ((planemask & PMask) != PMask)) {
-        GE_WAIT_IDLE();
+    if ( (alu != MIX_SRC) || ((planemask & PMask) != PMask)) {
         agxImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask);
 	return;
     }
-	
-    psrc += (pwidth * py + px) << BytesPerPixelShift;
-    offset = (x + y * agxDisplayWidth) << BytesPerPixelShift;
-    bank = offset / agxBankSize;
-    offset &= (agxBankSize-1);
-    curvm = (pointer)&((char*)agxVideoMem)[offset];
+
+    w = AGX_PIXEL_ADJUST( w );
+    psrc += pwidth * py + AGX_PIXEL_ADJUST( px );
+    offset = AGX_PIXEL_ADJUST( x ) + y * screenStride;
+    bank = (offset & ~bankMask) >> 16;
     agxSetVGAPage(bank);
+    offset &= bankMask;
+    curvm = &((volatile unsigned char*)agxVideoMem)[offset];
 
     GE_WAIT_IDLE();
-    while(h) {
-	/*
-	 * calc number of line before need to switch banks
-	 */
-	count = (agxBankSize - offset) / screenStride;
-	if (count >= h) {
-		count = h;
-		h = 0;
-	} 
+    while( h-- ) {
+        if ( (offset + w) <= agxBankSize) {
+            MemToBus( (pointer)curvm, psrc, w );
+            psrc += pwidth;
+            curvm  += screenStride;
+            offset += screenStride;
+        }
         else {
- 	   offset += (count * agxDisplayWidth);
-	   if (offset + (w<<BytesPerPixelShift) < agxBankSize) {
-	      count++;
-	      offset += agxDisplayWidth;
-	   }
-           h -= count;
-	}
-
-	/*
-	 * Output line till back switch
-	 */
-	while(count--) {
-		MemToBus(curvm, psrc, w<<BytesPerPixelShift);
-		curvm = (void *)((unsigned char *)curvm + agxDisplayWidth);
-		psrc += pwidth;
-	}
-
-	if (h) {
-	   if (offset < agxBankSize) {
-		h--;
-	        left = agxBankSize - offset;
-		MemToBus(curvm, psrc, left);
-		bank++;
-		agxSetVGAPage(bank);
-		
-		MemToBus(agxVideoMem, psrc+left, (w<<BytesPerPixelShift)-left);
-		psrc += pwidth;
-		offset += screenStride;
-	    } else {
-		bank++;
-		agxSetVGAPage(bank);
-	    }
-	offset &= (agxBankSize-1);
-	curvm = (pointer)&((char*)agxVideoMem)[offset];
-	}
+            if (offset < agxBankSize) {
+                left = agxBankSize - offset;
+                MemToBus( (pointer)curvm, psrc, left);
+                bank++;
+                agxSetVGAPage(bank);
+                MemToBus( agxVideoMem, 
+                          psrc+left, 
+                          w - left );
+                psrc += pwidth;
+                offset = (offset + screenStride) & bankMask;
+                curvm = &((volatile unsigned char*)agxVideoMem)[offset];
+            } else {
+                bank++;
+                agxSetVGAPage(bank);
+                offset &= bankMask;
+                curvm = &((volatile unsigned char*)agxVideoMem)[offset];
+                MemToBus( (pointer)curvm, psrc, w );
+                psrc += pwidth;
+                curvm  += screenStride;
+                offset += screenStride;
+            }
+        }
     }
 }
 
@@ -476,7 +459,7 @@ agxImageWriteNoMem(
     short		alu,
     unsigned long	planemask)
 #else
-agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
+agxImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
@@ -491,13 +474,15 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
 {
     unsigned int	srcPWidth;
     unsigned int	srcBWidth;
+    unsigned int	bw = AGX_PIXEL_ADJUST( w );
     int			srcBWidthShift;
     unsigned int	srcStripHeight;
     unsigned int	srcMaxLines;
-    unsigned int	srcLine;
+    unsigned int	srcLine = 0;
     unsigned int	numVertStrips;
     unsigned int	lastVStripHeight;
     unsigned int	strip;
+    unsigned int        dstCoOrd = y << 16 | x;
 
     /*
      * Unlike the 8514 clan, the XGA architecture does not support
@@ -513,16 +498,11 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
      *    1) Fits in scratchpad.
      *    2) Doesn't fit in scratchpad.
      *       Source split into multiple horizontal strips.
-     *   
-     * An optimization to be considered in the future, would be 
-     * to split the scratchpad into double buffers, and for all cases
-     * that are not trivially small, overlap the copies and 
-     * the bitblt to maximize concurrency.
      */
 
     srcBWidthShift = agxBytePadScratchMapPow2( w, BytesPerPixelShift );
     srcBWidth = 1 << srcBWidthShift;
-    srcPWidth = srcBWidth >> BytesPerPixelShift;
+    srcPWidth = AGX_TO_PIXEL( srcBWidth );
     srcMaxLines = agxScratchSize >> srcBWidthShift;
 
     if( h <= srcMaxLines ) {
@@ -540,13 +520,15 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
           lastVStripHeight = srcStripHeight;
     }
 
+    psrc += pwidth * py + AGX_PIXEL_ADJUST( px );
+
     MAP_INIT( GE_MS_MAP_B,
               agxVideoMapFormat,
               agxMemBase + agxScratchOffset,
               srcPWidth-1,
               srcStripHeight-1,
               FALSE, FALSE, FALSE );
-
+    
     GE_WAIT_IDLE();
 
     MAP_SET_DST( GE_MS_MAP_A );
@@ -562,9 +544,7 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
               | GE_OP_INC_X
               | GE_OP_INC_Y         );
 
-    srcLine = 0;       
     for( strip = 1; strip <= numVertStrips; strip++ ) {
-       register dstCoOrd = srcLine << 16 | x;
 
        GE_WAIT_IDLE(); 
 
@@ -572,18 +552,19 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
           srcStripHeight = lastVStripHeight;
           GE_OUT_W( GE_OP_DIM_HEIGHT, srcStripHeight - 1 );
        }
-          
+
        /*
         * Load map B with the current strip. 
         */
        if( numVertStrips == 1 ) { 
-          agxMemToVid( agxScratchOffset, srcPWidth,
-                       psrc, pwidth, h ); 
+          agxPartMemToVid( agxScratchOffset, srcBWidth,
+                           psrc, pwidth, 
+                           bw, h ); 
        }
        else {
-          agxMemToVid( agxScratchOffset, srcBWidth, 
-                       psrc + (srcLine<< srcBWidthShift), pwidth,
-                       srcStripHeight );
+          agxPartMemToVid( agxScratchOffset, srcBWidth, 
+                           psrc + (srcLine * pwidth), pwidth,
+                           bw, srcStripHeight );
        }
 
        GE_OUT_D( GE_SRC_MAP_X, 0 );
@@ -593,7 +574,8 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
                       | GE_OPW_SRC_MAP_B
                       | GE_OPW_DEST_MAP_A   );
 
-       srcLine += srcStripHeight << 16;
+       srcLine  += srcStripHeight;
+       dstCoOrd += srcStripHeight << 16;
     }
     GE_WAIT_IDLE_EXIT();
 } 
@@ -617,21 +599,21 @@ agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			w;
     int			h;
     char		*psrc;
-    int			pwidth;
+    int			pwidth;     /* already adjusted to bytes */
     int			px;
     int			py;
     unsigned long	planemask;
 #endif
 {
-    pointer curvm;
+    volatile unsigned char * curvm;
     int offset;
     int bank;
+    unsigned int bankMask = agxBankSize-1;
     int left;
 
     if ((w == 0) || (h == 0))
 	return;
 
-    GE_WAIT_IDLE();
 
 #if 0
     if ((planemask & 0xff) != 0xff) {
@@ -639,42 +621,44 @@ agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
     }
 #endif
 
-    psrc += pwidth * py + (px << BytesPerPixelShift);
-    offset = x + (y << BytesPerPixelShift) * screenStride;
+    psrc += pwidth * py + AGX_PIXEL_ADJUST( px );
+    offset = AGX_PIXEL_ADJUST( x ) + y * screenStride;
     bank = offset / agxBankSize;
-    offset &= (agxBankSize-1);
-    curvm = (pointer)&((char*)agxVideoMem)[offset];
     agxSetVGAPage(bank);
+    offset &= bankMask;
+    curvm = &((volatile unsigned char*)agxVideoMem)[offset];
+    w = AGX_PIXEL_ADJUST( w );
 
-    while(h--) {
-	if (offset + w > agxBankSize) {
+    GE_WAIT_IDLE();
+    while( h-- ) {
+	if (offset + w <= agxBankSize) {
+            BusToMem(psrc, (pointer)curvm, w );
+            psrc += pwidth;
+            curvm += screenStride;
+            offset += screenStride;
+        }
+        else {
 	    if (offset < agxBankSize) {
 		left = agxBankSize - offset;
-		BusToMem(psrc, curvm, left);
+		BusToMem(psrc, (pointer)curvm, left);
 		bank++;
 		agxSetVGAPage(bank);
-		
 		BusToMem( psrc+left, 
-                          agxVideoMem, 
-                          (w << BytesPerPixelShift) - left );
-		psrc += pwidth;
-		offset = (offset + screenStride) & (agxBankSize-1);
-		curvm = (pointer)&((char*)agxVideoMem)[offset];
+                          (pointer)((volatile unsigned char*)agxVideoMem), 
+                          w - left );
+                psrc += pwidth;
+                offset = (offset + screenStride) & bankMask;
+                curvm = &((volatile unsigned char*)agxVideoMem)[offset];
 	    } else {
 		bank++;
 		agxSetVGAPage(bank);
-		offset &= (agxBankSize-1);
-		curvm = (pointer)&((char*)agxVideoMem)[offset];
-		BusToMem(psrc, curvm, (w << BytesPerPixelShift));
-		offset += screenStride;
-		curvm = (void *)((unsigned char *)curvm + screenStride);
-		psrc += pwidth;
+		offset &= bankMask; 
+		curvm = &((volatile unsigned char*)agxVideoMem)[offset];
+		BusToMem(psrc, (pointer)curvm, w );
+                psrc += pwidth;
+                curvm += screenStride;
+                offset += screenStride;
 	    }
-	} else {
-	    BusToMem(psrc, curvm, (w << BytesPerPixelShift) );
-	    offset += screenStride;
-	    curvm = (void *)((unsigned char *)curvm + screenStride);
-	    psrc += pwidth;
 	}
     }
 }
@@ -734,11 +718,10 @@ agxImageFillBank(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
        GE_WAIT_IDLE();
    
-       agxPartMemToVid( (x + y * agxDisplayWidth) << BytesPerPixelShift, 
-                        agxVirtX,
-                        psrc + ((xrot + yrot * pwidth) << BytesPerPixelShift),
-                        pwidth,
-                        w << BytesPerPixelShift, h );
+       agxPartMemToVid( AGX_PIXEL_ADJUST(x) + y * screenStride, screenStride,
+                        psrc + AGX_PIXEL_ADJUST(xrot) + yrot * pwidth,
+                           pwidth,
+                        AGX_PIXEL_ADJUST( w ), h );
     }
 }
 
@@ -774,6 +757,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 #endif
 {
     unsigned int      srcPWidth;
+    unsigned int      bw;
     unsigned int      srcBWidth;
     int  		srcBWidthShift;
     unsigned int      srcStripHeight;
@@ -792,6 +776,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     unsigned int        lastVStripHeight;
     unsigned int      strip;
     unsigned int      vStripFirstY;         
+    int			xBrot;
     int			xrot;
     int			yrot;
     unsigned int      newWidth;
@@ -844,11 +829,12 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      * and loop overhead of this routine.
      */
 
+    bw = AGX_PIXEL_ADJUST( pw );
     newWidth = w > pw ? pw : w;
-    newBWidth = newWidth << BytesPerPixelShift;
+    newBWidth = AGX_PIXEL_ADJUST( newWidth );
     srcBWidthShift = agxBytePadScratchMapPow2( newWidth, BytesPerPixelShift );
     srcBWidth = 1 << srcBWidthShift;
-    srcPWidth = srcBWidth >> BytesPerPixelShift;
+    srcPWidth = AGX_TO_PIXEL( srcBWidth );
     srcMaxLines = agxScratchSize >> srcBWidthShift; 
 
     if( w == newWidth ) {
@@ -874,11 +860,12 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
        lastBWidth = newBWidth;
     }
     else { 
-       firstBWidth = (pw - xrot) << BytesPerPixelShift;
+       firstBWidth = AGX_PIXEL_ADJUST(pw - xrot);
        if( firstBWidth > newBWidth ) 
           firstBWidth = newBWidth; 
        lastBWidth = newBWidth - firstBWidth;
     }
+    xBrot = AGX_PIXEL_ADJUST(xrot);
     
     if( h < ph 
         && h <= srcMaxLines ) {
@@ -972,7 +959,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
                         lastBWidth, firstHeight );
        if( firstBWidth > 0 ) {
           agxPartMemToVid( agxScratchOffset, srcBWidth, 
-                           psrc + srcLine * pwidth + xrot, pwidth,
+                           psrc + srcLine * pwidth + xBrot, pwidth,
                            firstBWidth, firstHeight );
        }
      
@@ -983,8 +970,8 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
                             lastBWidth, secondHeight );
           if( firstBWidth > 0 ) {
              agxPartMemToVid( agxScratchOffset + firstHeight*srcBWidth,
-                              srcBWidth,
-                              psrc + xrot, pwidth,
+                                 srcBWidth,
+                              psrc + xBrot, pwidth,
                               firstBWidth, secondHeight );
           }
        }
@@ -1224,6 +1211,9 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
           lastVTileLastStripHeight = srcStripHeight;
     }
 
+    srcLine = yrot; 
+    vStripFirstY = y;
+
 #if 0
     if( lastBWidth > srcBWidth
         || lastBWidth > (w+7>>3)
@@ -1231,7 +1221,7 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        ErrorF( "%s:%s - lastBWidth is too wide: %x,%x,%x,%x\n",
                 __FILE__, __LINE__,
                 lastBWidth, srcBWidth,
-                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+                AGX_PIXEL_ADJUST( w ), AGX_PIXEL_ADJUST( pw ));
     }
     if( firstBWidth > srcBWidth
         || firstBWidth > (w+7>>3)
@@ -1239,7 +1229,7 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        ErrorF( "%s:%s - firstBWidth is too wide: %x,%x,%x,%x\n",
                 __FILE__, __LINE__,
                 firstBWidth, srcBWidth,
-                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+                AGX_PIXEL_ADJUST( w ), AGX_PIXEL_ADJUST( pw ));
     }
     if( firstBWidth+lastBWidth > srcBWidth
         || firstBWidth+lastBWidth > (w+7>>3)
@@ -1247,12 +1237,12 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        ErrorF( "%s:%s - firstBWidth+lastBWidth is too wide: %x,%x,%x,%x,%x\n",
                 __FILE__, __LINE__,
                 firstBWidth, lastBWidth, srcBWidth,
-                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+                AGX_PIXEL_ADJUST( w ), AGX_PIXEL_ADJUST( pw ));
     }
 #endif
 
     MAP_INIT( GE_MS_MAP_B, 
-              GE_MF_1BPP | GE_MF_MOTO_FORMAT,
+              GE_MF_1BPP | GE_MF_INTEL_FORMAT,
               agxMemBase + agxScratchOffset, 
               srcPWidth-1, 
               srcStripHeight-1,
@@ -1273,9 +1263,6 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
               | GE_OP_MASK_DISABLED
               | GE_OP_INC_X
               | GE_OP_INC_Y         );
-
-    srcLine = yrot; 
-    vStripFirstY = y;
 
     for( strip = 1; strip <= numVertStrips; strip++ ) {
 
@@ -1574,7 +1561,7 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     
     srcBWidthShift = agxBytePadScratchMapPow2( width, BytesPerPixelShift );
     srcBWidth = 1 << srcBWidthShift;
-    srcPWidth = srcBWidth >> BytesPerPixelShift;
+    srcPWidth = AGX_TO_PIXEL( srcBWidth );
     srcMaxLines = agxScratchSize >> srcBWidthShift;
     pixBWidth = PixmapBytePad( width, tile->drawable.depth );
 
@@ -1590,13 +1577,12 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     if( oneBox ) { 
         /* copy direct */
         GE_WAIT_IDLE();
-        agxPartMemToVid( (pBox->x1 + pBox->y1 * agxDisplayWidth)
-                            << BytesPerPixelShift,
+        agxPartMemToVid( AGX_PIXEL_ADJUST(pBox->x1 + pBox->y1*agxDisplayWidth),
                          agxVirtX,
                          tile->devPrivate.ptr 
-                           + ((xrot + yrot * srcPWidth) << BytesPerPixelShift), 
-                         srcPWidth,
-                         (pBox->x2 - pBox->x1) << BytesPerPixelShift, 
+                           + AGX_PIXEL_ADJUST( xrot + yrot * srcPWidth ),
+                         srcBWidth,
+                         AGX_PIXEL_ADJUST( pBox->x2 - pBox->x1 );
                          pBox->y2 - pBox->y1 );
 
     } 
@@ -1633,7 +1619,7 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
        GE_WAIT_IDLE();
 
        agxMemToVid( agxScratchOffset, srcBWidth,
-                       tile->devPrivate.ptr, pixBWidth, height );
+                    tile->devPrivate.ptr, pixBWidth, height );
  
        MAP_SET_DST( GE_MS_MAP_A );
        MAP_SET_SRC( GE_MS_MAP_B );
@@ -1647,6 +1633,7 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
                  | GE_OP_MASK_DISABLED
                  | GE_OP_INC_X
                  | GE_OP_INC_Y         );
+
  
        for (; nBox; nBox--, pBox++) {
           h = pBox->y2 - pBox->y1 - 1;
@@ -1767,8 +1754,8 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     if( wrap ) {
        int firstWidth = width - minX;
        newWidth = firstWidth + maxX + 1;
-       firstBWidth = firstWidth << BytesPerPixelShift;
-       secondBWidth = (maxX + 1) << BytesPerPixelShift;
+       firstBWidth = AGX_PIXEL_ADJUST( firstWidth );
+       secondBWidth = AGX_PIXEL_ADJUST( maxX + 1 );
     }
     else {
        newWidth = maxX - minX + 1;
@@ -1785,12 +1772,12 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     }
 
     pox += minX; 
-    xOff = minX << BytesPerPixelShift;
+    xOff = AGX_PIXEL_ADJUST( minX );
     pixStart = (char *)tile->devPrivate.ptr + xOff;
     pix2Start = (char *)tile->devPrivate.ptr;
     srcBWidthShift = agxBytePadScratchMapPow2( width, BytesPerPixelShift );
     srcBWidth = 1 << srcBWidthShift;
-    srcPWidth = srcBWidth >> BytesPerPixelShift;
+    srcPWidth = AGX_TO_PIXEL( srcBWidth ); 
     srcMaxLines = agxScratchSize >> srcBWidthShift;
     pixBWidth = PixmapBytePad( width, tile->drawable.depth );
 
@@ -2028,7 +2015,7 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth, stipple, pox, poy,
     }
 
     MAP_INIT( GE_MS_MAP_B,
-              GE_MF_1BPP,
+              GE_MF_1BPP | GE_MF_INTEL_FORMAT,
               agxMemBase + agxScratchOffset,
               srcPWidth-1,
               height-1,

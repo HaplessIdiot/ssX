@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.6 1994/09/11 00:36:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.7 1994/11/19 07:50:22 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -51,12 +51,15 @@
  * crtc regs structure 
  */
 typedef struct {
+    unsigned int  bpp;
     unsigned char htotal_lo;
     unsigned char hdisp_end_lo;
     unsigned char hblnk_strt_lo;
     unsigned char hblnk_end_lo;
     unsigned char hsync_strt_lo;
     unsigned char hsync_end_lo;
+    unsigned char hsync_pos_1;
+    unsigned char hsync_pos_2;
     unsigned char vtotal_lo,      vtotal_hi;
     unsigned char vdisp_end_lo,   vdisp_end_hi;
     unsigned char vblnk_strt_lo,  vblnk_strt_hi;
@@ -197,6 +200,20 @@ extern agxPixMap *agxCurPixMap[2];
    if( agxCurPixMap[1] == pMap ) \
       agxCurPixMap[1] = NULL; \
 } 
+
+#if 0
+#define AGX_PIXEL_ADJUST( pix )  ( (pix) << BytesPerPixelShift )
+#define AGX_TO_PIXEL( byt )  ( (byt) >> BytesPerPixelShift )
+#else
+#define AGX_PIXEL_ADJUST( pix )  (pix)
+#define AGX_TO_PIXEL( byt )  (byt)
+#endif
+
+
+#define RGB8_PSEUDO      (-1)
+#define RGB16_565         0
+#define RGB16_555         1
+#define RGB32_888         2
 
 
 /*
@@ -433,8 +450,12 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_CRTC_HSYNC_END_HI		0x1B
 #define IR_CRTC_HSYNC_POS1		0x1C
 #define IR_CHP1_MASK				0x60
+#define IR_CHP1_DELAY_4				0x40
+#define IR_CHP1_NO_DELAY			0x00
 #define IR_CRTC_HSYNC_POS2		0x1E
 #define IR_CHP2_MASK				0x06
+#define IR_CHP2_DELAY_4				0x04
+#define IR_CHP2_NO_DELAY			0x00
 #define IR_CRTC_VTOTAL_LO		0x20
 #define IR_CRTC_VTOTAL_HI		0x21
 #define IR_CRTC_VDISP_END_LO		0x22
@@ -541,21 +562,21 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define IR_M1_MODE_REG_1		0x77
 #define IR_M1_AGX10_MODE_REG_1		0x7F
-#define IR_M1_PRESERVE_MASK			0x03
-#define IR_M1_MASK				0x37
-#define IR_M1_WRITE_MASK			0x37
+#define IR_M1_PRESERVE_MASK			0x0F
+#define IR_M1_MASK				0xFF
+#define IR_M1_WRITE_MASK			0xFF
 #define IR_M1_EXT_ENG_REQ			0x80
 #define IR_M1_PCLK_DIV_2			0x40
 #define IR_M1_CS3_MASK				0x30
 #define IR_M1_CS3_SHIFT				0x04
-#define IR_M1_CRTC_DELAY			0x08
+#define IR_M1_XGA_CRTC_DELAY			0x08
 #define IR_M1_INTERLACED			0x04
 #define IR_M1_CPU_WAIT_STATE			0x02
 #define IR_M1_AGX_BUS_SIZE			0x01
 
 #define IR_M2_MODE_REG_2		0x76
 #define IR_M2_PRESERVE_MASK			0x01
-#define IR_M2_MASK				0x0F
+#define IR_M2_MASK				0x3F
 #define IR_M2_CCLK_DOUBLED			0x20
 #define IR_M2_DELAY_DISPLAY			0x10
 #define IR_M2_84DAC_SELECT			0x08
@@ -563,21 +584,25 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M2_VRAM_256		    		0x01
 
 #define IR_M3_MODE_REG_3		0x6D
-#define IR_M3_PRESERVE_MASK			0x2C
-#define IR_M3_MASK				0xFF
-#define IR_M3_B1F00_GE_ADDRESS		0x01
+#define IR_M3_PRESERVE_MASK			0x2D
+#define IR_M3_MASK				0x2F
+#define IR_M3_B1F00_GE_ADDRESS			0x01
+#define IR_M3_MCS16_INHIBIT    			0x02
 #define IR_M3_256_SRC_ADJUST			0x04
 #define IR_M3_256_DST_ADJUST 			0x08
+#define IR_M3_RGB_PACKED			0x00
+#define IR_M3_RGBX_UNPACKED			0x80
 #define IR_M3_PCLK_EDGE_TRIGGERED		0x40
 #define IR_M3_SCREEN_REFRESH_25			0x20
+#define IR_M3_24BPP_ENGINE         		0x10
 
 #define IR_M4_MODE_REG_4		0x6E
 #define IR_M4_MASK				0xFF
 
 #define IR_M5_MODE_REG_5		0x6F
 #define IR_M5_PRESERVE_MASK			0x2C
-#define IR_M5_MASK				0xFF
-#define IR_M5_WRITE_MASK			0xFF
+#define IR_M5_MASK				0x7F
+#define IR_M5_WRITE_MASK			0x8F
 #define IR_M5_CS4_MASK 				0x30
 #define IR_M5_CS4_SHIFT				0x04
 #define IR_M5_HICOLOR_DAC               	0x80U
@@ -596,7 +621,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M7_LOCAL_BUS 	                0x01
 
 #define IR_M8_MODE_REG_8		0x71
-#define IR_M8_PRESERVE_MASK                     0x4F
+#define IR_M8_PRESERVE_MASK                     0x00
 #define IR_M8_288_SRC_ADJUST			0x01
 #define IR_M8_128_SRC_ADJUST			0x02
 #define IR_M8_288_DST_ADJUST			0x04
@@ -607,7 +632,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M8_BIG_BUFFER_ENABLE			0x80
 
 #define IR_M10_MODE_REG_10		0x71
-#define IR_M10_PRESERVE_MASK                    0x05
+#define IR_M10_PRESERVE_MASK                    0x85
 #define IR_M10_PCI_ENABLE			0x01
 #define IR_M10_1MB_AP_ENABLE			0x02
 #define IR_M10_BUS_WAIT_STATE			0x04

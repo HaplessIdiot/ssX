@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.4 1995/01/20 04:23:50 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.5 1995/01/22 03:08:06 dawes Exp $
 
 # Cirrus Logic
 
@@ -223,6 +223,12 @@ RAMDAC s3_sdac
 CLOCKCHIP s3_sdac
 NOCLOCKPROBE
 
+NAME S3-864 with ATT 20C498 or 21C498
+CHIPSET S3-864
+SERVER S3
+RAMDAC att20c498
+LINE     Option "dac_8_bit"
+
 NAME S3-Trio64 (generic)
 CHIPSET S3-Trio64
 SERVER S3
@@ -276,8 +282,14 @@ LINE     # the following settings should be detected and set automaticly by XF86
 LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 
-NAME Miro Crystal 20SD
-DACSPEED 135
+NAME Miro Crystal 20SD with ICS2494 (BIOS 1.xx)
+SEE S3-864 with ATT 20C498 or 21C498
+
+NAME Miro Crystal 20SD with ICD2061A (BIOS 2.xx)
+CLOCKCHIP icd2061a
+SEE S3-864 with ATT 20C498 or 21C498
+
+NAME Miro Crystal 20SD with S3-SDAC (BIOS 3.xx)
 SEE S3-864 with SDAC (86C716)
 
 NAME SPEA/V7 Mirage P64
@@ -320,6 +332,12 @@ SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "dac_8_bit"
 
+NAME Miro Crystal 40SV
+CHIPSET S3-964
+SERVER S3
+CLOCKCHIP ti3025
+LINE     Option "dac_8_bit"
+
 NAME Elsa Winner 2000 Pro 4Mb
 CHIPSET S3-964
 SERVER S3
@@ -346,16 +364,6 @@ LINE     # the following settings should be detected and set automaticly by XF86
 LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 LINE     #Membase 0xf8000000
-
-NAME Elsa Winner 1000 Pro with AT&T or STG RAMDAC
-CHIPSET S3-928
-SERVER S3
-LINE     Option "dac_8_bit"
-LINE     # the following settings should be detected and set automaticly by XF86_S3
-LINE     # if the serial number of the ELSA card is printed correctly:
-LINE     #
-LINE     #    ClockChip "icd2061a"
-LINE     #    Membase 0xf3000000
 
 NAME Elsa Winner 2000
 SEE S3-928 (generic)

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.67 1995/01/21 14:07:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.68 1995/01/22 03:05:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -184,6 +184,7 @@ static Bool ti3025ClockSelect();
 static Bool ch8391ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
+Bool  s3VLB = FALSE;
 Bool  s3LinearAperture = FALSE;
 Bool  s3Mmio928 = FALSE;
 Bool  s3PixelMultiplexing = FALSE;
@@ -592,6 +593,7 @@ s3Probe()
 	 case 1:
             ErrorF("%s %s: card type: 386/486 localbus\n",
         	   XCONFIG_PROBED, s3InfoRec.name);
+	    s3VLB = TRUE;
 	    break;
 	 case 3:
             ErrorF("%s %s: card type: ISA\n", XCONFIG_PROBED, s3InfoRec.name);

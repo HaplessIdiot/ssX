@@ -5,7 +5,7 @@
 
 <title>Notes on the AGX Server
 <author>Henry Worth
-<date>13 December 1994
+<date>21 January 1995
 
 <!-- Table of contents -->
 <toc>
@@ -28,11 +28,11 @@
      Graphite series, and Sierra RAMDACs (15025 and 15021), and
      generic VGA RAMDAC.
 <p>  
-     The current driver has some basic acceleration routines:
-     solid zero-width lines (except AGX-014), bitblt fill's,
-     tiles, and stipples, and a basic font cache. Performance is 
-     not yet impressive, but there is quite of bit of potential for
-     future versions of the driver.
+     The current driver has a number of acceleration routines:
+     solid and dashed zero-width lines (except AGX-014), bitblt
+     fill's, tiles, and stipples, solid arc and polygon fills, 
+     and font cache. Performance for local-bus boards using the
+     AGX-015 and AGX-016 is in the high 70 to low 80 kxstone range.
 <p>
      Boards that have had some testing include ISA and VLB 
      versions of most of the Hercules Graphite series, Spider 
@@ -59,20 +59,11 @@
         and erase lines. Seems to have been reduced after some 
         recent fixes to the mi/cfb code.<p>
 
-<item> The AGX-016 adds support for additional virtual width's,
-        the current server does not support these.<p>
-
 <item>  The video memory probe has been problematic, recent fixes 
         haven't failed yet, but earlier versions showed promise too...<p>
 
-<item>  Needs more testing.<p>
+<item>  As in all software, needs more testing.<p>.<p>
 
-<item>  Sometimes running with -probeonly option under Linux
-        results in corruption of the lower-order characters of
-        the font (most noticeable are the blanks). This is 
-        difficult to reproduce (I've only seen once myself),
-        one fix was made hours before 3.1 release that may have
-        fixed it, but ... <p>
 </itemize>
 <sect> ToDo
 <p>
@@ -304,11 +295,11 @@ Set or clear CPU access wait state, default is the POST setting.
            use of any of the unused CRTC line's memory. CRTC line 
            width is restricted by the following rules:
 <p><quote>
-               <bf>AGX-014 :</bf> 1024 and 2048.
+               <bf>AGX-014 :</bf> 512, 1024 and 2048.
 </quote><quote>
-               <bf>AGX-015 :</bf> 1024, 1280, and 2048. 
+               <bf>AGX-015 :</bf> 512, 1024, 1280, and 2048. 
 </quote><quote>
-               <bf>AGX-016 :</bf> 600, 800, 1024, 1280, and 2048.
+               <bf>AGX-016 :</bf> 512, 600, 800, 1024, 1280, and 2048.
 </quote>
 <p>
            When panning I occasionally get streaks if the virtual 
@@ -413,13 +404,11 @@ Set or clear CPU access wait state, default is the POST setting.
           supported but have had very little testing.
 <p>
           The doublescan flag is now supported, however the minimum
-          clock supported is generally 25Mhz so resolutions of less
+          clock supported is generally 25Mhz, so resolutions of less
           than 400x300 are not likely to be supported by most monitors.
           In creating doublescan mode timings, the vertical timings
-          will have to be for the doubled values, e.g. for 400x300
-          the timings will actually be 400x600. The common XFree86
-          config routines may eventually take care of this automatically,
-          but not yet.
+          will match the apparent resolutions, e.g. for 400x300
+          the timings should describe 300 lines, not 600.
   
 <tag/Examples:/
 
@@ -471,14 +460,11 @@ Set or clear CPU access wait state, default is the POST setting.
           still producing XGA clones for the (E)ISA, VESA, or even PCI
           bus, let me know. Some bits of crude POS probe code exist, 
           but have proved useless for AGX based boards and are currently 
-          disabled. 
+          disabled. A few people have made attempts to use XGA cards,
+          but no one has reported success.
 <p>
           To attempt using an XGA compatible board, you will need to 
-          specify at least the XGA instance number (typically 0 for chips 
-          integrated on the motherboard and 1 for the first expansion 
-          card based adapter). However, you may need to explicitly 
-          specify other information. The accel section parms that may 
-          be of use are:
+          specify several parms:
 <p>
 <descrip>            
 <tag/Instance       nn/       XGA instance number, this is the
@@ -497,6 +483,23 @@ Set or clear CPU access wait state, default is the POST setting.
                                       where ext_mem_address is the high
                                       order 4-bits of POS register 2
                                       (the server assumes zero).
+
+<tag/POSbase       nnnn/      While this was intend to override the POS register
+                                       base address, until someone with an
+                                       XGA card can complete and test POS
+                                       register probing, it will be used to 
+                                       specify the value of POS register 4.
+                                       POS register 4 contains bits
+                                       31-25 of the XGA's video memory
+                                       system address. The value is shifted
+                                       one place to the left so that it 
+                                       is contained in bits 7-1 of POS register
+                                       4. Bit 0 of the register is not used by 
+                                       this server as the XGA's linear 
+                                       aperture is not used (however, 
+                                       the graphics engine must be 
+                                       configured with this address).
+
 </descrip>
 <p>           The XGA-2 has programmable clocks up to 90Mhz, this, and
            the XGA color table code are the most notable areas
@@ -507,12 +510,12 @@ Set or clear CPU access wait state, default is the POST setting.
            specify programmable clocks for the XGA-2, specify any of the 
            programmable clock option values on the clocks line (e.g. 
            "icd2061a", doesn't matter which).  Standard XGA-1 clock 
-           values, switching, and probing can also be used with the 
-           XGA-2.
+           values can also be used with the XGA-2.
+     
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.3 1995/01/21 07:16:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.4 1995/01/21 10:44:39 dawes Exp $
 </verb>
 
 </article>
