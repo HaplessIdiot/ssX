@@ -130,14 +130,42 @@ don't have enough space to cover them all here.
    o [OLD] Several new input drivers have been added, including tek4957, jam-
      studio (js_x), fpit, palmax, and ur98 (Linux only).
 
-2.3  X Server and Extension Updates
+2.3  IPv6 support
+
+XFree86 4.4 supports IPv6, based on the code contributed by Sun Microsystems
+to X.Org. See X.org's document <URL:http://www.x.org/IPV6_Spe-
+cific_Changes.html> for a detailled list of the changes.
+
+2.3.1  Protocol names and aliases.
+
+   o tcp is an alias for both IPv6 and IPv4 transports.
+
+   o inet specifies IPv4 only.
+
+   o inet6 specifies IPv6 only.
+
+You can force the X server to only listen to IPv4 connections with the X
+-nolisten inet6  command.  Or you can force a IPv6 connection by setting DIS-
+PLAY to inet6/host:0.
+
+2.3.2  XDM
+
+The IPv6 XDMCP code is not enabled by default on platforms that don't support
+binding a IPv6 socket to a IPv4 address.
+
+The XDM-AUTHORIZATION-1 authentification scheme does not support IPv6
+addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
+designed, but is not implemented yet.  Note that  by default XFree86 builds
+do not enable the XDM-AUTHORIZATION-1 code.
+
+2.4  X Server and Extension Updates
 
    o The Mesa version used for OpenGL® 1.3 and DRI driver support has been
      updated to 5.0.2.
 
-2.4  Client and Library Updates
+2.5  Client and Library Updates
 
-2.4.1  Xterm
+2.5.1  Xterm
 
 The user-visible changes to xterm since XFree86 4.3 are:
 
@@ -259,7 +287,7 @@ Modified terminfo/termcap entries:
    o Correct AF/AB strings in termcap for xterm-256color and xterm-88color
      entries.
 
-2.5  I18N and Font Updates
+2.6  I18N and Font Updates
 
    o FreeType2 updated to version 2.1.4.
 
@@ -277,7 +305,7 @@ Modified terminfo/termcap entries:
      flexible way of supporting multiple language layouts and switching
      between them.
 
-2.6  OS Support Updates
+2.7  OS Support Updates
 
    o [OLD] Updates for Darwin/Mac OS X, including:
 
@@ -603,10 +631,10 @@ ual page for more comprehensive information:
    o A new section called ServerLayout has been added to allow the layout of
      the screens and the selection of input devices to be specified.  The
      ServerLayout sections may also include options that are normally found
-     in the ServerFlags section.  Multiple ServerLayout sections may be
-     present, and selected from the command line.  The following example
-     shows a ServerLayout section for a dual-headed configuration with two
-     Matrox cards, and two mice:
+     in the ServerFlags section.  Multiple ServerLayout sections may be pre-
+     sent, and selected from the command line.  The following example shows a
+     ServerLayout section for a dual-headed configuration with two Matrox
+     cards, and two mice:
 
                Section "ServerLayout"
                    Identifier  "Layout 1"
@@ -1039,7 +1067,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.85 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.86 herrb Exp $
 
 
 $XFree86: $
