@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.27 2000/03/04 03:58:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.28 2000/03/22 04:22:28 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -245,7 +245,8 @@ configureScreenSection (int screennum)
     sprintf(ptr->scrn_identifier, "Screen%d", screennum);
     ptr->scrn_monitor_str = xf86confmalloc(19);
     sprintf(ptr->scrn_monitor_str, "Monitor%d", screennum);
-    ptr->scrn_device_str = strdup(DevToConfig[screennum].GDev.identifier);
+    ptr->scrn_device_str = xf86confmalloc(16);
+    sprintf(ptr->scrn_device_str, "Card%d", screennum);
 
     for (i=0; i<6; i++)
     {
@@ -264,13 +265,16 @@ configureScreenSection (int screennum)
 static XF86ConfDevicePtr
 configureDeviceSection (int screennum)
 {
+    char identifier[16];
     OptionInfoPtr p;
     int i = 0;
     Bool foundFBDEV = FALSE;
     parsePrologue (XF86ConfDevicePtr, XF86ConfDeviceRec)
 
     /* Move device info to parser structure */
-    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;
+    sprintf(identifier, "Card%d", screennum);
+    ptr->dev_identifier = strdup(identifier);
+/*    ptr->dev_identifier = DevToConfig[screennum].GDev.identifier;*/
     ptr->dev_vendor = DevToConfig[screennum].GDev.vendor;
     ptr->dev_board = DevToConfig[screennum].GDev.board;
     ptr->dev_chipset = DevToConfig[screennum].GDev.chipset;
@@ -377,11 +381,18 @@ configureLayoutSection (void)
 	aptr->list.next = NULL;
 	aptr->adj_x = 0;
 	aptr->adj_y = 0;
-	aptr->adj_refscreen = 0;
-	aptr->adj_scrnum = 0;
+	aptr->adj_scrnum = scrnum;
 	aptr->adj_screen_str = xnfalloc(18);
 	sprintf(aptr->adj_screen_str, "Screen%d", scrnum);
-	aptr->adj_where = CONF_ADJ_ABSOLUTE;
+	if (scrnum == 0) {
+	    aptr->adj_where = CONF_ADJ_ABSOLUTE;
+	    aptr->adj_refscreen = NULL;
+	}
+	else {
+	    aptr->adj_where = CONF_ADJ_RIGHTOF;
+	    aptr->adj_refscreen = xnfalloc(18);
+	    sprintf(aptr->adj_refscreen, "Screen%d", scrnum - 1);
+	}
     	ptr->lay_adjacency_lst =
 	    (XF86ConfAdjacencyPtr)addListItem((glp)ptr->lay_adjacency_lst,
 					      (glp)aptr);

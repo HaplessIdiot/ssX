@@ -1,4 +1,8 @@
 XFree86 4.0a (4 April 2000)
+  93. Fix some 'XFree86 -configure' problems when multiple cards (#3850,
+      Paulo Cesar Pereira de Andrade).
+  92. New graphical config tool (xf86cfg) (#3850,
+      Paulo Cesar Pereira de Andrade).
   91. Fix a typo in Xinstall.sh that prevents moving config files to
       /etc/X11 from being optional (#3858, Richard Gooch).
   90. Add lt_LT.ISO_8859-4 to locale.alias, and update the lt symbols for
@@ -10209,4 +10213,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1116 2000/04/02 15:59:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1117 2000/04/04 19:24:51 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.3 1999/01/14 13:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.4 1999/05/30 14:04:25 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -198,7 +198,7 @@ addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
 {
 	XF86LoadPtr new;
 
-	new = xf86confmalloc (sizeof (XF86LoadRec));
+	new = xf86confcalloc (1, sizeof (XF86LoadRec));
 	new->load_name = name;
 	new->load_type = type;
 	new->load_opt  = opts;

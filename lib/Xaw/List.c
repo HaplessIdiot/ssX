@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.13 2000/02/25 18:27:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.14 2000/02/25 23:20:46 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -681,7 +681,7 @@ PaintItemName(Widget w, int item)
     ListWidget lw = (ListWidget)w;
     XFontSetExtents *ext  = XExtentsOfFontSet(lw->list.fontset);
 
-    if (!XtIsRealized(w))
+    if (!XtIsRealized(w) || item > lw->list.nitems)
       return;
 
     if (lw->list.vertical_cols) {
@@ -1126,7 +1126,7 @@ XawListSetValues(Widget current, Widget request, Widget cnew,
 	redraw = True;
     }
 
-    if (cl->list.list != nl->list.list)
+    if (cl->list.list != nl->list.list || cl->list.nitems != nl->list.nitems)
 	nl->list.is_highlighted = nl->list.highlight = NO_HIGHLIGHT;
 
     if (cl->core.sensitive != nl->core.sensitive

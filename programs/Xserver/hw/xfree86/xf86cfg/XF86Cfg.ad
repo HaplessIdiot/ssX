@@ -1,0 +1,668 @@
+!!
+!! Copyright (c) 2000 by Conectiva S.A. (http://www.conectiva.com)
+!! 
+!! Permission is hereby granted, free of charge, to any person obtaining a
+!! copy of this software and associated documentation files (the "Software"),
+!! to deal in the Software without restriction, including without limitation
+!! the rights to use, copy, modify, merge, publish, distribute, sublicense,
+!! and/or sell copies of the Software, and to permit persons to whom the
+!! Software is furnished to do so, subject to the following conditions:
+!! 
+!! The above copyright notice and this permission notice shall be included in
+!! all copies or substantial portions of the Software.
+!!  
+!! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+!! IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+!! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+!! CONECTIVA LINUX BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+!! WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+!! OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+!! SOFTWARE.
+!! 
+!! Except as contained in this notice, the name of Conectiva Linux shall
+!! not be used in advertising or otherwise to promote the sale, use or other
+!! dealings in this Software without prior written authorization from
+!! Conectiva Linux.
+!!
+!! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
+!!
+!! $XFree86$
+!!
+
+*Form.background:			gray90
+*Label.background:			gray90
+!! keyboard
+*Core.background:			gray90
+
+*Command.background:			gray75
+*Command.displayList:\
+foreground	gray40;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	gray90;\
+lines		-1,0,0,0,0,-1
+
+*MenuButton.background:			gray75
+*MenuButton.displayList:\
+foreground	gray40;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	gray90;\
+lines		-1,0,0,0,0,-1
+
+*SimpleMenu.background:			gray75
+*SimpleMenu.displayList:\
+foreground	gray40;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	gray90;\
+lines		-1,0,0,0,0,-1
+
+*Toggle.background:			gray75
+*Toggle.displayList:\
+foreground	gray90;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	gray40;\
+lines		-1,0,0,0,0,-1
+
+*mouse.bitmap:				mouse.xbm
+*keyboard.bitmap:			keyboard.xbm
+*card.bitmap:				card.xbm
+*monitor.bitmap:			monitor.xbm
+
+*Label.borderWidth:			0
+*Viewport.forceBars:			True
+*Viewport.allowVert:			True
+*Viewport.useRight:			True
+
+.xf86cfg.geometry:			320x400
+.xf86cfg.minWidth:			320
+.xf86cfg.minHeight:			400
+.xf86cfg.maxWidth:			320
+.xf86cfg.maxHeight:			400
+
+.xf86cfg.config.geometry:		320x369
+.xf86cfg.config.minWidth:		320
+.xf86cfg.config.maxWidth:		320
+.xf86cfg.config.minHeight:		369
+.xf86cfg.config.maxHeight:		369
+
+*work.width:				320
+*work.height:				240
+
+*error.label.label:\
+Not all required fields\n\
+were filled, or the specified\n\
+identifier is duplicated.
+*error.label.vertDistance:		30
+*error.label.borderWidth:		0
+*error.label.leftBitmap:		Excl
+*error.command.fromVert:		label
+*error.command.label:			Ok
+*error.command.vertDistance:		20
+
+*Scrollbar.translations:\
+<BtnDown>:	StartScroll(Continuous) MoveThumb() NotifyThumb()\n\
+<BtnMotion>:	MoveThumb() NotifyThumb()\n\
+<BtnUp>:	NotifyScroll(Proportional) EndScroll()
+
+*List.showCurrent:		True
+*Tip.timeout:			100
+
+*Toggle.internalHeight:		2
+*Toggle.internalWidth:		2
+*mouse.label:			Mouse
+*keyboard.label:		Keyboard
+*card.label:			Card
+*monitor.label:			Monitor
+
+!*commands.background:		black
+*commands.borderWidth:		0
+*commands.defaultDistance:	2
+*commands.?.bottom:		chainTop
+*commands.height:		50
+
+*commands.keyboard.fromHoriz:	mouse
+*card.fromHoriz:		keyboard
+*monitor.fromHoriz:		card
+
+*commands.mouse.tip:		Add mouse
+*commands.keyboard.tip:		Add keyboard
+*commands.card.tip:		Add video card
+*commands.monitor.tip:		Add monitor
+
+*top.label:			Configure Layout
+*top*layout.label:		Configure Layout
+*top*screen.label:		Configure Screen
+*top.showGrip:			False
+*work.showGrip:			False
+
+*back.label:			<< Back
+*next.label:			Next >>
+*ok.label:			Ok
+*cancel.label:			Cancel
+*yes.label:			Yes
+*no.label:			No
+
+*help.label:			Help
+*quit.label:			Quit
+*next.fromHoriz:		back
+*config*ok.fromHoriz:		next
+*bottom*cancel.fromHoriz:	ok
+
+*top.label.label:		Identifier:
+*top.label.borderWidth:		0
+*top.identifier.fromHoriz:	label
+*top.label.internalHeight:	3
+*top.label.justify:		left
+*top.label.left:		chainLeft
+*top.label.right:		chainLeft
+*top.identifier.left:		chainLeft
+*top.identifier.right:		chainRight
+
+*bottom.layout.translations:	#override \
+<Key>Return:	rename-layout()
+*bottom.layout.label:		New server layout
+*bottom.layout.tip:		Type a text and press Return to rename this layout
+*bottom.Command.height:		19
+*bottom.Text.height:		19
+*bottom.MenuButton.height:	19
+*bottom*new.label:		New server layout
+*layout.fromHoriz:		select
+*help.fromHoriz:		layout
+*bottom.layout.justify:		left
+*bottom.select.label:		Layout
+*bottom.select.left:		chainLeft
+*bottom.select.right:		chainLeft
+*bottom.layout.left:		chainLeft
+*quit.fromHoriz:		help
+*bottom.?.left:			chainRight
+*bottom.?.right:		chainRight
+*bottom.?.top:			chainBottom
+*bottom.?.bottom:		chainBottom
+
+*pane.bottom.min:		30
+*pane.bottom.max:		30
+*pane.bottom.showGrip:		False
+*pane.bottom.defaultDistance:	5
+
+!! Wellcome message
+*work.wellcome.borderWidth:	0
+*work.wellcome.label:		Welcome to XFree86 4.0 setup program
+*work.?.borderWidth:		0
+!*work.?.width:			310
+*work.?.height:			290
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! mouseDP widget
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*mouseDP*Label.internalHeight:		0
+*mouseDP*Label.borderWidth:		0
+*mouseDP.labelD.vertDistance:		0
+*mouseDP.labelD.label:			Select mouse device
+*mouseDP.device.fromVert:		labelD
+*mouseDP.viewportD.fromVert:		device
+*mouseDP.device.width:			302
+*mouseDP.viewportD.vertDistance:	2
+*mouseDP.viewportD.listD.longest:	135
+*mouseDP.viewportD.width:		302
+*mouseDP.viewportD.height:		87
+*mouseDP.labelP.label:			Select mouse protocol
+*mouseDP.labelP.vertDistance:		10
+*mouseDP.labelP.fromVert:		viewportD
+*mouseDP.viewportP.fromVert:		labelP
+*mouseDP.viewportP.forceBars:		True
+*mouseDP.viewportP.allowVert:		True
+*mouseDP.viewportP.useRight:		True
+*mouseDP.viewportP.listP.longest:	135
+*mouseDP.viewportP.width:		302
+*mouseDP.viewportP.height:		110
+*mouseDP.viewportP.vertDistance:	6
+*mouseDP*List.verticalList:		True
+*mouseDP.emulate3.fromVert:		viewportP
+*mouseDP.emulate3.width:		180
+*mouseDP.apply.label:			Apply changes
+*mouseDP.apply.fromVert:		viewportP
+*mouseDP.apply.fromHoriz:		emulate3
+*mouseDP.apply.width:			116
+*mouseDP.emulate3.vertDistance:		10
+*mouseDP.apply.vertDistance:		10
+*mouseDP.emulate3.label:		Emulate 3 buttons
+*mouseDP.emulate3.tip:			Select if your mouse has only two buttons
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! keyboardML widget
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*keyboardML.labelL.vertDistance:	16
+*keyboardML.layout.vertDistance:	16
+*keyboardML.keyboard.vertDistance:	16
+*keyboardML.Label.borderWidth:		0
+*keyboardML.Label.width:		115
+*keyboardML.Label.internalWidth:	0
+*keyboardML.Label.justify:		right
+*keyboardML.model.width:		185
+*keyboardML.model.left:			chainRight
+*keyboardML.model.right:		chainRight
+*keyboardML.model.justify:		left
+*keyboardML.model.fromHoriz:		labelM
+*keyboardML.labelM.label:		Keyboard model:
+*keyboardML.layout.width:		185
+*keyboardML.layout.left:		chainRight
+*keyboardML.layout.right:		chainRight
+*keyboardML.layout.justify:		left
+*keyboardML.layout.fromVert:		model
+*keyboardML.labelL.fromVert:		model
+*keyboardML.layout.fromHoriz:		labelL
+*keyboardML.labelL.label:		Keyboard layout:
+*keyboardML.keyboard.fromVert:		labelL
+*keyboardML.keyboard.borderWidth:	0
+*keyboardML.keyboard.width:		305
+*keyboardML.keyboard.height:		121
+*keyboardML.apply.vertDistance:		16
+*keyboardML.apply.fromVert:		keyboard
+*keyboardML.apply.label:		Apply changes
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! cardModel widget
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*cardModel.label.internalHeight:	0
+*cardModel.keyboard.borderWidth:	0
+*cardModel.label.label:			Card model filter
+*cardModel.label.internalHeight:	2
+*cardModel.label.borderWidth:		0
+*cardModel.viewport.vertDistance:	2
+*cardModel.viewport.fromVert:		filter
+*cardModel.filter.fromHoriz:		label
+*cardModel.filter.width:		171
+*cardModel.viewport.width:		302
+*cardModel.viewport.height:		244
+*cardModel.busidL.label:		BusID
+*cardModel.busidL.fromVert:		viewport
+*cardModel.busid.fromVert:		viewport
+*cardModel.busid.fromHoriz:		busidL
+*cardModel.busid.width:			255
+*cardModel.viewport.forceBars:		True
+*cardModel.viewport.allowVert:		True
+*cardModel.viewport.useRight:		True
+*cardModel.viewport.list.longest:	277
+*cardModel.filter.tip:			Type name or vendor of your card and press enter
+*cardModel.filter.translations:	#override \
+<Key>Return:	filter-card()
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! main widget
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*work.cpu.backgroundPixmap:		computer.xpm
+*work.mouse.backgroundPixmap:		mouse.xpm
+*work.keyboard.backgroundPixmap:	keyboard.xpm
+*work.card.backgroundPixmap:		card.xpm
+*work.monitor.backgroundPixmap:		monitor.xpm
+
+*work.cpu.x:				130
+*work.cpu.y:				160
+*work.cpu.width:			30
+*work.cpu.height:			50
+*work.mouse.width:			26
+*work.mouse.height:			35
+*work.keyboard.width:			60
+*work.keyboard.height:			28
+*work.card.width:			41
+*work.card.height:			40
+*work.monitor.width:			47
+*work.monitor.height:			40
+
+.xf86cfg.pane.work.?.translations:\
+<Btn1Down>:	select-device()\n\
+<Btn1Motion>:	move-device()\n\
+<Btn1Up>:	unselect-device()\n\
+<Btn3Down>:	device-popup()\n\
+<Btn3Up>:	device-popdown()
+
+.xf86cfg.pane.work.screen.translations:\
+<Btn1Down>:	select-device()\n\
+<Btn1Motion>:	move-device()\n\
+<Btn1Up>:	unselect-device()\n\
+<Btn3Down>:	device-popup()\n\
+<Btn3Up>:	device-popdown()\n\
+<Expose>:	draw-screen()
+
+XF86Cfg.translations:	#override \
+<Message>WM_PROTOCOLS:	quit()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! Options
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+.xf86cfg.options.geometry:		400x176
+.xf86cfg.options.minWidth:		400
+.xf86cfg.options.maxWidth:		400
+.xf86cfg.options.minHeight:		176
+.xf86cfg.options.maxHeight:		176
+
+*options*commands.remove.fromHoriz:	add
+*options*commands.update.fromHoriz:	remove
+*options*commands.min:			30
+*options*commands.max:			30
+*options*commands.showGrip:		False
+*options*commands.defaultDistance:	4
+*options*commands.?.width:		100
+*options*commands.?.height:		20
+
+*options*name.fromHoriz:		label1
+*options*label2.fromHoriz:		name
+*options*value.fromHoriz:		label2
+*options*label3.fromHoriz:		value
+*options*viewport.fromVert:		name
+*options*Label.borderWidth:		0
+*options*Label.internalWidth:		0
+*options*Label.height:			21
+*options*Text.height:			19
+*options*Label.top:			chainTop
+*options*Text.top:			chainTop
+*options*Label.bottom:			chainTop
+*options*Text.bottom:			chainTop
+*options*Label.horizDistance:		0
+*options*Text.horizDistance:		0
+*options*Label.vertDistance:		8
+*options*Text.vertDistance:		8
+*options*Text.width:			147
+*options*viewport.width:		390
+*options*viewport.height:		50
+
+*options*viewport.horizDistance:	7
+*options*label1.horizDistance:		5
+*options*viewport.left:			chainLeft
+*options*viewport.right:		chainRight
+*options*list.longest:			376
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! monitor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*monitorl*Viewport.width:		302
+*monitorl*Text.width:			160
+*monitorl*Text.tip:\
+Select standard value from the list\n\
+below, or enter specific value here.
+
+*monitorl*hlabel.justify:		right
+*monitorl*hlabel.width:			138
+*monitorl*hlabel.label:			Horizontal sync
+*monitorl*hsync.fromHoriz:		hlabel
+*monitorl*hviewport.fromVert:		hsync
+*monitorl*hviewport.height:		156
+*monitorl*hlist.longest:		288
+
+*monitorl*vlabel.justify:		right
+*monitorl*vlabel.width:			138
+*monitorl*vlabel.vertDistance:		12
+*monitorl*vsync.vertDistance:		12
+*monitorl*vlabel.fromVert:		hviewport
+*monitorl*vsync.fromVert:		hviewport
+*monitorl*vlabel.label:			Vertical sync
+*monitorl*vsync.fromHoriz:		vlabel
+*monitorl*vviewport.fromVert:		vsync
+*monitorl*vviewport.height:		20
+*monitorl*vlist.longest:		64
+
+*monitorl*clabel.vertDistance:		12
+*monitorl*clabel.fromVert:		vviewport
+*monitorl*clabel.label:			Select card connected to monitor
+*monitorl*cmenu.fromVert:		clabel
+*monitorl*cmenu.width:			302
+*monitorl*cmenu.justify:		left
+*monitorl*none.label:			None
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! screen
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*screenD*depthL.label:			Default color depth:
+*screenD*depthL.height:			20
+*screenD*1.fromHoriz:			depthL
+*screenD*4.fromHoriz:			1
+*screenD*8.fromHoriz:			4
+*screenD*16.fromHoriz:			8
+*screenD*24.fromHoriz:			16
+*screenD*1.width:			24
+*screenD*4.width:			24
+*screenD*8.width:			24
+*screenD*16.width:			24
+*screenD*24.width:			24
+*screenD*1.horizDistance:		5
+*screenD*4.horizDistance:		5
+*screenD*8.horizDistance:		5
+*screenD*16.horizDistance:		5
+*screenD*24.horizDistance:		5
+*screenD*modeL.fromVert:		depthL
+*screenD*modeL.vertDistance:		14
+*screenD*modeL.label:			Select resolution(s):
+*screenD*listLeft.fromVert:		modeL
+*screenD*select.fromHoriz:		listLeft
+*screenD*unselect.fromHoriz:		listLeft
+*screenD*select.fromVert:		modeL
+*screenD*unselect.fromVert:		select
+*screenD*listRight.fromHoriz:		select
+*screenD*listRight.fromVert:		modeL
+*screenD*select.label:			->
+*screenD*unselect.label:		<-
+*screenD*listLeft.width:		133
+*screenD*listRight.width:		133
+*screenD*listLeft.height:		184
+*screenD*listRight.height:		184
+*screenD*listLeft.longest:		128
+*screenD*listRight.longest:		128
+
+*work.screen.width:			100
+*work.screen.height:			80
+
+
+*Dialog.background:			gray90
+*quit.ask.label:			Write configuration to
+*quit.ask.label.justify:		left
+*quit.ask.value.width:			222
+*quit.ask.icon:				Excl
+.xf86cfg.quit.geometry:			230x92
+.xf86cfg.quit.minWidth:			230
+.xf86cfg.quit.maxWidth:			230
+.xf86cfg.quit.minHeight:		92
+.xf86cfg.quit.maxHeight:		92
+
+*error.notice.label:			Failed to write configuration file.
+.xf86cfg.error.geometry:		280x50
+.xf86cfg.error.minWidth:		260
+.xf86cfg.error.maxWidth:		260
+.xf86cfg.error.minHeight:		50
+.xf86cfg.error.maxHeight:		50
+
+
+*accessx.geometry:			320x400
+*accessx*lock.fromVert:			label
+*accessx*div.fromVert:			label
+*accessx*div.fromHoriz:			lock
+*accessx*mul.fromVert:			label
+*accessx*mul.fromHoriz:			div
+*accessx*minus.fromVert:		label
+*accessx*minus.fromHoriz:		mul
+*accessx*7.fromVert:			lock
+*accessx*8.fromVert:			div
+*accessx*8.fromHoriz:			7
+*accessx*9.fromVert:			mul
+*accessx*9.fromHoriz:			8
+*accessx*plus.fromVert:			minus
+*accessx*plus.fromHoriz:		9
+*accessx*4.fromVert:			7
+*accessx*5.fromVert:			8
+*accessx*5.fromHoriz:			4
+*accessx*6.fromVert:			9
+*accessx*6.fromHoriz:			5
+*accessx*1.fromVert:			4
+*accessx*2.fromVert:			5
+*accessx*2.fromHoriz:			1
+*accessx*3.fromVert:			6
+*accessx*3.fromHoriz:			2
+*accessx*enter.fromVert:		plus
+*accessx*enter.fromHoriz:		3
+*accessx*0.fromVert:			2
+*accessx*del.fromVert:			3
+*accessx*del.fromHoriz:			0
+*accessx.form.background:		gray80
+*accessx.form.defaultDistance:		8
+*accessx*Label.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1
+*accessx*Label.font:			-*-helvetica-bold-o-*-*-14-*-*-*-*-*-*-1
+*accessx*Label.width:			70
+*accessx*Label.height:			70
+*accessx*label.width:			304
+*accessx*plus.height:			148
+*accessx*enter.height:			148
+*accessx*0.width:			148
+*accessx*lock.label:			Num\nLock
+*accessx*div.label:			/\n\ 
+*accessx*mul.label:			*\n\ 
+*accessx*minus.label:			-\n\ 
+*accessx*7.label:			7\n\ 
+*accessx*8.label:			8\n\ 
+*accessx*9.label:			9\n\ 
+*accessx*plus.label:			+\n\ \n\ \n\ \n\ \n\ 
+*accessx*4.label:			4\n\ 
+*accessx*5.label:			5\n\ 
+*accessx*6.label:			6\n\ 
+*accessx*1.label:			1\n\ 
+*accessx*2.label:			2\n\ 
+*accessx*3.label:			3\n\ 
+*accessx*enter.label:			Enter\n\ \n\ \n\ \n\ \n\ 
+*accessx*0.label:			0\n\ 
+*accessx*del.label:			.\n\ \n\ 
+*accessx*label.displayList:\
+foreground	white;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	gray20;\
+lines		-1,0,0,0,0,-1
+*accessx*label.label:\
+\  If your mouse does not work, use the\n\
+numeric keypad, following the diagram\n\
+bellow. Use Alt+Shift+NumLock to enable\n\
+or disable AccessX MouseKeys.
+*accessx*label.font:			XtDefaultFont
+*accessx*div.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-14-*-*-*-*-*-*-1;\
+draw-string	5,50, "Button 1"
+*accessx*mul.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-14-*-*-*-*-*-*-1;\
+draw-string	5,50, "Button 2"
+*accessx*minus.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-14-*-*-*-*-*-*-1;\
+draw-string	5,50, "Button 3"
+*accessx*7.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	30,30,30,50,50,30
+*accessx*8.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	40,30,23,48,57,48
+*accessx*9.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	30,30,50,50,50,30
+*accessx*plus.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-12-*-*-*-*-*-*-1;\
+draw-string	15,56, "Double";\
+draw-string	20,70, "Click"
+*accessx*4.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	33,38,48,53,48,23
+*accessx*5.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-17-*-*-*-*-*-*-1;\
+draw-string	15,50, "Click"
+*accessx*6.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	48,38,33,53,33,23
+*accessx*1.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	30,30,30,50,50,50
+*accessx*2.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	40,50,23,32,57,32
+*accessx*3.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+fill-poly	50,30,30,50,50,50
+*accessx*enter.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-12-*-*-*-*-*-*-1;\
+draw-string	15,56, "Toggle";\
+draw-string	15,70, "Speed"
+*accessx*0.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-17-*-*-*-*-*-*-1;\
+draw-string	26,50, "Button Lock"
+*accessx*del.displayList:\
+foreground	gray20;\
+lines		+1,-1,-1,-1,-1,+1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1;\
+foreground	red;\
+font		-*-helvetica-bold-o-*-*-12-*-*-*-*-*-*-1;\
+draw-string	15,36, "Button";\
+draw-string	12,50, "Release"

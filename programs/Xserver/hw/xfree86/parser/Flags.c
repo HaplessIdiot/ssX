@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.9 1999/06/05 15:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.11 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -200,7 +200,7 @@ addNewOption2 (XF86OptionPtr head, char *name, char *val, int used)
 	if (head != NULL && (old = FindOption(head, name)) != NULL)
 		new = old;
 	else
-		new = xf86confmalloc (sizeof (XF86OptionRec));
+		new = xf86confcalloc (1, sizeof (XF86OptionRec));
 	new->opt_name = name;
 	new->opt_val = val;
 	new->opt_used = used;
@@ -277,7 +277,7 @@ NewOption(char *name, char *value)
 {
     XF86OptionPtr opt;
 
-    opt = xf86confmalloc(sizeof (XF86OptionRec));
+    opt = xf86confcalloc(1, sizeof (XF86OptionRec));
     if (!opt)
 	return NULL;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.10 1999/06/27 14:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.11 1999/09/04 13:04:54 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -49,7 +49,7 @@ xf86ReadConfigFile (void)
 	int token;
 	XF86ConfigPtr ptr = NULL;
 
-	if ((ptr = xf86confmalloc (sizeof (XF86ConfigRec))) == NULL)
+	if ((ptr = xf86confcalloc (1, sizeof (XF86ConfigRec))) == NULL)
 	{
 		return NULL;
 	}
