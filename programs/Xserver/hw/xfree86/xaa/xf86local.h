@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.11 1997/09/09 10:27:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.12 1997/10/25 13:51:07 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -278,6 +278,18 @@ xf86PolyFillArcSolid(
 
 void
 xf86FillPolygonSolid1Rect(
+#if NeedFunctionPrototypes
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn
+#endif
+);
+
+void
+xf86FillPolygonStippled(
 #if NeedFunctionPrototypes
     DrawablePtr	pDrawable,
     GCPtr	pGC,

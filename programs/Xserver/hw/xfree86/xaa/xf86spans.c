@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.2 1997/03/27 08:31:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.3 1997/04/18 09:12:59 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -76,8 +76,14 @@ xf86FillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
 
+    if (n == 0) {
+        DEALLOCATE_LOCAL(ppt);
+        DEALLOCATE_LOCAL(pwidth);
+        return;
+    }
+
     xf86AccelInfoRec.FillSpansSolid(n, ppt, pwidth, fSorted, pGC->fgPixel,
-        pGC->alu);
+        pGC->alu, pGC->planemask);
 
     DEALLOCATE_LOCAL(ppt);
     DEALLOCATE_LOCAL(pwidth);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.6 1997/11/08 16:24:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.7 1997/11/16 11:51:16 dawes Exp $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
@@ -172,7 +172,7 @@ xf86FillPolyHelper (pDrawable, pGC, y, overall_height, left, right,
 	left_height -= height;
 	right_height -= height;
 
-	if(xf86AccelInfoRec.SubsequentFillTrapezoidSolid && (height > 4)) {
+	if(xf86AccelInfoRec.SubsequentFillTrapezoidSolid && (height > 6)) {
     	    int right_DX = (right_dx * right_signdx) + 
 			   (right_stepx * right_dy);
 	    int left_DX = (left_dx * left_signdx) + 

@@ -97,6 +97,9 @@ EXPORTS
  XagDestroyAssociation
  XagGetApplicationGroupAttributes
  XagQueryApplicationGroup
+ XLbxQueryExtension
+ XLbxGetEventBase
+ XLbxQueryVersion
  XcupGetReservedColormapEntries
  XcupQueryVersion
  XcupStoreColors
@@ -118,4 +121,4 @@ EXPORTS
  XeviQueryExtension
  XeviQueryVersion
  XeviGetVisualInfo
-/* $TOG: Xext-def.cpp /main/9 1997/12/02 14:28:56 kaleb $ */
+/* $TOG: Xext-def.cpp /main/10 1998/01/04 12:31:45 kaleb $ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.18 1997/09/09 10:27:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.19 1997/11/22 00:00:19 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -99,6 +99,8 @@ void xf86GCNewFillPolygon(pGC)
     GCPtr pGC;
 {
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+    	
+    pGC->ops->FillPolygon = miFillPolygon;
 
 #ifdef NO_ONE_RECT
     if(pGC->fillStyle == FillSolid) {
@@ -112,8 +114,45 @@ void xf86GCNewFillPolygon(pGC)
 	else
 #endif
             pGC->ops->FillPolygon = xf86GCInfoRec.FillPolygonWrapper;
-    } else
-    	pGC->ops->FillPolygon = miFillPolygon;
+    } else if (xf86AccelInfoRec.Flags & PIXMAP_CACHE){
+	/* We use these flags because the 8x8 stippled polygon
+		routine will be replacing these routines */
+    	switch (pGC->fillStyle) {
+    	case FillTiled:
+    	    if (!xf86GCInfoRec.PolyFillRectTiled)
+    	    	break;
+	    if (!CHECKPLANEMASK(xf86GCInfoRec.PolyFillRectTiledFlags))
+	    	break;
+	    if (!CHECKROP(xf86GCInfoRec.PolyFillRectTiledFlags))
+	    	break;
+            if (!CHECKSOURCEROP())
+	    	break;
+    	    pGC->ops->FillPolygon = xf86FillPolygonStippled;
+	    break;
+    	case FillStippled:
+    	    if (!xf86GCInfoRec.PolyFillRectStippled)
+    	    	break;
+	    if (!CHECKPLANEMASK(xf86GCInfoRec.PolyFillRectStippledFlags))
+	    	break;
+	    if (!CHECKROP(xf86GCInfoRec.PolyFillRectStippledFlags))
+	    	break;
+            if (!CHECKSOURCEROP())
+	    	break;
+    	    pGC->ops->FillPolygon = xf86FillPolygonStippled;
+	    break;
+    	case FillOpaqueStippled:
+    	    if (!xf86GCInfoRec.PolyFillRectOpaqueStippled)
+    	    	break;
+	    if (!CHECKPLANEMASK(xf86GCInfoRec.PolyFillRectOpaqueStippledFlags))
+	    	break;
+	    if (!CHECKROP(xf86GCInfoRec.PolyFillRectOpaqueStippledFlags))
+            	break;
+            if (!CHECKSOURCEROP())
+	    	break;
+    	    pGC->ops->FillPolygon = xf86FillPolygonStippled;
+	    break;
+    	}
+    }
 }
 
 

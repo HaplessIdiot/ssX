@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.17 95/06/07 19:12:49 converse Exp $ */
+/* $TOG: VarargsI.h /main/18 1998/01/09 16:08:57 kaleb $ */
 
 /*
 
@@ -67,6 +67,18 @@ extern XtTypedArgList _XtVaCreateTypedArgList(
 extern void _XtFreeArgList(
 #if NeedFunctionPrototypes
     ArgList /*args*/, int /*total_count*/, int /*typed_count*/
+#endif
+);
+
+extern void _XtGetApplicationResources(
+#if NeedFunctionPrototypes
+    Widget /*w*/, XtPointer /*base*/, XtResourceList /*resources*/, Cardinal /*num_resources*/, ArgList /*args*/, Cardinal /*num_args*/, XtTypedArgList /*typed_args*/, Cardinal /*num_typed_args*/
+#endif
+);
+
+extern void _XtGetSubresources(
+#if NeedFunctionPrototypes
+    Widget /*w*/, XtPointer /*base*/, const char* /*name*/, const char* /*class*/, XtResourceList /*resources*/, Cardinal /*num_resources*/, ArgList /*args*/, Cardinal /*num_args*/, XtTypedArgList /*typed_args*/, Cardinal /*num_typed_args*/
 #endif
 );
 

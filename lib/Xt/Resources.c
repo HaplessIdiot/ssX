@@ -1,4 +1,4 @@
-/* $TOG: Resources.c /main/112 1997/05/15 17:30:38 kaleb $ */
+/* $TOG: Resources.c /main/113 1998/01/09 16:08:41 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1072,6 +1072,79 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 
 
 #if NeedFunctionPrototypes
+void _XtGetSubresources (
+    Widget	  w,
+    XtPointer	  base,
+    const char*   name,
+    const char*   class,
+    XtResourceList resources,
+    Cardinal	  num_resources,
+    ArgList	  args,
+    Cardinal	  num_args,
+    XtTypedArgList typed_args,
+    Cardinal      num_typed_args
+    )
+#else
+void _XtGetSubresources (w, base, name, class, resources, num_resources,
+			args, num_args)
+    Widget	  w;		  /* Widget "parent" of subobject   */
+    XtPointer	  base;		  /* Base address to write to       */
+    String	  name;		  /* name of subobject		    */
+    String	  class;	  /* class of subobject		    */
+    XtResourceList resources;	  /* resource list for subobject    */
+    Cardinal	  num_resources;
+    ArgList	  args;		  /* arg list to override resources */
+    Cardinal	  num_args;
+    XtTypedArgsList typed_args;
+    Cardinal      num_typed_args;
+#endif
+{
+    XrmName	  *names, names_s[50];
+    XrmClass	  *classes, classes_s[50];
+    XrmQuark	  quark_cache[100];
+    XrmQuarkList  quark_args;
+    XrmResourceList* table;
+    Cardinal	  count, ntyped_args = num_typed_args;
+    WIDGET_TO_APPCON(w);
+
+    if (num_resources == 0) return;
+
+    LOCK_APP(app);
+    count = CountTreeDepth(w);
+    count++;	/* make sure there's enough room for name and class */
+    names = (XrmName*) XtStackAlloc(count * sizeof(XrmName), names_s);
+    classes = (XrmClass*) XtStackAlloc(count * sizeof(XrmClass), classes_s);
+    if (names == NULL || classes == NULL) _XtAllocError(NULL);
+
+    /* Get full name, class of subobject */
+    GetNamesAndClasses(w, names, classes);
+    count -= 2;
+    names[count] = StringToName(name);
+    classes[count] = StringToClass(class);
+    count++;
+    names[count] = NULLQUARK;
+    classes[count] = NULLQUARK;
+
+    /* Compile arg list into quarks */
+    CacheArgs(args, num_args, typed_args, num_typed_args,
+	      quark_cache, XtNumber(quark_cache), &quark_args);
+
+    /* Compile resource list if needed */
+    if (((int) resources->resource_offset) >= 0) {
+	XrmCompileResourceListEphem(resources, num_resources);
+    }
+    table = _XtCreateIndirectionTable(resources, num_resources); 
+    (void) GetResources(w, (char*)base, names, classes, table, num_resources,
+			quark_args, args, num_args,
+			typed_args, &ntyped_args, False);
+    FreeCache(quark_cache, quark_args);
+    XtFree((char *)table);
+    XtStackFree((XtPointer)names, names_s);
+    XtStackFree((XtPointer)classes, classes_s);
+    UNLOCK_APP(app);
+}
+
+#if NeedFunctionPrototypes
 void XtGetSubresources (
     Widget	  w,
     XtPointer	  base,
@@ -1095,67 +1168,27 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
     Cardinal	  num_args;
 #endif
 {
-    XrmName	  *names, names_s[50];
-    XrmClass	  *classes, classes_s[50];
-    XrmQuark	  quark_cache[100];
-    XrmQuarkList  quark_args;
-    XrmResourceList* table;
-    Cardinal	  count, null_typed_args = 0;
-    WIDGET_TO_APPCON(w);
-
-    if (num_resources == 0) return;
-
-    LOCK_APP(app);
-    count = CountTreeDepth(w);
-    count++;	/* make sure there's enough room for name and class */
-    names = (XrmName*) XtStackAlloc(count * sizeof(XrmName), names_s);
-    classes = (XrmClass*) XtStackAlloc(count * sizeof(XrmClass), classes_s);
-    if (names == NULL || classes == NULL) _XtAllocError(NULL);
-
-    /* Get full name, class of subobject */
-    GetNamesAndClasses(w, names, classes);
-    count -= 2;
-    names[count] = StringToName(name);
-    classes[count] = StringToClass(class);
-    count++;
-    names[count] = NULLQUARK;
-    classes[count] = NULLQUARK;
-
-    /* Compile arg list into quarks */
-    CacheArgs(args, num_args, (XtTypedArgList)NULL, (Cardinal)0,
-	      quark_cache, XtNumber(quark_cache), &quark_args);
-
-    /* Compile resource list if needed */
-    if (((int) resources->resource_offset) >= 0) {
-	XrmCompileResourceListEphem(resources, num_resources);
-    }
-    table = _XtCreateIndirectionTable(resources, num_resources); 
-    (void) GetResources(w, (char*)base, names, classes, table, num_resources,
-			quark_args, args, num_args,
-			(XtTypedArgList)NULL, &null_typed_args, False);
-    FreeCache(quark_cache, quark_args);
-    XtFree((char *)table);
-    XtStackFree((XtPointer)names, names_s);
-    XtStackFree((XtPointer)classes, classes_s);
-    UNLOCK_APP(app);
+    _XtGetSubresources (w, base, name, class, resources, num_resources, args, num_args, NULL, 0);
 }
 
 
-void XtGetApplicationResources
-	(w, base, resources, num_resources, args, num_args)
+void _XtGetApplicationResources
+	(w, base, resources, num_resources, args, num_args, typed_args, num_typed_args)
     Widget	    w;		  /* Application shell widget       */
     XtPointer	    base;	  /* Base address to write to       */
     XtResourceList  resources;	  /* resource list for subobject    */
     Cardinal	    num_resources;
     ArgList	    args;	  /* arg list to override resources */
     Cardinal	    num_args;
+    XtTypedArgList  typed_args;
+    Cardinal	    num_typed_args;
 {
     XrmName	    *names, names_s[50];
     XrmClass	    *classes, classes_s[50];
     XrmQuark	    quark_cache[100];
     XrmQuarkList    quark_args;
     XrmResourceList* table;
-    Cardinal        count, null_typed_args = 0;
+    Cardinal        count, ntyped_args = num_typed_args;
     XtAppContext    app;
 
     if (num_resources == 0) return;
@@ -1184,7 +1217,7 @@ void XtGetApplicationResources
     }
 
     /* Compile arg list into quarks */
-    CacheArgs(args, num_args, (XtTypedArgList)NULL, (Cardinal)0,  quark_cache, 
+    CacheArgs(args, num_args, typed_args, num_typed_args,  quark_cache, 
 	XtNumber(quark_cache), &quark_args);
     /* Compile resource list if needed */
     if (((int) resources->resource_offset) >= 0) {
@@ -1203,7 +1236,7 @@ void XtGetApplicationResources
 
     (void) GetResources(w, (char*)base, names, classes, table, num_resources,
 			quark_args, args, num_args,
-			(XtTypedArgList)NULL, &null_typed_args, False);
+			typed_args, &ntyped_args, False);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
     if (w != NULL) {
@@ -1211,6 +1244,18 @@ void XtGetApplicationResources
 	XtStackFree((XtPointer)classes, classes_s);
     }
     UNLOCK_APP(app);
+}
+
+void XtGetApplicationResources
+	(w, base, resources, num_resources, args, num_args)
+    Widget	    w;		  /* Application shell widget       */
+    XtPointer	    base;	  /* Base address to write to       */
+    XtResourceList  resources;	  /* resource list for subobject    */
+    Cardinal	    num_resources;
+    ArgList	    args;	  /* arg list to override resources */
+    Cardinal	    num_args;
+{
+    _XtGetApplicationResources(w, base, resources, num_resources, args, num_args, NULL, 0);
 }
 
 static Boolean initialized = FALSE;

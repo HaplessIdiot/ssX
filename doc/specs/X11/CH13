@@ -516,7 +516,7 @@ A name argument that is NULL identifies the end of the list.
 .LP
 A variable-length argument list may contain a nested list.
 If the name 
-.PN XVaNestedList
+.PN XNVaNestedList
 is specified in place of an argument name,
 then the following value is interpreted as an 
 .PN XVaNestedList

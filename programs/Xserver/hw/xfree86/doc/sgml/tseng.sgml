@@ -351,6 +351,7 @@ First a WARNING: defining a bad MemBase may cause serious injury or death
 (to your operating system, of course). Especially defining the MemBase to be
 inside the range of system memory is a ticket to hell.
 
+<sect1>What you should know BEFORE trying another MemBase<p>
 Rule &num;1: first, let the server find a memory base by itself, without
 specifying it. Make sure you "sync" all files to disk and close all critical
 applications. Make sure nothing bad will happen to your filesystems if you
@@ -381,6 +382,7 @@ nothing serious happens.
 When the server can't find a working linear memory base, it's time to
 experiment. The rest of this section deals with that.
 
+<sect1>Choosing a MemBase<p>
 Choosing a suitable MemBase can be quite tricky. If you have no way of
 determining the MemBase your card uses, trying to put it a few Mb above the
 system memory is a good first guess. E.g. if you have 16 Mb of RAM, defining
@@ -406,6 +408,7 @@ the system memory is a sound one: it stands most chance of actually being
 inside the decoded address range of the board. Unless your motherboard's
 entire memory space is filled with RAM.
 
+<sect1>An alternative approach<p>
 If you don't know how much memory address space your motherboard decodes
 (and who does?), try using a "non-trivial" address, like 0x1FC00000, which
 has enough bits set to "1" to work on any motherboard, even if a few are not
@@ -413,15 +416,23 @@ decoded. Keep in mind that using for example 0x10000000 may end up right on
 top of your system memory if the motherboard doesn't decode all upper
 address bits. You will only do that once.
 
+<sect1>When all else fails...<p>
 Some other VLB boards can only map the linear framebuffer above the 1GB mark
 (0x80000000 and up), so you must use a MemBase that is higher or equal to
 0x80000000.
+
+Some other VLB boards can only map the linear framebuffer BELOW the 16 MB
+mark. So you may want to try booting your system with up to 12 MB of memory
+(some operating systems allow you to supply a boot-time parameter that
+limits the memory to a certain amount, so you don't have to open your
+computer to try this), and set the MemBase to 0x00C00000 (=12M).
 
 Unfortunately, there is no easy way to tell what system you have (these
 details are mostly not in the motherboard manuals). Trial and error is the
 only road to success here. The server code will provide a default that works
 on most boards... but yours won't be one of those, of course.
 
+<sect1>Restrictions<p>
 There are some limits as to where the linear memory base may be put. On any
 ET4000W32, it must have a 4MB granularity (i.e. it can be put at 16M or at
 20M, but not at 18M). On ET6000, it needs a 16M granularity (note: the
@@ -447,6 +458,54 @@ you have it, you must disable access to all memory above the 12 MB mark.
 Some operating systems allow you to specify at startup how much memory it is
 allowed to use, so you don't have to unplug some memory each time you want
 to use linear memory.
+
+<sect1>Some boards simply cannot work in linear mode<p>
+Yes, and in that case, you're out of luck.
+
+There can be at least two reasons for this.
+
+The first is the most common: the board manufacturer has left out the
+necessary connections and hardware to be able to use linear addressing. This
+means that no coding effort on this planet can help you with your problem:
+it is physically impossible to use linear addressing.
+
+The second reason is that the current XFree86 Tseng linear addressing code is
+incompatible with the way your board is designed. The XFree86 Tseng code
+assumes a 1:1 mapping of the address lines from the bus (either ISA, VLB or
+PCI) to the address lines on the Tseng VGA chip. As unlikely as it may
+sound, this may NOT be the case!
+
+Some very rare boards do not have such a 1:1 mapping (e.g. two address lines
+swapped). It is possible to support this type of hardware, but at this
+moment, this has not been implemented yet.
+
+Other boards use external address decoding hardware that combines a number
+of address lines on the bus to a (smaller) number of address lines to the
+VGA chip. One such board for example uses three NOR gates (one 74F02 chip)
+to combine the 6 upper address lines to three address pins on the W32i chip.
+Obviously, this represents a 2:1 mapping, and not a 1:1 mapping. Therefor,
+this board is not "compatible" with the way XFree86 implements linear mode.
+
+<sect1>How can I see if the linear address is wrong?<p>
+Simple: nothing works, or your machine locks solid, or it crashes, or a
+zillion of other things.
+
+However, sometimes it is not always as obvious. Sometimes nothing bad
+happens: you just get a black screen, or a screen with rubbish on it, but
+nothing is drawn on it. Sometimes you get a core dump when the first
+application starts.
+
+If acceleration is enabled in those cases, you will almost always see
+multiple "WAIT_ACL: timeout" messages in the server output. That is because
+the accelerator registers are also mapped in the linear memory, and if
+linear memory doesn't work, then also the accelerator doesn't work.
+
+NOTE however that a WAIT_ACL message doesn't necessarily mean the linear
+memory address is bad. There are a number of other reasons for this message
+as well. But if you never saw these messages at 8bpp banked, then there's a
+good chance you have a linear memory problem ("banked" is the opposite of
+"linear", and is the default mode when "option linear" is not in the
+XF86Config file).
 
 <sect> Mode issues <p>
 
@@ -730,6 +789,7 @@ Some general hints:
     in the Device Section. The card normally auto-probes from the PCI bus,
     but on some systems, another on-board VGA card, although disabled, may
     cause the ET6000 server to want to use the other card.
+</itemize>
 
 
 Note that some VESA standard mode timings may give problems on some monitors
@@ -855,6 +915,21 @@ Problems with DMA hardware (floppy, tape)
 	"normal"</tt> statement to the Device section in your
 	<tt>XF86Config</tt> file. In most cases, this will solve the color
 	problem.
+<tag>
+Why does the server report my ModeLine with only half the pixel clock?
+</tag>
+	For ET4000W32p cards at 8bpp, some modes using a clock over 75 MHz
+	(e.g. a 1152x910 mode with 95 MHz pixel clock) will produce the
+	following message in the Xserver output:
+
+	(--) SVGA: Mode "1152x910" will use pixel multiplexing
+
+	And later, when the accepted modelines are reported:
+
+	(**) SVGA: Mode "1152x910": mode clock =  47.500
+
+	This is normal, because with pixel multiplexing, only half the clock
+	is needed as two pixels are sent to the RAMDAC per clock pulse. 
 
 </descrip>
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
@@ -937,21 +1012,14 @@ incomplete):
 <item>David Bateman
 <item>Gyorgy Krajcsovits
 <item>Kurt Olsen
-
-
-
-
-
-
-
-
+</itemize>
 
 
 
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.28 1997/10/13 17:16:39 hohndel Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.29 1997/12/05 22:01:39 hohndel Exp $ 
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.15 1997/12/20 14:20:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.16 1997/12/28 21:28:30 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -217,6 +217,17 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 	crtcRegs->vtgpolarity = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
+	if (IS_3DLABS_PM2_CLASS(coprotype)) {
+	   if (glintInfoRec.bitsPerPixel > 8) {
+		/* When != 8bpp then we stick the RAMDAC into 64bit mode */
+		/* And reduce the horizontal timings by half */
+		crtcRegs->vtgpolarity |= 1<<16;
+    		crtcRegs->h_limit >>= 1;
+		crtcRegs->h_sync_end >>= 1;
+		crtcRegs->h_sync_start >>= 1;
+		crtcRegs->h_blank_end >>= 1;
+	   }
+	}
     }
 
     crtcRegs->clock_sel = glintInfoRec.clock[mode->Clock];
@@ -475,7 +486,6 @@ saveGLINTstate()
 	}
 
         if (IS_3DLABS_PM2_CLASS(coprotype)) {
-		SR.glintRegs[102] = GLINT_READ_REG(PM2DACIndexData);
 		GLINT_WRITE_REG(PM2DACIndexMCR, PM2DACIndexReg);
 		SR.glintRegs[101] = GLINT_READ_REG(PM2DACIndexData);
 		GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
@@ -684,7 +694,9 @@ InitLUT(void)
     if (glintInfoRec.bitsPerPixel > 8) {
 	int r,g,b;
 	int mr,mg,mb;
-	int nr = 5, ng = 5, nb = 5;
+	int nr = xf86weight.red;
+	int ng = xf86weight.green;
+	int nb = xf86weight.blue;
 	extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 	extern LUTENTRY currentglintdac[];
 	
@@ -702,17 +714,17 @@ InitLUT(void)
 		
 		for (i=0;i<256;i++) {
 		    r = (i >> (6-nr)) & mr;
-		    /* g = (i >> (6-ng)) & mg; */
-		    /* b = (i >> (6-nb)) & mb; */
+		    g = (i >> (6-ng)) & mg;
+		    b = (i >> (6-nb)) & mb; 
 		    currentglintdac[i].r = xf86rGammaMap[(r*255+mr/2)/mr];
-		    currentglintdac[i].g = xf86gGammaMap[(r*255+mg/2)/mg];
-		    currentglintdac[i].b = xf86bGammaMap[(r*255+mb/2)/mb];
+		    currentglintdac[i].g = xf86gGammaMap[(g*255+mg/2)/mg];
+		    currentglintdac[i].b = xf86bGammaMap[(b*255+mb/2)/mb];
 		}
 	    }
 	}
 
     	if (IS_3DLABS_PM2_CLASS(coprotype)) {
-		GLINT_SLOW_WRITE_REG(0x00, PM2DACWriteAddress);
+		GLINT_WRITE_REG(0x00, PM2DACWriteAddress);
     	} else {
     		GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
     	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.19 1997/11/01 15:05:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.20 1997/11/16 11:51:16 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -676,7 +676,8 @@ typedef struct {
         int		*pwidthInit,
         int		fSorted,
         int		color,
-        int		rop
+        int		rop,
+        unsigned	planemask
 #endif
     );
     void (*ScreenToScreenBitBlt)(
@@ -845,6 +846,22 @@ typedef struct {
         int y,
         int w,
         int h
+#endif
+    );
+    void (*Subsequent8x8TrapezoidColorExpand)(
+#if NeedNestedPrototypes	
+	int patternx,
+	int patterny,
+        int ytop,
+        int height,
+        int left,
+        int dxL,
+	int dyL,
+	int eL,
+	int right,
+	int dxR,
+	int dyR,
+	int eR
 #endif
     );
     void (*SetupForCPUToScreenColorExpand)(

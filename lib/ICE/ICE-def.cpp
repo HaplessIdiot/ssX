@@ -60,3 +60,5 @@ EXPORTS
  _IceRead
  _IceReadSkip
  _IceWrite
+ IceListenForWellKnownConnections
+/* $TOG: ICE-def.cpp /main/7 1998/01/04 12:31:53 kaleb $ */

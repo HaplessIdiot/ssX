@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.13 1997/09/25 07:31:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.14 1997/10/25 13:51:01 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -89,7 +89,8 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* SetupForFill8x8Pattern() */
     NULL,	/* SubsequentFill8x8Pattern() */
     NULL,	/* SetupFor8x8PatternColorExpand() */
-    NULL,	/* SetupFor8x8PatternColorExpand() */
+    NULL,	/* Subsequent8x8PatternColorExpand() */
+    NULL,	/* Subsequent8x8TrapezoidColorExpand() */
     NULL,	/* SetupForCPUToScreenColorExpand() */
     NULL,	/* SubsequentCPUToScreenColorExpand() */
     NULL,	/* SetupForScreenToScreenColorExpand() */

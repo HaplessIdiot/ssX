@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.55 1997/12/05 22:01:55 hohndel Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.56 1997/12/28 21:28:39 hohndel Exp $
  */
 
 /*
@@ -252,10 +252,12 @@ static void reset_SGR_Foreground PROTO((void));
 #define XtNcolor14 "color14"
 #define XtNcolor15 "color15"
 #define XtNcolorBD "colorBD"
+#define XtNcolorBL "colorBL"
 #define XtNcolorUL "colorUL"
 #define XtNcolorMode "colorMode"
 #define XtNcolorULMode "colorULMode"
 #define XtNcolorBDMode "colorBDMode"
+#define XtNcolorBLMode "colorBLMode"
 #define XtNcolorAttrMode "colorAttrMode"
 #define XtNboldColors "boldColors"
 #define XtNdynamicColors "dynamicColors"
@@ -746,6 +748,9 @@ static XtResource resources[] = {
 {XtNcolorBD, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_BD]),
 	XtRString, "XtDefaultForeground"},
+{XtNcolorBL, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_BL]),
+	XtRString, "XtDefaultForeground"},
 {XtNcolorUL, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_UL]),
 	XtRString, "XtDefaultForeground"},
@@ -757,6 +762,9 @@ static XtResource resources[] = {
 	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNcolorBDMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorBDMode),
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNcolorBLMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.colorBLMode),
 	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNcolorAttrMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorAttrMode),
@@ -866,8 +874,11 @@ void SGR_Foreground(color)
 
 	XSetForeground(screen->display, NormalGC(screen), fg);
 	XSetBackground(screen->display, ReverseGC(screen), fg);
-	XSetForeground(screen->display, NormalBoldGC(screen), fg);
-	XSetBackground(screen->display, ReverseBoldGC(screen), fg);
+
+	if (NormalGC(screen) != NormalBoldGC(screen)) {
+		XSetForeground(screen->display, NormalBoldGC(screen), fg);
+		XSetBackground(screen->display, ReverseBoldGC(screen), fg);
+	}
 }
 
 void SGR_Background(color)
@@ -886,8 +897,11 @@ void SGR_Background(color)
 
 	XSetBackground(screen->display, NormalGC(screen), bg);
 	XSetForeground(screen->display, ReverseGC(screen), bg);
-	XSetBackground(screen->display, NormalBoldGC(screen), bg);
-	XSetForeground(screen->display, ReverseBoldGC(screen), bg);
+
+	if (NormalGC(screen) != NormalBoldGC(screen)) {
+		XSetBackground(screen->display, NormalBoldGC(screen), bg);
+		XSetForeground(screen->display, ReverseBoldGC(screen), bg);
+	}
 }
 
 /* Invoked after updating bold/underline flags, computes the extended color
@@ -905,6 +919,9 @@ setExtendedFG()
 
 		if (term->screen.colorBDMode && (term->flags & BOLD))
 			fg = COLOR_BD;
+
+		if (term->screen.colorBLMode && (term->flags & BLINK))
+			fg = COLOR_BL;
 	}
 
 	/* This implements the IBM PC-style convention of 8-colors, with one
@@ -1509,13 +1526,15 @@ static void VTparse()
 				 case DEFAULT:
 				 case 0:
 					term->flags &=
-						~(INVERSE|BOLD|UNDERLINE|INVISIBLE);
+						~(INVERSE|BOLD|BLINK|UNDERLINE|INVISIBLE);
 					if_OPT_ISO_COLORS(screen,{reset_SGR_Colors();})
 					break;
-				 case 1:	/* Bold				*/
-					/* FALLTHRU */
-				 case 5:	/* Blink, really.	*/
+				 case 1:	/* Bold			*/
 					term->flags |= BOLD;
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
+					break;
+				 case 5:	/* Blink		*/
+					term->flags |= BLINK;
 					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 4:	/* Underscore		*/
@@ -1533,9 +1552,11 @@ static void VTparse()
 					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 22: /* reset 'bold' */
-				 	/* FALLTHRU */
-				 case 25: /* reset 'blink' */
 					term->flags &= ~BOLD;
+					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
+					break;
+				 case 25: /* reset 'blink' */
+					term->flags &= ~BLINK;
 					if_OPT_ISO_COLORS(screen,{setExtendedFG();})
 					break;
 				 case 27:
@@ -2481,8 +2502,7 @@ dotext(screen, charset, buf, ptr)
 		if (n <= 1) {
 			if (screen->do_wrap && (term->flags & WRAPAROUND)) {
 			    /* mark that we had to wrap this line */
-			    ScrnSetAttributes(screen, screen->cur_row, 0,
-					      LINEWRAPPED, LINEWRAPPED, 1);
+			    ScrnSetWrapped(screen, screen->cur_row);
 			    xtermAutoPrint('\n');
 			    Index(screen, 1);
 			    screen->cur_col = 0;
@@ -2784,7 +2804,10 @@ dpmodes(termw, func)
 			break;
 		case 1048:
 			if (!termw->misc.titeInhibit) {
-				CursorRestore(termw, &screen->sc);
+		        	if(func == bitset)
+					CursorSave(termw, &screen->sc);
+				else
+					CursorRestore(termw, &screen->sc);
 			}
 			break;
 		}
@@ -3334,8 +3357,8 @@ SwitchBufPtrs(screen)
 {
     Size_t len = ScrnPointers(screen, screen->max_row + 1);
 
-    memcpy ( (char *)screen->save_ptr, (char *)screen->buf,      len);
-    memcpy ( (char *)screen->buf,      (char *)screen->altbuf,   len);
+    memcpy ( (char *)screen->save_ptr, (char *)screen->visbuf,   len);
+    memcpy ( (char *)screen->visbuf,   (char *)screen->altbuf,   len);
     memcpy ( (char *)screen->altbuf,   (char *)screen->save_ptr, len);
 }
 
@@ -3499,16 +3522,15 @@ static void RequestResize(termw, rows, cols, text)
 	     askedWidth,  askedHeight,
 	    &replyWidth, &replyHeight);
 
-	XSync(screen->display, FALSE);	/* synchronize */
-	if(XtAppPending(app_con))
-		xevents();
-
 	if (status == XtGeometryYes ||
 	    status == XtGeometryDone) {
 	    ScreenResize (&termw->screen,
 			  replyWidth,
 			  replyHeight,
 			  &termw->flags);
+	    XSync(screen->display, FALSE);	/* synchronize */
+	    if(XtAppPending(app_con))
+		xevents();
 	}
 }
 				
@@ -3543,9 +3565,9 @@ static void VTallocbuf ()
     screen->allbuf = Allocate (nrows, screen->max_col + 1,
      &screen->sbuf_address);
     if (screen->scrollWidget)
-      screen->buf = &screen->allbuf[MAX_PTRS * screen->savelines];
+      screen->visbuf = &screen->allbuf[MAX_PTRS * screen->savelines];
     else
-      screen->buf = screen->allbuf;
+      screen->visbuf = screen->allbuf;
     return;
 }
 
@@ -3650,6 +3672,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.boldColors    = request->screen.boldColors;
    new->screen.colorAttrMode = request->screen.colorAttrMode;
    new->screen.colorBDMode   = request->screen.colorBDMode;
+   new->screen.colorBLMode   = request->screen.colorBLMode;
    new->screen.colorMode     = request->screen.colorMode;
    new->screen.colorULMode   = request->screen.colorULMode;
 
@@ -3673,7 +3696,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
 #endif /* OPT_ISO_COLORS */
 
 #if OPT_DEC_CHRSET
-   new->num_ptrs = 4;
+   new->num_ptrs = 5;
 #endif
 
    new->screen.underline = request->screen.underline;
@@ -3971,7 +3994,7 @@ static void VTRealize (w, valuemask, values)
 #if OPT_TEK4014
 	if (!tekWidget)			/* if not called after fork */
 #endif
-	  screen->buf = screen->allbuf = NULL;
+	  screen->visbuf = screen->allbuf = NULL;
 
 	screen->do_wrap = 0;
 	screen->scrolls = screen->incopy = 0;
@@ -4218,7 +4241,7 @@ ShowCursor()
 		    if (screen->cursorGC) {
 			currentGC = screen->cursorGC;
 		    } else {
-			if (flags & BOLD) {
+			if (flags & (BOLD|BLINK)) {
 				currentGC = NormalBoldGC(screen);
 			} else {
 				currentGC = NormalGC(screen);
@@ -4228,7 +4251,7 @@ ShowCursor()
 		    if (screen->reversecursorGC) {
 			currentGC = screen->reversecursorGC;
 		    } else {
-			if (flags & BOLD) {
+			if (flags & (BOLD|BLINK)) {
 				currentGC = ReverseBoldGC(screen);
 			} else {
 				currentGC = ReverseGC(screen);
@@ -4246,6 +4269,7 @@ ShowCursor()
 	}
 
 	TRACE(("%s @%d, calling drawXtermText\n", __FILE__, __LINE__))
+
 	drawXtermText(screen, flags, currentGC,
 		x = CurCursorX(screen, screen->cur_row, screen->cur_col),
 		y = CursorY(screen, screen->cur_row),
@@ -4460,7 +4484,7 @@ VTReset(full)
 		 */
 		term->keyboard.flags &= ~(MODE_DECCKM|MODE_KAM);
 		bitcpy(&term->flags, term->initflags, WRAPAROUND|REVERSEWRAP);
-		bitclr(&term->flags, INSERT|INVERSE|BOLD|UNDERLINE|INVISIBLE);
+		bitclr(&term->flags, INSERT|INVERSE|BOLD|BLINK|UNDERLINE|INVISIBLE);
 		if_OPT_ISO_COLORS(screen,{reset_SGR_Colors();})
 		update_appcursor();
 		update_autowrap();
@@ -4810,6 +4834,7 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     GC new_reverseGC = NULL, new_reverseboldGC = NULL;
     Pixel new_normal, new_revers;
     char *tmpname = NULL;
+    Boolean proportional = False;
 
     if (!nfontname) return 0;
 
@@ -4830,6 +4855,14 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     else
 	if (bfs->ascent + bfs->descent == 0  ||  bfs->max_bounds.width == 0)
 	    goto bad;		/* can't use a 0-sized font */
+
+    if (nfs->min_bounds.width != nfs->max_bounds.width
+     || bfs->min_bounds.width != bfs->max_bounds.width
+     || nfs->min_bounds.width != bfs->min_bounds.width
+     || nfs->max_bounds.width != bfs->max_bounds.width) {
+	TRACE(("Proportional font!\n"))
+	proportional = True;
+    }
 
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
@@ -4891,6 +4924,7 @@ LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
 
     screen->fnt_norm = nfs;
     screen->fnt_bold = bfs;
+    screen->fnt_prop = proportional;
 
     screen->enbolden = (nfs == bfs);
     set_menu_font (False);
@@ -4984,6 +5018,7 @@ set_cursor_gcs (screen)
     Pixel fg = screen->foreground;
     Pixel bg = term->core.background_pixel;
     GC new_cursorGC = NULL;
+    GC new_cursorFillGC = NULL;
     GC new_reversecursorGC = NULL;
     GC new_cursoroutlineGC = NULL;
 
@@ -5027,6 +5062,10 @@ set_cursor_gcs (screen)
 	    xgcv.background = cc;
 	    new_cursorGC = XCreateGC (screen->display, TextWindow(screen), mask, &xgcv);
 
+	    xgcv.foreground = cc;
+	    xgcv.background = fg;
+	    new_cursorFillGC = XCreateGC (screen->display, TextWindow(screen), mask, &xgcv);
+
 	    if (screen->always_highlight) {
 		new_reversecursorGC = (GC) 0;
 		new_cursoroutlineGC = (GC) 0;
@@ -5045,9 +5084,14 @@ set_cursor_gcs (screen)
 	/* we have a colored cursor */
 	xgcv.font = screen->fnt_norm->fid;
 	mask = (GCForeground | GCBackground | GCFont);
+
 	xgcv.foreground = fg;
 	xgcv.background = cc;
 	new_cursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+
+	xgcv.foreground = cc;
+	xgcv.background = fg;
+	new_cursorFillGC = XtGetGC ((Widget) term, mask, &xgcv);
 
 	if (screen->always_highlight) {
 	    new_reversecursorGC = (GC) 0;
@@ -5067,6 +5111,8 @@ set_cursor_gcs (screen)
     {
 	if (screen->cursorGC)
 	    XFreeGC (screen->display, screen->cursorGC);
+	if (screen->fillCursorGC)
+	    XFreeGC (screen->display, screen->fillCursorGC);
 	if (screen->reversecursorGC)
 	    XFreeGC (screen->display, screen->reversecursorGC);
 	if (screen->cursoroutlineGC)
@@ -5077,13 +5123,16 @@ set_cursor_gcs (screen)
     {
 	if (screen->cursorGC)
 	    XtReleaseGC ((Widget)term, screen->cursorGC);
+	if (screen->fillCursorGC)
+	    XtReleaseGC ((Widget)term, screen->fillCursorGC);
 	if (screen->reversecursorGC)
 	    XtReleaseGC ((Widget)term, screen->reversecursorGC);
 	if (screen->cursoroutlineGC)
 	    XtReleaseGC ((Widget)term, screen->cursoroutlineGC);
     }
 
-    screen->cursorGC = new_cursorGC;
+    screen->cursorGC        = new_cursorGC;
+    screen->fillCursorGC    = new_cursorFillGC;
     screen->reversecursorGC = new_reversecursorGC;
     screen->cursoroutlineGC = new_cursoroutlineGC;
 }

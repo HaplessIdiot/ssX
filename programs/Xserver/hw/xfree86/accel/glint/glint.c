@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.20 1997/12/20 14:20:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.21 1997/12/28 21:28:30 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -903,12 +903,6 @@ glintProbe()
 
   OFLG_ZERO(&validOptions);
 
-  if (IS_3DLABS_TX_MX_CLASS(coprotype) ||
-      IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	OFLG_SET(CLOCK_OPTION_IBMRGB, &validOptions);
-	OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
-  }
-
   if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
     OFLG_SET(OPTION_FIREGL3000, &validOptions);
 
@@ -926,27 +920,100 @@ glintProbe()
   glintInfoRec.chipset = "glint";
   xf86ProbeFailed = FALSE;
 
+  if (xf86bpp < 0)
+	xf86bpp = glintInfoRec.depth;
+
+  if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0)
+	xf86weight = glintInfoRec.weight;
+
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+	if (xf86bpp == 16) {
+		ErrorF("%s %s: Glint 500TX/MX does not support 16bpp. "
+		   "Using 15bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
+		xf86bpp = 15;
+	}
+	if (xf86bpp == 24) {
+		ErrorF("%s %s: Glint 500TX/MX does not support 24bpp. "
+		   "Using 32bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
+		xf86bpp = 32;
+	}
+  } else
+  if (IS_3DLABS_PM_FAMILY(coprotype)) {
+	if (xf86bpp == 15) {
+		ErrorF("%s %s: Permedia does not YET support 15bpp. "
+		   "Using 16bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
+		xf86bpp = 16;
+	}
+	if (xf86bpp == 24) {
+		ErrorF("%s %s: Permedia does not YET support 24bpp. "
+		   "Using 32bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
+		xf86bpp = 32;
+	}
+  }
+
+  switch (xf86bpp) {
+	case 8:
+		/* XAA uses this */
+		xf86weight.green = 8;
+		break;
+	case 15:
+		glintInfoRec.depth = 15;
+		xf86weight.green = xf86weight.red = xf86weight.blue = 5;
+		glintInfoRec.bitsPerPixel = 16;
+		if (glintInfoRec.defaultVisual < 0)
+			glintInfoRec.defaultVisual = TrueColor;
+		if (defaultColorVisualClass < 0)
+			defaultColorVisualClass = glintInfoRec.defaultVisual;
+		break;
+	case 16:
+		glintInfoRec.depth = 16;
+		xf86weight.green = 6;
+		xf86weight.red = xf86weight.blue = 5;
+		glintInfoRec.bitsPerPixel = 16;
+		if (glintInfoRec.defaultVisual < 0)
+			glintInfoRec.defaultVisual = TrueColor;
+		if (defaultColorVisualClass < 0)
+			defaultColorVisualClass = glintInfoRec.defaultVisual;
+		break;
+	case 32:
+		glintInfoRec.bitsPerPixel = 32;
+		glintInfoRec.depth = 32;
+		xf86weight.red = xf86weight.blue = xf86weight.green = 8;
+		if (glintInfoRec.defaultVisual < 0)
+			glintInfoRec.defaultVisual = TrueColor;
+		if (defaultColorVisualClass < 0)
+			defaultColorVisualClass = glintInfoRec.defaultVisual;
+		break;
+	default:
+		ErrorF("Invalid bpp.\n");
+		return (FALSE);
+		break;
+  }
+
   /*
    * these defaults aren't all that great, yet
    */
   if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	glintInfoRec.dacSpeeds[0] = 220000; 
 	glintInfoRec.dacSpeeds[1] = 220000; 
+	glintInfoRec.dacSpeeds[2] = 220000; /* Never used */
 	glintInfoRec.dacSpeeds[3] = 220000; 
-	glintInfoRec.maxClock = 220000;
   }
   else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)){
 	glintInfoRec.dacSpeeds[0] = 200000; 
 	glintInfoRec.dacSpeeds[1] = 100000; 
+	glintInfoRec.dacSpeeds[2] = 50000;
 	glintInfoRec.dacSpeeds[3] = 50000; 
-	glintInfoRec.maxClock = 220000;
   }
   else if (IS_3DLABS_PM2_CLASS(coprotype)){
 	glintInfoRec.dacSpeeds[0] = 230000; 
-	glintInfoRec.dacSpeeds[1] = 230000; 
-	glintInfoRec.dacSpeeds[3] = 230000; 
-	glintInfoRec.maxClock = 220000;
+	glintInfoRec.dacSpeeds[1] = 170000; 
+	glintInfoRec.dacSpeeds[2] = 110000; 
+	glintInfoRec.dacSpeeds[3] = 110000; 
   }
+
+  glintInfoRec.maxClock = glintInfoRec.dacSpeeds
+					[(glintInfoRec.bitsPerPixel/8)-1];
 
   /* Let's grab the basic mode lines */
   tx = glintInfoRec.virtualX;
@@ -954,7 +1021,7 @@ glintProbe()
 
   if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
   	if (glintInfoRec.virtualX > 0) {
-		ErrorF("%s %s: Virtual coordinates - Not yet supported. "
+		ErrorF("%s %s: Virtual coordinates - Not supported. "
 		   "Ignoring.\n", XCONFIG_GIVEN, glintInfoRec.name);
   	}
   }
@@ -1035,89 +1102,6 @@ glintProbe()
 	 */
 	FatalError("Can't handle pitch %d\n", glintInfoRec.displayWidth);
   }
-
-  if (xf86bpp < 0)
-	xf86bpp = glintInfoRec.depth;
-  if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0)
-	xf86weight = glintInfoRec.weight;
-  switch (xf86bpp) {
-	case 8:
-		/* XAA uses this */
-		xf86weight.green = 8;
-		break;
-	case 15:
-		glintInfoRec.depth = 15;
-		xf86weight.green = xf86weight.red = xf86weight.blue = 5;
-		glintInfoRec.bitsPerPixel = 16;
-		if (glintInfoRec.defaultVisual < 0)
-			glintInfoRec.defaultVisual = TrueColor;
-		if (defaultColorVisualClass < 0)
-			defaultColorVisualClass = glintInfoRec.defaultVisual;
-		break;
-	case 16:
-		glintInfoRec.depth = 16;
-		xf86weight.green = 6;
-		xf86weight.red = xf86weight.blue = 5;
-		glintInfoRec.bitsPerPixel = 16;
-		if (glintInfoRec.defaultVisual < 0)
-			glintInfoRec.defaultVisual = TrueColor;
-		if (defaultColorVisualClass < 0)
-			defaultColorVisualClass = glintInfoRec.defaultVisual;
-		break;
-	case 32:
-		glintInfoRec.bitsPerPixel = 32;
-		glintInfoRec.depth = 32;
-		xf86weight.red = xf86weight.blue = xf86weight.green = 8;
-		if (glintInfoRec.defaultVisual < 0)
-			glintInfoRec.defaultVisual = TrueColor;
-		if (defaultColorVisualClass < 0)
-			defaultColorVisualClass = glintInfoRec.defaultVisual;
-		break;
-	default:
-		ErrorF("Invalid bpp.\n");
-		return (FALSE);
-		break;
-  }
-
-  if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
-    {
-    if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
-      switch (glintInfoRec.depth) 
-	{
-	case 8: case 15: break;
-	default:
-	    FatalError("Permedia does not support %dbpp for option \"no_accel\".\n", glintInfoRec.depth);
-	  break;
-	}
-    else
-      switch (glintInfoRec.depth) 
-	{
-	case 8: case 15: case 16: case 32: break;
-	default:
-	    FatalError("Permedia does not support %dbpp.\n", glintInfoRec.depth);
-	  break;
-	}
-    }
-  else
-    if (IS_3DLABS_TX_MX_CLASS(coprotype))
-      if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
-	{
-	switch (glintInfoRec.depth) 
-	  {
-	  case 8: case 15: break;
-	  default:
-	      FatalError("500TX does not support %dbpp for option \"no_accel\".\n", glintInfoRec.depth);
-	    break;
-	  }
-	}
-      else
-	switch (glintInfoRec.depth) 
-	  {
-	  case 8: case 15: case 16: case 32:  break;
-	  default:
-	      FatalError("500TX does not support %dbpp.\n", glintInfoRec.depth);
-	    break;
-	  }
 
 #ifdef XFreeXDGA
   glintInfoRec.directMode = XF86DGADirectPresent;

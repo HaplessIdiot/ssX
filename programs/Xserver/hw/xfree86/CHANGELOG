@@ -1,8 +1,70 @@
+XFree86 3.9Ac (11 January 1998)
+1567. Fix some VSW5 failures in libXt (#1333, Kaleb Keithley).
+1566. xterm updates (#1332, Thomas Dickey) including:
+      - Add xterm support for blinking text.  It doesn't actually cause the
+        text to flash, but text with the blink attribute can be displayed in
+        color, using new resources colorBL and colorBLMode.
+      - Corrected a missing save-cursor in the handling of SGR 1048.
+      - Flush the output of the transparent printing after each line.
+      - Correct the modes that are affected by save/restore cursor.
+      - Corrected placement of one of the XSync calls which had the
+	side-effect of writing on the window border when the xterm was
+	resizing from 132 to 80 columns.
+      - Work around an incompatibility of the XKB definition used in xterm
+        versus that symbol from IRIX 6.2's imake definitions (by adjusting
+        the standalone configure script).
+1565. Add detection of Intel TX chips and Pyramid 3D TR25202 to scanpci
+      (#1330, Dejan Ilic).
+1564. Fix xtest related problems on MGA (related to syncing before reading)
+      (#1329, 1334, Mark Vojkovich).
+1563. Possible fix for Millennium II crashing (#1328, Mark Vojkovich).
+1562. Add more careful checking of $HOME/.xsession in the default xdm
+      Xsession script (#1327, Geoff Wing).
+1561. Fix uninitialised variables in decddx (#1326, Kaleb Keithley).
+1560. Fix a typo in the Xlib docs (#1325, Kaleb Keithley).
+1559. Add 8x8 pattern filled 1 rect polygons to XAA.  Also included is
+      an 8x8 pattern filled trapezoid function (#1324, 1331, Mark Vojkovich).
+1558. Add more conservative limits for when XAA uses trapezoid fills rather
+      than spans (#1323, Mark Vojkovich).
+1557. Add transparent 8x8 pattern fills to s3/svga (#1322, Mark Vojkovich).
+1556. Xt (VSW5 failures): Xt11/XtCallConverter - Test Purposes 11, 12, 13
+      (#1321, Kaleb Keithley).
+1555. Xt: XtMakeGeometryRequest doesn't emit error if parent != composite
+      (#1320, Kaleb Keithley).
+1554. S3 (svga) ramdac fixes in IBMRGB52x_Init, TI_3020_3025_Init,
+      NORMAL_PreInit, and ATT_409_498_Probe routines, including fixes for
+      the use of the dacSpeeds array (#1319, Craig Groeschel/Metro Link).
+1553. Fixes for Permedia PM2 support to correct 32bpp, and improve things
+      for 16bpp (#1318, Alan Hourihane).
+1552. P9x00 driver (#1317, Joerg Knura).
+1551. Allow xvidtune to be driven by the keyboard (#1315, via Kaleb Keithley).
+1550. Add missing exported symbols to Win32 DLLs (#1314, Kaleb Keithley).
+1549. Detect an extra Trident Cyber chip (#1313, Alan Hourihane).
+1548. Add timeouts to all Tseng "wait for something" functions (#1312,
+      Koen Gadeyne).
+1547. Tseng driver documentation update (#1311, Koen Gadeyne).
+1546. Update xterm man page, configure script and related things (#1310,
+      Thomas Dickey).
+1545. Add a version number to xterm, and make the -version and -help options
+      used before attempting to open the display (#1310, 1316, Thomas Dickey).
+1544. Implement logic to permit xterm to work with proportional fonts.
+      This is done by rendering the characters on a fixed pitch (#1310,
+      Thomas Dickey).
+1543. Fix missing planemask in XAA function (#1309, Mark Vojkovich).
+1542. Fix XAA syncing inconsistencies (#1308, Mark Vojkovich).
+1541. Allow Trident 9397 and later 3D chipsets to work by not using
+      acceleration (#1307, Alan Hourihane).
+1540. Fixes for older Trident Cyber series (#1307, Arthur Tateshi).
+1539. Fix includes for xfwp (#1306, Craig Groeschel/Metro Link).
+1538. Fix for large pixmaps in XINERAMA extension (#1305, Kaleb Keithley).
+1537. Xlib: XGetICValues fails for {preedit,status}Attributes
+      (#1299, Kaleb Keithley).
+1536. Add locale and xkb files for Lithuanian (#1298, Ricardas Cepas).
 1535. Device updates for scanpci (Robin Cutshaw).
 1534. First cut at cleaning up the parallel make dependencies (Robin Cutshaw).
 
 XFree86 3.9Ab (29 December 1997)
-1533. Reorganize the accleration code in the tseng driver. Fix tseng XAA init
+1533. Reorganize the acceleration code in the tseng driver. Fix tseng XAA init
       problem (#1303, Koen Gadeyne).
 1532. Add support for changing the MClk from the XF86Config file for
       W32p cards with ICS5341 RAMDAC and for the ET6000 family (#1302,
@@ -5817,4 +5879,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.560 1997/12/28 21:28:27 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.563 1998/01/01 20:35:21 robin Exp $

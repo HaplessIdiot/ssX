@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.50 1997/10/25 13:50:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.52 1998/01/01 20:05:28 robin Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -827,11 +827,11 @@ struct pci_vendor_device {
                             { 0x1040, "946C 10", NF },
                             { 0x8130, "FlashPoint", NF },
                             { 0x0000, (char *)NULL, NF } } },
-	{ 0x104C, "Texas Instruments", {
-			    { 0x3d04, "3DLabs Permedia", NF },
-			    { 0x3d07, "3DLabs Permedia 2", NF },
-			    { 0xAC12, "PCI1130", NF },
-			    { 0xAC15, "PCI1131", NF },
+        { 0x104C, "Texas Instruments", {
+                            { 0x3d04, "3DLabs Permedia", NF },
+                            { 0x3d07, "3DLabs Permedia 2", NF },
+                            { 0xAC12, "PCI1130", NF },
+                            { 0xAC15, "PCI1131", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x104E, "Oak", {
                             { 0x0107, "OTI107", NF },
@@ -1047,9 +1047,9 @@ struct pci_vendor_device {
         { 0x1159, "Mutech", {
                             { 0x0001, "MV1000", NF },
                             { 0x0000, (char *)NULL, NF } } },
-	{ 0x1163, "Rendition", {
-			    { 0x0001, "V1000", NF },
-			    { 0x2000, "V2100", NF },
+        { 0x1163, "Rendition", {
+                            { 0x0001, "V1000", NF },
+                            { 0x2000, "V2100", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1179, "Toshiba", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -1062,16 +1062,19 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x120E, "Cyclades", {
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x121A, "3Dfx Interactive", {
+                            { 0x0001, "Voodoo Graphics", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1236, "Sigma Designs", {
                             { 0x6401, "REALmagic64/GX (SD 6425)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1281, "YOKOGAWA", {
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1292, "TriTech Microelectronics", {
+                            { 0xfc02, "Pyramid3D TR25202", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x12D2, "NVidia/SGS-Thomson", {
                             { 0x0018, "Riva128", NF },
-                            { 0x0000, (char *)NULL, NF } } },
-        { 0x12d2, "NVIDIA/SGS-Thomson", {
-                            { 0x0018, "RIVA 128", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1C1C, "Symphony", {
                             { 0x0001, "82C101", NF },
@@ -1086,16 +1089,16 @@ struct pci_vendor_device {
                             { 0x0004, "GLINT Permedia", NF },
                             { 0x0006, "GLINT MX", NF },
                             { 0x0007, "GLINT Permedia 2", NF },
-			    { 0x0000, (char *)NULL, NF } } } ,
+                            { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {
-			    { 0x0551, "Plato/PX", NF },
-			    { 0x5631, "ViRGE", NF },
+                            { 0x0551, "Plato/PX", NF },
+                            { 0x5631, "ViRGE", NF },
                             { 0x8811, "Trio32/64", NF },
                             { 0x8812, "Aurora64V+", NF },
                             { 0x8814, "Trio64UV+", NF },
-			    { 0x883D, "ViRGE/VX", NF },
+                            { 0x883D, "ViRGE/VX", NF },
                             { 0x8880, "868", NF },
                             { 0x88B0, "928", NF },
                             { 0x88C0, "864-0", NF },
@@ -1105,11 +1108,11 @@ struct pci_vendor_device {
                             { 0x88F0, "968", NF },
                             { 0x8901, "Trio64V2/DX or /GX", NF },
                             { 0x8902, "PLATO/PX", NF },
-			    { 0x8A01, "ViRGE/DX or /GX", NF },
-			    { 0x8A10, "ViRGE/GX2", NF },
-			    { 0x8C01, "ViRGE/MX", NF },
-			    { 0x8C02, "ViRGE/MX+", NF },
-			    { 0x8C03, "ViRGE/MX+MV", NF },
+                            { 0x8A01, "ViRGE/DX or /GX", NF },
+                            { 0x8A10, "ViRGE/GX2", NF },
+                            { 0x8C01, "ViRGE/MX", NF },
+                            { 0x8C02, "ViRGE/MX+", NF },
+                            { 0x8C03, "ViRGE/MX+MV", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x8086, "Intel", {
                             { 0x0482, "82375EB pci-eisa bridge", NF },
@@ -1119,19 +1122,27 @@ struct pci_vendor_device {
                             { 0x04A3, "82434LX/NX pci cache mem controller", NF },
                             { 0x1230, "82371 bus-master IDE controller", NF },
                             { 0x1223, "SAA7116", NF },
-			    { 0x1229, "82557 10/100MBit network controller",NF},
+                            { 0x1229, "82557 10/100MBit network controller",NF},
                             { 0x122D, "82437 Triton", NF },
                             { 0x122E, "82471 Triton", NF },
                             { 0x1230, "82438", NF },
                             { 0x1250, "82439", NF },
                             { 0x7000, "82371 pci-isa bridge", NF },
                             { 0x7010, "82371 bus-master IDE controller", NF },
+                            { 0x7100, "82439 TX", NF },
+                            { 0x7110, "82371AB PIIX4 ISA", NF },
+                            { 0x7111, "82371AB PIIX4 IDE", NF },
+                            { 0x7112, "82371AB PIIX4 USB", NF },
+                            { 0x7113, "82371AB PIIX4 ACPI", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x9004, "Adaptec", {
                             { 0x5078, "7850", NF },
                             { 0x5578, "7855", NF },
                             { 0x6078, "7860", NF },
                             { 0x7078, "294x", NF },
+                            { 0x7111, "82371AB PIIX4 IDE", NF },
+                            { 0x7112, "82371AB PIIX4 USB", NF },
+                            { 0x7113, "82371AB PIIX4 ACPI", NF },
                             { 0x7178, "2940", NF },
                             { 0x7278, "7872", NF },
                             { 0x7478, "2944", NF },

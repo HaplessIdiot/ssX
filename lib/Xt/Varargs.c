@@ -1,4 +1,4 @@
-/* $TOG: Varargs.c /main/32 1997/05/15 17:32:20 kaleb $ */
+/* $TOG: Varargs.c /main/33 1998/01/09 16:08:52 kaleb $ */
 
 /*
 
@@ -183,7 +183,7 @@ XtTypedArgList _XtVaCreateTypedArgList(var, count)
 
 
 /*
- *    _XtTypedArgToArg() invokes a resource converter to convert the
+ *    TypedArgToArg() invokes a resource converter to convert the
  *    passed typed arg into a name/value pair and stores the name/value
  *    pair in the passed Arg structure.  If memory is allocated for the
  *    converted value, the address is returned in the value field of 
@@ -191,7 +191,7 @@ XtTypedArgList _XtVaCreateTypedArgList(var, count)
  *    1 if the conversion succeeded and 0 if the conversion failed.
  */
 static int
-_XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
+TypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
 		 memory_return)
     Widget              widget;
     XtTypedArgList      typed_arg;
@@ -276,11 +276,11 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
 
 
 /*
- *    _XtNestedArgtoArg() converts the passed nested list into
+ *    NestedArgtoArg() converts the passed nested list into
  *    an ArgList/count.
  */
 static int
-_XtNestedArgtoArg(widget, avlist, args, resources, num_resources,
+NestedArgtoArg(widget, avlist, args, resources, num_resources,
 		  memory_return)
     Widget              widget;
     XtTypedArgList      avlist;
@@ -296,12 +296,12 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources,
             /* If widget is NULL, the typed arg is ignored */
             if (widget != NULL) {
                 /* this is a typed arg */
-                count += _XtTypedArgToArg(widget, avlist, (args+count),
+                count += TypedArgToArg(widget, avlist, (args+count),
 					  resources, num_resources,
 					  (memory_return+count));
             }
         } else if (strcmp(avlist->name, XtVaNestedList) == 0) {
-            count += _XtNestedArgtoArg(widget, (XtTypedArgList)avlist->value,
+            count += NestedArgtoArg(widget, (XtTypedArgList)avlist->value,
 				       (args+count), resources, num_resources,
 				       (memory_return+count));
         } else {
@@ -322,7 +322,7 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources,
  * element [n] in the lower half of the array, the value field of the
  * corresponding element [n + total_count] in the upper half of the array
  * has been pressed into service in order to note whether the resource value
- * is a pointer to memory that was allocated in _XtTypedArgToArg.  In the
+ * is a pointer to memory that was allocated in TypedArgToArg.  In the
  * upper half, if the value field is not NULL, it contains the address of
  * memory which should now be freed.  That memory could have been allocated
  * only as a result of the conversion of typed arguments.  Therefore, if
@@ -419,7 +419,7 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 		    GetResources(widget, &resources, &num_resources);
 		    fetched_resource_list = True;
 		}
-		count += _XtTypedArgToArg(widget, &typed_arg, &args[count],
+		count += TypedArgToArg(widget, &typed_arg, &args[count],
 					  resources, num_resources,
 					  &args[max_count + count]);
 	    }
@@ -429,7 +429,7 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
 		fetched_resource_list = True;
 	    }
 
-	    count += _XtNestedArgtoArg(widget, va_arg(var, XtTypedArgList),
+	    count += NestedArgtoArg(widget, va_arg(var, XtTypedArgList),
 				       &args[count], resources, num_resources,
 				       &args[max_count + count]);
 	} else {
@@ -485,7 +485,7 @@ Cardinal * number;
     }
 }
 
-static int _XtNestedArgtoTypedArg(args, avlist) 
+static int NestedArgtoTypedArg(args, avlist) 
     XtTypedArgList      args;
     XtTypedArgList      avlist;
 {    
@@ -499,7 +499,7 @@ static int _XtNestedArgtoTypedArg(args, avlist)
             (args+count)->value = avlist->value;
             ++count; 
         } else if(strcmp(avlist->name, XtVaNestedList) == 0) {             
-            count += _XtNestedArgtoTypedArg((args+count),  
+            count += NestedArgtoTypedArg((args+count),  
                             (XtTypedArgList)avlist->value); 
         } else {                             
             (args+count)->name = avlist->name; 
@@ -550,7 +550,7 @@ _XtVaToTypedArgList(var, max_count, args_return, num_args_return)
 	    args[count].size = va_arg(var, int);
 	    ++count;
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
-   	    count += _XtNestedArgtoTypedArg(&args[count], 
+   	    count += NestedArgtoTypedArg(&args[count], 
 			va_arg(var, XtTypedArgList));
 	} else {
 	    args[count].name = attr;

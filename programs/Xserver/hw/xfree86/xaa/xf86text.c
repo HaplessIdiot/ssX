@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.14 1997/05/03 09:19:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.15 1997/09/29 08:40:34 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1152,7 +1152,8 @@ static void DrawTextTECPUToScreenColorExpand(nglyph, h, glyphp, glyphwidth)
             *(unsigned int *)base = 0;
     }
 
-    xf86AccelInfoRec.Sync();
+    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        xf86AccelInfoRec.Sync();
 }
 
 /*
@@ -1220,7 +1221,8 @@ glyphwidth)
             *(unsigned int *)base = 0;
     }
 
-    xf86AccelInfoRec.Sync();
+    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        xf86AccelInfoRec.Sync();
 }
 
 /*
@@ -1287,7 +1289,8 @@ glyphwidth)
             *(unsigned int *)base = 0;
     }
 
-    xf86AccelInfoRec.Sync();
+    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        xf86AccelInfoRec.Sync();
 }
 
 
@@ -1434,8 +1437,8 @@ DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop)
             *(unsigned int *)base = 0;
     }
 
-    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        SET_SYNC_FLAG;
+    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        xf86AccelInfoRec.Sync();
 }
 
 /*

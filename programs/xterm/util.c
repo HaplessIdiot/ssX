@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.21 1997/12/05 22:01:59 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.22 1997/12/28 21:28:44 hohndel Exp $
  */
 
 /*
@@ -265,7 +265,7 @@ register int amount;
 			screen->bot_marg + screen->savelines, 0,
 			amount, screen->max_col + 1);
 	else
-		ScrnDeleteLine(screen, screen->buf,
+		ScrnDeleteLine(screen, screen->visbuf,
 			screen->bot_marg, screen->top_marg,
 			amount, screen->max_col + 1);
 	if(refreshheight > 0)
@@ -338,7 +338,7 @@ register int amount;
 		    (unsigned) Width(screen));
 	}
     }
-    ScrnInsertLine(screen, screen->buf, screen->bot_marg, screen->top_marg,
+    ScrnInsertLine(screen, screen->visbuf, screen->bot_marg, screen->top_marg,
 		   amount, screen->max_col + 1);
 }
 
@@ -398,7 +398,7 @@ register int n;
 		    (unsigned) Width(screen));
 	}
     }
-    ScrnInsertLine(screen, screen->buf, screen->bot_marg, screen->cur_row, n,
+    ScrnInsertLine(screen, screen->visbuf, screen->bot_marg, screen->cur_row, n,
 		   screen->max_col + 1);
 }
 
@@ -479,7 +479,7 @@ register int n;
 			screen->bot_marg + screen->savelines, 0,
 			n, screen->max_col + 1);
 	else
-		ScrnDeleteLine(screen, screen->buf,
+		ScrnDeleteLine(screen, screen->visbuf,
 			screen->bot_marg, screen->cur_row,
 			n, screen->max_col + 1);
 }
@@ -510,7 +510,7 @@ InsertChar (screen, n)
 		 * prevent InsertChar from shifting the end of a line over
 		 * if it is being appended to
 		 */
-		if (non_blank_line (screen->buf, screen->cur_row, 
+		if (non_blank_line (screen->visbuf, screen->cur_row, 
 				    screen->cur_col, screen->max_col + 1))
 		    horizontal_copy_area(screen, screen->cur_col,
 					 col - screen->cur_col,
@@ -753,7 +753,7 @@ int n;
 	(void) ClearInLine(screen, screen->cur_row, screen->cur_col, len);
 
 	/* with the right part cleared, we can't be wrapping */
-	BUF_ATTRS(screen->buf, screen->cur_row)[0] &= ~LINEWRAPPED;
+	ScrnClrWrapped(screen, screen->cur_row);
 }
 
 /*
@@ -1043,9 +1043,9 @@ HandleExposure (screen, event)
 	int both_x1 = Max(screen->copy_src_x, reply->x);
 	int both_y1 = Max(screen->copy_src_y, reply->y);
 	int both_x2 = Min(screen->copy_src_x+screen->copy_width,
-			  reply->x+reply->width);
+			  (unsigned)(reply->x+reply->width));
 	int both_y2 = Min(screen->copy_src_y+screen->copy_height,
-			  reply->y+reply->height);
+			  (unsigned)(reply->y+reply->height));
 	int value = 0;
 
 	/* was anything copied affected? */
@@ -1329,7 +1329,7 @@ recolor_cursor (cursor, fg, bg)
 /*
  * Draws text with the specified combination of bold/underline
  */
-void
+int
 drawXtermText(screen, flags, gc, x, y, chrset, text, len)
 	register TScreen *screen;
 	unsigned flags;
@@ -1351,19 +1351,61 @@ drawXtermText(screen, flags, gc, x, y, chrset, text, len)
 			temp[n++] = *text++;
 			temp[n++] = ' ';
 		}
-		drawXtermText(screen, flags, gc, x, y, 0, temp, n);
-		x += FontWidth(screen) * n;
+		x = drawXtermText(screen, flags, gc, x, y, 0, temp, n);
 		free(temp);
-		return;
+		return x;
 	}
 #endif
+	/*
+	 * If we're asked to display a proportional font, do this with a fixed
+	 * pitch.  Yes, it's ugly.  But we cannot distinguish the use of xterm
+	 * as a dumb terminal vs its use as in fullscreen programs such as vi.
+	 */
+	if (screen->fnt_prop) {
+		int	adj, width;
+		GC	fillGC = gc;	/* might be cursorGC */
+		XFontStruct *fs = (flags & (BOLD|BLINK))
+				? screen->fnt_bold
+				: screen->fnt_norm;
+		screen->fnt_prop = False;
+
+#define GC_PAIRS(a,b) \
+	if (gc == a) fillGC = b; \
+	if (gc == b) fillGC = a
+
+		/*
+		 * Fill the area where we'll write the characters, otherwise
+		 * we'll get gaps between them.  The cursor is a special case,
+		 * because the XFillRectangle call only uses the foreground,
+		 * while we've set the cursor color in the background.  So we
+		 * need a special GC for that.
+		 */
+		if (gc == screen->cursorGC
+		 || gc == screen->reversecursorGC)
+			fillGC = screen->fillCursorGC;
+		GC_PAIRS(NormalGC(screen),      ReverseGC(screen));
+		GC_PAIRS(NormalBoldGC(screen),  ReverseBoldGC(screen));
+
+		XFillRectangle (screen->display, TextWindow(screen), fillGC,
+			x, y, len * FontWidth(screen), FontHeight(screen));
+
+		while (len-- > 0) {
+			width = XTextWidth(fs, text, 1);
+			adj = (FontWidth(screen) - width) / 2;
+			(void)drawXtermText(screen, flags, gc, x + adj, y, chrset, text++, 1);
+			x += FontWidth(screen);
+		}
+		screen->fnt_prop = True;
+		return x;
+	}
+
 	TRACE(("drawtext%c[%4d,%4d] (%d) %d:%.*s\n",
 		screen->cursor_state == OFF ? ' ' : '*',
 		y, x, chrset, len, len, text))
 	y += FontAscent(screen);
 	XDrawImageString(screen->display, TextWindow(screen), gc, 
 		x, y,  (char *)text, len);
-	if ((flags & BOLD) && screen->enbolden)
+	if ((flags & (BOLD|BLINK)) && screen->enbolden)
 		XDrawString(screen->display, TextWindow(screen), gc,
 			x+1, y,  (char *)text, len);
 	if ((flags & UNDERLINE) && screen->underline) {
@@ -1372,6 +1414,8 @@ drawXtermText(screen, flags, gc, x, y, chrset, text, len)
 		XDrawLine(screen->display, TextWindow(screen), gc, 
 			x, y, x + len * FontWidth(screen), y);
 	}
+
+	return x + len * FontWidth(screen);
 }
 
 /*
@@ -1392,7 +1436,7 @@ updatedXtermGC(screen, flags, fg_bg, hilite)
 
 	if ( (!hilite && (flags & INVERSE) != 0)
 	  ||  (hilite && (flags & INVERSE) == 0) ) {
-		if (flags & BOLD)
+		if (flags & (BOLD|BLINK))
 			gc = ReverseBoldGC(screen);
 		else
 			gc = ReverseGC(screen);
@@ -1401,7 +1445,7 @@ updatedXtermGC(screen, flags, fg_bg, hilite)
 		XSetBackground(screen->display, gc, fg_pix);
 
 	} else {
-		if (flags & BOLD)
+		if (flags & (BOLD|BLINK))
 			gc = NormalBoldGC(screen);
 		else
 			gc = NormalGC(screen);
@@ -1429,7 +1473,7 @@ resetXtermGC(screen, flags, hilite)
 
 	if ( (!hilite && (flags & INVERSE) != 0)
 	  ||  (hilite && (flags & INVERSE) == 0) ) {
-		if (flags & BOLD)
+		if (flags & (BOLD|BLINK))
 			gc = ReverseBoldGC(screen);
 		else
 			gc = ReverseGC(screen);
@@ -1438,7 +1482,7 @@ resetXtermGC(screen, flags, hilite)
 		XSetBackground(screen->display, gc, fg_pix);
 
 	} else {
-		if (flags & BOLD)
+		if (flags & (BOLD|BLINK))
 			gc = NormalBoldGC(screen);
 		else
 			gc = NormalGC(screen);
@@ -1466,6 +1510,8 @@ extract_fg (color, flags)
 			fg = COLOR_UL;
 		if (term->screen.colorBDMode && (flags & BOLD))
 			fg = COLOR_BD;
+		if (term->screen.colorBLMode && (flags & BLINK))
+			fg = COLOR_BL;
 	}
 	return fg;
 }
@@ -1480,10 +1526,11 @@ extract_bg (color)
 /*
  * Combine the current foreground and background into a single 8-bit number.
  * Note that we're storing the SGR foreground, since cur_foreground may be set
- * to COLOR_UL or COLOR_BD, which would make the code larger than 8 bits.
+ * to COLOR_UL, COLOR_BD or COLOR_BL, which would make the code larger than 8
+ * bits.
  *
- * FIXME: I'm using the coincidence of fg/bg values to unmask COLOR_UL/COLOR_BD,
- * which will require more work...
+ * This assumes that fg/bg are equal when we override with one of the special
+ * attribute colors.
  */
 unsigned
 makeColorPair (fg, bg)

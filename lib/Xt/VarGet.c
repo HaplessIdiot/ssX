@@ -1,4 +1,4 @@
-/* $TOG: VarGet.c /main/21 1997/05/15 17:32:13 kaleb $ */
+/* $TOG: VarGet.c /main/22 1998/01/09 16:08:48 kaleb $ */
 /*
 
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -82,7 +82,7 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
 #endif
 {
     va_list                 var;
-    ArgList                 args;
+    XtTypedArgList          args;
     Cardinal                num_args;
     int			    total_count, typed_count;
     WIDGET_TO_APPCON(widget);
@@ -94,10 +94,10 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
 	 
     Va_start(var, num_resources);
 	      
-    _XtVaToArgList(widget, var, total_count, &args, &num_args);
+    _XtVaToTypedArgList(var, total_count, &args, &num_args);
 
-    XtGetSubresources(widget, base, name, class, resources, num_resources, 
-	args, num_args);
+    _XtGetSubresources(widget, base, name, class, resources, num_resources, 
+	NULL, 0, args, num_args);
 
     if (num_args != 0) {
 	XtFree((XtPointer)args);
@@ -122,7 +122,7 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
 #endif
 {
     va_list                 var;
-    ArgList                 args; 
+    XtTypedArgList          args; 
     Cardinal                num_args; 
     int			    total_count, typed_count;
     WIDGET_TO_APPCON(widget);
@@ -134,10 +134,10 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
 	
     Va_start(var,num_resources); 
 
-    _XtVaToArgList(widget, var, total_count, &args, &num_args);
+    _XtVaToTypedArgList(var, total_count, &args, &num_args);
                                 
-    XtGetApplicationResources(widget, base, resources, num_resources, 
-	args, num_args); 
+    _XtGetApplicationResources(widget, base, resources, num_resources, 
+	NULL, 0, args, num_args); 
 
     if (num_args != 0) {
 	XtFree((XtPointer)args);
@@ -149,7 +149,7 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
 
 
 static void
-_XtGetTypedArg(widget, typed_arg, resources, num_resources)
+GetTypedArg(widget, typed_arg, resources, num_resources)
     Widget              widget;
     XtTypedArgList	typed_arg;
     XtResourceList      resources;
@@ -218,7 +218,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
 }
 
 static int
-_XtGetNestedArg(widget, avlist, args, resources, num_resources)
+GetNestedArg(widget, avlist, args, resources, num_resources)
     Widget              widget;
     XtTypedArgList	avlist;
     ArgList             args;
@@ -229,9 +229,9 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
  
     for (; avlist->name != NULL; avlist++) {
         if (avlist->type != NULL) {
-	    _XtGetTypedArg(widget, avlist, resources, num_resources);
+	    GetTypedArg(widget, avlist, resources, num_resources);
         } else if(strcmp(avlist->name, XtVaNestedList) == 0) {
-            count += _XtGetNestedArg(widget, (XtTypedArgList)avlist->value,
+            count += GetNestedArg(widget, (XtTypedArgList)avlist->value,
 				     args, resources, num_resources);
         } else {
             (args+count)->name = avlist->name;
@@ -287,13 +287,13 @@ void XtVaGetValues(widget, va_alist)
 		XtGetResourceList(XtClass(widget), &resources,&num_resources);
 	    }
 
-	    _XtGetTypedArg(widget, &typed_arg, resources, num_resources);
+	    GetTypedArg(widget, &typed_arg, resources, num_resources);
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
 	    if (resources == NULL) {
 		XtGetResourceList(XtClass(widget),&resources, &num_resources);
 	    }
 
-	    count += _XtGetNestedArg(widget, va_arg(var, XtTypedArgList),
+	    count += GetNestedArg(widget, va_arg(var, XtTypedArgList),
 				     (args+count), resources, num_resources);
 	} else {
 	    args[count].name = attr;

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: cursor.c,v 1.14 93/09/20 17:42:23 hersh Exp $
- *	$XFree86: xc/programs/xterm/cursor.c,v 3.3 1996/08/20 12:33:48 dawes Exp $
+ *	$XFree86: xc/programs/xterm/cursor.c,v 3.4 1997/05/23 09:19:49 dawes Exp $
  */
 
 /*
@@ -244,6 +244,8 @@ register SavedCursor *sc;
 	memmove( sc->gsets, screen->gsets, sizeof(screen->gsets));
 }
 
+#define DECSC_FLAGS (BOLD|BLINK|INVERSE|UNDERLINE|ORIGIN|WRAPAROUND|PROTECTED)
+
 /*
  * Restore Cursor and Attributes
  */
@@ -257,8 +259,8 @@ register SavedCursor *sc;
 	memmove( screen->gsets, sc->gsets, sizeof(screen->gsets));
 	screen->curgl = sc->curgl;
 	screen->curgr = sc->curgr;
-	tw->flags &= ~(BOLD|INVERSE|UNDERLINE|ORIGIN);
-	tw->flags |= sc->flags & (BOLD|INVERSE|UNDERLINE|ORIGIN);
+	tw->flags &= ~DECSC_FLAGS;
+	tw->flags |= sc->flags & DECSC_FLAGS;
 	CursorSet (screen, (tw->flags & ORIGIN) ? sc->row - screen->top_marg
 			   : sc->row, sc->col, tw->flags);
 }

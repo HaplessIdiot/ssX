@@ -1,4 +1,4 @@
-## $XFree86: xc/programs/xterm/Makefile.in,v 3.8 1997/09/30 04:51:06 hohndel Exp $ ##
+## $XFree86: xc/programs/xterm/Makefile.in,v 3.9 1997/12/28 21:28:38 hohndel Exp $ ##
 
 #### Start of system configuration section. ####
 
@@ -12,13 +12,15 @@ INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
 
-IMAKE_CFLAGS	= @IMAKE_CFLAGS@
-EXTRA_CFLAGS	= @EXTRA_CFLAGS@
-CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS) $(IMAKE_CFLAGS)
-LIBS		= @LIBS@
-
 X_CFLAGS	= @X_CFLAGS@
 X_LIBS		= @X_LIBS@
+
+IMAKE_CFLAGS	= @IMAKE_CFLAGS@
+EXTRA_CFLAGS	= @EXTRA_CFLAGS@
+
+CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H $(X_CFLAGS) $(IMAKE_CFLAGS)
+CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS) 
+LIBS		= @LIBS@
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -32,8 +34,6 @@ mandir		= $(prefix)/man/man$(manext)
 
 SHELL		= /bin/sh
 RM              = rm -f
-
-CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H $(X_CFLAGS) 
 
 LDFLAGS		= 
 
@@ -54,7 +54,7 @@ EXTRAOBJ	= @EXTRAOBJS@
            SRCS = $(SRCS1) $(SRCS2)
            OBJS = $(OBJS1) $(OBJS2)
            HDRS = VTparse.h data.h error.h main.h menu.h proto.h \
-                  ptyx.h xterm.h $(EXTRAHDR)
+                  ptyx.h version.h xterm.h $(EXTRAHDR)
        PROGRAMS = xterm resize
 
 all:	$(PROGRAMS)
@@ -68,6 +68,8 @@ all:	$(PROGRAMS)
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $*.c >$@
+
+main.o: version.h
 
 xterm : $(OBJS1)
 	$(LINK) $(LDFLAGS) -o $@ $(OBJS1) $(X_LIBS) $(LIBS)
@@ -101,6 +103,10 @@ distclean: clean
 
 realclean: distclean
 	-$(RM) tags TAGS
+
+lint:
+	lint $(CPPFLAGS) $(SRCS1)
+	lint $(CPPFLAGS) $(SRCS2)
 
 tags:
 	ctags $(SRCS) $(HDRS)

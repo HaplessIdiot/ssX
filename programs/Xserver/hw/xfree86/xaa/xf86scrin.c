@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.19 1997/08/15 07:19:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.20 1997/08/26 10:01:45 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -113,6 +113,39 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* This is defined in cfbscrinit.c */
 extern Bool cfbCreateScreenResources();
+
+static void
+GetImageWrapper(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
+    DrawablePtr pDrawable;
+    int         sx, sy, w, h;
+    unsigned int format;
+    unsigned long planeMask;
+    char        *pdstLine;
+{
+    SYNC_CHECK
+#ifdef VGA256
+    vga256GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+#else
+    cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+#endif
+}
+
+static void
+GetSpansWrapper(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
+    DrawablePtr         pDrawable;      /* drawable from which to get bits */
+    int                 wMax;           /* largest value of all *pwidths */
+    DDXPointPtr 	ppt;           /* points to start copying from */
+    int                 *pwidth;        /* list of number of bits to copy */
+    int                 nspans;         /* number of scanlines to copy */
+    char                *pchardstStart; /* where to put the bits */
+{
+    SYNC_CHECK
+#ifdef VGA256
+    vga256GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
+#else
+    cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
+#endif
+}
 
 /* We need to define this here instead of use the cfb one. */
 static miBSFuncRec xf86BSFuncRec = {
@@ -297,9 +330,6 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	return FALSE;
 
 #ifdef VGA256
-    /* These override what was being set in cfbSetupScreen() */
-    pScreen->GetImage = vga256GetImage;
-    pScreen->GetSpans = vga256GetSpans;
     /*
      * It may be better to do PaintWindow via mi so that new-style
      * acceleration is used. This happens in xf86InitializeAcceleration().
@@ -311,6 +341,8 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     mfbRegisterCopyPlaneProc (pScreen, vga256CopyPlane);
 #endif
+    pScreen->GetImage = GetImageWrapper;
+    pScreen->GetSpans = GetSpansWrapper;
 
     return vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
         width);

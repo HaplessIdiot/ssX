@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.16 1997/04/08 13:16:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.17 1997/04/18 09:12:40 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.16 1997/04/08 13:16:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.17 1997/04/18 09:12:40 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -542,7 +542,7 @@ xf86miFillRectStippledFallBack(pDrawable, pGC, nBox, pBox)
         (rectHeight) = _rectBotY - (rectTopY);				 \
     }
 
-static void RotatePattern(pattern, xoffset, yoffset)
+void RotatePattern(pattern, xoffset, yoffset)
     unsigned char *pattern;
     int xoffset;
     int yoffset;
