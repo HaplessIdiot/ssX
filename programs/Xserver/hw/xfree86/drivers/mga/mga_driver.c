@@ -136,6 +136,7 @@ static void	MGARestore(ScrnInfoPtr pScrn);
 static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void		MGAAdjustFrameCrtc2(int scrnIndex, int x, int y, int flags);
 static void 	MGABlockHandler(int, pointer, pointer, pointer);
+static void     MGAG100BlackMagic(MGAPtr pMga);
 
 static int MGAEntityIndex = -1;
 
@@ -212,7 +213,8 @@ typedef enum {
     OPTION_TVSTANDARD,
     OPTION_CABLETYPE,
     OPTION_USEIRQZERO,
-    OPTION_NOHAL
+    OPTION_NOHAL,
+    OPTION_SWAPPED_HEAD
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -244,6 +246,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_USEIRQZERO,	"UseIrqZero",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOHAL,		"NoHal",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SWAPPED_HEAD,      "SwappedHead",  OPTV_BOOLEAN,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1155,6 +1158,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     MGAMODEINFO mgaModeInfo = {0};
     Bool digital = FALSE;
     Bool tv = FALSE;
+    Bool swap_head = FALSE;
 #endif
 
     /*
@@ -2056,6 +2060,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #ifdef USEMGAHAL
     MGA_HAL(
+    swap_head 
+        = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
+
     if(pMga->SecondCrtc == FALSE) {
         pMga->pBoard = (LPBOARDHANDLE) xalloc (sizeof(CLIENTDATA) + MGAGetBOARDHANDLESize());
         pMga->pClientStruct = (LPCLIENTDATA) xalloc (sizeof(CLIENTDATA));
@@ -2073,7 +2080,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pMgaEnt->pBoard = pMga->pBoard;
 	    pMgaEnt->pMgaHwInfo = pMga->pMgaHwInfo;
 	} 
-        mgaModeInfo.flOutput = MGAMODEINFO_ANALOG1;
+
+        if (!swap_head) {
+          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG1;
+        } else {
+          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2; 
+        }
         mgaModeInfo.ulDispWidth = pScrn->virtualX;
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
         mgaModeInfo.ulDeskWidth = pScrn->virtualX;
@@ -2088,8 +2100,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
             mgaModeInfo.flOutput = MGAMODEINFO_TV |
             			   MGAMODEINFO_SECOND_CRTC;
         } else {
-            mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2 |
-            			   MGAMODEINFO_SECOND_CRTC;
+            if (!swap_head) {
+              mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2 |
+            			     MGAMODEINFO_SECOND_CRTC;
+            } else {
+	      mgaModeInfo.flOutput = MGAMODEINFO_ANALOG1 |
+                                     MGAMODEINFO_SECOND_CRTC;
+            }
         }
         mgaModeInfo.ulDispWidth = pScrn->virtualX;
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
@@ -2580,6 +2597,8 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool digital = FALSE;
     Bool tv = FALSE;
     ULONG status;
+    Bool swap_head 
+      = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
     /* Verify if user wants digital screen output */
     xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
@@ -2618,14 +2637,26 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    				   MGAMODEINFO_FORCE_PITCH |
 	    				   MGAMODEINFO_FORCE_DISPLAYORG;
 	} else {
-	    pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
-	    				   MGAMODEINFO_SECOND_CRTC |
-	    				   MGAMODEINFO_FORCE_PITCH |
-	    				   MGAMODEINFO_FORCE_DISPLAYORG;
+            if (!swap_head) {
+	      pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
+	    				     MGAMODEINFO_SECOND_CRTC |
+	    				     MGAMODEINFO_FORCE_PITCH |
+	    				     MGAMODEINFO_FORCE_DISPLAYORG;
+            } else {
+              pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
+                                             MGAMODEINFO_SECOND_CRTC |
+                                             MGAMODEINFO_FORCE_PITCH |
+                                             MGAMODEINFO_FORCE_DISPLAYORG;
+            }
 	}
     } else {
-	pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
-					MGAMODEINFO_FORCE_PITCH;
+        if (!swap_head) {
+	  pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG1 |
+					 MGAMODEINFO_FORCE_PITCH;
+        } else {
+          pMga->pMgaModeInfo->flOutput = MGAMODEINFO_ANALOG2 |
+                                         MGAMODEINFO_FORCE_PITCH;
+        }
     }
 
     pMga->pMgaModeInfo->ulFBPitch = pScrn->displayWidth;
@@ -2784,6 +2815,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!MGAMapMem(pScrn))
 	    return FALSE;
     }
+
+    if ((pMga->Chipset == PCI_CHIP_MGAG100) 
+	|| (pMga->Chipset == PCI_CHIP_MGAG100_PCI)) 
+        MGAG100BlackMagic(pMga);
 
     if (xf86IsEntityShared(pScrn->entityList[0])) {
        DevUnion *pPriv;
@@ -3664,3 +3699,12 @@ dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val)
     *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val);
 }
 #endif /* DEBUG */
+
+static void
+MGAG100BlackMagic(MGAPtr pMga)
+{
+    OUTREG(MGAREG_PLNWT, ~(CARD32)0x0);
+    /* reset memory */
+    OUTREG(MGAREG_MACCESS, 1<<15);
+    usleep(10);
+}
