@@ -1,5 +1,4 @@
 /* $XConsortium: XKBGAlloc.c /main/7 1996/02/02 14:38:24 kaleb $ */
-/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -969,7 +968,7 @@ register XkbPropertyPtr prop;
     for (i=0,prop=geom->properties;i<geom->num_properties;i++,prop++) {
 	if ((prop->name)&&(strcmp(name,prop->name)==0)) {
 	    if (prop->value)
-		xfree(prop->value);
+		Xfree(prop->value);
 	    prop->value= (char *)_XkbAlloc(strlen(value)+1);
 	    if (prop->value)
 		strcpy(prop->value,value);
@@ -987,7 +986,7 @@ register XkbPropertyPtr prop;
     strcpy(prop->name,name);
     prop->value= (char *)_XkbAlloc(strlen(value)+1);
     if (!value) {
-	xfree(prop->name);
+	Xfree(prop->name);
 	prop->name= NULL;
 	return NULL;
     }
@@ -1204,7 +1203,7 @@ XkbSectionPtr	section;
 	return NULL;
     if ((sz_doodads>0)&&(_XkbAllocDoodads(section,sz_doodads)!=Success)) {
 	if (section->rows) {
-	    xfree(section->rows);
+	    Xfree(section->rows);
 	    section->rows= NULL;
 	    section->sz_rows= section->num_rows= 0;
 	}
