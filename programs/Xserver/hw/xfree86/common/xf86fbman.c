@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.29 2004/02/13 23:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.30 2005/01/16 02:42:26 dawes Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -852,7 +852,7 @@ AllocateLinear(
    ScreenPtr pScreen = offman->pScreen;
    FBLinearLinkPtr linear = NULL;
    FBLinearLinkPtr newlink = NULL;
-   int offset, end;
+   int offset = 0, end;
 
    if(size <= 0) return NULL;
 
