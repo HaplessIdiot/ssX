@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.1 2000/11/15 01:36:14 dawes Exp $ */
 
 /*
 ===========================================================================
@@ -62,8 +62,6 @@
 #include <drivers/event_status_driver.h>
 #include <IOKit/hidsystem/ev_keymap.h>
 #include "darwin.h"
-extern DarwinFramebufferRec dfb;
-extern unsigned char darwinKeyCommandL, darwinKeyOptionL;
 
 #define XK_TECHNICAL		// needed to get XK_Escape
 #include "keysym.h"
