@@ -1,4 +1,5 @@
 XFree86 3.9.16 (31 August 1999)
+3122. Xman update (#3174, Carlos A M dos Santos).
 3021. Import some xkb data file updates from 3.3.5.
 3020. Fix a build problem on Alpha platforms (#3191, Matt Grossman).
 3019. Allow driver SDK builds for the i740 driver (#3190, Daryll Strauss).
@@ -8684,4 +8685,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.822 1999/08/30 01:24:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.823 1999/08/30 02:34:09 dawes Exp $

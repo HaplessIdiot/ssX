@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/html-mode.c,v 1.1 1999/08/28 09:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/html-mode.c,v 1.2 1999/08/28 10:43:37 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -611,7 +611,7 @@ Html_FontArgs(Html_Parser *parser, Html_Item *item)
 		    XFreeFontNames(font_list);
 		if (count)
 		    break;
-	    } while (ptr);	/* XXX check this!! */
+	    } while (ptr);
 	    if (count) {
 		item->combine->xlfd_mask |= XAW_TPROP_FAMILY;
 		item->combine->family = XrmStringToQuark(family);
