@@ -1,4 +1,4 @@
-MANIFEST for xterm-141, version xterm-141
+MANIFEST for xterm-149, version xterm-149
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 256colres.h                     resource-definitions for 256-color mode
@@ -78,10 +78,13 @@ vms.h                           system headers and definitions for vms.c
 wcwidth.c                       wide-character utility functions
 wcwidth.h                       interface of wcwidth.c
 xcharmouse.h                    Jason Bacon's mouse-defs, cleaned up a little
+xstrings.c                      a few common string functions
+xstrings.h                      interface of xstrings.c
 xterm.dat                       application defaults for VMS port of 'xterm'
 xterm.h                         common includes, definitions and prototypes for 'xterm'
 xterm.man                       manual page for 'xterm'
 xterm_axp.opt                   linker options file for VMS port of 'xterm'
+xterm_io.h                      split-out definitions of termio/termios/sgtty and winsize from main.c, os2main.c, screen.c and resize.c
 xtermcfg.hin                    configure script: template for xtermcfg.h
 tektests                        subdirectory
 tektests/aitest.tek             tek4014 demo: draw a globe
