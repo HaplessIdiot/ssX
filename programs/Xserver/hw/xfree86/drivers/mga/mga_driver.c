@@ -215,6 +215,7 @@ typedef enum {
     OPTION_COLOR_KEY,
     OPTION_SET_MCLK,
     OPTION_OVERCLOCK_MEM,
+    OPTION_VIDEO_KEY,
     OPTION_ROTATE
 } MGAOpts;
 
@@ -232,6 +233,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
@@ -1372,10 +1374,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if ((s = xf86GetOptValString(MGAOptions, OPTION_OVERLAY))) {
       if (!*s || !xf86NameCmp(s, "8,24") || !xf86NameCmp(s, "24,8")) {
-	if(pMga->Chipset == PCI_CHIP_MGAG100) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"Option \"Overlay\" is not supported by the G100\n");
-	} else if(pScrn->bitsPerPixel == 32) {
+	if(pScrn->bitsPerPixel == 32) {
 	    pMga->Overlay8Plus24 = TRUE;
 	    if(!xf86GetOptValInteger(
 			MGAOptions, OPTION_COLOR_KEY,&(pMga->colorKey)))
@@ -1386,13 +1385,21 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 				"PseudoColor overlay enabled\n");
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"Option \"Overlay\" is not supported in this configuration\n");
+		"Option \"Overlay\" is only supported in 32 bits per pixel\n");
 	}
       } else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"\"%s\" is not a valid value for Option \"Overlay\"\n", s);
       }
-    } 
+    }
+    if(xf86GetOptValInteger(MGAOptions, OPTION_VIDEO_KEY, &(pMga->videoKey))) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+				pMga->videoKey);
+    } else {
+	pMga->videoKey =  (1 << pScrn->offset.red) | 
+			  (1 << pScrn->offset.green) |
+        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
+    }
     if (xf86ReturnOptValBool(MGAOptions, OPTION_SHADOW_FB, FALSE)) {
 	pMga->ShadowFB = TRUE;
 	pMga->NoAccel = TRUE;
