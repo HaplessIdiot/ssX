@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.8 1995/03/08 04:57:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.9 1995/03/11 14:19:49 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -250,6 +250,9 @@ CreateWellKnownSockets()
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
 #ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
+#endif
+#ifdef NO_SYSCONF
+#undef _SC_OPEN_MAX
 #endif
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;

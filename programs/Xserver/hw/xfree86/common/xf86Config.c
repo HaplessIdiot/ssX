@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.39 1995/03/12 13:00:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.40 1995/03/12 13:44:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1131,6 +1131,7 @@ configPointerSection()
   xf86Info.oldBaudRate     = -1;
   xf86Info.sampleRate      = 0;
   xf86Info.emulate3Buttons = FALSE;
+  xf86Info.emulate3Timeout = 50;
   xf86Info.chordMiddle     = FALSE;
   xf86Info.mouseFlags      = 0;
   xf86Info.mseProc         = (int (*)())NULL;
@@ -1236,6 +1237,12 @@ configPointerSection()
       xf86Info.emulate3Buttons = TRUE;
       break;
 
+    case EM3TIMEOUT:
+      if (getToken(NULL) != NUMBER)
+        configError("3 button emulation timeout expected");
+      xf86Info.emulate3Timeout = val.num;
+      break;
+
 #ifndef OSMOUSE_ONLY
     case CHORDMIDDLE:
       if (xf86Info.mseType + MICROSOFT == MICROSOFT ||
@@ -1313,7 +1320,8 @@ configPointerSection()
       formatFlag = !formatFlag;
     }
     if (xf86Info.emulate3Buttons)
-      ErrorF("%s3 button emulation", formatFlag ? ",\n       " : ", ");
+      ErrorF("%s3 button emulation (timeout: %dms)",
+             formatFlag ? ",\n       " : ", ", xf86Info.emulate3Timeout);
     if (xf86Info.chordMiddle)
       ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
     ErrorF("\n");

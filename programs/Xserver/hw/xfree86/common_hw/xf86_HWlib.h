@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.7 1995/01/21 14:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.9 1995/01/28 17:03:57 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -169,7 +169,8 @@ extern int S3TrioSetClock(
 extern void Ti3025SetClock(
 #if NeedFunctionPrototypes
 	long,
-	int
+	int,
+        void (*)()
 #endif
 );
 

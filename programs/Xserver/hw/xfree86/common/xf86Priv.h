@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.5 1995/01/11 03:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.7 1995/01/28 17:03:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -77,6 +77,7 @@ typedef struct {
   int           threshold, num, den;  /* acceleration */
   int           emulateState;         /* automata state for 2 button mode */
   Bool          emulate3Buttons;
+  int           emulate3Timeout;      /* Timeout for 3 button emulation */
   Bool          chordMiddle;
   int           mouseFlags;        /* Flags to Clear after opening mouse dev */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.21 1995/01/28 17:03:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.22 1995/03/12 13:00:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -437,11 +437,13 @@ static SymTabRec KeyboardTab[] = {
 #define CHORDMIDDLE	55
 #define PROTOCOL	56
 #define PDEVICE		57
+#define EM3TIMEOUT	58
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
   { PROTOCOL,	"protocol" },
   { EMULATE3,	"emulate3buttons" },
+  { EM3TIMEOUT,	"emulate3timeout" },
   { ENDSECTION,	"endsection"},
 #ifndef OSMOUSE_ONLY
   { PDEVICE,	"device"},

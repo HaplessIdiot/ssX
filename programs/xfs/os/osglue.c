@@ -1,5 +1,5 @@
 /* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp $ */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.1 1995/03/08 04:58:30 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.2 1995/03/11 14:21:11 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -305,6 +305,10 @@ CloneMyself()
 	return -1;
 
     old_listen_arg[0] = '\0';
+
+#ifdef NO_SYSCONF
+#undef _SC_OPEN_MAX
+#endif
 
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;

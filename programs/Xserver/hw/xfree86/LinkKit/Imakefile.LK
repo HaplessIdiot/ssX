@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.19 1995/03/04 06:01:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.20 1995/03/12 11:05:26 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -149,7 +149,7 @@ XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(DRIVERSRC)/libvga256.a \
                $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 VGADRIVERS = XF86SvgaDrivers
-ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),confvga256.sh,$(VGADRIVERS))
+ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.sh,$(VGADRIVERS))
 XF86_SVGA.o: XF86_SVGA.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
 #ifndef ServerToInstall
@@ -178,7 +178,7 @@ XF86VGA16LIBS = $(VGA16DRIVERSRC)/libdriver16.a $(DRIVERSRC)/libvga16.a \
                 $(XF86VGA16MONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86VGA16SYSLIBS = $(SYSLIBS)
 VGA16DRIVERS = XF86Vga16Drivers
-ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),confvga16.sh,$(VGA16DRIVERS))
+ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),cvga16.sh,$(VGA16DRIVERS))
 XF86_VGA16.o: XF86_VGA16.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LIBS),$(XF86VGA16SYSLIBS))
 #ifndef ServerToInstall
@@ -223,7 +223,7 @@ XF86MONOLIBS = $(VGA2DRIVERSRC)/libdriver2.a $(DRIVERSRC)/libvga2.a \
                $(XF86MONOMONOLIBS) $(XF86MLIBS) NoMFBBareLibs $(OTHEREXTS)
 XF86MONOSYSLIBS = $(SYSLIBS)
 VGA2DRIVERS = XF86Vga2Drivers
-ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),configvga2.sh,$(VGA2DRIVERS))
+ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),confvga2.sh,$(VGA2DRIVERS))
 XF86_Mono.o: XF86_Mono.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_Mono,$(XF86MONOSUBDIRS),$(XF86MONOOBJS),$(XF86MONOLIBS),$(XF86MONOSYSLIBS))
 #ifndef ServerToInstall

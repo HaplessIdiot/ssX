@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.8 1995/01/23 01:33:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.9 1995/03/11 14:18:16 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1538,6 +1538,7 @@ static char *pointersection_text2 =
 "#    SampleRate	150\n"
 "\n"
 "# Emulate3Buttons is an option for 2-button Microsoft mice\n"
+"# Emulate3Timeout is the timeout in milliseconds (default is 50ms)\n"
 "\n";
 
 static char *monitorsection_text1 =
@@ -1746,7 +1747,10 @@ void write_XF86Config(filename)
 	fprintf(f, "%s", pointersection_text2);
 	if (!config_emulate3buttons)
 		fprintf(f, "#");
-	fprintf(f, "    Emulate3Buttons\n\n");
+	fprintf(f, "    Emulate3Buttons\n");
+	if (!config_emulate3buttons)
+		fprintf(f, "#");
+	fprintf(f, "    Emulate3Timeout    50\n\n");
 	fprintf(f, "# ChordMiddle is an option for some 3-button Logitech mice\n\n");
 	if (!config_chordmiddle)
 		fprintf(f, "#");

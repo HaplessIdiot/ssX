@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.70 1995/01/25 10:48:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.72 1995/01/28 17:01:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -40,11 +40,12 @@
 #include "s3.h"
 #include "regs3.h"
 #include "xf86_HWlib.h"
+#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "s3linear.h"
 #include "s3Bt485.h"
-#include "s3Ti3020.h"
+#include "Ti302X.h"
 #include "s3ELSA.h"
 
 extern int s3MaxClock;
@@ -181,6 +182,7 @@ static Bool s3ClockSelect();
 static Bool icd2061ClockSelect();
 static Bool s3GendacClockSelect();
 static Bool ti3025ClockSelect();
+static void s3ProgramTi3025Clock();
 static Bool ch8391ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
@@ -458,6 +460,41 @@ s3Probe()
    Bool pixMuxInterlaceOK = TRUE;
    Bool pixMuxWidthOK = TRUE;
    int s3ChipRev = 0;
+   int idx = 0;
+   struct pci_config_reg *pcrp;
+
+   /* check for PCI devices first */
+   while (pcrp = pci_devp[idx]) {
+      if (pcrp->_vendor != 0x5333)
+         continue;
+      switch(pcrp->_device) {
+         case 0x8811:  /* Trio64 */
+            ErrorF("%s %s: PCI S3 chipset: Trio64, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+         case 0x88B0:  /* 928    */
+            ErrorF("%s %s: PCI S3 chipset: 928, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+         case 0x88C0:  /* 864-0  */
+            ErrorF("%s %s: PCI S3 chipset: 864-0, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+         case 0x88C1:  /* 864-1  */
+            ErrorF("%s %s: PCI S3 chipset: 864-1, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+         case 0x88D0:  /* 964    */
+            ErrorF("%s %s: PCI S3 chipset: 964, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+	 default:
+            ErrorF("%s %s: PCI S3 chipset: Unknown, memory base 0x%x\n", 
+	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
+	    break;
+      }
+      break;
+   }
 
    xf86ClearIOPortList(s3InfoRec.scrnIndex);
    xf86AddIOPorts(s3InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -1493,7 +1530,7 @@ s3Probe()
 	 mclk = 55000;
 	 ErrorF("%s %s: Setting MCLK to %1.3f MHz for #9GXE64 Pro\n",
 		XCONFIG_PROBED, s3InfoRec.name, mclk / 1000.0);
-	 Ti3025SetClock(2 * mclk, TI_MCLK_PLL_DATA);
+	 Ti3025SetClock(2 * mclk, TI_MCLK_PLL_DATA, s3ProgramTi3025Clock);
 	 mcc = s3InTiIndReg(TI_MCLK_DCLK_CONTROL);
 	 s3OutTiIndReg(TI_MCLK_DCLK_CONTROL,0x00, (mcc & 0xf0) | 0x08);
       }
@@ -2554,6 +2591,49 @@ s3GendacClockSelect(freq)
 }
 
 
+static void
+s3ProgramTi3025Clock(clk, n, m, p)
+int clk;
+unsigned char n;
+unsigned char m;
+unsigned char p;
+{
+   /*
+    * Reset the clock data index
+    */
+   s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+
+   if (clk != TI_MCLK_PLL_DATA) {
+      /*
+       * Now output the clock frequency
+       */
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, n);
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, m);
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, p | TI_PLL_ENABLE);
+
+      /*
+       * And now set up the loop clock for RCLK
+       */
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p>0 ? p : 1);
+      s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
+		    TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
+
+      /*
+       * And finally enable the clock
+       */
+      s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
+   } else {
+      /*
+       * Set MCLK
+       */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, n);
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, m);
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, p | 0x80);
+   }
+}
+
 static Bool
 ti3025ClockSelect(freq)
      int   freq;
@@ -2579,7 +2659,7 @@ ti3025ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-	 (void) Ti3025SetClock(freq, 2); /* can't fail */
+	 (void) Ti3025SetClock(freq, 2, s3ProgramTi3025Clock); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
 	 usleep(150000);
@@ -2588,6 +2668,7 @@ ti3025ClockSelect(freq)
    LOCK_SYS_REGS;
    return(result);
 }
+
 
 static Bool
 ch8391ClockSelect(freq)

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.11 1995/03/04 08:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.12 1995/03/11 14:13:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -834,6 +834,17 @@ xf86PostKbdEvent(key)
 #endif /* !__EMX__ */
 
 
+static CARD32
+buttonTimer(timer, now, arg)
+     OsTimerPtr timer;
+     CARD32 now;
+     pointer arg;
+{
+  xf86PostMseEvent((int)arg, 0, 0);
+  return(0);
+}
+
+
 /*      
  * xf86PostMseEvent --
  *	Translate the raw hardware MseEvent into an XEvent(s), and tell DIX
@@ -844,6 +855,7 @@ void
 xf86PostMseEvent(buttons, dx, dy)
      int buttons, dx, dy;
 {
+  static OsTimerPtr timer = NULL;
   int         id, change;
   int         truebuttons;
   xEvent      mevent;
@@ -897,6 +909,20 @@ xf86PostMseEvent(buttons, dx, dy)
 	}
 
       xf86Info.emulateState = stateTab[buttons + xf86Info.emulateState][2];
+      if (stateTab[buttons + xf86Info.emulateState][0] ||
+          stateTab[buttons + xf86Info.emulateState][1])
+        {
+          timer = TimerSet(timer, 0, xf86Info.emulate3Timeout, buttonTimer,
+			   (pointer)truebuttons);
+        }
+      else
+        {
+          if (timer)
+            {
+              TimerFree(timer);
+              timer = NULL;
+            }
+        }
     }
   else
     {

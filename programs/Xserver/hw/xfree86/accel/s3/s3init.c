@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.56 1995/03/04 06:13:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.57 1995/03/11 14:46:01 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -42,7 +42,7 @@
 #include "s3.h"
 #include "regs3.h"
 #include "s3Bt485.h"
-#include "s3Ti3020.h"
+#include "Ti302X.h"
 #define XCONFIG_FLAGS_ONLY 
 #include "xf86_Config.h"
 

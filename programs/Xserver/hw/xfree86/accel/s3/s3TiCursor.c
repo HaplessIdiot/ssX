@@ -1,5 +1,5 @@
 /* $XConsortium: s3TiCursor.c,v 1.4 95/01/26 15:35:46 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.5 1995/01/26 02:18:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.7 1995/01/28 17:01:43 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -41,7 +41,7 @@
 #include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
-#include "s3Ti3020.h"
+#include "Ti302X.h"
 
 #define MAX_CURS_HEIGHT 64   /* 64 scan lines */
 #define MAX_CURS_WIDTH  64   /* 64 pixels     */
