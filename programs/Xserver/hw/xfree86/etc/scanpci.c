@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.81 2001/01/06 20:19:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.82 2001/10/28 03:33:55 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -88,6 +88,7 @@ static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 	{ PCI_CHIP_MACH64GV, print_mach64 },
 	{ PCI_CHIP_MACH64GW, print_mach64 },
 	{ PCI_CHIP_MACH64GX, print_mach64 },
+	{ PCI_CHIP_MACH64GY, print_mach64 },
 	{ PCI_CHIP_MACH64GZ, print_mach64 },
 	{ PCI_CHIP_MACH64LB, print_mach64 },
 	{ PCI_CHIP_MACH64LD, print_mach64 },
@@ -96,6 +97,7 @@ static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 	{ PCI_CHIP_MACH64LM, print_mach64 },
 	{ PCI_CHIP_MACH64LN, print_mach64 },
 	{ PCI_CHIP_MACH64LP, print_mach64 },
+	{ PCI_CHIP_MACH64LQ, print_mach64 },
 	{ PCI_CHIP_MACH64LR, print_mach64 },
 	{ PCI_CHIP_MACH64LS, print_mach64 },
 	{ PCI_CHIP_MACH64VT, print_mach64 },
