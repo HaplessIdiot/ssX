@@ -1,4 +1,5 @@
 /* $XConsortium: bank.s,v 1.2 94/03/29 11:03:31 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *

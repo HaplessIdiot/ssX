@@ -48,6 +48,7 @@ SOFTWARE.
 #ifndef XMD_H
 #define XMD_H 1
 /* $XConsortium: Xmd.h,v 1.47 94/04/17 20:10:50 rws Exp $ */
+/* $XFree86$ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
