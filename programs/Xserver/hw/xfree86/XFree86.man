@@ -1,6 +1,6 @@
 .\" $XConsortium: XFree86.man,v 1.3 94/04/11 16:03:13 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.5 1994/09/26 15:30:31 dawes Exp $
-.TH XFree86 1 "Version 3.1"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.6 1994/09/27 10:27:18 dawes Exp $
+.TH XFree86 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
 .SH DESCRIPTION

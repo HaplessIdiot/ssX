@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.0 1994/05/14 06:50:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.1 1994/08/31 04:19:29 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -96,6 +96,21 @@ int *Chipset;
 		case 0x9:
 			*Chipset = CHIP_CTF65510;
 			break;
+		case 0xd:
+			switch (vers & 0xf)
+			{
+			case 0x0:
+				*Chipset = CHIP_CTF65540;
+				break;
+			case 0x8:
+				*Chipset = CHIP_CTF65545;
+				break;
+			default:
+				Chip_data = vers;
+				*Chipset = CHIP_CT_UNKNOWN;
+				break;
+			}
+			break;
 		default:
 			Chip_data = (vers >> 4);
 			*Chipset = CHIP_CT_UNKNOWN;
@@ -164,6 +179,8 @@ int Chipset;
 		break;
 	case CHIP_CTF65520:
 	case CHIP_CTF65530:
+	case CHIP_CTF65540:
+	case CHIP_CTF65545:
 		switch (rdinx(0x3D6, 0x04) & 0x03)
 		{
 		case 0x00:

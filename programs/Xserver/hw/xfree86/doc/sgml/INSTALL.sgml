@@ -256,88 +256,11 @@ drivers installed:
 <sect> Reconfiguring the server (binary distribution)
 <p>
   If you have installed the server Binary LinkKit, it is possible to
-reconfigure the drivers and some of the extensions in the servers.  To
-do this, go to the configuration directory
-(<tt>/usr/X11R6/lib/Server</tt>) and do the following:
-<enum>
-<item> For systems which don't use gcc-2, you may need to install
-   <tt/libgcc.a/ if the binary distribution you are using was built
-   with gcc-2.
-
-<item> Edit the <tt/site.def/ file to define which servers you want to
-   build, and the drivers you want included.
-
-    <itemize>
-    <item>  Set <bf/HasGcc/ and <bf/HasGcc2/ to match the compiler you
-    are using if the defaults aren't correct.
-
-    <item> If the LinkKit was built with gcc-2.x and you are using
-      some other compiler, you must install <tt/libgcc.a/ and set
-      <bf/NeedLibGcc/ to <bf/YES/.
-
-    <item> To build the 256 colour server: set <bf/XF86SVGAServer/ to <bf/YES/.
-    <item> To build the 16 colour server: set <bf/XF86VGA16Server/ to <bf/YES/.
-    <item> To build the monochrome server: set <bf/XF86MonoServer/ to <bf/YES/.
-    <item> To build the S3 server: set <bf/XF86S3Server/ to <bf/YES/.
-    <item> To build the Mach8 server: set <bf/XF86Mach8Server/ to <bf/YES/.
-    <item> To build the Mach32 server: set <bf/XF86Mach32Server/ to <bf/YES/.
-    <item> To build the Mach64 server: set <bf/XF86Mach64Server/ to <bf/YES/.
-    <item> To build the P9000 server: set <bf/XF86P9000Server/ to <bf/YES/.
-    <item> To build the AGX server: set <bf/XF86AGXServer/ to <bf/YES/.
-    <item> To build the ET4000/W32 server: set <bf/XF86W32Server/ to <bf/YES/.
-    <item> To build the IBM 8514/A server: set <bf/XF86I8514Server/ to <bf/YES/.
-
-    <item> Set <bf/XF86SvgaDrivers/ to the list of drivers you want to
-      include in the SVGA server.
-
-    <item>  Set <bf/XF86Vga16Drivers/ to the list of drivers you want
-       to include in the 16 colour server.
-
-    <item> Set <bf/XF86Vga2Drivers/ to the list of drivers you want to
-       include in the monochrome vga server.
-
-    <item> Set <bf/XF86MonoDrivers/ to the list of non-vga mono drivers you
-       want to include in the mono or VGA16 servers (when building
-       dual-headed servers).
-
-    </itemize>
-
-<quote>
-   <bf/Note:/ the ordering of drivers determines the order in
-   which the probing is done.  The <bf/generic/ driver should be the last
-   one included in the Mono and VGA16 and SVGA servers because its
-   probe always succeeds.  
-</quote>
-
-<item> If you are including a driver that it not part of the standard
-   distribution, make a directory in <tt>drivers/vga256</tt>
-   (<tt>drivers/vga2</tt> if it is for the VGA2 part of the Mono
-   server, <tt>drivers/vga16</tt> if it is for the 16 colour server, or
-   drivers/mono non-VGA part of the Mono and VGA16 servers) and copy
-   either the source or <tt/.o/ file and a suitable <tt/Imakefile/ into that
-   directory.  The name of the directory should be the same as the
-   name of the driver (refer to the documentation in the <tt/VGADriverDoc/
-   directory for more details).
-
-<item> To build the Makefile, run
-<tscreen><verb>
-     ./mkmf
-</verb></tscreen>
-
-<item> Run ``<tt/make/'' to link the server(s) as configured.
-
-<item> Run ``<tt/make install/'' to install the new server(s).
-
-<item> Run ``<tt/make clean/'' to remove the files that were created by this
-   procedure.
-
-<item> It is possible to see which drivers are included in the server by
-   running it with the ``<tt/-showconfig/'' flag.
-
-</enum>
+reconfigure the drivers and some of the extensions in the servers.  For
+details of how to do this, please refer to the README.LinkKit file.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.0 1994/12/20 11:33:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.1 1994/12/26 11:03:25 dawes Exp $
 </verb>
 
 </article>
