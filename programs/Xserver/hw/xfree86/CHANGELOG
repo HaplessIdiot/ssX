@@ -1,5 +1,5 @@
 XFree86 4.4.99.3 (xx March 2004)
-  63. Various ANSifications (#5965, #5966, #5964, #5984, Alexander Stohr).
+  63. Various ANSifications (#5965, #5966, #5967, #5984, Alexander Stohr).
   62. Modify xf86CommonSpecialKey() to match xf86PostKbdEvent() in
       differentiating between Alt+Ctrl+SPECIAL and Alt+Ctrl+Shift+SPECIAL
       (Bugzilla #1298, Kean Johnston).
@@ -18833,7 +18833,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3212 2004/04/03 22:31:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3213 2004/04/03 22:38:52 tsi Exp $
 
 
 
