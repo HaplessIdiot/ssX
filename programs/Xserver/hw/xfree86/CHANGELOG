@@ -1,4 +1,6 @@
-XFree86 4.4.99.903 (xx February 2005)
+XFree86 4.4.99.904 (xx March 2005)
+
+XFree86 4.4.99.903 ( 6 March 2005)
  355. DRM build fixes for the 2.6.11 Linux kernel (David Dawes).
  354. Fix a ScreenToScreenCopy bug in the s3 driver that shows up with xtest
       (NMarci, Tim Roberts).
@@ -19438,7 +19440,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3461 2005/03/05 17:10:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3462 2005/03/06 03:55:46 dawes Exp $
 
 
 
