@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.51 94/04/17 20:13:07 kaleb Exp $ */
+/* $XConsortium: TextAction.c,v 1.53 95/06/14 15:07:27 kaleb Exp $ */
 
 /*
 
@@ -292,26 +292,6 @@ Cardinal num_params;
     int buffer;
 
     selection = XInternAtom(XtDisplay(w), *params, False);
-
-    /* CASE 1: INTERNAL */
-
-    if ( ( strcmp( params[0], "INTERNAL" ) == 0 ) &&
-	 	 ( ((TextWidget)w)->text.internal_selection != NULL ) ) {
-	int fmt8 = 8;
-	Atom type = XA_COMPOUND_TEXT(XtDisplay(w));
-	char *line = XtNewString( ((TextWidget)w)->text.internal_selection );
-	unsigned long length = strlen( line );
-	if ( length ) {
-	    _SelectionReceived(w, (XtPointer) NULL, &selection, &type, (XPointer)line,
-				&length, &fmt8);
-	    return;
-	}
-	else if (num_params > 1)
-	    GetSelection(w, time, params+1, num_params-1);
-    }
-
-    /* CASE 2: CUT_BUFFERx */
-
     switch (selection) {
       case XA_CUT_BUFFER0: buffer = 0; break;
       case XA_CUT_BUFFER1: buffer = 1; break;
@@ -335,9 +315,6 @@ Cardinal num_params;
 	else if (num_params > 1)
 	    GetSelection(w, time, params+1, num_params-1);
     } else {
-
-        /* CASE 3: a real selection */
-
 	struct _SelectionList* list;
 	if (--num_params) {
 	    list = XtNew(struct _SelectionList);

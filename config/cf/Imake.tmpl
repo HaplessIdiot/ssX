@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.227 95/05/05 17:42:07 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.11 1995/05/27 01:56:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.12tsi Exp $
 XCOMM
 
 /*
@@ -265,7 +265,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifdef ProjectRoot
 #define UsrLibDir Concat(ProjectRoot,/lib)
 #ifndef AlternateUsrLibDir
-#define AlternateUsrLibDir YES
+#define AlternateUsrLibDir (defined(UseInstalled) || HasLdRunPath)
 #endif
 #else
 #define UsrLibDir /usr/lib

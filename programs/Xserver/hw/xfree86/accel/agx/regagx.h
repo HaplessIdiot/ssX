@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.10 1995/05/27 03:03:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.11 1995/06/14 09:42:15 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -264,9 +264,8 @@ extern agxPixMap *agxCurPixMap[2];
 #define POS_CONF_EXT_MEM_MULT    	0x200      
 #define POS_CONF_EXT_MEM_BASE    	0xC0000      
 #define POS_CONF_COPROC_REG_OFF		0x01C00      
-#define POS_CONF_INSTANCE_MASK	 	0x0C
-#define POS_CONF_INSTANCE_SHIFT 	0x01
-#define POS_CONF_XGA_ENABLE_MASK	0x01
+#define POS_CONF_INSTANCE_MASK	 	0x07
+#define POS_CONF_XGA_ENABLE_MASK	0x08
 
 #define POS_CONF_INSTANCE( pos2 )  \
              ((( pos2 ) && POS_CONF_INSTANCE_MASK) >> 1)

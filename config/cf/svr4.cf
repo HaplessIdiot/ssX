@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.13 95/06/09 20:57:00 gildea Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.10 1995/05/27 01:56:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.11 1995/06/14 05:16:44 dawes Exp $
 /*
  * A default OS name
  */
@@ -111,7 +111,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.10 1995/05/27 01:56:52 dawes Exp $
 #endif
 #endif
 #ifndef ToolkitStringsABIOptions
-#define ToolkitStringsABIOptions -intelabi -earlyR6abi
+#define ToolkitStringsABIOptions -intelabi -earlyR6bc
 #endif
 #ifndef DefaultCCOptions
 #if !HasGcc

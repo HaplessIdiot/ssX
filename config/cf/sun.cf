@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.143 95/06/09 20:57:00 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.17 1995/01/28 15:40:31 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.18 1995/06/14 05:16:43 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -149,16 +149,19 @@ XCOMM operating system:  OSName
 #endif
 
 #if OSMajorVersion > 4
-#define BootstrapCFlags	  -DSVR4
 #ifndef XawI18nDefines
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
 #define ToolkitStringsABIOptions	-intelabi -earlyR6bc
+#define BootstrapCFlags   -DSVR4 -Di386 -Dsun
 #else
 #define StandardDefines	  -Dsun -Dsparc -DSVR4
 #define ToolkitStringsABIOptions	-sparcabi
+#endif
+#ifndef BootstrapCFlags
+#define BootstrapCFlags	  -DSVR4
 #endif
 #define ExtraLibraries    -lsocket -lnsl
 #if OSMinorVersion > 1

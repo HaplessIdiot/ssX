@@ -3,6 +3,7 @@
  */
 
 /* $XConsortium: fsinfo.c,v 1.5 94/04/17 20:24:18 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Portions Copyright (c) 1987  X Consortium
@@ -100,6 +101,10 @@ main(argc, argv)
     svr = FSOpenServer(servername);
 
     if (!svr) {
+	if (FSServerName(servername) == NULL) {
+	    fprintf(stderr, "%s: no font server defined\n", progname);
+	    exit(1);
+	}
 	fprintf(stderr, "%s:  unable to open server \"%s\"\n",
 		progname, FSServerName(servername));
 	exit(1);

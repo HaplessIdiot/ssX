@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.193 94/04/17 20:13:03 kaleb Exp $ */
+/* $XConsortium: Text.c,v 1.197 95/06/14 15:07:27 kaleb Exp $ */
 
 /***********************************************************
 
@@ -514,8 +514,6 @@ Cardinal *num_args;		/* unused */
   ctx->text.copy_area_offsets = NULL;
   ctx->text.salt2 = NULL;
 
-  ctx->text.internal_selection = NULL;
-
   if (ctx->core.height == DEFAULT_TEXT_HEIGHT) {
     ctx->core.height = VMargins(ctx);
     if (ctx->text.sink != NULL)
@@ -729,7 +727,7 @@ XawTextPosition left, right;
     left = SrcRead(ctx->text.source, left, &text, (int)(right - left));
     if (!text.length)
 	break;
-    (void) strncpy(tempResult, text.ptr, text.length * bytes);
+    memmove(tempResult, text.ptr, text.length * bytes);
     tempResult += text.length * bytes;
   }
 
@@ -1690,7 +1688,6 @@ Atom *selection;
   atomP = ctx->text.s.selections;
   for (i = 0 ; i < ctx->text.s.atom_count; i++, atomP++)
     if ( (*selection == *atomP) || 
- 	( *atomP == XInternAtom( XtDisplay(w), "INTERNAL", True ) ) ||
 	(GetCutBufferNumber(*atomP) != NOT_A_CUT_BUFFER) )/* is a cut buffer */
       *atomP = (Atom)0;
 
@@ -1807,8 +1804,7 @@ int	num_atoms;
     j = 0;
     for (i = 0; i < num_atoms; i++)
     {
-	if ( (GetCutBufferNumber (selections[i]) == NOT_A_CUT_BUFFER) &&
- 	( selections[i] != XInternAtom( XtDisplay( (Widget)ctx ), "INTERNAL", True ) ) )
+	if (GetCutBufferNumber (selections[i]) == NOT_A_CUT_BUFFER)
 	{
 	    salt->s.selections[j++] = selections[i];
 	    XtOwnSelection ((Widget) ctx, selections[i], ctx->text.time,
@@ -1854,47 +1850,14 @@ Cardinal count;
     Widget w = (Widget) ctx;
     int buffer;
     
-    /* There are three storage classes currently supported:
-	INTERNAL	stores selected data in the widget record
-	CUT_BUFFER0-7	stores selected data in a root property
-	[other]		taken as a selection name to assert ownership of
-
-    The INTERNAL type is new for R6 and allows better performance than the
-    CUT_BUFFER, and allows selecting non-ASCII text and pasting it into the
-    same widget even with intervening mouse cursor positionings. */
-
     while (count) {
       Atom selection = selections[--count];
 
-      if ( selection == XInternAtom( XtDisplay(w), "INTERNAL", True ) ) {
+/*
+ * If this is a cut buffer.
+ */
 
-          /* CASE 1: INTERNAL */
-
-          unsigned char *ptr = (unsigned char *)
-			_XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
-
-          if (_XawTextFormat(ctx) == XawFmtWide) {
-              XTextProperty textprop;
-              if (XwcTextListToTextProperty(XtDisplay(w), (wchar_t**)&ptr, 1,
-			                  XCompoundTextStyle, &textprop) < Success) {
-                  XtFree((char *)ptr);
-                  return;
-              }
-              XtFree((char *)ptr);
-              ptr = textprop.value;
-          }
-          if ( strlen( (char *)ptr ) ) {
-              if ( ctx->text.internal_selection != NULL )
-                  XtFree( ctx->text.internal_selection );
-              ctx->text.internal_selection = XtNewString( (char *)ptr );
-          }
-
-      }
-
-      else if ((buffer = GetCutBufferNumber(selection)) != NOT_A_CUT_BUFFER) {
-
-        /* CASE 2: CUT_BUFFERx */
-
+      if ((buffer = GetCutBufferNumber(selection)) != NOT_A_CUT_BUFFER) {
 	unsigned char *ptr, *tptr;
 	unsigned int amount, max_len = MAX_CUT_LEN(XtDisplay(w));
 	unsigned long len;
@@ -2479,10 +2442,6 @@ Cardinal nelems;
     ctx->text.s.selections = sel;
   }
   for (n=nelems; --n >= 0; sel++, list++)
-
-    /* I changed this to True so that atoms besides CUT_BUFFERx and
-    PRIMARY, SECONDARY can be used - specifically, INTERNAL. */
-
     *sel = XInternAtom(dpy, *list, True);
   ctx->text.s.atom_count = nelems;
   return ctx->text.s.selections;
@@ -2854,8 +2813,6 @@ Widget w;
   XtFree((char *)ctx->text.search);
   XtFree((char *)ctx->text.updateFrom);
   XtFree((char *)ctx->text.updateTo);
-
-  XtFree((char *)ctx->text.internal_selection);
 }
 
 /*
@@ -3334,8 +3291,7 @@ Widget w;
 /*
  * As selections are lost the atom_count will decrement.
  */
-      if ( (GetCutBufferNumber(sel) == NOT_A_CUT_BUFFER) &&
-	( sel != XInternAtom( XtDisplay(w), "INTERNAL", True ) ) )
+      if (GetCutBufferNumber(sel) == NOT_A_CUT_BUFFER)
 	XtDisownSelection(w, sel, ctx->text.time);
       LoseSelection(w, &sel); /* In case this is a cut buffer, or 
 				 XtDisownSelection failed to call us. */

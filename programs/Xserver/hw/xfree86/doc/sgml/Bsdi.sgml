@@ -35,12 +35,6 @@ let us know so that we can correct any incompatibilities.
 If you've done it and want to share your binaries, please let the Bsdi
 mailing list know.
 The binaries are built using gcc 2.6.3 as distributed with BSD/OS 2.0.
-The XFree86 3.1.2 server displays large amounts of diagnostic output to
-stderr when the server is started. If the server is started from the console
-on BSD/OS 2.0, the output to stderr will block and the server will hang.
-The workaround for this is to redirect stdout and stderr to a file when using
-startx or xinit. This problem does only appear on BSD/OS 2.0, earlier
-versions are not affected.
 If you build the distribution from source using a gcc compiler built using
 the generic gcc source code, you may run into problems using the binaries
 on a 386/486 not equipped with a math coprocessor.
@@ -318,7 +312,7 @@ BSD/OS 2.0.
 
 <verb>
 $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.9 1995/01/28 16:01:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.10 1995/06/01 08:25:23 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.5 1995/06/08 06:56:03 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.6 1995/06/14 09:48:41 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -80,7 +80,9 @@
 !Removed Edit capability -- Jon
 *Flags-text*sensitive: False
 *Apply-button.fromHoriz: Quit-button
-*Test-button.fromHoriz: Apply-button
+*AutoApply-toggle.fromHoriz: Apply-button
+*AutoApply-toggle.borderWidth: 1
+*Test-button.fromHoriz: AutoApply-toggle
 *Restore-button.fromHoriz: Test-button
 *Show-button.fromHoriz: Fetch-button
 *Next-button.fromHoriz: Show-button
@@ -91,6 +93,7 @@
 *Restore-button.label: Restore
 *Test-button.label: Test
 *Apply-button.label: Apply
+*AutoApply-toggle.label: Auto
 *Next-button.label: Next
 *Prev-button.label: Prev
 *Left-button.label: Left
@@ -106,22 +109,22 @@
 *WarnCancel.label: Cancel
 *Left.label: Left
 *Right.label: Right
-*Wider.label Wider
+*Wider.label: Wider
 *Narrower.label: Narrower
 *Up.label: Up
 *Down.label: Down
 *Shorter.label: Shorter
 *Higher.label: Higher
 *AckError.label: Acknowledged
-*ErrorMessage.label: Sorry: You have Requested a mode-line\n\
+*ErrorMessage.label: Sorry: You have requested a mode-line\n\
  That is not possible, or not supported by your\n\
  hardware configuration\n
 *testingMessage.label: Mode test current in progress\n\n     Please wait
 *WarnLabel.label: WARNING     WARNING    WARNING    WARNING    WARNING\
     WARNING\n\n\
-THE INCORRECT OF THIS PROGRAM CAN DO PERMENANT DAMAGE TO YOUR MONITOR\n\
-AND/OR VIDEO CARD.  IF YOU ARE NOT SURE WHAT YOU ARE DOING HIT CANCEL\n\
-NOW. OTHERWISE HIT OK TO CONTINUE\n\
+THE INCORRECT USE OF THIS PROGRAM CAN DO PERMANENT DAMAGE TO YOUR MONITOR\n\
+AND/OR VIDEO CARD.  IF YOU ARE NOT SURE WHAT YOU ARE DOING, HIT CANCEL\n\
+NOW. OTHERWISE, HIT OK TO CONTINUE\n\
 \n\
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,\n\
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n\

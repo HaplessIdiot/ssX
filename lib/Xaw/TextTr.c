@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.19 94/04/17 20:13:16 kaleb Exp $ */
+/* $XConsortium: TextTr.c,v 1.20 95/06/14 15:07:27 kaleb Exp $ */
 
 /*
 
@@ -41,13 +41,7 @@ so I am adding one more translation:
 
 The Japanese user typically hits their Kanji key when they want to do
 input.  This merely makes sure the input is connected.
-
-/* INTERNAL SELECTION STORAGE:
-
-     The Xaw Text now can store its most recent selection in itself, triggered
-by the INTERNAL argument to the extend-end() and insert-selection() routines. 
-Drawback: if anyone is using the CUT_BUFFERs for IPC to and from Xaw-based
-clients (which I doubt:) they will want the CUT_BUFFER left in. */
+*/
 
 char *_XawDefaultTextTranslations1 =
 "\

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.20 1995/06/04 02:56:18 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.21 1995/06/14 07:50:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -859,11 +859,14 @@ vgaHWInit(mode, size)
       }
       else
       {
-	if      (mode->VDisplay < 400)
+	int VDisplay = mode->VDisplay;
+	if (mode->Flags & V_DBLSCAN)
+	  VDisplay *= 2;
+	if      (VDisplay < 400)
 		new->MiscOutReg = 0xA3;		/* +hsync -vsync */
-	else if (mode->VDisplay < 480)
+	else if (VDisplay < 480)
 		new->MiscOutReg = 0x63;		/* -hsync +vsync */
-	else if (mode->VDisplay < 768)
+	else if (VDisplay < 768)
 		new->MiscOutReg = 0xE3;		/* -hsync -vsync */
 	else
 		new->MiscOutReg = 0x23;		/* +hsync +vsync */

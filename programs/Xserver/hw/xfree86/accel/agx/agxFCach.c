@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.11 1995/05/27 03:02:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.12 1995/06/14 09:42:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -107,6 +107,9 @@ agxCacheFont8(font)
    CharInfoPtr pci;
 
    CacheFont8Ptr last, ret = agxHeadFont;
+
+   if( agxHeadFont == NULL )
+      return NULL;
 
    while (ret != NULL) {
       if (ret->font == font)
@@ -354,7 +357,9 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    Bool constantMetrics = fentry->font->info.constantMetrics;
    Bool noVertOverlap = FALSE;
    Bool first = TRUE;
- 
+   unsigned int backDim; 
+   unsigned int backCoOrd;
+
    ret_x = x;
 
    /*
@@ -380,7 +385,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    x += pDraw->x;
    y += pDraw->y;
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
-   maxDescent = FONTMINBOUNDS(pfont, descent);
+   maxDescent = FONTMAXBOUNDS(pfont, descent);
    minY = y - maxAscent;
    maxY = y + maxDescent;
 
@@ -409,6 +414,8 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
       backrect.height = FONTASCENT(pfont) + FONTDESCENT(pfont); 
       noVertOverlap = backrect.y == minY
                       && backrect.height == (maxY - minY);
+      backDim = (backrect.height-1)<< 16 | backrect.width-1; 
+      backCoOrd = backrect.y << 16 | backrect.x;
    }
 
    /* since GE may be busy, preload first block if needed */
@@ -427,18 +434,16 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    }
    if (!numRects || pBox->y1 >= maxY )
       return ret_x;
-   while (numRects && pBox->y1 < maxY  && pBox->x2 <= minX ) {
+   while (numRects && (pBox->x1 >= maxX || pBox->x2 <= minX )) {
       ++pBox;
       --numRects;
    }
 
-   for (; 
-        numRects-- > 0
-        && pBox->y1 < maxY;
-        ++pBox) {
+   for (; numRects-- > 0; ++pBox) {
       unsigned short mixes;
 
-      if (pBox->x1 < maxX && pBox->x2 > minX) {
+      if (pBox->x1 < maxX && pBox->x2 > minX 
+         && pBox->y1 < maxY && pBox->y2 > minY ) {
          /* mask off clipped areas of the destination */
          register unsigned int mapCoOrd = (pBox->y1 << 16) | pBox->x1;
          register unsigned int mapDim   = ((pBox->y2 - pBox->y1)-1) << 16 
@@ -483,10 +488,6 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
            else {
               /* have to seperate the opaque from the character draw */
               {
-                 register unsigned int backDim = (backrect.height-1)<< 16 
-                                                 | backrect.width-1; 
-                 register unsigned int backCoOrd = backrect.y << 16 
-                                                   | backrect.x;
                  GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
                  GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
                  GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
@@ -626,10 +627,10 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
    register unsigned int dstCoOrd, patCoOrd;
    register CharInfoPtr pci = fentry->pci[(int)*chars];
    register unsigned int idx;
-   unsigned int h = GLYPHHEIGHTPIXELS(pci);
-   unsigned int opDim = (h-1) << 16 
-                        | (GLYPHWIDTHPIXELS(pci)-1);
+   unsigned int h = fentry->hPix;
    unsigned int w = fentry->wBytes<<3;
+   unsigned int opDim = (GLYPHHEIGHTPIXELS(pci)-1) << 16 
+                        | (GLYPHWIDTHPIXELS(pci)-1);
    unsigned int blocki = 0xFFFFFFFF;
    bitMapBlockPtr block;
    unsigned int blockBase;

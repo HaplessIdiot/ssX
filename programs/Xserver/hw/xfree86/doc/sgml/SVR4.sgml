@@ -311,8 +311,8 @@ a generic problem with the X client and X11R5/6; the others are to work
 with some things that are specific to the XFree86 servers.  Here are the
 things you need to do:
 <enum>
-<item> Set and export <tt>&dollar;XMERGE</tt> in your <tt>.xinitrc</tt> and/or 
-       <tt>.xsession</tt> files.
+<item> Set and export <tt>&dollar;XMERGE</tt> in your <tt>.xinitrc</tt>
+	   and/or <tt>.xsession</tt> files.
 	   In general, you should set <tt>XMERGE=vga</tt>.<p>
 <item> You MUST use the "xqueue" driver instead of the server's native
 	   keyboard and mouse driver, if you intend to use the "zoom"
@@ -420,6 +420,6 @@ information.<p>
 
 <verb>
 $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.2 1995/01/15 10:34:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.3 1995/01/28 16:02:30 dawes Exp $
 </verb>
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: mnx_io.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.0 1994/05/08 05:23:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.2 1995/01/28 17:04:47 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -81,7 +81,7 @@ int xf86GetKbdLeds()
 	return(0);
 }
 
-#if __STDC__
+#if NeedFunctionPrototypes
 void xf86SetKbdRepeat(char rad)
 #else
 void xf86SetKbdRepeat(rad)

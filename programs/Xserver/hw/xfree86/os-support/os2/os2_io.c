@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.0 1995/03/11 14:15:24 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -73,7 +73,7 @@ int xf86GetKbdLeds()
 	return rc ? 0 : kinfo.fsState & 0x70;
 }
 
-#if __STDC__
+#if NeedFunctionPrototypes
 void xf86SetKbdRepeat(char rad)
 #else
 void xf86SetKbdRepeat(rad)

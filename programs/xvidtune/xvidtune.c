@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.9 1995/06/10 13:33:21 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.10 1995/06/14 09:48:44 dawes Exp $ */
 
 /*
 
@@ -39,6 +39,7 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
+#include <X11/Xaw/Toggle.h>
 #include <X11/extensions/xf86vmode.h>
 #include <stdio.h>
 #include <signal.h>
@@ -127,6 +128,7 @@ static Atom wm_delete_window;
 static Widget invalid_mode_popup;
 static Widget testing_popup;
 static Widget Top;
+static Widget auto_apply_toggle;
 
 static void UpdateSyncRates();
 
@@ -437,6 +439,7 @@ static void AdjustCB(w, client, call)
     XtPointer client, call;
 {
    int what = (int) client;
+   Boolean state;
    
    switch (what) {
     case HSyncStart:
@@ -503,6 +506,9 @@ static void AdjustCB(w, client, call)
       break;
    }  
    SetScrollbars ();
+   XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+   if (state)
+       ApplyCB (w, client, call);
 }
 
 
@@ -923,15 +929,20 @@ static void CreateHierarchy(top)
 		forms[9], NULL, 0);
     XtAddCallback (wids[1], XtNcallback, ApplyCB, NULL);
 
-    wids[2] = XtCreateWidget ("Test-button", commandWidgetClass, 
+    wids[2] = XtCreateWidget ("AutoApply-toggle", toggleWidgetClass, 
 		forms[9], NULL, 0);
-    XtAddCallback (wids[2], XtNcallback, TestCB, NULL);
+    auto_apply_toggle = wids[2];
 
-    wids[3] = XtCreateWidget ("Restore-button", commandWidgetClass, 
+    wids[3] = XtCreateWidget ("Test-button", commandWidgetClass, 
 		forms[9], NULL, 0);
-    XtAddCallback (wids[3], XtNcallback, RestoreCB, NULL);
+    XtAddCallback (wids[3], XtNcallback, TestCB, NULL);
 
-    XtManageChildren (wids, 4);
+    wids[4] = XtCreateWidget ("Restore-button", commandWidgetClass, 
+		forms[9], NULL, 0);
+    XtAddCallback (wids[4], XtNcallback, RestoreCB, NULL);
+
+    XtManageChildren (wids, 5);
+
 
     CreateTyp (forms[10], PixelClock, "PixelClock-label", "PixelClock-text",
 	       NULL);
@@ -1124,7 +1135,7 @@ int main (argc, argv)
 
     XtMapWidget (top);
     displayWarning(top);
-    /* really we should run our on event despaching  here until the
+    /* really we should run our own event dispatching here until the
      * warning has been read...
      */
     XtAppMainLoop (app);

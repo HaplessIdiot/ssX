@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.7 1995/01/28 15:48:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.8 1995/05/27 03:02:32 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -46,8 +46,8 @@
 
 extern bitMapBlockPtr blockInUse;
 
-static bitMapRowPtr headBitRow;   /* top of linked list of cache rows */
-CacheFont8Ptr       agxHeadFont;  /* top of linked list of fonts in cache */
+static bitMapRowPtr headBitRow = NULL;   /* top of linked list of cache rows */
+CacheFont8Ptr       agxHeadFont = NULL;  /* top of list of fonts in cache */
 
 extern Bool xf86Verbose;
 
@@ -109,6 +109,10 @@ agxBitCache8Init(x,y)
 	    bptr = bptr->next;
          }
       }
+   }
+   else {
+      agxHeadFont = NULL;
+      headBitRow  = NULL;
    }
 
    if (xf86Verbose) {
@@ -257,7 +261,7 @@ agxCReturnBlock(block)
          MAP_INIT( GE_MS_MAP_B,
                    agxVideoMapFormat & ~GE_MF_MOTO_FORMAT,
                    block->daddy->offset + agxMemBase,
-                   AGX_PIXEL_ADJUST(CACHE_LINE_WIDTH_BYTES)-1,
+                   AGX_TO_PIXEL(CACHE_LINE_WIDTH_BYTES)-1,
                    ROW_NUM_LINES-1,
                    FALSE, FALSE, FALSE );
 
@@ -277,7 +281,7 @@ agxCReturnBlock(block)
             srcCoOrd = tmpb->line << 16;
             dstCoOrd = newLine << 16; 
             opDim    = (tmpb->sizel-1 << 16) 
-                       | AGX_PIXEL_ADJUST(CACHE_LINE_WIDTH_BYTES)-1;
+                       | AGX_TO_PIXEL(CACHE_LINE_WIDTH_BYTES)-1;
 
             GE_WAIT_IDLE();
             GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );

@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.16 1995/05/27 03:03:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.17 1995/06/14 09:42:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -465,8 +465,6 @@ agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
     temp = mode->CrtcVTotal - 1;
     crtcRegs->vblnk_end_lo =
        crtcRegs->vtotal_lo = temp & 0xFF;
-    if (mode->Flags & V_INTERLACE) 
-       crtcRegs->vtotal_lo |= 1;    /* must be odd */ 
     crtcRegs->vblnk_end_hi =
        crtcRegs->vtotal_hi = (temp>>8) & 0xFF;
 

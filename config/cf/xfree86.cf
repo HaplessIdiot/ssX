@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.58 1995/06/08 06:18:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.59tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -273,8 +273,18 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.58 1995/06/08 06:18:45 dawes Exp $
 #define XF86LinkKit	NO
 #endif
 
-#if XF86LinkKit && !defined(AlternateIncRoot) && !defined(IncRoot)
+#if XF86LinkKit
+/*
+ * Definitions for LinkKit self-containment
+ *
+ * Construction zone.  Drive with care!
+ */
+#if !defined(IncRoot) && !defined(AlternateIncRoot)
 #define AlternateIncRoot	NO
+#endif
+#if !defined(UsrLibDir) && defined(ProjectRoot) && !defined(AlternateUsrLibDir)
+#define AlternateUsrLibDir	HasLdRunPath
+#endif
 #endif
 
 #ifndef LinkKitDefines
@@ -391,13 +401,13 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 
 #if HasGcc
 #ifndef DefaultCCOptions
-#if UseInstalled
+#ifdef UseInstalled
 #define DefaultCCOptions -ansi
 #else
 #define DefaultCCOptions -ansi -pedantic
 #endif
 #endif
-#if UseInstalled
+#if defined(UseInstalled) || XF86LinkKit
 #ifndef UseGccMakeDepend
 #define UseGccMakeDepend YES
 #endif
