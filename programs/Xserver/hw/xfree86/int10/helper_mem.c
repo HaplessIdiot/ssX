@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.2 2000/02/08 13:13:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.4 2000/04/17 16:30:11 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -25,7 +25,7 @@ static OptionInfoRec INT10Options[] = {
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
 
-	
+#define nINT10Options (sizeof(INT10Options) / sizeof(INT10Options[0]))
 
 #ifdef DEBUG
 void 
@@ -152,9 +152,11 @@ int10skip(ScrnInfoPtr pScrn, int entityIndex)
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
     
     if (pEnt->device && pEnt->device->options) {
-	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options,
-			   INT10Options);
-	xf86GetOptValBool(INT10Options, OPT_NOINT10, &noint10);
+	OptionInfoRec options[nINT10Options];
+
+	(void)memcpy(options, INT10Options, sizeof(INT10Options));
+	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options, options);
+	xf86GetOptValBool(options, OPT_NOINT10, &noint10);
     }
     xfree(pEnt);
 

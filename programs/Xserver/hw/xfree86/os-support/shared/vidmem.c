@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.8 2000/02/08 13:13:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.10 2000/02/15 02:00:15 eich Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -113,19 +113,18 @@ static OptionInfoRec opts[] =
 	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
+#define nopts (sizeof(opts) / sizeof(opts[0]))
+
 static void
 checkMtrrOption(VidMapPtr vp)
 {
 	if (!vp->mtrrOptChecked && vp->pScrn->options != NULL) {
-		/*
-		 * We get called once for each screen, so reset
-		 * the OptionInfoRecs.
-		 */
-		opts[0].found = FALSE;
+		OptionInfoRec options[nopts];
 
+		(void)memcpy(options, opts, sizeof(opts));
 		xf86ProcessOptions(vp->pScrn->scrnIndex, vp->pScrn->options,
-					opts);
-		if (xf86GetOptValBool(opts, OPTION_MTRR, &vp->mtrrEnabled))
+					options);
+		if (xf86GetOptValBool(options, OPTION_MTRR, &vp->mtrrEnabled))
 			vp->mtrrFrom = X_CONFIG;
 		vp->mtrrOptChecked = TRUE;
 	}

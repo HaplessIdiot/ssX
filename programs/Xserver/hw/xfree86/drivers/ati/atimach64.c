@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.18 2000/04/12 14:44:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.19 2000/04/20 21:28:28 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1113,6 +1113,7 @@ ATIMach64SubsequentScreenToScreenCopy
     xDst *= pATI->XModifier;
     w    *= pATI->XModifier;
 
+    /* Disable clipping if it gets in the way */
     if ((xDst < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
         ((xDst + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
         outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
@@ -1197,6 +1198,7 @@ ATIMach64SubsequentSolidFillRect
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
+    /* Disable clipping if it gets in the way */
     if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
         ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
         outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
@@ -1381,6 +1383,7 @@ ATIMach64SubsequentMono8x8PatternFillRect
             (DST_X_DIR | DST_Y_DIR | DST_24_ROT_EN));
     }
 
+    /* Disable clipping if it gets in the way */
     if ((x < (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 0)) ||
         ((x + w - 1) > (int)GetWord(CacheSlot(SC_LEFT_RIGHT), 1)))
         outm(SC_LEFT_RIGHT, SetWord(pATI->NewHW.sc_right, 1) |
@@ -1486,6 +1489,7 @@ ATIMach64SubsequentColorExpandScanline
     ATIPtr pATI         = ATIPTR(pScreenInfo);
     CARD32 *pBitmapData = pATI->ExpansionBitmapScanline;
     int    w            = pATI->ExpansionBitmapWidth;
+    int    nFIFOEntries = pATI->nFIFOEntries;
 
     pATI->nFIFOEntries >>= 1;
 
@@ -1497,7 +1501,7 @@ ATIMach64SubsequentColorExpandScanline
         outm(HOST_DATA_0, *pBitmapData);
     }
 
-    pATI->nFIFOEntries <<= 1;
+    pATI->nFIFOEntries = nFIFOEntries;
 }
 
 /*

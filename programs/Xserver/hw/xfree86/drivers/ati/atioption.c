@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.6 2000/02/18 12:19:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.7 2000/03/30 15:41:18 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -95,7 +95,7 @@ ATIProcessOptions
         {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
     };
 
-    memcpy(PublicOption, ATIPublicOptions, SizeOf(ATIPublicOptions));
+    (void)memcpy(PublicOption, ATIPublicOptions, SizeOf(ATIPublicOptions));
 
 #   define Accel       PublicOption[ATI_OPTION_ACCEL].value.bool
 #   define CRTScreen   PublicOption[ATI_OPTION_CRT].value.bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.12 1999/12/03 19:17:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.14 2000/04/17 16:29:56 eich Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -106,13 +106,20 @@ static unsigned char * DDCRead_DDC2(
     int len
 );
 
-OptionInfoRec DDCOptions[] = {
+typedef enum {
+    DDCOPT_NODDC1,
+    DDCOPT_NODDC2,
+    DDCOPT_NODDC
+} DDCOpts;
+
+static OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
-    
+
+#define nDDCOptions (sizeof(DDCOptions) / sizeof(DDCOptions[0]))
 
 xf86MonPtr 
 xf86DoEDID_DDC1(
@@ -125,11 +132,13 @@ xf86DoEDID_DDC1(
     xf86MonPtr tmp = NULL;
     /* Default DDC and DDC1 to enabled. */
     Bool noddc = FALSE, noddc1 = FALSE;
+    OptionInfoRec options[nDDCOptions];
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
+    (void)memcpy(options, DDCOptions, sizeof(DDCOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
-    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
-    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC1, &noddc1);
+    xf86GetOptValBool(options, DDCOPT_NODDC, &noddc);
+    xf86GetOptValBool(options, DDCOPT_NODDC1, &noddc1);
     
     if (noddc || noddc1)
 	return NULL;
@@ -156,11 +165,13 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     xf86MonPtr tmp = NULL;
     /* Default DDC and DDC2 to enabled. */
     Bool noddc = FALSE, noddc2 = FALSE;
+    OptionInfoRec options[nDDCOptions];
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
+    (void)memcpy(options, DDCOptions, sizeof(DDCOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
-    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
-    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC2, &noddc2);
+    xf86GetOptValBool(options, DDCOPT_NODDC, &noddc);
+    xf86GetOptValBool(options, DDCOPT_NODDC2, &noddc2);
     
     if (noddc || noddc2)
 	return NULL;

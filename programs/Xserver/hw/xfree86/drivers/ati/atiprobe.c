@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.19 2000/03/07 16:13:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.20 2000/03/22 03:08:19 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1089,21 +1089,15 @@ ATIProbe
          * this is verbiage to deal with potential situations that are very
          * unlikely to occur in practice.
          *
-         * First, look for non-ATI shareable VGA's.  For now, these must have
-         * been previously initialised by their BIOS.
+         * First, look for non-ATI shareable VGA's.  For now, these must the
+         * primary device.
          */
         if (ATICheckSparseIOBases(ProbeFlags, ATTRX, 16, TRUE) == DoProbe)
         {
             for (i = 0;  (pVideo = xf86PciVideoInfo[i++]);  )
             {
                 if ((pVideo->vendor == PCI_VENDOR_ATI) ||
-                    !(((pciConfigPtr)(pVideo->thisCard))->pci_command &
-                      PCI_CMD_IO_ENABLE) ||
-                    (pVideo->interface != 0) ||
-                    (((pVideo->class != PCI_CLASS_PREHISTORIC) ||
-                      (pVideo->subclass != PCI_SUBCLASS_PREHISTORIC_VGA)) &&
-                     ((pVideo->class != PCI_CLASS_DISPLAY) ||
-                      (pVideo->subclass != PCI_SUBCLASS_DISPLAY_VGA))))
+                    !xf86IsPrimaryPci(pVideo))
                     continue;
 
                 if (!xf86CheckPciSlot(pVideo->bus,
@@ -1548,6 +1542,30 @@ NoVGAWonder:;
 
         xfree(ATIPtrs);
         return (nAdapter != 0);
+    }
+
+    /*
+     * Re-order list of detected devices so that the primary device is before
+     * any other PCI device.
+     */
+    for (i = 0;  i < nATIPtr;  i++)
+    {
+        if (!ATIPtrs[i]->PCIInfo)
+            continue;
+
+        for (j = i;  j < nATIPtr;  j++)
+        {
+            pATI = ATIPtrs[j];
+            if (!xf86IsPrimaryPci(pATI->PCIInfo))
+                continue;
+
+            for (;  j > i;  j--)
+                ATIPtrs[j] = ATIPtrs[j - 1];
+            ATIPtrs[j] = pATI;
+            break;
+        }
+
+        break;
     }
 
     /*

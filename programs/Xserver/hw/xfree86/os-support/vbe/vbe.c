@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.5 2000/04/17 16:30:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.6 2000/04/20 21:28:49 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -192,19 +192,33 @@ vbeProbeDDC(vbeInfoPtr pVbe)
     return TRUE; 
 }
 
+typedef enum {
+    VBEOPT_NOVBE
+} VBEOpts;
+
+static OptionInfoRec VBEOptions[] = {
+    { VBEOPT_NOVBE,	"NoVBE",	OPTV_BOOLEAN,	{0},	FALSE },
+    { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
+};
+
+#define nVBEOptions (sizeof(VBEOptions) / sizeof(VBEOptions[0]))
+
 static unsigned char *
 vbeReadEDID(vbeInfoPtr pVbe)
 {
     int RealOff = pVbe->real_mode_base;
     pointer page = pVbe->memory;
     unsigned char *tmp = NULL;
-    Bool noddc = FALSE;
+    Bool novbe = FALSE;
     int screen = pVbe->pInt10->scrnIndex;
+    OptionInfoRec options[nVBEOptions];
 
     if (!page) return NULL;
 
-    xf86GetOptValBool(DDCOptions, DDCOPT_NODDC, &noddc);
-    if (noddc) return NULL;
+    (void)memcpy(options, VBEOptions, sizeof(VBEOptions));
+    xf86ProcessOptions(screen, xf86Screens[screen]->options, options);
+    xf86GetOptValBool(options, VBEOPT_NOVBE, &novbe);
+    if (novbe) return NULL;
     
     if (!vbeProbeDDC(pVbe)) goto error;
     
