@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.40 2000/11/06 19:24:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.41 2000/11/30 23:29:54 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -523,13 +523,13 @@ install:: fonts.alias							@@\
 # define ServerExtraDefines    GccGasOption -Dmc68000 -Dmc68020
 
 # ifndef Xsun24Server
-#  define Xsun24Server		YES
+#  define Xsun24Server		NO
 # endif
 # ifndef XsunServer
 #  define XsunServer		YES
 # endif
 # ifndef XsunMonoServer
-#  define XsunMonoServer	YES
+#  define XsunMonoServer	NO
 # endif
 
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
@@ -634,13 +634,13 @@ install:: fonts.alias							@@\
 #ifdef SparcArchitecture
 
 # ifndef Xsun24Server
-# define Xsun24Server		YES
+# define Xsun24Server		NO
 # endif
 # ifndef XsunServer
 # define XsunServer		YES
 # endif
 # ifndef XsunMonoServer
-# define XsunMonoServer		YES
+# define XsunMonoServer		NO
 # endif
 
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
