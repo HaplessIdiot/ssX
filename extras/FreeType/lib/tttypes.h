@@ -20,6 +20,7 @@
  *   of the high-level interface.  See also 'freetype.h'.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #ifndef TTTYPES_H
 #define TTTYPES_H
@@ -45,19 +46,9 @@
   typedef unsigned long   ULong;
   typedef signed   long   Long;
 
-#if SIZEOF_INT == 4
+/* Xserver-specific change */
 
-  typedef int             Fixed;    /* signed fixed 16.16 float */
-
-#elif SIZEOF_LONG == 4
-
-  typedef long            Fixed;    /* signed fixed 16.16 float */
-
-#else
-
-#error "no 32bit type found"
-
-#endif
+  typedef INT32           Fixed;    /* signed fixed 16.16 float */
 
   typedef int             Int;
 
