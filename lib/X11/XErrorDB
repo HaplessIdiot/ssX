@@ -23,7 +23,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.38 2002/10/03 22:05:47 keithp Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.39 2002/11/20 04:47:24 dawes Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -592,8 +592,8 @@ XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
 XProtoError.XFree86-VidModeExtension.3: XF86VidModeModeUnsuitable
-XProtoError.XFree86-VidModeExtension.4: XF86VidModeClientNotLocal
-XProtoError.XFree86-VidModeExtension.5: XF86VidModeExtensionDisabled
+XProtoError.XFree86-VidModeExtension.4: XF86VidModeExtensionDisabled
+XProtoError.XFree86-VidModeExtension.5: XF86VidModeClientNotLocal
 XProtoError.XFree86-VidModeExtension.6: XF86VidModeZoomLocked
 ! XFree86-Misc -- not an X Consortium standard
 XRequest.XFree86-Misc.0: XF86MiscQueryVersion
