@@ -6,10 +6,10 @@
 
 <title>Driver Status for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>11 August 2000
+<date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.19 2000/11/28 20:59:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.20 2000/12/04 18:49:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -414,11 +414,12 @@ dependencies/limitations, other architectures known to work on
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
-	NM2097, NM2160 and NM2200 chipsets is provided by the "neomagic"
-	driver.
+	NM2097, NM2160, NM2200, NM2230, NM2360 and NM2380 chipsets is
+	provided by the "neomagic" driver.
 
 <tag>Summary:</tag>
 	All chips supported in &legacyvers; are also supported in
+	&relvers;.  The NM2230 and later chips are only supported in
 	&relvers;.
 
 </descrip>
