@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128stubs.c,v 3.3 1998/01/24 16:56:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128stubs.c,v 3.4 1998/01/24 19:15:11 hohndel Exp $ */
 
 
 
@@ -7,9 +7,6 @@
 
 
 
-/*** fix compile problem (dhh)
-#include "i128.h"
-***/
 void
 i128CacheMoveBlock(void)
 {

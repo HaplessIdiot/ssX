@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.5 1996/12/23 06:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.6 1998/01/24 16:56:34 hohndel Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -105,7 +105,7 @@ extern int	i128HDisplay;
 extern int	i128InitCursorFlag;
 extern int	i128ValidTokens[];
 extern pointer	i128VideoMem;
-extern short	i128alu[];
+extern CARD32	i128alu[];
 extern int	i128hotX;
 extern int	i128hotY;
 extern ScreenPtr i128savepScreen;

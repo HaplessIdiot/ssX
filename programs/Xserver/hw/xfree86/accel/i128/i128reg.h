@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.10 1997/11/22 00:00:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.5.2.4 1998/02/15 23:31:57 robin Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -70,6 +70,26 @@ struct i128mem {
     CARD32 *rbase_i;
 };
 
+
+/* display list processor instruction formats */
+typedef union {
+	struct {
+		CARD8 aad;
+		CARD8 bad;
+		CARD8 cad;
+		CARD8 control;
+		CARD32 rad;
+		CARD32 rbd;
+		CARD32 rcd;
+	} f0;
+	struct {
+		CARD32 xy0;
+		CARD32 xy2;
+		CARD32 xy3;
+		CARD32 xy1;
+	} f1;
+	CARD32 f4[4];
+} i128dlpu;
 
 #define I128_DEVICE_ID1		0x2309105D
 #define I128_DEVICE_ID2		0x2339105D
@@ -270,6 +290,8 @@ struct i128mem {
 #define  XY_X_DATA    0xFFFF0000
 #define  XY_I_DATA1   0x0000FFFF
 #define  XY_I_DATA2   0xFFFF0000
+#define DL_ADR    0x00F8/4
+#define DL_CNTRL  0x00FC/4
 
 #define I128_WAIT_READY 1
 #define I128_WAIT_DONE  2
