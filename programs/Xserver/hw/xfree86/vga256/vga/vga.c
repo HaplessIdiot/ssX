@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.0 1994/05/04 15:05:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,13 +50,13 @@
 
 #ifndef XF86VGA16
 #ifdef MONOVGA
-extern int mfbDoBitbltCopy();
-extern int mfbDoBitbltCopyInverted();
+extern void mfbDoBitbltCopy();
+extern void mfbDoBitbltCopyInverted();
 #ifdef BANKEDMONOVGA
-extern int oneBankmfbDoBitbltCopy();
-extern int oneBankmfbDoBitbltCopyInverted();
-extern int (*ourmfbDoBitbltCopy)();
-extern int (*ourmfbDoBitbltCopyInverted)();
+extern void mfbDoBitbltTwoBanksCopy();
+extern void mfbDoBitbltTwoBanksCopyInverted();
+void (*ourmfbDoBitbltCopy)();
+void (*ourmfbDoBitbltCopyInverted)();
 #endif
 #else
 unsigned long useSpeedUp = 0;
@@ -86,6 +86,7 @@ ScrnInfoRec vga256InfoRec = {
   vgaPrintIdent,        /* void (* PrintIdent)() */
 #ifdef MONOVGA
   1,			/* int depth */
+  {0, 0, 0},            /* xrgb weight */
   1,			/* int bitsPerPixel */
   StaticGray,		/* int defaultVisual */
 #else
@@ -94,10 +95,12 @@ ScrnInfoRec vga256InfoRec = {
 #else
   8,			/* int depth */
 #endif
+  {0, 0, 0},            /* xrgb weight */
   8,			/* int bitsPerPixel */
   PseudoColor,		/* int defaultVisual */
 #endif
   -1, -1,		/* int virtualX,virtualY */
+  -1,                   /* int displayWidth */
   -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
   {0, },		/* OFlagSet options */
   {0, },		/* OFlagSet clockOptions */
@@ -194,6 +197,12 @@ Bool vgaWriteFlag;
 Bool vgaUse2Banks;
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
+
+#ifdef MONOVGA
+int vgaReadseg=0;
+int vgaWriteseg=0;
+int vgaReadWriteseg=0;
+#endif
 
 int vgaIOBase;
 
@@ -390,8 +399,27 @@ vgaProbe()
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
+	/* if Virtual given: is the virtual size too big? */
+#ifdef BANKEDMONOVGA
+	if (vga256InfoRec.virtualX > (2048-32)) {
+		ErrorF("%s: Virtual width %i exceeds max. virtual width %i\n",
+		       vga256InfoRec.name, vga256InfoRec.virtualX, (2048-32));
+		vgaEnterLeaveFunc(LEAVE);
+		return(FALSE);
+	}
+	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY </*=*/ 8*vgaMapSize)
+		/* may be unbanked */                    /* ^^^ mfb bug */
+		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	else if (vga256InfoRec.virtualX > (1024-32))
+		vga256InfoRec.displayWidth=2048;
+	     else vga256InfoRec.displayWidth=1024;
+
+	if (vga256InfoRec.virtualX > 0 &&
+	    vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
+#else
 	if (vga256InfoRec.virtualX > 0 &&
 	    vga256InfoRec.virtualX * vga256InfoRec.virtualY > needmem)
+#endif
 	  {
 	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
                    vga256InfoRec.name, vga256InfoRec.virtualX,
@@ -434,7 +462,24 @@ vgaProbe()
 
         vga256InfoRec.virtualX = max(maxX, vga256InfoRec.virtualX);
         vga256InfoRec.virtualY = max(maxY, vga256InfoRec.virtualY);
+#ifdef BANKEDMONOVGA
+	if (vga256InfoRec.virtualX > (2048-32)) {
+		ErrorF("%s: Max. width %i exceeds max. virtual width %i\n",
+			vga256InfoRec.name, vga256InfoRec.virtualX, (2048-32));
+		vgaEnterLeaveFunc(LEAVE);
+		return(FALSE);
+	}
+	/* Now that modes are resolved and max. extents are found,
+	 * test size again */
+	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY </*=*/ 8*vgaMapSize)
+		/* may be unbanked */                    /* ^^^ mfb bug */
+		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	else if (vga256InfoRec.virtualX > (1024-32))
+		vga256InfoRec.displayWidth=2048;
+	     else vga256InfoRec.displayWidth=1024;
+#endif
 
+#ifndef BANKEDMONOVGA
 	if (vga256InfoRec.virtualX % rounding)
 	  {
 	    vga256InfoRec.virtualX -= vga256InfoRec.virtualX % rounding;
@@ -466,9 +511,27 @@ vgaProbe()
           vgaEnterLeaveFunc(LEAVE);
 	  return(FALSE);
 	}
+#else
+	if ( vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
+		ErrorF("%s: Too little memory to accomodate display width %i"
+			" and virtual height %i\n",
+			vga256InfoRec.name,
+			vga256InfoRec.displayWidth, vga256InfoRec.virtualY);
+		vgaEnterLeaveFunc(LEAVE);
+		return(FALSE);
+	}
+#endif
 	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY))
             OFLG_CLR(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag);
 
+#ifdef BANKEDMONOVGA
+	if (xf86Verbose)
+		ErrorF("%s %s: Display width set to %i\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+		        vga256InfoRec.displayWidth);
+#else
+        vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+#endif
         if (xf86Verbose)
           ErrorF("%s %s: Virtual resolution set to %dx%d\n",
                  OFLG_ISSET(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag) ? 
@@ -476,21 +539,8 @@ vgaProbe()
                  vga256InfoRec.name,
                  vga256InfoRec.virtualX, vga256InfoRec.virtualY);
 
-#ifndef XF86VGA16
-#ifdef MONOVGA
-#ifdef BANKEDMONOVGA
-	if (!vgaUse2Banks)
-	{
-	  ourmfbDoBitbltCopy = oneBankmfbDoBitbltCopy;
-	  ourmfbDoBitbltCopyInverted = oneBankmfbDoBitbltCopyInverted;
-	}
-	else
-	{
-	  ourmfbDoBitbltCopy = mfbDoBitbltCopy;
-	  ourmfbDoBitbltCopyInverted = mfbDoBitbltCopyInverted;
-	}
-#endif
-#else
+#if !defined(XF86VGA16)
+#if !defined(MONOVGA)
 	if ((vga256InfoRec.speedup & ~SPEEDUP_ANYWIDTH) &&
             vga256InfoRec.virtualX != 1024)
 	  {
@@ -532,8 +582,23 @@ vgaProbe()
 	/* Initialise chip-specific enhanced fb functions */
 	vgaHWCursor.Initialized = FALSE;
 	(*vgaFbInitFunc)();
-
-#endif /* MONOVGA */
+#else
+#ifdef BANKEDMONOVGA
+	if (vgaUse2Banks)
+	{
+	  ourmfbDoBitbltCopy = mfbDoBitbltTwoBanksCopy;
+	  ourmfbDoBitbltCopyInverted = mfbDoBitbltTwoBanksCopyInverted;
+	}
+	else
+	{
+	  ourmfbDoBitbltCopy = mfbDoBitbltCopy;
+	  ourmfbDoBitbltCopyInverted = mfbDoBitbltCopyInverted;
+	}
+#else
+	ourmfbDoBitbltCopy = mfbDoBitbltTwoBanksCopy;
+	ourmfbDoBitbltCopyInverted = mfbDoBitbltTwoBanksCopyInverted;
+#endif /* BANKEDMONOVGA */
+#endif /* !MONOVGA */
 #endif /* !XF86VGA16 */
 
 	return TRUE;
@@ -568,8 +633,8 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 			    vgaMapSize);
 
 #ifdef MONOVGA
-    if (vga256InfoRec.virtualX * vga256InfoRec.virtualY > vgaMapSize * 8)
-    {
+    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaMapSize * 8)
+    {                                                     /* ^ mfb bug */
       ErrorF("%s %s: Using banked mono vga mode\n", 
           XCONFIG_PROBED, vga256InfoRec.name);
       vgaVirtBase = (pointer)VGABASE;
@@ -632,14 +697,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.virtualX))
+		     vga256InfoRec.displayWidth))
 #else
   if (!cfbScreenInit(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.virtualX))
+		     vga256InfoRec.displayWidth))
 #endif
     return(FALSE);
 #else /* XF86VGA16 */
@@ -648,7 +713,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.virtualX);
+		     vga256InfoRec.displayWidth);
 #endif /* XF86VGA16 */
 
   pScreen->CloseScreen = vgaCloseScreen;
@@ -689,15 +754,19 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   /* Fill the screen with black */
   if (serverGeneration == 1)
   {
-#if defined(MONOVGA) || defined(XF86VGA16)
+#if (defined(MONOVGA) && !defined (BANKEDMONOVGA)) /* || defined(XF86VGA16) */
     memset(vgaBase,pScreen->blackPixel,vgaSegmentSize);
 #else
     pointer    vgaVirtPtr;
     pointer    vgaPhysPtr;
 
     for(vgaVirtPtr=vgaVirtBase;
-        vgaVirtPtr<(char *)vgaVirtBase+(vga256InfoRec.videoRam*1024);
-        (char *)vgaVirtPtr+=vgaSegmentSize)
+#if defined(MONOVGA) || defined(XF86VGA16)
+        vgaVirtPtr<(pointer)((char *)vgaVirtBase+(vga256InfoRec.videoRam*256));
+#else
+        vgaVirtPtr<(pointer)((char *)vgaVirtBase+(vga256InfoRec.videoRam*1024));
+#endif
+        vgaVirtPtr = (pointer)((char *)vgaVirtPtr + vgaSegmentSize))
         {
             /* Set the bank, then clear it */
             vgaPhysPtr=vgaSetWrite(vgaVirtPtr);

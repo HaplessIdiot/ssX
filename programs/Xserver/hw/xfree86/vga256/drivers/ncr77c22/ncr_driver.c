@@ -1,4 +1,5 @@
 /* $XConsortium: ncr_driver.c,v 1.1 94/03/28 21:51:43 dpw Exp $ */
+/* $XFree86$ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -569,9 +570,9 @@ NCRAdjust(x, y)
 {
   unsigned char	temp;
 #if defined(MONOVGA) || defined(XF86VGA16)
-  unsigned long	Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  unsigned long	Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-  unsigned long	Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+  unsigned long	Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

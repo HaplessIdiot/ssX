@@ -1,4 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -729,10 +730,12 @@ TVGA8900Adjust(x, y)
 	 * Go see the comments in the Init function.
 	 */
 	if (vga256InfoRec.videoRam != 1024)
-		base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+		base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 	else
+		base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+#else
+		base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #endif
-		base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
 
   	outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);

@@ -751,7 +751,7 @@ ATIAdjust(x, y)
 	 **	would kill our panning feature.
 	 **/
 
-	Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+	Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);

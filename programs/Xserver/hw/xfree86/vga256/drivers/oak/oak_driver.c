@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.0 1994/05/04 15:04:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -834,7 +834,7 @@ int x, y;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+	int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 
 	/*
 	 * These are the generic starting address registers.

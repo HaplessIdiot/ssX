@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.0 1994/05/14 07:02:38 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -302,7 +302,7 @@ int x, y;
 
 	/* In standard VGA 320x200x256 (chain-4), the start address */
 	/* is in pixel units. */
-	int Base = (y * vga256InfoRec.virtualX + x);
+	int Base = (y * vga256InfoRec.displayWidth + x);
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);

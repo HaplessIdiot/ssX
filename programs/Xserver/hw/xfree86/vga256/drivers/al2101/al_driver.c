@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.0 1994/05/14 07:01:39 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -321,7 +321,7 @@ static void
 AL2101Adjust(x, y)
      int x, y;
 {
-  int Base = (y * vga256InfoRec.virtualX + x) >> 3;
+  int Base = (y * vga256InfoRec.displayWidth + x) >> 3;
 
   outw(vgaIOBase + 4, (Base & 0x00FF00)        | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8)   | 0x0D);

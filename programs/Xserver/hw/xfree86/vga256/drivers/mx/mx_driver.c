@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.0 1994/05/14 07:02:50 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -681,7 +681,7 @@ unsigned char temp;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x) >> 2;
+	int Base = (y * vga256InfoRec.displayWidth + x) >> 2;
 
 	/*
 	 * These are the generic starting address registers.

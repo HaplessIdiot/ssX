@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.0 1994/05/29 02:08:34 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -853,7 +853,7 @@ int x, y;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x), msb, lsb;
+	int Base = (y * vga256InfoRec.displayWidth + x), msb, lsb;
 	unsigned char tmp;
 
 #ifdef MONOVGA

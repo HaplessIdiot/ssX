@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.0 1994/04/29 14:10:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.1 1994/05/14 07:01:54 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -1504,9 +1504,9 @@ cirrusAdjust(x, y)
 {
      unsigned char CR1B, CR1D;
 #ifdef MONOVGA
-     int Base = (y * vga256InfoRec.virtualX + x + 1) >> 3;
+     int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 3;
 #else
-     int Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+     int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
      outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
      outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);

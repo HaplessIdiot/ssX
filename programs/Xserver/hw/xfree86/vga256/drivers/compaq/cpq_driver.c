@@ -1,4 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.1 94/03/28 21:50:26 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -364,9 +365,9 @@ COMPAQAdjust(x, y)
      int x, y;
 {
 #ifdef MONOVGA
-	int Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+	int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-	int Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+	int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

@@ -1,6 +1,5 @@
+/* $XFree86$ */
 /*
- * $XFree86$
- * 
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its
