@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.17 2000/12/10 11:23:10 herrb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.18 2000/12/15 03:01:45 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -180,6 +180,8 @@ Description()
 		echo "Docs in Japanese";;
 	Xps*)
 		echo "Docs in PostScript";;
+	Xaout*)
+		echo "a.out compatibility libraries";;
 	*)
 		echo "unknown";;
 	esac
