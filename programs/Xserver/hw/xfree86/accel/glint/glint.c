@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.30 1998/06/04 16:43:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.31 1998/06/27 12:54:05 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -116,7 +116,6 @@ ScrnInfoRec glintInfoRec = {
     glintAdjustFrame,	/* void (* AdjustFrame)() */
     glintSwitchMode,	/* Bool (* SwitchMode)() */
     glintDPMSSet,	/* void (* DPMSSet)() */
-    (void (*)())NoopDDA,/* void (* APMNotify)() */
     glintPrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */

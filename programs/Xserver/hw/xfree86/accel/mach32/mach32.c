@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.79 1998/03/27 23:23:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.80 1998/06/27 12:54:11 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -134,7 +134,6 @@ ScrnInfoRec mach32InfoRec = {
     mach32AdjustFrame,	/* void (* AdjustFrame)() */
     mach32SwitchMode,	/* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
-    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach32PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */

@@ -38,9 +38,7 @@ from the X Consortium.
 #define _BITMAP_H_
 
 #include <fntfilio.h>
-#ifndef XFree86LOADER
 #include <stdio.h>  /* just for NULL */
-#endif
 
 /*
  * Internal format used to store bitmap fonts

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.26 1998/01/24 16:58:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.27 1998/06/27 12:54:32 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -122,97 +122,8 @@ typedef struct dirent DIRENTRY;
  * This file contains the XFree86 wrappers for libc functions that can be
  * called by loadable modules
  */
-int
-xf86creat(const char * filename, mode_t mode)
-{
-	return(creat(filename,mode));
-}
-
-int
-xf86fcntl(int fildes, int cmd)
-{
-	return(fcntl(fildes,cmd));
-}
-
-off_t
-xf86lseek(int fd, off_t offset, int whence)
-{
-	return(lseek(fd,offset,whence));
-}
-
-int
-xf86unlink(const char * name)
-{
-	return(unlink(name));
-}
-
-unsigned int
-xf86alarm(unsigned int seconds)
-{
-	return(alarm(seconds));
-}
-
-unsigned int
-xf86sleep(unsigned int seconds)
-{
-	return(sleep(seconds));
-}
-
-time_t
-xf86time(time_t * tp)
-{
-	return(time(tp));
-}
-
-int
-xf86stat(const char * path, struct stat * statbuf)
-{
-	return(stat(path,statbuf));
-}
-
-int
-xf86fstat(int fd, struct stat * statbuf)
-{
-	return(fstat(fd,statbuf));
-}
-
-int
-xf86chmod(const char * path, mode_t mode)
-{
-	return(chmod(path,mode));
-}
-
-int
-xf86mkdir(const char * path, mode_t mode)
-{
-	return(mkdir(path,mode));
-}
-
-mode_t
-xf86umask(mode_t mode)
-{
-	return(umask(mode));
-}
-
-double
-xf86hypot(double x, double y)
-{
-	return(hypot(x,y));
-}
-
-void
-xf86qsort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *))
-{
-	qsort(base,nmemb,size,compar);
-}
 
 /* string functions */
-
-int
-xf86strcasecmp(const char *s1, const char *s2)
-{
-	return(strcasecmp(s1,s2));
-}
 
 char*
 xf86strcat(char* dest, const char* src)
@@ -454,7 +365,6 @@ xf86fopen(const char* fn, const char* mode)
 {
 	XF86FILE_priv* fp;
 	FILE *f = fopen(fn,mode);
-	xf86errno = errno;
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
@@ -554,18 +464,6 @@ xf86vfprintf(XF86FILE* f, const char *format,...)
 }
 
 int
-xf86printf(const char *format, ...)
-{
-	int ret;
-	va_list args;
-	va_start(args, format);
-
-	ret = printf(format,args);
-	va_end(args);
-	return ret;
-}
-
-int
 xf86vsprintf(char *s, const char *format, ...)
 {
 	int ret;
@@ -621,24 +519,6 @@ xf86fputs(char *buf, XF86FILE* f)
 
 	_xf86checkhndl(fp,"xf86fputs");
 	return fputs(buf,fp->filehnd);
-}
-
-int
-xf86fileno(XF86FILE* f)
-{
-	XF86FILE_priv* fp = (XF86FILE_priv*)f;
-
-	_xf86checkhndl(fp,"xf86fileno");
-	return fileno(fp->filehnd);
-}
-
-int
-xf86getc(XF86FILE* f)
-{
-	XF86FILE_priv* fp = (XF86FILE_priv*)f;
-
-	_xf86checkhndl(fp,"xf86getc");
-	return getc(fp->filehnd);
 }
 
 int
@@ -835,7 +715,6 @@ xf86freopen(const char* fname,const char* mode,XF86FILE* fold)
 
 	_xf86checkhndl(fp,"xf86freopen");
 	fnew = freopen(fname,mode,fp->filehnd);
-	xf86errno = errno;
 	if (!fnew) {
 		xf86fclose(fold);	/* discard old XF86FILE structure */
 		return 0;
@@ -900,7 +779,6 @@ xf86tmpfile(void)
 #else
 	XF86FILE_priv* fp;
 	FILE *f = tmpfile();
-	xf86errno = errno;
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.5 1998/01/24 16:58:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.6 1998/06/27 12:54:30 hohndel Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -57,14 +57,11 @@ extern int xf86feof(XF86FILE*);
 extern int xf86ferror(XF86FILE*);
 extern int xf86fflush(XF86FILE*);
 extern int xf86fgetc(XF86FILE*);
-extern int xf86getc(XF86FILE*);
 extern int xf86fgetpos(XF86FILE*,XF86fpos_t*);
 extern char* xf86fgets(char*,int,XF86FILE*);
 extern double xf86floor(double);
 extern double xf86fmod(double,double);
 extern XF86FILE* xf86fopen(const char*,const char*);
-extern int xf86fileno(XF86FILE*);
-extern int xf86printf(/*const char*,...*/);
 extern int xf86fprintf(/*XF86FILE*,const char*,...*/);
 extern int xf86fputc(int,XF86FILE*);
 extern int xf86fputs(const char*,XF86FILE*);
@@ -110,7 +107,6 @@ extern double xf86sin(double);
 extern int xf86sprintf(/*char*,const char*,...*/);
 extern double xf86sqrt(double);
 extern int xf86sscanf(/*const char* const char*,...*/);
-extern int xf86strcasecmp(const char *s1, const char *s2);
 extern char* xf86strcat(char*,const char*);
 extern int xf86strcmp(const char*,const char*);
 extern char* xf86strcpy(char*,const char*);
@@ -118,11 +114,9 @@ extern INT32 xf86strcspn(const char*,const char*);
 extern char* xf86strerror(int);
 extern INT32 xf86strlen(const char*);
 extern int xf86strncmp(const char*,const char*,INT32);
-extern char *xf86strncat(char *dest, const char *src, size_t n);
 extern char* xf86strncpy(char*,const char*,INT32);
 extern char* xf86strpbrk(const char*,const char*);
 extern char* xf86strrchr(const char*,int);
-extern char* xf86strchr(const char*,int);
 extern INT32 xf86strspn(const char*,const char*);
 extern char* xf86strstr(const char*,const char*);
 extern double xf86strtod(const char*,char**);
@@ -144,22 +138,6 @@ extern int xf86ioctl(int, unsigned long, char *);
 extern int xf86read(int, const void *, size_t);
 extern int xf86write(int, const void *, size_t);
 extern int xf86errno;
-
-/* Needed for font */
-extern int xf86creat(const char *, mode_t);
-extern int xf86fcntl(/*int, int,...*/);
-extern double xf86hypot(double, double);
-extern time_t xf86time(time_t *);
-extern int xf86stat(const char *, struct stat *);
-extern int xf86fstat(int, struct stat *);
-extern int xf86mkdir(const char *, mode_t);
-extern int xf86chmod(const char *, mode_t);
-extern mode_t xf86umask(mode_t);
-extern off_t xf86lseek(int, off_t, int);
-extern unsigned int xf86alarm(unsigned int);
-extern void xf86sleep(unsigned int);
-extern int xf86unlink(const char *);
-extern void xf86qsort(/*ptr_t, size_t, size_t, compar_fn_t*/);
 
 /* non-ANSI C functions */
 extern XF86DIR* xf86opendir(char*);

@@ -52,7 +52,6 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message       */
 /*END SHARED*/
 /*SHARED*/
  
-#undef abort
 #define   abort(line)       FatalError(line)
 #define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)

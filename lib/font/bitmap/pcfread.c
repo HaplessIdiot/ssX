@@ -34,7 +34,6 @@ from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include <stdio.h>
 #include "fntfilst.h"
 #include "bitmap.h"
 #include "pcf.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.38 1998/03/27 23:23:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.39 1998/06/27 12:54:16 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -140,7 +140,6 @@ ScrnInfoRec s3InfoRec =
    (void (*)())NoopDDA,		/* void (* AdjustFrame)() */
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
    s3DPMSSet,			/* void (* DPMSSet)() */
-   (Bool (*)())NoopDDA,		/* Bool (* APMNotify)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.90 1998/03/27 23:23:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.91 1998/06/27 12:54:12 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -148,7 +148,6 @@ ScrnInfoRec mach64InfoRec = {
     mach64AdjustFrame,	/* void (* AdjustFrame)() */
     mach64SwitchMode,	/* Bool (* SwitchMode)() */
     mach64DPMSSet	,/* void (* DPMSSet)() */
-    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach64PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */

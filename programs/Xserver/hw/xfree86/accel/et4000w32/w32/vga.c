@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.45 1998/01/24 16:56:30 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.46 1998/06/27 12:54:04 hohndel Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -73,7 +73,6 @@ ScrnInfoRec vga256InfoRec = {
   (void (*)())NoopDDA,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
   vgaDPMSSet,		/* void (* DPMSSet)() */
-  (void (*)())NoopDDA,	/* void (* APMNotify)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
   8,			/* int depth */
   {0, 0, 0},            /* xrgb weight */

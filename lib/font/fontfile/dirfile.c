@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.3 1997/01/27 06:56:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.4 1998/06/27 12:53:41 hohndel Exp $ */
 #ifndef lint
 static char *rid=
     "$XConsortium: dirfile.c /main/12 1995/12/08 19:02:23 gildea $";
@@ -41,8 +41,8 @@ in this Software without prior written authorization from the X Consortium.
  * Read fonts.dir and fonts.alias files
  */
 
-#include <stdio.h>
 #include "fntfilst.h"
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -75,10 +75,10 @@ FontFileReadDirectory (directory, pdir)
 #ifdef FONTDIRATTRIB
     /* Check for font directory attributes */
 #ifndef __EMX__
-    if (ptr = (char *)strchr(directory, ':')) {
+    if (ptr = strchr(directory, ':')) {
 #else
     /* OS/2 path might start with a drive letter, don't clip this */
-    if (ptr = (char *)strchr(directory+2, ':')) {
+    if (ptr = strchr(directory+2, ':')) {
 #endif
 	strncpy(dir_path, directory, ptr - directory);
 	dir_path[ptr - directory] = '\0';
@@ -92,7 +92,7 @@ FontFileReadDirectory (directory, pdir)
     if (dir_file[strlen(dir_file) - 1] != '/')
 	strcat(dir_file, "/");
     strcat(dir_file, FontDirFile);
-    file = (pointer)fopen(dir_file, "r");
+    file = fopen(dir_file, "r");
     if (file) {
 	if (fstat (fileno(file), &statb) == -1)
 	    return BadFontPath;
@@ -266,7 +266,7 @@ ReadFontAlias(directory, isFile, pdir)
 	    strcat(alias_file, "/");
 	strcat(alias_file, FontAliasFile);
     }
-    file = (pointer)fopen(alias_file, "r");
+    file = fopen(alias_file, "r");
     if (!file)
 	return ((errno == ENOENT) ? Successful : BadFontPath);
     if (!dir)

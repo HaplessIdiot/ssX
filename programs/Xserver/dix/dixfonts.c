@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c /main/58 1996/09/28 17:11:55 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.10 1997/04/12 13:43:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.11 1998/06/27 12:53:48 hohndel Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1753,10 +1753,13 @@ SetFontPathElements(npaths, paths, bad)
 		goto bail;
 	    }
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
-	    if (err == Successful) /* A successful font, add it to the list */
-	    	fplist[valid_paths++] = fpe;
-	    else
-		ErrorF("Removing %s from the valid list of fontpaths\n",fpe->name);
+	    if (err != Successful) {
+		xfree(fpe->name);
+		xfree(fpe);
+		err = BadValue;
+		goto bail;
+	    }
+	    fplist[valid_paths++] = fpe;
 	} else {
 	    err = BadValue;
 	    goto bail;

@@ -40,7 +40,7 @@
  *
  ******************************************************************/
 
-/* $XFree86: xc/lib/font/FreeType/lib/ttraster.c,v 1.2 1998/04/28 13:31:00 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/lib/ttraster.c,v 1.3 1998/06/27 12:53:29 hohndel Exp $ */
   
 #include "ttraster.h"
 #include "tterror.h"
@@ -48,10 +48,6 @@
 #include "ttengine.h"
 
 #include "ttmemory.h"
-
-#ifdef XFree86LOADER
-#include <xf86_libc.h>
-#endif
 
 /* The default render pool size */
 #define  RASTER_RENDER_POOL   64000

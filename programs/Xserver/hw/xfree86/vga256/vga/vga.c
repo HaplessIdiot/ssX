@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.114 1998/06/05 02:57:14 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.115 1998/06/27 12:54:57 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -112,7 +112,6 @@ ScrnInfoRec vga256InfoRec = {
   vgaAdjustFrame,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
   vgaDPMSSet,		/* void (* DPMSSet)() */
-  vgaAPMNotify,         /* void (* APMNotify)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
   8,			/* int depth */
   {0, 0, 0},            /* xrgb weight */

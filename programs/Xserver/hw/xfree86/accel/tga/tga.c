@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.29 1998/06/04 16:43:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.30 1998/06/27 12:54:18 hohndel Exp $ */
 
 #include <stdio.h> 
 #include "X.h"
@@ -82,7 +82,6 @@ ScrnInfoRec tgaInfoRec = {
     tgaAdjustFrame,	/* void (* AdjustFrame)() */
     tgaSwitchMode,	/* Bool (* SwitchMode)() */
     tgaDPMSSet,		/* void (* DPMSSet)() */
-    (void (*)())NoopDDA,/* void (* APMNotify)() */
     tgaPrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */

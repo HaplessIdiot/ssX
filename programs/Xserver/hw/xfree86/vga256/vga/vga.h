@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.31 1998/01/24 16:58:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.32 1998/06/27 12:54:58 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -520,12 +520,6 @@ Bool vgaSwitchMode(
 void vgaDPMSSet(
 #if NeedFunctionPrototypes
     int PowerManagementMode
-#endif
-);
-
-void vgaAPMNotify(
-#if NeedFunctionPrototypes
-    int APMEvent
 #endif
 );
 

@@ -53,9 +53,7 @@ from the X Consortium.
 #ifndef _SPINT_H_
 #define _SPINT_H_
 
-#ifndef XFree86LOADER
 #include <stdio.h>
-#endif
 #include "fntfilst.h"
 #include <X11/Xfuncproto.h>
 #include "speedo.h"
