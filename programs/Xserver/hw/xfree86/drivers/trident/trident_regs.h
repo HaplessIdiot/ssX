@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.5 1999/04/15 06:39:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.6 1999/04/25 10:02:31 dawes Exp $ */
 
 #define NTSC 14.31818
 #define PAL  17.73448
@@ -243,7 +243,8 @@
 	(*(volatile unsigned char *)(pTrident->IOBase + OLDGER_STATUS) = (c))
 #define TGUI_OPERMODE(c) \
 	(*(volatile unsigned short *)(pTrident->IOBase + GER_OPERMODE) = (c))
-#define OLDTGUI_OPERMODE(c) \ /* XXX */
+/* XXX */
+#define OLDTGUI_OPERMODE(c) \
 	{ \
 		*(unsigned short *)(pTrident->IOBase + OLDGER_MWIDTH) = \
 			            vga256InfoRec.displayWidth - 1; \
