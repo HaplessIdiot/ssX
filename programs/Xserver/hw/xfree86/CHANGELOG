@@ -1,4 +1,5 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 233. Fix a typo in xeyes/Eyes.c (Bugzilla #1519, Phillip Vandry).
  232. Rationalise driver interface for DGA's OpenFramebuffer();  fix
       siliconmotion driver's entry for it;  bump driver ABI version (not
       strictly necessary as this is only a source API change)
@@ -19193,7 +19194,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3356 2004/12/03 02:18:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3357 2004/12/07 15:59:16 tsi Exp $
 
 
 
