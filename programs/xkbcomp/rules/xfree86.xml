@@ -2229,6 +2229,25 @@
             <description xml:lang="zh_CN">Sun 死键</description>
           </configItem>
         </variant>
+        <variant>
+          <configItem>
+            <name>fr_pl</name>
+            <description>Polish signs with AltGr (€ on AltGr-$)</description>
+            <description xml:lang="bg">полска (€=AltGr-$)</description>
+            <description xml:lang="cs">Polské (€=AltGr-$)</description>
+            <description xml:lang="da">Polsk (€=AltGr-$)</description>
+            <description xml:lang="fr">Caractères polonais par AltGr (€=AltGr-$)</description>
+            <description xml:lang="hu">lengyel (€=AltGr-$)</description>
+            <description xml:lang="nl">Pools (€=AltGr-$)</description>
+            <description xml:lang="pl">Polskie znaki z AltGr (€=AltGr-$)</description>
+            <description xml:lang="ru">Польские буквы с AltGr (€=AltGr-$)</description>
+            <description xml:lang="sk">Poľské (€=AltGr-$)</description>
+            <description xml:lang="sr">пољски (€=AltGr-$)</description>
+            <description xml:lang="tr">Polonez (€=AltGr-$)</description>
+            <description xml:lang="uk">Польська (€=AltGr-$)</description>
+            <description xml:lang="zh_CN">波兰 (€=AltGr-$)</description>
+          </configItem>
+        </variant>
       </variantList>
     </layout>
     <layout>
