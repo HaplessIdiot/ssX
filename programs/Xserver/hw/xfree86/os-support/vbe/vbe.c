@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.22 2002/09/16 18:06:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.23 2003/01/18 15:22:35 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -30,6 +30,7 @@
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
 #define FARP(p)		(((unsigned)(p & 0xffff0000) >> 12) | (p & 0xffff))
+#define R16(v)		((v) & 0xffff)
 
 static unsigned char * vbeReadEDID(vbeInfoPtr pVbe);
 static Bool vbeProbeDDC(vbeInfoPtr pVbe);
@@ -366,7 +367,7 @@ VBEGetVBEInfo(vbeInfoPtr pVbe)
     pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (NULL);
 
     block = xcalloc(sizeof(VbeInfoBlock), 1);
@@ -466,7 +467,7 @@ VBESetVBEMode(vbeInfoPtr pVbe, int mode, VbeCRTCInfoBlock *block)
 
     xf86ExecX86int10(pVbe->pInt10);
 
-    return (pVbe->pInt10->ax == 0x4f);
+    return (R16(pVbe->pInt10->ax) == 0x4f);
 }
 
 Bool
@@ -487,8 +488,8 @@ VBEGetVBEMode(vbeInfoPtr pVbe, int *mode)
 
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax == 0x4f) {
-	*mode = pVbe->pInt10->bx;
+    if (R16(pVbe->pInt10->ax) == 0x4f) {
+	*mode = R16(pVbe->pInt10->bx);
 
 	return (TRUE);
     }
@@ -521,7 +522,7 @@ VBEGetModeInfo(vbeInfoPtr pVbe, int mode)
     pVbe->pInt10->es = SEG_ADDR(pVbe->real_mode_base);
     pVbe->pInt10->di = SEG_OFF(pVbe->real_mode_base);
     xf86ExecX86int10(pVbe->pInt10);
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (NULL);
 
     block = xcalloc(sizeof(VbeModeInfoBlock), 1);
@@ -653,11 +654,11 @@ VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction function,
 	    pVbe->pInt10->dx = 0;
 	    pVbe->pInt10->cx = 0x000f;
 	    xf86ExecX86int10(pVbe->pInt10);
-	    if (pVbe->pInt10->ax != 0x4f)
+	    if (R16(pVbe->pInt10->ax) != 0x4f)
 	        return (FALSE);
 
 	    if (function == MODE_SAVE) {
-	        int npages = (pVbe->pInt10->bx * 64) / 4096 + 1;
+	        int npages = (R16(pVbe->pInt10->bx) * 64) / 4096 + 1;
 		if ((*memory = xf86Int10AllocPages(pVbe->pInt10, npages,
 						   real_mode_pages)) == NULL) {
 		    xf86DrvMsg(screen, X_ERROR,
@@ -689,7 +690,7 @@ VBESaveRestore(vbeInfoPtr pVbe, vbeSaveRestoreFunction function,
 	    pVbe->pInt10->es = SEG_ADDR(*real_mode_pages);
 	    pVbe->pInt10->bx = SEG_OFF(*real_mode_pages);
 	    xf86ExecX86int10(pVbe->pInt10);
-	    return (pVbe->pInt10->ax == 0x4f);
+	    return (R16(pVbe->pInt10->ax) == 0x4f);
 
 	}
     }
@@ -712,7 +713,7 @@ VBEBankSwitch(vbeInfoPtr pVbe, unsigned int iBank, int window)
     pVbe->pInt10->dx = iBank;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (FALSE);
 
     return (TRUE);
@@ -751,16 +752,16 @@ VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, vbeScanwidthCommand command,
 	pVbe->pInt10->cx = width;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (FALSE);
 
     if (command == SCANWID_GET || command == SCANWID_GET_MAX) {
 	if (pixels)
-	    *pixels = pVbe->pInt10->cx;
+	    *pixels = R16(pVbe->pInt10->cx);
 	if (bytes)
-	    *bytes = pVbe->pInt10->bx;
+	    *bytes = R16(pVbe->pInt10->bx);
 	if (max)
-	    *max = pVbe->pInt10->dx;
+	    *max = R16(pVbe->pInt10->dx);
     }
 
     return (TRUE);
@@ -776,7 +777,7 @@ VBESetDisplayStart(vbeInfoPtr pVbe, int x, int y, Bool wait_retrace)
     pVbe->pInt10->dx = y;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (FALSE);
 
     return (TRUE);
@@ -790,7 +791,7 @@ VBEGetDisplayStart(vbeInfoPtr pVbe, int *x, int *y)
     pVbe->pInt10->bx = 0x01;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (FALSE);
 
     *x = pVbe->pInt10->cx;
@@ -823,7 +824,7 @@ VBESetGetDACPaletteFormat(vbeInfoPtr pVbe, int bits)
 	pVbe->pInt10->bx = (bits & 0x00ff) << 8;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (0);
 
     return (bits != 0 ? bits : (pVbe->pInt10->bx >> 8) & 0x00ff);
@@ -874,7 +875,7 @@ VBESetGetPaletteData(vbeInfoPtr pVbe, Bool set, int first, int num,
 	memcpy(pVbe->memory, data, num * sizeof(CARD32));
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (NULL);
 
     if (set)
@@ -911,13 +912,13 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
     pVbe->pInt10->di = 0;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (NULL);
 
     pmi = xalloc(sizeof(VBEpmi));
-    pmi->seg_tbl = pVbe->pInt10->es;
-    pmi->tbl_off = pVbe->pInt10->di;
-    pmi->tbl_len = pVbe->pInt10->cx;
+    pmi->seg_tbl = R16(pVbe->pInt10->es);
+    pmi->tbl_off = R16(pVbe->pInt10->di);
+    pmi->tbl_len = R16(pVbe->pInt10->cx);
 
     return (pmi);
 }
@@ -1030,7 +1031,7 @@ VBEGetPixelClock(vbeInfoPtr pVbe, int mode, int clock)
     pVbe->pInt10->dx = mode;
     xf86ExecX86int10(pVbe->pInt10);
 
-    if (pVbe->pInt10->ax != 0x4f)
+    if (R16(pVbe->pInt10->ax) != 0x4f)
 	return (0);
 
     return (pVbe->pInt10->cx);
@@ -1066,6 +1067,6 @@ VBEDPMSSet(vbeInfoPtr pVbe, int mode)
 	break;
     }
     xf86ExecX86int10(pVbe->pInt10);
-    return (pVbe->pInt10->ax == 0x4f);
+    return (R16(pVbe->pInt10->ax) == 0x4f);
 }
 

@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.34 2002/10/16 17:51:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.35 2002/12/12 04:52:26 dawes Exp $
  */
 
 #include "vesa.h"
@@ -484,7 +484,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->progClock = TRUE;
     pScrn->rgbBits = 8;
 
-    vbe = VBEGetVBEInfo(pVesa->pVbe);
+    if ((vbe = VBEGetVBEInfo(pVesa->pVbe)) == NULL)
+	return (FALSE);
     pVesa->major = (unsigned)(vbe->VESAVersion >> 8);
     pVesa->minor = vbe->VESAVersion & 0xff;
     pVesa->vbeInfo = vbe;
