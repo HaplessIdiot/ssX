@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Fill.c,v 1.9 94/04/17 20:16:35 rws Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -28,6 +29,12 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
+/* Hack for SVR4  -- use TCPCONN */
+#ifdef STREAMSCONN
+#undef STREAMSCONN
+#define TCPCONN
+#endif
+
 #ifdef WIN32
 #define _WILLWINSOCK_
 #endif
@@ -44,10 +51,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <winsock.h>
 #undef BOOL
 #else
+#ifndef MINIX
 #include <sys/socket.h>
+#endif /* !MINIX */
 #endif
 #endif
 
+#ifndef MINIX
 int
 XdmcpFill (fd, buffer, from, fromlen)
     int		    fd;
@@ -94,3 +104,49 @@ XdmcpFill (fd, buffer, from, fromlen)
     }
     return TRUE;
 }
+#else /* MINIX */
+int
+MNX_XdmcpFill (fd, buffer, from, fromlen, data, datalen)
+    int		    fd;
+    XdmcpBufferPtr  buffer;
+    XdmcpNetaddr    from;	/* return */
+    int		    *fromlen;	/* return */
+    char	    *data;
+    int		    datalen;
+{
+    BYTE    *newBuf;
+    struct sockaddr_in *from_addr;
+    udp_io_hdr_t *udp_io_hdr;
+
+    if (buffer->size < XDM_MAX_MSGLEN)
+    {
+	newBuf = (BYTE *) Xalloc (XDM_MAX_MSGLEN);
+	if (newBuf)
+	{
+	    Xfree (buffer->data);
+	    buffer->data = newBuf;
+	    buffer->size = XDM_MAX_MSGLEN;
+	}
+    }
+    buffer->pointer = 0;
+    udp_io_hdr= (udp_io_hdr_t *)data;
+    data += sizeof(udp_io_hdr_t) + udp_io_hdr->uih_ip_opt_len;
+    datalen -= sizeof(udp_io_hdr_t) + udp_io_hdr->uih_ip_opt_len;
+    buffer->count= udp_io_hdr->uih_data_len;
+    if (buffer->count > datalen)
+    {
+    	buffer->count= 0;
+    	return FALSE;
+    }
+    bcopy(data, (char *)buffer->data, buffer->count);
+    from_addr= (struct sockaddr_in *)from;
+    from_addr->sin_family= AF_INET;
+    from_addr->sin_addr.s_addr= udp_io_hdr->uih_src_addr;
+    from_addr->sin_port= udp_io_hdr->uih_src_port;
+    if (buffer->count < 6) {
+	buffer->count = 0;
+	return FALSE;
+    }
+    return TRUE;
+}
+#endif /* !MINIX */

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Flush.c,v 1.10 94/04/17 20:16:35 rws Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -28,6 +29,12 @@ in this Software without prior written authorization from the X Consortium.
  * Author:  Keith Packard, MIT X Consortium
  */
 
+/* Hack for SVR4  -- use TCPCONN */
+#ifdef STREAMSCONN
+#undef STREAMSCONN
+#define TCPCONN
+#endif
+
 #ifdef WIN32
 #define _WILLWINSOCK_
 #endif
@@ -44,7 +51,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <winsock.h>
 #undef BOOL
 #else
+#ifndef MINIX
 #include <sys/socket.h>
+#endif /* !MINIX */
 #endif
 #endif
 
@@ -56,6 +65,12 @@ XdmcpFlush (fd, buffer, to, tolen)
     int		    tolen;
 {
     int result;
+#ifdef MINIX
+    struct sockaddr_in *to_addr;
+    char *b;
+    udp_io_hdr_t *udp_io_hdr;
+    int flags, s_errno;
+#endif /* MINIX */
 
 #ifdef STREAMSCONN
     struct t_unitdata dataunit;
@@ -69,10 +84,37 @@ XdmcpFlush (fd, buffer, to, tolen)
     if (result < 0)
 	return FALSE;
 #else
+#ifndef MINIX
     result = sendto (fd, (char *)buffer->data, buffer->pointer, 0,
 		     (struct sockaddr *)to, tolen);
     if (result != buffer->pointer)
 	return FALSE;
+#else /* MINIX */
+    to_addr= (struct sockaddr_in *)to;
+    b= (char *)Xalloc(buffer->pointer + sizeof(udp_io_hdr_t));
+    if (b == NULL)
+    	return FALSE;
+    udp_io_hdr= (udp_io_hdr_t *)b;
+    bcopy((char *)buffer->data, b+sizeof(udp_io_hdr_t), buffer->pointer);
+    udp_io_hdr->uih_dst_addr= to_addr->sin_addr.s_addr;
+    udp_io_hdr->uih_dst_port= to_addr->sin_port;
+    udp_io_hdr->uih_ip_opt_len= 0;
+    udp_io_hdr->uih_data_len= buffer->pointer;
+
+    /* Make the write synchronous by turning of asynch I/O */
+    flags= fcntl(fd, F_GETFD);
+    fcntl(fd, F_SETFD, flags & ~FD_ASYNCHIO);
+    result= write(fd, b, buffer->pointer + sizeof(udp_io_hdr_t));
+    s_errno= errno;
+    Xfree(b);
+    fcntl(fd, F_SETFD, flags);
+    if (result != buffer->pointer + sizeof(udp_io_hdr_t))
+    {
+    	ErrorF("XdmcpFlush: unable to write: %d, '%s'\n", result,
+    		strerror(s_errno));
+    	return FALSE;
+    }
+#endif /* MINIX */
 #endif
     return TRUE;
 }
