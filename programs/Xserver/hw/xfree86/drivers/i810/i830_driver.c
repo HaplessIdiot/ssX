@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.38 2003/09/24 02:43:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.39 2003/10/08 15:48:40 eich Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2337,16 +2337,17 @@ SaveHWState(ScrnInfoPtr pScrn)
 #endif
 
    pVesa = pI830->vesa;
-   /* This save/restore method doesn't work for 845G BIOS */
    /*
-    * XXX If it's fixed in production versions, this could be removed.
-    *
+    * This save/restore method doesn't work for 845G BIOS, or for some
+    * other platforms.  Enable it in all cases
+    */
+   /*
     * KW: This may have been because of the behaviour I've found on my
     * board: The 'save' command actually modifies the interrupt
     * registers, turning off the irq & breaking the kernel module
     * behaviour.
     */
-   if (!I845G_VBE_WORKAROUND || !IS_845G(pI830)) {
+   if (!I845G_VBE_WORKAROUND) {
       CARD16 imr = INREG16(IMR);
       CARD16 ier = INREG16(IER);
       CARD16 hwstam = INREG16(HWSTAM);
