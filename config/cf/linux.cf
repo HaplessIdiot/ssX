@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.233 2005/01/30 23:42:43 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.234 2005/02/03 02:01:12 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -869,11 +869,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define LinuxMachineDefines	-D__sparc__
 # define ServerOSDefines	XFree86ServerOSDefines
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
-# define AsVISOption		-Av9a
-# ifdef Sparc64Architecture
-#  define AsOutputArchSize	64
-# else
-#  define AsOutputArchSize	32
+# if UseElfFormat
+#  define AsVISOption		-Av9a
+#  ifdef Sparc64Architecture
+#   define AsOutputArchSize	64
+#  else
+#   define AsOutputArchSize	32
+#  endif
 # endif
 #endif
 

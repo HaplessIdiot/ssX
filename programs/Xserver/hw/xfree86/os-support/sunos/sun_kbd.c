@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbd.c,v 1.1 2001/05/28 02:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_kbd.c,v 1.2 2003/10/09 11:44:00 pascal Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@XFree86.org>
@@ -68,16 +68,16 @@ xf86KbdInit()
 	 */
 
 	if (ioctl(xf86Info.kbdFd, KIOCTYPE, &sun_ktype) < 0)
-		FatalError("Unable to determine keyboard type: %d\n", errno);
+		xf86Msg(X_ERROR, "Unable to determine keyboard type: %d\n", errno);
 
 	if (ioctl(xf86Info.kbdFd, KIOCLAYOUT, &klayout) < 0)
-		FatalError("Unable to determine keyboard layout: %d\n", errno);
+		xf86Msg(X_ERROR, "Unable to determine keyboard layout: %d\n", errno);
 
 	if (ioctl(xf86Info.kbdFd, KIOCGTRANS, &sun_otranslation) < 0)
-		FatalError("Unable to determine keyboard translation mode\n");
+		xf86Msg(X_ERROR, "Unable to determine keyboard translation mode\n");
 
 	if (ioctl(xf86Info.kbdFd, KIOCGDIRECT, &sun_odirect) < 0)
-		FatalError("Unable to determine keyboard direct setting\n");
+		xf86Msg(X_ERROR, "Unable to determine keyboard direct setting\n");
 }
 
 int
