@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.1 2000/09/03 05:07:23 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.2 2000/09/08 21:46:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -96,6 +96,10 @@ shadowDamageRegion (WindowPtr pWindow, RegionPtr pRegion)
     shadowScrPriv (pScreen);
 
     REGION_UNION (pScreen, &pScrPriv->damage, &pScrPriv->damage, pRegion);
+#undef ALWAYS_DISPLAY
+#ifdef ALWAYS_DISPLAY
+    shadowRedisplay (pScreen);
+#endif
 }
 
 static void 
