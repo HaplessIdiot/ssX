@@ -1,3 +1,6 @@
+XFree86 4.0.1Za (x December 2000)
+1154. Add DGA support to I128 driver (Robin Cutshaw).
+
 XFree86 4.0.1Z (8 December 2000)
 1153. Flesh out the wacom man page (#4358, Frederic Lepied).
 1152. Fix incorrect documentation for xf86UnMapVidMem() in README.OS-lib
@@ -12000,4 +12003,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1462 2000/12/09 00:17:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1463 2000/12/09 03:31:31 dawes Exp $
