@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.215 2003/09/03 15:52:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.216 2003/09/03 20:30:07 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -568,6 +568,10 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef Freetype2BuildDefines
 #define Freetype2BuildDefines	/**/
+#endif
+/* For FreeType 1.x */
+#ifndef Freetype1BuildDefines
+#define Freetype1BuildDefines	Freetype2BuildDefines
 #endif
 
 #ifndef BuildRandR
