@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ia64Pci.c,v 1.2tsi Exp $ */
+/* $XFree86$ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -26,34 +26,29 @@
  */
 
 /*
- * This file contains the glue needed to support various IA-64 chipsets.
+ * This file contains the glue necessary for support of Intel's E8870 chipset.
  */
 
-#include "460gxPCI.h"
 #include "e8870PCI.h"
-#include "zx1PCI.h"
+#include "xf86.h"
 #include "Pci.h"
 
-void
-ia64ScanPCIWrapper(scanpciWrapperOpt flags)
+Bool
+xf86PreScanE8870(void)
 {
+    PCITAG tag;
 
-    if (flags == SCANPCI_INIT) {
+    /* Look for an E8870's Hub interface */
+    tag = PCI_MAKE_TAG(0, 0x1E, 0);
+    if (pciReadLong(tag, PCI_ID_REG) != DEVID(INTEL, 82801_P2P))
+	return FALSE;
 
-	/* PCI configuration space probes should be done first */
-	if (xf86PreScan460GX())
-	    return;
-	if (xf86PreScanE8870())
-	    return;
-	if (xf86PreScanZX1())
-	    return;
+    /* XXX Fill me in... */
+    return TRUE;
+}
 
-    } else /* if (flags == SCANPCI_TERM) */ {
-
-	xf86PostScan460GX();
-	xf86PostScanE8870();
-	xf86PostScanZX1();
-
-    }
-
+void
+xf86PostScanE8870(void)
+{
+    /* XXX Fill me in... */
 }
