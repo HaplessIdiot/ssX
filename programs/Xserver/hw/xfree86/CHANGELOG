@@ -1,4 +1,16 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 646. Add some more aliases for some German locales (#A.1263, Thomas Koeller).
+ 645. Update kio8-r encoded Cyrillic BDF fonts (#A.1267, Andrey A. Chernov).
+ 644. Fix Xtrans TLI code to handle a port scan and not fill the log file
+      with error messages from _XSERVTransTLIAccept() (#A.1333, Fiel Cabral).
+ 643. Only free cbs.data.text when cbs.type is XIMTextType in
+      _XimStatusDrawCallback() (#A.1342, Owen Taylor).
+ 642. Allow mouse pointer movement to be rotated (#A.1346, Joost Buelens).
+ 641. Add xkb layouts for Indian scripts (Kannada, Telugu, and Oriya) (#A.1436,
+      Guntupalli Karunakar).
+ 640. Enable MMX, SSE and 3DNow! for NetBSD 1.6 and later (#5536,
+      Matthias Scheler).
+ 639. Merge the xkb 'lt' layouts into pc/lt (#5535, Nerijus Baliunas).
  638. Set the default fa_IR character set to UTF-8 instead of
       ISIRI-3342 (#A.1356, Roozbeh Pournader).
  637. Fixes and updates for building under LynxOS/PowerPC 4.0 (#A.1386,
@@ -15805,4 +15817,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2446 2002/12/13 04:21:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2447 2002/12/14 04:52:01 dawes Exp $
