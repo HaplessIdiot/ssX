@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.7 2001/10/15 07:05:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.8 2001/10/15 15:36:51 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -80,6 +80,7 @@ LispObj *Lisp_XtCreateManagedWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreatePopupShell(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtDestroyWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtGetValues(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtManageChild(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopup(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopdown(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtRealizeWidget(LispMac*, LispObj*, char*);
@@ -119,6 +120,7 @@ static LispBuiltin lispbuiltins[] = {
     {"XT-CREATE-POPUP-SHELL",		Lisp_XtCreatePopupShell,	1,3,4,},
     {"XT-DESTROY-WIDGET",		Lisp_XtDestroyWidget,		1,1,1,},
     {"XT-GET-VALUES",			Lisp_XtGetValues,		1,2,2,},
+    {"XT-MANAGE-CHILD",			Lisp_XtManageChild,		1,1,1,},
     {"XT-POPUP",			Lisp_XtPopup,			1,2,2,},
     {"XT-POPDOWN",			Lisp_XtPopdown,			1,1,1,},
     {"XT-REALIZE-WIDGET",		Lisp_XtRealizeWidget,		1,1,1,},
@@ -619,6 +621,17 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
     GCUProtect();
 
     return (res);
+}
+
+LispObj *
+Lisp_XtManageChild(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    XtManageChild((Widget)(CAR(list)->data.opaque.data));
+
+    return (NIL);
 }
 
 LispObj *

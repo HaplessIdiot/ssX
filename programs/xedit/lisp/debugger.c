@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.7 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.8 2001/10/15 07:05:51 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -665,6 +665,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 
 			fprintf(lisp_stdout, "* Delete all breakpoints? "
 				"(y or n) ");
+			fflush(lisp_stdout);
 			if ((ch = fgetc(lisp_stdin)) == '\n')
 			    continue;
 			while ((i = fgetc(lisp_stdin)) != '\n' && i != EOF)
@@ -729,6 +730,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    goto debugger_print_frame;
 		if (i >= 0 && i <= mac->debug_level)
 		    goto debugger_new_frame;
+		fprintf(lisp_stdout, "* No such frame %d.\n", i);
 		break;
 	    case DebuggerDown:
 		if (frame + 1 > mac->debug_level) {

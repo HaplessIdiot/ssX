@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.1 2001/10/15 07:05:52 paulo Exp $ */
 
 #include "string.h"
 #include "private.h"
@@ -39,26 +39,65 @@ Lisp_Char(LispMac *mac, LispObj *list, char *fname)
     int c, pos;
     LispObj *str = CAR(list), *idx = CAR(CDR(list));
 
-    if (str->type != LispString_t)
+    if (!STRING_P(str))
 	LispDestroy(mac, "%s is not a string, at %s",
 		    LispStrObj(mac, str), fname);
-    if (idx->type != LispReal_t)
+    if (!NUMBER_P(idx))
 	LispDestroy(mac, "%s is not a number, at %s",
 		    LispStrObj(mac, str), fname);
 
-    if (idx->data.real < 0 || (int)idx->data.real != idx->data.real)
-	LispDestroy(mac, "bad index %g, at %s", idx->data.real, fname);
+    if (INDEX_P(idx))
+	LispDestroy(mac, "bad index %s, at %s", LispStrObj(mac, idx), fname);
 
-    if ((pos = idx->data.real) >= strlen(STRPTR(str)))
+    if ((pos = NUMBER_VALUE(idx)) >= strlen(STRPTR(str)))
 	LispDestroy(mac, "index %d is too large, at %s", pos, fname);
 
     c = *(unsigned char*)(STRPTR(str) + pos);
 
-    mac->setflag = SETFSTR;
-    mac->setf = str;
-    mac->strpos = pos;
-
     return (CHAR(c));
+}
+
+/* helper function for setf
+ *	DONT explicitly call. Non standard function
+ */
+LispObj *
+Lisp_XeditCharStore(LispMac *mac, LispObj *list, char *fname)
+{
+    char *string;
+    int c, pos, len;
+    LispObj *str, *idx, *value;
+
+    str = CAR(list);
+    if (!STRING_P(str))
+	LispDestroy(mac, "%s is not a string, at %s",
+		    LispStrObj(mac, str), fname);
+    list = CDR(list);
+    idx = CAR(list);
+    if (idx->type != LispReal_t)
+	LispDestroy(mac, "%s is not a number, at %s",
+		    LispStrObj(mac, str), fname);
+    if (!INDEX_P(idx))
+	LispDestroy(mac, "bad index %s, at %s", LispStrObj(mac, idx), fname);
+    if ((pos = NUMBER_VALUE(idx)) >= (len = strlen(STRPTR(str))))
+	LispDestroy(mac, "index %d is too large, at %s", pos, fname);
+    list = CDR(list);
+    value = CAR(list);
+    if (value->type != LispCharacter_t)
+	LispDestroy(mac, "%s is not a character, at %s",
+		    LispStrObj(mac, value), fname);
+
+    c = value->data.integer;
+
+    if (c < 0 || c > 255)
+	LispDestroy(mac, "cannot represent character %d, at %s", c, fname);
+
+    string = LispStrdup(mac, STRPTR(str));
+    string[pos] = c;
+
+    str->data.atom = LispDoGetAtom(mac, string, 0, 0);
+    LispFree(mac, string);
+
+    return (value);
 }
 
 LispObj *
@@ -140,18 +179,19 @@ Lisp_Character(LispMac *mac, LispObj *list, char *fname)
 
     if (obj->type == LispCharacter_t)
 	return (obj);
-    else if ((obj->type == LispAtom_t || obj->type == LispString_t) &&
+    else if ((SYMBOL_P(obj) || STRING_P(obj)) &&
 	     STRPTR(obj)[1] == '\0')
 	return (CHAR((unsigned char)STRPTR(obj)[0]));
-    else if (obj->type == LispInteger_t && obj->data.integer >= 0)
-	return (CHAR(obj->data.integer));
-    else if (obj->type == LispReal_t && obj->data.real >= 0 &&
-	     (int)obj->data.real == obj->data.real &&
-	     obj->data.real <= 0xffff)
-	return (CHAR(obj->data.real));
-    else
-	LispDestroy(mac, "cannot convert %s to character, at %s",
-		    LispStrObj(mac, obj), fname);
+    else if (INDEX_P(obj)) {
+	int c = NUMBER_VALUE(obj);
+
+	if (c <= 0xffff)
+	    return (CHAR(c));
+    }
+
+    LispDestroy(mac, "cannot convert %s to character, at %s",
+		LispStrObj(mac, obj), fname);
+
     /*NOTREACHED*/
     return (NIL);
 }
@@ -208,11 +248,8 @@ Lisp_IntChar(LispMac *mac, LispObj *list, char *fname)
     long character;
     LispObj *obj = CAR(list);
 
-    if (obj->type == LispInteger_t)
-	character = obj->data.integer;
-    else if (obj->type == LispReal_t && (int)obj->data.real == obj->data.real)
-	character = obj->data.real < 0 || obj->data.real > 0xffff ? -1 :
-		    obj->data.real;
+    if (INTEGER_P(obj))
+	character = NUMBER_VALUE(obj);
     else
 	LispDestroy(mac, "cannot convert %s to character, at %s",
 		    LispStrObj(mac, obj), fname);
@@ -225,9 +262,9 @@ Lisp_String(LispMac *mac, LispObj *list, char *fname)
 {
     LispObj *obj = CAR(list);
 
-    if (obj->type == LispString_t)
+    if (STRING_P(obj))
 	return (obj);
-    else if (obj->type == LispAtom_t)
+    else if (SYMBOL_P(obj))
 	return (STRING(STRPTR(obj)));
     else if (obj->type == LispCharacter_t) {
 	char string[2];
@@ -249,7 +286,7 @@ Lisp_ReadFromString(LispMac *mac, LispObj *list, char *fname)
     int level, length, start, end;
     LispObj *res, *eof_error, *eof_value, *ostart, *oend, *preserve;
 
-    if (CAR(list)->type != LispString_t)
+    if (!STRING_P(CAR(list)))
 	LispDestroy(mac, "expecting string, at %s", fname);
     str = STRPTR(CAR(list));
 
@@ -272,18 +309,16 @@ Lisp_ReadFromString(LispMac *mac, LispObj *list, char *fname)
     if (ostart == NIL)
 	start = 0;
     else {
-	if (ostart->type != LispReal_t || ostart->data.real < 0 ||
-	    (int)ostart->data.real != ostart->data.real)
+	if (!INDEX_P(ostart))
 	    LispDestroy(mac, "expecting positive integer, at %s", fname);
-	start = ostart->data.real;
+	start = NUMBER_VALUE(ostart);
     }
     if (oend == NIL)
 	end = length;
     else {
-	if (oend->type != LispReal_t || oend->data.real < 0 ||
-	    (int)oend->data.real != oend->data.real)
+	if (!INDEX_P(oend))
 	    LispDestroy(mac, "expecting positive integer, at %s", fname);
-	end = oend->data.real;
+	end = NUMBER_VALUE(oend);
     }
     if (start >= end || end > length)
 	LispDestroy(mac, "bad string index or length, at %s", fname);

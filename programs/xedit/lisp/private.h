@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.12 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.13 2001/10/15 07:05:52 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -57,7 +57,6 @@
 #define LEX	mac->lexlist
 #define COD	mac->codlist
 #define FRM	mac->frmlist
-#define STR	mac->strlist
 #define RUN	mac->runlist
 #define RES	mac->reslist
 #define DBG	mac->dbglist
@@ -87,12 +86,16 @@ struct _LispStream {
  *	a function definition
  *	a pointer to a builtin function definition
  *	the atom properties list, read with (get), set with (setf (get ...) ...)
+ *	a setf expansion macro or function replacement name
+ *	a structure definition
  */
 struct _LispProperty {
     unsigned int object : 1;
     unsigned int function : 1;
     unsigned int builtin : 1;
     unsigned int property : 1;
+    unsigned int defsetf : 1;
+    unsigned int defstruct : 1;
     LispObj *value;
     union {
 	LispObj *function;
@@ -100,6 +103,13 @@ struct _LispProperty {
     } fun;	/* cannot have both, a builtin and user function attached,
 		 * virtually, builtin and user function are the same */
     LispObj *properties;
+    LispObj *setf;
+    struct {
+	LispObj *definition;
+#define STRUCT_CHECK		-2
+#define STRUCT_CONSTRUCTOR	-1
+	int function;		/* if >= 0, it is a structure field index */
+    } structure;
 };
 
 struct _LispAtom {
@@ -132,18 +142,12 @@ struct _LispModule {
     LispModuleData *data;
 };
 
-#define	SETFCAR		1
-#define	SETFCDR		2
-#define	SETFSTR		3
 struct _LispMac {
     FILE *fp;
     char *st;
     char *cp;
     int tok;
     int level;
-    LispObj *setf;	/* setf place, set on some functions */
-    int setflag;	/* the above SETF* */
-    int strpos;		/* index of string, when setf'ing it */
     int princ;		/* don't quote strings? */
     int justsize;	/* just calculate size of output,
 			 * needed to calculate formatted output */
@@ -172,9 +176,6 @@ struct _LispMac {
 	void **mem;
     } mem;		/* memory from Lisp*Alloc, to be release in error */
     LispModule *module;
-    LispObj *struc;	/* to avoid unecessary extra lookups and */
-			/* used to pass arguments to structure access functions */
-    int struc_field;
     char *prompt;
 
     LispObj *modlist;		/* module list */
@@ -183,7 +184,6 @@ struct _LispMac {
     LispObj *lexlist;		/* lexical instead of dynamic scope */
     LispObj *codlist;		/* current code */
     LispObj *frmlist;		/* input data */
-    LispObj *strlist;		/* structure definitions */
     LispObj *runlist[3];	/* +, ++, and +++ */
     LispObj *reslist[3];	/* *, **, and *** */
     LispObj *dbglist;		/* debug information */
@@ -229,7 +229,7 @@ extern struct _LispBuiltin *LispFindBuiltin(const char*, unsigned int);
 #endif
 
 /* (print) */
-void LispPrint(LispMac*, LispObj*, int);
+void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
 LispBlock *LispBeginBlock(LispMac*, LispObj*, int);
 void LispEndBlock(LispMac*, LispBlock*);
@@ -238,8 +238,10 @@ void LispUpdateResults(LispMac*, LispObj*, LispObj*);
 void LispTopLevel(LispMac*);
 
 LispAtom *LispDoGetAtom(LispMac*, char *str, int, int);
-	/* get value or add new key to atom's property list */
+	/* get value from atom's property list */
 LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
+	/* put value in atom's property list */
+LispObj *LispPutAtomProperty(LispMac*, LispAtom*, LispObj*, LispObj*);
 
 	/* create or change object property */
 void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
@@ -253,5 +255,13 @@ void LispRemAtomFunctionProperty(LispMac*, LispAtom*);
 void LispSetAtomBuiltinProperty(LispMac*, LispAtom*, LispBuiltin*);
 	/* remove builtin property */
 void LispRemAtomBuiltinProperty(LispMac*, LispAtom*);
+	/* define setf macro, or replace current definition */
+void LispSetAtomSetfProperty(LispMac*, LispAtom*, LispObj*);
+	/* remove setf macro */
+void LispRemAtomSetfProperty(LispMac*, LispAtom*);
+	/* create or change structure property */
+void LispSetAtomStructProperty(LispMac*, LispAtom*, LispObj*, int);
+	/* remove structure property */
+void LispRemAtomStructProperty(LispMac*, LispAtom*);
 
 #endif /* Lisp_private_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.5 2001/10/15 07:05:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.6 2001/10/15 15:36:51 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -71,6 +71,7 @@
 int xawLoadModule(LispMac*);
 
 LispObj *Lisp_XawCoerceToListReturnStruct(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawFormDoLayout(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawListHighlight(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawListUnhighlight(LispMac*, LispObj*, char*);
 LispObj *Lisp_XawTextGetSource(LispMac*, LispObj*, char*);
@@ -84,6 +85,7 @@ LispObj *Lisp_XawTextSetInsertionPoint(LispMac*, LispObj*, char*);
 
 static LispBuiltin lispbuiltins[] = {
     {"XAW-COERCE-TO-LIST-RETURN-STRUCT",Lisp_XawCoerceToListReturnStruct,1,1,1,},
+    {"XAW-FORM-DO-LAYOUT",		Lisp_XawFormDoLayout,		 1,2,2,},
     {"XAW-LIST-HIGHLIGHT",		Lisp_XawListHighlight,		 1,2,2,},
     {"XAW-LIST-UNHIGHLIGHT",		Lisp_XawListUnhighlight,	 1,1,1,},
     {"XAW-TEXT-GET-SOURCE",		Lisp_XawTextGetSource,		 1,1,1,},
@@ -245,6 +247,21 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispObj *list, char *fname)
     FRM = frm;
 
     return (res);
+}
+
+LispObj *
+Lisp_XawFormDoLayout(LispMac *mac, LispObj *list, char *fname)
+{
+    int force;
+
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    force = CAR(CDR(list)) != NIL;
+    XawFormDoLayout((Widget)(CAR(list)->data.opaque.data), force);
+
+    return (NIL);
 }
 
 LispObj *
