@@ -16,7 +16,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.5 1999/06/13 13:47:50 dawes Exp $ */
+/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.6 1999/07/10 12:17:44 dawes Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -178,8 +178,8 @@ void CIDFillVals(FontScalablePtr vals)
     }
 }
  
-int CheckFSFormat(format, fmask, bit, byte, scan, glyph, image)
-       int format,fmask,*bit,*byte,*scan,*glyph,*image;
+int CheckFSFormat(int format, int fmask, int *bit, int *byte,
+		  int *scan, int *glyph, int *image)
 {
        *bit = *byte = 1;
        *glyph = *scan = *image = 1;
@@ -187,10 +187,9 @@ int CheckFSFormat(format, fmask, bit, byte, scan, glyph, image)
  
 }
  
-char *MakeAtom(p)
-       char *p;
+Atom MakeAtom(char *p, unsigned len, int makeit)
 {
-       return p;
+       return *p;
 }
 
 FontResolutionPtr GetClientResolutions(int *resP)
@@ -209,14 +208,16 @@ void Xfree(pointer p)
        free((char *)p);
 }
  
-void FontDefaultFormat() { ; }
+void FontDefaultFormat(int *bit, int *byte, int *glyph, int *scan) { ; }
  
-Bool FontFileRegisterRenderer() { return TRUE; }
+Bool FontFileRegisterRenderer(FontRendererPtr renderer) { return TRUE; }
  
 void GenericGetBitmaps() { ; }
 void GenericGetExtents() { ; }
  
-Bool FontParseXLFDName() { return TRUE; }
+Bool FontParseXLFDName(char *fname, FontScalablePtr vals, int subst)
+{ return TRUE; }
+
 void FontComputeInfoAccelerators() { ; }
 
 void FatalError() { ; }
