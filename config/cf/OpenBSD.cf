@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.25 2000/01/25 18:37:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.26 2000/01/31 19:33:20 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -334,6 +334,19 @@ install:: fonts.alias							@@\
 #else
 #define HasMTRRSupport		NO
 #endif
+#endif
+
+/* Support for USB Mices */
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
+#define UsbMouseSupport		YES
+#endif
+
+/*
+ * A hack to work around an optimisation problem with the compiler on
+ * OpenBSD 2.6-current in late 1999/early 2000.
+ */
+#if OSMajorVersion == 2 && OSMinorVersion == 6 
+#define FreeBSDGccOptBug
 #endif
 
 # include <xfree86.cf>

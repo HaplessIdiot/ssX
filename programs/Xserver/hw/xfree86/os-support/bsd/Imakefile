@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.35 1999/12/14 02:40:15 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.36 2000/01/19 22:37:34 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -46,6 +46,16 @@ MOUSEOBJ = bsd_mouse.o
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
+#if UsbMouseSupport
+USBMOUSEDEFINES = -DUSBMOUSE_SUPPORT
+#if !HasLibUsb
+LIBUSBINCLUDES = -Ilibusb
+#define IHaveSubdirs
+SUBDIRS = libusb
+#endif
+#endif
+
+
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
        stdResource.c stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c
@@ -55,7 +65,8 @@ OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        stdResource.o stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES)
+           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES) \
+	    $(LIBUSBINCLUDES)
 
 CONSDEFINES = XFree86ConsoleDefines
 RESDEFINES = -DUSESTDRES
@@ -67,7 +78,7 @@ APINCLUDES = $(APDIR)/include
 #endif
 
 DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES) $(RESDEFINES) \
-	  $(MTRRDEFINES)
+	  $(MTRRDEFINES) $(USBMOUSEDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -93,6 +104,12 @@ LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 
 DependTarget()
+
+#if UsbMouseSupport && !HasLibUsb
+MakeSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))
+#endif
 
 #if 0
 InstallDriverSDKDynamicModule(bsd_jstk.o,$(DRIVERSDKMODULEDIR))

@@ -2,17 +2,14 @@
 <!ENTITY % defs SYSTEM "defs.ent"> %defs;
 ]>
 
-<!--
-Time-stamp: <99/05/26 23:10:24 jec>
--->
 <article>
 
 <title>Fonts in XFree86
 <author>Juliusz Chroboczek, <tt/jec@dcs.ed.ac.uk/
-<date>26 May 1999</date>
+<date>10 February 2000</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.3 1999/07/19 13:36:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.4 1999/08/28 10:43:33 dawes Exp $
 </ident>
 
 <toc>
@@ -74,7 +71,7 @@ to be <it/bitmap fonts/.  They may also consist of a mathematical
 description of glyph shapes, in which case they are said to be
 <it/scalable fonts/.  Common formats for scalable font files are
 <it/Type&nbsp;1/ (sometimes incorrectly called <it/ATM fonts/ or
-<it/PostScript fonts/), and <it/TrueType/.
+<it/PostScript fonts/), <it/Speedo/ and <it/TrueType/.
 
 The glyph data in a digital font needs to be indexed somehow.  How
 this is done depends on the font file format.  In the case of
@@ -99,8 +96,8 @@ specify the font instance's encoding.
 <p>Unicode (<url url="http://www.unicode.org">) is a coded character
 set with the goal of uniquely identifying all characters for all
 scripts, current and historical.  While Unicode was explicitly not
-designed as a glyph encoding scheme, it can often be used as such for
-a large number of scripts.
+designed as a glyph encoding scheme, it is often possible to use it as
+such.
 
 Unicode is an <it/open/ character set, in that codepoint assignments
 may be added to Unicode at any time (once specified, though, an
@@ -120,9 +117,8 @@ fields of their XLFD set to `<tt/iso10646-1/'.
 
 <p>XFree86 includes two new Unicode-encoded fonts with a large
 collection of non-ideographic glyphs.  While it is possible to use
-these fonts as main fonts, applications are expected to use them as
-fallbacks when a given glyph is not available in the current font.
-
+these fonts as main fonts, applications may also use them as fallbacks
+when a given glyph is not available in the current font.
 
 <sect1>The Unicode `fixed' font
 
@@ -144,16 +140,16 @@ font is compatible with the standard 8-bit <tt/fixed/ font and
 therefore also includes the DEC line-drawing glyphs in the range 0x00
 to 0x1F, which are not part of Unicode or ISO&nbsp;10646-1.
 
-XFree86 changes the standard aliases `<tt/fixed/' and `<tt/6x13/' to
-stand for this new Unicode-encoded font.  The old ISO&nbsp;8859-1
-encoded `<tt/fixed/' font is still available under its full XLFD name
+An ISO&nbsp;8859-1 version of this font is still available in file
+<tscreen>
+/usr/X11/lib/X11/fonts/misc/6x13-ISO8859-1.pcf.gz
+</tscreen>
+with XLFD
 <tscreen>
 -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1
 </tscreen>
-in the file
-<tscreen>
-/usr/X11/lib/X11/fonts/misc/6x13-L1.pcf.gz
-</tscreen>
+The standard aliases `<tt/fixed/' and `<tt/6x13/' still point at the
+ISO&nbsp;8859-1 versions of the font.
 
 <sect1>The ClearlyU Unicode font
 
@@ -172,9 +168,9 @@ and resides in the font file
 Additional ClearlyU fonts include
 <tscreen>
 -mutt-ClearlyU&nbsp;Alternate&nbsp;Glyphs-medium-r-normal--17-120-100-100-p-91-iso10646-1
--mutt-ClearlyU&nbsp;Arabic&nbsp;Extra-medium-r-normal--17-120-100-100-p-103-fontspecific-0
--mutt-ClearlyU&nbsp;Ligature-medium-r-normal--17-120-100-100-p-141-fontspecific-0
--mutt-ClearlyU&nbsp;PUA-medium-r-normal--17-120-100-100-p-111-iso10646-1
+<p>-mutt-ClearlyU&nbsp;Arabic&nbsp;Extra-medium-r-normal--17-120-100-100-p-103-fontspecific-0
+<p>-mutt-ClearlyU&nbsp;Ligature-medium-r-normal--17-120-100-100-p-141-fontspecific-0
+<p>-mutt-ClearlyU&nbsp;PUA-medium-r-normal--17-120-100-100-p-111-iso10646-1
 </tscreen>
 
 
@@ -186,7 +182,7 @@ automatically re-encode fonts to the encoding specified in the XLFD in
 contain entries for the Type&nbsp;1 Courier font such as
 <tscreen>
 cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-1
-cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-2
+<p>cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-2
 </tscreen>
 which will lead to the font being recoded to ISO&nbsp;8859-1 and 
 ISO&nbsp;8859-2 respectively.
@@ -194,7 +190,7 @@ ISO&nbsp;8859-2 respectively.
 <sect1>The `fontenc' layer<label id="sec-fontenc">
 
 <p>Three of the scalable backends (Type&nbsp;1, Speedo, and the
-`xfsft' TrueType backend) use a common `fontenc' layer for font
+`freetype' TrueType backend) use a common `fontenc' layer for font
 re-encoding.  This allows those backends to share their encoding data,
 and allows simple configuration of new locales independently of font
 type.
@@ -285,7 +281,7 @@ ISO&nbsp;8859-1.
 
 The Speedo backend limits all encodings to 8-bit codes.
 
-<sect2>The `xfsft' TrueType backend
+<sect2>The `freetype' TrueType backend
 
 <p>The TrueType backend scans the mappings in order.  Mappings with
 a target of PostScript are ignored; mappings with a TrueType or
@@ -311,9 +307,9 @@ example,
 
 <tscreen>
 3
-mulearabic-0 encodings/mulearabic-0.enc
-mulearabic-1 encodings/mulearabic-1.enc
-mulearabic-2 encodings/mulearabic-2.enc
+<p>mulearabic-0 encodings/mulearabic-0.enc
+<p>mulearabic-1 encodings/mulearabic-1.enc
+<p>mulearabic-2 encodings/mulearabic-2.enc
 </tscreen>
 
 Note that the name of an encoding must be specified in the encoding
@@ -347,8 +343,8 @@ The encoding file starts with the definition of the name of the
 encoding, and eventually its alternate names (aliases):
 <tscreen>
 STARTENCODING mulearabic-0
-ALIAS arabic-0
-ALIAS something-else
+<p>ALIAS arabic-0
+<p>ALIAS something-else
 </tscreen>
 The names of the encoding should be suitable for use in an XLFD font
 name, and therefore contain exactly one dash `<tt/-/'.
@@ -394,8 +390,8 @@ defined to the target of the mapping.  In mappings with a Unicode or
 TrueType mapping, codes are mapped to codes:
 <tscreen>
 0x21 0x0660
-0x22 0x0661
-...
+<p>0x22 0x0661
+<p>...
 </tscreen>
 As an abbreviation, it is possible to map a contiguous range of codes
 in a single line.  A line consisting of three integers
@@ -405,9 +401,9 @@ in a single line.  A line consisting of three integers
 is an abbreviation for the range of lines
 <tscreen>
 <it/start/     <it/target/
-<it/start/+1   <it/target/+1
-...
-<it/end/       <it/target/+<it/end/-<it/start/
+<p><it/start/+1   <it/target/+1
+<p>...
+<p><it/end/       <it/target/+<it/end/-<it/start/
 </tscreen>
 For example, the line
 <tscreen>
@@ -416,9 +412,9 @@ For example, the line
 is an abbreviation for
 <tscreen>
 0x2121 0x8140
-0x2122 0x8141
-...
-0x215F 0x817E
+<p>0x2122 0x8141
+<p>...
+<p>0x215F 0x817E
 </tscreen>
 Codes not listed are assumed to map through the identity (<it/i.e./ to
 the same numerical value).  In order to override this default mapping,
@@ -437,8 +433,8 @@ PostScript mappings are different.  Every line in a PostScript mapping
 maps a code to a glyph name
 <tscreen>
 0x41 A
-0x42 B
-...
+<p>0x42 B
+<p>...
 </tscreen>
 and codes not explicitly listed are undefined.
 
@@ -539,8 +535,8 @@ is similar to the format of the `<tt/fonts.dir/' file, except that it maps
 XLFD names to XLFD names. A `<tt/fonts.alias/' file might look as follows:
 <tscreen>
 1
-"-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-iso8859-2" \
-  "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
+<p>"-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-iso8859-2" \
+<p>  "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
 </tscreen>
 (both XLFD names on a single line).  The syntax of the
 `<tt/fonts.alias/' file is described in the mkfontdir(1) manual page.
@@ -550,11 +546,25 @@ XLFD names to XLFD names. A `<tt/fonts.alias/' file might look as follows:
 
 <sect1>New TrueType backends
 
-<p>This version of XFree86 comes with two TrueType backends, known
-as `xfsft' and `X-TrueType' (`X-TT' for short).  Those two backends
-are incompatible, in that only one can be used at any one time.  Users
-are invited to chose whichever backend they find more useful and stick
-to it.
+<p>This version of XFree86 comes with two TrueType backends, known as
+`freetype' (formerly `xfsft') and `X-TrueType' (`X-TT' for short).
+Those two backends are incompatible, in that only one can be used at
+any one time.  Users are invited to chose whichever backend they find
+more useful and stick to it.
+
+The `freetype' backend resides in the module `<tt/freetype/'.  Before
+using it, please check that the `<tt/Module/' section of your
+`<tt/XF86Config/' file contains a line that reads
+<tscreen>
+    Load    "freetype"
+</tscreen>
+
+The `X-TrueType' backend resides in module `<tt/xtt/'.  In order to
+use it, replace the line in your `<tt/XF86Config/' file that loads the
+`<tt/freetype/' module with a line reading
+<tscreen>
+    Load    "xtt"
+</tscreen>
 
 Both TrueType backends delay glyph rasterisation to the time at which
 a glyph is first used.  For this reason, they only provide an
@@ -574,19 +584,19 @@ encouraged to make use of this optimisation when useful, but be warned
 that not all monospaced fonts are character-cell fonts.
 
 
-<sect2>The `xfsft' TrueType backend
+<sect2>The `freetype' TrueType backend
 
-<p>The `xfsft' backend is a backend based on the FreeType library (see
-www.freetype.org) with support for the `fontenc' style of
-internationalisation (see <ref id="sec-fontenc" name="The fontenc
-layer">).  This backend supports TrueType Font files (<tt/*.ttf/) and
-TrueType Collections (<tt/*.ttc/).
+<p>The `freetype' backend (formerly `xfsft') is a backend based on the
+FreeType library (see www.freetype.org) with support for the `fontenc'
+style of internationalisation (see <ref id="sec-fontenc" name="The
+fontenc layer">).  This backend supports TrueType Font files
+(<tt/*.ttf/) and TrueType Collections (<tt/*.ttc/).
 
 In order to access the faces in a TrueType Collection file, the face
 number must be specified in the fonts.dir file before the filename
 within colons.  For example,
 <tscreen>
-:2:mincho.ttc -misc-mincho-medium-r-normal--0-0-0-0-c-0-jisx0208.1990-0
+<p>:2:mincho.ttc -misc-mincho-medium-r-normal--0-0-0-0-c-0-jisx0208.1990-0
 </tscreen>
 refers to face 2 in the `<tt/mincho.ttc/' TrueType Collection file.
 
@@ -747,3 +757,4 @@ support for horizontal writing.
 
 
 </article>
+

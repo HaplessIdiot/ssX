@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.2 2000/02/09 13:30:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.3 2000/02/10 22:33:24 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -38,12 +38,16 @@
 #include <sys/types.h>
 #ifdef HAS_SHM
 #ifdef CSRG_BASED
-#include <machine/param.h>
+#include <sys/param.h>
 #endif
 #ifdef linux
 #include <asm/page.h>
 #endif
 #ifdef SVR4
+#include <sys/sysmacros.h>
+#endif
+#ifdef ISC
+#include <sys/param.h>
 #include <sys/sysmacros.h>
 #endif
 #include <sys/ipc.h>

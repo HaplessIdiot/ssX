@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.11 1999/12/06 02:50:22 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.12 2000/02/10 22:33:44 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -15,8 +15,29 @@
 #ifdef WSCONS_SUPPORT
 #include <dev/wscons/wsconsio.h>
 #endif
+#ifdef USBMOUSE_SUPPORT
+#include "usb.h"
 
+#define HUP_GENERIC_DESKTOP     0x0001
+#define HUP_BUTTON              0x0009
+
+#define HUG_X                   0x0030
+#define HUG_Y                   0x0031
+#define HUG_Z                   0x0032
+#define HUG_WHEEL               0x0038
+
+#define HID_USAGE2(p,u) (((p) << 16) | u)
+
+/* The UMS mices have middle button as number 3 */
+#define UMS_BUT(i) ((i) == 0 ? 2 : (i) == 1 ? 0 : (i) == 2 ? 1 : (i))
+#endif /* USBMOUSE_SUPPORT */
+
+#ifdef WSCONS_SUPPORT
 static void wsconsSigioReadInput (int fd, void *closure);
+#endif
+#ifdef USBMOUSE_SUPPORT
+static void usbSigioReadInput (int fd, void *closure);
+#endif
 
 static int
 SupportedInterfaces(void)
@@ -34,6 +55,9 @@ SupportedInterfaces(void)
 static const char *internalNames[] = {
 #if defined(WSCONS_SUPPORT)
 	"WSMouse",
+#endif
+#if defined(USBMOUSE_SUPPORT)
+	"usb",
 #endif
 	NULL
 };
@@ -327,6 +351,238 @@ wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 }
 #endif
 
+#if defined(USBMOUSE_SUPPORT)
+
+typedef struct _UsbMseRec {
+    int packetSize;
+    int iid;
+    hid_item_t loc_x;		/* x locator item */
+    hid_item_t loc_y;		/* y locator item */
+    hid_item_t loc_z;		/* z (wheel) locator item */
+    hid_item_t loc_btn[MSE_MAXBUTTONS]; /* buttons locator items */
+   unsigned char *buffer;
+} UsbMseRec, *UsbMsePtr;
+
+static int
+usbMouseProc(DeviceIntPtr pPointer, int what)
+{
+    InputInfoPtr pInfo;
+    MouseDevPtr pMse;
+    UsbMsePtr pUsbMse;
+    unsigned char map[MSE_MAXBUTTONS + 1];
+    int nbuttons;
+
+    pInfo = pPointer->public.devicePrivate;
+    pMse = pInfo->private;
+    pMse->device = pPointer;
+    pUsbMse = pMse->mousePriv;
+
+    switch (what) {
+    case DEVICE_INIT: 
+	pPointer->public.on = FALSE;
+
+	for (nbuttons = 0; nbuttons < MSE_MAXBUTTONS; ++nbuttons)
+	    map[nbuttons + 1] = nbuttons + 1;
+
+	InitPointerDeviceStruct((DevicePtr)pPointer, 
+				map, 
+				min(pMse->buttons, MSE_MAXBUTTONS),
+				miPointerGetMotionEvents, 
+				pMse->Ctrl,
+				miPointerGetMotionBufferSize());
+
+	/* X valuator */
+	xf86InitValuatorAxisStruct(pPointer, 0, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 0);
+	/* Y valuator */
+	xf86InitValuatorAxisStruct(pPointer, 1, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 1);
+	xf86MotionHistoryAllocate(pInfo);
+	break;
+
+    case DEVICE_ON:
+	pInfo->fd = xf86OpenSerial(pInfo->options);
+	if (pInfo->fd == -1)
+	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
+	else {
+	    pMse->buffer = XisbNew(pInfo->fd, pUsbMse->packetSize);
+	    if (!pMse->buffer) {
+		xfree(pMse);
+		xf86CloseSerial(pInfo->fd);
+		pInfo->fd = -1;
+	    } else {
+		xf86FlushInput(pInfo->fd);
+		if (!xf86InstallSIGIOHandler (pInfo->fd, usbSigioReadInput, 
+					      pInfo))
+		    AddEnabledDevice(pInfo->fd);
+	    }
+	}
+	pMse->lastButtons = 0;
+	pMse->emulateState = 0;
+	pPointer->public.on = TRUE;
+	break;
+
+    case DEVICE_OFF:
+    case DEVICE_CLOSE:
+	if (pInfo->fd != -1) {
+	    RemoveEnabledDevice(pInfo->fd);
+	    if (pUsbMse->packetSize > 8 && pUsbMse->buffer) {
+		xfree(pUsbMse->buffer);
+	    }
+	    if (pMse->buffer) {
+		XisbFree(pMse->buffer);
+		pMse->buffer = NULL;
+	    }
+	    xf86CloseSerial(pInfo->fd);
+	    pInfo->fd = -1;
+	}
+	pPointer->public.on = FALSE;
+	usleep(300000);
+	break;
+    }
+    return Success;
+}
+
+static void
+usbReadInput(InputInfoPtr pInfo)
+{
+    MouseDevPtr pMse;
+    UsbMsePtr pUsbMse;
+    int buttons = pMse->lastButtons;
+    int dx = 0, dy = 0, dz = 0;
+    int n, c; 
+    unsigned char *pBuf;
+
+    pMse = pInfo->private;
+    pUsbMse = pMse->mousePriv;
+
+    XisbBlockDuration(pMse->buffer, -1);
+    pBuf = pUsbMse->buffer;
+    n = 0;
+    while ((c = XisbRead(pMse->buffer)) >= 0 && n < pUsbMse->packetSize) {
+	pBuf[n++] = (unsigned char)c;
+    }
+    if (n == 0)
+	return;
+    if (n != pUsbMse->packetSize) {
+	xf86Msg(X_WARNING, "%s: incomplete packet, size %d\n", pInfo->name,
+		n);
+    }
+    /* discard packets with an id that don't match the mouse */
+    /* XXX this is probably not the right thing */
+    if (pUsbMse->iid != 0) {
+	if (*pBuf++ != pUsbMse->iid) 
+	    return;
+    }
+    dx = hid_get_data(pBuf, &pUsbMse->loc_x);
+    dy = hid_get_data(pBuf, &pUsbMse->loc_y);
+    dz = hid_get_data(pBuf, &pUsbMse->loc_z);
+
+    buttons = 0;
+    for (n = 0; n < pMse->buttons; n++) {
+	if (hid_get_data(pBuf, &pUsbMse->loc_btn[n])) 
+	    buttons |= (1 << UMS_BUT(n));
+    }
+    pMse->PostEvent(pInfo, buttons, dx, dy, dz);
+    return;
+}
+
+static void
+usbSigioReadInput (int fd, void *closure)
+{
+    usbReadInput ((InputInfoPtr) closure);
+}
+
+/* This function is called when the protocol is "usb". */
+static Bool
+usbPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
+{
+    MouseDevPtr pMse = pInfo->private;
+    UsbMsePtr pUsbMse;
+    report_desc_t reportDesc;
+    int i;
+
+    pUsbMse = xalloc(sizeof(UsbMseRec));
+    if (pUsbMse == NULL) {
+	xf86Msg(X_ERROR, "%s: cannot allocate UsbMouseRec\n", pInfo->name);
+	xfree(pMse);
+	return FALSE;
+    }
+
+    pMse->protocol = protocol;
+    xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
+
+    /* Collect the options, and process the common options. */
+    xf86CollectInputOptions(pInfo, NULL, NULL);
+    xf86ProcessCommonOptions(pInfo, pInfo->options);
+
+    /* Check if the device can be opened. */
+    pInfo->fd = xf86OpenSerial(pInfo->options);
+    if (pInfo->fd == -1) {
+	if (xf86GetAllowMouseOpenFail())
+	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
+	else {
+	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
+	    xfree(pUsbMse);
+	    xfree(pMse);
+	    return FALSE;
+	}
+    }
+    /* Get USB informations */
+    reportDesc = hid_get_report_desc(pInfo->fd);
+    /* Get packet size & iid */
+    pUsbMse->packetSize = hid_report_size(reportDesc, hid_input,
+					      &pUsbMse->iid);
+    /* Allocate buffer */
+    if (pUsbMse->packetSize <= 8) {
+	pUsbMse->buffer = pMse->protoBuf;
+    } else {
+	pUsbMse->buffer = xalloc(pUsbMse->packetSize);
+    }
+    if (pUsbMse->buffer == NULL) {
+	xf86Msg(X_ERROR, "%s: cannot allocate buffer\n", pInfo->name);
+	xfree(pUsbMse);
+	xfree(pMse);
+	xf86CloseSerial(pInfo->fd);
+	return FALSE;
+    }
+    if (hid_locate(reportDesc, HID_USAGE2(HUP_GENERIC_DESKTOP, HUG_X),
+		   hid_input, &pUsbMse->loc_x) < 0) {
+	xf86Msg(X_WARNING, "%s: no x locator\n");
+    }
+    if (hid_locate(reportDesc, HID_USAGE2(HUP_GENERIC_DESKTOP, HUG_Y),
+		   hid_input, &pUsbMse->loc_y) < 0) {
+	xf86Msg(X_WARNING, "%s: no y locator\n");
+    }
+    if (hid_locate(reportDesc, HID_USAGE2(HUP_GENERIC_DESKTOP, HUG_WHEEL),
+		   hid_input, &pUsbMse->loc_z) < 0) {
+    }
+    /* Probe for number of buttons */
+    for (i = 1; i <= MSE_MAXBUTTONS; i++) {
+	if (!hid_locate(reportDesc, HID_USAGE2(HUP_BUTTON, i),
+			hid_input, &pUsbMse->loc_btn[i-1])) 
+	    break;
+    }
+    pMse->buttons = i-1;
+
+    xf86CloseSerial(pInfo->fd);
+    pInfo->fd = -1;
+
+    /* Private structure */
+    pMse->mousePriv = pUsbMse;
+
+    /* Process common mouse options (like Emulate3Buttons, etc). */
+    pMse->CommonOptions(pInfo);
+
+    /* Setup the local procs. */
+    pInfo->device_control = usbMouseProc;
+    pInfo->read_input = usbReadInput;
+
+    pInfo->flags |= XI86_CONFIGURED;
+    return TRUE;
+}
+#endif /* USBMOUSE */
+
 OSMouseInfoPtr
 xf86OSMouseInit(int flags)
 {
@@ -345,8 +601,12 @@ xf86OSMouseInit(int flags)
     p->SetBMRes = SetSysMouseRes;
     p->SetMiscRes = SetSysMouseRes;
 #endif
+    /* XXX This assumes that WSCONS and USB are mutually exclusive. */
 #if defined(WSCONS_SUPPORT)
     p->PreInit = wsconsPreInit;
+#endif
+#if defined(USBMOUSE_SUPPORT)
+    p->PreInit = usbPreInit;
 #endif
     return p;
 }
