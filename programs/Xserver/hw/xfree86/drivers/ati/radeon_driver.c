@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.118 2004/02/26 04:25:29 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.119tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5184,7 +5184,6 @@ static void RADEONRestorePLL2Registers(ScrnInfoPtr pScrn,
 	    ~(RADEON_PIX2CLK_SRC_SEL_MASK));
 }
 
-#if 0
 /* Write palette data */
 static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 {
@@ -5208,7 +5207,6 @@ static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	OUTPAL_NEXT_CARD32(restore->palette[i]);
     }
 }
-#endif
 
 /* Write out state to define a new video mode */
 static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
@@ -5277,9 +5275,7 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	}
     }
 
-#if 0
     RADEONRestorePalette(pScrn, &info->SavedReg);
-#endif
 }
 
 /* Read common registers */
@@ -5469,7 +5465,7 @@ static void RADEONSaveMode(ScrnInfoPtr pScrn, RADEONSavePtr save)
 	    RADEONSaveCrtc2Registers(pScrn, save);
 	    RADEONSavePLL2Registers(pScrn, save);
 	}
-     /* RADEONSavePalette(pScrn, save); */
+	RADEONSavePalette(pScrn, save);
     }
 
     RADEONTRACE(("RADEONSaveMode returns %p\n", save));
