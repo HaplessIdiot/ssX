@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.204 2003/05/25 01:27:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.205tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1617,6 +1617,8 @@ SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
 #else
 ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
 #endif
+      /* Common alternate spellings */
+      DEPXLIBONLY = $(DEPXONLYLIB)
          XLIBONLY = $(XONLYLIB)
 
 #if BuildThreadStubLibrary

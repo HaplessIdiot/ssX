@@ -1,4 +1,7 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 193. Clean up confusion in Imakefiles between XONLYLIB and XLIBONLY (and
+      between DEPXONLYLIB and the previously non-existent DEPXLIBONLY)
+      (Marc La France).
  192. Do not unnecessarily link libXmu, libXt and/or libXext into executables
       (Marc La France).
  191. Fix makedepend for IRIX 6.5 (Marc La France).
@@ -17023,7 +17026,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2713 2003/05/27 16:42:55 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2714 2003/05/27 17:58:19 tsi Exp $
 
 
 
