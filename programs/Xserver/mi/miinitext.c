@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.62 2001/11/02 23:29:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.63 2001/12/14 20:00:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -103,6 +103,9 @@ typedef void (*InitExtension)(INITARGS);
 #endif
 #ifdef XF86BIGFONT
 #include "xf86bigfstr.h"
+#endif
+#ifdef RES
+#include "XResproto.h"
 #endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
@@ -221,6 +224,9 @@ extern void RenderExtensionInit(INITARGS);
 #endif
 #ifdef RANDR
 extern void RRExtensionInit(INITARGS);
+#endif
+#ifdef RES
+extern void ResExtensionInit(INITARGS);
 #endif
 
 #ifndef XFree86LOADER
@@ -354,6 +360,9 @@ InitExtensions(argc, argv)
 #ifdef RANDR
     RRExtensionInit();
 #endif
+#ifdef RES
+    ResExtensionInit();
+#endif
 }
 
 void
@@ -421,6 +430,7 @@ ExtensionModule extension[] =
     { NULL, "FontCache", NULL, NULL },
     { NULL, "RENDER", NULL, NULL },
     { NULL, "RANDR", NULL, NULL },
+    { NULL, "X-Resource", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 #endif
