@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.29 2000/03/01 16:01:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.30 2000/03/06 23:54:12 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -61,6 +61,7 @@
 #include "accel.h"
 #include "vramdac.h"
 #include "rendition_shadow.h"
+#include "vbe.h"
 
 /*
  * defines
@@ -98,8 +99,10 @@ static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo);
 
 static xf86MonPtr renditionDDC(ScrnInfoPtr pScreenInfo);
 static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo);
+static void renditionProbeDDC(ScrnInfoPtr pScrn, int index);
 
 static void renditionLoadPalette(ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
+
 
 /* 
  * global data
@@ -195,6 +198,12 @@ static const char *shadowfbSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 
 
 #ifdef XFree86LOADER
@@ -230,7 +239,7 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
         xf86AddDriver(&RENDITION, Module, 0);
         LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols, 
 			  xaaSymbols, ddcSymbols, int10Symbols,
-			  shadowfbSymbols, NULL);
+			  shadowfbSymbols, vbeSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -464,8 +473,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     renditionPtr      pRendition;
     char             *in_string;
     
-    if (flags & PROBE_DETECT) return FALSE;
-
 #ifdef DEBUG
     ErrorF("Rendition: renditionPreInit() called\n");
 #endif
@@ -474,18 +481,24 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (pScreenInfo->numEntities != 1)
 	return FALSE;
 
-    /* set the monitor */
-    pScreenInfo->monitor=pScreenInfo->confScreen->monitor;
-
     /* allocate driver private structure */
     if (!renditionGetRec(pScreenInfo))
         return FALSE;
+
     pRendition=RENDITIONPTR(pScreenInfo);
 
     /* Get the entity, and make sure it is PCI. */
     pRendition->pEnt = xf86GetEntityInfo(pScreenInfo->entityList[0]);
     if (pRendition->pEnt->location.type != BUS_PCI)
 	return FALSE;
+
+    if (flags & PROBE_DETECT) {
+        renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
+        return TRUE;
+    }
+
+    /* set the monitor */
+    pScreenInfo->monitor=pScreenInfo->confScreen->monitor;
 
     /* Initialize the card through int10 interface if needed */
     if (xf86LoadSubModule(pScreenInfo, "int10")){
@@ -624,20 +637,21 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* I do not get the IO base addres <ml> */
     /* XXX Is this still true?  If so, the wrong base is being checked */
-    ErrorF("Rendition %s @ %x/%x\n",renditionChipsets[
-      pRendition->board.chip==V1000_DEVICE ? 0:1].name,
-        pRendition->board.io_base,
-        pRendition->board.mem_base);
+    xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+	       "Rendition %s @ %x/%x\n",
+	       renditionChipsets[pRendition->board.chip==V1000_DEVICE ? 0:1].name,
+	       pRendition->board.io_base,
+	       pRendition->board.mem_base);
 
     /* First of all get a "clean" starting state */
-    v_resetboard(pScreenInfo);
+    verite_resetboard(pScreenInfo);
 
     /* determine video ram -- to do so, we assume a full size memory of 16M,
-     * then map it and use v_getmemorysize() to determine the real amount of
+     * then map it and use verite_getmemorysize() to determine the real amount of
      * memory */
     pScreenInfo->videoRam=pRendition->board.mem_size=16<<20;
     renditionMapMem(pScreenInfo);
-    videoRam=v_getmemorysize(pScreenInfo)>>10;
+    videoRam=verite_getmemorysize(pScreenInfo)>>10;
 
     /* Unmaping delayed until after micrcode loading */
       /****************************************/
@@ -647,9 +661,12 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
       RENDITIONAccelPreInit (pScreenInfo);
     }
-    else ErrorF("RENDITION: Skipping acceleration on users request\n");
+    else
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		 ("Skipping acceleration on users request\n"));
 #else
-    ErrorF("RENDITION: Skipping acceleration\n");
+    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+	       ("Skipping acceleration\n"));
 #endif
 
     xf86MarkOptionUsedByName(renditionOptions,"NoAccel");
@@ -666,7 +683,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
         return FALSE;
     }
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
 
     pRendition->board.shadowfb=TRUE;
 
@@ -733,10 +749,12 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
 #endif
 
+#if 1
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
       if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
-	ErrorF ("RENDITION: Loading of DDC library failed, skipping DDC-probe\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		   ("Loading of DDC library failed, skipping DDC-probe\n"));
       }
       else {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
@@ -744,8 +762,26 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       }
     }
     else {
-      ErrorF ("RENDITION: Skipping DDC probe on users request\n");
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		 ("Skipping DDC probe on users request\n"));
     }
+#else
+    /* Load DDC module if needed */
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
+      if (!xf86LoadSubModule(pScreenInfo, "vbe")) {
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+		   ("Loading of DDC library failed, skipping DDC-probe\n"));
+      }
+      else {
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
+        renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
+      }
+    }
+    else {
+      xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		 ("Skipping DDC probe on users request\n"));
+    }
+#endif
 
     /***********************************************/
     /* ensure vgahw private structure is allocated */
@@ -878,7 +914,7 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
     vgaHWRestore(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
     vgaHWProtect(pScreenInfo, FALSE);
 
-    v_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
+    verite_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
 #ifdef DEBUG
     ErrorF("Restore OK...!!!!\n");
     sleep(1);
@@ -890,7 +926,7 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
 static Bool
 renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 {
-    struct v_modeinfo_t *modeinfo=&RENDITIONPTR(pScreenInfo)->mode;
+    struct verite_modeinfo_t *modeinfo=&RENDITIONPTR(pScreenInfo)->mode;
     vgaHWPtr pvgaHW;
 
 #ifdef DEBUG
@@ -900,7 +936,7 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 #endif
 
     pvgaHW = VGAHWPTR(pScreenInfo);
-    /* construct a modeinfo for the v_setmode function */
+    /* construct a modeinfo for the verite_setmode function */
     modeinfo->clock=pMode->SynthClock;
     modeinfo->hdisplay=pMode->HDisplay;
     modeinfo->hsyncstart=pMode->HSyncStart;
@@ -971,7 +1007,7 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
     modeinfo->fifosize=128;
     modeinfo->flags=pMode->Flags;
 
-    v_setmode(pScreenInfo,&RENDITIONPTR(pScreenInfo)->mode);
+    verite_setmode(pScreenInfo,&RENDITIONPTR(pScreenInfo)->mode);
 
 #ifdef DEBUG
     ErrorF("Setmode OK...!!!!\n");
@@ -1033,7 +1069,7 @@ renditionLeaveGraphics(ScrnInfoPtr pScreenInfo)
     renditionRestore(pScreenInfo);
     vgaHWLock(VGAHWPTR(pScreenInfo));
 
-    v_textmode(&RENDITIONPTR(pScreenInfo)->board);
+    verite_textmode(&RENDITIONPTR(pScreenInfo)->board);
 #ifdef DEBUG
     ErrorF("Leavegraphics OK...!!!!\n");
     sleep(1);
@@ -1195,7 +1231,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		        visual->blueMask = pScreenInfo->mask.blue;
 	        }
             else {
-                ErrorF("Changing masks!!!\n");
+	      /* ErrorF("Changing masks!!!\n"); */
                 if (pScreenInfo->bitsPerPixel == 32) {
 		        visual->offsetRed=16;
 		        visual->offsetGreen=8;
@@ -1332,7 +1368,7 @@ renditionAdjustFrame(int scrnIndex, int x, int y, int flags)
 #ifdef DEBUG
     ErrorF ("MOVING SCREEN %d bytes!!\n",offset);
 #endif
-    v_setframebase(pScreenInfo, offset);
+    verite_setframebase(pScreenInfo, offset);
 }
 
 
@@ -1385,7 +1421,7 @@ renditionMapMem(ScrnInfoPtr pScreenInfo)
      RENDITIONPTR(pScreenInfo)->board.mem_base, pScreenInfo->videoRam);
 #endif
 
-  if (1 /* RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE */){
+  if (RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE){
     /* Some V1000 boards are known to have problems with Write-Combining */
     /* V2x00 also found to have similar problems with memcpy & WC ! */
     WriteCombine = 0;
@@ -1397,11 +1433,13 @@ renditionMapMem(ScrnInfoPtr pScreenInfo)
   /* Override on users request */
   WriteCombine=xf86ReturnOptValBool(renditionOptions, OPTION_FBWC, WriteCombine);
   if (WriteCombine){
-    ErrorF("RENDITION: Requesting write-combined memory access\n");
+    xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+	       ("Requesting Write-Combined memory access\n"));
     mapOption = VIDMEM_FRAMEBUFFER;
   }
   else {
-    ErrorF("RENDITION: Requesting MMIO-style memory access\n");
+    xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+	       ("Requesting MMIO-style memory access\n"));
     mapOption = VIDMEM_MMIO;
   }
 
@@ -1438,7 +1476,7 @@ renditionLoadPalette(ScrnInfoPtr pScreenInfo, int numColors,
 		     int *indices, LOCO *colors,
 		     VisualPtr pVisual)
 {
-  v_setpalette(pScreenInfo, numColors, indices, colors, pVisual);
+  verite_setpalette(pScreenInfo, numColors, indices, colors, pVisual);
 }
 
 
@@ -1450,10 +1488,10 @@ renditionDDC (ScrnInfoPtr pScreenInfo)
   vu32 temp;
 
   xf86MonPtr MonInfo = NULL;
-  temp = v_in32(iob+CRTCCTL); /* Remember original value */
+  temp = verite_in32(iob+CRTCCTL); /* Remember original value */
 
   /* Enable DDC1 */
-  v_out32(iob+CRTCCTL,(temp|
+  verite_out32(iob+CRTCCTL,(temp|
 		       CRTCCTL_ENABLEDDC|
 		       CRTCCTL_VSYNCENABLE|
 		       CRTCCTL_VIDEOENABLE));
@@ -1462,7 +1500,7 @@ renditionDDC (ScrnInfoPtr pScreenInfo)
 			    vgaHWddc1SetSpeed,
 			    renditionDDC1Read );
 
-  v_out32(iob+CRTCCTL,temp); /* return the original values */
+  verite_out32(iob+CRTCCTL,temp); /* return the original values */
 
   xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
 	     "DDC Monitor info: %p\n", MonInfo);
@@ -1483,10 +1521,24 @@ renditionDDC1Read (ScrnInfoPtr pScreenInfo)
   vu32 value = 0;
 
   /* wait for Vsync */
-  while (!(v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC));
-  while (v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC);
+  while (!(verite_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC));
+  while (verite_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC);
 
   /* Read the value */
-  value = v_in32(iob+CRTCCTL) & CRTCCTL_DDCDATA;
+  value = verite_in32(iob+CRTCCTL) & CRTCCTL_DDCDATA;
   return value;
+}
+
+extern xf86MonPtr ConfiguredMonitor;
+
+void
+renditionProbeDDC(ScrnInfoPtr pScreenInfo, int index)
+{
+  vbeInfoPtr pVbe;
+  if (xf86LoadSubModule(pScreenInfo, "vbe")) {
+    xf86LoaderReqSymLists(vbeSymbols, NULL);
+
+    pVbe = VBEInit(NULL,index);
+    ConfiguredMonitor = vbeDoEDID(pVbe);
+  }
 }

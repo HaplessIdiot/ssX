@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.7 1999/11/19 13:54:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.8 2000/02/25 21:03:07 dawes Exp $ */
 /*
  * file vvga.c
  *
@@ -46,7 +46,7 @@ static void updattr(vu8 index, vu8 value);
  */
 
 void
-v_resetvga(void)
+verite_resetvga(void)
 {
     static struct VIDEO_REGS {
         vu8 seq[8];     /* sequencer regs */
@@ -74,7 +74,7 @@ v_resetvga(void)
     int c;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_resetvga called\n");
+    ErrorF ("Rendition: Debug verite_resetvga called\n");
 #endif
 
     /* set attribute controller */
@@ -98,7 +98,7 @@ v_resetvga(void)
 
 
 void
-v_loadvgafont(void)
+verite_loadvgafont(void)
 {
     int c;
     vu8 b;
@@ -108,12 +108,12 @@ v_loadvgafont(void)
     int fbFlags;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_loadvgafont called\n");
+    ErrorF ("Rendition: Debug verite_loadvgafont called\n");
 #endif
 
     /* Assert synchroneous reset while setting the clock mode */
     setvgareg(0x3c4, 0, 1);               /* assert synchronous reset */
-    v_out8(0x3c2, 0x67);                  /* select clock */
+    verite_out8(0x3c2, 0x67);                  /* select clock */
     setvgareg(0x3c4, 0, 3);               /* de-assert synchronous reset */
 
     /* load 8x16 font into plane 2 */
@@ -140,81 +140,81 @@ v_loadvgafont(void)
     vbase = xf86MapVidMem(0, fbFlags, 0xa0000, 64*1024);
     vidmem=vbase;
     for (c=0; c<=255; c++) {
-        v_memtobus_cpy(vbase+(32*c), address, 16);
+        verite_memtobus_cpy(vbase+(32*c), address, 16);
 	    address+=16;
     }
 
     xf86UnMapVidMem(0, vbase, 64*1024);
 
     /* restore the standard vga register values */
-    v_resetvga();
+    verite_resetvga();
 }
 
 
 
 void
-v_textmode(struct v_board_t *board) 
+verite_textmode(struct verite_board_t *board) 
 {
     vu16 iob=board->io_base;
     int tmp;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_textmode called\n");
+    ErrorF ("Rendition: Debug verite_textmode called\n");
 #endif
 
     /* dac */
-    v_out8(iob+DACCOMMAND0, 0x80);     /* 6 bit op, enable extended */
-    v_out8(iob+DACCOMMAND1, 0x68);     /* disable palette bypass */
-    v_out8(iob+DACCOMMAND2, 0x00);     /* disable cursor & pixel packing */
+    verite_out8(iob+DACCOMMAND0, 0x80);     /* 6 bit op, enable extended */
+    verite_out8(iob+DACCOMMAND1, 0x68);     /* disable palette bypass */
+    verite_out8(iob+DACCOMMAND2, 0x00);     /* disable cursor & pixel packing */
     if (V1000_DEVICE == board->chip) {
-        v_out8(iob+DACRAMWRITEADR, 0x01);  /* select COMMAND3 register */
-        v_out8(iob+DACCOMMAND3, 0x00);     /* no clock doubling */
+        verite_out8(iob+DACRAMWRITEADR, 0x01);  /* select COMMAND3 register */
+        verite_out8(iob+DACCOMMAND3, 0x00);     /* no clock doubling */
     }
-    v_out8(iob+DACCOMMAND0, 0x00);     /* 6 bit op */
+    verite_out8(iob+DACCOMMAND0, 0x00);     /* 6 bit op */
 
     if (V1000_DEVICE == board->chip) {
-        v_out32(iob+DRAMCTL, 0x140000);
+        verite_out32(iob+DRAMCTL, 0x140000);
         set_PLL(iob, 0x40000);
         usleep(500);
      }
     else {
         /* memctl */
-	tmp = 0x1800|v_in32(iob+DRAMCTL);
-        v_out32(iob+DRAMCTL, tmp);    /* linear mode */
+	tmp = 0x1800|verite_in32(iob+DRAMCTL);
+        verite_out32(iob+DRAMCTL, tmp);    /* linear mode */
 
         /* pixel clock */
-        v_out32(iob+PCLKPLL, 0x300000);
+        verite_out32(iob+PCLKPLL, 0x300000);
         /* system and memory clock */
-        v_out32(iob+SCLKPLL, 0x2480C);     /* mclk=86 sclk=43 */
+        verite_out32(iob+SCLKPLL, 0x2480C);     /* mclk=86 sclk=43 */
 
         /* Need to wait 200uS for PLL to stabilize --
          * let's play it safe with 500 */
         usleep(500);
 
         /* wait until VBLANK */
-        while ((v_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) !=
+        while ((verite_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) !=
                CRTCSTATUS_VERT_ACTIVE);
-        while ((v_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) ==
+        while ((verite_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) ==
                CRTCSTATUS_VERT_ACTIVE);
     }
 
     /* vga mode */
-    v_out8(iob+MODEREG, VGA_MODE);
+    verite_out8(iob+MODEREG, VGA_MODE);
 
     /* crtc */
-    v_out32(iob+CRTCCTL, 0x44cc2);
-    v_out32(iob+CRTCHORZ, 0x2b0a4f);
-    v_out32(iob+CRTCVERT, 0x9301df);
-    v_out32(iob+CRTCOFFSET, 0x40);
+    verite_out32(iob+CRTCCTL, 0x44cc2);
+    verite_out32(iob+CRTCHORZ, 0x2b0a4f);
+    verite_out32(iob+CRTCVERT, 0x9301df);
+    verite_out32(iob+CRTCOFFSET, 0x40);
 
 #ifdef SAVEVGA
-    v_loadvgafont();
-    v_restoretextmode(board);
-    v_restorepalette();
+    verite_loadvgafont();
+    verite_restoretextmode(board);
+    verite_restorepalette();
 #else
 #ifdef XSERVER
-    v_loadvgafont();
-    v_restorepalette();
+    verite_loadvgafont();
+    verite_restorepalette();
 #endif
 #endif
 
@@ -223,13 +223,13 @@ v_textmode(struct v_board_t *board)
 
 
 void
-v_savetextmode(struct v_board_t *board) 
+verite_savetextmode(struct verite_board_t *board) 
 {
     vu8 *vbase;
     int fbFlags;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_savetextmode called\n");
+    ErrorF ("Rendition: Debug verite_savetextmode called\n");
 #endif
 
     /* save the cursor position */
@@ -245,20 +245,20 @@ v_savetextmode(struct v_board_t *board)
     fbFlags = VIDMEM_MMIO; /* VIDMEM_SPARSE is implied on Alpha */
 
     vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
-    v_bustomem_cpy(board->scr_contents, vbase, 0x8000);
+    verite_bustomem_cpy(board->scr_contents, vbase, 0x8000);
     xf86UnMapVidMem(0, vbase, 0x8000);
 }
 
 
 
 void
-v_restoretextmode(struct v_board_t *board) 
+verite_restoretextmode(struct verite_board_t *board) 
 {
     vu8 *vbase;
     int fbFlags;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_restoretextmode called\n");
+    ErrorF ("Rendition: Debug verite_restoretextmode called\n");
 #endif
 
     /* restore the cursor position */
@@ -273,7 +273,7 @@ v_restoretextmode(struct v_board_t *board)
     fbFlags = VIDMEM_MMIO; /* VIDMEM_SPARSE is implied on Alpha */
 
     vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
-    v_memtobus_cpy(vbase, board->scr_contents, 0x8000);
+    verite_memtobus_cpy(vbase, board->scr_contents, 0x8000);
     xf86UnMapVidMem(0, vbase, 0x8000);
     xfree(board->scr_contents);
 }
@@ -281,18 +281,18 @@ v_restoretextmode(struct v_board_t *board)
 
 
 void
-v_restorepalette(void)
+verite_restorepalette(void)
 {
     int c;
     vu8 *pal=vga_pal;
 
 #ifdef DEBUG
-    ErrorF ("Rendition: Debug v_restorepalette called\n");
+    ErrorF ("Rendition: Debug verite_restorepalette called\n");
 #endif
 
-    v_out8(0x3c8, 0);
+    verite_out8(0x3c8, 0);
     for (c=0; c<768; c++)
-        v_out8(0x3c9, *pal++);
+        verite_out8(0x3c9, *pal++);
 }
 
 
@@ -309,8 +309,8 @@ v_restorepalette(void)
 static vu8
 getvgareg(vu16 port, vu8 index)
 {
-    v_out8(port, index);
-    return v_in8(port+1);
+    verite_out8(port, index);
+    return verite_in8(port+1);
 }
 
 
@@ -323,8 +323,8 @@ getvgareg(vu16 port, vu8 index)
 static void
 setvgareg(vu16 port, vu8 index, vu8 value)
 {
-    v_out8(port, index);
-    v_out8(port+1, value);
+    verite_out8(port, index);
+    verite_out8(port+1, value);
 }
 
 
@@ -337,11 +337,11 @@ setvgareg(vu16 port, vu8 index, vu8 value)
 static void
 updattr(vu8 index, vu8 value)
 {
-    v_in8(0x3da);           /* points to index register for color adapter */
-    v_in8(0x3ba);           /* points to index register for mono */
-    v_out8(0x3c0, index);
-    v_out8(0x3c0, value);
-    v_out8(0x3c0, index|0x20);
+    verite_in8(0x3da);           /* points to index register for color adapter */
+    verite_in8(0x3ba);           /* points to index register for mono */
+    verite_out8(0x3c0, index);
+    verite_out8(0x3c0, value);
+    verite_out8(0x3c0, index|0x20);
 }
 
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WMProps.c,v 3.1 1996/04/15 11:58:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WMProps.c,v 3.2 1998/10/03 08:41:24 dawes Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -52,6 +52,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
+#include <X11/Xlocale.h>
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
@@ -83,6 +84,7 @@ void XSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
     XTextProperty textprop;
     char hostName[256];
     int len = _XGetHostname (hostName, sizeof hostName);
+    char *locale;
 
     /* set names of window and icon */
     if (windowName) XSetWMName (dpy, w, windowName);
@@ -133,5 +135,11 @@ void XSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
 	}
 	XSetClassHint (dpy, w, classHints);
     }
+    
+    locale = setlocale(LC_CTYPE, (char *)NULL);
+    if (locale)
+        XChangeProperty (dpy, w, XInternAtom(dpy, "WM_LOCALE_NAME", False),
+        XA_STRING, 8, PropModeReplace,
+        (unsigned char *)locale, strlen(locale));
 }
 

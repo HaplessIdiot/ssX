@@ -13,7 +13,7 @@
       <date>6 March 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.2 2000/03/07 13:37:49 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.3 2000/03/08 05:38:41 dawes Exp $
     </ident>
 
     <toc>
@@ -126,9 +126,10 @@
         <verb>
         insmod XXX/drivername.o
         </verb>
+	where <tt>XXX</tt> is the directory containing the module.
         <p>
           For example, on 3dfx hardware, the kernel module is called tdfx.o
-          so you you would type insmod XXX/tdfx.o
+          so you you would type <tt>insmod XXX/tdfx.o</tt>
 
         <p>
           Verify that the kernel module was installed by checking that
@@ -181,7 +182,7 @@
 
         <verb>
         Section "DRI"
-             Group "xf86dri"
+             Group 8000
              Mode 0660
         EndSection
         </verb>

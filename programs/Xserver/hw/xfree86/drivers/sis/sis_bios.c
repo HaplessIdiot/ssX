@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.3 2000/02/18 12:20:00 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -443,9 +443,6 @@ SetCRT2Group(ScrnInfoPtr pScrn, CARD16 ModeNo)
 	SetGroup2(BaseAddr,ROMAddr);     
 	SetGroup3(BaseAddr);
 	SetGroup4(BaseAddr,ROMAddr,ModeNo);
-#if 0
-	SetGroup5(BaseAddr,ROMAddr);
-#endif
 
 	LockCRT2(BaseAddr);
 	if (SetFlag & TV_SIMU_MODE)  {
@@ -572,22 +569,22 @@ DisableBridge(CARD16 BaseAddr)
 	unsigned short	part2_base = BaseAddr+0x10;
 
 	andSISIDXREG(part2_base, 0, 0xDF);
+	LongWait(BaseAddr+0x5A);
 	orSISIDXREG(BaseAddr+SROFFSET, 1, 0x20);	/* DisplayOff */
 	andSISIDXREG(BaseAddr+SROFFSET, 0x32, 0xDF);
 	andSISIDXREG(BaseAddr+SROFFSET, 0x1E, 0xDF);
 }
 
 void
-LongWait(CARD16 BaseAddr)
+LongWait(CARD16 p3da)
 {
 	unsigned short	i;
-	unsigned short	p3da = BaseAddr + 0x5A;
 
 	for (i=0; i<0xFFFF; i++) {
 		if (!(inSISREG(p3da) & 0x08))	break;
 	}
 	for (i=0; i<0xFFFF; i++) {
-		if (inSISREG(p3da) & 0x08)	break;
+		if (inSISREG(p3da) & 0x09 == 9)	break;
 	}
 }
 
@@ -665,40 +662,28 @@ EnableBridge(CARD16 BaseAddr)
 			temp1 = 0x20;
 		}
 	}
-#if 0
 	LongWait(BaseAddr+0x5A);
-	VBLongWait(BaseAddr);
-#endif
 	setSISIDXREG(BaseAddr+SROFFSET, 0x32, ~0x20, temp1);
 
-#if 0
 	LongWait(BaseAddr+0x5A);
-	VBLongWait(BaseAddr);
-#endif
 	orSISIDXREG(BaseAddr+SROFFSET, 0x1E, 0x20);
 
 	LongWait(BaseAddr+0x5A);
-	LongWait(BaseAddr+0x5A);
-	LongWait(BaseAddr+0x5A);
-#if 0
-	VBLongWait(BaseAddr);
-#endif
 	setSISIDXREG(part2_base, 0, ~0xE0, 0x20);
 
 	LongWait(BaseAddr+0x5A);
-	LongWait(BaseAddr+0x5A);
-	LongWait(BaseAddr+0x5A);
-#if 0
-	VBLongWait(BaseAddr);
-#endif
 	andSISIDXREG(BaseAddr+SROFFSET, 1, ~0x20);	/* DisplayOn */
 
 	LongWait(BaseAddr+0x5A);
+	andSISIDXREG(part2_base, 0, ~0xE0);
+	LongWait(BaseAddr+0x5A);
+	setSISIDXREG(part2_base, 0, ~0xE0, 0x20);
+
+/*
 	LongWait(BaseAddr+0x5A);
 	LongWait(BaseAddr+0x5A);
-#if 0
 	VBLongWait(BaseAddr);
-#endif
+*/
 }
 
 void
@@ -872,9 +857,11 @@ GetRAMDAC2Data(CARD8 *ROMAddr, CARD16 ModeNo)
 	unsigned short	tempax,		/* horizontal total */
 			tempbx;		/* vertical total */
 	unsigned char	cr0, cr6, cr7, sra, srb;
+	char *	t1;
 
 	RVBHCMAX=1;
 	RVBHCFACT=1;
+	t1 = ROMAddr+CRTC1Offset;
 	if (ModeNo <= 0x13)  {
 		/* unused */
 		ErrorF("Current we do not support STD mode for LCD/TV\n");
@@ -1446,22 +1433,4 @@ GetVCLK2Ptr(CARD16 BaseAddr, CARD8 *ROMAddr, CARD16 ModeNo)
 	}
 	VCLKTableBase = *(CARD16 *)(ROMAddr+0x208);
 	return (ROMAddr + VCLKTableBase + index*4);
-}
-
-void
-SetGroup5(CARD16 BaseAddr, CARD8 *ROMAddr)
-{
-	ErrorF("Enter Group5()\n");
-	if (ModeType != MODE_VGA)
-		return;
-	if (VBInfo & (SET_IN_SLAVE_MODE | DISABLE_LOAD_CRT2DAC))
-		return;
-
-	ErrorF("Group5 begin to write DAC\n");
-	EnableCRT2(BaseAddr);
-	ErrorF("Group5 end to write DAC\n");
-#if 0
-	LoadDAC();
-#endif
-	ErrorF("Leave SetGroup5()\n");
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.1 2000/02/12 20:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.2 2000/02/12 23:07:58 dawes Exp $ */
 
 /*
  *
@@ -20,6 +20,8 @@
 
 #include <xf86PciInfo.h>
 #include <xf86Pci.h>
+
+#include <compiler.h>
 
 #include <miline.h>
 
@@ -89,7 +91,6 @@ SiSInitializeAccelerator(ScrnInfoPtr pScrn)
 {
 	SISPtr	pSiS = SISPTR(pScrn);
 
-	SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
 	pSiS->DoColorExpand = FALSE;
 }
 
@@ -109,30 +110,29 @@ SiS300AccelInit(ScreenPtr pScreen)
 
 	infoPtr->Flags = LINEAR_FRAMEBUFFER |
 			OFFSCREEN_PIXMAPS |
-			PIXMAP_CACHE |
-			NO_PLANEMASK;
+			PIXMAP_CACHE;
 
 	/* sync */
 	infoPtr->Sync = SiSSync;
+
+	if ((pScrn->bitsPerPixel != 8) && (pScrn->bitsPerPixel != 16) &&
+	    (pScrn->bitsPerPixel != 32))	 return FALSE;
 
 	/* BitBlt */
 	infoPtr->SetupForScreenToScreenCopy = SiSSetupForScreenToScreenCopy;
 	infoPtr->SubsequentScreenToScreenCopy = SiSSubsequentScreenToScreenCopy;
 	infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK | NO_TRANSPARENCY;
 
-
 	/* solid fills */
 	infoPtr->SetupForSolidFill = SiSSetupForSolidFill;
 	infoPtr->SubsequentSolidFillRect = SiSSubsequentSolidFillRect;
 	infoPtr->SolidFillFlags = NO_PLANEMASK;
-
 
 	/* solid line */
 	infoPtr->SetupForSolidLine = SiSSetupForSolidLine;
 	infoPtr->SubsequentSolidTwoPointLine = SiSSubsequentSolidTwoPointLine;
 	infoPtr->SubsequentSolidHorVertLine = SiSSubsequentSolidHorzVertLine;
 	infoPtr->SolidFillFlags = NO_PLANEMASK;
-
 
 	/* dashed line */
 	infoPtr->SetupForDashedLine = SiSSetupForDashedLine;
@@ -141,8 +141,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 	infoPtr->DashedLineFlags = NO_PLANEMASK | 
 			LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
 
-
-	/* 8x8 mono pattern fill */
+	/* 8x8 mono pattern fill 
 	infoPtr->SetupForMono8x8PatternFill = SiSSetupForMonoPatternFill;
 	infoPtr->SubsequentMono8x8PatternFillRect =
 				SiSSubsequentMonoPatternFill;
@@ -151,7 +150,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 				HARDWARE_PATTERN_PROGRAMMED_BITS |
 				NO_TRANSPARENCY |
 				BIT_ORDER_IN_BYTE_MSBFIRST ;
-
+*/
 
 	/* 8x8 color pattern fill 
 	infoPtr->SetupForColor8x8PatternFill =
@@ -163,8 +162,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 				HARDWARE_PATTERN_PROGRAMMED_BITS ;
 */
 
-
-	/* CPU To Screen Color Expand */
+	/* CPU To Screen Color Expand
 	infoPtr->SetupForCPUToScreenColorExpandFill =
 				SiSSetupForCPUToScreenColorExpand;
 	infoPtr->SubsequentCPUToScreenColorExpandFill =
@@ -179,8 +177,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 				SYNC_AFTER_COLOR_EXPAND |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				HARDWARE_PATTERN_PROGRAMMED_BITS ;
-
-
+*/
 
 	/* Screen To Screen Color Expand 
 	infoPtr->SetupForScreenToScreenColorExpandFill =
@@ -198,6 +195,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 	reservedFbSize = 0;
 	if (pSiS->TurboQueue) reservedFbSize += 1024*512;
 	if (pSiS->HWCursor)  reservedFbSize += 4096;
+	reservedFbSize = 4096*1024;
 	UsableFbSize = pSiS->FbMapSize - reservedFbSize;
 	Avail.x1 = 0;
 	Avail.y1 = 0;
@@ -206,7 +204,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 				"Frame Buffer From (%d,%d) To (%d,%d)\n",
 				Avail.x1, Avail.y1, Avail.x2, Avail.y2);
-	xf86InitFBManager(pScreen, &Avail);
+/*	xf86InitFBManager(pScreen, &Avail); */
 
 
 	return(XAAInit(pScreen, infoPtr));
@@ -271,7 +269,7 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 				unsigned int planemask, int trans_color)
 {
 	SISPtr	pSiS = SISPTR(pScrn);
-	XAAInfoRecPtr	pXAA = XAAPTR(pScrn);
+/*	XAAInfoRecPtr	pXAA = XAAPTR(pScrn);*/
 
 	PDEBUG(ErrorF("Setup ScreenCopy(%d, %d, 0x%x, 0x%x, 0x%x)\n",
 			xdir, ydir, rop, planemask, trans_color));

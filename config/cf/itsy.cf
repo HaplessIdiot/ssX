@@ -2,8 +2,8 @@
  * This configuration file contains additional configuration needed
  * to cross compile X for the Compaq Itsy handheld computer.
  * To use this, add the following to host.def:
+   #define KDriveXServer YES
    #define XItsyServer YES
-   #define KDriveServer YES
  */
  
 #define CrossCompiling YES

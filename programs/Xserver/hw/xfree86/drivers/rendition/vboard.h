@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.4 1999/12/14 03:12:10 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.5 2000/02/25 21:03:04 dawes Exp $ */
 
 /*
  * vboard.h
@@ -21,11 +21,11 @@
  * function prototypes
  */
 
-int v_initboard(ScrnInfoPtr pScreenInfo);
-int v_resetboard(ScrnInfoPtr pScreenInfo);
-int v_getmemorysize(ScrnInfoPtr pScreenInfo);
+int verite_initboard(ScrnInfoPtr pScreenInfo);
+int verite_resetboard(ScrnInfoPtr pScreenInfo);
+int verite_getmemorysize(ScrnInfoPtr pScreenInfo);
 
-void v_check_csucode(ScrnInfoPtr pScreenInfo);
+void verite_check_csucode(ScrnInfoPtr pScreenInfo);
 
 
 #endif /* __VBOARD_H__ */
