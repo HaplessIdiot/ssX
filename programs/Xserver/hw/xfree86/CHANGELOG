@@ -1,3 +1,20 @@
+XFree86 3.1.2e (16 November 1995)
+ 72. Updates to the Cards database.
+ 71. S3 868 + AT&T 20C409 support (8/15/16/24bpp) without pixmux, and
+     S3-868 + AT&T 20C499 support (untested) (8/15/16/24bpp, no pixmux).
+     Pixmux support is enabled, but not functional (Dirk Hohndel).
+ 70. Update SuperProbe to recognise AT&T 20C409 and AT&T 20C499 RAMDACs
+     (Dirk Hohndel).
+ 69. Allow attributes to be appended to elements of a font path.  The
+     attributes are introduced by a ':' character, and multiple attributes
+     are separated by a ':'.  Currently the attribute "unscaled" is
+     supported for bitmap fonts, and this prevents them from being scaled.
+ 68. Trident driver cleanups, and fixes for interlacing (Alan Hourihane).
+ 67. LynxOS updates for using MetroLink Motif (Thomas Mueller).
+ 66. Preliminary AT&T 20C409 support for the S3 server (not functional
+     yet) (Dirk Hohndel).
+ 65. W32 updates to Xserver and SuperProbe (Dirk Hohndel and Koen Gadeyne).
+
 XFree86 3.1.2d (12 November 1995)
  64. Fix a typo in the iso8859-1 Compose file.
  63. Add a '-noscale' flag to the Xserver and xfs to allow scaling of

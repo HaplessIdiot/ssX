@@ -1,4 +1,5 @@
 /* $XConsortium: fntfilst.h,v 1.8 94/04/17 20:17:29 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -115,6 +116,7 @@ typedef struct _FontDirectory {
     unsigned long   alias_mtime;
     FontTableRec    scalable;
     FontTableRec    nonScalable;
+    char	    *attributes;
 } FontDirectoryRec;
 
 /* Capability bits: for definition of capabilities bitmap in the

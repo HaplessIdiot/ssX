@@ -1,5 +1,5 @@
 /* $XConsortium: fontdir.c,v 1.23 95/02/21 14:25:17 mor Exp $ */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.2 1995/07/12 16:06:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.3 1995/11/12 09:49:18 dawes Exp $ */
 
 /*
 
@@ -105,14 +105,34 @@ FontFileMakeDir(dirName, size)
     FontDirectoryPtr	dir;
     int			dirlen;
     int			needslash = 0;
+#ifdef FONTDIRATTRIB
+    char		*attrib;
+    int			attriblen;
+#endif
 
+#ifdef FONTDIRATTRIB
+    attrib = strchr(dirName, ':');
+    if (attrib) {
+	dirlen = attrib - dirName;
+	attriblen = strlen(attrib);
+    } else {
+	dirlen = strlen(dirName);
+	attriblen = 0;
+    }
+#else
     dirlen = strlen(dirName);
+#endif
     if (dirName[dirlen - 1] != '/')
 #ifdef NCD
     if (dirlen)     /* leave out slash for builtins */
 #endif
 	needslash = 1;
+#ifdef FONTDIRATTRIB
+    dir = (FontDirectoryPtr) xalloc(sizeof *dir + dirlen + needslash + 1 +
+				    (attriblen ? attriblen + 1 : 0));
+#else
     dir = (FontDirectoryPtr) xalloc(sizeof *dir + dirlen + needslash + 1);
+#endif
     if (!dir)
 	return (FontDirectoryPtr)0;
     if (!FontFileInitTable (&dir->scalable, 0))
@@ -129,7 +149,18 @@ FontFileMakeDir(dirName, size)
     dir->directory = (char *) (dir + 1);
     dir->dir_mtime = 0;
     dir->alias_mtime = 0;
+#ifdef FONTDIRATTRIB
+    if (attriblen)
+	dir->attributes = dir->directory + dirlen + needslash + 1;
+    else
+	dir->attributes = NULL;
+    strncpy(dir->directory, dirName, dirlen);
+    dir->directory[dirlen] = '\0';
+    if (dir->attributes)
+	strcpy(dir->attributes, attrib);
+#else
     strcpy(dir->directory, dirName);
+#endif
     if (needslash)
 	strcat(dir->directory, "/");
     return dir;
@@ -596,12 +627,21 @@ FontFileAddFontFile (dir, fontName, fileName)
      * a scalable version of the name... this can lead to confusion and
      * ambiguity between the font name and the field enhancements.
      */
+#ifndef NEW_BITMAP_BEHAVIOUR
     isscale = entry.name.ndashes == 14 &&
 	      FontParseXLFDName(entry.name.name,
 				&vals, FONT_XLFD_REPLACE_NONE) &&
 	      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
 	      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
 	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+#else
+    isscale = entry.name.ndashes == 14 &&
+	      FontParseXLFDName(entry.name.name,
+				&vals, FONT_XLFD_REPLACE_NONE) &&
+	      !(vals.values_supplied & PIXELSIZE_MASK) &&
+	      !(vals.values_supplied & POINTSIZE_MASK) &&
+	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+#endif
 #ifdef NOSCALE_HACK
     if (!isscale && entry.name.ndashes == 15 &&
 	!strcmp(entry.name.name + entry.name.length - 8, "-noscale"))
@@ -609,12 +649,30 @@ FontFileAddFontFile (dir, fontName, fileName)
       entry.name.length -= 8;
       entry.name.name[entry.name.length] = '\0';
       entry.name.ndashes = 14;
-      FontParseXLFDName(entry.name.name,
-			&vals, FONT_XLFD_REPLACE_NONE) &&
-      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
-      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
-      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+      FontParseXLFDName(entry.name.name, &vals, FONT_XLFD_REPLACE_NONE);
     }      
+#endif
+#ifdef FONTDIRATTRIB
+#define UNSCALED_ATTRIB "unscaled"
+    /* For scalable fonts, check if the "unscaled" attribute is present */
+    if (isscale && dir->attributes && dir->attributes[0] == ':') {
+	char *ptr1 = dir->attributes + 1;
+	char *ptr2;
+	int length;
+	int uslength = strlen(UNSCALED_ATTRIB);
+
+	do {
+	    ptr2 = strchr(ptr1, ':');
+	    if (ptr2)
+		length = ptr2 - ptr1;
+	    else
+		length = dir->attributes + strlen(dir->attributes) - ptr1;
+	    if (length == uslength && !strncmp(ptr1, UNSCALED_ATTRIB, uslength))
+		isscale = FALSE;
+	    if (ptr2)
+		ptr1 = ptr2 + 1;
+	} while (ptr2);
+    }
 #endif
     if (!isscale || (vals.values_supplied & SIZE_SPECIFY_MASK))
     {

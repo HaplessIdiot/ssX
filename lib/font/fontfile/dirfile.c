@@ -1,4 +1,5 @@
 /* $XConsortium: dirfile.c,v 1.11 94/04/17 20:17:01 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -56,6 +57,10 @@ FontFileReadDirectory (directory, pdir)
     char        file_name[MAXFONTNAMELEN];
     char        font_name[MAXFONTNAMELEN];
     char        dir_file[MAXFONTNAMELEN];
+#ifdef FONTDIRATTRIB
+    char	dir_path[MAXFONTNAMELEN];
+    char	*ptr;
+#endif
     FILE       *file;
     int         count,
                 i,
@@ -64,8 +69,19 @@ FontFileReadDirectory (directory, pdir)
 
     FontDirectoryPtr	dir = NullFontDirectory;
 
+#ifdef FONTDIRATTRIB
+    /* Check for font directory attributes */
+    if (ptr = strchr(directory, ':')) {
+	strncpy(dir_path, directory, ptr - directory);
+	dir_path[ptr - directory] = '\0';
+    } else {
+	strcpy(dir_path, directory);
+    }
+    strcpy(dir_file, dir_path);
+#else
     strcpy(dir_file, directory);
-    if (directory[strlen(directory) - 1] != '/')
+#endif
+    if (dir_file[strlen(dir_file) - 1] != '/')
 	strcat(dir_file, "/");
     strcat(dir_file, FontDirFile);
     file = fopen(dir_file, "r");
@@ -100,7 +116,11 @@ FontFileReadDirectory (directory, pdir)
     } else if (errno != ENOENT) {
 	return BadFontPath;
     }
+#ifdef FONTDIRATTRIB
+    status = ReadFontAlias(dir_path, FALSE, &dir);
+#else
     status = ReadFontAlias(directory, FALSE, &dir);
+#endif
     if (status != Successful) {
 	if (dir)
 	    FontFileFreeDir (dir);

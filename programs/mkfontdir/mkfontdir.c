@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c,v 1.12 94/04/17 20:38:47 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.0 1995/11/12 09:54:54 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -121,6 +121,11 @@ extern int errno;
 char *progName;
 #ifdef NOSCALE_HACK
 char *noscale_string = "";
+#endif
+
+#ifdef NEW_BITMAP_BEHAVIOUR
+Bool nonscaled = FALSE;
+Bool scaled = FALSE;
 #endif
 
 static Bool
@@ -226,13 +231,57 @@ AddEntry (table, fontName, fileName)
     char	    *fontName, *fileName;
 {
     FontEntryRec    prototype;
+#ifdef NEW_BITMAP_BEHAVIOUR
+    char *newname = NULL;
+    int ndashes = 0;
+    int retval = 0;
+    FontScalableRec vals, zeroVals;
+#endif
 
+#ifdef NEW_BITMAP_BEHAVIOUR
+    ndashes = FontFileCountDashes (fontName, strlen(fontName));
+    if (ndashes = 14) {
+	newname = (char *)malloc(strlen(fontName) + 1);
+	strcpy(newname, fontName);
+	FontParseXLFDName(fontName, &vals, FONT_XLFD_REPLACE_NONE);
+	bzero((char *)&zeroVals, sizeof(zeroVals));
+	zeroVals.x = vals.x;
+	zeroVals.y = vals.y;
+	zeroVals.values_supplied = PIXELSIZE_SCALAR | POINTSIZE_SCALAR;
+	FontParseXLFDName (newname, &zeroVals, FONT_XLFD_REPLACE_VALUE);
+    }
+    if (nonscaled) {
+	prototype.name.name = fontName;
+	prototype.name.length = strlen (fontName);
+	prototype.name.ndashes = FontFileCountDashes (fontName,
+						      prototype.name.length);
+	prototype.type = FONT_ENTRY_BITMAP;
+	prototype.u.bitmap.fileName = FontFileSaveString (fileName);
+	if (FontFileAddEntry (table, &prototype) == 0)
+	    return 0;
+    }
+    if (scaled && newname) {
+	prototype.name.name = newname;
+	prototype.name.length = strlen (newname);
+	prototype.name.ndashes = FontFileCountDashes (newname,
+						      prototype.name.length);
+	prototype.type = FONT_ENTRY_BITMAP;
+	prototype.u.bitmap.fileName = FontFileSaveString (fileName);
+	if (FontFileAddEntry (table, &prototype) == 0)
+	    return 0;
+    }
+    if (newname)
+	free(newname);
+
+    return 1;
+#else
     prototype.name.name = fontName;
     prototype.name.length = strlen (fontName);
     prototype.name.ndashes = FontFileCountDashes (fontName, prototype.name.length);
     prototype.type = FONT_ENTRY_BITMAP;
     prototype.u.bitmap.fileName = FontFileSaveString (fileName);
     return FontFileAddEntry (table, &prototype) != 0;
+#endif
 }
 
 static Bool
@@ -502,6 +551,27 @@ main (argc, argv)
 	    argc--;
 	    argv++;
 	}
+    }
+#endif
+#ifdef NEW_BITMAP_BEHAVIOUR
+    while (argc > 1 && argv[1][0] == '-')
+    {
+	if (!strcmp(argv[1], "-nonscaled")) {
+	    nonscaled = TRUE;
+	    argc--;
+	    argv++;
+	} else if (!strcmp(argv[1], "-scaled")) {
+	    scaled = TRUE;
+	    argc--;
+	    argv++;
+	} else {
+	    fprintf(stderr, "%s: unrecognised option %s\n", progName, argv[1]);
+	    exit(1);
+	}
+    }
+    if (!nonscaled && !scaled) {
+	nonscaled = TRUE;
+	scaled = TRUE;
     }
 #endif
     if (argc == 1)
