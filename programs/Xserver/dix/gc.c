@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.4 1996/12/23 06:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.5 1998/10/04 09:38:08 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -42,7 +42,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: gc.c /main/71 1998/02/09 14:19:32 kaleb $ */
+/* $Xorg: gc.c,v 1.3 2000/08/17 19:48:18 cpqbld Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.30 2000/11/27 00:10:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.31 2000/11/30 23:30:02 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,6 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $Xorg: main.c,v 1.3 2000/08/17 19:48:18 cpqbld Exp $ */
 
 /* The panoramix components contained the following notice */
 /****************************************************************

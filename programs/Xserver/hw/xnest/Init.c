@@ -1,4 +1,4 @@
-/* $TOG: Init.c /main/8 1997/11/12 14:38:50 kaleb $ */
+/* $Xorg: Init.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.18 1999/05/14 14:11:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.19 2000/11/27 17:45:56 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

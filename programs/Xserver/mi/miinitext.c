@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.52 2000/08/31 22:47:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.53 2000/10/24 22:45:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: miinitext.c /main/47 1998/02/09 14:47:26 kaleb $ */
+/* $Xorg: miinitext.c,v 1.3 2000/08/17 19:53:38 cpqbld Exp $ */
 
 #include "misc.h"
 #include "extension.h"

@@ -1,4 +1,4 @@
-/* $TOG: lbxprop.c /main/24 1998/02/09 14:32:29 kaleb $ */
+/* $Xorg: lbxprop.c,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
 /*
 
 Copyright 1986, 1998  The Open Group
@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxprop.c,v 1.2 2000/05/18 23:46:24 dawes Exp $ */
 
 /* various bits of DIX-level mangling */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.14 1999/01/13 08:30:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.15 1999/05/16 06:55:40 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -43,7 +43,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $TOG: devices.c /main/55 1998/02/09 14:18:25 kaleb $ */
+/* $Xorg: devices.c,v 1.3 2000/08/17 19:48:17 cpqbld Exp $ */
 
 #include "X.h"
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.25 2000/08/10 17:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.26 2000/08/31 19:03:59 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -42,7 +42,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: WaitFor.c /main/58 1998/02/09 15:13:07 kaleb $ */
+/* $Xorg: WaitFor.c,v 1.3 2000/08/17 19:53:40 cpqbld Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:

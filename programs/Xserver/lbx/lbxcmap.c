@@ -1,4 +1,4 @@
-/* $TOG: lbxcmap.c /main/13 1998/03/11 16:28:54 barstow $ */
+/* $Xorg: lbxcmap.c,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
 
 /*
 Copyright 1996, 1998  The Open Group
@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.5 1998/11/15 11:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxcmap.c,v 1.6 2000/05/18 23:46:23 dawes Exp $ */
 
 #include <sys/types.h>
 #define NEED_REPLIES

@@ -1,4 +1,4 @@
-/* $TOG: sunIo.c /main/50 1998/02/10 13:16:53 kaleb $ */
+/* $Xorg: sunIo.c,v 1.3 2000/08/17 19:48:29 cpqbld Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.3 1997/05/21 15:17:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.4 1998/10/04 09:38:37 dawes Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.

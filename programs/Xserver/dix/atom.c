@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.0 1996/04/15 11:19:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/atom.c,v 3.1 1998/10/04 09:38:01 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -42,7 +42,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $TOG: atom.c /main/11 1998/02/09 14:17:45 kaleb $ */
+/* $Xorg: atom.c,v 1.3 2000/08/17 19:48:16 cpqbld Exp $ */
 
 #include "X.h"
 #include "Xatom.h"

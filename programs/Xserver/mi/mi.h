@@ -1,4 +1,4 @@
-/* $TOG: mi.h /main/18 1998/02/09 14:49:50 kaleb $ */
+/* $Xorg: mi.h,v 1.3 2000/08/17 19:53:36 cpqbld Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.5 1999/04/11 13:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.6 2000/02/12 03:40:06 dawes Exp $ */
 
 #ifndef MI_H
 #define MI_H

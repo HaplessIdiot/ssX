@@ -1,5 +1,4 @@
-/* $XConsortium: Screen.c /main/8 1996/12/02 10:21:46 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.6 1998/07/26 01:53:20 dawes Exp $ */
+/* $Xorg: Screen.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -13,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.7 1998/12/20 11:57:54 dawes Exp $ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "scrnintstr.h"

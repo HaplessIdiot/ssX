@@ -1,4 +1,4 @@
-/* $TOG: sunInit.c /main/81 1998/02/10 13:16:47 kaleb $ */
+/* $Xorg: sunInit.c,v 1.4 2000/08/17 19:48:29 cpqbld Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.6 1998/06/27 12:53:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.7 1998/10/04 09:38:36 dawes Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -96,6 +96,7 @@ extern Bool sunCG3Init(
 #define CG2I NULL
 #define CG4I NULL
 #else /* }{ */
+#ifdef INCLUDE_CG2_HEADER
 extern Bool sunCG2Init(
 #if NeedFunctionPrototypes
     int /* screen */,
@@ -105,6 +106,7 @@ extern Bool sunCG2Init(
 #endif
 );
 #define CG2I sunCG2Init
+#endif /* INCLUDE_CG2_HEADER */
 extern Bool sunCG4Init(
 #if NeedFunctionPrototypes
     int /* screen */,
@@ -197,7 +199,9 @@ sunFbDataRec sunFbData[XFBTYPE_LASTPLUSONE] = {
   { NULL, "SUN1BW        (bw1)" },
   { NULL, "SUN1COLOR     (cg1)" },
   { BW2I, "SUN2BW        (bw2)" },	
+#ifdef INCLUDE_CG2_HEADER
   { CG2I, "SUN2COLOR     (cg2)" },
+#endif /* INCLUDE_CG2_HEADER */
   { NULL, "SUN2GP        (gp1/gp2)" },
   { NULL, "SUN5COLOR     (cg5/386i accel)" },
   { CG3I, "SUN3COLOR     (cg3)" },

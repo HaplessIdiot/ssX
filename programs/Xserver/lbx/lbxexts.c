@@ -1,4 +1,4 @@
-/* $XConsortium: lbxexts.c /main/9 1996/12/15 21:25:42 rws $ */
+/* $Xorg: lbxexts.c,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxexts.c,v 1.2 2000/05/18 23:46:24 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
