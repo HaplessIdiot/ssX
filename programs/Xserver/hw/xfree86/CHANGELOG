@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 715. Fix a long standing VIA Xv problem with totem/xine and YUV surface
+      types (Uberto Barbini).
  714. VIA driver updates/fixes:
        - Remove HARDWARE_NEEDS_PROGRAMMED_ORIGIN (Bugzilla #1011).
        - Allocate the UserSetting structure and use it. Changed the names so
@@ -18448,7 +18450,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3062 2003/12/31 05:13:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3063 2003/12/31 05:41:58 dawes Exp $
 
 
 
