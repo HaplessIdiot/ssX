@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.18 2000/03/01 16:01:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.19 2000/03/07 16:13:36 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -216,15 +216,15 @@ ATIVGAProbe
      * need to unlock them.
      */
     ATISetVGAIOBase(pVGA, inb(R_GENMO));
-    (void) inb(GENS1(pVGA->CPIO_VGABase));
+    (void)inb(GENS1(pVGA->CPIO_VGABase));
     IOValue1 = inb(ATTRX);
-    (void) inb(GENS1(pVGA->CPIO_VGABase));
+    (void)inb(GENS1(pVGA->CPIO_VGABase));
     IOValue2 = GetReg(ATTRX, 0x14U | 0x20U);
     outb(ATTRX, IOValue2 ^ 0x0FU);
     IOValue3 = GetReg(ATTRX, 0x14U | 0x20U);
     outb(ATTRX, IOValue2);
     outb(ATTRX, IOValue1);
-    (void) inb(GENS1(pVGA->CPIO_VGABase));
+    (void)inb(GENS1(pVGA->CPIO_VGABase));
     if (IOValue3 == (IOValue2 ^ 0x0FU))
     {
         /* VGA device detected */
@@ -1106,6 +1106,11 @@ ATIProbe
                       (pVideo->subclass != PCI_SUBCLASS_DISPLAY_VGA))))
                     continue;
 
+                if (!xf86CheckPciSlot(pVideo->bus,
+                                      pVideo->device, 
+                                      pVideo->func))
+                    continue;
+
                 xf86SetPciVideo(pVideo, IO);
 
                 pATI = ATIVGAProbe(NULL);
@@ -1169,6 +1174,11 @@ ATIProbe
                     break;
 
                 default:        /* Must be DoProbe */
+                    if (!xf86CheckPciSlot(pVideo->bus,
+                                          pVideo->device,
+                                          pVideo->func))
+                        continue;
+
                     xf86SetPciVideo(pVideo, IO);
 
                     if (!(pATI = ATI8514Probe(pVideo)))
@@ -1252,6 +1262,11 @@ ATIProbe
                     break;
 
                 default:    /* Must be DoProbe */
+                    if (!xf86CheckPciSlot(pVideo->bus,
+                                          pVideo->device,
+                                          pVideo->func))
+                        continue;
+
                     xf86SetPciVideo(pVideo, IO);
 
                     pATI = ATIMach64Probe(Mach64SparseIOBases[j], SPARSE_IO,
@@ -1297,6 +1312,9 @@ ATIProbe
                 if (pATI->CPIOBase == pVideo->ioBase[1])
                     goto SetPCIInfo;
             }
+
+            if (!xf86CheckPciSlot(pVideo->bus, pVideo->device, pVideo->func))
+                continue;
 
             /* Probe for it */
             xf86SetPciVideo(pVideo, IO);
@@ -1624,9 +1642,35 @@ NoVGAWonder:;
                 {
                     if (pATI->Adapter != ATI_ADAPTER_MACH64)
                         continue;
-                    if ((pGDev->chipRev >= 0) &&
-                        (pATI->Chip != ATI_CHIP_Mach64))
-                        continue;
+
+                    if (pATI->Chip != ATI_CHIP_Mach64)
+                    {
+                        if (pATI->ChipRev == pATI->ChipRevision)
+                            continue;
+
+                        /*
+                         * There are two foundry codes for UMC.  Some adapters
+                         * will advertise one in CONFIG_CHIP_ID and the other
+                         * in PCI configuration space.  For matching purposes,
+                         * make both codes compare equal.
+                         */
+#                       define UMC_IGNORE (ATI_FOUNDRY_UMC ^ ATI_FOUNDRY_UMCA)
+#                       define UMC_NOCARE \
+                            GetBits(SetBits(UMC_IGNORE, CFG_CHIP_FOUNDRY), \
+                                CFG_CHIP_REV)
+
+                        if ((pATI->ChipRev ^ pGDev->chipRev) & ~UMC_NOCARE)
+                            continue;
+
+                        if ((pATI->ChipFoundry != ATI_FOUNDRY_UMC) &&
+                            (pATI->ChipFoundry != ATI_FOUNDRY_UMCA))
+                            continue;
+
+                        k = GetBits(pGDev->chipRev,
+                            GetBits(CFG_CHIP_FOUNDRY, CFG_CHIP_REV));
+                        if ((k != ATI_FOUNDRY_UMC) && (k != ATI_FOUNDRY_UMCA))
+                            continue;
+                    }
                 }
             }
 

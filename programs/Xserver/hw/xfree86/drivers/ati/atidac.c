@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.5 1999/09/27 06:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.6 2000/02/18 12:19:20 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -106,10 +106,10 @@ ATIGetDACCmdReg
     ATIPtr pATI
 )
 {
-    (void) inb(pATI->CPIO_DAC_WRITE);   /* Reset to PEL mode */
-    (void) inb(pATI->CPIO_DAC_MASK);
-    (void) inb(pATI->CPIO_DAC_MASK);
-    (void) inb(pATI->CPIO_DAC_MASK);
+    (void)inb(pATI->CPIO_DAC_WRITE);    /* Reset to PEL mode */
+    (void)inb(pATI->CPIO_DAC_MASK);
+    (void)inb(pATI->CPIO_DAC_MASK);
+    (void)inb(pATI->CPIO_DAC_MASK);
     return inb(pATI->CPIO_DAC_MASK);
 }
 

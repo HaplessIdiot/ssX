@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.7 1999/09/27 06:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.8 2000/02/18 12:19:21 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -42,14 +42,11 @@ ATIDSPPreInit
 )
 {
     CARD32 IOValue, dsp_config, dsp_on_off, vga_dsp_config, vga_dsp_on_off;
-    CARD16 CPIO_VGA_DSP_CONFIG, CPIO_VGA_DSP_ON_OFF;
     int trp;
 
     /* Set DSP register port numbers */
     pATI->CPIO_DSP_CONFIG = ATIIOPort(DSP_CONFIG);
     pATI->CPIO_DSP_ON_OFF = ATIIOPort(DSP_ON_OFF);
-    CPIO_VGA_DSP_CONFIG = ATIIOPort(VGA_DSP_CONFIG);
-    CPIO_VGA_DSP_ON_OFF = ATIIOPort(VGA_DSP_ON_OFF);
 
     /*
      * VT-B's and later have additional post-dividers that are not powers of
@@ -145,14 +142,15 @@ ATIDSPPreInit
     /* Allow BIOS to override */
     dsp_config = inl(pATI->CPIO_DSP_CONFIG);
     dsp_on_off = inl(pATI->CPIO_DSP_ON_OFF);
-    vga_dsp_config = inl(CPIO_VGA_DSP_CONFIG);
-    vga_dsp_on_off = inl(CPIO_VGA_DSP_ON_OFF);
+    vga_dsp_config = inl(ATIIOPort(VGA_DSP_CONFIG));
+    vga_dsp_on_off = inl(ATIIOPort(VGA_DSP_ON_OFF));
 
     if (dsp_config)
         pATI->DisplayLoopLatency = GetBits(dsp_config, DSP_LOOP_LATENCY);
 
-    if ((dsp_on_off == vga_dsp_on_off) &&
-        (!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW)))
+    if (!dsp_on_off ||
+        ((dsp_on_off == vga_dsp_on_off) &&
+         (!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW))))
     {
         if (ATIDivide(GetBits(vga_dsp_on_off, VGA_DSP_OFF),
                       GetBits(vga_dsp_config, VGA_DSP_XCLKS_PER_QW), 5, 1) > 23)
@@ -230,7 +228,7 @@ ATIDSPCalculate
     }
 
     /* Determine dsp_precision first */
-    tmp = ATIDivide(Multiplier * pATI->DisplayFIFODepth, Divider, vshift, 1);
+    tmp = ATIDivide(Multiplier * pATI->DisplayFIFODepth, Divider, vshift, -1);
     for (dsp_precision = -5;  tmp;  dsp_precision++)
         tmp >>= 1;
     if (dsp_precision < 0)
@@ -263,6 +261,9 @@ ATIDSPCalculate
         dsp_on += (tmp * 2) +
             ATIDivide(pATI->XCLKPageFaultDelay, 1, xshift, 1);
     }
+
+    if (dsp_on >= dsp_off)
+        dsp_on = dsp_off - ATIDivide(Multiplier, Divider, vshift, -1);
 
     /* Last but not least:  dsp_xclks */
     dsp_xclks = ATIDivide(Multiplier, Divider, vshift + 5, 1);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.9 2000/02/17 15:34:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.10 2000/02/18 12:19:19 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -72,6 +72,44 @@ ATISaveScreen
     }
 
     return TRUE;
+}
+
+/*
+ * ATISetDPMSMode --
+ *
+ * This function sets the adapter's VESA Display Power Management Signaling
+ * mode.
+ */
+void
+ATISetDPMSMode
+(
+    ScrnInfoPtr pScreenInfo,
+    int         DPMSMode,
+    int         flags
+)
+{
+    ATIPtr pATI;
+
+    if (!pScreenInfo || !pScreenInfo->vtSema)
+        return;
+
+    pATI = ATIPTR(pScreenInfo);
+
+    switch (pATI->Adapter)
+    {
+        case ATI_ADAPTER_MACH64:
+            ATIMach64SetDPMSMode(pATI, DPMSMode);
+            break;
+
+        case ATI_ADAPTER_NONE:
+        case ATI_ADAPTER_8514A:
+        case ATI_ADAPTER_MACH8:
+            break;
+
+        default:        /* Assume EGA/VGA */
+            ATIVGASetDPMSMode(pATI, DPMSMode);
+            break;
+    }
 }
 
 /*

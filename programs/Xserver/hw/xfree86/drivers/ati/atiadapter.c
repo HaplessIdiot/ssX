@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.4 1999/10/13 20:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.5 2000/02/18 12:19:11 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -75,7 +75,7 @@ ATICopyVGAMemory
     for (iBank = 0;  iBank < pATIHW->nBank;  iBank++)
     {
         (*pATIHW->SetBank)(pATI, iBank);
-        (void) memcpy(*to, *from, 0x00010000U);
+        (void)memcpy(*to, *from, 0x00010000U);
         *saveptr = (char *)(*saveptr) + 0x00010000U;
     }
 }
@@ -1072,6 +1072,8 @@ ATIAdapterAccelInit
     ScreenArea.x2 = pScreenInfo->displayWidth;
     ScreenArea.y2 = pScreenInfo->videoRam * 1024 * 8 /
         pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel;
+    if ((unsigned)ScreenArea.y2 > 16383)
+        ScreenArea.y2 = 16383;
     xf86InitFBManager(pScreen, &ScreenArea);
 
     if (XAAInit(pScreen, pATI->pXAAInfo))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.4 2000/02/18 12:19:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.5 2000/03/07 16:13:34 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -111,9 +111,8 @@ ATIUnlock
         outl(pATI->CPIO_GEN_TEST_CNTL, tmp | GEN_GUI_EN);
         outl(pATI->CPIO_GEN_TEST_CNTL, tmp);
         outl(pATI->CPIO_GEN_TEST_CNTL, tmp | GEN_GUI_EN);
-        pATI->LockData.crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
+        tmp = pATI->LockData.crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
             ~(CRTC_EN | CRTC_LOCK_REGS);
-        tmp = pATI->LockData.crtc_gen_cntl & ~CRTC_EN;
         if (pATI->Chip >= ATI_CHIP_264XL)
             tmp = (tmp & ~CRTC_INT_ENS_X) | CRTC_INT_ACKS_X;
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp | CRTC_EN);
