@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.14 2000/05/11 18:14:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.15 2000/06/16 01:50:21 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -54,7 +54,7 @@ static char GLINTKernelDriverName[] = "gamma";
 static char GLINTClientDriverName[] = "gamma";
 
 static void GLINTDestroyContext(ScreenPtr pScreen, drmContext hwContext,
-                                void *contextStore);
+                                DRIContextType contextStore);
 
 static int 
 GLINTDRIControlInit(int drmSubFD, int irq)
@@ -342,6 +342,18 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
 
+    /* Check the DRI version */
+    {
+       int major, minor, patch;
+       DRIQueryVersion(&major, &minor, &patch);
+       if (major != 3 || minor != 0 || patch < 0) {
+          xf86DrvMsg(pScreen->myNum, X_ERROR,
+                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                     major, minor, patch);
+          return FALSE;
+       }
+    }
+
     if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA) return FALSE;
 
     if (pGlint->numMXDevices > 2) return FALSE;
@@ -360,9 +372,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	    ((pciConfigPtr)pGlint->PciInfo->thisCard)->busnum,
 	    ((pciConfigPtr)pGlint->PciInfo->thisCard)->devnum,
 	    ((pciConfigPtr)pGlint->PciInfo->thisCard)->funcnum);
-    pDRIInfo->ddxDriverMajorVersion = 0;
-    pDRIInfo->ddxDriverMinorVersion = 1;
-    pDRIInfo->ddxDriverPatchVersion = 0;
+    pDRIInfo->ddxDriverMajorVersion = GLINT_MAJOR_VERSION;
+    pDRIInfo->ddxDriverMinorVersion = GLINT_MINOR_VERSION;
+    pDRIInfo->ddxDriverPatchVersion = GLINT_PATCHLEVEL;
     pDRIInfo->frameBufferPhysicalAddress = pGlint->FbAddress;
     pDRIInfo->frameBufferSize = pGlint->FbMapSize;
     pDRIInfo->frameBufferStride = 
@@ -412,6 +424,27 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	DRIDestroyInfoRec(pGlint->pDRIInfo);
 	xfree(pGlintDRI);
 	return FALSE;
+    }
+
+    /* Check the GLINT DRM version */
+    {
+        drmVersionPtr version = drmGetVersion(pGlint->drmSubFD);
+        if (version) {
+            if (version->version_major != 1 ||
+                version->version_minor != 0 ||
+                version->version_patchlevel < 0) {
+                /* incompatible drm version */
+                xf86DrvMsg(pScreen->myNum, X_ERROR,
+                           "GLINTDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
+                           version->version_major,
+                           version->version_minor,
+                           version->version_patchlevel);
+                GLINTDRICloseScreen(pScreen);
+                drmFreeVersion(version);
+                return FALSE;
+            }
+            drmFreeVersion(version);
+        }
     }
 
     /* Tell the client driver how many MX's we have */
@@ -499,6 +532,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	    if ((bufs = drmAddBufs(pGlint->drmSubFD,
 				   xf86ConfigDRI.bufs[i].count,
 				   xf86ConfigDRI.bufs[i].size,
+				   0,
 				   0 /* flags */)) <= 0) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			   "[drm] failure adding %d %d byte DMA buffers\n",
@@ -519,6 +553,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	if ((bufs = drmAddBufs(pGlint->drmSubFD,
 			       GLINT_DRI_BUF_COUNT,
 			       GLINT_DRI_BUF_SIZE,
+			       0,
 			       0 /* flags */)) <= 0) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "[drm] failure adding %d %d byte DMA buffers\n",
@@ -611,7 +646,7 @@ GLINTCreateContext(ScreenPtr pScreen,
                    VisualPtr visual,
                    drmContext hwContext,
                    void *pVisualConfigPriv,
-		   void *contextStore)
+		   DRIContextType contextStore)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -641,7 +676,7 @@ GLINTCreateContext(ScreenPtr pScreen,
 static void
 GLINTDestroyContext(ScreenPtr pScreen,
                     drmContext hwContext,
-                    void *contextStore)
+                    DRIContextType contextStore)
 {
 }
 
@@ -707,9 +742,9 @@ GLINTDRISwapContext(
     ScreenPtr pScreen,
     DRISyncType syncType,
     DRIContextType readContextType,
-    void* readContextStore,
+    void *readContextStore,
     DRIContextType writeContextType,
-    void* writeContextStore)
+    void *writeContextStore)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
