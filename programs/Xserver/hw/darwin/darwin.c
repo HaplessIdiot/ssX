@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.18 2001/04/11 08:34:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.19 2001/04/12 20:09:53 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -108,9 +108,6 @@ DarwinPrintBanner()
   ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
-#endif
-#if defined(DARWIN_WITH_QUARTZ)
-  ErrorF("Mac OS X Quartz support available.\n");
 #endif
 }
 

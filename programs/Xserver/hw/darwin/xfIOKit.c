@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.5 2001/04/02 05:39:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.6 2001/04/12 20:09:53 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -104,7 +104,7 @@ void XFIOKitBell(
  */
 void XFIOKitGiveUp( void )
 {
-#if 0
+#if 1
     // we must close the HID System first
     // because it is a client of the framebuffer
     NXCloseEventStatus( dfb.hidParam );
@@ -444,6 +444,8 @@ void XFIOKitOsVendorInit(void)
 {
     kern_return_t           kr;
     int                     fd[2];
+
+    ErrorF("Display mode: IOKit\n");
 
     kr = IOMasterPort(bootstrap_port, &masterPort);
     kern_assert( kr );

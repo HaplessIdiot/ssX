@@ -4,18 +4,20 @@
  *
  * This program selects the appropriate X server to launch:
  *  XDarwin         IOKit X server (default)
- *  XDarwin.app     Quartz X server (-quartz option)
+ *  XDarwinQuartz   A soft link to the Quartz X server
+ *                  executable (-quartz option)
  *
  * If told to idle, the program will simply pause and not
  * launch any X server. This is to support startx being
  * run by XDarwin.app.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.1 2001/03/29 02:06:51 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.2 2001/04/07 20:56:05 torrey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/syslimits.h>
 
 extern int errno;
 
@@ -43,11 +45,23 @@ int main(
             return 0;
 
         } else if (!strcmp(argv[i], "-quartz")) {
+            char quartzPath[PATH_MAX+1];
+            int pathLength;
+
+            // Find the path to the Quartz executable
+            pathLength = readlink(XPATH(XDarwinQuartz), quartzPath, PATH_MAX);
+            if (!pathLength) {
+                fprintf(stderr, "The symbolic link " XPATH(XDarwinQuartz)
+                        " is not valid.\n");
+                return errno;
+            }
+            quartzPath[pathLength] = '\0';
+
             // Build the new argument list
             newargv = (char **) malloc((argc+2) * sizeof(char *));
             for (j = argc; j; j--)
                 newargv[j] = argv[j];
-            newargv[0] = XPATH(XDarwin.app/Contents/MacOS/XDarwin);
+            newargv[0] = quartzPath;
             newargv[argc] = "-nostartx";
             newargv[argc+1] = NULL;
 
