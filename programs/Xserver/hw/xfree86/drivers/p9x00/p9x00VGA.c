@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/p9x00/p9x00VGA.c,v 1.1 1998/01/11 03:36:47 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -273,11 +273,14 @@ void w5x86Lock(void)
    
 void w5x86Unlock(void)
    {
+   unsigned char tmp;
+
    P9X00_ENABLEPORTS;
    outb(SEQ_INDEX_REG,SEQ_MISC_INDEX);
    saved_misc=inb(SEQ_PORT);
    outb(SEQ_PORT,saved_misc);
    outb(SEQ_PORT,saved_misc);
-   outb(SEQ_PORT,inb(SEQ_PORT)& ~0x20);
+   tmp = inb(SEQ_PORT);
+   outb(SEQ_PORT, tmp & ~0x20);
    P9X00_DISABLEPORTS;
-   }  
+   }
