@@ -933,12 +933,13 @@
 
         Richard Ferraro
 
-        Addison-Wesley, 1990
+        Addison-Wesley, 1994
 
         ISBN 0-201-62490-7
 
         (This is the bible of SVGA programming - it has a few errors, so
-        watch out).
+        watch out.  The third edition also covers several accelerated
+        video cards.)
 
      o  vgadoc4.zip
 
@@ -947,7 +948,7 @@
         (This is a collection of SVGA and other chipset documentation.
         It is available on most MS-DOS/Windows related FTP archives,
         including wuarchive.  It is DOS/BIOS oriented, but is still
-        extremely useful, especially for developing probe functions).
+        extremely useful, especially for developing probe functions.)
 
   12.  Vendor Contact Information
 
@@ -985,6 +986,7 @@
         San Jose, CA 95131
 
         (408) 432-9090 (sales)
+
 
         (408) 432-8324 (tech support)
 
@@ -1032,15 +1034,13 @@
         (714) 932-4900
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.9 1996/10/20 13:33:22 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.10 1996/10/23 13:10:05 dawes Exp $
 
 
 
 
 
   $XConsortium: VGADriv.sgml /main/6 1996/01/10 11:12:02 kaleb $
-
-
 
 
 

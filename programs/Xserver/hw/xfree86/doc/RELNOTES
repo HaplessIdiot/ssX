@@ -190,7 +190,7 @@
 
      o  Support for the S3 Trio64V+.
 
-     o  New server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.  Note that
+     o  *New server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.  Note that
         this server is very new, and is considered "beta".  Please
         report any problems with it.
 
@@ -439,7 +439,12 @@
      o  A problem preventing the StaticGray visual from working has been
         fixed.
 
-  3.15.  Trident driver (SVGA server)
+  3.15.  ET3000 driver (VGA16 server)
+
+
+     o  VGA16 support has been added to the ET3000 driver.
+
+  3.16.  Trident driver (SVGA server)
 
 
      o  TGUI9440 is now fully supported by the SVGA server.
@@ -453,14 +458,12 @@
 
      o  Known problems: ?
 
+
+
         +  There is a problem with interlaced modes with the SVGA
            driver.
 
-
-
-
-
-  3.16.  Ark driver (SVGA server)
+  3.17.  Ark driver (SVGA server)
 
 
      o  The Ark driver will now detect the ARK2000MT, but it is treated
@@ -495,38 +498,38 @@
 
      o  *Hardware cursor support has been added.
 
-  3.17.  ET6000 driver (SVGA server)
+  3.18.  ET6000 driver (SVGA server)
 
 
      o  *This driver includes support for linear memory and 16bpp, 24bpp
         and 32bpp operation.  Note, this support isn't currently present
         in the W32 accelerated server.
 
-  3.18.  Alliance ProMotion driver (SVGA server)
+  3.19.  Alliance ProMotion driver (SVGA server)
 
 
      o  A driver for the Alliance ProMotion 6442 has been added (from
         Alliance Semiconductor). This has not been thoroughly tested.
 
-  3.19.  NVidia NV1 / SGS Thomson SGT2000 driver (SVGA server)
+  3.20.  NVidia NV1 / SGS Thomson STG2000 driver (SVGA server)
 
 
-     o  *A driver for the NV1/SGT2000 has beed added.  This chipset is
+     o  *A driver for the NV1/STG2000 has been added.  This chipset is
         used on the Diamond Edge 3D card.  This is a very new driver,
         and is considered "beta".  It includes support for 8bpp and
         16bpp.
 
-  3.20.  Matrox Millennium driver (SVGA server)
+  3.21.  Matrox Millennium driver (SVGA server)
 
 
      o  *A driver for the Matrox Millennium (mga2064w) has been added.
         This is a very new driver, and is considered "beta".  It
         includes support for 8bpp, 16bpp, 24bpp and 32bpp.  The
+
         acceleration capabilities of this chipset are only used to a
         very limited extent at this stage.
 
-
-  3.21.  Cirrus driver (SVGA server)
+  3.22.  Cirrus driver (SVGA server)
 
 
      o  Support has been added for the CL-GD5446, CL-GD5462 and CL-
@@ -542,11 +545,11 @@
 
      o  *Some FIFO setting problems have been fixed.
 
-     o  *Packed 24bpp support has been added fo the 54xx.
+     o  *Packed 24bpp support has been added for the 54xx.
 
      o  *Some problems with 16bpp for a 1MB 5434 have been fixed.
 
-  3.22.  SiS driver (SVGA server)
+  3.23.  SiS driver (SVGA server)
 
 
      o  Support is included for the SiS 86C201 PCI graphics card.
@@ -556,7 +559,7 @@
      o  SiS 86c202 and 86c205 somewhat work when "sis86c201" is
         specified as chipset.
 
-  3.23.  Chips and Technologies driver (SVGA server)
+  3.24.  Chips and Technologies driver (SVGA server)
 
 
      o  This driver has been significantly reworked.
@@ -570,12 +573,12 @@
      o  BitBLT and some other acceleration for the 65545, 65546, 65548
         and 65550.
 
-  3.24.  ALI driver (SVGA server)
+  3.25.  ALI driver (SVGA server)
 
 
      o  Interlaced modes now work with this driver.
 
-  3.25.  ATI driver (SVGA server)
+  3.26.  ATI driver (SVGA server)
 
 
      o  Mach64 support has been improved.
@@ -587,20 +590,14 @@
      o  The "undoc_clocks" option has been removed.  If you had been
         using it, remove it from your XF86Config file.
 
+
+
      o  A colourmap problem with VGA Wonder V3 boards has been fixed.
 
-
-
-
-  3.26.  WD90C24 driver (SVGA server)
+  3.27.  WD90C24 driver (SVGA server)
 
 
      o  A problem with snow at high clocks has been fixed.
-
-  3.27.  ET3000 driver (SVGA server)
-
-
-     o  VGA16 support has been added to the ET3000 driver.
 
   3.28.  Compaq AVGA driver (SVGA server)
 
@@ -624,7 +621,7 @@
 
      o  The termcap and terminfo entries for xterm have been updated in
         line with the new features present.  These entries are not
-        comletely compatible with earlier versions of xterm.
+        completely compatible with earlier versions of xterm.
 
      o  xdm's session handling on BSD OSs has been fixed.
 
@@ -656,11 +653,10 @@
         been added to xset (was in xvidtune).  xset can now also be used
         to set the keyboard repeat parameters.
 
-
-
      o  The following new clients have been added:
 
         +  dga -- a test program for the XFree86-DGA extension.
+
 
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
@@ -714,25 +710,16 @@
   The following are required for all installations:
 
 
+       preinst.sh      Pre-installation script
+       postinst.sh     Post-installation script
+       X32bin.tgz      Clients, run-time libs, and app-defaults files
+       X32doc.tgz      Documentation
+       X32fnts.tgz     75dpi and misc fonts
+       X32lib.tgz      Data files required at run-time
+       X32man.tgz      Manual pages
+       X32set.tgz      XF86Setup utility
+       X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 
-
-
-
-
-
-
-
-
-
-  preinst.sh      Pre-installation script
-  postinst.sh     Post-installation script
-  X32bin.tgz      Clients, run-time libs, and app-defaults files
-  X32doc.tgz      Documentation
-  X32fnts.tgz     75dpi and misc fonts
-  X32lib.tgz      Data files required at run-time
-  X32man.tgz      Manual pages
-  X32set.tgz      XF86Setup utility
-  X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
 
 
 
@@ -790,22 +777,40 @@
 
   The following are optional.
 
-       X32f100.tgz    100dpi fonts
-       X32fcyr.tgz    Cyrillic fonts
-       X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
-       X32fscl.tgz    Scalable fonts (Speedo and Type1)
-       X32fsrv.tgz    Font server and config files
-       X32cfg.tgz     sample config files for xinit, xdm
-       X32prog.tgz    X header files, config files and compile-time libs
-       X32lkit.tgz    X server LinkKit
-       X32lk98.tgz    PC98 X server LinkKit
-       X32nest.tgz    Nested X server
-       X32vfb.tgz     Virtual framebuffer X server
-       X32ps.tgz      PostScript version of the documentation
-       X32html.tgz    HTML version of the documentation
 
 
 
+
+
+
+
+
+
+
+
+
+
+  X32f100.tgz    100dpi fonts
+  X32fcyr.tgz    Cyrillic fonts
+  X32fnon.tgz    Other fonts (Chinese, Japanese, Korean, Hebrew)
+  X32fscl.tgz    Scalable fonts (Speedo and Type1)
+  X32fsrv.tgz    Font server and config files
+  X32cfg.tgz     sample config files for xinit, xdm
+  X32prog.tgz    X header files, config files and compile-time libs
+  X32lkit.tgz    X server LinkKit
+  X32lk98.tgz    PC98 X server LinkKit
+  X32nest.tgz    Nested X server
+  X32vfb.tgz     Virtual framebuffer X server
+  X32ps.tgz      PostScript version of the documentation
+  X32html.tgz    HTML version of the documentation
+
+
+
+
+  NOTE: Be very careful about installing X32cfg.tgz if you have
+  customised your xinit and/or xdm config files.  Installing X32cfg.tgz
+  will overwrite any existing files.  If you do have customised files,
+  there is no need to install X32cfg.tgz.
 
   If you already have a version of XFree86 installed, MAKE A BACKUP OF
   /usr/X11R6 BEFORE DOING ANYTHING ELSE.  The standard installation
@@ -850,11 +855,11 @@
 
 
   On some OSs, you might get some "Broken Pipe" messages.  Providing
+
   there are no other messages associated with this, they can be safely
   ignored.  Note: You should not be running X while doing this installa-
   tion.  Doing so may cause the installation to fail, or cause your X
   session to crash.
-
 
   If you are using NetBSD or FreeBSD, a more reliable (and highly
   recommended) way of doing this is to extract the .tgz files with:
@@ -876,7 +881,7 @@
 
 
   Once the required .tgz files have been extracted, copy the postinst.sh
-  script to /var/tmp, then run go to /usr/X11R6 and run it:
+  script to /var/tmp, then go to /usr/X11R6 and run it:
 
 
                cd /usr/X11R6
@@ -892,12 +897,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.44 1996/10/21 05:27:45 dawes Exp $
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.45 1996/10/23 13:10:04 dawes Exp $
 
 
 

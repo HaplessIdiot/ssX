@@ -3,7 +3,7 @@
 <article>
 <title>Installation Guide for XFree86 3.2
 <author>David Dawes
-<Date>25 June 1995
+<Date>23 October 1996
 
 <abstract>
 This document describes how to build XFree86 from the <bf>source</bf>
@@ -324,7 +324,7 @@ details of how to do this, please refer to the <htmlurl url="LinkKit.html"
 name="README.LinkKit"> file.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.13 1996/02/04 09:08:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.14 1996/10/23 13:09:56 dawes Exp $
 
 
 

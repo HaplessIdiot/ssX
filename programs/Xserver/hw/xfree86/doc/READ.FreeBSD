@@ -4,14 +4,14 @@
 
   1.  What and Where is XFree86?
 
-  XFree86 is a port of X11R6 that supports several versions of Intel-
+  XFree86 is a port of X11R6.1 that supports several versions of Intel-
   based Unix.  It is derived from X386 1.2, which was the X server
   distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
-  is available as source patches against the X Consortium X11R6 code, as
-  well as binary distributions for many architectures.
+  is available as source patches against the X Consortium X11R6.1 code,
+  as well as binary distributions for many architectures.
 
-  See the Copyright Notice <COPYRIGHT.html>.
+  See the Copyright Notice.
 
   The sources for XFree86 are available by anonymous ftp from:
 
@@ -54,18 +54,15 @@
      Required unless you have already customized your configuration
         files:
 
-        X32xicf.tgz
-           customizable xinit runtime configuration file
-
-        X32xdcf.tgz
-           customizable xdm runtime configuration file
+        X32cfg.tgz
+           customizable xinit and xdm runtime configuration files
 
      Choose at least one server ( 2.3Mb):
 
-
-
         X328514.tgz
            8-bit color for IBM 8514 and true compatibles.
+
+
 
         X32AGX.tgz
            8 and 16-bit color for AGX and XGA boards.
@@ -74,7 +71,7 @@
            8 and 16-bit color for ATI Mach32 boards.
 
         X32Ma64.tgz
-           8, 16 and 24-bit color for ATI Mach64 boards.
+           8, 16 and 32-bit color for ATI Mach64 boards.
 
         X32Ma8.tgz
            8-bit color for ATI Mach8 boards.
@@ -83,15 +80,17 @@
            1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
         X32P9K.tgz
-           8, 16, and 24-bit color for Weitek P9000 boards (Diamond
+           8, 16, and 32-bit color for Weitek P9000 boards (Diamond
            Viper).
 
         X32S3.tgz
-           8, 16 and 24-bit color for S3 boards (#9 GXE, Actix GE32,
-           SPEA Mercury, STB Pegasus)
+           8, 16 and 32-bit color for S3 boards.
+
+        X32S3V.tgz
+           8 and 16-bit color for S3 ViRGE boards.
 
         X32SVGA.tgz
-           8-bit color for Super-VGA cards.
+           >=8-bit color for Super-VGA cards.
 
         X32VG16.tgz
            4-bit color for VGA and Super-VGA cards
@@ -130,6 +129,7 @@
            8 and 16-bit color for PC98 S3 PW/PCSKB boards
 
 
+
         X329LPW.tgz
            8 and 16-bit color for PC98 S3 PW/LB boards
 
@@ -144,6 +144,12 @@
 
         X32doc.tgz
            (.5Mb) READMEs
+
+        X32ps.tgz
+           (.XMb) READMEs in PostScript
+
+        X32html.tgz
+           (.XMb) READMEs in HTML
 
         X32man.tgz
            (1.7Mb) man pages
@@ -170,11 +176,8 @@
         X32link.tgz
            (7.8Mb) X server reconfiguration kit
 
-        X32pex.tgz
-           (.5Mb) PEX fonts and shared libs needed by PEX applications.
-
-        X32lbx.tgz
-           (.2Mb) low bandwidth X proxy server and libraries.
+        X32lk98.tgz
+           (7.8Mb) X server reconfiguration kit for PC98 X servers
 
   Note that there is no longer a separate xdm archive.  FreeBSD 2.0 and
   later handles this in shared libraries now, so that the xdm binary
@@ -191,13 +194,17 @@
         permissions.
 
 
-           % su
-           # umask 022
+
+
+      % su
+      # umask 022
+
+
 
 
 
      2. If you have 52Mb free in the /usr partition ``cd /usr'' and skip
-        to no. 3.  Otherwise, create a directory on another partition
+        to no. 4.  Otherwise, create a directory on another partition
         and sym link it into /usr:
 
 
@@ -210,14 +217,24 @@
 
 
 
-     3. Unpack everything:
+     3. Run the preinst.sh script
+
+
+           # cd /usr/X11R6
+           # sh preinst.sh
+
+
+
+
+
+     4. Unpack everything:
 
         If you are using sh (as root usually does):
 
 
 
            # for i in X32*.tgz; do
-           #   tar -xzf $i
+           #   tar -x -z --unlink -f $i
            # done
 
 
@@ -228,14 +245,14 @@
 
 
            % foreach i (X32*.tgz)
-           %   tar -xzf $i
+           %   tar -x -z --unlink -f $i
            % end
 
 
 
 
 
-     4. Create a symbolic link ``X'' that points to the server that
+     5. Create a symbolic link ``X'' that points to the server that
         matches your video card.  The XF86_* man pages list which vga
         chip sets are supported by each server.  For example, if you
         have an ET4000 based card you will use the XF86_SVGA server:
@@ -245,30 +262,27 @@
            # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
-
-
   2.2.  Minimal Install:
 
-  First do numbers 1 and 2 above. Then unpack the required archives:
+  First do numbers 1, 2 and 4 above. Then unpack the required archives:
 
 
 
         # for i in bin fnts lib xicf; do
-        #   tar -xzf  X32$i.tgz
+        #   tar -x -z --unlink -f  X32$i.tgz
         # done
 
 
 
 
   Then unpack a server archive corresponding to your vga card.  The
-
   server man pages, X11R6/man/man1/XF86_*, list the vga chip sets
   supported by each server.  For example, if you have an ET4000 based
   card you will use the XF86_SVGA server:
 
 
 
-        # tar -xzf X32SVGA.tgz
+        # tar -x -z --unlink -f X32SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -312,47 +326,14 @@
   applications.
 
 
-       NOTE: You don't need to uncompress the font files, but if
-       you uncompress them anyway you must run mkfontdir in the
-       corresponding font directory; otherwise your server will
-       abort with the message ``could not open default font
-       'fixed'''.
 
 
-  If you are running a stock FreeBSD 1.1.5 system you can ignore the
-  rest of this section.  If not, make sure you have a spare virtual
-  console which is running a login process (getty).  First check how
-  many virtual consoles you have:
+  NOTE: You don't need to uncompress the font files, but if
+  you uncompress them anyway you must run mkfontdir in the
+  corresponding font directory; otherwise your server will
+  abort with the message ``could not open default font
+  'fixed'''.
 
-
-
-
-
-   % dmesg|grep sc
-   sc0 at 0x60-0x6f irq 1 on motherboard
-   sc0: VGA color <8 virtual consoles>
-
-
-
-
-  Then check /etc/ttys to make sure there is at least one ttyv? devices
-  which doesn't have a getty enabled.  FreeBSD 1.1.5 has the first three
-  ``on'' and the last ``off'' so that getty runs on only three:
-
-
-
-        % grep ttyv /etc/ttys
-        ttyv0  "/usr/libexec/getty Pc" cons25  on secure
-        ttyv1  "/usr/libexec/getty Pc" cons25  on secure
-        ttyv2  "/usr/libexec/getty Pc" cons25  on secure
-        ttyv3  "/usr/libexec/getty Pc" cons25  off secure
-
-
-
-
-  If your kernel has least 4 VTs and only 3 gettys, this is fine.  If
-  not, either disable a getty in /etc/ttys by changing ``on'' to ``off''
-  or build another kernel with more VTs as described below.
 
   3.  Installing The Display Manager (xdm)
 
@@ -385,26 +366,9 @@
   card and mouse you have.  You must create it to tell the server what
   specific hardware you have.
 
-  XFree86 3.1 uses a new configuration file format. Consult the
-  XF86Config man page and the general INSTALL <INSTALL.html> file for
-  instructions.
-
-  It is strongly recommended that you use the `xf86config' utility to
-  generate an XF86Config file.
-
-  If you have a Xconfig file for XFree86 2.x, you can use reconfig to
-
-  translate part of it into the new format:
-
-
-
-        # reconfig <Xconfig >XF86Config
-
-
-
-
-  and complete the rest manually according to the XF86Config(4) man page
-  and the XF86Config.eg file as a template.
+  It is strongly recommended that you use either the `XF86Setup' utility
+  (which requires the VGA16 server to be installed), or the `xf86config'
+  utility to generate an XF86Config file.
 
   In order to protect your hardware from damage, the server no longer
   will read XF86Config files from a user's home directory, but requires
@@ -428,8 +392,6 @@
 
 
         % cat < /dev/tty00
-
-
 
 
   If you can't find the right mouse device then use ``dmesg|grep sio''
@@ -457,8 +419,6 @@
 
   If you plan to fine tune the screen size or position on your monitor
   you'll need the specs for sync frequencies from your monitor's manual.
-
-
 
   5.  Running X
 
@@ -500,8 +460,6 @@
         options                UCONSOLE                #X Console support
 
 
-
-
   The generic FreeBSD 2.1.0 and 2.1.5 kernels are configured by default
   with the syscons driver.  To configure your kernel similarly it should
   have a line like this in /usr/src/sys/i386/conf/GENERIC:
@@ -531,16 +489,6 @@
   are detected at runtime and no configuration of the server itself is
   required.
 
-  The pcvt console driver is bundled in /usr/ports/util/pcvt in FreeBSD
-  versions 1.0.2 and above.  It can also be ftp-ed from:
-
-  FreeBSD.cdrom.com:/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt
-  <ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt>
-
-  Refer to the README.FreeBSD
-  <ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD>
-  file there for complete installation instructions.
-
   The XFree86 servers include support for the MIT-SHM extension.  The
   GENERIC kernel does not support this, so if you want to make use of
   this, you will need a kernel configured with SYSV shared memory
@@ -568,51 +516,21 @@
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
   xf86site.def, type ``./mkmf' and ``make'' to link the server.  See
-  README.LinkKit <LinkKit.html> for more info.
+  README.LinkKit for more info.
 
   The source tree takes about 114Mb before compiling and an additional
   100Mb after ``make World''.  You should configure the distribution by
   editing xf86site.def and site.def in xc/config/cf before compiling.
-  By default, the config files are set up to build shared libraries.  If
-  you are running a version of FreeBSD that doesn't include shared
-  library support, add the following line to site.def:
-
-
-
-        #define BuildBsdSharedLibs             NO
-
-
-
-
-  If your system doesn't have support or SYSV shared memory (for
-  example, if you don't have the <sys/shm.h> header), you should disable
-  the MIT-SHM extension by adding the following line to site.def:
-
-
-
-
-
-   #define HasShm                         NO
-
-
-
+  By default, the config files are set up to build shared libraries.
 
   To compile the sources on FreeBSD 1.1 and later, edit
   xc/config/cf/FreeBSD.cf to set the OS version parameters correctly,
+
   and then type:
 
 
 
         make World
-
-
-
-
-  If you are running an old version of FreeBSD (before 1.1), then type:
-
-
-
-        make World BOOTSTRAPCFLAGS=-D__FreeBSD__
 
 
 
@@ -624,12 +542,6 @@
   Makefiles, then type ``make''.  Whenever you install additional man
   pages you should update whatis.db by running ``makewhatis
   /usr/X11R6/man''.
-
-  On FreeBSD 1.0 and earlier systems, to avoid the ``Virtual memory
-  exhausted'' message from cc while compiling, increase the data and
-  stack size limits (in csh type ``limit datasize 32M'' and ``limit
-  stacksize 16M'').  This is not needed on FreeBSD 2.0 and later since
-  the defaults are ample.
 
   Note: Starting with XFree86 2.1 and FreeBSD 1.1, the symbol __386BSD__
   no longer gets defined either by the compiler or via the X config
@@ -657,7 +569,6 @@
 
      o  Pace Willison  for providing initial *BSD support.
 
-
      o  Amancio Hasty for 386BSD kernel and S3 chipset support.
 
      o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
@@ -670,13 +581,36 @@
         the Linux distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.17 1996/10/18 15:03:25 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.18 1996/10/23 13:09:54 dawes Exp $
 
 
 
 
 
   $XConsortium: FreeBSD.sgml /main/5 1995/11/12 19:59:27 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

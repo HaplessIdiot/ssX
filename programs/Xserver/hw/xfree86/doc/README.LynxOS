@@ -1,6 +1,6 @@
   README for XFree86 3.2 on LynxOS
   Thomas Mueller
-  Last modified on: 12 October 1996
+  Last modified on: 21 October 1996
 
   1.  What and Where is XFree86?
 
@@ -20,8 +20,8 @@
 
   Binaries for the 3.2 release on LynxOS AT are available from:
 
-  ftp.XFree86.org:/pub/XFree86/current/LynxOS
-  <ftp://ftp.XFree86.org/pub/XFree86/current/LynxOS>
+  ftp.XFree86.org:/pub/XFree86/current/binaries/LynxOS
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/LynxOS>
 
   The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A
   FCS' and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than
@@ -153,9 +153,9 @@
         several executables are set-user-id.  Otherwise the server may
         abort if you unpack it as an ordinary user.
 
-     2. If you have about 80Mb free in the /usr partition ``cd /usr''
-        and skip to no. 3.  Otherwise, create a directory on another
-        partition and sym link it into /usr:
+     2. If you have about 80Mb free in the /usr partition create a
+        directory /usr/X11R6 and skip to no. 3.  Otherwise, create a
+        directory on another partition and sym link it into /usr:
 
 
 
@@ -173,6 +173,7 @@
 
 
 
+           # cd /usr/X11R6
            # for i in X32*.tgz; do
            #   gnutar -xzpPf $i
            # done
@@ -184,6 +185,7 @@
      Else, if you are using csh:
 
 
+           % cd /usr/X11R6
            % foreach i (X32*.tgz)
            %   gnutar -xzpPf $i
            % end
@@ -192,15 +194,16 @@
 
 
 
+
+
      4. Create a symbolic link ``X'' that points to the server that
         matches your video card.  The XF86_* man pages list which vga
         chip sets are supported by each server.  For example, if you
-
         have an ET4000 based card you will use the XF86_SVGA server:
 
 
 
-           # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+           # cd /usr/X11R6/bin; rm -f X; ln -s XF86_SVGA X
 
 
 
@@ -211,6 +214,7 @@
 
 
 
+        # cd /usr/X11R6
         # for i in bin fnts lib xicf; do
         #   gnutar -xzpPf  X32$i.tgz
         # done
@@ -226,7 +230,7 @@
 
 
         # gnutar -xzpPf X32SVGA.tgz
-        # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+        # cd /usr/X11R6/bin; rm -f X; ln -s XF86_SVGA X
 
 
 
@@ -257,10 +261,6 @@
   XFree86 port. A complete binary installation along with manual pages
   will require approximately 70-90 MBytes of disk space. To compile the
   system you will need at least 230 MBytes of free disk space.
-
-
-
-
 
   3.2.  Changes to system environment
 
@@ -776,7 +776,7 @@
   lynx.cf but it has never been tested.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.9 1996/10/13 11:19:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.10 1996/10/23 13:09:58 dawes Exp $
 
 
 
