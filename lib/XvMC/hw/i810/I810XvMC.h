@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.h,v 1.2 2001/12/18 04:23:56 dawes Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.h,v 1.3 2002/10/30 12:52:02 alanh Exp $ */
 
 
 #ifndef I810XVMC_H
@@ -43,7 +43,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xf86drm.h"
 #include "i810_common.h"
-#include <Xlibint.h>
+#include <X11/Xlibint.h>
 
 
 /***************************************************************************
