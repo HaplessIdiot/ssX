@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.76 2005/02/18 00:31:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.77 2005/02/18 01:52:59 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -228,6 +228,10 @@ xf86ModeStatusToString(ModeStatus status)
 	return "refresh rate is below the target";
     case MODE_TOO_BIG:
 	return "size is larger than the preferred mode";
+    case MODE_PANEL_NOSCALE:
+	return "cannot be scaled by the panel";
+    case MODE_ASPECT_RATIO:
+	return "aspect ratio is too large";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:

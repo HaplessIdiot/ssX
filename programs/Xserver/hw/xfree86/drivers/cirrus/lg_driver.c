@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.50tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.51 2004/11/26 13:45:00 tsi Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1735,17 +1735,19 @@ LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 	lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
 
-	if ((mode->CrtcHDisplay <= 2048) &&
-		(mode->CrtcHSyncStart <= 4096) &&
-		(mode->CrtcHSyncEnd <= 4096) &&
-		(mode->CrtcHTotal <= 4096) &&
-		(mode->CrtcVDisplay <= 2048 * lace) &&
-		(mode->CrtcVSyncStart <= 4096 * lace) &&
-		(mode->CrtcVSyncEnd <= 4096 * lace) &&
-		(mode->CrtcVTotal <= 4096 * lace)) {
+	if ((mode->CrtcHDisplay > 2048) ||
+		(mode->CrtcHSyncStart > 4096) ||
+		(mode->CrtcHSyncEnd > 4096) ||
+		(mode->CrtcHTotal > 4096)) {
+		return(MODE_BAD_HVALUE);
+	} else if ((mode->CrtcVDisplay > 2048 * lace) ||
+		(mode->CrtcVSyncStart > 4096 * lace) ||
+		(mode->CrtcVSyncEnd > 4096 * lace) ||
+		(mode->CrtcVTotal > 4096 * lace)) {
+		return(MODE_BAD_VVALUE);
+	} else {
 		return(MODE_OK);
 	}
-	return(MODE_BAD);
 }
 
 

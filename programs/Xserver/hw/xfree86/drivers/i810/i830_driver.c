@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.61 2005/01/10 17:09:32 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -5098,7 +5098,7 @@ I830ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	 xf86DrvMsg(scrnIndex, X_PROBED,
 		    "Removing interlaced mode \"%s\"\n", mode->name);
       }
-      return MODE_BAD;
+      return MODE_NO_INTERLACE;
    }
    return MODE_OK;
 }

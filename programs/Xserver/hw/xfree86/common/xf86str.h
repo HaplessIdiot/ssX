@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.103 2005/01/28 16:56:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.104 2005/02/17 03:46:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -194,13 +194,15 @@ typedef enum {
     MODE_VSYNC_WIDE,	/* vertical sync too wide */
     MODE_VBLANK_NARROW,	/* vertical blanking too narrow */
     MODE_VBLANK_WIDE,	/* vertical blanking too wide */
-    MODE_PANEL,         /* exceeds panel dimensions */
+    MODE_PANEL,		/* exceeds panel dimensions */
     MODE_INTERLACE_WIDTH, /* width too large for interlaced mode */
-    MODE_ONE_WIDTH,     /* only one width is supported */
-    MODE_ONE_HEIGHT,    /* only one height is supported */
-    MODE_ONE_SIZE,      /* only one resolution is supported */
+    MODE_ONE_WIDTH,	/* only one width is supported */
+    MODE_ONE_HEIGHT,	/* only one height is supported */
+    MODE_ONE_SIZE,	/* only one resolution is supported */
     MODE_REFRESH_LOW,	/* refresh rate below the target */
     MODE_TOO_BIG,	/* larger than the preferred mode */
+    MODE_PANEL_NOSCALE,	/* won't scale to panel size */
+    MODE_ASPECT_RATIO,	/* aspect ratio is too large */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;

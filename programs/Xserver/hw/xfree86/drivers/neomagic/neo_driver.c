@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.76tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.77 2004/11/26 13:45:01 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1970,7 +1970,7 @@ NEOValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 			   mode->VDisplay,
 			   nPtr->NeoPanelWidth,
 			   nPtr->NeoPanelHeight);
-		return(MODE_BAD);
+		return(MODE_PANEL);
 	    }
 
 	    /* Is the mode one of the acceptable sizes? */
@@ -2009,7 +2009,7 @@ NEOValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 		       "display properly on LCD\n",
 		       mode->HDisplay,
 		       mode->VDisplay);
-	    return(MODE_BAD);
+	    return(MODE_PANEL_NOSCALE);
 	}
     }
     return(MODE_OK);

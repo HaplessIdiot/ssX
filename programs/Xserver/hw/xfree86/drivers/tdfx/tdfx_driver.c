@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.107 2004/11/26 13:45:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.108 2004/12/10 16:07:03 alanh Exp $ */
 
 /*
  * Authors:
@@ -2407,25 +2407,27 @@ TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
   TDFXPtr pTDFX;
 
   TDFXTRACE("TDFXValidMode start\n");
-  if ((mode->HDisplay>2048) || (mode->VDisplay>1536)) 
-    return MODE_BAD;
+  if (mode->HDisplay>2048)
+    return MODE_BAD_HVALUE;
+  else if (mode->VDisplay>1536) 
+    return MODE_BAD_VVALUE;
   /* Banshee doesn't support interlace, but Voodoo 3 and higher do. */
   pScrn = xf86Screens[scrnIndex];
   pTDFX = TDFXPTR(pScrn);
   if (mode->Flags&V_INTERLACE) {
     switch (pTDFX->ChipType) {
       case PCI_CHIP_BANSHEE:
-        return MODE_BAD;
+        return MODE_NO_INTERLACE;
       case PCI_CHIP_VOODOO3:
       case PCI_CHIP_VOODOO5:
         return MODE_OK;
       default:
-        return MODE_BAD;
+        return MODE_NO_INTERLACE;
     }
   }
   /* In clock doubled mode widths must be divisible by 16 instead of 8 */
   if ((mode->Clock>TDFX2XCUTOFF) && (mode->HDisplay%16))
-    return MODE_BAD;
+    return MODE_H_ILLEGAL;
   return MODE_OK;
 }
 
