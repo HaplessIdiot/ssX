@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.10 2000/07/03 16:26:01 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.11 2000/08/09 23:40:11 dawes Exp $ */
 
 
 /* TO DO ****
@@ -4263,7 +4263,7 @@ source_command(char *p)
   int ie=0;
   int cond,invcond=0;
   char delim,op;
-  char if0[80], if1[80];
+  char if0[MAXBUF], if1[MAXBUF];
   float nif0, nif1;
   int insertat;
   char macrobuf[MAXBUF];		/* local so can have nested macros */
@@ -4443,8 +4443,18 @@ source_command(char *p)
     } else if (!isalpha(*p)) {	/* usually quote, ^G in Digital UNIX */
 	 /* gobble up comparators between delimiters */
 	 delim = *p++;
-	 q = if0; while (*p!=delim) { *q++=*p++; } *q='\0'; p++;
-	 q = if1; while (*p!=delim) { *q++=*p++; } *q='\0'; p++;
+	 q = if0;
+	 while (*p && *p!=delim) {
+	   *q++=*p++;
+	 }
+	 *q='\0';
+	 p++;
+	 q = if1;
+	 while (*p && *p!=delim) {
+	   *q++=*p++;
+	 }
+	 *q='\0';
+	 p++;
 	 cond = (strcmp(if0,if1)==0);
     } else cond=0;	/* a guess, seems to be right bettern than half the time */
     if (invcond) cond=1-cond;
