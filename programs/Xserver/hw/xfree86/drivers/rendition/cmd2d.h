@@ -4,6 +4,7 @@
 /*
  * commands the 2d microcode offers
  */
+/* $XFree86$ */
 
 #define CMD_SETUP					32
 #define CMD_SET_PIX_REG				2

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __RENDITION_OPTION_H__
 #define __RENDITION_OPTION_H__
 
