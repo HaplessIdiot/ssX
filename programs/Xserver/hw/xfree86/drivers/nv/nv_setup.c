@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.36 2003/08/18 21:40:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.37 2003/09/01 20:54:26 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -386,6 +386,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                      (implementation != 0x01A0) &&
                      (implementation != 0x0200);
 
+    pNv->fpScaler = (pNv->twoHeads && (implementation != 0x0110));
+
     pNv->twoStagePLL = (implementation == 0x0310) ||
                        (implementation == 0x0340);
 
@@ -530,21 +532,17 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        monitorA = NVProbeDDC(pScrn, 0);
        monitorB = NVProbeDDC(pScrn, 1);
 
-       if(slaved_on_A) {
+       if(slaved_on_A && !tvA) {
           CRTCnumber = 0;
           FlatPanel = 1;
-          Television = tvA;
           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                    "CRTC 0 is currently programmed for %s\n",
-                     Television ? "TV" : "DFP");
+                    "CRTC 0 is currently programmed for DFP\n");
        } else 
-       if(slaved_on_B) {
+       if(slaved_on_B && !tvB) {
           CRTCnumber = 1;
           FlatPanel = 1;
-          Television = tvB;
           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                    "CRTC 1 is currently programmed for %s\n",
-                     Television ? "TV" : "DFP");
+                    "CRTC 1 is currently programmed for DFP\n");
        } else
        if(analog_on_A) {
           CRTCnumber = outputAfromCRTC;
@@ -557,9 +555,25 @@ NVCommonSetup(ScrnInfoPtr pScrn)
            FlatPanel = 0;
            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                     "CRTC %i appears to have a CRT attached\n", CRTCnumber);
-       } else if(monitorA) {
+       } else
+       if(slaved_on_A) {
+          CRTCnumber = 0;
+          FlatPanel = 1;
+          Television = 1;
+          xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                    "CRTC 0 is currently programmed for TV\n");
+       } else
+       if(slaved_on_B) {
+          CRTCnumber = 1;
+          FlatPanel = 1;
+          Television = 1;
+          xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                    "CRTC 1 is currently programmed for TV\n");
+       } else
+       if(monitorA) {
            FlatPanel = monitorA->features.input_type ? 1 : 0;
-       } else if(monitorB) {
+       } else 
+       if(monitorB) {
            FlatPanel = monitorB->features.input_type ? 1 : 0;
        }
 
@@ -640,6 +654,13 @@ NVCommonSetup(ScrnInfoPtr pScrn)
               "Using %s on CRTC %i\n",
               pNv->FlatPanel ? (pNv->Television ? "TV" : "DFP") : "CRT", 
               pNv->CRTCnumber);
+
+    if(pNv->FlatPanel && !pNv->Television) {
+       pNv->fpWidth = pNv->PRAMDAC[0x0820/4] + 1;
+       pNv->fpHeight = pNv->PRAMDAC[0x0800/4] + 1;
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Panel size is %i x %i\n",
+                  pNv->fpWidth, pNv->fpHeight);
+    }
 
     if(monitorA)
       xf86SetDDCproperties(pScrn, monitorA);
