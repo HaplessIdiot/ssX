@@ -29,9 +29,9 @@ The following items have been added since XFree86 3.1 was released in
 October 1994:
 <enum>
     <item> XFree86 3.1.1 includes the X Consortium's recently released
-	public patches (up to fix-10).  The XFree86 Project, Inc has
+	public patches (up to fix-11).  The XFree86 Project, Inc has
 	worked with the X Consortium to have much of XFree86 3.1.1
-	included in the X Consortium's fix-10.
+	included in the X Consortium's fix-11.
     <item> A new accelerated server for Mach64 boards.
     <item> Support for the S3 Trio32 and Trio64 chipsets.
     <item> Support in the S3 server for the Chrontel 8391 clock chip.
@@ -703,7 +703,7 @@ information, contact The XFree86 Project, Inc, at
 <sect>Source and binary archive sites
 <p>
 
-Source patches are available to upgrade X11R6 PL10 from the X Consortium
+Source patches are available to upgrade X11R6 PL11 from the X Consortium
 to XFree86 3.1.1.  They and binaries for many OSs are available via anonymous
 FTP from:
 
@@ -810,7 +810,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.14 1995/01/23 01:30:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.15 1995/01/25 10:53:45 dawes Exp $
 </verb>
 
 </article>

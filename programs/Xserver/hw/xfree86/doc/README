@@ -17,9 +17,9 @@
   October 1994:
 
      1. XFree86 3.1.1 includes the X Consortium's recently released
-        public patches (up to fix-10).  The XFree86 Project, Inc has
+        public patches (up to fix-11).  The XFree86 Project, Inc has
         worked with the X Consortium to have much of XFree86 3.1.1
-        included in the X Consortium's fix-10.
+        included in the X Consortium's fix-11.
 
      2. A new accelerated server for Mach64 boards.
 
@@ -888,7 +888,7 @@
   10.  Source and binary archive sites
 
 
-  Source patches are available to upgrade X11R6 PL10 from the X
+  Source patches are available to upgrade X11R6 PL11 from the X
   Consortium to XFree86 3.1.1.  They and binaries for many OSs are
   available via anonymous FTP from:
 
@@ -997,7 +997,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.15 1995/01/25 10:53:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.16 1995/01/25 11:51:37 dawes Exp $
 
 
 

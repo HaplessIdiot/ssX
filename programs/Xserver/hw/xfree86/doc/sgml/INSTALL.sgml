@@ -30,7 +30,7 @@ and other sites archiving GNU source.)
 <item>You need the following:
 
     <itemize>
-    <item> X Consortium X11R6 distribution with fixes 01-10 applied.
+    <item> X Consortium X11R6 distribution with fixes 01-11 applied.
 
     <item> <tt/XFree86-3.1.1.diff.gz/
 
@@ -99,7 +99,7 @@ and other sites archiving GNU source.)
 </verb></tscreen>
      </itemize>
         
-<item> If you are starting from the stock X Consortium PL10 distribution,
+<item> If you are starting from the stock X Consortium PL11 distribution,
    go to the
    directory above your <tt/xc/ directory, and run:
 
@@ -294,7 +294,7 @@ details of how to do this, please refer to the <url url="LinkKit.html"
 name="README.LinkKit"> file.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.3 1995/01/15 10:34:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.4 1995/01/19 05:22:45 dawes Exp $
 </verb>
 
 </article>
