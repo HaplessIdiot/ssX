@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.5 1997/03/18 10:06:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.6 1997/04/12 13:47:13 hohndel Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -95,8 +95,13 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     PixelType	startmask;
     /* This is not quite right, but it'll do for now */
     if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
+#ifndef __powerpc__
 	startmask = (unsigned long)(-1) ^
 	    LONG2CHARSSAMEORDER((unsigned long)(-1) << 1);
+#else
+	startmask = (unsigned long)(-1) ^
+	    LONG2CHARSSAMEORDER((unsigned long)(-1) >> 1);
+#endif
     else
 	startmask = (unsigned long)(-1) ^
 	    LONG2CHARSDIFFORDER((unsigned long)(-1) >> 1);
@@ -160,7 +165,11 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
     		/* This is not quite right, but it'll do for now */
 		if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
+#ifndef __powerpc__
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << 1);
+#else
+		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) >> 1);
+#endif
 		else
 		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> 1);
 #else
@@ -210,7 +219,11 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 #ifdef XFree86Server
     		/* This is not quite right, but it'll do for now */
 		if (screenInfo.bitmapBitOrder == IMAGE_BYTE_ORDER)
+#ifndef __powerpc__
 		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) << 1);
+#else
+		    msk = LONG2CHARSSAMEORDER(LONG2CHARSSAMEORDER(msk) >> 1);
+#endif
 		else
 		    msk = LONG2CHARSDIFFORDER(LONG2CHARSDIFFORDER(msk) >> 1);
 #else

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.112 1997/06/08 15:31:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.113 1997/07/05 15:15:51 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -978,7 +978,7 @@ XF86LOADEROBJS = $(XF86COMSRC)/XF86_LOADER.o
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86LOADERLIBS = $(XF86LLIBS) $(XF86COMLIB) $(XF86LOADERLIB)  $(XF86HWLIB) \
                  $(XF86OSLIB) PreFbLibs $(OTHEREXTS) NoMfbPostFbLibs
-XF86LOADERSYSLIBS = $(SYSLIBS)
+XF86LOADERSYSLIBS = $(SYSLIBS) $(LIBDL)
 #if HasParallelMake
 MakeMutex($(XF86LOADERSUBDIRS) $(XF86LOADEROBJS) $(XF86LOADERLIBS) $(XF86LOADERSYSLIBS))
 #endif

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miarc.c /main/90 1996/08/01 19:25:10 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.3 1996/08/20 12:32:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.4 1996/12/23 07:09:42 dawes Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -589,7 +589,10 @@ miComputeEllipseSpans(lw, parc, spdata)
 		t = y / h;
 		x = w * sqrt(1 - (t * t));
 		t = K - y;
-		t = sqrt(rs - (t * t));
+		if (rs - (t * t) >= 0)
+		   t = sqrt(rs - (t * t));
+		else
+		   t = 0;
 		if (flip == 2)
 		    inx = x - t;
 		else
@@ -614,7 +617,10 @@ miComputeEllipseSpans(lw, parc, spdata)
 		t = y / h;
 		x = w * sqrt(1 - (t * t));
 		t = K - y;
-		inx = x - sqrt(rs - (t * t));
+		if (rs - (t * t) >= 0)
+		   inx = x - sqrt(rs - (t * t));
+		else
+		   inx = x;
 	    }
 	    y = (b - d) / 2;
 	    if (y >= 0.0)
@@ -624,7 +630,10 @@ miComputeEllipseSpans(lw, parc, spdata)
 		t = y / h;
 		x = w * sqrt(1 - (t * t));
 		t = K - y;
-		t = sqrt(rs - (t * t));
+		if (rs - (t * t) >= 0)
+		   t = sqrt(rs - (t * t));
+		else 
+		   t = 0;
 		if (flip == 1)
 		    inx = x - t;
 		else
@@ -771,7 +780,10 @@ tailX(K, def, bounds, acc)
 	    t = y / h;
 	    x = w * sqrt(1 - (t * t));
 	    t = K - y;
-	    t = sqrt(rs - (t * t));
+	    if (rs - (t * t) >= 0)
+	       t = sqrt(rs - (t * t));
+	    else
+	       t = 0;
 	    *xp++ = x - t;
 	}
     }
@@ -793,7 +805,10 @@ tailX(K, def, bounds, acc)
 	    t = y / h;
 	    x = w * sqrt(1 - (t * t));
 	    t = K - y;
-	    *xp++ = x - sqrt(rs - (t * t));
+	    if (rs - (t * t) >= 0)
+	       *xp++ = x - sqrt(rs - (t * t));
+	    else
+	       *xp++ = x;
 	}
 	y = (b - d) / 2;
 	if (y >= 0.0 && flip == 1)
@@ -803,7 +818,10 @@ tailX(K, def, bounds, acc)
 	    t = y / h;
 	    x = w * sqrt(1 - (t * t));
 	    t = K - y;
-	    t = sqrt(rs - (t * t));
+	    if (rs - (t * t) >= 0)
+	       t = sqrt(rs - (t * t));
+	    else
+	       t = 0;
 	    *xp++ = x - t;
 	}
     }

@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: events.c /main/187 1996/09/25 00:47:41 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.10 1996/12/23 06:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.11 1996/12/24 02:23:45 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -65,6 +65,11 @@ SOFTWARE.
 
 #ifdef XKB
 #include "XKBsrv.h"
+#if NeedFunctionPrototypes
+extern Bool XkbFilterEvents(ClientPtr, int, xEvent *);
+#else
+extern Bool XkbFilterEvents();
+#endif
 #endif
 
 #ifdef XCSECURITY

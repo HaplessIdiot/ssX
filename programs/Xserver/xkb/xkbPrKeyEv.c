@@ -154,7 +154,11 @@ XkbBehavior	behavior;
 		break;
 	    default:
 		ErrorF("unknown key behavior 0x%04x\n",behavior.type);
+#if defined(MetroLink)
+		return;
+#else
 		break;
+#endif
 	}
     }
     XkbHandleActions(keybd,keybd,xE,count);

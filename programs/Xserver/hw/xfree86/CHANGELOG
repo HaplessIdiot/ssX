@@ -1,4 +1,18 @@
 XFree86 3.9j (x July 1997)
+1108. Fix sqrt problems in miarc (#765, Harald Koenig).
+1107. Remove special Tk 4.0 support in XF86Setup and add C code to match the
+      latest vidmode extension changes. Fix a minor bug in the DPMS code
+      (#764, Joe Moss).
+1106. Several small fixes to Xserver/{dix,include,os/,PEX5} (#760-763,
+      Craig Groeschel).
+1105. XKB fixes (#759, Stuart Anderson).
+1104. Fix uninitialized variable (verbose) in scanpci.c (#757, Thomas Mueller).
+1103. Add big endian version of PCI config structure (#757, Thomas Mueller).
+1102. Add cross compile definitions for LynxOS and add static vga server for
+      LynxOS PowerPC (#757, Thomas Mueller).
+1101. Add bindist files for LynxOS (#756, Thomas Mueller).
+1100. Fix 24bpp on W32+STB170x cards (#755, David Bateman).
+1099. Add handling for AST onboard Mach32 card (#754, Bryan Feir).
 1098. Fix a problem in Imake.rules that shows up when using Motif.rules.
 1097. Fix MGA lockup on SVR4.0.
 1096. Add missing for Japanese "small TSU" character to the XKB 

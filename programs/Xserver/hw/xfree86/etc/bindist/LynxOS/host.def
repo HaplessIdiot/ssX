@@ -1,0 +1,11 @@
+/*
+ * host.def for building LynxOS binary dists
+ *
+ * $XFree86$
+ */
+
+#define InstallEmptyHostDef
+ 
+#define HasTk			YES
+#define HasTcl			YES
+

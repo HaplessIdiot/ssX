@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/mfblinebank.h,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb/mfblinebank.h,v 1.1 1997/04/12 14:11:32 hohndel Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -41,7 +41,7 @@ extern int vgaSaveReadseg;
 #define USE_GCC_INLINE
 #endif
 
-#if __GNUC__ > 1 && !defined(__alpha__)
+#if __GNUC__ > 1 && !defined(__alpha__) && !defined(__powerpc__)
 #define USE_ASM_BANK_MACROS
 #endif
 
