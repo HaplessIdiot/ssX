@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.9 2000/06/17 00:02:50 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.10 2000/06/26 05:41:28 martin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -221,14 +221,6 @@ DestroyContext(Display *dpy, GLXContext gc)
     xid = gc->xid;
     imported = gc->imported;
     gc->xid = None;
-    if (gc->currentDpy) {
-	/* Have to free later cuz it's in use now */
-	__glXUnlock();
-    } else {
-	/* Destroy the handle if not current to anybody */
-	__glXUnlock();
-	__glXFreeContext(gc);
-    }
 
 #ifdef GLX_DIRECT_RENDERING
     /* Destroy the direct rendering context */
@@ -240,6 +232,15 @@ DestroyContext(Display *dpy, GLXContext gc)
 	}
     }
 #endif
+
+    if (gc->currentDpy) {
+	/* Have to free later cuz it's in use now */
+	__glXUnlock();
+    } else {
+	/* Destroy the handle if not current to anybody */
+	__glXUnlock();
+	__glXFreeContext(gc);
+    }
 
     if (!imported) {
 	/* 
