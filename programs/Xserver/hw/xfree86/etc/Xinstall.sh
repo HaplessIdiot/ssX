@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.33 2002/01/08 01:31:42 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.34 2002/01/15 22:52:32 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -615,8 +615,8 @@ FindDistName()
 		case "$OsArch" in
 		i386)
 			case "$OsVersion" in
-			2.9*)	# Check this
-				DistName="OpenBSD-2.9"
+			3.0*)	# Check this
+				DistName="OpenBSD-3.0"
 				;;
 			*)
 				Message="No OpenBSD/i386 binaries available for this version"
