@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 709. Build fix for Solaris Express (Bugzilla #1032, Alan Coopersmith).
  708. Fix warning in lib/Xt/Alloc.c (Bugzilla #1035, Nicolas Jolly).
  707. Fix short overflow problem with box clipping in fb/fbcopy.c
       (Bugzilla #978, Stephen McCamant).
@@ -18414,7 +18415,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3056 2003/12/28 17:22:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3057 2003/12/30 01:45:08 tsi Exp $
 
 
 

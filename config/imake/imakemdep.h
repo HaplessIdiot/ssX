@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.69tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.71 2003/06/12 14:12:26 eich Exp $ */
 
 
 /* 
@@ -1014,8 +1014,17 @@ struct symtab	predefs[] = {
 #ifdef sparc
 	{"sparc", "1"},
 #endif
+#ifdef __sparc
+	{"__sparc", "1"},
+#endif
+#ifdef __sparcv9
+	{"__sparcv9", "1"},
+#endif
 #ifdef __sparc__
 	{"__sparc__", "1"},
+#endif
+#ifdef __sparcv9__
+	{"__sparcv9__", "1"},
 #endif
 #ifdef hpux
 	{"hpux", "1"},
@@ -1262,6 +1271,9 @@ struct symtab	predefs[] = {
 # if defined (__AMD64__) || defined (__x86_64__)
 	{"__AMD64__", "1"},
 	{"__x86_64__", "1"},
+# endif
+# ifdef __i386
+	{"__i386", "1"},
 # endif
 # ifdef __i386__
 	{"__i386__", "1"},
