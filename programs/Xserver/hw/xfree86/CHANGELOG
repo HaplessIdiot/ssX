@@ -1,4 +1,3 @@
-
 XFree86 4.2.99.3 (xx November 2002)
  536. Attempt to fix bitblt problems when doing offscreen pixmaps in
       i810 (Egbert Eich).
@@ -30,8 +29,7 @@ XFree86 4.2.99.3 (xx November 2002)
       with the host bridge specific code (Egbert Eich).
  520. AXP domain support (Jeff Wiedemeier).
  519. Added -m32 flag to c++ when build on ia32 (Egbert Eich).
- 518. Support for R_ALPHA_GPRELHIGH und R_ALPHA_GPRELL on Alpha used by 
-      gcc 3.2 (Stefan Reinauer).
+ 518. -
  517. Added rule to be able to use Numlock key on broken IBM keyboards
       (Stefan Dirsch).
  516. Fixed Xlib build rules so it builds a truly static library again 
@@ -15602,4 +15600,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2402 2002/11/22 04:27:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2404 2002/11/25 14:04:54 eich Exp $

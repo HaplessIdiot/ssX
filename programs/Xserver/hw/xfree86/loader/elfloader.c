@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.45 2002/10/29 22:50:03 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.47 2002/11/25 14:05:02 eich Exp $ */
 
 /*
  *
@@ -1512,34 +1512,6 @@ int		force;
 # endif
 	  break;
 
-	case R_ALPHA_GPRELLOW:
- 	    {
- 	    dest64=(unsigned long *)(secp+rel->r_offset);
- 	    dest16=(unsigned short *)dest64;
- 
- 	    symval += rel->r_addend;
- 	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
- 
- 	    *dest16=symval;
- 	    break;
- 	    }
- 	case R_ALPHA_GPRELHIGH:
- 	    {
- 	    dest64=(unsigned long *)(secp+rel->r_offset);
- 	    dest16=(unsigned short *)dest64;
- 
- 	    symval += rel->r_addend;
- 	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
- 	    symval = ((long)symval >> 16) + ((symval >> 15) & 1);
- 	    if( (long)symval > 0x7fff ||
- 	        (long)symval < -(long)0x8000 ) {
- 		FatalError("R_ALPHA_GPRELHIGH symval-got is too large for %s:%lx\n",
- 			ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)),symval);
- 	    }
- 
- 	    *dest16=symval;
- 	    break;
- 	    }
  	case R_ALPHA_GPREL16:
  	    {
  	    dest64=(unsigned long *)(secp+rel->r_offset);
