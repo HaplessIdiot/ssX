@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.10 2002/09/22 07:09:05 paulo Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.11 2002/09/23 01:25:38 paulo Exp $
 
 #include "Xedit"
 
@@ -9,12 +9,16 @@
 *Command.backgroundPixmap:	gradient:vertical?dimension=18&start=gray90&end=gray65
 *Command.foreground:		gray20
 *Command.displayList:\
-foreground	gray60;\
-lines		+2,-2,-2,-2,-2,+2;\
+foreground	gray92;\
+line		1,0,-2,0;\
 foreground	gray95;\
-lines		-3,+1,+1,+1,+1,-3;\
-foreground	gray78;\
-points		-2,+1,+1,-2
+line		2,1,-3,1;\
+foreground	gray74;\
+segments	3,-2,-4,-2, 2,-3,-3,-3, 1,-5,-2,-5;\
+point		-1,-1;\
+foreground	gray80;\
+line		0,0,0,-1;\
+point		-1,0
 
 *Command.translations:	#override \
 <Btn1Down>:	set-values(1, foreground, gray20, background, rgb:d/5/5) set()\n\
@@ -77,6 +81,11 @@ segments	3,-2,-4,-2, 2,-3,-3,-3, 1,-5,-2,-5
 *Text.background:		gray96
 *Text.?.background:		gray96
 *Text*cursorColor:		rgb:d/5/5
+*Text.displayList:\
+foreground	white;\
+line		1,-1,-2,-1;\
+foreground	gray88;\
+line		1,0,-2,0
 
 *Scrollbar.foreground:		rgb:a/5/5
 *Scrollbar.background:		gray60
@@ -85,14 +94,14 @@ segments	3,-2,-4,-2, 2,-3,-3,-3, 1,-5,-2,-5
 *hScrollbar.backgroundPixmap:	gradient:vertical?dimension=14&start=gray80&end=gray70
 *hScrollbar.displayList:\
 foreground	gray75;\
-lines		+1,-1,-1,-1,-1,+1;\
+line		1,-1,-2,-1;\
 foreground	gray85;\
-lines		-1,+0,+0,+0,+0,-1
+lines		1,0,-2,0
 *vScrollbar.displayList:\
 foreground	gray85;\
-lines		+1,-1,-1,-1,-1,+1;\
+lines		0,1,0,-2;\
 foreground	gray75;\
-lines		-1,+0,+0,+0,+0,-1
+lines		-1,1,-1,-2
 *Scrollbar.thumb:		vlines2
 *hScrollbar.thumb:		hlines2
 
@@ -182,3 +191,8 @@ foreground	rgb:d/c/6;\
 draw-segments	0,1,0,-3,1,-2,-3,-2,-2,-3,-2,1,-3,0,1,0;\
 foreground	rgb:a/8/4;\
 draw-lines	2,-1, -2,-1, -1,-2, -1,2
+
+*grip.foreground:	gray10
+*grip.displayList:\
+foreground	gray80;\
+points		0,0,0,-1,-1,-1,-1,0

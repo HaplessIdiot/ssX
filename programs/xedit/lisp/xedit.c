@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.1 2002/09/22 07:09:07 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -277,7 +277,7 @@ XeditPrint(LispMac *mac, Widget output, LispObj *object)
     LispDoWriteObject(mac, &result_stream, object, 1);
     if (result_string.length >= sizeof(result_buffer)) {
 	if (result_buffer[0] == '(')
-	    memcpy(result_buffer + sizeof(result_buffer) - 5, "...)", 5);
+	    memcpy(result_buffer + sizeof(result_buffer) - 5, "...)\n", 5);
 	else
 	    memcpy(result_buffer + sizeof(result_buffer) - 4, "...\n", 4);
     }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.11 2002/09/15 21:32:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.12 2002/09/22 07:09:07 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -923,7 +923,7 @@ LispFormatEnglishInteger(LispMac *mac, LispObj *stream, long number, int ordinal
 	}
 	else {
 	    strcpy(stk, "zero");
-	    length += 6;	/* strlen("zero") */
+	    length += 4;	/* strlen("zero") */
 	}
     }
     for (;;) {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.36 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.37 2002/09/22 18:41:26 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -95,17 +95,6 @@ LispObjectCompare(LispMac *mac, LispObj *left, LispObj *right, int function)
 		if (right->type == LispString_t &&
 		    strcasecmp(THESTR(left), THESTR(right)) == 0)
 		    result = T;
-		goto compare_done;
-	    /*  This assumes the lisp interpreter and the regex library
-	     * agree in case of characters. */
-	    case LispRegex_t:
-		/* If the regexs are guaranteed to generate the same matches */
-		if (right->type == LispRegex_t &&
-		    (left->data.regex.options & ~RE_ICASE) ==
-		    (right->data.regex.options & ~RE_ICASE))
-		    result = LispObjectCompare(mac, left->data.regex.pattern,
-					       right->data.regex.pattern,
-					       function);
 		goto compare_done;
 	    default:
 		break;
