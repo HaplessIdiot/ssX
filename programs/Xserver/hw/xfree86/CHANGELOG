@@ -1,4 +1,5 @@
 XFree86 4.4.99.18 (xx November 2004)
+ 218. Xpm fixes for CAN-2004-0914 (Petr Mladek, Thomas Biege). 
  217. Add content to the previously empty cirrus driver manual page
       (Bugzilla #1511, Scot Wilcoxon).
  216. Add Sinhala (Sri Lanka) xkb map (Bugzilla #1509, Harshula).
@@ -19166,7 +19167,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3341 2004/11/12 12:02:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3342 2004/11/18 21:26:16 dawes Exp $
 
 
 
