@@ -1,4 +1,5 @@
 XFree86 3.1.2Fc (3 September 1996)
+771. PCI detection for the Alliance ProMotion 6422 (Kent Hamilton).
 770. Documentation updates (Dirk Hohndel, Matthieu Herrb).
 769. Updates for OpenBSD, including support for recent changes to the
      console drivers (Matthieu Herrb).
