@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.0 1994/04/28 12:44:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.1 1994/05/22 00:02:09 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -537,6 +537,13 @@ StartClient (verify, d, pidp, name, passwd)
 	    LogError("setgroups for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
+#if (BSD >= 199103)
+	if (setlogin(name) < 0)
+	{
+	    LogError("setlogin for \"%s\" failed, errno=%d", name, errno);
+	    return(0);
+	}
+#endif
 #else
 	if (setgid(verify->gid) < 0)
 	{
@@ -836,7 +843,12 @@ char	*user, *home;
     if (home)
 	env = setEnv (env, "HOME", home);
     if (user)
+    {
 	env = setEnv (env, "USER", user);
+#if defined(SYSV) || defined(SVR4)
+	env = setEnv (env, "LOGNAME", user);
+#endif
+    }
     env = setEnv (env, "PATH", d->systemPath);
     env = setEnv (env, "SHELL", d->systemShell);
     if (d->authFile)

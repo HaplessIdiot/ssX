@@ -1,3 +1,8 @@
+XFree86 3.0Ca (27 June 1994)
+115. Fixes for AGX font cache code (Henry Worth).
+114. Banking support for P9000 (doesn't seem to work yet) (David Moews).
+113. Text resotration code for P9000 (Chris Mason).
+
 XFree86 3.0C (22 June 1994)
 112. Fix server crash when started with a lock key on.
 111. Recognise 864/964 PCI as capable of linear memory access.

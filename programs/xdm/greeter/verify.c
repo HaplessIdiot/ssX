@@ -1,4 +1,5 @@
 /* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -66,6 +67,10 @@ static char *envvars[] = {
     "SYS_CODE",
     "TZ",
 #endif
+#if (defined(SVR4) || defined(SYSV)) && defined(i386) && !defined(sun)
+    "TZ",
+    "XLOCAL",
+#endif
     NULL
 };
 
@@ -84,6 +89,9 @@ char	*user, *home, *shell;
     env = setEnv (env, "DISPLAY", d->name);
     env = setEnv (env, "HOME", home);
     env = setEnv (env, "USER", user);
+#if defined(SYSV) || defined(SVR4)
+    env = setEnv (env, "LOGNAME", user);
+#endif
     env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
     env = setEnv (env, "SHELL", shell);
     for (envvar = envvars; *envvar; envvar++)
