@@ -380,6 +380,7 @@
 				0A79E1A800449EB2CE6F79C2,
 				0A79E1A900449EB2CE6F79C2,
 				0A79E1AA00449EB2CE6F79C2,
+				1220774500712D2D416877C2,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -485,6 +486,39 @@
 			name = "Other Frameworks";
 			refType = 4;
 		};
+		1220774300712D2D416877C2 = {
+			children = (
+				1220774400712D2D416877C2,
+				1220774600712D75416877C2,
+			);
+			isa = PBXVariantGroup;
+			name = Localizable.strings;
+			path = "";
+			refType = 4;
+		};
+		1220774400712D2D416877C2 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/Localizable.strings;
+			refType = 4;
+		};
+		1220774500712D2D416877C2 = {
+			fileRef = 1220774300712D2D416877C2;
+			isa = PBXBuildFile;
+			settings = {
+				INCLUDED_OSS = (
+					MACOS,
+					WINDOWS,
+					PDOUNIX,
+				);
+			};
+		};
+		1220774600712D75416877C2 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/Localizable.strings;
+			refType = 4;
+		};
 		19C28FACFE9D520D11CA2CBB = {
 			children = (
 				0A79E19E004499A1CE6F79C2,
@@ -539,6 +573,7 @@
 			children = (
 				29B97318FDCFA39411CA2CEA,
 				089C165CFE840E0CC02AAC07,
+				1220774300712D2D416877C2,
 				0157A37D002CF6D7CE6F79C2,
 				02E03CA000348209CE6F79C2,
 				015698ED003DF345CE6F79C2,
