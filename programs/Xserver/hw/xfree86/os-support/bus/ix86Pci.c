@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.18tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -671,6 +671,7 @@ static struct {
     { DEVID(VIA,	APOLLOVP1),		64},
     { DEVID(VIA,	APOLLOPRO133X),		64},
     { DEVID(INTEL,	430HX_BRIDGE),		16},
+    { DEVID(INTEL,	440EX_BRIDGE),		32},
     { DEVID(INTEL,	440BX_BRIDGE),		32},
 };
 #define NUM_BRIDGES (sizeof(host_bridges) / sizeof(host_bridges[0]))

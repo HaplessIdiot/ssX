@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.49tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.50tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -742,7 +742,9 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	  xf86LoaderReqSymLists(vbeSymbols, NULL);
 	  mon = renditionProbeDDC(pScreenInfo, pRendition->pEnt->index);
 	  xf86PrintEDID(mon);
+#if 0
 	  xf86SetDDCproperties(pScreenInfo, mon);
+#endif
       }
     }
     else {

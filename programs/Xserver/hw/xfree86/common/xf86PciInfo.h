@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.143 2003/01/22 21:44:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.144tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -550,6 +550,7 @@
 #define PCI_CHIP_I810_DC100		0x7123
 #define PCI_CHIP_I810_E_BRIDGE		0x7124
 #define PCI_CHIP_I810_E			0x7125
+#define PCI_CHIP_440EX_BRIDGE		0x7180	/* Also 440LX */
 #define PCI_CHIP_440BX_BRIDGE		0x7190
 #define PCI_CHIP_I740_AGP		0x7800
 #define PCI_CHIP_460GX_PXB		0x84CB
