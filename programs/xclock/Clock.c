@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.23 2002/10/17 01:00:01 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.25 2003/07/04 16:24:30 eich Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -563,7 +563,7 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
 #endif
 }
 
-#if XRENDER
+#ifdef XRENDER
 static void
 RenderPrepare (ClockWidget  w, XftColor *color)
 {
