@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.77 1997/02/25 16:05:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.78 1997/02/27 13:59:55 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -212,19 +212,6 @@ ScrnInfoRec vga256InfoRec = {
 
 #ifdef XFree86LOADER
 
-ScrnInfoPtr xf86Screens[] = 
-{
-  &vga256InfoRec,
-};
-
-int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
-
-int xf86ScreenNames[] =
-{
-  SVGA,
-  -1
-};
-
 #ifdef XF86VGA16
 int vga16ValidTokens[] =
 {
@@ -407,7 +394,11 @@ static int validDepth = 4;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern int defaultColorVisualClass;
 
+#ifdef XFree86LOADER
+#define Drivers videoDrivers
+#else
 #define Drivers vgaDrivers
+#endif
 
 extern vgaVideoChipPtr Drivers[];
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.7 1996/12/23 06:48:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.8 1997/02/17 09:46:19 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -441,3 +441,36 @@ static void HGA6845ClearScreen()
     if (NULL!=monoBankABottom)
 	xf86memset(monoBankABottom,0,HGA6845MapSize);
 }
+
+
+#ifdef XFree86LOADER
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    int  * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+      * data = (int) &HERCULES;
+      * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+      break;
+    case 1:
+      * data = (int) "libmono.a";
+      * magic= MAGIC_LOAD;
+      break;
+    default:
+      * magic= MAGIC_DONE;
+      break;
+    }
+
+    return;
+}
+#endif /* XFree86LOADER */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:22:59 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/Imakefile,v 3.4 1996/02/04 09:09:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/Imakefile,v 3.5 1996/12/23 06:48:18 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = hgc1280driv.c
@@ -24,11 +24,15 @@ SubdirLibraryRule($(OBJS))
 #endif
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(hgc1280_drv, $(OBJS))
+NormalRelocatableTarget(hgc1280_1bpp, $(OBJS))
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mono/hgc1280)
 InstallLinkKitNonExecFile(hgc1280HW.h,$(LINKKITDIR)/drivers/mono/hgc1280)
 InstallLinkKitNonExecFile(hgc1280driv.c,$(LINKKITDIR)/drivers/mono/hgc1280)
 InstallLinkKitNonExecFile(HGC1280.info,$(LINKKITDIR)/drivers/mono/hgc1280)
+
+#if DoLoadableServer
+InstallDynamicModule(hgc1280_1bpp.o,$(MODULEDIR))
+#endif
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.105 1997/02/25 14:18:45 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.106 1997/02/27 13:57:30 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -134,6 +134,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.105 1997/02/25 14:18:45 hohndel Ex
  * The following servers are supported in Intel x86 platforms
  *
 #define XF86LoaderServer        NO
+#define XF86MonoModule          NO
 #define XF86SVGAModule          NO
 #define XF86VGA16Module         NO
 #define XF86S3Module            NO

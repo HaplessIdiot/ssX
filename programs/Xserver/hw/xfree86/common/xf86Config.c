@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.120 1997/02/27 13:58:27 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.121 1997/03/03 15:55:18 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +61,7 @@ extern char *getenv();
 #ifndef XF86SETUP
 #ifdef XFree86LOADER
 #include <vga.h>
-extern vgaVideoChipPtr vgaDrivers[];
+extern void * videoDrivers[];
 int xf86xaaloaded = FALSE;
 #endif
 #else
@@ -197,6 +197,11 @@ CONFIG_RETURN_TYPE findConfigFile(
 static int getScreenIndex(
 #if NeedFunctionPrototypes
      int token
+#endif
+);
+static int StringToToken(
+#if NeedFunctionPrototypes
+     char *str, SymTabRec tab[]
 #endif
 );
 static int getStringToken(
@@ -551,10 +556,18 @@ static int
 getStringToken(tab)
      SymTabRec tab[];
 {
+  return StringToToken (val.str, tab);
+}
+
+static int
+StringToToken(str, tab)
+     char *str;
+     SymTabRec tab[];
+{
   int i;
 
   for ( i = 0 ; tab[i].token != -1 ; i++ ) {
-    if ( ! StrCaseCmp(tab[i].name,val.str) ) return tab[i].token;
+    if ( ! StrCaseCmp(tab[i].name,str) ) return tab[i].token;
   }
   return(ERROR_TOKEN);
 }
@@ -2430,15 +2443,15 @@ configMonitorSection()
 #ifdef XFree86LOADER
 void
 addChipRec(rec)
-    vgaVideoChipRec *rec;
+    void *rec;
 {
     int i=0;
 
-    while( vgaDrivers[i] != (vgaVideoChipPtr)-1 )
+    while( videoDrivers[i] != (void *)-1 )
     {
-        if( vgaDrivers[i] == NULL )
+        if( videoDrivers[i] == NULL )
 	{
-	    vgaDrivers[i] = rec;
+	    videoDrivers[i] = rec;
 	    break;
 	}
 	i++;
@@ -2452,6 +2465,7 @@ configDynamicModuleSection()
 {
     int		token;
     ScrnInfoRec *(*ptr)();
+    int (*ptrInt)();
  
     while ((token = xf86GetToken(ModuleTab)) != ENDSECTION) {
 	switch (token) {
@@ -2502,6 +2516,8 @@ configDynamicModuleSection()
 	FatalError("Can't find ServerInit entry\n");
     } else {
 	xf86Screens[0]=(ptr)();
+	xf86ScreenNames [0]=
+		StringToToken (xf86Screens[0]->name, DriverTab);
     }
 #endif
 
@@ -2984,6 +3000,8 @@ configScreenSection()
                    XCONFIG_GIVEN, screen->name, screen->depth);
     switch( screen->depth )
     {
+    case 1:
+    	    break;
     case 4:
 	    /* right now this doesn't work */
     	    break;

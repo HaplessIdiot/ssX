@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.59 1997/01/18 06:55:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.60 1997/03/03 10:18:51 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -160,6 +160,16 @@ static SymTabRec DriverTab[] = {
   { MONO,	"mono" },
   { VGA16,	"vga16" },
   { ACCEL,	"accel" },
+  { ACCEL,	"agx" },
+  { ACCEL,	"dec_tga" },
+  { ACCEL,	"i128" },
+  { ACCEL,	"ibm8514" },
+  { ACCEL,	"mach32" },
+  { ACCEL,	"mach64" },
+  { ACCEL,	"mach8" },
+  { ACCEL,	"p9000" },
+  { ACCEL,	"s3" },
+  { ACCEL,	"s3v" },
   { FBDEV,	"fbdev" },
   { XF86,	"xfree86" },
   { -1,		"" },

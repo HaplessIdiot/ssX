@@ -31,7 +31,9 @@ $(DONES): $(SUBDIRS)
 
 NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
 
+#if ! DoLoadableServer
 ConfigTargetNoDepend(monoConf,$(ICONFIGFILES),confmono.SHsuf,$(MONODRIVERS))
+#endif
 
 NormalLibraryObjectRule()
 
@@ -39,5 +41,9 @@ ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(mono,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confmono.SHsuf,$(LINKKITDIR))
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(mono),$(MODULEDIR))
+#endif          
 
 DependSubdirs($(SUBDIRS))

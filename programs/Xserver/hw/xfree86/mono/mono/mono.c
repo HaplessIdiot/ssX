@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.28 1997/01/18 06:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.30 1997/02/17 09:46:30 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -278,6 +278,10 @@ Bool      /* on */
 );
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
+
+#ifdef XFree86LOADER
+#define monoDrivers videoDrivers
+#endif
 
 extern monoVideoChipPtr monoDrivers[];
 
@@ -678,3 +682,46 @@ monoValidMode(mode, verbose, flag)
   /* Maybe this should return MODE_BAD since no XF86Config modes are used? */
   return(MODE_OK);
 }
+
+#ifdef XFree86LOADER
+
+int monoValidTokens[] =
+{
+  STATICGRAY,
+  CHIPSET,
+  OPTION,
+  MEMBASE,
+  SCREENNO,
+  VIRTUAL,
+  VIEWPORT,
+  -1
+};
+
+ScrnInfoRec *
+ServerInit()
+{
+return &monoInfoRec;
+}
+
+/*
+ * this function is automagically executed when loading this module
+ *
+ * its name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    int  * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    default:
+      * magic= MAGIC_DONE;
+      break;
+    }
+
+    return;
+}
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coff.h,v 1.2 1997/02/16 10:27:20 hohndel Exp $ */
 
 
 
@@ -95,6 +95,7 @@ typedef struct COFF_syment
 		long	  _n_zeroes;	 /* Leading zeros		*/
 		long	  _n_offset;	 /* Offset for a header section  */
 	} _n_n;
+	char	*_n_nptr[2];		 /* allows for overlaying       */
 	} _n;
 
 	long		  n_value;	/* address of the segment	*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.5 1996/12/23 06:48:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.6 1997/02/17 09:46:27 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -574,3 +574,35 @@ register /*signed*/ int deltabank;
   }
   return((p)+(offset));
 }
+
+#ifdef XFree86LOADER
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    int  * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+      * data = (int) &SIGMA;
+      * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+      break;
+    case 1:
+      * data = (int) "libmono.a";
+      * magic= MAGIC_LOAD;
+      break;
+    default:
+      * magic= MAGIC_DONE;
+      break;
+    }
+
+    return;
+}
+#endif /* XFree86LOADER */

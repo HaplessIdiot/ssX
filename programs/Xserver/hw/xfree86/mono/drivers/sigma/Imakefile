@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:23:06 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/Imakefile,v 3.4 1996/02/04 09:09:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/Imakefile,v 3.5 1996/12/23 06:48:28 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = sigmadriv.c
@@ -24,10 +24,14 @@ SubdirLibraryRule($(OBJS))
 #endif
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(sigma_drv, $(OBJS))
+NormalRelocatableTarget(sigma_1bpp, $(OBJS))
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mono/sigma)
 InstallLinkKitNonExecFile(sigmaHW.h,$(LINKKITDIR)/drivers/mono/sigma)
 InstallLinkKitNonExecFile(sigmadriv.c,$(LINKKITDIR)/drivers/mono/sigma)
+
+#if DoLoadableServer
+InstallDynamicModule(sigma_1bpp.o,$(MODULEDIR))
+#endif
 
 DependTarget()
