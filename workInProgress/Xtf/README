@@ -1,0 +1,24 @@
+$XConsortium: README,v 1.2 95/07/06 14:27:11 kaleb Exp $
+
+The version of Fresco included here is obsolete.  Do not try to build
+this version of Fresco.
+
+Fresco has moved to a standalone distribution model decoupled from X11 
+releases to provide more flexibility in how, when, and to whom releases 
+are made available.
+
+The latest Fresco sources and documentation are available at:
+
+	http://www.faslab.com/fresco/HomePage.html
+	 ftp://ftp.faslab.com/pub/Fresco/
+
+The Fresco mailing list is open to public participation.  
+
+To subscribe to the mailing list, send a message to "requests@x.org" 
+containing the text "subscribe fresco <address>", where <address> is 
+optional and defaults to you From: address.
+
+To post to the mailing list, send your posting to "fresco@x.org"
+
+    The X Consortium Staff
+    23 May 1995
