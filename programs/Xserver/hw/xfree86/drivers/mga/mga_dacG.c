@@ -363,6 +363,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			pReg->Option = 0x50044120;
 		   } 
 		}
+		if(pMga->HasSDRAM)
+		   pReg->Option &= ~(1 << 14);
 		pReg->Option2 = 0x01003000;
 		break;
 	case PCI_CHIP_MGAG200:
@@ -472,12 +474,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->ExtVga[3]	= (((1 << BppShift) * 3) - 1) | 0x80;
 	else
 		pReg->ExtVga[3]	= ((1 << BppShift) - 1) | 0x80;
-
-#if 0
-	/* Set viddelay (CRTCEXT3 Bits 3-4). */
-	pReg->ExtVga[3] |= (pScrn->videoRam == 8192 ? 0x10
-			     : pScrn->videoRam == 2048 ? 0x08 : 0x00);
-#endif
 
 	pReg->ExtVga[4]	= 0;
 		
