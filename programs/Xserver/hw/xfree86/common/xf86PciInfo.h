@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.98 2001/05/11 07:56:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.99 2001/07/06 04:22:32 paulo Exp $ */
 /*
  * PCI Probe
  *
@@ -496,10 +496,11 @@
 #define PCI_CHIP_GEFORCE2GTS_1  0x0151
 #define PCI_CHIP_GEFORCE2ULTRA  0x0152
 #define PCI_CHIP_QUADRO2PRO     0x0153
+#define PCI_CHIP_IGEFORCE2      0x01A0
 #define PCI_CHIP_GEFORCE3	0x0200
 #define PCI_CHIP_GEFORCE3_1	0x0201
 #define PCI_CHIP_GEFORCE3_2	0x0202
-#define PCI_CHIP_GEFORCE3_3	0x0203
+#define PCI_CHIP_QUADRO_DDC	0x0203
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1250,15 +1251,17 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_QUADRO,	"Quadro",0},
 				{PCI_CHIP_GEFORCE2MX,	"GeForce2 MX",0},
 				{PCI_CHIP_GEFORCE2MXDDR,"GeForce2 MX DDR",0},
+				{PCI_CHIP_GEFORCE2GO,   "GeForce2 Go", 0},
 				{PCI_CHIP_QUADRO2MXR,	"GeForce2 MXR",0},
 				{PCI_CHIP_GEFORCE2GTS,	"GeForce2 GTS",0},
 				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)",0},
 				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra",0},
 				{PCI_CHIP_QUADRO2PRO,	"Quadro 2 Pro",0},
+				{PCI_CHIP_IGEFORCE2,	"GeForce2 Integrated",0},
 				{PCI_CHIP_GEFORCE3,	"GeForce3",0},
 				{PCI_CHIP_GEFORCE3_1,	"GeForce3 (rev 1)",0},
 				{PCI_CHIP_GEFORCE3_2,	"GeForce3 (rev 2)",0},
-				{PCI_CHIP_GEFORCE3_3,	"GeForce3 (rev 3)",0},
+				{PCI_CHIP_QUADRO_DDC,	"Quadro DDC",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_IMS, {
 				{PCI_CHIP_IMSTT128,	"TwinTurbo 128", 0},
