@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.15 2002/11/08 08:00:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.16 2002/11/10 23:21:56 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -236,7 +236,8 @@ SetEditModeMenu(void)
     xedit_flist_item *item = FindTextSource(XawTextGetSource(textwindow), NULL);
 
     for (i = 0; i < num_mode_infos; i++) {
-	if (item->xldata && mode_infos[i].syntax == item->xldata->syntax) {
+	if (item->xldata && item->xldata->syntax &&
+	    mode_infos[i].syntax == item->xldata->syntax) {
 	    new_entry = mode_infos[i].sme;
 	    break;
 	}

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.8 2002/11/10 16:29:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.9 2002/11/10 23:22:00 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -408,7 +408,7 @@ XeditPrint(Widget output, LispObj *object)
     XawTextPosition position;
 
     result_string.length = result_string.output = 0;
-    LispDoWriteObject(&result_stream, object, 1);
+    LispWriteObject(&result_stream, object);
     if (result_string.length >= sizeof(result_buffer)) {
 	if (result_buffer[0] == '(')
 	    memcpy(result_buffer + sizeof(result_buffer) - 5, "...)\n", 5);
