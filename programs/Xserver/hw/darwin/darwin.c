@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.14 2001/04/01 07:12:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.15 2001/04/02 05:39:36 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -37,6 +37,7 @@ DarwinFramebufferRec    dfb;
 int                     darwinEventFD = -1;
 int                     gDarwinEventWriteFD = -1;
 Bool                    quartz = FALSE;
+int                     quartzStartClients = 1;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
