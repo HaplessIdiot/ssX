@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.4 2000/12/05 03:13:32 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2001 Compaq Computer Corporation
  *
@@ -39,9 +39,11 @@
  */
 
 Bool
-miRRGetInfo (ScreenPtr pScreen)
+miRRGetInfo (ScreenPtr pScreen, int *rotations, int *swaps)
 {
     int	i;
+    *rotations = RR_ROTATE_0;
+    *swaps = 0;
     for (i = 0; i < pScreen->numDepths; i++)
     {
 	if (pScreen->allowedDepths[i].numVids)
@@ -113,7 +115,7 @@ miRandRInit (ScreenPtr pScreen)
 	return FALSE;
     fprintf(stderr, "got back successfully from RRScreenInit\n");
     rp = rrGetScrPriv(pScreen);
-    rp->rrGetInfo = miRRGetScreenInfo;
-    rp->rrSetConfig = miRRSetScreenConfig;
+    rp->rrGetInfo = miRRGetInfo;
+    rp->rrSetConfig = miRRSetConfig;
     return TRUE;
 }

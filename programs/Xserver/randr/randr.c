@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -358,7 +358,7 @@ ProcRRGetScreenInfo (ClientPtr client)
     pScrPriv = rrGetScrPriv(pDraw->pScreen);
     if (!pScrPriv)
     
-    RRGetInfo (pScreen);
+    RRGetInfo (pDraw->pScreen);
 
     rep.type = X_Reply;
     rep.length = 0;
@@ -370,7 +370,7 @@ ProcRRGetScreenInfo (ClientPtr client)
     rep.nAccelerated = 
     rep.nRotations =
     rep.sizeSetID =
-    rep.visualSetID =
+    rep.visualSetID = 0;
     
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
@@ -759,9 +759,9 @@ RRDestroySetOfVisualSet (ScreenPtr		pScreen,
 }
 
 Bool
-RRAddVisualToSetOfVisualSet (ScreenPtr		    pScreen,
-			     RRSetOfVisualSetPtr    pSetOfVisualSet,
-			     RRVisualSetPtr	    pVisualSet)
+RRAddVisualSetToSetOfVisualSet (ScreenPtr	    pScreen,
+				RRSetOfVisualSetPtr pSetOfVisualSet,
+				RRVisualSetPtr	    pVisualSet)
 {
     rrScrPriv(pScreen);
     int		*new;
@@ -838,6 +838,23 @@ RRRegisterSetOfVisualSet (ScreenPtr		pScreen,
     xfree (pSetOfVisualSet);
     pScrPriv->pSetsOfVisualSets = pNew;
     return &pNew[pScrPriv->nSetsOfVisualSets-1];
+}
+
+static Bool
+RRSizeInfoMatches (RRSizeInfoPtr  a,
+		   RRSizeInfoPtr  b)
+{
+    if (a->width != b->width)
+	return FALSE;
+    if (a->height != b->height)
+	return FALSE;
+    if (a->mmWidth != b->mmWidth)
+	return FALSE;
+    if (a->mmHeight != b->mmHeight)
+	return FALSE;
+    if (a->setOfVisualSets != b->setOfVisualSets)
+	return FALSE;
+    return TRUE;
 }
 
 RRSizeInfoPtr
