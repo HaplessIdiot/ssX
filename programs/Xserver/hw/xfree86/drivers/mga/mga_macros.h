@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.9 1999/08/01 07:57:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.11 2000/01/01 18:31:31 mvojkovi Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -18,6 +18,17 @@
 #endif
 
 #define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff)) 
+
+#ifdef XF86DRI
+#define MGAREG_DWGSYNC		      0x2c4c
+#define MGA_SYNC_XTAG                 0x275f4200
+
+#define MGABUSYWAIT() do { \
+OUTREG(MGAREG_DWGSYNC, MGA_SYNC_XTAG); \
+while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
+}while(0);
+
+#endif
 
 #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 

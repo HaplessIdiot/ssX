@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.47 1999/08/22 05:57:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.51 2000/01/01 18:31:31 mvojkovi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -21,6 +21,17 @@
 #include "colormapst.h"
 #include "xf86DDC.h"
 #include "xf86xv.h"
+
+#ifdef XF86DRI
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "GL/glxint.h"
+#include "mga_dri.h"
+#include "mga_dripriv.h"
+#endif
 
 #if !defined(EXTRADEBUG)
 #define INREG8(addr) MMIO_IN8(pMga->IOBase, addr)
@@ -161,6 +172,7 @@ typedef struct {
     CARD32		PlaneMask;
     CARD32		FgColor;
     CARD32		BgColor;
+    CARD32		MAccess;
     int			FifoSize;
     int			StyleLen;
     XAAInfoRecPtr	AccelInfoRec;
@@ -189,6 +201,18 @@ typedef struct {
     MGAFBLayout		CurrentLayout;
     Bool		DrawTransparent;
     int			MaxBlitDWORDS;
+
+#ifdef XF86DRI
+   Bool directRenderingEnabled;
+   DRIInfoPtr pDRIInfo;
+   int drmSubFD;
+   int numVisualConfigs;
+   __GLXvisualConfig* pVisualConfigs;
+   MGAConfigPrivPtr pVisualConfigsPriv;
+   MGARegRec DRContextRegs;
+   MGADRIServerPrivatePtr  DRIServerInfo;
+#endif
+
     Bool		timerIsOn;
     Time		offTime;
     XF86VideoAdaptorPtr adaptor;
@@ -207,10 +231,16 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define	MGA_NO_PLANEMASK	0x00000080
 #define USE_LINEAR_EXPANSION	0x00000100
 #define LARGE_ADDRESSES		0x00000200
-
+#define MGAIOMAPSIZE		0x00004000
+#define MGAILOADMAPSIZE		0x00400000
 
 #define TRANSPARENCY_KEY	255
 #define KEY_COLOR		0
+
+#define MGA_FRONT	0
+#define MGA_BACK	1
+#define MGA_DEPTH	2
+
 
 /* Prototypes */
 
@@ -233,6 +263,18 @@ Bool Mga32AccelInit(ScreenPtr pScreen);
 void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
 
 Bool MGADGAInit(ScreenPtr pScreen);
+
+Bool MGADRIScreenInit(ScreenPtr pScreen);
+void MGADRICloseScreen(ScreenPtr pScreen);
+Bool MGADRIFinishScreenInit(ScreenPtr pScreen);
+void MGASwapContext(ScreenPtr pScreen);
+void MGALostContext(ScreenPtr pScreen);
+void MGASelectBuffer(MGAPtr pMGA, int which);
+Bool mgaConfigureWarp(ScrnInfoPtr pScrn);
+unsigned int mgaInstallMicrocode(ScreenPtr pScreen, int agp_offset);
+unsigned int mgaGetMicrocodeSize(ScreenPtr pScreen);
+Bool mgadrmCleanupDma(ScrnInfoPtr pScrn);
+Bool mgadrmInitDma(ScrnInfoPtr pScrn, int prim_size);
 
 void MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);

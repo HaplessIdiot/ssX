@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.1 2000/02/08 13:13:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.2 2000/02/10 18:57:34 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -73,7 +73,9 @@ lnxPMGetEventFromOs(int fd, pmEvent *events, int num)
 	    return 0;
     }
 #endif
-    n = read( fd, linuxEvents, num * sizeof(apm_event_t) ) / sizeof(apm_event_t);
+    if ((n = read( fd, linuxEvents, num * sizeof(apm_event_t) )) == -1)
+	return 0;
+    n /= sizeof(apm_event_t);
     for (i = 0; i < n; i++) {
 	for (j = 0; j < numApmEvents; j++)
 	    if (LinuxToXF86[j].apmLinux == linuxEvents[i]) {

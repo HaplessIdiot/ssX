@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.28 1999/08/04 18:12:11 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.2 1999/12/14 01:33:56 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.3 2000/01/20 07:25:35 martin Exp $
  * 
  */
 
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	case 'b':
 	    count   = strtoul(optarg, &pt, 0);
 	    size    = strtoul(pt+1, NULL, 0);
-	    if ((r = drmAddBufs(fd, count, size, 0)) < 0) {
+	    if ((r = drmAddBufs(fd, count, size, 0, 65536)) < 0) {
 		drmError(r, argv[0]);
 		return 1;
 	    }

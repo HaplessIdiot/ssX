@@ -1,4 +1,6 @@
 XFree86 3.9.17e (11 February 2000)
+3699. i810 driver and preliminary DRI support for i810 and mga (#3638,
+      Keith Whitwell, Precision Insight).
 3698. 8+24 support upgraded to a non-destructive overlay (Mark Vojkovich).
 3697. Modify XAA to allow image rendering into DMA buffers (Mark Vojkovich).
 3696. Fix some SVR4.0 build problems (#3642, Satoshi Kimura).
@@ -22,7 +24,7 @@ XFree86 3.9.17e (11 February 2000)
       Mark Montague).
 3688. Add support for the Melco WHP-PS8 Permedia2-based card for Japanese
       PC-98 machines to the glint driver (#3354, Isao Ohishi).
-3687. Avoid segv in new Linux apm support (David Dawes).
+3687. Avoid segv in new Linux apm support (David Dawes, Michel Danzer).
 3686. Fix unresolved symbols in the linux int10 module and the GLcore module
       (David Dawes).
 3685. Add xkb support plus new (XFree86-specific) keysym names for the
@@ -9543,4 +9545,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.983 2000/02/10 18:57:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.986 2000/02/11 07:00:03 mvojkovi Exp $

@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/dma.c,v 1.7 1999/09/16 16:56:18 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/dma.c,v 1.1 1999/09/25 14:37:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/dma.c,v 1.2 1999/12/14 01:33:55 robin Exp $
  *
  */
 
@@ -64,15 +64,24 @@ void drm_dma_takedown(drm_device_t *dev)
 					       dma->bufs[i].page_order,
 					       DRM_MEM_DMA);
 			}
-			drm_free(dma->bufs[i].buflist,
-				 dma->buf_count
-				 * sizeof(*dma->bufs[0].buflist),
-				 DRM_MEM_BUFS);
 			drm_free(dma->bufs[i].seglist,
-				 dma->buf_count
+				 dma->bufs[i].seg_count
 				 * sizeof(*dma->bufs[0].seglist),
 				 DRM_MEM_SEGS);
-			drm_freelist_destroy(&dma->bufs[i].freelist);
+		}
+	   	if(dma->bufs[i].buf_count) {
+		   	for(j = 0; j < dma->bufs[i].buf_count; j++) {
+			   if(dma->bufs[i].buflist[j].dev_private) {
+			      drm_free(dma->bufs[i].buflist[j].dev_private,
+				       dma->bufs[i].buflist[j].dev_priv_size,
+				       DRM_MEM_BUFS);
+			   }
+			}
+		   	drm_free(dma->bufs[i].buflist,
+				 dma->bufs[i].buf_count *
+				 sizeof(*dma->bufs[0].buflist),
+				 DRM_MEM_BUFS);
+		   	drm_freelist_destroy(&dma->bufs[i].freelist);
 		}
 	}
 	

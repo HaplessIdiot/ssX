@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.59 1999/08/29 12:21:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.62 2000/01/01 18:21:31 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -22,11 +22,21 @@
 #include "miline.h"
 #include "servermd.h"
 
+#ifdef XF86DRI
+#include "cfb.h"
+#include "GL/glxtokens.h"
+#endif
+
 #include "mga_bios.h"
 #include "mga.h"
 #include "mga_reg.h"
 #include "mga_map.h"
 #include "mga_macros.h"
+
+#ifdef XF86DRI
+#include "mga_dri.h"
+#include "mga_dripriv.h"
+#endif
 
 static void MGANAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
 				int srcX, int srcY, int dstX, int dstY,
@@ -87,6 +97,14 @@ static void MGANAME(SubsequentDashedTwoPointLine)(ScrnInfoPtr pScrn,
 				int x1, int y1, int x2, int y2, 
 				int flags, int phase);
 
+#ifdef XF86DRI
+void MGANAME(DRIInitBuffers)(WindowPtr pWin, 
+			     RegionPtr prgn, CARD32 index);
+void MGANAME(DRIMoveBuffers)(WindowPtr pParent, DDXPointRec ptOldOrg,
+			     RegionPtr prgnSrc, CARD32 index);
+
+#endif
+
 extern void MGAWriteBitmapColorExpand(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h, unsigned char *src, int srcwidth,
 				int skipleft, int fg, int bg, int rop,
@@ -125,6 +143,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
     int maxFastBlitMem;
     BoxRec AvailFBArea;
+#ifdef XF86DRI
+    RegionRec MemRegion;
+#endif
 
     pMga->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
@@ -358,11 +379,23 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
 
     AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
+
+#ifndef XF86DRI
+    AvailFBArea.y1 = 0;
     AvailFBArea.y2 = (min(pMga->FbUsableSize, 16*1024*1024)) / 
 			(pScrn->displayWidth * PSZ / 8);
+   
     xf86InitFBManager(pScreen, &AvailFBArea); 
+#else
+    AvailFBArea.y1 = pScrn->virtualY;
+    AvailFBArea.y2 = pScrn->virtualY+128;
+   
+    REGION_INIT(pScreen, &MemRegion, &AvailFBArea, 1);
+    xf86InitFBManagerRegion(pScreen, &MemRegion);
+    REGION_UNINIT(pScreen, &MemRegion);
+#endif
+   
 
     return(XAAInit(pScreen, infoPtr));
 }
@@ -466,6 +499,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_PITCH, pLayout->displayWidth);
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
+    pMga->MAccess = maccess;
     pMga->PlaneMask = ~0;
     if(pMga->Chipset != PCI_CHIP_MGAG100)
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
@@ -1969,14 +2003,169 @@ MGATEGlyphRenderer(
     SET_SYNC_FLAG(infoRec);
 }
 
-
 #endif
 
+#ifdef XF86DRI
+void
+MGANAME(DRIInitBuffers)(WindowPtr pWin, RegionPtr prgn, CARD32 index)
+{
+  ScreenPtr pScreen = pWin->drawable.pScreen;
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  MGAPtr pMGA = MGAPTR(pScrn);
+  BoxPtr pbox;
+  int nbox;
 
+  /* It looks nicer if these start out black */
+  pbox = REGION_RECTS(prgn);
+  nbox = REGION_NUM_RECTS(prgn);
 
+  MGANAME(SetupForSolidFill)(pScrn, 0, GXcopy, -1);
+  while (nbox--) {
+    MGASelectBuffer(pMGA, MGA_BACK);
+    MGANAME(SubsequentSolidFillRect)(pScrn, pbox->x1, pbox->y1,
+				     pbox->x2-pbox->x1, pbox->y2-pbox->y1);
+    MGASelectBuffer(pMGA, MGA_DEPTH);
+    MGANAME(SubsequentSolidFillRect)(pScrn, pbox->x1, pbox->y1,
+				     pbox->x2-pbox->x1, pbox->y2-pbox->y1);
+    pbox++;
+  }
+  MGASelectBuffer(pMGA, MGA_FRONT);
 
+  pMGA->AccelInfoRec->NeedToSync = TRUE;
+}
 
+/*
+  This routine is a modified form of XAADoBitBlt with the calls to
+  ScreenToScreenBitBlt built in. My routine has the prgnSrc as source
+  instead of destination. My origin is upside down so the ydir cases
+  are reversed.
+*/
+	   
+void
+MGANAME(DRIMoveBuffers)(WindowPtr pParent, DDXPointRec ptOldOrg, 
+		   RegionPtr prgnSrc, CARD32 index)
+{
+#if 0
+  ScreenPtr pScreen = pParent->drawable.pScreen;
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  MGAPtr pMGA = MGAPTR(pScrn);
+  int nbox;
+  BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
+  DDXPointPtr pptTmp, pptNew1, pptNew2;
+  int xdir, ydir;
+  int dx, dy, w, h;
+  DDXPointPtr pptSrc;
 
+  pbox = REGION_RECTS(prgnSrc);
+  nbox = REGION_NUM_RECTS(prgnSrc);
+  pboxNew1 = 0;
+  pptNew1 = 0;
+  pboxNew2 = 0;
+  pboxNew2 = 0;
+  pptSrc = &ptOldOrg;
 
+  dx = pParent->drawable.x - ptOldOrg.x;
+  dy = pParent->drawable.y - ptOldOrg.y;
 
+  /* If the copy will overlap in Y, reverse the order */
+  if (dy>0) {
+    ydir = -1;
 
+    if (nbox>1) {
+      /* Keep ordering in each band, reverse order of bands */
+      pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
+      if (!pboxNew1) return;
+      pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
+      if (!pptNew1) {
+	DEALLOCATE_LOCAL(pboxNew1);
+	return;
+      }
+      pboxBase = pboxNext = pbox+nbox-1;
+      while (pboxBase >= pbox) {
+	while ((pboxNext >= pbox) && (pboxBase->y1 == pboxNext->y1))
+	  pboxNext--;
+	pboxTmp = pboxNext+1;
+	pptTmp = pptSrc + (pboxTmp - pbox);
+	while (pboxTmp <= pboxBase) {
+	  *pboxNew1++ = *pboxTmp++;
+	  *pptNew1++ = *pptTmp++;
+	}
+	pboxBase = pboxNext;
+      }
+      pboxNew1 -= nbox;
+      pbox = pboxNew1;
+      pptNew1 -= nbox;
+      pptSrc = pptNew1;
+    }
+  } else {
+    /* No changes required */
+    ydir = 1;
+  }
+
+  /* If the regions will overlap in X, reverse the order */
+  if (dx>0) {
+    xdir = -1;
+
+    if (nbox > 1) {
+      /*reverse orderof rects in each band */
+      pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
+      pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
+      if (!pboxNew2 || !pptNew2) {
+	if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+	if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+	if (pboxNew1) {
+	  DEALLOCATE_LOCAL(pptNew1);
+	  DEALLOCATE_LOCAL(pboxNew1);
+	}
+	return;
+      }
+      pboxBase = pboxNext = pbox;
+      while (pboxBase < pbox+nbox) {
+	while ((pboxNext < pbox+nbox) && (pboxNext->y1 == pboxBase->y1))
+	  pboxNext++;
+	pboxTmp = pboxNext;
+	pptTmp = pptSrc + (pboxTmp - pbox);
+	while (pboxTmp != pboxBase) {
+	  *pboxNew2++ = *--pboxTmp;
+	  *pptNew2++ = *--pptTmp;
+	}
+	pboxBase = pboxNext;
+      }
+      pboxNew2 -= nbox;
+      pbox = pboxNew2;
+      pptNew2 -= nbox;
+      pptSrc = pptNew2;
+    }
+  } else {
+    /* No changes are needed */
+    xdir = 1;
+  }
+  
+  MGANAME(SetupForScreenToScreenCopy)(pScrn, xdir, ydir, GXcopy, -1, -1);
+  while (nbox--) {
+    w=pbox->x2-pbox->x1+1;
+    h=pbox->y2-pbox->y1+1;
+    MGASelectBuffer(pMGA, MGA_BACK);
+    MGANAME(SubsequentScreenToScreenCopy)(pScrn, pbox->x1, pbox->y1, 
+				     pbox->x1+dx, pbox->y1+dy, w, h);
+    MGASelectBuffer(pMGA, MGA_DEPTH);
+    MGANAME(SubsequentScreenToScreenCopy)(pScrn, pbox->x1, pbox->y1, 
+				     pbox->x1+dx, pbox->y1+dy, w, h);
+    pbox++;
+  }
+  MGASelectBuffer(pMGA, MGA_FRONT);
+
+  if (pboxNew2) {
+    DEALLOCATE_LOCAL(pptNew2);
+    DEALLOCATE_LOCAL(pboxNew2);
+  }
+  if (pboxNew1) {
+    DEALLOCATE_LOCAL(pptNew1);
+    DEALLOCATE_LOCAL(pboxNew1);
+  }
+
+  pMGA->AccelInfoRec->NeedToSync = TRUE;
+#endif
+}
+	   
+#endif /* XF86DRI */

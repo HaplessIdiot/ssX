@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.8 1998/09/20 08:39:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.10 1999/12/12 00:37:21 mvojkovi Exp $ */
 
 
 
@@ -117,6 +117,14 @@
 #define	MGAREG_Reset		0x1e40
 
 #define	MGAREG_OPMODE		0x1e54
+
+/* Warp Registers */
+#define MGAREG_WIADDR           0x1dc0
+#define MGAREG_WIADDR2          0x1dd8
+#define MGAREG_WGETMSB          0x1dc8
+#define MGAREG_WVRTXSZ          0x1dcc
+#define MGAREG_WACCEPTSEQ       0x1dd4
+#define MGAREG_WMISC            0x1e70
 
 /* OPMODE register additives */
 

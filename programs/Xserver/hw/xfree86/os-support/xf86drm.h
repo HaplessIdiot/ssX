@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.44 1999/08/04 18:14:42 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.3 1999/07/04 06:39:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.4 1999/09/25 14:37:43 dawes Exp $
  * 
  */
 
@@ -66,7 +66,8 @@ typedef struct _drmVersion {
 typedef enum {
     DRM_FRAME_BUFFER    = 0,      /* WC, no caching, no core dump           */
     DRM_REGISTERS       = 1,      /* no caching, no core dump               */
-    DRM_SHM             = 2       /* shared, cached                         */
+    DRM_SHM             = 2,      /* shared, cached                         */
+    DRM_AGP             = 3	  /* AGP/GART                               */
 } drmMapType;
 
 typedef enum {
@@ -92,8 +93,16 @@ typedef enum {			 /* These values *MUST* match drm.h         */
 				 /* Flags for DMA buffer request            */
     DRM_DMA_WAIT         = 0x10, /* Wait for free buffers                   */
     DRM_DMA_SMALLER_OK   = 0x20, /* Smaller-than-requested buffers ok       */
-    DRM_DMA_LARGER_OK    = 0x40  /* Larger-than-requested buffers ok        */
+    DRM_DMA_LARGER_OK    = 0x40, /* Larger-than-requested buffers ok        */
+    DRM_DMA_VERTEX	 = 0x01000000,
+    DRM_DMA_SETUP	 = 0x02000000,
+    DRM_DMA_BLIT	 = 0x04000000
 } drmDMAFlags;
+
+typedef enum {
+    DRM_PAGE_ALIGN       = 0x01,
+    DRM_AGP_BUFFER       = 0x02
+} drmBufDescFlags;
 
 typedef enum {
     DRM_LOCK_READY      = 0x01, /* Wait until hardware is ready for DMA */
@@ -168,14 +177,7 @@ typedef struct _drmDMAReq {
     int           granted_count;  /* Number of buffers granted at this size */
 } drmDMAReq, *drmDMAReqPtr;
 
-#if 0
-				/* The kernel does this, but it doesn't
-                                   seem necessary with recent gcc's.  */
-typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
-#define __drm_dummy_lock(lock) (*(__volatile__ __drm_dummy_lock_t *)lock)
-#else
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
-#endif
 
 #define DRM_LOCK_HELD  0x80000000 /* Hardware lock is held                 */
 #define DRM_LOCK_CONT  0x40000000 /* Hardware lock is contended            */
@@ -197,7 +199,7 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 #endif
 
 #ifndef DRM_CAS
-#define DRM_CAS(lock,old,new,ret) /* FAST LOCK FAILS */
+#define DRM_CAS(lock,old,new,ret) do { ret=1; } while (0) /* FAST LOCK FAILS */
 #endif
 
 #define DRM_LIGHT_LOCK(fd,lock,context)                                \
@@ -292,7 +294,9 @@ extern int           drmAddMap(int fd,
 			       drmMapType type,
 			       drmMapFlags flags,
 			       drmHandlePtr handle);
-extern int           drmAddBufs(int fd, int count, int size, int flags);
+extern int           drmAddBufs(int fd, int count, int size, 
+				drmBufDescFlags flags,
+				int agp_offset);
 extern int           drmMarkBufs(int fd, double low, double high);
 extern int           drmCreateContext(int fd, drmContextPtr handle);
 extern int           drmSetContextFlags(int fd, drmContext context,
@@ -332,6 +336,28 @@ extern int           drmGetLock(int fd,
 			        drmLockFlags flags);
 extern int           drmUnlock(int fd, drmContext context);
 extern int           drmFinish(int fd, int context, drmLockFlags flags);
+
+/* AGP/GART support: X server (root) only */
+extern int           drmAgpAcquire(int fd);
+extern int           drmAgpRelease(int fd);
+extern int           drmAgpEnable(int fd, unsigned long mode);
+extern unsigned long drmAgpAlloc(int fd, unsigned long size, 
+				 unsigned long type, unsigned long *address);
+extern int           drmAgpFree(int fd, unsigned long handle);
+extern unsigned long drmAgpBind(int fd, unsigned long handle,
+				unsigned long offset);
+extern int           drmAgpUnbind(int fd, unsigned long handle);
+
+/* AGP/GART info: authenticated client and/or X */
+extern int           drmAgpVersionMajor(int fd);
+extern int           drmAgpVersionMinor(int fd);
+extern unsigned long drmAgpGetMode(int fd);
+extern unsigned long drmAgpBase(int fd); /* Physical location */
+extern unsigned long drmAgpSize(int fd); /* Bytes */
+extern unsigned long drmAgpMemoryUsed(int fd);
+extern unsigned long drmAgpMemoryAvail(int fd);
+extern unsigned int  drmAgpVendorId(int fd);
+extern unsigned int  drmAgpDeviceId(int fd);
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

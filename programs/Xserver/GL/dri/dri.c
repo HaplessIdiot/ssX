@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.7 1999/12/14 01:33:38 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.8 2000/02/08 17:18:50 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -120,6 +120,7 @@ DRIScreenInit(
 
     pDRIPriv->directRenderingSupport = TRUE;
     pDRIPriv->pDriverInfo = pDRIInfo;
+    pDRIPriv->nrWindows = 0;
 
     /* setup device independent direct rendering memory maps */
 
@@ -483,8 +484,6 @@ DRICloseConnection(
     ScreenPtr pScreen
 )
 {
-    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-
     return TRUE;
 }
 
@@ -643,7 +642,7 @@ DRICreateContext(
 				                      visual, 
 				                      *pHWContext, 
 				                      *pVisualConfigPriv,
-						      contextStore))) {
+						      (int)contextStore))) {
 	    DRIDestroyContextPriv(pDRIContextPriv);
 	    return FALSE;
 	}
@@ -680,11 +679,32 @@ DRIContextPrivDelete(
     if (pDRIPriv->pDriverInfo->DestroyContext) {
       contextStore=DRIGetContextStore(pDRIContextPriv);
       (pDRIPriv->pDriverInfo->DestroyContext)(pDRIContextPriv->pScreen,
-					     pDRIContextPriv->hwContext,
-					     contextStore);
+					      pDRIContextPriv->hwContext,
+					      (int)contextStore);
     }
     return DRIDestroyContextPriv(pDRIContextPriv);
 }
+
+
+/* This walks the drawable timestamp array and invalidates all of them
+ * in the case of transition from private to shared backbuffers.  It's
+ * not necessary for correctness, because DRIClipNotify gets called in
+ * time to prevent any conflict, but the transition from
+ * shared->private is sometimes missed if we don't do this.  
+ */
+static void 
+DRIClipNotifyAllDrawables( ScreenPtr pScreen )
+{
+   int i;
+   DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+   for( i=0; i < pDRIPriv->pDriverInfo->maxDrawableTableEntry; i++) {
+      pDRIPriv->pSAREA->drawableTable[i].stamp++;
+   }
+   
+   DRIDrawableValidationStamp++;
+}
+
 
 Bool
 DRICreateDrawable(
@@ -725,8 +745,13 @@ DRICreateDrawable(
 	    pWin->devPrivates[DRIWindowPrivIndex].ptr = 
 						(pointer)pDRIDrawablePriv;
 
+	    if (pDRIPriv->nrWindows == 1) {
+	       DRIClipNotifyAllDrawables( pScreen );
+	    }
+
 	    /* track this in case this window is destroyed */
 	    AddResource(id, DRIDrawablePrivResType, (pointer)pWin);
+	    pDRIPriv->nrWindows++;	       
 	}
     }
     else { /* pixmap (or for GLX 1.3, a PBuffer) */
@@ -789,6 +814,10 @@ DRIDrawablePrivDelete(
 	}
 	xfree(pDRIDrawablePriv);
 	pWin->devPrivates[DRIWindowPrivIndex].ptr = NULL;
+	pDRIPriv->nrWindows--;
+	if (pDRIPriv->nrWindows == 1) {
+	   DRIClipNotifyAllDrawables( pDrawable->pScreen );
+	}
     }
     else { /* pixmap (or for GLX 1.3, a PBuffer) */
 	/* NOT_DONE */
@@ -809,7 +838,11 @@ DRIGetDrawableInfo(
     int* W,
     int* H,
     int* numClipRects,
-    XF86DRIClipRectPtr* pClipRects
+    XF86DRIClipRectPtr* pClipRects,
+    int* auxX,
+    int* auxY,
+    int* numAuxClipRects,
+    XF86DRIClipRectPtr* pAuxClipRects
 )
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
@@ -898,6 +931,35 @@ DRIGetDrawableInfo(
 	    *H = (int)(pWin->drawable.height);
 	    *numClipRects = REGION_NUM_RECTS(&pWin->clipList);
 	    *pClipRects = (XF86DRIClipRectPtr)REGION_RECTS(&pWin->clipList);
+	    
+	    *auxX = *X;
+	    *auxY = *Y;
+
+	    if (pDRIPriv->nrWindows == 1 && *numClipRects) {
+	       /* Use a single cliprect. */
+
+	       int x0 = *X;
+	       int y0 = *Y;
+	       int x1 = x0 + *W;
+	       int y1 = y0 + *H;
+
+	       if (x0 < 0) x0 = 0;
+	       if (y0 < 0) y0 = 0;
+	       if (x1 > pScreen->width-1) x1 = pScreen->width-1;
+	       if (y1 > pScreen->height-1) y1 = pScreen->height-1;
+
+	       pDRIPriv->private_buffer_rect.x1 = x0;
+	       pDRIPriv->private_buffer_rect.y1 = y0;
+	       pDRIPriv->private_buffer_rect.x2 = x1;
+	       pDRIPriv->private_buffer_rect.y2 = y1;
+
+	       *numAuxClipRects = 1;
+	       *pAuxClipRects = &(pDRIPriv->private_buffer_rect);
+	    } else {
+	       /* Use the frontbuffer cliprects for aux buffers.  */
+	       *numAuxClipRects = 0;
+	       *pAuxClipRects = 0;
+	    }
 	}
 	else {
 	    /* Not a DRIDrawable */
