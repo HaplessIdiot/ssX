@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.46 2000/12/14 01:06:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.47 2000/12/15 18:02:41 dawes Exp $
 </ident>
 
 <abstract>
@@ -1090,6 +1090,18 @@ man page.
 The "trident" driver supports all PCI based Trident cards, including one ISA
 based - the 8900D. 3.3.x is still needed for older SVGA ISA/VLB based cards,
 yet 4.0.2 is much faster for the newer boards. 
+
+<sect2>I128 <label id="i128">
+<p>
+
+The "i128" driver supports the same range or hardware as XFree86 3.3.6
+and has a number of enhancements including multi-head support and
+support for DGA, DDC2, and the render extension.  Font restore after
+server exit has been fixed.  Multi-head SGI flatpanel has been tested
+and works well.
+
+Further information can be found in the <tt>i128</tt> <htmlurl name="man page"
+url="I128.html">.
 -->
 
 
