@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.22 2002/05/22 21:38:28 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.23 2002/05/22 21:42:49 herrb Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -197,8 +197,8 @@ xf86HandleInt10Options(ScrnInfoPtr pScrn, int entityIndex)
 
 	/* Check if xf86CollectOptions() has already been called */
 	if (((pEnt->index < 0) ||
-	    !xf86Screens[pEnt->index] ||
-	    !(configOptions = xf86Screens[pEnt->index]->options)) &&
+	    !pScrn ||
+	    !(configOptions = pScrn->options)) &&
 	    pEnt->device)
 	    configOptions = pEnt->device->options;
 
