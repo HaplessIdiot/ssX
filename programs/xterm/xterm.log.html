@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.112 2003/12/25 22:04:04 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.113 2003/12/31 17:12:28 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_dev">Development - 2004/1/8 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_184">Patch #184 - 2003/12/31 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_183">Patch #183 - 2003/12/26 - XFree86 4.3.99.903</A>
 <LI><A HREF="#xterm_182">Patch #182 - 2003/12/2 - XFree86 4.3.99.901</A>
@@ -230,7 +231,12 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_184">Development - 2003/12/31 - XFree86 4.3.99.903</A></H1>
+<H1><A NAME="xterm_dev">Development - 2004/1/8 - XFree86 4.3.99.903</A></H1>
+<ul>
+	<li>fix a typo in computing relative font size (Jess Thrysoee).
+</ul>
+
+<H1><A NAME="xterm_184">Patch #184 - 2003/12/31 - XFree86 4.3.99.903</A></H1>
 <ul>
 	<li>improve configure-script checks for FreeType and related libraries,
 	    using <code>xft-config</code> or <code>freetype-config</code>
@@ -243,7 +249,7 @@ xc/programs/Xserver/hw/xfree86).
 	    by H Merijn Brand).
 </ul>
 
-<H1><A NAME="xterm_183">Development - 2003/12/26 - XFree86 4.3.99.903</A></H1>
+<H1><A NAME="xterm_183">Patch #183 - 2003/12/26 - XFree86 4.3.99.903</A></H1>
 <ul>
 	<li>correct logic for configurations that may attempt to open both
 	    old/new-style pseudoterminals.  In this case, the old-style are

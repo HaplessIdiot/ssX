@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.42 2003/10/28 23:11:58 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.43 2003/12/31 17:12:28 dickey Exp $
  */
 
 /************************************************************
@@ -1682,7 +1682,7 @@ lookupRelativeFontSize(TScreen * screen, int old, int relative)
 	    if (relative > 1)
 		m = lookupRelativeFontSize(screen, m, relative - 1);
 	    else if (relative < -1)
-		m = lookupRelativeFontSize(screen, m, relative = 1);
+		m = lookupRelativeFontSize(screen, m, relative + 1);
 	}
     }
     return m;
