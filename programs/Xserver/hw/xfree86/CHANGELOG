@@ -1,3 +1,33 @@
+XFree86 3.9x (21 November 1997)
+1455. Clean up XAA calls in glint server (#1210, Alan Hourihane).
+1454. Adapt memory detection in I128 server to T2R (#1208, Robin Cutshaw).
+1453. Add DGA to glint server and get xvidtune to work with it (#1207,
+      Alan Hourihane).
+1452. Cleanups and preliminary support for the Trident 3DImage975 and
+      3DImage985 (#1206, Alan Hourihane).
+1451. Add stipple accelereation to the tseng driver (#1192, Koen Gadeyne, 
+      Mark Vojkovich).
+1450. Add better text acceleration to the tseng driver (#1190, Koen Gadeyne).
+1449. Fix HiQV image writes (#1191, David Bateman).
+1448. Remove the need for the VideoMemSave buffers in glint server (#1196,
+      Alan Hourihane).
+1447. Handle bogus base address in vgaPCIInfo for s3/svga (#1194, Mark
+      Vojkovich).
+1446. Fix XF86Setup to work with Tcl/Tk 8.0 and improve support for future
+      mouse protocols in XF86Setup (#1158,1159, Joe Moss).
+1445. Fix DGASetViewPort problem in S3 server (#1157, Harald Koenig).
+1444. Add -U flag to imake (#1156, Chris Demetriou).
+1443. First cut for I128 Revolution support (#1155, Robin Cutshaw).
+1442. Fix packing order for dashed lines (#1154, Alan Hourihane, Mark
+      Vojkovich).
+1441. Fix joycal.c to work with Linux 2.1.x (#1153, Robin Cutshaw).
+1440. Fix ImageString xtest results. Call miImageGlyphBlt instead of
+      cfbImageGlyphBlt8 (#1152, Alan Hourihane).
+1439. Add overlay support for the IBM RGB526 (disabled)(#1151, Mark Vojkovich).
+1438. Fix setting maxclock in s3/svga (#1151, Mark Vojkovich).
+1437. Print module version in plaintext (#1150, Holger Veit).
+1436. Correct change 1390 (#1148, Takaaki Nomura).
+
 XFree86 3.9w (16 November 1997)
 1435. Remove some compiler warnings.
 1434. Fix lcPublic state_depend_encoding test in Xlib (#1181, Kaleb Keithley).
@@ -5638,4 +5668,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.546 1997/11/16 06:18:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.547 1997/11/16 11:51:09 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.70 1997/06/03 14:11:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.71 1997/07/29 12:07:46 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1143,6 +1143,14 @@ s3AdjustFrame(int x, int y)
 	 Base &= ~a;
       }
    }
+
+#ifdef XFreeXDGA
+   if (s3InfoRec.directMode & XF86DGADirectGraphics) {
+      /* unlock ext. registers */
+      outb(vgaCRIndex, 0x38);
+      outb(vgaCRReg, 0x48);
+   }
+#endif
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);

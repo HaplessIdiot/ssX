@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.12 1997/08/12 12:02:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.13 1997/08/26 10:00:56 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -47,7 +47,8 @@ extern struct i128io i128io;
 extern int i128Weight;
 extern int i128DisplayWidth;
 extern int i128DisplayOffset;
-extern int i128MemoryTypeDram;
+extern int i128DeviceType;
+extern int i128MemoryType;
 extern int i128RamdacType;
 
 
@@ -61,7 +62,7 @@ saveI128state()
 #endif
 {
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
-	if ((i128io.id&0x7) > 1) {
+	if ((i128io.id&0x7) > 0) {
 
                 xf86EnableIOPorts(i128InfoRec.scrnIndex);
 		iR.vga_ctl = inl(iR.iobase + 0x30);
@@ -311,7 +312,7 @@ restoreI128state()
         xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
-	if ((i128io.id&0x7) > 1) {
+	if ((i128io.id&0x7) > 0) {
 		int i;
 		unsigned char *vidmem = (unsigned char *)i128mem.mw0_ad;
 
@@ -431,7 +432,7 @@ i128Init(mode)
 		iclock = 4;
 	else if (i128RamdacType == IBM528_DAC)
 		iclock = 128 / i128InfoRec.bitsPerPixel;
-	else if (i128MemoryTypeDram)
+	else if (i128MemoryType == I128_MEMORY_DRAM)
 		iclock = 32 / i128InfoRec.bitsPerPixel; /* IBM526 DAC 32b bus */
 	else
 		iclock = 64 / i128InfoRec.bitsPerPixel; /* IBM524/526 DAC */
@@ -449,9 +450,15 @@ i128Init(mode)
 	i128mem.rbase_g[CRT_VFP] = mode->VSyncStart - mode->VDisplay;
 	i128mem.rbase_g[CRT_VS] = mode->VSyncEnd - mode->VSyncStart;
 	i128mem.rbase_g[CRT_BORD] = 0x00;
-	i128mem.rbase_g[CRT_1CON] = 0x00000070;
-	if (i128MemoryTypeDram)
+	tmp = 0x00000070;
+	if (i128DeviceType == I128_DEVICE_ID3)
+		tmp |= 0x00000100;
+	i128mem.rbase_g[CRT_1CON] = tmp;
+	if ((i128MemoryType == I128_MEMORY_DRAM) ||
+	    (i128MemoryType == I128_MEMORY_SGRAM))
 		tmp = 0x20000100;
+	else if (i128MemoryType == I128_MEMORY_WRAM)
+		tmp = 0x00040100;
 	else {
 		tmp = 0x00040101;
 		if (i128InfoRec.videoRam == 2048)
@@ -477,7 +484,7 @@ i128Init(mode)
 	i128mem.rbase_w[MW0_MASK] = 0xFFFFFFFF;
 									MB;
 
-	if ((i128io.id&0x7) > 1) {
+	if ((i128io.id&0x7) > 0) {
 
         	xf86EnableIOPorts(i128InfoRec.scrnIndex);
 

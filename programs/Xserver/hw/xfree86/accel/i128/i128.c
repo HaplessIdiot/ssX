@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.36 1997/08/12 12:01:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.37 1997/08/26 10:00:56 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -186,7 +186,7 @@ int i128hotX, i128hotY;
 Bool i128BlockCursor, i128ReloadCursor;
 int i128CursorStartX, i128CursorStartY, i128CursorLines;
 int i128DeviceType;
-int i128MemoryTypeDram = 0;
+int i128MemoryType = I128_MEMORY_UNKNOWN;
 int i128RamdacType = UNKNOWN_DAC;
 
 extern Bool xf86Exiting, xf86Resetting;
@@ -276,7 +276,8 @@ i128Probe()
    i = 0;
    while ((pcrp = pcrpp[i]) != (pciConfigPtr)NULL) {
       if ((pcrp->_device_vendor == I128_DEVICE_ID1) ||
-          (pcrp->_device_vendor == I128_DEVICE_ID2))
+          (pcrp->_device_vendor == I128_DEVICE_ID2) ||
+          (pcrp->_device_vendor == I128_DEVICE_ID3))
         break;
       i++;
    }
@@ -288,10 +289,6 @@ i128Probe()
 
    i128DeviceType = pcrp->_device_vendor;
 
-   if (((pcrp->_status_command & 0x03) == 0x03) &&
-       ((pcrp->rsvd2 >>16) == 0x08))
-      i128MemoryTypeDram = 1;
-
    xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
    i128io.rbase_g = inl(iR.iobase)        & 0xFFFFFF00;
@@ -302,7 +299,7 @@ i128Probe()
    i128io.rbase_e = inl(iR.iobase + 0x14) & 0xFFFF8003;
    i128io.id =      inl(iR.iobase + 0x18) & /* 0x7FFFFFFF */ 0xFFFFFFFF;
    i128io.config1 = inl(iR.iobase + 0x1C) & /* 0xF3333F1F */ 0xFF333F1F;
-   i128io.config2 = inl(iR.iobase + 0x20) & /* 0xFFF70F03 */ 0xC1F70FFF;
+   i128io.config2 = inl(iR.iobase + 0x20) & 0xC1F70FFF;
    i128io.soft_sw = inl(iR.iobase + 0x28) & 0x0000FFFF;
    i128io.vga_ctl = inl(iR.iobase + 0x30) & 0x0000FFFF;
 
@@ -366,12 +363,26 @@ i128Probe()
    i128io.config2 |= 0x00500000;
    outl(iR.iobase + 0x20, i128io.config2);
 
+   if (i128DeviceType == I128_DEVICE_ID3) {
+	if ((i128io.config2&6) == 2)
+		i128MemoryType = I128_MEMORY_SGRAM;
+	else
+		i128MemoryType = I128_MEMORY_WRAM;
+   } else if (i128DeviceType == I128_DEVICE_ID2) {
+   	if (((pcrp->_status_command & 0x03) == 0x03) &&
+   	    ((pcrp->rsvd2 >>16) == 0x08))
+   	   i128MemoryType = I128_MEMORY_DRAM;
+   }
+
    xf86DisableIOPorts(i128InfoRec.scrnIndex);
 
    xf86ProbeFailed = FALSE;
 
-   ErrorF("%s %s: I128 revision (%d)\n", 
-	  XCONFIG_PROBED, i128InfoRec.name, i128io.id&0x7);
+   ErrorF("%s %s: I128%s revision (%d)\n", 
+	  XCONFIG_PROBED, i128InfoRec.name,
+	  i128DeviceType == I128_DEVICE_ID2 ? "-II" :
+	  i128DeviceType == I128_DEVICE_ID3 ? "-T2R" : "",
+	  i128io.id&0x7);
 
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
@@ -384,11 +395,36 @@ i128Probe()
    if (xf86Verbose)
       ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, i128InfoRec.name);
 
-   i128InfoRec.videoRam = 2048;  /* default to 2MB */
-   if (i128io.config1 & 0x04)    /* 128 bit mode   */
-      i128InfoRec.videoRam <<= 1;
-   if (i128io.id & 0x0400)       /* 2 banks VRAM   */
-      i128InfoRec.videoRam <<= 1;
+   i128InfoRec.videoRam = 0;
+
+   if (i128DeviceType == I128_DEVICE_ID3) {
+      switch ((pcrp->rsvd2>>16)&0xFFF7) {
+	 case 0x00:	/* 4MB card, no daughtercard */
+	    i128InfoRec.videoRam = 4 * 1024; break;
+	 case 0x01:	/* 4MB card, 4MB daughtercard */
+	 case 0x04:	/* 8MB card, no daughtercard */
+	    i128InfoRec.videoRam = 8 * 1024; break;
+	 case 0x02:	/* 4MB card, 8MB daughtercard */
+	 case 0x05:	/* 8MB card, 4MB daughtercard */
+	    i128InfoRec.videoRam = 12 * 1024; break;
+	 case 0x06:	/* 8MB card, 8MB daughtercard */
+	    i128InfoRec.videoRam = 16 * 1024; break;
+	 case 0x03:	/* 4MB card, 16 daughtercard */
+	    i128InfoRec.videoRam = 20 * 1024; break;
+	 case 0x07:	/* 8MB card, 16MB daughtercard */
+	    i128InfoRec.videoRam = 24 * 1024; break;
+	 default:
+	    break;
+      }
+   }
+
+   if (i128InfoRec.videoRam == 0) {
+      i128InfoRec.videoRam = 2048;  /* default to 2MB */
+      if (i128io.config1 & 0x04)    /* 128 bit mode   */
+         i128InfoRec.videoRam <<= 1;
+      if (i128io.id & 0x0400)       /* 2 banks VRAM   */
+         i128InfoRec.videoRam <<= 1;
+   }
 
    if (xf86Verbose)
       ErrorF("%s %s: videoram:  %dk\n", 
@@ -497,6 +533,8 @@ i128Probe()
       if (i128io.id & 0x0400)       /* 2 banks VRAM   */
 	 i128RamdacType = IBM528_DAC;
       else
+	 i128RamdacType = IBM526_DAC;
+   } else if (pcrp->_device_vendor == I128_DEVICE_ID3) {
 	 i128RamdacType = IBM526_DAC;
    } else {
             ErrorF("%s: Unknown I128 rev (%x).\n", i128InfoRec.name,
@@ -631,6 +669,7 @@ i128Probe()
  */
    if (i128InfoRec.dacSpeeds[0] <= 0) {
       if ((pcrp->_device_vendor == I128_DEVICE_ID2) ||
+          (pcrp->_device_vendor == I128_DEVICE_ID3) ||
           (i128InfoRec.videoRam == 8192))
 	 i128InfoRec.dacSpeeds[0] = 220000;
       else
@@ -701,7 +740,11 @@ i128Probe()
    if ((tx != i128InfoRec.virtualX) || (ty != i128InfoRec.virtualY))
       OFLG_CLR(XCONFIG_VIRTUAL,&i128InfoRec.xconfigFlag);
 
-   if (i128InfoRec.virtualX <= 640)
+   if (pcrp->_device_vendor == I128_DEVICE_ID3) {
+      i128DisplayWidth = i128InfoRec.virtualX;
+      if ((i128InfoRec.virtualX % 128) != 0)
+         i128DisplayWidth +=  128 - (i128InfoRec.virtualX % 128);
+   } else if (i128InfoRec.virtualX <= 640)
       i128DisplayWidth = 640;
    else if (i128InfoRec.virtualX <= 800)
       i128DisplayWidth = 800;
@@ -718,7 +761,9 @@ i128Probe()
    else
       i128DisplayWidth = 2048;
 
-   if (i128InfoRec.videoRam > 4096)
+   if (pcrp->_device_vendor == I128_DEVICE_ID3)
+      i128DisplayOffset = 0;
+   else if (i128InfoRec.videoRam > 4096)
       i128DisplayOffset = 0x400000L %
 		          (i128DisplayWidth * (i128InfoRec.bitsPerPixel/8));
 
@@ -902,14 +947,15 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g[DATA_I] = 0x01;					MB;
    i128mem.rbase_g[IDXL_I] = IBMRGB_misc1;				MB;
    tmp2 = i128mem.rbase_g[DATA_I] & 0xbc;
-   if (!i128MemoryTypeDram)
+   if (i128MemoryType != I128_MEMORY_DRAM)
    	tmp2 |= (i128RamdacType == IBM528_DAC) ? 3 : 1;
    i128mem.rbase_g[DATA_I] = tmp2;					MB;
    i128mem.rbase_g[IDXL_I] = IBMRGB_misc2;				MB;
    tmp2 = 0x03;
    if (i128DAC8Bit)
 	tmp2 |= 0x04;
-   if (!(i128MemoryTypeDram && (i128InfoRec.bitsPerPixel > 16)))
+   if (!((i128MemoryType == I128_MEMORY_DRAM) &&
+	 (i128InfoRec.bitsPerPixel > 16)))
 	tmp2 |= 0x40;
    i128mem.rbase_g[DATA_I] = tmp2;					MB;
    i128mem.rbase_g[IDXL_I] = IBMRGB_misc3;				MB;

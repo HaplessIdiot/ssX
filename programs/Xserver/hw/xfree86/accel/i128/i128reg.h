@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.8 1997/06/25 08:24:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.9 1997/08/12 12:02:01 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -86,6 +86,12 @@ typedef struct {
 
 #define I128_DEVICE_ID1		0x2309105D
 #define I128_DEVICE_ID2		0x2339105D
+#define I128_DEVICE_ID3		0x493D105D
+
+#define I128_MEMORY_UNKNOWN	0x01
+#define I128_MEMORY_DRAM	0x02
+#define I128_MEMORY_WRAM	0x04
+#define I128_MEMORY_SGRAM	0x08
 
 /* RBASE_I register offsets */
 
@@ -173,6 +179,7 @@ typedef struct {
 #define  BC_MDM_MSK  0x00600000
 #define  BC_MDM_KEY  0x00200000
 #define  BC_MDM_PLN  0x00400000
+#define  BC_BLK_ENA  0x00800000
 #define  BC_PSIZ_MSK 0x03000000
 #define  BC_PSIZ_8B  0x00000000
 #define  BC_PSIZ_16B 0x01000000

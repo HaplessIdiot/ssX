@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.26 94/04/17 23:05:13 gildea Exp $
+.\" $XConsortium: imake.man /main/29 1996/09/28 16:14:42 rws $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -24,11 +24,12 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH IMAKE 1 "Release 6" "X Version 11"
+.TH IMAKE 1 "Release 6.1" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
 .SH SYNOPSIS
 \fBimake\fP [ \fB\-D\fP\fIdefine\fP ] [ \fB\-I\fP\fIdir\fP ]
+[ \fB\-U\fP\fIdefine\fP ] 
 [ \fB\-T\fP\fItemplate\fP ]
 [ \fB\-f\fP \fIfilename\fP ] [ \fB\-C\fP \fIfilename\fP ]
 [ \fB\-s\fP \fIfilename\fP ] [ \fB\-e\fP ]
@@ -55,6 +56,10 @@ directory, relative to the top.
 This option is passed directly to \fIcpp\fP.  It is typically used to 
 indicate the directory in which the \fIimake\fP template and configuration
 files may be found.
+.TP 8
+.B \-U\fIdefine\fP
+This option is passed directly to \fIcpp\fP.  It is typically used to
+unset variables when debugging \fIimake\fP configuration files.
 .TP 8
 .B \-T\fItemplate\fP
 This option specifies the name of the master template file (which is usually
@@ -232,11 +237,8 @@ recommended as they introduce dependencies that are not readily apparent
 when \fIimake\fP is run:
 .TP 5
 .B IMAKEINCLUDE
-If defined, this should be a valid include argument for the
-C preprocessor.  E.g., ``\-I/usr/include/local''.
-Actually, any valid
-.I cpp
-argument will work here.
+If defined, this specifies a ``\-I'' include argument to pass to the
+C preprocessor.  E.g., ``\-I/usr/X11/config''.
 .TP 5
 .B IMAKECPP
 If defined, this should be a valid path to a preprocessor program.

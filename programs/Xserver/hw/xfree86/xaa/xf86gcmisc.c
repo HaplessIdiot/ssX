@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.17 1997/08/26 10:01:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.18 1997/09/09 10:27:53 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -256,14 +256,14 @@ xf86GCNewText(pGC)
 	) {
 #ifdef WriteBitGroup
 	   PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltWrapper;
- 	   ImageGlyphBltFunc = cfbImageGlyphBlt8;
+ 	   ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltWrapper;
 #else
  	   ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltWrapper;
 #endif
 	} else {
 #ifdef WriteBitGroup
 	   PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltWrapper;
-	   ImageGlyphBltFunc = cfbImageGlyphBlt8;
+	   ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltWrapper;
 #endif
 	}
     }

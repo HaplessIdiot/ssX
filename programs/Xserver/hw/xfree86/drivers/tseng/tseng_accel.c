@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.14 1997/11/08 16:24:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.15 1997/11/09 08:03:45 hohndel Exp $ */
 
 
 /*
@@ -59,7 +59,12 @@ void TsengSetupForScreenToScreenCopy();
 void TsengSubsequentScreenToScreenCopy();
 
 void TsengDoImageWrite();
-void TsengWriteBitmap();
+void ET6KWriteBitmap();
+void W32WriteBitmap();
+void TsengScanlineScreenToScreenFillStippledRect();
+void TsengSubsequentScanlineScreenToScreenFillStippledRect();
+void TsengScanlineCPUToScreenFillStippledRect();
+void TsengSubsequentScanlineCPUToScreenFillStippledRect();
 
 void TsengSetupForScanlineScreenToScreenColorExpand();
 void TsengSubsequentScanlineScreenToScreenColorExpand();
@@ -67,6 +72,10 @@ void TsengSetupForScanlineCPUToScreenColorExpand();
 void TsengSubsequentScanlineCPUToScreenColorExpand();
 static void TsengSubsequentScanlineCPUToScreenColorExpand_1to2to16();
 static void TsengSubsequentScanlineCPUToScreenColorExpand_1to4to32();
+void W32ImageTextTECPUToScreenColorExpand();
+void W32PolyTextTECPUToScreenColorExpand();
+                    
+                    
 
 void TsengSubsequentBresenhamLine();
 void TsengSubsequentTwoPointLine();
@@ -94,8 +103,8 @@ static int planemask_mask; /* will hold the "empty" planemask value */
 static CARD32 colexp_buf[COLEXP_BUF_SIZE/4];
 
 /* for ImageWrite and WriteBitmap */
-static unsigned int *FirstLinePntr, *SecondLinePntr;
-static unsigned int FirstLine, SecondLine;
+static CARD32 *FirstLinePntr, *SecondLinePntr;
+static CARD32 FirstLine, SecondLine;
 
 
 /* These will hold the ping-pong registers.
@@ -137,6 +146,11 @@ void TsengAccelInit() {
      */
     if (Tseng_bus != BUS_PCI)
        xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
+       
+#if 0
+    if (TsengScanlineScreenToScreenFillStippledRect)
+       xf86AccelInfoRec.Flags |= DO_NOT_CACHE_STIPPLES;
+#endif
       
     /*
      * The following line installs a "Sync" function, that waits for
@@ -220,11 +234,11 @@ void TsengAccelInit() {
       SecondLine = FirstLine + ((tseng_line_width + 6) & ~0x3L);
       
       if (TSENG.ChipUseLinearAddressing)
-          FirstLinePntr = (unsigned int *) ((int)vgaLinearBase + FirstLine);
+          FirstLinePntr = (CARD32 *) ((int)vgaLinearBase + FirstLine);
       else
-          FirstLinePntr = (unsigned int *) ( ((int)vgaBase) + 0x1A000L);
+          FirstLinePntr = (CARD32 *) ( ((int)vgaBase) + 0x1A000L);
 
-      SecondLinePntr = (unsigned int *)((int)FirstLinePntr + ((tseng_line_width + 6) & ~0x3L));
+      SecondLinePntr = (CARD32 *)((int)FirstLinePntr + ((tseng_line_width + 6) & ~0x3L));
     }
 
     /*
@@ -300,6 +314,16 @@ void TsengAccelInit() {
 
     if (!Is_ET6K)
     {
+      /* fast 8bpp-only XAA replacements for text drawing and Bitmap writing */
+      if ( (vgaBitsPerPixel == 8) && (et4000_type != TYPE_ET4000W32Pa) )
+      {
+          xf86AccelInfoRec.WriteBitmap = W32WriteBitmap;
+          xf86AccelInfoRec.ImageTextTE = W32ImageTextTECPUToScreenColorExpand;
+          xf86AccelInfoRec.PolyTextTE = W32PolyTextTECPUToScreenColorExpand;
+          xf86AccelInfoRec.FillRectOpaqueStippled = TsengScanlineCPUToScreenFillStippledRect;
+          xf86AccelInfoRec.FillRectStippled = TsengScanlineCPUToScreenFillStippledRect;
+      }
+
       /*
        * We'll use an intermediate memory buffer and fake
        * scanline-screen-to-screen color expansion, because the XAA
@@ -336,8 +360,12 @@ void TsengAccelInit() {
 
     if (Is_ET6K)
     {
-      if (tsengImageWriteBase && Is_ET6K)   /* uses the same buffer memory as ImageWrite */
-        xf86AccelInfoRec.WriteBitmap = TsengWriteBitmap;
+      if (tsengImageWriteBase)   /* uses the same buffer memory as ImageWrite */
+      {
+        xf86AccelInfoRec.WriteBitmap = ET6KWriteBitmap;
+        xf86AccelInfoRec.FillRectOpaqueStippled = TsengScanlineScreenToScreenFillStippledRect;
+        xf86AccelInfoRec.FillRectStippled = TsengScanlineScreenToScreenFillStippledRect;
+      }
 
       xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
           TsengSetupForScanlineScreenToScreenColorExpand;
@@ -1163,7 +1191,7 @@ void TsengSubsequentScanlineCPUToScreenColorExpand(srcaddr)
         case 8:
         case 24: /* TRIPLE_BITS_24BPP */
            /* Copy scanline data to accelerator MMU aperture */
-           MoveDWORDS((unsigned int*)CPU2ACLBase, colexp_buf, colexp_width_dwords);
+           MoveDWORDS(CPU2ACLBase, colexp_buf, colexp_width_dwords);
            break;
         case 16:
            /* expand the color expand data to 2 bits per pixel before copying it to the MMU aperture */
@@ -1287,11 +1315,14 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 }
 
 
-#ifdef NOT_USED
 /*
  * TsengSubsequentCPUToScreenColorExpand() is potentially dangerous:
  *   Not writing enough data to the MMU aperture for CPU-to-screen color
  *   expansion will eventually cause a system deadlock!
+ *
+ * Note that CPUToScreenColorExpand operations _always_ require a
+ * WAIT_INTERFACE before starting a new operation (this is empyrical,
+ * though)
  */
 
 void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
@@ -1304,13 +1335,13 @@ void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
   /* ErrorF(" %dx%d|%d ",w,h,skipleft);*/
   if (skipleft) ErrorF("Can't do: Skipleft = %d\n", skipleft);
   
-  wait_acl_queue();
+/*  wait_acl_queue();*/
+  WAIT_INTERFACE;
 
   *ACL_MIX_Y_OFFSET = w-1;
   SET_XY(w, h);
   START_ACL_CPU(destaddr);
 }
-#endif
 
 void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
    int bg, fg;
@@ -1630,8 +1661,8 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
  */
 
 static void MoveDWORDS(dest, src, dwords)
-   register unsigned int* dest;
-   register unsigned int* src;
+   register CARD32* dest;
+   register CARD32* src;
    register int dwords;
 {
      while(dwords & ~0x03) {
@@ -1791,7 +1822,7 @@ TsengDoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
  * accelerator instead of the XAA code (= the CPU).
  */
 
-void TsengWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy, 
+void ET6KWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy, 
                         bg, fg, rop, planemask)
     int x, y, w, h;
     unsigned char *src;
@@ -1804,9 +1835,7 @@ void TsengWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     unsigned char* srcp;        /* pointer to src */
     Bool PlusOne = (h & 0x01);
     int dwords;
-    int line = y;
 
-/*    ErrorF("Wb ");*/
     TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, planemask);
 
     h >>= 1;                        /* h now represents line pairs */
@@ -1844,4 +1873,770 @@ void TsengWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 
     SET_SYNC_FLAG;
  }
+
+
+
+/* when defined, use faster (but less generic) ACL CPU-to-screen Subsequent setup code */
+#define USE_FAST_ACLINIT 1
+
+
+void W32WriteBitmap(x, y, w, h, src, srcwidth, srcx,
+srcy, bg, fg, rop, planemask)
+    int x, y, w, h;
+    unsigned char *src;
+    int srcwidth;
+    int srcx, srcy;
+    int bg, fg;
+    int rop;
+    unsigned int planemask;
+{
+    unsigned char *srcp = (srcwidth * srcy) + (srcx >> 3) + src;
+    int dwords =  (w + 31) >> 5;
+    register int shift = srcx & 0x07;
+    int destaddr;
+
+    TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask);
+    
+#ifdef USE_FAST_ACLINIT
+   /*
+    * this is a replacement for the TsengSubsequentCPUToScreenColorExpand()
+    * function, but optimized for this application.
+    */
+    destaddr = FBADDR(x,y);
+
+    SET_XY(w, 1);
+#endif
+
+    if(shift) {
+	int count;
+	register CARD32* destptr;
+	register CARD32* srcptr;
+    	while(h--) {
+	    count = dwords;
+	    srcptr = (CARD32*)srcp;
+	    destptr = (CARD32*)CPU2ACLBase;
+	    WAIT_QUEUE;
+#ifdef USE_FAST_ACLINIT
+            WAIT_INTERFACE;
+            START_ACL_CPU(destaddr);
+	    destaddr += tseng_line_width;
+#else
+            TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
+#endif
+	    while(count--) {
+	   	*(destptr++) = (srcptr[0] >> shift) | 
+				(srcptr[1] << (32 - shift));
+		srcptr++;
+	    }
+	    srcp += srcwidth;
+    	}    
+    } else {
+    	while(h--) {
+            WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+            START_ACL_CPU(destaddr);
+	    destaddr += tseng_line_width;
+#else
+            TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
+#endif
+	    MoveDWORDS(CPU2ACLBase, (CARD32*)srcp, dwords);
+	    srcp += srcwidth;
+    	}    
+    }
+
+    SET_SYNC_FLAG;	
+}
+
+
+
+/*
+ * Fast W32 8bpp TE ImageText and PolyText rendering code, using
+ * CPU-to-screen color expansion. This draws one scanline at a time.
+ * Author: Mark Vojkovich.
+ */
+
+
+#include "xf86expblt.h"
+
+#define MAX_GLYPHS	1024			/* that's gotta be enough */
+static unsigned int* Glyphs[MAX_GLYPHS]; 
+
+void
+W32ImageTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+					nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    int w, h, x, y;
+    int glyphWidth, count;
+    int destaddr;
+
+    glyphWidth = FONTMAXBOUNDS(pGC->font, characterWidth);
+    
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if ((GLYPHWIDTHBYTESPADDED(*ppci) != 4) || glyphWidth > 32) {
+        xf86GCInfoRec.ImageGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    h = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
+    if (!(h && glyphWidth))
+	return;
+
+    TsengSetupForCPUToScreenColorExpand(
+            pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
+
+    x = xInit + FONTMAXBOUNDS(pGC->font, leftSideBearing) + pDrawable->x;
+    y = yInit - FONTASCENT(pGC->font) + pDrawable->y;
+    w = nglyph * glyphWidth;
+
+#ifdef USE_FAST_ACLINIT
+   /*
+    * this is a replacement for the TsengSubsequentCPUToScreenColorExpand()
+    * function, but optimized for this application.
+    */
+    destaddr = FBADDR(x,y);
+
+    SET_XY(w, 1);
+#endif
+
+    for(count = 0; count < nglyph; count++) 
+	Glyphs[count] = (unsigned int*)FONTGLYPHBITS(pglyphBase,*ppci++);	
+
+
+    for(count = 0; count < h; count++, y++) {
+        WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+        START_ACL_CPU(destaddr);
+	destaddr += tseng_line_width;
+#else
+        TsengSubsequentCPUToScreenColorExpand(x,y,w,1,0);
+#endif
+	xf86DrawTextScanline((unsigned int*)CPU2ACLBase,
+		Glyphs, count, nglyph, glyphWidth);
+    }
+
+    SET_SYNC_FLAG;	
+}
+
+void
+W32PolyTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+					nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    int w, h, x, y;
+    int glyphWidth, count;		       
+    int destaddr;
+
+    glyphWidth = FONTMAXBOUNDS(pGC->font, characterWidth);
+    
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if ((GLYPHWIDTHBYTESPADDED(*ppci) != 4) || glyphWidth > 32) {
+        xf86GCInfoRec.PolyGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    h = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
+    if (!(h && glyphWidth))
+	return;
+
+    TsengSetupForCPUToScreenColorExpand(
+            -1 , pGC->fgPixel, pGC->alu, pGC->planemask);
+
+    x = xInit + FONTMAXBOUNDS(pGC->font, leftSideBearing) + pDrawable->x;
+    y = yInit - FONTASCENT(pGC->font) + pDrawable->y;
+    w = nglyph * glyphWidth;
+
+#ifdef USE_FAST_ACLINIT
+   /*
+    * this is a replacement for the TsengSubsequentCPUToScreenColorExpand()
+    * function, but optimized for this application.
+    */
+    destaddr = FBADDR(x,y);
+
+    SET_XY(w, 1);
+#endif
+
+    for(count = 0; count < nglyph; count++) 
+	Glyphs[count] = (unsigned int*)FONTGLYPHBITS(pglyphBase,*ppci++);	
+
+    for(count = 0; count < h; count++, y++) {
+        WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+        START_ACL_CPU(destaddr);
+	destaddr += tseng_line_width;
+#else
+        TsengSubsequentCPUToScreenColorExpand(x,y,w,1,0);
+#endif
+	xf86DrawTextScanline((unsigned int*)CPU2ACLBase,
+		Glyphs, count, nglyph, glyphWidth);
+    }
+
+    SET_SYNC_FLAG;	
+}
+
+
+/*
+ * Stipple acceleration code.
+ */
+
+/* shiftmasks for stipple acceleration */
+static CARD32 ShiftMasks[32] = {
+  0x00000000, 0x00000001, 0x00000003, 0x00000007,
+  0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f,
+  0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff,
+  0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff,
+  0x0000ffff, 0x0001ffff, 0x0003ffff, 0x0007ffff,
+  0x000fffff, 0x001fffff, 0x003fffff, 0x007fffff,
+  0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
+  0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff };
+
+
+
+/*
+The TsengFillStippledRect function can replace:
+
+    xf86AccelInfoRec.FillRectOpaqueStippled
+		&
+    xf86AccelInfoRec.FillRectStippled
+
+
+  This function will probably be less satisfying since it will
+rarely be used.  In general, scanline expansions are only used
+when a bitmap won't fit in the cache, either because it's just
+too big or because video memory is low.  For the most part,
+the other options are preferred to the scanline expansion
+(blit from pixmap cache, 8x8 pattern fills).
+  
+  This code is based on stuff I wrote for the S3.  I was
+unhappy with the performance of the XAA stipple fallbacks in 
+cases where the pixmap cache couldn't be used.  It DOESN'T
+use a skipleft parameter.  All performance gains over XAA
+come from breaking up the code to handle 3 cases of stipple
+widths: powers of two <= 32, other less than 32, and larger
+stipple widths.
+
+As for x11perf:
+
+srect, osrect -
+
+   These guys are 32x32 stipples reduceable to 8x8.  It would
+be good to establish a hierarchy between the 8x8 pattern fills,
+blitting from the pixmap cache, and the expansion routines.
+This function would only be used if there isn't enough room
+for the pixmap cache (or it's turned off), or if you specify
+DO_NOT_CACHE_STIPPLES.
+
+oddsrect, oddosrect -
+
+   A 17x15 stipple.  Will only use this function if there's
+not enough room (need 15 lines) in the pixmap cache or with
+DO_NOT_CACHE_STIPPLES.
+
+bigsrect, bigosrect -
+
+   This function will always be used, since the pixmap cache
+is never large enough to hold these stipples.  Conceivably
+I could make a skipleft version for the bigger stipples, but I 
+haven't yet.
+
+
+In general the ones that are used the least is where my
+version of this code has the biggest advantage over XAA,
+so I generally only think of this as a way to keep performance
+from sucking when there's not enough room for the pixmap cache.
+
+[ kmg ]
+Do we really need those shiftmasks?
+
+	ShiftMasks[i] = (1 << i) - 1;
+
+This is really a very simple operation, probably even faster than indexing
+in an array -- and certainly a lot more cache-friendly (it's in-place)
+
+*/
+
+static void SetDWORDS(dest, value, dwords)
+   register CARD32* dest;
+   register CARD32 value;
+   register int dwords;
+{
+    while(dwords & ~0x03) {
+	dest[0] = dest[1] = dest[2] = dest[3] = value;
+	dest += 4;
+	dwords -= 4;
+    }	
+    switch(dwords) {
+	case 1: dest[0] = value; 
+		break;
+	case 2: dest[0] = dest[1] = value; 
+		break;
+	case 3: dest[0] = dest[1] = dest[2] = value; 
+		break;
+    }
+}
+
+
+
+/* this function attaches to those 2 xf86AccelInfoRec pointers.
+   This function calls that previous function I posted */
+
+void
+TsengScanlineScreenToScreenFillStippledRect (pDrawable, pGC, nBoxInit, pBoxInit)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int nBoxInit;		/* number of rectangles to fill */
+    BoxPtr pBoxInit;		/* Pointer to first rectangle to fill */
+{
+    PixmapPtr pPixmap;		/* Pixmap of the area to draw */
+    int rectWidth;		/* Width of the rect to be drawn */
+    int rectHeight;		/* Height of the rect to be drawn */
+    BoxPtr pBox;		/* current rectangle to fill */
+    int nBox;			/* Number of rectangles to fill */
+    int xoffset, yoffset;
+    Bool AlreadySetup = FALSE;
+
+    pPixmap = pGC->stipple;
+
+    for (nBox = nBoxInit, pBox = pBoxInit; nBox > 0; nBox--, pBox++) {
+
+
+	rectWidth = pBox->x2 - pBox->x1;
+	rectHeight = pBox->y2 - pBox->y1;
+
+	if ((rectWidth > 0) && (rectHeight > 0)) {
+	    if(!AlreadySetup) {
+                TsengSetupForScreenToScreenColorExpand(
+                   (pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel,
+                    pGC->fgPixel, pGC->alu, pGC->planemask);
+
+		AlreadySetup = TRUE;
+	    }
+
+	    xoffset = (pBox->x1 - (pGC->patOrg.x + pDrawable->x))
+	        % pPixmap->drawable.width;
+	    if (xoffset < 0)
+	        xoffset += pPixmap->drawable.width;
+	    yoffset = (pBox->y1 - (pGC->patOrg.y + pDrawable->y))
+	        % pPixmap->drawable.height;
+	    if (yoffset < 0)
+	        yoffset += pPixmap->drawable.height;
+	    TsengSubsequentScanlineScreenToScreenFillStippledRect(
+	        pBox->x1, pBox->y1, rectWidth, rectHeight,
+	        pPixmap->devPrivate.ptr, pPixmap->devKind,
+	        pPixmap->drawable.width, pPixmap->drawable.height,
+	        xoffset, yoffset);
+	}
+    }	/* end for loop through each rectangle to draw */
+}
+
+
+void TsengSubsequentScanlineScreenToScreenFillStippledRect(x, y, w, h, src, srcwidth,
+			stipplewidth, stippleheight, srcx, srcy)
+    int x, y, w, h;
+    unsigned char *src;
+    int srcwidth;
+    int stipplewidth, stippleheight;
+    int srcx, srcy;
+{
+    unsigned char *srcp;
+    int dwords = (w + 31) >> 5;
+    int line = 0;
+    
+    /* setup x/y/w in the ACL engine */
+    ColorExpandDst = FBADDR(x,y);
+    *ACL_MIX_Y_OFFSET = 0x0FFF;
+    SET_XY(w, 1);
+
+    srcp = (srcwidth * srcy) + src;
+
+    if(!((stipplewidth > 32) || (stipplewidth & (stipplewidth - 1)))) { 
+    	CARD32 pattern;
+    	register unsigned char* kludge = (unsigned char*)(&pattern);
+
+	while(h--) {
+	   switch(stipplewidth) {
+		case 32:
+	   	    pattern = *((CARD32*)srcp);  
+		    break;
+	      	case 16:
+		    kludge[0] = kludge[2] = srcp[0];
+		    kludge[1] = kludge[3] = srcp[1];
+		    break;
+	      	case 8:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = srcp[0];
+		    break;
+	      	case 4:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = 
+				(srcp[0] & 0x0F);
+		    pattern |= (pattern << 4);
+		    break;
+		case 2:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = 
+				(srcp[0] & 0x03);
+		    pattern |= (pattern << 2);
+		    pattern |= (pattern << 4);
+		    break;
+		default:	/* case 1: */
+		    if(srcp[0] & 0x01) 
+			pattern = 0xffffffff;
+		    else
+			pattern = 0x00000000;
+		    break;
+	   }
+
+	   if(srcx) 
+		pattern = (pattern >> srcx) | (pattern << (32 - srcx));     
+
+	   if(line & 0x01) {
+   	   	SetDWORDS(FirstLinePntr, pattern, dwords); 
+		TsengSubsequentScanlineScreenToScreenColorExpand(FirstLine<<3);
+	   } else {
+		WAIT_ACL;
+   	   	SetDWORDS(SecondLinePntr, pattern, dwords); 
+		TsengSubsequentScanlineScreenToScreenColorExpand(SecondLine<<3);
+           }
+	   line++;
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    } else if(stipplewidth < 32) {
+	register int width, offset;
+	int count;
+	register CARD32 pattern;
+	register CARD32* DestPntr;
+
+	while(h--) {
+	   width = stipplewidth;
+	   pattern = *((CARD32*)srcp) & ShiftMasks[width];  
+	   while(!(width & ~15)) {
+		pattern |= (pattern << width);
+		width <<= 1;	
+	   }
+	   pattern |= (pattern << width);
  
+	   offset = srcx;
+	   count = dwords;
+	
+	   if(line & 0x01) {
+		DestPntr = SecondLinePntr;
+	   	while(count--) {
+	 	    *DestPntr = (pattern >> offset) | 
+					(pattern << (width - offset));
+		    DestPntr++;
+		    offset += 32;
+		    while(offset >= width) 
+		    	offset -= width;
+	        }
+		TsengSubsequentScanlineScreenToScreenColorExpand(SecondLine<<3);
+	   } else {
+		DestPntr = FirstLinePntr;
+		WAIT_ACL;
+	   	while(count--) {
+	 	    *DestPntr = (pattern >> offset) | 
+					(pattern << (width - offset));
+		    DestPntr++;
+		    offset += 32;
+		    while(offset >= width) 
+		    	offset -= width;
+	        }
+		TsengSubsequentScanlineScreenToScreenColorExpand(FirstLine<<3);
+	   }
+	   line++;
+
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    } else  {
+	register CARD32* scratch;
+	int shift, offset, scratch2, count;
+	register CARD32* DestPntr;
+
+	while(h--) {
+	   count = dwords;
+	   offset = srcx;
+	   	   	
+	   if(line & 0x01) 
+		DestPntr = SecondLinePntr;
+  	   else {
+		DestPntr = FirstLinePntr;
+		WAIT_ACL;
+	   }
+	   while(count--) {
+	   	shift = stipplewidth - offset;
+		scratch = (CARD32*)(srcp + (offset >> 3));
+		scratch2 = offset & 0x07;
+
+		if(shift & ~31) {
+		   if(scratch2) {
+		      *DestPntr = (*scratch >> scratch2) |
+			(scratch[1] << (32 - scratch2));
+		   } else 
+		       *DestPntr = *scratch; 
+		} else {
+		    *DestPntr = (*((CARD32*)srcp) << shift) |
+			((*scratch >> scratch2) & ShiftMasks[shift]);
+		}
+		DestPntr++;
+		offset += 32;
+		while(offset >= stipplewidth) 
+		    offset -= stipplewidth;
+	   }	
+	   if(line & 0x01) TsengSubsequentScanlineScreenToScreenColorExpand(SecondLine<<3);
+	   else TsengSubsequentScanlineScreenToScreenColorExpand(FirstLine<<3);
+
+	   line++;
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    }
+    SET_SYNC_FLAG;
+}
+
+
+void
+TsengScanlineCPUToScreenFillStippledRect (pDrawable, pGC, nBoxInit, pBoxInit)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int nBoxInit;		/* number of rectangles to fill */
+    BoxPtr pBoxInit;		/* Pointer to first rectangle to fill */
+{
+    PixmapPtr pPixmap;		/* Pixmap of the area to draw */
+    int rectWidth;		/* Width of the rect to be drawn */
+    int rectHeight;		/* Height of the rect to be drawn */
+    BoxPtr pBox;		/* current rectangle to fill */
+    int nBox;			/* Number of rectangles to fill */
+    int xoffset, yoffset;
+    Bool AlreadySetup = FALSE;
+
+    pPixmap = pGC->stipple;
+
+    for (nBox = nBoxInit, pBox = pBoxInit; nBox > 0; nBox--, pBox++) {
+
+
+	rectWidth = pBox->x2 - pBox->x1;
+	rectHeight = pBox->y2 - pBox->y1;
+
+	if ((rectWidth > 0) && (rectHeight > 0)) {
+	    if(!AlreadySetup) {
+                TsengSetupForCPUToScreenColorExpand(
+                   (pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel,
+                    pGC->fgPixel, pGC->alu, pGC->planemask);
+
+		AlreadySetup = TRUE;
+	    }
+
+	    xoffset = (pBox->x1 - (pGC->patOrg.x + pDrawable->x))
+	        % pPixmap->drawable.width;
+	    if (xoffset < 0)
+	        xoffset += pPixmap->drawable.width;
+	    yoffset = (pBox->y1 - (pGC->patOrg.y + pDrawable->y))
+	        % pPixmap->drawable.height;
+	    if (yoffset < 0)
+	        yoffset += pPixmap->drawable.height;
+	    TsengSubsequentScanlineCPUToScreenFillStippledRect(
+	        pBox->x1, pBox->y1, rectWidth, rectHeight,
+	        pPixmap->devPrivate.ptr, pPixmap->devKind,
+	        pPixmap->drawable.width, pPixmap->drawable.height,
+	        xoffset, yoffset);
+	}
+    }	/* end for loop through each rectangle to draw */
+}
+
+
+void TsengSubsequentScanlineCPUToScreenFillStippledRect(x, y, w, h, src, srcwidth,
+			stipplewidth, stippleheight, srcx, srcy)
+    int x, y, w, h;
+    unsigned char *src;
+    int srcwidth;
+    int stipplewidth, stippleheight;
+    int srcx, srcy;
+{
+    unsigned char *srcp;
+    int dwords = (w + 31) >> 5;
+    int destaddr;
+    
+#ifdef USE_FAST_ACLINIT
+   /*
+    * this is a replacement for the TsengSubsequentCPUToScreenColorExpand()
+    * function, but optimized for this application.
+    */
+    destaddr = FBADDR(x,y);
+
+    SET_XY(w, 1);
+#endif
+
+    srcp = (srcwidth * srcy) + src;
+
+    if(!((stipplewidth > 32) || (stipplewidth & (stipplewidth - 1)))) { 
+    	CARD32 pattern;
+    	register unsigned char* kludge = (unsigned char*)(&pattern);
+
+	while(h--) {
+	   switch(stipplewidth) {
+		case 32:
+	   	    pattern = *((CARD32*)srcp);  
+		    break;
+	      	case 16:
+		    kludge[0] = kludge[2] = srcp[0];
+		    kludge[1] = kludge[3] = srcp[1];
+		    break;
+	      	case 8:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = srcp[0];
+		    break;
+	      	case 4:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = 
+				(srcp[0] & 0x0F);
+		    pattern |= (pattern << 4);
+		    break;
+		case 2:
+		    kludge[0] = kludge[1] = kludge[2] = kludge[3] = 
+				(srcp[0] & 0x03);
+		    pattern |= (pattern << 2);
+		    pattern |= (pattern << 4);
+		    break;
+		default:	/* case 1: */
+		    if(srcp[0] & 0x01) 
+			pattern = 0xffffffff;
+		    else
+			pattern = 0x00000000;
+		    break;
+	   }
+
+	   if(srcx) 
+		pattern = (pattern >> srcx) | (pattern << (32 - srcx));     
+
+           WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+           START_ACL_CPU(destaddr);
+           destaddr += tseng_line_width;
+#else
+           TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
+#endif
+	   SetDWORDS(CPU2ACLBase, pattern, dwords); 
+
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    } else if(stipplewidth < 32) {
+	register int width, offset;
+	int count;
+	register CARD32 pattern;
+	register CARD32* DestPntr;
+
+	while(h--) {
+	   width = stipplewidth;
+	   pattern = *((CARD32*)srcp) & ShiftMasks[width];  
+	   while(!(width & ~15)) {
+		pattern |= (pattern << width);
+		width <<= 1;	
+	   }
+	   pattern |= (pattern << width);
+ 
+	   offset = srcx;
+	   count = dwords;
+	
+           WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+           START_ACL_CPU(destaddr);
+           destaddr += tseng_line_width;
+#else
+           TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
+#endif
+	   DestPntr = CPU2ACLBase; 
+   	   while(count--) {
+ 	     *DestPntr = (pattern >> offset) | 
+				(pattern << (width - offset));
+	     DestPntr++;
+	     offset += 32;
+	     while(offset >= width) 
+	    	offset -= width;
+           }
+
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    } else  {
+	register CARD32* scratch;
+	int shift, offset, scratch2, count;
+	register CARD32* DestPntr;
+
+	while(h--) {
+	   count = dwords;
+	   offset = srcx;
+	   	   	
+	   DestPntr = CPU2ACLBase;
+
+           WAIT_INTERFACE;
+#ifdef USE_FAST_ACLINIT
+           START_ACL_CPU(destaddr);
+           destaddr += tseng_line_width;
+#else
+           TsengSubsequentCPUToScreenColorExpand(x,y++,w,1,0);
+#endif
+	   while(count--) {
+	   	shift = stipplewidth - offset;
+		scratch = (CARD32*)(srcp + (offset >> 3));
+		scratch2 = offset & 0x07;
+
+		if(shift & ~31) {
+		   if(scratch2) {
+		      *DestPntr = (*scratch >> scratch2) |
+			(scratch[1] << (32 - scratch2));
+		   } else 
+		       *DestPntr = *scratch; 
+		} else {
+		    *DestPntr = (*((CARD32*)srcp) << shift) |
+			((*scratch >> scratch2) & ShiftMasks[shift]);
+		}
+		DestPntr++;
+		offset += 32;
+		while(offset >= stipplewidth) 
+		    offset -= stipplewidth;
+	   }	
+
+	   srcy++;
+	   srcp += srcwidth;
+	   if (srcy >= stippleheight) {
+	     srcy = 0;
+	     srcp = src;
+	   }
+	}
+    }
+    SET_SYNC_FLAG;
+}

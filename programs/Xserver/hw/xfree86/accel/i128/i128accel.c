@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.9 1997/07/31 07:16:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.10 1997/08/12 12:02:00 hohndel Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -38,6 +38,7 @@ extern struct i128mem i128mem;
 extern int i128DisplayWidth;
 extern int i128DisplayOffset;
 extern int i128DeviceType;
+extern int i128MemoryType;
 static volatile CARD32 *eng_a;
 static volatile CARD32 *eng_b;
 static volatile CARD32 *eng_cur;
@@ -208,22 +209,32 @@ void
 i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 	int transparency_color)
 {
+	static CARD32 buf_ctrl = 1;
+
 	i128EngineReady();
 
-	switch (xf86bpp) {
-		case 8:
-			eng_cur[BUF_CTRL] = BC_PSIZ_8B;
-			break;
-		case 16:
-			eng_cur[BUF_CTRL] = BC_PSIZ_16B;
-			break;
-		case 24:
-		case 32:
-			eng_cur[BUF_CTRL] = BC_PSIZ_32B;
-			break;
-		default:
-			/* programming error */
-			return;
+	if (buf_ctrl == 1) {
+		switch (xf86bpp) {
+			case 8:
+				buf_ctrl = BC_PSIZ_8B;
+				break;
+			case 16:
+				buf_ctrl = BC_PSIZ_16B;
+				break;
+			case 24:
+			case 32:
+				buf_ctrl = BC_PSIZ_32B;
+				break;
+			default:
+				/* programming error */
+				return;
+		}
+		if (i128DeviceType == I128_DEVICE_ID3) {
+			buf_ctrl |= BC_BLK_ENA;
+			if (i128MemoryType == I128_MEMORY_SGRAM)
+				buf_ctrl |= BC_MDM_PLN;
+		}
+		eng_cur[BUF_CTRL] = buf_ctrl;
 	}
 
 	eng_cur[DE_PGE] = 0x00;
@@ -269,6 +280,8 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h)
 void
 i128SetupForFillRectSolid(int color, int rop, unsigned planemask)
 {
+	CARD32 buf_ctrl;
+
 	i128EngineReady();
 #if 0
 ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128alu[rop], planemask);
@@ -276,7 +289,7 @@ ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128
 
 	switch (xf86bpp) {
 		case 8:
-			eng_cur[BUF_CTRL] = BC_PSIZ_8B;
+			buf_ctrl = BC_PSIZ_8B;
 			if (planemask != -1)
 				eng_cur[MASK] = planemask |
 						(planemask<<8) |
@@ -286,7 +299,7 @@ ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128
 				eng_cur[MASK] = planemask;
 			break;
 		case 16:
-			eng_cur[BUF_CTRL] = BC_PSIZ_16B;
+			buf_ctrl = BC_PSIZ_16B;
 			if (planemask != -1)
 				eng_cur[MASK] = planemask | (planemask<<16);
 			else
@@ -294,13 +307,20 @@ ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128
 			break;
 		case 24:
 		case 32:
-			eng_cur[BUF_CTRL] = BC_PSIZ_32B;
+			buf_ctrl = BC_PSIZ_32B;
 			eng_cur[MASK] = planemask;
 			break;
 		default:
 			/* programming error */
 			return;
 	}
+
+	if (i128DeviceType == I128_DEVICE_ID3) {
+		buf_ctrl |= BC_BLK_ENA;
+		if (i128MemoryType == I128_MEMORY_SGRAM)
+			buf_ctrl |= BC_MDM_PLN;
+	}
+	eng_cur[BUF_CTRL] = buf_ctrl;
 
 	eng_cur[DE_PGE] = 0x00;
 	eng_cur[DE_SORG] = i128DisplayOffset;

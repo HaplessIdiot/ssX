@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.3 1997/06/10 12:30:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.4 1997/09/25 16:13:56 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -196,7 +196,8 @@ void S3FbInit(void)
 	  
 	 if (vga256InfoRec.MemBase) 
 	    s3InfoRec.ChipLinearBase = vga256InfoRec.MemBase;
-         else if (vgaPCIInfo && (vgaPCIInfo->Vendor == PCI_S3_VENDOR_ID))
+         else if (vgaPCIInfo && (vgaPCIInfo->Vendor == PCI_S3_VENDOR_ID) &&
+		(vgaPCIInfo->MemBase & 0xFF800000))
 	    s3InfoRec.ChipLinearBase = vgaPCIInfo->MemBase & 0xFF800000;
 	 else if (S3_x64_SERIES(s3ChipId)) 
 	    s3InfoRec.ChipLinearBase = 0xf3000000; 

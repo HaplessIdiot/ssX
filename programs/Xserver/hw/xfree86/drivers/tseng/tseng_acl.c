@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.10 1997/10/13 17:16:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.11 1997/11/08 16:24:32 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -17,6 +17,7 @@ ByteP MMU_CONTROL;
 ByteP ACL_SUSPEND_TERMINATE,
       ACL_OPERATION_STATE,
       ACL_SYNC_ENABLE,
+      ACL_WRITE_INTERFACE_VALID,
       ACL_INTERRUPT_MASK,
       ACL_INTERRUPT_STATUS,
       ACL_ACCELERATOR_STATUS;
@@ -236,6 +237,7 @@ void tseng_init_acl()
     ACL_SYNC_ENABLE		= (ByteP) (MMioBase + 0x32);
     /* for ET6000, ACL_SYNC_ENABLE becomes ACL_6K_CONFIG */
 
+    ACL_WRITE_INTERFACE_VALID	= (ByteP) (MMioBase + 0x33);
     ACL_INTERRUPT_MASK		= (ByteP) (MMioBase + 0x34);
     ACL_INTERRUPT_STATUS	= (ByteP) (MMioBase + 0x35);
     ACL_ACCELERATOR_STATUS	= (ByteP) (MMioBase + 0x36);
@@ -344,7 +346,7 @@ void tseng_init_acl()
     else /* W32i/W32p */
     {
       *ACL_RELOAD_CONTROL = 0x0;
-      *ACL_SYNC_ENABLE = 0x1;
+      *ACL_SYNC_ENABLE = 0x1;  /* | 0x2 = 0WS ACL read. Yields up to 10% faster operation for small blits */
       *ACL_ROUTING_CONTROL = 0x00;
     }
 

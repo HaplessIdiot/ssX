@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.4 1997/06/25 08:25:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.5 1997/10/25 13:51:03 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.4 1997/06/25 08:25:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.5 1997/10/25 13:51:03 hohndel Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -131,9 +131,18 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
     int PatternLength;
     Bool UseTwoPointLine = (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE);
 
-    if ( (!(PatternLength = xf86PackDashPattern(pGC))) ||
-         (((xf86AccelInfoRec.Flags & LINE_PATTERN_ONLY_TRANSPARENCY) &&
-	(pGC->lineStyle == LineDoubleDash))) ) {
+    if ((xf86AccelInfoRec.Flags & LINE_PATTERN_ONLY_TRANSPARENCY) &&
+	(pGC->lineStyle == LineDoubleDash)) {
+	SYNC_CHECK;	
+#ifdef POLYSEGMENT
+	cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+#else
+	cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
+#endif
+	return;
+    }
+
+    if (!(PatternLength = xf86PackDashPattern(pGC))) {
 	SYNC_CHECK;	
 #ifdef POLYSEGMENT
 	cfbSegmentSD(pDrawable, pGC, nseg, pSeg);

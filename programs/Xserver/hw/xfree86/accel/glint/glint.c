@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.14 1997/11/08 17:07:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.15 1997/11/09 09:30:58 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -253,11 +253,12 @@ extern void glintIBMHideCursor();
 extern void glintIBMSetCursorPosition();
 extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
-extern void restorehotspot(void);
 
 Bool glintDoubleBufferMode = FALSE;
+extern Bool glintInitialized;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern Bool xf86Exiting, xf86Resetting;
+extern int VBlank;
 ScreenPtr savepScreen = NULL;
 Bool glintReloadCursor, glintBlockCursor;
 unsigned char glintSwapBits[256];
@@ -274,7 +275,6 @@ int glintLBBase;
 int glintLBvideoRam;
 int GLINTFrameBufferSize, GLINTLocalBufferSize;
 int GLINTWindowBase;
-extern unsigned char *glintVideoMemSavegr;
 int glintAdjustCursorXPos = 0;
 static glintCRTCRegRec glintCRTCRegs;
 extern int defaultColorVisualClass;
@@ -881,7 +881,6 @@ glintProbe()
       IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	OFLG_SET(CLOCK_OPTION_IBMRGB, &validOptions);
 	OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
-	OFLG_SET(OPTION_IBMRGB_CURS, &glintInfoRec.options);
   }
   OFLG_SET(OPTION_XAA_BENCHMARK, &validOptions);
   OFLG_SET(OPTION_NOACCEL, &validOptions);
@@ -1077,9 +1076,7 @@ glintProbe()
 	  }
 
 #ifdef XFreeXDGA
-#ifdef NOTYET
   glintInfoRec.directMode = XF86DGADirectPresent;
-#endif
 #endif
 
   return(TRUE);
@@ -1120,36 +1117,27 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 
   	/* Let's use the new XAA Architecture.....*/
 	
-	if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options))
-	{
+	xf86AccelInfoRec.ServerInfoRec = &glintInfoRec;
+
+	if (OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options)) {
 		OFLG_SET(OPTION_SW_CURSOR, &glintInfoRec.options);
-		switch (glintInfoRec.depth) {
-			case 8:
-				ScreenInitFunc = &cfbScreenInit;
-				break;
-			case 15: case 16:
-				ScreenInitFunc = &cfb16ScreenInit;
-				break;
-			case 32:
-				ScreenInitFunc = &cfb32ScreenInit;
-				break;
-		}
 	} else {
-  		if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
+		if (IS_3DLABS_TX_MX_CLASS(coprotype)) 
 			GLINTAccelInit();
-		else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) 
+		else if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
 			PermediaAccelInit();
-		switch (glintInfoRec.depth) {
-			case 8:
-				ScreenInitFunc = &xf86XAAScreenInit8bpp;
-				break;
-			case 15: case 16:
-				ScreenInitFunc = &xf86XAAScreenInit16bpp;
-				break;
-			case 32:
-				ScreenInitFunc = &xf86XAAScreenInit32bpp;
-				break;
-		}
+	}
+
+	switch (glintInfoRec.depth) {
+		case 8:
+			ScreenInitFunc = &xf86XAAScreenInit8bpp;
+			break;
+		case 15: case 16:
+			ScreenInitFunc = &xf86XAAScreenInit16bpp;
+			break;
+		case 32:
+			ScreenInitFunc = &xf86XAAScreenInit32bpp;
+			break;
 	}
 
 	if (!ScreenInitFunc(pScreen,
@@ -1233,10 +1221,17 @@ glintNewSerialNumber(WindowPtr pWin, pointer data)
 void
 glintEnterLeaveVT(Bool enter, int screen_idx)
 {
+  BoxRec pixBox;
+  RegionRec pixReg;
+  DDXPointRec pixPt;
   PixmapPtr pspix;
   ScreenPtr pScreen = savepScreen;
 
     if (!xf86Exiting && !xf86Resetting) {
+	pixBox.x1 = 0; pixBox.x2 = pScreen->width;
+	pixBox.y1 = 0; pixBox.y2 = pScreen->height;
+	pixPt.x = 0; pixPt.y = 0;
+	(pScreen->RegionInit)(&pixReg, &pixBox, 1);
         switch (glintInfoRec.bitsPerPixel) {
         case 8:
             pspix = (PixmapPtr)pScreen->devPrivate;
@@ -1265,29 +1260,15 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 
 	    glintRestoreDACvalues();
 	    glintRestoreColor0(pScreen);
-#if 0
-	    (void)glintCursorInit(0, pScreen);
-	    glintRestoreCursor(pScreen);
-#endif
-	    (void)XAACursorInit(0, pScreen);
+
 	    XAARestoreCursor(pScreen);
 	    glintAdjustFrame(pScr->frameX0, pScr->frameY0);
 
-	    /* after RestoreCursor, RestoreCursor save not the hot_spot from
-	     the textcursor from the mouse */
-	    restorehotspot();
-
 	    if (pspix->devPrivate.ptr != glintVideoMem && ppix) {
 		pspix->devPrivate.ptr = glintVideoMem;
-#if 1
-		ppix->devPrivate.ptr = (pointer)glintVideoMem;
-#else
-		(glintImageWriteFunc)(0, 0, pScreen->width, pScreen->height,
-				 ppix->devPrivate.ptr,
-				 PixmapBytePad(pScreen->width,
-					       pScreen->rootDepth),
-				 0, 0, MIX_SRC, ~0);
-#endif
+
+  xf86AccelInfoRec.ImageWriteFallBack(&ppix->drawable,
+   &pspix->drawable, GXcopy, &pixReg, &pixPt, ~0);
 	    }
 	}
 	if (ppix) {
@@ -1302,29 +1283,31 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 					    pScreen->rootDepth);
 
 	    if (ppix) {
-#if 1
-		ppix->devPrivate.ptr = (pointer)glintVideoMemSavegr;
-#else
-		(glintImageReadFunc)(0, 0, pScreen->width, pScreen->height,
-				ppix->devPrivate.ptr,
-				PixmapBytePad(pScreen->width,
-					      pScreen->rootDepth),
-				0, 0, ~0);
-#endif
+  xf86AccelInfoRec.ImageWriteFallBack(&pspix->drawable,
+   &ppix->drawable, GXcopy, &pixReg, &pixPt, ~0);
+
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
 	}
+#ifdef XFreeXDGA
+    if (glintInfoRec.directMode & XF86DGADirectGraphics) {
+	XAACursorInfoRec.HideCursor();
+    }
+#endif
 
 	xf86InvalidatePixmapCache();
 
 	if (!xf86Resetting) {
-		if (AlreadyInited) {
 #ifdef XFreeXDGA
-	    if (!(glintInfoRec.directMode & XF86DGADirectGraphics))
+	    if (!(glintInfoRec.directMode & XF86DGADirectGraphics)) {
 #endif
-		glintCleanUp();
-		AlreadyInited = FALSE;
+		if (AlreadyInited) {
+		    glintCleanUp();
+		    AlreadyInited = FALSE;
 		}
+#ifdef XFreeXDGA
+	    }
+#endif
 	}
 	xf86UnMapDisplay(screen_idx, LINEAR_REGION);
     }
@@ -1472,8 +1455,13 @@ void
 glintAdjustFrame(x, y)
     int x, y;
 {
-  GLINTWindowBase = y * glintInfoRec.displayWidth + x;
-  GLINT_WRITE_REG(GLINTWindowBase, FBWindowBase);
+	GLINT_WRITE_REG(glintInfoRec.virtualY * y + x, FBWindowBase);
+#ifdef XFreeXDGA
+	if (glintInfoRec.directMode & XF86DGADirectGraphics) {
+		while ( (GLINT_READ_REG(VTGVLineNumber) >= 1) &&
+			(GLINT_READ_REG(VTGVLineNumber) <= VBlank) );
+	}
+#endif
 }
 
 /*
@@ -1484,14 +1472,14 @@ Bool
 glintSwitchMode(mode)
     DisplayModePtr mode;
 {
-#if 0
+    xf86MapDisplay(glintInfoRec.scrnIndex, LINEAR_REGION);
+
     glintCalcCRTCRegs(&glintCRTCRegs, mode);
     glintSetCRTCRegs(&glintCRTCRegs);
 
+    XAACursorInfoRec.ShowCursor();
+
     return(TRUE);
-#else
-    return(FALSE);
-#endif
 }
 
 /*

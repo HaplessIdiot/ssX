@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.11 1997/07/29 12:07:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.12 1997/08/26 10:00:53 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -628,7 +628,11 @@ extern int	TkCreateFrame (
 #endif
 );
 
+#if TK_MAJOR_VERSION == 4
 extern int	TkPlatformInit (
+#else
+extern int	TkpInit (
+#endif
 #if NeedFunctionProtoTypes
 	Tcl_Interp	*interp
 #endif
@@ -682,7 +686,11 @@ XF86Setup_TkInit(interp, display, appName)
 
     Tcl_ResetResult(interp);
     mainWindow = Tk_MainWindow(interp);
+#if TK_MAJOR_VERSION == 4
     TkPlatformInit(interp);
+#else
+    TkpInit(interp);
+#endif
     XtFree(class);
 
     if (synchronize)

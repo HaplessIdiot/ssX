@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.10 1997/09/29 08:40:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.12 1997/11/01 15:04:32 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -55,12 +55,10 @@ static glintRegisters SR;
 /* #define  VGASize glintInfoRec.videoRam*1024 */
 #define VGASize MEMSize 
 
-unsigned char *glintVideoMemSave=NULL;
-unsigned char *glintVideoMemSavegr=NULL;
-
-static int glintInitialized = 0;
+static Bool glintInitialized = FALSE;
 static Bool LUTInited = FALSE;
 static LUTENTRY oldlut[256];
+int VBlank;
 int glintInitCursorFlag = TRUE;
 int glintHDisplay;
 extern struct glintmem glintmem;
@@ -69,7 +67,6 @@ extern int glintDisplayWidth;
 extern Bool glintDoubleBufferMode;
 void glintDumpRegs(void);
 unsigned int glintSetLUT(int , unsigned int );
-void restorehotspot(void);
 int pprod;
 extern int coprotype;
 
@@ -194,6 +191,7 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
     crtcRegs->v_sync_end	= v_front_porch + v_sync_width + 1;
     crtcRegs->v_sync_start	= v_front_porch + 1;
     crtcRegs->v_blank_end	= mode->CrtcVTotal - mode->CrtcVDisplay;
+    VBlank = crtcRegs->v_blank_end;
 
     crtcRegs->pitch		= mode->CrtcHDisplay;
 
@@ -283,13 +281,10 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
     GLINT_WAIT (3);
     GLINT_WRITE_REG(1,			FBWriteMode);
     GLINT_WRITE_REG(pprod,		FBReadMode);
-#if 0
-    GLINT_WRITE_REG((glintInfoRec.displayWidth - 1) |
-		    0x7FFF0000,	ScreenSize);
+    GLINT_WRITE_REG(glintInfoRec.displayWidth |
+		    ((((glintInfoRec.videoRam * 1024) / 
+			glintInfoRec.displayWidth))<<16),	ScreenSize);
     GLINT_WRITE_REG(2,			ScissorMode);
-#else
-    GLINT_WRITE_REG(0,			ScissorMode);
-#endif
 
     /*
      * this one depends on the color depth
@@ -621,15 +616,6 @@ restoreGLINTstate(void)
 	}
 }
 
-void restorehotspot(void)
-{
-  if (glintInitialized)
-    {
-      glintOutIBMRGBIndReg(IBMRGB_curs_hot_x, 0, SR.DacRegs[IBMRGB_curs_hot_x]);
-      glintOutIBMRGBIndReg(IBMRGB_curs_hot_y, 0, SR.DacRegs[IBMRGB_curs_hot_y]);
-    }
-}
-
 void
 glintCleanUp(void)
 {
@@ -638,27 +624,9 @@ glintCleanUp(void)
     if (!glintInitialized)
 	return;
   
-      /* save for X-Console */
-      xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem,
-		 /* glintInfoRec.virtualX * glintInfoRec.virtualY * */
-/* 		 glintInfoRec.bitsPerPixel / 8 */
-		 MEMSize
-		 );
-
-#if MEMDEBUG
-    ErrorF("CleanUp: saving 0x%x bytes GRAPHICS mem\n",
-		 MEMSize /* glintInfoRec.virtualX * glintInfoRec.virtualY * */
-/* 		 glintInfoRec.bitsPerPixel / 8 */);
-#endif
-
-    if (glintVideoMemSave && glintVideoMem)
-      xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSave, VGASize);
-
-#if MEMDEBUG
-      ErrorF("CleanUp: restoring 0x%x bytes saved memory\n",VGASize);
-#endif
-
     restoreGLINTstate();
+
+    glintInitialized = FALSE;
 }
 
 void permediapreinit(void)
@@ -744,27 +712,6 @@ glintInit(DisplayModePtr mode)
 	  GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
     }
 
-    xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, VGASize);
-#if MEMDEBUG
-    ErrorF("Init : vX 0x%x vY 0x%x bpp %d\n",glintInfoRec.virtualX,
-                                             glintInfoRec.virtualY,
-				             glintInfoRec.bitsPerPixel);
-    ErrorF("Init: saving 0x%x bytes VT mem\n",VGASize);
-#endif
-
-
-    if (!glintInitialized)
-      xf86memset((unsigned char *)glintVideoMem, 0, MEMSize/* glintInfoRec.virtualX * */
-/*  		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8 */);
-    else
-      xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSavegr,
-		 MEMSize/* glintInfoRec.virtualX * glintInfoRec.virtualY * */
-/* 		 glintInfoRec.bitsPerPixel / 8 */);
-#if MEMDEBUG
-    ErrorF("Init: setting/restoring 0x%x bytes GRAPHICS mem\n",
-	   glintInfoRec.virtualX, glintInfoRec.virtualY, glintInfoRec.bitsPerPixel);
-#endif
-
     /*
      * for some reason, the server cannot access the framebuffer
      * when using some motherboards. At this point all we can do is
@@ -782,7 +729,7 @@ glintInit(DisplayModePtr mode)
 		ErrorF("Framebuffer Access Problem!!\n");
 	}
 
-    glintInitialized = 1;
+    glintInitialized = TRUE;
     glintInitCursorFlag = TRUE;
 
     return(TRUE);
@@ -891,28 +838,10 @@ glintInitAperture(int screen_idx)
 					  glintInfoRec.videoRam * 1024);
 	}
 
-    if (!glintVideoMemSave) {
-      /*  for VGA */
-      glintVideoMemSave = (unsigned char *)xalloc(VGASize);
-      
-      /* for graphics */
-      glintVideoMemSavegr = (unsigned char *)xalloc(MEMSize/* glintInfoRec.virtualX* */
-/* 						    glintInfoRec.virtualY* */
-/* 						    glintInfoRec.bitsPerPixel/8 */);
-      
-      if (!glintVideoMemSave || !glintVideoMemSavegr)
-	FatalError("Unable to allocate save/restore buffer for %d "
-		   "bytes, aborting.....\n");
-      
-      xf86memset(glintVideoMemSavegr, 0, MEMSize /*glintInfoRec.virtualX *  */
-/* 		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8 */);
-      xf86memset(glintVideoMemSave, 0, VGASize);
-    }
-
 #ifdef XFreeXDGA
-    glintInfoRec.physBase = (glintInfoRec.MemBase);
-    glintInfoRec.physSize = MEMSize /*  glintInfoRec.virtualX * glintInfoRec.virtualY */
-/* 	* glintInfoRec.bitsPerPixel / 8 */;
+    glintInfoRec.physBase = glintInfoRec.MemBase;
+    glintInfoRec.physSize = glintInfoRec.virtualX * glintInfoRec.virtualY
+ 	* glintInfoRec.bitsPerPixel / 8;
 #endif
 }	
 

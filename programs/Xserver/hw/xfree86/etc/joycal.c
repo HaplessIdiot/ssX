@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/joycal.c,v 3.2 1996/02/18 03:43:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/joycal.c,v 3.3 1996/10/16 14:41:29 dawes Exp $ */
 
 /* A simple program to get the Joystick calibration coordinates */
 
@@ -15,6 +15,11 @@
 #define inline __inline__
 #include <linux/joystick.h>
 #define button_down(j) (j.buttons)
+#if defined(JSIOCGTIMELIMIT)
+/* make 2.1.x joystick.h backward compatable */
+#define JS_DATA_TYPE		js_status
+#endif
+
 #endif
 #include <fcntl.h>
 #include <stdio.h>

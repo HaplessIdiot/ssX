@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.37 1997/10/25 13:50:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.38 1997/11/01 15:04:57 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -94,8 +94,9 @@
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
-#define PCI_CHIP_9680		0x9680 /* XXX is that right? */
 #define PCI_CHIP_9397		0x9397
+#define PCI_CHIP_9750		0x9750
+#define PCI_CHIP_9850		0x9850
 
 /* Matrox */
 #define PCI_CHIP_MGA2085	0x0518
@@ -268,7 +269,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_9420,		"TGUI 9420"},
 				{PCI_CHIP_9440,		"TGUI 9440"},
 				{PCI_CHIP_9660,		"TGUI 96xx"},
-				{PCI_CHIP_9680,		"Cyber 9397"},
+				{PCI_CHIP_9397,		"Cyber 9397"},
+				{PCI_CHIP_9750,		"3DImage975"},
+				{PCI_CHIP_9850,		"3DImage985"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_MATROX,	"Matrox", {
 				{PCI_CHIP_MGA2085,	"MGA 2085PX"},

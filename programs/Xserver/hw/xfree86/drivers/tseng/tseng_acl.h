@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.7 1997/08/26 10:01:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.8 1997/10/13 17:16:48 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -20,6 +20,7 @@ extern
 ByteP ACL_SUSPEND_TERMINATE,
       ACL_OPERATION_STATE,
       ACL_SYNC_ENABLE,
+      ACL_WRITE_INTERFACE_VALID,
       ACL_INTERRUPT_MASK,
       ACL_INTERRUPT_STATUS,
       ACL_ACCELERATOR_STATUS;
@@ -131,6 +132,10 @@ extern int tsengImageWriteBase;
 
 #define WAIT_QUEUE \
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1);}
+
+/* This is only for W32p rev b...d*/
+#define WAIT_INTERFACE \
+{while (*(volatile unsigned char *)ACL_WRITE_INTERFACE_VALID & 0xf);}
 
 #define WAIT_QUEUE_VERBOSE \
 { int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1) cnt++; ErrorF("Q%d ",cnt);}

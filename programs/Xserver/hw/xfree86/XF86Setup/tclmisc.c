@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.9 1997/07/26 12:59:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.10 1997/10/25 13:50:09 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -433,11 +433,11 @@ TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
 			(char *) NULL);
 		return TCL_ERROR;
 	} else {
-		if ( mseinfo.type < 0 || mseinfo.type >= MSETABLESIZE)
-			mseinfo.type = 10;  /* Unknown */
+		if (mseinfo.type >= MSETABLESIZE)
+			mseinfo.type = -1;  /* Unknown */
 		sprintf(tmpbuf, "%s %s %d %d %s %d %s",
 			mseinfo.device==NULL? "{}": mseinfo.device,
-			msetable[mseinfo.type+1],
+			mseinfo.type<0 ? "Unknown": msetable[mseinfo.type+1],
 			mseinfo.baudrate, mseinfo.samplerate,
 			mseinfo.emulate3buttons? "on": "off",
 			mseinfo.emulate3timeout,
