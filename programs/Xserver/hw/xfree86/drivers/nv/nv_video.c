@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.2 2001/04/01 14:00:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.3 2001/05/21 00:23:20 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1173,7 +1173,7 @@ NVDisplaySurface (
     pPriv->currentBuffer = 0;
 
     NVPutOverlayImage (pScrnInfo, surface->offsets[0], surface->id,
-			surface->pitches[0], &dstBox, xa, xb, ya, yb,
+			surface->pitches[0], &dstBox, xa, ya, xb, yb,
 			surface->width, surface->height, src_w, src_h,
 			drw_w, drw_h, clipBoxes);
 
@@ -1213,10 +1213,7 @@ XF86OffscreenImageRec NVOffscreenImages[2] =
 static void
 NVInitOffscreenImages (ScreenPtr pScreen)
 {
-#if 0
-   /* This doesn't seem to work */
     xf86XVRegisterOffscreenImages(pScreen, NVOffscreenImages, 2);
-#endif
 }
 
 #endif
