@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.267 2004/11/23 02:25:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.268tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2520,7 +2520,7 @@ ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),XBuildLibDir)
     XXF86DGALIBSRC = $(LIBSRC)/Xxf86dga
 #if SharedLibXxf86dga
 #ifndef SharedXxf86dgaRev
-#define SharedXxf86dgaRev 1.0
+#define SharedXxf86dgaRev 1.1
 #endif
 SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
 #else
