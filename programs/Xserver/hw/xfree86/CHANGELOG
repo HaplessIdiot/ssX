@@ -1,4 +1,5 @@
 XFree86 4.4.99.17 (xx October 2004)
+ 208. Remove vestigial rootlessAqua.h from XDarwin DDX (Torrey T. Lyons).
  207. Modify luit to extract information from pty before fork rather than
       after, to avoid conflict with child process's modifications to the
       line (Bugzilla #1093, Alexander E. Patrakov).
@@ -19148,7 +19149,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3335 2004/10/27 23:03:53 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3336 2004/10/28 20:19:29 tsi Exp $
 
 
 
