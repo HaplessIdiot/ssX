@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.8 2000/12/13 12:58:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.9 2001/01/21 21:19:21 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -460,6 +460,11 @@ RADEONQueryBestSize(
   unsigned int *p_w, unsigned int *p_h,
   pointer data
 ){
+   if(vid_w > (drw_w << 4))
+	drw_w = vid_w >> 4;
+   if(vid_h > (drw_h << 4))
+	drw_h = vid_h >> 4;
+	
   *p_w = drw_w;
   *p_h = drw_h;
 }
