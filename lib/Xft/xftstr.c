@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftstr.c,v 1.3 2000/12/20 00:28:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftstr.c,v 1.4 2000/12/20 10:24:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -31,6 +31,8 @@ _XftSaveString (const char *s)
 {
     char    *r;
 
+    if (!s)
+	return 0;
     r = (char *) malloc (strlen (s) + 1);
     if (!r)
 	return 0;
