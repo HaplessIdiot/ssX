@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.14 2000/08/15 16:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.15 2000/09/01 19:26:40 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -148,8 +148,6 @@ typedef struct _I810Rec {
    I810MemRange TexMem;
    I810MemRange Scratch;
    I810MemRange BufferMem;
-   I810MemRange OverlayBuf0;
-   I810MemRange OverlayBuf1;
  
 
    int auxPitch;

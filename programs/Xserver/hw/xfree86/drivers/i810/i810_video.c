@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.10 2000/09/09 13:10:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.11 2000/09/16 22:46:12 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -252,13 +252,13 @@ typedef struct {
 } I810OverlayRegRec, *I810OverlayRegPtr;
 
 typedef struct {
-	CARD32       YBuf0VirtAddr;
-	CARD32       UBuf0VirtAddr;
-	CARD32       VBuf0VirtAddr;
+	CARD32       YBuf0offset;
+	CARD32       UBuf0offset;
+	CARD32       VBuf0offset;
 
-	CARD32       YBuf1VirtAddr;
-	CARD32       UBuf1VirtAddr;
-	CARD32       VBuf1VirtAddr;
+	CARD32       YBuf1offset;
+	CARD32       UBuf1offset;
+	CARD32       VBuf1offset;
 
 	unsigned char currentBuf;
 
@@ -271,6 +271,7 @@ typedef struct {
 	CARD32       videoStatus;
 	Time         offTime;
 	Time         freeTime;
+	FBLinearPtr  linear;
 } I810PortPrivRec, *I810PortPrivPtr;        
 
 #define GET_PORT_PRIVATE(pScrn) \
@@ -286,13 +287,6 @@ static void I810ResetVideo(ScrnInfoPtr pScrn)
      * Default to maximum image size in YV12
      */
 
-    overlay->OBUF_0Y = pI810->OverlayBuf0.Start;
-    overlay->OBUF_1Y = pI810->OverlayBuf1.Start;
-    overlay->OBUF_0U = overlay->OBUF_0Y + Y_BUF_SIZE;
-    overlay->OBUF_0V = overlay->OBUF_0U + (Y_BUF_SIZE >> 2);
-    overlay->OBUF_1U = overlay->OBUF_1Y + Y_BUF_SIZE;
-    overlay->OBUF_1V = overlay->OBUF_1U + (Y_BUF_SIZE >> 2);
-    overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15); /* YV12 */
     overlay->YRGB_VPH = 0;
     overlay->UV_VPH = 0;
     overlay->HORZ_PH = 0;
@@ -379,28 +373,7 @@ I810SetupImageVideo(ScreenPtr pScreen)
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
-
-    /*
-     * If I810DRIScreenInit() has not allocated the overlay buffers
-     */
-    if (!pI810->directRenderingEnabled) {
-      if (!I810AllocHigh(&(pI810->OverlayBuf0), &(pI810->SysMem), Y_BUF_SIZE*2))
-	  return NULL;
-      if (!I810AllocHigh(&(pI810->OverlayBuf1), &(pI810->SysMem), Y_BUF_SIZE*2))
-	  return NULL;
-    }
-
-    if((!pI810->OverlayBuf0.Start) || (!pI810->OverlayBuf1.Start))
-	return NULL;
-
-    pPriv->YBuf0VirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf0.Start);
-    pPriv->UBuf0VirtAddr = pPriv->YBuf0VirtAddr + Y_BUF_SIZE;
-    pPriv->VBuf0VirtAddr = pPriv->UBuf0VirtAddr + (Y_BUF_SIZE >> 2);
-    
-    pPriv->YBuf1VirtAddr = (CARD32) (pI810->FbBase + pI810->OverlayBuf1.Start);
-    pPriv->UBuf1VirtAddr = pPriv->YBuf1VirtAddr + Y_BUF_SIZE;
-    pPriv->VBuf1VirtAddr = pPriv->UBuf1VirtAddr + (Y_BUF_SIZE >> 2);
-
+    pPriv->linear = NULL;
     pPriv->currentBuf = 0;
 
     /* gotta uninit this someplace */
@@ -540,6 +513,10 @@ I810StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	overlay->OV0CMD &= 0xFFFFFFFE;
 	OVERLAY_UPDATE(pI810->OverlayPhysical);
      }
+     if(pPriv->linear) {
+	xf86FreeOffscreenLinear(pPriv->linear);
+	pPriv->linear = NULL;
+     }
      pPriv->videoStatus = 0;
   } else {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
@@ -627,8 +604,6 @@ I810QueryBestSize(
 ){
   *p_w = drw_w;
   *p_h = drw_h; 
-
-  if(*p_w > 16384) *p_w = 16384;
 }
 
 
@@ -637,6 +612,7 @@ I810CopyPackedData(
    ScrnInfoPtr pScrn, 
    unsigned char *buf,
    int srcPitch,
+   int dstPitch,
    int top,
    int left,
    int h,
@@ -650,15 +626,15 @@ I810CopyPackedData(
     src = buf + (top*srcPitch) + (left<<1);
 
     if (pPriv->currentBuf == 0)
-	dst = (unsigned char*) pPriv->YBuf0VirtAddr;
+	dst = pI810->FbBase + pPriv->YBuf0offset;
     else
-	dst = (unsigned char*) pPriv->YBuf1VirtAddr;
+	dst = pI810->FbBase + pPriv->YBuf1offset;
 
     w <<= 1;
     while(h--) {
 	memcpy(dst, src, w);
 	src += srcPitch;
-	dst += IMAGE_MAX_WIDTH*2;
+	dst += dstPitch;
     }
 }
 
@@ -667,6 +643,7 @@ I810CopyPlanarData(
    ScrnInfoPtr pScrn, 
    unsigned char *buf,
    int srcPitch,
+   int dstPitch,  /* of chroma */
    int srcH,
    int top,
    int left,
@@ -683,54 +660,54 @@ I810CopyPlanarData(
     /* Copy Y data */
     src1 = buf + (top*srcPitch) + left;
     if (pPriv->currentBuf == 0)
-	dst1 = (unsigned char *) pPriv->YBuf0VirtAddr;
+	dst1 = pI810->FbBase + pPriv->YBuf0offset;
     else
-	dst1 = (unsigned char *) pPriv->YBuf1VirtAddr;
+	dst1 = pI810->FbBase + pPriv->YBuf1offset;
 
     for (i = 0; i < h; i++) {
 	memcpy(dst1, src1, w);
 	src1 += srcPitch;
-	dst1 += IMAGE_MAX_WIDTH;
+	dst1 += dstPitch << 1;
     }
 
     /* Copy V data for YV12, or U data for I420 */
     src2 = buf + (srcH*srcPitch) + ((top*srcPitch)>>2) + (left>>1);
     if (pPriv->currentBuf == 0) {
 	if (id == FOURCC_I420)
-	    dst2 = (unsigned char *) pPriv->UBuf0VirtAddr;
+	    dst2 = pI810->FbBase + pPriv->UBuf0offset;
 	else
-	    dst2 = (unsigned char *) pPriv->VBuf0VirtAddr;
+	    dst2 = pI810->FbBase + pPriv->VBuf0offset;
     } else {
 	if (id == FOURCC_I420)
-	    dst2 = (unsigned char *) pPriv->UBuf1VirtAddr;
+	    dst2 = pI810->FbBase + pPriv->UBuf1offset;
 	else
-	    dst2 = (unsigned char *) pPriv->VBuf1VirtAddr;
+	    dst2 = pI810->FbBase + pPriv->VBuf1offset;
     }
 
     for (i = 0; i < h/2; i++) {
 	memcpy(dst2, src2, w/2);
 	src2 += srcPitch>>1;
-	dst2 += IMAGE_MAX_WIDTH>>1;
+	dst2 += dstPitch;
     }
 
     /* Copy U data for YV12, or V data for I420 */
     src3 = buf + (srcH*srcPitch) + ((srcH*srcPitch)>>2) + ((top*srcPitch)>>2) + (left>>1);
     if (pPriv->currentBuf == 0) {
 	if (id == FOURCC_I420) 
-	    dst3 = (unsigned char *) pPriv->VBuf0VirtAddr;
+	    dst3 = pI810->FbBase + pPriv->VBuf0offset;
 	else
-	    dst3 = (unsigned char *) pPriv->UBuf0VirtAddr;
+	    dst3 = pI810->FbBase + pPriv->UBuf0offset;
     } else {
 	if (id == FOURCC_I420) 
-	    dst3 = (unsigned char *) pPriv->VBuf1VirtAddr;
+	    dst3 = pI810->FbBase + pPriv->VBuf1offset;
 	else
-	    dst3 = (unsigned char *) pPriv->UBuf1VirtAddr;
+	    dst3 = pI810->FbBase + pPriv->UBuf1offset;
     }
     
     for (i = 0; i < h/2; i++) {
 	memcpy(dst3, src3, w/2);
 	src3 += srcPitch>>1;
-	dst3 += IMAGE_MAX_WIDTH>>1;
+	dst3 += dstPitch;
     }
 }
 
@@ -739,6 +716,7 @@ I810DisplayVideo(
     ScrnInfoPtr pScrn,
     int id,
     short width, short height,
+    int dstPitch,  /* of chroma for 4:2:0 */
     int x1, int y1, int x2, int y2,
     BoxPtr dstBox,
     short src_w, short src_h,
@@ -771,6 +749,14 @@ I810DisplayVideo(
     overlay->DWINPOS = (dstBox->y1 << 16) | dstBox->x1;
     overlay->DWINSZ = ((dstBox->y2 - dstBox->y1) << 16) | 
 	              (dstBox->x2 - dstBox->x1);
+
+    /* buffer locations */
+    overlay->OBUF_0Y = pPriv->YBuf0offset;
+    overlay->OBUF_1Y = pPriv->YBuf1offset;
+    overlay->OBUF_0U = pPriv->UBuf0offset; 
+    overlay->OBUF_0V = pPriv->VBuf0offset;
+    overlay->OBUF_1U = pPriv->UBuf1offset;
+    overlay->OBUF_1V = pPriv->VBuf1offset;
 
     /* 
      * Calculate horizontal and vertical scaling factors, default to 1:1
@@ -872,19 +858,19 @@ I810DisplayVideo(
     switch(id) {
     case FOURCC_YV12:
     case FOURCC_I420:
-	overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15);
+	overlay->OV0STRIDE = (dstPitch << 1) | (dstPitch << 16);
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_420;
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
-	overlay->OV0STRIDE = IMAGE_MAX_WIDTH << 1;
+    default:
+	overlay->OV0STRIDE = dstPitch;
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_422;
 	overlay->OV0CMD &= ~OV_BYTE_ORDER;
 	if (id == FOURCC_UYVY)
 	    overlay->OV0CMD |= Y_SWAP;
-	default: /* we may have to do something different here ? */
 	break;
     }
 
@@ -896,6 +882,46 @@ I810DisplayVideo(
 
     OVERLAY_UPDATE(pI810->OverlayPhysical);
 
+}
+
+static FBLinearPtr
+I810AllocateMemory(
+  ScrnInfoPtr pScrn,
+  FBLinearPtr linear,
+  int size
+){
+   ScreenPtr pScreen;
+   FBLinearPtr new_linear;
+
+   if(linear) {
+	if(linear->size >= size)
+	   return linear;
+
+	if(xf86ResizeOffscreenLinear(linear, size))
+	   return linear;
+
+	xf86FreeOffscreenLinear(linear);
+   }
+
+   pScreen = screenInfo.screens[pScrn->scrnIndex];
+
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 4,
+                                            NULL, NULL, NULL);
+
+   if(!new_linear) {
+        int max_size;
+
+        xf86QueryLargestOffscreenLinear(pScreen, &max_size, 4, 
+				       PRIORITY_EXTREME);
+
+        if(max_size < size) return NULL;
+
+        xf86PurgeUnlockedOffscreenAreas(pScreen);
+        new_linear = xf86AllocateOffscreenLinear(pScreen, size, 4, 
+                                                 NULL, NULL, NULL);
+   } 
+
+   return new_linear;
 }
 
 static int 
@@ -913,11 +939,9 @@ I810PutImage(
     I810Ptr pI810 = I810PTR(pScrn);
     I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
     INT32 x1, x2, y1, y2;
-    int srcPitch;
-    int top, left, npixels, nlines;
+    int srcPitch, dstPitch;
+    int top, left, npixels, nlines, size;
     BoxRec dstBox;
-
-    if(drw_w > 16384) drw_w = 16384;
 
     /* Clip */
     x1 = src_x;
@@ -945,13 +969,31 @@ I810PutImage(
     case FOURCC_YV12:
     case FOURCC_I420:
 	 srcPitch = (width + 3) & ~3;
+	 dstPitch = ((width >> 1) + 7) & ~7;  /* of chroma */
+	 size =  dstPitch * height * 3;	
 	 break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
 	 srcPitch = (width << 1);
+	 dstPitch = (srcPitch + 7) & ~7;
+	 size = dstPitch * height;
 	 break;
     }  
+
+    if(!(pPriv->linear = I810AllocateMemory(pScrn, pPriv->linear, 
+		(pScrn->bitsPerPixel == 16) ? size : (size >> 1))))
+	return BadAlloc;
+
+    /* fixup pointers */
+    pPriv->YBuf0offset = pPriv->linear->offset * pI810->cpp;
+    pPriv->UBuf0offset = pPriv->YBuf0offset + (dstPitch * 2 * height);
+    pPriv->VBuf0offset = pPriv->UBuf0offset + (dstPitch * height >> 1);
+    
+    pPriv->YBuf1offset = (pPriv->linear->offset * pI810->cpp) + size;
+    pPriv->UBuf1offset = pPriv->YBuf1offset + (dstPitch * 2 * height);
+    pPriv->VBuf1offset = pPriv->UBuf1offset + (dstPitch * height >> 1);
+
 
     /* wait for the last rendered buffer to be flipped in */
     while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
@@ -972,13 +1014,15 @@ I810PutImage(
     case FOURCC_I420:
 	top &= ~1;
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	I810CopyPlanarData(pScrn, buf, srcPitch, height, top, left, nlines, npixels, id);
+	I810CopyPlanarData(pScrn, buf, srcPitch, dstPitch,  height, top, left, 
+                           nlines, npixels, id);
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
 	nlines = ((y2 + 0xffff) >> 16) - top;
-	I810CopyPackedData(pScrn, buf, srcPitch, top, left, nlines, npixels);
+	I810CopyPackedData(pScrn, buf, srcPitch, dstPitch, top, left, nlines, 
+                                                              npixels);
         break;
     }
 
@@ -992,7 +1036,7 @@ I810PutImage(
     }
 
 
-    I810DisplayVideo(pScrn, id, width, height,
+    I810DisplayVideo(pScrn, id, width, height, dstPitch, 
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
@@ -1075,10 +1119,10 @@ I810BlockHandler (
 	    }
 	} else {  /* FREE_TIMER */
 	    if(pPriv->freeTime < currentTime.milliseconds) {
-		/*
-		 * If we want to allocate the buffers on-demand, then should 
-		 * free the YUV buffers here 
-		 */
+		if(pPriv->linear) {
+		   xf86FreeOffscreenLinear(pPriv->linear);
+		   pPriv->linear = NULL;
+		}
 		pPriv->videoStatus = 0;
 	    }
         }
