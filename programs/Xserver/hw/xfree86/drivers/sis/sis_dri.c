@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.3 2000/09/22 11:35:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.4 2000/09/24 13:51:30 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -371,6 +371,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
     pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
+#if 0 /* This should be in os-support/%os%/drm */
     {
       drm_sis_agp_t agp;
       
@@ -378,6 +379,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
       agp.size = AGP_SIZE - AGP_CMDBUF_SIZE;
       xf86ioctl(pSIS->drmSubFD, SIS_IOCTL_AGP_INIT, &agp);
     }  
+#endif
   }
   while(0);
     
