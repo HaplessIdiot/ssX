@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.11 2000/05/11 18:14:09 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.12 2000/06/17 00:02:51 martin Exp $
 
 #include <Threads.tmpl>
 
@@ -369,7 +369,9 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 
 #if GlxBuiltInMesa || GlxDriverUsesMesa || !GlxUseBuiltInDRIDriver
   MESASUBDIRS =
+#ifdef i386Architecture
   ASMSUBDIRS = X86
+#endif
 
 #include <Library.tmpl>
 
