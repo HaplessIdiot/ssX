@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.8 1997/05/03 09:18:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.9 1997/05/18 12:12:12 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -818,6 +818,7 @@ TVGA8900Probe()
 				break;
 			case 0x30:
 			case 0x33: /* Guessing */
+			case 0x34:
 			case 0xB3: /* Guessing */
 				REV = "9385";
 				IsCyber = TRUE;

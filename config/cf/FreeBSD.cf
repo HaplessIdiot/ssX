@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.65 1997/05/13 15:08:13 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.66 1997/05/17 12:52:05 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -184,7 +184,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags -m486 DefaultGcc2i386Opt
+# define OptimizedCDebugFlags DefaultGcc2i386Opt
 #else
 # define OptimizedCDebugFlags -O2
 #endif
