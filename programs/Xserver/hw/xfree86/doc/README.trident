@@ -44,21 +44,10 @@ by the "generic" driver for the monochrome server.
 
 2 - Special considerations for 512k boards
 ------------------------------------------
-  512k cards require the clocks in the ModeDB entries to be double the normal 
-value when operating in 256 color mode.  This doubled clock must be a clock 
-value on the card.  The reason for this is that each pixel takes two clock 
-cycles in 256 color mode.
-
-To create timings for the color modes, take the timings for the corresponding 
-monochrome mode, and double the clock.  For example:
-
-        monochrome timings (taken from Xconfig.sample):
-         "640x480"     25      640  664  760  800    480  491  493  525
-         "800x600"     36      800  824  896 1024    600  601  603  625
-
-        color timings:
-         "640x480c"    50      640  664  760  800    480  491  493  525
-         "800x600c"    72      800  824  896 1024    600  601  603  625
+  There are no longer any special considerations for 512k Trident boards.
+The driver is now configured so that they can use modes with normal
+timings.  The available pixel clocks are halved compared with those
+specified on the Clocks line
 
 Be aware that older Trident chipsets support a maximum clock of 65Mhz.  Hence 
 the best actual clock available to the color server is 32.5Mhz.  This means, 
@@ -108,4 +97,4 @@ clock speed.  So be prepared for this phenomenon to occur, and have the board
 documentation handy.
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.trident,v 3.0 1994/05/29 02:06:27 dawes Exp $

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.22 1994/09/22 15:50:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.23 1994/09/23 10:13:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -63,6 +63,15 @@ extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
 int s3Madjust=0, s3Nadjust=0;
+
+char *xf86VisualNames[] = {
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
+};
 
 static void configFilesSection(
 #if NeedFunctionPrototypes
@@ -2246,24 +2255,14 @@ configScreenSection()
     }
     if (xf86Verbose && driver->defaultVisual > 0) {
       char *visualname;
-      switch (driver->defaultVisual + STATICGRAY) {
-      case STATICGRAY:
-        visualname = "StaticGray";
-        break;
-      case GRAYSCALE:
-        visualname = "GrayScale";
-        break;
-      case STATICCOLOR:
-        visualname = "StaticColor";
-        break;
-      case PSEUDOCOLOR:
-        visualname = "PseudoColor";
-        break;
-      case TRUECOLOR:
-        visualname = "TrueColor";
-        break;
-      case DIRECTCOLOR:
-        visualname = "DirectColor";
+      switch (driver->defaultVisual) {
+      case StaticGray:
+      case GrayScale:
+      case StaticColor:
+      case PseudoColor:
+      case TrueColor:
+      case DirectColor:
+        visualname = xf86VisualNames[driver->defaultVisual];
         break;
       default:
         configError("unknown visual type");

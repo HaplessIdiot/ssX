@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.27 1994/09/23 10:49:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.28 1994/09/23 13:38:14 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -566,6 +566,15 @@ s3Init(mode)
       vgaNewVideoState = vgaHWSave(vgaNewVideoState, sizeof(vgaS3Rec));
       outb(DAC_MASK, 0);
 
+   } else if (DAC_IS_TI3025) {
+      /* switch the ramdac from bt485 to ti3020 mode clearing RS4 */
+      outb(vgaCRIndex, 0x5C);
+      CR5C = inb(vgaCRReg);
+      outb(vgaCRReg, CR5C & 0xDF);
+
+      oldS3->Ti3020[TI_CURS_CONTROL] = s3InTiIndReg(TI_CURS_CONTROL);
+      /* clear TI_PLANAR_ACCESS bit */
+      s3OutTiIndReg(TI_CURS_CONTROL, 0x7F, 0x00);
    }
 
    if (s3UsingPixMux && (mode->Flags & V_PIXMUX))
@@ -1383,7 +1392,7 @@ s3Init(mode)
          if (DAC_IS_TI3025) {
             outb(vgaCRIndex, 0x6D);             /* set blank delay */
             if (s3InfoRec.bitsPerPixel == 32)
-               outb(vgaCRReg, 0x70);
+               outb(vgaCRReg, 0x40);
             else if (s3InfoRec.bitsPerPixel == 16)
                outb(vgaCRReg, 0x70);
             else

@@ -1,6 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.10 1994/09/17 13:45:39 dawes Exp $
-.\" XF86_Acc.man
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.11 1994/09/23 10:06:13 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -97,8 +96,8 @@ Physical resolutions up to 1280x1024 (1600x1280 on some cards) are
 possible using 2Mb or more of display memory (virtual resolution is
 dependent solely on the amount of memory installed, with the maximum
 virtual width being 2048, and max virtual height is 4096).
-Similar resolutions are supported on the Mach32.
 .PP
+Similar resolutions are supported on the Mach32.
 For the Mach32, the maximum virtual width is 1536, and the maximum virtual
 height is 1280.
 .PP
@@ -108,10 +107,6 @@ For 8514 the maximum resolution is 1024x768.
 .PP
 For the P9000, the virtual and physical resolutions must be the
 same.  With sufficient memory, resolutions up to 1280x1024 are supported.
-.PP
-AGX???
-.PP
-W32???
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, these servers accept some more command line switches,
@@ -183,7 +178,7 @@ vipervlb
 (for the Diamond Viper VLB)
 .TP 12
 viperpci
-(for the Diamond Viper PCI - disabled)
+(for the Diamond Viper PCI)
 .TP 12
 orchidp9000
 (for the Orchid P9000 and many generic P9000-based boards)
@@ -242,7 +237,7 @@ For boards with non-programmable clock chips, the clocks can be specified
 here (see \fIXF86Config(4/5)\fP).  The P9000 server uses a programamble
 clock generator, and, unlike the others servers in this situation, it
 requires a \fBClocks\fP line to specify those frequencies which will be
-available.  Note, clocks over 110~Mhz are not recommended or supported
+available.  Note, clocks over 110\ Mhz are not recommended or supported
 by the P9000 server.
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
@@ -384,20 +379,20 @@ to setting the \fBmembase\fP to \fI0x78000000\fP.
 .sp
 \fBspea_mercury\fP - (S3) Enables pixel multiplex support for SPEA Mercury
 cards (928 + Bt485 RAMDAC).  For these cards, pixel multiplexing is required
-in order to use dot clocks higher than 67.5~MHz and to access more than
+in order to use dot clocks higher than 67.5\ MHz and to access more than
 1MB of video memory.  Pixel multiplexing is currently supported only for
 non-interlaced modes, and modes with a physical width no smaller than 1024.
 .sp
 \fBstb_pegasus\fP - (S3) Enables pixel multiplex support for STB Pegasus
 cards (928 + Bt485 RAMDAC).  For these cards, pixel multiplexing is
-required in order to use dot clocks higher than 67.5~MHz.  Pixel
+required in order to use dot clocks higher than 67.5\ MHz.  Pixel
 multiplexing is currently supported only for non-interlaced modes, and
 modes with a physical width no smaller than 1024.
 .sp
 \fBnumber_nine\fP - (S3) Enables pixel multiplex support for Number Nine
 GXe level 10, 11, 12 cards (928 + Bt485 RAMDAC).
 For these cards, pixel
-multiplexing is required in order to use dot clocks higher than 85~MHz.
+multiplexing is required in order to use dot clocks higher than 85\ MHz.
 Pixel multiplexing is currently supported only for non-interlaced modes,
 and modes with a physical width no smaller than 800.
 This option is also required for some other Number Nine cards (eg,
@@ -464,18 +459,18 @@ In addition to the authors of \fIXFree86\fP the following people
 contributed major work to this server:
 .PP
 .nf
-Kevin Martin,    \fImartin@cs.unc.edu\fP
-Jon Tombs,       \fIjon@gtex02.us.es\fP
-Rik Faith,       \fIfaith@cs.unc.edu\fP
+Kevin Martin,       \fImartin@cs.unc.edu\fP
+Jon Tombs,          \fItombs@XFree86.org\fP
+Rik Faith,          \fIfaith@cs.unc.edu\fP
 .fi
 .RS 8
 Did the overall work on the base accelerated servers.
 .RE
 .PP
 .nf
-David Dawes,     \fIdawes@physics.su.oz.au\fP
-Dirk Hohndel,    \fIhohndel@aib.com\fP
-David Wexelblat, \fIdwex@goblin.org\fP, \fIdwex@aib.com\fP
+David Dawes,        \fIdawes@XFree86.org\fP
+Dirk Hohndel,       \fIhohndel@XFree86.org\fP
+David Wexelblat,    \fIdwex@XFree86.org\fP
 .fi
 .RS 8
 Merged their work into XFree86.
@@ -490,6 +485,7 @@ Robin Cutshaw,      \fIrobin@XFree86.org\fP
 Norbert Distler,    \fINorbert.Distler@physik.tu-muenchen.de\fP
 Leonard N. Zubkoff, \fIlnz@dandelion.com\fP
 Harald Koenig,      \fIkoenig@tat.physik.uni-tuebingen.de\fP
+Bernhard Bender,    \fIbr@elsa.mhs.compuserve.com\fP
 Hans Nasten,        \fInasten@everyware.se\fP
 .fi
 .RS 8
@@ -497,22 +493,22 @@ Development and improvement of the S3 specific code.
 .RE
 .PP
 .nf
-Kevin Martin,    \fImartin@cs.unc.edu\fP
-Rik Faith,       \fIfaith@cs.unc.edu\fP
-Tiago Gons,      \fItiago@comosjn.hobby.nl\fP
-Hans Nasten,     \fInasten@everyware.se\fP
-Scott Laird,     \fIlair@midway.uchicago.edu\fP
+Kevin Martin,       \fImartin@cs.unc.edu\fP
+Rik Faith,          \fIfaith@cs.unc.edu\fP
+Tiago Gons,         \fItiago@comosjn.hobby.nl\fP
+Hans Nasten,        \fInasten@everyware.se\fP
+Scott Laird,        \fIlair@midway.uchicago.edu\fP
 .fi
 .RS 8
 Development and improvement of the Mach8 and 8514/A specific code.
 .RE
 .PP
 .nf
-Kevin Martin,    \fImartin@cs.unc.edu\fP
-Rik Faith,       \fIfaith@cs.unc.edu\fP
-Mike Bernson,    \fImike@mbsun.mlb.org\fP
-Mark Weaver,     \fIMark_Weaver@brown.edu\fP
-Craig Groeschel, \fIcraig@adikia.sccsi.com\fP
+Kevin Martin,       \fImartin@cs.unc.edu\fP
+Rik Faith,          \fIfaith@cs.unc.edu\fP
+Mike Bernson,       \fImike@mbsun.mlb.org\fP
+Mark Weaver,        \fIMark_Weaver@brown.edu\fP
+Craig Groeschel,    \fIcraig@metrolink.com\fP
 .fi
 .RS 8
 Development and improvement of the Mach32 specific code.

@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.3 1994/08/06 05:56:19 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.4 1994/09/17 13:38:22 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -879,6 +879,43 @@ install.man::								@@\
 	done; \								@@\
 	RemoveFile($${TMP}))
 #endif /* InstallManPageAliases */
+
+
+/*
+ * InstallGenManPageLong - More general rules for installing manual pages --
+ * doesn't assume MANSUFFIX.
+ */
+#ifndef InstallGenManPageLong
+#define	InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+install.man:: file.man							@@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.suffix
+#endif /* InstallGenManPageLong */
+
+
+/*
+ * InstallGenManPage - general equivalent of InstallManPage
+ */
+#ifndef InstallManPage
+#define	InstallManPage(file,destdir,suffix)				@@\
+InstallGenManPageLong(file,destdir,file)
+#endif /* InstallGenManPage */
+
+
+/*
+ * InstallGenManPageAliases - general equivalent of InstallManPageAliases
+ */
+#ifndef InstallGenManPageAliases
+#define	InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+install.man::								@@\
+	@(TMP=/tmp/tmp.$$$$; \						@@\
+	RemoveFile($${TMP}); \						@@\
+	echo .so `basename destdir`/file.suffix > $${TMP}; \		@@\
+	for i in aliases; do (set -x; \					@@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.suffix); \ @@\
+	done; \								@@\
+	RemoveFile($${TMP}))
+#endif /* InstallGenManPageAliases */
 
 
 /*

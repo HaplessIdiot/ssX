@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: ncr.cf,v 1.11 94/06/04 16:47:47 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.3 1994/06/09 10:41:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.4 1994/06/12 16:30:17 dawes Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -83,6 +83,9 @@ install.man::                                                           @@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.z $(DESTDIR)destdir/dest.z; \@@\
 	fi
 
+#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+	InstallManPageLong(file,destdir,dest)
+
 #define InstallMultipleManSuffix(list,dest,suff)                        @@\
 install.man:: 								@@\
 	MakeDir($(DESTDIR)dest)						@@\
@@ -107,6 +110,9 @@ install.man:: 								@@\
 		(cd $(DESTDIR)destdir; $(LN) file.z $$i.z);\  		@@\
 		); \							@@\
 	done
+
+#define InstallGenManPageAliasese(file,destdir,suffix,aliases)		@@\
+	InstallManPageAliases(file,destdir,aliases)
 
 #define i386Architecture
 #include <svr4.cf>

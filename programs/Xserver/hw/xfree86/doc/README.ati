@@ -1,4 +1,4 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.2 1994/09/07 15:52:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.3 1994/09/21 10:52:03 dawes Exp $
 
 This is the README for the XFree86 ATI VGA Wonder driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -92,12 +92,11 @@ probed).  This is done to ensure you are aware that the clocks specification
 for previous versions of the driver is not supported by this version.
 
 The clocks line to be specified in your XF86Config depends on what the board
-uses to generate dot clocks, and on whether or not the board is based on the
-Mach64 accelerator.
+uses to generate dot clocks.
 
-For all boards, except those based on the Mach64, one of the following clocks
-specifications (or an initial subset thereof) can be used depending on what the
-board uses to generate dot clocks:
+For all boards, one of the following clocks specifications (or an initial
+subset thereof) can be used depending on what the board uses to generate dot
+clocks:
 
 Crystals (VGA Wonder V3 and V4 boards only):
 
@@ -139,37 +138,7 @@ ATI 18811-1 and ATI 18811-2 clock generators:
           33.750   8.000  27.500  20.000  25.000  31.500  23.100   9.000
            9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
-For Mach64 boards, one of the following clocks specifications (or an initial
-subset thereof) can be used depending on what the board uses to generate dot
-clocks:
-
-ATI 18810 clock generator (unlikely, but inserted for completeness):
-
-  Clocks  42.954  48.771   0.000  36.000  50.350  56.640   0.000  44.900
-          30.240  32.000  37.500  39.000  40.000  56.644  75.000  65.000
-          21.477  24.386   0.000  18.000  25.175  28.320   0.000  22.450
-          15.120  16.000  18.750  19.500  20.000  28.322  37.500  32.500
-
-ATI 18811-0 and ATI 18812-0 clock generators:
-
-  Clocks  42.954  48.771  92.400  36.000  50.350  56.640   0.000  44.900
-          30.240  32.000 110.000  80.000  39.910  44.900  75.000  65.000
-          21.477  24.386  46.200  18.000  25.175  28.320   0.000  22.450
-          15.120  16.000  55.000  40.000  19.955  22.450  37.500  32.500
-
-ATI 18811-1 and ATI 18811-2 clock generators:
-
-  Clocks 100.000 126.000  92.400  36.000  50.350  56.640   0.000  44.900
-         135.000  32.000 110.000  80.000  39.910  44.900  75.000  65.000
-          50.000  63.000  46.200  18.000  25.175  28.320   0.000  22.450
-          67.500  16.000  55.000  40.000  19.955  22.450  37.500  32.500
-
-The discerning eye will notice that the Mach64 clocks are the same as their
-non-Mach64 counterparts, except that only the first 32 clocks are to be
-specified in a different order.  This situation might change in a future
-XFree86 release.
-
-However, Mach64 boards are more likely to use the newer ATI 18818 clock
+The possibilities for Mach64 boards also include the newer ATI 18818 clock
 generator chip.  At bootup, video BIOS initialization can set up the 18818 to
 generate two slightly different sets of dot clocks.  A way to duplicate this
 behaviour in the driver has not yet been found.  In the meantime, one of the
@@ -177,17 +146,17 @@ following clocks specification can be used:
 
 ATI 18818 clock generator (possibility 1):
 
-  Clocks  50.350  56.644  63.000  72.000  40.000  44.900  49.500  50.000
-           0.000 110.000 126.000 135.000   0.000  80.000  75.000  65.000
-          25.175  28.322  31.500  36.000  20.000  22.450  24.750  25.000
-           0.000  55.000  63.000  67.500   0.000  40.000  37.500  32.500
+  Clocks   0.000 110.000 126.000 135.000  50.350  56.644  63.000  72.000
+           0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
+           0.000  55.000  63.000  67.500  25.175  28.322  31.500  36.000
+           0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
 ATI 18818 clock generator (possibility 2):
 
-  Clocks  25.175  28.322  31.500  36.000  40.000  44.900  49.500  50.000
-           0.000 110.000 126.000 135.000   0.000  80.000  75.000  65.000
-          12.588  14.161  15.750  18.000  20.000  22.450  24.750  25.000
-           0.000  55.000  63.000  67.500   0.000  40.000  37.500  32.500
+  Clocks   0.000 110.000 126.000 135.000  25.175  28.322  31.500  36.000
+           0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
+           0.000  55.000  63.000  67.500  12.588  14.161  15.750  18.000
+           0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
 Other clock generators that have been used on ATI boards (which can all be said
 to be clones of one of the above) might generate non-zero frequencies for those
@@ -212,7 +181,7 @@ Specifically, you should run the server with the -probeonly flag and the
 the XF86Config derived from the Xconfig you used with the older XFree86.  This
 will cause the clocks to be probed.  You should replace the XF86Config clocks
 with the set above that is closest to the clocks reported by the probe.  You
-can then change the chipset specification to "vgawonder".
+should then change the chipset specification to "vgawonder".
 
 You should not need to change your mode definitions except for those that are
 already driving your monitor close to its tolerance limits.  You might need to
@@ -260,7 +229,7 @@ uses more than 256k to be scrambled.
 Dot clocks greater than 80MHz cannot be used as a way still needs to be
 discovered to make the VGA Wonder controller do pixel multiplexing.
 
-The different clock ordering for Mach64's needs to be addressed.
+Support for more than 8bpp colour depth is pending proper RAMDAC handling.
 
 Support for the ATI 18818 clock generator needs to be cleaned up.
 

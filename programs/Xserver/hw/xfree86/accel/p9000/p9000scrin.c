@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.3 1994/07/24 11:47:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.4 1994/08/31 04:23:13 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -183,6 +183,12 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	
     if (cfbGeneration != serverGeneration) 
       {
+	/* Only TrueColor for 16/32bpp */
+	if (p9000InfoRec.bitsPerPixel > 8) {
+	    if (!cfbSetVisualTypes(p9000InfoRec.depth, 1 << TrueColor,
+				   bitsPerRGB))
+		return FALSE;
+	}
 	if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
 			    &defaultVisual,
 			    1<<(p9000InfoRec.bitsPerPixel - 1), bitsPerRGB))

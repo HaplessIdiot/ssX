@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.38 1994/09/23 10:09:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.39 1994/09/23 13:38:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -55,6 +55,7 @@ extern int s3MaxTi3020Clock, s3MaxTi3020Clock175, s3MaxTi3020ClockFast;
 extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
 int s3Weight = RGB8_PSEUDO;
+extern char *xf86VisualNames[];
 
 extern s3VideoChipPtr s3Drivers[];
 
@@ -630,6 +631,15 @@ s3Probe()
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
    }
+
+   if (s3InfoRec.bitsPerPixel > 8 &&
+       defaultColorVisualClass >= 0 && defaultColorVisualClass != TrueColor) {
+      ErrorF("Invalid default visual type: %d (%s)\n", defaultColorVisualClass,
+	     xf86VisualNames[defaultColorVisualClass]);
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return(FALSE);
+   }
+
    s3Bpp = s3InfoRec.bitsPerPixel / 8;
 
    /* Make sure CR55 is unlocked for Bt485 probe */
@@ -1308,7 +1318,6 @@ s3Probe()
 	    }
 	    break;
 	 case SC15025_DAC:
-	    /* This assumes double edge clocking */
 	    if (s3Bpp > 1) {
 	       s3InfoRec.clock[j] /= s3Bpp;
 	       clocksChanged = TRUE;
@@ -1563,7 +1572,6 @@ s3Probe()
 	    }
 	    break;
 	 case SC15025_DAC:
-	    /* This assumes double edge clocking */
 	    if (s3Bpp > 1) {
 	       pMode->SynthClock *= s3Bpp;
 	    }
@@ -1848,6 +1856,8 @@ icd2061ClockSelect(freq)
 	    result = SC11412SetClock((long)freq/1000);
 #ifdef ICS2595
 	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+	    result = ICS2595SetClock((long)freq/1000);
+	    result = ICS2595SetClock((long)freq/1000);
 	    result = ICS2595SetClock((long)freq/1000);
 #endif
 	 } else { /* Should never get here */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.2 1994/09/22 15:51:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.3 1994/09/23 13:40:39 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -30,10 +30,12 @@ extern int vgaSaveReadseg;
 #define VGABASE 0xF0000000
 #endif
 
-#if 0 /* disable this -- there are problems */
 #if __GNUC__ > 1
 #define USE_GCC_INLINE
 #endif
+
+#if __GNUC__ > 1
+#define USE_ASM_BANK_MACROS
 #endif
 
 #ifdef USE_GCC_INLINE
@@ -93,14 +95,14 @@ void
 
 #ifndef BANK_DEBUG
 
-#ifdef USE_GCC_INLINE
+#ifdef USE_ASM_BANK_MACROS
 #define DO_BANK_READ(_bank)						\
 __asm__ __volatile__							\
 ("call *%0"								\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetReadFunc),		\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #define DO_BANK_WRITE(_bank)						\
 __asm__ __volatile__							\
@@ -108,7 +110,7 @@ __asm__ __volatile__							\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetWriteFunc),		\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #define DO_BANK_READ_WRITE(_bank)						\
 __asm__ __volatile__							\
@@ -116,7 +118,7 @@ __asm__ __volatile__							\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetReadWriteFunc),	\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #else
 extern void vgaBankRead(
@@ -137,7 +139,7 @@ int n
 #define DO_BANK_READ(_bank)       vgaBankRead(_bank)
 #define DO_BANK_WRITE(_bank)      vgaBankWrite(_bank)
 #define DO_BANK_READ_WRITE(_bank) vgaBankReadWrite(_bank)
-#endif /* USE_GCC_INLINE */
+#endif /* USE_ASM_BANK_MACROS */
 
 
 static gcc_inline PixelType *vga2ScanlineOffsetFuncSrc(p,offset)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.7tsi 1994.09.14 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.8 1994/09/21 10:57:55 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -104,11 +104,12 @@
  * these clock generators.  The possibilities for Mach64 boards also include
  * two different flavours of the newer 18818 chips.  I have yet to figure out
  * how BIOS initialization sets up the board for a particular set of
- * frequencies.  Mach64 boards also use a different dot clock ordering.  ATI
- * says there is no reliable way for the driver to determine which clock
- * generator is on the board (their BIOS's are tailored to the board).
+ * frequencies.  Mach32 and Mach64 boards also use a different dot clock
+ * ordering.  ATI says there is no reliable way for the driver to determine
+ * which clock generator is on the board (their BIOS's are tailored to the
+ * board).
  *
- * VGA Wonder V5/PLUS/XL/XL24 and Mach32 Board Clock Frequencies
+ * VGA Wonder V5/PLUS/XL/XL24 Board Clock Frequencies
  * R E G I S T E R S
  *   1CE     1CE     3C2     3C2    Frequency
  *   B9h     BEh                     (MHz)   18811-0  18811-1
@@ -135,7 +136,7 @@
  * (*2) External 1 (supposedly 28.322 MHz)
  * (*3) This setting doesn't seem to generate anything
  *
- * Mach64 Board Clock Frequencies
+ * Mach32 and Mach64 Board Clock Frequencies
  * R E G I S T E R S
  *   1CE     1CE     3C2     3C2    Frequency
  *   B9h     BEh                     (MHz)   18811-0  18811-1
@@ -161,6 +162,9 @@
  * (*1) External 0 (supposedly 16.657 Mhz)
  * (*2) External 1 (supposedly 28.322 MHz)
  * (*3) This setting doesn't seem to generate anything
+ *
+ * Note that, to reduce confusion, this driver masks out the different clock
+ * ordering.
  *
  * For all boards, these frequencies can be divided by 1, 2, 3 or 4.
  *
@@ -305,7 +309,7 @@ static unsigned ATI_IOPorts[] =
 {
         /* ATI VGA Wonder extended registers */
         0x01CE, 0x01CF,
-
+#if 0
         /* 8514/A registers */
         GP_STAT, SUBSYS_CNTL,
 
@@ -316,7 +320,7 @@ static unsigned ATI_IOPorts[] =
         MEM_BNDRY, MEM_CFG, MISC_OPTIONS
 
         /* Mach64 registers */
-
+#endif
 };
 static int Num_ATI_IOPorts =
         (sizeof(ATI_IOPorts) / sizeof(ATI_IOPorts[0]));
@@ -532,6 +536,30 @@ unsigned char old_b2, new_b2;
 #endif
 
 /*
+ * ATIMapClock --
+ *
+ * This function is called to mask out the different clock ordering used on
+ * Mach32 and Mach64 boards.
+ */
+static int
+ATIMapClock(Clock)
+int Clock;
+{
+        if (ATIBoard >= ATI_BOARD_MACH32)
+        {
+                /* First, invert the 0x04 bit */
+                Clock ^= 0x04;
+
+                /* Lastly, exchange 0x04 and 0x08 bits */
+                Clock = (Clock & ~0x0C) |
+                        ((Clock & 0x04) << 1) |
+                        ((Clock & 0x08) >> 1);
+        }
+
+        return Clock;
+}
+
+/*
  * ATIClockSelect --
  *
  * This function selects the dot-clock with index 'no'.  This is done by
@@ -594,6 +622,11 @@ int no;
 
                         break;
                 default:
+                        /*
+                         * Possibly, remap clock number.
+                         */
+                        no = ATIMapClock(no);
+
                         /*
                          * Set the generic two low-order bits of the clock
                          * select.
@@ -1316,11 +1349,7 @@ ATIProbe()
                         Calibration_Clock_Number = 10 /* or 11 */;
                         Calibration_Clock_Value = 75000 /* or 65000 */;
                         if (ATIBoard >= ATI_BOARD_MACH32)
-                        {
                                 Number_Of_Clocks = 16*2;
-                                if (ATIBoard >= ATI_BOARD_MACH64)
-                                        Calibration_Clock_Number = 14;
-                        }
                 }
                 if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
                         Number_Of_Clocks <<= 1 + (ATIBoard == ATI_BOARD_V4);
@@ -1384,8 +1413,10 @@ Bool enter;
 {
         static unsigned char saved_ab,
                 saved_b4, saved_b8, saved_b9, saved_be;
+#if 0
         static unsigned short saved_clock_sel, saved_misc_options,
                 saved_mem_bndry, saved_mem_cfg;
+#endif
         static Bool entered = LEAVE;
         unsigned char tmp;
 
@@ -1396,7 +1427,7 @@ Bool enter;
         if (enter == ENTER)
         {
                 xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-
+#if 0
                 if (ATIBoard == ATI_BOARD_MACH32)
                 {
                         /* Save register values to be modified */
@@ -1427,7 +1458,7 @@ Bool enter;
                         /* Reset the 8514/A and disable all interrupts */
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
                 }
-
+#endif
                 vgaIOBase = (inb(0x03CC) & 0x01) ? 0x03D0 : 0x03B0;
 
                 /* Clear protection bits in ATI extended registers */
@@ -1478,7 +1509,7 @@ Bool enter;
                                         (saved_ab & 0x18) | (tmp & 0xE7));
                         }
                 }
-
+#if 0
                 if (ATIBoard == ATI_BOARD_MACH32)
                 {
                         /* Wait for enough FIFO entries */
@@ -1497,7 +1528,7 @@ Bool enter;
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
                         outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
                 }
-
+#endif
                 xf86DisableIOPorts(vga256InfoRec.scrnIndex);
         }
 }
@@ -1797,12 +1828,12 @@ DisplayModePtr mode;
                 else
                         new->be |= 0x02;
 
-        /*
-         * Set clock select bits.
-         */
         if (new->std.NoClock >= 0)
         {
-                int Clock = mode->Clock;
+                /*
+                 * Set clock select bits, possibly remapping them.
+                 */
+                int Clock = ATIMapClock(mode->Clock);
 
                 /*
                  * Set generic clock select bits just in case.

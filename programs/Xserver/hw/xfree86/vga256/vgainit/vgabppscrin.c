@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vgainit/vgabppscrin.c,v 3.0 1994/09/07 15:56:12 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -60,6 +60,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "gcstruct.h"
 #include "xf86.h"
 #include "xf86Priv.h"	/* for xf86weight */
+#include "vga.h"
 
 #if PSZ == 16
 #define vgabppScreenInit vga16bppScreenInit
@@ -104,6 +105,11 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     rootdepth = 0;
     BitsPerRGB = xf86weight.green;
+#if PSZ > 8
+    /* Only TrueColor for 16/32bpp */
+    if (!cfbSetVisualTypes(vga256InfoRec.depth, 1 << TrueColor, BitsPerRGB))
+	return FALSE;
+#endif
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
 			 &defaultVisual,((unsigned long)1<<(PSZ-1)), BitsPerRGB))
 	return FALSE;

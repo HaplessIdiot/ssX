@@ -133,6 +133,8 @@ bin, fonts lib and one X server.
 4 - Installing Xdm, the display manager
 ---------------------------------------
 
+The display manager makes your PC look like an X terminal.  That is, it
+presents you with a login screen that runs under X.
 To start the display manager, log in as root on the console and type
 `xdm -nodaemon'.
 
@@ -152,22 +154,48 @@ console "/usr/libexec/getty std.9600"   ibmpc3  off secure
 5 - Configuring X for Your Hardware
 -----------------------------------
 
-The XF86Config file tells the X server what kind of monitor, video card
-and mouse you have.  You *must* create it to tell the server what
-specific hardware you have.
+The XF86Config file tells the X server what kind of monitor, video card and
+mouse you have.  You *must* create it to tell the server what specific
+hardware you have.
 
-XFree86 3.1 uses a new configuration file format. Consult the XF86Config
-man page and the general INSTALL file for instructions.
-If you have a Xconfig file that worked with XFree86 2.X, you can create a
-XF86Config file using your old Xconfig file with the new XF86Config.sample
-file as a template.
+XFree86 3.1 uses a new configuration file format. Consult the XF86Config man
+page and the general INSTALL file for instructions.
 
-If you plan to fine tune the screen size or position on your monitor
-you'll also need the specs for sync frequencies from your monitor's
-manual.
+If you have a Xconfig file for XFree86 2.x, use reconfig to translate part of
+it into the new format:
 
-If your mouse does not work try using kermit or tip to connect to the
-mouse serial port and verify that it does indeed generate characters.
+     # reconfig <Xconfig >XF86Config
+
+and complete the rest according to the XF86Config man page and the
+XF86Config.sample file as a template.
+
+In order to protect your hardware from damage, the server no longer will read
+XF86Config files from a user's home directory, but requires that it be in
+/etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname or
+/usr/X11R6/lib/X11/XF86Config.
+
+You'll need info on your hardware:
+
+     Your mouse type, baud rate and it's /dev entry.
+     The video card's chipset (e.g. ET4000, S3, etc).
+     Your monitor's sync frequencies.
+
+The easiest way to find which device your mouse is plugged into is to use
+'cat' or 'kermit' to look at the output of the mouse.  Connect to it and just
+make sure that it generates output when the mouse is moved or clicked:
+
+     % cat </dev/tty00
+
+If you can't find the right mouse device then use 'dmesg|grep com' to get a
+list of devices that were detected upon booting:
+
+     % dmesg|grep com
+     com0 at isa0 iobase 0x3f8 irq 4
+
+com0 is the hardware port used for /dev/tty00 and com1 is /dev/tty01.
+
+If you plan to fine tune the screen size or position on your monitor you'll
+need the specs for sync frequencies from your monitor's manual.
 
 
 6 - Running X
@@ -178,8 +206,8 @@ window manager and an xterm take about 4 Mb of memory themselves. On
 a 4Mb system that would leave nothing left over for the kernel and
 other applications like gcc that expect a few meg free.
 
-The easiest way for new users to start X windows is to type 'startx >&
-startx.log'.  Error messages are lost unless you redirect them because
+The easiest way for new users to start X windows is to type 'xinit >&
+xinit.log'.  Error messages are lost unless you redirect them because
 the server takes over the screen.
 
 To get out of X windows, type 'exit' in the console xterm.  You can
@@ -196,7 +224,8 @@ changes to the site.def, type './mkmf' and 'make' to link the server.
 See /usr/X11R6/lib/Server/README for more info.
 
 See /usr/X11R6/lib/X11/etc/INSTALL for instructions on unbundling and
-building the source distribution.
+building the source distribution. You will need about 250Mb free for the
+sources, objects and binaries during the build.
 
 You should configure the distribution by editing xc/config/cf/xf86site.def
 before compiling.  To compile the sources, invoke
@@ -235,4 +264,4 @@ and __bsdi__ for BSD/386.
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.0 1994/09/20 12:47:14 dawes Exp $

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.14 1994/09/22 15:45:31 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.15 1994/09/23 10:03:44 dawes Exp $
 
 #define OSName            FreeBSD 1.1.5
 #define OSVendor          /**/
@@ -107,6 +107,16 @@ install.man:: file.man                                                  @@\
 	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.$(MANSUFFIX)
 #endif
 
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)                                      @@\
+	$(RM) $(DESTDIR)destdir/dest.suffix*                            @@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \                        @@\
+          $(DESTDIR)destdir/dest.suffix                                 @@\
+	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix
+#endif
+
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
@@ -134,6 +144,14 @@ install.man::                                                           @@\
 	(cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
 	$$i.$${SUFFIX})); \                                             @@\
 	done)
+#endif
+
+/*
+ * InstallGenManPageAliases - install soft links for aliases.
+ */
+#ifndef InstallGenManPageAliases
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)              @@\
+	InstallManPageAliases(file,destdir,aliases)
 #endif
 #endif
 

@@ -1,3 +1,16 @@
+XFree86 3.0Fc (24 September 1994)
+365. Fix image shift at 32bpp on GXE64Pro (Hans Nasten).
+364. Only initialise TrueColor visual for 16/32bpp since DirectColor is
+     not appropriate for the hardware.
+363. Man page updates.
+362. Fix installation problems with XF86Config man page.
+361. Disable some code in vgawonder driver that leads to problems with
+     SuperProbe (Marc Aurele La France).
+360. Change clock ordering (in some cases) for vgawonder driver so it
+     now depends only on the clock chip used (Marc Aurele La France).
+359. Fix S3 VT switching problem with #9 GXE64Pro (Robin Cutshaw).
+358. Added README.SOLX86 (David Holland).
+
 XFree86 3.0Fb (23 September 1994)
 357. Enable ICS2595 clockchip support.
 356. Enable 32bpp for Ti3025+964.

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.20 1994/09/17 04:07:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.21 1994/09/22 15:52:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -70,6 +70,7 @@ extern void OneBankvgaBitBlt();
 #endif /* !XF86VGA16 */
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern char *xf86VisualNames[];
 extern Bool miDCInitialize();
 
 ScrnInfoRec vga256InfoRec = {
@@ -365,6 +366,12 @@ vgaProbe()
           vga256InfoRec.defaultVisual = TrueColor;
       if (defaultColorVisualClass < 0)
           defaultColorVisualClass = vga256InfoRec.defaultVisual;
+      if (defaultColorVisualClass != TrueColor) {
+	  ErrorF("Invalid default visual type: %d (%s)\n",
+		 defaultColorVisualClass,
+		 xf86VisualNames[defaultColorVisualClass]);
+	  return(FALSE);
+      }
   }
 #endif
 

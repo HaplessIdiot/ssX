@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.3 1994/09/20 12:47:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.4 1994/09/23 10:18:02 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -30,18 +30,19 @@ OSREADME = /* README.SVR3 */
 #endif
 #ifdef SVR4Architecture
 # ifdef SunArchitecture
-OSREADME = /* README.SOLX86 */
+OSREADME = README.SOLX86
 # else
-OSREADME = /* README.SVR4 */
+OSREADME = README.SVR4
 # endif
 #endif
 
 all::
 
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
-            README.cirrus README.Video7 README.P9000 README.agx
+            README.cirrus README.Video7 README.P9000 README.agx \
+            README.S3
 
-MAINDOCS = COPYRIGHT /* README */ README.Config /* INSTALL */ ServersOnly
+MAINDOCS = COPYRIGHT README README.Config INSTALL ServersOnly
 
 OTHERDOCS = VideoModes.doc modeDB.txt AccelCards README.clkprog
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.2 1994/08/11 06:55:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.3 1994/08/20 07:34:23 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -123,6 +123,12 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
 	
     if (cfbGeneration != serverGeneration) {
+	/* Only TrueColor for 16/32bpp */
+	if (s3InfoRec.bitsPerPixel > 8) {
+	    if (!cfbSetVisualTypes(s3InfoRec.depth, 1 << TrueColor,
+				   bitsPerRGB))
+		return FALSE;
+	}
 	if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
 	    &defaultVisual, 1<<(s3InfoRec.bitsPerPixel - 1), bitsPerRGB))
 	    return FALSE;

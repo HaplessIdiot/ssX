@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.16 1994/09/17 13:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.17 1994/09/20 12:45:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -63,6 +63,7 @@
 
 extern int p9000MaxClock;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern char *xf86VisualNames[];
 
 extern int defaultColorVisualClass;
 
@@ -307,22 +308,34 @@ p9000Probe()
       case 16:
 	p9000InfoRec.depth = 16;  /* if 555, set to 15 below */
 	p9000InfoRec.bitsPerPixel = 16;
-	p9000InfoRec.defaultVisual = TrueColor;
-	defaultColorVisualClass = TrueColor;
+	if (p9000InfoRec.defaultVisual < 0)
+	    p9000InfoRec.defaultVisual = TrueColor;
+	if (defaultColorVisualClass < 0)
+	    defaultColorVisualClass = p9000InfoRec.defaultVisual;
 	break;
       case 24:
       case 32:
 	xf86bpp = 32;
 	p9000InfoRec.depth = 24;
 	p9000InfoRec.bitsPerPixel = 32;     /* Use sparse 24 bpp (RGBX) */
-	p9000InfoRec.defaultVisual = TrueColor;
-	defaultColorVisualClass = TrueColor;
+	if (p9000InfoRec.defaultVisual < 0)
+	    p9000InfoRec.defaultVisual = TrueColor;
+	if (defaultColorVisualClass < 0)
+	    defaultColorVisualClass = p9000InfoRec.defaultVisual;
 	p9000MaxClock = P9000_MAX_32BPP_CLOCK;
 	break;
       default:
 	ErrorF("%s %s: Invalid value for bpp.  Valid values are 8, 16, and 32.\n", XCONFIG_GIVEN, p9000InfoRec.name);
 	return(FALSE);
       }
+
+    if (p9000InfoRec.bitsPerPixel > 8 &&
+	defaultColorVisualClass >= 0 && defaultColorVisualClass != TrueColor) {
+	ErrorF("Invalid default visual type: %d (%s)\n",
+	       defaultColorVisualClass,
+	       xf86VisualNames[defaultColorVisualClass]);
+	return(FALSE);
+    }
 
     if (xf86bpp == 16) 
       {

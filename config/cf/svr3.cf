@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.0 1994/05/21 23:39:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.1 1994/05/22 01:45:19 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -252,6 +252,17 @@ install.man:: file.man                                                  @@\
         $(RM) /tmp/file.man
 #endif
 
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+        MakeDir($(DESTDIR)destdir)                                      @@\
+        $(RM) $(DESTDIR)destdir/dest.suffix*                            @@\
+        $(RMDSDEMACCMD) file.man | neqn | nroff -man >/tmp/file.man     @@\
+        $(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man $(DESTDIR)destdir/dest.suffix @@\
+        -$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix                @@\
+        $(RM) /tmp/file.man
+#endif
+
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
@@ -282,6 +293,10 @@ install.man::                                                           @@\
         $$i.$${SUFFIX})); \                                             @@\
         done)
 #endif
+
+#ifndef InstallGenManPageAliases
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+	InstallManPageAliases(file,destdir,aliases)
 
 #endif /* FormattedManPages */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32scrin.c,v 1.2 94/04/17 20:30:50 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.2 1994/07/15 06:58:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.3 1994/09/11 00:49:06 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -156,6 +156,12 @@ mach32ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
 	
     if (cfbGeneration != serverGeneration) {
+	/* Only TrueColor for 16/32bpp */
+	if (mach32InfoRec.bitsPerPixel > 8) {
+	    if (!cfbSetVisualTypes(mach32InfoRec.depth, 1 << TrueColor,
+				   bitsPerRGB))
+		return FALSE;
+	}
 	if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
 	    &defaultVisual, 1<<(mach32InfoRec.bitsPerPixel - 1), bitsPerRGB))
 	    return FALSE;
