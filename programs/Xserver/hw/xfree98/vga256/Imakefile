@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.17 1997/07/29 12:08:21 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.18 1997/09/19 09:01:24 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -220,7 +220,7 @@ InstallLinkKitLibrary(mga,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabep,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabs,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wsna,$(XF98LINKKITDIR)/drivers98)
-InstallLinkKitLibrary(svga,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitLibrary(vga256,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(egc,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(XF98LINKKITDIR))
@@ -258,7 +258,9 @@ InstallDynamicModule(LibraryTargetName(wsna),$(MODULEDIR))
 InstallDynamicModule(LibraryTargetName(mga),$(MODULEDIR))
 #endif
 #if XF98SVGAModule
-InstallDynamicModule(LibraryTargetName(svga),$(MODULEDIR))
+#ifndef DontInstallPC98Version
+InstallDynamicModule(LibraryTargetName(vga256),$(MODULEDIR))
+#endif
 #endif
 #if XF98EGCModule
 InstallDynamicModule(LibraryTargetName(egc),$(MODULEDIR))

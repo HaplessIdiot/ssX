@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.24 1997/09/09 10:27:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.25 1997/09/15 07:18:51 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -650,6 +650,9 @@ xf86InitializeAcceleration(pScreen)
 	xf86AccelInfoRec.ImageWriteRange = 0;
     else /* change to dwords */
 	xf86AccelInfoRec.ImageWriteRange >>= 2;
+
+    if(!xf86AccelInfoRec.ImageWriteBase)
+	xf86AccelInfoRec.ImageWriteBase = (pointer)xf86AccelInfoRec.FramebufferBase;
 
     if(!xf86AccelInfoRec.DoImageWrite &&
 	xf86AccelInfoRec.SetupForImageWrite && 

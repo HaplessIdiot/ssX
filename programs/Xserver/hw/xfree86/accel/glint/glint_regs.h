@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.5 1997/09/25 07:31:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.6 1997/09/29 08:40:29 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -392,7 +392,7 @@
         
 
 #define ConstantColor						GLINT_TAG_ADDR(0x0f,0x0d)
-#define GLINTColor							GLINT_TAG_ADDR(0x0f,0x0e)
+#define GLINTColor						GLINT_TAG_ADDR(0x0f,0x0e)
 #define AlphaTestMode						GLINT_TAG_ADDR(0x10,0x00)
 #define AntialiasMode						GLINT_TAG_ADDR(0x10,0x01)
 #define AlphaBlendMode						GLINT_TAG_ADDR(0x10,0x02)
@@ -559,7 +559,10 @@
 
 #define FBSourceOffset						GLINT_TAG_ADDR(0x15,0x01)
 #define FBPixelOffset						GLINT_TAG_ADDR(0x15,0x02)
-#define FBColor								GLINT_TAG_ADDR(0x15,0x03)
+#define FBColor							GLINT_TAG_ADDR(0x15,0x03)
+#define FBData							GLINT_TAG_ADDR(0x15,0x04)
+#define FBSourceData						GLINT_TAG_ADDR(0x15,0x05)
+
 #define FBWindowBase						GLINT_TAG_ADDR(0x15,0x06)
 #define FBWriteMode							GLINT_TAG_ADDR(0x15,0x07)
 	/* 0:					*/
