@@ -1,6 +1,4 @@
-/* Localized versions of Info.plist keys */
+/* English localized versions of Info.plist keys. */
+/* Most of these are set in the target application settings. */
 
-CFBundleName = "Xmaster";
-CFBundleShortVersionString = "Xmaster version 0.2";
-CFBundleGetInfoString = "Xmaster version 0.2";
-NSHumanReadableCopyright = "";
+NSHumanReadableCopyright = "XFree86 Version 4.0.2 / X Window System";

@@ -7,10 +7,22 @@
             SUPERCLASS = NSObject; 
         }, 
         {
-            ACTIONS = {close = id; setDisplay = id; setFakeButtons = id; setKey = id; }; 
+            ACTIONS = {
+                close = id; 
+                setDisplay = id; 
+                setFakeButtons = id; 
+                setKey = id; 
+                setStartupHelp = id; 
+            }; 
             CLASS = Preferences; 
             LANGUAGE = ObjC; 
-            OUTLETS = {displayNumber = id; fakeButtons = id; keyField = id; window = id; }; 
+            OUTLETS = {
+                displayNumber = id; 
+                fakeButtons = id; 
+                keyField = id; 
+                startupHelp = id; 
+                window = id; 
+            }; 
             SUPERCLASS = NSObject; 
         }, 
         {
@@ -19,7 +31,13 @@
             OUTLETS = {preferences = id; xserver = id; }; 
             SUPERCLASS = NSApplication; 
         }, 
-        {CLASS = Xserver; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+        {
+            ACTIONS = {closeHelpAndShow = id; }; 
+            CLASS = Xserver; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {helpWindow = id; }; 
+            SUPERCLASS = NSObject; 
+        }
     ); 
     IBVersion = 1; 
 }

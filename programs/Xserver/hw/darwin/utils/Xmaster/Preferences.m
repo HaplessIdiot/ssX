@@ -2,27 +2,64 @@
 
 @implementation Preferences
 
+// Initialize internal state info of switch key button
+- (void)initSwitchKey {
+    keyCode = [Preferences keyCode];
+    modifiers = [Preferences modifiers];
+    [switchString setString:[Preferences switchString]];
+}
+
 - (id)init {
     self=[super init];
-    
+
     isGettingKeyCode=NO;
+    switchString=[[NSMutableString alloc] init];
+
+    // Provide user defaults if needed
+    if([[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchKeyCode"]==nil) {
+        [Preferences setKeyCode:0];
+        [Preferences setModifiers:(NSCommandKeyMask | NSAlternateKeyMask)];
+        [Preferences setSwitchString:@"Cmd-Opt-a"];
+        [Preferences setDisplay:0];
+        [Preferences setFakeButtons:YES];
+        [Preferences setStartupHelp:YES];
+    }
+
+    [self initSwitchKey];
+
     return self;
 }
 
-- (void)awakeFromNib {
-    if([[NSUserDefaults standardUserDefaults] stringForKey:@"keyCode"]==nil) {
-        //provide defaults
-        [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:@"keyCode"];
-        [[NSUserDefaults standardUserDefaults] setInteger:(NSCommandKeyMask | NSAlternateKeyMask) forKey:@"modifiers"];
-        [[NSUserDefaults standardUserDefaults] setObject:@"Cmd-Opt-a" forKey:@"title"];
-    }
-    [keyField setTitle:[[NSUserDefaults standardUserDefaults] stringForKey:@"title"]];
+// Set the window controls to the state in user defaults
+- (void)resetWindow {
+    [keyField setTitle:[Preferences switchString]];
     [displayNumber setIntValue:[Preferences display]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
+    [startupHelpButton setIntValue:[Preferences startupHelp]];
 }
 
+- (void)awakeFromNib {
+    [self resetWindow];
+    [splashStartupHelpButton setIntValue:[Preferences startupHelp]];
+}
+
+// User cancelled the changes
 - (IBAction)close:(id)sender
 {
+    [window orderOut:nil];
+    [self resetWindow];  	// reset window controls
+    [self initSwitchKey];	// reset switch key state
+}
+
+// User saved changes
+- (IBAction)saveChanges:(id)sender
+{
+    [Preferences setKeyCode:keyCode];
+    [Preferences setModifiers:modifiers];
+    [Preferences setSwitchString:switchString];
+    [Preferences setDisplay:[displayNumber intValue]];
+    [Preferences setFakeButtons:[fakeButton intValue]];
+    [Preferences setStartupHelp:[startupHelpButton intValue]];
     [window orderOut:nil];
 }
 
@@ -30,67 +67,87 @@
 {
     [keyField setTitle:@"Press key"];
     isGettingKeyCode=YES;
+    [switchString setString:@""];
 }
 
 - (BOOL)sendEvent:(NSEvent*)anEvent {
     if(isGettingKeyCode) {
-        NSMutableString *str;
         if([anEvent type]==NSKeyDown) //wait for keyup
             return YES;
         if([anEvent type]!=NSKeyUp)
             return NO;
-        
-        str=[[NSMutableString alloc] init];
-        
+
         if([anEvent modifierFlags] & NSCommandKeyMask)
-            [str appendString:@"Cmd-"];
+            [switchString appendString:@"Cmd-"];
         if([anEvent modifierFlags] & NSControlKeyMask)
-            [str appendString:@"Ctrl-"];
+            [switchString appendString:@"Ctrl-"];
         if([anEvent modifierFlags] & NSAlternateKeyMask)
-            [str appendString:@"Opt-"];
+            [switchString appendString:@"Opt-"];
         if([anEvent modifierFlags] & NSNumericPadKeyMask) // doesn't work
-            [str appendString:@"Num-"];
+            [switchString appendString:@"Num-"];
         if([anEvent modifierFlags] & NSHelpKeyMask)
-            [str appendString:@"Help-"];
+            [switchString appendString:@"Help-"];
         if([anEvent modifierFlags] & NSFunctionKeyMask) // powerbooks only
-            [str appendString:@"Fn-"];
+            [switchString appendString:@"Fn-"];
         
-        [str appendString:[anEvent charactersIgnoringModifiers]];
-        [keyField setTitle:str];
+        [switchString appendString:[anEvent charactersIgnoringModifiers]];
+        [keyField setTitle:switchString];
         
-        [[NSUserDefaults standardUserDefaults] setInteger:[anEvent keyCode] forKey:@"keyCode"];
-        [[NSUserDefaults standardUserDefaults] setInteger:[anEvent modifierFlags] forKey:@"modifiers"];
-        [[NSUserDefaults standardUserDefaults] setObject:str forKey:@"title"];
+        keyCode = [anEvent keyCode];
+        modifiers = [anEvent modifierFlags];
         isGettingKeyCode=NO;
         
-        [str release];
         return YES;
     }
     return NO;
 }
 
-- (IBAction)setDisplay:(id)sender {
-    [[NSUserDefaults standardUserDefaults] setInteger:[sender intValue] forKey:@"display"];
++ (void)setSwitchString:(NSString*)newString {
+    [[NSUserDefaults standardUserDefaults] setObject:newString forKey:@"SwitchString"];
 }
 
-- (IBAction)setFakeButtons:(id)sender {
-    [[NSUserDefaults standardUserDefaults] setBool:[sender intValue] forKey:@"fakeButtons"];
++ (void)setKeyCode:(int)newKeyCode {
+    [[NSUserDefaults standardUserDefaults] setInteger:newKeyCode forKey:@"SwitchKeyCode"];
+}
+
++ (void)setModifiers:(int)newModifiers {
+    [[NSUserDefaults standardUserDefaults] setInteger:newModifiers forKey:@"SwitchModifiers"];
+}
+
++ (void)setDisplay:(int)newDisplay {
+    [[NSUserDefaults standardUserDefaults] setInteger:newDisplay forKey:@"Display"];
+}
+
++ (void)setFakeButtons:(BOOL)newFakeButtons {
+    [[NSUserDefaults standardUserDefaults] setBool:newFakeButtons forKey:@"FakeButtons"];
+}
+
++ (void)setStartupHelp:(BOOL)newStartupHelp {
+    [[NSUserDefaults standardUserDefaults] setBool:newStartupHelp forKey:@"ShowStartupHelp"];
+}
+
++ (NSString*)switchString {
+    return [[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchString"];
 }
 
 + (unsigned int)keyCode {
-    return [[NSUserDefaults standardUserDefaults] integerForKey:@"keyCode"];
+    return [[NSUserDefaults standardUserDefaults] integerForKey:@"SwitchKeyCode"];
 }
 
 + (unsigned int)modifiers {
-    return [[NSUserDefaults standardUserDefaults] integerForKey:@"modifiers"];
+    return [[NSUserDefaults standardUserDefaults] integerForKey:@"SwitchModifiers"];
 }
 
 + (int)display {
-    return [[NSUserDefaults standardUserDefaults] integerForKey:@"display"];
+    return [[NSUserDefaults standardUserDefaults] integerForKey:@"Display"];
 }
 
 + (BOOL)fakeButtons {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"fakeButtons"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"FakeButtons"];
+}
+
++ (BOOL)startupHelp {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowStartupHelp"];
 }
 
 @end

@@ -27,10 +27,10 @@
 
 - (BOOL)applicationShouldTerminate:(NSApplication *)sender {
     int but;
-
+    
     if(!killed && mRunning) {
         but=NSRunAlertPanel(@"Quit X-server?", @"If you leave it running, you can switch back to it by restarting Xmaster.", @"Quit", @"Cancel", @"Leave running");
-
+    
         switch(but) {
         case NSAlertDefaultReturn:
             [self kill];
@@ -127,21 +127,21 @@
     int i;
 
     if (mRunning) return;
-    
+
     // from Xserver/os/osutils.h through darwin.c
     #define LOCK_DIR "/tmp"
     #define LOCK_PREFIX "/.X"
     #define FIFO_SUFFIX "-fifo"
-    
+
     sprintf(fifoName, LOCK_DIR LOCK_PREFIX "%s" FIFO_SUFFIX, [mDisplay cString]);
-    
+
     // Change to user's home directory (so xterms etc. start there)
     home = getenv("HOME");
     if (home) chdir(home);
-    
+
     // Add X binary directory to the PATH
     [Xserver append:@":/usr/X11R6/bin" toEnv:@"PATH"];
-    
+
     // Is an X server already running? Try to open the fifo.
     // nonblock so we don't open stale fifo with no reader
     mEventWriteFD = open(fifoName, O_WRONLY | O_NONBLOCK, 0);
@@ -152,12 +152,10 @@
     else {
         // Run a new X server
         if([Preferences fakeButtons])
-            sprintf(buffer, "/usr/X11R6/bin/startx -- /usr/X11R6/bin/Xdarwin "
-                    " -quartz -fakebuttons "
+            sprintf(buffer, "/usr/X11R6/bin/startx -- -quartz -fakebuttons "
                     " :%s ", [mDisplay cString]);
         else
-            sprintf(buffer, "/usr/X11R6/bin/startx -- /usr/X11R6/bin/Xdarwin "
-                    " -quartz"
+            sprintf(buffer, "/usr/X11R6/bin/startx -- -quartz "
                     " :%s ", [mDisplay cString]);
                 
         // popen: allows Xmaster to see X server's stdout and stderr
@@ -184,6 +182,20 @@
     fcntl(mEventWriteFD, F_SETFL, 0); // clear O_NONBLOCK
     NSLog(@"Xmaster: xserver started, Xmasterfifo open");
     mRunning = YES;
+
+    // Display the help splash screen or show the X server
+    if ([Preferences startupHelp]) {
+        [self sendShowHide:NO];
+        [helpWindow makeKeyAndOrderFront:self];
+    } else {
+        [self closeHelpAndShow:self];
+    }
+}
+
+// Close the help splash screen and show the X server
+- (IBAction)closeHelpAndShow:(id)sender {
+    [Preferences setStartupHelp:[startupHelpButton intValue]];
+    [helpWindow close];
     mVisible = YES;
     [self sendShowHide:YES];
     [NSApp activateIgnoringOtherApps:YES];
