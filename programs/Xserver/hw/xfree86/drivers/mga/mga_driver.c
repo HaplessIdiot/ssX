@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.135 2000/02/11 17:25:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.136 2000/02/12 20:45:23 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2465,6 +2465,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	RefreshAreaFuncPtr refreshArea = MGARefreshArea;
 
 	if(pMga->Rotate) {
+	    pMga->PointerMoved = NULL;
 	    if (!pMga->PointerMoved) {
 	    pMga->PointerMoved = pScrn->PointerMoved;
 	    pScrn->PointerMoved = MGAPointerMoved;
