@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.153 2003/10/02 13:29:55 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.154 2003/10/08 14:58:26 dawes Exp $
 
 
 
@@ -275,3 +275,4 @@ InstallDriverSDKNonExecFile(xf86fbman.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86str.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86xv.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(xf86xvmc.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xisb.h,$(DRIVERSDKINCLUDEDIR))
