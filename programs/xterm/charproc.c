@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/190 1996/01/14 16:52:40 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.15 1996/01/12 14:42:01 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.16 1996/01/16 15:09:40 dawes Exp $
  */
 
 /*
@@ -1998,6 +1998,12 @@ dpmodes(termw, func)
 				screen->send_mouse_pos = 1;
 			else
 				screen->send_mouse_pos = 0;
+			break;
+		case 25:		/* Show/hide cursor like VT200	*/
+		        if(func == bitset)
+			        screen->cursor_set = ON;
+			else
+			        screen->cursor_set = OFF;
 			break;
 		case 38:		/* DECTEK			*/
 			if(func == bitset && !(screen->inhibit & I_TEK)) {

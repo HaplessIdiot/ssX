@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.19 1995/12/07 08:03:52 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.20 1996/01/16 15:09:55 dawes Exp $ */
 
 /*
 
@@ -55,7 +55,7 @@ int dot_clock, mode_flags;
 
 /* Minimum extension version required */
 #define MINMAJOR 0
-#define MINMINOR 4
+#define MINMINOR 5
 
 /* Mode flags -- ignore flags not in V_FLAG_MASK */
 #define V_FLAG_MASK	0x1FF;
@@ -1378,11 +1378,6 @@ static void usage()
     fprintf(stderr, "        -next                             Switch to next video mode\n");
     fprintf(stderr, "        -prev                             Switch to previous video mode\n");
     fprintf(stderr, "        -unlock                           Enable mode switch hot-keys\n");
-    fprintf(stderr, "        -query                            Print current monitor sync info\n");
-#if 0
-    fprintf(stderr, "                                             and power-saver settings\n");
-    fprintf(stderr, "        -saver <suspendtime> [<offtime>]  Set power-saver settings\n");
-#endif
     exit(1);
 }
 
@@ -1393,7 +1388,6 @@ int main (argc, argv)
     Widget top;
     XtAppContext app;
     Display* dpy;
-    Bool query = False;
     int suspendTime, offTime;
 
     static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction },
@@ -1423,7 +1417,7 @@ int main (argc, argv)
     }
 
     /* Fail if the extension version in the server is too old */
-    if (MajorVersion < MINMAJOR ||
+    if (MajorVersion < MINMAJOR || 
 	(MajorVersion == MINMAJOR && MinorVersion < MINMINOR)) {
 	fprintf(stderr,
 		"Xserver is running an old XFree86-VidModeExtension version"
@@ -1436,26 +1430,6 @@ int main (argc, argv)
     /* This should probably be done differently */
     if (argc > 1) {
 	int i = 0;
-#if 0
-	if ((argc == 3 || argc == 4) && !strcmp(argv[1], "-saver")) {
-	    XF86VidModeGetSaver(XtDisplay (top),
-				DefaultScreen (XtDisplay (top)),
-				&suspendTime, &offTime);
-	    switch (argc) {
-	    case 4:
-		offTime = atoi(argv[3]) * 1000;
-		/* fall through */
-	    case 3:
-		suspendTime = atoi(argv[2]) * 1000;
-		break;
-	    }
-	    XF86VidModeSetSaver(XtDisplay (top),
-				DefaultScreen (XtDisplay (top)),
-				suspendTime, offTime);
-	    XSync(XtDisplay (top), True);
-	    return 0;
-	}
-#endif
 	if (argc != 2)
 		usage();
 	if (!strcmp(argv[1], "-next"))
@@ -1466,15 +1440,6 @@ int main (argc, argv)
 	    CleanUp(XtDisplay (top));
 	    XSync(XtDisplay (top), True);
 	    return 0;
-	} else if (!strcmp(argv[1], "-query")) {
-#if 0
-	    if (MinorVersion > 2) {
-		XF86VidModeGetSaver(XtDisplay (top),
-				    DefaultScreen (XtDisplay (top)),
-				    &suspendTime, &offTime);
-	    }
-#endif
-	    query = TRUE;
 	} else
 		usage();
 	if (i != 0) {
@@ -1487,13 +1452,6 @@ int main (argc, argv)
     if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top)))) {
 	fprintf(stderr, "Unable to query monitor info\n");
 	return 2;
-    }
-
-    if (query) {
-	if (MajorVersion > 0 || (MajorVersion == 0 && MinorVersion > 2))
-	    printf("Suspend time: %d seconds, Off time: %d seconds\n",
-		    suspendTime / 1000, offTime / 1000);
-	return 0;
     }
 
     if (!XF86VidModeLockModeSwitch(XtDisplay (top),

@@ -1,5 +1,5 @@
 # $XConsortium: terminfo,v 1.11 94/10/13 21:24:31 gildea Exp $
-# $XFree86: xc/programs/xterm/terminfo,v 3.1 1995/09/23 07:09:29 dawes Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.2 1996/01/05 13:23:14 dawes Exp $
 # meml locks memory above the cursor; memu unlocks (ala HP terminals)
 #
 xterm|xterm-24|xterms|vs100|xterm terminal emulator (X Window System),
@@ -11,8 +11,10 @@ xterm|xterm-24|xterms|vs100|xterm terminal emulator (X Window System),
 	csr=\E[%i%p1%d;%p2%dr,
 	cud=\E[%p1%dB, cud1=\n, cuu=\E[%p1%dA, cuu1=\E[A,
 	cub=\E[%p1%dD, cub1=\b,	cuf=\E[%p1%dC, cuf1=\E[C,
+	civis=\E[25l, cnorm=\E[25h,
 	el=\E[K, ed=\E[J,
 	home=\E[H, ht=^I, ind=^J, cr=^M,
+	khome=\E[H, kend=\E[F, kbeg=\E[E,
 	km,
 	smir=\E[4h, rmir=\E[4l, mir,
 	smso=\E[7m, rmso=\E[m, smul=\E[4m, rmul=\E[m,

@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/33 1995/12/09 15:44:40 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.5 1996/01/05 13:11:06 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.6 1996/01/16 15:01:05 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -575,24 +575,29 @@ XRequest.XFree86-VidModeExtension.2: XF86VidModeModModeLine
 XRequest.XFree86-VidModeExtension.3: XF86VidModeSwitchMode
 XRequest.XFree86-VidModeExtension.4: XF86VidModeGetMonitor
 XRequest.XFree86-VidModeExtension.5: XF86VidModeLockModeSwitch
-XRequest.XFree86-VidModeExtension.8: XF86VidModeGetServerName
 XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
 XProtoError.XFree86-VidModeExtension.3: XF86VidModeModeUnsuitable
 XProtoError.XFree86-VidModeExtension.4: XF86VidModeClientNotLocal
 XProtoError.XFree86-VidModeExtension.5: XF86VidModeExtensionDisabled
+XProtoError.XFree86-VidModeExtension.6: XF86VidModeZoomLocked
 ! XFree86-Misc -- not an X Consortium standard
 XRequest.XFree86-Misc.0: XF86MiscQueryVersion
 XRequest.XFree86-Misc.1: XF86MiscGetSaver
 XRequest.XFree86-Misc.2: XF86MiscSetSaver
 ! XFree86-DGA  -- not an X Consortium standard
-XRequest.XFree86-DGA.0: XF86DGAGetVideoLL
-XRequest.XFree86-DGA.1: XF86DGADirectVideo
-XRequest.XFree86-DGA.2: XF86DGAGetViewPort
-XRequest.XFree86-DGA.3: XF86DGASetViewPort
-XRequest.XFree86-DGA.4: XF86DGAGetVidPage
-XRequest.XFree86-DGA.5: XF86DGASetVidPage
+XRequest.XFree86-DGA.0: XF86DGAQueryVersion
+XRequest.XFree86-DGA.1: XF86DGAGetVideoLL
+XRequest.XFree86-DGA.2: XF86DGADirectVideo
+XRequest.XFree86-DGA.3: XF86DGAGetViewPort
+XRequest.XFree86-DGA.4: XF86DGASetViewPort
+XRequest.XFree86-DGA.5: XF86DGAGetVidPage
+XRequest.XFree86-DGA.6: XF86DGASetVidPage
+XProtoError.XFree86-DGA.0: XF86DGAClientNotLocal
+XProtoError.XFree86-DGA.1: XF86DGANoDirectVideoMode
+XProtoError.XFree86-DGA.2: XF86DGAScreenNotActive
+XProtoError.XFree86-DGA.3: XF86DGADirectNotActivated
 ! DOUBLE-BUFFER (DBE), an X Consortium standard
 XRequest.DOUBLE-BUFFER.0: DBEGetVersion
 XRequest.DOUBLE-BUFFER.1: DBEAllocateBackBufferName

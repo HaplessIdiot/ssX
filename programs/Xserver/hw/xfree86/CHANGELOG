@@ -1,9 +1,29 @@
+XFree86 3.1.2Bk (17 January 1996)
+258. Don't allow DGA operations which affect the server when it isn't on
+     the active screen.
+257. Have XFree86-Misc report the power saver times in seconds rather
+     than milliseconds (to be consistent with XGetScreenSaver).
+256. Modify xset to allow setting/viewing the power saver parmaters via
+     the XFree86-Misc extension.
+255. Modify the VidMode extension to disallow both mode switches and
+     the locking/unlocking of mode switching when DontZoom has been set
+     in the XF86Config.
+254. Only allow the DGA extension to accept local connections.
+253. Fix Home/End key support in xterm (Thomas Mueller).
+252. Add support for VT200 compatible cursor on/off to xterm (Thomas Mueller).
+251. Add support for the XFree86-Misc extension to xdpyinfo (Joe Moss).
+250. VidMode/xvidtune updates (Kaleb Keithley).
+249. XC fix-trackers to seq-4055 (mostly XKB fixes).
+248. Fix link ordering of new libraries (Thomas Mueller).
+247. Add some missing XKB #defines (Thomas Mueller).
+246. Fix typo in include/extensions/Imakefile (Thomas Mueller).
+
 XFree86 3.1.2Bj (16 January 1996)
 245. Remove the XExExt library, and replace it with individual libraries
      for each extension.
 244. Remove the GetSaver/SetSaver functions from the VidMode extension
      and add them to a new extension: XFree86-Misc.
-243. Cleanup VidMode extension code -- removing "vgahelp" referenced
+243. Cleanup VidMode extension code -- removing "vgahelp" references
      (Kaleb Keithley).
 242. Allow the write functions of the VidMode extension to be disabled
      for non-local clients (default), and all clients (Kaleb Keithley).
