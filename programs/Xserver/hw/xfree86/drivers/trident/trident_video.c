@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.33 2003/04/23 21:51:50 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -255,6 +255,7 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     int red, green, blue;
     int tmp;
 
+    WaitForVBlank(pScrn);
     OUTW(vgaIOBase + 4, 0x848E);
 
     if (pTrident->Chipset >= CYBER9388) {
@@ -418,6 +419,7 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
   if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+    	WaitForVBlank(pScrn);
 	OUTW(vgaIOBase + 4, 0x848E);
 	OUTW(vgaIOBase + 4, 0x0091);
      }
@@ -1022,6 +1024,7 @@ TRIDENTStopSurface(
     if(pPriv->isOn) {
 	TRIDENTPtr pTrident = TRIDENTPTR(surface->pScrn);
     	int vgaIOBase = VGAHWPTR(surface->pScrn)->IOBase;
+	WaitForVBlank(pScrn);
  	OUTW(vgaIOBase + 4, 0x848E);
 	OUTW(vgaIOBase + 4, 0x0091);
 	pPriv->isOn = FALSE;
@@ -1168,6 +1171,7 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
     if(pPriv->videoStatus & TIMER_MASK) {
 	if(pPriv->videoStatus & OFF_TIMER) {
 	    if(pPriv->offTime < time) {
+		WaitForVBlank(pScrn);
   		OUTW(vgaIOBase + 4, 0x848E);
 		OUTW(vgaIOBase + 4, 0x0091);
 		pPriv->videoStatus = FREE_TIMER;
