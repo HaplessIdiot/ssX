@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.14 2002/12/10 04:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.15 2002/12/11 17:07:58 dawes Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -106,12 +106,8 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-    "fbCopyPlane",
-    "fbCopyRegion",
     "fbCreateDefColormap",
-    "fbDoCopy",
     "fbPictureInit",
-    "fbQueryBestSize",
     "fbScreenInit",
     NULL
 };
@@ -124,7 +120,7 @@ static const char *ramdacSymbols[] = {
 };
 
 static const char *shadowfbSymbols[] = {
-    "ShadowFBInit",
+    "ShadowFBInit2",
     NULL
 };
 
