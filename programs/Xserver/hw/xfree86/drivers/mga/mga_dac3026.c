@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.23 1998/08/19 12:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.24 1998/08/29 05:43:30 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -24,6 +24,9 @@
  * Modified for TVP3026 by Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  * 
  * Modified for MGA Millennium by Xavier Ducoin <xavier@rd.lectra.fr>
+ *
+ * Doug Merritt <doug@netcom.com>
+ * 24bpp: fixed high res stripe glitches, clock glitches on all res
  *
  */
 
@@ -91,8 +94,12 @@ static unsigned char MGADACbpp16[DACREGSIZE] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
+/*
+ * [0] value was 0x07, but changed to 0x06 by Doug Merrit to fix high res
+ * stripe glitches and clock glitches at 24bpp.
+ */
 static unsigned char MGADACbpp24[DACREGSIZE] = {
-	0x07, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0x06, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
