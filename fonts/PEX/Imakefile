@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.19 94/04/17 22:20:44 rws Exp $
-XCOMM $XFree86: xc/fonts/PEX/Imakefile,v 3.0 1994/04/28 12:29:47 dawes Exp $
+XCOMM $XFree86: xc/fonts/PEX/Imakefile,v 3.1 1994/11/26 12:34:16 dawes Exp $
 XCOMM 
 XCOMM
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. 
@@ -58,6 +58,8 @@ FONTS_BINARY = Roman.phont Roman_M.phont
     TOWFONT = ./to_wfont
 
 all:: ProgramTargetName(to_wfont) $(FONTS_BINARY)
+
+install:: ProgramTargetName(to_wfont)
 
 LexFile(lex)
 

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.33 94/12/01 16:33:12 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.8 1994/12/20 12:09:09 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.9 1995/01/12 05:54:21 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -993,7 +993,7 @@ XtransConnInfo ciptr;
 
     if (stat (unsock->sun_path, &statb) == -1 ||
         ((statb.st_mode & S_IFMT) !=
-#if (defined (sun) && defined(SVR4)) || defined(NCR)
+#if (defined (sun) && defined(SVR4)) || defined(NCR) || defined(SCO) || !defined(S_IFSOCK)
 	  		S_IFIFO))
 #else
 			S_IFSOCK))
