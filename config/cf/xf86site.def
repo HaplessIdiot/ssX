@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.24 1994/12/20 12:14:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.25 1994/12/20 22:38:24 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -124,14 +124,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.24 1994/12/20 12:14:39 dawes Exp $
 #define BuildLBX YES
  */
 
-/* Should probably put this somewhere else */
-#if defined(BuildLBX) && BuildLBX
-#define SitePervasiveExtensionDefines -DLBX
-#define SiteExtensionLibs $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
-#define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/lbxutil $(TOP)/workInProgress/lbx/programs/Xserver/lbx
-#define BigReqDefines /**/
-#endif
-
+/*
+ * To build the required bits to make LBX selectable via the LinkKit
+ * uncomment this.  Note:  BuildLBX should *not* be set when doing this.
+ *
+ */
+#define BuildExtraLBXServerLibs	YES
 
 /*
  * Do you want to install the default system config files, this will overwrite

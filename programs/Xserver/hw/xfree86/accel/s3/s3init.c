@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.39 1994/12/17 10:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.40 1994/12/18 10:58:16 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -227,7 +227,8 @@ s3CleanUp(void)
 
       /* Turn off parallel mode explicitly here */
       if (s3Bt485PixMux) {
-         if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))
+         if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+             S3_928_ONLY(s3ChipId))
 	 {
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, 0x20);
@@ -393,7 +394,8 @@ s3Init(mode)
        */
       if (S3_964_SERIES(s3ChipId) && !DAC_IS_TI3025)
          s3SAM256 = 0x40;
-      else if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
+      else if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+               S3_928_ONLY(s3ChipId)) ||
 	       OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
          s3SAM256 = 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
       else
@@ -699,7 +701,8 @@ s3Init(mode)
    else
       new->MiscOutReg |= 0x01;
 
-   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) && 
+       S3_928_ONLY(s3ChipId)) {
       /*
        * Make sure that parallel option is already set correctly before
        * changing the clock doubler state.
@@ -1181,7 +1184,8 @@ s3Init(mode)
 	   outb(vgaCRReg, tmp | 0x20);
 	 }
 
-	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))	
+	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+              S3_928_ONLY(s3ChipId))	
 	 {
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, 0x20);
@@ -1240,7 +1244,8 @@ s3Init(mode)
 	     the rightmost pixels back to the left of the display.
 	   */
 	   outb(vgaCRReg, 0x00);
-         else if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+         else if (!(OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+                    S3_928_ONLY(s3ChipId))) {
 	    outb(vgaCRReg, tmp | 0x20);
  	    /* set s3 reg65 for some unknown reason                      */
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
@@ -1272,7 +1277,8 @@ s3Init(mode)
 
       } else {
 
-	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))
+	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+             S3_928_ONLY(s3ChipId))
 	 {
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, 0x20);
@@ -1282,8 +1288,8 @@ s3Init(mode)
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
          tmp = inb(vgaCRReg);
-	 if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) &&
-	     (s3Bpp != 1)) {
+	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) && 
+	     S3_928_ONLY(s3ChipId) && (s3Bpp != 1)) {
             outb(vgaCRReg, tmp | 0x20);
 	 } else {
             outb(vgaCRReg, tmp & 0xDF);
@@ -1294,7 +1300,8 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp & 0xDF);
 
-	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))
+	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+             S3_928_ONLY(s3ChipId))
 	 {
 	    outb(vgaCRIndex, 0x5C);
 	    outb(vgaCRReg, 0x00);

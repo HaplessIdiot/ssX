@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.12 1994/11/26 12:48:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.13 1994/12/11 10:57:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -835,20 +835,10 @@ vgaHWInit(mode, size)
       }
       else
       {
-	if (mode->Flags & V_DBLSCAN)
-	{
-	  if      (mode->VDisplay < 200) new->MiscOutReg = 0xA3;
-	  else if (mode->VDisplay < 240) new->MiscOutReg = 0x63;
-	  else if (mode->VDisplay < 384) new->MiscOutReg = 0xE3;
-	  else                           new->MiscOutReg = 0x23;
-	}
-	else
-	{
-	  if      (mode->VDisplay < 400) new->MiscOutReg = 0xA3;
-	  else if (mode->VDisplay < 480) new->MiscOutReg = 0x63;
-	  else if (mode->VDisplay < 768) new->MiscOutReg = 0xE3;
-	  else                           new->MiscOutReg = 0x23;
-	}
+	if      (mode->CrtcVDisplay < 400) new->MiscOutReg = 0xA3;
+	else if (mode->CrtcVDisplay < 480) new->MiscOutReg = 0x63;
+	else if (mode->CrtcVDisplay < 768) new->MiscOutReg = 0xE3;
+	else                           new->MiscOutReg = 0x23;
       }
   if (!vga256InfoRec.clockprog)
     new->MiscOutReg |= (new->NoClock & 0x03) << 2;
@@ -883,14 +873,6 @@ vgaHWInit(mode, size)
     mode->CrtcVAdjusted = TRUE;
   }
 
-  if (!mode->CrtcVAdjusted && (mode->Flags & V_DBLSCAN)) {
-    mode->CrtcVDisplay <<= 1;
-    mode->CrtcVSyncStart <<= 1;
-    mode->CrtcVSyncEnd <<= 1;
-    mode->CrtcVTotal <<= 1;
-    mode->CrtcVAdjusted = TRUE;
-  }
-    
   /*
    * CRTC Controller
    */

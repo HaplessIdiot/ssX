@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.1 1994/12/02 05:48:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.2 1994/12/11 11:16:03 dawes Exp $ */
 
 /*
  * This is a dumb configuration program that will create a base
@@ -42,6 +42,7 @@
  * 18Oct94 Add check for existence of /usr/X11R6.
  *	   Add note about ctrl-alt-backspace.
  * 06Nov94 Add comment above standard mode timings in XF86Config.
+ * 24Dec94 Add low-resolution modes using doublescan.
  *
  * Possible enhancements:
  * - Add more standard mode timings (also applies to README.Config). Missing
@@ -556,8 +557,8 @@ static char *devicecomment_text =
 "'X -probeonly 2>output_file'. Be warned that clock probing is inherently\n"
 "imprecise; some clocks may be slightly too high (varies per run).\n"
 "\n"
-"Especially for accelerated servers, Ramdac and Dacspeed settings or special\n"
-"options may be required in the Device section.\n"
+"Especially for accelerated servers, Ramdac, Dacspeed and ClockChip settings\n"
+"or special options may be required in the Device section.\n"
 "\n";
 
 static char *deviceclocksquestion_text =
@@ -606,14 +607,17 @@ static int videomemory[5] = {
 	256, 512, 1024, 2048, 4096
 };
 
-#define NU_MODESTRINGS 5
+#define NU_MODESTRINGS 8
 
 static char *modestring[NU_MODESTRINGS] = {
 	"\"640x400\"",
 	"\"640x480\"",
 	"\"800x600\"",
 	"\"1024x768\"",
-	"\"1280x1024\""
+	"\"1280x1024\"",
+	"\"320x200\"",
+	"\"320x240\"",
+	"\"400x300\""
 };
 
 void screen_configuration() {
@@ -907,7 +911,7 @@ endofprobeonly:
 
 		modes[0] = '\0';
 		for (i = 0; i < strlen(s); i++) {
-			if (s[i] < '1' || s[i] > '5') {
+			if (s[i] < '1' || s[i] > '0' + NU_MODESTRINGS) {
 				printf("Invalid mode skipped.\n");
 				continue;
 			}
@@ -1158,6 +1162,31 @@ static char *modelines_text =
 "\n"
 "# 1280x1024 @ 74 Hz, 78.85 kHz hsync\n"
 "Modeline \"1280x1024\"  135    1280 1312 1456 1712  1024 1027 1030 1064\n"
+"\n"
+"# Low-res Doublescan modes\n"
+"# If your chipset does not support doublescan, you get a 'squashed'\n"
+"# resolution like 320x400.\n"
+"\n"
+"# 320x200 @ 70 Hz, 31.5 kHz hsync, 8:5 aspect ratio\n"
+"Modeline \"320x200\"     12.588 320  336  384  400   200  204  205  225 Doublescan\n"
+"# 320x240 @ 60 Hz, 31.5 kHz hsync, 4:3 aspect ratio\n"
+"Modeline \"320x240\"     12.588 320  336  384  400   240  245  246  262 Doublescan\n"
+"# 320x240 @ 72 Hz, 36.5 kHz hsync\n"
+"Modeline \"320x240\"     15.750 320  336  384  400   240  244  246  262 Doublescan\n"
+"# 400x300 @ 56 Hz, 35.2 kHz hsync, 4:3 aspect ratio\n"
+"ModeLine \"400x300\"     18     400  416  448  512   300  301  602  312 Doublescan\n"
+"# 400x300 @ 60 Hz, 37.8 kHz hsync\n"
+"Modeline \"400x300\"     20     400  416  480  528   300  301  303  314 Doublescan\n"
+"# 400x300 @ 72 Hz, 48.0 kHz hsync\n"
+"Modeline \"400x300\"     25     400  424  488  520   300  319  322  333 Doublescan\n"
+"# 480x300 @ 56 Hz, 35.2 kHz hsync, 8:5 aspect ratio\n"
+"ModeLine \"480x300\"     21.656 480  496  536  616   300  301  302  312 Doublescan\n"
+"# 480x300 @ 60 Hz, 37.8 kHz hsync\n"
+"Modeline \"480x300\"     23.890 480  496  576  632   300  301  303  314 Doublescan\n"
+"# 480x300 @ 63 Hz, 39.6 kHz hsync\n"
+"Modeline \"480x300\"     25     480  496  576  632   300  301  303  314 Doublescan\n"
+"# 480x300 @ 72 Hz, 48.0 kHz hsync\n"
+"Modeline \"480x300\"     29.952 480  504  584  624   300  319  322  333 Doublescan\n"
 "\n";
 
 static char *devicesection_text =

@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.7 1994/11/19 07:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.8 1994/12/11 10:57:24 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -703,7 +703,7 @@ OAKProbe()
       else if (temp1 == 0x00 )
 	vga256InfoRec.videoRam = 256;
       else {
-	ErrorF("%s %s: oak: unknown video memory, using 256Kb.\n",
+	ErrorF("%s %s: oak: unknown video memory.\n",
 	       XCONFIG_PROBED, vga256InfoRec.name);
 	OAKEnterLeave(LEAVE);
 	return(FALSE);
@@ -739,7 +739,7 @@ OAKProbe()
 	  OAK.ChipLinearSize = 0x100000 ;
 
 	  /*     OAK.ChipHas16bpp = TRUE ;              
-		 OAK.ChipHas32bpp = TRUE ;
+		 OAK.ChipHas32bpp = TRUE ;   */
 
 	  OTI_linear = TRUE;
 

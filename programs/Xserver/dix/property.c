@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: property.c,v 5.16 94/04/17 20:26:42 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -58,7 +59,7 @@ SOFTWARE.
 extern void (*ReplySwapVector[]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
 
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 int fWriteToClient(client, len, buf)
     ClientPtr   client;
     int         len;
@@ -559,7 +560,7 @@ ProcGetProperty(client)
 		    switch (reply.format) {
 		    case 32: client->pSwapReplyFunc = CopySwap32Write; break;
 		    case 16: client->pSwapReplyFunc = CopySwap16Write; break;
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 		    default: client->pSwapReplyFunc = (void (*) ())fWriteToClient; break;
 #else
 		    default: client->pSwapReplyFunc = (void (*) ())WriteToClient; break;

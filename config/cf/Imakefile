@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.1 1994/06/05 05:52:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.2 1994/11/30 20:26:17 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -16,6 +16,7 @@ hpLib.rules \
 bsdLib.rules \
 ibmLib.rules \
 lnxLib.rules \
+lnxdoc.rules \
 necLib.rules \
 noop.rules \
 oldlib.rules \
@@ -32,6 +33,7 @@ Fresco.tmpl \
 Ixx.tmpl \
 bsdLib.tmpl \
 lnxLib.tmpl \
+lnxdoc.tmpl \
 Library.tmpl \
 Project.tmpl \
 Server.tmpl \
@@ -43,7 +45,8 @@ necLib.tmpl \
 osfLib.tmpl \
 sunLib.tmpl \
 sv4Lib.tmpl \
-sv3Lib.tmpl
+sv3Lib.tmpl \
+xf86.tmpl
 
 CFFILES = \
 Imake.cf \

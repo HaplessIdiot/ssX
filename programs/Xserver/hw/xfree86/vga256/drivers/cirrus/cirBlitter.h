@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.3 1994/08/20 07:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.4 1994/10/20 06:11:16 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -44,14 +44,14 @@
 /* Pitch: the 5426 goes up to 4095, the 5434 can do 8191. */
 
 #define SETDESTPITCH(dstPitch) \
-  if (dstPitch != cirrusBltDestPitchShadow) { \
+  if ((dstPitch) != cirrusBltDestPitchShadow) { \
     cirrusBltDestPitchShadow = dstPitch; \
     outw (0x3CE, (((dstPitch) & 0x000000FF) << 8) | 0x24); \
     outw (0x3CE, (((dstPitch) & 0x00001F00)) | 0x25); \
   }
 
 #define SETSRCPITCH(srcPitch) \
-  if (srcPitch != cirrusBltSrcPitchShadow) { \
+  if ((srcPitch) != cirrusBltSrcPitchShadow) { \
     cirrusBltSrcPitchShadow = srcPitch; \
     outw (0x3CE, (((srcPitch) & 0x000000FF) << 8) | 0x26); \
     outw (0x3CE, (((srcPitch) & 0x00001F00)) | 0x27); \
@@ -67,7 +67,7 @@
 
 /* The height is preserved by a blit only on the 543x. */
 #define SETHEIGHT543X(fillHeight) \
-  if (fillHeight != cirrusBltHeightShadow) { \
+  if ((fillHeight) != cirrusBltHeightShadow) { \
     cirrusBltHeightShadow = fillHeight; \
     outw (0x3CE, ((((fillHeight) - 1) & 0x000000FF) << 8) | 0x22); \
     outw (0x3CE, (((fillHeight) - 1) & 0x00000700) | 0x23); \
@@ -78,7 +78,7 @@
   outw (0x3CE, (((fillHeight) - 1) & 0x00000700) | 0x23);
 
 #define SETBLTMODE(m) \
-  if (m != cirrusBltModeShadow) { \
+  if ((m) != cirrusBltModeShadow) { \
     cirrusBltModeShadow = m; \
     outw(0x3CE, ((m) << 8) | 0x30); \
   }
@@ -93,10 +93,10 @@
 
 #define SETTRANSPARENCYCOLORMASK16(m) \
   outw(0x3ce, ((m) << 8) | 0x38); \
-  outw(0x3ce, (m & 0xff00) | 0x39);
+  outw(0x3ce, ((m) & 0xff00) | 0x39);
 
 #define SETROP(rop) \
-  if (rop != cirrusBltRopShadow) { \
+  if ((rop) != cirrusBltRopShadow) { \
     cirrusBltRopShadow = rop; \
     outw (0x3CE, ((rop) << 8) | 0x32); \
   }

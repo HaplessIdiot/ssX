@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.29 1994/11/30 20:41:09 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.30 1994/12/11 10:54:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2581,6 +2581,14 @@ xf86LookupMode(target, driver)
     target->CrtcVTotal     = best_mode->CrtcVTotal;
     target->CrtcHAdjusted  = best_mode->CrtcHAdjusted;
     target->CrtcVAdjusted  = best_mode->CrtcVAdjusted;
+    if (target->Flags & V_DBLSCAN)
+    {
+      target->CrtcVDisplay *= 2;
+      target->CrtcVSyncStart *= 2;
+      target->CrtcVSyncEnd *= 2;
+      target->CrtcVTotal *= 2;
+      target->CrtcVAdjusted = TRUE;
+    }
     if (xf86Verbose)
     {
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",

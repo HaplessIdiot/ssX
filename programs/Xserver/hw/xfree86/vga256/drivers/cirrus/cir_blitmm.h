@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitmm.h,v 3.1 1994/08/31 04:44:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitmm.h,v 3.2 1994/12/02 05:48:07 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
@@ -46,12 +46,18 @@ extern unsigned char *cirrusMMIOBase;
 /* Address: the 5426 adresses 2MBytes, the 5434 can address 4MB. */
 
 #define SETDESTADDR(dstAddr) \
+  *(unsigned int *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr;
+#if 0
   *(unsigned short *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr; \
   *(unsigned char *)(cirrusMMIOBase + MMIODESTADDR + 2) = dstAddr >> 16;
+#endif
 
 #define SETSRCADDR(srcAddr) \
+  *(unsigned int *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr;
+#if 0
   *(unsigned short *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr; \
   *(unsigned char *)(cirrusMMIOBase + MMIOSRCADDR + 2) = srcAddr >> 16;
+#endif
   
 #define SETSRCADDRUNMODIFIED SETSRCADDR
 
@@ -86,12 +92,12 @@ extern unsigned char *cirrusMMIOBase;
   *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) |= 0x02;
 
 #define BLTBUSY(s) \
-  s = *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
+  s = *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
 
 /* BitBLT reset: temporarily set bit 2 of GR31 */
 #define BLTRESET() \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04; \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04;
+  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04; \
+  *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) ^= 0x04;
 
 #define WAITUNTILFINISHED() CirrusBLTWaitUntilFinished()  
 

@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dix.h,v 1.80 94/04/17 20:25:36 dpw Exp $ */
+/* $XFree86$ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -167,7 +168,7 @@ typedef struct _Client *ClientPtr; /* also in misc.h */
 #define _XTYPEDEF_CLIENTPTR
 #endif
 
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 typedef struct _ClientPublic {
     int             (*writeToClient) ();
     unsigned long   (*requestLength) ();
@@ -177,7 +178,7 @@ typedef struct _ClientPublic {
 #define WriteToClient(client,buf,len)   (((client)->public.writeToClient)(client,buf,len))
 #define ReadRequestFromClient(client)   ((client)->public.readRequest(client))
 #define RequestLength(r,client,g,p)           (*(client)->public.requestLength) (r,client,g,p)
-#endif /* LBX */
+#endif /* LBX || LBX_COMPAT */
 
 typedef struct _WorkQueue	*WorkQueuePtr;
 

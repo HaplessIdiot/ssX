@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.88 94/04/17 20:27:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.1 1994/05/08 05:25:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.2 1994/06/13 14:54:31 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -202,7 +202,7 @@ typedef struct {
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 int
 StandardReadRequestFromClient(client)
     ClientPtr client;
@@ -1221,7 +1221,7 @@ SetCriticalOutputPending()
  *****************/
 
 int
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
 StandardWriteToClient (who, count, buf)
 #else
 WriteToClient (who, count, buf)

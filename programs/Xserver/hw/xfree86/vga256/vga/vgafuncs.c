@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafuncs.c,v 3.0 1994/07/24 11:58:55 dawes Exp $ */
 
 /*
  * vgafuncs.c
@@ -18,5 +18,6 @@ CfbfuncRec vga256LowlevFuncs = {
     vga256FillBoxSolid,
     vga256TEGlyphBlt8,
     vga256CopyPlane1to8,
+    vga256SolidSpansGeneral,
 };
 

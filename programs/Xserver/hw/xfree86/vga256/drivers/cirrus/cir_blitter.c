@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.3 1994/08/20 07:36:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.4 1994/08/31 04:44:16 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -75,10 +75,10 @@ int cirrus_rop[16] = {
 };
 
 /*
- * The BLT functions defined in this file support exiting without waiting
- * for the BLT to finish. The calling function must set
- * cirrusDoBackgroundBLT, call any BLT functions defined in this file,
- * and when the operations are done check whether a BLT is still in
+ * Some of the BLT functions defined in this file support exiting without
+ * waiting for the BLT to finish. The calling function must set
+ * cirrusDoBackgroundBLT, call the BLT functions, and when the
+ * operations are done check whether a BLT is still in
  * progress (cirrusBLTisBusy) and if so call WAITUNTILFINISHED().
  * If the function does any other video memory access or BLT functions
  * not defined in this file, it must make sure no BLT is in progress
@@ -228,244 +228,6 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
    * Because of this, a calling function that uses background BLTs must
    * set it to zero when it is finished.
    */
-
-#ifdef CIRRUS_MMIO
-  cirrusMMIOFlag = TRUE;
-#endif
-}
-
-
-/*
- * 8x8 pattern fill.
- *
- * Regular 8x8 byte-per-pixel pattern.
- * 
- */
-
-#ifdef CIRRUS_MMIO
-#define _CirrusBLT8x8PatternFill CirrusMMIOBLT8x8PatternFill
-#else
-#define _CirrusBLT8x8PatternFill CirrusBLT8x8PatternFill
-#endif
-
-void _CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
-     unsigned int dstAddr;
-     int w, h, destpitch;
-     int rop;
-     void *pattern;
-{
-  unsigned int srcAddr;
-  int i;
-  pointer pDst;
-
-  if (!HAVE543X() && h > 1024) {
-      /* Split into two for 5426, 5428, & 5429. */
-      _CirrusBLT8x8PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
-      _CirrusBLT8x8PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
-          pattern, destpitch, rop);
-      return;
-  }
-
-  if (cirrusBLTisBusy)
-    WAITUNTILFINISHED();
-
-  /* Pattern fill with video memory source. */
-
-  /* Write 64 byte pattern. */
-  /* Because of 16K bank granularity and 32K window, we don't have to */
-  /* check for bank boundaries. */
-  srcAddr = cirrusBLTPatternAddress;
-  CIRRUSSETWRITE(srcAddr);
-  memcpy(CIRRUSWRITEBASE() + srcAddr, pattern, 64);
-
-  SETDESTADDR(dstAddr);
-  SETSRCADDR(cirrusBLTPatternAddress);
-  SETDESTPITCH(destpitch);
-  SETWIDTH(w);
-  SETHEIGHT(h);
-
-  /* 8x8 Pattern Copy, screen to screen blt, forwards. */
-  SETBLTMODE(PATTERNCOPY);
-  SETROP(rop);
-
-  /* Do it. */
-  STARTBLT();
-
-  if (cirrusDoBackgroundBLT)
-    cirrusBLTisBusy = TRUE;
-  else
-    WAITUNTILFINISHED();
-
-#ifdef CIRRUS_MMIO
-  cirrusMMIOFlag = TRUE;
-#endif
-}
-
-
-/*
- * 16x16 pattern fill.
- *
- * Uses two 16x8 byte-per-pixel pattern fills (meant for 8x8 16-bit pixel
- * fill), vertically interleaved.
- * 
- */
-
-#ifdef CIRRUS_MMIO
-#define _CirrusBLT16x16PatternFill CirrusMMIOBLT16x16PatternFill
-#else
-#define _CirrusBLT16x16PatternFill CirrusBLT16x16PatternFill
-#endif
-
-void _CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
-     unsigned int dstAddr;
-     int w, h, destpitch;
-     int rop;
-     unsigned char *pattern;
-{
-  unsigned int srcAddr;
-  int i;
-  pointer pDst;
-  int blith, blitpitch;
-
-  if (!HAVE543X() && h > 1024) {
-      /* Split into two for 5426, 5428 & 5429. */
-      _CirrusBLT16x16PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
-      _CirrusBLT16x16PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
-          pattern, destpitch, rop);
-      return;
-  }
-
-  if (cirrusBLTisBusy)
-    WAITUNTILFINISHED();
-
-  /* Pattern fill with video memory source. */
-
-  /* Write 128 byte pattern (even lines). */
-  /* Because of 16K bank granularity and 32K window, we don't have to */
-  /* check for bank boundaries. */
-  srcAddr = cirrusBLTPatternAddress;
-  CIRRUSSETWRITE(srcAddr);
-  for (i = 0; i < 8; i++)
-      memcpy(CIRRUSWRITEBASE() + srcAddr + i * 16,
-          pattern + i * 32, 16);
-
-  blitpitch = destpitch * 2;
-  blith = (h / 2) + (h & 1);
-
-  SETDESTADDR(dstAddr);
-  SETSRCADDR(cirrusBLTPatternAddress);
-  SETDESTPITCH(blitpitch);
-  SETWIDTH(w);
-  SETHEIGHT(blith);
-
-  /* 8x8 Pattern Copy, 16-bit pixels, screen to screen blt, forwards. */
-  SETBLTMODE(PATTERNCOPY | PIXELWIDTH16);
-  SETROP(rop);
-
-  /* Do it. */
-  STARTBLT();
-
-  WAITUNTILFINISHED();
-
-  /* Now do uneven lines. */
-  /* Write pattern. */
-  for (i = 0; i < 8; i++)
-	  memcpy(CIRRUSWRITEBASE() + srcAddr + i * 16,
-	  	pattern + i * 32 + 16, 16);
-
-  dstAddr += destpitch;
-/*  blitpitch = destpitch * 2; */
-  blith = (h / 2);
-
-  SETDESTADDR(dstAddr);
-  SETSRCADDR(cirrusBLTPatternAddress);
-/* SETDESTPITCH(blitpitch); */
-  SETWIDTH(w);
-  SETHEIGHT(blith);
-
-  /* 8x8 Pattern Copy, 16-bit pixels, screen to screen blt, forwards. */
-/*  SETBLTMODE(PATTERNCOPY | PIXELWIDTH); */
-/*  SETROP(rop); */
-
-  STARTBLT();
-
-  if (cirrusDoBackgroundBLT)
-    cirrusBLTisBusy = TRUE;
-  else
-    WAITUNTILFINISHED();
-
-#ifdef CIRRUS_MMIO
-  cirrusMMIOFlag = TRUE;
-#endif
-}
-
-/*
- * 32x32 pattern fill for 5434.
- *
- * Uses four 32x8 byte-per-pixel pattern fills (meant for 8x8 32-bit pixel
- * fill), vertically interleaved.
- * This is untested.
- *
- * Something like this would also work on the 5426/28 (by filling vertical
- * bands 16 pixels wide, 4-way interleaved) if the virtual screen width is
- * less than 1024 (i.e. rarely).
- */
-
-#ifdef CIRRUS_MMIO
-#define _CirrusBLT32x32PatternFill CirrusMMIOBLT32x32PatternFill
-#else
-#define _CirrusBLT32x32PatternFill CirrusBLT32x32PatternFill
-#endif
-
-void _CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
-     unsigned int dstAddr;
-     int w, h, destpitch;
-     int rop;
-     void *pattern;
-{
-  unsigned int srcAddr;
-  int i, k;
-  int blith, blitpitch;
-
-  if (cirrusBLTisBusy)
-    WAITUNTILFINISHED();
-
-  /* No need to split into two for 5434 (handles heights up to 2048). */
-
-  /* Pattern fill with video memory source. */
-
-  /* Set up write bank for writing pattern. */
-  srcAddr = cirrusBLTPatternAddress;
-  CIRRUSSETWRITE(srcAddr);
-
-  /* Set up BLT parameters that remain constant. */
-  blitpitch = destpitch * 4;	/* Four-way interleaving. */
-  SETDESTPITCH(blitpitch);
-  /* 8x8 Pattern Copy, 32-bit pixels, screen to screen blt, forwards. */
-  SETBLTMODE(PATTERNCOPY | PIXELWIDTH32);
-  SETROP(rop);
-
-  for (k = 0; k < 4; k++) {
-      /* Do the lines for which [index % 4 == k]. */
-      /* Write 32x8 pattern. */
-      for (i = 0; i < 8; i++)
-          memcpy(CIRRUSWRITEBASE() + srcAddr + i * 32,
-	  	(unsigned char *)pattern + i * 32 * 4 + 32 * k, 32);
-      blith = h / 4;
-      if (h & 3 > k)
-  	  blith++;
-      SETDESTADDR(dstAddr);
-      SETSRCADDR(cirrusBLTPatternAddress);
-      SETWIDTH(w);
-      SETHEIGHT(blith);
-      STARTBLT();
-      if (k != 3 || !cirrusDoBackgroundBLT)
-          WAITUNTILFINISHED();
-      else
-          cirrusBLTisBusy = TRUE;
-
-      dstAddr += destpitch;
-  }
 
 #ifdef CIRRUS_MMIO
   cirrusMMIOFlag = TRUE;
@@ -625,4 +387,313 @@ void _CirrusBLTWaitUntilFinished() {
     	}
     }
   }
+}
+
+
+/*
+ * This function performs a 8x8 tile fill with the BitBLT engine.
+ */
+
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT8x8PatternFill CirrusMMIOBLT8x8PatternFill
+#else
+#define _CirrusBLT8x8PatternFill CirrusBLT8x8PatternFill
+#endif
+
+void _CirrusBLT8x8PatternFill(destaddr, w, h, pattern, patternpitch,
+destpitch, rop)
+    unsigned int destaddr;
+    int w, h;
+    unsigned char *pattern;
+    int patternpitch;
+    int destpitch, rop;
+{
+    unsigned char *base;
+    int srcaddr, busy, i;
+
+    if (!HAVE543X() && h > 1024) {
+        /* Split into two for 5426, 5428, & 5429. */
+        _CirrusBLT8x8PatternFill(destaddr, w, 1024, pattern, patternpitch,
+            destpitch, rop);
+        /* Vertical alignment is correct since 1024 is a multiple of 8. */
+        _CirrusBLT8x8PatternFill(destaddr + destpitch * 1024, w, h - 1024,
+            pattern, patternpitch, destpitch, rop);
+        return;
+    }
+
+    srcaddr = cirrusBLTPatternAddress;
+    CIRRUSSETWRITE(srcaddr);
+    base = CIRRUSWRITEBASE();
+
+    if (patternpitch == 8)
+	memcpy(base + srcaddr, pattern, 64);
+    else
+	for (i = 0; i < 8; i++)
+            memcpy(base + srcaddr + i * 8, (unsigned char *)pattern +
+                patternpitch * i, 8);
+
+    /* Set up the BitBLT parameters. */
+    SETROP(rop);
+    SETSRCADDR(cirrusBLTPatternAddress);
+    SETDESTPITCH(destpitch);
+    SETBLTMODE(PATTERNCOPY);
+    SETDESTADDR(destaddr);
+    SETWIDTH(w);
+    SETHEIGHT(h);
+    STARTBLT();
+
+    do { BLTBUSY(busy); } while (busy);
+    SETFOREGROUNDCOLOR(0);		/* Restore VGA Set/Reset register. */
+}
+
+
+/*
+ * This function performs a 16x16 tile fill with the BitBLT engine,
+ * using two 16x8 pattern fills, vertically interleaved.
+ */
+
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT16x16PatternFill CirrusMMIOBLT16x16PatternFill
+#else
+#define _CirrusBLT16x16PatternFill CirrusBLT16x16PatternFill
+#endif
+
+void _CirrusBLT16x16PatternFill(destaddr, w, h, pattern, patternpitch,
+destpitch, rop)
+    unsigned int destaddr;
+    int w, h;
+    unsigned char *pattern;
+    int patternpitch;
+    int destpitch, rop;
+{
+    unsigned char *base;
+    int srcaddr, busy, k, i;
+
+    if (!HAVE543X() && h > 1024) {
+        /* Split into two for 5426, 5428, & 5429. */
+        _CirrusBLT16x16PatternFill(destaddr, w, 1024, pattern, patternpitch,
+            destpitch, rop);
+        /* Vertical alignment is correct since 1024 is a multiple of 16. */
+        _CirrusBLT16x16PatternFill(destaddr + destpitch * 1024, w, h - 1024,
+            pattern, patternpitch, destpitch, rop);
+        return;
+    }
+
+    srcaddr = cirrusBLTPatternAddress;
+    CIRRUSSETWRITE(srcaddr);
+    base = CIRRUSWRITEBASE();
+
+    /* Set up the invariant BitBLT parameters. */
+    SETROP(rop);
+    SETDESTPITCH(destpitch * 2);	/* Two-way interleaving. */
+    SETBLTMODE(PATTERNCOPY | PIXELWIDTH16);
+
+    for (k = 0; k < 2; k++) {
+        /* Do the lines for which [index % 2 == k]. */
+        int blitheight;
+        int width_left;
+        int i;
+
+        blitheight = h / 2;
+        if ((h & 1) > k)
+  	    blitheight++;
+
+	do { BLTBUSY(busy); } while (busy);
+        for (i = 0; i < 8; i++)
+            memcpy(base + srcaddr + i * 16, (unsigned char *)pattern +
+               patternpitch * (i * 2 + k), 16);
+        SETDESTADDR(destaddr);
+        SETSRCADDR(cirrusBLTPatternAddress);
+        SETWIDTH(w);
+        SETHEIGHT(blitheight);
+	STARTBLT();
+
+	destaddr += destpitch;
+    }
+
+    do { BLTBUSY(busy); } while (busy);
+    SETFOREGROUNDCOLOR(0);		/* Restore VGA Set/Reset register. */
+}
+
+
+/*
+ * This function performs a 32x32 tile fill with the BitBLT engine,
+ * using multiple 16x8 pattern fills in vertical bands, and four-way
+ * vertically interleaved. For a 256x256 area, it performs 16 * 4 = 64
+ * individual BitBLT fills.
+ * As an extra optimization, it combines the vertical bands if the
+ * left part of a set of tile lines is identical to the right part.
+ * This is always possible on chips that support 32x8 tile fill.
+ */
+
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT32x32PatternFill CirrusMMIOBLT32x32PatternFill
+#else
+#define _CirrusBLT32x32PatternFill CirrusBLT32x32PatternFill
+#endif
+
+void _CirrusBLT32x32PatternFill(destaddr, w, h, pattern, patternpitch,
+destpitch, rop)
+    unsigned int destaddr;
+    int w, h;
+    unsigned char *pattern;
+    int patternpitch;
+    int destpitch, rop;
+{
+    unsigned char *base;
+    int srcaddr, saved_destaddr, x, busy, k, chip_supports_32byte_fill;
+
+    if (!HAVE543X() && h > 1024) {
+        /* Split into two for 5426, 5428, & 5429. */
+        _CirrusBLT32x32PatternFill(destaddr, w, 1024, pattern, patternpitch,
+            destpitch, rop);
+        /* Vertical alignment is correct since 1024 is a multiple of 16. */
+        _CirrusBLT32x32PatternFill(destaddr + destpitch * 1024, w, h - 1024,
+            pattern, patternpitch, destpitch, rop);
+        return;
+    }
+
+    chip_supports_32byte_fill = 0;
+
+    /*
+     * We need at most two 16 * 32 fill areas at the same time, so the
+     * preallocated 256 byte pattern space at cirrusBLTPatternAddress is
+     * sufficient.
+     */
+    srcaddr = cirrusBLTPatternAddress;
+    CIRRUSSETWRITE(srcaddr);
+    base = CIRRUSWRITEBASE();
+
+    /* Set up the invariant BitBLT parameters. */
+    SETROP(rop);
+    SETDESTPITCH(destpitch * 4);	/* Four-way interleaving. */
+    if (chip_supports_32byte_fill)
+    	SETBLTMODE(PATTERNCOPY | PIXELWIDTH32)
+    else
+        SETBLTMODE(PATTERNCOPY | PIXELWIDTH16);
+
+    saved_destaddr = destaddr;
+
+    for (k = 0; k < 4; k++) {
+        /* Do the lines for which [index % 4 == k]. */
+        int blitheight;
+        int width_left;
+        int i, halves_identical;
+
+        blitheight = h / 4;
+        if ((h & 3) > k)
+  	    blitheight++;
+
+	/*
+	 * On chips for which 32-byte wide pattern fill is not broken,
+	 * this code can be used.
+	 */
+	if (chip_supports_32byte_fill) {
+	    do { BLTBUSY(busy); } while (busy);
+            for (i = 0; i < 8; i++)
+                memcpy(base + srcaddr + i * 32, (unsigned char *)pattern +
+                    patternpitch * (i * 4 + k), 32);
+            SETDESTADDR(destaddr);
+            SETSRCADDR(cirrusBLTPatternAddress);
+            SETWIDTH(w);
+            SETHEIGHT(blitheight);
+	    STARTBLT();
+	    goto k_finished;
+	}
+
+        /*
+         * Create two 16x8 patterns; one for the left half and one for
+         * the right half of the 32-byte wide pattern. We take the
+         * pattern lines for which [index % 4 == k].
+         */
+
+	/*
+	 * First check for the special case: left half of each 32-byte wide
+	 * tile line is identical to right half.
+	 */
+        halves_identical = 1;
+        for (i = 0; i < 8; i++) {
+            int *p;
+            p = (int *)((unsigned char *)pattern + patternpitch * (i * 4 + k));
+            if (p[0] != p[4] || p[1] != p[5] || p[2] != p[6] || p[3] != p[7]) {
+	        halves_identical = 0;
+	        break;
+	    }
+	}
+
+        do { BLTBUSY(busy); } while (busy);
+
+        for (i = 0; i < 8; i++) {
+            /* 
+             * It helps if this gets expanded into unrolled inline
+             * loads/stores. gcc -O2 does this.
+             */
+            memcpy(base + srcaddr + i * 16,
+	        pattern + patternpitch * (i * 4 + k), 16);
+	    if (!halves_identical)
+                memcpy(base + srcaddr + i * 16 + 128,
+                    pattern + patternpitch * (i * 4 + k) + 16, 16);
+	}
+
+	if (halves_identical) {
+	    /*
+	     * Shortcut, no bands necessary.
+	     * Fill over the whole horizontal span with one BitBLT.
+	     */
+            SETDESTADDR(destaddr);
+            SETSRCADDR(cirrusBLTPatternAddress);
+            SETWIDTH(w);
+            SETHEIGHT(blitheight);
+	    STARTBLT();
+	    goto k_finished;
+	}
+
+	/*
+	 * Draw 16x8 patterns from the left to the right, alternating between
+	 * the two source patterns.
+	 */
+	width_left = w;
+	for (;;) {
+	    if (width_left == 0)
+	    	break;
+	    do { BLTBUSY(busy); } while (busy);
+            SETDESTADDR(destaddr);
+            SETSRCADDR(cirrusBLTPatternAddress);
+            if (width_left >= 16) {
+                SETWIDTH(16);
+                width_left -= 16;
+            }
+            else {
+                SETWIDTH(width_left);
+                width_left = 0;
+            }
+            SETHEIGHT(blitheight);
+	    STARTBLT();
+	    destaddr += 16;
+
+	    if (width_left == 0)
+	    	break;
+	    do { BLTBUSY(busy); } while (busy);
+            SETDESTADDR(destaddr);
+            SETSRCADDR(cirrusBLTPatternAddress + 128);
+            if (width_left >= 16) {
+                SETWIDTH(16);
+                width_left -= 16;
+            }
+            else {
+                SETWIDTH(width_left);
+                width_left = 0;
+            }
+/*	    SETHEIGHT(blitheight); */
+	    STARTBLT();
+	    destaddr += 16;
+	}
+
+k_finished:
+	saved_destaddr += destpitch;
+	destaddr = saved_destaddr;
+    } /* for (k = 0; k < 4; k++) */
+
+    do { BLTBUSY(busy); } while (busy);
+    SETFOREGROUNDCOLOR(0);		/* Restore VGA Set/Reset register. */
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.19 1994/11/26 12:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.20 1994/11/30 20:37:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -642,27 +642,22 @@ memory size in your XF86Config file.\n",
          xf86DeleteMode(&agxInfoRec, pMode);
       }
       else {
-         int effVDisplay;
-
-         effVDisplay = (pMode->Flags & V_DBLSCAN) ?
-                          pMode->VDisplay >> 1 : pMode->VDisplay; 
-
          if (pMode->HDisplay > 2048) {
             ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
                    XCONFIG_PROBED, agxInfoRec.name, pMode->name, 2048);
             xf86DeleteMode(&agxInfoRec, pMode);
          }
-         else if ((pMode->HDisplay * (1 + effVDisplay)) >
+         else if ((pMode->HDisplay * (1 + pMode->VDisplay)) >
                     agxInfoRec.videoRam * 1024) {
             ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
                    agxInfoRec.name, pMode->name);
             xf86DeleteMode(&agxInfoRec, pMode);
          }
          else if (((tx > 0) && (pMode->HDisplay > tx)) ||
-                    ((ty > 0) && (effVDisplay > ty))) {
+                    ((ty > 0) && (pMode->VDisplay > ty))) {
             ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
                    XCONFIG_PROBED, agxInfoRec.name,
-                   pMode->HDisplay, effVDisplay, tx, ty);
+                   pMode->HDisplay, pMode->VDisplay, tx, ty);
             xf86DeleteMode(&agxInfoRec, pMode);
          }
          else {
@@ -674,7 +669,7 @@ memory size in your XF86Config file.\n",
                pEnd = pMode;
    
             agxInfoRec.virtualX = max( agxInfoRec.virtualX, pMode->HDisplay );
-            agxInfoRec.virtualY = max( agxInfoRec.virtualY, effVDisplay );
+            agxInfoRec.virtualY = max( agxInfoRec.virtualY, pMode->VDisplay );
             pMode = pMode->next;
          }
       }

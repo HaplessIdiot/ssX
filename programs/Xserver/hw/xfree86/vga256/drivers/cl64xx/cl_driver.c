@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.0 1994/12/17 10:08:21 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -129,9 +129,9 @@ vgaVideoChipRec CL64XX = {
 	CL64XXSave,
 	CL64XXRestore,
 	CL64XXAdjust,
-	NoopDDA,
-	NoopDDA,
-	NoopDDA,
+	(void (*)())NoopDDA,
+	(void (*)())NoopDDA,
+	(void (*)())NoopDDA,
 	CL64XXSetRead,
 	CL64XXSetWrite,
 	CL64XXSetReadWrite,
@@ -796,7 +796,7 @@ vgaCL64XXPtr restore;
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestore(restore);
+	vgaHWRestore((vgaHWPtr)restore);
 }
 
 /*
@@ -822,7 +822,7 @@ vgaCL64XXPtr save;
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	save = (vgaCL64XXPtr)vgaHWSave(save, sizeof(vgaCL64XXRec));
+	save = (vgaCL64XXPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaCL64XXRec));
 
 	/*
 	 * The port I/O code necessary to read in the extended registers 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.4 1994/11/19 10:50:07 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -67,7 +67,7 @@ Author: Keith Packard, MIT X Consortium
   \
 	    SET_XY(w, h)  \
 	    START_ACL_CPU(pBox->y1 * nlwDst + pBox->x1 * (PSZ >> 3))  \
-	    rot = (pBox->x1 & ((PGSZ-1) & ~PIM));  \
+	    rot = pBox->x1 & (PGSZ-1);  \
 	    pBox++;  \
 	    y = y % stippleHeight;  \
 	    w = (w + 7) >> 3;  \

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.0 1994/12/03 10:08:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.1 1994/12/17 09:58:04 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -59,7 +59,7 @@ int *Chipset;
 
 	EnableIOPorts(2, Ports);
 
-	outp(0xCF8, 0x80);
+	outp(0xCF8, 0x00);
 	outp(0xCFA, 0x00);
 	tmp1 = inp(0xCF8);
 	tmp2 = inp(0xCFA);
@@ -127,6 +127,11 @@ int *Chipset;
 	}
 
 	/* else configtype == 2 */
+
+	EnableIOPorts(2, Ports);
+	outp(0xCF8, 0x80);
+	outp(0xCFA, 0x00);
+	DisableIOPorts(2, Ports);
 
 	for (ioaddr = 0xC000; ioaddr < 0xD000; ioaddr += 0x0100) {
 	    Ports[2] = ioaddr;

@@ -21,6 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h,v 1.33 94/04/17 20:25:40 dpw Exp $ */
+/* $XFree86$ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -99,7 +100,7 @@ typedef struct _Client {
     unsigned char requestLog[MAX_REQUEST_LOG];
     int         requestLogIndex;
 #endif
-#ifdef LBX
+#if defined(LBX) || defined(LBX_COMPAT)
     ClientPublicRec public;
     int         lbxIndex;
 #endif

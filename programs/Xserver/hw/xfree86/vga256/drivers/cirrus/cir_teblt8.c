@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.9 1994/10/20 06:11:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.10 1994/10/23 13:00:59 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -125,18 +125,12 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	glyphWidth = FONTMAXBOUNDS(pfont,characterWidth);
 	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 
+#if 0	/* This cannot be used in a function used for 8, 16, 32bpp that */
+	/* is compiled only once. */
 	cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
-	switch (vgaBitsPerPixel) {
-	case 16 :
-		widthDst = vga256InfoRec.virtualX * 2;
-		break;
-	case 32 :
-		widthDst = vga256InfoRec.virtualX * 4;
-		break;
-	default :
-		widthDst *= 4;	/* Convert to bytes. */
-		break;
-	}
+#else
+	widthDst = vga256InfoRec.virtualX << (vgaBitsPerPixel >> 4);
+#endif
 
 	/* We only accelerate fonts 32 or less pixels wide. */
 	/* Let cfb handle writing into offscreen pixmap. */
@@ -233,26 +227,12 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	CollectCharacters(glyphp, nglyph, pglyphBase, ppci);
 
-	switch (vgaBitsPerPixel) {
-	case 16 :
-		destaddr = y * widthDst + x * 2;
-		break;
-	case 32 :
-		destaddr = y * widthDst + x * 4;
-		break;
-	default : /* 8 */
-		destaddr = y * widthDst + x;
-		break;
-	}
+	destaddr = y * widthDst + (x << (vgaBitsPerPixel >> 4));
 	SETDESTADDR(destaddr);
 	SETDESTPITCH(widthDst);
 	SETSRCADDR(0);
 	SETSRCPITCH(0);
-	blitwidth = glyphWidth * nglyph;
-	if (vgaBitsPerPixel == 16)
-		blitwidth *= 2;
-	if (vgaBitsPerPixel == 32)
-		blitwidth *= 4;
+	blitwidth = (glyphWidth * nglyph) << (vgaBitsPerPixel >> 4);
 	SETWIDTH(blitwidth);
 	SETHEIGHT(h);
 
@@ -449,9 +429,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		 * the foreground color.
 		 * MMIO implies a 5429 or 543x.
 		 */
-#ifndef CIRRUS_MMIO
-		if (HAVE543X() || cirrusChip == CLGD5429) {
-#endif
+		if (cirrusChip == CLGD5434) {
 			color = (~pGC->fgPixel) & 0xff;
 			color = color | (color << 8) | (color << 16)
 				| (color << 24);
@@ -460,8 +438,20 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			color = color | (color << 8) | (color << 16)
 				| (color << 24);
 			SETFOREGROUNDCOLOR32(color);
-#ifndef CIRRUS_MMIO
 		}
+#ifdef CIRRUS_MMIO
+		else {
+#else		
+		else if (cirrusChip == CLGD5430 || cirrusChip == CLGD5429) {
+#endif
+			color = (~pGC->fgPixel) & 0xff;
+			color = color | (color << 8);
+			SETBACKGROUNDCOLOR16(color);
+			color = pGC->fgPixel;
+			color = color | (color << 8);
+			SETFOREGROUNDCOLOR16(color);
+		}
+#ifndef CIRRUS_MMIO
 		else {
 			color = (~pGC->fgPixel) & 0xff;
 			color = color | (color << 8);

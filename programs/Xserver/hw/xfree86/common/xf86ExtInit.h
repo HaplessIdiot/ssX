@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86ExtInit.h,v 3.0 1994/06/28 12:29:14 dawes Exp $ */
 
 /*
  * Dummy functions to disable various extensions
@@ -11,8 +11,9 @@ void PexExtensionInit() {}
 
 void XieInit() {}
 
-#else /* MONO_SERVER */
+#endif /* MONO_SERVER */
 
+#if 0
 #if defined(LINKKIT) && !defined(PEXEXT)
 void PexExtensionInit() {}
 #endif
@@ -23,6 +24,16 @@ void XieInit() {}
 
 #endif /* MONO_SERVER */
 
+#if 0
 #if defined(LINKKIT) && !defined(SCREENSAVER)
 void ScreenSaverExtensionInit() {}
+#endif
+
+#if defined(LBX)
+void BigReqExtensionInit() {}
+#else
+void LbxExtensionInit() {}
+void LbxFreeFontTag() {}
+#endif
+
 #endif

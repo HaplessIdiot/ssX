@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.3 1994/08/20 07:36:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.4 1994/10/30 02:59:33 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -39,6 +39,8 @@ in this Software without prior written authorization from the X Consortium.
  *
  * We need to reproduce this to be able to use our own non-GXcopy
  * solid fills, and tiles.
+ *
+ * Works for 8bpp, and linear framebuffer 16bpp and 32bpp (compiled once).
  */
 
 
@@ -54,6 +56,13 @@ in this Software without prior written authorization from the X Consortium.
 #if PPW == 4
 extern void cfb8FillRectStippledUnnatural();
 #endif
+
+extern void cfb16FillRectSolidCopy();
+extern void cfb16FillRectSolidGeneral();
+extern void cfb16FillRectTileOdd();
+extern void cfb32FillRectSolidCopy();
+extern void cfb32FillRectSolidGeneral();
+extern void cfb32FillRectTileOdd();
 
 #define NUM_STACK_RECTS	1024
 
@@ -80,11 +89,24 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    widthDst;
     RROP_DECLARE
 
+#if 0	/* Can't use this for different depths. */
     cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
+#endif
 
-    if (!xf86VTSema || !CHECKSCREEN(pdstBase))
+    if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
     {
-        cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+    	if (vgaBitsPerPixel == 8) {
+            cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+            return;
+        }
+    	if (vgaBitsPerPixel == 16) {
+            cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+            return;
+        }
+        if (vgaBitsPerPixel == 32) {
+            cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+            return;
+        }
         return;
     }
 
@@ -98,11 +120,29 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	RROP_FETCH_GCPRIV(priv)
 	switch (priv->rop) {
 	case GXcopy:
-	    BoxFill = vga256LowlevFuncs.fillRectSolidCopy;
+	    if (cirrusUseMMIO && HAVEBITBLTENGINE())
+	        BoxFill = CirrusMMIOFillRectSolid;	/* Optimized. */
+	    else {
+	    	if (vgaBitsPerPixel == 8)
+	            BoxFill = vga256LowlevFuncs.fillRectSolidCopy;
+	        else if (vgaBitsPerPixel == 16)
+	            BoxFill = cfb16FillRectSolidCopy;
+	        else
+	            BoxFill = cfb32FillRectSolidCopy;
+	    }
 	    break;
 	default:
 	    /* BoxFill = cfbFillRectSolidGeneral; */
-	    BoxFill = CirrusFillRectSolidGeneral;
+	    if (cirrusUseMMIO && HAVEBITBLTENGINE())
+	        BoxFill = CirrusMMIOFillRectSolid;
+	    else {
+	        if (vgaBitsPerPixel == 8)
+	            BoxFill = CirrusFillRectSolidGeneral;
+	        else if (vgaBitsPerPixel == 16)
+	            BoxFill = cfb16FillRectSolidGeneral;
+	        else
+	            BoxFill = cfb32FillRectSolidGeneral;
+	    }
 	    break;
 	}
 	break;
@@ -114,7 +154,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
             BoxFill = cfbFillRectTileOdd;
 	else
 #endif
-	if (1)
+	if (vgaBitsPerPixel == 8)
 	{
 	    if (pGC->alu == GXcopy && (pGC->planemask & 0xFF) == 0xFF)
 		/* BoxFill = cfbFillRectTile32Copy; */
@@ -122,6 +162,10 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    else
 		BoxFill = vga256FillRectTileOdd;
 	}
+	else if (vgaBitsPerPixel == 16)
+	    BoxFill = cfb16FillRectTileOdd;
+	else
+	    BoxFill = cfb32FillRectTileOdd;
 	break;
 #if (PPW == 4)
     case FillStippled:

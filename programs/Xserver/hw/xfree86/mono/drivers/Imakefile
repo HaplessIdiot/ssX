@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.2 1994/05/30 08:24:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.3 1994/06/05 05:57:56 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -18,6 +18,3 @@ DependSubdirs($(SUBDIRS))
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mono)
 
-#if XF86LinkKit
-#include <LinkKit.tmpl>
-#endif

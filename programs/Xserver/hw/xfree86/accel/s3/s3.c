@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.53 1994/12/17 10:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.54 1994/12/18 10:58:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -148,6 +148,7 @@ static int Num_S3_IOPorts = (sizeof(S3_IOPorts)/sizeof(S3_IOPorts[0]));
 static SymTabRec s3DacTable[] = {
    { NORMAL_DAC,	"normal" },
    { BT485_DAC,		"bt485" },
+   { BT485_DAC,		"bt9485" },
    { ATT20C505_DAC,	"att20c505" },
    { TI3020_DAC,	"ti3020" },
    { ATT20C498_DAC,	"att20c498" },
@@ -847,6 +848,26 @@ s3Probe()
              s3RamdacType = BT485_DAC;
              ErrorF("%s %s: Detected a BrookTree Bt485 RAMDAC\n",
                     XCONFIG_PROBED, s3InfoRec.name);
+
+             /* If it is a Bt485 and no clockchip is specified in the 
+                XF86Config, set clockchips for SPEA Mercury / Mercury P64 */
+
+             if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions))
+              if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+               if (S3_964_SERIES(s3ChipId)) {
+                   OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
+                   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+                   s3ClockSelectFunc = icd2061ClockSelect;
+                   numClocks = 3;
+                   clockchip_probed = XCONFIG_PROBED;
+               } else if (S3_928_ONLY(s3ChipId)) {
+                   OFLG_SET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions);
+                   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+                   s3ClockSelectFunc = icd2061ClockSelect;
+                   numClocks = 3;
+                   clockchip_probed = XCONFIG_PROBED;
+               }
+              }    
           }
          }
          outb(0x3C6, tmp);
@@ -1177,7 +1198,8 @@ s3Probe()
       pixMuxPossible = TRUE;
       allowPixMuxInterlace = FALSE;	/* It doesn't work right (yet) */
       allowPixMuxSwitching = FALSE;	/* XXXX Is this right? */
-      if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+          S3_928_ONLY(s3ChipId)) {
 	 nonMuxMaxClock = 67500;	/* Doubling only works in mux mode */
 	 nonMuxMaxMemory = 1024;	/* Can't access more without mux */
 	 allowPixMuxSwitching = FALSE;
@@ -1242,7 +1264,7 @@ s3Probe()
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using Sierra SC11412 programmable clock\n",
-		XCONFIG_GIVEN, s3InfoRec.name);
+		clockchip_probed, s3InfoRec.name);
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = s3GendacClockSelect;
@@ -2121,7 +2143,10 @@ icd2061ClockSelect(freq)
 	 }
 	 if (!OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    outb(vgaCRIndex, 0x42);/* select the clock */
-	    outb(vgaCRReg, 0x02);
+	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
+                S3_964_SERIES(s3ChipId)) /* for the SPEA Mercury P64 */
+                 outb(vgaCRReg, 0x0a);   /* for some unknown reason  */
+            else outb(vgaCRReg, 0x02); 
 	 }
 	 usleep(150000);
 	 /* Do the clock doubler selection in s3Init() */

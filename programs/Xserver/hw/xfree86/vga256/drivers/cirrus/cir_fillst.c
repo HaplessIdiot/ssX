@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.4 1994/08/01 12:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.5 1994/08/20 07:36:30 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -187,7 +187,7 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 	int width, height;
 	int pixWidth;
 	int xrot, yrot;
-	void *pattern;
+	unsigned char *pattern;
 	int vidpattern;
 
 	pPix = pGC->tile.pixmap;
@@ -213,11 +213,9 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		vga256InfoRec.virtualX < 2048) ||
 		(HAVE543X() && vga256InfoRec.virtualX < 4096)))
 			goto tile16x16;
-#ifdef CIRRUS_INTERLEAVED32x32FILL_543X
 		if (width == 32 && height == 32 && HAVE543X() &&
-		vga256InfoRec.virtualX < 2048)
+		vga256InfoRec.virtualX < 2048 && cirrusUseMMIO)
 			goto tile32x32;
-#endif			
 #if 0	/* broken. */
 		if (width * height >= 500 && (width != 32 || height > 32 ||
 		cirrusBusType == CIRRUS_SLOWBUS || HAVE543X()))
@@ -233,95 +231,147 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 	return;
 
 tile8x8:
-	/* 8x8 BitBLT tile fill. */
-	pattern = ALLOCATE_LOCAL(8 * 8);
-	cirrusDoBackgroundBLT = TRUE;
-	/* This could be speeded up by avoiding the pattern being copied
-	 * to video memory each time. */
-	for (;nBox; nBox--, pBox++) {
+	/*
+	 * This function does 8x8 tile fills with the BitBLT engine.
+	 */
+	pattern = NULL;
+	for (; nBox; nBox--, pBox++) {
 		int w, h;
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
-		if (w * h < 500)
+		if (w * h < 5000) {
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
-		else {
-			rotatepattern(pattern, (unsigned char *)src, pixWidth,
-				8, 8, (pBox->x1 - xrot) & 7,
-				(pBox->y1 - yrot) & 7);
-			if (cirrusUseMMIO)
-				CirrusMMIOBLT8x8PatternFill(pBox->y1 *
-					destPitch + pBox->x1, w, h, pattern,
-					destPitch, CROP_SRC);
-			else
-				CirrusBLT8x8PatternFill(pBox->y1 * destPitch +
-					pBox->x1, w, h,	pattern, destPitch,
-					CROP_SRC);
+			continue;
 		}
+		if (pattern == NULL) {
+			int i;
+			/*
+			 * Generate a square of four copies of the tile in
+			 * system memory, so that any rotated position can
+			 * be copied out of it.
+			 */
+			pattern = (unsigned char *)ALLOCATE_LOCAL(16 * 16);
+			for (i = 0; i < 8; i++) {
+			    	memcpy(pattern + i * 16,
+				       (unsigned char *)src + i * pixWidth, 8);
+			    	memcpy(pattern + i * 16 + 8,
+				       (unsigned char *)src + i * pixWidth, 8);
+			    	memcpy(pattern + (i + 8) * 16,
+				       (unsigned char *)src + i * pixWidth, 8);
+			    	memcpy(pattern + (i + 8) * 16 + 8,
+				       (unsigned char *)src + i * pixWidth, 8);
+			}
+		}
+		if (cirrusUseMMIO)
+			CirrusMMIOBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 7) * 16 +
+				((pBox->x1 - xrot) & 7), 16, destPitch, CROP_SRC);
+		else
+			CirrusBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 7) * 16 +
+				((pBox->x1 - xrot) & 7), 16, destPitch, CROP_SRC);
 	}
-	if (cirrusBLTisBusy)
-		CirrusBLTWaitUntilFinished();
-	cirrusDoBackgroundBLT = FALSE;
-	DEALLOCATE_LOCAL(pattern);
+	if (pattern != NULL)
+		DEALLOCATE_LOCAL(pattern);
 	return;
 
 tile16x16:
-	/* 16x16 BitBLT tile fill. */
-	pattern = ALLOCATE_LOCAL(16 * 16);
-	cirrusDoBackgroundBLT = TRUE;
-	for (;nBox; nBox--, pBox++) {
+	/*
+	 * This function does 16x16 tile fills with the BitBLT engine
+	 * by dividing them into two-way vertically interleaved
+	 * 16x8 pattern fills.
+	 */
+	pattern = NULL;
+	for (; nBox; nBox--, pBox++) {
 		int w, h;
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
-		if (w * h < 250)
+		if (w * h < 5000) {
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
-		else {
-			rotatepattern(pattern, (unsigned char *)src, pixWidth,
-				16, 16,	(pBox->x1 - xrot) & 15,
-				(pBox->y1 - yrot) & 15);
-			/* Low level function uses vertical interleaving. */
-			if (cirrusUseMMIO)
-				CirrusMMIOBLT16x16PatternFill(pBox->y1 *
-					destPitch + pBox->x1, w, h, pattern,
-					destPitch, CROP_SRC);
-			else
-				CirrusBLT16x16PatternFill(pBox->y1 *
-					destPitch + pBox->x1, w, h, pattern,
-					destPitch, CROP_SRC);
+			continue;
 		}
+		if (pattern == NULL) {
+			int i;
+			/*
+			 * Generate a square of four copies of the tile in
+			 * system memory, so that any rotated position can
+			 * be copied out of it.
+			 */
+			pattern = (unsigned char *)ALLOCATE_LOCAL(32 * 32);
+			for (i = 0; i < 16; i++) {
+			    	memcpy(pattern + i * 32,
+				       (unsigned char *)src + i * pixWidth, 16);
+			    	memcpy(pattern + i * 32 + 16,
+				       (unsigned char *)src + i * pixWidth, 16);
+			    	memcpy(pattern + (i + 16) * 32,
+				       (unsigned char *)src + i * pixWidth, 16);
+			    	memcpy(pattern + (i + 16) * 32 + 16,
+				       (unsigned char *)src + i * pixWidth, 16);
+			}
+		}
+		if (cirrusUseMMIO)
+			CirrusMMIOBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 15) * 32 +
+				((pBox->x1 - xrot) & 15), 32, destPitch, CROP_SRC);
+		else
+			CirrusBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 15) * 32 +
+				((pBox->x1 - xrot) & 15), 32, destPitch, CROP_SRC);
 	}
-	if (cirrusBLTisBusy)
-		CirrusBLTWaitUntilFinished();
-	cirrusDoBackgroundBLT = FALSE;
-	DEALLOCATE_LOCAL(pattern);
+	if (pattern != NULL)
+		DEALLOCATE_LOCAL(pattern);
 	return;
 
-#ifdef CIRRUS_INTERLEAVED32x32FILL_543X
 tile32x32:
-	/* 32x32 BitBLT tile fill (for 5434). */
-	pattern = ALLOCATE_LOCAL(32 * 32);
-	for (;nBox; nBox--, pBox++) {
+	/*
+	 * This function does 32x32 tile fills with the BitBLT engine
+	 * by dividing them into vertical bands of 16x8 tile fills
+	 * (four-way vertically interleaved).
+	 * Current revisions of the 5434 do not work correctly with
+	 * 32-byte wide BitBLT pattern copy without color expansion;
+	 * for chips that do support it the vertical bands are not
+	 * necessary.
+	 */
+	pattern = NULL;
+	for (; nBox; nBox--, pBox++) {
 		int w, h;
-		rotatepattern(pattern, (unsigned char *)src, pixWidth, 32, 32,
-			(pBox->x1 - xrot) & 31, (pBox->y1 - yrot) & 31);
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
-		if (w * h < 500)
+		if (w * h < 5000) {
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
-		else {
-			/* Low level function uses vertical interleaving. */
-			if (cirrusUseMMIO)
-				CirrusMMIOBLT32x32PatternFill(pBox->y1 *
-					destPitch + pBox->x1, w, h, pattern,
-					destPitch, CROP_SRC);
-			else
-				CirrusBLT32x32PatternFill(pBox->y1 *
-					destPitch + pBox->x1, w, h, pattern,
-					destPitch, CROP_SRC);
+			continue;
 		}
+		if (pattern == NULL) {
+			int i;
+			/*
+			 * Generate a square of four copies of the tile in
+			 * system memory, so that any rotated position can
+			 * be copied out of it.
+			 */
+			pattern = (unsigned char *)ALLOCATE_LOCAL(64 * 64);
+			for (i = 0; i < 32; i++) {
+			    	memcpy(pattern + i * 64,
+				       (unsigned char *)src + i * pixWidth, 32);
+			    	memcpy(pattern + i * 64 + 32,
+				       (unsigned char *)src + i * pixWidth, 32);
+			    	memcpy(pattern + (i + 32) * 64,
+				       (unsigned char *)src + i * pixWidth, 32);
+			    	memcpy(pattern + (i + 32) * 64 + 32,
+				       (unsigned char *)src + i * pixWidth, 32);
+			}
+		}
+		if (cirrusUseMMIO)
+			CirrusMMIOBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 31) * 64 +
+				((pBox->x1 - xrot) & 31), 64, destPitch, CROP_SRC);
+		else
+			CirrusBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
+				w, h, pattern + ((pBox->y1 - yrot) & 31) * 64 +
+				((pBox->x1 - xrot) & 31), 64, destPitch, CROP_SRC);
 	}
-	DEALLOCATE_LOCAL(pattern);
+	if (pattern != NULL)
+		DEALLOCATE_LOCAL(pattern);
 	return;
-#endif
 
 #if 0
 tileblit:
@@ -403,7 +453,8 @@ tile8mx:
 				}
 
 				/* Do the work. */
-				pattern = ALLOCATE_LOCAL(width * height);
+				pattern = (unsigned char *)
+					    ALLOCATE_LOCAL(width * height);
 				/* Align to start of screen. */
 				rotatepattern(pattern, (unsigned char *)src,
 					pixWidth, width, height,

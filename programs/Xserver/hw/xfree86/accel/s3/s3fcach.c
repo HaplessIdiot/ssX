@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.8 1994/09/11 00:50:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.9 1994/09/23 13:38:10 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -71,6 +71,17 @@ s3FontCache8Init()
    x = 0;
    y = s3CursorStartY + s3CursorLines;
    h = s3ScissB + 1 - y;
+   w = s3DisplayWidth;
+   /*
+     If the area to the right of the virtual screen is larger than the
+     area below it, then use the area to the right.
+   */
+   if (h*w < y*(s3DisplayWidth-s3InfoRec.virtualX)) {
+     h = y;
+     w = s3DisplayWidth - s3InfoRec.virtualX;
+     x = s3InfoRec.virtualX;
+     y = 0;
+   }
 
    /*
     * No pixmap expansion if s3DisplayWidth < 1024 and less than 100 scanlines
@@ -79,7 +90,6 @@ s3FontCache8Init()
 
    if ((h < MIN_PIXMAP_WIDTH) ||
        ((s3DisplayWidth < 1024) && (h < MIN_PIXMAP_WIDTH + 100))) {
-      w = s3DisplayWidth;
       ErrorF("%s %s: No pixmap expanding area available\n",
 	     XCONFIG_PROBED, s3InfoRec.name);
    } else {
@@ -88,18 +98,16 @@ s3FontCache8Init()
       else
 	pmwidth = h;
 
-      if (s3DisplayWidth < 1024) {
-	 w = s3DisplayWidth;
+      if (s3DisplayWidth < 1024 || x > 0) {
 	 if (first) {
-	    s3InitFrect(0, y, pmwidth);
+	    s3InitFrect(x, y, pmwidth);
 	 }
 	 y += pmwidth;
+	 h -= pmwidth;
       } else {
-	 w = s3DisplayWidth - pmwidth;
-	 if (h >= pmwidth) { /* XXXX This test should now be redundant */
-	    if (first) {
-	       s3InitFrect(w, y, pmwidth);
-	    }
+	 w -= pmwidth;
+	 if (first) {
+	   s3InitFrect(w, y, pmwidth);
 	 }
       }
       if (first) {
