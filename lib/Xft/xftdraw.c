@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.10 2000/12/15 17:12:52 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.11 2000/12/20 00:20:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -344,6 +344,41 @@ XftDrawString32 (XftDraw	*draw,
     }
 #endif
 }
+
+void
+XftDrawStringUtf8 (XftDraw	*draw,
+		   XftColor	*color,
+		   XftFont	*font,
+		   int		x,
+		   int		y,
+		   XftChar8	*string,
+		   int		len)
+{
+    if (font->core)
+    {
+	XChar2b	    *xc;
+	XChar2b	    xcloc[XFT_CORE_N16LOCAL];
+	int	    n;
+	
+	XftDrawCorePrepare (draw, color, font);
+	xc = XftCoreConvertUtf8 (string, len, xcloc, &n);
+	if (xc)
+	{
+	    XDrawString16 (draw->dpy, draw->drawable, draw->core.draw_gc, x, y, 
+			   xc, n);
+	}
+	if (xc != xcloc)
+	    free (xc);
+    }
+#ifdef FREETYPE2
+    else if (XftDrawRenderPrepare (draw, color, font))
+    {
+	XftRenderStringUtf8 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
+			     draw->render.pict, 0, 0, x, y, string, len);
+    }
+#endif
+}
+
 
 void
 XftDrawRect (XftDraw	    *draw,
