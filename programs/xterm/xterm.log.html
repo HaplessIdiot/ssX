@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.95 2003/03/23 17:18:58 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.96 2003/05/19 00:47:33 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_177">Patch #177 - 2003/3/23 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_176">Patch #176 - 2003/3/22 - XFree86 4.3.0</A>
@@ -223,6 +224,24 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A></H1>
+<ul>
+	<li>modify ifdef's for WTMPX_FILE to allow building on cygwin again.
+
+	<li>change the default of pty-handshaking configure option (and related
+	    default for imake) to assume this feature is needed.
+
+	<li>add ifdef's so configure option for XawPlus library works (patch
+	    by Pavel Roskin).
+
+	<li>add <code>$(MAIN_DEFINES)</code> to the variables checked by the
+	    configure script that may contain information set by imake.  This
+	    allows xterm to build/run properly using the configure script on
+	    IRIX64.
+
+	<li>add configure check for ".exe" suffix on cygwin.
+</ul>
 
 <H1><A NAME="xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A></H1>
 <ul>
