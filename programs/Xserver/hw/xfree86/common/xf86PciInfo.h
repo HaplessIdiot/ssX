@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.60 2000/06/20 05:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.61 2000/06/20 20:07:57 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -148,6 +148,7 @@
 #define PCI_VENDOR_YOKOGAWA	0x1281
 #define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS	0x12d2
+#define PCI_VENDOR_NETGEAR	0x1385
 #define PCI_VENDOR_SYMPHONY	0x1C1C
 #define PCI_VENDOR_TEKRAM_2	0x1DE1
 #define PCI_VENDOR_3DLABS	0x3D3D
@@ -643,6 +644,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_IMAGTEC, "Imaging Technology"},
     {PCI_VENDOR_PLX, "PLX"},
     {PCI_VENDOR_NVIDIA_SGS,	"NVidia/SGS-Thomson"},
+    {PCI_VENDOR_NETGEAR,	"Netgear"},
     {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor"},
     {PCI_VENDOR_VMIC, "VMIC"},
     {PCI_VENDOR_DIGI, "DIGI*"},
@@ -1251,6 +1253,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x0001, "1221",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_LITEON, {
+                                {0x0002, "82C168/9 PNIC 10/100BaseTX",0 },
                                 {0xC115, "LC82C115 PNIC II 10/100BaseTX",0 },
 				{0x0000,		NULL,0}}},
 #ifdef INCLUDE_EMPTY_LISTS
@@ -1621,8 +1624,14 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0001, "4010CDT CT65555",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_LITEON, {
+			{ 0xc001, "LNE100TX Version 2.0",0, NF },
+                        { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_BUSLOGIC, {
 	                { 0x1040,	"BT958",0, NF },
+                        { 0x0000, (char *)NULL,0, NF } } },
+	{ PCI_VENDOR_NETGEAR, {
+			{ 0xf004, "FA310-TX Rev. D2",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 #endif
 	{0x0000, {
