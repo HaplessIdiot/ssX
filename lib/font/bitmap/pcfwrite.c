@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.7 2001/11/06 16:11:36 alanh Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.8tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -361,6 +361,7 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
 	if (current_position > table->offset) {
 	    printf("can't go backwards... %d > %d\n",
 		   (int)current_position, (int)table->offset);
+	    xfree(offsetProps);
 	    return BadFontName;
 	}
 	while (current_position < table->offset)
@@ -464,5 +465,7 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
 	    break;
 	}
     }
+
+    xfree(offsetProps);
     return Successful;
 }
