@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.62 2002/01/04 21:22:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.63 2002/01/08 18:16:40 dawes Exp $ */
 
 /*
  * Authors:
@@ -127,7 +127,7 @@ static const OptionInfoRec I810Options[] = {
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
-static const char *vgahwSymbols[] = {
+const char *I810vgahwSymbols[] = {
    "vgaHWFreeHWRec",
    "vgaHWGetHWRec",
    "vgaHWGetIOBase",
@@ -146,31 +146,34 @@ static const char *vgahwSymbols[] = {
    NULL
 };
 
-static const char *fbSymbols[] = {
+const char *I810fbSymbols[] = {
    "fbPictureInit",
    "fbScreenInit",
    NULL
 };
 
-static const char *miscSymbols[] = {
-   "GetTimeInMillis",
-   NULL
-};
-
-static const char *vbeSymbols[] = {
+const char *I810vbeSymbols[] = {
    "VBEInit",
    "vbeDoEDID",
    "vbeFree",
    NULL
 };
 
-static const char *ddcSymbols[] = {
+const char *I810ddcSymbols[] = {
    "xf86PrintEDID",
    "xf86SetDDCproperties",
    NULL
 };
 
-static const char *xaaSymbols[] = {
+const char *I810int10Symbols[] = {
+   "xf86ExecX86int10",
+   "xf86InitInt10",
+   "xf86Int10AllocPages",
+   "xf86int10Addr",
+   NULL
+};
+
+const char *I810xaaSymbols[] = {
    "XAACachePlanarMonoStipple",
    "XAACreateInfoRec",
    "XAADestroyInfoRec",
@@ -182,13 +185,14 @@ static const char *xaaSymbols[] = {
    NULL
 };
 
-static const char *ramdacSymbols[] = {
+const char *I810ramdacSymbols[] = {
    "xf86CreateCursorInfoRec",
    "xf86DestroyCursorInfoRec",
    "xf86InitCursor",
    NULL
 };
 
+#ifdef XFree86LOADER
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
    "drmAddBufs",
@@ -224,6 +228,7 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
+#endif
 #endif
 
 
@@ -285,17 +290,17 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
        * Tell the loader about symbols from other modules that this module
        * might refer to.
        */
-      LoaderRefSymLists(vgahwSymbols, 
-			fbSymbols, 
-			xaaSymbols, 
-			ramdacSymbols,
-			miscSymbols,
+      LoaderRefSymLists(I810vgahwSymbols, 
+			I810fbSymbols, 
+			I810xaaSymbols, 
+			I810ramdacSymbols,
 #ifdef XF86DRI
 			drmSymbols, 
 			driSymbols,
 #endif
-			vbeSymbols,
-			ddcSymbols, 
+			I810vbeSymbols,
+			I810ddcSymbols, 
+			I810int10Symbols, 
 			NULL);
 
       /*
@@ -461,7 +466,7 @@ I810DoDDC(ScrnInfoPtr pScrn, int index)
     }
 
     if (xf86LoadSubModule(pScrn, "vbe") && (pVbe = VBEInit(NULL,index))) {
-      xf86LoaderReqSymLists(vbeSymbols, NULL);
+      xf86LoaderReqSymLists(I810vbeSymbols, NULL);
       MonInfo = vbeDoEDID(pVbe, NULL);
       xf86PrintEDID( MonInfo );
       xf86SetDDCproperties(pScrn, MonInfo);
@@ -509,7 +514,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    /* The vgahw module should be loaded here when needed */
    if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
 
-   xf86LoaderReqSymLists(vgahwSymbols, NULL);
+   xf86LoaderReqSymLists(I810vgahwSymbols, NULL);
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec(pScrn)) return FALSE;
@@ -825,14 +830,14 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       I810FreeRec(pScrn);
       return FALSE;
    }
-   xf86LoaderReqSymLists(fbSymbols, NULL);
+   xf86LoaderReqSymLists(I810fbSymbols, NULL);
 
    if (!xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "xaa")) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(xaaSymbols, NULL);
+      xf86LoaderReqSymLists(I810xaaSymbols, NULL);
    }
 
    if (!xf86ReturnOptValBool(pI810->Options, OPTION_SW_CURSOR, FALSE)) {
@@ -840,7 +845,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
-      xf86LoaderReqSymLists(ramdacSymbols, NULL);
+      xf86LoaderReqSymLists(I810ramdacSymbols, NULL);
    }
 
    if (xf86GetOptValInteger(pI810->Options, OPTION_COLOR_KEY, &(pI810->colorKey)))
