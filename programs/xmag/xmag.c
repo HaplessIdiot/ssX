@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/xmag.c,v 1.10 2001/12/14 20:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/xmag.c,v 1.11 2003/01/19 04:44:45 paulo Exp $ */
 
 
 #include <stdlib.h>		/* for exit() and abs() */
@@ -579,12 +579,17 @@ FindWindow(int x, int y)	/* Locatation of cursor */
 {
   XWindowAttributes wa;
   Window findW = DefaultRootWindow(dpy), stopW, childW;
-  XTranslateCoordinates(dpy, findW, findW,
-			x, y, &x, &y, &stopW);
+
+  /* Setup for first window find */
+  stopW = findW;
+
   while (stopW) {
     XTranslateCoordinates(dpy, findW, stopW, 
 			  x, y, &x, &y, &childW);
     findW = stopW;
+    /* If child is not InputOutput (for example, InputOnly) */
+    /* then don't continue, return the present findW which */
+    /* can be the root, or a root child of class InputOutput */
     if (childW &&
 	XGetWindowAttributes(dpy, childW, &wa) &&
 	wa.class != InputOutput)
@@ -884,7 +889,11 @@ GetMaxIntensity(hlPtr data)
       mptr = tptr;
     tptr++;
   }
-  return mptr->pixel;
+  /* Null pointer protection */
+  if(mptr)
+    return mptr->pixel;
+  else
+    return WhitePixel(dpy, scr);
 }
 
 /*
@@ -905,7 +914,11 @@ GetMinIntensity(hlPtr data)
       mptr = tptr; 
     tptr++;
   }
-  return mptr->pixel;
+  /* Null pointer protection */
+  if(mptr)
+    return mptr->pixel;
+  else
+    return BlackPixel(dpy, scr);
 }
 
 
