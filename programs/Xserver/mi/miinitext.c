@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.17 1997/01/19 12:52:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.19 1997/04/08 14:56:22 hohndel Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -166,6 +166,13 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #endif
+#ifdef GLXEXT
+#ifndef GLX_MODULE
+extern void GlxExtensionInit(INITARGS);
+#else
+InitExtension GlxExtensionInitPtr = NULL;
+#endif
+#endif
 
 #ifndef XFree86LOADER
 
@@ -277,6 +284,20 @@ InitExtensions(argc, argv)
 #if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
     DPMSExtensionInit();
 #endif
+#ifdef GLXEXT
+#ifndef GLX_MODULE
+#ifndef XPRINT	/* we don't want Glx in the Xprint server */
+    GlxExtensionInit();
+#endif
+#else
+    if (GlxExtensionInitPtr != NULL) {
+        (*GlxExtensionInitPtr)();
+    } else {
+        if (serverGeneration == 1)
+            ErrorF("GLX extension module not loaded\n");
+    }
+#endif
+#endif
 }
 
 #else /* XFree86LOADER */
@@ -312,6 +333,7 @@ ExtensionModule extension[] =
     { NULL, "XFree86-Misc", NULL },
     { NULL, "XFree86-DGA", NULL },
     { NULL, "DPMS", NULL },
+    { NULL, "GLX", NULL },
     { NULL, NULL, NULL }
 };
 
@@ -404,6 +426,7 @@ InitExtensions(argc, argv)
 #if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
     extension[27].initFunc = DPMSExtensionInit;
 #endif
+    /* 28 - GLX */
 
     for (i = 0; extension[i].name != NULL; i++) 
 	if (extension[i].initFunc != NULL && 

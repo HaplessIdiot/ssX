@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/38 1996/11/07 14:43:46 kaleb $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.13 1996/12/23 05:50:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.15 1997/03/17 07:17:27 hohndel Exp $
 
 XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
@@ -50,6 +50,7 @@ Imake.tmpl \
 Library.tmpl \
 Motif.tmpl \
 Server.tmpl \
+ServerLib.tmpl \
 Threads.tmpl \
 WinLib.tmpl \
 X11.tmpl \

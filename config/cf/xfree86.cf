@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.153 1997/03/27 18:37:32 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.154 1997/04/08 10:09:30 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -575,6 +575,21 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #else
 #define BuildPexExt		NO
 #endif
+#endif
+
+/*
+ * Build GLX server interface
+ *   --- Does't work for 1-bit and 4-bit servers
+ */
+#if !defined(BuildGlxExt) || BuildGlxExt
+#  undef BuildGlxExt
+#  if XF86AccelServer || XF86SVGAServer || XF98AccelServer || \
+      XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
+      XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
+#    define BuildGlxExt             YES
+#  else
+#    define BuildGlxExt             NO
+#  endif
 #endif
 
 /*

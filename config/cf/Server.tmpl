@@ -4,7 +4,7 @@
  */
 
 XCOMM $XConsortium: Server.tmpl /main/14 1996/04/30 14:37:27 mw $
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.5 1997/02/18 10:46:42 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.6 1997/02/18 17:47:46 hohndel Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -66,6 +66,9 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #ifndef XieModule
 #define XieModule		ExtensionsModules
 #endif
+#ifndef GlxModule
+#define GlxModule		ExtensionsModules
+#endif
 
          CC = ServerCcCmd
   CCOPTIONS = ServerCCOptions
@@ -75,6 +78,12 @@ SERVER_THREAD_DEFINES = XThreadsDefines ThreadTypeDefines
 STD_DEFINES = ServerDefines $(SERVER_THREAD_DEFINES)
 CDEBUGFLAGS = ServerCDebugFlags
 EXT_DEFINES = ExtensionDefines
+
+#if GlxModule | DoLoadableServer
+GLX_DEFINES = GlxDefines -DGLX_MODULE
+#else
+GLX_DEFINES = GlxDefines
+#endif
 
 #ifdef XFree86Version
 #include <xf86.tmpl>

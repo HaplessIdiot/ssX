@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.105 1997/03/24 16:28:41 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.106 1997/03/27 08:29:16 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -46,6 +46,13 @@ INSTPGMFLAGS =
 		   PEX5/ospex/ModuleLibraryTargetName(ospex) 
           PEXDIR = PEX5
 #endif
+
+#if BuildGlxExt && !GlxModule
+        GLXLIB = glxStub/LibraryTargetName(ServerGl) 
+        GLXDIR = glxStub 
+#endif
+
+
 #if BuildXInputExt
       XINPUTEXT = Xi/LibraryTargetName(xinput)
           XIDIR = Xi
@@ -130,11 +137,11 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #else
-     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
+     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #endif
-        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) \
+        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(GLXDIR) \
                   $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)

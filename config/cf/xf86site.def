@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.109 1997/03/18 06:39:33 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.110 1997/03/18 06:42:45 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -394,6 +394,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.109 1997/03/18 06:39:33 hohndel Ex
  * If you don't want to build PEX, uncomment this.
  *
 #define BuildPexExt		NO
+ */
+
+/*
+ * If you don't want to build support for an external GLX server module or
+ * library, uncomment this.
+ *
+#define BuildGlxExt             NO
  */
 
 /*

@@ -1,3 +1,6 @@
+XFree86 3.2At (11 April 1997)
+ 659. Add stubs to load GLX extension (#228,246, Henry Worth, Dirk Hohndel).
+
 XFree86 3.2As (09 April 1997)
  658. Several fixes and enhancements for the cirrus driver. Fix the crash that
       showed up in 3.2A with MMIO on some chips at 16bpp. Enable the 8x8 
@@ -4313,4 +4316,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.442 1997/04/08 10:10:15 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.443 1997/04/08 13:15:46 hohndel Exp $

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.13 1997/02/27 13:57:41 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.14 1997/03/11 13:05:05 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -190,6 +190,7 @@ ObjectFromSpecialSource(cfbply1rctG,cfbply1rct,-DRROP=GXset)
 
 SpecialCObjectRule(cfbglblt8,$(_NOOP_),$(STIPPLEDEF))
 SpecialCObjectRule(cfbpixmap,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(cfbcmap,$(ICONFIGFILES),$(EXT_DEFINES) $(GLX_DEFINES))
 
 #if PixelSize == 8
 ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
