@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.8 2001/04/18 14:52:42 dawes Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.9tsi Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -321,7 +321,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pFfbDRI->mFbcRegs = 0;
 
 	xf86DrvMsg(pScreen->myNum, X_INFO,
-		   "[drm] FBC Register handle = 0x%08x\n",
+		   "[drm] FBC Register handle = 0x%08lx\n",
 		   pFfbDRI->hFbcRegs);
 
 	if (drmAddMap(pFfb->drmSubFD,
@@ -334,7 +334,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pFfbDRI->mDacRegs = 0;
 
 	xf86DrvMsg(pScreen->myNum, X_INFO,
-		   "[drm] DAC Register handle = 0x%08x\n",
+		   "[drm] DAC Register handle = 0x%08lx\n",
 		   pFfbDRI->hDacRegs);
 
 	/* Now add maps for the "Smart" views of the framebuffer. */
@@ -348,7 +348,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pFfbDRI->mSfb8r = 0;
 
 	xf86DrvMsg(pScreen->myNum, X_INFO,
-		   "[drm] SFB8R handle = 0x%08x\n",
+		   "[drm] SFB8R handle = 0x%08lx\n",
 		   pFfbDRI->hSfb8r);
 
 	if (drmAddMap(pFfb->drmSubFD,
@@ -361,7 +361,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pFfbDRI->mSfb32 = 0;
 
 	xf86DrvMsg(pScreen->myNum, X_INFO,
-		   "[drm] SFB32 handle = 0x%08x\n",
+		   "[drm] SFB32 handle = 0x%08lx\n",
 		   pFfbDRI->hSfb32);
 
 	if (drmAddMap(pFfb->drmSubFD,
@@ -374,7 +374,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pFfbDRI->mSfb64 = 0;
 
 	xf86DrvMsg(pScreen->myNum, X_INFO,
-		   "[drm] SFB64 handle = 0x%08x\n",
+		   "[drm] SFB64 handle = 0x%08lx\n",
 		   pFfbDRI->hSfb64);
 
 	/* Setup visual configurations. */
