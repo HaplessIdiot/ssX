@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.4 2001/05/01 22:57:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.5 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -172,21 +172,21 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 #endif
     
   /* Create the window */
-  *phwnd = CreateWindowExA (0,			// Extended styles
-			    WINDOW_CLASS,	// Class name
-			    WINDOW_TITLE,	// Window name
+  *phwnd = CreateWindowExA (0,			/* Extended styles */
+			    WINDOW_CLASS,	/* Class name */
+			    WINDOW_TITLE,	/* Window name */
 			    WS_OVERLAPPED
 			    | WS_CAPTION
 			    | WS_SYSMENU
-			    | WS_MINIMIZEBOX,	// Almost an OverlappedWindow
-			    0,			// Horizontal position
-			    0,			// Vertical position
-			    iWidth,		// Right edge
-			    iHeight,		// Bottom edge
-			    (HWND) NULL,	// No parent or owner window
-			    (HMENU) NULL,	// No menu
-			    GetModuleHandle (NULL),// Instance handle
-			    pScreenPriv);	// ScreenPrivates
+			    | WS_MINIMIZEBOX,	/* Almost an OverlappedWindow */
+			    0,			/* Horizontal position */
+			    0,			/* Vertical position */
+			    iWidth,		/* Right edge */
+			    iHeight,		/* Bottom edge */
+			    (HWND) NULL,	/* No parent or owner window */
+			    (HMENU) NULL,	/* No menu */
+			    GetModuleHandle (NULL),/* Instance handle */
+			    pScreenPriv);	/* ScreenPrivates */
 
   /* Get the client area coordinates */
   GetClientRect (*phwnd, &rcClient);
