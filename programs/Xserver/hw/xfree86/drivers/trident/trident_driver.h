@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.10 1997/02/10 16:41:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.1 1997/03/06 23:17:07 hohndel Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -124,3 +124,6 @@ extern int tridentClockLimit32bpp[];
 
 #define TKD8001		0
 #define TGUIDAC		1
+
+extern int TVGAchipset;
+extern Bool IsCyber;

@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.17 1997/02/17 09:48:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.1 1997/03/06 23:17:02 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -46,12 +46,10 @@
 #include "trident_driver.h"
 #include "tgui_ger.h"
 
-extern int TVGAchipset;
 extern int tridentHWCursorType;
 
 extern Bool vgaUseLinearAddressing;
 extern Bool tridentUseLinear;
-extern Bool IsCyber;
 
 static int tridentFlipCursor = 0;
 static Bool TridentRealizeCursor();
