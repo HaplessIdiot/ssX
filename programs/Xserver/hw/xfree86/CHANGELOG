@@ -1,4 +1,5 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 689. On Darwin add Mac font directories to fonts.conf (Torrey T. Lyons).
  688. Post XDarwin mouse events in Quartz mode where they happen rather than
       where the cursor currently is (Adrian Umpleby).
  687. Enable Freetype Mac FOND support on Mac OS X (Torrey T. Lyons).
@@ -15921,4 +15922,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2463 2003/01/01 22:08:36 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2464 2003/01/02 07:05:09 torrey Exp $
