@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.49 2003/03/03 03:28:49 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.50 2003/03/07 16:35:52 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -599,8 +599,11 @@ FindDistName()
 			6.1)
 				DistName="Linux-alpha-glibc21"
 				;;
+			6.2)
+				DistName="Linux-alpha-glibc22"
+				;;
 			6.*)
-				Message="No Linux/alpha binaries for glibc 2.$OsLibcMinor.  Try Linux-alpha-glibc21"
+				Message="No Linux/alpha binaries for glibc 2.$OsLibcMinor.  Try Linux-alpha-glibc22"
 				;;
 			*)
 				Message="No Linux/alpha binaries for this libc version"
