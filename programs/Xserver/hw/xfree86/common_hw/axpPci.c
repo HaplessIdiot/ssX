@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/axpPci.c,v 3.2 1998/01/24 23:58:36 hohndel Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -87,7 +87,7 @@ axpPciInit()
 }
 
 
-#if defined(Linux)
+#if defined(linux)
 /*
  * These funtions will work for Linux, but other OS's
  * are likely have a different mechanism for getting at
@@ -100,7 +100,7 @@ axpPciCfgRead(PCITAG tag, int off)
 	CARD32 val = 0xffffffff;
 
 	bus = PCI_BUS_FROM_TAG(tag);
-	dfn = PCI_DFN_FROM_TAG(TAG);
+	dfn = PCI_DFN_FROM_TAG(tag);
 	
 	__syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
 	return(val);
@@ -112,7 +112,7 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 	int bus, dfn, len;
 
 	bus = PCI_BUS_FROM_TAG(tag);
-	dfn = PCI_DFN_FROM_TAG(TAG);
+	dfn = PCI_DFN_FROM_TAG(tag);
 	
 	__syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
 }

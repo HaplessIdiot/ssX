@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.40 1998/01/24 16:58:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.41 1998/03/20 21:07:15 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -118,6 +118,7 @@
 #define PCI_CHIP_SG86C201	0x0001
 #define PCI_CHIP_SG86C202	0x0002
 #define PCI_CHIP_SG86C205	0x0205
+#define PCI_CHIP_SIS5597      0x0200
 
 /* SGS */
 #define PCI_CHIP_STG2000	0x0008

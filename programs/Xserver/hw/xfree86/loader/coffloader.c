@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.5 1998/03/20 21:07:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.6 1998/04/05 00:46:01 robin Exp $ */
 
 
 
@@ -163,7 +163,7 @@ RELOC		*rel;
 {
     COFFRelocPtr reloc;
 
-    if ((reloc = (COFFRelocPtr) xalloc(sizeof(COFFRelocRec))) == NULL) {
+    if ((reloc = (COFFRelocPtr) xf86loadermalloc(sizeof(COFFRelocRec))) == NULL) {
 	ErrorF( "COFFDelayRelocation() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -187,7 +187,7 @@ int index;
 {
     COFFCommonPtr common;
 
-    if ((common = (COFFCommonPtr) xalloc(sizeof(COFFCommonRec))) == NULL) {
+    if ((common = (COFFCommonPtr) xf86loadermalloc(sizeof(COFFCommonRec))) == NULL) {
 	ErrorF( "COFFAddCOMMON() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -228,13 +228,13 @@ COFFModulePtr	cofffile;
 	       numsyms, size );
 #endif
 
-    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
         ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
         return NULL;
     }
 
     cofffile->comsize=size;
-    if ((cofffile->common = (unsigned char *) xcalloc(1,size)) == NULL) {
+    if ((cofffile->common = (unsigned char *) xf86loadercalloc(1,size)) == NULL) {
         ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
         return NULL;
     }
@@ -252,7 +252,7 @@ COFFModulePtr	cofffile;
 #endif
         listCOMMON=common->next;
         offset+=common->sym->n_value;
-        xfree(common);
+        xf86loaderfree(common);
         l++;
     }
     /* listCOMMON == NULL */
@@ -282,7 +282,7 @@ int		index;
     COFFDEBUG("COFFGetSymbolName(%x,%x) %x",cofffile, index, sym->n_zeroes );
 #endif
 
-    name = (char *) xalloc(sym->n_zeroes ? SYMNMLEN + 1
+    name = (char *) xf86loadermalloc(sym->n_zeroes ? SYMNMLEN + 1
 	   : strlen((const char *)&cofffile->strtab[(int)sym->n_offset-4]) + 1);
     if (!name)
 	FatalError("COFFGetSymbolName: Out of memory\n");
@@ -333,7 +333,7 @@ int index;
     COFFDEBUG("%x\n", symval );
 #endif
 
-    xfree(symname);
+    xf86loaderfree(symname);
     return symval;
 }
 
@@ -344,8 +344,7 @@ int index;
  * same module as the calling function.
  */
 static unsigned char *
-COFFGetSymbolGlinkValue(pNamespace, cofffile, index)
-NamespacePtr pNamespace;
+COFFGetSymbolGlinkValue(cofffile, index)
 COFFModulePtr	cofffile;
 int index;
 {
@@ -369,9 +368,9 @@ int index;
 	1 00000000 3d80xxxx	lis   r12,hi16(funcdesc)
 	2 00000004 618cxxxx	ori   r12,r12,lo16(funcdesc)
 	3 00000008 90410014	st    r2,20(r1)	# save old TOC pointer
-	4 0000000c 800c0000	l     r0,0(r12)	# Get address of functions
-	5 00000010 804c0004	l     r2,4(r12)	# get TOC of function
-	6 00000014 7c0903a6	mtctr  r0	# load destination address
+	4 0000000c 804c0000 	l     r2,0(r12)	# Get address of functions
+	5 00000010 7c4903a6	mtctr  r2	# load destination address
+	6 00000014 804c0004	l     r2,4(r12)	# get TOC of function
 	7 00000018 4e800420	bctr		# branch to it
 
  */
@@ -387,20 +386,19 @@ int index;
 	symbol->code.glink[ 3]=((unsigned long)symbol->address&0x0000ffff);
 	symbol->code.glink[ 4]=0x9041; /* st r2,20(r1) */
 	symbol->code.glink[ 5]=0x0014;
-	symbol->code.glink[ 6]=0x800c; /* l r0,0(r12) */
+	symbol->code.glink[ 6]=0x804c; /* l r2,0(r12) */
 	symbol->code.glink[ 7]=0x0000;
-	symbol->code.glink[ 8]=0x804c; /* l r2,4(r12) */
-	symbol->code.glink[ 9]=0x0004;
-	symbol->code.glink[10]=0x7c09; /* mtctr */
-	symbol->code.glink[11]=0x03a6;
+	symbol->code.glink[ 8]=0x7c49; /* mtctr r2 */
+	symbol->code.glink[ 9]=0x03a6;
+	symbol->code.glink[10]=0x804c; /* l r2,4(r12) */
+	symbol->code.glink[11]=0x0004;
 	symbol->code.glink[12]=0x4e80; /* bctr */
 	symbol->code.glink[13]=0x0420;
 	ppc_flush_icache(&symbol->code.glink[0]);
-	ppc_flush_icache(&symbol->code.glink[8]);
 	ppc_flush_icache(&symbol->code.glink[12]);
     }
 
-    xfree(name);
+    xf86loaderfree(name);
     return symval;
 }
 #endif /* __powerpc__ */
@@ -505,7 +503,7 @@ RELOC		*rel;
 		char *namestr;
 		COFFDEBUG( "R_DIR32 %s\n",
 			    namestr=COFFGetSymbolName(cofffile,rel->r_symndx) );
-		xfree(namestr);
+		xf86loaderfree(namestr);
 		COFFDEBUG( "txtsize=%x\t", cofffile->txtsize );
 		COFFDEBUG( "dest32=%x\t", dest32 );
 		COFFDEBUG( "symval=%x\t", symval );
@@ -593,7 +591,7 @@ RELOC		*rel;
 		char *name;
 		COFFDEBUG( "***Unable to resolve symbol %s\n",
 			    name=COFFGetSymbolName(cofffile,rel->r_symndx) );
-		xfree(name);
+		xf86loaderfree(name);
 #endif
 		return COFFDelayRelocation(cofffile,secndx,rel);
 	    }
@@ -747,7 +745,7 @@ RELOC		*rel;
 		char *name;
 		COFFDEBUG( "***Unable to resolve symbol %s\n",
 			    name=COFFGetSymbolName(cofffile,rel->r_symndx) );
-		xfree(name);
+		xf86loaderfree(name);
 #endif
 		return COFFDelayRelocation(cofffile,secndx,rel);
 	    }
@@ -860,7 +858,7 @@ COFFModulePtr	cofffile;
     cofffile->symtab=(SYMENT *)_LoaderFileToMem(cofffile->fd,cofffile->header->f_symptr,
 						(numsyms*SYMESZ),"symbols");
 
-    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
+    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
 	return NULL;
 
     for(i=0,l=0; i<numsyms; i++)
@@ -925,9 +923,9 @@ COFFModulePtr	cofffile;
 				listCOMMON = tmp;
 			    }
 			}
-			xfree(name);
+			xf86loaderfree(name);
 		    }
-		    xfree(symname);
+		    xf86loaderfree(symname);
 		    break;
 		case N_ABS:
 		case N_DEBUG:
@@ -936,7 +934,7 @@ COFFModulePtr	cofffile;
 		    COFFDEBUG("Freeing %s, section %d\n",
 			       symname, sym->n_scnum );
 #endif
-		    xfree(symname);
+		    xf86loaderfree(symname);
 		    break;
 		case N_TEXT:
 		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
@@ -956,7 +954,7 @@ COFFModulePtr	cofffile;
 			COFFDEBUG( "TEXT Section not loaded %d\n",
 				    sym->n_scnum-1 );
 #endif
-			xfree(symname);
+			xf86loaderfree(symname);
 		    }
 		    break;
 		case N_DATA:
@@ -985,7 +983,7 @@ COFFModulePtr	cofffile;
 			COFFDEBUG( "DATA Section not loaded %d\n",
 				    sym->n_scnum-1 );
 #endif
-			xfree(symname);
+			xf86loaderfree(symname);
 		    }
 		    break;
 		case N_BSS:
@@ -1014,12 +1012,12 @@ COFFModulePtr	cofffile;
 			COFFDEBUG( "BSS Section not loaded %d\n",
 				    sym->n_scnum-1 );
 #endif
-			xfree(symname);
+			xf86loaderfree(symname);
 		    }
 		    break;
 		default:
 		    ErrorF("Unknown Section number %d\n", sym->n_scnum );
-		    xfree(symname);
+		    xf86loaderfree(symname);
 		    break;
 		}
 	}
@@ -1032,7 +1030,7 @@ COFFModulePtr	cofffile;
 	    ;
 	memcpy(&(lookup[l]), lookup_common, i * sizeof (LOOKUP));
 
-	xfree(lookup_common);
+	xf86loaderfree(lookup_common);
 	l += i;
 	lookup[l].symName = NULL;
     }
@@ -1119,7 +1117,7 @@ COFFModulePtr	cofffile;
 	if( strcmp(cofffile->sections[i].s_name,
 		   ".bss" ) == 0 ) {
 	    if( SecSize(i) )
-		cofffile->bss=(unsigned char *) xcalloc(1,SecSize(i));
+		cofffile->bss=(unsigned char *) xf86loadercalloc(1,SecSize(i));
 	    else
 		cofffile->bss=NULL;
 	    cofffile->saddr[i]=cofffile->bss;
@@ -1169,7 +1167,7 @@ LOOKUP **ppLookup;
     COFFDEBUG("COFFLoadModule(%s,%x,%x)\n",modrec->name,modrec->handle,cofffd);
 #endif
 
-    if ((cofffile = (COFFModulePtr) xcalloc(1,sizeof(COFFModuleRec))) == NULL) {
+    if ((cofffile = (COFFModulePtr) xf86loadercalloc(1,sizeof(COFFModuleRec))) == NULL) {
 	ErrorF( "Unable to allocate COFFModuleRec\n" );
 	return NULL;
     }
@@ -1185,6 +1183,12 @@ LOOKUP **ppLookup;
     cofffile->header=(FILHDR *)_LoaderFileToMem(cofffd,0,sizeof(FILHDR),"header");
     header=(FILHDR *)cofffile->header;
 
+    if( header->f_symptr == 0 || header->f_nsyms == 0 ) {
+	ErrorF("No symbols found in module\n");
+	_LoaderFreeFileMem(header,sizeof(FILHDR));
+	xf86loaderfree(cofffile);
+	return NULL;
+    }
 /*
  * Get the section table
  */
@@ -1192,9 +1196,9 @@ LOOKUP **ppLookup;
     cofffile->secsize=(header->f_nscns*SCNHSZ);
     cofffile->sections=(SCNHDR *)_LoaderFileToMem(cofffd,FILHSZ+header->f_opthdr,
 						  cofffile->secsize, "sections");
-    cofffile->saddr=(unsigned char **) xcalloc(cofffile->numsh,
+    cofffile->saddr=(unsigned char **) xf86loadercalloc(cofffile->numsh,
 					       sizeof(unsigned char *));
-    cofffile->reladdr=(unsigned char **) xcalloc(cofffile->numsh,
+    cofffile->reladdr=(unsigned char **) xf86loadercalloc(cofffile->numsh,
 						 sizeof(unsigned char *));
 
 /*
@@ -1255,7 +1259,7 @@ void *mod;
 	}
 	tmp = p;
 	p = p->next;
-	xfree(tmp);
+	xf86loaderfree(tmp);
     }
     _LoaderGetRelocations(mod)->coff_reloc = newlist;
 }
@@ -1278,7 +1282,7 @@ void	*mod;
         flag = _LoaderHandleUnresolved(name,
 			_LoaderHandleToName(crel->file->handle), color_depth);
         if (flag) fatalsym = 1;
-	xfree(name);
+	xf86loaderfree(name);
 	crel=crel->next;
 	}
     return fatalsym;
@@ -1296,17 +1300,19 @@ void *modptr;
  */
 
     relptr=_LoaderGetRelocations(cofffile->funcs)->coff_reloc;
-    brelptr=&relptr;
+    brelptr=&(_LoaderGetRelocations(cofffile->funcs)->coff_reloc);
 
     while(relptr) {
 	if( relptr->file == cofffile ) {
 	    *brelptr=relptr->next;	/* take it out of the list */
 	    reltptr=relptr;		/* save pointer to this node */
 	    relptr=relptr->next;	/* advance the pointer */
-	    xfree(reltptr);		/* free the node */
+	    xf86loaderfree(reltptr);		/* free the node */
 	}
-	else
+	else {
+	    brelptr=&(relptr->next);
 	    relptr=relptr->next;	/* advance the pointer */
+        }
     }
 
 /*
@@ -1328,18 +1334,18 @@ void *modptr;
     CheckandFree(cofffile->reladdr[cofffile->datndx],cofffile->datrelsize);
     CheckandFree(cofffile->bss,cofffile->bsssize);
     if( cofffile->common )
-	xfree(cofffile->common);
+	xf86loaderfree(cofffile->common);
 /*
  * Free the section table, and section pointer array
  */
     _LoaderFreeFileMem(cofffile->sections,cofffile->secsize);
-    xfree(cofffile->saddr);
-    xfree(cofffile->reladdr);
+    xf86loaderfree(cofffile->saddr);
+    xf86loaderfree(cofffile->reladdr);
     _LoaderFreeFileMem(cofffile->header,sizeof(FILHDR));
 /*
  * Free the COFFModuleRec
  */
-    xfree(cofffile);
+    xf86loaderfree(cofffile);
 
     return;
 }

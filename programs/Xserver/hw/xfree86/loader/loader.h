@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.10 1998/03/20 21:07:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.11 1998/03/21 11:08:49 dawes Exp $ */
 
 
 
@@ -104,6 +104,37 @@ typedef struct _loader_item {
 	} code ;
 #endif
 	} itemRec, *itemPtr ;
+
+/*
+ * The loader uses loader specific alloc/calloc/free functions that
+ * are mapped to either to the regular Xserver functions, or in a couple
+ * of special cases, mapped to the C library functions.
+ */
+#if !defined(PowerMAX_OS) && !(defined(linux) && defined(__alpha__))
+#define xf86loadermalloc(size) xalloc(size)
+#define xf86loaderrealloc(ptr,size) xrealloc(ptr,size)
+#define xf86loadercalloc(num,size) xcalloc(num,size)
+#define xf86loaderfree(ptr) xfree(ptr)
+#define xf86loaderstrdup(ptr) xf86strdup(ptr)
+#else
+/*
+ * On Some OSes, xalloc() et al uses mmap to allocate space for large
+ * allocation. This has the effect of placing the text section of some
+ * modules very far away from the rest which are placed on the heap.
+ * Certain relocations are limited in the size of the offsets that can be
+ * handled, and this seperation causes these relocation to overflow. This
+ * is fixes by just using the C library allocation functions for the loader
+ * to ensure that all text sections are located on the head. OSes that have
+ * this problem are:
+ *	PowerMAXOS/PPC
+ * 	Linux/Alpha
+ */
+#define xf86loadermalloc(size) malloc(size)
+#define xf86loaderrealloc(ptr,size) realloc(ptr,size)
+#define xf86loadercalloc(num,size) calloc(num,size)
+#define xf86loaderfree(ptr) free(ptr)
+#define xf86loaderstrdup(ptr) strdup(ptr)
+#endif
 
 typedef struct _loader *loaderPtr;
 

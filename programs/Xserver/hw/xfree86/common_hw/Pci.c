@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.c,v 3.4 1998/03/20 21:06:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Pci.c,v 3.5 1998/03/27 23:23:34 hohndel Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -269,7 +269,7 @@ pciInit()
 
   
 PCITAG
-pciFindFirst(unsigned long id, unsigned long mask)
+pciFindFirst(CARD32 id, CARD32 mask)
 {
 #ifdef DEBUGPCI
 ErrorF("pciFindFirst(0x%lx, 0x%lx), pciInit = %d\n", id, mask, pciInitialized);
@@ -649,7 +649,7 @@ void buserr(int sig)
 	buserr_detected = 1;
 }
 
-unsigned long
+CARD32
 pciCfgMech1Read(PCITAG tag, int offset)
 {
   unsigned long rv = 0xffffffff;
@@ -672,7 +672,7 @@ pciCfgMech1Read(PCITAG tag, int offset)
 }
 
 void
-pciCfgMech1Write(PCITAG tag, int offset, unsigned long val)
+pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 {
 #if defined(__powerpc__)
   signal(SIGBUS, SIG_IGN);
@@ -686,12 +686,12 @@ pciCfgMech1Write(PCITAG tag, int offset, unsigned long val)
 #endif
 }
 
-unsigned long
-pciByteSwap(unsigned long u)
+CARD32
+pciByteSwap(CARD32 u)
 {
 #if BYTE_ORDER == BIG_ENDIAN
 # if defined(__powerpc__) && defined(PowerMAX_OS)
-  unsigned long tmp;
+  CARD32 tmp;
 
   __inst_stwbrx(u, &tmp, 0);
 
@@ -713,14 +713,14 @@ pciByteSwap(unsigned long u)
 /*
  * Dummy functions to noop the PCI services
  */
-unsigned long
+CARD32
 pciReadLongNULL(PCITAG tag, int offset)
 {
 	return(0xffffffff);
 }
 
 void
-pciWriteLongNULL(PCITAG tag, int offset, unsigned long val)
+pciWriteLongNULL(PCITAG tag, int offset, CARD32 val)
 {
 }
 

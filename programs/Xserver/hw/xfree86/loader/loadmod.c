@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.22 1998/03/27 23:23:42 hohndel Exp $ */
 
 /* 
  *
@@ -205,7 +205,8 @@ ExtensionModule *e;
 
 	if (e == NULL)
 		return;
-	ErrorF ("loading extension %s\n", e->name);
+	if (xf86Verbose > 2)
+		ErrorF ("loading extension %s\n", e->name);
 
 	for (i = 0; extension[i].name != NULL; i++)
 	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.1 1997/02/14 12:17:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.2 1997/06/03 14:12:27 hohndel Exp $ */
 
 
 
@@ -9,6 +9,14 @@ typedef unsigned short	Elf32_Half;
 typedef unsigned long	Elf32_Off;
 typedef long		Elf32_Sword;
 typedef unsigned long	Elf32_Word;
+
+typedef unsigned long	Elf64_Addr;
+typedef unsigned short	Elf64_Half;
+typedef unsigned long	Elf64_Off;
+typedef int		Elf64_Sword;
+typedef unsigned int	Elf64_Word;
+typedef unsigned long   Elf64_Xword;
+typedef long            Elf64_Sxword;
 
 /* These constants are for the segment types stored in the image headers */
 #define PT_NULL    0
@@ -84,9 +92,10 @@ typedef unsigned long	Elf32_Word;
 #define ELF32_ST_BIND(x) ((x) >> 4)
 #define ELF32_ST_TYPE(x) (((unsigned int) x) & 0xf)
 
+#define ELF64_ST_BIND(x) ELF32_ST_BIND (x)
+#define ELF64_ST_TYPE(x) ELF32_ST_TYPE (x)
 
-
-typedef struct dynamic{
+typedef struct dynamic32 {
   Elf32_Sword d_tag;
   union{
     Elf32_Sword	d_val;
@@ -94,11 +103,22 @@ typedef struct dynamic{
   } d_un;
 } Elf32_Dyn;
 
+typedef struct dynamic64 {
+  Elf64_Sxword d_tag;
+  union{
+    Elf64_Xword d_val;
+    Elf64_Addr  d_ptr;
+  } d_un;
+} Elf64_Dyn;
+
 extern Elf32_Dyn _DYNAMIC [];
 
 /* The following are used with relocations */
 #define ELF32_R_SYM(x) ((x) >> 8)
 #define ELF32_R_TYPE(x) ((x) & 0xff)
+
+#define ELF64_R_SYM(x)  ((x) >> 32)
+#define ELF64_R_TYPE(x)  ((x) & 0xffffffff)
 
 /* x86 Relocation Types */
 #define R_386_NONE	0
@@ -251,11 +271,22 @@ typedef struct elf32_rel {
   Elf32_Word	r_info;
 } Elf32_Rel;
 
+typedef struct elf64_rel {
+  Elf64_Addr	r_offset;
+  Elf64_Xword	r_info;
+} Elf64_Rel;
+
 typedef struct elf32_rela{
   Elf32_Addr	r_offset;
   Elf32_Word	r_info;
   Elf32_Sword	r_addend;
 } Elf32_Rela;
+
+typedef struct elf64_rela{
+  Elf64_Addr	r_offset;
+  Elf64_Xword	r_info;
+  Elf64_Sxword	r_addend;
+} Elf64_Rela;
 
 typedef struct elf32_sym{
   Elf32_Word	st_name;
@@ -266,10 +297,18 @@ typedef struct elf32_sym{
   Elf32_Half	st_shndx;
 } Elf32_Sym;
 
+typedef struct elf64_sym{
+  Elf64_Word	st_name;
+  unsigned char	st_info;
+  unsigned char st_other;
+  Elf64_Half	st_shndx;
+  Elf64_Addr	st_value;
+  Elf64_Xword	st_size;
+} Elf64_Sym;
 
 #define EI_NIDENT	16
 
-typedef struct elfhdr{
+typedef struct elf32hdr{
   unsigned char	e_ident[EI_NIDENT];
   Elf32_Half	e_type;
   Elf32_Half	e_machine;
@@ -285,6 +324,23 @@ typedef struct elfhdr{
   Elf32_Half	e_shnum;
   Elf32_Half	e_shstrndx;
 } Elf32_Ehdr;
+
+typedef struct elf64hdr {
+  unsigned char	e_ident[EI_NIDENT];
+  Elf64_Half	e_type;
+  Elf64_Half	e_machine;
+  Elf64_Word	e_version;
+  Elf64_Addr	e_entry;
+  Elf64_Off	e_phoff;
+  Elf64_Off	e_shoff;
+  Elf64_Word	e_flags;
+  Elf64_Half	e_ehsize;
+  Elf64_Half	e_phentsize;
+  Elf64_Half	e_phnum;
+  Elf64_Half	e_shentsize;
+  Elf64_Half	e_shnum;
+  Elf64_Half	e_shstrndx;
+} Elf64_Ehdr;
 
 /* These constants define the permissions on sections in the program
    header, p_flags. */
@@ -302,6 +358,18 @@ typedef struct elf_phdr{
   Elf32_Word	p_flags;
   Elf32_Word	p_align;
 } Elf32_Phdr;
+
+typedef struct
+{
+  Elf64_Word	p_type;
+  Elf64_Word	p_flags;
+  Elf64_Off	p_offset;
+  Elf64_Addr	p_vaddr;
+  Elf64_Addr	p_paddr;
+  Elf64_Xword	p_filesz;
+  Elf64_Xword	p_memsz;
+  Elf64_Xword	p_align;
+} Elf64_Phdr;
 
 /* sh_type */
 #define SHT_NULL	0
@@ -349,6 +417,20 @@ typedef struct {
   Elf32_Word	sh_addralign;
   Elf32_Word	sh_entsize;
 } Elf32_Shdr;
+
+typedef struct
+{
+  Elf64_Word	sh_name;
+  Elf64_Word	sh_type;
+  Elf64_Xword	sh_flags;
+  Elf64_Addr	sh_addr;
+  Elf64_Off	sh_offset;
+  Elf64_Xword	sh_size;
+  Elf64_Word	sh_link;
+  Elf64_Word	sh_info;
+  Elf64_Xword	sh_addralign;
+  Elf64_Xword	sh_entsize;
+} Elf64_Shdr;
 
 #define	EI_MAG0		0		/* e_ident[] indexes */
 #define	EI_MAG1		1
