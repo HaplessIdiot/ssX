@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.70 2002/05/22 21:38:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.71 2002/07/27 16:41:16 herrb Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1776,165 +1776,6 @@ xf86RegisterResources(int entityIndex, resList list, unsigned long access)
     
 }
 
-/*
- * Server State 
- */
-#ifdef notanymore1
-static xf86AccessPtr
-busTypeSpecific(EntityPtr pEnt, xf86State state)
-{
-    pciAccPtr *ppaccp;
-
-    switch (pEnt->bus.type) {
-    case BUS_ISA:
-	switch (state) {
-	case SETUP:
-	    return &AccessNULL;
-	    break;
-	case OPERATING:
-	    if (pEnt->entityProp & NEED_SHARED)
-		return &AccessNULL;
-	    else  /* no conflicts at all */
-		return NULL; /* remove from RAC */
-	    break;
-	}
-	break;
-    case BUS_PCI:
-	ppaccp = xf86PciAccInfo;
-	while (*ppaccp) {
-	    if ((*ppaccp)->busnum == pEnt->pciBusId.bus
-		&& (*ppaccp)->devnum == pEnt->pciBusId.device
-		&& (*ppaccp)->funcnum == pEnt->pciBusId.func) {
-		switch (state) {
-		case SETUP:
-		    (*ppaccp)->io_memAccess.AccessDisable((*ppaccp)->
-							  io_memAccess.arg);
-		    return &(*ppaccp)->io_memAccess;
-		    break;
-		case OPERATING:
-		    if (!(pEnt->entityProp & NEED_MEM_SHARED)){
-			if (pEnt->entityProp & NEED_MEM)
-			    (*ppaccp)->memAccess.AccessEnable((*ppaccp)->
-							      memAccess.arg);
-			else 
-			    (*ppaccp)->memAccess.AccessDisable((*ppaccp)->memAccess.arg);
-		    }
-		    if (!(pEnt->entityProp & NEED_IO_SHARED)) {
-			if (pEnt->entityProp & NEED_IO)
-			    (*ppaccp)->ioAccess.AccessEnable((*ppaccp)->
-							     ioAccess.arg);
-			else 
-			    (*ppaccp)->ioAccess.AccessDisable((*ppaccp)->
-							      ioAccess.arg);
-		    }
-		    switch(pEnt->entityProp & NEED_SHARED) {
-		    case NEED_IO_SHARED:
-			return &(*ppaccp)->ioAccess;
-		    case NEED_MEM_SHARED:
-			return &(*ppaccp)->memAccess;
-		    case NEED_SHARED:
-			return &(*ppaccp)->io_memAccess;
-		    default: /* no conflicts at all */
-			return NULL; /* remove from RAC */
-		    }
-		    break;
-		}
-	    }
-	    ppaccp++;
-	}
-	break;
-    default:
-	return NULL;
-    }
-    return NULL;
-}
-
-/*
- * setAccess() -- sets access functions according to resources
- * required. 
- */
-
-static void
-setAccess(EntityPtr pEnt, xf86State state)
-{
-    xf86AccessPtr new = NULL;
-    
-    /* set access funcs and access state according to resource requirements */
-    pEnt->access->pAccess = busTypeSpecific(pEnt,state);
-    
-    if (state == OPERATING) {
-	switch(pEnt->entityProp & NEED_SHARED) {
-	case NEED_SHARED:
-	    pEnt->access->rt = MEM_IO;
-	    break;
-	case NEED_IO_SHARED:
-	    pEnt->access->rt = IO;
-	    break;
-	case NEED_MEM_SHARED:
-	    pEnt->access->rt = MEM;
-	    break;
-	default:
-	    pEnt->access->rt = NONE;
-	}
-    } else 
-	pEnt->access->rt = MEM_IO;
-    
-    /* disable shared resources */
-    if (pEnt->access->pAccess 
-	&& pEnt->access->pAccess->AccessDisable)
-	pEnt->access->pAccess->AccessDisable(pEnt->access->pAccess->arg);
-
-    /*
-     * If device is not under access control it is enabled.
-     * If it needs bus routing do it here as it isn't bus
-     * type specific. Any conflicts should be checked at this
-     * stage
-     */
-    if (!pEnt->access->pAccess
-	&& (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP :
-				NEED_VGA_ROUTED))) 
-	((BusAccPtr)pEnt->busAcc)->set_f(pEnt->busAcc);
-    
-    /* do we have a driver replacement for the generic access funcs ?*/
-    if (pEnt->rac) {
-	/* XXX should we use rt here? */
-	switch (pEnt->access->rt) {
-	case MEM_IO:
-	    new = pEnt->rac->io_mem_new;
-	    break;
-	case IO:
-	    new = pEnt->rac->io_new;
-	    break;
-	case MEM:
-	    new = pEnt->rac->mem_new;
-	    break;
-	default:
-	    new = NULL;
-	    break;
-	}
-    }
-    if (new) {
-	/* does the driver want the old access func? */
-	if (pEnt->rac->old) {
-	    /* give it to the driver, leave state disabled */
-	    (*pEnt->rac->old) = pEnt->access->pAccess;
-	} else if ((pEnt->access->rt != NONE) && pEnt->access->pAccess
-		   && pEnt->access->pAccess->AccessEnable) {
-	    /* driver doesn't want it - enable generic access */
-	    pEnt->access->pAccess->AccessEnable(pEnt->access->pAccess->arg);
-	}
-	/* now replace access funcs */
-	pEnt->access->pAccess = new;
-	/* call the new disable func just to be shure */
-	/* XXX should we do this only if rt != NONE? */
-	if (pEnt->access->pAccess && pEnt->access->pAccess->AccessDisable)
-	    pEnt->access->pAccess->AccessDisable(pEnt->access->pAccess->arg);
-	/* The replacement function needs to handle _all_ shared resources */
-	/* unless they are handeled locally and disabled otherwise         */
-    } 
-} 
-#endif
-
 static void
 busTypeSpecific(EntityPtr pEnt, xf86State state, xf86AccessPtr *acc_mem,
 		xf86AccessPtr *acc_io, xf86AccessPtr *acc_mem_io)
@@ -2166,11 +2007,7 @@ xf86EnterServerState(xf86State state)
     else
 	notifyStateChange(NOTIFY_OPERATING_TRANSITION);
     
-#ifdef notanymore1
-    disableAccess();
-#else
     clearAccess();
-#endif
     for (i=0; i<xf86NumScreens;i++) {
 
 	rt = NONE;
