@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.31 2003/08/02 17:48:07 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.32 2003/09/17 05:48:32 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -100,21 +100,6 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif
 #endif /* X_NOT_POSIX */
-
-#ifdef USE_PAM
-#include <security/pam_appl.h>
-#endif
-
-#ifdef CSRG_BASED
-#include <sys/param.h>
-#ifdef HAS_SETUSERCONTEXT
-#include <login_cap.h>
-#include <pwd.h>
-#ifdef USE_BSDAUTH
-#include <bsd_auth.h>
-#endif
-#endif
-#endif
 
 #ifdef USE_PAM
 #include <security/pam_appl.h>
