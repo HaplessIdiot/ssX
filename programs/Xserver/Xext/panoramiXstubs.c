@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.4 1999/01/13 08:30:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.5 1999/06/27 16:17:28 dawes Exp $ */
 /*
  * HISTORY
  * Log
@@ -16,7 +16,7 @@
 
 typedef int Bool;
 
-void *panoramiXdataPtr;
+void *panoramiXdataPtr = 0;
 
 void PanoramiXConsolidate()
 {
@@ -29,15 +29,15 @@ Bool PanoramiXCreateConnectionBlock()
 	return 0;
 }
 
-void* PanoramiXWinRoot;
+void* PanoramiXWinRoot = 0;
 
-void* PanoramiXGCRoot;
+void* PanoramiXGCRoot = 0;
 
-void* PanoramiXCmapRoot;
+void* PanoramiXCmapRoot = 0;
 
-void* PanoramiXPmapRoot;
+void* PanoramiXPmapRoot = 0;
 
-int PanoramiXNumScreens;
+int PanoramiXNumScreens = 0;
 
 void PanoramiXExtensionInit()
 {
@@ -50,10 +50,10 @@ Bool PanoramiXCreateScreenRegion()
 	return 0;
 }
 
-void* PanoramiXScreenRegion;
+void* PanoramiXScreenRegion = 0;
 
-Bool PanoramiXWinRootFreeable;
-Bool PanoramiXGCRootFreeable;
-Bool PanoramiXCmapRootFreeable;
-Bool PanoramiXPmapRootFreeable;
+Bool PanoramiXWinRootFreeable = 0;
+Bool PanoramiXGCRootFreeable = 0;
+Bool PanoramiXCmapRootFreeable = 0;
+Bool PanoramiXPmapRootFreeable = 0;
 
