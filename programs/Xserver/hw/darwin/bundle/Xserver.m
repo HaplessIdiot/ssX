@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.13 2001/04/19 00:40:48 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.14 2001/04/25 02:23:47 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -164,7 +164,7 @@ extern void ShowMenuBar(void);
         char xinitrcbuf[PATH_MAX];
         NSString *path = [NSString stringWithCString:XPATH(xinit)];
         NSString *server = [NSString stringWithCString:XPATH(XDarwinStartup)];
-        NSString *client;
+        NSString *client, *displayName;
         BOOL hasClient = YES;
         NSArray *args;
 
@@ -185,6 +185,9 @@ extern void ShowMenuBar(void);
         [Xserver append:@":" toEnv:@"PATH"];
         [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
 
+        displayName = [NSString localizedStringWithFormat:@":%d",
+                                [Preferences display]];
+
         // Find the client init file to use
         snprintf(xinitrcbuf, PATH_MAX, "%s/.xinitrc", home);
         if (access(xinitrcbuf, F_OK)) {
@@ -195,9 +198,11 @@ extern void ShowMenuBar(void);
         }
         if (hasClient) {
             client = [NSString stringWithCString:xinitrcbuf];
-            args = [NSArray arrayWithObjects:client, @"--", server, @"-idle", nil];
+            args = [NSArray arrayWithObjects:client, @"--", server,
+                            displayName, @"-idle", nil];
         } else {
-            args = [NSArray arrayWithObjects:@"--", server, @"-idle", nil];
+            args = [NSArray arrayWithObjects:@"--", server, displayName,
+                            @"-idle", nil];
         }
 
         // Launch a new task to run start X clients

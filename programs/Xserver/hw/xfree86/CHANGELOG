@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx April 2001)
+ 455. Fix XDarwin so display number preference is followed (Torrey Lyons).
  454. Fix Xserver/Imakefile for Cygwin/XFree86 (Harold Hunt, Alan Hourihane).
 
 XFree86 4.0.99.3 (26 April 2001)
@@ -13108,4 +13109,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1726 2001/04/27 22:33:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1727 2001/04/27 22:39:27 alanh Exp $
