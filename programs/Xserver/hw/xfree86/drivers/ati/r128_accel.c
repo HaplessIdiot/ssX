@@ -1,34 +1,37 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.1 2000/11/02 16:55:30 tsi Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario
- *		    and Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ *                      Precision Insight, Inc., Cedar Park, Texas, and
+ *                      VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation on the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /*
  * Authors:
- *   Rickard E. Faith <faith@precisioninsight.com>
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Rickard E. Faith <faith@valinux.com>
+ *   Kevin E. Martin <martin@valinux.com>
  *   Alan Hourihane <ahourihane@valinux.com>
  *
  * Credits:
@@ -49,33 +52,33 @@
  * Notes on unimplemented XAA optimizations:
  *
  *   SetClipping:   The Rage128 doesn't support the full 16bit registers needed
- *		    for XAA clip rect support.
+ *                  for XAA clip rect support.
  *   SolidFillTrap: This will probably work if we can compute the correct
- *		    Bresenham error values.
+ *                  Bresenham error values.
  *   TwoPointLine:  The Rage 128 supports Bresenham lines instead.
  *   DashedLine with non-power-of-two pattern length: Apparently, there is
- *		    no way to set the length of the pattern -- it is always
- *		    assumed to be 8 or 32 (or 1024?).
+ *                  no way to set the length of the pattern -- it is always
+ *                  assumed to be 8 or 32 (or 1024?).
  *   ScreenToScreenColorExpandFill: See p. 4-17 of the Technical Reference
- *		    Manual where it states that monochrome expansion of frame
- *		    buffer data is not supported.
+ *                  Manual where it states that monochrome expansion of frame
+ *                  buffer data is not supported.
  *   CPUToScreenColorExpandFill, direct: The implementation here uses a hybrid
- *		    direct/indirect method.  If we had more data registers,
- *		    then we could do better.  If XAA supported a trigger write
- *		    address, the code would be simpler.
+ *                  direct/indirect method.  If we had more data registers,
+ *                  then we could do better.  If XAA supported a trigger write
+ *                  address, the code would be simpler.
  * (Alan Hourihane) Update. We now use purely indirect and clip the full
- *		    rectangle. Seems as the direct method has some problems
- *		    with this, although this indirect method is much faster
- *		    than the old method of setting up the engine per scanline.
- *		    This code was the basis of the Radeon work we did.
+ *                  rectangle. Seems as the direct method has some problems
+ *                  with this, although this indirect method is much faster
+ *                  than the old method of setting up the engine per scanline.
+ *                  This code was the basis of the Radeon work we did.
  *   Color8x8PatternFill: Apparently, an 8x8 color brush cannot take an 8x8
- *		    pattern from frame buffer memory.
+ *                  pattern from frame buffer memory.
  *   ImageWrites:   See CPUToScreenColorExpandFill.
  *
  */
 
-#define R128_IMAGEWRITE 0	/* Disable ImageWrites - faster in software */
-#define R128_TRAPEZOIDS 0	/* Trapezoids don't work	       */
+#define R128_IMAGEWRITE 0       /* Disable ImageWrites - faster in software */
+#define R128_TRAPEZOIDS 0       /* Trapezoids don't work               */
 
 				/* X and server generic header files */
 #include "Xarch.h"
@@ -99,30 +102,30 @@ static struct {
     int rop;
     int pattern;
 } R128_ROP[] = {
-    { R128_ROP3_ZERO, R128_ROP3_ZERO }, /* GXclear	  */
-    { R128_ROP3_DSa,  R128_ROP3_DPa  }, /* Gxand	  */
-    { R128_ROP3_SDna, R128_ROP3_PDna }, /* GXandReverse	  */
-    { R128_ROP3_S,    R128_ROP3_P    }, /* GXcopy	  */
+    { R128_ROP3_ZERO, R128_ROP3_ZERO }, /* GXclear        */
+    { R128_ROP3_DSa,  R128_ROP3_DPa  }, /* Gxand          */
+    { R128_ROP3_SDna, R128_ROP3_PDna }, /* GXandReverse   */
+    { R128_ROP3_S,    R128_ROP3_P    }, /* GXcopy         */
     { R128_ROP3_DSna, R128_ROP3_DPna }, /* GXandInverted  */
-    { R128_ROP3_D,    R128_ROP3_D    }, /* GXnoop	  */
-    { R128_ROP3_DSx,  R128_ROP3_DPx  }, /* GXxor	  */
-    { R128_ROP3_DSo,  R128_ROP3_DPo  }, /* GXor		  */
-    { R128_ROP3_DSon, R128_ROP3_DPon }, /* GXnor	  */
-    { R128_ROP3_DSxn, R128_ROP3_PDxn }, /* GXequiv	  */
-    { R128_ROP3_Dn,   R128_ROP3_Dn   }, /* GXinvert	  */
-    { R128_ROP3_SDno, R128_ROP3_PDno }, /* GXorReverse	  */
+    { R128_ROP3_D,    R128_ROP3_D    }, /* GXnoop         */
+    { R128_ROP3_DSx,  R128_ROP3_DPx  }, /* GXxor          */
+    { R128_ROP3_DSo,  R128_ROP3_DPo  }, /* GXor           */
+    { R128_ROP3_DSon, R128_ROP3_DPon }, /* GXnor          */
+    { R128_ROP3_DSxn, R128_ROP3_PDxn }, /* GXequiv        */
+    { R128_ROP3_Dn,   R128_ROP3_Dn   }, /* GXinvert       */
+    { R128_ROP3_SDno, R128_ROP3_PDno }, /* GXorReverse    */
     { R128_ROP3_Sn,   R128_ROP3_Pn   }, /* GXcopyInverted */
-    { R128_ROP3_DSno, R128_ROP3_DPno }, /* GXorInverted	  */
-    { R128_ROP3_DSan, R128_ROP3_DPan }, /* GXnand	  */
-    { R128_ROP3_ONE,  R128_ROP3_ONE  }	/* GXset	  */
+    { R128_ROP3_DSno, R128_ROP3_DPno }, /* GXorInverted   */
+    { R128_ROP3_DSan, R128_ROP3_DPan }, /* GXnand         */
+    { R128_ROP3_ONE,  R128_ROP3_ONE  }  /* GXset          */
 };
 
 /* Flush all dirty data in the Pixel Cache to memory. */
 void R128EngineFlush(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  i;
+    int           i;
 
     OUTREGP(R128_PC_NGUI_CTLSTAT, R128_PC_FLUSH_ALL, ~R128_PC_FLUSH_ALL);
     for (i = 0; i < R128_TIMEOUT; i++) {
@@ -133,16 +136,16 @@ void R128EngineFlush(ScrnInfoPtr pScrn)
 /* Reset graphics card to known state. */
 void R128EngineReset(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    CARD32	  clock_cntl_index;
-    CARD32	  mclk_cntl;
-    CARD32	  gen_reset_cntl;
+    CARD32        clock_cntl_index;
+    CARD32        mclk_cntl;
+    CARD32        gen_reset_cntl;
 
     R128EngineFlush(pScrn);
 
     clock_cntl_index = INREG(R128_CLOCK_CNTL_INDEX);
-    mclk_cntl	     = INPLL(pScrn, R128_MCLK_CNTL);
+    mclk_cntl        = INPLL(pScrn, R128_MCLK_CNTL);
 
     OUTPLL(R128_MCLK_CNTL, mclk_cntl | R128_FORCE_GCP | R128_FORCE_PIPE3D_CP);
 
@@ -153,9 +156,9 @@ void R128EngineReset(ScrnInfoPtr pScrn)
     OUTREG(R128_GEN_RESET_CNTL, gen_reset_cntl & ~R128_SOFT_RESET_GUI);
     INREG(R128_GEN_RESET_CNTL);
 
-    OUTPLL(R128_MCLK_CNTL,	  mclk_cntl);
+    OUTPLL(R128_MCLK_CNTL,        mclk_cntl);
     OUTREG(R128_CLOCK_CNTL_INDEX, clock_cntl_index);
-    OUTREG(R128_GEN_RESET_CNTL,	  gen_reset_cntl);
+    OUTREG(R128_GEN_RESET_CNTL,   gen_reset_cntl);
 
 #ifdef XF86DRI
     if (R128CCE_USE_RING_BUFFER(info->CCEMode)) R128CCEResetRing(pScrn);
@@ -166,9 +169,9 @@ void R128EngineReset(ScrnInfoPtr pScrn)
    these slots are empty. */
 void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  i;
+    int           i;
 
     for (;;) {
 	for (i = 0; i < R128_TIMEOUT; i++) {
@@ -189,13 +192,13 @@ void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 }
 
 /* Wait for the graphics engine to be completely idle: the FIFO has
-   drained, the Pixel Cache is flushed, and the engine is idle.	 This is a
+   drained, the Pixel Cache is flushed, and the engine is idle.  This is a
    standard "sync" function that will make the hardware "quiescent". */
 void R128WaitForIdle(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  i;
+    int           i;
 
     R128WaitForFifoFunction(pScrn, 64);
 
@@ -223,7 +226,7 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
 				  int color, int rop, unsigned int planemask)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 4);
@@ -232,8 +235,8 @@ static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].pattern));
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  color);
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
-    OUTREG(R128_DP_CNTL,	    (R128_DST_X_LEFT_TO_RIGHT
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
+    OUTREG(R128_DP_CNTL,            (R128_DST_X_LEFT_TO_RIGHT
 				     | R128_DST_Y_TOP_TO_BOTTOM));
 }
 
@@ -244,11 +247,11 @@ static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
 static void  R128SubsequentSolidFillRect(ScrnInfoPtr pScrn,
 					 int x, int y, int w, int h)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 2);
-    OUTREG(R128_DST_Y_X,	  (y << 16) | x);
+    OUTREG(R128_DST_Y_X,          (y << 16) | x);
     OUTREG(R128_DST_WIDTH_HEIGHT, (w << 16) | h);
 }
 
@@ -256,7 +259,7 @@ static void  R128SubsequentSolidFillRect(ScrnInfoPtr pScrn,
 static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
 				  int color, int rop, unsigned int planemask)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 3);
@@ -265,7 +268,7 @@ static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].pattern));
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  color);
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
 }
 
 
@@ -277,44 +280,44 @@ static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
    Mark Vojkovich's linetest program, posted 2Jun99 to devel@xfree86.org.]
 
    x11perf -line500
-			       1024x768@76Hz   1024x768@76Hz
-					8bpp	       32bpp
-   not used:			 39700.0/sec	 34100.0/sec
-   used:			 47600.0/sec	 36800.0/sec
+                               1024x768@76Hz   1024x768@76Hz
+                                        8bpp           32bpp
+   not used:                     39700.0/sec     34100.0/sec
+   used:                         47600.0/sec     36800.0/sec
 */
 static void R128SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
 					     int x, int y,
 					     int major, int minor,
 					     int err, int len, int octant)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  flags	    = 0;
+    int           flags     = 0;
 
-    if (octant & YMAJOR)	 flags |= R128_DST_Y_MAJOR;
+    if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
     if (!(octant & XDECREASING)) flags |= R128_DST_X_DIR_LEFT_TO_RIGHT;
     if (!(octant & YDECREASING)) flags |= R128_DST_Y_DIR_TOP_TO_BOTTOM;
 
     R128WaitForFifo(pScrn, 6);
     OUTREG(R128_DP_CNTL_XDIR_YDIR_YMAJOR, flags);
-    OUTREG(R128_DST_Y_X,		  (y << 16) | x);
-    OUTREG(R128_DST_BRES_ERR,		  err);
-    OUTREG(R128_DST_BRES_INC,		  minor);
-    OUTREG(R128_DST_BRES_DEC,		  -major);
-    OUTREG(R128_DST_BRES_LNTH,		  len);
+    OUTREG(R128_DST_Y_X,                  (y << 16) | x);
+    OUTREG(R128_DST_BRES_ERR,             err);
+    OUTREG(R128_DST_BRES_INC,             minor);
+    OUTREG(R128_DST_BRES_DEC,             -major);
+    OUTREG(R128_DST_BRES_LNTH,            len);
 }
 
 /* Subsequent XAA solid horizontal and vertical lines
 
    1024x768@76Hz 8bpp
-			     Without		 With
-   x11perf -hseg500	 87600.0/sec	 798000.0/sec
-   x11perf -vseg500	 38100.0/sec	  38000.0/sec
+                             Without             With
+   x11perf -hseg500      87600.0/sec     798000.0/sec
+   x11perf -vseg500      38100.0/sec      38000.0/sec
 */
 static void R128SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
 					   int x, int y, int len, int dir )
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 1);
@@ -337,24 +340,24 @@ static void R128SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
    speed-up on appropriately-sized patterns.
 
    1024x768@76Hz 8bpp
-			     Without		 With
-   x11perf -dseg100	218000.0/sec	 222000.0/sec
-   x11perf -dline100	215000.0/sec	 221000.0/sec
-   x11perf -ddline100	178000.0/sec	 180000.0/sec
+                             Without             With
+   x11perf -dseg100     218000.0/sec     222000.0/sec
+   x11perf -dline100    215000.0/sec     221000.0/sec
+   x11perf -ddline100   178000.0/sec     180000.0/sec
 */
 static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
 				   int fg, int bg,
 				   int rop, unsigned int planemask,
 				   int length, unsigned char *pattern)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    CARD32	  pat	    = *(CARD32 *)pattern;
+    CARD32        pat       = *(CARD32 *)pattern;
 
     switch (length) {
-    case  2: pat |= pat <<  2;	/* fall through */
-    case  4: pat |= pat <<  4;	/* fall through */
-    case  8: pat |= pat <<  8;	/* fall through */
+    case  2: pat |= pat <<  2; /* fall through */
+    case  4: pat |= pat <<  4; /* fall through */
+    case  8: pat |= pat <<  8; /* fall through */
     case 16: pat |= pat << 16;
     }
 
@@ -365,10 +368,10 @@ static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
 					: R128_GMC_BRUSH_32x1_MONO_FG_BG)
 				     | R128_ROP[rop].pattern
 				     | R128_GMC_BYTE_LSB_TO_MSB));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  fg);
     OUTREG(R128_DP_BRUSH_BKGD_CLR,  bg);
-    OUTREG(R128_BRUSH_DATA0,	    pat);
+    OUTREG(R128_BRUSH_DATA0,        pat);
 }
 
 /* Subsequent XAA dashed line. */
@@ -378,22 +381,22 @@ static void R128SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
 					      int err, int len, int octant,
 					      int phase)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  flags	    = 0;
+    int           flags     = 0;
 
-    if (octant & YMAJOR)	 flags |= R128_DST_Y_MAJOR;
+    if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
     if (!(octant & XDECREASING)) flags |= R128_DST_X_DIR_LEFT_TO_RIGHT;
     if (!(octant & YDECREASING)) flags |= R128_DST_Y_DIR_TOP_TO_BOTTOM;
 
     R128WaitForFifo(pScrn, 7);
     OUTREG(R128_DP_CNTL_XDIR_YDIR_YMAJOR, flags);
-    OUTREG(R128_DST_Y_X,		  (y << 16) | x);
-    OUTREG(R128_BRUSH_Y_X,		  (phase << 16) | phase);
-    OUTREG(R128_DST_BRES_ERR,		  err);
-    OUTREG(R128_DST_BRES_INC,		  minor);
-    OUTREG(R128_DST_BRES_DEC,		  -major);
-    OUTREG(R128_DST_BRES_LNTH,		  len);
+    OUTREG(R128_DST_Y_X,                  (y << 16) | x);
+    OUTREG(R128_BRUSH_Y_X,                (phase << 16) | phase);
+    OUTREG(R128_DST_BRES_ERR,             err);
+    OUTREG(R128_DST_BRES_INC,             minor);
+    OUTREG(R128_DST_BRES_DEC,             -major);
+    OUTREG(R128_DST_BRES_LNTH,            len);
 }
 
 #if R128_TRAPEZOIDS
@@ -411,13 +414,13 @@ static void R128SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
 					int left, int dxL, int dyL, int eL,
 					int right, int dxR, int dyR, int eR)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int		  flags	    = 0;
-    int		  Lymajor   = 0;
-    int		  Rymajor   = 0;
-    int		  origdxL   = dxL;
-    int		  origdxR   = dxR;
+    int           flags     = 0;
+    int           Lymajor   = 0;
+    int           Rymajor   = 0;
+    int           origdxL   = dxL;
+    int           origdxR   = dxR;
 
     R128TRACE(("Trap %d %d; L %d %d %d %d; R %d %d %d %d\n",
 	       y, h,
@@ -430,28 +433,28 @@ static void R128SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
     R128WaitForFifo(pScrn, 11);
 
 #if 1
-    OUTREG(R128_DP_CNTL,	    flags | (1 << 1) | (1 << 7));
-    OUTREG(R128_DST_Y_SUB,	    ((y) << 4) | 0x0 );
-    OUTREG(R128_DST_X_SUB,	    ((left) << 4)|0x0);
-    OUTREG(R128_TRAIL_BRES_ERR,	    eR-dxR);
-    OUTREG(R128_TRAIL_BRES_INC,	    dxR);
-    OUTREG(R128_TRAIL_BRES_DEC,	    -dyR);
-    OUTREG(R128_TRAIL_X_SUB,	    ((right) << 4) | 0x0);
-    OUTREG(R128_LEAD_BRES_ERR,	    eL-dxL);
-    OUTREG(R128_LEAD_BRES_INC,	    dxL);
-    OUTREG(R128_LEAD_BRES_DEC,	    -dyL);
+    OUTREG(R128_DP_CNTL,            flags | (1 << 1) | (1 << 7));
+    OUTREG(R128_DST_Y_SUB,          ((y) << 4) | 0x0 );
+    OUTREG(R128_DST_X_SUB,          ((left) << 4)|0x0);
+    OUTREG(R128_TRAIL_BRES_ERR,     eR-dxR);
+    OUTREG(R128_TRAIL_BRES_INC,     dxR);
+    OUTREG(R128_TRAIL_BRES_DEC,     -dyR);
+    OUTREG(R128_TRAIL_X_SUB,        ((right) << 4) | 0x0);
+    OUTREG(R128_LEAD_BRES_ERR,      eL-dxL);
+    OUTREG(R128_LEAD_BRES_INC,      dxL);
+    OUTREG(R128_LEAD_BRES_DEC,      -dyL);
     OUTREG(R128_LEAD_BRES_LNTH_SUB, ((h) << 4) | 0x00);
 #else
-    OUTREG(R128_DP_CNTL,	    flags | (1 << 1) );
-    OUTREG(R128_DST_Y_SUB,	    (y << 4));
-    OUTREG(R128_DST_X_SUB,	    (right << 4));
-    OUTREG(R128_TRAIL_BRES_ERR,	    eL);
-    OUTREG(R128_TRAIL_BRES_INC,	    dxL);
-    OUTREG(R128_TRAIL_BRES_DEC,	    -dyL);
-    OUTREG(R128_TRAIL_X_SUB,	    (left << 4) | 0);
-    OUTREG(R128_LEAD_BRES_ERR,	    eR);
-    OUTREG(R128_LEAD_BRES_INC,	    dxR);
-    OUTREG(R128_LEAD_BRES_DEC,	    -dyR);
+    OUTREG(R128_DP_CNTL,            flags | (1 << 1) );
+    OUTREG(R128_DST_Y_SUB,          (y << 4));
+    OUTREG(R128_DST_X_SUB,          (right << 4));
+    OUTREG(R128_TRAIL_BRES_ERR,     eL);
+    OUTREG(R128_TRAIL_BRES_INC,     dxL);
+    OUTREG(R128_TRAIL_BRES_DEC,     -dyL);
+    OUTREG(R128_TRAIL_X_SUB,        (left << 4) | 0);
+    OUTREG(R128_LEAD_BRES_ERR,      eR);
+    OUTREG(R128_LEAD_BRES_INC,      dxR);
+    OUTREG(R128_LEAD_BRES_DEC,      -dyR);
     OUTREG(R128_LEAD_BRES_LNTH_SUB, h << 4);
 #endif
 }
@@ -466,7 +469,7 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 					   unsigned int planemask,
 					   int trans_color)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     info->xdir = xdir;
@@ -477,8 +480,8 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].rop
 				     | R128_DP_SRC_SOURCE_MEMORY));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
-    OUTREG(R128_DP_CNTL,	    ((xdir >= 0 ? R128_DST_X_LEFT_TO_RIGHT : 0)
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
+    OUTREG(R128_DP_CNTL,            ((xdir >= 0 ? R128_DST_X_LEFT_TO_RIGHT : 0)
 				     | (ydir >= 0
 					? R128_DST_Y_TOP_TO_BOTTOM
 					: 0)));
@@ -495,40 +498,40 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
 /* Subsequent XAA screen-to-screen copy. */
 static void R128SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
-					     int xa, int ya,
-					     int xb, int yb,
+					     int x1, int y1,
+					     int x2, int y2,
 					     int w, int h)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    if (info->xdir < 0) xa += w - 1, xb += w - 1;
-    if (info->ydir < 0) ya += h - 1, yb += h - 1;
+    if (info->xdir < 0) x1 += w - 1, x2 += w - 1;
+    if (info->ydir < 0) y1 += h - 1, y2 += h - 1;
 
     R128WaitForFifo(pScrn, 3);
-    OUTREG(R128_SRC_Y_X,	  (ya << 16) | xa);
-    OUTREG(R128_DST_Y_X,	  (yb << 16) | xb);
+    OUTREG(R128_SRC_Y_X,          (y1 << 16) | x1);
+    OUTREG(R128_DST_Y_X,          (y2 << 16) | x2);
     OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16) | w);
 }
 
 /* Setup for XAA mono 8x8 pattern color expansion.  Patterns with
-   transparency use `bg == -1'.	 This routine is only used if the XAA
+   transparency use `bg == -1'.  This routine is only used if the XAA
    pixmap cache is turned on.
 
    Tests: xtest XFree86/fllrctngl (no other test will test this routine with
-				   both transparency and non-transparency)
+                                   both transparency and non-transparency)
 
    1024x768@76Hz 8bpp
-			     Without		 With
-   x11perf -srect100	 38600.0/sec	  85700.0/sec
-   x11perf -osrect100	 38600.0/sec	  85700.0/sec
+                             Without             With
+   x11perf -srect100     38600.0/sec      85700.0/sec
+   x11perf -osrect100    38600.0/sec      85700.0/sec
 */
 static void R128SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					   int patternx, int patterny,
 					   int fg, int bg, int rop,
 					   unsigned int planemask)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 6);
@@ -538,25 +541,25 @@ static void R128SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					: R128_GMC_BRUSH_8X8_MONO_FG_BG)
 				     | R128_ROP[rop].pattern
 				     | R128_GMC_BYTE_LSB_TO_MSB));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
     OUTREG(R128_DP_BRUSH_FRGD_CLR,  fg);
     OUTREG(R128_DP_BRUSH_BKGD_CLR,  bg);
-    OUTREG(R128_BRUSH_DATA0,	    patternx);
-    OUTREG(R128_BRUSH_DATA1,	    patterny);
+    OUTREG(R128_BRUSH_DATA0,        patternx);
+    OUTREG(R128_BRUSH_DATA1,        patterny);
 }
 
-/* Subsequent XAA 8x8 pattern color expansion.	Because they are used in
+/* Subsequent XAA 8x8 pattern color expansion.  Because they are used in
    the setup function, `patternx' and `patterny' are not used here. */
 static void R128SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 						 int patternx, int patterny,
 						 int x, int y, int w, int h)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 3);
-    OUTREG(R128_BRUSH_Y_X,	  (patterny << 8) | patternx);
-    OUTREG(R128_DST_Y_X,	  (y << 16) | x);
+    OUTREG(R128_BRUSH_Y_X,        (patterny << 8) | patternx);
+    OUTREG(R128_DST_Y_X,          (y << 16) | x);
     OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16) | w);
 }
 
@@ -570,7 +573,7 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 					    int rop, unsigned int planemask,
 					    int trans_color)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128TRACE(("Color8x8 %d %d %d\n", trans_color, patx, paty));
@@ -581,7 +584,7 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 				     | R128_GMC_SRC_DATATYPE_COLOR
 				     | R128_ROP[rop].rop
 				     | R128_DP_SRC_SOURCE_MEMORY));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
 
     if (trans_color != -1) {
 				/* Set up for transparency */
@@ -598,7 +601,7 @@ static void R128SubsequentColor8x8PatternFillRect( ScrnInfoPtr pScrn,
 						   int patx, int paty,
 						   int x, int y, int w, int h)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128TRACE(("Color8x8 %d,%d %d,%d %d %d\n", patx, paty, x, y, w, h));
@@ -611,14 +614,14 @@ static void R128SubsequentColor8x8PatternFillRect( ScrnInfoPtr pScrn,
 
 /* Setup for XAA indirect CPU-to-screen color expansion (indirect).
    Because of how the scratch buffer is initialized, this is really a
-   mainstore-to-screen color expansion.	 Transparency is supported when `bg
+   mainstore-to-screen color expansion.  Transparency is supported when `bg
    == -1'.
 
    x11perf -ftext (pure indirect):
-			       1024x768@76Hz   1024x768@76Hz
-					8bpp	       32bpp
-   not used:			685000.0/sec	794000.0/sec
-   used:		       1070000.0/sec   1080000.0/sec
+                               1024x768@76Hz   1024x768@76Hz
+                                        8bpp           32bpp
+   not used:                    685000.0/sec    794000.0/sec
+   used:                       1070000.0/sec   1080000.0/sec
 
    We could improve this indirect routine by about 10% if the hardware
    could accept DWORD padded scanlines, or if XAA could provide bit-packed
@@ -629,27 +632,27 @@ static void R128SubsequentColor8x8PatternFillRect( ScrnInfoPtr pScrn,
    few areas:
 
    1024x768@76 8bpp
-				   Indirect	     Hybrid
-   x11perf -oddsrect10		50100.0/sec	71700.0/sec
-   x11perf -oddsrect100		 4240.0/sec	 6660.0/sec
-   x11perf -bigsrect10		50300.0/sec	71100.0/sec
-   x11perf -bigsrect100		 4190.0/sec	 6800.0/sec
-   x11perf -polytext	       584000.0/sec    714000.0/sec
-   x11perf -polytext16	       154000.0/sec    172000.0/sec
-   x11perf -seg1	      1780000.0/sec   1880000.0/sec
-   x11perf -copyplane10		42900.0/sec	58300.0/sec
-   x11perf -copyplane100	 4400.0/sec	 6710.0/sec
-   x11perf -putimagexy10	 5090.0/sec	 6670.0/sec
-   x11perf -putimagexy100	  424.0/sec	  575.0/sec
+                                   Indirect          Hybrid
+   x11perf -oddsrect10          50100.0/sec     71700.0/sec
+   x11perf -oddsrect100          4240.0/sec      6660.0/sec
+   x11perf -bigsrect10          50300.0/sec     71100.0/sec
+   x11perf -bigsrect100          4190.0/sec      6800.0/sec
+   x11perf -polytext           584000.0/sec    714000.0/sec
+   x11perf -polytext16         154000.0/sec    172000.0/sec
+   x11perf -seg1              1780000.0/sec   1880000.0/sec
+   x11perf -copyplane10         42900.0/sec     58300.0/sec
+   x11perf -copyplane100         4400.0/sec      6710.0/sec
+   x11perf -putimagexy10         5090.0/sec      6670.0/sec
+   x11perf -putimagexy100         424.0/sec       575.0/sec
 
    1024x768@76 -depth 24 -fbbpp 32
-				   Indirect	     Hybrid
-   x11perf -oddsrect100		 4240.0/sec	 6670.0/sec
-   x11perf -bigsrect100		 4190.0/sec	 6800.0/sec
-   x11perf -polytext	       585000.0/sec    719000.0/sec
-   x11perf -seg1	      2960000.0/sec   2990000.0/sec
-   x11perf -copyplane100	 4400.0/sec	 6700.0/sec
-   x11perf -putimagexy100	  138.0/sec	  191.0/sec
+                                   Indirect          Hybrid
+   x11perf -oddsrect100          4240.0/sec      6670.0/sec
+   x11perf -bigsrect100          4190.0/sec      6800.0/sec
+   x11perf -polytext           585000.0/sec    719000.0/sec
+   x11perf -seg1              2960000.0/sec   2990000.0/sec
+   x11perf -copyplane100         4400.0/sec      6700.0/sec
+   x11perf -putimagexy100         138.0/sec       191.0/sec
 
 */
 static void R128SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -658,7 +661,7 @@ static void R128SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 							   unsigned int
 							   planemask)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128WaitForFifo(pScrn, 4);
@@ -671,7 +674,7 @@ static void R128SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 				     | R128_ROP[rop].rop
 				     | R128_GMC_BYTE_LSB_TO_MSB
 				     | R128_DP_SRC_SOURCE_HOST_DATA));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
     OUTREG(R128_DP_SRC_FRGD_CLR,    fg);
     OUTREG(R128_DP_SRC_BKGD_CLR,    bg);
 }
@@ -683,12 +686,12 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 							     int w, int h,
 							     int skipleft)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     int x1clip = x+skipleft;
     int x2clip = x+w;
 
-    info->scanline_h	  = h;
+    info->scanline_h      = h;
     info->scanline_words  = (w + 31) >> 5;
 
 #if 0
@@ -705,8 +708,8 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #endif
     {
 	/* Use indirect for anything else */
-	info->scratch_buffer[0]		   = info->scratch_save;
-	info->scanline_direct = 0;
+	info->scratch_buffer[0] = info->scratch_save;
+	info->scanline_direct   = 0;
     }
 
     if (pScrn->bitsPerPixel == 24) {
@@ -716,22 +719,22 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
     R128WaitForFifo(pScrn, 4 + (info->scanline_direct ?
 					(info->scanline_words * h) : 0) );
-    OUTREG(R128_SC_TOP_LEFT,	 (y << 16)	 | (x1clip & 0xffff));
+    OUTREG(R128_SC_TOP_LEFT,     (y << 16)       | (x1clip & 0xffff));
     OUTREG(R128_SC_BOTTOM_RIGHT, ((y+h-1) << 16) | ((x2clip-1) & 0xffff));
-    OUTREG(R128_DST_Y_X,	 (y << 16)	 | (x & 0xffff));
+    OUTREG(R128_DST_Y_X,         (y << 16)       | (x & 0xffff));
     /* Have to pad the width here and use clipping engine */
-    OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16)	  | ((w + 31) & ~31));
+    OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16)      | ((w + 31) & ~31));
 }
 
 /* Subsequent XAA indirect CPU-to-screen color expandion.  This is called
    once for each scanline. */
 static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
-    R128InfoPtr	    info      = R128PTR(pScrn);
+    R128InfoPtr     info      = R128PTR(pScrn);
     unsigned char   *R128MMIO = info->MMIO;
-    CARD32	    *p		= (CARD32 *)info->scratch_buffer[bufno];
-    int		    i;
-    int		    left	= info->scanline_words;
+    CARD32          *p        = (CARD32 *)info->scratch_buffer[bufno];
+    int             i;
+    int             left      = info->scanline_words;
     volatile CARD32 *d;
 
     if (info->scanline_direct) return;
@@ -763,12 +766,11 @@ static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 
 /* Setup for XAA indirect image write.
 
-
    1024x768@76Hz 8bpp
-			     Without		 With
-   x11perf -putimage10	 37500.0/sec	  39300.0/sec
-   x11perf -putimage100	  2150.0/sec	   1170.0/sec
-   x11perf -putimage500	   108.0/sec	     49.8/sec
+                             Without             With
+   x11perf -putimage10   37500.0/sec      39300.0/sec
+   x11perf -putimage100   2150.0/sec       1170.0/sec
+   x11perf -putimage500    108.0/sec         49.8/sec
  */
 #if R128_IMAGEWRITE
 static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
@@ -778,7 +780,7 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 					   int bpp,
 					   int depth)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     info->scanline_bpp = bpp;
@@ -791,7 +793,7 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 				     | R128_ROP[rop].rop
 				     | R128_GMC_BYTE_LSB_TO_MSB
 				     | R128_DP_SRC_SOURCE_HOST_DATA));
-    OUTREG(R128_DP_WRITE_MASK,	    planemask);
+    OUTREG(R128_DP_WRITE_MASK,      planemask);
 
     if (trans_color != -1) {
 				/* Set up for transparency */
@@ -810,7 +812,7 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 						 int w, int h,
 						 int skipleft)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
     int x1clip = x+skipleft;
     int x2clip = x+w;
@@ -820,7 +822,7 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
     if (pScrn->bitsPerPixel == 8) shift = 3;
     else if (pScrn->bitsPerPixel == 16) shift = 1;
 
-    info->scanline_h	  = h;
+    info->scanline_h      = h;
     info->scanline_words  = (w * info->scanline_bpp + 31) >> 5;
 
 #if 0
@@ -836,8 +838,8 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 #endif
     {
 	/* Use indirect for anything else */
-	info->scratch_buffer[0]		   = info->scratch_save;
-	info->scanline_direct = 0;
+	info->scratch_buffer[0] = info->scratch_save;
+	info->scanline_direct   = 0;
     }
 
     if (pScrn->bitsPerPixel == 24) {
@@ -847,22 +849,22 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 
     R128WaitForFifo(pScrn, 4 + (info->scanline_direct ?
 					(info->scanline_words * h) : 0) );
-    OUTREG(R128_SC_TOP_LEFT,	  (y << 16)	  | (x1clip & 0xffff));
-    OUTREG(R128_SC_BOTTOM_RIGHT,  ((y+h-1) << 16)   | ((x2clip-1) & 0xffff));
-    OUTREG(R128_DST_Y_X,	  (y << 16)	  | (x & 0xffff));
+    OUTREG(R128_SC_TOP_LEFT,      (y << 16)       | (x1clip & 0xffff));
+    OUTREG(R128_SC_BOTTOM_RIGHT,  ((y+h-1) << 16) | ((x2clip-1) & 0xffff));
+    OUTREG(R128_DST_Y_X,          (y << 16)       | (x & 0xffff));
     /* Have to pad the width here and use clipping engine */
-    OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16)	  | ((w + shift) & ~shift));
+    OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16)       | ((w + shift) & ~shift));
 }
 
-/* Subsequent XAA indirect iamge write.	 This is called once for each
+/* Subsequent XAA indirect iamge write.  This is called once for each
    scanline. */
 static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
-    R128InfoPtr	    info      = R128PTR(pScrn);
+    R128InfoPtr     info      = R128PTR(pScrn);
     unsigned char   *R128MMIO = info->MMIO;
-    CARD32	    *p		= (CARD32 *)info->scratch_buffer[bufno];
-    int		    i;
-    int		    left	= info->scanline_words;
+    CARD32          *p        = (CARD32 *)info->scratch_buffer[bufno];
+    int             i;
+    int             left      = info->scanline_words;
     volatile CARD32 *d;
 
     if (info->scanline_direct) return;
@@ -896,7 +898,7 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 /* Initialize the acceleration hardware. */
 void R128EngineInit(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr	  info	    = R128PTR(pScrn);
+    R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
     R128TRACE(("EngineInit (%d/%d)\n", info->CurrentLayout.pixel_code, info->CurrentLayout.bitsPerPixel));
@@ -921,15 +923,15 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 
     R128WaitForFifo(pScrn, 2);
     OUTREG(R128_DEFAULT_OFFSET, 0);
-    OUTREG(R128_DEFAULT_PITCH,	info->pitch);
+    OUTREG(R128_DEFAULT_PITCH,  info->pitch);
 
     R128WaitForFifo(pScrn, 4);
-    OUTREG(R128_AUX_SC_CNTL,		 0);
+    OUTREG(R128_AUX_SC_CNTL,             0);
     OUTREG(R128_DEFAULT_SC_BOTTOM_RIGHT, (R128_DEFAULT_SC_RIGHT_MAX
 					  | R128_DEFAULT_SC_BOTTOM_MAX));
-    OUTREG(R128_SC_TOP_LEFT,		 0);
-    OUTREG(R128_SC_BOTTOM_RIGHT,	 (R128_DEFAULT_SC_RIGHT_MAX
-					 | R128_DEFAULT_SC_BOTTOM_MAX));
+    OUTREG(R128_SC_TOP_LEFT,             0);
+    OUTREG(R128_SC_BOTTOM_RIGHT,         (R128_DEFAULT_SC_RIGHT_MAX
+					  | R128_DEFAULT_SC_BOTTOM_MAX));
 
     info->dp_gui_master_cntl = ((info->datatype << R128_GMC_DST_DATATYPE_SHIFT)
 				| R128_GMC_CLR_CMP_CNTL_DIS
@@ -940,14 +942,14 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 				     | R128_GMC_SRC_DATATYPE_COLOR));
 
     R128WaitForFifo(pScrn, 8);
-    OUTREG(R128_DST_BRES_ERR,	   0);
-    OUTREG(R128_DST_BRES_INC,	   0);
-    OUTREG(R128_DST_BRES_DEC,	   0);
+    OUTREG(R128_DST_BRES_ERR,      0);
+    OUTREG(R128_DST_BRES_INC,      0);
+    OUTREG(R128_DST_BRES_DEC,      0);
     OUTREG(R128_DP_BRUSH_FRGD_CLR, 0xffffffff);
     OUTREG(R128_DP_BRUSH_BKGD_CLR, 0x00000000);
     OUTREG(R128_DP_SRC_FRGD_CLR,   0xffffffff);
     OUTREG(R128_DP_SRC_BKGD_CLR,   0x00000000);
-    OUTREG(R128_DP_WRITE_MASK,	   0xffffffff);
+    OUTREG(R128_DP_WRITE_MASK,     0xffffffff);
 
     R128WaitForFifo(pScrn, 1);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
@@ -963,12 +965,12 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 #ifdef XF86DRI
     /* FIXME: When direct rendering is enabled, we should use the CCE to
        draw 2D commands */
-static void R128CCEAccelInit(XAAInfoRecPtr a)
+static void R128CCEAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 {
-    a->Flags				= 0;
+    a->Flags                            = 0;
 
 				/* Sync */
-    a->Sync				= R128CCEWaitForIdle;
+    a->Sync                             = R128CCEWaitForIdle;
 
 }
 #endif
@@ -977,17 +979,17 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 {
     R128InfoPtr info = R128PTR(pScrn);
 
-    a->Flags				= (PIXMAP_CACHE
+    a->Flags                            = (PIXMAP_CACHE
 					   | OFFSCREEN_PIXMAPS
 					   | LINEAR_FRAMEBUFFER);
 
 				/* Sync */
-    a->Sync				= R128WaitForIdle;
+    a->Sync                             = R128WaitForIdle;
 
 				/* Solid Filled Rectangle */
-    a->PolyFillRectSolidFlags		= 0;
-    a->SetupForSolidFill		= R128SetupForSolidFill;
-    a->SubsequentSolidFillRect		= R128SubsequentSolidFillRect;
+    a->PolyFillRectSolidFlags           = 0;
+    a->SetupForSolidFill                = R128SetupForSolidFill;
+    a->SubsequentSolidFillRect          = R128SubsequentSolidFillRect;
 
 				/* Screen-to-screen Copy */
 				/* Transparency uses the wrong colors for
@@ -996,23 +998,23 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 				   This can be seen with netscape's I-bar
 				   cursor when editing in the URL location
 				   box. */
-    a->ScreenToScreenCopyFlags		= ((pScrn->bitsPerPixel == 24)
+    a->ScreenToScreenCopyFlags          = ((pScrn->bitsPerPixel == 24)
 					   ? NO_TRANSPARENCY
 					   : 0);
-    a->SetupForScreenToScreenCopy	= R128SetupForScreenToScreenCopy;
-    a->SubsequentScreenToScreenCopy	= R128SubsequentScreenToScreenCopy;
+    a->SetupForScreenToScreenCopy       = R128SetupForScreenToScreenCopy;
+    a->SubsequentScreenToScreenCopy     = R128SubsequentScreenToScreenCopy;
 
 				/* Mono 8x8 Pattern Fill (Color Expand) */
-    a->SetupForMono8x8PatternFill	= R128SetupForMono8x8PatternFill;
+    a->SetupForMono8x8PatternFill       = R128SetupForMono8x8PatternFill;
     a->SubsequentMono8x8PatternFillRect = R128SubsequentMono8x8PatternFillRect;
-    a->Mono8x8PatternFillFlags		= (HARDWARE_PATTERN_PROGRAMMED_BITS
+    a->Mono8x8PatternFillFlags          = (HARDWARE_PATTERN_PROGRAMMED_BITS
 					   | HARDWARE_PATTERN_PROGRAMMED_ORIGIN
 					   | HARDWARE_PATTERN_SCREEN_ORIGIN
 					   | BIT_ORDER_IN_BYTE_LSBFIRST);
 
 				/* Indirect CPU-To-Screen Color Expand */
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
-    a->ScanlineCPUToScreenColorExpandFillFlags =  LEFT_EDGE_CLIPPING
+    a->ScanlineCPUToScreenColorExpandFillFlags = LEFT_EDGE_CLIPPING
 					       | LEFT_EDGE_CLIPPING_NEGATIVE_X;
 #else
     a->ScanlineCPUToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST
@@ -1021,10 +1023,10 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 #endif
     a->NumScanlineColorExpandBuffers   = 1;
     a->ScanlineColorExpandBuffers      = info->scratch_buffer;
-    info->scratch_save		       = xalloc(((pScrn->virtualX+31)/32*4)
+    info->scratch_save                 = xalloc(((pScrn->virtualX+31)/32*4)
 					    + (pScrn->virtualX
 					    * info->CurrentLayout.pixel_bytes));
-    info->scratch_buffer[0]	       = info->scratch_save;
+    info->scratch_buffer[0]            = info->scratch_save;
     a->SetupForScanlineCPUToScreenColorExpandFill
 	= R128SetupForScanlineCPUToScreenColorExpandFill;
     a->SubsequentScanlineCPUToScreenColorExpandFill
@@ -1032,26 +1034,26 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->SubsequentColorExpandScanline   = R128SubsequentColorExpandScanline;
 
 				/* Bresenham Solid Lines */
-    a->SetupForSolidLine	       = R128SetupForSolidLine;
+    a->SetupForSolidLine               = R128SetupForSolidLine;
     a->SubsequentSolidBresenhamLine    = R128SubsequentSolidBresenhamLine;
     a->SubsequentSolidHorVertLine      = R128SubsequentSolidHorVertLine;
 
 				/* Bresenham Dashed Lines*/
-    a->SetupForDashedLine	       = R128SetupForDashedLine;
+    a->SetupForDashedLine              = R128SetupForDashedLine;
     a->SubsequentDashedBresenhamLine   = R128SubsequentDashedBresenhamLine;
-    a->DashPatternMaxLength	       = 32;
-    a->DashedLineFlags		       = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
+    a->DashPatternMaxLength            = 32;
+    a->DashedLineFlags                 = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
 					  | LINE_PATTERN_POWER_OF_2_ONLY);
 
 				/* ImageWrite */
 #if R128_IMAGEWRITE
     a->NumScanlineImageWriteBuffers    = 1;
     a->ScanlineImageWriteBuffers       = info->scratch_buffer;
-    info->scratch_buffer[0]	       = info->scratch_save;
+    info->scratch_buffer[0]            = info->scratch_save;
     a->SetupForScanlineImageWrite      = R128SetupForScanlineImageWrite;
     a->SubsequentScanlineImageWriteRect= R128SubsequentScanlineImageWriteRect;
     a->SubsequentImageWriteScanline    = R128SubsequentImageWriteScanline;
-    a->ScanlineImageWriteFlags		 = CPU_TRANSFER_PAD_DWORD
+    a->ScanlineImageWriteFlags         = CPU_TRANSFER_PAD_DWORD
 		/* Performance tests show that we shouldn't use GXcopy for
 		 * uploads as a memcpy is faster */
 					  | NO_GXCOPY
@@ -1065,8 +1067,8 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
    graphics hardware for acceleration. */
 Bool R128AccelInit(ScreenPtr pScreen)
 {
-    ScrnInfoPtr	  pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr	  info	= R128PTR(pScrn);
+    ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
+    R128InfoPtr   info  = R128PTR(pScrn);
     XAAInfoRecPtr a;
 
     if (!(a = info->accel = XAACreateInfoRec())) return FALSE;
@@ -1074,7 +1076,7 @@ Bool R128AccelInit(ScreenPtr pScreen)
 #ifdef XF86DRI
     /* FIXME: When direct rendering is enabled, we should use the CCE to
        draw 2D commands */
-    if (info->CCE2D) R128CCEAccelInit(a);
+    if (info->CCE2D) R128CCEAccelInit(pScrn, a);
     else
 #endif
 	R128MMIOAccelInit(pScrn, a);

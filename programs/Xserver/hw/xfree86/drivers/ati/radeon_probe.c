@@ -1,34 +1,36 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.1 2000/11/02 16:55:44 tsi Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario
- *		    and Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation on the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 /*
  * Authors:
- *   Rickard E. Faith <faith@precisioninsight.com>
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Rickard E. Faith <faith@valinux.com>
  *
  * Modified by Marc Aurele La France <tsi@xfree86.org> for ATI driver merge.
  */
@@ -50,7 +52,7 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_QE, "ATI Radeon QE (AGP)" },
     { PCI_CHIP_RADEON_QF, "ATI Radeon QF (AGP)" },
     { PCI_CHIP_RADEON_QG, "ATI Radeon QG (AGP)" },
-    { -1,		  NULL }
+    { -1,                 NULL }
 };
 
 PciChipsets RADEONPciChipsets[] = {
@@ -58,7 +60,7 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RADEON_QE, PCI_CHIP_RADEON_QE, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_QF, PCI_CHIP_RADEON_QF, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_QG, PCI_CHIP_RADEON_QG, RES_SHARED_VGA },
-    { -1,		  -1,		      RES_UNDEFINED }
+    { -1,                 -1,                 RES_UNDEFINED }
 };
 
 /* Return the options for supported chipset 'n'; NULL otherwise */
@@ -91,13 +93,13 @@ RADEONIdentify(int flags)
 Bool
 RADEONProbe(DriverPtr drv, int flags)
 {
-    int		  numUsed;
-    int		  numDevSections, nATIGDev, nRadeonGDev;
-    int		  *usedChips;
-    GDevPtr	  *devSections, *ATIGDevs, *RadeonGDevs;
+    int           numUsed;
+    int           numDevSections, nATIGDev, nRadeonGDev;
+    int           *usedChips;
+    GDevPtr       *devSections, *ATIGDevs, *RadeonGDevs;
     EntityInfoPtr pEnt;
-    Bool	  foundScreen = FALSE;
-    int		  i;
+    Bool          foundScreen = FALSE;
+    int           i;
 
     if (!xf86GetPciVideoInfo()) return FALSE;
 
@@ -144,7 +146,7 @@ RADEONProbe(DriverPtr drv, int flags)
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	if (pEnt->active) {
-	    ScrnInfoPtr pScrn	 = xf86AllocateScreen(drv, 0);
+	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
 	    if (!xf86LoadSubModule(pScrn, "radeon")) {
@@ -158,19 +160,19 @@ RADEONProbe(DriverPtr drv, int flags)
 #endif
 
 	    pScrn->driverVersion = RADEON_VERSION_CURRENT;
-	    pScrn->driverName	 = RADEON_DRIVER_NAME;
-	    pScrn->name		 = RADEON_NAME;
-	    pScrn->Probe	 = RADEONProbe;
-	    pScrn->PreInit	 = RADEONPreInit;
-	    pScrn->ScreenInit	 = RADEONScreenInit;
-	    pScrn->SwitchMode	 = RADEONSwitchMode;
-	    pScrn->AdjustFrame	 = RADEONAdjustFrame;
-	    pScrn->EnterVT	 = RADEONEnterVT;
-	    pScrn->LeaveVT	 = RADEONLeaveVT;
-	    pScrn->FreeScreen	 = RADEONFreeScreen;
-	    pScrn->ValidMode	 = RADEONValidMode;
+	    pScrn->driverName    = RADEON_DRIVER_NAME;
+	    pScrn->name          = RADEON_NAME;
+	    pScrn->Probe         = RADEONProbe;
+	    pScrn->PreInit       = RADEONPreInit;
+	    pScrn->ScreenInit    = RADEONScreenInit;
+	    pScrn->SwitchMode    = RADEONSwitchMode;
+	    pScrn->AdjustFrame   = RADEONAdjustFrame;
+	    pScrn->EnterVT       = RADEONEnterVT;
+	    pScrn->LeaveVT       = RADEONLeaveVT;
+	    pScrn->FreeScreen    = RADEONFreeScreen;
+	    pScrn->ValidMode     = RADEONValidMode;
 
-	    foundScreen		 = TRUE;
+	    foundScreen          = TRUE;
 
 	    xf86ConfigActivePciEntity(pScrn, usedChips[i], RADEONPciChipsets,
 				      0, 0, 0, 0, 0);

@@ -1,34 +1,37 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.1 2000/11/02 16:55:37 tsi Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario
- *		    and Precision Insight, Inc., Cedar Park, Texas.
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ *                      Precision Insight, Inc., Cedar Park, Texas, and
+ *                      VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation on the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /*
  * Authors:
- *   Rickard E. Faith <faith@precisioninsight.com>
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Rickard E. Faith <faith@valinux.com>
+ *   Kevin E. Martin <martin@valinux.com>
  *
  * Modified by Marc Aurele La France <tsi@xfree86.org> for ATI driver merge.
  */
@@ -55,7 +58,7 @@ SymTabRec R128Chipsets[] = {
     { PCI_CHIP_RAGE128LF, "ATI Rage 128 Mobility LF (AGP)" },
     { PCI_CHIP_RAGE128MF, "ATI Rage 128 Mobility MF (AGP)" },
     { PCI_CHIP_RAGE128ML, "ATI Rage 128 Mobility ML (AGP)" },
-    { -1,		  NULL }
+    { -1,                 NULL }
 };
 
 PciChipsets R128PciChipsets[] = {
@@ -68,7 +71,7 @@ PciChipsets R128PciChipsets[] = {
     { PCI_CHIP_RAGE128LF, PCI_CHIP_RAGE128LF, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128MF, PCI_CHIP_RAGE128MF, RES_SHARED_VGA },
     { PCI_CHIP_RAGE128ML, PCI_CHIP_RAGE128ML, RES_SHARED_VGA },
-    { -1,		  -1,		      RES_UNDEFINED }
+    { -1,                 -1,                 RES_UNDEFINED }
 };
 
 /* Return the options for supported chipset 'n'; NULL otherwise */
@@ -101,13 +104,13 @@ R128Identify(int flags)
 Bool
 R128Probe(DriverPtr drv, int flags)
 {
-    int		  numUsed;
-    int		  numDevSections, nATIGDev, nR128GDev;
-    int		  *usedChips;
-    GDevPtr	  *devSections, *ATIGDevs, *R128GDevs;
+    int           numUsed;
+    int           numDevSections, nATIGDev, nR128GDev;
+    int           *usedChips;
+    GDevPtr       *devSections, *ATIGDevs, *R128GDevs;
     EntityInfoPtr pEnt;
-    Bool	  foundScreen = FALSE;
-    int		  i;
+    Bool          foundScreen = FALSE;
+    int           i;
 
     if (!xf86GetPciVideoInfo()) return FALSE;
 
@@ -154,7 +157,7 @@ R128Probe(DriverPtr drv, int flags)
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	if (pEnt->active) {
-	    ScrnInfoPtr pScrn	 = xf86AllocateScreen(drv, 0);
+	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
 	    if (!xf86LoadSubModule(pScrn, "r128")) {
@@ -168,19 +171,19 @@ R128Probe(DriverPtr drv, int flags)
 #endif
 
 	    pScrn->driverVersion = R128_VERSION_CURRENT;
-	    pScrn->driverName	 = R128_DRIVER_NAME;
-	    pScrn->name		 = R128_NAME;
-	    pScrn->Probe	 = R128Probe;
-	    pScrn->PreInit	 = R128PreInit;
-	    pScrn->ScreenInit	 = R128ScreenInit;
-	    pScrn->SwitchMode	 = R128SwitchMode;
-	    pScrn->AdjustFrame	 = R128AdjustFrame;
-	    pScrn->EnterVT	 = R128EnterVT;
-	    pScrn->LeaveVT	 = R128LeaveVT;
-	    pScrn->FreeScreen	 = R128FreeScreen;
-	    pScrn->ValidMode	 = R128ValidMode;
+	    pScrn->driverName    = R128_DRIVER_NAME;
+	    pScrn->name          = R128_NAME;
+	    pScrn->Probe         = R128Probe;
+	    pScrn->PreInit       = R128PreInit;
+	    pScrn->ScreenInit    = R128ScreenInit;
+	    pScrn->SwitchMode    = R128SwitchMode;
+	    pScrn->AdjustFrame   = R128AdjustFrame;
+	    pScrn->EnterVT       = R128EnterVT;
+	    pScrn->LeaveVT       = R128LeaveVT;
+	    pScrn->FreeScreen    = R128FreeScreen;
+	    pScrn->ValidMode     = R128ValidMode;
 
-	    foundScreen		 = TRUE;
+	    foundScreen          = TRUE;
 
 	    xf86ConfigActivePciEntity(pScrn, usedChips[i], R128PciChipsets,
 				      0, 0, 0, 0, 0);

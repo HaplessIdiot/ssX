@@ -1,28 +1,30 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.1 2000/11/02 16:55:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.2 2000/11/03 09:52:55 alanh Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario
- *	      and VA Linux Systems, Inc., Sunnyvale, California.
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation on
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation on the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * ATI, VA LINUX SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 /*
@@ -92,11 +94,11 @@ static DGAModePtr RADEONSetupDGAMode(ScrnInfoPtr pScrn,
 				     unsigned long blue,
 				     short visualClass)
 {
-    RADEONInfoPtr  info		   = RADEONPTR(pScrn);
-    DGAModePtr	   newmodes	   = NULL, currentMode;
+    RADEONInfoPtr  info            = RADEONPTR(pScrn);
+    DGAModePtr     newmodes        = NULL, currentMode;
     DisplayModePtr pMode, firstMode;
-    int		   otherPitch, Bpp = bitsPerPixel >> 3;
-    Bool	   oneMore;
+    int            otherPitch, Bpp = bitsPerPixel >> 3;
+    Bool           oneMore;
 
     pMode = firstMode = pScrn->modes;
 
@@ -122,31 +124,31 @@ SECOND_PASS:
 	currentMode = modes + *num;
 	(*num)++;
 
-	currentMode->mode	    = pMode;
+	currentMode->mode           = pMode;
 	/* FIXME: is concurrent access really possible? */
-	currentMode->flags	    = DGA_CONCURRENT_ACCESS;
+	currentMode->flags          = DGA_CONCURRENT_ACCESS;
 	if (pixmap)
-	    currentMode->flags	   |= DGA_PIXMAP_AVAILABLE;
+	    currentMode->flags     |= DGA_PIXMAP_AVAILABLE;
 	if (info->accel)
-	    currentMode->flags	   |= DGA_FILL_RECT | DGA_BLIT_RECT;
+	    currentMode->flags     |= DGA_FILL_RECT | DGA_BLIT_RECT;
 	if (pMode->Flags & V_DBLSCAN)
-	    currentMode->flags	   |= DGA_DOUBLESCAN;
+	    currentMode->flags     |= DGA_DOUBLESCAN;
 	if (pMode->Flags & V_INTERLACE)
-	    currentMode->flags	   |= DGA_INTERLACED;
-	currentMode->byteOrder	    = pScrn->imageByteOrder;
-	currentMode->depth	    = depth;
+	    currentMode->flags     |= DGA_INTERLACED;
+	currentMode->byteOrder      = pScrn->imageByteOrder;
+	currentMode->depth          = depth;
 	currentMode->bitsPerPixel   = bitsPerPixel;
-	currentMode->red_mask	    = red;
-	currentMode->green_mask	    = green;
-	currentMode->blue_mask	    = blue;
+	currentMode->red_mask       = red;
+	currentMode->green_mask     = green;
+	currentMode->blue_mask      = blue;
 	currentMode->visualClass    = visualClass;
 	currentMode->viewportWidth  = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
 	currentMode->xViewportStep  = 8;
 	currentMode->yViewportStep  = 1;
 	currentMode->viewportFlags  = DGA_FLIP_RETRACE;
-	currentMode->offset	    = 0;
-	currentMode->address	    = (unsigned char*)info->LinearAddr;
+	currentMode->offset         = 0;
+	currentMode->address        = (unsigned char*)info->LinearAddr;
 
 	if (oneMore) { /* first one is narrow width */
 	    currentMode->bytesPerScanline = (((pMode->HDisplay * Bpp) + 3)
@@ -164,14 +166,14 @@ SECOND_PASS:
 	    goto SECOND_PASS;
 	} else {
 	    currentMode->bytesPerScanline = ((otherPitch * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth	  = otherPitch;
-	    currentMode->imageHeight	  = pMode->VDisplay;
-	    currentMode->pixmapWidth	  = currentMode->imageWidth;
-	    currentMode->pixmapHeight	  = currentMode->imageHeight;
-	    currentMode->maxViewportX	  = (currentMode->imageWidth -
+	    currentMode->imageWidth       = otherPitch;
+	    currentMode->imageHeight      = pMode->VDisplay;
+	    currentMode->pixmapWidth      = currentMode->imageWidth;
+	    currentMode->pixmapHeight     = currentMode->imageHeight;
+	    currentMode->maxViewportX     = (currentMode->imageWidth -
 					     currentMode->viewportWidth);
 	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY	  = (currentMode->imageHeight -
+	    currentMode->maxViewportY     = (currentMode->imageHeight -
 					     currentMode->viewportHeight);
 	}
 
@@ -185,10 +187,10 @@ SECOND_PASS:
 
 Bool RADEONDGAInit(ScreenPtr pScreen)
 {
-    ScrnInfoPtr	  pScrn = xf86Screens[pScreen->myNum];
-    RADEONInfoPtr info	= RADEONPTR(pScrn);
-    DGAModePtr	  modes = NULL;
-    int		  num	= 0;
+    ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info  = RADEONPTR(pScrn);
+    DGAModePtr    modes = NULL;
+    int           num   = 0;
 
     /* 8 */
     modes = RADEONSetupDGAMode(pScrn, modes, &num, 8, 8,
@@ -245,8 +247,8 @@ Bool RADEONDGAInit(ScreenPtr pScreen)
 static Bool RADEON_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
     static RADEONFBLayout SavedLayouts[MAXSCREENS];
-    int			  indx = pScrn->pScreen->myNum;
-    RADEONInfoPtr	  info = RADEONPTR(pScrn);
+    int                   indx = pScrn->pScreen->myNum;
+    RADEONInfoPtr         info = RADEONPTR(pScrn);
 
     if (!pMode) { /* restore the original mode */
 	/* put the ScreenParameters back */
@@ -260,18 +262,18 @@ static Bool RADEON_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 	RADEONAdjustFrame(indx, 0, 0, 0);
 	info->DGAactive = FALSE;
     } else {
-	if (!info->DGAactive) {	 /* save the old parameters */
+	if (!info->DGAactive) {  /* save the old parameters */
 	    memcpy(&SavedLayouts[indx], &info->CurrentLayout,
 		   sizeof(RADEONFBLayout));
 	    info->DGAactive = TRUE;
 	}
 
 	info->CurrentLayout.bitsPerPixel = pMode->bitsPerPixel;
-	info->CurrentLayout.depth	 = pMode->depth;
+	info->CurrentLayout.depth        = pMode->depth;
 	info->CurrentLayout.displayWidth = (pMode->bytesPerScanline /
 					    (pMode->bitsPerPixel >> 3));
-	info->CurrentLayout.pixel_bytes	 = pMode->bitsPerPixel / 8;
-	info->CurrentLayout.pixel_code	 = (pMode->bitsPerPixel != 16
+	info->CurrentLayout.pixel_bytes  = pMode->bitsPerPixel / 8;
+	info->CurrentLayout.pixel_code   = (pMode->bitsPerPixel != 16
 					    ? pMode->bitsPerPixel
 					    : pMode->depth);
 	/* RADEONModeInit() will set the mode field */
@@ -345,7 +347,7 @@ static Bool RADEON_OpenFramebuffer(ScrnInfoPtr pScrn,
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
 
-    *name   = NULL;		/* no special device */
+    *name   = NULL;             /* no special device */
     *mem    = (unsigned char*)info->LinearAddr;
     *size   = info->FbMapSize;
     *offset = 0;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.1 2000/11/02 16:55:32 tsi Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -239,7 +239,7 @@ R128_SetMode(
 	R128AdjustFrame(indx, 0, 0, 0);
 	info->DGAactive = FALSE;
    } else {
-	if(!info->DGAactive) {	/* save the old parameters */
+	if(!info->DGAactive) {  /* save the old parameters */
 	    memcpy(&SavedLayouts[indx], &info->CurrentLayout, sizeof(R128FBLayout));
 	    info->DGAactive = TRUE;
 	}
@@ -249,7 +249,7 @@ R128_SetMode(
 	info->CurrentLayout.displayWidth = pMode->bytesPerScanline /
 					    (pMode->bitsPerPixel >> 3);
 	info->CurrentLayout.pixel_bytes = pMode->bitsPerPixel / 8;
-	info->CurrentLayout.pixel_code	= (pMode->bitsPerPixel != 16
+	info->CurrentLayout.pixel_code  = (pMode->bitsPerPixel != 16
 					  ? pMode->bitsPerPixel
 					  : pMode->depth);
 	/* R128ModeInit() will set the mode field */
@@ -281,7 +281,7 @@ R128_SetViewport(
    R128InfoPtr info = R128PTR(pScrn);
 
    R128AdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   info->DGAViewportStatus = 0;	 /* FIXME */
+   info->DGAViewportStatus = 0;  /* FIXME */
 }
 
 
@@ -348,7 +348,7 @@ R128_OpenFramebuffer(
 ){
     R128InfoPtr info = R128PTR(pScrn);
 
-    *name = NULL;		/* no special device */
+    *name = NULL;               /* no special device */
     *mem = (unsigned char*)info->LinearAddr;
     *size = info->FbMapSize;
     *offset = 0;
