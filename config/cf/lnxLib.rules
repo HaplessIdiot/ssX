@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules /main/12 1996/01/03 14:51:18 kaleb $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.19 1996/02/04 08:53:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.20 1996/02/12 11:10:20 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -55,7 +55,15 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.19 1996/02/04 08:53:42 dawes Exp $
 #define PositionIndependentCplusplusFlags -fPIC
 #endif
 #ifndef ExtraLoadFlags
-#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIR)
+#if BinUtilsVersion >= 2607
+#ifdef UseInstalled
+#define ExtraLoadFlags -Wl,-rpath-link,$(SHLIBDIR)
+#else
+#define ExtraLoadFlags -Wl,-rpath-link,$(BUILDLIBDIR)
+#endif
+#else
+#define ExtraLoadFlags -Wl,-rpath,$(SHLIBDIR)
+#endif
 #endif
 
 /*
@@ -87,13 +95,22 @@ install:: Concat(lib,libname.so.rev) 					@@\
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
+#ifdef UseInstalled
+#define LinkBuildSonameLibrary(lib) $(_NULLCMD_)
+#else
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	(cd down; T=`echo $@ | sed 's/\.[^\.]*$$//'`; \
-		$(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$T solist $(REQUIREDLIBS) BaseShLibReqs) @@\
+	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
+		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
+		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
+		LinkBuildSonameLibrary($$SONAME); \			@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\

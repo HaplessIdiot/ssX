@@ -1,8 +1,12 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.37 1996/02/10 10:35:24 dawes Exp $
 
 #ifndef LinuxElfDefault
+#ifdef i386Architecture
+#define LinuxElfDefault		YES
+#else
 #define LinuxElfDefault		NO
+#endif
 #endif
 
 #ifndef UseElfFormat
@@ -27,6 +31,14 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawe
 #endif
 #ifndef OSTeenyVersion
 #define OSTeenyVersion		13
+#endif
+
+/*
+ * The Linux BinUtils version.  2520 => 2.5.2, which is what is included
+ * with Slackware 3.0
+ */
+#ifndef BinUtilsVersion
+#define BinUtilsVersion		2520
 #endif
 
 #define HasGcc			YES
@@ -63,7 +75,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawe
 #define AsCmd			as
 #define LdCmd			ld
 #define AsmDefines		-D__ELF__
-#define CplusplusCmd		g++
+#define CplusplusCmd		c++
 #else
 #define CcCmd			gcc -b i486-linuxaout
 #define AsCmd			/usr/i486-linuxaout/bin/as
@@ -76,7 +88,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawe
 #define AsCmd			/usr/i486-linux/bin/as
 #define LdCmd			ld -m elf_i386
 #define AsmDefines		-D__ELF__
-#define CplusplusCmd		g++ -b i486-linux
+#define CplusplusCmd		c++ -b i486-linux
 #else
 #define CcCmd			gcc
 #define AsCmd			as
@@ -90,7 +102,11 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawe
 #endif
 #endif
 #define CppCmd			/lib/cpp
+#ifdef USE_BYACC
+#define YaccCmd			byacc
+#else
 #define YaccCmd			bison -y
+#endif
 #define LexCmd			flex -l
 #define LexLib			-lfl
 #define PreProcessCmd		CcCmd -E
@@ -106,9 +122,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.36 1996/02/09 08:17:42 dawe
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #if BuildDynamicLoading
-#define ServerExtraSysLibs	-rdynamic -ldl $(CBRT) -lm
+#define ServerExtraSysLibs	-rdynamic -ldl
 #else
-#define ServerExtraSysLibs	$(CBRT) -lm
+#define ServerExtraSysLibs	/**/
 #endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 #define InstUidFlags		-s -m 4711

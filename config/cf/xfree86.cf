@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.86 1996/02/12 11:10:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.87 1996/02/18 03:40:47 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -229,7 +229,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 #ifndef XF86MonoDrivers
-# define XF86MonoDrivers	hgc1280 sigma apollo hercules
+# define XF86MonoDrivers	hgc1280 sigma apollo /*hercules*/
 #endif
 
 /* This doesn't do anything (yet) */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.71 1996/02/18 03:40:46 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -32,6 +32,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
  * uncomment the following line, and remove '-fno-strength-reduce'
  *
 #define DefaultGcc2i386Opt	-O2 -fno-strength-reduce
+ */
+
+/*
+ * For Linux, this should match the Binutils version you have.  This example
+ * is for 2.6.0.7.  See linux.cf for the default setting.
+ *
+#define BinUtilsVersion		2607
  */
 
 /*
@@ -134,7 +141,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
 /*
  * Mono driver in Mono or VGA16 server:
  *
-#define XF86MonoDrivers		hgc1280 sigma apollo hercules
+#define XF86MonoDrivers		hgc1280 sigma apollo
  */
 
 /*
@@ -341,9 +348,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
 
 /*
  * Uncomment this if your default tools (eg, gcc, ld, as, etc) are
- * the Linux ELF versions.
+ * not the Linux ELF versions.
  *
-#define LinuxElfDefault		YES
+#define LinuxElfDefault		NO
  */
 
 /*
@@ -351,6 +358,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.70 1996/02/09 08:17:48 dawes Exp $
  * Note: gcc-2.6.0-941008 and gas-941008 (or later) is required for this.
  * Check linux.cf if you have problems regarding the location of elf-aware
  * gcc and gas binaries.
+ *
+ * The default setting of this is the same as the setting of LinuxElfDefault
  *
 #define UseElfFormat		YES
  */
