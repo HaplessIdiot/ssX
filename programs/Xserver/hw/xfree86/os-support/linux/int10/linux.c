@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.19 2000/12/06 15:35:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.21 2001/02/15 19:46:04 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -557,9 +557,11 @@ do_vm86(xf86Int10InfoPtr pInt)
 {
     int retval, signo;
 
+    xf86DisableIO();	/* So that all I/O can be trapped */
     xf86InterceptSignals(&signo);
     retval = vm86_rep(VM86S);
     xf86InterceptSignals(NULL);
+    xf86EnableIO();
 
     if (signo >= 0) {
 	xf86DrvMsg(pInt->scrnIndex, X_ERROR,
