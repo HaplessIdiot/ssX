@@ -1,3 +1,14 @@
+XFree86 3.9.18Za (5 March 2000)
+3795. Static library objects don't use THREADS_CFLAGS (#3790, Matthieu Herrb).
+3934. Fix a fatal error related to shared memory pixmaps in Xinerama (#3788,
+      Mark Vojkovich).
+3933. Fix IA64 build fixes (#3787, Mark Vojkovich).
+3932. Fill out the rendition man page (#3785, Dejan Ilic).
+3931. Update the s3virge man page (#3784, Kevin Brosius).
+3930. Fix the FreeBSD/alpha code to track changes made to the Linux memory
+      mapping code (#3782, Doug Rabson).
+3929. Update email addresses for C&T driver authors (#3781, Nozomi Ytow).
+
 XFree86 3.9.18Z (3 March 2000)
 3928. Restrict the X server -configure option to root, and fix a crash
       when the server fails to read the first stage config file that it
@@ -9960,4 +9971,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1063 2000/03/04 03:25:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1064 2000/03/04 03:57:57 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.51 2000/02/27 02:45:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.52 2000/03/01 16:01:19 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -801,7 +801,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86GetOptValFreq(S3VOptions, OPTION_REFCLK, OPTUNITS_MHZ, &real)) {
 	ps3v->REFCLK = (int)(real * 1000.0);
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: set_mclk set to %1.3f Mhz\n",
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: set_refclk set to %1.3f Mhz\n",
 		   ps3v->REFCLK / 1000.0 );
     } else
    	ps3v->REFCLK = 0;

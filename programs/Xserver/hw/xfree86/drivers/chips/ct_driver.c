@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.81 2000/02/27 02:45:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.82 2000/03/01 16:01:02 tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -7,20 +7,20 @@
  *
  * Major Contributors to XFree86 3.2
  *   Modified 1995/6 by Nozomi Ytow
- *   Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
- *   Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
+ *   Modified 1996 by Egbert Eich <eich@xfree86.org>
+ *   Modified 1996 by David Bateman <dbateman@club-internet.fr>
  *   Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  * Contributors to XFree86 3.2
  *   Modified 1995/6 by Ken Raeburn <raeburn@raeburn.org>
  *   Modified 1996 by Shigehiro Nomura <nomura@sm.sony.co.jp>
- *   Modified 1996 by Marc de Courville <courvill@sig.enst.fr>
+ *   Modified 1996 by Marc de Courville <marc@courville.org>
  *   Modified 1996 by Adam Sulmicki <adam@cfar.umd.edu>
  *   Modified 1996 by Jens Maurer <jmaurer@cck.uni-kl.de>
  *
  * Large parts rewritten for XFree86 4.0
- *   Modified 1998 by David Bateman <dbateman@eng.uts.edu.au>
- *   Modified 1998 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
+ *   Modified 1998 by David Bateman <dbateman@club-internet.fr>
+ *   Modified 1998 by Egbert Eich <eich@xfree86.org>
  *   Modified 1998 by Nozomi Ytow
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
