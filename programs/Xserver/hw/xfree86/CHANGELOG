@@ -1,4 +1,10 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 420. Fixes and updates for XKB keyboard maps:
+      - Fix unneeded BKSL redefinition in Ukrainian 'winkeys' keyboard map
+        (Andriy Rysin).
+      - Fix some keycodes for jp106 keyboard model (Bugzilla #657,
+        Stephen J. Turnbull).
+      - Update xfree86.xml registry file (Andriy Rysin, Sergey V. Oudaltsov).
  419. Add a missing xf86UnblockSIGIO() call to xf86InstallSIGIOHandler()
       (#5839, NetBSD PR xsrc/22668, Yorick Hardy).
  418. Fix a problem with the "pl" map where the order in which the Alt_R and
@@ -17655,7 +17661,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2840 2003/09/03 20:30:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2841 2003/09/04 00:24:12 dawes Exp $
 
 
 
