@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.48 1995/06/14 07:46:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.49 1995/06/14 09:44:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1622,7 +1622,7 @@ configDeviceSection()
       devp->s3MClk = (int)(val.realnum * 1000.0 + 0.5);
       break;
 
-    case VGABASE:
+    case VGABASEADDR:
       if (getToken(NULL) != NUMBER) 
          configError("VGA aperature base address expected");
       devp->VGAbase = val.num;

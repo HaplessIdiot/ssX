@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.24 1995/03/19 10:18:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.25 1995/06/14 09:44:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -342,7 +342,7 @@ static SymTabRec KeyMapTab[] = {
 #define CLOCKCHIP	27
 #define S3MNADJUST	28
 #define S3MCLK		29
-#define VGABASE        100
+#define VGABASEADDR    100
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
