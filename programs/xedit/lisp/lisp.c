@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.63 2002/10/06 17:11:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.64 2002/11/02 22:58:09 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -161,13 +161,13 @@ static INLINE void LispMutable(LispObj*);
 
 static LispObj *LispCheckNeedProtect(LispObj*);
 
+static
 #ifdef SIGNALRETURNSINT
-int LispAbortSignal(int);
-int LispFPESignal(int);
+int
 #else
-void LispAbortSignal(int);
-void LispFPESignal(int);
+void
 #endif
+LispSignalHandler(int);
 
 /*
  * Initialization
@@ -176,6 +176,9 @@ static LispObj lispnil = {LispNil_t};
 static LispObj lispt = {LispTrue_t};
 static LispObj lispunbound = {LispNil_t};
 LispObj *NIL = &lispnil, *T = &lispt, *UNBOUND = &lispunbound;
+
+static volatile int lisp__disable_int;
+static volatile int lisp__interrupted;
 
 LispObj *Okey, *Orest, *Ooptional, *Oaux, *Olambda;
 
@@ -809,6 +812,8 @@ LispTopLevel(LispMac *mac)
 
     mac->savepackage = PACKAGE;
     mac->savepack = mac->pack;
+
+    lisp__disable_int = lisp__interrupted = 0;
 }
 
 void
@@ -834,6 +839,8 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 
     if (gcpro)
 	return;
+
+    DISABLE_INTERRUPTS();
 
     nfree = 0;
     freeobj = NIL;
@@ -1046,6 +1053,8 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 	mac->gc.gctime += msec;
     }
 #endif
+
+    ENABLE_INTERRUPTS();
 }
 
 static INLINE void
@@ -1088,10 +1097,12 @@ LispMused(LispMac *mac, void *pointer)
 {
     int i;
 
+    DISABLE_INTERRUPTS();
     for (i = mac->mem.index; i >= 0; i--)
 	if (mac->mem.mem[i] == pointer) {
 	    mac->mem.mem[i] = NULL;
 	    mac->mem.index = i;
+	    ENABLE_INTERRUPTS();
 	    return;
 	}
 
@@ -1100,6 +1111,7 @@ LispMused(LispMac *mac, void *pointer)
 	    mac->mem.mem[i] = NULL;
 	    mac->mem.index = i;
 	}
+    ENABLE_INTERRUPTS();
 }
 
 void *
@@ -1107,11 +1119,13 @@ LispMalloc(LispMac *mac, unsigned size)
 {
     void *pointer;
 
+    DISABLE_INTERRUPTS();
     LispCheckMemLevel(mac);
     if ((pointer = malloc(size)) == NULL)
 	LispDestroy(mac, "out of memory, couldn't allocate %u bytes", size);
 
     mac->mem.mem[mac->mem.index] = pointer;
+    ENABLE_INTERRUPTS();
 
     return (pointer);
 }
@@ -1121,11 +1135,13 @@ LispCalloc(LispMac *mac, unsigned nmemb, unsigned size)
 {
     void *pointer;
 
+    DISABLE_INTERRUPTS();
     LispCheckMemLevel(mac);
     if ((pointer = calloc(nmemb, size)) == NULL)
 	LispDestroy(mac, "out of memory, couldn't allocate %u bytes", size);
 
     mac->mem.mem[mac->mem.index] = pointer;
+    ENABLE_INTERRUPTS();
 
     return (pointer);
 }
@@ -1136,6 +1152,7 @@ LispRealloc(LispMac *mac, void *pointer, unsigned size)
     void *ptr;
     int i;
 
+    DISABLE_INTERRUPTS();
     if (pointer == NULL)
 	i = mac->mem.level;
     else {
@@ -1153,6 +1170,7 @@ LispRealloc(LispMac *mac, void *pointer, unsigned size)
 	LispDestroy(mac, "out of memory, couldn't realloc");
 
     mac->mem.mem[i] = ptr;
+    ENABLE_INTERRUPTS();
 
     return (ptr);
 }
@@ -1172,11 +1190,13 @@ LispFree(LispMac *mac, void *pointer)
 {
     int i;
 
+    DISABLE_INTERRUPTS();
     for (i = mac->mem.index; i >= 0; i--)
 	if (mac->mem.mem[i] == pointer) {
 	    mac->mem.mem[i] = NULL;
 	    mac->mem.index = i;
 	    free(pointer);
+	    ENABLE_INTERRUPTS();
 	    return;
 	}
 
@@ -1187,6 +1207,7 @@ LispFree(LispMac *mac, void *pointer)
 	}
 
     free(pointer);
+    ENABLE_INTERRUPTS();
 }
 
 LispObj *
@@ -4950,41 +4971,64 @@ static LispMac *global_mac = NULL;
 
 #ifdef SIGNALRETURNSINT
 int
-LispAbortSignal(int signum)
-{
-    if (global_mac != NULL)
-	LispDestroy(global_mac, "aborted");
-}
-
-int
-LispFPESignal(int signum)
-{
-    if (global_mac != NULL)
-	LispDestroy(global_mac, "floating point exception");
-}
 #else
 void
-LispAbortSignal(int signum)
+#endif
+LispSignalHandler(int signum)
 {
     if (global_mac != NULL)
-	LispDestroy(global_mac, "aborted");
+	LispSignal(global_mac, signum);
+#ifdef SIGNALRETURNSINT
+    return (0);
+#endif
 }
 
 void
-LispFPESignal(int signum)
+LispSignal(LispMac *mac, int signum)
 {
-    if (global_mac != NULL)
-	LispDestroy(global_mac, "floating point exception");
+    char *errstr;
+    char buffer[32];
+
+    if (lisp__disable_int) {
+	lisp__interrupted = signum;
+	return;
+    }
+    switch (signum) {
+	case SIGINT:
+	    errstr = "interrupted";
+	    break;
+	case SIGFPE:
+	    errstr = "floating point exception";
+	    break;
+	default:
+	    sprintf(buffer, "signal %d received", signum);
+	    errstr = buffer;
+	    break;
+    }
+    LispDestroy(mac, errstr);
 }
-#endif
+
+void
+LispDisableInterrupts(LispMac *mac)
+{
+    ++lisp__disable_int;
+}
+
+void
+LispEnableInterrupts(LispMac *mac)
+{
+    --lisp__disable_int;
+    if (lisp__disable_int <= 0 && lisp__interrupted)
+	LispSignal(mac, lisp__interrupted);
+}
 
 void
 LispMachine(LispMac *mac)
 {
     LispObj *cod, *obj;
 
-    mac->sigint = signal(SIGINT, LispAbortSignal);
-    mac->sigfpe = signal(SIGFPE, LispFPESignal);
+    mac->sigint = signal(SIGINT, LispSignalHandler);
+    mac->sigfpe = signal(SIGFPE, LispSignalHandler);
     global_mac = mac;
 
     /*CONSTCOND*/

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.3 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.4 2002/11/03 20:10:27 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -35,6 +35,42 @@
 #include <X11/Xmu/Xmu.h>
 #define XEDIT_LISP_PRIVATE
 #include "xedit.h"
+#include <signal.h>
+
+/* Initialize to enter lisp */
+#define LISP_SETUP()						\
+    int lisp__running = mac->running
+
+/* XXX Maybe should use ualarm or better, setitimer, but one
+ *     second seens good enough to check for interrupts */
+
+#define	ENABLE_SIGALRM()					\
+    old_sigalrm = signal(SIGALRM, SigalrmHandler);		\
+    alarm(1)
+
+#define DISABLE_SIGALRM()					\
+    alarm(0);							\
+    signal(SIGALRM, old_sigalrm)
+
+/* Enter lisp */
+#define LISP_ENTER()						\
+    if (!lisp__running) {					\
+	mac->running = 1;					\
+	ENABLE_SIGALRM();					\
+	if (sigsetjmp(mac->jmp, 1) != 0) {			\
+	    DISABLE_SIGALRM();					\
+	    mac->running = 0;					\
+	    return;						\
+	}							\
+    }
+
+/* Leave lisp */
+#define LISP_LEAVE()						\
+    if (!lisp__running) {					\
+	DISABLE_SIGALRM();					\
+	LispTopLevel(mac);					\
+	mac->running = 0;					\
+    }
 
 /*
  * Types
@@ -64,6 +100,11 @@ static LispObj *XeditSearch(LispMac*, LispBuiltin*, XawTextScanDirection);
  * Initialization
  */
 extern LispMac *lisp_handler;		/* Hack... */
+#ifdef SIGNALRETURNSINT
+static int (*old_sigalrm)(int);
+#else
+static void (*old_sigalrm)(int);
+#endif
 
 static LispObj *Oauto_mode, *Osyntax_highlight, *Osyntable_indent;
 
@@ -118,6 +159,36 @@ static LispBuiltin xeditbuiltins[] = {
 /*
  * Implementation
  */
+/*ARGSUSED*/
+static
+#ifdef SIGNALRETURNSINT
+int
+#else
+void
+#endif
+SigalrmHandler(int signum)
+{
+    XEvent event;
+    char buffer[2];
+
+    /* Check if user pressed C-g */
+    if (XCheckMaskEvent(XtDisplay(textwindow),
+			KeyPressMask | KeyReleaseMask,
+			&event) &&
+	(event.xkey.state & ControlMask) &&
+	XLookupString(&(event.xkey), buffer, sizeof(buffer), NULL, NULL) &&
+	buffer[0] == '\a') {
+	/* Tell a signal was received, print message for SIGINT */
+	LispSignal(lisp_handler, SIGINT);
+	alarm(0);
+    }
+    else
+	alarm(1);
+#ifdef SIGNALRETURNSINT
+    return (0);
+#endif
+}
+
 void
 LispXeditInitialize(LispMac *mac)
 {
@@ -217,21 +288,18 @@ LispXeditInitialize(LispMac *mac)
     EXECUTE("(require \"xedit\")");
 }
 
-int
+void
 XeditLispExecute(LispMac *mac, Widget output,
 		 XawTextPosition left, XawTextPosition right)
 {
+    LISP_SETUP();
     int alloced;
     XawTextBlock block;
     XawTextPosition position;
     unsigned char *string, *ptr;
     LispObj *result, *code, *_cod, **presult = &result;
 
-    mac->running = 1;
-    if (sigsetjmp(mac->jmp, 1) != 0) {
-	mac->running = 0;
-	return (0);
-    }
+    LISP_ENTER();
 
     *presult = NIL;
 
@@ -283,9 +351,8 @@ XeditLispExecute(LispMac *mac, Widget output,
 
     if (alloced)
 	LispFree(mac, string);
-    LispTopLevel(mac);
 
-    return (1);
+    LISP_LEAVE();
 }
 
 static void
@@ -322,16 +389,12 @@ void
 XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
 {
     GC_ENTER();
+    LISP_SETUP();
     LispObj *syntax, *name;
 
     item->xldata = (XeditLispData*)XtCalloc(1, sizeof(XeditLispData));
 
-    /* Don't call abort if a fatal error happens */
-    mac->running = 1;
-    if (sigsetjmp(mac->jmp, 1) != 0) {
-	mac->running = 0;
-	return;
-    }
+    LISP_ENTER();
 
     /* Create an object that represents the buffer filename.
      * Note that the entire path is passed to the auto-mode
@@ -373,9 +436,7 @@ XeditLispSetEditMode(LispMac *mac, xedit_flist_item *item)
     else
 	item->properties = NULL;
 
-    /* Return to the toplevel and or do any cleanup */
-    LispTopLevel(mac);
-    mac->running = 0;
+    LISP_LEAVE();
 }
 
 void
@@ -405,6 +466,7 @@ static void
 XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 {
     LispMac *mac = lisp_handler;
+    LISP_SETUP();
     XeditLispData *data = (XeditLispData*)client_data;
     LispObj *syntax = data->syntaxp;
     XawTextPropertyInfo *info = (XawTextPropertyInfo*)call_data;
@@ -423,12 +485,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     if (data->disable_highlight)
 	return;
 
-    /* Don't call abort if a fatal error happens */
-    mac->running = 1;
-    if (sigsetjmp(mac->jmp, 1) != 0) {
-	mac->running = 0;
-	return;
-    }
+    LISP_ENTER();
 
     first = XawTextSourceScan(w, 0, XawstAll, XawsdLeft, 1, True);
     last = XawTextSourceScan(w, 0, XawstAll, XawsdRight, 1, True);
@@ -486,7 +543,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
 	/* Loop storing information */					\
 	while (entity &&						\
 	    (position = anchor->position + entity->offset) < (to)) {	\
-	    (info)[(count)].left = MAX(position, (left));		\
+	    (info)[(count)].left = MAX(position, (from));		\
 	    position += entity->length;					\
 	    (info)[(count)].right = MIN(position, (to));		\
 	    (info)[(count)].property = entity->property;		\
@@ -519,6 +576,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     if (INT_P(result))
 	right = result->data.integer;
 
+    LISP_LEAVE();
 
     /* Check what have changed */
     STORE_STATE(num_ninfo, ninfo, begin, right);
@@ -604,10 +662,6 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     }
     XmuDestroyScanline(clip);
 
-    /* Return to the toplevel and or do any cleanup */
-    LispTopLevel(mac);
-    mac->running = 0;
-
     data->syntablep = syntable;
     if (indent && syntable != NIL &&
 	/* Doing an undo, probably will need an exported interface for this
@@ -625,19 +679,14 @@ static void
 XeditIndentationCallback(Widget w, XtPointer client_data, XtPointer call_data)
 {
     LispMac *mac = lisp_handler;
+    LISP_SETUP();
     LispObj *indentp;
     XeditLispData *data = (XeditLispData*)client_data;
 
     data->disable_highlight = True;
     XtRemoveCallback(w, XtNpositionCallback, XeditIndentationCallback, data);
 
-    /* Don't call abort if a fatal error happens */
-    mac->running = 1;
-    if (sigsetjmp(mac->jmp, 1) != 0) {
-	mac->running = 0;
-	data->disable_highlight = False;
-	return;
-    }
+    LISP_ENTER();
 
     /* Get pointer to indentation function */
     indentp = APPLY1(Osyntable_indent, data->syntablep);
@@ -648,9 +697,7 @@ XeditIndentationCallback(Widget w, XtPointer client_data, XtPointer call_data)
 
     data->disable_highlight = False;
 
-    /* Return to the toplevel and or do any cleanup */
-    LispTopLevel(mac);
-    mac->running = 0;
+    LISP_LEAVE();
 }
 
 /************************************************************************
