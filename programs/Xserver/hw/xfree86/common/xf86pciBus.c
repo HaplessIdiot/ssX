@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.56 2002/09/16 18:05:48 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.57 2002/09/16 20:14:46 tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -1918,7 +1918,6 @@ xf86GetPciBridgeInfo(void)
 
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
-
 
 		PciBus->primary = primary;
 		PciBus->secondary = secondary;
