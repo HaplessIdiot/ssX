@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_state.c,v 1.1.1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "api_arrayelt.h"
 #include "enums.h"
 #include "colormac.h"
+#include "light.h"
 
 #include "swrast/swrast.h"
 #include "array_cache/acache.h"
@@ -103,158 +104,234 @@ static void r200AlphaFunc( GLcontext *ctx, GLenum func, GLfloat ref )
    rmesa->hw.ctx.cmd[CTX_PP_MISC] = pp_misc;
 }
 
-static void r200BlendEquation( GLcontext *ctx, GLenum mode )
+static void r200BlendColor( GLcontext *ctx, const GLfloat cf[4] )
+{
+   GLubyte color[4];
+   r200ContextPtr rmesa = R200_CONTEXT(ctx);
+   R200_STATECHANGE( rmesa, ctx );
+   CLAMPED_FLOAT_TO_UBYTE(color[0], cf[0]);
+   CLAMPED_FLOAT_TO_UBYTE(color[1], cf[1]);
+   CLAMPED_FLOAT_TO_UBYTE(color[2], cf[2]);
+   CLAMPED_FLOAT_TO_UBYTE(color[3], cf[3]);
+   if (rmesa->r200Screen->drmSupportsBlendColor)
+      rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCOLOR] = r200PackColor( 4, color[0], color[1], color[2], color[3] );
+}
+
+/**
+ * Calculate the hardware blend factor setting.  This same function is used
+ * for source and destination of both alpha and RGB.
+ *
+ * \returns
+ * The hardware register value for the specified blend factor.  This value
+ * will need to be shifted into the correct position for either source or
+ * destination factor.
+ *
+ * \todo
+ * Since the two cases where source and destination are handled differently
+ * are essentially error cases, they should never happen.  Determine if these
+ * cases can be removed.
+ */
+static int blend_factor( GLenum factor, GLboolean is_src )
+{
+   int func;
+
+   switch ( factor ) {
+   case GL_ZERO:
+      func = R200_BLEND_GL_ZERO;
+      break;
+   case GL_ONE:
+      func = R200_BLEND_GL_ONE;
+      break;
+   case GL_DST_COLOR:
+      func = R200_BLEND_GL_DST_COLOR;
+      break;
+   case GL_ONE_MINUS_DST_COLOR:
+      func = R200_BLEND_GL_ONE_MINUS_DST_COLOR;
+      break;
+   case GL_SRC_COLOR:
+      func = R200_BLEND_GL_SRC_COLOR;
+      break;
+   case GL_ONE_MINUS_SRC_COLOR:
+      func = R200_BLEND_GL_ONE_MINUS_SRC_COLOR;
+      break;
+   case GL_SRC_ALPHA:
+      func = R200_BLEND_GL_SRC_ALPHA;
+      break;
+   case GL_ONE_MINUS_SRC_ALPHA:
+      func = R200_BLEND_GL_ONE_MINUS_SRC_ALPHA;
+      break;
+   case GL_DST_ALPHA:
+      func = R200_BLEND_GL_DST_ALPHA;
+      break;
+   case GL_ONE_MINUS_DST_ALPHA:
+      func = R200_BLEND_GL_ONE_MINUS_DST_ALPHA;
+      break;
+   case GL_SRC_ALPHA_SATURATE:
+      func = (is_src) ? R200_BLEND_GL_SRC_ALPHA_SATURATE : R200_BLEND_GL_ZERO;
+      break;
+   case GL_CONSTANT_COLOR:
+      func = R200_BLEND_GL_CONST_COLOR;
+      break;
+   case GL_ONE_MINUS_CONSTANT_COLOR:
+      func = R200_BLEND_GL_ONE_MINUS_CONST_COLOR;
+      break;
+   case GL_CONSTANT_ALPHA:
+      func = R200_BLEND_GL_CONST_ALPHA;
+      break;
+   case GL_ONE_MINUS_CONSTANT_ALPHA:
+      func = R200_BLEND_GL_ONE_MINUS_CONST_ALPHA;
+      break;
+   default:
+      func = (is_src) ? R200_BLEND_GL_ONE : R200_BLEND_GL_ZERO;
+   }
+   return func;
+}
+
+/**
+ * Sets both the blend equation and the blend function.
+ * This is done in a single
+ * function because some blend equations (i.e., \c GL_MIN and \c GL_MAX)
+ * change the interpretation of the blend function.
+ * Also, make sure that blend function and blend equation are set to their default
+ * value if color blending is not enabled, since at least blend equations GL_MIN
+ * and GL_FUNC_REVERSE_SUBTRACT will cause wrong results otherwise for
+ * unknown reasons.
+ */
+static void r200_set_blend_state( GLcontext * ctx )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLuint b = rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] & ~R200_COMB_FCN_MASK;
+   GLuint cntl = rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] &
+      ~(R200_ROP_ENABLE | R200_ALPHA_BLEND_ENABLE | R200_SEPARATE_ALPHA_ENABLE);
 
-   switch ( mode ) {
+   int func = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+      (R200_BLEND_GL_ZERO << R200_DST_BLEND_SHIFT);
+   int eqn = R200_COMB_FCN_ADD_CLAMP;
+   int funcA = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+      (R200_BLEND_GL_ZERO << R200_DST_BLEND_SHIFT);
+   int eqnA = R200_COMB_FCN_ADD_CLAMP;
+
+   R200_STATECHANGE( rmesa, ctx );
+
+   if (rmesa->r200Screen->drmSupportsBlendColor) {
+      if (ctx->Color._LogicOpEnabled) {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] =  cntl | R200_ROP_ENABLE;
+         rmesa->hw.ctx.cmd[CTX_RB3D_ABLENDCNTL] = eqn | func;
+         rmesa->hw.ctx.cmd[CTX_RB3D_CBLENDCNTL] = eqn | func;
+         return;
+      } else if (ctx->Color.BlendEnabled) {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] =  cntl | R200_ALPHA_BLEND_ENABLE | R200_SEPARATE_ALPHA_ENABLE;
+      }
+      else {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] = cntl;
+         rmesa->hw.ctx.cmd[CTX_RB3D_ABLENDCNTL] = eqn | func;
+         rmesa->hw.ctx.cmd[CTX_RB3D_CBLENDCNTL] = eqn | func;
+         return;
+      }
+   }
+   else {
+      if (ctx->Color._LogicOpEnabled) {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] =  cntl | R200_ROP_ENABLE;
+         rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] = eqn | func;
+         return;
+      } else if (ctx->Color.BlendEnabled) {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] =  cntl | R200_ALPHA_BLEND_ENABLE;
+      }
+      else {
+         rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] = cntl;
+         rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] = eqn | func;
+         return;
+      }
+   }
+
+   func = (blend_factor( ctx->Color.BlendSrcRGB, GL_TRUE ) << R200_SRC_BLEND_SHIFT) |
+      (blend_factor( ctx->Color.BlendDstRGB, GL_FALSE ) << R200_DST_BLEND_SHIFT);
+
+   switch(ctx->Color.BlendEquationRGB) {
    case GL_FUNC_ADD:
-   case GL_LOGIC_OP:
-      b |= R200_COMB_FCN_ADD_CLAMP;
+      eqn = R200_COMB_FCN_ADD_CLAMP;
       break;
 
    case GL_FUNC_SUBTRACT:
-      b |= R200_COMB_FCN_SUB_CLAMP;
+      eqn = R200_COMB_FCN_SUB_CLAMP;
       break;
 
    case GL_FUNC_REVERSE_SUBTRACT:
-      b |= R200_COMB_FCN_RSUB_CLAMP;
+      eqn = R200_COMB_FCN_RSUB_CLAMP;
       break;
 
    case GL_MIN:
-      b |= R200_COMB_FCN_MIN;
+      eqn = R200_COMB_FCN_MIN;
+      func = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+         (R200_BLEND_GL_ONE << R200_DST_BLEND_SHIFT);
       break;
 
    case GL_MAX:
-      b |= R200_COMB_FCN_MAX;
+      eqn = R200_COMB_FCN_MAX;
+      func = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+         (R200_BLEND_GL_ONE << R200_DST_BLEND_SHIFT);
       break;
 
    default:
-      break;
+      fprintf( stderr, "[%s:%u] Invalid RGB blend equation (0x%04x).\n",
+         __FUNCTION__, __LINE__, ctx->Color.BlendEquationRGB );
+      return;
    }
 
-   R200_STATECHANGE( rmesa, ctx );
-   rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] = b;
-   if ( ctx->Color.ColorLogicOpEnabled ) {
-      rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] |=  R200_ROP_ENABLE;
-   } else {
-      rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] &= ~R200_ROP_ENABLE;
+   if (!rmesa->r200Screen->drmSupportsBlendColor) {
+      rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] = eqn | func;
+      return;
    }
+
+   funcA = (blend_factor( ctx->Color.BlendSrcA, GL_TRUE ) << R200_SRC_BLEND_SHIFT) |
+      (blend_factor( ctx->Color.BlendDstA, GL_FALSE ) << R200_DST_BLEND_SHIFT);
+
+   switch(ctx->Color.BlendEquationA) {
+   case GL_FUNC_ADD:
+      eqnA = R200_COMB_FCN_ADD_CLAMP;
+      break;
+
+   case GL_FUNC_SUBTRACT:
+      eqnA = R200_COMB_FCN_SUB_CLAMP;
+      break;
+
+   case GL_FUNC_REVERSE_SUBTRACT:
+      eqnA = R200_COMB_FCN_RSUB_CLAMP;
+      break;
+
+   case GL_MIN:
+      eqnA = R200_COMB_FCN_MIN;
+      funcA = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+         (R200_BLEND_GL_ONE << R200_DST_BLEND_SHIFT);
+      break;
+
+   case GL_MAX:
+      eqnA = R200_COMB_FCN_MAX;
+      funcA = (R200_BLEND_GL_ONE << R200_SRC_BLEND_SHIFT) |
+         (R200_BLEND_GL_ONE << R200_DST_BLEND_SHIFT);
+      break;
+
+   default:
+      fprintf( stderr, "[%s:%u] Invalid A blend equation (0x%04x).\n",
+         __FUNCTION__, __LINE__, ctx->Color.BlendEquationA );
+      return;
+   }
+
+   rmesa->hw.ctx.cmd[CTX_RB3D_ABLENDCNTL] = eqnA | funcA;
+   rmesa->hw.ctx.cmd[CTX_RB3D_CBLENDCNTL] = eqn | func;
+
 }
 
-static void r200BlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
+static void r200BlendEquationSeparate( GLcontext *ctx,
+				       GLenum modeRGB, GLenum modeA )
 {
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLuint b = rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] & 
-      ~(R200_SRC_BLEND_MASK | R200_DST_BLEND_MASK);
-
-   switch ( ctx->Color.BlendSrcRGB ) {
-   case GL_ZERO:
-      b |= R200_SRC_BLEND_GL_ZERO;
-      break;
-   case GL_ONE:
-      b |= R200_SRC_BLEND_GL_ONE;
-      break;
-   case GL_DST_COLOR:
-      b |= R200_SRC_BLEND_GL_DST_COLOR;
-      break;
-   case GL_ONE_MINUS_DST_COLOR:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_DST_COLOR;
-      break;
-   case GL_SRC_COLOR:
-      b |= R200_SRC_BLEND_GL_SRC_COLOR;
-      break;
-   case GL_ONE_MINUS_SRC_COLOR:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_SRC_COLOR;
-      break;
-   case GL_SRC_ALPHA:
-      b |= R200_SRC_BLEND_GL_SRC_ALPHA;
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_SRC_ALPHA;
-      break;
-   case GL_DST_ALPHA:
-      b |= R200_SRC_BLEND_GL_DST_ALPHA;
-      break;
-   case GL_ONE_MINUS_DST_ALPHA:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_DST_ALPHA;
-      break;
-   case GL_SRC_ALPHA_SATURATE:
-      b |= R200_SRC_BLEND_GL_SRC_ALPHA_SATURATE;
-      break;
-   case GL_CONSTANT_COLOR:
-      b |= R200_SRC_BLEND_GL_CONST_COLOR;
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_CONST_COLOR;
-      break;
-   case GL_CONSTANT_ALPHA:
-      b |= R200_SRC_BLEND_GL_CONST_ALPHA;
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA:
-      b |= R200_SRC_BLEND_GL_ONE_MINUS_CONST_ALPHA;
-      break;
-   default:
-      break;
-   }
-
-   switch ( ctx->Color.BlendDstRGB ) {
-   case GL_ZERO:
-      b |= R200_DST_BLEND_GL_ZERO;
-      break;
-   case GL_ONE:
-      b |= R200_DST_BLEND_GL_ONE;
-      break;
-   case GL_SRC_COLOR:
-      b |= R200_DST_BLEND_GL_SRC_COLOR;
-      break;
-   case GL_ONE_MINUS_SRC_COLOR:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_SRC_COLOR;
-      break;
-   case GL_SRC_ALPHA:
-      b |= R200_DST_BLEND_GL_SRC_ALPHA;
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_SRC_ALPHA;
-      break;
-   case GL_DST_COLOR:
-      b |= R200_DST_BLEND_GL_DST_COLOR;
-      break;
-   case GL_ONE_MINUS_DST_COLOR:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_DST_COLOR;
-      break;
-   case GL_DST_ALPHA:
-      b |= R200_DST_BLEND_GL_DST_ALPHA;
-      break;
-   case GL_ONE_MINUS_DST_ALPHA:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_DST_ALPHA;
-      break;
-   case GL_CONSTANT_COLOR:
-      b |= R200_DST_BLEND_GL_CONST_COLOR;
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_CONST_COLOR;
-      break;
-   case GL_CONSTANT_ALPHA:
-      b |= R200_DST_BLEND_GL_CONST_ALPHA;
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA:
-      b |= R200_DST_BLEND_GL_ONE_MINUS_CONST_ALPHA;
-      break;
-   default:
-      break;
-   }
-
-   R200_STATECHANGE( rmesa, ctx );
-   rmesa->hw.ctx.cmd[CTX_RB3D_BLENDCNTL] = b;
+      r200_set_blend_state( ctx );
 }
 
 static void r200BlendFuncSeparate( GLcontext *ctx,
 				     GLenum sfactorRGB, GLenum dfactorRGB,
 				     GLenum sfactorA, GLenum dfactorA )
 {
-   r200BlendFunc( ctx, sfactorRGB, dfactorRGB );
+      r200_set_blend_state( ctx );
 }
 
 
@@ -412,9 +489,9 @@ static void r200Fogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
  */
 
 
-static GLboolean intersect_rect( XF86DRIClipRectPtr out,
-				 XF86DRIClipRectPtr a,
-				 XF86DRIClipRectPtr b )
+static GLboolean intersect_rect( drm_clip_rect_t *out,
+				 drm_clip_rect_t *a,
+				 drm_clip_rect_t *b )
 {
    *out = *a;
    if ( b->x1 > out->x1 ) out->x1 = b->x1;
@@ -429,7 +506,7 @@ static GLboolean intersect_rect( XF86DRIClipRectPtr out,
 
 void r200RecalcScissorRects( r200ContextPtr rmesa )
 {
-   XF86DRIClipRectPtr out;
+   drm_clip_rect_t *out;
    int i;
 
    /* Grow cliprect store?
@@ -445,7 +522,7 @@ void r200RecalcScissorRects( r200ContextPtr rmesa )
 
       rmesa->state.scissor.pClipRects = 
 	 MALLOC( rmesa->state.scissor.numAllocedClipRects * 
-		 sizeof(XF86DRIClipRectRec) );
+		 sizeof(drm_clip_rect_t) );
 
       if ( rmesa->state.scissor.pClipRects == NULL ) {
 	 rmesa->state.scissor.numAllocedClipRects = 0;
@@ -659,7 +736,7 @@ static void r200PolygonStipple( GLcontext *ctx, const GLubyte *mask )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
    GLuint i;
-   drmRadeonStipple stipple;
+   drm_radeon_stipple_t stipple;
 
    /* Must flip pattern upside down.
     */
@@ -676,7 +753,7 @@ static void r200PolygonStipple( GLcontext *ctx, const GLubyte *mask )
     */
    stipple.mask = rmesa->state.stipple.mask;
    drmCommandWrite( rmesa->dri.fd, DRM_RADEON_STIPPLE, 
-                    &stipple, sizeof(drmRadeonStipple) );
+                    &stipple, sizeof(stipple) );
    UNLOCK_HARDWARE( rmesa );
 }
 
@@ -710,7 +787,7 @@ static void r200PolygonMode( GLcontext *ctx, GLenum face, GLenum mode )
 static void r200UpdateSpecular( GLcontext *ctx )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   CARD32 p = rmesa->hw.ctx.cmd[CTX_PP_CNTL];
+   u_int32_t p = rmesa->hw.ctx.cmd[CTX_PP_CNTL];
 
    R200_STATECHANGE( rmesa, tcl );
    R200_STATECHANGE( rmesa, vtx );
@@ -787,6 +864,8 @@ static void update_global_ambient( GLcontext *ctx )
    float *fcmd = (float *)R200_DB_STATE( glt );
 
    /* Need to do more if both emmissive & ambient are PREMULT:
+    * I believe this is not nessary when using source_material. This condition thus
+    * will never happen currently, and the function has no dependencies on materials now
     */
    if ((rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1] &
        ((3 << R200_FRONT_EMISSIVE_SOURCE_SHIFT) |
@@ -809,9 +888,6 @@ static void update_global_ambient( GLcontext *ctx )
 /* Update on change to 
  *    - light[p].colors
  *    - light[p].enabled
- *    - material,
- *    - colormaterial enabled
- *    - colormaterial bitmask
  */
 static void update_light_colors( GLcontext *ctx, GLuint p )
 {
@@ -822,102 +898,115 @@ static void update_light_colors( GLcontext *ctx, GLuint p )
    if (l->Enabled) {
       r200ContextPtr rmesa = R200_CONTEXT(ctx);
       float *fcmd = (float *)R200_DB_STATE( lit[p] );
-      GLuint bitmask = ctx->Light.ColorMaterialBitmask;
-      GLfloat (*mat)[4] = ctx->Light.Material.Attrib;
 
       COPY_4V( &fcmd[LIT_AMBIENT_RED], l->Ambient );	 
       COPY_4V( &fcmd[LIT_DIFFUSE_RED], l->Diffuse );
       COPY_4V( &fcmd[LIT_SPECULAR_RED], l->Specular );
       
-      if (!ctx->Light.ColorMaterialEnabled)
-	 bitmask = 0;
-
-      if ((bitmask & MAT_BIT_FRONT_AMBIENT) == 0) 
-	 SELF_SCALE_3V( &fcmd[LIT_AMBIENT_RED], mat[MAT_ATTRIB_FRONT_AMBIENT] );
-
-      if ((bitmask & MAT_BIT_FRONT_DIFFUSE) == 0) 
-	 SELF_SCALE_3V( &fcmd[LIT_DIFFUSE_RED], mat[MAT_ATTRIB_FRONT_DIFFUSE] );
-      
-      if ((bitmask & MAT_BIT_FRONT_SPECULAR) == 0) 
-	 SELF_SCALE_3V( &fcmd[LIT_SPECULAR_RED], mat[MAT_ATTRIB_FRONT_SPECULAR] );
-
       R200_DB_STATECHANGE( rmesa, &rmesa->hw.lit[p] );
    }
 }
 
-/* Also fallback for asym colormaterial mode in twoside lighting...
- */
-static void check_twoside_fallback( GLcontext *ctx )
-{
-   GLboolean fallback = GL_FALSE;
-   GLint i;
-
-   if (ctx->Light.Enabled && ctx->Light.Model.TwoSide) {
-      if (ctx->Light.ColorMaterialEnabled &&
-	  (ctx->Light.ColorMaterialBitmask & BACK_MATERIAL_BITS) != 
-	  ((ctx->Light.ColorMaterialBitmask & FRONT_MATERIAL_BITS)<<1))
-	 fallback = GL_TRUE;
-      else {
-	 for (i = MAT_ATTRIB_FRONT_AMBIENT; i < MAT_ATTRIB_FRONT_INDEXES; i+=2)
-	    if (memcmp( ctx->Light.Material.Attrib[i],
-			ctx->Light.Material.Attrib[i+1],
-			sizeof(GLfloat)*4) != 0) {
-	       fallback = GL_TRUE;  
-	       break;
-	    }
-      }
-   }
-
-   TCL_FALLBACK( ctx, R200_TCL_FALLBACK_LIGHT_TWOSIDE, fallback );
-}
-
 static void r200ColorMaterial( GLcontext *ctx, GLenum face, GLenum mode )
 {
-   if (ctx->Light.ColorMaterialEnabled) {
       r200ContextPtr rmesa = R200_CONTEXT(ctx);
       GLuint light_model_ctl1 = rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1];
-      GLuint mask = ctx->Light.ColorMaterialBitmask;
-
-      /* Default to PREMULT:
-       */
       light_model_ctl1 &= ~((0xf << R200_FRONT_EMISSIVE_SOURCE_SHIFT) |
 			   (0xf << R200_FRONT_AMBIENT_SOURCE_SHIFT) |
 			   (0xf << R200_FRONT_DIFFUSE_SOURCE_SHIFT) |
-			   (0xf << R200_FRONT_SPECULAR_SOURCE_SHIFT)); 
+		   (0xf << R200_FRONT_SPECULAR_SOURCE_SHIFT) |
+		   (0xf << R200_BACK_EMISSIVE_SOURCE_SHIFT) |
+		   (0xf << R200_BACK_AMBIENT_SOURCE_SHIFT) |
+		   (0xf << R200_BACK_DIFFUSE_SOURCE_SHIFT) |
+		   (0xf << R200_BACK_SPECULAR_SOURCE_SHIFT));
+
+   if (ctx->Light.ColorMaterialEnabled) {
+      GLuint mask = ctx->Light.ColorMaterialBitmask;
    
       if (mask & MAT_BIT_FRONT_EMISSION) {
 	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
 			     R200_FRONT_EMISSIVE_SOURCE_SHIFT);
       }
+      else
+	 light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_0 <<
+			     R200_FRONT_EMISSIVE_SOURCE_SHIFT);
 
       if (mask & MAT_BIT_FRONT_AMBIENT) {
 	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
 			     R200_FRONT_AMBIENT_SOURCE_SHIFT);
       }
+      else
+         light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_0 <<
+			     R200_FRONT_AMBIENT_SOURCE_SHIFT);
 	 
       if (mask & MAT_BIT_FRONT_DIFFUSE) {
 	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
 			     R200_FRONT_DIFFUSE_SOURCE_SHIFT);
       }
+      else
+         light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_0 <<
+			     R200_FRONT_DIFFUSE_SOURCE_SHIFT);
    
       if (mask & MAT_BIT_FRONT_SPECULAR) {
 	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
 			     R200_FRONT_SPECULAR_SOURCE_SHIFT);
       }
-   
-      if (light_model_ctl1 != rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1]) {
-	 GLuint p;
-
-	 R200_STATECHANGE( rmesa, tcl );
-	 rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1] = light_model_ctl1;      
-
-	 for (p = 0 ; p < MAX_LIGHTS; p++) 
-	    update_light_colors( ctx, p );
-	 update_global_ambient( ctx );
+      else {
+         light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_0 <<
+			     R200_FRONT_SPECULAR_SOURCE_SHIFT);
       }
+   
+      if (mask & MAT_BIT_BACK_EMISSION) {
+	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
+			     R200_BACK_EMISSIVE_SOURCE_SHIFT);
+      }
+
+      else light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_1 <<
+			     R200_BACK_EMISSIVE_SOURCE_SHIFT);
+
+      if (mask & MAT_BIT_BACK_AMBIENT) {
+	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
+			     R200_BACK_AMBIENT_SOURCE_SHIFT);
+      }
+      else light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_1 <<
+			     R200_BACK_AMBIENT_SOURCE_SHIFT);
+
+      if (mask & MAT_BIT_BACK_DIFFUSE) {
+	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
+			     R200_BACK_DIFFUSE_SOURCE_SHIFT);
+   }
+      else light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_1 <<
+			     R200_BACK_DIFFUSE_SOURCE_SHIFT);
+
+      if (mask & MAT_BIT_BACK_SPECULAR) {
+	 light_model_ctl1 |= (R200_LM1_SOURCE_VERTEX_COLOR_0 <<
+			     R200_BACK_SPECULAR_SOURCE_SHIFT);
+      }
+      else {
+         light_model_ctl1 |= (R200_LM1_SOURCE_MATERIAL_1 <<
+			     R200_BACK_SPECULAR_SOURCE_SHIFT);
+      }
+      }
+   else {
+       /* Default to SOURCE_MATERIAL:
+        */
+     light_model_ctl1 |=
+        (R200_LM1_SOURCE_MATERIAL_0 << R200_FRONT_EMISSIVE_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_0 << R200_FRONT_AMBIENT_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_0 << R200_FRONT_DIFFUSE_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_0 << R200_FRONT_SPECULAR_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_1 << R200_BACK_EMISSIVE_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_1 << R200_BACK_AMBIENT_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_1 << R200_BACK_DIFFUSE_SOURCE_SHIFT) |
+        (R200_LM1_SOURCE_MATERIAL_1 << R200_BACK_SPECULAR_SOURCE_SHIFT);
+   }
+
+   if (light_model_ctl1 != rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1]) {
+      R200_STATECHANGE( rmesa, tcl );
+      rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_1] = light_model_ctl1;
    }
    
-   check_twoside_fallback( ctx );
+   
 }
 
 void r200UpdateMaterial( GLcontext *ctx )
@@ -925,16 +1014,16 @@ void r200UpdateMaterial( GLcontext *ctx )
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
    GLfloat (*mat)[4] = ctx->Light.Material.Attrib;
    GLfloat *fcmd = (GLfloat *)R200_DB_STATE( mtl[0] );
-   GLuint p;
+   GLfloat *fcmd2 = (GLfloat *)R200_DB_STATE( mtl[1] );
    GLuint mask = ~0;
    
+   /* Might be possible and faster to update everything unconditionally? */
    if (ctx->Light.ColorMaterialEnabled)
       mask &= ~ctx->Light.ColorMaterialBitmask;
 
    if (R200_DEBUG & DEBUG_STATE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-      
    if (mask & MAT_BIT_FRONT_EMISSION) {
       fcmd[MTL_EMMISSIVE_RED]   = mat[MAT_ATTRIB_FRONT_EMISSION][0];
       fcmd[MTL_EMMISSIVE_GREEN] = mat[MAT_ATTRIB_FRONT_EMISSION][1];
@@ -963,15 +1052,39 @@ void r200UpdateMaterial( GLcontext *ctx )
       fcmd[MTL_SHININESS]       = mat[MAT_ATTRIB_FRONT_SHININESS][0];
    }
 
-   if (R200_DB_STATECHANGE( rmesa, &rmesa->hw.mtl[0] )) {
-      for (p = 0 ; p < MAX_LIGHTS; p++) 
-	 update_light_colors( ctx, p );
-
-      check_twoside_fallback( ctx );
-      update_global_ambient( ctx );
+   if (mask & MAT_BIT_BACK_EMISSION) {
+      fcmd2[MTL_EMMISSIVE_RED]   = mat[MAT_ATTRIB_BACK_EMISSION][0];
+      fcmd2[MTL_EMMISSIVE_GREEN] = mat[MAT_ATTRIB_BACK_EMISSION][1];
+      fcmd2[MTL_EMMISSIVE_BLUE]  = mat[MAT_ATTRIB_BACK_EMISSION][2];
+      fcmd2[MTL_EMMISSIVE_ALPHA] = mat[MAT_ATTRIB_BACK_EMISSION][3];
    }
-   else if (R200_DEBUG & (DEBUG_PRIMS|DEBUG_STATE))
-      fprintf(stderr, "%s: Elided noop material call\n", __FUNCTION__);
+   if (mask & MAT_BIT_BACK_AMBIENT) {
+      fcmd2[MTL_AMBIENT_RED]     = mat[MAT_ATTRIB_BACK_AMBIENT][0];
+      fcmd2[MTL_AMBIENT_GREEN]   = mat[MAT_ATTRIB_BACK_AMBIENT][1];
+      fcmd2[MTL_AMBIENT_BLUE]    = mat[MAT_ATTRIB_BACK_AMBIENT][2];
+      fcmd2[MTL_AMBIENT_ALPHA]   = mat[MAT_ATTRIB_BACK_AMBIENT][3];
+   }
+   if (mask & MAT_BIT_BACK_DIFFUSE) {
+      fcmd2[MTL_DIFFUSE_RED]     = mat[MAT_ATTRIB_BACK_DIFFUSE][0];
+      fcmd2[MTL_DIFFUSE_GREEN]   = mat[MAT_ATTRIB_BACK_DIFFUSE][1];
+      fcmd2[MTL_DIFFUSE_BLUE]    = mat[MAT_ATTRIB_BACK_DIFFUSE][2];
+      fcmd2[MTL_DIFFUSE_ALPHA]   = mat[MAT_ATTRIB_BACK_DIFFUSE][3];
+   }
+   if (mask & MAT_BIT_BACK_SPECULAR) {
+      fcmd2[MTL_SPECULAR_RED]    = mat[MAT_ATTRIB_BACK_SPECULAR][0];
+      fcmd2[MTL_SPECULAR_GREEN]  = mat[MAT_ATTRIB_BACK_SPECULAR][1];
+      fcmd2[MTL_SPECULAR_BLUE]   = mat[MAT_ATTRIB_BACK_SPECULAR][2];
+      fcmd2[MTL_SPECULAR_ALPHA]  = mat[MAT_ATTRIB_BACK_SPECULAR][3];
+   }
+   if (mask & MAT_BIT_BACK_SHININESS) {
+      fcmd2[MTL_SHININESS]       = mat[MAT_ATTRIB_BACK_SHININESS][0];
+   }
+
+   R200_DB_STATECHANGE( rmesa, &rmesa->hw.mtl[0] );
+   R200_DB_STATECHANGE( rmesa, &rmesa->hw.mtl[1] );
+
+   /* currently material changes cannot trigger a global ambient change, I believe this is correct
+    update_global_ambient( ctx ); */
 }
 
 /* _NEW_LIGHT
@@ -1108,6 +1221,10 @@ static void r200Lightfv( GLcontext *ctx, GLenum light,
    case GL_CONSTANT_ATTENUATION:
       R200_STATECHANGE(rmesa, lit[p]);
       fcmd[LIT_ATTEN_CONST] = params[0];
+      if ( params[0] == 0.0 )
+	 fcmd[LIT_ATTEN_CONST_INV] = FLT_MAX;
+      else
+	 fcmd[LIT_ATTEN_CONST_INV] = 1.0 / params[0];
       break;
    case GL_LINEAR_ATTENUATION:
       R200_STATECHANGE(rmesa, lit[p]);
@@ -1121,6 +1238,41 @@ static void r200Lightfv( GLcontext *ctx, GLenum light,
       return;
    }
 
+   /* Set RANGE_ATTEN only when needed */
+   switch (pname) {
+   case GL_POSITION:
+   case GL_CONSTANT_ATTENUATION:
+   case GL_LINEAR_ATTENUATION:
+   case GL_QUADRATIC_ATTENUATION: {
+      GLuint *icmd = (GLuint *)R200_DB_STATE( tcl );
+      GLuint idx = TCL_PER_LIGHT_CTL_0 + p/2;
+      GLuint atten_flag = ( p&1 ) ? R200_LIGHT_1_ENABLE_RANGE_ATTEN
+				  : R200_LIGHT_0_ENABLE_RANGE_ATTEN;
+      GLuint atten_const_flag = ( p&1 ) ? R200_LIGHT_1_CONSTANT_RANGE_ATTEN
+				  : R200_LIGHT_0_CONSTANT_RANGE_ATTEN;
+
+      if ( l->EyePosition[3] == 0.0F ||
+	   ( ( fcmd[LIT_ATTEN_CONST] == 0.0 || fcmd[LIT_ATTEN_CONST] == 1.0 ) &&
+	     fcmd[LIT_ATTEN_QUADRATIC] == 0.0 && fcmd[LIT_ATTEN_LINEAR] == 0.0 ) ) {
+	 /* Disable attenuation */
+	 icmd[idx] &= ~atten_flag;
+      } else {
+	 if ( fcmd[LIT_ATTEN_QUADRATIC] == 0.0 && fcmd[LIT_ATTEN_LINEAR] == 0.0 ) {
+	    /* Enable only constant portion of attenuation calculation */
+	    icmd[idx] |= ( atten_flag | atten_const_flag );
+	 } else {
+	    /* Enable full attenuation calculation */
+	    icmd[idx] &= ~atten_const_flag;
+	    icmd[idx] |= atten_flag;
+	 }
+      }
+
+      R200_DB_STATECHANGE( rmesa, &rmesa->hw.tcl );
+      break;
+   }
+   default:
+     break;
+   }
 }
 
 		  
@@ -1149,10 +1301,7 @@ static void r200LightModelfv( GLcontext *ctx, GLenum pname,
 	 if (ctx->Light.Model.TwoSide)
 	    rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_0] |= R200_LIGHT_TWOSIDE;
 	 else
-	    rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_0] &= ~R200_LIGHT_TWOSIDE;
-
-	 check_twoside_fallback( ctx );
-
+	    rmesa->hw.tcl.cmd[TCL_LIGHT_MODEL_CTL_0] &= ~(R200_LIGHT_TWOSIDE);
 	 if (rmesa->TclFallback) {
 	    r200ChooseRenderState( ctx );
 	    r200ChooseVertexState( ctx );
@@ -1565,18 +1714,18 @@ void r200SetCliprects( r200ContextPtr rmesa, GLenum mode )
    switch ( mode ) {
    case GL_FRONT_LEFT:
       rmesa->numClipRects = dPriv->numClipRects;
-      rmesa->pClipRects = (XF86DRIClipRectPtr)dPriv->pClipRects;
+      rmesa->pClipRects = dPriv->pClipRects;
       break;
    case GL_BACK_LEFT:
       /* Can't ignore 2d windows if we are page flipping.
        */
       if ( dPriv->numBackClipRects == 0 || rmesa->doPageFlip ) {
 	 rmesa->numClipRects = dPriv->numClipRects;
-	 rmesa->pClipRects = (XF86DRIClipRectPtr)dPriv->pClipRects;
+	 rmesa->pClipRects = dPriv->pClipRects;
       }
       else {
 	 rmesa->numClipRects = dPriv->numBackClipRects;
-	 rmesa->pClipRects = (XF86DRIClipRectPtr)dPriv->pBackClipRects;
+	 rmesa->pClipRects = dPriv->pBackClipRects;
       }
       break;
    default:
@@ -1603,11 +1752,11 @@ static void r200DrawBuffer( GLcontext *ctx, GLenum mode )
     * _DrawDestMask is easier to cope with than <mode>.
     */
    switch ( ctx->Color._DrawDestMask ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       FALLBACK( rmesa, R200_FALLBACK_DRAW_BUFFER, GL_FALSE );
       r200SetCliprects( rmesa, GL_FRONT_LEFT );
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       FALLBACK( rmesa, R200_FALLBACK_DRAW_BUFFER, GL_FALSE );
       r200SetCliprects( rmesa, GL_BACK_LEFT );
       break;
@@ -1667,17 +1816,8 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
       break;
 
    case GL_BLEND:
-      R200_STATECHANGE( rmesa, ctx );
-      if (state) {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] |=  R200_ALPHA_BLEND_ENABLE;
-      } else {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] &= ~R200_ALPHA_BLEND_ENABLE;
-      }
-      if ( ctx->Color.ColorLogicOpEnabled ) {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] |=  R200_ROP_ENABLE;
-      } else {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] &= ~R200_ROP_ENABLE;
-      }
+   case GL_COLOR_LOGIC_OP:
+      r200_set_blend_state( ctx );
       break;
 
    case GL_CLIP_PLANE0:
@@ -1699,8 +1839,7 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    case GL_COLOR_MATERIAL:
       r200ColorMaterial( ctx, 0, 0 );
-      if (!state) 
-	 r200UpdateMaterial( ctx );
+      r200UpdateMaterial( ctx );
       break;
 
    case GL_CULL_FACE:
@@ -1774,7 +1913,6 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
 
    case GL_LIGHTING:
       r200UpdateSpecular(ctx);
-      check_twoside_fallback( ctx );
       break;
 
    case GL_LINE_SMOOTH:
@@ -1795,15 +1933,6 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
       }
       break;
 
-   case GL_COLOR_LOGIC_OP:
-      R200_STATECHANGE( rmesa, ctx );
-      if ( state ) {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] |=  R200_ROP_ENABLE;
-      } else {
-	 rmesa->hw.ctx.cmd[CTX_RB3D_CNTL] &= ~R200_ROP_ENABLE;
-      }
-      break;
-      
    case GL_NORMALIZE:
       R200_STATECHANGE( rmesa, tcl );
       if ( state ) {
@@ -1914,6 +2043,10 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
       r200UpdateSpecular ( ctx );
       break;
 
+   case GL_VERTEX_PROGRAM_ARB:
+      TCL_FALLBACK(rmesa->glCtx, R200_TCL_FALLBACK_TCL_DISABLE, state);
+      break;
+
    default:
       return;
    }
@@ -1991,7 +2124,7 @@ static void update_texturematrix( GLcontext *ctx )
    rmesa->TexMatEnabled = 0;
    rmesa->TexMatCompSel = 0;
 
-   for (unit = 0 ; unit < 2; unit++) {
+   for (unit = 0 ; unit < ctx->Const.MaxTextureUnits; unit++) {
       if (!ctx->Texture.Unit[unit]._ReallyEnabled) 
 	 continue;
 
@@ -2096,7 +2229,7 @@ static void r200InvalidateState( GLcontext *ctx, GLuint new_state )
 }
 
 /* A hack.  The r200 can actually cope just fine with materials
- * between begin/ends, so fix this.
+ * between begin/ends, so fix this. But how ?
  */
 static GLboolean check_material( GLcontext *ctx )
 {
@@ -2113,7 +2246,6 @@ static GLboolean check_material( GLcontext *ctx )
    return GL_FALSE;
 }
       
-
 static void r200WrapRunPipeline( GLcontext *ctx )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
@@ -2145,57 +2277,61 @@ static void r200WrapRunPipeline( GLcontext *ctx )
 
 /* Initialize the driver's state functions.
  */
-void r200InitStateFuncs( GLcontext *ctx )
+void r200InitStateFuncs( struct dd_function_table *functions )
 {
-   ctx->Driver.UpdateState		= r200InvalidateState;
-   ctx->Driver.LightingSpaceChange      = r200LightingSpaceChange;
+   functions->UpdateState		= r200InvalidateState;
+   functions->LightingSpaceChange	= r200LightingSpaceChange;
 
-   ctx->Driver.DrawBuffer		= r200DrawBuffer;
-   ctx->Driver.ReadBuffer		= r200ReadBuffer;
+   functions->DrawBuffer		= r200DrawBuffer;
+   functions->ReadBuffer		= r200ReadBuffer;
 
-   ctx->Driver.AlphaFunc		= r200AlphaFunc;
-   ctx->Driver.BlendEquation		= r200BlendEquation;
-   ctx->Driver.BlendFunc		= r200BlendFunc;
-   ctx->Driver.BlendFuncSeparate	= r200BlendFuncSeparate;
-   ctx->Driver.ClearColor		= r200ClearColor;
-   ctx->Driver.ClearDepth		= NULL;
-   ctx->Driver.ClearIndex		= NULL;
-   ctx->Driver.ClearStencil		= r200ClearStencil;
-   ctx->Driver.ClipPlane		= r200ClipPlane;
-   ctx->Driver.ColorMask		= r200ColorMask;
-   ctx->Driver.CullFace			= r200CullFace;
-   ctx->Driver.DepthFunc		= r200DepthFunc;
-   ctx->Driver.DepthMask		= r200DepthMask;
-   ctx->Driver.DepthRange		= r200DepthRange;
-   ctx->Driver.Enable			= r200Enable;
-   ctx->Driver.Fogfv			= r200Fogfv;
-   ctx->Driver.FrontFace		= r200FrontFace;
-   ctx->Driver.Hint			= NULL;
-   ctx->Driver.IndexMask		= NULL;
-   ctx->Driver.LightModelfv		= r200LightModelfv;
-   ctx->Driver.Lightfv			= r200Lightfv;
-   ctx->Driver.LineStipple              = r200LineStipple;
-   ctx->Driver.LineWidth                = r200LineWidth;
-   ctx->Driver.LogicOpcode		= r200LogicOpCode;
-   ctx->Driver.PolygonMode		= r200PolygonMode;
-   ctx->Driver.PolygonOffset		= r200PolygonOffset;
-   ctx->Driver.PolygonStipple		= r200PolygonStipple;
-   ctx->Driver.PointSize                = r200PointSize;
-   ctx->Driver.RenderMode		= r200RenderMode;
-   ctx->Driver.Scissor			= r200Scissor;
-   ctx->Driver.ShadeModel		= r200ShadeModel;
-   ctx->Driver.StencilFunc		= r200StencilFunc;
-   ctx->Driver.StencilMask		= r200StencilMask;
-   ctx->Driver.StencilOp		= r200StencilOp;
-   ctx->Driver.Viewport			= r200Viewport;
+   functions->AlphaFunc			= r200AlphaFunc;
+   functions->BlendColor		= r200BlendColor;
+   functions->BlendEquationSeparate	= r200BlendEquationSeparate;
+   functions->BlendFuncSeparate		= r200BlendFuncSeparate;
+   functions->ClearColor		= r200ClearColor;
+   functions->ClearDepth		= NULL;
+   functions->ClearIndex		= NULL;
+   functions->ClearStencil		= r200ClearStencil;
+   functions->ClipPlane			= r200ClipPlane;
+   functions->ColorMask			= r200ColorMask;
+   functions->CullFace			= r200CullFace;
+   functions->DepthFunc			= r200DepthFunc;
+   functions->DepthMask			= r200DepthMask;
+   functions->DepthRange		= r200DepthRange;
+   functions->Enable			= r200Enable;
+   functions->Fogfv			= r200Fogfv;
+   functions->FrontFace			= r200FrontFace;
+   functions->Hint			= NULL;
+   functions->IndexMask			= NULL;
+   functions->LightModelfv		= r200LightModelfv;
+   functions->Lightfv			= r200Lightfv;
+   functions->LineStipple		= r200LineStipple;
+   functions->LineWidth			= r200LineWidth;
+   functions->LogicOpcode		= r200LogicOpCode;
+   functions->PolygonMode		= r200PolygonMode;
+   functions->PolygonOffset		= r200PolygonOffset;
+   functions->PolygonStipple		= r200PolygonStipple;
+   functions->PointSize			= r200PointSize;
+   functions->RenderMode		= r200RenderMode;
+   functions->Scissor			= r200Scissor;
+   functions->ShadeModel		= r200ShadeModel;
+   functions->StencilFunc		= r200StencilFunc;
+   functions->StencilMask		= r200StencilMask;
+   functions->StencilOp			= r200StencilOp;
+   functions->Viewport			= r200Viewport;
 
    /* Swrast hooks for imaging extensions:
     */
-   ctx->Driver.CopyColorTable		= _swrast_CopyColorTable;
-   ctx->Driver.CopyColorSubTable	= _swrast_CopyColorSubTable;
-   ctx->Driver.CopyConvolutionFilter1D	= _swrast_CopyConvolutionFilter1D;
-   ctx->Driver.CopyConvolutionFilter2D	= _swrast_CopyConvolutionFilter2D;
+   functions->CopyColorTable		= _swrast_CopyColorTable;
+   functions->CopyColorSubTable		= _swrast_CopyColorSubTable;
+   functions->CopyConvolutionFilter1D	= _swrast_CopyConvolutionFilter1D;
+   functions->CopyConvolutionFilter2D	= _swrast_CopyConvolutionFilter2D;
+}
 
+
+void r200InitTnlFuncs( GLcontext *ctx )
+{
    TNL_CONTEXT(ctx)->Driver.NotifyMaterialChange = r200UpdateMaterial;
    TNL_CONTEXT(ctx)->Driver.RunPipeline = r200WrapRunPipeline;
 }

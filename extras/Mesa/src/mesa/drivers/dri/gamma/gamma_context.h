@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.6 2002/12/16 16:18:50 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamma_context.h,v 1.1.1.3tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -28,6 +28,8 @@
 #define _GAMMA_CONTEXT_H_
 
 #include "dri_util.h"
+#include "drm.h"
+#include "drm_sarea.h"
 #include "colormac.h"
 #include "gamma_regs.h"
 #include "gamma_macros.h"
@@ -149,7 +151,7 @@ struct gamma_texture_object_t {
    GLuint max_level;
    GLuint dirty_images;
 
-   GLint firstLevel, lastLevel;  /* upload tObj->Image[first .. lastLevel] */
+   GLint firstLevel, lastLevel;  /* upload tObj->Image[0][first .. lastLevel] */
 
    struct { 
       const struct gl_texture_image *image;
@@ -158,13 +160,13 @@ struct gamma_texture_object_t {
       int internalFormat;
    } image[GAMMA_TEX_MAXLEVELS];
 
-   CARD32 TextureBaseAddr[GAMMA_TEX_MAXLEVELS];
-   CARD32 TextureAddressMode;
-   CARD32 TextureColorMode;
-   CARD32 TextureFilterMode;
-   CARD32 TextureFormat;
-   CARD32 TextureReadMode;
-   CARD32 TextureBorderColor;
+   u_int32_t TextureBaseAddr[GAMMA_TEX_MAXLEVELS];
+   u_int32_t TextureAddressMode;
+   u_int32_t TextureColorMode;
+   u_int32_t TextureFilterMode;
+   u_int32_t TextureFormat;
+   u_int32_t TextureReadMode;
+   u_int32_t TextureBorderColor;
 };		
 
 #define GAMMA_NO_PALETTE        0x0
@@ -191,7 +193,8 @@ void gammaDDInitSpanFuncs( GLcontext *ctx );
 void gammaDDInitState( gammaContextPtr gmesa );
 void gammaInitHW( gammaContextPtr gmesa );
 void gammaDDInitStateFuncs( GLcontext *ctx );
-void gammaDDInitTextureFuncs( GLcontext *ctx );
+void gammaDDInitTextureFuncs( struct dd_function_table *table );
+void gammaInitTextureObjects( GLcontext *ctx );
 void gammaDDInitTriFuncs( GLcontext *ctx );
 
 void gammaUpdateWindow( GLcontext *ctx );
@@ -240,12 +243,12 @@ struct gamma_context {
 
    	/* Mirrors of some DRI state
     	 */
-   	drmContext hHWContext;
-   	drmLock *driHwLock;
+   	drm_context_t hHWContext;
+   	drm_hw_lock_t *driHwLock;
    	int driFd;
 
    	GLuint numClipRects;		   /* Cliprects for the draw buffer */
-   	XF86DRIClipRectPtr pClipRects;
+   	drm_clip_rect_t *pClipRects;
 
     	dmaBuf              buf;           /* DMA buffer for regular cmds */
     	int                 bufIndex;
@@ -297,18 +300,18 @@ struct gamma_context {
    	unsigned int lastStamp;
    
 
-    	CARD32 			ClearColor;
-	CARD32			Color;
-	CARD32			DitherMode;
-    	CARD32			ClearDepth;
-	CARD32			FogMode;
-	CARD32			AreaStippleMode;
-	CARD32			LBReadFormat;
-	CARD32			LBWriteFormat;
-	CARD32			LineMode;
-	CARD32			PointMode;
-	CARD32			TriangleMode;
-	CARD32			AntialiasMode;
+    	u_int32_t 		ClearColor;
+	u_int32_t		Color;
+	u_int32_t		DitherMode;
+    	u_int32_t		ClearDepth;
+	u_int32_t		FogMode;
+	u_int32_t		AreaStippleMode;
+	u_int32_t		LBReadFormat;
+	u_int32_t		LBWriteFormat;
+	u_int32_t		LineMode;
+	u_int32_t		PointMode;
+	u_int32_t		TriangleMode;
+	u_int32_t		AntialiasMode;
 	GLfloat			ViewportScaleX;
 	GLfloat			ViewportScaleY;
 	GLfloat			ViewportScaleZ;

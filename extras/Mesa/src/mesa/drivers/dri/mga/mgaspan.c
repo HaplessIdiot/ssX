@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.11 2002/10/30 12:51:36 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgaspan.c,v 1.1.1.2tsi Exp $ */
 
 #include "mtypes.h"
 #include "mgadd.h"
@@ -34,7 +34,7 @@
 #include "swrast/swrast.h"
 
 #define DBG 0
-
+#define NO_MONO
 
 #define LOCAL_VARS					\
    __DRIdrawablePrivate *dPriv = mmesa->mesa_drawable;	\
@@ -244,9 +244,9 @@ static void mgaDDSetBuffer(GLcontext *ctx, GLframebuffer *buffer,
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    unsigned int   offset;
 
-   assert( (bufferBit == FRONT_LEFT_BIT) || (bufferBit == BACK_LEFT_BIT) );
+   assert((bufferBit == DD_FRONT_LEFT_BIT) || (bufferBit == DD_BACK_LEFT_BIT));
 
-   offset = (bufferBit == FRONT_LEFT_BIT)
+   offset = (bufferBit == DD_FRONT_LEFT_BIT)
        ? mmesa->mgaScreen->frontOffset
        : mmesa->mgaScreen->backOffset;
 

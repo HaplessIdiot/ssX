@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamma_tex.c,v 1.1.1.4 2004/12/10 15:06:07 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamma_tex.c,v 1.3tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,8 +32,8 @@ static GLuint gammaComputeLodBias(GLfloat bias)
 static void gammaSetTexWrapping(gammaTextureObjectPtr t, 
 			       GLenum wraps, GLenum wrapt)
 {
-   uint32_t t1 = t->TextureAddressMode;
-   uint32_t t2 = t->TextureReadMode;
+   u_int32_t t1 = t->TextureAddressMode;
+   u_int32_t t2 = t->TextureReadMode;
 
    t1 &= ~(TAM_SWrap_Mask | TAM_TWrap_Mask);
    t2 &= ~(TRM_UWrap_Mask | TRM_VWrap_Mask);
@@ -58,8 +58,8 @@ static void gammaSetTexFilter(gammaContextPtr gmesa,
 			     GLenum minf, GLenum magf,
                              GLfloat bias)
 {
-   uint32_t t1 = t->TextureAddressMode;
-   uint32_t t2 = t->TextureReadMode;
+   u_int32_t t1 = t->TextureAddressMode;
+   u_int32_t t2 = t->TextureReadMode;
 
    t2 &= ~(TRM_Mag_Mask | TRM_Min_Mask);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.9 2003/03/26 20:43:49 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_screen.c,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -38,7 +38,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_context.h"
 #include "r128_ioctl.h"
 #include "r128_tris.h"
-#include "r128_vb.h"
 
 #include "context.h"
 #include "imports.h"
@@ -46,9 +45,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "utils.h"
 #include "vblank.h"
 
-#ifndef _SOLO
-#include "glxextensions.h"
-#endif
+#include "GL/internal/dri_interface.h"
 
 /* R128 configuration
  */
@@ -87,6 +84,9 @@ static const GLuint __driNConfigOptions = 2;
 #define PCI_CHIP_RAGE128RL	0x524C
 #endif
 
+#ifdef USE_NEW_INTERFACE
+static PFNGLXCREATECONTEXTMODES create_context_modes = NULL;
+#endif /* USE_NEW_INTERFACE */
 
 /* Create the device specific screen private data struct.
  */
@@ -96,8 +96,6 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
    r128ScreenPtr r128Screen;
    R128DRIPtr r128DRIPriv = (R128DRIPtr)sPriv->pDevPriv;
 
-   if ( ! driCheckDriDdxDrmVersions( sPriv, "Rage128", 4, 0, 4, 0, 2, 2 ) )
-      return NULL;
 
    /* Allocate the private area */
    r128Screen = (r128ScreenPtr) CALLOC( sizeof(*r128Screen) );
@@ -114,7 +112,7 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
    r128Screen->sarea_priv_offset = r128DRIPriv->sarea_priv_offset;
    
    if (sPriv->drmMinor >= 3) {
-      drmR128GetParam gp;
+      drm_r128_getparam_t gp;
       int ret;
 
       gp.param = R128_PARAM_IRQ_NR;
@@ -190,26 +188,25 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
    r128Screen->depthPitch	= r128DRIPriv->depthPitch;
    r128Screen->spanOffset	= r128DRIPriv->spanOffset;
 
-   r128Screen->texOffset[R128_CARD_HEAP] = r128DRIPriv->textureOffset;
-   r128Screen->texSize[R128_CARD_HEAP] = r128DRIPriv->textureSize;
-   r128Screen->logTexGranularity[R128_CARD_HEAP] = r128DRIPriv->log2TexGran;
+   r128Screen->texOffset[R128_LOCAL_TEX_HEAP] = r128DRIPriv->textureOffset;
+   r128Screen->texSize[R128_LOCAL_TEX_HEAP] = r128DRIPriv->textureSize;
+   r128Screen->logTexGranularity[R128_LOCAL_TEX_HEAP] = r128DRIPriv->log2TexGran;
 
    if ( r128Screen->IsPCI ) {
       r128Screen->numTexHeaps = R128_NR_TEX_HEAPS - 1;
-      r128Screen->texOffset[R128_AGP_HEAP] = 0;
-      r128Screen->texSize[R128_AGP_HEAP] = 0;
-      r128Screen->logTexGranularity[R128_AGP_HEAP] = 0;
+      r128Screen->texOffset[R128_AGP_TEX_HEAP] = 0;
+      r128Screen->texSize[R128_AGP_TEX_HEAP] = 0;
+      r128Screen->logTexGranularity[R128_AGP_TEX_HEAP] = 0;
    } else {
       r128Screen->numTexHeaps = R128_NR_TEX_HEAPS;
-      r128Screen->texOffset[R128_AGP_HEAP] =
+      r128Screen->texOffset[R128_AGP_TEX_HEAP] =
 	 r128DRIPriv->agpTexOffset + R128_AGP_TEX_OFFSET;
-      r128Screen->texSize[R128_AGP_HEAP] = r128DRIPriv->agpTexMapSize;
-      r128Screen->logTexGranularity[R128_AGP_HEAP] =
+      r128Screen->texSize[R128_AGP_TEX_HEAP] = r128DRIPriv->agpTexMapSize;
+      r128Screen->logTexGranularity[R128_AGP_TEX_HEAP] =
 	 r128DRIPriv->log2AGPTexGran;
    }
 
    r128Screen->driScreen = sPriv;
-#ifndef _SOLO
    if ( driCompareGLXAPIVersion( 20030813 ) >= 0 ) {
       PFNGLXSCRENABLEEXTENSIONPROC glx_enable_extension =
           (PFNGLXSCRENABLEEXTENSIONPROC) glXGetProcAddress( (const GLubyte *) "__glXScrEnableExtension" );
@@ -225,7 +222,6 @@ r128CreateScreen( __DRIscreenPrivate *sPriv )
 	 (*glx_enable_extension)( psc, "GLX_MESA_swap_frame_usage" );
       }
    }
-#endif
    return r128Screen;
 }
 
@@ -251,15 +247,6 @@ r128DestroyScreen( __DRIscreenPrivate *sPriv )
 
    FREE( r128Screen );
    sPriv->private = NULL;
-}
-
-
-/* Initialize the fullscreen mode.
- */
-static GLboolean
-r128OpenCloseFullScreen( __DRIcontextPrivate *driContextPriv )
-{
-   return GL_TRUE;
 }
 
 
@@ -335,30 +322,6 @@ r128InitDriver( __DRIscreenPrivate *sPriv )
    return GL_TRUE;
 }
 
-#ifndef _SOLO
-/**
- * This function is called by libGL.so as soon as libGL.so is loaded.
- * This is where we register new extension functions with the dispatcher.
- *
- * \todo This interface has been deprecated, so we should probably remove
- *       this function before the next XFree86 release.
- */
-void __driRegisterExtensions( void )
-{
-   PFNGLXENABLEEXTENSIONPROC glx_enable_extension;
-
-   if ( driCompareGLXAPIVersion( 20030317 ) >= 0 ) {
-      glx_enable_extension = (PFNGLXENABLEEXTENSIONPROC)
-	  glXGetProcAddress( (const GLubyte *) "__glXEnableExtension" );
-
-      if ( glx_enable_extension != NULL ) {
-	 glx_enable_extension( "GLX_SGI_swap_control", GL_FALSE );
-	 glx_enable_extension( "GLX_SGI_video_sync", GL_FALSE );
-	 glx_enable_extension( "GLX_MESA_swap_control", GL_FALSE );
-      }
-   }
-}
-#endif
 
 static struct __DriverAPIRec r128API = {
    .InitDriver      = r128InitDriver,
@@ -370,8 +333,6 @@ static struct __DriverAPIRec r128API = {
    .SwapBuffers     = r128SwapBuffers,
    .MakeCurrent     = r128MakeCurrent,
    .UnbindContext   = r128UnbindContext,
-   .OpenFullScreen  = r128OpenCloseFullScreen,
-   .CloseFullScreen = r128OpenCloseFullScreen,
    .GetSwapInfo     = NULL,
    .GetMSC          = driGetMSC32,
    .WaitForMSC      = driWaitForMSC32,
@@ -381,12 +342,12 @@ static struct __DriverAPIRec r128API = {
 };
 
 
+#ifndef DRI_NEW_INTERFACE_ONLY
 /*
  * This is the bootstrap function for the driver.
  * The __driCreateScreen name is the symbol that libGL.so fetches.
  * Return:  pointer to a __DRIscreenPrivate.
  */
-#ifndef _SOLO 
 void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
                         int numConfigs, __GLXvisualConfig *config)
 {
@@ -394,12 +355,141 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    psp = __driUtilCreateScreen(dpy, scrn, psc, numConfigs, config, &r128API);
    return (void *) psp;
 }
-#else
-void *__driCreateScreen(struct DRIDriverRec *driver,
-                        struct DRIDriverContextRec *driverContext)
+#endif /* DRI_NEW_INTERFACE_ONLY */
+
+
+#ifdef USE_NEW_INTERFACE
+static __GLcontextModes *
+r128FillInModes( unsigned pixel_bits, unsigned depth_bits,
+		 unsigned stencil_bits, GLboolean have_back_buffer )
+{
+    __GLcontextModes * modes;
+    __GLcontextModes * m;
+    unsigned num_modes;
+    unsigned depth_buffer_factor;
+    unsigned back_buffer_factor;
+    GLenum fb_format;
+    GLenum fb_type;
+
+    /* Right now GLX_SWAP_COPY_OML isn't supported, but it would be easy
+     * enough to add support.  Basically, if a context is created with an
+     * fbconfig where the swap method is GLX_SWAP_COPY_OML, pageflipping
+     * will never be used.
+     */
+    static const GLenum back_buffer_modes[] = {
+	GLX_NONE, GLX_SWAP_UNDEFINED_OML /*, GLX_SWAP_COPY_OML */
+    };
+
+    u_int8_t depth_bits_array[2];
+    u_int8_t stencil_bits_array[2];
+
+
+    depth_bits_array[0] = depth_bits;
+    depth_bits_array[1] = depth_bits;
+    
+    /* Just like with the accumulation buffer, always provide some modes
+     * with a stencil buffer.  It will be a sw fallback, but some apps won't
+     * care about that.
+     */
+    stencil_bits_array[0] = 0;
+    stencil_bits_array[1] = (stencil_bits == 0) ? 8 : stencil_bits;
+
+    depth_buffer_factor = ((depth_bits != 0) || (stencil_bits != 0)) ? 2 : 1;
+    back_buffer_factor  = (have_back_buffer) ? 2 : 1;
+
+    num_modes = depth_buffer_factor * back_buffer_factor * 4;
+
+    if ( pixel_bits == 16 ) {
+        fb_format = GL_RGB;
+        fb_type = GL_UNSIGNED_SHORT_5_6_5;
+    }
+    else {
+        fb_format = GL_BGR;
+        fb_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    }
+
+    modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
+    m = modes;
+    if ( ! driFillInModes( & m, fb_format, fb_type,
+			   depth_bits_array, stencil_bits_array, depth_buffer_factor,
+			   back_buffer_modes, back_buffer_factor,
+			   GLX_TRUE_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
+    }
+
+    if ( ! driFillInModes( & m, fb_format, fb_type,
+			   depth_bits_array, stencil_bits_array, depth_buffer_factor,
+			   back_buffer_modes, back_buffer_factor,
+			   GLX_DIRECT_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
+    }
+
+    /* Mark the visual as slow if there are "fake" stencil bits.
+     */
+    for ( m = modes ; m != NULL ; m = m->next ) {
+	if ( (m->stencilBits != 0) && (m->stencilBits != stencil_bits) ) {
+	    m->visualRating = GLX_SLOW_CONFIG;
+	}
+    }
+
+    return modes;
+}
+
+
+/**
+ * This is the bootstrap function for the driver.  libGL supplies all of the
+ * requisite information about the system, and the driver initializes itself.
+ * This routine also fills in the linked list pointed to by \c driver_modes
+ * with the \c __GLcontextModes that the driver can support for windows or
+ * pbuffers.
+ * 
+ * \return A pointer to a \c __DRIscreenPrivate on success, or \c NULL on 
+ *         failure.
+ */
+void * __driCreateNewScreen( __DRInativeDisplay *dpy, int scrn, __DRIscreen *psc,
+			     const __GLcontextModes * modes,
+			     const __DRIversion * ddx_version,
+			     const __DRIversion * dri_version,
+			     const __DRIversion * drm_version,
+			     const __DRIframebuffer * frame_buffer,
+			     drmAddress pSAREA, int fd, 
+			     int internal_api_version,
+			     __GLcontextModes ** driver_modes )
+			     
 {
    __DRIscreenPrivate *psp;
-   psp = __driUtilCreateScreen(driver, driverContext, &r128API);
+   static const __DRIversion ddx_expected = { 4, 0, 0 };
+   static const __DRIversion dri_expected = { 4, 0, 0 };
+   static const __DRIversion drm_expected = { 2, 2, 0 };
+
+
+   if ( ! driCheckDriDdxDrmVersions2( "Rage128",
+				      dri_version, & dri_expected,
+				      ddx_version, & ddx_expected,
+				      drm_version, & drm_expected ) ) {
+      return NULL;
+   }
+      
+   psp = __driUtilCreateNewScreen(dpy, scrn, psc, NULL,
+				  ddx_version, dri_version, drm_version,
+				  frame_buffer, pSAREA, fd,
+				  internal_api_version, &r128API);
+   if ( psp != NULL ) {
+      create_context_modes = (PFNGLXCREATECONTEXTMODES)
+	  glXGetProcAddress( (const GLubyte *) "__glXCreateContextModes" );
+      if ( create_context_modes != NULL ) {
+	 R128DRIPtr dri_priv = (R128DRIPtr) psp->pDevPriv;
+	 *driver_modes = r128FillInModes( dri_priv->bpp,
+					  (dri_priv->bpp == 16) ? 16 : 24,
+					  (dri_priv->bpp == 16) ? 0  : 8,
+					  (dri_priv->backOffset != dri_priv->depthOffset) );
+      }
+   }
+
    return (void *) psp;
 }
-#endif
+#endif /* USE_NEW_INTERFACE */

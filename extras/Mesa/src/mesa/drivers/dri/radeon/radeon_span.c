@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.6 2002/10/30 12:51:56 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_span.c,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -46,6 +46,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tex.h"
 
 #define DBG 0
+#define NO_MONO
 
 #define LOCAL_VARS							\
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);			\
@@ -301,7 +302,7 @@ static void radeonSetBuffer( GLcontext *ctx,
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
 
    switch ( bufferBit ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       if ( rmesa->sarea->pfCurrentPage == 1 ) {
         rmesa->state.pixel.readOffset = rmesa->radeonScreen->backOffset;
         rmesa->state.pixel.readPitch  = rmesa->radeonScreen->backPitch;
@@ -314,7 +315,7 @@ static void radeonSetBuffer( GLcontext *ctx,
       	rmesa->state.color.drawPitch  = rmesa->radeonScreen->frontPitch;
       }
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       if ( rmesa->sarea->pfCurrentPage == 1 ) {
       	rmesa->state.pixel.readOffset = rmesa->radeonScreen->frontOffset;
       	rmesa->state.pixel.readPitch  = rmesa->radeonScreen->frontPitch;

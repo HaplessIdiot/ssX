@@ -24,13 +24,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_screen.c,v 1.3 2002/12/10 01:26:53 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_screen.c,v 1.1.1.2tsi Exp $ */
 
-/*
- * Authors:
- *   Keith Whitwell <keith@tungstengraphics.com>
- * Adapted for use on the I830M:
- *   Jeff Hartmann <jhartmann@2d3d.com>
+/**
+ * \file i830_screen.c
+ * 
+ * Adapted for use on the I830M by Jeff Hartmann.
+ *
+ * \author Keith Whitwell <keith@tungstengraphics.com>
+ * \author Jeff Hartmann <jhartmann@2d3d.com>
  */
 
 
@@ -50,6 +52,20 @@
 
 #include "i830_dri.h"
 
+#include "utils.h"
+#include "xmlpool.h"
+
+const char __driConfigOptions[] =
+DRI_CONF_BEGIN
+    DRI_CONF_SECTION_PERFORMANCE
+       DRI_CONF_MAX_TEXTURE_UNITS(4,2,4)
+    DRI_CONF_SECTION_END
+DRI_CONF_END;
+const GLuint __driNConfigOptions = 1;
+
+#ifdef USE_NEW_INTERFACE
+static PFNGLXCREATECONTEXTMODES create_context_modes = NULL;
+#endif /*USE_NEW_INTERFACE*/
 
 static int i830_malloc_proxy_buf(drmBufMapPtr buffers)
 {
@@ -125,25 +141,6 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    i830ScreenPrivate *i830Screen;
    I830DRIPtr         gDRIPriv = (I830DRIPtr)sPriv->pDevPriv;
 
-   /* Check the DRI externsion version */
-   if ( sPriv->driMajor != 4 || sPriv->driMinor < 0 ) {
-      __driUtilMessage( "i830 DRI driver expected DRI version 4.0.x "
-                        "but got version %d.%d.%d",
-                        sPriv->driMajor, sPriv->driMinor, sPriv->driPatch );
-      return GL_FALSE;
-   }
-
-   /* Check that the DDX driver version is compatible */
-   if (sPriv->ddxMajor != 1 || sPriv->ddxMinor < 0) {
-      __driUtilMessage("i830 DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
-      return GL_FALSE;
-   }
-		
-   /* Check that the DRM driver version is compatible */
-   if (sPriv->drmMajor != 1 || sPriv->drmMinor < 3) {
-      __driUtilMessage("i830 DRI driver expected DRM driver version 1.3.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
-      return GL_FALSE;
-   }
 
    /* Allocate the private area */
    i830Screen = (i830ScreenPrivate *)CALLOC(sizeof(i830ScreenPrivate));
@@ -151,6 +148,11 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
       fprintf(stderr,"\nERROR!  Allocating private area failed\n");
       return GL_FALSE;
    }
+
+   /* parse information in __driConfigOptions */
+   driParseOptionInfo (&i830Screen->optionCache,
+		       __driConfigOptions, __driNConfigOptions);
+
 
    i830Screen->driScrnPriv = sPriv;
    sPriv->private = (void *)i830Screen;
@@ -275,6 +277,21 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    }
 #endif
 
+   if ( driCompareGLXAPIVersion( 20030813 ) >= 0 ) {
+      PFNGLXSCRENABLEEXTENSIONPROC glx_enable_extension =
+          (PFNGLXSCRENABLEEXTENSIONPROC) glXGetProcAddress( (const GLubyte *) "__glXScrEnableExtension" );
+      void * const psc = sPriv->psc->screenConfigs;
+
+      if ( glx_enable_extension != NULL ) {
+	 (*glx_enable_extension)( psc, "GLX_SGI_make_current_read" );
+
+	 if ( driCompareGLXAPIVersion( 20030915 ) >= 0 ) {
+	    (*glx_enable_extension)( psc, "GLX_SGIX_fbconfig" );
+	    (*glx_enable_extension)( psc, "GLX_OML_swap_method" );
+	 }
+      }
+   }
+
    return GL_TRUE;
 }
 		
@@ -322,11 +339,6 @@ static void i830DestroyBuffer(__DRIdrawablePrivate *driDrawPriv)
    _mesa_destroy_framebuffer((GLframebuffer *) (driDrawPriv->driverPrivate));
 }
 
-static GLboolean i830OpenCloseFullScreen (__DRIcontextPrivate *driContextPriv)
-{
-   return GL_TRUE;  
-}
-
 static const struct __DriverAPIRec i830API = {
    .InitDriver      = i830InitDriver,
    .DestroyScreen   = i830DestroyScreen,
@@ -337,8 +349,6 @@ static const struct __DriverAPIRec i830API = {
    .SwapBuffers     = i830SwapBuffers,
    .MakeCurrent     = i830MakeCurrent,
    .UnbindContext   = i830UnbindContext,
-   .OpenFullScreen  = i830OpenCloseFullScreen,
-   .CloseFullScreen = i830OpenCloseFullScreen,
    .GetSwapInfo     = NULL,
    .GetMSC          = NULL,
    .WaitForMSC      = NULL,
@@ -352,7 +362,7 @@ static const struct __DriverAPIRec i830API = {
  * The __driCreateScreen name is the symbol that libGL.so fetches.
  * Return:  pointer to a __DRIscreenPrivate.
  */
-#ifndef _SOLO
+#if !defined(DRI_NEW_INTERFACE_ONLY)
 void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 			int numConfigs, __GLXvisualConfig *config)
 {
@@ -360,12 +370,133 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    psp = __driUtilCreateScreen(dpy, scrn, psc, numConfigs, config, &i830API);
    return (void *) psp;
 }
-#else
-void *__driCreateScreen(struct DRIDriverRec *driver,
-                        struct DRIDriverContextRec *driverContext)
+#endif /* !defined(DRI_NEW_INTERFACE_ONLY) */
+
+
+#ifdef USE_NEW_INTERFACE
+static __GLcontextModes *
+i830FillInModes( unsigned pixel_bits, unsigned depth_bits,
+		 unsigned stencil_bits, GLboolean have_back_buffer )
+{
+   __GLcontextModes * modes;
+   __GLcontextModes * m;
+   unsigned num_modes;
+   unsigned depth_buffer_factor;
+   unsigned back_buffer_factor;
+   GLenum fb_format;
+   GLenum fb_type;
+
+   /* GLX_SWAP_COPY_OML is only supported because the MGA driver doesn't
+    * support pageflipping at all.
+    */
+   static const GLenum back_buffer_modes[] = {
+      GLX_NONE, GLX_SWAP_UNDEFINED_OML, GLX_SWAP_COPY_OML
+   };
+
+   u_int8_t depth_bits_array[2];
+   u_int8_t stencil_bits_array[2];
+
+
+   depth_bits_array[0] = 0;
+   depth_bits_array[1] = depth_bits;
+
+   /* Just like with the accumulation buffer, always provide some modes
+    * with a stencil buffer.  It will be a sw fallback, but some apps won't
+    * care about that.
+    */
+   stencil_bits_array[0] = 0;
+   stencil_bits_array[1] = (stencil_bits == 0) ? 8 : stencil_bits;
+
+   depth_buffer_factor = ((depth_bits != 0) || (stencil_bits != 0)) ? 2 : 1;
+   back_buffer_factor  = (have_back_buffer) ? 3 : 1;
+
+   num_modes = depth_buffer_factor * back_buffer_factor * 4;
+
+    if ( pixel_bits == 16 ) {
+        fb_format = GL_RGB;
+        fb_type = GL_UNSIGNED_SHORT_5_6_5;
+    }
+    else {
+        fb_format = GL_BGRA;
+        fb_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    }
+
+   modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
+   m = modes;
+   if ( ! driFillInModes( & m, fb_format, fb_type,
+			  depth_bits_array, stencil_bits_array, depth_buffer_factor,
+			  back_buffer_modes, back_buffer_factor,
+			  GLX_TRUE_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
+    }
+
+   /* There's no direct color modes on i830? */
+
+   /* Mark the visual as slow if there are "fake" stencil bits.
+    */
+   for ( m = modes ; m != NULL ; m = m->next ) {
+      if ( (m->stencilBits != 0) && (m->stencilBits != stencil_bits) ) {
+	 m->visualRating = GLX_SLOW_CONFIG;
+      }
+   }
+
+   return modes;
+}
+#endif /* USE_NEW_INTERFACE */
+
+
+/**
+ * This is the bootstrap function for the driver.  libGL supplies all of the
+ * requisite information about the system, and the driver initializes itself.
+ * This routine also fills in the linked list pointed to by \c driver_modes
+ * with the \c __GLcontextModes that the driver can support for windows or
+ * pbuffers.
+ * 
+ * \return A pointer to a \c __DRIscreenPrivate on success, or \c NULL on 
+ *         failure.
+ */
+#ifdef USE_NEW_INTERFACE
+void * __driCreateNewScreen( __DRInativeDisplay *dpy, int scrn, __DRIscreen *psc,
+			     const __GLcontextModes * modes,
+			     const __DRIversion * ddx_version,
+			     const __DRIversion * dri_version,
+			     const __DRIversion * drm_version,
+			     const __DRIframebuffer * frame_buffer,
+			     drmAddress pSAREA, int fd, 
+			     int internal_api_version,
+			     __GLcontextModes ** driver_modes )
+			     
 {
    __DRIscreenPrivate *psp;
-   psp = __driUtilCreateScreen(driver, driverContext, &i830API);
+   static const __DRIversion ddx_expected = { 1, 0, 0 };
+   static const __DRIversion dri_expected = { 4, 0, 0 };
+   static const __DRIversion drm_expected = { 1, 3, 0 };
+
+   if ( ! driCheckDriDdxDrmVersions2( "i830",
+				      dri_version, & dri_expected,
+				      ddx_version, & ddx_expected,
+				      drm_version, & drm_expected ) ) {
+      return NULL;
+   }
+
+   psp = __driUtilCreateNewScreen(dpy, scrn, psc, NULL,
+				  ddx_version, dri_version, drm_version,
+				  frame_buffer, pSAREA, fd,
+				  internal_api_version, &i830API);
+   if ( psp != NULL ) {
+      create_context_modes = (PFNGLXCREATECONTEXTMODES)
+	  glXGetProcAddress( (const GLubyte *) "__glXCreateContextModes" );
+      if ( create_context_modes != NULL ) {
+	 I830DRIPtr dri_priv = (I830DRIPtr) psp->pDevPriv;
+	 *driver_modes = i830FillInModes( dri_priv->cpp * 8,
+					  (dri_priv->cpp == 2) ? 16 : 24,
+					  (dri_priv->cpp == 2) ? 0  : 8,
+					  (dri_priv->backOffset != dri_priv->depthOffset) );
+      }
+   }
+
    return (void *) psp;
 }
-#endif
+#endif /* USE_NEW_INTERFACE */

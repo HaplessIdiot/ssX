@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/colortab.c,v 1.3 2004/12/10 15:30:11 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/colortab.c,v 1.4tsi Exp $ */
 
 #include "glheader.h"
 #include "imports.h"
@@ -514,7 +514,6 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
    struct gl_color_table *table = NULL;
    GLfloat rScale = 1.0, gScale = 1.0, bScale = 1.0, aScale = 1.0;
    GLfloat rBias  = 0.0, gBias  = 0.0, bBias  = 0.0, aBias  = 0.0;
-   GLint comps;
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
 
    switch (target) {

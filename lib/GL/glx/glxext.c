@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.26 2004/04/22 13:58:39 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.27tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -58,11 +58,13 @@
 #include "glcontextmodes.h"
 
 #ifdef GLX_DIRECT_RENDERING
-#include <inttypes.h>
 #include <sys/mman.h>
 #include "xf86dri.h"
 #include "sarea.h"
 #include "dri_glx.h"
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 #endif
 
 #include <assert.h>

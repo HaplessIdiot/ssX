@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.4 2004/12/10 15:41:01 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.5tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -509,7 +509,7 @@ static __inline void radeonEltPrimitive( radeonContextPtr rmesa, GLenum prim )
 
 
 #define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
-#define ELTS_VARS( buf )  GLushort *dest = buf
+#define ELTS_VARS( buf )  GLushort *dest = buf; (void)rmesa;
 #define INIT( prim ) radeonDmaPrimitive( rmesa, prim )
 #define ELT_INIT(prim) radeonEltPrimitive( rmesa, prim )
 #define FLUSH()  RADEON_NEWPRIM( rmesa )

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.1.1.2 2004/12/10 15:33:18 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/dri_util.c,v 1.2tsi Exp $ */
 /**
  * \file dri_util.c
  * DRI utility functions.
@@ -27,12 +27,15 @@
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include <inttypes.h>
 #include <assert.h>
 #include <stdarg.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <stdio.h>
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 #ifndef DRI_NEW_INTERFACE_ONLY
 # include <X11/Xlibint.h>

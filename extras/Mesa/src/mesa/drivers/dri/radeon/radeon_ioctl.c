@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.1.1.4 2004/12/10 15:33:25 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.6tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -772,11 +772,11 @@ void radeonAllocDmaRegionVerts( radeonContextPtr rmesa,
  * SwapBuffers with client-side throttling
  */
 
-static uint32_t radeonGetLastFrame (radeonContextPtr rmesa) 
+static u_int32_t radeonGetLastFrame (radeonContextPtr rmesa) 
 {
    unsigned char *RADEONMMIO = rmesa->radeonScreen->mmio.map;
    int ret;
-   uint32_t frame;
+   u_int32_t frame;
 
    if (rmesa->dri.screen->drmMinor >= 4) {
       drm_radeon_getparam_t gp;
@@ -1011,7 +1011,7 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    __DRIdrawablePrivate *dPriv = rmesa->dri.drawable;
    drm_radeon_sarea_t *sarea = rmesa->sarea;
    unsigned char *RADEONMMIO = rmesa->radeonScreen->mmio.map;
-   uint32_t clear;
+   u_int32_t clear;
    GLuint flags = 0;
    GLuint color_mask = 0;
    GLint ret, i;
