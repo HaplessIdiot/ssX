@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.9 2001/12/14 19:56:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.10tsi Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -1159,12 +1159,16 @@ void _XtGetApplicationResources
     XrmQuarkList    quark_args;
     XrmResourceList* table;
     Cardinal        count, ntyped_args = num_typed_args;
+#ifdef XTHREADS
     XtAppContext    app;
+#endif
 
     if (num_resources == 0) return;
 
     if (w == NULL) app = _XtDefaultAppContext();
+#ifdef XTHREADS
     else app = XtWidgetToApplicationContext(w);
+#endif
 
     LOCK_APP(app);
     /* Get full name, class of application */
