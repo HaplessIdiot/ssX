@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.5 1995/01/28 15:49:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.6 1995/05/27 03:03:12 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -45,7 +45,9 @@ $XConsortium: agxSeg.c,v 1.2 95/01/05 20:29:54 kaleb Exp $
 
 #include "cfb.h"
 #include "cfb16.h"
+#ifdef AGX_32BPP
 #include "cfb32.h"
+#endif
 #include "cfbmskbits.h"
 #include "regagx.h"
 #include "agx.h"
@@ -125,9 +127,11 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
            case 16:
               cfb16SegmentSS(pDrawable, pGC, nseg, pSeg);
               break;
+#ifdef AGX_32BPP
            case 32:
               cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
               break;
+#endif
         }
 	return;
     }

@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.17 1995/06/14 09:42:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.18 1995/06/17 12:15:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -148,8 +148,7 @@ agxSaveReg  agxSaveIdx[MAX_AGX_IDX_REGS] = {
 
  { AGX_ALL|XGA_ALL, 	IR_DISP_MAP_LO,			0xFF,	      	0 },
  { AGX_ALL|XGA_ALL, 	IR_DISP_MAP_MID,		0xFF,	      	0 },
- { AGX_ALL,		IR_DISP_MAP_HI,			0x01,	      	0 },
- { XGA_ALL,		IR_DISP_MAP_HI,			0x07,	      	0 },
+ { AGX_ALL|XGA_ALL,	IR_DISP_MAP_HI,			0x07,	      	0 },
  { AGX_ALL|XGA_ALL, 	IR_DISP_MAP_WIDTH_LO,		0xFF,	      	0 },
  { AGX_ALL|XGA_ALL, 	IR_DISP_MAP_WIDTH_HI,		0x07,	      	0 },
 
@@ -398,7 +397,6 @@ agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
                 hercDoubledClocks, usingHercBigDac );
 #endif
 
-    agxOriginAdjust = 0;
     switch( agxInfoRec.depth ) {
        case 8:
             crtcRegs->bpp = 8;
@@ -591,7 +589,10 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_XGA_MODE);
    GE_RESET();
    agxResetCRTC(CRTC_PRERESET);
-   (*agxClockSelectFunc)(0,0);
+   if( agxClockSelectFunc == xgaNiClockSelect )
+      xgaNiClockSelect(0,-1);
+   else
+      (*agxClockSelectFunc)(0,0);
    agxResetCRTC(CRTC_RESET);
 
    if(AGX_SERIES(agxChipId)) {
@@ -618,7 +619,9 @@ agxSetCRTCRegs(crtcRegs)
           byteData &= ~IR_M1_INTERLACED;
 
       if( !usingHercBigDac 
-          && !(xf86RamDacType == SC15021_DAC && crtcRegs->bpp > 16)  ) {
+          && xf86RamDacType != SC15021_DAC  
+          && !(agxInfoRec.depth == 16 && DAC_IS_ATT490)
+        ) {
           /* for edge triggered RAMDAC modes */
           if( crtcRegs->bpp != 8 )
               byteData |= IR_M1_XGA_CRTC_DELAY;
@@ -649,8 +652,10 @@ agxSetCRTCRegs(crtcRegs)
       switch( crtcRegs->bpp ) {
          case 15:
          case 16:
-            if (!usingHercBigDac
-                 && !(agxInfoRec.depth == 16 && DAC_IS_ATT490) )
+            if( !usingHercBigDac
+                 && xf86RamDacType != SC15021_DAC
+                 && !(agxInfoRec.depth == 16 && DAC_IS_ATT490)
+              )
                byteData |= IR_M3_PCLK_EDGE_TRIGGERED;
             break;
          case 24:
@@ -835,9 +840,9 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_CRTC_VLINE_COMP_HI);
    outb(agxByteData, 0xFF);
    outb(agxIdxReg, IR_DISP_MAP_LO);
-   outb(agxByteData, agxOriginAdjust);
+   outb(agxByteData, 0);
    outb(agxIdxReg, IR_DISP_MAP_MID);
-   outb(agxByteData, agxOriginAdjust >> 8);
+   outb(agxByteData, 0);
    outb(agxIdxReg, IR_DISP_MAP_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_DISP_MAP_WIDTH_LO);
@@ -1261,13 +1266,11 @@ xgaNiClockSelect(no,scl)
       result = agxClockSelect(no,scl);
       break;
    default:
-      if (no >= agxInfoRec.clocks) {
-         ErrorF("%s: Clock number too high (%d)\n", agxInfoRec.name, no);
-         result = FALSE;
-         break;
-      }
       /* Start with freq in kHz */
-      freq = agxInfoRec.clock[no];
+      if( scl == -1 )
+         freq = 25000;
+      else
+         freq = agxInfoRec.clock[no];
       /* Check if clock frequency is within range */
       if (freq > agxInfoRec.maxClock) {
          ErrorF("%s %s: Specified dot clock (%7.3f) too high for RAMDAC.",
@@ -1288,8 +1291,8 @@ xgaNiClockSelect(no,scl)
          scale = IR_NI_PLL_SCALE_4;
       }
       else {
-         ErrorF("%s %s: Specified dot clock (%7.3f) too low for clock synthesizer.",
-                XCONFIG_PROBED, agxInfoRec.name, freq );
+         ErrorF("%s %s: Specified dot clock (%d-%7.3f) too low for clock synthesizer.\n",
+                XCONFIG_PROBED, agxInfoRec.name, no, freq / 1000.0 );
          result = FALSE;
          break;
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86RamDac.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.5 1995/05/27 03:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.6 1995/06/14 07:33:33 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -348,7 +348,6 @@ registers, assuming normal RAMDAC.\n",
          break;
 
       case XGA_DAC:
-         xf86MaxClock =  90000;
          break;
 
       case UNKNOWN_DAC:

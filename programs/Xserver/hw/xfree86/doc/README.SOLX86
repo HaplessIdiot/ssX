@@ -195,6 +195,24 @@
         You will also need to either create a link from gcc to cc, or
         comment out the CC=cc line in ~xc/config/imake/Makefile.ini.
 
+        You should also make certain your version of GCC predefines
+        `sun'.  2.4.5 is known NOT to by default.  If needed edit
+        /usr/local/lib/gcc-lib/*/*/specs, and modify the *predefines:
+        line.
+
+
+        Note: A Threaded Xlib compiled with GCC has subtle problems.
+        It'll work 98% of the time, however clients will occasionally
+        exhibit strange hangs. Most notably image viewers such as
+        xv-3.10 exhibit this problem.
+
+
+        It is recommended that you set ThreadedX in ~xc/config/cf/sun.cf
+        to NO, if you are using GCC.  ProWorks does not have this
+        problem.
+
+
+
 
      3. If your are using ProWorks to compile the XFree86 distribution,
         you need to modify your PATH appropriately so the ProWorks tools
@@ -244,8 +262,6 @@
      1. If you have not made the Virtual Terminal devices, you will need
         to specify the terminal device to run the Xserver on.  The
         correct device is vt00 so your xinit command would look like so:
-
-
                           xinit -- vt00
 
 
@@ -312,8 +328,6 @@
 
 
         Solaris 2.4 does not have this problem.
-
-
         There is no known work around.
 
 
@@ -327,22 +341,8 @@
 
 
 
-
   $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.3 1995/01/28 16:02:26 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.4 1995/06/21 11:53:23 dawes Exp $
 
 
 

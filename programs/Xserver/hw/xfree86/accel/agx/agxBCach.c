@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.8 1995/05/27 03:02:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.9 1995/06/17 12:15:28 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -45,6 +45,7 @@
 #include        "xf86_Config.h"
 
 extern bitMapBlockPtr blockInUse;
+extern unsigned long agxFontAge;
 
 static bitMapRowPtr headBitRow = NULL;   /* top of linked list of cache rows */
 CacheFont8Ptr       agxHeadFont = NULL;  /* top of list of fonts in cache */
@@ -93,6 +94,8 @@ agxBitCache8Init(x,y)
 
    reEntry = TRUE;
       
+   agxHeadFont = NULL;
+   headBitRow  = NULL;
    if ( numRows ) {
       bitMapRowPtr bptr;
       /* Xcalloc returns zeroed memory */
@@ -111,8 +114,7 @@ agxBitCache8Init(x,y)
       }
    }
    else {
-      agxHeadFont = NULL;
-      headBitRow  = NULL;
+      agxFontCacheSize = 0;
    }
 
    if (xf86Verbose) {
@@ -121,8 +123,13 @@ agxBitCache8Init(x,y)
 	         XCONFIG_PROBED, agxInfoRec.name, 
                  agxFontCacheSize>>10, agxFontCacheOffset );
       } else {
-	 ErrorF("%s %s: Font caching is disabled due to lack of VRAM.\n",
-                XCONFIG_PROBED, agxInfoRec.name);
+
+         if( OFLG_ISSET(OPTION_NOACCEL, &agxInfoRec.options) )
+	    ErrorF("%s %s: Font caching disabled by the \"noaccel\" option\n",
+                   XCONFIG_GIVEN, agxInfoRec.name);
+         else
+	    ErrorF("%s %s: Font caching is disabled due to lack of VRAM\n",
+                   XCONFIG_PROBED, agxInfoRec.name);
       }
    }
 }
@@ -139,12 +146,14 @@ agxBitCache8Init(x,y)
  * font code must throw out some other blocks to make room.
  */
 bitMapBlockPtr
-agxCGetBlock( size )
-     unsigned int size;      /* Block size in lines */
+agxCGetBlock( fentry, block, size  )
+     CacheFont8Ptr fentry;
+     int   block;     
+     int   size;      /* Block size in lines */
 {
    bitMapRowPtr bptr = headBitRow;
    bitMapBlockPtr canidate = NULL;
-   int oldest=0;   
+   unsigned long oldest = 0;
    
    do {
        if (bptr->blocks == NULL) { /* block is empty */    
@@ -154,6 +163,8 @@ agxCGetBlock( size )
 	  bptr->blocks->daddy = bptr; /* so we can trace a block back to its
 	                               * parent row.  
 		                       */
+          bptr->blocks->fentry = fentry;
+          bptr->blocks->block  = block;
 	  bptr->freel -= size;        /* reduce the free space of this row */
 	  SHOWCACHE();
 	  return bptr->blocks;
@@ -170,14 +181,29 @@ agxCGetBlock( size )
 	     bbptr->next->line  = ROW_NUM_LINES - bptr->freel;
 	     bbptr->next->sizel = size;
 	     bbptr->next->daddy = bptr;
+             bbptr->next->fentry = fentry;
+             bbptr->next->block  = block;
 	     bptr->freel -= size;
 	     SHOWCACHE();
 	     return bbptr->next;
 	  }
-          else { /* see if any slot is big enough anyway */
+          else { 
+             /*
+              * Select the oldest font of suitable size, other than 
+              * the last or very recently used slots from the same font.
+              */
 	     bitMapBlockPtr bbptr = bptr->blocks;
-	     while (bbptr->next != NULL)  {
-		if (bbptr->sizel > size && bbptr->lru > oldest) {
+	     while (bbptr != NULL)  {
+		if( bbptr->sizel >= size 
+                    && ( canidate == NULL 
+                         || bbptr->lru < oldest
+                            /* check if we haven't caught lru clock wrap */
+                         || bbptr->lru > agxFontAge && oldest < agxFontAge
+                       )
+                    && bbptr != blockInUse 
+                    && ( bbptr->fentry != fentry   
+                         || agxFontAge - bbptr->lru > 100 )
+                  ) {
 		   oldest = bbptr->lru;
 		   canidate = bbptr; /* our prime candidate to remove
 				      * If no space is found
@@ -189,16 +215,18 @@ agxCGetBlock( size )
       }
    } while ((bptr = bptr->next) != NULL);
 
-   /* If we get here then there are no slots left
-    * We throw out the least used block if we found one big enough.
-    * else we return null and let the calling code do something about it.
+   /*
+    * If we get here then there are no slots left.
+    * We throw out one out if we found a suitable
+    * candidate, else let the caller deal with it.
     */
 
    ERROR_F(("forced font return\n"));
    if (canidate != NULL) {
       agxCReturnBlock(canidate);
-      return agxCGetBlock(size);
-   } else
+      return agxCGetBlock(fentry,block,size);
+   } 
+   else
       return NULL;	/* shouldn't happen unless you try very hard */
    
 }
@@ -225,13 +253,14 @@ agxCReturnBlock(block)
 
    if( block == blockInUse) 
    {
-      ERROR_F(("freeing in-use block: line offset=0x%x num lines=0x%x\n", 
-                                     block->line, block->sizel));
       GE_WAIT_IDLE_SHORT();
    }
 
-   ERROR_F(("free block: line offset=0x%x num lines=0x%x\n", 
-             block->line, block->sizel));
+   ERROR_F(("free 0x%x(0x%x) 0x%x: line offset=0x%x num lines=0x%x\n", 
+              block->fentry, block->block, 
+              block->fentry ? 
+                 block->fentry->fblock[block->block] : 0,
+              block->line, block->sizel));
    SHOWCACHE();
    bptr->freel += block->sizel;	/* this much we can be sure of */
 
@@ -269,7 +298,7 @@ agxCReturnBlock(block)
          MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
          GE_SET_MAP( GE_MS_MAP_B );
          GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
-         GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
+         GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFFFFFFFF );
          GE_OUT_W( GE_PIXEL_OP,
                    GE_OP_PAT_FRGD
                    | GE_OP_MASK_DISABLED
@@ -324,7 +353,11 @@ agxCReturnBlock(block)
     * know where that is. This is used for when we need to free a block in
     * order to store a new one.
     */
-   *(block->reference)=NULL; 
+   if( block->fentry != NULL ) {
+      if( block->block < BLOCKS_PER_FONT ) 
+         block->fentry->fblock[block->block]=NULL; 
+      block->fentry=NULL; 
+   }
    Xfree(block);
 
 }

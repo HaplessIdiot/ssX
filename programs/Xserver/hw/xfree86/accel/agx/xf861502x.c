@@ -1,5 +1,5 @@
 /* $XConsortium: xf861502x.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.4 1995/05/27 03:03:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.5 1995/06/14 09:42:17 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -254,7 +254,7 @@ xf86Sc1502xInit()
          break;
 
       case 15:
-         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_15BPP_EDGE_TRGR );
+         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_15BPP );
          xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
                                SC1502X_RP_8X2_TO_16X1 );
          if( xf86RamDacType == SC15021_DAC ) {
@@ -264,7 +264,7 @@ xf86Sc1502xInit()
          break;
 
       case 16:
-         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_16BPP_EDGE_TRGR );
+         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_16BPP );
          xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
                                SC1502X_RP_8X2_TO_16X1 );
          if( xf86RamDacType == SC15021_DAC ) {

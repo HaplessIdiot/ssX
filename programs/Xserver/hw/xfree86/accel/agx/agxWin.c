@@ -1,5 +1,5 @@
 /* $XConsortium: agxWin.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.2 1995/01/28 15:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.3 1995/05/27 03:03:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -65,6 +65,10 @@ Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
+#include "cfb16.h"
+#ifdef AGX_32BPP
+#include "cfb32.h"
+#endif
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
@@ -102,9 +106,11 @@ agxCopyWindow(pWin, ptOldOrg, prgnSrc)
         case 16:
           cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
           break;
+#ifdef AGX_32BPP
        case 32:
           cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
           break;
+#endif
       }
       return;
    }

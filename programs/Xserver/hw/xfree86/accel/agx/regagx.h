@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.11 1995/06/14 09:42:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.12 1995/06/17 12:15:35 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -35,11 +35,12 @@
 #include "vgaBank.h"
 #include "xf86RamDac.h"
 
-#define MAX_XGA_NI_CLOCK        90000
-#define MAX_XGA_1_CLOCK         80000
-#define MAX_AGX_16_CLOCK        85000
-#define MAX_AGX_15_CLOCK        85000
-#define MAX_AGX_14_CLOCK        85000
+#define MAX_XGA_NI_CLOCK        	90000
+#define MAX_XGA_NI_CLOCK_CONSERV 	80000
+#define MAX_XGA_1_CLOCK         	45000
+#define MAX_AGX_16_CLOCK        	85000
+#define MAX_AGX_15_CLOCK        	85000
+#define MAX_AGX_14_CLOCK        	85000
 
 #define MEM_SIZE_512K           0x0000
 #define MEM_SIZE_1M             0x0004
@@ -244,6 +245,7 @@ extern agxPixMap *agxCurPixMap[2];
  */
 
 #define POS_DEF_IO_BASE		0x100
+#define POS_EISA_MASK           0x0C80
 #define POS_LAST_IO_REG	 	0x0F
 #define POS_NUM_IO_REG		(POS_LAST_IO_REG+1)
 
@@ -264,14 +266,16 @@ extern agxPixMap *agxCurPixMap[2];
 #define POS_CONF_EXT_MEM_MULT    	0x200      
 #define POS_CONF_EXT_MEM_BASE    	0xC0000      
 #define POS_CONF_COPROC_REG_OFF		0x01C00      
-#define POS_CONF_INSTANCE_MASK	 	0x07
-#define POS_CONF_XGA_ENABLE_MASK	0x08
+#define POS_CONF_INSTANCE_MASK	 	0x0E
+#define POS_CONF_XGA_ENABLE_MASK	0x01
+#define POS_CONF_ISA_ENABLE_MASK	0x08
+#define POS_CONF_EISA_ENABLE_MASK	0x01
 
 #define POS_CONF_INSTANCE( pos2 )  \
-             ((( pos2 ) && POS_CONF_INSTANCE_MASK) >> 1)
+             ((( pos2 ) & POS_CONF_INSTANCE_MASK) >> 1)
 
-#define POS_CONF_XGA_ENABLED( pos2 )   \
-             (( pos2 ) && POS_CONF_XGA_ENABLED)
+#define POS_CONF_XGA_IS_ENABLED( pos2 )   \
+             (( pos2 ) & POS_CONF_XGA_IS_ENABLED)
 
 
 #define POS_BUS_ARB_INDEX	0x00
@@ -319,9 +323,9 @@ extern agxPixMap *agxCurPixMap[2];
 #define POS_BIOS_ADDRESS_MULT		0x400
 #define POS_BIOS_ADDRESS_BASE		0xC0000
 
-#define POS_CONTROL       	0x08
-#define POS_ENABLE	 		0x08
-#define POS_DISABLE 			0x00
+#define POS_CONTROL       		0x08
+#define POS_EISA_CONTROL       	 	0x05
+#define POS_EISA_OFFSET        	 	0x08
 #define POS_INSTANCE_MASK		0x07
 
 

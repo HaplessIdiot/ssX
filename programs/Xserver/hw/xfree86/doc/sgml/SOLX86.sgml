@@ -185,8 +185,21 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 
 	You will also need to either create a link from gcc to cc, or
 	comment out the CC=cc line in 
-<tt>~xc/config/imake/Makefile.ini</tt>.
-<p>
+<tt>~xc/config/imake/Makefile.ini</tt>.<p>
+	You should also make certain your version of GCC predefines `sun'.
+	2.4.5 is known NOT to by default.  If needed edit
+	<tt>/usr/local/lib/gcc-lib/*/*/specs</tt>, and modify the
+	<tt>*predefines:</tt> line.<p>
+
+	Note: A Threaded Xlib compiled with GCC has subtle problems.
+	It'll work 98&percnt; of the time, however clients will occasionally
+	exhibit strange hangs. Most notably image viewers such as
+	xv-3.10 exhibit this problem.<p>
+
+	It is recommended that you set ThreadedX in
+	<tt>~xc/config/cf/sun.cf</tt> to NO, if you are using GCC.
+	ProWorks does not have this problem.
+
 
 
 <item>	If your are using ProWorks to compile the XFree86 distribution, you 
@@ -297,6 +310,6 @@ Xserver.
 
 <verb>
 $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.2 1995/01/15 10:34:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.3 1995/01/28 16:02:26 dawes Exp $
 </verb>
 </article>

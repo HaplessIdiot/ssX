@@ -1,5 +1,5 @@
 /* $XConsortium: agxDLine.c,v 1.2 95/01/06 20:56:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.2 1995/01/28 15:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.3 1995/05/27 03:02:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -156,9 +156,11 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
          case 16:
             cfb16LineSD(pDrawable, pGC, mode, npt, pptInit);
             break;
+#ifdef AGX_32BPP
          case 32:
             cfb32LineSD(pDrawable, pGC, mode, npt, pptInit);
             break;
+#endif
       }
       return;
    }

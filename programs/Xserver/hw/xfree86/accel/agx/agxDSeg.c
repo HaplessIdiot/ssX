@@ -1,5 +1,5 @@
 /* $XConsortium: agxDSeg.c,v 1.2 95/01/06 20:56:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.2 1995/01/28 15:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.3 1995/05/27 03:02:41 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -152,9 +152,11 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
         case 16:
            cfb16SegmentSD(pDrawable, pGC, nseg, pSeg);
            break;
+#ifdef AGX_32BPP
         case 32:
            cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
            break;
+#endif
       }
       return;
    }

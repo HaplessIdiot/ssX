@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.29 1995/06/14 09:42:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.30 1995/06/17 12:15:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -52,7 +52,9 @@
 #include "xf86_HWlib.h"
 #include "cfb.h"
 #include "cfb16.h"
+#ifdef AGX_32BPP
 #include "cfb32.h"
+#endif
 #include "mi.h"
 #include "agx.h"
 #include "regagx.h"
@@ -124,7 +126,7 @@ ScrnInfoRec agxInfoRec = {
     0,                  /* int s3Madjust    */
     0,                  /* int s3Nadjust    */
     0,                  /* int s3MClk    */
-    0,			/* unsigned long VGABase */
+    0xA0000,		/* unsigned long VGABase */
 };
 
 int vgaInterlaceType = VGA_NO_DIVIDE_VERT;
@@ -162,18 +164,20 @@ pointer  vgaPhysBase = NULL;
 pointer  vgaBase = NULL;
 pointer  vgaVirtBase = NULL;
 pointer  agxVideoMem = NULL;
-unsigned int  agxVideoBase = 0x0;
-unsigned char agxPOSMemBase = 0x0;
-unsigned int vgaBankSize = 0x10000;
-unsigned int agxBankSize = 0x10000;
-unsigned int   agxMemBase; 
-unsigned int  agxFontCacheOffset;
-unsigned int  agxFontCacheSize;
-unsigned int  agxScratchOffset;
-unsigned int  agxScratchSize;
-unsigned int  agxHWCursorOffset;
+unsigned long agxVideoBase = 0x0;
+unsigned long agxPOSMemBase = 0x0;
+unsigned long vgaBankSize = 0x10000;
+unsigned long agxBankSize = 0x10000;
+unsigned long agxMemBase; 
+unsigned long agxFontCacheOffset;
+unsigned long agxFontCacheSize;
+unsigned long agxFontRowLength;
+unsigned int  agxFontRowNumLines;
+
+unsigned long agxScratchOffset;
+unsigned long agxScratchSize;
+unsigned long agxHWCursorOffset;
 Bool     agxHWCursor = FALSE;
-unsigned int  agxOriginAdjust = 0;
 
 
 extern Bool xf86VTSema;
@@ -234,7 +238,7 @@ GetXGAInfoBlock(instance,info)
    int posBase = agxInfoRec.POSbase;
 
    if (xf86Verbose) {
-      ErrorF( "%s %s: XGA POS Register Probe:\n", 
+      ErrorF( "%s %s: ------------- XGA POS Register Probe -------------\n", 
               XCONFIG_PROBED, agxInfoRec.name );
   
       ErrorF( "%s %s: POS Probe Register Base Address: 0x0%x (POSBASE)\n", 
@@ -243,34 +247,45 @@ GetXGAInfoBlock(instance,info)
               agxInfoRec.name, posBase );
    }
 
-   if( inst < 0 || inst > 7 ) {
-      unsigned char in; 
-      inst = -1;
-      for( i=0; i<8; i++) {
-         GlennsIODelay();
-         in = inb(posBase+POS_CONTROL+i);
-         if (in != 0xFF) 
-            inst = i; 
-         if (xf86Verbose) 
-            ErrorF( "%s %s: POS instance %d - control register: 0x%x, \
-value: 0x%02x\n",
-                    XCONFIG_PROBED, agxInfoRec.name,
-                    i, POS_CONTROL+i, in );
-      }
+   if( posBase & POS_EISA_MASK == POS_EISA_MASK ) {
+      ErrorF( "%s %s: EISA POS Probe\n", XCONFIG_PROBED, agxInfoRec.name );
+
+      /* enable pos regs for video board instance */
+      outb(posBase+POS_EISA_CONTROL, POS_CONF_EISA_ENABLE_MASK | inst);
+
+      posBase += POS_EISA_OFFSET;
    }
    else {
-      if( inb(posBase+POS_CONTROL+inst) == 0xFF )
+      ErrorF( "%s %s: ISA POS  Probe\n", XCONFIG_PROBED, agxInfoRec.name );
+      if( inst < 0 || inst > 7 ) {
+         unsigned char in; 
          inst = -1;
+         for( i=0; i<8; i++) {
+            GlennsIODelay();
+            in = inb(posBase+POS_CONTROL+i);
+            if (in != 0xFF) 
+               inst = i; 
+            if (xf86Verbose) 
+               ErrorF( "%s %s: POS instance %d - control register: 0x%x, \
+value: 0x%02x\n",
+                       XCONFIG_PROBED, agxInfoRec.name,
+                       i, POS_CONTROL+i, in );
+         }
+      }
+      else {
+         if( inb(posBase+POS_CONTROL+inst) == 0xFF )
+            inst = -1;
+      }
+      if( inst < 0 ) {
+         return inst;
+      }
+      /* enable pos regs for video board instance */
+      outb(posBase+POS_CONTROL+inst, POS_CONF_ISA_ENABLE_MASK | inst);
    }
 
    if( inst < 0 ) {
       return inst;
    }
-   inst &= POS_INSTANCE_MASK;
-   info->instance = inst;
-
-   /* enable pos regs for video board instance */
-   outb(posBase+POS_CONTROL+inst, POS_CONF_XGA_ENABLE_MASK | inst);
 
    GlennsIODelay();
    info->pos0 = inb(posBase);
@@ -287,7 +302,15 @@ value: 0x%02x\n",
    
    /* disable the POS registers */
    GlennsIODelay();
-   outb(posBase+POS_CONTROL+inst, inst & POS_INSTANCE_MASK);
+   if( posBase & POS_EISA_MASK == POS_EISA_MASK ) { 
+      posBase -= POS_EISA_OFFSET;
+      outb(posBase+POS_EISA_CONTROL, 0x0 );
+   }
+   else {
+      outb(posBase+POS_CONTROL+inst, inst & POS_INSTANCE_MASK);
+   }
+
+   info->instance = POS_CONF_INSTANCE(info->pos2);
 
    info->xgaBiosAddress = ((info->pos2 & POS_CONF_EXT_MEM_MASK) 
                              * POS_CONF_EXT_MEM_MULT) + POS_CONF_EXT_MEM_BASE;
@@ -333,6 +356,9 @@ Base Address: 0x%06x (COPBASE)\n",
       ErrorF( "%s %s: POS XGA Coproc's Video Memory Base \
 Address: 0x%06x (MEMBASE)\n", 
               XCONFIG_PROBED, agxInfoRec.name, info->xgaMemBase );
+
+      ErrorF( "%s %s: ------------- End POS Register Probe -------------\n", 
+              XCONFIG_PROBED, agxInfoRec.name );
    }
 
    return inst;
@@ -414,7 +440,7 @@ agxProbe()
    xf86ClearIOPortList(agxInfoRec.scrnIndex); 
 
    /* probe and auto-config XGA chips */ 
-   if( XGA_SERIES(agxChipId) ) {
+   if( XGA_SERIES(agxChipId) && agxInfoRec.POSbase != 0 ) {
       int inst;
       XGAInformationBlock info = { 0xFF, };
 
@@ -477,7 +503,7 @@ for information on how to manually configure.\n",
                ? XCONFIG_GIVEN : XCONFIG_PROBED,
             agxInfoRec.name, agxInfoRec.instance, agxInfoRec.IObase );
 
-   ErrorF( "%s %s: I/O Mapped Register Base Address = 0x%04x (IOBASE).\n",
+   ErrorF( "%s %s: I/O Mapped Register Base Address = 0x%04x (IOBASE)\n",
             OFLG_ISSET(XCONFIG_IOBASE, &agxInfoRec.xconfigFlag) 
                ? XCONFIG_GIVEN : XCONFIG_PROBED,
             agxInfoRec.name, agxInfoRec.IObase );
@@ -625,7 +651,10 @@ for information on how to manually configure.\n",
    if (XGA_2_ONLY(agxChipId)) {
       /* has programmable clocks */ 
       agxClockSelectFunc = xgaNiClockSelect;  
-      xf86MaxClock        = MAX_XGA_NI_CLOCK;
+      if( OFLG_ISSET(XCONFIG_DACSPEED, &agxInfoRec.xconfigFlag) )
+         xf86MaxClock = min( MAX_XGA_NI_CLOCK, agxInfoRec.dacSpeed );
+      else
+         xf86MaxClock = MAX_XGA_NI_CLOCK_CONSERV;
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(agxInfoRec.clockOptions));
    }
    else {
@@ -645,6 +674,10 @@ for information on how to manually configure.\n",
     * Handle the depth options
     */
    
+   if( XGA_SERIES(agxChipId) && xf86bpp == 15 ) {
+      xf86bpp = agxInfoRec.depth = 16;
+   }
+
    if (xf86bpp < 0) {
       xf86bpp = agxInfoRec.depth;
    }
@@ -685,6 +718,7 @@ for information on how to manually configure.\n",
       if (defaultColorVisualClass < 0)
          defaultColorVisualClass = agxInfoRec.defaultVisual;
       break;
+#ifdef AGX_32BPP
    case 24:
    case 32:
       BytesPerPixelShift = 2;
@@ -700,9 +734,15 @@ for information on how to manually configure.\n",
       if (defaultColorVisualClass < 0)
          defaultColorVisualClass = agxInfoRec.defaultVisual;
       break;
+#endif
    default:
+#ifdef AGX_32BPP
       ErrorF(
         "Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
+#else
+      ErrorF(
+        "Invalid value for bpp.  Valid values are 8, 15, and 16.\n");
+#endif
       xf86DisableIOPorts(agxInfoRec.scrnIndex);
       return(FALSE);
    }
@@ -804,6 +844,8 @@ for information on how to manually configure.\n",
       else {
          outb(VGA_PAL_MASK, 0x00);
       }
+      if( agxClockSelectFunc == xgaNiClockSelect )  
+         agxInfoRec.clock[0] = 25000;
       agxSetUpProbeCRTC( &agxProbeCRTC ); 
       agxSetCRTCRegs(&agxProbeCRTC);
       agxInitGE();
@@ -841,11 +883,11 @@ for information on how to manually configure.\n",
       else {
          outb(VGA_PAL_MASK, 0xFF);
       }
-   
-      agxHWRestore(agxSavedState);
-   
-      xf86DisableIOPorts(agxInfoRec.scrnIndex);
    }
+   
+   agxHWRestore(agxSavedState);
+   
+   xf86DisableIOPorts(agxInfoRec.scrnIndex);
 
    /*
     * Adjust the clocks for depth
@@ -867,8 +909,6 @@ for information on how to manually configure.\n",
       switch( agxInfoRec.depth ) {
          int clk, max;
          case 8:
-            break;
-   
          case 15:
          case 16:
             max = agxInfoRec.clocks;
@@ -893,9 +933,9 @@ for information on how to manually configure.\n",
       ErrorF("%s: ", agxInfoRec.name);
 
       if(OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,&(agxInfoRec.clockOptions)))
-         ErrorF("Dot-clocks at %d bpp: Programmable.", agxInfoRec.depth);
+         ErrorF("Dot-clocks at %d bpp: Programmable", agxInfoRec.depth);
       else
-         ErrorF("Dot-clocks at %d bpp: %d.", 
+         ErrorF("Dot-clocks at %d bpp: %d", 
                  agxInfoRec.depth, agxInfoRec.clocks );
 
       for (i = 0; i < agxInfoRec.clocks; i++) {
@@ -1075,33 +1115,72 @@ for information on how to manually configure.\n",
    }
 
    {
-     unsigned int end = ((xf86bpp * (agxDisplayWidth*agxVirtY)) >> 3);
-     unsigned int avail;
-     unsigned int total = agxInfoRec.videoRam << 10;
+     unsigned long end = ((xf86bpp * (agxDisplayWidth*agxVirtY)) >> 3);
+     unsigned long avail;
+     unsigned long total = agxInfoRec.videoRam << 10;
  
-     /* align to 64K -- 32K for the XGA */
+     /* align to 64K -- 16K for the XGA */
      if( AGX_10_XGA_ONLY(agxChipId) )  
-        agxScratchOffset = (end + 0x7FFF) & 0xFFFF8000;
+        agxScratchOffset = (end + 0x3FFF) & 0xFFFFC000;
      else
         agxScratchOffset = (end + 0xFFFF) & 0xFFFF0000;
      avail = total - agxScratchOffset;
-     if( avail < 0x8000 )
-        agxScratchSize = 0;
-     else if( AGX_10_XGA_ONLY(agxChipId) && avail <= 0x10000 )
-        agxScratchSize = 0x08000;
-     else if( avail < 0x40000 )
-        agxScratchSize = 0x10000;
-     else 
-        agxScratchSize = 0x20000; 
 
-     /* align to 64K -- 32k for the XGA */
-     if( AGX_10_XGA_ONLY(agxChipId) )  
-        agxFontCacheOffset = (agxScratchOffset + agxScratchSize + 0x7FFF) 
-                                 & 0xFFFF8000;
-     else
-        agxFontCacheOffset = (agxScratchOffset + agxScratchSize + 0xFFFF) 
-                                 & 0xFFFF0000;
-     agxFontCacheSize  = total - agxFontCacheOffset;
+    if( !OFLG_ISSET(OPTION_NOACCEL, &agxInfoRec.options) ) {  
+        if( AGX_10_XGA_ONLY(agxChipId) 
+            && avail >= 0x0C000 && avail < 0x10000 )
+           agxScratchSize = 0x04000;    /* 32K Font Cache */
+        else if( AGX_10_XGA_ONLY(agxChipId) && avail < 0x10000 )
+           agxScratchSize = avail & 0x1C000;   /* No Font Cache */
+        else if( AGX_10_XGA_ONLY(agxChipId) && avail < 0x20000 )
+           agxScratchSize = 0x08000 + (avail & 0x04000);    
+        else if( avail <= 0x10000 )
+           agxScratchSize = 0;
+        else if( avail < 0x40000 )
+           agxScratchSize = 0x10000 + (avail & 0x04000);
+        else if( avail < 0x80000 )
+           agxScratchSize = 0x20000 + (avail & 0x0C000); 
+        else 
+           agxScratchSize = 0x40000; 
+    }
+    else {
+        agxScratchSize = avail; 
+    }
+    
+    if( !OFLG_ISSET(OPTION_NOACCEL, &agxInfoRec.options) ) {  
+        /* align to 64K -- 32K/64K for the XGA */
+        agxFontCacheOffset = (agxScratchOffset + agxScratchSize) & 0XFF8000;
+        agxFontCacheSize   = total - agxFontCacheOffset;
+        if( AGX_10_XGA_ONLY(agxChipId) )  {
+           if( agxFontCacheSize < 0x08000 ) {
+              agxFontCacheSize   = 0;
+              agxFontRowLength   = 2048; /* to prevent div-by-zero */
+              agxFontRowNumLines = 0;
+           }
+           else if( agxFontCacheOffset & 0x08000 && agxFontCacheSize < 0x20000 ) {
+              agxFontCacheSize   &= 0xFF8000;
+              agxFontRowLength    = 0x008000;
+              agxFontRowNumLines  = 1024;
+           }
+           else {
+              agxFontCacheOffset &= 0xFF0000;
+              agxFontCacheSize   &= 0xFF0000;
+              agxFontRowLength    = 0x010000;
+              agxFontRowNumLines  = 2048;
+           }
+        }
+        else {
+           agxFontCacheOffset &= 0xFF0000;
+           agxFontCacheSize   &= 0xFF0000;
+           agxFontRowLength    = 0x010000;
+           agxFontRowNumLines  = 2048;
+        }
+     }
+     else {
+        agxFontCacheSize   = 0;
+        agxFontRowLength   = 2048;
+        agxFontRowNumLines = 0;
+     }
 
      if( agxScratchSize < 0x10000 && !AGX_10_XGA_ONLY(agxChipId) ) {
          ErrorF("%s %s: 64K video memory required for scratchpad, \
@@ -1109,8 +1188,8 @@ for information on how to manually configure.\n",
              XCONFIG_PROBED, agxInfoRec.name, agxScratchSize );
          return FALSE; 
      }
-     else if( agxScratchSize < 0x08000 && AGX_10_XGA_ONLY(agxChipId) ) {
-         ErrorF("%s %s: 32K video memory required for scratchpad, \
+     else if( agxScratchSize < 0x04000 && AGX_10_XGA_ONLY(agxChipId) ) {
+         ErrorF("%s %s: 16K video memory required for scratchpad, \
 0x%05x available\n",
              XCONFIG_PROBED, agxInfoRec.name, agxScratchSize );
          return FALSE; 
@@ -1310,10 +1389,12 @@ agxEnterLeaveVT(enter, screen_idx)
             pspix =
                   (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
             break;
+#ifdef AGX_32BPP
          case 32:
             pspix =
                   (PixmapPtr)pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
             break;
+#endif
       }
    }
 
@@ -1611,10 +1692,10 @@ agxAdjustFrame(x, y)
     */
    if( AGX_SERIES(agxChipId) ) {
       byte_offset = AGX_PIXEL_ADJUST( x + y*agxDisplayWidth ) >> 2; 
-      byte_offset += agxOriginAdjust;
    }
-   else
-      byte_offset = AGX_PIXEL_ADJUST(x + y*agxDisplayWidth + 1 ) >> 3;
+   else {
+      byte_offset = AGX_PIXEL_ADJUST(x + y*agxDisplayWidth ) >> 3;
+   }
                     
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    if (vgaPhysBase)

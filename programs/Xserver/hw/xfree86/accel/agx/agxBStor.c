@@ -1,5 +1,5 @@
 /* $XConsortium: agxBStor.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBStor.c,v 3.1 1995/01/28 15:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBStor.c,v 3.2 1995/05/27 03:02:34 dawes Exp $ */
 /*-
  * agxbstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -64,9 +64,11 @@ agxSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
         case 16:
             cfb16SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
             return;
+#ifdef AGX_32BPP
         case 32:
             cfb32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
             return;
+#endif
       }
    }
 
@@ -105,9 +107,11 @@ agxRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
         case 16:
             cfb16RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
             return;
+#ifdef AGX_32BPP
          case 32:
             cfb32RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
             return;
+#endif
       }
    }
 

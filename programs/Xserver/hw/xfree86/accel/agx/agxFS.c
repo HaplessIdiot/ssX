@@ -1,5 +1,5 @@
 /* $XConsortium: agxFS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.6 1995/01/28 15:48:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.7 1995/05/27 03:02:48 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -135,10 +135,12 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
          cfb16SolidSpansGeneral(pDrawable, pGC,
                                 nInit, pptInit, pwidthInit, fSorted);
          break;
+#ifdef AGX_32BPP
       case 32:
          cfb32SolidSpansGeneral(pDrawable, pGC,
                                 nInit, pptInit, pwidthInit, fSorted);
          break;
+#endif
       }
       return;
     }
@@ -242,10 +244,12 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
          cfb16UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
                               pwidthInit, fSorted);
          break;
+#ifdef AGX_32BPP
       case 32:
          cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
                               pwidthInit, fSorted);
          break;
+#endif
       }
       return;
     }
@@ -329,10 +333,12 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
          cfb16UnnaturalStippleFS(pDrawable, pGC,
                                  nInit, pptInit, pwidthInit, fSorted);
          break;
+#ifdef AGX_32BPP
       case 32:
          cfb32UnnaturalStippleFS(pDrawable, pGC,
                                  nInit, pptInit, pwidthInit, fSorted);
          break;
+#endif
       }
       return;
     }
@@ -419,10 +425,12 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
           cfb16UnnaturalStippleFS(pDrawable, pGC,
                                   nInit, pptInit, pwidthInit, fSorted);
           break;
+#ifdef AGX_32BPP
        case 32:
           cfb32UnnaturalStippleFS(pDrawable, pGC,
                                   nInit, pptInit, pwidthInit, fSorted);
           break;
+#endif
        }
        return;
     }

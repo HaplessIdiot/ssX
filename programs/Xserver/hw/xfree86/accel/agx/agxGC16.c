@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC16.c,v 3.0 1995/05/23 08:49:38 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -114,9 +114,9 @@ static GCOps agxOps =
    agxPolyFillRect,
    agxPolyFillArc,
    agxPolyText8,
-   miPolyText16,
+   agxPolyText16,
    agxImageText8,
-   miImageText16,
+   agxImageText16,
    miImageGlyphBlt,
    miPolyGlyphBlt,
    miPushPixels,

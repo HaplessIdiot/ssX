@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.5 1995/01/28 15:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.6 1995/05/27 03:03:10 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -52,7 +52,9 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include "colormapst.h"
 #include "cfb.h"
 #include "cfb16.h"
+#ifdef AGX_32BPP
 #include "cfb32.h"
+#endif
 #include "mi.h"
 #include "mistruct.h"
 #include "dix.h"
@@ -219,6 +221,7 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->DestroyPixmap = cfb16DestroyPixmap;
 	mfbRegisterCopyPlaneProc (pScreen, agxCopyPlane);	
 	break;
+#ifdef AGX_32BPP
      case 24:
      case 32:
 	pScreen->CreateGC = agxCreateGC32;
@@ -235,6 +238,7 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->DestroyPixmap = cfb32DestroyPixmap;
 	mfbRegisterCopyPlaneProc (pScreen, agxCopyPlane);	
 	break;
+#endif
      default:
 	    FatalError("root depth %d not (yet?) supported\n", rootdepth);
     }
@@ -251,12 +255,15 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
 			&agxBSFuncRec);
+#ifdef AGX_32BPP
     if (rootdepth > 16) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
     }
-    else if (rootdepth > 8) {
+    else 
+#endif
+    if (rootdepth > 8) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;

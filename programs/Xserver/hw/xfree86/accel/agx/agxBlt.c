@@ -1,5 +1,5 @@
 /* $XConsortium: agxBlt.c,v 1.4 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.10 1995/01/28 15:48:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.11 1995/05/27 03:02:36 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -46,7 +46,9 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include	"mi.h"
 #include	"cfb.h"
 #include	"cfb16.h"
+#ifdef AGX_32BPP
 #include	"cfb32.h"
+#endif
 #include	"fastblt.h"
 
 #include	"regagx.h"
@@ -93,9 +95,11 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
            case 16:
                return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
                                     srcx, srcy, width, height, dstx, dsty);
+#ifdef AGX_32BPP
            case 32:
                return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
                                     srcx, srcy, width, height, dstx, dsty);
+#endif
            default:
                return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
                                   srcx, srcy, width, height, dstx, dsty);
@@ -618,10 +622,12 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
              return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
                                    srcx, srcy, width, height, 
                                    dstx, dsty, bitPlane);
+#ifdef AGX_32BPP
            case 32:
               return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
                                     srcx, srcy, width, height, 
                                     dstx, dsty, bitPlane);
+#endif
         }
     }
 

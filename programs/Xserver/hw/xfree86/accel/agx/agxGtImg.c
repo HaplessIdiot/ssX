@@ -1,5 +1,5 @@
 /* $XConsortium: agxGtImg.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.1 1995/01/28 15:48:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.2 1995/05/27 03:02:54 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -31,7 +31,9 @@
 #include "pixmapstr.h"
 #include "cfb.h"
 #include "cfb16.h"
+#ifdef AGX_32BPP
 #include "cfb32.h"
+#endif
 #include "cfbmskbits.h"
 #include "agx.h"
 
@@ -66,9 +68,11 @@ agxGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
          case 16:
             cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	    break;
+#ifdef AGX_32BPP
          case 32:
             cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	    break;
+#endif
       }
       return;
    }

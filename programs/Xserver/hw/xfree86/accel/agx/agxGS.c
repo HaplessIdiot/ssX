@@ -1,5 +1,5 @@
 /* $XConsortium: agxGS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGS.c,v 3.3 1995/01/28 15:48:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGS.c,v 3.4 1995/05/27 03:02:53 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -72,6 +72,10 @@ Modified for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#ifdef AGX_32BPP
+#include "cfb32.h"
+#endif
 #include "cfbmskbits.h"
 #include "agx.h"
 
@@ -101,9 +105,11 @@ agxGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
          case 16:
             cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
             break;
+#ifdef AGX_32BPP
          case 32:
             cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
             break;
+#endif
       }
       return;
     }
@@ -119,9 +125,11 @@ agxGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    case 16:
 		cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 		break;
+#ifdef AGX_32BPP
 	    case 32:
 		cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 		break;
+#endif
 	    default:
 		ErrorF("agxGetSpans: Unsupported pixmap depth\n");
 		break;

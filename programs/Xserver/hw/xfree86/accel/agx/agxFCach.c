@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.12 1995/06/14 09:42:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.13 1995/06/17 12:15:30 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -43,7 +43,7 @@
 #include        "agxBCach.h"
 
 extern CacheFont8Ptr agxHeadFont;
-static unsigned long agxFontAge;
+unsigned long agxFontAge;
 #define NEXT_FONT_AGE  ++agxFontAge
 
 static void agxloadFontBlock();
@@ -195,12 +195,12 @@ agxloadFontBlock(fentry, block)
 
    if ( pbits != NULL 
         && (fentry->fblock[block]
-             = agxCGetBlock(fentry->blockSize)) != NULL ) {
+             = agxCGetBlock( fentry,
+                             block,
+                             fentry->blockSize )) != NULL ) {
 
       unsigned int first = block << BLOCK_NUM_SHIFT;  /* first char in block */
       unsigned int last  = first + BLOCK_NUM_CHAR;    /* last+1 char in block */
-
-      fentry->fblock[block]->reference = (pointer *) &(fentry->fblock[block]); 
 
       /* for each character in the block */
       for ( c = first; c < last; c++ ) {
@@ -294,33 +294,34 @@ agxloadFontBlock(fentry, block)
    /*
     * If we get here we are in deep trouble, half way through printing a
     * string we have been unable to load a font block into the cache, the
-    * get Block function found no block of the right size, this is probably
-    * impossible but just to stop potential core dumps we shall do something
-    * stupid about it anyway we just throw away the font blocks of another
-    * font. Or even ourselves in desperate times!
-    * Unfortunatly this doesn't work if we use the preload code so the
-    * demand load makes more sense.
+    * get Block function found no block of the right size, this can occur
+    * if the font is filled with smaller fonts, requiring the flushing
+    * of multiple blocks in a row to make room.
+    *
+    * Need to flush smaller lru blocks, but for now try flushing    
+    * one font at a time, and if that fails everything.
+    *
     */
-      ERROR_F(("Time to write new font cache management\n"));
 
       if (pbits) DEALLOCATE_LOCAL(pbits);
-
-      for (fptr = agxHeadFont; fptr == NULL; fptr= fptr->next)
+      for (fptr = agxHeadFont; fptr != NULL; fptr= fptr->next)
 	 if (fptr != fentry) {
-	    for (i = 0; i < BLOCKS_PER_FONT; i++)
+            ERROR_F(("Flushing Font!\n"));
+	    for (i = 0; i < BLOCKS_PER_FONT; i++) {
 	       if (fptr->fblock[i] != NULL) {
 	         agxCReturnBlock(fptr->fblock[i]);
-		 found = TRUE;
+                 found = TRUE; 
 	       }
-	    if (found)
-	       break;
+          }
+           if (found)
+              break;
 	 }
 
       /* getting real desperate - this doesn't work with pre-loading */
       if (!found) { 
          ERROR_F(("Flushing Current Font!\n"));
 	 for (i = 0; i < BLOCKS_PER_FONT; i++)
-	    if (fentry->fblock[i] != NULL) 
+ 	    if (fentry->fblock[i] != NULL) 
 	       agxCReturnBlock(fentry->fblock[i]);	    
       }
       agxloadFontBlock(fentry, block);
@@ -353,9 +354,11 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    unsigned int mapDim, mapCoOrd;
    char  toload[BLOCKS_PER_FONT];
    xRectangle backrect;
+#if 0
    Bool terminalFont = fentry->font->info.terminalFont;
    Bool constantMetrics = fentry->font->info.constantMetrics;
    Bool noVertOverlap = FALSE;
+#endif
    Bool first = TRUE;
    unsigned int backDim; 
    unsigned int backCoOrd;
@@ -412,14 +415,16 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    if( opaque ) {
       backrect.y = y - FONTASCENT(pfont);
       backrect.height = FONTASCENT(pfont) + FONTDESCENT(pfont); 
+#if 0
       noVertOverlap = backrect.y == minY
                       && backrect.height == (maxY - minY);
+#endif
       backDim = (backrect.height-1)<< 16 | backrect.width-1; 
       backCoOrd = backrect.y << 16 | backrect.x;
    }
 
    /* since GE may be busy, preload first block if needed */
-   block = *chars >> BLOCK_NUM_SHIFT;
+   block = (*chars >> BLOCK_NUM_SHIFT) & BLOCK_IDX_MASK;
    if (fentry->fblock[block] == NULL)
       agxloadFontBlock(fentry, block);
 
@@ -438,7 +443,6 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
       ++pBox;
       --numRects;
    }
-
    for (; numRects-- > 0; ++pBox) {
       unsigned short mixes;
 
@@ -461,9 +465,11 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
             if (opaque) {
                /* opaque stipples are faster, so if terminalFont: opaque it */ 
+#if 0
                if (terminalFont && noVertOverlap) 
                   mixes = MIX_SRC << 8 | MIX_SRC; 
                else
+#endif
                   mixes = MIX_DST << 8 | MIX_SRC; 
             }
             else {
@@ -481,45 +487,34 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapDim ); 
          }
          if (opaque) {
+#if 0
            if (terminalFont && noVertOverlap) {
                /* we can do just an opaque stipple */
                DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
            }
-           else {
+           else 
+#endif
+           {
               /* have to seperate the opaque from the character draw */
-              {
-                 GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
-                 GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
-                 GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
-                 GE_START_CMD( GE_OP_BITBLT
-                               | GE_OP_PAT_FRGD
-                               | GE_OP_MASK_BOUNDARY
-                               | GE_OP_INC_X
-                               | GE_OP_INC_Y
-                               | GE_OP_FRGD_SRC_CLR
-                               | GE_OP_DEST_MAP_A   );
-              }
-              if (constantMetrics) {
-                  GE_WAIT_IDLE_SHORT(); 
-                  GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
-                  DoagxConstMetrics( x, y, count, chars, 
-                                     fentry, pGC, maxAscent );
-              }
-              else {
-                 DoagxCPolyText8( x, y, count, chars, fentry, 
-                                  pGC, TRUE, mixes );
-              }
+              GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
+              GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
+              GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
+              GE_OUT_W( GE_FRGD_MIX, MIX_SRC );
+              GE_START_CMD( GE_OP_BITBLT
+                            | GE_OP_PAT_FRGD
+                            | GE_OP_MASK_BOUNDARY
+                            | GE_OP_INC_X
+                            | GE_OP_INC_Y
+                            | GE_OP_FRGD_SRC_CLR
+                            | GE_OP_DEST_MAP_A   );
+
+	      DoagxCPolyText8( x, y, count, chars, fentry,
+			       pGC, TRUE, mixes );
            }
          }
          else {
-            if (constantMetrics) {
-               DoagxConstMetrics( x, y, count, chars, 
-                                  fentry, pGC, maxAscent );
-            }
-            else {
-               DoagxCPolyText8( x, y, count, chars, fentry,
-                                pGC, FALSE, mixes );
-            }
+	   DoagxCPolyText8( x, y, count, chars, fentry,
+			    pGC, FALSE, mixes );
          }
       }
    }
@@ -550,6 +545,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    if (opaque) {
       GE_WAIT_IDLE_SHORT(); 
       GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
+      GE_OUT_W(GE_FRGD_MIX, mixes);
    }
       
    GE_OUT_W( GE_PIXEL_OP,
@@ -562,7 +558,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
       if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
          if ( (opDim = GLYPHHEIGHTPIXELS(pci)) > 0 ) {
 	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (int)(*chars >> BLOCK_NUM_SHIFT);
+	       blocki = (*chars >> BLOCK_NUM_SHIFT) & BLOCK_IDX_MASK;
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
                   geBlockMove = FALSE;
@@ -616,6 +612,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    return;
 }
 
+#if 0
 static __inline__ void
 DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
      int   x, y, count;
@@ -649,7 +646,7 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
    for (;count > 0; count--, chars++) {
       if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
 	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (int)(*chars >> BLOCK_NUM_SHIFT);
+	       blocki = (*chars >> BLOCK_NUM_SHIFT) & BLOCK_IDX_MASK;
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
                   geBlockMove = FALSE;
@@ -696,3 +693,4 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
    GE_WAIT_IDLE_EXIT();
    return;
 }
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.4 1994/11/19 07:50:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.5 1995/05/27 03:02:51 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -76,9 +76,9 @@ static GCOps	agxOps = {
     agxPolyFillRect,
     agxPolyFillArc,
     agxPolyText8,
-    miPolyText16,
+    agxPolyText16,
     agxImageText8,
-    miImageText16,
+    agxImageText16,
     miImageGlyphBlt,
     miPolyGlyphBlt,
     miPushPixels,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.5 1995/01/28 15:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.6 1995/05/27 03:02:46 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -81,9 +81,11 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       case 16:
          cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
          break;
+#ifdef AGX_32BPP
       case 32:
          cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
          break;
+#endif
       }
       return;
    }

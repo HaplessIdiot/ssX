@@ -1,5 +1,5 @@
 /* $XConsortium: agx.h,v 1.6 95/01/23 15:33:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.12 1995/01/28 15:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.13 1995/05/27 03:02:30 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -634,6 +634,26 @@ void agxImageText8(
     char *
 #endif
 );
+int agxPolyText16(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    int ,
+    unsigned short *
+#endif
+);
+void agxImageText16(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    int ,
+    unsigned short *
+#endif
+);
 /* agxFRect.c */
 void agxPolyFillRect(
 #if NeedFunctionPrototypes
@@ -1017,16 +1037,16 @@ _XFUNCPROTOEND
 
 extern pointer agxVideoMem;
 extern pointer agxPhysVidMem;
-extern unsigned int  agxMemBase;
-extern unsigned char agxPOSMemBase;
-extern unsigned int  agxFontCacheOffset;
-extern unsigned int  agxFontCacheSize;
-extern unsigned int  agxScratchOffset;
-extern unsigned int  agxScratchSize;
-extern unsigned int  agxHWCursorOffset;
+extern unsigned long agxMemBase;
+extern unsigned long agxPOSMemBase;
+extern unsigned long agxFontCacheOffset;
+extern unsigned long agxFontCacheSize;
+extern unsigned long agxFontRowLength;
+extern unsigned int  agxFontRowNumLines;
+extern unsigned long agxScratchOffset;
+extern unsigned long agxScratchSize;
+extern unsigned long agxHWCursorOffset;
 extern Bool     agxHWCursor;
-extern unsigned int  agxOriginAdjust;
-
 
 extern pointer vgaBase;
 extern pointer vgaVirtBase;
@@ -1060,8 +1080,8 @@ extern unsigned int agxApIdxReg;
 extern unsigned int agxByteData;
 extern unsigned int agxChipId;
 extern unsigned int xf86RamDacBase;
-extern unsigned int vgaBankSize;
-extern unsigned int agxBankSize;
+extern unsigned long vgaBankSize;
+extern unsigned long agxBankSize;
 
 extern int agxBpp;
 extern int agxWeight;
