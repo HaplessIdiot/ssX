@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.55 2003/09/05 17:05:44 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.56 2003/10/19 02:47:20 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1617,6 +1617,26 @@ if [ -f $RUNDIR/lib/libGL.so ]; then
 		;;
 	esac
 fi
+
+# Check for documentation files with old extensions and remove them.
+for i in $RUNDIR/lib/X11/doc/*.txt; do
+	base=`basename $i .txt`
+	old="RUNDIR/lib/X11/doc/$base.TXT"
+	if [ -f "$old" ]; then
+		echo "Removing old file $old (replaced by $base.txt)"
+		rm -f "$old"
+	fi
+done
+
+for i in $RUNDIR/lib/X11/doc/PostScript/*.PS; do
+	base=`basename $i .ps`
+	old="RUNDIR/lib/X11/doc/$base.PS"
+	if [ -f "$old" ]; then
+		echo "Removing old file $old (replaced by $base.ps)"
+		rm -f "$old"
+	fi
+done
+
 
 # Need to run ldconfig on some OSs
 case "$OsName" in
