@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/189 1996/01/14 16:42:30 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.7 1996/01/10 08:50:04 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/190 1996/01/16 19:51:54 kaleb $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.8 1996/01/16 15:01:03 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -37,7 +37,7 @@ EXTRA_LIBRARIES = /**/
 	          XKBGetByName.c XKBNames.c XKBRdBuf.c XKBSetMap.c XKBUse.c \
 		  XKBleds.c XKBBell.c XKBGeom.c XKBExtDev.c XKBList.c \
 		  XKBMAlloc.c XKBGAlloc.c XKBAlloc.c
-        XKBOBJS = XKB.o XKBBind.o XKBCompat.o XKBCtrls.o XKBCvt.o XKBGetMap.o\
+        XKBOBJS = XKB.o XKBBind.o XKBCompat.o XKBCtrls.o XKBCvt.o XKBGetMap.o \
 		  XKBGetByName.o XKBNames.o XKBRdBuf.o XKBSetMap.o XKBUse.o \
 		  XKBleds.o XKBBell.o XKBGeom.o XKBExtDev.o XKBList.o \
 		  XKBMAlloc.o XKBGAlloc.o XKBAlloc.o

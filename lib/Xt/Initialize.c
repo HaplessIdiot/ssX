@@ -1,5 +1,5 @@
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.5 1996/01/05 13:12:51 dawes Exp $ */
-/* $XConsortium: Initialize.c /main/195 1996/01/12 15:08:21 kaleb $ */
+/* $XConsortium: Initialize.c /main/196 1996/01/17 17:54:26 kaleb $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.6 1996/01/13 12:21:08 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -229,7 +229,7 @@ String _XtGetUserName(dest)
 #ifdef WIN32
     String ptr = NULL;
 
-    if ((ptr = getenv("USERNAME"))
+    if ((ptr = getenv("USERNAME")))
 	(void) strcpy (dest, ptr);
     else
 	*dest = '\0';

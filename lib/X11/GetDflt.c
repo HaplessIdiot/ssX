@@ -1,5 +1,5 @@
-/* $XConsortium: GetDflt.c /main/42 1996/01/12 15:08:42 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.4 1996/01/05 13:11:02 dawes Exp $ */
+/* $XConsortium: GetDflt.c /main/43 1996/01/17 18:13:55 kaleb $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.5 1996/01/13 12:19:51 dawes Exp $ */
 
 /***********************************************************
 
@@ -74,11 +74,9 @@ static char *GetHomeDir (dest)
 
     if (ptr = getenv("HOME"))
 	(void) strcpy(dest, ptr);
-    else {
-	if (ptr = getenv("USERNAME")) {
-	    (void) strcpy (dest, "/users/");
-	    (void) strcat (dest, ptr);
-	}
+    else if (ptr = getenv("USERNAME")) {
+	(void) strcpy (dest, "/users/");
+	(void) strcat (dest, ptr);
     } else
 	*dest = '\0';
 #else

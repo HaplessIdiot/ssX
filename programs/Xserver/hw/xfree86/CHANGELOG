@@ -1,4 +1,7 @@
-XFree86 3.1.2Bk (17 January 1996)
+XFree86 3.1.2Bl (21 January 1996)
+263. Xvfb fix for systems that have mmap, but not the MS_ASYNC flag for
+     msync().
+262. XC fix-trackers to seq-4060 (some XKB and config updates).
 261. 6-bit/rgb fix for the I128 server (Robin Cutshaw).
 260. Update hw/xfree98 Imakefiles (Takefumi Tsukada).
 259. Add a GetAllModeLines function to the VidMode extension, and modify

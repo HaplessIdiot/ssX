@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.11 94/04/17 20:30:25 gildea Exp $ */
+/* $XConsortium: InitOutput.c,v 1.14 94/12/05 17:55:50 ray Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -59,6 +59,7 @@ from the X Consortium.
 #include <sys/shm.h>
 #endif /* HAS_SHM */
 #include "dix.h"
+#include "miline.h"
 
 extern char *display;
 
@@ -67,6 +68,7 @@ extern char *display;
 #define VFB_DEFAULT_DEPTH  8
 #define VFB_DEFAULT_WHITEPIXEL 0
 #define VFB_DEFAULT_BLACKPIXEL 1
+#define VFB_DEFAULT_LINEBIAS 0
 #define XWD_WINDOW_NAME_LEN 60
 
 typedef struct
@@ -84,6 +86,7 @@ typedef struct
     XWDFileHeader *pXWDHeader;
     Pixel blackPixel;
     Pixel whitePixel;
+    unsigned int lineBias;
 
 #ifdef HAS_MMAP
     int mmap_fd;
@@ -135,6 +138,7 @@ vfbInitializeDefaultScreens()
 	vfbScreens[i].depth  = VFB_DEFAULT_DEPTH;
 	vfbScreens[i].blackPixel = VFB_DEFAULT_BLACKPIXEL;
 	vfbScreens[i].whitePixel = VFB_DEFAULT_WHITEPIXEL;
+	vfbScreens[i].lineBias = VFB_DEFAULT_LINEBIAS;
 	vfbScreens[i].pfbMemory = NULL;
     }
     vfbNumScreens = 1;
@@ -211,6 +215,7 @@ ddxUseMsg()
 {
     ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
     ErrorF("-pixdepths list-of-int support given pixmap depths\n");
+    ErrorF("-linebias n            adjust thin line pixelization\n");
 
 #ifdef HAS_MMAP
     ErrorF("-fbdir directory       put framebuffers in mmap'ed files in directory\n");
@@ -319,6 +324,25 @@ ddxProcessArgument (argc, argv, i)
 	return 2;
     }
 
+    if (strcmp (argv[i], "-linebias") == 0)	/* -linebias n */
+    {
+	unsigned int linebias;
+	if (++i >= argc) UseMsg();
+	linebias = atoi(argv[i]);
+	if (-1 == lastScreen)
+	{
+	    int i;
+	    for (i = 0; i < MAXSCREENS; i++)
+	    {
+		vfbScreens[i].lineBias = linebias;
+	    }
+	}
+	else
+	{
+	    vfbScreens[lastScreen].lineBias = linebias;
+	}
+	return 2;
+    }
 
 #ifdef HAS_MMAP
     if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
@@ -556,8 +580,13 @@ vfbBlockHandler(blockData, pTimeout, pReadmask)
 
     for (i = 0; i < vfbNumScreens; i++)
     {
+#ifdef MS_ASYNC
 	if (-1 == msync((caddr_t)vfbScreens[i].pXWDHeader,
 			(size_t)vfbScreens[i].sizeInBytes, MS_ASYNC))
+#else
+	if (-1 == msync((caddr_t)vfbScreens[i].pXWDHeader,
+			(size_t)vfbScreens[i].sizeInBytes))
+#endif
 	{
 	    perror("msync");
 	    ErrorF("msync failed, errno %d", errno);
@@ -741,13 +770,19 @@ vfbWriteXWDFileHeader(pScreen)
 
     pXWDHeader->pixmap_format = ZPixmap;
     pXWDHeader->pixmap_depth = pvfb->depth;
-    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->width;
     pXWDHeader->pixmap_height = pXWDHeader->window_height = pvfb->height;
     pXWDHeader->xoffset = 0;
     pXWDHeader->byte_order = IMAGE_BYTE_ORDER;
-    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT;
     pXWDHeader->bitmap_bit_order = BITMAP_BIT_ORDER;
+#ifndef INTERNAL_VS_EXTERNAL_PADDING
+    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->width;
+    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT;
     pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD;
+#else
+    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->paddedWidth;
+    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT_PROTO;
+    pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD_PROTO;
+#endif
     pXWDHeader->bits_per_pixel = pvfb->bitsPerPixel;
     pXWDHeader->bytes_per_line = pvfb->paddedWidth;
     pXWDHeader->ncolors = pvfb->ncolors;
@@ -876,6 +911,8 @@ vfbScreenInit(index, pScreen, argc, argv)
     {
 	ret = cfbCreateDefColormap(pScreen);
     }
+
+    miSetZeroLineBias(pScreen, pvfb->lineBias);
 
     return ret;
 

@@ -1,5 +1,5 @@
-# $XConsortium: Makefile /main/30 1995/12/12 16:43:32 gildea $
-# $XFree86$
+# $XConsortium: Makefile /main/32 1996/01/18 06:15:36 kaleb $
+# $XFree86: xc/Makefile,v 3.1 1996/01/12 14:55:25 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -25,11 +25,8 @@ MAKE_CMD = $(MAKE) $(MAKE_OPTS)
 FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 
 all:
-	@if [ -r xmakefile ]; then \
-	    echo "$(MAKE_CMD) $@"; $(MAKE_CMD) $@; \
-	else \
-	    $(MAKE) all-initial; \
-	fi
+	@$(MAKE_CMD) xmakefile-exists || $(MAKE) all-initial
+	@$(MAKE_CMD) $@
 
 all-initial:
 	@echo Please use make World, or on NT use nmake World.Win32.
