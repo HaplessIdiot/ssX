@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 201. Add PCI ID for ATI Radeon Mobility M7 'LX' (#5233, Mike Harris).
  200. Fix CrossCompile environment for Cygwin/XFree86 
       (#5324, Alexander Gottwald, Harold Hunt).
  199. ATI patch to:
@@ -14938,4 +14939,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2259 2002/07/11 20:11:45 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2260 2002/07/14 17:08:12 alanh Exp $

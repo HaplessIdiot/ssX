@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.24 2002/01/16 02:00:43 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.25 2002/01/16 16:22:25 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -439,7 +439,7 @@ ATIChipID
         case OldChipID('X', 'X'):  case NewChipID('X', 'X'):
             return ATI_CHIP_68800_6;
 
-        case OldChipID('L', 'X'):  case NewChipID('L', 'X'):
+        case OldChipID('L', 'X'):
             return ATI_CHIP_68800LX;
 
         case OldChipID('A', 'X'):  case NewChipID('A', 'X'):
@@ -605,6 +605,7 @@ ATIChipID
             return ATI_CHIP_RADEONMOBILITY6;
 
         case NewChipID('L', 'W'):
+        case NewChipID('L', 'X'):
             return ATI_CHIP_RADEONMOBILITY7;
 
         case NewChipID('Q', 'L'):
