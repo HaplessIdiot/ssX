@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.10 2000/11/30 20:55:16 paulo Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.11 2000/12/08 21:51:04 paulo Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -108,6 +108,8 @@ InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
 InstallMultipleFlags($(XBMPICS),$(INCDIR)/X11/bitmaps,$(INSTINCFLAGS))
 InstallMultipleFlags($(XPMPICS),$(INCDIR)/X11/pixmaps,$(INSTINCFLAGS))
 InstallAppDefaults(XF86Cfg)
+
+CppManTarget(xf86cfg,)
 InstallManPage(xf86cfg,$(MANDIR))
 
 NormalLibraryObjectRule()

@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86conf.man,v 3.6 1997/11/16 06:42:16 dawes Exp $
-.TH xf86config 1 "Version 3.2" "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86conf.man,v 3.7 1998/04/05 02:28:43 dawes Exp $
+.TH xf86config 1 "Version 4.0.2" "XFree86"
 .SH NAME
 xf86config \- generate an XF86Config file
 .SH SYNOPSIS
@@ -10,7 +10,7 @@ for use with XFree86 X servers.
 .SH FILES
 <xroot>/lib/X11/Cards            Video cards database
 .SH "SEE ALSO"
-XFree86(1), XF86Config(4/5), reconfig(1)
+XFree86(1), XF86Config(__filemansuffix__), reconfig(1)
 .SH AUTHOR
 Harm Hanemaayer.
 .\" $TOG: xf86conf.man /main/9 1997/07/19 10:53:08 kaleb $

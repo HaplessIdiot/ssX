@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Imakefile,v 3.7 2000/04/05 18:14:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Imakefile,v 3.8 2000/10/27 18:31:06 dawes Exp $
 
 
 
@@ -27,4 +27,6 @@ InstallNamedProg(xf86config.cmd,xf86config.cmd,$(BINDIR))
 DependTarget()
 
 InstallNonExecFile(Cards,$(LIBDIR))
-InstallManPageLong(xf86conf,$(MANDIR),xf86config)
+
+CppManTarget(xf86config,)
+InstallManPage(xf86config,$(MANDIR))

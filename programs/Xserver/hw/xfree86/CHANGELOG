@@ -1,4 +1,7 @@
 XFree86 4.0.1Za (11 December 2000)
+1166. Update man page version strings, and convert some server/XFree86 man
+      pages to cpp-processed files to make the references to pages in
+      system-dependent sections correct (David Dawes).
 1165. Update the release notes for the i18n and Unicode support (#4366,
       Bruno Haible).
 1164. Document most of the environment variables that can influence libX11
@@ -12022,4 +12025,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1465 2000/12/11 07:25:58 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1466 2000/12/11 19:51:00 dawes Exp $

@@ -26,7 +26,7 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.3 2000/12/11 20:13:56 paulo Exp $
 .\"
 .TH xf86cfg 1 "Version 4.0.2" "XFree86"
 .SH NAME
@@ -129,7 +129,7 @@ Keyboard specific configuration
 
 .SH "SEE ALSO"
 .IR XFree86 (1)
-.IR XF86Config (5x)
+.IR XF86Config (__filemansuffix__)
 
 .SH COPYRIGHT
 .TP 8
