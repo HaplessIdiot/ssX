@@ -712,6 +712,10 @@ CreatePmap:
 				shmdesc->addr + stuff->offset);
 
 	if (pMap) {
+#ifdef PIXPRIV
+            pMap->devPrivates[shmPixmapPrivate].ptr = (pointer) shmdesc;
+#endif
+            shmdesc->refcnt++;
 	    pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    pMap->drawable.id = newPix->info[j].id;
 	    if (!AddResource(newPix->info[j].id, RT_PIXMAP, (pointer)pMap)) {
@@ -731,11 +735,8 @@ CreatePmap:
 	    FreeResource(newPix->info[j].id, RT_NONE);
 	}
 	xfree(newPix);
-    } else {
-	shmdesc->refcnt++;
-
+    } else 
 	AddResource(stuff->pid, XRT_PIXMAP, newPix);
-    }
 
     return result;
 }
