@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.102 2003/03/12 21:27:18 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.103 2003/03/18 22:23:30 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -181,6 +181,7 @@ static SymTabRec NVKnownChipsets[] =
  */
 
 static const char *vgahwSymbols[] = {
+    "vgaHWUnmapMem",
     "vgaHWDPMSSet",
     "vgaHWFreeHWRec",
     "vgaHWGetHWRec",
