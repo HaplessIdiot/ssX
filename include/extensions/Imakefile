@@ -44,6 +44,9 @@ RENDERHEADERS = render.h renderproto.h
 #if BuildRandR || BuildRandRLibrary
 RANDRHEADERS = randr.h randrproto.h
 #endif
+#if BuildXFixes || BuildXFixesLibrary
+XFIXESHEADERS = xfixeswire.h xfixesproto.h
+#endif
 #if BuildXTrap || BuildXTrapLibrary
 XTRAPHEADERS = xtrapbits.h xtrapddmi.h xtrapdi.h xtrapemacros.h xtraplib.h \
 	xtraplibp.h xtrapproto.h
@@ -56,7 +59,7 @@ EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86MISCHEADERS) $(XF86BIGFONTHEADERS) \
 	       $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XINERAMAHEADERS) \
 	       $(LBXHEADERS) $(XVHEADERS) $(XVMCHEADERS) $(XF86RUSHHEADERS) \
 	       $(FONTCACHEHEADERS) $(RENDERHEADERS) $(RANDRHEADERS) \
-	       $(XTRAPHEADERS) $(XRESHEADERS)
+	       $(XTRAPHEADERS) $(XRESHEADERS) $(XFIXESHEADERS)
 
 
 

@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 562. Add XFIXES extension (Keith Packard, Bill Haneman, Owen Taylor)
  561. Fix bug in kldload() call on FreeBSD (reported by Joy Ganguly).
  560. Adding int10 symbols to the list of possibly unresolved symbols in
       Rage128 driver (Egbert Eich).
@@ -15652,4 +15653,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2413 2002/11/29 15:33:17 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2414 2002/11/29 17:47:21 tsi Exp $

@@ -321,13 +321,14 @@ LookupClient(rid, client)
 
 
 int
-AlterSaveSetForClient(client, pWin, mode)
-    ClientPtr client;
-    WindowPtr pWin;
-    unsigned mode;
+AlterSaveSetForClient(ClientPtr client,
+		      WindowPtr pWin,
+		      unsigned mode,
+		      Bool  toRoot,
+		      Bool  remap)
 {
-    int numnow;
-    pointer *pTmp = NULL;
+    int		numnow;
+    SaveSetElt	*pTmp = NULL;
     int j;
 
     numnow = client->numSaved;
@@ -335,7 +336,7 @@ AlterSaveSetForClient(client, pWin, mode)
     if (numnow)
     {
 	pTmp = client->saveSet;
-	while ((j < numnow) && (pTmp[j] != (pointer)pWin))
+	while ((j < numnow) && (SaveSetWindow(pTmp[j]) != pWin))
 	    j++;
     }
     if (mode == SetModeInsert)
@@ -343,12 +344,14 @@ AlterSaveSetForClient(client, pWin, mode)
 	if (j < numnow)         /* duplicate */
 	   return(Success);
 	numnow++;
-	pTmp = (pointer *)xrealloc(client->saveSet, sizeof(pointer) * numnow);
+	pTmp = (SaveSetElt *)xrealloc(client->saveSet, sizeof(SaveSetElt) * numnow);
 	if (!pTmp)
 	    return(BadAlloc);
 	client->saveSet = pTmp;
        	client->numSaved = numnow;
-	client->saveSet[numnow - 1] = (pointer)pWin;
+	SaveSetAssignWindow(client->saveSet[numnow - 1], pWin);
+	SaveSetAssignToRoot(client->saveSet[numnow - 1], toRoot);
+	SaveSetAssignRemap(client->saveSet[numnow - 1], remap);
 	return(Success);
     }
     else if ((mode == SetModeDelete) && (j < numnow))
@@ -361,15 +364,15 @@ AlterSaveSetForClient(client, pWin, mode)
 	numnow--;
         if (numnow)
 	{
-    	    pTmp = (pointer *)xrealloc(client->saveSet,
-				       sizeof(pointer) * numnow);
+    	    pTmp = (SaveSetElt *)xrealloc(client->saveSet,
+					  sizeof(SaveSetElt) * numnow);
 	    if (pTmp)
 		client->saveSet = pTmp;
 	}
         else
         {
             xfree(client->saveSet);
-	    client->saveSet = (pointer *)NULL;
+	    client->saveSet = (SaveSetElt *)NULL;
 	}
 	client->numSaved = numnow;
 	return(Success);
@@ -388,7 +391,7 @@ DeleteWindowFromAnySaveSet(pWin)
     {    
 	client = clients[i];
 	if (client && client->numSaved)
-	    (void)AlterSaveSetForClient(client, pWin, SetModeDelete);
+	    (void)AlterSaveSetForClient(client, pWin, SetModeDelete, FALSE, TRUE);
     }
 }
 

@@ -1,0 +1,17 @@
+XCOMM $XFree86: xc/programs/Xserver/xfixes/Imakefile,v 1.2 2002/09/29 23:39:45 keithp Exp $
+#include <Server.tmpl>
+
+       SRCS =	xfixes.c saveset.c select.c cursor.c
+
+       OBJS =	xfixes.o saveset.o select.o cursor.o
+
+   INCLUDES = -I../include -I$(EXTINCSRC) -I$(XINCLUDESRC) \
+		-I$(FONTINCSRC) -I$(SERVERSRC)/render
+   LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
+
+NormalLibraryTarget(xfixes,$(OBJS))
+NormalLibraryObjectRule()
+LintLibraryTarget(xfixes,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
