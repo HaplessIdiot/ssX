@@ -27,15 +27,36 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winerror.c,v 1.1 2001/08/30 21:24:46 alanh Exp $ */
 
 #include "win.h"
 
+extern FILE		*g_pfLog;
+
+#ifdef DDXOSVERRORF
 void
 OsVendorVErrorF (const char *pszFormat, va_list va_args)
 {
-  /*
-   * TODO: Add file-based logging.
-   */
-  vfprintf (stderr, pszFormat, va_args);
+  /* Print the error message to a log file, could be stderr */
+  vfprintf (g_pfLog, pszFormat, va_args);
+
+  /* Flush after every write, to make updates show up quickly */
+  fflush (g_pfLog);
 }
+#endif
+
+
+/*
+ * os/util.c/FatalError () calls our vendor ErrorF, so the message
+ * from a FatalError will be logged.  Thus, the message for the
+ * fatal error is not passed to this function.
+ *
+ * Attempt to do last-ditch, safe, important cleanup here.
+ */
+#ifdef DDXOSFATALERROR
+void
+OsVendorFatalError (void)
+{
+  
+}
+#endif
