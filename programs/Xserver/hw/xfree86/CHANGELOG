@@ -6,7 +6,7 @@ XFree86 3.9r (30 September 1997)
       updates to configure-script macros (#1004, Thomas Dickey).
 1293. Make sure ImageWriteBase gets set with a default value (#1003,
       Alan Hourihane).
-1292. Replace mktemp() with mkstemp() in xrdb (#1002, Matthieu Herrb).
+1292. Replace mktemp() with mkstemp() in xrdb (#1002, Luke Mewburn).
 1291. Don't fail to start if there isn't enough memory for the hw cursor in
       tseng driver (#1001, Koen Gadeyne).
 1290. Fix the install problem with XF98_SVGA (#1000, Takaaki Nomura).
@@ -5406,4 +5406,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.533 1997/09/29 08:40:26 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.534 1997/09/30 04:50:57 hohndel Exp $
