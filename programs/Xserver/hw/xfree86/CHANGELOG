@@ -1,4 +1,5 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 443. Remove lots of redundant redeclarations (David Dawes).
  442. VIA driver:
       Fixed video memory detection. (Bugzilla #525, Alan Cox).
       Fixed TV and FP initialization problems (Bugzilla #525, Frederic Crozat,
@@ -17722,7 +17723,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2852 2003/09/10 11:07:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2853 2003/09/11 10:08:34 eich Exp $
 
 
 

@@ -156,8 +156,6 @@ static fontProp extraProps[] = {
 
 #define NPROPS  (NNAMEPROPS + NEXTRAPROPS)
 
-extern Atom MakeAtom(char *string, unsigned len, Bool makeit);
-
 void
 freetype_make_standard_props(void)
 {

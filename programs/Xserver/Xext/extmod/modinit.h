@@ -1,10 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.h,v 1.1 2003/07/16 01:38:33 dawes Exp $ */
 
 #ifndef INITARGS
 #define INITARGS void
 #endif
-
-extern Bool noTestExtensions;
 
 #ifdef SHAPE
 extern void ShapeExtensionInit(INITARGS);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbscrinit.c,v 1.4 1999/08/14 10:50:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbscrinit.c,v 1.5 2003/07/16 01:38:49 dawes Exp $ */
 
 
 #include "X.h"
@@ -38,7 +38,6 @@ int cfb24_32GCIndex = 1;
 int cfb24_32PixmapIndex = 1;
 
 static unsigned long cfb24_32Generation = 0;
-extern WindowPtr *WindowTable;
 
 static Bool
 cfb24_32AllocatePrivates(ScreenPtr pScreen)

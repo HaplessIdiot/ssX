@@ -4,7 +4,7 @@
 ** How to make a widget to choose the fraction of tests to be run.
 **
 */
-/* $XFree86: xc/programs/xgc/testfrac.c,v 1.3 2000/02/17 14:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/xgc/testfrac.c,v 1.4 2003/05/07 21:02:07 herrb Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -13,8 +13,6 @@
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Scrollbar.h>
 #include "xgc.h"
-
-extern XtAppContext appcontext;
 
 #define SCROLLBAR_LENGTH 125
 #define SLIDER_LENGTH 0.2	/* proportion of scrollbar taken up

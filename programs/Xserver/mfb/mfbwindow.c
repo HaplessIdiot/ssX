@@ -55,8 +55,6 @@ SOFTWARE.
 #include "regionstr.h"
 #include "maskbits.h"
 
-extern WindowPtr *WindowTable;
-
 Bool
 mfbCreateWindow(pWin)
     register WindowPtr pWin;

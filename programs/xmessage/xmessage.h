@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmessage/xmessage.h,v 1.1 2003/04/14 23:03:13 herrb Exp $ */
 /*
  * Copyright (C) 2003 The XFree86 Project, Inc.  All Rights Reserved.
  * 
@@ -32,7 +32,6 @@
 extern const char *ProgramName;
 extern int default_exitstatus;
 
-extern char *read_file(char *, int *);
 extern Widget make_queryform(Widget, char *, int, char *, Boolean, char *,
     Dimension, Dimension);
 

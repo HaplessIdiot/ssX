@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.16 2003/05/27 22:26:56 tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -87,8 +87,6 @@ static void VErrorF(const char*, va_list);
 /*
  * External declarations not in header files
  */
-extern char *display_name;
-extern char *display;
 extern Bool PartialNetwork;
 extern int lbxDebug;
 

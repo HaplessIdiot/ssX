@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/options.c,v 1.6 2001/01/17 23:44:56 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/options.c,v 1.7 2001/12/14 20:00:51 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -471,11 +471,6 @@ OptZlibReq(server, buf)
     *buf = zlevel;
     return (2);
 }
-
-extern LbxStreamCompHandle ZlibInit();
-extern int ZlibStuffInput(), ZlibInputAvail(), ZlibFlush(),
-	 ZlibRead(), ZlibWriteV();
-extern void ZlibCompressOn(), ZlibCompressOff(), ZlibFree();
 
 /*ARGSUSED*/
 static int

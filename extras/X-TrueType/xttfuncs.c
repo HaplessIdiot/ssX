@@ -32,7 +32,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.17 2003/02/17 03:59:22 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.18 2003/07/27 02:01:17 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -104,12 +104,6 @@ static char const * const releaseID =
  * prototypes
  */
 
-/* from lib/font/fontfile/defaults.c */
-extern void
-FontDefaultFormat(int *bit, int *byte, int *glyph, int *scan);
-/* from lib/font/fontfile/renderers.c */
-extern Bool
-FontFileRegisterRenderer(FontRendererPtr renderer);
 /* from lib/font/util/format.c */
 extern int
 CheckFSFormat(fsBitmapFormat format, fsBitmapFormatMask fmask,
@@ -333,18 +327,12 @@ convertNothing(FreeTypeFont *ft, unsigned char *p, int size)
 static void
 convertBitOrder(FreeTypeFont *ft, unsigned char *p, int size)
 {
-    extern void
-        BitOrderInvert(register unsigned char *buf, register int nbytes);
-
     BitOrderInvert(p, size);
 }
 
 static void
 convertByteOrder(FreeTypeFont *ft, unsigned char *p, int size)
 {
-    extern void TwoByteSwap(register unsigned char *buf, register int nbytes);
-    extern void FourByteSwap(register unsigned char *buf, register int nbytes);
-
     if (ft->pFont->bit != ft->pFont->byte) {
         switch (ft->pFont->scan) {
         case 1:

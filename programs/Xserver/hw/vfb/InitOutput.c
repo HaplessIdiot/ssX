@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.21 2002/12/04 10:28:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.22 2003/01/15 02:34:07 torrey Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -65,8 +65,6 @@ from The Open Group.
 #include "dix.h"
 #include "miline.h"
 #include "mfb.h"
-
-extern char *display;
 
 #define VFB_DEFAULT_WIDTH  1280
 #define VFB_DEFAULT_HEIGHT 1024

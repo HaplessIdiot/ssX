@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/XDPS.c,v 1.3 2001/10/28 03:32:42 tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -1626,8 +1626,6 @@ samo_samo:
         }
     return(True);
 }
-
-extern struct _t_DPSContextRec *XDPSContextFromXID(Display *, ContextXID);
 
 void
 XDPSLGetCSDPSStatus(
