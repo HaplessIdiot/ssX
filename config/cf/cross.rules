@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #define HostLinkRule(target, flags, src, libs)  cc -I$(BUILDINCDIR) -o target src
 
