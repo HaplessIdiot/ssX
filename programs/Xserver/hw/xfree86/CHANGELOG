@@ -1,4 +1,11 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 619. Update referenced symbols lists for the mga, vesa, i810 and vmware
+      drivers (David Dawes).
+ 618. Add missing symbol to the mga driver's referenced symbols lists
+      (#5534, Mike Harris).
+ 617. Add some utf8 locale aliases (#5533, Mike Harris).
+ 616. Fix some Linux/Alpha (with domain support) build and runtime
+      problems (#5532, Jeff Wiedemeier).
  615. Add some missing symbols to the radeon driver's referenced symbols
       lists (#5531, Mike Harris).
  614. Restore the Alt/Meta mappings for pc104/pc105 keyboards in the
@@ -15764,4 +15771,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2442 2002/12/10 17:36:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2443 2002/12/11 03:58:51 dawes Exp $
