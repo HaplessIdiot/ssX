@@ -28,7 +28,7 @@
  * 
  * GLINT 300SX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.3 2000/04/12 14:44:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.4 2001/01/31 16:15:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -102,7 +102,7 @@ SXInitializeEngine(ScrnInfoPtr pScrn)
     /* Initialize the Accelerator Engine to defaults */
 
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	DitherMode);
-    GLINT_SLOW_WRITE_REG(0xc00,		FilterMode);
+    GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,  ScissorMode);
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	LBReadMode);
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	FBReadMode);
@@ -294,7 +294,7 @@ SXSync(
 
     while (GLINT_READ_REG(DMACount) != 0);
     GLINT_WAIT(3);
-    GLINT_WRITE_REG(0xc00, FilterMode);
+    GLINT_WRITE_REG(0x400, FilterMode);
     GLINT_WRITE_REG(0, GlintSync);
     do {
    	while(GLINT_READ_REG(OutFIFOWords) == 0);

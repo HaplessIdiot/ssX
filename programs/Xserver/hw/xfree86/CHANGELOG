@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+ 104. Ensure PCI retry is off for Permedia3, and fix an over by 1 error on
+      FIFO usage (Alan Hourihane).
  103. Prevent glint driver from Seg faulting if mode pool is empty
       (Alan Hourihane).
  102. Add FIFOSize to glint driver for overriding of the FIFO depending on
@@ -12361,4 +12363,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1551 2001/02/01 12:25:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1552 2001/02/02 10:21:51 alanh Exp $
