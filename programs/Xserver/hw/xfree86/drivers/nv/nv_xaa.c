@@ -600,7 +600,7 @@ NVAccelInit(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pNv->FbUsableSize / 
+    AvailFBArea.y2 = (min(pNv->FbUsableSize, 32*1024*1024)) / 
 		     (pScrn->displayWidth * pScrn->bitsPerPixel / 8);
     xf86InitFBManager(pScreen, &AvailFBArea);
     
