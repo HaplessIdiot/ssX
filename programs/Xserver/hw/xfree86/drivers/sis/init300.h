@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.h,v 1.2 2000/08/03 12:24:03 dawes Exp $ */
 
 #include "initdef.h"
 
@@ -52,16 +52,20 @@ USHORT VGA_DAC[]={0x00,0x10,0x04,0x14,0x01,0x11,0x09,0x15,
                0x0B,0x0C,0x0D,0x0F,0x10};
 
 USHORT  ModeIndex_640x480[]   = {0x2E, 0x44, 0x45, 0x62};
+USHORT  ModeIndex_720x480[]   = {0x31, 0x33, 0x00, 0x35};
+USHORT  ModeIndex_720x576[]   = {0x32, 0x34, 0x00, 0x36};
 USHORT  ModeIndex_800x600[]   = {0x30, 0x47, 0x48, 0x63};
 USHORT  ModeIndex_1024x768[]  = {0x38, 0x4A, 0x4B, 0x64};
 USHORT  ModeIndex_1280x1024[] = {0x3A, 0x4D, 0x4E, 0x65};
 USHORT  ModeIndex_1600x1200[] = {0x3C, 0x3D, 0x3E, 0x66};
-USHORT  RefreshRate[5][8] = { 
+USHORT  RefreshRate[7][8] = { 
                         {60, 72, 75, 85, 100, 120, 160, 200},
                         {56, 60, 72, 75,  85, 100, 120, 160},
                         {43, 60, 70, 75,  85, 100, 120,   0},
                         {43, 60, 75, 85,   0,   0,   0,   0},
-                        {60, 65, 70, 75,  85,   0,   0,   0}};
+                        {60, 65, 70, 75,  85,   0,   0,   0},
+                        {60, 0 , 0 , 0 , 0  , 0  , 0  , 0  },
+                        {60, 0 , 0 , 0 , 0  , 0  , 0  , 0  }};
 
 USHORT   P3c4,P3d4,P3c0,P3ce,P3c2,P3ca,P3c6,P3c7,P3c8,P3c9,P3da;
 USHORT   CRT1VCLKLen;      /*VCLKData table length of bytes of each entry*/
@@ -69,6 +73,8 @@ USHORT   flag_clearbuffer; /*0: no clear frame buffer 1:clear frame buffer*/
 int      RAMType;
 int      ModeIDOffset,StandTable,CRT1Table,ScreenOffset,VCLKData,MCLKData, ECLKData;
 int      REFIndex,ModeType;
+USHORT   IF_DEF_LVDS;
+USHORT   VBInfo,LCDResInfo,LCDTypeInfo,LCDInfo;
 
 USHORT   CalcRefreshRate(ScrnInfoPtr, DisplayModePtr);
 USHORT   CalcModeIndex(ScrnInfoPtr, DisplayModePtr);
@@ -103,8 +109,8 @@ USHORT   CalcDelay(ULONG ,USHORT);
 extern BOOLEAN SetCRT2Group(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
 extern VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr);
 extern VOID PresetScratchregister(USHORT P3d4);
-extern BOOLEAN GetLCDResInfo(USHORT P3d4);
+extern BOOLEAN GetLCDResInfo(ULONG ROMAddr, USHORT P3d4);
 extern VOID SetTVSystem();
 extern BOOLEAN GetLCDDDCInfo(ScrnInfoPtr pScrn);
 extern USHORT GetVCLKLen(ULONG ROMAddr);
-
+extern USHORT Part1[];

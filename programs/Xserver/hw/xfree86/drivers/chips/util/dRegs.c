@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.3 1998/09/13 05:23:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.5 2000/09/19 12:46:15 eich Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -65,9 +65,10 @@ void main(void)
 {
     int i, HTotal, HDisplay, HSyncStart, HSyncEnd, 
     VTotal, VDisplay, VSyncStart, VSyncEnd, Clock;
-    unsigned char storeReg, bpp, shift;
+    unsigned char storeReg, bpp, shift, IOSS, MSS, again;
     unsigned short port;
     int isHiQV = 0;
+    int is69030 = 0;
 
     SET_IOPL();
     
@@ -83,8 +84,22 @@ void main(void)
 	|| storeReg == 0xC0)	/* CT69000 */
     {
 	isHiQV = 1;
+    } else if (storeReg == 0x30) {
+      outb(0x3D6,0x03);
+      storeReg = inb(0x3D7);
+      if (storeReg == 0xC) {
+	isHiQV = 1;
+	is69030 = 1;
+	IOSS=inb(0x3CD);
+	MSS=inb(0x3CB);
+	outb(0x3CD,((IOSS&0xE0)| 0x11));  /* Select Channel 0 */
+	outb(0x3CB,((MSS&0xF0)| 0x8));
+	again = 1;
+	printf("Pipeline A:\n");
+      }
     }
         
+ again:
     printf("port 0x3D6 (C&T)\n");
     storeReg = inb(0x3D6);
     shift = 3;
@@ -270,6 +285,21 @@ void main(void)
 	   HDisplay, HSyncStart, HSyncEnd, HTotal,
 	   VDisplay, VSyncStart, VSyncEnd, VTotal);
 
+
+    if (is69030==1) {
+      if (again==1) {
+	again=0;
+	printf("\n\nPipeline B:\n");
+	outb(0x3CD,((IOSS&0xE0)| 0x1F));  /* Select Channel 1 */
+	outb(0x3CB,((MSS&0xF0)| 0xF));
+	goto again;
+      } else {
+	outb(0x3CD,IOSS);
+	outb(0x3CB,MSS);
+	printf("\n\n0x3CB\t0x%X  (MSS)\n",inb(0x3CB)&0xFF);
+	printf("0x3CD\t0x%X  (IOSS)\n",inb(0x3CD)&0xFF);
+      }
+    }
     RESET_IOPL();
 }
 

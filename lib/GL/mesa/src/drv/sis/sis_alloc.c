@@ -1,4 +1,35 @@
-/* $XFree86$ */
+/**************************************************************************
+
+Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sub license, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice (including the
+next paragraph) shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**************************************************************************/
+
+/*
+ * Authors:
+ *    Sung-Ching Lin <sclin@sis.com.tw>
+ *
+ */
 
 #include <assert.h>
 
@@ -16,7 +47,7 @@
 #define Z_BUFFER_HW_ALIGNMENT 16
 #define Z_BUFFER_HW_PLUS (16 + 4)
 
-/* 3D engine uses 2,and bitblt uses 4 */
+/* 3D engine uses 2, and bitblt uses 4 */
 #define DRAW_BUFFER_HW_ALIGNMENT 16
 #define DRAW_BUFFER_HW_PLUS (16 + 4)
 
@@ -60,12 +91,14 @@ sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free_fb (__GLSiScontext * hwcx, void *free)
+sis_free_fb (int hHWContext, void *free)
 {
   xf86FreeOffscreenArea ((FBAreaPtr) free);
 }
 
 #else
+
+int gDRMSubFD = -1;
 
 /* debug */
 #if 1
@@ -103,11 +136,8 @@ sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free_fb (__GLSiScontext * hwcx, void *free)
+sis_free_fb (int hHWContext, void *free)
 {
-  GLcontext *ctx = hwcx->gc;
-  XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-
   drm_sis_mem_t fb;
 
   if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
@@ -116,9 +146,9 @@ sis_free_fb (__GLSiScontext * hwcx, void *free)
             (DWORD)free, (DWORD)getpid(), --_total_video_memory_count);
   }
   
-  fb.context = xmesa->driContextPriv->hHWContext;
+  fb.context = hHWContext;
   fb.free = (unsigned int)free;
-  ioctl(hwcx->drmSubFD, SIS_IOCTL_FB_FREE, &fb);
+  ioctl(gDRMSubFD, SIS_IOCTL_FB_FREE, &fb);
 }
 
 #else
@@ -139,7 +169,7 @@ sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free_fb (__GLSiScontext * hwcx, void *free)
+sis_free_fb (int hHWContext, void *free)
 {
   return;
 }
@@ -176,11 +206,8 @@ sis_alloc_agp (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free_agp (__GLSiScontext * hwcx, void *free)
+sis_free_agp (int hHWContext, void *free)
 {
-  GLcontext *ctx = hwcx->gc;
-  XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-
   drm_sis_mem_t agp;
 
   if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
@@ -189,9 +216,9 @@ sis_free_agp (__GLSiScontext * hwcx, void *free)
             (DWORD)free, (DWORD)getpid(), --_total_video_memory_count);
   }
   
-  agp.context = xmesa->driContextPriv->hHWContext;
+  agp.context = hHWContext;
   agp.free = (unsigned int)free;
-  ioctl(hwcx->drmSubFD, SIS_IOCTL_AGP_FREE, &agp);
+  ioctl(gDRMSubFD, SIS_IOCTL_AGP_FREE, &agp);
 }
 
 /* debug */
@@ -277,9 +304,9 @@ void
 sis_free_z_stencil_buffer (XMesaBuffer buf)
 {
   sisBufferInfo *priv = (sisBufferInfo *) buf->private;
-  __GLSiScontext *hwcx = (__GLSiScontext *) buf->xm_context->private;
+  XMesaContext xmesa = buf->xm_context;
 
-  sis_free_fb (hwcx, priv->zbFree);
+  sis_free_fb (xmesa->driContextPriv->hHWContext, priv->zbFree);
   priv->zbFree = NULL;
   buf->depthbuffer = NULL;
 }
@@ -307,6 +334,7 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
   width2 = (depth == 2) ? ALIGNMENT (xm_buffer->width, 2) : xm_buffer->width;
   size = width2 * xm_buffer->height * depth + DRAW_BUFFER_HW_PLUS;
 
+  /* Fixme: unique context alloc/free back-buffer? */
   addr = sis_alloc_fb (hwcx, size, free);
   if (!addr)
     {
@@ -316,7 +344,7 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
 
   addr = (GLbyte *) ALIGNMENT ((GLuint) addr, DRAW_BUFFER_HW_ALIGNMENT);
 
-  image->data = (char *)addr;
+  image->data = addr;
 
   image->bytes_per_line = width2 * depth;
   image->bits_per_pixel = depth * 8;
@@ -351,9 +379,9 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
 void
 sis_free_back_image (XMesaBuffer buf, XMesaImage *image, void *free)
 {
-  __GLSiScontext *hwcx = (__GLSiScontext *) buf->xm_context->private;
+  XMesaContext xmesa = buf->xm_context;
 
-  sis_free_fb (hwcx, free);
+  sis_free_fb (xmesa->driContextPriv->hHWContext, free);
   image->data = NULL; 
 }
 
@@ -476,7 +504,7 @@ sis_alloc_texture_image (GLcontext * ctx, GLtextureImage * image)
   area->Format = driver_format;
   area->Size = image->Width * image->Height * texel_size;
   area->texelSize = texel_size;
-  area->hwcx = hwcx;
+  area->hHWContext = xmesa->driContextPriv->hHWContext;
 
   /* debug */
   area->realSize = area->Size;
@@ -490,7 +518,6 @@ void
 sis_free_texture_image (GLtextureImage * image)
 {
   SIStextureArea *area = (SIStextureArea *) image->DriverData;
-  __GLSiScontext *hwcx = (__GLSiScontext *) area->hwcx;
 
   /* debug */
   Total_Real_Textures_Used -= area->realSize;
@@ -498,14 +525,14 @@ sis_free_texture_image (GLtextureImage * image)
 
   if (!area)
     return;
-
+  
   if (area->Data)
     switch(area->memType){
     case VIDEO_TYPE:  
-      sis_free_fb (hwcx, area->free);
+      sis_free_fb (area->hHWContext, area->free);
       break;
     case AGP_TYPE:  
-      sis_free_agp (hwcx, area->free);
+      sis_free_agp (area->hHWContext, area->free);
       break;
     default:
       assert(0);

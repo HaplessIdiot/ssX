@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.15 2000/07/26 01:52:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.16 2000/08/01 20:52:24 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -145,6 +145,7 @@ typedef struct {
     Bool                TurboQueue;
     Bool                ValidWidth;
     Bool                FastVram;
+    int                 LVDSFlags;
     int                 VBFlags;
     int                 LCDFlags;
     int                 TVFlags;
@@ -173,8 +174,10 @@ typedef struct {
     Bool                (*ModeInit)(ScrnInfoPtr pScrn, DisplayModePtr mode);
     void                (*SiSSave)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSSave2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void                (*SiSSaveLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSRestore)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSRestore2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void                (*SiSRestoreLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SetThreshold)(ScrnInfoPtr pScrn, DisplayModePtr mode,
                                 unsigned short *Low, unsigned short *High);
     void                (*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,

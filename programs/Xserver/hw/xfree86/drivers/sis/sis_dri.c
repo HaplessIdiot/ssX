@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.2 2000/08/04 03:51:46 tsi Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -189,6 +189,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 {
   unsigned int port_3c5_value;
 
+#if 0
   /* Set magic number */
   outb (0x3c4, 0x05);
   if (inb (0x3c5) == 0x21){
@@ -205,6 +206,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   /* Enable HW to retry MMIO command */
   outb (0x3c4, 0x22);
   outb (0x3c5, 0xb2);
+#endif
 }
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
@@ -318,7 +320,6 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSIS->agpCmdBufSize = 0;
     pSISDRI->AGPCmdBufSize = 0;
     
-    /* TODO: if enable fails, not call drmAgpRelease */
     if (drmAgpAcquire(pSIS->drmSubFD) < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
       break;
@@ -331,17 +332,19 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     }
     ErrorF("[drm] drmAgpEnabled succeeded\n");
 
-    drmAgpAlloc(pSIS->drmSubFD, AGP_SIZE, 0, 0, &pSIS->agpHandle);
-    
-    if (pSIS->agpHandle == 0) {
+    if (drmAgpAlloc(pSIS->drmSubFD, AGP_SIZE, 0, NULL, &pSIS->agpHandle) < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
                  "[drm] drmAgpAlloc failed\n");
+      drmAgpRelease(pSIS->drmSubFD);
       break;
     }
    
     if (drmAgpBind(pSIS->drmSubFD, pSIS->agpHandle, 0) < 0) {
-      DRICloseScreen(pScreen); xf86DrvMsg(pScreen->myNum, X_ERROR,
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
                  "[drm] drmAgpBind failed\n");
+      drmAgpFree(pSIS->drmSubFD, pSIS->agpHandle);
+      drmAgpRelease(pSIS->drmSubFD);
+
       break;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.1 2000/04/04 19:25:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.4 2000/09/19 12:46:15 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -15,6 +15,7 @@
 #include "xaa.h"
 #include "xaalocal.h"
 #include "dixstruct.h"
+#include "fourcc.h"
 
 #define OFF_DELAY 	200  /* milliseconds */
 #define FREE_DELAY 	60000
@@ -152,40 +153,8 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	XvTopToBottom
    },
-   {
-	0x32315659,
-	XvYUV,
-	LSBFirst,
-	{'Y','V','1','2',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
-	12,
-	XvPlanar,
-	3,
-	0, 0, 0, 0 ,
-	8, 8, 8, 
-	1, 2, 2,
-	1, 2, 2,
-	{'Y','V','U',
-	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	XvTopToBottom
-   },
-   {
-	0x32595559,
-        XvYUV,
-	LSBFirst,
-	{'Y','U','Y','2',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
-	16,
-	XvPacked,
-	1,
-	0, 0, 0, 0 ,
-	8, 8, 8, 
-	1, 2, 2,
-	1, 1, 1,
-	{'Y','U','Y','V',
-	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	XvTopToBottom
-   }
+   XVIMAGE_YV12,
+   XVIMAGE_YUY2
 };
 
 typedef struct {
@@ -659,10 +628,10 @@ CHIPSDisplayVideo(
     case 0x36315652:		/* RGB16 */
 	tmp |= 0x08;
 	break;
-    case 0x32315659:		/* YV12 */
-	tmp |= 0x00; 
+    case FOURCC_YV12:		/* YV12 */
+	tmp |= 0x03; 
 	break;
-    case 0x32595559:		/* YUY2 */
+    case FOURCC_YUY2:		/* YUY2 */
     default:
 	tmp |= 0x00;		/* Do nothing here */
 	break;
@@ -786,16 +755,13 @@ CHIPSPutImage(
    new_h = ((dstPitch * height) + pitch - 1) / pitch;
 
    switch(id) {
-   case 0x32315659:		/* YV12 */
+   case FOURCC_YV12:		/* YV12 */
 	srcPitch = (width + 3) & ~3;
 	offset2 = srcPitch * height;
 	srcPitch2 = ((width >> 1) + 3) & ~3;
 	offset3 = (srcPitch2 * (height >> 1)) + offset2;
 	break;
-   case 0x35315652:		/* RGB15 */
-   case 0x36315652:		/* RGB16 */
-   case 0x32595559:		/* YUY2 */
-   default:
+   default:			/* RGB15, RGB16, YUY2 */
 	srcPitch = (width << 1);
 	break;
    }  
@@ -812,8 +778,8 @@ CHIPSPutImage(
    dst_start = cPtr->FbBase + offset + left;
 
    switch(id) {
-   case 0x32315659:		/* YV12 */
-       top &= ~1;
+   case FOURCC_YV12:		/* YV12 */
+        top &= ~1;
 	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
 	offset2 += tmp;
 	offset3 += tmp; 
@@ -822,10 +788,7 @@ CHIPSPutImage(
 			  buf + offset2, buf + offset3, dst_start,
 			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
 	break;
-   case 0x35315652:		/* RGB15 */
-   case 0x36315652:		/* RGB16 */
-   case 0x32595559:		/* YUY2 */
-   default:
+   default:			/* RGB15, RGB16, YUY2 */
 	buf += (top * srcPitch) + left;
 	nlines = ((y2 + 0xffff) >> 16) - top;
 	CHIPSCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
@@ -865,7 +828,7 @@ CHIPSQueryImageAttributes(
     if(offsets) offsets[0] = 0;
 
     switch(id) {
-    case 0x32315659:		/* YV12 */
+    case FOURCC_YV12:		/* YV12 */
 	*h = (*h + 1) & ~1;
 	size = (*w + 3) & ~3;
 	if(pitches) pitches[0] = size;
@@ -878,10 +841,7 @@ CHIPSQueryImageAttributes(
 	if(offsets) offsets[2] = size;
 	size += tmp;
 	break;
-    case 0x35315652:		/* RGB15 */
-    case 0x36315652:		/* RGB16 */
-    case 0x32595559:		/* YUY2 */
-    default:
+    default:			/* RGB15, RGB16, YUY2 */
 	size = *w << 1;
 	if(pitches) pitches[0] = size;
 	size *= *h;

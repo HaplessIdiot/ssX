@@ -1,4 +1,35 @@
-/* $XFree86$ */
+/**************************************************************************
+
+Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sub license, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice (including the
+next paragraph) shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**************************************************************************/
+
+/*
+ * Authors:
+ *    Sung-Ching Lin <sclin@sis.com.tw>
+ *
+ */
 
 #ifndef _sis_ctx_h_
 #define _sis_ctx_h_
@@ -109,9 +140,8 @@ typedef struct __GLSiSHardwareRec
 }
 __GLSiSHardware;
 
-/*
- ** Device dependent context state
- */
+/* Device dependent context state */
+
 typedef struct __GLSiScontextRec
 {
   /* This must be first in this structure */
@@ -121,10 +151,10 @@ typedef struct __GLSiScontextRec
   unsigned int bytesPerPixel;
   unsigned char *IOBase;
   unsigned char *FbBase;
-  unsigned int displayWidth;	/* per byte */
+  unsigned int displayWidth;
   unsigned int pitch;
 
-  /* for sw-render */
+  /* For Software Renderer */
   GLubyte *swRenderBase;
   GLuint swRenderPitch;
   GLubyte *swZBase;
@@ -143,7 +173,7 @@ typedef struct __GLSiScontextRec
   unsigned int clearColorPattern;
   unsigned int clearZStencilPattern;
 
-  /* render function */
+  /* Render Function */
   points_func PointsFunc;
   line_func LineFunc;
   triangle_func TriangleFunc;
@@ -196,7 +226,7 @@ typedef struct __GLSiScontextRec
 
   void (*SwapBuffers)(XMesaBuffer b);
 
-  /* stereo */
+  /* Stereo */
   GLboolean isFullScreen;
   GLboolean useStereo;
   GLboolean stereoEnabled;
@@ -221,7 +251,7 @@ typedef struct __GLSiScontextRec
 }
 __GLSiScontext;
 
-/* Macros to access hwcx */
+/* Macros */
 #define GET_IOBase(x) ((x)->IOBase)
 #define GET_FbBase(x) ((x)->FbBase)
 #define GET_AGPBase(x) ((x)->AGPBase)
@@ -252,6 +282,9 @@ extern void sis_set_scissor (GLcontext * gc);
 void sis_StartAGP (GLcontext * ctx);
 void sis_FlushAGP (GLcontext * ctx);
 extern float *AGP_CurrentPtr;
+
+/* DRM FD */
+extern int gDRMSubFD;
 
 void sis_fatal_error (void);
 
