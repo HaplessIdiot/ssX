@@ -1,4 +1,8 @@
 XFree86 3.9Ne (13 September 1998)
+1835. Remove the OS dependence in the formatting of docs in xfree86/doc/sgml
+      (which removes the need for the BuildAllDocs setting).
+1834. Update mi and dix cursor handling to avoid displaying empty cursors
+      (#1972, Mark Vojkovich).
 1833. Update Xv docs (#1971, Mark Vojkovich).
 1832. Add return values to the Get/Put driver functions in the Xv DDX
       (#1970, Mark Vojkovich).
@@ -6500,4 +6504,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.622 1998/09/06 13:47:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.623 1998/09/13 05:23:25 dawes Exp $
