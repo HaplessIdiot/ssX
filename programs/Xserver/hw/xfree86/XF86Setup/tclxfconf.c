@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.14 1997/01/18 06:53:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.15 1997/01/23 10:59:36 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -44,11 +44,6 @@
 #define INIT_OPTIONS
 #include "xf86_Option.h"
 
-#define NO_COMPILER_H_EXTRAS
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
-#include "xf86_Config.h"
-
 #include "tcl.h"
 #define XF86SETUP_NO_FUNC_RENAME
 #include "xfsconf.h"
@@ -56,6 +51,11 @@
 #if NeedVarargsPrototypes
 #include <stdarg.h>
 #endif
+
+#define NO_COMPILER_H_EXTRAS
+#include "xf86Procs.h"
+#include "xf86_OSlib.h"
+#include "xf86_Config.h"
 
 int TCL_XF86FindXF86Config(
 #if NeedNestedPrototypes

@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.13 1997/02/23 09:24:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.14 1997/02/25 14:18:44 hohndel Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -64,7 +64,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.13 1997/02/23 09:24:43 dawes Exp $
  * because they will replace rules after having seen the first lines
  * of Imakefile (include <Server.tmpl>)
  */
-#if defined(IHaveModules) && DoLoadableServer
+#if defined(IHaveModules) && DoLoadableServer && defined(OS2Architecture)
 
 /* This overrides the ObjCompile in Imake.rules! */
 #undef ObjectCompile

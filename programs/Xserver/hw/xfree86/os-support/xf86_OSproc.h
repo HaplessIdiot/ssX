@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.6 1997/02/24 17:47:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.7 1997/02/25 14:21:16 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -382,6 +382,7 @@ extern void xf86OsMouseOption(
 #endif
 );
 
+#ifdef XFree86LOADER
 /*
  * at this point I don't think we support any non-ANSI compilers...
  */
@@ -484,6 +485,7 @@ void xf86rewinddir(XF86DIR dirp);
 
 int xf86closedir(XF86DIR dirp);
 
+#endif /* XFree86LOADER */
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

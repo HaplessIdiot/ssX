@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.6 1997/02/17 09:44:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.7 1997/02/25 14:19:50 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -63,7 +63,18 @@ miBSFuncRec cfbBSFuncRec = {
      * in generic parts of XFree86
      */
 void
-ModuleInit(data,magic)
+#if PSZ == 8
+libcfbModuleInit(data,magic)
+#endif 
+#if PSZ == 16 
+libcfb16ModuleInit(data,magic)
+#endif
+#if PSZ == 24
+libcfb24ModuleInit(data,magic)
+#endif
+#if PSZ == 32 
+libcfb32ModuleInit(data,magic)
+#endif
     pointer *	data;
     INT32 *	magic;
 {
