@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.25 2000/06/15 01:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.26 2000/06/21 17:28:10 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -118,9 +118,6 @@ static Bool     NEOProbe(DriverPtr drv, int flags);
 static Bool     NEOPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     NEOScreenInit(int Index, ScreenPtr pScreen, int argc,
                                   char **argv);
-static Bool     NEOSwitchMode(int scrnIndex, DisplayModePtr mode,
-                                  int flags);
-static void     NEOAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool     NEOEnterVT(int scrnIndex, int flags);
 static void     NEOLeaveVT(int scrnIndex, int flags);
 static Bool     NEOCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -1399,6 +1396,9 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     
     xf86SetBlackWhitePixels(pScreen);
+
+    if (!nPtr->shadowFB)
+	NEODGAInit(pScreen);
     
     nPtr->NeoHWCursorShown = FALSE;
     nPtr->NeoHWCursorInitialized = FALSE;
@@ -1570,14 +1570,14 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 }
 
 /* Mandatory */
-static Bool
+Bool
 NEOSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return neoModeInit(xf86Screens[scrnIndex], mode);
 }
 
 /* Mandatory */
-static void
+void
 NEOAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;

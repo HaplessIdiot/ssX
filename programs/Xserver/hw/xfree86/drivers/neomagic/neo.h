@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.8 2000/04/28 18:19:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.9 2000/06/15 01:26:22 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -73,6 +73,9 @@ typedef enum {
 } NEOType;
 
 /* function prototypes */
+
+extern Bool NEOSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+extern void NEOAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* in neo_2070.c */
 extern Bool Neo2070AccelInit(ScreenPtr pScreen);
@@ -181,6 +184,10 @@ typedef struct neoRec
     unsigned char* NeoFbBase;
     long NeoFbMapSize;
     unsigned int vgaIOBase;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
     /* ??? */
     int NeoFifoCount;
     /* cursor */
