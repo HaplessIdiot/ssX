@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.18 2003/09/17 05:48:32 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.19 2003/09/29 20:25:53 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -96,8 +96,6 @@ pollRandomDevice (int fd)
 /* ####################################################################### */
 
 /*
- * Stolen from the Linux kernel.
- *
  * Copyright Theodore Ts'o, 1994, 1995, 1996, 1997, 1998, 1999.  All
  * rights reserved.
  *
