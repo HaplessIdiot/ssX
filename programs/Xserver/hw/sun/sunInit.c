@@ -1,4 +1,5 @@
-/* $XConsortium: sunInit.c,v 5.52 94/04/17 20:29:40 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.53 94/08/16 13:45:30 dpw Exp $ */
+/* $XFree86$ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -47,7 +48,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include    "sun.h"
 #include    "gcstruct.h"
+#include    "mi.h"
 #include    "mibstore.h"
+#include    "cfb.h"
 
 /* maximum pixmap depth */
 #ifndef SUNMAXDEPTH
@@ -142,9 +145,7 @@ extern SunModmapRec* sunType4ModMaps[];
 
 static Bool	sunDevsInited = FALSE;
 
-#ifndef XKB
 Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
-#endif
 Bool sunSwapLkeys = FALSE;
 Bool sunFlipPixels = FALSE;
 Bool sunFbInfo = FALSE;
@@ -375,7 +376,7 @@ static void SigIOHandler(sig)
  */
 void sunNonBlockConsoleOff(
 #if NeedFunctionPrototypes
-#ifdef SVR4
+#if defined(SVR4) || defined(__NetBSD__)
     void
 #else
     char* arg
@@ -463,7 +464,7 @@ static void getKbdType()
 	    key.kio_station = 118;
 	    if (ioctl(sunKbdPriv.fd, KIOCGETKEY, &key) == -1) {
 		Error( "ioctl KIOCGETKEY" );
-		FatalError("Can't KIOCGETKEY on fd %d\n", kbdFd);
+		FatalError("Can't KIOCGETKEY on fd %d\n", sunKbdPriv.fd);
 	    }
 	    if (key.kio_entry != HOLE)
 		sunKbdPriv.type = KB_SUN4;
@@ -562,7 +563,7 @@ void InitOutput(pScreenInfo, argc, argv)
      */
     if (nonBlockConsole) {
 	if (!setup_on_exit) {
-#ifdef SVR4 /* { */
+#if defined(SVR4) || defined(__NetBSD__) /* { */
 	    if (atexit(sunNonBlockConsoleOff))
 #else /* }{ */
 	    if (on_exit(sunNonBlockConsoleOff, (char *)0))
@@ -587,9 +588,10 @@ void InitOutput(pScreenInfo, argc, argv)
     pScreenInfo->numPixmapFormats = NUMFORMATS;
     for (i=0; i< NUMFORMATS; i++)
         pScreenInfo->formats[i] = formats[i];
-#ifndef XKB
-    sunAutoRepeatHandlersInstalled = FALSE;
+#ifdef XKB
+    if (noXkbExtension)
 #endif
+    sunAutoRepeatHandlersInstalled = FALSE;
     if (!sunDevsInited) {
 	/* first time ever */
 	for (scr = 0; scr < MAXSCREENS; scr++)
@@ -627,7 +629,6 @@ void InitInput(argc, argv)
     int     	  argc;
     char    	  **argv;
 {
-    int		i;
     DevicePtr	p, k;
     extern Bool mieqInit();
 
@@ -791,8 +792,6 @@ sunCfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     int width;			/* pixel width of frame buffer */
     int	bpp;			/* bits per pixel of root */
 {
-    extern int		cfbWindowPrivateIndex;
-    extern int		cfbGCPrivateIndex;
     int ret;
 
     switch (bpp) {
@@ -827,7 +826,6 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     int width;			/* pixel width of frame buffer */
     int bpp;
 {
-    int		i;
     pointer	oldDevPrivate;
     VisualPtr	visuals;
     int		nvisuals;

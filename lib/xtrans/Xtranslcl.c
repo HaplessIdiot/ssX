@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.1 1994/08/31 03:24:55 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.2 1994/10/23 12:55:36 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -102,6 +102,10 @@ from the X Consortium.
 #include <sys/un.h>
 #endif
 
+#ifdef ISC
+typedef unsigned short  mode_t;
+/* POSIX needed for mode_t define in sys/types.h */
+#endif
 
 /*
  * These functions actually implement the local connection mechanisms.
@@ -196,7 +200,7 @@ char		*peer_sun_path;
 
 /* PTS */
 
-#if defined(SYSV) && !defined(SCO)
+#if defined(SYSV) && !defined(SCO) && !defined(ISC)
 #define SIGNAL_T int
 #else
 #define SIGNAL_T void
@@ -233,7 +237,7 @@ int sig;
  * backwards binary compatability only.
  */
 
-#define X_ISC_DIR	"/dev/X"
+#define X_ISC_DIR	"/dev/X/ISCCONN"
 #define ISCDEVNODENAME	"/dev/X/ISCCONN/X%s"
 #define ISCTMPNODENAME	"/tmp/.X11-unix/X%s"
 #define SCORNODENAME	"/dev/X%1sR"
@@ -2256,7 +2260,7 @@ BytesReadable_t *pend;
 {
     PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
     
-#ifdef SCO
+#if defined(SCO) || defined(ISC)
     return ioctl(ciptr->fd, I_NREAD, (char *)pend);
 #else
     return ioctl(ciptr->fd, FIONREAD, (char *)pend);
