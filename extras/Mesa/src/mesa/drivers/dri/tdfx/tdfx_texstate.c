@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texstate.c,v 1.2 2002/02/22 21:45:04 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_texstate.c,v 1.1.1.3tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -424,9 +424,9 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
             *
             * Calculate the color combination.
             */
-            Shift_RGB = texUnit->CombineScaleShiftRGB;
-            Shift_A = texUnit->CombineScaleShiftA;
-            switch (texUnit->CombineModeRGB) {
+            Shift_RGB = texUnit->Combine.ScaleShiftRGB;
+            Shift_A = texUnit->Combine.ScaleShiftA;
+            switch (texUnit->Combine.ModeRGB) {
             case GL_REPLACE:
                /*
                 * The formula is: Arg0
@@ -434,11 +434,11 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 *   (Arg0 + 0(0))*(1-0) + 0
                 */
                 TEXENV_SETUP_ARG_RGB(A_RGB,
-                                     texUnit->CombineSourceRGB[0],
-                                     texUnit->CombineOperandRGB[0],
+                                     texUnit->Combine.SourceRGB[0],
+                                     texUnit->Combine.OperandRGB[0],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_MODE_RGB(Amode_RGB,
-                                      texUnit->CombineOperandRGB[0]);
+                                      texUnit->Combine.OperandRGB[0]);
                 B_RGB = C_RGB = D_RGB = GR_CMBX_ZERO;
                 Bmode_RGB = GR_FUNC_MODE_ZERO;
                 Cinv_RGB = FXTRUE;
@@ -452,19 +452,19 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 *   (Arg0 + 0(0)) * Arg1 + 0(0)
                 */
                 TEXENV_SETUP_ARG_RGB(A_RGB,
-                                     texUnit->CombineSourceRGB[0],
-                                     texUnit->CombineOperandRGB[0],
+                                     texUnit->Combine.SourceRGB[0],
+                                     texUnit->Combine.OperandRGB[0],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_MODE_RGB(Amode_RGB,
-                                      texUnit->CombineOperandRGB[0]);
+                                      texUnit->Combine.OperandRGB[0]);
                 B_RGB = GR_CMBX_ZERO;
                 Bmode_RGB = GR_CMBX_ZERO;
                 TEXENV_SETUP_ARG_RGB(C_RGB,
-                                     texUnit->CombineSourceRGB[1],
-                                     texUnit->CombineOperandRGB[1],
+                                     texUnit->Combine.SourceRGB[1],
+                                     texUnit->Combine.OperandRGB[1],
                                      incomingRGB, incomingAlpha);
                 Cinv_RGB = TEXENV_OPERAND_INVERTED
-                               (texUnit->CombineOperandRGB[1]);
+                               (texUnit->Combine.OperandRGB[1]);
                 D_RGB = GR_CMBX_ZERO;
                 Dinv_RGB = Ginv_RGB = FXFALSE;
                 break;
@@ -473,17 +473,17 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * The formula is Arg0 + Arg1
                 */
                 TEXENV_SETUP_ARG_RGB(A_RGB,
-                                     texUnit->CombineSourceRGB[0],
-                                     texUnit->CombineOperandRGB[0],
+                                     texUnit->Combine.SourceRGB[0],
+                                     texUnit->Combine.OperandRGB[0],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_MODE_RGB(Amode_RGB,
-                                      texUnit->CombineOperandRGB[0]);
+                                      texUnit->Combine.OperandRGB[0]);
                 TEXENV_SETUP_ARG_RGB(B_RGB,
-                                     texUnit->CombineSourceRGB[1],
-                                     texUnit->CombineOperandRGB[1],
+                                     texUnit->Combine.SourceRGB[1],
+                                     texUnit->Combine.OperandRGB[1],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_MODE_RGB(Bmode_RGB,
-                                      texUnit->CombineOperandRGB[1]);
+                                      texUnit->Combine.OperandRGB[1]);
                 C_RGB = D_RGB = GR_CMBX_ZERO;
                 Cinv_RGB = FXTRUE;
                 Dinv_RGB = Ginv_RGB = FXFALSE;
@@ -498,20 +498,20 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * we cannot implement the formula properly.
                 */
                 TEXENV_SETUP_ARG_RGB(A_RGB,
-                                     texUnit->CombineSourceRGB[0],
-                                     texUnit->CombineOperandRGB[0],
+                                     texUnit->Combine.SourceRGB[0],
+                                     texUnit->Combine.OperandRGB[0],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_ARG_RGB(B_RGB,
-                                     texUnit->CombineSourceRGB[1],
-                                     texUnit->CombineOperandRGB[1],
+                                     texUnit->Combine.SourceRGB[1],
+                                     texUnit->Combine.OperandRGB[1],
                                      incomingRGB, incomingAlpha);
-                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandRGB[0])) {
+                if (!TEXENV_OPERAND_INVERTED(texUnit->Combine.OperandRGB[0])) {
                    /*
                     * A is not inverted.  So, choose it.
                     */
                     Amode_RGB = GR_FUNC_MODE_X_MINUS_HALF;
                     if (!TEXENV_OPERAND_INVERTED
-                            (texUnit->CombineOperandRGB[1])) {
+                            (texUnit->Combine.OperandRGB[1])) {
                         Bmode_RGB = GR_FUNC_MODE_X;
                     }
                     else {
@@ -525,7 +525,7 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                     */
                     Amode_RGB = GR_FUNC_MODE_ONE_MINUS_X;
                     if (!TEXENV_OPERAND_INVERTED
-                            (texUnit->CombineOperandRGB[1])) {
+                            (texUnit->Combine.OperandRGB[1])) {
                         Bmode_RGB = GR_FUNC_MODE_X_MINUS_HALF;
                     }
                     else {
@@ -553,16 +553,16 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * not support it properly.
                 */
                 TEXENV_SETUP_ARG_RGB(A_RGB,
-                                     texUnit->CombineSourceRGB[0],
-                                     texUnit->CombineOperandRGB[0],
+                                     texUnit->Combine.SourceRGB[0],
+                                     texUnit->Combine.OperandRGB[0],
                                      incomingRGB, incomingAlpha);
                 TEXENV_SETUP_MODE_RGB(Amode_RGB,
-                                      texUnit->CombineOperandRGB[0]);
+                                      texUnit->Combine.OperandRGB[0]);
                 TEXENV_SETUP_ARG_RGB(B_RGB,
-                                     texUnit->CombineSourceRGB[1],
-                                     texUnit->CombineOperandRGB[1],
+                                     texUnit->Combine.SourceRGB[1],
+                                     texUnit->Combine.OperandRGB[1],
                                      incomingRGB, incomingAlpha);
-                if (TEXENV_OPERAND_INVERTED(texUnit->CombineOperandRGB[1])) {
+                if (TEXENV_OPERAND_INVERTED(texUnit->Combine.OperandRGB[1])) {
                    /*
                     * This case is wrong.
                     */
@@ -577,8 +577,8 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * specify some kind of alpha value.
                 */
                 TEXENV_SETUP_ARG_A(C_RGB,
-                                   texUnit->CombineSourceRGB[2],
-                                   texUnit->CombineOperandRGB[2],
+                                   texUnit->Combine.SourceRGB[2],
+                                   texUnit->Combine.OperandRGB[2],
                                    incomingAlpha);
                 Cinv_RGB = FXFALSE;
                 D_RGB = GR_CMBX_B;
@@ -599,7 +599,7 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
            /*
             * Calculate the alpha combination.
             */
-            switch (texUnit->CombineModeA) {
+            switch (texUnit->Combine.ModeA) {
             case GL_REPLACE:
                /*
                 * The formula is: Arg0
@@ -607,11 +607,11 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 *   (Arg0 + 0(0))*(1-0) + 0
                 */
                 TEXENV_SETUP_ARG_A(A_A,
-                                   texUnit->CombineSourceA[0],
-                                   texUnit->CombineOperandA[0],
+                                   texUnit->Combine.SourceA[0],
+                                   texUnit->Combine.OperandA[0],
                                    incomingAlpha);
                 TEXENV_SETUP_MODE_A(Amode_A,
-                                    texUnit->CombineOperandA[0]);
+                                    texUnit->Combine.OperandA[0]);
                 B_A = GR_CMBX_ITALPHA;
                 Bmode_A = GR_FUNC_MODE_ZERO;
                 C_A = D_A = GR_CMBX_ZERO;
@@ -626,19 +626,19 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 *   (Arg0 + 0(0)) * Arg1 + 0(0)
                 */
                 TEXENV_SETUP_ARG_A(A_A,
-                                   texUnit->CombineSourceA[0],
-                                   texUnit->CombineOperandA[0],
+                                   texUnit->Combine.SourceA[0],
+                                   texUnit->Combine.OperandA[0],
                                    incomingAlpha);
                 TEXENV_SETUP_MODE_A(Amode_A,
-                                    texUnit->CombineOperandA[0]);
+                                    texUnit->Combine.OperandA[0]);
                 B_A = GR_CMBX_ZERO;
                 Bmode_A = GR_CMBX_ZERO;
                 TEXENV_SETUP_ARG_A(C_A,
-                                   texUnit->CombineSourceA[1],
-                                   texUnit->CombineOperandA[1],
+                                   texUnit->Combine.SourceA[1],
+                                   texUnit->Combine.OperandA[1],
                                    incomingAlpha);
                 Cinv_A = TEXENV_OPERAND_INVERTED
-                               (texUnit->CombineOperandA[1]);
+                               (texUnit->Combine.OperandA[1]);
                 D_A = GR_CMBX_ZERO;
                 Dinv_A = Ginv_A = FXFALSE;
                 break;
@@ -647,17 +647,17 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * The formula is Arg0 + Arg1
                 */
                 TEXENV_SETUP_ARG_A(A_A,
-                                   texUnit->CombineSourceA[0],
-                                   texUnit->CombineOperandA[0],
+                                   texUnit->Combine.SourceA[0],
+                                   texUnit->Combine.OperandA[0],
                                    incomingAlpha);
                 TEXENV_SETUP_MODE_A(Amode_A,
-                                    texUnit->CombineOperandA[0]);
+                                    texUnit->Combine.OperandA[0]);
                 TEXENV_SETUP_ARG_A(B_A,
-                                   texUnit->CombineSourceA[1],
-                                   texUnit->CombineOperandA[1],
+                                   texUnit->Combine.SourceA[1],
+                                   texUnit->Combine.OperandA[1],
                                    incomingAlpha);
                 TEXENV_SETUP_MODE_A(Bmode_A,
-                                    texUnit->CombineOperandA[1]);
+                                    texUnit->Combine.OperandA[1]);
                 C_A = D_A = GR_CMBX_ZERO;
                 Cinv_A = FXTRUE;
                 Dinv_A = Ginv_A = FXFALSE;
@@ -672,20 +672,20 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * we cannot implement the formula properly.
                 */
                 TEXENV_SETUP_ARG_A(A_A,
-                                   texUnit->CombineSourceA[0],
-                                   texUnit->CombineOperandA[0],
+                                   texUnit->Combine.SourceA[0],
+                                   texUnit->Combine.OperandA[0],
                                    incomingAlpha);
                 TEXENV_SETUP_ARG_A(B_A,
-                                   texUnit->CombineSourceA[1],
-                                   texUnit->CombineOperandA[1],
+                                   texUnit->Combine.SourceA[1],
+                                   texUnit->Combine.OperandA[1],
                                    incomingAlpha);
-                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandA[0])) {
+                if (!TEXENV_OPERAND_INVERTED(texUnit->Combine.OperandA[0])) {
                    /*
                     * A is not inverted.  So, choose it.
                     */
                     Amode_A = GR_FUNC_MODE_X_MINUS_HALF;
                     if (!TEXENV_OPERAND_INVERTED
-                            (texUnit->CombineOperandA[1])) {
+                            (texUnit->Combine.OperandA[1])) {
                         Bmode_A = GR_FUNC_MODE_X;
                     } else {
                         Bmode_A = GR_FUNC_MODE_ONE_MINUS_X;
@@ -697,7 +697,7 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                     */
                     Amode_A = GR_FUNC_MODE_ONE_MINUS_X;
                     if (!TEXENV_OPERAND_INVERTED
-                            (texUnit->CombineOperandA[1])) {
+                            (texUnit->Combine.OperandA[1])) {
                         Bmode_A = GR_FUNC_MODE_X_MINUS_HALF;
                     } else {
                        /*
@@ -724,16 +724,16 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * not support it properly.
                 */
                 TEXENV_SETUP_ARG_A(A_A,
-                                   texUnit->CombineSourceA[0],
-                                   texUnit->CombineOperandA[0],
+                                   texUnit->Combine.SourceA[0],
+                                   texUnit->Combine.OperandA[0],
                                    incomingAlpha);
                 TEXENV_SETUP_MODE_A(Amode_A,
-                                    texUnit->CombineOperandA[0]);
+                                    texUnit->Combine.OperandA[0]);
                 TEXENV_SETUP_ARG_A(B_A,
-                                   texUnit->CombineSourceA[1],
-                                   texUnit->CombineOperandA[1],
+                                   texUnit->Combine.SourceA[1],
+                                   texUnit->Combine.OperandA[1],
                                    incomingAlpha);
-                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandA[1])) {
+                if (!TEXENV_OPERAND_INVERTED(texUnit->Combine.OperandA[1])) {
                     Bmode_A = GR_FUNC_MODE_NEGATIVE_X;
                 }
                 else {
@@ -748,8 +748,8 @@ SetupTexEnvNapalm(GLcontext *ctx, GLboolean useIteratedRGBA,
                 * specify some kind of alpha value.
                 */
                 TEXENV_SETUP_ARG_A(C_A,
-                                   texUnit->CombineSourceA[2],
-                                   texUnit->CombineOperandA[2],
+                                   texUnit->Combine.SourceA[2],
+                                   texUnit->Combine.OperandA[2],
                                    incomingAlpha);
                 Cinv_A = FXFALSE;
                 D_A = GR_CMBX_B;
@@ -1478,13 +1478,14 @@ selectSingleTMUSrc(tdfxContextPtr fxMesa, GLint tmu, FxBool LODblend)
    fxMesa->dirty |= TDFX_UPLOAD_TEXTURE_ENV;
 }
 
+#ifdef UNUSED
 static void print_state(tdfxContextPtr fxMesa)
 {
    GLcontext *ctx = fxMesa->glCtx;
    struct gl_texture_object *tObj0 = ctx->Texture.Unit[0].Current2D;
    struct gl_texture_object *tObj1 = ctx->Texture.Unit[1].Current2D;
-   GLenum base0 = tObj0->Image[tObj0->BaseLevel] ? tObj0->Image[tObj0->BaseLevel]->Format : 99;
-   GLenum base1 = tObj1->Image[tObj1->BaseLevel] ? tObj1->Image[tObj1->BaseLevel]->Format : 99;
+   GLenum base0 = tObj0->Image[0][tObj0->BaseLevel] ? tObj0->Image[0][tObj0->BaseLevel]->Format : 99;
+   GLenum base1 = tObj1->Image[0][tObj1->BaseLevel] ? tObj1->Image[0][tObj1->BaseLevel]->Format : 99;
 
    printf("Unit 0: Enabled:  GL=%d   Gr=%d\n", ctx->Texture.Unit[0]._ReallyEnabled,
           fxMesa->TexState.Enabled[0]);
@@ -1499,7 +1500,7 @@ static void print_state(tdfxContextPtr fxMesa)
           fxMesa->TexState.EnvMode[1]);
    printf("   BaseFmt: GL=0x%x  Gr:0x%x\n", base1, fxMesa->TexState.TexFormat[1]);
 }
-
+#endif
 
 /*
  * When we're only using a single texture unit, we always use the 0th
@@ -1517,7 +1518,7 @@ static void setupTextureSingleTMU(GLcontext * ctx, GLuint unit)
    GLenum envMode, baseFormat;
 
    tObj = ctx->Texture.Unit[unit].Current2D;
-   if (tObj->Image[tObj->BaseLevel]->Border > 0) {
+   if (tObj->Image[0][tObj->BaseLevel]->Border > 0) {
       FALLBACK(fxMesa, TDFX_FALLBACK_TEXTURE_BORDER, GL_TRUE);
       return;
    }
@@ -1539,7 +1540,7 @@ static void setupTextureSingleTMU(GLcontext * ctx, GLuint unit)
 
    /* Check if we really need to update the texenv state */
    envMode = ctx->Texture.Unit[unit].EnvMode;
-   baseFormat = tObj->Image[tObj->BaseLevel]->Format;
+   baseFormat = tObj->Image[0][tObj->BaseLevel]->Format;
 
    if (TDFX_IS_NAPALM(fxMesa)) {
       /* see if we really need to update the unit */
@@ -1826,8 +1827,8 @@ static void setupTextureDoubleTMU(GLcontext * ctx)
    struct gl_texture_object *tObj1 = ctx->Texture.Unit[1].Current2D;
    tdfxTexInfo *ti0 = TDFX_TEXTURE_DATA(tObj0);
    tdfxTexInfo *ti1 = TDFX_TEXTURE_DATA(tObj1);
-   struct gl_texture_image *baseImage0 = tObj0->Image[tObj0->BaseLevel];
-   struct gl_texture_image *baseImage1 = tObj1->Image[tObj1->BaseLevel];
+   struct gl_texture_image *baseImage0 = tObj0->Image[0][tObj0->BaseLevel];
+   struct gl_texture_image *baseImage1 = tObj1->Image[0][tObj1->BaseLevel];
    const GLenum envMode0 = ctx->Texture.Unit[0].EnvMode;
    const GLenum envMode1 = ctx->Texture.Unit[1].EnvMode;
 

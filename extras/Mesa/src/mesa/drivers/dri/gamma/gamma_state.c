@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.5 2002/11/05 17:46:07 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/gamma/gamma_state.c,v 1.1.1.3tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -177,19 +177,12 @@ static void gammaDDAlphaFunc( GLcontext *ctx, GLenum func, GLfloat ref )
    gmesa->new_state |= GAMMA_NEW_ALPHA;
 }
 
-static void gammaDDBlendEquation( GLcontext *ctx, GLenum mode )
+static void gammaDDBlendEquationSeparate( GLcontext *ctx, 
+					  GLenum modeRGB, GLenum modeA )
 {
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
 
-   FLUSH_BATCH( gmesa );
-
-   gmesa->new_state |= GAMMA_NEW_ALPHA;
-}
-
-static void gammaDDBlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
-{
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
-
+   assert( modeRGB == modeA );
    FLUSH_BATCH( gmesa );
 
    gmesa->new_state |= GAMMA_NEW_ALPHA;
@@ -589,6 +582,7 @@ static void gammaUpdateFogAttrib( GLcontext *ctx )
    }
 }
 
+#if 0
 static void gammaDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
 {
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
@@ -596,6 +590,7 @@ static void gammaDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
    FLUSH_BATCH( gmesa );
    gmesa->new_state |= GAMMA_NEW_FOG;
 }
+#endif
 
 /* =============================================================
  * Lines
@@ -1698,8 +1693,7 @@ void gammaDDInitStateFuncs( GLcontext *ctx )
    ctx->Driver.ColorMask		= gammaDDColorMask;
 
    ctx->Driver.AlphaFunc		= gammaDDAlphaFunc;
-   ctx->Driver.BlendEquation		= gammaDDBlendEquation;
-   ctx->Driver.BlendFunc		= gammaDDBlendFunc;
+   ctx->Driver.BlendEquationSeparate	= gammaDDBlendEquationSeparate;
    ctx->Driver.BlendFuncSeparate	= gammaDDBlendFuncSeparate;
    ctx->Driver.ClearDepth		= gammaDDClearDepth;
    ctx->Driver.CullFace			= gammaDDCullFace;
