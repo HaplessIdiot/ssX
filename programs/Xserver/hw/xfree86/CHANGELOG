@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 712. Xtt2 update: Restore the behaviour of "bw" TTCap option for Netscape 4.x.
+      (Chisato Yamauchi).
  711. Fix neomagic driver default mode selection to match the detected
       panel size.  This allows it to work correctly with automatic
       configuration (David Dawes).
@@ -18423,7 +18425,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3059 2003/12/30 13:31:15 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3060 2003/12/31 05:07:27 dawes Exp $
 
 
 

@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.40tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.41 2003/12/31 01:18:42 tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -2970,10 +2970,9 @@ FreeTypeLoadXFont(char *fileName,
 	    tmp_rsb = face->face->bbox.xMax;
 	    if ( tmp_rsb < face->face->max_advance_width ) tmp_rsb = face->face->max_advance_width;
 	    /* apply scaleBBoxWidth */
-	    /* we should not ...???
+	    /* we should not ...??? */
 	    tmp_lsb *= ins_ttcap->scaleBBoxWidth;
 	    tmp_rsb *= ins_ttcap->scaleBBoxWidth;
-	    */
 	    /* transform and rescale */
 	    compute_new_extents( vals, scale, tmp_lsb, tmp_rsb, tmp_des, tmp_asc,
 				 &minLsb, &maxRsb, &descent, &ascent );
