@@ -1,9 +1,9 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/ie,v 1.1 2002/11/26 02:09:17 dawes Exp $
 
 // Irish keyboard map
 
 // Support for Irish (old and new orthography) and English
-// Seamus O Ciardhuain <seoc@cnds.ucd.ie>  (24 November 2002)
+// Seamus O Ciardhuain <seoc@cnds.ucd.ie>  (17 December 2002)
 
 // The general idea is to provide the characters in ISO 8859-1,
 // ISO 8859-15, ISO 8859-14, CP1252 and "Extended Latin-8".
@@ -12,22 +12,17 @@
 // "Multi_key" compose sequences.
 // This will work best with a Unicode locale setting (en_IE.UTF-8
 // or ga_IE.UTF-8).
+// Designed to be similar to the layouts used on Windows
+// and the Macintosh.
 
-// Unicode values are used for some characters because:
-// (a) there are no corresponding keysyms in keysymdef.h
-// (b) dependencies of keysyms on the input locale settings (?)
-// (c) some keysyms don't work even though they are in keysymdef.h
-// The last two need to be resolved as they shouldn't happen.
-
-// Everything is in Group 1 so this should be compatible with the
+// Everything is in Group 1 to be compatible with the
 // multi-layout keyboard support in XFree86 4.3.
 
 // The basic layout is a modern keyboard, but dotted consonants are
-// accessible using a deadkey (AltGr+H).
+// accessible using a deadkey (AltGr+H or AltGr+W).
 // If a proper Clo Gaelach keyboard is needed, then use the layout
 // defined below as ie(CloGaelach), which gives dotted consonants
-// without use of a deadkey. Some other characters are lost to
-// make these available.
+// without use of a deadkey.
 
 
 partial default alphanumeric_keys
@@ -36,8 +31,7 @@ xkb_symbols "basic" {
     // Modern keyboard for Irish and English
     //  - acute-accented vowels as AltGr+vowel and AltGr+Shift+vowel
     //  - euro currency sign as AltGr+4
-    //  - Comhartha Agus (Tironian Sign Et) as AltGr+7
-    //  - numeric top row has useful fractions added
+    //  - Comhartha Agus (Tironian Sign Et) as AltGr+Shift+7
     //  - non-breaking space as AltGr+Shift+Space
     //  - matches hardware (keys and engraved symbols) for Irish keyboards
 
@@ -48,111 +42,110 @@ xkb_symbols "basic" {
     //
     // Numeric row `1234567890-=
     //
-    key <TLDE> { [        grave,     notsign,      dead_grave,      0x10000A6 ] };
-                                                                // broken bar
-    key <AE01> { [            1,      exclam,     onesuperior,     exclamdown ] };
-    key <AE02> { [            2,    quotedbl,     twosuperior,      0x10000BD ] };
-                                                                   // onehalf
-    key <AE03> { [            3,    sterling,   threesuperior,      0x1002153 ] };
-                                                                  // onethird
-    key <AE04> { [            4,      dollar,        EuroSign,      0x10000BC ] };
-                                                                // onequarter
-    key <AE05> { [            5,     percent,            cent,      0x1002030 ] };
+    key <TLDE> { [        grave,     notsign,       brokenbar,       NoSymbol ] };
+    key <AE01> { [            1,      exclam,      exclamdown,    onesuperior ] };
+    key <AE02> { [            2,    quotedbl,       trademark,    twosuperior ] };
+    key <AE03> { [            3,    sterling,       copyright,  threesuperior ] };
+    key <AE04> { [            4,      dollar,        EuroSign,           cent ] };
+    key <AE05> { [            5,     percent,         section,      0x1002020 ] };
+                                                                    // dagger
+    key <AE06> { [            6, asciicircum, dead_circumflex,      0x1002030 ] };
                                                               // per thousand
-    key <AE06> { [            6, asciicircum, dead_circumflex,      0x10000BE ] };
-                                                             // threequarters
-    key <AE07> { [            7,   ampersand,       0x100204A,      0x100215E ] };
-                                               // Tironian Et    seveneighths
-    key <AE08> { [            8,    asterisk,       0x100215B,      0x100215C ] };
-                                                // oneeighth     threeeighths
-    key <AE09> { [            9,   parenleft,       0x1002154,      0x100215D ] };
-                                                //  twothirds     fiveeighths
-    key <AE10> { [            0,  parenright,          degree,      0x10000AD ] };
-                                                               // soft hyphen
+    key <AE07> { [            7,   ampersand,       paragraph,      0x100204A ] };
+                                                               // Tironian Et
+    key <AE08> { [            8,    asterisk,  dead_diaeresis,      0x1002022 ] };
+                                                                    // bullet
+    key <AE09> { [            9,   parenleft,     ordfeminine, periodcentered ] };
+    key <AE10> { [            0,  parenright,       masculine,         degree ] };
     key <AE11> { [        minus,  underscore,       0x1002013,      0x1002014 ] };
                                                    // en dash         em dash
-    key <AE12> { [        equal,        plus,        multiply,       division ] };
-
+    key <AE12> { [        equal,        plus,       0x1002260,      plusminus ] };
+                                                  // notequal
     //
     // QWERTYUIOP[]
     //
     key <AD01> { [            q,           Q,       0x1000153,      0x1000152 ] };
                                                         // oe              OE
-    key <AD02> { [            w,           W,              ae,             AE ] };
+    key <AD02> { [            w,           W,   dead_abovedot,  dead_abovedot ] };
     key <AD03> { [            e,           E,          eacute,         Eacute ] };
-    key <AD04> { [            r,           R,      registered,      paragraph ] };
-    key <AD05> { [            t,           T,        NoSymbol,       NoSymbol ] };
+    key <AD04> { [            r,           R,      registered,      0x1002030 ] };
+                                                              // per thousand
+    key <AD05> { [            t,           T,           thorn,          THORN ] };
     key <AD06> { [            y,           Y,             yen,             mu ] };
     key <AD07> { [            u,           U,          uacute,         Uacute ] };
     key <AD08> { [            i,           I,          iacute,         Iacute ] };
     key <AD09> { [            o,           O,          oacute,         Oacute ] };
-    key <AD10> { [            p,           P,           thorn,          THORN ] };
-    key <AD11> { [  bracketleft,   braceleft,       0x1002265,      0x1002264 ] };
-                                                    // <=               >=
-    key <AD12> { [ bracketright,  braceright,       plusminus,      0x1002260 ] };
-                                                                  // notequal
+    key <AD10> { [            p,           P,       0x100201A,       NoSymbol ] };
+                                        // single low-9 quote
+    key <AD11> { [  bracketleft,   braceleft,       0x100201C,      0x100201D ] };
+                                                     // L and R double quotes
+    key <AD12> { [ bracketright,  braceright,       0x1002018,      0x1002019 ] };
+                                                     // L and R single quotes
 
     //
     // ASDFGHJKL;'#
     //
     key <AC01> { [          a,             A,          aacute,         Aacute ] };
-    key <AC02> { [          s,             S,          ssharp,        section ] };
+    key <AC02> { [          s,             S,          ssharp,       NoSymbol ] };
     key <AC03> { [          d,             D,             eth,            ETH ] };
-    key <AC04> { [          f,             F,     ordfeminine,      0x1000192 ] };
-                                                               // f with hook
-    key <AC05> { [          g,             G,        NoSymbol,       NoSymbol ] };
+    key <AC04> { [          f,             F,       0x1000192,       NoSymbol ] };
+                                               // f with hook
+    key <AC05> { [          g,             G,       copyright,       NoSymbol ] };
     key <AC06> { [          h,             H,   dead_abovedot,  dead_abovedot ] };
-    key <AC07> { [          j,             J,        idotless,      0x100027C ] };
-                                                                    // long r
-    key <AC08> { [          k,             K,       0x10003A9,      0x100017F ] };
-                                               // Greek_OMEGA          long s
-    key <AC09> { [          l,             L,       0x1002020,      0x1002021 ] };
-                                                    // dagger   double dagger
-    key <AC10> { [  semicolon,         colon,  dead_diaeresis,      0x100201E ] };
-                                                        // double low-9 quote
-    key <AC11> { [ apostrophe,            at,      dead_acute, dead_abovering ] };
-    key <BKSL> { [ numbersign,    asciitilde,      dead_tilde,      0x1002026 ] };
-                                                                  // ellipsis
+    key <AC07> { [          j,             J,        idotless,      0x10000BC ] };
+                                                               // one quarter
+    key <AC08> { [          k,             K,  dead_abovering,      0x10000BD ] };
+                                                                  // one half
+    key <AC09> { [          l,             L,      dead_acute,      0x10000BE ] };
+                                                             // threequarters
+    key <AC10> { [  semicolon,         colon,       0x1002026,      0x1002021 ] };
+                                                  // ellipsis   double dagger
+    key <AC11> { [ apostrophe,            at,              ae,             AE ] };
+    key <BKSL> { [ numbersign,    asciitilde,   guillemotleft, guillemotright ] };
+                                                                  
 
     //
     // \ZXCVBNM,./
     //
-    key <LSGT> { [  backslash,           bar,          oslash,       Ooblique ] };
+    key <LSGT> { [  backslash,           bar,      dead_grave,       NoSymbol ] };
 
-    key <AB01> { [          z,             Z,   guillemotleft,      0x1002039 ] };
-                                                          // left angle quote
-    key <AB02> { [          x,             X,  guillemotright,      0x100203A ] };
-                                                         // right angle quote
-    key <AB03> { [          c,             C,       copyright,      0x10000A4 ] };
-                                                                  // currency
-    key <AB04> { [          v,             V,       0x100201C,      0x1002018 ] };
-                                             // left double and single quotes
-    key <AB05> { [          b,             B,       0x100201D,      0x1002019 ] };
-                                            // right double and single quotes
-    key <AB06> { [          n,             N,        NoSymbol,       NoSymbol ] };
-    key <AB07> { [          m,             M,              mu,      masculine ] };
-    key <AB08> { [      comma,          less,    dead_cedilla,      0x100201A ] };
-                                                        // single low-9 quote
-    key <AB09> { [     period,       greater,  periodcentered,      0x1002022 ] };
-                                                                    // bullet
-    key <AB10> { [      slash,      question,       0x1002122,   questiondown ] };
-                                                 // trademark
+    key <AB01> { [          z,             Z,       0x1002039,      0x100203A ] };
+                                               // L and R single angle quotes
+    key <AB02> { [          x,             X,        multiply,      0x1002248 ] };
+                                                              // approx equal
+    key <AB03> { [          c,             C,    dead_cedilla,       NoSymbol ] };
+    key <AB04> { [          v,             V,      dead_caron,       NoSymbol ] };
+    key <AB05> { [          b,             B,        NoSymbol,       NoSymbol ] };
+    key <AB06> { [          n,             N,      dead_tilde,       NoSymbol ] };
+    key <AB07> { [          m,             M,        NoSymbol,       NoSymbol ] };
+    key <AB08> { [      comma,          less,       0x1002264,      0x100201E ] };
+                                      // greater or equal, double low-9 quote
+    key <AB09> { [     period,       greater,       0x1002265,      0x100201A ] };
+                                        // less or equal,  single low-9 quote
+    key <AB10> { [      slash,      question,        division,   questiondown ] };
+
 
     key <SPCE> { type[Group1]="FOUR_LEVEL",
-                 [      space,         space,           space,   nobreakspace ] };
+                 [      space,         space,    nobreakspace,   nobreakspace ] };
 
     key <RALT>  { type[Group1]="ONE_LEVEL", [ ISO_Level3_Shift ]  };
-    modifier_map Mod5  { <RALT> };
+    modifier_map Mod5  { ISO_Level3_Shift };
 
     // NB: putting Shift+<RALT> as Multi_key gives odd behaviour since the
     // order of pressing keys affects the result.
-    // For Ireland, Multi_key could be <RWIN> or the <MENU> key if <RWIN>
-    // is not available (laptops), i.e. options "compose:rwin" and "compose:menu".
-    // These also make good choices for group switching keys if needed.
+
+    key <RWIN>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
 };
 
+partial default alphanumeric_keys
+xkb_symbols "laptop" {
+    // For laptops which don't have the RWIN key but are otherwise
+    // the same as 105-key layouts.
+    include "ie(basic)"
+    key <MENU>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
+};
 
-partial alphanumeric_keys
+partial default alphanumeric_keys
 xkb_symbols "CloGaelach" {
 
     // Adds support for Clo Gaelach (old orthography for Irish).
@@ -170,42 +163,38 @@ xkb_symbols "CloGaelach" {
 
     name[Group1] = "Irish (Clo Gaelach)";
 
-    key <AD04> { [         r,     R,      0x100027C,  paragraph ] }; // long r
-    key <AD05> { [         t,     T,      0x1001E6B,  0x1001E6A ] }; // [tT] with dot above
-    key <AD10> { [         p,     P,      0x1001E57,  0x1001E56 ] }; // [pP] with dot above
+    key <TLDE> { [     grave, notsign,    brokenbar,  ssharp ] };
+    key <AD04> { [         r,     R,      0x100027C,  registered ] }; // long r
+    key <AD05> { [         t,     T,      0x1001E6B,  0x1001E6A ] }; // [tT]abovedot
+    key <AD10> { [         p,     P,      0x1001E57,  0x1001E56 ] }; // [pP]abovedot
 
-    key <AC02> { [         s,     S,      0x1001E61,  0x1001E60 ] }; // [sS] with dot above
-    key <AC03> { [         d,     D,      0x1001E0B,  0x1001E0A ] }; // [dD] with dot above
-    key <AC04> { [         f,     F,      0x1001E1F,  0x1001E1E ] }; // [fF] with dot above
+    key <AC02> { [         s,     S,      0x1001E61,  0x1001E60 ] }; // [sS]abovedot
+    key <AC03> { [         d,     D,      0x1001E0B,  0x1001E0A ] }; // [dD]abovedot
+    key <AC04> { [         f,     F,      0x1001E1F,  0x1001E1E ] }; // [fF]abovedot
     key <AC05> { [         g,     G,      gabovedot,  Gabovedot ] };
-    key <AC07> { [         j,     J,       idotless,  0x100201E ] }; // double low-9 quote
-    key <AC08> { [         k,     K,      0x10003A9,  0x100201A ] };
-                                     // Greek_OMEGA   single low-9 quote
-    key <AC09> { [         l,     L,      0x1002020,  0x1002021 ] }; // dagger, double dagger
-    key <AC10> { [ semicolon, colon, dead_diaeresis,    section ] };
 
     key <AB01> { [         z,     Z,      0x100017F,  0x1001E9B ] }; // long s, long s dot
-    key <AB02> { [         x,     X,      0x100201C,  0x100201D ] }; // double quotes
     key <AB03> { [         c,     C,      cabovedot,  Cabovedot ] };
-    key <AB04> { [         v,     V,      0x1002018,  0x1002019 ] }; // single quotes
-    key <AB05> { [         b,     B,      0x1001E03,  0x1001E02 ] }; // [bB] with dot above
-    key <AB07> { [         m,     M,      0x1001E41,  0x1001E40 ] }; // [mM] with dot above
+    key <AB05> { [         b,     B,      0x1001E03,  0x1001E02 ] }; // [bB]abovedot
+    key <AB07> { [         m,     M,      0x1001E41,  0x1001E40 ] }; // [mM]abovedot
 
-    key <LSGT> { [ backslash,    bar,     copyright, registered ] };
+    key <LSGT> { [ backslash,    bar,    dead_grave, dead_cedilla ] };
 };
 
 partial default alphanumeric_keys
-xkb_symbols "accents" {
+xkb_symbols "CloGaelachLaptop" {
+    // For laptops which don't have the RWIN key but are otherwise
+    // the same as 105-key layouts.
+    include "ie(CloGaelach)"
+    key <MENU>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
+};
 
-    // Modern keyboard for Irish and English with many accents available.
-    //  - acute-accented vowels as AltGr+vowel and AltGr+Shift+vowel
-    //  - euro currency sign as AltGr+4
-    //  - Comhartha Agus (Tironian Sign Et) as AltGr+7
-    //  - has deadkeys for numerous accents
-    //  - non-breaking space as AltGr+Shift+Space
-    // Provides an alternative to "basic" above if unusual accents are needed.
+partial default alphanumeric_keys
+xkb_symbols "UnicodeExpert" {
 
-    name[Group1] = "Irish (deadkey accents)";
+// This should eventually be a "Unicode Expert" layout like the Mac one.
+
+    name[Group1] = "Irish (Unicode Expert)";
 
     key.type[Group1] = "FOUR_LEVEL_ALPHABETIC";
 
@@ -279,5 +268,6 @@ xkb_symbols "accents" {
     key <RALT>  { type[Group1]="ONE_LEVEL", [ ISO_Level3_Shift ]  };
     modifier_map Mod5  { <RALT> };
 
+    key <RWIN>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
 };
 
