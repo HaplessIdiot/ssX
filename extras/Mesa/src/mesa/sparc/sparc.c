@@ -21,6 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 /*
  * Sparc assembly code by David S. Miller
@@ -88,9 +89,9 @@ extern GLvector4f  *_mesa_sparc_cliptest_points4_np(GLvector4f *clip_vec,
 
 #define NORM_ARGS	const GLmatrix *mat,				\
 			GLfloat scale,					\
-			const GLvector3f *in,				\
+			const GLvector4f *in,				\
 			const GLfloat *lengths,				\
-			GLvector3f *dest
+			GLvector4f *dest
 
 extern void _mesa_sparc_transform_normalize_normals(NORM_ARGS);
 extern void _mesa_sparc_transform_normalize_normals_no_rot(NORM_ARGS);

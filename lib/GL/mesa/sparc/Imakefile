@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile,v 1.2tsi Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -34,10 +34,12 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #include "Imakefile.inc"
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(MESA_ASM_DEFINES)
-     INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(MESASRCDIR)/src \
+     INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) \
 		-I$(MESASRCDIR)/src/mesa/sparc \
+		-I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/glapi \
-		-I../../../include
+		-I$(MESASRCDIR)/src/mesa/main \
+		-I$(MESASRCDIR)/include
 
          SRCS = $(MESA_ASM_SRCS)
          OBJS = $(MESA_ASM_OBJS)
