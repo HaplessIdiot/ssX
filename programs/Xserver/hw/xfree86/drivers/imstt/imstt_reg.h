@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_reg.h,v 1.1 2000/06/14 00:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_reg.h,v 1.2 2000/06/19 15:01:02 tsi Exp $ */
 
 #ifndef _IMSTT_REG_H
 #define _IMSTT_REG_H
@@ -28,8 +28,8 @@ static inline unsigned long regr(unsigned long base_addr, unsigned long regindex
 }
 
 
-#define INREG(addr)		regr(((unsigned long)IMSTTMMIO), (addr))
-#define OUTREG(addr, val)	regw(((unsigned long)IMSTTMMIO), (addr), (val))
+#define INREG(addr)		regr(((unsigned long)(iptr->MMIOBase)), (addr))
+#define OUTREG(addr, val)	regw(((unsigned long)(iptr->MMIOBase)), (addr), (val))
 
 #else
 

@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.h,v 3.4 1997/06/22 10:17:04 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.h,v 3.5 1997/10/26 13:25:30 dawes Exp $ */
 
 #ifndef XKBCOMP_H
 #define	XKBCOMP_H 1
@@ -233,6 +233,7 @@ typedef struct _IndicatorMapDef {
     unsigned	 merge;
     Atom	 name;
     VarDef *	 body;
+    void *	 pad;	/* so that sizeof(IndicatorMapDef) == sizeof(DoodadDef) */
 } IndicatorMapDef;
 
 typedef struct _IndicatorNameDef {

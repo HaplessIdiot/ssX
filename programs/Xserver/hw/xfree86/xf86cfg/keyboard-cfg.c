@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.4 2000/06/14 21:57:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.5 2000/06/20 05:08:50 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -326,7 +326,7 @@ InitializeKeyboard(void)
 	exit(1);
     }
 
-    xkb_info = XtNew(XkbInfo);
+    xkb_info = XtCalloc(1, sizeof(XkbInfo));
     xkb_info->conf = NULL;
     xkb_infos = (XkbInfo**)XtCalloc(1, sizeof(XkbInfo*));
     num_xkb_infos = 1;
@@ -568,6 +568,9 @@ WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
     if (conf->mk_time_to_max > 0)
 	fprintf(fp, "MouseKeysTimeToMax	 =	%d\n",
 		conf->mk_time_to_max);
+    if (conf->mk_max_speed > 0)
+	fprintf(fp, "MouseKeysMaxSpeed	 =	%d\n",
+		conf->mk_max_speed);
     fprintf(fp, "MouseKeysCurve		 =	%d\n", conf->mk_curve);
 
     fprintf(fp, "AccessXTimeout		 =	%d\n", conf->ax_timeout);

@@ -46,7 +46,7 @@ xkb_symbols "default" {
 //    key <AC04> {	[	  f,	F		]	};
 //    key <AC05> {	[	  g,	G		]	};
     key <AC10> {	[ ae,			AE	],
-			[ circumflex			]	};
+			[ asciircum			]	};
     key <AC11> {	[ dead_acute,	Adiaeresis	],
 			[ dead_circumflex		]	};
 

@@ -1,4 +1,20 @@
 XFree86 4.0.1a (2 August 2000)
+ 466. Imstt driver updates, including moving from cfb to fb, fixing fbdev
+      bugs and an accel blit bug, and a general cleanup (#4068, Ani Joshi).
+ 465. Fix the installation path of the xditview bitmap (#4067,
+      Carlos A. M. dos Santos).
+ 464. Some xf86cfg fixes (#4065, 4068, Paulo Cesar Pereira de Andrade).
+ 463. Fix some syntax errors in xkb config files and a size mismatch between
+      two xkbcomp structures that were being masked one to another (#4063,
+      Paulo Cesar Pereira de Andrade).
+ 462. Fix a problem where the xkbcomp would read junk data from the server
+      if SmartScheduleTimer() is called while writing to it (#4063,
+      Paulo Cesar Pereira de Andrade).
+ 461. Increase MAXVISUALSPERDEPTH further for Xnest so that it will work
+      with GLX (#4062, Harald Koenig).
+ 460. Xv overlay support for the Intel i810 chipset (#4061, Jonathan Bian,
+      Matthew J Sottek, Intel).
+ 459. Penmount touch panel input driver (#4060, Mayk Langer).
  458. Fix the r128 SaveScreen function so that it doesn't touch the hardware
       when switched away (#4056, Benjamin Herrenschmidt).
  457. Add support to xman for FreeBSD's /etc/manpath.config (#4055,
@@ -10882,4 +10898,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1249 2000/07/31 23:24:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1250 2000/08/01 18:53:03 dawes Exp $

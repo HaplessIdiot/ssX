@@ -17,4 +17,4 @@ xkb_symbols "compose" {
     key <RALT> {	[ 	Alt_R		]	};
     key <RWIN> {	[ 	Meta_R		]	};
     key <MENU> {	[ 	Multi_key	]	};
-}
+};

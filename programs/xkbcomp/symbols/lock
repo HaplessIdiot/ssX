@@ -8,7 +8,7 @@ xkb_symbols "shift" {
 partial hidden modifier_keys
 xkb_symbols "caps" {
     key <CAPS> {	[	Caps_Lock		]	};
-    modifier_map Lock { Caps_Lock }
+    modifier_map Lock { Caps_Lock };
 };
 partial hidden modifier_keys
 xkb_symbols "group" {

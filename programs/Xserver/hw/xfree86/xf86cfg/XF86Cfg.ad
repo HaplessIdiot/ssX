@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.2 2000/05/18 16:29:59 dawes Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.3 2000/06/13 23:15:51 dawes Exp $
 !!
 
 *Form.background:			gray85
@@ -815,6 +815,8 @@ your monitor is not rotated.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! accessx
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*Accessx*Label.font:			-*-fixed-medium-r-*-*-13-*-*-*-*-*-iso8859-1
+*Accessx.Form.Toggle.font:		-*-fixed-medium-r-*-*-13-*-*-*-*-*-iso8859-1
 *Accessx*Label.background:		white
 *Accessx*Label.justify:			left
 *Accessx*Label.internalHeight:		0
@@ -837,7 +839,7 @@ fill-poly	0,2,0,-3,8,6
 <Enter>: set-values(1, displayList, "foreground white;points 0,0,-1,0;fill-poly 0,1,10,6,0,-2;foreground rgb:7/7/f;fill-poly 0,2,0,-3,8,6")\n\
 <Leave>: set-values(1, displayList, "foreground white;points 0,0,-1,0;foreground rgb:f/7/7;fill-poly 0,2,0,-3,8,6")
 *Accessx.Form.borderWidth:		1
-*Accessx.Form.borderColor:		rgb:f/7/7
+*Accessx.Form.borderColor:		rgb:f/a/a
 *Accessx.Form.vertDistance:		0
 *Accessx.Form.defaultDistance:		2
 *Accessx.borderWidth:			0
@@ -894,7 +896,7 @@ lines		-1,0,0,0,0,-1
 *Accessx*Scrollbar.height:		8
 *Accessx*Scrollbar.minimumThumb:	5
 *Accessx*Scrollbar.borderWidth:		1
-*Accessx*Scrollbar.borderColor:		gray70
+*Accessx*Scrollbar.borderColor:		white
 *Accessx*Scrollbar.foreground:		rgb:f/7/7
 *Accessx*Scrollbar.background:		gray95
 *Accessx*Scrollbar.displayList:\
@@ -938,6 +940,9 @@ lines		-1,0,0,0,0,-1
 *Accessx.mouseForm.timeScroller.horizDistance:	37
 *Accessx.mouseForm.delayLabel.fromVert:	timeScroller
 *Accessx.mouseForm.delayLabel.label:	Motion delay (sec)
+*Accessx.mouseForm.delayLabel.tip:\
+Time between the initial key press\n\
+and the first repeated motion event
 *Accessx.mouseForm.delayLabel.vertDistance:	7
 *Accessx.mouseForm.delayNumber.label:	???
 *Accessx.mouseForm.delayNumber.fromVert:	timeScroller
@@ -981,6 +986,7 @@ lines		-1,0,0,0,0,-1
 *Accessx.slowForm.Toggle.internalWidth:	4
 *Accessx.slowForm.Toggle.internalHeight:	1
 *Accessx.slowForm.beep.label:		Beep when key is
+*Accessx.slowForm.beep.vertDistance:	3
 *Accessx.slowForm.pressed.fromHoriz:	beep
 *Accessx.slowForm.pressed.label:	pressed
 *Accessx.slowForm.accepted.fromHoriz:	pressed
