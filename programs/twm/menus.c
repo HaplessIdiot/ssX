@@ -863,7 +863,7 @@ MenuRoot *mr;
 
 	valuemask = (CWBackPixel | CWBorderPixel | CWEventMask);
 	attributes.background_pixel = Scr->MenuC.back;
-	attributes.border_pixel = Scr->MenuC.fore;
+	attributes.border_pixel = Scr->MenuBorderColor;
 	attributes.event_mask = (ExposureMask | EnterWindowMask);
 	if (Scr->SaveUnder) {
 	    valuemask |= CWSaveUnder;
@@ -874,7 +874,8 @@ MenuRoot *mr;
 	    attributes.backing_store = Always;
 	}
 	mr->w = XCreateWindow (dpy, Scr->Root, 0, 0, (unsigned int) mr->width,
-			       (unsigned int) mr->height, (unsigned int) 1,
+			       (unsigned int) mr->height,
+			       (unsigned int) Scr->MenuBorderWidth,
 			       CopyFromParent, (unsigned int) CopyFromParent,
 			       (Visual *) CopyFromParent,
 			       valuemask, &attributes);

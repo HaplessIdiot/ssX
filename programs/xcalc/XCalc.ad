@@ -76,6 +76,7 @@ XCalc*ti.bevel.screen.LCD.translations:	#replace\n\
 	<Key>KP_Add:add()\n\
 	<Key>KP_Subtract:subtract()\n\
 	<Key>KP_Decimal:decimal()\n\
+	<Key>KP_Separator:decimal()\n\
 	<Key>KP_Divide:divide()\n\
 	<Key>KP_Tab:equal()\n\
 	<Key>Clear:clear()\n\

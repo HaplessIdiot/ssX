@@ -132,7 +132,7 @@ xkb_symbols "extended" {
     key <LALT> {	[  Alt_L	]	};
     key <RALT> {	[  Alt_R	]	};
     key <LWIN> {	[  Meta_L	]	};
-    key <WWIN> {	[  Meta_R	]	};
+    key <RWIN> {	[  Meta_R	]	};
     // End "Modifier" section
 
     // begin modifier mappings

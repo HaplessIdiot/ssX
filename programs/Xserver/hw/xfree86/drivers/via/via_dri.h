@@ -21,33 +21,63 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+#ifndef _VIA_DRI_
+#define _VIA_DRI_
 
-#ifndef _VIA_SWOV_H
-#define _VIA_SWOV_H
+#include "xf86drm.h"
 
-/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
+#define VIA_MAX_DRAWABLES 256
 
-#ifdef XV_DEBUG
-# define DBG_DD(x) (x)
-#else
-# define DBG_DD(x)
+#define VIA_VERSION_MAJOR		4
+#define VIA_VERSION_MINOR		1
+
+typedef struct {
+    int CtxOwner;
+} VIASAREAPriv;
+
+typedef struct {
+    drmHandle handle;
+    drmSize size;
+    drmAddress map;
+} viaRegion, *viaRegionPtr;
+
+typedef struct {
+    viaRegion regs, agp;
+    int deviceID;
+    int width;
+    int height;
+    int mem;
+    int bytesPerPixel;
+    int priv1;
+    int priv2;
+    int fbOffset;
+    int fbSize;
+    Bool drixinerama;
+    
+    int backOffset;
+    int depthOffset;
+    int textureOffset;
+    int textureSize;
+    int irqEnabled;
+    unsigned int scrnX, scrnY;
+    int sarea_priv_offset;
+} VIADRIRec, *VIADRIPtr;
+
+typedef struct {
+    int dummy;
+} VIAConfigPrivRec, *VIAConfigPrivPtr;
+
+typedef struct {
+    int dummy;
+} VIADRIContextRec, *VIADRIContextPtr;
+
+#ifdef XFree86Server
+
+#include "screenint.h"
+
+Bool VIADRIScreenInit(ScreenPtr pScreen);
+void VIADRICloseScreen(ScreenPtr pScreen);
+Bool VIADRIFinishScreenInit(ScreenPtr pScreen);
+
 #endif
-
-#include "ddmpeg.h"
-#include "via_xvpriv.h"
-
-/* Definition for VideoStatus */
-#define VIDEO_NULL              0x00000000
- 
-unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurfaceDesc);
-unsigned long VIAVidLockSurface(ScrnInfoPtr pScrn, LPDDLOCK lpLock);
-unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfaceDesc);
-
-unsigned long Upd_MPEG(ScrnInfoPtr pScrn, unsigned long dwVideoFlag,unsigned long dwStartAddr,RECTL rSrc,RECTL rDest,unsigned long dwSrcPitch,
-                 unsigned long dwOriSrcWidth,unsigned long dwOriSrcHeight,LPDDPIXELFORMAT lpDPFsrc,
-                 unsigned long dwDeinterlaceMode,unsigned long dwColorKey,unsigned long dwChromaKey,
-                 unsigned long dwKeyLow,unsigned long dwKeyHigh,unsigned long dwChromaLow,unsigned long dwChromaHigh);
-
-unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate);
-unsigned long VIAVidAdjustFrame(ScrnInfoPtr pScr, LPADJUSTFRAME lpAdjustFrame);
-#endif /* _VIA_SWOV_H */
+#endif

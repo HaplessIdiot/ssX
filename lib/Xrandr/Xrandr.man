@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/Xrandr/Xrandr.man,v 1.4 2003/05/29 15:04:22 dawes Exp $
+.\" $XFree86: xc/lib/Xrandr/Xrandr.man,v 1.6 2003/06/12 14:12:28 eich Exp $
 .\"
 .\" Copyright 2002 Hewlett-Packard Company.\"
 .\" Permission to use, copy, modify, distribute, and sell this software and its
@@ -53,6 +53,14 @@ Status XRRSetScreenConfig \^(\^Display *\fIdpy\fP,
 	Rotation \fIrotation\fP,
 	Time \fItimestamp\fP\^);
 .sp
+Status XRRSetScreenConfigAndRate \^(\^Display *\fIdpy\fP, 
+				  XRRScreenConfiguration *\fIconfig\fP,
+				  Drawable \fIdraw\fP,
+				  int \fIsize_index\fP,
+				  Rotation \fIrotation\fP,
+				  short \fIrate\fP,
+				  Time \fItimestamp\fP\^);
+.sp
 Rotation XRRConfigRotations\^(\^
 	XRRScreenConfiguration *\fIconfig\fP, 
 	Rotation *\fIcurrent_rotation\fP\^);
@@ -65,10 +73,18 @@ XRRScreenSize *XRRConfigSizes\^(\^
 	XRRScreenConfiguration *\fIconfig\fP, 
 	int *\fInsizes\fP\^);
 .sp
+short *XRRConfigRates \^(\^
+	XRRScreenConfiguration *\fIconfig\fP, 
+	int \fIsize_index\fP, 
+	int *\fInrates\fP\^);
+.sp
 SizeID XRRConfigCurrentConfiguration \^(\^
 	XRRScreenConfiguration *\fIconfig\fP, 
 	Rotation *\fIrotation\fP\^);
-.sp    
+.sp
+short XRRConfigCurrentRate \^(\^
+	XRRScreenConfiguration *\fIconfig\fP\^);    
+.sp
 int XRRRootToScreen\^(\^
 	Display *\fIdpy\fP, 
 	Window \fIroot\fP\^);
@@ -99,6 +115,9 @@ Rotation XRRRotations\^(\^
 XRRScreenSize *XRRSizes\^(\^Display *\fIdpy\fP, 
 	int \fIscreen\fP, int *\fInsizes\fP\^);
 .sp
+short *XRRRates \^(\^Display *\fIdpy\fP, int \fIscreen\fP, 
+	int \fIsize_index\fP, int *\fInrates\fP\^);
+.sp
 Time XRRTimes \^(\^Display *\fIdpy\fP, int \fIscreen\fP, Time *\fIconfig_timestamp\fP\^);
 .fi
 .SH ARGUMENTS
@@ -120,6 +139,8 @@ Specifies the timestamp when the screen was last (re)configured.
 Specifies the screen configuration being used.
 .IP \fIsizes\fP 1i
 Specifies the array of sizes supported.
+.IP \fIrate\fP 1i
+Specifies the refresh rate in Hz.
 
 .SH DATATYPES
 
@@ -257,6 +278,10 @@ the specified screen.  The first size specified is the default size
 of the server. If RandR is not supported, it returns 0 for
 the number of sizes.
 .PP
+.B XRRRates
+returns a pointer to a the rates supported by the specified size.
+If RandR is not supported, it returns 0 for the number of rates.
+.PP
 .B XRRTimes
 returns the time last reported by the server along with the
 timestamp the last configuration changed.
@@ -286,11 +311,20 @@ to indicate success or failure; a client must refresh its configuration
 information if it fails and try the call again (by calling 
 \fBXRRGetScreenInfo\fP).
 .PP
+.B XRRSetScreenConfigAndRate
+like
+.B XRRSetScreenConfig
+but also set the refresh rate. If specified rate is not supported a
+.B BadValue
+error is returned.
+.PP
 .B XRRConfigRotations,
 .B XRRConfigSizes,
 .B XRRConfigCurrentConfiguration,
+.B XRRConfigTimes,
+.B XRRConfigRates,
 and
-.B XRRConfigTimes
+.B XRRConfigCurrentRate
 are used to get specific configuration information out of a screen
 configuration.
 .PP

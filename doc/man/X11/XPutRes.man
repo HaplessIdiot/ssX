@@ -187,6 +187,7 @@ followed by:
 .Ds
 XrmQPutResource(database, bindings, quarks, XrmStringToQuark(type), value)
 .De
+.LP
 If the specifier and type are not in the Host Portable Character Encoding,
 the result is implementation-dependent.
 The value is stored in the database without modification.

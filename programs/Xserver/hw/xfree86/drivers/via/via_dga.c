@@ -21,13 +21,15 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+
+
 #include "xaalocal.h"
 #include "via_driver.h"
 #include "dgaproc.h"
 
+
 static Bool VIADGAOpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
-				  int *, int *, int *);
+                                  int *, int *, int *);
 static Bool VIADGASetMode(ScrnInfoPtr, DGAModePtr);
 static int  VIADGAGetViewport(ScrnInfoPtr);
 static void VIADGASetViewport(ScrnInfoPtr, int, int, int);
@@ -38,14 +40,14 @@ static void VIADGABlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static
 DGAFunctionRec VIADGAFuncs = {
     VIADGAOpenFramebuffer,
-    NULL,		    /* CloseFrameBuffer */
+    NULL,                   /* CloseFrameBuffer */
     VIADGASetMode,
     VIADGASetViewport,
     VIADGAGetViewport,
     VIAAccelSync,
     VIADGAFillRect,
     VIADGABlitRect,
-    NULL		    /* BlitTransRect */
+    NULL                    /* BlitTransRect */
 };
 
 #define DGATRACE    4
@@ -72,7 +74,7 @@ VIASetupDGAMode(
     int otherPitch, Bpp = bitsPerPixel >> 3;
     Bool oneMore;
 
-    xf86ErrorFVerb(DGATRACE, "	    VIASetupDGAMode\n");
+    xf86ErrorFVerb(DGATRACE, "      VIASetupDGAMode\n");
 
     pMode = firstMode = pScrn->modes;
 
@@ -84,102 +86,102 @@ VIASetupDGAMode(
 
     while (pMode) {
 
-	otherPitch = secondPitch ? secondPitch : pMode->HDisplay;
+        otherPitch = secondPitch ? secondPitch : pMode->HDisplay;
 
-	if (pMode->HDisplay != otherPitch) {
-	    newmodes = xrealloc(modes, (*num + 2) * sizeof(DGAModeRec));
-	    oneMore = TRUE;
-	}
-	else {
-	    newmodes = xrealloc(modes, (*num + 1) * sizeof(DGAModeRec));
-	    oneMore = FALSE;
-	}
+        if (pMode->HDisplay != otherPitch) {
+            newmodes = xrealloc(modes, (*num + 2) * sizeof(DGAModeRec));
+            oneMore = TRUE;
+        }
+        else {
+            newmodes = xrealloc(modes, (*num + 1) * sizeof(DGAModeRec));
+            oneMore = FALSE;
+        }
 
-	if (!newmodes) {
-	    xfree(modes);
-	    return NULL;
-	}
+        if (!newmodes) {
+            xfree(modes);
+            return NULL;
+        }
 
-	modes = newmodes;
+        modes = newmodes;
 
 SECOND_PASS:
 
-	mode = modes + *num;
-	(*num)++;
+        mode = modes + *num;
+        (*num)++;
 
-	mode->mode = pMode;
-	mode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
+        mode->mode = pMode;
+        mode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
 
-	if(!pVia->NoAccel)
-	    mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
+        if(!pVia->NoAccel)
+            mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
 
-	if (pMode->Flags & V_DBLSCAN)
-	    mode->flags |= DGA_DOUBLESCAN;
+        if (pMode->Flags & V_DBLSCAN)
+            mode->flags |= DGA_DOUBLESCAN;
 
-	if (pMode->Flags & V_INTERLACE)
-	    mode->flags |= DGA_INTERLACED;
+        if (pMode->Flags & V_INTERLACE)
+            mode->flags |= DGA_INTERLACED;
 
-	mode->byteOrder = pScrn->imageByteOrder;
-	mode->depth = depth;
-	mode->bitsPerPixel = bitsPerPixel;
-	mode->red_mask = red;
-	mode->green_mask = green;
-	mode->blue_mask = blue;
-	mode->visualClass = visualClass;
-	mode->viewportWidth = pMode->HDisplay;
-	mode->viewportHeight = pMode->VDisplay;
-	mode->xViewportStep = 2;
-	mode->yViewportStep = 1;
-	mode->viewportFlags = DGA_FLIP_RETRACE;
-	mode->offset = 0;
-	mode->address = pVia->FBBase;
+        mode->byteOrder = pScrn->imageByteOrder;
+        mode->depth = depth;
+        mode->bitsPerPixel = bitsPerPixel;
+        mode->red_mask = red;
+        mode->green_mask = green;
+        mode->blue_mask = blue;
+        mode->visualClass = visualClass;
+        mode->viewportWidth = pMode->HDisplay;
+        mode->viewportHeight = pMode->VDisplay;
+        mode->xViewportStep = 2;
+        mode->yViewportStep = 1;
+        mode->viewportFlags = DGA_FLIP_RETRACE;
+        mode->offset = 0;
+        mode->address = pVia->FBBase;
 
-	xf86ErrorFVerb(DGATRACE,
-		       "VIADGAInit vpWid=%d, vpHgt=%d, Bpp=%d, mdbitsPP=%d\n",
-		       mode->viewportWidth,
-		       mode->viewportHeight,
-		       Bpp,
-		       mode->bitsPerPixel);
+        xf86ErrorFVerb(DGATRACE,
+                       "VIADGAInit vpWid=%d, vpHgt=%d, Bpp=%d, mdbitsPP=%d\n",
+                       mode->viewportWidth,
+                       mode->viewportHeight,
+                       Bpp,
+                       mode->bitsPerPixel);
 
-	if (oneMore) { /* first one is narrow width */
-	    mode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
-	    mode->imageWidth = pMode->HDisplay;
-	    mode->imageHeight =	 pMode->VDisplay;
-	    mode->pixmapWidth = mode->imageWidth;
-	    mode->pixmapHeight = mode->imageHeight;
-	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
+        if (oneMore) { /* first one is narrow width */
+            mode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
+            mode->imageWidth = pMode->HDisplay;
+            mode->imageHeight =  pMode->VDisplay;
+            mode->pixmapWidth = mode->imageWidth;
+            mode->pixmapHeight = mode->imageHeight;
+            mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
 
-	    /* this might need to get clamped to some maximum */
-	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
-	    oneMore = FALSE;
+            /* this might need to get clamped to some maximum */
+            mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+            oneMore = FALSE;
 
-	    xf86ErrorFVerb(DGATRACE,
-			   "VIADGAInit 1 imgHgt=%d, stride=%d\n",
-			   mode->imageHeight,
-			   mode->bytesPerScanline );
+            xf86ErrorFVerb(DGATRACE,
+                           "VIADGAInit 1 imgHgt=%d, stride=%d\n",
+                           mode->imageHeight,
+                           mode->bytesPerScanline );
 
-	    goto SECOND_PASS;
-	}
-	else {
-	    mode->bytesPerScanline = ((pScrn->displayWidth * Bpp) + 3) & ~3L;
-	    mode->imageWidth = pScrn->displayWidth;
-	    mode->imageHeight = pVia->videoRambytes / mode->bytesPerScanline;
-	    mode->pixmapWidth = mode->imageWidth;
-	    mode->pixmapHeight = mode->imageHeight;
-	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+            goto SECOND_PASS;
+        }
+        else {
+            mode->bytesPerScanline = ((pScrn->displayWidth * Bpp) + 3) & ~3L;
+            mode->imageWidth = pScrn->displayWidth;
+            mode->imageHeight = pVia->videoRambytes / mode->bytesPerScanline;
+            mode->pixmapWidth = mode->imageWidth;
+            mode->pixmapHeight = mode->imageHeight;
+            mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
+            /* this might need to get clamped to some maximum */
+            mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
 
-	    xf86ErrorFVerb(DGATRACE,
-			   "VIADGAInit 2 imgHgt=%d, stride=%d\n",
-			   mode->imageHeight,
-			   mode->bytesPerScanline);
-	}
+            xf86ErrorFVerb(DGATRACE,
+                           "VIADGAInit 2 imgHgt=%d, stride=%d\n",
+                           mode->imageHeight,
+                           mode->bytesPerScanline);
+        }
 
-	pMode = pMode->next;
+        pMode = pMode->next;
 
-	if (pMode == firstMode)
-	    break;
+        if (pMode == firstMode)
+            break;
     }
 
     return modes;
@@ -194,35 +196,35 @@ VIADGAInit(ScreenPtr pScreen)
     DGAModePtr modes = NULL;
     int num = 0;
 
-    xf86ErrorFVerb(DGATRACE, "	    VIADGAInit\n");
+    xf86ErrorFVerb(DGATRACE, "      VIADGAInit\n");
 
     /* 8 */
     modes = VIASetupDGAMode(pScrn, modes, &num, 8, 8,
-			    (pScrn->bitsPerPixel == 8),
-			    (pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
-			    0, 0, 0, PseudoColor);
+                            (pScrn->bitsPerPixel == 8),
+                            (pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
+                            0, 0, 0, PseudoColor);
 
     /* 16 */
     modes = VIASetupDGAMode(pScrn, modes, &num, 16, 16,
-			    (pScrn->bitsPerPixel == 16),
-			    (pScrn->depth != 16) ? 0 : pScrn->displayWidth,
-			    0xf800, 0x07e0, 0x001f, TrueColor);
+                            (pScrn->bitsPerPixel == 16),
+                            (pScrn->depth != 16) ? 0 : pScrn->displayWidth,
+                            0xf800, 0x07e0, 0x001f, TrueColor);
 
     modes = VIASetupDGAMode(pScrn, modes, &num, 16, 16,
-			    (pScrn->bitsPerPixel == 16),
-			    (pScrn->depth != 16) ? 0 : pScrn->displayWidth,
-			    0xf800, 0x07e0, 0x001f, DirectColor);
+                            (pScrn->bitsPerPixel == 16),
+                            (pScrn->depth != 16) ? 0 : pScrn->displayWidth,
+                            0xf800, 0x07e0, 0x001f, DirectColor);
 
     /* 24-in-32 */
     modes = VIASetupDGAMode(pScrn, modes, &num, 32, 24,
-			    (pScrn->bitsPerPixel == 32),
-			    (pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
-			    0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+                            (pScrn->bitsPerPixel == 32),
+                            (pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
+                            0xff0000, 0x00ff00, 0x0000ff, TrueColor);
 
     modes = VIASetupDGAMode(pScrn, modes, &num, 32, 24,
-			    (pScrn->bitsPerPixel == 32),
-			    (pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
-			    0xff0000, 0x00ff00, 0x0000ff, DirectColor);
+                            (pScrn->bitsPerPixel == 32),
+                            (pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
+                            0xff0000, 0x00ff00, 0x0000ff, DirectColor);
 
     pVia->numDGAModes = num;
     pVia->DGAModes = modes;
@@ -241,36 +243,43 @@ VIADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (!pMode) { /* restore the original mode */
-	/* put the ScreenParameters back */
+        /* put the ScreenParameters back */
 
-	pScrn->displayWidth = OldDisplayWidth[index];
-	pScrn->bitsPerPixel = OldBitsPerPixel[index];
-	pScrn->depth = OldDepth[index];
+        pScrn->displayWidth = OldDisplayWidth[index];
+        pScrn->bitsPerPixel = OldBitsPerPixel[index];
+        pScrn->depth = OldDepth[index];
 
-	VIASwitchMode(index, pScrn->currentMode, 0);
-	if (pVia->hwcursor)
-	    VIAShowCursor(pScrn);
+        VIASwitchMode(index, pScrn->currentMode, 0);
+        if (pVia->hwcursor)
+            VIAShowCursor(pScrn);
 
-	pVia->DGAactive = FALSE;
+        pVia->DGAactive = FALSE;
     }
     else {
-	if (pVia->hwcursor)
-	    VIAHideCursor(pScrn);
+#if 0
+        ErrorF("pScrn->bitsPerPixel %d, pScrn->depth %d\n",
+               pScrn->bitsPerPixel, pScrn->depth);
+        ErrorF(" want  bitsPerPixel %d,  want  depth %d\n",
+               pMode->bitsPerPixel, pMode->depth);
+#endif
 
-	if (!pVia->DGAactive) {	 /* save the old parameters */
-	    OldDisplayWidth[index] = pScrn->displayWidth;
-	    OldBitsPerPixel[index] = pScrn->bitsPerPixel;
-	    OldDepth[index] = pScrn->depth;
+        if (pVia->hwcursor)
+            VIAHideCursor(pScrn);
 
-	    pVia->DGAactive = TRUE;
-	}
+        if (!pVia->DGAactive) {  /* save the old parameters */
+            OldDisplayWidth[index] = pScrn->displayWidth;
+            OldBitsPerPixel[index] = pScrn->bitsPerPixel;
+            OldDepth[index] = pScrn->depth;
 
-	pScrn->bitsPerPixel = pMode->bitsPerPixel;
-	pScrn->depth = pMode->depth;
-	pScrn->displayWidth = pMode->bytesPerScanline /
-			      (pMode->bitsPerPixel >> 3);
+            pVia->DGAactive = TRUE;
+        }
 
-	VIASwitchMode(index, pMode->mode, 0);
+        pScrn->bitsPerPixel = pMode->bitsPerPixel;
+        pScrn->depth = pMode->depth;
+        pScrn->displayWidth = pMode->bytesPerScanline /
+                              (pMode->bitsPerPixel >> 3);
+
+        VIASwitchMode(index, pMode->mode, 0);
     }
 
     return TRUE;
@@ -301,28 +310,28 @@ VIADGAFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h, unsigned long colo
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (pVia->AccelInfoRec) {
-	(*pVia->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
-	(*pVia->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
-	SET_SYNC_FLAG(pVia->AccelInfoRec);
+        (*pVia->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
+        (*pVia->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
+        SET_SYNC_FLAG(pVia->AccelInfoRec);
     }
 }
 
 
 static void
 VIADGABlitRect(ScrnInfoPtr pScrn, int srcx, int srcy, int w, int h,
-	       int dstx, int dsty)
+               int dstx, int dsty)
 {
     VIAPtr pVia = VIAPTR(pScrn);
 
     if (pVia->AccelInfoRec) {
-	int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
-	int ydir = (srcy < dsty) ? -1 : 1;
+        int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
+        int ydir = (srcy < dsty) ? -1 : 1;
 
-	(*pVia->AccelInfoRec->SetupForScreenToScreenCopy)(
-		pScrn, xdir, ydir, GXcopy, ~0, -1);
-	(*pVia->AccelInfoRec->SubsequentScreenToScreenCopy)(
-		pScrn, srcx, srcy, dstx, dsty, w, h);
-	SET_SYNC_FLAG(pVia->AccelInfoRec);
+        (*pVia->AccelInfoRec->SetupForScreenToScreenCopy)(
+                pScrn, xdir, ydir, GXcopy, ~0, -1);
+        (*pVia->AccelInfoRec->SubsequentScreenToScreenCopy)(
+                pScrn, srcx, srcy, dstx, dsty, w, h);
+        SET_SYNC_FLAG(pVia->AccelInfoRec);
     }
 }
 

@@ -680,6 +680,7 @@ InitVariables()
     Scr->MenuTitleC.fore = black;
     Scr->MenuTitleC.back = white;
     Scr->MenuShadowColor = black;
+    Scr->MenuBorderColor = black;
     Scr->IconC.fore = black;
     Scr->IconC.back = white;
     Scr->IconBorderColor = black;
@@ -699,6 +700,7 @@ InitVariables()
     Scr->SizeStringOffset = 0;
     Scr->BorderWidth = BW;
     Scr->IconBorderWidth = BW;
+    Scr->MenuBorderWidth = BW;
     Scr->UnknownWidth = 0;
     Scr->UnknownHeight = 0;
     Scr->NumAutoRaises = 0;

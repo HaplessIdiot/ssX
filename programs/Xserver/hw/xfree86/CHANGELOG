@@ -1,4 +1,52 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 347. Fixed ValidMode() in C&T driver to work with option 'FixPanelSize' 
+      (Egbert Eich).
+ 346. Fixed Meta_R key on us layout Macintosh keyboard (Bugzilla #539, 
+      Frank Murphy).
+ 345. Add new charset sequence for CText at the end of list. This way the
+      sequence of a charsets that were added earlier will be picked if two
+      sequences for the same charset are registered (BugzillaR #228, 
+      Egbert Eich).
+ 344. Use return value sysconf (_SC_OPEN_MAX) instead of the fixed number 256
+      for allowed number of open files on POSIX.1 conformant systems
+      (Egbert Eich).
+ 343. Added missing exported functions in libfreetype to compile mkfontscale,
+      made mkfontsdir script install on platforms that use extensions (Bugzilla
+      536, Frank Giessler).
+ 342, Fixed a sig11 in Xaw that may appear on the rare condition that no font
+      can be found (BugzillaR #482, Egbert Eich).
+ 341. Added KP_Separator to symbols that can generate decimal() in xcalc
+      (Egbert Eich).
+ 340. Disabled Color8x8PatternFill() in savage driver (Egbert Eich).
+ 339. Fixed a sig11 in twm when used with a session manager (Egbert Eich).
+ 338. Fixed rounding of refresh rate in RandR, updated Xrandr man page 
+       (BugzillaR #527, Egbert Eich).
+ 337. Added MenuBorderWidth and MenuBorderColor options to twm (Bugzilla #529, 
+      Alexander Pohoyda)
+ 336. Update for VIA driver:   
+      - DGA no longer hangs (eg freedroidRPG now runs reliably)
+      - Starting two copies of Xine no longer aborts the X server
+      - Added support for KM400/K8M400
+      - Improved video overlay support.
+      - Fixed video overlay clipping when the image cliprects change but 
+	not the size.
+      - TV tuner support via XV interface for two overlay ports.
+      - DRI support (the client side library is not yet fully ported to 4.3).
+      - Disable Xv in modes with insufficient bandwidth (1600c1200x16).
+      - Updated documentation
+	It differs from the base VIA codedrop.
+      - Several of the fixes were done by me on top of it (the dual Xine fix,
+	and bandwidth)
+      - Various system types have been turned to CARD32 to make the code 
+	portable
+      - The hybrid Video4Linux/XV glue was racy and has been removed 
+	(the XV layer is more than sufficient anyway)
+      - DRI library client code is not included (porting not yet finished)
+      - Additional debugging
+        (Bugzilla #525, VIA, Alan Cox) .
+      - Cleaning up namespace pollution, removing dependency on via_drm.h
+	removing some global symbols from driver (Egbert Eich).
+        Please note: there are more global symbols yet to be removed.
  335. Remove the 'xc/xkbcomp/geometry/HP' directory from the CVS repository.
  334. Substantial rewrite of the "nv" driver (Mark Vojkovich).
  333. Resync with Cygwin/XFree86 changes up to Test92 (#5721, Harold Hunt and
@@ -17419,7 +17467,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2792 2003/07/31 20:28:51 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2793 2003/08/04 04:22:09 dawes Exp $
 
 
 

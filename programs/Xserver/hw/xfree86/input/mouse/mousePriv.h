@@ -6,6 +6,11 @@
 #ifndef _X_MOUSEPRIV_H
 #define _X_MOUSEPRIV_H
 
+#if 0
+# define MOUSEINITDEBUG
+# define MOUSEDATADEBUG
+#endif
+
 #include "mouse.h"
 #include "xf86Xinput.h"                                                                                              
 /* Private interface for the mouse driver. */

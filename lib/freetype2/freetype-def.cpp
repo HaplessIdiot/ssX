@@ -201,6 +201,7 @@ FT_Get_Next_Char
 FT_Get_PS_Font_Info
 FT_Has_PS_Glyph_Names
 FT_Get_Name_Index
+FT_Get_BDF_Property
 #endif
 
-/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.2 2002/05/31 18:45:50 dawes Exp $ */
+/* $XFree86: xc/lib/freetype2/freetype-def.cpp,v 1.4 2003/06/18 16:17:34 eich Exp $ */

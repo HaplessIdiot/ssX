@@ -21,47 +21,75 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_xvpriv.h,v 1.1tsi Exp $ */
+
 #ifndef __VIA_XVPRIV_H
 #define __VIA_XVPRIV_H
 
-#define	  XV_PORT_NUM	    1
-#define	  XV_SWOV_PORTID    0
+#include "videodev.h"
 
-#define	  COMMAND_FOR_SWOV	XV_SWOV_PORTID
+#define   XV_PORT_NUM       5
+#define   XV_SWOV_PORTID    0
+#define   XV_TV0_PORTID     1
+#define   XV_TV1_PORTID     2
+#define   XV_UTCTRL_PORTID  3
+#define   XV_DUMMY_PORTID   4
+
+#define   COMMAND_FOR_SWOV      XV_SWOV_PORTID
+#define   COMMAND_FOR_TV0       XV_TV0_PORTID
+#define   COMMAND_FOR_TV1       XV_TV1_PORTID
+#define   COMMAND_FOR_UTCTRL    XV_UTCTRL_PORTID
+#define   COMMAND_FOR_DUMMY     XV_DUMMY_PORTID
 
 typedef struct {
-    unsigned long  xvPortID;
+    unsigned char  xv_portnum;
     unsigned char  brightness;
+    unsigned char  saturation;
     unsigned char  contrast;
+    unsigned char  hue;
     unsigned long  dwEncoding;
-    FBAreaPtr	   area;
-    RegionRec	   clip;
-    CARD32	   colorKey;
-    Time	   offTime;
-    Time	   freeTime;
-    VIAAUDCTRL	   AudCtrl;
+    RegionRec      clip;
+    CARD32         colorKey;
+    Time           offTime;
+    Time           freeTime;
+    VIACAPINFO     CapInfo;
+    VIAAUDCTRL     AudCtrl;
+
+    /* Surface structure */
+    DDSURFACEDESC SurfaceDesc;
+    DDLOCK ddLock;
 
     /* file handle */
-    int				nr;
+    int 			nr;
+    struct video_capability     cap;
 
-    int				*input;
-    int				*norm;
-    int				nenc,cenc;
+    /* attributes */
+    struct video_picture    	pict;
+    struct video_audio          audio;
+
+    int                         *input;
+    int                         *norm;
+    int                         nenc,cenc;
+
+    /* yuv to offscreen */
+    struct video_window		yuv_win;
+
+    /* store old video source & dst data */
+    short old_src_w;
+    short old_src_h;
+
+    short old_drw_x;
+    short old_drw_y;
+    short old_drw_w;
+    short old_drw_h;
 
 } viaPortPrivRec, *viaPortPrivPtr;
 
-#define	  SET_XVPORTID	     0
-#define	  SET_VIDEOSTATUS    1
-#define	  SET_BRIGHTNESS     2
-#define	  SET_CONTRAST	     3
-#define	  SET_COLORKEY	     4
-
-
-__inline void AllocatePortPriv(void);
-__inline void FreePortPriv(void);
+#if 0
+__inline void AllocatePortPriv();
+__inline void FreePortPriv();
 __inline void ClearPortPriv(int);
 viaPortPrivPtr GetPortPriv(int);
 void SetPortPriv(int nIndex, unsigned long dwAction, unsigned long dwValue);
 unsigned long  IdentifyPort(viaPortPrivPtr);
+#endif
 #endif /* end of  __VIA_XVPRIV_H */

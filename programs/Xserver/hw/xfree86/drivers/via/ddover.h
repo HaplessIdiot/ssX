@@ -21,18 +21,19 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/ddover.h,v 1.1tsi Exp $ */
-/*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
-
-#ifdef XV_DEBUG
-#  define DBG_DD(x) (x)
-#else
-#  define DBG_DD(x)
-#endif
-
+ 
 #ifndef __DDOVER
 #define __DDOVER
 
+/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
+
+#ifdef XV_DEBUG
+# define DBG_DD(x) (x)
+#else
+# define DBG_DD(x)
+#endif
+
+#define PLUS_HEIGHT 1 /*V003*/
 
 typedef struct _YCBCRREC  {
   CARD32  dwY ;
@@ -40,14 +41,24 @@ typedef struct _YCBCRREC  {
   CARD32  dwCR;
 } YCBCRREC;
 
-void DDOver_GetV1Format(CARD32 dwVideoFlag,LPVIDEOFORMAT lpVF, CARD32 * lpdwVidCtl,CARD32 * lpdwHQVCtl );
-CARD32 DDOverHQV_GetFormat(LPVIDEOFORMAT lpVF, CARD32 dwVidCtl,CARD32 * lpdwHQVCtl );
-CARD32 DDOver_GetSrcStartAddress (CARD32 dwVideoFlag,BOXPARAM SrcBox,BOXPARAM DestBox, CARD32 dwSrcPitch,LPVIDEOFORMAT lpVF,CARD32 * lpHQVoffset );
-YCBCRREC DDOVer_GetYCbCrStartAddress(CARD32 dwVideoFlag,CARD32 dwStartAddr, CARD32 dwOffset,CARD32 dwUVoffset,CARD32 dwSrcPitch/*lpGbl->lPitch*/,CARD32 dwSrcHeight/*lpGbl->wHeight*/);
-CARD32 DDOVER_HQVCalcZoomWidth(CARD32 dwVideoFlag, CARD32 srcWidth , CARD32 dstWidth,
-			   CARD32 * lpzoomCtl, CARD32 * lpminiCtl, CARD32 * lpHQVfilterCtl, CARD32 * lpHQVminiCtl,CARD32 * lpHQVzoomflag);
-CARD32 DDOVER_HQVCalcZoomHeight (CARD32 srcHeight,CARD32 dstHeight,
-			     CARD32 * lpzoomCtl, CARD32 * lpminiCtl, CARD32 * lpHQVfilterCtl, CARD32 * lpHQVminiCtl,CARD32 * lpHQVzoomflag);
-CARD32 DDOver_GetFetch(CARD32 dwVideoFlag,LPVIDEOFORMAT lpVF,CARD32 dwSrcWidth,CARD32 dwDstWidth,CARD32 dwOriSrcWidth,CARD32 * lpHQVsrcFetch);
-void DDOver_GetDisplayCount(CARD32 dwVideoFlag,LPVIDEOFORMAT lpVF,CARD32 dwSrcWidth,CARD32 * lpDisplayCountW);
-#endif /*End of	 __DDOVER*/
+/*
+void DDOver_GetColorKey(LPDDHAL_UPDATEOVERLAYDATA lpUO, LPDDOVERLAYFX lpFX,
+                        LPDDRAWI_DDRAWSURFACE_LCL lpDestSurf,
+                        LPDDRAWI_DDRAWSURFACE_LCL lpSrcSurf,
+                        unsigned long *  lpColorKey,unsigned long *   lpChromaKey,
+                        unsigned long *  lpKeyLow  ,unsigned long *   lpKeyHigh,
+                        unsigned long *  lpChromaLow  ,unsigned long *   lpChromaHigh);
+*/
+
+void viaDDOver_GetV1Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
+void viaDDOver_GetV3Format(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
+unsigned long viaDDOverHQV_GetFormat(LPDDPIXELFORMAT lpDPF, unsigned long dwVidCtl,unsigned long * lpdwHQVCtl );
+unsigned long viaDDOver_GetSrcStartAddress (unsigned long dwVideoFlag,RECTL rSrc,RECTL rDest, unsigned long dwSrcPitch,LPDDPIXELFORMAT lpDPF,unsigned long * lpHQVoffset );
+YCBCRREC viaDDOVer_GetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long dwStartAddr, unsigned long dwOffset,unsigned long dwUVoffset,unsigned long dwSrcPitch/*lpGbl->lPitch*/,unsigned long dwSrcHeight/*lpGbl->wHeight*/);
+unsigned long viaDDOVER_HQVCalcZoomWidth(unsigned long dwVideoFlag, unsigned long srcWidth , unsigned long dstWidth,
+                           unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag);
+unsigned long viaDDOVER_HQVCalcZoomHeight (unsigned long srcHeight,unsigned long dstHeight,
+                             unsigned long * lpzoomCtl, unsigned long * lpminiCtl, unsigned long * lpHQVfilterCtl, unsigned long * lpHQVminiCtl,unsigned long * lpHQVzoomflag);
+unsigned long viaDDOver_GetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long dwDstWidth,unsigned long dwOriSrcWidth,unsigned long * lpHQVsrcFetch);
+void viaDDOver_GetDisplayCount(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long * lpDisplayCountW);
+#endif /*End of  __DDOVER*/

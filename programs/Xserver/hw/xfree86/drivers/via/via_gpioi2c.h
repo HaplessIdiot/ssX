@@ -22,32 +22,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_SWOV_H
-#define _VIA_SWOV_H
+#define GPIOPORT                (pBIOSInfo->GPIOI2CInfo.bGPIOPort)
+#define SLAVEADDR               (pBIOSInfo->GPIOI2CInfo.bSlaveAddr)
+#define I2C_WAIT_TIME           (pBIOSInfo->GPIOI2CInfo.I2C_WAIT_TIME)
+#define STARTTIMEOUT            (pBIOSInfo->GPIOI2CInfo.STARTTIMEOUT)
+#define BYTETIMEOUT             (pBIOSInfo->GPIOI2CInfo.BYTETIMEOUT)
+#define HOLDTIME                (pBIOSInfo->GPIOI2CInfo.HOLDTIME)
+#define BITTIMEOUT              (pBIOSInfo->GPIOI2CInfo.BITTIMEOUT)
 
-/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
+#define GPIOI2C_MASKD           0xC0
+#define GPIOI2C_SCL_MASK        0x80
+#define GPIOI2C_SCL_WRITE       0x80
+#define GPIOI2C_SCL_READ        0x80
+#define GPIOI2C_SDA_MASK        0x40
+#define GPIOI2C_SDA_WRITE       0x40
+#define GPIOI2C_SDA_READ        0x00
 
-#ifdef XV_DEBUG
-# define DBG_DD(x) (x)
-#else
-# define DBG_DD(x)
-#endif
+#define I2C_RELEASE             0x00
+#define I2C_WRITE_SCL           0x01
+#define I2C_READ_SCL            0x02
+#define I2C_WRITE_SDA           0x03
+#define I2C_READ_SDA            0x04
 
-#include "ddmpeg.h"
-#include "via_xvpriv.h"
+#define I2C_SDA_SCL_MASK        0x30
+#define I2C_SDA_SCL             0x30
+#define I2C_OUTPUT_CLOCK        0x20
+#define I2C_OUTPUT_DATA         0x10
+#define I2C_INPUT_CLOCK         0x08
+#define I2C_INPUT_DATA          0x04
 
-/* Definition for VideoStatus */
-#define VIDEO_NULL              0x00000000
- 
-unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurfaceDesc);
-unsigned long VIAVidLockSurface(ScrnInfoPtr pScrn, LPDDLOCK lpLock);
-unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfaceDesc);
-
-unsigned long Upd_MPEG(ScrnInfoPtr pScrn, unsigned long dwVideoFlag,unsigned long dwStartAddr,RECTL rSrc,RECTL rDest,unsigned long dwSrcPitch,
-                 unsigned long dwOriSrcWidth,unsigned long dwOriSrcHeight,LPDDPIXELFORMAT lpDPFsrc,
-                 unsigned long dwDeinterlaceMode,unsigned long dwColorKey,unsigned long dwChromaKey,
-                 unsigned long dwKeyLow,unsigned long dwKeyHigh,unsigned long dwChromaLow,unsigned long dwChromaHigh);
-
-unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate);
-unsigned long VIAVidAdjustFrame(ScrnInfoPtr pScr, LPADJUSTFRAME lpAdjustFrame);
-#endif /* _VIA_SWOV_H */
+#define READ_MAX_RETRIES        20
+#define WRITE_MAX_RETRIES       20

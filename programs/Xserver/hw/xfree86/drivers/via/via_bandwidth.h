@@ -22,32 +22,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_SWOV_H
-#define _VIA_SWOV_H
+typedef struct _VIAPanel3C522Tue
+{
+    CARD16   wPanelXres;
+    CARD16   wPanelYres;
+    CARD16   wPanelBpp;
+    CARD8    bRamClock;
+    CARD8    bTuningValue;
+} VIAPanel3C522Tue, *pVIAPanel3C522Tue;
 
-/*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
+static const VIAPanel3C522Tue Panel_Tuning_Lst[] = {
+    {1280, 768,32,0x03,0x3}, {1280,1024,32,0x03,0x4}, {1280,1024,32,0x04,0x3},
+    {1600,1200,16,0x03,0x4}, {1600,1200,32,0x04,0x4}, {1024, 768,32,0x03,0xA},
+    {1400,1050,16,0x03,0x3}, {1400,1050,32,0x03,0x4}, {1400,1050,32,0x04,0x4},
+    { 800, 600,32,0x03,0xA}, {   0,   0, 0,   0,  0}
+};
 
-#ifdef XV_DEBUG
-# define DBG_DD(x) (x)
-#else
-# define DBG_DD(x)
-#endif
+static const VIAPanel3C522Tue Panel_Tuning_LstC0[] = {
+    {1280, 768,32,0x03,0x3}, {1280,1024,32,0x03,0x4}, {1280,1024,32,0x04,0x4},
+    {1600,1200,32,0x03,0x3}, {1600,1200,32,0x04,0x4}, {1024, 768,32,0x03,0xA},
+    {1400,1050,32,0x03,0x4}, {1400,1050,32,0x04,0x4},
+    { 800, 600,32,0x03,0xA}, {   0,   0, 0,   0,  0}
+};
 
-#include "ddmpeg.h"
-#include "via_xvpriv.h"
-
-/* Definition for VideoStatus */
-#define VIDEO_NULL              0x00000000
- 
-unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurfaceDesc);
-unsigned long VIAVidLockSurface(ScrnInfoPtr pScrn, LPDDLOCK lpLock);
-unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfaceDesc);
-
-unsigned long Upd_MPEG(ScrnInfoPtr pScrn, unsigned long dwVideoFlag,unsigned long dwStartAddr,RECTL rSrc,RECTL rDest,unsigned long dwSrcPitch,
-                 unsigned long dwOriSrcWidth,unsigned long dwOriSrcHeight,LPDDPIXELFORMAT lpDPFsrc,
-                 unsigned long dwDeinterlaceMode,unsigned long dwColorKey,unsigned long dwChromaKey,
-                 unsigned long dwKeyLow,unsigned long dwKeyHigh,unsigned long dwChromaLow,unsigned long dwChromaHigh);
-
-unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate);
-unsigned long VIAVidAdjustFrame(ScrnInfoPtr pScr, LPADJUSTFRAME lpAdjustFrame);
-#endif /* _VIA_SWOV_H */
+static const VIAPanel3C522Tue Panel_Tuning_Lst3205[]={
+    {1280,1024,32,0x03,0x3}, {1280,1024,32,0x04,0x9}, {1280, 768,32,0x03,0x3},
+    {1280, 768,32,0x04,0x9}, {1400,1050,32,0x03,0x3}, {1400,1050,32,0x04,0x9},
+    {1600,1200,32,0x03,0x4}, {1600,1200,32,0x04,0xA}, {   0,   0, 0,   0,  0}
+};
