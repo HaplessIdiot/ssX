@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.71 2005/03/13 00:32:37 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.72 2005/03/15 21:05:51 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -1058,7 +1058,7 @@ Charles Dobson,
 DRI Project,
 Emmanuel Dreyfus,
 Boris Dusek,
-Georgina Economou,
+Georgina O. Economou,
 Egbert Eich,
 Bernd Ernesti,
 Chris Evans,
