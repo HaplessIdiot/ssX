@@ -33,6 +33,9 @@ RMAN_PROG = ProgramTargetName(rman)
 QNXCopyInstaller($(PROJECTROOT)/bin/install.qnx,./install.sh)
 #endif
 
+PROGRAMS = xmkmf $(CCMDEP_PROG) $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) \
+	   $(RMAN_PROG) ProgramTargetName(revpath) \
+	   HostProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
 DEPLIBS =
 #ifndef Win32Architecture
   EXTRA_LIBRARIES =
@@ -52,9 +55,7 @@ XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
         LDPOSTLIB = 
 #endif
 
-all:: xmkmf $(GCCMDEP_PROG) mergelib $(LNDIR_PROG) $(RMAN_PROG) \
-      $(CCMDEP_PROG) ProgramTargetName(revpath) \
-      HostProgramTargetName(makestrs) $(EXPORTLISTGEN) $(CMKDIRHIER)
+all:: $(PROGRAMS)
 
 #if HasGcc
 GCCCMD = $(CC)

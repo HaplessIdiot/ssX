@@ -16,6 +16,10 @@ XCOMM $XFree86: xc/programs/proxymngr/Imakefile,v 1.8 2001/01/17 23:45:02 dawes 
                    
            OBJS1 = main.o pmdb.o config.o
 
+          PROGS1 = ProgramTargetName(proxymngr)
+
+        PROGRAMS = $(PROGS1)
+
         LBXPROXY = $(BINDIR)/lbxproxy
 
      SITE_CONFIG = -DLBXPROXY=$(LBXPROXY)
