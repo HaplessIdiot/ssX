@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.7 2001/01/17 16:38:59 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.8 2001/04/29 23:25:02 tsi Exp $ */
 
 #include "def.h"
 
@@ -99,7 +99,7 @@ deftype (char *line, struct filepointer *filep,
 	     struct inclist *file_red, struct inclist *file, int parse_it)
 {
 	register char	*p;
-	char	*directive, savechar;
+	char	*directive, savechar, *q;
 	register int	ret;
 
 	/*
@@ -156,6 +156,11 @@ deftype (char *line, struct filepointer *filep,
 	 */
 	while (*p == ' ' || *p == '\t')
 		p++;
+	q = p + strlen(p);
+	do {
+		q--;
+	} while (*q == ' ' || *q == '\t');
+	q[1] = '\0';
 	switch (ret) {
 	case IF:
 		/*

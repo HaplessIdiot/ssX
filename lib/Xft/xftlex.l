@@ -1,6 +1,6 @@
 %{
 /*
- * $XFree86: xc/lib/Xft/xftlex.l,v 1.5 2001/03/31 01:57:20 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftlex.l,v 1.6 2001/05/16 10:32:54 keithp Exp $
  *
  * Copyright (c) 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -76,16 +76,20 @@ int	XftConfigFiledeep = 0;
 static int input (void)
 {
     char    buf[1];
-    int	    r;
+    static  int	r = EOF;
 
-    YY_INPUT(buf, r, 1);
     if (r == 0)
 	return 0;
+    YY_INPUT(buf, r, 1);
+    if (r == 0)
+	return EOF;
     return buf[0];
 }
 
 static void unput (char c)
 {
+    if (!c || c == EOF)
+	return;
     if (c == '\n')
 	XftConfigLineno--;
     ungetc (c, XftConfigInput);
@@ -173,6 +177,7 @@ _XftConfigSkipLine (void)
     do {
 	c = input();
     } while (c != EOF && c != '\n');
+    if (c == '\n') unput('\n');
 }
 
 Bool

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.22 2001/03/30 02:15:18 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.24 2001/03/31 01:57:20 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -135,7 +135,7 @@ typedef enum _XftQual {
 typedef struct _XftTest {
     struct _XftTest	*next;
     XftQual		qual;
-    char		*field;
+    const char		*field;
     XftOp		op;
     XftValue		value;
 } XftTest;

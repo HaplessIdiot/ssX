@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.15 2001/04/20 02:52:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.17 2001/05/15 10:19:39 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -2066,7 +2066,9 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
 		    "Shadow area physical %08x, linear %08x\n",
 		    psav->ShadowPhysical, psav->ShadowVirtual );
+#if 0	/* XXX This is WRONG !!! */
 	psav->WaitQueue = ShadowWait;
+#endif
 	psav->WaitIdle = ShadowWait;
 	psav->WaitIdleEmpty = ShadowWait;
 	

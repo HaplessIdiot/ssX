@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.1 2000/10/20 14:59:05 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.2 2001/05/15 18:22:23 paulo Exp $
  */
 #ifdef USE_MODULES
 #include "config.h"
@@ -189,7 +189,7 @@ typedef struct _ModuleInfoRec {
     char *		moduleName;
     pointer		module;
     int			refCount;
-    const OptionInfoRec * (*AvailableOptions)(void *unused);
+    OptionInfoRec *	(*AvailableOptions)(void *unused);
     pointer		unused[2];	/* leave some space for more fields */
 } ModuleInfoRec, *ModuleInfoPtr;
 #endif /* LOADER_PRIVATE */
