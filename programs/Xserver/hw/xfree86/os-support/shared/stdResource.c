@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.1.2.2 1999/01/17 11:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.2 1999/04/03 06:50:38 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -120,9 +120,9 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysMem,
     /* Add each PCI-PCI bridge */
     /* XXX What about secondary host bridges?? */
     for (pcrpp = pciInfo, pcrp = *pcrpp; pcrp; pcrp = *(++pcrpp)) {
-	if (pcrp->_base_class == PCI_CLASS_BRIDGE &&
-	    pcrp->_sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
-	    i = pcrp->_secondary_bus_number;
+	if (pcrp->pci_base_class == PCI_CLASS_BRIDGE &&
+	    pcrp->pci_sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
+	    i = pcrp->pci_secondary_bus_number;
 	    if (i + 1 > NumBusses) {
 		NumBusses = i + 1;
 		PciBusList = xnfrealloc(PciBusList,
@@ -132,18 +132,18 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysMem,
 	    PciBusList[i]->brbus = pcrp->busnum;
 	    PciBusList[i]->brdev = pcrp->devnum;
 	    PciBusList[i]->brfunc = pcrp->funcnum;
-	    PciBusList[i]->subclass = pcrp->_sub_class;
-	    PciBusList[i]->brcontrol = pcrp->_bridge_control;
-	    begin = pcrp->_io_base << 8;
-	    end = (pcrp->_io_limit << 8) | 0xfff;
+	    PciBusList[i]->subclass = pcrp->pci_sub_class;
+	    PciBusList[i]->brcontrol = pcrp->pci_bridge_control;
+	    begin = pcrp->pci_io_base << 8;
+	    end = (pcrp->pci_io_limit << 8) | 0xfff;
 	    PciBusList[i]->io = xf86AddResToList(NULL, begin, end,
 					ResIo | ResBlock | ResMinimised, -1);
-	    begin = pcrp->_mem_base << 16;
-	    end = (pcrp->_mem_limit << 16) | 0xfffff;
+	    begin = pcrp->pci_mem_base << 16;
+	    end = (pcrp->pci_mem_limit << 16) | 0xfffff;
 	    PciBusList[i]->mem = xf86AddResToList(NULL, begin, end,
 					ResMem | ResBlock | ResMinimised, -1);
-	    begin = pcrp->_prefetch_mem_base << 16;
-	    end = (pcrp->_prefetch_mem_limit << 16) | 0xfffff;
+	    begin = pcrp->pci_prefetch_mem_base << 16;
+	    end = (pcrp->pci_prefetch_mem_limit << 16) | 0xfffff;
 	    PciBusList[i]->pmem = xf86AddResToList(NULL, begin, end,
 					ResMem | ResBlock | ResMinimised, -1);
 	    xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "

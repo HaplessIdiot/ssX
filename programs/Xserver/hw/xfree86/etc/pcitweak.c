@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.1 1999/04/03 09:34:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.2 1999/04/04 10:05:27 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -24,7 +24,6 @@
 #endif
 
 int xf86Verbose = 1;
-xf86InfoRec xf86Info;
 
 static void usage(void);
 static Bool parsePciBusString(const char *id, int *bus, int *device, int *func);
@@ -200,6 +199,10 @@ parsePciBusString(const char *busID, int *bus, int *device, int *func)
 
 
 
+/* Dummy variables */
+xf86InfoRec xf86Info;
+ScrnInfoPtr *xf86Screens;
+
 /*
  * Utility functions required by libxf86_os.  It would be nice to have
  * a library with these somewhere.
@@ -251,7 +254,27 @@ xf86MsgVerb(MessageType type, int verb, const char *format, ...)
 }
 
 void
+xf86DrvMsgVerb(int i, MessageType type, int verb, const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    VErrorFVerb(verb, format, ap);
+    va_end(ap);
+}
+
+void
 xf86Msg(MessageType type, const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    VErrorFVerb(1, format, ap);
+    va_end(ap);
+}
+
+void
+xf86DrvMsg(int i, MessageType type, const char *format, ...)
 {
     va_list ap;
 
@@ -280,6 +303,16 @@ Xalloc(unsigned long n)
 }
 
 pointer
+Xcalloc(unsigned long n)
+{
+    pointer r;
+
+    r = Xalloc(n);
+    memset(r, 0, n);
+    return r;
+}
+
+pointer
 XNFalloc(unsigned long n)
 {
     pointer r;
@@ -291,9 +324,50 @@ XNFalloc(unsigned long n)
    
 }
 
+pointer
+XNFcalloc(unsigned long n)
+{
+    pointer r;
+
+    r = Xcalloc(n);
+    if (!r)
+	FatalError("XNFcalloc failed\n");
+    return r;
+   
+}
+
 void
 Xfree(pointer p)
 {
     free(p);
+}
+
+int
+xf86AllocateScrnInfoPrivateIndex()
+{
+    return -1;
+}
+
+int
+xf86GetVerbosity()
+{
+    return xf86Verbose;
+}
+
+void
+xf86ProcessOptions(int i, pointer p, OptionInfoPtr o)
+{
+}
+
+Bool
+xf86GetOptValBool(OptionInfoPtr o, int i, Bool *b)
+{
+    return FALSE;
+}
+
+Bool
+xf86ServerIsInitialising()
+{
+    return FALSE;
 }
 

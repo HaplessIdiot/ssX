@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.19 1999/03/29 09:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.20 1999/04/04 00:20:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -124,24 +124,24 @@ xf86FindPCIVideoInfo(void)
     }
 
     while ((pcrp = pcrpp[i])) {
-	if (PCIINFOCLASSES(pcrp->_base_class, pcrp->_sub_class)) {
+	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class)) {
 	    num++;
 	    xf86PciVideoInfo = xnfrealloc(xf86PciVideoInfo,
 					  sizeof(pciVideoPtr) * (num + 1));
 	    xf86PciVideoInfo[num] = NULL;
 	    info = xf86PciVideoInfo[num - 1] = xnfalloc(sizeof(pciVideoRec));
-	    info->vendor = pcrp->_vendor;
-	    info->chipType = pcrp->_device;
-	    info->chipRev = pcrp->_rev_id;
-	    info->subsysVendor = pcrp->_subsys_vendor;
-	    info->subsysCard = pcrp->_subsys_card;
+	    info->vendor = pcrp->pci_vendor;
+	    info->chipType = pcrp->pci_device;
+	    info->chipRev = pcrp->pci_rev_id;
+	    info->subsysVendor = pcrp->pci_subsys_vendor;
+	    info->subsysCard = pcrp->pci_subsys_card;
 	    info->bus = pcrp->busnum;
 	    info->device = pcrp->devnum;
 	    info->func = pcrp->funcnum;
-	    info->class = pcrp->_base_class;
-	    info->subclass = pcrp->_sub_class;
-	    info->interface = pcrp->_prog_if;
-	    info->biosBase = pcrp->_baserom;
+	    info->class = pcrp->pci_base_class;
+	    info->subclass = pcrp->pci_sub_class;
+	    info->interface = pcrp->pci_prog_if;
+	    info->biosBase = pcrp->pci_baserom;
 	    info->biosSize = pciGetBaseSize(pcrp->tag, 6, TRUE, NULL);
 	    info->thisCard = pcrp;
 	    for (j = 0; j < 6; j++) {
@@ -159,85 +159,85 @@ xf86FindPCIVideoInfo(void)
 	     * XXX Should deal with them on platforms that support them.
 	     */
 
-	    if (pcrp->_base0) {
-		if (pcrp->_base0 & PCI_MAP_IO) {
-		    info->ioBase[0] = PCIGETIO(pcrp->_base0);
-		    info->type[0] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base0) {
+		if (pcrp->pci_base0 & PCI_MAP_IO) {
+		    info->ioBase[0] = PCIGETIO(pcrp->pci_base0);
+		    info->type[0] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base0))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base0))
 			mem64 = TRUE;
 		    else {
-			info->memBase[0] = PCIGETMEMORY(pcrp->_base0);
-			info->type[0] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[0] = PCIGETMEMORY(pcrp->pci_base0);
+			info->type[0] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    }
 
-	    if (pcrp->_base1 && !mem64) {
-		if (pcrp->_base1 & PCI_MAP_IO) {
-		    info->ioBase[1] = PCIGETIO(pcrp->_base1);
-		    info->type[1] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base1 && !mem64) {
+		if (pcrp->pci_base1 & PCI_MAP_IO) {
+		    info->ioBase[1] = PCIGETIO(pcrp->pci_base1);
+		    info->type[1] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base1))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base1))
 			mem64 = TRUE;
 		    else {
-			info->memBase[1] = PCIGETMEMORY(pcrp->_base1);
-			info->type[1] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[1] = PCIGETMEMORY(pcrp->pci_base1);
+			info->type[1] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
-	    if (pcrp->_base2 && !mem64) {
-		if (pcrp->_base2 & PCI_MAP_IO) {
-		    info->ioBase[2] = PCIGETIO(pcrp->_base2);
-		    info->type[2] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base2 && !mem64) {
+		if (pcrp->pci_base2 & PCI_MAP_IO) {
+		    info->ioBase[2] = PCIGETIO(pcrp->pci_base2);
+		    info->type[2] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base2))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base2))
 			mem64 = TRUE;
 		    else {
-			info->memBase[2] = PCIGETMEMORY(pcrp->_base2);
-			info->type[2] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[2] = PCIGETMEMORY(pcrp->pci_base2);
+			info->type[2] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
-	    if (pcrp->_base3 && !mem64) {
-		if (pcrp->_base3 & PCI_MAP_IO) {
-		    info->ioBase[3] = PCIGETIO(pcrp->_base3);
-		    info->type[3] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base3 && !mem64) {
+		if (pcrp->pci_base3 & PCI_MAP_IO) {
+		    info->ioBase[3] = PCIGETIO(pcrp->pci_base3);
+		    info->type[3] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base3))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base3))
 			mem64 = TRUE;
 		    else {
-			info->memBase[3] = PCIGETMEMORY(pcrp->_base3);
-			info->type[3] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[3] = PCIGETMEMORY(pcrp->pci_base3);
+			info->type[3] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
-	    if (pcrp->_base4 && !mem64) {
-		if (pcrp->_base4 & PCI_MAP_IO) {
-		    info->ioBase[4] = PCIGETIO(pcrp->_base4);
-		    info->type[4] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base4 && !mem64) {
+		if (pcrp->pci_base4 & PCI_MAP_IO) {
+		    info->ioBase[4] = PCIGETIO(pcrp->pci_base4);
+		    info->type[4] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base4))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base4))
 			mem64 = TRUE;
 		    else {
-			info->memBase[4] = PCIGETMEMORY(pcrp->_base4);
-			info->type[4] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[4] = PCIGETMEMORY(pcrp->pci_base4);
+			info->type[4] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
-	    if (pcrp->_base5 && !mem64) {
-		if (pcrp->_base5 & PCI_MAP_IO) {
-		    info->ioBase[5] = PCIGETIO(pcrp->_base5);
-		    info->type[5] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+	    if (pcrp->pci_base5 && !mem64) {
+		if (pcrp->pci_base5 & PCI_MAP_IO) {
+		    info->ioBase[5] = PCIGETIO(pcrp->pci_base5);
+		    info->type[5] = pcrp->pci_base0 & PCI_MAP_IO_ATTR_MASK;
 		} else
-		    if (PCI_MAP_IS64BITMEM(pcrp->_base5))
+		    if (PCI_MAP_IS64BITMEM(pcrp->pci_base5))
 			mem64 = TRUE;
 		    else {
-			info->memBase[5] = PCIGETMEMORY(pcrp->_base5);
-			info->type[5] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+			info->memBase[5] = PCIGETMEMORY(pcrp->pci_base5);
+			info->type[5] = pcrp->pci_base0 & PCI_MAP_MEMORY_ATTR_MASK;
 		    }
 	    }
 	}
@@ -961,7 +961,7 @@ setupPciAccess(void)
 
     while ((pcp = xf86PciInfo[i]) != NULL) {
 	i++;
-	if (PCISHAREDIOCLASSES(pcp->_base_class, pcp->_sub_class)) {
+	if (PCISHAREDIOCLASSES(pcp->pci_base_class, pcp->pci_sub_class)) {
 	    j++;
 	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
 					sizeof(pciAccPtr) * (j + 1));
@@ -1045,21 +1045,21 @@ FindPciPrimaryDevice(void)
     if (!xf86PciAccInfo) return;
 
     while ((pcp = xf86PciInfo[i]) != NULL) { 
-	if (pcp->_command & PCI_CMD_IO_ENABLE) {
+	if (pcp->pci_command & PCI_CMD_IO_ENABLE) {
 	    j = 0;
 	    while ((paccp = xf86PciAccInfo[j]) != NULL) {
 		if (paccp->busnum == pcp->busnum
 		    && paccp->devnum == pcp->devnum
 		    && paccp->funcnum == pcp->funcnum) {
-		    if (PCISHAREDIOCLASSES(pcp->_base_class,pcp->_sub_class))
-			if (pcp->_prog_if == 0) {
+		    if (PCISHAREDIOCLASSES(pcp->pci_base_class,pcp->pci_sub_class))
+			if (pcp->pci_prog_if == 0) {
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
 			    primaryBus = BUS_PCI;
 			    /* prefer VGA */
 			    return;
-			} else if (pcp->_prog_if == 1){
+			} else if (pcp->pci_prog_if == 1){
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
@@ -1447,14 +1447,14 @@ xf86CheckPciGAType(pciVideoPtr pPci)
     while ((pcp = xf86PciInfo[i]) != NULL) { 
 	if (pPci->bus == pcp->busnum && pPci->device == pcp->devnum
 	    && pPci->func == pcp->funcnum) {
-	    if (pcp->_base_class == PCI_CLASS_PREHISTORIC &&
-		pcp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
+	    if (pcp->pci_base_class == PCI_CLASS_PREHISTORIC &&
+		pcp->pci_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
 		return PCI_CHIP_VGA ;
-	    if (pcp->_base_class == PCI_CLASS_DISPLAY &&
-		pcp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
-		if (pcp->_prog_if == 0)
+	    if (pcp->pci_base_class == PCI_CLASS_DISPLAY &&
+		pcp->pci_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
+		if (pcp->pci_prog_if == 0)
 		    return PCI_CHIP_VGA ; 
-		if (pcp->_prog_if == 1)
+		if (pcp->pci_prog_if == 1)
 		    return PCI_CHIP_8514;
 	    }
 	    return -1;
@@ -1710,12 +1710,12 @@ xf86GetPciSysRes(resPtr *mem, resPtr *io, int flags)
 
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
-	if (PCINONSYSTEMCLASSES(pcrp->_base_class, pcrp->_sub_class))
+	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
 	/* Only process devices with type 0 headers */
-	if ((pcrp->_header_type & 0x7f) != 0)
+	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
-	basep = &pcrp->_base0;
+	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
 	    if (basep[i]) {
 		if (PCI_MAP_IS_IO(basep[i])) {
@@ -1731,8 +1731,8 @@ xf86GetPciSysRes(resPtr *mem, resPtr *io, int flags)
 		}
 	    }
 	}
-	if (pcrp->_baserom) {
-	    begin = PCIGETROM(pcrp->_baserom);
+	if (pcrp->pci_baserom) {
+	    begin = PCIGETROM(pcrp->pci_baserom);
 	    end = begin + (1 << pcrp->basesize[6]) - 1;
 	    sysMem = xf86AddResToList(sysMem, begin, end, ResExcIoBlock, -1);
 	}

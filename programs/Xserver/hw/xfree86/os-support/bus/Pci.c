@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.10 1999/03/28 15:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.11 1999/04/04 00:20:55 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -901,7 +901,7 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 				pciReadLong(tag, i * sizeof(CARD32));
 
 	    /* Get base address sizes for type 0 headers */
-	    if ((devp->_header_type & 0x7f) == 0)
+	    if ((devp->pci_header_type & 0x7f) == 0)
 		for (i = 0; i < 7; i++)
 		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, NULL);
 
@@ -909,17 +909,18 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "
 			"ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
 			devp->busnum, devp->devnum, devp->funcnum,
-			devp->_vendor, devp->_device, devp->_rev_id,
-			devp->_base_class, devp->_sub_class);
+			devp->pci_vendor, devp->pci_device, devp->pci_rev_id,
+			devp->pci_base_class, devp->pci_sub_class);
 #else
 	    xf86MsgVerb(X_INFO, 2, "PCI: %02x:%02x:%1x: chip %04x,%04x"
 			" card %04x,%04x rev %02x class %02x,%02x,%02x"
 			" hdr %02x\n",
 			devp->busnum, devp->devnum, devp->funcnum,
-			devp->_vendor, devp->_device, devp->_subsys_vendor,
-			devp->_subsys_card, devp->_rev_id,
-			devp->_base_class, devp->_sub_class, devp->_prog_if,
-			devp->_header_type);
+			devp->pci_vendor, devp->pci_device,
+			devp->pci_subsys_vendor, devp->pci_subsys_card,
+			devp->pci_rev_id, devp->pci_base_class,
+			devp->pci_sub_class, devp->pci_prog_if,
+			devp->pci_header_type);
 #endif
 
 	    pci_devp[idx++] = devp;
