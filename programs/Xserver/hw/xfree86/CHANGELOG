@@ -1,4 +1,16 @@
 XFree86 3.9g (xx June 1997)
+1031. Fix for pci detection code in S3 server (#683, Harald Koenig).
+1030. Fix problems with rop -1 in S3V server (#679,681,682, Huver Hu, Harald
+      Koenig).
+1029. Fix cache expansion routine for HARDWARE_PATTERN_NOT_LINEAR (#680,
+      Mark Vojkovich).
+1028. Add "no_split_xfer" option to S3 server (#678, Harald Koenig).
+1027. Fix bug in xterm. Logout records should contain '\0' as first char
+      in user name (#676, Alex Belits).
+1026. Fix color problems on S3 cards with Ti3026 for SVGA/S3 (#671,
+      Achim Oppelt).
+1025. Adapt code to future changes in NetBSD's (and OpenBSD's?) mmap
+      semantics (#670, Matthieu Herrb).
 1024. Fix xterm's op termcap entry, and shorten the entry so it fits within
       the 1024 character limit.
 1023. Actually include changes 963-965.
@@ -4957,4 +4969,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.490 1997/06/17 08:17:50 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.491 1997/06/18 08:25:49 dawes Exp $

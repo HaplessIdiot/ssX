@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.50 1997/05/25 14:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.51 1997/06/11 12:24:57 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -3774,6 +3774,7 @@ Exit(n)
 		    utmp.ut_xtime = time ((Time_t *) 0);
 		    utmp.ut_tv.tv_usec = 0;
 #else
+		    *utptr->ut_user=0;
 		    utptr->ut_time = time((Time_t *) 0);
 #endif
 		    (void) pututline(utptr);

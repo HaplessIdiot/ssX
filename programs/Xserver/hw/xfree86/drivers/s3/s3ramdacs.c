@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.5 1997/06/10 12:30:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.6 1997/06/15 07:12:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3149,14 +3149,14 @@ static int TI3030_3026_Init(DisplayModePtr mode)
          outb(vgaCRReg, tmp);
 
 	 if (vga256InfoRec.bitsPerPixel == 24) {            /* packed 24bpp */
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888_P8);
+	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_888_P8);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
 			TI_MUX2_BUS_3030TC_D24P128);
 	    else
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
-			TI_MUX2_BUS_3026TC_D24P64);
-	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+			TI_MUX2_BUS_3026DC_D24P64);
+	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else if (vga256InfoRec.bitsPerPixel == 32) {              /* 32bpp */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_888);
 	    if (DAC_IS_TI3030)
@@ -3164,8 +3164,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 			 TI_MUX2_BUS_3030TC_D24P128);
 	    else
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
-				TI_MUX2_BUS_3026TC_D24P64);
-	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+				TI_MUX2_BUS_3026DC_D24P64);
+	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else if (vga256InfoRec.depth == 16) {                    /* 5-6-5 */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_565);
 	    if (DAC_IS_TI3030)
@@ -3173,8 +3173,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 				TI_MUX2_BUS_3030TC_D16P128);
 	    else
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
-				TI_MUX2_BUS_3026TC_D16P64);
-	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+				TI_MUX2_BUS_3026DC_D16P64);
+	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else if (vga256InfoRec.depth == 15) {                     /* 5-5-5 */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_555);
 	    if (DAC_IS_TI3030)
@@ -3182,8 +3182,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 				TI_MUX2_BUS_3030TC_D15P128);
 	    else
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
-				TI_MUX2_BUS_3026TC_D15P64);
-	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+				TI_MUX2_BUS_3026DC_D15P64);
+	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
 	 } else {
             /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
             /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
@@ -3199,10 +3199,19 @@ static int TI3030_3026_Init(DisplayModePtr mode)
          /* change to 8-bit DAC and re-route the data path and clocking */
          s3OutTi3026IndReg(TI_GENERAL_IO_CONTROL, 0x00, TI_GIC_ALL_BITS);
          if (s3DAC8Bit) {
-	    s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0,
-			      TI_MC_INT_6_8_CONTROL | TI_MC_8_BPP);
+	   if (vga256InfoRec.bitsPerPixel>8)
+	     s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0,
+			       TI_MC_INT_6_8_CONTROL | TI_MC_8_BPP
+			       | TI_MC_PSEL_POLARITY);
+	   else
+	     s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0,
+			       TI_MC_INT_6_8_CONTROL | TI_MC_8_BPP);
          } else {
-	    s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0, TI_MC_INT_6_8_CONTROL);
+	   if (vga256InfoRec.bitsPerPixel>8)
+	     s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0, TI_MC_INT_6_8_CONTROL
+			       | TI_MC_PSEL_POLARITY);
+	   else
+	     s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0, TI_MC_INT_6_8_CONTROL);
          }
 	 if (OFLG_ISSET(OPTION_DIAMOND, &vga256InfoRec.options)) {
 	    outb(vgaCRIndex, 0x67);
