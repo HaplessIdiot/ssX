@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.22 1999/04/17 07:06:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.23 1999/04/18 04:08:40 dawes Exp $ */
 
 #define DEBUG
 
@@ -154,7 +154,7 @@ typedef enum {
     OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
-    OPTION_NOTURBOQUEUE,
+    OPTION_TURBOQUEUE,
     OPTION_FAST_VRAM,
     OPTION_SET_MEMCLOCK
 } SISOpts;
@@ -165,7 +165,7 @@ static OptionInfoRec SISOptions[] = {
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"rgbbits",	OPTV_INTEGER,	{0}, -1    },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOTURBOQUEUE,	"NoTurboQueue",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_TURBOQUEUE,	"TurboQueue",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SET_MEMCLOCK,	"SetMClk",	OPTV_INTEGER,	{0}, -1    },
     { OPTION_FAST_VRAM,		"FastVram",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
@@ -763,9 +763,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    pSiS->MaxClock = 135000;	
 	    pSiS->TurboQueue = FALSE; 
             xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock was set by BIOS to %3.3fMHz\n",SiSMclk()/1000.0);
-    	    if (xf86ReturnOptValBool(SISOptions, OPTION_NOTURBOQUEUE, FALSE)) {
-		pSiS->TurboQueue = FALSE;
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
+    	    if (xf86ReturnOptValBool(SISOptions, OPTION_TURBOQUEUE, FALSE)) {
+		pSiS->TurboQueue = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling TurboQueue\n");
     	    }
 	    break;
 	case PCI_CHIP_SIS6326:
@@ -773,9 +773,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    pSiS->MaxClock = 175000;	/* XXX Guess, need to check this */
 	    pSiS->TurboQueue = FALSE; /* Turn on for 6326 */
             xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock was set by BIOS to %3.3fMHz\n",SiSMclk()/1000.0);
-    	    if (xf86ReturnOptValBool(SISOptions, OPTION_NOTURBOQUEUE, FALSE)) {
-		pSiS->TurboQueue = FALSE;
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
+    	    if (xf86ReturnOptValBool(SISOptions, OPTION_TURBOQUEUE, FALSE)) {
+		pSiS->TurboQueue = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling TurboQueue\n");
     	    }
 	    outb(VGA_SEQ_INDEX, ExtConfStatus1); temp = inb(VGA_SEQ_DATA);
 	    switch (temp & 0x03) {
@@ -1251,7 +1251,7 @@ SISMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pSiS->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pSiS->PciTag, pSiS->IOAddress, 0x1000);
+		pSiS->PciTag, pSiS->IOAddress, 0x10000);
 
     if (pSiS->IOBaseDense == NULL)
 	return FALSE;
@@ -1286,15 +1286,15 @@ SISUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBase, 0x1000);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBase, 0x10000);
     pSiS->IOBase = NULL;
 
 #ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBaseDense, 0x1000);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBaseDense, 0x10000);
     pSiS->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->FbBase, pScrn->videoRam);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->FbBase, pSis->FbMapSize);
     pSiS->FbBase = NULL;
     return TRUE;
 }

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/include/fontenc.h,v 1.2 1999/01/31 13:45:19 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontenc.h,v 1.3 1999/02/07 06:18:29 dawes Exp $ */
 
 /* Header for backend-independent encoding code */
 
@@ -63,7 +63,8 @@ struct font_encoding_mapping {
 struct font_encoding {
   char *name;                   /* the name of the encoding */
   char **aliases;               /* its aliases, null terminated */
-  int size;                     /* its size */
+  int size;                     /* its size, either in bytes or rows */
+  int row_size;                 /* the size of a row, or 0 if bytes */
   struct font_encoding_mapping *mappings; /* linked list of mappings */
   struct font_encoding *next;   /* link to next element */
 };
@@ -81,10 +82,14 @@ char *font_encoding_from_xlfd(const char*, int);
 struct font_encoding *font_encoding_find(const char*, const char*);
 
 /* Recode a code.  Always succeeds. */
-unsigned font_encoding_recode(unsigned, struct font_encoding_mapping*);
+unsigned font_encoding_recode(unsigned,
+                              struct font_encoding*,
+                              struct font_encoding_mapping*);
 
 /* Return a name for a code.  Returns a string or NULL. */
-char *font_encoding_name(unsigned, struct font_encoding_mapping*);
+char *font_encoding_name(unsigned,
+                         struct font_encoding*,
+                         struct font_encoding_mapping*);
 
 #if defined(NEED_STRCASECMP) && !defined(FONTMODULE)
 #define strcasecmp(s1,s2) f_strcasecmp(s1,s2)

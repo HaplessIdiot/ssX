@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.5 1999/02/07 10:38:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.6 1999/03/21 07:34:42 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -50,10 +50,11 @@ THE SOFTWARE.
 #define STARTMAPPING_LINE 2
 #define ENDMAPPING_LINE 3
 #define CODE_LINE 4
-#define CODE_UNDEFINE_LINE 5
-#define NAME_LINE 6
-#define SIZE_LINE 7
-#define ALIAS_LINE 8
+#define CODE_RANGE_LINE 5
+#define CODE_UNDEFINE_LINE 6
+#define NAME_LINE 7
+#define SIZE_LINE 8
+#define ALIAS_LINE 9
 
 /* Return from lexer */
 #define MAXKEYWORDLEN 100
@@ -61,7 +62,7 @@ THE SOFTWARE.
 static long number_value;
 static char keyword_value[MAXKEYWORDLEN+1];
 
-static long value1, value2;
+static long value1, value2, value3;
 
 /* Lexer code */
 
@@ -202,10 +203,17 @@ retry:
     switch(token) {
     case NUMBER_TOKEN:
       value2=number_value;
-      if(!endOfLine(f,c))
-        return ERROR_LINE;
-      else
+      token=gettoken(f,c,&c);
+      switch(token) {
+      case NUMBER_TOKEN:
+        value3=number_value;
+        return CODE_RANGE_LINE;
+      case EOL_TOKEN:
         return CODE_LINE;
+      default:
+        skipEndOfLine(f,c);
+        return ERROR_LINE;
+      }
     case KEYWORD_TOKEN:
       if(!endOfLine(f,c))
         return ERROR_LINE;
@@ -242,10 +250,18 @@ retry:
       token=gettoken(f,c,&c);
       if(token==NUMBER_TOKEN) {
         value1=number_value;
-        if(endOfLine(f,c))
+        token=gettoken(f,c,&c);
+        switch(token) {
+        case NUMBER_TOKEN:
+          value2=number_value;
           return SIZE_LINE;
-        else
+        case EOL_TOKEN:
+          value2=0;
+          return SIZE_LINE;
+        default:
+          skipEndOfLine(f,c);
           return ERROR_LINE;
+        }
       } else {
         skipEndOfLine(f,c);
         return ERROR_LINE;
@@ -337,6 +353,59 @@ install_mapping(struct font_encoding *encoding,
   mapping->next=NULL;
 }
 
+static int
+setCode(unsigned from, unsigned to, unsigned row_size,
+        unsigned *first, unsigned *last,
+        unsigned *encsize, unsigned short **enc)
+{
+  unsigned index, i;
+  unsigned short *newenc;
+
+  if(from>0xFFFF)
+    return 0;                   /* success */
+
+  if(row_size==0)
+    index=from;
+  else {
+    if((value1&0xFF)>=row_size)
+      return 0;                 /* ignore out-of-range mappings */
+    index=(from>>8)*row_size+(from&0xFF);
+  }
+
+  /* Optimize away useless identity mappings.  This is only expected
+   * to be useful with linear encodings. */
+  if(index==to && (index<*first || index>*last))
+    return 0;
+  if(*encsize==0) {
+    *encsize=index<256?256:0x10000;
+    if((*enc=
+        (unsigned short*)xalloc(*encsize*sizeof(unsigned short)))==NULL) {
+      encsize=0;
+      return 1;
+    }
+  } else if(*encsize<=index) {
+    *encsize=0x10000;
+    if((newenc=(unsigned short*)xrealloc(enc, *encsize))==NULL)
+      return 1;
+    *enc=newenc;
+  }
+  if(*first>*last) {
+    *first=*last=index;
+  }
+  if(index<*first) {
+    for(i=index; i<*first; i++)
+      (*enc)[i]=i;
+    *first=index;
+  }
+  if(index>*last) {
+    for(i=*last+1; i<=index; i++)
+      (*enc)[i]=i;
+    *last=index;
+  }
+  (*enc)[index]=to;
+  return 0;
+}
+
 /* Parser. */
 static struct font_encoding*
 parseEncodingFile(FontFilePtr f)
@@ -344,7 +413,7 @@ parseEncodingFile(FontFilePtr f)
   int line;
 
   unsigned short *enc=NULL;
-  char **nam=NULL;
+  char **nam=NULL, **newnam;
   unsigned i, first=0xFFFF, last=0, encsize=0, namsize=0;
   struct font_encoding *encoding=NULL;
   struct font_encoding_mapping *mapping=NULL;
@@ -357,7 +426,7 @@ no_encoding:
   line=getnextline(f);
   switch(line) {
   case EOF_LINE:
-    goto done;
+    goto error;
   case STARTENCODING_LINE:
     if((encoding=
         (struct font_encoding*)xalloc(sizeof(struct font_encoding)))
@@ -367,11 +436,12 @@ no_encoding:
       goto error;
     strcpy(encoding->name, keyword_value);
     encoding->size=256;
+    encoding->row_size=0;
     encoding->mappings=NULL;
     encoding->next=NULL;
     goto no_mapping;
   default:
-    goto no_encoding;           /* ignore unknown lines */
+    goto error;
   }
 
 no_mapping:
@@ -388,7 +458,8 @@ no_mapping:
     }
     goto no_mapping;
   case SIZE_LINE:
-    encoding->size=value1; 
+    encoding->size=value1;
+    encoding->row_size=value2;
     goto no_mapping;
   case STARTMAPPING_LINE:
     if(!strcasecmp(keyword_value, "unicode")) {
@@ -400,6 +471,10 @@ no_mapping:
       mapping->type = FONT_ENCODING_UNICODE;
       mapping->pid = 0;
       mapping->eid = 0;
+      mapping->recode=0;
+      mapping->name=0;
+      mapping->client_data=0;
+      mapping->next=0;
     } else if(!strcasecmp(keyword_value, "cmap")) {
       if((mapping=
           (struct font_encoding_mapping*)
@@ -409,6 +484,10 @@ no_mapping:
       mapping->type = FONT_ENCODING_TRUETYPE;
       mapping->pid = value1;
       mapping->eid = value2;
+      mapping->recode=0;
+      mapping->name=0;
+      mapping->client_data=0;
+      mapping->next=0;
       goto mapping;
     } else if(!strcasecmp(keyword_value, "postscript")) {
       if((mapping=
@@ -419,6 +498,10 @@ no_mapping:
       mapping->type = FONT_ENCODING_POSTSCRIPT;
       mapping->pid = 0;
       mapping->eid = 0;
+      mapping->recode=0;
+      mapping->name=0;
+      mapping->client_data=0;
+      mapping->next=0;
       goto string_mapping;
     } else {                    /* unknown mapping type -- ignore */
       goto skipmapping;
@@ -450,14 +533,21 @@ mapping:
         (struct font_encoding_simple_mapping*)
         xalloc(sizeof(struct font_encoding_simple_mapping)))==NULL)
       goto error;
-    sm->first=first;
-    sm->len=last-first+1;
-    if((sm->map=
-        (unsigned short*)xalloc(sm->len*sizeof(unsigned short)))
-       ==NULL) {
-      xfree(sm);
-      mapping->client_data=sm=NULL;
-      goto error;
+    sm->row_size=encoding->row_size;
+    if(first<=last) {
+      sm->first=first;
+      sm->len=last-first+1;
+      if((sm->map=
+          (unsigned short*)xalloc(sm->len*sizeof(unsigned short)))
+         ==NULL) {
+        xfree(sm);
+        mapping->client_data=sm=NULL;
+        goto error;
+      }
+    } else {
+      sm->first=0;
+      sm->len=0;
+      sm->map=0;
     }
     for(i=0; i<sm->len; i++)
       sm->map[i]=enc[first+i];
@@ -465,67 +555,46 @@ mapping:
     mapping=0;
     first=0xFFFF; last=0;
     goto no_mapping;
+
   case CODE_LINE:
-    if(value1>0x10000) goto mapping;
-    /* Optimize away useless identity mappings */
-    if(value1==value2 && (value1<first || value1>last))
-      goto mapping;
-    if(encsize==0) {
-      encsize=value1<256?256:0x10000;
-      if((enc=
-          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL) {
-        encsize=0;
-        goto error;
-      }
-    } else if(encsize<=value1) {
-      encsize=0x10000;
-      if((enc=(unsigned short*)xrealloc(enc, encsize))==NULL)
-        goto error;
-    }
-    if(first>last) {
-      first=last=value1;
-    }
-    if(value1<first) {
-      for(i=value1; i<first; i++)
-        enc[i]=i;
-      first=value1;
-    }
-    if(value1>last) {
-      for(i=last+1; i<=value1; i++)
-        enc[i]=i;
-      last=value1;
-    }
-    enc[value1]=value2;
+    if(setCode(value1, value2, encoding->row_size,
+               &first, &last, &encsize, &enc))
+      goto error;
     goto mapping;
+
+  case CODE_RANGE_LINE:
+    if(value1>0x10000)
+      value1=0x10000;
+    if(value2>0x10000)
+      value2=0x10000;
+    if(value2<value1)
+      goto mapping;
+    /* Do the last value first to avoid having to realloc() */
+    if(setCode(value2, value3+(value2-value1), encoding->row_size,
+               &first, &last, &encsize, &enc))
+      goto error;
+    for(i=value1; i<value2; i++) {
+      if(setCode(i, value3+(i-value1), encoding->row_size,
+                 &first, &last, &encsize, &enc))
+        goto error;
+    }
+    goto mapping;
+    
   case CODE_UNDEFINE_LINE:
-    if(value1>=0x10000 || value2>=0x10000) goto mapping;
-    if(value2<value1) {
-      i=value1; value1=value2; value2=i;
-    }
-    if(encsize==0) {
-      encsize=value2<256?256:0x10000;
-      if((enc=
-          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL) {
-        encsize=0;
+    if(value1>0x10000)
+      value1=0x10000;
+    if(value2>0x10000)
+      value2=0x10000;
+    if(value2<value1)
+      goto mapping;
+    /* Do the last value first to avoid having to realloc() */
+    if(setCode(value2, 0, encoding->row_size,
+               &first, &last, &encsize, &enc))
+      goto error;
+    for(i=value1; i<value2; i++) {
+      if(setCode(i, 0, encoding->row_size,
+                 &first, &last, &encsize, &enc))
         goto error;
-      }
-    } else if(encsize<=value2) {
-      encsize=0x10000;
-      if((enc=(unsigned short*)xrealloc(enc, encsize))==NULL)
-        goto error;
-    }
-    if(first>last) {
-      first=value1;
-      last=value2;
-    }
-    if(value1<first) {
-      first=value1;
-    }
-    if(value1>last) {
-      last=value2;
-    }
-    for(i=value1; i<=value2; i++) {
-      enc[i]=0;
     }
     goto mapping;
 
@@ -543,12 +612,18 @@ string_mapping:
         (struct font_encoding_simple_naming*)
         xalloc(sizeof(struct font_encoding_simple_naming)))==NULL)
       goto error;
-    sn->first=first;
-    sn->len=last-first+1;
-    if((sn->map=
-        (char**)xalloc(sn->len*sizeof(char*)))
-       ==NULL) {
-      xfree(sn);
+    if(first<=last) {
+      sn->first=first;
+      sn->len=last-first+1;
+      if((sn->map=
+          (char**)xalloc(sn->len*sizeof(char*)))
+         ==NULL) {
+        xfree(sn);
+      } else {
+        sn->first=0;
+        sn->len=0;
+        sn->map=0;
+      }
       mapping->client_data=sn=NULL;
       goto error;
     }
@@ -568,8 +643,9 @@ string_mapping:
       }
     } else if(namsize<=value1) {
       namsize=0x10000;
-      if((nam=(char**)xrealloc(nam, namsize))==NULL)
+      if((newnam=(char**)xrealloc(nam, namsize))==NULL)
         goto error;
+      nam=newnam;
     }
     if(first>last) {
       first=last=value1;

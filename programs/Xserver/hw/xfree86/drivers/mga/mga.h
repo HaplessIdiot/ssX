@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.34 1999/03/21 07:35:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.35 1999/04/17 07:06:12 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -162,6 +162,7 @@ typedef struct {
     Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
+    void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
     Bool		(*i2cInit)(ScrnInfoPtr);
     I2CBusPtr		I2C;
     Bool		FBDev;

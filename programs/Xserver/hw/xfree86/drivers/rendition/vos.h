@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vos.h,v 1.2 1999/04/17 07:06:43 dawes Exp $ */
 /*
  * file vos.h
  *
@@ -16,7 +16,6 @@
 
 #include "vtypes.h"
 #include <compiler.h>
-#include <unistd.h>
 
 
 

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.6 1998/11/01 07:57:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.7 1998/11/15 04:30:01 dawes Exp $ */
 
 /*
  * SimpleMenuP.h - Private Header file for SimpleMenu widget.
@@ -79,6 +79,8 @@ typedef struct _SimpleMenuPart {
   Dimension left_margin;
   Dimension right_margin;
   XawDisplayList *display_list;
+  Widget sub_menu;
+  unsigned char state;
 } SimpleMenuPart;
 
 typedef struct _SimpleMenuRec {

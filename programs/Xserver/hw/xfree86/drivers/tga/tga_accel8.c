@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.5 1999/02/07 11:11:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.6 1999/02/28 11:19:42 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -60,24 +60,24 @@
 
 /* prototypes */
 
-unsigned int __inline__ fb_offset(ScrnInfoPtr pScrn, int x, int y);
-void TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
+static unsigned int __inline__ fb_offset(ScrnInfoPtr pScrn, int x, int y);
+static void TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			 int y2, int w);
-void TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
+static void TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			  int y2, int w);
-void TGASync();
-void TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+static void TGASync();
+static void TGASetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 			  unsigned int planemask);
-void TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h);
-void TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
+static void TGASubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h);
+static void TGASetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 				   int rop, unsigned int planemask,
 				   int transparency_color);
-void TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
+static void TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 				     int x2, int y2, int w, int h);
-void TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
+static void TGASetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
 				   int fg, int bg, int rop,
 				   unsigned int planemask);
-void TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx,
+static void TGASubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx,
 					 int paty, int x, int y, int w,
 					 int h);
 
@@ -92,7 +92,7 @@ static int transparent_pattern_p;
  * from the FbInit() function in the SVGA driver.
  */
 Bool
-DEC21030AccelInit(ScreenPtr pScreen)
+DEC21030AccelInit8(ScreenPtr pScreen)
 {
   XAAInfoRecPtr TGA_AccelInfoRec;
   BoxRec AvailFBArea;

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.8 1999/02/28 11:20:15 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.9 1999/03/14 03:22:28 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -338,16 +338,11 @@ SwitchTextSource(xedit_flist_item *item)
     XtSetValues(labelwindow, args, num_args);
 
     for (i = 0; i < 3; i++)
-	if (texts[i] != textwindow
-	    && XawTextGetSource(texts[i]) == item->source
+	if (XawTextGetSource(texts[i]) == item->source
 	    && XtIsManaged(texts[i]))
 	    break;
 
     if (i < 3) {
-	/* Text may have changed in the other window, before the
-	 * displayPosition or insertPosition, and it is not worth
-	 * the work to calculate the offset changes outside of Xaw.
-	 */
 	num_args = 0;
 	XtSetArg(args[num_args], XtNdisplayPosition,
 	     &(item->display_position));			++num_args;
@@ -406,6 +401,7 @@ ChangeTextWindow(Widget w)
 	XtSetValues(textwindow, args, 1);
 	XtSetArg(args[0], XtNdisplayCaret, True);
 	XtSetValues(w, args, 1);
+	XawTextUnsetSelection(textwindow);
 	textwindow = w;
     }
 }
@@ -437,6 +433,9 @@ void
 PopupMenu(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     Cardinal n_params = num_params ? *num_params : 0;
+
+    if (*num_params && XmuCompareISOLatin1(*params, "editMenu") == 0)
+	SetEditMenu();
 
     XtCallActionProc(w, "XawPositionSimpleMenu", event, params, n_params);
     XtCallActionProc(w, "XtMenuPopup", event, params, n_params);
@@ -524,8 +523,7 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
 
     labelwindow = labels[0];
-    ChangeTextWindow(texts[0]);
-    XtSetKeyboardFocus(topwindow, textwindow);
+    XeditFocus(texts[0], NULL, NULL, NULL);
 }
 
 void

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/SmeBSBP.h,v 1.3 1998/08/20 13:59:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSBP.h,v 1.4 1998/10/03 08:42:21 dawes Exp $ */
 
 #ifndef _XawSmeBSBP_h
 #define _XawSmeBSBP_h
@@ -69,6 +69,9 @@ typedef struct {
     Dimension left_bitmap_height;
     Dimension right_bitmap_width;
     Dimension right_bitmap_height;
+
+    /* new resources */
+    String menu_name;			/* name of nested sub menu or NULL */
 } SmeBSBPart;
 
 /*

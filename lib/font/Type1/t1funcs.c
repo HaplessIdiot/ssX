@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.10 1999/01/31 04:59:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.11 1999/03/14 11:17:44 dawes Exp $ */
 
 /*
 
@@ -303,9 +303,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                } else {
                  int j;
                  if(mapping->type==FONT_ENCODING_UNICODE) {
-                   codename=unicodetoPSname(font_encoding_recode(i,mapping));
+                   codename=unicodetoPSname(font_encoding_recode(i,
+                                                                 encoding,
+                                                                 mapping));
                  } else
-                   codename=font_encoding_name(i, mapping);
+                   codename=font_encoding_name(i, encoding, mapping);
                  len=codename?strlen(codename):0;
                }
                

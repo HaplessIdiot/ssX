@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.2 1999/04/17 07:06:36 dawes Exp $ */
 /*
  * includes
  */
@@ -23,7 +23,7 @@
  */
 
 
-#if NOT_YET_USED
+#ifdef NOT_YET_USED
 /*
  * functions
  */

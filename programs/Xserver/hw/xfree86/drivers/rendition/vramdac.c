@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.2 1999/04/17 07:06:44 dawes Exp $ */
 /*
  * includes
  */
@@ -207,9 +207,9 @@ int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
  */
 void v_enablecursor(struct v_board_t *board, int type, int size)
 {
-    static ctypes[]={ BT485_DISABLE_CURSOR, BT485_2_COLOR_CURSOR,
+    static vu8 ctypes[]={ BT485_DISABLE_CURSOR, BT485_2_COLOR_CURSOR,
                       BT485_3_COLOR_CURSOR, BT485_X_WINDOW_CURSOR };
-    static csizes[]={ BT485_32_BY_32_CURSOR, BT485_64_BY_64_CURSOR };
+    static vu8 csizes[]={ BT485_32_BY_32_CURSOR, BT485_64_BY_64_CURSOR };
   
     vu16 iob=board->io_base+RAMDACBASEADDR;
 

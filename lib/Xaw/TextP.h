@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.10 1999/01/11 05:13:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.11 1999/03/14 03:21:13 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -215,6 +215,7 @@ typedef struct _TextPart {
     char doing_numeric_hack;
 #endif
     char source_changed;
+    Boolean overwrite;			    /* Overwrite mode */
 
     /* private state, shared w/Source and Sink */
     Boolean redisplay_needed;		     /* in SetValues */
@@ -222,6 +223,12 @@ typedef struct _TextPart {
     int from_left;			     /* Cursor position */
 
     XawTextKillRing *kill_ring_ptr;
+
+    /* new resources and states, for text edition
+     * Note: a fixed width font is required for these resources/states.
+     */
+    short left_column, right_column;
+    XawTextJustifyMode justify;
 } TextPart;
 
 #define XtRWrapMode "WrapMode"
@@ -229,6 +236,7 @@ typedef struct _TextPart {
 #define XtRScrollMode		"ScrollMode"
 #define XtRResizeMode "ResizeMode"
 #endif
+#define XtRJustifyMode		"JustifyMode"
 
 /* full instance record */
 typedef struct _TextRec {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.3 1999/04/17 07:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.4 1999/04/18 04:08:39 dawes Exp $ */
 /*
  * file vvga.c
  *
@@ -11,13 +11,15 @@
  * includes
  */
 
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+
 #include "vvga.h"
 #include "vtypes.h"
 #include "vos.h"
 #include "v1kregs.h"
 #include "v2kregs.h"
-#include "xf86.h"
-#include "xf86_OSproc.h"
 
 void set_PLL(vu16, vu32);
 

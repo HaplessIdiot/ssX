@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.50 1999/03/28 15:33:21 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.51 1999/04/11 13:11:34 dawes Exp $
  */
 
 /*
@@ -132,7 +132,7 @@
 #ifdef __hpux
 #define TTYDEV		"/dev/pty/ttyxx"
 #else	/* !__hpux */
-#ifdef __osf__
+#if defined(__osf__) || (defined(linux) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1)
 #define TTYDEV		"/dev/ttydirs/xxx/xxxxxxxxxxxxxx"
 #else
 #define	TTYDEV		"/dev/ttyxx"

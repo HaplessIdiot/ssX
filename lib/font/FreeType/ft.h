@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.9 1999/01/31 04:59:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.10 1999/02/07 06:18:14 dawes Exp $ */
 
 #undef DEBUG_TRUETYPE
 
@@ -62,8 +62,9 @@ THE SOFTWARE.
 
 struct ttf_mapping
 {
+  int has_cmap;
   TT_CharMap cmap;
-  int size;
+  struct font_encoding *encoding;
   struct font_encoding_mapping *mapping;
 };
 

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.11 1999/04/04 08:46:26 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.12 1999/04/11 13:11:23 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -500,7 +500,6 @@ static void
 SourceChanged(Widget w, XtPointer client_data, XtPointer call_data)
 {
     xedit_flist_item *item = (xedit_flist_item*)client_data;
-    static Bool first_time = True;
     Bool changed = (Bool)call_data;
 
     if (changed) {
@@ -512,20 +511,6 @@ SourceChanged(Widget w, XtPointer client_data, XtPointer call_data)
 	if (item->flags & CHANGED_BIT)
 	    ResetSourceChanged(item);
 	return;
-    }
-
-    if (first_time) {
-	if (!flist.pixmap && strlen(app_resources.changed_pixmap_name)) {
-	    XrmValue from, to;
-
-	    from.size = strlen(app_resources.changed_pixmap_name);
-	    from.addr = app_resources.changed_pixmap_name;
-	    to.size = sizeof(Pixmap);
-	    to.addr = (XtPointer)&(flist.pixmap);
-
-	    XtConvertAndStore(flist.popup, XtRString, &from, XtRBitmap, &to);
-	}
-	first_time = False;
     }
 
     if (flist.pixmap) {

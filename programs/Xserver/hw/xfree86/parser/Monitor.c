@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.7 1999/04/04 08:46:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.8 1999/04/05 07:13:17 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -627,24 +627,24 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 	{
 		fprintf (cf, "Section \"Monitor\"\n");
 		if (ptr->mon_identifier)
-			fprintf (cf, "\tIdentifier     \"%s\"\n", ptr->mon_identifier);
+			fprintf (cf, "\tIdentifier   \"%s\"\n", ptr->mon_identifier);
 		if (ptr->mon_vendor)
-			fprintf (cf, "\tVendorName         \"%s\"\n", ptr->mon_vendor);
+			fprintf (cf, "\tVendorName   \"%s\"\n", ptr->mon_vendor);
 		if (ptr->mon_modelname)
-			fprintf (cf, "\tModelName      \"%s\"\n", ptr->mon_modelname);
+			fprintf (cf, "\tModelName    \"%s\"\n", ptr->mon_modelname);
 		if (ptr->mon_width)
-			fprintf (cf, "\tDisplaySize     %d\t%d\n",
+			fprintf (cf, "\tDisplaySize  %d\t%d\n",
 					 ptr->mon_width,
 					 ptr->mon_height);
 		for (i = 0; i < ptr->mon_n_hsync; i++)
 		{
-			fprintf (cf, "\tHorizSync     %2.1f - %2.1f\n",
+			fprintf (cf, "\tHorizSync    %2.1f - %2.1f\n",
 					 ptr->mon_hsync[i].lo,
 					 ptr->mon_hsync[i].hi);
 		}
 		for (i = 0; i < ptr->mon_n_vrefresh; i++)
 		{
-			fprintf (cf, "\tVertRefresh     %2.1f - %2.1f\n",
+			fprintf (cf, "\tVertRefresh  %2.1f - %2.1f\n",
 					 ptr->mon_vrefresh[i].lo,
 					 ptr->mon_vrefresh[i].hi);
 		}
@@ -652,10 +652,10 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 			if (ptr->mon_gamma_red == ptr->mon_gamma_green
 				&& ptr->mon_gamma_red == ptr->mon_gamma_blue)
 			{
-				fprintf (cf, "\tGamma           %.4g\n",
+				fprintf (cf, "\tGamma        %.4g\n",
 					ptr->mon_gamma_red);
 			} else {
-				fprintf (cf, "\tGamma           %.4g %.4g %.4g\n",
+				fprintf (cf, "\tGamma        %.4g %.4g %.4g\n",
 					ptr->mon_gamma_red,
 					ptr->mon_gamma_green,
 					ptr->mon_gamma_blue);
@@ -694,7 +694,7 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 		}
 		for (optr = ptr->mon_option_lst; optr; optr = optr->list.next)
 		{
-			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
+			fprintf (cf, "\tOption       \"%s\"", optr->opt_name);
 			if (optr->opt_val)
 				fprintf (cf, " \"%s\"", optr->opt_val);
 			fprintf (cf, "\n");

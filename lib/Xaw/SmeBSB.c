@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.7 1998/10/03 08:42:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.8 1998/11/15 04:30:02 dawes Exp $ */
 
 /*
  * SmeBSB.c - Source code file for BSB Menu Entry object.
@@ -162,6 +162,15 @@ static XtResource resources[] = {
     offset(fontset),
     XtRString,
     XtDefaultFontSet
+  },
+  {
+    XtNmenuName,
+    XtCMenuName,
+    XtRString,
+    sizeof(String),
+    offset(menu_name),
+    XtRImmediate,
+    (XtPointer)NULL
   },
 };
 #undef offset

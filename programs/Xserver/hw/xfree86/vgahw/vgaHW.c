@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.20 1999/04/18 04:08:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.21 1999/04/18 12:59:48 dawes Exp $ */
 
 /*
  *
@@ -1407,32 +1407,27 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
     hwp = VGAHWPTRLVAL(scrp) = xnfcalloc(sizeof(vgaHWRec), 1);
     regp = &VGAHWPTR(scrp)->ModeReg;
     if (scrp->bitsPerPixel == 1) {
+	rgb blackColour = scrp->display->blackColour,
+	    whiteColour = scrp->display->whiteColour;
+
+	/* Detect default for black & white */
+	if (!blackColour.red && !blackColour.green && !blackColour.blue &&
+	    !whiteColour.red && !whiteColour.green && !whiteColour.blue)
+	    whiteColour.red = whiteColour.green = whiteColour.blue = 0x3F;
+
         /*
          * initialize default colormap for monochrome
          */
         for (i=0; i<3;   i++) regp->DAC[i] = 0x00;
         for (i=3; i<768; i++) regp->DAC[i] = 0x3F;
-        /* The old blackColour/whiteColour handling needs to be redone XXX */
         i = BLACK_VALUE * 3;
-#if 0
-        regp->DAC[i++] = scrp->blackColour.red;
-        regp->DAC[i++] = scrp->blackColour.green;
-        regp->DAC[i] = scrp->blackColour.blue;
-#else
-        regp->DAC[i++] = 0;
-        regp->DAC[i++] = 0;
-        regp->DAC[i] = 0;
-#endif
+        regp->DAC[i++] = blackColour.red;
+        regp->DAC[i++] = blackColour.green;
+        regp->DAC[i] = blackColour.blue;
         i = WHITE_VALUE * 3;
-#if 0
-        regp->DAC[i++] = scrp->whiteColour.red;
-        regp->DAC[i++] = scrp->whiteColour.green;
-        regp->DAC[i] = scrp->whiteColour.blue;
-#else
-        regp->DAC[i++] = 0x3F;
-        regp->DAC[i++] = 0x3F;
-        regp->DAC[i] = 0x3F;
-#endif
+        regp->DAC[i++] = whiteColour.red;
+        regp->DAC[i++] = whiteColour.green;
+        regp->DAC[i] = whiteColour.blue;
         i = OVERSCAN_VALUE * 3;
         regp->DAC[i++] = 0x00;
         regp->DAC[i++] = 0x00;

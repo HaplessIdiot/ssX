@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.11 1999/01/31 04:59:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.12 1999/01/31 13:45:17 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -42,26 +42,34 @@ ttf_pick_cmap(char *xlfd, int length, char *filename, TT_Face face,
   struct font_encoding_mapping *mapping;
   TT_CharMap cmap;
 
-  char *encoding_name;
+  char *encoding_name=0;
 
-  if(xlfd && (encoding_name=font_encoding_from_xlfd(xlfd, length))) {
-    if(!strcasecmp(encoding_name, "truetype-raw"))
-      return 1;
-    else {
-      if(encoding=font_encoding_find(encoding_name, filename)) {
-        for(mapping=encoding->mappings; mapping; mapping=mapping->next) {
-          if(!find_cmap(mapping->type, mapping->pid, mapping->eid, face, 
-                        &cmap)) {
-            tm->cmap=cmap;
-            tm->size=encoding->size;
-            tm->mapping=mapping;
-            return 0;
-          }
+  if(xlfd)
+    encoding_name=font_encoding_from_xlfd(xlfd, length);
+  if(!encoding_name)
+    encoding_name="iso8859-1";
+
+  if(!strcasecmp(encoding_name, "truetype-raw")) {
+    tm->has_cmap=0;
+    tm->encoding=0;
+    tm->mapping=0;
+    return 0;
+  } else {
+    if(encoding=font_encoding_find(encoding_name, filename)) {
+      for(mapping=encoding->mappings; mapping; mapping=mapping->next) {
+        if(!find_cmap(mapping->type, mapping->pid, mapping->eid, face, 
+                      &cmap)) {
+          tm->has_cmap=1;
+          tm->cmap=cmap;
+          tm->encoding=encoding;
+          tm->mapping=mapping;
+          return 0;
         }
       }
     }
   }
 
+  /* Failed to find a suitable mapping and cmap */
   return find_cmap_default(face, tm);
 }
 
@@ -72,22 +80,27 @@ find_cmap_default(TT_Face face, struct ttf_mapping *tm)
 
   /* Try to find a Unicode charmap */
     if(!find_cmap(FONT_ENCODING_UNICODE, 0, 0, face, &cmap)) {
+      tm->has_cmap=1;
       tm->cmap=cmap;
+      tm->encoding=0;
       tm->mapping=0;
-      tm->size=256;
       return 0;
     }
 
   /* Try to get the first charmap in the file */
   if(!TT_Get_CharMap(face, 0, &cmap)) {
+    tm->has_cmap=1;
     tm->cmap=cmap;
-    tm->size=256;
+    tm->encoding=0;
     tm->mapping=0;
-      return 0;
+    return 0;
   }
 
   /* Tough. */
-  return 1;
+  tm->has_cmap=0;
+  tm->encoding=0;
+  tm->mapping=0;
+  return 0;
 }
 
 
@@ -149,10 +162,17 @@ ttf_remap(unsigned code, struct ttf_mapping *tm)
 {
   unsigned index;
 
-  if(tm->mapping)
-    index=font_encoding_recode(code, tm->mapping);
+  if(tm->encoding) {
+    index=font_encoding_recode(code, tm->encoding, tm->mapping);
+  } else {
+    if(code<0x100 || !tm->has_cmap)
+      index=code;
+    else
+      return 0;
+  }
+  if(tm->has_cmap)
+    return TT_Char_Index(tm->cmap, index);
   else
-    index=code;
-  return TT_Char_Index(tm->cmap, index);
+    return index;
 }
 

@@ -20,20 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontencI.h,v 1.1 1999/01/31 04:59:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontencI.h,v 1.2 1999/02/07 06:18:28 dawes Exp $ */
 
 /* Private types and functions for the encoding code. */
 /* Used by the files `fontenc.h' and `encparse.h' */
 
 struct font_encoding_simple_mapping {
+  unsigned len;                 /* might be 0x10000 */
+  unsigned short row_size;
   unsigned short first;
-  unsigned short len;
   unsigned short *map;
 };
 
 struct font_encoding_simple_naming {
+  unsigned len;
   unsigned short first;
-  unsigned short len;
   char **map;
 };
 

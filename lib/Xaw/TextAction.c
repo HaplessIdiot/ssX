@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.20 1999/03/21 07:34:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.21 1999/04/04 08:46:03 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +49,8 @@ in this Software without prior written authorization from The Open Group.
 #ifdef NO_NUMERIC_HACK
 #define MULT(w)			(w->text.mult)
 #else
-#define MULT(w)			(w->text.mult == 0 ? 4 : w->text.mult)
+#define MULT(w)			(w->text.mult == 0 ? 4 :		\
+				 w->text.mult == 32767 ? -4 : w->text.mult)
 #endif
 
 #define KILL_RING_APPEND	2
@@ -67,13 +68,19 @@ static void _SelectionReceived(Widget, XtPointer, Atom*, Atom*, XtPointer,
 			       unsigned long*, int*);
 static void _LoseSelection(Widget, Atom*, char**, int*);
 static void AutoFill(TextWidget);
+static Bool BlankLine(Widget, XawTextPosition, int*);
 static Boolean ConvertSelection(Widget, Atom*, Atom*, Atom*, XtPointer*,
 				unsigned long*, int*);
 static void DeleteOrKill(TextWidget, XEvent*, XawTextScanDirection,
 			 XawTextScanType, Bool, Bool);
+static int DoFormatText(TextWidget, XawTextPosition, Bool, int,
+			XawTextBlock*, XawTextPosition*, int, Bool);
 static void EndAction(TextWidget);
+static int FormatText(TextWidget, XawTextPosition, Bool,
+		      XawTextPosition*, int);
 static int FormRegion(TextWidget, XawTextPosition, XawTextPosition,
 		      XawTextPosition*, int);
+static Bool GetBlockBoundaries(TextWidget, XawTextPosition*, XawTextPosition*);
 static void GetSelection(Widget, Time, String*, Cardinal);
 static char *IfHexConvertHexElseReturnParam(char*, int*);
 static void InsertNewCRs(TextWidget, XawTextPosition, XawTextPosition,
@@ -92,6 +99,12 @@ static void NotePosition(TextWidget, XEvent*);
 static void StartAction(TextWidget, XEvent*);
 static XawTextPosition StripOutOldCRs(TextWidget, XawTextPosition,
 				      XawTextPosition, XawTextPosition*, int);
+static Bool StripSpaces(TextWidget, XawTextPosition, XawTextPosition,
+			XawTextPosition *, int);
+static Bool Tabify(TextWidget, XawTextPosition, XawTextPosition,
+		   XawTextPosition*, int);
+static Bool Untabify(TextWidget, XawTextPosition, XawTextPosition,
+		     XawTextPosition*, int);
 
 /*
  * Actions
@@ -107,6 +120,7 @@ static void DeleteCurrentSelection(Widget, XEvent*, String*, Cardinal*);
 static void DeleteForwardChar(Widget, XEvent*, String*, Cardinal*);
 static void DeleteForwardWord(Widget, XEvent*, String*, Cardinal*);
 static void FormParagraph(Widget, XEvent*, String*, Cardinal*);
+static void Indent(Widget, XEvent*, String*, Cardinal*);
 static void InsertChar(Widget, XEvent*, String*, Cardinal*);
 static void InsertNewLine(Widget, XEvent*, String*, Cardinal*);
 static void InsertNewLineAndBackup(Widget, XEvent*, String*, Cardinal*);
@@ -157,6 +171,7 @@ static void TextEnterWindow(Widget, XEvent*, String*, Cardinal*);
 static void TextFocusIn(Widget, XEvent*, String*, Cardinal*);
 static void TextFocusOut(Widget, XEvent*, String*, Cardinal*);
 static void TextLeaveWindow(Widget, XEvent*, String*, Cardinal*);
+static void ToggleOverwrite(Widget, XEvent*, String*, Cardinal*);
 static void TransposeCharacters(Widget, XEvent*, String*, Cardinal*);
 static void Undo(Widget, XEvent*, String*, Cardinal*);
 
@@ -193,6 +208,7 @@ void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 				 String*, Cardinal);
 void _XawTextVScroll(TextWidget, int);
 void XawTextScroll(TextWidget, int, int);
+void _XawTextSetLineAndColumnNumber(TextWidget, Bool);
 
 /*
  * Defined in TextSrc.c
@@ -520,30 +536,36 @@ static void
 Move(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
      XawTextScanType type, Bool include)
 {
-  XawTextPosition insertPos;
+    XawTextPosition insertPos;
+    short mult = MULT(ctx);
 
-  insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
-		      type, dir, MULT(ctx), include);
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
 
-  /*
-   * Avoid screen flashing
-   */
-  if (ctx->text.s.left != ctx->text.s.right)
-    XawTextUnsetSelection((Widget)ctx);
-  else if (insertPos == ctx->text.insertPos
-	   && IsPositionVisible(ctx, insertPos)) {
-      ctx->text.mult = 1;
+    insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+			type, dir, mult, include);
+
+    /*
+     * Avoid screen flashing
+     */
+    if (ctx->text.s.left != ctx->text.s.right)
+	XawTextUnsetSelection((Widget)ctx);
+    else if (insertPos == ctx->text.insertPos
+	     && IsPositionVisible(ctx, insertPos)) {
+	ctx->text.mult = 1;
 #ifndef NO_NUMERIC_HACK
-      ctx->text.doing_numeric_hack = False;
+	ctx->text.doing_numeric_hack = False;
 #endif
-      return;
-  }
+	return;
+    }
 
-  StartAction(ctx, event);
-  ctx->text.showposition = True;
-  ctx->text.from_left = -1;
-      ctx->text.insertPos = insertPos;
-  EndAction(ctx);
+    StartAction(ctx, event);
+    ctx->text.showposition = True;
+    ctx->text.from_left = -1;
+    ctx->text.insertPos = insertPos;
+    EndAction(ctx);
 }
 
 /*ARGSUSED*/
@@ -652,35 +674,41 @@ MoveToLineStart(Widget w, XEvent *event, String *p, Cardinal *n)
 static void
 MoveLine(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
 {
-  XawTextPosition cnew, next_line, ltemp;
-  int itemp, from_left;
+    XawTextPosition cnew, next_line, ltemp;
+    int itemp, from_left;
+    short mult = MULT(ctx);
 
-  XawTextUnsetSelection((Widget)ctx);
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
 
-  StartAction(ctx, event);
+    XawTextUnsetSelection((Widget)ctx);
 
-  if (dir == XawsdLeft) {
+    StartAction(ctx, event);
+
+    if (dir == XawsdLeft) {
 #ifndef NO_NUMERIC_HACK
-      if (ctx->text.mult == 0)
-	  ctx->text.mult = 4;
+	if (mult == 0)
+	    mult = 4;
 #endif
-      ctx->text.mult++;
-  }
+	mult++;
+    }
 
-  cnew = SrcScan(ctx->text.source, ctx->text.insertPos,
-		 XawstEOL, XawsdLeft, 1, False);
+    cnew = SrcScan(ctx->text.source, ctx->text.insertPos,
+		   XawstEOL, XawsdLeft, 1, False);
 
-  if (ctx->text.from_left < 0)
-    FindDist(ctx->text.sink, cnew, ctx->text.left_margin, ctx->text.insertPos,
-	     &ctx->text.from_left, &ltemp, &itemp);
+    if (ctx->text.from_left < 0)
+	FindDist(ctx->text.sink, cnew, ctx->text.left_margin, ctx->text.insertPos,
+		 &ctx->text.from_left, &ltemp, &itemp);
 
-  cnew = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, dir,
-		  MULT(ctx), (dir == XawsdRight));
+    cnew = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, dir,
+		   mult, (dir == XawsdRight));
 
-  next_line = SrcScan(ctx->text.source, cnew, XawstEOL, XawsdRight, 1, False);
+    next_line = SrcScan(ctx->text.source, cnew, XawstEOL, XawsdRight, 1, False);
 
-  FindPos(ctx->text.sink, cnew, ctx->text.left_margin, ctx->text.from_left,
-	  False, &ctx->text.insertPos, &from_left, &itemp);
+    FindPos(ctx->text.sink, cnew, ctx->text.left_margin, ctx->text.from_left,
+	    False, &ctx->text.insertPos, &from_left, &itemp);
 
   if (from_left < ctx->text.from_left)
     {
@@ -736,25 +764,31 @@ MoveEndOfFile(Widget w, XEvent *event, String *p, Cardinal *n)
 static void
 Scroll(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
 {
-  if (ctx->text.lt.lines > 1
-      && (dir == XawsdRight
-	  || ctx->text.lastPos >= ctx->text.lt.info[1].position))
-  {
-    StartAction(ctx, event);
+    short mult = MULT(ctx);
 
-    if (dir == XawsdLeft)
-      _XawTextVScroll(ctx, MULT(ctx));
-    else
-      _XawTextVScroll(ctx, -MULT(ctx));
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
 
-    EndAction(ctx);
-  }
-  else {
-      ctx->text.mult = 1;
+    if (ctx->text.lt.lines > 1
+	&& (dir == XawsdRight
+	    || ctx->text.lastPos >= ctx->text.lt.info[1].position)) {
+	StartAction(ctx, event);
+
+	if (dir == XawsdLeft)
+	    _XawTextVScroll(ctx, mult);
+	else
+	    _XawTextVScroll(ctx, -mult);
+
+	EndAction(ctx);
+    }
+    else {
+	ctx->text.mult = 1;
 #ifndef NO_NUMERIC_HACK
-      ctx->text.doing_numeric_hack = False;
+	ctx->text.doing_numeric_hack = False;
 #endif
-  }
+    }
 }
 
 /*ARGSUSED*/
@@ -1242,31 +1276,36 @@ static void
 DeleteOrKill(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
 	     XawTextScanType type, Bool include, Bool kill)
 {
-  XawTextPosition from, to;
+    XawTextPosition from, to;
+    short mult = MULT(ctx);
 
-  StartAction(ctx, event);
-  to = SrcScan(ctx->text.source, ctx->text.insertPos,
-	       type, dir, MULT(ctx), include);
-
-  /*
-   * If no movement actually happened, then bump the count and try again.
-   * This causes the character position at the very beginning and end of
-   * a boundary to act correctly
-   */
-  if (to == ctx->text.insertPos)
-    to = SrcScan(ctx->text.source, ctx->text.insertPos,
-		 type, dir, MULT(ctx) + 1, include);
-
-  if (dir == XawsdLeft)
-    {
-      from = to;
-      to = ctx->text.insertPos;
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
     }
-  else 
-    from = ctx->text.insertPos;
 
-  _DeleteOrKill(ctx, from, to, kill);
-  EndAction(ctx);
+    StartAction(ctx, event);
+    to = SrcScan(ctx->text.source, ctx->text.insertPos,
+		 type, dir, mult, include);
+
+    /*
+     * If no movement actually happened, then bump the count and try again.
+     * This causes the character position at the very beginning and end of
+     * a boundary to act correctly
+     */
+    if (to == ctx->text.insertPos)
+	to = SrcScan(ctx->text.source, ctx->text.insertPos,
+		     type, dir, mult + 1, include);
+
+    if (dir == XawsdLeft) {
+	from = to;
+	to = ctx->text.insertPos;
+    }
+    else 
+	from = ctx->text.insertPos;
+
+    _DeleteOrKill(ctx, from, to, kill);
+    EndAction(ctx);
 }
 
 static void
@@ -1350,19 +1389,24 @@ KillBackwardWord(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 KillToEndOfLine(Widget w, XEvent *event, String *p, Cardinal *n)
 {
-  TextWidget ctx = (TextWidget)w;
-  XawTextPosition end_of_line;
-  unsigned mult = MULT(ctx);
+    TextWidget ctx = (TextWidget)w;
+    XawTextPosition end_of_line;
+    short mult = MULT(ctx);
 
-  StartAction(ctx, event);
-  end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
-			XawsdRight, mult, False);
-  if (end_of_line == ctx->text.insertPos)
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
+
+    StartAction(ctx, event);
     end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
-			  XawsdRight, mult, True);
+			  XawsdRight, mult, False);
+    if (end_of_line == ctx->text.insertPos)
+	end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
+			      XawsdRight, mult, True);
 
-  _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, True);
-  EndAction(ctx);
+    _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, True);
+    EndAction(ctx);
 }
 
 /*ARGSUSED*/
@@ -1443,68 +1487,913 @@ DeleteCurrentSelection(Widget w, XEvent *event, String *p, Cardinal *n)
   _XawTextZapSelection((TextWidget)w, event, False);
 }
 
+#define TAB_SIZE 8
+static Bool
+StripSpaces(TextWidget ctx, XawTextPosition left, XawTextPosition right,
+	    XawTextPosition *pos, int num_pos)
+{
+    Bool done, space;
+    int i, cpos, count = 0;
+    XawTextBlock block, text;
+    XawTextPosition ipos, position = left, tmp = left;
+
+    text.firstPos = 0;
+    text.format = XawFmt8Bit;
+    text.ptr = " ";
+    text.length = 1;
+
+    position = XawTextSourceRead(ctx->text.source, position,
+				 &block, right - left);
+    done = False;
+    space = False;
+    /* convert tabs and returns to spaces */
+    while (!done) {
+	if (XawTextFormat(ctx, XawFmt8Bit)) {
+	    for (i = 0; i < block.length; i++)
+		if (block.ptr[i] == '\t' || block.ptr[i] == '\n') {
+		    space = True;
+		    break;
+		}
+	}
+	else {
+	    wchar_t *wptr = (wchar_t*)block.ptr;
+	    for (i = 0; i < block.length; i++)
+		if (wptr[i] == _Xaw_atowc('\t') || wptr[i] == _Xaw_atowc('\n')) {
+		    space = True;
+		    break;
+		}
+	}
+	if (space) {
+	    if (_XawTextReplace(ctx, tmp + i, tmp + i + 1, &text))
+		return (False);
+	    space = False;
+	}
+	tmp += i;
+	position = XawTextSourceRead(ctx->text.source, tmp,
+				     &block, right - tmp);
+	if (block.length == 0 || tmp == position || tmp >= right)
+	    done = True;
+    }
+
+    text.ptr = "";
+    text.length = 0;
+    position = tmp = left;
+    position = XawTextSourceRead(ctx->text.source, position,
+				 &block, right - left);
+    ipos = ctx->text.insertPos;
+    done = False;
+    space = True;
+    while (!done) {
+	if (XawTextFormat(ctx, XawFmt8Bit)) {
+	    for (i = 0; i < block.length; i++)
+		if (block.ptr[i] == ' ')
+		    space = ++count < 2;
+		else if (count == 1) {
+		    space = True;
+		    count = 0;
+		}
+		else if (count)
+		    break;
+	}
+	else {
+	    wchar_t *wptr = (wchar_t*)block.ptr;
+	    for (i = 0; i < block.length; i++)
+		if (wptr[i] == _Xaw_atowc(' '))
+		    space = ++count < 2;
+		else if (count == 1) {
+		    space = True;
+		    count = 0;
+		}
+		else if (count)
+		    break;
+	}
+	if ((count -= !space) > 0) {
+	    if (_XawTextReplace(ctx, tmp + i - count, tmp + i, &text))
+		return (False);
+	    right -= count;
+	    if (num_pos) {
+		for (cpos = 0; cpos < num_pos; cpos++) {
+		    if (tmp + i - count < pos[cpos]) {
+			if (tmp + i < pos[cpos])
+			    pos[cpos] -= count;
+			else
+			    pos[cpos] = tmp + i - count;
+		    }
+		}
+	    }
+	    else {
+		if (tmp + i - count < ipos) {
+		    if (tmp + i < ipos)
+			ipos -= count;
+		    else
+			ipos = tmp + i - count;
+		}
+	    }
+	}
+	tmp += i - count + (space);
+	count = !space;
+	position = XawTextSourceRead(ctx->text.source, tmp,
+				     &block, right - tmp);
+	if (block.length == 0 || tmp == position || tmp >= right)
+	    done = True;
+    }
+    if (!num_pos)
+	ctx->text.insertPos = ipos;
+
+    return (True);
+}
+
+static Bool
+Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
+       XawTextPosition *pos, int num_pos)
+{
+    Bool done, zero;
+    int i, cpos, count = 0, column = 0, offset = 0;
+    XawTextBlock text, block;
+    XawTextPosition ipos, position = left, tmp = left;
+
+    text.firstPos = 0;
+    text.ptr = "\t";
+    text.format = XawFmt8Bit;
+    text.length = 1;
+
+    position = XawTextSourceRead(ctx->text.source, position,
+				 &block, right - left);
+    ipos = ctx->text.insertPos;
+    done = zero = False;
+    while (!done) {
+	if (XawTextFormat(ctx, XawFmt8Bit)) {
+	    for (i = 0; i < block.length; i++) {
+		++offset;
+		++column;
+		if (block.ptr[i] == ' ') {
+		    if (++count > 8)
+			count %= 8;
+		    if (column % 8 == 0) {
+			if (count % 9 > 1)
+			    break;
+			else
+			    count = 0;
+		    }
+		}
+		else {
+		    if (block.ptr[i] == '\n') {
+			zero = True;
+			break;
+		    }
+		    count = 0;
+		}
+	    }
+	}
+	else {
+	    wchar_t *wptr = (wchar_t*)block.ptr;
+	    for (i = 0; i < block.length; i++) {
+		++offset;
+		++column;
+		if (wptr[i] == _Xaw_atowc(' ')) {
+		    if (++count > 8)
+			count %= 8;
+		    if (column % 8 == 0) {
+			if (count % 9 > 1)
+			    break;
+			else
+			    count = 0;
+		    }
+		}
+		else {
+		    if (wptr[i] == _Xaw_atowc('\n')) {
+			zero = True;
+			break;
+		    }
+		    count = 0;
+		}
+	    }
+	}
+	count %= 9;
+	if (!zero && count > 1 && i < block.length) {
+	    if (_XawTextReplace(ctx, tmp + i - count + 1, tmp + i + 1, &text))
+		return (False);
+	    right -= count - 1;
+	    offset -= count - 1;
+	    if (num_pos) {
+		for (cpos = 0; cpos < num_pos; cpos++) {
+		    if (tmp + i - count + 1 < pos[cpos]) {
+			if (tmp + i + 1 < pos[cpos])
+			    pos[cpos] -= count;
+			else
+			    pos[cpos] = tmp + i - count + 1;
+			++pos[cpos];
+		    }
+		}
+	    }
+	    else {
+		if (tmp + i - count + 1 < ipos) {
+		    if (tmp + i + 1 < ipos)
+			ipos -= count;
+		    else
+			ipos = tmp + i - count + 1;
+		    ++ipos;
+		}
+	    }
+	}
+	if (count)
+	    --count;
+	if (zero) {
+	    count = column = 0;
+	    zero = False;
+	}
+	else if (i < block.length)
+	    count = 0;
+	tmp = left + offset;
+	position = XawTextSourceRead(ctx->text.source, tmp,
+				     &block, right - tmp);
+	if (tmp == position || tmp >= right)
+	    done = True;
+    }
+    if (!num_pos)
+	ctx->text.insertPos = ipos;
+
+    return (True);
+}
+
+static Bool
+Untabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
+	 XawTextPosition *pos, int num_pos)
+{
+    Bool done, zero;
+    int i, cpos, count = 0, diff = 0;
+    XawTextBlock block, text;
+    XawTextPosition ipos, position = left, tmp = left;
+
+    text.firstPos = 0;
+    text.format = XawFmt8Bit;
+    text.ptr = "        ";
+
+    position = XawTextSourceRead(ctx->text.source, position,
+				 &block, right - left);
+    ipos = ctx->text.insertPos;
+    done = False;
+    zero = False;
+    while (!done) {
+	if (XawTextFormat(ctx, XawFmt8Bit))
+	    for (i = 0; i < block.length; i++) {
+		if (block.ptr[i] != '\t') {
+		    ++count;
+		    if (block.ptr[i] == '\n') {
+			zero = True;
+			break;
+		    }
+		}
+		else
+		    break;
+	}
+	else {
+	    wchar_t *wptr = (wchar_t*)block.ptr;
+	    for (i = 0; i < block.length; i++)
+		if (wptr[i] != _Xaw_atowc('\t')) {
+		    ++count;
+		    if (wptr[i] != _Xaw_atowc('\n')) {
+			zero = True;
+			break;
+		    }
+		}
+		else
+		    break;
+	}
+	if (!zero && i < block.length) {
+	    text.length = TAB_SIZE - (count % TAB_SIZE);
+	    if (_XawTextReplace(ctx, tmp + i, tmp + i + 1, &text))
+		return (False);
+	    count += text.length;
+	    right += text.length - 1;
+	    if (num_pos) {
+		for (cpos = 0; cpos < num_pos; cpos++) {
+		    if (tmp + i < pos[cpos]) {
+			if (tmp + i + 1 < pos[cpos])
+			    --pos[cpos];
+			else
+			    pos[cpos] = tmp + i;
+			pos[cpos] += text.length;
+		    }
+		}
+	    }
+	    else {
+		if (tmp + i < ipos) {
+		    if (tmp + i + 1 < ipos)
+			--ipos;
+		    else
+			ipos = tmp + i;
+		    ipos += text.length;
+		}
+	    }
+	}
+	tmp = left + count + diff;
+	if (zero) {
+	    diff += count;
+	    count = 0;
+	    zero = False;
+	}
+	position = XawTextSourceRead(ctx->text.source, tmp,
+				     &block, right - tmp);
+	if (tmp == position || tmp >= right)
+	    done = True;
+    }
+    if (!num_pos)
+	ctx->text.insertPos = ipos;
+
+    return (True);
+}
+
+static int
+FormatText(TextWidget ctx, XawTextPosition left, Bool force,
+	   XawTextPosition *pos, int num_pos)
+{
+    char *ptr = NULL;
+    Bool freepos, undo, paragraph = pos != NULL;
+    int i, result;
+    XawTextBlock block, *text;
+    XawTextPosition end = ctx->text.lastPos, buf[32];
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
+    XawTextPosition right = SrcScan(ctx->text.source, left, XawstEOL,
+				    XawsdRight, 1, False);
+
+    undo = src->textSrc.enable_undo && src->textSrc.undo_state == False;
+    if (undo) {
+	if (!pos) {
+	    num_pos = src->textSrc.num_text;
+	    pos = XawStackAlloc(sizeof(XawTextPosition) * num_pos, buf);
+	    for (i = 0; i < num_pos; i++)
+		pos[i] = ((TextWidget)src->textSrc.text[i])->text.insertPos;
+	    freepos = True;
+	}
+	else
+	    freepos = False;
+	src->textSrc.undo_state = True;
+	block.ptr = NULL;
+	block.firstPos = left;
+	block.length = right - left;
+	text = &block;
+    }
+    else
+	text = NULL;
+
+    result = DoFormatText(ctx, left, force, 1, text, pos, num_pos, paragraph);
+    if (undo && result == XawEditDone && block.ptr) {
+	char *lbuf, *rbuf;
+	unsigned llen, rlen, size;
+
+	ptr = lbuf = block.ptr;
+	llen = block.length;
+	rlen = llen + (ctx->text.lastPos - end);
+
+	block.firstPos = 0;
+	block.format = _XawTextFormat(ctx);
+
+	rbuf = _XawTextGetText(ctx, left, left + rlen);
+
+	size = XawTextFormat(ctx, XawFmtWide) ? sizeof(wchar_t) : sizeof(char);
+	if (llen != rlen || memcmp(lbuf, rbuf, llen * size)) {
+	    block.ptr = lbuf;
+	    block.length = llen;
+	    _XawTextReplace(ctx, left, left + rlen, &block);
+
+	    src->textSrc.undo_state = False;
+	    block.ptr = rbuf;
+	    block.length = rlen;
+	    _XawTextReplace(ctx, left, left + llen, &block);
+	}
+	XtFree(rbuf);
+    }
+    if (undo) {
+	src->textSrc.undo_state = False;
+	if (freepos) {
+	    for (i = 0; i < num_pos; i++) {
+		TextWidget tw = (TextWidget)src->textSrc.text[i];
+		tw->text.insertPos = XawMin(XawMax(0, pos[i]), tw->text.lastPos);
+	    }
+	    XawStackFree(pos, buf);
+	}
+	if (ptr)
+	    XtFree(ptr);
+    }
+
+    return (result);
+}
+
+static int
+DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
+	     XawTextBlock *save, XawTextPosition *pos, int num_pos,
+	     Bool paragraph)
+{
+    XawTextPosition right = SrcScan(ctx->text.source, left, XawstEOL,
+				    XawsdRight, 1, False);
+    XawTextPosition position, tmp, ipos;
+    XawTextBlock block, text;
+    char buf[128];
+    wchar_t *wptr;
+    int i, count, savecount, cpos;
+    Bool done, force2 = force, recurse = False;
+
+#define CHECK_SAVE()						\
+	if (save && !save->ptr)					\
+	    save->ptr = _XawTextGetText(ctx, save->firstPos,	\
+		save->firstPos + save->length)
+
+    tmp = left;
+    position = XawTextSourceRead(ctx->text.source, left, &block, right - left);
+#ifndef iswalnum
+#define iswalnum(c)	(isascii(c) && isalnum(toascii(c)))
+#endif
+    if (block.length == 0 || ctx->text.left_column >= ctx->text.right_column ||
+	level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
+	 block.ptr[0] != ' ' &&
+	 block.ptr[0] != '\t' &&
+	 !isalnum(*(unsigned char*)block.ptr)) ||
+	(XawTextFormat(ctx, XawFmtWide) &&
+	 _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr &&
+	 _Xaw_atowc(XawTAB) != *(wchar_t*)block.ptr &&
+	 !iswalnum(*(wchar_t*)block.ptr))))
+	return (XawEditDone);
+
+    if (level == 1 && !paragraph) {
+	CHECK_SAVE();
+	if (Untabify(ctx, left, right, pos, num_pos) == False)
+	    return (XawEditError);
+	right = SrcScan(ctx->text.source, left, XawstEOL,
+			XawsdRight, 1, False);
+	position = XawTextSourceRead(ctx->text.source, left, &block,
+				     right - left);
+    }
+
+    text.firstPos = 0;
+    text.format = XawFmt8Bit;
+
+    ipos = ctx->text.insertPos;
+    count = 0;
+    done = False;
+    while (!done) {
+	if (XawTextFormat(ctx, XawFmt8Bit)) {
+	    for (i = 0; i < block.length; i++)
+		if (block.ptr[i] == ' ')
+		    ++count;
+		else {
+		    done = True;
+		    break;
+		}
+	}
+	else {
+	    wptr = (wchar_t*)block.ptr;
+	    for (i = 0; i < block.length; i++)
+		if (wptr[i] == _Xaw_atowc(' '))
+		    ++count;
+		else {
+		    done = True;
+		    break;
+		}
+	}
+	tmp = position;
+	position = XawTextSourceRead(ctx->text.source, position,
+				     &block, right - position);
+	if (tmp == position)
+	    done = True;
+    }
+    position = left + count;
+    if (count < ctx->text.left_column) {
+	int bytes = ctx->text.left_column - count;
+
+	text.ptr = XawStackAlloc(bytes, buf);
+	text.length = bytes;
+	for (i = 0; i < bytes; i++)
+	    text.ptr[i] = ' ';
+	CHECK_SAVE();
+	if (_XawTextReplace(ctx, left, left, &text)) {
+	    XawStackFree(text.ptr, buf);
+	    return (XawEditError);
+	}
+	XawStackFree(text.ptr, buf);
+	right += bytes;
+	if (num_pos) {
+	    for (cpos = 0; cpos < num_pos; cpos++)
+		if (pos[cpos] >= left)
+		    pos[cpos] += bytes;
+	}
+	if (ipos >= left)
+	    ipos += bytes;
+	count += bytes;
+    }
+
+    done = False;
+    if (!paragraph && level == 1
+	&& ipos <= right + 1 && ipos - left > ctx->text.right_column) {
+	XawTextPosition len = ctx->text.lastPos;
+	int skip = ctx->text.justify == XawjustifyRight
+		|| ctx->text.justify == XawjustifyCenter ?
+		ctx->text.left_column : count;
+	int sub = 0;
+
+	if (pos)
+	    for (i = 0; i < num_pos; i++)
+		if (pos[i] == ipos)
+		    break;
+
+	XawTextSourceRead(ctx->text.source, right - 1, &block, 1);
+	if (block.length &&
+	    (XawTextFormat(ctx, XawFmt8Bit) &&
+	     block.ptr[0] != ' ') ||
+	    (XawTextFormat(ctx, XawFmtWide) &&
+	     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr))
+	    sub = 1;
+	CHECK_SAVE();
+	StripSpaces(ctx, left + skip, right - 1 - sub, pos, num_pos);
+	right += ctx->text.lastPos - len;
+	if (pos && i < num_pos)
+	    ipos = pos[i];
+	else
+	    ipos = ctx->text.insertPos;
+	done = ipos - left > ctx->text.right_column;
+	count = skip + (count == skip + 1);
+    }
+    if ((paragraph || done) && right - left > ctx->text.right_column) {
+	position = tmp = right;
+	XawTextSourceRead(ctx->text.source, position - 1, &block, 1);
+	if (block.length &&
+	    (XawTextFormat(ctx, XawFmt8Bit) &&
+	     block.ptr[0] == ' ') ||
+	    (XawTextFormat(ctx, XawFmtWide) &&
+	     _Xaw_atowc(XawSP) == *(wchar_t*)block.ptr))
+	    --position;
+	while (position - left > ctx->text.right_column) {
+	    tmp = position;
+	    position = SrcScan(ctx->text.source, position,
+			       XawstWhiteSpace, XawsdLeft, 1, True);
+	}
+	if (position <= left + ctx->text.left_column)
+	    position = tmp;
+	if (position > left && position - left > ctx->text.left_column
+	    && position != right) {
+	    text.ptr = "\n";
+	    text.length = 1;
+	    CHECK_SAVE();
+	    if (_XawTextReplace(ctx, position, position + 1, &text))
+		return (XawEditError);
+	    right = position;
+	    recurse = True;
+	    force = True;
+	}
+    }
+
+    if (!paragraph && force2 && ctx->text.justify == XawjustifyCenter)
+	savecount = count;
+    else
+	savecount = 0;
+    count = 0;
+    if (force) {
+	count = ctx->text.right_column - savecount;
+	if (count > right - left)
+	    count -= right - left;
+	else
+	    count = 0;
+    }
+    if (count) {
+	switch (ctx->text.justify) {
+	    case XawjustifyLeft:
+		break;
+	    case XawjustifyRight:
+	    case XawjustifyCenter:
+		if (ctx->text.justify == XawjustifyCenter) {
+		    int alnum = 0;
+
+		    if (!(count & 1)) {
+			XawTextSourceRead(ctx->text.source, right, &block, 1);
+			if ((XawTextFormat(ctx, XawFmt8Bit)
+			     && isalnum(*(unsigned char*)block.ptr)) ||
+			    (XawTextFormat(ctx, XawFmtWide)
+			     && iswalnum(*(wchar_t*)block.ptr)))
+			    alnum = 1;
+		    }
+		    count = (count + alnum) >> 1;
+		}
+		text.ptr = XawStackAlloc(count, buf);
+		text.length = count;
+		for (i = 0; i < count; i++)
+		    text.ptr[i] = ' ';
+		CHECK_SAVE();
+		if (_XawTextReplace(ctx, left, left, &text)) {
+		    XawStackFree(text.ptr, buf);
+		    return (XawEditError);
+		}
+		XawStackFree(text.ptr, buf);
+		position += count;
+		if (num_pos) {
+		    for (cpos = 0; cpos < num_pos; cpos++)
+			if (pos[cpos] > left)
+			    pos[cpos] += count;
+		}
+		else if (ipos > left)
+		    ipos += count;
+		break;
+	    case XawjustifyFull:
+		i = 0;
+		tmp = left;
+		/*CONSTCOND*/
+		while (True) {
+		    tmp = SrcScan(ctx->text.source, tmp, XawstWhiteSpace,
+				  XawsdRight, 1, True);
+		    if (tmp < right)
+			++i;
+		    else
+			break;
+		}
+		if (i) {
+		    double inc, ii;
+		    int bytes, steps;
+
+		    bytes = count;
+		    inc = ii = (count + .5) / (double)i;
+
+		    steps = count;
+		    text.ptr = XawStackAlloc(steps, buf);
+		    for (i = 0; i < steps; i++)
+			text.ptr[i] = ' ';
+		    tmp = left;
+		    CHECK_SAVE();
+		    while (bytes) {
+			steps = 1;
+			while (inc + ii < 1) {
+			    ++steps;
+			    inc += ii;
+			}
+			tmp = SrcScan(ctx->text.source, tmp, XawstWhiteSpace,
+				      XawsdRight, steps, True);
+			if (bytes > inc)
+			    text.length = (int)inc;
+			else
+			    text.length = bytes;
+			bytes -= text.length;
+			if (_XawTextReplace(ctx, tmp, tmp, &text)) {
+			    XawStackFree(buf, text.ptr);
+			    return (XawEditError);
+			}
+			if (num_pos) {
+			    for (cpos = 0; cpos < num_pos; cpos++)
+				if (tmp <= pos[cpos])
+				    pos[cpos] += text.length;
+			}
+			else if (tmp <= ipos)
+			    ipos += text.length;
+			inc -= (int)inc;
+			inc += ii;
+		    }
+		    position += count;
+		    XawStackFree(buf, text.ptr);
+		}
+		break;
+	}
+    }
+
+    if (!num_pos)
+	ctx->text.insertPos = XawMin(ipos, ctx->text.lastPos);
+
+    return (recurse ? DoFormatText(ctx, position + 1,
+				   ctx->text.justify != XawjustifyFull
+				   && (force2 || paragraph),
+				   ++level, save, pos, num_pos, paragraph)
+		 : XawEditDone);
+}
+#undef CHECK_SAVE
+
+/*ARGSUSED*/
+static void
+Indent(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    TextWidget ctx = (TextWidget)w;
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
+    XawTextPosition from, to, tmp, end, *pos, *posbuf[32];
+    char buf[32];
+    XawTextBlock text;
+    int i, spaces = MULT(ctx);
+    char *lbuf, *rbuf;
+    unsigned llen, rlen, size;
+    Bool undo = src->textSrc.enable_undo && src->textSrc.undo_state == False;
+    Bool format = ctx->text.auto_fill
+	&& ctx->text.left_column < ctx->text.right_column;
+
+    text.firstPos = 0;
+    text.format = XawFmt8Bit;
+    text.ptr = "";
+
+    StartAction(ctx, event);
+
+    pos = XawStackAlloc(sizeof(XawTextPosition) * src->textSrc.num_text, posbuf);
+    for (i = 0; i < src->textSrc.num_text; i++)
+	pos[i] = ((TextWidget)src->textSrc.text[i])->text.insertPos;
+
+    if (!GetBlockBoundaries(ctx, &from, &to)) {
+	EndAction(ctx);
+	XawStackFree(pos, posbuf);
+	return;
+    }
+
+    if (undo) {
+	llen = to - from;
+	end = ctx->text.lastPos;
+	lbuf = _XawTextGetText(ctx, from, to);
+	src->textSrc.undo_state = True;
+    }
+
+    tmp = ctx->text.lastPos;
+    if (!Untabify(ctx, from, to, pos, src->textSrc.num_text)) {
+	XBell(XtDisplay(ctx), 0);
+	EndAction(ctx);
+	XawStackFree(pos, posbuf);
+	if (undo) {
+	    src->textSrc.undo_state = True;
+	    XtFree(lbuf);
+	}
+	return;
+    }
+    to += ctx->text.lastPos - tmp;
+
+    tmp = from;
+
+    if (spaces > 0) {
+        text.ptr = XawStackAlloc(spaces, buf);
+        for (i = 0; i < spaces; i++)
+            text.ptr[i] = ' ';
+
+	text.length = spaces;
+	while (tmp < to) {
+	    _XawTextReplace(ctx, tmp, tmp, &text);
+
+	    for (i = 0; i < src->textSrc.num_text; i++)
+		if (tmp < pos[i])
+		    pos[i] += spaces;
+
+	    to += spaces;
+	    tmp = SrcScan(ctx->text.source, tmp, XawstEOL, XawsdRight, 1, True);
+	}
+	XawStackFree(text.ptr, buf);
+    }
+    else {
+	int min = 32767;
+
+	text.length = 0;
+	tmp = from;
+
+	/* find the amount of spaces to cut */
+	while (tmp < to) {
+	    (void)BlankLine(w, tmp, &i);
+	    if (i < min)
+		min = i;
+	    tmp = SrcScan(ctx->text.source, tmp, XawstEOL, XawsdRight, 1, True);
+	}
+	spaces = XawMin(-spaces, min);
+
+	/* cut the spaces */
+	tmp = from;
+	while (tmp < to) {
+	    _XawTextReplace(ctx, tmp, tmp + spaces, &text);
+
+	    for (i = 0; i < src->textSrc.num_text; i++)
+		if (tmp < pos[i]) {
+		    if (tmp + spaces < pos[i])
+			pos[i] -= spaces;
+		    else
+			pos[i] = tmp;
+		}
+
+	    to -= spaces;
+	    tmp = SrcScan(ctx->text.source, tmp, XawstEOL, XawsdRight, 1, True);
+	}
+    }
+
+    if (!format)
+	Tabify(ctx, from, to, pos, src->textSrc.num_text);
+
+    if (undo) {
+	rlen = llen + (ctx->text.lastPos - end);
+	rbuf = _XawTextGetText(ctx, from, to);
+
+	text.format = _XawTextFormat(ctx);
+	size = XawTextFormat(ctx, XawFmtWide) ? sizeof(wchar_t) : sizeof(char);
+	if (llen != rlen || memcmp(lbuf, rbuf, llen * size)) {
+	    text.ptr = lbuf;
+	    text.length = llen;
+	    _XawTextReplace(ctx, from, from + rlen, &text);
+
+	    src->textSrc.undo_state = False;
+	    text.ptr = rbuf;
+	    text.length = rlen;
+	    _XawTextReplace(ctx, from, from + llen, &text);
+	}
+	else
+	    src->textSrc.undo_state = False;
+	XtFree(lbuf);
+	XtFree(rbuf);
+    }
+
+    for (i = 0; i < src->textSrc.num_text; i++) {
+	TextWidget tw = (TextWidget)src->textSrc.text[i];
+
+	tw->text.insertPos = XawMin(XawMax(0, pos[i]), tw->text.lastPos);
+    }
+    XawStackFree(pos, posbuf);
+    ctx->text.showposition = True;
+
+    EndAction(ctx);
+}
+
+/*ARGSUSED*/
+static void
+ToggleOverwrite(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    TextWidget ctx = (TextWidget)w;
+
+    ctx->text.overwrite = !ctx->text.overwrite;
+
+    /* call information callback */
+    _XawTextSetLineAndColumnNumber(ctx, True);
+}
+
 /*
  * Insertion Routines
  */
 static int
 InsertNewLineAndBackupInternal(TextWidget ctx)
 {
-  int count, error = XawEditDone;
-  XawTextBlock text;
+    int count, error = XawEditDone, mult = MULT(ctx);
+    XawTextPosition position;
+    XawTextBlock text;
+    char buf[32];
 
-  text.format = _XawTextFormat(ctx);
-  text.length = MULT(ctx);
-  text.firstPos = 0;
-
-  if (text.format == XawFmtWide)
-    {
-      wchar_t *wptr;
-      text.ptr =  XtMalloc(sizeof(wchar_t) * MULT(ctx));
-      wptr = (wchar_t *)text.ptr;
-      for (count = 0; count < MULT(ctx); count++)
-	wptr[count] = _Xaw_atowc(XawLF);
-    }
-  else
-    {
-      text.ptr = XtMalloc(sizeof(char) * MULT(ctx));
-      for (count = 0; count < MULT(ctx); count++)
-	text.ptr[count] = XawLF;
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
     }
 
-  if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text))
-    {
-      XBell( XtDisplay(ctx), 50);
-      error = XawEditError;
-    }
-  else 
-    ctx->text.showposition = TRUE;
+    text.format = _XawTextFormat(ctx);
+    text.length = mult;
+    text.firstPos = 0;
 
-  XtFree(text.ptr);
-  return (error);
+    if (text.format == XawFmtWide) {
+	wchar_t *wptr;
+
+	text.ptr =  XawStackAlloc(sizeof(wchar_t) * mult, buf);
+	wptr = (wchar_t *)text.ptr;
+	for (count = 0; count < mult; count++)
+	    wptr[count] = _Xaw_atowc(XawLF);
+    }
+    else {
+	text.ptr = XawStackAlloc(sizeof(char) * mult, buf);
+	for (count = 0; count < mult; count++)
+	    text.ptr[count] = XawLF;
+    }
+
+    position = SrcScan(ctx->text.source, ctx->text.insertPos,
+		       XawstEOL, XawsdLeft, 1, False);
+    if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
+	XBell( XtDisplay(ctx), 50);
+	error = XawEditError;
+    }
+    else {
+	ctx->text.showposition = TRUE;
+	ctx->text.insertPos += text.length;
+    }
+
+    XawStackFree(text.ptr, buf);
+
+    if (ctx->text.auto_fill && error == XawEditDone)
+	(void)FormatText(ctx, position, ctx->text.justify != XawjustifyFull,
+			 NULL, 0);
+
+    return (error);
 }
 
 /*ARGSUSED*/
 static void
 InsertNewLineAndBackup(Widget w, XEvent *event, String *p, Cardinal *n)
 {
-  StartAction((TextWidget)w, event);
-  (void)InsertNewLineAndBackupInternal((TextWidget)w);
-  EndAction((TextWidget)w);
+    TextWidget ctx = (TextWidget)w;
+    XawTextPosition insertPos = ctx->text.insertPos;
+
+    StartAction((TextWidget)w, event);
+    (void)InsertNewLineAndBackupInternal(ctx);
+    ctx->text.insertPos = SrcScan(ctx->text.source, insertPos, XawstEOL,
+				  XawsdRight, 1, False);
+    EndAction((TextWidget)w);
 }
 
 static int
 LocalInsertNewLine(TextWidget ctx, XEvent *event)
 {
-  StartAction(ctx, event);
-  if (InsertNewLineAndBackupInternal(ctx) == XawEditError)
-    return (XawEditError);
+    int error;
 
-  ctx->text.from_left = -1;
-  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
-				XawstPositions, XawsdRight, MULT(ctx),
-				True);
-  EndAction(ctx);
-  return (XawEditDone);
+    StartAction(ctx, event);
+    error = InsertNewLineAndBackupInternal(ctx);
+    ctx->text.from_left = -1;
+    EndAction(ctx);
+
+    return (error);
 }
 
 /*ARGSUSED*/
@@ -1781,6 +2670,7 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
   _XawImUnsetFocus(w);
   if (event->xfocus.detail == NotifyPointer)
     return;
+
   ctx->text.hasfocus = FALSE;
   XawTextDisplayCaret(w, ctx->text.display_caret);
 }
@@ -1879,117 +2769,146 @@ AutoFill(TextWidget ctx)
 
   if (_XawTextReplace(ctx, ret_pos - 1, ret_pos, &text))
     XBell(XtDisplay((Widget)ctx), 0);
+
+    if (++ctx->text.insertPos > ctx->text.lastPos)
+	ctx->text.insertPos = ctx->text.lastPos;
 }
 
 /*ARGSUSED*/
 static void
 InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 {
-  TextWidget ctx = (TextWidget)w;
-  char *ptr, strbuf[128], ptrbuf[512];
-  int count, error;
-  KeySym keysym;
-  XawTextBlock text;
+    TextWidget ctx = (TextWidget)w;
+    char *ptr, strbuf[128], ptrbuf[512];
+    int count, error, mult = MULT(ctx);
+    KeySym keysym;
+    XawTextBlock text;
+    Bool format = False;
+    XawTextPosition from, to;
 
-  if (XtIsSubclass (ctx->text.source, (WidgetClass) multiSrcObjectClass))
-    text.length = _XawImWcLookupString(w, &event->xkey, (wchar_t*)strbuf,
+    if (XtIsSubclass (ctx->text.source, (WidgetClass) multiSrcObjectClass))
+	text.length = _XawImWcLookupString(w, &event->xkey, (wchar_t*)strbuf,
+					   sizeof(strbuf), &keysym);
+    else
+	text.length = _XawLookupString(w, (XKeyEvent*)event, strbuf,
 				       sizeof(strbuf), &keysym);
-  else
-    text.length = _XawLookupString(w, (XKeyEvent*)event, strbuf, sizeof(strbuf),
-				   &keysym);
 
-  if (text.length == 0)
-    return;
+    if (text.length == 0)
+	return;
 
-  text.format = _XawTextFormat(ctx);
-  if (text.format == XawFmtWide)
-    {
-      text.ptr = ptr = XawStackAlloc(sizeof(wchar_t) * text.length
-				     * MULT(ctx), ptrbuf);
-      for (count = 0; count < MULT(ctx); count++)
-	{
-          memcpy((char*)ptr, (char *)strbuf, sizeof(wchar_t) * text.length);
-          ptr += sizeof(wchar_t) * text.length;
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
+
+    text.format = _XawTextFormat(ctx);
+    if (text.format == XawFmtWide) {
+	text.ptr = ptr = XawStackAlloc(sizeof(wchar_t) * text.length
+				       * mult, ptrbuf);
+	for (count = 0; count < mult; count++) {
+	    memcpy((char*)ptr, (char *)strbuf, sizeof(wchar_t) * text.length);
+	    ptr += sizeof(wchar_t) * text.length;
+	}
+	if (mult == 1/* && (_Xaw_atowc(XawSP) == *(wchar_t*)text.ptr ||
+			  _Xaw_atowc(XawTAB) == *(wchar_t*)text.ptr)*/)
+	    format = ctx->text.left_column < ctx->text.right_column;
+    }
+    else {	/* == XawFmt8Bit */
+	text.ptr = ptr = XawStackAlloc(text.length * mult, ptrbuf);
+	for (count = 0; count < mult; count++) {
+	    strncpy(ptr, strbuf, text.length);
+	    ptr += text.length;
+	}
+	if (mult == 1/* && (XawSP == *text.ptr || XawTAB == *text.ptr)*/)
+	    format = ctx->text.left_column < ctx->text.right_column;
+    }
+
+    text.length = text.length * mult;
+    text.firstPos = 0;
+
+    StartAction(ctx, event);
+
+    from = ctx->text.insertPos;
+    if (ctx->text.overwrite) {
+	XawTextPosition tmp;
+
+	to = from + mult;
+	tmp = SrcScan(ctx->text.source, from, XawstEOL, XawsdRight, 1, False);
+	if (to > tmp)
+	    to = tmp;
+    }
+    else
+	to = from;
+
+    error = _XawTextReplace(ctx, from , to, &text);
+
+    if (error == XawEditDone) {
+	ctx->text.from_left = -1;
+	ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
+				      XawstPositions, XawsdRight,
+				      text.length, True);
+	if (ctx->text.auto_fill) {
+	    if (format)
+		(void)FormatText(ctx, SrcScan(ctx->text.source,
+					      ctx->text.insertPos, XawstEOL,
+					      XawsdLeft, 1, False), False,
+					      NULL, 0);
+	    else
+		AutoFill(ctx);
 	}
     }
-  else	/* == XawFmt8Bit */
-    {
-      text.ptr = ptr = XawStackAlloc(text.length * MULT(ctx), ptrbuf);
-      for (count = 0; count < MULT(ctx); count++)
-	{
-          strncpy(ptr, strbuf, text.length);
-          ptr += text.length;
-	}
+    else
+	XBell(XtDisplay(ctx), 50);
+
+    XawStackFree(text.ptr, ptrbuf);
+    EndAction(ctx);
+
+    if (error == XawEditDone && text.format == XawFmt8Bit && text.length == 1
+	&& (text.ptr[0] == ')' || text.ptr[0] == ']' || text.ptr[0] == '}')
+	&& ctx->text.display_caret) {
+	static struct timeval tmval = {0, 500000};
+	fd_set fds;
+	Widget source = ctx->text.source;
+	XawTextPosition insertPos = ctx->text.insertPos, pos, tmp, last;
+	char left, right = text.ptr[0];
+	int level = 0;
+
+	left = right == ')' ? '(' : right == ']' ? '[' : '{';
+
+	last = insertPos - 1;
+	do {
+	    text.ptr[0] = left;
+	    pos = XawTextSourceSearch(source, last, XawsdLeft, &text);
+	    if (pos == XawTextSearchError || !IsPositionVisible(ctx, pos))
+		return;
+	    text.ptr[0] = right;
+	    tmp = pos;
+	    do {
+		tmp = XawTextSourceSearch(source, tmp, XawsdRight, &text);
+		if (tmp == XawTextSearchError)
+		    return;
+		if (tmp <= last)
+		    ++level;
+	    } while (++tmp <= last);
+	    --level;
+	    last = pos;
+	} while (level);
+
+	StartAction(ctx, NULL);
+	ctx->text.insertPos = pos;
+	EndAction(ctx);
+
+	XSync(XtDisplay(w), False);
+	while (XtAppPending(XtWidgetToApplicationContext(w)) & XtIMXEvent)
+	    XtAppProcessEvent(XtWidgetToApplicationContext(w), XtIMXEvent);
+	FD_ZERO(&fds);
+	FD_SET(ConnectionNumber(XtDisplay(w)), &fds);
+	(void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
+
+	StartAction(ctx, NULL);
+	ctx->text.insertPos = insertPos;
+	EndAction(ctx);
     }
-
-  text.length = text.length * MULT(ctx);
-  text.firstPos = 0;
-
-  StartAction(ctx, event);
-
-  error = _XawTextReplace(ctx, ctx->text.insertPos,ctx->text.insertPos, &text);
-
-  if (error == XawEditDone)
-    {
-      ctx->text.from_left = -1;
-      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.old_insert,
-				    XawstPositions, XawsdRight,
-				    text.length, True);
-      if (ctx->text.auto_fill)
-	AutoFill(ctx);
-    }
-  else
-    XBell(XtDisplay(ctx), 50);
-
-  XawStackFree(text.ptr, ptrbuf);
-  EndAction(ctx);
-
-  if (error == XawEditDone && text.format == XawFmt8Bit && text.length == 1
-      && (text.ptr[0] == ')' || text.ptr[0] == ']' || text.ptr[0] == '}')
-      && ctx->text.display_caret) {
-      static struct timeval tmval = {0, 500000};
-      fd_set fds;
-      Widget source = ctx->text.source;
-      XawTextPosition insertPos = ctx->text.insertPos, pos, tmp, last;
-      char left, right = text.ptr[0];
-      int level = 0;
-
-      left = right == ')' ? '(' : right == ']' ? '[' : '{';
-
-      last = insertPos - 1;
-      do {
-	  text.ptr[0] = left;
-	  pos = XawTextSourceSearch(source, last, XawsdLeft, &text);
-	  if (pos == XawTextSearchError || !IsPositionVisible(ctx, pos))
-	      return;
-	  text.ptr[0] = right;
-	  tmp = pos;
-	  do {
-	      tmp = XawTextSourceSearch(source, tmp, XawsdRight, &text);
-	      if (tmp == XawTextSearchError)
-		  return;
-	      if (tmp <= last)
-		  ++level;
-	  } while (++tmp <= last);
-	  --level;
-	  last = pos;
-      } while (level);
-
-      StartAction(ctx, NULL);
-      ctx->text.insertPos = pos;
-      EndAction(ctx);
-
-      XSync(XtDisplay(w), False);
-      while (XtAppPending(XtWidgetToApplicationContext(w)) & XtIMXEvent)
-	  XtAppProcessEvent(XtWidgetToApplicationContext(w), XtIMXEvent);
-      FD_ZERO(&fds);
-      FD_SET(ConnectionNumber(XtDisplay(w)), &fds);
-      (void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
-
-      StartAction(ctx, NULL);
-      ctx->text.insertPos = insertPos;
-      EndAction(ctx);
-  }
 }
 
 /* IfHexConvertHexElseReturnParam() - called by InsertString
@@ -2199,7 +3118,8 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	long mult = ctx->text.mult;
 
 	if (*num_params != 1 || strlen(params[0]) != 1
-	    || !isdigit(params[0][0])) {
+	    || (!isdigit(params[0][0])
+		&& (params[0][0] != '-' || mult != 0))) {
 	    char err_buf[256];
 
 	    XmuSnprintf(err_buf, sizeof(err_buf),
@@ -2209,9 +3129,19 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    ctx->text.doing_numeric_hack = False;
 	    return;
 	}
-	mult = mult * 10 + params[0][0] - '0';
-	ctx->text.mult = ctx->text.mult * 10 + params[0][0] - '0';
-	if (mult != ctx->text.mult) {	/* checks for overflow */
+	if (params[0][0] == '-') {
+	    ctx->text.mult = 32767;
+	    return;
+	}
+	else if (mult == 32767) {
+	    mult = ctx->text.mult = - (params[0][0] - '0');
+	    return;
+	}
+	else {
+	    mult = mult * 10 + params[0][0] - '0';
+	    ctx->text.mult = ctx->text.mult * 10 + params[0][0] - '0';
+	}
+	if (mult != ctx->text.mult || mult >= 32767) {	/* checks for overflow */
 	    XBell(XtDisplay(w), 0);
 	    ctx->text.mult = 1;
 	    ctx->text.doing_numeric_hack = False;
@@ -2518,16 +3448,175 @@ static int
 FormRegion(TextWidget ctx, XawTextPosition from, XawTextPosition to,
 	   XawTextPosition *pos, int num_pos)
 {
+    Bool format = ctx->text.auto_fill
+	&& ctx->text.left_column < ctx->text.right_column;
+
     if (from >= to)
 	return (XawEditDone);
 
-    if ((to = StripOutOldCRs(ctx, from, to, pos, num_pos)) == XawReplaceError)
-	return (XawReplaceError);
+    if (format) {
+	XawTextPosition len = ctx->text.lastPos;
+	int inc = 0;
 
-    InsertNewCRs(ctx, from, to, pos, num_pos);
+	if (ctx->text.justify == XawjustifyLeft ||
+	    ctx->text.justify == XawjustifyFull) {
+	    Untabify(ctx, from, to, pos, num_pos);
+	    to += ctx->text.lastPos - len;
+	    len = ctx->text.insertPos;
+	    (void)BlankLine((Widget)ctx, from, &inc);
+	    if (from + inc >= to)
+		return (XawEditDone);
+	}
+	if (!StripSpaces(ctx, from + inc, to, pos, num_pos))
+	    return (XawReplaceError);
+	to += ctx->text.lastPos - len;
+
+	FormatText(ctx, from, ctx->text.justify != XawjustifyFull, pos, num_pos);
+    }
+    else {
+	if ((to = StripOutOldCRs(ctx, from, to, pos, num_pos)) == XawReplaceError)
+	    return (XawReplaceError);
+	InsertNewCRs(ctx, from, to, pos, num_pos);
+    }
     ctx->text.from_left = -1;
 
     return (XawEditDone);
+}
+
+static Bool
+BlankLine(Widget w, XawTextPosition pos, int *blanks_return)
+{
+    int i, blanks = 0;
+    XawTextBlock block;
+    Widget src = XawTextGetSource(w);
+    XawTextPosition l = SrcScan(src, pos, XawstEOL, XawsdLeft, 1, False);
+    XawTextPosition r = SrcScan(src, pos, XawstEOL, XawsdRight, 1, False);
+
+    while (l < r) {
+	l = XawTextSourceRead(src, l, &block, r - l);
+	if (block.length == 0) {
+	    if (blanks_return)
+		*blanks_return = blanks;
+	    return (True);
+	}
+	if (XawTextFormat((TextWidget)w, XawFmt8Bit)) {
+	    for (i = 0; i < block.length; i++, blanks++)
+		if (block.ptr[i] != ' ' &&
+		    block.ptr[i] != '\t') {
+		    if (blanks_return)
+			*blanks_return = blanks;
+		    return (block.ptr[i] == '\n');
+		}
+	}
+	else if (XawTextFormat((TextWidget)w, XawFmtWide)) {
+	    for (i = 0; i < block.length; i++, blanks++)
+		if (_Xaw_atowc(XawSP) != ((wchar_t*)block.ptr)[i] &&
+		    _Xaw_atowc(XawTAB) != ((wchar_t*)block.ptr)[i]) {
+		    if (blanks_return)
+			*blanks_return = blanks;
+		    return (_Xaw_atowc(XawLF) == ((wchar_t*)block.ptr)[i]);
+		}
+	}
+    }
+
+    return (True);
+}
+
+static Bool
+GetBlockBoundaries(TextWidget ctx,
+		   XawTextPosition *from_return, XawTextPosition *to_return)
+{
+    XawTextPosition from, to;
+
+    if (ctx->text.auto_fill && ctx->text.left_column < ctx->text.right_column) {
+	if (ctx->text.s.left != ctx->text.s.right) {
+	    from = SrcScan(ctx->text.source,
+			   XawMin(ctx->text.s.left, ctx->text.s.right),
+			   XawstEOL, XawsdLeft, 1, False);
+	    to   = SrcScan(ctx->text.source,
+			   XawMax(ctx->text.s.right, ctx->text.s.right),
+			   XawstEOL, XawsdRight, 1, False);
+	}
+	else {
+	    XawTextBlock block;
+	    XawTextPosition tmp;
+	    Bool first;
+
+	    from = to = ctx->text.insertPos;
+
+	    /* find from position */
+	    first = True;
+	    while (1) {
+		tmp = from;
+		from = SrcScan(ctx->text.source, from, XawstEOL, XawsdLeft,
+			       1 + !first, False);
+		XawTextSourceRead(ctx->text.source, from, &block, 1);
+		if (block.length == 0 ||
+		    (XawTextFormat(ctx, XawFmt8Bit) &&
+		     block.ptr[0] != ' ' &&
+		     block.ptr[0] != '\t' &&
+		     !isalnum(*(unsigned char*)block.ptr)) ||
+		    (XawTextFormat(ctx, XawFmtWide) &&
+		     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr &&
+		     _Xaw_atowc(XawTAB) != *(wchar_t*)block.ptr &&
+		     !iswalnum(*(wchar_t*)block.ptr)) ||
+		    BlankLine((Widget)ctx, from, NULL)) {
+		    from = tmp;
+		    break;
+		}
+		if (from == tmp && !first)
+		    break;
+		first = False;
+	    }
+	    if (first)
+		return (False);
+
+	    /* find to position */
+	    first = True;
+	    while (1) {
+		tmp = to;
+		to = SrcScan(ctx->text.source, to, XawstEOL, XawsdRight,
+			     1 + !first, False);
+		XawTextSourceRead(ctx->text.source, to + (to < ctx->text.lastPos),
+				  &block, 1);
+		if (block.length == 0 ||
+		    (XawTextFormat(ctx, XawFmt8Bit) &&
+		     block.ptr[0] != ' ' &&
+		     block.ptr[0] != '\t' &&
+		     !isalnum(*(unsigned char*)block.ptr)) ||
+		    (XawTextFormat(ctx, XawFmtWide) &&
+		     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr &&
+		     _Xaw_atowc(XawTAB) != *(wchar_t*)block.ptr &&
+		     !iswalnum(*(wchar_t*)block.ptr)) ||
+		    BlankLine((Widget)ctx, to, NULL))
+		    break;
+		if (to == tmp && !first)
+		    break;
+		first = False;
+	    }
+	}
+    }
+    else {
+	from = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL,
+		       XawsdLeft, 1, False);
+	if (BlankLine((Widget)ctx, from, NULL))
+	    return (False);
+	from = SrcScan(ctx->text.source, from, XawstParagraph,
+		       XawsdLeft, 1, False);
+	if (BlankLine((Widget)ctx, from, NULL))
+	    from = SrcScan(ctx->text.source, from, XawstEOL,
+			   XawsdRight, 1, True);
+	to = SrcScan(ctx->text.source, from, XawstParagraph,
+			XawsdRight, 1, False);
+    }
+
+    if (from < to) {
+	*from_return = from;
+	*to_return = to;
+	return (True);
+    }
+
+    return (False);
 }
 
 /* FormParagraph() - action
@@ -2549,9 +3638,12 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
     for (i = 0; i < src->textSrc.num_text; i++)
 	pos[i] = ((TextWidget)src->textSrc.text[i])->text.old_insert;
 
-    from = SrcScan((Widget)src, ctx->text.insertPos, XawstParagraph,
-		   XawsdLeft, 1, False);
-    to = SrcScan((Widget)src, from, XawstParagraph, XawsdRight, 1, False);
+    if (!GetBlockBoundaries(ctx, &from, &to)) {
+	EndAction(ctx);
+	XawStackFree(pos, buf);
+	return;
+    }
+
     if (src->textSrc.enable_undo) {
 	src->textSrc.undo_state = True;
 	lbuf = _XawTextGetText(ctx, from, to);
@@ -2621,7 +3713,12 @@ TransposeCharacters(Widget w, XEvent *event,
   XawTextPosition start, end;
   XawTextBlock text;
   char *buf;
-  int i;
+  int i, mult = MULT(ctx);
+
+    if (mult < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
 
   StartAction(ctx, event);
 
@@ -2630,7 +3727,7 @@ TransposeCharacters(Widget w, XEvent *event,
   start = SrcScan(ctx->text.source, ctx->text.insertPos, XawstPositions,
 		  XawsdLeft, 1, True);
   end = SrcScan(ctx->text.source, ctx->text.insertPos, XawstPositions,
-		XawsdRight, MULT(ctx), True);
+		XawsdRight, mult, True);
 
   /* Make sure we aren't at the very beginning or end of the buffer. */
 
@@ -2689,6 +3786,11 @@ Undo(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     TextWidget ctx = (TextWidget)w;
     int mul = MULT(ctx);
+
+    if (mul < 0) {
+	ctx->text.mult = 1;
+	return;
+    }
 
     StartAction(ctx, event);
     for (; mul; --mul)
@@ -2807,6 +3909,8 @@ XtActionsRec _XawTextActionsTable[] = {
   {"undo",			Undo},
   {"keyboard-reset",		KeyboardReset},
   {"kill-ring-yank",		KillRingYank},
+  {"toggle-overwrite",		ToggleOverwrite},
+  {"indent",			Indent},
   {"no-op",			NoOp},
 
   /* action to bind translations for text dialogs */

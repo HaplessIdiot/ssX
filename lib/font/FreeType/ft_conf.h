@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.6 1999/03/14 03:21:16 dawes Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
@@ -117,9 +117,11 @@
 /* a.k.a. font-smoothing or anti-aliasing. Default is on, but you can    */
 /* disable it if you don't need it.                                      */
 
-/* Not used in X yet */
-
+#ifdef ANTI_ALIASING
+#define  TT_CONFIG_OPTION_GRAY_SCALING
+#else
 #undef  TT_CONFIG_OPTION_GRAY_SCALING
+#endif
 
 
 /*************************************************************************/

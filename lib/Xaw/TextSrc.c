@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.9 1999/02/05 04:49:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.10 1999/03/21 07:34:31 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -897,7 +897,7 @@ _XawTextSrcUndo(TextSrcObject src, XawTextPosition *insert_pos)
 	src->textSrc.undo->end_mark = nlist;
 
     if (src->textSrc.undo->dir == XawsdLeft) {
-	if (list->undo == NULL)
+	if (list->undo == NULL || list == src->textSrc.undo->head)
 	    src->textSrc.undo->dir = XawsdRight;
 	else
 	    list = list->undo;

@@ -1,9 +1,10 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.6 1999/04/04 08:46:25 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.7 1999/04/11 13:11:23 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
 *enableBackups:				True
 *backupNameSuffix:			~
+*changedBitmap:				xlogo11
 
 *hints:\
 Use Control-S and Control-R to Search.\n\
@@ -33,7 +34,7 @@ Use Control-C to paste the selection at CUT_BUFFER0.
 *positionWindow.horizDistance:		0
 *positionWindow.left:			chainRight
 *positionWindow.right:			chainRight
-*positionWindow.width:			50
+*positionWindow.width:			90
 *positionWindow.label:			error
 *positionWindow.justify:		left
 *labelWindow*justify:			center
@@ -82,20 +83,44 @@ xedit.textSource*enableUndo:		True
 
 *SimpleMenu.BackingStore:		NotUseful
 *SimpleMenu.menuLabel.vertSpace:	80
-*SimpleMenu.?.HorizontalMargins:	16
+*SimpleMenu.SmeBSB.HorizontalMargins:	16
 *SimpleMenu.justify:			center
 *SimpleMenu.menuLabel.height:		250
 *SimpleMenu.cursor:			left_ptr
 
 *fileMenu.label:			File Menu
 *optionsMenu.label:			Option Menu
+*optionsMenu.ispell.label:		ispell...
+*editMenu.label:			Edit Menu
+*editMenu.wrapMenuItem.label:		Wrapping
+*editMenu.wrapMenuItem.leftBitmap:	menu12
+*wrapMenu.never.label:			Never
+*wrapMenu.line.label:			Line
+*wrapMenu.word.label:			Word
+*editMenu.autoFill.label:		Auto Fill
+*editMenu.justifyMenuItem.label:	Justification
+*editMenu.justifyMenuItem.leftBitmap:	menu12
+*justifyMenu.left.label:		Left
+*justifyMenu.right.label:		Right
+*justifyMenu.center.label:		Center
+*justifyMenu.full.label:		Full
+*editMenu.breakColumns.label:		Break Columns...
+*editMenu.scrollMenuItem.label:		Scrollbars
+*editMenu.scrollMenuItem.leftBitmap:	menu12
+*scrollMenu.vertical.label:		Vertical
+*scrollMenu.horizontal.label:		Horizontal
 
-*search*Text.translations: #override \
+*TransientShell*Text.translations: #override \
 c<Key>S:	no-op(r)\n\
 c<Key>R:	no-op(r)\n\
 m<Key>I:	no-op(r)
 
 *search.translations: #override \
+<Create>:get-values(my, $w, width, $h, height)\
+	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
+
+*insertFile.title:			Insert File
+*insertFile.translations: #override \
 <Create>:get-values(my, $w, width, $h, height)\
 	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
 
@@ -105,6 +130,7 @@ m<Key>I:	no-op(r)
 <Ctrl>X,<Ctrl>F:find-file()
 
 *editWindow.translations: #override \
+<Ctrl>X,<Key>Tab:indent()\n\
 <Ctrl>X,:<Key>0:delete-window(current)\n\
 <Ctrl>X,:<Key>1:delete-window(other)\n\
 <Ctrl>X,:<Key>2:split-window(vertical)\n\
@@ -114,12 +140,17 @@ m<Key>I:	no-op(r)
 <Ctrl>X,!<Key>k:kill-file()\n\
 <Ctrl>X,!<Key>o:other-window()\n\
 <Ctrl>X,!<Key>u:undo()\n\
+<Key>Tab:	insert-char()\n\
 !<Key>b:	insert-char()\n\
 !<Key>d:	insert-char()\n\
 !<Key>k:	insert-char()\n\
 !<Key>o:	insert-char()\n\
 !<Key>u:	insert-char()\n\
+c @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
+c @Num_Lock<Btn2Down>:xedit-focus() popup-menu(editMenu)\n\
+c @Num_Lock<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
 c<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
+c<Btn2Down>:	xedit-focus() popup-menu(editMenu)\n\
 c<Btn3Down>:	xedit-focus() popup-menu(optionsMenu)\n\
 <Btn1Down>:	xedit-focus() select-start()
 
@@ -142,25 +173,26 @@ c<Key>G:	cancel-find-file()\n\
 *ispell.geometry:			0x0
 *ispell.minWidth:			320
 *ispell.minHeight:			224
-!*ispell.wordChars:			·ÈÌÛ˙Á¡…Õ”⁄«‡¿‚ÍÙ¬ ‘¸‹„ı√’
-!*ispell.ispellCommand:			/usr/local/bin/ispell -d br
+!*ispell.wordChars:			·ÈÌÛ˙Á¡…Õ”⁄«‡¿‚ÍÙ¬ ‘¸‹„ı√’-
+!*ispell.ispellCommand:			/usr/local/bin/ispell -d br -B -m
 !*ispell.skipLines:			.#
 *ispell*Label.borderWidth:		0
 *ispell*Label.internalHeight:		4
 *ispell*Label.justify:			right
-*ispell*Label.width:			106
+*ispell*Label.width:			112
 *ispell*Label.left:			chainLeft
 *ispell*Label.right:			chainLeft
 *ispell*Label.top:			chainTop
 *ispell*Label.bottom:			chainTop
-*ispell*mispelled.label:		Mispelled word:
+*ispell*mispelled.label:		Misspelled word:
 *ispell*mispelled.internalWidth:	0
 *ispell*replacement.label:		Replace with:
 *ispell*word.fromHoriz:			mispelled
 *ispell*word.justify:			left
 *ispell*word.borderWidth:		1
+*ispell*word.internalWidth:		4
 *ispell*word.internalHeight:		3
-*ispell*word.width:			200
+*ispell*word.width:			194
 *ispell*word.left:			chainLeft
 *ispell*word.right:			chainRight
 *ispell*word.label:
@@ -168,17 +200,18 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*replacement.fromVert:		mispelled
 *ispell*replacement.internalWidth:	0
 *ispell*text.fromVert:			word
-*ispell*text.width:			200
+*ispell*text.width:			194
 *ispell*text.top:			chainTop
 *ispell*text.bottom:			chainTop
 *ispell*text.left:			chainLeft
 *ispell*text.right:			chainRight
+*ispell*text.leftMargin:		4
 *ispell*suggestions.label:		Suggestions:
 *ispell*suggestions.fromVert:		replacement
 *ispell*suggestions.internalWidth:	0
 *ispell*viewport.fromHoriz:		suggestions
 *ispell*viewport.fromVert:		text
-*ispell*viewport.width:			200
+*ispell*viewport.width:			194
 *ispell*viewport.height:		169
 *ispell*viewport.top:			chainTop
 *ispell*viewport.bottom:		chainBottom
@@ -193,15 +226,16 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*commands.bottom:		chainBottom
 *ispell*commands.right:			chainLeft
 *ispell*commands.left:			chainLeft
+*ispell*undo.label:			Undo
+*ispell*undo.width:			98
+*ispell*replace.fromVert:		undo
 *ispell*replace.label:			Replace
+*ispell*replaceAll.fromVert:		undo
 *ispell*replaceAll.fromHoriz:		replace
 *ispell*replaceAll.label:		All
-*ispell*undo.fromVert:			replace
-*ispell*undo.label:			Undo
-*ispell*undo.width:			92
-*ispell*ignore.fromVert:		undo
+*ispell*ignore.fromVert:		replace
 *ispell*ignore.label:			Ignore
-*ispell*ignoreAll.fromVert:		undo
+*ispell*ignoreAll.fromVert:		replaceAll
 *ispell*ignoreAll.fromHoriz:		ignore
 *ispell*ignoreAll.label:		All
 *ispell*add.fromVert:			ignore
@@ -210,12 +244,52 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*suspend.label:			Suspend
 *ispell*cancel.fromVert:		suspend
 *ispell*cancel.label:			Close
-*ispell*replace.width:			60
-*ispell*ignore.width:			60
-*ispell*replaceAll.width:		30
+*ispell*replace.width:			63
+*ispell*ignore.width:			63
+*ispell*replaceAll.width:		33
 *ispell*replaceAll.horizDistance:	0
-*ispell*ignoreAll.width:		30
+*ispell*ignoreAll.width:		33
 *ispell*ignoreAll.horizDistance:	0
-*ispell*add.width:			92
-*ispell*suspend.width:			92
-*ispell*cancel.width:			92
+*ispell*add.width:			98
+*ispell*suspend.width:			98
+*ispell*cancel.width:			98
+
+*columns.minWidth:			140
+*columns.minHeight:			76
+*columns.maxWidth:			140
+*columns.maxHeight:			76
+*columns.form*defaultDistance:		4
+*columns*left:				chainLeft
+*columns*right:				chainLeft
+*columns*top:				chainTop
+*columns*bottom:			chainTop
+*columns*Label.width:			96
+*columns*Label.borderWidth:		0
+*columns*Label.internalHeight:		4
+*columns*Label.internalWidth:		2
+*columns*Label.justify:			right
+*columns*Text.width:			30
+*columns*Command.width:			58
+*columns*leftLabel.label:		Left Column:
+*columns*left.fromHoriz:		leftLabel
+*columns*rightLabel.label:		Right Column:
+*columns*rightLabel.fromVert:		leftLabel
+*columns*right.fromHoriz:		rightLabel
+*columns*right.fromVert:		left
+*columns*ok.fromVert:			rightLabel
+*columns*cancel.fromHoriz:		ok
+*columns*cancel.fromVert:		rightLabel
+*columns*cancel.horizDistance:		12
+
+*columns*Text.translations: #override \
+c<Key>S:	no-op(r)\n\
+c<Key>R:	no-op(r)\n\
+m<Key>I:	no-op(r)\n\
+<Key>Return:	set-columns(ok)\n\
+<Key>Tab:	change-field()\n\
+c<Key>G:	set-columns(cancel)\n\
+<Key>Escape:	set-columns(cancel)
+
+*columns.translations:	#override \
+<Message>WM_PROTOCOLS:	set-columns(cancel)
+

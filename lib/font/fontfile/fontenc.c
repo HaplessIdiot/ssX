@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.3 1999/02/07 06:18:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.4 1999/02/28 11:19:21 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -105,7 +105,7 @@ static unsigned short iso8859_2_tophalf[]=
   0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9 };
 
 static struct font_encoding_simple_mapping iso8859_2_to_unicode_map=
-{ 0xA0, 0x60, iso8859_2_tophalf };
+{0x60, 0, 0xA0, iso8859_2_tophalf };
 
 static unsigned short iso8859_2_apple_centeuro[]=
 { 0xCA, 0x84, 0x00, 0xFC, 0x00, 0xBB, 0xE5, 0xA4,
@@ -156,7 +156,7 @@ static unsigned short iso8859_3_tophalf[]=
   0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9};
 
 static struct font_encoding_simple_mapping iso8859_3_to_unicode_map=
-{ 0xA0, 0x60, iso8859_3_tophalf };
+{ 0x60, 0, 0xA0, iso8859_3_tophalf };
 
 static struct font_encoding_mapping iso8859_3[]=
 {
@@ -182,7 +182,7 @@ static unsigned short iso8859_4_tophalf[]=
 };
 
 static struct font_encoding_simple_mapping iso8859_4_to_unicode_map=
-{ 0xA0, 0x60, iso8859_4_tophalf };
+{ 0x60, 0, 0xA0, iso8859_4_tophalf };
 
 static struct font_encoding_mapping iso8859_4[]=
 {
@@ -206,7 +206,7 @@ static unsigned short iso8859_5_tophalf[]=
   0x0458, 0x0459, 0x045A, 0x045B, 0x045C, 0x00A7, 0x045E, 0x045F};
 
 static struct font_encoding_simple_mapping iso8859_5_to_unicode_map=
-{ 0xA0, 0x60, iso8859_5_tophalf };
+{ 0x60, 0, 0xA0, iso8859_5_tophalf };
 
 static unsigned short 
 iso8859_5_apple_cyrillic[]=
@@ -346,7 +346,7 @@ static unsigned short iso8859_10_tophalf[]=
   0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x0138};
 
 static struct font_encoding_simple_mapping iso8859_10_to_unicode_map=
-{ 0xA0, 0x60, iso8859_10_tophalf };
+{ 0x60, 0, 0xA0, iso8859_10_tophalf };
 
 static struct font_encoding_mapping iso8859_10[]=
 {
@@ -396,7 +396,7 @@ static unsigned short koi8_r_tophalf[]=
   0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A};
 
 static struct font_encoding_simple_mapping koi8_r_to_unicode_map=
-{ 0x80, 0x80, koi8_r_tophalf };
+{ 0x80, 0, 0x80, koi8_r_tophalf };
 
 
 static struct font_encoding_mapping koi8_r[]=
@@ -544,26 +544,26 @@ static char *iso8859_15_aliases[2]={"fcd8859-15",0};
 
 static struct font_encoding initial_encodings[]=
 {
-  {"iso10646-1",0,256*256,iso10646,0}, /* Unicode */
-  {"iso8859-1",0,256,iso8859_1,0},  /* Latin 1 (West European) */
-  {"iso8859-2",0,256,iso8859_2,0},  /* Latin 2 (East European) */
-  {"iso8859-3",0,256,iso8859_3,0},  /* Latin 3 (South European) */
-  {"iso8859-4",0,256,iso8859_4,0},  /* Latin 4 (North European) */
-  {"iso8859-5",0,256,iso8859_5,0},  /* Cyrillic */
-  {"iso8859-6",0,256,iso8859_6,0},  /* Arabic */
-  {"iso8859-7",0,256,iso8859_7,0},  /* Greek */
-  {"iso8859-8",0,256,iso8859_8,0},  /* Hebrew */
-  {"iso8859-9",0,256,iso8859_9,0},  /* Latin 5 (Turkish) */
-  {"iso8859-10",0,256,iso8859_10,0},/* Latin 6 (Nordic) */
-  {"iso8859-15",iso8859_15_aliases,256,iso8859_15,0}, /* Latin 9 */
-  {"koi8-r",0,256,koi8_r,0},        /* Russian */
-  {"koi8-ru",0,256,koi8_ru,0},      /* Ukrainian */
-  {"koi8-uni",0,256,koi8_uni,0},    /* Russian/Ukrainian/Bielorussian */
-  {"koi8-e",0,256,koi8_e,0},        /* ``European'' */
-  {"koi8-u",0,256,koi8_u,0},        /* Ukrainian too */
-  {"microsoft-symbol",0,256,microsoft_symbol,0},
-  {"apple-roman",0,256,apple_roman,0},
-  {0,0,0,0}
+  {"iso10646-1",0,256*256,0,iso10646,0}, /* Unicode */
+  {"iso8859-1",0,256,0,iso8859_1,0},  /* Latin 1 (West European) */
+  {"iso8859-2",0,256,0,iso8859_2,0},  /* Latin 2 (East European) */
+  {"iso8859-3",0,256,0,iso8859_3,0},  /* Latin 3 (South European) */
+  {"iso8859-4",0,256,0,iso8859_4,0},  /* Latin 4 (North European) */
+  {"iso8859-5",0,256,0,iso8859_5,0},  /* Cyrillic */
+  {"iso8859-6",0,256,0,iso8859_6,0},  /* Arabic */
+  {"iso8859-7",0,256,0,iso8859_7,0},  /* Greek */
+  {"iso8859-8",0,256,0,iso8859_8,0},  /* Hebrew */
+  {"iso8859-9",0,256,0,iso8859_9,0},  /* Latin 5 (Turkish) */
+  {"iso8859-10",0,256,0,iso8859_10,0},/* Latin 6 (Nordic) */
+  {"iso8859-15",iso8859_15_aliases,256,0,iso8859_15,0}, /* Latin 9 */
+  {"koi8-r",0,256,0,koi8_r,0},        /* Russian */
+  {"koi8-ru",0,256,0,koi8_ru,0},      /* Ukrainian */
+  {"koi8-uni",0,256,0,koi8_uni,0},    /* Russian/Ukrainian/Bielorussian */
+  {"koi8-e",0,256,0,koi8_e,0},        /* ``European'' */
+  {"koi8-u",0,256,0,koi8_u,0},        /* Ukrainian too */
+  {"microsoft-symbol",0,256,0,microsoft_symbol,0},
+  {"apple-roman",0,256,0,apple_roman,0},
+  {0,0,0,0,0}
 };
 
 static struct font_encoding *font_encodings=NULL;
@@ -630,20 +630,33 @@ font_encoding_from_xlfd(const char *name, int length)
 }
 
 unsigned
-font_encoding_recode(unsigned code, struct font_encoding_mapping *mapping)
+font_encoding_recode(unsigned code, 
+                     struct font_encoding *encoding,
+                     struct font_encoding_mapping *mapping)
 {
-  if(mapping->recode)
-    return (*mapping->recode)(code,mapping->client_data);
-  else
+  if(mapping->recode) {
+    if((encoding->row_size==0 && code>=encoding->size) ||
+       (encoding->row_size!=0 &&
+        (code/0x100>=encoding->size || ((code&0xFF)>=encoding->row_size))))
+      return 0;
+    return (*mapping->recode)(code, mapping->client_data);
+  } else
     return code;
 }
 
 char*
-font_encoding_name(unsigned code, struct font_encoding_mapping *mapping)
+font_encoding_name(unsigned code, 
+                   struct font_encoding *encoding,
+                   struct font_encoding_mapping *mapping)
 {
-  if(mapping->name)
-    return (*mapping->name)(code,mapping->client_data);
-  else
+  unsigned index;
+
+  if(mapping->name) {
+    if((encoding->row_size==0 && code>=encoding->size) ||
+       ((code/0x100>=encoding->size || ((code&0xFF)>=encoding->row_size))))
+      return 0;
+    return (*mapping->name)(code, mapping->client_data);
+  } else
     return 0;
 }
 
@@ -687,10 +700,20 @@ unsigned
 font_encoding_simple_recode(unsigned code, void *client_data)
 {
   struct font_encoding_simple_mapping *map;
+  unsigned index;
 
   map=client_data;
-  if(map && code>=map->first && code<map->first+map->len)
-    return map->map[code-map->first];
+
+  if(code>0xFFFF || (map->row_size && (code&0xFF)>=map->row_size))
+    return 0;
+
+  if(map->row_size)
+    index=(code&0xFF)+(code>>8)*map->row_size;
+  else
+    index=code;
+
+  if(map->map && index>=map->first && index<map->first+map->len)    
+    return map->map[index-map->first];
   else
     return code;
 }

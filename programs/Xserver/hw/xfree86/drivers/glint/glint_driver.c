@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.32 1999/03/28 15:32:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.33 1999/04/18 04:08:35 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1588,7 +1588,8 @@ GLINTUnmapMem(ScrnInfoPtr pScrn)
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->IOBase, 0x20000);
     pGlint->IOBase = NULL;
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, pScrn->videoRam);
+    if (pGlint->FbBase != NULL)
+    	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, pGlint->FbMapSize);
     pGlint->FbBase = NULL;
     return TRUE;
 }

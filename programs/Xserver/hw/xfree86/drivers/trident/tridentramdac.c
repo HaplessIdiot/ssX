@@ -24,7 +24,7 @@
  * TridentOutIndReg() and TridentInIndReg() are used to access 
  * the indirect Trident RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridentramdac.c,v 1.1 1998/09/06 13:48:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridentramdac.c,v 1.2 1998/09/13 05:23:43 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,25 +39,29 @@
 void
 TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index)
 {
-    outb(0x3C6, 0xFF);
-    outb(0x3C8, index);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    MMIO_OUTB(0x3C6, 0xFF);
+    MMIO_OUTB(0x3C8, index);
 }
 
 void
 TridentWriteData(ScrnInfoPtr pScrn, unsigned char data)
 {
-    outb(0x3C9, data);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    MMIO_OUTB(0x3C9, data);
 }
 
 void
 TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index)
 {
-    outb(0x3C6, 0xFF);
-    outb(0x3C7, index);
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    MMIO_OUTB(0x3C6, 0xFF);
+    MMIO_OUTB(0x3C7, index);
 }
 
 unsigned char
 TridentReadData(ScrnInfoPtr pScrn)
 {
-    return(inb(0x3C9));
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    return(MMIO_INB(0x3C9));
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.2 1998/07/25 16:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.3 1999/01/14 13:05:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -161,9 +161,9 @@ printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 		return;
 
 	if (ptr->file_logfile)
-		fprintf (cf, "\tLogFile     \"%s\"\n", ptr->file_logfile);
+		fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
 	if (ptr->file_rgbpath)
-		fprintf (cf, "\tRgbPath     \"%s\"\n", ptr->file_rgbpath);
+		fprintf (cf, "\tRgbPath      \"%s\"\n", ptr->file_rgbpath);
 	if (ptr->file_modulepath)
 	{
 		s = ptr->file_modulepath;
@@ -171,13 +171,13 @@ printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 		while (p)
 		{
 			*p = '\000';
-			fprintf (cf, "\tModulePath     \"%s\"\n", s);
+			fprintf (cf, "\tModulePath   \"%s\"\n", s);
 			*p = ',';
 			s = p;
 			s++;
 			p = index (s, ',');
 		}
-		fprintf (cf, "\tModulePath     \"%s\"\n", s);
+		fprintf (cf, "\tModulePath   \"%s\"\n", s);
 	}
 	if (ptr->file_fontpath)
 	{

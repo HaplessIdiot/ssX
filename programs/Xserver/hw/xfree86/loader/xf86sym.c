@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.83 1999/04/17 07:07:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.84 1999/04/18 04:08:47 dawes Exp $ */
 
 /*
  *
@@ -523,9 +523,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(pciHostAddrToBusAddr)
    SYMFUNC(xf86MapPciMem)
    SYMFUNC(xf86scanpci)
-#ifdef __alpha__
-   SYMFUNC(xf86MapPciMemSparse)
-#endif
    SYMFUNC(xf86ReadPciBIOS)
    SYMFUNC(AllocatePixmapPrivateIndex)
    SYMFUNC(AllocatePixmapPrivate)
@@ -700,7 +697,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
-   SYMFUNC(xf86MapVidMemSparse)
    SYMFUNC(xf86ReadSparse32)
    SYMFUNC(xf86ReadSparse16)
    SYMFUNC(xf86ReadSparse8)

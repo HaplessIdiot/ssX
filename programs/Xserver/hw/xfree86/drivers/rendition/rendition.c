@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.2 1999/04/18 04:08:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.3 1999/04/24 07:36:22 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -949,12 +949,21 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	        }
             else {
                 ErrorF("Changing masks!!!\n");
+                if (pScreenInfo->bitsPerPixel == 32) {
+		        visual->offsetRed=16;
+		        visual->offsetGreen=8;
+		        visual->offsetBlue=0;
+		        visual->redMask=0xff0000;
+		        visual->greenMask=0xff00;
+		        visual->blueMask=0xff;
+		} else {
 		        visual->offsetRed=11;
 		        visual->offsetGreen=5;
 		        visual->offsetBlue=0;
 		        visual->redMask=0xf800;
 		        visual->greenMask=0x7e0;
 		        visual->blueMask=0x1f;
+		}
 /*
 		        visual->offsetRed=0;
 		        visual->offsetGreen=5;
@@ -1080,7 +1089,7 @@ static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
   Bool WriteCombine;
   int mapOption;
 
-#if DEBUG0
+#ifdef DEBUG0
   ErrorF("Mapping ...\n");
   ErrorF("%d %d %d %x %d\n", pScreenInfo->scrnIndex, VIDMEM_FRAMEBUFFER, 
      RENDITIONPTR(pScreenInfo)->pcitag,
@@ -1111,20 +1120,20 @@ static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
 	pScreenInfo->videoRam);
     return TRUE;
 
-#if DEBUG0
+#ifdef DEBUG0
     ErrorF("Done\n");
 #endif
 }
 
 static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo)
 {
-#if DEBUG0
+#ifdef DEBUG0
   ErrorF("Unmapping ...\n");
 #endif
     xf86UnMapVidMem(pScreenInfo->scrnIndex,
         RENDITIONPTR(pScreenInfo)->board.mem_base, pScreenInfo->videoRam);
     return TRUE;
-#if DEBUG0
+#ifdef DEBUG0
     ErrorF("Done\n");
 #endif
 }

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.19 1999/03/28 15:33:24 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.20 1999/04/11 13:11:37 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_96">Patch #96 - 1999/4/19 - XFree86 3.9Pj</A>
 <LI><A HREF="#xterm_95">Patch #95 - 1999/4/5 - XFree86 3.9Ph</A>
 <LI><A HREF="#xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A>
 <LI><A HREF="#xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A>
@@ -138,6 +139,32 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_96">Patch #96 - 1999/4/19 - XFree86 3.9Pj</A></H1>
+<ul>
+	<li>modify Makefile.in to work with configure script's --srcdir option.
+	  (patch by Jeremy Buhler &lt;jbuhler@cs.washington.edu&gt;)
+
+	<li>add checks for 'echo -n' equivalent for 8colors.sh and 16colors.sh
+	  scripts (reported by Vikas Agnihotri).
+
+	<li>improve logic that looks for bold fonts to allow for wildcards
+	  in the specification for normal fonts, and to ensure that if
+	  a bold font is specified as normal, that xterm will simulate a
+	  bold version of that using a one-pixel offset overstrike
+	  (reported by Henrik Harmsen &lt;harmsen@erv.ericsson.se&gt;).
+
+	<li>correct horizontal spacing of doublewidth line-drawing characters
+	  that xterm simulates.
+
+	<li>improve support for Unix98 PTY's, using patch in Debian bug report
+	  #35650, by Topi Miettinen &lt;Topi.Miettinen@medialab.sonera.fi&gt;.
+	  Andreas Jaeger says this also corrects a permissions problem
+	  reported by cat@zip.net.au
+
+	<li>modify initial-erase logic to ensure that <code>ttyModes</code>
+	  resource overrides it.
+</ul>
 
 <H1><A NAME="xterm_95">Patch #95 - 1999/4/5 - XFree86 3.9Ph</A></H1>
 <ul>

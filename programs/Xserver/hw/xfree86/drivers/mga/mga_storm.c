@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.46 1999/03/14 03:22:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.47 1999/03/21 07:35:14 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -558,7 +558,7 @@ MGANAME(SubsequentScreenToScreenCopy)(
     WAITFIFO(4); 
     OUTREG(MGAREG_AR0, end);
     OUTREG(MGAREG_AR3, start);
-    OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | dstX);
+    OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
 }
 
@@ -626,7 +626,7 @@ MGANAME(SubsequentScreenToScreenCopy_FastBlit)(
 		OUTREG(MGAREG_DWGCTL, 0x040A400C);
 		OUTREG(MGAREG_AR0, end);
 		OUTREG(MGAREG_AR3, start);
-		OUTREG(MGAREG_FXBNDRY, (fxright << 16) | dstX);
+		OUTREG(MGAREG_FXBNDRY, (fxright << 16) | (dstX & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
 		OUTREG(MGAREG_DWGCTL, pMga->AtypeNoBLK[GXcopy] | 
 			MGADWG_SHIFTZERO | MGADWG_BITBLT | MGADWG_BFCOL);
@@ -639,7 +639,7 @@ MGANAME(SubsequentScreenToScreenCopy_FastBlit)(
     	OUTREG(MGAREG_DWGCTL, 0x040A400C);
     	OUTREG(MGAREG_AR0, end);
     	OUTREG(MGAREG_AR3, start);
-    	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | dstX);
+    	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
     	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
     	OUTREG(MGAREG_DWGCTL, pMga->AtypeNoBLK[GXcopy] | MGADWG_SHIFTZERO | 
 			MGADWG_BITBLT | MGADWG_BFCOL);
@@ -651,7 +651,7 @@ FASTBLIT_BAILOUT:
     WAITFIFO(4); 
     OUTREG(MGAREG_AR0, end);
     OUTREG(MGAREG_AR3, start);
-    OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | dstX);
+    OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
 }
 
@@ -700,7 +700,7 @@ MGANAME(SubsequentSolidFillRect)(
     MGAPtr pMga = MGAPTR(pScrn);
 
     WAITFIFO(2);
-    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }   
 
@@ -725,7 +725,7 @@ MGANAME(SubsequentSolidFillTrap)(ScrnInfoPtr pScrn, int y, int h,
     OUTREG(MGAREG_AR5, ar5);
     OUTREG(MGAREG_AR6, dyR);
     OUTREG(MGAREG_SGN, (sdxl << 1) | (sdxr << 5));
-    OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | left);
+    OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | (left & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD);
 }
@@ -745,17 +745,17 @@ MGANAME(SubsequentSolidHorVertLine) (
 
     if(dir == DEGREES_0) {
 	WAITFIFO(2);
-	OUTREG(MGAREG_FXBNDRY, ((x + len) << 16) | x);
+	OUTREG(MGAREG_FXBNDRY, ((x + len) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | 1);
     } else if(pMga->AccelFlags & USE_RECTS_FOR_LINES) {
 	WAITFIFO(2);
-	OUTREG(MGAREG_FXBNDRY, ((x + 1) << 16) | x);
+	OUTREG(MGAREG_FXBNDRY, ((x + 1) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | len);
     } else {
 	WAITFIFO(4);
 	OUTREG(MGAREG_DWGCTL, pMga->SolidLineCMD | MGADWG_AUTOLINE_OPEN);
-	OUTREG(MGAREG_XYSTRT, (y << 16) | x);
-	OUTREG(MGAREG_XYEND + MGAREG_EXEC, ((y + len) << 16) | x);
+	OUTREG(MGAREG_XYSTRT, (y << 16) | (x & 0xffff));
+	OUTREG(MGAREG_XYEND + MGAREG_EXEC, ((y + len) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD); 
     }
 }
@@ -841,7 +841,7 @@ MGANAME(SubsequentMono8x8PatternFillRect)(
     
     WAITFIFO(3);
     OUTREG(MGAREG_SHIFT, (paty << 4) | patx);
-    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     pMga->AccelInfoRec->SubsequentMono8x8PatternFillRect = 
 		MGANAME(SubsequentMono8x8PatternFillRect_Additional);
@@ -855,7 +855,7 @@ MGANAME(SubsequentMono8x8PatternFillRect_Additional)(
 {
     MGAPtr pMga = MGAPTR(pScrn);
     WAITFIFO(2);
-    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
@@ -886,7 +886,7 @@ MGANAME(SubsequentMono8x8PatternFillTrap)(
     OUTREG(MGAREG_AR5, ar5);
     OUTREG(MGAREG_AR6, dyR);
     OUTREG(MGAREG_SGN, sdxl | sdxr);
-    OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | left);
+    OUTREG(MGAREG_FXBNDRY, ((right + 1) << 16) | (left & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     OUTREG(MGAREG_DWGCTL, pMga->PatternRectCMD);
 }
@@ -1180,7 +1180,7 @@ MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
     WAITFIFO(4);
     OUTREG(MGAREG_AR3, start);
     OUTREG(MGAREG_AR0, end);
-    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
@@ -1250,7 +1250,7 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 	WAITFIFO(4);
 	OUTREG(MGAREG_AR3, start);
 	OUTREG(MGAREG_AR0, start + w);
-	OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+	OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
     } else {
 	while(h) {
@@ -1261,13 +1261,13 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		WAITFIFO(7);
 		OUTREG(MGAREG_AR3, start);
 		OUTREG(MGAREG_AR0, start + num);
-		OUTREG(MGAREG_FXBNDRY, ((x + num) << 16) | x);
+		OUTREG(MGAREG_FXBNDRY, ((x + num) << 16) | (x & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 		
 		OUTREG(MGAREG_AR3, next);
 		OUTREG(MGAREG_AR0, start + w);
 		OUTREG(MGAREG_FXBNDRY + MGAREG_EXEC, ((x + w) << 16) | 
-                                                     (x + num + 1));
+                                                     ((x + num + 1) & 0xffff));
 		start += pitch;
 		h--; y++;
 	    } else {
@@ -1277,7 +1277,7 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		WAITFIFO(4);
 		OUTREG(MGAREG_AR3, start);
 		OUTREG(MGAREG_AR0, start + w);
-		OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+		OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | (x & 0xffff));
 		OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | num);
 
 		start += num * pitch;
@@ -1480,7 +1480,7 @@ MGAFillSolidRectsDMA(
     (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
 
     if(nBox & 1) {
-	OUTREG(MGAREG_FXBNDRY, ((pBox->x2) << 16) | pBox->x1);
+	OUTREG(MGAREG_FXBNDRY, ((pBox->x2) << 16) | (pBox->x1 & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, 
 		(pBox->y1 << 16) | (pBox->y2 - pBox->y1));
 	nBox--; pBox++;
@@ -1492,10 +1492,10 @@ MGAFillSolidRectsDMA(
     while(nBox) {
 	base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
                 MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
-	base[1] = ((pBox->x2) << 16) | pBox->x1;
+	base[1] = ((pBox->x2) << 16) | (pBox->x1 & 0xffff);
 	base[2] = (pBox->y1 << 16) | (pBox->y2 - pBox->y1);
 	pBox++;
-	base[3] = ((pBox->x2) << 16) | pBox->x1;
+	base[3] = ((pBox->x2) << 16) | (pBox->x1 & 0xffff);
 	base[4] = (pBox->y1 << 16) | (pBox->y2 - pBox->y1);
 	pBox++;
 	base += 5; nBox -= 2;
@@ -1530,7 +1530,7 @@ MGAFillSolidSpansDMA(
     (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
 
     if(n & 1) {
-	OUTREG(MGAREG_FXBNDRY, ((ppt->x + *pwidth) << 16) | ppt->x);
+	OUTREG(MGAREG_FXBNDRY, ((ppt->x + *pwidth) << 16) | (ppt->x & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (ppt->y << 16) | 1);
 	ppt++; pwidth++; n--;
     }
@@ -1542,10 +1542,10 @@ MGAFillSolidSpansDMA(
 	while(n) {
 	    base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
                 MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
-	    base[1] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	    base[1] = ((ppt->x + *(pwidth++)) << 16) | (ppt->x & 0xffff);
 	    base[2] = (ppt->y << 16) | 1;
 	    ppt++;
-	    base[3] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	    base[3] = ((ppt->x + *(pwidth++)) << 16) | (ppt->x & 0xffff);
 	    base[4] = (ppt->y << 16) | 1;
 	    ppt++;
 	    base += 5; n -= 2;
@@ -1594,7 +1594,7 @@ SECOND_PASS:
 
     while(nBox--) {
 	WAITFIFO(2);
-	OUTREG(MGAREG_FXBNDRY, ((pBox->x2) << 16) | pBox->x1);
+	OUTREG(MGAREG_FXBNDRY, ((pBox->x2) << 16) | (pBox->x1 & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, 
 			(pBox->y1 << 16) | (pBox->y2 - pBox->y1));
 	pBox++;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.12 1999/04/04 10:59:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.13 1999/04/18 04:08:51 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -79,6 +79,7 @@
 #define _XF86PCI_H 1
 #include "Xarch.h"
 #include "Xfuncproto.h"
+#include "misc.h"
 
 /*
  * PCI cfg space definitions (e.g. stuff right out of the PCI spec
