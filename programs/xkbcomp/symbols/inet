@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.26 2003/02/14 22:59:10 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.27 2003/02/17 22:31:56 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -636,6 +636,8 @@ xkb_symbols "hpxe3gc" {
     key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
     key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
     key <I19>	{	[ XF86AudioNext		]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
 };
 
 partial alphanumeric_keys
