@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.5 1999/08/01 07:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.6 1999/09/27 06:29:43 dawes Exp $ */
 /*
  * Copyright 1994 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1080,18 +1080,18 @@
 #define LOCK_8DOT			0x00000010ul
 #define ICON_ENABLE			0x00000020ul
 #define DONT_SHADOW_VPAR		0x00000040ul
-#define V2CLK_ALWAYS_ONb		0x00000080ul
+#define V2CLK_PM_EN			0x00000080ul
 #define RST_FM				0x00000100ul
 #define DISABLE_PCLK_RESET		0x00000200ul	/* XC/XL */
 #define DIS_HOR_CRT_DIVBY2		0x00000400ul
 #define SCLK_SEL			0x00000800ul
 #define SCLK_DELAY			0x0000f000ul
-#define TVCLK_ALWAYS_ONb		0x00010000ul
-#define VCLK_DAC_ALWAYS_ONb		0x00020000ul
+#define TVCLK_PM_EN			0x00010000ul
+#define VCLK_DAC_PM_EN			0x00020000ul
 #define VCLK_LCD_OFF			0x00040000ul
 #define SELECT_WAIT_4MS			0x00080000ul
-#define XTALIN_ALWAYS_ONb		0x00080000ul	/* XC/XL */
-#define V2CLK_DAC_ALWAYS_ONb		0x00100000ul
+#define XTALIN_PM_EN			0x00080000ul	/* XC/XL */
+#define V2CLK_DAC_PM_EN			0x00100000ul
 #define LVDS_EN				0x00200000ul
 #define LVDS_PLL_EN			0x00400000ul
 #define LVDS_PLL_RESET			0x00800000ul
@@ -1386,6 +1386,33 @@
 #define LCD_PATTERN_GEN_SEED	0x1bu			/* XC/XL */
 #define LCD_APC_CNTL		0x1cu			/* XC/XL */
 #define LCD_POWER_MANAGEMENT_2	0x1du			/* XC/XL */
+#define LCD_XCLK_DISP_PM_EN		0x00000001ul
+#define LCD_XCLK_DISP2_PM_EN		0x00000002ul	/* Mobility */
+#define LCD_XCLK_VID_PM_EN		0x00000004ul
+#define LCD_XCLK_SCL_PM_EN		0x00000008ul
+#define LCD_XCLK_GUI_PM_EN		0x00000010ul
+#define LCD_XCLK_SUB_PM_EN		0x00000020ul
+/*	?				0x000000c0ul */
+#define LCD_MCLK_PM_EN			0x00000100ul
+#define LCD_SS_EN			0x00000200ul
+#define LCD_BLON_DIGON_EN		0x00000400ul
+/*	?				0x00000800ul */
+#define LCD_PM_DYN_XCLK_SYNC		0x00003000ul
+#define LCD_SEL_W4MS			0x00004000ul
+/*	?				0x00008000ul */
+#define LCD_PM_DYN_XCLK_EN		0x00010000ul
+#define LCD_PM_XCLK_ALWAYS		0x00020000ul
+#define LCD_PM_DYN_XCLK_STATUS		0x00040000ul
+#define LCD_PCI_ACC_DIS			0x00080000ul
+#define LCD_PM_DYN_XCLK_DISP		0x00100000ul
+#define LCD_PM_DYN_XCLK_DISP2		0x00200000ul	/* Mobility */
+#define LCD_PM_DYN_XCLK_VID		0x00400000ul
+#define LCD_PM_DYN_XCLK_HFB		0x00800000ul
+#define LCD_PM_DYN_XCLK_SCL		0x01000000ul
+#define LCD_PM_DYN_XCLK_SUB		0x02000000ul
+#define LCD_PM_DYN_XCLK_GUI		0x04000000ul
+#define LCD_PM_DYN_XCLK_HOST		0x08000000ul
+/*	?				0xf0000000ul */
 #define LCD_PRI_ERR_PATTERN	0x1eu			/* XC/XL */
 #define LCD_CUR_ERR_PATTERN	0x1fu			/* XC/XL */
 #define LCD_PLTSTBLK_RPT	0x20u			/* XC/XL */

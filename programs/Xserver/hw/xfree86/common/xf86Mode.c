@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.19 1999/07/06 11:38:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.20 1999/08/01 07:57:11 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -169,6 +169,26 @@ xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges)
     }
 }
 
+
+/*
+ * xf86FindClockRangeForMode()    [... like the name says ...]
+ */
+static ClockRangePtr
+xf86FindClockRangeForMode(ClockRangePtr clockRanges, DisplayModePtr p)
+{
+    ClockRangePtr cp;
+
+    for (cp = clockRanges; ; cp = cp->next)
+	if (!cp ||
+	    ((p->Clock >= cp->minClock) &&
+	     (p->Clock <= cp->maxClock) &&
+	     (cp->interlaceAllowed || !(p->Flags & V_INTERLACE)) &&
+	     (cp->doubleScanAllowed ||
+	      ((p->VScan <= 1) && !(p->Flags & V_DBLSCAN)))))
+	    return cp;
+}
+
+
 /*
  * xf86HandleBuiltinMode() - handles built-in modes
  */
@@ -187,15 +207,7 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
     
     if ((p->type & M_T_CLOCK_C) == M_T_CLOCK_C) {
 	/* Check clock is in range */
-	for (cp = clockRanges; cp != NULL; cp = cp->next) {
-	    if ((cp->minClock <= p->Clock) &&
-		(cp->maxClock >= p->Clock) &&
-		(cp->interlaceAllowed ||
-		 !(p->Flags & V_INTERLACE)) &&
-		(cp->doubleScanAllowed ||
-		 ((!(p->Flags & V_DBLSCAN)) && (p->VScan <= 1))))
-		break;
-	}
+	cp = xf86FindClockRangeForMode(clockRanges, p);
 	if (cp == NULL){
 	    modep->type = p->type;
 	    return MODE_CLOCK_RANGE;
@@ -341,14 +353,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 					     allowDiv2);
 		
 	    /* Check clock is in range */
-	    for (cp = clockRanges; cp != NULL; cp = cp->next) {
-		if ((cp->minClock <= p->Clock) &&
-		    (cp->maxClock >= p->Clock) &&
-		    (cp->interlaceAllowed || !(p->Flags & V_INTERLACE)) &&
-		    (cp->doubleScanAllowed ||
-		     ((!(p->Flags & V_DBLSCAN)) && (p->VScan <= 1))))
-		    break;
-	    }
+	    cp = xf86FindClockRangeForMode(clockRanges, p);
 	    if (cp == NULL) {
 		/*
 		 * XXX Could do more here to provide a more detailed
@@ -512,6 +517,76 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     return MODE_OK;
 }
 
+
+/*
+ * xf86SetModeCrtc
+ *
+ * Initialises the Crtc parameters for a mode.  The initialisation includes
+ * adjustments for interlaced and double scan modes.
+ */
+static void
+xf86SetModeCrtc(DisplayModePtr p, int adjustFlags)
+{
+    if ((p == NULL) || ((p->type & M_T_CRTC_C) == M_T_BUILTIN))
+	return;
+
+    p->CrtcHDisplay             = p->HDisplay;
+    p->CrtcHSyncStart           = p->HSyncStart;
+    p->CrtcHSyncEnd             = p->HSyncEnd;
+    p->CrtcHTotal               = p->HTotal;
+    p->CrtcHSkew                = p->HSkew;
+    p->CrtcVDisplay             = p->VDisplay;
+    p->CrtcVSyncStart           = p->VSyncStart;
+    p->CrtcVSyncEnd             = p->VSyncEnd;
+    p->CrtcVTotal               = p->VTotal;
+    if ((p->Flags & V_INTERLACE) && (adjustFlags & INTERLACE_HALVE_V))
+    {
+        p->CrtcVDisplay         /= 2;
+        p->CrtcVSyncStart       /= 2;
+        p->CrtcVSyncEnd         /= 2;
+        p->CrtcVTotal           /= 2;
+    }
+    if (p->Flags & V_DBLSCAN) {
+        p->CrtcVDisplay         *= 2;
+        p->CrtcVSyncStart       *= 2;
+        p->CrtcVSyncEnd         *= 2;
+        p->CrtcVTotal           *= 2;
+    }
+    if (p->VScan > 1) {
+        p->CrtcVDisplay         *= p->VScan;
+        p->CrtcVSyncStart       *= p->VScan;
+        p->CrtcVSyncEnd         *= p->VScan;
+        p->CrtcVTotal           *= p->VScan;
+    }
+    p->CrtcHAdjusted = FALSE;
+    p->CrtcVAdjusted = FALSE;
+
+    /*
+     * XXX
+     *
+     * The following is taken from VGA, but applies to other cores as well.
+     */
+    p->CrtcVBlankStart = min(p->CrtcVSyncStart, p->CrtcVDisplay);
+    p->CrtcVBlankEnd = max(p->CrtcVSyncEnd, p->CrtcVTotal);
+    if ((p->CrtcVBlankEnd - p->CrtcVBlankStart) >= 127) {
+        /* 
+         * V Blanking size must be < 127.
+         * Moving blank start forward is safer than moving blank end
+         * back, since monitors clamp just AFTER the sync pulse (or in
+         * the sync pulse), but never before.
+         */
+        p->CrtcVBlankStart = p->CrtcVBlankEnd - 127;
+    }
+    p->CrtcHBlankStart = min(p->CrtcHSyncStart, p->CrtcHDisplay);
+    p->CrtcHBlankEnd = max(p->CrtcHSyncEnd, p->CrtcHTotal);
+    if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63 * 8) {
+        /*
+         * H Blanking size must be < 63*8. Same remark as above.
+         */
+        p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
+    }
+}
+
 /*
  * xf86CheckModeForMonitor
  *
@@ -592,6 +667,7 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
  *    virtualY     (optional) virtual height requested
  *
  * In addition, the following fields from the ScrnInfoRec are used:
+ *    monitor      pointer to structure for monitor section
  *    fbFormat     pixel format for the framebuffer
  *    videoRam     video memory size (in kB)
  *    maxHValue    maximum horizontal timing value
@@ -600,14 +676,32 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 
 ModeStatus
 xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
+			      ClockRangePtr clockRanges,
+			      LookupModeFlags strategy,
 			      int maxPitch, int virtualX, int virtualY)
 {
+    MonPtr monitor;
+    ClockRangePtr cp;
+    ModeStatus status;
+    Bool allowDiv2 = (strategy & LOOKUP_CLKDIV2) != 0;
+    int i, needDiv2;
+    float hsync, vrefresh;
+
     /* Sanity checks */
-    if (scrp == NULL || mode == NULL) {
+    if (!scrp || !mode || !clockRanges) {
 	ErrorF("xf86InitialCheckModeForDriver: "
 		"called with invalid parameters\n");
 	return MODE_ERROR;
     }
+
+    /* Some basic mode validity checks */
+    if (0 >= mode->HDisplay || mode->HDisplay > mode->HSyncStart ||
+	mode->HSyncStart >= mode->HSyncEnd || mode->HSyncEnd >= mode->HTotal)
+	return MODE_H_ILLEGAL;
+
+    if (0 >= mode->VDisplay || mode->VDisplay > mode->VSyncStart ||
+	mode->VSyncStart >= mode->VSyncEnd || mode->VSyncEnd >= mode->VTotal)
+	return MODE_V_ILLEGAL;
 
     if (mode->HDisplay * mode->VDisplay * scrp->fbFormat.bitsPerPixel >
         scrp->videoRam * (1024 * 8))
@@ -628,8 +722,80 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
     if (scrp->maxVValue > 0 && mode->VTotal > scrp->maxVValue)
 	return MODE_BAD_VVALUE;
 
-    if (scrp->ValidMode)
-	return scrp->ValidMode(scrp->scrnIndex, mode, FALSE, 0);
+    /*
+     * The use of the DisplayModeRec's Crtc* and SynthClock elements below is
+     * provisional, in that they are later reused by the driver at mode-set
+     * time.  Here, they are temporarily enlisted to contain the mode timings
+     * as seen by the CRT or panel (rather than the CRTC).  The driver's
+     * ValidMode() is allowed to modify these so it can deal with such things
+     * as mode stretching and/or centering.  The driver should >NOT< modify the
+     * user-supplied values as these are reported back when mode validation is
+     * said and done.
+     */
+    xf86SetModeCrtc(mode, INTERLACE_HALVE_V);
+
+    cp = xf86FindClockRangeForMode(clockRanges, mode);
+    if (!cp)
+	return MODE_CLOCK_RANGE;
+
+    if (cp->ClockMulFactor < 1)
+	cp->ClockMulFactor = 1;
+    if (cp->ClockDivFactor < 1)
+	cp->ClockDivFactor = 1;
+
+    /*
+     * XXX  The effect of clock dividers and multipliers on the monitor's
+     *      pixel clock needs to be verified.
+     */
+    if (scrp->progClock) {
+	mode->SynthClock = mode->Clock;
+    } else {
+	i = xf86GetNearestClock(scrp, mode->Clock, allowDiv2,
+				cp->ClockDivFactor, cp->ClockMulFactor,
+				&needDiv2);
+	mode->SynthClock = (scrp->clock[i] * cp->ClockDivFactor) /
+			   cp->ClockMulFactor;
+	if (needDiv2 & V_CLKDIV2)
+	    mode->SynthClock /= 2;
+    }
+
+    if (scrp->ValidMode) {
+	status = (*scrp->ValidMode)(scrp->scrnIndex, mode, FALSE, 0);
+	if (status != MODE_OK)
+	    return status;
+    }
+
+    if (!(monitor = scrp->monitor)) {
+	ErrorF("xf86InitialCheckModeForDriver: "
+		"called with invalid monitor\n");
+	return MODE_ERROR;
+    }
+
+    /* Check hsync against the allowed ranges */
+    hsync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
+    for (i = 0; i < monitor->nHsync; i++)
+	if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+	    (hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
+	    break;
+
+    /* Now see whether we ran out of sync ranges without finding a match */
+    if (i == monitor->nHsync)
+	return MODE_HSYNC;
+
+    /* Check vrefresh against the allowed ranges */
+    vrefresh = mode->SynthClock * 1000.0 / (mode->CrtcHTotal * mode->CrtcVTotal);
+    for (i = 0; i < monitor->nVrefresh; i++)
+	if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+	    (vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
+	    break;
+
+    /* Now see whether we ran out of refresh ranges without finding a match */
+    if (i == monitor->nVrefresh)
+	return MODE_VSYNC;
+
+    /* Force interlaced modes to have an odd VTotal */
+    if (mode->Flags & V_INTERLACE)
+	mode->CrtcVTotal |= 1;
 
     /* Assume it is OK */
     return MODE_OK;
@@ -693,6 +859,7 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
  *    clocks       a list of discrete clocks
  *    numClocks    number of discrete clocks
  *    progClock    clock is programmable
+ *    monitor      pointer to structure for monitor section
  *    fbFormat     format of the framebuffer
  *    videoRam     video memory size
  *    maxHValue    maximum horizontal timing value
@@ -851,8 +1018,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp->modePool == NULL) {
 	q = NULL;
 	for (p = availModes; p != NULL; p = p->next) {
-	    status = xf86InitialCheckModeForDriver(scrp, p, maxPitch, virtualX,
-						   virtualY);
+	    status = xf86InitialCheckModeForDriver(scrp, p, clockRanges,
+						   strategy, maxPitch,
+						   virtualX, virtualY);
 	    if (status == MODE_OK) {
 		new = xnfalloc(sizeof(DisplayModeRec));
 		*new = *p;
@@ -1052,59 +1220,6 @@ xf86DeleteMode(DisplayModePtr *modeList, DisplayModePtr mode)
 }
 
 /*
- * xf86PruneMonitorModes
- *
- * Remove the monitor modes which are inconsistent with the monitor's
- * specs.
- */
-
-void
-xf86PruneMonitorModes(MonPtr monp)
-{
-    DisplayModePtr p, n;
-    ModeStatus status;
-    Bool first = TRUE;
-    float refresh;
-
-    p = monp->Modes;
-    while (p != NULL) {
-	n = p->next;
-	status = xf86CheckModeForMonitor(p, monp);
-	if (status != MODE_OK) {
-	    if ((p->type & M_T_DEFAULT) == 0) {
-		if (first) {
-		    first = FALSE;
-		    xf86Msg(X_INFO, "Bad modes for monitor \"%s\"\n",
-			    monp->id);
-		}
-		xf86Msg(X_INFO, "  Mode \"%s\" deleted (%s", p->name,	/*) */
-			xf86ModeStatusToString(status));
-		switch (status) {
-		case MODE_HSYNC:
-		    xf86ErrorF(": %.2f kHz", (double)p->Clock / p->HTotal);
-		    break;
-		case MODE_VSYNC:
-		    refresh = p->Clock * 1000.0 / (p->HTotal * p->VTotal);
-		    if (p->Flags & V_INTERLACE)
-			refresh *= 2.0;
-		    if (p->Flags & V_DBLSCAN)
-			refresh /= 2.0;
-		    if (p->VScan > 1)
-			refresh /= (float)(p->VScan);
-		    xf86ErrorF(": %.2f Hz", refresh);
-		    break;
-		default:
-		    break;
-		}
-		xf86ErrorF( /*( */ ")\n");
-	    }
-	    xf86DeleteMode(&(monp->Modes), p);
-	}
-	p = n;
-    }
-}
-
-/*
  * xf86PruneDriverModes
  *
  * Remove modes from the driver's mode list which have been marked as
@@ -1157,58 +1272,7 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 	return;
 
     do {
-	if (!(p->type & M_T_BUILTIN) ||
-	    ((p->type & M_T_CRTC_C) == M_T_CRTC_C)) {
-	    p->CrtcHDisplay		= p->HDisplay;
-	    p->CrtcHSyncStart	        = p->HSyncStart;
-	    p->CrtcHSyncEnd		= p->HSyncEnd;
-	    p->CrtcHTotal		= p->HTotal;
-	    p->CrtcHSkew		= p->HSkew;
-	    p->CrtcVDisplay		= p->VDisplay;
-	    p->CrtcVSyncStart    	= p->VSyncStart;
-	    p->CrtcVSyncEnd		= p->VSyncEnd;
-	    p->CrtcVTotal		= p->VTotal;
-	    if ((p->Flags & V_INTERLACE) && (adjustFlags & INTERLACE_HALVE_V))
-	    {
-		p->CrtcVDisplay	        /= 2;
-		p->CrtcVSyncStart	/= 2;
-		p->CrtcVSyncEnd	        /= 2;
-		p->CrtcVTotal           /= 2;
-	    }
-	    if (p->Flags & V_DBLSCAN) {
-		p->CrtcVDisplay	        *= 2;
-		p->CrtcVSyncStart	*= 2;
-		p->CrtcVSyncEnd	        *= 2;
-		p->CrtcVTotal           *= 2;
-	    }
-	    if (p->VScan > 1) {
-		p->CrtcVDisplay	        *= p->VScan;
-		p->CrtcVSyncStart	*= p->VScan;
-		p->CrtcVSyncEnd	        *= p->VScan;
-		p->CrtcVTotal	        *= p->VScan;
-	    }
-	    p->CrtcHAdjusted = FALSE;
-	    p->CrtcVAdjusted = FALSE;
-	    p->CrtcVBlankStart = min(p->CrtcVSyncStart, p->CrtcVDisplay);
-	    p->CrtcVBlankEnd = max(p->CrtcVSyncEnd, p->CrtcVTotal);
-	    if ((p->CrtcVBlankEnd - p->CrtcVBlankStart) >= 127) {
-		/* 
-		 * V Blanking size must be < 127.
-		 * Moving blank start forward is safer than moving blank end
-		 * back, since monitors clamp just AFTER the sync pulse (or in
-		 * the sync pulse), but never before.
-		 */
-		p->CrtcVBlankStart = p->CrtcVBlankEnd - 127;
-	    }
-	    p->CrtcHBlankStart = min(p->CrtcHSyncStart, p->CrtcHDisplay);
-	    p->CrtcHBlankEnd = max(p->CrtcHSyncEnd, p->CrtcHTotal);
-	    if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63 * 8) {
-		/*
-		 * H Blanking size must be < 63*8. Same remark as above.
-		 */
-		p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
-	    }
-	}
+	xf86SetModeCrtc(p, adjustFlags);
 #ifdef DEBUG
 	ErrorF("%s %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
 	       (p->type & M_T_DEFAULT) ? "(VESA)Mode" : "Mode",

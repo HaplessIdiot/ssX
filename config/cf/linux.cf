@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.103 1999/09/25 14:36:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.104 1999/09/27 06:29:02 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -350,13 +350,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #endif
 #define CppCmd			/lib/cpp
-#ifndef YaccCmd
-#if OSMajorVersion >= 2
-#define YaccCmd			yacc
-#else
+/* Some Linux distributions have yacc, some don't. All have bison. */
 #define YaccCmd			bison -y
-#endif
-#endif
 #define LexCmd			flex -l
 #define LexLib			-lfl
 #define PreProcessCmd		CcCmd -E

@@ -1,12 +1,12 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.h,v 1.2 1999/04/17 07:06:46 dawes Exp $ */
 /*
  * file vvga.h
  *
  * Headerfile for vvga.c
  */
 
-#ifndef _VVGA_H_
-#define _VVGA_H_
+#ifndef __VVGA_H__
+#define __VVGA_H__
 
 
 
@@ -31,7 +31,7 @@ void v_restorepalette(void);
 
 
 
-#endif /* #ifndef _VVGA_H_ */
+#endif /* __VVGA_H__ */
 
 /*
  * end of file vvga.h

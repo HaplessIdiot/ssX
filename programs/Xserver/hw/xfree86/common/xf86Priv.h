@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.55 1999/09/04 13:04:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.56 1999/09/25 14:37:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -15,6 +15,7 @@
 #define _XF86PRIV_H
 
 #include "xf86Privstr.h"
+#include "propertyst.h"
 
 /*
  * Parameters set ONLY from the command line options

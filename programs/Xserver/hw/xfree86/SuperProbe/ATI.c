@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.18 1999/06/06 08:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.19 1999/09/27 06:29:24 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -196,7 +196,7 @@ int chip, *Chipset;
 		case 0x4C4D:
 		case 0x4C4E:
 		case 0x4C52:
-		case 0x4c53:
+		case 0x4C53:
 			Mach64xTB = TRUE;
 			*Chipset = CHIP_ATIMOBILITY;
 			break;

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_cursor.c,v 1.1 1999/04/17 07:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_cursor.c,v 1.2 1999/06/27 14:08:09 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -78,28 +78,100 @@ NeoHideCursor(ScrnInfoPtr pScrn)
     nPtr->NeoHWCursorShown = FALSE;
 }
 
+#define MAX_CURS 64
+
+#define REVBITS_32(__b) { \
+  ((unsigned char *)&__b)[0] = byte_reversed[((unsigned char *)&__b)[0]]; \
+  ((unsigned char *)&__b)[1] = byte_reversed[((unsigned char *)&__b)[1]]; \
+  ((unsigned char *)&__b)[2] = byte_reversed[((unsigned char *)&__b)[2]]; \
+  ((unsigned char *)&__b)[3] = byte_reversed[((unsigned char *)&__b)[3]]; \
+}
+
 static void
 neoSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+    int i;
+    unsigned long bits, bits2;
+    unsigned char *_dest = ((unsigned char *)nPtr->NeoFbBase +
+			    nAcl->CursorAddress);
+    unsigned char *src = nPtr->NeoCursorImage;
     int xoff = 0, yoff = 0;
     
-    if (y < 0) {
+    if ((y < 0) && (y > (-MAX_CURS))) {
 	yoff = -y;
 	y = 0;
     }
-    if (x < 0) {
+    if ((x < 0) && (x > (-MAX_CURS))) {
 	xoff = -x;
 	x = 0;
     }
     if (yoff != nPtr->NeoCursorPrevY || xoff !=nPtr->NeoCursorPrevX) {
-	_neoLoadCursorImage(pScrn, nPtr->NeoCursorImage
-			    + ((nPtr->CursorInfo->MaxWidth >> 2) * yoff)
-			    + ((xoff + 4) >> 3),(xoff + 4),yoff);
 	nPtr->NeoCursorPrevY = yoff;
 	nPtr->NeoCursorPrevX = xoff;
-    }
+       
+        /* This is for sprites that move off the top of the display.
+	 * this code simply updates the pointer used for loading the sprite.
+	 * Note, in our driver's RealizeCursor, the allocated buffer size
+	 * is twice as large as needed, and we initialize the upper half to all
+	 * zeros, so we can use this pointer trick here.
+	 */
+       
+         if (yoff) {
+	    src += (yoff * 16);       
+	 }
 
+	 /* This is for sprites that move off the left edge of the display.
+	  * this code has to do some ugly bit swizzling to generate new cursor
+	  * masks that give the impression the cursor is moving off the screen.
+	  * WARNING: PLATFORM SPECIFIC!  This is 32-bit little endian code!
+	  */
+          if (xoff)
+	    {
+	       if (xoff < 32) { /* offset 1-31 */
+		  for (i=0; i<256; i+=2) {
+		     bits = ((unsigned long *)src)[i];
+		     bits2 = ((unsigned long *)src)[i+1];
+		     
+		     REVBITS_32(bits);
+		     REVBITS_32(bits2);
+		     
+		     bits = ((bits >> xoff) | (bits2 << (32-xoff)));
+		     bits2 >>= xoff;
+		     
+		     REVBITS_32(bits);
+		     REVBITS_32(bits2);
+		     
+		     ((unsigned long *) nAcl->CursTemp)[i] = bits;
+		     ((unsigned long *) nAcl->CursTemp)[i+1] = bits2;
+		  }
+	       }
+	       else { /* offset 32-63 */
+		  for (i=0; i<256; i+=2) {
+		     bits = ((unsigned long *)src)[i];
+		     bits2 = ((unsigned long *)src)[i+1];
+
+		     REVBITS_32(bits2);
+		     
+		     bits = (bits2 >> (xoff-32));
+		     bits2 = 0;
+		     
+		     REVBITS_32(bits);
+		     
+		     ((unsigned long *)nAcl->CursTemp)[i] = bits;
+		     ((unsigned long *)nAcl->CursTemp)[i+1] = bits2;
+		  }
+	       }
+	       src = nAcl->CursTemp;
+	    }
+       memcpy(_dest, src, 1024);
+       OUTREG(NEOREG_CURSMEMPOS, ((0x000f & (nAcl->CursorAddress >> 10)) << 8) |
+	      ((0x0ff0 & (nAcl->CursorAddress >> 10)) >> 4));
+       
+       
+    }
+   
     /* Move the cursor */
     OUTREG(NEOREG_CURSX, x);
     OUTREG(NEOREG_CURSY, y);
@@ -185,6 +257,10 @@ neoLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
     nPtr->NeoCursorImage = src;  /* store src address for later use */
+   
+    /* Reset these because we have a new cursor image */
+    nPtr->NeoCursorPrevY = nPtr->NeoCursorPrevX = 0;
+   
     _neoLoadCursorImage(pScrn,src,0,0);
 }
 
@@ -192,8 +268,13 @@ static Bool
 neoUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
     NEOACLPtr nAcl = NEOACLPTR(xf86Screens[pScr->myNum]);
-
-    return nAcl->UseHWCursor;
+    NEOPtr nPtr = NEOPTR(xf86Screens[pScr->myNum]);
+   
+    if(!nPtr->noLinear) {
+       return(nAcl->UseHWCursor);
+    }
+   
+    return (FALSE);
 }
 
 static unsigned char*

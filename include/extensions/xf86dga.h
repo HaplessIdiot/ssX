@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.18 1999/08/14 10:49:15 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.19 1999/08/22 05:57:22 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -32,7 +32,7 @@
 #define X_XDGACreateColormap		26
 
 
-#define XDGAConcurrentAcces	0x00000001
+#define XDGAConcurrentAccess	0x00000001
 #define XDGASolidFillRect	0x00000002
 #define XDGABlitRect		0x00000004
 #define XDGABlitTransRect	0x00000008

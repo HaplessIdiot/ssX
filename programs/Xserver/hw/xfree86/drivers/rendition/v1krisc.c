@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.c,v 1.2 1999/04/17 07:06:34 dawes Exp $ */
 /*
  *
  */
@@ -7,6 +7,7 @@
  * includes
  */
 
+#include "rendition.h"
 #include "v1krisc.h"
 #include "vos.h"
 
@@ -99,52 +100,56 @@ static void risc_continue(vu16 io_base);
  */
 
 /*
- * void v1k_start(struct v_board_t *board, vu32 pc)
+ * void v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc)
  *
  * Start the RISC with its PC set to |pc|.
  */
-void v1k_start(struct v_board_t *board, vu32 pc)
+void v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc)
 {
-  vu16 io_base=board->io_base;
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  vu16 io_base=pRendition->board.io_base;
 
-  v1k_stop(board);
+  v1k_stop(pScreenInfo);
   risc_forcestep(io_base, NOP_INSTR);
   risc_forcestep(io_base, NOP_INSTR);
   risc_forcestep(io_base, NOP_INSTR);
   risc_forcestep(io_base, JMP_INSTR(JMP_OP, pc>>2));
   risc_forcestep(io_base, NOP_INSTR);
 
-  v1k_continue(board);
+  v1k_continue(pScreenInfo);
 }
 
 
 
 /*
- * void v1k_continue(struct v_board_t *board)
+ * void v1k_continue(ScrnInfoPtr pScreenInfo)
  *
  * Let the RISC do its work.
  */
-void v1k_continue(struct v_board_t *board)
+void v1k_continue(ScrnInfoPtr pScreenInfo)
 {
-  risc_continue(board->io_base);
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+
+  risc_continue(pRendition->board.io_base);
 }
 
 
 
 /*
- * void v1k_stop(struct v_board_t *board)
+ * void v1k_stop(ScrnInfoPtr pScreenInfo)
  *
  * Stop the RISC.
  */
-void v1k_stop(struct v_board_t *board)
+void v1k_stop(ScrnInfoPtr pScreenInfo)
 {
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu8	debugreg, statusreg;
-  vu16 io_base=board->io_base;
+  vu16 io_base=pRendition->board.io_base;
   vu16 STATUS = 0x4A;   /* v2x00 io register offset */
 
   debugreg=v_in8(io_base+DEBUGREG);
 
-  if (board->chip == V2000_DEVICE)
+  if (pRendition->board.chip == V2000_DEVICE)
     do {
       statusreg = v_in8((vu16)(io_base+STATUS));
       if ((statusreg & 0x8C) == 0x8C)
@@ -153,7 +158,7 @@ void v1k_stop(struct v_board_t *board)
 
   v_out8(io_base+DEBUGREG, debugreg|HOLDRISC);
 
-  if (board->chip == V2000_DEVICE)
+  if (pRendition->board.chip == V2000_DEVICE)
     do {
       statusreg = v_in8((vu16)(io_base+STATUS));
       if (statusreg & HOLDRISC) break;
@@ -168,15 +173,16 @@ void v1k_stop(struct v_board_t *board)
 
 
 /* 
- * void v1k_flushicache(struct v_board_t *board)
+ * void v1k_flushicache(ScrnInfoPtr pScreenInfo)
  *
  * Returns with Icache on, also flushes Pixel engine line buffers 
  * in the Dcache.
  */
-void v1k_flushicache(struct v_board_t *board)
+void v1k_flushicache(ScrnInfoPtr pScreenInfo)
 {
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
   vu32 c, p1, p2;
-  vu16 io_base=board->io_base;
+  vu16 io_base=pRendition->board.io_base;
 
   /* first flush store accumulation buffers so data is all in memory */
   p1=risc_readmem(io_base, 0, READ_WORD);
@@ -216,13 +222,14 @@ void v1k_flushicache(struct v_board_t *board)
 
 
 /*
- * void v1k_softreset(struct v_board_t *board)
+ * void v1k_softreset(ScrnInfoPtr pScreenInfo)
  *
  * Soft Reset RISC.
  */
-void v1k_softreset(struct v_board_t *board)
+void v1k_softreset(ScrnInfoPtr pScreenInfo)
 {
-  vu16 io_base=board->io_base;
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  vu16 io_base=pRendition->board.io_base;
 
   v_out8(io_base+DEBUGREG, SOFTRESET|HOLDRISC);
   v_out8(io_base+STATEINDEX, STATEINDEX_PC);

@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.68 1999/09/25 14:37:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.69 1999/09/27 06:30:00 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -67,6 +67,7 @@
 #endif
 
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #if defined(SVR4) && !defined(DGUX)
 #if defined(sun)
@@ -1184,7 +1185,7 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1163, "Rendition", {
                             { 0x0001, "V1000", NF },
-                            { 0x2000, "V2100", NF },
+                            { 0x2000, "V2100/V2200", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1179, "Toshiba", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -1365,6 +1366,13 @@ main(int argc, char *argv[])
         }
     }
 
+#if !defined(MSDOS)
+    if (geteuid()) {
+	printf("This program must have root privileges\n");
+	exit(1);
+    }
+#endif
+
 #if defined(DGUX)
     printf("Scanpci for Intel ix86 DG/ux R4.20MU04...MUxx\n\n");
 #endif
@@ -1414,8 +1422,7 @@ main(int argc, char *argv[])
     do {
         printf("\nProbing for devices on PCI bus %d:\n", pcr._pcibusidx);
 
-        for (pcr._cardnum = 0x0; pcr._cardnum < MAX_DEV_PER_VENDOR_CFG1;
-		pcr._cardnum += 0x1) {
+        for (pcr._cardnum = 0x0; pcr._cardnum < 0x20; pcr._cardnum += 0x1) {
 	  func = 0;
 	  do { /* loop over the different functions, if present */
 #if !defined(__alpha__) && !defined(__powerpc__) && !defined(__sparc__)

@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.5 1999/01/23 09:55:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.6 1999/01/26 05:53:45 dawes Exp $ */
 
 #include "misc.h"
 
@@ -44,7 +44,7 @@ static XF86ModuleVersionInfo VersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	1, 0, 0,
+	1, 1, 7,
 	ABI_CLASS_FONT,			/* Font module */
 	ABI_FONT_VERSION,
 	MOD_CLASS_FONT,

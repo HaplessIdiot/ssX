@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.111 1999/09/25 14:37:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.112 1999/09/27 14:33:46 dawes Exp $ */
 
 /*
  *
@@ -372,6 +372,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ConfigPciEntityInactive)
    SYMFUNC(xf86ConfigIsaEntityInactive)
    SYMFUNC(xf86IsScreenPrimary)
+   SYMFUNC(xf86RegisterRootWindowProperty)
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
@@ -387,7 +388,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ValidateModes)
    SYMFUNC(xf86DeleteMode)
    SYMFUNC(xf86PruneDriverModes)
-   SYMFUNC(xf86PruneMonitorModes)
    SYMFUNC(xf86SetCrtcForModes)
    SYMFUNC(xf86PrintModes)
    SYMFUNC(xf86ShowClockRanges)

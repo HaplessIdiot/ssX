@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.21 1999/07/11 10:27:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.22 1999/09/04 13:04:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -10,6 +10,8 @@
 
 #include "X.h"
 #include "os.h"
+#include "windowstr.h"
+#include "propertyst.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Parser.h"
@@ -19,6 +21,7 @@
 /* Globals that video drivers may access */
 
 int xf86ScreenIndex = -1;	/* Index of ScrnInfo in pScreen.devPrivates */
+int xf86CreateRootWindowIndex = -1;	/* Index into pScreen.devPrivates */
 ScrnInfoPtr *xf86Screens = NULL;	/* List of ScrnInfos */
 int xf86PixmapIndex = 0;
 const unsigned char byte_reversed[256] =
@@ -195,6 +198,7 @@ Bool xf86VidModeAllowNonLocal = FALSE;
 Bool xf86MiscModInDevDisabled = FALSE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
 #endif
+PropertyPtr *xf86RegisteredPropertiesTable = NULL;
 
 #ifdef DLOPEN_HACK
 /*

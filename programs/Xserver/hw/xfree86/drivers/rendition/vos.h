@@ -1,12 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vos.h,v 1.2 1999/04/17 07:06:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vos.h,v 1.3 1999/04/25 10:02:16 dawes Exp $ */
 /*
  * file vos.h
  *
  * layer to map operating system dependent system calls
  */
 
-#ifndef _VOS_H_
-#define _VOS_H_
+#ifndef __VOS_H__
+#define __VOS_H__
 
 
 
@@ -15,9 +15,6 @@
  */
 
 #include "vtypes.h"
-#include <compiler.h>
-
-
 
 /*
  * function prototypes

@@ -1,33 +1,32 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.2 1999/04/17 07:06:36 dawes Exp $ */
 /*
  * vboard.h
  *
  * functions to interact with a Verite board
  */
 
-#ifndef _VBOARD_H_
-#define _VBOARD_H_
+#ifndef __VBOARD_H__
+#define __VBOARD_H__
 
 
 /*
  * includes
  */
 
+#include "rendition.h"
 #include "vtypes.h"
-
-
 
 /*
  * function prototypes
  */
 
-int v_initboard(struct v_board_t *board);
-int v_resetboard(struct v_board_t *board);
-int v_getmemorysize(struct v_board_t *board);
+int v_initboard(ScrnInfoPtr pScreenInfo);
+int v_resetboard(ScrnInfoPtr pScreenInfo);
+int v_getmemorysize(ScrnInfoPtr pScreenInfo);
 
 
 
-#endif /* #define _VBOARD_H_ */
+#endif /* __VBOARD_H__ */
 
 /*
  * end of file vboard.h

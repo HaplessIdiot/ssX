@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.12 1999/01/31 13:45:17 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.13 1999/04/25 10:01:35 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 /* TrueType-dependent encoding code */
+#include <string.h>
 
 #include "fontmisc.h"		/* defines xalloc and friends */
 #include "fontenc.h"
@@ -41,6 +42,7 @@ ttf_pick_cmap(char *xlfd, int length, char *filename, TT_Face face,
   struct font_encoding *encoding;
   struct font_encoding_mapping *mapping;
   TT_CharMap cmap;
+  
 
   char *encoding_name=0;
 
@@ -51,6 +53,7 @@ ttf_pick_cmap(char *xlfd, int length, char *filename, TT_Face face,
 
   if(!strcasecmp(encoding_name, "truetype-raw")) {
     tm->has_cmap=0;
+    tm->base=0;
     tm->encoding=0;
     tm->mapping=0;
     return 0;
@@ -61,6 +64,16 @@ ttf_pick_cmap(char *xlfd, int length, char *filename, TT_Face face,
                       &cmap)) {
           tm->has_cmap=1;
           tm->cmap=cmap;
+          if(!strcasecmp(encoding_name, "microsoft-symbol")) {
+            /* deal with undocumented lossage */
+            TT_Face_Properties properties;
+            if(!TT_Get_Face_Properties(face, &properties) &&
+               properties.os2!=0)
+              tm->base=properties.os2->usFirstCharIndex-0x20;
+            else
+              tm->base=0;
+          } else
+            tm->base=0;
           tm->encoding=encoding;
           tm->mapping=mapping;
           return 0;
@@ -82,6 +95,7 @@ find_cmap_default(TT_Face face, struct ttf_mapping *tm)
     if(!find_cmap(FONT_ENCODING_UNICODE, 0, 0, face, &cmap)) {
       tm->has_cmap=1;
       tm->cmap=cmap;
+      tm->base=0;
       tm->encoding=0;
       tm->mapping=0;
       return 0;
@@ -91,6 +105,7 @@ find_cmap_default(TT_Face face, struct ttf_mapping *tm)
   if(!TT_Get_CharMap(face, 0, &cmap)) {
     tm->has_cmap=1;
     tm->cmap=cmap;
+    tm->base=0;
     tm->encoding=0;
     tm->mapping=0;
     return 0;
@@ -98,6 +113,7 @@ find_cmap_default(TT_Face face, struct ttf_mapping *tm)
 
   /* Tough. */
   tm->has_cmap=0;
+  tm->base=0;
   tm->encoding=0;
   tm->mapping=0;
   return 0;
@@ -170,6 +186,7 @@ ttf_remap(unsigned code, struct ttf_mapping *tm)
     else
       return 0;
   }
+  index += tm->base;
   if(tm->has_cmap)
     return TT_Char_Index(tm->cmap, index);
   else

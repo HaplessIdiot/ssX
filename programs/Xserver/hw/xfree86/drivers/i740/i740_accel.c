@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_accel.c,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
 
 /*
  * Authors:
@@ -101,18 +101,19 @@ static void I740SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 					     int x2, int y2, int w, int h);
 static void I740SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
 					   int pattx, int patty,
-					   int bg, int fg, int rop,
+					   int fg, int bg, int rop,
 					   unsigned int planemask);
 static void I740SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 						  int pattx, int patty,
 						  int x, int y, int w, int h);
+#if 0
 static void I740SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
 						   int bg, int fg, int rop,
 						   unsigned int planemask);
 static void I740SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
 						     int x, int y, int w, int h,
 						     int skipleft);
-
+#endif
 /*
  * The following function sets up the supported acceleration. Call it
  * from the FbInit() function in the SVGA driver, or before ScreenInit
@@ -143,25 +144,28 @@ I740AccelInit(ScreenPtr pScreen) {
   infoPtr->CachePixelGranularity=8/pI740->cpp;
 
   /* Solid filled rectangles */
-  infoPtr->PolyFillRectSolidFlags = NO_PLANEMASK;
+  infoPtr->SolidFillFlags = NO_PLANEMASK;
   infoPtr->SetupForSolidFill = I740SetupForSolidFill;
   infoPtr->SubsequentSolidFillRect = I740SubsequentSolidFillRect;
 
   /* Screen to screen copy */
-  infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK;
-  if (pScrn->bitsPerPixel == 24) {
-    infoPtr->ScreenToScreenCopyFlags |= NO_TRANSPARENCY;
-  }
+  infoPtr->ScreenToScreenCopyFlags = (NO_PLANEMASK | NO_TRANSPARENCY);
   infoPtr->SetupForScreenToScreenCopy = I740SetupForScreenToScreenCopy;
   infoPtr->SubsequentScreenToScreenCopy = I740SubsequentScreenToScreenCopy;
 
   /* 8x8 pattern fills */
   infoPtr->SetupForMono8x8PatternFill = I740SetupForMono8x8PatternFill;
   infoPtr->SubsequentMono8x8PatternFillRect = I740SubsequentMono8x8PatternFillRect;
-  infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
+  infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK | HARDWARE_PATTERN_SCREEN_ORIGIN |
     BIT_ORDER_IN_BYTE_MSBFIRST;
 
   /* CPU to screen color expansion */
+  /* Currently XAA is limited to only DWORD padding.  The 3.3 driver
+   * uses NO_PAD scanlines b/c of problems with using the chip in
+   * DWORD mode. Once other padding modes are available in XAA this
+   * Code can be turned back on. 
+   */
+#if 0
 #ifndef ALLOW_PCI_COLOR_EXP
   if (pI740->Chipset != PCI_CHIP_I740_PCI) {
 #endif
@@ -171,6 +175,7 @@ I740AccelInit(ScreenPtr pScreen) {
      * can re-enable color expansion.
      */
     infoPtr->CPUToScreenColorExpandFillFlags = 
+       					  NO_PLANEMASK |
 #ifdef USE_DWORD_COLOR_EXP
 					  SCANLINE_PAD_DWORD |
 #endif
@@ -184,7 +189,7 @@ I740AccelInit(ScreenPtr pScreen) {
 #ifndef ALLOW_PCI_COLOR_EXP
     }
 #endif
-
+#endif
   return XAAInit(pScreen, infoPtr);
 }
 
@@ -255,14 +260,8 @@ I740SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   else
     pI740->bltcmd.BR04 |= BLT_TOP_TO_BOT;
 
-  if (transparency_color != -1) {
-    pI740->bltcmd.BR01 = transparency_color;
-    pI740->bltcmd.BR04 |= (COLOR_TRANSP_ENABLE |
-			   COLOR_TRANSP_ROP |
-			   COLOR_TRANSP_EQ);
-  } else {
     pI740->bltcmd.BR01 = 0x00000000;
-  }
+
 }
 
 static void
@@ -306,7 +305,7 @@ I740SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 
 static void
 I740SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int pattx, int patty, 
-				int bg, int fg, int rop, 
+				int fg, int bg, int rop, 
 				unsigned int planemask) {
   I740Ptr pI740;
 
@@ -343,7 +342,7 @@ I740SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int pattx, int patty,
   OUTREG(LP_FIFO, 0x00000000);
   OUTREG(LP_FIFO, (h << 16) | (w * pI740->cpp));
 }
-
+#if 0
 static void
 I740SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int bg, int fg, 
 				       int rop, unsigned int planemask) {
@@ -395,3 +394,4 @@ I740SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
 #endif
   OUTREG(LP_FIFO, (h << 16) | (w * pI740->cpp));
 }
+#endif

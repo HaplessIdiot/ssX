@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.7 1999/05/09 10:51:48 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.8 1999/08/21 13:48:03 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -518,20 +518,14 @@ static struct font_encoding_mapping koi8_u[]=
   {0,0,0,0,0,0,0}
 };
 
-/* Apparently, Microsoft Symbol aims at being compatible with Unicode
- * by using the 16 columns of the Private Use Area starting at code
- * 0xF000. */
-
-static unsigned
-eight_bit_to_microsoft_symbol(unsigned code, void *client_data)
-{
-  return code+0xF000;
-}
+/* Microsoft Symbol is treated specially in ftenc.c, where we add
+ * usFirstCharIndex-0x20 to the glyph index before applying the
+ * cmap. */
 
 static struct font_encoding_mapping microsoft_symbol[]=
-{{FONT_ENCODING_TRUETYPE,3,0,eight_bit_to_microsoft_symbol,0,0,0}, 
+{{FONT_ENCODING_TRUETYPE,3,0,0,0,0,0}, 
  /* You never know */
- {FONT_ENCODING_TRUETYPE,3,1,eight_bit_to_microsoft_symbol,0,0,0}, 
+ {FONT_ENCODING_TRUETYPE,3,1,0,0,0,0}, 
  {0,0,0,0,0,0,0}};
 
 static struct font_encoding_mapping apple_roman[]=

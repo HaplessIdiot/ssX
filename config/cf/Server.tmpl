@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.13 1998/10/02 06:15:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.14 1999/03/01 02:13:56 dawes Exp $
 /*
  * Server imakefile info  - this contains any special redefinitions, etc.
  * that Imakefiles in the server subtree will need.
@@ -17,6 +17,8 @@ XCOMM $TOG: Server.tmpl /main/15 1997/07/16 14:43:38 kaleb $
 #ifndef ServerDefines
 #define ServerDefines StandardDefines
 #endif
+/* Note: Changing ServerCDebugFlags has no effect because CDEBUGFLAGS is over-
+   ridden by PassCDebugFlags in the parent Makefile or toplevel xmakefile. */
 #ifndef ServerCDebugFlags
 #define ServerCDebugFlags DefaultCDebugFlags
 #endif

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.91 1999/09/25 14:38:26 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.92 1999/09/27 06:30:13 dawes Exp $
  */
 
 /*
@@ -2520,6 +2520,10 @@ in_put(void)
 	/* Update the masks and, unless X events are already in the queue,
 	   wait for I/O to be possible. */
 	XFD_COPYSET (&Select_mask, &select_mask);
+	/* in selection mode xterm does not read pty */
+	if (eventMode != NORMAL)
+		FD_CLR (screen->respond, &select_mask);
+
 	if (v_bufptr > v_bufstr) {
 	    XFD_COPYSET (&pty_mask, &write_mask);
 	} else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.40 1999/09/04 09:14:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.41 1999/09/27 06:29:29 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -1149,7 +1149,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 #endif
     {PCI_VENDOR_RENDITION,	{
 				{PCI_CHIP_V1000,	"Verite 1000"},
-				{PCI_CHIP_V2x00,	"Verite 2x00"},
+				{PCI_CHIP_V2x00,	"Verite 2100/2200"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_TOSHIBA, {

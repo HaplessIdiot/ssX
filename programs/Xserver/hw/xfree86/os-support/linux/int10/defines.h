@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/defines.h,v 1.2 1999/09/27 14:59:26 dawes Exp $ */
 
 #ifdef _VM86_LINUX
 
@@ -43,7 +43,7 @@
 #define X86_CL CPU_RB(ecx)
 #define X86_DL CPU_RB(edx)
 
-#elif _X86EMU
+#elif defined(_X86EMU)
 
 #include "xf86x86emu.h"
 

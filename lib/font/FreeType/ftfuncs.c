@@ -21,7 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.10 1999/04/25 10:01:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.11 1999/06/13 13:47:29 dawes Exp $ */
+
+#include <string.h>
 
 #include "fontmisc.h"
 #include "fntfilst.h"
@@ -134,7 +136,7 @@ FreeTypeOpenFace(TTFFace **facep, char *fileName)
 
   face->instances=0;
 
-  if(ttc_checkForTTCName(fileName, &realFileName, &faceNumber)) {
+  if(ttf_checkForTTCName(fileName, &realFileName, &faceNumber)) {
     ftrc=TT_Open_Collection(ftypeEngine, realFileName, faceNumber,
                             &face->face);
   } else {
@@ -775,7 +777,6 @@ FreeTypeFreeFont(TTFFont *font)
 static void
 FreeTypeFreeXFont(FontPtr pFont, int freeProps)
 {
-  int i;
   TTFFont *tf;
 
   if(pFont) {
@@ -812,7 +813,6 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
                       int rawAverageWidth)
 {
   int i, j, maxprops;
-  unsigned long code;
   char *sp, *ep, val[256];
   TT_Instance_Metrics imetrics;
   int upm;                      /* units per em */
@@ -1573,7 +1573,6 @@ FreeTypeGetGlyphsAnti(FontPtr pFont, unsigned long count, unsigned char *chars,
                       FontEncoding charEncoding, unsigned long *glyphCount,
                       CharInfoPtr *glyphs, int nlevels)
 {
-  int idx;
   unsigned code;
   TTFFont *tf;
   CharInfoPtr *gp;

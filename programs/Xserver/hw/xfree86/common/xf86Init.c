@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.135 1999/09/04 13:04:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.136 1999/09/25 14:37:13 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -20,6 +20,7 @@ extern int atoi();
 #include "Xproto.h"
 #include "input.h"
 #include "servermd.h"
+#include "windowstr.h"
 #include "scrnintstr.h"
 #include "site.h"
 
@@ -105,6 +106,70 @@ InputDriverRec xf86KEYBOARD = {
 #undef MOUSE
 extern InputDriverRec MOUSE;
 
+
+static Bool
+xf86CreateRootWindow(WindowPtr pWin)
+{
+  int ret;
+  int err = Success;
+  ScreenPtr pScreen = pWin->drawable.pScreen;
+  PropertyPtr pRegProp;
+  CreateWindowProcPtr CreateWindow =
+    (CreateWindowProcPtr)(pScreen->devPrivates[xf86CreateRootWindowIndex].ptr);
+
+ErrorF("xf86CreateRootWindow(%p)\n", pWin);
+
+  if (pWin->parent == NULL) {
+    for (pRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
+	 pRegProp != NULL && err==Success;
+	 pRegProp = pRegProp->next )
+      {
+	ErrorF("about to call ChangeWindowProperty(%p,%d,%d,%d,PropModeReplace,%d,%p,FALSE)\n",
+	       pWin,
+	       pRegProp->propertyName, pRegProp->type,
+	       pRegProp->format,
+	       pRegProp->size, pRegProp->data
+	       );
+	err = ChangeWindowProperty(pWin,
+				   pRegProp->propertyName, pRegProp->type,
+				   pRegProp->format, PropModeReplace,
+				   pRegProp->size, pRegProp->data,
+				   FALSE
+				   );
+      }
+
+    /* Look at err */
+    ret = (err==Success);
+
+    /* free memory */
+
+  } else {
+    ErrorF("xf86CreateRootWindow unexpectedly called with non-root window %p (parent %p)\n",
+	   pWin, pWin->parent);
+    ret = FALSE;
+  }
+
+  if ( pScreen->CreateWindow != xf86CreateRootWindow ) {
+    /* Can't find hook we are hung on */
+	xf86DrvMsg(pScreen->myNum, X_WARNING /* X_ERROR */,
+		  "xf86CreateRootWindow %p called when not in pScreen->CreateWindow %p n",
+		   xf86CreateRootWindow, pScreen->CreateWindow );
+  }
+
+  /* Unhook this function ... */
+  pScreen->CreateWindow = CreateWindow;
+  pScreen->devPrivates[xf86CreateRootWindowIndex].ptr = NULL;
+
+  /* ... and call the previous CreateWindow fuction, if any */
+  if (NULL!=pScreen->CreateWindow) {
+    ret &= (*pScreen->CreateWindow)(pWin);
+  }
+
+  ErrorF("xf86CreateRootWindow() returns %d\n", ret);
+  return (ret);
+}
+
+
 /*
  * InitOutput --
  *	Initialize screenInfo for all actually accessible framebuffers.
@@ -135,7 +200,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   /* Do this early? */
   if (generation != serverGeneration) {
       xf86ScreenIndex = AllocateScreenPrivateIndex();
+      xf86CreateRootWindowIndex = AllocateScreenPrivateIndex();
       xf86PixmapIndex = AllocatePixmapPrivateIndex();
+      xf86RegisteredPropertiesTable=NULL;
       generation = serverGeneration;
   }
 
@@ -417,15 +484,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     /*
-     * Prune the set of monitor modes for each monitor that is referenced
-     * by a screen section.
-     *
-     * XXX Probably best to do this here than elsewhere?
+     * Call the driver's PreInit()'s to complete initialisation for the first
+     * generation.
      */
-
-    for (i = 0; i < xf86NumScreens; i++) {
-	xf86PruneMonitorModes(xf86Screens[i]->confScreen->monitor);
-    }
 
     for (i = 0; i < xf86NumScreens; i++) {
 	xf86EnableAccess(xf86Screens[i]);
@@ -722,6 +783,15 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	/* This shouldn't normally happen */
 	FatalError("AddScreen/ScreenInit failed for driver %d\n", i);
       }
+
+      ErrorF("InitOutput - xf86Screens[%d]->pScreen = %p\n",
+	     i, xf86Screens[i]->pScreen );
+      ErrorF("xf86Screens[%d]->pScreen->CreateWindow = %p\n",
+	     i, xf86Screens[i]->pScreen->CreateWindow );
+
+      screenInfo.screens[scr_index]->devPrivates[xf86CreateRootWindowIndex].ptr
+	= (void*)(xf86Screens[i]->pScreen->CreateWindow);
+      xf86Screens[i]->pScreen->CreateWindow = xf86CreateRootWindow;
 
 #ifdef NOT_USED
       /*

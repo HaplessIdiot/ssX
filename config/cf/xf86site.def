@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.148 1999/09/25 14:36:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.149 1999/09/27 06:29:02 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -553,6 +553,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.148 1999/09/25 14:36:31 dawes Exp 
  * this. Assumes you have Gcc2.
  * (If you don't have Gcc2, you can use the DebugLib{X11,Xt,Xaw,...} variables
  * to build debugging versions of the libraries separately.)
+ *
 #define DebuggableLibraries	YES
 */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.192 1999/09/04 13:04:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.193 1999/09/06 11:27:27 dawes Exp $ */
 
 
 /*
@@ -732,7 +732,11 @@ configInputKbd(IDevPtr inputp)
 #ifdef XKB
   if (!xf86IsPc98()) {
     xf86Info.xkbrules      = "xfree86";
+#ifdef SOL8
+    xf86Info.xkbmodel      = "pc101_sol8x86";
+#else
     xf86Info.xkbmodel      = "pc101";
+#endif
     xf86Info.xkblayout     = "us";
     xf86Info.xkbvariant    = NULL;
     xf86Info.xkboptions    = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.116 1999/08/21 13:48:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.117 1999/09/25 14:37:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -19,12 +19,16 @@
 #include <X11/Xfuncproto.h>
 #include <stdarg.h>
 
+#include "propertyst.h"
+
 /* General parameters */
 extern int xf86ScreenIndex;		/* Index into pScreen.devPrivates */
+extern int xf86CreateRootWindowIndex;	/* Index into pScreen.devPrivates */
 extern int xf86PixmapIndex;
 extern Bool xf86ResAccessEnter;
 extern ScrnInfoPtr *xf86Screens;	/* List of pointers to ScrnInfoRecs */
 extern const unsigned char byte_reversed[256];
+extern PropertyPtr *xf86RegisteredPropertiesTable;
 
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
@@ -215,6 +219,9 @@ void xf86ConfigIsaEntityInactive(EntityInfoPtr pEnt, IsaChipsets *i_chip,
 				 EntityProc enter, EntityProc leave,
 				 pointer private);
 Bool xf86IsScreenPrimary(int scrnIndex);
+extern int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
+				    int format, unsigned long len,
+				    pointer value);
 
 
 /* xf86Init.c */
@@ -231,6 +238,8 @@ ModeStatus xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 			  ClockRangePtr clockRanges, LookupModeFlags strategy);
 ModeStatus xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor);
 ModeStatus xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
+					 ClockRangePtr clockRanges,
+					 LookupModeFlags strategy,
 					 int maxPitch, int virtualX,
 					 int virtualY);
 ModeStatus xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
@@ -243,7 +252,6 @@ int xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		      LookupModeFlags strategy);
 void xf86DeleteMode(DisplayModePtr *modeList, DisplayModePtr mode);
 void xf86PruneDriverModes(ScrnInfoPtr scrp);
-void xf86PruneMonitorModes(MonPtr monp);
 void xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags);
 void xf86PrintModes(ScrnInfoPtr scrp);
 void xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges);

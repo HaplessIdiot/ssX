@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.28 1999/05/14 14:11:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.29 1999/05/15 12:10:34 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -451,7 +451,7 @@ extern void FatalError(
     ...
 #endif
 )
-#if __GNUC__ == 2 && __GNUC_MINOR__ > 4 
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
 __attribute((noreturn))
 #endif
 ;

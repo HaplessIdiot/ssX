@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8/sol8_init.c,v 3.5 1998/07/25 16:57:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_init.c,v 1.1 1999/09/25 14:38:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -54,6 +54,9 @@ char	fb_dev[PATH_MAX] = "/dev/console";
 int xf86_sol8usleep(unsigned long);
 static void xf86_sol8sleep(int);
 #endif
+
+void sol8_setkbdinitiate(double value);
+void sol8_setkbdrepeat(double value);
 
 void
 xf86OpenConsole()
@@ -164,14 +167,28 @@ int i;
 	if (!strcmp(argv[i], "-dev")  && i+1 < argc) {
 		strncpy(fb_dev, argv[i+1], PATH_MAX);
 		fb_dev[PATH_MAX-1] = '\0';
-		return(1);
+		return(2);
 	}
+
+	if (!strcmp(argv[i], "-ar1") && i+1 < argc) {
+		sol8_setkbdinitiate(atof(argv[i+1]));
+		return(2);
+	}
+	if (!strcmp(argv[i], "-ar2") && i+1 < argc) { 
+		sol8_setkbdrepeat(atof(argv[i+1]));
+		return(2);
+	}
+
 	return(0);
 }
 
 void xf86UseMsg()
 {
-	ErrorF("-dev <fb> FrameBuffer device");
+	ErrorF("-ar1 <float> 	       Set autorepeat initiate time (sec)\n");
+	ErrorF("                       (If not using XKB)\n");
+	ErrorF("-ar2 <float>           Set autorepeat interval time (sec)\n");
+	ErrorF("                       (If not using XKB)\n");
+	ErrorF("-dev <fb>              FrameBuffer device\n");
 	ErrorF("-keeptty               ");
 	ErrorF("don't detach controlling tty (for debugging only)\n");
 	return;

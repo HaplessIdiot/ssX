@@ -1,12 +1,12 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v1krisc.h,v 1.2 1999/04/17 07:06:34 dawes Exp $ */
 /*
  * file v1krisc.h
  *
  * low level function to communicate with the on-board RISC
  */
 
-#ifndef _V1KRISC_H_
-#define _V1KRISC_H_
+#ifndef __V1KRISC_H__
+#define __V1KRISC_H__
 
 
 
@@ -23,12 +23,12 @@
  * function prototypes
  */
 
-void v1k_start(struct v_board_t *board, vu32 pc);
-void v1k_continue(struct v_board_t *board);
-void v1k_stop(struct v_board_t *board);
-void v1k_flushicache(struct v_board_t *board);
-void v1k_softreset(struct v_board_t *board);
+void v1k_start(ScrnInfoPtr pScreenInfo, vu32 pc);
+void v1k_continue(ScrnInfoPtr pScreenInfo);
+void v1k_stop(ScrnInfoPtr pScreenInfo);
+void v1k_flushicache(ScrnInfoPtr pScreenInfo);
+void v1k_softreset(ScrnInfoPtr pScreenInfo);
 
 
 
-#endif /* #ifndef _V1KRISC_H_ */
+#endif /* #ifndef __V1KRISC_H__ */

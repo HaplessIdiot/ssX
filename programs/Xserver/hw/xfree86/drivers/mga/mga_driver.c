@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.116 1999/09/25 14:37:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.117 1999/09/27 06:29:53 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1532,7 +1532,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * Reset card if it isn't primary one
      */
-    if (!pMga->Primary && !pMga->FBDev)
+    if ( (!pMga->Primary && !pMga->FBDev) || xf86IsPc98() )
         MGASoftReset(pScrn);
 
     /*

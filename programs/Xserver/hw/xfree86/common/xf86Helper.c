@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.57 1999/09/25 14:37:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.58 1999/09/27 06:29:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -15,6 +15,7 @@
 #include "servermd.h"
 #include "pixmapstr.h"
 #include "windowstr.h"
+#include "propertyst.h"
 #include "gcstruct.h"
 #include "loaderProcs.h"
 #include "xf86.h"
@@ -134,6 +135,14 @@ xf86AllocateScreen(DriverPtr drv, int flags)
      */
     xf86Screens[i]->CurrentAccess = &xf86CurrentAccess;
     xf86Screens[i]->resourceType = MEM_IO;
+
+    ErrorF("xf86AllocateScreen - xf86Screens[%d]->pScreen = %p\n",
+	   i, xf86Screens[i]->pScreen );
+    if ( NULL != xf86Screens[i]->pScreen ) {
+      ErrorF("xf86Screens[%d]->pScreen->CreateWindow = %p\n",
+	     i, xf86Screens[i]->pScreen->CreateWindow );
+    }
+
     return xf86Screens[i];
 }
 
@@ -785,8 +794,9 @@ Bool
 xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 {
     MessageType from = X_DEFAULT;
+#if 0
     xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC); 
-
+#endif
     if (TEST_GAMMA(xf86Gamma)) {
 	from = X_CMDLINE;
 	scrp->gamma.red = SET_GAMMA(xf86Gamma.red);
@@ -2356,4 +2366,63 @@ xf86IsScreenPrimary(int scrnIndex)
     return FALSE;
 }
 
+int
+xf86RegisterRootWindowProperty(int ScrnIndex, Atom property, Atom type,
+			       int format, unsigned long len, pointer value )
+{
+    PropertyPtr pNewProp, pRegProp;
+    int i;
+
+ErrorF("xf86RegisterRootWindowProperty(%d, %d, %d, %d, %d, %p)\n",
+       ScrnIndex, property, type, format, len, value);
+
+    if (ScrnIndex<0 || ScrnIndex>=xf86NumScreens) {
+      return(BadMatch);
+    }
+
+    if ( (pNewProp = (PropertyPtr)xalloc(sizeof(PropertyRec)))==NULL ) {
+      return(BadAlloc);
+    }
+
+    pNewProp->propertyName = property;
+    pNewProp->type = type;
+    pNewProp->format = format;
+    pNewProp->size = len;
+    pNewProp->data = value;
+    /* We will put this property at the end of the list so that
+     * the changes are made in the order they were requested.
+     */
+    pNewProp->next = NULL;
+ 
+    ErrorF("new property filled\n");
+
+    if (NULL==xf86RegisteredPropertiesTable) {
+      ErrorF("creating xf86RegisteredPropertiesTable[] size %d\n",
+	     xf86NumScreens);
+      if ( NULL==(xf86RegisteredPropertiesTable=(PropertyPtr*)xnfcalloc(sizeof(PropertyPtr),xf86NumScreens) )) {
+	return(BadAlloc);
+      }
+      for (i=0; i<xf86NumScreens; i++) {
+	xf86RegisteredPropertiesTable[i] = NULL;
+      }
+    }
+
+    ErrorF("xf86RegisteredPropertiesTable %p\n",
+	   xf86RegisteredPropertiesTable);
+    ErrorF("xf86RegisteredPropertiesTable[%d] %p\n",
+	   ScrnIndex, xf86RegisteredPropertiesTable[ScrnIndex]);
+
+    if ( xf86RegisteredPropertiesTable[ScrnIndex] == NULL) {
+      xf86RegisteredPropertiesTable[ScrnIndex] = pNewProp;
+    } else {
+      pRegProp = xf86RegisteredPropertiesTable[ScrnIndex];
+      while (pRegProp->next != NULL) {
+	ErrorF("- next %p\n", pRegProp);
+	pRegProp = pRegProp->next;
+      }
+      pRegProp->next = pNewProp;
+    }
+ErrorF("xf86RegisterRootWindowProperty succeeded\n");
+    return(Success);    
+}
 

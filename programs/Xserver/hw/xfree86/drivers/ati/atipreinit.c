@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.4 1999/09/25 14:37:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.5 1999/09/27 06:29:42 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -330,6 +330,7 @@ ATIPreInit
     CARD8           BIOS[BIOS_SIZE];
 #   define          BIOSByte(_n)     (*((CARD8  *)(BIOS + (_n))))
 #   define          BIOSWord(_n)     (*((CARD16 *)(BIOS + (_n))))
+#   define          BIOSLong(_n)     (*((CARD32 *)(BIOS + (_n))))
     unsigned int    BIOSSize = BIOS_SIZE;
     unsigned int    ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
     unsigned int    LCDTable = 0, LCDPanelInfo = 0;
@@ -768,27 +769,30 @@ ATIPreInit
         if (pATI->LCDPanelID >= 0)
         {
             LCDTable = BIOSWord(0x78U);
-            if (((LCDTable + 0x1AU) > BIOSSize) ||
-                (BIOSByte(LCDTable + 5) != 0x1AU))
+            if ((LCDTable + BIOSByte(LCDTable + 5)) > BIOSSize)
                 LCDTable = 0;
 
             if (LCDTable > 0)
             {
                 LCDPanelInfo = BIOSWord(LCDTable + 0x0AU);
                 if (((LCDPanelInfo + 0x1DU) > BIOSSize) ||
-                    (BIOSByte(LCDPanelInfo) != pATI->LCDPanelID))
+                    ((BIOSByte(LCDPanelInfo) != pATI->LCDPanelID) &&
+                     (pATI->LCDPanelID || (BIOSByte(LCDPanelInfo) > 0x1FU) ||
+                      (pATI->Chip <= ATI_CHIP_264LTPRO))))
                     LCDPanelInfo = 0;
             }
 
             if (!LCDPanelInfo)
             {
                 /*
-                 * This is an older BIOS.  Scan it for the panel info table.
+                 * Scan BIOS for panel info table.
                  */
                 for (i = 0;  i <= (int)(BIOSSize - 0x1DU);  i++)
                 {
                     /* Look for panel ID ... */
-                    if (BIOSByte(i) != pATI->LCDPanelID)
+                    if ((BIOSByte(i) != pATI->LCDPanelID) &&
+                        (pATI->LCDPanelID || (BIOSByte(i) > 0x1FU) ||
+                         (pATI->Chip <= ATI_CHIP_264LTPRO)))
                         continue;
 
                     /* ... followed by 24-byte panel model name ... */
@@ -813,7 +817,14 @@ ATIPreInit
 
                     if (LCDPanelInfo)
                     {
-                        /* More than one possibility */
+                        /*
+                         * More than one possibility, but don't care if all
+                         * tables describe panels of the same size.
+                         */
+                        if (BIOSLong(LCDPanelInfo + 0x19U) ==
+                            BIOSLong(i + 0x19U))
+                            continue;
+
                         LCDPanelInfo = 0;
                         break;
                     }
@@ -826,6 +837,7 @@ ATIPreInit
 
             if (LCDPanelInfo > 0)
             {
+                pATI->LCDPanelID = BIOSByte(LCDPanelInfo);
                 pATI->LCDHorizontal = BIOSWord(LCDPanelInfo + 0x19U);
                 pATI->LCDVertical = BIOSWord(LCDPanelInfo + 0x1BU);
 
@@ -1610,6 +1622,8 @@ ATIPreInit
      */
 
     ATIClockPreInit(pScreenInfo, pATI, pGDev, &ATIClockRange);
+    if (pATI->ProgrammableClock != ATI_CLOCK_FIXED)
+        Strategy = LOOKUP_BEST_REFRESH;
 
     /*
      * Mode validation.

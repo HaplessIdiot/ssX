@@ -10,7 +10,7 @@
 <date>17 April 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.4 1999/04/18 13:49:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.5 1999/07/19 13:36:21 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -19,7 +19,7 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.4 1999/04/18 13:4
 <sect> Introduction <p>
 
 This driver was primarily written for the SiS6326 and SiS530 by Alan Hourihane.
-It also works on 5597/5598 chips, and probably on older SiS862XX family.
+It also works on 5597/5598 chips, and probably on older SiS862X5 family.
 
 The driver supports :
 <itemize>
@@ -33,8 +33,11 @@ The driver supports :
 <sect> Supported chips <p>
 
 <quote>
-SiS 530, SiS 86c201, SiS 86c202, SiS 86c2x5, SiS 5597/5598, SiS 6326
+SiS 530, SiS 86c2x5, SiS 5597/5598, SiS 6326
 </quote>
+
+This driver needs linear framebuffer support in the card. Because this 
+SiS 86C201 and 86C202 based cards don't work with this driver.
 
 Color expansion is not supported by the engine in 16M-color graphic mode.
 
@@ -102,8 +105,6 @@ driver you'll need to consider several points:
 </itemize>
 
 <sect> Troubleshooting <p>
-
-6326 based cards with more than 4Mb of RAM probably don't work.
 
 The generic VGA driver don't work with 6326, so XF86Setup can't be used
 for this card. Please use xf86config instead.

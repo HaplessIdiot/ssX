@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/private.c,v 1.3 1999/06/13 16:18:15 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/private.c,v 1.4 1999/08/21 13:48:10 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -60,6 +60,8 @@ CreateFontRec (void)
 
 void DestroyFontRec (FontPtr pFont)
 {
+   if (pFont->devPrivates && pFont->devPrivates != (pointer)(&pFont[1]))
+	xfree(pFont->devPrivates);
    xfree(pFont);
 }
 
@@ -74,11 +76,18 @@ _FontSetNewPrivate (FontPtr pFont, int n, pointer ptr)
 {
     pointer *new;
 
-    if (n > pFont->maxPrivate)
-    {
-	new = (pointer *) xrealloc (pFont->devPrivates, (n + 1) * sizeof (pointer));
-	if (!new)
-	    return FALSE;
+    if (n > pFont->maxPrivate) {
+	if (pFont->devPrivates && pFont->devPrivates != (pointer)(&pFont[1])) {
+	    new = (pointer *) xrealloc (pFont->devPrivates, (n + 1) * sizeof (pointer));
+	    if (!new)
+		return FALSE;
+	} else {
+	    new = (pointer *) xmalloc ((n + 1) * sizeof (pointer));
+	    if (!new)
+		return FALSE;
+	    if (pFont->devPrivates)
+		memcpy (new, pFont->devPrivates, (pFont->maxPrivate + 1) * sizeof (pointer));
+	}
 	pFont->devPrivates = new;
 	/* zero out new, uninitialized privates */
 	while(++pFont->maxPrivate < n)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.31 1999/04/11 13:10:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.32 1999/05/03 12:16:04 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -786,6 +786,8 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
 	ctBLTWAIT;
+	/* BR03[0x27] sometimes set after reset, so must ensure it is zero */
+	ctSETMONOCTL(ctDWORDALIGN);
         switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);
@@ -1244,6 +1246,7 @@ CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     if (trans != -1) {
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
+	ctSETMONOCTL(ctDWORDALIGN);
         switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);
@@ -1570,6 +1573,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     if (trans != -1) {
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
+	ctSETMONOCTL(ctDWORDALIGN);
         switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);

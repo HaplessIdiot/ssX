@@ -1,13 +1,10 @@
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.5 1999/01/31 04:59:24 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.7 1999/04/25 15:54:25 dawes Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
 
 /* Glyphs are held in segments of this size */
 #define FONTSEGMENTSIZE 16
-
-/* defined in atom.c */
-Atom MakeAtom(char *, unsigned, int);
 
 /* A structure that holds bitmap order and padding info. */
 

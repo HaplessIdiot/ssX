@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.5 1999/08/01 07:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.6 1999/09/25 14:37:21 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -159,10 +159,12 @@ ATIMach64Calculate
             pMode->CrtcHSyncEnd =
                 pMode->CrtcHSyncStart + MaxBits(CRTC_H_SYNC_WID);
         else if (pMode->CrtcHSyncStart == pMode->CrtcHSyncEnd)
+        {
             if (pMode->CrtcHDisplay < pMode->CrtcHSyncStart)
                 pMode->CrtcHSyncStart--;
             else if (pMode->CrtcHSyncEnd < pMode->CrtcHTotal)
                 pMode->CrtcHSyncEnd++;
+        }
     }
 
     /*

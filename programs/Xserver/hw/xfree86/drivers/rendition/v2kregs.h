@@ -1,6 +1,6 @@
-/* $XFree86$ */
-#ifndef _V2KREGS_H
-#define _V2KREGS_H
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/v2kregs.h,v 1.2 1999/04/17 07:06:34 dawes Exp $ */
+#ifndef __V2KREGS_H__
+#define __V2KREGS_H__
 
 #include "vtypes.h"
 
@@ -265,6 +265,7 @@ typedef struct _v_mem_io {
 #define CRTCCTL_EVENFRAME       0x10000
 #define CRTCCTL_LINEDOUBLE      0x20000
 #define CRTCCTL_FRAMESWITCHED   0x40000
+#define CRTCCTL_VIDEOFIFOSIZE256        0x800000
 
 #define CRTCHORZ_ACTIVE_MASK    	0xFF
 #define CRTCHORZ_ACTIVE_SHIFT    	0
@@ -366,4 +367,4 @@ typedef struct _v_mem_io {
 #define VINNOODD_SHIFT   29
 #define VINENABLE_SHIFT  30
 
-#endif /* _V2KREGS_H */
+#endif /* __V2KREGS_H__ */

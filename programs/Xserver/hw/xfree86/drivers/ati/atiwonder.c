@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.4 1999/07/06 11:38:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.5 1999/08/01 07:57:24 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -211,11 +211,13 @@ ATIVGAWonderCalculate
             pATIHW->ac = (ATIGetExtReg(0xACU) & 0x8EU)        ;
         }
     }
-    if (pMode->Flags & V_INTERLACE)     /* Enable interlace */
+    if (pMode->Flags & V_INTERLACE)
+    {                                   /* Enable interlace */
         if (pATI->Chip <= ATI_CHIP_18800)
             pATIHW->b2 |= 0x01U;
         else
             pATIHW->be |= 0x02U;
+    }
 #if 0   /* This is no longer needed but is left in for reference */
     if (pMode->Flags & V_DBLSCAN)       /* Enable doublescan */
         pATIHW->b1 |= 0x08U;
@@ -225,6 +227,7 @@ ATIVGAWonderCalculate
     if (pMode->Flags & V_NCSYNC)
         pATIHW->bd |= 0x09U;            /* Invert composite sync */
     if (pMode->HSkew > 0)
+    {
         if (pMode->HSkew <= 3)
             pATIHW->b5 |= 0x04U;
         else if (pATI->Chip >= ATI_CHIP_28800_2)
@@ -253,6 +256,7 @@ ATIVGAWonderCalculate
                 default:
                     break;
             }
+    }
 }
 
 /*

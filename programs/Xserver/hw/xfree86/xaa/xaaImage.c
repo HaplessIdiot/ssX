@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.15 1999/05/30 03:03:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.16 1999/07/04 06:39:17 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -320,7 +320,7 @@ XAAWritePixmapScanline (
     CARD32* base = (CARD32*)infoRec->ScanlineImageWriteBuffers[0];
 
     if((skipleft = (long)src & 0x03L)) {
-	if(!(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
+	if(!(infoRec->ScanlineImageWriteFlags & LEFT_EDGE_CLIPPING)) {
 	   skipleft = 0;
 	   beCareful = TRUE;
 	   goto BAD_ALIGNMENT;
@@ -331,7 +331,7 @@ XAAWritePixmapScanline (
 	else
 	   skipleft /= Bpp;
 
-	if((x < skipleft) && !(infoRec->ImageWriteFlags &
+	if((x < skipleft) && !(infoRec->ScanlineImageWriteFlags &
 				 LEFT_EDGE_CLIPPING_NEGATIVE_X)) {
 	   skipleft = 0;
 	   beCareful = TRUE;

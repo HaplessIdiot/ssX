@@ -1,7 +1,10 @@
 /****************************************************************************\ 
  *       NOTE: This file generated automatically. Do not edit by hand!      *
 \****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/cscode.h,v 1.2 1999/04/17 07:06:31 dawes Exp $ */
+
+#ifndef __CSCODE_H__
+#define __CSCODE_H__
 
 static vu32 csrisc[]={
   0x10802100L,
@@ -35,3 +38,5 @@ static vu32 csrisc[]={
   0x62ffe300L,
   0x00000000L,
 };
+
+#endif /* __CSCODE_H__ */

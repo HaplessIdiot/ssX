@@ -1,11 +1,17 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/Imakefile,v 1.5 1999/06/20 15:02:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/Imakefile,v 1.6 1999/08/14 10:49:53 dawes Exp $
+
+XCOMM
+XCOMM This is an Imakefile for the Rendition driver.
+XCOMM
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = rendition.c vboard.c vmodes.c vramdac.c v1krisc.c vvga.c
+SRCS = rendition.c vboard.c vmodes.c vramdac.c v1krisc.c vvga.c \
+       hwcursor.c vloaduc.c accel.c
 
-OBJS = rendition.o vboard.o vmodes.o vramdac.o v1krisc.o vvga.o
+OBJS = rendition.o vboard.o vmodes.o vramdac.o v1krisc.o vvga.o \
+       hwcursor.o vloaduc.o accel.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -22,6 +28,12 @@ INCLUDES = -I. -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
 	   -I$(XF86SRC)/shadowfb -I$(XF86SRC)/rac
 #endif
 
+XCOMM
+XCOMM Temporary solution for the loader to find the microcode
+XCOMM
+DEFINES = -DMODULEDIR=\"$(MODULEDIR)\"
+
+
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
@@ -30,17 +42,21 @@ ModuleObjectRule()
 
 ObjectModuleTarget(rendition,$(OBJS))
 
+ObjectFromSpecialSource(accel, accelX, -DPSZ=16)
+
 InstallObjectModule(rendition,$(MODULEDIR),drivers)
+InstallNonExecFile(v10002d.uc,$(MODULEDIR))
+InstallNonExecFile(v20002d.uc,$(MODULEDIR))
 
 DependTarget()
 
 InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(cscode.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(rendition.c,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(rendition_options.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1kregs.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1krisc.c,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(v1krisc.h,$(DRIVERSDKDIR)/drivers/rendition)
-InstallDriverSDKNonExecFile(v1kregs.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(vboard.c,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(vboard.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(vloaduc.h,$(DRIVERSDKDIR)/drivers/rendition)
@@ -56,5 +72,17 @@ InstallDriverSDKNonExecFile(v2kregs.h,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(vgafont-vrx.data,$(DRIVERSDKDIR)/drivers/rendition)
 InstallDriverSDKNonExecFile(vgapalette.data,$(DRIVERSDKDIR)/drivers/rendition)
 
-InstallDriverSDKObjectModule(rendition,$(DRIVERSDKMODULEDIR),drivers)
+InstallDriverSDKNonExecFile(hwcursor.c,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(hwcursor.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(vloaduc.c,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(vloaduc.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(accel.h,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(accelX.c,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(cmd2d.h,$(DRIVERSDKDIR)/drivers/rendition)
 
+InstallDriverSDKNonExecFile(v10002d.uc,$(DRIVERSDKDIR)/drivers/rendition)
+InstallDriverSDKNonExecFile(v20002d.uc,$(DRIVERSDKDIR)/drivers/rendition)
+
+InstallDriverSDKNonExecFile(README.uc,$(DRIVERSDKDIR)/drivers/rendition)
+
+InstallDriverSDKObjectModule(rendition,$(DRIVERSDKMODULEDIR),drivers)

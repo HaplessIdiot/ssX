@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.8 1999/05/22 08:40:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_io.c,v 1.1 1999/09/25 14:38:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -43,25 +43,22 @@ xf86SoundKbdBell(int loudness, int pitch, int duration)
 	if (loudness && pitch)
 	{
 		kbdCmd = KBD_CMD_BELL;
-		if (ioctl (xf86Info.consoleFd, KIOCCMD, &kbdCmd) == -1) {
-			ErrorF("Failed to activate bell");
+		if (ioctl (xf86Info.kbdFd, KIOCCMD, &kbdCmd) == -1) {
+			ErrorF("Failed to activate bell\n");
 			return;
 		}
 
 		usleep(xf86Info.bell_duration * loudness * 20);
 
 		kbdCmd = KBD_CMD_NOBELL;
-		if (ioctl (xf86Info.consoleFd, KIOCCMD, &kbdCmd) == -1)
-			printf ("Failed to deactivate bell");
+		if (ioctl (xf86Info.kbdFd, KIOCCMD, &kbdCmd) == -1)
+			ErrorF ("Failed to deactivate bell\n");
 	}
 }
 
 void
 xf86SetKbdLeds(int leds)
 {
-#ifdef KBIO_SETMODE
-	ioctl(xf86Info.consoleFd, KBIO_SETMODE, KBM_AT);
-	ioctl(xf86Info.consoleFd, KDSETLED, leds);
-	ioctl(xf86Info.consoleFd, KBIO_SETMODE, KBM_XT);
-#endif
+	if( ioctl(xf86Info.kbdFd, KIOCSLED, &leds) < 0 )
+		ErrorF("Failed to set Keyboard LED's\n");
 }
