@@ -1,0 +1,12 @@
+.\" $XFree86$
+.\"
+.TH dga 1 "Release 6" "X Version 11"
+.SH NAME
+dga \- test program for the XFree86-DGA extension
+.SH SYNOPSIS
+.B dga
+.SH DESCRIPTION
+Dga is a simple test client for the XFree86-DGA extension.  To exit it,
+hit the `q' key.
+.SH AUTHOR
+Jon Tombs

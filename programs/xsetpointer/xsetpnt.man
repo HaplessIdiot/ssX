@@ -1,0 +1,14 @@
+.\" $XFree86$
+.\"
+.TH xsetpointer 1 "Release 6" "X Version 11"
+.SH NAME
+xsetpointer \- set an X Input device as the main pointer
+.SH SYNOPSIS
+.B xsetpointer \-l
+|
+.I device-name
+.SH DESCRIPTION
+Xsetmode sets an XInput device up as the main pointer.  When called with
+the \-l flag it lists the available devices.
+.SH AUTHOR
+Frederic Lepied

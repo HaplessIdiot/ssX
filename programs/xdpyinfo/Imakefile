@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 94/07/12 18:15:34 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.1 1995/12/23 10:12:13 dawes Exp $
   SYS_LIBRARIES = MathLibrary
 
 #if HasShm
@@ -13,10 +13,8 @@ XCOMM $XFree86$
 #if BuildLBX
         LBXDEFINES = -DLBX
        LBXINCLUDES = -I$(TOP)/workInProgress/lbx/include/extensions
-        LBXXEXTLIB = -llbxXext
-     DEPLBXXEXTLIB =
-#else
-        LBXXEXTLIB =
+            LBXLIB = $(LBXXEXTLIB)
+         DEPLBXLIB = $(DEPLBXXEXTLIB)
 #endif
 
 #if BuildXF86DGA
@@ -26,7 +24,7 @@ XCOMM $XFree86$
         DEFINES = $(SHMDEFINES) $(LBXDEFINES) $(LBXINCLUDES) \
 			$(VIDMODEDEFINES) $(DGADEFINES)
         DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXMULIB) $(DEPXLIB) \
-			$(DEPLBXXEXTLIB)
-LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XMULIB) $(LBXXEXTLIB) $(XLIB)
+			$(DEPLBXLIB)
+LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XMULIB) $(LBXLIB) $(XLIB)
 
 SimpleProgramTarget(xdpyinfo)
