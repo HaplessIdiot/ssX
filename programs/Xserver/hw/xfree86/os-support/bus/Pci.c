@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.82 2004/01/16 15:39:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.84tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -328,8 +328,9 @@ pciReadLong(PCITAG tag, int offset)
 	pciBusInfo[bus]->funcs->pciReadLong) {
     CARD32 rv = (*pciBusInfo[bus]->funcs->pciReadLong)(tag, offset);
 
-    PCITRACE(1, ("pciReadLong: tag=0x%x [b=%d,d=%d,f=%d] returns 0x%08x\n",
-		 tag, bus, PCI_DEV_FROM_TAG(tag), PCI_FUNC_FROM_TAG(tag), rv));
+    PCITRACE(1, ("pciReadLong: tag=0x%08lx [b=%d,d=%ld,f=%ld] returns 0x%08lx\n",
+		 tag, bus, PCI_DEV_FROM_TAG(tag), PCI_FUNC_FROM_TAG(tag),
+		 (unsigned long)rv));
     return(rv);
    }
 
@@ -726,7 +727,7 @@ pciGenFindNext(void)
 	}
 
 #ifdef DEBUGPCI
-	ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusNum]);
+	ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%p\n", pciBusNum, pciBusInfo[pciBusNum]);
 #endif
 	if (!pciBusInfo[pciBusNum]) {
 	    pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
@@ -868,7 +869,7 @@ pciCfgMech1Read(PCITAG tag, int offset)
 {
   unsigned long rv = 0xffffffff;
 #ifdef DEBUGPCI
-  ErrorF("pciCfgMech1Read(tag=%08x,offset=%08x)\n", tag, offset);
+  ErrorF("pciCfgMech1Read(tag=%08lx,offset=%08x)\n", tag, offset);
 #endif
 
 #if defined(__powerpc__)
@@ -897,8 +898,8 @@ void
 pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 {
 #ifdef DEBUGPCI
-  ErrorF("pciCfgMech1Write(tag=%08x,offset=%08x,val=%08x)\n",
-        tag, offset,val);
+  ErrorF("pciCfgMech1Write(tag=%08lx,offset=%08x,val=%08lx)\n",
+        tag, offset, (unsigned long)val);
 #endif
 
 #if defined(__powerpc__)
