@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.3 2000/11/20 07:13:11 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -105,10 +105,10 @@ typedef struct _XRenderPictureAttributes {
 } XRenderPictureAttributes;
 
 typedef struct {
-    short   red;
-    short   green;
-    short   blue;
-    short   alpha;
+    unsigned short   red;
+    unsigned short   green;
+    unsigned short   blue;
+    unsigned short   alpha;
 } XRenderColor;
 
 typedef struct _XGlyphInfo {
@@ -206,6 +206,34 @@ XRenderCompositeString8 (Display	    *dpy,
 			 int		    yDst,
 			 char		    *string,
 			 int		    nchar);
+
+void
+XRenderCompositeString16 (Display	    *dpy,
+			  int		    op,
+			  Picture	    src,
+			  Picture	    dst,
+			  XRenderPictFormat *maskFormat,
+			  GlyphSet	    glyphset,
+			  int		    xSrc,
+			  int		    ySrc,
+			  int		    xDst,
+			  int		    yDst,
+			  unsigned short    *string,
+			  int		    nchar);
+
+void
+XRenderCompositeString32 (Display	    *dpy,
+			  int		    op,
+			  Picture	    src,
+			  Picture	    dst,
+			  XRenderPictFormat *maskFormat,
+			  GlyphSet	    glyphset,
+			  int		    xSrc,
+			  int		    ySrc,
+			  int		    xDst,
+			  int		    yDst,
+			  unsigned long	    *string,
+			  int		    nchar);
 
 void
 XRenderFillRectangle (Display	    *dpy,
