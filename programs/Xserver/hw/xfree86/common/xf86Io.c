@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.6 95/01/16 20:07:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.8 1995/03/12 13:00:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.9 1995/05/27 03:10:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -128,7 +128,7 @@ void
 xf86InitKBD(init)
 Bool init;
 {
-  char            leds,rad;
+  char            leds = 0, rad;
   unsigned int    i;
   xEvent          kevent;
   DevicePtr       pKeyboard = xf86Info.pKeyboard;
@@ -189,6 +189,7 @@ Bool init;
       xf86Info.composeLock     = FALSE;
     
 #ifdef LED_CAP
+#ifdef INHERIT_LOCK_STATE
       leds = xf86Info.leds;
 
       for (i = keyc->curKeySyms.minKeyCode, map = keyc->curKeySyms.map;
@@ -223,6 +224,7 @@ Bool init;
 	    }
           break;
         }
+#endif /* INHERIT_LOCK_STATE */
       xf86KbdLeds();
 #endif /* LED_CAP */
 

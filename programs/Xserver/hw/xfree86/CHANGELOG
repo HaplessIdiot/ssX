@@ -1,3 +1,10 @@
+XFree86 3.1.1A (28 May 1995)
+ 96. vgawonder driver updates (including fix for VGA2 driver with Mach64)
+     (Marc Aurele La France).
+ 95. Small TVP3026 fix (Harald Koenig).
+ 94. Fix keyboard LEDs not being turned off now that the initial lock state
+     is ignored.
+
 XFree86 3.1.1h (26 May 1995)
  93. Don't initialise the state of the lock keys based on their state
      prior to server startup.

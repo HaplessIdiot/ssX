@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.20 1995/03/04 06:17:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.21tsi Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -365,7 +365,7 @@ static unsigned Probe_IOPorts[] =
         GRAX, GRAD,
 
         /* 8514/A registers */
-        ERR_TERM, GP_STAT,
+        ERR_TERM, GP_STAT, SUBSYS_CNTL,
         WRT_MASK, RD_MASK, CUR_X, CUR_Y, PIX_TRANS, FRGD_COLOR,
 
         /* Mach8 registers */
@@ -1136,8 +1136,7 @@ probe_clocks:
                         break;
                 if (!vga256InfoRec.clock[Clock_Index])
                         continue;
-                if ((!Specification_Clock) &&
-                    (ATIChip != ATI_CHIP_18800) && (ATIBoard != ATI_BOARD_V4))
+                if ((!Specification_Clock) && (ATIClock != ATI_CLOCK_CRYSTALS))
                         continue;
                 vga256InfoRec.clock[Clock_Index] = Specification_Clock;
         }
@@ -2581,7 +2580,7 @@ ATIInit(DisplayModePtr mode)
                 new->be = (ATIGetExtReg(0xBE) & 0x30) | 0x09;
                 if (ATIChip >= ATI_CHIP_28800_2)
                 {
-                        new->bf = (ATIGetExtReg(0xBF) & 0x50)       ;
+                        new->bf = (ATIGetExtReg(0xBF) & 0x5F)       ;
                         new->a3 = (ATIGetExtReg(0xA3) & 0x67)       ;
                         new->a6 = (ATIGetExtReg(0xA6) & 0x38) | 0x04;
                         new->a7 = (ATIGetExtReg(0xA7) & 0xFE)       ;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.62 1995/05/07 11:49:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.63 1995/05/27 03:10:10 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1953,9 +1953,9 @@ s3Init(mode)
 	       outb(vgaCRReg, 0x75);
 	 }
 	 else {
-	    outb(vgaCRIndex, 0x6D);
-	    outb(vgaCRReg, 0x00);
 	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRIndex, 0x6d);
 	    if (s3Bpp == 1)
 	       outb(vgaCRReg, 0x00);
 	    else if (s3Bpp == 2)

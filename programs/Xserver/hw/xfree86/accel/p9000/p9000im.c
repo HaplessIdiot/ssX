@@ -1,5 +1,5 @@
 /* $XConsortium: p9000im.c,v 1.5 95/01/05 20:38:51 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.5 1995/01/28 15:54:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.6 1995/05/24 12:21:55 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -306,12 +306,12 @@ static unsigned testalu[] = {
     (IGM_S_MASK & IGM_F_MASK) | IGM_D_MASK, /* GXor src or dst */
     (IGM_S_MASK & ~IGM_F_MASK) & ~IGM_D_MASK, /* GXnor  not src and not dst */ 
     (IGM_S_MASK & ~IGM_F_MASK) ^ IGM_D_MASK, /* GXequiv  not src XOR dst */ 
-    ~IGM_D_MASK, 			    /* GXinvert */
-    (IGM_S_MASK & IGM_F_MASK) | ~IGM_D_MASK, /* GXorReverse */
+    (unsigned)~IGM_D_MASK, 		    /* GXinvert */
+    (IGM_S_MASK & IGM_F_MASK) | (unsigned)~IGM_D_MASK, /* GXorReverse */
     (IGM_S_MASK & ~IGM_F_MASK),              /* copy inverted */
     (IGM_S_MASK & ~IGM_F_MASK) | IGM_D_MASK, /* GXorInverted NOT src or dst */
-    (IGM_S_MASK & ~IGM_F_MASK) | ~IGM_D_MASK, /* GXnand */
-    ~0					      /* GXset */
+    (IGM_S_MASK & ~IGM_F_MASK) | (unsigned)~IGM_D_MASK, /* GXnand */
+    (unsigned)~0				      /* GXset */
 } ;
 
 /*
