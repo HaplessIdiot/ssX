@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.70tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.72tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -270,8 +270,8 @@ FindPCIVideoInfo(void)
 	    }
 	    
 	    /*
-	     * 64-bit base addresses are checked for and avoided.
-	     * XXX Should deal with them on platforms that support them.
+	     * 64-bit base addresses are checked for and avoided on 32-bit
+	     * platforms.
 	     */
 	    if (pcrp->pci_base0) {
 		if (pcrp->pci_base0 & PCI_MAP_IO) {
@@ -287,7 +287,7 @@ FindPCIVideoInfo(void)
 			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base1) << 32;
 #else
 			if (pcrp->pci_base1)
-			    info->memBase[0] = 0;
+			  info->memBase[0] = 0;
 #endif
 		    } 
 		}
@@ -1014,31 +1014,38 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    (subclass == PCI_SUBCLASS_BRIDGE_HOST))
 	    resMisc |= ResOverlap;
 	
-	if ((pcrp->pci_command & (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
-	    res = activeRes;
-	else
-	    res = inactiveRes;
-	
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
 	    if (basep[i]) {
-	        if (PCI_MAP_IS_IO(basep[i]))
-		    P_I_RANGE(range,pcrp->tag,PCIGETIO(basep[i]),
+	        if (PCI_MAP_IS_IO(basep[i])) {
+		    if (pcrp->pci_command & PCI_CMD_IO_ENABLE)
+			res = activeRes;
+		    else
+			res = inactiveRes;
+		    P_I_RANGE(range, pcrp->tag, PCIGETIO(basep[i]),
 			      pcrp->basesize[i], ResExcIoBlock | resMisc)
-		else if (!PCI_MAP_IS64BITMEM(basep[i])) 
-		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY(basep[i]),
-			   pcrp->basesize[i], ResExcMemBlock | resMisc)
-		else {
+		} else if (!PCI_MAP_IS64BITMEM(basep[i])) {
+		    if (pcrp->pci_command & PCI_CMD_MEM_ENABLE)
+			res = activeRes;
+		    else
+			res = inactiveRes;
+		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY(basep[i]),
+			      pcrp->basesize[i], ResExcMemBlock | resMisc)
+		} else {
 		    i++;
 #if defined(LONG64) || defined(WORD64)
-		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY64(basep[i-1]),
-			  pcrp->basesize[i-1], ResExcMemBlock | resMisc)
+		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY64(basep[i - 1]),
+			      pcrp->basesize[i - 1], ResExcMemBlock | resMisc)
 #else
 		    if (basep[i])
 		      continue;
-		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY(basep[i-1]),
-			   pcrp->basesize[i], ResExcMemBlock | resMisc)
+		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY(basep[i - 1]),
+			      pcrp->basesize[i - 1], ResExcMemBlock | resMisc)
 #endif
+		    if (pcrp->pci_command & PCI_CMD_MEM_ENABLE)
+			res = activeRes;
+		    else
+			res = inactiveRes;
 		}
 		if (range.rBegin) { /* catch cases where PCI base is unset */
 		    tmp = xf86AddResToList(NULL, &range, -1);
@@ -1047,15 +1054,16 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		}
 	    }
 	}
+
         /* Ignore disabled non-video ROMs */
-	if ((res == activeRes) &&
+	if ((pcrp->pci_command & PCI_CMD_MEM_ENABLE) &&
 	    (pcrp->pci_baserom & PCI_MAP_ROM_DECODE_ENABLE)) {
 	    P_M_RANGE(range,pcrp->tag,PCIGETROM(pcrp->pci_baserom),
 		  pcrp->basesize[6], ResExcMemBlock | resMisc);
 	    if (range.rBegin) {
 		tmp = xf86AddResToList(NULL, &range, -1);
-		removeOverlapsWithBridges(pcrp->busnum,tmp);
-		*res = xf86JoinResLists(tmp,*res);
+		removeOverlapsWithBridges(pcrp->busnum, tmp);
+		*activeRes = xf86JoinResLists(tmp, *activeRes);
 	    }
 	}
     }
@@ -2381,14 +2389,14 @@ ValidatePci(void)
 			      pcrp->basesize[i], ResExcMemBlock)
 		} else {
 		    i++;
-#if defined(LONG64) || defined(WORD64)
 		    if (!(pcrp->pci_command & PCI_CMD_MEM_ENABLE))
 			continue;
+#if defined(LONG64) || defined(WORD64)
 		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY64(basep[i-1]),
 			      pcrp->basesize[i-1], ResExcMemBlock)
 #else
-		    if (basep[i-1])
-			continue;
+		    if (basep[i])
+		        continue;
 		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY(basep[i-1]),
 			      pcrp->basesize[i-1], ResExcMemBlock)
 #endif

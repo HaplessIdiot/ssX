@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 373. Be a little more precise about differentiating between active and
+      inactive non-video PCI resources (Marc La France).
  372. Added Apple-WM extension and library (Apple and Torrey T. Lyons).
  371. Fixed indirect GLX on Mac OS X when the client can not make a
       connection to the CoreGraphics window server (Apple).
@@ -17526,7 +17528,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2804 2003/08/12 00:28:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2805 2003/08/12 23:47:07 torrey Exp $
 
 
 
