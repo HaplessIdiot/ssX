@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.53 2001/08/06 18:31:01 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.54 2002/01/17 17:10:37 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -77,7 +77,7 @@ To globally override the compiled-in defaults, you should define (and
 export if using \fIsh\fP or \fIksh\fP) \fIXLOCAL\fP globally.  If you
 use \fIstartx/xinit\fP, the definition should be at the top of
 your \fI.xinitrc\fP file.  If you use \fIxdm\fP, the definitions should be
-early on in the \fI<XRoot>/lib/X11/xdm/Xsession\fP script.
+early on in the \fI __projectroot__/lib/X11/xdm/Xsession\fP script.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, \fIXFree86\fP accepts the following command line switches:
@@ -367,6 +367,20 @@ Change video mode to previous one specified in the configuration file.
 This can be disabled with the
 .B DontZoom
 XF86Config(__filemansuffix__) file option.
+.TP 8
+.B Ctrl+Alt+Keypad-Multiply
+Not treated specially by default.  If the
+.B AllowClosedownGrabs
+XF86Config(__filemansuffix__) file option is specified, this key sequence
+kills clients with an active keyboard or mouse grab as well as killing any
+application that may have locked the server, normally using the
+XGrabServer(__libmansuffix__) Xlib function.
+.TP 8
+.B Ctrl+Alt+Keypad-Divide
+Not treated specially by default.  If the
+.B AllowDeactivateGrabs
+XF86Config(__filemansuffix__) file option is specified, this key sequence
+deactivates any active keyboard and mouse grabs.
 .TP 8
 .B Ctrl+Alt+F1...F12
 For BSD and Linux systems with virtual terminal support, these keystroke

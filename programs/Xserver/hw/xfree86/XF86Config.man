@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.8 2002/03/04 16:11:05 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.9 2002/10/11 01:40:27 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -13,19 +13,19 @@ following places when the server is started as a normal user:
 .PP
 .RS 4
 .nf
-.RI /etc/X11/ <cmdline>
-.RI __projectroot__/etc/X11/ <cmdline>
-.RB /etc/X11/ $XF86CONFIG
-.RB __projectroot__/etc/X11/ $XF86CONFIG
-/etc/X11/XF86Config-4
-/etc/X11/XF86Config
-/etc/XF86Config
-.RI __projectroot__/etc/X11/XF86Config. <hostname>
-__projectroot__/etc/X11/XF86Config-4
-__projectroot__/etc/X11/XF86Config
-.RI __projectroot__/lib/X11/XF86Config. <hostname>
-__projectroot__/lib/X11/XF86Config-4
-__projectroot__/lib/X11/XF86Config
+.IR /etc/X11/ <cmdline>
+.IR __projectroot__/etc/X11/ <cmdline>
+.IB /etc/X11/ $XF86CONFIG
+.IB __projectroot__/etc/X11/ $XF86CONFIG
+.I /etc/X11/XF86Config-4
+.I /etc/X11/XF86Config
+.I /etc/XF86Config
+.IR __projectroot__/etc/X11/XF86Config. <hostname>
+.I __projectroot__/etc/X11/XF86Config-4
+.I __projectroot__/etc/X11/XF86Config
+.IR __projectroot__/lib/X11/XF86Config. <hostname>
+.I __projectroot__/lib/X11/XF86Config-4
+.I __projectroot__/lib/X11/XF86Config
 .fi
 .RE
 .PP
@@ -38,29 +38,29 @@ command line option,
 is the relative path (with no ".." components) specified by that
 environment variable, and
 .I <hostname>
-is the machines hostname as reported by gethostname(3).
+is the machine's hostname as reported by gethostname(3).
 .PP
 When the X server is started by the "root" user, the config file search
 locations are as follows:
 .PP
 .RS 4
 .nf
-.I <cmdline>
-.RI /etc/X11/ <cmdline>
-.RI __projectroot__/etc/X11/ <cmdline>
+<cmdline>
+.IR /etc/X11/ <cmdline>
+.IR __projectroot__/etc/X11/ <cmdline>
 .B $XF86CONFIG
-.RB /etc/X11/ $XF86CONFIG
-.RB __projectroot__/etc/X11/ $XF86CONFIG
-.BR $HOME /XF86Config
-/etc/X11/XF86Config-4
-/etc/X11/XF86Config
-/etc/XF86Config
-.RI __projectroot__/etc/X11/XF86Config. <hostname>
-__projectroot__/etc/X11/XF86Config-4
-__projectroot__/etc/X11/XF86Config
-.RI __projectroot__/lib/X11/XF86Config. <hostname>
-__projectroot__/lib/X11/XF86Config-4
-__projectroot__/lib/X11/XF86Config
+.IB /etc/X11/ $XF86CONFIG
+.IB __projectroot__/etc/X11/ $XF86CONFIG
+.BI $HOME /XF86Config
+.I /etc/X11/XF86Config-4
+.I /etc/X11/XF86Config
+.I /etc/XF86Config
+.IR __projectroot__/etc/X11/XF86Config. <hostname>
+.I __projectroot__/etc/X11/XF86Config-4
+.I __projectroot__/etc/X11/XF86Config
+.IR __projectroot__/lib/X11/XF86Config. <hostname>
+.I __projectroot__/lib/X11/XF86Config-4
+.I __projectroot__/lib/X11/XF86Config
 .fi
 .RE
 .PP
@@ -76,7 +76,7 @@ environment variable (absolute or relative),
 is the path specified by that environment variable (usually the home
 directory), and
 .I <hostname>
-is the machines hostname as reported by gethostname(3).
+is the machine's hostname as reported by gethostname(3).
 .PP
 The
 .B XF86Config
@@ -296,12 +296,12 @@ font path elements:
 .PP
 .RS 4
 .nf
-__projectroot__/lib/X11/fonts/misc/
-__projectroot__/lib/X11/fonts/Speedo/
-__projectroot__/lib/X11/fonts/Type1/
-__projectroot__/lib/X11/fonts/CID/
-__projectroot__/lib/X11/fonts/75dpi/
-__projectroot__/lib/X11/fonts/100dpi/
+.I __projectroot__/lib/X11/fonts/misc/
+.I __projectroot__/lib/X11/fonts/Speedo/
+.I __projectroot__/lib/X11/fonts/Type1/
+.I __projectroot__/lib/X11/fonts/CID/
+.I __projectroot__/lib/X11/fonts/75dpi/
+.I __projectroot__/lib/X11/fonts/100dpi/
 .fi
 .RE
 .PP
@@ -309,15 +309,15 @@ The recommended font path contains the following font path elements:
 .PP
 .RS 4
 .nf
-__projectroot__/lib/X11/fonts/local/
-__projectroot__/lib/X11/fonts/misc/
-__projectroot__/lib/X11/fonts/75dpi/:unscaled
-__projectroot__/lib/X11/fonts/100dpi/:unscaled
-__projectroot__/lib/X11/fonts/Type1/
-__projectroot__/lib/X11/fonts/CID/
-__projectroot__/lib/X11/fonts/Speedo/
-__projectroot__/lib/X11/fonts/75dpi/
-__projectroot__/lib/X11/fonts/100dpi/
+.I __projectroot__/lib/X11/fonts/local/
+.I __projectroot__/lib/X11/fonts/misc/
+.I __projectroot__/lib/X11/fonts/75dpi/:unscaled
+.I __projectroot__/lib/X11/fonts/100dpi/:unscaled
+.I __projectroot__/lib/X11/fonts/Type1/
+.I __projectroot__/lib/X11/fonts/CID/
+.I __projectroot__/lib/X11/fonts/Speedo/
+.I __projectroot__/lib/X11/fonts/75dpi/
+.I __projectroot__/lib/X11/fonts/100dpi/
 .fi
 .RE
 .PP
@@ -331,8 +331,13 @@ When this entry is not specified in the config file, the server falls back
 to the compiled-in default RGB path, which is:
 .PP
 .RS 11
-__projectroot__/lib/X11/rgb
+.I __projectroot__/lib/X11/rgb
 .RE
+.PP
+Note that an implicit
+.I .txt
+is added to this path if the server was compiled to use text rather than
+binary format RGB color databases.
 .TP 7
 .BI "ModulePath \*q" path \*q
 sets the search path for loadable X server modules.  This path is a
@@ -537,7 +542,7 @@ enable or disable XINERAMA extension. Default is disabled.
 .BI "Option \*qAllowDeactivateGrabs\*q \*q" boolean \*q
 This option enables the use of the
 .B Ctrl+Alt+Keypad-Divide
-key sequence to desactivate any active keyboard and mouse grabs.
+key sequence to deactivate any active keyboard and mouse grabs.
 Default: off.
 .TP 7
 .BI "Option \*qAllowClosedownGrabs\*q \*q" boolean \*q
@@ -545,7 +550,7 @@ This option enables the use of the
 .B Ctrl+Alt+Keypad-Multiply
 key sequence to kill clients with an active keyboard or mouse grab as well
 as killing any application that may have locked the server,
-normally using the XGrabServer(3) Xlib function.
+normally using the XGrabServer(__libmansuffix__) Xlib function.
 Default: off.
 .br
 Note that the options
@@ -1489,6 +1494,7 @@ The visual type available for the depth 1 (monochrome) is
 .TP 7
 .BI "Black  " "red green blue"
 This optional entry allows the "black" colour to be specified.  This
+is only supported at depth 1.  The default is black.
 .TP 7
 .BI "White  " "red green blue"
 This optional entry allows the "white" colour to be specified.  This
@@ -1685,42 +1691,46 @@ For an example of an XF86Config file, see the file installed as
 __projectroot__/lib/X11/XF86Config.eg.
 .fi
 .SH "SEE ALSO"
-X(__miscmansuffix__), Xserver(1), XFree86(1),
-apm(__drivermansuffix__),
-ati(__drivermansuffix__),
-chips(__drivermansuffix__),
-cirrus(__drivermansuffix__),
-cyrix(__drivermansuffix__),
-fbdev(__drivermansuffix__),
-glide(__drivermansuffix__),
-glint(__drivermansuffix__),
-i128(__drivermansuffix__),
-i740(__drivermansuffix__),
-i810(__drivermansuffix__),
-imstt(__drivermansuffix__),
-mga(__drivermansuffix__),
-neomagic(__drivermansuffix__),
-nv(__drivermansuffix__),
-r128(__drivermansuffix__),
-rendition(__drivermansuffix__),
-s3virge(__drivermansuffix__),
-siliconmotion(__drivermansuffix__),
-sis(__drivermansuffix__),
-sunbw2(__drivermansuffix__),
-suncg14(__drivermansuffix__),
-suncg3(__drivermansuffix__),
-suncg6(__drivermansuffix__),
-sunffb(__drivermansuffix__),
-sunleo(__drivermansuffix__),
-suntcx(__drivermansuffix__),
-tdfx(__drivermansuffix__),
-tga(__drivermansuffix__),
-trident(__drivermansuffix__),
-tseng(__drivermansuffix__),
-v4l(__drivermansuffix__),
-vesa(__drivermansuffix__),
-vga(__drivermansuffix__),
-vmware(__drivermansuffix__),
+.IR X(__miscmansuffix__),
+.IR Xserver(1),
+.IR XFree86(1),
+.IR apm(__drivermansuffix__),
+.\" .IR ati(__drivermansuffix__),
+.IR chips(__drivermansuffix__),
+.IR cirrus(__drivermansuffix__),
+.IR cyrix(__drivermansuffix__),
+.IR fbdev(__drivermansuffix__),
+.IR glide(__drivermansuffix__),
+.IR glint(__drivermansuffix__),
+.IR i128(__drivermansuffix__),
+.IR i740(__drivermansuffix__),
+.IR i810(__drivermansuffix__),
+.IR imstt(__drivermansuffix__),
+.IR mga(__drivermansuffix__),
+.IR neomagic(__drivermansuffix__),
+.IR nv(__drivermansuffix__),
+.IR r128(__drivermansuffix__),
+.IR rendition(__drivermansuffix__),
+.IR savage(__drivermansuffix__),
+.IR s3virge(__drivermansuffix__),
+.\" .IR shadowfb(__drivermansuffix__),
+.IR siliconmotion(__drivermansuffix__),
+.IR sis(__drivermansuffix__),
+.IR sunbw2(__drivermansuffix__),
+.IR suncg14(__drivermansuffix__),
+.IR suncg3(__drivermansuffix__),
+.IR suncg6(__drivermansuffix__),
+.IR sunffb(__drivermansuffix__),
+.IR sunleo(__drivermansuffix__),
+.IR suntcx(__drivermansuffix__),
+.IR tdfx(__drivermansuffix__),
+.IR tga(__drivermansuffix__),
+.IR trident(__drivermansuffix__),
+.IR tseng(__drivermansuffix__),
+.IR v4l(__drivermansuffix__),
+.IR vesa(__drivermansuffix__),
+.IR vga(__drivermansuffix__),
+.IR vmware(__drivermansuffix__),
 .br
 README
 .IR <http://www.xfree86.org/current/README.html> ,
