@@ -9,6 +9,8 @@
 # users were accustomed to uwm, the defaults could be set up not to decorate
 # any windows and to use meta-keys.
 #
+# $XFree86$
+#
 
 NoGrabServer
 RestartPreviousState

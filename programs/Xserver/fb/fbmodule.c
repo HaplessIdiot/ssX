@@ -23,6 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
+/* $XFree86$ */
 
 #ifdef XFree86LOADER
 

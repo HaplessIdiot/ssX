@@ -1,5 +1,5 @@
 /*
- * $Id: kasync.c,v 1.2 2000/01/21 01:12:01 dawes Exp $
+ * $Id: kasync.c,v 1.3 2000/01/21 18:41:49 dawes Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -21,6 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include "kdrive.h"
 
