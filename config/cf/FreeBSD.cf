@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.82 1999/04/05 08:28:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.83 1999/04/17 09:08:01 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -98,6 +98,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2) || \
      (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion >= 2)
 #define HasSetUserContext	YES
+#endif
+
+/* 3.2 and later has support for setting MTRRs */
+#ifndef HasMTRRSupport
+#if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion >= 2)
+#define HasMTRRSupport		YES
+#else
+#define HasMTRRSupport		NO
+#endif
 #endif
 
 /* 

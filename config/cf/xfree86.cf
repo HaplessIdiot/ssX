@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.216 1999/04/17 07:05:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.217 1999/04/17 09:08:05 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -535,6 +535,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 #ifndef HasDlsymBug
 #define HasDlsymBug		NO
+#endif
+
+#ifndef HasMTRRSupport
+#define HasMTRRSupport		NO
 #endif
 
 /*

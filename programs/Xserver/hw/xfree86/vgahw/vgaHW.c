@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.19 1999/02/19 21:27:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.20 1999/04/18 04:08:56 dawes Exp $ */
 
 /*
  *
@@ -1489,13 +1489,17 @@ vgaHWMapMem(ScrnInfoPtr scrp)
     vgaHWPtr hwp = VGAHWPTR(scrp);
     int scr_index = scrp->scrnIndex;
     
+    if (hwp->Base)
+	return TRUE;
+
     /* If not set, initialise with the defaults */
     if (hwp->MapSize == 0)
 	hwp->MapSize = VGA_DEFAULT_MEM_SIZE;
     if (hwp->MapPhys == 0)
 	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
 
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER,
+    /* Map as VIDMEM_MMIO because WC is bad when there is page flipping */
+    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO,
 			      hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }

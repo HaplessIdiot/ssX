@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.88 1999/04/05 07:13:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.89 1999/04/18 04:08:37 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1554,7 +1554,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* Allocate HW cursor buffer at the end of video ram */
-    if( pMga->HWCursor && pMga->Dac.CursorOffscreenMemSize )
+    if( pMga->HWCursor && pMga->Dac.CursorOffscreenMemSize ) {
         if( pScrn->virtualY * pScrn->displayWidth * pScrn->bitsPerPixel / 8 <=
         	pMga->FbUsableSize - pMga->Dac.CursorOffscreenMemSize ) {
             pMga->FbUsableSize -= pMga->Dac.CursorOffscreenMemSize;
@@ -1565,6 +1565,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
             xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                 "Too less offscreen memory for HW cursor; using SW cursor\n");
         }
+    }
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
@@ -2352,6 +2353,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	    MGARestore(pScrn);
 	    vgaHWLock(hwp);
 	    MGAUnmapMem(pScrn);
+	    vgaHWUnmapMem(pScrn);
 	}
     }
     if (pMga->AccelInfoRec)
