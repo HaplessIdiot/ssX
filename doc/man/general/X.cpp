@@ -1,5 +1,6 @@
 .\" $TOG: X.cpp /main/72 1997/10/13 14:20:40 kaleb $
 .\" Copyright (c) 1994  X Consortium
+.\" Copyright \(co 2000  The XFree86 Project, Inc.
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
 .\" copy of this software and associated documentation files (the "Software"), 
@@ -23,7 +24,7 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
-.TH X __miscmansuffix__ "Release 6.3" "X Version 11"
+.TH X __miscmansuffix__ "XFree86 4.0.2" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
 .SH SYNOPSIS
@@ -972,6 +973,195 @@ defaults
 into any site-wide defaults.  All sites are encouraged to set up convenient
 ways of automatically loading resources. See the \fIXlib\fP 
 manual section \fIResource Manager Functions\fP for more information.
+.SH ENVIRONMENT
+.TP
+.SM
+.B DISPLAY
+This is the only mandatory environment variable. It must point to an
+X server. See section "Display Names" above.
+.TP
+.SM
+.B XAUTHORITY
+This must point to a file that contains authorization data. The default
+is \fI$HOME/.Xauthority\fP. See
+.BR Xsecurity (__miscmansuffix__),
+.BR xauth (1),
+.BR xdm (1),
+.BR Xau (3).
+.TP
+.SM
+.B ICEAUTHORITY
+This must point to a file that contains authorization data. The default
+is \fI$HOME/.ICEauthority\fP.
+.TP
+.SM
+.BR LC_ALL ", " LC_CTYPE ", " LANG
+The first non-empty value among these three determines the current
+locale's facet for character handling, and in particular the default
+text encoding. See
+.BR locale (__miscmansuffix__),
+.BR setlocale (3),
+.BR locale (1).
+.TP
+.SM
+.B XMODIFIERS
+This variable can be set to contain additional information important
+for the current locale setting. Typically set to \fI@im=<input-method>\fP
+to enable a particular input method. See
+.BR XSetLocaleModifiers (3).
+.TP
+.SM
+.B XLOCALEDIR
+This must point to a directory containing the locale.alias file and
+Compose and XLC_LOCALE file hierarchies for all locales. The default value
+is \fI<XRoot>/lib/X11/locale\fP, i.e. normally /usr/X11R6/lib/X11/locale.
+.TP
+.SM
+.B XENVIRONMENT
+This must point to a file containing X resources. The default is
+\fI$HOME/.Xdefaults-<hostname>\fP. Unlike \fI<XRoot>/lib/X11/Xresources\fP,
+it is consulted each time an X application starts.
+.TP
+.SM
+.B XFILESEARCHPATH
+This must contain a colon separated list of path templates, where libXt
+will search for resource files. The default value consists of
+.sp
+.nf
+    <XRoot>/lib/X11/%L/%T/%N%C%S:\\
+    <XRoot>/lib/X11/%l/%T/%N%C%S:\\
+    <XRoot>/lib/X11/%T/%N%C%S:\\
+    <XRoot>/lib/X11/%L/%T/%N%S:\\
+    <XRoot>/lib/X11/%l/%T/%N%S:\\
+    <XRoot>/lib/X11/%T/%N%S
+.fi
+.sp
+i.e. normally
+.sp
+.nf
+    /usr/X11R6/lib/X11/%L/%T/%N%C%S:\\
+    /usr/X11R6/lib/X11/%l/%T/%N%C%S:\\
+    /usr/X11R6/lib/X11/%T/%N%C%S:\\
+    /usr/X11R6/lib/X11/%L/%T/%N%S:\\
+    /usr/X11R6/lib/X11/%l/%T/%N%S:\\
+    /usr/X11R6/lib/X11/%T/%N%S
+.fi
+.sp
+A path template is transformed to a pathname by substituting:
+.sp
+.nf
+    %N => name (basename) being searched for
+    %T => type (dirname) being searched for
+    %S => suffix being searched for
+    %C => value of the resource "customization"
+          (class "Customization")
+    %L => the locale name
+    %l => the locale's language (part before '_')
+    %t => the locale's territory (part after '_` but before '.')
+    %c => the locale's encoding (part after '.')
+.fi
+.TP
+.SM
+.B XUSERFILESEARCHPATH
+This must contain a colon separated list of path templates,
+where libXt will search for user dependent resource files. The default
+value is:
+.sp
+.nf
+    $XAPPLRESDIR/%L/%N%C:\\
+    $XAPPLRESDIR/%l/%N%C:\\
+    $XAPPLRESDIR/%N%C:\\
+    $HOME/%N%C:\\
+    $XAPPLRESDIR/%L/%N:\\
+    $XAPPLRESDIR/%l/%N:\\
+    $XAPPLRESDIR/%N:\\
+    $HOME/%N
+.fi
+.sp
+$XAPPLRESDIR defaults to \fI$HOME\fP, see below.
+.sp
+A path template is transformed to a pathname by substituting:
+.sp
+.nf
+    %N => name (basename) being searched for
+    %T => type (dirname) being searched for
+    %S => suffix being searched for
+    %C => value of the resource "customization"
+          (class "Customization")
+    %L => the locale name
+    %l => the locale's language (part before '_')
+    %t => the locale's territory (part after '_` but before '.')
+    %c => the locale's encoding (part after '.')
+.fi
+.TP
+.SM
+.B XAPPLRESDIR
+This must point to a base directory where the user stores his application
+dependent resource files. The default value is \fI$HOME\fP. Only used if
+XUSERFILESEARCHPATH is not set.
+.TP
+.SM
+.B XKEYSYMDB
+This must point to a file containing nonstandard keysym definitions.
+The default value is \fI<XRoot>/lib/X11/XKeysymDB\fP, i.e. normally
+/usr/X11R6/lib/X11/XKeysymDB.
+.TP
+.SM
+.B XCMSDB
+This must point to a color name database file. The default value is
+\fI<XRoot>/lib/X11/Xcms.txt\fP, i.e. normally /usr/X11R6/lib/X11/Xcms.txt.
+.TP
+.SM
+.B XFT_CONFIG
+This must point to a configuration file for the Xft library. The default
+value is \fI<XRoot>/lib/X11/XftConfig\fP, i.e. normally
+/usr/X11R6/lib/X11/XftConfig.
+.TP
+.SM
+.B RESOURCE_NAME
+This serves as main identifier for resources belonging to the program
+being executed. It defaults to the basename of pathname of the program.
+.TP
+.SM
+.B SESSION_MANAGER
+Denotes the session manager the application should connect. See
+.BR xsm (1),
+.BR rstart (1).
+.TP
+.SM
+.B XF86BIGFONT_DISABLE
+Setting this variable to a non-empty value disables the XFree86-Bigfont
+extension. This extension is a mechanism to reduce the memory consumption
+of big fonts by use of shared memory.
+.LP
+.B XKB_FORCE
+.br
+.B XKB_DISABLE
+.br
+.B XKB_DEBUG
+.br
+.B _XKB_CHARSET
+.br
+.B _XKB_LOCALE_CHARSETS
+.br
+.B _XKB_OPTIONS_ENABLE
+.br
+.B _XKB_LATIN1_LOOKUP
+.br
+.B _XKB_CONSUME_LOOKUP_MODS
+.br
+.B _XKB_CONSUME_SHIFT_AND_LOCK
+.br
+.B _XKB_IGNORE_NEW_KEYBOARDS
+.br
+.B _XKB_CONTROL_FALLBACK
+.br
+.B _XKB_COMP_LED
+.B _XKB_COMP_FAIL_BEEP
+.TP
+.SM
+.I ""
+These variables influence the X Keyboard Extension.
 .SH EXAMPLES
 The following is a collection of sample command lines for some of the 
 more frequently used commands.  For more information on a particular command,
@@ -1038,26 +1228,82 @@ the appropriate instance name can be placed before the asterisk:
 .SH "SEE ALSO"
 .PP
 .\" introductions
-XProjectTeam(__miscmansuffix__),
-XStandards(__miscmansuffix__),
-Xsecurity(__miscmansuffix__),
+.BR XProjectTeam (__miscmansuffix__),
+.BR XStandards (__miscmansuffix__),
+.BR Xsecurity (__miscmansuffix__),
 .\" clients, utilities, and demos
-
-appres(1), bdftopcf(1), bitmap(1), editres(1), fsinfo(1),
-fslsfonts(1), fstobdf(1), iceauth(1), imake(1), lbxproxy(1),
-makedepend(1), mkfontdir(1), oclock(1), proxymngr(1), rgb(1), 
-resize(1), rstart(1), smproxy(1), twm(1), x11perf(1), x11perfcomp(1), 
-xauth(1), xclipboard(1), xclock(1), xcmsdb(1), xconsole(1), xdm(1), 
-xdpyinfo(1), xfd(1), xfindproxy(1), xfs(1), xfwp(1), xhost(1),
-xieperf(1), xinit(1), xkbbell(1), xkbcomp(1), xbkevd(1), xkbprint(1),
-xkbvleds(1), xkbwatch(1), xkill(1), xlogo(1), xlsatoms(1),
-xlsclients(1), xlsfonts(1), xmag(1), xmh(1), xmodmap(1), xon(1),
-xprop(1), xrdb(1), xrefresh(1), xrx(1), xset(1), xsetroot(1),
-xsm(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1).
+.BR appres (1),
+.BR bdftopcf (1),
+.BR bitmap (1),
+.BR editres (1),
+.BR fsinfo (1),
+.BR fslsfonts (1),
+.BR fstobdf (1),
+.BR iceauth (1),
+.BR imake (1),
+.BR lbxproxy (1),
+.BR makedepend (1),
+.BR mkfontdir (1),
+.BR oclock (1),
+.BR proxymngr (1),
+.BR rgb (1), 
+.BR resize (1),
+.BR rstart (1),
+.BR smproxy (1),
+.BR twm (1),
+.BR x11perf (1),
+.BR x11perfcomp (1), 
+.BR xauth (1),
+.BR xclipboard (1),
+.BR xclock (1),
+.BR xcmsdb (1),
+.BR xconsole (1),
+.BR xdm (1),
+.BR xdpyinfo (1),
+.BR xfd (1),
+.BR xfindproxy (1),
+.BR xfs (1),
+.BR xfwp (1),
+.BR xhost (1),
+.BR xieperf (1),
+.BR xinit (1),
+.BR xkbbell (1),
+.BR xkbcomp (1),
+.BR xbkevd (1),
+.BR xkbprint (1),
+.BR xkbvleds (1),
+.BR xkbwatch (1),
+.BR xkill (1),
+.BR xlogo (1),
+.BR xlsatoms (1),
+.BR xlsclients (1),
+.BR xlsfonts (1),
+.BR xmag (1),
+.BR xmh (1),
+.BR xmodmap (1),
+.BR xon (1),
+.BR xprop (1),
+.BR xrdb (1),
+.BR xrefresh (1),
+.BR xrx (1),
+.BR xset (1),
+.BR xsetroot (1),
+.BR xsm (1),
+.BR xstdcmap (1),
+.BR xterm (1),
+.BR xwd (1),
+.BR xwininfo (1),
+.BR xwud (1).
 .\" servers
-Xserver(1), Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
-XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1),
-kbd_mode(1),
+.BR Xserver (1),
+.BR Xdec (1),
+.BR XmacII (1),
+.BR Xsun (1),
+.BR Xnest (1),
+.BR Xvfb (1),
+.BR XFree86 (1),
+.BR Xdarwin (1),
+.BR kbd_mode (1),
 .\" specifications
 .I "Xlib \- C Language X Interface\fR,\fP"
 and
