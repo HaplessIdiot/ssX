@@ -30,7 +30,7 @@
  *     Machine-independent DBE code
  *
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dbe/midbe.c,v 3.1 2000/04/05 18:13:30 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -54,7 +54,11 @@
 #include "gcstruct.h"
 #include "inputstr.h"
 
-#include <xf86_ansic.h>
+#ifndef IN_MODULE
+#include <stdio.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 /* DEFINES */
 
