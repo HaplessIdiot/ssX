@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.13 2002/03/28 02:21:08 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.14 2002/08/28 06:19:15 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -6,11 +6,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.13 2002/03/28 02:21:
 LinkSourceFile(XFree86.man,../xfree86)
 
 SRCS =	darwin.c \
+        darwinEvents.c \
         darwinKeyboard.c \
         xfIOKit.c \
         xfIOKitCursor.c
 
 OBJS =	darwin.o \
+        darwinEvents.o \
         darwinKeyboard.o \
         xfIOKit.o \
         xfIOKitCursor.o

@@ -57,7 +57,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitCursor.c,v 1.3 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitCursor.c,v 1.4 2002/03/28 02:21:08 torrey Exp $ */
 
 #include "scrnintstr.h"
 #include "cursorstr.h"
@@ -615,6 +615,8 @@ static miPointerScreenFuncRec darwinScreenFuncsRec = {
   XFIOKitCursorOffScreen,
   XFIOKitCrossScreen,
   XFIOKitWarpCursor,
+  DarwinEQEnqueue,
+  DarwinEQSwitchScreen
 };
 
 

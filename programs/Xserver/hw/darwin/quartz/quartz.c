@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.25 2002/02/17 03:15:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -229,7 +229,43 @@ void QuartzHide(void)
         }
     }
     quartzServerVisible = FALSE;
-    QuartzMessageMainThread(kQuartzServerHidden);
+    QuartzMessageMainThread(kQuartzServerHidden, NULL, 0);
+}
+
+
+/*
+ * QuartzProcessEvent
+ *  Process Quartz specific events.
+ */
+void QuartzProcessEvent(
+    xEvent *xe)
+{
+    switch (xe->u.u.type) {
+
+        case kXDarwinShow:
+            QuartzShow(xe->u.keyButtonPointer.rootX,
+                       xe->u.keyButtonPointer.rootY);
+            break;
+
+        case kXDarwinHide:
+            QuartzHide();
+            break;
+
+        case kXDarwinQuit:
+            GiveUp(0);
+            break;
+
+        case kXDarwinReadPasteboard:
+            QuartzReadPasteboard();
+            break;
+
+        case kXDarwinWritePasteboard:
+            QuartzWritePasteboard();
+            break;
+
+        default:
+            ErrorF("Unknown application defined event.\n");
+    }
 }
 
 
