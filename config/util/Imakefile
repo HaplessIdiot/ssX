@@ -2,11 +2,9 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.46 2002/10/01 14:31:37 alanh Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.47tsi Exp $
 
-#if UseCCMakeDepend
 CCMDEP_PROG = ccmakedep
-#endif
 
 #ifdef ExportListGenSource
 EXPORTLISTGEN = exportlistgen
@@ -17,6 +15,7 @@ CMKDIRHIER = mkdirhier.exe
 #endif
 
 GCCMDEP_PROG = gccmakedep
+
 #if HasSymLinks
 #if CrossCompiling
 LNDIR_PROG = HostProgramTargetName(lndir)
