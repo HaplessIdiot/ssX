@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.11 2000/12/08 21:51:04 paulo Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.12 2000/12/11 20:48:55 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -84,7 +84,10 @@ LOADERLIB      = -L../loader -lxloader -L../dummylib -ldummy
 MODULEDEFINES  = -DUSE_MODULES
 INCLUDES       = -I../common -I../loader -I$(XF86OSSRC) \
 		 -I$(SERVERSRC)/include -I$(XINCLUDESRC)
-WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
+#if !HasSnprintf
+SNPRINTF_DEFS  = -DNEED_SNPRINTF
+#endif
+WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER $(SNPRINTF_DEFS)
 #endif
 
 #if HasNCurses
@@ -101,7 +104,8 @@ DLLIB = DlLibrary
 
 LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
-		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) -lm
+		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) \
+		  RegexLibrary -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
