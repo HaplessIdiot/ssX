@@ -162,7 +162,6 @@ void XeditLispCleanUp(void);
 
 /*	externs in proto.c	*/
 #define PROTOPREFFIX	'\033'
-#define PROTOMAXSIZE	1024
 Bool XeditProto(char*, char**);
 
 /*	externs for system replacement functions */

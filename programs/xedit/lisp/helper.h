@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.4 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.5 2002/02/08 02:59:29 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -38,6 +38,10 @@
  * Prototypes
  */
 LispObj *LispSet(LispMac*, LispObj*, LispObj*, char*, int);
+
+LispObj *LispCharacterCoerce(LispMac*, LispBuiltin*, LispObj*);
+LispObj *LispStringCoerce(LispMac*, LispBuiltin*, LispObj*);
+LispObj *LispCoerce(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 
 /*
  do init test &rest body

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.7 2001/10/20 00:19:34 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.8 2002/01/30 21:00:57 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -114,6 +114,7 @@ LispObj *Lisp_Setenv(LispMac*, LispBuiltin*);		/* setenv */
 LispObj *Lisp_Set(LispMac*, LispBuiltin*);		/* set */
 LispObj *Lisp_Setf(LispMac*, LispBuiltin*);		/* setf */
 LispObj *Lisp_SetQ(LispMac*, LispBuiltin*);		/* setq */
+LispObj *Lisp_Sleep(LispMac*, LispBuiltin*);		/* sleep */
 LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		/* stringp */
 LispObj *Lisp_Subseq(LispMac*, LispBuiltin*);		/* subseq */
 LispObj *Lisp_Symbolp(LispMac*, LispBuiltin*);		/* symbolp */
@@ -121,6 +122,7 @@ LispObj *Lisp_SymbolPlist(LispMac*, LispBuiltin*);	/* symbol-plist */
 LispObj *Lisp_Tagbody(LispMac*, LispBuiltin*);		/* tagbody */
 LispObj *Lisp_Terpri(LispMac*, LispBuiltin*);		/* terpri */
 LispObj *Lisp_Throw(LispMac*, LispBuiltin*);		/* throw */
+LispObj *Lisp_The(LispMac*, LispBuiltin*);		/* the */
 LispObj *Lisp_Typep(LispMac*, LispBuiltin*);		/* typep */
 LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* unless */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.3 2001/09/11 06:42:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.5 2002/01/31 04:33:26 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -44,6 +44,7 @@
  */
 static void XeditLispInitialize(void);
 static void XeditRunLisp(void);
+static void XeditLispTextReplace(char*, int);
 static void LispInputCallback(XtPointer, int*, XtInputId*);
 static void LispErrorInputCallback(XtPointer, int*, XtInputId*);
 static void XeditDoLispEval(Widget, XEvent*, String*, Cardinal*);
@@ -70,6 +71,9 @@ static struct {
     XtAppContext appcon;
     Widget output;
     Bool sigchld;
+
+    char buffer[8192];		/* input read and not yet processed */
+    char *input;		/* for incomplete xedit-proto reads */
 } lisp;
 
 extern XtAppContext appcon;
@@ -164,7 +168,8 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    if (isspace(block.ptr[0]) ||
 		block.ptr[0] == '(' ||
 		block.ptr[0] == ')' ||
-		block.ptr[0] == '\'')
+		block.ptr[0] == '\'' ||
+		block.ptr[0] == '`')
 		break;
 	    ++gotchars;
 	    --position;
@@ -242,6 +247,8 @@ XeditLispInitialize(void)
 
     XeditPrintf("Notice: starting lisp process.\n");
 
+    lisp.input = lisp.buffer;
+
     lisp.sigchld = False;
     pipe(lisp.ifd);
     pipe(lisp.ofd);
@@ -285,46 +292,116 @@ XeditLispInitialize(void)
 }
 
 static void
+XeditLispTextReplace(char *string, int length)
+{
+    XawTextBlock block;
+    XawTextPosition position = XawTextGetInsertionPoint(lisp.output);
+
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+    block.length = length;
+    block.ptr = string;
+    XawTextReplace(lisp.output, position, position, &block);
+    position += length;
+    XawTextSetInsertionPoint(lisp.output, position);
+}
+
+static void
 LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 {
-    int len;
-    char str[8192];
+    char *ptr, *end;
+    char *start;	/* start of text or xedit-proto call */
+    int length;
+    int proto;		/* parsing a xedit-proto call */ 
+    int quote;		/* reading a string */
 
-    len = read(lisp.ifd[0], str, sizeof(str) - 1);
-    if (len && len < PROTOMAXSIZE && *str == PROTOPREFFIX) {
-	char *res = NULL;
+    /* read data */
+    length = sizeof(lisp.buffer) - (lisp.input - lisp.buffer);
+    length = read(lisp.ifd[0], lisp.input, length);
 
-	str[len] = '\0';
-	len = 0;
+    /* if nothing new, just return */
+    if (length <= 0)
+	return;
 
-	if (XeditProto(str + 1, &res) == False) {
-	    Feep();
-	    if (res)
-		XeditPrintf(res);
-	    write(lisp.ofd[1], "NIL\n", 4);
+    /* initialize */
+    proto = quote = 0;
+
+    /* scan data read */
+    for (ptr = start = lisp.buffer, end = lisp.input + length; ptr < end; ptr++) {
+	if (proto) {
+	    /* check for string quote */
+	    if (*ptr == '"' && ptr > start && ptr[-1] != '\\')
+		quote = !quote;
+
+	    /* newlines can be embedded in strings */
+	    else if (*ptr == '\n' && !quote) {
+		/* not in a string, this is a xedit-proto call */
+
+		char *result = NULL;
+
+		/* finish string */
+		*ptr = '\0';
+
+		if (XeditProto(start + 1, &result) == False) {
+		    /* error parsing xedit-proto call */
+
+		    Feep();
+		    if (result)
+			XeditPrintf(result);
+		    write(lisp.ofd[1], "NIL\n", 4);
+		}
+		else
+		    /* result must end with a newline */
+		    write(lisp.ofd[1], result, strlen(result));
+
+		/* not parsing a xedit-proto anymore */
+		proto = 0;
+
+		/* pointer to new data */
+		start = ptr + 1;
+	    }
 	}
-	else {
-	    write(lisp.ofd[1], res, strlen(res));
-	    write(lisp.ofd[1], "\n", 1);
+	else if (*ptr == PROTOPREFFIX) {
+
+	    /* remember to be parsing a xedit-proto */
+	    proto = 1;
+
+	    if (ptr > start)
+		/* this data goes directly to the xedit buffer */
+
+		XeditLispTextReplace(start, ptr - start);
+
+	    /* start points to the beginning of the xedit-proto command */
+	    start = ptr;
 	}
     }
-    if (len > 0) {
-	if (lisp.output == messwidget) {
-	    str[len] = '\0';
-	    XeditPrintf(str);
+
+    if (proto) {
+	if (start == lisp.buffer) {
+	    if (end == lisp.buffer + sizeof(lisp.buffer)) {
+		/* xedit-proto command too large */
+		Feep();
+		XeditPrintf("Error: xedit-proto command too large.\n");
+		/* buffer could be increased, but always there must be a limit */
+		XeditLispTextReplace(start, ptr - start);
+		lisp.input = lisp.buffer;
+	    }
+	    else
+		/* just did not read the entire text */
+		lisp.input = end;
 	}
 	else {
-	    XawTextBlock block;
-	    XawTextPosition pos = XawTextGetInsertionPoint(lisp.output);
-
-	    block.firstPos = 0;
-	    block.format = FMT8BIT;
-	    block.length = len;
-	    block.ptr = str;
-	    XawTextReplace(lisp.output, pos, pos, &block);
-	    pos += len;
-	    XawTextSetInsertionPoint(lisp.output, pos);
+	    /* needs more space */
+	    length = sizeof(lisp.buffer) - (start - lisp.buffer);
+	    memmove(lisp.buffer, start, length);
+	    lisp.input = lisp.buffer + length;
 	}
+    }
+    else {
+	if (ptr > start)
+	    /* flush output */
+	    XeditLispTextReplace(start, ptr - start);
+	lisp.input = lisp.buffer;
     }
 }
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.29 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.31 2002/02/08 03:54:07 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -109,7 +109,8 @@ static INLINE void LispDoAddVar(LispMac*, LispObj*, LispObj*);
 /* create environment for function call */
 static void LispMakeEnvironment(LispMac*, LispObj*, LispObj*, char*, int);
 
-static LispObj *LispEvalBackquote(LispMac*, LispObj*);
+static LispObj *LispEvalBackquoteObject(LispMac*, LispObj*, int, int);
+static LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
 
 	/* if no properties remaining, free atom->property,
 	 * and this way, make string candidate to gc */
@@ -345,6 +346,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Set, "set symbol value"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
     {LispMacro, Lisp_SetQ, "setq &rest form"},
+    {LispFunction, Lisp_Sleep, "sleep seconds"},
     {LispFunction, Lisp_Sqrt, "sqrt number"},
     {LispFunction, Lisp_Elt, "svref sequence index &aux (length (length sequence))"},
     {LispFunction, Lisp_Streamp, "streamp object"},
@@ -375,6 +377,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Tagbody, "tagbody &rest body"},
     {LispFunction, Lisp_Terpri, "terpri &optional output-stream"},
     {LispFunction, Lisp_Typep, "typep object type"},
+    {LispMacro, Lisp_The, "the value-type form"},
     {LispMacro, Lisp_Throw, "throw tag result"},
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
@@ -1532,7 +1535,7 @@ mark_again:
 		    LispMark(CAR(obj));
 		obj->mark = LispTrue_t;
 	    }
-	    if (obj && !CONS_P(obj))
+	    if (obj != NIL && !obj->mark)
 		goto mark_again;
 	    return;
 	case LispArray_t:
@@ -1608,7 +1611,7 @@ immutable_again:
 		    LispImmutable(CAR(obj));
 		obj->prot = LispTrue_t;
 	    }
-	    if (obj && !CONS_P(obj))
+	    if (obj != NIL)
 		goto immutable_again;
 	    return;
 	case LispArray_t:
@@ -1684,7 +1687,7 @@ mutable_again:
 		    LispImmutable(CAR(obj));
 		obj->prot = LispNil_t;
 	    }
-	    if (obj && !CONS_P(obj))
+	    if (obj != NIL)
 		goto mutable_again;
 	    return;
 	case LispArray_t:
@@ -1732,8 +1735,7 @@ LispUProtect(LispMac *mac, LispObj *key, LispObj *list)
 	    return;
 	}
 
-    LispDestroy(mac, "no match for (%s %s), at UPROTECT",
-		LispStrObj(mac, key), LispStrObj(mac, list));
+    LispDestroy(mac, "no match for %s, at UPROTECT", STROBJ(key));
 }
 
 LispObj *
@@ -2598,136 +2600,182 @@ LispBlockUnwind(LispMac *mac, LispBlock *block)
     }
 }
 
-LispObj *
-LispEvalBackquote(LispMac *mac, LispObj *arg)
+static LispObj *
+LispEvalBackquoteObject(LispMac *mac, LispObj *argument, int list, int quote)
 {
-    LispObj *res = NIL;
+    LispObj *result = NIL, *object;
 
-    if (arg->type == LispComma_t) {
-	if (arg->data.comma.atlist)
-	    LispDestroy(mac, ",@ only allowed on lists");
-	else if (arg->data.comma.eval->type == LispComma_t)
-	    res = arg->data.comma.eval;
-	else {
-	    /* just evaluate it */
-	    if (NCONSTANT_P(res = arg->data.comma.eval))
-		res = EVAL(res);
-	}
+    if (argument->type == LispComma_t) {
+	/* argument may need to be evaluated */
+
+	int atlist;
+
+	if (!list && argument->data.comma.atlist)
+	    /* cannot append, not in a list */
+	    LispDestroy(mac, "EVAL: ,@ only allowed on lists");
+
+	--quote;
+	if (quote < 0)
+	    LispDestroy(mac, "EVAL: comma outside of backquote");
+
+	result = object = argument->data.comma.eval;
+	atlist = result->type == LispComma_t && object->data.comma.atlist;
+
+	if (result->type == LispComma_t || result->type == LispBackquote_t)
+	    /* nested commas, reduce 1 level, or backquote,
+	     * don't call LispEval or quote argument will be reset */
+	    result = LispEvalBackquoteObject(mac, object, 0, quote);
+
+	else if (quote == 0 && !CONSTANT_P(result))
+	   /* just evaluate it */
+	    result = EVAL(result);
+
+	if (quote != 0)
+	    result = result == object ? argument : COMMA(result, atlist);
     }
-    else if (CONS_P(arg)) {
-	int length = mac->protect.length;
-	LispObj *obj, *cdr = NIL, *ptr;
-	/* create new form, evaluating any commas inside */
 
-	res = NIL;
-	for (ptr = arg; ; ptr = CDR(ptr)) {
-	    int atcons = 1, atlist = 0;
+    else if (argument->type == LispBackquote_t) {
+	object = argument->data.quote;
 
-	    if (!CONS_P(ptr)) {
-		atcons = 0;
-		obj = ptr;
-	    }
-	    else
-		obj = CAR(ptr);
-	    if (obj->type == LispComma_t) {
-		atlist = obj->data.comma.atlist;
-		if (obj->data.comma.eval->type == LispComma_t) {
-		    if (atlist)
-			LispDestroy(mac, ",@ only allowed on lists");
-		    obj = obj->data.comma.eval;
-		}
-		else {
-		    obj = obj->data.comma.eval;
-		    if (NCONSTANT_P(obj))
-			obj = EVAL(obj);
-		}
-	    }
-	    else if (obj->type == LispBackquote_t)
-		obj = LispEvalBackquote(mac, obj->data.quote);
-	    else if (CONS_P(obj))
-		obj = LispEvalBackquote(mac, obj);
-	    /* else do nothing */
+	result = LispEvalBackquote(mac, object, quote + 1);
+	if (quote)
+	    result = result == object ? argument : BACKQUOTE(result);
+    }
 
-	    if (res == NIL) {
-		GCProtect();		/* XXX disable GC */
-		if (length + 1 >= mac->protect.space)
-		    LispMoreProtects(mac);
-		if (!atlist) {
-		    if (atcons)
-			/* easier case */
-			res = cdr = CONS(obj, NIL);
-		    else
-			res = cdr = obj;
-		}
-		else {
-		    /* add list contents */
-		    if (!CONS_P(obj))
-			res = cdr = obj;
-		    else {
-			res = cdr = CONS(CAR(obj), NIL);
-			for (obj = CDR(obj); CONS_P(obj); obj = CDR(obj)) {
-			    CDR(cdr) = CONS(CAR(obj), NIL);
-			    cdr = CDR(cdr);
-			}
-			if (obj != NIL) {
-			    CDR(cdr) = obj;
-			    cdr = CDR(cdr);
-			}
-		    }
-		}
-		mac->protect.objects[mac->protect.length++] = res;
-		GCUProtect();		/* enable GC */
+    else if (argument->type == LispQuote_t &&
+	     (argument->data.quote->type == LispComma_t ||
+	      argument->data.quote->type == LispBackquote_t)) {
+	/* ensures `',sym to be the same as `(quote ,sym) */
+	object = argument->data.quote;
+
+	result = LispEvalBackquote(mac, argument->data.quote, quote);
+	result = result == object ? argument : QUOTE(result);
+    }
+
+    else
+	/* anything else is not evaluated */
+	result = argument;
+
+    return (result);
+}
+
+static LispObj *
+LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
+{
+    int protect;
+    LispObj *result, *object, *cons, *cdr;
+
+    if (!CONS_P(argument))
+	return (LispEvalBackquoteObject(mac, argument, 0, quote));
+
+    result = cdr = NIL;
+    protect = mac->protect.length;
+
+    /* always generate a new list for the result, even if nothing
+     * is evaluated. It is not expected to use backqoutes when
+     * not required. */
+	
+    /* reserve a GC protected slot for the result */
+    if (protect + 1 >= mac->protect.space)
+	LispMoreProtects(mac);
+    mac->protect.objects[mac->protect.length++] = NIL;
+
+    for (cons = argument; ; cons = CDR(cons)) {
+	/* if false, last argument, and if cons is not NIL, a dotted list */
+	int list = CONS_P(cons), insert;
+
+	if (list)
+	    object = CAR(cons);
+	else
+	    object = cons;
+
+	if (object->type == LispComma_t)
+	    /* need to insert list elements in result, not just cons it? */
+	    insert = object->data.comma.atlist;
+	else
+	    insert = 0;
+
+	/* evaluate object, if required */
+	object = LispEvalBackquoteObject(mac, object, insert, quote);
+
+	if (result == NIL) {
+	    /* if starting result list */
+	    if (!insert) {
+		if (list)
+		    result = cdr = CONS(object, NIL);
+		else
+		    result = cdr = object;
+		/* gc protect result */
+		mac->protect.objects[protect] = result;
 	    }
 	    else {
-		if (!CONS_P(cdr))
-		    LispDestroy(mac, "cannot append to %s",
-				LispStrObj(mac, cdr));
-		if (!atlist) {
-		    if (atcons) {
-			CDR(cdr) = CONS(obj, NIL);
-			cdr = CDR(cdr);
-		    }
-		    else {
-			CDR(cdr) = obj;
-			cdr = obj;
-		    }
+		if (!CONS_P(object)) {
+		    result = cdr = object;
+		    /* gc protect result */
+		    mac->protect.objects[protect] = result;
 		}
 		else {
-		    if (!CONS_P(obj)) {
-			CDR(cdr) = obj;
-			if (obj != NIL)
-			    cdr = obj;
+		    result = cdr = CONS(CAR(object), NIL);
+		    /* gc protect result */
+		    mac->protect.objects[protect] = result;
+
+		    /* add remaining elements to result */
+		    for (object = CDR(object); CONS_P(object); object = CDR(object)) {
+			CDR(cdr) = CONS(CAR(object), NIL);
+			cdr = CDR(cdr);
 		    }
-		    else {
-			for (; CONS_P(obj); obj = CDR(obj)) {
-			    CDR(cdr) = CONS(CAR(obj), NIL);
-			    cdr = CDR(cdr);
-			}
-			if (obj != NIL) {
-			    CDR(cdr) = obj;
-			    cdr = CDR(cdr);
-			}
+		    if (object != NIL) {
+			/* object was a dotted list */
+			CDR(cdr) = object;
+			cdr = CDR(cdr);
 		    }
 		}
 	    }
-	    if (!CONS_P(ptr))
-		break;
 	}
-	/* XXX res is not GC protected anymore */
-	mac->protect.length = length;
-    }
-    else if (arg->type == LispBackquote_t)
-	res = BACKQUOTE(LispEvalBackquote(mac, arg->data.quote));
-    else if (arg->type == LispQuote_t)
-	/* also check quoted objects, to make
-	 * `',sym the same as `(quote ,sym)
-	 */
-	res = QUOTE(LispEvalBackquote(mac, arg->data.quote));
-    else
-	/* 'obj == `obj */
-	res = arg;
+	else {
+	    if (!CONS_P(cdr))
+		LispDestroy(mac, "EVAL: cannot append to %s", STROBJ(cdr));
 
-    return (res);
+	    if (!insert) {
+		if (list) {
+		    CDR(cdr) = CONS(object, NIL);
+		    cdr = CDR(cdr);
+		}
+		else {
+		    CDR(cdr) = object;
+		    cdr = object;
+		}
+	    }
+	    else {
+		if (!CONS_P(object)) {
+		    CDR(cdr) = object;
+		    /* if object is NIL, it is a empty list appended, not
+		     * creating a dotted list. */
+		    if (object != NIL)
+			cdr = object;
+		}
+		else {
+		    for (; CONS_P(object); object = CDR(object)) {
+			CDR(cdr) = CONS(CAR(object), NIL);
+			cdr = CDR(cdr);
+		    }
+		    if (object != NIL) {
+			/* object was a dotted list */
+			CDR(cdr) = object;
+			cdr = CDR(cdr);
+		    }
+		}
+	    }
+	}
+
+	/* if last argument list element processed */
+	if (!list)
+	    break;
+    }
+
+    mac->protect.length = protect;
+
+    return (result);
 }
 
 static void
@@ -3138,9 +3186,9 @@ LispEval(LispMac *mac, LispObj *obj)
 	case LispQuote_t:
 	    return (obj->data.quote);
 	case LispBackquote_t:
-	    return LispEvalBackquote(mac, obj->data.quote);
+	    return LispEvalBackquote(mac, obj->data.quote, 1);
 	case LispComma_t:
-	    LispDestroy(mac, "EVAL: illegal comma outside of backquote");
+	    LispDestroy(mac, "EVAL: comma outside of backquote");
 	case LispCons_t:
 	    cons = obj;
 	    break;
