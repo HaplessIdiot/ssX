@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/11 1997/10/30 15:51:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.8 1996/12/23 06:30:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.9 1997/11/16 06:18:38 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -47,7 +47,7 @@ LinkSourceFile(stubs.c,../../Xi)
 SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
 
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -UXFree86Loader -UXF86VIDMODE -UXFreeXDGA -UXF86MISC -UGLXEXT)
 
 #if BuildPanoramiX
 LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
