@@ -629,9 +629,6 @@ static void TAG(shade_fast_rgba)( struct vertex_buffer *VB )
    if ( flags[j] & VERT_MATERIAL ) 
       gl_update_material( ctx, new_material[j], new_material_mask[j] );
 
-   COPY_3V(base[0], ctx->Light.BaseColor[0]);
-   if (NR_SIDES == 2) COPY_3V(base[1], ctx->Light.BaseColor[1]);
-
    interesting = cm_flags | VERT_MATERIAL | VERT_END_VB | VERT_NORM;
    VB->ColorPtr = VB->LitColor[0];
    VB->Color[0] = VB->LitColor[0];

@@ -2216,7 +2216,7 @@ _mesa_texture_combine(const GLcontext *ctx,
                rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
-	 break;
+         break;
       case GL_DOT3_RGB_EXT:
       case GL_DOT3_RGBA_EXT:
          {
