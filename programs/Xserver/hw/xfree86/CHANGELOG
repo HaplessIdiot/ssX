@@ -1,4 +1,6 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 410. Fixes for potential integer overflows in font libraries. (blexim, 
+      Matthieu Herrb).
  409. SiS driver: Add RENDER hardware acceleration
  408. Add a Fopen() function to open the Xauthority file without spawning
       a shell (Bugzilla #255, Aidan Kehoe, Matthieu Herrb). 
@@ -17635,7 +17637,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2831 2003/08/27 19:57:18 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2832 2003/08/27 23:07:01 twini Exp $
 
 
 

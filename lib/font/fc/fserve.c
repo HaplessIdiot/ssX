@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.22tsi Exp $ */
+/* $XFree86: fserve.c,v 3.23 2003/05/27 22:26:48 tsi Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -1505,8 +1505,8 @@ fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags,
 
     if (conn->blockState & FS_GIVE_UP)
 	return BadFontName;
-    
-    if (namelen > sizeof (buf) - 1)
+ 
+    if (namelen <= 0 || namelen > sizeof (buf) - 1)
 	return BadFontName;
     
     /*
