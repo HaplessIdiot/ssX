@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.26 2003/11/14 22:44:26 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -2395,7 +2395,7 @@ Bool GLX_PREFIX(glXGetSyncValuesOML)(Display *dpy, GLXDrawable drawable,
     __GLXdisplayPrivate * const priv = __glXInitialize(dpy);
 
     if ( priv != NULL ) {
-	unsigned   i;
+	int   i;
 	__DRIdrawable * const pdraw = GetDRIDrawable( dpy, drawable, & i );
 	__GLXscreenConfigs * const psc = &priv->screenConfigs[i];
 
@@ -2436,7 +2436,7 @@ Bool GLX_PREFIX(glXGetSyncValuesOML)(Display *dpy, GLXDrawable drawable,
 Bool GLX_PREFIX(glXGetMscRateOML)(Display * dpy, GLXDrawable drawable,
 				  int32_t * numerator, int32_t * denominator)
 {
-#if defined( GLX_DIRECT_RENDERING )
+#if defined( GLX_DIRECT_RENDERING ) && defined( XF86VIDMODE )
    __GLXdisplayPrivate * const priv = __glXInitialize(dpy);
 
 
@@ -2444,7 +2444,7 @@ Bool GLX_PREFIX(glXGetMscRateOML)(Display * dpy, GLXDrawable drawable,
       XF86VidModeModeLine   mode_line;
       int   dot_clock;
       int   screen_num;
-      unsigned   i;
+      int   i;
 
 
       GetDRIDrawable( dpy, drawable, & screen_num );
