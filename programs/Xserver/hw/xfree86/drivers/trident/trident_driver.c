@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.177tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.178 2003/04/23 21:51:49 tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -480,6 +480,7 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAAInit",
     "XAAPatternROP",
+    "XAAScreenIndex",
     NULL
 };
 
