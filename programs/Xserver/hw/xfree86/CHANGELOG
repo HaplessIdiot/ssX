@@ -1,3 +1,10 @@
+XFree86 3.0Dd (12 August 1994)
+181. Fix for unnecessary read-ahead in mfbblt, and remove the '-32' display
+     width restriction (Pascal Haible, Gertjan Akkerman).
+180. Support for SGS/inmos STG1700 RAMDAC -- S3 server (Bernhard Bender).
+179. Performance improvements for AGX server (Henry Worth).
+178. More 15/16bpp fixes for S3 (Harald Koenig).
+
 XFree86 3.0Dc (11 August 1994)
 177. Various 15/16bpp S3 fixes (Jon Tombs, Harald Koenig).
 176. 16bpp support for ATT 20C490 (Jon Tombs).
