@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.131 2001/06/13 23:34:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.132 2001/06/15 21:22:50 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -134,6 +134,7 @@ static SymTabRec GLINTVGAChipsets[] = {
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V,	"pm2v" },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,		"pm2" },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,		"pm" },
+    {-1, NULL }
 };
 
 static PciChipsets GLINTVGAPciChipsets[] = {
