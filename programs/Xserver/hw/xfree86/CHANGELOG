@@ -1,4 +1,31 @@
 XFree86 4.3.99.3 (xx April 2003)
+  97. Xlib cleanups and fixes, including:
+       - Fixed up any old style function defintions that raised warnings.
+       - Fixed functions with no parameter or return value.
+       - Moved any external prototype in a c-files to h-files.
+       - Set unreferenced and unmentioned functions to static.
+       - Completed any forward declartion with its calling parameters.
+       - Established function typedefs where might be helpful.
+       - Fixed bogus XIM callback function to XID type, fixed XPointer* -
+         XPointer mismatch on some callback.
+       - Added explicit FIXME XXX statement on locations for the work around
+         macro XCMS_CONVERSION_HARDWARE where the compiler was unsatisfied
+         about a known problem with the currently inconsistent src_to_CIEXYZ
+         table types.
+       - Split _XcmsSetGetColor and *Colors handling routine in order
+	 to avoid any type conflicts there, fixed a memory leak for
+	 error case in that area.  Used stack based Buffer for single-color
+	 version (should be simpler and faster).
+       - Fixed _XAsyncReply where a "register variable pend" was passed
+	 and returned with the & operator.  This location is further
+	 suspect of variable size problems on anything else but 32 bit
+	 platforms, with the new code it might more likely raise a type
+	 mismatch warning for those specific location.
+      (#A.1729, Alexander Stohr).
+  96. Fix the <KPDL> mapping for the hr XKB map, and add an hr_US map (#A.1726,
+      Vlatko Kosturjak).
+  95. Fix vmware driver crash when running two X servers concurrently (#5688,
+      Nolan Leake).
   94. Rework the Linux drm kernel module build to leverage off the standard
       kernel build system.  This is based on suggestions and examples from
       David Woodhouse.  This approach has the advantage that the build
@@ -16734,4 +16761,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2630 2003/04/12 12:32:21 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2631 2003/04/12 17:18:13 dawes Exp $
