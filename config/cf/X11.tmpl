@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.23 1997/12/14 02:55:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.24 1998/04/05 02:28:16 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -207,6 +207,10 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.23 1997/12/14 02:55:25 dawes Exp $
 #endif
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	BuildXF86DGA
+#endif
+
+#ifndef BuildFreeType
+#define BuildFreeType		NO
 #endif
 
 #ifndef InstallLibManPages

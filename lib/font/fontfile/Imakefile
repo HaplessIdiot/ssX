@@ -1,11 +1,15 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.3 1996/12/23 06:02:18 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.4 1996/12/26 03:41:32 dawes Exp $
 #include <Server.tmpl>
 
    INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include -I$(TOP)/lib/zlib
     HEADERS = 
 #ifdef FontFormatDefines
 FORMAT_DEFS = FontFormatDefines
+#endif
+
+#if BuildFreeType
+FREETYPE_DEFINES = -DBUILD_FREETYPE
 #endif
 
 #if GzipFontCompression
@@ -16,7 +20,7 @@ FORMAT_DEFS = FontFormatDefines
 
  ATTRIBDEFS = -DFONTDIRATTRIB
 
-    DEFINES = $(ATTRIBDEFS)
+    DEFINES = $(ATTRIBDEFS) $(FREETYPE_DEFINES)
 
 
 

@@ -1,4 +1,7 @@
 XFree86 3.9Ah (XX April 1998)
+1651. Add FreeType code to lib/font/FreeType, but the build-related
+      things haven't been done yet (David Turner, Robert Wilhelm,
+      Werner Lemberg, Mark Leisher, Juliusz Chroboczek).
 1650. Sync I128 server acceleration with 3.3.2 (Robin Cutshaw).
 
 XFree86 3.9Ag (05 April 1998)
@@ -6092,4 +6095,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.582 1998/04/05 16:42:08 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.583 1998/04/07 18:34:37 robin Exp $

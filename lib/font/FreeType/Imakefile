@@ -1,0 +1,21 @@
+XCOMM $XFree86$
+
+XCOMM Imakefile created for the Freetype TrueType renderer.
+XCOMM mleisher@crl.nmsu.edu (Mark Leisher)
+XCOMM jec@dcs.ed.ac.uk (Juliusz Chroboczek)
+
+#include <Server.tmpl>
+
+INCLUDES = -I$(FONTINCSRC) -I../include  -Ilib
+
+SRCS = ftfuncs.c ftenc.c ftutil.c ftxcmap.c
+
+OBJS = ftfuncs.o ftenc.o ftutil.o ftxcmap.o
+
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

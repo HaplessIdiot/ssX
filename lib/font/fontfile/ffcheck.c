@@ -26,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -154,6 +155,9 @@ FontFileCheckRegisterFpeFunctions ()
 #ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
     Type1RegisterFontFileFunctions();
+#ifdef BUILD_FREETYPE
+    FreeTypeRegisterFontFileFunctions();
+#endif
 #endif
     RegisterFPEFunctions(FontFileNameCheck,
 				  FontFileInitFPE,

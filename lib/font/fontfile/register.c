@@ -26,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /*
  * This is in a separate source file so that small programs
@@ -39,6 +40,9 @@ FontFileRegisterFpeFunctions()
 #ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
     Type1RegisterFontFileFunctions();
+#ifdef BUILD_FREETYPE
+    FreeTypeRegisterFontFileFunctions();
+#endif
 #endif
 
     FontFileRegisterLocalFpeFunctions ();
