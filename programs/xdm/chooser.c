@@ -1,6 +1,6 @@
 /*
- * $XConsortium: chooser.c /main/26 1996/01/14 16:51:09 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.8 1996/01/05 13:20:59 dawes Exp $
+ * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.9 1996/01/16 15:08:46 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 

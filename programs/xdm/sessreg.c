@@ -1,6 +1,6 @@
 /*
- * $XConsortium: sessreg.c,v 1.17 95/01/29 12:07:22 kaleb Exp $
- * $XFree86: xc/programs/xdm/sessreg.c,v 3.5 1995/06/19 14:39:19 dawes Exp $
+ * $XConsortium: sessreg.c /main/18 1996/01/25 18:45:57 kaleb $
+ * $XFree86: xc/programs/xdm/sessreg.c,v 3.6 1995/07/15 15:12:39 dawes Exp $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -73,22 +73,8 @@
 # include	<pwd.h>
 #endif
 
-#ifdef linux
+#if defined(SVR4) || defined(linux)
 #define SYSV
-#endif
-
-#ifdef SVR4
-#define SYSV			/* nice System V utmp interface still the same */
-#endif
-
-#ifdef _PATH_WTMP
-#define WTMP_FILE	_PATH_WTMP
-#endif
-#ifdef _PATH_UTMP
-#define UTMP_FILE	_PATH_UTMP
-#endif
-#ifdef _PATH_LASTLOG
-#define LLOG_FILE	_PATH_LASTLOG
 #endif
 
 #ifdef CSRG_BASED
@@ -97,15 +83,27 @@
 #endif
 
 #ifndef WTMP_FILE
-# define WTMP_FILE	"/usr/adm/wtmp"
+# ifdef _PATH_WTMP
+#  define WTMP_FILE	_PATH_WTMP
+# else
+#  define WTMP_FILE	"/usr/adm/wtmp"
+# endif
 #endif
 #ifndef UTMP_FILE
-# define UTMP_FILE	"/etc/utmp"
+# ifdef _PATH_UTMP
+#  define UTMP_FILE	_PATH_UTMP
+# else
+#  define UTMP_FILE	"/etc/utmp"
+# endif
 #endif
 #ifndef NO_LASTLOG
-#ifndef LLOG_FILE
-# define LLOG_FILE	"/usr/adm/lastlog"
-#endif
+# ifndef LLOG_FILE
+#  ifdef _PATH_LASTLOG
+#   define LLOG_FILE	_PATH_LASTLOG
+#  else
+#   define LLOG_FILE	"/usr/adm/lastlog"
+#  endif
+# endif
 #endif
 #ifndef SYSV
 # ifndef TTYS_FILE
