@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.72 1997/02/18 22:26:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.74 1997/02/25 16:04:52 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -257,6 +257,7 @@ extern Bool BoardInit(void);
 extern PC98TGUiTable *pc98TGUi;
 #endif
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -285,6 +286,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif /* XFree86LOADER */
 
 
 /*

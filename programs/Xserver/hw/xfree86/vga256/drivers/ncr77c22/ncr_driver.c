@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.22 1997/02/16 12:13:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.23 1997/02/25 14:22:37 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -147,6 +147,7 @@ vgaVideoChipRec NCR77C22= {
 #define CHIP_NCR77C22E	1
 static unsigned char NCRchipset;
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -176,6 +177,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * NCRIdent

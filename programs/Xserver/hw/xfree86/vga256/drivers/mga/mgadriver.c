@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.30 1997/02/25 14:22:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.31 1997/02/27 13:59:39 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -259,6 +259,7 @@ vgaVideoChipRec MGA = {
 	1,
 };
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -288,6 +289,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * This is a convenience macro, so that entries in the driver structure

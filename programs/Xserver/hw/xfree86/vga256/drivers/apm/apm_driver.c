@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.10 1997/02/16 12:13:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.11 1997/02/25 14:21:32 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -258,6 +258,7 @@ static unsigned num_dflt_clocks = sizeof(dflt_clocks) / sizeof(unsigned);
 
 unsigned long   apm_xbase;
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -287,6 +288,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 unsigned char
 rdxb(addr)

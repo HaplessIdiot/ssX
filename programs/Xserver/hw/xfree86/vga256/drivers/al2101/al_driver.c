@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.19 1997/02/16 12:13:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.20 1997/02/25 14:21:25 hohndel Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -111,6 +111,7 @@ static unsigned AL2101_IOPorts[] = {
 	0x3D6, 0x3D7
 };
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -140,6 +141,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * AL2101ClockSelect --

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.84 1997/02/17 09:47:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.85 1997/02/25 14:22:00 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -649,6 +649,7 @@ cirrusTilesPerLine cirrusTilesPerLineTab[] = {
 int defaultTilesPerLineIndex = 5; /* 2048 byte, skinny tiles */
 
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -678,8 +679,7 @@ ModuleInit(data,magic)
 
     return;
 }
-
-
+#endif /* XFree86LOADER */
 
 /*
  * cirrusIdent -- 

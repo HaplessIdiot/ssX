@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.20 1997/02/16 12:14:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.22 1997/02/25 16:04:46 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -186,6 +186,7 @@ unsigned char *sisMMIOBase = NULL;
 unsigned int PCIMMIOBase=0 ;
 
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -215,6 +216,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * SISIdent --

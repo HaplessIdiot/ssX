@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.12 1997/02/16 12:14:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.13 1997/02/25 14:22:53 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -315,6 +315,7 @@ static int Num_RTVGA_ExtPorts =
 	(sizeof(RTVGA_ExtPorts)/sizeof(RTVGA_ExtPorts[0]));
 
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -344,6 +345,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * RTVGAIdent --

@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.19 1997/02/16 12:13:04 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.20 1997/02/25 14:21:28 hohndel Exp $
  */
 
 #include "X.h"
@@ -185,6 +185,7 @@ static unsigned ALI_ExtPorts[] = {0x3CE, 0x3D4, 0x3D6, 0x3D7};
 static int Num_ALI_ExtPorts =
         (sizeof(ALI_ExtPorts)/sizeof(ALI_ExtPorts[0]));
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -214,6 +215,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#ifdef XFree86LOADER
 
 /*
  * ALIIdent() - 

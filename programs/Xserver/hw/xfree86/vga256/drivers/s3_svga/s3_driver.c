@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.20 1997/02/16 12:14:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.21 1997/02/25 14:22:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -149,6 +149,7 @@ static unsigned S3_ExtPorts[] = {0x22e8};
 static int Num_S3_ExtPorts = 
    (sizeof(S3_ExtPorts)/sizeof(S3_ExtPorts[0]));
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -178,6 +179,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * S3Ident --

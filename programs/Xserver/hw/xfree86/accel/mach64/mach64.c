@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.65 1997/02/25 14:20:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.66 1997/02/27 13:58:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -149,9 +149,13 @@ int mach64ValidTokens[] =
   -1
 };
 #else
+/*
+ * I think this does not belong here for non-module build;
+ * it's defined in common/XF86_Mach64.c (dhh)
 #define MAX_MACH64_CLOCK	80000
 
 int mach64MaxClock = MAX_MACH64_CLOCK;
+ */
 #endif
 
 ScrnInfoRec mach64InfoRec = {

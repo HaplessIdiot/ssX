@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.8 1997/02/16 12:13:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.9 1997/02/25 14:22:41 hohndel Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -161,6 +161,7 @@ vgaVideoChipRec NV =
  */
 #define new ((vgaNVPtr)vgaNewVideoState)
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -190,6 +191,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 static char *NVIdent(int n)
 {

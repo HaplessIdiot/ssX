@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.18 1997/02/16 12:14:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.20 1997/02/25 16:04:57 hohndel Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -245,6 +245,7 @@ static unsigned VIDEO7_ExtPorts[] = { 0x46E8, 0x4BC4, 0x4BC5 };
 static int Num_VIDEO7_ExtPorts =
 	(sizeof(VIDEO7_ExtPorts)/sizeof(VIDEO7_ExtPorts[0]));
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -274,6 +275,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 
 /*

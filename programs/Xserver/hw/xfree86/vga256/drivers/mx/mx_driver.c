@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.21 1997/02/16 12:13:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.22 1997/02/25 14:22:34 hohndel Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -215,6 +215,7 @@ static unsigned MX_ExtPorts[] = { 0x3c4,0x3c5 };
 static int Num_MX_ExtPorts =
 	(sizeof(MX_ExtPorts)/sizeof(MX_ExtPorts[0]));
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -244,6 +245,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 
 /*

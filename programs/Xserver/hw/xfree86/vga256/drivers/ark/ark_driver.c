@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.28 1997/02/16 12:13:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.29 1997/02/25 14:21:36 hohndel Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -399,10 +399,9 @@ static SymTabRec ramdacs[] = {
 	{ -1,		"" },
 };
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
- *
- * its name has to be ModuleInit()
  */
 void
 ModuleInit(data,magic)
@@ -428,6 +427,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 
 /*
