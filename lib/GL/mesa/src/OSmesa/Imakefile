@@ -93,7 +93,6 @@ MESA_INCLUDES = -I. -I.. -I../../include -I../../../../../include
 		../winpos.c \
 		../xform.c \
 		../zoom.c \
-		../X86/common_x86.c \
 		osmesa.c
 
      MESAOBJS = ../aatriangle.o \
