@@ -178,10 +178,5 @@ OsInit()
 #endif
 	been_here = TRUE;
     }
-    TimerInit();
-#ifdef DDXOSINIT
-    OsVendorInit();
-#endif
     OsInitAllocator();
-    OsInitColors();
 }
