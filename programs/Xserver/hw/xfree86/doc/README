@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                   4 July 1999 (this document needs work!)
+                                18 July 1999
 
                                   Abstract
 
@@ -48,9 +48,22 @@ to the latest source and to other developers.
 
 4.  How to get XFree86 3.9.15
 
+XFree86 3.9.15 can be found at the XFree86 ftp server
+<URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/3.9.15/>, and at mirrors of
+this server.  This snapshot is available primarily in source form.  Binaries
+for some platforms may be made available at a later time.
+
 5.  Reporting Bugs
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.92 1999/07/10 07:24:44 dawes Exp $
+Bugs should be reported to <XFree86@XFree86.org>.  Before reporting bugs,
+please check the X server log file, which can be found at
+/var/log/XFree86.0.log on most platforms.  If you can't resolve the problem
+yourself, send the entire log file with your bug report.  Please don't edit
+out what you think might not be important.  The information contained in the
+log file is there to make it easier for the developers to determine what is
+going wrong when there are problems.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.93 1999/07/18 15:47:53 dawes Exp $
 
 
 $XFree86$

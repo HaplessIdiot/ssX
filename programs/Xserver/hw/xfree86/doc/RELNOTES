@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                  12 July 1999 (this document needs work!)
+                  18 July 1999 (this document needs work!)
 
                                   Abstract
 
@@ -63,7 +63,260 @@ Note about module security
 
 1.2  Configuration File
 
+The X server configuration file format has been extended to handle some of
+the new functionality.
+
+The main changes are:
+
+   o The Module section is used to load server extension modules and font
+     modules, but not XInput drivers.  The .so suffix should no longer be
+     specified with module names.  Options may be supplied for modules by
+     loading the module via a SubSection instead of the usual Load keyword.
+     The bitmap module is the only font module that is loaded by default.  No
+     server extensions are loaded by default, but some are built-in to the
+     server.  The following example shows how to load all the server exten-
+     sions plus the Type1 and TrueType fonts support, and a commented example
+     that shows how to pass options to an extension (this one is for loading
+     the misc extensions (extmod) with the XFree86-VidModeExtension dis-
+     abled):
+
+               Section "Module"
+
+                   Load "dbe"
+                   Load "record"
+                   Load "glx"
+                   Load "pex5"
+                   Load "xie"
+                   Load "extmod"
+
+                   Load "type1"
+                   Load "freetype"
+
+                 # SubSection "extmod"
+                 #     Option "Omit XFree86-VidModeExtension"
+                 # EndSubSection
+
+               EndSection
+
+   o Option flags have been extended and are now used more widely in the con-
+     fig file.  Options flags come in two main types.  The first type is
+     exactly like the old form:
+
+                   Option "name"
+
+     where the option just has a name specified.  The name is case insensi-
+     tive, and white space and underscore characters are ignored.  The second
+     type consists of a name and a value:
+
+                   Option "name" "value"
+
+     The value is passed transparently as a string to the code that uses the
+     option.  Common value formats are integer, boolean, real, string and
+     frequency.  The following boolean option values are recognised as mean-
+     ing TRUE: "true", "yes", "on", "1", and no value.  The values recognised
+     as FALSE are "false", "no", "off", "0".  In addition to this, "no" may
+     be prepended to the name of a boolean option to indicate that it is
+     false.  Frequency options can have the strings Hz, kHz, or MHz appended
+     to the numerical value specified.
+
+     Note: the value must always be enclosed in double quotes (").
+
+   o The ServerFlags section now accepts its parameters as Options instead of
+     as special keywords.  The older keyword format is still recognised for
+     compatibility purposes, but is deprecated and support for it will likely
+     be dropped in a future release.  The DPMS and screen save timeout values
+     are now specified in the ServerFlags section rather than elsewhere
+     (because they are global parameters, not screen-specific).  This example
+     shows the defaults for these:
+
+                   Option "blank time"    "10"
+                   Option "standby time"  "20"
+                   Option "suspend time"  "30"
+                   Option "off time"      "60"
+
+   o The Keyboard, Pointer and XInput sections have been replaced by a more
+     general InputDevice section.  The old Keyboard and Pointer sections are
+     still recognised for compatibility purposes, but they are deprecated and
+     support for them may be dropped in future releases.  The keywords from
+     the old sections are expressed as Options in the InputDevice sections.
+     The following example shows typical InputDevice sections for the core
+     mouse and keyboard.
+
+               Section "InputDevice"
+                   Identifier  "Keyboard 1"
+                   Driver      "keyboard"
+                   Option      "AutoRepeat" "500 5"
+                   Option      "XkbModel"   "pc104"
+                   Option      "XkbLayout"  "us"
+               EndSection
+
+               Section "InputDevice"
+                   Identifier  "Mouse 1"
+                   Driver      "mouse"
+                   Option      "Protocol"   "PS/2"
+                   Option      "Device"     "/dev/mouse"
+               EndSection
+
+   o The Monitor section is mostly unchanged.  The main difference is that a
+     set of VESA modes is defined internally in the server, and so for most
+     monitors, it isn't necessary to specify any modes explicitly in the Mon-
+     itor section.  The Monitor section may also include Options.  Options
+     that are monitor-specific, like the "DPMS" and "Sync on Green" options
+     are best specified in the Monitor sections.
+
+   o The Device sections are mostly unchanged.  The main difference is the
+     new (and mandatory) Driver keyword, that specifies which video driver
+     should be loaded to drive the video card.  Another difference is the
+     BusID keyword that is used to specify which of possibly multiple video
+     cards the Device section is for.  The following is an example for a
+     Matrox card:
+
+               Section "Device"
+                   Identifier "MGA 1"
+                   Driver     "mga"
+                   BusID      "PCI:1:0:0"
+                   Option     "PCI Retry"
+               EndSection
+
+   o The Screen sections are mostly unchanged.  The old Driver keyword is no
+     longer used, and a mandatory Identifier keyword has been added.  The
+     DefaultColorDepth keyword has been renamed to DefaultDepth.
+
+   o A new section called ServerLayout has been added to allow the layout of
+     the screens and the selection of input devices to be specified.  The
+     ServerLayout sections may also include options that are normally found
+     in the ServerFlags section.  Multiple ServerLayout sections may be pre-
+     sent, and selected from the command line.  The following example shows a
+     ServerLayout section for a dual-headed configuration with two Matrox
+     cards, and two mice:
+
+               Section "ServerLayout"
+                   Identifier  "Layout 1"
+                   Screen      "MGA 1"
+                   Screen      "MGA 2"
+                   InputDevice "Keyboard 1" "CoreKeyboard"
+                   InputDevice "Mouse 1"    "CorePointer"
+                   InputDevice "Mouse 2"    "SendCoreEvents"
+                   Option      "BlankTime"  "5"
+               EndSection
+
+The config file search patch has been extended, with the directories /etc/X11
+and /usr/X11R6/etc being added.
+
 1.3  Command Line Options
+
+The following new X server command line options have been added:
+
+     -depth n
+
+          This specifies the colour depth that the server is run-
+          ning at.  The default is 8 for most drivers.  Most
+          drivers support the values 8, 15, 16 and 24.  Some
+          drivers also support the values 1 and 4.  Some drivers
+          may also support other depths.  Note that the depth is
+          different from the ``bpp'' that was specified with previ-
+          ous versions.  The depth is the number of bits in each
+          pixel that are significant in determining the pixel's
+          value.  The bpp is total size occupied by each pixel,
+          including bits that are not used.  The old -bpp option is
+          no longer recognised because it isn't a good way of spec-
+          ifying the server behaviour.
+
+     -fbbpp n
+
+          This specifies the bpp format to use for the framebuffer.
+          This may be used in 24-bit mode to force a framebuffer
+          format that is different from what the driver chooses by
+          default.  In most cases there should be no need to use
+          this option.
+
+     -pixmap24
+
+          This specifies that the client-side pixmap format should
+          be the packed 24-bit format that was often used by the
+          3.3.x servers.  The default is the more common 32-bit
+          format.  There should normally be no need to use this
+          option.
+
+     -pixmap32
+
+          This specifies that the client-side pixmap format should
+          be the sparse 32-bit format.  This is the default, so
+          there should normally be no need to use this option.
+
+     -layout name
+
+          This specifies which ServerLayout section in the config
+          file to use.  When this option is not specified, the
+          first ServerLayout section is used.  When there is no
+          ServerLayout section, the first Screen section is used.
+
+     -screen name
+
+          This specifies which Screen section in the config file to
+          use.  When this option is not specified, the first
+          ServerLayout section is used.  When there is no Server-
+          Layout section, the first Screen section is used.
+
+     -keyboard name
+
+          This specifies which InputDevice section in the config
+          file to use for the core keyboard.  This option may be
+          used in conjunction with the -screen option.
+
+     -pointer name
+
+          This specifies which InputDevice section in the config
+          file to use for the core pointer.  This option may be
+          used in conjunction with the -screen option.
+
+     -modulepath path
+
+          This specifies the module search path.  The path should
+          be a comma-separated list of absolute directory paths to
+          search for server modules.  When specified here, it over-
+          rides the value specified in the config file.  This
+          option is only available when the server is started by
+          the root user.
+
+     -logfile file
+
+          This specifies the log file name.  When specified here,
+          it overrides the value specified in the config file.
+          This option is only available when the server is started
+          by the root user.
+
+     -scanpci
+
+          This specifies the scanpci module should be loaded and
+          executed.  This does a scan of the PCI bus.  This option
+          is only available when the server is started by the root
+          user.
+
+     -logverbose [n]
+
+          This options specifies the verbosity level to use for the
+          log file.  The default is 3.
+
+The following new X server command line options have been changed since
+3.3.x:
+
+     -verbose [n]
+
+          This option specifies the verbosity level to use for the
+          server messages that get written to stderr.  It may be
+          specified multiple time to increase the verbositly level
+          (as with 3.3.x), or the verbosity level may be specified
+          explicitly as a number.  The default verbosity level is
+          1.
+
+     -xf86config filename
+
+          This option has been extended to allow non-root users to
+          specify a relative config file name.  The config file
+          search path will be used to locate the file in this case.
+          This makes it possible for users to choose from multiple
+          config files that the the sysadmin has provided.
 
 1.4  XAA
 
@@ -328,7 +581,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 1.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.8 1999/07/17 05:30:57 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.9 1999/07/18 15:47:54 dawes Exp $
 
 
 $XFree86$
