@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.7 2000/10/23 21:37:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.8 2000/10/25 00:09:17 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -713,8 +713,8 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 
     /* enable all of the memory mapped windows */
 
-    pI128->io.config1 &= 0x33000004;
-    pI128->io.config1 |= 0x00331F00;
+    pI128->io.config1 &= 0x3300001F;
+    pI128->io.config1 |= 0x00331F10;
     outl(iobase + 0x1C, pI128->io.config1);
 
     pI128->MemoryType = I128_MEMORY_UNKNOWN;
