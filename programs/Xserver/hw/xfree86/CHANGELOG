@@ -1,4 +1,8 @@
 XFree86 4.4.99.1 (XX March 2004)
+  16. Fix ix86 pre-Solaris8 mmap() problems by deleting obsolete code
+      (Marc La France).
+  15. Fix build glitch on SunOS SPARC (Marc La France).
+  14. Clean up constype utility used on SPARC's (Marc La France).
   13. Experimental changes to recognise parameterised macros in makedepend
       (From #6003, Alexander Stohr).
   12. Change scanpci utility to optionally display PCI bus linkages
@@ -18711,7 +18715,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3168 2004/03/05 04:02:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3169 2004/03/05 16:02:59 tsi Exp $
 
 
 
