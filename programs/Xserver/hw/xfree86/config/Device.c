@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.1.2.3 1997/07/22 13:50:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Device.c,v 1.1 1998/01/24 16:57:41 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -380,6 +380,7 @@ validateDevice (XF86ConfigPtr p)
     return (FALSE);
   }
 
+#if defined(XFree86LOADER)
   while (device) {
     if (!device->dev_driver) {
       xf86ValidationError (UNDEFINED_DRIVER_MSG, device->dev_identifier);
@@ -387,6 +388,7 @@ validateDevice (XF86ConfigPtr p)
     }
   device = device->list.next;
   }
+#endif
   return (TRUE);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.1 1997/03/07 00:29:35 hohndel Exp $ */
 /*
  * glint register file 
  *
@@ -78,7 +78,7 @@
 #define VTGVSyncStart	0x3028
 #define	VTGVSyncEnd	0x3030
 #define VTGVBlankEnd    0x3038
-#define VTGVGateStart   0x3040
+#define VTGHGateStart   0x3040
 #define VTGHGateEnd	0x3048
 #define VTGVGateStart	0x3050
 #define VTGVGateEnd	0x3058

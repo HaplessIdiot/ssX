@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.23 1998/01/24 16:56:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.24 1998/03/20 21:05:31 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,6 +36,7 @@
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
+#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86Version.h"
@@ -79,8 +80,6 @@ static int glintValidMode(
 #define GLINT_MAX_CLOCK	220000
 
 int glintMaxClock = GLINT_MAX_CLOCK;
-
-
 
 ScrnInfoPtr xf86Screens[] = 
 {
@@ -174,6 +173,8 @@ ScrnInfoRec glintInfoRec = {
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
     0,			/* int MemClk */
+    0,			/* int busType */
+    0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */
@@ -234,10 +235,14 @@ ModuleInit(data,magic)
 			* magic= MAGIC_LOAD;
 			break;
 		case 5:
-			* data = (pointer) "xaa32.o";
+			* data = (pointer) "xaa24.o";
 			* magic= MAGIC_LOAD;
 			break;
 		case 6:
+			* data = (pointer) "xaa32.o";
+			* magic= MAGIC_LOAD;
+			break;
+		case 7:
 			* data = (pointer) "libxaa.a";
 			* magic= MAGIC_LOAD;
 			break;
@@ -261,6 +266,7 @@ extern void glintIBMHideCursor();
 extern void glintIBMSetCursorPosition();
 extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
+extern int glintIBMRGB_Probe();
 
 extern int Shiftbpp();
 Bool glintDoubleBufferMode = FALSE;
@@ -280,6 +286,7 @@ static PixmapPtr ppix = NULL;
 int glintDisplayWidth;
 volatile pointer glintVideoMem = NULL;
 volatile pointer GLINTMMIOBase;
+Bool UsePCIRetry = FALSE;
 
 Bool AlreadyInited;
 int coprotype = -1;
@@ -316,40 +323,6 @@ glintPrintIdent()
 }
 
 /*
- * IBMRGBClockSelect --
- * 	Set the programmable clock
- */
-Bool
-IBMRGBClockSelect(int freq)
-{
-	Bool result = TRUE;
-
-	switch(freq)
-	{
-		case CLK_REG_SAVE:
-		case CLK_REG_RESTORE:
-			break;
-		default:
-		{
-			if (freq < 16250) {
-				ErrorF("%s %s: Specified dot clock (%.3f) too"
-				       "low for IBM Ramdac", XCONFIG_PROBED,
-				       glintInfoRec.name, freq / 1000.0);
-				result = FALSE;
-				break;
-			}			
-			(void)IBMRGBGlintSetClock(freq, 2,
-					glintInfoRec.dacSpeeds[0],
-					glintInfoRec.s3RefClk);
-		}
-	}
-
-	usleep(5000);
-
-	return(result);
-}
-
-/*
  * glintProbe --
  *      check up whether a GLINT based board is installed
  */
@@ -360,7 +333,6 @@ glintProbe()
   int i, ibm_id;
   int tx, ty;
   int temp;
-  Bool pModeInited = FALSE;
   DisplayModePtr pMode, pEnd;
   OFlagSet validOptions;
   pciConfigPtr pcrp = NULL;
@@ -370,12 +342,11 @@ glintProbe()
   unsigned long glintdelta = 0;
   unsigned long glintcopro = 0;
   unsigned long basecopro = 0;
-  unsigned long base3copro, base4copro;
-  unsigned long basedelta;
-  unsigned long *delta_pci_basep;
+  unsigned long base3copro = 0;
+  unsigned long basedelta = 0;
+  unsigned long *delta_pci_basep = 0;
   int cardnum = -1;
   int offset;
-  unsigned short usData;
 
   pcrpp = xf86scanpci(glintInfoRec.scrnIndex);
  
@@ -857,14 +828,19 @@ glintProbe()
     OFLG_SET(OPTION_FIREGL3000, &validOptions);
 
   OFLG_SET(OPTION_XAA_BENCHMARK, &validOptions);
+  OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
   OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
   OFLG_SET(OPTION_NOACCEL, &validOptions);
   OFLG_SET(OPTION_PCI_RETRY, &validOptions);
+  OFLG_SET(OPTION_XAA_NO_COL_EXP, &validOptions);
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
   OFLG_SET(OPTION_SW_CURSOR, &validOptions);
   OFLG_SET(OPTION_FIREGL3000, &validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &glintInfoRec.clockOptions);
+
+  if (OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options))
+	UsePCIRetry = TRUE;
 
   xf86VerifyOptions(&validOptions, &glintInfoRec);
   glintInfoRec.chipset = "glint";
@@ -887,17 +863,13 @@ glintProbe()
 		   "Using 32bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
 		xf86bpp = 32;
 	}
-  } else
-  if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	if (xf86bpp == 15) {
-		ErrorF("%s %s: Permedia does not YET support 15bpp. "
-		   "Using 16bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
-		xf86bpp = 16;
-	}
+  }
+
+  if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
 	if (xf86bpp == 24) {
-		ErrorF("%s %s: Permedia does not YET support 24bpp. "
-		   "Using 32bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
-		xf86bpp = 32;
+	  	ErrorF("%s %s: Permedia does not support 24bpp. "
+	     	   "Using 32bpp mode.\n", XCONFIG_GIVEN, glintInfoRec.name);
+	  	xf86bpp = 32;
 	}
   }
 
@@ -925,6 +897,16 @@ glintProbe()
 		if (defaultColorVisualClass < 0)
 			defaultColorVisualClass = glintInfoRec.defaultVisual;
 		break;
+	case 24:
+		glintInfoRec.bitsPerPixel = 24;
+		glintInfoRec.depth = 24;
+		xf86weight.red = xf86weight.blue = xf86weight.green = 8;
+		if (glintInfoRec.defaultVisual < 0)
+			glintInfoRec.defaultVisual = TrueColor;
+		if (defaultColorVisualClass < 0)
+			defaultColorVisualClass = glintInfoRec.defaultVisual;
+		OFLG_SET(OPTION_NOACCEL, &glintInfoRec.options);
+		break;
 	case 32:
 		glintInfoRec.bitsPerPixel = 32;
 		glintInfoRec.depth = 32;
@@ -940,26 +922,35 @@ glintProbe()
 		break;
   }
 
-  /*
-   * these defaults aren't all that great, yet
-   */
   if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	glintInfoRec.dacSpeeds[0] = 220000; 
-	glintInfoRec.dacSpeeds[1] = 220000; 
-	glintInfoRec.dacSpeeds[2] = 220000; /* Never used */
-	glintInfoRec.dacSpeeds[3] = 220000; 
+	if (!glintInfoRec.dacSpeeds[0])
+		glintInfoRec.dacSpeeds[0] = 220000; 
+	if (!glintInfoRec.dacSpeeds[1])
+		glintInfoRec.dacSpeeds[1] = 220000; 
+	if (!glintInfoRec.dacSpeeds[2])
+		glintInfoRec.dacSpeeds[2] = 220000; /* Never used */
+	if (!glintInfoRec.dacSpeeds[3])
+		glintInfoRec.dacSpeeds[3] = 220000; 
   }
   else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)){
-	glintInfoRec.dacSpeeds[0] = 200000; 
-	glintInfoRec.dacSpeeds[1] = 100000; 
-	glintInfoRec.dacSpeeds[2] = 50000;
-	glintInfoRec.dacSpeeds[3] = 50000; 
+	if (!glintInfoRec.dacSpeeds[0])
+		glintInfoRec.dacSpeeds[0] = 200000; 
+	if (!glintInfoRec.dacSpeeds[1])
+		glintInfoRec.dacSpeeds[1] = 100000; 
+	if (!glintInfoRec.dacSpeeds[2])
+		glintInfoRec.dacSpeeds[2] = 50000;
+	if (!glintInfoRec.dacSpeeds[3])
+		glintInfoRec.dacSpeeds[3] = 50000; 
   }
   else if (IS_3DLABS_PM2_CLASS(coprotype)){
-	glintInfoRec.dacSpeeds[0] = 230000; 
-	glintInfoRec.dacSpeeds[1] = 170000; 
-	glintInfoRec.dacSpeeds[2] = 110000; 
-	glintInfoRec.dacSpeeds[3] = 110000; 
+	if (!glintInfoRec.dacSpeeds[0])
+		glintInfoRec.dacSpeeds[0] = 230000; 
+	if (!glintInfoRec.dacSpeeds[1])
+		glintInfoRec.dacSpeeds[1] = 170000; 
+	if (!glintInfoRec.dacSpeeds[2])
+		glintInfoRec.dacSpeeds[2] = 110000; 
+	if (!glintInfoRec.dacSpeeds[3])
+		glintInfoRec.dacSpeeds[3] = 110000; 
   }
 
   glintInfoRec.maxClock = glintInfoRec.dacSpeeds
@@ -1071,7 +1062,6 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	int displayResolution = 75; 	/* default to 75dpi */
 	int i;
 	extern int monitorResolution;
-	Bool  ret;
 	Bool (*ScreenInitFunc)(register ScreenPtr,pointer,int,int,int,int,int);
 
 	/* Init the screen */
@@ -1127,6 +1117,9 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 		case 15: case 16:
 			ScreenInitFunc = &xf86XAAScreenInit16bpp;
 			break;
+		case 24:
+			ScreenInitFunc = &xf86XAAScreenInit24bpp;
+			break;
 		case 32:
 			ScreenInitFunc = &xf86XAAScreenInit32bpp;
 			break;
@@ -1153,6 +1146,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 			pScreen->StoreColors = glintStoreColors;
 			break;
 		case 16:
+		case 24:
 		case 32:
 			pScreen->InstallColormap = cfbInstallColormap;
 			pScreen->UninstallColormap = cfbUninstallColormap;
@@ -1248,6 +1242,9 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	case 16:
 	    pspix = (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
 	    break;
+        case 24:
+	    pspix = (PixmapPtr)pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr;
+            break;
         case 32:
 	    pspix = (PixmapPtr)pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
             break;
@@ -1372,6 +1369,9 @@ glintCloseScreen(int screen_idx, ScreenPtr pScreen)
     case 16:
 	cfb16CloseScreen(screen_idx, savepScreen);
 	break;
+    case 24:
+        cfb24CloseScreen(screen_idx, savepScreen);
+	break;
     case 32:
         cfb32CloseScreen(screen_idx, savepScreen);
 	break;
@@ -1476,7 +1476,7 @@ glintAdjustFrame(x, y)
     int x, y;
 {
 	if (IS_3DLABS_PM_FAMILY(coprotype)) {
-		GLINT_WRITE_REG(Shiftbpp((y*glintInfoRec.displayWidth+x)>>1), PMScreenBase);
+		GLINT_SLOW_WRITE_REG(Shiftbpp((y*glintInfoRec.displayWidth+x)>>1), PMScreenBase);
 	}
 #ifdef XFreeXDGA
 	if (glintInfoRec.directMode & XF86DGADirectGraphics) {
@@ -1512,104 +1512,19 @@ glintSwitchMode(mode)
 static int
 glintValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
-  if (mode->Flags & V_INTERLACE)
-    {
+  if (mode->Flags & V_INTERLACE) {
       ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
 	     XCONFIG_GIVEN, glintInfoRec.name);
       return MODE_BAD;
-    }
+  }
 
-  if ((coprotype == PCI_CHIP_3DLABS_PERMEDIA) && (mode->CrtcHDisplay > 1536))
-    {
-      ErrorF("HDisplay is %d, cannot support HDisplay > 1536, deleting.\n",
+  if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+    if (mode->CrtcHDisplay > 1536) {
+        ErrorF("HDisplay is %d, cannot support HDisplay > 1536, deleting.\n",
 	     mode->CrtcHDisplay);
-      return MODE_BAD;
+        return MODE_BAD;
     }
-  
-  if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) 
-    {
-      /* Max dotclock is 80 MHz for Permedia 8Mb */
-      if (!glintInfoRec.dacSpeeds[0] || !glintInfoRec.dacSpeeds[1] || 
-	  !glintInfoRec.dacSpeeds[2] || !glintInfoRec.dacSpeeds[3])
-	{
-	  /* the 4MB Gloria-S have Errors wich clockspeed > 80MHz !? */
-	  if (glintInfoRec.videoRam > 4096)
-	    {
-	      switch (glintInfoRec.depth) 
-		{
-		case 8: 
-		case 15: 
-		case 16:
-#ifdef DEBUG 
-		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
-#endif
-		  if (mode->Clock > 83000) 
-		    {
-		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 83 MHz. \n",
-			   mode->Clock/1000);
-		    /* return MODE_BAD; */
-		    }
-		  break;
-		case 32:
-#ifdef DEBUG 
-		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
-#endif
-		  if (mode->Clock > 88000) 
-		    {
-		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 88 MHz. \n",
-			   mode->Clock/1000);
-		    /* return MODE_BAD; */
-		    }
-		  break;
-		}
-	    }
-	  else
-	    switch (glintInfoRec.depth) 
-	      {
-	      case 8: 
-#ifdef DEBUG 
-		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
-#endif
-		if (mode->Clock > 200000) 
-		  {
-		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 200 MHz. \n",
-			   mode->Clock/1000);
-		    return MODE_BAD;
-		  }
-		break;
-	      case 15:
-	      case 16:
-#ifdef DEBUG 
-		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
-#endif
-		if (mode->Clock > 100000) 
-		  {
-		    ErrorF("Error: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 100 MHz. \n",
-			   mode->Clock/1000);
-		    return MODE_BAD;
-		  }
-		break;
-	      case 32: /* 32 bpp have tested with 8Mb Gloria-S */
-#ifdef DEBUG 
-		ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
-#endif
-		if (mode->Clock > 50000) 
-		  ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 50 MHz. \n",
-			 mode->Clock/1000);
-		if (mode->Clock > 100000) 
-		  {
-		    ErrorF("Error: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 100 MHz. \n",
-			   mode->Clock/1000);
-		    return MODE_BAD;
-		  }
-		break;
-	      }
-	}
-    }
+  }
+
   return MODE_OK;
 }
-
-
-
-
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.41 1998/01/24 16:56:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.42 1998/03/20 21:05:53 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -166,6 +166,8 @@ ScrnInfoRec mach8InfoRec = {
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
     0,			/* int MemClk */
+    0,			/* int busType */
+    0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.7 1997/12/05 22:01:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.8 1997/12/20 14:20:49 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -20,6 +20,7 @@
 
 extern Bool     glintDoubleBufferMode;
 extern int      coprotype;
+extern Bool	UsePCIRetry;
 
 int             ActualDacId;
 
@@ -48,19 +49,19 @@ GLINT_RAMDACS;
 void
 glintOutIBMRGBIndReg (unsigned char reg, unsigned char mask, unsigned char data)
 {
-  unsigned char   tmp, tmp2 = 0x00;
+  unsigned char tmp = 0x00;
 
   GLINT_SLOW_WRITE_REG (reg, IBMRGB_INDEX_LOW);
 
   if (mask != 0x00)
-    tmp2 = GLINT_READ_REG (IBMRGB_INDEX_DATA) & mask;
-  GLINT_SLOW_WRITE_REG (tmp2 | data, IBMRGB_INDEX_DATA);
+    tmp = GLINT_READ_REG (IBMRGB_INDEX_DATA) & mask;
+  GLINT_SLOW_WRITE_REG (tmp | data, IBMRGB_INDEX_DATA);
 }
 
 unsigned char
 glintInIBMRGBIndReg (unsigned char reg)
 {
-  volatile unsigned char tmp, ret;
+  unsigned char ret;
 
   GLINT_SLOW_WRITE_REG (reg, IBMRGB_INDEX_LOW);
   ret = GLINT_READ_REG (IBMRGB_INDEX_DATA);
@@ -290,25 +291,8 @@ IBMRGBGlintSetClock (long freq, int clk, long dacspeed, long fref)
 int
 glintIBMRGB_Probe ()
 {
-  unsigned char   CR43, CR55, dac[3], lut[6];
   unsigned char   ilow, ihigh, id, rev, id2, rev2;
-  int             i, j;
   int             ret = 0;
-
-#if 0
-  /* save DAC and first LUT entries */
-  for (i = 0; i < 3; i++)
-    dac[i] = GLINT_READ_REG (IBMRGB_PIXEL_MASK + i);
-  for (i = j = 0; i < 2; i++)
-    {
-      GLINT_SLOW_WRITE_REG (i, IBMRGB_READ_ADDR);
-      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
-      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
-      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
-    }
-
-  glintIBMRGB_Init ();
-#endif
 
   /* read ID and revision */
   ilow = GLINT_READ_REG (IBMRGB_INDEX_LOW);
@@ -400,26 +384,13 @@ glintIBMRGB_Probe ()
   GLINT_SLOW_WRITE_REG (ilow, IBMRGB_INDEX_LOW);
   GLINT_SLOW_WRITE_REG (ihigh, IBMRGB_INDEX_HIGH);
 
-#if 0
-  /* restore DAC and first LUT entries */
-  for (i = j = 0; i < 2; i++)
-    {
-      GLINT_SLOW_WRITE_REG (i, IBMRGB_WRITE_ADDR);
-      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
-      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
-      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
-    }
-  for (i = 0; i < 3; i++)
-    GLINT_SLOW_WRITE_REG (dac[i], IBMRGB_PIXEL_MASK + i);
-#endif
-
   return ret;
 }
 
-
+void
 glintIBMRGB_Init ()
 {
-  unsigned char   CR55, tmp;
+  unsigned char tmp;
 
   tmp = GLINT_READ_REG (IBMRGB_INDEX_CONTROL);
   /* turn off auto-increment */
@@ -427,58 +398,11 @@ glintIBMRGB_Init ()
   GLINT_SLOW_WRITE_REG (0, IBMRGB_INDEX_HIGH);	/* index high byte */
 }
 
-#if 0
-int
-IBMRGB52x_Init (DisplayModePtr mode)
-{
-  unsigned char   tmp, tmp2;
-
-  if (IS_3DLABS_TX_MX_CLASS (coprotype))
-    {
-      /* uses 64bit wide VRAM
-       * set VRAM size to 128/64 bit and disable VRAM mask */
-      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, 0x31);
-      glintOutIBMRGBIndReg (IBMRGB_misc2, ~0x08, 0x47);
-    }
-  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
-    {
-      /* uses 32bit SDRAM
-       * set 32bit and use LCK */
-      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, 0x30);
-      /* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, 0x07); */
-      glintOutIBMRGBIndReg (IBMRGB_misc2, ~0x08, 0x47);
-      /* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM ); */
-    }
-  if (glintInfoRec.bitsPerPixel == 32)
-    {				/* 32 bpp */
-      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 6);
-      glintOutIBMRGBIndReg (IBMRGB_32bpp, 0, 3);
-    }
-  else if (glintInfoRec.bitsPerPixel == 16)
-    {				/* 16 bpp 555 */
-      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 4);
-      glintOutIBMRGBIndReg (IBMRGB_16bpp, 0, 0xC5);
-    }
-  else
-    {				/*  8 bpp */
-      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 3);
-      glintOutIBMRGBIndReg (IBMRGB_8bpp, 0, 0);
-    }
-
-  if (glintDoubleBufferMode)
-    glintOutIBMRGBIndReg (IBMRGB_misc3, 0, 1);
-  else
-    glintOutIBMRGBIndReg (IBMRGB_misc3, 0, 0);
-
-  return 1;
-}
-#endif
-
 int
 IBMRGB52x_Init_Stdmode (int clock)
 {
-  unsigned char   tmp, tmp2;
-  unsigned long   P, M, N, C, RefClkSpeed, PixelClock, SystemClock, MaxVco = 2200000;
+  unsigned long P, M, N, C, RefClkSpeed;
+  unsigned long PixelClock, SystemClock, MaxVco = 2200000;
 
   /*
    * for the RGB640 we need to initialize a few things to save values

@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.20 *
- * 1997/11/22 00:00:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.20tsi Exp $ */
 
 /* 
  *
@@ -354,9 +353,9 @@ int *errmin;
 				xf86ccdScreenPrivateIndex = data;
 				break;
 			case MAGIC_CCD_XAA_SCREEN_INIT:
-				pccddbb = LoaderSymbol("xf86ccdXAAScreenInit");
-				if (pccddbb)
-					*pccddbb = (xf86ccdXAAScreenInitProcPtr)data;
+				pccdxaasi = LoaderSymbol("xf86ccdXAAScreenInit");
+				if (pccdxaasi)
+					*pccdxaasi = (xf86ccdXAAScreenInitProcPtr)data;
 				break;
 			case MAGIC_LOAD_EXTENSION:
 				LoadExtension ((ExtensionModule *) data);

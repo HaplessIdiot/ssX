@@ -1,3 +1,29 @@
+XFree86 3.9Af (27 March 1998)
+1633. Resync xfree98 with xfree86 and resync some PC98 files with 3.3.2
+      (#1616, Takaaki Nomura).
+1632. Fix micro typo in chips.sgml (#1615, David Bateman).
+1631. Define defaults for XF86Config file locations. Have make clean remove
+      Makefile.bak files. Resync ScrnInfoRec's for the last time (Hope
+      springs eternal). "Externalise" InstalledMaps in all XFree?? servers.
+      Remove reference to DEFAULT_MODULE_PATH in static servers. Deal with
+      some of the warnings produced by gcc by default. Resync ATI driver with
+      the version found in XFree86 3.3.2. Fix loader bug in dealing with XAA.
+      (#1614, <arc La France).
+1630. Don't abort a static server if the Driver statement in the Device 
+      section is missing (#1613, Kazutaka Yokota).
+1629. Fix typo in #1606 and improve printing of mouse related messages
+      (#1613, Kazutaka Yokota).
+1628. Build fixes for static S3 and S3V servers (#1613, Kazutaka Yokota).
+1627. Re-add 8x8 trap fill support in XAA (#1612, Mark Vojkovich).
+1626. Add new text replacements to glint server, add packed data modes, tune
+      fifo handling, fix drawing bugs and others (#1609,1611, Mark Vojkovich,
+      Alan Hourihane).
+1625. Add mouse related 3.3.2 changes to XF86Setup (which still doesn't
+      compile) (#1608,1610, Kazutaka Yokota).
+1624. Update xdpyinfo to reflect mouse code changes (#1607, Kazutaka Yokota).
+1623. Merge missing mouse code from 3.3.2 (#1606, Kazutaka Yokota).
+1622. Resync xterm, add missing patches from 3.3.2 (#1605, Thomas Dickey).
+
 XFree86 3.9Ae (22 March 1998)
 1621. Bring over some of the new mouse code from the 3.3.2 tree.
 1620. Link X11 apps against libxpg4 on FreeBSD to get multibyte locale
@@ -6031,4 +6057,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.575 1998/03/21 14:14:17 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.576 1998/03/22 12:57:30 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.3 1998/03/20 21:06:38 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -269,7 +269,7 @@ ATIPrintMode(DisplayModePtr mode)
     ErrorF(" Dot clock:           %7.3fMHz\n"
            " Horizontal timings:  %4d %4d %4d %4d\n"
            " Vertical timings:    %4d %4d %4d %4d\n",
-        (double)mode->SynthClock / 1000.0,
+        (double)vga256InfoRec.clock[mode->Clock] / 1000.0,
         mode->HDisplay, mode->HSyncStart, mode->HSyncEnd, mode->HTotal,
         mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal);
 

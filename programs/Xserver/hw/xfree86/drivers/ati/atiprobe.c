@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.5 1998/03/20 21:06:38 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -282,8 +282,7 @@ ATIMach32videoRam(void)
     outw(EXT_GE_CONFIG, saved_ext_ge_config);
     corrected_misc_options |=
         Test_Case[Case_Number].Miscellaneous_Options_Setting;
-    if (corrected_misc_options != saved_misc_options)
-        outw(MISC_OPTIONS, corrected_misc_options);
+    outw(MISC_OPTIONS, corrected_misc_options);
     outw(MEM_BNDRY, saved_mem_bndry);
     outw(CLOCK_SEL, saved_clock_sel);
 
@@ -1402,7 +1401,7 @@ Skip8514Probe:
             /* A temporary kludge */
             if (!ATI.ChipUseLinearAddressing &&
                 (vga256InfoRec.bitsPerPixel == 24))
-                ATI.ChipRounding = 5464;
+                ATI.ChipRounding = 4096;
 #       endif /* __TSI__ */
     }
 

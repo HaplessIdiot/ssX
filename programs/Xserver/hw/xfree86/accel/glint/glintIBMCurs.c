@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.6 1997/11/01 15:04:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.7 1998/01/24 16:56:32 hohndel Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -23,15 +23,12 @@
  * Written by Alan Hourihane <alanh@fairlite.demon.co.uk>
  * for the 3Dlabs GLINT chipset
  */
-
-#include "servermd.h"
-#include "mi.h"
-
 #include "glint_regs.h"
 #include "glint.h"
 #define GLINT_SERVER
 #include "IBMRGB.h"
 
+extern Bool UsePCIRetry;
 
 void 
 glintIBMShowCursor()

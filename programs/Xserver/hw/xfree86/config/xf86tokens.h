@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.1.2.3 1997/07/22 13:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/xf86tokens.h,v 1.1 1998/01/24 16:57:47 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -82,15 +82,24 @@
 #define PS_2		1026
 #define MMHITTAB	1027
 #define GLIDEPOINT	1028
-#define INTELLIMOUSE    1029
-#define XQUE      	1030
-#define OSMOUSE   	1031
+#define IMSERIAL	1029
+#define THINKING	1030
+#define IMPS2		1031
+#define THINKINGPS2	1032
+#define MMANPLUSPS2	1033
+#define GLIDEPOINTPS2	1034
+#define NETPS2		1035
+#define NETSCROLLPS2	1036
+#define SYSMOUSE	1037
+#define AUTOMOUSE	1038
+#define XQUE		1039
+#define OSMOUSE		1040
 
 /* File tokens */
-#define FONTPATH	1040
-#define RGBPATH		1041
-#define MODULEPATH	1042
-#define LOGFILEPATH	1043
+#define FONTPATH	1045
+#define RGBPATH		1046
+#define MODULEPATH	1047
+#define LOGFILEPATH	1048
 
 /* Server Flag tokens */
 #define NOTRAPSIGNALS		1050
@@ -217,8 +226,17 @@
 								 * [CHRIS-211092] */
 #define P_PS2		6			/* PS/2 mouse */
 #define P_MMHIT		7			/* MM_HitTab */
-#define P_GLIDEPOINT	8		/* ALPS GlidePoint */
-#define P_MSINTELLIMOUSE  9		/* Microsoft IntelliMouse */
+#define P_GLIDEPOINT	8		/* ALPS serial GlidePoint */
+#define P_IMSERIAL	9		/* Microsoft serial IntelliMouse */
+#define P_THINKING	10		/* Kensington serial ThinkingMouse */
+#define P_IMPS2		11		/* Microsoft PS/2 IntelliMouse */
+#define P_THINKINGPS2	12		/* Kensington PS/2 ThinkingMouse */
+#define P_MMANPLUSPS2	13		/* Logitech PS/2 MouseMan+ */
+#define P_GLIDEPOINTPS2	14		/* ALPS PS/2 GlidePoint */
+#define P_NETPS2	15		/* Genius PS/2 NetMouse */
+#define P_NETSCROLLPS2	16		/* Genius PS/2 NetScroll */
+#define P_SYSMOUSE	17		/* SysMouse */
+#define P_AUTO		18		/* automatic */
 
 #define EMULATE3	50
 #define BAUDRATE	51
@@ -233,7 +251,18 @@
 #define REPEATEDMIDDLE	59
 #define DEVICE_NAME	60
 #define ALWAYSCORE	61
-#define BUTTONS		62
+#define PRESOLUTION	62
+#define ZAXISMAPPING	63
+#define PBUTTONS	64
+
+#define XAXIS		68
+#define YAXIS		69
+
+/* the following values are defined in xf86.h */
+#define MSE_MAPTOX	(-1)
+#define MSE_MAPTOY	(-2)
+#define MSE_MAXBUTTONS	12
+#define MSE_DFLTBUTTONS	3
 
 /* Display tokens */
 /* OPTION is defined to 12 above */

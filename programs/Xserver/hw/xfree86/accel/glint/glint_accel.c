@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.18 1998/01/24 16:56:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.19 1998/03/20 21:05:31 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,11 +36,14 @@
 #include "xf86.h"
 #include "miline.h"
 #include "compiler.h"
-#include "mispans.h"
 
 #include "glint_regs.h"
 #include "glint.h"
 #include "xf86xaa.h"
+#include "xf86expblt.h"
+#include "dixfontstr.h"
+
+#include <float.h>
 
 #if DEBUG
 #include <stdio.h>
@@ -49,32 +52,34 @@
 extern int pprod;
 extern int coprotype;
 extern GLINTWindowBase;
+extern UsePCIRetry;
 int ScanlineWordCount;
-static int BitMaskOffset;
+int wait = 0;
+int savedplanemask = 0xffffffff;
+int savedrop = UNIT_DISABLE;
+int savedreadmode = 0;
+int savedrasterizer = UNIT_DISABLE;
+int savedcolorddamode = UNIT_DISABLE;
 static int gcolor;
-static int blitmode;
+int blitmode = FBRM_DstEnable;
 static int grop;
-static int gtransparency;
 static int mode;
 static int span;
 static int gbg, gfg;
-static int DashPatternSize;
-static short DashPattern;
 CARD32 ScratchBuffer[512];
 static int blitxdir, blitydir;
+
+extern void xf86ImageGlyphBltTE();
+extern void xf86PolyGlyphBltTE();
 
 void GLINTSync();
 void GLINTSetupForFillRectSolid();
 void GLINTSubsequentFillRectSolid();
 void GLINTSubsequentFillTrapezoidSolid();
 void GLINTSubsequentTwoPointLine();
-void GLINTSetupForDashedLine();
-void GLINTSubsequentDashedTwoPointLine();
 void GLINTSetupForScreenToScreenCopy();
 void GLINTSubsequentScreenToScreenCopy();
 void GLINTSetClippingRectangle();
-void GLINTSetupForFill8x8Pattern();
-void GLINTSubsequentFill8x8Pattern();
 void GLINTSetupFor8x8PatternColorExpand();
 void GLINTSubsequent8x8PatternColorExpand();
 void GLINTSetupForScanlineScreenToScreenColorExpand();
@@ -82,23 +87,19 @@ void GLINTSubsequentScanlineScreenToScreenColorExpand();
 void GLINTSubsequentScanlineScreenToScreenCopy();
 void GLINTFillRectStippled();
 void GLINTWriteBitmap();
+void GLINTImageTextTECPUToScreenColorExpand();
+void GLINTPolyTextTECPUToScreenColorExpand();
 
 void GLINTAccelInit() 
 {
     xf86AccelInfoRec.Flags = 	PIXMAP_CACHE |
       				ONLY_LEFT_TO_RIGHT_BITBLT |
  				COP_FRAMEBUFFER_CONCURRENCY |
-#if 0
-      				HARDWARE_CLIP_LINE |
-				TWO_POINT_LINE_NOT_LAST |
-      				USE_TWO_POINT_LINE |
-				LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
-#endif
       				BACKGROUND_OPERATIONS |
 				DELAYED_SYNC;
 
     /* With PCI Retry its faster to blit directly and ignore the cache */
-    if (OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options)) 
+    if (UsePCIRetry)
 	xf86AccelInfoRec.Flags |= DO_NOT_BLIT_STIPPLES;
 
     xf86AccelInfoRec.PatternFlags =	HARDWARE_PATTERN_PROGRAMMED_BITS |
@@ -111,23 +112,11 @@ void GLINTAccelInit()
     xf86GCInfoRec.PolyFillRectSolidFlags = 0;
   
     xf86AccelInfoRec.SetupForFillRectSolid = GLINTSetupForFillRectSolid;
-#if 0
-    xf86AccelInfoRec.SubsequentFillTrapezoidSolid = GLINTSubsequentFillTrapezoidSolid;
-#endif
     xf86AccelInfoRec.SubsequentFillRectSolid = GLINTSubsequentFillRectSolid;
 
-#if 0
     xf86AccelInfoRec.SubsequentTwoPointLine = GLINTSubsequentTwoPointLine;
-#endif
     xf86AccelInfoRec.SetClippingRectangle = GLINTSetClippingRectangle;
 
-#if 0
-    xf86AccelInfoRec.SetupForDashedLine = GLINTSetupForDashedLine;
-    xf86AccelInfoRec.SubsequentDashedTwoPointLine = GLINTSubsequentDashedTwoPointLine;
-    xf86AccelInfoRec.LinePatternBuffer = (void *)&DashPattern;
-    xf86AccelInfoRec.LinePatternMaxLength = 16;
-#endif
-  
     xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
 
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
@@ -136,7 +125,6 @@ void GLINTAccelInit()
       GLINTSubsequentScreenToScreenCopy;
   
     xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
-      					NO_SYNC_AFTER_CPU_COLOR_EXPAND |
       					CPU_TRANSFER_PAD_DWORD |
 					ONLY_TRANSPARENCY_SUPPORTED |
       					BIT_ORDER_IN_BYTE_LSBFIRST;
@@ -151,15 +139,17 @@ void GLINTAccelInit()
     xf86AccelInfoRec.ScratchBufferBase = (void*)(ScratchBuffer);
     xf86AccelInfoRec.PingPongBuffers = 1;
 
-#if 0
-    xf86AccelInfoRec.SetupForFill8x8Pattern = GLINTSetupForFill8x8Pattern;
-    xf86AccelInfoRec.SubsequentFill8x8Pattern = GLINTSubsequentFill8x8Pattern;
-#endif
-
     xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
       					GLINTSetupFor8x8PatternColorExpand;
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
       					GLINTSubsequent8x8PatternColorExpand;
+
+    if (UsePCIRetry) {
+	xf86AccelInfoRec.ImageTextTE = GLINTImageTextTECPUToScreenColorExpand;
+	xf86GCInfoRec.ImageGlyphBltTE = xf86ImageGlyphBltTE;
+	xf86AccelInfoRec.PolyTextTE = GLINTPolyTextTECPUToScreenColorExpand;
+	xf86GCInfoRec.PolyGlyphBltTE = xf86PolyGlyphBltTE;
+    }
 
     /* Replace XAA functions */
     xf86AccelInfoRec.FillRectOpaqueStippled = GLINTFillRectStippled;
@@ -197,7 +187,8 @@ void GLINTAccelInit()
 
 void GLINTSync() {
 	while (GLINT_READ_REG(DMACount) != 0);
-	GLINT_WRITE_REG(0x400, FilterMode);
+	GLINT_WAIT(2);
+	GLINT_WRITE_REG(0xc00, FilterMode);
 	GLINT_WRITE_REG(0, GlintSync);
 	do {
     		while(GLINT_READ_REG(OutFIFOWords) == 0);
@@ -207,11 +198,13 @@ void GLINTSync() {
 
 void GLINTSetupForFillRectSolid(int color, int rop, unsigned planemask)
 {
-	REPLICATE(color);
 	gcolor = color;
+	REPLICATE(color);
 	
-	DO_PLANEMASK(planemask);
 
+	grop = rop;
+	GLINT_WAIT(6);
+	DO_PLANEMASK(planemask);
 	if (rop == GXcopy) {
 		GLINT_WRITE_REG(pprod, FBReadMode);
 		GLINT_WRITE_REG(0, PatternRamMode);
@@ -224,15 +217,12 @@ void GLINTSetupForFillRectSolid(int color, int rop, unsigned planemask)
 		mode = FastFillEnable | SpanOperation;
 	}
 	GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-
 	GLINT_WRITE_REG(1<<16,dY);
-	GLINT_WRITE_REG(0,dXDom);
-	GLINT_WRITE_REG(0,dXSub);
-	GLINT_WRITE_REG(0,StartXSub);
 }
 
 void GLINTSubsequentFillRectSolid(int x, int  y, int  w, int  h)
 {
+	GLINT_WAIT(5);
 	GLINT_WRITE_REG((x+w)<<16, StartXSub);
 	GLINT_WRITE_REG(x<<16,StartXDom);
 	GLINT_WRITE_REG(y<<16,StartY);
@@ -240,160 +230,32 @@ void GLINTSubsequentFillRectSolid(int x, int  y, int  w, int  h)
 	GLINT_WRITE_REG(PrimitiveTrapezoid | mode,Render);
 }
 
-void GLINTSetupForDashedLine(fg, bg, rop, planemask, size)
-{
-	REPLICATE(fg);
-	REPLICATE(bg);
-
-	gfg = fg;
-	gbg = bg;
-
-	DO_PLANEMASK(planemask);
-
-	grop = rop;
-
-	if (rop == GXcopy) {
-		GLINT_WRITE_REG(pprod, FBReadMode);
-	} else {
-		GLINT_WRITE_REG(pprod | blitmode, FBReadMode);
-	}
-
-	GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
-	GLINT_WRITE_REG(0, StartXSub);
-	GLINT_WRITE_REG(0,dXDom);
-	GLINT_WRITE_REG(0,dXSub);
-	GLINT_WRITE_REG(1<<16,dY);
-
-	DashPatternSize = size;
-}
-
-void GLINTSubsequentDashedTwoPointLine(int x1, int y1, int x2, int y2,
-				       int bias, int offset)
-{
-	int dx, dy;
-
-	dx = x2 - x1;
-	dy = y2 - y1;
-
-
-	GLINT_WRITE_REG(x1<<16, StartXDom);
-	GLINT_WRITE_REG(y1<<16, StartY);
-
-	if (abs(dx) > abs(dy)) {	/* XMajor axis (i.e. Horizontal) */
-		if (dx < 0) {
-			GLINT_WRITE_REG(-1<<16, dXDom);
-			dx = -dx;
-		} else {
-			GLINT_WRITE_REG(1<<16, dXDom);
-		}
-		if (dx == 0) { 
-			/* dx = 1; */
-			GLINT_WRITE_REG(1<<16, dY); 
-		} else {
-			GLINT_WRITE_REG((dy<<16)/dx, dY);
-		}
-		if (!(bias & 0x100)) dx += 1;
-		GLINT_WRITE_REG(abs(dx), GLINTCount);
-	} else {			/* YMajor axis  (i.e. Vertical) */
-		if (dy < 0) {
-			GLINT_WRITE_REG(-1<<16, dY);
-			dy = -dy;
-		} else {
-			GLINT_WRITE_REG(1<<16, dY);
-		}
-		if (dy == 0) { 
-			/* dy = 1; */
-			GLINT_WRITE_REG(0, dXDom); 
-		} else { 
-			GLINT_WRITE_REG(((dx<<16)/dy), dXDom); 
-		}
-		if (!(bias & 0x100)) dy += 1;
-		GLINT_WRITE_REG(abs(dy), GLINTCount);
- 	}
-
-	if (gbg != -1) {
-		if (miSpansEasyRop(grop)) {
-		  if (grop == GXcopy) {
-			GLINT_WRITE_REG(0, PatternRamMode);
-			GLINT_WRITE_REG(gbg, FBBlockColor);
-			mode = FastFillEnable;
-		  } else {
-			GLINT_WRITE_REG(1, PatternRamMode);
-			GLINT_WRITE_REG(gbg, PatternRamData0);
-			mode = FastFillEnable | SpanOperation;
-		  }
-	  	  GLINT_WRITE_REG(PrimitiveTrapezoid | mode,Render);
-		} else {
-		  GLINT_WRITE_REG(0, UpdateLineStippleCounters);
-		  GLINT_WRITE_REG(DashPattern << 10 |  
-				1<<17 | UNIT_ENABLE, LineStippleMode);
-		  GLINT_WRITE_REG(gbg, GLINTColor);
-		  GLINT_WRITE_REG(PrimitiveLine | LineStippleEnable, Render);
-		}
-	}
-
-	GLINT_WRITE_REG(0, UpdateLineStippleCounters);
-	GLINT_WRITE_REG(DashPattern << 10 | UNIT_ENABLE, LineStippleMode);
-	GLINT_WRITE_REG(gfg, GLINTColor);
-	GLINT_WRITE_REG(PrimitiveLine | LineStippleEnable, Render);
-
-	GLINT_WRITE_REG(0, ScissorMode);
-}
-
 void GLINTSubsequentTwoPointLine(int x1, int y1, int x2, int y2, int bias)
 {
-	int dx, dy;
+  int dy = y2 - y1 + 1;
+  
+  if ((dy < 16) && (grop == GXcopy)) {
+	GLINT_WAIT(5);
+	GLINT_WRITE_REG((x1+1)<<16, StartXSub);
+	GLINT_WRITE_REG(x1<<16,StartXDom);
+	GLINT_WRITE_REG(y1<<16,StartY);
+	GLINT_WRITE_REG(dy,GLINTCount);
+	GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
+	return;
+  }
 
-	dx = x2 - x1;
-	dy = y2 - y1;
+  GLINT_WAIT(5);
+  GLINT_WRITE_REG (gcolor, GLINTColor);
+  GLINT_WRITE_REG (x1 << 16, StartXDom);
+  GLINT_WRITE_REG (y1 << 16, StartY);
+  GLINT_WRITE_REG (dy, GLINTCount);
 
-	GLINT_WRITE_REG(gcolor, GLINTColor);
-	GLINT_WRITE_REG(x1<<16, StartXDom);
-	GLINT_WRITE_REG(y1<<16, StartY);
-
-	if ((dx == 0) && (dy == 0)) { /* This is a point */
-		GLINT_WRITE_REG(PrimitivePoint, Render);
-		return;
-	}
-
-	if (abs(dx) > abs(dy)) {	/* XMajor axis (i.e. Horizontal) */
-		if (dx < 0) {
-			GLINT_WRITE_REG(-1<<16, dXDom);
-			dx = -dx;
-		} else {
-			GLINT_WRITE_REG(1<<16, dXDom);
-		}
-		if (dx == 0) { 
-			/* dx = 1; */
-			GLINT_WRITE_REG(0, dY); 
-		} else {
-			GLINT_WRITE_REG(((dy<<16)/dx), dY);
-		}
-		if (!(bias & 0x100)) dx += 1;
-		GLINT_WRITE_REG(abs(dx), GLINTCount);
-	} else {			/* YMajor axis  (i.e. Vertical) */
-		if (dy < 0) {
-			GLINT_WRITE_REG(-1<<16, dY);
-			dy = -dy;
-		} else {
-			GLINT_WRITE_REG(1<<16, dY);
-		}
-		if (dy == 0) { 
-			/* dy = 1; */
-			GLINT_WRITE_REG(0, dXDom); 
-		} else { 
-			GLINT_WRITE_REG(((dx<<16)/dy), dXDom); 
-		}
-		if (!(bias & 0x100)) dy += 1;
-		GLINT_WRITE_REG(abs(dy), GLINTCount);
-	} 
-
-	GLINT_WRITE_REG(PrimitiveLine, Render);
-	GLINT_WRITE_REG(0, ScissorMode);
+  GLINT_WRITE_REG (PrimitiveLine, Render);
 }
 
 void GLINTSetClippingRectangle(int x1, int y1, int x2, int y2)
 {
+	GLINT_WAIT(3);
 	GLINT_WRITE_REG(y1<<16|x1, ScissorMinXY);
 	GLINT_WRITE_REG(y2<<16|x2, ScissorMaxXY);
 	GLINT_WRITE_REG(1, ScissorMode); /* Enable Scissor Mode */
@@ -405,8 +267,8 @@ void GLINTSetupForScreenToScreenCopy( int xdir, int  ydir, int  rop,
 	blitydir = ydir;
 	blitxdir = xdir;
 
+	GLINT_WAIT(4);
 	DO_PLANEMASK(planemask);
-
 	GLINT_WRITE_REG(0, PatternRamMode);
 
 	if ((rop == GXclear) || (rop == GXset)) {
@@ -419,8 +281,6 @@ void GLINTSetupForScreenToScreenCopy( int xdir, int  ydir, int  rop,
 	}
 
 	GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-	GLINT_WRITE_REG(0, dXDom);
-	GLINT_WRITE_REG(0, dXSub);
 }
 
 void GLINTSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2,
@@ -431,6 +291,7 @@ void GLINTSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2,
 
 	/* Glint 500TX only allows left to right bitblt's */
 
+	GLINT_WAIT(8);
 	if (blitydir < 0) {
 		y1 = y1 + h - 1;
 		y2 = y2 + h - 1;
@@ -458,9 +319,10 @@ void GLINTSetupForScanlineScreenToScreenColorExpand(int x, int y, int w, int h,
   gbg = bg;
   gfg = fg;
 
-  DO_PLANEMASK(planemask);
 
   grop = rop;
+  GLINT_WAIT(11);
+  DO_PLANEMASK(planemask);
   if (rop == GXcopy) {
     GLINT_WRITE_REG(pprod, FBReadMode);
     GLINT_WRITE_REG(fg, FBBlockColor);
@@ -473,8 +335,6 @@ void GLINTSetupForScanlineScreenToScreenColorExpand(int x, int y, int w, int h,
     mode = FastFillEnable | SpanOperation;
   }
   GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-  GLINT_WRITE_REG(0, dXDom);
-  GLINT_WRITE_REG(0, dXSub);
   GLINT_WRITE_REG(x<<16, StartXDom);
   GLINT_WRITE_REG(y<<16, StartY);
   GLINT_WRITE_REG((x+w)<<16, StartXSub);
@@ -486,62 +346,31 @@ void GLINTSetupForScanlineScreenToScreenColorExpand(int x, int y, int w, int h,
 
 void GLINTSubsequentScanlineScreenToScreenColorExpand(int srcaddr)
 {
-  register CARD32 *ptr = (CARD32 *)ScratchBuffer;
-  int count = ScanlineWordCount;
+	register CARD32 *ptr = (CARD32 *) ScratchBuffer;
+	int count = ScanlineWordCount >> 3; 
 
-  while (count--){
-    GLINT_WRITE_REG(*(ptr++), BitMaskPattern);
-  }
-}
-
-void
-GLINTSetupForFill8x8Pattern(patternx, patterny, rop, planemask,transparency_color)
-	int patternx, patterny, rop, planemask, transparency_color;
-{
-  GLINT_WRITE_REG(0,         dXDom);
-  GLINT_WRITE_REG(0,         dXSub);
-  GLINT_WRITE_REG(1<<16,     dY);
-  GLINT_WRITE_REG((patternx+8)<<16, StartXSub);
-  GLINT_WRITE_REG(patternx<<16,     StartXDom);
-  GLINT_WRITE_REG(patterny<<16,     StartY);
-  GLINT_WRITE_REG(8,         GLINTCount);
-  GLINT_WRITE_REG((1<<9)|(1<<6)|(0x0F<<1)|1, PatternRamMode);
-  GLINT_WRITE_REG(0, LogicalOpMode);
-  GLINT_WRITE_REG(0, FBWriteMode);
-  GLINT_WRITE_REG(0xFFFFFFFF, FBHardwareWriteMask);
-  GLINT_WRITE_REG(pprod | FBRM_SrcEnable, FBReadMode);
-  GLINT_WRITE_REG(PrimitiveTrapezoid, Render);
-
-  GLINT_WRITE_REG(UNIT_ENABLE, FBWriteMode);
-	
-  DO_PLANEMASK(planemask);
-
-  if (rop == GXcopy) {
-	GLINT_WRITE_REG(pprod, FBReadMode);
-  } else {
-	GLINT_WRITE_REG(pprod | blitmode, FBReadMode);
-  }
-  GLINT_WRITE_REG((2<<9)|(2<<6)|(0x0F<<1)|1, PatternRamMode);
-  GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
-}
-
-void GLINTSubsequentFill8x8Pattern(int patternx, int patterny, int x, int y,
-				   int w, int h)
-{
-	GLINT_WRITE_REG((x+w)<<16, StartXSub);
-	GLINT_WRITE_REG(x<<16,     StartXDom);
-	GLINT_WRITE_REG(y<<16,     StartY);
-	GLINT_WRITE_REG(h,         GLINTCount);
-	GLINT_WRITE_REG(PrimitiveTrapezoid|FastFillEnable|SpanOperation,Render);
+	while (count--) {
+		GLINT_WAIT(8);
+		GLINT_WRITE_REG(*(ptr), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+1), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+2), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+3), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+4), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+5), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+6), BitMaskPattern);
+		GLINT_WRITE_REG(*(ptr+7), BitMaskPattern);
+		ptr+=8;
+	}
+	count = ScanlineWordCount & 0x07;
+	GLINT_WAIT(count);
+	while (count--) 
+		GLINT_WRITE_REG(*(ptr++), BitMaskPattern);
 }
 
 void GLINTSetupFor8x8PatternColorExpand(int patternx, int patterny, 
 					   int bg, int fg, int rop,
 					   unsigned planemask)
 {
-  unsigned long a,b,c,d,e,f,g,h;
-
-  DO_PLANEMASK(planemask);
   if (bg == -1) mode = -1;
 	else    mode = 0;
   REPLICATE(fg);
@@ -549,38 +378,30 @@ void GLINTSetupFor8x8PatternColorExpand(int patternx, int patterny,
 
   gfg = fg;
   gbg = bg;
-  
 
-  a = (patternx & 0xFF); 		a = a | a << 8 | a << 16 | a << 24;
-  b = (patternx & 0xFF00) >> 8;		b = b | b << 8 | b << 16 | b << 24;
-  c = (patternx & 0xFF0000) >> 16;	c = c | c << 8 | c << 16 | c << 24;
-  d = (patternx & 0xFF000000) >> 24;	d = d | d << 8 | d << 16 | d << 24;
-  e = (patterny & 0xFF); 		e = e | e << 8 | e << 16 | e << 24;
-  f = (patterny & 0xFF00) >> 8;		f = f | f << 8 | f << 16 | f << 24;
-  g = (patterny & 0xFF0000) >> 16;	g = g | g << 8 | g << 16 | g << 24;
-  h = (patterny & 0xFF000000) >> 24;	h = h | h << 8 | h << 16 | h << 24;
-
-  GLINT_WRITE_REG(a, AreaStipplePattern0);
-  GLINT_WRITE_REG(b, AreaStipplePattern1);
-  GLINT_WRITE_REG(c, AreaStipplePattern2);
-  GLINT_WRITE_REG(d, AreaStipplePattern3);
-  GLINT_WRITE_REG(e, AreaStipplePattern4);
-  GLINT_WRITE_REG(f, AreaStipplePattern5);
-  GLINT_WRITE_REG(g, AreaStipplePattern6);
-  GLINT_WRITE_REG(h, AreaStipplePattern7);
+  GLINT_WAIT(13);
+  DO_PLANEMASK(planemask);
+  GLINT_WRITE_REG((patternx & 0x000000FF),       AreaStipplePattern0);
+  GLINT_WRITE_REG((patternx & 0x0000FF00) >> 8,  AreaStipplePattern1);
+  GLINT_WRITE_REG((patternx & 0x00FF0000) >> 16, AreaStipplePattern2);
+  GLINT_WRITE_REG((patternx & 0xFF000000) >> 24, AreaStipplePattern3);
+  GLINT_WRITE_REG((patterny & 0x000000FF),       AreaStipplePattern4);
+  GLINT_WRITE_REG((patterny & 0x0000FF00) >> 8,  AreaStipplePattern5);
+  GLINT_WRITE_REG((patterny & 0x00FF0000) >> 16, AreaStipplePattern6);
+  GLINT_WRITE_REG((patterny & 0xFF000000) >> 24, AreaStipplePattern7);
   
   grop = rop;
 
   if (rop == GXcopy) {
+      GLINT_WRITE_REG(0, PatternRamMode);
       GLINT_WRITE_REG(pprod, FBReadMode);
   } else {
+      GLINT_WRITE_REG(1, PatternRamMode);
       GLINT_WRITE_REG(pprod | blitmode, FBReadMode);
   }
 
   GLINT_WRITE_REG((rop<<1) | UNIT_ENABLE, LogicalOpMode);
   GLINT_WRITE_REG(1<<16, dY);	
-  GLINT_WRITE_REG(0, dXDom);
-  GLINT_WRITE_REG(0, dXSub);
 }
 
 void 
@@ -589,46 +410,29 @@ GLINTSubsequent8x8PatternColorExpand(int patternx, int patterny, int x, int y,
 {
   int span = 0;
   
+  GLINT_WAIT(10);
   GLINT_WRITE_REG((x+w)<<16, StartXSub);
   GLINT_WRITE_REG(x<<16,     StartXDom);
   GLINT_WRITE_REG(y<<16,     StartY);
   GLINT_WRITE_REG(h,         GLINTCount);
 
   if (mode != -1) {
-	if (miSpansEasyRop(grop)) {
-  	  if (grop == GXcopy) {
-		GLINT_WRITE_REG(0, PatternRamMode);
-		GLINT_WRITE_REG(gbg, FBBlockColor);
-		mode = FastFillEnable;
-	  } else {
-		GLINT_WRITE_REG(1, PatternRamMode);
-		GLINT_WRITE_REG(gbg, PatternRamData0);
-		mode = FastFillEnable | SpanOperation;
-	  }
-	  GLINT_WRITE_REG(PrimitiveTrapezoid | mode,Render);
+	if (grop == GXcopy) {
+	  GLINT_WRITE_REG(gbg, FBBlockColor);
+	  GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
 	} else {
-  	  	if (grop == GXcopy) {
-			GLINT_WRITE_REG(gbg, FBBlockColor);
-			GLINT_WRITE_REG(0, PatternRamMode);
-			span = 0;
-		} else {
-			GLINT_WRITE_REG(1, PatternRamMode);
-  			GLINT_WRITE_REG(gbg, PatternRamData0);
-			span = SpanOperation;
-		}
-		GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12| ASM_InvertPattern |
-			UNIT_ENABLE, AreaStippleMode);
-		GLINT_WRITE_REG(AreaStippleEnable | span | FastFillEnable | 
+  	  GLINT_WRITE_REG(gbg, PatternRamData0);
+	  GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |
+					UNIT_ENABLE, AreaStippleMode);
+	  GLINT_WRITE_REG(AreaStippleEnable | SpanOperation | FastFillEnable | 
 						PrimitiveTrapezoid, Render);
 	}
   }
 
   if (grop == GXcopy) {
 	GLINT_WRITE_REG(gfg, FBBlockColor);
-	GLINT_WRITE_REG(0, PatternRamMode);
 	span = 0;
   } else {
-	GLINT_WRITE_REG(1, PatternRamMode);
   	GLINT_WRITE_REG(gfg, PatternRamData0);
 	span = SpanOperation;
   }
@@ -639,28 +443,12 @@ GLINTSubsequent8x8PatternColorExpand(int patternx, int patterny, int x, int y,
 }
 
 void
-GLINTSubsequentFillTrapezoidSolid(int y, int h, int left, int dxl, int dyl, int el, 
-				  int right, int dxr, int dyr, int er)
-{
-
-  GLINT_WRITE_REG(left<<16, StartXDom);
-  GLINT_WRITE_REG((right+1)<<16, StartXSub);
-  GLINT_WRITE_REG((dxl<<16)/dyl, dXDom); 
-  GLINT_WRITE_REG((dxr<<16)/dyr, dXSub);
-
-  GLINT_WRITE_REG(y<<16, StartY);
-  GLINT_WRITE_REG(h, GLINTCount);
-
-  GLINT_WRITE_REG(PrimitiveTrapezoid | mode, Render);
-}
-
-void
 GLINTSubsequentScanlineScreenToScreenCopy(LineAddr, skipleft, x, y, w)
 	int LineAddr, skipleft, x, y, w;
 {
 	int dstaddr;
 
-
+	GLINT_WAIT(8);
 	GLINT_WRITE_REG(-1<<16, dY);
 
 	dstaddr = GLINTWindowBase + y * glintInfoRec.displayWidth + x;
@@ -676,36 +464,6 @@ GLINTSubsequentScanlineScreenToScreenCopy(LineAddr, skipleft, x, y, w)
 	GLINT_WRITE_REG(0, FBSourceOffset);
 }
 
-int stip_width, stip_height;
-
-void
-GLINTStipple32x32Pattern(x, y, w, h, srcx, srcy)
-	int x, y, w, h, srcx, srcy;
-{
-  int width, height;
-  GLINT_WRITE_REG((x+w)<<16, StartXSub);
-  GLINT_WRITE_REG(x<<16,     StartXDom);
-  GLINT_WRITE_REG(y<<16,     StartY);
-  GLINT_WRITE_REG(h,         GLINTCount);
-
-  if (stip_width <= 32) width = 4;
-  if (stip_width <= 16) width = 3;
-  if (stip_width <= 8) width = 2;
-  if (stip_width <= 4) width = 1;
-  if (stip_width <= 2) width = 0;
-  if (stip_height <= 32) height = 4;
-  if (stip_height <= 16) height = 3;
-  if (stip_height <= 8) height = 2;
-  if (stip_height <= 4) height = 1;
-  if (stip_height <= 2) height = 0;
-width = 4; height = 4;
-
-  GLINT_WRITE_REG(width<<1|height<<4|srcx<<7|srcy<<12|mode<<17|UNIT_ENABLE, AreaStippleMode);
-
-  GLINT_WRITE_REG(AreaStippleEnable | span | FastFillEnable | 
-						PrimitiveTrapezoid, Render);
-}
-
 static unsigned int ShiftMasks[33] = {
   0x00000000, 0x00000001, 0x00000003, 0x00000007,
   0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
@@ -718,6 +476,7 @@ static unsigned int ShiftMasks[33] = {
   0xFFFFFFFF
 };
 
+void
 GLINTStippleCPUToScreen(x, y, w, h, src, srcwidth,
 stipplewidth, stippleheight, srcx, srcy)
     int x, y, w, h;
@@ -730,19 +489,10 @@ stipplewidth, stippleheight, srcx, srcy)
     int dwords = (w + 31) >> 5; 
     int count, offset; 
 
-#ifdef QWORD_PADDING
-    Bool PlusOne = ((dwords * h) & 0x01);
-#endif 
 
-   /*  >>>>>>  Initiate the transfer (x,y,w,h) <<<<<<<< */
-  GLINT_WRITE_REG(0, dXDom);
-  GLINT_WRITE_REG(0, dXSub);
-  GLINT_WRITE_REG(x<<16, StartXDom);
-  GLINT_WRITE_REG(y<<16, StartY);
-  GLINT_WRITE_REG((x+w)<<16, StartXSub);
-  GLINT_WRITE_REG(h, GLINTCount);
-  GLINT_WRITE_REG(1<<16, dY);
-  GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable | span | SyncOnBitMask, Render);
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable | span | 
+						SyncOnBitMask, Render);
 
     if(stipplewidth < 32) {
 	register int width;
@@ -761,6 +511,7 @@ stipplewidth, stippleheight, srcx, srcy)
 	   count = dwords;
 
 	   while(count--) {
+		GLINT_WAIT(1);
 	   	GLINT_WRITE_REG(
 		    (pattern >> offset) | 
 		    (pattern << (width - offset)), BitMaskPattern);
@@ -792,12 +543,15 @@ stipplewidth, stippleheight, srcx, srcy)
 
 		if(shift & ~31) {
 		    if(scratch2) {
+			GLINT_WAIT(1);
 		        GLINT_WRITE_REG((*scratch >> scratch2) |
 			     (scratch[1] << (32 - scratch2)), BitMaskPattern);
 		    } else {
+			GLINT_WAIT(1);
 			GLINT_WRITE_REG(*scratch, BitMaskPattern); 
 		    }
 		} else {
+			GLINT_WAIT(1);
 			GLINT_WRITE_REG((*((CARD32*)srcp) << shift) |
 			((*scratch >> scratch2) & ShiftMasks[shift]), BitMaskPattern);
 		}
@@ -815,12 +569,6 @@ stipplewidth, stippleheight, srcx, srcy)
 	   }
 	}
     }
-
-#ifdef QWORD_PADDING
-    if(PlusOne) {
-	GLINT_WRITE_REG(0, BitMaskPattern); 
-    }
-#endif 
 }
 
 
@@ -833,23 +581,16 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 {
     int rectWidth, rectHeight;
     BoxPtr pBox;
-    int i;
     int color;
     int nBox;
     int xoffset, yoffset, StippleType;
     PixmapPtr pPixmap = pGC->stipple;
 
-    /* 6 types of stipples. TransparentStipples, OpaqueEasyStipples and
-	OpaqueHardStipples.  Each of these in both HardwarePattern
-	and CPUToScreen versions */
- 
-    /* But for now, we only use CPUToScreen as Hardware pattern can
-       only be in power of 2 */
-
     if(pGC->fillStyle == FillStippled){	/* Transparent Stipples */
 	StippleType = 0;
 	color = pGC->fgPixel; REPLICATE(color);
 	/* >>>>>>>>>>>>>>>>>  Set fg  <<<<<<<<<<<<<<<<<< */
+	GLINT_WAIT(2);
 	if (pGC->alu == GXcopy) {
 		span = 0;
 		GLINT_WRITE_REG(0, PatternRamMode);
@@ -859,36 +600,16 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 		GLINT_WRITE_REG(1, PatternRamMode);
 		GLINT_WRITE_REG(color, PatternRamData0);
 	}
-    } else if(miSpansEasyRop(pGC->alu))  /* OpaqueEasyStipples */
+    } else if(pGC->alu == GXcopy)  /* OpaqueEasyStipples */
 	StippleType = 2;
     else 				/* OpaqueHardStipples */
 	StippleType = 4;
 
-    stip_width = pPixmap->drawable.width;
-    stip_height = pPixmap->drawable.height;
-
-#if 0
-    if((stip_width <= 32) && (stip_height <= 32) /* && !(stip_width & (stip_width -1)) && !(stip_height & (stip_height - 1)) */) {
-  	register CARD32 *ptr = (CARD32 *)pPixmap->devPrivate.ptr;
-	StippleType++;   
-	/* >>>>>>>>>>>>>>>>  Load pattern <<<<<<<<<<<<<<<<<<<<<  */
-	/* Size is pPixmap->drawable.width by pPixmap->drawable.height */
-	/* starting at pPixmap->devPrivate.ptr in memory with a */
-	/* pPixmap->devKind byte scanline pitch. */
-	for (i=0;i<16;i++) {
-		GLINT_WRITE_REG(*(ptr++), GLINT_TAG_ADDR(0x04,i));
-	}
-	if (stip_height > 16) {
-		for (i=0;i<(stip_height-16);i++) {
-			GLINT_WRITE_REG(*(ptr++), GLINT_TAG_ADDR(0x05,i));
-		}
-	}
-    }
-#endif
-
     /* >>>>>>>>>>> Set ROP, Planemask <<<<<<<<<<< */
-    GLINT_WRITE_REG((pGC->alu<<1)|UNIT_ENABLE, LogicalOpMode);
+    GLINT_WAIT(4);
     DO_PLANEMASK(pGC->planemask);
+    GLINT_WRITE_REG((pGC->alu<<1)|UNIT_ENABLE, LogicalOpMode);
+    GLINT_WRITE_REG(1<<16, dY);
     if (pGC->alu == GXcopy) {
 	span = 0;
 	GLINT_WRITE_REG(pprod, FBReadMode);
@@ -899,6 +620,7 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 
     if(StippleType < 4) {
     	/* >>>>> Make sure our bitmask is not inverted <<<<<< */
+	GLINT_WAIT(1);
 	GLINT_WRITE_REG(0, RasterizerMode);
 	mode = 0;
     }
@@ -917,6 +639,12 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	    if (yoffset < 0)
 	        yoffset += pPixmap->drawable.height;
 
+	    GLINT_WAIT(4);
+  	    GLINT_WRITE_REG(pBox->x1<<16, StartXDom);
+  	    GLINT_WRITE_REG(pBox->y1<<16, StartY);
+  	    GLINT_WRITE_REG(pBox->x2<<16, StartXSub);
+  	    GLINT_WRITE_REG(rectHeight, GLINTCount);
+
 	    switch(StippleType) {
 	      case 0:
 		GLINTStippleCPUToScreen(
@@ -925,13 +653,10 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
 	        	xoffset, yoffset);
 		break;
-	      case 1: 
-		GLINTStipple32x32Pattern(pBox->x1, pBox->y1, 
-			rectWidth, rectHeight, xoffset, yoffset);
-		break;
 	      case 2:
 		/* >>>>>>>>>>>  Set bg and draw rect <<<<<<<<<<<<<< */
 		color = pGC->bgPixel; REPLICATE(color);
+		GLINT_WAIT(3);
 		if (pGC->alu == GXcopy) {
 		    span = 0;
 		    GLINT_WRITE_REG(0, PatternRamMode);
@@ -944,6 +669,7 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 		GLINT_WRITE_REG(PrimitiveTrapezoid |span|FastFillEnable,Render);
 		/* >>>>>>>>>>  Set fg <<<<<<<<<<<<<< */
 		color = pGC->fgPixel; REPLICATE(color);
+		GLINT_WAIT(2);
 		if (pGC->alu == GXcopy) {
 			span = 0;
 			GLINT_WRITE_REG(0, PatternRamMode);
@@ -959,36 +685,12 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
 	        	xoffset, yoffset);
 		break;
-	      case 3:
-		color = pGC->bgPixel; REPLICATE(color);
-		if (pGC->alu == GXcopy) {
-		    span = 0;
-		    GLINT_WRITE_REG(0, PatternRamMode);
-		    GLINT_WRITE_REG(color, FBBlockColor);
-		} else {
-		    span = SpanOperation;
-		    GLINT_WRITE_REG(1, PatternRamMode);
-		    GLINT_WRITE_REG(color, PatternRamData0);
-		}
-		GLINT_WRITE_REG(PrimitiveTrapezoid |span|FastFillEnable,Render);
-		color = pGC->fgPixel; REPLICATE(color);
-		if (pGC->alu == GXcopy) {
-			span = 0;
-			GLINT_WRITE_REG(0, PatternRamMode);
-			GLINT_WRITE_REG(color, FBBlockColor);
-		} else {
-			span = SpanOperation;
-			GLINT_WRITE_REG(1, PatternRamMode);
-			GLINT_WRITE_REG(color, PatternRamData0);
-		}
-		GLINTStipple32x32Pattern(pBox->x1, pBox->y1, 
-			rectWidth, rectHeight, xoffset, yoffset);
-		break;
 	      case 4:
     		/* >>>>> Make sure our bitmask is not inverted <<<<<< */
 		GLINT_WRITE_REG(0, RasterizerMode);
 		/* >>>>>>>>>>  Set fg <<<<<<<<<<<<<< */
 		color = pGC->fgPixel; REPLICATE(color);
+		GLINT_WAIT(2);
 		if (pGC->alu == GXcopy) {
 			span = 0;
 			GLINT_WRITE_REG(0, PatternRamMode);
@@ -1004,6 +706,7 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
 	        	xoffset, yoffset);
 	/*	>>>>>>>>>>  Invert Mask <<<<<<<<< */
+		GLINT_WAIT(3);
 		GLINT_WRITE_REG(2, RasterizerMode);
 	/*	>>>>>>>>>>  Set bg <<<<<<<<<<<<<< */
 		color = pGC->bgPixel; REPLICATE(color);
@@ -1022,42 +725,11 @@ GLINTFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	        	pPixmap->drawable.width, pPixmap->drawable.height,
 	        	xoffset, yoffset);
 		break;
-	      default:
-    		/* >>>>> Make sure our bitmask is not inverted <<<<<< */
-		mode = 0;
-		/* >>>>>>>>>>  Set fg <<<<<<<<<<<<<< */
-		color = pGC->fgPixel; REPLICATE(color);
-		if (pGC->alu == GXcopy) {
-			span = 0;
-			GLINT_WRITE_REG(0, PatternRamMode);
-			GLINT_WRITE_REG(color, FBBlockColor);
-		} else {
-			span = SpanOperation;
-			GLINT_WRITE_REG(1, PatternRamMode);
-			GLINT_WRITE_REG(color, PatternRamData0);
-		}
-		GLINTStipple32x32Pattern(pBox->x1, pBox->y1, 
-			rectWidth, rectHeight, xoffset, yoffset);
-	/*	>>>>>>>>>>  Invert Mask Area Stipple Mask <<<<<<<<< */
-		mode = 1;
-	/*	>>>>>>>>>>  Set bg <<<<<<<<<<<<<< */
-		color = pGC->bgPixel; REPLICATE(color);
-		if (pGC->alu == GXcopy) {
-			span = 0;
-			GLINT_WRITE_REG(0, PatternRamMode);
-			GLINT_WRITE_REG(color, FBBlockColor);
-		} else {
-			span = SpanOperation;
-			GLINT_WRITE_REG(1, PatternRamMode);
-			GLINT_WRITE_REG(color, PatternRamData0);
-		}
-		GLINTStipple32x32Pattern(pBox->x1, pBox->y1, 
-			rectWidth, rectHeight, xoffset, yoffset);
-		break;
 	    }
 	}
     }
 
+    GLINT_WAIT(1);
     GLINT_WRITE_REG(0, RasterizerMode);
     SET_SYNC_FLAG;
 }
@@ -1080,10 +752,6 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     register CARD32* pattern;
     Bool SecondPass = FALSE;
 
-#if QWORD_PADDED
-    Bool PlusOne;
-#endif
-
     srcp = (srcwidth * srcy) + (srcx >> 3) + src; 
     srcx &= 0x07;
     if(skipleft = (int)srcp & 0x03) { 
@@ -1096,14 +764,11 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     x -= skipleft;
     dwords = (w + 31) >> 5;
 
-#if QWORD_PADDED
-     PlusOne = ((dwords * h) & 0x01);
-#endif
-
     /* >>>>> Set rop, planemask, left edge clip skipleft pixels right
 	of x (skipleft is sometimes 0 and clipping isn't needed). <<<<<< */
-    GLINT_WRITE_REG(0, RasterizerMode);
+    GLINT_WAIT(9);
     DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(0, RasterizerMode);
     GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);
     if (rop == GXcopy) {
 	GLINT_WRITE_REG(pprod, FBReadMode);
@@ -1114,8 +779,6 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     GLINT_WRITE_REG(y<<16, StartY);
     GLINT_WRITE_REG((x+w)<<16, StartXSub);
     GLINT_WRITE_REG(h, GLINTCount);
-    GLINT_WRITE_REG(0, dXDom);
-    GLINT_WRITE_REG(0, dXSub);
     GLINT_WRITE_REG(1<<16, dY);
     if (skipleft > 0) 
 	GLINTSetClippingRectangle(x+skipleft, y, x+w, y+h);
@@ -1123,6 +786,7 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
     if(bg == -1) {
 	/* >>>>> set fg <<<<<<<< */
 	REPLICATE(fg);
+	GLINT_WAIT(2);
 	if (rop == GXcopy) {
 	    mode = 0;
 	    GLINT_WRITE_REG(0, PatternRamMode);
@@ -1136,6 +800,7 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	/* >>>>> set bg <<<<<<< */
  	/* >>>>> draw rect (x,y,w,h) */
 	REPLICATE(bg);
+	GLINT_WAIT(3);
 	if (rop == GXcopy) {
 	    mode = 0;
 	    GLINT_WRITE_REG(0, PatternRamMode);
@@ -1148,6 +813,7 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	GLINT_WRITE_REG(PrimitiveTrapezoid |mode|FastFillEnable,Render);
 	/* >>>>>> set fg <<<<<< */
 	REPLICATE(fg);
+	GLINT_WAIT(2);
 	if (rop == GXcopy) {
 	    mode = 0;
 	    GLINT_WRITE_REG(0, PatternRamMode);
@@ -1161,6 +827,7 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	SecondPass = TRUE;
 	/* >>>>> set fg <<<<<<< */
 	REPLICATE(fg);
+	GLINT_WAIT(2);
 	if (rop == GXcopy) {
 	    mode = 0;
 	    GLINT_WRITE_REG(0, PatternRamMode);
@@ -1176,27 +843,38 @@ GLINTWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	left edge will be clipped <<<<<< */
 
 SECOND_PASS:
+    GLINT_WAIT(1);
     GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable | mode | SyncOnBitMask, Render);
     
     height = h;
     srcpntr = srcp;
     while(height--) {
-	count = dwords;
+	count = dwords >> 3;
 	pattern = (CARD32*)srcpntr;
 	while(count--) {
-		GLINT_WRITE_REG(*(pattern++), BitMaskPattern);
+		GLINT_WAIT(8);
+		GLINT_WRITE_REG(*(pattern), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+1), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+2), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+3), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+4), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+5), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+6), BitMaskPattern);
+		GLINT_WRITE_REG(*(pattern+7), BitMaskPattern);
+		pattern+=8;
 	}
+	count = dwords & 0x07;
+	GLINT_WAIT(count);
+	while (count--) 
+		GLINT_WRITE_REG(*(pattern++), BitMaskPattern);
 	srcpntr += srcwidth;
     }    
-
-#if QWORD_PADDED
-    if(PlusOne) GLINT_SLOW_WRITE_REG(0);
-#endif
 
     if(SecondPass) {
 	SecondPass = FALSE;
 	/* >>>>>> invert bitmask and set bg <<<<<<<< */
 	REPLICATE(bg);
+	GLINT_WAIT(3);
 	GLINT_WRITE_REG(2, RasterizerMode);
 	if (rop == GXcopy) {
 	    mode = 0;
@@ -1210,7 +888,153 @@ SECOND_PASS:
 	goto SECOND_PASS;
     }
 
+    GLINT_WAIT(2);
     GLINT_WRITE_REG(0, RasterizerMode);
     GLINT_WRITE_REG(0, ScissorMode);
     SET_SYNC_FLAG;	
 }
+
+#define MAX_GLYPHS	1024			/* that's gotta be enough */
+static unsigned int* Glyphs[MAX_GLYPHS]; 
+
+void
+GLINTImageTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+					nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    int w, h, x, y;
+    int glyphWidth, count;		       
+
+    glyphWidth = FONTMAXBOUNDS(pGC->font, characterWidth);
+    
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if ((GLYPHWIDTHBYTESPADDED(*ppci) != 4) || glyphWidth > 32) {
+        xf86GCInfoRec.ImageGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+ 
+    h = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
+    if (!(h && glyphWidth))
+	return;
+ 
+    x = xInit + FONTMAXBOUNDS(pGC->font, leftSideBearing) + pDrawable->x;
+    y = yInit - FONTASCENT(pGC->font) + pDrawable->y;
+    w = nglyph * glyphWidth;
+ 
+    /*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+    DO_PLANEMASK(pGC->planemask);
+    gfg =  pGC->fgPixel;
+    gbg = pGC->bgPixel;
+    REPLICATE (gfg);
+    REPLICATE (gbg);
+ 
+    GLINT_WRITE_REG((GXcopy<<1)|UNIT_ENABLE, LogicalOpMode);
+    GLINT_WRITE_REG((x+w)<<16, StartXSub);
+    GLINT_WRITE_REG(x<<16,StartXDom);
+    GLINT_WRITE_REG(y<<16,StartY);
+    GLINT_WRITE_REG(h,GLINTCount);
+    GLINT_WRITE_REG(1<<16,dY);
+    GLINT_WRITE_REG(0, RasterizerMode);
+    GLINT_WRITE_REG(pprod, FBReadMode);
+    GLINT_WRITE_REG(gbg, FBBlockColor);
+    GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable, Render);
+    /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+    for(count = 0; count < nglyph; count++) 
+	Glyphs[count] = (unsigned int*)FONTGLYPHBITS(pglyphBase,*ppci++);	
+
+    /*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+    GLINT_WRITE_REG(gfg, FBBlockColor);
+    GLINT_WRITE_REG(PrimitiveTrapezoid |FastFillEnable| SyncOnBitMask, Render);
+    /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+ 
+    for(count = 0; count < h; count++, y++) {
+	xf86DrawTextScanlineFixedBase((unsigned int*)(
+ 		(char*)GLINTMMIOBase + GLINT_TAG_ADDR(0x00,0x0d)),
+ 		Glyphs, count, nglyph, glyphWidth);
+    }
+}
+
+void
+GLINTPolyTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+ 					nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    int w, h, x, y;
+    int glyphWidth, count;		       
+ 
+    glyphWidth = FONTMAXBOUNDS(pGC->font, characterWidth);
+     
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if ((GLYPHWIDTHBYTESPADDED(*ppci) != 4) || glyphWidth > 32) {
+        xf86GCInfoRec.PolyGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+ 
+    h = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
+    if (!(h && glyphWidth))
+ 	return;
+ 
+    x = xInit + FONTMAXBOUNDS(pGC->font, leftSideBearing) + pDrawable->x;
+    y = yInit - FONTASCENT(pGC->font) + pDrawable->y;
+    w = nglyph * glyphWidth;
+ 
+    for(count = 0; count < nglyph; count++) 
+ 	Glyphs[count] = (unsigned int*)FONTGLYPHBITS(pglyphBase,*ppci++);	
+ 
+    /*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+    DO_PLANEMASK(pGC->planemask);
+    gfg = pGC->fgPixel;
+    REPLICATE (gfg);
+ 
+    GLINT_WRITE_REG((pGC->alu<<1)|UNIT_ENABLE, LogicalOpMode);
+    GLINT_WRITE_REG((x+w)<<16, StartXSub);
+    GLINT_WRITE_REG(x<<16,StartXDom);
+    GLINT_WRITE_REG(y<<16,StartY);
+    GLINT_WRITE_REG(1<<16,dY);
+    GLINT_WRITE_REG(h,GLINTCount);
+    GLINT_WRITE_REG(0, RasterizerMode);
+    if (pGC->alu == GXcopy) {
+ 	GLINT_WRITE_REG(pprod, FBReadMode);
+ 	GLINT_WRITE_REG(gfg, FBBlockColor);
+ 	GLINT_WRITE_REG(PrimitiveTrapezoid|FastFillEnable|SyncOnBitMask,Render);
+    } else {
+ 	GLINT_WRITE_REG(pprod | blitmode, FBReadMode);
+     	GLINT_WRITE_REG(UNIT_ENABLE, PatternRamMode);
+ 	GLINT_WRITE_REG(gfg, PatternRamData0);
+ 	GLINT_WRITE_REG(PrimitiveTrapezoid|FastFillEnable|
+				SpanOperation|SyncOnBitMask,Render);
+    }
+    /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+ 
+      
+    for(count = 0; count < h; count++, y++) { 
+	xf86DrawTextScanlineFixedBase((unsigned int*)(
+ 		(char*)GLINTMMIOBase + GLINT_TAG_ADDR(0x00,0x0d)),
+ 		Glyphs, count, nglyph, glyphWidth);
+    }
+}
+
+#ifdef GLINT_3D
+void glint_accel_dummy( void )
+{
+	glint_3d_dummy();
+	return;
+}
+#endif

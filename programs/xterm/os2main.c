@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.13 1998/01/24 01:53:37 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.14 1998/03/20 21:08:37 hohndel Exp $ */
 
 /***********************************************************
 
@@ -774,7 +774,7 @@ char **envp;
 	if (argc > 1) {
 		if (!strncmp(argv[1], "-v", 2))
 			Version();
-		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 2))
+		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 3))
 			Help();
 	}
 

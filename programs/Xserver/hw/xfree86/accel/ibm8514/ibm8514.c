@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.36 1998/01/24 16:56:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.37 1998/03/20 21:05:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -152,6 +152,8 @@ ScrnInfoRec ibm8514InfoRec = {
     NULL,               /* char* DCConfig */
     NULL,               /* char* DCOptions */
     0,			/* int MemClk */
+    0,			/* int busType */
+    0,			/* PCITAG pciTag */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */

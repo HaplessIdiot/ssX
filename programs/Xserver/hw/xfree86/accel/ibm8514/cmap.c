@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/cmap.c,v 3.2 1997/11/16 06:18:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/cmap.c,v 3.3 1998/01/24 16:56:39 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -40,8 +40,7 @@
 
 #define NOMAPYET        (ColormapPtr) 0
 
-static ColormapPtr InstalledMaps[MAXSCREENS];
-				/* current colormap for each screen */
+ColormapPtr InstalledMaps[MAXSCREENS]; /* current colormap for each screen */
 
 static LUTENTRY current8514dac[256];
 

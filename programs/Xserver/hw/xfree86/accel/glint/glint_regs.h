@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.10 1997/12/05 22:01:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.11 1997/12/20 14:20:51 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -101,6 +101,7 @@
 #define ChipConfig							0x0070
 #define   SCLK_SEL_MASK		(3 << 10)
 #define   SCLK_SEL_MCLK_HALF	(3 << 10)
+#define ByDMAControl							0x00D8
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl							0x1000
@@ -683,6 +684,7 @@
 	#define FBRM_DstEnable					1 << 10
 	#define FBRM_DataFBColor				1 << 15
 	#define FBRM_WinBottomLeft				1 << 16
+	#define FBRM_Packed					1 << 19
 	#define FBRM_ScanlineInt2				1 << 23
 	#define FBRM_ScanlineInt4				2 << 23
 	#define FBRM_ScanlineInt8				3 << 23
@@ -883,15 +885,11 @@ typedef struct {
 {								\
 	if( xf86Verbose > 2)					\
 		ErrorF("reg 0x%04x to 0x%08x\n",r,v);		\
-	GLINT_WAIT(1);						\
 	*(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
 }
 #else
 #define GLINT_WRITE_REG(v,r)					\
-{								\
-	GLINT_WAIT(1);						\
-        *(unsigned int *)((char*)GLINTMMIOBase+r) = v;		\
-}
+        *(unsigned int *)((char*)GLINTMMIOBase+r) = v;		
 #endif
 
 
@@ -899,7 +897,7 @@ typedef struct {
 	*(unsigned int *)((char*)GLINTMMIOBase+r)
 
 #define GLINT_WAIT(n)	\
- 	if (!OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options))  \
+ 	if (!UsePCIRetry)  \
 	  while(GLINT_READ_REG(InFIFOSpace)<n)
 
 #define GLINT_SLOW_WRITE_REG(v,r) 		\
@@ -911,11 +909,11 @@ typedef struct {
 
 #define REPLICATE(r)						\
 {								\
+	if (glintInfoRec.bitsPerPixel == 24) {			\
+		r &= 0x00FFFFFF;				\
+	} else							\
 	if (glintInfoRec.bitsPerPixel == 16) {			\
 		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
-	} else							\
-	if (glintInfoRec.bitsPerPixel == 15) {			\
-		r = ((r & 0x7FFF) << 16) | (r & 0x7FFF);	\
 	} else							\
 	if (glintInfoRec.bitsPerPixel == 8) { 			\
 		r = (r & 0xFF);					\
@@ -926,11 +924,10 @@ typedef struct {
 #define CHECKPLANEMASK(planemask)					\
 {									\
 	if ( (planemask & ((1<<glintInfoRec.bitsPerPixel)-1)) ==	\
-			   ((1<<glintInfoRec.bitsPerPixel)-1) ) {	\
+			   ((1<<glintInfoRec.bitsPerPixel)-1) ) 	\
 		blitmode = FBRM_DstEnable;				\
-	} else {							\
+	else 								\
 		blitmode = 0;						\
-	}								\
 }
 
 #define DO_PLANEMASK(planemask)					\

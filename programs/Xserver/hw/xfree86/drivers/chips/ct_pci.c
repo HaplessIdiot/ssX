@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.4 1996/12/27 07:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_pci.c,v 1.1 1997/03/06 23:15:06 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -39,9 +39,10 @@ ctPCIMemBase(ctisHiQV32)
 	    return -1;
 	}
     } else {
-	ErrorF("%s %s: %s: Can't find PCI device in "
-	    "configuration space\n", XCONFIG_PROBED,
-	    vga256InfoRec.name, vga256InfoRec.chipset);
+    	if (xf86Verbose > 1)
+	    ErrorF("%s %s: %s: Can't find C&T PCI device in "
+		"configuration space\n", XCONFIG_PROBED,
+		vga256InfoRec.name, vga256InfoRec.chipset);
 	return -1;
     }
 }

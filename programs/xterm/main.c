@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.65 1998/01/24 01:53:33 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.66 1998/03/20 21:08:36 hohndel Exp $ */
 
 
 /* main.c */
@@ -1117,7 +1117,7 @@ char **argv;
 	if (argc > 1) {
 		if (!strncmp(argv[1], "-v", 2))
 			Version();
-		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 2))
+		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 3))
 			Help();
 	}
 

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_Curs.c,v 1.1 1997/12/20 14:20:51 hohndel Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -27,38 +27,44 @@
 #include "glint.h"
 #define GLINT_SERVER
 
+extern Bool UsePCIRetry;
+
 void 
 PM2DACShowCursor()
 {
    /* Enable cursor - X11 mode */
-   GLINT_WRITE_REG(PM2DACCursorControl, PM2DACIndexReg);
-   GLINT_WRITE_REG(0x4B, PM2DACIndexData);
+   GLINT_SLOW_WRITE_REG(0x4B, PM2DACCursorControl);
 }
 
 void
 PM2DACHideCursor()
 {
-   GLINT_WRITE_REG(PM2DACCursorControl, PM2DACIndexReg);
-   GLINT_WRITE_REG(0x48, PM2DACIndexData);
+   GLINT_SLOW_WRITE_REG(0x48, PM2DACCursorControl);
 }
 
 void
 PM2DACSetCursorPosition(x, y, xorigin, yorigin)
 {
-   GLINT_WRITE_REG((x >> 8) & 0x0F, PM2DACCursorXMsb);
-   GLINT_WRITE_REG(x & 0xFF, PM2DACCursorXLsb);
-   GLINT_WRITE_REG((y >> 8) & 0x0F, PM2DACCursorYMsb);
-   GLINT_WRITE_REG(y & 0xFF, PM2DACCursorYLsb);
+   GLINT_SLOW_WRITE_REG(x & 0xFF, PM2DACCursorXLsb);
+   GLINT_SLOW_WRITE_REG((x >> 8) & 0x0F, PM2DACCursorXMsb);
+   GLINT_SLOW_WRITE_REG(y & 0xFF, PM2DACCursorYLsb);
+   GLINT_SLOW_WRITE_REG((y >> 8) & 0x0F, PM2DACCursorYMsb);
 }
 
 void
 PM2DACSetCursorColors(bg, fg)
 	int bg, fg;
 {
-   GLINT_SLOW_WRITE_REG(0x01, PM2DACCursorColorAddress);
+   GLINT_SLOW_WRITE_REG(0, PM2DACCursorColorAddress);
    GLINT_SLOW_WRITE_REG((bg & 0xFF0000)>>16, PM2DACCursorColorData);
    GLINT_SLOW_WRITE_REG((bg & 0xFF00)>>8, PM2DACCursorColorData);
    GLINT_SLOW_WRITE_REG((bg & 0xFF), PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((bg & 0xFF0000)>>16, PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((bg & 0xFF00)>>8, PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((bg & 0xFF), PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((fg & 0xFF0000)>>16, PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((fg & 0xFF00)>>8, PM2DACCursorColorData);
+   GLINT_SLOW_WRITE_REG((fg & 0xFF), PM2DACCursorColorData);
    GLINT_SLOW_WRITE_REG((fg & 0xFF0000)>>16, PM2DACCursorColorData);
    GLINT_SLOW_WRITE_REG((fg & 0xFF00)>>8, PM2DACCursorColorData);
    GLINT_SLOW_WRITE_REG((fg & 0xFF), PM2DACCursorColorData);
@@ -69,15 +75,28 @@ PM2DACLoadCursorImage(bits, xorigin, yorigin)
 	unsigned char *bits;
 	int xorigin, yorigin;
 {
-   unsigned char tmp, tmp1, tmpcurs;
    int i;
+   unsigned char control;
+   register unsigned char *mask = bits + 1;
 
-   GLINT_WRITE_REG(0, PM2DACWriteAddress);
+   control = GLINT_READ_REG(PM2DACCursorControl);
+
    /* 
     * Output the cursor data.  The realize function has put the planes into
     * their correct order, so we can just blast this out.
     */
-   for (i = 0; i < 1024; i++) {
-      GLINT_WRITE_REG(*bits++, PM2DACCursorData);
+   GLINT_SLOW_WRITE_REG(0x4B, PM2DACCursorControl);
+   GLINT_SLOW_WRITE_REG(0, PM2DACWriteAddress);
+   GLINT_SLOW_WRITE_REG(0x0B, PM2DACIndexReg);
+   for (i = 0; i < 512; i++, mask+=2) {
+      GLINT_SLOW_WRITE_REG(*bits++, PM2DACIndexData);
    }
+   GLINT_SLOW_WRITE_REG(PM2DACCursorControl, PM2DACIndexReg);
+   GLINT_SLOW_WRITE_REG(0x4F, PM2DACCursorControl);
+   GLINT_SLOW_WRITE_REG(0, PM2DACWriteAddress);
+   GLINT_SLOW_WRITE_REG(0x0B, PM2DACIndexReg);
+   for (i = 0; i < 512; i++, bits+=2) {
+      GLINT_SLOW_WRITE_REG(*bits++, PM2DACIndexData);
+   }
+   GLINT_SLOW_WRITE_REG(control, PM2DACCursorControl);
 }

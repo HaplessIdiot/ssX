@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.4 1997/11/01 15:04:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.5 1998/01/24 16:57:54 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -34,8 +34,6 @@ extern Bool ctisHiQV32;		       /*New architecture used in 65550 and 65554 */
 extern Bool ctisWINGINE;
 extern Bool ctHDepth;		       /*Chip has 16/24bpp */
 extern Bool ctDSTN;
-extern Bool ctLCD;
-extern Bool ctCRT;
 extern Bool ctHWCursor;
 extern Bool ctHWCursorAlways;
 

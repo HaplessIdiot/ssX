@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.4 1998/01/11 03:48:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.5 1998/01/24 01:53:02 hohndel Exp $ */
 /*
  * Copyright 1997 The XFree86 Project, Inc
  *
@@ -15,6 +15,8 @@
 
 #include "glint.h"
 #include "glint_regs.h"
+
+extern Bool UsePCIRetry;
 
 /*
  * glintOutPM2DACIndReg() and glintInPM2DACIndReg() are used to access 
@@ -137,6 +139,11 @@ PM2DACInit(int clock)
     	glintOutPM2IndReg(PM2DACIndexCMR,0x00,
 			  PM2DAC_RGB|PM2DAC_TRUECOLOR|PM2DAC_GRAPHICS|
 			  PM2DAC_565);
+    	break;
+    case 24:
+    	glintOutPM2IndReg(PM2DACIndexCMR,0x00,
+			  PM2DAC_RGB|PM2DAC_TRUECOLOR|PM2DAC_GRAPHICS|
+			  PM2DAC_PACKED);
     	break;
     case 32:
     	glintOutPM2IndReg(PM2DACIndexCMR,0x00,

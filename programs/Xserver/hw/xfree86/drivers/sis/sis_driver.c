@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.7 1997/08/26 10:01:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.8 1998/01/24 16:58:22 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -559,9 +559,10 @@ SISProbe()
 		       vga256InfoRec.name, vga256InfoRec.chipset);
 
 	} else {
-	    ErrorF("%s %s: %s: Can't find PCI device in "
-		   "configuration space\n", XCONFIG_PROBED,
-		   vga256InfoRec.name, vga256InfoRec.chipset);
+	    if (xf86Verbose > 1)
+		ErrorF("%s %s: %s: Can't find SiS PCI device in "
+		       "configuration space\n", XCONFIG_PROBED,
+		       vga256InfoRec.name, vga256InfoRec.chipset);
 	}
 
   	if (vga256InfoRec.chipset)

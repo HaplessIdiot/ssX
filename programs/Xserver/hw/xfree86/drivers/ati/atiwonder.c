@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.2 1998/03/20 21:06:43 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -94,7 +94,7 @@ ATIVGAWonderSave(ATIHWPtr save)
  * ATIVGAWonderInit --
  *
  * This function fills in the VGA Wonder portion of an ATIHWRec structure
- * occurrentce.
+ * occurrence.
  */
 void
 ATIVGAWonderInit(DisplayModePtr mode)
