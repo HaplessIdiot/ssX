@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.52 1995/03/11 14:02:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.53 1995/03/12 11:02:08 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -305,7 +305,7 @@ VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
 #ifdef SiteIConfigFiles
 #undef SiteIConfigFiles
 #endif
-#define SiteIConfigFiles $(TOP)/site.def $(TOP)/Imakefile
+#define SiteIConfigFiles $(TOP)/site.def $(TOP)/Imakefile $(IRULESRC)/host.def
 #else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel

@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.6 1994/12/11 10:48:17 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.7 1995/01/04 04:36:01 dawes Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -123,8 +123,6 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.6 1994/12/11 10:48:17 dawes Exp
 #endif
 */
 
-/*
 #include <host.def>
-*/
 
 #endif /* AfterVendorCF */
