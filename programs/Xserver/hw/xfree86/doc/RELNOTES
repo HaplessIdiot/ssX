@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2E (beta version)
   The XFree86 Project, Inc
 
-  15 May 1996
+  25 May 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2E, 3.1.2D,
@@ -943,6 +943,18 @@
 
 
 
+  Note: on some systems (including Linux), you may first need to remove
+  some existing terminfo entries if tic complains about duplicates.  For
+  example:
+
+
+
+               rm /usr/lib/terminfo/x/xterms
+               rm /usr/lib/terminfo/v/vs100
+
+
+
+
   8.  Installing the XFree86 3.1.2D Beta Release
 
   The XFree86 3.1.2D binary beta release is distributed as a full
@@ -968,15 +980,23 @@
   The following are optional.
 
 
-       X312Df100.tgz     100dpi fonts
-       X312Dfcyr.tgz     Cyrillic fonts
-       X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-       X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
-       X312Dfsrv.tgz     Font server and config files
-       X312Dprog.tgz     X header files, config files and compile-time libs
-       X312Dcfg.tgz      sample config files for xinit, xdm
-       X312Dnest.tgz     Nested X server
-       X312Dvfb.tgz      Virtual framebuffer X server
+
+
+
+
+
+
+
+
+  X312Df100.tgz     100dpi fonts
+  X312Dfcyr.tgz     Cyrillic fonts
+  X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
+  X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
+  X312Dfsrv.tgz     Font server and config files
+  X312Dprog.tgz     X header files, config files and compile-time libs
+  X312Dcfg.tgz      sample config files for xinit, xdm
+  X312Dnest.tgz     Nested X server
+  X312Dvfb.tgz      Virtual framebuffer X server
 
 
 
@@ -987,7 +1007,6 @@
 
   If you have a previous version of XFree86 installed, you can upgrade
   to the new version by first running the script preinst.sh, and then
-
   extracting the required .tgz files over the previous version in
   /usr/X11R6.  The preinst.sh script must be run before removing any
   previous beta versions you have installed.  It removes symbolic links
@@ -1034,6 +1053,7 @@
 
 
   Note that there is no postinst.sh script to be run for this release.
+
   However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD),
   you should either run ldconfig or reboot to complete the installation.
   On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you
@@ -1041,7 +1061,53 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.32 1996/05/15 03:34:30 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.33 1996/06/10 09:15:16 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

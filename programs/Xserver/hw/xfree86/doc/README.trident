@@ -64,11 +64,31 @@
            Turn on hardware cursor (NOTE: it is off by default)
 
 
-        Option "pci_burst_on"
-           Turn on PCI burst mode (NOTE: it is off by default)
+        Option "tgui_pci_read_on"
+           Turn on PCI burst read mode.
+
+        Option "tgui_pci_read_off"
+           Turn off PCI burst read mode.
+
+        Option "tgui_pci_write_on"
+           Turn on PCI burst write mode.
+
+        Option "tgui_pci_write_off"
+           Turn off PCI burst write mode.  NOTE: PCI modes. By default
+           the read burst and write burst are independant of each other.
+           By not specifying one of the above - the PCI registers are
+           untouched. If you suffer from screen corruption then try
+           turning them off. By turning them on explicitly may benefit
+           from improved performance, but it may also give screen
+           corruption. USE WITH CAUTION.
 
         ClockChip "tgui"
            Turn on programmable clocks.  This is the default for TGUIs.
+
+        Option "no_program_clocks"
+           Turn off programmable clock. Use fixed VGA clocks only.
+           Useful for fixed frequency monitors - usually used for VGA
+           monitors - not SVGA.
 
      o  No acceleration features of the newer chipsets have been taken
         advantage of yet!
@@ -129,7 +149,6 @@
   hardware phenomenon was discovered.  When using the default board
   jumper configuration, dot-clocks above 57Mhz would frequently lock up
   the machine.  There appear to be jumpers on all of the Trident boards
-
   that determine whether the board will operate in zero-wait-state mode
   on the ISA bus.  Disabling the zero-wait-state mode via jumpers cured
   the lockups, but at the expense of performance.  Whether or not a
@@ -143,7 +162,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.10 1996/02/20 14:34:35 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.12 1996/06/29 09:07:47 dawes Exp $
 
 
 
@@ -151,25 +170,6 @@
 
 
   $XConsortium: trident.sgml /main/7 1996/01/16 15:36:48 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

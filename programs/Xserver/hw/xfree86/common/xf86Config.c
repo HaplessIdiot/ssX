@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.91 1996/06/10 09:14:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.92 1996/06/29 09:07:35 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2666,8 +2666,12 @@ configScreenSection()
     } else {
       /* Work out which if any Display subsection to use based on depth */
       if (xf86bpp < 0) { 
-        /* no -bpp option given, so take depth if only one Display subsection */
-        if (numDisps == 1) {
+        /*
+	 * no -bpp option given, so take depth if only one Display subsection
+	 * Don't do this for VGA2 and VGA16 where it makes no sense, and only
+	 * causes problems
+	 */
+        if (numDisps == 1 && !(driverno >= VGA2 && driverno <= VGA16)) {
 #ifndef XF86SETUP
           if (dispList[0].depth > 0) {
             xf86bpp = dispList[0].depth;

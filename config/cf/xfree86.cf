@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.93 1996/06/13 07:54:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.94 1996/06/29 09:02:02 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -307,6 +307,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #else
 #define BuildXF86Setup			NO
 #endif
+#endif
+
+#ifndef XF86SetupUsesStaticTkTcl
+#define XF86SetupUsesStaticTkTcl	YES
 #endif
 
 /*

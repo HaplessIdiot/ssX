@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.0 1996/06/13 07:58:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.1 1996/06/29 09:06:30 dawes Exp $
 #include <Server.tmpl>
 
 #if !BuildXKB || !BuildXF86MiscExt || !BuildXF86VidModeExt
@@ -75,6 +75,7 @@ DependTarget()
 
 InstallMultiple($(TCL_FILES),$(XF86SETUPLIBDIR))
 InstallMultiple($(TCLLIB_FILES),$(XF86SETUPLIBDIR)/tcllib)
+InstallMultiple($(PICS_FILES),$(XF86SETUPLIBDIR)/pics)
 InstallManPage(XF86Setup,$(MANDIR))
 
 #endif
