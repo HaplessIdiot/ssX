@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tris.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -54,6 +54,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i830_state.h"
 #include "i830_vb.h"
 #include "i830_ioctl.h"
+#include "i830_span.h"
 
 static void i830RenderPrimitive( GLcontext *ctx, GLenum prim );
 
@@ -398,13 +399,15 @@ i830_fallback_tri( i830ContextPtr imesa,
    GLcontext *ctx = imesa->glCtx;
    SWvertex v[3];
 
-   if (DEBUGGING)
+   if (0)
       fprintf(stderr, "\n%s\n", __FUNCTION__);
 
    i830_translate_vertex( ctx, v0, &v[0] );
    i830_translate_vertex( ctx, v1, &v[1] );
    i830_translate_vertex( ctx, v2, &v[2] );
+   i830SpanRenderStart( ctx );
    _swrast_Triangle( ctx, &v[0], &v[1], &v[2] );
+   i830SpanRenderFinish( ctx );
 }
 
 
@@ -416,12 +419,14 @@ i830_fallback_line( i830ContextPtr imesa,
    GLcontext *ctx = imesa->glCtx;
    SWvertex v[2];
 
-   if (DEBUGGING)
+   if (0)
       fprintf(stderr, "\n%s\n", __FUNCTION__);
 
    i830_translate_vertex( ctx, v0, &v[0] );
    i830_translate_vertex( ctx, v1, &v[1] );
+   i830SpanRenderStart( ctx );
    _swrast_Line( ctx, &v[0], &v[1] );
+   i830SpanRenderFinish( ctx );
 }
 
 
@@ -432,11 +437,13 @@ i830_fallback_point( i830ContextPtr imesa,
    GLcontext *ctx = imesa->glCtx;
    SWvertex v[1];
 
-   if (DEBUGGING)
+   if (0)
       fprintf(stderr, "\n%s\n", __FUNCTION__);
 
    i830_translate_vertex( ctx, v0, &v[0] );
+   i830SpanRenderStart( ctx );
    _swrast_Point( ctx, &v[0] );
+   i830SpanRenderFinish( ctx );
 }
 
 
@@ -486,9 +493,6 @@ static void i830RenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    struct vertex_buffer *VB = &TNL_CONTEXT(ctx)->vb;
    GLuint prim = imesa->render_primitive;
 
-   if (DEBUGGING)
-      fprintf(stderr, "\n%s\n", __FUNCTION__);
-
    /* Render the new vertices as an unclipped polygon.
     */
    {
@@ -509,9 +513,6 @@ static void i830RenderClippedLine( GLcontext *ctx, GLuint ii, GLuint jj )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
 
-   if (DEBUGGING)
-      fprintf(stderr, "\n%s\n", __FUNCTION__);
-
    tnl->Driver.Render.Line( ctx, ii, jj );
 }
 
@@ -526,13 +527,10 @@ static void i830FastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    const GLuint *start = (const GLuint *)V(elts[0]);
    int i,j;
 
-   if (DEBUGGING)
-      fprintf(stderr, "\n%s\n", __FUNCTION__);
-
    for (i = 2 ; i < n ; i++) {
-      COPY_DWORDS( j, vb, vertsize, start );
       COPY_DWORDS( j, vb, vertsize, V(elts[i-1]) );
       COPY_DWORDS( j, vb, vertsize, V(elts[i]) );
+      COPY_DWORDS( j, vb, vertsize, start );
    }
 }
 
@@ -562,7 +560,8 @@ static void i830ChooseRenderState(GLcontext *ctx)
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    GLuint flags = ctx->_TriangleCaps;
    GLuint index = 0;
-   if (DEBUGGING)
+
+   if (I830_DEBUG & DEBUG_STATE)
      fprintf(stderr,"\n%s\n",__FUNCTION__);
 
    if (flags & (ANY_FALLBACK_FLAGS|ANY_RASTER_FLAGS)) {
@@ -714,7 +713,7 @@ void i830RasterPrimitive( GLcontext *ctx,
 
    aa &= ~AA_LINE_ENABLE;
 
-   if (0) {
+   if (I830_DEBUG & DEBUG_PRIMS) {
       /* Prints reduced prim, and hw prim */
       char *prim_name = "Unknown";
 
@@ -785,6 +784,29 @@ void i830RasterPrimitive( GLcontext *ctx,
 /*           Transition to/from hardware rasterization.               */
 /**********************************************************************/
 
+static char *fallbackStrings[] = {
+   "Texture",
+   "Draw buffer",
+   "Read buffer",
+   "Color mask",
+   "Render mode",
+   "Stencil",
+   "Stipple",
+   "User disable"
+};
+
+
+static char *getFallbackString(GLuint bit)
+{
+   int i = 0;
+   while (bit > 1) {
+      i++;
+      bit >>= 1;
+   }
+   return fallbackStrings[i];
+}
+
+
 
 void i830Fallback( i830ContextPtr imesa, GLuint bit, GLboolean mode )
 {
@@ -792,14 +814,12 @@ void i830Fallback( i830ContextPtr imesa, GLuint bit, GLboolean mode )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    GLuint oldfallback = imesa->Fallback;
 
-   if (0) fprintf(stderr, "%s old %x bit %x mode %d\n", __FUNCTION__,
-		  imesa->Fallback, bit, mode );
-   
    if (mode) {
       imesa->Fallback |= bit;
       if (oldfallback == 0) {
-	 if (0) fprintf(stderr, "ENTER FALLBACK\n");
 	 I830_FIREVERTICES(imesa);
+	 if (I830_DEBUG & DEBUG_FALLBACKS) 
+	    fprintf(stderr, "ENTER FALLBACK %s\n", getFallbackString( bit ));
 	 _swsetup_Wakeup( ctx );
 	 imesa->RenderIndex = ~0;
       }
@@ -807,8 +827,9 @@ void i830Fallback( i830ContextPtr imesa, GLuint bit, GLboolean mode )
    else {
       imesa->Fallback &= ~bit;
       if (oldfallback == bit) {
-         if (0) fprintf(stderr, "LEAVE FALLBACK\n");
 	 _swrast_flush( ctx );
+	 if (I830_DEBUG & DEBUG_FALLBACKS) 
+	    fprintf(stderr, "LEAVE FALLBACK %s\n", getFallbackString( bit ));
 	 tnl->Driver.Render.Start = i830RenderStart;
 	 tnl->Driver.Render.PrimitiveNotify = i830RenderPrimitive;
 	 tnl->Driver.Render.Finish = i830RenderFinish;

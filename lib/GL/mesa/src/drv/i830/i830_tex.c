@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tex.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -71,7 +71,7 @@ static GLuint i830ComputeLodBias(GLfloat bias)
 static void i830SetTexWrapping(i830TextureObjectPtr tex,
 			       GLenum swrap, GLenum twrap)
 {
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(I830_DEBUG&DEBUG_DRI)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    tex->Setup[I830_TEXREG_MCS] &= ~(TEXCOORD_ADDR_U_MASK|TEXCOORD_ADDR_V_MASK);
@@ -112,7 +112,7 @@ static void i830SetTexFilter(i830ContextPtr imesa,
 {
    int minFilt = 0, mipFilt = 0, magFilt = 0;
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(I830_DEBUG&DEBUG_DRI)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    switch (minf) {
@@ -181,7 +181,7 @@ static void i830SetTexFilter(i830ContextPtr imesa,
 
 static void i830SetTexBorderColor(i830TextureObjectPtr t, GLubyte color[4])
 {
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(I830_DEBUG&DEBUG_DRI)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
     t->Setup[I830_TEXREG_MI5] = 

@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.1 2002/09/09 19:18:47 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.2 2002/09/10 00:39:38 dawes Exp $ */
 
 /*
  * Authors:
@@ -63,19 +63,42 @@
 #include <X11/Xlibint.h>
 #include <stdio.h>
 
+
+#ifndef I830_DEBUG
+int I830_DEBUG = (0);
+#endif
+
 /***************************************
  * Mesa's Driver Functions
  ***************************************/
 
+#define PCI_CHIP_845_G			0x2562
+#define PCI_CHIP_I830_M			0x3577
+#define DRIVER_DATE                     "20020803"
+
 static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
 {
-   switch (name) {
-   case GL_VENDOR:
-      return (GLubyte *)"2d3D, Inc";
-   case GL_RENDERER:
-      return (GLubyte *)"Mesa DRI I830 20020528";
-   default:
-      return 0;
+   switch (I830_CONTEXT(ctx)->i830Screen->deviceID) {
+   case PCI_CHIP_845_G:
+      switch (name) {
+      case GL_VENDOR:
+	 return (GLubyte *)"2d3D, Inc";
+      case GL_RENDERER:
+	 return (GLubyte *)"Mesa DRI I845 " DRIVER_DATE;
+      default:
+	 return 0;
+      }
+      break;
+   case PCI_CHIP_I830_M:
+      switch (name) {
+      case GL_VENDOR:
+	 return (GLubyte *)"VA Linux, Inc";
+      case GL_RENDERER:
+	 return (GLubyte *)"Mesa DRI I830 " DRIVER_DATE;
+      default:
+	 return 0;
+      }
+      break;
    }
 }
 
@@ -108,6 +131,8 @@ static void i830InitExtensions( GLcontext *ctx )
    _mesa_enable_extension( ctx, "GL_EXT_blend_subtract" );
    _mesa_enable_extension( ctx, "GL_EXT_blend_func_separate" );
    _mesa_enable_extension( ctx, "GL_EXT_texture_lod_bias" );
+   _mesa_enable_extension( ctx, "GL_EXT_secondary_color" );
+   _mesa_enable_extension( ctx, "GL_EXT_fog_coord" );
 
    /* Leave this for later */
 #if 0
@@ -131,6 +156,48 @@ static const struct gl_pipeline_stage *i830_pipeline[] = {
    &_tnl_render_stage,
    0,
 };
+
+
+#if DO_DEBUG
+static void add_debug_flags( const char *debug )
+{
+   if (strstr(debug, "fall")) 
+      I830_DEBUG |= DEBUG_FALLBACKS;
+
+   if (strstr(debug, "tex")) 
+      I830_DEBUG |= DEBUG_TEXTURE;
+
+   if (strstr(debug, "ioctl")) 
+      I830_DEBUG |= DEBUG_IOCTL;
+
+   if (strstr(debug, "prim")) 
+      I830_DEBUG |= DEBUG_PRIMS;
+
+   if (strstr(debug, "vert")) 
+      I830_DEBUG |= DEBUG_VERTS;
+
+   if (strstr(debug, "state")) 
+      I830_DEBUG |= DEBUG_STATE;
+
+   if (strstr(debug, "verb")) 
+      I830_DEBUG |= DEBUG_VERBOSE;
+
+   if (strstr(debug, "dri")) 
+      I830_DEBUG |= DEBUG_DRI;
+
+   if (strstr(debug, "dma")) 
+      I830_DEBUG |= DEBUG_DMA;
+
+   if (strstr(debug, "san")) 
+      I830_DEBUG |= DEBUG_SANITY;
+
+   if (strstr(debug, "sync")) 
+      I830_DEBUG |= DEBUG_SYNC;
+
+   if (strstr(debug, "sleep")) 
+      I830_DEBUG |= DEBUG_SLEEP;
+}
+#endif
 
 GLboolean i830CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
 			    __DRIcontextPrivate *driContextPriv,
@@ -187,6 +254,7 @@ GLboolean i830CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    ctx->Const.PointSizeGranularity = 1.0;
 
    ctx->Driver.GetBufferSize = i830BufferSize;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
    ctx->Driver.GetString = i830DDGetString;
 
    /* Who owns who? */
@@ -266,6 +334,14 @@ GLboolean i830CreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    i830DDInitIoctlFuncs( ctx );
    i830InitVB (ctx);
    i830DDInitState (ctx);
+
+#if DO_DEBUG
+   if (getenv("INTEL_DEBUG"))
+      add_debug_flags( getenv("INTEL_DEBUG") );
+   if (getenv("I830_DEBUG"))
+      add_debug_flags( getenv("I830_DEBUG") );
+#endif
+
 
    return GL_TRUE;
 }
@@ -362,14 +438,16 @@ GLboolean i830MakeCurrent(__DRIcontextPrivate *driContextPriv,
    if (driContextPriv) {
       i830ContextPtr imesa = (i830ContextPtr) driContextPriv->driverPrivate;
 
+      if ( imesa->driDrawable != driDrawPriv ) {
+	 /* Shouldn't the readbuffer be stored also? */
+	 imesa->driDrawable = driDrawPriv;
+	 i830XMesaWindowMoved( imesa );
+      }
+
       _mesa_make_current2(imesa->glCtx,
 			  (GLframebuffer *) driDrawPriv->driverPrivate,
 			  (GLframebuffer *) driReadPriv->driverPrivate);
-      /* Shouldn't the readbuffer be stored also? */
-      imesa->driDrawable = driDrawPriv;
 
-      /* Are these necessary? */
-      i830XMesaWindowMoved( imesa );
       if (!imesa->glCtx->Viewport.Width)
 	 _mesa_set_viewport(imesa->glCtx, 0, 0,
 			    driDrawPriv->w, driDrawPriv->h);

@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texstate.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -55,6 +55,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i830_tex.h"
 #include "i830_state.h"
 #include "i830_ioctl.h"
+
+#define I830_TEX_UNIT_ENABLED(unit)		(1<<unit)
 
 static void i830SetTexImages( i830ContextPtr imesa, 
 			      struct gl_texture_object *tObj )
@@ -184,7 +186,9 @@ static void i830SetTexImages( i830ContextPtr imesa,
 				LOD_MIN(numLevels - 1));
 
    t->dirty = I830_UPLOAD_TEX0 | I830_UPLOAD_TEX1;
+   LOCK_HARDWARE( imesa );
    i830UploadTexImages( imesa, t );
+   UNLOCK_HARDWARE( imesa );
 }
 
 /* ================================================================
@@ -206,7 +210,7 @@ static void i830SetBlend_GL1_2(i830ContextPtr imesa, int curTex,
 {
    GLuint texel_op = GetTexelOp(curTex);
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(I830_DEBUG&DEBUG_TEXTURE)
      fprintf(stderr, "%s %s %s unit (%d) texel_op(0x%x)\n",
 	     __FUNCTION__,
 	     _mesa_lookup_enum_by_nr(format),
@@ -1015,7 +1019,7 @@ static void i830SetBlend_GL1_2(i830ContextPtr imesa, int curTex,
 	 break;
    }
 
-   if (I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if (I830_DEBUG&DEBUG_TEXTURE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 }
 
@@ -1030,7 +1034,7 @@ static void i830SetTexEnvCombine(i830ContextPtr imesa,
    GLuint texel_op = GetTexelOp(unit);
    int i;
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(I830_DEBUG&DEBUG_TEXTURE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    switch(texUnit->CombineModeRGB) {
@@ -1251,7 +1255,7 @@ static void i830UpdateTexEnv( GLcontext *ctx, GLuint unit )
 
 static void i830TexSetUnit( i830TextureObjectPtr t, GLuint unit )
 {
-      if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+      if(I830_DEBUG&DEBUG_TEXTURE)
            fprintf(stderr, "%s unit(%d)\n", __FUNCTION__, unit);
    
       /* This will need to be changed when I support more then 2 t units */

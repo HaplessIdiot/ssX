@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.h,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -59,6 +59,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern void i830DDInitState( GLcontext *ctx );
 extern void i830DDInitStateFuncs( GLcontext *ctx );
+
 extern void i830PrintDirty( const char *msg, GLuint state );
 
 extern void i830Fallback( i830ContextPtr imesa, GLuint bit, GLboolean mode );

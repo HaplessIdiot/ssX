@@ -1,10 +1,14 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.h,v 1.2 2001/10/28 03:33:33 tsi Exp $ */
 
 #ifndef _I830_DRI_H
 #define _I830_DRI_H
 
-#include <xf86drm.h>
-#include <xf86drmI830.h>
+#include "xf86drm.h"
+#ifdef HAVE_DRM_COMMAND
+#include "i830_common.h"
+#else
+#include "xf86drmI830.h"
+#endif
 
 #define I830_MAX_DRAWABLES 256
 
@@ -30,7 +34,7 @@ typedef struct _I830DRIRec {
 
    drmHandle agp_buffers;
    drmSize agp_buf_size;
-   
+
    int deviceID;
    int width;
    int height;
@@ -60,61 +64,61 @@ typedef struct _I830DRIRec {
 } I830DRIRec, *I830DRIPtr;
 
 typedef struct {
-  /* Nothing here yet */
-  int dummy;
+   /* Nothing here yet */
+   int dummy;
 } I830ConfigPrivRec, *I830ConfigPrivPtr;
 
 typedef struct {
-  /* Nothing here yet */
-  int dummy;
+   /* Nothing here yet */
+   int dummy;
 } I830DRIContextRec, *I830DRIContextPtr;
 
 /* Warning: If you change the SAREA structure you must change the kernel
  * structure as well */
 
 typedef struct _I830TexRegion {
-	unsigned char next, prev; /* indices to form a circular LRU  */
-	unsigned char in_use;	/* owned by a client, or free? */
-	int age;		/* tracked by clients to update local LRU's */
+   unsigned char next, prev;		/* indices to form a circular LRU  */
+   unsigned char in_use;		/* owned by a client, or free? */
+   int age;				/* tracked by clients to update local LRU's */
 } I830TexRegion;
 
 typedef struct _I830SAREA {
-	unsigned int ContextState[I830_CTX_SETUP_SIZE];
-   	unsigned int BufferState[I830_DEST_SETUP_SIZE];
-	unsigned int TexState[I830_TEXTURE_COUNT][I830_TEX_SETUP_SIZE];
-	unsigned int TexBlendState[I830_TEXBLEND_COUNT][I830_TEXBLEND_SIZE];
-	unsigned int TexBlendStateWordsUsed[I830_TEXBLEND_COUNT];
-	unsigned int Palette[2][256];
-   	unsigned int dirty;
+   unsigned int ContextState[I830_CTX_SETUP_SIZE];
+   unsigned int BufferState[I830_DEST_SETUP_SIZE];
+   unsigned int TexState[I830_TEXTURE_COUNT][I830_TEX_SETUP_SIZE];
+   unsigned int TexBlendState[I830_TEXBLEND_COUNT][I830_TEXBLEND_SIZE];
+   unsigned int TexBlendStateWordsUsed[I830_TEXBLEND_COUNT];
+   unsigned int Palette[2][256];
+   unsigned int dirty;
 
-	unsigned int nbox;
-	XF86DRIClipRectRec boxes[I830_NR_SAREA_CLIPRECTS];
+   unsigned int nbox;
+   XF86DRIClipRectRec boxes[I830_NR_SAREA_CLIPRECTS];
 
-	/* Maintain an LRU of contiguous regions of texture space.  If
-	 * you think you own a region of texture memory, and it has an
-	 * age different to the one you set, then you are mistaken and
-	 * it has been stolen by another client.  If global texAge
-	 * hasn't changed, there is no need to walk the list.
-	 *
-	 * These regions can be used as a proxy for the fine-grained
-	 * texture information of other clients - by maintaining them
-	 * in the same lru which is used to age their own textures,
-	 * clients have an approximate lru for the whole of global
-	 * texture space, and can make informed decisions as to which
-	 * areas to kick out.  There is no need to choose whether to
-	 * kick out your own texture or someone else's - simply eject
-	 * them all in LRU order.  
-	 */
+   /* Maintain an LRU of contiguous regions of texture space.  If
+    * you think you own a region of texture memory, and it has an
+    * age different to the one you set, then you are mistaken and
+    * it has been stolen by another client.  If global texAge
+    * hasn't changed, there is no need to walk the list.
+    *
+    * These regions can be used as a proxy for the fine-grained
+    * texture information of other clients - by maintaining them
+    * in the same lru which is used to age their own textures,
+    * clients have an approximate lru for the whole of global
+    * texture space, and can make informed decisions as to which
+    * areas to kick out.  There is no need to choose whether to
+    * kick out your own texture or someone else's - simply eject
+    * them all in LRU order.  
+    */
 
-	I830TexRegion texList[I830_NR_TEX_REGIONS+1]; 
-				/* Last elt is sentinal */
-        int texAge;		/* last time texture was uploaded */
-        int last_enqueue;	/* last time a buffer was enqueued */
-	int last_dispatch;	/* age of the most recently dispatched buffer */
-	int last_quiescent;     /*  */
-	int ctxOwner;		/* last context to upload state */
+   I830TexRegion texList[I830_NR_TEX_REGIONS + 1];
+   /* Last elt is sentinal */
+   int texAge;				/* last time texture was uploaded */
+   int last_enqueue;			/* last time a buffer was enqueued */
+   int last_dispatch;			/* age of the most recently dispatched buffer */
+   int last_quiescent;			/*  */
+   int ctxOwner;			/* last context to upload state */
 
-	int vertex_prim;
+   int vertex_prim;
 } I830SAREARec, *I830SAREAPtr;
 
 #endif

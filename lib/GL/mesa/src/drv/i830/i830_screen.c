@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_screen.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Authors:
@@ -158,8 +158,7 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    /* Allocate the private area */
    i830Screen = (i830ScreenPrivate *)Xmalloc(sizeof(i830ScreenPrivate));
    if (!i830Screen) {
-      if(DEBUGGING)
-	fprintf(stderr,"\nERROR!  Allocating private area failed\n");
+      fprintf(stderr,"\nERROR!  Allocating private area failed\n");
       return GL_FALSE;
    }
 
@@ -188,16 +187,11 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    i830Screen->textureSize = gDRIPriv->textureSize;
    i830Screen->logTextureGranularity = gDRIPriv->logTextureGranularity;
 			 			    			 
-   if (DEBUGGING)
-	 fprintf(stderr, "Tex heap size 0x%x, granularity 0x%x bytes\n",
-		 i830Screen->textureSize, 
-		 1 << i830Screen->logTextureGranularity);
 
    i830Screen->bufs = i830_create_empty_buffers();
    if(i830Screen->bufs == NULL) {
-      if (DEBUGGING)
-	fprintf(stderr,"\nERROR: Failed to create empty buffers in %s \n",
-		__FUNCTION__);
+      fprintf(stderr,"\nERROR: Failed to create empty buffers in %s \n",
+	      __FUNCTION__);
       Xfree(i830Screen);
       return GL_FALSE;
    }
@@ -217,9 +211,8 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
 	      i830Screen->back.handle,
 	      i830Screen->back.size,
 	      (drmAddress *)&i830Screen->back.map) != 0) {
-      if (DEBUGGING)
-	 fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n",
-		 __LINE__, __FUNCTION__, __FILE__);
+      fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n",
+	      __LINE__, __FUNCTION__, __FILE__);
       Xfree(i830Screen);
       sPriv->private = NULL;
       return GL_FALSE;
@@ -232,9 +225,8 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
 	      i830Screen->depth.handle,
 	      i830Screen->depth.size,
 	      (drmAddress *)&i830Screen->depth.map) != 0) {
-      if (DEBUGGING)
-	 fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n", 
-		 __LINE__, __FUNCTION__, __FILE__);
+      fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n", 
+	      __LINE__, __FUNCTION__, __FILE__);
       Xfree(i830Screen);
       drmUnmap(i830Screen->back.map, i830Screen->back.size);
       sPriv->private = NULL;
@@ -248,9 +240,8 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
 	      i830Screen->tex.handle,
 	      i830Screen->tex.size,
 	      (drmAddress *)&i830Screen->tex.map) != 0) {
-      if (DEBUGGING)
-	 fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n",
-		 __LINE__, __FUNCTION__, __FILE__);
+      fprintf(stderr, "\nERROR: line %d, Function %s, File %s\n",
+	      __LINE__, __FUNCTION__, __FILE__);
       Xfree(i830Screen);
       drmUnmap(i830Screen->back.map, i830Screen->back.size);
       drmUnmap(i830Screen->depth.map, i830Screen->depth.size);
@@ -259,7 +250,7 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    }
 			 
    i830Screen->sarea_priv_offset = gDRIPriv->sarea_priv_offset;
-   if(0) i830PrintDRIInfo(i830Screen, sPriv, gDRIPriv);
+   if (1) i830PrintDRIInfo(i830Screen, sPriv, gDRIPriv);
    return GL_TRUE;
 }
 		
@@ -308,35 +299,6 @@ static void i830DestroyBuffer(__DRIdrawablePrivate *driDrawPriv)
    _mesa_destroy_framebuffer((GLframebuffer *) (driDrawPriv->driverPrivate));
 }
 
-#if 0		
-GLboolean XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
-{  
-   i830ContextPtr imesa = (i830ContextPtr)driContextPriv->driverPrivate;
-   
-   if (imesa->currentPage ==1) {
-      i830PageFlip(imesa);
-      imesa->currentPage = 0;
-   }
-
-   imesa->doPageFlip = GL_FALSE;
-   imesa->Setup[I830_DESTREG_DI0] = imesa->driScreen->front_offset;
-   
-   return GL_TRUE;
-}
-
-
-GLboolean XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv)
-{	   
-   i830ContextPtr imesa = (i830ContextPtr)driContextPriv->driverPrivate;
-   
-   imesa->doPageFlip = 1;
-   imesa->currentPage = 0;
-   
-   return GL_TRUE;
-}
-
-#else
-
 static GLboolean i830OpenFullScreen (__DRIcontextPrivate *driContextPriv)
 {
    return GL_TRUE;  
@@ -346,8 +308,6 @@ static GLboolean i830CloseFullScreen (__DRIcontextPrivate *driContextPriv)
 {
    return GL_TRUE;  
 }
-
-#endif
 
 static struct __DriverAPIRec i830API = {
    i830InitDriver,

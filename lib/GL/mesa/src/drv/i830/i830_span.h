@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_span.h,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -39,5 +39,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _I830_SPAN_H
 
 extern void i830DDInitSpanFuncs( GLcontext *ctx );
+
+extern void i830SpanRenderFinish( GLcontext *ctx );
+extern void i830SpanRenderStart( GLcontext *ctx );
 
 #endif

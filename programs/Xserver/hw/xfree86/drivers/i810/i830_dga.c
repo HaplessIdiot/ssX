@@ -43,47 +43,47 @@
 #include "xf86PciInfo.h"
 #include "xaa.h"
 #include "xaalocal.h"
-#include "i810.h"
+#include "i830.h"
 #include "i810_reg.h"
 #include "dgaproc.h"
 #include "vgaHW.h"
 
-static Bool I810_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
+static Bool I830_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 				 int *, int *, int *);
-static Bool I810_SetMode(ScrnInfoPtr, DGAModePtr);
-static void I810_Sync(ScrnInfoPtr);
-static int I810_GetViewport(ScrnInfoPtr);
-static void I810_SetViewport(ScrnInfoPtr, int, int, int);
-static void I810_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
-static void I810_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+static Bool I830_SetMode(ScrnInfoPtr, DGAModePtr);
+static void I830_Sync(ScrnInfoPtr);
+static int I830_GetViewport(ScrnInfoPtr);
+static void I830_SetViewport(ScrnInfoPtr, int, int, int);
+static void I830_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
+static void I830_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 
 #if 0
-static void I810_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int,
+static void I830_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int,
 			       unsigned long);
 #endif
 
 static
-DGAFunctionRec I810DGAFuncs = {
-   I810_OpenFramebuffer,
+DGAFunctionRec I830DGAFuncs = {
+   I830_OpenFramebuffer,
    NULL,
-   I810_SetMode,
-   I810_SetViewport,
-   I810_GetViewport,
-   I810_Sync,
-   I810_FillRect,
-   I810_BlitRect,
+   I830_SetMode,
+   I830_SetViewport,
+   I830_GetViewport,
+   I830_Sync,
+   I830_FillRect,
+   I830_BlitRect,
 #if 0
-   I810_BlitTransRect
+   I830_BlitTransRect
 #else
    NULL
 #endif
 };
 
 Bool
-I810DGAInit(ScreenPtr pScreen)
+I830DGAInit(ScreenPtr pScreen)
 {
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
    DGAModePtr modes = NULL, newmodes = NULL, currentMode;
    DisplayModePtr pMode, firstMode;
    int Bpp = pScrn->bitsPerPixel >> 3;
@@ -108,7 +108,7 @@ I810DGAInit(ScreenPtr pScreen)
 
       currentMode->mode = pMode;
       currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-      if (pI810->AccelInfoRec)
+      if (pI830->AccelInfoRec)
 	 currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
       if (pMode->Flags & V_DBLSCAN)
 	 currentMode->flags |= DGA_DOUBLESCAN;
@@ -127,11 +127,11 @@ I810DGAInit(ScreenPtr pScreen)
       currentMode->yViewportStep = 1;
       currentMode->viewportFlags = DGA_FLIP_RETRACE;
       currentMode->offset = 0;
-      currentMode->address = pI810->FbBase;
+      currentMode->address = pI830->FbBase + pScrn->fbOffset;
 
       currentMode->bytesPerScanline = ((pScrn->displayWidth * Bpp) + 3) & ~3L;
-      currentMode->imageWidth = pI810->FbMemBox.x2;
-      currentMode->imageHeight = pI810->FbMemBox.y2;
+      currentMode->imageWidth = pI830->FbMemBox.x2;
+      currentMode->imageHeight = pI830->FbMemBox.y2;
       currentMode->pixmapWidth = currentMode->imageWidth;
       currentMode->pixmapHeight = currentMode->imageHeight;
       currentMode->maxViewportX = currentMode->imageWidth -
@@ -145,35 +145,35 @@ I810DGAInit(ScreenPtr pScreen)
 	 break;
    }
 
-   pI810->numDGAModes = num;
-   pI810->DGAModes = modes;
+   pI830->numDGAModes = num;
+   pI830->DGAModes = modes;
 
-   return DGAInit(pScreen, &I810DGAFuncs, modes, num);
+   return DGAInit(pScreen, &I830DGAFuncs, modes, num);
 }
 
-static DisplayModePtr I810SavedDGAModes[MAXSCREENS];
+static DisplayModePtr I830SavedDGAModes[MAXSCREENS];
 
 static Bool
-I810_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
+I830_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
    int index = pScrn->pScreen->myNum;
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
    if (!pMode) {			/* restore the original mode */
       DPRINTF(PFX, "Restoring original mode (from DGA mode)\n");
-      if (pI810->DGAactive) {
-	 pScrn->currentMode = I810SavedDGAModes[index];
+      if (pI830->DGAactive) {
+	 pScrn->currentMode = I830SavedDGAModes[index];
 	 pScrn->SwitchMode(index, pScrn->currentMode, 0);
 	 pScrn->AdjustFrame(index, 0, 0, 0);
-	 pI810->DGAactive = FALSE;
+	 pI830->DGAactive = FALSE;
       }
    } else {
-      if (!pI810->DGAactive) {
+      if (!pI830->DGAactive) {
 	 DPRINTF(PFX, "Setting DGA mode\n");
-	 I810SavedDGAModes[index] = pScrn->currentMode;
-	 pI810->DGAactive = TRUE;
+	 I830SavedDGAModes[index] = pScrn->currentMode;
+	 pI830->DGAactive = TRUE;
       }
 
       pScrn->SwitchMode(index, pMode->mode, 0);
@@ -183,19 +183,19 @@ I810_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 }
 
 static int
-I810_GetViewport(ScrnInfoPtr pScrn)
+I830_GetViewport(ScrnInfoPtr pScrn)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
-   return pI810->DGAViewportStatus;
+   return pI830->DGAViewportStatus;
 }
 
 static void
-I810_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
+I830_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
    MARKER();
@@ -206,59 +206,59 @@ I810_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
    while ((hwp->readST01(hwp) & 0x08)) ;
    while (!(hwp->readST01(hwp) & 0x08)) ;
 
-   pI810->DGAViewportStatus = 0;
+   pI830->DGAViewportStatus = 0;
 }
 
 static void
-I810_FillRect(ScrnInfoPtr pScrn,
+I830_FillRect(ScrnInfoPtr pScrn,
 	      int x, int y, int w, int h, unsigned long color)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
-   if (pI810->AccelInfoRec) {
-      (*pI810->AccelInfoRec->SetupForSolidFill) (pScrn, color, GXcopy, ~0);
-      (*pI810->AccelInfoRec->SubsequentSolidFillRect) (pScrn, x, y, w, h);
-      SET_SYNC_FLAG(pI810->AccelInfoRec);
+   if (pI830->AccelInfoRec) {
+      (*pI830->AccelInfoRec->SetupForSolidFill) (pScrn, color, GXcopy, ~0);
+      (*pI830->AccelInfoRec->SubsequentSolidFillRect) (pScrn, x, y, w, h);
+      SET_SYNC_FLAG(pI830->AccelInfoRec);
    }
 }
 
 static void
-I810_Sync(ScrnInfoPtr pScrn)
+I830_Sync(ScrnInfoPtr pScrn)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
-   if (pI810->AccelInfoRec) {
-      (*pI810->AccelInfoRec->Sync) (pScrn);
+   if (pI830->AccelInfoRec) {
+      (*pI830->AccelInfoRec->Sync) (pScrn);
    }
 }
 
 static void
-I810_BlitRect(ScrnInfoPtr pScrn,
+I830_BlitRect(ScrnInfoPtr pScrn,
 	      int srcx, int srcy, int w, int h, int dstx, int dsty)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
-   if (pI810->AccelInfoRec) {
+   if (pI830->AccelInfoRec) {
       int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
       int ydir = (srcy < dsty) ? -1 : 1;
 
-      (*pI810->AccelInfoRec->SetupForScreenToScreenCopy) (pScrn, xdir, ydir,
+      (*pI830->AccelInfoRec->SetupForScreenToScreenCopy) (pScrn, xdir, ydir,
 							  GXcopy, ~0, -1);
-      (*pI810->AccelInfoRec->SubsequentScreenToScreenCopy) (pScrn, srcx, srcy,
+      (*pI830->AccelInfoRec->SubsequentScreenToScreenCopy) (pScrn, srcx, srcy,
 							    dstx, dsty, w, h);
-      SET_SYNC_FLAG(pI810->AccelInfoRec);
+      SET_SYNC_FLAG(pI830->AccelInfoRec);
    }
 }
 
 #if 0
 static void
-I810_BlitTransRect(ScrnInfoPtr pScrn,
+I830_BlitTransRect(ScrnInfoPtr pScrn,
 		   int srcx, int srcy,
 		   int w, int h, int dstx, int dsty, unsigned long color)
 {
@@ -271,23 +271,23 @@ I810_BlitTransRect(ScrnInfoPtr pScrn,
 #endif
 
 static Bool
-I810_OpenFramebuffer(ScrnInfoPtr pScrn,
+I830_OpenFramebuffer(ScrnInfoPtr pScrn,
 		     char **name,
 		     unsigned char **mem, int *size, int *offset, int *flags)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
+   I830Ptr pI830 = I830PTR(pScrn);
 
    MARKER();
 
    *name = NULL;			/* no special device */
-   *mem = (unsigned char *)pI810->LinearAddr;
-   *size = pI810->FbMapSize;
-   *offset = 0;
+   *mem = (unsigned char *)pI830->LinearAddr;
+   *size = pI830->FbMapSize;
+   *offset = pScrn->fbOffset;
    *flags = DGA_NEED_ROOT;
 
    DPRINTF(PFX,
-	   " mem == 0x%.8x (pI810->LinearAddr)\n"
-	   "size == %lu (pI810->FbMapSize)\n", *mem, *size);
+	   " mem == 0x%.8x (pI830->LinearAddr)\n"
+	   "size == %lu (pI830->FbMapSize)\n", *mem, *size);
 
    return TRUE;
 }

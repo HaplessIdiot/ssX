@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_span.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -50,6 +50,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DBG 0
 
 #define LOCAL_VARS						\
+   i830ContextPtr imesa = I830_CONTEXT(ctx);                    \
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;		\
    i830ScreenPrivate *i830Screen = imesa->i830Screen;		\
    GLuint pitch = i830Screen->backPitch * i830Screen->cpp;	\
@@ -64,6 +65,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
    (void) read_buf; (void) buf; (void) p
 
 #define LOCAL_DEPTH_VARS					\
+   i830ContextPtr imesa = I830_CONTEXT(ctx);                    \
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;		\
    i830ScreenPrivate *i830Screen = imesa->i830Screen;		\
    GLuint pitch = i830Screen->backPitch * i830Screen->cpp;	\
@@ -93,11 +95,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define Y_FLIP(_y) (height - _y - 1)
 
 
-#define HW_LOCK()				\
-   i830ContextPtr imesa = I830_CONTEXT(ctx);	\
-   I830_FIREVERTICES(imesa);			\
-   i830DmaFinish(imesa);			\
-   LOCK_HARDWARE_QUIESCENT(imesa);
+#define HW_LOCK()
 
 #define HW_CLIPLOOP()						\
   do {								\
@@ -114,9 +112,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
     }						\
   } while (0)
 
-#define HW_UNLOCK()				\
-    UNLOCK_HARDWARE(imesa);
-
+#define HW_UNLOCK()
 
 /* 16 bit, 565 rgb color spanline and pixel functions
  */
@@ -179,6 +175,7 @@ do {								\
 
 #undef LOCAL_VARS
 #define LOCAL_VARS					\
+   i830ContextPtr imesa = I830_CONTEXT(ctx);                    \
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;	\
    i830ScreenPrivate *i830Screen = imesa->i830Screen;	\
    GLuint pitch = i830Screen->backPitch * i830Screen->cpp;	\
@@ -280,14 +277,29 @@ static void i830SetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
 
 
 
+/* Move locking out to get reasonable span performance.
+ */
+void i830SpanRenderStart( GLcontext *ctx )
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   I830_FIREVERTICES(imesa);
+   i830DmaFinish(imesa);
+   LOCK_HARDWARE_QUIESCENT(imesa);
+}
+
+void i830SpanRenderFinish( GLcontext *ctx )
+{
+   i830ContextPtr imesa = I830_CONTEXT( ctx );
+   _swrast_flush( ctx );
+   UNLOCK_HARDWARE( imesa );
+}
+
 void i830DDInitSpanFuncs( GLcontext *ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    i830ScreenPrivate *i830Screen = imesa->i830Screen;
 
    struct swrast_device_driver *swdd = _swrast_GetDeviceDriverReference(ctx);
-   if (DEBUGGING) 
-      fprintf(stderr,"\nInitialising SPAN funcs\n");
 
    swdd->SetReadBuffer = i830SetReadBuffer;
 
@@ -349,6 +361,7 @@ void i830DDInitSpanFuncs( GLcontext *ctx )
       }
       break;
    }
-   if (DEBUGGING)
-      fprintf(stderr,"\nFinished initialising SPAN funcs\n");
+
+   swdd->SpanRenderStart = i830SpanRenderStart;
+   swdd->SpanRenderFinish = i830SpanRenderFinish; 
 }
