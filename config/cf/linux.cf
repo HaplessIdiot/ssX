@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.155 2000/12/12 23:24:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.156 2000/12/14 00:53:35 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -87,7 +87,9 @@ XCOMM libc:	(LinuxCLibMajorVersion./**/LinuxCLibMinorVersion./**/LinuxCLibTeenyV
 XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #if LinuxDistribution == LinuxDebian
-#define XFree86Devel	YES
+#ifdef DebianMaintainer
+#define XFree86Devel		YES
+#endif
 #define HasTk			YES
 #define TkLibDir		/usr/lib
 #define TkIncDir		/usr/include
@@ -98,10 +100,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define TclIncDir		/usr/include
 #define TclLibName		tcl8.3
 #define XF86SetupUsesStaticTcl	NO
-#if 0
-#define XInputDrivers mouse dynapro elo2300 elographics magellan microtouch \
-	mutouch spaceorb wacom void
-#endif
 /* un-comment this when it is un-broken */
 /* #define JoystickSupport YES */
 #define InstallXinitConfig	YES
@@ -127,6 +125,16 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #define XAppLoadDir		EtcX11Directory/app-defaults
 #define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
+#ifdef DebianMaintainer
+/* the relative symlink created by this rule causes problems for us */
+#if InstallAppDefFiles
+#define InstallAppDefaultsLong(file,class)				@@\
+InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
+#else
+#define InstallAppDefaultsLong(file,class)				@@\
+InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
+#endif /* InstallAppDefFiles */
+#endif
 #ifdef DebianMaintainer
 #define BuilderEMailAddr	"submit@bugs.debian.org"
 #endif
