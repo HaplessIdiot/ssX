@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.24 2001/02/07 13:26:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.25 2001/02/27 18:47:25 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -113,8 +113,34 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg[0];
     CARD32 temp1, temp2, temp3, temp4;
 
-    pReg->glintRegs[Aperture0 >> 3] = 0;
-    pReg->glintRegs[Aperture1 >> 3] = 0;
+    temp1 = 0;
+    temp2 = 0;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    switch (pGlint->HwBpp) {
+    case 8:
+    case 24:
+	    temp1 = 0x00;
+	    temp2 = 0x00;
+	    break;
+
+    case 15:
+    case 16:
+	    temp1 = 0x02;
+	    temp2 = 0x02;
+	    break;
+
+    case 32:
+	    temp1 = 0x01;
+	    temp2 = 0x01;
+	    break;
+    default:
+	    break;
+    };
+#endif /* BIG_ENDIAN */
+
+    pReg->glintRegs[Aperture0 >> 3] = temp1;
+    pReg->glintRegs[Aperture1 >> 3] = temp2;
+
     pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
     pReg->glintRegs[PMBypassWriteMask >> 3] = 0xFFFFFFFF;
 
@@ -163,7 +189,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVTotal >> 3] -= 1; /* PMVTotal */
 
     pReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig) & 0xFFFFFFDD;
-    pReg->DacRegs[PM2VDACRDDACControl] = 0x80;
+    pReg->DacRegs[PM2VDACRDDACControl] = 0x00;
   
     {
 	/* Get the programmable clock values */
@@ -197,6 +223,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x2E;
     	break;
     case 16:
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
 	if (pScrn->depth == 15)
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
@@ -204,10 +231,12 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
     	break;
     case 24:
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x04;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x60;
     	break;
     case 32:
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {

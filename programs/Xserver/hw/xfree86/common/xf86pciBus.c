@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.39 2001/04/01 14:00:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.41 2001/05/15 10:19:35 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1697,24 +1697,24 @@ get_sun_apb_ranges(PciBusPtr PciBus, pciConfigPtr pcrp)
     iomap = pciReadByte(pcrp->tag, APB_IO_ADDRESS_MAP);
     memmap = pciReadByte(pcrp->tag, APB_MEM_ADDRESS_MAP);
 
-    /* if (pcrp->pci_command & PCI_CMD_IO_ENABLE) */ {	/* ??? */
+    if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
 	for (i = 0; i < 8; i++) {
 	    if ((iomap & (1 << i)) != 0) {
 		PCI_I_RANGE(range, pcrp->tag,
 		    (i << 21), (i << 21) + ((1 << 21) - 1),
 		    ResIo | ResBlock | ResExclusive);
-		PciBus->io = xf86AddResToList(PciBus->io, &range, -1);
+		PciBus->preferred_io = xf86AddResToList(PciBus->preferred_io, &range, -1);
 	    }
 	}
     }
 
-    /* if (pcrp->pci_command & PCI_CMD_MEM_ENABLE) */ {	/* ??? */
+    if (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
 	for (i = 0; i < 8; i++) {
 	    if ((memmap & (1 << i)) != 0) {
 		PCI_M_RANGE(range, pcrp->tag,
 		    (i << 29), (i << 29) + ((1 << 29) - 1),
 		    ResMem | ResBlock | ResExclusive);
-		PciBus->mem = xf86AddResToList(PciBus->mem, &range, -1);
+		PciBus->preferred_mem = xf86AddResToList(PciBus->preferred_mem, &range, -1);
 	    }
 	}
     }
@@ -2054,6 +2054,10 @@ ValidatePci(void)
 	    Sys = xf86AddResToList(Sys, &range, -1);
 	}
     }
+#ifdef DEBUG
+    xf86MsgVerb(X_INFO, 3,"Sys:\n");
+    xf86PrintResList(3,Sys);
+#endif
 
     /*
      * The order the video devices are listed in is
