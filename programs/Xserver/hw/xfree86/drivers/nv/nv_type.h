@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.33 2002/03/15 05:16:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.34 2002/03/18 21:47:48 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -156,7 +156,14 @@ int RivaGetConfig(NVPtr);
 #define NV_CHIP_QUADRO4_200         ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_200)
 #define NV_CHIP_QUADRO4_550XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_550XGL)
 #define NV_CHIP_QUADRO4_500_GOGL    ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_500_GOGL)
+#define NV_CHIP_0x0180              ((PCI_VENDOR_NVIDIA << 16) | 0x0180)
+#define NV_CHIP_0x0181              ((PCI_VENDOR_NVIDIA << 16) | 0x0181)
+#define NV_CHIP_0x0182              ((PCI_VENDOR_NVIDIA << 16) | 0x0182)
+#define NV_CHIP_0x0188              ((PCI_VENDOR_NVIDIA << 16) | 0x0188)
+#define NV_CHIP_0x018A              ((PCI_VENDOR_NVIDIA << 16) | 0x018A)
+#define NV_CHIP_0x018B              ((PCI_VENDOR_NVIDIA << 16) | 0x018B)
 #define NV_CHIP_IGEFORCE2           ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_IGEFORCE2)
+#define NV_CHIP_0x01F0              ((PCI_VENDOR_NVIDIA << 16) | 0x01F0)
 #define NV_CHIP_GEFORCE3            ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3)
 #define NV_CHIP_GEFORCE3_TI_200     ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3_TI_200)
 #define NV_CHIP_GEFORCE3_TI_500     ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3_TI_500)
@@ -167,6 +174,10 @@ int RivaGetConfig(NVPtr);
 #define NV_CHIP_QUADRO4_900XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_900XGL)
 #define NV_CHIP_QUADRO4_750XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_750XGL)
 #define NV_CHIP_QUADRO4_700XGL      ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO4_700XGL)
+#define NV_CHIP_0x0280              ((PCI_VENDOR_NVIDIA << 16) | 0x0280)
+#define NV_CHIP_0x0281              ((PCI_VENDOR_NVIDIA << 16) | 0x0281)
+#define NV_CHIP_0x0288              ((PCI_VENDOR_NVIDIA << 16) | 0x0288)
+#define NV_CHIP_0x0289              ((PCI_VENDOR_NVIDIA << 16) | 0x0289)
 
 
 #endif /* __NV_STRUCT_H__ */

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.87 2002/03/18 21:47:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.88 2002/07/24 01:47:30 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -116,7 +116,14 @@ static SymTabRec NVChipsets[] = {
     {NV_CHIP_QUADRO4_200,        "Quadro4 200/400NVS"},
     {NV_CHIP_QUADRO4_550XGL,     "Quadro4 550XGL"},
     {NV_CHIP_QUADRO4_500_GOGL,   "Quadro4 GoGL"},
+    {NV_CHIP_0x0180,             "0x0180"},
+    {NV_CHIP_0x0181,             "0x0181"},
+    {NV_CHIP_0x0182,             "0x0182"},
+    {NV_CHIP_0x0188,             "0x0188"},
+    {NV_CHIP_0x018A,             "0x018A"},
+    {NV_CHIP_0x018B,             "0x018B"},
     {NV_CHIP_IGEFORCE2,          "GeForce2 Integrated"},
+    {NV_CHIP_0x01F0,             "0x01F0"},
     {NV_CHIP_GEFORCE3,           "GeForce3"},
     {NV_CHIP_GEFORCE3_TI_200,    "GeForce3 Ti 200"},
     {NV_CHIP_GEFORCE3_TI_500,    "GeForce3 Ti 500"},
@@ -127,6 +134,10 @@ static SymTabRec NVChipsets[] = {
     {NV_CHIP_QUADRO4_900XGL,     "Quadro4 900 XGL"},
     {NV_CHIP_QUADRO4_750XGL,     "Quadro4 750 XGL"},
     {NV_CHIP_QUADRO4_700XGL,     "Quadro4 700 XGL"},
+    {NV_CHIP_0x0280,             "0x0280"},
+    {NV_CHIP_0x0281,             "0x0281"},
+    {NV_CHIP_0x0288,             "0x0288"},
+    {NV_CHIP_0x0289,             "0x0289"},
     {-1,                        NULL }
 };
 
@@ -160,7 +171,14 @@ static PciChipsets NVPciChipsets[] = {
     {NV_CHIP_QUADRO4_200,        NV_CHIP_QUADRO4_200,        RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_550XGL,     NV_CHIP_QUADRO4_550XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_500_GOGL,   NV_CHIP_QUADRO4_500_GOGL,   RES_SHARED_VGA},
+    {NV_CHIP_0x0180,             NV_CHIP_0x0180,             RES_SHARED_VGA},
+    {NV_CHIP_0x0181,             NV_CHIP_0x0181,             RES_SHARED_VGA},
+    {NV_CHIP_0x0182,             NV_CHIP_0x0182,             RES_SHARED_VGA},
+    {NV_CHIP_0x0188,             NV_CHIP_0x0188,             RES_SHARED_VGA},
+    {NV_CHIP_0x018A,             NV_CHIP_0x018A,             RES_SHARED_VGA},
+    {NV_CHIP_0x018B,             NV_CHIP_0x018B,             RES_SHARED_VGA},
     {NV_CHIP_IGEFORCE2,          NV_CHIP_IGEFORCE2,          RES_SHARED_VGA},
+    {NV_CHIP_0x01F0,             NV_CHIP_0x01F0,             RES_SHARED_VGA},
     {NV_CHIP_GEFORCE3,           NV_CHIP_GEFORCE3,           RES_SHARED_VGA},
     {NV_CHIP_GEFORCE3_TI_200,    NV_CHIP_GEFORCE3_TI_200,    RES_SHARED_VGA},
     {NV_CHIP_GEFORCE3_TI_500,    NV_CHIP_GEFORCE3_TI_500,    RES_SHARED_VGA},
@@ -171,6 +189,10 @@ static PciChipsets NVPciChipsets[] = {
     {NV_CHIP_QUADRO4_900XGL,     NV_CHIP_QUADRO4_900XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_750XGL,     NV_CHIP_QUADRO4_750XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_700XGL,     NV_CHIP_QUADRO4_700XGL,     RES_SHARED_VGA},
+    {NV_CHIP_0x0280,             NV_CHIP_0x0280,             RES_SHARED_VGA},
+    {NV_CHIP_0x0281,             NV_CHIP_0x0281,             RES_SHARED_VGA},
+    {NV_CHIP_0x0288,             NV_CHIP_0x0288,             RES_SHARED_VGA},
+    {NV_CHIP_0x0289,             NV_CHIP_0x0289,             RES_SHARED_VGA},
     { -1,                       -1,                          RES_UNDEFINED  }
 };
 
@@ -1225,11 +1247,14 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case 0x0110:
         case 0x0150:
         case 0x0170:
+        case 0x0180:
         case 0x01A0:
+        case 0x01F0:
             NV10Setup(pScrn);
 	    break;
 	case 0x0200:
 	case 0x0250:
+	case 0x0280:
             NV20Setup(pScrn);
             break;
     }
