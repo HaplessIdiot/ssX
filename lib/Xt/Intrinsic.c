@@ -1,5 +1,5 @@
 /* $XConsortium: Intrinsic.c,v 1.194 94/04/17 20:14:16 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.0 1994/10/20 06:06:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.1 1994/11/26 12:36:05 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -788,8 +788,6 @@ Boolean XtIsSensitive(object)
     UNLOCK_APP(app);
     return retval;
 }
-
-/*
 
 /*
  * Internal routine; must be called only after XtIsWidget returns false

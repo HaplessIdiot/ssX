@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.21 94/02/10 19:50:38 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/bitmap/Imakefile,v 3.0 1994/04/28 12:43:48 dawes Exp $
 BUTTONPICTURES = \
 	Dashes \
 	Down \
@@ -29,11 +29,7 @@ LOCAL_LIBRARIES = XawClientLibs
        PROGRAMS = bitmap bmtoa atobm
 
 ComplexProgramTarget_1(bitmap,$(LOCAL_LIBRARIES),MathLibrary)
-#ifdef LinuxArchitecture
-NormalProgramTarget(bmtoa,$(OBJS2),NullParameter,$(XMULIB) $(XLIB),NullParameter)
-#else
 NormalProgramTarget(bmtoa,$(OBJS2),NullParameter,$(XMULIB),NullParameter)
-#endif
 NormalProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter,NullParameter)
 
 BuildIncludes($(BUTTONPICTURES),bitmaps,..)

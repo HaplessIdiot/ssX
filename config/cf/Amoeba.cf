@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: Amoeba.cf,v 1.4 94/04/04 13:20:04 dpw Exp $
-XCOMM platform:  $XFree86: xc/config/cf/Amoeba.cf,v 3.3 1994/09/24 15:09:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/Amoeba.cf,v 3.4 1994/11/19 07:32:09 dawes Exp $
 
 /*  The presence of this configuration file in the X distribution
  *  does not imply full support for the system it describes.
@@ -227,6 +227,7 @@ program: $(OBJS) $(DEPLIBS)						@@\
 	HostLinkRule($@,$(_NOOP_),$(OBJS),$(DEPLIBS) $(LOCAL_LIBRARIES)) @@\
 									@@\
 DependTarget()								@@\
+									@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\

@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.8 94/04/17 20:37:37 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/Imakefile,v 3.0 1994/05/30 08:20:56 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -90,9 +90,9 @@ NormalLibraryTarget(ddpexs,$(OBJS))
 LintLibraryTarget(dps, $(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialCObjectRule(miMisc,$(ICONFIGFILES),$(EXT_DEFINES))
-
 InstallLinkKitLibrary(ddpexs,$(LINKKITDIR)/lib)
+
+SpecialCObjectRule(miMisc,$(ICONFIGFILES),$(EXT_DEFINES))
 
 DependTarget()
 

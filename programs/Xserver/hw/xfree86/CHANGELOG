@@ -1,3 +1,11 @@
+XFree86 3.1.0g (2 December 1994)
+109. Enable mmio for the Cirrus 543x (Harm Hanemaayer).
+108. Updates to xf86config (Harm Hanemaayer).
+107. Code for SuperProbe to successfuly detect CL-GD543x (Harm Hanemaayer).
+106. Eliminate all references to "SYSV386".  "-Di386" should be used instead,
+     even in the BOOTSTRAPCFLAGS for SVR4 and SVR3 (Kaleb Keithley).
+105. Some typo changes to bring our code closer to what the XC has.
+
 XFree86 3.1.0f (1 December 1994)
 104. Eliminate references to SYSV386.
 103. Add check for usable linear fb for 864/964 boards.

@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.8 94/04/17 20:36:07 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.0 1994/05/30 08:21:09 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -57,10 +57,10 @@ NormalLibraryTarget(diobpex,$(OBJS))
 LintLibraryTarget(obj,$(SRCS))
 NormalLintTarget($(SRCS))
 
+InstallLinkKitLibrary(diobpex,$(LINKKITDIR)/lib)
+
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 #endif
-
-InstallLinkKitLibrary(diobpex,$(LINKKITDIR)/lib)
 
 DependTarget()
