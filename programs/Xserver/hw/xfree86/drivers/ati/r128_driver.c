@@ -349,6 +349,7 @@ void R128LoaderRefSymLists(void)
 		      driSymbols,
 #endif
 		      fbdevHWSymbols,
+		      int10Symbols,
 		      vbeSymbols,
 		      /* ddcsymbols, */
 		      i2cSymbols,
