@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.24tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.25 2002/10/02 15:06:12 tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -600,10 +600,10 @@ FreeTypeRasteriseGlyph(CharInfoPtr tgp, FTInstancePtr instance,
     bpr = (((wd + (instance->bmfmt.glyph<<3) - 1) >> 3) & 
            -instance->bmfmt.glyph);
     if(tgp) {
-        raster = (char*)xalloc(ht * bpr);
+        raster = (char*)xalloc((ht+2) * bpr);
         if(raster == NULL) 
             return AllocError;
-        memset(raster, 0, ht * bpr);
+        memset(raster, 0, (ht+2) * bpr);
     }
 
     if(dx == 0 && dy == 0 && bpr == bitmap->pitch) {

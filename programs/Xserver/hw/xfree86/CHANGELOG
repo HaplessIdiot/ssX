@@ -1,4 +1,6 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 864. Fix an X server crash with the "freetype" module when displaying
+      kochi-mincho.ttf at a size of 18 pixels or higher (Chisato Yamauchi).
  863. Fix segfault in XkbInitKeyboardDeviceStruct() (David Dawes).
  862. Add a ServerFlags/ServerLayout option for disabling the RandR extension
       (David Dawes).
@@ -16303,4 +16305,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2538 2003/02/09 00:18:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2539 2003/02/09 02:28:03 dawes Exp $
