@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/Geometry.c,v 1.7 2000/10/10 14:05:48 tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include "ShellP.h"
@@ -164,6 +164,14 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	}
     }
 
+#if 0
+    /*
+     * The Xt spec says that these conditions must generate
+     * error messages (not warnings), but many Xt applications
+     * and toolkits (including parts of Xaw, Motif and Netscape)
+     * depend on the previous Xt behaviour.  Thus, these tests
+     * should probably remain disabled.
+     */
     if (parentRealized && managed) {
 	if (parent && !XtIsComposite(parent))
 	{
@@ -187,6 +195,10 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 			  (String *)NULL, (Cardinal *)NULL);
 	}
     }
+#else
+    if (!manager)
+	managed = False;
+#endif
 
     if (widget->core.being_destroyed) {
 	CALLGEOTAT(_XtGeoTab(-1));
