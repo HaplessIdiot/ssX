@@ -70,6 +70,7 @@ SOFTWARE.
 #define PI			3.14159265358979
 #define TWOPI			(2. * PI)
 
+#define MINOR_TICK_FRACT	95
 #define SECOND_HAND_FRACT	90
 #define MINUTE_HAND_FRACT	70
 #define HOUR_HAND_FRACT		40
@@ -116,6 +117,20 @@ static XtResource resources[] = {
         offset(font), XtRString, XtDefaultFont},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
+#ifdef XRENDER
+    {XtNrender, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	offset(render), XtRImmediate, (XtPointer) FALSE },
+    {XtNhourColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
+	offset(hour_color), XtRString, "rgba:7f/00/00/c0"},
+    {XtNminuteColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
+	offset(min_color), XtRString, "rgba:00/7f/7f/c0"},
+    {XtNsecondColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
+	offset(sec_color), XtRString, "rgba:00/00/ff/80"},
+    {XtNmajorColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
+	offset(major_color), XtRString, "rgba:7f/00/00/c0"},
+    {XtNminorColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
+	offset(minor_color), XtRString, "rgba:00/7f/7f/c0"},
+#endif
 };
 
 #undef offset
@@ -140,7 +155,7 @@ static void DrawSecond ( ClockWidget w, Dimension length, Dimension width,
 			 Dimension offset, int tick_units );
 static void SetSeg ( ClockWidget w, int x1, int y1, int x2, int y2 );
 static void DrawClockFace ( ClockWidget w );
-static int round ( double x );
+static int clock_round ( double x );
 static Boolean SetValues ( Widget gcurrent, Widget grequest, Widget gnew, 
 			   ArgList args, Cardinal *num_args );
 
@@ -161,7 +176,7 @@ ClockClassRec clockClassRec = {
     /* resource_count		*/	XtNumber(resources),
     /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
-    /* compress_exposure	*/	TRUE,
+    /* compress_exposure	*/	XtExposeCompressMaximal,
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	FALSE,
     /* destroy			*/	Destroy,
@@ -195,11 +210,59 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
  *
  ****************************************************************/
 
+#ifdef XRENDER
+static Boolean
+XmuCvtStringToRenderColor(Display *dpy,
+			  XrmValue *args, Cardinal *num_args,
+			  XrmValue *fromVal, XrmValue *toVal,
+			  XtPointer *converter_data)
+{
+    char	    *spec;
+    XRenderColor    renderColor;
+    
+    if (*num_args != 0)
+    {
+	XtAppErrorMsg (XtDisplayToApplicationContext (dpy),
+		       "cvtStringToRenderColor", "wrongParameters",
+		       "XtToolkitError",
+		       "String to render color conversion needs no arguments",
+		       (String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
+
+    spec = (char *) fromVal->addr;
+    if (strcasecmp (spec, XtDefaultForeground) == 0)
+    {
+	renderColor.red = 0;
+	renderColor.green = 0;
+	renderColor.blue = 0;
+	renderColor.alpha = 0xffff;
+    }
+    else if (strcasecmp (spec, XtDefaultBackground) == 0)
+    {
+	renderColor.red = 0xffff;
+	renderColor.green = 0xffff;
+	renderColor.blue = 0xffff;
+	renderColor.alpha = 0xffff;
+    }
+    else if (!XRenderParseColor (dpy, spec, &renderColor))
+	return False;
+    *((XRenderColor *) toVal->addr) = renderColor;
+    return True;
+}
+#endif
+
 static void 
 ClassInitialize(void)
 {
     XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
 		    NULL, 0 );
+#ifdef XRENDER
+    XtSetTypeConverter (XtRString, XtRRenderColor, 
+			XmuCvtStringToRenderColor, 
+			NULL, 0,
+			XtCacheByDisplay, NULL);
+#endif
 }
 
 static char *
@@ -285,7 +348,275 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
     w->clock.numseg = 0;
     w->clock.interval_id = 0;
+#ifdef XRENDER
+    w->clock.picture = 0;
+    w->clock.fill_picture = 0;
+    w->clock.damage.x = 0;
+    w->clock.damage.y = 0;
+    w->clock.damage.height = 0;
+    w->clock.damage.width = 0;
+#endif
 }
+
+#if XRENDER
+static void
+RenderPrepare (ClockWidget  w, XRenderColor *color)
+{
+    if (!w->clock.picture)
+    {
+	w->clock.picture = XRenderCreatePicture (XtDisplay (w),
+						 XtWindow (w),
+						 XRenderFindVisualFormat (XtDisplay (w),
+									  DefaultVisual (XtDisplay (w),
+											 DefaultScreen(XtDisplay (w)))),
+						 0, 0);
+    }
+    if (color)
+    {
+	if (!w->clock.fill_picture)
+	{
+	    XRenderPictFormat   *pixf = XRenderFindStandardFormat (XtDisplay (w),
+								   PictStandardARGB32);
+	    XRenderPictureAttributes    attr;
+	    Pixmap		pix = XCreatePixmap (XtDisplay (w), XtWindow (w),
+						 1, 1, pixf->depth);
+	    attr.repeat = True;
+	    w->clock.fill_picture = XRenderCreatePicture (XtDisplay (w),
+							  pix,
+							  pixf,
+							  CPRepeat,
+							  &attr);
+	    w->clock.fill_color.red = ~color->red;
+	}
+	if (w->clock.fill_color.red != color->red ||
+	    w->clock.fill_color.green != color->green ||
+	    w->clock.fill_color.blue != color->blue ||
+	    w->clock.fill_color.alpha != color->alpha)
+	{
+	    XRenderFillRectangle (XtDisplay (w), PictOpSrc, w->clock.fill_picture,
+				  color, 0, 0, 1, 1);
+	    w->clock.fill_color = *color;
+	}
+    }
+}
+
+#define LINE_WIDTH  0.01
+#include <math.h>
+
+#define XCoord(x,w) ((x) * (w)->clock.x_scale + (w)->clock.x_off)
+#define YCoord(y,w) ((y) * (w)->clock.y_scale + (w)->clock.y_off)
+
+static void
+RenderUpdateBounds (XPointDouble *points, int npoints, XRectangle *bounds)
+{
+    int	    x1 = bounds->x;
+    int	    y1 = bounds->y;
+    int	    x2 = bounds->x + bounds->width; 
+    int	    y2 = bounds->y + bounds->height; 
+    
+    while (npoints--)
+    {
+	int	    r_x1 = points[0].x;
+	int	    r_y1 = points[0].y;
+	int	    r_x2 = points[0].x + 1;
+	int	    r_y2 = points[0].y + 1;
+
+	if (x1 == x2)
+	    x2 = x1 = r_x1;
+	if (y1 == y2)
+	    y2 = y1 = r_y1;
+	if (r_x1 < x1) x1 = r_x1;
+	if (r_y1 < y1) y1 = r_y1;
+	if (r_x2 > x2) x2 = r_x2;
+	if (r_y2 > y2) y2 = r_y2;
+	points++;
+    }
+    bounds->x = x1;
+    bounds->y = y1;
+    bounds->width = x2 - x1;
+    bounds->height = y2 - y1;
+}
+
+static Boolean
+RenderCheckBounds (XPointDouble *points, int npoints, XRectangle *bounds)
+{
+    int	    x1 = bounds->x;
+    int	    y1 = bounds->y;
+    int	    x2 = bounds->x + bounds->width; 
+    int	    y2 = bounds->y + bounds->height; 
+    
+    while (npoints--)
+    {
+	if (x1 <= points->x && points->x <= x2 &&
+	    y1 <= points->y && points->y <= y2)
+	    return True;
+	points++;
+    }
+    return False;
+}
+
+static void
+RenderResetBounds (XRectangle *bounds)
+{
+    bounds->x = 0;
+    bounds->y = 0;
+    bounds->width = 0;
+    bounds->height = 0;
+}
+
+static void
+RenderLine (ClockWidget w, XDouble x1, XDouble y1, XDouble x2, XDouble y2,
+	    XRenderColor *color,
+	    Boolean draw)
+{
+    XPointDouble    poly[4];
+    XDouble	    dx = (x2 - x1);
+    XDouble	    dy = (y2 - y1);
+    XDouble	    len = sqrt (dx*dx + dy*dy);
+    XDouble	    ldx = (LINE_WIDTH/2.0) * dy / len;
+    XDouble	    ldy = (LINE_WIDTH/2.0) * dx / len;
+
+    poly[0].x = XCoord (x1 + ldx, w);
+    poly[0].y = YCoord (y1 - ldy, w);
+    
+    poly[1].x = XCoord (x2 + ldx, w);
+    poly[1].y = YCoord (y2 - ldy, w);
+    
+    poly[2].x = XCoord (x2 - ldx, w);
+    poly[2].y = YCoord (y2 + ldy, w);
+    
+    poly[3].x = XCoord (x1 - ldx, w);
+    poly[3].y = YCoord (y1 + ldy, w);
+
+    RenderUpdateBounds (poly, 4, &w->clock.damage);
+    if (draw)
+    {
+	if (RenderCheckBounds (poly, 4, &w->clock.damage))
+	{
+	    RenderPrepare (w, color);
+	    XRenderCompositeDoublePoly (XtDisplay (w),
+					PictOpOver,
+					w->clock.fill_picture,
+					w->clock.picture,
+					XRenderFindStandardFormat (XtDisplay (w),
+								   PictStandardA8),
+					0, 0, 0, 0, poly, 4, EvenOddRule);
+	}
+    }
+    else
+	RenderUpdateBounds (poly, 4, &w->clock.damage);
+}
+
+static void
+RenderRotate (ClockWidget w, XPointDouble *out, double x, double y, double s, double c)
+{
+    out->x = XCoord (x * c - y * s, w);
+    out->y = YCoord (y * c + x * s, w);
+}
+
+static void
+RenderHand (ClockWidget w, int tick_units, int size, XRenderColor *color,
+	    Boolean draw)
+{
+    double	    c, s;
+    XPointDouble    poly[3];
+    double	    outer_x;
+    double	    inner_y;
+
+    ClockAngle (tick_units, &c, &s);
+    s = -s;
+
+    /* compute raw positions */
+    outer_x = size / 100.0;
+    inner_y = HAND_WIDTH_FRACT / 100.0;
+
+    /* rotate them into position */
+    RenderRotate (w, &poly[0], outer_x, 0.0, s, c);
+    RenderRotate (w, &poly[1], -inner_y, inner_y, s, c);
+    RenderRotate (w, &poly[2], -inner_y, -inner_y, s, c);
+    
+    if (draw)
+    {
+	if (RenderCheckBounds (poly, 3, &w->clock.damage))
+	{
+	    RenderPrepare (w, color);
+	    XRenderCompositeDoublePoly (XtDisplay (w),
+					PictOpOver,
+					w->clock.fill_picture,
+					w->clock.picture,
+					XRenderFindStandardFormat (XtDisplay (w),
+								   PictStandardA8),
+					0, 0, 0, 0, poly, 3, EvenOddRule);
+	}
+    }
+    RenderUpdateBounds (poly, 3, &w->clock.damage);
+}
+
+static void
+RenderHands (ClockWidget w, struct tm *tm, Boolean draw)
+{
+    RenderHand (w, tm->tm_min * 12, MINUTE_HAND_FRACT, &w->clock.min_color, draw);
+    RenderHand (w, tm->tm_hour * 60 + tm->tm_min, HOUR_HAND_FRACT, &w->clock.hour_color, draw);
+}
+
+static void
+RenderSec (ClockWidget w, struct tm *tm, Boolean draw)
+{
+    double	    c, s;
+    XPointDouble    poly[10];
+    double	    inner_x, middle_x, outer_x, far_x;
+    double	    middle_y;
+    double	    line_y;
+
+    ClockAngle (tm->tm_sec * 12, &c, &s);
+    
+    s = -s;
+    
+    /*
+     * Compute raw positions
+     */
+    line_y = LINE_WIDTH;
+    inner_x = (MINUTE_HAND_FRACT / 100.0);
+    middle_x = ((SECOND_HAND_FRACT + MINUTE_HAND_FRACT) / 200.0);
+    outer_x = (SECOND_HAND_FRACT / 100.0);
+    far_x = (MINOR_TICK_FRACT / 100.0);
+    middle_y = (SECOND_WIDTH_FRACT / 100.0);
+    
+    /*
+     * Rotate them into position
+     */
+    RenderRotate (w, &poly[0], -line_y, line_y, s, c);
+    RenderRotate (w, &poly[1], inner_x, line_y, s, c);
+    RenderRotate (w, &poly[2], middle_x, middle_y, s, c);
+    RenderRotate (w, &poly[3], outer_x, line_y, s, c);
+    RenderRotate (w, &poly[4], far_x, line_y, s, c);
+    RenderRotate (w, &poly[5], far_x, -line_y, s, c);
+    RenderRotate (w, &poly[6], outer_x, -line_y, s, c);
+    RenderRotate (w, &poly[7], middle_x, -middle_y, s, c);
+    RenderRotate (w, &poly[8], inner_x, -line_y, s, c);
+    RenderRotate (w, &poly[9], -line_y, -line_y, s, c);
+
+    if (draw)
+    {
+	if (RenderCheckBounds (poly, 10, &w->clock.damage))
+	{
+	    RenderPrepare (w, &w->clock.sec_color);
+	    XRenderCompositeDoublePoly (XtDisplay (w),
+					PictOpOver,
+					w->clock.fill_picture,
+					w->clock.picture,
+					XRenderFindStandardFormat (XtDisplay (w),
+								   PictStandardA8),
+					0, 0, 0, 0, poly, 10, EvenOddRule);
+	}
+    }
+    else
+    {
+	RenderUpdateBounds (poly, 10, &w->clock.damage);
+    }
+}
+
+#endif
 
 static void 
 Realize(Widget gw, XtValueMask *valueMask, XSetWindowAttributes *attrs)
@@ -317,6 +648,12 @@ Destroy(Widget gw)
      XtReleaseGC (gw, w->clock.HighGC);
      XtReleaseGC (gw, w->clock.HandGC);
      XtReleaseGC (gw, w->clock.EraseGC);
+#ifdef RENDER
+    if (w->clock.picture)
+	XRenderFreePicture (dpy, w->clock.picture);
+    if (w->clock.fill_picture)
+	XRenderFreePicture (dpy, w->clock.fill_picture);
+#endif
 }
 
 static void 
@@ -337,6 +674,12 @@ Resize(Widget gw)
 
         w->clock.centerX = w->core.width / 2;
         w->clock.centerY = w->core.height / 2;
+#ifdef XRENDER
+	w->clock.x_scale = 0.45 * w->core.width;
+	w->clock.y_scale = 0.45 * w->core.height;
+	w->clock.x_off = 0.5 * w->core.width;
+	w->clock.y_off = 0.5 * w->core.height;
+#endif
     }
 }
 
@@ -346,9 +689,16 @@ Redisplay(Widget gw, XEvent *event, Region region)
 {
     ClockWidget w = (ClockWidget) gw;
     if (w->clock.analog) {
-	if (w->clock.numseg != 0)
-	    erase_hands (w, (struct tm *) 0);
-        DrawClockFace(w);
+#ifdef XRENDER
+	if (w->clock.render)
+	    XClipBox (region, &w->clock.damage);
+	else
+#endif
+	{
+	    if (w->clock.numseg != 0)
+		erase_hands (w, (struct tm *) 0);
+	    DrawClockFace(w);
+	}
     } else {
 	w->clock.prev_time_string[0] = '\0';
     }
@@ -439,6 +789,50 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 			if(tm.tm_hour >= 12)
 				tm.tm_hour -= 12;
 
+#ifdef XRENDER
+			if (w->clock.render)
+			{
+			    /*
+			     * Compute repaint area
+			     */
+			    if (tm.tm_min != w->clock.otm.tm_min ||
+				tm.tm_hour != w->clock.otm.tm_hour)
+			    {
+				RenderHands (w, &w->clock.otm, False);
+				RenderHands (w, &tm, False);
+			    }
+			    if (w->clock.show_second_hand &&
+				tm.tm_sec != w->clock.otm.tm_sec)
+			    {
+				RenderSec (w, &w->clock.otm, False);
+				RenderSec (w, &tm, False);
+			    }
+			    if (w->clock.damage.width && 
+				w->clock.damage.height)
+			    {
+				XClearArea (XtDisplay (w),
+					    XtWindow (w), 
+					    w->clock.damage.x,
+					    w->clock.damage.y,
+					    w->clock.damage.width,
+					    w->clock.damage.height, False);
+				RenderPrepare (w, 0);
+				XRenderSetPictureClipRectangles (XtDisplay (w),
+								 w->clock.picture,
+								 0, 0, 
+								 &w->clock.damage,
+								 1);
+				DrawClockFace (w);
+				RenderHands (w, &tm, True);
+				if (w->clock.show_second_hand == TRUE)
+				    RenderSec (w, &tm, True);
+			    }
+			    w->clock.otm = tm;
+			    RenderResetBounds (&w->clock.damage);
+			    return;
+			}
+#endif
+		
 			erase_hands (w, &tm);
 
 		    if (w->clock.numseg == 0 ||
@@ -697,14 +1091,14 @@ DrawHand(ClockWidget w, Dimension length, Dimension width, int tick_units)
 	wc = width * cosangle;
 	ws = width * sinangle;
 	SetSeg(w,
-	       x = w->clock.centerX + round(length * sinangle),
-	       y = w->clock.centerY - round(length * cosangle),
-	       x1 = w->clock.centerX - round(ws + wc), 
-	       y1 = w->clock.centerY + round(wc - ws));  /* 1 ---- 2 */
+	       x = w->clock.centerX + clock_round(length * sinangle),
+	       y = w->clock.centerY - clock_round(length * cosangle),
+	       x1 = w->clock.centerX - clock_round(ws + wc), 
+	       y1 = w->clock.centerY + clock_round(wc - ws));  /* 1 ---- 2 */
 	/* 2 */
 	SetSeg(w, x1, y1, 
-	       x2 = w->clock.centerX - round(ws - wc), 
-	       y2 = w->clock.centerY + round(wc + ws));  /* 2 ----- 3 */
+	       x2 = w->clock.centerX - clock_round(ws - wc), 
+	       y2 = w->clock.centerY + clock_round(wc + ws));  /* 2 ----- 3 */
 
 	SetSeg(w, x2, y2, x, y);	/* 3 ----- 1(4) */
 }
@@ -765,14 +1159,14 @@ DrawSecond(ClockWidget w, Dimension length, Dimension width,
 	ws = width * sinangle;
 	/*1 ---- 2 */
 	SetSeg(w,
-	       x = w->clock.centerX + round(length * sinangle),
-	       y = w->clock.centerY - round(length * cosangle),
-	       w->clock.centerX + round(ms - wc),
-	       w->clock.centerY - round(mc + ws) );
-	SetSeg(w, w->clock.centerX + round(offset *sinangle),
-	       w->clock.centerY - round(offset * cosangle), /* 2-----3 */
-	       w->clock.centerX + round(ms + wc), 
-	       w->clock.centerY - round(mc - ws));
+	       x = w->clock.centerX + clock_round(length * sinangle),
+	       y = w->clock.centerY - clock_round(length * cosangle),
+	       w->clock.centerX + clock_round(ms - wc),
+	       w->clock.centerY - clock_round(mc + ws) );
+	SetSeg(w, w->clock.centerX + clock_round(offset *sinangle),
+	       w->clock.centerY - clock_round(offset * cosangle), /* 2-----3 */
+	       w->clock.centerX + clock_round(ms + wc), 
+	       w->clock.centerY - clock_round(mc - ws));
 	w->clock.segbuffptr->x = x;
 	w->clock.segbuffptr++->y = y;
 	w->clock.numseg ++;
@@ -801,10 +1195,43 @@ DrawClockFace(ClockWidget w)
 	w->clock.segbuffptr = w->clock.segbuff;
 	w->clock.numseg = 0;
 	for (i = 0; i < 60; i++)
+	{
+#ifdef XRENDER
+	    if (w->clock.render)
+	    {
+		double	s, c;
+		XDouble	x1, y1, x2, y2;
+		XRenderColor	*color;
+		ClockAngle (i * 12, &s, &c);
+		x1 = c;
+		y1 = s;
+		if (i % 5)
+		{
+		    x2 = c * (MINOR_TICK_FRACT / 100.0);
+		    y2 = s * (MINOR_TICK_FRACT / 100.0);
+		    color = &w->clock.minor_color;
+		}
+		else
+		{
+		    x2 = c * (SECOND_HAND_FRACT / 100.0);
+		    y2 = s * (SECOND_HAND_FRACT / 100.0);
+		    color = &w->clock.major_color;
+		}
+		RenderLine (w, x1, y1, x2, y2, color, True);
+	    }
+	    else
+#endif
+	    {
 		DrawLine(w, ( (i % 5) == 0 ? 
 			     w->clock.second_hand_length :
 			     (w->clock.radius - delta) ),
 			 w->clock.radius, i * 12);
+	    }
+	}
+#ifdef XRENDER
+	if (w->clock.render)
+	    return;
+#endif
 	/*
 	 * Go ahead and draw it.
 	 */
@@ -817,7 +1244,7 @@ DrawClockFace(ClockWidget w)
 }
 
 static int 
-round(double x)
+clock_round(double x)
 {
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }

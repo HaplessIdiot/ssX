@@ -61,6 +61,7 @@ static XrmOptionDescRec options[] = {
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 {"-brief",      "*clock.brief",	        XrmoptionNoArg,	        "TRUE"},
 {"-utime",      "*clock.utime",	        XrmoptionNoArg,	        "TRUE"},
+{"-render",	"*clock.render",	XrmoptionNoArg,		"TRUE"},
 };
 
 static void quit ( Widget w, XEvent *event, String *params, 
@@ -83,7 +84,7 @@ Syntax(char *call)
 	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
 	(void) printf ("       [-rv] [-update <seconds>] [-display displayname]\n");
-	(void) printf ("       [-geometry geom]\n\n");
+	(void) printf ("       [-render] [-geometry geom]\n\n");
 	exit(1);
 }
 
