@@ -23,7 +23,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.37 2002/09/29 23:39:40 keithp Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.38 2002/10/03 22:05:47 keithp Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -603,6 +603,9 @@ XRequest.XFree86-Misc.3: XF86MiscGetMouseSettings
 XRequest.XFree86-Misc.4: XF86MiscGetKbdSettings
 XRequest.XFree86-Misc.5: XF86MiscSetMouseSettings
 XRequest.XFree86-Misc.6: XF86MiscSetKbdSettings
+XRequest.XFree86-Misc.7: XF86MiscSetGrabKeysState
+XRequest.XFree86-Misc.8: XF86MiscSetClientVersion
+XRequest.XFree86-Misc.9: XF86MiscGetFilePaths
 XProtoError.XFree86-Misc.0: XF86MiscBadMouseProtocol
 XProtoError.XFree86-Misc.1: XF86MiscBadMouseBaudRate
 XProtoError.XFree86-Misc.2: XF86MiscBadMouseFlags
