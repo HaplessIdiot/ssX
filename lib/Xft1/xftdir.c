@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdir.c,v 1.3 2001/05/16 10:32:54 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftdir.c,v 1.2 2002/03/01 01:00:53 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -31,12 +31,12 @@
 Bool
 XftDirScan (XftFontSet *set, const char *dir, Bool force)
 {
-    return FcDirScan (set, 0, FcConfigGetBlanks (0), (FcChar8 *) dir, force);
+    return FcFalse;
 }
 
 Bool
 XftDirSave (XftFontSet *set, const char *dir)
 {
-    return FcDirSave (set, (FcChar8 *) dir);
+    return FcFalse;
 }
 
