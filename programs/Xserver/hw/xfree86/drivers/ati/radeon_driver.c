@@ -859,6 +859,52 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
         RADEONMMIO               = NULL;
         RADEONUnmapMMIO(pScrn);
 
+        info->HBlank = 0;
+        info->HOverPlus = 0;
+        info->HSyncWidth = 0;
+        info->VBlank = 0;
+        info->VOverPlus = 0;
+        info->VSyncWidth = 0;          
+        info->DotClock = 0;
+
+		 if(info->DisplayType == MT_LCD) {
+             tmp = RADEON_BIOS16(info->FPBIOSstart + 0x40);
+             if(!tmp) {
+                 info->PanelPwrDly = 200;
+                 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "No Panel Info Table found in BIOS!\n");
+             } else {
+                 char stmp[30];
+                 int tmp0;
+                 for(i=0; i<24; i++)
+					 stmp[i] = RADEON_BIOS8(tmp+i+1);
+				 stmp[24] = 0; 
+                 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+                     "Panel ID string: %s\n", stmp);
+                 info->PanelXRes = RADEON_BIOS16(tmp+25);
+                 info->PanelYRes = RADEON_BIOS16(tmp+27);
+                 xf86DrvMsg(0, X_INFO, "Panel Size from BIOS: %dx%d\n", 
+							info->PanelXRes, info->PanelYRes);
+                 info->PanelPwrDly = RADEON_BIOS16(tmp+44);
+                 if(info->PanelPwrDly > 2000 || info->PanelPwrDly < 0)
+                      info->PanelPwrDly = 2000;
+                 for(i=0; i<20; i++) {
+                     tmp0 = RADEON_BIOS16(tmp+64+i*2);
+                     if(tmp0 == 0) break;
+                     if((RADEON_BIOS16(tmp0) == info->PanelXRes) &&
+						(RADEON_BIOS16(tmp0+2) == info->PanelYRes)) {
+
+                         info->HBlank = (RADEON_BIOS16(tmp0+17) - RADEON_BIOS16(tmp0+19)) * 8;
+                         info->HOverPlus = (RADEON_BIOS16(tmp0+21) - RADEON_BIOS16(tmp0+19) - 1) * 8;
+                         info->HSyncWidth = RADEON_BIOS8(tmp0+23) * 8;
+                         info->VBlank = RADEON_BIOS16(tmp0+24) - RADEON_BIOS16(tmp0+26);
+                         info->VOverPlus = (RADEON_BIOS16(tmp0+28) & 0x7ff) - RADEON_BIOS16(tmp0+26);
+                         info->VSyncWidth = (RADEON_BIOS16(tmp0+28) & 0xf800) >> 11;          
+                         info->DotClock = RADEON_BIOS16(tmp0+9) * 10;
+                     }
+                 }
+             } 
+         }
+
         /* Detect connector type from BIOS, used for
            I2C/DDC qeurying EDID, Only available for VE or newer cards*/
         tmp = RADEON_BIOS16(info->FPBIOSstart + 0x50);
@@ -1479,7 +1525,8 @@ static int RADEONValidateFPModes(ScrnInfoPtr pScrn)
                     if(ddc->det_mon[j].type == 0)
                         new->Clock = ddc->det_mon[j].section.d_timings.clock / 1000;
                 }
-            }
+            } else
+                new->Clock = info->DotClock;
 
             if(new->prev) new->prev->next = new;
             last = new;
@@ -1979,14 +2026,19 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
                     ddc->det_mon[i].section.d_timings.v_sync_width;
                 info->VBlank =
                     ddc->det_mon[i].section.d_timings.v_blanking;
+
                 return TRUE;    
             }  
         }
     }
 
+    /* in case both EDID and BIOS probings failed, we'll try to get
+       panel information from the registers. This will depends on
+       how the registers are set up by bios, not very reliable*/
     mapped = RADEONMapMem(pScrn);
     RADEONMMIO = info->MMIO;
 
+    if(info->PanelXRes==0 || info->PanelYRes==0) { 
     r = INREG(RADEON_FP_VERT_STRETCH);
     if(r & 0x08000000) {
         r &= 0x00fff000;
@@ -2007,7 +2059,7 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
     }
     
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "Detected panel size from BIOS: %dx%d\n", info->PanelXRes, info->PanelYRes);
+        "Detected panel size from registers: %dx%d\n", info->PanelXRes, info->PanelYRes);
 
     if ((s = xf86GetOptValString(info->Options, OPTION_PANEL_SIZE))) {
         if (sscanf(s, "%dx%d", &info->PanelXRes, &info->PanelYRes) == 2) {
@@ -2016,6 +2068,7 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
                 info->PanelXRes, info->PanelYRes);
         }
 	}
+    }
 
     if (info->PanelXRes == 0 || info->PanelYRes == 0) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -2023,6 +2076,7 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
 		return FALSE;
     }
 
+    if(info->HBlank == 0 || info->VBlank == 0) {
     r = INREG(RADEON_FP_CRTC_H_TOTAL_DISP);
     a = (r & RADEON_FP_CRTC_H_TOTAL_MASK) + 4;
     b = (r & 0x01FF0000) >> RADEON_FP_CRTC_H_DISP_SHIFT;
@@ -2047,7 +2101,8 @@ static Bool RadeonGetDFPInfo(ScrnInfoPtr pScrn)
                  - b + 1;
     info->VSyncWidth = (unsigned short)((r & RADEON_FP_V_SYNC_WID_MASK)
                  >> RADEON_FP_V_SYNC_WID_SHIFT);
-    
+    }
+
     if(mapped) RADEONUnmapMem(pScrn);
 
     return TRUE;
@@ -3250,7 +3305,7 @@ RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
     else
     {
         RADEONRestoreCommonRegisters(pScrn, restore);
-    RADEONRestoreDDARegisters(pScrn, restore);
+        RADEONRestoreDDARegisters(pScrn, restore);
         if(!pRADEONEnt->HasSecondary || pRADEONEnt->IsSecondaryRestored
             || info->SwitchingMode)
         {

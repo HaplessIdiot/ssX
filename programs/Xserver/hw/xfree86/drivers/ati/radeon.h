@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.22 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.23 2001/09/26 12:49:25 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -274,7 +274,7 @@ typedef struct {
     BOOL              SwitchingMode;
     int               FPBIOSstart;  /* Start of the flat panel info          */
 
-				/* Computed values for FPs */
+				/* EDID or BIOS values for FPs */
     int               PanelXRes;
     int               PanelYRes;
     int               HOverPlus;
@@ -284,6 +284,7 @@ typedef struct {
     int               VSyncWidth;
     int               VBlank;
     int               PanelPwrDly;
+    int               DotClock;
     /****************************************************/
 
     /*for getting EDID data using DDC interface*/
