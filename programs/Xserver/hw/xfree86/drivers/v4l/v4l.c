@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.6 1999/04/17 07:07:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.7 1999/05/23 06:33:49 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -29,7 +29,7 @@ typedef unsigned long ulong;
 
 static void     V4LIdentify(int flags);
 static Bool     V4LProbe(DriverPtr drv, int flags);
-                  
+
 DriverRec V4L = {
         40000,
         "Xv driver for video4linux",
@@ -101,7 +101,7 @@ v4lSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 typedef struct _PortPrivRec {
     ScrnInfoPtr                 pScrn;
     FBAreaPtr			pFBArea[2];
-    int				VideoOn;	/* No, Once, Yes */
+    int				VideoOn;	/* yes/no */
     Bool			StreamOn;
 
     /* file handle */
@@ -155,6 +155,8 @@ static void V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
     pPPriv->useCount++;
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+			"Xv/open: refcount=%d\n",pPPriv->useCount));
 
     if (pPPriv->fd == -1) {
 	pPPriv->fd = open(pPPriv->devname, O_RDWR, 0);
@@ -179,6 +181,8 @@ static void V4lCloseDevice(PortPrivPtr pPPriv)
 {
     pPPriv->useCount--;
     
+    DEBUG(xf86DrvMsgVerb(0, X_INFO, 2,
+			"Xv/close: refcount=%d\n",pPPriv->useCount));
     if(pPPriv->useCount == 0 && pPPriv->fd != -1) {
 	close(pPPriv->fd);
 	pPPriv->fd = -1;
@@ -243,8 +247,11 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     }
 
     /* Open a file handle to the device */
-    
-    V4lOpenDevice(pPPriv, pScrn);
+
+    if (!pPPriv->VideoOn) {
+	V4lOpenDevice(pPPriv, pScrn);
+	pPPriv->VideoOn = 1;
+    }
 
     /* start */
 
@@ -253,7 +260,6 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &one))
 	perror("ioctl VIDIOCCAPTURE(1)");
 
-    pPPriv->VideoOn = 1;
     return Success;
 }
 
@@ -277,6 +283,11 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
     int zero=0;
 
+    if (!pPPriv->VideoOn) {
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+	      "Xv/StopVideo called with video already off\n"));
+	return;
+    }
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/StopVideo\n"));
 
     if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))

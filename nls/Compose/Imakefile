@@ -1,9 +1,5 @@
 XCOMM $TOG: Imakefile /main/9 1998/06/29 09:17:20 kaleb $
-
-
-
-
-XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.5 1998/10/02 08:13:55 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.6 1998/10/21 06:12:01 dawes Exp $
 
 #ifndef Win32Architecture
 #ifndef OS2Architecture
@@ -32,5 +28,10 @@ InstallNamedNonExec(name,Compose,$(XLOCALEDIR)/name)
 
 ComposeTarget(iso8859-1)
 ComposeTarget(iso8859-2)
+ComposeTarget(iso8859-3)
 ComposeTarget(iso8859-4)
+ComposeTarget(iso8859-9)
+#if 0
+ComposeTarget(iso8859-14)
+#endif
 ComposeTarget(iso8859-15)

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xaw6/Imakefile,v 1.1 1999/06/06 08:48:36 dawes Exp $
 #define DoNormalLib NormalLibXaw6
 #define DoSharedLib SharedLibXaw6
 #define DoExtraLib SharedLibXaw6
@@ -10,8 +10,8 @@ XCOMM $XFree86$
 #define LibHeaders NO
 #define NoSoSymlink
 
-#ifdef SharedXawReqs
-REQUIREDLIBS = SharedXawReqs
+#ifdef SharedXaw6Reqs
+REQUIREDLIBS = SharedXaw6Reqs
 #endif
 
 DEFINES = XawI18nDefines -DOLDXAW

@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XlcUTF.h,v 1.5 1999/05/30 15:28:19 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -55,12 +55,21 @@ typedef unsigned short Rune;		/* 16 bits */
 #define		tab8859_8	"tab8859_8"
 #define		tab8859_9	"tab8859_9"
 #define		tab8859_10	"tab8859_10"
+#define		tab8859_14	"tab8859_14"
 #define		tab8859_15	"tab8859_15"
 #define		jis0208		"jis0208"
 #define		ksc5601		"ksc5601"
 #define		gb2312		"gb2312"
+#define		tabtis620	"tabtis620"
 #define		tabkoi8_r	"tabkoi8_r"
 #define		tabkoi8_u	"tabkoi8_u"
+#define		tabarmscii_8	"tabarmscii_8"
+#define		tabibm_cp1133	"tabibm_cp1133"
+#define		tabmulelao_1	"tabmulelao_1"
+#define		tabviscii	"tabviscii"
+#define		tabtcvn		"tabtcvn"
+#define		tabgeorgian_academy	"tabgeorgian_academy"
+#define		tabgeorgian_ps	"tabgeorgian_ps"
 
 #define emit(x)    *r = (Rune)x;
 

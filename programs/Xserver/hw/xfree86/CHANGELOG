@@ -1,4 +1,10 @@
 XFree86 3.9Pq (6 June 1999)
+2718. Add support for armscii-8, ibm-cp1133, mulelao-1, viscii1.1-1,
+      tcvn-5712, georgian-academy, georgian-ps (not all complete yet)
+      (#2843, Pablo Saratxaga).
+2717. Some fixes for the v4l driver that make it keep track of the video
+      state correctly (#2854, Gerd Knorr).
+2716. Xterm patch #105 (#2853, Thomas Dickey).
 2715. Add defines to the Xaw code to make it possible to build a version
       of the shared library that is binary compatible with the standard 6.1
       version (#2849, Paulo Cesar Pereira de Andrade).
@@ -8113,4 +8119,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.765 1999/06/06 05:14:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.766 1999/06/06 08:48:38 dawes Exp $
