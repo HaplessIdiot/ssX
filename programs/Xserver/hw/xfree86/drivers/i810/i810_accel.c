@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.17 2002/11/25 14:04:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.19 2003/04/24 18:00:24 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -48,46 +48,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xf86_ansic.h"
 #include "xf86.h"
-
+#include "xaarop.h"
 #include "i810.h"
-
-static unsigned int i810Rop[16] = {
-   0x00,				/* GXclear      */
-   0x88,				/* GXand        */
-   0x44,				/* GXandReverse */
-   0xCC,				/* GXcopy       */
-   0x22,				/* GXandInvert  */
-   0xAA,				/* GXnoop       */
-   0x66,				/* GXxor        */
-   0xEE,				/* GXor         */
-   0x11,				/* GXnor        */
-   0x99,				/* GXequiv      */
-   0x55,				/* GXinvert     */
-   0xDD,				/* GXorReverse  */
-   0x33,				/* GXcopyInvert */
-   0xBB,				/* GXorInverted */
-   0x77,				/* GXnand       */
-   0xFF					/* GXset        */
-};
-
-static unsigned int i810PatternRop[16] = {
-   0x00,				/* GXclear      */
-   0xA0,				/* GXand        */
-   0x50,				/* GXandReverse */
-   0xF0,				/* GXcopy       */
-   0x0A,				/* GXandInvert  */
-   0xAA,				/* GXnoop       */
-   0x5A,				/* GXxor        */
-   0xFA,				/* GXor         */
-   0x05,				/* GXnor        */
-   0xA5,				/* GXequiv      */
-   0x55,				/* GXinvert     */
-   0xF5,				/* GXorReverse  */
-   0x0F,				/* GXcopyInvert */
-   0xAF,				/* GXorInverted */
-   0x5F,				/* GXnand       */
-   0xFF					/* GXset        */
-};
 
 static void I810SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 					   int pattx, int patty,
@@ -334,7 +296,7 @@ I810SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 
    /* Color blit, p166 */
    pI810->BR[13] = (BR13_SOLID_PATTERN |
-		    (i810PatternRop[rop] << 16) |
+		    (XAAPatternROP[rop] << 16) |
 		    (pScrn->displayWidth * pI810->cpp));
    pI810->BR[16] = color;
 }
@@ -380,7 +342,7 @@ I810SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
    if (xdir == -1)
       pI810->BR[13] |= BR13_RIGHT_TO_LEFT;
 
-   pI810->BR[13] |= i810Rop[rop] << 16;
+   pI810->BR[13] |= XAACopyROP[rop] << 16;
 
    pI810->BR[18] = 0;
 }
@@ -460,7 +422,7 @@ I810SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int pattx, int patty,
    pI810->BR[18] = bg;
    pI810->BR[19] = fg;
    pI810->BR[13] = (pScrn->displayWidth * pI810->cpp);
-   pI810->BR[13] |= i810PatternRop[rop] << 16;
+   pI810->BR[13] |= XAAPatternROP[rop] << 16;
    if (bg == -1)
       pI810->BR[13] |= BR13_MONO_TRANSPCY;
 }
@@ -524,7 +486,7 @@ I810SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	     fg, bg, rop, planemask);
 
    pI810->BR[13] = (pScrn->displayWidth * pI810->cpp);
-   pI810->BR[13] |= i810Rop[rop] << 16;
+   pI810->BR[13] |= XAACopyROP[rop] << 16;
    pI810->BR[13] |= (1 << 27);
    if (bg == -1)
       pI810->BR[13] |= BR13_MONO_TRANSPCY;
