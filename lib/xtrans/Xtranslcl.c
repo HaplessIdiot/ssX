@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.21 95/01/19 18:06:04 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.7 1995/01/25 10:46:12 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.8 1995/03/04 05:49:53 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -2055,8 +2055,37 @@ char *host;
 char *port;
 
 {
+    char *typetocheck = NULL;
+    int found = 0;
+    char typebuf[TYPEBUFSIZE];
+
     PRMSG(2,"TRANS(LocalOpenCOTSServer)(%s,%s,%s)\n",protocol,host,port);
+
+    /* Check if this local type is in the XLOCAL list */
+    TRANS(LocalInitTransports)("local");
+    typetocheck = workingXLOCAL;
+    while (typetocheck && !found) {
+	int j;
+
+	workingXLOCAL = strchr(workingXLOCAL, ':');
+	if (workingXLOCAL && *workingXLOCAL)
+	    *workingXLOCAL++ = '\0';
+	strncpy(typebuf, typetocheck, TYPEBUFSIZE);
+	for (j = 0; j < TYPEBUFSIZE; j++)
+	    if (isupper(typebuf[j]))
+		typebuf[j] = tolower(typebuf[j]);
+	if (!strcmp(thistrans->TransName, typebuf))
+	    found = 1;
+	typetocheck = workingXLOCAL;
+    }
+    TRANS(LocalEndTransports)();
     
+    if (!found) {
+	PRMSG(3,"TRANS(LocalOpenCOTSServer) disabling %s\n",thistrans->TransName,0,0);
+	thistrans->flags |= TRANS_DISABLED;
+	return NULL;
+    }
+
     return TRANS(LocalOpenServer)(XTRANS_OPEN_COTS_SERVER, protocol, host, port);
 }
 

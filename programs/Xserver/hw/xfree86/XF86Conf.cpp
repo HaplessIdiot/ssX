@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.10 1995/01/11 03:46:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.11 1995/01/28 15:46:18 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -137,8 +137,10 @@ XCOMM    BaudRate	9600
 XCOMM    SampleRate	150
 
 XCOMM Emulate3Buttons is an option for 2-button Microsoft mice
+XCOMM Emulate3Timeout is the timeout in milliseconds (default is 50ms)
 
 XCOMM    Emulate3Buttons
+XCOMM    Emulate3Timeout	50
 
 XCOMM ChordMiddle is an option for some 3-button Logitech mice
 

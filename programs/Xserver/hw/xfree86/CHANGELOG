@@ -1,3 +1,10 @@
+XFree86 3.1.1d (19 March 1995)
+ 38. Add timeout for 3 button emulation (Mike Hench).
+ 37. Reorganise Ti302x code to remove S3-specifics from common_hw
+     (Robin Cutshaw).
+ 36. General PCI probe code (Robin Cutshaw).
+ 35. FreeBSD 1.1.5 has _SC_OPEN_MAX defined, but no sysconf().
+
 XFree86 3.1.1c (12 March 1995)
  34. Updates for #9 GXE64Pro required due to changes in 3.1.1b (Hans Nasten).
  33. Support for BSD/OS 2.0 (Hans Nasten).
