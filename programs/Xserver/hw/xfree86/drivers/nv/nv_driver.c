@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.73 2001/10/01 13:44:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.74 2001/10/01 20:28:23 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1356,7 +1356,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->minClock = pNv->MinClock;
     clockRanges->maxClock = pNv->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    clockRanges->interlaceAllowed = TRUE;
+    if(((pNv->Chipset & 0x0ff0) <= 0x0100) ||
+       ((pNv->Chipset & 0x0ff0) == 0x0150))
+    {
+       clockRanges->interlaceAllowed = TRUE;
+    } else  /* Chips after NV15 (including NV11) do not support interlaced */
+       clockRanges->interlaceAllowed = FALSE;
     clockRanges->doubleScanAllowed = TRUE;
 
     /*
@@ -1403,7 +1408,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * driver and if the driver doesn't provide code to set them.  They
      * are not pre-initialised at all.
      */
-    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+    xf86SetCrtcForModes(pScrn, 0);
 
     /* Set the current mode to the first in the list */
     pScrn->currentMode = pScrn->modes;
