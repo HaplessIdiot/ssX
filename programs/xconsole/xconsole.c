@@ -1,5 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -771,13 +772,20 @@ get_pty (pty, tty, ttydev, ptydev)
  * So this routine creates a streams-pty where one end reads the device and
  * sends the output to xconsole.
  */
+
+#ifdef SCO
+#define	OSM_DEVICE	"/dev/error"
+#else
+#define	OSM_DEVICE	"/dev/osm"
+#endif
+
 FILE *
 osm_pipe()
 {
   int tty;
   char ttydev[64];
     
-  if (access("/dev/osm", R_OK) < 0) return NULL;
+  if (access(OSM_DEVICE, R_OK) < 0) return NULL;
   if ((tty = open("/dev/ptmx", O_RDWR)) < 0)  return NULL;
 
   grantpt(tty);
@@ -797,7 +805,7 @@ osm_pipe()
     }
     pty = open(ttydev, O_RDWR);
     if (pty < 0) exit(1);
-    osm = open("/dev/osm", O_RDONLY);
+    osm = open(OSM_DEVICE, O_RDONLY);
     if (osm < 0) exit(1);
     for (nbytes = 0; skip > 0 && nbytes >= 0; skip -= nbytes) {
 	nbytes = skip;

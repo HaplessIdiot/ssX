@@ -1,5 +1,5 @@
 /* $XConsortium: rgb.c,v 11.19 94/04/17 20:24:45 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.0 1994/04/28 12:44:05 dawes Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -46,7 +46,11 @@ from the X Consortium.
 #endif
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_store(db,key,content,flags) (store(key,content))
+#ifdef SCO
+#define dbm_close(db) /* */
+#else
 #define dbm_close(db) dbmclose()
+#endif
 #endif
 
 #undef NULL

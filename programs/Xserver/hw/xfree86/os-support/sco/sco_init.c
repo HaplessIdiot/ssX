@@ -1,4 +1,5 @@
 /* $XConsortium: sco_init.c,v 1.1 94/03/28 21:30:32 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -161,7 +162,7 @@ void xf86OpenConsole()
 	/*
 	 * now get the VT
 	 */
-	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) != 0)
+	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
 	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
@@ -173,9 +174,6 @@ void xf86CloseConsole()
 {
     struct vt_mode   VT;
 
-#if 0
-    ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1);
-#endif
     ioctl(xf86Info.consoleFd, VT_RELDISP, 1);
     if (sco_console_mode != -1)
     {

@@ -1,4 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -76,6 +77,7 @@ from the X Consortium.
  */
 
 #include <errno.h>
+#include <ctype.h>
 #include <sys/signal.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -192,7 +194,7 @@ char		*peer_sun_path;
 
 /* PTS */
 
-#ifdef SYSV
+#if defined(SYSV) && !defined(SCO)
 #define SIGNAL_T int
 #else
 #define SIGNAL_T void
@@ -232,8 +234,8 @@ int sig;
 #define X_ISC_DIR	"/dev/X"
 #define ISCDEVNODENAME	"/dev/X/ISCCONN/X%s"
 #define ISCTMPNODENAME	"/tmp/.X11-unix/X%s"
-#define SCORNODENAME	"/dev/X/%1sR"
-#define SCOSNODENAME	"/dev/X/%1sS"
+#define SCORNODENAME	"/dev/X%1sR"
+#define SCOSNODENAME	"/dev/X%1sS"
 #endif
 #if defined(XIM_t)
 #define PTSNODENAME	"/dev/X/XIM."
@@ -884,7 +886,7 @@ char		*port;
     char	server_dev_path[64];
     struct 	strfdinsert buf;
     long	temp;
-    o_mode_t 	spmode;
+    mode_t 	spmode; /* use mode_t, the header file says not to use o_mode_t */
     struct stat 	filestat;
     
     PRMSG(2,"TRANS(ISCOpenClient)(%s)\n", port, 0,0 );
@@ -1260,6 +1262,8 @@ char		*port;
 	named_spipe(fds, serverS_path) != -1 &&
 	named_spipe(fdr, serverR_path) != -1) {
 	PRMSG(2,"TRANS(SCOOpenServer) connect pipes\n", 0,0,0 );
+	} else {
+	PRMSG(2,"TRANS(SCOOpenServer) failed to connect pipes\n", 0,0,0 );
 	close(fds);
 	close(fdr);
 	return -1;
@@ -2240,7 +2244,11 @@ BytesReadable_t *pend;
 {
     PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
     
+#ifdef SCO
+    return ioctl(ciptr->fd, I_NREAD, (char *)pend);
+#else
     return ioctl(ciptr->fd, FIONREAD, (char *)pend);
+#endif
 }
 
 static int

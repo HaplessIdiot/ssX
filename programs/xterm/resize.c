@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.29 93/09/20 17:42:18 hersh Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.0 1994/04/28 12:46:42 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.1 1994/05/08 05:27:08 dawes Exp $
  */
 
 /*
@@ -55,12 +55,25 @@
 #undef SYSV				/* pretend to be bsd */
 #endif /* macII */
 
+#ifdef SCO
+#define USE_TERMCAP
+#define USE_TERMINFO
+#endif
+
 #if defined(SYSV) || defined(linux)
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #else /* else not SYSV */
 #define USE_TERMCAP
 #endif /* SYSV */
+
+/*
+ * some OS's may want to use both, like SCO for example we catch
+ * here anyone who hasn't decided what they want.
+ */
+#if !defined(USE_TERMCAP) && !defined(USE_TERMINFO)
+#define USE_TERMINFO
+#endif
 
 #ifdef MINIX
 #define USE_TERMIOS
@@ -310,14 +323,15 @@ main (argc, argv)
 		    myname, env);
 	    exit(1);
 	}
-#else /* else not USE_TERMCAP */
+#endif /* USE_TERMCAP */
+#ifdef USE_TERMINFO
 	if(!(env = getenv("TERM")) || !*env) {
 		env = "xterm";
 		if(SHELL_BOURNE == shell_type)
 			setname = "TERM=xterm;\nexport TERM;\n";
 		else	setname = "setenv TERM xterm;\n";
 	}
-#endif	/* USE_TERMCAP */
+#endif	/* USE_TERMINFO */
 
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCGETA, &tioorig);
@@ -432,26 +446,28 @@ main (argc, argv)
 	if(SHELL_BOURNE == shell_type) {
 
 #ifdef USE_TERMCAP
-		printf ("%sTERMCAP='%s'\n",
+		printf ("%sTERMCAP='%s';\n",
 		 setname, termcap);
-#else /* else not USE_TERMCAP */
+#endif /* USE_TERMCAP */
+#ifdef USE_TERMINFO
 #ifndef SVR4
 		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
 			setname, cols, rows);
 #endif /* !SVR4 */
-#endif	/* USE_SYSV_TERMCAP */
+#endif	/* USE_TERMINFO */
 
 	} else {		/* not Bourne shell */
 
 #ifdef USE_TERMCAP
 		printf ("set noglob;\n%ssetenv TERMCAP '%s';\nunset noglob;\n",
 		 setname, termcap);
-#else /* else not USE_TERMCAP */
+#endif /* USE_TERMCAP */
+#ifdef USE_TERMINFO
 #ifndef SVR4
 		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
 			setname, cols, rows);
 #endif /* !SVR4 */
-#endif	/* USE_TERMCAP */
+#endif	/* USE_TERMINFO */
 	}
 	exit(0);
 }
@@ -492,13 +508,13 @@ readstring(fp, buf, str)
 {
 	register int last, c;
 	SIGNAL_T timeout();
-#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX)
+#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(SCO)
 	/* What is the advantage of setitimer() over alarm()? */
 	struct itimerval it;
 #endif
 
 	signal(SIGALRM, timeout);
-#if defined(USG) || defined(AMOEBA) || defined(MINIX)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(SCO)
 	alarm (TIMEOUT);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
@@ -517,7 +533,7 @@ readstring(fp, buf, str)
 	last = str[strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last)
 	    ;
-#if defined(USG) || defined(AMOEBA) || defined(MINIX)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(SCO)
 	alarm (0);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));

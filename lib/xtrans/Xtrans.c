@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.22 94/04/17 20:22:59 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.0 1994/05/08 05:16:32 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -689,7 +689,7 @@ int		arg;
 	    /* Set to blocking mode */
 	    break;
 	case 1: /* Set to non-blocking mode */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
+#if defined(O_NONBLOCK) && (!defined(SCO) && !defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
 	    ret = fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -1275,10 +1275,10 @@ int 		iovcnt;
 
 #endif /* SYSV && SYSV386 || WIN32 || __sxg__ */
 
-#if defined(WIN32) || defined(__sxg__)
+#if defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 /*
- * WIN32 does not have readv so we emulate
+ * WIN32 does not have writev so we emulate
  */
 
 static int TRANS(WriteV) (ciptr, iov, iovcnt)
