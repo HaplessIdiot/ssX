@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.20 1996/12/09 11:50:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.21 1997/05/25 14:41:17 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -722,7 +722,7 @@ Bool XF86VidModeSetViewPort(dpy, screen, x, y)
     req->xf86vidmodeReqType = X_XF86VidModeSetViewPort;
     req->screen = screen;
     req->x = x;
-    req->y = y
+    req->y = y;
 
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,4 +1,13 @@
 XFree86 3.9c (xx May 1997)
+ 850. Fix a problem where XAA calls accel text functions with a ROP that
+      has no source by rechecking the text function when the ROP is changed
+      in the gc (#543, David Bateman).
+ 849. Fix an xterm autoconf problem (#541, Thomas E. Dickey).
+ 848. Add support for ICD2061 programmable clock in the pvga1 driver,
+      as used by Diamond Speedstar 24X cards (#539, Torsten Duwe).
+ 847. Fix XAA cap style problem with thin lines that shows up with the
+      MGA driver (#540, Radoslaw Kapitan).
+ 846. Update the Cards db for ViRGE cards (#534, Sebastien Marineau).
  845. PC98 doc updates (#530, Michio "Karl" Jinbo).
  844. Implement the Get/SetViewPort() functions in the VidMode extension
       (these were already documented).
@@ -4660,4 +4669,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.477 1997/05/24 13:46:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.478 1997/05/25 14:41:18 dawes Exp $
