@@ -26,16 +26,29 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.3 2001/07/07 01:48:01 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.4 2001/07/07 20:19:08 paulo Exp $
  */
 
 #ifdef USE_MODULES
 #define LOADER_PRIVATE
 #include "loader.h"
 
+#define	True		1
+#define False		0
+#define XtPointer	char*
+#define XtMalloc	malloc
+#define XtCalloc	calloc
+#define XtRealloc	realloc
+#define XtFree		free
+#define XtNew(t)	malloc(sizeof(t))
+#define XtNewString(s)	((s) ? strdup(s) : NULL)
+
+#define	pointer void*
+
 /* XXX beware (or fix it) libc functions called here are the xf86 ones */
 
 static void AddModuleOptions(char*, OptionInfoPtr);
+#if 0
 void xf86AddDriver(DriverPtr, void*, int);
 Bool xf86ServerIsOnlyDetecting(void);
 void xf86AddInputDriver(InputDriverPtr, pointer, int);
@@ -49,8 +62,9 @@ pciVideoPtr *xf86GetPciVideoInfo(void);
 int xf86MatchDevice(const char*, GDevPtr**);
 int xf86MatchPciInstances(const char*, int, SymTabPtr, PciChipsets*, GDevPtr*, int, DriverPtr,int**);
 int xf86MatchIsaInstances(const char*, SymTabPtr, pointer*, DriverPtr, pointer, GDevPtr*, int, int**);
-void *xf86LoadDrvSubModule(const char*);
+void *xf86LoadDrvSubModule(DriverPtr drv, const char*);
 void xf86DrvMsg(int, int, const char*, ...);
+#endif
 void *xf86GetPciConfigInfo(void);
 
 extern char *loaderPath, **loaderList, **ploaderList;
@@ -293,7 +307,7 @@ AddModuleOptions(char *name, OptionInfoPtr option)
 	for (count = 0, tmp = option; tmp->name != NULL; tmp++, count++)
 	    ;
 	++count;
-	ptr->option = (XtPointer)XtCalloc(1, count * sizeof(OptionInfoRec));
+	ptr->option = XtCalloc(1, count * sizeof(OptionInfoRec));
 	for (count = 0, tmp = option; tmp->name != NULL; count++, tmp++) {
 	    memcpy(&ptr->option[count], tmp, sizeof(OptionInfoRec));
 	    ptr->option[count].name = XtNewString(tmp->name);
@@ -308,7 +322,7 @@ AddModuleOptions(char *name, OptionInfoPtr option)
 	for (count = 0, ctmp = chips; ctmp->name; ctmp++, count++)
 	    ;
 	++count;
-	ptr->chipsets = (XtPointer)XtCalloc(1, count * sizeof(SymTabRec));
+	ptr->chipsets = XtCalloc(1, count * sizeof(SymTabRec));
 	for (count = 0, ctmp = chips; ctmp->name != NULL; count++, ctmp++) {
 	    memcpy(&ptr->chipsets[count], ctmp, sizeof(SymTabRec));
 	    ptr->chipsets[count].name = XtNewString(ctmp->name);
@@ -422,8 +436,9 @@ xf86cfgCheckModule(void)
 	    vers = initdata->vers;
 	    if (vers && strcmp(*ploaderList, vers->modname)) {
 		/* This was a problem at some time for some video drivers */
-		ErrorF("  WARNING file/module name mismatch: \"%s\" \"%s\"\n",
-		       *ploaderList, vers->modname);
+		CheckMsg(CHECKER_FILE_MODULE_NAME_MISMATCH,
+			 "WARNING file/module name mismatch: \"%s\" \"%s\"\n",
+			 *ploaderList, vers->modname);
 		++error_level;
 	    }
 	}
@@ -469,6 +484,8 @@ void
 xf86AddDriver(DriverPtr drv, void *module, int flags)
 {
     driver = drv;
+    if (driver)
+	driver->module = module;
     module_type = VideoModule;
 }
 
@@ -539,16 +556,15 @@ xf86MatchPciInstances(const char *name, int VendorID, SymTabPtr chipsets, PciChi
 		      GDevPtr *devList, int numDevs, DriverPtr drvp, int **foundEntities)
 {
     vendor = VendorID;
-    if (chips == NULL)
-	chips = chipsets;
+    chips = chipsets;
     *foundEntities = NULL;
 
     return (0);
 }
 
 int
-xf86MatchIsaInstances(const char *name, SymTabPtr chipsets, pointer *ISAchipsets, DriverPtr drvp,
-		      pointer FindIsaDevice, GDevPtr *devList, int numDevs, int **foundEntities)
+xf86MatchIsaInstances(const char *name, SymTabPtr chipsets, IsaChipsets *ISAchipsets, DriverPtr drvp,
+		      FindIsaDevProc FindIsaDevice, GDevPtr *devList, int numDevs, int **foundEntities)
 {
     *foundEntities = NULL;
 
@@ -557,9 +573,16 @@ xf86MatchIsaInstances(const char *name, SymTabPtr chipsets, pointer *ISAchipsets
 
 /*ARGSUSED*/
 void *
-xf86LoadDrvSubModule(const char *name)
+xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 {
-    return (NULL);
+    pointer ret;
+    int errmaj = 0, errmin = 0;
+
+    ret = LoadSubModule(drv->module, name, NULL, NULL, NULL, NULL,
+			&errmaj, &errmin);
+    if (!ret)
+	LoaderErrorMsg(NULL, name, errmaj, errmin);
+    return (ret);
 }
 
 void *

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.5 2001/07/06 22:03:16 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.7 2001/07/08 05:46:35 paulo Exp $
  */
 
 #define CARDS_PRIVATE
@@ -100,11 +100,14 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	    break;
 
     if (!xf86PCIVendorInfoData[i].VendorID) {
-	ErrorF("    WARNING No such vendor 0x%x\n", opts->vendor);
+	CheckMsg(CHECKER_CHIPSET_NO_VENDOR,
+		 "WARNING No such vendor 0x%x\n", opts->vendor);
 	++*err;
 	if (chips) {
 	    while (chips->name) {
-		ErrorF("    WARNING Cannot verify chipset %s\n", chips->name);
+		CheckMsg(CHECKER_CANNOT_VERIFY_CHIPSET,
+			 "WARNING Cannot verify chipset \"%s\" (0x%x)\n",
+			 chips->name, chips->token);
 		++chips;
 		++*err;
 	    }
@@ -115,7 +118,7 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
     }
 
     if (!chips) {
-	ErrorF("    WARNING No chipsets specified.\n");
+	CheckMsg(CHECKER_NO_CHIPSETS, "WARNING No chipsets specified.\n");
 	++*err;
 	return;
     }
@@ -128,14 +131,17 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
 	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID) {
 		if (strcmp(chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName)) {
-		    ErrorF("    ERROR chipset strings don't match: \"%s\" \"%s\"\n",
-			   chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName);
-		    *err += 2;
+		    CheckMsg(CHECKER_NOMATCH_CHIPSET_STRINGS,
+			     "WARNING chipset strings don't match: \"%s\" \"%s\" (0x%x)\n",
+			     chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName,
+			     chips->token);
+		    ++*err;
 		}
 		break;
 	    }
 	if (!xf86PCIVendorInfoData[i].Device[j].DeviceName) {
-	    ErrorF("    WARNING chipset \"%s\" not in list.\n", chips->name);
+	    CheckMsg(CHECKER_CHIPSET_NOT_LISTED,
+		     "WARNING chipset \"%s\" (0x%x) not in list.\n", chips->name, chips->token);
 	    ++*err;
 	}
 	else
@@ -145,9 +151,10 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 
     for (j = 0; j < count; j++) {
 	if (!chipsets_supported[j]) {
-	    ErrorF("    NOTICE chipset \"%s\" not listed as supported.\n",
-		   xf86PCIVendorInfoData[i].Device[j].DeviceName);
-	    ++*err;	/* Not really an error? */
+	    CheckMsg(CHECKER_CHIPSET_NOT_SUPPORTED,
+		     "NOTICE chipset \"%s\" (0x%x) not listed as supported.\n",
+		     xf86PCIVendorInfoData[i].Device[j].DeviceName,
+		     xf86PCIVendorInfoData[i].Device[j].DeviceID);
 	}
     }
 
