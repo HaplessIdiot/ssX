@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.22 1996/02/04 09:04:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.23 1996/02/20 14:34:15 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -174,7 +174,9 @@ s3CursorInit(pm, pScr)
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
       }
-      pScr->RecolorCursor = s3RecolorCursor;
+      if (!useSWCursor)
+	 pScr->RecolorCursor = s3RecolorCursor;
+
       s3CursGeneration = serverGeneration;
    }
 
@@ -623,81 +625,94 @@ s3RecolorCursor(pScr, pCurs, displayed)
    if (useSWCursor) 
       return;
 
-   switch (s3InfoRec.bitsPerPixel) {
-     case 8:
-	s3GetInstalledColormaps(pScr, &pmap);
-	sourceColor.red = pCurs->foreRed;
-	sourceColor.green = pCurs->foreGreen;
-	sourceColor.blue = pCurs->foreBlue;
-	FakeAllocColor(pmap, &sourceColor);
-	maskColor.red = pCurs->backRed;
-	maskColor.green = pCurs->backGreen;
-	maskColor.blue = pCurs->backBlue;
-	FakeAllocColor(pmap, &maskColor);
-	FakeFreeColor(pmap, sourceColor.pixel);
-	FakeFreeColor(pmap, maskColor.pixel);
+   if (!displayed)
+      return;
 
-	if (S3_TRIOxx_SERIES(s3ChipId)) {
-	   outb(vgaCRIndex, 0x45);
-	   inb(vgaCRReg);  /* reset stack pointer */
-	   outb(vgaCRIndex, 0x4A);
-	   outb(vgaCRReg, sourceColor.pixel);
-	   outb(vgaCRReg, sourceColor.pixel);
-	   outb(vgaCRIndex, 0x45);
-	   inb(vgaCRReg);  /* reset stack pointer */
-	   outb(vgaCRIndex, 0x4B);
-	   outb(vgaCRReg, maskColor.pixel);
-	   outb(vgaCRReg, maskColor.pixel);
-	}
-	else {
-	   outb(vgaCRIndex, 0x0E);
-	   outb(vgaCRReg, sourceColor.pixel);
-	   outb(vgaCRIndex, 0x0F);
-	   outb(vgaCRReg, maskColor.pixel);
-	}
-	break;
-     case 16:
-        if (s3InfoRec.depth == 15) {
-	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1) 
-	               | ((pCurs->foreGreen & 0xf800) >>  6)
-		       | ((pCurs->foreBlue  & 0xf800) >> 11);
-	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  1) 
-	               | ((pCurs->backGreen & 0xf800) >>  6)
-		       | ((pCurs->backBlue  & 0xf800) >> 11);
-	} else {
-	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  0) 
-	               | ((pCurs->foreGreen & 0xfc00) >>  5)
-		       | ((pCurs->foreBlue  & 0xf800) >> 11);
-	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  0) 
-	               | ((pCurs->backGreen & 0xfc00) >>  5)
-		       | ((pCurs->backBlue  & 0xf800) >> 11);
-	}
-	outb(vgaCRIndex, 0x45);
-	inb(vgaCRReg);  /* reset stack pointer */
-	outb(vgaCRIndex, 0x4A);
-	outb(vgaCRReg, packedcolfg);
-	outb(vgaCRReg, packedcolfg>>8);
-	outb(vgaCRIndex, 0x45);
-	inb(vgaCRReg);  /* reset stack pointer */
-	outb(vgaCRIndex, 0x4B);
-	outb(vgaCRReg, packedcolbg);
-	outb(vgaCRReg, packedcolbg>>8);
-     break;
-     case 32:
-	outb(vgaCRIndex, 0x45);
-	inb(vgaCRReg);  /* reset stack pointer */
-	outb(vgaCRIndex, 0x4A);
-	outb(vgaCRReg, pCurs->foreBlue >>8);
-	outb(vgaCRReg, pCurs->foreGreen>>8);
-	outb(vgaCRReg, pCurs->foreRed  >>8);
+   if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
+      s3BtRecolorCursor(pScr, pCurs);
+   else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
+      s3TiRecolorCursor(pScr, pCurs);
+   else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+      s3Ti3026RecolorCursor(pScr, pCurs);
+   else if (OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options))
+      s3IBMRGBRecolorCursor(pScr, pCurs);
+   else {
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 s3GetInstalledColormaps(pScr, &pmap);
+	 sourceColor.red = pCurs->foreRed;
+	 sourceColor.green = pCurs->foreGreen;
+	 sourceColor.blue = pCurs->foreBlue;
+	 FakeAllocColor(pmap, &sourceColor);
+	 maskColor.red = pCurs->backRed;
+	 maskColor.green = pCurs->backGreen;
+	 maskColor.blue = pCurs->backBlue;
+	 FakeAllocColor(pmap, &maskColor);
+	 FakeFreeColor(pmap, sourceColor.pixel);
+	 FakeFreeColor(pmap, maskColor.pixel);
 
-	outb(vgaCRIndex, 0x45);
-	inb(vgaCRReg);  /* reset stack pointer */
-	outb(vgaCRIndex, 0x4B);
-	outb(vgaCRReg, pCurs->backBlue >>8);
-	outb(vgaCRReg, pCurs->backGreen>>8);
-	outb(vgaCRReg, pCurs->backRed  >>8);
-     break;
+	 if (S3_TRIOxx_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x45);
+	    inb(vgaCRReg);	/* reset stack pointer */
+	    outb(vgaCRIndex, 0x4A);
+	    outb(vgaCRReg, sourceColor.pixel);
+	    outb(vgaCRReg, sourceColor.pixel);
+	    outb(vgaCRIndex, 0x45);
+	    inb(vgaCRReg);	/* reset stack pointer */
+	    outb(vgaCRIndex, 0x4B);
+	    outb(vgaCRReg, maskColor.pixel);
+	    outb(vgaCRReg, maskColor.pixel);
+	 }
+	 else {
+	    outb(vgaCRIndex, 0x0E);
+	    outb(vgaCRReg, sourceColor.pixel);
+	    outb(vgaCRIndex, 0x0F);
+	    outb(vgaCRReg, maskColor.pixel);
+	 }
+	 break;
+      case 16:
+	 if (s3InfoRec.depth == 15) {
+	    packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1) 
+	       | ((pCurs->foreGreen & 0xf800) >>  6)
+		  | ((pCurs->foreBlue  & 0xf800) >> 11);
+	    packedcolbg = ((pCurs->backRed   & 0xf800) >>  1) 
+	       | ((pCurs->backGreen & 0xf800) >>  6)
+		  | ((pCurs->backBlue  & 0xf800) >> 11);
+	 } else {
+	    packedcolfg = ((pCurs->foreRed   & 0xf800) >>  0) 
+	       | ((pCurs->foreGreen & 0xfc00) >>  5)
+		  | ((pCurs->foreBlue  & 0xf800) >> 11);
+	    packedcolbg = ((pCurs->backRed   & 0xf800) >>  0) 
+	       | ((pCurs->backGreen & 0xfc00) >>  5)
+		  | ((pCurs->backBlue  & 0xf800) >> 11);
+	 }
+	 outb(vgaCRIndex, 0x45);
+	 inb(vgaCRReg);		/* reset stack pointer */
+	 outb(vgaCRIndex, 0x4A);
+	 outb(vgaCRReg, packedcolfg);
+	 outb(vgaCRReg, packedcolfg>>8);
+	 outb(vgaCRIndex, 0x45);
+	 inb(vgaCRReg);		/* reset stack pointer */
+	 outb(vgaCRIndex, 0x4B);
+	 outb(vgaCRReg, packedcolbg);
+	 outb(vgaCRReg, packedcolbg>>8);
+	 break;
+      case 32:
+	 outb(vgaCRIndex, 0x45);
+	 inb(vgaCRReg);		/* reset stack pointer */
+	 outb(vgaCRIndex, 0x4A);
+	 outb(vgaCRReg, pCurs->foreBlue >>8);
+	 outb(vgaCRReg, pCurs->foreGreen>>8);
+	 outb(vgaCRReg, pCurs->foreRed  >>8);
+
+	 outb(vgaCRIndex, 0x45);
+	 inb(vgaCRReg);		/* reset stack pointer */
+	 outb(vgaCRIndex, 0x4B);
+	 outb(vgaCRReg, pCurs->backBlue >>8);
+	 outb(vgaCRReg, pCurs->backGreen>>8);
+	 outb(vgaCRReg, pCurs->backRed  >>8);
+	 break;
+      }
    }
 }
 

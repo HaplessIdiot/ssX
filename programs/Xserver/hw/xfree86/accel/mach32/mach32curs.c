@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.8 1996/02/05 11:20:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.9 1996/02/20 14:33:45 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -397,6 +397,9 @@ mach32RecolorCursor(pScr, pCurs, displayed)
     miRecolorCursor(pScr, pCurs, displayed);
     return;
   }
+
+  if (!displayed)
+    return;
 
   mach32GetInstalledColormaps(pScr, &pmap);
 

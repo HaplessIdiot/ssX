@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.18 1995/12/23 09:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.19 1996/02/04 09:05:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -258,8 +258,16 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  S3_OUTW(MULTIFUNC_CNTL, 
 			PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-		  S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-		  S3_OUTW32(WRT_MASK, pGC->planemask);
+		  if (s3Trio32FCBug) {
+		     S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+		     S3_OUTW32(WRT_MASK, pGC->planemask);
+
+		     WaitQueue16_32(1,2);
+		     S3_OUTW32(BKGD_COLOR, 0);
+		  } else {
+		     S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+		     S3_OUTW32(WRT_MASK, pGC->planemask);
+		  }
 		  height = width = pmsk = 0;
 	       }
 	       WaitQueue16_32(2,3);

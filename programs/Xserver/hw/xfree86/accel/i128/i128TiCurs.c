@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.1 1996/02/04 09:01:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128TiCurs.c,v 3.2 1996/02/20 14:33:37 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -200,6 +200,9 @@ i128TiRecolorCursor(pScr, pCurs, displayed)
       miRecolorCursor(pScr, pCurs, displayed);
       return;
    }
+
+   if (!displayed)
+      return;
 
    tmp = i128mem.rbase_g_b[INDEX_TI];
 

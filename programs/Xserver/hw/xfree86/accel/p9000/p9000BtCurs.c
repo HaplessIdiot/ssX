@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.6 1996/02/04 09:04:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.7 1996/02/20 14:34:04 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -212,6 +212,9 @@ p9000BtRecolorCursor(pScr, pCurs, displayed)
       miRecolorCursor(pScr, pCurs, displayed);
       return;
    }
+
+   if (!displayed)
+      return;
 
    /* Start writing at address 1 (0 is overscan color) */
    p9000StartBtData(BT_CURS_WR_ADDR, 0x01, BT_CURS_DATA);

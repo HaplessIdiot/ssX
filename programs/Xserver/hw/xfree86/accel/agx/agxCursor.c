@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.4 1996/02/04 08:57:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.5 1996/02/20 14:33:30 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -398,6 +398,9 @@ agxRecolorCursor(pScr, pCurs, displayed)
       miRecolorCursor(pScr, pCurs, displayed);
       return;
    }
+
+   if (!displayed)
+      return;
 
    if (XGA_SERIES(agxChipId)) {
       outb(agxIdxReg, IR_CUR_COLOR0_RED);

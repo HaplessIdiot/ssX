@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.1 1996/02/04 09:12:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.2 1996/02/20 14:35:18 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -447,6 +447,9 @@ static void ArkRecolorCursor(pScr, pCurs, displayed)
 	xColorItem sourceColor, maskColor;
 
 	if (!xf86VTSema)
+		return;
+
+	if (!displayed)
 		return;
 
 	switch (vgaBitsPerPixel) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.12 1996/02/20 14:35:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.13 1996/02/20 15:03:56 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -438,6 +438,9 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
    unsigned char sr12;
 
    if (!xf86VTSema)
+       return;
+
+   if (!displayed)
        return;
 
    /* Find the PseudoColour or TrueColor visual for the colour mapping

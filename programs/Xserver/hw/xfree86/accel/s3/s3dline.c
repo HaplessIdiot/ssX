@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.6 1996/01/11 10:37:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.7 1996/02/04 09:04:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -177,8 +177,15 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    if (pGC->lineStyle == LineDoubleDash) {
       S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
-   } else
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+   } else {
+      if (s3_968_DashBug) {
+	 S3_OUTW32(BKGD_COLOR, 0);
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      }
+      else {
+	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      }
+   }
 
    WaitQueue16_32(3,5);
    S3_OUTW32(WRT_MASK, pGC->planemask);

@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.5 1996/02/04 09:14:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.6 1996/02/20 14:35:48 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -487,6 +487,9 @@ TridentRecolorCursor(pScr, pCurs, displayed)
    unsigned char AddColReg;
 
    if (!xf86VTSema)
+       return;
+
+   if (!displayed)
        return;
 
    /* Find the PseudoColour or TrueColor visual for the colour mapping
