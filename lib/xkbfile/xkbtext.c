@@ -873,7 +873,7 @@ char *rtrn;
 	}
 	return rtrn;
     }
-    sprintf(buf,"0x%x",type);
+    sprintf(buf,"Private");
     return buf;
 }
 
