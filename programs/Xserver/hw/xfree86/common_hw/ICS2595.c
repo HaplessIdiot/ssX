@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.1 1994/09/21 10:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.2 1994/09/22 15:50:38 dawes Exp $ */
 
-/* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/19 */
+/* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/23 */
 
 #include "ICS2595.h" 
 #include "compiler.h"
@@ -50,7 +50,7 @@ register long frequency;
   if (frequency<MIN_ICS2595_FREQ)
     return FALSE; 	/* Frequency too low!  */ 
 
-  FeedDiv = (unsigned int) ((frequency/QUARZFREQ)*46);
+  FeedDiv = (unsigned int) ((frequency*46)/QUARZFREQ);
   FeedDiv -= 257;
  
 
@@ -65,12 +65,13 @@ register long frequency;
         outb(vgaCRIndex,  0x5c);
         outb(vgaCRReg,    0x20);
         outb(vgaCRReg,    0x00);
+        usleep(100000);                /* this is unclear perhaps only 30*/
         outb(vgaCRIndex,  0x5c);        
         outb(vgaCRReg,    0x04);
         outb(vgaCRIndex,  0x42);
-        outb(vgaCRReg,    0x04);}
-   else { outb(vgaCRIndex, 0x42);
-	  outb(vgaCRReg,   0x01);
+        outb(vgaCRReg,    0x04);}      /* perhaps here usleep(10000)      */
+   else { outb(vgaCRIndex, 0x42);      /* Swen check out different combi- */ 
+	  outb(vgaCRReg,   0x01);      /* nations of both  :-?            */
           outb(vgaCRIndex, 0x5c);
           outb(vgaCRReg,   0x20);
           outb(vgaCRReg,   0x00); } 
@@ -97,16 +98,19 @@ unsigned int N, D, L;
 	outb(vgaCRReg,   0x00);
         outb(vgaCRIndex, 0x5c);
         outb(vgaCRReg,   0x00);
+        usleep(100000);
 	outb(vgaCRIndex, 0x42);
         outb(vgaCRReg,   0x00);
         outb(vgaCRIndex, 0x5c);
         outb(vgaCRReg,   0x20);
         outb(vgaCRReg,   0x00);
+        usleep(30);
         outb(vgaCRIndex, 0x42);
         outb(vgaCRReg,   0x01);
         outb(vgaCRIndex, 0x5c);
         outb(vgaCRReg,   0x20);
         outb(vgaCRReg,   0x00);
+        usleep(30);
 
 	/* enable programming of ICS2595 */
 
@@ -150,11 +154,13 @@ int bool;
     outb(vgaCRIndex, 0x5c);
     outb(vgaCRReg,   0x20);
     outb(vgaCRReg,   0x00);
+    usleep(30);   
     outb(vgaCRIndex, 0x42);
     outb(vgaCRReg,   0x0c);
     outb(vgaCRIndex, 0x5c);
     outb(vgaCRReg,   0x20);
     outb(vgaCRReg,   0x00);
+    usleep(30);
    }
    else
    {
@@ -163,12 +169,15 @@ int bool;
     outb(vgaCRIndex, 0x5c);
     outb(vgaCRReg,   0x20);
     outb(vgaCRReg,   0x00);
+    usleep(30);
     outb(vgaCRIndex, 0x42);
     outb(vgaCRReg,   0x08);
     outb(vgaCRIndex, 0x5c);
     outb(vgaCRReg,   0x20);
     outb(vgaCRReg,   0x00);
+    usleep(30);
    }
 }         
 
 /* End of ICS2595.C */
+

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.25 1994/09/20 12:46:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.26 1994/09/23 10:09:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1537,11 +1537,7 @@ s3Init(mode)
       break;
    case 8:
    default:
-      if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
-	 outb(vgaCRReg, 0x80);
-      } else {
-         outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
-      }
+      outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
       break;
    }
 
