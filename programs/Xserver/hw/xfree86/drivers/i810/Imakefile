@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.15 2001/09/27 08:25:03 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.16 2001/10/01 17:13:58 alanh Exp $
 XCOMM
 XCOMM This is the Imakefile for the i810 driver.  
 XCOMM 
@@ -38,8 +38,6 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC)				\
 #endif
 DEFINES = $(DRIDEFINES)
 
-LinkSourceFile(i830_3d_reg.h, $(GLXLIBSRC)/mesa/src/drv/i830)
-
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
@@ -51,7 +49,6 @@ ObjectModuleTarget(i810,$(OBJS))
 InstallObjectModule(i810,$(MODULEDIR),drivers)
 
 #if !defined(XF86DriverSDK)
-CppManTarget(i810,)
 InstallModuleManPage(i810)
 #endif
 
@@ -69,8 +66,5 @@ InstallDriverSDKNonExecFile(i810_io.c,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i810_memory.c,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i810_wmark.c,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i810_reg.h,$(DRIVERSDKDIR)/drivers/i810)
-InstallDriverSDKNonExecFile(i830_dri.c,$(DRIVERSDKDIR)/drivers/i810)
-InstallDriverSDKNonExecFile(i830_dri.h,$(DRIVERSDKDIR)/drivers/i810)
-InstallDriverSDKNonExecFile(i830_driver.c,$(DRIVERSDKDIR)/drivers/i810)
 
 InstallDriverSDKObjectModule(i810,$(DRIVERSDKMODULEDIR),drivers)
