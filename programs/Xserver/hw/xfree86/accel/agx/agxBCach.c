@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.1 1994/06/18 16:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.2 1994/06/26 13:04:11 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -239,17 +239,11 @@ agxCReturnBlock(block)
       }
    }
    else { /* we are not the last of the row */
-      unsigned int oldSize;
-      unsigned int newBase;
-      unsigned int oldBase;
+      unsigned int newLine;
+      unsigned int oldSizeL;
+      extern Bool geBlockMove;
 
-   
-      /* find the length of blocks behind and adjust their x co-ordinate
-       * by our width
-       */
-      newBase = block->line << CACHE_LINE_WIDTH_BYTES_SHIFT;
-      tmpb = block->next;
-
+      geBlockMove = TRUE;      
 
       MAP_INIT( GE_MS_MAP_B,
                 GE_MF_8BPP,
@@ -262,25 +256,26 @@ agxCReturnBlock(block)
       MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
       GE_SET_MAP( GE_MS_MAP_B )
 
+      newLine = block->line;
+      tmpb = block->next;
       while (tmpb != NULL) {
-         oldBase = tmpb->line << CACHE_LINE_WIDTH_BYTES_SHIFT;
-         oldSize = tmpb->sizel << CACHE_LINE_WIDTH_BYTES_SHIFT;
+         oldSizeL = tmpb->sizel;
          GE_WAIT_IDLE();
 
          GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
          GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
 #ifndef NO_MULTI_IO
-         GE_OUT_D( GE_SRC_MAP_X, oldBase );
-         GE_OUT_D( GE_DEST_MAP_X, newBase );
-         GE_OUT_D( GE_OP_DIM_WIDTH, oldSize-1 << 16 
+         GE_OUT_D( GE_SRC_MAP_X, tmpb->line << 16 );
+         GE_OUT_D( GE_DEST_MAP_X, newLine << 16 );
+         GE_OUT_D( GE_OP_DIM_WIDTH, oldSizeL-1 << 16 
                                     | CACHE_LINE_WIDTH_BYTES-1 );
 #else
-         GE_OUT_W( GE_SRC_MAP_X, oldBase );
-         GE_OUT_W( GE_SRC_MAP_Y, 0 );
-         GE_OUT_W( GE_DEST_MAP_X, newBase );
-         GE_OUT_W( GE_DEST_MAP_Y, 0 );
+         GE_OUT_W( GE_SRC_MAP_X, 0 );
+         GE_OUT_W( GE_SRC_MAP_Y, tmpb->line );
+         GE_OUT_W( GE_DEST_MAP_X, 0 );
+         GE_OUT_W( GE_DEST_MAP_Y, newLine );
          GE_OUT_W( GE_OP_DIM_WIDTH, CACHE_LINE_WIDTH_BYTES-1 );
-         GE_OUT_W( GE_OP_DIM_HEIGHT, oldSize-1 ); 
+         GE_OUT_W( GE_OP_DIM_HEIGHT, oldSizeL-1 ); 
 #endif
          GE_START_CMD( GE_OP_BITBLT
                        | GE_OP_FRGD_SRC_MAP 
@@ -291,7 +286,8 @@ agxCReturnBlock(block)
                        | GE_OP_INC_X
                        | GE_OP_INC_Y         );
 
-         newBase += oldSize;
+         tmpb->line = newLine;
+         newLine += oldSizeL;
 	 tmpb = tmpb->next;
       }
 

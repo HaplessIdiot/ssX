@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.0 1994/06/15 15:35:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -165,13 +165,13 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
 
     GE_OUT_W( GE_PIXEL_OP,
-                     GE_OP_PAT_FRGD
-                     | GE_OP_MASK_DISABLED
-                     | GE_OP_INC_X
-                     | GE_OP_INC_Y         );
+              GE_OP_PAT_FRGD
+              | GE_OP_MASK_DISABLED
+              | GE_OP_INC_X
+              | GE_OP_INC_Y         );
 
     while (n--) {
-       width = ((short)*pwidth)-1; 
+       width = (*pwidth)-1; 
        GE_WAIT_IDLE();
 #ifndef NO_MULTI_IO
        GE_OUT_D( GE_DEST_MAP_X, (ppt->y) << 16 | (ppt->x) );
@@ -257,7 +257,7 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
+#if 0 /* def PIXPRIV */
     if (agxCacheTile(pPix)) {
 	while (n--) {
 	    if (*pwidth < 50)
@@ -351,7 +351,7 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
+#if 0 /* def PIXPRIV */
     if (agxCacheStipple(pPix)) {
 	while (n--) {
 	    if (*pwidth < 50)
@@ -446,7 +446,7 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
+#if 0 /* def PIXPRIV */
     if (agxCacheOpStipple(pPix)) {
 	while (n--) {
 	    if (*pwidth < 50)

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.0 1994/06/15 15:35:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth,  Sunnyvale, California.
@@ -67,6 +67,7 @@ extern int  xf86RamDacType;
 extern int  xf86MaxCurs;
 extern int  xf86FrameX0;
 extern int  xf86FrameY0;
+extern int  xf86MaxClock;
 
 extern unsigned char xf86SwapBits[256];
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.0 1994/06/15 15:35:47 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -272,7 +272,7 @@ xf86Sc1502xInit()
 {
    xf86OutSc1502xCmd( 0x00, SC1502X_CMD_8BPP_PSUEDO ); 
    xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, SC1502X_RP_8X1_TO_8X1);
-   if( SC15021 ) {
+   if( xf86RamDacType == SC15021_DAC ) {
       xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, SC15021_SC_8BPP_PSUEDO );
    }
 

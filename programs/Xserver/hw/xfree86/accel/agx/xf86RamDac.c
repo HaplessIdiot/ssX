@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.0 1994/06/15 15:35:53 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -54,6 +54,7 @@ int  xf86RamDacType = -1;
 int  xf86MaxCurs = 0;
 int  xf86FrameX0 = 0;
 int  xf86FrameY0 = 0;
+int  xf86MaxClock;
 
 unsigned char xf86SwapBits[256] = {
 0x00,0x80,0x40,0xC0,0x20,0xA0,0x60,0xE0,0x10,0x90,0x50,0xD0,0x30,0xB0,0x70,0xF0,
@@ -283,7 +284,9 @@ Using IPF access method.\n",
                   ErrorF( "%s : Unable to access Sierra 1502x extended \
 registers, assuming normal RAMDAC.\n",
                     XCONFIG_PROBED );
-           
+          
+               xf86RamDacType = NORMAL_DAC; 
+               xf86MaxClock = 85000;
                xf86MaxCurs = 0;
                xf86RamDacHWSave = xf86RamDacHWNoop;
                xf86RamDacHWRestore = xf86RamDacHWNoop;
@@ -292,7 +295,10 @@ registers, assuming normal RAMDAC.\n",
             }
          }
 
-         SC15021 = xf86InSc1502xIndReg( SC1502X_ID3 ) == SC1502X_ID3_15021;
+         if ( xf86InSc1502xIndReg( SC1502X_ID3 ) == SC1502X_ID3_15021 ) {
+            xf86RamDacType = SC15021_DAC; 
+            xf86MaxClock = 135000;
+         }
 
          if (xf86Verbose)
             xf86Sc1502xPrintId();

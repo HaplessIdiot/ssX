@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.1 1994/06/18 16:23:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.2 1994/06/22 04:18:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -61,7 +61,6 @@
 #include <sys/resource.h>
 #endif
 
-extern int  agxMaxClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 
 extern ScrnInfoRec agxInfoRec;
@@ -311,6 +310,8 @@ agxInitDisplay(screen_idx, crtcRegs)
     * set the CRTC registers
     */
    agxSetCRTCRegs(crtcRegs);
+   
+   agxInitGE();
 
 
    /* enable DAC output */
@@ -465,13 +466,17 @@ agxSetCRTCRegs(crtcRegs)
     * The CRTC registers are passed in from the calling routine.
     */
 
+   if (AGX_SERIES(agxChipId)) {
+      (*xf86RamDacInit)();
+   }
+
    /*
     * switch to XGA graphics mode 
     */
    outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_XGA_MODE);
    if(AGX_SERIES(agxChipId)) {
       outb(agxIdxReg,IR_M1_MODE_REG_1); 
-      byteData = inb(agxByteData);
+      byteData = inb(agxByteData) & IR_M1_PRESERVE_MASK;
       if (OFLG_ISSET(OPTION_8_BIT_BUS, &agxInfoRec.options)) 
           byteData &= ~IR_M1_AGX_BUS_SIZE;
       else
@@ -491,7 +496,7 @@ agxSetCRTCRegs(crtcRegs)
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M2_MODE_REG_2); 
-      byteData = inb(agxByteData);
+      byteData = inb(agxByteData) & IR_M2_PRESERVE_MASK;
       if (OFLG_ISSET(OPTION_VRAM_128, &agxInfoRec.options)) 
           byteData &= ~IR_M2_VRAM_256;
       if (OFLG_ISSET(OPTION_VRAM_256, &agxInfoRec.options)) 
@@ -501,11 +506,7 @@ agxSetCRTCRegs(crtcRegs)
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M3_MODE_REG_3); 
-      byteData = inb(agxByteData);
-      if (agx256WidthAdjust) {
-          byteData |= IR_M3_256_SRC_ADJUST;
-          byteData |= IR_M3_256_DST_ADJUST;
-      }
+      byteData = inb(agxByteData) & IR_M3_PRESERVE_MASK;
       if (agxGEPhysBase == (pointer) 0xD1F00)
           byteData &= ~IR_M3_B1F00_GE_ADDRESS; 
       else
@@ -517,17 +518,20 @@ agxSetCRTCRegs(crtcRegs)
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M5_MODE_REG_5); 
-      byteData = inb(agxByteData);
-      if (crtcRegs->hblnk_strt_lo > 0x63) 
-         byteData |= IR_M5_REFRESH_SPLIT;
-      else
-         byteData &= ~IR_M5_REFRESH_SPLIT;
-      byteData &= ~IR_M5_HICOLOR_DAC;
+      byteData = 0;
+      /*
+       * Some boards only need refresh split at higher resolutions
+       * Others need it at all. Haven't found any problems leaving
+       * it on all the time.
+       */
+      byteData |= IR_M5_REFRESH_SPLIT;
+      if (OFLG_ISSET(OPTION_ENGINE_DELAY, &agxInfoRec.options))
+          byteData |= IR_M5_ENGINE_DELAY;
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M7_MODE_REG_7); 
-      byteData = inb(agxByteData);
-      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options)) 
+      byteData = inb(agxByteData) & IR_M7_PRESERVE_MASK;
+      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
           byteData &= ~IR_M7_BUFFER_ENABLE;
       else
           byteData |= IR_M7_BUFFER_ENABLE;
@@ -535,18 +539,24 @@ agxSetCRTCRegs(crtcRegs)
           byteData &= ~IR_M7_VLB_B;
       if (OFLG_ISSET(OPTION_VLB_B, &agxInfoRec.options)) 
           byteData |= IR_M7_VLB_B;
+      if (OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options))
+          byteData &= ~(IR_M7_VRAM_RAS_DELAY | IR_M7_VRAM_LATCH_DELAY);
+      if (OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)) {
+          byteData |= IR_M7_VRAM_LATCH_DELAY;
+          byteData &= ~IR_M7_VRAM_RAS_DELAY;
+      }
+      if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options)) {
+          byteData |= IR_M7_VRAM_RAS_DELAY;
+          byteData |= IR_M7_VRAM_LATCH_DELAY;
+      }
+      if (OFLG_ISSET(OPTION_VRAM_DELAY_LATCH, &agxInfoRec.options))
+          byteData |= IR_M7_VRAM_LATCH_DELAY;
+      if (OFLG_ISSET(OPTION_VRAM_DELAY_RAS, &agxInfoRec.options))
+          byteData |= IR_M7_VRAM_RAS_DELAY;
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M8_MODE_REG_8); 
-      byteData = inb(agxByteData);
-      if (agx128WidthAdjust) {
-          byteData |= IR_M8_128_SRC_ADJUST;
-          byteData |= IR_M8_128_DST_ADJUST;
-      }
-      if (agx288WidthAdjust) {
-          byteData |= IR_M8_288_SRC_ADJUST;
-          byteData |= IR_M8_288_DST_ADJUST;
-      }
+      byteData = inb(agxByteData) & IR_M8_PRESERVE_MASK;
       if (OFLG_ISSET(OPTION_SPRITE_REFRESH, &agxInfoRec.options)) 
           byteData &= ~IR_M8_SPRITE_REFRESH;
       else
@@ -555,22 +565,27 @@ agxSetCRTCRegs(crtcRegs)
           byteData |= IR_M8_SCREEN_REFRESH;
       else
           byteData &= ~IR_M8_SCREEN_REFRESH;
-      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
-          byteData &= ~IR_M8_BIG_BUFFER_ENABLE;
-      else
+      if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &agxInfoRec.options))
           byteData |= IR_M8_BIG_BUFFER_ENABLE;
+      else
+          byteData &= ~IR_M8_BIG_BUFFER_ENABLE;
+      if ( OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)
+           | OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options) )
+          byteData &= ~IR_M8_VRAM_RAS_EXTEND;
+      if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options))
+          byteData |= IR_M8_VRAM_RAS_EXTEND;
+      if (OFLG_ISSET(OPTION_VRAM_EXTEND_RAS, &agxInfoRec.options))
+          byteData |= IR_M8_VRAM_RAS_EXTEND;
+
       outb(agxByteData,byteData);
 
       if (AGX_16_ONLY(agxChipId)) {
-         outb(agxIdxReg,IR_M10_MODE_REG_10); 
-         byteData = inb(agxByteData);
+         outb(agxIdxReg,IR_M10_MODE_REG_10);
+         byteData = inb(agxByteData) & IR_M10_PRESERVE_MASK; 
          if (OFLG_ISSET(OPTION_WAIT_STATE, &agxInfoRec.options)) 
              byteData |= IR_M10_BUS_WAIT_STATE;
          if (OFLG_ISSET(OPTION_NO_WAIT_STATE, &agxInfoRec.options)) 
              byteData &= ~IR_M10_BUS_WAIT_STATE;
-         byteData &= ~( IR_M10_1MB_AP_ENABLE 
-                        | IR_M10_ENABLE_6MB
-                        | IR_M10_16_BIT_PIXEL );
          outb(agxByteData,byteData);
       }
    }
@@ -679,10 +694,6 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_PAL_SEQUENCE);
    outb(agxByteData, IR_PS_FRMT_RGB);
 
-   if (AGX_SERIES(agxChipId)) {
-      (*xf86RamDacInit)();
-   }
-
    /* Clock select register */
    (*agxClockSelectFunc)(crtcRegs->clock_sel,scale);
 
@@ -690,8 +701,6 @@ agxSetCRTCRegs(crtcRegs)
    agxResetCRTC(CRTC_RUN);
 
    outb(agxIdxReg, 0);
-
-   agxInitGE();
 }
 
 
@@ -1322,8 +1331,11 @@ agxSaveLUT(lut)
 
    for (i = 0; i < 256; i++) {
       lut[i].r = inb(palDataReg);
+      inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
       lut[i].g = inb(palDataReg);
+      inb(agxIdxReg);   /* Some RAMDAC's can't take full speed */
       lut[i].b = inb(palDataReg);
+      inb(agxIdxReg);   /* Some RAMDAC's can't take full speed */
    }
 
    outb(agxIdxReg, oldIndex);

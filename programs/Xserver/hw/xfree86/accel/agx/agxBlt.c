@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.0 1994/06/15 15:35:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.1 1994/06/18 16:23:02 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -650,8 +650,8 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	agxCopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		       0, 0);
+ 	agxCopyArea( pSrcDrawable, (DrawablePtr)pPixmap, pGC1, 
+                     srcx, srcy, width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
         FreeScratchGC(pGC1);

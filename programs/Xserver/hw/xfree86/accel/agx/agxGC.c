@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.0 1994/06/15 15:35:27 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -873,27 +873,25 @@ agxValidateGC(pGC, changes, pDrawable)
 
 
     if (new_fillspans) {
-#if 0
       if (pWin) {
 	 switch (pGC->fillStyle) {
 	   case FillSolid:
-	      pGC->ops->FillSpans = ibm8514SolidFSpans;
+	      pGC->ops->FillSpans = agxSolidFSpans;
 	      break;
 	   case FillTiled:
-	      pGC->ops->FillSpans = ibm8514TiledFSpans;
+	      pGC->ops->FillSpans = agxTiledFSpans;
 	      break;
 	   case FillStippled:
-	      pGC->ops->FillSpans = ibm8514StipFSpans;
+	      pGC->ops->FillSpans = agxStipFSpans;
 	      break;
 	   case FillOpaqueStippled:
-	      pGC->ops->FillSpans = ibm8514OStipFSpans;
+	      pGC->ops->FillSpans = agxOStipFSpans;
 	      break;
 	   default:
 	      FatalError("agxValidateGC: illegal fillStyle\n");
 	 }
       } 
       else
-#endif
       {
  	 switch (pGC->fillStyle) {
 	   case FillSolid:
@@ -946,14 +944,12 @@ agxValidateGC(pGC, changes, pDrawable)
     } /* end of new_fillspans */
 
     if (new_fillarea) {
-#if 0
       if (pWin) {
 	pGC->ops->PolyFillRect = agxPolyFillRect;
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = miPushPixels;
       } 
       else
-#endif
       {
 #if PPW != 4
 	pGC->ops->PolyFillRect = miPolyFillRect;

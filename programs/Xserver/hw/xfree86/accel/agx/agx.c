@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.2 1994/06/19 11:04:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.3 1994/06/28 12:27:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -59,7 +59,6 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern int  agxMaxClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
@@ -534,8 +533,17 @@ agxProbe()
    OFLG_SET(OPTION_SPRITE_REFRESH, &validOptions);
    OFLG_SET(OPTION_SCREEN_REFRESH, &validOptions);
    OFLG_SET(OPTION_FIFO_CONSERV, &validOptions);
+   OFLG_SET(OPTION_FIFO_AGGRESSIVE, &validOptions);
    OFLG_SET(OPTION_VLB_A, &validOptions);
    OFLG_SET(OPTION_VLB_B, &validOptions);
+   OFLG_SET(OPTION_FAST_DRAM, &validOptions);
+   OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
+   OFLG_SET(OPTION_MED_DRAM, &validOptions);
+   OFLG_SET(OPTION_VRAM_DELAY_LATCH, &validOptions);
+   OFLG_SET(OPTION_VRAM_DELAY_RAS, &validOptions);
+   OFLG_SET(OPTION_VRAM_EXTEND_RAS, &validOptions);
+   OFLG_SET(OPTION_ENGINE_DELAY, &validOptions);
+
 
    xf86VerifyOptions(&validOptions, &agxInfoRec);
 
@@ -547,20 +555,20 @@ agxProbe()
        && OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &agxInfoRec.clockOptions)) {
       /* has programmable clocks */ 
       agxClockSelectFunc = xgaNiClockSelect;  
-      agxMaxClock        = MAX_XGA_NI_CLOCK;
+      xf86MaxClock        = MAX_XGA_NI_CLOCK;
    }
    else {
       agxClockSelectFunc = agxClockSelect;
       if (AGX_16_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_16_CLOCK;
+         xf86MaxClock = MAX_AGX_16_CLOCK;
       else if (AGX_15_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_15_CLOCK;
+         xf86MaxClock = MAX_AGX_15_CLOCK;
       else if (AGX_14_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_14_CLOCK;
+         xf86MaxClock = MAX_AGX_14_CLOCK;
       else 
-         agxMaxClock = MAX_XGA_1_CLOCK;
+         xf86MaxClock = MAX_XGA_1_CLOCK;
    }
-   agxInfoRec.maxClock = agxMaxClock;
+   agxInfoRec.maxClock = xf86MaxClock;
 
    /* 
     * The Hercules specific routines are also generic for accessing
@@ -593,7 +601,7 @@ agxProbe()
       }
       else if (OFLG_ISSET(OPTION_SC15025, &agxInfoRec.options)) {
          xf86RamDacType = SC15025_DAC;
-         agxMaxClock = 110000;
+         xf86MaxClock = 110000;
       }
       else if (OFLG_ISSET(OPTION_HERC_DUAL_DAC, &agxInfoRec.options)) {
          xf86RamDacType = HERC_DUAL_DAC;
@@ -622,12 +630,13 @@ agxProbe()
       }
 
       xf86SetUpRamDac();
-      agxInfoRec.maxClock = agxMaxClock;
+      agxInfoRec.maxClock = xf86MaxClock;
    }
 
    agxSavedState = agxHWSave(agxSavedState, sizeof(agxSaveBlock));
    agxSetUpProbeCRTC( &agxProbeCRTC ); 
    agxSetCRTCRegs(&agxProbeCRTC);
+   agxInitGE();
    if (!agxInfoRec.videoRam) {
       agxInfoRec.videoRam = agxGetMemSize();
       if (agxInfoRec.videoRam == 0 )
@@ -690,25 +699,32 @@ memory size in your Xconfig file.\n",
       agxAdjustedVirtX = width;
 
       if (agxVirtX != width && AGX_15_16_ONLY(agxChipId)) {
+#if 0   /* doesn't work yet - may only be good for 640 and 800 widths */
          if (AGX_16_ONLY(agxChipId) && ((width>>1) + 128) >= agxVirtX) {
             agx128WidthAdjust = TRUE;
             width >>= 1;
             agxAdjustedVirtX = width;
             adjWidth = width + 128;
-         } else if (((width>>1) + 256) >= agxVirtX) {
+         }
+         else 
+#endif
+         if (((width>>1) + 256) >= agxVirtX) {
                agx256WidthAdjust = TRUE;
                width >>= 1;
                agxAdjustedVirtX = width;
                adjWidth = width + 256;
-         } else if (AGX_16_ONLY(agxChipId) && ((width>>1) + 288) >= agxVirtX) {
+         } 
+#if 0
+         else if (AGX_16_ONLY(agxChipId) && ((width>>1) + 288) >= agxVirtX) {
                agx288WidthAdjust = TRUE;
                width >>= 1;
                agxAdjustedVirtX = width;
                adjWidth = width + 288;
          } 
+#endif
          if (agxVirtX != adjWidth)
             ErrorF("%s: Virtual screen width must be a power of 2 or \
-256 plus a power of 2 (the AGX-016 also has adjusts of 129 and 288); \
+256 plus a power of 2; \
 adjusting to %d\n", 
                     agxInfoRec.name, adjWidth);
       }

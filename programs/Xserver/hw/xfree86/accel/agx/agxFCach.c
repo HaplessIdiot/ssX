@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.2 1994/06/28 13:11:34 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -48,6 +48,8 @@ static unsigned long agxFontAge;
 static void agxloadFontBlock();
 static __inline__ void DoagxCPolyText8();
 extern CacheFont8Ptr agxFontCache;
+
+Bool geBlockMove = FALSE;
 
 void
 agxUnCacheFont8(font)
@@ -215,7 +217,6 @@ agxloadFontBlock(fentry, block)
 	       nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(fentry->pci[c]);
                nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
-#if 0
 	       if ( nbyWidth == nbyPadGlyph
 #if GLYPHPADBYTES != 4
 		    && (((int)pglyph) & 3) == 0
@@ -227,7 +228,6 @@ agxloadFontBlock(fentry, block)
 		  pb = pglyph;
                }
 	       else
-#endif
                {
                   unsigned char *pg;
                   /*
@@ -480,11 +480,7 @@ agxCImageText8(pDraw, pGC, x, y, count, chars, fentry)
    gcvals[2] = FillSolid;
    DoChangeGC(pGC, GCFunction | GCForeground | GCFillStyle, gcvals, 0);
    ValidateGC(pDraw, pGC);
-   if ( pDraw->type != DRAWABLE_PIXMAP )
-      (*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &backrect);
-   else   /* temporary until agxIm.c stuff is complete */
-      agxPolyFillRect(pDraw, pGC, 1, &backrect);
-      
+   (*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &backrect);
 
  /* put down the glyphs */
    gcvals[0] = oldFG;
@@ -522,18 +518,15 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
    unsigned int   oldBlockBase = 0;
 
    GE_WAIT_IDLE();
-
    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-
-#ifndef NO_MULTI_IO
-    GE_OUT_W(GE_FRGD_MIX, (MIX_DST << 8) | pGC->alu );  /* both fg & bg */
+#if 1 /* ndef NO_MULTI_IO */
+   GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu );
 #else
-    GE_OUT_B(GE_FRGD_MIX, pGC->alu );
-    GE_OUT_B(GE_BKGD_MIX, MIX_DST );
+   GE_OUT_B(GE_FRGD_MIX, pGC->alu );
+   GE_OUT_B(GE_BKGD_MIX, MIX_DST );
 #endif
    GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
    GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
-   GE_OUT_D(GE_BKGD_CLR, pGC->bgPixel);
 
    for (;count > 0; count--, chars++) {
 
@@ -549,9 +542,21 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 	       blocki = (int) (*chars >> BLOCK_NUM_SHIFT);
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
+                  geBlockMove = FALSE;
 		  agxloadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
-                  MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+                  if( geBlockMove ) {
+                     GE_WAIT_IDLE();
+                     MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+#if 1 /* ndef NO_MULTI_IO */
+                     GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu );
+#else
+                     GE_OUT_B(GE_FRGD_MIX, pGC->alu );
+                     GE_OUT_B(GE_BKGD_MIX, MIX_DST );
+#endif
+                     GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
+                     GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
+                  }
 	       }
                block->lru = NEXT_FONT_AGE;
                blockBase = agxMemBase + block->daddy->offset;
@@ -560,7 +565,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
                   GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
   
                   GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );
-#ifndef NO_MULTI_IO
+#if 1 /* ndef NO_MULTI_IO */
                   GE_OUT_D( GE_PIXEL_MAP_WIDTH,  ROW_NUM_LINES-1 << 16
                                                  | CACHE_LINE_WIDTH_PIXELS-1 );
 #else
@@ -581,7 +586,7 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
 
             GE_WAIT_IDLE_SHORT();
 
-#ifndef NO_MULTI_IO
+#if 1  /* ndef NO_MULTI_IO */
             GE_OUT_D( GE_DEST_MAP_X, yStart << 16 | xStart );
             GE_OUT_D( GE_PAT_MAP_X,  line << 16 | linePos ); 
             GE_OUT_D( GE_OP_DIM_WIDTH,  gHeight << 16 | gWidth );

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.0 1994/06/15 15:35:35 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -352,7 +352,7 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
                     GE_OUT_W( GE_DEST_MAP_X,      (short) x1 );
                     GE_OUT_W( GE_DEST_MAP_Y,      (short) y1 );
 #endif
-                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
+                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len - 1 );
                     GE_OUT_W( GE_BRES_ERROR_TERM, (short) e+fix );
                     GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
                     GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
@@ -425,7 +425,7 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
                         GE_OUT_W( GE_DEST_MAP_X,      (short) new_x1 );
                         GE_OUT_W( GE_DEST_MAP_Y,      (short) new_y1 );
 #endif
-                        GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
+                        GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len - 1 );
                         GE_OUT_W( GE_BRES_ERROR_TERM, (short) err+fix );
                         GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
                         GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
@@ -478,9 +478,8 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
                               | GE_OP_SRC_MAP_A
                               | GE_OP_DEST_MAP_A
                               | GE_OP_PAT_FRGD
-                              | GE_OP_DEC_X
-                              | GE_OP_Y_MAJ
-                              | GE_OP_DEC_Y          );
+                              | GE_OP_INC_X
+                              | GE_OP_INC_Y          );
 
 		break;
 	    }

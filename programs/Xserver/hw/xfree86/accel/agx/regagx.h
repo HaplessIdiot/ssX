@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.0 1994/06/15 15:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.1 1994/06/22 04:18:25 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -535,6 +535,7 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define IR_M1_MODE_REG_1		0x77
 #define IR_M1_AGX10_MODE_REG_1		0x7F
+#define IR_M1_PRESERVE_MASK			0x03
 #define IR_M1_MASK				0x37
 #define IR_M1_WRITE_MASK			0x37
 #define IR_M1_CS3_MASK				0x30
@@ -545,6 +546,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M1_AGX_BUS_SIZE			0x01
 
 #define IR_M2_MODE_REG_2		0x76
+#define IR_M2_PRESERVE_MASK			0xC3
 #define IR_M2_MASK				0x0F
 #define IR_M2_CCLK_DIV_2			0x20
 #define IR_M2_DELAY_DISPLAY			0x10
@@ -553,6 +555,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M2_VRAM_256		    		0x01
 
 #define IR_M3_MODE_REG_3		0x6D
+#define IR_M3_PRESERVE_MASK			0x2C
 #define IR_M3_MASK				0xFF
 #define IR_M3_B1F00_GE_ADDRESS		0x01
 #define IR_M3_256_SRC_ADJUST			0x04
@@ -563,32 +566,39 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M4_MASK				0xFF
 
 #define IR_M5_MODE_REG_5		0x6F
+#define IR_M5_PRESERVE_MASK			0x2C
 #define IR_M5_MASK				0xFF
 #define IR_M5_WRITE_MASK			0xFF
 #define IR_M5_CS4_MASK 				0x30
 #define IR_M5_CS4_SHIFT				0x04
 #define IR_M5_HICOLOR_DAC               	0x80U
+#define IR_M5_ENGINE_DELAY                      0x08
 #define IR_M5_EXT_CLOCK                 	0x40
 #define IR_M5_REFRESH_SPLIT			0x04
 
 #define IR_M7_MODE_REG_7		0x6C
+#define IR_M7_PRESERVE_MASK                     0x3F
 #define IR_M7_MASK				0xFF
-#define IR_M7_PRESERVE_MASK			0x21
-#define IR_M7_ROM_DAC_DISABLE                   0x20
+#define IR_M7_ROM_DAC_DISABLE                   0x20  /* must be preserved! */
+#define IR_M7_VRAM_RAS_DELAY                    0x10
+#define IR_M7_VRAM_LATCH_DELAY                  0x08
 #define IR_M7_VLB_B                             0x04
 #define IR_M7_BUFFER_ENABLE                     0x02
 #define IR_M7_LOCAL_BUS 	                0x01
 
 #define IR_M8_MODE_REG_8		0x71
+#define IR_M8_PRESERVE_MASK                     0x4F
 #define IR_M8_288_SRC_ADJUST			0x01
 #define IR_M8_128_SRC_ADJUST			0x02
 #define IR_M8_288_DST_ADJUST			0x04
 #define IR_M8_128_DST_ADJUST			0x08
 #define IR_M8_SPRITE_REFRESH			0x10
 #define IR_M8_SCREEN_REFRESH			0x20
+#define IR_M8_VRAM_RAS_EXTEND                   0x40
 #define IR_M8_BIG_BUFFER_ENABLE			0x80
 
 #define IR_M10_MODE_REG_10		0x71
+#define IR_M10_PRESERVE_MASK                    0x05
 #define IR_M10_PCI_ENABLE			0x01
 #define IR_M10_1MB_AP_ENABLE			0x02
 #define IR_M10_BUS_WAIT_STATE			0x04
@@ -669,7 +679,7 @@ typedef struct {
 
 #define GE_XGA2_BUSY()         ((*(volatile char*)((char *)agxGEBase+0x09))&0x80)
 
-#define GE_WAIT_IDLE()         { int i = 200000, j; \
+#define GE_WAIT_IDLE()         { int i = 500000, j; \
                                  if(GE_BUSY()) { \
                                     if (XGA_2_ONLY(agxChipId))  \
                                        while(GE_XGA2_BUSY()) { \
@@ -678,13 +688,13 @@ typedef struct {
                                           if(GE_XGA2_BUSY()) sleep(0); \
                                        } \
                                     while(GE_BUSY()&&i--) { \
-                                       j = 5; \
+                                      j = 5; \
                                       while(j--); \
                                        if(GE_BUSY()) sleep(0); \
                                     } \
                                  } \
                                  if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE Timed Out:0x%02x.\n"); \
+                                   ErrorF("GE_WAIT_IDLE Timed Out.\n"); \
                                }
 
 #define GE_WAIT_IDLE_SHORT()   { int i = 500000, j; \
@@ -694,7 +704,7 @@ typedef struct {
                                     while(GE_BUSY()&&i--); \
                                  } \
                                  if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE_SHORT Timed Out:0x%02x.\n"); \
+                                   ErrorF("GE_WAIT_IDLE_SHORT Timed Out.\n"); \
                                }
 
 #define GE_START_CMD( cmd )    GE_OUT_D(0x7C, (cmd))

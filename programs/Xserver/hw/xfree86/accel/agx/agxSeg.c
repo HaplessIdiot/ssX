@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.0 1994/06/15 15:35:40 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -339,7 +339,7 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                     GE_OUT_W( GE_DEST_MAP_X,      (short) x1 );
                     GE_OUT_W( GE_DEST_MAP_Y,      (short) y1 );
 #endif
-                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
+                    GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len - 1 );
                     GE_OUT_W( GE_BRES_ERROR_TERM, (short) e+fix );
                     GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
                     GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
@@ -411,7 +411,7 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
                         GE_OUT_W( GE_DEST_MAP_X,      (short) new_x1 );
                         GE_OUT_W( GE_DEST_MAP_Y,      (short) new_y1 );
 #endif
-                        GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len );
+                        GE_OUT_W( GE_OP_DIM_LINE_MAJ, (short) len - 1 );
                         GE_OUT_W( GE_BRES_ERROR_TERM, (short) err+fix );
                         GE_OUT_W( GE_BRES_CONST_K1,   (short) e1 );
                         GE_OUT_W( GE_BRES_CONST_K2,   (short) e2 );
