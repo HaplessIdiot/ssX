@@ -1515,7 +1515,8 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      if(pSiS->xv_sisdirectunlocked) {
         pSiS->xv_sd_result = (value & 0xffffff00);
         if(SISCheckModeIndexForCRT2Type(pScrn, (unsigned short)(value & 0xff),
-	                                       (unsigned short)((value >> 8) & 0xff))) {
+	                                       (unsigned short)((value >> 8) & 0xff),
+					       FALSE)) {
 	   pSiS->xv_sd_result |= 0x01;
 	}
      }
@@ -1747,6 +1748,47 @@ SISGetPortAttribute(
   } else return BadMatch;
   return Success;
 }
+
+#if 0 /* For future use */
+static int
+SiSHandleSiSDirectCommand(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv, sisdirectcommand *sdcbuf)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+   int i;
+   unsigned long j;
+
+   if(sdcbuf->sdc_id != SDC_ID) return BadMatch;
+
+   j = sdcbuf->sdc_header;
+   j += sdcbuf->sdc_command;
+   for(i = 0; i < SDC_NUM_PARM; i++) {
+      j += sdcbuf->sdc_parm[i];
+   }
+   if(j != sdcbuf->sdc_chksum) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "SiS Direct: Bad packet checksum\n");
+    	return BadMatch;
+   }
+   sdcbuf->sdc_header = SDC_RESULT_OK;
+   switch(sdcbuf->sdc_command) {
+   case SDC_CMD_GETVERSION:
+      sdcbuf->sdc_parm[0] = SDC_VERSION;
+      break;
+   case SDC_CMD_CHECKMODEFORCRT2:
+      j = sdcbuf->sdc_parm[0];
+      sdcbuf->sdc_parm[0] = 0;
+      if(SISCheckModeIndexForCRT2Type(pScrn, (unsigned short)(j & 0xff),
+	                                     (unsigned short)((j >> 8) & 0xff),
+					     FALSE)) {
+	 sdcbuf->sdc_parm[0] = 1;
+      }
+      break;
+   default:
+      sdcbuf->sdc_header = SDC_RESULT_UNDEFCMD;
+   }
+
+   return Success;
+}
+#endif
 
 static void
 SISQueryBestSize(
@@ -3348,6 +3390,12 @@ SISPutImage(
    int totalSize=0;
    int depth = pSiS->CurrentLayout.bitsPerPixel >> 3;
    int myreds[] = { 0x000000ff, 0x0000f800, 0, 0x00ff0000 };
+
+#if 0
+   if(id == SDC_ID) {
+      return(SiSHandleSiSDirectCommand(pScrn, pPriv, (sisdirectcommand *)buf));
+   }
+#endif
 
    if(pPriv->grabbedByV4L)
    	return Success;
