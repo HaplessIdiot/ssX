@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxsetup.c,v 1.1 2000/09/24 13:51:19 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -55,7 +55,7 @@ static GLboolean fxMultipassTexture(struct vertex_buffer *, GLuint);
 
 
 
-static void
+void
 fxTexValidate(GLcontext * ctx, struct gl_texture_object *tObj)
 {
     fxMesaContext fxMesa = FX_CONTEXT(ctx);
@@ -300,11 +300,15 @@ fxGetTexSetConfiguration(GLcontext * ctx,
 static void
 fxSetupSingleTMU_NoLock(fxMesaContext fxMesa, struct gl_texture_object *tObj)
 {
+    struct TdfxSharedState *shared = (struct TdfxSharedState *) fxMesa->glCtx->Shared->DriverData;
     tfxTexInfo *ti = fxTMGetTexInfo(tObj);
-    int tmu;
+    const GLcontext *ctx = fxMesa->glCtx;
 
     /* Make sure we're not loaded incorrectly */
-    if (ti->isInTM) {
+    if (ti->isInTM && !shared->umaTexMemory) {
+        /* if doing filtering between mipmap levels, alternate mipmap levels
+         * must be in alternate TMUs.
+         */
         if (ti->LODblend) {
             if (ti->whichTMU != FX_TMU_SPLIT)
                 fxTMMoveOutTM(fxMesa, tObj);
@@ -317,27 +321,35 @@ fxSetupSingleTMU_NoLock(fxMesaContext fxMesa, struct gl_texture_object *tObj)
 
     /* Make sure we're loaded correctly */
     if (!ti->isInTM) {
-        if (ti->LODblend)
-            fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU_SPLIT);
+        /* Have to download the texture */
+        if (shared->umaTexMemory) {
+           fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU0);
+        }
         else {
-            if (fxMesa->haveTwoTMUs) {
-                if (fxMesa->freeTexMem[FX_TMU0] >
-                    FX_grTexTextureMemRequired_NoLock(GR_MIPMAPLEVELMASK_BOTH,
-                                                      &(ti->info))) {
-                    fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU0);
-                }
-                else {
-                    fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU1);
-                }
-            }
-            else
-                fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU0);
+           /* Voodoo3 (split texture memory) */
+           if (ti->LODblend) {
+               fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU_SPLIT);
+           }
+           else {
+               if (fxMesa->haveTwoTMUs) {
+                   GLint memReq = FX_grTexTextureMemRequired_NoLock(
+                                         GR_MIPMAPLEVELMASK_BOTH, &(ti->info));
+                   if (shared->freeTexMem[FX_TMU0] > memReq) {
+                       fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU0);
+                   }
+                   else {
+                       fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU1);
+                   }
+               }
+               else
+                   fxTMMoveInTM_NoLock(fxMesa, tObj, FX_TMU0);
+           }
         }
     }
 
     if (ti->LODblend && ti->whichTMU == FX_TMU_SPLIT) {
-        if ((ti->info.format == GR_TEXFMT_P_8)
-            && (!fxMesa->haveGlobalPaletteTexture)) {
+        /* mipmap levels split between texture banks */
+        if (ti->info.format == GR_TEXFMT_P_8 && !ctx->Texture.SharedPalette) {
             if (MESA_VERBOSE & VERBOSE_DRIVER) {
                 fprintf(stderr, "fxmesa: uploading texture palette\n");
             }
@@ -360,13 +372,19 @@ fxSetupSingleTMU_NoLock(fxMesaContext fxMesa, struct gl_texture_object *tObj)
                               GR_MIPMAPLEVELMASK_EVEN, &(ti->info));
     }
     else {
+        FxU32 tmu;
+
         if (ti->whichTMU == FX_TMU_BOTH)
             tmu = FX_TMU0;
         else
             tmu = ti->whichTMU;
 
-        if ((ti->info.format == GR_TEXFMT_P_8)
-            && (!fxMesa->haveGlobalPaletteTexture)) {
+        if (shared->umaTexMemory) {
+            assert(ti->whichTMU == FX_TMU0);
+            assert(tmu == FX_TMU0);
+        }
+
+        if (ti->info.format == GR_TEXFMT_P_8 && !ctx->Texture.SharedPalette) {
             if (MESA_VERBOSE & VERBOSE_DRIVER) {
                 fprintf(stderr, "fxmesa: uploading texture palette\n");
             }
@@ -409,12 +427,22 @@ fxSelectSingleTMUSrc_NoLock(fxMesaContext fxMesa, GLint tmu, FxBool LODblend)
                                GR_COMBINE_FACTOR_ONE_MINUS_LOD_FRACTION,
                                FXFALSE, FXFALSE);
 
-        if (fxMesa->haveTwoTMUs)
-            FX_grTexCombine_NoLock(GR_TMU1,
+        if (fxMesa->haveTwoTMUs) {
+            const struct gl_shared_state *mesaShared = fxMesa->glCtx->Shared;
+            const struct TdfxSharedState *shared = (struct TdfxSharedState *) mesaShared->DriverData;
+            int tmu;
+
+            if (shared->umaTexMemory)
+                tmu = GR_TMU0;
+            else
+                tmu = GR_TMU1;
+
+            FX_grTexCombine_NoLock(tmu,
                                    GR_COMBINE_FUNCTION_LOCAL,
                                    GR_COMBINE_FACTOR_NONE,
                                    GR_COMBINE_FUNCTION_LOCAL,
                                    GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE);
+        }
         fxMesa->tmuSrc = FX_TMU_SPLIT;
     }
     else {
@@ -454,60 +482,21 @@ fxSelectSingleTMUSrc_NoLock(fxMesaContext fxMesa, GLint tmu, FxBool LODblend)
     }
 }
 
+
+/*
+ * Setup the texture env mode for a texture unit on Banshee/Voodoo3
+ */
 static void
-fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
+SetupTexEnvVoodoo3(GLcontext *ctx, FxU32 unit, GLboolean iteratedRGBA,
+                   GLenum envMode, GLenum baseFormat)
 {
-    fxMesaContext fxMesa = (fxMesaContext) ctx->DriverCtx;
     GrCombineLocal_t localc, locala;
-    GLuint unitsmode;
-    GLint ifmt;
-    tfxTexInfo *ti;
-    struct gl_texture_object *tObj =
-        ctx->Texture.Unit[textureset].CurrentD[2];
-    int tmu;
-
-    if (MESA_VERBOSE & VERBOSE_DRIVER) {
-        fprintf(stderr, "fxmesa: fxSetupTextureSingleTMU(...) Start\n");
-    }
-
-    ti = fxTMGetTexInfo(tObj);
-
-    fxTexValidate(ctx, tObj);
-
-    fxSetupSingleTMU_NoLock(fxMesa, tObj);
-
-    if (ti->whichTMU == FX_TMU_BOTH)
-        tmu = FX_TMU0;
+    if (iteratedRGBA)
+       localc = locala = GR_COMBINE_LOCAL_ITERATED;
     else
-        tmu = ti->whichTMU;
-    if (fxMesa->tmuSrc != tmu)
-        fxSelectSingleTMUSrc_NoLock(fxMesa, tmu, ti->LODblend);
+       localc = locala = GR_COMBINE_LOCAL_CONSTANT;
 
-    if (textureset == 0 || !fxMesa->haveTwoTMUs)
-        unitsmode = fxGetTexSetConfiguration(ctx, tObj, NULL);
-    else
-        unitsmode = fxGetTexSetConfiguration(ctx, NULL, tObj);
-
-    fxMesa->stw_hint_state = 0;
-    FX_grHints_NoLock(GR_HINT_STWHINT, 0);
-
-    ifmt = ti->baseLevelInternalFormat;
-
-    if (unitsmode & FX_UM_ALPHA_ITERATED)
-        locala = GR_COMBINE_LOCAL_ITERATED;
-    else
-        locala = GR_COMBINE_LOCAL_CONSTANT;
-
-    if (unitsmode & FX_UM_COLOR_ITERATED)
-        localc = GR_COMBINE_LOCAL_ITERATED;
-    else
-        localc = GR_COMBINE_LOCAL_CONSTANT;
-
-    if (MESA_VERBOSE & (VERBOSE_DRIVER | VERBOSE_TEXTURE))
-        fprintf(stderr, "fxMesa: fxSetupTextureSingleTMU, envmode is %s\n",
-                gl_lookup_enum_by_nr(ctx->Texture.Unit[textureset].EnvMode));
-
-    switch (ctx->Texture.Unit[textureset].EnvMode) {
+    switch (envMode) {
     case GL_DECAL:
         FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                  GR_COMBINE_FACTOR_NONE,
@@ -522,7 +511,7 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
                                  GR_COMBINE_FACTOR_LOCAL,
                                  locala, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
 
-        if (ifmt == GL_ALPHA)
+        if (baseFormat == GL_ALPHA)
             FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      localc, GR_COMBINE_OTHER_NONE, FXFALSE);
@@ -537,7 +526,7 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
         FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
                                  GR_COMBINE_FACTOR_LOCAL,
                                  locala, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
-        if (ifmt == GL_ALPHA)
+        if (baseFormat == GL_ALPHA)
             FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      localc, GR_COMBINE_OTHER_NONE, FXFALSE);
@@ -553,7 +542,7 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
 #endif
         break;
     case GL_REPLACE:
-        if ((ifmt == GL_RGB) || (ifmt == GL_LUMINANCE))
+        if ((baseFormat == GL_RGB) || (baseFormat == GL_LUMINANCE))
             FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      locala, GR_COMBINE_OTHER_NONE, FXFALSE);
@@ -563,7 +552,7 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
                                      locala, GR_COMBINE_OTHER_TEXTURE,
                                      FXFALSE);
 
-        if (ifmt == GL_ALPHA)
+        if (baseFormat == GL_ALPHA)
             FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      localc, GR_COMBINE_OTHER_NONE, FXFALSE);
@@ -574,29 +563,29 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
                                      FXFALSE);
         break;
     case GL_ADD:
-        if (ifmt == GL_ALPHA ||
-            ifmt == GL_LUMINANCE_ALPHA ||
-            ifmt == GL_RGBA) {
+        if (baseFormat == GL_ALPHA ||
+            baseFormat == GL_LUMINANCE_ALPHA ||
+            baseFormat == GL_RGBA) {
             /* product of texel and fragment alpha */
             FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
                                      GR_COMBINE_FACTOR_LOCAL,
                                      locala, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
         }
-        else if (ifmt == GL_LUMINANCE || ifmt == GL_RGB) {
+        else if (baseFormat == GL_LUMINANCE || baseFormat == GL_RGB) {
             /* fragment alpha is unchanged */
             FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      locala, GR_COMBINE_OTHER_NONE, FXFALSE);
         }
         else {
-            ASSERT(ifmt == GL_INTENSITY);
+            ASSERT(baseFormat == GL_INTENSITY);
             /* sum of texel and fragment alpha */
             FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
                                      GR_COMBINE_FACTOR_ONE,
                                      locala, GR_COMBINE_OTHER_TEXTURE,
                                      FXFALSE);
         }
-        if (ifmt == GL_ALPHA) {
+        if (baseFormat == GL_ALPHA) {
             /* rgb unchanged */
             FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
@@ -611,17 +600,804 @@ fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
         }
         break;
     default:
-        if (MESA_VERBOSE & VERBOSE_DRIVER)
-            fprintf(stderr,
-                    "fx Driver: %x Texture.EnvMode not yet supported\n",
-                    ctx->Texture.Unit[textureset].EnvMode);
+        gl_problem(ctx, "Bad baseFormat in SetupTexEnvVoodoo3");
+    }
+}
+
+
+/*
+ * These macros are used below when handling COMBINE_EXT.
+ */
+#define TEXENV_OPERAND_INVERTED(operand)                            \
+  (((operand) == GL_ONE_MINUS_SRC_ALPHA)                            \
+   || ((operand) == GL_ONE_MINUS_SRC_COLOR))
+#define TEXENV_OPERAND_ALPHA(operand)                               \
+  (((operand) == GL_SRC_ALPHA) || ((operand) == GL_ONE_MINUS_SRC_ALPHA))
+#define TEXENV_SETUP_ARG_A(param, source, operand, iteratedAlpha)   \
+    switch (source) {                                               \
+    case GL_TEXTURE:                                                \
+        param = GR_CMBX_LOCAL_TEXTURE_ALPHA;                        \
+        break;                                                      \
+    case GL_CONSTANT_EXT:                                           \
+        param = GR_CMBX_TMU_CALPHA;                                 \
+        break;                                                      \
+    case GL_PRIMARY_COLOR_EXT:                                      \
+        param = GR_CMBX_ITALPHA;                                    \
+        break;                                                      \
+    case GL_PREVIOUS_EXT:                                           \
+        param = iteratedAlpha;                                      \
+        break;                                                      \
+    default:                                                        \
+       /*                                                           \
+        * This is here just to keep from getting                    \
+        * compiler warnings.                                        \
+        */                                                          \
+        param = GR_CMBX_ZERO;                                       \
+        break;                                                      \
+    }
+
+#define TEXENV_SETUP_ARG_RGB(param, source, operand, iteratedColor, iteratedAlpha) \
+    if (!TEXENV_OPERAND_ALPHA(operand)) {                           \
+        switch (source) {                                           \
+        case GL_TEXTURE:                                            \
+            param = GR_CMBX_LOCAL_TEXTURE_RGB;                      \
+            break;                                                  \
+        case GL_CONSTANT_EXT:                                       \
+            param = GR_CMBX_TMU_CCOLOR;                             \
+            break;                                                  \
+        case GL_PRIMARY_COLOR_EXT:                                  \
+            param = GR_CMBX_ITRGB;                                  \
+            break;                                                  \
+        case GL_PREVIOUS_EXT:                                       \
+            param = iteratedColor;                                  \
+            break;                                                  \
+        default:                                                    \
+           /*                                                       \
+            * This is here just to keep from getting                \
+            * compiler warnings.                                    \
+            */                                                      \
+            param = GR_CMBX_ZERO;                                   \
+            break;                                                  \
+        }                                                           \
+    } else {                                                        \
+        switch (source) {                                           \
+        case GL_TEXTURE:                                            \
+            param = GR_CMBX_LOCAL_TEXTURE_ALPHA;                    \
+            break;                                                  \
+        case GL_CONSTANT_EXT:                                       \
+            param = GR_CMBX_TMU_CALPHA;                             \
+            break;                                                  \
+        case GL_PRIMARY_COLOR_EXT:                                  \
+            param = GR_CMBX_ITALPHA;                                \
+            break;                                                  \
+        case GL_PREVIOUS_EXT:                                       \
+            param = iteratedAlpha;                                  \
+            break;                                                  \
+        default:                                                    \
+           /*                                                       \
+            * This is here just to keep from getting                \
+            * compiler warnings.                                    \
+            */                                                      \
+            param = GR_CMBX_ZERO;                                   \
+            break;                                                  \
+        }                                                           \
+    }
+
+#define TEXENV_SETUP_MODE_RGB(param, operand)                       \
+    switch (operand) {                                              \
+    case GL_SRC_COLOR:                                              \
+    case GL_SRC_ALPHA:                                              \
+        param = GR_FUNC_MODE_X;                                     \
+        break;                                                      \
+    case GL_ONE_MINUS_SRC_ALPHA:                                    \
+    case GL_ONE_MINUS_SRC_COLOR:                                    \
+        param = GR_FUNC_MODE_ONE_MINUS_X;                           \
+        break;                                                      \
+    default:                                                        \
+        param = GR_FUNC_MODE_ZERO;                                  \
+        break;                                                      \
+    }
+
+#define TEXENV_SETUP_MODE_A(param, operand)                         \
+    switch (operand) {                                              \
+    case GL_SRC_ALPHA:                                              \
+        param = GR_FUNC_MODE_X;                                     \
+        break;                                                      \
+    case GL_ONE_MINUS_SRC_ALPHA:                                    \
+        param = GR_FUNC_MODE_ONE_MINUS_X;                           \
+        break;                                                      \
+    default:                                                        \
+        param = GR_FUNC_MODE_ZERO;                                  \
+        break;                                                      \
+    }
+
+/*
+ * Setup the texture env mode for a texture unit on Napalm.
+ * If useIteratedRGBA is true, we'll feed the interpolated fragment
+ * color into the combiner, else we'll feed in the upstream texture
+ * unit's resultant color.
+ */
+static void
+SetupTexEnvNapalm(GLcontext *ctx, FxU32 unit, GLboolean useIteratedRGBA,
+                  struct gl_texture_unit *texUnit, GLenum baseFormat)
+{
+    GrTCCUColor_t incomingRGB, incomingAlpha;
+    GLenum envMode = texUnit->EnvMode;
+
+    if (useIteratedRGBA) {
+        incomingRGB = GR_CMBX_ITRGB;
+        incomingAlpha = GR_CMBX_ITALPHA;
+    }
+    else {
+        incomingRGB = GR_CMBX_OTHER_TEXTURE_RGB;
+        incomingAlpha = GR_CMBX_OTHER_TEXTURE_ALPHA;
+    }
+
+    switch (envMode) {
+    case GL_REPLACE:
+        /* Setup RGB combiner */
+        if (baseFormat == GL_ALPHA) {
+            /* Rv = Rf */
+             (*grTexColorCombineExtPtr)(unit,
+                                        incomingRGB, GR_FUNC_MODE_X,
+                                        GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                        GR_CMBX_ZERO, FXTRUE,
+                                        GR_CMBX_ZERO, FXFALSE,
+                                        0, FXFALSE);
+        }
+        else {
+            /* Rv = Rt */
+            (*grTexColorCombineExtPtr)(unit,
+                                     GR_CMBX_LOCAL_TEXTURE_RGB, GR_FUNC_MODE_X,
+                                     GR_CMBX_ZERO, GR_FUNC_MODE_X,
+                                     GR_CMBX_ZERO, FXTRUE,
+                                     GR_CMBX_ZERO, FXFALSE,
+                                     0, FXFALSE);
+        }
+        /* Setup Alpha combiner */
+        if (baseFormat == GL_LUMINANCE || baseFormat == GL_RGB) {
+            /* Av = Af */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       incomingAlpha, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else {
+            /* Av = At */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       GR_CMBX_LOCAL_TEXTURE_ALPHA, FXFALSE,
+                                       0, FXFALSE);
+        }
         break;
+    case GL_MODULATE:
+        /* Setup RGB combiner */
+        if (baseFormat == GL_ALPHA) {
+            /* Rv = Rf */
+            (*grTexColorCombineExtPtr)(unit,
+                                       incomingRGB, GR_FUNC_MODE_X,
+                                       GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else {
+            /* Result = Frag * Tex */
+            (*grTexColorCombineExtPtr)(unit,
+                                       incomingRGB, GR_FUNC_MODE_X,
+                                       GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_LOCAL_TEXTURE_RGB, FXFALSE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        /* Setup Alpha combiner */
+        if (baseFormat == GL_LUMINANCE || baseFormat == GL_RGB) {
+            /* Av = Af */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       incomingAlpha, GR_FUNC_MODE_X,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else {
+            /* Av = Af * At */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                   GR_CMBX_LOCAL_TEXTURE_ALPHA, GR_FUNC_MODE_X,
+                                   GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                   incomingAlpha, FXFALSE,
+                                   GR_CMBX_ZERO, FXFALSE,
+                                   0, FXFALSE);
+        }
+        break;
+    case GL_DECAL:
+        /* Setup RGB combiner */
+        if (baseFormat == GL_RGB) {
+            /* Rv = Rt */
+            (*grTexColorCombineExtPtr)(unit,
+                                     GR_CMBX_LOCAL_TEXTURE_RGB, GR_FUNC_MODE_X,
+                                     GR_CMBX_ZERO, GR_FUNC_MODE_X,
+                                     GR_CMBX_ZERO, FXTRUE,
+                                     GR_CMBX_ZERO, FXFALSE,
+                                     0, FXFALSE);
+        }
+        else {
+            /* Rv = Rf * (1 - At) + Rt * At */
+            (*grTexColorCombineExtPtr)(unit,
+                                    GR_CMBX_LOCAL_TEXTURE_RGB, GR_FUNC_MODE_X,
+                                    incomingRGB, GR_FUNC_MODE_NEGATIVE_X,
+                                    GR_CMBX_LOCAL_TEXTURE_ALPHA, FXFALSE,
+                                    GR_CMBX_B, FXFALSE,
+                                    0, FXFALSE);
+        }
+        /* Setup Alpha combiner */
+        /* Av = Af */
+        (*grTexAlphaCombineExtPtr)(unit,
+                                   incomingAlpha, GR_FUNC_MODE_X,
+                                   GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                   GR_CMBX_ZERO, FXTRUE,
+                                   GR_CMBX_ZERO, FXFALSE,
+                                   0, FXFALSE);
+        break;
+    case GL_BLEND:
+        /* Setup RGB combiner */
+        if (baseFormat == GL_ALPHA) {
+            /* Rv = Rf */
+            (*grTexColorCombineExtPtr)(unit,
+                                       incomingRGB, GR_FUNC_MODE_X,
+                                       GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else {
+            /* Rv = Rf * (1 - Rt) + Rc * Rt */
+            (*grTexColorCombineExtPtr)(unit,
+                                       GR_CMBX_TMU_CCOLOR, GR_FUNC_MODE_X,
+                                       incomingRGB, GR_FUNC_MODE_NEGATIVE_X,
+                                       GR_CMBX_LOCAL_TEXTURE_RGB, FXFALSE,
+                                       GR_CMBX_B, FXFALSE,
+                                       0, FXFALSE);
+        }
+        /* Setup Alpha combiner */
+        if (baseFormat == GL_LUMINANCE || baseFormat == GL_RGB) {
+            /* Av = Af */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       incomingAlpha, GR_FUNC_MODE_X,
+                                       GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else if (baseFormat == GL_INTENSITY) {
+            /* Av = Af * (1 - It) + Ac * It */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                      GR_CMBX_TMU_CALPHA, GR_FUNC_MODE_X,
+                                      incomingAlpha, GR_FUNC_MODE_NEGATIVE_X,
+                                      GR_CMBX_LOCAL_TEXTURE_ALPHA, FXFALSE,
+                                      GR_CMBX_B, FXFALSE,
+                                      0, FXFALSE);
+        }
+        else {
+            /* Av = Af * At */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                   GR_CMBX_LOCAL_TEXTURE_ALPHA, GR_FUNC_MODE_X,
+                                   GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                   incomingAlpha, FXFALSE,
+                                   GR_CMBX_ZERO, FXFALSE,
+                                   0, FXFALSE);
+        }
+        /* Also have to set up the tex env constant color */
+        {
+            GrColor_t constColor;
+            GLubyte *abgr = (GLubyte *) &constColor;
+            abgr[0] = ctx->Texture.Unit[0].EnvColor[0] * 255.0F;
+            abgr[1] = ctx->Texture.Unit[0].EnvColor[1] * 255.0F;
+            abgr[2] = ctx->Texture.Unit[0].EnvColor[2] * 255.0F;
+            abgr[3] = ctx->Texture.Unit[0].EnvColor[3] * 255.0F;
+            (*grConstantColorValueExtPtr)(unit, constColor);
+        }
+        break;
+    case GL_ADD:
+        /* Setup RGB combiner */
+        if (baseFormat == GL_ALPHA) {
+            /* Rv = Rf */
+            (*grTexColorCombineExtPtr)(unit,
+                                       incomingRGB, GR_FUNC_MODE_X,
+                                       GR_CMBX_ZERO, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else {
+            /* Rv = Rf + Tt */
+            (*grTexColorCombineExtPtr)(unit,
+                                     incomingRGB, GR_FUNC_MODE_X,
+                                     GR_CMBX_LOCAL_TEXTURE_RGB, GR_FUNC_MODE_X,
+                                     GR_CMBX_ZERO, FXTRUE,
+                                     GR_CMBX_ZERO, FXFALSE,
+                                     0, FXFALSE);
+        }
+        /* Setup Alpha combiner */
+        if (baseFormat == GL_LUMINANCE || baseFormat == GL_RGB) {
+            /* Av = Af */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       incomingAlpha, GR_FUNC_MODE_X,
+                                       GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                       GR_CMBX_ZERO, FXTRUE,
+                                       GR_CMBX_ZERO, FXFALSE,
+                                       0, FXFALSE);
+        }
+        else if (baseFormat == GL_INTENSITY) {
+            /* Av = Af + It */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                   incomingAlpha, GR_FUNC_MODE_X,
+                                   GR_CMBX_LOCAL_TEXTURE_ALPHA, GR_FUNC_MODE_X,
+                                   GR_CMBX_ZERO, FXTRUE,
+                                   GR_CMBX_ZERO, FXFALSE,
+                                   0, FXFALSE);
+        }
+        else {
+            /* Av = Af * At */
+            (*grTexAlphaCombineExtPtr)(unit,
+                                   GR_CMBX_LOCAL_TEXTURE_ALPHA, GR_FUNC_MODE_X,
+                                   GR_CMBX_ITALPHA, GR_FUNC_MODE_ZERO,
+                                   incomingAlpha, FXFALSE,
+                                   GR_CMBX_ZERO, FXFALSE,
+                                   0, FXFALSE);
+        }
+        break;
+    case GL_COMBINE_EXT:
+        {
+            FxU32 A_RGB, B_RGB, C_RGB, D_RGB;
+            FxU32 Amode_RGB, Bmode_RGB;
+            FxBool Cinv_RGB, Dinv_RGB, Ginv_RGB;
+            FxU32 Shift_RGB;
+            FxU32 A_A, B_A, C_A, D_A;
+            FxU32 Amode_A, Bmode_A;
+            FxBool Cinv_A, Dinv_A, Ginv_A;
+            FxU32 Shift_A;
+           /*
+            *
+            * In the formulas below, we write:
+            *  o "1(x)" for the identity function applied to x,
+            *    so 1(x) = x.
+            *  o "0(x)" for the constant function 0, so
+            *    0(x) = 0 for all values of x.
+            *
+            * Calculate the color combination.
+            */
+            Shift_RGB = texUnit->CombineScaleShiftRGB;
+            Shift_A = texUnit->CombineScaleShiftA;
+            switch (texUnit->CombineModeRGB) {
+            case GL_REPLACE:
+               /*
+                * The formula is: Arg0
+                * We implement this by the formula:
+                *   (Arg0 + 0(0))*(1-0) + 0
+                */
+                TEXENV_SETUP_ARG_RGB(A_RGB,
+                                     texUnit->CombineSourceRGB[0],
+                                     texUnit->CombineOperandRGB[0],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_MODE_RGB(Amode_RGB,
+                                      texUnit->CombineOperandRGB[0]);
+                B_RGB = C_RGB = D_RGB = GR_CMBX_ZERO;
+                Bmode_RGB = GR_FUNC_MODE_ZERO;
+                Cinv_RGB = FXTRUE;
+                Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            case GL_MODULATE:
+               /*
+                * The formula is: Arg0 * Arg1
+                *
+                * We implement this by the formula
+                *   (Arg0 + 0(0)) * Arg1 + 0(0)
+                */
+                TEXENV_SETUP_ARG_RGB(A_RGB,
+                                     texUnit->CombineSourceRGB[0],
+                                     texUnit->CombineOperandRGB[0],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_MODE_RGB(Amode_RGB,
+                                      texUnit->CombineOperandRGB[0]);
+                B_RGB = GR_CMBX_ZERO;
+                Bmode_RGB = GR_CMBX_ZERO;
+                TEXENV_SETUP_ARG_RGB(C_RGB,
+                                     texUnit->CombineSourceRGB[1],
+                                     texUnit->CombineOperandRGB[1],
+                                     incomingRGB, incomingAlpha);
+                Cinv_RGB = TEXENV_OPERAND_INVERTED
+                               (texUnit->CombineOperandRGB[1]);
+                D_RGB = GR_CMBX_ZERO;
+                Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            case GL_ADD:
+               /*
+                * The formula is Arg0 + Arg1
+                */
+                TEXENV_SETUP_ARG_RGB(A_RGB,
+                                     texUnit->CombineSourceRGB[0],
+                                     texUnit->CombineOperandRGB[0],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_MODE_RGB(Amode_RGB,
+                                      texUnit->CombineOperandRGB[0]);
+                TEXENV_SETUP_ARG_RGB(B_RGB,
+                                     texUnit->CombineSourceRGB[1],
+                                     texUnit->CombineOperandRGB[1],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_MODE_RGB(Bmode_RGB,
+                                      texUnit->CombineOperandRGB[1]);
+                C_RGB = D_RGB = GR_CMBX_ZERO;
+                Cinv_RGB = FXTRUE;
+                Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            case GL_ADD_SIGNED_EXT:
+               /*
+                * The formula is: Arg0 + Arg1 - 0.5.
+                * We compute this by calculating:
+                *      (Arg0 - 1/2) + Arg1         if op0 is SRC_{COLOR,ALPHA}
+                *      Arg0 + (Arg1 - 1/2)         if op1 is SRC_{COLOR,ALPHA}
+                * If both op0 and op1 are ONE_MINUS_SRC_{COLOR,ALPHA}
+                * we cannot implement the formula properly.
+                */
+                TEXENV_SETUP_ARG_RGB(A_RGB,
+                                     texUnit->CombineSourceRGB[0],
+                                     texUnit->CombineOperandRGB[0],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_ARG_RGB(B_RGB,
+                                     texUnit->CombineSourceRGB[1],
+                                     texUnit->CombineOperandRGB[1],
+                                     incomingRGB, incomingAlpha);
+                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandRGB[0])) {
+                   /*
+                    * A is not inverted.  So, choose it.
+                    */
+                    Amode_RGB = GR_FUNC_MODE_X_MINUS_HALF;
+                    if (!TEXENV_OPERAND_INVERTED
+                            (texUnit->CombineOperandRGB[1])) {
+                        Bmode_RGB = GR_FUNC_MODE_X;
+                    } else {
+                        Bmode_RGB = GR_FUNC_MODE_ONE_MINUS_X;
+                    }
+                } else {
+                   /*
+                    * A is inverted, so try to subtract 1/2
+                    * from B.
+                    */
+                    Amode_RGB = GR_FUNC_MODE_ONE_MINUS_X;
+                    if (!TEXENV_OPERAND_INVERTED
+                            (texUnit->CombineOperandRGB[1])) {
+                        Bmode_RGB = GR_FUNC_MODE_X_MINUS_HALF;
+                    } else {
+                       /*
+                        * Both are inverted.  This is the case
+                        * we cannot handle properly.  We just
+                        * choose to not add the - 1/2.
+                        */
+                        Bmode_RGB = GR_FUNC_MODE_ONE_MINUS_X;
+                    }
+                }
+                C_RGB = D_RGB = GR_CMBX_ZERO;
+                Cinv_RGB = FXTRUE;
+                Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            case GL_INTERPOLATE_EXT:
+               /*
+                * The formula is: Arg0 * Arg2 + Arg1 * (1 - Arg2).
+                * We compute this by the formula:
+                *            (Arg0 - Arg1) * Arg2 + Arg1
+                *               == Arg0 * Arg2 - Arg1 * Arg2 + Arg1
+                *               == Arg0 * Arg2 + Arg1 * (1 - Arg2)
+                * However, if both Arg1 is ONE_MINUS_X, the HW does
+                * not support it properly.
+                */
+                TEXENV_SETUP_ARG_RGB(A_RGB,
+                                     texUnit->CombineSourceRGB[0],
+                                     texUnit->CombineOperandRGB[0],
+                                     incomingRGB, incomingAlpha);
+                TEXENV_SETUP_MODE_RGB(Amode_RGB,
+                                      texUnit->CombineOperandRGB[0]);
+                TEXENV_SETUP_ARG_RGB(B_RGB,
+                                     texUnit->CombineSourceRGB[1],
+                                     texUnit->CombineOperandRGB[1],
+                                     incomingRGB, incomingAlpha);
+                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandRGB[1])) {
+                    Bmode_RGB = GR_FUNC_MODE_NEGATIVE_X;
+                } else {
+                   /*
+                    * This case is wrong.
+                    */
+                    Bmode_RGB = GR_FUNC_MODE_NEGATIVE_X;
+                }
+               /*
+                * The Source/Operand for the C value must
+                * specify some kind of alpha value.
+                */
+                TEXENV_SETUP_ARG_A(C_RGB,
+                                   texUnit->CombineSourceRGB[2],
+                                   texUnit->CombineOperandRGB[2],
+                                   incomingAlpha);
+                Cinv_RGB = FXFALSE;
+                D_RGB = GR_CMBX_B;
+                Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            default:
+               /*
+                * This is here mostly to keep from getting
+                * a compiler warning about these not being set.
+                * However, this should set all the texture values
+                * to zero.
+                */
+                A_RGB = B_RGB = C_RGB = D_RGB = GR_CMBX_ZERO;
+                Amode_RGB = Bmode_RGB = GR_FUNC_MODE_X;
+                Cinv_RGB = Dinv_RGB = Ginv_RGB = FXFALSE;
+                break;
+            }
+           /*
+            * Calculate the alpha combination.
+            */
+            switch (texUnit->CombineModeA) {
+            case GL_REPLACE:
+               /*
+                * The formula is: Arg0
+                * We implement this by the formula:
+                *   (Arg0 + 0(0))*(1-0) + 0
+                */
+                TEXENV_SETUP_ARG_A(A_A,
+                                   texUnit->CombineSourceA[0],
+                                   texUnit->CombineOperandA[0],
+                                   incomingAlpha);
+                TEXENV_SETUP_MODE_A(Amode_A,
+                                    texUnit->CombineOperandA[0]);
+                B_A = C_A = D_A = GR_CMBX_ZERO;
+                Bmode_A = GR_FUNC_MODE_ZERO;
+                Cinv_A = FXTRUE;
+                Dinv_A = Ginv_A = FXFALSE;
+                break;
+            case GL_MODULATE:
+               /*
+                * The formula is: Arg0 * Arg1
+                *
+                * We implement this by the formula
+                *   (Arg0 + 0(0)) * Arg1 + 0(0)
+                */
+                TEXENV_SETUP_ARG_A(A_A,
+                                   texUnit->CombineSourceA[0],
+                                   texUnit->CombineOperandA[0],
+                                   incomingAlpha);
+                TEXENV_SETUP_MODE_A(Amode_A,
+                                    texUnit->CombineOperandA[0]);
+                B_A = GR_CMBX_ZERO;
+                Bmode_A = GR_CMBX_ZERO;
+                TEXENV_SETUP_ARG_A(C_A,
+                                   texUnit->CombineSourceA[1],
+                                   texUnit->CombineOperandA[1],
+                                   incomingAlpha);
+                Cinv_A = TEXENV_OPERAND_INVERTED
+                               (texUnit->CombineOperandA[1]);
+                D_A = GR_CMBX_ZERO;
+                Dinv_A = Ginv_A = FXFALSE;
+                break;
+            case GL_ADD:
+               /*
+                * The formula is Arg0 + Arg1
+                */
+                TEXENV_SETUP_ARG_A(A_A,
+                                   texUnit->CombineSourceA[0],
+                                   texUnit->CombineOperandA[0],
+                                   incomingAlpha);
+                TEXENV_SETUP_MODE_A(Amode_A,
+                                    texUnit->CombineOperandA[0]);
+                TEXENV_SETUP_ARG_A(B_A,
+                                   texUnit->CombineSourceA[1],
+                                   texUnit->CombineOperandA[1],
+                                   incomingAlpha);
+                TEXENV_SETUP_MODE_A(Bmode_A,
+                                    texUnit->CombineOperandA[0]);
+                C_A = D_A = GR_CMBX_ZERO;
+                Cinv_A = FXTRUE;
+                Dinv_A = Ginv_A = FXFALSE;
+                break;
+            case GL_ADD_SIGNED_EXT:
+               /*
+                * The formula is: Arg0 + Arg1 - 0.5.
+                * We compute this by calculating:
+                *      (Arg0 - 1/2) + Arg1         if op0 is SRC_{COLOR,ALPHA}
+                *      Arg0 + (Arg1 - 1/2)         if op1 is SRC_{COLOR,ALPHA}
+                * If both op0 and op1 are ONE_MINUS_SRC_{COLOR,ALPHA}
+                * we cannot implement the formula properly.
+                */
+                TEXENV_SETUP_ARG_A(A_A,
+                                   texUnit->CombineSourceA[0],
+                                   texUnit->CombineOperandA[0],
+                                   incomingAlpha);
+                TEXENV_SETUP_ARG_A(B_A,
+                                   texUnit->CombineSourceA[1],
+                                   texUnit->CombineOperandA[1],
+                                   incomingAlpha);
+                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandA[0])) {
+                   /*
+                    * A is not inverted.  So, choose it.
+                    */
+                    Amode_A = GR_FUNC_MODE_X_MINUS_HALF;
+                    if (!TEXENV_OPERAND_INVERTED
+                            (texUnit->CombineOperandA[1])) {
+                        Bmode_A = GR_FUNC_MODE_X;
+                    } else {
+                        Bmode_A = GR_FUNC_MODE_ONE_MINUS_X;
+                    }
+                } else {
+                   /*
+                    * A is inverted, so try to subtract 1/2
+                    * from B.
+                    */
+                    Amode_A = GR_FUNC_MODE_ONE_MINUS_X;
+                    if (!TEXENV_OPERAND_INVERTED
+                            (texUnit->CombineOperandA[1])) {
+                        Bmode_A = GR_FUNC_MODE_X_MINUS_HALF;
+                    } else {
+                       /*
+                        * Both are inverted.  This is the case
+                        * we cannot handle properly.  We just
+                        * choose to not add the - 1/2.
+                        */
+                        Bmode_A = GR_FUNC_MODE_ONE_MINUS_X;
+                    }
+                }
+                C_A = D_A = GR_CMBX_ZERO;
+                Cinv_A = FXTRUE;
+                Dinv_A = Ginv_A = FXFALSE;
+                break;
+            case GL_INTERPOLATE_EXT:
+               /*
+                * The formula is: Arg0 * Arg2 + Arg1 * (1 - Arg2).
+                * We compute this by the formula:
+                *            (Arg0 - Arg1) * Arg2 + Arg1
+                *               == Arg0 * Arg2 - Arg1 * Arg2 + Arg1
+                *               == Arg0 * Arg2 + Arg1 * (1 - Arg2)
+                * However, if both Arg1 is ONE_MINUS_X, the HW does
+                * not support it properly.
+                */
+                TEXENV_SETUP_ARG_A(A_A,
+                                   texUnit->CombineSourceA[0],
+                                   texUnit->CombineOperandA[0],
+                                   incomingAlpha);
+                TEXENV_SETUP_MODE_A(Amode_A,
+                                    texUnit->CombineOperandA[0]);
+                TEXENV_SETUP_ARG_A(B_A,
+                                   texUnit->CombineSourceA[1],
+                                   texUnit->CombineOperandA[1],
+                                   incomingAlpha);
+                if (!TEXENV_OPERAND_INVERTED(texUnit->CombineOperandA[1])) {
+                    Bmode_A = GR_FUNC_MODE_NEGATIVE_X;
+                } else {
+                   /*
+                    * This case is wrong.
+                    */
+                    Bmode_A = GR_FUNC_MODE_NEGATIVE_X;
+                }
+               /*
+                * The Source/Operand for the C value must
+                * specify some kind of alpha value.
+                */
+                TEXENV_SETUP_ARG_A(C_A,
+                                   texUnit->CombineSourceA[2],
+                                   texUnit->CombineOperandA[2],
+                                   incomingAlpha);
+                Cinv_A = FXFALSE;
+                D_A = GR_CMBX_ZERO;
+                Dinv_A = Ginv_A = FXFALSE;
+                break;
+            default:
+               /*
+                * This is here mostly to keep from getting
+                * a compiler warning about these not being set.
+                * However, this should set all the alpha values
+                * to one.
+                */
+                A_A = B_A = C_A = D_A = GR_CMBX_ZERO;
+                Amode_A = Bmode_A = GR_FUNC_MODE_X;
+                Cinv_A = Dinv_A = FXFALSE;
+                Ginv_A = FXTRUE;
+                break;
+            }
+           /*
+            * Call the functions.
+            */
+            (*grTexColorCombineExtPtr)(unit,
+                                       A_RGB, Amode_RGB,
+                                       B_RGB, Bmode_RGB,
+                                       C_RGB, Cinv_RGB,
+                                       D_RGB, Dinv_RGB,
+                                       Shift_RGB, Ginv_RGB);
+            (*grTexAlphaCombineExtPtr)(unit,
+                                       A_A, Amode_A,
+                                       B_A, Bmode_A,
+                                       C_A, Cinv_A,
+                                       D_A, Dinv_A,
+                                       Shift_A, Ginv_A);
+        }
+    break;
+    default:
+        gl_problem(ctx, "Bad baseFormat in SetupTexEnvNapalm");
+    }
+
+    /* setup Color and Alpha combine always the same */
+    (*grColorCombineExtPtr)(GR_CMBX_TEXTURE_RGB, GR_FUNC_MODE_X, 
+                            GR_CMBX_ZERO, GR_FUNC_MODE_X, 
+                            GR_CMBX_ZERO, FXTRUE,
+                            GR_CMBX_ZERO, FXFALSE,
+                            0, FXFALSE);
+    (*grAlphaCombineExtPtr)(GR_CMBX_TEXTURE_ALPHA, GR_FUNC_MODE_X, 
+                            GR_CMBX_ZERO, GR_FUNC_MODE_X, 
+                            GR_CMBX_ZERO, FXTRUE,
+                            GR_CMBX_ZERO, FXFALSE,
+                            0, FXFALSE);
+}
+
+
+static void
+fxSetupTextureSingleTMU_NoLock(GLcontext * ctx, GLuint textureset)
+{
+    fxMesaContext fxMesa = (fxMesaContext) ctx->DriverCtx;
+    GLuint unitsmode;
+    GLint ifmt;
+    tfxTexInfo *ti;
+    struct gl_texture_object *tObj =
+        ctx->Texture.Unit[textureset].CurrentD[2];
+    int tmu;
+
+    if (MESA_VERBOSE & VERBOSE_DRIVER) {
+        fprintf(stderr, "fxmesa: fxSetupTextureSingleTMU(...) Start\n");
+    }
+
+    ti = fxTMGetTexInfo(tObj);
+    fxTexValidate(ctx, tObj);
+
+    fxSetupSingleTMU_NoLock(fxMesa, tObj);
+
+    if (ti->whichTMU == FX_TMU_BOTH)
+        tmu = FX_TMU0;
+    else
+        tmu = ti->whichTMU;
+
+    if (fxMesa->tmuSrc != tmu)
+        fxSelectSingleTMUSrc_NoLock(fxMesa, tmu, ti->LODblend);
+
+    fxMesa->stw_hint_state = 0;
+    FX_grHints_NoLock(GR_HINT_STWHINT, 0);
+
+    ifmt = ti->baseLevelInternalFormat;
+
+    if (/*0*/fxMesa->isNapalm) {
+        SetupTexEnvNapalm(ctx, tmu, GL_TRUE,
+                          &(ctx->Texture.Unit[textureset]),
+                          ti->baseLevelInternalFormat);
+    }
+    else {
+        GLboolean iteratedRGBA = GL_FALSE;
+        if (textureset == 0 || !fxMesa->haveTwoTMUs)
+            unitsmode = fxGetTexSetConfiguration(ctx, tObj, NULL);
+        else
+            unitsmode = fxGetTexSetConfiguration(ctx, NULL, tObj);
+        if ((unitsmode & FX_UM_ALPHA_ITERATED) ||
+            (unitsmode & FX_UM_COLOR_ITERATED)) {
+            iteratedRGBA = GL_TRUE;
+        }
+        SetupTexEnvVoodoo3(ctx, tmu, iteratedRGBA,
+                           ctx->Texture.Unit[textureset].EnvMode,
+                           ti->baseLevelInternalFormat);
     }
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {
         fprintf(stderr, "fxmesa: fxSetupTextureSingleTMU(...) End\n");
     }
 }
+
 
 static void
 fxSetupTextureSingleTMU(GLcontext * ctx, GLuint textureset)
@@ -646,6 +1422,9 @@ fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa,
 #define T0_IN_TMU1     0x10
 #define T1_IN_TMU1     0x20
 
+    const struct gl_shared_state *mesaShared = fxMesa->glCtx->Shared;
+    const struct TdfxSharedState *shared = (struct TdfxSharedState *) mesaShared->DriverData;
+    const GLcontext *ctx = fxMesa->glCtx;
     tfxTexInfo *ti0 = fxTMGetTexInfo(tObj0);
     tfxTexInfo *ti1 = fxTMGetTexInfo(tObj1);
     GLuint tstate = 0;
@@ -708,14 +1487,21 @@ fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa,
 
     if (!(((tstate & T0_IN_TMU0) && (tstate & T1_IN_TMU1)) ||
           ((tstate & T0_IN_TMU1) && (tstate & T1_IN_TMU0)))) {
-        if (tObj0 == tObj1)
-            fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU_BOTH);
+        if (tObj0 == tObj1) {
+            if (shared->umaTexMemory)
+               fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU0);
+            else
+               fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU_BOTH);
+        }
         else {
             /* Find the minimal way to correct the situation */
             if ((tstate & T0_IN_TMU0) || (tstate & T1_IN_TMU1)) {
                 /* We have one in the standard order, setup the other */
                 if (tstate & T0_IN_TMU0) { /* T0 is in TMU0, put T1 in TMU1 */
-                    fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU1);
+                    if (shared->umaTexMemory)
+                        fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU0);
+                    else
+                        fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU1);
                 }
                 else {
                     fxTMMoveInTM_NoLock(fxMesa, tObj0, FX_TMU0);
@@ -725,7 +1511,10 @@ fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa,
             else if ((tstate & T0_IN_TMU1) || (tstate & T1_IN_TMU0)) {
                 /* we have one in the reverse order, setup the other */
                 if (tstate & T1_IN_TMU0) { /* T1 is in TMU0, put T0 in TMU1 */
-                    fxTMMoveInTM_NoLock(fxMesa, tObj0, FX_TMU1);
+                    if (shared->umaTexMemory)
+                        fxTMMoveInTM_NoLock(fxMesa, tObj0, FX_TMU0);
+                    else
+                        fxTMMoveInTM_NoLock(fxMesa, tObj0, FX_TMU1);
                 }
                 else {
                     fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU0);
@@ -735,13 +1524,16 @@ fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa,
             }
             else {              /* Nothing is loaded */
                 fxTMMoveInTM_NoLock(fxMesa, tObj0, FX_TMU0);
-                fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU1);
+                if (shared->umaTexMemory)
+                    fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU0);
+                else
+                    fxTMMoveInTM_NoLock(fxMesa, tObj1, FX_TMU1);
                 /* tmu0 and tmu1 are setup */
             }
         }
     }
 
-    if (!fxMesa->haveGlobalPaletteTexture) {
+    if (!ctx->Texture.SharedPalette) {
         if (ti0->info.format == GR_TEXFMT_P_8) {
             if (MESA_VERBOSE & VERBOSE_DRIVER) {
                 fprintf(stderr, "fxmesa: uploading texture palette TMU0\n");
@@ -765,8 +1557,13 @@ fxSetupDoubleTMU_NoLock(fxMesaContext fxMesa,
     FX_grTexFilterMode_NoLock(tmu0, ti0->minFilt, ti0->maxFilt);
     FX_grTexMipMapMode_NoLock(tmu0, ti0->mmMode, FXFALSE);
 
-    FX_grTexSource_NoLock(tmu1, ti1->tm[tmu1]->startAddr,
-                          GR_MIPMAPLEVELMASK_BOTH, &(ti1->info));
+    if (shared->umaTexMemory)
+        FX_grTexSource_NoLock(tmu1, ti1->tm[tmu0]->startAddr,
+                              GR_MIPMAPLEVELMASK_BOTH, &(ti1->info));
+    else
+        FX_grTexSource_NoLock(tmu1, ti1->tm[tmu1]->startAddr,
+                              GR_MIPMAPLEVELMASK_BOTH, &(ti1->info));
+
     FX_grTexClampMode_NoLock(tmu1, ti1->sClamp, ti1->tClamp);
     FX_grTexFilterMode_NoLock(tmu1, ti1->minFilt, ti1->maxFilt);
     FX_grTexMipMapMode_NoLock(tmu1, ti1->mmMode, FXFALSE);
@@ -832,200 +1629,212 @@ fxSetupTextureDoubleTMU_NoLock(GLcontext * ctx)
         tmu1 = 0;
     }
     fxMesa->tmuSrc = FX_TMU_BOTH;
-    switch (envmode) {
-    case (FX_UM_E0_MODULATE | FX_UM_E1_MODULATE):
-        {
-            GLboolean isalpha[FX_NUM_TMU];
 
-            if (ti0->baseLevelInternalFormat == GL_ALPHA)
-                isalpha[tmu0] = GL_TRUE;
-            else
-                isalpha[tmu0] = GL_FALSE;
+    if (fxMesa->isNapalm) {
+        /* Remember, Glide has its texture units numbered in backward
+         * order compared to OpenGL.
+         */
+        SetupTexEnvNapalm(ctx, FX_TMU1, GL_TRUE, &(ctx->Texture.Unit[0]),
+                          ti0->baseLevelInternalFormat);
+        SetupTexEnvNapalm(ctx, FX_TMU0, GL_FALSE, &(ctx->Texture.Unit[1]),
+                          ti1->baseLevelInternalFormat);
+    }
+    else {
+        switch (envmode) {
+        case (FX_UM_E0_MODULATE | FX_UM_E1_MODULATE):
+            {
+                GLboolean isalpha[FX_NUM_TMU];
 
-            if (ti1->baseLevelInternalFormat == GL_ALPHA)
-                isalpha[tmu1] = GL_TRUE;
-            else
-                isalpha[tmu1] = GL_FALSE;
+                if (ti0->baseLevelInternalFormat == GL_ALPHA)
+                    isalpha[tmu0] = GL_TRUE;
+                else
+                    isalpha[tmu0] = GL_FALSE;
 
-            if (isalpha[FX_TMU1])
+                if (ti1->baseLevelInternalFormat == GL_ALPHA)
+                    isalpha[tmu1] = GL_TRUE;
+                else
+                    isalpha[tmu1] = GL_FALSE;
+
+                if (isalpha[FX_TMU1])
+                    FX_grTexCombine_NoLock(GR_TMU1,
+                                           GR_COMBINE_FUNCTION_ZERO,
+                                           GR_COMBINE_FACTOR_NONE,
+                                           GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE, FXTRUE,
+                                           FXFALSE);
+                else
+                    FX_grTexCombine_NoLock(GR_TMU1, GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE,
+                                           GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE, FXFALSE,
+                                           FXFALSE);
+
+                if (isalpha[FX_TMU0])
+                    FX_grTexCombine_NoLock(GR_TMU0,
+                                           GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                           GR_COMBINE_FACTOR_ONE,
+                                           GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                           GR_COMBINE_FACTOR_LOCAL, FXFALSE,
+                                           FXFALSE);
+                else
+                    FX_grTexCombine_NoLock(GR_TMU0,
+                                           GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                           GR_COMBINE_FACTOR_LOCAL,
+                                           GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                           GR_COMBINE_FACTOR_LOCAL, FXFALSE,
+                                           FXFALSE);
+
+                FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                         GR_COMBINE_FACTOR_LOCAL,
+                                         localc, GR_COMBINE_OTHER_TEXTURE,
+                                         FXFALSE);
+
+                FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                         GR_COMBINE_FACTOR_LOCAL,
+                                         locala, GR_COMBINE_OTHER_TEXTURE,
+                                         FXFALSE);
+                break;
+            }
+        case (FX_UM_E0_REPLACE | FX_UM_E1_BLEND): /* Only for GLQuake */
+            if (tmu1 == FX_TMU1) {
                 FX_grTexCombine_NoLock(GR_TMU1,
-                                       GR_COMBINE_FUNCTION_ZERO,
+                                       GR_COMBINE_FUNCTION_LOCAL,
                                        GR_COMBINE_FACTOR_NONE,
                                        GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE, FXTRUE,
-                                       FXFALSE);
-            else
-                FX_grTexCombine_NoLock(GR_TMU1, GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE,
-                                       GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE, FXFALSE,
-                                       FXFALSE);
+                                       GR_COMBINE_FACTOR_NONE, FXTRUE, FXFALSE);
 
-            if (isalpha[FX_TMU0])
-                FX_grTexCombine_NoLock(GR_TMU0,
-                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                       GR_COMBINE_FACTOR_ONE,
-                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                       GR_COMBINE_FACTOR_LOCAL, FXFALSE,
-                                       FXFALSE);
-            else
                 FX_grTexCombine_NoLock(GR_TMU0,
                                        GR_COMBINE_FUNCTION_BLEND_OTHER,
                                        GR_COMBINE_FACTOR_LOCAL,
                                        GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                       GR_COMBINE_FACTOR_LOCAL, FXFALSE,
-                                       FXFALSE);
+                                       GR_COMBINE_FACTOR_LOCAL, FXFALSE, FXFALSE);
+            }
+            else {
+                FX_grTexCombine_NoLock(GR_TMU1,
+                                       GR_COMBINE_FUNCTION_LOCAL,
+                                       GR_COMBINE_FACTOR_NONE,
+                                       GR_COMBINE_FUNCTION_LOCAL,
+                                       GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE);
 
-            FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                     GR_COMBINE_FACTOR_LOCAL,
-                                     localc, GR_COMBINE_OTHER_TEXTURE,
-                                     FXFALSE);
+                FX_grTexCombine_NoLock(GR_TMU0,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_ONE_MINUS_LOCAL,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_ONE_MINUS_LOCAL,
+                                       FXFALSE, FXFALSE);
+            }
 
-            FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                     GR_COMBINE_FACTOR_LOCAL,
-                                     locala, GR_COMBINE_OTHER_TEXTURE,
-                                     FXFALSE);
-            break;
-        }
-    case (FX_UM_E0_REPLACE | FX_UM_E1_BLEND): /* Only for GLQuake */
-        if (tmu1 == FX_TMU1) {
-            FX_grTexCombine_NoLock(GR_TMU1,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE, FXTRUE, FXFALSE);
-
-            FX_grTexCombine_NoLock(GR_TMU0,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_LOCAL,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_LOCAL, FXFALSE, FXFALSE);
-        }
-        else {
-            FX_grTexCombine_NoLock(GR_TMU1,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE);
-
-            FX_grTexCombine_NoLock(GR_TMU0,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_ONE_MINUS_LOCAL,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_ONE_MINUS_LOCAL,
-                                   FXFALSE, FXFALSE);
-        }
-
-        FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
-                                 GR_COMBINE_FACTOR_NONE,
-                                 locala, GR_COMBINE_OTHER_NONE, FXFALSE);
-
-        FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                 GR_COMBINE_FACTOR_ONE,
-                                 localc, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
-        break;
-    case (FX_UM_E0_REPLACE | FX_UM_E1_MODULATE): /* Quake 2 and 3 */
-        if (tmu1 == FX_TMU1) {
-            FX_grTexCombine_NoLock(GR_TMU1,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE,
-                                   GR_COMBINE_FUNCTION_ZERO,
-                                   GR_COMBINE_FACTOR_NONE, FXFALSE, FXTRUE);
-
-            FX_grTexCombine_NoLock(GR_TMU0,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_LOCAL,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_LOCAL, FXFALSE, FXFALSE);
-
-        }
-        else {
-            FX_grTexCombine_NoLock(GR_TMU1,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE,
-                                   GR_COMBINE_FUNCTION_LOCAL,
-                                   GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE);
-
-            FX_grTexCombine_NoLock(GR_TMU0,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_LOCAL,
-                                   GR_COMBINE_FUNCTION_BLEND_OTHER,
-                                   GR_COMBINE_FACTOR_ONE, FXFALSE, FXFALSE);
-        }
-
-        if (ti0->baseLevelInternalFormat == GL_RGB)
             FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
                                      GR_COMBINE_FACTOR_NONE,
                                      locala, GR_COMBINE_OTHER_NONE, FXFALSE);
-        else
-            FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                     GR_COMBINE_FACTOR_ONE,
-                                     locala, GR_COMBINE_OTHER_NONE, FXFALSE);
-
-
-        FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                 GR_COMBINE_FACTOR_ONE,
-                                 localc, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
-        break;
-
-
-    case (FX_UM_E0_MODULATE | FX_UM_E1_ADD): /* Quake 3 Sky */
-        {
-            GLboolean isalpha[FX_NUM_TMU];
-
-            if (ti0->baseLevelInternalFormat == GL_ALPHA)
-                isalpha[tmu0] = GL_TRUE;
-            else
-                isalpha[tmu0] = GL_FALSE;
-
-            if (ti1->baseLevelInternalFormat == GL_ALPHA)
-                isalpha[tmu1] = GL_TRUE;
-            else
-                isalpha[tmu1] = GL_FALSE;
-
-            if (isalpha[FX_TMU1])
-                FX_grTexCombine_NoLock(GR_TMU1,
-                                       GR_COMBINE_FUNCTION_ZERO,
-                                       GR_COMBINE_FACTOR_NONE,
-                                       GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE, FXTRUE,
-                                       FXFALSE);
-            else
-                FX_grTexCombine_NoLock(GR_TMU1, GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE,
-                                       GR_COMBINE_FUNCTION_LOCAL,
-                                       GR_COMBINE_FACTOR_NONE, FXFALSE,
-                                       FXFALSE);
-
-            if (isalpha[FX_TMU0])
-                FX_grTexCombine_NoLock(GR_TMU0,
-                                       GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                       GR_COMBINE_FACTOR_ONE,
-                                       GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
-                                       GR_COMBINE_FACTOR_ONE, FXFALSE,
-                                       FXFALSE);
-            else
-                FX_grTexCombine_NoLock(GR_TMU0,
-                                       GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
-                                       GR_COMBINE_FACTOR_ONE,
-                                       GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
-                                       GR_COMBINE_FACTOR_ONE, FXFALSE,
-                                       FXFALSE);
 
             FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                     GR_COMBINE_FACTOR_LOCAL,
-                                     localc, GR_COMBINE_OTHER_TEXTURE,
-                                     FXFALSE);
+                                     GR_COMBINE_FACTOR_ONE,
+                                     localc, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
+            break;
+        case (FX_UM_E0_REPLACE | FX_UM_E1_MODULATE): /* Quake 2 and 3 */
+            if (tmu1 == FX_TMU1) {
+                FX_grTexCombine_NoLock(GR_TMU1,
+                                       GR_COMBINE_FUNCTION_LOCAL,
+                                       GR_COMBINE_FACTOR_NONE,
+                                       GR_COMBINE_FUNCTION_ZERO,
+                                       GR_COMBINE_FACTOR_NONE, FXFALSE, FXTRUE);
 
-            FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
-                                     GR_COMBINE_FACTOR_LOCAL,
-                                     locala, GR_COMBINE_OTHER_TEXTURE,
-                                     FXFALSE);
+                FX_grTexCombine_NoLock(GR_TMU0,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_LOCAL,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_LOCAL, FXFALSE, FXFALSE);
+
+            }
+            else {
+                FX_grTexCombine_NoLock(GR_TMU1,
+                                       GR_COMBINE_FUNCTION_LOCAL,
+                                       GR_COMBINE_FACTOR_NONE,
+                                       GR_COMBINE_FUNCTION_LOCAL,
+                                       GR_COMBINE_FACTOR_NONE, FXFALSE, FXFALSE);
+
+                FX_grTexCombine_NoLock(GR_TMU0,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_LOCAL,
+                                       GR_COMBINE_FUNCTION_BLEND_OTHER,
+                                       GR_COMBINE_FACTOR_ONE, FXFALSE, FXFALSE);
+            }
+
+            if (ti0->baseLevelInternalFormat == GL_RGB)
+                FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_LOCAL,
+                                         GR_COMBINE_FACTOR_NONE,
+                                         locala, GR_COMBINE_OTHER_NONE, FXFALSE);
+            else
+                FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                         GR_COMBINE_FACTOR_ONE,
+                                         locala, GR_COMBINE_OTHER_NONE, FXFALSE);
+
+
+            FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                     GR_COMBINE_FACTOR_ONE,
+                                     localc, GR_COMBINE_OTHER_TEXTURE, FXFALSE);
+            break;
+
+
+        case (FX_UM_E0_MODULATE | FX_UM_E1_ADD): /* Quake 3 Sky */
+            {
+                GLboolean isalpha[FX_NUM_TMU];
+
+                if (ti0->baseLevelInternalFormat == GL_ALPHA)
+                    isalpha[tmu0] = GL_TRUE;
+                else
+                    isalpha[tmu0] = GL_FALSE;
+
+                if (ti1->baseLevelInternalFormat == GL_ALPHA)
+                    isalpha[tmu1] = GL_TRUE;
+                else
+                    isalpha[tmu1] = GL_FALSE;
+
+                if (isalpha[FX_TMU1])
+                    FX_grTexCombine_NoLock(GR_TMU1,
+                                           GR_COMBINE_FUNCTION_ZERO,
+                                           GR_COMBINE_FACTOR_NONE,
+                                           GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE, FXTRUE,
+                                           FXFALSE);
+                else
+                    FX_grTexCombine_NoLock(GR_TMU1, GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE,
+                                           GR_COMBINE_FUNCTION_LOCAL,
+                                           GR_COMBINE_FACTOR_NONE, FXFALSE,
+                                           FXFALSE);
+
+                if (isalpha[FX_TMU0])
+                    FX_grTexCombine_NoLock(GR_TMU0,
+                                           GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                           GR_COMBINE_FACTOR_ONE,
+                                           GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
+                                           GR_COMBINE_FACTOR_ONE, FXFALSE,
+                                           FXFALSE);
+                else
+                    FX_grTexCombine_NoLock(GR_TMU0,
+                                           GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
+                                           GR_COMBINE_FACTOR_ONE,
+                                           GR_COMBINE_FUNCTION_SCALE_OTHER_ADD_LOCAL,
+                                           GR_COMBINE_FACTOR_ONE, FXFALSE,
+                                           FXFALSE);
+
+                FX_grColorCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                         GR_COMBINE_FACTOR_LOCAL,
+                                         localc, GR_COMBINE_OTHER_TEXTURE,
+                                         FXFALSE);
+
+                FX_grAlphaCombine_NoLock(GR_COMBINE_FUNCTION_SCALE_OTHER,
+                                         GR_COMBINE_FACTOR_LOCAL,
+                                         locala, GR_COMBINE_OTHER_TEXTURE,
+                                         FXFALSE);
+                break;
+            }
+        default:
+            fprintf(stderr, "Unexpected dual texture mode encountered\n");
             break;
         }
-    default:
-        fprintf(stderr, "Unexpected dual texture mode encountered\n");
-        break;
     }
 
     if (MESA_VERBOSE & VERBOSE_DRIVER) {

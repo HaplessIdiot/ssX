@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxcva.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -137,17 +137,14 @@ static mergefunc merge_and_render_tab[2][MAX_MERGABLE][PRIM_CULLED + 1];
 
 #undef DO_SETUP_RGBA
 #if FX_USE_PARGB
-#define DO_SETUP_RGBA				\
-{									\
-  GLubyte *col = color[i];			\
-  GET_PARGB(v)=	((col[3] << 24) |	\
-  			    (col[0] << 16)  |	\
-  			    (col[1] << 8)   |   \
-  			    (col[2]));			\
+#define DO_SETUP_RGBA				                \
+{						                \
+  GLubyte *col = color[i];			                \
+  PACK_4F_ARGB(GET_PARGB(v), col[3], col[0], col[1], col[2]);   \
 }
 #else
-#define DO_SETUP_RGBA				\
-{							\
+#define DO_SETUP_RGBA				                \
+{						                \
   GLubyte *col = color[i];					\
   v[GR_VERTEX_R_OFFSET]=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[0]);	\
   v[GR_VERTEX_G_OFFSET]=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[1]);	\
@@ -402,13 +399,6 @@ fxDDCheckMergeAndRender(GLcontext * ctx, struct gl_pipeline_stage *d)
 
 /*     gl_print_vert_flags("merge&render inputs", d->inputs); */
 }
-
-
-extern void fxPointSmooth(GLcontext * ctx, GLuint first, GLuint last);
-extern void fxLineSmooth(GLcontext * ctx, GLuint v1, GLuint v2, GLuint pv);
-extern void fxTriangleSmooth(GLcontext * ctx, GLuint v1, GLuint v2, GLuint v3,
-                             GLuint pv);
-extern const char *gl_prim_name[];
 
 
 /* static GLboolean edge_flag[GL_POLYGON+2] = { 0,0,0,0,1,0,0,1,0,1,0 }; */

@@ -1,11 +1,9 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxtexman.h,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
 #ifndef FXTEXMAN_H
 #define FXTEXMAN_H
 
 
 #define fxTMGetTexInfo(o) ((tfxTexInfo*)((o)->DriverData))
-
-#define fxTMMoveOutTM_NoLock fxTMMoveOutTM
 
 extern void fxTMReloadMipMapLevel(GLcontext *, struct gl_texture_object *,
                                   GLint);
@@ -19,9 +17,11 @@ extern void fxTMClose(fxMesaContext ctx);
 
 extern void fxTMRestoreTextures_NoLock(fxMesaContext ctx);
 
-extern void fxTMMoveInTM(fxMesaContext, struct gl_texture_object *, GLint);
+extern void fxTMMoveInTM(fxMesaContext, struct gl_texture_object *, FxU32);
 
 extern void fxTMMoveOutTM(fxMesaContext, struct gl_texture_object *);
+
+extern void fxTMMoveOutTM_NoLock(fxMesaContext, struct gl_texture_object *);
 
 extern void fxTMFreeTexture(fxMesaContext, struct gl_texture_object *);
 

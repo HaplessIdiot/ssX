@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxdrv.h,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -39,7 +39,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef GLX_DIRECT_RENDERING
 
 #include <sys/time.h>
-#include <glide.h>
 #include "dri_tmm.h"
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
@@ -52,32 +51,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if defined(__linux__)
 #include <signal.h>
 #endif
+#include "clip.h"
 #include "context.h"
+#include "fxglidew.h"
 #include "macros.h"
 #include "matrix.h"
 #include "mem.h"
 #include "texture.h"
 #include "types.h"
 #include "vb.h"
-#include "xform.h"
-#include "clip.h"
 #include "vbrender.h"
-#include "fxglidew.h"
+#include "xform.h"
 
-
-/*typedef struct tfxMesaContext *fxMesaContext;*/
-
-
-typedef struct
-{
+typedef struct {
     drmHandle handle;
     drmSize size;
     drmAddress map;
-}
-tdfxRegion, *tdfxRegionPtr;
+} tdfxRegion, *tdfxRegionPtr;
 
-typedef struct
-{
+typedef struct {
     tdfxRegion regs;
     int deviceID;
     int width;
@@ -93,18 +85,15 @@ typedef struct
     int textureOffset;
     int textureSize;
     __DRIscreenPrivate *driScrnPriv;
-}
-tdfxScreenPrivate;
+} tdfxScreenPrivate;
 
-typedef struct
-{
+typedef struct {
     volatile int fifoPtr;
     volatile int fifoRead;
     volatile int fifoOwner;
     volatile int ctxOwner;
     volatile int texOwner;
-}
-TDFXSAREAPriv;
+} TDFXSAREAPriv;
 
 
 extern void fx_sanity_triangle(fxMesaContext fxMesa,
@@ -184,6 +173,12 @@ fxVertex;
   gWin[(x)].v.a=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[3]);	\
 }
 
+#if FX_USE_PARGB
+#define GOURAUD2(v, c) {			                \
+  GLubyte *col = c;     			                \
+  PACK_4F_ARGB(GET_PARGB(v), col[3], col[0], col[1], col[2]);   \
+}
+#else
 #define GOURAUD2(v, c) {			\
   GLubyte *col = c;  				\
   v->r=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[0]);	\
@@ -191,6 +186,7 @@ fxVertex;
   v->b=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[2]);	\
   v->a=UBYTE_COLOR_TO_FLOAT_255_COLOR(col[3]);	\
 }
+#endif /* FX_USE_PARGB */
 
 
 /* Mergable items first
@@ -363,6 +359,7 @@ typedef struct
     GLuint reqTexUpload;
     GLuint texUpload;
     GLuint memTexUpload;
+    GLuint texSwaps;
 }
 tfxStats;
 
@@ -426,23 +423,19 @@ tfxUnitsState;
  */
 struct tfxMesaVertexBuffer
 {
-    GLvector1ui clipped_elements;
-
-    fxVertex *verts;
-    fxVertex *last_vert;
-    void *vert_store;
+    GLuint size;                   /* Number of vertexes */
+    GLvector1ui clipped_elements;  /* Array [size] of GLuints */
+    fxVertex *verts;               /* Array of [size] fxVertex */
+    fxVertex *last_vert;           /* Points into verts array */
 #if defined(FX_GLIDE3)
-    GrVertex **triangle_b;      /* Triangle buffer */
-    GrVertex **strips_b;        /* Strips buffer */
+    GrVertex **triangle_b;         /* Triangle buffer */
+    GrVertex **strips_b;           /* Strips buffer */
 #endif
-
-    GLuint size;
 };
 
 #define FX_DRIVER_DATA(vb) ((struct tfxMesaVertexBuffer *)((vb)->driver_data))
 #define FX_CONTEXT(ctx) ((fxMesaContext)((ctx)->DriverCtx))
 #define FX_TEXTURE_DATA(t) fxTMGetTexInfo((t)->Current)
-
 
 #if !defined(FX_PXCONV_TABULAR) \
     && !defined(FX_PXCONV_APPROXIMATION) \
@@ -490,40 +483,96 @@ extern GLubyte FX_PixelToBArray[0x10000];
 #elif	defined(FX_PXCONV_EXACT)
 #define FX_PixelToR(fxMesa, v) \
     ((((fxMesa)->bgrOrder \
-        ? FX_PXCONV_INT_FIELD(v, 5,  0)
+        ? FX_PXCONV_INT_FIELD(v, 5,  0) \
         : FX_PXCONV_INT_FIELD(v, 5, 11)) * 8 * 255) / 0xF8)
 #define FX_PixelToG(fxMesa, v) \
      ((FX_PXCONV_INT_FIELD(v, 6, 5) * 4 * 255) / 0xFC)
 #define FX_PixelToB(fxMesa, v) \
     ((((fxMesa)->bgrOrder \
-        ? FX_PXCONV_INT_FIELD(v, 5, 11)
+        ? FX_PXCONV_INT_FIELD(v, 5, 11) \
         : FX_PXCONV_INT_FIELD(v, 5,  0)) * 8 * 255) / 0xF8)
 #else
 #error	Need to define pixel a conversion method.
 #endif
 
+
+/*
+ * This is state which may be shared by several tdfx contexts.
+ * It hangs off of Mesa's gl_shared_state object (ctx->Shared->DriverData).
+ */
+struct TdfxSharedState
+{
+    GLboolean umaTexMemory;
+    GLuint totalTexMem[FX_NUM_TMU]; /* constant */
+    GLuint freeTexMem[FX_NUM_TMU]; /* changes as we go */
+    MemRange *tmPool;
+    MemRange *tmFree[FX_NUM_TMU];
+};
+
+
+/*
+ * This is the tdfx context struct.
+ */
 struct tfxMesaContext
 {
+    /*
+     * Set once and never changed:
+     */
     GLcontext *glCtx;           /* the core Mesa context */
     GLvisual *glVis;            /* describes the color buffer */
 
+    GLboolean initDone;         /* has this context been initialized? */
     GLint board;                /* the board used for this context */
-    GLint width, height;        /* size of color buffer */
+    int screen_width;
+    int screen_height;
 
-    GrBuffer_t currentFB;
+    FX_GrContext_t glideContext; /* returned by grSstWinOpen() */
+    void *state;                 /* Glide state buffer */
 
+    GLint textureAlign;
     GLboolean bgrOrder;
-    GLuint depthClear;
-    GrColor_t color;
-    GrColor_t clearC;
-    GrAlpha_t clearA;
+    GLboolean verbose;
+    GLboolean haveTwoTMUs;      /* True if we really have 2 tmu's  */
+    GLboolean emulateTwoTMUs;   /* True if we present 2 tmu's to mesa.  */
+    GLboolean haveHwStencil;
+    GLboolean isNapalm;
+    GLint swapInterval;
+    GLint maxPendingSwapBuffers;
+
+    /* stuff added for DRI */
+    __DRIcontextPrivate *driContextPriv;
+    drmContext hHWContext;
+    int numClipRects;
+    XF86DRIClipRectPtr pClipRects;
+    tdfxScreenPrivate *tdfxScrnPriv;
+
+    /*
+     * Changes during execution:
+     */
+    int width, height;   /* size of window */
+    int x_offset;        /* distance from window left to screen left */
+    int y_offset;        /* distance from window top to screen top */
+    int y_delta;         /* distance from window bottom to screen bottom */
+    int needClip;        /* need to loop over cliprects? */
+    int clipMinX;        /* if !needClip, bounds of the single clip rect */
+    int clipMaxX;        /* "" */
+    int clipMinY;        /* "" */
+    int clipMaxY;        /* "" */
+
+
+    GrBuffer_t currentFB;  /* front buffer or back buffer */
+
+    GLuint depthClear;     /* glClear depth value */
+    GrColor_t clearC;      /* glClear color value */
+    GrAlpha_t clearA;      /* glClear alpha value */
     GLuint constColor;
+    GrColor_t color;
     GrCullMode_t cullMode;
 
     tfxUnitsState unitsState;
     tfxUnitsState restoreUnitsState; /* saved during multipass */
 
-    GuTexPalette glbPalette;
+    GuTexPalette glbPalette;         /* global texture palette */
 
     GLuint tmu_source[FX_NUM_TMU];
     GLuint tex_dest[MAX_TEXTURE_UNITS];
@@ -538,25 +587,17 @@ struct tfxMesaContext
     GLuint is_in_hardware;
     GLuint new_state;
     GLuint using_fast_path, passes, multipass;
+    GLuint texBindNumber;
+    GLint tmuSrc;
 
     tfxLineClipFunc clip_line;
     tfxTriClipFunc clip_tri_stride;
     tfxTriViewClipFunc view_clip_tri;
 
-
-    /* Texture Memory Manager Data */
-    GLboolean umaTexMemory;
-    GLuint texBindNumber;
-    GLint tmuSrc;
-    GLuint freeTexMem[FX_NUM_TMU];
-    MemRange *tmPool;
-    MemRange *tmFree[FX_NUM_TMU];
-
     GLenum fogTableMode;
     GLfloat fogDensity;
     GLfloat fogStart, fogEnd;
     GrFog_t *fogTable;
-    GLint textureAlign;
 
     /* Acc. functions */
 
@@ -566,54 +607,16 @@ struct tfxMesaContext
     quad_func QuadFunc;
 
     render_func **RenderVBTables;
-
     render_func *RenderVBClippedTab;
     render_func *RenderVBCulledTab;
     render_func *RenderVBRawTab;
 
-
     tfxStats stats;
-
-    void *state;
-
-    /* Options */
-
-    GLboolean verbose;
-    GLboolean haveTwoTMUs;      /* True if we really have 2 tmu's  */
-    GLboolean emulateTwoTMUs;   /* True if we present 2 tmu's to mesa.  */
-    GLboolean haveAlphaBuffer;
-    GLboolean haveHwStencil;
-    GLboolean haveGlobalPaletteTexture;
-    GLboolean isNapalm;
-    GLint swapInterval;
-    GLint maxPendingSwapBuffers;
-
-    FX_GrContext_t glideContext;
-
-    int x_offset;
-    int y_offset;
-    int y_delta;
-    int screen_width;
-    int screen_height;
-    int initDone;
-    int clipMinX;
-    int clipMaxX;
-    int clipMinY;
-    int clipMaxY;
-    int needClip;
-
-    /* stuff added for DRI */
-    __DRIcontextPrivate *driContextPriv;
-    drmContext hHWContext;
-    int numClipRects;
-    XF86DRIClipRectPtr pClipRects;
-    tdfxScreenPrivate *tdfxScrnPriv;
 };
 
 
 typedef void (*tfxSetupFunc) (struct vertex_buffer *, GLuint, GLuint);
 
-extern int texSwaps;
 
 extern void fxPrintSetupFlags(const char *msg, GLuint flags);
 extern void fxSetupDDPointers(GLcontext *);
@@ -676,7 +679,7 @@ extern int fxDDInitFxMesaContext(fxMesaContext fxMesa);
 
 extern void fxSetScissorValues(GLcontext * ctx);
 extern void fxTMMoveInTM_NoLock(fxMesaContext fxMesa,
-                                struct gl_texture_object *tObj, GLint where);
+                                struct gl_texture_object *tObj, FxU32 where);
 extern void fxInitPixelTables(fxMesaContext fxMesa, GLboolean bgrOrder);
 
 
@@ -690,13 +693,10 @@ extern void XMesaUpdateState(fxMesaContext fxMesa);
 
 
 /* This is the private interface between Glide and DRI */
-extern void grDRIOpen(char *pFB, char *pRegs, int deviceID,
-                      int width, int height,
-                      int mem, int cpp, int stride,
-                      int fifoOffset, int fifoSize,
-                      int fbOffset, int backOffset, int depthOffset,
-                      int textureOffset, int textureSize,
+#if 0
+extern void grDRIOpen(char *pFB, tdfxScreenPrivate *sPriv,
                       volatile int *fifoPtr, volatile int *fifoRead);
+#endif
 extern void grDRIPosition(int x, int y, int w, int h,
                           int numClip, XF86DRIClipRectPtr pClip);
 extern void grDRILostContext(void);

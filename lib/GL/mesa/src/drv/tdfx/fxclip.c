@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxclip.c,v 1.1 2000/09/24 13:51:12 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -355,31 +355,7 @@ fx_clip_line(GLcontext * ctx,
 }
 
 
-
-
-
-
-#if defined(FX_V2)
-
-#define VARS_XYZW				\
-  GLfloat vsx = mat[MAT_SX];			\
-  GLfloat vsy = mat[MAT_SY];			\
-  GLfloat vsz = mat[MAT_SZ];			\
-  GLfloat vtx = mat[MAT_TX];			\
-  GLfloat vty = mat[MAT_TY];			\
-  GLfloat vtz = mat[MAT_TZ];
-
-#define DO_SETUP_XYZW				\
-{						\
-  GLfloat oow = 1.0 / data[3];			\
-  v->x   = data[0]*oow*vsx + vtx;		\
-  v->y   = data[1]*oow*vsy + vty;		\
-  v->ooz = data[2]*oow*vsz + vtz;		\
-  v->oow = oow; 				\
-}
-#else
-
-#if defined(DRIVERTS)
+/* Add window offset to window coords to get screen coords */
 
 #define VARS_XYZW				\
   GLfloat vsx = mat[MAT_SX];			\
@@ -398,29 +374,7 @@ fx_clip_line(GLcontext * ctx,
   v->oow = oow;					\
 }
 
-#else
-#define VARS_XYZW 				\
-  GLfloat vsx = mat[MAT_SX];			\
-  GLfloat vsy = mat[MAT_SY];			\
-  GLfloat vsz = mat[MAT_SZ];			\
-  const GLfloat snapper = (3L << 18);		\
-  GLfloat snap_tx = mat[MAT_TX] + snapper;	\
-  GLfloat snap_ty = mat[MAT_TY] + snapper;	\
-  GLfloat vtz = mat[MAT_TZ];
 
-#define DO_SETUP_XYZW				\
-{						\
-  GLfloat oow = 1.0 / data[3];			\
-  v->x = data[0]*oow*vsx + snap_tx;		\
-  v->y = data[1]*oow*vsy + snap_ty;		\
-  v->ooz = data[2]*oow*vsz + vtz;		\
-  v->oow = oow;					\
-  v->x -= snapper;				\
-  v->y -= snapper;				\
-}
-
-#endif
-#endif
 
 #define COPY_XYZW_STRIDE				\
   { GLfloat *clip = VEC_ELT(VB->ClipPtr, GLfloat, e);	\
@@ -434,10 +388,7 @@ fx_clip_line(GLcontext * ctx,
 
 #if FX_USE_PARGB
 #define DO_SETUP_RGBA				\
-  GET_PARGB(v) = (((int)data[4+3]) << 24) | 	\
-  		 (((int)data[4+0]) << 16) | 	\
-  		 (((int)data[4+1]) << 8)  |	\
-  		 (((int)data[4+2]) << 0);
+  PACK_4F_ARGB(GET_PARGB(v), data[4+3], data[4+0], data[4+1], data[4+2]);
 #else
 #define DO_SETUP_RGBA				\
   v->r = data[4+0];				\

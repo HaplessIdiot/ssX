@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxvsetup.h,v 1.1 2000/09/24 13:51:20 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -79,35 +79,13 @@
 #define INCR_XY win += 4
 
 
-#ifdef FX_V2
-#  define DO_SETUP_XY 				\
-  v[XCOORD]=win[0];				\
-  v[YCOORD]=win[1];
-#else
-#ifdef DRIVERTS
+/* Add window offset to window coords to get screen coords */
 #  define DO_SETUP_XY 				\
   v[XCOORD]=win[0]+fxMesa->x_offset;		\
   v[YCOORD]=win[1]+fxMesa->y_delta;
-#else
-#  if (defined(__linux__) && defined(__i386__)) || defined(macintosh)
-#    define DO_SETUP_XY {			\
-       GLfloat t1 = win[0] + snapper;	\
-       GLfloat t2 = win[1] + snapper;	\
-       v[XCOORD] = t1 - snapper;			\
-       v[YCOORD] = t2 - snapper;			\
-     }
-#  else
-#    define DO_SETUP_XY {				\
-        /* trunc (x,y) to multiple of 1/16 */		\
-        v[XCOORD]=((int)(win[0]*16.0f))*(1.0f/16.0f);	\
-        v[YCOORD]=((int)(win[1]*16.0f))*(1.0f/16.0f);	\
-     }
-#  endif
-#endif
-#endif
 
 
-#define DO_SETUP_W {				\
+#define DO_SETUP_W {			\
    v[OOWCOORD]=win[3];			\
 }
 
@@ -130,16 +108,17 @@
 #define INCR_TMU1 STRIDE_F(tmu1_data, tmu1_stride)
 
 #if FX_USE_PARGB
-#define DO_SETUP_RGBA	\
- { GET_PARGB(v) = color[ACOMP] << 24 | color[RCOMP] << 16 | color[GCOMP] << 8 | color[BCOMP];}
-
+#define DO_SETUP_RGBA	                                                \
+{                                                                       \
+  PACK_4F_ARGB(GET_PARGB(v), color[3], color[0], color[1], color[2]);   \
+}
 #else
-#define DO_SETUP_RGBA					\
-{							\
-  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[RCOORD], color[0]);	\
-  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[GCOORD], color[1]);	\
-  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[BCOORD], color[2]);	\
-  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[ACOORD], color[3]);	\
+#define DO_SETUP_RGBA					                \
+{							                \
+  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[RCOORD], color[0]);	                \
+  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[GCOORD], color[1]);	                \
+  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[BCOORD], color[2]);	                \
+  UBYTE_COLOR_TO_FLOAT_255_COLOR2(v[ACOORD], color[3]);	                \
 }
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfasttmp.h,v 1.1 2000/09/24 13:51:15 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfasttmp.h,v 1.2 2000/11/13 23:31:32 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -144,8 +144,7 @@ static void TAG(fx_project_vertices) (GLfloat * first,
 
 #if FX_USE_PARGB
         if (TYPE & SETUP_RGBA) {
-            PACK_4F_ARGB(GET_PARGB(f), f[CLIP_A], f[CLIP_R], f[CLIP_G],
-                         f[CLIP_B]);
+            PACK_4F_ARGB(GET_PARGB(f), f[CLIP_A], f[CLIP_R], f[CLIP_G], f[CLIP_B]);
         }
 #else
         if (TYPE & SETUP_RGBA) {
@@ -183,12 +182,7 @@ static void TAG(fx_project_clipped_vertices) (GLfloat * first,
             GLfloat oow = 1.0f / f[CLIP_WCOORD];
 #if FX_USE_PARGB
             if (TYPE & SETUP_RGBA) {
-                const GLuint r = f[CLIP_R];
-                const GLuint g = f[CLIP_G];
-                const GLuint b = f[CLIP_B];
-                const GLuint a = f[CLIP_A];
-                /* ToDo Optimize */
-                GET_PARGB(f) = a << 24 | r << 16 | g << 8 | b;
+                PACK_4F_ARGB(GET_PARGB(f), f[CLIP_A], f[CLIP_R], f[CLIP_G], f[CLIP_B]);
             }
 #else
             if (TYPE & SETUP_RGBA) {
@@ -336,8 +330,8 @@ static void TAG(fx_init_fastpath) (struct fx_fast_tab * tab)
     tab->project_vertices = TAG(fx_project_vertices);
     tab->project_clipped_vertices = TAG(fx_project_clipped_vertices);
 
-#if 0 && defined(USE_3DNOW_ASM)
-    if (gl_x86_cpu_features & X86_FEATURE_3DNOW) {
+#if defined(USE_3DNOW_ASM)
+    if (gl_x86_cpu_features & GL_CPU_3Dnow) {
         extern void TAG(fx_3dnow_project_vertices) (GLfloat * first,
                                                     GLfloat * last,
                                                     const GLfloat * mat,

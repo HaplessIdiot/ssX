@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxsanity.c,v 1.1 2000/09/24 13:51:17 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -85,6 +85,23 @@ fx_sanity_triangle(fxMesaContext fxMesa,
     }
 
     if (print) {
+#if FX_USE_PARGB
+        fprintf(stderr,
+                "v1: %f %f %f %f col %d %d %d %d t0 %f %f %f t1 %f %f %f\n",
+                v3->x, v3->y, v3->ooz, v3->oow, GET_PR(v1), GET_PG(v1), GET_PB(v1), GET_PA(v1),
+                v1->tmuvtx[0].sow, v1->tmuvtx[0].tow, v1->tmuvtx[0].oow,
+                v1->tmuvtx[1].sow, v1->tmuvtx[1].tow, v1->tmuvtx[1].oow);
+        fprintf(stderr,
+                "v2: %f %f %f %f col %d %d %d %d t0 %f %f %f t1 %f %f %f\n",
+                v3->x, v3->y, v3->ooz, v3->oow, GET_PR(v1), GET_PG(v1), GET_PB(v1), GET_PA(v1),
+                v2->tmuvtx[0].sow, v2->tmuvtx[0].tow, v2->tmuvtx[0].oow,
+                v2->tmuvtx[1].sow, v2->tmuvtx[1].tow, v2->tmuvtx[1].oow);
+        fprintf(stderr,
+                "v3: %f %f %f %f col %d %d %d %d t0 %f %f %f t1 %f %f %f\n",
+                v3->x, v3->y, v3->ooz, v3->oow, GET_PR(v1), GET_PG(v1), GET_PB(v1), GET_PA(v1),
+                v3->tmuvtx[0].sow, v3->tmuvtx[0].tow, v3->tmuvtx[0].oow,
+                v3->tmuvtx[1].sow, v3->tmuvtx[1].tow, v3->tmuvtx[1].oow);
+#else
         fprintf(stderr,
                 "v1: %f %f %f %f col %.0f %.0f %.0f %.0f t0 %f %f %f t1 %f %f %f\n",
                 v1->x, v1->y, v1->ooz, v1->oow, v1->r, v1->g, v1->b, v1->a,
@@ -100,6 +117,7 @@ fx_sanity_triangle(fxMesaContext fxMesa,
                 v3->x, v3->y, v3->ooz, v3->oow, v3->r, v3->g, v3->b, v3->a,
                 v3->tmuvtx[0].sow, v3->tmuvtx[0].tow, v3->tmuvtx[0].oow,
                 v3->tmuvtx[1].sow, v3->tmuvtx[1].tow, v3->tmuvtx[1].oow);
+#endif
     }
 
     if (1)
