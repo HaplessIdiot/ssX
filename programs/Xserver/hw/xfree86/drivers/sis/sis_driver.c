@@ -3930,6 +3930,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	  pSiS->sistvedgeenhance = -1;
        }
     }
+    if(pSiS->sistvsaturation != -1) {
+       if(pSiS->VBFlags & VB_301) {
+	  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	       "SISTVSaturation not supported on SiS301\n");
+	  pSiS->sistvsaturation = -1;
+       }
+    }
 
     /* Do some MergedFB mode initialisation */
 #ifdef SISMERGED
@@ -9088,6 +9095,7 @@ void SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val)
 
    if(!(pSiS->VBFlags & CRT2_TV)) return;
    if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+   if(pSiS->VBFlags & VB_301) return;
 
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
@@ -9106,7 +9114,9 @@ int SiS_GetSISTVsaturation(ScrnInfoPtr pScrn)
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
 
-   if(!(pSiS->VBFlags & VB_SISBRIDGE && pSiS->VBFlags & CRT2_TV)) {
+   if(!(pSiS->VBFlags & VB_SISBRIDGE &&
+        (!(pSiS->VBFlags & VB_301)) &&
+        pSiS->VBFlags & CRT2_TV)) {
 #ifdef SISDUALHEAD
       if(pSiSEnt && pSiS->DualHeadMode)
            return (int)pSiSEnt->sistvsaturation;

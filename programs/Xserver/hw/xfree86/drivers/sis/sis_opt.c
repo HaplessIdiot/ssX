@@ -143,10 +143,8 @@ typedef enum {
 static const OptionInfoRec SISOptions[] = {
     { OPTION_SW_CURSOR,         	"SWcursor",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_HW_CURSOR,         	"HWcursor",               OPTV_BOOLEAN,   {0}, FALSE },
-/*  { OPTION_PCI_RETRY,         	"PciRetry",               OPTV_BOOLEAN,   {0}, FALSE },  */
     { OPTION_NOACCEL,           	"NoAccel",                OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_TURBOQUEUE,        	"TurboQueue",             OPTV_BOOLEAN,   {0}, FALSE },
-/*  { OPTION_SET_MEMCLOCK,      	"SetMClk",                OPTV_FREQ,      {0}, -1    },  */
     { OPTION_FAST_VRAM,         	"FastVram",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_NOHOSTBUS,         	"NoHostBus",              OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_RENDER,        		"RenderAcceleration",     OPTV_BOOLEAN,   {0}, FALSE },
