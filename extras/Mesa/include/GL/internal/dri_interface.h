@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
  * (C) Copyright IBM Corporation 2004

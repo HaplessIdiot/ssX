@@ -1,3 +1,4 @@
+# $XFree86$
 #
 #	Name:             ISO 8859-7:2003 to Unicode
 #	Unicode version:  4.0

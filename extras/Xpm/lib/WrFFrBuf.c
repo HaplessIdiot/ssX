@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright (C) 1989-95 GROUPE BULL
  *

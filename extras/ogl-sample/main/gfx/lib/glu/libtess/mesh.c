@@ -35,8 +35,7 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date$ $Revision$
-** $Header$
+** $XFree86$
 */
 
 #include "gluos.h"

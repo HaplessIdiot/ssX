@@ -1,4 +1,4 @@
-/* $Xorg: GetActKey.c,v 1.4 2001/02/09 02:03:55 xorgcvs Exp $ */
+/* $XFree86$ */
 
 /*LINTLIBRARY*/
 
