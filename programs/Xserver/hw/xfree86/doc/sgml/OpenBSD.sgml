@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 9 November 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.24 2002/01/16 22:35:17 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.25 2002/11/09 18:01:53 herrb Exp $
 </ident>
 
 <toc>
@@ -155,7 +155,7 @@ which can be used as a starting point.
 
 
 For details about the <tt/XF86Config/ file format, refer to the
-<em>XF86Config(5)</em> manual page.
+<em><htmlurl name="XF86Config(5)" url="XF86Config.5.html"></em> manual page.
 
 Once you've set up a XF86Config file, you can fine tune the video
 modes with the <tt>xvidtune</tt> utility. 

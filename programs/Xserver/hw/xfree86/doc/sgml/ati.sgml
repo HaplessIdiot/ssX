@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.40 2002/02/14 22:08:00 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.41 2003/01/04 04:20:23 dawes Exp $
 </ident>
 
 <abstract>
@@ -534,7 +534,8 @@ mode.
 In the first case, the workaround is to use some other means of restoring the
 text font.
 On Linux, this can be accomplished with the kbd or svgalib packages.
-In the second case, xrefresh(1) will usually clean up the image.
+In the second case, <htmlurl name="xrefresh(1)" url="xrefresh.1.html">
+will usually clean up the image.
 No complete solution to this problem is currently known.
 It appears this corruption occurs due to either video memory bandwidth or
 RAMDAC limitations, and so the driver will limit mode clocks to 40MHz.

@@ -9,7 +9,7 @@
 <date>17 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.71 2002/01/21 19:01:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.72 2002/12/21 03:50:20 dawes Exp $
 </ident>
 
 <abstract>
@@ -1041,9 +1041,9 @@ New features:
 
   <item>A <tt>displayList</tt> resource is available to all Xaw widgets. It
 	basically consists of a list of drawing commands, fully described in
-	the <tt>Xaw(3)</tt> manual page, that enables a integration of Xaw
-	programs with the new window/desktop managers that allows for
-	configurable themes.
+	the <tt><htmlurl name="Xaw(3)" url="Xaw.3.html"></tt> manual
+	page, that enables a integration of Xaw programs with the new
+	window/desktop managers that allows for configurable themes.
 
   <item>Some new actions were added to all Xaw widgets, to allow more
 	configurable control of the widgets, and to allow setting resources
