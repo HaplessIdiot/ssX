@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.33 2000/09/24 13:51:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.34 2000/09/26 15:57:11 tsi Exp $ */
 
 /*
  * Authors:
@@ -1951,7 +1951,7 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
 static void
 I810FreeScreen(int scrnIndex, int flags) {
    I810FreeRec(xf86Screens[scrnIndex]);
-   if (vgaHWFreeHWRec)
+   if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
        vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
