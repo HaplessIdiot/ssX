@@ -1,4 +1,6 @@
 XFree86 4.0.1c (25 August 2000)
+ 528. Fix detection problem with ramdac for Glint Permedia1's 
+      (Alan Hourihane).
  527. Fix minor symbol resoltion problem in dlopen() loader (Marc La France).
  526. Alpha changes that fell out of RadHat's IA-64 changes (Marc La France).
  525. A merge of most of RedHat's IA-64 changes (Keith Fish, Stephane Eranian,
@@ -11026,4 +11028,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1276 2000/08/23 21:06:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1277 2000/08/23 22:10:06 tsi Exp $
