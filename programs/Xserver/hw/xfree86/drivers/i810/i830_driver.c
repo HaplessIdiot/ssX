@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.35 2003/07/16 01:38:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.36 2003/09/03 15:32:26 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2034,6 +2034,14 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    vbeFree(pVbe);
 
 #if defined(XF86DRI)
+   /* Load the dri module if requested. */
+   if (xf86ReturnOptValBool(pI830->Options, OPTION_DRI, FALSE) &&
+       !pI830->directRenderingDisabled) {
+      if (xf86LoadSubModule(pScrn, "dri")) {
+	 xf86LoaderReqSymLists(I810driSymbols, I810drmSymbols, NULL);
+      }
+   }
+
    if (!pI830->directRenderingDisabled) {
       if (!xf86LoadSubModule(pScrn, "shadow")) {
 	 PreInitCleanup(pScrn);

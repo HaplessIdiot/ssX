@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.87 2003/08/23 15:03:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.88 2003/09/15 02:46:57 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -252,10 +252,8 @@ const char *I810ramdacSymbols[] = {
    NULL
 };
 
-#ifndef I830_ONLY
-#ifdef XFree86LOADER
 #ifdef XF86DRI
-static const char *drmSymbols[] = {
+const char *I810drmSymbols[] = {
    "drmAddBufs",
    "drmAddMap",
    "drmAgpAcquire",
@@ -279,7 +277,7 @@ static const char *drmSymbols[] = {
 };
 
 
-static const char *driSymbols[] = {
+const char *I810driSymbols[] = {
    "DRICloseScreen",
    "DRICreateInfoRec",
    "DRIDestroyInfoRec",
@@ -293,10 +291,6 @@ static const char *driSymbols[] = {
    NULL
 };
 
-#endif
-#endif
-
-#ifdef XF86DRI
 const char *I810shadowSymbols[] = {
    "shadowInit",
    "shadowSetup",
@@ -304,8 +298,6 @@ const char *I810shadowSymbols[] = {
    NULL
 };
 #endif
-
-#endif /* I830_ONLY */
 
 #ifndef I810_DEBUG
 int I810_DEBUG = (0
@@ -369,8 +361,8 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
       LoaderRefSymLists(I810vgahwSymbols,
 			I810fbSymbols, I810xaaSymbols, I810ramdacSymbols,
 #ifdef XF86DRI
-			drmSymbols,
-			driSymbols,
+			I810drmSymbols,
+			I810driSymbols,
 			I810shadowSymbols,
 #endif
 			I810vbeSymbols, vbeOptionalSymbols,
@@ -1015,6 +1007,15 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 		 "XvMC is Disabled: use XvMCSurfaces config option to enable.\n");
       pI810->numSurfaces = 0;
    }
+
+#ifdef XF86DRI
+   /* Load the dri module if requested. */
+   if (xf86ReturnOptValBool(pI810->Options, OPTION_DRI, FALSE)) {
+      if (xf86LoadSubModule(pScrn, "dri")) {
+	 xf86LoaderReqSymLists(I810driSymbols, I810drmSymbols, NULL);
+      }
+   }
+#endif
 
    /*  We won't be using the VGA access after the probe */
    I810SetMMIOAccess(pI810);

@@ -1,4 +1,8 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 451. For drivers that support 'Option "dri"' have the driver request
+      loading the dri module when this option is true.  This brings
+      it in to line with how other things are handled.  Other drivers
+      that have DRI support need to have the "dri" option added (David Dawes).
  450. Fix libGL bug that could cause deadlock when switching contexts
       (John Harper).
  449. Improve the contrast of the whiteglass xterm cursor, and fix the
@@ -17746,7 +17750,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2859 2003/09/18 00:38:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2860 2003/09/18 19:31:47 torrey Exp $
 
 
 
