@@ -1,4 +1,6 @@
 XFree86 4.0.1b (11 August 2000)
+ 500. Fix VGA detection bug with Mach64 integrated controllers
+      (Marc La France).
  499. Accelerated line support for the NV driver (Chas Inman, Mark Vojkovich).
  498. Add GeForce2 support to the NV driver (Chas Inman).
  497. Integrate Cygwin support.  To compile, this requires Cygwin 1.0 or
@@ -10969,4 +10971,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1263 2000/08/11 05:06:17 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1264 2000/08/11 06:15:33 mvojkovi Exp $

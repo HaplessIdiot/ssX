@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.23 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.24 2000/08/04 21:07:15 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -674,9 +674,14 @@ ATIMach64Probe
         return NULL;
     }
 
-    /* Determine VGA capability */
+    /*
+     * Determine VGA capability.  VGA can always be enabled on integrated
+     * controllers.  For the GX/CX, it's a board strap.
+     */
     IOValue = inr(CONFIG_STATUS64_0);
-    if (pATI->Chip < ATI_CHIP_264CT)
+    if (pATI->Chip >= ATI_CHIP_264CT)
+        pATI->VGAAdapter = ATI_ADAPTER_MACH64;
+    else
     {
         pATI->BusType = GetBits(IOValue, CFG_BUS_TYPE);
         IOValue &= (CFG_VGA_EN | CFG_CHIP_EN);
@@ -688,11 +693,6 @@ ATIMach64Probe
             pATI->CPIO_VGAWonder = 0x01CEU;
             pATI->VGAOffset = 0x80U;
         }
-    }
-    else
-    {
-        if ((pATI->Chip < ATI_CHIP_264VT) || (IOValue & CFG_VGA_EN_T))
-            pATI->VGAAdapter = ATI_ADAPTER_MACH64;
     }
 
     return pATI;
