@@ -8,7 +8,7 @@ XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-DUSL
 #define NeedWidePrototypes	NO	/* experimental */
-#define ServerExtraDefines	-D__USLC__
+#define ServerExtraDefines	-D__USLC__ LinkKitDefines
 #define ServerOSDefines		-DDDXTIME -DDDXOSINIT
 #define i386Architecture
 #include <svr4.cf>

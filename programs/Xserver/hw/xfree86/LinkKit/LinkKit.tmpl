@@ -1,0 +1,9 @@
+XCOMM $XFree86$
+XCOMM ----------------------------------------------------------------------
+XCOMM LinkKit.tmpl: Template for some LinkKit specifics
+XCOMM ----------------------------------------------------------------------
+
+   IMAKE_DEFINES = -DXF86LinkKit=1
+       IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(TOP)/$(NEWTOP) -I$(IRULESRC) \
+                   $(IMAKE_DEFINES)
+

@@ -1,27 +1,26 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:59 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
-SRCS = driverg.c bankg.s
+SRCS = gvg_driver.c gvg_bank.s
 
-OBJS = driverg.o bankg.o
+OBJS = gvg_driver.o gvg_bank.o
 
 #if XF86LinkKit
-VGA256DIR = ../../vga256
 INCLUDES = -I. -I../../../include -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
-VGA256DIR = ../../../vga256/drivers
 #endif
 
 DEFINES = -DMONOVGA
 
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(gvga_drv, $(OBJS))
+NormalRelocatableTarget(gvga_drv,$(OBJS))
 
-ObjectFromSpecialSource(driverg,$(VGA256DIR)/gvga/gvg_driver,/**/)
-ObjectFromSpecialAsmSource(bankg,$(VGA256DIR)/gvga/bank,/**/)
+LinkSourceFile(gvg_driver.c,$(VGADRIVERSRC)/gvga)
+ObjectFromSpecialAsmSource(gvg_bank,$(VGADRIVERSRC)/gvga/bank,NullParameter)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga2/gvga)
 

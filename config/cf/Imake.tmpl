@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.219 94/05/13 15:58:31 matt Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.0 1994/05/08 05:13:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.1 1994/05/22 06:37:40 dawes Exp $
 XCOMM
 
 /*
@@ -1078,6 +1078,7 @@ XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
 InstallManSubdirs($(SUBDIRS))
+InstallLinkKitSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
@@ -1092,6 +1093,9 @@ install::
 
 install.man::
 	@echo "install.man in $(CURRENT_DIR) done"
+
+install.linkkit::
+	@echo "install.linkkit in $(CURRENT_DIR) done"
 
 Makefiles::
 

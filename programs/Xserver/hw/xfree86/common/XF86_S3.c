@@ -1,4 +1,5 @@
 /* $XConsortium: XF86_S3.c,v 1.1 94/03/28 21:22:05 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "os.h"
 
@@ -74,8 +75,14 @@ int s3ValidTokens[] =
   -1
 };
 
-/* Dummy function for PEX in LinkKit and mono server */
+/* Dummy function for PEX in LinkKit */
 
 #if defined(LINKKIT) && !defined(PEXEXT)
 PexExtensionInit() {}
+#endif
+
+/* Dummy function for XIE in LinkKit */
+
+#if defined(LINKKIT) && !defined(XIE)
+XieInit() {}
 #endif

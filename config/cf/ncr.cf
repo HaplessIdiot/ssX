@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: ncr.cf,v 1.10 94/04/15 11:52:14 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.0 1994/04/28 12:28:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.1 1994/05/22 01:45:17 dawes Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -13,7 +13,7 @@ XCOMM operating system:  OSName
 #define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
 #define DefaultCCOptions	-Xc -Hnocopyr -W0,-asm
 #define DefaultCDebugFlags	-O3
-#define ServerExtraDefines      -DNO_SECONDARY AllocateLocalDefines
+#define ServerExtraDefines      -DNO_SECONDARY AllocateLocalDefines LinkKitDefines
 #define ServerOSDefines         -DDDXTIME -DDDXOSINIT
 #define AllocateLocalDefines	-DNO_ALLOCA
 

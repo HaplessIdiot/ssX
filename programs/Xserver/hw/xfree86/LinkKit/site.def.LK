@@ -1,0 +1,106 @@
+XCOMM $XFree86$
+
+/* Configuration file for Server Link Kit */
+
+#ifdef BeforeVendorCF
+
+/*
+ * Change these definitions if you need to override the defaults:
+ */
+
+/*
+ * HasGcc: defaults:
+ *		SVR3,4:		YES
+ *		Mach, *BSD:	YES
+ */
+/* #define HasGcc 		NO */
+
+/*
+ * HasGcc2: (should also set HasGcc)
+ *	    defaults:
+ *		SVR3,4:		YES
+ *		Mach, *BSD:	YES
+ */
+/* #define HasGcc2		NO */
+
+/*
+ * If the link kit you are using was built with gcc2, and you are using
+ * a different compiler:
+ *   1. Install libgcc.a in a directory searched by your 'ld'
+ *   2. Set NeedLibGcc to YES
+ */
+#define NeedLibGcc		NO
+
+/*
+ * Server configuration parameters
+ */
+
+#define XF86Vga256Drivers      et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
+                               ncr77c22 compaq oak s3_svga mx al2101 cl6420 \
+                               video7 generic
+
+#define XF86Vga16Drivers       et4000 ncr77c22 tvga8900 oak cl6420 generic
+
+#define XF86Vga2Drivers        et4000 et3000 pvga1 gvga tvga8900 cirrus \
+                               ncr77c22 compaq oak cl6420 generic
+
+#define XF86MonoDrivers        hgc1280 sigma apollo hercules
+
+
+/* The SVGA colour server */
+#define XF86SVGAServer		YES
+
+/* The 16-colour VGA server */
+#define XF86VGA16Server		YES
+
+/* Dual headed 16-colour VGA + mono server */
+#define XF86VGA16DualServer	YES
+
+/* The VGA mono server */
+#define XF86MonoServer		YES
+
+/* Dual headed VGA mono server */
+#define XF86MonoDualServer	YES
+
+/* The S3 server */
+#define XF86S3Server		YES
+
+/* The IBM 8514/A server */
+#define XF86I8514Server		YES
+
+/* The Mach8 server */
+#define XF86Mach8Server		YES
+
+/* The Mach32 server */
+#define XF86Mach32Server	YES
+
+/* The P9000 server */
+#define XF86P9000Server		YES
+
+/*
+ * Set the default server (ie the one that gets the sym-link to "X")
+ *
+#define ServerToInstall	XF86_S3
+*/
+
+/*
+ * If you want PEX (and this link kit was built with PEX support), set
+ * the following to YES
+ */
+#define BuildPexExt		NO
+
+/*
+ * If you want XIE (and this link kit was built with XIE support), set
+ * the following to YES
+ */
+#define BuildXIE		NO
+
+#endif /* BeforeVendorCF */
+
+#ifdef AfterVendorCF
+
+/* If you are using a different ProjectRoot, set it here */
+
+#define ProjectRoot /usr/X11R6
+
+#endif /* AfterVendorCF */

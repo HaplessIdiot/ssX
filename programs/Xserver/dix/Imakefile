@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.46 94/02/04 10:51:26 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.0 1994/05/08 05:18:20 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -68,5 +68,7 @@ SpecialCObjectRule(globals,$(ICONFIGFILES),$(SITE_DEFINES))
 SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(main,$(ICONFIGFILES),$(VENDOR_DEFINES))
+
+InstallLinkKitLibrary(dix,$(LINKKITDIR)/lib)
 
 DependTarget()

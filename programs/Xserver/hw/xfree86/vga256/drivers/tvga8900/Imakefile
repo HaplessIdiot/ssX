@@ -1,17 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:53:06 dpw Exp $
 #include <Server.tmpl>
 
-#if i386Mach
-SRCS = t89_driver.c
-#else
-SRCS = t89_driver.c bank.s
-#endif
+SRCS = t89_driver.c t89_bank.s
 
-#if defined(i386BsdArchitecture)
-OBJS = driverT.o bankT.o
-#else
-OBJS = t89_driver.o bank.o
-#endif
+OBJS = t89_driver.o t89_bank.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../..
@@ -23,12 +15,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-NormalRelocatableTarget(tvga89_drv, $(OBJS))
+NormalRelocatableTarget(tvga89_drv,$(OBJS))
 
-#if defined(i386BsdArchitecture)
-ObjectFromSpecialAsmSource(bankT,bank,NullParameter)
-ObjectFromSpecialSource(driverT,t89_driver,NullParameter)
-#endif
+ObjectFromSpecialAsmSource(t89_bank,bank,NullParameter)
 
 InstallLinkKitNonExecFile(t89_driver.c,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/tvga8900)

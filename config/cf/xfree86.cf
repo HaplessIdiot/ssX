@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.4 1994/05/22 08:59:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.5 1994/05/29 02:01:49 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -108,14 +108,11 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.4 1994/05/22 08:59:39 dawes Exp $
 				ncr77c22 compaq oak cl6420 generic
 #endif
 
-#ifndef XF86Hga2Drivers
-# define XF86Hga2Drivers	hga6845
-#endif
-
 #ifndef XF86MonoDrivers
 # define XF86MonoDrivers	hgc1280 sigma apollo hercules
 #endif
 
+/* This doesn't do anything (yet) */
 #ifndef XF86S3Drivers
 # define XF86S3Drivers		mmio_928 s3_generic
 #endif
@@ -143,13 +140,54 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.4 1994/05/22 08:59:39 dawes Exp $
 #define CompressAllFonts	YES
 #endif
 
+#ifndef XF86LinkKit
+#define XF86LinkKit	NO
+#endif
+
+#ifndef LinkKitDefines
+#if XF86LinkKit
+#define LinkKitDefines	-DLINKKIT
+#else
+#define LinkKitDefines	/**/
+#endif
+#endif
+
+#ifndef ServerExtraDefines
+#define ServerExtraDefines	LinkKitDefines
+#endif
+
+#ifndef LinkKitDir
+#define LinkKitDir	$(USRLIBDIR)/Server
+#endif
+
+LINKKITDIR = LinkKitDir
+
 /*
  * Some commonly refered to directories are defined here.
  */
 
+#if XF86LinkKit
+       XF86SRC = $(TOP)
+  XF86ACCELSRC = $(XF86SRC)/lib
+    XF86COMSRC = $(XF86SRC)/lib
+ XF86CONFIGSRC = $(XF86SRC)
+     XF86HWSRC = $(XF86SRC)/lib
+     XF86OSSRC = $(XF86SRC)/lib
+     DRIVERSRC = $(XF86SRC)/drivers
+  VGADRIVERSRC = $(XF86SRC)/drivers/vga256
+VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
+ VGA2DRIVERSRC = $(XF86SRC)/drivers/vga2
+ MONODRIVERSRC = $(XF86SRC)/drivers/mono
+   S3DRIVERSRC = $(XF86SRC)/drivers/s3
+
+#undef SiteIConfigFiles
+#define SiteIConfigFiles $(TOP)/site.def $(TOP)/LinkKit.tmpl $(TOP)/Imakefile
+
+#else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel
     XF86COMSRC = $(XF86SRC)/common
+ XF86CONFIGSRC = $(XF86COMSRC)
      XF86HWSRC = $(XF86SRC)/common_hw
      XF86OSSRC = $(XF86SRC)/os-support
   VGADRIVERSRC = $(XF86SRC)/vga256/drivers
@@ -157,6 +195,7 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
  VGA2DRIVERSRC = $(XF86SRC)/vga2/drivers
  MONODRIVERSRC = $(XF86SRC)/mono/drivers
    S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
+#endif
 
 /*
  * These libraries are needed by all X Servers
@@ -164,7 +203,7 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
 
 XF86INIT   = $(XF86COMSRC)/xf86Init.o
 XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o
-XF86CONFIG = $(XF86COMSRC)/xf86_Option.o
+XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/libxf86.a
 XF86OSLIB  = $(XF86OSSRC)/libxf86_os.a
 XF86HWLIB  = $(XF86HWSRC)/libxf86_hw.a

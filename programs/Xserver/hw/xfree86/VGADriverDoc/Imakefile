@@ -1,0 +1,10 @@
+XCOMM $XFree86$
+
+all::
+
+InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
+InstallLinkKitNonExecFile(Imakefile.stub,$(LINKKITDIR)/VGADriverDoc)
+InstallLinkKitNonExecFile(stub_driver.c,$(LINKKITDIR)/VGADriverDoc)
+InstallLinkKitNonExecFile(stub_bank.s,$(LINKKITDIR)/VGADriverDoc)
+
+DependTarget()

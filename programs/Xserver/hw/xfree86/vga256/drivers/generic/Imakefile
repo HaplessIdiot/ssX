@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/Imakefile,v 3.0 1994/05/14 07:02:37 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = gen_driver.c
@@ -13,9 +13,8 @@ INCLUDES = -I. -I../../../common -I../../../common_hw -I../../../os-support \
 #endif
 
 NormalLibraryObjectRule()
-NormalAsmObjectRule()
 
-NormalRelocatableTarget(gen_drv, $(OBJS))
+NormalRelocatableTarget(gen_drv,$(OBJS))
 
 InstallLinkKitNonExecFile(gen_driver.c,$(LINKKITDIR)/drivers/vga256/generic)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/generic)

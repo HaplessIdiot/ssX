@@ -1,5 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile,v 5.11 94/04/17 20:36:16 rws Exp $
+XCOMM $XFree86$
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -59,5 +60,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(diswapex,$(OBJS))
 LintLibraryTarget(dsw,$(SRCS))
 NormalLintTarget($(SRCS))
+
+InstallLinkKitLibrary(diswapex,$(LINKKITDIR)/lib)
 
 DependTarget()
