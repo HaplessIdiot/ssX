@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.16 2003/09/04 00:21:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.17tsi Exp $ */
 
 /* sigio.c -- Support for SIGIO handler installation and removal
  * Created: Thu Jun  3 15:39:18 1999 by faith@precisioninsight.com
@@ -77,10 +77,8 @@
 #ifdef XFree86Server
 # include "X.h"
 # include "xf86.h"
-# include "xf86drm.h"
 # include "xf86Priv.h"
 # include "xf86_OSlib.h"
-# include "xf86drm.h"
 # include "inputstr.h"
 #else
 # include <unistd.h>
@@ -313,7 +311,7 @@ xf86AssertBlockedSIGIO (char *where)
 
 /* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
 
-int
+Bool
 xf86SIGIOSupported (void)
 {
     return 1;

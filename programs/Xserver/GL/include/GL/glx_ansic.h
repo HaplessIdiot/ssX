@@ -1,7 +1,7 @@
 #ifndef _glx_ansic_h_
 #define _glx_ansic_h_
 
-/* $XFree86: xc/programs/Xserver/GL/include/GL/glx_ansic.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/include/GL/glx_ansic.h,v 1.8tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -50,7 +50,7 @@
 ** tree and all should be taken care of.
 */
 
-#ifdef XFree86Server
+#if defined(XFree86Server) && !defined(XFree86FakeServer)
 
 #include "xf86_ansic.h"
 #ifndef assert
