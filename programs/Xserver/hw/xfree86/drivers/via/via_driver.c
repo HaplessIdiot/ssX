@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.17 2003/12/17 18:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.18 2003/12/24 02:36:46 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2430,8 +2430,7 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
         if(!pVia->NoAccel)
         	viaInitVideo(pScreen);
         else
-        	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled; no Xvideo support.\n",
-        		pScrn->virtualX, pScrn->virtualY);
+        	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled; no Xvideo support.\n");
     }
 
     if (serverGeneration == 1)
