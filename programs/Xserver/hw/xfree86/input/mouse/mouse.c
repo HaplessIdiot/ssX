@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.53 2002/04/14 21:04:10 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.55 2002/09/16 18:06:07 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -3014,11 +3014,9 @@ autoProbeMouse(InputInfoPtr pInfo, Bool inSync, Bool lostSync)
 	    void *defaults;
 	    AP_DBG(("State SWITCH_PROTOCOL\n"));
 	    proto = mPriv->protoList[mPriv->protocolID++];
-	    if (proto != PROT_UNKNOWN)
-		defaults = GetProtocol(proto)->defaults;
-	    if ((proto  == PROT_UNKNOWN)) 
+	    if (proto == PROT_UNKNOWN) 
 		mPriv->autoState = AUTOPROBE_SWITCHSERIAL;
-	    else if (!(defaults)
+	    else if (!(defaults = GetProtocol(proto)->defaults)
 		       || (mPriv->serialDefaultsNum == -1 
 			   && (defaults == msDefaults))
 		       || (mPriv->serialDefaultsNum != -1
