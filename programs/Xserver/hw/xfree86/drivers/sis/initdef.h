@@ -2,34 +2,48 @@
 /*
  * Global definitions for init.c and init301.c
  *
- * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
- * If distributed as part of the linux kernel, the contents of this file
- * is entirely covered by the GPL.
+ * If distributed outside the scope of XFree86 (such as but only exclusively the
+ * Linux kernel), the following license terms apply:
  *
- * Otherwise, the following terms apply:
+ * * This program is free software; you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as published by
+ * * the Free Software Foundation; either version 2 of the License, or
+ * * any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public License
+ * * along with this program; if not, write to the Free Software
+ * * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the copyright holder not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The copyright holder makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * As a part of XFree86 code, the following terms apply:
  *
- * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * * Permission to use, copy, modify, distribute, and sell this software and its
+ * * documentation for any purpose is hereby granted without fee, provided that
+ * * the above copyright notice appears in all copies and that both that copyright
+ * * notice and this permission notice appear in supporting documentation, and
+ * * and that the name of the copyright holder not be used in advertising
+ * * or publicity pertaining to distribution of the software without specific,
+ * * written prior permission. The copyright holder makes no representations
+ * * about the suitability of this software for any purpose.  It is provided
+ * * "as is" without expressed or implied warranty.
+ * *
+ * * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+ * * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
  *
- * Based on code by Silicon Integrated Systems
+ * Based on non-functional code fragments by Silicon Integrated Systems, Inc.
  *
  */
 
@@ -75,22 +89,25 @@
 #define SetCRT2ToSCART          0x0010
 #define SetCRT2ToLCD            0x0020
 #define SetCRT2ToRAMDAC         0x0040
-#define SetCRT2ToYPbPr	        0x0080	/* Needs change in sis_vga.c if changed (GPIO) */
-#define SetCRT2ToTV             (SetCRT2ToYPbPr | SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
-#define SetCRT2ToTVNoYPbPr  	(SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
+#define SetCRT2ToHiVision       0x0080   		/* for SiS bridge */
+#define SetCRT2ToCHYPbPr       	SetCRT2ToHiVision	/* for Chrontel   */
 #define SetNTSCTV               0x0000   /* CR 31 */
 #define SetPALTV                0x0100   		/* Deprecated here, now in TVMode */
 #define SetInSlaveMode          0x0200
 #define SetNotSimuMode          0x0400
-#define SetNotSimuTVMode        0x0400
+#define SetNotSimuTVMode        SetNotSimuMode
 #define SetDispDevSwitch        0x0800
+#define SetCRT2ToYPbPr525750    0x0800   /* 661 */
 #define LoadDACFlag             0x1000
-#define SetCHTVOverScan  	0x1000   		/* Deprecated here, now in TVMode */
 #define DisableCRT2Display      0x2000
-#define CRT2DisplayFlag         0x2000
 #define DriverMode              0x4000
-#define HotKeySwitch            0x8000  
+#define HotKeySwitch            0x8000
 #define SetCRT2ToLCDA           0x8000
+
+/* v-- Needs change in sis_vga.c if changed (GPIO) --v */
+#define SetCRT2ToTV             (SetCRT2ToYPbPr525750|SetCRT2ToHiVision|SetCRT2ToSCART|SetCRT2ToSVIDEO|SetCRT2ToAVIDEO)
+#define SetCRT2ToTVNoYPbPrHiVision (SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
+#define SetCRT2ToTVNoHiVision  	(SetCRT2ToYPbPr525750 | SetCRT2ToSCART | SetCRT2ToSVIDEO | SetCRT2ToAVIDEO)
 
 /* SiS_ModeType */
 #define ModeText                0x00
@@ -122,8 +139,8 @@
 #define SupportTV1024           0x0800
 #define SupportCHTV 		0x0800
 #define Support64048060Hz       0x0800  /* Special for 640x480 LCD */
-#define SupportYPbPr            0x0010
-#define SupportYPbPr2           0x1000
+#define SupportHiVision         0x0010
+#define SupportYPbPr            0x1000  /* TODO */
 #define SupportLCD              0x0020
 #define SupportRAMDAC2          0x0040	/* All           (<= 100Mhz) */
 #define SupportRAMDAC2_135      0x0100  /* All except DH (<= 135Mhz) */
@@ -152,14 +169,18 @@
 #define TVSetPALM		0x0004
 #define TVSetPALN		0x0008
 #define TVSetCHOverScan		0x0010
+#define TVSetYPbPr525i		0x0020
+#define TVSetYPbPr525p		0x0040
+#define TVSetYPbPr750p		0x0080
+#define TVSetHiVision		0x0100
 #define TVSetTVSimuMode		0x0800
 #define TVRPLLDIV2XO		0x1000
 #define TVSetNTSC1024		0x2000
 
-/* YPbPr flag (YPbPr not supported yet) */
+/* YPbPr flag (>=315, <661; YPbPr not supported yet) */
 #define YPbPr750                0x0001	/* 750p (must be a single bit, checked logially) */
 #define YPbPr525                0x0002	/* 525p (must be a single bit, checked logially) */
-#define YPbPrHiVision           0x0003	/* old HiVision */
+#define YPbPrHiVision           0x0003	/* HiVision */
 #define YPbPrModeMask           (YPbPr750 | YPbPr525 | YPbPrHiVision)
 #define YPbPrSetSVideo     	0x0004	/* (sets SVIDEO flag) */
 
@@ -197,10 +218,11 @@
    [2]    1 = PALM (if D0 = 1)
    [3]    1 = PALN (if D0 = 1)
    [4]    1 = Overscan (Chrontel only)
-   [7:5]  000  525i  (not supported yet)
+   [7:5]  (only if D2 in CR38 is set; not supported yet)
+          000  525i
  	  001  525p
 	  010  750p
-	  011  1080i
+	  011  HiVision (Should be 1080i, but...)
 
    These bits are being translated to TVMode flag.
 
@@ -254,7 +276,7 @@
 /* CR38 (315 series) */
 #define EnableDualEdge 		0x01
 #define SetToLCDA		0x02   /* LCD channel A (301C/302B/30x(E)LV and 650+LVDS only) */
-#define EnableSiSYPbPr          0x04   /* YPbPr on SiS bridge (not used) */
+#define EnableSiSYPbPr          0x04   /* YPbPr on SiS bridge (not used; also on 661) */
 #define EnableCHScart           0x04   /* Scart on Ch7019 (unofficial definition - TW) */
 #define EnableCHYPbPr           0x08   /* YPbPr on Ch7019 (480i HDTV); only on 650/Ch7019 systems */
 #define EnableYPbPr750          0x08   /* Enable 750P YPbPr mode (30xLV/301C only) (not supported) */
@@ -271,6 +293,8 @@
 	  010 LVDS
 	  011 Chrontel 7019
 	  100 Conexant
+  D2      Enable YPbPr output (see CR35)
+  D[1:0]  LCDA (like before)
 */
 
 #define EnablePALMN             0x40   /* Romflag: 1 = Allow PALM/PALN */
@@ -279,6 +303,13 @@
 #define LCDPass1_1		0x01   /* LVDS only; set by driver to pass 1:1 data to LVDS output  */
 #define Enable302LV_DualLink    0x04   /* 302LV only; enable dual link */
 
+/* CR39 (661 and later; not yet implemented)
+   D[1:0] YPbPr Aspect Ratio
+          00 4:3 letterbox
+	  01 4:3
+	  10 16:9
+	  11 4:3
+*/
 
 /* CR79 (315/330 series only; not 661 and later)
    [3-0] Notify driver
@@ -344,6 +375,8 @@
 #define Panel_Custom		0x0f
 #define Panel_Barco1366         0x10
 #define Panel_848x480		0x11
+#define Panel_1280x800		0x12    /* 661etc: 0x0c */
+#define Panel_1680x1050         0x13    /* 661etc: 0x0d */
 
 /* Index in ModeResInfo table */
 #define SIS_RI_320x200    0
@@ -419,6 +452,7 @@
 #define HiTVVCLK                0x03   /* Index relative to TVCLKBASE */
 #define HiTVSimuVCLK            0x04   /* Index relative to TVCLKBASE */
 #define HiTVTextVCLK            0x05   /* Index relative to TVCLKBASE */
+#define YPbPr750pVCLK		0x0f   /* NOT relative to TVCLKBASE ! */
 
 /* ------------------------------ */
 

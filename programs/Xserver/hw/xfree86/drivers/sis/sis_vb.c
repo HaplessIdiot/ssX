@@ -2,20 +2,20 @@
 /*
  * Video bridge detection and configuration for 300, 315 and 330 series
  *
- * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the copyright holder not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The copyright holder makes no representations
+ * the above copyright notice appears in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * and that the name of the copyright holder not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. The copyright holder makes no representations
  * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * "as is" without expressed or implied warranty.
  *
  * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
  * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
@@ -75,6 +75,26 @@ static const SiS_LCD_StStruct SiS315_LCD_Type[]=
 	{ VB_LCD_1600x1200,1600, 1200, LCD_1600x1200 },  /* b */
 	{ VB_LCD_640x480_2, 640,  480, LCD_640x480_2 },  /* c DSTN/FSTN */
 	{ VB_LCD_640x480_3, 640,  480, LCD_640x480_3 },  /* d DSTN/FSTN */
+	{ VB_LCD_320x480,   320,  480, LCD_320x480   },  /* e */
+	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,   }   /* f */
+};
+
+static const SiS_LCD_StStruct SiS661_LCD_Type[]=
+{
+        { VB_LCD_1024x768, 1024,  768, LCD_1024x768  },  /* 0 - invalid */
+	{ VB_LCD_800x600,   800,  600, LCD_800x600   },  /* 1 */
+	{ VB_LCD_1024x768, 1024,  768, LCD_1024x768  },  /* 2 */
+	{ VB_LCD_1280x1024,1280, 1024, LCD_1280x1024 },  /* 3 */
+	{ VB_LCD_640x480,   640,  480, LCD_640x480   },  /* 4 */
+	{ VB_LCD_1024x600, 1024,  600, LCD_1024x600  },  /* 5 */
+	{ VB_LCD_1152x864, 1152,  864, LCD_1152x864  },  /* 6 */
+	{ VB_LCD_1280x960, 1280,  960, LCD_1280x960  },  /* 7 */
+	{ VB_LCD_1152x768, 1152,  768, LCD_1152x768  },  /* 8 */
+	{ VB_LCD_1400x1050,1400, 1050, LCD_1400x1050 },  /* 9 */
+	{ VB_LCD_1280x768, 1280,  768, LCD_1280x768  },  /* a */
+	{ VB_LCD_1600x1200,1600, 1200, LCD_1600x1200 },  /* b */
+	{ VB_LCD_1280x800, 1280,  800, LCD_1280x800  },  /* c */
+	{ VB_LCD_1680x1050,1680, 1050, LCD_1680x1050 },  /* d */
 	{ VB_LCD_320x480,   320,  480, LCD_320x480   },  /* e */
 	{ VB_LCD_CUSTOM,      0,    0, LCD_CUSTOM,   }   /* f */
 };
@@ -328,11 +348,17 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 	        pSiS->LCDwidth = SiS300_LCD_Type[(CR36 & 0x0f)].LCDwidth;
                 pSiS->sishw_ext.ulCRT2LCDType = SiS300_LCD_Type[(CR36 & 0x0f)].LCDtype;
 	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
-	     } else {
+	     } else if(pSiS->sishw_ext.jChipType < SIS_661) {
 	        pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
                 pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
 	        pSiS->LCDwidth = SiS315_LCD_Type[(CR36 & 0x0f)].LCDwidth;
                 pSiS->sishw_ext.ulCRT2LCDType = SiS315_LCD_Type[(CR36 & 0x0f)].LCDtype;
+	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+	     } else {
+		pSiS->VBLCDFlags |= SiS661_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
+                pSiS->LCDheight = SiS661_LCD_Type[(CR36 & 0x0f)].LCDheight;
+	        pSiS->LCDwidth = SiS661_LCD_Type[(CR36 & 0x0f)].LCDwidth;
+                pSiS->sishw_ext.ulCRT2LCDType = SiS661_LCD_Type[(CR36 & 0x0f)].LCDtype;
 	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
 	     }
 	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -360,6 +386,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
+    inSISIDXREG(SISCR, 0x35, CR35);
     inSISIDXREG(SISSR, 0x16, SR16);
     inSISIDXREG(SISSR, 0x38, SR38);
     switch(pSiS->VGAEngine) {
@@ -367,7 +394,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        if(pSiS->Chipset == PCI_CHIP_SIS630) temp = 0x35;
        break;
     case SIS_315_VGA:
-       if(pSiS->Chipset != PCI_CHIP_SIS660) temp = 0x38;
+       temp = 0x38;
        break;
     }
     if(temp) {
@@ -380,25 +407,35 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	CR32, SR16, SR38);
 #endif
 
-    if(CR32 & 0x47)
-       pSiS->VBFlags |= CRT2_TV;
+    if(CR32 & 0x47) pSiS->VBFlags |= CRT2_TV;
 
-    if(CR32 & 0x04)
-       pSiS->VBFlags |= TV_SCART;
+    if(pSiS->Chipset == PCI_CHIP_SIS660) {
+       if(CR32 & 0x80) pSiS->VBFlags |= CRT2_TV;
+    } else {
+       CR32 &= 0x7f;
+    }
+
+    if(CR32 & 0x01)
+       pSiS->VBFlags |= TV_AVIDEO;
     else if(CR32 & 0x02)
        pSiS->VBFlags |= TV_SVIDEO;
-    else if(CR32 & 0x01)
-       pSiS->VBFlags |= TV_AVIDEO;
-    else if((CR32 & 0x40) && (!(pSiS->VBFlags & (VB_301C | VB_301LV | VB_302LV | VB_302ELV))))
-       pSiS->VBFlags |= (TV_SVIDEO | TV_HIVISION);
-    else if((CR38 & 0x04) && (pSiS->VBFlags & (VB_301C | VB_301LV | VB_302LV | VB_302ELV)))
+    else if(CR32 & 0x04)
+       pSiS->VBFlags |= TV_SCART;
+    else if((CR32 & 0x40) && (pSiS->VBFlags & VB_SISBRIDGE))
+       pSiS->VBFlags |= (TV_HIVISION | TV_PAL);
+    else if((CR32 & 0x80) && (pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV|VB_302ELV))) {
        pSiS->VBFlags |= TV_YPBPR;
-    else if((CR38 & 0x04) && (pSiS->VBFlags & VB_CHRONTEL))
+       if(CR38 & 0x04) {
+          if(CR35 & 0x20)      pSiS->VBFlags |= TV_YPBPR525P;
+	  else if(CR35 & 0x40) pSiS->VBFlags |= TV_YPBPR750P;
+	  else                 pSiS->VBFlags |= TV_YPBPR525I;
+       }
+    } else if((CR38 & 0x04) && (pSiS->VBFlags & VB_CHRONTEL))
        pSiS->VBFlags |= (TV_CHSCART | TV_PAL);
     else if((CR38 & 0x08) && (pSiS->VBFlags & VB_CHRONTEL))
-       pSiS->VBFlags |= (TV_CHHDTV | TV_NTSC);
-	        
-    if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO | TV_HIVISION | TV_YPBPR)) {
+       pSiS->VBFlags |= (TV_CHYPBPR525I | TV_NTSC);
+
+    if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO)) {
        if(pSiS->VGAEngine == SIS_300_VGA) {
 	  /* TW: Should be SR38, but this does not work. */
 	  if(SR16 & 0x20)
@@ -426,7 +463,6 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
  	  } else
 	     pSiS->VBFlags |= TV_NTSC;
        } else if(pSiS->Chipset == PCI_CHIP_SIS660) {
-          inSISIDXREG(SISCR, 0x35, CR35);
           if(SR38 & 0x01) {
 	     pSiS->VBFlags |= TV_PAL;
 	     if(CR35 & 0x04)      pSiS->VBFlags |= TV_PALM;
@@ -443,16 +479,29 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	     pSiS->VBFlags |= TV_NTSC;
        }
     }
-    
-    if(pSiS->VBFlags & (TV_SCART|TV_SVIDEO|TV_AVIDEO|TV_HIVISION|TV_YPBPR|TV_CHSCART|TV_CHHDTV)) {
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			"%sTV standard %s\n",
-			(pSiS->VBFlags & (TV_CHSCART | TV_CHHDTV)) ? "Using " : "Detected default ",
-			(pSiS->VBFlags & TV_NTSC) ?
-			   ((pSiS->VBFlags & TV_CHHDTV) ? "480i HDTV" :
-			      ((pSiS->VBFlags & TV_NTSCJ) ? "NTSCJ" : "NTSC")) :
-			   ((pSiS->VBFlags & TV_PALM) ? "PALM" :
-			   	((pSiS->VBFlags & TV_PALN) ? "PALN" : "PAL")) );
+
+    if(pSiS->VBFlags & (TV_SCART|TV_SVIDEO|TV_AVIDEO)) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected default TV standard %s\n",
+          (pSiS->VBFlags & TV_NTSC) ?
+	     ((pSiS->VBFlags & TV_NTSCJ) ? "NTSCJ" : "NTSC") :
+	         ((pSiS->VBFlags & TV_PALM) ? "PALM" :
+		     ((pSiS->VBFlags & TV_PALN) ? "PALN" : "PAL")));
+    }
+
+    if(pSiS->VBFlags & TV_HIVISION) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports HiVision TV\n");
+    }
+
+    if(pSiS->VBFlags & (TV_CHSCART|TV_CHYPBPR525I)) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chrontel: %s forced\n",
+       	(pSiS->VBFlags & TV_CHSCART) ? "SCART (PAL)" : "YPbPr (525i)");
+    }
+
+    if(pSiS->VBFlags & TV_YPBPR) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports YPbPr TV (%s)\n",
+         (pSiS->VBFlags & TV_YPBPR525I) ? "525i" :
+	     ((pSiS->VBFlags & TV_YPBPR525P) ? "525p" :
+	        ((pSiS->VBFlags & TV_YPBPR750P) ? "750p" : "unknown format")));
     }
 }
 

@@ -2,10 +2,7 @@
 /*
  * Mode setup and basic video bridge detection
  *
- * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
- *
- * Init() function for old series (except for TV and FIFO calculation) based
- * on code which was Copyright 1998,1999 by Alan Hourihane, Wigan, England.
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,9 +22,10 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors: 	Thomas Winischhofer <thomas@winischhofer.net>
- *          	...
+ * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
  *
+ * Init() function for old series (except for TV and FIFO calculation) based
+ * on code which was Copyright (C) 1998,1999 by Alan Hourihane, Wigan, England
  */
 
 #include "xf86.h"
@@ -1417,7 +1415,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		inSISIDXREG(SISPART4, 0x23, temp2);
 		if(!(temp2 & 0x02)) pSiS->VBFlags |= VB_30xBDH;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, detectvb,
-				(temp2 & 0x02) ? "SiS301B" : "SiS301B-DH", temp1);
+				(temp2 & 0x02) ? "SiS301B" : "SiS301B-DH", 1, temp1);
 	} else {
 	        pSiS->VBFlags |= VB_301;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301;
@@ -1444,7 +1442,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 		inSISIDXREG(SISPART4, 0x23, temp2);
 		if(!(temp & 0x02)) pSiS->VBFlags |= VB_30xBDH;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, detectvb,
-				(temp2 & 0x02) ? "SiS302B" : "SiS302B-DH", temp1);
+				(temp2 & 0x02) ? "SiS302B" : "SiS302B-DH", 2, temp1);
 	}
 
 	SISSense30x(pScrn);
@@ -1622,10 +1620,10 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
                         break;
 		     case 0x04:
 			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Chrontel: Detected TV connected to SCART output or 480i HDTV\n");
+			   "Chrontel: Detected TV connected to SCART or YPBPR output\n");
 			if(pSiS->chtvtype == -1) {
 			   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			      "Chrontel: Use CHTVType option to select either SCART or HDTV\n");
+			      "Chrontel: Use CHTVType option to select either SCART or YPBPR525I\n");
 			   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			      "Chrontel: Using SCART by default\n");
 			   pSiS->chtvtype = 1;
@@ -1633,7 +1631,7 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 			if(pSiS->chtvtype)
 			    pSiS->VBFlags |= TV_CHSCART;
 			else
-			    pSiS->VBFlags |= TV_CHHDTV;
+			    pSiS->VBFlags |= TV_CHYPBPR525I;
                         break;
 		     default:
 		        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,

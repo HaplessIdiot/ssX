@@ -3,7 +3,7 @@
  * SiS DGA handling
  *
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales, UK.
- * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ * Copyright 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
  * Portions from radeon_dga.c which is
  *          Copyright 2000 ATI Technologies Inc., Markham, Ontario, and

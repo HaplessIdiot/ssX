@@ -2,22 +2,20 @@
 /*
  * SiS driver option evaluation
  *
- * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria
- *
- * Based on code by ? (included in XFree86 4.1)
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the supplier not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The supplier makes no representations
+ * the above copyright notice appears in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * and that the name of the copyright holder not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. The copyright holder makes no representations
  * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * "as is" without expressed or implied warranty.
  *
- * THE SUPPLIER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
  * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
@@ -993,24 +991,44 @@ SiSOptions(ScrnInfoPtr pScrn)
                 pSiS->ForceCRT2Type = CRT2_VGA;
              else if(!xf86NameCmp(strptr,"NONE"))
                 pSiS->ForceCRT2Type = 0;
-	     else if(pSiS->Chipset == PCI_CHIP_SIS550) {
-	        if(!xf86NameCmp(strptr,"DSTN")) {
-		   if(pSiS->ForceCRT1Type == CRT1_VGA) {
-		      pSiS->ForceCRT2Type = CRT2_LCD;
-		      pSiS->DSTN = TRUE;
-		   }
-		} else if(!xf86NameCmp(strptr,"FSTN")) {
-		   if(pSiS->ForceCRT1Type == CRT1_VGA) {
-		      pSiS->ForceCRT2Type = CRT2_LCD;
-		      pSiS->FSTN = TRUE;
-		   }
+	     else if((!xf86NameCmp(strptr,"DSTN")) && (pSiS->Chipset == PCI_CHIP_SIS550)) {
+		if(pSiS->ForceCRT1Type == CRT1_VGA) {
+		   pSiS->ForceCRT2Type = CRT2_LCD;
+		   pSiS->DSTN = TRUE;
 		}
+	     } else if((!xf86NameCmp(strptr,"FSTN")) && (pSiS->Chipset == PCI_CHIP_SIS550)) {
+		if(pSiS->ForceCRT1Type == CRT1_VGA) {
+		   pSiS->ForceCRT2Type = CRT2_LCD;
+		   pSiS->FSTN = TRUE;
+		}
+#ifdef ENABLE_YPBPR
+	     } else if((!xf86NameCmp(strptr,"HIVISION")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+		pSiS->ForceCRT2Type = CRT2_TV;
+	        pSiS->ForceTVType = TV_HIVISION;
+	     } else if((!xf86NameCmp(strptr,"YPBPR525I")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+		pSiS->ForceCRT2Type = CRT2_TV;
+		pSiS->ForceTVType = TV_YPBPR;
+		pSiS->ForceYPbPrType = TV_YPBPR525I;
+	     } else if((!xf86NameCmp(strptr,"YPBPR525P")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+		pSiS->ForceCRT2Type = CRT2_TV;
+		pSiS->ForceTVType = TV_YPBPR;
+		pSiS->ForceYPbPrType = TV_YPBPR525P;
+	     } else if((!xf86NameCmp(strptr,"YPBPR750P")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+		pSiS->ForceCRT2Type = CRT2_TV;
+		pSiS->ForceTVType = TV_YPBPR;
+		pSiS->ForceYPbPrType = TV_YPBPR750P;
+#endif
 	     } else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "ForceCRT2Type");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	            "Valid parameters are \"LCD\" (=\"DVI-D\"), \"TV\", \"SVIDEO\", \"COMPOSITE\",\n"
-		    "\t\"SVIDEO+COMPOSITE\", \"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\", on the SiS550\n"
-		    "\talso \"DSTN\" and \"FSTN\"\n");
+		    "\t\"SVIDEO+COMPOSITE\", \"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\"; on the SiS550\n"
+		    "\talso \"DSTN\" and \"FSTN\""
+#ifdef ENABLE_YPBPR
+		    				"; on the SiS661/741/760 also \"HIVISION\",\n"
+		    "\t\"YPBPR525I\", \"YPBPR525P\" and \"YPBPR750P\""
+#endif
+		    "\n");
 	     }
 
              if(pSiS->ForceCRT2Type != CRT2_DEFAULT)
@@ -1191,21 +1209,21 @@ SiSOptions(ScrnInfoPtr pScrn)
           }
        }
 
-      /* CHTVType  (315/330 series only)
+      /* CHTVType  (315/330 series + Chrontel only)
        * Used for telling the driver if the TV output shall
-       * be 480i HDTV or SCART.
+       * be 525i YPbPr or SCART.
        */
        if(pSiS->VGAEngine == SIS_315_VGA) {
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CHTVTYPE);
           if(strptr != NULL) {
              if(!xf86NameCmp(strptr,"SCART"))
                 pSiS->chtvtype = 1;
- 	     else if(!xf86NameCmp(strptr,"HDTV"))
+ 	     else if(!xf86NameCmp(strptr,"YPBPR525I"))
 	        pSiS->chtvtype = 0;
 	     else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "CHTVType");
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	          "Valid parameters are \"SCART\" or \"HDTV\"\n");
+	          "Valid parameters are \"SCART\" or \"YPBPR525I\"\n");
 	     }
              if(pSiS->chtvtype != -1)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
