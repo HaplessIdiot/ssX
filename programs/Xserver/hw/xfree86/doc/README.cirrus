@@ -210,12 +210,11 @@
         improves performance at high dot clocks.
 
      Option ``no_2mb_banksel'' (542x)
-        HERE" This option will cause the driver not to set the `DRAM
-        bank select' bit to enable the upper megabyte of memory on a
-        2Mbyte card. This should be helpful with cards equipped with
-        512Kx8 DRAMs, as opposed to 256Kx4/16 DRAMs, when using a
-        virtual screen configuration that uses more than 1Mbyte of
-        memory.
+        This option will cause the driver not to set the `DRAM bank
+        select' bit to enable the upper megabyte of memory on a 2Mbyte
+        card. This should be helpful with cards equipped with 512Kx8
+        DRAMs, as opposed to 256Kx4/16 DRAMs, when using a virtual
+        screen configuration that uses more than 1Mbyte of memory.
 
      Option ``probe_clocks''
         This option will force probing of dot clocks on the card. This
@@ -260,7 +259,6 @@
         faster.  This can give a performance improvement on a heavily
         CPU-loaded system (e.g. running gcc and other programs at the
         same time) in certain situations.
-
 
      Option ``mmio'' (543x)
         This enables the use of memory-mapped I/O to talk to the BitBLT
@@ -328,6 +326,8 @@
   If you have a 5424/26/28 on VESA local bus, the situation is more
   complicated. There are two different types of cards w.r.t. linear
   addressing:
+
+
   o  Cards that can only map in the lower 16Mb, like cards on the ISA
      bus.  This is most found in older cards (first half 1993). The same
      restrictions apply (i.e. you must have less than 16Mb of memory).
@@ -549,7 +549,7 @@
 
   o  Support for Memory-Mapped I/O on 543x.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.1 1994/12/26 11:03:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.2 1995/01/04 04:40:35 dawes Exp $
 
 
 

@@ -595,9 +595,10 @@
        #if (BSD >= 199103)
 
 
-
-  To ensure that this symbol is correctly defined, include either
-  <X11/Xos.h> (best) or <sys/param.h> in the source that requires it.
+  To ensure that this symbol is correctly defined, include <sys/param.h>
+  in the source that requires it.  Note that the symbol CSRG_BASED is
+  defined for *BSD systems in XFree86 3.1.1 and later.  This should be
+  used to protect the inclusion of <sys/param.h>.
 
   For code that really is specific to a particular i386 BSD port, use
   __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
@@ -621,8 +622,7 @@
 
   o  Simon Cooper and Dirk Hohndel for ideas from the Linux README.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.2 1994/12/26 11:03:23 dawes Exp $
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.3 1995/01/04 04:40:30 dawes Exp $
 
 
 
