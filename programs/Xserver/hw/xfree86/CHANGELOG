@@ -1,4 +1,6 @@
-XFree86 4.3.99.8 (xx June 2003)
+XFree86 4.3.99.9 (xx July 2003)
+
+XFree86 4.3.99.8 (10 July 2003)
  300. X.Org IPv6 changes (Bugzilla #227, Alan Coopersmith, Marc La France).
       See http://www.x.org/IPV6_Specific_Changes.html for details.  This has
       been further modified as follows.
@@ -17293,7 +17295,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2770 2003/07/09 02:15:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2771 2003/07/09 15:27:30 tsi Exp $
 
 
 
