@@ -472,6 +472,20 @@ typedef struct {
 
 #define sz_xRenderFillRectanglesReq		    20
 
+/* 0.5 and higher */
+
+typedef struct {
+    CARD8	reqType;
+    CARD8	renderReqType;
+    CARD16	length B16;
+    Cursor	cid B32;
+    Picture	src B32;
+    CARD16	x B16;
+    CARD16	y B16;
+} xRenderCreateCursorReq;
+
+#define sz_xRenderCreateCursorReq		    16
+
 #undef Window
 #undef Drawable
 #undef Font

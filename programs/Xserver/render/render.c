@@ -42,6 +42,7 @@
 #include "picturestr.h"
 #include "glyphstr.h"
 #include "Xfuncproto.h"
+#include "cursorstr.h"
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
 #endif
@@ -71,6 +72,7 @@ static int ProcRenderAddGlyphsFromPicture (ClientPtr pClient);
 static int ProcRenderFreeGlyphs (ClientPtr pClient);
 static int ProcRenderCompositeGlyphs (ClientPtr pClient);
 static int ProcRenderFillRectangles (ClientPtr pClient);
+static int ProcRenderCreateCursor (ClientPtr pClient);
 
 static int ProcRenderDispatch (ClientPtr pClient);
 
@@ -99,10 +101,11 @@ static int SProcRenderAddGlyphsFromPicture (ClientPtr pClient);
 static int SProcRenderFreeGlyphs (ClientPtr pClient);
 static int SProcRenderCompositeGlyphs (ClientPtr pClient);
 static int SProcRenderFillRectangles (ClientPtr pClient);
+static int SProcRenderCreateCursor (ClientPtr pClient);
 
 static int SProcRenderDispatch (ClientPtr pClient);
 
-#define	RenderNumRequests   (X_RenderFillRectangles+1)
+#define	RenderNumRequests   (X_RenderCreateCursor+1)
 
 int	(*ProcRenderVector[RenderNumRequests])(ClientPtr) = {
     ProcRenderQueryVersion,
@@ -132,6 +135,7 @@ int	(*ProcRenderVector[RenderNumRequests])(ClientPtr) = {
     ProcRenderCompositeGlyphs,
     ProcRenderCompositeGlyphs,
     ProcRenderFillRectangles,
+    ProcRenderCreateCursor,
 };
 
 int	(*SProcRenderVector[RenderNumRequests])(ClientPtr) = {
@@ -162,6 +166,7 @@ int	(*SProcRenderVector[RenderNumRequests])(ClientPtr) = {
     SProcRenderCompositeGlyphs,
     SProcRenderCompositeGlyphs,
     SProcRenderFillRectangles,
+    SProcRenderCreateCursor,
 };
 
 static void
@@ -1233,6 +1238,7 @@ ProcRenderFillRectangles (ClientPtr client)
     int             things;
     REQUEST(xRenderFillRectanglesReq);
     
+    REQUEST_AT_LEAST_SIZE (xRenderFillRectanglesReq);
     if (!PictOpValid (stuff->op))
     {
 	client->errorValue = stuff->op;
@@ -1253,6 +1259,150 @@ ProcRenderFillRectangles (ClientPtr client)
 		    (xRectangle *) &stuff[1]);
     
     return client->noClientException;
+}
+
+static void
+SetBit (unsigned char *line, int x, int bit)
+{
+    unsigned char   mask;
+    
+    if (screenInfo.bitmapBitOrder == LSBFirst)
+	mask = (1 << (x & 7));
+    else
+	mask = (0x80 >> (x & 7));
+    /* XXX assumes byte order is host byte order */
+    if (bit)
+	*line |= mask;
+    else
+	*line &= ~mask;
+}
+
+static int
+ProcRenderCreateCursor (ClientPtr client)
+{
+    REQUEST(xRenderCreateCursorReq);
+    PicturePtr	    pSrc;
+    ScreenPtr	    pScreen;
+    unsigned short  width, height;
+    CARD32	    *argbbits, *argb;
+    unsigned char   *srcbits, *srcline;
+    unsigned char   *mskbits, *mskline;
+    int		    stride;
+    int		    x, y;
+    int		    n;
+    CursorMetricRec cm;
+    CursorPtr	    pCursor;
+
+    REQUEST_SIZE_MATCH (xRenderCreateCursorReq);
+    LEGAL_NEW_RESOURCE(stuff->cid, client);
+    
+    VERIFY_PICTURE (pSrc, stuff->src, client, SecurityReadAccess, 
+		    RenderErrBase + BadPicture);
+    pScreen = pSrc->pDrawable->pScreen;
+    width = pSrc->pDrawable->width;
+    height = pSrc->pDrawable->height;
+    if ( stuff->x > width 
+      || stuff->y > height )
+	return (BadMatch);
+    argbbits = xalloc (width * height * sizeof (CARD32));
+    if (!argbbits)
+	return (BadAlloc);
+    
+    stride = BitmapBytePad(width);
+    n = stride*height;
+    srcbits = (unsigned char *)xalloc(n);
+    if (!srcbits)
+    {
+	xfree (argbbits);
+	return (BadAlloc);
+    }
+    mskbits = (unsigned char *)xalloc(n);
+    if (!mskbits)
+    {
+	xfree(argbbits);
+	xfree(srcbits);
+	return (BadAlloc);
+    }
+
+    if (pSrc->format == PICT_a8r8g8b8)
+    {
+	(*pScreen->GetImage) (pSrc->pDrawable,
+			      0, 0, width, height, ZPixmap,
+			      0xffffffff, (pointer) argbbits);
+    }
+    else
+    {
+	PixmapPtr	pPixmap;
+	PicturePtr	pPicture;
+	PictFormatPtr	pFormat;
+	int		error;
+
+	pFormat = PictureMatchFormat (pScreen, 32, PICT_a8r8g8b8);
+	if (!pFormat)
+	{
+	    xfree (argbbits);
+	    xfree (srcbits);
+	    xfree (mskbits);
+	    return (BadImplementation);
+	}
+	pPixmap = (*pScreen->CreatePixmap) (pScreen, width, height, 32);
+	if (!pPixmap)
+	{
+	    xfree (argbbits);
+	    xfree (srcbits);
+	    xfree (mskbits);
+	    return (BadAlloc);
+	}
+	pPicture = CreatePicture (0, &pPixmap->drawable, pFormat, 0, 0, 
+				  client, &error);
+	if (!pPicture);
+	{
+	    xfree (argbbits);
+	    xfree (srcbits);
+	    xfree (mskbits);
+	    return error;
+	}
+	(*pScreen->DestroyPixmap) (pPixmap);
+	CompositePicture (PictOpSrc,
+			  pSrc, 0, pPicture,
+			  0, 0, 0, 0, 0, 0, width, height);
+	(*pScreen->GetImage) (pPicture->pDrawable,
+			      0, 0, width, height, ZPixmap,
+			      0xffffffff, (pointer) argbbits);
+	FreePicture (pPicture, 0);
+    }
+    /*
+     * Convert argb image to black/white cursor and mask
+     */
+    bzero ((char *) mskbits, n);
+    bzero ((char *) srcbits, n);
+    srcline = srcbits;
+    mskline = mskbits;
+    argb = argbbits;
+    for (y = 0; y < height; y++)
+    {
+	for (x = 0; x < width; x++)
+	{
+	    CARD32  p = *argb++;
+	    
+	    /* >= 50% opaque gets a 1 mask bit */
+	    SetBit (mskline, x, p >= 0x80000000);
+	    /* >= 50% Y gets a 1 source bit */
+	    SetBit (srcline, x, CvtR8G8B8toY15(p) >= 0x4000);
+	}
+	srcline += stride;
+	mskline += stride;
+    }
+    cm.width = width;
+    cm.height = height;
+    cm.xhot = stuff->x;
+    cm.yhot = stuff->y;
+    pCursor = AllocCursorARGB (srcbits, mskbits, argbbits, &cm,
+			       0xffff, 0xffff, 0xffff,
+			       0x0000, 0x0000, 0x0000);
+    if (pCursor && AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
+	return (client->noClientException);
+    return BadAlloc;
 }
 
 static int
@@ -1585,8 +1735,9 @@ static int
 SProcRenderFillRectangles (ClientPtr client)
 {
     register int n;
-    
     REQUEST(xRenderFillRectanglesReq);
+
+    REQUEST_AT_LEAST_SIZE (xRenderFillRectanglesReq);
     swaps(&stuff->length, n);
     swapl(&stuff->dst, n);
     swaps(&stuff->color.red, n);
@@ -1594,6 +1745,21 @@ SProcRenderFillRectangles (ClientPtr client)
     swaps(&stuff->color.blue, n);
     swaps(&stuff->color.alpha, n);
     SwapRestS(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
+}
+    
+static int
+SProcRenderCreateCursor (ClientPtr client)
+{
+    register int n;
+    REQUEST(xRenderCreateCursorReq);
+    REQUEST_SIZE_MATCH (xRenderCreateCursorReq);
+    
+    swaps(&stuff->length, n);
+    swapl(&stuff->cid, n);
+    swapl(&stuff->src, n);
+    swaps(&stuff->x, n);
+    swaps(&stuff->y, n);
     return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
     
@@ -1629,7 +1795,6 @@ SProcRenderDispatch (ClientPtr client)
 } \
 
 int	    (*PanoramiXSaveRenderVector[RenderNumRequests])(ClientPtr);
-extern int  XineramaDeleteResource(pointer data, XID id);
 
 unsigned long	XRT_PICTURE;
 

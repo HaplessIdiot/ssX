@@ -106,6 +106,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          SRCS = Xrender.c \
                 Color.c \
                 Composite.c \
+                Cursor.c \
                 Glyph.c \
                 Picture.c \
                 FillRect.c \
@@ -117,6 +118,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          OBJS = Xrender.o \
                 Color.o \
                 Composite.o \
+                Cursor.o \
                 Glyph.o \
                 Picture.o \
                 FillRect.o \

@@ -66,6 +66,9 @@ typedef struct _CursorBits {
     unsigned short width, height, xhot, yhot;	/* metrics */
     int refcnt;					/* can be shared */
     pointer devPriv[MAXSCREENS];		/* set by pScr->RealizeCursor*/
+#ifdef ARGB_CURSOR
+    CARD32 *argb;				/* full-color alpha blended */
+#endif
 } CursorBits, *CursorBitsPtr;
 
 typedef struct _Cursor {

@@ -436,6 +436,12 @@ XRenderParseColor(Display	*dpy,
 		  char		*spec,
 		  XRenderColor	*def);
 
+Cursor
+XRenderCreateCursor (Display	    *dpy,
+		     Picture	    source,
+		     unsigned int   x,
+		     unsigned int   y);
+
 _XFUNCPROTOEND
 
 #endif /* _XRENDER_H_ */

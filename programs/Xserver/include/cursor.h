@@ -54,6 +54,9 @@ SOFTWARE.
 
 #define NullCursor ((CursorPtr)NULL)
 
+/* Provide support for alpha composited cursors */
+#define ARGB_CURSOR
+
 typedef struct _Cursor *CursorPtr;
 typedef struct _CursorMetric *CursorMetricPtr;
 
@@ -75,6 +78,21 @@ extern CursorPtr AllocCursor(
 #if NeedFunctionPrototypes
     unsigned char* /*psrcbits*/,
     unsigned char* /*pmaskbits*/,
+    CursorMetricPtr /*cm*/,
+    unsigned /*foreRed*/,
+    unsigned /*foreGreen*/,
+    unsigned /*foreBlue*/,
+    unsigned /*backRed*/,
+    unsigned /*backGreen*/,
+    unsigned /*backBlue*/
+#endif
+);
+
+extern CursorPtr AllocCursorARGB(
+#if NeedFunctionPrototypes
+    unsigned char* /*psrcbits*/,
+    unsigned char* /*pmaskbits*/,
+    CARD32* /*argb*/,
     CursorMetricPtr /*cm*/,
     unsigned /*foreRed*/,
     unsigned /*foreGreen*/,

@@ -1059,6 +1059,32 @@ CompositeGlyphs32
 		for each glyph
 			Combine (op, dst, source, glyph)
 
+CreateCursor
+
+	cid:		CURSOR
+	source:		PICTURE
+	x, y:		CARD16
+
+	Errors:		Alloc, IDChoice, Match, Picture
+
+	This request creates a cursor and associates identifier cid with it.
+	The x and y coordinates define the hotspot relative to the source's
+	origin and must be a point within the source (or a Match error
+	results).  The resulting picture will nominally be drawn to the
+	screen with PictOpOver. 
+	
+	The components of the cursor may be transformed arbitrarily to meet
+	display limitations.  In particular, if the display supports only
+	two colors cursors without translucency, the cursor will be
+	transformed so that areas less than .5 alpha will be transparent,
+	else opaque, and areas darker than 50% gray will be black else white.
+
+	The source picture can be freed immediately if no further explicit
+	references to them are to be made.
+
+	Subsequent drawing in the source has an undefined effect on the
+	cursor.  The server might or might not make a copy of the picture.
+
 14. Extension Versioning
 
 The Render extension was developed in parallel with the implementation to
@@ -1093,3 +1119,6 @@ what each version before 1.0 implemented:
 		Triangles
 		TriStrip
 		TriFan
+
+	0.5:
+		CreateCursor
