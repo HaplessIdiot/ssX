@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.40tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.41 2003/08/29 20:49:03 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -366,7 +366,7 @@ typedef struct pci_bus_funcs {
 	 * to be performed generically.
 	 */
 	CARD16  (*pciControlBridge)(int, CARD16, CARD16);
-	void    (*pciGetBridgeBusses)(int, int *, int *, int *);
+	void    (*pciGetBridgeBuses)(int, int *, int *, int *);
 	/* Use pointer's to avoid #include recursion */
 	void    (*pciGetBridgeResources)(int, pointer *, pointer *, pointer *);
 } pciBusFuncs_t, *pciBusFuncs_p;

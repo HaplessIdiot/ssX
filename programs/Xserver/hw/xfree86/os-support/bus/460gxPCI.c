@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/460gxPCI.c,v 1.2 2003/01/10 22:05:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/460gxPCI.c,v 1.3 2003/07/17 15:08:22 tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -122,7 +122,7 @@ Control460GXBridge(int bus, CARD16 mask, CARD16 value)
  * host bridges.
  */
 static void
-Get460GXBridgeBusses(int bus, int *primary, int *secondary, int *subordinate)
+Get460GXBridgeBuses(int bus, int *primary, int *secondary, int *subordinate)
 {
     pciConfigPtr pPCI = Verify460GXBus(bus);
     int i;
@@ -324,7 +324,7 @@ xf86PreScan460GX(void)
     }
 
     /*
-     * The 460GX spec says that any access to busses higher than CBN will be
+     * The 460GX spec says that any access to buses higher than CBN will be
      * master-aborted.  It seems possible however that this is not the case in
      * all 460GX implementations.  For now, limit the bus scan to CBN, unless
      * we have already found a higher bus number.
@@ -354,7 +354,7 @@ xf86PostScan460GX(void)
     /* Set up our extra bus functions */
     BusFuncs_460gx = *(pciBusInfo[0]->funcs);
     BusFuncs_460gx.pciControlBridge = Control460GXBridge;
-    BusFuncs_460gx.pciGetBridgeBusses = Get460GXBridgeBusses;
+    BusFuncs_460gx.pciGetBridgeBuses = Get460GXBridgeBuses;
     BusFuncs_460gx.pciGetBridgeResources = Get460GXBridgeResources;
 
     /*

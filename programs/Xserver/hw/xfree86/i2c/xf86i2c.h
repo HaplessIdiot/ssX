@@ -2,7 +2,7 @@
  *  Copyright (C) 1998 Itai Nahshon, Michael Schimek
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.9 2003/05/05 21:18:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.10 2003/07/16 01:38:47 dawes Exp $ */
 #ifndef _XF86I2C_H
 #define _XF86I2C_H
 
@@ -52,7 +52,7 @@ I2CBusPtr 	xf86CreateI2CBusRec(void);
 void      	xf86DestroyI2CBusRec(I2CBusPtr pI2CBus, Bool unalloc, Bool devs_too);
 Bool      	xf86I2CBusInit(I2CBusPtr pI2CBus);
 I2CBusPtr 	xf86I2CFindBus(int scrnIndex, char *name);
-int		xf86I2CGetScreenBusses(int scrnIndex, I2CBusPtr **pppI2CBus);
+int		xf86I2CGetScreenBuses(int scrnIndex, I2CBusPtr **pppI2CBus);
 
 
 /* I2C slave devices */

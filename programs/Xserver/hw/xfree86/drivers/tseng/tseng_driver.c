@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.92 2003/04/23 21:51:50 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.93 2003/08/23 16:09:21 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -786,7 +786,7 @@ ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev)
  *      determine bus interface type
  *      (also determines Lin Mem address mask, because that depends on bustype)
  *
- * We don't need to bother with PCI busses here: TsengPreInitPCI() took care
+ * We don't need to bother with PCI buses here: TsengPreInitPCI() took care
  * of that. This code isn't called if it's a PCI bus anyway.
  */
 
@@ -883,7 +883,7 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn)
     }
 }
 
-/* The TsengPreInit() part for non-PCI busses */
+/* The TsengPreInit() part for non-PCI buses */
 static Bool
 TsengPreInitNoPCI(ScrnInfoPtr pScrn)
 {
