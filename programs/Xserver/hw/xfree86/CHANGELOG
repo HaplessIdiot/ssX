@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+  98. The XKB version of XRefreshKeyboardMapping() had an UnlockDisplay()
+      call without a preceding LockDisplay() call (Yoel Perl).
   97. Xlib cleanups and fixes, including:
        - Fixed up any old style function defintions that raised warnings.
        - Fixed functions with no parameter or return value.
@@ -16761,4 +16763,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2631 2003/04/12 17:18:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2632 2003/04/13 19:27:43 dawes Exp $
