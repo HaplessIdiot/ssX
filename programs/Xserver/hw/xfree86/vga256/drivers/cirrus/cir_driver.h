@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.7 1994/09/17 04:07:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.8 1994/10/20 06:11:25 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -148,6 +148,11 @@ extern void CirrusMMIOBLTImageWrite();
 extern void CirrusBLTImageRead();
 extern void CirrusBLTWriteBitmap();
 extern void CirrusMMIOBLTWriteBitmap();
+
+/* Functions defined in cir_bitblt16.c: */
+extern RegionPtr Cirrus16CopyArea();
+extern RegionPtr Cirrus32CopyArea();
+extern void CirrusCopyWindow();
 
 _XFUNCPROTOEND
 

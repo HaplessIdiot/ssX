@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.2 1994/08/01 12:15:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.3 1994/08/20 07:36:29 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -116,7 +116,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 #endif
 	if (1)
 	{
-	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
+	    if (pGC->alu == GXcopy && (pGC->planemask & 0xFF) == 0xFF)
 		/* BoxFill = cfbFillRectTile32Copy; */
 		BoxFill = CirrusFillRectTile;
 	    else

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.18 1994/10/20 06:11:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.19 1994/10/23 13:00:56 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -330,10 +330,10 @@ static int cirrusClockLimit[] = {
   85500,	/* 5426 */
   85500,	/* 5428 */
   85500,	/* 5429 */
-  45100,	/* 6205 */
-  45100,	/* 6215 */
-  45100,	/* 6225 */
-  45100,	/* 6235 */
+  65100,	/* 6205  The 62x5 are speced for 65 MHz at 5V, and */
+  65100,	/* 6215  40 MHz at 3.3V. */
+  65100,	/* 6225 */
+  65100,	/* 6235 */
   85500,	/* 5434 */
   85500		/* 5430 */
 #else 
@@ -729,6 +729,16 @@ cirrusProbe()
 	       return(FALSE);
 	       break;
 	       }
+	  
+	  if (cirrusChip == CLGD5430 || cirrusChip == CLGD5434) {
+	      /* Write sane value to Display Compression Control */
+	      /* Register, which may be corrupted by pvga1 driver */
+	      /* probe. */
+	      outb(0x3ce, 0x0f);
+	      temp = inb(0x3cf) & 0xc0;
+	      outb(0x3cf, temp);
+	  }
+
 	  }
      
      /* OK, we are a Cirrus */
@@ -1079,8 +1089,8 @@ cirrusProbe()
 
 #ifndef MONOVGA
 
-extern GCOps cfb16TEOps1Rect, cfb16TEOps;
-extern GCOps cfb32TEOps1Rect, cfb32TEOps;
+extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
+extern GCOps cfb32TEOps1Rect, cfb32TEOps, cfb32NonTEOps1Rect, cfb32NonTEOps;
 
 #endif
 
@@ -1141,15 +1151,16 @@ cirrusFbInit()
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
       HAVE543X())
       {
-      unsigned char SRF;
+      unsigned char SRF, SR1F;
       outb(0x3c4, 0x0f);
       SRF = inb(0x3c5);
       outb(0x3c4, 0x1f);
+      SR1F = inb(0x3c5);
       if (xf86Verbose)
           ErrorF(
               "%s %s: %s: Internal memory clock register is 0x%02x (%s RAS)\n",
               XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
-              inb(0x3c5), (SRF & 4) ? "Standard" : "Extended");
+              SR1F & 0x3f, (SRF & 4) ? "Standard" : "Extended");
       
       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
           {
@@ -1162,7 +1173,8 @@ cirrusFbInit()
       	   * The BIOS default usually is 0x1c (50 MHz).
       	   * On one card tested, with 80ns DRAM, 0x26 seems stable.
       	   */
-	  outw(0x3c4, 0x221f);		/* Set to 0x22 (about 62 MHz). */
+      	  outb(0x3c4, 0x1f);
+      	  outb(0x3c5, (SR1F & 0xc0) | 0x22); /* Set to 0x22 (about 62 MHz). */
 	  if (xf86Verbose)
               ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
@@ -1170,7 +1182,8 @@ cirrusFbInit()
 
       if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
           {
-          outw(0x3c4, 0x1c1f);		/* Set to 0x1c (50.1 MHz). */
+          outb(0x3c4, 0x1f);
+          outb(0x3c5, (SR1F & 0xc0) | 0x1c);	/* Set to 0x1c (50.1 MHz). */
           if (xf86Verbose)
               ErrorF("%s %s: %s: Internal memory clock register set to 0x1c\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
@@ -1178,7 +1191,8 @@ cirrusFbInit()
 
       if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
           {
-          outw(0x3c4, 0x1f1f);		/* Set to 0x1f. */
+          outb(0x3c4, 0x1f);
+          outb(0x3c5, (SR1F & 0xc0) | 0x1f);	/* Set to 0x1f. */
           if (xf86Verbose)
               ErrorF("%s %s: %s: Internal memory clock register set to 0x1f\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
@@ -1345,10 +1359,20 @@ nolinear:
 	    if (vgaBitsPerPixel == 16) {
 		cfb16TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
 	        cfb16TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+        	cfb16TEOps1Rect.CopyArea = Cirrus16CopyArea;
+        	cfb16NonTEOps1Rect.CopyArea = Cirrus16CopyArea;
+        	cfb16TEOps.CopyArea = Cirrus16CopyArea;
+        	cfb16NonTEOps.CopyArea = Cirrus16CopyArea;
+/*	        xf86Info.currentScreenCopyWindow = CirrusCopyWindow; */
 	    }
 	    if (vgaBitsPerPixel == 32) {
 		cfb32TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
 	        cfb32TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+        	cfb32TEOps1Rect.CopyArea = Cirrus32CopyArea;
+        	cfb32NonTEOps1Rect.CopyArea = Cirrus32CopyArea;
+        	cfb32TEOps.CopyArea = Cirrus32CopyArea;
+        	cfb32NonTEOps.CopyArea = Cirrus32CopyArea;
+/*	        xf86Info.currentScreen->CopyWindow = CirrusCopyWindow; */
 	    }
             if (OFLG_ISSET(OPTION_FAVOUR_BITBLT, &vga256InfoRec.options))
                 /* Use BitBLT engine in more cases. */
@@ -2025,8 +2049,14 @@ cirrusInit(mode)
       * the VCLK at pixel rate and the same CRTC timings as 8bpp (i.e.
       * nicely compatible).
       */
-     if (vgaBitsPerPixel == 8)
-         new->SR7 = 0x01;		/* Tell it to use 256 Colors */
+     if (vgaBitsPerPixel == 8) {
+#ifdef ALLOW_8BPP_MULTIPLEXING
+         if (multiplexing)
+             new->SR7 = 0x07;	/* 5434 palette clock doubling mode */
+         else
+#endif
+             new->SR7 = 0x01;	/* Tell it to use 256 Colors */
+     }
      if (vgaBitsPerPixel == 16) {
          if (cirrusChip <= CLGD5424)
              /* Use the double VCLK mode. */
@@ -2125,7 +2155,7 @@ VirtX = %x\n",
 
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
-         new->HIDDENDAC = 0x4a;
+         new->HIDDENDAC = 0x6a;
          mode->HDisplay <<= 1;	/* Restore horizontal timing values. */
          mode->HSyncStart <<= 1;
          mode->HTotal <<= 1;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.44 1994/10/20 06:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.45 1994/10/23 12:58:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -917,8 +917,10 @@ s3Probe()
 	 case SC15025_DAC:
 	    break;
 	 case TI3020_DAC:
-	    if (s3Bpp > 1)
-	       reason = "a TI3020 RAMDAC";
+	    if (!OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options)) {
+	       if (s3Bpp > 1)
+		  reason = "a TI3020 RAMDAC";
+	    }
 	    break;
 	 case TI3025_DAC:
 	    break;
@@ -1224,6 +1226,9 @@ s3Probe()
       }
       break;
    case TI3020_DAC:
+      clockDoublingPossible = TRUE;
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed; /* looks like the same limit */
+      break;                                   /* for all bpp's... */
    case TI3025_DAC:
       if (s3Bpp == 1)	/* XXXX is this right?? */
 	 clockDoublingPossible = TRUE;
@@ -1315,16 +1320,25 @@ s3Probe()
 	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3020_DAC:
-	 case TI3025_DAC:
-	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    switch (s3Bpp) {
+	    case 1:
+	       break;
+	    case 2:
+	       s3InfoRec.clock[j] /= 2;
+	       clocksChanged = TRUE;
+	       break;
+	    case 4:
+	       s3InfoRec.clock[j] /= 4;
+	       clocksChanged = TRUE;
+	       break;
+	    }
 	    break;
 	 case ATT20C498_DAC:
 	 case STG1700_DAC:	/* XXXX should this be here? */
-	 case S3_SDAC_DAC:	/* XXXX should this be here? */
 	    switch (s3Bpp) {
 	    case 1:
 	       /*
-	        * This one depend on pixel multiplexing for 8bpp.
+	        * This one depends on pixel multiplexing for 8bpp.
 	        * Although existing code implies it depends on ramdac
 	        * clock doubling instead (are the two tied together?)
 	        * Hopefully no 498s are used with non-programable clocks
@@ -1350,6 +1364,14 @@ s3Probe()
 	       s3InfoRec.clock[j] /= s3Bpp;
 	       clocksChanged = TRUE;
 	    }
+	    break;
+	 case TI3025_DAC:
+	 case S3_SDAC_DAC:
+	 case S3_GENDAC_DAC:
+	    /*
+	     * We should never get here since these have a programmable
+	     * clock built in.
+	     */
 	    break;
 	 default:
 	    /* Do nothing */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.32 1994/10/20 06:08:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.33 1994/10/23 12:58:18 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1308,10 +1308,15 @@ s3Init(mode)
 	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_W_CMPL);
          } else {
 	    /* set aux control to self clocked, window function complement */
-	    s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
+	    if (s3InfoRec.bitsPerPixel > 8)
+	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
+            else
+	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
 		          TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL);
          }
 	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+   	    int vclock,rclock;
+
 	    /*
 	     * The 964 needs different VCLK division depending on the 
 	     * clock frequenzy used. VCLK/1 for 0-60MHz, VCLK/2 for
@@ -1324,21 +1329,24 @@ s3Init(mode)
 	     * (964 uses always 8:1 in 256 color modes)
 	     */
 	    if (s3InfoRec.clock[mode->Clock] > 120000) {
-	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x01);
+	       vclock = TI_OCLK_S_V4;
 	    } else if (s3InfoRec.clock[mode->Clock] > 60000){
-	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R8);
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x02);
+	       vclock = TI_OCLK_S_V2;
             } else {
-	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V1_R8);
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x03);
+	       vclock = TI_OCLK_S_V1;
             }
+	    if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
+               rclock = TI_OCLK_S_R2;
+            } else if ((s3InfoRec.bitsPerPixel == 16) ||
+                       (s3InfoRec.bitsPerPixel == 15)) {  /* 15/16bpp */
+               rclock = TI_OCLK_S_R4;
+            } else {
+               rclock = TI_OCLK_S_R8;
+            }
+            s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, 0x40 | vclock | rclock);
+            outb(vgaCRIndex, 0x66);
+            tmp = inb(vgaCRReg);
+            outb(vgaCRReg, (tmp & 0xf8) | ((rclock - (vclock >> 3)) & 7));
 	 } else if (DAC_IS_TI3025) {
 	    if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R2);

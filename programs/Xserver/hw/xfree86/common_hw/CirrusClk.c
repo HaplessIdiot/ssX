@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.0 1994/10/20 06:09:41 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -56,7 +56,7 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 
 	/* Calculate the MCLK. */
 	outb(0x3c4, 0x0f);
-	mclk = 14318 * inb(0x3c5) / 8;
+	mclk = 14318 * (inb(0x3c5) & 0x3f) / 8;
 	/*
 	 * Favour MCLK as VLCK if it matches as good as the found clock,
 	 * or if it is within 0.2 MHz of the request clock. A VCLK close

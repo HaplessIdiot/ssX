@@ -1,4 +1,7 @@
-XFree86 3.1.0b (29 October 1994)
+XFree86 3.1.0b (30 October 1994)
+ 54. 16/32bpp support for Elsa Winner2000Pro (964+Ti3020) (Dirk Hohndel).
+ 53. Update to cirrus programmable clock code (Harm Hanemaayer).
+ 52. Accelerated 16/32bpp bitblt for the Cirrus driver (Harm Hanemaayer).
  51. The vgawonder driver will now attempt to determine what the board uses to
      generate clocks (Marc Aurele La France).
  50. Allow mode flags to specify composite sync polarity (Marc Aurele
