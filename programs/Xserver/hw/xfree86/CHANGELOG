@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 718. Fix for symbols/hr map (#5991, Vlatko Kosturjak).
  717. The current VIA DRI driver isn't remotely compatible with the current
       code, so make sure it isn't loaded by requiring version 2.0.0 or later
       (Alan Cox).
@@ -39,7 +40,7 @@ XFree86 4.3.99.903 (xx December 2003)
       - Add Shift+CapsLock group switcher (Ivan Pascal, see Bugzilla #1025).
       - Update rules/xfree86.lst with missing descriptions (Ivan Pascal).
  709. Build fix for Solaris Express (Bugzilla #1032, Alan Coopersmith).
- 708. Fix warning in lib/Xt/Alloc.c (Bugzilla #1035, Nicolas Jolly).
+ 708. Fix warning in lib/Xt/Alloc.c (Bugzilla #1035, Nicolas Joly).
  707. Fix short overflow problem with box clipping in fb/fbcopy.c
       (Bugzilla #978, Stephen McCamant).
  706. Fix logic in xterm's get_pty() for platforms where old-style pty's are
@@ -18454,7 +18455,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3065 2003/12/31 05:45:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3066 2003/12/31 05:47:38 dawes Exp $
 
 
 
