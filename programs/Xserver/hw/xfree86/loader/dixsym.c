@@ -93,6 +93,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(dispatchException)
   SYMVAR(isItTimeToYield)
   SYMVAR(ClientStateCallback)
+  SYMVAR(ServerGrabCallback)
   /* dixfonts.c */
   SYMFUNC(CloseFont)
   SYMFUNC(FontToXError)
