@@ -1,4 +1,6 @@
-XFree86 4.4.99.902 (xx February 2005)
+XFree86 4.4.99.903 (xx February 2005)
+
+XFree86 4.4.99.902 (20 February 2005)
  338. Fix bad external symbols in the sis driver (David Dawes).
  337. Build fix for when XKB is disabled (Bugzilla #1551, reported by
       David Yerger).
@@ -19404,7 +19406,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3446 2005/02/18 22:38:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3447 2005/02/19 01:03:22 dawes Exp $
 
 
 
