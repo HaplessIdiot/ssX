@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.3 2000/03/21 21:29:47 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.4 2000/03/21 21:48:35 dawes Exp $ */
 
 
 /* TO DO ****
@@ -286,7 +286,7 @@ int fIP=0;
 
 /* case insensitive versions of strcmp and strncmp */
 
-int
+static int
 stricmp(const char *s1, const char *s2) {
 	assert(s1!=NULL && s2!=NULL);
 	/*strincmp(s1, s2, strlen(s1)+1);*/
@@ -300,9 +300,12 @@ stricmp(const char *s1, const char *s2) {
 	else return 1;
 }
 
-int lcexceptionscmp(const char **a, const char **b) { return stricmp(*a, *b); }
+static int
+lcexceptionscmp(const void *a, const void *b) {
+	return stricmp(*(char **)a, *(char **)b);
+}
 
-int
+static int
 strincmp(const char *s1, const char *s2, size_t n) {
 	assert(s1!=NULL && s2!=NULL && n>0);
 
@@ -315,7 +318,7 @@ strincmp(const char *s1, const char *s2, size_t n) {
 }
 
 /* compare string and a colon-separated list of strings */
-int
+static int
 strcoloncmp2(char *candidate, int end, const char *list, int sen) {
 	const char *l = list;
 	char *c,c2;
@@ -350,7 +353,7 @@ strcoloncmp2(char *candidate, int end, const char *list, int sen) {
 	return 0;
 }
 
-int
+static int
 strcoloncmp(char *candidate, int end, const char *list) {
 	int sen=1;
 	const char *l = list;
@@ -365,8 +368,8 @@ strcoloncmp(char *candidate, int end, const char *list) {
 }
 
 /* strdup not universally available */
-char *
-mystrdup(char *p) {
+static char *
+mystrdup(const char *p) {
   char *q;
 
   if (p==NULL) return NULL;
@@ -381,7 +384,8 @@ mystrdup(char *p) {
    if word in exceptions list, return exception conversion
    else uc first letter, lc rest
 */
-void casify(char *p) {
+static void
+casify(char *p) {
 	char tmpch, *q, **exp;
 	int fuc;
 
@@ -406,7 +410,7 @@ void casify(char *p) {
 
 /* add an attribute tag to a range of characters */
 
-void
+static void
 tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last) {
 	assert(type!=NOTAG);
 
@@ -425,7 +429,7 @@ tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last)
    (probably few enough malloc's that more sophistication is unnecessary)
 */
 
-void
+static void
 tocadd(char *text, enum command type, int line) {
 	char *r;
 
@@ -449,7 +453,7 @@ char *manRef = MANREFPRINTF;
 char *href;
 int fmanRef=1;	/* make 'em links or just show 'em? */
 
-void
+static void
 manrefextract(char *p) {
   char *p0;
   static char *nonhref = "\">'";
@@ -480,7 +484,7 @@ manrefextract(char *p) {
  *    *** does this save significant space? ***
  */
 
-void
+static void
 formattedonly(void) {
 	fprintf(stderr, "The output formats for Tk and TkMan require nroff-formatted input\n");
 	exit(1);
@@ -490,7 +494,7 @@ formattedonly(void) {
 /*
  * DefaultFormat -- in weak OO inheritance, top of hierarchy for everybody
  */
-void
+static void
 DefaultFormat(enum command cmd) {
   int i;
   
@@ -510,7 +514,7 @@ DefaultFormat(enum command cmd) {
  * for output format to "inherit", have "default: DefaultLine(cmd)" and override case statement "methods"
  */
 
-void
+static void
 DefaultLine(enum command cmd) {
 	switch (cmd) {
 	default:
@@ -523,7 +527,7 @@ DefaultLine(enum command cmd) {
  * DefaultPara -- top of hierarchy for output formats that are formatted by their viewers
  */
 
-void
+static void
 DefaultPara(enum command cmd) {
 	switch (cmd) {
 	default:
@@ -537,7 +541,7 @@ DefaultPara(enum command cmd) {
  * Tk -- just emit list of text-tags pairs
  */
 
-void
+static void
 Tk(enum command cmd) {
 	static int skip=0;	/* skip==1 when line has no text */
 	int i;
@@ -719,7 +723,7 @@ int rebuscnt=0, rebus[MAXLINES];
 int rebuspatcnt=0, rebuspatlen[25];
 char *rebuspat[25];
 
-void
+static void
 TkMan(enum command cmd) {
 	static int lastscnt=-1;
 	static int lastlinelen=-1;
@@ -843,7 +847,7 @@ TkMan(enum command cmd) {
  * ASCII
  */
 
-void
+static void
 ASCII(enum command cmd) {
 	int i;
 
@@ -940,7 +944,7 @@ ASCII(enum command cmd) {
  * Perl 5 pod ("plain old documentation")
  */
 
-void
+static void
 pod(enum command cmd) {
 	static int curindent=0;
 	int i;
@@ -1092,7 +1096,7 @@ pod(enum command cmd) {
 
 
 
-void
+static void
 Sections(enum command cmd) {
 
 	switch (cmd) {
@@ -1165,7 +1169,7 @@ Sections(enum command cmd) {
 
 
 
-void
+static void
 Roff(enum command cmd) {
 	switch (cmd) {
 	   case BEGINDOC:
@@ -1277,7 +1281,7 @@ Roff(enum command cmd) {
  * Ensemble
  */
 
-void
+static void
 EnsembleDumpTags(void) {
 	int i,tag;
 	int fI=0, fB=0;
@@ -1323,7 +1327,7 @@ EnsembleDumpTags(void) {
 	tagc=0;
 }
 
-void
+static void
 Ensemble(enum command cmd) {
 
 	switch (cmd) {
@@ -1443,7 +1447,7 @@ Ensemble(enum command cmd) {
  * HTML
  */
 
-void
+static void
 HTML(enum command cmd) {
 	static int pre=0;
 	int i;
@@ -1746,11 +1750,10 @@ HTML(enum command cmd) {
 
 /*char *docbookpath = "docbook.dtd";*/
 
-void
+static void
 SGML(enum command cmd) {
 	static int pre=0;
 	int i;
-	int lasttoc;
 	char *p;
 	static int fRefEntry=0;
 	static int fRefPurpose=0;
@@ -1982,11 +1985,10 @@ SGML(enum command cmd) {
  * GNU Texinfo -- somebody should finish this up
  */
 
-void
+static void
 Texinfo(enum command cmd) {
 	static int pre=0;
 	int i;
-	int lasttoc;
 
 	/* always respond to these signals */
 	switch (cmd) {
@@ -2257,7 +2259,7 @@ Texinfo(enum command cmd) {
 
 /* generates MIME compliant to RFC 1563 */
 
-void
+static void
 MIME(enum command cmd) {
 	static int pre=0;
 	int i;
@@ -2294,7 +2296,9 @@ MIME(enum command cmd) {
 	   case CHARBACKSLASH:	/* these should be caught as escaped chars */
 	   case CHARGT:
 	   case CHARLT:
+#if 0
 		assert(1);
+#endif
 		break;
 	   default:
 		break;
@@ -2455,7 +2459,7 @@ MIME(enum command cmd) {
  * LaTeX
  */
 
-void
+static void
 LaTeX(enum command cmd) {
 
 	switch (cmd) {
@@ -2585,7 +2589,7 @@ LaTeX(enum command cmd) {
 }
 
 
-void
+static void
 LaTeX2e(enum command cmd) {
 
 	switch (cmd) {
@@ -2626,7 +2630,7 @@ LaTeX2e(enum command cmd) {
 
 /* RTF could use more work */
 
-void
+static void
 RTF(enum command cmd) {
 
 	switch (cmd) {
@@ -2764,14 +2768,14 @@ RTF(enum command cmd) {
  * pointers to existing tools
  */
 
-void
+static void
 PostScript(enum command cmd) {
 	fprintf(stderr, "Use groff or psroff to generate PostScript.\n");
 	exit(1);
 }
 
 
-void
+static void
 FrameMaker(enum command cmd) {
 	fprintf(stderr, "FrameMaker comes with filters that convert from roff to MIF.\n");
 	exit(1);
@@ -2797,7 +2801,7 @@ FrameMaker(enum command cmd) {
 
 int Psect=0, Psub=0, Pbp=0, Pbt=0, Pb=0, Pbul=0;
 
-void
+static void
 pop(enum command cmd) {
 	assert(cmd==ENDINDENT || cmd==BEGINBULLET || cmd==BEGINBULTXT || cmd==BEGINBULPAIR || cmd==BEGINBODY || cmd==BEGINSECTION || cmd==BEGINSUBSECTION || cmd==ENDDOC);
 /*
@@ -2836,7 +2840,7 @@ pop(enum command cmd) {
 }
 
 
-void
+static void
 poppush(enum command cmd) {
 	assert(cmd==ENDINDENT || cmd==BEGINBULLET || cmd==BEGINBULTXT || cmd==BEGINBULPAIR || cmd==BEGINBODY || cmd==BEGINSECTION || cmd==BEGINSUBSECTION);
 
@@ -2865,7 +2869,7 @@ poppush(enum command cmd) {
 
 /* wrapper for getchar() that expands tabs, and sends maximum of n=40 consecutive spaces */
 
-int
+static int
 getchartab(void) {
 	static int tabexp = 0;
 	static int charinline = 0;
@@ -2896,7 +2900,7 @@ getchartab(void) {
 
 
 /* replace gets.  handles hyphenation too */
-char *
+static char *
 la_gets(char *buf) {
 	static char la_buf[MAXBUF];	/* can lookahead a full line, but nobody does now */
 	static int fla=0, hy=0;
@@ -2966,7 +2970,7 @@ la_gets(char *buf) {
 char phrase[MAXBUF];	/* first "phrase" (space of >=3 spaces) */
 int phraselen;
 
-void
+static void
 filterline(char *buf, char *plain) {
 	char *p,*q,*r;
 	char *ph;
@@ -3233,7 +3237,7 @@ filterline(char *buf, char *plain) {
 int fHead=0;
 int fFoot=0;
 
-void
+static void
 preformatted_filter(void) {
 	const int MINRM=50;		/* minimum column for right margin */
 	const int MINMID=20;
@@ -3552,7 +3556,7 @@ preformatted_filter(void) {
 			if (!fcont && fcharout) {
 				if (strchr(escchars,c)!=NULL) {
 					putchar('\\'); putchar(c); I++;
-				} else if (strchr(trouble,c)!=NULL) {
+				} else if (strchr((char *)trouble,c)!=NULL) {
 					(*fn)(c); fcont=1;
 				} else {
 					putchar(c); I++;
@@ -3729,7 +3733,7 @@ int finitDoc=0;
 int finlist=0;
 int sublevel=0;
 
-char *
+static char *
 source_gets(void) {
   char *p,*q;
   char *ret = (*in)?buf:NULL;
@@ -3824,7 +3828,7 @@ int sI=0;
 /* use int linelen from up top */
 int fFlush=1;
 
-void
+static void
 source_flush(void) {
   int i,j;
   char *p,*q,*r;
@@ -3879,7 +3883,7 @@ source_flush(void) {
     if (strchr(escchars,c)!=NULL) {
 	 xputchar('\\'); xputchar(c);
 	 if (fcharout) linelen++;
-    } else if (strchr(trouble,c)!=NULL) {
+    } else if (strchr((char *)trouble,c)!=NULL) {
 	 (*fn)(c);
     } else if (linelen>=LINEBREAK && c==' ') { (*fn)(ENDLINE); linelen=0;
     } else {		/* normal character */
@@ -3898,8 +3902,8 @@ source_flush(void) {
 
 
 /* source_out stuffs characters in a buffer */
-char *
-source_out0(char *p, char end) {
+static char *
+source_out0(const char *pin, char end) {
   /* stack of character formattings */
   static enum tagtype styles[20];
   static int style=-1;
@@ -3907,7 +3911,9 @@ source_out0(char *p, char end) {
   int i, j;
   int len;
   int sign;
+  char *p, *pstart;
 
+  pstart = p = mystrdup(pin);
   while (*p && *p!=end) {
     if (*p=='\\') {	/* escape character */
 	 switch (*++p) {
@@ -4077,17 +4083,20 @@ source_out0(char *p, char end) {
   }
 
   if (*p && *p!=' ') p++;		/* skip over end character */
-  return p;
+  free(pstart);
+  return (char *)pin + (p - pstart);
+
 }
 
 /* oh, for function overloading.  inlined by compiler, probably */
-char *source_out(char *p) {
+static char *
+source_out(const char *p) {
   return source_out0(p,'\0');
 }
 
 
-char *
-source_out_word(char *p) {
+static char *
+source_out_word(const char *p) {
   char end = ' ';
 
   while (*p && isspace(*p)) p++;
@@ -4097,11 +4106,11 @@ source_out_word(char *p) {
   }
   p = source_out0(p,end);
   /*while (*p && isspace(*p)) p++;*/
-  return p;
+  return (char *)p;
 }
 
 
-void
+static void
 source_struct(enum command cmd) {
   source_out("\\fR\\s0");	/* don't let run-on stylings run past structural units */
   source_flush();
@@ -4113,8 +4122,9 @@ source_struct(enum command cmd) {
 
 int finnf=0;
 
-void source_line(char *p);
-void
+static void source_line(char *p);
+
+static void
 source_subfile(char *newin) {
   char *p;
   char *oldin = in;
@@ -4131,7 +4141,7 @@ source_subfile(char *newin) {
 }
 
 /* have to delay acquisition of list tag */
-void
+static void
 source_list(void) {
   static int oldlisttype;	/* OK to have just one because nested lists done with RS/RE */
   char *q;
@@ -4176,7 +4186,7 @@ source_list(void) {
 static int inComment=0;
 static int isComment=0;
 
-void
+static void
 source_command(char *p) {
   static int lastif=1;
   int mylastif;
@@ -4839,7 +4849,7 @@ source_command(char *p) {
 }
 
 
-void
+static void
 source_line(char *p) {
   /*stagadd(BEGINLINE);*/
   char *cmd=p;
@@ -4898,7 +4908,7 @@ source_line(char *p) {
 }
 
 
-void
+static void
 source_filter(void) {
   char *p = in, *q;
   char *oldv,*newv,*shiftp,*shiftq,*endq;
@@ -5064,7 +5074,7 @@ source_filter(void) {
  * STARTUP
  */
 
-int
+static int
 setFilterDefaults(char *outputformat) {
 	static struct {
 		void (*fn)(enum command);
@@ -5113,7 +5123,7 @@ setFilterDefaults(char *outputformat) {
 
 
 /* read in whole file.  caller responsible for freeing memory */
-char *
+static char *
 filesuck(FILE *in) {
   const int inc=1024*100;	/* what's 100K these days? */
   int len=0,cnt;
@@ -5142,8 +5152,6 @@ main(int argc, char *argv[]) {
 	char **argvch;	/* remapped argv */
 	char *argvbuf;
 	char *processing = "stdin";
-	extern char *optarg;
-	extern int optind;
 /*	FILE *macros; -- interpret -man macros? */
 
 	char strgetopt[80];
@@ -5317,7 +5325,7 @@ main(int argc, char *argv[]) {
 			exit(0);
 
 		   case 'v': /*case '?':*/
-			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/03/21 21:48:35 $\n");
+			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/03/21 22:15:48 $\n");
 			exit(0);
 
 		   default:
