@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.49 2000/01/24 23:45:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.50 2000/01/25 18:37:47 dawes Exp $ */
 
 /*
  *
@@ -182,12 +182,12 @@ LoaderSetPath(const char *path)
 /* Standard set of module subdirectories to search, in order of preference */
 static const char *stdSubdirs[] =
 {
-	"",
 	"drivers/",
 	"input/",
 	"extensions/",
 	"fonts/",
 	"internal/",
+	"",
 	NULL
 };
 
