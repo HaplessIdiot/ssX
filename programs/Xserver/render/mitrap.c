@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.3 2002/05/15 06:44:59 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.4 2002/05/17 18:08:31 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -32,8 +32,11 @@
 #include "mipict.h"
 
 PicturePtr
-miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
-		      CARD16 width, CARD16 height)
+miCreateAlphaPicture (ScreenPtr	    pScreen, 
+		      PicturePtr    pDst,
+		      PictFormatPtr pPictFormat,
+		      CARD16	    width,
+		      CARD16	    height)
 {
     PixmapPtr	    pPixmap;
     PicturePtr	    pPicture;
@@ -43,7 +46,10 @@ miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
 
     if (!pPictFormat)
     {
-	pPictFormat = PictureMatchFormat (pScreen, 8, PICT_a8);
+	if (pDst->polyEdge == PolyEdgeSharp)
+	    pPictFormat = PictureMatchFormat (pScreen, 1, PICT_a1);
+	else
+	    pPictFormat = PictureMatchFormat (pScreen, 8, PICT_a8);
 	if (!pPictFormat)
 	    return 0;
     }
@@ -135,7 +141,7 @@ miTrapezoids (CARD8	    op,
 	miTrapezoidBounds (ntrap, traps, &bounds);
 	if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
 	    return;
-	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
@@ -150,7 +156,7 @@ miTrapezoids (CARD8	    op,
 	    miTrapezoidBounds (1, traps, &bounds);
 	    if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
 		continue;
-	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+	    pPicture = miCreateAlphaPicture (pScreen, pDst, maskFormat,
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
