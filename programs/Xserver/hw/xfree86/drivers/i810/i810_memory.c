@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.20 2001/10/10 14:08:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.21 2001/11/19 15:33:40 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -89,8 +89,13 @@ int I810AllocateGARTMemory (ScrnInfoPtr pScrn)
 		return (TRUE);
 	 }
 
-   if (!xf86AgpGARTSupported () || !xf86AcquireGART (pScrn->scrnIndex))
+   if (!xf86AgpGARTSupported () || !xf86AcquireGART (pScrn->scrnIndex)) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"AGP GART support is either not available or cannot be used.\n"
+		"\tMake sure your kernel has agpgart support or has the\n"
+		"\tagpgart module loaded.\n");
 	 return (FALSE);
+   }
 
    /* This allows the 2d only Xserver to regen */
    pI810->agpAcquired2d = TRUE;

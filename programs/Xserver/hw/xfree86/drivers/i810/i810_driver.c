@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.57 2001/10/10 14:08:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.58 2001/11/15 00:54:34 dawes Exp $ */
 
 /*
  * Authors:
@@ -657,6 +657,15 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    xf86DrvMsg(pScrn->scrnIndex, from, "IO registers at addr 0x%lX\n",
 	      (unsigned long)pI810->MMIOAddr);
 
+   /* AGP GART support is required.  Don't proceed any further if it isn't
+    * present.
+    */
+   if (!xf86AgpGARTSupported()) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	"AGP GART support is not available.  Make sure your kernel has\n"
+	"\tagpgart support or that the agpgart kernel module is loaded.\n");
+      return FALSE;
+   }
 
    /* Find out memory bus frequency.
     */
