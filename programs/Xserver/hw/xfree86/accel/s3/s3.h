@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.23 1995/07/05 12:39:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.24 1995/07/13 14:14:12 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -220,6 +220,19 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_SC1148x_M2	(s3RamdacType == SC1148x_M2_DAC)
 #define DAC_IS_SC1148x_M3	(s3RamdacType == SC1148x_M3_DAC)
 #define DAC_IS_SC1148x_SERIES	(DAC_IS_SC1148x_M2 || DAC_IS_SC1148x_M3)
+
+/* Vendor BIOS types */
+
+#define UNKNOWN_BIOS		-1
+#define ELSA_BIOS		 1
+#define MIRO_BIOS		 2
+#define SPEA_BIOS		 3
+#define GENOA_BIOS		 4
+#define STB_BIOS		 5
+#define NUMBER9_BIOS		 6
+#define HERCULES_BIOS		 7
+#define DIAMOND_BIOS		 8
+
 
 /* Function Prototypes */
 

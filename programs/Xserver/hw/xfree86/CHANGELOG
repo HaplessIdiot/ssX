@@ -1,3 +1,8 @@
+XFree86 3.1.1Da (16 July 1995)
+215. Replace xf86pci.c with the real scanpci.c (Robin Cutshaw).
+214. Updates to the code for the additional S3 mode parameters, including
+     better default settings (Harald Koenig).
+
 XFree86 3.1.1D (15 July 1995)
 213. xterm fix for crash when inputMethod is set to kinput2 (Manabe Keishi).
 212. Code to detect the AT&T20C490, and Sierra 1148[234579] ramdacs

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.31 1995/07/03 10:06:01 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.32 1995/07/15 15:01:45 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -447,11 +447,6 @@ cards.  For further details refer to \fIREADME.S3\fP.
 .B S3RefClk \fIrefclk\fP
 This allows the PLL reference clock to be specified.  This may be required
 for some cards that use the IBM RGB52x RAMDACs.  The value is in MHz.
-.TP 8
-.B S3BlankDelay \fIa b\fP
-This allows the blank timing parameters to be adjusted.  This affects
-screen wrapping on 964 and 968 cards.  For further details refer to
-\fIREADME.S3\fP.
 .PP
 \fBOption\fP flags may be specified in either the \fBDevice\fP section
 or the \fBDisplay\fP subsection of the XF86Config file.
@@ -548,8 +543,10 @@ PCI 928 cards on machines with a buggy SMC UART.
 \fBs3_964_bt485_vclk\fP - (S3) Enables a workaround for possible problems
 on cards using the 964 and Bt485.
 .sp
+.ig
 \fBs3_invert_vclk\fP - (S3) Inverts the VRAM clock.
 .sp
+..
 \fBslow_vram\fP - (S3) Adjusts the VRAM timings for cards using slow
 VRAM.  This is required for some Diamond Stealth 64 VRAM cards.
 .sp

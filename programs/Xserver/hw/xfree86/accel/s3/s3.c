@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.92 1995/07/13 14:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.93 1995/07/15 15:06:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -266,6 +266,7 @@ Bool s3ATT498PixMux = FALSE;
 static int maxRawClock = 0;
 static Bool clockDoublingPossible = FALSE;
 int s3AdjustCursorXPos = 0;
+static int s3BiosVendor = UNKNOWN_BIOS;
 
 /*
  * s3PrintIdent -- print identification message
@@ -348,9 +349,11 @@ static int s3DetectMIRO_20SV_Rev(int BIOSbase)
    char *match1 = "miroCRYSTAL\37720SV", *match2 = "Rev.";
    unsigned char *p;
 
-   if ((p = find_bios_string(BIOSbase,match1,match2)) != NULL)
+   if ((p = find_bios_string(BIOSbase,match1,match2)) != NULL) {
+      s3BiosVendor = MIRO_BIOS;
       if (*p >= '0' && *p <= '9')
 	 return *p - '0';
+   }
    return -1;
 }
 
@@ -359,8 +362,10 @@ static int check_SPEA_bios(int BIOSbase)
    char *match = " SPEA/Video";
    unsigned char *p;
    
-   if ((p = find_bios_string(BIOSbase,match,NULL)) != NULL)
+   if ((p = find_bios_string(BIOSbase,match,NULL)) != NULL) {
+      s3BiosVendor = SPEA_BIOS;
       return 1;
+   }
    return 0;
 }
 
@@ -662,7 +667,9 @@ s3Probe()
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
+#if 0
    OFLG_SET(OPTION_S3_INVERT_VCLK, &validOptions);
+#endif
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
@@ -707,9 +714,18 @@ s3Probe()
 	 ErrorF("\tplease use Option \"s3_964_bt485_vclk\"\n");
    }
 
+   if (find_bios_string(s3InfoRec.BIOSbase,"Stealth",
+			"Diamond Computer Systems, Inc.") != NULL) {
+      s3BiosVendor = DIAMOND_BIOS;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Diamond Stealth BIOS found\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+   }
+
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
 			  &max_mem_clock);
    if (card_id > 0) {
+      s3BiosVendor = ELSA_BIOS;
       ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
       xfree(card);
@@ -1948,6 +1964,7 @@ s3Probe()
 
       if (find_bios_string(s3InfoRec.BIOSbase,"VideoBlitz III AV",
 			   "Genoa Systems Corporation") != NULL) {
+	 s3BiosVendor = GENOA_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: Genoa VideoBlitz III AV BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1956,6 +1973,7 @@ s3Probe()
       }
       else if (find_bios_string(s3InfoRec.BIOSbase,"STB Systems, Inc.", NULL) 
 	       != NULL) {
+	 s3BiosVendor = STB_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: STB Velocity 64 BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1965,6 +1983,7 @@ s3Probe()
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Number Nine Visual Technology","Motion 771")
 	       != NULL) {
+	 s3BiosVendor = NUMBER9_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: #9 Motion 771 BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -1973,6 +1992,7 @@ s3Probe()
       }
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
+	 s3BiosVendor = HERCULES_BIOS;
 	 if (xf86Verbose)
 	    ErrorF("%s %s: Hercules Graphite Terminator BIOS found\n",
 		   XCONFIG_PROBED, s3InfoRec.name);
@@ -2877,60 +2897,105 @@ s3Probe()
       if (S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
 	 if (!pMode->PrivSize || !pMode->Private) {
 	    pMode->PrivSize = S3_MODEPRIV_SIZE;
-	    pMode->Private = xalloc(S3_MODEPRIV_SIZE * sizeof(CARD32));
+	    pMode->Private = (INT32 *)xcalloc(sizeof(INT32), S3_MODEPRIV_SIZE);
 	    pMode->Private[0] = 0;
 	 }
+
 	 /* Set default for invert_vclk */
 	 if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
-	    if (OFLG_ISSET(OPTION_S3_INVERT_VCLK, &s3InfoRec.options))
+	    if (DAC_IS_TI3026 && s3BiosVendor == DIAMOND_BIOS)
 	       pMode->Private[S3_INVERT_VCLK] = 1;
-	    else
+	    else if (DAC_IS_IBMRGB) 
+	       if (s3Bpp == 4) pMode->Private[S3_INVERT_VCLK] = 0;
+	       else pMode->Private[S3_INVERT_VCLK] = 1;
+	    else 
 	       pMode->Private[S3_INVERT_VCLK] = 0;
+	    pMode->Private[0] |= 1 << S3_INVERT_VCLK;
 	 }
+
 	 /* Set default for blank_delay */
 	 if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
-	    if (s3InfoRec.s3BlankDelay >= 0)
-	       pMode->Private[S3_BLANK_DELAY] = s3InfoRec.s3BlankDelay;
-	    else {
-	       if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
-		  if ((pMode->Flags & V_DBLCLK) || s3Bpp > 1)
+	    pMode->Private[0] |= (1 << S3_BLANK_DELAY);
+	    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+	       if ((pMode->Flags & V_DBLCLK) || s3Bpp > 1)
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       else
+		  pMode->Private[S3_BLANK_DELAY] = 0x01;
+	    } else if (DAC_IS_TI3025) {
+	       if (s3Bpp == 1)
+		  if (pMode->Flags & V_DBLCLK)
+		     pMode->Private[S3_BLANK_DELAY] = 0x02;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x03;
+	       else if (s3Bpp == 2)
+		  if (pMode->Flags & V_DBLCLK)
 		     pMode->Private[S3_BLANK_DELAY] = 0x00;
 		  else
 		     pMode->Private[S3_BLANK_DELAY] = 0x01;
-	       } else if (DAC_IS_TI3025) {
-		  if (s3Bpp == 1)
-		     if (pMode->Flags & V_DBLCLK)
-			pMode->Private[S3_BLANK_DELAY] = 0x02;
-		     else
-			pMode->Private[S3_BLANK_DELAY] = 0x03;
-		  else if (s3Bpp == 2)
-		     if (pMode->Flags & V_DBLCLK)
-			pMode->Private[S3_BLANK_DELAY] = 0x00;
-		     else
-			pMode->Private[S3_BLANK_DELAY] = 0x01;
-		  else /* (s3Bpp == 4) */
-		     pMode->Private[S3_BLANK_DELAY] = 0x00;
-	       } else if (DAC_IS_TI3026) {
-		  if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options))
-		     pMode->Private[S3_BLANK_DELAY] = 0x01;
-		  else
-			pMode->Private[S3_BLANK_DELAY] = 0x00;
-	       } else if (DAC_IS_IBMRGB) {
-		  if (s3Bpp == 1)
-		     pMode->Private[S3_BLANK_DELAY] = 0x21;
-		  else if (s3Bpp == 2)
-		     pMode->Private[S3_BLANK_DELAY] = 0x10;
-		  else /* if (s3Bpp == 4) */
-		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       else /* (s3Bpp == 4) */
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    } else if (DAC_IS_TI3026) {
+	       if (s3BiosVendor == DIAMOND_BIOS 
+                   || OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	          if (s3Bpp == 1) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x72;
+	          else if (s3Bpp == 2) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x73;
+	          else /*if (s3Bpp == 4)*/ 
+		     pMode->Private[S3_BLANK_DELAY] = 0x75;
 	       } else {
-		  pMode->Private[S3_BLANK_DELAY] = (CARD32)-1;
+	          if (s3Bpp == 1) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	          else if (s3Bpp == 2) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+	          else /*if (s3Bpp == 4)*/ 
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
 	       }
+	    } else if (DAC_IS_IBMRGB) {
+	       if (s3BiosVendor == GENOA_BIOS) {
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	       else if (s3BiosVendor == STB_BIOS) {
+		  if (s3Bpp == 1 && pMode->Clock > 135000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  else if (s3Bpp == 4)
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	       else if (s3BiosVendor == HERCULES_BIOS) {
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	       else
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    } else {
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
 	    }
 	 }
-	 /* Set default for early_sc */
+	 
+	 /* Set default for early_sc */      
 	 if (!(pMode->Private[0] & (1 << S3_EARLY_SC))) {
-	    /* XXX how should this be set? */
-	    pMode->Private[S3_EARLY_SC] = 0;
+	    pMode->Private[0] |= 1 << S3_EARLY_SC;
+	    if (DAC_IS_TI3025) {
+	       if (OFLG_ISSET(OPTION_NUMBER_NINE,&s3InfoRec.options))
+		  pMode->Private[S3_EARLY_SC] = 1;
+	       else
+		  pMode->Private[S3_EARLY_SC] = 0;
+	    } else if (DAC_IS_IBMRGB) {
+	       if (s3BiosVendor == GENOA_BIOS) {
+	          pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else if (s3BiosVendor == STB_BIOS) {
+	          pMode->Private[S3_EARLY_SC] = 1;
+	       }
+	       else if (s3BiosVendor == HERCULES_BIOS) {
+	          pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else
+	          pMode->Private[S3_EARLY_SC] = 0;
+	    } else {
+	       pMode->Private[S3_EARLY_SC] = 0;
+	    }
 	 }
       }
       pMode = pMode->next;
