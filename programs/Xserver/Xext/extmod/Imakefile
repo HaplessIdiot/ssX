@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.8 1998/08/13 14:45:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.9 1998/10/06 06:08:26 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -54,6 +54,12 @@ LinkSourceFile(xvdisp.c,..)
 LinkSourceFile(xvmod.c,..)
 #endif
 
+#if BuildXantiExt
+       XANTISRCS = anti.c
+       XANTIOBJS = anti.o
+LinkSourceFile(anti.c,..)
+#endif
+
 #if BuildAppgroup
     APPGROUPSRCS = appgroup.c
     APPGROUPOBJS = appgroup.o
@@ -94,19 +100,20 @@ LinkSourceFile(cup.c,..)
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
-	      $(EVISRCS) $(XVSRCS) $(MODINITSRCS)
+	      $(EVISRCS) $(XVSRCS) $(XANTISRCS) $(MODINITSRCS)
 
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
 	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS)
       MOBJS = $(MODINITOBJS) shape.o $(MULTIBUFOBJ) mitmisc.o \
 	      bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o \
 	      $(VIDMODEOBJS) $(XF86MISCOBJS) $(XF86DGAOBJS) \
-              $(CUPOBJS) $(DPMSOBJS) $(EVIOBJS) $(XVOBJS)
+              $(CUPOBJS) $(DPMSOBJS) $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
 
     DEFINES = -DEXTMODULE
 
 XF86INCLUDES = -I$(XF86COMSRC)
-    INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(XF86INCLUDES)
+    INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
+	       $(XF86INCLUDES) -I$(FONTINCSRC)
     LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
 
 LinkSourceFile(shape.c,..)

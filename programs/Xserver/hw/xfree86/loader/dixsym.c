@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.13 1998/10/06 06:59:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.14 1998/11/15 05:53:24 dawes Exp $ */
 
 
 /*
@@ -94,10 +94,15 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(isItTimeToYield)
   SYMVAR(ClientStateCallback)
   /* dixfonts.c */
+  SYMFUNC(CloseFont)
+  SYMFUNC(FontToXError)
+  SYMFUNC(LoadGlyphs)
   SYMVAR(fpe_functions)
   /* dixutils.c */
   SYMFUNC(AddCallback)
+  SYMFUNC(ClientSleep)
   SYMFUNC(ClientTimeToServerTime)
+  SYMFUNC(ClientWakeup)
   SYMFUNC(CompareTimeStamps)
   SYMFUNC(CopyISOLatin1Lowered)
   SYMFUNC(DeleteCallback)

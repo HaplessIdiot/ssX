@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.56 1998/10/25 07:12:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.57 1998/11/15 04:30:29 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -250,6 +250,7 @@ static const char *xaaSymbols[] = {
     "XAAInit",
     "XAAStippleScanlineFuncLSBFirst",
     "XAAOverlayFBfuncs",
+    "XAAScreenIndex",
     NULL
 };
 

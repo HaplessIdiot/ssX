@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.4 1998/08/30 05:11:31 dawes Exp $ */
 /*
 ** File: 
 **
@@ -216,7 +216,7 @@ XvAdaptorInfo **p_pAdaptors;
 	}
 
       pf = pfs;
-      for (ii=0; ii<pa->num_formats; ii++)
+      for (jj=0; jj<pa->num_formats; jj++)
 	{
 	  pf->depth = u.pf->depth;
 	  pf->visual_id = u.pf->visual;
