@@ -1053,8 +1053,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
     }
 #endif
+
     if (xf86LoadSubModule(pScrn, "vbe")) {
-	
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
     
@@ -2103,9 +2103,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
 #ifdef XFree86LOADER
 	if (cPtr->pVbe) {
-	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL))) != NULL)
+	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe, NULL))) != NULL) {
 		ddc_done = TRUE;
-	    xf86SetDDCproperties(pScrn,pMon);
+		xf86SetDDCproperties(pScrn,pMon);
+	    }
 	}
 #endif
 

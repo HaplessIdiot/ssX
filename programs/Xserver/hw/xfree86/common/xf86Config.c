@@ -301,7 +301,8 @@ xf86DriverlistFromConfig()
      * Handle the set of inactive "Device" sections.
      */
     j = 0;
-    while (xf86ConfigLayout.inactives[j++].identifier)
+    if (xf86ConfigLayout.inactives)
+	while (xf86ConfigLayout.inactives[j++].identifier)
 	count++;
 
     if (count == 0)
@@ -319,8 +320,10 @@ xf86DriverlistFromConfig()
 	slp++;
     }
     j = 0;
-    while (xf86ConfigLayout.inactives[j].identifier) 
-	modulearray[count++] = xf86ConfigLayout.inactives[j++].driver;
+
+    if (xf86ConfigLayout.inactives)
+	while (xf86ConfigLayout.inactives[j].identifier) 
+	    modulearray[count++] = xf86ConfigLayout.inactives[j++].driver;
 
     modulearray[count] = NULL;
 

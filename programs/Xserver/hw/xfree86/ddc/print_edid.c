@@ -113,10 +113,13 @@ print_input_features(int scrnIndex, struct disp_features *c)
 static void 
 print_dpms_features(int scrnIndex, struct disp_features *c)
 {
-    xf86DrvMsg(scrnIndex,X_INFO,"DPMS capabilities:");
-    if (DPMS_STANDBY(c->dpms)) xf86ErrorF(" StandBy");
-    if (DPMS_SUSPEND(c->dpms)) xf86ErrorF(" Suspend");
-    if (DPMS_OFF(c->dpms)) xf86ErrorF(" Off");
+     if (c->dpms) {
+	 xf86DrvMsg(scrnIndex,X_INFO,"DPMS capabilities:");
+	 if (DPMS_STANDBY(c->dpms)) xf86ErrorF(" StandBy");
+	 if (DPMS_SUSPEND(c->dpms)) xf86ErrorF(" Suspend");
+	 if (DPMS_OFF(c->dpms)) xf86ErrorF(" Off");
+     } else 
+	 xf86DrvMsg(scrnIndex,X_INFO,"No DPMS capabilities specified");
     switch (c->display_type){
     case DISP_MONO:
 	xf86ErrorF("; Monochorome/GrayScale Display\n");
@@ -214,13 +217,13 @@ print_detailed_monitor_section(int scrnIndex,
 	    print_detailed_timings(scrnIndex,&m[i].section.d_timings);
 	    break;
 	case DS_SERIAL:
-	    xf86DrvMsg(scrnIndex,X_INFO,"Serial No: %s\n",m[i].section.serial);
+	    xf86DrvMsg(scrnIndex,X_INFO,"Serial No: %s",m[i].section.serial);
 	    break;
 	case DS_ASCII_STR:
-	    xf86DrvMsg(scrnIndex,X_INFO," %s\n",m[i].section.ascii_data);
+	    xf86DrvMsg(scrnIndex,X_INFO," %s",m[i].section.ascii_data);
 	    break;
 	case DS_NAME:
-	    xf86DrvMsg(scrnIndex,X_INFO,"Monitor name: %s\n",m[i].section.name);
+	    xf86DrvMsg(scrnIndex,X_INFO,"Monitor name: %s",m[i].section.name);
 	    break;
 	case DS_RANGES:
 	    xf86DrvMsg(scrnIndex,X_INFO,
