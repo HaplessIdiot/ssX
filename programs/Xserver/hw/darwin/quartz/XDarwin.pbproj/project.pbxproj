@@ -118,8 +118,8 @@
 			);
 			isa = PBXGroup;
 			name = "X Server";
-			path = "/Volumes/Mac OS X/Users/torrey/Develop/XFree86/xc/programs/Xserver/hw/darwin";
-			refType = 0;
+			path = ..;
+			refType = 4;
 		};
 		018F40F3003E1916CE6F79C2 = {
 			isa = PBXFileReference;
@@ -558,8 +558,8 @@
 			);
 			isa = PBXGroup;
 			name = IOKit;
-			path = "/Volumes/Mac OS X/Users/torrey/Develop/XFree86/xc/programs/Xserver/hw/darwin";
-			refType = 0;
+			path = ..;
+			refType = 4;
 		};
 //170
 //171
