@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.33 1998/10/25 07:11:10 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.34 1998/12/20 11:56:34 dawes Exp $ */
 
 
 /* 
@@ -184,6 +184,14 @@ in this Software without prior written authorization from The Open Group.
 #define imake_ccflags "-DBSD43"
 #endif
 
+#if defined(__QNX__) && !defined(__QNXNTO__)
+#define imake_ccflags "-D__QNX__ -D_i386"
+#endif
+
+#if defined(__QNXNTO__)
+#define imake_ccflags "-D__QNXNTO__"
+#endif
+
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -287,6 +295,9 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #if defined(__GNU__)
 #define USE_CC_E
+#endif
+#if defined (__QNX__)
+#define DEFAULT_CPP "/usr/X11R6/bin/cpp"
 #endif
 /*
  * Step 5:  cpp_argv
@@ -597,8 +608,23 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DPowerMAX_OS",
 # endif
 #endif
-#ifdef __QNX__
-	"-D__QNX__",
+#if defined (__QNX__) && !defined(__QNXNTO__)
+        "-traditional",
+        "-D__QNX__",
+#endif
+
+#if defined(__QNXNTO__)
+        "-traditional",
+        "-D__QNXNTO__",
+#if defined(i386)
+        "-Di386",
+#endif
+#if defined(PPC)
+        "-DPPC",
+#endif
+#if defined(MIPS)
+        "-DMIPS",
+#endif
 #endif
 
 };
@@ -984,6 +1010,12 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __EMX__
 	{"__EMX__", "1"},
+#endif
+#if defined(__QNX__)
+        {"__QNX__", "1"},
+#endif
+#ifdef __QNXNTO__
+        {"__QNXNTO__", "1"},
 #endif
 # ifdef __powerpc__
 	{"__powerpc__", "1"},

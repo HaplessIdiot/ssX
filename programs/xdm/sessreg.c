@@ -26,7 +26,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.10 1998/10/04 09:40:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.11 1998/10/10 15:25:39 dawes Exp $ */
 
 /*
  * sessreg
@@ -51,7 +51,7 @@
 # include	<stdio.h>
 # include	<utmp.h>
 
-#if defined(SYSV) || defined(SVR4) || defined(Lynx)
+#if defined(SYSV) || defined(SVR4) || defined(Lynx) || defined(__QNX__)
 #define NO_LASTLOG
 #endif
 
@@ -277,7 +277,7 @@ main (int argc, char **argv)
 	if (!Lflag)
 		llog_file = LLOG_FILE;
 #endif
-#if !defined(SYSV) && !defined(linux)
+#if !defined(SYSV) && !defined(linux) && !defined(__QNX__)
 	if (!tflag)
 		ttys_file = TTYS_FILE;
 	if (!sflag && !utmp_none) {
@@ -391,7 +391,7 @@ set_utmp (struct utmp *u, char *line, char *user, char *host, Time_t date, int a
 		u->ut_type = DEAD_PROCESS;
 	}
 #endif
-#if !defined(SYSV) || defined(linux)
+#if (!defined(SYSV) && !defined(__QNX__)) || defined(linux)
 	if (addp && host)
 		(void) strncpy (u->ut_host, host, sizeof (u->ut_host));
 	else
@@ -490,9 +490,13 @@ findslot (char *line_name, char *host_name, int addp, int slot)
 
 	while (read (utmp, (char *) &entry, sizeof (entry)) == sizeof (entry)) {
 		if (strncmp(entry.ut_line, line_name,
-			sizeof(entry.ut_line)) == 0 &&
+			sizeof(entry.ut_line)) == 0 
+#ifndef __QNX__
+                    &&
 		    strncmp(entry.ut_host, host_name,
-			sizeof(entry.ut_host)) == 0) {
+			sizeof(entry.ut_host)) == 0
+#endif
+                   ) {
 			found = 1;
 			break;
 		}

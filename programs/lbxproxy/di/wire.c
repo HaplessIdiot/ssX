@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.6 1998/10/04 09:40:21 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.7 1998/12/20 11:58:07 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 /*
  * The following include for utsname.h is from lib/xtrans
  */
-#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3) && !defined(__QNX__)) || defined(hpux) || defined(USG) || defined(SVR4)
 #define NEED_UTSNAME
 #include <sys/utsname.h>	/* uname() */
 #else

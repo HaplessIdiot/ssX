@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/31 1998/06/16 15:16:14 msr $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.16 1999/03/28 15:33:11 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.17 1999/04/29 09:13:59 dawes Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -40,7 +40,7 @@ $(DIFSLIB):	$(DIFSDIR)
 
 all:: config
 
-#ifndef LynxOSArchitecture
+#if !defined(LynxOSArchitecture) && !defined(QNX4Architecture)
 ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(FSSYSLIBS) $(EXTRA_LIBRARIES))
 #else
 ServerTarget(xfs,$(FSDIRS),difs/main.o,$(FSLIBS),$(FSSYSLIBS) $(EXTRA_LIBRARIES))

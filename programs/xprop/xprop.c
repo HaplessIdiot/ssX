@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.5 1998/10/04 09:41:43 dawes Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.6 1999/03/07 11:41:17 dawes Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -45,7 +45,9 @@ char *getenv();
 
 #define MAXSTR 10000
 
+#ifndef min
 #define min(a,b)  ((a) < (b) ? (a) : (b))
+#endif
 
 /*
  *

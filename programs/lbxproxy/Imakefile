@@ -4,7 +4,7 @@ XCOMM $TOG: Imakefile /main/17 1997/08/05 09:00:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.9 1997/07/06 08:13:06 dawes Exp $
+XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.11 1998/01/01 14:51:45 robin Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -29,7 +29,7 @@ os/LibraryTargetName(os):	os
 
 di/LibraryTargetName(dilbx):	di
 
-#ifndef LynxOSArchitecture
+#if !defined(LynxOSArchitecture) && !defined(QNX4Architecture)
 ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
 #else
 ServerTarget(lbxproxy,$(SUBDIRS),di/main.o,$(LBXLIBS),$(OTHERLIBS))

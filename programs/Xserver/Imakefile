@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.168 1999/08/14 10:49:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.170 1999/11/19 13:53:35 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -852,7 +852,7 @@ XNESTDDXDIR = hw/xnest
 XNESTDDXDIR = hw
 #endif
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
-#if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
+#if !defined(LynxOSArchitecture) && !defined(Win32Architecture) && !defined(QNX4Architecture)
 XNESTOBJS = hw/xnest/miinitext.o
 #else
 XNESTOBJS = hw/xnest/miinitext.o dix/main.o
@@ -942,7 +942,7 @@ DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
           $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS)
 
-#if defined(ServerToInstall) && !defined(OS2Architecture)
+#if defined(ServerToInstall) && !defined(OS2Architecture) && !defined(QNX4Architecture)
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) ServerToInstall X)
 #endif

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.29 1998/12/20 11:58:14 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.30 1999/03/14 03:22:22 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -84,7 +84,7 @@ PWD_DEFINES = -DUSESHADOW
 PWD_DEFINES = -DUSESHADOW -DSHADOWSUITE
 #endif
 
-#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture)
+#if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture)
 SYS_LIBRARIES3 = -lresolv
 #endif
 #if SystemV || defined(SequentArchitecture)

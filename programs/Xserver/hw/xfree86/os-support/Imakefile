@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.31 1999/09/27 14:33:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.33 1999/12/03 19:17:38 eich Exp $
 
 
 
@@ -14,6 +14,14 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 	(defined(LinuxArchitecture) && defined(AlphaArchitecture)) || \
 	defined(PpcArchitecture) || defined(SparcArchitecture)
 BUS_SUBDIR = bus
+#endif
+
+#if defined(QNX4Architecture)
+OS_SUBDIR = qnx4
+#endif
+
+#if defined(NTOArchitecture)
+OS_SUBDIR = nto
 #endif
 
 #if defined(ArcArchitecture)

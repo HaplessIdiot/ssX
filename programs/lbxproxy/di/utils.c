@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.7 1997/10/26 13:25:15 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.8 1998/10/04 09:40:21 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -59,7 +59,7 @@ SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if !defined(SYSV) && !defined(Lynx)
+#if !defined(SYSV) && !defined(Lynx) && !defined(QNX4)
 #include <sys/resource.h>
 #endif
 

@@ -60,7 +60,9 @@ extern void show_fonts(void);
 extern void copy_number(char **, char **, int, int);
 extern void do_query_font(Display *, char *);
 static int compare(const void *, const void *);
+#ifndef max
 static int max(int, int);
+#endif
 static int IgnoreError(Display *, XErrorEvent *);
 static void PrintProperty(XFontProp *);
 static void ComputeFontType(XFontStruct *);
@@ -392,6 +394,7 @@ show_fonts()
 		printf("%s\n", font_list[i].name);
 }
 
+#ifndef max
 static int
 max(i, j)
 	int	i, j;
@@ -400,6 +403,7 @@ max(i, j)
 		return (i);
 	return(j);
 }
+#endif
 
 void
 copy_number(pp1, pp2, n1, n2)

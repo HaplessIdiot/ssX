@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/vgasolid.c,v 1.1.2.2 1998/02/14 06:31:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/vgasolid.c,v 1.2 1998/07/25 16:58:24 dawes Exp $ */
 /*
  *
 Copyright (c) 1990  X Consortium
@@ -73,17 +73,17 @@ RROP_NAME(vga256FillRectSolid) (pDrawable, pGC, nBox, pBox)
 #endif /* GXcopy */
 #else /* SPEEDUP */
 #if RROP == GXcopy
-    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_xor, 0, GXcopy);
+    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_xor, 0L, GXcopy);
 #endif /* GXcopy */
 #endif /* SPEEDUP */
 #if RROP == GXxor
-    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_xor, 0, GXxor);
+    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_xor, 0L, GXxor);
 #endif /* GXxor */
 #if RROP == GXor
-    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_or, 0, GXor);
+    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_or, 0L, GXor);
 #endif /* GXor */
 #if RROP == GXand
-    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_and, 0, GXand);
+    vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_and, 0L, GXand);
 #endif /* GXand */
 #if RROP == GXset
     vga256FillBoxSolid (pDrawable, nBox, pBox, rrop_and, rrop_xor, GXset);

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.13 1999/08/21 13:48:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.14 1999/12/13 02:52:51 robin Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -2733,7 +2733,7 @@ fs_register_fpe_functions(void)
 					fs_list_fonts,
 					fs_start_list_with_info,
 					fs_next_list_with_info,
-					fs_wakeup,
+					(WakeupFpeFunc)fs_wakeup,
 					fs_client_died,
 					_fs_load_glyphs,
 					NULL,
@@ -2800,7 +2800,7 @@ check_fs_register_fpe_functions(void)
 					check_fs_list_fonts,
 					check_fs_start_list_with_info,
 					check_fs_next_list_with_info,
-					fs_wakeup,
+					(WakeupFpeFunc)fs_wakeup,
 					fs_client_died,
 					_fs_load_glyphs,
 					NULL,

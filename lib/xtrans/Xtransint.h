@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.25 1999/03/28 15:32:07 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.26 1999/06/20 08:41:21 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -108,7 +108,7 @@ extern int  errno;		/* Internal system error number. */
  * to avoid a race condition. JKJ (6/5/97)
  */
 
-#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || defined(SCO)
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3) && !defined(__QNX__)) || defined(hpux) || defined(USG) || defined(SVR4) || defined(SCO)
 #ifndef NEED_UTSNAME
 #define NEED_UTSNAME
 #endif
@@ -145,7 +145,7 @@ extern int  errno;		/* Internal system error number. */
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__QNX__)
 #define OPEN_MAX NOFILES_MAX
 #else
 #define OPEN_MAX 256

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.5 1998/10/04 09:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.6 1998/10/10 15:25:46 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -49,6 +49,10 @@ extern int errno;
 
 #ifdef X_NOT_STDC_ENV
 char *getenv();
+#endif
+
+#ifdef QNX4
+extern char *crypt(const char *, const char *);
 #endif
 
 static char *envvars[] = {
@@ -121,7 +125,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	} else {
 	    user_pass = sp->sp_pwdp;
 	}
+#ifndef QNX4
 	endspent();
+#endif  /* QNX4 doesn't need endspent() to end shadow passwd ops */
 #endif
 #if defined(ultrix) || defined(__ultrix__)
 	if (authenticate_user(p, greet->password, NULL) < 0)

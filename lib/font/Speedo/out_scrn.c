@@ -21,7 +21,7 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-/* $XFree86: xc/lib/font/Speedo/out_scrn.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/font/Speedo/out_scrn.c,v 1.3 1999/03/14 03:21:17 dawes Exp $ */
 
 
 /*************************** O U T _ S C R N . C *****************************
@@ -210,7 +210,7 @@ if (((Y3 >> 16)) == (Y0 >> 16) || (Y3+1) == Y0 || Y3 == (Y0+1))
     }
 if ((X3 >> 16) == (X0 >> 16))
     {
-    vert_line_screen(X3,(Y0>>16),(Y3>>16));
+    vert_line_screen(X3,(fix15)(Y0>>16),(fix15)(Y3>>16));
 	return;
     }
 Pmidx = (X0 + (X1 + X2) * 3 + X3 + 4 ) >> 3;

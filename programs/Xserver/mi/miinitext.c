@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.40 1999/04/11 13:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.41 1999/06/14 07:32:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -50,6 +50,13 @@ SOFTWARE.
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
 #endif
+
+#if defined(QNX4) /* sleaze for Watcom on QNX4 ... */
+#undef PEXEXT
+#undef XIE
+#undef GLXEXT
+#endif
+
 #ifdef PANORAMIX
 extern Bool noPanoramiXExtension;
 #endif

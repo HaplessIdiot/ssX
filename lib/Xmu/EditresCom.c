@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.10 1999/01/31 12:21:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.11 1999/03/21 07:34:36 dawes Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -237,7 +237,7 @@ _XEditResCheckMessages(Widget w, XtPointer data, XEvent *event, Boolean *cont)
       if (c_event->data.l[3] != CURRENT_PROTOCOL_VERSION)
 	{
 	    _XEditResResetStream(&globals.stream);
-	    _XEditResPut8(&globals.stream, CURRENT_PROTOCOL_VERSION);
+	    _XEditResPut8(&globals.stream, (unsigned int) CURRENT_PROTOCOL_VERSION);
 	    SendCommand(w, res_comm, ident, ProtocolMismatch, &globals.stream);
 	    return;
 	}

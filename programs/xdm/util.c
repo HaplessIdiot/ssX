@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/util.c,v 3.10 1998/10/10 15:25:39 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.11 1998/12/20 11:58:15 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -51,7 +51,7 @@ from The Open Group.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX)
+#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__QNXNTO__)
 #define setpgrp setpgid
 #endif
 

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.29 1998/12/20 11:57:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.30 1999/07/18 03:27:03 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -113,7 +113,7 @@ SOFTWARE.
 
 
 #if !defined(AMOEBA)
-#ifdef hpux
+#if defined(hpux) || defined(__QNXNTO__)
 # include <sys/utsname.h>
 # ifdef HAS_IFREQ
 #  include <net/if.h>
@@ -494,7 +494,7 @@ DefineSelf (int fd)
 
 #else /* WINTCP */
 
-#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
+#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ)) || defined(__QNXNTO__)
 void
 DefineSelf (int fd)
 {
@@ -599,8 +599,13 @@ DefineSelf (int fd)
 		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
 #define ifraddr_size(a) (a.sa_len)
 #else
+#ifdef QNX4
+#define ifr_size(p) (p->ifr_addr.sa_len + IFNAMSIZ)
+#define ifraddr_size(a) (a.sa_len)
+#else
 #define ifr_size(p) (sizeof (struct ifreq))
 #define ifraddr_size(a) (sizeof (a))
+#endif
 #endif
 
 void

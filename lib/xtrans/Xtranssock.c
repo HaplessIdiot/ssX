@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.43 1999/07/04 13:39:53 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.44 1999/12/13 02:52:55 robin Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1686,7 +1686,9 @@ TRANS(SocketBytesReadable) (XtransConnInfo ciptr, BytesReadable_t *pend)
 {
     PRMSG (2,"SocketBytesReadable(%x,%d,%x)\n",
 	ciptr, ciptr->fd, pend);
-
+#if defined(QNX4)
+    *pend = 0L; /* FIONREAD only returns a short. Zero out upper bits */
+#endif
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else

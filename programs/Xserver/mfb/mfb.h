@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.13 1999/04/11 13:11:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.14 1999/06/06 08:49:13 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -1197,6 +1197,7 @@ than a switch on the rop per item (span or rectangle.)
 #define fnCOPYINVERTED(src, dst)(~src)
 #define fnORINVERTED(src, dst)	(~src | dst)
 #define fnNAND(src, dst)	(~(src & dst))
+#undef fnSET
 #define fnSET(src, dst)		(unsigned long)(~0)
 
 /*  Using a "switch" statement is much faster in most cases
@@ -1213,6 +1214,7 @@ than a switch on the rop per item (span or rectangle.)
  *  Note that this requires a change to the "calling sequence"
  *  since we can't engineer a "switch" statement to have an lvalue.
  */
+#undef DoRop
 #define DoRop(result, alu, src, dst) \
 { \
     if (alu == GXcopy) \
