@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.71 2001/04/23 16:52:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.72 2001/05/04 19:05:47 dawes Exp $ */
 
 /*
  * Authors:
@@ -646,6 +646,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   int flags24;
   rgb defaultWeight = {0, 0, 0};
   pciVideoPtr match;
+  int availableMem;
 
   TDFXTRACE("TDFXPreInit start\n");
   if (pScrn->numEntities != 1) return FALSE;
@@ -925,12 +926,19 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   clockRanges->interlaceAllowed = FALSE;
   clockRanges->doubleScanAllowed = TRUE;
 
+  /*
+   * Max memory available for the framebuffer is the total less the
+   * HW cursor space and FIFO space.
+   */
+  availableMem = pScrn->videoRam - 4096 -
+		 (((255 <= CMDFIFO_PAGES) ? 255 : CMDFIFO_PAGES) << 12);
+
   i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			pScrn->display->modes, clockRanges,
 			0, 320, 2048, 16*pScrn->bitsPerPixel, 
 			200, 1536,
-			pScrn->virtualX, pScrn->virtualY,
-			pTDFX->FbMapSize, LOOKUP_BEST_REFRESH);
+			pScrn->display->virtualX, pScrn->display->virtualY,
+			availableMem, LOOKUP_BEST_REFRESH);
 
   if (i==-1) {
     TDFXFreeRec(pScrn);
@@ -1713,6 +1721,9 @@ calcBufferSize(int xres, int yres, Bool tiled, int cpp)
 static void allocateMemory(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX;
   int memRemaining, fifoSize, screenSizeInTiles, cursorSize;
+  int fbSize;
+  int verb;
+  char *str;
 
   pTDFX = TDFXPTR(pScrn);
 
@@ -1725,6 +1736,14 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
     screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY,
 				     TRUE, 4);
   }
+
+  /*
+   * Layout is:
+   *    cursor, fifo, fb, tex, bb, db
+   */
+
+  fbSize = (pScrn->virtualY + pTDFX->pixmapCacheLinesMin) * pTDFX->stride;
+
   memRemaining=((pScrn->videoRam<<10) - 1) &~ 0xFFF;
   /* Note that a page is 4096 bytes, and a  */
   /* tile is 32 x 128 = 4096 bytes.  So,    */
@@ -1734,10 +1753,12 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   pTDFX->depthOffset = (memRemaining - screenSizeInTiles) &~ 0xFFF;
   if ((pTDFX->depthOffset & (0x1 << 12)) == 0) {
 #if	1
+    if (pTDFX->depthOffset > 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                  "Changing depth offset from 0x%08x to 0x%08x\n",
                  pTDFX->depthOffset,
                  pTDFX->depthOffset - (0x1 << 12));
+    }
 #endif
       pTDFX->depthOffset -= (0x1 << 12);
   }
@@ -1746,10 +1767,12 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   pTDFX->backOffset = (pTDFX->depthOffset - screenSizeInTiles) &~ 0xFFF;
   if (pTDFX->backOffset & (0x1 << 12)) {
 #if	1
+    if (pTDFX->backOffset > 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                  "Changing back offset from 0x%08x to 0x%08x\n",
                  pTDFX->backOffset,
                  pTDFX->backOffset - (0x1 << 12));
+    }
 #endif
       pTDFX->backOffset -= (0x1 << 12);
   }
@@ -1765,46 +1788,62 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   /* it to be on a page boundary too, just  */
   /* for giggles.                           */
   pTDFX->fbOffset = pTDFX->fifoOffset + pTDFX->fifoSize;
-  pTDFX->texOffset = pTDFX->fbOffset +
-                ((pScrn->virtualY+pTDFX->pixmapCacheLinesMin)*pTDFX->stride);
-  pTDFX->texSize = pTDFX->backOffset - pTDFX->texOffset;
-  pTDFX->cursorOffset = 0;
-  if (pTDFX->texSize < 0) {
-    pTDFX->backOffset = -1;
+  pTDFX->texOffset = pTDFX->fbOffset + fbSize;
+  if (pTDFX->depthOffset <= pTDFX->texOffset ||
+	pTDFX->backOffset <= pTDFX->texOffset) {
+    /*
+     * pTDFX->texSize < 0 means that the DRI is disabled.  pTDFX->backOffset
+     * is used to calculate the maximum amount of memory available for
+     * 2D offscreen use.  With DRI disabled, set this to the top of memory.
+     */
+
+    pTDFX->texSize = -1;
+    pTDFX->backOffset = pScrn->videoRam * 1024;
     pTDFX->depthOffset = -1;
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "No Texture Memory available, disabling DRI\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	"Not enough video memory available for textures and depth buffer\n"
+	"\tand/or back buffer.  Disabling DRI.  To use DRI try lower\n"
+	"\tresolution modes and/or a smaller virtual screen size\n");
   } else {
+    pTDFX->texSize = pTDFX->backOffset - pTDFX->texOffset;
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Textures Memory %0.02f MB\n",
 		(float)pTDFX->texSize/1024.0/1024.0);
   }
 
-#if	1
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+/* This could be set to 2 or 3 */
+#define OFFSET_VERB 1
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, OFFSET_VERB,
              "Cursor Offset: [0x%08X,0x%08X)\n",
              pTDFX->cursorOffset,
              pTDFX->cursorOffset + cursorSize);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, OFFSET_VERB,
              "Fifo Offset: [0x%08X, 0x%08X)\n",
              pTDFX->fifoOffset,
              pTDFX->fifoOffset + pTDFX->fifoSize);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-             "Texture Offset: [0x%08X, 0x%08X)\n",
-             pTDFX->texOffset,
-             pTDFX->texOffset + pTDFX->texSize);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, OFFSET_VERB,
              "Front Buffer Offset: [0x%08X, 0x%08X)\n",
              pTDFX->fbOffset,
              pTDFX->fbOffset +
 		(pScrn->virtualY+pTDFX->pixmapCacheLinesMin)*pTDFX->stride);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-             "BackOffset: [0x%08X, 0x%08X)\n",
+  if (pTDFX->texSize > 0) {
+    verb = OFFSET_VERB;
+    str = "";
+  } else {
+    verb = 3;
+    str = "(NOT USED) ";
+  }
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, verb,
+             "%sTexture Offset: [0x%08X, 0x%08X)\n", str,
+             pTDFX->texOffset,
+             pTDFX->texOffset + pTDFX->texSize);
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, verb,
+             "%sBackOffset: [0x%08X, 0x%08X)\n", str,
              pTDFX->backOffset,
              pTDFX->backOffset + screenSizeInTiles);
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-             "DepthOffset: [0x%08X, 0x%08X)\n",
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, verb,
+             "%sDepthOffset: [0x%08X, 0x%08X)\n", str,
              pTDFX->depthOffset,
              pTDFX->depthOffset + screenSizeInTiles);
-#endif	/* 0/1 */
 }
 
 static Bool
@@ -1815,6 +1854,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   VisualPtr visual;
   BoxRec MemBox;
   MessageType driFrom = X_DEFAULT;
+  int scanlines;
 
   TDFXTRACE("TDFXScreenInit start\n");
   pScrn = xf86Screens[pScreen->myNum];
@@ -1854,18 +1894,23 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     return FALSE;
   }
 
-  pTDFX->pixmapCacheLinesMax = (pTDFX->backOffset - pTDFX->fbOffset) / 
-				pTDFX->stride;
-
+  scanlines = (pTDFX->backOffset - pTDFX->fbOffset) / pTDFX->stride;
   if(pTDFX->ChipType < PCI_CHIP_VOODOO5) {
-      if(pTDFX->pixmapCacheLinesMax > 2048) 
-	pTDFX->pixmapCacheLinesMax = 2048;
+      if (scanlines > 2048) 
+	scanlines = 2048;
   } else {
       /* MaxClip seems to have only 12 bits => 0->4095 */
-      if(pTDFX->pixmapCacheLinesMax > 4095) 
-	pTDFX->pixmapCacheLinesMax = 4095;
+      if (scanlines > 4095) 
+	scanlines = 4095;
   }
 
+  pTDFX->pixmapCacheLinesMax = scanlines - pScrn->virtualY;
+
+  /*
+   * Note, pTDFX->pixmapCacheLinesMax may be smaller than
+   * pTDFX->pixmapCacheLinesMin when pTDFX->texSize < 0.  DRI is disabled
+   * in that case, so pTDFX->pixmapCacheLinesMin isn't used when that's true.
+   */
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
     "%i lines of offscreen memory available for 2D and video\n", 
 	pTDFX->pixmapCacheLinesMax);
@@ -1873,7 +1918,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   MemBox.y1 = 0;
   MemBox.x1 = 0;
   MemBox.x2 = pScrn->displayWidth;
-  MemBox.y2 = pTDFX->pixmapCacheLinesMax;
+  MemBox.y2 = scanlines;
 
   pTDFX->maxClip = MemBox.x2 | (MemBox.y2 << 16);
 
@@ -1900,7 +1945,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_DRI, TRUE) || pTDFX->NoAccel) {
       pTDFX->directRenderingEnabled = FALSE;
       driFrom = X_CONFIG;
-  } else if ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1)) {
+  } else if (pTDFX->texSize < 0) {
       pTDFX->directRenderingEnabled = FALSE;
       driFrom = X_PROBED;
   } else {
