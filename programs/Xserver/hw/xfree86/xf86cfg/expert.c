@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.1 2000/11/30 20:55:16 paulo Exp $
  */
 
 #include "config.h"
@@ -1548,7 +1548,7 @@ NewVideoPortCallback(Widget unused, XtPointer user_data, XtPointer call_data)
     if (*label == '\0')
 	return;
 
-    video = node->parent;
+    video = node->parent->parent;
     DeleteNode(node);
     port = (XF86ConfVideoPortPtr)XtCalloc(1, sizeof(XF86ConfVideoPortRec));
     port->vp_identifier = XtNewString(label);
@@ -1814,11 +1814,6 @@ NewMonitorCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	xf86addMonitor(XF86Config->conf_monitor_lst, mon);
 
     CreateMonitor(parent, mon);
-
-    node = parent->child;
-    while (node->next)
-	node = node->next;
-    ToggleNode(parent->child, False);
 
     RelayoutTree();
 }
@@ -3487,13 +3482,15 @@ CreateLayoutField(TreeNode *node, Bool addnew)
 					XtNlabel, lay->lay_identifier, NULL, 0);
 
 	command = XtVaCreateManagedWidget("Adjacency", toggleWidgetClass, tree,
-					  XtNstate, True, NULL, 0);
+					  XtNstate, True, XtNtreeParent, box,
+					  NULL, 0);
 	adjacency = NewNode(node, command, command, box, NULL);
 	node->child = adjacency;
 	CreateAdjacency(adjacency, lay->lay_adjacency_lst);
 
 	command = XtVaCreateManagedWidget("Inputref", toggleWidgetClass, tree,
-					  XtNstate, True, NULL, 0);
+					  XtNstate, True, XtNtreeParent, box,
+					  NULL, 0);
 	inputref = NewNode(node, command, command, box, NULL);
 	adjacency->next = inputref;
 	CreateInputref(inputref, lay->lay_input_lst);
@@ -3538,7 +3535,7 @@ NewLayoutCallback(Widget unused, XtPointer user_data, XtPointer call_data)
     DeleteNode(node);
     lay = (XF86ConfLayoutPtr)XtCalloc(1, sizeof(XF86ConfLayoutRec));
     lay->lay_identifier = XtNewString(label);
-    XF86Config->conf_layout_lst = xf86addLayout(XF86Config, lay);
+    XF86Config->conf_layout_lst = xf86addLayout(XF86Config->conf_layout_lst, lay);
 
     CreateLayout(parent, lay);
     RelayoutTree();
