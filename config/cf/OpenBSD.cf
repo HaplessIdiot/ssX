@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.106 2004/06/11 00:02:16 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.107tsi Exp $
 XCOMM
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -871,6 +871,10 @@ install::								@@\
 
 # include <xfree86.cf>
 
+# ifdef DefaultGcc2PpcOpt
+#  define OptimizedCDebugFlags	DefaultGcc2PpcOpt
+# endif
+
 #endif /* PpcArchitecture */
 
 /*
@@ -918,6 +922,10 @@ install::								@@\
 # define BuildXInputExt		NO
 # include <xfree86.cf>
 
+# ifdef DefaultGcc2SparcOpt
+#  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
+# endif
+
 #endif /* SparcArchitecture */
 
 /*
@@ -946,6 +954,10 @@ install::								@@\
 # endif
 
 # include <xfree86.cf>
+
+# if defined(DefaultGcc2SparcOpt) && !defined(OptimizedCDebugFlags)
+#  define OptimizedCDebugFlags	DefaultGcc2SparcOpt
+# endif
 
 #endif /* Sparc64Architecture */
 

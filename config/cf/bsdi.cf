@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.38 2004/01/25 01:12:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.39tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -152,20 +152,20 @@ XCOMM xf86site.def
 #  define CcCmd			gcc /* shlicc */
 #  define CplusplusCmd		g++ /* shlicc++ */
 #  if ((OSMajorVersion == 4 && OSMinorVersion >= 2) || (OSMajorVersion > 4))
-#   define OptimizedCDebugFlags	-O3 -mcpu=pentiumpro -march=pentium
+#   define OptimizedCDebugFlags	-O3 -mcpu=pentiumpro -march=pentium GccAliasingArgs
 #  else
-#   define OptimizedCDebugFlags	-O2 -m486
+#   define OptimizedCDebugFlags	-O2 -m486 GccAliasingArgs
 #  endif
 # endif
 # ifdef PpcArchitecture
 #  define CcCmd			gcc
 #  define CplusplusCmd		g++
-#  define OptimizedCDebugFlags	-O2
+#  define OptimizedCDebugFlags	-O2 GccAliasingArgs
 # endif
 # ifdef SparcArchitecture
 #  define CcCmd			gcc
 #  define CplusplusCmd		g++
-#  define OptimizedCDebugFlags	-O2 -cpu=v8 -mtune=v8
+#  define OptimizedCDebugFlags	-O2 -cpu=v8 -mtune=v8 GccAliasingArgs
 # endif
 #else
 # define CcCmd			cc
