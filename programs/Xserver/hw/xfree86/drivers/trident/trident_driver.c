@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.114 2000/12/07 16:48:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.115 2000/12/07 18:32:58 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1076,15 +1076,27 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 1:
 	case 4:
 	case 8:
-	case 15:
-	case 16:
 	    if (pScrn->bitsPerPixel != pScrn->depth) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	     "Given depth (%d)/ fbbpp (%d) is not supported by this driver\n",
 		       pScrn->depth, pScrn->bitsPerPixel);
 		return FALSE;
 	    }
+	case 15:
+	case 16:
+	    if (pScrn->bitsPerPixel != 16) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	     "Given depth (%d)/ fbbpp (%d) is not supported by this driver\n",
+		       pScrn->depth, pScrn->bitsPerPixel);
+		return FALSE;
+	    }
 	case 24:
+	    if ((pScrn->bitsPerPixel != 24) || (pScrn->bitsPerPixel != 32)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	     "Given depth (%d)/ fbbpp (%d) is not supported by this driver\n",
+		       pScrn->depth, pScrn->bitsPerPixel);
+		return FALSE;
+	    }
 	    /* OK */
 	    break;
 	default:
