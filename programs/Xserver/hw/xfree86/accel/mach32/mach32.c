@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.19 1994/09/18 08:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.20 1994/09/22 15:48:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -65,6 +65,7 @@ extern int mach32MaxTlc34075Clock;
 extern int mach32Max16bppClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
+extern char *xf86VisualNames[];
 
 ScrnInfoRec mach32InfoRec = {
     FALSE,		/* Bool configured */
@@ -410,8 +411,16 @@ mach32Probe()
 #endif
 	mach32InfoRec.depth = 16;	/* if 555, set to 15, below */
 	mach32InfoRec.bitsPerPixel = 16;
-	mach32InfoRec.defaultVisual = TrueColor;
-	defaultColorVisualClass = TrueColor;
+	if (mach32InfoRec.defaultVisual < 0)
+	    mach32InfoRec.defaultVisual = TrueColor;
+	if (defaultColorVisualClass < 0)
+	    defaultColorVisualClass = mach32InfoRec.defaultVisual;
+	if (defaultColorVisualClass != TrueColor) {
+	    ErrorF("Invalid default visual type: %d (%s)\n",
+		   defaultColorVisualClass,
+		   xf86VisualNames[defaultColorVisualClass]);
+	}
+	return(FALSE);
 	break;
     default:
 #if 0

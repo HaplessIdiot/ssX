@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.11 94/04/07 15:42:57 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.6 1994/09/18 08:46:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.7 1994/09/19 13:36:21 dawes Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -91,6 +91,9 @@ install.man::                                                           @@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.0 $(DESTDIR)destdir/dest.0; \@@\
 	fi
 
+#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+	InstallManPageLong(file,destdir,dest)
+
 #define InstallMultipleManSuffix(list,dest,suff)                        @@\
 install.man:: 								@@\
 	MakeDir($(DESTDIR)dest)						@@\
@@ -114,6 +117,9 @@ install.man:: 								@@\
 		(cd $(DESTDIR)destdir; $(LN) file.0 $$i.0);\  		@@\
 		); \							@@\
 	done
+
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+	InstallManPageAliases(file,destdir,aliases)
 
 /*
  * These seem redundant, but leave them in for now.
