@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.11 1994/09/23 10:06:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.12 1994/09/24 15:11:50 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -105,6 +105,10 @@ For Mach8, the maximum virtual width is 1024.
 .PP
 For 8514 the maximum resolution is 1024x768.
 .PP
+For the AGX chips, maximum resolution depends upon the chip revision
+and amount of available display memory. 
+Refer to \fIREADME.agx\fP for configuration details.
+.PP
 For the P9000, the virtual and physical resolutions must be the
 same.  With sufficient memory, resolutions up to 1280x1024 are supported.
 .SH OPTIONS
@@ -129,8 +133,9 @@ See the
 .I XF86Config(4/5)
 manpage for general details. Here only the
 parts specific to the
-.I XF86_S3, XF86_Mach8, XF86_Mach32, XF86_P9000, XF86_AGX, XF86_W32
-and
+.I XF86_S3, XF86_Mach8, XF86_Mach32, XF86_P9000, XF86_AGX,
+.I XF86_W32
+and 
 .I XF86_8514
 servers are explained.
 .PP
@@ -200,6 +205,10 @@ agx-010
 xga-2
 .TP 12
 xga-1
+(note: only the agx-016, agx-015, and agx-014 have been tested.
+Refer to the XGA section of \fIREADME.agx\fP before attempting
+to use the other chipsets.
+)
 .RE
 .RS 8
 .PP
@@ -253,8 +262,10 @@ This specifies the type of RAMDAC used on the board.  Only the S3 and
 AGX servers use this.
 .sp
 \fBnormal\fP - (S3, AGX) Card does not have one of the other RAMDACs mentioned
-here.  This option is only required if the server incorrectly detects one
-of those other RAMDACs.
+here.  This option is only required for the S3 server if the server 
+incorrectly detects one of those other RAMDACs. 
+The AGX server does not yet auto-detect RAMDACs, this 
+is the default if no RAMDAC is specified.
 .sp
 \fBatt20c490\fP - (S3) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
@@ -297,11 +308,11 @@ requires a dot clock higher than 70MHz.
 .sp
 \fBbt482\fP - (AGX) Card has a BrookTree Bt482 RAMDAC.
 .sp
-\fBherc_dual_dac\fP - (AGX) Card (Hercules Graphite Pro) has both the large
-and small RAMDACs installed.
+\fBherc_dual_dac\fP - (AGX) Card (Hercules Graphite Pro) has both the
+84-pin (Bt485 or AT&T20C505) and 44-pin (Bt481 or Bt482) RAMDACs installed.
 .sp
 \fBherc_small_dac\fP - (AGX) Card (Hercules Graphite Pro) has only the
-small RAMDAC installed.
+44-pin (Bt481 or Bt482) RAMDAC installed.
 .TP 8
 .B IOBase \fIioaddress\fP
 specified the base address for extended IO registers.  This is only
@@ -365,10 +376,11 @@ is ignored for the 864 and 964 chips.
 .sp
 \fBsw_cursor\fP - (Mach32, P9000) Disable the hardware cursor.
 .sp
-\fBdac_8_bit\fP - (S3, Mach32) Enables 8-bit per RGB.  Currently only
+\fBdac_8_bit\fP - (S3, Mach32, AGX) Enables 8-bit per RGB.  Currently only
 supported with the Ti3020/5, Bt485, AT&T 20C505, AT&T 20C490/1,
-Sierra SC15025/6, AT&T 20C498 and STG1700 (S3 server)
-and ATI68875/TLC34075/Bt885 (Mach32 server) RAMDACs.
+Sierra SC15025/6, AT&T 20C498 and STG1700 (S3 server),
+Bt481 and Bt482 (AGX server),
+ATI68875/TLC34075/Bt885 (Mach32 server) RAMDACs.
 .sp
 \fBsync_on_green\fP - (S3, P9000) Enables generation of sync on the green
 signal on cards with Bt485, AT&T 20C505 or Ti3020/5 RAMDACs.
@@ -449,6 +461,15 @@ Server configuration file
 .TP 30
 <XRoot>/lib/X11/XF86Config
 Server configuration file (secondary location)
+.TP 30
+<XRoot>/lib/X11/doc/README.agx
+Extra documentation for the AGX server
+.TP 30
+<XRoot>/lib/X11/doc/README.P9000
+Extra documentation for the P9000 server
+.TP 30
+<XRoot>/lib/X11/doc/README.S3
+Extra documentation for the S3 server
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"

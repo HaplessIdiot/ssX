@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.14 1994/09/20 12:44:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.15 1994/09/23 10:07:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -521,6 +521,20 @@ agxProbe()
    }
    agxInfoRec.maxClock = xf86MaxClock;
 
+   /*
+    * Save the VGA state
+    */
+   agxSavedState = agxHWSave(agxSavedState, sizeof(agxSaveBlock));
+   agxClearColor0();
+   outb(agxIdxReg, 0);
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0x00);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0x00);
+   }
+
    /* 
     * The Hercules specific routines are also generic for accessing
     * RAMDAC registers 0-7.
@@ -563,19 +577,6 @@ agxProbe()
       agxInfoRec.maxClock = xf86MaxClock;
    }
 
-   agxSavedState = agxHWSave(agxSavedState, sizeof(agxSaveBlock));
-
-   
-
-   agxClearColor0();
-   outb(agxIdxReg, 0);
-   if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_PAL_MASK);
-      outb(agxByteData, 0x00);
-   }
-   else {
-      outb(VGA_PAL_MASK, 0x00);
-   }
    agxSetUpProbeCRTC( &agxProbeCRTC ); 
    agxSetCRTCRegs(&agxProbeCRTC);
    agxInitGE();
