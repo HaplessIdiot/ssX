@@ -1,7 +1,23 @@
-XFree86 4.0.1Za (x December 2000)
-1157 Add Darwin documentation (Torrey T. Lyons).
-1156 Add Darwin bindist files and update Xinstall.sh (Matthieu Herrb).
-1155 Update bindist files for NetBSD 1.5 ELF (Matthieu Herrb).
+XFree86 4.0.1Za (11 December 2000)
+1165. Update the release notes for the i18n and Unicode support (#4366,
+      Bruno Haible).
+1164. Document most of the environment variables that can influence libX11
+      and libXt in the 'X' man page (#4365, Bruno Haible).
+1163. Update the ICCCM spec document to relfect the selection targets currently
+      used in XFree86 (#4364, Bruno Haible).
+1162. Update the CTEXT spec document to reflect part of the current
+      practice in XFree86 (#4363, Bruno Haible).
+1161. Augment SpecsDocDirs to reflect additional docs that have XFree86 changes
+      (#4363, Bruno Haible).
+1160. Fix Xv library references in the xvinfo Imakefile (#4361,
+      Thomas Mueller).
+1159. Fix a signed/unsigned error in the calculation of 16-bit displacements
+      in x86emu (#4359, Tim Roberts).
+1158. Fix "noaccel" option in the tdfx driver when building without DRI
+      (David Dawes).
+1157. Add Darwin documentation (Torrey T. Lyons).
+1156. Add Darwin bindist files and update Xinstall.sh (Matthieu Herrb).
+1155. Update bindist files for NetBSD 1.5 ELF (Matthieu Herrb).
 1154. Add DGA support to I128 driver (Robin Cutshaw).
 
 XFree86 4.0.1Z (8 December 2000)
@@ -12006,4 +12022,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1464 2000/12/11 01:55:45 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1465 2000/12/11 07:25:58 herrb Exp $
