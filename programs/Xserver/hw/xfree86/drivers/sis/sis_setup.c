@@ -459,7 +459,7 @@ sis315Setup(ScrnInfoPtr pScrn)
 	    pSiS->BusWidth);
 }
 
-/* For 550, 65x, 74x, 660 */
+/* For 550, 65x, 74x, 660, 760 */
 static  void
 sis550Setup(ScrnInfoPtr pScrn)
 {

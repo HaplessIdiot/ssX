@@ -164,9 +164,7 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SIS550,	    "SIS550" },
     { PCI_CHIP_SIS650,      "SIS650/M650/651/661FX/M661FX/740/741" },
     { PCI_CHIP_SIS330,      "SIS330(Xabre)" },
-#if 0
-    { PCI_CHIP_SIS660,      "SIS660/M660/760/M760" },
-#endif
+    { PCI_CHIP_SIS660,      "SIS760" },
     { -1,                   NULL }
 };
 
@@ -183,9 +181,7 @@ static PciChipsets SISPciChipsets[] = {
     { PCI_CHIP_SIS315PRO,   PCI_CHIP_SIS315PRO, RES_SHARED_VGA },
     { PCI_CHIP_SIS650,      PCI_CHIP_SIS650,    RES_SHARED_VGA },
     { PCI_CHIP_SIS330,      PCI_CHIP_SIS330,    RES_SHARED_VGA },
-#if 0
     { PCI_CHIP_SIS660,      PCI_CHIP_SIS660,    RES_SHARED_VGA },
-#endif
     { -1,                   -1,                 RES_UNDEFINED }
 };
 
@@ -7554,7 +7550,6 @@ SISSaveScreen(ScreenPtr pScreen, int mode)
 
     	SISPtr pSiS = SISPTR(pScrn);
 
-	/* enable access to extended sequencer registers */
 #ifdef UNLOCK_ALWAYS
         sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -7631,84 +7626,88 @@ static Bool
 SISSaveScreenDH(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    Bool checkit = FALSE;
 
     if((pScrn != NULL) && pScrn->vtSema) {
 
-    	SISPtr pSiS = SISPTR(pScrn);
-	if(pSiS->SecondHead) {
+       SISPtr pSiS = SISPTR(pScrn);
 
-	    /* Slave head is always CRT1 */
-	    return vgaHWSaveScreen(pScreen, mode);
+       if((pSiS->SecondHead) && (!(pSiS->VBFlags & CRT1_LCDA))) {
 
-	} else {
+	  /* Slave head is always CRT1 */
+	  return vgaHWSaveScreen(pScreen, mode);
 
-	    /* Master head is always CRT2 */
+       } else {
 
-	    /* We can only blank LCD, not other CRT2 devices */
-	    if(!(pSiS->VBFlags & CRT2_LCD)) return TRUE;
+	  /* Master head is always CRT2 */
+	  /* But we land here if CRT1 is LCDA, too */
 
-	    /* enable access to extended sequencer registers */
+	  /* We can only blank LCD, not other CRT2 devices */
+	  if(!(pSiS->VBFlags & (CRT2_LCD|CRT1_LCDA))) return TRUE;
+
+	  /* enable access to extended sequencer registers */
 #ifdef UNLOCK_ALWAYS
-            sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+          sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
- 	    if(pSiS->VGAEngine == SIS_300_VGA) {
+ 	  if(pSiS->VGAEngine == SIS_300_VGA) {
 
-	        if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
-		   if(!xf86IsUnblank(mode)) {
-		         pSiS->BlankCRT2 = TRUE;
-			 SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
-		   } else {
-		         pSiS->BlankCRT2 = FALSE;
-		         SiS_SiS30xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
-		   }
-		} else if(pSiS->VBFlags & (VB_LVDS|VB_30xBDH)) {
-		   if(!pSiS->BlankCRT2) {
-		        inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
-		   }
-		   if(!xf86IsUnblank(mode)) {
-    			pSiS->BlankCRT2 = TRUE;
-			outSISIDXREG(SISSR, 0x11, pSiS->LCDon | 0x08);
-		   } else {
-    			pSiS->BlankCRT2 = FALSE;
-			outSISIDXREG(SISSR, 0x11, pSiS->LCDon);
-		   }
+	     if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+	        checkit = TRUE;
+	        if(!xf86IsUnblank(mode)) {
+		   SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
+		} else {
+		   SiS_SiS30xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
 		}
-
-            } else if(pSiS->VGAEngine == SIS_315_VGA) {
-
- 		if(!pSiS->BlankCRT2) {
-			inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+	     } else if(pSiS->VBFlags & (VB_LVDS|VB_30xBDH)) {
+	        if(!pSiS->BlankCRT2) {
+		   inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
 		}
-
-	        if(pSiS->VBFlags & VB_CHRONTEL) {
-		      if(!xf86IsUnblank(mode)) {
-			  pSiS->BlankCRT2 = TRUE;
-			  SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
-		      } else {
-		          pSiS->BlankCRT2 = FALSE;
-		          SiS_Chrontel701xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
-		      }
-		} else if(pSiS->VBFlags & VB_LVDS) {
-		      if(!xf86IsUnblank(mode)) {
-		         pSiS->BlankCRT2 = TRUE;
-			 outSISIDXREG(SISSR, 0x11, pSiS->LCDon | 0x08);
-		      } else {
-		         pSiS->BlankCRT2 = FALSE;
-			 outSISIDXREG(SISSR, 0x11, pSiS->LCDon);
-		      }
-		} else if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
-		      if(!xf86IsUnblank(mode)) {
-		         pSiS->BlankCRT2 = TRUE;
-			 SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
-		      } else {
-		         pSiS->BlankCRT2 = FALSE;
-		         SiS_SiS30xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
-		      }
+		checkit = TRUE;
+		if(!xf86IsUnblank(mode)) {
+		   outSISIDXREG(SISSR, 0x11, pSiS->LCDon | 0x08);
+		} else {
+		   outSISIDXREG(SISSR, 0x11, pSiS->LCDon);
 		}
+	     }
 
-	    }
-	}
+          } else if(pSiS->VGAEngine == SIS_315_VGA) {
+
+ 	     if(!pSiS->BlankCRT2) {
+	 	inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+	     }
+
+	     if(pSiS->VBFlags & VB_CHRONTEL) {
+	        checkit = TRUE;
+		if(!xf86IsUnblank(mode)) {
+		   SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
+		} else {
+		   SiS_Chrontel701xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
+		}
+	     } else if(pSiS->VBFlags & VB_LVDS) {
+	        checkit = TRUE;
+		if(!xf86IsUnblank(mode)) {
+		   outSISIDXREG(SISSR, 0x11, pSiS->LCDon | 0x08);
+		} else {
+		   outSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+		}
+	     } else if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+	        checkit = TRUE;
+		if(!xf86IsUnblank(mode)) {
+		   SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
+		} else {
+		   SiS_SiS30xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
+		}
+	     }
+
+	  }
+
+	  if(checkit) {
+	     if(!pSiS->SecondHead) pSiS->BlankCRT2 = xf86IsUnblank(mode) ? FALSE : TRUE;
+	     else if(pSiS->VBFlags & CRT1_LCDA) pSiS->Blank = xf86IsUnblank(mode) ? FALSE : TRUE;
+	  }
+
+       }
     }
     return TRUE;
 }

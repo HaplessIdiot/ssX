@@ -1445,7 +1445,7 @@ static const SiS_LVDSDesStruct SiS_PanelType1076_1[]=
 	{ 0 , 0},
 	{ 0 , 0},
 	{ 0 , 0},
-	{ 0 , 0},
+	{ 0 , 805 },   /* was 0, 0 -> top line cut away (26/09/03) */
 	{ 0 , 0},
 	{ 0 , 0}
 };
@@ -1458,7 +1458,7 @@ static const SiS_LVDSDesStruct SiS_PanelType1076_2[]=
 	{ 1184, 597 },
 	{ 1152, 622 },
 	{ 1232, 722 },
-	{    0, 0   },
+	{    0, 805 },  /* was 0, 0 -> top line cut away (26/09/03) */
 	{    0, 794 },
 	{    0, 0   }
 };

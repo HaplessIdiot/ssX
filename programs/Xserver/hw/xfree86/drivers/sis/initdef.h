@@ -36,26 +36,6 @@
 #ifndef _INITDEF_
 #define _INITDEF_
 
-#define SiS300                  0x0300
-#define SiS540                  0x5300
-#define SiS630                  0x6300
-#define SiS730                  0x6300
-
-/* SiS_VBType */
-#define VB_SIS301	      	0x0001
-#define VB_SIS301B        	0x0002
-#define VB_SIS302B        	0x0004
-#define VB_SIS301LV     	0x0008
-#define VB_SIS302LV     	0x0010
-#define VB_SIS301C              0x0020
-#define VB_SIS30xLV		VB_SIS301LV
-#define VB_SIS30xNEW		VB_SIS302LV
-#define VB_NoLCD        	0x8000
-#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV)
-#define VB_SIS301B302B          (VB_SIS301B|VB_SIS301C|VB_SIS302B)
-#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV)
-#define VB_SISVB		(VB_SIS301 | VB_SIS301BLV302BLV)
-
 #define IS_SIS330		(HwInfo->jChipType == SIS_330)
 #define IS_SIS550		(HwInfo->jChipType == SIS_550)
 #define IS_SIS650		(HwInfo->jChipType == SIS_650)
@@ -73,9 +53,42 @@
 #define IS_SIS650740660         (IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
 #define IS_SIS550650740660      (IS_SIS550 || IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
 
-#define CRT1Len                 17
-#define LVDSCRT1Len             15
-#define CHTVRegDataLen          5
+/* SiS_VBType */
+#define VB_SIS301	      	0x0001
+#define VB_SIS301B        	0x0002
+#define VB_SIS302B        	0x0004
+#define VB_SIS301LV     	0x0008
+#define VB_SIS302LV     	0x0010
+#define VB_SIS301C              0x0020
+#define VB_NoLCD        	0x8000
+#define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS301C|VB_SIS302B|VB_SIS301LV|VB_SIS302LV)
+#define VB_SIS301B302B          (VB_SIS301B|VB_SIS301C|VB_SIS302B)
+#define VB_SIS301LV302LV        (VB_SIS301LV|VB_SIS302LV)
+#define VB_SISVB		(VB_SIS301 | VB_SIS301BLV302BLV)
+
+/* VBInfo */
+#define SetSimuScanMode         0x0001   /* CR 30 */
+#define SwitchCRT2              0x0002
+#define SetCRT2ToAVIDEO         0x0004
+#define SetCRT2ToSVIDEO         0x0008
+#define SetCRT2ToSCART          0x0010
+#define SetCRT2ToLCD            0x0020
+#define SetCRT2ToRAMDAC         0x0040
+#define SetCRT2ToHiVisionTV     0x0080
+#define SetCRT2ToTV             0x009C   /* alias */
+#define SetNTSCTV               0x0000   /* CR 31 */
+#define SetPALTV                0x0100
+#define SetInSlaveMode          0x0200
+#define SetNotSimuMode          0x0400
+#define SetNotSimuTVMode        0x0400
+#define SetDispDevSwitch        0x0800
+#define LoadDACFlag             0x1000
+#define SetCHTVOverScan  	0x1000  /* TW: Re-defined (from 0x8000) */
+#define DisableCRT2Display      0x2000
+#define CRT2DisplayFlag         0x2000
+#define DriverMode              0x4000
+#define HotKeySwitch            0x8000  /* TW: ? */
+#define SetCRT2ToLCDA           0x8000
 
 /* SiS_ModeType */
 #define ModeText                0x00
@@ -125,30 +138,6 @@
 #define ECLKindex3              0x0300
 #define ECLKindex4              0x0400
 
-/* VBInfo */
-#define SetSimuScanMode         0x0001   /* CR 30 */
-#define SwitchCRT2              0x0002
-#define SetCRT2ToAVIDEO         0x0004
-#define SetCRT2ToSVIDEO         0x0008
-#define SetCRT2ToSCART          0x0010
-#define SetCRT2ToLCD            0x0020
-#define SetCRT2ToRAMDAC         0x0040
-#define SetCRT2ToHiVisionTV     0x0080
-#define SetCRT2ToTV             0x009C   /* alias */
-#define SetNTSCTV               0x0000   /* CR 31 */
-#define SetPALTV                0x0100
-#define SetInSlaveMode          0x0200
-#define SetNotSimuMode          0x0400
-#define SetNotSimuTVMode        0x0400
-#define SetDispDevSwitch        0x0800
-#define LoadDACFlag             0x1000
-#define SetCHTVOverScan  	0x1000  /* TW: Re-defined (from 0x8000) */
-#define DisableCRT2Display      0x2000
-#define CRT2DisplayFlag         0x2000
-#define DriverMode              0x4000
-#define HotKeySwitch            0x8000  /* TW: ? */
-#define SetCRT2ToLCDA           0x8000
-
 /* SetFlag */
 #define ProgrammingCRT2         0x01
 #define TVSimuMode              0x02
@@ -170,13 +159,6 @@
 #define SF_Is741		0x0080
 #define SF_Is660		0x8000
 
-#define PanelRGB18Bit           0x0100
-#define PanelRGB24Bit           0x0000
-
-#define TVOverScan              0x10    /* Bit in CR35 (300 series only) */
-#define TVOverScanShift         4
-#define ClearBufferFlag         0x20
-
 /* CR32 (Newer 630, and 315 series)
 
    [0]   VB connected with CVBS
@@ -187,8 +169,13 @@
    [5]   CRT1 monitor is connected
    [6]   VB connected with Hi-Vision TV
    [7]   VB connected with DVI combo connector
+*/
 
+/* CR35 (300 series only) */
+#define TVOverScan              0x10
+#define TVOverScanShift         4
 
+/*
    CR37
 
    [0]   Set 24/18 bit (0/1) RGB to LVDS/TMDS transmitter (set by BIOS)
@@ -240,14 +227,11 @@
 #define EnablePALM              0x40   /* 1 = Set PALM */
 #define EnablePALN              0x80   /* 1 = Set PALN */
 
-#define SetSCARTOutput          0x01
-#define BoardTVType             0x02
-
 #define EnablePALMN             0x40   /* Romflag: 1 = Allow PALM/PALN */
 
 /* CR39 (650) */
 #define LCDPass1_1		0x01   /* LVDS only; set by driver to pass 1:1 data to LVDS output  */
-#define Enable302LV_DualLink    0x04   /* 30xNEW (302LV) only; set by mode switching function */
+#define Enable302LV_DualLink    0x04   /* 302LV only; set by mode switching function */
 
 
 /* CR79 (315 series only)
@@ -346,21 +330,10 @@
 #define SIS_RI_768x576 27
 #define SIS_RI_1360x1024 28
 
-#define ExtChipType             0x0e
-#define ExtChip301              0x02
-#define ExtChipLVDS             0x04
-#define ExtChipTrumpion         0x06
-#define ExtChipCH7005           0x08
-#define ExtChipMitacTV          0x0a    /* TW: Incorrect, 0x0a = Chrontel 7005 only */
+/* CR5F */
+#define IsM650                  0x80
 
-#define IsM650                  0x80   	/* TW: CR5F */
-
-#define LCDDataLen              8
-#define HiTVDataLen             12
-#define TVDataLen               16
-#define SetPALTV                0x0100
-#define HalfDCLK                0x1000  /* modeflag */
-
+/* Timing data */
 #define NTSCHT                  1716
 #define NTSC2HT                 1920
 #define NTSCVT                  525
@@ -372,9 +345,6 @@
 #define StHiTextTVVT            1126
 #define ExtHiTVHT               2100
 #define ExtHiTVVT               1125
-
-#define VCLKStartFreq           25
-#define SoftDramType            0x80
 
 /* Indices in (VB)VCLKData tables */
 
@@ -405,22 +375,10 @@
 
 /* ------------------------------ */
 
-#define LoadDACFlag             0x1000
-#define AfterLockCRT2           0x4000
-#define SetCRT2ToAVIDEO         0x0004
-#define SetCRT2ToSCART          0x0010
-#define Ext2StructSize          5
-
 #define SetSCARTOutput          0x01
-#define AVIDEOSense             0x01
-#define SVIDEOSense             0x02
-#define SCARTSense              0x04
-#define LCDSense                0x08
-#define Monitor1Sense           0x20
-#define Monitor2Sense           0x10
-#define HiTVSense               0x40
-#define BoardTVType             0x02
+
 #define HotPlugFunction         0x08
+
 #define StStructSize            0x06
 
 #define SIS_VIDEO_CAPTURE       0x00 - 0x30
@@ -437,6 +395,10 @@
 #define ADR_CHTVVCLKPtr         0x216
 #define ADR_CHTVRegDataPtr      0x218
 
+#define LCDDataLen              8
+#define HiTVDataLen             12
+#define TVDataLen               16
+
 #define LVDSDataLen             6
 #define EnableLVDSDDA           0x10
 #define LVDSDesDataLen          3
@@ -449,8 +411,6 @@
 #define SoftSettingAddr         0x52
 #define ModeSettingAddr         0x53
 
-#define SelectCRT1Rate          0x4
-        
 #define _PanelType00             0x00
 #define _PanelType01             0x08
 #define _PanelType02             0x10
@@ -469,7 +429,8 @@
 #define _PanelType0F             0x78
 
 #define PRIMARY_VGA       	0     /* 1: SiS is primary vga 0:SiS is secondary vga */
-#define BIOSIDCodeAddr          0x235  /* TW: Offsets to ptrs in BIOS image */
+
+#define BIOSIDCodeAddr          0x235  /* Offsets to ptrs in BIOS image */
 #define OEMUtilIDCodeAddr       0x237
 #define VBModeIDTableAddr       0x239
 #define OEMTVPtrAddr            0x241
