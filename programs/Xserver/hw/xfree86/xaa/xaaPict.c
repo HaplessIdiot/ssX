@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.2 2000/10/10 22:35:35 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.3 2000/10/21 22:26:20 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -314,6 +314,9 @@ XAAComposite (CARD8      op,
 		       height);    
     }
 
+    if(pDst->pDrawable->type == DRAWABLE_PIXMAP)
+	(XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pDst->pDrawable)))->flags |= DIRTY;
+
     XAA_RENDER_EPILOGUE(pScreen, Composite, XAAComposite);
 }
 
@@ -340,5 +343,9 @@ XAAGlyphs (CARD8         op,
        (*GetPictureScreen(pScreen)->Glyphs) (op, pSrc, pDst, maskFormat,
 					  xSrc, ySrc, nlist, list, glyphs);
     }
+
+    if(pDst->pDrawable->type == DRAWABLE_PIXMAP)
+	(XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pDst->pDrawable)))->flags |= DIRTY;
+
     XAA_RENDER_EPILOGUE(pScreen, Glyphs, XAAGlyphs);
 }
