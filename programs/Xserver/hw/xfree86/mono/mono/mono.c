@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.31 1997/03/04 10:42:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.32 1997/03/07 00:29:48 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -36,6 +36,7 @@
 #include "mono.h"
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern int vga256ValidTokens[];
 
 void monoPrintIdent(
 #if NeedFunctionPrototypes
@@ -133,14 +134,10 @@ ScrnInfoRec monoInfoRec = {
   NULL,			/* char *clockprog */
   -1,			/* int textclock */
   TRUE,			/* Bool bankedMono */
-#ifdef XFree86LOADER
   "SVGA",		/* char *name */
-#else
-  "MONO",		/* char *name */
-#endif
   {0, },		/* xrgb blackColour */
   {0, },		/* xrgb whiteColour */
-  monoValidTokens,	/* int *validTokens */
+  vga256ValidTokens,	/* int *validTokens */
   MONO_PATCHLEVEL,	/* char *patchLevel */
   0,			/* int IObase */
   0,			/* int PALbase */
@@ -283,9 +280,10 @@ Bool      /* on */
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
-#ifdef XFree86LOADER
+/*
+ * we now have a unified structure for all drivers
+ */
 #define monoDrivers videoDrivers
-#endif
 
 extern monoVideoChipPtr monoDrivers[];
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.52 1997/02/17 14:23:19 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.53 1997/02/24 17:47:13 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,12 +118,10 @@
  */
 Bool clgd6225Lcd= FALSE;
 
-#ifdef MONOVGA
 /* DAC indices for white and black */
 #define WHITE_VALUE 0x3F
 #define BLACK_VALUE 0x00
 #define OVERSCAN_VALUE 0x01
-#endif
 
 static CARD32
 vgaOffMode(
@@ -556,6 +554,7 @@ vgaHWRestore(restore)
    */
   
   vgaSaveScreen(NULL, FALSE);
+  if (xf86bpp > 1) {
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
   if(restore->FontInfo1 || restore->FontInfo2 || restore->TextInfo) {
     /*
@@ -609,6 +608,7 @@ vgaHWRestore(restore)
 #endif
   }
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
+  }
   vgaSaveScreen(NULL, TRUE);
 
 #if !defined(PC98_NEC480) && !defined(PC98_EGC)
@@ -825,6 +825,7 @@ vgaHWSave(save, size)
   outb(0x3C2, save->MiscOutReg | 0x01);		/* shift to colour emulation */
   /* Since forced to colour mode, must use 0x3Dx instead of (vgaIOBase + x) */
 
+  if (xf86bpp > 1) {
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
   /*
    * get the character sets, and text screen if required
@@ -887,6 +888,7 @@ vgaHWSave(save, size)
 #endif /* SAVE_TEXT */
   }
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
+  }
 
   outb(0x3C2, save->MiscOutReg);		/* back to original setting */
 #endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
@@ -940,24 +942,23 @@ vgaHWInit(mode, size)
      */
     for (i=0; i<3;   i++) new->DAC[i] = 0x00;
     for (i=3; i<768; i++) new->DAC[i] = 0x3F;
-#ifdef MONOVGA
-    i = BLACK_VALUE * 3;
-    new->DAC[i++] = vga256InfoRec.blackColour.red;
-    new->DAC[i++] = vga256InfoRec.blackColour.green;
-    new->DAC[i] = vga256InfoRec.blackColour.blue;
-    i = WHITE_VALUE * 3;
-    new->DAC[i++] = vga256InfoRec.whiteColour.red;
-    new->DAC[i++] = vga256InfoRec.whiteColour.green;
-    new->DAC[i] = vga256InfoRec.whiteColour.blue;
-    i = OVERSCAN_VALUE * 3;
-    new->DAC[i++] = 0x00;
-    new->DAC[i++] = 0x00;
-    new->DAC[i] = 0x00;
-#endif
-#ifndef MONOVGA
-    /* Initialise overscan register */
-    new->Attribute[17] = 0xFF;
-#endif
+    if (xf86bpp == 1) {
+      i = BLACK_VALUE * 3;
+      new->DAC[i++] = vga256InfoRec.blackColour.red;
+      new->DAC[i++] = vga256InfoRec.blackColour.green;
+      new->DAC[i] = vga256InfoRec.blackColour.blue;
+      i = WHITE_VALUE * 3;
+      new->DAC[i++] = vga256InfoRec.whiteColour.red;
+      new->DAC[i++] = vga256InfoRec.whiteColour.green;
+      new->DAC[i] = vga256InfoRec.whiteColour.blue;
+      i = OVERSCAN_VALUE * 3;
+      new->DAC[i++] = 0x00;
+      new->DAC[i++] = 0x00;
+      new->DAC[i] = 0x00;
+    } else {
+      /* Initialise overscan register */
+      new->Attribute[17] = 0xFF;
+    }
 
   }
 
@@ -999,26 +1000,23 @@ vgaHWInit(mode, size)
   /*
    * Time Sequencer
    */
-#ifdef XF86VGA16
-  new->Sequencer[0] = 0x02;
-#else
-  new->Sequencer[0] = 0x00;
-#endif
+  if (xf86bpp == 4)
+    new->Sequencer[0] = 0x02;
+  else
+    new->Sequencer[0] = 0x00;
   if (mode->Flags & V_CLKDIV2) 
     new->Sequencer[1] = 0x09;
   else
     new->Sequencer[1] = 0x01;
-#ifdef MONOVGA
-  new->Sequencer[2] = 1 << BIT_PLANE;
-#else
-  new->Sequencer[2] = 0x0F;
-#endif
+  if (xf86bpp == 1)
+    new->Sequencer[2] = 1 << BIT_PLANE;
+  else
+    new->Sequencer[2] = 0x0F;
   new->Sequencer[3] = 0x00;                             /* Font select */
-#if defined(MONOVGA) || defined(XF86VGA16)
-  new->Sequencer[4] = 0x06;                             /* Misc */
-#else
-  new->Sequencer[4] = 0x0E;                             /* Misc */
-#endif
+  if (xf86bpp < 8)
+    new->Sequencer[4] = 0x06;                             /* Misc */
+  else
+    new->Sequencer[4] = 0x0E;                             /* Misc */
 
   if (!mode->CrtcVAdjusted && (mode->Flags & V_INTERLACE) &&
       vgaInterlaceType == VGA_DIVIDE_VERT) {
@@ -1068,11 +1066,10 @@ vgaHWInit(mode, size)
   new->CRTC[20] = 0x00;
   new->CRTC[21] = mode->CrtcVSyncStart & 0xFF; 
   new->CRTC[22] = (mode->CrtcVSyncStart +1) & 0xFF;
-#if defined(MONOVGA) || defined(XF86VGA16)
-  new->CRTC[23] = 0xE3;
-#else
-  new->CRTC[23] = 0xC3;
-#endif
+  if (xf86bpp < 8)
+    new->CRTC[23] = 0xE3;
+  else
+    new->CRTC[23] = 0xC3;
   new->CRTC[24] = 0xFF;
 
   /*
@@ -1082,60 +1079,59 @@ vgaHWInit(mode, size)
   new->Graphics[1] = 0x00;
   new->Graphics[2] = 0x00;
   new->Graphics[3] = 0x00;
-#ifdef MONOVGA
-  new->Graphics[4] = BIT_PLANE;
-  new->Graphics[5] = 0x00;
-#else
-  new->Graphics[4] = 0x00;
-#ifdef XF86VGA16
-  new->Graphics[5] = 0x02;
-#else
-  new->Graphics[5] = 0x40;
-#endif
-#endif
+  if (xf86bpp == 1) {
+    new->Graphics[4] = BIT_PLANE;
+    new->Graphics[5] = 0x00;
+  } else {
+    new->Graphics[4] = 0x00;
+    if (xf86bpp == 4)
+      new->Graphics[5] = 0x02;
+    else
+      new->Graphics[5] = 0x40;
+  }
   new->Graphics[6] = 0x05;   /* only map 64k VGA memory !!!! */
   new->Graphics[7] = 0x0F;
   new->Graphics[8] = 0xFF;
   
-#ifdef MONOVGA
-  /* Initialise the Mono map according to which bit-plane gets written to */
+  if (xf86bpp == 1) {
+    /* Initialise the Mono map according to which bit-plane gets written to */
 
-  for (i=0; i<16; i++)
-    if (i & (1<<BIT_PLANE))
-      new->Attribute[i] = WHITE_VALUE;
-    else
-      new->Attribute[i] = BLACK_VALUE;
+    for (i=0; i<16; i++)
+      if (i & (1<<BIT_PLANE))
+        new->Attribute[i] = WHITE_VALUE;
+      else
+        new->Attribute[i] = BLACK_VALUE;
 
-  new->Attribute[16] = 0x01;  /* -VGA2- */ /* wrong for the ET4000 */
-  new->Attribute[17] = OVERSCAN_VALUE;  /* -VGA2- */
-#else
-  new->Attribute[0]  = 0x00; /* standard colormap translation */
-  new->Attribute[1]  = 0x01;
-  new->Attribute[2]  = 0x02;
-  new->Attribute[3]  = 0x03;
-  new->Attribute[4]  = 0x04;
-  new->Attribute[5]  = 0x05;
-  new->Attribute[6]  = 0x06;
-  new->Attribute[7]  = 0x07;
-  new->Attribute[8]  = 0x08;
-  new->Attribute[9]  = 0x09;
-  new->Attribute[10] = 0x0A;
-  new->Attribute[11] = 0x0B;
-  new->Attribute[12] = 0x0C;
-  new->Attribute[13] = 0x0D;
-  new->Attribute[14] = 0x0E;
-  new->Attribute[15] = 0x0F;
-#ifdef XF86VGA16
-  new->Attribute[16] = 0x81; /* wrong for the ET4000 */
-  new->Attribute[17] = 0x00; /* GJA -- overscan. */
-#else
-  new->Attribute[16] = 0x41; /* wrong for the ET4000 */
-#endif
+    new->Attribute[16] = 0x01;  /* -VGA2- */ /* wrong for the ET4000 */
+    new->Attribute[17] = OVERSCAN_VALUE;  /* -VGA2- */
+  } else {
+    new->Attribute[0]  = 0x00; /* standard colormap translation */
+    new->Attribute[1]  = 0x01;
+    new->Attribute[2]  = 0x02;
+    new->Attribute[3]  = 0x03;
+    new->Attribute[4]  = 0x04;
+    new->Attribute[5]  = 0x05;
+    new->Attribute[6]  = 0x06;
+    new->Attribute[7]  = 0x07;
+    new->Attribute[8]  = 0x08;
+    new->Attribute[9]  = 0x09;
+    new->Attribute[10] = 0x0A;
+    new->Attribute[11] = 0x0B;
+    new->Attribute[12] = 0x0C;
+    new->Attribute[13] = 0x0D;
+    new->Attribute[14] = 0x0E;
+    new->Attribute[15] = 0x0F;
+    if (xf86bpp == 4) {
+      new->Attribute[16] = 0x81; /* wrong for the ET4000 */
+      new->Attribute[17] = 0x00; /* GJA -- overscan. */
+    } else {
+      new->Attribute[16] = 0x41; /* wrong for the ET4000 */
+    }
   /*
    * Attribute[17] is the overscan, and is initalised above only at startup
    * time, and not when mode switching.
    */
-#endif
+  }
   new->Attribute[18] = 0x0F;
   new->Attribute[19] = 0x00;
   new->Attribute[20] = 0x00;

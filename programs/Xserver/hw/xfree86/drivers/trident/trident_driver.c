@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.2 1997/03/10 05:56:21 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -138,7 +138,7 @@ extern void TGUISetWrite();
 extern void TGUISetReadWrite();
 static int  TGUIPitchAdjust();
 
-vgaVideoChipRec TVGA8900 = {
+vgaVideoChipRec TRIDENT = {
   TVGA8900Probe,
   TVGA8900Ident,
   TVGA8900EnterLeave,
@@ -291,7 +291,7 @@ ModuleInit(data,magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
-	* data = (pointer)&TVGA8900;
+	* data = (pointer)&TRIDENT;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     default:
@@ -516,7 +516,7 @@ TVGA8900Probe()
 	int i;
 
 #ifdef PC98_TGUI
-	OFLG_SET(OPTION_PC98TGUI, &TVGA8900.ChipOptionFlags);
+	OFLG_SET(OPTION_PC98TGUI, &TRIDENT.ChipOptionFlags);
 	if( BoardInit() == FALSE )
 		return(FALSE);
 #endif
@@ -728,21 +728,21 @@ TVGA8900Probe()
       	case TVGA8900D:
 		tridentLinearOK = TRUE;
 		tridentDACtype = TKD8001;
-		TVGA8900.ChipHas16bpp = TRUE;	/* Has HiColor DAC */
+		TRIDENT.ChipHas16bpp = TRUE;	/* Has HiColor DAC */
       		break;
 	case TVGA9200CXr:
 		tridentIsTGUI = FALSE;			/* Not a TGUI */
 		tridentTGUIProgrammableClocks = FALSE;
 		tridentLinearOK = TRUE;
 		tridentDACtype = TKD8001;
-		TVGA8900.ChipHas16bpp = TRUE;
+		TRIDENT.ChipHas16bpp = TRUE;
 		break;
 	case TGUI9320LCD:
 		tridentIsTGUI = TRUE;		/* Reports of this works */
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
 		if (vgaBitsPerPixel >= 8)
-			TVGA8900.ChipUse2Banks = TRUE;
+			TRIDENT.ChipUse2Banks = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 #if 0
 		tridentHasAcceleration = TRUE;	/* NEEDS CHECKING ! */
@@ -753,9 +753,9 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
-		TVGA8900.ChipHas16bpp = TRUE;
+		TRIDENT.ChipHas16bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
-			TVGA8900.ChipUse2Banks = TRUE;
+			TRIDENT.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9430DGi:
 		tridentHWCursorType = 2;		/* HW cursor */
@@ -768,9 +768,9 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		tridentHasAcceleration = TRUE;
-		TVGA8900.ChipHas16bpp = TRUE;
+		TRIDENT.ChipHas16bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
-			TVGA8900.ChipUse2Banks = TRUE;
+			TRIDENT.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9440AGi:
 		tridentIsTGUI = TRUE;
@@ -782,10 +782,10 @@ TVGA8900Probe()
 			tridentHasAcceleration = FALSE;
 		else
 			tridentHasAcceleration = TRUE;
-		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipHas24bpp = TRUE;
+		TRIDENT.ChipHas16bpp = TRUE;
+		TRIDENT.ChipHas24bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
-			TVGA8900.ChipUse2Banks = TRUE;
+			TRIDENT.ChipUse2Banks = TRUE;
 		break;
 	case TGUI96xx:
 		/* We've found a 96xx graphics engine */
@@ -832,16 +832,16 @@ TVGA8900Probe()
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		tridentHasAcceleration = TRUE;
-		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipHas32bpp = TRUE;
+		TRIDENT.ChipHas16bpp = TRUE;
+		TRIDENT.ChipHas32bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
-			TVGA8900.ChipUse2Banks = TRUE;
+			TRIDENT.ChipUse2Banks = TRUE;
 		if (IsCyber)
 		{
 			/* Allow stretch mode on LCD */
-			OFLG_SET(OPTION_LCD_STRETCH, &TVGA8900.ChipOptionFlags);
+			OFLG_SET(OPTION_LCD_STRETCH, &TRIDENT.ChipOptionFlags);
 			/* Allow LCD centering */
-			OFLG_SET(OPTION_LCD_CENTER, &TVGA8900.ChipOptionFlags);
+			OFLG_SET(OPTION_LCD_CENTER, &TRIDENT.ChipOptionFlags);
 			outb(0x3CE, 0x42);
 			temp = inb(0x3CF);
 			if (temp & 0x80) 
@@ -891,11 +891,11 @@ TVGA8900Probe()
 	 * Set up 2 bank registers 
 	 */
 
-	if (TVGA8900.ChipUse2Banks == TRUE)
+	if (TRIDENT.ChipUse2Banks == TRUE)
 	{
-		TVGA8900.ChipSetRead = TGUISetRead;
-		TVGA8900.ChipSetWrite = TGUISetWrite;
-		TVGA8900.ChipSetReadWrite = TGUISetReadWrite;
+		TRIDENT.ChipSetRead = TGUISetRead;
+		TRIDENT.ChipSetWrite = TGUISetWrite;
+		TRIDENT.ChipSetReadWrite = TGUISetReadWrite;
 	}
 	
  	/* 
@@ -935,7 +935,7 @@ TVGA8900Probe()
      	}
 
 	if ((vga256InfoRec.videoRam < 1024) && (!tridentTGUIProgrammableClocks))
-		TVGA8900.ChipRounding = 16;
+		TRIDENT.ChipRounding = 16;
 
 	if (!tridentTGUIProgrammableClocks)
 	{
@@ -960,12 +960,12 @@ TVGA8900Probe()
 
 	if (tridentTGUIProgrammableClocks) 
 	{
-		OFLG_SET(OPTION_TGUI_MCLK_66, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_TGUI_MCLK_66, &TRIDENT.ChipOptionFlags);
 		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
 			ErrorF("%s %s: Forcing MCLK to 66MHz\n", XCONFIG_GIVEN,
 				vga256InfoRec.name);
 
-		OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &TRIDENT.ChipOptionFlags);
 
 		/* Do some sanity checking first ! */
 		if (vga256InfoRec.clocks)
@@ -1054,23 +1054,23 @@ TVGA8900Probe()
 	/* Initialize option flags allowed for this driver */
 	if ((TVGAchipset == TVGA8900B) || (TVGAchipset == TVGA8900C))
 	{
-		OFLG_SET(OPTION_16CLKS, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_16CLKS, &TRIDENT.ChipOptionFlags);
 	}
 
 	if (vgaBitsPerPixel >= 8) {
 	/* For 512k in 256 colour, the pixel clock is half the raw clock */
 	if ((vga256InfoRec.videoRam < 1024) && (!tridentIsTGUI))
-		TVGA8900.ChipClockScaleFactor = 2;
+		TRIDENT.ChipClockScaleFactor = 2;
 
 	if (tridentLinearOK)
 	{
-		OFLG_SET(OPTION_LINEAR, &TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_NOLINEAR_MODE, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_LINEAR, &TRIDENT.ChipOptionFlags);
+		OFLG_SET(OPTION_NOLINEAR_MODE, &TRIDENT.ChipOptionFlags);
 	}
 
 	if (tridentHWCursorType)
 	{
-		OFLG_SET(OPTION_HW_CURSOR, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_HW_CURSOR, &TRIDENT.ChipOptionFlags);
 	}
 
 #ifdef XFreeXDGA
@@ -1081,8 +1081,8 @@ TVGA8900Probe()
 	if (tridentHasAcceleration)
 	{
 		/* TGUI Accelerator stuff */
-		OFLG_SET(OPTION_NOACCEL, &TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_NO_MMIO, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_NOACCEL, &TRIDENT.ChipOptionFlags);
+		OFLG_SET(OPTION_NO_MMIO, &TRIDENT.ChipOptionFlags);
 		if (TVGAchipset >= TGUI9440AGi)
 		    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 			vgaSetPitchAdjustHook(TGUIPitchAdjust);
@@ -1095,9 +1095,9 @@ TVGA8900Probe()
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
 		OFLG_SET(OPTION_TGUI_PCI_READ_ON,
-			&TVGA8900.ChipOptionFlags);
+			&TRIDENT.ChipOptionFlags);
 		OFLG_SET(OPTION_TGUI_PCI_WRITE_ON,
-			&TVGA8900.ChipOptionFlags);
+			&TRIDENT.ChipOptionFlags);
 	}
 
 	if ( (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) &&
@@ -1120,7 +1120,7 @@ TVGA8900Probe()
 				tridentClockLimit16bpp[TVGAchipset];
 			if (!tridentTGUIProgrammableClocks)
 			{
-				TVGA8900.ChipClockScaleFactor = 2;
+				TRIDENT.ChipClockScaleFactor = 2;
 				vga256InfoRec.maxClock *= 2;
 			}
 			break;
@@ -1130,7 +1130,7 @@ TVGA8900Probe()
 				tridentClockLimit32bpp[TVGAchipset];
 			if (!tridentTGUIProgrammableClocks)
 			{
-				TVGA8900.ChipClockScaleFactor = 3;
+				TRIDENT.ChipClockScaleFactor = 3;
 				vga256InfoRec.maxClock *= 3;
 			}
 			break;
@@ -1220,12 +1220,12 @@ TVGA8900FbInit()
 		     (TVGAchipset != TVGA9200CXr) )
 			return;
 
-	TVGA8900.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+	TRIDENT.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
 		if (vgaPCIInfo->MemBase != 0) {
-		  TVGA8900.ChipLinearBase = vgaPCIInfo->MemBase;
+		  TRIDENT.ChipLinearBase = vgaPCIInfo->MemBase;
 		  tridentUseLinear = TRUE;
 		} else {
 		  ErrorF("%s %s: Unable to locate valid FrameBuffer,"
@@ -1243,12 +1243,12 @@ TVGA8900FbInit()
  		{
 		  /* This is for the 8900CL/D Linear Buffer */
 		  /* 8900CL/D only has 1MB Ram, therefore.. */
-		  TVGA8900.ChipLinearBase = (15 * 1024 * 1024);
+		  TRIDENT.ChipLinearBase = (15 * 1024 * 1024);
 		}
 		else
 		{
 		  /* set a default of 60MB, must be on 2MB boundary */
-		  TVGA8900.ChipLinearBase = (60 * 1024 * 1024);
+		  TRIDENT.ChipLinearBase = (60 * 1024 * 1024);
 		}
 	}
 
@@ -1257,7 +1257,7 @@ TVGA8900FbInit()
 
 	/* Use Membase when told to, then align on 2MB boundary */
 	if (vga256InfoRec.MemBase != 0)
-		TVGA8900.ChipLinearBase = vga256InfoRec.MemBase & 0xFFE00000;
+		TRIDENT.ChipLinearBase = vga256InfoRec.MemBase & 0xFFE00000;
 
 	if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options))
 		tridentUseLinear = FALSE;
@@ -1268,11 +1268,11 @@ TVGA8900FbInit()
 	if (tridentUseLinear) 
 		ErrorF("%s %s: Using Linear Frame Buffer at 0x0%x, Size %dMB\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
-			TVGA8900.ChipLinearBase, 
-			TVGA8900.ChipLinearSize/1048576);
+			TRIDENT.ChipLinearBase, 
+			TRIDENT.ChipLinearSize/1048576);
 
 	if (tridentUseLinear)
-		TVGA8900.ChipUseLinearAddressing = TRUE;
+		TRIDENT.ChipUseLinearAddressing = TRUE;
 
 	TridentDisplayableMemory = vga256InfoRec.displayWidth 
 					* vga256InfoRec.virtualY
@@ -1815,11 +1815,11 @@ TVGA8900Init(mode)
 	if (tridentUseLinear) 
 	{
 		new->LinearAddReg = 
-			  ((TVGA8900.ChipLinearBase >> 24) << 6) |
-			  ((TVGA8900.ChipLinearBase >> 20) & 0x0F);
+			  ((TRIDENT.ChipLinearBase >> 24) << 6) |
+			  ((TRIDENT.ChipLinearBase >> 20) & 0x0F);
 		new->LinearAddReg |= 0x20;	/* Enable Linear */
 		if (TVGAchipset < TGUI9440AGi)
-			if (TVGA8900.ChipLinearSize == (2048*1024))
+			if (TRIDENT.ChipLinearSize == (2048*1024))
 				new->LinearAddReg |= 0x10;
 	}
 

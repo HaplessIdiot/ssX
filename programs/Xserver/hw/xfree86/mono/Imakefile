@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:05:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.10 1997/03/10 05:56:24 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.11 1997/03/10 10:12:25 hohndel Exp $
 
 
 #define IHaveModules
@@ -12,11 +12,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.10 1997/03/10 
 
 #define IHaveSubdirs
 
-#if DoLoadableServer
 SUBDIRS = mono mfb.banked
-#else
-SUBDIRS = mono drivers mfb.banked
-#endif
 
 SRCS = mono/?*.c mfb.banked/?*.c
 OBJS = mono/?*.o mfb.banked/?*.o

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.19 1997/03/03 10:19:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.1 1997/03/06 23:15:43 hohndel Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  * Copyright 1997 Ming Yu <yum@itp.ac.cn>, Gerry Toll <gtoll@tc.cornell.edu>, 
@@ -52,6 +52,8 @@
 
 #include "xf86.h"
 #include "xf86Version.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -415,10 +417,12 @@ static void
 COMPAQAdjust(x, y)
      int x, y;
 {
+	int Base;
+
 	if( xf86bpp == 1 ) {
-		int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+		Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 	} else {
-		int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
+		Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 	}
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
