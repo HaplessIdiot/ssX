@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.1 1996/08/16 12:39:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.2 1996/08/18 12:34:37 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -36,15 +36,25 @@ includes::
 		   pics/XFree86.xbm pics/XFree86.msk
       SUBDIRS    = tcllib pics scripts
 
+#if BuildServersOnly && !defined(UseInstalled)
+/* Use installed X libraries and headers */
+ USEINSTALLEDLIB = -L$(USRLIBDIR)
+     USEBUILTLIB = -L$(BUILDLIBDIR)
+ USEINSTALLEDINC = -I$(INCROOT)
+        LDPRELIB = 
+#undef XawClientDepLibs
+#define XawClientDepLibs /**/
+#endif
+
 #if XF86SetupUsesStaticTkTcl
        TKLIBRARY = StaticLibrary($(TKLIBDIR),$(TKLIBNAME))
       TCLLIBRARY = StaticLibrary($(TCLLIBDIR),$(TCLLIBNAME))
 #endif
  TCLTK_LIBRARIES = $(TKLIBRARY) $(TCLLIBRARY)
 
- LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) \
+ LOCAL_LIBRARIES = $(USEBUILTLIB) $(XKBUILIB) $(XKBFILELIB) \
 		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
-		   XawClientLibs MathLibrary
+		   $(USEINSTALLEDLIB) XawClientLibs MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
       CARDDBFILE = $(LIBDIR)/Cards
       XCONFIGSRC = xf86Config
@@ -58,7 +68,7 @@ includes::
 		   $(XCONFIG_DEFINES)
         INCLUDES = -I$(TCLINCDIR) -I../os-support -I../common \
 		   -I$(SERVERSRC)/include -I$(INCLUDESRC) \
-		   -I$(EXTINCSRC)
+		   -I$(EXTINCSRC) $(USEINSTALLEDINC)
 
 #if HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR):$(TCLLIBDIR)

@@ -1,3 +1,6 @@
+XFree86 3.1.2Ej (19 August 1996)
+665. Fix problems building XF86Setup with BuildServersOnly set to YES.
+
 XFree86 3.1.2Ei (18 August 1996)
 664. Fix some PC98 Imakefile problems (Michio "Karl" Jinbo).
 663. Linux/m68k support (Geert Uytterhoeven, Martin Schaller, Gary Henderson).
