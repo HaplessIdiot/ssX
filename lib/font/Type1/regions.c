@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/regions.c,v 3.4 2000/04/28 18:19:20 eich Exp $ */
+/* $XFree86: xc/lib/font/Type1/regions.c,v 3.5 2001/01/17 19:43:23 dawes Exp $ */
  /* REGIONS  CWEB         V0023 LOTS                                 */
 /*
 :h1 id=regions.REGIONS Module - Regions Operator Handler
@@ -139,14 +139,14 @@ set.  The flag is used to optimize some paths.
 Infinity is the complement of a null area:
 Note - removed the refcount = 1 init, replaced with references = 2 3-26-91 PNM
 */
-static struct region infinity = { REGIONTYPE,
+static struct region _infinity = { REGIONTYPE,
                            ISCOMPLEMENT(ON)+ISINFINITE(ON)+ISPERMANENT(ON)+ISIMMORTAL(ON), 2,
                            {0, 0}, {0, 0},
                            0, 0, 0, 0,
                            NULL, NULL,
                            0, 0, 0, 0, 0, NULL, NULL,
                            NULL, 0, NULL, NULL };
-struct region *TT_INFINITY = &infinity;
+struct region *TT_INFINITY = &_infinity;
  
 /*
 :h4."EmptyRegion" - A Region Structure with Zero Area
