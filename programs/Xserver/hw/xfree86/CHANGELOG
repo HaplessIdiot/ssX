@@ -1,3 +1,7 @@
+XFree86 3.9.15d (29 August 1999)
+2983. Basic man page for the generic VGA driver (David Dawes).
+2982. Fix for lockup problem with Trident Image 975 (Alan Hourihane).
+
 XFree86 3.9.15c (22 August 1999)
 2981. Update NetBSD.cf to reflect NetBSD's switch from GNU malloc to FreeBSD's
       malloc (#3151, Bernd Ernesti).
@@ -8615,4 +8619,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.816 1999/08/22 06:21:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.817 1999/08/22 11:59:44 dawes Exp $

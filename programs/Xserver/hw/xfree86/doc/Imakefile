@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.57 1999/08/14 10:49:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.58 1999/08/23 06:14:17 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -30,6 +30,7 @@ REPORTFORM = BetaReport
 #if !BuildLinuxDocText
 OSREADMES = \
 	/*ReadmeFile(Bsdi)*/	\
+	ReadmeFile(DGux)	\
 	ReadmeFile(FreeBSD)	\
 	ReadmeFile(isc)		\
 	ReadmeFile(Linux)	\
@@ -44,19 +45,26 @@ OSREADMES = \
 	$(_NULLENTRY_)
 
 HWREADME = \
+	ReadmeFile(3Dlabs)	\
+	ReadmeFile(apm)		\
 	/*ReadmeFile(agx)*/	\
 	/*ReadmeFile(ark)*/	\
-	/*ReadmeFile(ati)*/	\
+	ReadmeFile(ati)		\
 	ReadmeFile(chips)	\
 	ReadmeFile(cirrus)	\
+	/*ReadmeFile(cyrix)*/	\
 	ReadmeFile(DECtga)	\
+	/*ReadmeFile(epson)*/	\
 	ReadmeFile(fbdev)	\
+	/*ReadmeFile(I128)*/	\
+	/*ReadmeFile(i740)*/	\
 	/*ReadmeFile(Mach32)*/	\
 	/*ReadmeFile(Mach64)*/	\
 	ReadmeFile(MGA)		\
-	/*ReadmeFile(NV1)*/	\
+	ReadmeFile(NVIDIA)	\
 	/*ReadmeFile(Oak)*/	\
 	/*ReadmeFile(P9000)*/	\
+	ReadmeFile(rendition)	\
 	/*ReadmeFile(S3)*/	\
 	ReadmeFile(SiS)		\
 	ReadmeFile(s3virge)	\
