@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.92 2000/12/14 20:28:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.93 2000/12/15 18:18:04 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -339,6 +339,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.92 2000/12/14 20:28:35 dawes Exp $
 #ifndef InstallXtermSetUID
 #define InstallXtermSetUID	YES	/* xterm needs to be set uid */
 #endif
+#ifndef InstallXloadSetGID
+#define InstallXloadSetGID	YES	/* xload often needs set gid kmem */
+#endif
 #ifndef InstallXinitConfig
 #define InstallXinitConfig	NO	/* install sample xinit config */
 #endif
@@ -357,6 +360,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.92 2000/12/14 20:28:35 dawes Exp $
 #endif
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
+#endif
+#ifndef UseConfDirForAppDefaults
+#define UseConfDirForAppDefaults YES
+#endif
+#ifndef UseConfDirForXkb
+#define UseConfDirForXkb	YES
 #endif
 #ifndef CompressAllFonts
 #define CompressAllFonts	NO
@@ -2347,6 +2356,7 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
  * if the InstallAppDefFiles configuration parameter is set.
  */
 #ifndef InstallAppDefaultsLong
+#if UseConfDirForAppDefaults
 #if InstallAppDefFiles
 #define InstallAppDefaultsLong(file,class)				@@\
 LinkConfDirectory(app-defaults,.,app-defaults,.)			@@\
@@ -2356,6 +2366,15 @@ InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 LinkConfDirectory(app-defaults,.,app-defaults,.)			@@\
 InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #endif /* InstallAppDefFiles */
+#else /* UseConfDirForAppDefaults */
+#if InstallAppDefFiles
+#define InstallAppDefaultsLong(file,class)				@@\
+InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
+#else
+#define InstallAppDefaultsLong(file,class)				@@\
+InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
+#endif /* InstallAppDefFiles */
+#endif /* UseConfDirForAppDefaults */
 #endif /* InstallAppDefaultsLong */
 
 /*

@@ -1,4 +1,11 @@
 XFree86 4.X.Ya (?? January 2001)
+1263. Add an imake control for determining when xload should be installed
+      set-gid (David Dawes).
+1262. Add some imake controls for installing Xkb and app-defaults files
+      in the traditional location rather than under /etc/X11 (Red Hat does
+      that) (David Dawes).
+1261. Add compressed man page functionality to the rules in Imake.rules,
+      so it should be usable on most platforms (David Dawes).
 1260. Make acceleration work on the Trident Cyber9388 (Alan Hourihane).
 1259. - Various small changes to accomodate Mac OS X support and fix a 
         problem people were having with uninitialized globals in X 
@@ -12218,4 +12225,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1518 2001/01/14 16:58:32 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1519 2001/01/14 21:36:20 alanh Exp $
