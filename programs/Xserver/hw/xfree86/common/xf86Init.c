@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.158 2000/03/17 16:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.159 2000/04/01 01:28:33 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1620,7 +1620,7 @@ xf86LoadModules(char **list, pointer *optlist)
 }
 
 /*
- * xf86LoadModules iterates over a list that is being passed in.
+ * xf86LoadOneModule loads a single module.
  */             
 pointer
 xf86LoadOneModule(char *name, pointer opt)

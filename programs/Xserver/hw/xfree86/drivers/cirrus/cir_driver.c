@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.54 2000/03/08 21:21:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.55 2000/03/31 22:55:40 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -42,6 +42,9 @@ extern OptionInfoPtr	AlpAvailableOptions(int chipid);
 extern OptionInfoPtr	LgAvailableOptions(int chipid);
 extern Bool AlpProbe(int entity, ScrnInfoPtr pScrn);
 extern Bool LgProbe(int entity, ScrnInfoPtr pScrn);
+
+static Bool lg_loaded = FALSE;
+static Bool alp_loaded = FALSE;
 
 #define VERSION 4000
 #define CIR_NAME "CIRRUS"
@@ -208,8 +211,6 @@ CIRProbe(DriverPtr drv, int flags)
 	int numUsed;
 	Bool foundScreen = FALSE;
 	Bool (*subProbe)(int entity, ScrnInfoPtr pScrn);
-	Bool lg_loaded = FALSE;
-	Bool alp_loaded = FALSE;
 #ifdef CIR_DEBUG
 	ErrorF("CirProbe\n");
 #endif
@@ -249,13 +250,13 @@ CIRProbe(DriverPtr drv, int flags)
 	 */
 	if (flags & PROBE_DETECT) {
 		if (!lg_loaded) {
-			if(xf86LoadSubModule(pScrn, "cirrus_laguna")) {
+			if(xf86LoadSubModule(NULL, "cirrus_laguna")) {
 				xf86LoaderReqSymLists(lgSymbols, NULL);
 				lg_loaded = TRUE;
 			}
 		}
 		if (!alp_loaded) {
-			if(xf86LoadSubModule(pScrn, "cirrus_alpine")) {
+			if(xf86LoadSubModule(NULL, "cirrus_alpine")) {
 				xf86LoaderReqSymLists(alpSymbols, NULL);
 				alp_loaded = TRUE;
 			}
