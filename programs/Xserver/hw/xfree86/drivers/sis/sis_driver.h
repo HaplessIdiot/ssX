@@ -170,10 +170,17 @@ const customttable mycustomttable[] = {
 	},
 	{ SIS_650, "", "",
 	  0,
-	  { 0, 0, 0, 0, 0 },
-	  { 0, 0, 0, 0, 0 },
+	  { 0x00c, 0, 0, 0, 0 },
+	  { 'e'  , 0, 0, 0, 0 },
 	  0x1558, 0x0287,
-	  "Clevo", "L285/L287", CUT_CLEVO1024, "CLEVO1024"
+	  "Clevo", "L285/L287 (Version 1)", CUT_CLEVO1024, "CLEVO1024"
+	},
+	{ SIS_650, "", "",
+	  0,
+	  { 0x00c, 0, 0, 0, 0 },
+	  { 'y'  , 0, 0, 0, 0 },
+	  0x1558, 0x0287,
+	  "Clevo", "L285/L287 (Version 2)", CUT_CLEVO10242, "CLEVO10242"
 	},
 	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
 	  0,

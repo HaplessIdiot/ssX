@@ -58,28 +58,27 @@
 			 * time-intensive, it is faster to let it be done
 			 * by the generic polygon functions.
 			 * Does not work on XABRE at all, hangs the engine.
+			 * Even with correct trapezoids, this is slower than
+			 * doing it by the CPU.
                          */
 
-#ifndef SISVRAMQ
-#define CTSCE           /* Use/Don't use CPUToScreenColorExpand. Slower than the */
-#endif 			/* CPU sometimes, so we disable this on SiS650/740 where
-			 * we know that we're running on a P4.
-			 * Does not work in VRAM queue mode, hangs the engine.
+#undef CTSCE          	/* Use/Don't use CPUToScreenColorExpand. Disabled
+			 * because it is slower than doing it by the CPU.
+			 * Indirect mode does not work in VRAM queue mode.
 			 * Does not work on Xabre (even in MMIO mode).
+			 */
+#define CTSCE_DIRECT    /* Use direct method - This works (on both 315 and Xabre at
+			 * least in VRAM queue mode) but we don't use this either,
+			 * because it's slower than doing it by the CPU. (Using it
+			 * would require defining CTSCE)
 			 */
 
 #undef STSCE    	/* Use/Don't use ScreenToScreenColorExpand - does not work,
   			 * see comments below.
 			 */
 
-#undef INCL_RENDER	/* Use/Don't use RENDER extension acceleration 
-			 * DOES NOT WORK. The hardware does not support
-			 * ARGB textures, but Alpha Blended BitBlits with
-			 * a static alpha value only. This is completely
-			 * useless as XFree does not provide any environment
-			 * for such a function. The code is kept regardless
-			 * as XFree 5 might support translucent windows where
-			 * this function could make sense.
+#undef INCL_RENDER	/* Use/Don't use RENDER extension acceleration
+			 * Should work, but how do I test this?
 			 */
 
 #ifdef INCL_RENDER
@@ -141,6 +140,14 @@ static void SiSSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
                                 int srcx, int srcy, int skipleft);
 #endif
 #ifdef CTSCE
+#ifdef CTSCE_DIRECT
+static void SiSSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                int fg, int bg, int rop,
+                                unsigned int planemask);
+static void SiSSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                int x, int y, int w, int h,
+                                int skipleft);
+#else
 static void SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                 int fg, int bg, int rop,
                                 unsigned int planemask);
@@ -148,6 +155,7 @@ static void SiSSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                 int x, int y, int w, int h,
                                 int skipleft);
 static void SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
+#endif
 #endif
 #ifdef INCL_RENDER
 #ifdef RENDER
@@ -205,7 +213,11 @@ SiS315AccelInit(ScreenPtr pScreen)
 	int             UsableFbSize;
 	unsigned char   *AvailBufBase;
 	BoxRec          Avail;
+#ifdef CTSCE
+#ifndef CTSCE_DIRECT
 	int             i;
+#endif
+#endif	
 
 	pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
 	if (!infoPtr)
@@ -268,31 +280,57 @@ SiS315AccelInit(ScreenPtr pScreen)
 					   NO_TRANSPARENCY |
 					   BIT_ORDER_IN_BYTE_MSBFIRST ;
 
-/* #ifndef SISVRAMQ */
 #ifdef STSCE
 	/* Screen To Screen Color Expand */
-	/* The hardware does not support this the way we need it */
+	/* The hardware does not support this the way we need it, because
+	 * the mono-bitmap is not provided with a pitch of (width), but
+	 * with a pitch of scrnOffset (= width * bpp / 8).
+	 */
 	infoPtr->SetupForScreenToScreenColorExpandFill =
 	    			SiSSetupForScreenToScreenColorExpand;
 	infoPtr->SubsequentScreenToScreenColorExpandFill =
 	    			SiSSubsequentScreenToScreenColorExpand;
 	infoPtr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
 	                                              BIT_ORDER_IN_BYTE_MSBFIRST ;
-	/* TEST */
-	/* infoPtr->CacheColorExpandDensity = 8;
-	infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple; */
 #endif
-/* #endif */
 
 #ifdef CTSCE
-        /* per-scanline color expansion - indirect method
+#ifdef CTSCE_DIRECT
+	/* CPU color expansion - direct method
 	 *
-         * 650, 740, 660: We don't use this, it's much slower than doing it by the CPU.
-	 * On 650, 740, 660 we know that we are running on a P4; for other chipsets like
-	 * 315, we don't. On 550, this should be faster than the CPU in any case.
-	 * Does not work on XABRE, hangs the engine.
+	 * We somewhat fake this function here in the following way:
+	 * XAA copies its mono-bitmap data not into an aperture, but
+	 * into our video RAM buffer. We then do a ScreenToScreen
+	 * color expand.
+	 * Unfortunately, XAA sends the data to the aperture AFTER
+	 * the call to Subsequent(), therefore we do not execute the
+	 * command in Subsequent, but in the following call to Sync().
+	 * (Hence, the SYNC_AFTER_COLOR_EXPAND flag MUST BE SET)
+	 *
+	 * This is slower than doing it by the CPU.
+	 */
+
+	 pSiS->ColorExpandBufferNumber = 48;
+	 pSiS->PerColorExpandBufferSize = ((pScrn->virtualX + 31)/32) * 4;
+	 infoPtr->SetupForCPUToScreenColorExpandFill = SiSSetupForCPUToScreenColorExpandFill;
+	 infoPtr->SubsequentCPUToScreenColorExpandFill = SiSSubsequentCPUToScreenColorExpandFill;
+	 infoPtr->ColorExpandRange = pSiS->ColorExpandBufferNumber * pSiS->PerColorExpandBufferSize;
+	 infoPtr->CPUToScreenColorExpandFillFlags =
+	     NO_PLANEMASK |
+	     CPU_TRANSFER_PAD_DWORD |
+	     SCANLINE_PAD_DWORD |
+	     BIT_ORDER_IN_BYTE_MSBFIRST |
+	     LEFT_EDGE_CLIPPING |
+	     SYNC_AFTER_COLOR_EXPAND;
+#else
+        /* CPU color expansion - per-scanline / indirect method
+	 *
+	 * SLOW! SLOWER! SLOWEST!
+	 *
+	 * Does not work on XABRE, hangs the engine (both VRAM and MMIO).
 	 * Does not work in VRAM queue mode.
 	 */
+#ifndef SISVRAMQ
         if((pSiS->Chipset != PCI_CHIP_SIS650) &&
 	   (pSiS->Chipset != PCI_CHIP_SIS660) &&
 	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
@@ -311,9 +349,13 @@ SiS315AccelInit(ScreenPtr pScreen)
 	     BIT_ORDER_IN_BYTE_MSBFIRST |
 	     LEFT_EDGE_CLIPPING;
 	} else {
+#endif
 	   pSiS->ColorExpandBufferNumber = 0;
 	   pSiS->PerColorExpandBufferSize = 0;
+#ifndef SISVRAMQ
 	}
+#endif
+#endif
 #else
         pSiS->ColorExpandBufferNumber = 0;
 	pSiS->PerColorExpandBufferSize = 0;
@@ -321,18 +363,19 @@ SiS315AccelInit(ScreenPtr pScreen)
 
 #ifdef INCL_RENDER
 #ifdef RENDER
-        /* Render - DOES NOT WORK AS SUCH (keep it for upcoming Transparency support) */
+        /* Render (can later also be used for Translucent windows with constant Alpha) */
         if((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) {
            infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
 	   infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
 	   infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
-	   infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
-	   					   XAA_RENDER_NO_SRC_ALPHA;
+	   infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE  /* |
+	   					   XAA_RENDER_NO_SRC_ALPHA */ ;
 
            infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
            infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
            infoPtr->CPUToScreenTextureFormats = SiSTextureFormats;
 	   infoPtr->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
+	   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "RENDER acceleration enabled\n");
 	}
 #endif
 #endif
@@ -357,14 +400,21 @@ SiS315AccelInit(ScreenPtr pScreen)
 	 *                                 topFB
 	 */
 	AvailBufBase = pSiS->FbBase + UsableFbSize;
+#ifdef CTSCE
 	if(pSiS->ColorExpandBufferNumber) {
+#ifdef CTSCE_DIRECT
+	   infoPtr->ColorExpandBase = (unsigned char *)AvailBufBase;
+	   pSiS->ColorExpandBase = UsableFbSize;
+#else
 	   for(i = 0; i < pSiS->ColorExpandBufferNumber; i++) {
 	      pSiS->ColorExpandBufferAddr[i] = AvailBufBase +
 		    i * pSiS->PerColorExpandBufferSize;
 	      pSiS->ColorExpandBufferScreenOffset[i] = UsableFbSize +
 		    i * pSiS->PerColorExpandBufferSize;
 	   }
+#endif
 	}
+#endif
 	Avail.x1 = 0;
 	Avail.y1 = 0;
 	Avail.x2 = pScrn->displayWidth;
@@ -401,7 +451,17 @@ SiSSync(ScrnInfoPtr pScrn)
 
 	PDEBUG(ErrorF("SiSSync()\n"));
 
+#ifdef CTSCE
+#ifdef CTSCE_DIRECT
+	if(pSiS->DoColorExpand) {
+	   SiSDoCMD
+	   pSiS->ColorExpandBusy = TRUE;
+	}
+#endif
+#endif
+
 	pSiS->DoColorExpand = FALSE;
+
 	SiSIdle
 }
 
@@ -412,8 +472,8 @@ SiSRestoreAccelState(ScrnInfoPtr pScrn)
 	SISPtr pSiS = SISPTR(pScrn);
 
 	/* We don't need to do anything special here */
-	pSiS->DoColorExpand = FALSE;
 	SiSIdle
+	pSiS->ColorExpandBusy = FALSE;
 }
 #endif
 
@@ -469,15 +529,11 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
-
 	SiSCheckQueue(16 * 2);
-
 	SiSSetupSRCPitchDSTRect(pSiS->scrnOffset, pSiS->scrnOffset, -1)
 #else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-
 	SiSSetupSRCPitch(pSiS->scrnOffset)
-
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 #endif
 
@@ -581,17 +637,13 @@ SiSSetupForSolidFill(ScrnInfoPtr pScrn, int color,
 	SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
 	SiSCheckQueue(16 * 1);
 	SiSSetupPATFGDSTRect(color, pSiS->scrnOffset, -1)
+	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupCMDFlag(PATFG)
 #else
   	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-#endif
-
 	SiSSetupROP(sisPatALUConv[rop])
-
-#ifdef SISVRAMQ
-        SiSSetupCMDFlag(PATFG)
-#else
 	SiSSetupCMDFlag(PATFG | pSiS->SiS310_AccelDepth)
 #endif
 }
@@ -727,18 +779,14 @@ SiSSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 	SiSCheckQueue(16 * 3);
         SiSSetupLineCountPeriod(1, 1)
 	SiSSetupPATFGDSTRect(color, pSiS->scrnOffset, -1)
+	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupCMDFlag(PATFG | LINE)
 #else
 	SiSSetupLineCount(1)
 	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	SiSSetupDSTColorDepth(pSiS->DstColor);
-#endif
-
+	SiSSetupDSTColorDepth(pSiS->DstColor)
 	SiSSetupROP(sisPatALUConv[rop])
-
-#ifdef SISVRAMQ
-        SiSSetupCMDFlag(PATFG | LINE)
-#else
 	SiSSetupCMDFlag(PATFG | LINE | pSiS->SiS310_AccelDepth)
 #endif
 }
@@ -1050,7 +1098,118 @@ SiSSubsequentMonoPatternFillTrap(ScrnInfoPtr pScrn,
 
 #ifdef CTSCE
 
-/* We use the indirect method */
+#ifdef CTSCE_DIRECT
+
+/* Direct method */
+
+/* This is somewhat a fake. We let XAA copy its data not to an
+ * aperture, but to video RAM, and then do a ScreenToScreen
+ * color expansion.
+ * Since the data is sent AFTER the call to Subsequent, we
+ * don't execute the command here, but set a flag and do
+ * that in the (subsequent) call to Sync()
+ */
+
+static void
+SiSSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+		int fg, int bg, int rop, unsigned int planemask)
+{
+	SISPtr pSiS=SISPTR(pScrn);
+
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSSetupROP(sisALUConv[rop]);
+	SiSSetupSRCFGDSTRect(fg, pSiS->scrnOffset, -1)
+	if(bg == -1) {
+	   SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCVIDEO);
+	} else {
+	   SiSSetupSRCBG(bg);
+	   SiSSetupCMDFlag(ENCOLOREXP | SRCVIDEO);
+	}
+#else
+	SiSSetupSRCXY(0,0);
+	SiSSetupROP(sisALUConv[rop]);
+	SiSSetupSRCFG(fg);
+	SiSSetupDSTRect(pSiS->scrnOffset, -1);
+	SiSSetupDSTColorDepth(pSiS->DstColor);
+	if(bg == -1) {
+	   SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCVIDEO
+				       | pSiS->SiS310_AccelDepth);
+	} else {
+	   SiSSetupSRCBG(bg);
+	   SiSSetupCMDFlag(ENCOLOREXP | SRCVIDEO | pSiS->SiS310_AccelDepth);
+	}
+#endif
+}
+
+static void
+SiSSubsequentCPUToScreenColorExpandFill(
+                        ScrnInfoPtr pScrn, int x, int y, int w,
+                        int h, int skipleft)
+{
+	SISPtr pSiS = SISPTR(pScrn);
+	int _x0, _y0, _x1, _y1;
+	long srcbase, dstbase;
+
+	srcbase = pSiS->ColorExpandBase;
+
+	dstbase = 0;
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset*y;
+	   y = 0;
+	}
+
+#ifdef SISDUALHEAD
+	srcbase += HEADOFFSET;
+	dstbase += HEADOFFSET;
+#endif
+
+#ifdef SISVRAMQ
+	SiSSetupSRCDSTBase(srcbase,dstbase);
+#else
+	SiSSetupSRCBase(srcbase);
+	SiSSetupDSTBase(dstbase)
+#endif
+
+	if(skipleft > 0) {
+	   _x0 = x + skipleft;
+	   _y0 = y;
+	   _x1 = x + w;
+	   _y1 = y + h;
+#ifdef SISVRAMQ
+           SiSSetupClip(_x0, _y0, _x1, _y1);
+#else
+	   SiSSetupClipLT(_x0, _y0);
+	   SiSSetupClipRB(_x1, _y1);
+#endif
+	   SiSSetupCMDFlag(CLIPENABLE);
+	} else {
+	   pSiS->CommandReg &= (~CLIPENABLE);
+	}
+
+#ifdef SISVRAMQ
+	SiSSetupRectSRCPitch(w, h, ((((w + 7) >> 3) + 3) >> 2) << 2);
+	SiSSetupSRCDSTXY(0, 0, x, y);
+#else
+	SiSSetupRect(w, h);
+	SiSSetupSRCPitch(((((w+7)/8)+3) >> 2) * 4);
+	SiSSetupDSTXY(x, y);
+#endif
+
+	if(pSiS->ColorExpandBusy) {
+	   pSiS->ColorExpandBusy = FALSE;
+	   SiSIdle
+	}
+
+	pSiS->DoColorExpand = TRUE;
+}
+
+#else
+
+/* Indirect method */
+
+/* This is SLOW, slower than the CPU on most chipsets */
+/* Does not work in VRAM queue mode. */
 
 static void
 SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -1165,8 +1324,18 @@ SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	SiSIdle
 }
 #endif
+#endif
 
 /* --- Screen To Screen Color Expand --- */
+
+/* This method blits in a single task; this does not work because
+ * the hardware does not use the source pitch as scanline offset
+ * but to calculate pattern address from source X and Y and to
+ * limit the drawing width (similar to width set by SetupRect).
+ * XAA provides the pattern bitmap with scrnOffset (displayWidth * bpp/8)
+ * offset, but this is not supported by the hardware.
+ * DOES NOT WORK ON XABRE, HANGS ENGINE.
+ */
 
 #ifdef STSCE
 static void
@@ -1193,21 +1362,12 @@ SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 	   SiSSetupCMDFlag(ENCOLOREXP | SRCVIDEO);
 	};
 }
-#endif
-
-/* TW. This method blits in a single task; this does not seem to work
- * because the hardware does not use the source pitch as scanline
- * offset but to calculate pattern address from source X and Y and to
- * limit the drawing width (similar to width set by SetupRect).
- * XAA provides the pattern bitmap with scrnOffset (displayWidth * bpp/8)
- * offset, but this does not seem to be supported by the hardware.
- * DOES NOT WORK ON XABRE, HANGS ENGINE.
- */
-#ifdef STSCE
 
 /* For testing, these are the methods: (use only one at a time!) */
 
 #undef npitch 		/* Normal: Use srcx/y as srcx/y, use scrnOffset as source pitch
+			 * Does not work on 315 series, because the hardware does not
+			 * regard the src x and y. Apart from this problem:
 			 * This would work if the hareware used the source pitch for
 			 * incrementing the source address after each scanline - but
 			 * it doesn't do this! The first line of the area is correctly
@@ -1235,7 +1395,9 @@ SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 			 * correctly color expanded, but since the source pitch is
 			 * ignored for scanline address incremention, the following
 			 * lines are not correctly color expanded.
-			 * WHATEVER I write to source pitch is ignored!
+			 * This is the only way it works (apart from the problem
+			 * described above). The hardware does not regard the src
+			 * x and y values in any way.
 		   	 */
 
 static void
@@ -1392,7 +1554,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
    			int height, int	flags)
 {
     	SISPtr pSiS = SISPTR(pScrn);
-    	int pitch, sizeNeeded, offset, i;   
+    	int pitch, sizeNeeded, offset;   
 	
 #ifdef ACCELDEBUG
 	xf86DrvMsg(0, X_INFO, "AT: RGB %x %x %x, w %d h %d A-pitch %d\n",
@@ -1400,7 +1562,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	xf86DrvMsg(0, X_INFO, "    %02x %02x %02x %02x %02x %02x %02x %02x\n",
 		alphaPtr[0],alphaPtr[1],alphaPtr[2],alphaPtr[3],
 		alphaPtr[4],alphaPtr[5],alphaPtr[6],alphaPtr[7]);
-#endif	
+#endif
 
     	if(op != PictOpOver)  
 	   return FALSE;
@@ -1425,32 +1587,30 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 		alphaPtr, alphaPitch, (CARD32*)(pSiS->FbBase + offset),
         	pitch, width, height);
 
-    	/* "AGP base" - color depth depending value (see sis_vga.c) */
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSSetupSRCPitchDSTRect((pitch << 2), pSiS->scrnOffset, -1);
 #else
+	/* "AGP base" - color depth depending value (see sis_vga.c) */
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-#endif
-	/* SRC pitch */
 	SiSSetupSRCPitch((pitch << 2));
-	/* DST pitch and height (-1 for disabling merge-clipping) */
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
+#endif
+
 	/* Init CommandReg and set ROP */
 	SiSSetupROP(RENDER_OP)  
 	/* Set command  */
-	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO) 
+	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA)
 
 #ifndef SISVRAMQ
 	/* Set some color depth depending value (see sis_vga.c) */
 	SiSSetupCMDFlag(pSiS->SiS310_AccelDepth)
 #endif
-	
-	/* THIS is the problem: The hardware does not 
-	 * support ARGB textures, but a static alpha
-	 * value only. Makes the whole thing pretty
-	 * useless for render.
-	 */
-	SiSSetupAlpha(0x99)	 
+
+#if 0
+	/* For constant alpha, we need to do this and set A_CONSTANTALPHA instead */
+	SiSSetupAlpha(0x99)
+#endif
 
     	return TRUE;
 }
@@ -1464,10 +1624,10 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
     	SISPtr pSiS = SISPTR(pScrn);
     	int i, pitch, sizeNeeded, offset;
 	
-#ifdef ACCELDEBUG
+/* #ifdef ACCELDEBUG */
 	xf86DrvMsg(0, X_INFO, "T: type %d op %d w %d h %d T-pitch %d\n",
 		texType, op, width, height, texPitch);
-#endif	
+/* #endif	 */
 
     	if(op != PictOpOver)  
 	   return FALSE;
@@ -1499,23 +1659,16 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
 
 #ifdef SISVRAMQ
         SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSSetupSRCPitchDSTRect((pitch << 4), pSiS->scrnOffset, -1);
+	SiSSetupROP(RENDER_OP)
+	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA)
 #else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-#endif	
-	/* SRC pitch */
 	SiSSetupSRCPitch((pitch << 4));
-	/* DST pitch and height (-1 for disabling merge-clipping) */
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	/* Init CommandReg and set ROP */
-	SiSSetupROP(RENDER_OP)  
-	/* Set command  */
-#ifdef SISVRAMQ
-	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO)
-#else
-	/* Set some color depth depending value (see sis_vga.c) */
-	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | pSiS->SiS310_AccelDepth)
+	SiSSetupROP(RENDER_OP)
+	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | A_PERPIXELALPHA | pSiS->SiS310_AccelDepth)
 #endif
-
 	return TRUE;
 }
 
@@ -1532,10 +1685,10 @@ SiSSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
 	if(pScrn->bitsPerPixel == 32)
 	   srcbase <<= 1;
 	
-#ifdef ACCELDEBUG
-	xf86DrvMsg(0, X_INFO, "!: o %x sx %d sy %d dx %d dy %d w %d h %d\n",
-		srcbase, src_x, src_y, dst_x, dst_y, width, height);
-#endif
+/* #ifdef ACCELDEBUG */
+	xf86DrvMsg(0, X_INFO, "FIRE: dx %d dy %d w %d h %d\n",
+		dst_x, dst_y, width, height);
+/* #endif */
 
 	dstbase = 0;
 	if((dst_y >= pScrn->virtualY) || (dst_y >= 2048)) {

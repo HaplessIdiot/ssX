@@ -222,6 +222,7 @@ typedef UCHAR DRAM4Type[4];
 #define CUT_COMPAQ12802 5
 #define CUT_PANEL848    6
 #define CUT_CLEVO1024   7
+#define CUT_CLEVO10242  8
 
 typedef struct _SiS_Private
 {

@@ -68,7 +68,10 @@
 #define TRANSPARENT             0x00100000
 
 /* Subfunctions for Alpha Blended BitBlt */
-#define A_UNKNOWN		0x00100000   /* (Blits solid?) */
+#define A_CONSTANTALPHA         0x00000000
+#define A_PERPIXELALPHA		0x00080000
+#define A_NODESTALPHA		0x00100000
+#define A_3DFULLSCENE		0x00180000
 
 /* ? */
 #define DSTAGP                  0x02000000
@@ -76,7 +79,7 @@
 
 /* Subfunctions for Color/Enhanced Color Expansion */
 #define COLOR_TO_MONO		0x00100000
-#define AA_TEXT			0x00200000
+#define AA_TEXT			0x00200000  /* ? (hangs the engine) */
 
 /* Line */
 #define LINE_STYLE              0x00800000
@@ -372,6 +375,30 @@
          *(CARD32 *)(tt + 4) = (CARD32)(color);	 			\
 	 *(CARD32 *)(tt + 8) = (CARD32)(SIS_SKPC_HEADER + DST_PITCH); 	\
          *(CARD32 *)(tt +12) = (CARD32)((y)<<16 | (x));	 		\
+         SiSUpdateQueue \
+	 SiSSetSwWP(ttt); \
+      }
+
+#define SiSSetupSRCFGDSTRect(color,x,y) \
+      { \
+         CARD32 ttt = SiSGetSwWP(); \
+	 CARD32 tt = (CARD32)pSiS->cmdQueueBase + ttt; \
+         *(CARD32 *)(tt)     = (CARD32)(SIS_SKPC_HEADER + SRC_FGCOLOR); \
+         *(CARD32 *)(tt + 4) = (CARD32)(color);	 			\
+	 *(CARD32 *)(tt + 8) = (CARD32)(SIS_SKPC_HEADER + DST_PITCH); 	\
+         *(CARD32 *)(tt +12) = (CARD32)((y)<<16 | (x));	 		\
+         SiSUpdateQueue \
+	 SiSSetSwWP(ttt); \
+      }
+
+#define SiSSetupRectSRCPitch(w,h,pitch) \
+      { \
+         CARD32 ttt = SiSGetSwWP(); \
+	 CARD32 tt = (CARD32)pSiS->cmdQueueBase + ttt; \
+         *(CARD32 *)(tt)     = (CARD32)(SIS_SKPC_HEADER + RECT_WIDTH); 	\
+         *(CARD32 *)(tt + 4) = (CARD32)((h)<<16 | (w));	 		\
+	 *(CARD32 *)(tt + 8) = (CARD32)(SIS_SKPC_HEADER + SRC_PITCH); 	\
+         *(CARD32 *)(tt +12) = (CARD32)(pitch);				\
          SiSUpdateQueue \
 	 SiSSetSwWP(ttt); \
       }
