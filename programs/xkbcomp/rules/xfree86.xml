@@ -3892,6 +3892,14 @@
     </layout>
     <layout>
       <configItem>
+        <name>sin</name>
+        <shortDescription>Sin</shortDescription>
+        <description>Sinhala</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
         <name>si</name>
         <shortDescription>Svn</shortDescription>
         <shortDescription xml:lang="ru">Cловен</shortDescription>
