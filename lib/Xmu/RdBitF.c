@@ -1,4 +1,4 @@
-/* $TOG: RdBitF.c /main/11 1997/08/27 12:13:15 kaleb $ */
+/* $TOG: RdBitF.c /main/12 1997/12/05 15:06:46 kaleb $ */
 
 /*
 
@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.2 1996/05/10 06:55:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.3 1997/10/26 13:24:52 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -364,9 +364,12 @@ FILE* fopen_file(path, mode)
     char buf[MAX_PATH];
     char* bufp;
     void* ret = NULL;
+    UINT olderror = SetErrorMode (SEM_FAILCRITICALERRORS);
 
     if (AccessFile (path, buf, MAX_PATH, &bufp))
 	ret = fopen (bufp, mode);
+
+    (void) SetErrorMode (olderror);
 
     if (bufp != buf) free (bufp);
 

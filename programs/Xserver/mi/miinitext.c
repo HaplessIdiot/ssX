@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: miinitext.c /main/45 1997/11/12 14:38:54 kaleb $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.27 1997/11/22 06:50:32 dawes Exp $ */
+/* $TOG: miinitext.c /main/46 1997/11/24 16:48:50 kaleb $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.28 1997/11/22 08:17:36 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -82,6 +82,9 @@ extern void XTestExtension1Init(INITARGS);
 #endif
 #ifdef SHAPE
 extern void ShapeExtensionInit(INITARGS);
+#endif
+#ifdef EVI
+extern void EVIExtensionInit(INITARGS);
 #endif
 #ifdef MITSHM
 extern void ShmExtensionInit(INITARGS);
@@ -206,6 +209,9 @@ InitExtensions(argc, argv)
 #endif
 #ifdef MITSHM
     ShmExtensionInit();
+#endif
+#ifdef EVI
+    EVIExtensionInit();
 #endif
 #if defined(PEXEXT) && !(defined(PEX_MODULE) && defined(NO_MODULES_EXTS))
 #ifndef PEX_MODULE

@@ -92,6 +92,10 @@ extern CARD32 defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultScreenSaverAllowExposures;
 
+#ifdef DPMSExtension
+#indlude "dpms.h"
+#endif
+
 void ddxGiveUp();
 
 extern int InitClientPrivates(
@@ -272,6 +276,13 @@ main(argc, argv)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+#ifdef DPMSExtension
+	DPMSStandbyTime = defaultDPMSStandbyTime;
+	DPMSSuspendTime = defaultDPMSSuspendTime;
+	DPMSOffTime = defaultDPMSOffTime;
+	DPMSEnabled = defaultDPMSEnabled;
+	DPMSPowerLevel = 0;
+#endif
 	InitBlockAndWakeupHandlers();
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
@@ -378,6 +389,13 @@ main(argc, argv)
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
 	    FatalError("could not open default cursor font '%s'",
 		       defaultCursorFont);
+
+#ifdef DPMSExtension
+	/* check all screens, looking for DPMS Capabilities */
+	DPMSCapableFlag = DPMSSupported();
+	if (!DPMSCapableFlag)
+	    DPMSEnabled = FALSE;
+  #endif
 
 #ifdef PANORAMIX
 	

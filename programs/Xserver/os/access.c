@@ -1,5 +1,4 @@
-/* $XConsortium: access.c /main/68 1996/12/15 22:57:09 rws $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.20 1997/02/25 16:05:15 hohndel Exp $ */
+/* $TOG: access.c /main/69 1997/12/07 18:26:32 kaleb $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.21 1997/10/25 13:51:13 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -162,6 +162,12 @@ SOFTWARE.
 
 #if defined(Lynx) && defined(__Lynx__)
 #define VARIABLE_IFREQ
+#endif
+
+#ifdef BSD44SOCKETS
+#ifndef VARIABLE_IFREQ
+#define VARIABLE_IFREQ
+#endif
 #endif
 
 #endif /* WIN32 */

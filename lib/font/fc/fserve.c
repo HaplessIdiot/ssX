@@ -1,4 +1,4 @@
-/* $TOG: fserve.c /main/49 1997/06/10 11:23:56 barstow $ */
+/* $TOG: fserve.c /main/50 1997/12/05 15:09:07 barstow $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.5 1997/05/31 13:51:19 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.6 1997/06/11 12:24:29 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -348,7 +348,8 @@ fs_close_conn(conn)
     if (conn->trans_conn)
         (void) _FontTransClose (conn->trans_conn);
 
-    FD_CLR(conn->fs_fd, &_fs_fd_mask);
+    if (conn->fs_fd != -1)
+	FD_CLR(conn->fs_fd, &_fs_fd_mask);
 
     for (client = conn->clients; client; client = nclient) 
     {

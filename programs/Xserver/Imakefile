@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/revisionist/2 1997/11/17 14:35:40 kaleb $
+XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.124 1997/11/22 11:10:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.125 1997/12/05 22:01:16 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO

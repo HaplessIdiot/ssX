@@ -1,4 +1,4 @@
-/* $XConsortium: NewNDest.c /main/2 1996/09/22 22:02:19 lehors $ */
+/* $TOG: NewNDest.c /main/3 1997/11/24 11:03:41 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -55,6 +55,7 @@ RxpNew(PluginInstance *This)
 {
     This->window = None;
     This->child_pid = 0;
+    This->toplevel_widget = NULL;
 }
 
 void

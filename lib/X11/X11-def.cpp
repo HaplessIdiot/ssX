@@ -1,12 +1,12 @@
 LIBRARY X11
 VERSION LIBRARY_VERSION
 EXPORTS
- _Xdebug_p=_Xdebug DATA
- _XCreateMutex_fn_p=_XCreateMutex_fn DATA
- _XFreeMutex_fn_p=_XFreeMutex_fn DATA
- _XLockMutex_fn_p=_XLockMutex_fn DATA
- _XUnlockMutex_fn_p=_XUnlockMutex_fn DATA
- _Xglobal_lock_p=_Xglobal_lock DATA
+ _Xdebug_p=_Xdebug CONSTANT
+ _XCreateMutex_fn_p=_XCreateMutex_fn CONSTANT
+ _XFreeMutex_fn_p=_XFreeMutex_fn CONSTANT
+ _XLockMutex_fn_p=_XLockMutex_fn CONSTANT
+ _XUnlockMutex_fn_p=_XUnlockMutex_fn CONSTANT
+ _Xglobal_lock_p=_Xglobal_lock CONSTANT
  XActivateScreenSaver
  XAddConnectionWatch
  XAddExtension
@@ -730,4 +730,6 @@ EXPORTS
  XkbSetDeviceButtonActions
  XkbToControl
  XkbSetDebuggingFlags
-/* $TOG: X11-def.cpp /main/15 1997/08/27 12:11:54 kaleb $ */
+ XkbGetPerClientControls
+ XkbSetPerClientControls
+/* $TOG: X11-def.cpp /main/17 1997/12/02 18:36:11 kaleb $ */

@@ -1,4 +1,4 @@
-/* $XConsortium: RxPlugin.h /main/4 1996/11/20 11:31:42 lehors $ */
+/* $TOG: RxPlugin.h /main/5 1997/11/24 11:03:48 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -93,6 +93,7 @@ typedef struct _PluginInstance
     Window window;
     pid_t child_pid;
     int display_num;		/* Xnest display number */
+    Widget toplevel_widget;
 } PluginInstance;
 
 #define PLUGIN_NAME             "RX Xnest Plug-in"

@@ -1,4 +1,4 @@
-/* $XConsortium: XDpyName.c /main/11 1996/12/07 17:06:12 kaleb $ */
+/* $TOG: XDpyName.c /main/12 1997/11/25 08:04:27 barstow $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -288,6 +288,7 @@ static int findproxy (proxyname, manager, server, name)
 	    } else {
 		fprintf (stderr, "Error from proxy manager: %s\n",
 		    reply.error);
+		return 0;
 	    }
 	}
     }

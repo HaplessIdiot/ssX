@@ -1,5 +1,4 @@
-/* $XConsortium: xkbEvents.c /main/20 1996/09/28 17:16:09 rws $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.2 1996/10/13 11:32:26 dawes Exp $ */
+/* $TOG: xkbEvents.c /main/21 1997/11/25 12:31:37 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.3 1996/12/23 07:10:12 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -940,6 +940,7 @@ XkbSrvInfoPtr	xkbi;
 			group= XkbAdjustGroup(group,xkbi->desc->ctrls);
 		    }
 		}
+		state = XkbBuildCoreState(state, group);
 	    }
 	    else if (flags&XkbPCF_LookupStateWhenGrabbed)
 		state= xkbi->state.compat_lookup_mods;

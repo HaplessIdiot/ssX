@@ -1,4 +1,4 @@
-/* $TOG: XUrls.c /main/13 1997/09/10 10:47:07 kaleb $ */
+/* $TOG: XUrls.c /main/14 1997/11/30 21:22:10 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -109,14 +109,14 @@ MyBestHostname (
 	  rv = bind (s, (struct sockaddr*) &local, sizeof local);
 	  tmp = ntohs (local.sin_port);
 	  local.sin_port = htons (tmp + 1);
-	} while (rv != -1 && errno == EADDRINUSE);
+	} while (rv == -1 && errno == EADDRINUSE);
 
 	if (rv != -1) {
 	  do {
 	    rv = connect (s, (struct sockaddr*) &remote, sizeof remote);
 	    tmp = ntohs (remote.sin_port);
 	    remote.sin_port = htons (tmp + 1);
-	  } while (rv != -1 && errno == EADDRINUSE);
+	  } while (rv == -1 && errno == EADDRINUSE);
 
 	  if (rv != -1) {
 	    namelen = sizeof local;
@@ -130,6 +130,7 @@ MyBestHostname (
 		strncpy (myname, hp->h_name, myname_len);
 		myname[MAXHOSTNAMELEN] = '\0';
 		close (s);
+		return display_name;
 	      }
 	    }
 	  }

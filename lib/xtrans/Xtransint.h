@@ -1,5 +1,4 @@
-/* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.19 1997/07/06 05:30:38 dawes Exp $ */
+/* $TOG: Xtransint.h /main/26 1997/12/02 11:33:46 kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.20 1997/07/19 05:43:05 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -173,6 +173,8 @@ extern int  errno;		/* Internal system error number. */
 #define EGET() errno
 
 #else /* WIN32 */
+
+#include <limits.h>	/* for USHRT_MAX */
 
 #define ESET(val) WSASetLastError(val)
 #define EGET() WSAGetLastError()

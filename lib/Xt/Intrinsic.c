@@ -1,4 +1,4 @@
-/* $TOG: Intrinsic.c /main/151 1997/08/27 12:13:28 kaleb $ */
+/* $TOG: Intrinsic.c /main/152 1997/12/05 15:06:38 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.10 1997/10/26 13:24:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.11 1997/11/22 06:50:17 dawes Exp $ */
 
 /*
 
@@ -968,9 +968,12 @@ static Boolean TestFile(path)
     char buf[MAX_PATH];
     char* bufp;
     int len;
+    UINT olderror = SetErrorMode (SEM_FAILCRITICALERRORS);
 
     if (AccessFile (path, buf, MAX_PATH, &bufp))
 	path = bufp; 
+
+    (void) SetErrorMode (olderror);
 #endif
     ret = (access(path, R_OK) == 0 &&		/* exists and is readable */
 	    stat(path, &status) == 0 &&		/* get the status */

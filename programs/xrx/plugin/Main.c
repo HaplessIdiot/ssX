@@ -1,4 +1,4 @@
-/* $TOG: Main.c /main/15 1997/11/21 14:33:16 kaleb $ */
+/* $TOG: Main.c /main/18 1997/11/24 13:14:08 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -387,7 +387,7 @@ StartCB(Widget widget, XtPointer client_data, XtPointer call_data)
     StartApplication(This);
 }
 
-#if defined(linux) || defined(__osf__)
+#if defined(linux)
 /* deficient linker semantics */
 static WidgetClass xmLabelGadgetClass;
 static WidgetClass xmPushButtonGadgetClass;
@@ -416,23 +416,26 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
 
     if (!XrmGetResource (db, "RxPlugin_BeenHere", "RxPlugin_BeenHere",
 		    &return_type, &return_value)) {
-	Widget w;
 
 	XrmPutStringResource (&db, "*Rx_Loading.labelString", "Loading...");
 	XrmPutStringResource (&db, "*Rx_Starting.labelString", "Starting...");
 	XrmPutStringResource (&db, "*Rx_Start.labelString", "Start");
 	XrmPutStringResource (&db, "RxPlugin_BeenHere", "YES");
-#if defined(linux) || defined(__osf__)
-	/*
-	   lame loader semantics mean we have to go fishing around to
-	   come up with widget class records so we can create some widgets.
+    }
+#if defined(linux)
+    /*
+	lame loader semantics mean we have to go fishing around to
+	come up with widget class records so we can create some widgets.
 
-	   Names of widgets changed in 4.x, so look for those names too
-	   for linux (Netscape hasn't done 4.x for Digital Unix [yet]).
+	Names of widgets changed in 4.x, so look for those names too
+	for linux.
 
-	   If Microsoft ever does IE for Linux we'll have to figure out
-	   those names too.
-	*/
+	If Microsoft ever does IE for Linux we'll have to figure out
+	those names too.
+    */
+    if (xmLabelGadgetClass == NULL) {
+	Widget w;
+
 	w = XtNameToWidget (This->toplevel_widget, "*topLeftArea.urlLabel");
 	if (w == NULL)
 	    w = XtNameToWidget (This->toplevel_widget, "*urlBar.urlLocationLabel");
@@ -441,8 +444,8 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
 	if (w == NULL)
 	    w = XtNameToWidget (This->toplevel_widget, "*PopupMenu.openCustomUrl");
 	xmPushButtonGadgetClass = XtClass (w);
-#endif
     }
+#endif
 
     n = 0;
     XtSetArg(args[n], "shadowThickness", 1); n++;
@@ -450,43 +453,22 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
     XtSetArg(args[n], XtNheight, This->height); n++;
     if (state == LOADING) {
 	/* create a label */
-#if 0
-	XmString string = XmStringCreateSimple("Loading...");
-	XtSetArg(args[n], "labelString", string); n++;
-#endif
 	This->status_widget =
 	    XtCreateManagedWidget("Rx_Loading", xmLabelGadgetClass,
 		This->plugin_widget, args, n);
-#if 0
-	XmStringFree(string);
-#endif
 #ifndef NO_STARTING_STATE
     } else if (state == STARTING) {
 	/* create a label */
-#if 0
-	XmString string = XmStringCreateSimple("Starting...");
-	XtSetArg(args[n], "labelString", string); n++;
-#endif
 	This->status_widget =
 	    XtCreateManagedWidget("Rx_Starting", xmLabelGadgetClass,
 		This->plugin_widget, args, n);
-#if 0
-	XmStringFree(string);
-#endif
 #endif
     } else if (state == WAITING) {
 	/* create a push button */
-#if 0
-	XmString string = XmStringCreateSimple("Start");
-	XtSetArg(args[n], "labelString", string); n++;
-#endif
 	This->status_widget =
 	    XtCreateManagedWidget("Rx_Start", xmPushButtonGadgetClass,
 		This->plugin_widget, args, n);
 	XtAddCallback(This->status_widget, "activateCallback", StartCB, This);
-#if 0
-	XmStringFree(string);
-#endif
     } else if (state == RUNNING) {
 	/* nothing else to be done */
     }

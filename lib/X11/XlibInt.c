@@ -1,4 +1,4 @@
-/* $TOG: XlibInt.c /main/184 1997/08/27 12:12:00 kaleb $ */
+/* $TOG: XlibInt.c /main/185 1997/12/05 15:06:26 kaleb $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.10 1997/10/26 13:24:45 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.11 1997/11/22 06:50:09 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -3354,9 +3354,12 @@ int _XOpenFile(path, flags)
     char buf[MAX_PATH];
     char* bufp;
     int ret = -1;
+    UINT olderror = SetErrorMode (SEM_FAILCRITICALERRORS);
 
     if (AccessFile (path, buf, MAX_PATH, &bufp))
 	ret = open (bufp, flags);
+
+    (void) SetErrorMode (olderror);
 
     if (bufp != buf) Xfree (bufp);
 
@@ -3370,9 +3373,12 @@ void* _XFopenFile(path, mode)
     char buf[MAX_PATH];
     char* bufp;
     void* ret = NULL;
+    UINT olderror = SetErrorMode (SEM_FAILCRITICALERRORS);
 
     if (AccessFile (path, buf, MAX_PATH, &bufp))
 	ret = fopen (bufp, mode);
+
+    (void) SetErrorMode (olderror);
 
     if (bufp != buf) Xfree (bufp);
 
@@ -3385,8 +3391,11 @@ int _XAccessFile(path)
     char buf[MAX_PATH];
     char* bufp;
     int ret = -1;
+    UINT olderror = SetErrorMode (SEM_FAILCRITICALERRORS);
 
     ret = AccessFile (path, buf, MAX_PATH, &bufp);
+
+    (void) SetErrorMode (olderror);
 
     if (bufp != buf) Xfree (bufp);
 
