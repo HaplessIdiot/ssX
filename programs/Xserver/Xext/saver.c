@@ -1,6 +1,6 @@
 /*
  * $XConsortium: saver.c,v 1.12 94/04/17 20:59:36 dpw Exp $
- * $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.3 2000/04/05 18:13:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.4 2001/08/23 13:01:36 alanh Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -45,6 +45,11 @@ in this Software without prior written authorization from the X Consortium.
 #include "gcstruct.h"
 #include "cursorstr.h"
 #include "colormapst.h"
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
 
 #ifdef IN_MODULE
 #include <xf86_ansic.h>
@@ -696,7 +701,10 @@ ScreenSaverHandle (pScreen, xstate, force)
 	    ret = TRUE;
 	
     }
-    SendScreenSaverNotify (pScreen, state, force);
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
+       SendScreenSaverNotify (pScreen, state, force);
     return ret;
 }
 
@@ -810,8 +818,7 @@ ProcScreenSaverSelectInput (client)
 }
 
 static int
-ProcScreenSaverSetAttributes (client)
-    register ClientPtr	client;
+ScreenSaverSetAttributes (ClientPtr client)
 {
     REQUEST(xScreenSaverSetAttributesReq);
     DrawablePtr			pDraw;
@@ -1191,8 +1198,7 @@ bail:
 }
 
 static int
-ProcScreenSaverUnsetAttributes (client)
-    register ClientPtr	client;
+ScreenSaverUnsetAttributes (ClientPtr client)
 {
     REQUEST(xScreenSaverSetAttributesReq);
     DrawablePtr			pDraw;
@@ -1210,6 +1216,110 @@ ProcScreenSaverUnsetAttributes (client)
 	CheckScreenPrivate (pDraw->pScreen);
     }
     return Success;
+}
+
+static int
+ProcScreenSaverSetAttributes (ClientPtr client)
+{
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension) {
+       REQUEST(xScreenSaverSetAttributesReq);
+       PanoramiXRes *draw;
+       PanoramiXRes *backPix = NULL;
+       PanoramiXRes *bordPix = NULL;
+       PanoramiXRes *cmap    = NULL;
+       int i, status = 0, len;
+       int  pback_offset = 0, pbord_offset = 0, cmap_offset = 0;
+       XID orig_visual, tmp;
+
+       REQUEST_AT_LEAST_SIZE (xScreenSaverSetAttributesReq);
+
+       if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                   client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+           return BadDrawable;
+
+       len = stuff->length -  (sizeof(xScreenSaverSetAttributesReq) >> 2);
+       if (Ones(stuff->mask) != len)
+           return BadLength;
+
+       if((Mask)stuff->mask & CWBackPixmap) {
+          pback_offset = Ones((Mask)stuff->mask & (CWBackPixmap - 1));
+          tmp = *((CARD32 *) &stuff[1] + pback_offset);
+          if ((tmp != None) && (tmp != ParentRelative)) {
+             if(!(backPix = (PanoramiXRes*) SecurityLookupIDByType(
+                  client, tmp, XRT_PIXMAP, SecurityReadAccess)))
+                return BadPixmap;
+          }
+       }
+
+       if ((Mask)stuff->mask & CWBorderPixmap) {
+          pbord_offset = Ones((Mask)stuff->mask & (CWBorderPixmap - 1));
+          tmp = *((CARD32 *) &stuff[1] + pbord_offset);
+          if (tmp != CopyFromParent) {
+             if(!(bordPix = (PanoramiXRes*) SecurityLookupIDByType(
+                  client, tmp, XRT_PIXMAP, SecurityReadAccess)))
+                return BadPixmap;
+          }
+       }
+
+       if ((Mask)stuff->mask & CWColormap) {
+           cmap_offset = Ones((Mask)stuff->mask & (CWColormap - 1));
+           tmp = *((CARD32 *) &stuff[1] + cmap_offset);
+           if ((tmp != CopyFromParent) && (tmp != None)) {
+             if(!(cmap = (PanoramiXRes*) SecurityLookupIDByType(
+                  client, tmp, XRT_COLORMAP, SecurityReadAccess)))
+                 return BadColor;
+           }
+       }
+
+       orig_visual = stuff->visualID;
+
+       FOR_NSCREENS_BACKWARD(i) {
+          stuff->drawable = draw->info[i].id;  
+          if (backPix)
+             *((CARD32 *) &stuff[1] + pback_offset) = backPix->info[i].id;
+          if (bordPix)
+             *((CARD32 *) &stuff[1] + pbord_offset) = bordPix->info[i].id;
+          if (cmap)
+             *((CARD32 *) &stuff[1] + cmap_offset) = cmap->info[i].id;
+
+          if (orig_visual != CopyFromParent) 
+            stuff->visualID = 
+                     PanoramiXVisualTable[(orig_visual*MAXSCREENS) + i];
+
+          status = ScreenSaverSetAttributes(client);
+       }
+
+       return status;
+    }
+#endif
+
+    return ScreenSaverSetAttributes(client);
+}
+
+static int
+ProcScreenSaverUnsetAttributes (ClientPtr client)
+{
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension) {
+       REQUEST(xScreenSaverUnsetAttributesReq);
+       PanoramiXRes *draw;
+       int i;
+
+       if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                   client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+           return BadDrawable;
+
+       for(i = PanoramiXNumScreens - 1; i > 0; i--) {
+            stuff->drawable = draw->info[i].id;
+            ScreenSaverUnsetAttributes(client);
+       }
+
+       stuff->drawable = draw->info[0].id;
+    }
+#endif
+
+    return ScreenSaverUnsetAttributes(client);
 }
 
 static DISPATCH_PROC((*NormalVector[])) = {

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.24 2001/10/28 03:32:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.25 2001/11/18 23:55:48 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -1939,8 +1939,7 @@ XineramaXvShmPutImage(ClientPtr client)
                 client, stuff->port, XvXRTPort, SecurityReadAccess)))
         return _XvBadPort;
  
-    isRoot = (draw->type == XRT_WINDOW) &&
-                (stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     x = stuff->drw_x;
     y = stuff->drw_y;
@@ -1987,8 +1986,7 @@ XineramaXvPutImage(ClientPtr client)
 		client, stuff->port, XvXRTPort, SecurityReadAccess)))
 	return _XvBadPort;
  
-    isRoot = (draw->type == XRT_WINDOW) &&
-                (stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     x = stuff->drw_x;
     y = stuff->drw_y;
@@ -2033,8 +2031,7 @@ XineramaXvPutVideo(ClientPtr client)
                 client, stuff->port, XvXRTPort, SecurityReadAccess)))
         return _XvBadPort;
 
-    isRoot = (draw->type == XRT_WINDOW) &&
-                (stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     x = stuff->drw_x;
     y = stuff->drw_y;
@@ -2079,8 +2076,7 @@ XineramaXvPutStill(ClientPtr client)
                 client, stuff->port, XvXRTPort, SecurityReadAccess)))
         return _XvBadPort;
 
-    isRoot = (draw->type == XRT_WINDOW) &&
-                (stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     x = stuff->drw_x;
     y = stuff->drw_y;

@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.31 2001/10/28 03:32:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.32 2002/08/01 00:30:34 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -764,7 +764,7 @@ void PanoramiXConsolidate(void)
     int 	i, j, k;
     VisualPtr   pVisual, pVisual2;
     ScreenPtr   pScreen, pScreen2;
-    PanoramiXRes *root, *defmap;
+    PanoramiXRes *root, *defmap, *saver;
 
     if(!PanoramiXVisualTable)
 	PanoramiXVisualTable = xcalloc(256 * MAXSCREENS, sizeof(XID));
@@ -866,14 +866,22 @@ void PanoramiXConsolidate(void)
     root->type = XRT_WINDOW;
     defmap = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes));
     defmap->type = XRT_COLORMAP;
+    saver = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes));
+    saver->type = XRT_WINDOW;
+
 
     for (i =  0; i < PanoramiXNumScreens; i++) {
 	root->info[i].id = WindowTable[i]->drawable.id;
 	root->u.win.class = InputOutput;
+        root->u.win.root = TRUE;
+        saver->info[i].id = savedScreenInfo[i].wid;
+        saver->u.win.class = InputOutput;
+        saver->u.win.root = TRUE;
 	defmap->info[i].id = (screenInfo.screens[i])->defColormap;
     }
 
     AddResource(root->info[0].id, XRT_WINDOW, root);
+    AddResource(saver->info[0].id, XRT_WINDOW, saver);
     AddResource(defmap->info[0].id, XRT_COLORMAP, defmap);
 }
 

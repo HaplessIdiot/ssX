@@ -1,4 +1,4 @@
-/* $XFree86: shm.c,v 3.35 2002/02/26 23:37:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.36 2002/04/03 19:51:11 herrb Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -572,8 +572,7 @@ ProcPanoramiXShmPutImage(register ClientPtr client)
                 client, stuff->gc, XRT_GC, SecurityReadAccess)))
         return BadGC;
 
-    isRoot = (draw->type == XRT_WINDOW) &&
-		(stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     orig_x = stuff->dstX;
     orig_y = stuff->dstY;
@@ -633,8 +632,7 @@ ProcPanoramiXShmGetImage(ClientPtr client)
     format = stuff->format;
     planemask = stuff->planeMask;
 
-    isRoot = (draw->type == XRT_WINDOW) &&
-		(stuff->drawable == WindowTable[0]->drawable.id);
+    isRoot = (draw->type == XRT_WINDOW) && draw->u.win.root;
 
     if(isRoot) {
       if( /* check for being onscreen */
