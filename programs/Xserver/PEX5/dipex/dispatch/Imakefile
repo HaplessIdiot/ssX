@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:54:48 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.4 1997/02/18 10:49:37 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.5 1997/02/18 17:50:06 hohndel Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,7 +40,7 @@ MODULEDEFINES =  -DDLSYM_BUG
 #define SharedServerLibraryDef -DDYNAMIC_MODULE
 #endif
 #if DoLoadableServer
-EXTRAINCLUDES = -I$(XF86COMSRC)
+EXTRAINCLUDES = $(XF86COMSRC)
 #endif
 
  CDEBUGFLAGS = PexDipexCDebugFlags
