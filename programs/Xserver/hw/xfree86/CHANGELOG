@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 601. Update the fonts document for the FreeType backend changes
+      (Chisato Yamauchi, After X-TT Project).
  600. Don't allow the lack of "SUPERSCRIPT TWO" to prevent Adobe Standard
       Cyrillic encoded fonts from being accepted as "koi8" capable
       (Michail Vidiassov).
@@ -18208,7 +18210,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2970 2003/11/15 04:01:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2971 2003/11/17 01:01:26 dawes Exp $
 
 
 
