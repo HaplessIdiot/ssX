@@ -25,7 +25,7 @@
 #ifndef _XFTFREETYPE_H_
 #define _XFTFREETYPE_H_
 
-#include <X11/Xft/Xft.h>
+#include "Xft.h"
 #include <freetype/freetype.h>
 
 #include <X11/Xfuncproto.h>
