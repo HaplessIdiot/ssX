@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.10 1998/08/16 10:25:59 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.11 1999/03/07 11:41:18 dawes Exp $
  */
 
 /*
@@ -146,7 +146,7 @@ extern FILE *popen();
 #endif
 
 static void fatal(char *, ...);
-static void addstring ( String *arg, __const char *s );
+static void addstring ( String *arg, const char *s );
 static void FormatEntries ( Buffer *buffer, Entries *entries );
 static void StoreProperty ( Display *dpy, Window root, Atom res_prop );
 static void Process ( int scrno, Bool doScreen, Bool execute );

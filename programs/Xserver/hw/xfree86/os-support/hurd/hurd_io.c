@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.2 1999/02/28 11:19:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.3 1999/03/07 14:05:09 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -77,9 +77,6 @@ typedef struct {
 int
 xf86OsMouseProc( DeviceIntPtr pPointer , int what )
 {
-    extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
-					unsigned long start, unsigned long stop,
-					ScreenPtr pScreen);
     unsigned char map[MSE_MAXBUTTONS + 1];
     int nbuttons;
     int mousefd;

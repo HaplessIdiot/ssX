@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.10 1998/12/13 05:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.11 1999/01/14 13:05:25 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -76,6 +76,19 @@ XAAValidateGC(
     if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){
 	pGCPriv->flags = OPS_ARE_PIXMAP;
         pGCPriv->changes |= changes;
+
+	/* make sure we're not using videomemory pixmaps to render
+	   onto system memory drawables */
+
+	if(!pGC->tileIsPixel && pGC->tile.pixmap &&
+				IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap)) {
+
+	    XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+	    FBAreaPtr area = pPriv->offscreenArea;
+
+	    XAARemoveAreaCallback(area); /* clobbers pPriv->offscreenArea */
+	    xf86FreeOffscreenArea(area);
+	}
     } 
     else if(!infoRec->pScrn->vtSema) {
 	pGCPriv->flags = 0;

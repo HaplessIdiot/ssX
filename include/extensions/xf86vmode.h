@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.24 1998/10/02 07:39:18 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.25 1999/03/07 08:29:27 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -54,15 +54,6 @@ from Kaleb S. KEITHLEY
 /* new for version 2.x of this extension */
 #define X_XF86VidModeGetDotClocks	13
 #define X_XF86VidModeSetClientVersion	14
-#if 0
-#define X_XF86VidModeGetModeLine	15
-#define X_XF86VidModeModModeLine	16
-#define X_XF86VidModeGetAllModeLines	17
-#define X_XF86VidModeAddModeLine	17
-#define X_XF86VidModeDeleteModeLine	18
-#define X_XF86VidModeValidateModeLine	20
-#define X_XF86VidModeSwitchToMode	21
-#endif
 
 #define CLKFLAG_PROGRAMABLE		1
 
