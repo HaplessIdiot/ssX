@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.8 1999/06/13 15:49:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.9 1999/06/20 07:14:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -103,8 +103,8 @@ IsClearTV(ScrnInfoPtr pScrn)
 
     if (pTrident->frequency != 0) return;
 
-    MMIO_OUTB(vgaIOBase + 4, 0xC0);
-    temp = MMIO_INB(vgaIOBase + 5);
+    OUTB(vgaIOBase + 4, 0xC0);
+    temp = INB(vgaIOBase + 5);
     if (temp & 0x80)
 	pTrident->frequency = PAL;
     else
@@ -123,8 +123,8 @@ CalculateMCLK(ScrnInfoPtr pScrn)
     CARD8 temp;
 
     if (pTrident->HasSGRAM) {
-	MMIO_OUTB(vgaIOBase + 4, 0x28);
-	switch(MMIO_INB(vgaIOBase + 5) & 0x07) {
+	OUTB(vgaIOBase + 4, 0x28);
+	switch(INB(vgaIOBase + 5) & 0x07) {
 	    case 0:
 		freq = 60;
 		break;
@@ -151,22 +151,22 @@ CalculateMCLK(ScrnInfoPtr pScrn)
 		break;
 	}
     } else {
-	MMIO_OUTB(0x3C4, NewMode1);
-	temp = MMIO_INB(0x3C5);
+	OUTB(0x3C4, NewMode1);
+	temp = INB(0x3C5);
 
-	MMIO_OUTB(0x3C5, 0xC2);
+	OUTB(0x3C5, 0xC2);
         if (!Is3Dchip) {
-	    a = MMIO_INB(0x43C6);
-	    b = MMIO_INB(0x43C7);
+	    a = INB(0x43C6);
+	    b = INB(0x43C7);
     	} else {
-	    MMIO_OUTB(0x3C4, 0x16);
-	    a = MMIO_INB(0x3C5);
-	    MMIO_OUTB(0x3C4, 0x17);
-	    b = MMIO_INB(0x3C5);
+	    OUTB(0x3C4, 0x16);
+	    a = INB(0x3C5);
+	    OUTB(0x3C4, 0x17);
+	    b = INB(0x3C5);
     	}
 
-	MMIO_OUTB(0x3C4, NewMode1);
-	MMIO_OUTB(0x3C5, temp);
+	OUTB(0x3C4, NewMode1);
+	OUTB(0x3C5, temp);
 
         IsClearTV(pScrn);
 

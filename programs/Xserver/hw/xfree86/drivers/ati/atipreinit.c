@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.5 1999/09/27 06:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.6 1999/10/13 04:21:09 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1657,14 +1657,14 @@ ATIPreInit
                  (pScreenInfo->display->virtualX > 2032)) */ )
                 ATIClockRange.interlaceAllowed = FALSE;
 
-            pScreenInfo->maxHValue = (0xFFU + 5) << 3;  /* max HTotal */
+            pScreenInfo->maxHValue = (0xFFU + 1) << 3;  /* max HTotal */
 
             /*
              * The maximum VTotal value set here applies to all modes,
              * including interlaced, doublescanned or multiscanned modes.
              * Finer-grained checks are done in ATIValidateMode().
              */
-            pScreenInfo->maxVValue = 0x03FFU + 2;
+            pScreenInfo->maxVValue = 0x03FFU + 1;
             if (pATI->Adapter > ATI_ADAPTER_VGA)
             {
                 pScreenInfo->maxVValue <<= 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.20 1999/08/28 09:00:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.21 1999/09/27 06:29:36 dawes Exp $ */
 
 
 #include "apm.h"
@@ -59,7 +59,10 @@ int ApmPixmapIndex = -1;
 
 DriverRec APM = {
 	VERSION,
+	APM_DRIVER_NAME,
+#if 0
 	"Driver for the Alliance chipsets",
+#endif
 	ApmIdentify,
 	ApmProbe,
 	NULL,
@@ -200,7 +203,7 @@ static const char *cfbSymbols[] = {
 };
 
 static XF86ModuleVersionInfo apmVersRec = {
-    "Alliance Promotion",
+    "apm",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
@@ -378,7 +381,7 @@ static Bool
 ApmProbe(DriverPtr drv, int flags)
 {
     int			numDevSections, numUsed, i;
-    GDevPtr		*DevSections;
+    GDevPtr		*DevSections = NULL;
     int			*usedChips;
     EntityInfoPtr	pEnt;
     int			foundScreen = FALSE;
@@ -404,6 +407,8 @@ ApmProbe(DriverPtr drv, int flags)
 		    drv, &usedChips);
 
     if (numUsed > 0) {
+	if (flags & PROBE_DETECT)
+	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
@@ -431,7 +436,9 @@ ApmProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(APM_NAME, ApmChipsets,
 			ApmIsaChipsets, drv, ApmFindIsaDevice, DevSections,
 			numDevSections, &usedChips);
-    if (numUsed > 0) 
+    if (numUsed > 0) {
+	if (flags & PROBE_DETECT)
+	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 
@@ -443,7 +450,9 @@ ApmProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn, usedChips[i], ApmIsaChipsets,
 				      NULL, NULL, NULL, NULL, NULL);
 	}
-    xfree(DevSections);
+    }
+    if (DevSections)
+	xfree(DevSections);
     DevSections = NULL;
     return foundScreen;
 }

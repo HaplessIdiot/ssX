@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.10 1999/08/21 13:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.11 1999/10/13 04:21:10 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -800,7 +800,7 @@ ATIProbe
 {
     ATIPtr              pATI, *ATIPtrs = NULL, pVGA = NULL, p8514 = NULL;
     ATIPtr              pMach64[3] = {NULL, NULL, NULL};
-    GDevPtr             *GDevs, pGDev;
+    GDevPtr             *GDevs = NULL, pGDev;
     pciVideoPtr         pVideo, *xf86PciVideoInfo = xf86GetPciVideoInfo();
     pciConfigPtr        pPCI,   *xf86PciInfo      = xf86GetPciConfigInfo();
     ATIGDev             *ATIGDevs, *pATIGDev;
@@ -846,6 +846,9 @@ ATIProbe
     ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
     memset(fChipsets, FALSE, SizeOf(fChipsets));
 
+    if (nGDev > 0 && (flags & PROBE_DETECT))
+	return TRUE;
+
     for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
     {
         pGDev = GDevs[i];
@@ -875,7 +878,8 @@ ATIProbe
         fChipsets[Chipset] = TRUE;
     }
 
-    xfree(GDevs);
+    if (GDevs)
+	xfree(GDevs);
 
     /* If no device sections remain, return now */
     if (!nATIGDev)

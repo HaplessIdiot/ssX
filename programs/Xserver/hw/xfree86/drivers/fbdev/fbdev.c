@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.9 1999/06/27 14:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.10 1999/06/27 16:17:31 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -65,7 +65,10 @@ static Bool	FBDevSaveScreen(ScreenPtr pScreen, Bool unblank);
 
 DriverRec FBDEV = {
 	VERSION,
+	FBDEV_DRIVER_NAME,
+#if 0
 	"driver for linux framebuffer devices",
+#endif
 	FBDevIdentify,
 	FBDevProbe,
 	NULL,
@@ -221,7 +224,7 @@ FBDevFreeRec(ScrnInfoPtr pScrn)
 static void
 FBDevIdentify(int flags)
 {
-	xf86PrintChipsets(FBDEV_NAME, "driver for linux framebuffer", FBDevChipsets);
+	xf86PrintChipsets(FBDEV_NAME, "driver for framebuffer", FBDevChipsets);
 }
 
 static Bool
@@ -229,13 +232,18 @@ FBDevProbe(DriverPtr drv, int flags)
 {
 	int i;
 	ScrnInfoPtr pScrn, pScrn0;
-       	GDevPtr *devSections;
+       	GDevPtr *devSections = NULL;
 	int numDevSections;
 	int bus,device,func;
 	char *dev;
 	Bool foundScreen = FALSE;
 
 	TRACE("probe start");
+
+	/* For now, just bail out for PROBE_DETECT. */
+	if (flags & PROBE_DETECT)
+		return FALSE;
+
 	pScrn0 = xf86AllocateScreen(drv, 0);
 	if (!xf86LoadSubModule(pScrn0, "fbdevhw")) {
 		xf86DeleteScreen(pScrn0->scrnIndex,0);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.20 1999/05/30 14:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.21 1999/09/25 14:36:50 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1828,13 +1828,16 @@ ProcWarpPointer(client)
         if ( !noPanoramiXExtension )
             PANORAMIXFIND_ID(pPanoramiXWin, stuff->dstWid);
 #endif
-    } else {
+    } else 
 	newScreen = sprite.hotPhys.pScreen;
+
 #ifdef PANORAMIX
-	x += panoramiXdataPtr[newScreen->myNum].x;
-	y += panoramiXdataPtr[newScreen->myNum].y;
+   if(!noPanoramiXExtension) {
+        x += panoramiXdataPtr[newScreen->myNum].x;
+        y += panoramiXdataPtr[newScreen->myNum].y;
+   }
 #endif
-    }
+
 
     x += stuff->dstX;
     y += stuff->dstY;

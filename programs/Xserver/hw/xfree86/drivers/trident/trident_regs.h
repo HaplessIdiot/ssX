@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.7 1999/04/25 11:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.8 1999/06/20 07:14:37 dawes Exp $ */
 
 #define NTSC 14.31818
 #define PAL  17.73448
@@ -151,6 +151,7 @@
 #define GER_DIM_XY	0x2140
 #define GER_DIM_X	0x2140		/* Word */
 #define GER_DIM_Y	0x2142		/* Word */
+#define GER_STYLE	0x2144		/* Long */
 #define GER_CKEY	0x2168		/* Long */
 #define GER_FPATCOL	0x2178
 #define GER_BPATCOL	0x217C
@@ -171,12 +172,17 @@
 /* Defines for BLADE Graphics Engine */
 #define BLADE_GE_STATUS		0x2120
 
-#define REPLICATE(x)  				\
-	if (pScrn->bitsPerPixel < 32) {		\
-		x |= x << 16;			\
-		if (pScrn->bitsPerPixel < 16)	\
-			x |= x << 8;		\
-	}
+#define REPLICATE(r)						\
+{								\
+	if (pScrn->bitsPerPixel == 16) {			\
+		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
+	} else							\
+	if (pScrn->bitsPerPixel == 8) { 			\
+		r &= 0xFF;					\
+		r |= (r<<8);					\
+		r |= (r<<16);					\
+	}							\
+}
 
 #define CHECKCLIPPING					\
 	if (pTrident->Clipping)	{			\
@@ -198,28 +204,53 @@
 #define TRIDENT_READ_REG(r) \
 	*(volatile CARD32 *)((char*)pTrident->IOBase+(r))
 
-#define MMIO_OUTB(addr, data) \
+#if USE_MMIO
+#define OUTB(addr, data) \
 	(*(volatile CARD8 *)(pTrident->IOBase + (addr)) = (data))
-#define MMIO_OUTW(addr, data) \
+#define OUTW(addr, data) \
 	(*(volatile CARD16 *)(pTrident->IOBase + (addr)) = (data))
-#define MMIO_INB(addr) \
+#define INB(addr) \
 	*(volatile CARD8 *)(pTrident->IOBase + (addr))
 
-#define MMIO_OUTW_3C4(reg) \
-    	MMIO_OUTW(0x3C4, (tridentReg->tridentRegs3C4[reg])<<8 | (reg))
-#define MMIO_OUTW_3CE(reg) \
-    	MMIO_OUTW(0x3CE, (tridentReg->tridentRegs3CE[reg])<<8 | (reg))
-#define MMIO_OUTW_3x4(reg) \
-    	MMIO_OUTW(vgaIOBase + 4, (tridentReg->tridentRegs3x4[reg])<<8 | (reg))
-#define MMIO_INB_3x4(reg) \
-    	(MMIO_OUTB(vgaIOBase + 4, reg), \
-    	tridentReg->tridentRegs3x4[reg] = MMIO_INB(vgaIOBase + 5))
-#define MMIO_INB_3C4(reg) \
-    	(MMIO_OUTB(0x3C4, reg), \
-    	tridentReg->tridentRegs3C4[reg] = MMIO_INB(0x3C5))
-#define MMIO_INB_3CE(reg) \
-    	(MMIO_OUTB(0x3CE, reg), \
-    	tridentReg->tridentRegs3CE[reg] = MMIO_INB(0x3CF))
+#define OUTW_3C4(reg) \
+    	OUTW(0x3C4, (tridentReg->tridentRegs3C4[reg])<<8 | (reg))
+#define OUTW_3CE(reg) \
+    	OUTW(0x3CE, (tridentReg->tridentRegs3CE[reg])<<8 | (reg))
+#define OUTW_3x4(reg) \
+    	OUTW(vgaIOBase + 4, (tridentReg->tridentRegs3x4[reg])<<8 | (reg))
+#define INB_3x4(reg) \
+    	(OUTB(vgaIOBase + 4, reg), \
+    	tridentReg->tridentRegs3x4[reg] = INB(vgaIOBase + 5))
+#define INB_3C4(reg) \
+    	(OUTB(0x3C4, reg), \
+    	tridentReg->tridentRegs3C4[reg] = INB(0x3C5))
+#define INB_3CE(reg) \
+    	(OUTB(0x3CE, reg), \
+    	tridentReg->tridentRegs3CE[reg] = INB(0x3CF))
+#else
+#define OUTB(addr, data) \
+	outb(addr, data); 
+#define OUTW(addr, data) \
+	outw(addr, data);
+#define INB(addr) \
+	inb(addr)
+
+#define OUTW_3C4(reg) \
+	outw(0x3C4, reg);
+#define OUTW_3CE(reg) \
+	outw(0x3CE, reg);
+#define OUTW_3x4(reg) \
+	outw(vgaIOBase + 4, reg);
+#define INB_3x4(reg) \
+    	(outb(vgaIOBase + 4, reg), \
+	tridentReg->tridentRegs3x4[reg] = inb(vgaIOBase + 5))
+#define INB_3C4(reg) \
+	(outb(0x3C4, reg), \
+    	tridentReg->tridentRegs3C4[reg] = inb(0x3C5))
+#define INB_3CE(reg) \
+	(outb(0x3CE, reg), \
+    	tridentReg->tridentRegs3CE[reg] = inb(0x3CF))
+#endif
 
 #define IMAGEBUSY(b) \
 	(b = (*(volatile CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF0000000)
@@ -270,6 +301,8 @@
 	(*(volatile CARD8 *)(pTrident->IOBase + OLDGER_BMIX) = (c))
 #define TGUI_DIM_XY(w,h) \
 	(*(volatile CARD32 *)(pTrident->IOBase + GER_DIM_XY) = XY_MERGE((w)-1,(h)-1))
+#define TGUI_STYLE(c) \
+	(*(volatile CARD32 *)(pTrident->IOBase + GER_STYLE) = (c))
 #define OLDTGUI_DIMXY(w,h) \
 	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_DIMXY) = XY_MERGE((w)-1,(h)-1))
 #define TGUI_SRC_XY(x,y) \

@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.41 1999/06/20 05:23:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.42 1999/07/11 08:49:24 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -150,7 +150,10 @@ static int pix24bpp = 0;
 
 DriverRec CIRRUS = {
     VERSION,
+    CIR_DRIVER_NAME,
+#if 0
     "Driver for Cirrus Logic GD5446, GD5480, and GD5462/4/5 cards",
+#endif
     CIRIdentify,
     CIRProbe,
     NULL,
@@ -405,7 +408,7 @@ static Bool
 CIRProbe(DriverPtr drv, int flags)
 {
     int i;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     pciVideoPtr pPci;
     int *usedChips;
     int numDevSections;
@@ -471,10 +474,13 @@ CIRProbe(DriverPtr drv, int flags)
 			CIRChipsets, CIRPciChipsets, devSections,
 			numDevSections, drv, &usedChips);
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
 	return FALSE;
+    if (flags & PROBE_DETECT)
+	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;

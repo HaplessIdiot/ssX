@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.13 1999/07/04 06:39:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.14 1999/07/18 03:27:00 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -32,6 +32,8 @@
 #include "compiler.h"
 #include "vgaHW.h"
 #include "xf86i2c.h"
+
+#define USE_MMIO 1
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -81,20 +83,23 @@ typedef struct {
     int			MaxClock;
     int			MUXThreshold;
     int			MCLK;
-    int			bytes;
+    int			dwords;
+    int			height;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
     I2CBusPtr		DDC;
     CARD16		EngineOperation;
-    CARD32		AccelFlags;
+    CARD32		PatternLocation;
     CARD32		BltScanDirection;
+    CARD32		DrawFlag;
     CARD16		LinePattern;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
-    unsigned char *	XAAScanlineColorExpandBuffers[1];
+    CARD8*		XAAScanlineColorExpandBuffers[2];
+    CARD8*		XAAImageScanlineBuffer[1];
 } TRIDENTRec, *TRIDENTPtr;
 
 /* Prototypes */
@@ -162,7 +167,8 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 #define CYBERBLADEI7D	31
 #define CYBERBLADEI1	32
 
-#define HAS_DST_TRANS	(pTrident->Chipset == PROVIDIA9682) 
+#define HAS_DST_TRANS	((pTrident->Chipset == PROVIDIA9682) || \
+			 (pTrident->Chipset == PROVIDIA9685))
 
 #define Is3Dchip	((pTrident->Chipset == CYBER9388) || \
 			 (pTrident->Chipset == CYBER9397) || \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.8 1999/10/13 14:27:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.9 1999/10/13 14:46:30 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -90,7 +90,10 @@ static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo);
 
 DriverRec RENDITION={
     RENDITION_VERSION_CURRENT,
+    RENDITION_DRIVER_NAME,
+#if 0
     "rendition driver",
+#endif
     renditionIdentify,
     renditionProbe,
     NULL,
@@ -250,7 +253,7 @@ renditionProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen=FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     int *usedChips;
     int c;
 
@@ -264,6 +267,8 @@ renditionProbe(DriverPtr drv, int flags)
         numUsed=xf86MatchPciInstances(RENDITION_NAME, PCI_VENDOR_RENDITION,
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
+	if (numUsed > 0 && (flags & PROBE_DETECT))
+	    return TRUE;
         for (c=0; c<numUsed; c++) {
             ScrnInfoPtr pScrn;
             /* Allocate a ScrnInfoRec and claim the slot */
@@ -287,7 +292,8 @@ renditionProbe(DriverPtr drv, int flags)
         if (numUsed > 0)
             xfree(usedChips);
     }
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     return foundScreen;
 }
 

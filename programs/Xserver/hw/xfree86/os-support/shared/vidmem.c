@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.4 1999/04/25 15:39:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.5 1999/09/25 14:38:04 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -145,7 +145,9 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	if (!vidMemInfo.initialised || !vidMemInfo.mapMem)
 		return NULL;
 
-	if ((Flags & VIDMEM_SPARSE) && vidMemInfo.mapMemSparse)
+	if (((Flags & VIDMEM_SPARSE) ||
+	     ((Flags & VIDMEM_MMIO) && !(Flags & VIDMEM_MMIO_32BIT))) &&
+	    vidMemInfo.mapMemSparse)
 		vbase = vidMemInfo.mapMemSparse(ScreenNum, Base, Size);
 	else
 		vbase = vidMemInfo.mapMem(ScreenNum, Base, Size);
