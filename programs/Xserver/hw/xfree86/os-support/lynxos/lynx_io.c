@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.8 1999/09/04 13:04:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.9 2002/10/11 01:40:35 dawes Exp $ */
 
 #include "X.h"
 
@@ -156,7 +156,7 @@ xf86KbdOff()
 #include "xf86OSKbd.h"
 
 Bool
-xf86OSKbdPreInit(KbdDevPtr pKbd)
+xf86OSKbdPreInit(InputInfoPtr pInfo)
 {
     return FALSE;
 }

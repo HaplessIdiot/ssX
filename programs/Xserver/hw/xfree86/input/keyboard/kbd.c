@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.5 2003/02/12 21:46:43 tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -215,7 +215,7 @@ KbdPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->private = pKbd;
     pKbd->PostEvent = PostKbdEvent;
 
-    if (!xf86OSKbdPreInit(pKbd))
+    if (!xf86OSKbdPreInit(pInfo))
         return pInfo;
 
     if (!pKbd->OpenKeyboard(pInfo)) {
@@ -431,11 +431,14 @@ KbdProc(DeviceIntPtr device, int what)
   KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
   KeySymsRec           keySyms;
   CARD8                modMap[MAP_LENGTH];
-  int                  kbdFd;
+  int                  ret;
 
   switch (what) {
      case DEVICE_INIT:
-        pKbd->KbdInit(pInfo);
+        ret = pKbd->KbdInit(pInfo, what);
+	if (ret != Success)
+	    return ret;
+
         pKbd->KbdGetMapping(pInfo, &keySyms, modMap);
 
         device->public.on = FALSE;
@@ -464,20 +467,22 @@ KbdProc(DeviceIntPtr device, int what)
     InitKBD(pInfo, TRUE);
     break;
   case DEVICE_ON:
+    if (device->public.on)
+	break;
     /*
      * Set the keyboard into "direct" mode and turn on
      * event translation.
      */
-    kbdFd = pKbd->KbdOn(pInfo);
+    if ((ret = pKbd->KbdOn(pInfo, what)) != Success)
+	return ret;
     /*
      * Discard any pending input after a VT switch to prevent the server
      * passing on parts of the VT switch sequence.
      */
-    sleep(1);
-    if (kbdFd != -1) {
-        char buf[16];
-        read(kbdFd, buf, 16);
-        AddEnabledDevice(kbdFd);
+    if (pInfo->fd >= 0) {
+	sleep(1);
+	xf86FlushInput(pInfo->fd);
+	AddEnabledDevice(pInfo->fd);
     }
 
     device->public.on = TRUE;
@@ -490,9 +495,9 @@ KbdProc(DeviceIntPtr device, int what)
     /*
      * Restore original keyboard directness and translation.
      */
-    kbdFd = pKbd->KbdOff(pInfo);
-    if (kbdFd != -1)
-      RemoveEnabledDevice(kbdFd);
+    if (pInfo->fd != -1)
+      RemoveEnabledDevice(pInfo->fd);
+    pKbd->KbdOff(pInfo, what);
     device->public.on = FALSE;
     break;
   }

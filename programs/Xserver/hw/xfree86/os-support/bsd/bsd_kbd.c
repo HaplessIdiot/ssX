@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.3 2002/10/21 20:38:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.4 2002/10/29 22:46:13 herrb Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -41,7 +41,7 @@ typedef struct {
 } BsdKbdPrivRec, *BsdKbdPrivPtr;
 
 static
-void KbdInit(InputInfoPtr pInfo)
+int KbdInit(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     BsdKbdPrivPtr priv = (BsdKbdPrivPtr) pKbd->private;
@@ -60,6 +60,8 @@ void KbdInit(InputInfoPtr pInfo)
 	         break;
         }
     }
+
+    return Success;
 }
 
 static void
@@ -138,7 +140,7 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
 }
 
 static int
-KbdOn(InputInfoPtr pInfo)
+KbdOn(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     BsdKbdPrivPtr priv = (BsdKbdPrivPtr) pKbd->private;
@@ -199,11 +201,11 @@ KbdOn(InputInfoPtr pInfo)
 #endif
         }
     }
-    return(pInfo->fd);
+    return Success;
 }
 
 static int
-KbdOff(InputInfoPtr pInfo)
+KbdOff(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     BsdKbdPrivPtr priv = (BsdKbdPrivPtr) pKbd->private;
@@ -233,7 +235,7 @@ KbdOff(InputInfoPtr pInfo)
 #endif
         }
     }
-    return(pInfo->fd);
+    return Success;
 }
 
 static void
@@ -503,8 +505,10 @@ OpenKeyboard(InputInfoPtr pInfo)
 }
 
 Bool
-xf86OSKbdPreInit(KbdDevPtr pKbd)
+xf86OSKbdPreInit(InputInfoPtr pInfo)
 {
+    KbdDevPtr pKbd = pInfo->private;
+
     pKbd->KbdInit	= KbdInit;
     pKbd->KbdOn		= KbdOn;
     pKbd->KbdOff	= KbdOff;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.1 2002/10/11 01:40:35 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -239,8 +239,8 @@ typedef struct {
    struct termios kbdtty;
 } LnxKbdPrivRec, *LnxKbdPrivPtr;
 
-static void
-KbdInit(InputInfoPtr pInfo)
+static int
+KbdInit(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     LnxKbdPrivPtr priv = (LnxKbdPrivPtr) pKbd->private;
@@ -252,10 +252,12 @@ KbdInit(InputInfoPtr pInfo)
     if (!pKbd->CustomKeycodes) {
         pKbd->RemapScanCode = ATScancode;
     }
+
+    return Success;
 }
 
 static int
-KbdOn(InputInfoPtr pInfo)
+KbdOn(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     LnxKbdPrivPtr priv = (LnxKbdPrivPtr) pKbd->private;
@@ -278,11 +280,11 @@ KbdOn(InputInfoPtr pInfo)
 	cfsetospeed(&nTty, 9600);
 	tcsetattr(pInfo->fd, TCSANOW, &nTty);
     }
-    return(pInfo->fd);
+    return Success;
 }
 
 static int
-KbdOff(InputInfoPtr pInfo)
+KbdOff(InputInfoPtr pInfo, int what)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     LnxKbdPrivPtr priv = (LnxKbdPrivPtr) pKbd->private;
@@ -291,7 +293,7 @@ KbdOff(InputInfoPtr pInfo)
 	ioctl(pInfo->fd, KDSKBMODE, priv->kbdtrans);
 	tcsetattr(pInfo->fd, TCSANOW, &(priv->kbdtty));
     }
-    return(pInfo->fd);
+    return Success;
 }
 
 static int
@@ -480,8 +482,10 @@ OpenKeyboard(InputInfoPtr pInfo)
 }
 
 Bool
-xf86OSKbdPreInit(KbdDevPtr pKbd)
+xf86OSKbdPreInit(InputInfoPtr pInfo)
 {
+    KbdDevPtr pKbd = pInfo->private;
+
     pKbd->KbdInit       = KbdInit;
     pKbd->KbdOn         = KbdOn;
     pKbd->KbdOff        = KbdOff;

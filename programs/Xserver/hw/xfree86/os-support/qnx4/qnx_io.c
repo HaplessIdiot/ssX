@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_io.c,v 1.1 1999/12/27 00:45:47 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_io.c,v 1.2 2002/10/11 01:40:36 dawes Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
@@ -100,7 +100,7 @@ xf86KbdInit()
 #include "xf86OSKbd.h"
 
 Bool
-xf86OSKbdPreInit(KbdDevPtr pKbd)
+xf86OSKbdPreInit(InputInfoPtr pInfo)
 {
     return FALSE;
 }
