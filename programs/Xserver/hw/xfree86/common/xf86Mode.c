@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.57 2002/10/16 17:06:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.58 2002/10/16 17:53:55 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1596,6 +1596,19 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	newVirtX = virtX;
 	newVirtY = virtY;
 
+	/*
+	 * Don't let non-user defined modes increase the virtual size
+	 */
+	if (!(p->type & M_T_USERDEF)) {
+	    if (p->HDisplay > virtX) {
+		p->status = MODE_VIRTUAL_X;
+		goto lookupNext;
+	    }
+	    if (p->VDisplay > virtY) {
+		p->status = MODE_VIRTUAL_Y;
+		goto lookupNext;
+	    }
+	}
 	/*
 	 * Adjust virtual width and height if the mode is too large for the
 	 * current values and if they are not fixed.
