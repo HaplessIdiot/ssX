@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.73 2003/01/15 03:32:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.74 2003/02/07 20:41:14 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -2481,6 +2481,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(scrnIndex, X_INFO, "Using software cursor\n");
 	}
     } else {
+	info->cursor_start = 0;
 	xf86DrvMsg(scrnIndex, X_INFO, "Using software cursor\n");
     }
 

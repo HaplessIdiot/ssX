@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.86 2003/02/07 20:41:15 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.87 2003/02/13 03:12:25 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -4006,6 +4006,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(scrnIndex, X_INFO, "Using software cursor\n");
 	}
     } else {
+	info->cursor_start = 0;
 	xf86DrvMsg(scrnIndex, X_INFO, "Using software cursor\n");
     }
 
