@@ -164,8 +164,8 @@ The default is
 Force to use PCI GART for DRI acceleration.
 This option is deprecated in favor of the
 .BI BusType
-option above.
-.TP
+option above and will be removed in the next release.
+.TP 
 .BI "Option \*qDDCMode\*q \*q" boolean \*q
 Force to use the modes queried from the connected monitor.
 .br

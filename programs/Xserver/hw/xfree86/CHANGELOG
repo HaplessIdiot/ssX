@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 602. Fix ForcePCIMode option to work as advertised in Radeon driver
+      (Bugzilla #850, Kevin Martin).
  601. Update the fonts document for the FreeType backend changes
       (Chisato Yamauchi, Reiko Nakajima, After X-TT Project).
  600. Don't allow the lack of "SUPERSCRIPT TWO" to prevent Adobe Standard
@@ -18210,7 +18212,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2972 2003/11/18 00:13:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2973 2003/11/19 01:44:55 dawes Exp $
 
 
 

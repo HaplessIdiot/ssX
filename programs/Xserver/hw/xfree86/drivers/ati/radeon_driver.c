@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.114 2003/11/06 18:38:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.115 2003/11/10 18:41:22 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1991,7 +1991,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     MessageType    from;
     unsigned char *RADEONMMIO = info->MMIO;
 #ifdef XF86DRI
-    const char *s;
+    const char    *s;
+    CARD32         agpCommand;
 #endif
 
 				/* Chipset */
@@ -2257,6 +2258,28 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 
 #ifdef XF86DRI
 				/* AGP/PCI */
+
+    /* There are signatures in BIOS and PCI-SSID for a PCI card, but
+     * they are not very reliable.  Following detection method works for
+     * all cards tested so far.  Note, checking AGP_ENABLE bit after
+     * drmAgpEnable call can also give the correct result.  However,
+     * calling drmAgpEnable on a PCI card can cause some strange lockup
+     * when the server restarts next time.
+     */
+
+    agpCommand = pciReadLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG);
+    pciWriteLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG,
+		 agpCommand | RADEON_AGP_ENABLE);
+    if (pciReadLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG)
+	& RADEON_AGP_ENABLE) {
+	info->IsPCI = FALSE; 
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "AGP card detected\n");
+    } else {
+	info->IsPCI = TRUE; 
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PCI card detected\n");
+    }
+    pciWriteLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG, agpCommand);
+
     if ((s = xf86GetOptValString(info->Options, OPTION_BUS_TYPE))) {
 	if (strcmp(s, "AGP") == 0) {
 	    info->IsPCI = FALSE;
@@ -2266,34 +2289,18 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forced into PCI mode\n");
 	} else if (strcmp(s, "PCIE") == 0) {
 	    info->IsPCI = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI Express not supported yet, use PCI mode\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "PCI Express not supported yet, using PCI mode\n");
 	} else {
-	    info->IsPCI = FALSE;
-	    s = NULL;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Invalid BusType option, use detected type\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Invalid BusType option, using detected type\n");
 	}
     } else if (xf86ReturnOptValBool(info->Options, OPTION_IS_PCI, FALSE)) {
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forced into PCI mode\n");
-    }
-
-    if (!s) {
-	CARD32 tmp = pciReadLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG);
-	/* There are signatures in BIOS and PCI-SSID for a PCI card, but they are not very reliable.
-	   Following detection method works for all cards tested so far.
-	   Note, checking AGP_ENABLE bit after drmAgpEnable call can also give the correct result.
-	   However, calling drmAgpEnable on a PCI card can cause some strange lockup when the server
-	   restarts next time.
-	*/
-	pciWriteLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG, tmp | RADEON_AGP_ENABLE);
-	if (pciReadLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG) & RADEON_AGP_ENABLE) {
-	    info->IsPCI = FALSE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "AGP card detected\n");
-	} else {
-	    info->IsPCI = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PCI card detected\n");
-	}
-	pciWriteLong(info->PciTag, RADEON_AGP_COMMAND_PCI_CONFIG, tmp);
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "ForcePCIMode is deprecated -- "
+		   "use BusType option instead\n");
     }
 #endif
 
