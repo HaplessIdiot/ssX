@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.63 2000/10/05 18:06:36 keithp Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.64 2000/11/01 01:12:43 dawes Exp $ */
 
 /************************************************************
 
@@ -545,14 +545,14 @@ extern GC xterm_DoubleGC(unsigned chrset, unsigned flags, GC old_gc);
 /* input.c */
 extern Boolean xtermDeleteIsDEL (void);
 extern void Input (TKeyboard *keyboard, TScreen *screen, XKeyEvent *event, Bool eightbit);
-extern void StringInput (TScreen *screen, char *string, size_t nbytes);
+extern void StringInput (TScreen *screen, Char *string, size_t nbytes);
 
 #if OPT_NUM_LOCK
 extern void VTInitModifiers(void);
 #endif
 
 #if OPT_TCAP_QUERY
-extern int xtermcapKeycode(char **params, unsigned *state);
+extern int xtermcapKeycode(char *params, unsigned *state);
 #endif
 
 #if OPT_WIDE_CHARS
