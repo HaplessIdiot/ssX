@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.145 2001/09/24 11:19:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.146 2001/09/24 20:40:14 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -168,6 +168,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBERBLADEAI1D,		"cyberbladeAi1d" },
     { CYBERBLADEXPm8,		"cyberbladeXPm/8" },
     { CYBERBLADEXPm16,		"cyberbladeXPm/16" },
+    { CYBERBLADEXPAI1,		"cyberbladeXPAi1" },
     { -1,				NULL }
 };
 
@@ -210,6 +211,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBERBLADEAI1D,	PCI_CHIP_8620,	RES_SHARED_VGA },
     { CYBERBLADEXPm8,	PCI_CHIP_9910,	RES_SHARED_VGA },
     { CYBERBLADEXPm16,	PCI_CHIP_9930,	RES_SHARED_VGA },
+    { CYBERBLADEXPAI1,	PCI_CHIP_8820,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -1818,6 +1820,17 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    chipset = "CyberBladeXPm/16";
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
+	case CYBERBLADEXPAI1:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+	    ramtype = "SGRAM";
+            pTrident->HasSGRAM = TRUE;
+            pTrident->NoAccel = TRUE; /* Disable acceleration */
+            pTrident->HWCursor = FALSE;
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "CyberBladeXPAi1";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
 	    break;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
@@ -1862,6 +1875,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pTrident->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
+      if (pTrident->Chipset == CYBERBLADEXPAI1) {
+      	pScrn->videoRam = 16384; /* NOTE: I have no idea what the real
+      				  * value is. BIOS takes about 20M RAM
+      				  * for its own and vid RAM */
+      } else
       if (pTrident->Chipset == CYBERBLADEXPm8) {
 	pScrn->videoRam = 8192;
       } else

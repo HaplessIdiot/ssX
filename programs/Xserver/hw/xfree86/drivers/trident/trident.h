@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.45 2001/09/24 11:19:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.46 2001/09/24 20:40:14 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -262,7 +262,8 @@ typedef enum {
     CYBERBLADEAI1D,
     CYBERBLADEE4,
     CYBERBLADEXPm8,
-    CYBERBLADEXPm16
+    CYBERBLADEXPm16,
+    CYBERBLADEXPAI1
 } TRIDENTType;
 
 #define UseMMIO		(pTrident->NoMMIO == FALSE)
@@ -289,6 +290,7 @@ typedef enum {
 			 (pTrident->Chipset == CYBERBLADEAI1)  || \
 			 (pTrident->Chipset == CYBERBLADEAI1D)  || \
 			 (pTrident->Chipset == BLADE3D) || \
+			 (pTrident->Chipset == CYBERBLADEXPAI1) || \
 			 (pTrident->Chipset == CYBERBLADEXPm8) || \
 			 (pTrident->Chipset == CYBERBLADEXPm16))
 
