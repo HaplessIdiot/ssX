@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/pci.c,v 1.6 2001/01/06 20:19:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/pci.c,v 1.8 2001/05/15 10:19:41 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -40,6 +40,7 @@ mapPciRom(int pciEntity, unsigned char * address)
 	return 0;
     }
 
+    length = 0;
     while ((ptr[0] == 0x55) && (ptr[1] == 0xAA)) {
 	unsigned short data_off = ptr[0x18] | (ptr[0x19] << 8);
 	unsigned char *data = ptr + data_off;
