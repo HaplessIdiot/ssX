@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.14 2001/08/17 13:27:58 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.15 2001/12/26 22:28:28 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -49,13 +49,12 @@ xkb_symbols "itouch" {
     key <I66>	{	[ XF86Start		]	};
 };
 
-// XXX Need a better name for this one.
 partial alphanumeric_keys 
-xkb_symbols "itouch2" {
+xkb_symbols "logiinetnav" {
 
     // Describes the extra keys on a newer Logitech iTouch keyboard.
 
-    name[Group1]= "iTouch2";
+    name[Group1]= "LogiInternetNavigator";
 
     // Media keys
     key <I20>	{	[ XF86AudioMute		]	};
