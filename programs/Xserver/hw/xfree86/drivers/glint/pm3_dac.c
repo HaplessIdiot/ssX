@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.25 2001/08/18 11:37:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.26 2001/09/03 08:13:03 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -278,6 +278,7 @@ void
 Permedia3PreInit(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+    CARD32 LocalMemCaps;
 
     TRACE_ENTER("Permedia3PreInit");
     if (IS_J2000) {
@@ -320,6 +321,13 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
 	    PM3RD_SClkControl_SOURCE_PCLK |
 	    PM3RD_SClkControl_ENABLE);
     }
+
+    /* If we have SDRAM instead of SGRAM, we have to do some things
+       differently in the FillRectSolid code. */       
+    LocalMemCaps = GLINT_READ_REG(PM3LocalMemCaps);
+    pGlint->PM3_UsingSGRAM = !(LocalMemCaps & PM3LocalMemCaps_NoWriteMask);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %s memory\n", 
+	       pGlint->PM3_UsingSGRAM ? "SGRAM" : "SDRAM");
 
     TRACE_EXIT("Permedia3PreInit");
 }

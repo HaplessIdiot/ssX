@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.7 2001/05/08 19:31:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.8 2001/08/18 11:37:31 alanh Exp $ */
 
 /*
  * glint register file 
@@ -90,6 +90,7 @@
 #define PM3MemBypassWriteMask					0x1008
 #define PM3MemScratch						0x1010
 #define PM3LocalMemCaps						0x1018
+	#define PM3LocalMemCaps_NoWriteMask			(1<<28)
 #define PM3LocalMemTimings					0x1020
 #define PM3LocalMemControl					0x1028
 #define PM3LocalMemRefresh					0x1030

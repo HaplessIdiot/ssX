@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.27 2001/05/24 19:55:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.28 2001/08/18 11:37:31 alanh Exp $ */
 
 /*
  * glint register file 
@@ -1241,7 +1241,8 @@ do{								\
 #define REPLICATE(r)						\
 {								\
 	if (pScrn->bitsPerPixel == 16) {			\
-		r = ((r & 0xFFFF) << 16) | (r & 0xFFFF);	\
+		r &= 0xFFFF;					\
+		r |= (r<<16);					\
 	} else							\
 	if (pScrn->bitsPerPixel == 8) { 			\
 		r &= 0xFF;					\

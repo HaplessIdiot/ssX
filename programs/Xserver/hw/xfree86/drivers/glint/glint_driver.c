@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.137 2001/10/01 13:44:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.139 2001/10/09 17:37:11 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1867,7 +1867,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Initialize the card through int10 interface if needed */
     if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
 	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
-	!xf86IsPrimaryPci(pGlint->PciInfo)) {
+	!xf86IsPrimaryPci(pGlint->PciInfo) && !pGlint->FBDev) {
     	if ( xf86LoadSubModule(pScrn, "int10")){
 	    xf86Int10InfoPtr pInt;
 

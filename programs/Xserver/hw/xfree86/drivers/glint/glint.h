@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.50 2001/08/18 11:37:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.51 2001/08/19 02:47:50 tsi Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -179,6 +179,7 @@ typedef struct {
     GLINTRegRec		DRContextRegs;
 #endif
     OptionInfoPtr	Options;
+    Bool		PM3_UsingSGRAM;
 } GLINTRec, *GLINTPtr;
 
 /* Defines for PCI data */
