@@ -14,7 +14,7 @@
 1.  What is XFree86 4.4.99.903?
 
 XFree86 4.4.99.903 is a pre-release snapshot of XFree86 4.5.0.  This snapshot
-is release candidate 1 for version 4.5.0.  Pre-release snapshots are provided
+is release candidate 3 for version 4.5.0.  Pre-release snapshots are provided
 for beta testing.  You should only install snapshots if you are comfortable
 dealing with possibly unstable beta-level software.  If you find problems
 with this snapshot, you are encouraged to report your findings to the public
@@ -152,7 +152,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.146 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.147 dawes Exp $
 
 
-$XFree86: xc/README,v 1.4 2005/03/05 17:59:50 dawes Exp $
+$XFree86$
