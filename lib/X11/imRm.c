@@ -1,29 +1,34 @@
-/* $XConsortium: imRm.c,v 1.7 94/03/31 22:02:36 rws Exp $ */
+/* $XConsortium: imRm.c /main/10 1995/11/18 16:08:18 kaleb $ */
+/* $XFree86$ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
+	  Copyright 1994                        by Sony Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
 provided that the above copyright notice appear in all copies and
 that both that copyright notice and this permission notice appear
 in supporting documentation, and that the name of FUJITSU LIMITED
-not be used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.
-FUJITSU LIMITED makes no representations about the suitability of
-this software for any purpose. 
-It is provided "as is" without express or implied warranty.
+and Sony Corporation not be used in advertising or publicity
+pertaining to distribution of the software without specific,
+written prior permission. FUJITSU LIMITED and Sony Corporation make
+no representations about the suitability of this software for any
+purpose. It is provided "as is" without express or implied warranty.
 
-FUJITSU LIMITED DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
-EVENT SHALL FUJITSU LIMITED BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
-USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+FUJITSU LIMITED AND SONY CORPORATION DISCLAIM ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL FUJITSU LIMITED AND
+SONY CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
   Author: Takashi Fujiwara     FUJITSU LIMITED 
 			       fujiwara@a80.tech.yk.fujitsu.co.jp
+  Modifier: Makoto Wakamatsu   Sony Corporation
+			       makoto@sm.sony.co.jp
 
 ******************************************************************/
 
@@ -33,6 +38,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "Xresource.h"
+#include "snprintf.h"
 
 #ifndef	isalnum
 #define	isalnum(c)	\
@@ -84,6 +90,7 @@ _XimGetResourceName(im, res_name, res_class)
     strcat(res_class, "Xim.");
 }
 
+#ifdef XIM_CONNECTABLE
 Private Bool
 _XimCheckBool(str)
     char	*str;
@@ -91,11 +98,10 @@ _XimCheckBool(str)
     if(!strcmp(str, "True") || !strcmp(str, "true") ||
        !strcmp(str, "Yes")  || !strcmp(str, "yes")  ||
        !strcmp(str, "ON")   || !strcmp(str, "on"))
-	return(True);
-    return(False);
+	return True;
+    return False;
 }
 
-#ifdef XIM_CONNECTABLE
 Public void
 _XimSetProtoResource(im)
     Xim		 im;
@@ -115,8 +121,8 @@ _XimSetProtoResource(im)
 
     _XimGetResourceName(im, xim_res_name, xim_res_class);
 
-    sprintf(res_name, "%s%s", xim_res_name, "useAuth");
-    sprintf(res_class, "%s%s", xim_res_class, "UseAuth");
+    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name, "useAuth");
+    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class, "UseAuth");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -124,8 +130,10 @@ _XimSetProtoResource(im)
 	}
     }
 
-    sprintf(res_name, "%s%s", xim_res_name, "delaybinding");
-    sprintf(res_class, "%s%s", xim_res_class, "Delaybinding");
+    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
+	       "delaybinding");
+    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
+	       "Delaybinding");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -133,8 +141,9 @@ _XimSetProtoResource(im)
 	}
     }
 
-    sprintf(res_name, "%s%s", xim_res_name, "reconnect");
-    sprintf(res_class, "%s%s", xim_res_class, "Reconnect");
+    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name, "reconnect");
+    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
+	       "Reconnect");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -145,8 +154,10 @@ _XimSetProtoResource(im)
     if(!IS_CONNECTABLE(im))
 	return;
 
-    sprintf(res_name, "%s%s", xim_res_name, "preeditDefaultStyle");
-    sprintf(res_class, "%s%s", xim_res_class, "PreeditDefaultStyle");
+    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
+	       "preeditDefaultStyle");
+    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
+	       "PreeditDefaultStyle");
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(!strcmp(value.addr, "XIMPreeditArea"))
 	    preedit_style = XIMPreeditArea;
@@ -162,8 +173,10 @@ _XimSetProtoResource(im)
     if(!preedit_style)
 	preedit_style = XIMPreeditNothing;
 
-    sprintf(res_name, "%s%s", xim_res_name, "statusDefaultStyle");
-    sprintf(res_class, "%s%s", xim_res_class, "StatusDefaultStyle");
+    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
+	       "statusDefaultStyle");
+    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
+	       "StatusDefaultStyle");
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(!strcmp(value.addr, "XIMStatusArea"))
 	    status_style = XIMStatusArea;
@@ -210,7 +223,6 @@ static char *supported_local_ic_values_list[] = {
     XNStringConversionCallback,
     XNStringConversion,
     XNResetState,
-    XNResetReturn,
     XNHotKey,
     XNHotKeyState,
     XNPreeditAttributes,
@@ -234,6 +246,7 @@ static char *supported_local_ic_values_list[] = {
     XNStatusDoneCallback,
     XNStatusDrawCallback,
     XNPreeditState,
+    XNPreeditStateNotifyCallback,
     (char *)NULL
 };
 
@@ -260,7 +273,7 @@ _XimDefaultStyles(info, top, parm, mode)
     n = XIMNumber(supported_local_styles) - 1;
     len = sizeof(XIMStyles) + sizeof(XIMStyle) * n;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero(tmp, len);
 
@@ -276,7 +289,7 @@ _XimDefaultStyles(info, top, parm, mode)
 
     out = (XIMStyles **)((char *)top + info->offset);
     *out = styles;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -296,7 +309,7 @@ _XimDefaultIMValues(info, top, parm, mode)
     n = XIMNumber(supported_local_im_values_list) - 1;
     len = sizeof(XIMValuesList) + sizeof(char **) * n;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero(tmp, len);
 
@@ -313,7 +326,7 @@ _XimDefaultIMValues(info, top, parm, mode)
 
     out = (XIMValuesList **)((char *)top + info->offset);
     *out = values_list;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -333,7 +346,7 @@ _XimDefaultICValues(info, top, parm, mode)
     n = XIMNumber(supported_local_ic_values_list) - 1;
     len = sizeof(XIMValuesList) + sizeof(char **) * n;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero(tmp, len);
 
@@ -350,7 +363,7 @@ _XimDefaultICValues(info, top, parm, mode)
 
     out = (XIMValuesList **)((char *)top + info->offset);
     *out = values_list;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -364,7 +377,7 @@ _XimDefaultVisiblePos(info, top, parm, mode)
 
     out = (Bool *)((char *)top + info->offset);
     *out = False;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -378,12 +391,12 @@ _XimDefaultFocusWindow(info, top, parm, mode)
     Window		*out;
 
     if(ic->core.client_window == (Window)NULL) {
-	return(True);
+	return True;
     }
 
     out = (Window *)((char *)top + info->offset);
     *out = ic->core.client_window;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -400,18 +413,18 @@ _XimDefaultResName(info, top, parm, mode)
     char		**out;
 
     if(im->core.res_name == (char *)NULL) {
-	return(True);
+	return True;
     }
     len = strlen(im->core.res_name);
     if(!(name = (char *)Xmalloc(len + 1))) {
-	return(False);
+	return False;
     }
     (void)strcpy(name, im->core.res_name);
     name[len] = '\0';
 
     out = (char **)((char *)top + info->offset);
     *out = name;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -428,18 +441,18 @@ _XimDefaultResClass(info, top, parm, mode)
     char		**out;
 
     if(im->core.res_class == (char *)NULL) {
-	return(True);
+	return True;
     }
     len = strlen(im->core.res_class);
     if(!(class = (char *)Xmalloc(len + 1))) {
-	return(False);
+	return False;
     }
     (void)strcpy(class, im->core.res_class);
     class[len] = '\0';
 
     out = (char **)((char *)top + info->offset);
     *out = class;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -455,7 +468,7 @@ _XimDefaultDestroyCB(info, top, parm, mode)
 
     out = (XIMCallback *)((char *)top + info->offset);
     *out = im->core.destroy_callback;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -469,21 +482,7 @@ _XimDefaultResetState(info, top, parm, mode)
 
     out = (XIMResetState *)((char *)top + info->offset);
     *out = XIMInitialState;
-    return(True);
-}
-
-Private  Bool
-_XimDefaultResetReturn(info, top, parm, mode)
-    XimValueOffsetInfo	  info;
-    XPointer	 	  top;
-    XPointer	 	  parm;
-    unsigned long	  mode;
-{
-    XIMResetReturn	*out;
-
-    out = (XIMResetReturn *)((char *)top + info->offset);
-    *out = XIMInitialState;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -497,7 +496,7 @@ _XimDefaultHotKeyState(info, top, parm, mode)
 
     out = (XIMHotKeyState *)((char *)top + info->offset);
     *out = XIMHotKeyStateOFF;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -518,13 +517,13 @@ _XimDefaultArea(info, top, parm, mode)
     XRectangle		*out;
 
     if(ic->core.focus_window == (Window)NULL) {
-	return(True);
+	return True;
     }
     if(XGetGeometry(im->core.display, (Drawable)ic->core.focus_window,
 		&root_return, &x_return, &y_return, &width_return,
 		&height_return, &border_width_return, &depth_return)
 		== (Status)NULL) {
-	return(True);
+	return True;
     }
     area.x	= 0;
     area.y	= 0;
@@ -533,7 +532,7 @@ _XimDefaultArea(info, top, parm, mode)
 
     out = (XRectangle *)((char *)top + info->offset);
     *out = area;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -549,16 +548,16 @@ _XimDefaultColormap(info, top, parm, mode)
     Colormap		*out;
 
     if(ic->core.client_window == (Window)NULL) {
-	return(True);
+	return True;
     }
     if(XGetWindowAttributes(im->core.display, ic->core.client_window,
 					&win_attr) == (Status)NULL) {
-	return(True);
+	return True;
     }
    
     out = (Colormap *)((char *)top + info->offset);
     *out = win_attr.colormap;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -572,7 +571,7 @@ _XimDefaultStdColormap(info, top, parm, mode)
 
     out = (Atom *)((char *)top + info->offset);
     *out = (Atom)0;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -590,7 +589,7 @@ _XimDefaultFg(info, top, parm, mode)
     fg = WhitePixel(im->core.display, DefaultScreen(im->core.display));
     out = (unsigned long *)((char *)top + info->offset);
     *out = fg;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -608,7 +607,7 @@ _XimDefaultBg(info, top, parm, mode)
     bg = BlackPixel(im->core.display, DefaultScreen(im->core.display));
     out = (unsigned long *)((char *)top + info->offset);
     *out = bg;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -622,7 +621,7 @@ _XimDefaultBgPixmap(info, top, parm, mode)
 
     out = (Pixmap *)((char *)top + info->offset);
     *out = (Pixmap)0;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -636,7 +635,7 @@ _XimDefaultFontSet(info, top, parm, mode)
 
     out = (XFontSet *)((char *)top + info->offset);
     *out = 0;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -647,7 +646,6 @@ _XimDefaultLineSpace(info, top, parm, mode)
     unsigned long	 mode;
 {
     Xic			 ic = (Xic)parm;
-    Xim			 im = (Xim)ic->core.im;
     XFontSet		 fontset;
     XFontSetExtents	*fset_extents;
     int			 line_space = 0;
@@ -658,7 +656,7 @@ _XimDefaultLineSpace(info, top, parm, mode)
     } else if(mode & XIM_STATUS_ATTR) {
 	fontset = ic->core.status_attr.fontset;
     } else {
-	return(True);
+	return True;
     }
     if (fontset) {
 	fset_extents = XExtentsOfFontSet(fontset);
@@ -666,7 +664,7 @@ _XimDefaultLineSpace(info, top, parm, mode)
     }
     out = (int *)((char *)top + info->offset);
     *out = line_space;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -680,7 +678,7 @@ _XimDefaultCursor(info, top, parm, mode)
 
     out = (Cursor *)((char *)top + info->offset);
     *out = (Cursor)0;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -694,7 +692,7 @@ _XimDefaultPreeditState(info, top, parm, mode)
 
     out = (XIMPreeditState *)((char *)top + info->offset);
     *out = XIMPreeditDisable;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -704,7 +702,7 @@ _XimDefaultNest(info, top, parm, mode)
     XPointer	 	 parm;
     unsigned long	 mode;
 {
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -717,7 +715,7 @@ _XimEncodeCallback(info, top, val)
 
     out = (XIMCallback *)((char *)top + info->offset);
     *out = *((XIMCallback *)val);
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -731,11 +729,11 @@ _XimEncodeString(info, top, val)
     char		**out;
 
     if(val == (XPointer)NULL) {
-	return(False);
+	return False;
     }
     len = strlen((char *)val);
     if(!(string = (char *)Xmalloc(len + 1))) {
-	return(False);
+	return False;
     }
     (void)strcpy(string, (char *)val);
     string[len] = '\0';
@@ -745,7 +743,7 @@ _XimEncodeString(info, top, val)
 	Xfree(*out);
     }
     *out = string;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -758,7 +756,7 @@ _XimEncodeStyle(info, top, val)
 
     out = (XIMStyle *)((char *)top + info->offset);
     *out = (XIMStyle)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -771,7 +769,7 @@ _XimEncodeWindow(info, top, val)
 
     out = (Window *)((char *)top + info->offset);
     *out = (Window)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -780,12 +778,10 @@ _XimEncodeStringConv(info, top, val)
     XPointer		 	 top;
     XPointer		 	 val;
 {
-    XIMStringConversionText	*out;
-
     /*
      * Not yet
      */
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -798,20 +794,7 @@ _XimEncodeResetState(info, top, val)
 
     out = (XIMResetState *)((char *)top + info->offset);
     *out = (XIMResetState)val;
-    return(True);
-}
-
-Private  Bool
-_XimEncodeResetReturn(info, top, val)
-    XimValueOffsetInfo	 info;
-    XPointer	 	 top;
-    XPointer	 	 val;
-{
-    XIMResetReturn	*out;
-
-    out = (XIMResetReturn *)((char *)top + info->offset);
-    *out = (XIMResetReturn)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -830,16 +813,16 @@ _XimEncodeHotKey(info, top, val)
     register int	  i;
 
     if(hotkey == (XIMHotKeyTriggers *)NULL) {
-	return(True);
+	return True;
     }
 
     if((num = hotkey->num_hot_key) == 0) {
-	return(True);
+	return True;
     }
 
     len = sizeof(XIMHotKeyTriggers) + sizeof(XIMHotKeyTrigger) * num;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
 
     key_list = (XIMHotKeyTriggers *)tmp;
@@ -854,7 +837,7 @@ _XimEncodeHotKey(info, top, val)
 
     out = (XIMHotKeyTriggers **)((char *)top + info->offset);
     *out = key_list;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -867,7 +850,7 @@ _XimEncodeHotKetState(info, top, val)
 
     out = (XIMHotKeyState *)((char *)top + info->offset);
     *out = (XIMHotKeyState)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -880,7 +863,7 @@ _XimEncodeRectangle(info, top, val)
 
     out = (XRectangle *)((char *)top + info->offset);
     *out = *((XRectangle *)val);
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -893,7 +876,7 @@ _XimEncodeSpot(info, top, val)
 
     out = (XPoint *)((char *)top + info->offset);
     *out = *((XPoint *)val);
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -906,7 +889,7 @@ _XimEncodeColormap(info, top, val)
 
     out = (Colormap *)((char *)top + info->offset);
     *out = (Colormap)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -919,7 +902,7 @@ _XimEncodeStdColormap(info, top, val)
 
     out = (Atom *)((char *)top + info->offset);
     *out = (Atom)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -932,7 +915,7 @@ _XimEncodeLong(info, top, val)
 
     out = (unsigned long *)((char *)top + info->offset);
     *out = (unsigned long)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -945,7 +928,7 @@ _XimEncodeBgPixmap(info, top, val)
 
     out = (Pixmap *)((char *)top + info->offset);
     *out = (Pixmap)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -958,7 +941,7 @@ _XimEncodeFontSet(info, top, val)
 
     out = (XFontSet *)((char *)top + info->offset);
     *out = (XFontSet)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -971,7 +954,7 @@ _XimEncodeLineSpace(info, top, val)
 
     out = (int *)((char *)top + info->offset);
     *out = (int)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -984,7 +967,7 @@ _XimEncodeCursor(info, top, val)
 
     out = (Cursor *)((char *)top + info->offset);
     *out = (Cursor)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -997,7 +980,7 @@ _XimEncodePreeditState(info, top, val)
 
     out = (XIMPreeditState *)((char *)top + info->offset);
     *out = (XIMPreeditState)val;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1006,7 +989,7 @@ _XimEncodeNest(info, top, val)
     XPointer	 	 top;
     XPointer	 	 val;
 {
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1023,7 +1006,7 @@ _XimDecodeStyles(info, top, val)
     XPointer		 tmp;
 
     if(val == (XPointer)NULL) {
-	return(False);
+	return False;
     }
 
     styles = *((XIMStyles **)((char *)top + info->offset));
@@ -1031,7 +1014,7 @@ _XimDecodeStyles(info, top, val)
 
     len = sizeof(XIMStyles) + sizeof(XIMStyle) * num;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero(tmp, len);
 
@@ -1045,7 +1028,7 @@ _XimDecodeStyles(info, top, val)
 	}
     }
     *((XIMStyles **)val) = out;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1062,7 +1045,7 @@ _XimDecodeValues(info, top, val)
     XPointer		 tmp;
 
     if(val == (XPointer)NULL) {
-	return(False);
+	return False;
     }
 
     values_list = *((XIMValuesList **)((char *)top + info->offset));
@@ -1070,7 +1053,7 @@ _XimDecodeValues(info, top, val)
 
     len = sizeof(XIMValuesList) + sizeof(char **) * num;
     if(!(tmp = (char *)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero(tmp, len);
 
@@ -1084,7 +1067,7 @@ _XimDecodeValues(info, top, val)
 	}
     }
     *((XIMValuesList **)val) = out;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1098,13 +1081,13 @@ _XimDecodeCallback(info, top, val)
 
     in = (XIMCallback *)((char *)top + info->offset);
     if(!(callback = (XIMCallback *)Xmalloc(sizeof(XIMCallback)))) {
-	return(False);
+	return False;
     }
     callback->client_data = in->client_data;
     callback->callback    = in->callback;
 
     *((XIMCallback **)val) = callback;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1122,14 +1105,14 @@ _XimDecodeString(info, top, val)
 	len = strlen(in);
     }
     if(!(string = (char *)Xmalloc(len + 1))) {
-	return(False);
+	return False;
     }
     if(in != (char *)NULL) {
 	(void)strcpy(string, in);
     }
     string[len] = '\0';
     *((char **)val) = string;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1142,7 +1125,7 @@ _XimDecodeBool(info, top, val)
 
     in = (Bool *)((char *)top + info->offset);
     *((Bool *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1155,7 +1138,7 @@ _XimDecodeStyle(info, top, val)
 
     in = (XIMStyle *)((char *)top + info->offset);
     *((XIMStyle *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1168,7 +1151,7 @@ _XimDecodeWindow(info, top, val)
 
     in = (Window *)((char *)top + info->offset);
     *((Window *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1180,7 +1163,7 @@ _XimDecodeStringConv(info, top, val)
     /*
      * Not yet
      */
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1193,20 +1176,7 @@ _XimDecodeResetState(info, top, val)
 
     in = (XIMResetState *)((char *)top + info->offset);
     *((XIMResetState *)val) = *in;
-    return(True);
-}
-
-Private  Bool
-_XimDecodeResetReturn(info, top, val)
-    XimValueOffsetInfo	 info;
-    XPointer	 	 top;
-    XPointer	 	 val;
-{
-    XIMResetReturn	*in;
-
-    in = (XIMResetReturn *)((char *)top + info->offset);
-    *((XIMResetReturn *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1227,7 +1197,7 @@ _XimDecodeHotKey(info, top, val)
     num = in->num_hot_key;
     len = sizeof(XIMHotKeyTriggers) + sizeof(XIMHotKeyTrigger) * num;
     if(!(tmp = (XPointer)Xmalloc(len))) {
-	return(False);
+	return False;
     }
 
     hotkey = (XIMHotKeyTriggers *)tmp;
@@ -1240,7 +1210,7 @@ _XimDecodeHotKey(info, top, val)
     hotkey->key = key;
 
     *((XIMHotKeyTriggers **)val) = hotkey;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1253,7 +1223,7 @@ _XimDecodeHotKetState(info, top, val)
 
     in = (XIMHotKeyState *)((char *)top + info->offset);
     *((XIMHotKeyState *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1267,11 +1237,11 @@ _XimDecodeRectangle(info, top, val)
 
     in = (XRectangle *)((char *)top + info->offset);
     if(!(rect = (XRectangle *)Xmalloc(sizeof(XRectangle)))) {
-	return(False);
+	return False;
     }
     *rect = *in;
     *((XRectangle **)val) = rect;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1285,11 +1255,11 @@ _XimDecodeSpot(info, top, val)
 
     in = (XPoint *)((char *)top + info->offset);
     if(!(spot = (XPoint *)Xmalloc(sizeof(XPoint)))) {
-	return(False);
+	return False;
     }
     *spot = *in;
     *((XPoint **)val) = spot;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1302,7 +1272,7 @@ _XimDecodeColormap(info, top, val)
 
     in = (Colormap *)((char *)top + info->offset);
     *((Colormap *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1315,7 +1285,7 @@ _XimDecodeStdColormap(info, top, val)
 
     in = (Atom *)((char *)top + info->offset);
     *((Atom *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1328,7 +1298,7 @@ _XimDecodeLong(info, top, val)
 
     in = (unsigned long *)((char *)top + info->offset);
     *((unsigned long *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1341,7 +1311,7 @@ _XimDecodeBgPixmap(info, top, val)
 
     in = (Pixmap *)((char *)top + info->offset);
     *((Pixmap *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1354,7 +1324,7 @@ _XimDecodeFontSet(info, top, val)
 
     in = (XFontSet *)((char *)top + info->offset);
     *((XFontSet *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1367,7 +1337,7 @@ _XimDecodeLineSpace(info, top, val)
 
     in = (int *)((char *)top + info->offset);
     *((int *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1380,7 +1350,7 @@ _XimDecodeCursor(info, top, val)
 
     in = (Cursor *)((char *)top + info->offset);
     *((Cursor *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1393,7 +1363,7 @@ _XimDecodePreeditState(info, top, val)
 
     in = (XIMPreeditState *)((char *)top + info->offset);
     *((XIMPreeditState *)val) = *in;
-    return(True);
+    return True;
 }
 
 Private  Bool
@@ -1402,7 +1372,7 @@ _XimDecodeNest(info, top, val)
     XPointer	 	 top;
     XPointer	 	 val;
 {
-    return(True);
+    return True;
 }
 
 static	XIMResource	im_resources[] = {
@@ -1436,7 +1406,6 @@ static	XIMResource	ic_resources[] = {
     {XNStringConversionCallback,   0, 0,			0, 0, 0},
     {XNStringConversion,	   0, XimType_XIMStringConversion,0, 0, 0},
     {XNResetState,		   0, 0,			0, 0, 0},
-    {XNResetReturn,		   0, 0,			0, 0, 0},
     {XNHotKey,			   0, XimType_XIMHotKeyTriggers,0, 0, 0},
     {XNHotKeyState,		   0, XimType_XIMHotKeyState, 	0, 0, 0},
     {XNPreeditAttributes,	   0, XimType_NEST,		0, 0, 0},
@@ -1459,7 +1428,8 @@ static	XIMResource	ic_resources[] = {
     {XNStatusStartCallback,	   0, 0,			0, 0, 0},
     {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
     {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
-    {XNPreeditState,		   0, 0,			0, 0, 0}
+    {XNPreeditState,		   0, 0,			0, 0, 0},
+    {XNPreeditStateNotifyCallback, 0, 0,			0, 0, 0},
 };
 
 static	XIMResource	ic_inner_resources[] = {
@@ -1468,7 +1438,6 @@ static	XIMResource	ic_inner_resources[] = {
     {XNGeometryCallback,	   0, 0,			0, 0, 0},
     {XNDestroyCallback,		   0, 0,			0, 0, 0},
     {XNStringConversionCallback,   0, 0,			0, 0, 0},
-    {XNResetReturn,		   0, 0,			0, 0, 0},
     {XNPreeditStartCallback,	   0, 0,			0, 0, 0},
     {XNPreeditDoneCallback,	   0, 0,			0, 0, 0},
     {XNPreeditDrawCallback,	   0, 0,			0, 0, 0},
@@ -1476,6 +1445,7 @@ static	XIMResource	ic_inner_resources[] = {
     {XNStatusStartCallback,	   0, 0,			0, 0, 0},
     {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
     {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditStateNotifyCallback, 0, 0,			0, 0, 0},
 };
 
 static XimValueOffsetInfoRec im_attr_info[] = {
@@ -1552,10 +1522,6 @@ static XimValueOffsetInfoRec ic_attr_info[] = {
     {XNResetState,		 0,
 	XOffsetOf(XimDefICValues, reset_state),
 	_XimDefaultResetState,	 _XimEncodeResetState,	_XimDecodeResetState},
-
-    {XNResetReturn,		 0,
-	XOffsetOf(XimDefICValues, reset_return),
-	_XimDefaultResetReturn,	 _XimEncodeResetReturn,	_XimDecodeResetReturn},
 
     {XNHotKey,			 0,
 	XOffsetOf(XimDefICValues, hotkey),
@@ -1637,7 +1603,11 @@ static XimValueOffsetInfoRec ic_pre_attr_info[] = {
 
     {XNPreeditState,		 0,
 	XOffsetOf(ICPreeditAttributes, preedit_state),
-	_XimDefaultPreeditState, _XimEncodePreeditState,_XimDecodePreeditState}
+	_XimDefaultPreeditState, _XimEncodePreeditState,_XimDecodePreeditState},
+
+    {XNPreeditStateNotifyCallback, 0,
+	XOffsetOf(ICPreeditAttributes, state_notify_callback),
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 };
 
 static XimValueOffsetInfoRec ic_sts_attr_info[] = {
@@ -1833,16 +1803,6 @@ static XimICMode	ic_mode[] = {
 		0,
 		0},
     {XNResetState, 0,
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		0,
-		0,
-		0,
-		0,
-		0},
-    {XNResetReturn, 0,
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
@@ -2052,6 +2012,16 @@ static XimICMode	ic_mode[] = {
 		0,
 		0,
 		0},
+    {XNPreeditStateNotifyCallback, 0,
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		(XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
+		0,
+		0,
+		0,
+		0,
+		0},
     {XNStatusStartCallback, 0,
 		0,
 		0,
@@ -2095,11 +2065,10 @@ _XimSetResourceList(res_list, list_num, resource, num_resource, id)
     register int	  i;
     int			  len;
     XIMResourceList	  res;
-    char		**values;
 
     len = sizeof(XIMResource) * num_resource;
     if(!(res = (XIMResourceList)Xmalloc(len))) {
-	return(False);
+	return False;
     }
     bzero((char *)res, len);
 
@@ -2111,7 +2080,7 @@ _XimSetResourceList(res_list, list_num, resource, num_resource, id)
     _XIMCompileResourceList(res, num_resource);
     *res_list  = res;
     *list_num  = num_resource;
-    return(True);
+    return True;
 }
 
 Public Bool
@@ -2119,8 +2088,8 @@ _XimSetIMResourceList(res_list, list_num)
     XIMResourceList	*res_list;
     unsigned int	*list_num;
 {
-    return(_XimSetResourceList(res_list, list_num,
-				im_resources, XIMNumber(im_resources), 100));
+    return _XimSetResourceList(res_list, list_num,
+				im_resources, XIMNumber(im_resources), 100);
 }
 
 Public Bool
@@ -2128,8 +2097,8 @@ _XimSetICResourceList(res_list, list_num)
     XIMResourceList	*res_list;
     unsigned int	*list_num;
 {
-    return(_XimSetResourceList(res_list, list_num,
-				ic_resources, XIMNumber(ic_resources), 200));
+    return _XimSetResourceList(res_list, list_num,
+				ic_resources, XIMNumber(ic_resources), 200);
 }
 
 Public Bool
@@ -2137,8 +2106,8 @@ _XimSetInnerIMResourceList(res_list, list_num)
     XIMResourceList	*res_list;
     unsigned int	*list_num;
 {
-    return(_XimSetResourceList(res_list, list_num,
-		im_inner_resources, XIMNumber(im_inner_resources), 100));
+    return _XimSetResourceList(res_list, list_num,
+		im_inner_resources, XIMNumber(im_inner_resources), 100);
 }
 
 Public Bool
@@ -2146,8 +2115,8 @@ _XimSetInnerICResourceList(res_list, list_num)
     XIMResourceList	*res_list;
     unsigned int	*list_num;
 {
-    return(_XimSetResourceList(res_list, list_num,
-		ic_inner_resources, XIMNumber(ic_inner_resources), 200));
+    return _XimSetResourceList(res_list, list_num,
+		ic_inner_resources, XIMNumber(ic_inner_resources), 200);
 }
 
 Private XIMResourceList
@@ -2160,10 +2129,10 @@ _XimGetResourceListRecByMode(res_list, list_num, mode)
 
     for(i = 0; i < list_num; i++) {
 	if (res_list[i].mode & mode) {
-	    return((XIMResourceList)&res_list[i]);
+	    return (XIMResourceList)&res_list[i];
 	}
     }
-    return((XIMResourceList)NULL);
+    return (XIMResourceList)NULL;
 }
 
 Public Bool
@@ -2187,10 +2156,10 @@ _XimGetResourceListRecByQuark(res_list, list_num, quark)
 
     for(i = 0; i < list_num; i++) {
 	if (res_list[i].xrm_name == quark) {
-	    return((XIMResourceList)&res_list[i]);
+	    return (XIMResourceList)&res_list[i];
 	}
     }
-    return((XIMResourceList)NULL);
+    return (XIMResourceList)NULL;
 }
 
 Public XIMResourceList
@@ -2199,10 +2168,9 @@ _XimGetResourceListRec(res_list, list_num, name)
     unsigned int	 list_num;
     char		*name;
 {
-    register int	 i;
     XrmQuark		 quark = XrmStringToQuark(name);
 
-    return(_XimGetResourceListRecByQuark(res_list, list_num, quark));
+    return _XimGetResourceListRecByQuark(res_list, list_num, quark);
 }
 
 Public char *
@@ -2219,20 +2187,20 @@ _XimSetIMValueData(im, top, values, res_list, list_num)
 
     for(p = values; p->name != NULL; p++) {
 	if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
-	    return(p->value);
+	    return p->value;
 	}
 	check = _XimCheckIMMode(res, XIM_SETIMVALUES);	
 	if(check == XIM_CHECK_INVALID) {
 	    continue;
 	} else if (check == XIM_CHECK_ERROR) {
-	    return(p->value);
+	    return p->value;
 	}
 	    
 	if(!_XimEncodeLocalIMAttr(res, top, p->value)) {
-	    return(p->value);
+	    return p->value;
 	}
     }
-    return(NULL);
+    return NULL;
 }
 
 Public char *
@@ -2249,20 +2217,20 @@ _XimGetIMValueData(im, top, values, res_list, list_num)
 
     for(p = values; p->name != NULL; p++) {
 	if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
-	    return(p->value);
+	    return p->value;
 	}
 	check = _XimCheckIMMode(res, XIM_GETIMVALUES);	
 	if(check == XIM_CHECK_INVALID) {
 	    continue;
 	} else if (check == XIM_CHECK_ERROR) {
-	    return(p->value);
+	    return p->value;
 	}
 	    
 	if(!_XimDecodeLocalIMAttr(res, top, p->value)) {
-	    return(p->value);
+	    return p->value;
 	}
     }
-    return(NULL);
+    return NULL;
 }
 
 Public void
@@ -2289,9 +2257,9 @@ _XimCheckSetIMDefaultsMode(res)
     XIMResourceList	res;
 {
     if(res->mode & XIM_MODE_IM_DEFAULT) {
-	return(XIM_CHECK_VALID);
+	return XIM_CHECK_VALID;
     }
-    return(XIM_CHECK_INVALID);
+    return XIM_CHECK_INVALID;
 }
 
 Private int
@@ -2299,9 +2267,9 @@ _XimCheckSetIMValuesMode(res)
     XIMResourceList	res;
 {
     if(res->mode & XIM_MODE_IM_SET) {
-	return(XIM_CHECK_VALID);
+	return XIM_CHECK_VALID;
     }
-    return(XIM_CHECK_INVALID);
+    return XIM_CHECK_INVALID;
 }
 
 Private int
@@ -2309,9 +2277,9 @@ Private int
     XIMResourceList	res;
 {
     if(res->mode & XIM_MODE_IM_GET) {
-	return(XIM_CHECK_VALID);
+	return XIM_CHECK_VALID;
     }
-    return(XIM_CHECK_INVALID);
+    return XIM_CHECK_INVALID;
 }
 
 Public int
@@ -2320,16 +2288,16 @@ Public int
     unsigned long	mode;
 {
     if(res->mode == 0) {
-	return(XIM_CHECK_INVALID);
+	return XIM_CHECK_INVALID;
     }
     if(mode & XIM_SETIMDEFAULTS) {
-	return(_XimCheckSetIMDefaultsMode(res));
+	return _XimCheckSetIMDefaultsMode(res);
     } else if (mode & XIM_SETIMVALUES) {
-	return(_XimCheckSetIMValuesMode(res));
+	return _XimCheckSetIMValuesMode(res);
     } else if (mode & XIM_GETIMVALUES) {
-	return(_XimCheckGetIMValuesMode(res));
+	return _XimCheckGetIMValuesMode(res);
     } else {
-	return(XIM_CHECK_ERROR);
+	return XIM_CHECK_ERROR;
     }
 }
 
@@ -2385,40 +2353,40 @@ _XimCheckSetICDefaultsMode(res, mode)
 {
     if(mode & XIM_PREEDIT_ATTR) {
 	if(!(res->mode & XIM_MODE_PRE_MASK)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_PRE_CREATE) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	} else if (!(res->mode & XIM_MODE_PRE_DEFAULT)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
     } else if(mode & XIM_STATUS_ATTR) {
 	if(!(res->mode & XIM_MODE_STS_MASK)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_STS_CREATE) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 	if(!(res->mode & XIM_MODE_STS_DEFAULT)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
     } else {
 	if(!res->mode) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_IC_CREATE) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 	if(!(res->mode & XIM_MODE_IC_DEFAULT)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
     }
-    return(XIM_CHECK_VALID);
+    return XIM_CHECK_VALID;
 }
 
 Private int
@@ -2428,7 +2396,7 @@ _XimCheckCreateICMode(res, mode)
 {
     if(mode & XIM_PREEDIT_ATTR) {
 	if(!(res->mode & XIM_MODE_PRE_MASK)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_PRE_CREATE) {
@@ -2438,12 +2406,12 @@ _XimCheckCreateICMode(res, mode)
 	} else if(res->mode & XIM_MODE_PRE_DEFAULT) {
 	    res->mode &= ~XIM_MODE_PRE_DEFAULT;
 	} else if (!(res->mode & XIM_MODE_PRE_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else if(mode & XIM_STATUS_ATTR) {
 	if(!(res->mode & XIM_MODE_STS_MASK)) {
-	    return (XIM_CHECK_INVALID);
+	    return  XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_STS_CREATE) {
@@ -2453,12 +2421,12 @@ _XimCheckCreateICMode(res, mode)
 	} else if(res->mode & XIM_MODE_STS_DEFAULT) {
 	    res->mode &= ~XIM_MODE_STS_DEFAULT;
 	} else if (!(res->mode & XIM_MODE_STS_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else {
 	if(!res->mode) {
-	    return (XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_IC_CREATE) {
@@ -2468,10 +2436,10 @@ _XimCheckCreateICMode(res, mode)
 	} else if(res->mode & XIM_MODE_IC_DEFAULT) {
 	    res->mode &= ~XIM_MODE_IC_DEFAULT;
 	} else if (!(res->mode & XIM_MODE_IC_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
     }
-    return(XIM_CHECK_VALID);
+    return XIM_CHECK_VALID;
 }
 
 Private int
@@ -2481,38 +2449,38 @@ _XimCheckSetICValuesMode(res, mode)
 {
     if(mode & XIM_PREEDIT_ATTR) {
 	if(!(res->mode & XIM_MODE_PRE_MASK)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_PRE_ONCE) {
 	    res->mode &= ~XIM_MODE_PRE_ONCE;
 	} else if(!(res->mode & XIM_MODE_PRE_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else if(mode & XIM_STATUS_ATTR) {
 	if(!(res->mode & XIM_MODE_STS_MASK)) {
-	    return (XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_STS_ONCE) {
 	    res->mode &= ~XIM_MODE_STS_ONCE;
 	} else if(!(res->mode & XIM_MODE_STS_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else {
 	if(!res->mode) {
-	    return (XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(res->mode & XIM_MODE_IC_ONCE) {
 	    res->mode &= ~XIM_MODE_IC_ONCE;
 	} else if(!(res->mode & XIM_MODE_IC_SET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
     }
-    return(XIM_CHECK_VALID);
+    return XIM_CHECK_VALID;
 }
 
 Private int
@@ -2522,32 +2490,32 @@ _XimCheckGetICValuesMode(res, mode)
 {
     if(mode & XIM_PREEDIT_ATTR) {
 	if(!(res->mode & XIM_MODE_PRE_MASK)) {
-	    return(XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(!(res->mode & XIM_MODE_PRE_GET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else if(mode & XIM_STATUS_ATTR) {
 	if(!(res->mode & XIM_MODE_STS_MASK)) {
-	    return (XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(!(res->mode & XIM_MODE_STS_GET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
 
     } else {
 	if(!res->mode) {
-	    return (XIM_CHECK_INVALID);
+	    return XIM_CHECK_INVALID;
 	}
 
 	if(!(res->mode & XIM_MODE_IC_GET)) {
-	    return(XIM_CHECK_ERROR);
+	    return XIM_CHECK_ERROR;
 	}
     }
-    return(XIM_CHECK_VALID);
+    return XIM_CHECK_VALID;
 }
 
 Public int
@@ -2556,15 +2524,15 @@ Public int
     unsigned long	 mode;
 {
     if(mode &XIM_SETICDEFAULTS) {
-	return(_XimCheckSetICDefaultsMode(res, mode));
+	return _XimCheckSetICDefaultsMode(res, mode);
     } else if (mode & XIM_CREATEIC) {
-	return(_XimCheckCreateICMode(res, mode));
+	return _XimCheckCreateICMode(res, mode);
     } else if (mode & XIM_SETICVALUES) {
-	return(_XimCheckSetICValuesMode(res, mode));
+	return _XimCheckSetICValuesMode(res, mode);
     } else if (mode & XIM_GETICVALUES) {
-	return(_XimCheckGetICValuesMode(res, mode));
+	return _XimCheckGetICValuesMode(res, mode);
     } else {
-	return(XIM_CHECK_ERROR);
+	return XIM_CHECK_ERROR;
     }
 }
 
@@ -2587,24 +2555,24 @@ _XimSetLocalIMDefaults(im, top, res_list, list_num)
     for(i = 0; i < num; i++) {
 	if((res = _XimGetResourceListRecByQuark( res_list, list_num,
 				info[i].quark)) == (XIMResourceList)NULL) { 
-	    return(False);
+	    return False;
 	}
 
 	check = _XimCheckIMMode(res, XIM_SETIMDEFAULTS);
 	if(check == XIM_CHECK_INVALID) {
 	    continue;
 	} else if (check == XIM_CHECK_ERROR) {
-	    return(False);
+	    return False;
 	}
 
 	if(!info[i].defaults) {
 	    continue;
 	}
 	if(!(info[i].defaults(&info[i], top, (XPointer)NULL, 0))) {
-	    return(False);
+	    return False;
 	}
     }
-    return(True);
+    return True;
 }
 
 Public Bool
@@ -2641,35 +2609,35 @@ _XimSetICDefaults(ic, top, mode, res_list, list_num)
 	if(info[i].quark == pre_quark) {
 	    if(!_XimSetICDefaults(ic, (XPointer)((char *)top + info[i].offset),
 			(mode | XIM_PREEDIT_ATTR), res_list, list_num)) {
-		return(False);
+		return False;
 	    }
 	} else if (info[i].quark == sts_quark) {
 	    if(!_XimSetICDefaults(ic, (XPointer)((char *)top + info[i].offset),
 			(mode | XIM_STATUS_ATTR), res_list, list_num)) {
-		return(False);
+		return False;
 	    }
 	} else {
 	    if(!(res = _XimGetResourceListRecByQuark(res_list, list_num,
 							info[i].quark))) {
-		return(False);
+		return False;
 	    }
 
 	    check = _XimCheckICMode(res, mode);
 	    if (check == XIM_CHECK_INVALID) {
 		continue;
 	    } else if (check == XIM_CHECK_ERROR) {
-		return(False);
+		return False;
 	    }
 
 	    if (!info[i].defaults) {
 		continue;
 	    }
 	    if (!(info[i].defaults(&info[i], top, (XPointer)ic, mode))) {
-		return(False);
+		return False;
 	    }
 	}
     }
-    return(True);
+    return True;
 }
 
 Private Bool
@@ -2685,12 +2653,12 @@ _XimEncodeAttr(info, num, res, top, val)
     for(i = 0; i < num; i++ ) {
 	if(info[i].quark == res->xrm_name) {
 	    if(!info[i].encode) {
-		return(False);
+		return False;
 	    }
-	    return(info[i].encode(&info[i], top, val));
+	    return (*info[i].encode)(&info[i], top, val);
 	}
     }
-    return(False);
+    return False;
 }
 
 Public Bool
@@ -2699,8 +2667,8 @@ _XimEncodeLocalIMAttr(res, top, val)
     XPointer		 top;
     XPointer		 val;
 {
-    return(_XimEncodeAttr(im_attr_info, XIMNumber(im_attr_info),
-					res, top, val));
+    return _XimEncodeAttr(im_attr_info, XIMNumber(im_attr_info),
+					res, top, val);
 }
 
 Public Bool
@@ -2725,7 +2693,7 @@ _XimEncodeLocalICAttr(ic, res, top, arg, mode)
 	num  = XIMNumber(ic_attr_info);
     }
 
-    return(_XimEncodeAttr(info, num, res, top, arg->value));
+    return _XimEncodeAttr(info, num, res, top, arg->value);
 }
 
 Private Bool
@@ -2827,28 +2795,28 @@ _XimSetICValueData(ic, top, res_list, list_num, values, mode, flag)
     for(p = values; p->name != NULL; p++) {
 	if((res = _XimGetResourceListRec(res_list, list_num,
 					p->name)) == (XIMResourceList)NULL) {
-	    return(p->name);
+	    return p->name;
 	}
 	if(res->xrm_name == pre_quark) {
 	    if(name = _XimSetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
 			res_list, list_num, (XIMArg *)p->value,
 			(mode | XIM_PREEDIT_ATTR), flag)) {
-		return(name);
+		return name;
 	    }
 	} else if(res->xrm_name == sts_quark) {
 	    if(name = _XimSetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->status_attr),
 			res_list, list_num, (XIMArg *)p->value,
 			(mode | XIM_STATUS_ATTR), flag)) {
-		return(name);
+		return name;
 	    }
 	} else {
 	    check = _XimCheckICMode(res, mode);
 	    if(check == XIM_CHECK_INVALID) {
 		continue;
 	    } else if(check == XIM_CHECK_ERROR) {
-		return(p->name);
+		return p->name;
 	    }
 
 	    if(mode & XIM_PREEDIT_ATTR) {
@@ -2862,11 +2830,11 @@ _XimSetICValueData(ic, top, res_list, list_num, values, mode, flag)
 	    	    return False;
     	    }
 	    if(_XimEncodeLocalICAttr(ic, res, top, p, mode) == False) {
-		return(p->name);
+		return p->name;
 	    }
 	}
     }
-    return(NULL);
+    return NULL;
 }
 
 Private Bool
@@ -2879,10 +2847,10 @@ _XimCheckInputStyle(styles, style)
 
     for(i = 0; i < num; i++) {
 	if(styles->supported_styles[i] == style) {
-	    return(True);
+	    return True;
 	}
     }
-    return(False);
+    return False;
 }
 
 Public Bool
@@ -2901,19 +2869,19 @@ _XimCheckLocalInputStyle(ic, top, values, styles, res_list, list_num)
     for(p = values; p && p->name != NULL; p++) {
 	if(quark == XrmStringToQuark(p->name)) {
 	    if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
-		return(False);
+		return False;
 	    }
 	    if(!_XimEncodeLocalICAttr(ic, res, top, p, 0)) {
-		return(False);
+		return False;
 	    }
 	    if (_XimCheckInputStyle(styles,
 			((XimDefICValues *)top)->input_style)) {
-		return(True);
+		return True;
 	    }
-	    return(False);
+	    return False;
 	}
     }
-    return(False);
+    return False;
 }
 
 Private Bool
@@ -2929,12 +2897,12 @@ _XimDecodeAttr(info, num, res, top, val)
     for(i = 0; i < num; i++ ) {
 	if(info[i].quark == res->xrm_name) {
 	    if(!info[i].decode) {
-		return(False);
+		return False;
 	    }
-	    return(info[i].decode(&info[i], top, val)); 
+	    return (*info[i].decode)(&info[i], top, val); 
 	}
     }
-    return(False);
+    return False;
 }
 
 Public Bool
@@ -2943,8 +2911,8 @@ _XimDecodeLocalIMAttr(res, top, val)
     XPointer		 top;
     XPointer		 val;
 {
-    return(_XimDecodeAttr(im_attr_info, XIMNumber(im_attr_info),
-					res, top, val));
+    return _XimDecodeAttr(im_attr_info, XIMNumber(im_attr_info),
+					res, top, val);
 }
 
 Public Bool
@@ -2968,7 +2936,7 @@ _XimDecodeLocalICAttr(res, top, val, mode)
 	num  = XIMNumber(ic_attr_info);
     }
 
-    return(_XimDecodeAttr(info, num, res, top, val));
+    return _XimDecodeAttr(info, num, res, top, val);
 }
 
 Public char *
@@ -2993,36 +2961,36 @@ _XimGetICValueData(ic, top, res_list, list_num, values, mode)
     for(p = values; p->name != NULL; p++) {
 	if((res = _XimGetResourceListRec(res_list, list_num,
 					p->name)) == (XIMResourceList)NULL) {
-	    return(p->name);
+	    return p->name;
 	}
 	if(res->xrm_name == pre_quark) {
 	    if(name = _XimGetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
 			res_list, list_num, (XIMArg *)p->value,
 			(mode | XIM_PREEDIT_ATTR))) {
-		return(name);
+		return name;
 	    }
 	} else if(res->xrm_name == sts_quark) {
 	    if(name = _XimGetICValueData(ic,
 			(XPointer)(&((XimDefICValues *)top)->status_attr),
 			res_list, list_num, (XIMArg *)p->value,
 			(mode | XIM_STATUS_ATTR))) {
-		return(name);
+		return name;
 	    }
 	} else {
 	    check = _XimCheckICMode(res, mode);
 	    if(check == XIM_CHECK_INVALID) {
 		continue;
 	    } else if(check == XIM_CHECK_ERROR) {
-		return(p->name);
+		return p->name;
 	    }
 
 	    if(_XimDecodeLocalICAttr(res, top, p->value, mode) == False) {
-		return(p->name);
+		return p->name;
 	    }
 	}
     }
-    return(NULL);
+    return NULL;
 }
 
 Public void
@@ -3039,7 +3007,6 @@ _XimGetCurrentIMValues(im, im_values)
     im_values->res_name		= im->core.res_name;
     im_values->res_class	= im->core.res_class;
     im_values->visible_position	= im->core.visible_position;
-    return;
 }
 
 Public void
@@ -3054,7 +3021,6 @@ _XimSetCurrentIMValues(im, im_values)
     im->core.res_name		= im_values->res_name;
     im->core.res_class		= im_values->res_class;
     im->core.visible_position	= im_values->visible_position;
-    return;
 }
 
 Public void
@@ -3072,18 +3038,14 @@ _XimGetCurrentICValues(ic, ic_values)
     ic_values->res_name		 = ic->core.res_name;
     ic_values->res_class	 = ic->core.res_class;
     ic_values->destroy_callback	 = ic->core.destroy_callback;
-    ic_values->preedit_state_notify_callback
-				 = ic->core.preedit_state_notify_callback;
     ic_values->string_conversion_callback
 				 = ic->core.string_conversion_callback;
     ic_values->string_conversion = ic->core.string_conversion;
     ic_values->reset_state	 = ic->core.reset_state;
-    ic_values->reset_return	 = ic->core.reset_return;
     ic_values->hotkey		 = ic->core.hotkey;
     ic_values->hotkey_state	 = ic->core.hotkey_state;
     ic_values->preedit_attr	 = ic->core.preedit_attr;
     ic_values->status_attr	 = ic->core.status_attr;
-    return;
 }
 
 Public void
@@ -3104,12 +3066,10 @@ _XimSetCurrentICValues(ic, ic_values)
 				= ic_values->string_conversion_callback;
     ic->core.string_conversion	= ic_values->string_conversion;
     ic->core.reset_state	= ic_values->reset_state;
-    ic->core.reset_return	= ic_values->reset_return;
     ic->core.hotkey		= ic_values->hotkey;
     ic->core.hotkey_state	= ic_values->hotkey_state;
     ic->core.preedit_attr	= ic_values->preedit_attr;
     ic->core.status_attr	= ic_values->status_attr;
-    return;
 }
 
 Private void
@@ -3121,7 +3081,6 @@ _XimInitialIMOffsetInfo()
     for(i = 0; i < n; i++) {
 	im_attr_info[i].quark = XrmStringToQuark(im_attr_info[i].name);
     }
-    return;
 }
 
 Private void
@@ -3144,7 +3103,6 @@ _XimInitialICOffsetInfo()
     for(i = 0; i < n; i++) {
 	ic_sts_attr_info[i].quark = XrmStringToQuark(ic_sts_attr_info[i].name);
     }
-    return;
 }
 
 Private void
@@ -3156,7 +3114,6 @@ _XimInitialIMMode()
     for(i = 0; i < n; i++) {
 	im_mode[i].quark = XrmStringToQuark(im_mode[i].name);
     }
-    return;
 }
 
 Private void
@@ -3168,7 +3125,6 @@ _XimInitialICMode()
     for(i = 0; i < n; i++) {
 	ic_mode[i].quark = XrmStringToQuark(ic_mode[i].name);
     }
-    return;
 }
 
 Public void
@@ -3184,5 +3140,4 @@ _XimInitialResourceInfo()
     _XimInitialIMMode();
     _XimInitialICMode();
     init_flag = True;
-    return;
 }

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/116 1995/11/30 19:05:17 kaleb $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.4 1996/01/24 21:58:29 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.5 1996/01/26 10:27:31 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -42,7 +42,10 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) XtExtraDefines
+#if HasSnprintf
+   MISC_DEFINES = -DHAS_SNPRINTF -DLIBXT
+#endif
+        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) $(MISC_DEFINES) XtExtraDefines
 
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
@@ -69,6 +72,11 @@ STRINGSABIOPTIONS = ToolkitStringsABIOptions
 
        LINTLIBS = $(LINTXLIB)
 
+#if !HasSnprintf
+       MISCSRC = snprintf.c
+       MISCOBJ = snprintf.o
+#endif
+
 HEADERS = \
 	Composite.h \
 	CompositeP.h \
@@ -89,6 +97,7 @@ HEADERS = \
 	VendorP.h
 
 SRCS = \
+	$(MISCSRC) \
 	ActionHook.c \
 	Alloc.c \
 	ArgList.c \
@@ -145,6 +154,7 @@ SRCS = \
 	sharedlib.c
 
 OBJS = \
+	$(MISCOBJ) \
 	ActionHook.o \
 	Alloc.o \
 	ArgList.o \
@@ -220,6 +230,11 @@ SpecialCLibObjectRule(Threads,$(ICONFIGFILES),$(LIB_MT_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,../misc)
+SpecialCLibObjectRule(snprintf,$(ICONFIGFILES),-DLIBXT)
+#endif
+LinkSourceFile(snprintf.h,../misc)
 
 #ifdef MinixArchitecture
 SpecialCLibObjectRule(Shell,$(ICONFIGFILES),-DXT_NO_SM)
