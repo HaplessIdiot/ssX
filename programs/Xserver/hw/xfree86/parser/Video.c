@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.1 1999/03/07 11:40:43 dawes Exp $ */
 
 #include "xf86Parser.h"
 #include "xf86tokens.h"
@@ -48,7 +48,7 @@ parseVideoPortSubSection (void)
 {
 	parsePrologue (XF86ConfVideoPortPtr, XF86ConfVideoPortRec)
 
-		while ((token = xf86GetToken (VideoPortTab)) != ENDSUBSECTION)
+	while ((token = xf86GetToken (VideoPortTab)) != ENDSUBSECTION)
 	{
 		switch (token)
 		{

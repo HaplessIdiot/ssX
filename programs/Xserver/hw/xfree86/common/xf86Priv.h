@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.43 1999/05/17 13:17:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.44 1999/05/22 08:40:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -36,6 +36,8 @@ extern Bool xf86bsEnableFlag;
 extern Bool xf86bsDisableFlag;
 extern char *xf86LayoutName;
 extern char *xf86ScreenName;
+extern char *xf86PointerName;
+extern char *xf86KeyboardName;
 #ifdef KEEPBPP
 extern int xf86Bpp;
 #endif

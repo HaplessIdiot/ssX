@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.119 1999/05/17 13:17:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.120 1999/05/22 08:40:02 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1232,6 +1232,20 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86ScreenName = argv[i];
     return 2;
   }
+  if (!strcmp(argv[i], "-pointer"))
+  {
+    if (++i >= argc)
+      return 0;
+    xf86PointerName = argv[i];
+    return 2;
+  }
+  if (!strcmp(argv[i], "-keyboard"))
+  {
+    if (++i >= argc)
+      return 0;
+    xf86KeyboardName = argv[i];
+    return 2;
+  }
   if (!strcmp(argv[i], "-scanpci"))
   {
     DoScanPci(argc, argv, i);
@@ -1274,6 +1288,8 @@ ddxUseMsg()
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
   ErrorF("-layout name           specify the ServerLayout section name\n");
   ErrorF("-screen name           specify the Screen section name\n");
+  ErrorF("-keyboard name         specify the core keyboard InputDevice name\n");
+  ErrorF("-pointer name          specify the core pointer InputDevice name\n");
   ErrorF("-flipPixels            swap default black/white Pixel values\n");
 #ifdef XF86VIDMODE
   ErrorF("-disableVidMode        disable mode adjustments with xvidtune\n");

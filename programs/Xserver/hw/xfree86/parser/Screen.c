@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.6 1999/03/21 07:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.7 1999/04/25 10:02:40 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -56,7 +56,7 @@ parseDisplaySubSection (void)
 {
 	parsePrologue (XF86ConfDisplayPtr, XF86ConfDisplayRec)
 
-		while ((token = xf86GetToken (DisplayTab)) != ENDSUBSECTION)
+	while ((token = xf86GetToken (DisplayTab)) != ENDSUBSECTION)
 	{
 		switch (token)
 		{

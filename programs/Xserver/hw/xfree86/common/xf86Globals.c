@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.15 1999/05/07 02:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.16 1999/05/09 06:06:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -171,6 +171,8 @@ Bool xf86bsEnableFlag = FALSE;
 Bool xf86bsDisableFlag = FALSE;
 char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
+char *xf86PointerName = NULL;
+char *xf86KeyboardName = NULL;
 Bool xf86ProbeOnly = FALSE;
 int xf86Verbose = DEFAULT_VERBOSE;
 int xf86LogVerbose = DEFAULT_LOG_VERBOSE;

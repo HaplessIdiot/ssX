@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.179 1999/05/17 13:17:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.180 1999/05/23 04:26:02 dawes Exp $ */
 
 
 /*
@@ -42,7 +42,8 @@ static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
 static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
-static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input);
+static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input,
+			MessageType from);
 static Bool configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display);
 static Bool addDefaultModes(MonPtr monitorp);
 
@@ -1109,6 +1110,110 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
 }
 #endif
 
+static Bool
+checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
+{
+    Bool havePointer = FALSE, haveKeyboard = FALSE;
+    Bool foundPointer = FALSE, foundKeyboard = FALSE;
+    IDevPtr indp;
+    IDevRec Pointer, Keyboard;
+    XF86ConfInputPtr confInput;
+    int count = 0;
+    MessageType from = X_DEFAULT;
+
+    /* Check if a core pointer or core keyboard is needed. */
+    for (indp = servlayoutp->inputs; indp->identifier; indp++) {
+	if ((indp->commonOptions &&
+	     xf86FindOption(indp->extraOptions, "CorePointer")) ||
+	    (indp->extraOptions &&
+	     xf86FindOption(indp->commonOptions, "CorePointer"))) {
+	    havePointer = TRUE;
+	}
+	if ((indp->commonOptions &&
+	     xf86FindOption(indp->extraOptions, "CoreKeyboard")) ||
+	    (indp->extraOptions &&
+	     xf86FindOption(indp->commonOptions, "CoreKeyboard"))) {
+	    haveKeyboard = TRUE;
+	}
+	count++;
+    }
+    if (!havePointer) {
+	if (xf86PointerName) {
+	    confInput = xf86FindInput(xf86PointerName,
+				      xf86configptr->conf_input_lst);
+	    if (!confInput) {
+		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
+			xf86PointerName);
+		return FALSE;
+	    }
+	    from = X_CMDLINE;
+	} else {
+	    from = X_DEFAULT;
+	    confInput = xf86FindInput(CONF_IMPLICIT_POINTER,
+				      xf86configptr->conf_input_lst);
+	    if (!confInput && implicitLayout) {
+		confInput = xf86FindInputByDriver("mouse",
+						xf86configptr->conf_input_lst);
+	    }
+	}
+	if (confInput)
+	    foundPointer = configInput(&Pointer, confInput, from);
+    }
+    if (!haveKeyboard) {
+	if (xf86KeyboardName) {
+	    confInput = xf86FindInput(xf86KeyboardName,
+				      xf86configptr->conf_input_lst);
+	    if (!confInput) {
+		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
+			xf86KeyboardName);
+		return FALSE;
+	    }
+	    from = X_CMDLINE;
+	} else {
+	    from = X_DEFAULT;
+	    confInput = xf86FindInput(CONF_IMPLICIT_KEYBOARD,
+				      xf86configptr->conf_input_lst);
+	    if (!confInput && implicitLayout) {
+		confInput = xf86FindInputByDriver("keyboard",
+						xf86configptr->conf_input_lst);
+	    }
+	}
+	if (confInput)
+	    foundKeyboard = configInput(&Keyboard, confInput, from);
+    }
+    if (foundPointer) {
+	count++;
+	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
+	indp[count - 1] = Pointer;
+	indp[count - 1].extraOptions = addNewOption(NULL, "CorePointer", NULL);
+	indp[count].identifier = NULL;
+	servlayoutp->inputs = indp;
+    } else if (!havePointer) {
+	if (implicitLayout)
+	    xf86Msg(X_ERROR, "Unable to find a core pointer device\n");
+	else
+	    xf86Msg(X_ERROR, "No core pointer device specified\n");
+	return FALSE;
+    }
+#ifdef NOT_YET
+    if (foundKeyboard) {
+	count++;
+	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
+	indp[count - 1] = Keyboard;
+	indp[count - 1].extraOptions = addNewOption(NULL, "CoreKeyboard", NULL);
+	indp[count].identifier = NULL;
+	servlayoutp->inputs = indp;
+    } else if (!haveKeyboard) {
+	if (implicitLayout)
+	    xf86Msg(X_ERROR, "Unable to find a core keyboard device\n");
+	else
+	    xf86Msg(X_ERROR, "No core keyboard device specified\n");
+	return FALSE;
+    }
+#endif
+    return TRUE;
+}
+
 /*
  * figure out which layout is active, which screens are used in that layout,
  * which drivers and monitors are used in these screens
@@ -1225,7 +1330,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     irp = conf_layout->lay_input_lst;
     count = 0;
     while (irp) {
-	if (!configInput(&indp[count], irp->iref_inputdev))
+	if (!configInput(&indp[count], irp->iref_inputdev, X_CONFIG))
 	    return FALSE;
 	indp[count].extraOptions = irp->iref_option_lst;
         count++;
@@ -1236,6 +1341,10 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     servlayoutp->inactives = gdp;
     servlayoutp->inputs = indp;
     servlayoutp->options = conf_layout->lay_option_lst;
+#ifdef NEW_INPUT
+    if (!checkCoreInputDevices(servlayoutp, FALSE))
+	return FALSE;
+#endif
     return TRUE;
 }
 
@@ -1288,10 +1397,15 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
     servlayoutp->screens = slp;
     servlayoutp->inactives = NULL;
     servlayoutp->options = NULL;
-    /* XXX Need to handle input devices.  Set up an empty list for now. */
+    /* Set up an empty input device list, then look for some core devices. */
     indp = xnfalloc(sizeof(IDevRec));
     indp->identifier = NULL;
     servlayoutp->inputs = indp;
+#ifdef NEW_INPUT
+    if (!checkCoreInputDevices(servlayoutp, TRUE))
+	return FALSE;
+#endif
+    
     return TRUE;
 }
 
@@ -1652,13 +1766,13 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 }
 
 static Bool
-configInput(IDevPtr inputp, XF86ConfInputPtr conf_input)
+configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
 {
-    xf86Msg(X_CONFIG, "|-->Input Device \"%s\"\n",
-		conf_input->inp_identifier);
+    xf86Msg(from, "|-->Input Device \"%s\"\n", conf_input->inp_identifier);
     inputp->identifier = conf_input->inp_identifier;
     inputp->driver = conf_input->inp_driver;
     inputp->commonOptions = conf_input->inp_option_lst;
+    inputp->extraOptions = NULL;
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.1.2.5 1998/06/02 14:49:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.2 1998/07/25 16:57:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -49,7 +49,7 @@ parseVendorSection (void)
 	int has_ident = FALSE;
 	parsePrologue (XF86ConfVendorPtr, XF86ConfVendorRec)
 
-		while ((token = xf86GetToken (VendorTab)) != ENDSECTION)
+	while ((token = xf86GetToken (VendorTab)) != ENDSECTION)
 	{
 		switch (token)
 		{

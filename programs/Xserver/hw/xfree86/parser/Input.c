@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.1 1999/04/05 07:13:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -175,6 +175,19 @@ xf86FindInput (const char *ident, XF86ConfInputPtr p)
 	while (p)
 	{
 		if (NameCompare (ident, p->inp_identifier) == 0)
+			return (p);
+
+		p = p->list.next;
+	}
+	return (NULL);
+}
+
+XF86ConfInputPtr
+xf86FindInputByDriver (const char *driver, XF86ConfInputPtr p)
+{
+	while (p)
+	{
+		if (NameCompare (driver, p->inp_driver) == 0)
 			return (p);
 
 		p = p->list.next;

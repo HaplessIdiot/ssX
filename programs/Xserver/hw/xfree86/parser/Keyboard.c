@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.4 1999/04/05 07:13:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.5 1999/04/29 05:13:01 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -86,7 +86,7 @@ parseKeyboardSection (void)
 	int ntoken;
 	parsePrologue (XF86ConfKeyboardPtr, XF86ConfKeyboardRec)
 
-		while ((token = xf86GetToken (KeyboardTab)) != ENDSECTION)
+	while ((token = xf86GetToken (KeyboardTab)) != ENDSECTION)
 	{
 		switch (token)
 		{

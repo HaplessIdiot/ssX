@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.9 1999/04/25 10:02:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.10 1999/04/29 05:13:01 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -119,6 +119,10 @@ else\
 "The %s keyword requires a quoted string to follow it."
 #define NUMBER_MSG \
 "The %s keyword requires a number to follow it."
+#define POSITIVE_INT_MSG \
+"The %s keyword requires a positive integer to follow it."
+#define ZAXISMAPPING_MSG \
+"The ZAxisMapping keyword requires 2 positive numbers or X or Y to follow it."
 #define AUTOREPEAT_MSG \
 "The AutoRepeat keyword requires 2 numbers (delay and rate) to follow it."
 #define DACSPEED_MSG \
