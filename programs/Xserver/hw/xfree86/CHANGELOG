@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 152. Use C89 style function prototypes in manual pages (Bugzilla #208,
+      Aidan Kehoe).
  151. Fix small memory leaks in XvQueryAdaptors() and __driUtilCreateScreen()
       (Jim Radford).
  150. Updated Wacom driver to support ntuos 2 2D mouse and a few styli,
@@ -16909,7 +16911,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2673 2003/04/28 16:27:18 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2674 2003/04/28 17:07:56 dawes Exp $
 
 
 

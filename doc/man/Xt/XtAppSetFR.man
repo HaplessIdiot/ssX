@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\" 
-.\" $XFree86: xc/doc/man/Xt/XtAppSetFR.man,v 1.4 2001/01/17 16:57:39 dawes Exp $
+.\" $XFree86: xc/doc/man/Xt/XtAppSetFR.man,v 1.5 2001/01/27 18:20:24 dawes Exp $
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xI Intrinsics
@@ -129,11 +129,9 @@
 .SH NAME
 XtAppSetFallbackResources \- set fallback resources
 .SH SYNTAX
-void XtAppSetFallbackResources(\fIapp_context\fP, \fIspecification_list\fP)
-.br
-      XtAppContext \fIapp_context\fP;
-.br
-      String* \fIspecification_list\fP;
+.HP
+void XtAppSetFallbackResources(XtAppContext \fIapp_context\fP, String*
+\fIspecification_list\fP); 
 .SH ARGUMENTS
 .IP \fIapp_context\fP 1i
 Specifies the application context.
