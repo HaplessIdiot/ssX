@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.19 2003/10/15 16:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.20 2003/10/15 16:58:34 dawes Exp $ */
 
 /*
  *
@@ -48,11 +48,14 @@
 #include "coffloader.h"
 
 #include "compiler.h"
-/*
-#ifndef LDTEST
+
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
+
+#if LOADERDEBUG
 #define COFFDEBUG ErrorF
 #endif
-*/
 
 /*
  * This structure contains all of the information about a module
@@ -237,7 +240,8 @@ COFFCreateCOMMON(COFFModulePtr cofffile)
 	lookup[l].symName = COFFGetSymbolName(cofffile, common->index);
 	lookup[l].offset = (funcptr) (cofffile->common + offset);
 #ifdef COFFDEBUG
-	COFFDEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName);
+	COFFDEBUG("Adding %p %s\n", (void *)lookup[l].offset,
+		  lookup[l].symName);
 #endif
 	listCOMMON = common->next;
 	offset += common->sym->n_value;
@@ -266,7 +270,8 @@ COFFGetSymbolName(COFFModulePtr cofffile, int index)
     sym = (SYMENT *) (((unsigned char *)cofffile->symtab) + (index * SYMESZ));
 
 #ifdef COFFDEBUG
-    COFFDEBUG("COFFGetSymbolName(%x,%x) %x", cofffile, index, sym->n_zeroes);
+    COFFDEBUG("COFFGetSymbolName(%p,%x) %lx", (void *)cofffile, index,
+	      sym->n_zeroes);
 #endif
 
     name = xf86loadermalloc(sym->n_zeroes ? SYMNMLEN + 1
@@ -312,7 +317,7 @@ COFFGetSymbolValue(COFFModulePtr cofffile, int index)
 	symval = (unsigned char *)symbol->address;
 
 #ifdef COFFDEBUG
-    COFFDEBUG("%x\n", symval);
+    COFFDEBUG("%p\n", symval);
 #endif
 
     xf86loaderfree(symname);
@@ -411,7 +416,8 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
  */
 
 #ifdef COFFDEBUG
-    COFFDEBUG("%x %d %o ", rel->r_vaddr, rel->r_symndx, rel->r_type);
+    COFFDEBUG("%lx %ld %o ", (unsigned long)rel->r_vaddr,
+	      rel->r_symndx, rel->r_type);
 #if defined(__powerpc__)
     COFFDEBUG("[%x %x %x] ",
 	      RELOC_RSIGN(*rel), RELOC_RFIXUP(*rel), RELOC_RLEN(*rel));
@@ -419,7 +425,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 #endif
     symbol = COFFGetSymbol(cofffile, rel->r_symndx);
 #ifdef COFFDEBUG
-    COFFDEBUG("%d %x %d-%d\n", symbol->n_sclass, symbol->n_value,
+    COFFDEBUG("%d %lx %d-%d\n", symbol->n_sclass, symbol->n_value,
 	      symbol->n_scnum, secndx);
 #endif
 
@@ -468,9 +474,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 				   symbol->n_type);
 #ifdef COFFDEBUG
 	COFFDEBUG("symbol->n_sclass==0\n");
-	COFFDEBUG("dest32=%x\t", dest32);
-	COFFDEBUG("symval=%x\t", symval);
-	COFFDEBUG("*dest32=%8.8x\t", *dest32);
+	COFFDEBUG("dest32=%p\t", (void *)dest32);
+	COFFDEBUG("symval=%p\t", symval);
+	COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 	*dest32 = (unsigned long)symval;
 	return 0;
@@ -488,9 +494,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 		      namestr = COFFGetSymbolName(cofffile, rel->r_symndx));
 	    xf86loaderfree(namestr);
 	    COFFDEBUG("txtsize=%x\t", cofffile->txtsize);
-	    COFFDEBUG("dest32=%x\t", dest32);
-	    COFFDEBUG("symval=%x\t", symval);
-	    COFFDEBUG("*dest32=%8.8x\t", *dest32);
+	    COFFDEBUG("dest32=%p\t", (void *)dest32);
+	    COFFDEBUG("symval=%p\t", symval);
+	    COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 	    *dest32 = (unsigned long)(symval + (*dest32) - symbol->n_value);
 	} else {
@@ -518,9 +524,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    case N_TEXT:
 #ifdef COFFDEBUG
 		COFFDEBUG("R_DIR32 N_TEXT\n");
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+		COFFDEBUG("dest32=%p\t", (void *)dest32);
+		COFFDEBUG("symval=%p\t", symval);
+		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  (unsigned long)(cofffile->
@@ -530,9 +536,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 #ifdef COFFDEBUG
 		COFFDEBUG("R_DIR32 N_DATA\n");
 		COFFDEBUG("txtsize=%x\t", cofffile->txtsize);
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+		COFFDEBUG("dest32=%p\t", (void *)dest32);
+		COFFDEBUG("symval=%p\t", symval);
+		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  ((unsigned long)(cofffile->
@@ -543,9 +549,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	    case N_BSS:
 #ifdef COFFDEBUG
 		COFFDEBUG("R_DIR32 N_BSS\n");
-		COFFDEBUG("dest32=%x\t", dest32);
-		COFFDEBUG("symval=%x\t", symval);
-		COFFDEBUG("*dest32=%8.8x\t", *dest32);
+		COFFDEBUG("dest32=%p\t", (void *)dest32);
+		COFFDEBUG("symval=%p\t", symval);
+		COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 		*dest32 = (unsigned long)((*dest32) +
 					  (unsigned long)(cofffile->
@@ -559,7 +565,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 
 	}
 #ifdef COFFDEBUG
-	COFFDEBUG("*dest32=%8.8x\n", *dest32);
+	COFFDEBUG("*dest32=%8.8lx\n", *dest32);
 #endif
 	break;
     case R_PCRLONG:
@@ -569,9 +575,9 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	symval = COFFGetSymbolValue(cofffile, rel->r_symndx);
 #ifdef COFFDEBUG
 	COFFDEBUG("R_PCRLONG ");
-	COFFDEBUG("dest32=%x\t", dest32);
-	COFFDEBUG("symval=%x\t", symval);
-	COFFDEBUG("*dest32=%8.8x\t", *dest32);
+	COFFDEBUG("dest32=%p\t", (void *)dest32);
+	COFFDEBUG("symval=%p\t", symval);
+	COFFDEBUG("*dest32=%8.8lx\t", *dest32);
 #endif
 	if (symval == 0) {
 #ifdef COFFDEBUG
@@ -586,7 +592,7 @@ COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 	*dest32 = (unsigned long)(symval - ((long)dest32 + sizeof(long)));
 
 #ifdef COFFDEBUG
-	COFFDEBUG("*dest32=%8.8x\n", *dest32);
+	COFFDEBUG("*dest32=%8.8lx\n", *dest32);
 #endif
 	break;
     case R_ABS:
@@ -855,11 +861,11 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	else
 	    aux = NULL;
 #ifdef COFFDEBUG
-	COFFDEBUG("\t%d %d %x %x %d %d %s\n",
+	COFFDEBUG("\t%d %d %lx %x %d %d %s\n",
 		  i, sym->n_scnum, sym->n_value, sym->n_type,
 		  sym->n_sclass, sym->n_numaux, symname);
 	if (aux)
-	    COFFDEBUG("aux=\t%d %x %x %x %x %x %x\n",
+	    COFFDEBUG("aux=\t%ld %lx %x %x %x %lx %x\n",
 		      aux->x_scnlen, aux->x_parmhash, aux->x_snhash,
 		      aux->x_smtyp, aux->x_smclas, aux->x_stab,
 		      aux->x_snstab);
@@ -875,8 +881,8 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 	    cofffile->tocaddr = (cofffile->saddr[sym->n_scnum - 1] +
 				 sym->n_value - (cofffile->dataddr));
 #ifdef COFFDEBUG
-	    COFFDEBUG("TOC=%x\n", cofffile->toc);
-	    COFFDEBUG("TOCaddr=%x\n", cofffile->tocaddr);
+	    COFFDEBUG("TOC=%lx\n", cofffile->toc);
+	    COFFDEBUG("TOCaddr=%p\n", cofffile->tocaddr);
 #endif
 	    continue;
 	}
@@ -927,8 +933,8 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->txtaddr);
 #ifdef COFFDEBUG
-		COFFDEBUG("Adding %x %s\n",
-			  lookup[l].offset, lookup[l].symName);
+		COFFDEBUG("Adding %p %s\n",
+			  (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
@@ -954,8 +960,8 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->dataddr);
 #ifdef COFFDEBUG
-		COFFDEBUG("Adding %x %s\n",
-			  lookup[l].offset, lookup[l].symName);
+		COFFDEBUG("Adding %p %s\n",
+			  (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
@@ -981,8 +987,8 @@ COFF_GetSymbols(COFFModulePtr cofffile)
 			(cofffile->saddr[sym->n_scnum - 1] +
 			 sym->n_value - cofffile->bssaddr);
 #ifdef COFFDEBUG
-		COFFDEBUG("Adding %x %s\n",
-			  lookup[l].offset, lookup[l].symName);
+		COFFDEBUG("Adding %p %s\n",
+			  (void *)lookup[l].offset, lookup[l].symName);
 #endif
 		l++;
 	    } else {
@@ -1069,7 +1075,7 @@ COFFCollectSections(COFFModulePtr cofffile)
 						    RelOffset(i), RelSize(i),
 						    ".rel.text");
 #ifdef COFFDEBUG
-	    COFFDEBUG(".text starts at %x (%x bytes)\n", cofffile->text,
+	    COFFDEBUG(".text starts at %p (%x bytes)\n", cofffile->text,
 		      cofffile->txtsize);
 #endif
 	    continue;
@@ -1088,7 +1094,7 @@ COFFCollectSections(COFFModulePtr cofffile)
 						    RelOffset(i), RelSize(i),
 						    ".rel.data");
 #ifdef COFFDEBUG
-	    COFFDEBUG(".data starts at %x (%x bytes)\n", cofffile->data,
+	    COFFDEBUG(".data starts at %p (%x bytes)\n", cofffile->data,
 		      cofffile->datsize);
 #endif
 	    continue;
@@ -1104,7 +1110,7 @@ COFFCollectSections(COFFModulePtr cofffile)
 	    cofffile->bssaddr = SecAddr(i);
 	    cofffile->bsssize = SecSize(i);
 #ifdef COFFDEBUG
-	    COFFDEBUG(".bss starts at %x (%x bytes)\n", cofffile->bss,
+	    COFFDEBUG(".bss starts at %p (%x bytes)\n", cofffile->bss,
 		      cofffile->bsssize);
 #endif
 	    continue;
