@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Cursor.c,v 1.1 94/03/28 21:22:57 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.1 1994/10/20 07:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.2 1994/11/30 20:41:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -59,22 +59,16 @@ void
 xf86InitViewport(pScr)
      ScrnInfoPtr pScr;
 {
-  int		EVDisplay;
-
-  EVDisplay = pScr->modes->VDisplay;
-  if (pScr->modes->Flags & V_DBLSCAN)
-  	EVDisplay /= 2;
-
   /*
    * Compute the initial Viewport if necessary
    */
   if (pScr->frameX0 < 0)
     {
       pScr->frameX0 = (pScr->virtualX - pScr->modes->HDisplay) / 2;
-      pScr->frameY0 = (pScr->virtualY - EVDisplay) / 2;
+      pScr->frameY0 = (pScr->virtualY - pScr->modes->VDisplay) / 2;
     }
   pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
-  pScr->frameY1 = pScr->frameY0 + EVDisplay - 1;
+  pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
 
   /*
    * Now adjust the initial Viewport, so it lies within the virtual area
@@ -87,8 +81,8 @@ xf86InitViewport(pScr)
 
   if (pScr->frameY1 >= pScr->virtualY)
     {
-	pScr->frameY0 = pScr->virtualY - EVDisplay;
-	pScr->frameY1 = pScr->frameY0 + EVDisplay - 1;
+	pScr->frameY0 = pScr->virtualY - pScr->modes->VDisplay;
+	pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
     }
 }
 
@@ -105,11 +99,6 @@ xf86SetViewport(pScreen, x, y)
 {
   Bool          frameChanged = FALSE;
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
-  int		EVDisplay;
-
-  EVDisplay = pScr->modes->VDisplay;
-  if (pScr->modes->Flags & V_DBLSCAN)
-  	EVDisplay /= 2;
 
   /*
    * check wether (x,y) belongs to the visual part of the screen
@@ -129,13 +118,13 @@ xf86SetViewport(pScreen, x, y)
   
   if ( pScr->frameY0 > y) { 
     pScr->frameY0 = y;
-    pScr->frameY1 = y + EVDisplay - 1;
+    pScr->frameY1 = y + pScr->modes->VDisplay - 1;
     frameChanged = TRUE;
   }
   
   if ( pScr->frameY1 < y) { 
     pScr->frameY1 = y;
-    pScr->frameY0 = y - EVDisplay + 1;
+    pScr->frameY0 = y - pScr->modes->VDisplay + 1;
     frameChanged = TRUE; 
   }
   
@@ -155,7 +144,6 @@ xf86ZoomViewport (pScreen, zoom)
      int        zoom;
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
-  int		EVDisplay;
 
   if (pScr->modes != pScr->modes->next)
   {
@@ -163,11 +151,6 @@ xf86ZoomViewport (pScreen, zoom)
 
     if ((pScr->SwitchMode)(pScr->modes))
     {
-
-      EVDisplay = pScr->modes->VDisplay;
-      if (pScr->modes->Flags & V_DBLSCAN)
-  	  EVDisplay /= 2;
-
       /* 
        * adjust new frame for the displaysize
        */
@@ -185,18 +168,18 @@ xf86ZoomViewport (pScreen, zoom)
 	  pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
 	}
       
-      pScr->frameY0 = (pScr->frameY1 + pScr->frameY0 - EVDisplay)/2;
-      pScr->frameY1 = pScr->frameY0 + EVDisplay - 1;
+      pScr->frameY0 = (pScr->frameY1 + pScr->frameY0 - pScr->modes->VDisplay)/2;
+      pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
 
       if (pScr->frameY0 < 0)
 	{
 	  pScr->frameY0 = 0;
-	  pScr->frameY1 = pScr->frameY0 + EVDisplay - 1;
+	  pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
 	}
       else if (pScr->frameY1 >= pScr->virtualY)
 	{
-	  pScr->frameY0 = pScr->virtualY - EVDisplay;
-	  pScr->frameY1 = pScr->frameY0 + EVDisplay - 1;
+	  pScr->frameY0 = pScr->virtualY - pScr->modes->VDisplay;
+	  pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
 	}
     }
     else /* switch failed, so go back to old mode */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.36 1994/11/05 23:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.37 1994/11/19 07:54:16 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -608,38 +608,26 @@ s3Init(mode)
    else 
       pixMuxShift = 0;
 
-   if (pixMuxShift > 0) {
-      /* now divide the horizontal timing parameters as required */
-      mode->HTotal     >>= pixMuxShift;
-      mode->HDisplay   >>= pixMuxShift;
-      mode->HSyncStart >>= pixMuxShift;
-      mode->HSyncEnd   >>= pixMuxShift;
-   }
-   else if (pixMuxShift < 0) {
-      /* now multiply the horizontal timing parameters as required */
-      mode->HTotal     <<= -pixMuxShift;
-      mode->HDisplay   <<= -pixMuxShift;
-      mode->HSyncStart <<= -pixMuxShift;
-      mode->HSyncEnd   <<= -pixMuxShift;
+   if (!mode->CrtcHAdjusted) {
+      if (pixMuxShift > 0) {
+	 /* now divide the horizontal timing parameters as required */
+	 mode->CrtcHTotal     >>= pixMuxShift;
+	 mode->CrtcHDisplay   >>= pixMuxShift;
+	 mode->CrtcHSyncStart >>= pixMuxShift;
+	 mode->CrtcHSyncEnd   >>= pixMuxShift;
+      }
+      else if (pixMuxShift < 0) {
+	 /* now multiply the horizontal timing parameters as required */
+	 mode->CrtcHTotal     <<= -pixMuxShift;
+	 mode->CrtcHDisplay   <<= -pixMuxShift;
+	 mode->CrtcHSyncStart <<= -pixMuxShift;
+	 mode->CrtcHSyncEnd   <<= -pixMuxShift;
+      }
+      mode->CrtcHAdjusted = TRUE;
    }
 
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
-
-   if (pixMuxShift > 0) {
-      /* put back the horizontal timing parameters */
-      mode->HTotal     <<= pixMuxShift;
-      mode->HDisplay   <<= pixMuxShift;
-      mode->HSyncStart <<= pixMuxShift;
-      mode->HSyncEnd   <<= pixMuxShift;
-   }
-   else if (pixMuxShift < 0) {
-      /* put back the horizontal timing parameters */
-      mode->HTotal     >>= -pixMuxShift;
-      mode->HDisplay   >>= -pixMuxShift;
-      mode->HSyncStart >>= -pixMuxShift;
-      mode->HSyncEnd   >>= -pixMuxShift;
-   }
 
    new->MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
    new->Sequencer[0] = 0x03;		/* XXXX shouldn't need this */
@@ -1779,48 +1767,27 @@ s3Init(mode)
       outb(vgaCRIndex, 0x5A);
       outb(vgaCRReg, s3Port5A);
 
-      i = (((mode->VTotal  / interlacedived - 2) & 0x400) >> 10) |
-	  (((mode->VDisplay / interlacedived - 1) & 0x400) >> 9) |
-	  (((mode->VSyncStart / interlacedived) & 0x400) >> 8)  |
-	  (((mode->VSyncStart / interlacedived) & 0x400) >> 6) | 0x40;
+      /* This shouldn't be needed -- they should be set by vgaHWInit() */
+      if (!mode->CrtcVAdjusted) {
+	 mode->CrtcVTotal /= interlacedived;
+	 mode->CrtcVDisplay /= interlacedived;
+	 mode->CrtcVSyncStart /= interlacedived;
+	 mode->CrtcVSyncEnd /= interlacedived;
+	 mode->CrtcVAdjusted = TRUE;
+      }
+
+      i = (((mode->CrtcVTotal - 2) & 0x400) >> 10) |
+	  (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+	  (((mode->CrtcVSyncStart) & 0x400) >> 8)  |
+	  (((mode->CrtcVSyncStart) & 0x400) >> 6) | 0x40;
 	  
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      if (pixMuxShift > 0) {
-	 /* now divide the horizontal timing parameters as required */
-	 mode->HTotal     >>= pixMuxShift;
-	 mode->HDisplay   >>= pixMuxShift;
-	 mode->HSyncStart >>= pixMuxShift;
-	 mode->HSyncEnd   >>= pixMuxShift;
-      }
-      else if (pixMuxShift < 0) {
-	 /* now multiply the horizontal timing parameters as required */
-	 mode->HTotal     <<= -pixMuxShift;
-	 mode->HDisplay   <<= -pixMuxShift;
-	 mode->HSyncStart <<= -pixMuxShift;
-	 mode->HSyncEnd   <<= -pixMuxShift;
-      }
-
-      i = ((((mode->HTotal >> 3) - 5) & 0x100) >> 8) |
-	  ((((mode->HDisplay >> 3) - 1) & 0x100) >> 7) |
-	  ((((mode->HSyncStart >> 3) - 1) & 0x100) >> 6) |
-	  ((mode->HSyncStart & 0x800) >> 7);
-
-      if (pixMuxShift > 0) {
-	 /* put back the horizontal timing parameters */
-	 mode->HTotal     <<= pixMuxShift;
-	 mode->HDisplay   <<= pixMuxShift;
-	 mode->HSyncStart <<= pixMuxShift;
-	 mode->HSyncEnd   <<= pixMuxShift;
-      }
-      else if (pixMuxShift < 0) {
-	 /* put back the horizontal timing parameters */
-	 mode->HTotal     >>= -pixMuxShift;
-	 mode->HDisplay   >>= -pixMuxShift;
-	 mode->HSyncStart >>= -pixMuxShift;
-	 mode->HSyncEnd   >>= -pixMuxShift;
-      }
+      i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
+	  ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
+	  ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
+	  ((mode->CrtcHSyncStart & 0x800) >> 7);
 
       outb(vgaCRIndex, 0x3b);
       itmp = (  new->CRTC[0] + ((i&0x01)<<8)

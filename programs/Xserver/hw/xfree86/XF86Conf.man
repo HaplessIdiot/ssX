@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.6 1994/10/20 06:08:06 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.7 1994/10/30 04:57:08 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -292,7 +292,8 @@ specifies the vertical timings for the mode.
 .TP 4
 .B Flags \fI"flag" ...\fP
 specifies an optional set of mode flags.  \fB"Interlace"\fP indicates
-that the mode is interlaced.  \fB"+HSync"\fP and \fB\"-HSync"\fP can
+that the mode is interlaced.  \fB"DoubleScan"\fP indicates a mode where
+each scanline is doubled.  \fB"+HSync"\fP and \fB\"-HSync"\fP can
 be used to select the polarity of the HSync signal.  \fB"+VSync"\fP
 and \fB\"-VSync"\fP can be used to select the polarity of the VSync
 signal.  \fB"Composite"\fP, can be used to specify composite sync on
@@ -313,6 +314,7 @@ numbers specifying the vertical timings.  These numbers are
 \fIvdisp\fP, \fIvsyncstart\fP, \fIvsyncend\fP, \fIvtotal\fP.  The
 final section is a list of flags specifying other characteristics
 of the mode.  \fBInterlace\fP indicates that the mode is interlaced.
+\fB"DoubleScan"\fP indicates a mode where each scanline is doubled.  
 \fB+HSync\fP and \fB\-HSync\fP can be used to select the polarity
 of the HSync signal.  \fB+VSync\fP and \fB\-VSync\fP can be used
 to select the polarity of the VSync signal.  \fBComposite\fP can be

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.4 1994/09/17 13:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.5 1994/11/26 12:44:21 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -137,23 +137,23 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
      DisplayModePtr mode;
 {
 
-  crtcRegs->XSize = mode->HDisplay;
-  crtcRegs->YSize = mode->VDisplay;
+  crtcRegs->XSize = mode->CrtcHDisplay;
+  crtcRegs->YSize = mode->CrtcVDisplay;
   crtcRegs->BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
   
   /* Where the BytesPerPixel gets multiplied in SHOULD CHANGE!!! *TO*DO* */
-  crtcRegs->hrzt  = (crtcRegs->BytesPerPixel) * (mode->HTotal / 4) - 1 ;
+  crtcRegs->hrzt  = (crtcRegs->BytesPerPixel) * (mode->CrtcHTotal / 4) - 1 ;
   crtcRegs->hrzsr = (crtcRegs->BytesPerPixel) * 
-    ((mode->HSyncEnd - mode->HSyncStart) / 4 ) - 1 ;
+    ((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) / 4 ) - 1 ;
   crtcRegs->hrzbr = (crtcRegs->BytesPerPixel) * 
-    ((mode->HTotal - mode->HSyncStart) / 4 ) - 1 ;
+    ((mode->CrtcHTotal - mode->CrtcHSyncStart) / 4 ) - 1 ;
   crtcRegs->hrzbf = (crtcRegs->BytesPerPixel) * 
-    ((mode->HDisplay+(mode->HTotal-mode->HSyncStart)) /4) - 1 ;
+    ((mode->CrtcHDisplay+(mode->CrtcHTotal-mode->CrtcHSyncStart)) /4) - 1 ;
 
-  crtcRegs->vrtt  = mode->VTotal ;
-  crtcRegs->vrtsr = mode->VSyncEnd - mode->VSyncStart ;
-  crtcRegs->vrtbr = mode->VTotal - mode->VSyncStart ;
-  crtcRegs->vrtbf = crtcRegs->vrtbr + mode->VDisplay ;
+  crtcRegs->vrtt  = mode->CrtcVTotal ;
+  crtcRegs->vrtsr = mode->CrtcVSyncEnd - mode->CrtcVSyncStart ;
+  crtcRegs->vrtbr = mode->CrtcVTotal - mode->CrtcVSyncStart ;
+  crtcRegs->vrtbf = crtcRegs->vrtbr + mode->CrtcVDisplay ;
   crtcRegs->prehrzc = 0x0L;
   crtcRegs->prevrtc = 0x0L;
 
@@ -167,7 +167,7 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
   else crtcRegs->interlaced = FALSE;
 
   /* Calculate sysconfig */
-  if (!p9000CalcSysconfigHres(mode->HDisplay, (int)crtcRegs->BytesPerPixel,
+  if (!p9000CalcSysconfigHres(mode->CrtcHDisplay, (int)crtcRegs->BytesPerPixel,
 			      &crtcRegs->sysconfig))
     ErrorF("Bad horizontal resolution!!!!\n");
 #ifdef DEBUG

@@ -1,5 +1,5 @@
 /* $XConsortium: mach8init.c,v 1.1 94/03/28 21:12:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.0 1994/04/29 14:07:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.1 1994/09/23 10:09:16 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -55,11 +55,11 @@ mach8calcvmode(vmdef, pMode)
 
     vmdef->clk = pMode->Clock;
 
-    vmdef->hd  = (pMode->HDisplay >> 3) - 1;
-    vmdef->ht  = (pMode->HTotal >> 3) - 1;
-    /*vmdef->hss = (pMode->HSyncStart >> 3) - 1;*/
-    vmdef->hss = (pMode->HSyncStart - 1) >> 3;
-    vmdef->hsw = (pMode->HSyncEnd - pMode->HSyncStart) >> 3;
+    vmdef->hd  = (pMode->CrtcHDisplay >> 3) - 1;
+    vmdef->ht  = (pMode->CrtcHTotal >> 3) - 1;
+    /*vmdef->hss = (pMode->CrtcHSyncStart >> 3) - 1;*/
+    vmdef->hss = (pMode->CrtcHSyncStart - 1) >> 3;
+    vmdef->hsw = (pMode->CrtcHSyncEnd - pMode->CrtcHSyncStart) >> 3;
     if(vmdef->hsw > 0x1f)
     {
         ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
@@ -68,19 +68,19 @@ mach8calcvmode(vmdef, pMode)
     }
     vmdef->hsw &= 0x1F;
 
-    vmdef->vd  = ((((pMode->VDisplay-1)<<1)&0xFFF8) | 
-                 (((pMode->VDisplay-1))&0x3)) |
-                 ((((pMode->VDisplay-1)&0x80)>>5));
+    vmdef->vd  = ((((pMode->CrtcVDisplay-1)<<1)&0xFFF8) | 
+                 (((pMode->CrtcVDisplay-1))&0x3)) |
+                 ((((pMode->CrtcVDisplay-1)&0x80)>>5));
 
-    vmdef->vt  = ((((pMode->VTotal-1)<<1)&0xFFF8) | 
-                 (((pMode->VTotal-1)&0x3)) |
-                 (((pMode->VTotal-1)&0x80)>>5));
+    vmdef->vt  = ((((pMode->CrtcVTotal-1)<<1)&0xFFF8) | 
+                 (((pMode->CrtcVTotal-1)&0x3)) |
+                 (((pMode->CrtcVTotal-1)&0x80)>>5));
 
-    vmdef->vss = ((((pMode->VSyncStart-1)<<1)&0xFFF8) | 
-                 (((pMode->VSyncStart-1)&0x3)) |
-                 (((pMode->VSyncStart-1)&0x80)>>5));
+    vmdef->vss = ((((pMode->CrtcVSyncStart-1)<<1)&0xFFF8) | 
+                 (((pMode->CrtcVSyncStart-1)&0x3)) |
+                 (((pMode->CrtcVSyncStart-1)&0x80)>>5));
 
-    vmdef->vsw = pMode->VSyncEnd - pMode->VSyncStart;
+    vmdef->vsw = pMode->CrtcVSyncEnd - pMode->CrtcVSyncStart;
     if(vmdef->vsw > 0x1f)
     {
         ErrorF("%s %s: Vertical Sync width (%d) in mode \"%s\"\n",

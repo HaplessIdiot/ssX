@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.sample,v 1.9 94/04/08 17:02:06 rws Exp $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.4 1994/05/29 02:01:47 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.5 1994/10/20 06:00:15 dawes Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -69,7 +69,7 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.4 1994/05/29 02:01:47 dawes Exp
 /*
 #if defined(SunArchitecture) && defined(SparcArchitecture)
 #define HasCodeCenter	YES
-#ifndef SVR4
+#ifndef SVR4Architecture
 #define HasTestCenter	YES
 #endif
 #endif
@@ -82,7 +82,7 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.4 1994/05/29 02:01:47 dawes Exp
 */
 
 /*
-#if defined(SunArchitecture) && defined(SparcArchitecture) && !defined(SVR4)
+#if defined(SunArchitecture) && defined(SparcArchitecture) && !defined(SVR4Architecture
 #define HasPurify	YES
 #endif
 */

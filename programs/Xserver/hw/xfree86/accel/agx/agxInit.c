@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.11 1994/11/26 12:40:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.12 1994/11/30 20:37:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -358,13 +358,13 @@ agxCalcCRTCRegs(crtcRegs, mode)
     crtcRegs->clock_sel   = 0;
 
     crtcRegs->hblnk_end_lo =
-       crtcRegs->htotal_lo = (mode->HTotal >> 3) -1; 
+       crtcRegs->htotal_lo = (mode->CrtcHTotal >> 3) -1; 
     crtcRegs->hdisp_end_lo = 
-       crtcRegs->hblnk_strt_lo = (mode->HDisplay >> 3) - 1;
-    crtcRegs->hsync_strt_lo    = (mode->HSyncStart >> 3) - 1;
-    crtcRegs->hsync_end_lo     = (mode->HSyncEnd >> 3) - 1;
+       crtcRegs->hblnk_strt_lo = (mode->CrtcHDisplay >> 3) - 1;
+    crtcRegs->hsync_strt_lo    = (mode->CrtcHSyncStart >> 3) - 1;
+    crtcRegs->hsync_end_lo     = (mode->CrtcHSyncEnd >> 3) - 1;
 
-    temp                       = (mode->HSyncEnd - mode->HSyncStart) >> 3;
+    temp                    = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3;
     if (temp > 0x1f) {
         ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
                XCONFIG_PROBED, agxInfoRec.name, temp<<3,
@@ -384,25 +384,25 @@ agxCalcCRTCRegs(crtcRegs, mode)
        crtcRegs->interlaced = FALSE;
     }
 
-    temp = mode->VTotal - 1;
+    temp = mode->CrtcVTotal - 1;
     crtcRegs->vblnk_end_lo =
        crtcRegs->vtotal_lo = temp & 0xFF;
     crtcRegs->vblnk_end_hi =
        crtcRegs->vtotal_hi = (temp>>8) & 0xFF;
 
-    temp = mode->VDisplay - 1;
+    temp = mode->CrtcVDisplay - 1;
     crtcRegs->vdisp_end_lo = 
        crtcRegs->vblnk_strt_lo = temp & 0xFF;
     crtcRegs->vdisp_end_hi =
        crtcRegs->vblnk_strt_hi = (temp>>8) & 0xFF;
 
-    temp = mode->VSyncStart - 1;
+    temp = mode->CrtcVSyncStart - 1;
     crtcRegs->vsync_strt_lo = temp & 0xFF;
     crtcRegs->vsync_strt_hi = (temp>>8) & 0xFF;
 
-    crtcRegs->vsync_end = mode->VSyncEnd & 0xFF;
+    crtcRegs->vsync_end = mode->CrtcVSyncEnd & 0xFF;
 
-    temp = mode->VSyncEnd - mode->VSyncStart;
+    temp = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
     if (temp > 0x1F) {
         ErrorF("%s %s: Vertical Sync width (%d) in mode \"%s\"\n",
                XCONFIG_PROBED, agxInfoRec.name, temp, mode->name);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.3 1994/09/07 15:55:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.4 1994/09/11 00:52:47 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -90,6 +90,16 @@ static DisplayModeRec Mode320x200 = {
 	225,
 	0,
 	0,
+	320,
+	344,
+	376,
+	400,
+	200,
+	204,
+	206,
+	225,
+	FALSE,
+	FALSE,
 };
 	
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.2 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.3 1994/11/30 20:41:22 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -185,7 +185,11 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
   pKeySyms->map        = map;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
-  pKeySyms->maxKeyCode = MAX_KEYCODE;
+  if (xf86Info.serverNumLock)
+    pKeySyms->maxKeyCode = MAX_KEYCODE; 
+  else
+    pKeySyms->maxKeyCode = MAX_STD_KEYCODE;
+
 }
 
 #include <linux/keyboard.h>

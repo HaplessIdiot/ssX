@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.3 1994/11/26 12:45:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.4 1994/11/30 20:41:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -353,26 +353,41 @@ xf86PostKbdEvent(key)
       updateLeds = TRUE;              /* led changes by firmware */
       break;
     }
-    if (xf86Info.serverNumLock &&
-        ((!xf86Info.numLock && !ModifierDown(ShiftMask)) ||
-         (xf86Info.numLock && ModifierDown(ShiftMask)))) {
+    if (xf86Info.serverNumLock) {
+     if ((!xf86Info.numLock && ModifierDown(ShiftMask)) ||
+         (xf86Info.numLock && !ModifierDown(ShiftMask))) {
       /*
        * Hardwired numlock handling ... (Some applications break if they have
        * these keys double defined, like twm)
        */
       switch (scanCode) {
-      case KEY_KP_7:        scanCode = KEY_Home;      break;  /* curs home */
-      case KEY_KP_8:        scanCode = KEY_Up;        break;  /* curs up */
-      case KEY_KP_9:        scanCode = KEY_PgUp;      break;  /* curs pgup */
-      case KEY_KP_4:        scanCode = KEY_Left;      break;  /* curs left */
-      case KEY_KP_5:        scanCode = KEY_Begin;     break;  /* curs begin */
-      case KEY_KP_6:        scanCode = KEY_Right;     break;  /* curs right */
-      case KEY_KP_1:        scanCode = KEY_End;       break;  /* curs end */
-      case KEY_KP_2:        scanCode = KEY_Down;      break;  /* curs down */
-      case KEY_KP_3:        scanCode = KEY_PgDown;    break;  /* curs pgdown */
-      case KEY_KP_0:        scanCode = KEY_Insert;    break;  /* curs insert */
-      case KEY_KP_Decimal:  scanCode = KEY_Delete;    break;  /* curs delete */
+      case KEY_KP_7:        scanCode = KEY_SN_KP_7;   break;  /* curs 7 */
+      case KEY_KP_8:        scanCode = KEY_SN_KP_8;   break;  /* curs 8 */
+      case KEY_KP_9:        scanCode = KEY_SN_KP_9;   break;  /* curs 9 */
+      case KEY_KP_4:        scanCode = KEY_SN_KP_4;   break;  /* curs 4 */
+      case KEY_KP_5:        scanCode = KEY_SN_KP_5;   break;  /* curs 5 */
+      case KEY_KP_6:        scanCode = KEY_SN_KP_6;   break;  /* curs 6 */
+      case KEY_KP_1:        scanCode = KEY_SN_KP_1;   break;  /* curs 1 */
+      case KEY_KP_2:        scanCode = KEY_SN_KP_2;   break;  /* curs 2 */
+      case KEY_KP_3:        scanCode = KEY_SN_KP_3;   break;  /* curs 3 */
+      case KEY_KP_0:        scanCode = KEY_SN_KP_0;   break;  /* curs 0 */
+      case KEY_KP_Decimal:  scanCode = KEY_SN_KP_Dec; break;  /* curs decimal */
       }
+     } else {
+      switch (scanCode) {
+      case KEY_KP_7:        scanCode = KEY_SN_KP_Home;  break;  /* curs home */
+      case KEY_KP_8:        scanCode = KEY_SN_KP_Up  ;  break;  /* curs up */
+      case KEY_KP_9:        scanCode = KEY_SN_KP_Prior; break;  /* curs pgup */
+      case KEY_KP_4:        scanCode = KEY_SN_KP_Left;  break;  /* curs left */
+      case KEY_KP_5:        scanCode = KEY_SN_KP_Begin; break;  /* curs begin */
+      case KEY_KP_6:        scanCode = KEY_SN_KP_Right; break;  /* curs right */
+      case KEY_KP_1:        scanCode = KEY_SN_KP_End;   break;  /* curs end */
+      case KEY_KP_2:        scanCode = KEY_SN_KP_Down;  break;  /* curs down */
+      case KEY_KP_3:        scanCode = KEY_SN_KP_Next;  break;  /* curs pgdn */
+      case KEY_KP_0:        scanCode = KEY_SN_KP_Ins;   break;  /* curs ins */
+      case KEY_KP_Decimal:  scanCode = KEY_SN_KP_Del;   break;  /* curs del */
+      }
+     }
     }
   }
 

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.28 Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.29 1994/11/30 20:41:09 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1675,30 +1675,40 @@ configMonitorSection()
       pNew->prev = NULL;
       pNew->Flags = 0;
       pNew->Clock = (int)(val.realnum * 1000.0 + 0.5);
+      pNew->CrtcHAdjusted = FALSE;
+      pNew->CrtcVAdjusted = FALSE;
       
-      if (getToken(NULL) == NUMBER) pNew->HDisplay = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHDisplay = pNew->HDisplay = val.num;
       else configError("Horizontal display expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HSyncStart = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHSyncStart = pNew->HSyncStart = val.num;
       else configError("Horizontal sync start expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HSyncEnd = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHSyncEnd = pNew->HSyncEnd = val.num;
       else configError("Horizontal sync end expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HTotal = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHTotal = pNew->HTotal = val.num;
       else configError("Horizontal total expected");
           
           
-      if (getToken(NULL) == NUMBER) pNew->VDisplay = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVDisplay = pNew->VDisplay = val.num;
       else configError("Vertical display expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VSyncStart = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVSyncStart = pNew->VSyncStart = val.num;
       else configError("Vertical sync start expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VSyncEnd = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVSyncEnd = pNew->VSyncEnd = val.num;
       else configError("Vertical sync end expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VTotal = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVTotal = pNew->VTotal = val.num;
       else configError("Vertical total expected");
 
       token = getToken(TimingTab);
@@ -1883,6 +1893,7 @@ MonPtr monp;
   pNew->prev = NULL;
   pNew->Flags = 0;
   pNew->HDisplay = pNew->VDisplay = 0; /* Uninitialized */
+  pNew->CrtcHAdjusted = pNew->CrtcVAdjusted = FALSE;
 
   if (monp->Last) 
     monp->Last->next = pNew;
@@ -1904,30 +1915,38 @@ MonPtr monp;
       had_dotclock = 1;
       break;
     case HTIMINGS:
-      if (getToken(NULL) == NUMBER) pNew->HDisplay = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHDisplay = pNew->HDisplay = val.num;
       else configError("Horizontal display expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HSyncStart = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHSyncStart = pNew->HSyncStart = val.num;
       else configError("Horizontal sync start expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HSyncEnd = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHSyncEnd = pNew->HSyncEnd = val.num;
       else configError("Horizontal sync end expected");
           
-      if (getToken(NULL) == NUMBER) pNew->HTotal = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcHTotal = pNew->HTotal = val.num;
       else configError("Horizontal total expected");
       had_htimings = 1;
       break;
     case VTIMINGS:
-      if (getToken(NULL) == NUMBER) pNew->VDisplay = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVDisplay = pNew->VDisplay = val.num;
       else configError("Vertical display expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VSyncStart = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVSyncStart = pNew->VSyncStart = val.num;
       else configError("Vertical sync start expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VSyncEnd = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVSyncEnd = pNew->VSyncEnd = val.num;
       else configError("Vertical sync end expected");
           
-      if (getToken(NULL) == NUMBER) pNew->VTotal = val.num;
+      if (getToken(NULL) == NUMBER)
+	pNew->CrtcVTotal = pNew->VTotal = val.num;
       else configError("Vertical total expected");
       had_vtimings = 1;
       break;
@@ -2543,15 +2562,25 @@ xf86LookupMode(target, driver)
 
   if (best_mode != NULL)
   {
-    target->HDisplay   = best_mode->HDisplay;
-    target->HSyncStart = best_mode->HSyncStart;
-    target->HSyncEnd   = best_mode->HSyncEnd;
-    target->HTotal     = best_mode->HTotal;
-    target->VDisplay   = best_mode->VDisplay;
-    target->VSyncStart = best_mode->VSyncStart;
-    target->VSyncEnd   = best_mode->VSyncEnd;
-    target->VTotal     = best_mode->VTotal;
-    target->Flags      = best_mode->Flags; 
+    target->HDisplay       = best_mode->HDisplay;
+    target->HSyncStart     = best_mode->HSyncStart;
+    target->HSyncEnd       = best_mode->HSyncEnd;
+    target->HTotal         = best_mode->HTotal;
+    target->VDisplay       = best_mode->VDisplay;
+    target->VSyncStart     = best_mode->VSyncStart;
+    target->VSyncEnd       = best_mode->VSyncEnd;
+    target->VTotal         = best_mode->VTotal;
+    target->Flags          = best_mode->Flags; 
+    target->CrtcHDisplay   = best_mode->CrtcHDisplay;
+    target->CrtcHSyncStart = best_mode->CrtcHSyncStart;
+    target->CrtcHSyncEnd   = best_mode->CrtcHSyncEnd;
+    target->CrtcHTotal     = best_mode->CrtcHTotal;
+    target->CrtcVDisplay   = best_mode->CrtcVDisplay;
+    target->CrtcVSyncStart = best_mode->CrtcVSyncStart;
+    target->CrtcVSyncEnd   = best_mode->CrtcVSyncEnd;
+    target->CrtcVTotal     = best_mode->CrtcVTotal;
+    target->CrtcHAdjusted  = best_mode->CrtcHAdjusted;
+    target->CrtcVAdjusted  = best_mode->CrtcVAdjusted;
     if (xf86Verbose)
     {
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",
@@ -2693,6 +2722,7 @@ char *scrname;
 				((float)(dispmp->HTotal) *
 					(float)(dispmp->VTotal)) ;
 	if ( dispmp->Flags & V_INTERLACE ) vrefreshrate *= 2.0;
+	if ( dispmp->Flags & V_DBLSCAN ) vrefreshrate /= 2.0;
 	for ( i = 0 ; i < monp->n_vrefresh ; i++ ) {
 		if ( monp->vrefresh[i].hi == monp->vrefresh[i].lo ) {
 			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].hi) &&

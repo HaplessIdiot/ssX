@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.5 1994/09/11 00:52:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.6 1994/09/23 10:26:19 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -692,10 +692,13 @@ DisplayModePtr mode;
 	 * we adapt them here so that the VGA module will initialise
 	 * the CRTC fields correctly
 	 */
-	mode->HTotal <<= 1;
-	mode->HDisplay <<= 1;
-	mode->HSyncStart <<= 1;
-	mode->HSyncEnd <<= 1;
+	if (!mode->CrtcHAdjusted) {
+		mode->CrtcHTotal <<= 1;
+		mode->CrtcHDisplay <<= 1;
+		mode->CrtcHSyncStart <<= 1;
+		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHAdjusted = TRUE;
+	}
 #endif
 
 	/*
@@ -711,34 +714,24 @@ DisplayModePtr mode;
 	 * to override generic registers whenever necessary.
 	 */
 	/*
-	 * The extions bits
+	 * The extension bits
 	 */
 	new->HBEX =
 		(new->std.CRTC[3] & 0x1F) |
-		((((mode->HSyncStart >> 3) - 1) & 0x100) >> 1);
+		((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 1);
 	new->HREX =
 		(new->std.CRTC[5] & 0x9F) |
-		(((mode->HSyncStart >> 3) & 0x100) >> 2) |
-		((((mode->HTotal >> 3) - 5) & 0x100) >> 3);
-
-#if !defined(MONOVGA) && !defined(XF86VGA16)
-	/*
-	 * Restore changed horizontal display parameters
-	 */
-	mode->HTotal >>= 1;
-	mode->HDisplay >>= 1;
-	mode->HSyncStart >>= 1;
-	mode->HSyncEnd >>= 1;
-#endif
+		(((mode->CrtcHSyncStart >> 3) & 0x100) >> 2) |
+		((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 3);
 
 	/*
 	 * For the vertical values only the extension bits have to be set
 	 */
 	new->VOVFL = 
-		(((mode->VTotal - 2) & 0x400) >> 10) |
-		(((mode->VDisplay - 1) & 0x400) >> 9) |
-		((mode->VSyncStart & 0x600) >> 7) |
-		((mode->VSyncStart & 0x400) >> 6);
+		(((mode->CrtcVTotal - 2) & 0x400) >> 10) |
+		(((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+		((mode->CrtcVSyncStart & 0x600) >> 7) |
+		((mode->CrtcVSyncStart & 0x400) >> 6);
 
 	new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
 	new->std.CRTC[23] = 0xE3;

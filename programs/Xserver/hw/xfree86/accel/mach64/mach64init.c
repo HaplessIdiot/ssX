@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.0 1994/11/26 12:42:53 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -77,11 +77,11 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
     int i;
 
     crtcRegs->h_total_disp =
-	(((mode->HDisplay >> 3) - 1) << 16) |
-	    ((mode->HTotal >> 3) - 1);
+	(((mode->CrtcHDisplay >> 3) - 1) << 16) |
+	    ((mode->CrtcHTotal >> 3) - 1);
     crtcRegs->h_sync_strt_wid =
-	(((mode->HSyncEnd - mode->HSyncStart) >> 3) << 16) |
-	    ((mode->HSyncStart >> 3) - 1);
+	(((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3) << 16) |
+	    ((mode->CrtcHSyncStart >> 3) - 1);
 
     if ((crtcRegs->h_sync_strt_wid >> 16) > 0x1f) {
 	ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
@@ -96,11 +96,11 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
 	crtcRegs->h_sync_strt_wid |= CRTC_H_SYNC_NEG;
 
     crtcRegs->v_total_disp =
-	((mode->VDisplay - 1) << 16) |
-	    (mode->VTotal - 1);
+	((mode->CrtcVDisplay - 1) << 16) |
+	    (mode->CrtcVTotal - 1);
     crtcRegs->v_sync_strt_wid =
-	((mode->VSyncEnd - mode->VSyncStart) << 16) |
-	    (mode->VSyncStart - 1);
+	((mode->CrtcVSyncEnd - mode->CrtcVSyncStart) << 16) |
+	    (mode->CrtcVSyncStart - 1);
 
     if ((crtcRegs->v_sync_strt_wid >> 16) > 0x1f) {
 	ErrorF("%s %s: Vertical Sync width (%d) in mode \"%s\"\n",

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.21 1994/12/02 05:48:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.22 1994/12/05 03:48:02 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1818,10 +1818,13 @@ cirrusInit(mode)
          /* The actual DAC register value is set later. */
          /* The CRTC is clocked at VCLK / 2, so we must half the */
          /* horizontal timings. */
-         mode->HDisplay >>= 1;
-         mode->HSyncStart >>= 1;
-         mode->HTotal >>= 1;
-         mode->HSyncEnd >>= 1;
+         if (!mode->CrtcHAdjusted) {
+            mode->CrtcHDisplay >>= 1;
+            mode->CrtcHSyncStart >>= 1;
+            mode->CrtcHTotal >>= 1;
+            mode->CrtcHSyncEnd >>= 1;
+            mode->CrtcHAdjusted = TRUE;
+         }
      }
 #endif
 #endif
@@ -2102,25 +2105,25 @@ cirrusInit(mode)
 
 				/* Fill up all the overflows - ugh! */
 #ifdef DEBUG_CIRRUS
-     fprintf(stderr,"Init: VSyncStart + 1 = %x\n\
-HsyncEnd>>3 = %x\n\
-HDisplay>>3 -1 = %x\n\
+     fprintf(stderr,"Init: CrtcVSyncStart + 1 = %x\n\
+CrtcHsyncEnd>>3 = %x\n\
+CrtcHDisplay>>3 -1 = %x\n\
 VirtX = %x\n",
-	     mode->VSyncStart + 1,
-	     mode->HSyncEnd >> 3, 
-	     (mode->HDisplay >> 3) - 1,
+	     mode->CrtcVSyncStart + 1,
+	     mode->CrtcHSyncEnd >> 3, 
+	     (mode->CrtcHDisplay >> 3) - 1,
 	     vga256InfoRec.virtualX>>4);
 #endif
      
-     new->CR1A = (((mode->VSyncStart + 1) & 0x300 ) >> 2)
-	  | (((mode->HSyncEnd >> 3) & 0xC0) >> 2);
+     new->CR1A = (((mode->CrtcVSyncStart + 1) & 0x300 ) >> 2)
+	  | (((mode->CrtcHSyncEnd >> 3) & 0xC0) >> 2);
 
      if (mode->Flags & V_INTERLACE) 
 	    {
 				/* ``Half the Horizontal Total'' which is */
 				/* really half the value in CR0 */
 
-	    new->CR19 = ((mode->HTotal >> 3) - 5) >> 1;
+	    new->CR19 = ((mode->CrtcHTotal >> 3) - 5) >> 1;
 	    new->CR1A |= 0x01;
 	    }
      else new->CR19 = 0x00;
@@ -2182,10 +2185,6 @@ VirtX = %x\n",
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
          new->HIDDENDAC = 0x6a;
-         mode->HDisplay <<= 1;	/* Restore horizontal timing values. */
-         mode->HSyncStart <<= 1;
-         mode->HTotal <<= 1;
-         mode->HSyncEnd <<= 1;
      }
 #endif
 #endif

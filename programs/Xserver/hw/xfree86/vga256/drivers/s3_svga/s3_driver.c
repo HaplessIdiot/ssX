@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.6 1994/09/08 14:29:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.7 1994/09/11 00:53:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -511,18 +511,18 @@ S3Init (mode)
 
  /* DON'T forget to set Interlace else where!!!!!! */
    new->OverflowHigh =
-      ((mode->VSyncStart & 0x400) >> 7)
-      | (((mode->VDisplay - 1) & 0x400) >> 9)
-      | (((mode->VTotal - 2) & 0x400) >> 5)
-      | (((mode->VTotal - 2) & 0x200) >> 9)
-      | (((mode->VSyncStart) & 0x200) >> 3);
+      ((mode->CrtcVSyncStart & 0x400) >> 7)
+      | (((mode->CrtcVDisplay - 1) & 0x400) >> 9)
+      | (((mode->CrtcVTotal - 2) & 0x400) >> 5)
+      | (((mode->CrtcVTotal - 2) & 0x200) >> 9)
+      | (((mode->CrtcVSyncStart) & 0x200) >> 3);
 
 
   new->s3reg[0] = 0x8d;
   new->s3reg[1] = 0x00;
   new->s3reg[2] = 0x20;
   new->s3reg[3] = 0x10;
-  if (mode->HDisplay > 800)
+  if (mode->CrtcHDisplay > 800)
       new->s3reg[4] = 0x00;
   else
      new->s3reg[4] = 0x13;
@@ -560,7 +560,7 @@ S3Init (mode)
 
 
 #ifdef ENHANCED_ENABLE
-   if (mode->HDisplay < 800) {	/* MOVE ME - JNT */
+   if (mode->CrtcHDisplay < 800) {	/* MOVE ME - JNT */
       outw (0x4ae8, 0x0003);
    } else
       outw (0x4ae8, 0x0007);

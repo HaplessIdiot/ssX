@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.4 1994/11/19 13:53:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.5 1994/11/30 20:26:19 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -132,7 +132,7 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.4 1994/11/19 13:53:18 dawes Exp $
 
 #ifndef ServerOSDefines
 # ifdef i386Architecture
-#  define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
+#  define ServerOSDefines -DDDXTIME XFree86ServerOSDefines -DPART_NET
 # else
 #  define ServerOSDefines -DDDXTIME
 # endif
@@ -192,10 +192,6 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.4 1994/11/19 13:53:18 dawes Exp $
 # define RemoveDSDENroffMacrosCmd sed -e '/^\.D[S|E]$$/d' 
 #else
 # define RemoveDSDENroffMacrosCmd cat
-#endif
-
-#ifndef PartialNetDefault
-# define PartialNetDefault	YES
 #endif
 
 #ifndef ConnectionFlags

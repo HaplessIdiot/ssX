@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.11 1994/10/20 06:12:40 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.12 1994/11/26 12:48:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -835,10 +835,20 @@ vgaHWInit(mode, size)
       }
       else
       {
-	if      (mode->VDisplay < 400) new->MiscOutReg = 0xA3;
-	else if (mode->VDisplay < 480) new->MiscOutReg = 0x63;
-	else if (mode->VDisplay < 768) new->MiscOutReg = 0xE3;
-	else                           new->MiscOutReg = 0x23;
+	if (mode->Flags & V_DBLSCAN)
+	{
+	  if      (mode->VDisplay < 200) new->MiscOutReg = 0xA3;
+	  else if (mode->VDisplay < 240) new->MiscOutReg = 0x63;
+	  else if (mode->VDisplay < 384) new->MiscOutReg = 0xE3;
+	  else                           new->MiscOutReg = 0x23;
+	}
+	else
+	{
+	  if      (mode->VDisplay < 400) new->MiscOutReg = 0xA3;
+	  else if (mode->VDisplay < 480) new->MiscOutReg = 0x63;
+	  else if (mode->VDisplay < 768) new->MiscOutReg = 0xE3;
+	  else                           new->MiscOutReg = 0x23;
+	}
       }
   if (!vga256InfoRec.clockprog)
     new->MiscOutReg |= (new->NoClock & 0x03) << 2;
@@ -864,34 +874,44 @@ vgaHWInit(mode, size)
   new->Sequencer[4] = 0x0E;                             /* Misc */
 #endif
 
-  if (vgaInterlaceType == VGA_DIVIDE_VERT && (mode->Flags & V_INTERLACE)) {
-    mode->VDisplay >>= 1;
-    mode->VSyncStart >>= 1;
-    mode->VSyncEnd >>= 1;
-    mode->VTotal >>= 1;
+  if (!mode->CrtcVAdjusted && (mode->Flags & V_INTERLACE) &&
+      vgaInterlaceType == VGA_DIVIDE_VERT) {
+    mode->CrtcVDisplay >>= 1;
+    mode->CrtcVSyncStart >>= 1;
+    mode->CrtcVSyncEnd >>= 1;
+    mode->CrtcVTotal >>= 1;
+    mode->CrtcVAdjusted = TRUE;
+  }
+
+  if (!mode->CrtcVAdjusted && (mode->Flags & V_DBLSCAN)) {
+    mode->CrtcVDisplay <<= 1;
+    mode->CrtcVSyncStart <<= 1;
+    mode->CrtcVSyncEnd <<= 1;
+    mode->CrtcVTotal <<= 1;
+    mode->CrtcVAdjusted = TRUE;
   }
     
   /*
    * CRTC Controller
    */
-  new->CRTC[0]  = (mode->HTotal >> 3) - 5;
-  new->CRTC[1]  = (mode->HDisplay >> 3) - 1;
-  new->CRTC[2]  = (mode->HSyncStart >> 3) -1;
-  new->CRTC[3]  = ((mode->HSyncEnd >> 3) & 0x1F) | 0x80;
-  new->CRTC[4]  = (mode->HSyncStart >> 3);
-  new->CRTC[5]  = (((mode->HSyncEnd >> 3) & 0x20 ) << 2 )
-    | (((mode->HSyncEnd >> 3)) & 0x1F);
-  new->CRTC[6]  = (mode->VTotal - 2) & 0xFF;
-  new->CRTC[7]  = (((mode->VTotal -2) & 0x100) >> 8 )
-    | (((mode->VDisplay -1) & 0x100) >> 7 )
-      | ((mode->VSyncStart & 0x100) >> 6 )
-	| (((mode->VSyncStart) & 0x100) >> 5 )
+  new->CRTC[0]  = (mode->CrtcHTotal >> 3) - 5;
+  new->CRTC[1]  = (mode->CrtcHDisplay >> 3) - 1;
+  new->CRTC[2]  = (mode->CrtcHSyncStart >> 3) -1;
+  new->CRTC[3]  = ((mode->CrtcHSyncEnd >> 3) & 0x1F) | 0x80;
+  new->CRTC[4]  = (mode->CrtcHSyncStart >> 3);
+  new->CRTC[5]  = (((mode->CrtcHSyncEnd >> 3) & 0x20 ) << 2 )
+    | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
+  new->CRTC[6]  = (mode->CrtcVTotal - 2) & 0xFF;
+  new->CRTC[7]  = (((mode->CrtcVTotal -2) & 0x100) >> 8 )
+    | (((mode->CrtcVDisplay -1) & 0x100) >> 7 )
+      | ((mode->CrtcVSyncStart & 0x100) >> 6 )
+	| (((mode->CrtcVSyncStart) & 0x100) >> 5 )
 	  | 0x10
-	    | (((mode->VTotal -2) & 0x200)   >> 4 )
-	      | (((mode->VDisplay -1) & 0x200) >> 3 )
-		| ((mode->VSyncStart & 0x200) >> 2 );
+	    | (((mode->CrtcVTotal -2) & 0x200)   >> 4 )
+	      | (((mode->CrtcVDisplay -1) & 0x200) >> 3 )
+		| ((mode->CrtcVSyncStart & 0x200) >> 2 );
   new->CRTC[8]  = 0x00;
-  new->CRTC[9]  = ((mode->VSyncStart & 0x200) >>4) | 0x40;
+  new->CRTC[9]  = ((mode->CrtcVSyncStart & 0x200) >>4) | 0x40;
   if (mode->Flags & V_DBLSCAN)
     new->CRTC[9] |= 0x80;
   new->CRTC[10] = 0x00;
@@ -900,13 +920,13 @@ vgaHWInit(mode, size)
   new->CRTC[13] = 0x00;
   new->CRTC[14] = 0x00;
   new->CRTC[15] = 0x00;
-  new->CRTC[16] = mode->VSyncStart & 0xFF;
-  new->CRTC[17] = (mode->VSyncEnd & 0x0F) | 0x20;
-  new->CRTC[18] = (mode->VDisplay -1) & 0xFF;
+  new->CRTC[16] = mode->CrtcVSyncStart & 0xFF;
+  new->CRTC[17] = (mode->CrtcVSyncEnd & 0x0F) | 0x20;
+  new->CRTC[18] = (mode->CrtcVDisplay -1) & 0xFF;
   new->CRTC[19] = vga256InfoRec.displayWidth >> 4;  /* just a guess */
   new->CRTC[20] = 0x00;
-  new->CRTC[21] = mode->VSyncStart & 0xFF; 
-  new->CRTC[22] = (mode->VSyncStart +1) & 0xFF;
+  new->CRTC[21] = mode->CrtcVSyncStart & 0xFF; 
+  new->CRTC[22] = (mode->CrtcVSyncStart +1) & 0xFF;
 #if defined(MONOVGA) || defined(XF86VGA16)
   new->CRTC[23] = 0xE3;
 #else
@@ -914,13 +934,6 @@ vgaHWInit(mode, size)
 #endif
   new->CRTC[24] = 0xFF;
 
-  if (vgaInterlaceType == VGA_DIVIDE_VERT && (mode->Flags & V_INTERLACE)) {
-    mode->VDisplay <<= 1;
-    mode->VSyncStart <<= 1;
-    mode->VSyncEnd <<= 1;
-    mode->VTotal <<= 1;
-  }
-    
   /*
    * Graphics Display Controller
    */

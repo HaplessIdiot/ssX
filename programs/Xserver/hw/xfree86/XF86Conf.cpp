@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.6 1994/09/26 15:30:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.7 1994/10/21 11:22:32 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -87,7 +87,10 @@ XCOMM following line
 XCOMM    Protocol	"Xqueue"
 
     AutoRepeat	500 5
-    ServerNumLock
+
+XCOMM Let the server do the NumLock processing.  This should only be required
+XCOMM when using pre-R6 clients
+XCOMM    ServerNumLock
 
 XCOMM Specifiy which keyboard LEDs can be user-controlled (eg, with xset(1))
 XCOMM    Xleds      1 2 3

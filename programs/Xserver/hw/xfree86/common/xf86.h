@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.9 1994/10/23 12:58:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.10 1994/10/29 22:37:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,7 +38,8 @@
 typedef struct _DispM {
   struct _DispM	*prev,*next;
   char		*name;              /* identifier of this mode */
-  int		Clock;              /* doclock */
+  /* These are the values that the user sees/provides */
+  int		Clock;              /* pixel clock */
   int           HDisplay;           /* horizontal timing */
   int           HSyncStart;
   int           HSyncEnd;
@@ -48,7 +49,18 @@ typedef struct _DispM {
   int           VSyncEnd;
   int           VTotal;
   int           Flags;
+  /* These are the values the hardware uses */
   int		SynthClock;         /* Actual clock freq to be programmed */
+  int		CrtcHDisplay;
+  int		CrtcHSyncStart;
+  int		CrtcHSyncEnd;
+  int		CrtcHTotal;
+  int		CrtcVDisplay;
+  int		CrtcVSyncStart;
+  int		CrtcVSyncEnd;
+  int		CrtcVTotal;
+  Bool		CrtcHAdjusted;
+  Bool		CrtcVAdjusted;
 } DisplayModeRec, *DisplayModePtr;
 
 #define V_PHSYNC    0x0001

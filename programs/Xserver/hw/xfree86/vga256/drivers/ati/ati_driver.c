@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.12 1994/11/05 23:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.13 1994/11/30 20:43:57 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2611,12 +2611,12 @@ DisplayModePtr mode;
         /*
          * Set horizontal display end.
          */
-        mode->HDisplay = (crt01 + 1) << 3;
+        mode->CrtcHDisplay = mode->HDisplay = (crt01 + 1) << 3;
 
         /*
          * Set horizontal synch pulse start.
          */
-        mode->HSyncStart = crt04 << 3;
+        mode->CrtcHSyncStart = mode->HSyncStart = crt04 << 3;
 
         /*
          * Set horizontal synch pulse end.
@@ -2624,23 +2624,23 @@ DisplayModePtr mode;
         crt05 = (crt04 & 0xE0) | (crt05 & 0x1F);
         if (crt05 <= crt04)
                 crt05 += 0x20;
-        mode->HSyncEnd = crt05 << 3;
+        mode->CrtcHSyncEnd = mode->HSyncEnd = crt05 << 3;
 
         /*
          * Set horizontal total.
          */
-        mode->HTotal = (crt00 + 5) << 3;
+        mode->CrtcHTotal = mode->HTotal = (crt00 + 5) << 3;
 
         /*
          * Set vertical display end.
          */
-        mode->VDisplay =
+        mode->CrtcVDisplay = mode->VDisplay =
                 (((crt07 & 0x40) << 3) | ((crt07 & 0x02) << 7) | crt12) + 1;
 
         /*
          * Set vertical synch pulse start.
          */
-        mode->VSyncStart =
+        mode->CrtcVSyncStart = mode->VSyncStart =
                 (((crt07 & 0x80) << 2) | ((crt07 & 0x04) << 6) | crt10);
 
         /*
@@ -2649,12 +2649,14 @@ DisplayModePtr mode;
         mode->VSyncEnd = (mode->VSyncStart & 0x3F0) | (crt11 & 0x0F);
         if (mode->VSyncEnd <= mode->VSyncStart)
                 mode->VSyncEnd += 0x10;
+	mode->CrtcVSyncEnd = mode->VSyncEnd;
 
         /*
-         * Set vertical total.
          */
-        mode->VTotal =
+        mode->CrtcVTotal = mode->VTotal =
                 (((crt07 & 0x20) << 4) | ((crt07 & 0x01) << 8) | crt06) + 2;
+
+	mode->CrtcVAdjusted = TRUE;
 
         /*
          * Set flags.
@@ -2689,31 +2691,22 @@ DisplayModePtr mode;
          */
         if (mode->Flags & V_INTERLACE)
                 ShiftCount++;
+        if (mode->Flags & V_DBLSCAN)
+                ShiftCount--;
         if (b1 & 0x40)
                 ShiftCount--;
         if (crt17 & 0x04)
                 ShiftCount++;
-        switch (ShiftCount)
-        {
-                case -1:
-                        mode->VDisplay >>= 1;
-                        mode->VSyncStart >>= 1;
-                        mode->VSyncEnd >>= 1;
-                        mode->VTotal >>= 1;
-                        break;
-                case 1:
-                        mode->VDisplay <<= 1;
-                        mode->VSyncStart <<= 1;
-                        mode->VSyncEnd <<= 1;
-                        mode->VTotal <<= 1;
-                        break;
-                case 2:
-                        mode->VDisplay <<= 2;
-                        mode->VSyncStart <<= 2;
-                        mode->VSyncEnd <<= 2;
-                        mode->VTotal <<= 2;
-                        break;
-                default:
-                        break;
+        if (ShiftCount > 0) {
+                mode->VDisplay <<= ShiftCount;
+                mode->VSyncStart <<= ShiftCount;
+                mode->VSyncEnd <<= ShiftCount;
+                mode->VTotal <<= ShiftCount;
+        }
+        if (ShiftCount < 0) {
+                mode->VDisplay >>= -ShiftCount;
+                mode->VSyncStart >>= -ShiftCount;
+                mode->VSyncEnd >>= -ShiftCount;
+                mode->VTotal >>= -ShiftCount;
         }
 }
