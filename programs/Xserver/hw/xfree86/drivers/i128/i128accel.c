@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.4 2000/10/24 02:00:06 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.5 2000/10/31 03:00:56 robin Exp $ */
 
 /*
  * Copyright 1997-2000 by Robin Cutshaw <robin@XFree86.Org>
@@ -425,12 +425,10 @@ I128AccelInit(ScreenPtr pScreen)
 				OFFSCREEN_PIXMAPS |
 				LINEAR_FRAMEBUFFER ;
 
-	infoPtr->PixmapCacheFlags = DO_NOT_BLIT_STIPPLES;
-
 	infoPtr->Sync = I128EngineDone;
 
 	/* screen to screen copy */
-	infoPtr->ScreenToScreenCopyFlags = 0;
+	infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
 	if (pI128->Chipset == PCI_CHIP_I128_T2R)
 		infoPtr->ScreenToScreenCopyFlags |= ONLY_LEFT_TO_RIGHT_BITBLT;
 
