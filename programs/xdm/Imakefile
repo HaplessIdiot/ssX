@@ -1,9 +1,5 @@
-<<<<<<< Imakefile
-XCOMM $XConsortium: Imakefile,v 1.72 94/04/01 12:37:39 gildea Exp $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.6 1994/12/02 06:56:58 dawes Exp $
-=======
 XCOMM $XConsortium: Imakefile,v 1.76 95/01/05 20:57:42 kaleb Exp $
->>>>>>> 1.1.1.2
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.7 1995/01/28 16:16:46 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -51,30 +47,16 @@ PWD_DEFINES = -DUSESHADOW
 #if SystemV || defined(SequentArchitecture)
 SYS_LIBRARIES1 = -lsec
 #endif
-<<<<<<< Imakefile
 #if defined(LinuxArchitecture)
 SYS_LIBRARIES1 = -lshadow
-=======
-#ifdef LinuxArchitecture
-SYS_LIBRARIES = -lshadow
->>>>>>> 1.1.1.2
 #endif
-<<<<<<< Imakefile
-#endif
-
-#ifdef i386Architecture
-MISC_DEFINES = -DFRAGILE_DEV_MEM
-#endif
-=======
 #endif
 
 #if defined(UltrixArchitecture)
-SYS_LIBRARIES = -lauth
+SYS_LIBRARIES1 = -lauth
 #endif
->>>>>>> 1.1.1.2
 
 #if (defined(AIXArchitecture) && (OSMajorVersion >= 3))
-<<<<<<< Imakefile
 SYS_LIBRARIES1 = -ls
 #endif
 
@@ -84,13 +66,6 @@ SYS_LIBRARIES2 = SpecialLibCrypt
 #else
 SYS_LIBRARIES2 = -lcrypt
 #endif
-=======
-SYS_LIBRARIES = -ls
-#endif
-
-#if defined(XFree86Version) && HasLibCrypt
-SYS_LIBRARIES = -lcrypt
->>>>>>> 1.1.1.2
 #endif
 
 SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2)
@@ -150,12 +125,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 		$(SIGNAL_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
 		$(PWD_DEFINES) $(CONN_DEFINES) \
-<<<<<<< Imakefile
-		$(GREET_DEFINES) \
-		$(MISC_DEFINES) \
-=======
 		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
->>>>>>> 1.1.1.2
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 
