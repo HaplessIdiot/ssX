@@ -11,16 +11,12 @@ DONES = request/DONE import/DONE process/DONE export/DONE
 
 #if !XieModule || DoLoadableServer
 #define	IHaveSubdirs
-
-
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
 #endif
 
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
-#endif
+request/DONE:	request
+import/DONE:	import
+process/DONE:	process
+export/DONE:	export
 
 NormalDepLibraryTarget(dixie,$(SUBDIRS) $(DONES),$(OBJS))
 

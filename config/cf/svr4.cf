@@ -138,7 +138,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.28 1997/07/05 15:14:46 dawes Exp $
 #define HasParallelMake		YES
 #endif
 #if HasParallelMake
-#define ParallelDefines		-P -B
+#define TopParallelDefines	-P -B
 #define MutexDirective		.MUTEX
 #endif
 #else /* SVR4 < 4.2.2 */

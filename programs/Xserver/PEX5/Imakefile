@@ -43,11 +43,15 @@ DONES = \
 	ddpex/mi/shared/DONE \
 	ospex/DONE
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
-
-$(DONES): $(SUBDIRS)
+dipex/dispatch/DONE:	dipex/dispatch
+dipex/swap/DONE:	dipex/swap
+dipex/objects/DONE:	dipex/objects
+ddpex/mi/level1/DONE:	ddpex/mi/level1
+ddpex/mi/level2/DONE:	ddpex/mi/level2
+ddpex/mi/level3/DONE:	ddpex/mi/level3
+ddpex/mi/level4/DONE:	ddpex/mi/level4
+ddpex/mi/shared/DONE:	ddpex/mi/shared
+ospex/DONE:		ospex
 
 #if DoLoadableServer
 NormalLibraryObjectRule()

@@ -24,13 +24,7 @@ INCLUDES = -Ivga -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
 
 VGADRIVERS = XF86SvgaDrivers
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
-
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
-#endif
+vga/DONE:	vga
 
 #if ! DoLoadableServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,$(VGADRIVERS))

@@ -48,10 +48,6 @@ DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_PW -DPC98_XKB
 
 S3DRIVERS = XF86S3Drivers
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS))
-#endif
-
 ConfigTarget(s3Conf,$(ICONFIGFILES),confS3.SHsuf,$(S3DRIVERS))
 
 NormalLibraryObjectRule()

@@ -47,9 +47,11 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 
 
 
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
-#endif
+xaavga256/DONE:	xaavga256
+xaa8/DONE:	xaa8
+xaa16/DONE:	xaa16
+xaa24/DONE:	xaa24
+xaa32/DONE:	xaa32
 
 NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS))
 NormalLibraryObjectRule()

@@ -21,13 +21,8 @@ DONES = ibm/DONE mfb/DONE
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) -I$(XF98OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
-
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
-#endif
+ibm/DONE:	ibm
+mfb/DONE:	mfb
 
 #ifdef OS2Architecture
 all:: DONE

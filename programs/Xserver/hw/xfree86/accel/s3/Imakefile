@@ -49,9 +49,11 @@ DEFINES = -DS3_SERVER -DPSZ=8
 
 S3DRIVERS = XF86S3Drivers
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS))
-#endif
+all::	s3newmmio/LibraryTargetName(s3newmmio) s3mmio/LibraryTargetName(s3mmio)
+
+s3newmmio/LibraryTargetName(s3newmmio):	s3newmmio
+
+s3mmio/LibraryTargetName(s3mmio):	s3mmio
 
 ConfigTarget(s3Conf,$(ICONFIGFILES),confS3.SHsuf,$(S3DRIVERS))
 
@@ -63,7 +65,7 @@ NormalLibraryTarget(s3,$(S3OBJS))
 
 NormalLibraryTarget(s3pio,$(PIOOBJS))
 
-MakeSubdirs($(SUBDIRS))
+ForceSubdirs($(SUBDIRS))
 
 LinkSourceFile(vgaHW.c,../../vga256/vga)
 

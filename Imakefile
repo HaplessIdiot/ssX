@@ -24,7 +24,7 @@ RELEASE = "Release 6.3"
 
 #if HasParallelMake
 #ifdef ParallelDefines
-        PARALLELOPTS = ParallelDefines
+        TOPPARALLELMFLAGS = TopParallelDefines
 #endif
 #endif
 
@@ -60,7 +60,7 @@ clean::
       MAKE_OPTS = -f xmakefile
 
 World::
-	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(PARALLELOPTS) all
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(TOPPARALLELMFLAGS) all
 
 Everything::
 	@echo ""

@@ -22,13 +22,8 @@ DONES = mono/DONE mfb.banked/DONE
 INCLUDES = -Imono -I../common -I../os-support -I$(SERVERSRC)/include \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
 
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
-
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
-#endif
+mono/DONE:	mono
+mfb.banked/DONE:	mfb.banked
 
 NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
 

@@ -16,16 +16,16 @@ DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE
 
 #if !XieModule || DoLoadableServer
 #define	IHaveSubdirs
-
-
-#if HasParallelMake
-MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
-#endif
 #endif
 
-#if HasGnuMake || HasBsdMake
-$(DONES): $(SUBDIRS)
+control/DONE:	control
+fax/DONE:	fax
+import/DONE:	import
+#if !BuildDIS
+jpeg/DONE:	jpeg
 #endif
+process/DONE:	process
+export/DONE:	export
 
 #ifdef OS2Architecture
 all:: DONE
