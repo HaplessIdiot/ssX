@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 222. Export from the loader the DIX symbols necessary for a modular version
+      of the DEC-XTRAP extension (#4797, Paul Stewart).
  221. Add a workaround for FreeBSD to make programs (like mkfontdir) that
       are run as part of the build use the shared libraries from the build
       rather than those that may be installed on the system (David Dawes).
@@ -13708,4 +13710,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1914 2001/08/16 08:23:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1915 2001/08/16 14:33:47 dawes Exp $
