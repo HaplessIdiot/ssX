@@ -480,7 +480,7 @@ SiS_PanelDelay(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT DelayTime)
          } else {
        	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
          }
-	 if((SiS_Pr->SiS_UseROM) && (!(SiS_Pr->SiS_ROMNew))) {
+	 if(SiS_Pr->SiS_UseROM) {
             if(ROMAddr[0x220] & 0x40) {
                if(!(DelayTime & 0x01)) {
 	          Delay = (USHORT)ROMAddr[0x225];
