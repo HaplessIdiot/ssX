@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.53 1999/05/29 14:41:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.54 1999/05/30 14:41:02 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -70,10 +70,10 @@ HWREADME = \
 	/*ReadmeFile(WstDig)*/	\
 	$(_NULLENTRY_)
 
-MAINDOCS = LICENSE README README.Config BUILD RELNOTES
+MAINDOCS = LICENSE README /*ReadmeFile(Config)*/ /*BUILD*/ RELNOTES DESIGN
 
-OTHERDOCS = VideoModes.doc QuickStart.doc /*ReadmeFile(clkprog)*/ xinput \
-	    ReadmeFile(fonts)
+OTHERDOCS = VideoModes.doc /*QuickStart.doc*/ /*ReadmeFile(clkprog)*/ xinput \
+	    ReadmeFile(fonts) ReadmeFile(mouse)
 #endif
 
 MISCDOCS = ServersOnly /*LbxproxyOnly*/ $(REPORTFORM) ReadmeFile(DGA)
@@ -83,11 +83,6 @@ DATABASE = /* modeDB.txt */ /* AccelCards Monitors Devices */
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
-
-#if 0
-LinkFile(ReadmeFile(Mach32),READ.Mach32)
-LinkFile(ReadmeFile(Mach64),READ.Mach64)
-#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))

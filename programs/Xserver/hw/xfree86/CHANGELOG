@@ -1,6 +1,8 @@
 XFree86 3.9Pv (4 July 1999)
+2820. Add a marked up (SGML) version of the DESIGN doc (David Dawes).
+2819. Remove the Alpha-specific Linux libc6 parts in linux.cf.
 2818. Add a "defs.ent" file for defining entities that can be shared by
-      other docs.
+      other docs (David Dawes).
 2817. Import the mouse.sgml doc from 3.3.x, and update it for 4.0.
 2816. Remove support for the very old LinuxDoc tools.
 2815. Use SpecialCObjectRule() in favour of SpecialObjectRule().
@@ -8310,4 +8312,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.787 1999/07/04 06:38:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.788 1999/07/04 08:31:08 dawes Exp $
