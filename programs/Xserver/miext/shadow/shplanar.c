@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/shadow/shplanar.c,v 1.1 2000/09/07 23:12:16 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -43,6 +43,44 @@
 #define PL_UNIT	    (1 << PL_SHIFT)
 #define PL_MASK	    (PL_UNIT - 1)
 
+/*
+ *  32->8 conversion:
+ *
+ *      7 6 5 4 3 2 1 0
+ *      A B C D E F G H
+ *
+ *      3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+ *      1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+ * m    . . . H . . . G . . . F . . . E . . . D . . . C . . . B . . . A
+ * m1   G . . . F . . . E . . . D . . . C . . . B . . . A . . . . . . .	    m << (7 - (p))
+ * m2   . H . . . G . . . F . . . E . . . D . . . C . . . B . . . A . .	    (m >> (p)) << 2
+ * m3   G               E               C               A                   m1 & 0x80808080
+ * m4     H               F               D               B                 m2 & 0x40404040
+ * m5   G H             E F             C D             A B                 m3 | m4
+ * m6   G H             E F             C D     G H     A B     E F         m5 | (m5 >> 20)
+ * m7   G H             E F             C D     G H     A B C D E F G H     m6 | (m6 >> 10)
+ */
+
+#if 0
+#define GetBits(p,o,d) {\
+    m = sha[o]; \
+    m1 = m << (7 - (p)); \
+    m2 = (m >> (p)) << 2; \
+    m3 = m1 & 0x80808080; \
+    m4 = m2 & 0x40404040; \
+    m5 = m3 | m4; \
+    m6 = m5 | (m5 >> 20); \
+    d = m6 | (m6 >> 10); \
+}
+#else
+#define GetBits(p,o,d) {\
+    m = sha[o]; \
+    m5 = ((m << (7 - (p))) & 0x80808080) | (((m >> (p)) << 2) & 0x40404040); \
+    m6 = m5 | (m5 >> 20); \
+    d = m6 | (m6 >> 10); \
+}
+#endif
+
 void
 shadowUpdatePlanar4 (ScreenPtr	pScreen,
 		     PixmapPtr	pShadow,
@@ -51,8 +89,7 @@ shadowUpdatePlanar4 (ScreenPtr	pScreen,
     shadowScrPriv(pScreen);
     int		nbox = REGION_NUM_RECTS (damage);
     BoxPtr	pbox = REGION_RECTS (damage);
-    FbBits	*shaBase, *shaLine, *sha;
-    FbBits	s0, s1, s2, s3;
+    CARD32	*shaBase, *shaLine, *sha;
     FbStride	shaStride;
     int		scrBase, scrLine, scr;
     int		shaBpp;
@@ -61,8 +98,10 @@ shadowUpdatePlanar4 (ScreenPtr	pScreen,
     CARD32	*winBase, *winLine, *win;
     CARD32	winSize;
     int		plane;
+    CARD32	m,m5,m6;
+    CARD8	s1, s2, s3, s4;
 
-    fbGetDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp);
+    fbGetStipDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp);
     while (nbox--)
     {
 	x = pbox->x1 * shaBpp;
@@ -91,65 +130,30 @@ shadowUpdatePlanar4 (ScreenPtr	pScreen,
 		    if (i <= 0 || scr < scrBase)
 		    {
 			winBase = (CARD32 *) (*pScrPriv->window) (pScreen,
-								 y,
-								 (scr << 4) | plane,
-								 SHADOW_WINDOW_WRITE,
-								 &winSize);
+								  y,
+								  (scr << 4) | (plane),
+								  SHADOW_WINDOW_WRITE,
+								  &winSize);
 			if(!winBase)
-			    return;
+			return;
 			winSize >>= 2;
 			scrBase = scr;
 			i = winSize;
 		    }
 		    win = winBase + (scr - scrBase);
 		    if (i > width)
-			i = width;
+		    i = width;
 		    width -= i;
 		    scr += i;
-#define PickBit(a,i)	(((a) >> (i)) & 1)
+		   
 		    while (i--)
 		    {
-			s0 = *sha++;
-			s0 >>= plane;
-			s0 = ((PickBit(s0,0) << 7) |
-			     (PickBit(s0,4) << 6) |
-			     (PickBit(s0,8) << 5) |
-			     (PickBit(s0,12) << 4) |
-			     (PickBit(s0,16) << 3) |
-			     (PickBit(s0,20) << 2) |
-			     (PickBit(s0,24) << 1) |
-			     (PickBit(s0,28) << 0));
-			s1 = *sha++;
-			s1 >>= plane;
-			s1 = ((PickBit(s1,0) << 7) |
-			     (PickBit(s1,4) << 6) |
-			     (PickBit(s1,8) << 5) |
-			     (PickBit(s1,12) << 4) |
-			     (PickBit(s1,16) << 3) |
-			     (PickBit(s1,20) << 2) |
-			     (PickBit(s1,24) << 1) |
-			     (PickBit(s1,28) << 0));
-			s2 = *sha++;
-			s2 >>= plane;
-			s2 = ((PickBit(s2,0) << 7) |
-			     (PickBit(s2,4) << 6) |
-			     (PickBit(s2,8) << 5) |
-			     (PickBit(s2,12) << 4) |
-			     (PickBit(s2,16) << 3) |
-			     (PickBit(s2,20) << 2) |
-			     (PickBit(s2,24) << 1) |
-			     (PickBit(s2,28) << 0));
-			s3 = *sha++;
-			s3 >>= plane;
-			s3 = ((PickBit(s3,0) << 7) |
-			     (PickBit(s3,4) << 6) |
-			     (PickBit(s3,8) << 5) |
-			     (PickBit(s3,12) << 4) |
-			     (PickBit(s3,16) << 3) |
-			     (PickBit(s3,20) << 2) |
-			     (PickBit(s3,24) << 1) |
-			     (PickBit(s3,28) << 0));
-			*win++ = s0 | (s1 << 8) | (s2 << 16) | (s3 << 24);
+			GetBits(plane,0,s1);
+			GetBits(plane,1,s2);
+			GetBits(plane,2,s3);
+			GetBits(plane,3,s4);
+			*win++ = s1 | (s2 << 8) | (s3 << 16) | (s4 << 24);
+			sha += 4;
 		    }
 		}
 	    }
