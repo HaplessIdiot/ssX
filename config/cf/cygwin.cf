@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.24 2001/07/02 09:37:13 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.25 2001/07/31 15:09:48 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -125,6 +125,13 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.24 2001/07/02 09:37:13 ala
 #endif
 
 #define LdCombineFlags          -r
+
+/* We don't define -ansi yet as newlib (which is cygwin's library) doesn't
+ * define some needed prototypes when -ansi is set, when that's fixed
+ * we can remove these lines and use the default XFree86 options. */
+#ifndef DefaultCCOptions
+# define DefaultCCOptions /* -ansi -pedantic */ GccWarningOptions
+#endif
 
 # ifndef OptimizedCDebugFlags
 #  define OptimizedCDebugFlags	DefaultGcc2i386Opt
