@@ -1,11 +1,40 @@
 .\" Use tbl and -ms
+.\"
+.\" $XFree86$
+.\"
+.\" --- bP --- bulleted paragraph macro
+.\"
+.de bP
+.IP \(bu 4
+..
+.\"
+.\" --- cT --- centered title; centers $1, adds TOC entry unless $2 is "no"
+.\"
+.de cT
+\\&		\" filler so that the following .sp really leaves a space
+.sp 1
+.ce 1
+\\s+1\\fB\\$1\\fP\\s-1
+.sp 1
+.if !'\\$2'no' \{\
+.XS \\n(PN
+\\$1
+.XE
+\}
+..
 .sp 8
-.ce 5
+.ce 9
 \s+2\fBCompound Text Encoding\fP\s-2
+.sp 6p
+Version 1.1.xf86.1
+XFree86 4.0.2
+XFree86, Inc.
+.sp 6p
+.I "based on"
 .sp 6p
 Version 1.1
 X Consortium Standard
-X Version 11, Release 6
+X Version 11, Release 6.4
 Robert W. Scheifler
 .sp 2
 .LP
@@ -38,10 +67,10 @@ Overview
 Compound Text is a format for multiple character set data, such as
 multi-lingual text.  The format is based on ISO
 standards for encoding and combining character sets.  Compound Text is intended
-to be used in three main contexts: inter-client communication using selections
-(as defined in the ICCCM); window properties (e.g. window manager hints as
-defined in the ICCCM); and resources (e.g. as defined in Xlib and the Xt
-Intrinsics).
+to be used in three main contexts: inter-client communication using selections,
+as defined in the \fIInter-Client Communication Conventions Manual\fP (ICCCM);
+window properties (e.g., window manager hints as defined in the ICCCM);
+and resources (e.g., as defined in Xlib and the Xt Intrinsics).
 .LP
 Compound Text is intended as an external representation, or interchange format,
 not as an internal representation.  It is expected (but not required) that
@@ -105,7 +134,7 @@ No control sequences are defined in Compound Text for changing the C0 and C1
 sets.
 .LP
 A horizontal tab can be represented with the octet 00/09.  Specification of
-tabulation width settings is not part of Compound Text, and must be obtained
+tabulation width settings is not part of Compound Text and must be obtained
 from context (in an unspecified manner).
 .LP
 [Inclusion of horizontal tab is for consistency with the STRING type currently
@@ -166,7 +195,7 @@ the first intermediate character always in the range 02/01 to 02/03.  The
 registration authority has defined an ``{I} F'' sequence for each registered
 character set encoding.
 .LP
-[Final characters for private encodings (in the range 03/00 to 03/15, are not
+[Final characters for private encodings (in the range 03/00 to 03/15) are not
 permitted here in Compound Text.]
 .LP
 For GL, octet 02/00 is always defined as SPACE, and octet 07/15 (normally
@@ -175,7 +204,7 @@ DELETE) is never used.  For a 94-character set defined as GR, octets 10/00 and
 .LP
 [This is consistent with ISO 2022.]
 .LP
-A 94\u\s-2N\s+2\d character set uses N octets (N>1) for each character.
+A 94\u\s-2N\s+2\d character set uses N octets (N > 1) for each character.
 The value of N is derived from the column value for F:
 .RS
 .TS
@@ -214,16 +243,19 @@ are later added to this list.
 .RS
 .TS
 l l l.
-\fB{I} F\fP	\fB94/96\fP	\fBDescription\fP
 _
-
+.sp 4p
+\fB{I} F\fP	\fB94/96\fP	\fBDescription\fP
+.sp 4p
+_
+.sp 6p
 04/02	94	7-bit ASCII graphics (ANSI X3.4-1968),
 		Left half of ISO 8859 sets
 04/09	94	Right half of JIS X0201-1976 (reaffirmed 1984),
 		8-Bit Alphanumeric-Katakana Code
 04/10	94	Left half of JIS X0201-1976 (reaffirmed 1984),
 		8-Bit Alphanumeric-Katakana Code
-
+.sp 6p
 04/01	96	Right half of ISO 8859-1, Latin alphabet No. 1
 04/02	96	Right half of ISO 8859-2, Latin alphabet No. 2
 04/03	96	Right half of ISO 8859-3, Latin alphabet No. 3
@@ -233,10 +265,18 @@ _
 04/08	96	Right half of ISO 8859-8, Latin/Hebrew alphabet
 04/12	96	Right half of ISO 8859-5, Latin/Cyrillic alphabet
 04/13	96	Right half of ISO 8859-9, Latin alphabet No. 5
-
+05/06	96	Right half of ISO 8859-10, Latin alphabet No. 6
+05/09	96	Right half of ISO 8859-13, Latin alphabet No. 7 (Baltic Rim)
+05/15	96	Right half of ISO 8859-14, Latin alphabet No. 8 (Celtic)
+06/02	96	Right half of ISO 8859-15, Latin alphabet No. 9
+06/06	96	Right half of ISO 8859-16, Latin alphabet No. 10
+.sp 6p
 04/01	94\u\s-22\s+2\d	GB2312-1980, China (PRC) Hanzi
-04/02	94\u\s-22\s+2\d	JIS X0208-1983, Japanese Graphic Character Set
+04/02	94\u\s-22\s+2\d	JIS X0208-1983/1990, Japanese Graphic Character Set
 04/03	94\u\s-22\s+2\d	KS C5601-1987, Korean Graphic Character Set
+04/02	94\u\s-22\s+2\d	JIS X0212-1990, Supplementary Japanese Graphic Character Set
+.sp 6p
+_
 .TE
 .RE
 .LP
@@ -268,7 +308,7 @@ of octets that appear in the remainder of the segment.  The number is computed
 as ((M - 128) * 128) + (L - 128).  The most significant bit M and L are always
 set to one.  The remainder of the segment consists of two parts, the name of
 the character set encoding and the actual text.  The name of the encoding comes
-first, and is separated from the text by the octet 00/02 (STX, START OF TEXT).
+first and is separated from the text by the octet 00/02 (STX, START OF TEXT).
 Note that the length defined by M and L includes the encoding name and
 separator.
 .LP
@@ -279,23 +319,48 @@ however, since some octets in the actual text of the extended segment may have
 to be zero.]
 .LP
 The name of the encoding should be registered with the X Consortium to avoid
-conflicts, and should when appropriate match the CharSet Registry and Encoding
+conflicts and should when appropriate match the CharSet Registry and Encoding
 registration used in the X Logical Font Description.  The name itself should be
 encoded using ISO 8859-1 (Latin 1), should not use question mark (03/15) or
 asterisk (02/10), and should use hyphen (02/13) only in accordance with the X
 Logical Font Description.
 .LP
-Extended segments are not to be used for any character set encoding which can
+Extended segments are not to be used for any character set encoding that can
 be constructed from a GL/GR pair of approved standard encodings. For
 example, it is incorrect to use an extended segment for any of the ISO 8859
 family of encodings.
 .LP
 It should be noted that the contents of an extended segment are arbitrary;
-e.g., they may contain octets in the C0 and C1 ranges, including 00/00, and
+for example,
+they may contain octets in the C0 and C1 ranges, including 00/00, and
 octets comprising a given character may differ in their most significant bit.
 .LP
-[ISO registered ``other coding systems'' are not used in Compound Text;
+[Except for UTF-8,
+ISO-registered ``other coding systems'' are not used in Compound Text;
 extended segments are the only mechanism for non-2022 encodings.]
+.NH 1
+The UTF-8 encoding
+.LP
+Unicode characters that are not contained in one of the approved standard
+encodings can be encoded using the UTF-8 encoding. The following escape
+sequences are used:
+.RS
+.TS
+l l.
+01/11 02/05 04/07	switch into UTF-8 mode
+01/11 02/05 04/00	return from UTF-8 mode
+.TE
+.RE
+.LP
+The first is the ISO registered sequence for UTF-8 (ISO-IR-196), the second
+is the ISO-2022 ``standard return'' sequence. While in UTF-8 mode, the UTF-8
+encoding replaces the currently designated GL and GR encodings. After return
+from UTF-8 mode, the previously designated GL and GR encodings are
+reactivated.
+.LP
+[This is the only ``other coding system'' used in Compound Text.]
+.LP
+[This is an XFree86 extension introduced in XFree86 4.0.2.]
 .NH 1
 Directionality
 .LP
@@ -321,7 +386,7 @@ empty, the directionality of the text is unspecified.
 .LP
 Directionality applies to all subsequent text, whether in GL, GR, or an
 extended segment.  If the desired directionality of GL, GR, or extended
-segments differ, then directionality control sequences must be inserted when
+segments differs, then directionality control sequences must be inserted when
 switching between them.
 .LP
 Note that definition of GL and GR sets is independent of directionality;
@@ -331,7 +396,7 @@ definitions.
 .LP
 Specification of directionality is entirely optional; text direction should be
 clear from context in most cases.  However, it must be the case that either
-all characters in a Compound Text string have explicitly specified direction,
+all characters in a Compound Text string have explicitly specified direction
 or that all characters have unspecified direction.  That is, if directionality
 control sequences are used, the first such control sequence must precede the
 first graphic character in a Compound Text string, and graphic characters are
@@ -340,7 +405,7 @@ not permitted whenever the directionality stack is empty.
 Resources
 .LP
 To use Compound Text in a resource, you can simply treat all octets as if they
-were ASCII/Latin-1, and just replace all ``\\'' octets (05/12) with the two
+were ASCII/Latin-1 and just replace all ``\\'' octets (05/12) with the two
 octets ``\\\\'', all newline octets (00/10) with the two octets ``\\n'', and
 all zero octets with the four octets ``\\000''.
 It is up to the client making use of the resource to interpret the data as
@@ -353,23 +418,35 @@ The following CharSet names for the standard character set encodings are
 registered for use in font names under the X Logical Font Description:
 .RS
 .TS
-l l.
-\fBName\fP	\fBEncoding Standard\fP
+l l l.
 _
-
-ISO8859-1	ISO 8859-1
-ISO8859-2	ISO 8859-2
-ISO8859-3	ISO 8859-3
-ISO8859-4	ISO 8859-4
-ISO8859-5	ISO 8859-5
-ISO8859-6	ISO 8859-6
-ISO8859-7	ISO 8859-7
-ISO8859-8	ISO 8859-8
-ISO8859-9	ISO 8859-9
-JISX0201.1976-0	JIS X0201-1976 (reaffirmed 1984)
-GB2312.1980-0	GB2312-1980, GL encoding
-JISX0208.1983-0	JIS X0208-1983, GL encoding
-KSC5601.1987-0	KS C5601-1987, GL encoding
+.sp 6p
+\fBName\fP	\fBEncoding Standard\fP	\fBDescription\fP
+.sp 6p
+_
+.sp 6p
+ISO8859-1	ISO 8859-1	Latin alphabet No. 1
+ISO8859-2	ISO 8859-2	Latin alphabet No. 2
+ISO8859-3	ISO 8859-3	Latin alphabet No. 3
+ISO8859-4	ISO 8859-4	Latin alphabet No. 4
+ISO8859-5	ISO 8859-5	Latin/Cyrillic alphabet
+ISO8859-6	ISO 8859-6	Latin/Arabic alphabet
+ISO8859-7	ISO 8859-7	Latin/Greek alphabet
+ISO8859-8	ISO 8859-8	Latin/Hebrew alphabet
+ISO8859-9	ISO 8859-9	Latin alphabet No. 5
+ISO8859-10	ISO 8859-10	Latin alphabet No. 6
+ISO8859-13	ISO 8859-13	Latin alphabet No. 7 (Baltic Rim)
+ISO8859-14	ISO 8859-14	Latin alphabet No. 8 (Celtic)
+ISO8859-15	ISO 8859-15	Latin alphabet No. 9
+ISO8859-16	ISO 8859-16	Latin alphabet No. 10
+JISX0201.1976-0	JIS X0201-1976 (reaffirmed 1984)	8-bit Alphanumeric-Katakana Code
+GB2312.1980-0	GB2312-1980, GL encoding	China (PRC) Hanzi
+JISX0208.1983-0	JIS X0208-1983, GL encoding	Japanese Graphic Character Set
+JISX0208.1990-0	JIS X0208-1990, GL encoding	Japanese Graphic Character Set
+JISX0212.1990-0	JIS X0212-1990, GL encoding	Supplementary Japanese Graphic Character Set
+KSC5601.1987-0	KS C5601-1987, GL encoding	Korean Graphic Character Set
+.sp 6p
+_
 .TE
 .RE
 .LP
@@ -404,7 +481,7 @@ similar to extended segments:
 .IP
 For this format, F is in the range 03/05 to 3/15.  M and L are as defined
 in extended segments.  Such a segment will always be followed by the number
-of octets defined by M and L.  These octets can have arbitrary values, and
+of octets defined by M and L.  These octets can have arbitrary values and
 need not follow the internal structure defined for current extended
 segments.
 .LP
@@ -432,7 +509,32 @@ Compound Text to decide which control sequence to use.
 .NH 1
 Errors
 .LP
-If a Compound Text string does not match the specification here (e.g.  uses
+If a Compound Text string does not match the specification here (e.g., uses
 undefined control characters, or undefined control sequences, or incorrectly
 formatted extended segments), it is best to treat the entire string as invalid,
 except as indicated by a version control sequence.
+.bp
+.\" Set registers to number the appendixes A.1, B.1, C.1, ...
+.nr H1 0
+.af H1 A
+.cT "Appendix A" no
+.nH 1 "Revision History"
+.LP
+This appendix describes the revision history of this document and
+summarizes the incompatibilities between this and earlier versions.
+.nH 2 "Version 1.1"
+.LP
+Version 1.1 is the original X11 specification.
+.nH 2 "Version 1.1.xf86.1"
+.LP
+Version 1.1.xf86.1 was released with XFree86 4.0.2 in December 2000.
+It adds the following changes:
+.bP
+Added ISO 8859-10,13,14,15,16 and JIS X0212 to the list of standard
+encodings. Mention the 1990 revision of JIS X0208 as an alternative to
+the 1983 edition.
+.bP
+Added ISO8859-10, ISO8859-13, ISO8859-14, ISO8859-15, ISO8859-16,
+JISX0208.1990-0, JISX0212.1990-0 to the list of font charsets.
+.bP
+The section about UTF-8 encoding was added.
