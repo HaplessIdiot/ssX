@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.18 1999/04/25 15:39:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.19 1999/05/15 14:31:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -138,7 +138,7 @@ linearVidMem()
 }
 
 static pointer
-mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
 	pointer base;
 	int fd;

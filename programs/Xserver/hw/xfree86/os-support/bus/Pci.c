@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.34 2000/09/19 12:46:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.35 2000/10/17 16:53:19 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -929,12 +929,16 @@ xf86scanpci(int flags)
     int idx = 0;
     PCITAG tag;
 
+printf("1\n");
     if (pci_devp[0])
 	return pci_devp;
 
+printf("2\n");
     pciInit();
 
+printf("3\n");
     tag = pciFindFirst(0,0);  /* 0 mask means match any valid device */
+printf("4\n");
     /* Check if no devices, return now */
     if (tag == PCI_NOT_FOUND)
 	return NULL;
@@ -945,17 +949,21 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 #ifndef OLD_FORMAT
     xf86MsgVerb(X_INFO, 2, "PCI: PCI scan (all values are in hex)\n");
 #endif
+printf("5\n");
     while (idx < MAX_PCI_DEVICES && tag != PCI_NOT_FOUND) {
 	    pciConfigPtr devp;
 	    int          i;
 	    
+printf("!\n");
 	    devp = xalloc(sizeof(pciDevice));
+printf("@\n");
 	    if (!devp) {
 		    xf86Msg(X_ERROR,
 			"xf86scanpci: Out of memory after %d devices!!\n",
 			idx);
 		    return (pciConfigPtr *)NULL;
 	    }
+printf("#\n");
 
 	    /* Identify pci device by bus, dev, func, and tag */
 	    devp->tag = tag;
@@ -963,16 +971,19 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 	    devp->devnum = PCI_DEV_FROM_TAG(tag);
 	    devp->funcnum = PCI_FUNC_FROM_TAG(tag);
 	    
+printf("$\n");
 	    /* Read config space for this device */
 	    for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 		    devp->cfgspc.dwords[i] =
 				pciReadLong(tag, i * sizeof(CARD32));
+printf("%\n");
 
 	    /* Get base address sizes for type 0 headers */
 	    if ((devp->pci_header_type & 0x7f) == 0)
 		for (i = 0; i < 7; i++)
 		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, 
 						       &devp->minBasesize);
+printf("^\n");
 	    devp->listed_class = 0;
 
 #ifdef OLD_FORMAT
@@ -993,15 +1004,19 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 			devp->pci_header_type);
 #endif
 
+printf("&\n");
 	    pci_devp[idx++] = devp;
 	    tag = pciFindNext();
+printf("*\n");
 #ifdef DEBUGPCI
 ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 #endif
     }
+printf("6\n");
 #ifndef OLD_FORMAT
     xf86MsgVerb(X_INFO, 2, "PCI: End of PCI scan\n");
 #endif
+printf("7\n");
     
     return pci_devp;
 }
