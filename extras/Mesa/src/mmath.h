@@ -232,8 +232,8 @@ do {						\
  * GLubyte b = FloatToInt(CLAMP(f, 0, 1) * 255)
  */
 
-#if defined(__i386__) || defined(__sparc__) || ( defined(__alpha__) && \
-	      ( defined( __IEEE_FLOAT ) || !defined( VMS ) ) )
+#if defined(__i386__) || defined(__sparc__) || defined(__s390x__) || \
+    ( defined(__alpha__) && ( defined( __IEEE_FLOAT ) || !defined( VMS ) ) )
 #define USE_IEEE
 #define IEEE_ONE 0x3f7f0000
 #endif

@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 150. Add IBM S/390 support for building the tree (#4815, Mike A. Harris)
  149. Fixes incorrect spelling of "XChangeWindowAttributes" found in
       XCreateColormap(3X11) and XInstallColormap(3X11)
       (#4813 Carlos A M dos Santos).
@@ -13576,4 +13577,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1879 2001/07/19 18:51:27 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1880 2001/07/23 20:47:18 paulo Exp $

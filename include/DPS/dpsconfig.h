@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/include/DPS/dpsconfig.h,v 1.2 2000/08/23 22:10:02 tsi Exp $ */
+/* $XFree86: xc/include/DPS/dpsconfig.h,v 1.3 2000/08/31 19:03:54 tsi Exp $ */
 
 #ifndef	DPSCONFIG_H
 #define	DPSCONFIG_H
@@ -87,7 +87,8 @@
 #endif /* _IBMR2 */
 
 #if defined(__alpha) || defined(__alpha__) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) || \
+    defined(__s390x__)
 #define IEEEFLOAT 1
 #endif /* __alpha */
 
@@ -127,7 +128,7 @@
 #ifndef SWAPBITS
 
 #if defined(__alpha) || defined(__alpha__) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) 
 #define SWAPBITS 1
 #endif /* __alpha */
 
@@ -150,6 +151,10 @@
 #ifdef mc68000
 #define SWAPBITS 0
 #endif /* mc68000 */
+
+#if defined(__s390x__) || defined (__s390__)
+#define SWAPBITS 0
+#endif /* s390 and s390x */
 
 #if (defined(_IBMR2) || defined(_POWER)) && defined(AIXV3)
 #define SWAPBITS 0
@@ -180,7 +185,8 @@
 #ifndef MIN_POINTER_ALIGN
  
 #if defined(__alpha) || defined(__alpha__) || \
-    defined(__ia64__) || defined(ia64)
+    defined(__ia64__) || defined(ia64) || \
+    defined(__s390x__)
 #define MIN_POINTER_ALIGN 8
 #endif /* __alpha */
 
