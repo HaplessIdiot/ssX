@@ -1,4 +1,12 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 434. Fix a problem with the mga G400 2nd head going into power saver mode
+      when it should be blanked, and enable DPMS for the 2nd head (#A.358,
+      Craig Leres).
+ 433. Fix a horizontal resolution problem that shows up with mga Xv (#A.365,
+      Ewald Snel).
+ 432. Work around a refresh rate problem when using custom modelines that
+      have a refresh rate > 100Hz with the Matrox HAL library (#A.360,
+      Ewald Snel).
  431. XDarwin fixes:
        - Provide work around for kernel/driver issue on Darwin 1.3 that
          causes the kernel keymapping to be empty on Mac portables.
@@ -13067,4 +13075,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1713 2001/04/23 21:41:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1714 2001/04/25 02:23:42 torrey Exp $

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.196 2001/04/10 16:08:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.197 2001/04/18 15:29:18 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -127,6 +127,9 @@ static void	MGAFreeScreen(int scrnIndex, int flags);
 static int	MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 static void	MGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					     int PowerManagementMode,
+					     int flags);
+static void	MGADisplayPowerManagementSetCrtc2(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
 
@@ -977,9 +980,9 @@ MGACountRam(ScrnInfoPtr pScrn)
 	base = pMga->FbBase;
 
 	/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
-	OUTREG8(0x1FDE, 3);
-	tmp = INREG8(0x1FDF);
-	OUTREG8(0x1FDF, tmp | 0x80);
+	OUTREG8(MGAREG_CRTCEXT_INDEX, 3);
+	tmp = INREG8(MGAREG_CRTCEXT_DATA);
+	OUTREG8(MGAREG_CRTCEXT_DATA, tmp | 0x80);
 
 	/* write, read and compare method */
 	for(i = ProbeSize; i > 2048; i -= 2048) {
@@ -993,8 +996,8 @@ MGACountRam(ScrnInfoPtr pScrn)
 	}
 
 	/* restore CRTCEXT3 state */
-	OUTREG8(0x1FDE, 3);
-	OUTREG8(0x1FDF, tmp);
+	OUTREG8(MGAREG_CRTCEXT_INDEX, 3);
+	OUTREG8(MGAREG_CRTCEXT_DATA, tmp);
 
 	MGAUnmapMem(pScrn);
    }
@@ -2564,7 +2567,7 @@ static void FillModeInfoStruct(ScrnInfoPtr pScrn, DisplayModePtr mode)
     		pMga->pMgaModeInfo->ulTVStandard = TV_NTSC;
     	}
     } else {
-    	pMga->pMgaModeInfo->ulRefreshRate = 60;
+    	pMga->pMgaModeInfo->ulRefreshRate = 0;
     	pMga->pMgaModeInfo->ulTVStandard = TV_NTSC;
     }
 
@@ -3155,7 +3158,11 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ShadowFBInit(pScreen, refreshArea);
     }
 
-    xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
+    if(pMga->SecondCrtc == TRUE) {
+        xf86DPMSInit(pScreen, MGADisplayPowerManagementSetCrtc2, 0);
+    } else {
+        xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
+    }
 
     pScrn->memPhysBase = pMga->FbAddress;
     pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
@@ -3543,38 +3550,18 @@ MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 }
 
 
-/* Do screen blanking */
-
-/* Mandatory */
-#define MGAREG_C2CTL 0x3c10
-
+/*
+ * This routine is required but since we can't easily blank the
+ * second display without risking powering off the monitor, return
+ * FALSE and let the X server do something generic.
+ */
 static Bool
 MGASaveScreenCrtc2(ScreenPtr pScreen, int mode)
 {
-    ScrnInfoPtr pScrn = NULL;
-    MGAPtr pMga = NULL;
-    Bool on;
-    CARD32 tmp;
-
-    on = xf86IsUnblank(mode);
-
-    if (on)
-       SetTimeSinceLastInputEvent();
-    if (pScreen != NULL)
-       pScrn = xf86Screens[pScreen->myNum];
-
-    if (pScrn != NULL)
-       pMga = MGAPTR(pScrn);
-
-    if(pMga != NULL && pScrn->vtSema) {
-        tmp = INREG(MGAREG_C2CTL);
-        tmp &= ~0x00000008;
-        if (!on) tmp |= 0x0000008;
-        OUTREG(MGAREG_C2CTL, tmp);
-    }
-
-    return TRUE;
+    return FALSE;
 }
+
+/* Do screen blanking */
 
 static Bool
 MGASaveScreen(ScreenPtr pScreen, int mode)
@@ -3619,12 +3606,26 @@ MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	    break;
 	}
 	/* XXX Prefer an implementation that doesn't depend on VGA specifics */
-	OUTREG8(0x1FC4, 0x01);	/* Select SEQ1 */
-	seq1 |= INREG8(0x1FC5) & ~0x20;
-	OUTREG8(0x1FC5, seq1);
-	OUTREG8(0x1FDE, 0x01);	/* Select CRTCEXT1 */
-	crtcext1 |= INREG8(0x1FDF) & ~0x30;
-	OUTREG8(0x1FDF, crtcext1);
+	OUTREG8(MGAREG_SEQ_INDEX, 0x01);	/* Select SEQ1 */
+	seq1 |= INREG8(MGAREG_SEQ_DATA) & ~0x20;
+	OUTREG8(MGAREG_SEQ_DATA, seq1);
+	OUTREG8(MGAREG_CRTCEXT_INDEX, 0x01);	/* Select CRTCEXT1 */
+	crtcext1 |= INREG8(MGAREG_CRTCEXT_DATA) & ~0x30;
+	OUTREG8(MGAREG_CRTCEXT_DATA, crtcext1);
+}
+
+
+static void
+MGADisplayPowerManagementSetCrtc2(ScrnInfoPtr pScrn, int PowerManagementMode,
+				  int flags)
+{
+	MGAPtr pMga = MGAPTR(pScrn);
+	CARD32 crtc2 = 0;
+
+	if (PowerManagementMode != DPMSModeOn)
+            crtc2 = 0x8;			/* c2pixclkdis */
+	crtc2 |= INREG(MGAREG_C2CTL) & ~0x8;
+	OUTREG(MGAREG_C2CTL, crtc2);
 }
 
 
@@ -3710,7 +3711,7 @@ dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val)
 
     pMga = MGAPTR(pScrn);
 #if 0
-    if( addr = 0x1fdf )
+    if( addr = MGAREG_CRTCEXT_DATA )
     	return;
 #endif
     if( addr != 0x3c00 ) {
@@ -3731,7 +3732,7 @@ dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val)
     CARD16 ret;
 
 #if 0
-    if (addr == 0x1fde)
+    if (addr == MGAREG_CRTCEXT_INDEX)
     	return;
 #endif
     pMga = MGAPTR(pScrn);
