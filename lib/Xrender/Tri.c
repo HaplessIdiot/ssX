@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Tri.c,v 1.1 2002/05/13 05:21:46 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Tri.c,v 1.2 2002/05/15 06:43:22 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -61,7 +61,7 @@ XRenderCompositeTriangles (Display		*dpy,
 	}
 	SetReqLen (req, len, len);
 	len <<= 2;
-	Data32 (dpy, (short *) triangles, len);
+	DataInt32 (dpy, (int *) triangles, len);
 	ntriangle -= n;
 	triangles += n;
     }
@@ -106,7 +106,7 @@ XRenderCompositeTriStrip (Display		*dpy,
 	}
 	SetReqLen (req, len, len);
 	len <<= 2;
-	Data32 (dpy, (short *) points, len);
+	DataInt32 (dpy, (int *) points, len);
 	npoint -= (n - 2);
 	points += (n - 2);
     }
@@ -158,7 +158,7 @@ XRenderCompositeTriFan (Display			*dpy,
 	}
 	SetReqLen (req, len, len);
 	len <<= 2;
-	Data32 (dpy, (short *) points, len);
+	DataInt32 (dpy, (int *) points, len);
 	npoint -= (n - 1);
 	points += (n - 1);
     }
