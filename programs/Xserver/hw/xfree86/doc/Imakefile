@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.71 2000/12/11 07:34:46 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.72 2000/12/11 16:06:49 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -90,6 +90,10 @@ MISCDOCS = ServersOnly /*LbxproxyOnly*/ $(REPORTFORM) ReadmeFile(DGA) \
 DATABASE = /* modeDB.txt */ /* AccelCards Monitors Devices */
 
 FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
+
+VERS = XFree86VersionString
+
+CppFileTarget(BugReport, BugReport.cpp, -DXF86_VERSION=$(VERS), $(ICONFIGFILES))
 
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
 
