@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwud/xwud.c,v 3.7 2001/12/14 20:02:35 dawes Exp $ */
+/* $XFree86: xc/programs/xwud/xwud.c,v 3.8 2003/09/24 02:43:39 dawes Exp $ */
 
 /* xwud - marginally useful raster image undumper */
 
@@ -871,9 +871,9 @@ VisualRank(int class)
     switch (class) {
     case PseudoColor:
 	return 5;
-    case DirectColor:
-	return 4;
     case TrueColor:
+	return 4;
+    case DirectColor:
 	return 3;
     case StaticColor:
 	return 2;
