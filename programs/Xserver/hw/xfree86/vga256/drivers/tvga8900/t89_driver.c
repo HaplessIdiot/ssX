@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.66 1997/01/28 10:55:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.71 1997/02/16 12:14:09 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1505,9 +1505,7 @@ TVGA8900Restore(restore)
 		if (TVGAchipset >= TGUI9440AGi)
 		{
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
-			if (vgaBitsPerPixel > 8)
-				outw(vgaIOBase + 4, 
-					((restore->PixelBusReg) << 8) | 0x38);
+			outw(vgaIOBase + 4, ((restore->PixelBusReg) << 8) | 0x38);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
 		else
@@ -1666,11 +1664,8 @@ TVGA8900Save(save)
 		{
 			outb(vgaIOBase + 4, 0x36); 
 			save->GraphEngReg = inb(vgaIOBase + 5);
-			if (vgaBitsPerPixel > 8)
-			{
-				outb(vgaIOBase + 4, 0x38); 
-				save->PixelBusReg = inb(vgaIOBase + 5);
-			}
+			outb(vgaIOBase + 4, 0x38); 
+			save->PixelBusReg = inb(vgaIOBase + 5);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
 		}
@@ -2003,12 +1998,13 @@ TVGA8900Init(mode)
 		}
 		outb(0x3CE, 0x2F);
 		new->MiscIntContReg = inb(0x3CF) | 0x04; /* double line width */
+		new->PixelBusReg = 0x00;
 		if (vgaBitsPerPixel == 16)
 		{
 			new->std.Attribute[17] = 0x00;
 			new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
 			new->CommandReg = 0x30;	 /* 16bpp */
-			new->PixelBusReg = 0x04;
+			new->PixelBusReg |= 0x04;
 			GE_OP |= 0x01; /* 16bpp in GE */
 		}
 		if (vgaBitsPerPixel == 24)
@@ -2016,7 +2012,7 @@ TVGA8900Init(mode)
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 32bpp */
 			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
-			new->PixelBusReg = 0x08;
+			new->PixelBusReg |= 0x08;
 			GE_OP |= 0x00; /* 8bpp in GE, but 24bpp through XAA */
 		}
 		if (vgaBitsPerPixel == 32)
@@ -2024,7 +2020,7 @@ TVGA8900Init(mode)
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 32bpp */
 			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
-			new->PixelBusReg = 0x08;
+			new->PixelBusReg |= 0x08;
 			GE_OP |= 0x02; /* 32bpp in GE */
 		}
 #endif
@@ -2176,6 +2172,7 @@ static int
 TGUIPitchAdjust()
 {
 	int pitch = 0;
+	int memory;
 	int X;
 
 	X = vga256InfoRec.virtualX;
@@ -2188,6 +2185,21 @@ TGUIPitchAdjust()
 		pitch = 1024;
 	if (X <= 512)
 		pitch = 512;
+
+	memory = (pitch * vga256InfoRec.virtualY) / 1024;
+
+	if (memory > vga256InfoRec.videoRam)
+	{
+		TVGA8900EnterLeave(LEAVE);
+		FatalError("%s %s: Too Little VideoRam for Accelerator Engine\n"
+			   "%s %s: Required resolution with accelerator is %dx%d.\n"
+			   "%s %s: Reduce your Virtual X resolution to %d, or use Option \"noaccel\".\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+			XCONFIG_PROBED, vga256InfoRec.name,
+			pitch, vga256InfoRec.virtualY,
+			XCONFIG_PROBED, vga256InfoRec.name,
+			pitch/2);
+	}
 
 	return pitch;
 }

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.88 1997/02/18 10:48:33 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.89 1997/02/18 17:47:51 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -414,7 +414,7 @@ SetUIDServerTarget(Xsvga,$(SVGASUBDIRS),$(SVGAOBJS),$(SVGALIBS),$(SVGASYSLIBS))
 #ifdef XFree86Version
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86CONFIGSRC)/xf86IniExt.o
 XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o $(XF86CONFIGSRC)/xf86MIniExt.o
-XF86LINIT  = $(XF86COMSRC)/xf86Init_L.o 
+XF86LINIT  = $(XF86COMSRC)/xf86Init_L.o $(XF86CONFIGSRC)/xf86IniExt.o
 XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)

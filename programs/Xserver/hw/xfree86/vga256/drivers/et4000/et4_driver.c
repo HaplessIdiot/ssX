@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.45 1997/01/26 04:41:12 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.50 1997/02/16 12:13:39 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -98,6 +98,9 @@ extern void     ET4000W32SetWrite();
 extern void     ET4000W32SetReadWrite();
 extern void	TsengAccelInit();
 extern void     ET4000HWSaveScreen();
+
+#include "tseng_cursor.h"
+extern vgaHWCursorRec vgaHWCursor;
 
 unsigned char 	tseng_save_divide = 0;
 #ifndef MONOVGA
@@ -776,6 +779,23 @@ ET4000Probe()
     OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
   }
 
+      /* Hardware Cursor support */
+  if (et4000_type == TYPE_ET6000)
+  {
+          /* Set HW Cursor option valid */
+      OFLG_SET(OPTION_HW_CURSOR, &ET4000.ChipOptionFlags);
+  }
+
+  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
+  {
+      if (et4000_type == TYPE_ET6000)
+      {
+          ErrorF("%s %s: Reserving 1kb of video memory for hardware cursor.\n",
+                 XCONFIG_PROBED, vga256InfoRec.name);
+          vga256InfoRec.videoRam -= 1; /* 1kb reserved for hardware cursor */
+      }
+  }
+        
   OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
 
 #endif
@@ -981,6 +1001,22 @@ ET4000FbInit()
   {
     vga256LowlevFuncs.fillBoxSolid = speedupvga256FillBoxSolid;
   }
+
+      /* Hardware cursor setup */
+  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
+      tsengCursorWidth = 64;
+      tsengCursorHeight = 64;
+      vgaHWCursor.Initialized = TRUE;
+      vgaHWCursor.Init = TsengCursorInit;
+      vgaHWCursor.Restore = TsengRestoreCursor;
+      vgaHWCursor.Warp = TsengWarpCursor;
+      vgaHWCursor.QueryBestSize = TsengQueryBestSize;
+      if (xf86Verbose)
+          ErrorF("%s %s: %s: Using hardware cursor\n",
+                 XCONFIG_PROBED, vga256InfoRec.name,
+                 vga256InfoRec.chipset);             
+  }
+
 #endif /* MONOVGA */
 }
 
