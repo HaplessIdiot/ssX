@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.4 2002/10/30 12:52:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.5 2002/12/10 01:27:05 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1429,6 +1429,9 @@ I830UnbindGARTMemory(ScrnInfoPtr pScrn)
 	    return FALSE;
       }
 #endif
+      if (!xf86ReleaseGART(pScrn->scrnIndex))
+	 return FALSE;
+
       pI830->GttBound = 0;
    }
 
