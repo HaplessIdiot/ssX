@@ -179,7 +179,7 @@ you don't need these features, then you can safely answer "no" if you don't
 want them moved.
 
 When installing over an existing version, you will be prompted before each
-set of configuration files is installed.  If you haven't made any customisa-
+set of configuration files is installed.  If you haven't made any Customisa-
 tions to your existing configuration files, then you can safely answer "yes"
 for each of these.  If you have made customisations, you can try answering
 "no".  If you run into problems later, you may need to manually merge your
@@ -351,7 +351,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.10 2000/12/15 19:09:06 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.11 2001/03/02 17:40:48 dawes Exp $
 
 
 $XFree86$
