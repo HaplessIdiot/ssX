@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 448. More corrections to Xaw manpage (#5022, Branden Robinson).
  447. Fix XDarwin crash if a NULL mask is passed to Composite in rootless
       mode (Torrey T. Lyons).
  446. Fix XDarwin crash if more than one keyboard interface is returned from
@@ -14103,4 +14104,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2021 2001/11/04 08:12:15 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2022 2001/11/04 17:57:01 dawes Exp $
