@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.0 1994/04/29 14:07:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.1 1994/05/14 06:52:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -51,6 +51,7 @@
 extern int s3MaxClock;
 extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
 extern int s3MaxTi3020Clock, s3MaxTi3020ClockFast;
+extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
 
 extern s3VideoChipPtr s3Drivers[];
@@ -72,9 +73,11 @@ ScrnInfoRec s3InfoRec =
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
+   {0, 0, 0},			/* xrgb weight */
    8,				/* int bitsPerPixel */
    PseudoColor,			/* int defaultVisual */
    -1, -1,			/* int virtualX,virtualY */
+   -1,				/* int displayWidth */
    -1, -1, -1, -1,		/* int frameX0, frameY0, frameX1, frameY1 */
    {0,},			/* OFlagSet options */
    {0,},			/* OFlagSet clockOptions */   
@@ -166,6 +169,7 @@ int s3RamdacType = UNKNOWN_DAC;
 Bool s3UsingPixMux = FALSE;
 Bool s3Bt485PixMux = FALSE;
 Bool s3ClockDouble = FALSE;
+Bool s3ATT498PixMux = FALSE;
 
 
 /*
@@ -336,6 +340,7 @@ s3Probe()
    OFLG_SET(OPTION_ATT490_1, &validOptions);
    OFLG_SET(OPTION_SC15025, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
+   OFLG_SET(OPTION_ATT498, &validOptions);
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
@@ -523,13 +528,29 @@ s3Probe()
 	 }
       }
    }
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      if (s3RamdacType != UNKNOWN_DAC) {
+	 ErrorF("%s %s: Only one RAMDAC Option may be specified.  %s\n",
+		s3InfoRec.name, XCONFIG_PROBED, "Ignoring \"att_20c498\"");
+      } else {
+	 if (!S3_x64_SERIES(s3ChipId)) {
+            ErrorF("%s %s: ATT 20C496 is only supported on 864/964\n",
+	           XCONFIG_PROBED, s3InfoRec.name);
+	    OFLG_CLR(OPTION_ATT498, &s3InfoRec.options);
+	 } else {
+            ErrorF("%s %s: Programming for ATT 20C498 RAMDAC\n",
+	           XCONFIG_GIVEN, s3InfoRec.name);
+	    s3RamdacType = ATT498_DAC;
+	 }
+      }
+   }
 
    /* Make sure CR55 is unlocked for Bt485 probe */
    outb(vgaCRIndex, 0x39);
    outb(vgaCRReg, 0xA5);
 
-   /* For chipsets other than 928, there is only one RAMDAC type possible */
-   if (!S3_928_SERIES(s3ChipId)) {
+   /* For chipsets other than 928 or 864/964, there is only one RAMDAC type possible */
+   if (!S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
       s3RamdacType = NORMAL_DAC;
    } else if (s3RamdacType == UNKNOWN_DAC) {
       /* Otherwise, probe for the RAMDAC type */
@@ -579,7 +600,24 @@ s3Probe()
 	 outb(vgaCRReg, tmp);
       }
 
-      /* If it wasn't a Ti3020 either, it must be a "normal" ramdac */
+      /* If it wasn't a Ti3020, probe for the ATT 20C498 */
+      if (s3RamdacType == UNKNOWN_DAC) {
+	 int i,dir, mir;
+	 xf86dactopel();
+	 xf86dactocomm();
+	 (void)inb(0x3C6);
+	 mir = inb(0x3C6);
+	 dir = inb(0x3C6);
+	 xf86dactopel();
+
+	 if ((mir == 0x84) && (dir == 0x98)) {
+	    ErrorF("%s %s: Detected a ATT 20C498 RAMDAC\n",
+	           XCONFIG_PROBED, s3InfoRec.name);
+	    s3RamdacType = ATT498_DAC;
+	 }
+      }
+
+      /* If it wasn't a ATT498 either, it must be a "normal" ramdac */
       if (s3RamdacType == UNKNOWN_DAC) {
 	 s3RamdacType = NORMAL_DAC;
       }
@@ -630,6 +668,9 @@ s3Probe()
 	     XCONFIG_PROBED, s3InfoRec.name);
    }
 
+   if (DAC_IS_ATT498 && OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options))
+      s3ATT498PixMux = TRUE;
+
    /* Set clock limit */
    switch(s3RamdacType) {
    case BT485_DAC:
@@ -638,6 +679,12 @@ s3Probe()
 	 s3InfoRec.maxClock = s3MaxBt485MuxClock;
       else
 	 s3InfoRec.maxClock = s3MaxBt485Clock;
+      break;
+   case ATT498_DAC:
+      if (s3ATT498PixMux)
+	 s3InfoRec.maxClock = s3MaxATT498MuxClock;
+      else
+	 s3InfoRec.maxClock = s3MaxATT498Clock;
       break;
    case TI3020_DAC:
       if (OFLG_ISSET(OPTION_TI3020_FAST, &s3InfoRec.options))
@@ -655,6 +702,15 @@ s3Probe()
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
+   } else if (s3ATT498PixMux) {
+      if (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options)) {
+	 pixMuxPossible = TRUE;
+	 nonMuxMaxClock = 67500;
+	 allowPixMuxInterlace = FALSE;
+	 allowPixMuxSwitching = TRUE;
+	 pixMuxLimitedWidths = FALSE;
+	 /* pixMuxMinWidth = 1024; */
+      }
    } else if (s3Bt485PixMux) {
       /* XXXX Are the defaults for the other parameters correct? */
       pixMuxPossible = TRUE;
@@ -872,6 +928,14 @@ s3Probe()
          s3DAC8Bit = TRUE;
    }
      
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      if (xf86Verbose)
+         ErrorF("%s %s: Using AT&T 20C498 RAMDAC\n",
+            XCONFIG_GIVEN, s3InfoRec.name);
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
+         s3DAC8Bit = TRUE;
+   }
+     
    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
       if (xf86Verbose)
          ErrorF("%s %s: Using Sierra SC 15025/6 RAMDAC\n",
@@ -928,11 +992,15 @@ s3Probe()
       } else if (s3InfoRec.virtualX <= 1024) {
 	 s3DisplayWidth = 1024;
       } else if ((s3InfoRec.virtualX <= 1152) &&
-		 (S3_801_REV_C(s3ChipId) || S3_928_REV_E(s3ChipId))) {
+		 (   S3_801_REV_C(s3ChipId) 
+		  || S3_928_REV_E(s3ChipId)
+		  || S3_x64_SERIES(s3ChipId))) {
 	 s3DisplayWidth = 1152;
       } else if (s3InfoRec.virtualX <= 1280) {
 	 s3DisplayWidth = 1280;
-      } else if ((s3InfoRec.virtualX <= 1600) && S3_928_REV_E(s3ChipId)) {
+      } else if ((s3InfoRec.virtualX <= 1600) && 
+		 (   S3_928_REV_E(s3ChipId)
+		  || S3_x64_SERIES(s3ChipId))) {
 	 s3DisplayWidth = 1600;
       } else if (s3InfoRec.virtualX <= 2048) {
 	 s3DisplayWidth = 2048;

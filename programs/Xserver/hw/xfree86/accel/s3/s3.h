@@ -1,4 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -126,16 +127,19 @@ extern int s3RamdacType;
 extern Bool s3DAC8Bit;
 extern Bool s3UsingPixMux;
 extern Bool s3Bt485PixMux;
+extern Bool s3ATT498PixMux;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
 #define BT485_DAC          1
 #define ATT20C505_DAC      2
 #define TI3020_DAC         3
+#define ATT498_DAC         4
 
 #define DAC_IS_BT485_SERIES    (s3RamdacType == BT485_DAC || \
 			        s3RamdacType == ATT20C505_DAC)
 #define DAC_IS_TI3020	       (s3RamdacType == TI3020_DAC)
+#define DAC_IS_ATT498	       (s3RamdacType == ATT498_DAC)
 
 /* Function Prototypes */
 

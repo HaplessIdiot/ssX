@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.0 1994/04/29 14:08:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -97,9 +97,11 @@ typedef struct {
   Bool           (* SwitchMode)();
   void           (* PrintIdent)();
   int            depth;
+  xrgb		 weight;
   int            bitsPerPixel;
   int            defaultVisual;
   int            virtualX,virtualY; 
+  int		 displayWidth;
   int            frameX0, frameY0, frameX1, frameY1;
   OFlagSet       options;
   OFlagSet       clockOptions;

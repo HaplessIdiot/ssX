@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.1 1994/05/06 08:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.2 1994/05/21 23:55:36 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -49,10 +49,11 @@ typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
    unsigned char SC15025[2];    /* Sierra SC 15025/6 command registers */
    unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
+   unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
    unsigned char s3reg[13];     /* Video Atribute (CR30-3C) */
-   unsigned char s3sysreg[38];  /* Video Atribute (CR40-65) */
+   unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D) */
    unsigned short AdvFuncCntl;  /* 0x4AE8 */
 }
 vgaS3Rec, *vgaS3Ptr;
@@ -61,10 +62,11 @@ typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
    unsigned char SC15025[2];    /* Sierra SC 15025/6 command registers */
    unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
+   unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
-   unsigned char s3sysreg[38];  /* Video Atribute (CR40-65)*/
+   unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
 vgaS3Rec, *vgaS3Ptr;
 #endif
@@ -154,6 +156,13 @@ s3CleanUp(void)
    }
    
    /*
+    * Restore AT&T 20C498 command register.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      xf86setdaccomm(oldS3->ATT498);
+   }
+   
+   /*
     * Restore Sierra SC 15025/6 registers.
     */
    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
@@ -220,7 +229,7 @@ s3CleanUp(void)
    if (S3_801_928_SERIES(s3ChipId)) {
     /* restore 801 specific registers */
 
-      for (i = 32; i < 38; i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38) ; i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 outb(vgaCRReg, oldS3->s3sysreg[i]);
 
@@ -308,6 +317,13 @@ s3Init(mode)
       }
 
       /*
+       * Save AT&T 20C498 command register.
+       */
+      if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+         oldS3->ATT498 = xf86getdaccomm();
+      }
+
+      /*
        * Save Sierra SC15025/6 command registers.
        */
       LOCK_SYS_REGS;
@@ -385,7 +401,7 @@ s3Init(mode)
 	     oldS3->s3sysreg[i + 16] = inb(vgaCRReg);
           }
 
-      for (i = 32; i < 38; i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 oldS3->s3sysreg[i] = inb(vgaCRReg);
 #ifdef REG_DEBUG
@@ -489,6 +505,17 @@ s3Init(mode)
    }
 
    /*
+    * Set AT&T 20C498 command register to 8-bit mode if desired.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      if (s3DAC8Bit) {
+         xf86setdaccommbit(0x02);
+      } else {
+	 xf86clrdaccommbit(0x02);
+      }
+   }
+
+   /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
    LOCK_SYS_REGS;
@@ -565,6 +592,12 @@ s3Init(mode)
 		    oldS3->Ti3020[TI_GENERAL_IO_DATA]);
    }
 #endif /* PIXMUX_SWITCH_HACK */
+
+   if (s3ATT498PixMux) {
+      tmp = xf86getdaccomm();
+      xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2, pixel multiplexing on */
+      /* x64: don't know yet how to enable pixel_multiplexing on 864 (and 964) */
+   }
 
    if (DAC_IS_BT485_SERIES) {
       outb(0x3C4, 1);
@@ -1284,7 +1317,9 @@ s3Init(mode)
       else
 	 s3Port54 = 0xA0;
       new->sysreg[0x14] = s3Port54;
-       new->s3sysreg[0x21] = 0x81;
+      /* x64: check values for s3sysreg[0x20-0x22] (CR60-CR62) 
+	 in "S3 Video Bios and Utilities OEM Guide" */
+      new->s3sysreg[0x21] = 0x81;
       if (s3DisplayWidth >= 1152) {
 	 new->s3sysreg[0x20] = 0x7F;
 	 new->s3sysreg[0x22] = 0xA1;
@@ -1338,7 +1373,7 @@ s3Restore(restore)
    if (S3_801_928_SERIES(s3ChipId)) {
     /* restore 801 specific registers */
 
-      for (i = 32; i < 38; i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 outb(vgaCRReg, restore->s3sysreg[i]);
 
@@ -1368,6 +1403,14 @@ s3Restore(restore)
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
       xf86setdaccomm(oldS3->ATT490_1);
    }
+
+   /*
+    * Restore AT&T 20C498 command register.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      xf86setdaccomm(oldS3->ATT498);
+   }
+
    /*
     * Restore Sierra SC 15025/6 registers.
     */
@@ -1446,6 +1489,14 @@ s3Save(save)
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
       oldS3->ATT490_1 = xf86getdaccomm();
    }
+
+   /*
+    * Save AT&T 20C498 command register.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      oldS3->ATT498 = xf86getdaccomm();
+   }
+
    /*
     * Save Sierra SC15025 command register.
     */
@@ -1511,7 +1562,7 @@ s3Save(save)
          save->s3sysreg[i + 16] = inb(vgaCRReg);
        }
 
-   for (i = 32; i < 38; i++) {
+   for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
       outb(vgaCRIndex, 0x40 + i);
       save->s3sysreg[i] = inb(vgaCRReg);
    }
@@ -1549,6 +1600,13 @@ S3Save(save)
     */
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
       oldS3->ATT490_1 = xf86getdaccomm();
+   }
+
+   /*
+    * Save AT&T 20C498 command register.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      oldS3->ATT498 = xf86getdaccomm();
    }
 
    /*
@@ -1617,10 +1675,11 @@ S3Save(save)
          save->s3sysreg[i + 16] = inb(vgaCRReg);
        }
 
-   for (i = 32; i < 38; i++) {
+   for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
       outb(vgaCRIndex, 0x40 + i);
       save->s3sysreg[i] = inb(vgaCRReg);
    }
+
    i = inb(vgaIOBase + 0x0A);	/* reset flip-flop */
    outb(0x3C0, 0x36);
    save->Misc = inb(0x3C1);
@@ -1661,7 +1720,7 @@ S3Restore(restore)
    if (S3_801_928_SERIES) {
     /* restore 801 specific registers */
 
-      for (i = 32; i < 38; i++) {
+      for (i = 32; i < (S3_x64_SERIES(s3ChipId) ? 46 : 38); i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 outb(vgaCRReg, restore->s3sysreg[i]);
       }
@@ -1694,6 +1753,13 @@ S3Restore(restore)
     */
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
       xf86setdaccomm(oldS3->ATT490_1);
+   }
+
+   /*
+    * Restore AT&T 20C498 command register.
+    */
+   if (OFLG_ISSET(OPTION_ATT498, &s3InfoRec.options)) {
+      xf86setdaccomm(oldS3->ATT498);
    }
 
    /*

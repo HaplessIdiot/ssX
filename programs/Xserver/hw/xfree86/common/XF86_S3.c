@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_S3.c,v 1.1 94/03/28 21:22:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_S3.c,v 3.0 1994/05/30 08:24:31 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -15,7 +15,7 @@ extern ScrnInfoRec s3InfoRec;
  * the ramdacs used on many S3 cards Increasing this limit
  * could result in damage to your hardware.
  */
-/* Clock limit for non-Bt485, non-Ti3020 cards */
+/* Clock limit for non-Bt485, non-Ti3020, non-ATT498 cards */
 #define MAX_S3_CLOCK    110000
 
 /*
@@ -34,11 +34,25 @@ extern ScrnInfoRec s3InfoRec;
 #define MAX_TI3020_CLOCK	135000
 #define MAX_TI3020_CLOCK_FAST	200000
 
+/* Clock limits for cards with a ATT 20C498 */
+#define MAX_ATT498_11_CLOCK	 80000  /* ATT 20C498-11 */
+#define MAX_ATT498_11_MUX_CLOCK	110000
+#define MAX_ATT498_13_CLOCK	110000  /* ATT 20C498-13 */
+#define MAX_ATT498_13_MUX_CLOCK	135000
+#define MAX_ATT498_15_CLOCK	110000  /* ATT 20C498-15 */
+#define MAX_ATT498_15_MUX_CLOCK	150000
+#define MAX_ATT498_17_CLOCK	110000  /* ATT 20C498-17 */
+#define MAX_ATT498_17_MUX_CLOCK	170000
+
 int s3MaxClock = MAX_S3_CLOCK;
 int s3MaxBt485Clock = MAX_BT485_CLOCK;
 int s3MaxBt485MuxClock = MAX_BT485_MUX_CLOCK;
 int s3MaxTi3020Clock = MAX_TI3020_CLOCK;
 int s3MaxTi3020ClockFast = MAX_TI3020_CLOCK_FAST;
+
+/* ELSA Winner 1000PRO uses ATT 20C498-13 RAMDAC */
+int s3MaxATT498Clock = MAX_ATT498_13_CLOCK;
+int s3MaxATT498MuxClock = MAX_ATT498_13_MUX_CLOCK;
 
 ScrnInfoPtr xf86Screens[] = 
 {

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.0 1994/04/29 14:08:21 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -89,6 +89,7 @@ typedef struct {
 #define OPTION_ATT490_1		33 /* AT&T 20C490 or 20C491 */
 #define OPTION_SC15025          34 /* Sierra SC15025/6 RAMDAC */
 #define OPTION_SYNC_ON_GREEN	35 /* Set Sync-On-Green in RAMDAC if available */
+#define OPTION_ATT498		36 /* AT&T 20C498 */
 
 /* Misc options */
 #define OPTION_CSYNC		40 /* Composite sync */
@@ -99,10 +100,11 @@ typedef struct {
 #define OPTION_SPEA_MERCURY	45 /* Enable pixmux for SPEA Mercury (S3) */
 #define OPTION_NUMBER_NINE	46 /* Enable pixmux for #9 with Bt485 (S3) */
 #define OPTION_STB_PEGASUS	47 /* Enable pixmux for STB Pegasus (S3) */
+#define OPTION_ELSA_W1000PRO	48 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
 
 /* Debugging options */
-#define OPTION_SHOWCACHE	48 /* Allow cache to be seen (S3) */
-#define OPTION_FB_DEBUG		49 /* Linear fb debug for S3 */
+#define OPTION_SHOWCACHE	60 /* Allow cache to be seen (S3) */
+#define OPTION_FB_DEBUG		61 /* Linear fb debug for S3 */
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -157,6 +159,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "att_20c490_1",	OPTION_ATT490_1 },
   { "sc15025",          OPTION_SC15025 },
   { "sync_on_green",    OPTION_SYNC_ON_GREEN },
+  { "att_20c498",	OPTION_ATT498 },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },
@@ -165,6 +168,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
   { "stb_pegasus",	OPTION_STB_PEGASUS },
+  { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
