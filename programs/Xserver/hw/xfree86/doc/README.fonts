@@ -21,8 +21,6 @@ this document for background information.
 
 2.  Installing fonts
 
-"
-
 Installing fonts in XFree86 is a two step process.  First, you need to create
 a font directory that contains all the relevant font files as well as some
 index files.  You then need to inform the X server of the existence of this
@@ -116,8 +114,6 @@ Fonts and internationalisation (section 4., page 1) later in this document.
 
 2.3  Installing CID-keyed fonts
 
-"
-
 The CID-keyed font format was designed by Adobe Systems for fonts with large
 character sets.  A CID-keyed font, or CIDFont for short, contains a collec-
 tion of glyphs indexed by character ID (CID).
@@ -178,8 +174,6 @@ whenever a change is made to any of the CID-keyed fonts, or when the CID-
 keyed fonts are copied to a machine with a different architecture.
 
 2.4  Setting the server's font path
-
-"
 
 The list of directories where the server looks for fonts is known as the font
 path.  Informing the server of the existence of a new font directory consists
@@ -459,8 +453,6 @@ and Blenda Horn from Y&Y, Inc.  For more information, please contact
 
 4.  Fonts and internationalisation
 
-"
-
 The scalable font backends (Type 1, Speedo and TrueType) can now automati-
 cally re-encode fonts to the encoding specified in the XLFD in fonts.dir.
 For example, a fonts.dir file can contain entries for the Type 1 Courier font
@@ -576,8 +568,6 @@ The Speedo backend limits all encodings to 8-bit codes.
 
 4.2.3  The FreeType TrueType backend
 
-"
-
 The TrueType backend scans the mappings in order.  Mappings with a target of
 PostScript are ignored; mappings with a TrueType or Unicode target are
 checked against all the cmaps in the file.  The first applicable mapping is
@@ -587,8 +577,6 @@ If you are writing an encoding file to be used with the TrueType backend, you
 should ensure that mappings are mentioned in decreasing order of preference.
 
 4.3  Format of encoding directory files
-
-"
 
 In order to use a font in an encoding that the font backend does not know
 about, you need to have an `encodings.dir' file in the same directory as the
@@ -896,8 +884,6 @@ found on the X-TrueType home page <URL:http://x-tt.dsl.gr.jp/>.
 
 6.  Appendix: background and terminology
 
-"
-
 6.1  Characters and glyphs
 
 A computer text-processing system inputs keystrokes and outputs glyphs, small
@@ -923,8 +909,6 @@ early mainframes used 6 bit character sets, while 16 bit (or more) character
 sets are necessary for ideographic writing systems.
 
 6.2  Font files, fonts, and XLFD
-
-"
 
 Traditionally, typographers speak about typefaces and founts.  A typeface is
 a particular style or design, such as Times Italic, while a fount is a
@@ -1024,7 +1008,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; my
 favourite is RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.10 2000/12/14 23:10:53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.11 2000/12/15 20:01:56 dawes Exp $
 
 
 $XFree86$

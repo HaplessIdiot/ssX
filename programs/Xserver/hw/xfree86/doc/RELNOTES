@@ -103,10 +103,17 @@ enough space to cover them all here.
      Intel i810/i815 and Matrox G400.  DRI support for SiS and Sun Creator3D
      is available.  The DRI is now also available on Alpha platforms.
 
+   o An input driver (citron) for Citron Infrared Touch devices has been
+     added.
+
+   o An input driver (penmount) for PenMount devices has been added.
+
+   o An input driver (digitaledge) for DigitalEdge devices has been added.
+
    o Big endian problems in Xinerama have been fixed.
 
-   o The new "render" extension has been added.  The design has been extended
-     in the following ways:
+   o The new "render" extension has been added (see below (section 4.11, page
+     1)).  The design has been extended in the following ways:
 
         o A new FillRectangles request was added.
 
@@ -237,8 +244,6 @@ enough space to cover them all here.
 
 2.3  Fonts and Internationalisation
 
-"
-
    o Many of the "misc" bdf fonts have been updated and extended, and a wider
      range of ISO-8859 subsets have been added.  These are now auto-generated
      from ISO-10646 encoded master fonts.
@@ -279,7 +284,9 @@ enough space to cover them all here.
 
 3.  Drivers
 
-XFree86 4.0.2 includes the following drivers:
+3.1  Video Drivers
+
+XFree86 4.0.2 includes the following video drivers:
 
 +--------------+--------------------------+----------------------------------+
 |Driver Name   | Description              | Further Information              |
@@ -331,7 +338,30 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-4.  Notes for people migrating from XFree86 3.3.x.
+XFree86 4.0.2 includes the following input drivers:
+
+3.2  Input Drivers
+
+          +------------+--------------------+---------------------+
+          |Driver Name | Description        | Further Information |
+          +------------+--------------------+---------------------+
+          |acecad      | AceCad             |                     |
+          |citron      | Citron             | citron(4)           |
+          |digitaledge | DigitalEdge        |                     |
+          |dynapro     | Dynapro            |                     |
+          |elographics | EloGraphics        |                     |
+          |keyboard    | generic keyboards  | keyboard(4)         |
+          |microtouch  | MicroTouch         |                     |
+          |mouse       | most mouse devices | mouse(4)            |
+          |mutouch     | MicroTouch         |                     |
+          |penmount    | PenMount           |                     |
+          |spaceorb    | SpaceOrb           |                     |
+          |summa       | SummaGraphics      |                     |
+          |void        | dummy device       | void(4)             |
+          |wacom       | Wacom tablets      | wacom(4)            |
+          +------------+--------------------+---------------------+
+
+4.  Summary of XFree86 4.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
 which drive different hardware, XFree86 4.0.2 has a single X server binary
@@ -755,7 +785,92 @@ ages.  XvImages are XImages in alternate color spaces such as YUV and can be
 passed to the server through shared memory segments.  This allows clients to
 display YUV data with high quality hardware scaling and filtering.
 
-4.11  Other extensions
+4.11  X Rendering Extension (Render)
+
+The X Rendering extension provides a 2D rendering model that more closely
+matches application demands and hardware capabilities.  It provides a render-
+ing model derived from Plan 9 based on Porter/Duff image composition rather
+than binary raster operations.
+
+Using simple compositing operators provided by most hardware, Render can draw
+anti-aliased text and geometric objects as well as perform translucent image
+overlays and other image operations not possible with the core X rendering
+system.
+
+XFree86 4.0.2 provides a partial implementation of Render sufficient for
+drawing anti-aliased text and image composition.  Still to be implemented are
+geometric primitives and affine transformation of images.
+
+Unlike the core protocol, Render provides no font support for applications,
+rather it allows applications to upload glyphs for display on the screen.
+This allows the client greater control over text rendering and complete
+access to the available font information while still providing hardware
+acceleration.  The Xft library provides font access for Render applications.
+
+4.11.1  The Xft Library
+
+On the client side, the Xft library provides access to fonts for applications
+using the FreeType library, version 2.  FreeType currently supports Type1 and
+TrueType font files, a future release is expected to support BDF and PCF
+files as well, so Render applications will have access to the complete range
+of fonts available to core applications.  One important thing to note is that
+Xft uses the vertical size of the monitor to compute accurate pixel sizes for
+provided point sizes; if your monitor doesn't provide accurate information
+via DDC, you may want to add that information to XF86Config.
+
+To allow a graceful transition for applications moving from core text render-
+ing to the Render extension, Xft can use either core fonts or FreeType and
+the Render extension for text.  By default, Xft is configured to support only
+core fonts, see the section on building FreeType support for the changes
+needed to add FreeType/Render fonts.
+
+The Xft library uses a configuration file, XftConfig, which contains informa-
+tion about which directories contain font files and also provides a sophisti-
+cated font aliasing mechanism.  Documentation for that file is included in
+the Xft man page.
+
+4.11.2  Building FreeType support for Xft
+
+XFree86 4.0.2 includes sources for FreeType version 2.0.1, but they are not
+built and installed automatically.  As a result, Xft is configured to provide
+only core fonts by default.
+
+To build FreeType support for Xft, first FreeType must be built and
+installed, either from the sources included in XFree86 in extras/freetype2 or
+from another FreeType (version 2.0.1 or later) release.  Early FreeType ver-
+sion 2 releases used a different header file installation and aren't compati-
+ble with XFree86. Instructions for building and installing FreeType can be
+found in the INSTALL file included with the FreeType release.
+
+Second, XFree86 needs to know the installed location for FreeType, usually
+/usr/local.  Edit (or create) config/cf/host.def to include:
+
+     #define Freetype2Dir     /usr/local
+
+Finally, build XFree86 with "make World" from the top.
+
+4.11.3  Application Support For Anti-Aliased Text
+
+Only three applications have been modified in XFree86 4.0.2 to work with the
+Render extension and the Xft and FreeType libraries to provide anti-aliased
+text.  Xterm, xditview and x11perf.  Migration of other applications may
+occur in future releases.
+
+By default, xterm uses core fonts through the standard core API.  It has two
+command line options and associated resources to direct it to use Xft
+instead:
+
+   o -fa family / .VT100.faceName: family.  Selects the font family to use.
+
+   o -fs pointsize / .VT100.faceSize: pointsize.  Selects the pointsize.
+
+Xditview will use Xft instead of the core API by default.  X11perf includes
+tests to measure the performance of text rendered in three ways, anti-
+aliased, anti-aliased with sub-pixel sampling and regular chunky text, but
+through the Render extension, a path which has not been optimized within the
+X server yet.
+
+4.12  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
 tecture yet.  This should be completed in a future release.
@@ -768,7 +883,7 @@ The new xgamma utility makes use of this feature.  Compatibility with the
 3.3.x version of the extension is provided.  The missing parts of this exten-
 sion and some new features should be completed in a future release.
 
-4.12  Xaw
+4.13  Xaw
 
 Two versions of the Xaw library are provided with XFree86 4.x. A version with
 bug fixes and a few binary compatible improvements and a new version with
@@ -827,11 +942,11 @@ Bug fixes:
    o Several bugs were fixed in the text code, while some code was rewritten
      from scratch.
 
-4.13  Xpm
+4.14  Xpm
 
 Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
 
-4.14  xedit
+4.15  xedit
 
 Xedit have been changed to use most of the new features added to the new ver-
 sion of the Xaw library, and some xedit only features were added. Emacs users
@@ -870,18 +985,18 @@ xedit. These include:
 
         o C-mode: this mode is expected to be stable, and fully usable.
 
-4.15  Font support
+4.16  Font support
 
 Details about the font support in XFree86 4.x can be found in the
 README.fonts document.
 
-4.16  TrueType support
+4.17  TrueType support
 
 XFree86 4.x comes with two TrueType backends, known as `xfsft' (the
 "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these back-
 ends are based on the FreeType library.
 
-4.17  CID font support
+4.18  CID font support
 
 Support for CID-keyed fonts is included in XFree86 4.x.  The CID-keyed font
 format was designed by Adobe Systems <URL:http://www.adobe.com> for fonts
@@ -889,7 +1004,7 @@ with large character sets.  The CID-keyed font support in XFree86 was donated
 by SGI <URL:http://www.sgi.com>.  See the LICENSE document for a copy of the
 CID Font Code Public License.
 
-4.18  Internationalisation of the scalable font backends
+4.19  Internationalisation of the scalable font backends
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends to
 use a common method of font re-encoding.  This re-encoding makes it possible
@@ -898,14 +1013,14 @@ layer is used by the Type1 and Speedo backends and the `xfsft' version of the
 TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
 different re-encoding method based on loadable encoding modules.
 
-4.19  Large font optimisation
+4.20  Large font optimisation
 
 The glyph metrics array, which all the X clients using a particular font have
 access to, is now placed in shared memory, so as to reduce redundant memory
 consumption.  For non-local clients, the glyph metrics array is transmitted
 in a compressed format.
 
-4.20  Unicode/ISO 10646 support
+4.21  Unicode/ISO 10646 support
 
 What is included in 4.x:
 
@@ -938,7 +1053,7 @@ What is included in 4.x:
    o Both the xfsft (the "freetype" module) and the X-TrueType (the "xtt"
      module) TrueType font backends support Unicode-encoded fonts.
 
-4.21  Lucidux fonts from Bigelow and Holmes
+4.22  Lucidux fonts from Bigelow and Holmes
 
 XFree86 now includes the ``Lucidux'' family of professionally hinted Type 1
 fonts.  This family consists of the fonts ``Lucidux Serif'', ``Lucidux Sans''
@@ -951,7 +1066,7 @@ Blenda Horn from Y&Y, Inc.  For more information, please contact
 <design@bigelowandholmes.com> or <sales@yandy.com>, or consult Y&Y's web site
 <URL:http://www.yandy.com>.
 
-4.22  Directory rearrangements
+4.23  Directory rearrangements
 
 Some changes to the installed XFree86 directory structure have been imple-
 mented for 4.x.  One important change is a modified search path for the X
@@ -962,7 +1077,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.49 2000/12/15 19:32:39 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.54 2000/12/15 20:21:35 dawes Exp $
 
 
 $XFree86$
