@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.19 1999/03/21 12:46:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.20 1999/03/29 06:23:14 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -123,7 +123,7 @@ extern double xf86atof(const char*);
 extern int xf86atoi(const char*);
 extern long xf86atol(const char*);
 extern double xf86ceil(double);
-extern void* xf86calloc(INT32,INT32);
+extern void* xf86calloc(xf86size_t,xf86size_t);
 extern void xf86clearerr(XF86FILE*);
 extern double xf86cos(double);
 extern void xf86exit(int);
@@ -144,7 +144,7 @@ extern int xf86printf(const char*,...);
 extern int xf86fprintf(XF86FILE*,const char*,...);
 extern int xf86fputc(int,XF86FILE*);
 extern int xf86fputs(const char*,XF86FILE*);
-extern INT32 xf86fread(void*,INT32,INT32,XF86FILE*);
+extern xf86size_t xf86fread(void*,xf86size_t,xf86size_t,XF86FILE*);
 extern void xf86free(void*);
 extern XF86FILE* xf86freopen(const char*,const char*,XF86FILE*);
 #ifdef HAVE_VFSCANF
@@ -156,7 +156,7 @@ extern int xf86fscanf(/*XF86FILE*,const char*,char *,char *,char *,char *,
 extern int xf86fseek(XF86FILE*,long,int);
 extern int xf86fsetpos(XF86FILE*,const XF86fpos_t*);
 extern long xf86ftell(XF86FILE*);
-extern INT32 xf86fwrite(const void*,INT32,INT32,XF86FILE*);
+extern xf86size_t xf86fwrite(const void*,xf86size_t,xf86size_t,XF86FILE*);
 extern char* xf86getenv(const char*);
 extern int xf86isalnum(int);
 extern int xf86isalpha(int);
@@ -172,21 +172,21 @@ extern int xf86isxdigit(int);
 extern long xf86labs(long);
 extern double xf86log(double);
 extern double xf86log10(double);
-extern void* xf86malloc(INT32);
-extern void* xf86memchr(const void*,int,INT32);
-extern int xf86memcmp(const void*,const void*,INT32);
-extern void* xf86memcpy(void*,const void*,INT32);
-extern void* xf86memmove(void*,const void*,INT32);
-extern void* xf86memset(void*,int,INT32);
+extern void* xf86malloc(xf86size_t);
+extern void* xf86memchr(const void*,int,xf86size_t);
+extern int xf86memcmp(const void*,const void*,xf86size_t);
+extern void* xf86memcpy(void*,const void*,xf86size_t);
+extern void* xf86memmove(void*,const void*,xf86size_t);
+extern void* xf86memset(void*,int,xf86size_t);
 extern double xf86modf(double,double*);
 extern void xf86perror(const char*);
 extern double xf86pow(double,double);
-extern void* xf86realloc(void*,INT32);
+extern void* xf86realloc(void*,xf86size_t);
 extern int xf86remove(const char*);
 extern int xf86rename(const char*,const char*);
 extern void xf86rewind(XF86FILE*);
 extern int xf86setbuf(XF86FILE*,char*);
-extern int xf86setvbuf(XF86FILE*,char*,int,INT32);
+extern int xf86setvbuf(XF86FILE*,char*,int,xf86size_t);
 extern double xf86sin(double);
 extern int xf86sprintf(char*,const char*,...);
 extern double xf86sqrt(double);
@@ -201,16 +201,16 @@ extern char* xf86strchr(const char*, int c);
 extern int xf86strcmp(const char*,const char*);
 extern int xf86strcasecmp(const char*,const char*);
 extern char* xf86strcpy(char*,const char*);
-extern INT32 xf86strcspn(const char*,const char*);
+extern xf86size_t xf86strcspn(const char*,const char*);
 extern char* xf86strerror(int);
-extern INT32 xf86strlen(const char*);
-extern char* xf86strncat(char *, const char *, INT32);
-extern int xf86strncmp(const char*,const char*,INT32);
-extern int xf86strncasecmp(const char*,const char*,INT32);
-extern char* xf86strncpy(char*,const char*,INT32);
+extern xf86size_t xf86strlen(const char*);
+extern char* xf86strncat(char *, const char *, xf86size_t);
+extern int xf86strncmp(const char*,const char*,xf86size_t);
+extern int xf86strncasecmp(const char*,const char*,xf86size_t);
+extern char* xf86strncpy(char*,const char*,xf86size_t);
 extern char* xf86strpbrk(const char*,const char*);
 extern char* xf86strrchr(const char*,int);
-extern INT32 xf86strspn(const char*,const char*);
+extern xf86size_t xf86strspn(const char*,const char*);
 extern char* xf86strstr(const char*,const char*);
 extern double xf86strtod(const char*,char**);
 extern char* xf86strtok(char*,const char*);
@@ -228,8 +228,8 @@ extern int xf86vsprintf(char*,const char*,...);
 extern int xf86open(const char*, int,...);
 extern int xf86close(int);
 extern int xf86ioctl(int, unsigned long, pointer);
-extern unsigned int xf86read(int, void *, INT32);
-extern unsigned int xf86write(int, const void *, INT32);
+extern xf86ssize_t xf86read(int, void *, xf86size_t);
+extern xf86ssize_t xf86write(int, const void *, xf86size_t);
 extern void* xf86mmap(void*, xf86size_t, int, int, int, xf86size_t /* off_t */);
 extern int xf86munmap(void*, xf86size_t);
 extern int xf86errno;
@@ -244,11 +244,11 @@ extern XF86DIR* xf86opendir(const char*);
 extern int xf86closedir(XF86DIR*);
 extern XF86DIRENT* xf86readdir(XF86DIR*);
 extern void xf86rewinddir(XF86DIR*);
-extern void xf86bcopy(const void*,void*,INT32);
+extern void xf86bcopy(const void*,void*,xf86size_t);
 extern int xf86ffs(int);
 extern char* xf86strdup(const char*);
 extern void xf86bzero(void*,unsigned int);
-extern void xf86getsecs(INT32 *, INT32 *);
+extern void xf86getsecs(CARD32 *, CARD32 *);
 extern int xf86execl(const char *, const char *, ...);
 extern long xf86fpossize(void);
 

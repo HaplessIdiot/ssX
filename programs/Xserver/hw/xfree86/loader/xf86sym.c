@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.76 1999/03/28 15:32:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.77 1999/03/29 01:39:11 dawes Exp $ */
 
 /*
  *
@@ -242,6 +242,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ClaimPciSlot)
    SYMFUNC(xf86ReleasePciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
+   SYMFUNC(xf86GetPciConfigInfo)
    SYMFUNC(xf86GetPciInfoForScreen)
    SYMFUNC(xf86CheckIsaSlot)
    SYMFUNC(xf86ClaimIsaSlot)

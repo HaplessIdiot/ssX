@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.16 1999/03/06 13:12:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.17 1999/03/28 15:32:25 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -475,6 +475,16 @@ pciVideoPtr *
 xf86GetPciVideoInfo()
 {
     return xf86PciVideoInfo;
+}
+
+/*
+ * Get the full xf86scanpci data.
+ * XXX This function may be removed, so don't rely on it.
+ */
+pciConfigPtr *
+xf86GetPciConfigInfo()
+{
+    return xf86PciInfo;
 }
 
 /*
