@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.118 2002/03/05 03:52:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.120 2002/04/04 14:05:32 eich Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1562,6 +1562,7 @@ TCLIBDIR = TclLibDir
           REVPATH = RevPathCmd
     EXPORTLISTGEN = ExportListCmd
              RMAN = RmanCmd
+     RMANBASENAME = ProgramTargetName(rman)
       RMANOPTIONS = RmanOptions
         CONFIGSRC = ConfigSrc
          IMAKESRC = $(CONFIGSRC)/imake
