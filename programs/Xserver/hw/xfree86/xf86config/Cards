@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.52 1997/05/03 09:19:47 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.53 1997/05/24 13:46:37 dawes Exp $
 
 #Chips & Technologies
 
@@ -1012,67 +1012,71 @@ NAME ET4000 (generic)
 CHIPSET ET4000
 SERVER SVGA
 
-NAME ET4000/W32, W32i, W32p (generic)
-CHIPSET ET4000/W32(i/p)
+NAME ET4000/W32 (generic)
+CHIPSET ET4000/W32
 SERVER W32
+
+NAME ET4000 W32i, W32p (generic)
+CHIPSET ET4000/W32(i/p)
+SERVER SVGA
 
 NAME ET6000 (generic)
 CHIPSET ET6000
-SERVER W32
+SERVER SVGA
 
 NAME Diamond Stealth 32
 CLOCKCHIP icd2061a
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Cardex Cobra
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Cardex Challenger (Pro)
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME DFI-WG5000
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Diamond SpeedStar (Plus)
 CHIPSET ET4000
 SERVER SVGA
 
 NAME Genoa 8900 Phantom 32i
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Hercules Dynamite Power
 CLOCKCHIP ics5341
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Hercules Dynamite Pro
 CLOCKCHIP ics5341
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME LeadTek WinFast S200
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME WinFast S200
 SEE LeadTek WinFast S200
 
 NAME Sigma Concorde
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000/W32 (generic)
 
 NAME STB LightSpeed
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME TechWorks Thunderbolt
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000/W32 (generic)
 
 NAME ViewTop PCI
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME SNI PC5H W32
 CLOCKCHIP stg1703
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME SNI Scenic W32
 CLOCKCHIP stg1703
-SEE ET4000/W32, W32i, W32p (generic)
+SEE ET4000 W32i, W32p (generic)
 
 NAME Hercules Dynamite 128/Video
 SEE ET6000 (generic)
@@ -1085,6 +1089,37 @@ SEE ET6000 (generic)
 
 NAME Jazz Multimedia G-Force 128
 SEE ET6000 (generic)
+
+NAME Mirage Z-128
+SEE ET6000 (generic)
+
+NAME CalGraph SunTracer 6000
+SEE ET6000 (generic)
+
+NAME Binar Graphics AnyView
+SEE ET6000 (generic)
+
+NAME MediaVision Proaxcel 128
+SEE ET6000 (generic)
+
+NAME ATrend ATC-2165A
+SEE ET6000 (generic)
+
+NAME Interay PMC Viper
+SEE ET6000 (generic)
+
+2-the-Max MAXColor 6000
+SEE ET6000 (generic)
+
+Gainward Challenger EV
+SEE ET6000 (generic)
+
+MachSpeed VGA ET6000
+SEE ET6000 (generic)
+
+KouTech KeyVision 128 EV
+SEE ET6000 (generic)
+
 
 # ATI
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.1 1996/12/09 11:48:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.2 1997/04/10 11:34:04 hohndel Exp $
 
 /*
  * This is for SCO Open Server 5.0.2 or later.
@@ -130,7 +130,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.1 1996/12/09 11:48:06 dawes Exp $
 #define MakeCmd	                make
 #define YaccCmd                 yacc
 
-#define DefaultUserPath         .:/bin:/usr/bin:$(BINDIR):/usr/bin/X11:/usr/local/bin:/etc
+#define DefaultUserPath         /bin:/usr/bin:$(BINDIR):/usr/bin/X11:/usr/local/bin:/etc
 #define DefaultSystemPath       /etc:/bin:/usr/bin:$(BINDIR):/usr/bin/X11
 
 /*

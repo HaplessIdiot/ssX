@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/xterm/xtermcfg.hin,v 3.1 1997/05/23 09:19:57 dawes Exp $
  */
 
 /************************************************************
@@ -30,14 +30,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* This is a template for <xtermcfg.h> */
 
 #undef CC_HAS_PROTOS	/* CF_ANSI_CC */
+#undef DFT_COLORMODE	/* AC_ARG_WITH(default-color-mode) */
 #undef DFT_DECID	/* AC_ARG_WITH(default-terminal-id) */
 #undef HAVE_STRERROR	/* AC_CHECK_FUNCS(strerror) */
 #undef HAVE_TERMCAP_H	/* AC_CHECK_HEADERS(termcap.h) */
+#undef OPT_AIX_COLORS	/* CF_ARG_DISABLE(16-color) */
 #undef OPT_ISO_COLORS	/* CF_ARG_DISABLE(ansi-color) */
 #undef OPT_TRACE	/* CF_ARG_ENABLE(trace) */
 #undef OPT_VT52_MODE	/* CF_ARG_DISABLE(vt52) */
 #undef USE_MY_MEMMOVE	/* CF_FUNC_MEMMOVE */
 #undef USE_OK_BCOPY	/* CF_FUNC_MEMMOVE */
+#undef USE_TERMINFO	/* CF_FUNC_TGETENT */
 #undef const		/* AC_CONST */
 #undef size_t		/* AC_TYPE_SIZE_T */
 #undef time_t		/* AC_CHECK_TYPE(time_t, long) */

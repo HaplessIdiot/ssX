@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86$
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.1 1997/05/23 09:19:48 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl 
@@ -27,7 +27,7 @@ dnl
 dnl ---------------------------------------------------------------------------
 dnl Process this file with autoconf to produce a configure script.
 dnl
-AC_REVISION($Revision: 3.1 $)
+AC_REVISION($Revision: 3.2 $)
 AC_PREREQ(2.12)
 AC_INIT(charproc.c)
 AC_CONFIG_HEADER(xtermcfg.h:xtermcfg.hin)
@@ -45,9 +45,6 @@ AC_ISC_POSIX
 AC_MINIX
 
 ###	checks for header files
-AC_CHECK_HEADERS( \
-	termcap.h \
-	)
 
 ###	checks for typedefs
 AC_TYPE_SIZE_T
@@ -111,13 +108,21 @@ CF_ARG_DISABLE(ansi-color,
 AC_MSG_RESULT($enable_ansi_color)
 test $enable_ansi_color = no && AC_DEFINE(OPT_ISO_COLORS,0)
 
-dnl AC_MSG_CHECKING(for default terminal-id)
-dnl CF_ARG_ENABLE(color-mode,
-dnl 	[  --enable-color-mode     set default colorMode resource ],
-dnl 	[default_colormode=$withval],
-dnl 	[default_colormode=vt100])
-dnl AC_MSG_RESULT($default_colormode)
-dnl AC_DEFINE(DFT_COLORMODE,$default_colormode)
+AC_MSG_CHECKING(if you want 16 colors like aixterm)
+CF_ARG_DISABLE(16-color,
+	[  --disable-16-color      disable 16-color support],
+	[enable_16_color=no],
+	[enable_16_color=yes])
+AC_MSG_RESULT($enable_ansi_color)
+test $enable_16_color = no && AC_DEFINE(OPT_AIX_COLORS,0)
+
+AC_MSG_CHECKING(for default color-mode)
+CF_ARG_ENABLE(color-mode,
+	[  --enable-color-mode     set default colorMode resource ],
+	[default_colormode=$withval],
+	[default_colormode=FALSE])
+AC_MSG_RESULT($default_colormode)
+AC_DEFINE_UNQUOTED(DFT_COLORMODE,$default_colormode)
 
 AC_MSG_CHECKING(if you want debugging traces)
 CF_ARG_ENABLE(trace,

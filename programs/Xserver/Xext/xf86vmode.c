@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.32 1997/02/25 14:19:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.33 1997/05/06 09:45:16 dawes Exp $ */
 
 /*
 
@@ -457,6 +457,7 @@ ProcXF86VidModeGetAllModeLines(client)
     ScrnInfoPtr vptr;
     DisplayModePtr mptr, curmptr;
     int privsize, modecount=1;
+    int totalPrivSize = 0;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
@@ -464,15 +465,20 @@ ProcXF86VidModeGetAllModeLines(client)
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     curmptr = mptr = vptr->modes;
 
+    totalPrivSize = mptr->Private ? mptr->PrivSize : 0;
+
     while (mptr->next != curmptr) {
 	++modecount;
 	mptr = mptr->next;
+	if (mptr->Private)
+	    totalPrivSize += mptr->PrivSize;
     }
 
     REQUEST_SIZE_MATCH(xXF86VidModeGetAllModeLinesReq);
     rep.type = X_Reply;
     rep.length = (SIZEOF(xXF86VidModeGetAllModeLinesReply) - SIZEOF(xGenericReply) +
-		  modecount * sizeof(xXF86VidModeModeInfo)) >> 2;
+		  modecount * sizeof(xXF86VidModeModeInfo) +
+		  totalPrivSize * sizeof(INT32)) >> 2;
     rep.sequenceNumber = client->sequence;
     rep.modecount = modecount;
     if (client->swapped) {
@@ -513,6 +519,11 @@ ProcXF86VidModeGetAllModeLines(client)
 	    swapl(&mdinf.privsize, n);
         }
         WriteToClient(client, sizeof(xXF86VidModeModeInfo), (char *)&mdinf);
+	if (privsize) {
+	    client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
+	    WriteSwappedDataToClient(client, privsize * sizeof(INT32),
+				     mptr->Private);
+	}
         mptr = mptr->next;
     } while (mptr != curmptr);
     return (client->noClientException);
@@ -543,7 +554,7 @@ ProcXF86VidModeAddModeLine(client)
     Bool clock_added = FALSE;
     int i, len;
 
-    if (xf86Verbose) {
+    if (xf86Verbose > 1) {
 	ErrorF("AddModeLine - scrn: %d clock: %d\n",
 		stuff->screen, stuff->dotclock);
 	ErrorF("AddModeLine - hdsp: %d hbeg: %d hend: %d httl: %d\n",
@@ -689,7 +700,7 @@ ProcXF86VidModeAddModeLine(client)
     newmptr->name          = "";
     newmptr->Private       = NULL;
     if (stuff->privsize) {
-	if (xf86Verbose)
+	if (xf86Verbose > 1)
 	    ErrorF("AddModeLine - Request includes privates\n");
 	newmptr->Private =
 	    (INT32 *) ALLOCATE_LOCAL(stuff->privsize * sizeof(INT32));
@@ -745,7 +756,7 @@ ProcXF86VidModeAddModeLine(client)
     (vptr->SwitchMode)(newmptr);
 #endif
 
-    if (xf86Verbose)
+    if (xf86Verbose > 1)
 	ErrorF("AddModeLine - Succeeded\n");
     return(client->noClientException);
 }
@@ -759,7 +770,7 @@ ProcXF86VidModeDeleteModeLine(client)
     DisplayModePtr curmptr, mptr;
     int len;
 
-    if (xf86Verbose) {
+    if (xf86Verbose > 1) {
 	ErrorF("DeleteModeLine - scrn: %d clock: %d\n",
 		stuff->screen, stuff->dotclock, stuff->dotclock);
 	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
@@ -778,11 +789,13 @@ ProcXF86VidModeDeleteModeLine(client)
     REQUEST_AT_LEAST_SIZE(xXF86VidModeDeleteModeLineReq);
     len = client->req_len - (sizeof(xXF86VidModeDeleteModeLineReq) >> 2);
     if (len != stuff->privsize) {
-	ErrorF("req_len = %d, sizeof(Req) = %d, privsize = %d, len = %d, length = %d\n",
-		client->req_len, sizeof(xXF86VidModeDeleteModeLineReq)>>2, stuff->privsize, len, stuff->length);
+	if (xf86Verbose > 1) {
+	    ErrorF("req_len = %d, sizeof(Req) = %d, privsize = %d, len = %d, length = %d\n",
+		    client->req_len, sizeof(xXF86VidModeDeleteModeLineReq)>>2, stuff->privsize, len, stuff->length);
+	}
 	return BadLength;
     }
-
+    if (xf86Verbose > 1) {
 	ErrorF("Checking against clock: %d (%d)\n",
 		mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
 	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
@@ -791,18 +804,21 @@ ProcXF86VidModeDeleteModeLine(client)
 	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
 		mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
 		mptr->VTotal, mptr->Flags);
+    }
     if (MODEMATCH(mptr, stuff, vptr))
 	return BadValue;
 
     while ((mptr = mptr->next) != curmptr) {
-	ErrorF("Checking against clock: %d (%d)\n",
-		mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
-	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
-		mptr->HDisplay, mptr->HSyncStart,
-		mptr->HSyncEnd, mptr->HTotal);
-	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
-		mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
-		mptr->VTotal, mptr->Flags);
+	if (xf86Verbose > 1) {
+	    ErrorF("Checking against clock: %d (%d)\n",
+		    mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
+	    ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
+		    mptr->HDisplay, mptr->HSyncStart,
+		    mptr->HSyncEnd, mptr->HTotal);
+	    ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+		    mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
+		    mptr->VTotal, mptr->Flags);
+	}
 	if (MODEMATCH(mptr, stuff, vptr)) {
 	    mptr->prev->next = mptr->next;
 	    mptr->next->prev = mptr->prev;
@@ -827,7 +843,7 @@ ProcXF86VidModeModModeLine(client)
     DisplayModeRec modetmp;
     int len;
 
-    if (xf86Verbose) {
+    if (xf86Verbose > 1) {
 	ErrorF("ModModeLine - scrn: %d hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->screen, stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
@@ -873,7 +889,7 @@ ProcXF86VidModeModModeLine(client)
 	modetmp.Private =
 		(INT32 *)ALLOCATE_LOCAL(mptr->PrivSize * sizeof(INT32));
 	if (stuff->privsize) {
-	    if (xf86Verbose)
+	    if (xf86Verbose > 1)
 		ErrorF("ModModeLine - Request includes privates\n");
 	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(INT32));
 	} else
@@ -932,7 +948,7 @@ ProcXF86VidModeModModeLine(client)
 
     (vptr->SwitchMode)(mptr);
 
-    if (xf86Verbose)
+    if (xf86Verbose > 1)
 	ErrorF("ModModeLine - Succeeded\n");
     return(client->noClientException);
 }
@@ -948,7 +964,7 @@ ProcXF86VidModeValidateModeLine(client)
     DisplayModeRec modetmp;
     int len, status;
 
-    if (xf86Verbose) {
+    if (xf86Verbose > 1) {
 	ErrorF("ValidateModeLine - scrn: %d clock: %d\n",
 		stuff->screen, stuff->dotclock);
 	ErrorF("                   hdsp: %d hbeg: %d hend: %d httl: %d\n",
@@ -1035,7 +1051,7 @@ status_reply:
 	swapl(&rep.status, n);
     }
     WriteToClient(client, sizeof(xXF86VidModeValidateModeLineReply), (char *)&rep);
-    if (xf86Verbose)
+    if (xf86Verbose > 1)
 	ErrorF("ValidateModeLine - Succeeded\n");
     return(client->noClientException);
 }
@@ -1067,8 +1083,9 @@ ProcXF86VidModeSwitchToMode(client)
     REQUEST(xXF86VidModeSwitchToModeReq);
     ScrnInfoPtr vptr;
     DisplayModePtr curmptr, mptr;
+    int len;
 
-    if (xf86Verbose) {
+    if (xf86Verbose > 1) {
 	ErrorF("SwitchToMode - scrn: %d clock: %d\n",
 		stuff->screen, stuff->dotclock);
 	ErrorF("               hdsp: %d hbeg: %d hend: %d httl: %d\n",
@@ -1087,20 +1104,26 @@ ProcXF86VidModeSwitchToMode(client)
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     curmptr = mptr = vptr->modes;
 
-    REQUEST_SIZE_MATCH(xXF86VidModeSwitchToModeReq);
+    REQUEST_AT_LEAST_SIZE(xXF86VidModeSwitchToModeReq);
+    len = client->req_len - (sizeof(xXF86VidModeSwitchToModeReq) >> 2);
+    if (len != stuff->privsize)
+	return BadLength;
+
 
     if (MODEMATCH(mptr, stuff, vptr))
 	return (client->noClientException);
 
     while ((mptr = mptr->next) != curmptr) {
-	ErrorF("Checking against clock: %d (%d)\n",
-		mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
-	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
-		mptr->HDisplay, mptr->HSyncStart,
-		mptr->HSyncEnd, mptr->HTotal);
-	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
-		mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
-		mptr->VTotal, mptr->Flags);
+	if (xf86Verbose > 1) {
+	    ErrorF("Checking against clock: %d (%d)\n",
+		    mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
+	    ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
+		    mptr->HDisplay, mptr->HSyncStart,
+		    mptr->HSyncEnd, mptr->HTotal);
+	    ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+		    mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
+		    mptr->VTotal, mptr->Flags);
+	}
 	if (MODEMATCH(mptr, stuff, vptr)) {
 	    if ((vptr->SwitchMode)(mptr)) {
 		vptr->modes = mptr;
@@ -1124,7 +1147,7 @@ ProcXF86VidModeSwitchToMode(client)
 		}
 	    }
 	    (vptr->AdjustFrame)(vptr->frameX0, vptr->frameY0);
-	    if (xf86Verbose)
+	    if (xf86Verbose > 1)
 		ErrorF("SwitchToMode - Succeeded\n");
 	    return(client->noClientException);
 	}
@@ -1237,16 +1260,27 @@ ProcXF86VidModeGetViewPort(client)
     REQUEST(xXF86VidModeGetViewPortReq);
     xXF86VidModeGetViewPortReply rep;
     ScrnInfoPtr vptr;
-    MonPtr mptr;
+    int n;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-    mptr = vptr->monitor;
 
     REQUEST_SIZE_MATCH(xXF86VidModeGetViewPortReq);
     rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.x = vptr->frameX0;
+    rep.y = vptr->frameY0;
+
+    if (client->swapped) {
+	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+	swapl(&rep.x, n);
+	swapl(&rep.y, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86VidModeGetViewPortReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -1256,15 +1290,37 @@ ProcXF86VidModeSetViewPort(client)
 {
     REQUEST(xXF86VidModeSetViewPortReq);
     ScrnInfoPtr vptr;
-    MonPtr mptr;
+    int x, y;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
-    mptr = vptr->monitor;
 
     REQUEST_SIZE_MATCH(xXF86VidModeSetViewPortReq);
+
+    if (stuff->x < 0)
+	x = 0;
+    else if (stuff->x + vptr->modes->HDisplay + 1 > vptr->virtualX)
+	x = vptr->virtualX - vptr->modes->HDisplay - 1;
+    else
+	x = stuff->x;
+
+    if (stuff->y < 0)
+	y = 0;
+    else if (stuff->y + vptr->modes->VDisplay + 1 > vptr->virtualY)
+	y = vptr->virtualY - vptr->modes->VDisplay - 1;
+    else
+	y = stuff->y;
+
+    if (vptr->AdjustFrame && xf86VTSema) {
+	vptr->AdjustFrame(x, y);
+	vptr->frameX0 = x;
+	vptr->frameX1 = x + vptr->modes->HDisplay - 1;
+	vptr->frameY0 = y;
+	vptr->frameY1 = y + vptr->modes->VDisplay - 1;
+    }
+    
     return (client->noClientException);
 }
 
@@ -1512,6 +1568,8 @@ SProcXF86VidModeSetViewPort(client)
     swaps(&stuff->length, n);
     REQUEST_SIZE_MATCH(xXF86VidModeSetViewPortReq);
     swaps(&stuff->screen, n);
+    swapl(&stuff->x, n);
+    swapl(&stuff->y, n);
     return ProcXF86VidModeSetViewPort(client);
 }
 

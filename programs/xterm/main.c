@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.48 1997/05/21 15:17:14 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.49 1997/05/23 09:19:51 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2262,12 +2262,14 @@ spawn ()
 		envnew = vtterm;
 		ptr = termcap;
 	}
+	*ptr = 0;
 	TermName = NULL;
 	if (resource.term_name) {
 	    if (tgetent (ptr, resource.term_name) == 1) {
 		TermName = resource.term_name;
-		if (!screen->TekEmu)
-		    resize (screen, TermName, termcap, newtc);
+		if (*ptr) 
+		    if (!screen->TekEmu)
+			resize (screen, TermName, termcap, newtc);
 	    } else {
 		fprintf (stderr, "%s:  invalid termcap entry \"%s\".\n",
 			 ProgramName, resource.term_name);
@@ -2277,8 +2279,9 @@ spawn ()
 	    while (*envnew != NULL) {
 		if(tgetent(ptr, *envnew) == 1) {
 			TermName = *envnew;
-			if(!screen->TekEmu)
-			    resize(screen, TermName, termcap, newtc);
+			if (*ptr) 
+			    if(!screen->TekEmu)
+				resize(screen, TermName, termcap, newtc);
 			break;
 		}
 		envnew++;
@@ -3140,7 +3143,7 @@ spawn ()
 		}
 #endif /* UTMP */
 #else /* USE_SYSV_ENVVAR */
-		if(!screen->TekEmu) {
+		if(!screen->TekEmu && *newtc) {
 		    strcpy (termcap, newtc);
 		    resize (screen, TermName, termcap, newtc);
 		}
@@ -3156,9 +3159,11 @@ spawn ()
 		    remove_termcap_entry (newtc, ":im=");
 		    remove_termcap_entry (newtc, ":ei=");
 		    remove_termcap_entry (newtc, ":mi");
-		    strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
+		    if(*newtc)
+			strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
 		}
-		Setenv ("TERMCAP=", newtc);
+		if(*newtc)
+		    Setenv ("TERMCAP=", newtc);
 #endif /* USE_SYSV_ENVVAR */
 
 
@@ -3504,12 +3509,14 @@ static int spawn()
 	ptr = termcap;
     }
 
+    *ptr = 0;
     TermName = NULL;
     if (resource.term_name) {
 	if (tgetent (ptr, resource.term_name) == 1) {
 	    TermName = resource.term_name;
-	    if (!screen->TekEmu)
-		resize (screen, TermName, termcap, newtc);
+	    if (*ptr)
+		if (!screen->TekEmu)
+		    resize (screen, TermName, termcap, newtc);
 	} else {
 	    fprintf (stderr, "%s:  invalid termcap entry \"%s\".\n",
 		ProgramName, resource.term_name);
@@ -3520,9 +3527,10 @@ static int spawn()
 	while (*envnew != NULL) {
 	    if(tgetent(ptr, *envnew) == 1) {
 		TermName = *envnew;
-		if(!screen->TekEmu)
-		    resize(screen, TermName, termcap, newtc);
-		    break;
+		if (*ptr)
+		    if(!screen->TekEmu)
+			resize(screen, TermName, termcap, newtc);
+		break;
 	    }
 	    envnew++;
 	}
@@ -3597,7 +3605,7 @@ static int spawn()
     if (!getenv("HOME")) Setenv("HOME=", DEF_HOME);
     if (!getenv("SHELL")) Setenv("SHELL=", DEF_SHELL);
 
-    if(!screen->TekEmu) {
+    if(!screen->TekEmu && *newtc) {
 	strcpy (termcap, newtc);
 	resize (screen, TermName, termcap, newtc);
     }
@@ -3612,9 +3620,11 @@ static int spawn()
 	remove_termcap_entry (newtc, ":im=");
 	remove_termcap_entry (newtc, ":ei=");
 	remove_termcap_entry (newtc, ":mi");
-	strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
+	if (*newtc)
+	    strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
     }
-    Setenv ("TERMCAP=", newtc);
+    if (*newtc)
+	Setenv ("TERMCAP=", newtc);
 
     /*
      * Execute specified program or shell. Use find_program to

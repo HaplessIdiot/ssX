@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.39 1997/05/12 13:28:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.40 1997/05/18 13:58:16 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -464,7 +464,7 @@ void mouse_configuration() {
 
 #else /* __EMX__ */
        	/* set some reasonable defaults for OS/2 */
-       	config_mousetype = 8;
+       	config_mousetype = 9;
 	config_chordmiddle = 0;       
 	config_cleardtrrts = 0;
 	config_emulate3buttons = 0;
