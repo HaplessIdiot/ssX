@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.31 95/05/31 20:47:35 converse Exp $" */
+/* $XConsortium: LRGB.c,v 1.32 95/06/08 23:20:39 gildea Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

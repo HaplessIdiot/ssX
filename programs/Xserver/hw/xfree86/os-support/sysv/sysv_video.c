@@ -1,5 +1,5 @@
-/* $XConsortium: sysv_video.c,v 1.1 94/03/28 21:33:15 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.1 1995/03/08 10:17:39 dawes Exp $ */
+/* $XConsortium: sysv_video.c,v 1.2 95/03/01 16:11:01 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.2 1995/04/09 13:52:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

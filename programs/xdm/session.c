@@ -1,5 +1,5 @@
-/* $XConsortium: session.c,v 1.75 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.5 1995/06/02 10:29:58 dawes Exp $ */
+/* $XConsortium: session.c,v 1.72.1.1 95/06/19 20:29:12 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.6 1995/06/14 07:54:26 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

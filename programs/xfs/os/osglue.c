@@ -1,5 +1,5 @@
-/* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp $ */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.3 1995/03/18 11:12:38 dawes Exp $ */
+/* $XConsortium: osglue.c,v 1.12 95/04/07 19:42:57 kaleb Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.4 1995/04/09 13:55:46 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -306,7 +306,7 @@ CloneMyself()
 
     old_listen_arg[0] = '\0';
 
-#ifdef XNO_SYSCONF
+#ifdef XNO_SYSCONF	/* should only be on FreeBSD 1.x and NetBSD 0.x */
 #undef _SC_OPEN_MAX
 #endif
 #ifdef _SC_OPEN_MAX

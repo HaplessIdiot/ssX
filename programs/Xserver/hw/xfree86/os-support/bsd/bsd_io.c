@@ -1,5 +1,5 @@
-/* $XConsortium: bsd_io.c,v 1.3 95/01/16 13:17:58 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.4 1995/01/28 17:04:27 dawes Exp $ */
+/* $XConsortium: bsd_io.c,v 1.5 95/06/14 15:19:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.5 1995/06/17 12:17:07 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

@@ -1,5 +1,5 @@
-/* $XConsortium: cmsColNm.c,v 1.30 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.0 1994/10/20 06:03:32 dawes Exp $ */
+/* $XConsortium: cmsColNm.c,v 1.30 95/06/08 23:20:39 gildea Exp $" */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.1 1995/06/14 07:07:18 dawes Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -757,6 +757,7 @@ LoadColornameDB()
     pairs = (XcmsPair *)Xcalloc(nEntries, sizeof(XcmsPair));
 
     ReadColornameDB(stream, pairs, strings);
+    (void) fclose(stream);
 
     /*
      * sort the pair recs

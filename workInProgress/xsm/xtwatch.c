@@ -1,5 +1,5 @@
 /* $XConsortium: xtwatch.c,v 1.8 95/05/24 20:43:29 mor Exp $ */
-/* $XFree86: xc/workInProgress/xsm/xtwatch.c,v 3.1 1995/06/20 14:46:48 dawes Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xtwatch.c,v 3.2 1995/06/24 10:38:34 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,6 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 
 extern void CloseDownClient ();
+
 
 
 Status
@@ -127,5 +128,4 @@ XtInputId	*id;
 	    IceCloseConnection (ice_conn);
 	}
     }
-    IceProcessMessages (ice_conn, NULL, NULL);
 }

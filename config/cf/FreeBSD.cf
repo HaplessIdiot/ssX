@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.4 95/01/05 19:39:23 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.28 1995/06/18 13:47:45 dawes Exp $
+XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.29 1995/06/24 10:21:09 dawes Exp $
 
 #define OSName            FreeBSD 2.0.5
 #define OSVendor          /**/

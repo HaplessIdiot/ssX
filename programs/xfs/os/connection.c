@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.5 1995/03/18 11:12:36 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.30 95/03/04 12:41:51 kaleb Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.6 1995/04/09 13:55:45 dawes Exp $ */
 /*
  * handles connections
  */

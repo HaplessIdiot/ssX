@@ -2,8 +2,8 @@
  * fsinfo -- report info about a font server
  */
 
-/* $XConsortium: fsinfo.c,v 1.5 94/04/17 20:24:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fsinfo.c,v 1.6 95/04/06 19:50:32 mor Exp $ */
+/* $XFree86: xc/programs/fsinfo/fsinfo.c,v 3.0 1995/06/17 12:21:05 dawes Exp $ */
 /*
 
 Portions Copyright (c) 1987  X Consortium
