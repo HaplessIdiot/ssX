@@ -1,4 +1,5 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 177. Fix ELF loader for >=2.6.8-pre3 Linux kernels (Marc La France).
  176. Add support for the si_LK.UTF-8 locale (Bugzilla #1465,
       Chamath Keppitiyagama on behalf of the Lanka Linux User Group).
  175. Fix the host memory to bus macro in xf86pciBus.c, and add translations
@@ -19088,7 +19089,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3309 2004/09/01 23:57:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3310 2004/09/03 02:45:00 dawes Exp $
 
 
 
