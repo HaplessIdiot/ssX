@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/r61_main/4 1996/01/13 13:05:30 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.47 1996/02/04 08:54:55 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.48 1996/02/09 08:19:46 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -97,7 +97,7 @@ INSTPGMFLAGS =
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-#if SystemV4 || defined(SGIArchitecture) || defined(XFree86Version)
+#if SystemV4 || defined(SGIArchitecture) || UseRgbTxt
         SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS)
 #else
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)

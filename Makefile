@@ -1,10 +1,10 @@
-# $XConsortium: Makefile /main/32 1996/01/18 06:15:36 kaleb $
-# $XFree86: xc/Makefile,v 3.2 1996/01/21 01:47:06 dawes Exp $
+# $XConsortium: Makefile /main/33 1996/02/02 19:03:18 gildea $
+# $XFree86: xc/Makefile,v 3.3 1996/01/24 21:51:40 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
 
-RELEASE = "Release 6.1beta"
+RELEASE = "Release 6.1"
 SHELL = /bin/sh
 RM = rm -f
 MV = mv

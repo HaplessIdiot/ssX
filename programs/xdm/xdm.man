@@ -1,5 +1,5 @@
-.\" $XConsortium: xdm.man /main/41 1995/12/15 14:02:42 gildea $
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.3 1995/11/02 00:29:44 dawes Exp $
+.\" $XConsortium: xdm.man /main/42 1996/01/15 15:16:40 gildea $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.4 1996/01/05 13:21:03 dawes Exp $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -123,13 +123,16 @@ After resetting the X server, \fIxdm\fP runs the \fIXsetup\fP script
 to assist in setting up the screen the user sees along with the
 \fIxlogin\fP widget.
 .PP
-When the user logs in, \fIxdm\fP runs the \fIXstartup\fP script as
+The \fIxlogin\fP widget, which \fIxdm\fP presents,
+offers the familiar login and password prompts.
+.PP
+After the user logs in, \fIxdm\fP runs the \fIXstartup\fP script as
 root.
 .PP
 Then \fIxdm\fP runs the \fIXsession\fP script as the user.  This
 system session file may do some additional startup and typically runs
-a script in the user's home directory.  When the \fIXsession\fP script
-exits, the session is over.
+the \fI.xsession\fP script in the user's home directory.
+When the \fIXsession\fP script exits, the session is over.
 .PP
 At the end of the session, the \fIXreset\fP script is run to clean up,
 the X server is reset, and the cycle starts over.
@@ -1170,6 +1173,17 @@ with a reasonably long
 command line (using the full path name should be enough).
 Each process which is
 servicing a display is marked \fB\-\fP\fIdisplay.\fP
+.SH "ADDITIONAL LOCAL DISPLAYS"
+.PP
+To add an additional local display, add a line for it to the
+\fIXservers\fP file.
+(See the section \fBLocal Server Specification\fP.)
+.PP
+Examine the display-specific resources in \fIxdm-config\fP
+(e.g., \fBDisplayManager._0.authorize\fP)
+and consider which of them should be copied for the new display.
+The default \fIxdm-config\fP has all the appropriate lines for
+displays \fB:0\fP and \fB:1\fP.
 .SH "OTHER POSSIBILITIES"
 .PP
 You can use \fIxdm\fP
