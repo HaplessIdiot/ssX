@@ -1679,6 +1679,8 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    }
 
 	    if (computer.devices[i]->refcount <= 0) {
+		int type = computer.devices[i]->type;
+
 		XtDestroyWidget(computer.devices[i]->widget);
 		XtFree((XtPointer)computer.devices[i]);
 		if (--computer.num_devices > i)
@@ -1686,7 +1688,7 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			    (computer.num_devices - i) * sizeof(xf86cfgDevice*));
 
 		DrawCables();
-		UpdateMenuDeviceList(computer.devices[i]->type);
+		UpdateMenuDeviceList(type);
 	    }
 
 	    break;
