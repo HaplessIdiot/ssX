@@ -47,11 +47,11 @@ struct _XftFontStruct {
     int			rgba;
     Bool		antialias;
     int			charmap;    /* -1 for unencoded */
-    Bool		transform;
-    FT_Matrix		matrix;
     XRenderPictFormat	*format;
     XGlyphInfo		**realized;
     int			nrealized;
+    Bool		transform;
+    FT_Matrix		matrix;
 };
 
 _XFUNCPROTOBEGIN
