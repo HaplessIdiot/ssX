@@ -26,11 +26,16 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.11 2003/02/16 05:23:45 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.12 2003/02/21 03:11:58 dawes Exp $
  */
 
 #ifdef USE_MODULES
 #include <setjmp.h>
+#if defined(setjmp) && \
+    defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
+#define HAS_GLIBC_SIGSETJMP 1
+#endif
+
 #define LOADER_PRIVATE
 #include "loader.h"
 
@@ -265,8 +270,17 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
+#ifdef HAS_GLIBC_SIGSETJMP
+   SYMFUNC(xf86setjmp)
+   SYMFUNCALIAS("xf86setjmp1",__sigsetjmp)
+#else
    SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNC(xf86setjmp1)
+#endif
    SYMFUNCALIAS("xf86longjmp",longjmp)
+   SYMFUNC(xf86getjmptype)
+   SYMFUNC(xf86setjmp1_arg2)
+   SYMFUNC(xf86setjmperror)
 
     SYMFUNC(xf86AddDriver)
     SYMFUNC(xf86ServerIsOnlyDetecting)

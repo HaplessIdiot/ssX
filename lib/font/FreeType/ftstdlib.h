@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86: xc/lib/font/FreeType/ftstdlib.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftstdlib.h,v 1.4 2002/10/10 01:18:31 tsi Exp $ */
 
 #ifndef __FTSTDLIB_H__
 #define __FTSTDLIB_H__
@@ -58,6 +58,7 @@
 #define _XTYPEDEF_BOOL
 #include "Xdefs.h"
 #define DONT_DEFINE_WRAPPERS
+#define DEFINE_SETJMP_WRAPPERS
 #include "xf86_ansic.h"
 #undef DONT_DEFINE_WRAPPERS
 
@@ -94,9 +95,9 @@
 
 #define ft_atoi   xf86atoi
 
-#define ft_jmp_buf  xf86jmp_buf
-#define ft_setjmp   xf86setjmp
-#define ft_longjmp  xf86longjmp
+#define ft_jmp_buf  jmp_buf
+#define ft_setjmp   setjmp
+#define ft_longjmp  longjmp
 
 #endif /* FONTMODULE */
 

@@ -1,4 +1,7 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 940. Allow xf86setjmp/xf86setlongjmp to work with platforms where
+      setjmp() isn't directly available as a function, specifically Linux
+      platforms that use glibc 2.0 and 2.1. (David Dawes, Keith Packard).
  939. Check pScrn->vtSema before calling xf86SetCursor() from
       xf86CursorCloseScreen().  This avoids a segfault at exit with some
       drivers (Alan Hourihane).
@@ -16477,4 +16480,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2574 2003/02/21 21:44:19 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2575 2003/02/21 22:40:22 dawes Exp $

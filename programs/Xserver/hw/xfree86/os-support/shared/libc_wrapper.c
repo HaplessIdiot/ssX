@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.86 2002/05/31 18:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.87 2003/02/21 03:11:57 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -164,6 +164,11 @@ typedef struct dirent DIRENTRY;
 #include <sys/shm.h>
 #endif
 #include <setjmp.h>
+
+#if defined(setjmp) && \
+    defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
+#define HAS_GLIBC_SIGSETJMP 1
+#endif
 
 #if 0
 #define SETBUF_RETURNS_INT
@@ -1944,3 +1949,41 @@ xf86shmdt(char *addr)
     return -1;
 }
 #endif /* HAVE_SYSV_IPC */
+
+int
+xf86getjmptype()
+{
+#ifdef HAS_GLIBC_SIGSETJMP
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+#ifdef HAS_GLIBC_SIGSETJMP
+int
+xf86setjmp(xf86jmp_buf env)
+{
+    FatalError("setjmp: type 0 called instead of type %d\n", xf86getjmptype());
+}
+#else
+int
+xf86setjmp1(xf86jmp_buf env, int arg2)
+{
+    FatalError("setjmp: type 1 called instead of type %d\n", xf86getjmptype());
+}
+#endif
+
+int
+xf86setjmp1_arg2()
+{
+    return 0;
+}
+
+int
+xf86setjmperror(xf86jmp_buf env)
+{
+    FatalError("setjmp: don't know how to handle setjmp() type %d\n",
+	       xf86getjmptype());
+}
+
