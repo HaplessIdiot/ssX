@@ -12,6 +12,7 @@
             LANGUAGE = ObjC; 
             OUTLETS = {
                 displayNumber = id; 
+                dockSwitchButton = id; 
                 fakeButton = id; 
                 keyField = id; 
                 keymapFileField = id; 
@@ -31,10 +32,10 @@
             SUPERCLASS = NSApplication; 
         }, 
         {
-            ACTIONS = {applicationWillResignActive = id; closeHelpAndShow = id; }; 
+            ACTIONS = {applicationWillResignActive = id; closeHelpAndShow = id; showAction = id; }; 
             CLASS = Xserver; 
             LANGUAGE = ObjC; 
-            OUTLETS = {helpWindow = id; startupHelpButton = id; }; 
+            OUTLETS = {helpWindow = id; startupHelpButton = id; switchWindow = id; }; 
             SUPERCLASS = NSObject; 
         }
     ); 

@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.15 2001/04/28 20:42:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.16 2001/04/30 16:26:01 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -216,12 +216,16 @@ extern void ShowMenuBar(void);
     // Make sure the menu bar gets drawn
     [NSApp setWindowsNeedUpdate:YES];
 
+    // Show the X switch window if not using dock icon switching
+    if (![Preferences dockSwitch])
+        [switchWindow orderFront:nil];
+
     // Display the help splash screen or show the X server
     if ([Preferences startupHelp]) {
-        [helpWindow makeKeyAndOrderFront:self];
+        [helpWindow makeKeyAndOrderFront:nil];
     } else {
         ShowMenuBar();
-        [self closeHelpAndShow:self];
+        [self closeHelpAndShow:nil];
     }
 }
 
@@ -250,6 +254,11 @@ extern void ShowMenuBar(void);
     serverVisible = YES;
     [self sendShowHide:YES];
     [NSApp activateIgnoringOtherApps:YES];
+}
+
+// Show the X server when sent message from GUI
+- (IBAction)showAction:(id)sender {
+    [self sendShowHide:YES];
 }
 
 // Show or hide the X server
@@ -374,7 +383,9 @@ extern void ShowMenuBar(void);
 
 // Called when the user clicks the application icon, but not when Cmd-Tab is used
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag {
-    [self show];
+    if ([Preferences dockSwitch]) {
+        [self show];
+    }
     return NO;
 }
 

@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.2 2001/04/11 08:34:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.3 2001/04/13 20:55:26 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -39,7 +39,7 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 #define HIDE_QD_CURSOR(display, visible) \
     if (visible) { CGDisplayHideCursor(display); visible = FALSE; }
 #define SHOW_QD_CURSOR(display, visible) \
-    if (! visible) { CGDisplayShowCursor(display); visible = TRUE; }
+    CGDisplayShowCursor(display); visible = TRUE;
 
 
 /*
