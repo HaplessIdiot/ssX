@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.117 2001/02/15 11:03:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.118 2001/02/24 14:29:17 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -66,7 +66,7 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #define PM3Video 1
 
 #if DEBUG
