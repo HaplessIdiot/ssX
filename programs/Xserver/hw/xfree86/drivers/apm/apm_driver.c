@@ -416,7 +416,7 @@ ApmProbe(DriverPtr drv, int flags)
 		    drv, &usedChips);
 
     if (numUsed > 0) {
-	if (flags & PROBE_DETECT)
+	if (flags & PROBE_DETECTPCI)
 	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
@@ -446,7 +446,7 @@ ApmProbe(DriverPtr drv, int flags)
 			ApmIsaChipsets, drv, ApmFindIsaDevice, DevSections,
 			numDevSections, &usedChips);
     if (numUsed > 0) {
-	if (flags & PROBE_DETECT)
+	if (flags & PROBE_DETECTISA)
 	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);

@@ -563,7 +563,7 @@ static Bool R128Probe(DriverPtr drv, int flags)
 				    drv,
 				    &usedChips);
 
-    if (numUsed > 0 && (flags & PROBE_DETECT))
+    if (numUsed > 0 && (flags & PROBE_DETECTPCI))
 	return TRUE;
 
     for (i = 0; i < numUsed; i++) {
