@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.10 1999/11/19 13:55:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.11 1999/12/14 02:59:26 robin Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -70,8 +70,8 @@ xf86GetKbdLeds()
 #include <asm/kbio.h>
 #endif
 
-int
-KDKBDREP_ioctl_ok(double rate, int delay) {
+static int
+KDKBDREP_ioctl_ok(int rate, int delay) {
 #ifdef KDKBDREP
      /* This ioctl is defined in <linux/kd.h> but is not
 	implemented anywhere - must be in some m68k patches. */
@@ -88,7 +88,7 @@ KDKBDREP_ioctl_ok(double rate, int delay) {
    if (rate == 0)				/* switch repeat off */
      kbdrep_s.rate = 0;
    else
-     kbdrep_s.rate  = 1000.0 / rate;		/* convert cps to msec */
+     kbdrep_s.rate  = 10000 / rate;		/* convert cps to msec */
    if (kbdrep_s.rate < 1)
      kbdrep_s.rate = 1;
    kbdrep_s.delay = delay;
@@ -99,12 +99,6 @@ KDKBDREP_ioctl_ok(double rate, int delay) {
      return 0;
    }
 
-   /* report */
-   if (kbdrep_s.rate == 0)
-     rate = 0;
-   else
-     rate = 1000.0 / (double) kbdrep_s.rate;
-
    return 1;			/* success! */
 
 #else /* no KDKBDREP */
@@ -112,8 +106,8 @@ KDKBDREP_ioctl_ok(double rate, int delay) {
 #endif /* KDKBDREP */
 }
 
-int
-KIOCSRATE_ioctl_ok(double rate, int delay) {
+static int
+KIOCSRATE_ioctl_ok(int rate, int delay) {
 #ifdef KIOCSRATE
    struct kbd_rate kbdrate_s;
    int fd;
@@ -122,7 +116,7 @@ KIOCSRATE_ioctl_ok(double rate, int delay) {
    if (fd == -1) 
      return 0;   
 
-   kbdrate_s.rate = (int) (rate + 0.5);  /* must be integer, so round up */
+   kbdrate_s.rate = (rate + 5) / 10;  /* must be integer, so round up */
    kbdrate_s.delay = delay * HZ / 1000;  /* convert ms to Hz */
    if (kbdrate_s.rate > 50)
      kbdrate_s.rate = 50;
@@ -146,6 +140,65 @@ void xf86SetKbdRepeat(rad)
 char rad;
 #endif
 {
+  int i;
+  int         value = 0x7f;    /* Maximum delay with slowest rate */
+
+#ifdef __sparc__
+  int         rate  = 500;     /* Default rate */
+  int         delay = 200;     /* Default delay */
+#else
+  int         rate  = 300;     /* Default rate */
+  int         delay = 250;     /* Default delay */
+#endif
+
+
+  static int valid_rates[] = { 300, 267, 240, 218, 200, 185, 171, 160, 150,
+			       133, 120, 109, 100, 92, 86, 80, 75, 67,
+			       60, 55, 50, 46, 43, 40, 37, 33, 30, 27,
+			       25, 23, 21, 20 };
+#define RATE_COUNT (sizeof( valid_rates ) / sizeof( int ))
+
+  static int valid_delays[] = { 250, 500, 750, 1000 };
+#define DELAY_COUNT (sizeof( valid_delays ) / sizeof( int ))
+
+
+  if (xf86Info.kbdRate >= 0) 
+    rate = xf86Info.kbdRate * 10;
+  if (xf86Info.kbdDelay >= 0)
+    delay = xf86Info.kbdDelay;
+
+
+  if(KDKBDREP_ioctl_ok(rate, delay)) 	/* m68k? */
+    return;
+
+  if(KIOCSRATE_ioctl_ok(rate, delay))	/* sparc? */
+    return;
+
+
+
+  /* The ioport way */
+
+  for (i = 0; i < RATE_COUNT; i++)
+    if (rate >= valid_rates[i]) {
+      value &= 0x60;
+      value |= i;
+      break;
+    }
+
+  for (i = 0; i < DELAY_COUNT; i++)
+    if (delay <= valid_delays[i]) {
+      value &= 0x1f;
+      value |= i << 5;
+      break;
+    }
+
+
+  while ((inb(0x64) & 2) == 2); /* wait */
+  outb(0x60, 0xf3);             /* set typematic rate */
+  while ((inb(0x64) & 2) == 2); /* wait */
+  usleep(10000);
+  outb(0x60, value);
+
   return;
 }
 
