@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.58 2002/10/16 17:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.59tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -11,6 +11,7 @@
 
 #include "X.h"
 #include "os.h"
+#include "servermd.h"
 #include "mibank.h"
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -761,6 +762,55 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 }
 
 /*
+ * xf86CheckModeSize
+ *
+ * An internal routine to check if a mode fits in video memory.  This tries to
+ * avoid overflows that would otherwise occur when video memory size is greater
+ * than 2456MB.
+ */
+static Bool
+xf86CheckModeSize(ScrnInfoPtr scrp, int w, int x, int y)
+{
+    int bpp = scrp->fbFormat.bitsPerPixel,
+	pad = scrp->fbFormat.scanlinePad;
+    int lineWidth, lastWidth;
+
+    if (scrp->depth == 4)
+	pad *= 4;		/* 4 planes */
+
+    /* Sanity check */
+    if ((w < 0) || (x < 0) || (y <= 0))
+	return FALSE;
+
+    lineWidth = (((w * bpp) + pad - 1) / pad) * pad;
+    lastWidth = x * bpp;
+
+    /*
+     * At this point, we need to compare
+     *
+     *	(lineWidth * (y - 1)) + lastWidth
+     *
+     * against
+     *
+     *	scrp->videoRam * (1024 * 8)
+     *
+     * These are bit quantities.  To avoid overflows, do the comparison in
+     * terms of BITMAP_SCANLINE_PAD units.  This assumes BITMAP_SCANLINE_PAD
+     * is a power of 2.  We currently use 32, which limits us to a video
+     * memory size of 8GB.
+     */
+
+    lineWidth = (lineWidth + (BITMAP_SCANLINE_PAD - 1)) / BITMAP_SCANLINE_PAD;
+    lastWidth = (lastWidth + (BITMAP_SCANLINE_PAD - 1)) / BITMAP_SCANLINE_PAD;
+
+    if ((lineWidth * (y - 1) + lastWidth) >
+	(scrp->videoRam * ((1024 * 8) / BITMAP_SCANLINE_PAD)))
+	return FALSE;
+
+    return TRUE;
+}
+
+/*
  * xf86InitialCheckModeForDriver
  *
  * This function checks if a mode satisfies a driver's initial requirements:
@@ -817,8 +867,8 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	mode->VSyncStart >= mode->VSyncEnd || mode->VSyncEnd >= mode->VTotal)
 	return MODE_V_ILLEGAL;
 
-    if (mode->HDisplay * mode->VDisplay * scrp->fbFormat.bitsPerPixel >
-        scrp->videoRam * (1024 * 8))
+    if (!xf86CheckModeSize(scrp, mode->HDisplay, mode->HDisplay,
+				 mode->VDisplay))
         return MODE_MEM;
 
     if (maxPitch > 0 && mode->HDisplay > maxPitch)
@@ -1135,9 +1185,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     ModeStatus status;
     int linePitch = -1, virtX = 0, virtY = 0;
     int newLinePitch, newVirtX, newVirtY;
-    int pixelArea = scrp->videoRam * (1024 * 8);	/* in bits */
     int modeSize;					/* in pixels */
-    int bitsPerPixel, pixmapPad;
     Bool validateAllDefaultModes;
     Bool userModes = FALSE;
     int saveType;
@@ -1315,18 +1363,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     else
 	BankFormat = xf86GetPixFormat(scrp, 1);	/* >not< scrp->depth! */
 
-    bitsPerPixel = scrp->fbFormat.bitsPerPixel;
-    pixmapPad = scrp->fbFormat.scanlinePad;
-    if (scrp->depth == 4)
-	pixmapPad *= 4;		/* 4 planes */
-
     if (scrp->xInc <= 0)
         scrp->xInc = 8;		/* Suitable for VGA and others */
 
 #define _VIRTUALX(x) ((((x) + scrp->xInc - 1) / scrp->xInc) * scrp->xInc)
-#define _VIDEOSIZE(w, x, y) \
-    ((((((w) * bitsPerPixel) + pixmapPad - 1) / pixmapPad) * pixmapPad * \
-     ((y) - 1)) + ((x) * bitsPerPixel))
 
     /*
      * Determine maxPitch if it wasn't given explicitly.  Note linePitches
@@ -1386,7 +1426,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    return -1;
 	}
 
-	if (_VIDEOSIZE(linePitch, virtualX, virtualY) > pixelArea) {
+	if (!xf86CheckModeSize(scrp, linePitch, virtualX, virtualY)) {
 	    xf86DrvMsg(scrp->scrnIndex, X_ERROR,
 		      "Virtual size (%dx%d) (pitch %d) exceeds video memory\n",
 		      virtualX, virtualY, linePitch);
@@ -1655,7 +1695,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	     * Check that the pixel area required by the new virtual height
 	     * and line pitch isn't too large.
 	     */
-	    if (_VIDEOSIZE(newLinePitch, newVirtX, newVirtY) > pixelArea) {
+	    if (!xf86CheckModeSize(scrp, newLinePitch, newVirtX, newVirtY)) {
 		p->status = MODE_MEM_VIRT;
 		goto lookupNext;
 	    }
@@ -1686,7 +1726,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     }
 
 #undef _VIRTUALX
-#undef _VIDEOSIZE
 
     /* Update the ScrnInfoRec parameters */
     
