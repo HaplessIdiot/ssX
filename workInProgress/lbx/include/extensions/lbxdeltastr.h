@@ -1,3 +1,4 @@
+/* $XConsortium: lbxdeltastr.h,v 1.4 95/03/21 19:57:46 mor Exp $ */
 /*
  * $NCDId: @(#)lbxdeltastr.h,v 1.1 1993/12/22 22:23:09 dct Exp $
  *
@@ -50,5 +51,42 @@ typedef struct _LBXDeltas {
     unsigned short	nextDelta;
     unsigned short	activeDeltas;	/* only needed for outgoing */
 } LBXDeltasRec, *LBXDeltasPtr;
+
+
+/*
+ * Motion delta cache
+ */
+
+typedef struct {
+    BYTE swapped;
+    BYTE detail;
+    CARD16 sequenceNumber B16;
+    Time time B32;
+    Window root B32, event B32, child B32;
+    INT16 rootX B16, rootY B16, eventX B16, eventY B16;
+    KeyButMask state B16;
+    BOOL sameScreen;		
+} lbxMotionCache;
+
+
+/*
+ * Motion delta events
+ */
+
+typedef struct {
+    BYTE type;
+    CARD8 deltaTime;
+    INT8 deltaX;
+    INT8 deltaY;
+} lbxQuickMotionDeltaEvent;
+
+typedef struct {
+    BYTE type;
+    INT8 deltaX;
+    INT8 deltaY;
+    BYTE pad;
+    CARD16 deltaTime B16;
+    CARD16 deltaSequence B16;
+} lbxMotionDeltaEvent;
 
 #endif /* LBX_DELTA_STRUCT_H */

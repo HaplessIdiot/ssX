@@ -1,4 +1,4 @@
-/* $XConsortium: lock.c,v 1.4 94/12/16 17:32:57 mor Exp $ */
+/* $XConsortium: lock.c,v 1.5 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -68,7 +68,8 @@ Bool write_id;
 	return (0);
 
     if (write_id &&
-        write (fd, networkIds, strlen (networkIds)) != strlen (networkIds))
+        (write (fd, networkIds, strlen (networkIds)) != strlen (networkIds)) ||
+	(write (fd, "\n", 1) != 1))
     {
 	close (fd);
 	return (0);
@@ -105,6 +106,37 @@ char *session_name;
 }
 
 
+char *
+GetLockId (session_name)
+
+char *session_name;
+
+{
+    char *path;
+    FILE *fp;
+    char lock_file[PATH_MAX];
+    char buf[256];
+    char *ret;
+
+    path = GetPath ();
+
+    sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
+
+    if ((fp = fopen (lock_file, "r")) == NULL)
+    {
+	return (NULL);
+    }
+
+    buf[0] = '\0';
+    fscanf (fp, "%s\n", buf);
+    ret = XtNewString (buf);
+
+    fclose (fp);
+
+    return (ret);
+}
+
+
 Bool
 CheckSessionLocked (session_name, get_id, id_ret)
 
@@ -114,28 +146,7 @@ char **id_ret;
 
 {
     if (get_id)
-    {
-	char *path;
-	FILE *fp;
-	char lock_file[PATH_MAX];
-	char buf[256];
-
-	path = GetPath ();
-
-	sprintf (lock_file, "%s/.XSMlock-%s", path, session_name);
-
-	if ((fp = fopen (lock_file, "r")) == NULL)
-	{
-	    *id_ret = NULL;
-	    return (0);
-	}
-
-	buf[0] = '\0';
-	fscanf (fp, "%s\n", buf);
-	*id_ret = XtNewString (buf);
-
-	fclose (fp);
-    }
+	*id_ret = GetLockId (session_name);
 
     if (!LockSession (session_name, False))
 	return (1);

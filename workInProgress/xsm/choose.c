@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.22 94/12/30 15:50:31 mor Exp $ */
+/* $XConsortium: choose.c,v 1.24 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -55,7 +55,8 @@ in this Software without prior written authorization from the X Consortium.
 static Pixel save_message_foreground;
 static Pixel save_message_background;
 
-static int delete_phase = 0;
+static int delete_session_phase = 0;
+static int break_lock_phase = 0;
 
 Widget chooseSessionPopup;
 Widget chooseSessionForm;
@@ -64,9 +65,7 @@ Widget chooseSessionListWidget;
 Widget chooseSessionMessageLabel;
 Widget chooseSessionLoadButton;
 Widget chooseSessionDeleteButton;
-#if 0
-Widget chooseSessionForceShutdownButton;
-#endif
+Widget chooseSessionBreakLockButton;
 Widget chooseSessionFailSafeButton;
 Widget chooseSessionCancelButton;
 
@@ -210,16 +209,23 @@ int number;
 Bool highlight;
 
 {
-    Bool locked = sessionsLocked[number];
+    if (number >= 0)
+    {
+	Bool locked = sessionsLocked[number];
 
-    if (highlight)
-	XawListHighlight (chooseSessionListWidget, number);
+	if (highlight)
+	    XawListHighlight (chooseSessionListWidget, number);
 
-    XtSetSensitive (chooseSessionLoadButton, !locked);
-    XtSetSensitive (chooseSessionDeleteButton, !locked);
-#if 0
-    XtSetSensitive (chooseSessionForceShutdownButton, locked);
-#endif
+	XtSetSensitive (chooseSessionLoadButton, !locked);
+	XtSetSensitive (chooseSessionDeleteButton, !locked);
+	XtSetSensitive (chooseSessionBreakLockButton, locked);
+    }
+    else
+    {
+	XtSetSensitive (chooseSessionLoadButton, False);
+	XtSetSensitive (chooseSessionDeleteButton, False);
+	XtSetSensitive (chooseSessionBreakLockButton, False);
+    }
 }
 
 
@@ -231,8 +237,19 @@ int count;
 String *names;
 
 {
+    int i;
+
     XawListChange (chooseSessionListWidget, names, count, 0, True);
-    SessionSelected (0, True);
+
+    /*
+     * Highlight the first unlocked session, if any.
+     */
+
+    for (i = 0; i < sessionNameCount; i++)
+	if (!sessionsLocked[i])
+	    break;
+
+    SessionSelected (i < sessionNameCount ? i : -1, True);
 }
 
 
@@ -332,6 +349,37 @@ ChooseSession ()
 
 
 static void
+CheckDeleteCancel ()
+
+{
+    if (delete_session_phase > 0)
+    {
+	XtVaSetValues (chooseSessionMessageLabel,
+	    XtNforeground, save_message_background,
+            NULL);
+
+	delete_session_phase = 0;
+    }
+}
+
+
+static void
+CheckBreakLockCancel ()
+
+{
+    if (break_lock_phase > 0)
+    {
+	XtVaSetValues (chooseSessionMessageLabel,
+	    XtNforeground, save_message_background,
+            NULL);
+
+	break_lock_phase = 0;
+    }
+}
+
+
+
+static void
 ChooseSessionUp (w, event, params, numParams)
 
 Widget w;
@@ -342,6 +390,9 @@ Cardinal *numParams;
 {
     XawListReturnStruct *current;
     
+    CheckDeleteCancel ();
+    CheckBreakLockCancel ();
+
     current = XawListShowCurrent (chooseSessionListWidget);
     if (current->list_index > 0)
 	SessionSelected (current->list_index - 1, True);
@@ -360,6 +411,9 @@ Cardinal *numParams;
 {
     XawListReturnStruct *current;
     
+    CheckDeleteCancel ();
+    CheckBreakLockCancel ();
+
     current = XawListShowCurrent (chooseSessionListWidget);
     if (current->list_index < sessionNameCount - 1)
 	SessionSelected (current->list_index + 1, True);
@@ -379,6 +433,9 @@ Cardinal *numParams;
 {
     XawListReturnStruct *current;
 
+    CheckDeleteCancel ();
+    CheckBreakLockCancel ();
+
     current = XawListShowCurrent (chooseSessionListWidget);
     SessionSelected (current->list_index, False /* already highlighted */);
     XtFree ((char *) current);
@@ -395,6 +452,9 @@ XtPointer 	callData;
 
 {
     XawListReturnStruct *current;
+
+    CheckDeleteCancel ();
+    CheckBreakLockCancel ();
 
     current = XawListShowCurrent (chooseSessionListWidget);
 
@@ -445,6 +505,8 @@ XtPointer 	callData;
     int longest;
     char *name;
 
+    CheckBreakLockCancel ();
+
     current = XawListShowCurrent (chooseSessionListWidget);
 
     if (!current || !(name = current->string) || *name == '\0')
@@ -455,9 +517,9 @@ XtPointer 	callData;
 	return;
     }
 
-    delete_phase++;
+    delete_session_phase++;
 
-    if (delete_phase == 1)
+    if (delete_session_phase == 1)
     {
 	XtVaSetValues (chooseSessionMessageLabel,
 	    XtNforeground, save_message_foreground,
@@ -509,10 +571,12 @@ XtPointer 	callData;
 
 		XawListChange (chooseSessionListWidget,
 		    sessionNamesLong, sessionNameCount, longest, True);
+
+		SessionSelected (-1, False);
 	    }
 	}
 
-	delete_phase = 0;
+	delete_session_phase = 0;
     }
 
     XtFree ((char *) current);
@@ -520,18 +584,73 @@ XtPointer 	callData;
 
 
 
-#if 0
 static void
-ChooseSessionForceShutdownXtProc (w, client_data, callData)
+ChooseSessionBreakLockXtProc (w, client_data, callData)
 
 Widget		w;
 XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    XBell (XtDisplay (topLevel), 0);
+    XawListReturnStruct *current;
+    char *name;
+
+    CheckDeleteCancel ();
+
+    current = XawListShowCurrent (chooseSessionListWidget);
+
+    if (!current || !(name = current->string) || *name == '\0')
+    {
+	if (current)
+	    XtFree ((char *) current);
+	XBell (XtDisplay (topLevel), 0);
+	return;
+    }
+
+    break_lock_phase++;
+
+    if (break_lock_phase == 1)
+    {
+	XtVaSetValues (chooseSessionMessageLabel,
+	    XtNforeground, save_message_foreground,
+            NULL);
+
+	XBell (XtDisplay (topLevel), 0);
+    }
+    else
+    {
+	char *id;
+	int longest;
+
+	XtVaSetValues (chooseSessionMessageLabel,
+	    XtNforeground, save_message_background,
+            NULL);
+
+	name = sessionNamesShort[current->list_index];
+
+	id = GetLockId (name);
+
+	UnlockSession (name);
+
+	sessionsLocked[current->list_index] = False;
+	XtFree ((char *) sessionNamesLong[current->list_index]);
+	sessionNamesLong[current->list_index] =
+	    sessionNamesShort[current->list_index];
+
+	XtVaGetValues (chooseSessionListWidget,
+	    XtNlongest, &longest,
+	    NULL);
+
+	XawListChange (chooseSessionListWidget,
+	    sessionNamesLong, sessionNameCount, longest, True);
+
+	SessionSelected (current->list_index, True);
+
+	break_lock_phase = 0;
+    }
+
+    XtFree ((char *) current);
 }
-#endif
 
 
 
@@ -546,6 +665,9 @@ XtPointer 	callData;
     /*
      * Pop down choice of sessions, and start the fail safe session.
      */
+
+    CheckDeleteCancel ();
+    CheckBreakLockCancel ();
 
     XtPopdown (chooseSessionPopup);
 
@@ -579,13 +701,14 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    if (delete_phase > 0)
+    if (delete_session_phase > 0 || break_lock_phase > 0)
     {
 	XtVaSetValues (chooseSessionMessageLabel,
 	    XtNforeground, save_message_background,
             NULL);
 
-	delete_phase = 0;
+	delete_session_phase = 0;
+	break_lock_phase = 0;
     }
     else
 	EndSession (2);
@@ -664,21 +787,19 @@ create_choose_session_popup ()
     XtAddCallback (chooseSessionDeleteButton, XtNcallback,
 	ChooseSessionDeleteXtProc, 0);
 
-#if 0
-    chooseSessionForceShutdownButton = XtVaCreateManagedWidget (
-	"chooseSessionForceShutdownButton",
+    chooseSessionBreakLockButton = XtVaCreateManagedWidget (
+	"chooseSessionBreakLockButton",
 	commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, chooseSessionDeleteButton,
         XtNfromVert, chooseSessionMessageLabel,
         NULL);
 
-    XtAddCallback (chooseSessionForceShutdownButton, XtNcallback,
-	ChooseSessionForceShutdownXtProc, 0);
-#endif
+    XtAddCallback (chooseSessionBreakLockButton, XtNcallback,
+	ChooseSessionBreakLockXtProc, 0);
 
     chooseSessionFailSafeButton = XtVaCreateManagedWidget (
 	"chooseSessionFailSafeButton", commandWidgetClass, chooseSessionForm,
-        XtNfromHoriz, chooseSessionDeleteButton,
+        XtNfromHoriz, chooseSessionBreakLockButton,
         XtNfromVert, chooseSessionMessageLabel,
         NULL);
 

@@ -45,13 +45,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.3 94/04/17 21:17:14 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.5 95/05/17 18:25:37 dpw Exp $ */
 
 #include <stdio.h>
-#include "X.h"
+#include "misc.h"
 #include "os.h"
 #include "osdep.h"
 #include "Xos.h"
+#include "util.h"
 
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN

@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.5 94/03/27 14:05:19 dpw Exp $ */
+/* $XConsortium: props.c,v 1.9 95/05/30 18:58:43 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -19,8 +19,8 @@
  * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * 
- * $NCDId: @(#)props.c,v 1.12 1994/03/24 17:54:57 lemke Exp $
+ *
+ * $NCDId: @(#)props.c,v 1.13 1994/09/07 00:43:39 lemke Exp $
  */
 /*
  * property handling
@@ -28,19 +28,14 @@
 
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/Xproto.h>
+#include	"misc.h"
 #include	"assert.h"
-#include	"lbxdata.h"
+#include	"lbx.h"
 #include	"util.h"
 #include	"tags.h"
-#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"	/* gets dixstruct.h */
 
 /*
  * XXX
@@ -79,7 +74,7 @@ propTagStoreData(tid, dlen, swapit, ptdp)
 	return FALSE;
     *new = *ptdp;
     new->data = (pointer) (new + 1);
-    bcopy((char *) ptdp->data, (char *) new->data, dlen);
+    memcpy((char *) new->data, (char *) ptdp->data, dlen);
     /* save data in proxy format */
     if (swapit) {
 	switch (new->format) {
@@ -171,7 +166,7 @@ change_property_req(client, data)
     datacopy = (pointer) xalloc(size);
     if (!datacopy)
 	return REQ_NOCHANGE;
-    bcopy((char *) &req[1], (char *) datacopy, size);
+    memcpy((char *) datacopy, (char *) &req[1], size);
 
     nr = NewReply(client);
     if (!nr) {
@@ -229,11 +224,12 @@ GetLbxChangePropertyReply(client, data)
     	swapl(&rep->tag, n);
     }
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
     ptdp = &nr->request_info.lbxchangeprop.ptd;
     if (rep->tag) {
-	if (!propTagStoreData(rep->tag, ptdp->length, client->swapped, ptdp)) {
+	if (!propTagStoreData(rep->tag, (unsigned long)ptdp->length,
+			      client->swapped, ptdp)) {
 	    SendInvalidateTag(client, rep->tag);
 /* XXX is this good enough?  or should we try to send the data on to
  * the server?
@@ -310,7 +306,7 @@ FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     if (!pdata)
 	pdata = ptdp->data;
 
-    pdata = (pointer) ((char *)pdata + (4 * offset));
+    pdata = (pointer) ((char *) pdata + (4 * offset));
 
     reply.type = X_Reply;
     reply.sequenceNumber = seqnum;
@@ -347,7 +343,7 @@ GetLbxGetPropertyReply(client, data)
     char       *data;
 {
     xLbxGetPropertyReply *rep;
-    int         len;
+    unsigned long len;
     ReplyStuffPtr nr;
     PropertyTagDataRec ptd;
     PropertyTagDataPtr ptdp;
@@ -359,7 +355,7 @@ GetLbxGetPropertyReply(client, data)
 
     rep = (xLbxGetPropertyReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
 
     ptd.type = rep->propertyType;
@@ -389,23 +385,34 @@ GetLbxGetPropertyReply(client, data)
 	    ptd.data = (pointer) &rep[1];
 	    if (!propTagStoreData(tag, len, client->swapped, &ptd)) {
 		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
+		SendInvalidateTag(client, tag);
 	    }
 	} else {
 
 	    ptdp = (PropertyTagDataPtr) TagGetData(prop_cache, tag);
+
 	    if (!ptdp) {
 		/* lost data -- ask again for tag value */
 
 		qt.tag = tag;
 		qt.tagtype = LbxTagTypeProperty;
-		qt.typedata.getprop.offset = nr->request_info.lbxgetprop.offset;
-		qt.typedata.getprop.length = nr->request_info.lbxgetprop.length;
+		qt.typedata.getprop.offset =
+		    nr->request_info.lbxgetprop.offset;
+		qt.typedata.getprop.length =
+		    nr->request_info.lbxgetprop.length;
 		qt.typedata.getprop.ptd = ptd;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
+
+	    } else if (client->swapped) {
+		/*
+		 * Make a copy, because we will need to swap the property data
+		 * and we don't want to alter the tag database.
+		 */
+		pdata = (pointer) ALLOCATE_LOCAL(ptdp->length);
+		memcpy((char *) pdata, (char *) ptdp->data, ptdp->length);
 	    }
 
 #ifdef LBX_STATS
@@ -428,7 +435,7 @@ GetLbxGetPropertyReply(client, data)
 	    ptd.data = (pointer) &rep[1];
 	if (client->swapped) {
 	    pdata = (pointer) ALLOCATE_LOCAL(ptdp->length);
-	    bcopy((char *) ptd.data, (char *) pdata, ptdp->length);
+	    memcpy((char *) pdata, (char *) ptd.data, ptdp->length);
 	    if (pdata) {
 		switch (rep->format) {
 		case 32:

@@ -1,5 +1,5 @@
-/* $XConsortium: access.c,v 1.5 95/01/27 15:05:53 kaleb Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/access.c,v 3.2 1995/01/28 16:24:00 dawes Exp $ */
+/* $XConsortium: access.c,v 1.6 95/05/17 18:25:37 dpw Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/access.c,v 3.3 1995/03/04 06:30:18 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,10 +51,7 @@ SOFTWARE.
 #include <stdio.h>
 #include "Xos.h"
 #include <X11/Xauth.h>
-#include "X.h"
-#include "Xproto.h"
 #include "misc.h"
-#include "site.h"
 #include <errno.h>
 #ifdef ESIX
 #include <lan/socket.h>
@@ -101,8 +98,9 @@ SOFTWARE.
 #include <netdb.h>
 #endif
 
-#include "dixstruct.h"
 #include "osdep.h"
+#include "os.h"
+#include "lbx.h"
 
 Bool defeatAccessControl = FALSE;
 
@@ -522,7 +520,7 @@ ResetHosts (display)
     int 		len;
     register struct hostent *hp;
 
-    AccessEnabled = defeatAccessControl ? FALSE : DEFAULT_ACCESS_CONTROL;
+    AccessEnabled = !defeatAccessControl;
     LocalHostEnabled = FALSE;
     while (host = validhosts)
     {
@@ -911,6 +909,7 @@ CheckAddr (family, pAddr, length)
 /* Check if a host is not in the access control list. 
  * Returns 1 if host is invalid, 0 if we've found it. */
 
+int
 InvalidHost (saddr, len)
     register struct sockaddr	*saddr;
     int				len;

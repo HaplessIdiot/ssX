@@ -1,6 +1,6 @@
-/* $XConsortium: lbxswap.c,v 1.2 94/03/27 13:18:13 dpw Exp $ */
+/* $XConsortium: lbxswap.c,v 1.5 95/05/02 19:38:05 mor Exp $ */
 /*
- * $NCDId: @(#)lbxswap.c,v 1.2 1994/03/21 20:59:28 lemke Exp $
+ * $NCDId: @(#)lbxswap.c,v 1.7 1994/11/18 20:32:42 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -83,9 +83,6 @@ SProcLbxStartProxy(client)
     REQUEST(xLbxStartProxyReq);
 
     swaps(&stuff->length, n);
-    swaps(&stuff->deltaN, n);
-    swaps(&stuff->deltaMaxLen, n);
-    swapl(&stuff->comptype, n);
     return ProcLbxStartProxy(client);
 }
 
@@ -324,10 +321,17 @@ SProcLbxPoly(client)
     register int n;
 
     REQUEST(xLbxPolyPointReq);
+    char *after;
 
     swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
+    after = ((char *) stuff) + SIZEOF(xLbxPolyPointReq);
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
     return ProcLbxDispatch(client);
 }
 
@@ -337,11 +341,164 @@ SProcLbxFillPoly(client)
 {
     register int n;
 
-    REQUEST(xLbxPolyPointReq);
+    REQUEST(xLbxFillPolyReq);
+    char *after;
 
     swaps(&stuff->length, n);
-    swapl(&stuff->drawable, n);
-    swapl(&stuff->gc, n);
+    after = ((char *) stuff) + SIZEOF(xLbxFillPolyReq);
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
+    return ProcLbxDispatch(client);
+}
+
+static int
+SProcLbxCopyArea (client)
+    register ClientPtr	client;
+{
+    register int    n;
+
+    REQUEST(xLbxCopyAreaReq);
+    char *after;
+
+    swaps(&stuff->length, n);
+    after = ((char *) stuff) + SIZEOF(xLbxCopyAreaReq);
+    if (GFXdCacheEnt (stuff->srcCache) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
+    return ProcLbxDispatch(client);
+}
+
+static int
+SProcLbxCopyPlane (client)
+    register ClientPtr	client;
+{
+    register int    n;
+
+    REQUEST(xLbxCopyPlaneReq);
+    char *after;
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->bitPlane, n);
+    after = ((char *) stuff) + SIZEOF(xLbxCopyPlaneReq);
+    if (GFXdCacheEnt (stuff->srcCache) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
+    return ProcLbxDispatch(client);
+}
+
+static int
+SProcLbxPolyText(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxPolyTextReq);
+    char *after;
+
+    swaps(&stuff->length, n);
+    after = ((char *) stuff) + SIZEOF(xLbxPolyTextReq);
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
+    return ProcLbxDispatch(client);
+}
+
+static int
+SProcLbxImageText(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxImageTextReq);
+    char *after;
+
+    swaps(&stuff->length, n);
+    after = ((char *) stuff) + SIZEOF(xLbxImageTextReq);
+    if (GFXdCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+    {
+	swapl (((Drawable *) after), n);
+	after += sizeof (Drawable);
+    }
+    if (GFXgCacheEnt (stuff->cacheEnts) == GFXCacheNone)
+	swapl (((GContext *) after), n);
+    return ProcLbxDispatch(client);
+}
+
+
+static int
+SProcLbxPutImage(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxPutImageReq);
+
+    swaps (&stuff->lbxLength, n);
+    swaps (&stuff->xLength, n);
+    swapl (&stuff->drawable, n);
+    swapl (&stuff->gc, n);
+    swaps (&stuff->width, n);
+    swaps (&stuff->height, n);
+    swaps (&stuff->dstX, n);
+    swaps (&stuff->dstY, n);
+    return ProcLbxPutImage(client);
+}
+
+static int
+SProcLbxGetImage(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xLbxGetImageReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->drawable, n);
+    swaps (&stuff->x, n);
+    swaps (&stuff->y, n);
+    swaps (&stuff->width, n);
+    swaps (&stuff->height, n);
+    swapl (&stuff->planeMask, n);
+    return ProcLbxGetImage(client);
+}
+
+static int
+SProcLbxQueryExtension(client)
+    ClientPtr	client;
+{
+    int	n;
+
+    REQUEST(xLbxQueryExtensionReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->nbytes, n);
     return ProcLbxDispatch(client);
 }
 
@@ -397,6 +554,22 @@ SProcLbxDispatch(client)
 	return SProcLbxGetProperty(client);
     case X_LbxTagData:
 	return SProcLbxTagData(client);
+    case X_LbxCopyArea:
+	return SProcLbxCopyArea(client);
+    case X_LbxCopyPlane:
+	return SProcLbxCopyPlane(client);
+    case X_LbxPolyText8:
+    case X_LbxPolyText16:
+	return SProcLbxPolyText(client);
+    case X_LbxImageText8:
+    case X_LbxImageText16:
+	return SProcLbxImageText (client);
+    case X_LbxQueryExtension:
+	return SProcLbxQueryExtension(client);
+    case X_LbxPutImage:
+	return SProcLbxPutImage(client);
+    case X_LbxGetImage:
+	return SProcLbxGetImage(client);
     default:
 	return BadRequest;
     }
@@ -533,4 +706,48 @@ LbxWriteSConnSetupPrefix(pClient, pcsp)
     cpswapl(pcsp->tag, cspT.tag);
 
     (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
+}
+
+void
+LbxSwapFontInfo(pr, compressed)
+    xLbxFontInfo	*pr;
+    Bool	compressed;
+{
+    unsigned    i;
+    xCharInfo  *pxci;
+    unsigned    nchars,
+                nprops;
+    char       *pby;
+    register char n;
+
+    nchars = pr->nCharInfos;
+    nprops = pr->nFontProps;
+    swaps(&pr->minCharOrByte2, n);
+    swaps(&pr->maxCharOrByte2, n);
+    swaps(&pr->defaultChar, n);
+    swaps(&pr->nFontProps, n);
+    swaps(&pr->fontAscent, n);
+    swaps(&pr->fontDescent, n);
+    SwapCharInfo(&pr->minBounds);
+    SwapCharInfo(&pr->maxBounds);
+    swapl(&pr->nCharInfos, n);
+
+    pby = (char *) &pr[1];
+    /*
+     * Font properties are an atom and either an int32 or a CARD32, so they
+     * are always 2 4 byte values
+     */
+    for (i = 0; i < nprops; i++) {
+	swapl(pby, n);
+	pby += 4;
+	swapl(pby, n);
+	pby += 4;
+    }
+    if (!compressed) {
+	pxci = (xCharInfo *) pby;
+	for (i = 0; i < nchars; i++, pxci++)
+	    SwapCharInfo(pxci);
+    } else {
+    	SwapLongs((CARD32 *) pby, nchars);
+    }
 }

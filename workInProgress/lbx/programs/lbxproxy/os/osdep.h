@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.4 94/04/17 21:17:14 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.6 95/05/17 18:25:37 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -215,9 +215,7 @@ typedef struct _connectionOutput {
     int size;
     unsigned char *buf;
     int count;
-#ifdef LBX
     Bool nocompress;
-#endif
 } ConnectionOutput, *ConnectionOutputPtr;
 
 #ifdef K5AUTH
@@ -240,7 +238,6 @@ typedef struct _osComm {
 #endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
     struct _XtransConnInfo *trans_conn; /* transport connection object */
-#ifdef LBX
     ConnectionOutputPtr ofirst;
     ConnectionOutputPtr olast;
     void (*Close) ();
@@ -249,25 +246,32 @@ typedef struct _osComm {
     int  (*flushClient) ();
     void (*compressOff) ();
     void (*compressOn) ();
-#endif
 } OsCommRec, *OsCommPtr;
 
-#ifdef LBX
 #define FlushClient(who, oc, extraBuf, extraCount) \
     (*((OsCommPtr)((who)->osPrivate))->flushClient)(who, oc, extraBuf, extraCount)
-#else
-extern int FlushClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*who*/,
-    OsCommPtr /*oc*/,
-    char* /*extraBuf*/,
-    int /*extraCount*/
-#endif
-);
-#endif
 
 extern void FreeOsBuffers(
 #if NeedFunctionPrototypes
     OsCommPtr /*oc*/
 #endif
 );
+
+extern int StandardFlushClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*who*/,
+    OsCommPtr /*oc*/,
+    char * /*extraBuf*/,
+    int /*extraCount*/
+#endif
+);
+
+extern int LbxFlushClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*who*/,
+    OsCommPtr /*oc*/,
+    char * /*extraBuf*/,
+    int /*extraCount*/
+#endif
+);
+

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxsquish.c,v 1.1 94/12/01 20:27:29 mor Exp $ */
+/* $XConsortium: lbxsquish.c,v 1.2 95/03/21 20:01:56 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -34,7 +34,7 @@
 
 /* handles server-side protocol squishing */
 
-LbxEventLength(proxy, ev)
+LbxSquishedEventLength(proxy, ev)
     LbxProxyPtr	proxy;
     xEvent     *ev;
 {
@@ -215,7 +215,7 @@ LbxSquishEvent(proxy, ev, evbuf)
 {
     int         len;
 
-    len = LbxEventLength(proxy, ev);
+    len = LbxSquishedEventLength(proxy, ev);
 
     /* repack if necessary */
     if (len != sizeof(xEvent)) {

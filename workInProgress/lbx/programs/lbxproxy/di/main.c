@@ -1,7 +1,7 @@
-/* $XConsortium: main.c,v 1.6 94/03/27 13:44:50 dpw Exp $ */
+/* $XConsortium: main.c,v 1.9 95/05/24 16:14:13 mor Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.15 1994/03/24 17:54:31 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -25,29 +25,20 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-#include "X.h"
-#include "Xproto.h"
-#include "input.h"
-#include "misc.h"
-#include "os.h"
-#include "resource.h"
 #include "lbx.h"
-#include "opaque.h"
-#include "servermd.h"
-#include "site.h"
 #include "wire.h"
 #include "atomcache.h"
 #include "colormap.h"
 #include "tags.h"
-
-char	*display = "10";
-
-extern Bool NoticeServer ();
+#include "lbxext.h"
+#include "os.h"
+#include "resource.h"
 
 XServerPtr  servers[MAX_SERVERS];
 
-extern char *display;
+char *display;
 
+int
 main (argc, argv)
     int	    argc;
     char    **argv;
@@ -64,6 +55,7 @@ main (argc, argv)
 	if (serverGeneration == 1)
 	{
 	    CreateWellKnownSockets ();
+	    RegisterAllExtensions();
 	    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
 	    if (!clients)
 		FatalError("couldn't create client array");
@@ -77,25 +69,29 @@ main (argc, argv)
             serverClient->clientGone = FALSE;
             serverClient->server = servers[0];
 	    serverClient->index = 0;
+	    serverClient->server_client_index = 0;
 	    serverClient->clientAsMask = (Mask)0;
 	    serverClient->noClientException = Success;
             serverClient->awaitingSetup = FALSE;
             serverClient->swapped = FALSE;
-
 	}
 	TagsInit();
         if (!InitClientResources(serverClient))
             FatalError("couldn't init server resources");
         InitDeleteFuncs();
+	InitExtensions();
         clients[0] = serverClient;
+	lastLbxClientIndexLookup = NULL;
         currentMaxClients = 1;
 
 	if (Dispatch () != 0)
 	    break;
+	ShutdownExtensions();
         FreeAllResources();
         FreeAtoms();
         FreeColors();
         FreeTags();
+	CacheFreeAll();
     }
     exit (0);
 }

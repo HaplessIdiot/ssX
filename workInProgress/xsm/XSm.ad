@@ -1,14 +1,16 @@
-! $XConsortium: XSm.ad,v 1.26 94/12/30 16:14:48 mor Exp $
+! $XConsortium: XSm.ad,v 1.28 95/05/24 20:43:29 mor Exp $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
-*chooseSessionMessageLabel.label:	Press button again to confirm...
+*chooseSessionMessageLabel.label:	Press button again to confirm, or hit Cancel...
 *chooseSessionLoadButton.label:		Load Session
 *chooseSessionDeleteButton.label:	Delete Session
 *chooseSessionFailSafeButton.label:	Default/Fail Safe
 *chooseSessionCancelButton.label:	Cancel
-
+*chooseSessionBreakLockButton.label:	Break Lock
 *chooseSessionLoadButton.background:	light steel blue
 *chooseSessionDeleteButton.background:	light steel blue
+*chooseSessionBreakLockButton.background: light steel blue
+
 *chooseSessionFailSafeButton.background:light steel blue
 *chooseSessionCancelButton.background:	light steel blue
 
@@ -20,6 +22,7 @@
 *shutdownDontSave.label:	Immediately
 
 *logPopup.title:		Session Log
+*logPopup.iconName:		Session Log
 *logOkButton.label:		OK
 *logText.width:			600
 *logText.height:		300
@@ -92,12 +95,17 @@ a successful save of their state:
 
 *chooseSessionListWidget.Translations: #override\n\
 	<Key>Up:	ChooseSessionUp()\n\
+	<Key>KP_Up:	ChooseSessionUp()\n\
+	Ctrl<Key>P:	ChooseSessionUp()\n\
 	<Key>Down:	ChooseSessionDown()\n\
+	<Key>KP_Down:	ChooseSessionDown()\n\
+	Ctrl<Key>N:	ChooseSessionDown()\n\
 	<Btn1Down>:	Set() ChooseSessionBtn1Down()\n
 
 *chooseSessionLoadButton.Accelerators: #override\n\
 	<Btn1Down>(2+):	set() notify() unset()\n\
-	<Key>Return:	set() notify() unset()\n
+	<Key>Return:	set() notify() unset()\n\
+	<Key>KP_Enter:	set() notify() unset()\n
 
 *checkPointButton.Translations: #override\n\
 	<Btn1Up>:	notify() reset()\n

@@ -1,4 +1,4 @@
-/* $XConsortium: options.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
+/* $XConsortium: options.c,v 1.4 95/05/30 19:02:09 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -92,11 +92,11 @@ LbxOptInit()
 
 int
 LbxOptBuildReq(buf)
-    register unsigned char *buf;
+    register char *buf;
 {
     int		  i;
-    unsigned char *bufstart = buf;
-    unsigned char *pnopts = buf++;
+    char *bufstart = buf;
+    char *pnopts = buf++;
 
     optcount = 0;
 
@@ -150,6 +150,7 @@ LbxOptParseReply(nopts, preply, replylen)
 	preply += len;
 	replylen -= len;
     }
+    return 0;
 }
 
 struct deltaOpt {
@@ -190,7 +191,7 @@ static int
 LbxProxyDeltaReq(buf)
     unsigned char *buf;
 {
-    bcopy((char *)&proxyDeltaOpt, buf, sizeof(struct deltaOpt));
+    memcpy(buf, (char *)&proxyDeltaOpt, sizeof(struct deltaOpt));
     return LBX_OPT_DELTA_REQLEN;
 }
 
@@ -198,7 +199,7 @@ static int
 LbxServerDeltaReq(buf)
     unsigned char *buf;
 {
-    bcopy((char *)&serverDeltaOpt, buf, sizeof(struct deltaOpt));
+    memcpy(buf, (char *)&serverDeltaOpt, sizeof(struct deltaOpt));
     return LBX_OPT_DELTA_REQLEN;
 }
 
@@ -284,7 +285,7 @@ LbxStreamCompReq(buf)
 	int typelen = LbxStreamComp[i].typelen;
 
 	*buf++ = typelen;
-	bcopy(LbxStreamComp[i].type, buf, typelen);
+	memcpy(buf, LbxStreamComp[i].type, typelen);
 	buf += typelen;
 	reqlen += 1 + typelen;
 
@@ -318,7 +319,7 @@ OptLzwReq(buf)
     unsigned char *buf;
 {
     *buf++ = sizeof(lzwCodeSizes);
-    bcopy(lzwCodeSizes, buf, sizeof(lzwCodeSizes));
+    memcpy(buf, lzwCodeSizes, sizeof(lzwCodeSizes));
     return (1 + sizeof(lzwCodeSizes));
 }
 

@@ -45,15 +45,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.8 94/04/17 21:17:22 gildea Exp $ */
-/* $NCDId: @(#)utils.c,v 1.7 1994/03/11 20:02:07 lemke Exp $ */
+/* $XConsortium: utils.c,v 1.12 95/05/30 18:37:40 mor Exp $ */
+/* $NCDId: @(#)utils.c,v 1.8 1994/11/16 02:27:25 lemke Exp $ */
 
-#include "Xos.h"
+#include "lbx.h"
 #include <stdio.h>
-#include "misc.h"
-#include "X.h"
-#include "input.h"
-#include "opaque.h"
 #ifdef X_POSIX_C_SOURCE
 #define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
@@ -77,7 +73,7 @@ SOFTWARE.
 #endif
 
 #if NeedVarargsPrototypes
-void VErrorF(char*, va_list);
+static void VErrorF(char*, va_list);
 #endif
 
 #ifdef SIGNALRETURNSINT
@@ -85,6 +81,9 @@ void VErrorF(char*, va_list);
 #else
 #define SIGVAL void
 #endif
+
+#include "util.h"
+#include "proxyopts.h"
 
 extern char *display_name;
 extern char *display;
@@ -186,40 +185,17 @@ GetTimeInMillis()
 }
 #endif
 
-AdjustWaitForDelay (waitTime, newdelay)
-    pointer	    waitTime;
-    unsigned long   newdelay;
-{
-    static struct timeval   delay_val;
-    struct timeval	    **wt = (struct timeval **) waitTime;
-    unsigned long	    olddelay;
-
-    if (*wt == NULL)
-    {
-	delay_val.tv_sec = newdelay / 1000;
-	delay_val.tv_usec = 1000 * (newdelay % 1000);
-	*wt = &delay_val;
-    }
-    else
-    {
-	olddelay = (*wt)->tv_sec * 1000 + (*wt)->tv_usec / 1000;
-	if (newdelay < olddelay)
-	{
-	    (*wt)->tv_sec = newdelay / 1000;
-	    (*wt)->tv_usec = 1000 * (newdelay % 1000);
-	}
-    }
-}
-
 void UseMsg()
 {
 #if !defined(AIXrt) && !defined(AIX386)
-    ErrorF("use: X [:<display>] [option]\n");
+    ErrorF("use: lbxproxy [:<display>] [option]\n");
     ErrorF("-ac                    disable access control restrictions\n");
 #ifdef MEMBUG
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
+/*
     ErrorF("-auth string           select authorization file\n");	
+*/
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
     ErrorF("-to #                  connection time out\n");
@@ -227,6 +203,84 @@ void UseMsg()
     XdmcpUseMsg();
 #endif
 #endif /* !AIXrt && ! AIX386 */
+}
+
+extern int  lbxTagCacheSize;
+extern Bool lbxUseTags;
+extern Bool lbxUseLbx;
+extern Bool lbxDoSquishing;
+extern Bool lbxCompressImages;
+extern Bool lbxDoShortCircuiting;
+extern Bool lbxDoLbxGfx;
+
+static int
+proxyProcessArgument (argc, argv, i)
+    int argc;
+    char    **argv;
+    int i;
+{
+    if (strcmp (argv[i], "-debug") == 0)
+    {
+	if (++i < argc)
+	    lbxDebug = atoi(argv[i]);
+	else
+	    UseMsg ();
+	return 2;
+    }
+    if (strcmp (argv[i], "-nogfx") == 0)
+    {
+	lbxDoLbxGfx = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nosc") == 0)
+    {
+	lbxDoShortCircuiting = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nolzw") == 0)
+    {
+	LbxNoComp();
+	return 1;
+    }
+    if (strcmp (argv[i], "-nocomp") == 0)
+    {
+	LbxNoComp();
+	return 1;
+    }
+    if (strcmp (argv[i], "-nodelta") == 0)
+    {
+	LbxNoDelta();
+	return 1;
+    }
+    if (strcmp (argv[i], "-notags") == 0)
+    {
+	lbxUseTags = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nolbx") == 0)
+    {
+	lbxUseLbx = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-noimage") == 0)
+    {
+	lbxCompressImages = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nosquish") == 0)
+    {
+	LbxNoSquish();
+	return 1;
+    }
+    if (strcmp (argv[i], "-tagcachesize") == 0)
+    {
+	if (++i < argc)
+	    lbxTagCacheSize = atoi(argv[i]);
+	else
+	    UseMsg ();
+	return 2;
+    }
+    return 0;
 }
 
 /*
@@ -244,8 +298,8 @@ char	*argv[];
 
     for ( i = 1; i < argc; i++ )
     {
-	/* call ddx first, so it can peek/override if it wants */
-        if(skip = ddxProcessArgument(argc, argv, i))
+	/* do proxy-specific stuff first */
+        if(skip = proxyProcessArgument(argc, argv, i))
 	{
 	    i += (skip - 1);
 	}
@@ -429,6 +483,7 @@ Xfree(ptr)
 	free((char *)ptr); 
 }
 
+void
 OsInitAllocator ()
 {
 #ifdef MEMBUG
@@ -500,7 +555,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
     va_list args;
 #endif
-    ErrorF("\nFatal server error:\n");
+    ErrorF("\nFatal proxy error:\n");
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
@@ -514,7 +569,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 }
 
 #if NeedVarargsPrototypes
-void
+static void
 VErrorF(f, args)
     char *f;
     va_list args;
@@ -554,7 +609,170 @@ strnalloc(str, len)
     t = (char *) Xalloc(len);
     if (!t)
 	return (char *) 0;
-    bcopy(str, t, len);
+    memcpy(t, str, len);
     return t;
 }
 
+/*
+ * A general work queue.  Perform some task before the server
+ * sleeps for input.
+ */
+
+typedef struct _WorkQueue {
+    struct _WorkQueue *next;
+    Bool        (*function) (
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		pointer		/* closure */
+#endif
+);
+    ClientPtr   client;
+    pointer     closure;
+}           WorkQueueRec;
+
+WorkQueuePtr		workQueue;
+static WorkQueuePtr	*workQueueLast = &workQueue;
+
+/* ARGSUSED */
+void
+ProcessWorkQueue()
+{
+    WorkQueuePtr    q, n, p;
+
+    p = NULL;
+    /*
+     * Scan the work queue once, calling each function.  Those
+     * which return TRUE are removed from the queue, otherwise
+     * they will be called again.  This must be reentrant with
+     * QueueWorkProc, hence the crufty usage of variables.
+     */
+    for (q = workQueue; q; q = n)
+    {
+	if ((*q->function) (q->client, q->closure))
+	{
+	    /* remove q from the list */
+	    n = q->next;    /* don't fetch until after func called */
+	    if (p)
+		p->next = n;
+	    else
+		workQueue = n;
+	    xfree (q);
+	}
+	else
+	{
+	    n = q->next;    /* don't fetch until after func called */
+	    p = q;
+	}
+    }
+    if (p)
+	workQueueLast = &p->next;
+    else
+    {
+	workQueueLast = &workQueue;
+    }
+}
+
+Bool
+QueueWorkProc (function, client, closure)
+    Bool	(*function)();
+    ClientPtr	client;
+    pointer	closure;
+{
+    WorkQueuePtr    q;
+
+    q = (WorkQueuePtr) xalloc (sizeof *q);
+    if (!q)
+	return FALSE;
+    q->function = function;
+    q->client = client;
+    q->closure = closure;
+    q->next = NULL;
+    *workQueueLast = q;
+    workQueueLast = &q->next;
+    return TRUE;
+}
+
+/*
+ * Manage a queue of sleeping clients, awakening them
+ * when requested, by using the OS functions IgnoreClient
+ * and AttendClient.  Note that this *ignores* the troubles
+ * with request data interleaving itself with events, but
+ * we'll leave that until a later time.
+ */
+
+typedef struct _SleepQueue {
+    struct _SleepQueue	*next;
+    ClientPtr		client;
+    Bool		(*function)();
+    pointer		closure;
+} SleepQueueRec, *SleepQueuePtr;
+
+static SleepQueuePtr	sleepQueue = NULL;
+
+Bool
+ClientSleep (client, function, closure)
+    ClientPtr	client;
+    Bool	(*function)();
+    pointer	closure;
+{
+    SleepQueuePtr   q;
+
+    q = (SleepQueuePtr) xalloc (sizeof *q);
+    if (!q)
+	return FALSE;
+
+    IgnoreClient (client);
+    q->next = sleepQueue;
+    q->client = client;
+    q->function = function;
+    q->closure = closure;
+    sleepQueue = q;
+    return TRUE;
+}
+
+Bool
+ClientSignal (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q;
+
+    for (q = sleepQueue; q; q = q->next)
+	if (q->client == client)
+	{
+	    return QueueWorkProc (q->function, q->client, q->closure);
+	}
+    return FALSE;
+}
+
+void
+ClientWakeup (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q, *prev;
+
+    prev = &sleepQueue;
+    while (q = *prev)
+    {
+	if (q->client == client)
+	{
+	    *prev = q->next;
+	    xfree (q);
+	    if (!client->clientGone)
+		AttendClient (client);
+	    break;
+	}
+	prev = &q->next;
+    }
+}
+
+Bool
+ClientIsAsleep (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q;
+
+    for (q = sleepQueue; q; q = q->next)
+	if (q->client == client)
+	    return TRUE;
+    return FALSE;
+}

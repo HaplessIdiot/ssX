@@ -1,7 +1,7 @@
-/* $XConsortium: dispatch.c,v 1.6 94/03/27 13:37:34 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 1.10 95/05/24 16:14:13 mor Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
- * $NCDId: @(#)dispatch.c,v 1.21 1994/03/24 17:54:33 lemke Exp $
+ * $NCDId: @(#)dispatch.c,v 1.27 1994/11/18 20:35:09 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -25,32 +25,20 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-#include "X.h"
-#define NEED_REPLIES
-#define NEED_EVENTS
 #include "assert.h"
-#include "Xproto.h"
-#include "opaque.h"
 #include "lbx.h"
-#include "lbxdata.h"
 #include "wire.h"
-#include "dixstruct.h"
-#include "input.h"
-#include "servermd.h"
-#define _XLBX_SERVER_
-#include "lbxstr.h"
 #include "swap.h"
+#include "lbxext.h"
+#include "util.h"
+#include "resource.h"
 
 extern int (* InitialVector[3]) ();
-extern int (* ProcVector[256]) ();
-extern int (* SwappedProcVector[256]) ();
-extern void (* EventSwapVector[128]) ();
-extern void (* ReplySwapVector[256]) ();
-extern void WriteSConnSetupPrefix();
-extern char *ClientAuthorized();
-extern Bool InsertFakeRequest();
-static void KillAllClients();
-extern void ProcessWorkQueue();
+static void KillAllClients(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 extern Bool lbxUseTags;
 
 static int nextFreeClientID; /* always MIN free client ID */
@@ -61,6 +49,9 @@ char *display_name = 0;
 char dispatchException = 0;
 char isItTimeToYield;
 Bool lbxUseLbx = TRUE;
+Bool lbxCompressImages = TRUE;
+Bool lbxDoShortCircuiting = TRUE;
+Bool lbxDoLbxGfx = TRUE;
 
 #define MAJOROP ((xReq *)client->requestBuffer)->reqType
 
@@ -109,7 +100,6 @@ Dispatch ()
 #endif
 	    isItTimeToYield = FALSE;
  
-            requestingClient = client;
 	    while (!isItTimeToYield)
 	    {
 		/* now, finally, deal with client requests */
@@ -130,9 +120,11 @@ Dispatch ()
 		client->requestLogIndex++;
 #endif
                 LBXSequenceNumber(client)++;
+#ifdef NOTDEF
 		if (result > (MAX_REQUEST_SIZE << 2))
 		    result = BadLength;
 		else
+#endif
 		    result = (* client->requestVector[MAJOROP])(client);
 	    
 #ifdef NOTDEF
@@ -185,8 +177,6 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
  * Returns NULL if there are no free clients.
  *************************/
 
-extern unsigned long	StandardRequestLength ();
-
 ClientPtr
 NextAvailableClient(ospriv)
     pointer ospriv;
@@ -198,13 +188,9 @@ NextAvailableClient(ospriv)
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
 	return (ClientPtr)NULL;
-    clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
+    clients[i] = client = (ClientPtr)xcalloc(sizeof(ClientRec));
     if (!client)
 	return (ClientPtr)NULL;
-    if (!MakeLBXStuff(client)) {
-    	xfree(client);
-        return (ClientPtr)NULL;
-    }
     client->index = i;
     client->sequence = 0; 
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
@@ -221,6 +207,8 @@ NextAvailableClient(ospriv)
     client->osPrivate = ospriv;
     client->server = servers[0];    /* XXX want to use multiple servers */
     client->swapped = FALSE;
+    LBXCacheSafe(client) = FALSE;
+    LBXCanDelayReply(client) = FALSE;
     if (!InitClientResources(client))
     {
 	xfree(client);
@@ -278,7 +266,6 @@ ProcEstablishConnection(client)
                *auth_proto,
                *auth_string;
     register xLbxConnClientPrefix *prefix;
-    register xWindowRoot *root;
     register int i;
     int         len;
 
@@ -320,9 +307,6 @@ ProcEstablishConnection(client)
 #endif
 
     nClients++;
-/*
-    client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
-*/
     client->requestVector = ProcVector;
     client->sequence = 0;
     LBXSequenceNumber(client) = 0;
@@ -367,6 +351,9 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
+    if (lastLbxClientIndexLookup == client)
+	lastLbxClientIndexLookup = NULL;
+
     if (!client->clientGone)
     {
 	CloseClient (client);
@@ -392,7 +379,6 @@ CloseDownClient(client)
 		else
 		    dispatchException |= DE_RESET;
 	    }
-	    FreeLBXStuff(client);
 	    xfree(client);
 	}
 	else
@@ -411,7 +397,7 @@ CloseDownClient(client)
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
-	FreeLBXStuff(client);
+	DeleteClientExtensions(client);
         xfree(client);
 	if (nClients == 0)
 	{
@@ -440,6 +426,7 @@ KillAllClients()
     }
 }
 
+int
 ProcStandardRequest (client)
     ClientPtr	client;
 {
@@ -451,6 +438,7 @@ ProcStandardRequest (client)
 }
 
 /* ARGSUSED */
+int
 ProcBadRequest (client)
     ClientPtr	client;
 {
@@ -458,6 +446,7 @@ ProcBadRequest (client)
 }
 
 /* turn off optional features */
+void
 AdjustProcVector()
 {
     int         i;
@@ -479,5 +468,42 @@ AdjustProcVector()
     if (!lbxUseTags) {
 	ProcVector[X_GetModifierMapping] = ProcStandardRequest;
 	ProcVector[X_GetKeyboardMapping] = ProcStandardRequest;
+	ProcVector[X_QueryFont] = ProcStandardRequest;
+	ProcVector[X_ChangeProperty] = ProcStandardRequest;
+	ProcVector[X_GetProperty] = ProcStandardRequest;
+    }
+
+    if (!lbxCompressImages) {
+	ProcVector[X_PutImage] = ProcStandardRequest;
+	ProcVector[X_GetImage] = ProcStandardRequest;
+    }
+
+    if (!lbxDoShortCircuiting) {
+	ProcVector[X_InternAtom] = ProcStandardRequest;
+	ProcVector[X_GetAtomName] = ProcStandardRequest;
+	ProcVector[X_CreateColormap] = ProcStandardRequest;
+	ProcVector[X_FreeColormap] = ProcStandardRequest;
+	ProcVector[X_CopyColormapAndFree] = ProcStandardRequest;
+	ProcVector[X_AllocColor] = ProcStandardRequest;
+	ProcVector[X_AllocNamedColor] = ProcStandardRequest;
+	ProcVector[X_FreeColors] = ProcStandardRequest;
+	ProcVector[X_LookupColor] = ProcStandardRequest;
+    }
+
+    if (!lbxDoLbxGfx) {
+	ProcVector[X_CopyArea] = ProcStandardRequest;
+	ProcVector[X_CopyPlane] = ProcStandardRequest;
+	ProcVector[X_PolyPoint] = ProcStandardRequest;
+	ProcVector[X_PolyLine] = ProcStandardRequest;
+	ProcVector[X_PolySegment] = ProcStandardRequest;
+	ProcVector[X_PolyRectangle] = ProcStandardRequest;
+	ProcVector[X_PolyArc] = ProcStandardRequest;
+	ProcVector[X_FillPoly] = ProcStandardRequest;
+	ProcVector[X_PolyFillRectangle] = ProcStandardRequest;
+	ProcVector[X_PolyFillArc] = ProcStandardRequest;
+	ProcVector[X_PolyText8] = ProcStandardRequest;
+	ProcVector[X_PolyText16] = ProcStandardRequest;
+	ProcVector[X_ImageText8] = ProcStandardRequest;
+	ProcVector[X_ImageText16] = ProcStandardRequest;
     }
 }
