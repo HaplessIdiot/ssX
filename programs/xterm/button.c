@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.48 2000/06/13 02:28:37 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.49 2000/08/25 21:51:08 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -918,14 +918,11 @@ static void _GetSelection(
 	Cardinal num_params,
 	Bool utf8_failed GCC_UNUSED)	/* already tried UTF-8 */
 {
-    TScreen *screen;
     Atom selection;
     int cutbuffer;
 
     if (!IsXtermWidget(w))
 	return;
-
-    screen = &((XtermWidget)w)->screen;
 
     XmuInternStrings(XtDisplay(w), params, (Cardinal)1, &selection);
     switch (selection) {
@@ -956,6 +953,7 @@ static void _GetSelection(
     } else {
 	struct _SelectionList* list;
 #if OPT_WIDE_CHARS
+	TScreen *screen = &((XtermWidget)w)->screen;
 	if (!screen->wide_chars || utf8_failed) {
 	    params++;
 	    num_params--;
@@ -1500,7 +1498,7 @@ ResizeSelection (TScreen *screen GCC_UNUSED, int rows, int cols)
 #if OPT_WIDE_CHARS
 int iswide(int i)
 {
-    return my_wcwidth(i) == 2;
+    return (i == HIDDEN_CHAR) || (my_wcwidth(i) == 2);
 }
 #endif
 
@@ -1535,8 +1533,8 @@ PointToRowCol(
 	 * pretend it happened on the left half.
 	 */
 	if (col > 0
-	 && iswide(getXtermCell(screen, row, col-1))
-	 && (getXtermCell(screen, row, col) == HIDDEN_CHAR)) {
+	 && iswide(XTERM_CELL(row, col-1))
+	 && (XTERM_CELL(row, col) == HIDDEN_CHAR)) {
 		col -= 1;
 	}
 #endif
@@ -1676,7 +1674,7 @@ static int class_of(TScreen *screen, int row, int col)
 }
 #define ClassSelects(screen, row, col, cclass) \
 	 (class_of(screen, row, col) == cclass \
-	 || getXtermCell(screen, row, col) == HIDDEN_CHAR)
+	 || XTERM_CELL(row, col) == HIDDEN_CHAR)
 #else
 #define class_of(screen,row,col) charClass[XTERM_CELL(row, col)]
 #define ClassSelects(screen, row, col, cclass) \
@@ -1702,15 +1700,15 @@ ComputeSelect(
 
 #if OPT_WIDE_CHARS
 	if (startCol > 1
-	 && iswide(getXtermCell(screen, startRow, startCol-1))
-	 && getXtermCell(screen, startRow, startCol-0) == HIDDEN_CHAR) {
+	 && iswide(XTERM_CELL(startRow, startCol-1))
+	 && XTERM_CELL(startRow, startCol-0) == HIDDEN_CHAR) {
 		fprintf(stderr, "Adjusting start. Changing downwards from %i.\n", startCol);
 		startCol -= 1;
 		if (endCol == (startCol+1)) endCol--;
 	}
 
-	if (iswide(getXtermCell(screen, endRow, endCol-1))
-	 && getXtermCell(screen, endRow, endCol) == HIDDEN_CHAR) {
+	if (iswide(XTERM_CELL(endRow, endCol-1))
+	 && XTERM_CELL(endRow, endCol) == HIDDEN_CHAR) {
 		endCol += 1;
 	}
 #endif
@@ -1757,7 +1755,7 @@ ComputeSelect(
 			}
 
 #if OPT_WIDE_CHARS
-			if (startSCol && getXtermCell(screen, startSRow, startSCol) == HIDDEN_CHAR)
+			if (startSCol && XTERM_CELL(startSRow, startSCol) == HIDDEN_CHAR)
 				startSCol++;
 #endif
 
@@ -1788,7 +1786,7 @@ ComputeSelect(
 			}
 
 #if OPT_WIDE_CHARS
-			if (endSCol && getXtermCell(screen, endSRow, endSCol) == HIDDEN_CHAR)
+			if (endSCol && XTERM_CELL(endSRow, endSCol) == HIDDEN_CHAR)
 				endSCol++;
 #endif
 
@@ -2244,12 +2242,18 @@ _OwnSelection(
 			"%s: selection too big (%d bytes), not storing in CUT_BUFFER%d\n",
 			xterm_name, termw->screen.selection_length, cutbuffer);
 	    } else {
-	      /* Cutbuffers are untyped, so in the wide chars case, we
-		 just store the raw UTF-8 data.	 It is unlikely it
-		 will be useful to anyone. */
+		/* This used to just use the UTF-8 data, which was totally
+		 * broken as not even the corresponding paste code in Xterm
+		 * understood this!  So now it converts to Latin1 first.
+		 *   Robert Brady, 2000-09-05
+		 */
+		long length = termw->screen.selection_length;
+		Char *data = termw->screen.selection_data;
+		if_OPT_WIDE_CHARS((&(termw->screen)), {
+		    data = UTF8toLatin1(data, length, &length);
+		})
 		XStoreBuffer( XtDisplay((Widget)termw),
-			      termw->screen.selection_data,
-			      termw->screen.selection_length, cutbuffer );
+			      data, length, cutbuffer );
 	    }
 	} else if (!replyToEmacs) {
 	    have_selection |=

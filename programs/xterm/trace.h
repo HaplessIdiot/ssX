@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/trace.h,v 3.8 2000/02/08 17:19:43 dawes Exp $
+ * $XFree86: xc/programs/xterm/trace.h,v 3.9 2000/06/13 02:28:41 dawes Exp $
  */
 
 /************************************************************
@@ -32,10 +32,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #ifndef	included_trace_h
 #define	included_trace_h
-
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
 
 #include <ptyx.h>
 
