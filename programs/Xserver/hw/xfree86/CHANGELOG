@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 795. Fix XDarwin crash in rootless mode with 16-bit color by ensuring that
+      window pixmap pointers are 32-bit aligned (Apple, Torrey T. Lyons).
  794. Update the i810 2D driver and i830 3D drivers to recognise and handle
       the Intel 852GM/855GM integrated graphics chipsets (David Dawes,
       Keith Whitwell).
@@ -16135,4 +16137,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2501 2003/01/28 20:52:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2502 2003/01/28 22:47:06 dawes Exp $

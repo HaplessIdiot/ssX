@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.11 2002/09/28 00:43:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.12 2003/01/21 05:58:58 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -527,21 +527,19 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
 
         // rect is the intersection of the old location and new location
         if (BOX_NOT_EMPTY(rect)) {
-            int dx, dy;
-
             /* The window drawable still has the old frame position, which
                means that DST doesn't actually point at the origin of our
                physical backing store when adjusted by the drawable.x,y
                position. So sneakily adjust it temporarily while copying.. */
 
-            dx = newX - oldX;
-            dy = newY - oldY;
-            SetPixmapBaseToScreen (dst, dx, dy);
+            ((PixmapPtr) dst)->devPrivate.ptr = winRec->frame.pixelData;
+            SetPixmapBaseToScreen(dst, newX, newY);
 
             fbCopyWindowProc(src, dst, NULL, &rect, 1, 0, 0,
                              FALSE, FALSE, 0, 0);
 
-            SetPixmapBaseToScreen (dst, -dx, -dy);
+            ((PixmapPtr) dst)->devPrivate.ptr = winRec->frame.pixelData;
+            SetPixmapBaseToScreen(dst, oldX, oldY);
         }
     }
 }
