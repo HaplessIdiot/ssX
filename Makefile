@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.26 2003/02/08 16:35:52 dawes Exp $
+# $XFree86: xc/Makefile,v 3.27 2003/02/26 09:21:31 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -11,7 +11,7 @@ RELEASE = "Release 6.6"
 SHELL = /bin/sh
 RM = rm -f
 MV = mv
-WORLDOPTS = -k
+WORLDOPTS =
 WIN32WORLDOPTS = -i
 TOP = .
 CURRENT_DIR = .
