@@ -1,5 +1,5 @@
 /* $XConsortium: mmio_928.c,v 1.1 94/03/28 21:17:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.3 1995/01/10 10:23:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.4 1995/01/10 10:55:08 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -53,7 +53,6 @@ s3VideoChipRec MMIO_928 = {
   mmio928_s3AdjustFrame,
   mmio928_s3SwitchMode,
 #else
-  NULL,
   NULL,
   NULL,
   NULL,
