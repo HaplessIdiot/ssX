@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3374. Add accelerated line support, clean up accel code, and other fixes
+      for the tga driver (#3453, Matt Grossman).
 3373. Restore colormap on exit in nv driver (#3452, Thomas Mueller).
 3372. Generalize the SIGIO way of reading input data (#3450, Frederic Lepied).
 3371. Fix missing quotes in Xt docs (#3443, Matthieu Herrb).
@@ -9149,4 +9151,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.869 1999/12/13 23:38:06 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.870 1999/12/13 23:42:53 robin Exp $

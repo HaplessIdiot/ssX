@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.10 1999/06/20 05:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.12 1999/11/19 13:54:51 hohndel Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -71,6 +71,7 @@ typedef struct {
     EntityInfoPtr       pEnt;
     CARD32     *buffers[1];
     unsigned int        current_rop;
+    unsigned int        current_planemask;
     int                 transparent_pattern_p;
     int                 blitdir;
     int                 block_or_opaque_p;
@@ -79,6 +80,10 @@ typedef struct {
     int                 ce_x;
     int                 ce_y;
     int                 ce_skipleft;
+    int                 line_pattern_length;
+    CARD16              line_pattern; /* for dashed lines */
+    int                 Bpp; /* bytes per pixel */
+    int                 depthflag; /* either BPP8PACKED or BPP24 */
 } TGARec, *TGAPtr;
 
 /* Prototypes */
@@ -90,11 +95,8 @@ void DEC21030Save(ScrnInfoPtr pScrn, /*vgaRegPtr vgaReg,*/ TGARegPtr tgaReg/*,
 		   Bool saveFonts*/);
 Bool DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
-/* tga_accel8.c */
-Bool DEC21030AccelInit8(ScreenPtr pScreen);
-
-/* tga_accel32.c */
-Bool DEC21030AccelInit32(ScreenPtr pScreen);
+/* tga_accel.c */
+Bool DEC21030AccelInit(ScreenPtr pScreen);
 
 /* BTramdac.c */
 void tgaBTOutIndReg(ScrnInfoPtr pScrn,
@@ -111,6 +113,48 @@ void BT463ramdacRestore(ScrnInfoPtr pScrn, unsigned char *data);
 
 /* tga_cursor.c */
 Bool TGAHWCursorInit(ScreenPtr pScreen);
+
+/* tga_line.c */
+
+void TGAPolySegment(DrawablePtr pDrawable, GCPtr pGC, int nseg,
+		    xSegment *pSeg);
+void TGAPolyLines(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+		  DDXPointPtr pptInit);
+void TGAPolySegmentDashed(DrawablePtr pDrawable, GCPtr pGC, int	nseg,
+			  xSegment *pSeg);
+void TGAPolyLinesDashed(DrawablePtr pDrawable, GCPtr pGC, int mode, int npt,
+			DDXPointPtr pptInit);
+
+/* line functions */
+void
+TGASetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
+		      unsigned int planemask);
+void
+TGASubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len,
+			      int dir);
+void
+TGASubsequentSolidLine(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2,
+		       int octant, int flags);
+void
+TGASetupForClippedLine(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2,
+		       int octant);
+void
+TGASubsequentClippedSolidLine(ScrnInfoPtr pScrn, int x1, int y1, int len,
+			      int err);
+
+void
+TGASetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
+		      unsigned int planemask, int length,
+		      unsigned char *pattern);
+void
+TGASubsequentDashedLine(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2,
+			int octant, int flags, int phase);
+void
+TGASubsequentClippedDashedLine(ScrnInfoPtr pScrn, int x1, int y1, int len,
+			       int err, int phase);
+
+
+
 
 #endif /* _TGA_H_ */
 

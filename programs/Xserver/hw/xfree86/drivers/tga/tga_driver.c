@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.28 1999/08/14 10:49:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.30 1999/11/19 13:54:52 hohndel Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -113,6 +113,8 @@ static void TGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
 #endif
+
+void TGASync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
 #define TGA_NAME "TGA"
@@ -668,7 +670,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
       }
     }
     else { /* try to divine the amount of RAM */
-      Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+      Base = xf86MapPciMem(pScrn->scrnIndex, 0x0,
 			   pTga->PciTag, pTga->FbAddress, 4);
       pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
       xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
@@ -1209,21 +1211,9 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         switch (pTga->Chipset)
         {
 	case PCI_CHIP_DEC21030:
-	  if (pScrn->bitsPerPixel == 8) {
-	    if(DEC21030AccelInit8(pScreen) == FALSE) {
-	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			 "XAA Initialization failed\n");
-	      return(FALSE);
-	    }
-	  } else if (pScrn->bitsPerPixel == 32) {
-	    if(DEC21030AccelInit32(pScreen) == FALSE) {
-	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			 "XAA Initialization failed\n");
-	      return(FALSE);
-	    }
-	  } else {
+	  if(DEC21030AccelInit(pScreen) == FALSE) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Unsupported acceleration depth\n");
+		       "XAA Initialization failed\n");
 	    return(FALSE);
 	  }
 	  break;
@@ -1543,5 +1533,25 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
     tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
 
   return;
+}
+
+
+/*
+ * This is the implementation of the Sync() function.
+ */
+void
+TGASync(ScrnInfoPtr pScrn)
+{
+#if 0
+  /* I'm experiencing lockups which could be due to this function.
+     We don't seem to need it anyway...
+  */
+    TGAPtr pTga = NULL;
+    
+    pTga = TGAPTR(pScrn);
+
+    while (TGA_READ_REG(TGA_CMD_STAT_REG) & 0x01);
+#endif
+    return;
 }
 
