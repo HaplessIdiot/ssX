@@ -22,6 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID
@@ -31,6 +32,12 @@
  * Written by Holger Waechtler <holger@akaflieg.extern.tu-berlin.de>
  *
  * Cleaned up and simplified by Gareth Hughes <gareth@valinux.com>
+ */
+
+/*
+ * NOTE: Avoid using spaces in between '(' ')' and arguments, especially
+ * with macros like CONST, LLBL that expand to CONCAT(...).  Putting spaces
+ * in there will break the build on some platforms.
  */
 
 #include "matypes.h"
@@ -86,7 +93,7 @@ GLNAME( _mesa_identify_x86_cpu_features ):
 	/* Verify the ID Flag bit has been written.
 	 */
 	CMP_L	( ECX, EAX )
-	JZ	( LLBL ( cpuid_done ) )
+	JZ	( LLBL (cpuid_done) )
 
 	/* Get the CPU vendor info.
 	 */
@@ -97,11 +104,11 @@ GLNAME( _mesa_identify_x86_cpu_features ):
 	 * "GenuineIntel" string in EBX, ECX and EDX.
 	 */
 	CMP_L	( CONST(GENU), EBX )
-	JNE	( LLBL( cpuid_amd ) )
+	JNE	( LLBL(cpuid_amd) )
 	CMP_L	( CONST(INEI), EDX )
-	JNE	( LLBL( cpuid_amd ) )
+	JNE	( LLBL(cpuid_amd) )
 	CMP_L	( CONST(NTEL), ECX )
-	JNE	( LLBL( cpuid_amd ) )
+	JNE	( LLBL(cpuid_amd) )
 
 	/* We have an Intel processor, so we can get the feature
 	 * information with an CPUID input value of 1.
@@ -109,19 +116,19 @@ GLNAME( _mesa_identify_x86_cpu_features ):
 	MOV_L	( CONST(0x1), EAX )
 	CPUID
 	MOV_L	( EDX, EAX )
-	JMP	( LLBL( cpuid_done ) )
+	JMP	( LLBL(cpuid_done) )
 
-LLBL( cpuid_amd ):
+LLBL(cpuid_amd):
 
 	/* Test for AMD processors.  We must look for the
 	 * "AuthenticAMD" string in EBX, ECX and EDX.
 	 */
 	CMP_L	( CONST(AUTH), EBX )
-	JNE	( LLBL( cpuid_other ) )
+	JNE	( LLBL(cpuid_other) )
 	CMP_L	( CONST(ENTI), EDX )
-	JNE	( LLBL( cpuid_other ) )
+	JNE	( LLBL(cpuid_other) )
 	CMP_L	( CONST(CAMD), ECX )
-	JNE	( LLBL( cpuid_other ) )
+	JNE	( LLBL(cpuid_other) )
 
 	/* We have an AMD processor, so we can get the feature
 	 * information after we verify that the extended functions are
@@ -130,19 +137,19 @@ LLBL( cpuid_amd ):
 	MOV_L	( CONST(0x80000000), EAX )
 	CPUID
 	TEST_L	( EAX, EAX )
-	JZ	( LLBL ( cpuid_failed ) )
+	JZ	( LLBL (cpuid_failed) )
 
 	MOV_L	( CONST(0x80000001), EAX )
 	CPUID
 	MOV_L	( EDX, EAX )
-	JMP	( LLBL ( cpuid_done ) )
+	JMP	( LLBL (cpuid_done) )
 
-LLBL( cpuid_other ):
+LLBL(cpuid_other):
 
 	/* Test for other processors here when required.
 	 */
 
-LLBL( cpuid_failed ):
+LLBL(cpuid_failed):
 
 	/* If we can't determine the feature information, we must
 	 * return zero to indicate that no platform-specific
@@ -150,7 +157,7 @@ LLBL( cpuid_failed ):
 	 */
 	MOV_L	( CONST(0), EAX )
 
-LLBL ( cpuid_done ):
+LLBL (cpuid_done):
 
 	POP_L	( EBX )
 	RET
