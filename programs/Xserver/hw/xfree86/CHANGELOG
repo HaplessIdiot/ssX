@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 371. Fixed indirect GLX on Mac OS X when the client can not make a
+      connection to the CoreGraphics window server (Apple).
  370. Fixed support for 64bit PCI bus on 32bit systems (Egbert Eich).
  369. Added support for using aliases in the -nolisten option. '-nolisten tcp'
       aliases to IPv4 and IPv6 (Matthieu Herrb, Egbert Eich).
@@ -17523,7 +17525,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2802 2003/08/11 13:28:18 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2803 2003/08/11 17:41:30 eich Exp $
 
 
 
