@@ -1,4 +1,5 @@
 XFree86 4.4.99.902 (xx February 2005)
+ 331. Fix a typo in xalloc.c (Rodion Vshevtsov).
  330. Back out CHANGELOG #100 (Marc La France).
  329. Add a Polish variant to the French keyboard layout (Bugzilla #1544,
       Hubert Gburzynski).
@@ -19389,7 +19390,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3438 2005/02/16 00:38:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3439 2005/02/16 17:03:55 tsi Exp $
 
 
 
