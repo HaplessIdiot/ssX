@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.2 2002/05/13 05:26:37 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.3 2002/05/13 16:30:39 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -321,11 +321,7 @@ static void PIXEL_WALK_INIT(PixelWalk *pw, xLineFixed line, Fixed newy)
     PIXEL_WALK_FIND_MODE(pw);
 }
 
-static int
-AreaAlpha (Fixed_1_31 area, int depth)
-{
-    return ((area >> depth) * ((1 << depth) - 1)) >> (31 - depth);
-}
+#define AreaAlpha(area, depth) ((((area) >> (depth)) * ((1 << (depth)) - 1)) >> (31 - (depth)))
 
 /*
   Pixel coverage from the upper-left corner bounded by one horizontal
@@ -371,6 +367,14 @@ slower. So, we'll use the non-optimized general equation.
 /* (1.16 + 1.16) / 2 -> 1.16 */
 #define WIDTH_AVG(x1,x2) (((x1) + (x2) + 1) >> 1)
 
+#define SubPixelArea(x1, y1, x2, y2, bottom)	\
+(Fixed_1_31) ( 						\
+   AREA_MULT((x1), (y1))			\
+ + AREA_MULT(WIDTH_AVG((x1), (x2)), (y2) - (y1))\
+ + AREA_MULT((x2), (bottom) - (y2))		\
+)
+
+/*
 static Fixed_1_31
 SubPixelArea (Fixed_1_16        x1,
               Fixed_1_16        y1,
@@ -393,7 +397,17 @@ SubPixelArea (Fixed_1_16        x1,
     
     return area;
 }
+*/
 
+#define SubPixelAlpha(x1, y1, x2, y2, bottom, depth)		\
+(								\
+    AreaAlpha(							\
+	SubPixelArea((x1), (y1), (x2), (y2), (bottom)),		\
+	(depth)							\
+    )								\
+)
+
+/*
 static int
 SubPixelAlpha (Fixed_1_16	x1,
 	       Fixed_1_16	y1,
@@ -408,6 +422,7 @@ SubPixelAlpha (Fixed_1_16	x1,
     
     return AreaAlpha(area, depth);
 }
+*/
 
 /*
   Pixel coverage from the left edge bounded by two horizontal lines,
@@ -452,6 +467,7 @@ PixelAlpha(Fixed	pixel_x,
 	    (double) pw->p1.y / (1 << 16),
 	    (double) pw->p2.x / (1 << 16),
 	    (double) pw->p2.y / (1 << 16));
+    fflush(stderr);
 #endif
 
 
@@ -487,6 +503,7 @@ PixelAlpha(Fixed	pixel_x,
     fprintf(stderr, "0x%x => %f\n",
 	    alpha,
 	    (double) alpha / ((1 << depth) -1 ));
+    fflush(stderr);
 #endif
 
     return alpha;
@@ -548,7 +565,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
     PixelWalk left, right;
     int	pixel_x;
     Fixed x, first_right_x;
-    Fixed y, y_min, y_max;
+    Fixed y, y_next, y_min, y_max;
 
     /* trap.left and trap.right must be non-horizontal */
     if (trap.left.p1.y == trap.left.p2.y
@@ -591,8 +608,9 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
     if (!fbBuildCompositeOperand (pMask, &mask, 0, FixedToInt (y_min)))
 	return;
     
-    for (y = y_min; y < y_max; y += Fixed1) 
-    {
+    for (y = y_min, y_next = y + Fixed1;
+	 y < y_max;
+	 y = y_next, y_next += Fixed1) {
 	first_right_x = FixedFloor(right.col.p1.x);
 	
 	/* First, pixels on this row intersected by only trap.left */
@@ -601,8 +619,8 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	pixel_x = FixedToInt (x);
 	mask.offset = pixel_x * mask.bpp;
 	
-	while (left.row.p1.y == y && x < first_right_x) {
-	    if (trap.bottom < y + Fixed1) {
+	while (left.row.p1.y < y_next && x < first_right_x) {
+	    if (trap.bottom < y_next) {
 		alpha = RectAlpha(y, trap.bottom, depth);
 	    } else {
 		alpha = max_alpha;
@@ -632,7 +650,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
                up right, in which case we can simply return */
 	} else {
 	    /* Fully covered pixels simply saturate */
-	    if (trap.top < y && trap.bottom > y + Fixed1) {
+	    if (trap.top < y && trap.bottom > y_next) {
 		while (x < first_right_x) {
 		    if (0 <= x && x < buf_width_fixed)
 			(*mask.store) (&mask, 0xff000000);
@@ -650,7 +668,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	}
 
 	/* Finally, pixels intersected only by trap.right */
-	while (right.row.p1.y == y) {
+	while (right.row.p1.y < y_next && right.p1.y < trap.bottom) {
 	    alpha = PixelAlpha(x, y, trap.top, trap.bottom, &right, depth);
 	    if (0 <= x && x < buf_width_fixed)
 		addAlpha (&mask, depth, alpha);
@@ -658,6 +676,12 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    INCREMENT_X_AND_PIXEL;
 	}
 	mask.line += mask.stride;
+	while (left.row.p1.y < y_next) {
+	    PIXEL_WALK_NEXT_PIXEL(left);
+	}
+	while (right.row.p1.y < y_next) {
+	    PIXEL_WALK_NEXT_PIXEL(right);
+	}
     }
 }
 
