@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.164 2002/04/04 14:05:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.165 2002/04/06 11:57:27 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1987,19 +1987,20 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
   	case 0x03:
   	    pScrn->videoRam = 1024;
   	    break;
-	case 0x04: /* 8MB, but - hw cursor can't store above 4MB */
-		   /* So, we force to 4MB for now */
-	    	   /* pScrn->videoRam = 8192; */
-	    /* Apparantly this isn't true for the CYBER9397DVD */
-	    /* maybe some other chipsets aren't affected either */
-	    /* XXX this needs to be investigated further */
-	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD) &&
+	case 0x04: 
+	    /* 
+	     * 8MB, but - hw cursor can't store above 4MB */
+	     * This only affects Image series chipsets, but for
+	     * some reason, reports suggest that the 9397DVD isn't
+	     * affected. XXX needs furthur investigation !
+	     */
+	    if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD) &&
 	      			    (pTrident->Chipset < BLADE3D)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+	    	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		       "Found 8MB board, using 4MB\n");
-	    pScrn->videoRam = 4096;
-	  } else
-	    pScrn->videoRam = 8192;
+	    	pScrn->videoRam = 4096;
+	    } else
+	    	pScrn->videoRam = 8192;
 	    break;
  	case 0x06: /* XP */
  	    pScrn->videoRam = 10240;
@@ -3462,7 +3463,11 @@ void
 tridentSetModeBIOS(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    if (pTrident->IsCyber && pTrident->lcdMode) {
+
+    /* This function is only for LCD screens, and also when we have
+     * int10 available */
+
+    if (pTrident->IsCyber && pTrident->lcdMode && pTrident->Int10) {
         int i = pTrident->lcdMode;
 	if ((pScrn->currentMode->HDisplay != LCD[i].display_x) /* !fullsize? */
 	    || (pScrn->currentMode->VDisplay != LCD[i].display_y)) {
