@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.72 2000/09/25 23:55:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.74 2000/10/06 17:32:46 eich Exp $ */
 
 
 /* All drivers should typically include these */
@@ -133,6 +133,233 @@ extern void MGAValidatePolyArc(GCPtr, unsigned long, DrawablePtr);
 extern void MGAValidatePolyPoint(GCPtr, unsigned long, DrawablePtr);
 extern void MGAFillCacheBltRects(ScrnInfoPtr, int, unsigned int, int, BoxPtr,
 				int, int, XAACacheInfoPtr);
+
+#ifdef RENDER
+extern Bool 
+MGAComposite (CARD8      op,
+              PicturePtr pSrc,
+              PicturePtr pMask,
+              PicturePtr pDst,
+              INT16      xSrc,
+              INT16      ySrc,
+              INT16      xMask,
+              INT16      yMask,
+              INT16      xDst,
+              INT16      yDst,
+              CARD16     width,
+              CARD16     height);
+
+#if PSZ == 8
+#include "mipict.h"
+
+/* kludge */
+static FBLinearPtr linear_scratch = (FBLinearPtr)NULL;
+static int linear_size = 0;
+
+Bool 
+MGAComposite (CARD8      op,
+              PicturePtr pSrc,
+              PicturePtr pMask,
+              PicturePtr pDst,
+              INT16      xSrc,
+              INT16      ySrc,
+              INT16      xMask,
+              INT16      yMask,
+              INT16      xDst,
+              INT16      yDst,
+              CARD16     width,
+              CARD16     height)
+{
+    ScreenPtr pScreen = pSrc->pDrawable->pScreen;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RegionRec region;
+    BoxPtr pbox;
+    int nbox;
+    MGAPtr pMga = MGAPTR(pScrn);
+    PixmapPtr pix;
+    int log2w, log2h, i, w, h, pitch, padw, padh, incx, incy;
+    int offset, sizeNeeded, x, y;
+    CARD32 solid_color;
+
+    if(!pScrn->vtSema || 
+      ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
+	!IS_OFFSCREEN_PIXMAP(pDst->pDrawable)))
+	return FALSE;
+
+    if(pMask) {
+       solid_color =
+           *((CARD32*)(((PixmapPtr)(pSrc->pDrawable))->devPrivate.ptr));
+
+       if(PICT_FORMAT_A(pSrc->format) && ((solid_color >> 24) != 0xff))
+	  return FALSE;
+
+       pix = (PixmapPtr)(pMask->pDrawable);
+
+       solid_color &= 0x00ffffff;
+    } else
+       pix = (PixmapPtr)(pSrc->pDrawable);
+	
+    w = pix->drawable.width;
+    h = pix->drawable.height;
+
+    if((w > 2048) || (h > 2048))
+	return FALSE;
+
+    xDst  += pDst->pDrawable->x;
+    yDst  += pDst->pDrawable->y;
+    xSrc  += pSrc->pDrawable->x;
+    ySrc  += pSrc->pDrawable->y;
+    if(pMask) {
+       xMask += pMask->pDrawable->x;
+       yMask += pMask->pDrawable->y;
+    }
+
+
+    if (!miComputeCompositeRegion (&region,
+                                   pSrc,
+                                   pMask,
+                                   pDst,
+                                   xSrc,
+                                   ySrc,
+                                   xMask,
+                                   yMask,
+                                   xDst,
+                                   yDst,
+                                   width,
+                                   height))
+	return TRUE;
+
+    nbox = REGION_NUM_RECTS(&region);
+    pbox = REGION_RECTS(&region);   
+
+    if(!nbox)
+	return TRUE;
+
+    i = 12;
+    while(--i) {
+        if(w & (1 << i)) {
+            log2w = i;
+            if(w & ((1 << i) - 1)) 
+                log2w++;
+            break;              
+        }
+    }
+
+    i = 12;
+    while(--i) {
+        if(h & (1 << i)) {
+            log2h = i;
+            if(h & ((1 << i) - 1)) 
+                log2h++;                
+            break;              
+        }
+    }
+
+    padw = 1 << log2w;
+    padh = 1 << log2h;
+    incx = (width << 20)/(width * padw);
+    incy = (height << 20)/(height * padh);
+   
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
+
+#if 0
+    if(pMga->Overlay8Plus24) {
+        i = 0x00ffffff;
+        WAITFIFO(1);
+        SET_PLANEMASK(i);
+    }
+#endif
+
+    pitch = (w + 15) & ~15;
+    sizeNeeded = pitch * h;
+    if(pScrn->bitsPerPixel == 16) 
+	sizeNeeded <<= 1;
+
+    if(!linear_scratch) {
+	linear_scratch = xf86AllocateOffscreenLinear(pScreen, sizeNeeded,
+	                                             32, NULL, NULL, NULL);
+	if(!linear_scratch)
+	   return FALSE;
+    } else {
+        if(linear_size < sizeNeeded) {
+    	    if(xf86ResizeOffscreenLinear(linear_scratch, sizeNeeded))
+	       linear_size = sizeNeeded;
+	    else
+		return FALSE;
+	}
+    }
+
+    offset = linear_scratch->offset << 1;
+    if(pScrn->bitsPerPixel == 32)
+        offset <<= 1;
+
+    if(pMga->AccelInfoRec->NeedToSync) 
+	MGAStormSync(pScrn);
+
+    /* copy offscreen */
+    if(pMask) {
+	CARD32 *dst = (CARD32*)(pMga->FbStart + offset);
+        CARD8 *src = (CARD8*)(pix->devPrivate.ptr);
+
+        for(y = 0; y < h; y++) {
+	   for(x = 0; x < w; x++) {
+	       dst[x] = solid_color | (src[x] << 24);
+	    }
+	    dst += pitch;
+	    src += pix->devKind;
+        } 
+    } else {
+       CARD8 *src = (CARD8*)(pix->devPrivate.ptr);
+       CARD8 *dst = (CARD8*)(pMga->FbStart + offset);
+
+       for(y = 0; y < h; y++) {
+	    memcpy(dst, src, w << 2);
+            dst += pitch << 2;
+            src += pix->devKind;
+   	}	
+    }
+
+    WAITFIFO(15);
+    OUTREG(MGAREG_TMR0, incx);  /* sx inc */
+    OUTREG(MGAREG_TMR1, 0);  /* sy inc */
+    OUTREG(MGAREG_TMR2, 0);  /* tx inc */
+    OUTREG(MGAREG_TMR3, incy);  /* ty inc */
+    OUTREG(MGAREG_TMR4, 0x00000000); 
+    OUTREG(MGAREG_TMR5, 0x00000000);
+    OUTREG(MGAREG_TMR8, 0x00010000);
+    OUTREG(MGAREG_TEXORG, offset); 
+    OUTREG(MGAREG_TEXWIDTH,  log2w | (((8 - log2w) & 63) << 9) | 
+                                ((w - 1) << 18));
+    OUTREG(MGAREG_TEXHEIGHT, log2h | (((8 - log2h) & 63) << 9) | 
+                                ((h - 1) << 18));
+    OUTREG(MGAREG_TEXCTL, 0x1A000106 | ((pitch & 0x07FF) << 9));
+    OUTREG(MGAREG_TEXCTL2, 0x00000014);
+    OUTREG(MGAREG_DWGCTL, 0x000c7076);   
+    OUTREG(MGAREG_TEXFILTER, 0x01e00020);
+    if(pMask)
+       OUTREG(MGAREG_ALPHACTRL, 0x00000154);
+    else
+       OUTREG(MGAREG_ALPHACTRL, 0x00000151);
+
+    padw = (xMask << 20)/padw;
+    padh = (yMask << 20)/padh;
+
+    while(nbox--) {
+        WAITFIFO(4);
+        OUTREG(MGAREG_TMR6, (incx * (pbox->x1 - xDst)) + padw);
+        OUTREG(MGAREG_TMR7, (incy * (pbox->y1 - yDst)) + padh);
+        OUTREG(MGAREG_FXBNDRY, (pbox->x2 << 16) | (pbox->x1 & 0xffff));
+        OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, 
+                                (pbox->y1 << 16) | (pbox->y2 - pbox->y1));
+        pbox++;
+    }
+
+    pMga->AccelInfoRec->NeedToSync = TRUE;
+
+    return TRUE;
+}
+#endif
+#endif
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -415,6 +642,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	if(shared_accel == TRUE)
 	    infoPtr->RestoreAccelState = MGANAME(RestoreAccelState);
     }
+
+#ifdef RENDER
+   if((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16))
+       infoPtr->Composite = MGAComposite;
+#endif
 
     return(XAAInit(pScreen, infoPtr));
 }
