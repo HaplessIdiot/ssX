@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.16 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.17 2001/08/06 20:51:13 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -459,7 +459,11 @@ xf86parseOption(XF86OptionPtr head)
 	}
 	else {
 		option = xf86newOption(name, NULL);
-		xf86unGetToken(token);
+		option->opt_comment = comment;
+		if (token == COMMENT)
+			option->opt_comment = xf86addComment(option->opt_comment, val.str);
+		else
+			xf86unGetToken(token);
 	}
 
         old = NULL;
