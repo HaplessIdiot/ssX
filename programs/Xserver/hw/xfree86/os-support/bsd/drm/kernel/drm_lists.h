@@ -27,6 +27,8 @@
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
+ *
+ * $FreeBSD: src/sys/dev/drm/drm_lists.h,v 1.3 2003/03/09 02:08:28 anholt Exp $
  */
 
 #include "drmP.h"
@@ -178,7 +180,7 @@ int DRM(freelist_put)(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 				/* Check for high water mark */
 	if (atomic_read(&bl->wfh) && atomic_read(&bl->count)>=bl->high_mark) {
 		atomic_set(&bl->wfh, 0);
-		DRM_WAKEUP_INT(&bl->waiting);
+		DRM_WAKEUP_INT((void *)&bl->waiting);
 	}
 	return 0;
 }
@@ -225,7 +227,7 @@ drm_buf_t *DRM(freelist_get)(drm_freelist_t *bl, int block)
 			for (;;) {
 				if (!atomic_read(&bl->wfh)
 				    && (buf = DRM(freelist_try(bl)))) break;
-				error = tsleep(&bl->waiting, PZERO|PCATCH,
+				error = tsleep((void *)&bl->waiting, PZERO|PCATCH,
 					       "drmfg", 0);
 				if (error)
 					break;
