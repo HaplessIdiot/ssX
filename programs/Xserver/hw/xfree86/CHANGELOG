@@ -1,4 +1,19 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 496. Add PCI ID defines for some ATI R300 chipsets (#5458,
+      Vladimir Dergachev).
+ 495. Fix error message typo in MakeRootTile() (#5451, Mike Harris).
+ 494. Redirect hostname's stderr in the xon script (#5450, Mike Harris).
+ 493. Add a request to the XFree86-Misc extension for querying the
+      X server's config file, module path, and log file name (#5456, Joe Moss).
+ 492. Add support for using the XKEYBOARD extension's action handlers
+      for the XFree86 X server hot keys.  This provides control over
+      the mapping of theese hot keys (#A.1334, 5454, Joe Moss).
+ 491. Reinstate the X server -xkbdir option, but only when the X server's
+      real and effective uids are the same (based on #A.1132, Ivan Popov).
+ 490. Fix an xkbcomp bug that prevents a later definition from specifying
+      actions if the previous definition didn't (#5471, Joe Moss).
+ 489. Add a stub handler to xkbcomp for the DeviceValuator action (#A.1341,
+      Joe Moss).
  488. Fix broken software cursor with XDarwin's new event handling
       (Torrey T.  Lyons).
  487. Change imake so that, when compiled with GCC, it invokes the pre-
@@ -18,7 +33,7 @@ XFree86 4.2.99.3 (xx November 2002)
       the DENSE map code for Linux/alpha (#5439, Ray Strode).
  480. Build fix for r128_accel on PPC when DRI is disabled (based on
       #5438, Mike Harris and #5449, Matthieu Herrb).
- 479. Updates to bdf/misc UCS fonts (#5446, Markus Kuhn).
+ 479. Updates to bdf/misc UCS fonts (#5446, 5453, Markus Kuhn).
  478. Fix Thai glyphs in the 6x13 UCS font (#5427, Theppitak Karoonboonyanan).
  477. Add Thai glyphs to 7x13, 7x13B, 7x13O, 7x14, 7x14B UCS fonts
       (#5445, Theppitak Karoonboonyanan).
@@ -15514,4 +15529,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2393 2002/11/19 15:25:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2394 2002/11/19 23:01:25 torrey Exp $
