@@ -1,4 +1,8 @@
-XFree86 4.2.99.1 (XX January 2002)
+XFree86 4.2.99.1 (XX February 2002)
+  32. Fix a problem related to reserving the overlay key in the default
+      colormap in 24+8 mode.  This caused some clients using the 8-bit
+      visuals to fail (David Dawes).
+  31. Zlib error handling fix (Mark Adler).
   30. Put back XDarwin's byte-ordering fix for reading keymappings on
       Darwin x86 that was inadvertently dropped (Rob Braun).
   29. Fix Big Endian hardware cursor bug on GeForce3 (Mark Vojkovich).
@@ -14619,4 +14623,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2166 2002/02/06 01:35:09 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2167 2002/02/07 02:54:40 torrey Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.5 1999/03/21 07:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.8 2000/03/25 20:14:43 mvojkovi Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -311,6 +311,7 @@ xf86Overlay8Plus32Init (ScreenPtr pScreen)
 
 	pmap->red[pScrn->colorKey].refcnt = AllocPrivate;
 	pmap->red[pScrn->colorKey].fShared = FALSE;
+	pmap->freeRed--;
 	
 	color.red = color.blue = color.green = 0;
 	color.pixel = pScrn->colorKey;
