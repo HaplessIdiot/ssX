@@ -362,9 +362,6 @@ void
 _XftFontManageMemory (Display *dpy, XftFont *public);
 
 /* xftinit.c */
-int
-XftNativeByteOrder (void);
-
 void
 XftMemReport (void);
 
@@ -380,11 +377,6 @@ XftListFontsPatternObjects (Display	    *dpy,
 			    int		    screen,
 			    FcPattern	    *pattern,
 			    FcObjectSet    *os);
-
-FcFontSet *
-XftListFonts (Display	*dpy,
-	      int	screen,
-	      ...);
 
 /* xftname.c */
 void 
