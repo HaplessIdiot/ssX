@@ -16,7 +16,7 @@
 <date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.139 2004/02/15 02:16:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.140 2004/02/24 03:41:40 dawes Exp $
 </ident>
 
 <abstract>
@@ -345,9 +345,14 @@ XFree86-&prevfullrelvers;-&fullrelvers;.diff4.gz
 </verb></tscreen>
 
 <![ %difftar; [
-There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is
-<tt>XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz</tt>.
+There is also a tarball and a cleanup script that handle files that have
+components that can't be included in a diff.  These are:
+
+<tscreen><verb>
+XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz
+XFree86-&prevfullrelvers;-&fullrelvers;-cleanup.sh
+</verb></tscreen>
+
 ]]>
 These patches should
 be applied to a clean &prevfullrelvers; source tree, working from the directory
@@ -361,23 +366,8 @@ gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
 gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff4.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
-<![ %removefiles; [
 <tscreen><verb>
-rm -f xc/doc/hardcopy/Xext/mit-shm.PS.gz
-rm -f xc/doc/hardcopy/saver/saver.PS.gz
-rm -fr xc/fonts/scaled/Ethiopic
-rm -fr xc/fonts/scaled/Meltho
-rm -fr xc/programs/Xserver/hw/darwin/bundle
-rm -f xc/programs/Xserver/hw/hp/input/drivers/XHPKeymaps
-rm -f xc/programs/Xserver/hw/hp/ngle/ngledoblt.o.8.07
-rm -f xc/programs/Xserver/hw/xwin/X.ico
-rm -fr xc/programs/xcursorgen/redglass
-rm -fr xc/programs/xcursorgen/whiteglass
-touch xc/extras/Mesa/src/Trace/tr_attrib.c
-touch xc/lib/fontconfig/NEWS
-</verb></tscreen>
-]]>
-<tscreen><verb>
+sh XFree86-&prevfullrelvers;-&fullrelvers;-cleanup.sh
 gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz | tar vxf -
 </verb></tscreen>
 ]]>
