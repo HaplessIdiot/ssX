@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.2 2000/11/03 09:52:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.3 2000/11/08 23:13:10 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markhom, Ontario
  *	      and VA Linux Systems, Inc., Sunnyvale, California.
@@ -1545,19 +1545,6 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
     xf86SetBlackWhitePixels(pScreen);
 
-
-    if (pScrn->bitsPerPixel > 8) {
-        /* Fixup RGB ordering */
-	    if ((visual->class | DynamicClass) == DirectColor) {
-		visual->offsetRed = pScrn->offset.red;
-		visual->offsetGreen = pScrn->offset.green;
-		visual->offsetBlue = pScrn->offset.blue;
-		visual->redMask = pScrn->mask.red;
-		visual->greenMask = pScrn->mask.green;
-		visual->blueMask = pScrn->mask.blue;
-	    }
-	}
-    }
     if (pScrn->bitsPerPixel > 8) {
 	VisualPtr visual;
 
