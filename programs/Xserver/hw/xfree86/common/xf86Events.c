@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.145 2003/02/20 04:19:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.146 2003/02/20 04:20:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -535,6 +535,17 @@ xf86PostKbdEvent(unsigned key)
     }
 
   /*
+   * PC keyboards generate separate key codes for
+   * Alt+Print and Control+Pause but in the X keyboard model
+   * they need to get the same key code as the base key on the same
+   * physical keyboard key.
+   */
+  if (scanCode == KEY_SysReqest)
+    scanCode = KEY_Print;
+  else if (scanCode == KEY_Break)
+    scanCode = KEY_Pause;
+  
+  /*
    * and now get some special keysequences
    */
 
@@ -828,17 +839,6 @@ special:
     }
 #endif
 
-  /*
-   * PC keyboards generate separate key codes for
-   * Alt+Print and Control+Pause but in the X keyboard model
-   * they need to get the same key code as the base key on the same
-   * physical keyboard key.
-   */
-  if (scanCode == KEY_SysReqest)
-    scanCode = KEY_Print;
-  else if (scanCode == KEY_Break)
-    scanCode = KEY_Pause;
-  
   /*
    * Now map the scancodes to real X-keycodes ...
    */
