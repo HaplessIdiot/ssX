@@ -1,4 +1,9 @@
 /* $XConsortium: ICD2061Aalt.c,v 1.1 94/03/28 21:24:51 dpw Exp $ */
+/* $XFree86$ */
+
+/*
+ * This code is derived from code available from the STB bulletin board
+ */
 
 #include "compiler.h"
 
@@ -51,16 +56,18 @@ int select;
    double delta, deltax;
    unsigned int p, q;
    unsigned int bestp, bestq;
+   unsigned char tmp;
 
    crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
 
-   outb(crtcaddr, 0x11);
-   outb(crtcaddr+1, 0x00);
-   outb(crtcaddr, 0x38);
-   outb(crtcaddr+1, 0x48);
 
-   outb(crtcaddr, 0x39);
-   outb(crtcaddr+1, 0xa5);
+   outb(crtcaddr, 0x11);	/* Unlock CRTC registers */
+   tmp = inb(crtcaddr + 1);
+   outb(crtcaddr + 1, tmp & ~0x80);
+
+   outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
+   outw(crtcaddr, 0xA039);
+
    clknum = select;
 
    freq = ((double)frequency)/1000000.0;
@@ -205,24 +212,23 @@ static void init_clock(setup, crtcport)
    int i;
    unsigned char c;
 
+   (void)xf86DisableInterrupts();
+
    oldclk = inb(0x3CC);
 
    outb(crtcport, 0x42);
-   restore42 = (inb(crtcport+1) << 8) & 0x3F00;
-   restore42 |= 0x42;
+   restore42 = inb(crtcport+1);
 
-   outb(0x3C4, 0x00);
-   outb(0x3C4, 0x01);
+   outw(0x3C4, 0x0100);
 
    outb(0x3C4, 1);
-   c= inb(0x3C5);
+   c = inb(0x3C5);
    outb(0x3C5, 0x20 | c);
 
    outb(crtcport, 0x42);
    outb(crtcport+1, 0x03);
 
-   outb(0x3C4, 0x00);
-   outb(0x3C4, 0x03);
+   outw(0x3C4, 0x0300);
 
    nclk[0] = oldclk & 0xF3;
    nclk[1] = nclk[0] | 0x08;
@@ -232,8 +238,7 @@ static void init_clock(setup, crtcport)
    outb(crtcport, 0x42);
    i = inw(crtcport);
 
-   outb(0x3C4, 0x00);
-   outb(0x3C4, 0x01);
+   outw(0x3C4, 0x0100);
 
    wrt_clk_bit(oldclk | 0x08);
    wrt_clk_bit(oldclk | 0x0C);
@@ -267,8 +272,10 @@ static void init_clock(setup, crtcport)
 
    outb(0x3C2, oldclk);
 
-   outb(0x3C4, 0x00);
-   outb(0x3C4, 0x03);
+   outw(0x3C4, 0x0300);
+
+   xf86EnableInterrupts();
+
    }
 
 static void wrt_clk_bit(value)

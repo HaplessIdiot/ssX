@@ -1,4 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,7 +59,7 @@ typedef struct _DispM {
 #define V_CSYNC     0x0040
 #define V_PIXMUX    0x0100
 
-#define MAXCLOCKS   32
+#define MAXCLOCKS   128
 
 /* Set default max allowed clock to 90MHz */
 #define DEFAULT_MAX_CLOCK	90000

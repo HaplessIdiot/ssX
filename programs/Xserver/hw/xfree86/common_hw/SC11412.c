@@ -1,4 +1,5 @@
 /* $XConsortium: SC11412.c,v 1.1 94/03/28 21:25:16 dpw Exp $ */
+/* $XFree86$ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  */
 
@@ -21,20 +22,20 @@ SC11412SetClock(frequency)
 register long frequency;
 {  
 unsigned i;
-unsigned  _mul, _div, __D;
-unsigned _err=32767;
+unsigned  Multiplier, Divider, BigD;
+unsigned ErrorTerm=32767;
 
 SetSC11412(105,32,0,0);    /* set Mclock to 46,... MHz */
 
   /* calculate postscalar divider */
-  __D = 0;
+  BigD = 0;
   if (frequency < MIN_SC11412_FREQ)
-   __D = 1;
+   BigD = 1;
   if (frequency < MIN_SC11412_FREQ / 2)
-   __D = 2;
+   BigD = 2;
   if (frequency < MIN_SC11412_FREQ / 4)
-    __D = 3;
-  frequency <<= __D;
+    BigD = 3;
+  frequency <<= BigD;
 
 if (frequency<MIN_SC11412_FREQ)
   return FALSE; 	/* Frequency too low! */ 
@@ -52,13 +53,13 @@ for (i=0; i<125; i++)
         t3=t3*127/(i+3);
         if (t2 > 125)
           continue;
-        if (t3 < _err)
-          _err=(unsigned)t3, _mul=i, _div=(unsigned)t2;
+        if (t3 < ErrorTerm)
+          ErrorTerm=(unsigned)t3, Multiplier=i, Divider=(unsigned)t2;
       }
-        _mul+=3; 
-        _div+=2;
+        Multiplier+=3; 
+        Divider+=2;
 
- return SetSC11412(_mul,_div,__D,1);
+ return SetSC11412(Multiplier,Divider,BigD,1);
 
 }	/* end of SC11412SetClock */
 

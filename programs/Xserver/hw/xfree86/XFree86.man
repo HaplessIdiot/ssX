@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.3 94/04/11 16:03:13 matt Exp $
-.\" XFree86.man
+.\" $XFree86$
 .TH XFree86 1 "Version 3.0"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -295,7 +295,7 @@ Support for \fB386BSD\fP, \fBFreeBSD\fP, and \fBNetBSD\fP.
 Robert Baron,      \fIRobert.Baron@ernst.mach.cs.cmu.edu\fP
 Ported to \fBMach\fP.
 .TP 8
-Orest Zborowski,   \fIorestz@microsoft.com\fP
+Orest Zborowski,   \fIorestz@eskimo.com\fP
 Ported to \fBLinux\fP.
 .TP 8
 Doug Anson,        \fIdanson@lgc.com\fP

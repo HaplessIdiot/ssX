@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -52,6 +53,7 @@ typedef struct {
 				      set of preset clocks is used */
 #define OPTION_HIBIT_HIGH	5  /* Initial state of high order clock bit */
 #define OPTION_HIBIT_LOW	6
+#define OPTION_UNDOC_CLKS	7  /* ATI undocumented clocks */
 
 /* Laptop display options */
 #define OPTION_INTERN_DISP	8  /* Laptops - enable internal display (WD)*/
@@ -72,6 +74,7 @@ typedef struct {
 #define OPTION_NOACCEL		20 /* Disable accel support in SVGA server */
 #define OPTION_HW_CURSOR	21 /* Turn on HW cursor */
 #define OPTION_SW_CURSOR	22 /* Turn off HW cursor (Mach32) */
+#define OPTION_NO_BITBLT	23 /* Disable hardware bitblt (cirrus) */
 
 /* RAMDAC options */
 #define OPTION_NORMAL_DAC	24 /* Override probes for Bt, Ti ramdacs (S3) */
@@ -85,6 +88,7 @@ typedef struct {
 #define OPTION_DAC_8_BIT	32 /* 8-bit DAC operation */
 #define OPTION_ATT490_1		33 /* AT&T 20C490 or 20C491 */
 #define OPTION_SC15025          34 /* Sierra SC15025/6 RAMDAC */
+#define OPTION_SYNC_ON_GREEN	35 /* Set Sync-On-Green in RAMDAC if available */
 
 /* Misc options */
 #define OPTION_CSYNC		40 /* Composite sync */
@@ -94,6 +98,7 @@ typedef struct {
 #define OPTION_FIFO_AGGRESSIVE	43 /* (cirrus) */
 #define OPTION_SPEA_MERCURY	45 /* Enable pixmux for SPEA Mercury (S3) */
 #define OPTION_NUMBER_NINE	46 /* Enable pixmux for #9 with Bt485 (S3) */
+#define OPTION_STB_PEGASUS	47 /* Enable pixmux for STB Pegasus (S3) */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	48 /* Allow cache to be seen (S3) */
@@ -121,6 +126,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "probe_clocks",	OPTION_PROBE_CLKS },
   { "hibit_high",	OPTION_HIBIT_HIGH },
   { "hibit_low",	OPTION_HIBIT_LOW },
+  { "undoc_clocks",	OPTION_UNDOC_CLKS },
 
   { "intern_disp",	OPTION_INTERN_DISP },
   { "extern_disp",	OPTION_EXTERN_DISP },
@@ -137,6 +143,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },
   { "sw_cursor",	OPTION_SW_CURSOR },
+  { "no_bitblt",	OPTION_NO_BITBLT },
 
   { "normal_dac",	OPTION_NORMAL_DAC },
   { "bt485",		OPTION_BT485 },
@@ -149,6 +156,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "dac_8_bit",	OPTION_DAC_8_BIT },
   { "att_20c490_1",	OPTION_ATT490_1 },
   { "sc15025",          OPTION_SC15025 },
+  { "sync_on_green",    OPTION_SYNC_ON_GREEN },
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },
@@ -156,6 +164,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "fifo_aggressive",	OPTION_FIFO_AGGRESSIVE },
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
+  { "stb_pegasus",	OPTION_STB_PEGASUS },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
