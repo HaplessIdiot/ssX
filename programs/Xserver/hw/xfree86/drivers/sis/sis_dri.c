@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.35tsi Exp $ */
+/* $XFree86$ */
 /*
  *  DRI wrapper for 300 and 315 series
  *
@@ -387,7 +387,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
     if(!pSIS->IsAGPCard)
        break;
-    
+
     if(drmAgpAcquire(pSIS->drmSubFD) < 0) {
        xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
        break;

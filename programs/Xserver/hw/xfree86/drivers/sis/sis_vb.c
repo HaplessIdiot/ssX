@@ -238,7 +238,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
      *
      * By default, CRT2 redetection is forced since 12/09/2003, as
      * I encountered numerous panels which deliver more or less
-     * bogus DDC data confusing the BIOS. Since out DDC detection
+     * bogus DDC data confusing the BIOS. Since our DDC detection
      * is waaaay better, we prefer it instead of the primitive
      * and buggy BIOS method.
      */
