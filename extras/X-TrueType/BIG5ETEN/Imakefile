@@ -1,0 +1,9 @@
+/* code converter: BIG5ETEN */
+
+#define ModuleName BIG5
+SRCS = BIG5ETENtoUCS2.c main.c
+OBJS = BIG5ETENtoUCS2.o main.o
+
+#include <xttMod.tmpl>
+
+/* end of file */
