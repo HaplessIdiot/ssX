@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.4 2001/05/15 18:22:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.5 2001/05/18 16:03:14 tsi Exp $
  */
 #define LOADER_PRIVATE
 #include "loader.h"
@@ -41,6 +41,7 @@ void xf86AddInputDriver(InputDriverPtr, pointer, int);
 void xf86AddModuleInfo(ModuleInfoPtr, void*);
 Bool xf86LoaderCheckSymbol(const char*);
 void xf86LoaderReqSymLists(const char **, ...);
+void xf86Msg(int, const char*, ...);
 
 xf86cfgModuleOptions *module_options;
 
@@ -241,6 +242,8 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86LoaderCheckSymbol)
 
     SYMFUNC(xf86LoaderReqSymLists)
+    SYMFUNC(xf86Msg)
+    SYMFUNC(ErrorF)
     {0,0}
 };
 
@@ -386,6 +389,10 @@ xf86LoaderCheckSymbol(const char *symbol)
 
 void
 xf86LoaderReqSymLists(const char **list0, ...)
+{
+}
+
+void xf86Msg(int type, const char *format, ...)
 {
 }
 #endif
