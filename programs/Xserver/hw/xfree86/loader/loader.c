@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.17 1998/03/20 21:07:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.18 1998/03/21 11:08:48 dawes Exp $ */
 
 
 
@@ -269,17 +269,7 @@ char	*label; /* Only used for Debugging */
     }
 
 #ifndef __EMX__
-#if defined(PowerMAX_OS)
-    /*
-     * For PowerMAX_OS, don't use xcalloc which can end up
-     * call mmap().  Doing so results in segments that get loaded
-     * at displacements from PPC PLTs that won't fit in 24(26) bits.
-     * This is bad......
-     */
-    if( (ptr=(char *)calloc(size,1)) == NULL )
-#else	    
-    if( (ptr=(char *)xcalloc(size,1)) == NULL )
-#endif	    
+    if( (ptr=(char *)xf86loadercalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #else
     if( (ptr=(char *)os2loader_calloc(size,1)) == NULL )
@@ -293,7 +283,7 @@ char	*label; /* Only used for Debugging */
 	FatalError("\n_LoaderFileToMem() read() failed: %s\n",strerror(errno));
 
 #ifdef DEBUGMEM
-    ErrorF("=%x\n",ptr);
+    ErrorF("=%lx\n",ptr);
 #endif
 
     return (void *)ptr;
@@ -309,7 +299,7 @@ void	*addr;
 int	size;
 {
 #ifdef DEBUGMEM
-    ErrorF("_LoaderFreeFileMem(%x,%d)",addr,size);
+    ErrorF("_LoaderFreeFileMem(%x,%d)\n",addr,size);
 #endif
 #if UseMMAP
     munmap(addr,size);
@@ -317,17 +307,7 @@ int	size;
     if(size == 0)
 	return;
 
-#if defined(PowerMAX_OS)
-    /*
-     * For PowerMAX_OS, don't use xcalloc which can end up
-     * call mmap().  Doing so results in segments that get loaded
-     * at displacements from PPC PLTs that won't fit in 24(26) bits.
-     * This is bad......
-     */
-    free(addr);
-#else	    
-    xfree(addr);
-#endif	    
+    xf86loaderfree(addr);
 #endif
 
     return;
@@ -354,7 +334,7 @@ static loaderPtr listHead = (loaderPtr) 0 ;
 static loaderPtr
 _LoaderListPush()
 {
-  loaderPtr item = (loaderPtr) xcalloc(1, sizeof (struct _loader));
+  loaderPtr item = (loaderPtr) xf86loadercalloc(1, sizeof (struct _loader));
   item->next = listHead ;
   listHead = item;
 
@@ -500,7 +480,7 @@ LOOKUP **ppLookup;
     int numsyms = 0;
     int resetoff;
 
-    /* lookup_ret = (LOOKUP **) xalloc(sizeof (LOOKUP *)); */
+    /* lookup_ret = (LOOKUP **) xf86loadermalloc(sizeof (LOOKUP *)); */
 
     arnamesize=strlen(modrec->name);
 
@@ -608,7 +588,7 @@ LOOKUP **ppLookup;
 	tmp->module = moduleseq++;
 	tmp->funcs=&funcs[modtype];
 	modnamesize=strlen(hdr.ar_name);
-	tmp->name=(char *)xalloc(arnamesize+modnamesize+2 );
+	tmp->name=(char *)xf86loadermalloc(arnamesize+modnamesize+2 );
 	strcpy(tmp->name,modrec->name);
 	strcat(tmp->name,":");
 	strcat(tmp->name,hdr.ar_name);
@@ -633,7 +613,7 @@ LOOKUP **ppLookup;
 	for (i = 0, p = lookup_ret; p && p->symName; i++, p++)
 	    ;
 	if (i) {
-	    myLookup = (LOOKUP *) xrealloc(myLookup, (numsyms + i + 1)
+	    myLookup = (LOOKUP *) xf86loaderrealloc(myLookup, (numsyms + i + 1)
 					   * sizeof (LOOKUP));
 	    if (!myLookup)
 		continue; /* Oh well! */
@@ -642,9 +622,9 @@ LOOKUP **ppLookup;
 	    numsyms += i;
 	    myLookup[numsyms].symName = 0;
 	}
-	xfree(lookup_ret);
+	xf86loaderfree(lookup_ret);
     }
-    /* xfree(lookup_ret); */
+    /* xf86loaderfree(lookup_ret); */
     offsetbias=0;
 
     *ppLookup = myLookup;
@@ -724,7 +704,7 @@ int *errmaj; int *errmin;
 
     if ( new_handle == MAX_HANDLE ) {
 	ErrorF( "Out of loader space\n" ) ; /* XXX */
-	*errmaj = LDR_NOSPACE;
+	if(errmaj) *errmaj = LDR_NOSPACE;
 	return -1 ;
     }
     else
@@ -736,20 +716,20 @@ int *errmaj; int *errmin;
     if( (fd=open(module, O_RDONLY)) < 0 ) {
 	ErrorF( "Unable to open %s\n", module );
 	freeHandles[new_handle] = HANDLE_FREE ;
-	*errmaj = LDR_NOMODOPEN;
-	*errmin = errno;
+	if(errmaj) *errmaj = LDR_NOMODOPEN;
+	if(errmin) *errmin = errno;
 	return -1 ;
     }
 
     if( (modtype=_GetModuleType(fd,0)) < 0 ) {
 	ErrorF( "%s is an unrecognized module type\n", module ) ;
         freeHandles[new_handle] = HANDLE_FREE ;
-	*errmaj = LDR_UNKTYPE;
+	if(errmaj) *errmaj = LDR_UNKTYPE;
 	return -1;
     }
 
     tmp=_LoaderListPush();
-    tmp->name = (char *) xalloc(strlen(module) + 1);
+    tmp->name = (char *) xf86loadermalloc(strlen(module) + 1);
     strcpy(tmp->name, module);
     tmp->handle = new_handle;
     tmp->module = moduleseq++;
@@ -759,12 +739,12 @@ int *errmaj; int *errmin;
 	ErrorF( "Failed to load %s\n", module ) ;
 	_LoaderListPop(new_handle);
         freeHandles[new_handle] = HANDLE_FREE ;
-	*errmaj = LDR_NOLOAD;
+	if(errmaj) *errmaj = LDR_NOLOAD;
 	return -1;
     }
 
     LoaderAddSymbols(new_handle, tmp->module, pLookup);
-    xfree(pLookup);
+    xf86loaderfree(pLookup);
 
     close(fd);
 
@@ -857,8 +837,8 @@ LoaderUnload( handle)
 		ErrorF( "Unloading %s\n", tmp->name ) ;
 		}
 	tmp->funcs->LoaderUnload(tmp->private);
-	xfree(tmp->name);
-	xfree(tmp);
+	xf86loaderfree(tmp->name);
+	xf86loaderfree(tmp);
 	}
   
   freeHandles[handle] = HANDLE_FREE ;

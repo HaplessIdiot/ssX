@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 1997-1998 by Metro Link, Inc.
+ * Copyright 1995-1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.h,v 1.1 1998/03/21 11:08:48 dawes Exp $ */
 
 #ifndef _HASH_H
 #define _HASH_H

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.7 1997/05/03 12:53:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.9 1998/03/20 21:06:59 hohndel Exp $ */
 
 
 
@@ -148,7 +148,7 @@ AOUTDelayRelocation(AOUTModulePtr aoutfile, int type,
 {
     AOUTRelocPtr reloc;
 
-    if ((reloc = (AOUTRelocPtr) xalloc(sizeof(AOUTRelocRec))) == NULL) {
+    if ((reloc = (AOUTRelocPtr) xf86loadermalloc(sizeof(AOUTRelocRec))) == NULL) {
 	ErrorF("AOUTDelayRelocation() Unable to allocate memory\n");
 	return NULL;
     }
@@ -173,7 +173,7 @@ AOUTAddCommon(struct AOUT_nlist *sym, int index)
 {
     AOUTCommonPtr common;
 
-    if ((common = (AOUTCommonPtr) xalloc(sizeof (AOUTCommonRec))) == NULL) {
+    if ((common = (AOUTCommonPtr) xf86loadermalloc(sizeof (AOUTCommonRec))) == NULL) {
 	ErrorF( "AOUTAddCommon() Unable to allocate memory\n" );
 	return 0;
     }
@@ -211,13 +211,13 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	      numsyms, size );
 #endif
     
-    if ((lookup = (LOOKUP *) xalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
         return NULL;
     }
     
     aoutfile->comsize = size;
-    if ((aoutfile->common = (unsigned char *)xcalloc(1,size)) == NULL) {
+    if ((aoutfile->common = (unsigned char *)xf86loadercalloc(1,size)) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
         return NULL;
     }
@@ -231,7 +231,7 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 #endif
         listCOMMON = common->next;
         offset += common->sym->n_value;
-        xfree(common);
+        xf86loaderfree(common);
         l++;
     } /* while */
     /* listCOMMON == NULL */
@@ -264,7 +264,7 @@ AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
     char *symname = AOUTGetString(aoutfile,sym->n_un.n_strx);
     char *name;
 
-    name=(char *) xalloc(strlen(symname)+1);
+    name=(char *) xf86loadermalloc(strlen(symname)+1);
     if (!name)
 	FatalError("AOUTGetSymbolName: Out of memory\n");
 
@@ -291,7 +291,7 @@ AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
     if (symbol)
 	symval = (unsigned char *)symbol->address;
 
-    xfree(name);
+    xf86loaderfree(name);
     return symval;
 }
 
@@ -304,7 +304,7 @@ AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
 {
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUT_Relocate %p : %08x %s",
-	      destl, *destl, type == 1 ? "rel" : "abs");  
+	      destl, *destl, pcrel == 1 ? "rel" : "abs");  
 
 #endif
     if (pcrel) {
@@ -334,11 +334,12 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 
     symnum = rel->r_symbolnum;
 #ifdef AOUTDEBUG 
+    {
     char *name;
     if (rel->r_extern) {
 	AOUTDEBUG("AOUT_RelocateEntry: extern %s\n", 
 		  name=AOUTGetSymbolName(aoutfile, symtab+symnum));
-        xfree(name);
+        xf86loaderfree(name);
     } else {
 	AOUTDEBUG("AOUT_RelocateEntry: intern\n");
     }
@@ -348,6 +349,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
     AOUTDEBUG("  jmptable: %d", rel->r_jmptable);
     AOUTDEBUG("  relative: %d", rel->r_relative);
     AOUTDEBUG("  copy: %d\n", rel->r_copy);    
+    }
 #endif /* AOUTDEBUG */
 
     if (rel->r_length != 2) {
@@ -506,7 +508,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 						      header->a_syms,
 						      "symbols");
     nsyms = header->a_syms/sizeof(AOUT_nlist);
-    lookup = (LOOKUP *)xalloc(nsyms * sizeof(LOOKUP));
+    lookup = (LOOKUP *)xf86loadermalloc(nsyms * sizeof(LOOKUP));
     if (lookup == NULL) {
 	ErrorF("AOUT_GetSymbols(): can't allocate memory\n");
 	return NULL;
@@ -540,7 +542,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 		AOUTDEBUG("Adding undef %s\n", symname);
 #endif
 	    }
-	    xfree(symname);
+	    xf86loaderfree(symname);
 	    break;
 	  case AOUT_TEXT:
 	    if (s->n_type & AOUT_EXT) {
@@ -552,7 +554,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 #endif
 		l++;
 	    } else {
-		xfree(symname);
+		xf86loaderfree(symname);
 	    }
 	    break;
 	  case AOUT_DATA :
@@ -566,7 +568,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 #endif
 		l++;
 	    } else {
-		xfree(symname);
+		xf86loaderfree(symname);
 	    }
 	    break;
 	  case AOUT_BSS:
@@ -581,12 +583,12 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 #endif
 		l++;
 	    } else {
-		xfree(symname);
+		xf86loaderfree(symname);
 	    }
 	    break;
 	  default:
 		ErrorF("Unknown symbol type %x\n", s->n_type & AOUT_TYPE);
-		xfree(symname);
+		xf86loaderfree(symname);
 	} /* switch */
     } /* for */
     lookup[l].symName = NULL;
@@ -599,7 +601,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    ;
 	memcpy(&(lookup[l]), lookup_common, i * sizeof (LOOKUP));
 
-	xfree(lookup_common);
+	xf86loaderfree(lookup_common);
 	l += i;
 	lookup[l].symName = NULL;
     }
@@ -623,7 +625,7 @@ AOUTLoadModule(loaderPtr modrec,
     AOUTDEBUG("AOUTLoadModule(%s, %d, %d)\n",
 	      modrec->name, modrec->handle, aoutfd);
 #endif
-    if ((aoutfile=(AOUTModulePtr)xcalloc(1,sizeof(AOUTModuleRec))) == NULL ) {
+    if ((aoutfile=(AOUTModulePtr)xf86loadercalloc(1,sizeof(AOUTModuleRec))) == NULL ) {
 	ErrorF( "Unable to allocate AOUTModuleRec\n" );
 	return NULL;
     }
@@ -661,7 +663,7 @@ AOUTLoadModule(loaderPtr modrec,
     }
     /* bss */
     if (header->a_bss != 0) {
-	aoutfile->bss = (unsigned char *) xcalloc(1, header->a_bss);
+	aoutfile->bss = (unsigned char *) xf86loadercalloc(1, header->a_bss);
     } else {
 	aoutfile->bss = NULL;
     }
@@ -727,7 +729,7 @@ void	*mod;
 	}
 	tmp = p;
 	p = p->next;
-	xfree(tmp);
+	xf86loaderfree(tmp);
     }
     _LoaderGetRelocations(mod)->aout_reloc = newlist;
 } /* AOUTResolveSymbols */
@@ -761,7 +763,7 @@ void	*mod;
         name=AOUTGetSymbolName(crel->file, crel->file->symtab + symnum);
         flag = _LoaderHandleUnresolved(name,
 		   _LoaderHandleToName(crel->file->handle), color_depth);
-	xfree(name);
+	xf86loaderfree(name);
         if (flag) fatalsym = 1;
 	crel = crel->next;
     }
@@ -783,12 +785,12 @@ AOUTUnloadModule(void *modptr)
  */
 
     relptr=_LoaderGetRelocations(aoutfile->funcs)->aout_reloc;
-    prevptr = &relptr;
+    prevptr=&(_LoaderGetRelocations(aoutfile->funcs)->aout_reloc);
 
     while (relptr) {
 	if (relptr->file == aoutfile) {
 	    *prevptr = relptr->next;
-	    xfree(relptr);
+	    xf86loaderfree(relptr);
 	    relptr = *prevptr;
 	} else {
 	    prevptr = &(relptr->next);
@@ -809,17 +811,17 @@ AOUTUnloadModule(void *modptr)
     CheckandFree(aoutfile->text,aoutfile->header->a_text);
     /* Free allocated sections */
     if (aoutfile->bss != NULL) {
-	xfree(aoutfile->bss);
+	xf86loaderfree(aoutfile->bss);
     }
     if (aoutfile->common != NULL) {
-	xfree(aoutfile->common);
+	xf86loaderfree(aoutfile->common);
     }
 
     /* Free header */
     _LoaderFreeFileMem(aoutfile->header, sizeof(AOUTHDR));
 
     /* Free the module structure itself */
-    xfree(aoutfile);
+    xf86loaderfree(aoutfile);
 
     return;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.31 1998/03/20 21:07:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.32 1998/03/21 22:40:13 robin Exp $ */
 
 
 
@@ -98,6 +98,27 @@ extern unsigned char  inb(unsigned int a);
 extern unsigned short inw(unsigned int a);
 extern unsigned long  inl(unsigned int a);
 
+#endif
+
+#if defined(__alpha__)
+extern void _outb(char val, unsigned short port);
+extern void _outw(short val, unsigned short port);
+extern void _outl(int val, unsigned short port);
+extern unsigned int _inb(unsigned short port);
+extern unsigned int _inw(unsigned short port);
+extern unsigned int _inl(unsigned short port);
+
+extern void xf86WriteSparse16(int, pointer, unsigned long);
+
+extern void SlowBCopyToBus(char *src, char *dst, int count);
+extern void SlowBCopyFromBus(char *src, char *dst, int count);
+
+extern void* __divl(long, long);
+extern void* __reml(long, long);
+extern void* __divlu(long, long);
+extern void* __remlu(long, long);
+extern void* __divq(long, long);
+extern void* __divqu(long, long);
 #endif
 
 #if defined(__powerpc__) && defined(Lynx)
@@ -401,6 +422,31 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86getsecs)
    SYMFUNC(xf86fpossize)      /* for returning sizeof(fpos_t) */
 
+#if defined(__alpha__)
+   SYMFUNC(__divl)
+   SYMFUNC(__reml)
+   SYMFUNC(__divlu)
+   SYMFUNC(__remlu)
+   SYMFUNC(__divq)
+   SYMFUNC(__divqu)
+
+   SYMFUNC(_outw)
+   SYMFUNC(_outb)
+   SYMFUNC(_outl)
+   SYMFUNC(_inb)
+   SYMFUNC(_inw)
+   SYMFUNC(_inl)
+   SYMFUNC(SlowBCopyToBus)
+   SYMFUNC(xf86MapVidMemSparse)
+   SYMFUNC(xf86ReadSparse32)
+   SYMFUNC(xf86ReadSparse16)
+   SYMFUNC(xf86ReadSparse8)
+   SYMFUNC(xf86WriteSparse32)
+   SYMFUNC(xf86WriteSparse16)
+   SYMFUNC(xf86WriteSparse8)
+   SYMFUNC(SlowBCopyFromBus)
+   SYMFUNC(memcpy)
+#endif
 #if defined(__powerpc__)	   
    SYMFUNC(inb)
    SYMFUNC(inw)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.5 1998/03/20 21:07:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.6 1998/03/21 11:08:48 dawes Exp $ */
 
 
 
@@ -149,7 +149,7 @@ LOOKUP	*list ;
      * and add it to the given namespace.
      */
     while ( l->symName ) {
-	i = (itemPtr) xalloc( sizeof( itemRec )) ;
+	i = (itemPtr) xf86loadermalloc( sizeof( itemRec )) ;
 	i->name = l->symName ;
 	if( strcmp(i->name,"ModuleInit") == 0
 #if defined(__powerpc__) && defined(Lynx)
@@ -174,7 +174,7 @@ LOOKUP	*list ;
 			else
 			    p = newmodname;
 
-			i->name = (char*)xalloc(strlen(p)+11);
+			i->name = (char*)xf86loadermalloc(strlen(p)+11);
 			if( i->name )
 			    {
 				strcpy(i->name,p);
@@ -183,7 +183,7 @@ LOOKUP	*list ;
 			free(newmodname);
 		    }
 #ifdef DEBUG
-		ErrorF("Add module init function %s \n",i->name);
+		ErrorF("Add module init function %s at %lx\n",i->name, l->offset);
 #endif
 	    }
 	i->address = (char *) l->offset ;
@@ -207,8 +207,8 @@ const char *string;
   while ( entry ) {
     if (! strcmp( entry->name, string )) {
       *entry2=entry->next;
-      xfree(entry->name);
-      xfree( entry ) ;
+      xf86loaderfree(entry->name);
+      xf86loaderfree( entry ) ;
       return 0 ;
     }
     entry2 = &(entry->next) ;
@@ -225,8 +225,9 @@ const char *string;
     itemPtr entry ;
 	entry = LoaderhashTable[ bucket ] ;
 	while ( entry ) {
-	    if (!strcmp(entry->name, string))
+	    if (!strcmp(entry->name, string)) {
 		return entry;
+	    }
 	    entry = entry->next;
 	}
     return 0;
@@ -238,12 +239,12 @@ int address;
 {
   int i ;
   itemPtr entry, best_entry = 0 ;
-  int best_difference = MAXINT;
+  long best_difference = MAXINT;
 
   for ( i = 0 ; i < HASHSIZE ; i ++ ) {
     entry = LoaderhashTable[ i ] ;
     while ( entry ) {
-      int difference = (int) address - (int) entry->address ;
+      long difference = (long) address - (long) entry->address ;
       if ( difference >= 0 ) {
 	if ( best_entry ) {
 	  if ( difference < best_difference ) {
@@ -269,8 +270,13 @@ unsigned long address;
     itemPtr	entry;
     entry=LoaderHashFindNearest(address);
     if (entry) {
+#if __alpha__
+	ErrorF("0x%016lx %s+%lx\n", entry->address, entry->name,
+		   address - (unsigned long) entry->address);
+#else
 	ErrorF("0x%x %s+%x\n", entry->address, entry->name,
 		   address - (unsigned long) entry->address);
+#endif
     } else {
 	ErrorF("(null)\n");
     }
@@ -280,7 +286,11 @@ void
 LoaderPrintItem(itemPtr pItem)
 {
     if (pItem)
-	ErrorF("0x%x %s\n", pItem->address, pItem->name);
+#if __alpha__
+	ErrorF("0x%016lx %s\n", pItem->address, pItem->name);
+#else
+	ErrorF("0x%lx %s\n", pItem->address, pItem->name);
+#endif
     else
 	ErrorF("(null)\n");
 }
@@ -309,14 +319,14 @@ LoaderHashTraverse(card, fnp)
       if (( * fnp )( card, entry )) {
 	if ( last_entry ) {
 	  last_entry->next = entry->next ;
-	  xfree( entry->name ) ;
-	  xfree( entry ) ;
+	  xf86loaderfree( entry->name ) ;
+	  xf86loaderfree( entry ) ;
 	  entry = last_entry->next ;
 	}
 	else {
 	  LoaderhashTable[ i ] = entry->next ;
-	  xfree( entry->name ) ;
-	  xfree( entry ) ;
+	  xf86loaderfree( entry->name ) ;
+	  xf86loaderfree( entry ) ;
 	  entry = LoaderhashTable[ i ] ;
 	}
       }
