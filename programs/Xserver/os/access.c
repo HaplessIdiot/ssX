@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.41 2002/05/31 18:46:05 dawes Exp $ */
+/* $Id: access.c,v 3.43 2003/04/20 18:35:12 herrb Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -189,23 +189,35 @@ static int CheckAddr(int /*family*/,
 
 static Bool NewHost(int /*family*/,
 		    pointer /*addr*/,
-		    int /*len*/);
+		    int /*len*/,
+		    int /* addingLocalHosts */);
+
+/* XFree86 bug #156: To keep track of which hosts were explicitly requested in
+   /etc/X<display>.hosts, we've added a requested field to the HOST struct,
+   and a LocalHostRequested variable.  These default to FALSE, but are set
+   to TRUE in ResetHosts when reading in /etc/X<display>.hosts.  They are
+   checked in DisableLocalHost(), which is called to disable the default 
+   local host entries when stronger authentication is turned on. */
 
 typedef struct _host {
 	short		family;
 	short		len;
 	unsigned char	*addr;
 	struct _host *next;
+	int		requested;
 } HOST;
 
 #define MakeHost(h,l)	(h)=(HOST *) xalloc(sizeof *(h)+(l));\
-                        if((h))\
-			(h)->addr=(unsigned char *) ((h) + 1);
+			if (h) { \
+			   (h)->addr=(unsigned char *) ((h) + 1);\
+			   (h)->requested = FALSE; \
+			}
 #define FreeHost(h)	xfree(h)
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
 static int LocalHostEnabled = FALSE;
+static int LocalHostRequested = FALSE;
 static int UsingXdmcp = FALSE;
 
 
@@ -232,9 +244,12 @@ DisableLocalHost (void)
 {
     HOST *self;
 
-    LocalHostEnabled = FALSE;
-    for (self = selfhosts; self; self = self->next)
+    if (!LocalHostRequested)		/* Fix for XFree86 bug #156 */
+	LocalHostEnabled = FALSE;
+    for (self = selfhosts; self; self = self->next) {
+      if (!self->requested)		/* Fix for XFree86 bug #156 */
 	(void) RemoveHost ((ClientPtr)NULL, self->family, self->len, (pointer)self->addr);
+    }
 }
 
 /*
@@ -843,7 +858,11 @@ AddLocalHosts (void)
     HOST    *self;
 
     for (self = selfhosts; self; self = self->next)
-	(void) NewHost (self->family, self->addr, self->len);
+	    /* Fix for XFree86 bug #156: pass addingLocal = TRUE to
+	     * NewHost to tell that we are adding the default local
+	     * host entries and not to flag the entries as being
+	     * explicitely requested */
+	(void) NewHost (self->family, self->addr, self->len, TRUE);
 }
 
 /* Reset access control list to initial hosts */
@@ -917,7 +936,8 @@ ResetHosts (char *display)
 	if (!strncmp("local:", lhostname, 6))
 	{
 	    family = FamilyLocalHost;
-	    NewHost(family, "", 0);
+	    NewHost(family, "", 0, FALSE);
+	    LocalHostRequested = TRUE;	/* Fix for XFree86 bug #156 */
 	}
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	else if (!strncmp("inet:", lhostname, 5))
@@ -969,7 +989,7 @@ ResetHosts (char *display)
     	    }
 	    if (dnaddrp)
 		(void) NewHost(FamilyDECnet, (pointer)dnaddrp,
-			(int)(dnaddrp->a_len + sizeof(dnaddrp->a_len)));
+			(int)(dnaddrp->a_len + sizeof(dnaddrp->a_len)), FALSE);
     	}
 	else
 #endif /* DNETCONN */
@@ -978,7 +998,7 @@ ResetHosts (char *display)
 	{
             krb5_parse_name(hostname, &princ);
 	    XauKrb5Encode(princ, &kbuf);
-	    (void) NewHost(FamilyKrb5Principal, kbuf.data, kbuf.length);
+	    (void) NewHost(FamilyKrb5Principal, kbuf.data, kbuf.length, FALSE);
 	    krb5_free_principal(princ);
         }
 	else
@@ -987,7 +1007,7 @@ ResetHosts (char *display)
 	if ((family == FamilyNetname) || (strchr(hostname, '@')))
 	{
 	    SecureRPCInit ();
-	    (void) NewHost (FamilyNetname, hostname, strlen (hostname));
+	    (void) NewHost (FamilyNetname, hostname, strlen (hostname), FALSE);
 	}
 	else
 #endif /* SECURE_RPC */
@@ -1011,9 +1031,9 @@ ResetHosts (char *display)
 
 		    /* iterate over the addresses */
 		    for (list = hp->h_addr_list; *list; list++)
-			(void) NewHost (family, (pointer)*list, len);
+			(void) NewHost (family, (pointer)*list, len, FALSE);
 #else
-    		    (void) NewHost (family, (pointer)hp->h_addr, len);
+    		    (void) NewHost (family, (pointer)hp->h_addr, len, FALSE);
 #endif
 		}
     	    }
@@ -1171,7 +1191,7 @@ AddHost (ClientPtr	client,
 	client->errorValue = family;
 	return (BadValue);
     }
-    if (NewHost (family, pAddr, len))
+    if (NewHost (family, pAddr, len, FALSE))
 	return Success;
     return BadAlloc;
 }
@@ -1197,7 +1217,8 @@ ForEachHostInFamily (int	    family,
 static Bool
 NewHost (int		family,
 	 pointer	addr,
-	 int		len)
+	 int		len,
+	 int		addingLocalHosts)
 {
     register HOST *host;
 
@@ -1205,6 +1226,14 @@ NewHost (int		family,
     {
         if (addrEqual (family, addr, len, host))
 	    return TRUE;
+    }
+    if (!addingLocalHosts) {			/* Fix for XFree86 bug #156 */
+	for (host = selfhosts; host; host = host->next) {
+	    if (addrEqual (family, addr, len, host)) {
+		host->requested = TRUE;
+		break;
+	    }	    
+	}
     }
     MakeHost(host,len)
     if (!host)
