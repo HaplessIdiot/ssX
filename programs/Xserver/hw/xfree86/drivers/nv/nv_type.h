@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.46 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.47 2004/03/20 01:52:16 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -92,6 +92,7 @@ typedef struct {
     CARD32              ScratchBufferStart;
     Bool                NoAccel;
     Bool                HWCursor;
+    Bool                FpScale;
     Bool                ShadowFB;
     unsigned char *     ShadowPtr;
     int                 ShadowPitch;

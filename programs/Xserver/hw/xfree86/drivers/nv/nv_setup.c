@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.41 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.42 2004/03/20 01:52:16 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -384,7 +384,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
                      (implementation != 0x01A0) &&
                      (implementation != 0x0200);
 
-    pNv->fpScaler = (pNv->twoHeads && (implementation != 0x0110));
+    pNv->fpScaler = (pNv->FpScale && pNv->twoHeads && (implementation!=0x0110));
 
     pNv->twoStagePLL = (implementation == 0x0310) ||
                        (implementation == 0x0340) ||
@@ -429,6 +429,15 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     case 0x0349:
     case 0x034B:
     case 0x034C:
+    case 0x0160:
+    case 0x0166:
+    case 0x00C8:
+    case 0x00C9:
+    case 0x00CC:
+    case 0x0147:
+    case 0x0148:
+    case 0x0149:
+    case 0x014C:
         mobile = TRUE;
         break;
     default:
