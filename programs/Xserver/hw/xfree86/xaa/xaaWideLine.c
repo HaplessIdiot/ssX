@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.5 1999/03/29 12:17:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.7 1999/10/31 23:52:57 mvojkovi Exp $ */
 
 /*
 
@@ -189,32 +189,22 @@ XAAFillPolyHelper (
 	left_height -= height;
 	right_height -= height;
 
-	if(infoRec->SubsequentSolidFillTrap && (height > 6)) {
-	    int right_DX, left_DX, left_box, right_box;
+	if(hardClip && infoRec->SubsequentSolidFillTrap && (height > 6)) {
+	    int right_DX, left_DX;
 
     	    right_DX = (right_dx * right_signdx) + (right_stepx * right_dy);
 	    left_DX = (left_dx * left_signdx) + (left_stepx * left_dy);
-	    if(!hardClip) {
-		left_box = (left_DX < 0) ? (left_x + left_DX) : left_x;
-		right_box = (right_DX < 0) ? right_x : (right_x + right_DX);
-	    }
 
-	    if(hardClip || ((left_box >= extents->x1) && 
-			    (right_box < extents->x2) &&
-			    (y >= extents->y1) && 
-			    ((y + height) < extents->y2))){
-
-	    	(*infoRec->SubsequentSolidFillTrap)(infoRec->pScrn, y, height, 
+	    (*infoRec->SubsequentSolidFillTrap)(infoRec->pScrn, y, height, 
 			left_x, left_DX, left_dy, left_e, 
 			right_x - 1, right_DX, right_dy, right_e);
 
-	    	FixError(left_x, left_dx, left_dy, left_e, left_signdx, 
+	    FixError(left_x, left_dx, left_dy, left_e, left_signdx, 
 			left_stepx, height);
-	    	FixError(right_x, right_dx, right_dy, right_e, right_signdx,
+	    FixError(right_x, right_dx, right_dy, right_e, right_signdx,
 			right_stepx, height);
-	    	y += height;
-	    	continue;
-	    }	
+	    y += height;
+	    continue;
 	}
 
 	while (height--) {
