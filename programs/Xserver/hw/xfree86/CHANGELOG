@@ -1,4 +1,7 @@
 XFree86 3.9c (xx May 1997)
+ 774. Move the Tk/Tcl include dirs after all the others in the XF86Setup
+      Imakefile to make sure they don't cause installed X headers to be
+      incorrectly used.
  773. Add CH8398 RAMDAC detection to SuperProbe (#418, Kurt Olsen).
  772. Fix an error in xterm's vt220 emulation: the DECUDK is only supposed
       to be interpreted for _shifted_ function keys (#384, Thomas E. Dickey).
@@ -4534,4 +4537,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.465 1997/05/12 13:27:52 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.466 1997/05/12 14:22:49 dawes Exp $
