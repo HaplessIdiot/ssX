@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.41 2001/10/28 03:33:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.42 2001/12/22 05:28:34 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -189,7 +189,7 @@ static Bool DarwinAddScreen(
     miClearVisualTypes();
 
     // setup a single visual appropriate for our pixel type
-    // Note: Darwin kIORGBDirectPixels = X window TrueColor, not DirectColor
+    // Note: Darwin kIORGBDirectPixels = X TrueColor, not DirectColor
     if (dfb->pixelInfo.pixelType == kIORGBDirectPixels) {
         if (!miSetVisualTypes( dfb->colorBitsPerPixel, TrueColorMask,
                                 bitsPerRGB, TrueColor )) {
@@ -1192,7 +1192,7 @@ void ddxUseMsg( void )
     ErrorF("-rootless : run rootless inside Mac OS X window server.\n");
     ErrorF("-quartz : use default Mac OS X window server mode\n");
     ErrorF("\n");
-    ErrorF("IOKit specific options (ignored in Quartz modes):\n");
+    ErrorF("Options ignored in rootless mode:\n");
 #endif
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
     ErrorF("-depth <8,15,24> : use this bit depth.\n");
