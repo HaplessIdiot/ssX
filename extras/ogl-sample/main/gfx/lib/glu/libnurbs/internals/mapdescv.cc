@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -35,8 +36,8 @@
 /*
  * mapdescv.c++
  *
- * $Date: 2001/04/07 17:13:25 $ $Revision: 1.2 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mapdescv.cc,v 1.2 2001/04/07 17:13:25 dawes Exp $
+ * $Date: 2001/04/27 12:58:28 $ $Revision: 1.3 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mapdescv.cc,v 1.3 2001/04/27 12:58:28 dawes Exp $
  */
 
 #include "glimports.h"

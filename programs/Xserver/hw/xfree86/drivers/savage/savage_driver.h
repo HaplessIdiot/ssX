@@ -1,4 +1,4 @@
-/* $xFree86: $ */
+/* $XFree86: $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _SAVAGE_REGS_H
 #define _SAVAGE_REGS_H
 
