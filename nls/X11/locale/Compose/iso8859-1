@@ -1,5 +1,5 @@
 # $XConsortium: iso8859-1,v 1.4 94/07/06 15:17:11 kaleb Exp $
-# $XFree86: xc/nls/X11/locale/Compose/iso8859-1,v 3.0 1995/03/04 06:40:39 dawes Exp $
+# $XFree86: xc/nls/X11/locale/Compose/iso8859-1,v 3.1 1995/06/08 06:21:15 dawes Exp $
 #
 # ISO 8859-1 (Latin1) Compose Sequence
 #
@@ -421,6 +421,81 @@
 <dead_acute> <Y>			: "\335"	Yacute
 <dead_acute> <y>			: "\375"	yacute
 <dead_diaeresis> <y>			: "\377"	ydiaeresis
+#
+# SunFA_ dead key accents
+# Special Character
+<SunFA_Circum>  <slash>			: "|"	bar
+<SunFA_Grave> <space>			: "`"	grave
+<SunFA_Acute> <space>			: "'"	apostrophe
+<SunFA_Diaeresis> <space>		: "\250"	diaeresis
+<SunFA_Circum> <space>			: "^"	asciicircum
+<SunFA_tilde> <space>			: "~"	tilde
+<SunFA_Grave> <space>			: "`"	grave
+<SunFA_Acute> <space>			: "'"	apostrophe
+<SunFA_Circum> <0>			: "\260"	degree
+<SunFA_Circum> <1>			: "\271"	onesuperior
+<SunFA_Circum> <2>			: "\262"	twosuperior
+<SunFA_Circum> <3>			: "\263"	threesuperior
+<SunFA_Circum> <period>			: "\267"	periodcentered
+<SunFA_Circum> <exclam>			: "\246"	brokenbar
+<SunFA_cedilla> <minus>			: "\254"	notsign
+<SunFA_Circum> <minus>			: "\257"	macron
+<SunFA_Circum> <underscore>		: "\257"	macron
+<SunFA_Acute> <apostrophe>		: "\264"	acute
+<SunFA_cedilla> <comma>			: "\270"	cedilla
+<SunFA_Diaeresis> <quotedbl>		: "\250"	diaeresis
+# Accented Alphabet
+<SunFA_Grave> <A>			: "\300"	Agrave
+<SunFA_Acute> <A>			: "\301"	Aacute
+<SunFA_Circum> <A>			: "\302"	Acircumflex
+<SunFA_tilde> <A>			: "\303"	Atilde
+<SunFA_Diaeresis> <A>			: "\304"	Adiaeresis
+<SunFA_Grave> <a>			: "\340"	agrave
+<SunFA_Acute> <a>			: "\341"	aacute
+<SunFA_Circum> <a>			: "\342"	acircumflex
+<SunFA_tilde> <a>			: "\343"	atilde
+<SunFA_Diaeresis> <a>			: "\344"	adiaeresis
+<SunFA_cedilla> <C>			: "\307"	Ccedilla
+<SunFA_cedilla> <c>			: "\347"	ccedilla
+<SunFA_Grave> <E>			: "\310"	Egrave
+<SunFA_Acute> <E>			: "\311"	Eacute
+<SunFA_Circum> <E>			: "\312"	Ecircumflex
+<SunFA_Diaeresis> <E>			: "\313"	Ediaeresis
+<SunFA_Grave> <e>			: "\350"	egrave
+<SunFA_Acute> <e>			: "\351"	eacute
+<SunFA_Circum> <e>			: "\352"	ecircumflex
+<SunFA_Diaeresis> <e>			: "\353"	ediaeresis
+<SunFA_Grave> <I>			: "\314"	Igrave
+<SunFA_Acute> <I>			: "\315"	Iacute
+<SunFA_Circum> <I>			: "\316"	Icircumflex
+<SunFA_Diaeresis> <I>			: "\317"	Idiaeresis
+<SunFA_Grave> <i>			: "\354"	igrave
+<SunFA_Acute> <i>			: "\355"	iacute
+<SunFA_Circum> <i>			: "\356"	icircumflex
+<SunFA_Diaeresis> <i>			: "\357"	idiaeresis
+<SunFA_tilde> <N>			: "\321"	Ntilde
+<SunFA_tilde> <n>			: "\361"	ntilde
+<SunFA_Grave> <O>			: "\322"	Ograve
+<SunFA_Acute> <O>			: "\323"	Oacute
+<SunFA_Circum> <O>			: "\324"	Ocircumflex
+<SunFA_tilde> <O>			: "\325"	Otilde
+<SunFA_Diaeresis> <O>			: "\326"	Odiaeresis
+<SunFA_Grave> <o>			: "\362"	ograve
+<SunFA_Acute> <o>			: "\363"	oacute
+<SunFA_Circum> <o>			: "\364"	ocircumflex
+<SunFA_tilde> <o>			: "\365"	otilde
+<SunFA_Diaeresis> <o>			: "\366"	odiaeresis
+<SunFA_Grave> <U>			: "\331"	Ugrave
+<SunFA_Acute> <U>			: "\332"	Uacute
+<SunFA_Circum> <U>			: "\333"	Ucircumflex
+<SunFA_Diaeresis> <U>			: "\334"	Udiaeresis
+<SunFA_Grave> <u>			: "\371"	ugrave
+<SunFA_Acute> <u>			: "\372"	uacute
+<SunFA_Circum> <u>			: "\373"	ucircumflex
+<SunFA_Diaeresis> <u>			: "\374"	udiaeresis
+<SunFA_Acute> <Y>			: "\335"	Yacute
+<SunFA_Acute> <y>			: "\375"	yacute
+<SunFA_Diaeresis> <y>			: "\377"	ydiaeresis
 #
 # Ctrl<T> Means <Compose>
 # Special Character
