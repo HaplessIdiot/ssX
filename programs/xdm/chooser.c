@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.20 2000/06/15 20:50:04 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.21 2001/01/17 23:45:20 dawes Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -65,6 +65,10 @@ in this Software without prior written authorization from The Open Group.
 #include    <sys/types.h>
 #include    <stdio.h>
 #include    <ctype.h>
+
+#ifdef USE_XINERAMA
+#include    <X11/extensions/Xinerama.h>
+#endif
 
 #if defined(SVR4) && !defined(SCO325)
 #include    <sys/sockio.h>
@@ -1135,6 +1139,11 @@ main (int argc, char **argv)
     Arg		position[3];
     Dimension   width, height;
     Position	x, y;
+#ifdef USE_XINERAMA
+    XineramaScreenInfo *screens;
+    int                 s_num;
+#endif
+
 
     toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), &argc, argv);
 
@@ -1162,8 +1171,23 @@ main (int argc, char **argv)
     XtSetArg (position[0], XtNwidth, &width);
     XtSetArg (position[1], XtNheight, &height);
     XtGetValues (toplevel, position, (Cardinal) 2);
-    x = (Position)(WidthOfScreen (XtScreen (toplevel)) - width) / 2;
-    y = (Position)(HeightOfScreen (XtScreen (toplevel)) - height) / 3;
+#ifdef USE_XINERAMA
+    if (
+	XineramaIsActive(XtDisplay(toplevel)) &&
+	(screens = XineramaQueryScreens(XtDisplay(toplevel), &s_num)) != NULL
+       )
+    {
+	x = (Position)(screens[0].x_org + (screens[0].width - width) / 2);
+	y = (Position)(screens[0].y_org + (screens[0].height - height) / 3);
+	
+	XFree(screens);
+    }
+    else
+#endif
+    {
+	x = (Position)(WidthOfScreen (XtScreen (toplevel)) - width) / 2;
+	y = (Position)(HeightOfScreen (XtScreen (toplevel)) - height) / 3;
+    }
     XtSetArg (position[0], XtNx, x);
     XtSetArg (position[1], XtNy, y);
     XtSetValues (toplevel, position, (Cardinal) 2);

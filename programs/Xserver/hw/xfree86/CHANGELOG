@@ -1,4 +1,8 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 253. Make xdm Xinerama-aware so that it can avoid splitting login and
+      chooser windows across physical screens (#A.276,
+      Dmitry Yu. Bolkhovityanov).
+ 252. Fix a resource allocation bug in the DBE code (#A.271, Bill Rugolsky).
  251. Only enable Xv support for the 630 in the sis driver (#A.263, Nick Lamb).
  250. Modify the sis driver to prefer 24bpp framebuffer layout.  Perhaps not
       all support 32bpp? (#A.263, Nick Lamb).
@@ -12670,4 +12674,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1616 2001/03/06 16:45:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1617 2001/03/06 17:07:38 dawes Exp $
