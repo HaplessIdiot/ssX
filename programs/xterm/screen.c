@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.0 1994/05/08 05:27:11 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.1 1995/09/17 06:33:20 dawes Exp $
  */
 
 /*
@@ -48,6 +48,12 @@
 
 #ifdef MINIX
 #include <termios.h>
+#endif
+
+#ifdef ISC
+#include <sys/termio.h>
+#define TIOCGPGRP TCGETPGRP
+#define TIOCSPGRP TCSETPGRP
 #endif
 
 extern Char *calloc(), *malloc(), *realloc();

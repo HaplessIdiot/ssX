@@ -1,5 +1,5 @@
 /* $XConsortium: bank.s,v 1.2 94/03/29 11:03:31 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.1 1995/03/11 14:50:27 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -26,6 +26,8 @@
  *	    David Wexelblat, dwex@goblin.org, version 0.2beta
  *		(dual banks)
  *	    David Wexelblat, version 0.3beta (back to 1 bank)
+ *
+ * 	    Alan Hourihane, version 1.0 (dual banks / single banks)
  */
 
 
@@ -56,4 +58,26 @@ GLNAME(TVGA8900SetWrite):
 	XOR_B	(CONST(0x02),AH)
 	MOV_L	(CONST(0x3C4),EDX)
 	OUT_W
+	RET
+
+	ALIGNTEXT4
+	GLOBL GLNAME(TGUISetReadWrite)
+GLNAME(TGUISetReadWrite):
+	MOV_B	(AL,AH)
+	MOV_L	(CONST(0x3D8),EDX)
+	OUT_W
+	RET
+
+	ALIGNTEXT4
+GLNAME(TGUISetRead):
+	GLOBL GLNAME(TGUISetRead)
+	MOV_L	(CONST(0x3D9),EDX)
+	OUT_B
+	RET
+
+	ALIGNTEXT4
+GLNAME(TGUISetWrite):
+	GLOBL GLNAME(TGUISetWrite)
+	MOV_L	(CONST(0x3D8),EDX)
+	OUT_B
 	RET

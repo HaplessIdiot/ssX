@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c,v 11.230 94/11/29 00:06:42 gildea Exp $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.2 1995/01/12 05:55:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.3 1995/03/11 14:07:38 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -105,7 +105,11 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ECHECK(err) (errno == err)
 #define ESET(val)
 #else
+#ifdef ISC
+#define ECHECK(err) ((errno == err) || ETEST())
+#else
 #define ECHECK(err) (errno == err)
+#endif
 #define ESET(val) errno = val
 #endif
 #endif

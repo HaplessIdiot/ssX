@@ -1,3 +1,42 @@
+XFree86 3.1.2Ac (16 December 1995)
+138. XFree86-DGA extension support for ISC SVR3, and SVR4 (Michael Rohleder).
+137. Fix for "XIOerror 11 (Resource temporarily unavailable)" errors while
+     running xterm on ISC (Michael Rohleder).
+136. Major Trident driver updates, including HW cursor for 9440, and
+     an option to use a set of fixed clocks instead of fully programmable
+     clocks for the TGUI chips (Alah Hourihane).
+135. I128 updates (Robin Cutshaw).
+134. Mach64 support for ATI Extended VGA register location on PCI
+     cards with block I/O (Kevin Martin).
+133. Clean up Mach64 software cursor support (Kevin Martin).
+132. "dac_8_bit" is now the default for supported RAMDACs in the Mach64
+     server.  6-bit mode can be forced with the "dac_6_bit" option
+     (Kevin Martin).
+131. Mach64 support for the ATI Graphics Pro Turbo 1600, including
+     1600x1200 mode support (Kevin Martin).
+130. Mach64 support for the IBM RGB514 RAMDAC (Kevin Martin).
+129. Mach64 support for the GX-F (GX rev 3) (Kevin Martin).
+128. Add new options "w32_interleave_on" and "w32_interleave_off" to
+     the SVGA and W32 servers.  They allow the desired mode to be
+     forced for W32i and W32p cards (Dirk Hohndel).
+127. Full STG1703 support for W32 server (Dirk Hohndel).
+126. Fix some incorrect prototype ifdefs in xf86.h (Kaleb Keithley).
+125. Modify xterm to call XtSetLanguageProc() rather than setlocale()
+     (Kaleb Keithley).
+124. Preliminary driver for the SIS 86C201 chipset (VGA2 and VGA16 only
+     so far) (Alan Hourihane).
+123. Change the Mach64 aperture mapping to map the video memory and
+     mmapped registers into two separate areas rather than mapping the
+     entire 8MB aperture range.
+122. Use an 8MB aperture for all but ISA Mach64 cards since most of the
+     newer Mach64 chips only support an 8MB aperture size.
+121. Fix typo in Mach64 server that was causing some RAMDACs to be incorrectly
+     detected.
+120. Fix aperture address detection for VLB Mach64 cards.
+119. In the Mach64 server, set RAMDAC to 20C408 if the 20C408 clock type
+     is detected, and same for STG1703.
+118. SIGWINCH support for xterm on ISC 4.x (Geoff Steckel).
+
 XFree86 3.1.2Ab (9 December 1995)
 117. FreeBSD support for the DGA extension.
 116. Split the DGA code out into a separate extension (called XFree86-DGA)
@@ -12,7 +51,7 @@ XFree86 3.1.2Ab (9 December 1995)
      ET4000/W32p based cards (Dirk Hohndel).
 111. Add new clock selection scheme to SVGA and W32 server, so that
      32 clocks are used. The first 16 are the same as before, the
-     second 16 use CS3 (Dirk Hohndel).
+     second 16 use CS3 (Dirk Hohndel and Koen Gadeyne).
 110. Add STG1703 detection to SuperProbe for ET4000/W32 based cards (Dirk
      Hohndel).
 109. Fix extension version checking in xvidtune.
