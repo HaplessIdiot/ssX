@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.7 2002/08/27 22:07:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.8tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -220,7 +220,7 @@ xf86GetPciHostConfigFromTag(PCITAG Tag)
     pciBusInfo_t *pBusInfo;
 
     while ((bus < pciNumBuses) && (pBusInfo = pciBusInfo[bus])) {
-	if (!pBusInfo->secondary)
+	if (bus == pBusInfo->primary_bus)
 	    return pBusInfo->bridge;
 	bus = pBusInfo->primary_bus;
     }
