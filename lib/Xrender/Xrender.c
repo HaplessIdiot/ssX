@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.6 2001/09/05 20:13:42 mvojkovi Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.9 2002/05/15 06:42:49 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -447,7 +447,7 @@ XRenderFindStandardFormat (Display  *dpy,
 	    {
 		0,			    /* id */
 		PictTypeDirect,		    /* type */
-		8,			    /* depth */
+		1,			    /* depth */
 		{			    /* direct */
 		    0,			    /* direct.red */
 		    0x00,		    /* direct.redMask */
