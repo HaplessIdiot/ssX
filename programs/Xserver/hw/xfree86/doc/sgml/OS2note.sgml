@@ -3,7 +3,7 @@
 
 <title>Notes on Rebuilding XFree86/OS2 from Scratch
 <author>Holger Veit
-<date>Last modified 17 May 1997
+<date>Last modified August 1st, 1999
 
 <toc>
 
@@ -17,20 +17,19 @@ with the same name, but also differ sometimes in a subtle way.
 This guide will give you hints if you intend to rebuild the system
 from scratch under OS/2.
 <p>
-Please also read README.OS2 for end-user information, and set at least the
-environment variables described there.
+Please also read <htmlurl name=README.OS2 url=OS2.html> for end-user
+information, and set at least the environment variables described there.
 <p>
-At the current time, the most recent version available is XFree86-3.3.
+At the current time, the most recent version available is XFree86-3.3.5.
 This is a full and unrestricted version which comes with complete source 
-code. 3.3 is an intermediate version which was released because the last
-beta version (3.2A) was about to expire and the new 4.0 version was not
-completely finished in time. 3.3 is the last ``classical'' version which
-has separate Xservers for different video cards.
+code. 3.3.5 is not only a bugfix release, but also supports new hardware,
+some of which might not even supported by OS/2 itself. See the RELEASE NOTES
+document for details.
 
 If you want to join the XFree86 developer team, e.g. to add support for
 certain hardware, please send a request to BOD@XFree86.org. Please
 think about such a step carefully before, though, since much work is 
-involved. Please use the XFree86-3.3 source code as a test example how
+involved. Please use the XFree86-3.3.5 source code as a test example how
 to compile the system. The ability to manage that is a basic requirement
 for becoming a developer.
 
@@ -46,7 +45,7 @@ Most of this software is available from <tt/hobbes.nmsu.edu/ or <tt/ftp.leo.org/
 via anonymous FTP. The following shopping list shows what you will need:
 
 <itemize>
-<item>gcc	EMX/gcc emx 0.9C patch2 or later
+<item>gcc	EMX/gcc emx 0.9C patch4 or later (0.9d preferred!)
 <item>gzip	GNU zip/unzip
 <item>tar	GNU tar
 <item>patch	Larry Wall's patch utility (attention: incompatible tool with same name in OS/2)
@@ -57,7 +56,7 @@ via anonymous FTP. The following shopping list shows what you will need:
 <item>sed	GNU sed stream editor
 <item>grep	GNU grep
 <item>gawk	GNU awk
-<item>make	GNU make 3.71/3.72 (use the one coming with XFree86!)
+<item>make	GNU make 3.71/3.72 (use the one from Xprog.zip!)
 <item>flex	GNU flex
 <item>bison	GNU bison
 <item>find	GNU find    (attention: incompatible tool with the same name in OS/2)
@@ -69,7 +68,7 @@ which might still be available from some archives is NOT compatible.
 
 Furthermore, you need the XFree86 sources. These are available from 
 the common XFree86 repositories. Look into a directory which is 
-often named /pub/XFree86/3.3/source.
+often named /pub/XFree86/3.3.5/source.
 
 <sect>Compiling and Installing
 <p>
@@ -160,6 +159,10 @@ installed them. Nor did I install the test subtree.
       original XFree86/OS2 installation. If you have not set this variable,
       go back to the prefix section of this document: you have forgotten
       something.
+<item>Copy the file <tt>xc/programs/Xserver/hw/xfree86/etc/bindist/OS2/host.def.os2</tt>
+      to the location <tt>xc/config/cf/host.def</tt>. Use this file to do
+      any specific modifications to imake variables, rather than editing
+      the file xfree86.cf, imake.tmpl, or os2.cf directly.
 <item>Copy the file <tt>xc/config/util/buildos2.cmd</tt> into the <tt/xc/
       directory. If this is a second or later attempt, you might need to
       copy the saved toplevel Makefile.os2 back to Makefile.
@@ -176,6 +179,20 @@ installed them. Nor did I install the test subtree.
       xmake install
       xmake install.man
       </verb>
+<item>There are a few minor glitches in the installation:
+<enum>
+<item>The xdm and linkkit directories will fail in compile and installation.
+      This is no problem and has no effect on the rest of the system.
+<item>The imake.exe which is installed in <tt/&bsol;XFree86&bsol;bin/ is usually defective.
+      The one which was built initially and installed in the root directory
+      of the drive where you have the source tree is okay. So simply copy
+      this <tt/&bsol;imake.exe/ to the <tt/&bsol;XFree86&bsol;bin/ directory 
+      manually. Some day this might be fixed.
+<item><tt/XF86Setup/ is not ported yet and won't work with the tcl/tk port
+      available for XFree86/OS2. My idea was to replace this by some native
+      installation tool, which I didn't find the time to do yet. Feel free
+      to spend a bit of time to play with XF86Setup if you like.
+</enum>
 </enum>
 
 Well, you see, this was quite easy :-)
@@ -184,7 +201,7 @@ Well, you see, this was quite easy :-)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.4 1997/01/27 06:57:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.4.2.6 1999/08/02 08:38:17 hohndel Exp $
 
 
 

@@ -5,11 +5,10 @@
 
 <title>Information for SVR4 Users
 <author>The XFree86 Project, Inc
-<date>14 Oct 1996
+<date>27 Feb 1998
 
 <abstract>
-<bf>NOTE:</bf>
-If you intend to use any of the accelerated servers, read section
+<bf>NOTE:</bf> If you intend to use any of the accelerated servers, read section
 10 and follow the instructions.  Otherwise the X server will crash
 when exiting, restarting, or switching VTs.
 </abstract>
@@ -36,7 +35,7 @@ when exiting, restarting, or switching VTs.
 and the following versions of <bf>SVR4.2</bf>:
 <itemize>
 <item>Consensys
-<item>Novell UnixWare 1.x and 2.0
+<item>Novell/SCO UnixWare 1.x and 2.0
 </itemize>
 Basically, we believe that XFree86 binaries will run unmodified on any
 ISA, EISA, or MCA platform version version of SVR4.0 (Solaris 2.x is an
@@ -183,6 +182,17 @@ compatibility.<p>
    running it.  (Note that mouseadmin will need to be rerun after
    rebuilding a kernel unless you add an appropriate entry to
    <tt>/etc/conf/node.d/gmse.</tt>)<p>
+
+   <bf>NOTE</bf>: Many of the accelerated server/drivers have problems
+   when using a HW cursor and Xqueue together.  If you have a serial mouse,
+   you can work around this by not using Xqueue.  Otherwise the only
+   workaround is to disable the HW cursor.  This is done by adding the line:
+<tscreen><verb>
+   Option "sw_cursor"
+</verb></tscreen>
+   to the Device section of your XF86Config file.  The S3 server is the
+   only one known to not have this problem.
+   <p>
    If you have problems with both Xqueue and your standard asy driver with
    SVR4, then you should install SAS.  When using SAS, set up <tt>XF86Config</tt> as
    you would for the standard driver.<p>
@@ -256,13 +266,14 @@ spelled out
    your <tt>/usr/X11R6/lib/xdm/Xsession</tt> script (when using xdm).<p>
 
 </enum>
+<!--
 <sect>Notes for running XFree86 on SVR4.2<p>
   In addition to the notes for SVR4.0, you need to be aware of a few
 problems with SVR4.2.  Basically, the base SVR4.2 code has broken
 Unix-domain sockets in such a way that making local connections via
 <tt>UNIXCONN</tt> does not work properly (this bug is known to exist 
 on Consensys
-SVR4.2 and Novell UnixWare).  The manifestation of this bug is that
+SVR4.2 and Novell/SCO UnixWare).  The manifestation of this bug is that
 windows remain on the screen after the client program exits, until you
 move the mouse into the window, or otherwise cause the server to try to
 write to the client.<p>
@@ -273,6 +284,7 @@ than <tt>UNIX</tt>.
 The mechanisms for doing this are described above.  This is not a problem
 for clients using the X11R6 X libraries because <tt>UNIX</tt> is no longer
 considered a local connection type.<p>
+-->
 
 <sect>Building non-core clients with SVR4<p>
 <enum>
@@ -393,7 +405,7 @@ registers.  XFree86 supports boards that tickle this bug.  In
 preparation for using these servers, we have produced a kernel patch 
 that works around the problem, and provided scripts for you that will 
 both install and back out the patch.  You must install this if you
-intend to use the S3, 8514, Mach8, Mach32, P9000, AGX servers.<p>
+intend to use the S3, 8514, Mach8, Mach32, P9000, AGX or W32 servers.<p>
 
 Dell 2.2 is known to not need the patch, because Thomas Roell found and
 fixed the bug while he was working for Dell.  Microport has fixed this in
@@ -418,8 +430,17 @@ Thanks to John M. Sully of Microport for helping us find a simple
 workaround for this problem, and giving us permission to release the
 information.<p>
 
+<sect>Other problems<p>
+Some accelerated drivers may cause the machine to lockup when starting
+up the server on some versions of SVR4.0.  The problem seems to be
+related to the kernel checking for the presence of physical memory
+when mmaping /dev/pmem.  This can cause problems when mapping memory
+mapped registers.  This was known to be a problem with the MGA driver in
+the SVGA server.  Some other drivers may be affected too.  The problem with
+the MGA driver is now fixed.
+
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.14 1997/12/05 22:01:38 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.13.2.3 1998/02/28 08:54:11 dawes Exp $
 
 
 

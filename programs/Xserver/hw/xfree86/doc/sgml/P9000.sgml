@@ -2,26 +2,26 @@
  
 <article>
  
-<title>XFree86 3.2 P9000 Server Release Notes
+<title>XFree86 P9000 Server Release Notes
 <author>Erik Nygren (<it>nygren@mit.edu</it>)
-<date>1997 February 24
+<date>1998 December 29
 <toc>
  
 <sect>Change Log <p>
 <descrip>
-<tag/1997.02.24:/
+<tag/1998.10.13:/
 	<itemize>
 	<item>
-	  Added loadable module support (Erik Nygren)
+	  Fixed a bug that would cause the server to crash when it tried
+	  to enable or disable the screen saver while at a VT (Erik Nygren)
 	</itemize>
 <tag/1997.01.30:/
 	<itemize>
 	<item>
 	  Added probing for MemBase and IOBase on Diamond Viper PCI cards
-          (Karl Anders &Oslash;ygard)
+          (Karl Anders Øygard)
 	<item>
-	  Added support for DPMS screen saving -- off mode only (Karl
-	  Anders &Oslash;ygard)
+	  Added support for DPMI screen saving (Karl Anders Øygard)
 	</itemize>
 <tag/1996.03.31:/
 	<itemize>
@@ -217,12 +217,13 @@ have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
 into your <tt>XF86Config</tt> file.
 
 <sect1>Diamond Viper PCI <p>
+
 You may need to specify the chipset <tt>"viperpci"</tt> in your 
 <tt>XF86Config</tt> file.
 
 Previously you had to find out the values for <tt>MemBase</tt> and
 <tt>IOBase</tt> by yourself.  These are now autodetected.
-  
+
 <sect>Orchid P9000 and random clones <p>
 The Orchid P9000 and other cards based on the Weitek board design
 (such as the STAR 2000) should now work.  Talk to
@@ -231,14 +232,9 @@ if you have problems with this.  Specify the chipset <tt>"orchid_p9000"</tt> in
 the <tt>Device</tt> section of <tt>XF86Config</tt>
 
 <sect>Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!) <p>
-These are NOT supported yet.  We don't have the hardware to write and
-or test drivers for them on.  The docs I have says the P9100 has a
-different interface than the P9000.  As a result, they may need an
-entirely new server.  If you need support for one of these cards, you
-should look into Xi Graphic's AcceleratedX or MetroLink's MetroX.
-They're commercial products that cost about &dollar;99.  
-Check out <it>http://www.metrolink.com/</it> and
-<it>http://www.xinside.com</it> for more info.
+These are NOT supported yet by this server, but are supported in the 
+p9x00 driver of the SVGA server.
+
 
 <sect>Acceleration <p>
 Some of the acceleration code is working, but
@@ -349,12 +345,6 @@ one which works with available memory, etc).  Any other modes which
 are valid and have the same dimensions are also used.  And other modes
 are ignored.
 
-If you're using the <tt>XF86_LOADER</tt> server, you'll need
-to tell it to load the <tt>libp9000.a</tt> and/or the
-<tt>XF86_P9000.o</tt> module.  Each of them knows that
-the other needs to be loaded and will load it if you
-do not specify it.
-
 The current supported keywords in the <tt>Device</tt> section
 of the <tt>XF86Config</tt> file are:
 <descrip>
@@ -383,14 +373,14 @@ of the <tt>XF86Config</tt> file are:
 			This line may now be omitted and clocks will
 			be matched automatically.
    <tag/Option/		<descrip>
-			<tag/&dquot;sw_cursor&dquot;/
+			<tag/"sw_cursor"/
 			   use software cursor
-			<tag/&dquot;vram_128&dquot;/
+			<tag/"vram_128"/
 			   use if you have 1024K VRAM in 128Kx8 SIMMS
-			<tag/&dquot;sync_on_green&dquot;/
+			<tag/"sync_on_green"/
 			   generate sync pulses on the green signal.  Most
 			   (all?) P9000 based boards don't support this.
-			<tag/&dquot;noaccel&dquot;/
+			<tag/"noaccel"/
 			   do not do hardware acceleration if
 				it's causing problems for you
 			</descrip>
@@ -414,10 +404,6 @@ of the <tt>XF86Config</tt> file are:
 </descrip>
 Here's a portion of a sample <tt>XF86Config</tt> file for the Viper VLB:
 <verb>
-Section "Module"
-    Load "libp9000.a"
-EndSection
-
 Section "Device"
     Identifier "ViperVLB"
     VendorName "Diamond"
@@ -473,7 +459,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.20 1997/02/18 12:04:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.18.2.7 1998/12/29 07:54:30 hohndel Exp $
 
 
 
