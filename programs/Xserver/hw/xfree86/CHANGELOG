@@ -1,4 +1,5 @@
 XFree86 4.0.1d (?? ?????? 2000)
+ 573. Don't build DRM modules with a non-module Linux kernel (Marc La France).
  572. Reinstate non-MMIO-only version of ATI driver for Alpha architecture
       (Marc La France).
  571. Fix input event queueuing for 64-bit platforms (Marc La France).
@@ -11094,4 +11095,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1289 2000/08/31 19:03:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1290 2000/09/01 01:13:33 tsi Exp $
