@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.21 2003/07/16 19:35:40 herrb Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.22 2003/07/18 15:53:28 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -1520,7 +1520,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
 	    return 1;
 	}
 	auth->data_length = len;
-	auth->data = copystring(key, len);
+	auth->data = malloc(len);
 	if (!auth->data) {
 		prefix(inputfilename, lineno);
 		fprintf(stderr, "unable to allocate %d bytes for key\n", len);
@@ -1532,6 +1532,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
 		free(key);
 		return 1;
 	}
+	memcpy(auth->data, key, len);
     }
     free(key);
     /*
