@@ -1183,20 +1183,22 @@ main(int argc, unsigned char *argv[])
     unsigned char tmp1, tmp2;
     unsigned int idx;
     struct pci_config_reg pcr;
-    int ch, verbose = 0;
+    int ch, verbose = 0, do_mode1_scan = 0, do_mode2_scan = 0;
     int func;
 
-    if (argc > 2) {
-	printf("Usage: %s [-v] \n", argv[0]);
-	exit(1);
-    }
-    while((ch = getopt(argc, argv, "v")) != EOF) {
+    while((ch = getopt(argc, argv, "v12")) != EOF) {
      	switch((char)ch) {
+	case '1':
+		do_mode1_scan = 1;
+		break;
+	case '2':
+		do_mode2_scan = 1;
+		break;
 	case 'v':
 		verbose = 1;
 		break;
 	default :
-		printf("Usage: %s [-v] \n", argv[0]);
+		printf("Usage: %s [-v12] \n", argv[0]);
 		exit(1);
         }
     }
@@ -1239,6 +1241,7 @@ main(int argc, unsigned char *argv[])
 
     /* Try pci config 1 probe first */
 
+    if ((pcr._configtype == 1) || do_mode1_scan) {
     printf("\nPCI probing configuration type 1\n");
 
     pcr._ioaddr = 0xFFFF;
@@ -1353,10 +1356,12 @@ main(int argc, unsigned char *argv[])
 	  } while( func < 8 );
         }
     } while (++pcr._pcibusidx < pcr._pcinumbus);
+    }
 
 #if !defined(__alpha__) && !defined(__powerpc__)
     /* Now try pci config 2 probe (deprecated) */
 
+    if ((pcr._configtype == 2) || do_mode2_scan) {
     outb(PCI_MODE2_ENABLE_REG, 0xF1);
     outb(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
 
@@ -1410,6 +1415,7 @@ main(int argc, unsigned char *argv[])
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
     outb(PCI_MODE2_ENABLE_REG, 0x00);
+    }
 
 #endif /* __alpha__ */
 
