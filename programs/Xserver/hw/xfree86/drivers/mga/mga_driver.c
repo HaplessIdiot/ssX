@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.58 1998/11/15 06:20:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.59 1998/11/29 10:50:26 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1936,7 +1936,10 @@ MGAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-    return MGAModeInit(pScrn, pScrn->currentMode);
+    if (!MGAModeInit(pScrn, pScrn->currentMode))
+	return FALSE;
+    MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    return TRUE;
 }
 
 

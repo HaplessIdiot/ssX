@@ -24,7 +24,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.3 1998/09/13 05:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.4 1998/10/04 09:39:30 dawes Exp $ */
 
 # define NEED_EVENTS
 # include   "X.h"
@@ -372,6 +372,26 @@ miPointerDeltaCursor (dx, dy, time)
     unsigned long   time;
 {
     miPointerAbsoluteCursor (miPointer.x + dx, miPointer.y + dy, time);
+}
+
+void
+miPointerSetNewScreen(int screen_no, int x, int y)
+{
+	miPointerScreenPtr pScreenPriv;
+	ScreenPtr pScreen;
+
+	pScreen = screenInfo.screens[screen_no];
+	pScreenPriv = GetScreenPrivate (pScreen);
+	(*pScreenPriv->screenFuncs->NewEventScreen) (pScreen, FALSE);
+	NewCurrentScreen (pScreen, x, y);
+   	miPointer.limits.x2 = pScreen->width;
+   	miPointer.limits.y2 = pScreen->height;
+}
+
+ScreenPtr
+miPointerCurrentScreen ()
+{
+	return (miPointer.pScreen);
 }
 
 /*

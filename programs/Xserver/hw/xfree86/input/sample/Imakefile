@@ -1,0 +1,23 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = sample.c
+OBJS = sample.o
+
+DRIVER = sample_drv
+
+INCLUDES = -I. -I$(XF86COMSRC) -I../../loader -I$(XF86OSSRC) \
+			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+NormalRelocatableTarget($(DRIVER),$(OBJS))
+	LinkBuildModule($(DRIVER).Osuf)
+
+install:: $(DRIVER).Osuf
+	MakeDir($(DESTDIR)$(MODULEDIR))
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMODFLAGS) $(DRIVER).Osuf $(DESTDIR)$(MODULEDIR)
+
+DependTarget()

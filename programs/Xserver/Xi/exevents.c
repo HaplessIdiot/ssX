@@ -40,7 +40,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.5 1997/07/05 15:15:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.6 1998/10/04 09:37:01 dawes Exp $ */
 
 /********************************************************************
  *
@@ -294,8 +294,7 @@ ProcessOtherEvent (xE, other, count)
     }
 
 int
-InitProximityClassDeviceStruct(dev)
-    DeviceIntPtr dev;
+InitProximityClassDeviceStruct( DeviceIntPtr dev)
 {
     register ProximityClassPtr proxc;
 
@@ -304,18 +303,17 @@ InitProximityClassDeviceStruct(dev)
 	return FALSE;
     dev->proximity = proxc;
     return TRUE;
-    }
+}
 
 void
-InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
-    DeviceIntPtr dev;
-    int axnum;
-    int minval;
-    int maxval;
-    int resolution;
-    int min_res;
-    int max_res;
-    {
+InitValuatorAxisStruct(	DeviceIntPtr dev,
+						int axnum,
+						int minval,
+						int maxval,
+						int resolution,
+						int min_res,
+						int max_res )
+{
     register AxisInfoPtr ax = dev->valuator->axes + axnum;
 
     ax->min_value = minval;
@@ -323,7 +321,7 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     ax->resolution = resolution;
     ax->min_resolution = min_res;
     ax->max_resolution = max_res;
-    }
+}
 
 static void
 #if NeedFunctionPrototypes

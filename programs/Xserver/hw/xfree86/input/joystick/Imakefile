@@ -1,0 +1,31 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = xf86Jstk.c
+OBJS = xf86Jstk.o
+
+DRIVER = xf86Jstk
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
+			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+#ifdef LinuxArchitecture
+	ARCH_JSTK = ../os-support/linux/lnx_jstk.o
+#endif
+
+#if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)
+	ARCH_JSTK = ../os-support/bsd/bsd_jstk.o
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+NormalRelocatableTarget($(DRIVER),$(OBJS),$(ARCH_JSTK))
+	LinkBuildModule($(DRIVER).Osuf)
+
+install:: $(DRIVER).Osuf
+	MakeDir($(DESTDIR)$(MODULEDIR))
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMODFLAGS) $(DRIVER).Osuf $(DESTDIR)$(MODULEDIR)
+
+DependTarget()

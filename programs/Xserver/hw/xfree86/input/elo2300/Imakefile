@@ -1,0 +1,23 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = elo.c
+OBJS = elo.o
+
+DRIVER = elo2300_drv
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
+			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+NormalRelocatableTarget($(DRIVER),$(OBJS))
+	LinkBuildModule($(DRIVER).Osuf)
+
+install:: $(DRIVER).Osuf
+	MakeDir($(DESTDIR)$(MODULEDIR))
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMODFLAGS) $(DRIVER).Osuf $(DESTDIR)$(MODULEDIR)
+
+DependTarget()

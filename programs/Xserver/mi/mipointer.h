@@ -25,7 +25,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.h,v 3.3 1998/07/26 02:33:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.h,v 3.4 1998/10/04 09:39:31 dawes Exp $ */
 
 #ifndef MIPOINTER_H
 #define MIPOINTER_H
@@ -168,6 +168,19 @@ extern void miRegisterPointerDevice(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
     DevicePtr /*pDevice*/
+#endif
+);
+
+extern void miPointerSetNewScreen(
+#if NeedFunctionPrototypes
+    int, /*screen_no*/
+	int, /*x*/
+	int /*y*/
+#endif
+);
+extern ScreenPtr miPointerCurrentScreen(
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 

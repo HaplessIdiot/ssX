@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/exglobals.h,v 3.1 1996/04/15 11:18:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exglobals.h,v 3.2 1996/05/06 05:56:03 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -68,7 +68,9 @@ extern	int	ChangeDeviceNotify;
 
 extern	int	RT_INPUTCLIENT;
 
+#if 0
 /* FIXME: in dix */
 extern	InputInfo inputInfo;
+#endif
 
 #endif /* EXGLOBALS_H */

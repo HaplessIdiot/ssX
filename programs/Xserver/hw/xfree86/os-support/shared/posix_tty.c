@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.12 1998/07/25 16:57:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.13 1998/08/29 05:43:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -504,6 +504,37 @@ xf86CloseSerial (int fd)
 	SYSCALL (r = close (fd));
 	return (r);
 }
+
+/* Merged/inserted from Metrolink tree */
+int
+xf86WaitForInput (int fd, int timeout)
+{
+	fd_set readfds;
+	struct timeval to;
+	int r;
+
+	FD_ZERO(&readfds);
+	FD_SET(fd, &readfds);
+	to.tv_sec = 0;
+	to.tv_usec = timeout;
+
+	SYSCALL (r = select (FD_SETSIZE, &readfds, NULL, NULL, &to));
+	if (xf86Verbose >= 9)
+		ErrorF ("select returned %d\n", r);
+	return (r);
+}
+
+int
+xf86SerialSendBreak (int fd, int duration)
+{
+	int r;
+
+	SYSCALL (r = tcsendbreak (fd, duration));
+	return (r);
+	
+}
+
+/* End of merged section */
 
 int
 xf86FlushInput(fd)

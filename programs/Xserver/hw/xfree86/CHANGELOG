@@ -1,3 +1,12 @@
+XFree86 3.9Np (6 December 1998)
+2029. New XInput code, including new drivers for the SpaceOrb and Magellan
+      (#2243, Metro Link).
+2028. Fix cfb24 bitblt for non-trivial planemasks (Peter Wainwright).
+2027. Fix bad headers included when compiling cup.c for extmod module.
+2026. Fix a malloc/xfree mismatch in xtrans LocalInitTransports().
+2025. Add some documentation for DDC (#2259, Egbert Eich).
+2024. Fix a problem with recent VT switch changes.
+
 XFree86 3.9No (29 November 1998)
 2023. Fix the depth vs bpp mixup in miCreateScreenResources().
 2022. Resync the s3virge driver with most of the updates contained in 3.3.3.
@@ -35,7 +44,7 @@ XFree86 3.9No (29 November 1998)
 2006. Define _XOPEN_SOURCE for Linux (#2261, Christopher Sekiya).
 2005. Add the vga copy plane expansion patch to the vgafb code (#2021,
       Jens Owen).
-2004. Add some documentation for DDC (#2259, Egbert Eich).
+2004. -
 2003. Fix a bug in xaaStipple.c which can cause a blitter lockup.
 2002. Fix a C&T bug that causes memory corruption when not in linear mode
       (#2260, Egbert Eich).
@@ -6855,4 +6864,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.646 1998/11/29 10:50:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.647 1998/11/29 13:09:17 dawes Exp $
