@@ -1,4 +1,5 @@
-/* $XConsortium: flo.c,v 1.6 94/04/17 20:33:55 rws Exp $ */
+/* $XConsortium: flo.c,v 1.7 94/06/03 15:58:13 dpw Exp $ */
+/* $XFree86$ */
 /**** module flo.c ****/
 /******************************************************************************
 
@@ -82,6 +83,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*
@@ -460,7 +462,7 @@ static void DAGonize(flo,ped)
       inFlo->ownDef = ped;
       src = inFlo->srcDef = flo->peArray[tag];
       
-      if(src->flags.loop)
+      if(src->flags.loop || src->flags.export)
 	SourceError(flo,ped, break);	/* oops, we've stumbled over a loop */
 
       /* insert this inFlo into the source element's outFlo list */
@@ -472,8 +474,8 @@ static void DAGonize(flo,ped)
     }        
   }
   if(!ferrCode(flo)) {
-    /* clear the loop-detector (unless this is an export element) */
-    ped->flags.loop = ped->flags.export;
+    /* clear the loop-detector */
+    ped->flags.loop = FALSE;
     
     if(ped->flags.import && !ListEmpty(&flo->defDAG)) {
       /* find the end of the import list, then append this element */

@@ -1,4 +1,5 @@
 /* $XConsortium: miSearch.c,v 5.6 94/04/17 20:37:18 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -61,7 +62,6 @@ SOFTWARE.
 #include "miFont.h"
 #include "miText.h"
 #include "miClip.h"
-#include "extnsionst.h"
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))

@@ -1,5 +1,5 @@
 /* $XConsortium: chgkbd.c /main/20 1996/01/14 16:44:41 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xi/chgkbd.c,v 3.0 1996/02/18 03:41:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/chgkbd.c,v 3.1 1996/03/10 11:53:46 dawes Exp $ */
 
 /************************************************************
 
@@ -61,14 +61,16 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "XIstubs.h"
 
-extern	int 		IReqCode;
-extern	int 		BadDevice;
-extern	int 		ChangeDeviceNotify;
-extern	Mask		ChangeDeviceNotifyMask;
-extern	InputInfo	inputInfo;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+
+#include "exevents.h"
+#include "exglobals.h"
+
+#include "chgkbd.h"
+#include "chgptr.h"
 
 /***********************************************************************
  *
@@ -95,6 +97,7 @@ SProcXChangeKeyboardDevice(client)
  *
  */
 
+int
 ProcXChangeKeyboardDevice (client)
     register ClientPtr client;
     {
@@ -178,7 +181,7 @@ ProcXChangeKeyboardDevice (client)
 	ev.time = currentTime.milliseconds;
 	ev.request = NewKeyboard;
 
-	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, &ev, 1);
+	SendEventToAllWindows (dev, ChangeDeviceNotifyMask, (xEvent *)&ev, 1);
 	SendMappingNotify (MappingKeyboard, k->curKeySyms.minKeyCode, 
 	    k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode + 1,client);
 
@@ -197,6 +200,7 @@ ProcXChangeKeyboardDevice (client)
  *
  */
 
+void
 SRepXChangeKeyboardDevice (client, size, rep)
     ClientPtr	client;
     int		size;

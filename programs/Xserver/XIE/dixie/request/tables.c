@@ -1,4 +1,5 @@
 /* $XConsortium: tables.c,v 1.4 94/04/17 20:33:59 rws Exp $ */
+/* $XFree86$ */
 /**** tables.c ****/
 /****************************************************************************
 
@@ -74,6 +75,7 @@ terms and conditions:
 
 #define _XIEC_TABLES
 
+#define NEED_EVENTS
 #define NEED_REPLIES
 #include "X.h"			/* Needed for just about anything	*/
 #include "Xproto.h"		/* defines protocol-related stuff	*/

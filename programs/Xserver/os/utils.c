@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.15 1996/01/31 11:53:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.16 1996/02/09 08:22:29 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -416,6 +416,9 @@ GiveUp(sig)
 #endif
 }
 
+#if __GNUC__
+static void AbortServer() __attribute__((noreturn));
+#endif
 
 static void
 AbortServer()

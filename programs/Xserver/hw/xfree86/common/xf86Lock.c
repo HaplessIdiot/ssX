@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.6 1996/02/04 09:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.7 1996/02/09 08:20:29 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -39,9 +39,9 @@
 #include <errno.h>
 extern int errno;
 
+#ifdef USE_XF86_SERVERLOCK
 static Bool StillLocking = FALSE;
 
-#ifdef USE_XF86_SERVERLOCK
 extern char* display;
 
 /*

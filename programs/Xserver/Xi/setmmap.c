@@ -1,4 +1,5 @@
 /* $XConsortium: setmmap.c,v 1.9 94/04/17 20:33:22 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,12 +61,12 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "exevents.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	int	DeviceMappingNotify;
-extern	void	(* ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
+#include "setmmap.h"
 
 /***********************************************************************
  *
@@ -91,6 +92,7 @@ SProcXSetDeviceModifierMapping(client)
  *
  */
 
+int
 ProcXSetDeviceModifierMapping(client)
     ClientPtr client;
     {
@@ -117,7 +119,7 @@ ProcXSetDeviceModifierMapping(client)
 
     ret = SetModifierMapping(client, dev, stuff->length,
 	(sizeof (xSetDeviceModifierMappingReq)>>2), stuff->numKeyPerModifier, 
-	&stuff[1], &kp);
+	(BYTE *)&stuff[1], &kp);
 
     if (ret==MappingSuccess || ret==MappingBusy || ret==MappingFailed)
         {
@@ -144,6 +146,7 @@ ProcXSetDeviceModifierMapping(client)
  *
  */
 
+void
 SRepXSetDeviceModifierMapping (client, size, rep)
     ClientPtr	client;
     int		size;

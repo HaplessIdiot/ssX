@@ -1,5 +1,5 @@
 /* $XConsortium: miNCurve.c,v 5.3 94/04/17 20:37:10 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNCurve.c,v 3.0 1995/07/07 15:34:37 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,7 +60,6 @@ SOFTWARE.
 #include "miStruct.h"
 #include "PEXprotost.h"
 #include "miRender.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "ddpex2.h"
 #include "miNurbs.h"

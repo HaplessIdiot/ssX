@@ -1,4 +1,6 @@
-/* $XConsortium: ecphoto.c,v 1.5 94/04/17 20:33:28 rws Exp $ */
+/* $XConsortium: ecphoto.c /main/6 1995/12/02 16:44:11 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module ecphoto.c ****/
 /******************************************************************************
 
@@ -81,6 +83,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*
@@ -188,7 +191,7 @@ peDefPtr MakeECPhoto(flo,tag,pe)
    */
   if(!(ped->techVec = FindTechnique(xieValEncode,raw->encodeTechnique)) 
     || !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
-    TechniqueError(flo,ped,xieValHistogram,raw->encodeTechnique,raw->lenParams,
+    TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
 		   return(ped));
 
   /* assign phototag to inFlo
@@ -395,7 +398,7 @@ static Bool PrepECPhoto(flo,ped)
     dst->format[b] = inf->format[b] = src->format[b];
   }
   if(!(ped->techVec->prepfnc(flo, ped, &raw[1])))
-    TechniqueError(flo,ped,xieValHistogram,raw->encodeTechnique,raw->lenParams,
+    TechniqueError(flo,ped,xieValEncode,raw->encodeTechnique,raw->lenParams,
                    return(FALSE));
 
   pvt->encodeNumber = raw->encodeTechnique;

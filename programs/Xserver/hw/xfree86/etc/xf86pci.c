@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.6 1996/02/22 05:12:11 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -47,9 +47,18 @@
 #include <sys/psw.h>
 #endif
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
+#if defined(__FreeBSD__) || defined(__386BSD__)
 #include <sys/file.h>
 #include <machine/console.h>
+#define GCCUSESGAS
+#endif
+#if defined(__NetBSD__)
+#include <sys/param.h>
+#ifndef NetBSD1_1
+#include <sys/file.h>
+#else
+#include <machine/sysarch.h>
+#endif
 #define GCCUSESGAS
 #endif
 #if defined(__bsdi__)
@@ -423,17 +432,30 @@ xf86EnableIOPorts(int dummy)
 #ifdef linux
     iopl(3);
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__) || defined(__bsdi__)
+#if defined(__FreeBSD__) || defined(__386BSD__) || defined(__bsdi__)
     if ((io_fd = open("/dev/console", O_RDWR, 0)) < 0) {
         perror("/dev/console");
         exit(1);
     }
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
+#if defined(__FreeBSD__) || defined(__386BSD__)
     if (ioctl(io_fd, KDENABIO, 0) < 0) {
         perror("ioctl(KDENABIO)");
         exit(1);
     }
 #endif
+#if defined(__NetBSD__)
+#if !defined(NetBSD1_1)
+    if ((io_fd = open("/dev/io", O_RDWR, 0)) < 0) {
+	perror("/dev/io");
+	exit(1);
+    }
+#else
+    if (i386_iopl(1) < 0) {
+	perror("i386_iopl");
+	exit(1);
+    }
+#endif /* NetBSD1_1 */
+#endif /* __NerBSD__ */
 #if defined(__bsdi__)
     if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
         perror("ioctl(PCCONENABIOPL)");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.25 1996/02/04 09:00:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.26 1996/02/18 03:42:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -355,6 +355,12 @@ vgaProbe()
             nonMuxMaxClock = MAX_W32_CLOCK;  /* or 75000 ? */ 
             pixMuxMinClock = 67500;
             pixMuxMinWidth = 1024;   /* seems to be this way: 1024x768 is wrong with pixmux -- something to do with byte/word/dword modes */
+          }
+          else if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
+          {
+            ErrorF("%s %s: Using W32 programmable clock chip ICD2061a\n",
+                   OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions) ?
+                   XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
           }
           else
           {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.8 1995/12/09 11:07:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.9 1996/02/04 09:00:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -557,6 +557,12 @@ static int read_cr()
 
 
 int RamdacShift;
+/*
+ * this variable will avoid the server from assigning 8-bit colors to a 6-bit DAC
+ * It saves you a lot of space in the palette [kmg]
+ */
+Bool W32Dac8Bit = FALSE;
+
 extern int vgaRamdacMask;
 static int saved_cr;
 static BOOL cr_saved;
@@ -567,6 +573,7 @@ static void check_ramdac()
 
     RamdacShift = 10;
     vgaRamdacMask = 0x3f;
+    W32Dac8Bit = FALSE;
     
     rmr = inb(RMR);
     saved_cr = read_cr();
@@ -591,6 +598,7 @@ static void check_ramdac()
             case  ATT20C491_DAC:
        	          RamdacShift = 8;
        	          vgaRamdacMask = 0xff;
+                  W32Dac8Bit = TRUE;
        	          break;
             case NORMAL_DAC: 
             case ATT20C47xA_DAC:
@@ -604,6 +612,7 @@ static void check_ramdac()
             default:
                   RamdacShift = 10;
                   vgaRamdacMask = 0x3f;
+                  W32Dac8Bit = FALSE;
           }
        }
     }
@@ -652,6 +661,7 @@ static void check_ramdac()
         	    W32RamdacType = ATT20C490_DAC;
         	    RamdacShift = 8;
         	    vgaRamdacMask = 0xff;
+                    W32Dac8Bit = TRUE;
         	}
         	else
         	{
@@ -672,6 +682,7 @@ static void check_ramdac()
         	    W32RamdacType = ATT20C491_DAC;
         	    RamdacShift = 8;
         	    vgaRamdacMask = 0xff;
+                    W32Dac8Bit = TRUE;
         	}
         	else
         	{
@@ -723,6 +734,7 @@ void SetupRamdac()
 	{
 	    generic_ramdac = TRUE;
 
+            W32Dac8Bit = FALSE;
 	    RamdacShift = 10;
 	    vgaRamdacMask = 0x3f;
 	    ErrorF("%s %s: Ramdac:  generic\n", XCONFIG_GIVEN,

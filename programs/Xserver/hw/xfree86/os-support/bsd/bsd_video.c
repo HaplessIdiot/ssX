@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.8 1995/12/21 11:45:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.9 1996/02/04 09:09:56 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -297,6 +297,90 @@ Bool xf86LinearVidMem()
 
 	return(useDevMem);
 }
+
+#ifdef USE_I386_IOPL
+/***************************************************************************/
+/* I/O Permissions section                                                 */
+/***************************************************************************/
+
+static Bool ScreenEnabled[MAXSCREENS];
+static Bool ExtendedEnabled = FALSE;
+static Bool InitDone = FALSE;
+
+void
+xf86ClearIOPortList(ScreenNum)
+int ScreenNum;
+{
+	if (!InitDone)
+	{
+		int i;
+		for (i = 0; i < MAXSCREENS; i++)
+			ScreenEnabled[i] = FALSE;
+		InitDone = TRUE;
+	}
+	return;
+}
+
+void
+xf86AddIOPorts(ScreenNum, NumPorts, Ports)
+int ScreenNum;
+int NumPorts;
+unsigned *Ports;
+{
+	return;
+}
+
+void
+xf86EnableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = TRUE;
+
+	if (ExtendedEnabled)
+		return;
+
+	if (i386_iopl(TRUE) < 0)
+	{
+		FatalError("%s: Failed to set IOPL for extended I/O\n",
+			   "xf86EnableIOPorts");
+	}
+	ExtendedEnabled = TRUE;
+
+	return;
+}
+	
+void
+xf86DisableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = FALSE;
+
+	if (!ExtendedEnabled)
+		return;
+
+	for (i = 0; i < MAXSCREENS; i++)
+		if (ScreenEnabled[i])
+			return;
+
+	i386_iopl(TRUE);
+	ExtendedEnabled = FALSE;
+
+	return;
+}
+
+
+void xf86DisableIOPrivs()
+{
+	if (ExtendedEnabled)
+		i386_iopl(FALSE);
+	return;
+}
+
+#endif /* USE_I386_IOPL */
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */

@@ -1,4 +1,6 @@
-/* $XConsortium: error.c,v 1.7 94/04/17 20:33:54 rws Exp $ */
+/* $XConsortium: error.c /main/8 1995/12/02 16:47:05 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module error.c ****/
 /****************************************************************************
 
@@ -75,6 +77,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*
@@ -215,9 +218,6 @@ int SendFloError(client, flo)
    */
   switch( ferrCode(flo) ) {
   case	xieErrNoFloAccess:
-    ((xieFloAccessErr *)(&err))->phototag = 0;
-    ((xieFloAccessErr *)(&err))->type     = 0;
-    break;
   case	xieErrNoFloAlloc:
   case	xieErrNoFloElement:
   case	xieErrNoFloImplementation:

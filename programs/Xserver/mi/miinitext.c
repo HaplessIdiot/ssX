@@ -46,9 +46,10 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/38 1995/12/08 13:41:44 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.9 1996/01/06 05:25:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.10 1996/01/16 15:07:34 dawes Exp $ */
 
 #include "misc.h"
+#include "extension.h"
 
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
@@ -59,77 +60,90 @@ extern Bool noTestExtensions;
 extern Bool noXkbExtension;
 #endif
 
+#if NeedFunctionPrototypes
+#define INITARGS void
+#else
+#define INITARGS /*nothing*/
+#endif
+
+/* FIXME: this whole block of externs should be from the appropriate headers */
 #ifdef BEZIER
-extern void BezierExtensionInit();
+extern void BezierExtensionInit(INITARGS);
 #endif
 #ifdef XTESTEXT1
-extern void XTestExtension1Init();
+extern void XTestExtension1Init(INITARGS);
 #endif
 #ifdef SHAPE
-extern void ShapeExtensionInit();
+extern void ShapeExtensionInit(INITARGS);
 #endif
 #ifdef MITSHM
-extern void ShmExtensionInit();
+extern void ShmExtensionInit(INITARGS);
 #endif
 #ifdef PEXEXT
-extern void PexExtensionInit();
+extern void PexExtensionInit(INITARGS);
 #endif
 #ifdef MULTIBUFFER
-extern void MultibufferExtensionInit();
+extern void MultibufferExtensionInit(INITARGS);
 #endif
 #ifdef XINPUT
-extern void XInputExtensionInit();
+extern void XInputExtensionInit(INITARGS);
 #endif
 #ifdef XTEST
-extern void XTestExtensionInit();
+extern void XTestExtensionInit(INITARGS);
 #endif
 #ifdef BIGREQS
-extern void BigReqExtensionInit();
+extern void BigReqExtensionInit(INITARGS);
 #endif
 #ifdef MITMISC
-extern void MITMiscExtensionInit();
+extern void MITMiscExtensionInit(INITARGS);
 #endif
 #ifdef XIDLE
-extern void XIdleExtensionInit();
+extern void XIdleExtensionInit(INITARGS);
 #endif
 #ifdef XTRAP
-extern void DEC_XTRAPInit();
+extern void DEC_XTRAPInit(INITARGS);
 #endif
 #ifdef SCREENSAVER
-extern void ScreenSaverExtensionInit ();
+extern void ScreenSaverExtensionInit (INITARGS);
 #endif
 #ifdef XV
-extern void XvExtensionInit();
+extern void XvExtensionInit(INITARGS);
 #endif
 #ifdef XIE
-extern void XieInit();
+extern void XieInit(INITARGS);
 #endif
 #ifdef XSYNC
-extern void SyncExtensionInit();
+extern void SyncExtensionInit(INITARGS);
 #endif
 #ifdef XKB
-extern void XkbExtensionInit();
+extern void XkbExtensionInit(INITARGS);
 #endif
 #ifdef XCMISC
-extern void XCMiscExtensionInit();
+extern void XCMiscExtensionInit(INITARGS);
 #endif
 #ifdef XRECORD
-extern void XRecordExtensionInit();
+extern void RecordExtensionInit(INITARGS);
 #endif
 #ifdef LBX
-extern void     LbxExtensionInit();
+extern void     LbxExtensionInit(INITARGS);
 #endif
 #ifdef DBE
-extern void     DbeExtensionInit();
+extern void     DbeExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
-extern void	XF86VidModeExtensionInit();
+extern void	XF86VidModeExtensionInit(INITARGS);
 #endif
 #ifdef XF86MISC
-extern void	XF86MiscExtensionInit();
+extern void	XF86MiscExtensionInit(INITARGS);
+#endif
+#ifdef XF86VIDMODE
+extern void	XFree86VidModeExtensionInit(INITARGS);
+#endif
+#ifdef XF86MISC
+extern void	XFree86MiscExtensionInit(INITARGS);
 #endif
 #ifdef XFreeXDGA
-extern void XFree86DGAExtensionInit();
+extern void XFree86DGAExtensionInit(INITARGS);
 #endif
 
 /*ARGSUSED*/

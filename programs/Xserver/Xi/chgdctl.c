@@ -1,4 +1,5 @@
 /* $XConsortium: chgdctl.c,v 1.4 94/04/17 20:33:02 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,11 +61,13 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"			/* control constants */
+#include "XIstubs.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice, DeviceBusy;
-extern	void	(* ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+
+#include "chgdctl.h"
 
 /***********************************************************************
  *
@@ -92,6 +95,7 @@ SProcXChangeDeviceControl(client)
  *
  */
 
+int
 ProcXChangeDeviceControl(client)
     ClientPtr client;
     {
@@ -151,7 +155,7 @@ ProcXChangeDeviceControl(client)
 		    BadValue);
 		return Success;
 		}
-	    status = ChangeDeviceControl(client, dev, r);
+	    status = ChangeDeviceControl(client, dev, (xDeviceCtl*) r);
 	    if (status == Success)
 		{
 	        a = &dev->valuator->axes[r->first_valuator];
@@ -196,6 +200,7 @@ ProcXChangeDeviceControl(client)
  *
  */
 
+void
 SRepXChangeDeviceControl (client, size, rep)
     ClientPtr	client;
     int		size;

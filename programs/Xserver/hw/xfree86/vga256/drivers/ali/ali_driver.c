@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.6 1996/01/12 14:37:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.7 1996/02/04 09:12:33 dawes Exp $
  */
 
 #include "X.h"
@@ -24,7 +24,6 @@
 #ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_

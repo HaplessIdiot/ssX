@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.122 1996/02/22 05:11:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.123 1996/03/11 12:34:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -50,7 +50,6 @@
 #ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
@@ -250,7 +249,14 @@ static Bool s3GendacClockSelect();
 static Bool ti3025ClockSelect();
 static Bool ti3026ClockSelect();
 static Bool IBMRGBClockSelect();
-static void s3ProgramTi3025Clock();
+static void s3ProgramTi3025Clock(
+#if NeedFunctionPrototypes
+	int clk,
+	unsigned char n,
+	unsigned char m,
+	unsigned char p
+#endif
+);
 static Bool ch8391ClockSelect();
 static Bool att409ClockSelect();
 static Bool STG1703ClockSelect();
@@ -331,19 +337,6 @@ s3PrintIdent()
   ErrorF("  %s: accelerated server for S3 graphics adaptors (Patchlevel %s)\n",
 	 s3InfoRec.name, s3InfoRec.patchLevel);
 	 
-#ifdef PC98
-  ErrorF("\tmodified for PC98 S3 (Patchlevel %s):\n      ",PC98_S3_PL);
-#if defined(PC98_PW)||defined(PC98_XKB)
-  ErrorF("\tThis server was compiled for Power Window and PCSKB/2/4.\n      ");
-#endif
-#ifdef PC98_NEC
-  ErrorF("\tThis server was compiled for NEC-S3(928).\n      ");
-#endif
-#ifdef PC98_PWLB
-  ErrorF("\tThis server was compiled for Power Window(Local Bus).\n      ");
-#endif
-#endif
-
   ErrorF("      ");
   for (i = 0; s3Drivers[i]; i++)
     for (j = 0; id = (s3Drivers[i]->ChipIdent)(j); j++, n++)
@@ -368,7 +361,7 @@ s3PrintIdent()
     }
   ErrorF("\n");
 #ifdef PC98
-  ErrorF("Supported video boards:\n \t%s \n    ",PC98_S3_BOARDS);
+  ErrorF("  PC98: Supported Video Boards:\n\t%s\n",PC98_S3_BOARDS);
 #endif
 }
 
@@ -747,6 +740,8 @@ s3Probe()
 	pc98BoardType = PW805I;
    if (OFLG_ISSET(OPTION_PWLB, &s3InfoRec.options))
 	pc98BoardType = PWLB;
+   if (OFLG_ISSET(OPTION_PW968, &s3InfoRec.options))
+	pc98BoardType = PW968;
    ErrorF("PC98   :Board Type = %X \n",pc98BoardType);
    if(BoardInit() == FALSE)
 	return(FALSE);
@@ -857,6 +852,7 @@ s3Probe()
    OFLG_SET(OPTION_NECWAB, &validOptions);
    OFLG_SET(OPTION_PW805I, &validOptions);
    OFLG_SET(OPTION_PWLB, &validOptions);
+   OFLG_SET(OPTION_PW968, &validOptions);
    OFLG_SET(OPTION_EPSON_MEM_WIN, &validOptions);
    OFLG_SET(OPTION_PW_MUX, &validOptions);
    OFLG_SET(OPTION_NOINIT, &validOptions);
@@ -3656,9 +3652,6 @@ s3GendacClockSelect(freq)
 {
    Bool result = TRUE;
    unsigned char tmp;
-#if defined(PC98_PW) || defined(PC98_PWLB)
-   int  i = 0;
-#endif
  
    UNLOCK_SYS_REGS;
    
@@ -3670,9 +3663,8 @@ s3GendacClockSelect(freq)
       break;
    default:
       {
-#if defined(PC98_PW) || defined(PC98_PWLB)
-      for (i=0;i<10;i++) {
-	(void) S3gendacSetClock(freq, 7);
+#if defined(PC98_PW)
+	(void) S3gendacSetClock(freq, 7);  /* PW805i can't use reg 2 */
 #else
 
 	 if (S3_TRIOxx_SERIES(s3ChipId)) {
@@ -3685,16 +3677,15 @@ s3GendacClockSelect(freq)
 	       (void) S3gendacSetClock(freq, 2); /* can't fail */
 #endif
 	    outb(vgaCRIndex, 0x42);/* select the clock */
-#if defined(PC98_PW) || defined(PC98_PWLB)
+#if defined(PC98_PW)
 	    tmp = inb(vgaCRReg) & 0xf0;
 	    outb(vgaCRReg, tmp | 0x07);
-	}
 #else
 	    tmp = inb(vgaCRReg) & 0xf0;
 	    outb(vgaCRReg, tmp | 0x02);
 #endif
 	    usleep(150000);
-#if !defined(PC98_PW) && !defined(PC98_PWLB)
+#if !defined(PC98_PW)
 	 }
 #endif
       }
@@ -3705,11 +3696,19 @@ s3GendacClockSelect(freq)
 
 
 static void
+#if NeedFunctionPrototypes
+s3ProgramTi3025Clock(
+int clk,
+unsigned char n,
+unsigned char m,
+unsigned char p)
+#else
 s3ProgramTi3025Clock(clk, n, m, p)
 int clk;
 unsigned char n;
 unsigned char m;
 unsigned char p;
+#endif
 {
    /*
     * Reset the clock data index

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.5 1995/01/28 15:50:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.6 1996/02/04 08:59:28 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -106,7 +106,6 @@ LinkSourceFile(cfbpntwin.c,LinkDirectory)
 LinkSourceFile(cfbpolypnt.c,LinkDirectory)
 LinkSourceFile(cfbrrop.c,LinkDirectory)
 LinkSourceFile(cfbrrop.h,LinkDirectory)
-LinkSourceFile(cfbscrinit.c,LinkDirectory)
 LinkSourceFile(cfbsetsp.c,LinkDirectory)
 LinkSourceFile(cfbsolid.c,LinkDirectory)
 LinkSourceFile(cfbigblt8.c,LinkDirectory)
@@ -141,7 +140,6 @@ ObjectFromSpecialSource(cfbbstore,../../../../../cfb/cfbbstore,/**/)
 ObjectFromSpecialSource(cfbimage,../../../../../cfb/cfbimage,/**/)
 ObjectFromSpecialSource(cfbpolypnt,../../../../../cfb/cfbpolypnt,/**/)
 ObjectFromSpecialSource(cfbrctstp8,../../../../../cfb/cfbrctstp8,/**/)
-ObjectFromSpecialSource(cfbscrinit,../../../../../cfb/cfbscrinit,/**/)
 ObjectFromSpecialSource(cfbwindow,../../../../../cfb/cfbwindow,/**/)
 
 ObjectFromSpecialSource(w32seg,w32line,-DPOLYSEGMENT)

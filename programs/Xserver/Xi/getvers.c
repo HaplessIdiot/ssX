@@ -1,4 +1,5 @@
 /* $XConsortium: getvers.c,v 1.8 94/04/17 20:33:13 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,10 +61,12 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "getvers.h"
+
 XExtensionVersion	AllExtensionVersions[128];
 
 /***********************************************************************
@@ -91,6 +94,7 @@ SProcXGetExtensionVersion(client)
  *
  */
 
+int
 ProcXGetExtensionVersion (client)
     register ClientPtr client;
     {
@@ -134,6 +138,7 @@ ProcXGetExtensionVersion (client)
  *
  */
 
+void
 SRepXGetExtensionVersion (client, size, rep)
     ClientPtr	client;
     int		size;

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/13 13:09:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.4 1996/02/18 03:44:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.5 1996/03/10 12:10:28 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -51,14 +51,22 @@ WSNAOBJS    = wsna/?*.o vgainit/?*.o
 WSNADONES   = wsna/DONE
 #endif
 
+#if XF98TGUIServer
+TGUISUBDIRS = trident
+TGUISRCS    = trident/?*.c vgainit/?*.c
+TGUIOBJS    = trident/?*.o vgainit/?*.o
+TGUIDONES   = trident/DONE
+#endif
+
 SUBDIRS = $(GANBWAPSUBDIRS) $(NEC480SUBDIRS) $(NKVNECSUBDIRS) \
-	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) vgainit drivers
-SRCS    = $(GANBWAPSRCS) $(NEC480SRCS) $(NKVNECSRCS) \
-	  $(WABSSRCS) $(WABEPSRCS) $(WSNASRCS)
-OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) \
-	  $(WABSOBJS) $(WABEPOBJS) $(WSNAOBJS)
-DONES   = $(GANBWAPDONES) $(NEC480DONES) $(NKVNECDONES) \
-	  $(WABSDONES) $(WABEPDONES) $(WSNADONES)
+	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS) \
+	  vgainit drivers
+SRCS    = $(GANBWAPSRCS) $(NEC480SRCS) $(NKVNECSRCS) $(WABSSRCS) \
+	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS)
+OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) $(WABSOBJS) \
+	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS)
+DONES   = $(GANBWAPDONES) $(NEC480DONES) $(NKVNECDONES) $(WABSDONES) \
+	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES)
 
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) -I$(XF98OSSRC) \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
@@ -91,6 +99,9 @@ NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers vgainit $(WABSDONES),?*.o)
 #if XF98WABEPServer
 NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers vgainit $(WABEPDONES),?*.o)
 #endif
+#if XF98TGUIServer
+NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers vgainit $(TGUIDONES),?*.o)
+#endif
 #else
 #if XF98GANBWAPServer
 NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers vgainit $(GANBWAPDONES),$(GANBWAPOBJS))
@@ -110,6 +121,9 @@ NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers vgainit $(WABSDONES),$(WABSOB
 #if XF98WABEPServer
 NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) drivers vgainit $(WABEPDONES),$(WABEPOBJS))
 #endif
+#if XF98TGUIServer
+NormalDepLibraryTarget(trident,$(TGUISUBDIRS) drivers vgainit $(TGUIDONES),$(TGUIOBJS))
+#endif
 #endif
 #if XF98GANBWAPServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
@@ -128,6 +142,9 @@ ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #endif
 #if XF98WABEPServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
+#endif
+#if XF98TGUIServer
+ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,tvga8900)
 #endif
 
 NormalLibraryObjectRule()

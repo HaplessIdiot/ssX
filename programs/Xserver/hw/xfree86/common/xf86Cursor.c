@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.9 1996/02/04 09:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.10 1996/02/18 03:42:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,6 +23,7 @@
  */
 /* $XConsortium: xf86Cursor.c /main/7 1996/01/28 07:57:03 kaleb $ */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xmd.h"
 #include "input.h"
@@ -40,20 +41,39 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 
-
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#ifdef XINPUT
+#include "xf86_Config.h"
+#include "XIproto.h"
+#include "xf86Xinput.h"
 #endif
 
 /* #include "atKeynames.h" -hv- dont need that include here */
 
 
-static Bool   xf86CursorOffScreen();
-static void   xf86CrossScreen();
-static void   xf86WrapCursor();
-#ifdef XINPUT
-extern void   xf86eqEnqueue();
+static Bool   xf86CursorOffScreen(
+#if NeedFunctionPrototypes
+     ScreenPtr   *pScreen,
+     int         *x,
+     int         *y
 #endif
+);
+static void   xf86CrossScreen(
+#if NeedFunctionPrototypes
+     ScreenPtr   pScreen,
+     Bool        entering
+#endif
+);
+static void   xf86WrapCursor(
+#if NeedFunctionPrototypes
+     ScreenPtr   pScreen,
+     int         x,
+     int	 y
+#endif
+);
 
 miPointerScreenFuncRec xf86PointerScreenFuncs = {
   xf86CursorOffScreen,

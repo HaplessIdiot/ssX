@@ -1,4 +1,5 @@
 /* $XConsortium: xcmisc.c,v 1.4 94/04/17 20:32:59 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +30,7 @@ from the X Consortium.
 
 */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"

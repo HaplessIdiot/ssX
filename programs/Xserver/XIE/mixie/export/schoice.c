@@ -1,4 +1,5 @@
 /* $XConsortium: schoice.c,v 1.4 94/04/17 20:34:25 rws Exp $ */
+/* $XFree86$ */
 /**** module schoice.c ****/
 /****************************************************************************
 
@@ -80,6 +81,7 @@ terms and conditions:
 /*
  *  Core X Includes
  */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
 /*

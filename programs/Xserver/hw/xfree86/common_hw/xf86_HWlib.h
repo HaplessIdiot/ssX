@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.18 1996/02/04 09:06:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.20 1996/03/19 21:09:20 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -57,6 +57,13 @@ extern void AltICD2061SetClock(
 #if NeedFunctionPrototypes
 	long,
 	int
+#endif
+);
+
+extern void Et4000AltICD2061SetClock(
+#if NeedFunctionPrototypes
+       long,
+       int
 #endif
 );
 

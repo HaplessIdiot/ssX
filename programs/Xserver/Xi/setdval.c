@@ -1,4 +1,5 @@
 /* $XConsortium: setdval.c,v 1.4 94/04/17 20:33:21 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -57,14 +58,15 @@ SOFTWARE.
 #define	 NEED_REPLIES
 #include "X.h"				/* for inputstr.h    */
 #include "Xproto.h"			/* Request macro     */
+#include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
-#include "inputstr.h"			/* DeviceIntPtr	     */
+#include "XIstubs.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "setdval.h"
 
 /***********************************************************************
  *
@@ -155,6 +157,7 @@ ProcXSetDeviceValuators(client)
  *
  */
 
+void
 SRepXSetDeviceValuators (client, size, rep)
     ClientPtr	client;
     int		size;

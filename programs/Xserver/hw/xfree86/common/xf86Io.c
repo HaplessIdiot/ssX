@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.18 1996/03/04 05:14:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.19 1996/03/10 12:04:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,7 +39,6 @@
 #include <X11/extensions/XKB.h>
 #include <X11/extensions/XKBstr.h>
 #include <X11/extensions/XKBsrv.h>
-extern Bool noXkbExtension;
 #endif
 
 extern KeybdCtrl defaultKeyboardControl;

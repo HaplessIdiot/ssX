@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.10 1996/03/10 12:04:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.11 1996/03/17 11:37:08 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -44,6 +44,16 @@
 
 #ifdef XINPUT
 #include "xf86Xinput.h"
+#endif
+
+#include "extnsionst.h"
+#include "extinit.h"
+
+#if NeedFunctionPrototypes
+static int xf86MouseProc(DeviceIntPtr device, int what);
+static void xf86MouseReadInput(LocalDevicePtr local);
+static LocalDevicePtr xf86MouseAllocate(void);
+static Bool xf86MouseConfig(LocalDevicePtr *array, int inx, int max, LexPtr val);
 #endif
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
@@ -448,10 +458,10 @@ xf86MouseProtocol(device, rBuf, nBytes)
 
 void
 xf86MouseCtrl(device, ctrl)
-     DevicePtr device;
+     DeviceIntPtr device;
      PtrCtrl   *ctrl;
 {
-    LocalDevicePtr	local = (LocalDevicePtr)((DeviceIntPtr)device)->public.devicePrivate;
+    LocalDevicePtr	local = (LocalDevicePtr)(device)->public.devicePrivate;
     MouseDevPtr		mouse = (MouseDevPtr) local->private;    
 
     ErrorF("xf86MouseCtrl mouse=0x%x\n", mouse);
@@ -469,13 +479,13 @@ xf86MouseCtrl(device, ctrl)
  ***************************************************************************
  */
 static Bool
-xf86MouseConfig(array, index, max, val)
-    LocalDevicePtr    *array;    
-    int               index;
+xf86MouseConfig(array, inx, max, val)
+    LocalDevicePtr    *array;
+    int               inx;
     int               max;
     LexPtr            val;
 {
-    LocalDevicePtr	dev = array[index];
+    LocalDevicePtr	dev = array[inx];
     MouseDevPtr		mouse = (MouseDevPtr)dev->private;
    
     ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);

@@ -1,4 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
+/* $XFree86$ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -74,6 +75,7 @@ terms and conditions:
 
 #define _XIEC_SESSION
 
+#define NEED_EVENTS
 #define NEED_REPLIES
 #include "X.h"			/* Needed for just about anything	*/
 #include "Xproto.h"		/* defines protocol-related stuff	*/

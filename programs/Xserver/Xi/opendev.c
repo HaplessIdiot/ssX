@@ -1,4 +1,5 @@
 /* $XConsortium: opendev.c,v 1.13 94/04/17 20:33:19 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -57,17 +58,18 @@ SOFTWARE.
 #define	 NEED_REPLIES
 #include "X.h"				/* for inputstr.h    */
 #include "Xproto.h"			/* Request macro     */
+#include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
-#include "inputstr.h"			/* DeviceIntPtr	     */
+#include "XIstubs.h"
 #include "windowstr.h"			/* window structure  */
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int 		BadDevice;
+#include "opendev.h"
+
 extern	CARD8		event_base [];
-extern	InputInfo	inputInfo;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
 
 /***********************************************************************
  *
@@ -103,7 +105,6 @@ ProcXOpenDevice(client)
     int status = Success;
     xOpenDeviceReply	rep;
     DeviceIntPtr dev;
-    void OpenInputDevice();
 
     REQUEST(xOpenDeviceReq);
     REQUEST_SIZE_MATCH(xOpenDeviceReq);
@@ -187,6 +188,7 @@ ProcXOpenDevice(client)
  *
  */
 
+void
 SRepXOpenDevice (client, size, rep)
     ClientPtr	client;
     int		size;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.8 1996/02/09 08:20:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.9 1996/02/18 03:42:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -332,6 +332,14 @@ extern unsigned short _port_tbl[];
 #define	port_convert(x)	_port_tbl[(unsigned short)x]
 #endif 
 
+#if defined(PC98_TGUI)
+#if NeedFunctionPrototypes
+extern void *mmioBase;
+#else
+extern unsigned char *mmioBase;
+#endif
+#endif
+
 static __inline__ void
 #if NeedFunctionPrototypes
 outb(
@@ -351,7 +359,7 @@ unsigned char val;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    *(volatile unsigned char *)((char *)mmioBase+(port)) = (unsigned char)(val);
 #else
    __asm__ __volatile__("outb %0,%1" : :"a" (val), "d" (port));
@@ -377,7 +385,7 @@ unsigned short val;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    *(volatile unsigned short *)((char *)mmioBase+(port)) = (unsigned short)(val);
 #else
    __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
@@ -403,7 +411,7 @@ unsigned int val;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    *(volatile unsigned int *)((char *)mmioBase+(port)) = (unsigned int)(val);
 #else
    __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
@@ -429,7 +437,7 @@ unsigned short port;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    ret =*(volatile unsigned char *)((char *)mmioBase+(port));
 #else
    __asm__ __volatile__("inb %1,%0" :
@@ -458,7 +466,7 @@ unsigned short port;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    ret =*(volatile unsigned short *)((char *)mmioBase+(port));
 #else
    __asm__ __volatile__("inw %1,%0" :
@@ -487,7 +495,7 @@ unsigned short port;
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)
    ret =*(volatile unsigned int *)((char *)mmioBase+(port));
 #else
    __asm__ __volatile__("inl %1,%0" :

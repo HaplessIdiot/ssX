@@ -4,24 +4,20 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.4 1996/02/09 08:21:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.5 1996/02/18 03:44:08 dawes Exp $ */
 
 #ifndef _PC98_VERSION_H
 #define _PC98_VERSION_H
 
-#define ORIGINAL_VER		"3.1.2"
-#define PC98_GENERAL_VER	" "
-#define PC98_GENERAL_PL		"13"
-#define PC98_GENERAL_NAME 	"XFree86-3.1.2 PC98 Server PL.13"
+#define PC98_VGA16_BOARDS "EGC(normal mode)"
 
-#define PC98_SVGA_PL	 "4"
-#define PC98_SVGA_BOARDS "WAB-S WAB-1000/2000 WAB-EP WSR-G/E WSN-A2F WAP-2000/4000 GA-98NB2/4\n\t\tPCNKV PCNKV2 PC9821Be/Bs/Bp/Xe PEGC" 
+#define PC98_VGA256_BOARDS "PEGC(packed pixel mode)"
 
-#define PC98_S3_PL	 "9" 
-#define PC98_S3_BOARDS	 "PW928 PW928G PW928II PW801 PW801+ PW801G PCSKB PCSKB2 \n\tNEC_WAB-A/B,Internal_928\n\t(Under testing: PW805i PCSKB4 PW928LB PW964LB NEC_Internal_864)"
+#define PC98_CIRRUS_BOARDS "WAB-S/1000/2000/EP WSR-G/E WSN-A2F WAP-2000/4000 GA-98NB2/4\n\tPCNKV/NKV2 NEC(542x,543x,544x)"
 
-#define PC98_VGA16_PL	  "0" 
-#define PC98_VGA16_BOARDS "EGC(normal mode)" 
+#define PC98_TGUI_BOARDS "(Under testing: NEC(9320/9660))"
+
+#define PC98_S3_BOARDS	 "PW928/928G/928II/801/801+/801G PCSKB/SKB2 \n\tWAB-A/B NEC(928)\n\t(Under testing: NEC(864) PCSKB4 PW805i/964/928LB/964LB)"
 
 #endif
 
@@ -40,6 +36,10 @@ PL.12	WAB-EP Server was added.
 PL.13	WSN-A2F Server was added.
 	Fix PCI-bus probe.
 	Debug code was deleted. (s3_pc98.c)
+PL.14	Trident 9320/9660 make rule was added.
+	PW805i initialize code was modified.	
+	PW964 initialize code was added.
+	XF98_NEC480 for PANIX(98) was available.
 
 =======================================================================
 

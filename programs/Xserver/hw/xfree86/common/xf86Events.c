@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.29 1996/03/10 12:04:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.30 1996/03/17 11:37:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,11 +42,12 @@
 #include "osdep.h"
 
 #ifdef XFreeXDGA
-#include "Xproto.h"
+#include "XIproto.h"
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 
+#include "exevents.h"
 
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
@@ -59,6 +60,7 @@
 #endif
 
 #include "mipointer.h"
+#include "dixevents.h"
 
 #ifdef XKB
 extern Bool noXkbExtension;
@@ -150,11 +152,34 @@ extern long EnabledDevices[];
 extern unsigned char xf86CodrvMap[];
 #endif
 
-static void xf86VTSwitch();
-#ifdef XFreeXDGA
-static void XF86DirectVideoMoveMouse();
-static void XF86DirectVideoKeyEvent();
+static void xf86VTSwitch(
+#if NeedFunctionPrototypes
+	void
 #endif
+	);
+#ifdef XFreeXDGA
+static void XF86DirectVideoMoveMouse(
+#if NeedFunctionPrototypes
+	int x,
+	int y,
+	CARD32 mtime
+#endif
+	);
+static void XF86DirectVideoKeyEvent(
+#if NeedFunctionPrototypes
+	xEvent *xE,
+	int keycode,
+	int etype
+#endif
+	);
+#endif
+static CARD32 buttonTimer(
+#if NeedFunctionPrototypes
+	OsTimerPtr timer,
+	CARD32 now,
+	pointer arg
+#endif
+     	);
 
 /*
  * Lets create a simple finite-state machine:
@@ -299,7 +324,9 @@ void
 ProcessInputEvents ()
 {
   int x, y;
+#ifdef INHERIT_LOCK_STATE
   static int generation = 0;
+#endif
 
 #ifdef AMOEBA
 #define MAXEVENTS	    32
@@ -917,7 +944,7 @@ xf86PostKbdEvent(key)
     }
   else 
     {
-#ifdef XFreeDGA
+#ifdef XFreeXDGA
       if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectKeyb) {
 	  XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
       } else
@@ -1050,7 +1077,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
       /*
        * emulate the third button by the other two
        */
-      if (id = stateTab[buttons + private->emulateState][0])
+      if ((id = stateTab[buttons + private->emulateState][0]) != 0)
 	{
 #ifdef XINPUT
           if (is_pointer) {
@@ -1072,7 +1099,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
 #endif 
 	}
 
-      if (id = stateTab[buttons + private->emulateState][1])
+      if ((id = stateTab[buttons + private->emulateState][1]) != 0)
 	{
 #ifdef XINPUT
 	  if (is_pointer) {
@@ -1389,10 +1416,6 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
 
 
 #ifdef XFreeXDGA
-extern void DeliverFocusedEvent();
-extern void DeliverDeviceEvents();
-extern WindowPtr GetSpriteWindow();
-
 static void
 XF86DirectVideoMoveMouse(x, y, mtime)
      int x;
@@ -1400,7 +1423,6 @@ XF86DirectVideoMoveMouse(x, y, mtime)
      CARD32 mtime;
 {
   xEvent xE;
-  Bool   deactivateGrab = FALSE;
 
   xE.u.u.type = MotionNotify;
   xE.u.keyButtonPointer.time = xf86Info.lastEventTime = mtime;
@@ -1417,8 +1439,6 @@ XF86DirectVideoMoveMouse(x, y, mtime)
   else
      DeliverDeviceEvents(GetSpriteWindow(), &xE, NullGrab, NullWindow,
 			   (xf86Info.pMouse), 1);
-
-
 }
 
 static void

@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/6 1996/01/12 12:17:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.8 1996/01/12 14:38:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.9 1996/02/04 09:13:37 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -65,7 +65,6 @@
 #ifdef XFreeXDGA 
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_

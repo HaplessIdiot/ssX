@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.32 1996/02/20 14:35:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.33 1996/02/22 05:13:25 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -70,7 +70,6 @@
 #ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
@@ -104,7 +103,6 @@ typedef struct {
 	unsigned char MiscExtFunc;	/* For Misc. Ext. Functions     */
 	unsigned char GraphEngReg;	/* For Graphic Engine Control   */
 	unsigned char PCIReg;		/* For PCI Bursts		*/
-	unsigned char VLBusReg;		/* For VL Bus stuff		*/
 	unsigned char AddColReg;	/* For Address/Colour Register  */
 	unsigned char CommandReg;	/* For DAC Command Register     */
 	unsigned char TRDReg;		/* For DAC Setup 		*/
@@ -175,7 +173,6 @@ int tridentHWCursorType = 0;
 static int tridentReprogrammedMCLK = 0;
 int tridentDisplayWidth;
 int tridentDACtype = -1;
-int tridentBusType = -1;
 Bool tridentUseLinear = FALSE;
 Bool tridentTGUIProgrammableClocks = FALSE;
 Bool tridentIsTGUI = FALSE;
@@ -193,6 +190,12 @@ static TGUI_Bpp_Clocks[] = {
 	80000, 40000, 0, 25175, 	/* 70ns DRAM */
 	108000, 45000,0, 25175,		/* 45ns DRAM */
 };
+
+#ifdef PC98_TGUI
+extern pointer mmioBase;
+extern Bool BoardInit(void);
+extern void crtswitch(short);
+#endif
 
 /*
  * TGUISetClock -- Set programmable clock for TGUI cards !
@@ -377,6 +380,11 @@ TVGA8900Probe()
   	unsigned char temp;
 	int i;
 
+#ifdef PC98_TGUI
+	OFLG_SET(OPTION_PC98TGUI, &TVGA8900.ChipOptionFlags);
+	if( BoardInit() == FALSE )
+		return(FALSE);
+#endif
 	/*
          * Set up I/O ports to be used by this card
 	 */
@@ -631,71 +639,6 @@ TVGA8900Probe()
 		break;
       	}
 	
-	/*
-	 * What type of card is it ?
-	 */
-	if (TVGAchipset >= TGUI9440AGi)
-	{
-		unsigned char temp;
-		char *CardType;
-
-		outb(vgaIOBase + 4, 0x2A);
-		temp = inb(vgaIOBase + 5);
-
-		switch (TVGAchipset)
-		{
-		case TGUI9440AGi:
-			switch (temp & 0x03)
-			{
-			  case 0:
-				CardType = "PCI";
-				tridentBusType = PCI;
-				break;
-			  case 1:
-				CardType = "Reserved/Unknown";
-				tridentBusType = Unknown;
-				break;
-			  case 2:
-				CardType = "VLBus";
-				tridentBusType = VLBus;
-				break;
-			  case 3:
-				CardType = "ISA Bus";
-				tridentBusType = ISA;
-				break;
-			}
-			break;
-		case TGUI9660XGi:
-		case TGUI9680:
-			switch (temp & 0x01)
-			{
-			  case 0:
-				CardType = "PCI";
-				tridentBusType = PCI;
-				break;
-			  case 1:
-				CardType = "VLBus";
-				tridentBusType = VLBus;
-				break;
-			}
-			break;
-		default:
-			CardType = "...Unable to determine. "
-				   "Probable Non-TGUI Card. "
-				   "Trying to continue....";
-			break;
-		}
-		if (tridentBusType != PCI)
-			ErrorF("%s Card Type is %s\n",XCONFIG_PROBED,CardType);
-
-#ifndef MONOVGA
-		TVGA8900.ChipUse2Banks = TRUE;	/* All TGUI's have 2 Banks */
-		TVGA8900.ChipSetRead = TGUISetRead;
-		TVGA8900.ChipSetWrite = TGUISetWrite;
-		TVGA8900.ChipSetReadWrite = TGUISetReadWrite;
-#endif
-	}
-
  	/* 
 	 * How much Video Ram have we got?
 	 */
@@ -883,7 +826,7 @@ TVGA8900Probe()
 
 		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
 #endif
-		if (tridentBusType == PCI)
+		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 			OFLG_SET(OPTION_PCI_BURST_ON, 
 				&TVGA8900.ChipOptionFlags);
 	}
@@ -1007,19 +950,16 @@ TVGA8900FbInit()
 
 	TVGA8900.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 
-	if (tridentBusType == PCI) /* PCI */
+	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
-		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
-		{
-			if (vgaPCIInfo->MemBase != 0) {
-			  TVGA8900.ChipLinearBase = vgaPCIInfo->MemBase;
-			  tridentUseLinear = TRUE;
-			} else {
-			  ErrorF("%s %s: Unable to locate valid FrameBuffer,"
-				" Linear Addressing Disabled\n",
-			  XCONFIG_PROBED, vga256InfoRec.name);
-			  tridentUseLinear = FALSE;
-			}
+		if (vgaPCIInfo->MemBase != 0) {
+		  TVGA8900.ChipLinearBase = vgaPCIInfo->MemBase;
+		  tridentUseLinear = TRUE;
+		} else {
+		  ErrorF("%s %s: Unable to locate valid FrameBuffer,"
+			" Linear Addressing Disabled\n",
+		  XCONFIG_PROBED, vga256InfoRec.name);
+		  tridentUseLinear = FALSE;
 		}
 	} 
 	else /* VLBus, ISA, EISA */
@@ -1141,9 +1081,15 @@ TVGA8900EnterLeave(enter)
 		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, temp & 0x7F);
+#ifdef PC98_TGUI
+		crtswitch(1);
+#endif
     	}
   	else
     	{
+#ifdef PC98_TGUI
+		crtswitch(0);
+#endif
       		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     	}
 }
@@ -1254,12 +1200,11 @@ TVGA8900Restore(restore)
 	outw(vgaIOBase + 4, ((restore->CRTHiOrd) << 8) | 0x27);
 	outw(vgaIOBase + 4, ((restore->AddColReg) << 8) | 0x29);
 
-#ifndef MONOVGA
-	outw(0x3CE, ((restore->MiscExtFunc) << 8) | 0x0F);
-#endif
-
 	if (tridentIsTGUI)
 	{
+#ifndef MONOVGA
+		outw(0x3CE, ((restore->MiscExtFunc) << 8) | 0x0F);
+#endif
 		/*
 	 	* Set the MCLK values....
 	 	*/
@@ -1287,7 +1232,6 @@ TVGA8900Restore(restore)
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
 #endif
 			outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
-			outw(vgaIOBase + 4, ((restore->VLBusReg) << 8) | 0x2A);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
 #endif
@@ -1390,13 +1334,11 @@ TVGA8900Save(save)
 	outb(vgaIOBase + 4, 0x27); save->CRTHiOrd = inb(vgaIOBase + 5);
 	outb(vgaIOBase + 4, 0x29); save->AddColReg = inb(vgaIOBase + 5);
 
-#ifndef MONOVGA
-	/* Enable Chain 4 Mode */
-	outb(0x3CE, 0x0F); save->MiscExtFunc = inb(0x3CF);
-#endif
-
 	if (tridentIsTGUI)
 	{
+#ifndef MONOVGA
+		outb(0x3CE, 0x0F); save->MiscExtFunc = inb(0x3CF);
+#endif
 		/*
 		 * Save the MCLK values....
 	 	 */
@@ -1437,8 +1379,6 @@ TVGA8900Save(save)
 #endif
 			outb(vgaIOBase + 4, 0x39);
 			save->PCIReg = inb(vgaIOBase + 5);
-			outb(vgaIOBase + 4, 0x2A);
-			save->VLBusReg = inb(vgaIOBase + 5);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
 		}
@@ -1583,12 +1523,13 @@ TVGA8900Init(mode)
  			(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
  			0x08;
 #ifndef MONOVGA
-	outb(0x3CE, 0x0F);
-	new->MiscExtFunc = inb(0x3CF) | 0x07;
+	if (tridentIsTGUI)
+	{
+		outb(0x3CE, 0x0F);
+		new->MiscExtFunc = inb(0x3CF) | 0x02;
+	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
-#endif
 
-#ifndef MONOVGA
 	if (tridentHWCursorType)
 	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
 		new->std.Attribute[17] = 0x00; /* Black overscan */
@@ -1627,7 +1568,7 @@ TVGA8900Init(mode)
 	{
 		if (TVGAchipset >= TGUI9660XGi)
 			new->AddColReg |= (offset & 0x200) >> 4;
-		if (tridentBusType == PCI)
+		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 		{
 			outb(vgaIOBase + 4, 0x39);
 			if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
@@ -1637,9 +1578,6 @@ TVGA8900Init(mode)
 				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
 		}
 		outb(vgaIOBase + 4, 0x2A);
-		new->VLBusReg = inb(vgaIOBase + 5);
-		if (tridentBusType != ISA)
-			new->VLBusReg |= 0x40;	/* Enable 32bit transfer */
 #ifndef MONOVGA
 #if 0
 		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))

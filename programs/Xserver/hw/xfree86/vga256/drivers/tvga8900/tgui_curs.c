@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.6 1996/02/20 14:35:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.7 1996/03/05 05:42:46 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -127,7 +127,9 @@ static unsigned char byte_reversed[256] = {
 	0x1f,0x9f,0x5f,0xdf,0x3f,0xbf,0x7f,0xff,
 };
 
-
+#ifdef PC98_TGUI
+extern pointer mmioBase;
+#endif
 
 /*
  * This is a high-level init function, called once; it passes a local
@@ -293,7 +295,7 @@ static Bool TridentUnrealizeCursor(pScr, pCurs)
  * module.
  */
 
-extern void TGUISetWrite();
+extern void TVGA8900SetWrite();
 
 static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 	ScreenPtr pScr;
@@ -312,7 +314,7 @@ static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 			cursor_image, 1024);
 	else {
 		vgaSaveBank();
-		TGUISetWrite(TridentCursorAddress >> 16);
+		TVGA8900SetWrite(TridentCursorAddress >> 16);
 		memcpy((unsigned char *)vgaBase + (TridentCursorAddress & 0xFFFF),
 			cursor_image, 1024);
 		vgaRestoreBank();

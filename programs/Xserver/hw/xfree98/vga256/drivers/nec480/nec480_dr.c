@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.0 1995/12/17 10:06:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.1 1996/02/04 09:17:07 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -28,8 +28,6 @@
 #include <sys/types.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <machine/endian.h>	/* To get Byte Order */
-
 
 /*
  * Driver data structures.
@@ -167,6 +165,8 @@ NEC480Ident(int n)
 static Bool
 NEC480Probe()
 {
+	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
+	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.
@@ -247,6 +247,8 @@ NEC480EnterLeave(Bool enter)
 
 	if(flag == 0)
 	{
+		if (enter == ENTER)
+			xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 		/* Save current graphic mode, 1: Extended graphic mode */
 		outb(0x9a0, 0x0a);
 		graph_mode = inb(0x9a0) & 0x01;
@@ -260,6 +262,8 @@ NEC480EnterLeave(Bool enter)
 
 	if(enter == ENTER)
 	{
+		if (flag != 0)
+			xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 		while (!(inb(0x60) & 0x20)) ;	/* V-SYNC wait */
 		outb(0x62, 0xc);		/* text off */
 		outb(0xA2, 0xc);		/* graphics off */
@@ -294,6 +298,7 @@ NEC480EnterLeave(Bool enter)
 		outb(0xA2, 0xc);		/* graphics off */
 		outb(0x62, 0xd);		/* text on */
 		*ppmodep = ppmode_sv;
+		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 	}
 }
 
@@ -351,42 +356,6 @@ NEC480Init(DisplayModePtr mode)
 	return (TRUE);
 }
 
-extern unsigned readseg;	/* Declared in vga256/vga/vgaBank.s */
-
-void
-NEC480SetRead(unsigned long regs)
-{
-	*(vramwindow_r) = (unsigned short)readseg;
-}
-
-void
-NEC480SetWrite(unsigned long regs)
-{
-	register int w = (int)writeseg;
-	*(vramwindow_w) = (unsigned short)w;
-}
-
-void
-NEC480SetReadWrite(unsigned long regs)
-{
-	/* XXX:
-	* Gcc 2.4.5 generates the code using a non protected register %ecx,
-	* however, a caller expects %ecx keeps its value.
-	* In this case, there is NO fault in gcc 2.4.5,
-	* and caller's assumption is mistaken! Ghaa...
-	*
-	*  register int w = (int)writeseg;
-	* *(vramwindow_r) = (unsigned short)w;
-	* *(vramwindow_w) = (unsigned short)w;
-	*/
-
-	asm("movl	_writeseg, %eax");
-	asm("movl	_vramwindow_r,%edx");
-	asm("movw	%ax, (%edx)");
-	asm("movl	_vramwindow_w,%edx");
-	asm("movw	%ax, (%edx)");
-}
-
 /*
  * NEC480ValidMode --
  *
@@ -400,7 +369,6 @@ NEC480ValidMode(DisplayModePtr mode)
 union gdc_sync_parm
 {
 	unsigned char param[8];
-#if BYTE_ORDER == LITTLE_ENDIAN
 	struct {
 		unsigned int	_S_S	:1,
 				_S_G	:1,
@@ -430,10 +398,6 @@ union gdc_sync_parm
 #define _S_VFP	_s_t._S_VFP
 #define _S_LF	_s_t._S_LF
 #define _S_VBP	_s_t._S_VBP
-#endif
-#if BYTE_ORDER == BIG_ENDIAN
-#error "Not supported this byte order"
-#endif
 };
 
 #define _GDC_CR		(80 - 2)

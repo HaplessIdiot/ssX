@@ -1,8 +1,8 @@
 /* $XConsortium: queryst.c,v 1.13 94/04/17 20:33:19 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/queryst.c,v 3.0 1995/07/07 15:37:02 dawes Exp $ */
 /*
 
-Copyright (c) 1998  X Consortium
+Copyright (c) 1988  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -44,11 +44,11 @@ from the X Consortium.
 #include "windowstr.h"			/* window structure  */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
 
-extern	int 		IReqCode;
-extern	int 		BadDevice;
-extern	void		(* ReplySwapVector[256]) ();
-DeviceIntPtr		LookupDeviceIntRec();
+#include "queryst.h"
 
 /***********************************************************************
  *
@@ -198,6 +198,7 @@ ProcXQueryDeviceState(client)
  *
  */
 
+void
 SRepXQueryDeviceState (client, size, rep)
     ClientPtr	client;
     int		size;

@@ -1,4 +1,5 @@
 /* $XConsortium: iphoto.c,v 1.5 94/04/17 20:33:36 rws Exp $ */
+/* $XFree86$ */
 /**** module iphoto.c ****/
 /******************************************************************************
 
@@ -81,6 +82,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*

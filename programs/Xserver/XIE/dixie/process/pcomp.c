@@ -1,4 +1,5 @@
 /* $XConsortium: pcomp.c,v 1.3 94/04/17 20:33:43 rws Exp $ */
+/* $XFree86$ */
 /**** module pcomp.c ****/
 /******************************************************************************
 
@@ -81,6 +82,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*

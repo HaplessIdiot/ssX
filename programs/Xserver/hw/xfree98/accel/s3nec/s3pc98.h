@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.h,v 3.0 1995/12/17 10:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.h,v 3.1 1996/02/04 09:15:57 dawes Exp $ */
 
 
 
@@ -16,6 +16,7 @@
 #define	NECWAB864_I	0x5D /* Internal           e.g. Xn /U8W */
 #define	PCSKB4	0x60
 #define	PWLB	0x70
+#define	PW968	0x80
 
 #define	PC98_NEC_INDX1	0xfa2	/* PC98 INDEX1 */
 #define	PC98_NEC_DATA1	0xfa3	/* PC98 DATA1  */                 

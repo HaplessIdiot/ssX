@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.2 1996/02/04 09:15:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/s3pc98.c,v 3.3 1996/02/18 03:44:01 dawes Exp $ */
 
 
 
@@ -22,26 +22,27 @@ extern int xf86bpp;
 #include "s3pc98.h"
 
 #define MasterClock		52000000l	/* 52MHz */	 
-#define MasterClock805i         65000000l       /* 65MHz */
 #undef chipID
 #undef _port_tbl
-short		chipID = 0;
+short		chipID = S3_UNKNOWN;
 unsigned short	_port_tbl[0x3e0];
 unsigned int	necIndex,necData;
 pointer		mmioBase = NULL;
 int		pc98BoardType;
 static pointer	PWLBctrlPort = NULL;
 
+/* MCLK = 62.56 MHz   m = 0x7f, n = 0x2d */
 static unsigned char sdac_data[ 30 ] = {
 	0x28, 0x61, 0x3d, 0x62, 0x28, 0x22, 0x77, 0x4a,	0x79, 0x49,
 	0x62, 0x46, 0x6b, 0x2a, 0x52, 0x26, 0x52, 0x26, 0x52, 0x26,
 	0x7f, 0x2d, 0x7f, 0x2d,	0x7f, 0x2d, 0x7f, 0x2d, 0x22, 0x22
 };
 
-static unsigned char sdac_data32[ 30 ] = {
-	0x28, 0x61, 0x3d, 0x62, 0x28, 0x41, 0x77, 0x4a,	0x79, 0x49,
-	0x62, 0x46, 0x6b, 0x2a, 0x52, 0x26, 0x52, 0x26, 0x52, 0x26,
-	0x7f, 0x2d, 0x7f, 0x2d,	0x7f, 0x2d, 0x7f, 0x2d, 0x22, 0x22
+/* MCLK = 65.63 MHz   m = 0x35, n = 0x41 */
+static unsigned char sdac_data805[ 30 ] = {
+	0x28, 0x61, 0x3d, 0x62, 0x2a, 0x43, 0x77, 0x4a,	0x79, 0x49,
+	0x62, 0x46, 0x6b, 0x2a, 0x50, 0x42, 0x50, 0x42, 0x50, 0x42,
+	0x35, 0x41, 0x35, 0x41,	0x35, 0x41, 0x35, 0x41, 0x27, 0x27
 };
 
 static unsigned char seqreg_data[ 0x05 ] = {
@@ -68,6 +69,23 @@ static unsigned char vgareg_data[ 0x70 ] = {
 	0xff, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, /* 60 - 67 */
 	0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* 68 - 6F */
 };
+
+static unsigned char vgareg_data805[ 0x70 ] = {
+	0x98, 0x7F, 0x7F, 0x99, 0x80, 0x19, 0x9D, 0x1F, /* 00 - 07 */
+	0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, /* 08 - 0F */
+	0x80, 0x2B, 0x7F, 0x80, 0x00, 0x80, 0x81, 0xE3, /* 10 - 17 */
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* 18 - 1F */
+	0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 20 - 27 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 28 - 2F */
+	0xA8, 0x8D, 0x00, 0x20, 0x10, 0x0C, 0x83, 0x0F, /* 30 - 37 */
+	0x4B, 0xAD, 0xB5, 0x8C, 0x4C, 0x4C, 0x4C, 0x4C, /* 38 - 3F */
+	0x01, 0xF9, 0x27, 0x00, 0x00, 0x01, 0x01, 0x83, /* 40 - 47 */
+	0x81, 0x8E, 0x00, 0xC0, 0xC3, 0x00, 0x00, 0x00, /* 48 - 4F */
+	0x00, 0x00, 0x00, 0x20, 0xF8, 0x40, 0x00, 0x00, /* 50 - 57 */
+	0x00, 0x00, 0x0A, 0x00, 0x07, 0x00, 0x40, 0x00, /* 58 - 5F */
+	0xFF, 0x81, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, /* 60 - 67 */
+	0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F, 0x0F  /* 68 - 6F */
+};
 	
 void crtswitch(short);
 int  pwboardinit(void);
@@ -86,12 +104,11 @@ static void _hkbportconvert(void);
 static void _necportconvert(void);
 static void _skbportconvert(void);
 static void _skb4portconvert(void);
-static void pw805iSetClock(unsigned char PW_Switch);
 static int  PWBoardCheck(unsigned char PW_Switch);
 static int  PWLBBoardCheck(unsigned char PW_Switch);
-static void SetMasterClock( void );
-static void GetMasterClock( void );
-static void SetRegisters( void );
+static void SetSDACClock( unsigned char *sdac );
+static void GetSDACClock( void );
+static void SetRegisters( unsigned char *seqreg,unsigned char *grctrl,unsigned char *vgareg);
 static void GetRegisters( void );
 
 static void Wait0(void)
@@ -117,6 +134,7 @@ void crtswitch(short crtmod)
 	switch(pc98BoardType){
 	case PW:
 	case PW805I:
+	case PW968:
 		if(crtmod)
 			tmp = rdinx(vgaCRIndex, 0x41) | 1;
 		else
@@ -194,6 +212,7 @@ Bool BoardInit()
       			return(FALSE);
    		}
 		break;
+
 	case PW805I:
 		ErrorF("   PC98: Changing PW805i mode\n");
 		if(pw805iboardinit()) {
@@ -201,7 +220,17 @@ Bool BoardInit()
       			xf86DisableIOPorts(s3InfoRec.scrnIndex);
       			return(FALSE);
    		}
+		pw805iboardinit(); /* Initializing PW805i 2 times */
 		break;
+
+	case PW968:
+		if(pw968boardinit()) {
+      			ErrorF("PW968: chipset unknown\n");
+      			xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      			return(FALSE);
+   		}
+		break;
+
 	case PWLB:
 		ErrorF("   PC98: Changing PW localbus mode\n");
 		if(pwlbboardinit()) {
@@ -236,7 +265,7 @@ Bool BoardInit()
 
 static int PWBoardCheck(unsigned char PW_Switch)
 {
-	unsigned char tmp;
+	unsigned int tmp;
 
 	_outb(0x0dc|PW_PORT, PW_Switch);
 	Wait0();
@@ -254,10 +283,10 @@ static int PWBoardCheck(unsigned char PW_Switch)
 	tmp = rdinx(vgaCRIndex, 0x30);
 	switch(tmp & 0xf0) {
 		case 0x80:
-			chipID = 924;
+			chipID = S3_924;
 			return -1;	
 		case 0x90:
-			chipID = 928;
+			chipID = S3_928;
 			_outb(0x0da|PW_PORT, 3);
 			if(_inb(0x0de|PW_PORT) == 1) {
 				_port_tbl[0x3c7] = 0x0d6|PW_PORT;
@@ -268,15 +297,29 @@ static int PWBoardCheck(unsigned char PW_Switch)
 			}
 			break;
 		case 0xa0:
-			chipID = 801;
+			chipID = S3_801;
 			_port_tbl[0x3c7] = 0x0d6|PW_PORT;
 			_port_tbl[0x3c9] = 0x0d8|PW_PORT;
 			if(tmp >= 0xa8){
-				chipID = 805;
+				chipID = S3_805;
+			}
+			break;
+		case 0xe0:
+		case 0xf0:
+			outb(vgaCRIndex, 0x2e);
+			tmp |= (inb(vgaCRReg) << 8);
+			ErrorF("PC98 : chipID = %X \n",tmp);
+			if((tmp & 0xfff0) == 0xf0e0 ) {
+			  chipID = S3_968;
+			  _port_tbl[0x3c7] = 0x0d6|PW_PORT;
+			  _port_tbl[0x3c9] = 0x0d8|PW_PORT;
+			}else{
+			  chipID = S3_UNKNOWN;
+			  return -1;
 			}
 			break;
 		default:
-			chipID = 0;
+			chipID = S3_UNKNOWN;
 			return -1;
 	}
 	return 0;
@@ -287,7 +330,7 @@ int pwboardinit()
 	unsigned char comm;
 	unsigned char PW_Switch = 0xf0; /* 0xf0 | Quicksaver=4 */
 	vgaCRIndex = 0x3d4;
-	if(chipID == 0) {
+	if(chipID == S3_UNKNOWN) {
 		_pwportconvert();
 		_outb(0x0dc|PW_PORT, 0);
 		AltICD2061SetClock(MasterClock, 1);
@@ -308,7 +351,7 @@ int pwboardinit()
 			_outb(0x0da|PW_PORT, 4);
 			_outb(0x0de|PW_PORT, PW_WinAdd | 1);		    
 		} else
-		    if(chipID == 928) {
+		    if(chipID == S3_928) {
 		    	_outb(0xfa2, 1);
 		      	_outb(0xfa3, PW_WinAdd);		      
 		    }
@@ -318,7 +361,7 @@ int pwboardinit()
 	_outb(0x0dc|PW_PORT, PW_Switch);
 	usleep(150000);
 
-      switch (xf86bpp) { /* Following part is from s3init.c .  Why need? */
+      switch (xf86bpp) { /* Following part was got from s3init.c. Why need? */
       case 8: 
          comm = 0;  /* repack mode 0, color mode 0 */
          break;
@@ -351,32 +394,33 @@ int pw805iboardinit()
 {
 	unsigned char PW_Switch = 0xf0; /* 0xf0 | Quicksaver=4 */
 	vgaCRIndex = 0x3d4;
-	if(chipID == 0) {
 		_pwportconvert();
-		pw805iSetClock(PW_Switch);
+		_port_tbl[0x3c7] = 0x0d6|PW_PORT;
+		_port_tbl[0x3c9] = 0x0d8|PW_PORT;
+		SetSDACClock(sdac_data805);
+/*		GetRegisters(); */
+	        SetRegisters(seqreg_data,grctrl_data,vgareg_data805);
 		usleep(150000);
 		if(PWBoardCheck(PW_Switch)) {
 			crtswitch(0);
 			return -1;
 		}
-	}
 	if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &s3InfoRec.options)) {
 		unsigned char tmp = PW_WinAdd;
 		if(tmp >= 0xf0)
 			_outb(0x43b, _inb(0x43b) & 0xfd);
 		}
  	if(!OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
-		_outb(0x0da|PW_PORT, 3);
-		if(_inb(0x0de|PW_PORT) == 1) {
 			_outb(0x0da|PW_PORT, 4);
 			_outb(0x0de|PW_PORT, PW_WinAdd | 1);		    
-		}
-		PW_Switch |= 8;
-	} 
+		PW_Switch |= 0x88;
+	}
 	wrinx(vgaCRIndex, 0x41, PW_Switch);
 	_outb(0x0dc|PW_PORT, PW_Switch);
 	usleep(150000);
 }
+
+
 
 static int PWLBBoardCheck(unsigned char PW_Switch)
 {
@@ -398,23 +442,14 @@ static int PWLBBoardCheck(unsigned char PW_Switch)
 	wrinx(vgaCRIndex, 0x40, 0x95);
 	tmp = rdinx(vgaCRIndex, 0x30);
 	switch(tmp & 0xf0) {
-		case 0x80:
-			chipID = 924;
-			return -1;	
 		case 0x90:
-			chipID = 928;
-			break;
-		case 0xa0:
-			chipID = 801;
-			if(tmp >= 0xa8){
-				chipID = 805;
-			}
+			chipID = S3_928;
 			break;
 		case 0xD0:
-			chipID = 964;
+			chipID = S3_964;
 			break;
 		default:
-			chipID = 0;
+			chipID = S3_UNKNOWN;
 			return -1;
 	}
 	return 0;
@@ -430,7 +465,7 @@ int pwlbboardinit()
 	PWLBctrlPort = xf86MapVidMem(0, LINEAR_REGION,
 			(pointer)((PWLB_WinAdd << 16) + 0xC00000), 1);
 	vgaCRIndex = 0x3d4;
-	if(chipID == 0) {
+	if(chipID == S3_UNKNOWN) {
 		PWLBctrl(0);
 		AltICD2061SetClock(MasterClock, 1);
 		usleep(150000);
@@ -446,7 +481,7 @@ int pwlbboardinit()
 	PWLBctrl(PW_Switch);
 	usleep(150000);
 
-	switch (xf86bpp) { /* Following part is from s3init.c .  Why need? */
+	switch (xf86bpp) { /* Following part was got from s3init.c. Why need? */
 	case 8: 
 		comm = 0;  /* repack mode 0, color mode 0 */
 		break;
@@ -479,6 +514,38 @@ void PWLBctrl(unsigned char a)
 {
 	*(volatile unsigned char *)PWLBctrlPort = a;
 }
+
+int pw968boardinit()
+{
+	unsigned char PW_Switch = 0xf0; /* 0xf0 | Quicksaver=4 */
+	vgaCRIndex = 0x3d4;
+	if(chipID == S3_UNKNOWN) {
+		_pwportconvert();
+		_outb(0x0dc|PW_PORT, 0);
+
+		usleep(150000);
+		if(PWBoardCheck(PW_Switch)) {
+			crtswitch(0);
+			return -1;
+		}
+	}
+	if(OFLG_ISSET(OPTION_EPSON_MEM_WIN, &s3InfoRec.options)) {
+		unsigned char tmp = PW_WinAdd;
+		if(tmp >= 0xf0)
+			_outb(0x43b, _inb(0x43b) & 0xfd);
+		}
+ 	if(!OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
+		_outb(0x0da|PW_PORT, 4);
+		_outb(0x0de|PW_PORT, PW_WinAdd | 1);		    
+		PW_Switch |= 8;
+	} 
+	wrinx(vgaCRIndex, 0x41, PW_Switch);
+	_outb(0x0dc|PW_PORT, PW_Switch);
+	usleep(150000);
+
+	return 0;
+}
+
 
 void skbboardinit()
 {
@@ -588,108 +655,6 @@ void skb4boardinit()
 }
 
 
-void pw805iSetClock(unsigned char PW_Switch)
-{
-      int     vgaCRIndex=0x3d4;
-      int     vgaCRReg  =0x3d5;
-      int     tmp,tmp1;
-
-      _outb(0x0dc|PW_PORT,PW_Switch);
-      unlocks3regs();
-      outb(vgaCRIndex,0x30);
-      tmp1=inb(vgaCRReg);
-
-      AltICD2061SetClock(MasterClock, 1);
-
-      _outb(0x0dc|PW_PORT, PW_Switch);
-      Wait0();
-              outb(ROM_PAGE_SEL, 0x1e);
-      Wait0();
-              _outb(0x0d2|PW_PORT, 0x01);
-      Wait0();
-              outb(ROM_PAGE_SEL, 0x0e);
-      Wait0();
-              outb(ADVFUNC_CNTL, 0x00);
-      Wait0();
-              outb(0x3c2, 0xa3);
-      Wait0();
-      unlocks3regs();
-      outb(vgaCRIndex,0x30);
-      tmp=inb(vgaCRReg);
-
-      if(tmp == 0xa8) {
-              AltICD2061SetClock(MasterClock805i, 1);
-
-              _outb(0x0dc|PW_PORT, PW_Switch);
-                      outb(ROM_PAGE_SEL, 0x1e);
-              Wait0();
-                      _outb(0x0d2|PW_PORT, 0x01);
-              Wait0();
-                      outb(ROM_PAGE_SEL, 0x0e);
-              Wait0();
-                      outb(ADVFUNC_CNTL, 0x00);
-              Wait0();
-                      outb(0x3c2, 0xa3);
-              Wait0();
-              unlocks3regs();
-              outb(vgaCRIndex,0x30);
-              tmp=inb(vgaCRReg);
-
-              if (tmp1 == 0xff) {
-                      outb(vgaCRIndex,0x52);
-                      outb(vgaCRReg,0x54);
-                      outb(vgaCRIndex,0x5b);
-                      outb(vgaCRReg,0x25);
-                      _outb(0x0da|PW_PORT,0x03);
-                      tmp=_inb(0x0de|PW_PORT);
-                      _outb(0x10d4|PW_PORT,01);
-                      tmp=_inb(0x10d5|PW_PORT)|0x21;
-                      _outb(0x10d5|PW_PORT,tmp);
-                      tmp=_inb(0x10d8|PW_PORT);
-                      tmp=0x00;
-                      while(tmp != 0x70) {
-                              tmp=_inb(0x10d6|PW_PORT);
-                      }
-                      tmp=_inb(0x10d8|PW_PORT);
-                      _outb(0x10d6|PW_PORT,0xff);
-                      tmp=_inb(0x10d6|PW_PORT);
-                      tmp=_inb(0x10d6|PW_PORT);
-                      tmp=_inb(0x10d6|PW_PORT);
-                      tmp=_inb(0x10d6|PW_PORT);
-                      _outb(0x10d6|PW_PORT,0x00);
-                      tmp=_inb(0x10d8|PW_PORT);
-                      _outb(0x10d6|PW_PORT,0xff);
-                      outb(vgaCRIndex,0x55);
-                      tmp=inb(vgaCRReg)|0x01;
-                      outb(vgaCRReg,tmp);
-                      _outb(0x10d6|PW_PORT,0x0a);
-                      _outb(0x0d8|PW_PORT,0x30);
-                      _outb(0x0d8|PW_PORT,0x09);
-                      outb(vgaCRIndex,0x55);
-                      tmp=inb(vgaCRReg)&0xfc;
-                      outb(vgaCRReg,tmp);
-                      outw(vgaCRIndex,0x8017);
-                      outw(vgaCRIndex,0x4838);
-                      outw(vgaCRIndex,0xa539);
-                      outb(vgaCRIndex,0x41);
-                      tmp=inb(vgaCRReg)|0x01;
-                      _outb(0x10d4|PW_PORT,0x01);
-                      tmp=_inb(0x10d5|PW_PORT)|0x20; 
-                      _outb(0x10d5|PW_PORT,tmp);
-              }
-              outb(vgaCRIndex,0x55);
-              tmp=inb(vgaCRReg)|0x01;
-              outb(vgaCRReg,tmp);
-              _outb(0x10d6|PW_PORT,0x0a);
-              _outb(0x0d8|PW_PORT,0x30);
-              _outb(0x0d8|PW_PORT,0x09);
-              outb(vgaCRIndex,0x55);
-              tmp=inb(vgaCRReg)|0xfc;
-              outb(vgaCRReg,tmp);
-      }
-}
-
-
 Bool necboardinit()
 {
 	unsigned char tmp;
@@ -769,17 +734,17 @@ Bool necboardinit()
 /*	GetRegisters(); */
 	if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)){
 		if(!OFLG_ISSET(OPTION_NOINIT, &s3InfoRec.options)){
-/*			GetMasterClock(); */
-			SetMasterClock();
-/* 			GetMasterClock(); */
-			SetRegisters();
+/*			GetSDACClock(); */
+			SetSDACClock(sdac_data);
+/* 			GetSDACClock(); */
+		        SetRegisters(seqreg_data,grctrl_data,vgareg_data);
 /*			GetRegisters(); */
 		} 
 	}
 	return (TRUE);	
 }
 
-static void SetMasterClock( void )
+static void SetSDACClock( unsigned char *sdac )
 {
 	int i;
 	unsigned char saveCR55;
@@ -788,14 +753,18 @@ static void SetMasterClock( void )
 	saveCR55 = inb(vgaCRReg);
 	outb(vgaCRReg, saveCR55 | 1);
 
-	outb(0x3C8, 0); /* Write MCLK & etc */
+	if(pc98BoardType == PW805I)
+	  outb(0x3C7, 0); /* Write MCLK & etc for PW805i. Can't use 0x3C8 */
+	else
+	  outb(0x3C8, 0); /* Write MCLK & etc */
+
 	for( i=0; i<30; i++){
-		outb( 0x3c9, sdac_data[ i ] );
+		outb( 0x3c9, sdac[ i ] );
 	}
 	return;
 }
 
-static void GetMasterClock( void )
+static void GetSDACClock( void )
 {
 	int m, n, n1, n2, mclk,i;
 	unsigned char saveCR55;
@@ -823,14 +792,14 @@ static void GetMasterClock( void )
 	return;
 }
 
-static void SetRegisters( void )
+static void SetRegisters( unsigned char *seqreg,unsigned char *grctrl, unsigned char *vgareg)
 {
 	int i;
 
 	/* Sequence Registers */
 	for( i=0; i<=4; i++ ){
 		outb( 0x3c4, i );
-		outb( 0x3c5, seqreg_data[ i ] );
+		outb( 0x3c5, seqreg[ i ] );
 		_inb( 0x5f );
 		_inb( 0x5f );
 	}
@@ -838,7 +807,7 @@ static void SetRegisters( void )
 	/* Set Graphic Control Data */
 	for( i=0; i<=8; i++ ){
 		outb( 0x3ce, i );
-		outb( 0x3cf, grctrl_data[ i ] );
+		outb( 0x3cf, grctrl[ i ] );
 		_inb( 0x5f );
 		_inb( 0x5f );
 	}
@@ -846,7 +815,7 @@ static void SetRegisters( void )
 	/* Set VGA Registers */
 	for( i=0; i<=0x6f; i++ ){
 		outb( vgaCRIndex, i );
-		outb( vgaCRReg, vgareg_data[ i ] );
+		outb( vgaCRReg, vgareg[ i ] );
 		_outb( 0x5f, 0 );
 		_outb( 0x5f, 0 );
 	} 

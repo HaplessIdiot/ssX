@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.5 1996/02/18 03:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.6 1996/03/10 12:04:37 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -33,6 +33,7 @@
 #include "inputstr.h"
 #include "XI.h"
 #include "XIproto.h"
+#include "XIstubs.h"
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
@@ -138,77 +139,6 @@ void
 InitExtInput(
 #ifdef NeedFunctionPrototypes
 		void
-#endif
-);
-
-void
-OpenInputDevice (
-#ifdef NeedFunctionPrototypes
-		DeviceIntPtr    /* dev */,
-		ClientPtr       /* client */,
-		int *           /* status */
-#endif
-);
-
-int
-ChangeKeyboardDevice (
-#ifdef NeedFunctionPrototypes
-		DeviceIntPtr	/* old_dev */,
-		DeviceIntPtr	/* new_dev */
-#endif
-);
-
-int
-ChangePointerDevice (
-#ifdef NeedFunctionPrototypes
-		DeviceIntPtr	/* old_dev */,
-		DeviceIntPtr	/* new_dev */,
-		unsigned char	/* x */,
-		unsigned char	/* y */
-#endif
-);
-
-void
-CloseInputDevice (
-#ifdef NeedFunctionPrototypes
-		DeviceIntPtr    /* d */,
-		ClientPtr       /* client */
-#endif
-);
-
-void
-AddOtherInputDevices (
-#ifdef NeedFunctionPrototypes
-		void
-#endif
-);
-
-int
-SetDeviceMode (
-#ifdef NeedFunctionPrototypes
-		ClientPtr       /* client */,
-		DeviceIntPtr    /* dev */,
-		int             /* mode */
-#endif
-);
-
-int
-SetDeviceValuators (
-#ifdef NeedFunctionPrototypes
-		ClientPtr       /* client */,
-		DeviceIntPtr    /* dev */,
-		int *           /* valuators */,
-		int             /* first_valuator */,
-		int             /* num_valuators */
-#endif
-);
-
-int
-ChangeDeviceControl (
-#ifdef NeedFunctionPrototypes
-		ClientPtr       /* client */,
-		DeviceIntPtr    /* dev */,
-		xDeviceCtl *    /* control */
 #endif
 );
 

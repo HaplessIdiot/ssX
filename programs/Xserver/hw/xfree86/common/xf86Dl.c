@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.2 1996/02/18 03:42:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.3 1996/03/11 12:37:19 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -32,6 +32,7 @@
 #include "xf86Version.h"
 #include "xf86.h"
 #include "xf86_Config.h"
+#include "xf86Priv.h"
 
 #ifdef CSRG_BASED
 #define PREPEND_UNDERSCORE
@@ -115,8 +116,6 @@ xf86LoadModule(const char *	file,
 		       "version%s\n", file, XF86_VERSION);
 	    }
 	   else {
-	       extern int	xf86Verbose;
-	       
 	       if (xf86Verbose)
 		   ErrorF("%s module %s successfully loaded from %s\n",
 			  XCONFIG_GIVEN, file, dir_elem);

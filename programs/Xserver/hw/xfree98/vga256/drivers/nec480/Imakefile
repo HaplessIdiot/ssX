@@ -4,11 +4,11 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/13 13:09:45 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/Imakefile,v 3.3 1996/01/13 12:23:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/Imakefile,v 3.4 1996/02/04 09:17:06 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = nec480_dr.c
-OBJS = nec480_dr.o
+SRCS = nec480_dr.c 480_bank.s
+OBJS = nec480_dr.o 480_bank.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -19,13 +19,18 @@ INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) \
 
 DEFINES = -DPC98 -DPC98_NEC480
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
 NormalRelocatableTarget(nec480_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(cpq_driver.c,$(XF98LINKKITDIR)/drivers/vga256/nec480)
-InstallLinkKitNonExecFile(cpq_bank.s,$(XF98LINKKITDIR)/drivers/vga256/nec480)
+ObjectFromSpecialAsmSource(480_bank,bank,NullParameter)
+
+InstallLinkKitNonExecFile(nec480_dr.c,$(XF98LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(480_bank.s,$(XF98LINKKITDIR)/drivers/vga256/nec480)
 InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga256/nec480)
 
 DependTarget()

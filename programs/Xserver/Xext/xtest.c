@@ -1,4 +1,5 @@
 /* $XConsortium: xtest.c,v 1.22 94/04/17 20:32:59 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -46,6 +47,7 @@ from the X Consortium.
 #include "XI.h"
 #include "XIproto.h"
 #define EXTENSION_EVENT_BASE	64
+#include "extinit.h"		/* LookupDeviceIntRec */
 #endif /* XINPUT */
 
 static unsigned char XTestReqCode;
@@ -56,7 +58,6 @@ CursorPtr GetSpriteCursor();
 WindowPtr GetCurrentRootWindow();
 #ifdef XINPUT
 extern int DeviceValuator;
-DeviceIntPtr LookupDeviceIntRec();
 #endif /* XINPUT */
 
 void

@@ -1,4 +1,5 @@
 /* $XConsortium: ungrdevk.c,v 1.10 94/04/17 20:33:25 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,15 +62,15 @@ SOFTWARE.
 #include "windowstr.h"			/* window structure  */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"
+
+#include "ungrdevk.h"
 
 #define AllModifiersMask ( \
 	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
 	Mod3Mask | Mod4Mask | Mod5Mask )
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	void	(* ReplySwapVector[256]) ();
-extern	int	DeviceKeyPress;
-DeviceIntPtr	LookupDeviceIntRec();
 
 /***********************************************************************
  *

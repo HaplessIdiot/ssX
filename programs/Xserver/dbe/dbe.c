@@ -1,4 +1,5 @@
 /* $XConsortium: dbe.c /main/3 1995/09/22 10:20:44 dpw $ */
+/* $XFree86$ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -34,6 +35,7 @@
 
 /* INCLUDES */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "scrnintstr.h"

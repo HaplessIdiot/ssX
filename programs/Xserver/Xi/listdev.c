@@ -1,5 +1,5 @@
 /* $XConsortium: listdev.c,v 1.18 94/04/17 20:33:18 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/listdev.c,v 3.0 1995/07/07 15:37:00 dawes Exp $ */
 
 /************************************************************
 
@@ -61,22 +61,14 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "XIstubs.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exglobals.h"			/* FIXME */
+
+#include "listdev.h"
 
 #define VPC	20			/* Max # valuators per chunk */
-extern InputInfo inputInfo;
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	void	(*ReplySwapVector[256]) ();
-DeviceIntPtr	LookupDeviceIntRec();
-
-void		CopySwapKeyClass ();
-void		CopySwapButtonClass ();
-int		CopySwapValuatorClass ();
-void		SizeDeviceInfo ();
-void		ListDeviceInfo ();
-void		AddOtherInputDevices ();
-void		CopyDeviceName ();
-void		CopySwapDevice ();
 
 /***********************************************************************
  *
@@ -101,6 +93,7 @@ SProcXListInputDevices(client)
  *
  */
 
+int
 ProcXListInputDevices (client)
     register ClientPtr client;
     {
@@ -116,7 +109,6 @@ ProcXListInputDevices (client)
     xDeviceInfo 	*dev;
     DeviceIntPtr 	d;
 
-    REQUEST(xListInputDevicesReq);
     REQUEST_SIZE_MATCH(xListInputDevicesReq);
 
     rep.repType = X_Reply;
@@ -398,6 +390,7 @@ CopySwapValuatorClass (client, v, buf)
  *
  */
 
+void
 SRepXListInputDevices (client, size, rep)
     ClientPtr	client;
     int		size;

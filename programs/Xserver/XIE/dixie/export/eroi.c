@@ -1,4 +1,5 @@
 /* $XConsortium: eroi.c,v 1.4 94/04/17 20:33:32 rws Exp $ */
+/* $XFree86$ */
 /**** module eroi.c ****/
 /******************************************************************************
 
@@ -81,6 +82,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*

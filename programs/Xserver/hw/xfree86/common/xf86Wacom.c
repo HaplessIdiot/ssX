@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.11 1996/03/04 05:14:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.12 1996/03/17 11:37:07 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -61,6 +61,10 @@
 #endif
 
 #include "osdep.h"
+#include "exevents.h"
+
+#include "extnsionst.h"
+#include "extinit.h"
 
 /******************************************************************************
  * debugging macro
@@ -204,6 +208,8 @@ static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
 
 #define HANDLE_TILT(priv) ((priv)->wcmPktLength == 9)
 
+#define mils(res) (res * 1000 / 2.54) /* resolution */
+
 /******************************************************************************
  * private flags
  *****************************************************************************/
@@ -231,6 +237,12 @@ extern void miPointerDeltaCursor(
     unsigned long /*time*/
 #endif
 );
+
+#if NeedFunctionPrototypes
+static LocalDevicePtr xf86WcmAllocateStylus(void);
+static LocalDevicePtr xf86WcmAllocateCursor(void);
+static LocalDevicePtr xf86WcmAllocateEraser(void);
+#endif
 
 #if !defined(sun) || defined(i386)
 /*
@@ -358,6 +370,7 @@ xf86WcmConfig(LocalDevicePtr    *array,
 }
 #endif
 
+#if 0
 /*
  ***************************************************************************
  *
@@ -389,6 +402,7 @@ ascii_to_hexa(char	buf[2])
   }
   return uc;
 }
+#endif
 
 /*
  ***************************************************************************
@@ -489,6 +503,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
   int			is_core_pointer, is_absolute;
   int			is_stylus, is_button, is_proximity;
   int			x, y, z, tx = 0, ty = 0, buttons, prox;
+  int			rx, ry;
   int			*px, *py, *pz, *pbuttons, *pprox;
   DeviceIntPtr		device;
   unsigned char		buffer[BUFFER_SIZE];
@@ -645,7 +660,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
       device = local->dev;
       
       DBG(6, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
-		    is_stylus ? "stylus" : "cursor", prox ? "true" : "false", x, y, z,
+		    is_stylus ? "stylus" : "cursor", prox ? "true" : "false",
+		    x, y, z,
 		    is_button ? "true" : "false", buttons));
 
       /* we can have only one device */
@@ -659,20 +675,29 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	x = x * screenInfo.screens[0]->width / priv->wcmMaxX;
 	y = y * screenInfo.screens[0]->height / priv->wcmMaxY;
       }
-      
-      /* coordonates are ready we can send events */
+
+      /* sets rx and ry according to the mode */
+      if (is_absolute) {
+	  rx = x;
+	  ry = y;
+      } else {
+	  rx = x - *px;
+	  ry = y - *py;
+      }
+
+      /* coordonates are reary we can send events */
       if (is_proximity) {
 
 	if (!*pprox) {
 	  if (!is_core_pointer) {
-	    PostProximityEvent(device, 1, 0, 3, x, y, z);
+	    PostProximityEvent(device, 1, 0, 6, rx, ry, z, tx, ty, 0);
 	  }
 	  local->private_flags |= FIRST_TOUCH_FLAG;
 	  DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
 	}      
 
-	DBG(4, ErrorF("xf86WcmReadInput %s x=%d y=%d z=%d *pbuttons=%d\n",
-		      is_stylus ? "stylus" : "cursor", x, y, z, *pbuttons));
+	DBG(4, ErrorF("xf86WcmReadInput %s rx=%d ry=%d z=%d *pbuttons=%d\n",
+		      is_stylus ? "stylus" : "cursor", rx, ry, z, *pbuttons));
     
 	if ((*px != x) ||
 	    (*py != y) ||
@@ -683,12 +708,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		local->private_flags -= FIRST_TOUCH_FLAG;
 		DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG unset\n"));
 	    } else {
-		if (is_absolute) {
-		    PostMotionEvent(device, is_absolute, 0, 5, x, y, z, tx, ty); 
-		} else {
-		    PostMotionEvent(device, is_absolute, 0, 5, x - *px, y - *py,
-				    z, tx, ty);
-		}
+		PostMotionEvent(device, is_absolute, 0, 6, rx, ry, z,
+				tx, ty, 0); 
 	    }
 	}
 	if (*pbuttons != buttons) {
@@ -704,7 +725,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		buttons = (buttons == 5) ? 3 : 0;
 	    } else {
 		delta = buttons - *pbuttons;
-		button = (delta > 0) ? delta : ((delta == 0) ? *pbuttons : -delta);
+		button = (delta > 0) ? delta
+		    : ((delta == 0) ? *pbuttons : -delta);
 	    }
 
 	    if (*pbuttons != buttons) {
@@ -712,10 +734,13 @@ xf86WcmReadInput(LocalDevicePtr         local)
 			      delta));
 	    
 		if (is_stylus && (delta == 3)) {
-		    PostButtonEvent(device, 1, (delta > 0), 0, 5, x, y, z, tx, ty);
-		    PostButtonEvent(device, 2, (delta > 0), 0, 5, x, y, z, tx, ty);
+		    PostButtonEvent(device, 1, (delta > 0), 0, 6, rx, ry, z,
+				    tx, ty, 0);
+		    PostButtonEvent(device, 2, (delta > 0), 0, 6, rx, ry, z,
+				    tx, ty, 0);
 		} else {
-		    PostButtonEvent(device, button, (delta > 0), 0, 5, x, y, z, tx, ty); 
+		    PostButtonEvent(device, button, (delta > 0), 0, 6, rx, ry, z,
+				    tx, ty, 0); 
 		}
 	    }
 	}
@@ -728,27 +753,37 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	priv->wcmOldTiltY = ty;
       }
       else { /* !PROXIMITY */
+	  /* reports button up when the device has been down and out of proximity */
 	  if (*pbuttons) {
 	      /*
 	       * the tablet reports button 3 sometimes if we press button 1
 	       * and button 2 together.
 	       */
 	      if (is_stylus && (*pbuttons == 3) && (!priv->wcmEraser)) {
-		  PostButtonEvent(device, 1, 0, 0, 5, *px, *py, *pz, tx, ty);
-		  PostButtonEvent(device, 2, 0, 0, 5, *px, *py, *pz, tx, ty);
+		  PostButtonEvent(device, 1, 0, 0, 6, rx, ry, z,
+				  tx, ty, 0);
+		  PostButtonEvent(device, 2, 0, 0, 6, rx, ry, z,
+				  tx, ty, 0);
 	      }
 	      else {
-		  PostButtonEvent(device, *pbuttons, 0, 0, 5, *px, *py, *pz, tx, ty);
+		  PostButtonEvent(device, *pbuttons, 0, 0, 6, rx, ry, z,
+				  tx, ty, 0);
 	      }
 	      *pbuttons = 0;
 	  }
 	  if (!is_core_pointer) {
 	      if (*pprox) {
-		  PostProximityEvent(device, 0, 0, 5, *px, *py, *pz, tx, ty);
+		  PostProximityEvent(device, 0, 0, 6, rx, ry, z,
+				     tx, ty, 0);
 	      }
+	      /* macro button management button number is in pressure */
 	      if (buttons) {
-		  PostButtonEvent(device, z, 1, 0, 5, *px, *py, *pz, tx, ty);
-		  PostButtonEvent(device, z, 0, 0, 5, *px, *py, *pz, tx, ty); 
+		  int	macro = z / 2;
+		  
+		  PostButtonEvent(device, buttons, 1, 0, 6, 0, 0, 0,
+				  tx, ty, macro);
+		  PostButtonEvent(device, buttons, 0, 0, 6, 0, 0, 0,
+				  tx, ty, macro);
 	      }
 	  }
 	  *pprox = 0;
@@ -1060,27 +1095,44 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
 			   0,
 			   0, /* min val */
 			   priv->wcmMaxX, /* max val */
-			   priv->wcmResolX * 1000 / 2.54); /* resolution */
+			   mils(priv->wcmResolX), /* resolution */
+			   0, /* min_res */
+			   mils(priv->wcmResolX)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   1,
 			   0, /* min val */
 			   priv->wcmMaxY, /* max val */
-			   priv->wcmResolY * 1000 / 2.54); /* resolution */
+			   mils(priv->wcmResolY), /* resolution */
+			   0, /* min_res */
+			   mils(priv->wcmResolY)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   2,
 			   - priv->wcmMaxZ / 2, /* min val */
 			   priv->wcmMaxZ / 2, /* max val */
-			   priv->wcmResolZ * 1000 / 2.54); /* resolution */
+			   mils(priv->wcmResolZ), /* resolution */
+			   0, /* min_res */
+			   mils(priv->wcmResolZ)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   3,
 			   -64,		/* min val */
 			   63,		/* max val */
-			   128);	/* resolution ??? */
+			   128,		/* resolution ??? */
+			   0,
+			   128);
     InitValuatorAxisStruct(pWcm,
 			   4,
 			   -64,		/* min val */
 			   63,		/* max val */
-			   128);	/* resolution ??? */
+			   128,		/* resolution ??? */
+			   0,
+			   128);
+    InitValuatorAxisStruct(pWcm,
+			   5,
+			   0,		/* min val */
+			   32,		/* max val */
+			   1,		/* resolution ??? */
+			   0,
+			   1);
     return (local->fd != -1);
 }
 
@@ -1113,13 +1165,14 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     case DEVICE_INIT: 
       DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=INIT\n", pWcm));
       
-      nbaxes = 5;			/* X, Y, Pressure, Tilt-X, Tilt-Y */
+      nbaxes = 6;			/* X, Y, Pressure, Tilt-X, Tilt-Y, macro button */
       switch (DEVICE_ID(local->private_flags)) {
       case STYLUS_ID:
       case CURSOR_ID:
-	nbbuttons = 24;
+	nbbuttons = 16;
 	break;
 
+      default:		/* this shouldn't happen */
       case ERASER_ID:
 	nbbuttons = 1;
 	break;
@@ -1154,8 +1207,8 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 					nbaxes,
 					xf86WcmGetMotionEvents, 
 					0, /* numMotionEvents */
-					(local->private_flags & ABSOLUTE_FLAG) ? Absolute
-					: Relative) /* relatif ou absolute */
+					(local->private_flags & ABSOLUTE_FLAG) 
+					? Absolute : Relative)
 	  == FALSE) {
 	ErrorF("unable to allocate Valuator class device\n"); 
 	return !Success;

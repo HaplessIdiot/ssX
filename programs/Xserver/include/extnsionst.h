@@ -1,4 +1,5 @@
 /* $XConsortium: extnsionst.h,v 1.14 94/04/17 20:25:42 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -83,7 +84,21 @@ typedef struct _ExtensionEntry {
  * to another.  You can't even put void *, void * (the ibm compiler
  * complains, anyway).
  */
-extern void (* EventSwapVector[128]) ();
+typedef void (*EventSwapPtr) (
+#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+	xEvent *,
+	xEvent *
+#endif
+);
+
+extern EventSwapPtr EventSwapVector[128];
+
+extern void NotImplemented (	/* FIXME: this may move to another file... */
+#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+	xEvent *,
+	xEvent *
+#endif
+);
 
 typedef void (* ExtensionLookupProc)(/*args indeterminate*/);
 

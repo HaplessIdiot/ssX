@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.9 1996/01/14 13:42:23 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.10 1996/02/12 11:16:47 dawes Exp $
  */
 
 /*
@@ -87,19 +87,19 @@
 #define USE_TERMINFO
 #endif
 
-#ifdef MINIX
+#if defined(CSRG_BASED)
 #define USE_TERMIOS
 #endif
 
 #include <sys/ioctl.h>
 #ifdef USE_SYSV_TERMIO
-#include <sys/termio.h>
+# include <sys/termio.h>
 #else /* else not USE_SYSV_TERMIO */
-#ifdef MINIX
-#include <termios.h>
-#else /* !MINIX */
-#include <sgtty.h>
-#endif /* MINIX */
+# ifdef USE_TERMIOS
+#  include <termios.h>
+# else /* not USE_TERMIOS */
+#  include <sgtty.h>
+# endif /* USE_TERMIOS */
 #endif	/* USE_SYSV_TERMIO */
 
 #ifdef USE_USG_PTYS
@@ -127,8 +127,9 @@ extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
 
-#ifdef USE_TERMIOS
+#ifdef MINIX
 #define USE_SYSV_TERMIO
+#include <sys/termios.h>
 #define termio termios
 #define TCGETA TCGETS
 #define TCSETAW TCSETSW
@@ -190,7 +191,11 @@ char *setsize[EMULATIONS] = {
 #ifdef USE_SYSV_TERMIO
 struct termio tioorig;
 #else /* not USE_SYSV_TERMIO */
+# ifdef USE_TERMIOS
+struct termios tioorig;
+# else /* not USE_TERMIOS */
 struct sgttyb sgorig;
+# endif /* USE_TERMIOS */
 #endif /* USE_SYSV_TERMIO */
 char *size[EMULATIONS] = {
 	"\033[%d;%dR",
@@ -244,7 +249,11 @@ main (argc, argv)
 #ifdef USE_SYSV_TERMIO
 	struct termio tio;
 #else /* not USE_SYSV_TERMIO */
+#ifdef USE_TERMIOS
+	struct termios tio;
+#else /* not USE_TERMIOS */
 	struct sgttyb sg;
+#endif /* USE_TERMIOS */
 #endif /* USE_SYSV_TERMIO */
 #ifdef USE_TERMCAP
 	char termcap [1024];
@@ -366,10 +375,20 @@ main (argc, argv)
 	tio.c_cc[VMIN] = 6;
 	tio.c_cc[VTIME] = 1;
 #else	/* else not USE_SYSV_TERMIO */
+#if defined(USE_TERMIOS)
+	tcgetattr(tty, &tioorig);
+	tio = tioorig;
+	tio.c_iflag &= ~ICRNL;
+	tio.c_lflag &= ~(ICANON | ECHO);
+	tio.c_cflag |= CS8;
+	tio.c_cc[VMIN] = 6;
+	tio.c_cc[VTIME] = 1;
+#else	/* not USE_TERMIOS */
  	ioctl (tty, TIOCGETP, &sgorig);
 	sg = sgorig;
 	sg.sg_flags |= RAW;
 	sg.sg_flags &= ~ECHO;
+#endif  /* USE_TERMIOS */
 #endif	/* USE_SYSV_TERMIO */
 	signal(SIGINT, onintr);
 	signal(SIGQUIT, onintr);
@@ -377,7 +396,11 @@ main (argc, argv)
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tio);
 #else	/* not USE_SYSV_TERMIO */
+#ifdef USE_TERMIOS
+	tcsetattr(tty, TCSADRAIN, &tio);
+#else   /* not USE_TERMIOS */
 	ioctl (tty, TIOCSETP, &sg);
+#endif  /* USE_TERMIOS */
 #endif	/* USE_SYSV_TERMIO */
 
 	if (argc == 2) {
@@ -434,7 +457,11 @@ main (argc, argv)
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);
 #else	/* not USE_SYSV_TERMIO */
+#ifdef USE_TERMIOS
+	tcsetattr(tty, TCSADRAIN, &tioorig);
+#else   /* not USE_TERMIOS */
 	ioctl (tty, TIOCSETP, &sgorig);
+#endif  /* USE_TERMIOS */
 #endif	/* USE_SYSV_TERMIO */
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
@@ -595,7 +622,11 @@ onintr(sig)
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);
 #else	/* not USE_SYSV_TERMIO */
+#ifdef USE_TERMIOS
+	tcsetattr (tty, TCSADRAIN, &tioorig);
+#else   /* not USE_TERMIOS */
 	ioctl (tty, TIOCSETP, &sgorig);
+#endif  /* use TERMIOS */
 #endif	/* USE_SYSV_TERMIO */
 	exit(1);
 }

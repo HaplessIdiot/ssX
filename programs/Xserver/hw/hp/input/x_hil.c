@@ -1,4 +1,5 @@
-/* $XConsortium: x_hil.c,v 8.142 94/04/17 20:30:15 dpw Exp $ */
+/* $XConsortium: x_hil.c /main/8 1996/01/14 08:48:33 kaleb $ */
+/* $XFree86$ */
 
 /*******************************************************************
 **
@@ -79,50 +80,38 @@ University of California.
 
 */
 
-#include "stdio.h"
-
-#ifndef __apollo
-#include "termio.h"
-#else
-#include "/sys5/usr/include/sys/termio.h"
-#endif	/* __apollo */
-
 #define	 NEED_EVENTS
 #include "X.h"
 #include "XI.h"
 #include "Xproto.h"
+#include "Xpoll.h"
 #include "hildef.h"
-#include "hppriv.h"
-#include "windowstr.h"
 #include "XHPproto.h"
 #include "x_hil.h"
 #include "x_serialdrv.h"
 #include "hpkeys.h"
+#include "windowstr.h"
 #include "inputstr.h"
-#include "../../../os/osdep.h"
+#include "hppriv.h"
 #include <sys/times.h>
-#ifdef __apollo
-#include "../apollo/xshscreenpriv.h"
-#endif /* __apollo */
-#ifdef __hp_osf
-#include <hp/hilioctl.h>
-extern	HILQ *hil_qp;
-#endif /* __hp_osf */
-#ifdef __hpux
 #include <sys/hilioctl.h>
-#endif /* __hpux */
+#ifdef XKB
+#include "XKBsrv.h"
+extern Bool noXkbExtension;
+#endif
+#ifdef XINPUT
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#endif
 
 #define	FIRST_EXTENSION_EVENT	64
-
 #define	MIN_KEYCODE		8	
-#define REPEAT_ARROW		0x2
 
-#define SERIAL_DRIVER_WRITE(f, type, ptr) \
-	{ int i; \
-	for (i=0; i<num_serial_devices; i++) \
-	    if (f==serialprocs[i].fd) { \
-		if ((*(serialprocs[i].write)) (f, type, ptr)==WRITE_SUCCESS) \
-		    return Success; } }
+#define ENQUEUE_EVENT(ev) \
+    {if (xE.b.u.u.type != 0)	/* at least 1 motion event */ \
+        {ev = allocate_event();/* get current queue pointer*/ \
+        *ev = xE;		/* copy from global struct  */ \
+        xE = zxE;}}		/* mark it as processed	    */ 
 
 #ifdef XTESTEXT1
 /*
@@ -139,11 +128,7 @@ extern int	exclusive_steal;
  */
 
 extern char	*mflg;
-extern int num_serial_devices;
-extern SerialProcs serialprocs[];
-
 xEvent	*format_ev();
-
 xHPEvent  xE, zxE;
 
 #ifdef	XINPUT
@@ -156,8 +141,6 @@ extern	int		DeviceValuator;
 extern	int		ProximityIn;
 extern	int		ProximityOut;
 #endif	/* XINPUT */
-int			*dheadmotionBuf[MAX_LOGICAL_DEVS];
-int			*dpmotionBuf[MAX_LOGICAL_DEVS];
 extern	int 		axes_changed;
 extern	int 		keyboard_click;
 extern	int 		screenIsSaved;
@@ -169,7 +152,6 @@ extern	HPInputDevice	*hpPointer;
 extern	HPInputDevice	*hptablet_extension;
 extern	WindowPtr 	*WindowTable;
 extern	InputInfo 	inputInfo;
-extern	TimeStamp	lastDeviceEventTime;
 extern	DeviceIntPtr	screen_change_dev;
 extern	DeviceIntPtr	tablet_extension_device;
 
@@ -180,17 +162,15 @@ extern	unsigned	tablet_ylimit;
 extern	u_int		tablet_width;
 
 static	Bool		in_tablet_extension = FALSE;
+static  BoxRec 		LimitTheCursor;
+
 
 u_char		pointer_amt_bits[3];
 u_char		ptr_mods, mv_mods, rs_mods, bw_mods;
-u_char		buf[BUF_SIZ];
-u_char		*pkt_ptr = buf;
 Bool		screen_was_changed = FALSE;
 Bool		reset_enabled = TRUE;
 int 		hpActiveScreen = 0; 		/* active screen ndx (Zaphod) */
 int		queue_events_free = MAX_EVENTS;
-int		data_cnt = 0;
-int		data_fd = -1;
 int		pending_index;
 int		pending_bytes;
 float		acceleration;
@@ -198,13 +178,6 @@ int		threshold;
 struct		x11EventQueue *events_queue;	/* pointer to events queue.  */
 xHPEvent	*allocate_event();
 struct		dev_info hil_info;		/* holds hil_data */
-Bool		display_borrowed = FALSE;
-#ifdef XINPUT
-DeviceIntPtr	LookupDeviceIntRec ();
-#endif /* XINPUT */
-#if defined(__hp9000s800) && !defined(__hp9000s700)
-unsigned long 	timediff;
-#endif /* __hp9000s800 */
 
 /******************************************************************
  *
@@ -214,7 +187,6 @@ unsigned long 	timediff;
 
 static	DeviceIntPtr find_deviceintrec();
 static	int  process_inputs();
-static	void process_hil_data();
 static	void process_serial_data();
 static	check_subset_and_scale();
 static	move_sprite();
@@ -223,7 +195,6 @@ static	send_button();
 static	move_mouse();
 static	u_char	last_direction;
 static	u_char	last_key;
-static	u_char	last_arrow = REPEAT_ARROW;/*keycode of arrow key pressed last */
 static	int	k_down_flag[4];
 static	int	k_down_incx[4];
 static	int	k_down_incy[4];
@@ -244,62 +215,45 @@ static	int	k_down_incy[4];
  *
  */
 
-store_inputs(mask)
-    long	mask[];
+CheckInput (blockData, result, pReadmask)
+    pointer blockData;
+    int result;
+    pointer pReadmask;
     {
+    fd_set* LastSelectMask = (fd_set*)pReadmask;
+    fd_set mask, checkmask;
+    extern fd_set EnabledDevices;
     int	    i;
     int     checkfd = max_input_fd;		/* max fd valid for input*/
-    int     checkword = MASKIDX(checkfd);	/* max valid word of mask*/
-    long    checkmask[mskcnt];
-#if defined(__hp9000s800) && !defined(__hp9000s700)  /* building for s800 */
-    struct tms 		buffer;
-    int newtime;
-    struct timeval tv, get_tv();
+    int     checkword = checkfd >> 5;		/* max valid word of mask*/
 
-    /**********************************************************************
-     *
-     * On s800 machines, the time reported in HIL events has its origin at
-     * the time of machine power-up.  The time reported by gettimeofday(),
-     * which will be called by UpdateCurrentTime when a grab is done, always
-     * has its origin at Jan. 1, 1970.  On s800s, we must compute a difference
-     * to be added to the HIL times to keep the two in sync.  We must also
-     * check each time via get_tv (PA-RISC fast gettimeofday) to see if the
-     * time reported by gettimeofday has been changed via the date() command.
-     * If so, our time difference is invalid and must be recalculated.
-     */
+    if (result <= 0)
+	return;
+    XFD_ANDSET(&mask, LastSelectMask, &EnabledDevices);
+    if (!XFD_ANYSET(&mask)) 
+	return;
 
-    tv = get_tv();
-    newtime = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-    if (newtime < lastDeviceEventTime.milliseconds)
-	timediff = GetTimeInMillis() - (times(&buffer)*10);
-#endif /* __hp9000s800 */
+    FD_ZERO(&checkmask);
 
-    for (i=0; i<mskcnt; i++)
-	checkmask[i] = 0;
-
-    if (data_cnt > 0)				/* we have leftover data*/
-	{
-	process_inputs (data_fd);		/* go process it	*/
-	}
-
-    BITSET(checkmask, checkfd);			/* corresponding mask	*/
+    FD_SET(checkfd, &checkmask);		/* corresponding mask	*/
 
     for (i=checkword; i>=0; i--)		/* for all mask words   */
 	{
-	while (mask[i] && checkmask[i])		/* while input available*/
+	while (mask.fds_bits[i] && 
+	       checkmask.fds_bits[i])		/* while input available*/
 	    {
-	    if (mask[i] & checkmask[i]) 	/* if current fd valid  */
+	    if (mask.fds_bits[i] & checkmask.fds_bits[i]) /* current fd valid  */
 		{
-		mask[i] &= ~checkmask[i];
+		mask.fds_bits[i] &= ~checkmask.fds_bits[i];
 		process_inputs(checkfd);	/* process its input	*/
 		}
 	    checkfd--;
-	    checkmask[i] = checkmask[i] >> 1;
+	    checkmask.fds_bits[i] = checkmask.fds_bits[i] >> 1;
             }
 	if (i>0)
 	    {
 	    checkfd = (i-1) * 32 + 31;
-	    BITSET(checkmask, checkfd);		/* corresponding mask	*/
+	    FD_SET(checkfd, &checkmask);	/* corresponding mask	*/
 	    }
         }
     }
@@ -316,8 +270,6 @@ store_inputs(mask)
  *
  */
 
-#define TIME_POLL_BYTES		5	/* bytes indicating time and poll*/
-
 static int process_inputs (file_ds)
     int	file_ds;			/* file_ds to read from      	 */
     {
@@ -330,7 +282,7 @@ static int process_inputs (file_ds)
 
     for (i=0; i<MAX_LOGICAL_DEVS; i++)
 	{
-	if (file_ds == l_devs[i].file_ds) 
+	if (file_ds == l_devs[i].d.file_ds) 
 	    {
 	    indevice = &(l_devs[i]);
 	    break;
@@ -339,37 +291,14 @@ static int process_inputs (file_ds)
 	
     dev = find_deviceintrec(indevice);
 
-    if (data_cnt == 0 &&	 		/* no leftover data	    */
-      !(indevice->hpflags & IS_SERIAL_DEVICE))
-	{
-	pkt_ptr = buf;
-	data_cnt = read (file_ds, buf, READ_SIZ);
-	}
-    while (data_cnt > 0 || 			/* data yet to be processed */
-      (indevice->hpflags & IS_SERIAL_DEVICE && !done))
+    while (!done)				/* data yet to be processed */
 	{
 	if (queue_events_free <= MAXHILEVENTS)	/* no room on server queue  */
-	    {
-	    if (data_fd == -1)
-		data_fd = file_ds;		/* save the file descriptor */
 	    return;
-	    }
 	hil_ptr = (unsigned char *) &hil_info;/* place to copy packet to*/
-	if (indevice->hpflags & IS_SERIAL_DEVICE)
-	    {
-	    done = get_serial_event (hil_ptr);
-	    process_serial_data (dev, hil_info.hil_dev, &(hil_info));
-	    }
-	else
-	    {
-	    get_hil_event (file_ds, hil_ptr);
-#if defined(__hp9000s800) && !defined(__hp9000s700)  /* building for s800 */
-	    hil_info.timestamp += timediff;
-#endif /* __hp9000s800 */
-	    process_hil_data (dev, hil_info.hil_dev, &(hil_info));
-	    }
+	done = get_serial_event (hil_ptr);
+	process_serial_data (dev, hil_info.hil_dev, &(hil_info));
 	}
-    data_fd = -1;
     if (xE.b.u.u.type != 0)			/* at least 1 motion event */
 	{
         xHP = allocate_event();			/* get current queue pointer*/
@@ -400,7 +329,7 @@ DeviceIntPtr find_deviceintrec (indevice)
 	{
 	hil_info.hil_dev = indevice;		/* input device struct ptr  */
 	if (hptablet_extension &&
-	    indevice->file_ds==hptablet_extension->file_ds && 
+	    indevice->d.file_ds==hptablet_extension->d.file_ds && 
 	    in_tablet_extension)
 	    {
 	    hil_info.hil_dev = hptablet_extension;
@@ -413,8 +342,14 @@ DeviceIntPtr find_deviceintrec (indevice)
 		(indevice->hpflags & MERGED_DEVICE)))
 	    dev = inputInfo.pointer;
 #ifdef XINPUT
-	else
-	    dev = LookupDeviceIntRec (indevice->dev_id);
+	else{
+	    for (dev = inputInfo.devices;
+		dev && ((HPInputDevice *)dev->public.devicePrivate != indevice);
+		dev = dev->next)
+		;
+	    if (!dev)
+		FatalError ("X server couldn't find current input device - Aborting.\n");
+	}
 
     	p = dev->ptrfeed;
 	if (p != NULL)
@@ -433,209 +368,6 @@ DeviceIntPtr find_deviceintrec (indevice)
 
 /****************************************************************************
  *
- * Get one HIL data packet from the data that was previously read.
- * If the buffer only contains a partial packet, read the rest.
- *
- * This function may also be called from x_threebut.c.
- *
- */
-
-#define MAX_PACKET (sizeof(struct dev_info) - sizeof(HPInputDevice *))
-
-get_hil_event (fd, dest)
-    int		fd;
-    char	*dest;
-    {
-    int	packet_size;
-    int	i;
-    struct dev_info *info = (struct dev_info *) dest;
-
-    packet_size = *pkt_ptr++;		/* 1st byte is size	    */
-    if (packet_size > MAX_PACKET)
-	{
-	data_cnt = 0;
-	pkt_ptr=buf;
-	pending_index = 0;
-	if (mflg)
-	    ErrorF("Invalid length %d in HIL data packet, clearing data.\n",packet_size);
-	return;
-	}
-    if(data_cnt < packet_size)		/* We got a partial packet  */
-	{
-	data_cnt += read(fd,		/* get rest of packet */ 
-			pkt_ptr + data_cnt, 
-			packet_size - data_cnt);
-
-	if(data_cnt != packet_size)
-	    FatalError ("Unable to read all of an HIL data packet.  Server exiting! \n");
-	}
-    for (i=1; i<packet_size; i++)	/* copy the current packet  */
-        *dest++ = *pkt_ptr++;
-
-    info->timestamp = (info->timestamp - 1) * 10;
-    info->poll_hdr &= HIL_POLL_HDR_BITS;/* zero nonsignifcant bits  */
-    data_cnt -= packet_size;		/* fix unprocessed data cnt */
-    pending_index = 0;
-    pending_bytes = packet_size - 1  - TIME_POLL_BYTES;
-    }
-
-/****************************************************************************
- *
- * process the HIL data packet and generate X input events as needed.
- *
- */
-
-#define UP_LEFT_ARROW		0xf8	/* HIL key codes for arrow keys. */
-#define DOWN_LEFT_ARROW		0xf9
-#define UP_DOWN_ARROW		0xfa
-#define DOWN_DOWN_ARROW		0xfb
-#define UP_UP_ARROW		0xfc
-#define DOWN_UP_ARROW		0xfd
-#define UP_RIGHT_ARROW		0xfe
-#define DOWN_RIGHT_ARROW	0xff
-#define HIL_PROXIMITY		0x4f
-
-static u_char	code[2];
-
-static void process_hil_data (dev, phys, info)
-    DeviceIntPtr 	dev;
-    HPInputDevice	*phys;
-    struct		dev_info	*info;
-    {
-    xEvent		*ev;
-    int			count;
-    u_char		type, keyset, kcode, bcode, *hil_code;
-    struct hil_desc_record *h = &phys->hil_header;
-
-    while (pending_index < pending_bytes ) 
-	{  
-	if (!(info->poll_hdr & (MOTION_MASK | KEY_DATA_MASK)))
-	    {
-	    pending_index = pending_bytes = 0;
-	    if (mflg)
-		ErrorF("Invalid HIL data header \'%x\' received, ignoring event.\n",info->poll_hdr);
-	    break;
-	    }
-
-	if (info->poll_hdr & MOTION_MASK)
-	    {
-	    handle_motion_event (dev, phys, info);
-	    info->poll_hdr &= ~MOTION_MASK;
-	    }
-    
-	if (info->poll_hdr & KEY_DATA_MASK)
-	    {  
-	    keyset   = info->poll_hdr & HILPRH_KEYSET;
-	    hil_code = code;
-	    if (phys->hpflags & DATA_IS_8_BITS)
-		*hil_code = (info->dev_data)[pending_index++];
-	    else if (phys->hpflags & DATA_IS_16_BITS)
-		{
-		*hil_code = ((info->dev_data)[pending_index] << 8) |
-		    (info->dev_data)[pending_index+1];
-		pending_index += 2;
-		}
-	    /* Check if cursor keys are repeating. */
-    
-	    switch (*hil_code)
-		{
-		case DOWN_DOWN_ARROW	:
-		case UP_DOWN_ARROW		:
-		case UP_LEFT_ARROW		:
-		case DOWN_LEFT_ARROW	:
-		case UP_RIGHT_ARROW		:
-		case DOWN_RIGHT_ARROW	:
-		case UP_UP_ARROW		:
-		case DOWN_UP_ARROW		:
-		    last_arrow = *hil_code;
-		    break;
-		case	REPEAT_ARROW		:
-		    if ((keyset==HILPRH_KEYSET1) && last_arrow!=REPEAT_ARROW)
-		        *hil_code = last_arrow;
-		    break;
-		default:
-		    break;
-		}
-
-
-	    if (phys->dev_type == BARCODE)
-		hil_code = ascii_to_code[*hil_code];
-
-	    for (count=0; (count==0 || *hil_code != 0); count++)
-		{
-#ifdef XINPUT
-		/* proximity HIL codes cause a different event type.
-		   However, proximity is not reported for devices being
-		   used as the X pointer, unless they have no buttons
-		   (like a touchscreen), in which case the proximity is
-		   treated as button 1.
-		   */
-
-		kcode = ((u_char) *hil_code) >> 1;	/* same code up & down*/
-		kcode += MIN_KEYCODE;		        /* avoid mouse codes. */
-
-		/* Check to see if this is a "down" keycode for a key that is
-		   already down.  If so, and autorepeat has been disabled for
-		   this key, ignore the key and return.
-		   */
-
-		if (!(*hil_code % 2) && KeyIsDown(dev,kcode) &&
-		    !KeyIsRepeating(dev,kcode))
-		    return;
-
-		bcode = *(hil_code++);
-		if ((h->iob & HILIOB_PIO) && kcode == HIL_PROXIMITY)
-		    if (dev!=inputInfo.pointer)
-			{
-			type = (bcode & UP_MASK) ? ProximityOut : ProximityIn;
-			ev= format_ev (type, 0, info->timestamp, phys, NULL);
-			return;
-			}
-		    else if (h->p_button_count == 0)
-			bcode -= 0x0e;			/* make it button 1 */
-		    else
-			return;	/* proximity not reported for X pointer */
-#endif /* XINPUT */
-		if (bcode >= BUTTON_BASE && bcode < PROXIMITY_IN)
-		    {
-		    if (phys == hptablet_extension && phys->clients == NULL)
-			return;
-		    if (dev==inputInfo.pointer)
-			if (bcode & UP_MASK) 
-			    type = ButtonRelease;
-			else
-			    type = ButtonPress;
-		    else
-			if (bcode & UP_MASK) 
-			    type = DeviceButtonRelease;
-			else
-			    type = DeviceButtonPress;
-		    ev= format_ev (type, kcode, info->timestamp, phys, NULL);
-		    process_button (ev, dev, info, bcode, h->p_button_count);
-		    }
-		else
-		    {
-		    if (dev==inputInfo.keyboard)
-			if (bcode & UP_MASK) 
-			    type = KeyRelease;
-			else
-			    type = KeyPress;
-		    else
-			if (bcode & UP_MASK) 
-			    type = DeviceKeyRelease;
-			else
-			    type = DeviceKeyPress;
-		    ev= format_ev (type, kcode, info->timestamp, phys, NULL);
-
-		    parse_keycode (dev, phys, ev);
-		    }
-	        }
-	    }
-	}
-   }
-
-/****************************************************************************
- *
  * process the serial data packet and generate X input events as needed.
  *
  */
@@ -648,10 +380,8 @@ static void process_serial_data (dev, phys, info)
     struct		dev_info	*info;
     {
     xEvent		*ev;
-    int			count;
     u_int		*hil_code;
     u_char		type, kcode;
-    int button_count = phys->hil_header.p_button_count;
 
     while (pending_index < pending_bytes ) 
 	{  
@@ -680,6 +410,11 @@ static void process_serial_data (dev, phys, info)
 		(info->dev_data)[pending_index];
 	    pending_index += 4;
 	    }
+	else
+	    {
+	    pending_index = pending_bytes;
+	    return;
+	    }
 
 	if (info->poll_hdr & KEY_DATA)
 	    {
@@ -692,7 +427,7 @@ static void process_serial_data (dev, phys, info)
 	    kcode += MIN_KEYCODE;		        /* avoid mouse codes. */
 
 	    if (*hil_code & UP_MASK) 
-		if (dev==inputInfo.keyboard)
+		if (dev==inputInfo.keyboard || dev==inputInfo.pointer)
 		    type = KeyRelease;
 		else
 		    type = DeviceKeyRelease;
@@ -700,28 +435,38 @@ static void process_serial_data (dev, phys, info)
 		{
 		if (KeyIsDown(dev,kcode) && !KeyIsRepeating(dev,kcode))
 		    return;
-		if (dev==inputInfo.keyboard)
+		if (dev==inputInfo.keyboard || dev==inputInfo.pointer)
 		    type = KeyPress;
 		else
 		    type = DeviceKeyPress;
 		}
 
-	    ev= format_ev (type, kcode, info->timestamp, phys, NULL);
+	    ev= format_ev (dev, type, kcode, info->timestamp, phys, NULL);
 	    parse_keycode (dev, phys, ev);
 	    }
 	else if (info->poll_hdr & BUTTON_DATA)
 	    {
-	    extern HPInputDevice	*bd;
 
-	    if (phys == hptablet_extension && phys->clients == NULL)
-	        return;
 	    if (dev==inputInfo.pointer)
-		type = ButtonPress;
+		type = (*hil_code & UP_MASK) ? ButtonRelease : ButtonPress;
 	    else
-		type = DeviceButtonPress;
-	    ev= format_ev (type,(*hil_code >>1) + 1,info->timestamp,phys,NULL);
-	    bd = phys;
-	    put_button_event (dev, ev, info, phys, *hil_code + 2);
+		type = (*hil_code & UP_MASK) ? DeviceButtonRelease 
+					     : DeviceButtonPress;
+
+	    ev= format_ev (dev, type,(*hil_code >>1) + 1,info->timestamp,phys,NULL);
+#ifdef	XTESTEXT1
+	    {
+	    extern int	on_steal_input;	/* steal input mode is on.	*/
+	    extern int	exclusive_steal;
+
+	    if (on_steal_input)
+		XTestStealKeyData(ev->u.u.detail, ev->u.u.type, MOUSE, 
+		    phys->coords[0], phys->coords[1]);
+
+	    if (exclusive_steal)
+		deallocate_event(ev);
+	    }
+#endif	/* XTESTEXT1 */
 	    }
 #ifdef XINPUT
 	else if (info->poll_hdr & PROXIMITY_DATA)
@@ -735,21 +480,23 @@ static void process_serial_data (dev, phys, info)
 	    if (dev!=inputInfo.pointer)
 		{
 		type = (*hil_code & UP_MASK) ? ProximityOut : ProximityIn;
-		ev= format_ev (type, 0, info->timestamp, phys, NULL);
+		ev= format_ev (dev, type, 0, info->timestamp, phys, NULL);
 		return;
 		}
-	    else if (button_count == 0)
+	    else if (phys->d.num_buttons == 0)
 		{
-		kcode = 1;			/* make it button 1 */
-	        ev= format_ev (type, kcode, info->timestamp, phys, NULL);
-		if (phys == hptablet_extension && phys->clients == NULL)
-		    return;
-		process_button (ev, dev, info, kcode, button_count);
+		type = (*hil_code & UP_MASK) ? ButtonRelease : ButtonPress;
+	        ev= format_ev (dev, type, 1, info->timestamp, phys, NULL);
 		}
 	    else
 		return;	/* proximity not reported for X pointer */
 	    }
 #endif /* XINPUT */
+	else
+	    {
+	    pending_index = pending_bytes;
+	    return;
+	    }
 	}
    }
 
@@ -787,17 +534,17 @@ handle_motion_event (dev, phys, info)
     else
 	bytes_coord = 1;
 
-    pending_index += phys->hil_header.ax_num * bytes_coord;
+    pending_index += phys->d.ax_num * bytes_coord;
 
-    if (phys->hil_header.flags & HIL_ABSOLUTE)		/* absolute device */
+    if (phys->hpflags & ABSOLUTE_DATA)		/* absolute device */
 	{
 	udata = info->dev_data; 
-	for (i=0; i < (u_char) phys->hil_header.ax_num; i++, udata+=bytes_coord)
+	for (i=0; i < (u_char) phys->d.ax_num; i++, udata+=bytes_coord)
 	    if (bytes_coord == 1)
 		coords[i] = *udata;
 	    else if (bytes_coord == 2)
 		coords[i] = *udata | *(udata+1) << 8;
-	    else if (bytes_coord == 4)
+	    else
 		coords[i] = *udata | (*(udata+1) << 8) | (*(udata+2) << 16) | 
 			    (*(udata+3) << 24);
 
@@ -807,12 +554,12 @@ handle_motion_event (dev, phys, info)
     else
 	{
 	sdata = (char *) info->dev_data; 
-	for (i=0; i < (u_char) phys->hil_header.ax_num; i++, sdata+=bytes_coord)
+	for (i=0; i < (u_char) phys->d.ax_num; i++, sdata+=bytes_coord)
 	    if (bytes_coord == 1)
 		coords[i] = *sdata;
 	    else if (bytes_coord == 2)
 		coords[i] = *(sdata+1) << 8 | (*sdata & 0x0ff);
-	    else if (bytes_coord == 4)
+	    else 
 		coords[i] = (*(sdata+3) << 24) | ((*(sdata+2) << 16) & 0x0ff)|
 			    ((*(sdata+1) << 8) & 0xff) | (*sdata & 0x0ff);
 	}
@@ -826,13 +573,8 @@ handle_motion_event (dev, phys, info)
 	else
 	    coords[1] = coords[y_axis];
 	}
-    if (!(phys->hil_header.flags & HIL_ABSOLUTE) &&
-	!(phys->hpflags & IS_SERIAL_DEVICE) &&
-	phys->dev_type != NINE_KNOB)
-	coords[1] = -coords[1];
-
     process_motion (dev, phys, log, coords, info->timestamp);
-    (void) format_ev (type, 0, info->timestamp, log, &xE);
+    (void) format_ev (dev, type, 0, info->timestamp, log, &xE);
     }
 
 /*******************************************************************
@@ -850,9 +592,9 @@ check_subset_and_scale (dev, phys, log, c)
     int			c[];
     {	
     extern u_char screen_change_amt;
-    int i, n_axes = phys->hil_header.ax_num;
+    int i, n_axes = phys->d.ax_num;
 
-    if (tablet_width)
+    if (tablet_width && hptablet_extension)
 	if (c[0]< tablet_xorg || c[0] > tablet_xlimit ||
 	    c[1]> tablet_yorg || c[1] < tablet_ylimit)
 	    {
@@ -878,7 +620,7 @@ check_subset_and_scale (dev, phys, log, c)
 	{
 	if (*dev == screen_change_dev)
 	    c[0] -= screen_change_amt;
-        c[1] = phys->hil_header.size_y - c[1]; /* Y-coord  reversed.*/
+        c[1] = phys->d.max_y - c[1]; /* Y-coord  reversed.*/
 	}
     if (c[0]==(*log)->coords[0] && c[1]==(*log)->coords[1])
 	return (FALSE);
@@ -886,8 +628,6 @@ check_subset_and_scale (dev, phys, log, c)
 	c[i] -= (*log)->coords[i];
     return (TRUE);
     }
-
-unsigned char lockcode;
 
 /****************************************************************************
  *
@@ -897,12 +637,13 @@ unsigned char lockcode;
  *
  */
 
-#if defined(__hpux) || defined(__hp_osf)
-struct	 _LedCmd {
-    int 	on;
-    int		off;
-    } LedCmd[] = {{HILP1,HILA1},{HILP2,HILA2},{HILP3,HILA3},{HILP3,HILA3}};
-#endif
+#define FIX_LED_CTRL(dev, d, ev, index, led) \
+	{if (KeyUpEvent(ev) && dev->key->modifierKeyCount[index] <= 1) { \
+	    d.leds &= ~led; \
+	    dev->kbdfeed->ctrl.leds &= ~led; } \
+	else { \
+	    d.leds |= led; \
+	    dev->kbdfeed->ctrl.leds |= led; }}
 
 int parse_keycode (dev, phys, ev)
     DeviceIntPtr 	dev;
@@ -913,130 +654,93 @@ int parse_keycode (dev, phys, ev)
     extern u_char	xtest_command_key;	 /* defined in xtestext1dd.c */
 #endif	/* XTESTEXT1 */
     u_char	down_mods;
-    char 	ioctl_data[12];
+    u_char 	key = ev->u.u.detail;
 
     if (hpPointer->x_type == KEYBOARD)
 	if (hpKeyboard->hpflags & SECOND_LOGICAL_DEVICE &&
-	    ((ev->u.keyButtonPointer.pad1==hpKeyboard->dev_id ||
-	      ev->u.keyButtonPointer.pad1==hpPointer->dev_id ) &&
+	    ((ev->u.keyButtonPointer.pad1==inputInfo.keyboard->id ||
+	      ev->u.keyButtonPointer.pad1==inputInfo.pointer->id ) &&
 	     move_sprite (dev, hpPointer, ev)))
 		return;
 	else
-	    if (ev->u.keyButtonPointer.pad1==hpPointer->dev_id &&
+	    if (ev->u.keyButtonPointer.pad1==inputInfo.pointer->id &&
 		(move_sprite (dev, hpPointer, ev)))
 		return;
-    
-    /* allow borrow-mode switching on Domain/OS machines */
-#ifdef __apollo
-
-    if (ev->u.u.detail==borrow_mode)
-	if ((hpKeyboard->hpflags & SECOND_LOGICAL_DEVICE &&
-	    (ev->u.keyButtonPointer.pad1==hpKeyboard->dev_id ||
-	     ev->u.keyButtonPointer.pad1==hpPointer->dev_id)) ||
-	    ev->u.keyButtonPointer.pad1==hpKeyboard->dev_id)
-	{
-	get_down_modifiers (inputInfo.keyboard, &down_mods);
-	if ((bw_mods & down_mods) == bw_mods)
-	    {
-	    extern unsigned char last_code;	/* in smd_input.c */
-	    unsigned long timestamp;
-
-	    timestamp = ev->u.keyButtonPointer.time;
-	    deallocate_event (ev);	/* eat the borrow mode key */
-	    ev = format_ev (KeyRelease, borrow_mode_mods[0]+MIN_KEYCODE,
-		timestamp, phys, NULL);
-	    ev = format_ev (KeyRelease, borrow_mode_mods[1]+MIN_KEYCODE,
-		timestamp, phys, NULL);
-	    last_code = 0;
-	    leave_X();
-	    }
-	}
-#endif /* __apollo */
-
 
     /* allow reset only from the X system keyboard,
 	   and only if reset is enabled.		*/
 
-    if (ev->u.u.detail==reset && reset_enabled)
+    if (key==reset && reset_enabled)
 	if ((hpKeyboard->hpflags & SECOND_LOGICAL_DEVICE &&
-	    (ev->u.keyButtonPointer.pad1==hpKeyboard->dev_id ||
-	     ev->u.keyButtonPointer.pad1==hpPointer->dev_id)) ||
-	    ev->u.keyButtonPointer.pad1==hpKeyboard->dev_id)
+	    (ev->u.keyButtonPointer.pad1==inputInfo.keyboard->id ||
+	     ev->u.keyButtonPointer.pad1==inputInfo.pointer->id)) ||
+	    ev->u.keyButtonPointer.pad1==inputInfo.keyboard->id)
 	{
 	get_down_modifiers (inputInfo.keyboard, &down_mods);
 	if ((rs_mods & down_mods) == rs_mods)
 	    GiveUp(0);
 	}
 
-#if defined(__hpux) || defined(__hp_osf)
+    /* Special case handling for toggling keys.  These are keys
+       that are bound to one of the X modifiers, and have been
+       made into toggling keys.  This currently only includes Caps Lock.
+       If a key is pressed that is bound to a toggling key,   
+       turn on the appropriate LED and treat the key as a toggle.
+     */
 
-    /* Special case handling for the Caps Lock modifier and LED.
-       If a key is pressed that is bound to the Lock modifier,
-       turn on the Caps Lock LED and treat the key as latched.
-       However, do this only if a client has not overridden the
-       default use of the Caps Lock LED via the HPConfigureInput
-       protocol request.  */
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
 
-    if (IsLockKey(dev, ev->u.u.detail))		/* lock modifier pressed */
+    if (IsToggleKey(dev, phys, key))     	/* toggling key pressed */
 	{
-	if (ev->u.u.detail != lockcode)		/* was changed by xmodmap*/
-	    {
-	    UnlatchKey(phys, lockcode);
-	    LatchKey(phys, ev->u.u.detail);
-	    lockcode = ev->u.u.detail;
-	    }
-	}
-    else if (ev->u.u.detail == lockcode) 	/* is former lock modifier */
-	{
-	UnlatchKey(phys, lockcode);
-	lockcode = 0xff;
-	}
-
-    if (KeyIsLatched(phys, ev->u.u.detail))
-	if (KeyIsIgnored(phys,ev->u.u.detail))
+	if (KeyIsIgnored(phys,key))
 	    {
 	    if (KeyDownEvent(ev))
-	        UnignoreKey(phys,ev->u.u.detail);
+	        UnignoreKey(phys,key);
+	    ExpectUpKey(phys,key);		/* for handling autorepeat */
 	    deallocate_event (ev);
 	    return;
 	    }
 	else if (KeyDownEvent(ev))
-	    IgnoreKey(phys,ev->u.u.detail);
-
-    if (DeviceHasLeds(phys) && KeyHasLed(dev,phys,ev->u.u.detail))
-	if (KeyUpEvent(ev) && 
-	    dev->key->modifierKeyCount[LockMapIndex] <= 1)
-	    if (phys->hpflags & IS_SERIAL_DEVICE){
-		HPKeyboardFeedbackControl	d;
-		d.class = KbdFeedbackClass;
-		d.leds = 0;
-		SERIAL_DRIVER_WRITE(phys->file_ds, _XChangeFeedbackControl, &d);
+	    {
+	    if (UpIsExpected(phys,key))		/* key is autorepeating */
+		{
+	        deallocate_event (ev);
+		return;
+		}
+	    IgnoreKey(phys,key);
 	    }
-	    else
-		LedOff(dev, phys, ev->u.u.detail, ioctl_data);
-	else
-	    if (phys->hpflags & IS_SERIAL_DEVICE){
-		HPKeyboardFeedbackControl	d;
-		d.class = KbdFeedbackClass;
-		d.leds = 4;
-		SERIAL_DRIVER_WRITE(phys->file_ds, _XChangeFeedbackControl, &d);
-	    }
-	    else
-		LedOn(dev, phys, ev->u.u.detail, ioctl_data);
+	else if (KeyUpEvent(ev))
+	    DontExpectUpKey(phys,key);
 
-#endif /* __hpux */
+        if (DeviceHasLeds(phys))
+	    {
+	    int led, index;
+	    HPKeyboardFeedbackControl	d;
+
+	    copy_kbd_ctrl_params (&d, &dev->kbdfeed->ctrl);
+	    if (index = IsLockKey(dev, key))
+	       FIX_LED_CTRL(dev, d, ev, index, CAPSLOCK_LED);
+
+	    (*(phys->s.write)) (phys->d.file_ds, _XChangeFeedbackControl, &d);
+	    }
+	}
+#ifdef XKB
+    }
+#endif
 
 #ifdef	XTESTEXT1
     if (on_steal_input)
 	{ 
-	XTestStealKeyData(ev->u.u.detail, ev->u.u.type, phys->x_type, 
+	XTestStealKeyData(key, ev->u.u.type, phys->x_type, 
 	    ev->u.keyButtonPointer.rootX, ev->u.keyButtonPointer.rootY);
 	if (exclusive_steal)
 	    { 
-	    if (ev->u.u.detail != xtest_command_key)
+	    if (key != xtest_command_key)
 		deallocate_event (ev);
 	    }
-	else if (ev->u.u.detail == xtest_command_key)
+	else if (key == xtest_command_key)
 	    deallocate_event (ev);
 	}
 #endif /* XTESTEXT1 */
@@ -1166,7 +870,7 @@ static send_motion (phys, ev, x, y, which)
     time = ev->u.keyButtonPointer.time;
     deallocate_event(ev);
     process_motion (inputInfo.pointer, phys, hpPointer, coords, time);
-    ev = format_ev (MotionNotify, 0, time, hpPointer, &xE);
+    ev = format_ev (inputInfo.pointer, MotionNotify, 0, time, hpPointer, &xE);
     return (1);
     }
 
@@ -1215,14 +919,21 @@ static send_button (ev, direction, bcode)
 #define EDGE_T			1 << 2
 #define EDGE_B			1 << 3
 
-#define OffRightEdge(log)  (log->coords[0] > (log->change_xmax + \
-			    (int) log->change_amt) ? EDGE_R : 0)
-#define OffLeftEdge(log)   (log->coords[0] < (log->change_xmin - \
-			    (int) log->change_amt) ? EDGE_L : 0) 
-#define OffTopEdge(log)    (log->coords[1] < (log->change_ymin - \
-			    (int) log->change_amt) ? EDGE_T : 0) 
-#define OffBottomEdge(log) (log->coords[1] > (log->change_ymax + \
-			    (int) log->change_amt) ? EDGE_B : 0) 
+/*
+ * Use the change_xmax and change_amt from the physical device.
+ * This is needed for the case where an absolute device like a tablet
+ * has its input merged with a relative device like a mouse.
+ *
+ */
+
+#define OffRightEdge(log, phys)  (log->coords[0] > (phys->change_xmax + \
+			    (int) phys->change_amt) ? EDGE_R : 0)
+#define OffLeftEdge(log, phys)   (log->coords[0] < (phys->change_xmin - \
+			    (int) phys->change_amt) ? EDGE_L : 0) 
+#define OffTopEdge(log, phys)    (log->coords[1] < (phys->change_ymin - \
+			    (int) phys->change_amt) ? EDGE_T : 0) 
+#define OffBottomEdge(log, phys) (log->coords[1] > (phys->change_ymax + \
+			    (int) phys->change_amt) ? EDGE_B : 0) 
 
 process_motion (dev, phys, log, c, timestamp)
     DeviceIntPtr dev;
@@ -1233,6 +944,7 @@ process_motion (dev, phys, log, c, timestamp)
     int		i;
     unsigned int state = 0;
     extern int playback_on;
+    ScreenPtr newScreen = log->pScreen;
    
     /* Compute x,y taking care of desired threshold and acceleration
      * No acceleration if we're playing back a recorded test script.
@@ -1242,10 +954,10 @@ process_motion (dev, phys, log, c, timestamp)
 
     if (!playback_on)
 	{
-	if (!(phys->hil_header.flags & HIL_ABSOLUTE) && 
+	if (!(phys->hpflags & ABSOLUTE_DATA) && 
 	    (acceleration != DEF_ACCELERATION))
 	    {
-	    for (i=0; i < (u_char) log->hil_header.ax_num; i++)
+	    for (i=0; i < (u_char) log->d.ax_num; i++)
 	        if ( (c[i] - threshold) > 0)
 		    c[i] = threshold + (c[i] - threshold) * acceleration;
 	        else if ( (c[i] + threshold) < 0)
@@ -1259,31 +971,28 @@ process_motion (dev, phys, log, c, timestamp)
      * If this is a relative device, save the current movement.
      */
 
-    if (log == hpPointer || (phys->hil_header.flags & HIL_ABSOLUTE))
-	for (i=0; i< (int) log->hil_header.ax_num; i++)
+    if (log == hpPointer || (phys->hpflags & ABSOLUTE_DATA))
+	for (i=0; i< (int) log->d.ax_num; i++)
 	    log->coords[i] = log->coords[i] + c[i];
     else
-	for (i=0; i< (u_char) log->hil_header.ax_num; i++)
+	for (i=0; i< (u_char) log->d.ax_num; i++)
 	    log->coords[i] = c[i];
 
     /*
-     * Active Zaphod implementation:
-     *    Change the screen if we have more than one screen,
-     *	  and the screen change device has gone off one of the edges,
-     *    and the device is not grabbed and confined.
+     * Change the screen if we have more than one screen,
+     * and the screen change device has gone off one of the edges,
+     * and the device is not grabbed and confined.
      */
 
-
-#if defined(__hpux) || defined(__hp_osf)
     if ( screenInfo.numScreens > 1 && 
-	 log->dev_id == screen_change_dev->id &&
+	 dev->id == screen_change_dev->id &&
         (!dev->grab || !dev->grab->confineTo))
 	{
-	if (state = (OffRightEdge(log) | OffLeftEdge(log) | 
-	    OffTopEdge(log) | OffBottomEdge(log)))
+	if ((state=OffRightEdge(log,phys)) || (state=OffLeftEdge(log,phys)) || 
+	    (state = OffTopEdge(log,phys)) || (state = OffBottomEdge(log,phys)))
 	    {
 	    if (!screen_was_changed)
-		change_the_screen (dev, phys, log, state);
+		change_the_screen (dev, phys, log, state, &newScreen);
 	    }
 	else 
 	    /*
@@ -1294,15 +1003,18 @@ process_motion (dev, phys, log, c, timestamp)
 	     */
 	    screen_was_changed = FALSE;
 	}
-#endif /* __hpux */
     if (phys == hptablet_extension && phys->clients == NULL)
 	return;
     /*
      * Clip the cursor to stay within the bound of screen.
      */
-    if (log == hpPointer &&
-        (!hpConstrainXY (&log->coords[0], &log->coords[1])))
-	   return;
+    if (log == hpPointer)
+	{
+	log->coords[0] = 
+	    max( LimitTheCursor.x1, min( LimitTheCursor.x2,log->coords[0]));
+	log->coords[1] = 
+	    max( LimitTheCursor.y1, min( LimitTheCursor.y2,log->coords[1]));
+	}
     move_mouse (log, timestamp);
     }
 
@@ -1313,8 +1025,6 @@ process_motion (dev, phys, log, c, timestamp)
  * off one of the edges.  Change to another screen.
  *
  */
-
-#if defined(__hpux) || defined(__hp_osf)
 
 #define INCREMENT_SCREEN_BY_ONE(p,l) (screenInfo.screens[(p->myNum+1) % \
     screenInfo.numScreens])
@@ -1330,14 +1040,13 @@ process_motion (dev, phys, log, c, timestamp)
     screenInfo.screens[p->myNum-2] : \
     screenInfo.screens[p->myNum + screenInfo.numScreens - 2])
 
-change_the_screen (dev, phys, log, state)
+change_the_screen (dev, phys, log, state, newScreen)
     DeviceIntPtr dev;
     HPInputDevice *phys, *log;				/* logical device */
     unsigned int state;
+    ScreenPtr *newScreen;
     {
-    ScreenPtr  	pScreen;
-    WindowPtr	pRootWin;
-    int		tx, ty;
+    ScreenPtr  	oldScreen = log->pScreen;
 
     if (screen_col_wrap == DEFAULT)
 	{
@@ -1355,191 +1064,212 @@ change_the_screen (dev, phys, log, state)
 	    screen_row_wrap = NOWRAP;
 	}
 
-    pScreen = log->pScreen;
 
     switch (state)
 	{
 	case EDGE_L:
 	    if (screen_row_wrap == NOWRAP &&
 		(screen_orientation == VERTICAL ||
-	        (pScreen->myNum == 0  ||
-	        (pScreen->myNum == 2 && screen_orientation == MATRIX ))))
+	        (oldScreen->myNum == 0  ||
+	        (oldScreen->myNum == 2 && screen_orientation == MATRIX ))))
 		return;
 
 	    if (screen_orientation == VERTICAL)
 		{
 		if (screen_row_wrap == CHANGE_BY_TWO)
 		    {
-		    log->pScreen = DECREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = DECREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		}
 	    else if (screen_orientation == HORIZONTAL)
 		{
-		log->pScreen = DECREMENT_SCREEN_BY_ONE(pScreen,log);
+		*newScreen = DECREMENT_SCREEN_BY_ONE(oldScreen,log);
 		}
-	    else if (screen_orientation == MATRIX)
+	    else 					/* MATRIX */
 		{
-		if (pScreen->myNum % 2)
+		if (oldScreen->myNum % 2)
 		    {
-		    log->pScreen = DECREMENT_SCREEN_BY_ONE(pScreen,log);
+		    *newScreen = DECREMENT_SCREEN_BY_ONE(oldScreen,log);
 		    }
 	        else if (screen_row_wrap == WRAP)
 		    {
-		    if (!(screenInfo.numScreens == 3 && pScreen->myNum == 2))
+		    if (!(screenInfo.numScreens == 3 && oldScreen->myNum == 2))
 	    	        {
-		        log->pScreen = INCREMENT_SCREEN_BY_ONE(pScreen,log);
+		        *newScreen = INCREMENT_SCREEN_BY_ONE(oldScreen,log);
 		        }
 		    }
 		else
 		    break;
 		}
     
-	    if (!(log->hil_header.flags & HIL_ABSOLUTE))
-		log->coords[0] += (log->pScreen->width - log->change_xmin);
+	    if (!(phys->hpflags & ABSOLUTE_DATA))
+		log->coords[0] += (oldScreen->width - log->change_xmin);
 	    break;
 	case EDGE_R:
 	    if (screen_row_wrap == NOWRAP &&
 		(screen_orientation == VERTICAL ||
-	        (pScreen->myNum == 3  ||
-	        (pScreen->myNum == 1 && screen_orientation == MATRIX ))))
+	        (oldScreen->myNum == (screenInfo.numScreens-1)  ||
+	        (oldScreen->myNum == 1 && screen_orientation == MATRIX ))))
 		return;
 
 	    if (screen_orientation == VERTICAL)
 		{
 		if (screen_row_wrap == CHANGE_BY_TWO)
 		    {
-		    log->pScreen = INCREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = INCREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		}
 	    else if (screen_orientation == HORIZONTAL)
 		{
-		log->pScreen = INCREMENT_SCREEN_BY_ONE(pScreen,log);
+		*newScreen = INCREMENT_SCREEN_BY_ONE(oldScreen,log);
 		}
-	    else if (screen_orientation == MATRIX)
+	    else 					/* MATRIX */
 		{
-	        if (pScreen->myNum % 2)
+	        if (oldScreen->myNum % 2)
 		    {
 	            if (screen_row_wrap == WRAP)
 		        {
-		        log->pScreen = DECREMENT_SCREEN_BY_ONE(pScreen,log);
+		        *newScreen = DECREMENT_SCREEN_BY_ONE(oldScreen,log);
 		        }
 		    else
 			break;
 		    }
-		else if (!(screenInfo.numScreens == 3 && pScreen->myNum == 2))
+		else if (!(screenInfo.numScreens == 3 && oldScreen->myNum == 2))
 		    {
-		    log->pScreen = INCREMENT_SCREEN_BY_ONE(pScreen,log);
+		    *newScreen = INCREMENT_SCREEN_BY_ONE(oldScreen,log);
 		    }
 		else if (screen_row_wrap != WRAP)
 		    break;
 		}
 
-	    if (!(log->hil_header.flags & HIL_ABSOLUTE))
-		log->coords[0] -= (pScreen->width);
+	    if (!(phys->hpflags & ABSOLUTE_DATA))
+		log->coords[0] -= (oldScreen->width);
 	    break;
 	case EDGE_T:
 	    if (screen_col_wrap == NOWRAP &&
 		(screen_orientation == HORIZONTAL ||
-	        (pScreen->myNum == 3  ||
-	        (pScreen->myNum == 2 && screen_orientation == MATRIX ))))
+	        (oldScreen->myNum == (screenInfo.numScreens-1)  ||
+	        (oldScreen->myNum == 2 && screen_orientation == MATRIX ))))
 		return;
 
 	    if (screen_orientation == HORIZONTAL)
 		{
 		if (screen_col_wrap == CHANGE_BY_TWO)
 		    {
-		    log->pScreen = INCREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = INCREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		}
 	    else if (screen_orientation == VERTICAL)
 		{
-		log->pScreen = INCREMENT_SCREEN_BY_ONE(pScreen,log);
+		*newScreen = INCREMENT_SCREEN_BY_ONE(oldScreen,log);
 		}
-	    else if (screen_orientation == MATRIX)
+	    else 						/* MATRIX */
 	        {
-		if (pScreen->myNum >= 2) 
+		if (oldScreen->myNum >= 2) 
 		    {
 		    if (screen_col_wrap == WRAP)
 		        {
-		        log->pScreen = DECREMENT_SCREEN_BY_TWO(pScreen,log);
+		        *newScreen = DECREMENT_SCREEN_BY_TWO(oldScreen,log);
 		        }
 		    else
 			break;
 		    }
-		else if (!(screenInfo.numScreens == 3 && pScreen->myNum == 1))
+		else if (!(screenInfo.numScreens == 3 && oldScreen->myNum == 1))
 		    {
-		    log->pScreen = INCREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = INCREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		else if (screen_col_wrap != WRAP)
 		    break;
 		}
     
-	    if (!(log->hil_header.flags & HIL_ABSOLUTE))
-		log->coords[1] += (pScreen->height);
+	    if (!(phys->hpflags & ABSOLUTE_DATA))
+		log->coords[1] += (oldScreen->height);
 	    break;
 	case EDGE_B:
 	    if (screen_col_wrap == NOWRAP &&
 		(screen_orientation == HORIZONTAL ||
-	        (pScreen->myNum == 0  ||
-	        (pScreen->myNum == 1 && screen_orientation == MATRIX))))
+	        (oldScreen->myNum == 0  ||
+	        (oldScreen->myNum == 1 && screen_orientation == MATRIX))))
 		return;
 
 	    if (screen_orientation == HORIZONTAL)
 		{
 		if (screen_col_wrap == CHANGE_BY_TWO)
 		    {
-		    log->pScreen = DECREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = DECREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		}
 	    else if (screen_orientation == VERTICAL)
 		{
-		log->pScreen = DECREMENT_SCREEN_BY_ONE(pScreen,log);
+		*newScreen = DECREMENT_SCREEN_BY_ONE(oldScreen,log);
 		}
-	    else if (screen_orientation == MATRIX)
+	    else 						/* MATRIX */
 	        {
-		if (pScreen->myNum >= 2) 
+		if (oldScreen->myNum >= 2) 
 		    {
-		    log->pScreen = DECREMENT_SCREEN_BY_TWO(pScreen,log);
+		    *newScreen = DECREMENT_SCREEN_BY_TWO(oldScreen,log);
 		    }
 		else if (screen_col_wrap == WRAP)
 		    {
-		    if (! (screenInfo.numScreens == 3 && pScreen->myNum == 1))
+		    if (! (screenInfo.numScreens == 3 && oldScreen->myNum == 1))
 		        {
-		        log->pScreen = INCREMENT_SCREEN_BY_TWO(pScreen,log);
+		        *newScreen = INCREMENT_SCREEN_BY_TWO(oldScreen,log);
 		        }
 		    }
 		else
 		    break;
 		}
 
-	    if (!(log->hil_header.flags & HIL_ABSOLUTE))
-		log->coords[1] -= (pScreen->height);
+	    if (!(phys->hpflags & ABSOLUTE_DATA))
+		log->coords[1] -= (oldScreen->height);
 	    break;
 	}
 
-    (*((hpPrivPtr) pScreen->devPrivate)->CursorOff)(pScreen);
-    pScreen = log->pScreen;
-    screen_was_changed = TRUE;
-    set_scale_and_screen_change (log);
-    (*((hpPrivPtr) pScreen->devPrivate)->ChangeScreen)(pScreen);
-    if (phys == hptablet_extension)
+    hpMoveCursorToNewScreen(*newScreen, log);
+    }
+
+/****************************************************************************
+ *
+ * hpMoveCursorToNewScreen()
+ * Turn the cursor off on the old screen.
+ * Call the display driver ChangeScreen routine.
+ * This routine is also called from the display driver SetCursorPosition
+ * routine.
+ *
+ */
+
+#include <stdio.h>
+
+hpMoveCursorToNewScreen(newScreen, InDev)
+    ScreenPtr newScreen;
+    HPInputDevice *InDev;
+    {
+    WindowPtr	pRootWin;
+    int tx, ty;
+    hpPrivPtr php = (hpPrivPtr) InDev->pScreen->devPrivate;
+
+    php->CursorOff (InDev->pScreen);
+    set_scale_and_screen_change (inputInfo.pointer, InDev, newScreen);
+    (*((hpPrivPtr)(newScreen->devPrivate))->ChangeScreen) (newScreen);
+    InDev->pScreen = newScreen;
+    if (InDev == hptablet_extension)
 	{
-	tx = phys->coords[0] < tablet_xorg ? 0 : pScreen->width;
-        ty = (float) phys->coords[1] * phys->scaleY;
-	NewCurrentScreen(pScreen, tx, ty);
+	tx = InDev->coords[0] < tablet_xorg ? 0 : newScreen->width;
+	ty = (float) InDev->coords[1] * InDev->scaleY;
+	NewCurrentScreen(newScreen, tx, ty);
 	}
     else
-        NewCurrentScreen(pScreen, log->coords[0], log->coords[1]);
+	NewCurrentScreen(newScreen, InDev->coords[0], InDev->coords[1]);
+    hpActiveScreen = newScreen->myNum;
+    screen_was_changed = TRUE;
 
-    hpActiveScreen = pScreen->myNum;
-    if (dev->grab && dev->grab->cursor)
-	pScreen->DisplayCursor(pScreen,dev->grab->cursor);
-    else if (!(pRootWin = WindowTable[pScreen->myNum]))
-	pScreen->DisplayCursor(pScreen,(CursorPtr) NULL);
+    if (inputInfo.pointer->grab && inputInfo.pointer->grab->cursor)
+	newScreen->DisplayCursor(newScreen,inputInfo.pointer->grab->cursor);
+    else if (!(pRootWin = WindowTable[newScreen->myNum]))
+	newScreen->DisplayCursor(newScreen,(CursorPtr) NULL);
     else
-	pScreen->DisplayCursor(pScreen,pRootWin->optional->cursor);
+	newScreen->DisplayCursor(newScreen,pRootWin->optional->cursor);
     }
-#endif /* __hpux || __hp_osf */
 
 /****************************************************************************
  *
@@ -1558,40 +1288,17 @@ move_mouse (log, event_time)
     int	event_time;				/* event timestamp */
     {
     int			i;
-    int			id 	= log->dev_id;
-    int			axes = log->hil_header.ax_num;
-   
-#if defined(__hpux) || defined(__hp_osf)
-    register 		hpPrivPtr phpPriv =  (hpPrivPtr) 
-			   log->pScreen->devPrivate;
+    int			axes = log->d.ax_num;
+
     if (log == hpPointer)
-#ifdef SPECIAL_68K_OSF
-	miPointerMoveCursor(log->pScreen, log->coords[0], log->coords[1], 1);
-#else
-        (*phpPriv->MoveMouse) (log->pScreen, log->coords[0], log->coords[1], 1);
-#endif
-#endif /* __hpux */
+	(*log->pScreen->SetCursorPosition) (log->pScreen, log->coords[0], log->coords[1], FALSE);
 
-#ifdef __apollo
-    if (log == hpPointer)
-	{
-	xshScreenPrivPtr pScreenPriv;
-
-	pScreenPriv = XSH_SCREEN_PRIV (log->pScreen);
-	(*pScreenPriv->MoveCursor) (pScreenPriv,log->coords[0],log->coords[1]);
-#ifdef XTESTEXT1
-	if (on_steal_input)
-	    check_for_motion_steal (log->coords[0], log->coords[1]);
-#endif /* XTESTEXT1 */
-	}
-#endif /* __apollo */
-
-    *dpmotionBuf[id]++ = event_time;
+    *log->dpmotionBuf++ = event_time;
     for (i=0; i<axes; i++)
-	*dpmotionBuf[id]++ = log->coords[i];
+	*log->dpmotionBuf++ = log->coords[i];
     
-    if((dheadmotionBuf[id] + 100 * (axes+1)) == dpmotionBuf[id])
-	dpmotionBuf[id] = dheadmotionBuf[id];
+    if((log->dheadmotionBuf + 100 * (axes+1)) == log->dpmotionBuf)
+	log->dpmotionBuf = log->dheadmotionBuf;
     }
 
 /**************************************************************************
@@ -1617,42 +1324,45 @@ move_mouse (log, event_time)
  * that controls screen changes.
  *
  */
-set_scale_and_screen_change (d)
+set_scale_and_screen_change (dev,d,newScreen)
+    DeviceIntPtr dev;
     HPInputDevice *d;
+    ScreenPtr newScreen;
     {
-    int tmp, resx_mm, resy_mm;
+    int tmp, res_mm;
 
     /* Absolute device: graphics tablet or touchscreen */
 
-    if (d->hil_header.flags & HIL_ABSOLUTE)
+    if (d->hpflags & ABSOLUTE_DATA)
 	{
-	resx_mm = d->hil_header.resx / 1000;
-	resy_mm = d->hil_header.resy / 1000;
+	res_mm = d->d.resolution / 1000;
 
     	/* Tablet subsetting enabled and this is the pointer region.
     	   This is called only during initialization, since when
     	   we change screens, the device is the second logical device. */
 
-	if (tablet_width && d->dev_id == inputInfo.pointer->id)
+	if (tablet_width && dev->id == inputInfo.pointer->id)
 	    {
-	    tablet_xorg = tablet_xorigin * resx_mm;
-	    tablet_xlimit = tablet_xorg + tablet_width * resx_mm;
-	    tmp  = d->hil_header.size_y - (tablet_yorigin * resy_mm);
+	    tablet_xorg = tablet_xorigin * res_mm;
+	    tablet_xlimit = tablet_xorg + tablet_width * res_mm;
+	    tmp  = d->d.max_y - (tablet_yorigin * res_mm);
 	    tablet_yorg = tmp > 0 ? tmp : 0;
-	    tmp = tablet_yorg - (tablet_height * resy_mm);
+	    tmp = tablet_yorg - (tablet_height * res_mm);
 	    if (tmp > 0)
 		tablet_ylimit = tmp;
 	    else
 		{
 		tablet_ylimit = 0;
-		tablet_height = tablet_yorg / resy_mm;
+		tablet_height = tablet_yorg / res_mm;
+		if (!tablet_height)
+		    tablet_height = 1;
 		}
-	    d->scaleX = ((float) d->pScreen->width) /
-	        ((float)tablet_width * resx_mm );
-	    d->scaleY = ((float) d->pScreen->height) /
-		((float)tablet_height * resy_mm );
+	    d->scaleX = ((float) newScreen->width) /
+	        ((float)tablet_width * res_mm );
+	    d->scaleY = ((float) newScreen->height) /
+		((float)tablet_height * res_mm );
 	    d->change_xmin = 0;
-	    d->change_xmax = d->pScreen->width;
+	    d->change_xmax = newScreen->width;
 	    d->change_amt = 0;
 	    }
 	else
@@ -1668,10 +1378,10 @@ set_scale_and_screen_change (d)
 	      Set scale for the case where the tablet is the X pointer.
 	      The scale is also returned to clients via XHPListInputDevices.
 	     */
-	    d->scaleX = ((float) (d->pScreen->width+2*screen_change_amt)) /
-		((float)d->hil_header.size_x);
-	    d->scaleY = ((float)d->pScreen->height) /
-		((float)d->hil_header.size_y);
+	    d->scaleX = ((float) (newScreen->width+2*screen_change_amt)) /
+		((float)d->d.max_x);
+	    d->scaleY = ((float)newScreen->height) /
+		((float)d->d.max_y);
 	    if (tablet_width)
 		{
 		/* If this is the second logical device, we must also
@@ -1679,14 +1389,14 @@ set_scale_and_screen_change (d)
 		   absolute extension devices is not scaled, the
 		   screen change amounts units are tablet counts.
 		 */
-		hpPointer->scaleX = ((float) d->pScreen->width) /
-	            ((float)tablet_width * resx_mm );
-		hpPointer->scaleY = ((float) d->pScreen->height) /
-		    ((float)tablet_height * resy_mm );
-		d->change_xmin =  resx_mm * screen_change_amt;
-		d->change_xmax = d->hil_header.size_x - d->change_xmin;
-		d->change_ymin =  resy_mm * screen_change_amt;
-		d->change_ymax = d->hil_header.size_y - d->change_xmin;
+		hpPointer->scaleX = ((float) newScreen->width) /
+	            ((float)tablet_width * res_mm );
+		hpPointer->scaleY = ((float) newScreen->height) /
+		    ((float)tablet_height * res_mm );
+		d->change_xmin =  res_mm * screen_change_amt;
+		d->change_xmax = d->d.max_x - d->change_xmin;
+		d->change_ymin =  res_mm * screen_change_amt;
+		d->change_ymax = d->d.max_y - d->change_xmin;
 		d->change_amt = 0;
 		}
 	    else
@@ -1695,9 +1405,9 @@ set_scale_and_screen_change (d)
 		 */
 		{
 		d->change_xmin =  1;
-		d->change_xmax = d->pScreen->width - 2;
+		d->change_xmax = newScreen->width - 2;
 		d->change_ymin =  1;
-		d->change_ymax = d->pScreen->height - 2;
+		d->change_ymax = newScreen->height - 2;
 		d->change_amt = 0;
 		}
 	    }
@@ -1713,9 +1423,9 @@ set_scale_and_screen_change (d)
 
 	{
 	d->change_xmin = 0;
-	d->change_xmax = d->pScreen->width;
+	d->change_xmax = newScreen->width;
 	d->change_ymin = 0;
-	d->change_ymax = d->pScreen->height;
+	d->change_ymax = newScreen->height;
 	d->change_amt = screen_change_amt;
 	}
     }
@@ -1732,11 +1442,19 @@ set_scale_and_screen_change (d)
 queue_motion_event (dev_p)
     HPInputDevice	*dev_p;
     {
-    static int		coords[MAX_AXES] = {0,0,0,0,0,0,0,0};
+    int			i;
+    int			axes = dev_p->d.ax_num;
     extern		TimeStamp currentTime;
+    int			ev_time = currentTime.milliseconds;
 
-    process_motion (inputInfo.pointer, dev_p, dev_p, coords, currentTime.milliseconds);
-    (void) format_ev (MotionNotify, 0, currentTime.milliseconds, dev_p, NULL);
+    *dev_p->dpmotionBuf++ = ev_time;
+    for (i=0; i<axes; i++)
+	*dev_p->dpmotionBuf++ = dev_p->coords[i];
+    
+    if((dev_p->dheadmotionBuf + 100 * (axes+1)) == dev_p->dpmotionBuf)
+	dev_p->dpmotionBuf = dev_p->dheadmotionBuf;
+
+    (void) format_ev (inputInfo.pointer, MotionNotify, 0, ev_time, dev_p, NULL);
     xE.b.u.u.type = 0;
     }
 
@@ -1751,30 +1469,43 @@ queue_motion_event (dev_p)
 #define AXES_PER_EVENT 6
 
 xEvent *
-format_ev (type, detail, event_time, log, event)
+format_ev (dev, type, detail, event_time, log, event)
+    DeviceIntPtr	dev;
     u_char		type;
     u_char		detail;
     unsigned  int 	event_time;
     HPInputDevice	*log;
     xHPEvent		*event;
     {
+    int first_val = 0, val_data = 0;
     int i, j;
-    int n_axes = log->hil_header.ax_num;
+    int n_axes = log->d.ax_num;
     INT32 *ip;
     xEvent *ret = NULL;
     Bool compressing = FALSE;
+
+    if (log->hpflags & NON_CONTIGUOUS_DATA)
+	for (j=0; j < (u_char) log->d.ax_num; j++)
+	    if (log->coords[j]!=0)
+		{
+		first_val = j;
+		val_data = log->coords[j];
+		break;
+		}
 
     for (i=0; (i==0 || i<n_axes); i+=AXES_PER_EVENT)
 	{
 	if (event==NULL)
 	    {
-	    if (xE.b.u.u.type != 0)	/* we have a previous motion event  */
-		{
-        	event = allocate_event();/* queue it before the new event    */
-        	*event = xE;
-		xE = zxE;			/* mark it as processed	    */
-		}
+	    ENQUEUE_EVENT(event);
 	    event = allocate_event();
+	    }
+	else if ((event->b.u.keyButtonPointer.pad1 & 0x7f) != dev->id ||
+	    ((log->hpflags & NON_CONTIGUOUS_DATA) &&
+	    event->x.first_valuator != first_val))
+	    {
+	    ENQUEUE_EVENT(event);
+	    event = &xE;
 	    }
 	else
 	    compressing = TRUE;
@@ -1786,42 +1517,37 @@ format_ev (type, detail, event_time, log, event)
 	event->b.u.keyButtonPointer.time = event_time;
 	event->b.u.keyButtonPointer.rootX = hpPointer->coords[0];
 	event->b.u.keyButtonPointer.rootY = hpPointer->coords[1];
-	event->b.u.keyButtonPointer.pad1 = log->dev_id;
+	event->b.u.keyButtonPointer.pad1 = dev->id;
 #ifdef XINPUT
 	if (type >= FIRST_EXTENSION_EVENT)
 	    {
 	    event->b.u.keyButtonPointer.pad1 |= MORE_EVENTS;
 	    event->x.type = DeviceValuator;
-	    event->x.deviceid = log->dev_id;
+	    event->x.deviceid = dev->id;
 
 	    if (log->hpflags & NON_CONTIGUOUS_DATA)
-		for (j=0; j < (u_char) log->hil_header.ax_num; j++)
-		    {
-		    if (log->coords[j]!=0)
-			{
-			event->x.num_valuators = 1;
-			event->x.first_valuator = j;
-			if (compressing && 
-			   !(log->hil_header.flags & HIL_ABSOLUTE))
-			    event->x.valuator0 += log->coords[j];
-			else
-			    event->x.valuator0 = log->coords[j];
-			return (ret);
-			}
-		    }
+		{
+		event->x.num_valuators = 1;
+		event->x.first_valuator = first_val;
+		if (compressing && !(log->hpflags & ABSOLUTE_DATA))
+		    event->x.valuator0 += val_data;
+		else
+		    event->x.valuator0 = val_data;
+		return (ret);
+		}
 	    else
 		{
 		event->x.num_valuators = 
-		    log->hil_header.ax_num < AXES_PER_EVENT ?
-		    log->hil_header.ax_num : i==0 ? AXES_PER_EVENT:
-		    log->hil_header.ax_num - AXES_PER_EVENT;
+		    log->d.ax_num < AXES_PER_EVENT ?
+		    log->d.ax_num : i==0 ? AXES_PER_EVENT:
+		    log->d.ax_num - AXES_PER_EVENT;
 
 		event->x.first_valuator = i;
 		ip = &event->x.valuator0;
 		for (j=i; j<i+6; j++)
-		    if ( j < (u_char) log->hil_header.ax_num)
+		    if ( j < (u_char) log->d.ax_num)
 			if (compressing &&
-			   !(log->hil_header.flags & HIL_ABSOLUTE))
+			   !(log->hpflags & ABSOLUTE_DATA))
 			    *ip++ +=  log->coords[j];
 			else
 			    *ip++ =  log->coords[j];
@@ -1844,28 +1570,20 @@ format_ev (type, detail, event_time, log, event)
  *
  */
 
-#define CLICK_VOICE 		2
-
-void
-ProcessInputEvents()
+void ProcessInputEvents()
     {
-    int	click, id, i;
+    int	id, i;
     INT32 *ip;
     int	count;
     xHPEvent	*event;
     DeviceIntPtr	dev;
     Bool checkedscreensave = FALSE;
 
-#if defined(__hp_osf)
-    if (hil_qp->hil_evqueue.head != hil_qp->hil_evqueue.tail)
-	read_shmhil();
-#endif /* __hp_osf */
-
     while ( events_queue->head != events_queue->tail) 
 	{
 	if (!checkedscreensave)
 	    {
-	    if (screenIsSaved==SCREEN_SAVER_ON && !display_borrowed)
+	    if (screenIsSaved==SCREEN_SAVER_ON)
 		SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
 	    checkedscreensave = TRUE;
 	    }
@@ -1875,34 +1593,42 @@ ProcessInputEvents()
 	    {
 	    case KeyPress:
 	        if (keyboard_click)
-		    beep(CLICK_VOICE,800,keyboard_click,1);
+		    {
+    		    KeybdCtrl ctrl;
+		    dev = (DeviceIntPtr) LookupKeyboardDevice ();
+		    ctrl.click = dev->kbdfeed->ctrl.click;
+		    ctrl.bell = 0;
+		    hpBell(0, dev, &ctrl, 0);
+		    }
 	    case KeyRelease:
 		dev = (DeviceIntPtr) LookupKeyboardDevice ();
-		(*dev->public.processInputProc) ((xEventPtr)event, dev, 1);
+		(*dev->public.processInputProc) ((xEventPtr) event, dev, 1);
 	        break;
 	    case ButtonPress:
 	    case ButtonRelease:
 	    case MotionNotify:
-		dev = (DeviceIntPtr) LookupPointerDevice ();
-		(*dev->public.processInputProc) ((xEventPtr)event, dev, 1);
-	        break;
-	    default:
-#ifdef XINPUT
-		id = event->b.u.keyButtonPointer.pad1 & DEVICE_BITS;
-		if (!(event->b.u.keyButtonPointer.pad1 & MORE_EVENTS))
-		    count=1;
-		else
-		    count=2;
-		dev = LookupDeviceIntRec (id);
+		    dev = (DeviceIntPtr) LookupPointerDevice ();
+		    (*dev->public.processInputProc) ((xEventPtr) event, dev, 1);
+		    break;
+		default:
+    #ifdef XINPUT
+		    id = event->b.u.keyButtonPointer.pad1 & DEVICE_BITS;
+		    if (!(event->b.u.keyButtonPointer.pad1 & MORE_EVENTS))
+			count=1;
+		    else
+			count=2;
+		    dev = LookupDeviceIntRec (id);
 		if (dev == NULL)
 		    break;
 		if (event->b.u.u.type == DeviceKeyPress)
 		    {
-		    if (dev->kbdfeed)
-		        click = (int)((double)(dev->kbdfeed->ctrl.click) * 
-				15.0 / 100.0);
-		    if (click)
-		        beep(CLICK_VOICE,800,click,1);
+		    if (dev->kbdfeed && dev->kbdfeed->ctrl.click)
+		        {
+    		        KeybdCtrl ctrl;
+		        ctrl.click = dev->kbdfeed->ctrl.click;
+		        ctrl.bell = 0;
+		        hpBell(0, dev, &ctrl, 0);
+		        }
 		    }
 		else if (event->b.u.u.type == DeviceMotionNotify)
 		    {
@@ -1910,7 +1636,7 @@ ProcessInputEvents()
 		    for (i=0; i < (u_char) event->x.num_valuators; i++)
 			dev->valuator->axisVal[i] = *(ip+i);
 		    }
-		(*dev->public.processInputProc) ((xEventPtr)event, dev, count);
+		(*dev->public.processInputProc) ((xEventPtr) event, dev, count);
 #endif /* XINPUT */
 	    break;
 	    }
@@ -1924,95 +1650,48 @@ ProcessInputEvents()
     queue_events_free	= WR_EVENTS;
     }
 
-#ifdef __hp_osf
-/******************************************************************
- * 
- * This routine removes data from the HIL shared memory event queue,
- * and processes it through the server ddx input event processing code.
- *
- */
-
-#define		NONDATA_BYTES	7
-#define		MAXNAMLEN	255
-
-read_shmhil()
-    {
-    int			i, head;
-    char		dev_name[MAXNAMLEN];
-    u_char		*buf;
-    DeviceIntPtr 	dev;
-    void		process_hil_data();
-    xHPEvent		*xHP;
-
-    while (hil_qp->hil_evqueue.head != hil_qp->hil_evqueue.tail)
-        {
-	head = hil_qp->hil_evqueue.head;
-	sprintf (dev_name, "/dev/hil%d", hil_qp->hil_event[head].dev);
-	for (i=0; i<MAX_LOGICAL_DEVS; i++)
-	    if (strcmp (l_devs[i].dev_name, dev_name) == 0)
-		break;
-
-	if (i==MAX_LOGICAL_DEVS)
-	   	    FatalError ("Can't find input device %s\n queue head = %d\n queue tail = %d\n event timestamp = 0x%x\n event pollheader = 0x%x\n event size = %d\n",
-			dev_name,
-			head,hil_qp->hil_evqueue.tail,
-			hil_qp->hil_event[head].tstamp,
-			hil_qp->hil_event[head].poll_hdr,
-			hil_qp->hil_event[head].size);
-	dev = find_deviceintrec (&l_devs[i]);
-	buf = (u_char *) &hil_qp->hil_event[head].tstamp;
-	hil_info.timestamp = ((*buf & 0x0ff) << 24) |
-			     ((*(buf+1) & 0x0ff) << 16) |
-			     ((*(buf+2) & 0x0ff) << 8) |
-			     ( *(buf+3) & 0x0ff);
-
-	hil_info.timestamp = (hil_info.timestamp - 1) * 10;
-	hil_info.poll_hdr = hil_qp->hil_event[head].poll_hdr & HIL_POLL_HDR_BITS;
-
-	pending_bytes = hil_qp->hil_event[head].size - NONDATA_BYTES;
-	pending_index = 0;
-	for (i=0; i < pending_bytes; i++)
-	    hil_info.dev_data[i] = hil_qp->hil_event[head].dev_data[i];
-
-	process_hil_data (dev, hil_info.hil_dev, &(hil_info));
-        hil_qp->hil_evqueue.head = (hil_qp->hil_evqueue.head + 1) % 
-		hil_qp->hil_evqueue.size;	/* MUST use real head pointer,
-						   process_button may have
-						   incremented it.      */
-	}
-
-    if (xE.b.u.u.type != 0)			/* at least 1 motion event */
-	{
-        xHP = allocate_event();			/* get current queue pointer*/
-        *xHP = xE;				/* copy from global struct  */
-        xE.b.u.u.type = 0;			/* mark it as processed	    */
-	}
-    }
-#endif /* __hp_osf */
-
 Bool
 get_serial_event (hil_ptr)
     struct dev_info *hil_ptr;				/* holds hil_data */
     {
-    int i, status;
+    HPInputDevice *d = hil_ptr->hil_dev;
+    int status;
 
     hil_ptr->timestamp = GetTimeInMillis();
     hil_ptr->poll_hdr = 0;
     pending_index=0;
     pending_bytes=0;
     bzero (hil_ptr->dev_data, 36);
-    for (i=0; i<num_serial_devices; i++)
-	if (hil_ptr->hil_dev->file_ds==serialprocs[i].fd)
-	    {
- 	    status = (*(serialprocs[i].read))
-		(hil_ptr->hil_dev->file_ds,
-	    	hil_ptr->dev_data, 
-		&hil_ptr->poll_hdr, 
-		&pending_bytes);
-	    break;
-	    }
+    status = (*(d->s.read))
+	(d->d.file_ds, hil_ptr->dev_data, &hil_ptr->poll_hdr, &pending_bytes);
     if (status==READ_SUCCESS)
 	return(FALSE);
     else
 	return(TRUE);
     }
+
+/************************************************************
+ * hpConstrainCursor
+ *
+ * This function simply sets the box to which the cursor 
+ * is limited.  
+ * 
+ * A single BoxRec is used for recording the cursor limits, 
+ * instead of one per screen.  This is ok because DIX will
+ * call this routine to establish new limits anytime the 
+ * cursor leaves one screen for another.
+ *
+ ************************************************************/
+
+void 
+hpConstrainCursor (pScreen,pBox)
+ScreenPtr pScreen;    /* Screen to which it should be constrained */
+BoxPtr   pBox;        /* Box in which... */
+{
+    HPInputDevice *d;
+
+    LimitTheCursor = *pBox;
+    d = GET_HPINPUTDEVICE (inputInfo.pointer);
+    if (d->pScreen !=pScreen)
+	hpMoveCursorToNewScreen(pScreen, d);
+}

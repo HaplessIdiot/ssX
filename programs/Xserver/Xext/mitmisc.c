@@ -28,7 +28,9 @@ in this Software without prior written authorization from the X Consortium.
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
 /* $XConsortium: mitmisc.c,v 1.5 94/04/17 20:32:54 rws Exp $ */
+/* $XFree86$ */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"

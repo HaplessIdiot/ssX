@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.6 1996/02/12 11:12:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.7 1996/02/18 03:42:46 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -90,6 +90,10 @@
 
 #include "os.h"
 #include "osdep.h"
+#include "exevents.h"
+
+#include "extnsionst.h"
+#include "extinit.h"
 
 #if !defined(sun) || defined(i386)
 /*
@@ -911,11 +915,13 @@ xf86EloControl(DeviceIntPtr	dev,
     }
     else {
       InitValuatorAxisStruct(dev, 0, priv->min_x, priv->max_x,
-			     9500/*,
-			     min_res, max_res*/);
+			     9500,
+			     0     /* min_res */,
+			     9500  /* max_res */);
       InitValuatorAxisStruct(dev, 1, priv->min_y, priv->max_y,
-			     10500/*,
-			     min_res, max_res*/);
+			     10500,
+			     0     /* min_res */,
+			     10500 /* max_res */);
     }
 
     if (InitPtrFeedbackClassDeviceStruct(dev, xf86EloPtrControl) == FALSE) {
@@ -1126,6 +1132,10 @@ not_success:
     local->fd = -1;
     DBG(2, ErrorF("Done\n"));
     return Success;
+
+  default:
+      ErrorF("unsupported mode=%d\n", mode);
+      return !Success;
   }
 }
 
@@ -1137,7 +1147,11 @@ not_success:
  ***************************************************************************
  */
 static LocalDevicePtr
-xf86EloAllocate()
+xf86EloAllocate(
+#if NeedFunctionPrototypes
+	void
+#endif
+	)
 {
   LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
   EloPrivatePtr         priv = (EloPrivatePtr) xalloc(sizeof(EloPrivateRec));

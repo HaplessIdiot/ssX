@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.24 1996/02/04 09:13:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.25 1996/02/22 05:13:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,7 +48,6 @@
 #ifdef XFreeXDGA
 #include "X.h"
 #include "Xproto.h"
-#include "extnsionst.h"  
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
@@ -108,6 +107,7 @@ static Bool     LegendClockSelect();
 #ifdef W32_ACCEL_SUPPORT
 static Bool     ICS5341ClockSelect();
 static Bool     STG1703ClockSelect();
+static Bool     ICD2061AClockSelect();
 #endif
 static void     ET4000EnterLeave();
 static Bool     ET4000Init();
@@ -349,6 +349,7 @@ ICS5341ClockSelect(freq)
    }
    return(result);
 }
+
 /*
  * STG1703ClockSelect --
  *      programmable clock chip
@@ -373,6 +374,33 @@ STG1703ClockSelect(freq)
 	 * the code programs the clocks directly :-(
 	 */
         ET4000stg1703SetClock(freq, 2); /* can't fail */
+        result = ET4000ClockSelect(2);
+        usleep(150000);
+      }
+   }
+   return(result);
+}
+
+/*
+ * ICD2061AClockSelect --
+ *      programmable clock chip
+ */
+
+static Bool
+ICD2061AClockSelect(freq)
+     int freq;
+{
+   Bool result = TRUE;
+
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = ET4000ClockSelect(freq);
+      break;
+   default:
+      {
+        Et4000AltICD2061SetClock((long)freq*1000, 2); /* can't fail */
         result = ET4000ClockSelect(2);
         usleep(150000);
       }
@@ -540,6 +568,11 @@ ET4000Probe()
     else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions))
     {
       ClockSelect = STG1703ClockSelect;
+      numClocks = 3;
+    }
+    else if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
+    {
+      ClockSelect = ICD2061AClockSelect;
       numClocks = 3;
     }
     else
@@ -819,6 +852,10 @@ ET4000Restore(restore)
        ErrorF("--------  New Cmd Reg: 0x%2x\n\n",pllctr);
 #endif
     }
+    if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
+    {
+       /* Alas... The ICD clock registers cannot be restored */
+    }
   }
 #endif
  
@@ -938,6 +975,10 @@ ET4000Save(save)
       save->gendac.PLL_f2_N = inb(0x3c6);     /* f2 PLL N1/N2 divider */
       save->gendac.PLL_ctrl = STG1703getIndex(0x03);    
                                               /* pixel mode select control */
+    }
+    if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
+    {
+      /* ICD2061A clock registers cannot be saved, 'cause they cannot be read */ 
     }
   }
 #endif
@@ -1102,7 +1143,7 @@ ET4000Init(mode)
          && (    (W32RamdacType == STG1703_DAC)
               || (W32RamdacType == ICS5341_DAC)) )
     { 
-      /* for pixmux: must use post-div of at least 4!
+      /* for pixmux: must use post-div of 4 on ICS GenDAC!
        */
 
 #if EXTENDED_DEBUG
@@ -1126,10 +1167,10 @@ ET4000Init(mode)
 						   * mode 
 						   */
 
+#if THIS_SHOULD_BE_NECESSARY_BUT_FAILS
          /* set doubleword adressing -- seems to be needed for <1280 modes 
 	  * to get correct screen 
 	  */
-#if THIS_SHOULD_BE_NECESSARY_BUT_FAILS
          new->std.CRTC[0x14] = (new->std.CRTC[0x14] & 0x9F) | 0x40;
 #endif
          new->std.CRTC[0x17] = (new->std.CRTC[0x17] & 0xFB);
@@ -1162,6 +1203,19 @@ ET4000Init(mode)
        new->Compatibility = (new->Compatibility & 0xFD);   
        new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
        new->std.NoClock = 2;
+    }
+    else
+    if (    (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+              && (    (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))))
+    {
+       /* the programmed clock will be on clock index 2 */
+       /* disable MCLK/2 and MCLK/4 */
+       new->AuxillaryMode = (new->AuxillaryMode & 0xBE);   
+       /* clear CS2: we need clock #2 */
+       new->Compatibility = (new->Compatibility & 0xFD);   
+       new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
+       new->std.NoClock = 2;
+       ICD2061AClockSelect(mode->SynthClock);
     }
     else
 #endif

@@ -1,4 +1,5 @@
 /* $XConsortium: bigreq.c,v 1.4 94/04/17 20:32:51 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -29,6 +30,7 @@ from the X Consortium.
 
 */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.4 1996/02/18 03:42:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.5 1996/03/10 12:04:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -86,7 +86,11 @@ extern void xf86ConfigError(
 #if NeedFunctionPrototypes
 	char *			/* msg */
 #endif
-);
+)
+#if __GNUC__
+__attribute__((noreturn))
+#endif
+;
 
 /* xf86Cursor.c */
 

@@ -1,4 +1,6 @@
-/* $XConsortium: iclut.c,v 1.4 94/04/17 20:33:33 rws Exp $ */
+/* $XConsortium: iclut.c /main/5 1995/12/02 16:45:18 dpw $ */
+/* $XFree86$ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module iclut.c ****/
 /******************************************************************************
 
@@ -82,6 +84,7 @@ terms and conditions:
   /*
    *  Core X Includes
    */
+#define NEED_EVENTS
 #include <X.h>
 #include <Xproto.h>
   /*
@@ -195,27 +198,27 @@ static Bool PrepICLUT(flo,ped)
   case xieValTripleBand :
     if(!raw->length0 || !raw->length1 || !raw->length2)
       ValueError(flo,ped,0, return(FALSE));
-    if(raw->levels0 || raw->levels0 > MAX_LEVELS(3) ||
-       raw->levels1 || raw->levels1 > MAX_LEVELS(3) ||
-       raw->levels2 || raw->levels2 > MAX_LEVELS(3))
+    if(raw->levels0 < 2 || raw->levels0 > MAX_LEVELS(3) ||
+       raw->levels1 < 2 || raw->levels1 > MAX_LEVELS(3) ||
+       raw->levels2 < 2 || raw->levels2 > MAX_LEVELS(3))
       MatchError(flo,ped, return(FALSE));
 
-    inflo->bands	    = 3;
-    inflo->format[1].band   = 1;
-    inflo->format[2].band   = 2;
+    inflo->bands	  = 3;
+    inflo->format[1].band = 1;
+    inflo->format[2].band = 2;
     ped->outFlo.format[1] = inflo->format[1];
     ped->outFlo.format[2] = inflo->format[2];
-    ped->outFlo.format[1].levels =  raw->levels1;
-    ped->outFlo.format[2].levels =  raw->levels2;
-    ped->outFlo.format[1].height =  raw->length1;
-    ped->outFlo.format[2].height =  raw->length2;
+    ped->outFlo.format[1].levels = raw->levels1;
+    ped->outFlo.format[2].levels = raw->levels2;
+    ped->outFlo.format[1].height = raw->length1;
+    ped->outFlo.format[2].height = raw->length2;
     break;
 #endif
   default :
     ValueError(flo,ped,raw->class, return(FALSE));
   }
 
-  inflo->format[0].band   = 0;
+  inflo->format[0].band = 0;
   ped->outFlo.format[0] = inflo->format[0];
   ped->outFlo.format[0].levels =  raw->levels0;
   ped->outFlo.format[0].height =  raw->length0;

@@ -1,4 +1,5 @@
 /* $XConsortium: miListUtil.c,v 5.3 94/04/17 20:36:52 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,7 +55,6 @@ SOFTWARE.
 #include "misc.h"
 #include "miscstruct.h"
 #include "PEXErr.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 
 /*++

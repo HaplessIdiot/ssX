@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.87 1996/02/18 03:40:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.88 1996/02/24 04:32:54 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -143,6 +143,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF98WSNAServer		NO	
 #endif
 
+#ifndef XF98TGUIServer
+# define XF98TGUIServer		NO
+#endif
+
 #ifndef XF98EGCServer
 # define XF98EGCServer		NO
 #endif
@@ -249,14 +253,14 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
  * PEX doesn't work for 1-bit and 4-bit servers
  */
 #ifndef BuildPexExt
-#define BuildPexExt		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer
+#define BuildPexExt		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
 #endif
 
 /*
  * XIE doesn't work for our 1-bit and 4-bit servers
  */
 #ifndef BuildXIE
-#define BuildXIE		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer
+#define BuildXIE		XF86AccelServer || XF86SVGAServer || XF98AccelServer || XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer
 #endif
 
 /*
@@ -366,7 +370,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines XFree86DGADefines -DDEVINTPTR
+#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines XFree86DGADefines
 #endif
 
 #ifndef XFree86ServerOSDefines
@@ -539,7 +543,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3124
+#define XFree86Version	3125
 #endif
 
 #ifndef XVendorString

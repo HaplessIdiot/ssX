@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.8 1996/02/04 09:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.9 1996/03/04 05:14:21 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -349,8 +349,7 @@ static void
 readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
   KeySym        *k;
-  char          type;
-  int           i, j;
+  int           i;
   static unsigned char tbl[GLYPHS_PER_KEY] =
   {
 	0,	/* unshifted */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.48 1996/02/22 05:13:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.49 1996/02/24 05:59:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,7 +50,6 @@
 #endif
 
 #ifdef XFreeXDGA
-#include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
@@ -321,34 +320,9 @@ vgaPrintIdent()
 #ifdef XF86VGA16
   ErrorF("  %s: server for 4-bit colour VGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
-#ifdef	PC98_EGC
-  ErrorF("\tmodified for PC98 EGC (Patchlevel %s):\n      ",PC98_VGA16_PL);
-#endif
 #else
   ErrorF("  %s: server for 8-bit colour SVGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
-#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP) \
-	||defined(PC98_NKVNEC)||defined(PC98_NEC480)||defined(PX98_WSNA)
-  ErrorF("\tmodified for PC98 WAB/WAP/WSN GA-98NB EPSON-NKV \n\tNEC-CIRRUS PEGC(Patchlevel %s):\n      ",PC98_SVGA_PL);
-#endif
-#ifdef PC98_WAB
-  ErrorF("\tThis server was compiled for PC98 WAB.\n      ");
-#endif
-#ifdef PC98_WABEP
-  ErrorF("\tThis server was compiled for PC98 WAB-EP.\n      ");
-#endif
-#ifdef PC98_GANB_WAP
-  ErrorF("\tThis server was compiled for PC98 GA-98NB and WAP.\n      ");
-#endif
-#ifdef PC98_WSNA
-  ErrorF("\tThis server was compiled for PC98 WSN-A2F.\n      ");
-#endif
-#ifdef PC98_NKVNEC
-  ErrorF("\tThis server was compiled for PC98 EPSON-NKV/NKV2/NEC_CIRRUS.\n      ");
-#endif
-#ifdef PC98_NEC480
-  ErrorF("\tThis server was compiled for PC98 PEGC(640x480,256colors).\n      ");
-#endif
 #endif
 #endif
   n = 0;
@@ -375,13 +349,21 @@ vgaPrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
-
-#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP) \
-	||defined(PC98_NKVNEC)||defined(PC98_NEC480)||defined(PC98_WSNA)
-  ErrorF("Supported video boards:\n \t%s \n    ",PC98_SVGA_BOARDS);
+#ifdef PC98
+  ErrorF("  PC98: Supported Video Boards:\n\t");
 #endif
-#ifdef	PC98_EGC
-  ErrorF("Supported video boards:\n \t%s \n    ",PC98_VGA16_BOARDS);
+#ifdef PC98_EGC
+  ErrorF("%s\n",PC98_VGA16_BOARDS);
+#endif
+#ifdef PC98_NEC480
+  ErrorF("%s\n",PC98_VGA256_BOARDS);
+#endif
+#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)||\
+	defined(PC98_NKVNEC)||defined(PC98_WSNA)
+  ErrorF("%s\n",PC98_CIRRUS_BOARDS);
+#endif
+#ifdef PC98_TGUI
+  ErrorF("%s\n",PC98_TGUI_BOARDS);
 #endif
 }
 
@@ -469,7 +451,7 @@ vgaProbe()
   }
 #endif
 
-#ifndef PC98
+#if !defined(PC98) || defined(PC98_TGUI)
   /* First do a general PCI probe (unless disabled) */
   if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
     vgaPCIInfo = vgaGetPCIInfo();
@@ -966,6 +948,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
 			    vgaMapSize);
 #else
+#if defined(PC98_TGUI)
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xFFE10000,
+			    vgaMapSize);
+#else
 #if defined(PC98_EGC) || defined(PC98_NEC480)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA8000,
 			    vgaMapSize);
@@ -973,6 +959,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 			    vgaMapSize);
 #endif /* PC98_EGC || PC98_NE480 */
+#endif /* PC98_TGUI */
 #endif /* PC98_GANB_WAP || PC98_WSNA || PC98_NKVNEC */
 #endif /* PC98_WAB || PC98_WABEP */
     if (vgaUseLinearAddressing)
@@ -1441,16 +1428,6 @@ vgaCloseScreen(screen_idx, pScreen)
    * current vt. Let's catch this case here.
    */
   xf86Exiting = TRUE;
-  if (xf86VTSema)
-    vgaEnterLeaveVT(LEAVE, screen_idx);
-  else if (ppix) {
-    /*
-     * 7-Jan-94 CEG: The server is not running on the current vt.
-     * Free the screen snapshot taken when the server vt was left.
-     */
-    (savepScreen->DestroyPixmap)(ppix);
-    ppix = NULL;
-  }
 #ifdef	PC98_EGC
   /* clear screen */
   {
@@ -1484,6 +1461,16 @@ vgaCloseScreen(screen_idx, pScreen)
 	outb(0x6a, 0x06);
 	outb(0x7c, 0x00);
 #endif /* PC98_NEC480 */
+  if (xf86VTSema)
+    vgaEnterLeaveVT(LEAVE, screen_idx);
+  else if (ppix) {
+    /*
+     * 7-Jan-94 CEG: The server is not running on the current vt.
+     * Free the screen snapshot taken when the server vt was left.
+     */
+    (savepScreen->DestroyPixmap)(ppix);
+    ppix = NULL;
+  }
   return(TRUE);
 }
 

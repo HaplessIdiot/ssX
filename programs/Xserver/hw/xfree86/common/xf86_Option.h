@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.46 1996/02/09 08:20:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.47 1996/02/20 14:34:28 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -169,7 +169,8 @@ typedef struct {
 #define OPTION_PCHKB		 142 /* SELECT EPSON PCHKB for S3 Server */
 #define OPTION_NECWAB		 143 /* SELECT NEC WAB-A/B for S3 Server */
 #define OPTION_PW805I		 144 /* SELECT Canopus PW805i for S3 Server */
-#define	OPTION_PWLB		 145 /* SELECT Canopus PW_LB for S3 Server */
+#define OPTION_PWLB		 145 /* SELECT Canopus PW_LB for S3 Server */
+#define OPTION_PW968		 146 /* SELECT Canopus PW968 for S3 Server */
 #define OPTION_GA98NB1           150 /* SELECT IO DATA GA-98NB1 for SVGA */
 #define OPTION_GA98NB2           151 /* SELECT IO DATA GA-98NB2 for SVGA */
 #define OPTION_GA98NB4           152 /* SELECT IO DATA GA-98NB4 for SVGA */
@@ -177,7 +178,8 @@ typedef struct {
 #define OPTION_NEC_CIRRUS        154 /* SELECT NEC Internal Server for SVGA */
 #define OPTION_EPSON_MEM_WIN	 161 /* ENABLE mem-window 0xF00000 for EPSON */
 #define OPTION_PW_MUX            162 /* ENABLE MUX on PW928II */
-#define	OPTION_NOINIT		 163 /* Not Initialize SDAC & VGA Registers */
+#define OPTION_NOINIT		 163 /* Not Initialize SDAC & VGA Registers */
+#define OPTION_PC98TGUI		 170 /* SELECT NEC TGUI9660 */
 /* #endif */
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
@@ -299,6 +301,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "necwab",		OPTION_NECWAB },
   { "pw805i",		OPTION_PW805I },
   { "pw_localbus",	OPTION_PWLB },
+  { "pw968",		OPTION_PW968 },
   { "ga98nb1",		OPTION_GA98NB1 },
   { "ga98nb2",		OPTION_GA98NB2 },
   { "ga98nb4",		OPTION_GA98NB4 },
@@ -307,6 +310,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "epsonmemwin",	OPTION_EPSON_MEM_WIN },
   { "pw_mux",		OPTION_PW_MUX },
   { "noinit",		OPTION_NOINIT },
+  { "pc98_tgui",	OPTION_PC98TGUI },
 /* #endif */
 
   { "8_bit_bus",        OPTION_8_BIT_BUS },

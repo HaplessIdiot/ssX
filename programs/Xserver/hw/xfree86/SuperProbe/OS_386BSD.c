@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.4 1995/01/28 15:47:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.5 1996/02/04 08:56:53 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -65,6 +65,13 @@
 #endif
 #if defined(__NetBSD__) && !defined(MAP_FILE)
 #define MAP_FILE 0
+#endif
+
+#if defined(__NetBSD__)
+#  include <sys/param.h>
+#  ifdef NetBSD1_1
+#    include <machine/sysarch.h>
+#  endif
 #endif
 
 static int CONS_fd = -1;
@@ -336,11 +343,19 @@ int Len;
  * Enable access to 'NumPorts' IO ports listed in array 'Ports'.  For 386BSD, 
  * we've disabled IO protections so this is a no-op.
  */
+static int IOEnabled = 0;
 /*ARGSUSED*/
 int EnableIOPorts(NumPorts, Ports)
 CONST int NumPorts;
 CONST Word *Ports;
 {
+#ifdef __NetBSD__ 
+#ifdef NetBSD1_1
+    if (IOEnabled++ == 0) {
+	i386_iopl(TRUE);
+    }
+#endif
+#endif
 	return(0);
 }
 
@@ -356,6 +371,13 @@ int DisableIOPorts(NumPorts, Port)
 CONST int NumPorts;
 CONST Word *Port;
 {
+#ifdef __NetBSD__
+#ifdef NetBSD1_1
+    if (--IOEnabled == 0) {
+	i386_iopl(FALSE);
+    }
+#endif
+#endif
 	return(0);
 }
 

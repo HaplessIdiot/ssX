@@ -1,9 +1,15 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.7 1995/12/21 11:44:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.8 1996/02/04 09:06:42 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
  */
 /* $XConsortium: I2061Aalt.c /main/5 1995/12/28 17:15:59 kaleb $ */
+
+/*#define EXTENDED_DEBUG*/
+
+#ifdef EXTENDED_DEBUG
+#include <stdio.h>
+#endif
 
 #include "compiler.h"
 
@@ -29,14 +35,16 @@ static void prtbinary(unsigned int size, unsigned int val);
 #endif
 static void wait_vb();
 static void wrt_clk_bit(unsigned int value);
-static void init_clock(unsigned long setup, unsigned short crtcport);
+static void s3_init_clock(unsigned long setup,  unsigned short crtcport);
+static void et4000_init_clock(unsigned long setup);
 #else
 #if 0
 static void prtbinary();
 #endif
 static void wait_vb();
 static void wrt_clk_bit();
-static void init_clock();
+static void s3_init_clock();
+static void et4000_init_clock();
 #endif
 #ifdef PC98_PW
 static void PWClockSet(short,unsigned long);
@@ -45,9 +53,9 @@ static void PWClockSet(short,unsigned long);
 static void PWLBClockSet(short,unsigned long);
 #endif
 
-void AltICD2061SetClock(frequency, select)
+static unsigned long
+AltICD2061CalcClock(frequency)
 register long   frequency;               /* in Hz */
-int select;
 {
    unsigned int m;
    int i;
@@ -75,8 +83,6 @@ int select;
    outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
    outw(crtcaddr, 0xA539);
 #endif
-
-   clknum = select;
 
    freq = ((double)frequency)/1000000.0;
    if (freq > range[13])
@@ -122,16 +128,55 @@ int select;
    }
    fvco = fref / (1<<bestm);
    realval = (fvco * bestp) /  bestq;
+
+#ifdef EXTENDED_DEBUG
+   fprintf(stderr, "I2061Aalt.c: from (%d,%d,%d) calculated freq %ld kHz\n", bestm, bestp, bestq,
+          ((((unsigned long) 4*14318lu*bestp/bestq)>>bestm)+1)>>1);
+#endif
+
 #if !defined(PC98_PW) && !defined(PC98_PWLB)
    dwv = ((((((long)besti << 7) | (bestp-3)) << 3) | bestm) << 7) | (bestq-2);
+#else
+   bestp = (~(0x82 - bestp)) & 0x7f;
+   bestq = (~(0x81 - bestq)) & 0x7f;		
+   dwv = ((((((((long)besti << 7) | bestp) << 1) | 1) << 3) | bestm) << 7) | (bestq-2);
+#endif
+
+   return (dwv);
+
+}
+
+void
+AltICD2061SetClock(frequency, select)
+register long   frequency;               /* in Hz */
+int select;
+{
+   unsigned char tmp;
+   long dwv;
 
 #ifdef EXTENDED_DEBUG
    ErrorF("Setting ICD2061A compatible clock to %d\n",frequency);
 #endif
-/*
- * Write ICD 2061A clock chip
- */
-   init_clock(((unsigned long)dwv) | (((long)clknum) << 21), crtcaddr);
+
+   crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
+
+   outb(crtcaddr, 0x11);        /* Unlock CRTC registers */
+   tmp = inb(crtcaddr + 1);
+   outb(crtcaddr + 1, tmp & ~0x80);
+
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
+   outw(crtcaddr, 0x4838);      /* Unlock S3 register set */
+   outw(crtcaddr, 0xA039);
+#else
+   outw(crtcaddr, 0x4838);      /* Unlock S3 register set */
+   outw(crtcaddr, 0xA539);
+#endif
+
+   /* Write ICD 2061A clock chip */
+   dwv = AltICD2061CalcClock(frequency);
+
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
+   s3_init_clock(((unsigned long)dwv) | (((long)select) << 21), crtcaddr);
 
    wait_vb();
    wait_vb();
@@ -139,11 +184,9 @@ int select;
    wait_vb();
    wait_vb();
    wait_vb();
-   wait_vb();		/* 0.10 second delay... */
+   wait_vb();           /* 0.10 second delay... */
+
 #else
-	bestp = (~(0x82 - bestp)) & 0x7f;
-	bestq = (~(0x81 - bestq)) & 0x7f;		
-	dwv = ((((((((long)besti << 7) | bestp) << 1) | 1) << 3) | bestm) << 7) | (bestq-2);
 #ifdef PC98_PW
 	PWClockSet(select, (unsigned long)dwv);
 #else
@@ -157,11 +200,44 @@ int select;
 	inb(0x3d4);
 	inb(0x3d4);
 #endif
+
+}
+
+void
+Et4000AltICD2061SetClock(frequency, select)
+register long   frequency;               /* in Hz */
+int select;
+{
+   unsigned long dwv;
+
+   crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
+
+   /* Write ICD 2061A clock chip */
+
+   dwv = AltICD2061CalcClock(frequency);
+#ifdef EXTENDED_DEBUG
+   fprintf(stderr, "I2061Aalt.c: Setting (et4000)ICD2061A freq %d, select %d, dwv %ld\n",
+          frequency, select, dwv);
+#endif
+   et4000_init_clock(((unsigned long)dwv) | (((long)select) << 21));
+
+   /* select the clock */
+   outb(0x3C2,(inb(0x3CC) & 0xF3) | ((select << 2) & 0x0C));
+
+   wait_vb();
+   wait_vb();
+   wait_vb();
+   wait_vb();
+   wait_vb();
+   wait_vb();
+   wait_vb();           /* 0.10 second delay... */
 }
 
 
+
 #if 0
-static void prtbinary(size, val)
+static void
+prtbinary(size, val)
    unsigned int size;
    unsigned int val;
    {
@@ -190,9 +266,11 @@ static void wait_vb()
 
 
 #if NeedFunctionPrototypes
-static void init_clock(unsigned long setup, unsigned short crtcport)
+static void
+s3_init_clock(unsigned long setup, unsigned short crtcport)
 #else
-static void init_clock(setup, crtcport)
+static void
+s3_init_clock(setup, crtcport)
    unsigned long setup;
    unsigned short crtcport;
 #endif
@@ -270,7 +348,8 @@ static void init_clock(setup, crtcport)
 
    }
 
-static void wrt_clk_bit(value)
+static void
+wrt_clk_bit(value)
    unsigned int value;
    {
    int j;
@@ -325,3 +404,39 @@ PWLBClockSet(short a, unsigned long setup)
 	}
 }
 #endif
+
+
+/*
+ *  ET4000 ICD2061 (Diamond Stealth 32) clock setting code.
+ *    Original by Frank Klemm
+ *    Linux port by Ray Balister.
+ *    various improvements by Peter Chang
+ *    included in XFREE code base by Koen Gadeyne
+ */
+
+static void
+et4000_init_clock(unsigned long setup)
+{
+    register unsigned char a=inb(0x3CC) & ~0x0C;
+    register unsigned i;
+    unsigned long m;
+
+#define S(x)   outb(0x3C2,a | 4*(x))
+
+    for (i=0; i<5; i++)
+      S(2), S(3);
+    for (i=0; i<2; i++)
+      S(0), S(1);
+    for (i=0, m=1; i<24; i++, m+=m)
+      if (setup & m)
+       S(1), S(0), S(2), S(3);
+      else
+       S(3), S(2), S(0), S(1);
+    S(3), S(2), S(3);
+    S(3);
+
+#undef S
+
+}
+
+

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.6 1996/02/18 03:42:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.7 1996/03/10 12:04:36 dawes Exp $ */
 
 #include "XI.h"
 #include "XIproto.h"
@@ -33,6 +33,13 @@
 #include "xf86Xinput.h"
 #include "xf86Procs.h"
 #include "mipointer.h"
+
+#include "exevents.h"	/* AddInputDevice */
+
+#include "extnsionst.h"
+#include "extinit.h"	/* LookupDeviceIntRec */
+
+#include "windowstr.h"	/* screenIsSaved */
 
 #include <stdarg.h>
 
@@ -128,7 +135,6 @@ configExtendedInputSection(LexPtr       val)
 {
   int           i;
   int           token;
-  extern int    xf86GetToken(SymTabRec tab[]);
 
 #ifndef DYNAMIC_MODULE
 # ifdef JOYSTICK_SUPPORT
@@ -238,7 +244,7 @@ InitExtInput()
   /* Add each device */
   for (i = 0; i < num_devices; i++) {
     if (localDevices[i]->flags & XI86_CONFIGURED) {
-      dev = (DeviceIntPtr) AddInputDevice(localDevices[i]->device_control,
+      dev = AddInputDevice(localDevices[i]->device_control,
                                           (localDevices[i]->flags & XI86_NO_OPEN_ON_INIT) ? FALSE : TRUE);
       if (dev == NULL)
         FatalError("Too many input devices");
@@ -579,7 +585,7 @@ void
 xf86eqEnqueue (e)
     xEvent	*e;
 {
-    int	oldtail, newtail, prevtail;
+    int	oldtail, newtail;
     Bool    isMotion;
 #ifdef XINPUT
     int     count;
@@ -659,13 +665,10 @@ xf86eqProcessInputEvents ()
     DeviceIntPtr                dev;
     int                         id, count;
     deviceKeyButtonPointer      *dev_xe;
-    extern DeviceIntPtr         LookupDeviceIntRec();
 #endif
 
     while (xf86EventQueue.head != xf86EventQueue.tail)
     {
-	extern int  screenIsSaved;
-
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
 
@@ -750,70 +753,65 @@ PostMotionEvent(DeviceIntPtr	device,
 		int		num_valuators,
 		...)
 {
-  va_list			var;
-  int				loop;
-  xEvent			xE[2];
-  deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
-  deviceValuator		*xv = (deviceValuator*) xev+1;
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
 
-  if (num_valuators > 6) {
-    num_valuators = 6;
-  }
+    va_start(var, num_valuators);
 
-  va_start(var, num_valuators);
-
-  for(loop=0; loop<num_valuators; loop++) {
-    switch (loop) {
-    case 0:
-      xv->valuator0 = va_arg(var, int);
-      break;
-    case 1:
-      xv->valuator1 = va_arg(var, int);
-      break;
-    case 2:
-      xv->valuator2 = va_arg(var, int);
-      break;
-    case 3:
-      xv->valuator3 = va_arg(var, int);
-      break;
-    case 4:
-      xv->valuator4 = va_arg(var, int);
-      break;
-    case 5:
-      xv->valuator5 = va_arg(var, int);
-      break;
-    }
-  }
-
-  va_end(var);
-
-  if (!IsCorePointer(device)) {
-    xev->type = DeviceMotionNotify;
-    xev->detail = 0;
-    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
-    xev->deviceid = device->id | MORE_EVENTS;
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    break;
+	}
+	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+	    if (!IsCorePointer(device)) {
+		xev->type = DeviceMotionNotify;
+		xev->detail = 0;
+		xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+		xev->deviceid = device->id | MORE_EVENTS;
             
-    xv->type = DeviceValuator;
-    xv->deviceid = device->id;
-
-    xv->num_valuators = num_valuators;
-    xv->first_valuator = first_valuator;
-    xv->device_state = 0;
-    
-    xf86eqEnqueue(xE);
-  }
-  else {
-    xf86Info.lastEventTime = GetTimeInMillis();
-    
-    if (num_valuators >= 2) {
-      if (is_absolute) {
-	miPointerAbsoluteCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime); 
-      }
-      else {
-	miPointerDeltaCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime);
-      }
+		xv->type = DeviceValuator;
+		xv->deviceid = device->id;
+	    
+		xv->num_valuators = loop % 6;
+		xv->first_valuator = first_valuator + (loop / 6) * 6;
+		xv->device_state = 0;
+	    
+		xf86eqEnqueue(xE);
+	    } else {
+		xf86Info.lastEventTime = GetTimeInMillis();
+	    
+		if (num_valuators >= 2) {
+		    if (is_absolute) {
+			miPointerAbsoluteCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime); 
+		    } else {
+			miPointerDeltaCursor(xv->valuator0, xv->valuator1, xf86Info.lastEventTime);
+		    }
+		}
+		break;
+	    }
+	}
+	va_end(var);
     }
-  }  
 }
 
 void
@@ -823,56 +821,52 @@ PostProximityEvent(DeviceIntPtr	device,
 		   int		num_valuators,
 		   ...)
 {
-  va_list			var;
-  int				loop;
-  xEvent			xE[2];
-  deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
-  deviceValuator		*xv = (deviceValuator*) xev+1;
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
 
-  if (num_valuators > 6) {
-    num_valuators = 6;
-  }
+    va_start(var, num_valuators);
 
-  va_start(var, num_valuators);
-
-  for(loop=0; loop<num_valuators; loop++) {
-    switch (loop) {
-    case 0:
-      xv->valuator0 = va_arg(var, int);
-      break;
-    case 1:
-      xv->valuator1 = va_arg(var, int);
-      break;
-    case 2:
-      xv->valuator2 = va_arg(var, int);
-      break;
-    case 3:
-      xv->valuator3 = va_arg(var, int);
-      break;
-    case 4:
-      xv->valuator4 = va_arg(var, int);
-      break;
-    case 5:
-      xv->valuator5 = va_arg(var, int);
-      break;
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    break;
+	}
+	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+	    xev->type = is_in ? ProximityIn : ProximityOut;
+	    xev->detail = 0;
+	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+	    xev->deviceid = device->id | MORE_EVENTS;
+	
+	    xv->type = DeviceValuator;
+	    xv->deviceid = device->id;
+	
+	    xv->num_valuators = loop % 6;
+	    xv->first_valuator = first_valuator + (loop / 6) * 6;
+	    xv->device_state = 0;
+	
+	    xf86eqEnqueue(xE);
+	}
     }
-  }
-
-  va_end(var);
-  
-  xev->type = is_in ? ProximityIn : ProximityOut;
-  xev->detail = 0;
-  xf86Info.lastEventTime = xev->time = GetTimeInMillis();
-  xev->deviceid = device->id | MORE_EVENTS;
-            
-  xv->type = DeviceValuator;
-  xv->deviceid = device->id;
-
-  xv->num_valuators = num_valuators;
-  xv->first_valuator = first_valuator;
-  xv->device_state = 0;
-    
-  xf86eqEnqueue(xE);
+    va_end(var);
 }
 
 void
@@ -883,68 +877,65 @@ PostButtonEvent(DeviceIntPtr	device,
 		int		num_valuators,
 		...)
 {
-  va_list			var;
-  int				loop;
-  xEvent			xE[2];
-  deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
-  deviceValuator		*xv = (deviceValuator*) xev+1;
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
 
-  if (num_valuators > 6) {
-    num_valuators = 6;
-  }
+    va_start(var, num_valuators);
 
-  va_start(var, num_valuators);
-
-  for(loop=0; loop<num_valuators; loop++) {
-    switch (loop) {
-    case 0:
-      xv->valuator0 = va_arg(var, int);
-      break;
-    case 1:
-      xv->valuator1 = va_arg(var, int);
-      break;
-    case 2:
-      xv->valuator2 = va_arg(var, int);
-      break;
-    case 3:
-      xv->valuator3 = va_arg(var, int);
-      break;
-    case 4:
-      xv->valuator4 = va_arg(var, int);
-      break;
-    case 5:
-      xv->valuator5 = va_arg(var, int);
-      break;
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    break;
+	}
+	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
+	    if (!IsCorePointer(device)) {
+		xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
+		xev->detail = button;
+	    
+		xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+		xev->deviceid = device->id | MORE_EVENTS;
+	    
+		xv->type = DeviceValuator;
+		xv->deviceid = device->id;
+		xv->device_state = 0;
+		xv->num_valuators = loop % 6;
+		xv->first_valuator = first_valuator + (loop / 6) * 6;
+		xf86eqEnqueue(xE);
+	    } else {
+		int       cx, cy;
+	    
+		GetSpritePosition(&cx, &cy);
+	    
+		xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
+		xE->u.u.detail =  button;
+		xE->u.keyButtonPointer.rootY = cx;
+		xE->u.keyButtonPointer.rootX = cy;
+		xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
+		xf86eqEnqueue(xE);
+		break;
+	    }
+	}
     }
-  }
-
-  va_end(var);
-
-  if (!IsCorePointer(device)) {
-    xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
-    xev->detail = button;
-    
-    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
-    xev->deviceid = device->id | MORE_EVENTS;
-	    
-    xv->type = DeviceValuator;
-    xv->deviceid = device->id;
-    xv->device_state = 0;
-    xv->num_valuators = num_valuators;
-    xv->first_valuator = first_valuator;
-  }
-  else {
-    int       cx, cy;
-    
-    GetSpritePosition(&cx, &cy);
-	    
-    xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
-    xE->u.u.detail =  button;
-    xE->u.keyButtonPointer.rootY = cx;
-    xE->u.keyButtonPointer.rootX = cy;
-    xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
-  }
-  xf86eqEnqueue(xE);
+    va_end(var);
 }
 
 /* end of xf86Xinput.c */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.86 1996/02/22 05:11:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.87 1996/03/11 12:34:46 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -61,6 +61,7 @@ typedef struct {
    unsigned char Trio[14];      /* Trio32/64 ext. sequenzer (PLL) registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
+   unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
 }
 vgaS3Rec, *vgaS3Ptr;
 
@@ -451,6 +452,19 @@ s3CleanUp(void)
       outb(vgaCRReg, oldS3->s3sysreg[i]);
    }
 
+   outb(vgaCRIndex, 0x45);
+   inb(vgaCRReg);         /* reset color stack pointer */
+   outb(vgaCRIndex, 0x4A);
+   for (i = 0; i < 4; i++)
+      outb(vgaCRReg, oldS3->ColorStack[i]);
+
+   outb(vgaCRIndex, 0x45);
+   inb(vgaCRReg);         /* reset color stack pointer */
+   outb(vgaCRIndex, 0x4B);
+   for (i = 4; i < 8; i++)
+      outb(vgaCRReg, oldS3->ColorStack[i]);
+
+
    if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)){
       outb(vgaCRIndex, 0x42);
       outb(vgaCRReg, (oldS3->s3sysreg[2] & 0xf0) | 0x01);
@@ -761,6 +775,22 @@ s3Init(mode)
 #ifdef REG_DEBUG
 	 ErrorF("CR%X = 0x%02x\n", 0x40 + i, oldS3->s3sysreg[i]);
 #endif
+      }
+
+      outb(vgaCRIndex, 0x45);
+      inb(vgaCRReg);         /* reset color stack pointer */
+      outb(vgaCRIndex, 0x4A);
+      for (i = 0; i < 4; i++) {
+	 oldS3->ColorStack[i] = inb(vgaCRReg);
+	 outb(vgaCRReg,oldS3->ColorStack[i]);  /* advance stack pointer */
+      }
+      
+      outb(vgaCRIndex, 0x45);
+      inb(vgaCRReg);         /* reset color stack pointer */
+      outb(vgaCRIndex, 0x4B);
+      for (i = 4; i < 8; i++) {
+	 oldS3->ColorStack[i] = inb(vgaCRReg);
+	 outb(vgaCRReg,oldS3->ColorStack[i]);  /* advance stack pointer */
       }
 
       if (S3_801_928_SERIES(s3ChipId)) 

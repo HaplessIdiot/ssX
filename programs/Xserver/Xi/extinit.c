@@ -1,4 +1,5 @@
 /* $XConsortium: extinit.c,v 1.18 94/04/17 20:33:08 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -63,6 +64,49 @@ SOFTWARE.
 #include "extnsionst.h"			/* extension entry   */
 #include "XI.h"
 #include "XIproto.h"
+
+#include "exevents.h"
+#include "extinit.h"
+#include "exglobals.h"
+
+/* modules local to Xi */
+#include "allowev.h"
+#include "chgdctl.h"
+#include "chgfctl.h"
+#include "chgkbd.h"
+#include "chgprop.h"
+#include "chgptr.h"
+#include "closedev.h"
+#include "devbell.h"
+#include "getbmap.h"
+#include "getbmap.h"
+#include "getdctl.h"
+#include "getfctl.h"
+#include "getfocus.h"
+#include "getkmap.h"
+#include "getmmap.h"
+#include "getprop.h"
+#include "getselev.h"
+#include "getvers.h"
+#include "getvers.h"
+#include "grabdev.h"
+#include "grabdevb.h"
+#include "grabdevk.h"
+#include "gtmotion.h"
+#include "listdev.h"
+#include "opendev.h"
+#include "queryst.h"
+#include "selectev.h"
+#include "sendexev.h"
+#include "chgkmap.h"
+#include "setbmap.h"
+#include "setdval.h"
+#include "setfocus.h"
+#include "setmmap.h"
+#include "setmode.h"
+#include "ungrdev.h"
+#include "ungrdevb.h"
+#include "ungrdevk.h"
 
 static Mask 	lastExtEventMask = 1;
 int  		ExtEventIndex;
@@ -142,10 +186,8 @@ int	RT_INPUTCLIENT;
  *
  */
 
-extern	void			(* ReplySwapVector[256]) ();
-extern	void			(* EventSwapVector[128]) ();
 extern	XExtensionVersion	AllExtensionVersions[];
-extern	InputInfo		inputInfo;
+
 Mask	PropagateMask[MAX_DEVICES];
 
 /*****************************************************************
@@ -154,12 +196,6 @@ Mask	PropagateMask[MAX_DEVICES];
  *
  */
 
-int	ProcIDispatch();
-int	SProcIDispatch();
-void	SReplyIDispatch();
-void	IResetProc();
-void	SEventIDispatch();
-void	NotImplemented();
 static	XExtensionVersion	thisversion = 
 					{XI_Present, 
 					 XI_Add_XChangeDeviceControl_Major, 
@@ -178,10 +214,8 @@ static	XExtensionVersion	thisversion =
 
 void
 XInputExtensionInit()
-    {
-    ExtensionEntry *extEntry, *AddExtension();
-    int XShutDownDevice();
-    int InputClientGone();
+{
+    ExtensionEntry *extEntry;
 
     extEntry = AddExtension(INAME, IEVENTS, IERRORS, ProcIDispatch,
 		   SProcIDispatch, IResetProc, StandardMinorOpcode);
@@ -190,7 +224,7 @@ XInputExtensionInit()
 	IReqCode = extEntry->base;
 	AllExtensionVersions[IReqCode-128] = thisversion;
 	MakeDeviceTypeAtoms ();
-	RT_INPUTCLIENT = CreateNewResourceType(InputClientGone);
+	RT_INPUTCLIENT = CreateNewResourceType((DeleteType)InputClientGone);
 	FixExtensionEvents (extEntry);
 	ReplySwapVector[IReqCode] = SReplyIDispatch;
 	EventSwapVector[DeviceValuator] = SEventIDispatch;
@@ -225,7 +259,7 @@ XInputExtensionInit()
 int
 ProcIDispatch (client)
     register ClientPtr client;
-    {
+{
     REQUEST(xReq);
     if (stuff->data == X_GetExtensionVersion)
 	return(ProcXGetExtensionVersion(client));
@@ -316,7 +350,7 @@ ProcIDispatch (client)
 int
 SProcIDispatch(client)
     register ClientPtr client;
-    {
+{
     REQUEST(xReq);
     if (stuff->data == X_GetExtensionVersion)
 	return(SProcXGetExtensionVersion(client));
@@ -402,54 +436,59 @@ SProcIDispatch(client)
  *
  */
 
+/* FIXME: this would be more concise and readable in ANSI C */
+#define DISPATCH(code) \
+    if (rep->RepType == X_##code) \
+	SRepX##code (client, len, (x##code##Reply *) rep)
+
 void
 SReplyIDispatch (client, len, rep)
     ClientPtr		client;
     int			len;
     xGrabDeviceReply	*rep;		/* All we look at is the type field */
-    {					/* This is common to all replies    */
+{					/* This is common to all replies    */
     if (rep->RepType == X_GetExtensionVersion)
-	SRepXGetExtensionVersion (client, len, rep);
+	SRepXGetExtensionVersion (client, len, (xGetExtensionVersionReply *)rep);
     else if (rep->RepType == X_ListInputDevices)
-	SRepXListInputDevices (client, len, rep);
+	SRepXListInputDevices (client, len, (xListInputDevicesReply *)rep);
     else if (rep->RepType == X_OpenDevice)
-	SRepXOpenDevice (client, len, rep);
+	SRepXOpenDevice (client, len, (xOpenDeviceReply *)rep);
     else if (rep->RepType == X_SetDeviceMode)
-	SRepXSetDeviceMode (client, len, rep);
+	SRepXSetDeviceMode (client, len, (xSetDeviceModeReply *) rep);
     else if (rep->RepType == X_GetSelectedExtensionEvents)
-	SRepXGetSelectedExtensionEvents (client, len, rep);
+	SRepXGetSelectedExtensionEvents (client, len, (xGetSelectedExtensionEventsReply *) rep);
     else if (rep->RepType == X_GetDeviceDontPropagateList)
-	SRepXGetDeviceDontPropagateList (client, len, rep);
+	SRepXGetDeviceDontPropagateList (client, len, (xGetDeviceDontPropagateListReply *)rep);
     else if (rep->RepType == X_GetDeviceMotionEvents)
-	SRepXGetDeviceMotionEvents (client, len, rep);
+	SRepXGetDeviceMotionEvents (client, len, (xGetDeviceMotionEventsReply *) rep);
     else if (rep->RepType == X_ChangeKeyboardDevice)
-	SRepXChangeKeyboardDevice (client, len, rep);
+	SRepXChangeKeyboardDevice (client, len, (xChangeKeyboardDeviceReply *) rep);
     else if (rep->RepType == X_ChangePointerDevice)
-	SRepXChangePointerDevice (client, len, rep);
+	SRepXChangePointerDevice (client, len, (xChangePointerDeviceReply *)rep);
     else if (rep->RepType == X_GrabDevice)
-	SRepXGrabDevice (client, len, rep);
+	SRepXGrabDevice (client, len, (xGrabDeviceReply *)rep);
     else if (rep->RepType == X_GetDeviceFocus)
-	SRepXGetDeviceFocus (client, len, rep);
+	SRepXGetDeviceFocus (client, len, (xGetDeviceFocusReply *)rep);
     else if (rep->RepType == X_GetFeedbackControl)
-	SRepXGetFeedbackControl (client, len, rep);
+	SRepXGetFeedbackControl (client, len, (xGetFeedbackControlReply *)rep);
     else if (rep->RepType == X_GetDeviceKeyMapping)
-	SRepXGetDeviceKeyMapping (client, len, rep);
+	SRepXGetDeviceKeyMapping (client, len, (xGetDeviceKeyMappingReply *)rep);
     else if (rep->RepType == X_GetDeviceModifierMapping)
-	SRepXGetDeviceModifierMapping (client, len, rep);
+	SRepXGetDeviceModifierMapping (client, len, (xGetDeviceModifierMappingReply *)rep);
     else if (rep->RepType == X_SetDeviceModifierMapping)
-	SRepXSetDeviceModifierMapping (client, len, rep);
+	SRepXSetDeviceModifierMapping (client, len, (xSetDeviceModifierMappingReply *)rep);
     else if (rep->RepType == X_GetDeviceButtonMapping)
-	SRepXGetDeviceButtonMapping (client, len, rep);
+	SRepXGetDeviceButtonMapping (client, len, (xGetDeviceButtonMappingReply *)rep);
     else if (rep->RepType == X_SetDeviceButtonMapping)
-	SRepXSetDeviceButtonMapping (client, len, rep);
+	SRepXSetDeviceButtonMapping (client, len, (xSetDeviceButtonMappingReply *)rep);
     else if (rep->RepType == X_QueryDeviceState)
-	SRepXQueryDeviceState (client, len, rep);
+	SRepXQueryDeviceState (client, len, (xQueryDeviceStateReply *)rep);
     else if (rep->RepType == X_SetDeviceValuators)
-	SRepXSetDeviceValuators (client, len, rep);
+	SRepXSetDeviceValuators (client, len, (xSetDeviceValuatorsReply *)rep);
     else if (rep->RepType == X_GetDeviceControl)
-	SRepXGetDeviceControl (client, len, rep);
+	SRepXGetDeviceControl (client, len, (xGetDeviceControlReply *)rep);
     else if (rep->RepType == X_ChangeDeviceControl)
-	SRepXChangeDeviceControl (client, len, rep);
+	SRepXChangeDeviceControl (client, len, (xChangeDeviceControlReply *)rep);
     else
 	{
 	    FatalError("XINPUT confused sending swapped reply");
@@ -462,15 +501,17 @@ SReplyIDispatch (client, len, rep)
  *
  *	Swap any events defined in this extension.
  */
+#define DO_SWAP(func,type) func ((type *)from, (type *)to)
+
 void
 SEventIDispatch (from, to)
     xEvent	*from;
     xEvent	*to;
-    {
+{
     int		type = from->u.u.type & 0177;
 
     if (type == DeviceValuator)
-	SEventDeviceValuator (from, to);
+	DO_SWAP(SEventDeviceValuator, deviceValuator);
     else if (type == DeviceKeyPress)
 	{
         SKeyButtonPtrEvent (from, to);
@@ -497,9 +538,9 @@ SEventIDispatch (from, to)
 	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
 	}
     else if (type == DeviceFocusIn)
-        SEventFocus (from, to);
+        DO_SWAP(SEventFocus, deviceFocus);
     else if (type == DeviceFocusOut)
-        SEventFocus (from, to);
+        DO_SWAP(SEventFocus, deviceFocus);
     else if (type == ProximityIn)
 	{
         SKeyButtonPtrEvent (from, to);
@@ -511,15 +552,15 @@ SEventIDispatch (from, to)
 	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
 	}
     else if (type == DeviceStateNotify)
-        SDeviceStateNotifyEvent (from, to);
+        DO_SWAP(SDeviceStateNotifyEvent, deviceStateNotify);
     else if (type == DeviceKeyStateNotify)
-        SDeviceKeyStateNotifyEvent (from, to);
+        DO_SWAP(SDeviceKeyStateNotifyEvent, deviceKeyStateNotify);
     else if (type == DeviceButtonStateNotify)
-        SDeviceButtonStateNotifyEvent (from, to);
+        DO_SWAP(SDeviceButtonStateNotifyEvent, deviceButtonStateNotify);
     else if (type == DeviceMappingNotify)
-        SDeviceMappingNotifyEvent (from, to);
+        DO_SWAP(SDeviceMappingNotifyEvent, deviceMappingNotify);
     else if (type == ChangeDeviceNotify)
-        SChangeDeviceNotifyEvent (from, to);
+        DO_SWAP(SChangeDeviceNotifyEvent, changeDeviceNotify);
     else
 	{
 	FatalError("XInputExtension: Impossible event!\n");
@@ -532,6 +573,7 @@ SEventIDispatch (from, to)
  *
  */
 
+void
 SEventDeviceValuator (from, to)
     deviceValuator	*from;
     deviceValuator	*to;
@@ -550,10 +592,11 @@ SEventDeviceValuator (from, to)
 	}
     }
 
+void
 SEventFocus (from, to)
     deviceFocus	*from;
     deviceFocus	*to;
-    {
+{
     register char	n;
 
     *to = *from;
@@ -562,10 +605,11 @@ SEventFocus (from, to)
     swapl(&to->window, n);
     }
 
+void
 SDeviceStateNotifyEvent (from, to)
     deviceStateNotify	*from;
     deviceStateNotify	*to;
-    {
+{
     register int	i;
     register char	n;
     INT32 *ip B32;
@@ -580,30 +624,33 @@ SDeviceStateNotifyEvent (from, to)
 	}
     }
 
+void
 SDeviceKeyStateNotifyEvent (from, to)
     deviceKeyStateNotify	*from;
     deviceKeyStateNotify	*to;
-    {
+{
     register char	n;
 
     *to = *from;
     swaps(&to->sequenceNumber,n);
     }
 
+void
 SDeviceButtonStateNotifyEvent (from, to)
     deviceButtonStateNotify	*from;
     deviceButtonStateNotify	*to;
-    {
+{
     register char	n;
 
     *to = *from;
     swaps(&to->sequenceNumber,n);
     }
 
+void
 SChangeDeviceNotifyEvent (from, to)
     changeDeviceNotify	*from;
     changeDeviceNotify	*to;
-    {
+{
     register char	n;
 
     *to = *from;
@@ -611,10 +658,11 @@ SChangeDeviceNotifyEvent (from, to)
     swapl(&to->time, n);
     }
 
+void
 SDeviceMappingNotifyEvent (from, to)
     deviceMappingNotify	*from;
     deviceMappingNotify	*to;
-    {
+{
     register char	n;
 
     *to = *from;
@@ -628,14 +676,11 @@ SDeviceMappingNotifyEvent (from, to)
  *
  */
 
+void
 FixExtensionEvents (extEntry)
     ExtensionEntry 	*extEntry;
-    {
-    Mask		mask, GetNextExtEventMask();
-    void		SetMaskForExtEvent();
-    void		SetEventInfo();
-    void		AllowPropagateSuppress();
-    void		SetExclusiveAccess();
+{
+    Mask		mask;
 
     DeviceValuator  	    = extEntry->eventBase;
     DeviceKeyPress   	    = DeviceValuator + 1;
@@ -734,8 +779,9 @@ FixExtensionEvents (extEntry)
  *
  */
 
+void
 RestoreExtensionEvents ()
-    {
+{
     int	i;
 
     IReqCode = 0;
@@ -782,7 +828,8 @@ RestoreExtensionEvents ()
  */
 
 void
-IResetProc()
+IResetProc(unused)
+    ExtensionEntry *unused;
     {
 
     ReplySwapVector[IReqCode] = NotImplemented;
@@ -810,12 +857,12 @@ IResetProc()
  *
  */
 
-int
+void
 AssignTypeAndName (dev, type, name)
     DeviceIntPtr dev;
     Atom type;
     char *name;
-    {
+{
     dev->type = type;
     dev->name = (char *) xalloc(strlen(name)+1);
     strcpy (dev->name, name);
@@ -827,7 +874,7 @@ AssignTypeAndName (dev, type, name)
  *
  */
 
-int
+void
 MakeDeviceTypeAtoms ()
     {
     int i;
@@ -845,9 +892,14 @@ MakeDeviceTypeAtoms ()
  */
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+LookupDeviceIntRec (
+    CARD8 id)
+#else
 LookupDeviceIntRec (id)
     CARD8 id;
-    {
+#endif
+{
     DeviceIntPtr dev;
 
     for (dev=inputInfo.devices; dev; dev=dev->next)

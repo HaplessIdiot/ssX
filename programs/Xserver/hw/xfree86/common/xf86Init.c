@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.46 1996/03/10 12:04:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.47 1996/03/11 13:13:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -32,12 +32,6 @@
 #include "scrnintstr.h"
 #include "site.h"
 
-#ifdef XINPUT
-#include "inputstr.h"
-#include "XI.h"
-#include "XIproto.h"
-#endif
-
 #include "compiler.h"
 
 #include "xf86.h"
@@ -45,6 +39,13 @@
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
 #include "mipointer.h"
+
+#ifdef XINPUT
+#include "XI.h"
+#include "XIproto.h"
+#include "xf86_Config.h"
+#include "xf86Xinput.h"
+#endif
 
 #ifdef XTESTEXT1
 #include "atKeynames.h"
@@ -87,8 +88,16 @@ double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 char *xf86ServerName = NULL;
 
-static void xf86PrintConfig();
-static void xf86CheckBeta();
+static void xf86PrintConfig(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
+static void xf86CheckBeta(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
 
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
@@ -375,7 +384,7 @@ InitInput(argc, argv)
 
   miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
 #ifdef XINPUT
-  xf86eqInit (xf86Info.pKeyboard, xf86Info.pMouse);
+  xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #else
   mieqInit (xf86Info.pKeyboard, xf86Info.pMouse);
 #endif
@@ -390,7 +399,6 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
-  extern Bool OsDelayInitColors;
 #ifdef USE_XF86_SERVERLOCK
   extern void xf86LockServer();
   static Bool been_here = FALSE;
@@ -692,9 +700,6 @@ xf86PrintConfig()
 	 "\tthan the above date, look for a newer version before "
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
-#ifdef PC98
-  ErrorF("PC98: %s \n",PC98_GENERAL_NAME);
-#endif
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
   ErrorF("Configured drivers:\n");
   for (i = 0; i < xf86MaxScreens; i++)
@@ -746,21 +751,25 @@ xf86PrintConfig()
 #endif
 #define DAY_IN_SECONDS (24 * 60 * 60)
 
+#ifdef X_NOT_STDC_ENV
 extern char *getenv();
+#endif
 
 static void
 xf86CheckBeta()
 {
-  char *home = NULL;
-  char *filename = NULL;
-  FILE *f = NULL;
   FILE *m = NULL;
   Bool showmessage = FALSE;
-  Bool writefile = FALSE;
   Bool expired = FALSE;
   Bool expiresoon = FALSE;
   Bool requireconfirm = FALSE;
+#ifdef SHOW_BETA_MESSAGE
+  FILE *f = NULL;
+  char *home = NULL;
+  char *filename = NULL;
+  Bool writefile = FALSE;
   char oldvers[16] = {0, };
+#endif
 #ifndef X_NOT_STDC_ENV
   time_t expirytime = EXPIRY_TIME;
 #else
@@ -852,8 +861,8 @@ xf86CheckBeta()
 		   " version.\n");
       } else if (expiresoon) {
 	fprintf(m, " WARNING! This version (%s) will expire in less than"
-		   " %d day(s)\n at %s\n", XF86_VERSION,
-		(expirytime - time(NULL)) / DAY_IN_SECONDS + 1,
+		   " %ld day(s)\n at %s\n", XF86_VERSION,
+		(long)(expirytime - time(NULL)) / DAY_IN_SECONDS + 1,
 		ctime(&expirytime));
 	fprintf(m, " Please get the release version or a newer beta"
 		   " version.\n");

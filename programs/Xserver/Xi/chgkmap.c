@@ -1,4 +1,5 @@
 /* $XConsortium: chgkmap.c,v 1.7 94/04/17 20:33:04 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -60,11 +61,12 @@ SOFTWARE.
 #include "inputstr.h"			/* DeviceIntPtr	     */
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
+#include "exevents.h"
+#include "exglobals.h"
 
-extern	int 	IReqCode;
-extern	int	BadDevice;
-extern	int	DeviceMappingNotify;
-DeviceIntPtr	LookupDeviceIntRec();
+#include "chgkmap.h"
 
 /***********************************************************************
  *
@@ -100,6 +102,7 @@ SProcXChangeDeviceKeyMapping(client)
  *
  */
 
+int
 ProcXChangeDeviceKeyMapping(client)
     register ClientPtr client;
     {
@@ -121,7 +124,7 @@ ProcXChangeDeviceKeyMapping(client)
 
     ret = ChangeKeyMapping (client, dev, len, DeviceMappingNotify, 
 	stuff->firstKeyCode, stuff->keyCodes, stuff->keySymsPerKeyCode, 
-	&stuff[1]);
+	(KeySym *)&stuff[1]);
 
     if (ret != Success)
 	SendErrorToClient (client, IReqCode, X_ChangeDeviceKeyMapping, 0, 

@@ -1,5 +1,5 @@
 /* $XConsortium: bank.s /main/4 1995/12/17 08:39:48 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.2 1995/12/16 08:21:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.3 1996/02/04 09:14:18 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -50,34 +50,61 @@
 	GLOBL GLNAME(TVGA8900SetReadWrite)
 	GLOBL GLNAME(TVGA8900SetRead)
 	GLOBL GLNAME(TVGA8900SetWrite)
+#ifdef PC98_TGUI
+	GLOBL GLNAME(mmioBase)
+#endif
 GLNAME(TVGA8900SetReadWrite):
 GLNAME(TVGA8900SetRead):
 GLNAME(TVGA8900SetWrite):
 	MOV_B	(AL,AH)
 	MOV_B	(CONST(0x0E),AL)
 	XOR_B	(CONST(0x02),AH)
+#ifdef PC98_TGUI
+	MOV_L	(GLNAME(mmioBase),EDX)
+	ADD_L	(CONST(0x3C4),EDX)
+	MOV_W	(AX,REGIND(EDX))
+#else
 	MOV_L	(CONST(0x3C4),EDX)
 	OUT_W
+#endif
 	RET
 
 	ALIGNTEXT4
 	GLOBL GLNAME(TGUISetReadWrite)
 GLNAME(TGUISetReadWrite):
 	MOV_B	(AL,AH)
+#ifdef PC98_TGUI
+	MOV_L	(GLNAME(mmioBase),EDX)
+	ADD_L	(CONST(0x3D8),EDX)
+	MOV_W	(AX,REGIND(EDX))
+#else
 	MOV_L	(CONST(0x3D8),EDX)
 	OUT_W
+#endif
 	RET
 
 	ALIGNTEXT4
 GLNAME(TGUISetRead):
 	GLOBL GLNAME(TGUISetRead)
+#ifdef PC98_TGUI
+	MOV_L	(GLNAME(mmioBase),EDX)
+	ADD_L	(CONST(0x3D9),EDX)
+	MOV_B	(AL,REGIND(EDX))
+#else
 	MOV_L	(CONST(0x3D9),EDX)
 	OUT_B
+#endif
 	RET
 
 	ALIGNTEXT4
 GLNAME(TGUISetWrite):
 	GLOBL GLNAME(TGUISetWrite)
+#ifdef PC98_TGUI
+	MOV_L	(GLNAME(mmioBase),EDX)
+	ADD_L	(CONST(0x3D8),EDX)
+	MOV_B	(AL,REGIND(EDX))
+#else
 	MOV_L	(CONST(0x3D8),EDX)
 	OUT_B
+#endif
 	RET

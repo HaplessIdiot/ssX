@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h /main/55 1995/12/08 13:34:38 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.11 1996/01/05 13:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.12 1996/02/18 03:45:11 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -103,6 +103,8 @@ typedef struct _NewClientRec *NewClientPtr;
 #else
 #define SIGVAL void
 #endif
+
+extern Bool OsDelayInitColors;
 
 extern int WaitForSomething(
 #if NeedFunctionPrototypes
@@ -411,7 +413,11 @@ extern void FatalError(
     char* /*f*/,
     ...
 #endif
-);
+)
+#if __GNUC__
+__attribute((noreturn))
+#endif
+;
 
 extern void ErrorF(
 #if NeedVarargsPrototypes

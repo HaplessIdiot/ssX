@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.31 1996/02/22 05:11:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.32 1996/03/10 12:04:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -287,10 +287,10 @@ extern Bool        xf86VTSema;
 /* Mouse device private record */
 
 typedef struct _MouseDevRec {
-    int           (* mseProc)();        /* procedure for initializing */
+    DeviceProc    mseProc;              /* procedure for initializing */
     void          (* mseEvents)(
-#if NeedNestedFunctionPrototypes
-				MouseDevPtr
+#if NeedNestedPrototypes
+			struct _MouseDevRec *
 #endif
 				);      /* proc for processing events */
     DeviceIntPtr  device;
@@ -315,6 +315,19 @@ typedef struct _MouseDevRec {
     int           xqueSema;
 #endif
 } MouseDevRec, *MouseDevPtr;
+
+/* Global data */
+/* xf86Init.c */
+extern double xf86rGamma, xf86gGamma, xf86bGamma;
+
+#ifdef XF86VIDMODE
+extern Bool xf86VidModeEnabled;
+extern Bool xf86VidModeAllowNonLocal;
+#endif
+#ifdef XF86MISC
+extern Bool xf86MiscModInDevEnabled;
+extern Bool xf86MiscModInDevAllowNonLocal;
+#endif
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
@@ -374,6 +387,14 @@ void xf86Config(
 #endif
 );
 
+void configPointerSection(
+#if NeedFunctionPrototypes
+    MouseDevPtr /*mouse_dev*/,
+    int /*end_tag*/,
+    char** /*devicename*/
+#endif
+);
+
 Bool xf86LookupMode(
 #if NeedFunctionPrototypes
     DisplayModePtr target,
@@ -430,6 +451,15 @@ void xf86ZoomViewport(
 #if NeedFunctionPrototypes
     ScreenPtr pScreen,
     int zoom
+#endif
+);
+
+/* xf86Dl.c */
+void*
+xf86LoadModule(
+#if NeedFunctionPrototypes
+	const char *	file,
+	const char *	path
 #endif
 );
 
@@ -587,6 +617,15 @@ void xf86MouseProtocol(
     int nBytes
 #endif
 );
+
+#ifdef XINPUT
+void xf86MouseCtrl(
+#if NeedFunctionPrototypes
+     DeviceIntPtr device,
+     PtrCtrl   *ctrl
+#endif
+);
+#endif
 
 /* xf86Kbd.c */
 Bool LegalModifier(

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.84 1996/03/11 13:13:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.85 1996/03/17 11:37:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,7 +23,16 @@
  */
 /* $XConsortium: xf86Config.c /main/34 1996/01/31 10:06:24 kaleb $ */
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern double atof();
+extern char *getenv();
+#endif
+
+#define NEED_EVENTS 1
 #include "X.h"
+#include "Xproto.h"
 #include "Xmd.h"
 #include "input.h"
 #include "servermd.h"
@@ -37,6 +46,11 @@
 
 #define INIT_CONFIG
 #include "xf86_Config.h"
+
+#ifdef XKB
+#include "inputstr.h"
+#include "XKBsrv.h"
+#endif
 
 #define CONFIG_BUF_LEN     1024
 
@@ -59,7 +73,6 @@ static GDevPtr device_list = NULL;
 
 static int screenno = -100;      /* some little number ... */
 
-extern char *getenv();
 extern char *defaultFontPath;
 extern char *rgbPath;
 
@@ -98,13 +111,6 @@ static void configDeviceSection(
     void
 #endif
 );
-void configPointerSection(
-#if NeedFunctionPrototypes
-    MouseDevPtr /*mouse_dev*/,
-    int /*end_tag*/,
-    char** /*devicename*/
-#endif
-);
 static void configScreenSection(
 #if NeedFunctionPrototypes
     void
@@ -125,6 +131,38 @@ static void configDynamicModuleSection(
     void
 #endif
 );
+static void findConfigFile(
+#if NeedFunctionPrototypes
+      char *filename,
+      FILE **fp
+#endif
+);
+static int getScreenIndex(
+#if NeedFunctionPrototypes
+     int token
+#endif
+);
+static int getStringToken(
+#if NeedFunctionPrototypes
+     SymTabRec tab[]
+#endif
+);
+static void readVerboseMode(
+#if NeedFunctionPrototypes
+    MonPtr monp
+#endif
+);
+static Bool validateGraphicsToken(
+#if NeedFunctionPrototypes
+     int *validTokens,
+     int token
+#endif
+);
+extern char * xf86GetPathElem(
+#if NeedFunctionPrototypes
+     char **pnt
+#endif
+);
 static DisplayModePtr xf86PruneModes(
 #if NeedFunctionPrototypes
     MonPtr monp,
@@ -132,9 +170,9 @@ static DisplayModePtr xf86PruneModes(
     ScrnInfoPtr scrp
 #endif
 );
-static void readVerboseMode(
+static char * xf86ValidateFontPath(
 #if NeedFunctionPrototypes
-    MonPtr monp
+     char * /* path */
 #endif
 );
 #ifdef XINPUT
@@ -240,7 +278,7 @@ xf86ValidateFontPath(path)
 #ifndef __EMX__
     if (*path_elem == '/') {
       dir_elem = (char *)xcalloc(1, strlen(path_elem) + 1);
-      if (p1 = strchr(path_elem, ':'))
+      if ((p1 = strchr(path_elem, ':')) != 0)
 #else
     /* OS/2 must prepend X11ROOT */
     if (*path_elem == '/') {
@@ -355,7 +393,6 @@ xf86GetToken(tab)
        */
       if (isdigit(c))
 	{
-          extern double atof();
 	  int base;
 
 	  if (c == '0')
@@ -457,8 +494,7 @@ getStringToken(tab)
      SymTabRec tab[];
 {
   int i;
-  char *s1p, *s2p;
-  
+
   for ( i = 0 ; tab[i].token != -1 ; i++ ) {
     if ( ! StrCaseCmp(tab[i].name,val.str) ) return tab[i].token;
   }
@@ -601,7 +637,7 @@ findConfigFile(filename, fp)
   char           *xconfig = NULL;
   char           *xwinhome = NULL;
   char           *configPaths[MAXPTRIES];
-  int            pcount, idx;
+  int            pcount = 0, idx;
 
   /*
    * First open if necessary the config file.
@@ -627,12 +663,13 @@ findConfigFile(filename, fp)
      */
     configPaths[pcount] = (char *)xalloc(PATH_MAX);
 #ifndef __EMX__
-    if (getuid() == 0 && xf86ConfigFile[0]) {
+    if (getuid() == 0 && xf86ConfigFile[0])
 #else
-    if (xf86ConfigFile[0]) {
+    if (xf86ConfigFile[0])
 #endif
+    {
       strcpy(configPaths[pcount], xf86ConfigFile);
-      if (configFile = fopen(configPaths[pcount], "r"))
+      if ((configFile = fopen(configPaths[pcount], "r")) != 0)
         break;
       else
         FatalError(
@@ -643,21 +680,23 @@ findConfigFile(filename, fp)
      * Check if XF86CONFIG is set.
      */
 #ifndef __EMX__
-    if (getuid() == 0 && (xconfig = getenv("XF86CONFIG"))) {
-      if (index(xconfig, '/')) {
+    if (getuid() == 0
+     && (xconfig = getenv("XF86CONFIG")) != 0
+     && index(xconfig, '/'))
 #else
     /* no root available, and filenames start with drive letter */
-    if ((xconfig = getenv("XF86CONFIG"))) {
-      if (isalpha(xconfig[0]) && xconfig[1]==':') {
+    if ((xconfig = getenv("XF86CONFIG")) != 0
+      && isalpha(xconfig[0])
+      && xconfig[1]==':')
 #endif
+    {
         strcpy(configPaths[pcount], xconfig);
-        if (configFile = fopen(configPaths[pcount], "r"))
+        if ((configFile = fopen(configPaths[pcount], "r")) != 0)
           break;
         else
           FatalError(
                "Cannot read file \"%s\" specified by XF86CONFIG variable\n",
                configPaths[pcount]);
-      }
     }
      
 #ifndef __EMX__
@@ -669,7 +708,7 @@ findConfigFile(filename, fp)
       strcpy(configPaths[pcount],home);
       strcat(configPaths[pcount],"/XF86Config");
       if (xconfig) strcat(configPaths[pcount],xconfig);
-      if (configFile = fopen( configPaths[pcount], "r" )) break;
+      if ((configFile = fopen( configPaths[pcount], "r" )) != 0) break;
     }
     
     /*
@@ -678,7 +717,7 @@ findConfigFile(filename, fp)
     configPaths[++pcount] = (char *)xalloc(PATH_MAX);
     strcpy(configPaths[pcount], "/etc/XF86Config");
     if (xconfig) strcat(configPaths[pcount],xconfig);
-    if (configFile = fopen( configPaths[pcount], "r" )) break;
+    if ((configFile = fopen( configPaths[pcount], "r" )) != 0) break;
     
     /*
      * $(LIBDIR)/XF86Config.<hostname>
@@ -701,7 +740,7 @@ findConfigFile(filename, fp)
     gethostname(configPaths[pcount]+strlen(configPaths[pcount]),
                 MAXHOSTNAMELEN);
 #endif
-    if (configFile = fopen( configPaths[pcount], "r" )) break;
+    if ((configFile = fopen( configPaths[pcount], "r" )) != 0) break;
 #endif /* !__EMX__  */
     
     /*
@@ -724,7 +763,7 @@ findConfigFile(filename, fp)
     strcpy(configPaths[pcount], __XOS2RedirRoot("/XFree86/lib/X11/XConfig"));
 #endif
 
-    if (configFile = fopen( configPaths[pcount], "r" )) break;
+    if ((configFile = fopen( configPaths[pcount], "r" )) != 0) break;
     
     ErrorF("\nCould not find config file!\n");
     ErrorF("- Tried:\n");
@@ -1132,16 +1171,7 @@ static void
 configServerFlagsSection()
 {
   int            token;
-  int            i, j;
-#ifdef XF86VIDMODE
-  extern Bool	 xf86VidModeEnabled;
-  extern Bool	 xf86VidModeAllowNonLocal;
-#endif
-#ifdef XF86MISC
-  extern Bool	 xf86MiscModInDevEnabled;
-  extern Bool	 xf86MiscModInDevAllowNonLocal;
-#endif
-      
+
   xf86Info.dontZap       = FALSE;
   xf86Info.dontZoom      = FALSE;
 
@@ -1189,17 +1219,13 @@ static void
 configKeyboardSection()
 {
   int            token, ntoken;
-  int            i, j;
-#ifdef XKB
-  extern Bool noXkbExtension;
-#endif
-      
+ 
   /* Initialize defaults */
   xf86Info.serverNumLock = FALSE;
   xf86Info.xleds         = 0L;
   xf86Info.kbdDelay      = 500;
   xf86Info.kbdRate       = 30;
-  xf86Info.kbdProc       = (int (*)())NULL;
+  xf86Info.kbdProc       = (DeviceProc)0;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
   xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
@@ -1365,7 +1391,7 @@ configKeyboardSection()
       break;
     }
   }
-  if (xf86Info.kbdProc == (int (*)())NULL)
+  if (xf86Info.kbdProc == (DeviceProc)0)
   {
     xf86ConfigError("No keyboard device given");
   }
@@ -1378,7 +1404,9 @@ configPointerSection(MouseDevPtr	mouse_dev,
 {
   int            token;
   int		 mtoken;
-  int            i, j;
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
+  int            i;
+#endif
   char *mouseType = "unknown";
 
   /* Set defaults */
@@ -1389,7 +1417,7 @@ configPointerSection(MouseDevPtr	mouse_dev,
   mouse_dev->emulate3Timeout = 50;
   mouse_dev->chordMiddle     = FALSE;
   mouse_dev->mouseFlags      = 0;
-  mouse_dev->mseProc         = (int (*)())NULL;
+  mouse_dev->mseProc         = (DeviceProc)0;
   mouse_dev->mseDevice       = NULL;
   mouse_dev->mseType         = -1;
       
@@ -1556,7 +1584,7 @@ configPointerSection(MouseDevPtr	mouse_dev,
   }
   /* Print log and make sanity checks */
 
-  if (mouse_dev->mseProc == (int (*)())NULL)
+  if (mouse_dev->mseProc == (DeviceProc)0)
   {
     xf86ConfigError("No mouse protocol given");
   }
@@ -1599,7 +1627,7 @@ static void
 configDeviceSection()
 {
   int            token;
-  int            i, j;
+  int            i;
   GDevPtr devp;
 
   /* Allocate one more device */
@@ -1923,7 +1951,7 @@ static void
 configMonitorSection()
 {
   int            token;
-  int            i, j;
+  int            i;
   MonPtr monp;
   float multiplier;
       
@@ -2167,9 +2195,6 @@ configMonitorSection()
        if ((token = xf86GetToken(NULL)) != NUMBER || val.realnum<0.1 || val.realnum>10)
 	  xf86ConfigError(msg);
        else {
-	  int i;
-	  extern double xf86rGamma, xf86gGamma, xf86bGamma;
-	  extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 	  xf86rGamma = xf86gGamma = xf86bGamma = 1.0 / val.realnum;
 	  if ((token = xf86GetToken(NULL)) == NUMBER) {
 	     if (val.realnum<0.1 || val.realnum>10) xf86ConfigError(msg);
@@ -2201,8 +2226,7 @@ static void
 configDynamicModuleSection()
 {
     int		token;
-    void	*(*xf86LoadModule(const char*, const char*));
-	      
+ 
     while ((token = xf86GetToken(ModuleTab)) != ENDSECTION) {
 	switch (token) {
 	case LOAD:
@@ -2361,7 +2385,6 @@ configScreenSection()
   DispPtr dispp;
       
   int token;
-  DisplayModePtr pNew, pLast;
   ScrnInfoPtr screen = NULL;
   int textClockValue = -1;
 
@@ -2582,10 +2605,10 @@ configScreenSection()
           if (dispIndex == numDisps) {
             /* No match.  This time, allow 15/16 and 24/32 to match */
             for (dispIndex = 0; dispIndex < numDisps; dispIndex++) {
-              if (screen->depth == 15 && dispList[dispIndex].depth == 16 ||
-                  screen->depth == 16 && dispList[dispIndex].depth == 15 ||
-                  screen->depth == 24 && dispList[dispIndex].depth == 32 ||
-                  screen->depth == 32 && dispList[dispIndex].depth == 24)
+              if ((screen->depth == 15 && dispList[dispIndex].depth == 16) ||
+                  (screen->depth == 16 && dispList[dispIndex].depth == 15) ||
+                  (screen->depth == 24 && dispList[dispIndex].depth == 32) ||
+                  (screen->depth == 32 && dispList[dispIndex].depth == 24))
                 break;
             }
           }
@@ -2610,10 +2633,10 @@ configScreenSection()
           if (dispIndex == numDisps) {
             /* No match.  This time, allow 15/16 and 24/32 to match */
             for (dispIndex = 0; dispIndex < numDisps; dispIndex++) {
-              if (xf86bpp == 15 && dispList[dispIndex].depth == 16 ||
-                  xf86bpp == 16 && dispList[dispIndex].depth == 15 ||
-                  xf86bpp == 24 && dispList[dispIndex].depth == 32 ||
-                  xf86bpp == 32 && dispList[dispIndex].depth == 24)
+              if ((xf86bpp == 15 && dispList[dispIndex].depth == 16) ||
+                  (xf86bpp == 16 && dispList[dispIndex].depth == 15) ||
+                  (xf86bpp == 24 && dispList[dispIndex].depth == 32) ||
+                  (xf86bpp == 32 && dispList[dispIndex].depth == 24))
                 break;
             }
           }
@@ -2753,9 +2776,8 @@ configDisplaySubsection(disp)
 DispPtr disp;
 {
   int token;
-  int i, j;
-  int driver;
-      
+  int i;
+
   while ((token = xf86GetToken(DisplayTab)) != ENDSUBSECTION) {
     switch (token) {
     case DEPTH:
@@ -2822,12 +2844,12 @@ DispPtr disp;
     case WHITE:
       {
         unsigned char rgb[3];
-        int i;
+        int ii;
         
-        for (i = 0; i < 3; i++)
+        for (ii = 0; ii < 3; ii++)
         {
           if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("RGB value expected");
-          rgb[i] = val.num & 0x3F;
+          rgb[ii] = val.num & 0x3F;
         }
         if (token == BLACK)
         {
@@ -2885,6 +2907,7 @@ DispPtr disp;
 	 strcpy(mode_string,val.str);
 
 	 switch (token) {
+	 default:	/* pacify compiler (uninitialized opt, value) */
 	 case INVERTVCLK:
 	    if (xf86GetToken(NULL) != NUMBER || val.num < 0 || val.num > 1)
 	       xf86ConfigError("0 or 1 expected");

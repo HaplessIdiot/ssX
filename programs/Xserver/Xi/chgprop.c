@@ -1,4 +1,5 @@
 /* $XConsortium: chgprop.c,v 1.12 94/04/17 20:33:05 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,11 +62,14 @@ SOFTWARE.
 #include "windowstr.h"
 #include "XI.h"
 #include "XIproto.h"
+#include "extnsionst.h"
+#include "extinit.h"			/* LookupDeviceIntRec */
 
-extern	int 	BadMode;
-extern	int 	BadClass;
-extern	int 	IReqCode;
-DeviceIntPtr	LookupDeviceIntRec();
+#include "exevents.h"
+#include "exglobals.h"
+
+#include "chgprop.h"
+#include "grabdev.h"
 
 /***********************************************************************
  *
@@ -101,6 +105,7 @@ SProcXChangeDeviceDontPropagateList(client)
  *
  */
 
+int
 ProcXChangeDeviceDontPropagateList (client)
     register ClientPtr client;
     {

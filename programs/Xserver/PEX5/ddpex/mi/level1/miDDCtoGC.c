@@ -1,5 +1,5 @@
 /* $XConsortium: miDDCtoGC.c,v 5.6 94/04/17 20:36:51 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/miDDCtoGC.c,v 3.0 1995/07/07 15:34:13 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -57,7 +57,6 @@ SOFTWARE.
 #include "miscstruct.h"
 #include "PEXErr.h"
 #include "miRender.h"
-#include "extnsionst.h"
 #include "gcstruct.h"
 #include "miLineDash.h"
 
