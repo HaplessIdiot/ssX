@@ -1,5 +1,5 @@
 /* $XConsortium: cir_orect.c,v 1.3 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.3 1995/01/26 02:21:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.4 1995/01/28 16:11:58 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -107,9 +107,6 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     xOrigin = pDrawable->x;
     yOrigin = pDrawable->y;
 
-    /* Set up for BitBLT color-expand solid fill. */
-    CirrusWriteSolidPattern();
-
 #if PSZ == 8
     SETBLTMODE(FORWARDS | COLOREXPAND | PATTERNCOPY);
 #endif
@@ -120,18 +117,21 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     SETBLTMODE(FORWARDS | COLOREXPAND | PATTERNCOPY | PIXELWIDTH32);
 #endif
     SETROP(cirrus_rop[pGC->alu]);
-    SETSRCADDR(cirrusBLTPatternAddress);
     destpitch = vga256InfoRec.virtualX * (PSZ / 8);
     SETDESTPITCH(destpitch);
 #if PSZ == 8    
     SETFOREGROUNDCOLOR(pGC->fgPixel);
+    SETBACKGROUNDCOLOR(pGC->fgPixel);
 #endif
 #if PSZ == 16
     SETFOREGROUNDCOLOR16(pGC->fgPixel);
+    SETBACKGROUNDCOLOR16(pGC->fgPixel);
 #endif
 #if PSZ == 32
     SETFOREGROUNDCOLOR32(pGC->fgPixel);
+    SETBACKGROUNDCOLOR32(pGC->fgPixel);
 #endif
+    SETSRCADDR(0);
 
     base = vgaLinearBase;	/* Assume linear addressing. */
 

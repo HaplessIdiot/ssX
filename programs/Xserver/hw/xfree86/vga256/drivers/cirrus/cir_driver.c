@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.31 1995/01/21 07:18:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.33 1995/01/28 17:08:11 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -132,7 +132,7 @@ int cirrusReprogrammedMCLK = 0;
 #define CLGD6205_ID 0x02
 #define CLGD6215_ID 0x22  /* Hmmm... looks like a 5420 or 5422 */
 #define CLGD6225_ID 0x32
-#define CLGD6235_ID 0x12	/* XXXX was 0x06. Untested. */
+#define CLGD6235_ID 0x06	/* It's not 0x12. */
 				/* XXXX need to add 6245. */
 #define CLGD5434_OLD_ID 0x29
 #define CLGD5434_ID 0x2A	/* CL changed the ID at the last minute. */
@@ -300,6 +300,10 @@ static cirrusClockRec cirrusClockTab[] = {
   { 0x46, 0x14 },		/* 100.226 */
   { 0x53, 0x16 },		/* 108.035 */
   { 0x5C, 0x18 },		/* 110.248 */
+  { 0x6D, 0x1A },		/* 120.050 */
+  { 0x58, 0x14 },		/* 125.998 */
+  { 0x6D, 0x18 },		/* 130.055 */
+  { 0x42, 0x0E },		/* 134.998 */
 };
 
 /* Doubled clocks for 16-bit clocking mode with pixel clock ~< 45 MHz. */
@@ -673,7 +677,9 @@ cirrusProbe()
 	  switch( id )
 	       {
 	     case CLGD5420_ID:
+#if 0	/* Conflicts with CL-GD6235. */
 	     case CLAVGA2_ID:		/* AVGA2 uses 5402 */
+#endif
 	       cirrusChip = CLGD5420;	/* 5420 or 5402 */
 	       /* Check for CL-GD5420-75QC-B */
 	       /* It has a Hidden-DAC register. */
@@ -728,9 +734,15 @@ cirrusProbe()
 
 	     /* 'Alpine' family. */
 	     case CLGD5434_ID:
-	       if ((partstatus & 0xC0) == 0xC0)
-	          cirrusChipRevision = 0x01;	/* Better than rev. D/E. */
-	       cirrusChip = CLGD5434;		/* handles 60 MHz MCLK. */
+	       if ((partstatus & 0xC0) == 0xC0) {
+	          /*
+	           * Better than Rev. ~D/E/F.
+	           * Handles 60 MHz MCLK and 135 MHz VCLK.
+	           */
+	          cirrusChipRevision = 0x01;
+	          cirrusClockLimit[CLGD5434] = 135100;
+	       }
+	       cirrusChip = CLGD5434;
 	       break;
 
 	     case CLGD5430_ID:
@@ -1213,6 +1225,7 @@ cirrusFbInit()
       	   * 0x1c, 51 MHz	Option "slow_dram"
       	   * 0x1f, 55 MHz	Option "med_dram"
       	   * 0x22, 61 MHz	Option "fast_dram"
+      	   * 0x25, 66 MHz
       	   * 
 	   * The official spec for the 542x is 50 MHz, but some cards are
 	   * overclocked.
@@ -1626,6 +1639,10 @@ cirrusRestore(restore)
   outb(0x3cf, restore->std.Graphics[0x00]);
   outb(0x3ce, 0x01);
   outb(0x3cf, restore->std.Graphics[0x01]);
+  outb(0x3ce, 0x02);
+  outb(0x3cf, restore->std.Graphics[0x02]);
+  outb(0x3ce, 0x05);
+  outb(0x3cf, restore->std.Graphics[0x05]);
 
   vgaHWRestore((vgaHWPtr)restore);
 
@@ -2096,7 +2113,7 @@ cirrusInit(mode)
 	 cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
          {
          int fifoshift_5430;
-
+         int pixelrate, bandwidthleft, bandwidthused, percent;
 	 /* Now set the CRT FIFO threshold (in 4 byte words). */
 	 outb(0x3C4,0x16);
 	 new->SR16 = inb(0x3C5) & 0xF0;
@@ -2106,64 +2123,114 @@ cirrusInit(mode)
 	 fifoshift_5430 = 0;
 	 if (cirrusChip == CLGD5430)
 	     fifoshift_5430 = 4;
+
+	 /*
+	  * Calculate the relative amount of video memory bandwidth
+	  * taken up by screen refresh to help with FIFO threshold
+	  * setting.
+	  */
+         pixelrate = vga256InfoRec.clock[new->std.NoClock];
+         if (vgaBitsPerPixel == 32)
+         	bandwidthused = pixelrate * 4;
+         else
+         if (vgaBitsPerPixel == 16)
+         	bandwidthused = pixelrate * 2;
+         else
+	 	bandwidthused = pixelrate;
+	 bandwidthleft = cirrusDRAMBandwidth - bandwidthused;
+	 /* Relative amount of bandwidth left for drawing. */
+	 percent = bandwidthleft * 100 / cirrusDRAMBandwidth;
          
 	 /* We have an option for conservative, or aggressive setting. */
 	 /* The default is something in between. */
 
-	 if (cirrusChip == CLGD5434)
-	     {
-	     /* The 5434 has 16 extra levels of buffering. */
-	     if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options))
-	         new->SR16 |= 8;	/* Use 24. */
-	     else
-	     if (!OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options))
-	         /* Default: use effectively 17. */
-	         new->SR16 |= 1;
-	     /* Otherwise (aggressive), effectively 16. */
-	     }
+	 if (cirrusChip == CLGD5434) {
+	 	int threshold;
+	 	int hsyncdelay;
+	 	/*
+	 	 * Small difference between HTotal and HSyncStart
+	 	 * (first and second horizontal numbers) requires
+	 	 * much higher FIFO threshold setting. It might be
+	 	 * worthwhile to automatically modify the timing.
+	 	 */
+	 	hsyncdelay = mode->CrtcHSyncStart - mode->CrtcHDisplay;
+	 	/* The 5434 has 16 extra levels of buffering. */
+	 	if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options))
+			/* Aggressive setting, effectively 16. */
+			threshold = 0;
+		else {
+			/* Default FIFO setting for 5434. */
+			threshold = 1;	/* Effectively 17. */
+			if (cirrusDRAMBandwidth <= 250000) {
+				if (bandwidthused >= 125000)
+					threshold = 4;
+				if (bandwidthused >= 155000)
+					threshold = 8;
+				if (hsyncdelay <= 16)
+					threshold = 10;
+			}
+			if (cirrusDRAMBandwidth <= 210000) {
+				if (bandwidthused >= 125000)
+					threshold = 8;
+				if (bandwidthused >= 155000)
+					threshold = 12;
+				if (hsyncdelay <= 16)
+					threshold = 12;
+			}
+			if (OFLG_ISSET(OPTION_FIFO_CONSERV,
+			&vga256InfoRec.options)) {
+				threshold = 8;
+				if (bandwidthused >= 125000)
+					threshold = 12;
+				if (bandwidthused >= 155000)
+					threshold = 14;
+			}
+		}
+		new->SR16 |= threshold;
+	 }
          else {
 		 /* XXXX Is 0 required for interlaced modes on some chips? */
-	         int pixelrate, bandwidth, percent, threshold;
-	         pixelrate = vga256InfoRec.clock[new->std.NoClock];
-	         if (vgaBitsPerPixel == 16)
-		 	bandwidth = cirrusDRAMBandwidth - pixelrate * 2;
-		 else
-		 	bandwidth = cirrusDRAMBandwidth - pixelrate;
-		 /* Relative amount of bandwidth left for drawing. */
-		 percent = bandwidth * 100 / cirrusDRAMBandwidth;
+		 int threshold;
 	         threshold = 8;
 	         if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
 	         	/* Conservative FIFO threshold setting. */
-	         	if (percent <= 36)	/* >= 64 MHz at 8bpp */
-	                	threshold = 12;
-	         	if (percent <= 29)	/* >= 71 MHz at 8bpp */
+	         	if (bandwidthused >= 59000)
+	         		threshold = 12;
+	         	if (bandwidthused >= 64000)
 	         		threshold = 14;
-	         	if (percent <= 15)
-	         		threshold = 15;	/* >= 86 MHz at 8bpp */
+	         	if (bandwidthused >= 79000)
+	         		threshold = 15;
 	         }
 	         else
 		 if (!OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
 		 	/* Default FIFO threshold setting. */
-		 	if (percent <= 36)	/* >= 64 MHz at 8bpp */
+		 	if (bandwidthused >= 64000)
 		 		threshold = 10;
-		 	if (percent <= 29)	/* >= 71 MHz at 8bpp */
+		 	if (bandwidthused >= 71000)
 		 		threshold = 12;
 		 	if (cirrusChip < CLGD5428) {
-		 		if (percent <= 26) /* >= 74 MHz at 8bpp */
-		 			threshold = 13;
-		 		if (percent <= 16) /* >= 84 MHz at 8bpp */
-		 			threshold = 14;
-		 		if (percent <= 12) /* >= 44 MHz at 16bpp */
-					threshold = 15;
+			 	if (bandwidthused >= 74000)
+			 		threshold = 14;
+		 		if (bandwidthused >= 83000)
+		 			threshold = 15;
 		 	}
 		 	else {
 		 		/* Based on the observation that the 5428 */
 		 		/* BIOS 77 MHz 1024x768 mode uses 12. */
-		 		if (percent <= 16) /* >= 84 MHz at 8bpp */
-		 			threshold = 13;
-		 		if (percent <= 12) /* >= 44 MHz at 16bpp */
-					threshold = 14;
+		 		if (bandwidthused >= 79000)
+		 			threshold = 14;
+		 		if (bandwidthused >= 88000)
+		 			threshold = 15;
 		 	}
+		 }
+		 else {
+		 	/* Aggressive setting. */
+		 	if (bandwidthused >= 69000)
+		 		threshold = 10;
+		 	if (bandwidthused >= 79000)
+		 		threshold = 12;
+		 	if (bandwidthused >= 88000)
+		 		threshold = 14;
 		 }
 		 /* Agressive FIFO threshold setting is always 8. */
 		 new->SR16 |= threshold - fifoshift_5430;
@@ -2287,14 +2354,18 @@ VirtX = %x\n",
           new->CR1D = inb(vgaIOBase + 5) & 0x7f;
      }
 
-     if (HAVE543X()) {
+     if (HAVE543X() || cirrusChip == CLGD5429) {
           outb(0x3c4, 0x17);
           new->SR17 = inb(0x3c5);
 #ifdef CIRRUS_SUPPORT_MMIO
           /* Optionally enable Memory-Mapped I/O. */
-          if (HAVE543X() && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
+          if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
      	       /* Set SR17 bit 2. */
                new->SR17 |= 0x04;
+               if (cirrusChip == CLGD5429)
+               	   /* Clear bit 6 to select mmio address space at 0xB8000. */
+                   new->SR17 &= ~0x40;
+          }
 #endif
      }
 

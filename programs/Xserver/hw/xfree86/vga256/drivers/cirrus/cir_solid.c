@@ -1,5 +1,5 @@
 /* $XConsortium: cir_solid.c,v 1.2 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.2 1995/01/26 02:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.3 1995/01/28 16:12:00 dawes Exp $ */
 
 /*
 
@@ -109,6 +109,8 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 #include "xf86.h"
 #include "vga256.h"
 #include "vga.h"
+#include "cfbrrop.h"
+#include "mergerop.h"
 #include "compiler.h"
 #include "cir_driver.h"
 #include "cirBlitMM.h"		/* MMIO BitBLT commands */
@@ -204,6 +206,7 @@ fSorted)
     int *initPwidth;
     unsigned short width;
     int pitch, busy, pixshift;
+    RROP_DECLARE
 
     /* We only handle on-screen spans with full planemask. */
     if (vgaBitsPerPixel == 8 && (!xf86VTSema ||
@@ -264,19 +267,23 @@ fSorted)
                      pptInit, pwidthInit, nInit,
                      ppt, pwidth, fSorted);
 
+    RROP_FETCH_GC(pGC);
+
     pitch = vga256InfoRec.virtualX;
     pixshift = vgaBitsPerPixel >> 4;
     pitch <<= pixshift;
 
-    /* Write the color-expanded source pattern (solid). */
-    CirrusWriteSolidPattern();
+    /*
+     * Source bit pattern is irrelevant, background and foregound color
+     * are set to the same value.
+     */
 
     /* Set up the invariant BitBLT parameters. */
+    SETSRCADDR(0);
     SETROP(cirrus_rop[pGC->alu]);
-    SETSRCADDR(cirrusBLTPatternAddress);
     SETDESTPITCH(pitch);
     SETHEIGHT(1);
-    SetForegroundColorAndBlitMode(pGC->fgPixel,
+    SetColorsAndBlitMode(pGC->fgPixel,
         FORWARDS | PATTERNCOPY | COLOREXPAND);
 
     while (n--) {
@@ -299,7 +306,6 @@ fSorted)
     }
 
     do { BLTBUSY(busy); } while (busy);
-    SETFOREGROUNDCOLOR(0);	/* Restore VGA Set/Reset register. */
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);
@@ -320,6 +326,7 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
     BoxPtr	    pBox;
 {
     int pitch, busy, pixshift;
+    RROP_DECLARE
 
     /* We only handle on-screen fills with full planemask. */
     if (vgaBitsPerPixel == 8 && (!xf86VTSema ||
@@ -342,18 +349,22 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
         return;
     }
 
+    RROP_FETCH_GC(pGC);
+
     pitch = vga256InfoRec.virtualX;
     pixshift = vgaBitsPerPixel >> 4;
     pitch <<= pixshift;
 
-    /* Write the color-expanded source pattern (solid). */
-    CirrusWriteSolidPattern();
+    /*
+     * Source bit pattern is irrelevant, background and foregound color
+     * are set to the same value.
+     */
    
     /* Set up the invariant BitBLT parameters. */
+    SETSRCADDR(0);
     SETROP(cirrus_rop[pGC->alu]);
-    SETSRCADDR(cirrusBLTPatternAddress);
     SETDESTPITCH(pitch);
-    SetColorsAndBlitMode(pGC->fgPixel, pGC->bgPixel,
+    SetColorsAndBlitMode(pGC->fgPixel, pGC->fgPixel,
         FORWARDS | PATTERNCOPY | COLOREXPAND);
 
     while (nBox) {
@@ -391,7 +402,6 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
     }
 
     do { BLTBUSY(busy); } while (busy);
-    SETFOREGROUNDCOLOR(0);	/* Restore VGA Set/Reset register. */
 }
 
 /* Wrapper for vga256lowlevFuncs.fillBoxSolid(). Currently not used. */

@@ -1,4 +1,5 @@
 /* $XConsortium: lnx_video.c,v 1.1 94/03/28 21:29:02 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

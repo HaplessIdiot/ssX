@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cirFillRct.c,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.5 1994/12/25 12:35:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.6 1995/01/28 16:11:27 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -169,14 +169,21 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if (PPW == 4)
     case FillStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+        /*
+         * There's an unresolved conflict between MMIO + linear addressing
+         * and the color expand stipple function (MMIO fills tend to
+         * go wrong).
+         */
+	if ((cirrusUseMMIO && cirrusUseLinear) ||
+	!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = CirrusFillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+	if ((cirrusUseMMIO && cirrusUseLinear) ||
+	!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else

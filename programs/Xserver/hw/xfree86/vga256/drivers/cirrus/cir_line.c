@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cir_line.c,v 1.1.1.1 95/01/27 01:02:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.0 1994/12/25 12:35:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.2 1995/01/28 16:11:56 dawes Exp $ */
 
 /*
  * Modified: Harm Hanemaayer (hhanemaa@cs.ruu.nl)
@@ -186,15 +186,13 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
     xorg = pDrawable->x;
     yorg = pDrawable->y;
 
-    /* Set up for BitBLT color-expand solid fill. */
-    CirrusWriteSolidPattern();
-
     SETBLTMODE(FORWARDS | COLOREXPAND | PATTERNCOPY);
     SETROP(cirrus_rop[alu]);
-    SETSRCADDR(cirrusBLTPatternAddress);
     destpitch = nlwidth * 4;
     SETDESTPITCH(destpitch);
     SETFOREGROUNDCOLOR(pGC->fgPixel);
+    SETBACKGROUNDCOLOR(pGC->bgPixel);
+    SETSRCADDR(0);	/* Irrelevant, bg/fg color are the same. */
 
 #ifdef POLYSEGMENT
     while (nseg--)

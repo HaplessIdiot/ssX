@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.5 95/01/23 15:35:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.13 1995/01/18 06:14:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.15 1995/01/28 17:08:14 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -275,35 +275,49 @@ typedef struct
 		unsigned char tmp; \
 		cirrusWriteModeShadow = n; \
 		outb(0x3ce, 0x05); \
-		tmp = inb(0x3cf) & 0xf8; \
+		tmp = inb(0x3cf) & 0x20; \
 		outb(0x3cf, tmp | (n)); \
 	}
 
 #define SETFOREGROUNDCOLOR(c) \
+	outw(0x3ce, 0x01 + ((c) << 8));
+#if 0
 	if ((unsigned char)c != (unsigned char)cirrusForegroundColorShadow) { \
 		*(unsigned char *)(&cirrusForegroundColorShadow) = c; \
 		outw(0x3ce, 0x01 + ((c) << 8)); \
 	}
+#endif
 
 #define SETBACKGROUNDCOLOR(c) \
+	outw(0x3ce, 0x00 + ((c) << 8));
+#if 0
 	if ((unsigned char)c != (unsigned char)cirrusBackgroundColorShadow) { \
 		*(unsigned char *)(&cirrusBackgroundColorShadow) = c; \
 		outw(0x3ce, 0x00 + ((c) << 8)); \
 	}
+#endif
 
 #define SETFOREGROUNDCOLOR16(c) \
+	outw(0x3ce, 0x01 + ((c) << 8)); \
+	outw(0x3ce, 0x11 + ((c) & 0xff00));
+#if 0
 	if ((unsigned short)c != (unsigned short)cirrusForegroundColorShadow) { \
 		*(unsigned short *)(&cirrusForegroundColorShadow) = c; \
 		outw(0x3ce, 0x01 + ((c) << 8)); \
 		outw(0x3ce, 0x11 + ((c) & 0xff00)); \
 	}
+#endif
 
 #define SETBACKGROUNDCOLOR16(c) \
+	outw(0x3ce, 0x00 + ((c) << 8)); \
+	outw(0x3ce, 0x10 + ((c) & 0xff00));
+#if 0
 	if ((unsigned short)c != (unsigned short)cirrusBackgroundColorShadow) { \
 		*(unsigned short *)(&cirrusBackgroundColorShadow) = c; \
 		outw(0x3ce, 0x00 + ((c) << 8)); \
 		outw(0x3ce, 0x10 + ((c) & 0xff00)); \
 	}
+#endif
 
 #if 0	/* Seems to cause problems. */
 #define SETPIXELMASK(m) \
@@ -332,7 +346,7 @@ typedef struct
 		unsigned char tmp; \
 		cirrusModeExtensionsShadow = m; \
 		outb(0x3ce, 0x0b); \
-		tmp = inb(0x3cf) & 0xe0; \
+		tmp = inb(0x3cf) & 0x20; \
 		outb(0x3cf, tmp | (m)); \
 	}
 

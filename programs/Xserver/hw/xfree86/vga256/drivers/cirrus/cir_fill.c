@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.3 95/01/05 20:48:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.6 1994/12/02 05:48:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.8 1995/01/28 17:08:16 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -131,6 +131,9 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	  h = pBox->y2 - pBox->y1;
 	  w = pBox->x2 - pBox->x1;
 	  
+	  if (w <= 0 || h <= 0)
+	  	continue;
+
           dstAddr = pBox->y1 * widthDst + pBox->x1;
 
           if (alu == GXcopy) {

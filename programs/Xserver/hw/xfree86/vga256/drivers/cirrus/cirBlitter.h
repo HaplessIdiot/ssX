@@ -1,5 +1,5 @@
 /* $XConsortium: cirBlitter.h,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.6 1995/01/04 04:42:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.7 1995/01/28 16:11:25 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -105,22 +105,16 @@
 /* 32-bit colors are specific to the BitBLT engine, so define macros here. */
 
 #define SETFOREGROUNDCOLOR32(c) \
-  if (c != cirrusForegroundColorShadow) { \
-    cirrusForegroundColorShadow = c; \
     outw(0x3ce, 0x01 + ((c) << 8)); \
     outw(0x3ce, 0x11 + ((c) & 0xff00)); \
     outw(0x3ce, 0x13 + (((c) & 0xff0000) >> 8)); \
-    outw(0x3ce, 0x15 + (((unsigned int)(c) & 0xff000000) >> 16)); \
-  }
+    outw(0x3ce, 0x15 + (((unsigned int)(c) & 0xff000000) >> 16));
 
 #define SETBACKGROUNDCOLOR32(c) \
-  if (c != cirrusBackgroundColorShadow) { \
-    cirrusBackgroundColorShadow = c; \
     outw(0x3ce, 0x00 + ((c) << 8)); \
     outw(0x3ce, 0x10 + ((c) & 0xff00)); \
     outw(0x3ce, 0x12 + (((c) & 0xff0000) >> 8)); \
-    outw(0x3ce, 0x14 + (((unsigned int)(c) & 0xff000000) >> 16)); \
-  }
+    outw(0x3ce, 0x14 + (((unsigned int)(c) & 0xff000000) >> 16));
 
 #define STARTBLT() { \
   unsigned char tmp; \

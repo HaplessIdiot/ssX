@@ -1,5 +1,5 @@
 /* $XConsortium: cirBlitMM.h,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.3 1994/12/25 12:34:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.4 1995/01/28 16:11:23 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
@@ -48,18 +48,10 @@ extern unsigned char *cirrusMMIOBase;
 
 #define SETDESTADDR(dstAddr) \
   *(unsigned int *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr;
-#if 0
-  *(unsigned short *)(cirrusMMIOBase + MMIODESTADDR) = dstAddr; \
-  *(unsigned char *)(cirrusMMIOBase + MMIODESTADDR + 2) = dstAddr >> 16;
-#endif
 
 #define SETSRCADDR(srcAddr) \
   *(unsigned int *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr;
-#if 0
-  *(unsigned short *)(cirrusMMIOBase + MMIOSRCADDR) = srcAddr; \
-  *(unsigned char *)(cirrusMMIOBase + MMIOSRCADDR + 2) = srcAddr >> 16;
-#endif
-  
+
 #define SETSRCADDRUNMODIFIED SETSRCADDR
 
 /* Pitch: the 5426 goes up to 4095, the 5434 can do 8191. */
