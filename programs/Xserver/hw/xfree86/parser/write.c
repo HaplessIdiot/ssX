@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.3 1999/03/07 11:40:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.4 1999/05/23 14:38:09 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -55,15 +55,17 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 
 	printServerFlagsSection (cf, cptr->conf_flags);
 
+#ifndef NEW_INPUT
 	fprintf (cf, "Section \"Keyboard\"\n");
 	printKeyboardSection (cf, cptr->conf_keyboard);
 	fprintf (cf, "EndSection\n\n");
 
-#ifndef NEW_INPUT
 	fprintf (cf, "Section \"Pointer\"\n");
 	printPointerSection (cf, cptr->conf_pointer);
 	fprintf (cf, "EndSection\n\n");
 #endif
+
+	printInputSection (cf, cptr->conf_input_lst);
 
 	printVideoAdaptorSection (cf, cptr->conf_videoadaptor_lst);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.12 1999/04/29 05:13:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.13 1999/05/23 14:38:10 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -68,6 +68,7 @@ XF86ConfModuleRec, *XF86ConfModulePtr;
 
 #define CONF_IMPLICIT_KEYBOARD	"Implicit Core Keyboard"
 
+#ifndef NEW_INPUT
 /* Device tokens */
 typedef struct
 {
@@ -90,11 +91,13 @@ typedef struct
 	int keyb_panix106;
 }
 XF86ConfKeyboardRec, *XF86ConfKeyboardPtr;
-
-#define CONF_ZAXIS_MAPTOX	-1
-#define CONF_ZAXIS_MAPTOY	-2
+#endif /* NEW_INPUT */
 
 #define CONF_IMPLICIT_POINTER	"Implicit Core Pointer"
+
+#ifndef NEW_INPUT
+#define CONF_ZAXIS_MAPTOX	-1
+#define CONF_ZAXIS_MAPTOY	-2
 
 typedef struct
 {
@@ -114,6 +117,7 @@ typedef struct
 	int pntr_alwaysCore;
 }
 XF86ConfPointerRec, *XF86ConfPointerPtr;
+#endif /* NEW_INPUT */
 
 #define XF86CONF_PHSYNC    0x0001
 #define XF86CONF_NHSYNC    0x0002
@@ -373,8 +377,10 @@ typedef struct
 	XF86ConfFilesPtr conf_files;
 	XF86ConfModulePtr conf_modules;
 	XF86ConfFlagsPtr conf_flags;
+#ifndef NEW_INPUT
 	XF86ConfKeyboardPtr conf_keyboard;
 	XF86ConfPointerPtr conf_pointer;
+#endif
 	XF86ConfVideoAdaptorPtr conf_videoadaptor_lst;
 	XF86ConfModesPtr conf_modes_lst;
 	XF86ConfMonitorPtr conf_monitor_lst;

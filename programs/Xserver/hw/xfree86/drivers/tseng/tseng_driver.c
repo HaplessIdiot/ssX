@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.50 1999/04/18 04:08:42 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.51 1999/04/27 12:05:19 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1455,6 +1455,9 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
 
+    xf86AddControlledResource(pScrn, MEM_IO);
+    xf86EnableAccess(&pScrn->Access);
+
     vgaHWGetIOBase(VGAHWPTR(pScrn));
 
     /*
@@ -1782,7 +1785,13 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
     TsengPtr pTseng = TsengPTR(pScrn);
     int offscreen_videoram, videoram_end, req_videoram;
     int i;
+    int v;
 
+    /* XXX Hack to suppress messages in subsequent generations. */
+    if (serverGeneration == 1)
+	v = 1;
+    else
+	v = 100;
     /*
      * The accelerator requires free off-screen video memory to operate. The
      * more there is, the more it can accelerate.
@@ -1791,7 +1800,7 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
     videoram_end = pScrn->videoRam * 1024;
     offscreen_videoram = videoram_end -
 	pScrn->displayWidth * pScrn->virtualY * pTseng->Bytesperpixel;
-    xf86DrvMsg(scrnIndex, X_INFO, "Available off-screen memory: %d bytes.\n",
+    xf86DrvMsgVerb(scrnIndex, X_INFO, v, "Available off-screen memory: %d bytes.\n",
 	offscreen_videoram);
 
     /*
@@ -1801,7 +1810,7 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
     if (pTseng->HWCursor) {
 	req_videoram = 1024;
 	if (offscreen_videoram < req_videoram) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, v,
 		"Hardware Cursor disabled. It requires %d bytes of free video memory\n",
 		req_videoram);
 	    pTseng->HWCursor = FALSE;
@@ -1826,7 +1835,7 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
      */
     req_videoram = 2 * 8 * 3;
     if (offscreen_videoram < req_videoram) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, v,
 	    "Acceleration disabled. It requires AT LEAST %d bytes of free video memory\n",
 	    req_videoram);
 	pTseng->UseAccel = FALSE;
@@ -1844,7 +1853,7 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
      */
     req_videoram = 3 * ((pScrn->virtualX + 31) / 32) * 4;
     if (offscreen_videoram < req_videoram) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, v,
 	    "Accelerated color expansion disabled (%d more bytes of free video memory required)\n",
 	    req_videoram - offscreen_videoram);
 	pTseng->AccelColorExpandBufferOffsets[0] = 0;
@@ -1867,12 +1876,12 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
     req_videoram = 2 * (pScrn->virtualX * pTseng->Bytesperpixel);
     /* banked mode uses an 8kb aperture for imagewrite */
     if ((req_videoram > 8192) && (!pTseng->UseLinMem)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, v,
 	    "Accelerated ImageWrites disabled (banked %dbpp virtual width must be <= %d)\n",
 	    pScrn->bitsPerPixel, 8192 / (2 * pTseng->Bytesperpixel));
 	pTseng->AccelImageWriteBufferOffsets[0] = 0;
     } else if (offscreen_videoram < req_videoram) {
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, v,
 	    "Accelerated ImageWrites disabled (%d more bytes of free video memory required)\n",
 	    req_videoram - offscreen_videoram);
 	pTseng->AccelImageWriteBufferOffsets[0] = 0;
@@ -1884,7 +1893,8 @@ TsengSetupAccelMemory(int scrnIndex, ScreenPtr pScreen)
 	}
     }
 
-    xf86DrvMsg(scrnIndex, X_INFO, "Remaining off-screen memory available for pixmap cache: %d bytes.\n",
+    xf86DrvMsgVerb(scrnIndex, X_INFO, v,
+	"Remaining off-screen memory available for pixmap cache: %d bytes.\n",
 	offscreen_videoram);
 
 end_memsetup:
@@ -2251,7 +2261,7 @@ TsengUnmapMem(ScrnInfoPtr pScrn)
     PDEBUG("	TsengUnmapMem\n");
 
     if (pTseng->UseLinMem) {
-	xf86UnMapVidMem(pScrn->scrnIndex, (pointer) pTseng->FbBase, pScrn->videoRam);
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer) pTseng->FbBase, pTseng->FbMapSize);
     }
     vgaHWUnmapMem(pScrn);
 

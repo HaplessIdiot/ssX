@@ -1,4 +1,11 @@
 XFree86 3.9Pp (30 May 1999)
+2696. Close input devices while VT switched away (David Dawes).
+2695. Prevent the input device "PreInit" from being called in subsequent
+      server generations (David Dawes).
+2694. Handle the Keyboard config information as an InputDevice section
+      (but the keyboard driver isn't converted yet) (David Dawes).
+2693. Add basic accessEnable calls to the Tseng driver so that it will at
+      least work single head with an ET6000 (David Dawes).
 2692. Fix Xinerama bugs related to the Shape extension (#2832, Mark Vojkovich).
 2691. Separate the pitch and virtual X increments (#2829, Marc La France).
 2690. Add some large encoding files for the `fontenc' layer (#2827,
@@ -8070,4 +8077,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.759 1999/05/30 02:28:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.760 1999/05/30 03:03:25 dawes Exp $

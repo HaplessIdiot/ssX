@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.6 1999/04/05 07:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.7 1999/05/23 14:38:09 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -73,16 +73,21 @@ xf86ReadConfigFile (void)
 			{
 				HANDLE_RETURN (conf_flags, parseFlagsSection ());
 			}
+#ifndef NEW_INPUT
 			else if (NameCompare (val.str, "keyboard") == 0)
 			{
 				HANDLE_RETURN (conf_keyboard, parseKeyboardSection ());
 			}
-#ifndef NEW_INPUT
 			else if (NameCompare (val.str, "pointer") == 0)
 			{
 				HANDLE_RETURN (conf_pointer, parsePointerSection ());
 			}
 #else
+			else if (NameCompare (val.str, "keyboard") == 0)
+			{
+				HANDLE_LIST (conf_input_lst, parseKeyboardSection,
+							 XF86ConfInputPtr);
+			}
 			else if (NameCompare (val.str, "pointer") == 0)
 			{
 				HANDLE_LIST (conf_input_lst, parsePointerSection,
@@ -209,8 +214,8 @@ XF86FreeConfig (XF86ConfigPtr p)
 	freeFiles (p->conf_files);
 	freeModules (p->conf_modules);
 	freeFlags (p->conf_flags);
-	freeKeyboard (p->conf_keyboard);
 #ifndef NEW_INPUT
+	freeKeyboard (p->conf_keyboard);
 	freePointer (p->conf_pointer);
 #endif
 	freeMonitorList (p->conf_monitor_lst);
