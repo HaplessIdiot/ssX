@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.5 1999/03/28 15:32:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.6 1999/07/10 07:24:50 dawes Exp $
 
 
 
@@ -19,9 +19,14 @@ XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #endif
 
-SRCS = xf86_Util.c xf86_IlHack.c $(XSRCS)
+#if HasGcc || HasGcc2
+ILHACKSRCS = xf86_IlHack.c
+ILHACKOBJS = xf86_IlHack.o
+#endif
 
-OBJS = xf86_Util.o xf86_IlHack.o $(XOBJS)
+SRCS = xf86_Util.c $(ILHACKSRCS) $(XSRCS)
+
+OBJS = xf86_Util.o $(ILHACKOBJS) $(XOBJS)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
