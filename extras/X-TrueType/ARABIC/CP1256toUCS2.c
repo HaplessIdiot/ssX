@@ -28,11 +28,12 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
@@ -81,11 +82,8 @@ static ucs2_t tblCp1256ToUcs2[] = {
     0xfe7c, 0x00f9, 0xfe7e, 0x00fb, 0x00fc, 0x200e, 0x200f, 0x00ff
 };
 
-CODE_CONV_ONE_OCTET_TO_UCS2(cc_cp1256_to_ucs2, /* function name */
-                          tblCp1256ToUcs2, /* table name */
-                          0x00,0xff, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+CODE_CONV_ONE_OCTET_TO_UCS2_ALL(cc_cp1256_to_ucs2, /* function name */
+                                tblCp1256ToUcs2) /* table name */
 
 
 /* end of file */

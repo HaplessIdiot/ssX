@@ -28,7 +28,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
@@ -39,6 +39,7 @@ Notice===
     positions (first char is at 0x02) so the table goes from 0x00 to 0xff.
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
@@ -90,10 +91,7 @@ static ucs2_t tblVisciiToUcs2[] = {
     0x1ee5, 0x00f9, 0x00fa, 0x0169, 0x1ee7, 0x00fd, 0x1ee3, 0x1eee
 };
 
-CODE_CONV_ONE_OCTET_TO_UCS2(cc_viscii_to_ucs2, /* function name */
-                          tblVisciiToUcs2, /* table name */
-			  0x00,0xff, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+CODE_CONV_ONE_OCTET_TO_UCS2_ALL(cc_viscii_to_ucs2, /* function name */
+                                tblVisciiToUcs2) /* table name */
 
 /* end of file */

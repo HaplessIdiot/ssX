@@ -32,7 +32,7 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.4 1999/07/18 16:04:14 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconvP.h,v 1.5 2000/02/13 05:24:36 dawes Exp $ */
 
 #ifndef _XTTCCONVP_H_
 #define _XTTCCONVP_H_ 1
@@ -134,6 +134,13 @@ funcName(ft_char_code_t codeSrc)\
         codeDst = altChar;\
 \
     return codeDst;\
+}
+
+#define CODE_CONV_ONE_OCTET_TO_UCS2_ALL(funcName, tableName)\
+ft_char_code_t /* result charCodeDst */\
+funcName(ft_char_code_t codeSrc)\
+{\
+    return tableName[codeSrc];\
 }
 
 /* 2 octet charset to unicode */
