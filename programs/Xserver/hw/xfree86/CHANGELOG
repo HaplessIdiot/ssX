@@ -1,4 +1,6 @@
 XFree86 3.9Nc (29 August 1998)
+1787. Make the BuildLinuxDoc* symbols default to YES when HasSgmlFmt is YES 
+      (Marc La France).
 1786. Add a resize function to the offscreen memory manager (#1937,
       Mark Vojkovich).
 1785. Fix C&T 69000 horizontal CRT overflow register settings (#1936,
@@ -6406,4 +6408,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.614 1998/08/20 08:55:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.615 1998/08/29 05:42:57 dawes Exp $

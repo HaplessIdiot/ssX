@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.36 1998/08/19 12:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.37 1998/08/29 05:43:31 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -601,10 +601,9 @@ MGACountRam(ScrnInfoPtr pScrn)
 		volatile unsigned char* base;
 		unsigned char tmp, tmp3, tmp5;
 	
-		base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-				pMga->PciTag,
-				(pointer)((unsigned long)pMga->FbAddress),
-				8192 * 1024);
+		pMga->FbMapSize = 8192 * 1024;
+		MGAMapMem(pScrn);
+		base = pMga->FbBase;
 	
 		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
 		OUTREG8(0x1FDE, 3);
@@ -622,7 +621,7 @@ MGACountRam(ScrnInfoPtr pScrn)
 		OUTREG8(0x1FDE, 3);
 		OUTREG8(0x1FDF, tmp);
 	
-		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)base, 8192 * 1024);
+		MGAUnmapMem(pScrn);
 	
 		if(tmp5 == 0x55)
 			return 8192;
