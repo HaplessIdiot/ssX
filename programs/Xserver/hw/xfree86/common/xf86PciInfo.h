@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.121 2002/02/19 23:35:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.122 2002/02/21 03:16:46 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -540,7 +540,7 @@
 #define PCI_CHIP_GEFORCE3		0x0200
 #define PCI_CHIP_GEFORCE3_TI_200	0x0201
 #define PCI_CHIP_GEFORCE3_TI_500	0x0202
-#define PCI_CHIP_QUADRO_DDC		0x0203
+#define PCI_CHIP_QUADRO_DCC		0x0203
 #define PCI_CHIP_GEFORCE4_TI_4600	0x0250
 #define PCI_CHIP_GEFORCE4_TI_4400	0x0251
 #define PCI_CHIP_GEFORCE4_TI_4200	0x0253
@@ -1348,7 +1348,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GEFORCE3,	      "GeForce3",0},
 				{PCI_CHIP_GEFORCE3_TI_200,    "GeForce3 Ti 200",0},
 				{PCI_CHIP_GEFORCE3_TI_500,    "GeForce3 Ti 500",0},
-				{PCI_CHIP_QUADRO_DDC,	      "Quadro DDC",0},
+				{PCI_CHIP_QUADRO_DCC,	      "Quadro DCC",0},
 				{PCI_CHIP_GEFORCE4_TI_4600,   "GeForce4 Ti 4600",0},
 				{PCI_CHIP_GEFORCE4_TI_4400,   "GeForce4 Ti 4400",0},
 				{PCI_CHIP_GEFORCE4_TI_4200,   "GeForce4 Ti 4200",0},

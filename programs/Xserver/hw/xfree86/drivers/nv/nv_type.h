@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.32 2002/02/19 23:36:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.33 2002/03/15 05:16:40 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -160,7 +160,7 @@ int RivaGetConfig(NVPtr);
 #define NV_CHIP_GEFORCE3            ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3)
 #define NV_CHIP_GEFORCE3_TI_200     ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3_TI_200)
 #define NV_CHIP_GEFORCE3_TI_500     ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE3_TI_500)
-#define NV_CHIP_QUADRO_DDC          ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO_DDC)
+#define NV_CHIP_QUADRO_DCC          ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_QUADRO_DCC)
 #define NV_CHIP_GEFORCE4_TI_4600    ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE4_TI_4600)
 #define NV_CHIP_GEFORCE4_TI_4400    ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE4_TI_4400)
 #define NV_CHIP_GEFORCE4_TI_4200    ((PCI_VENDOR_NVIDIA << 16) | PCI_CHIP_GEFORCE4_TI_4200)

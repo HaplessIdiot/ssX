@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.85 2002/02/19 23:36:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.86 2002/03/15 05:16:40 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -120,7 +120,7 @@ static SymTabRec NVChipsets[] = {
     {NV_CHIP_GEFORCE3,           "GeForce3"},
     {NV_CHIP_GEFORCE3_TI_200,    "GeForce3 Ti 200"},
     {NV_CHIP_GEFORCE3_TI_500,    "GeForce3 Ti 500"},
-    {NV_CHIP_QUADRO_DDC,         "Quadro DDC"},
+    {NV_CHIP_QUADRO_DCC,         "Quadro DCC"},
     {NV_CHIP_GEFORCE4_TI_4600,   "GeForce4 Ti 4600"},
     {NV_CHIP_GEFORCE4_TI_4400,   "GeForce4 Ti 4400"},
     {NV_CHIP_GEFORCE4_TI_4200,   "GeForce4 Ti 4200"},
@@ -164,7 +164,7 @@ static PciChipsets NVPciChipsets[] = {
     {NV_CHIP_GEFORCE3,           NV_CHIP_GEFORCE3,           RES_SHARED_VGA},
     {NV_CHIP_GEFORCE3_TI_200,    NV_CHIP_GEFORCE3_TI_200,    RES_SHARED_VGA},
     {NV_CHIP_GEFORCE3_TI_500,    NV_CHIP_GEFORCE3_TI_500,    RES_SHARED_VGA},
-    {NV_CHIP_QUADRO_DDC,         NV_CHIP_QUADRO_DDC,         RES_SHARED_VGA},
+    {NV_CHIP_QUADRO_DCC,         NV_CHIP_QUADRO_DCC,         RES_SHARED_VGA},
     {NV_CHIP_GEFORCE4_TI_4600,   NV_CHIP_GEFORCE4_TI_4600,   RES_SHARED_VGA},
     {NV_CHIP_GEFORCE4_TI_4400,   NV_CHIP_GEFORCE4_TI_4400,   RES_SHARED_VGA},
     {NV_CHIP_GEFORCE4_TI_4200,   NV_CHIP_GEFORCE4_TI_4200,   RES_SHARED_VGA},
