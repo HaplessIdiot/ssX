@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.67 2002/10/16 04:53:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.68 2002/10/30 12:52:13 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -264,6 +264,9 @@ static const char *ramdacSymbols[] = {
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
+    "drmGetInterruptFromBusID",
+    "drmCtlInstHandler",
+    "drmCtlUninstHandler",
     "drmAddBufs",
     "drmAddMap",
     "drmAgpAcquire",
@@ -5439,7 +5442,7 @@ void RADEONDoAdjustFrame(ScrnInfoPtr pScrn, int x, int y, int clone)
     unsigned char *RADEONMMIO = info->MMIO;
     int            reg, Base = y * info->CurrentLayout.displayWidth + x;
 #ifdef XF86DRI
-    RADEONSAREAPrivPtr pSAREAPriv = DRIGetSAREAPrivate(pScrn->pScreen);
+    RADEONSAREAPrivPtr pSAREAPriv;
 #endif
 
     switch (info->CurrentLayout.pixel_code) {
@@ -5460,6 +5463,9 @@ void RADEONDoAdjustFrame(ScrnInfoPtr pScrn, int x, int y, int clone)
 
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {
+
+    	pSAREAPriv = DRIGetSAREAPrivate(pScrn->pScreen);
+
 	if (pSAREAPriv->pfCurrentPage == 1) {
 	    Base += info->backOffset;
 	}
