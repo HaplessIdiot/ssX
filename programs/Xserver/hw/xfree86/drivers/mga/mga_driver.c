@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.227 2002/12/12 04:52:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.228 2002/12/16 16:19:18 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1054,7 +1054,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pMga->I2C);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
     xf86PrintEDID(MonInfo);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n");
   }
   if (!MonInfo)
 #endif /* MGAuseI2C */
@@ -1065,7 +1065,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
 					 pMga->ddc1Read ) ;
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
     xf86PrintEDID( MonInfo );
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n");
   }
 
 
