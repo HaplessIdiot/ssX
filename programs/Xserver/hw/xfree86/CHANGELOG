@@ -1,4 +1,6 @@
 XFree86 3.9.18c (2 March 2000)
+3907. Keep xf86RegisterRootWindowProperty from freeing data it didn't
+      allocate (Mark Vojkovich).
 3906. Add an extra file name to the server config file search path --
       XF86Config-M, where M is the major version number (David Dawes).
 3905. DRI megapatch II.  This includes DRI enhancements, 3dfx fixes and
