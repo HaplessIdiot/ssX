@@ -3,10 +3,10 @@
 
 // symbols for a Japanese 106 keyboard(by tsuka@kawalab.dnj.ynu.ac.jp)
 
-// $XFree86: xc/programs/xkbcomp/symbols/jp,v 3.6 2001/01/17 23:45:58 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/jp,v 3.7 2002/11/20 04:49:03 dawes Exp $
 
 default xkb_symbols "jp106" {
-
+    include "srvr_ctrl(xfree86)"
     key <ESC>  { [ Escape		]	};
 
     // Alphanumeric section
@@ -158,5 +158,6 @@ default xkb_symbols "jp106" {
     modifier_map Shift  { Shift_L,Shift_R };
     modifier_map Lock   { Caps_Lock };
     modifier_map Control{ Control_L,Control_R };
+    modifier_map Mod1   { Alt_L, Alt_R, Meta_L, Meta_R };
 };
 
