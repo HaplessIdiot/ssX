@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.42 1999/01/31 12:21:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.43 1999/02/07 06:18:45 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1524,6 +1524,16 @@ MGAFillSolidSpansDMA(
     CARD32 *base = (CARD32*)pMga->ILOADBase;
 
     SET_SYNC_FLAG(infoRec);
+    
+    if(infoRec->ClipBox) {
+	OUTREG(MGAREG_CXBNDRY,
+	   ((infoRec->ClipBox->x2 - 1) << 16) | infoRec->ClipBox->x1); 
+	OUTREG(MGAREG_YTOP, 
+	   (infoRec->ClipBox->y1 * pScrn->displayWidth) + pMga->YDstOrg); 
+	OUTREG(MGAREG_YBOT, 
+	   ((infoRec->ClipBox->y2 - 1) * pScrn->displayWidth) + pMga->YDstOrg); 
+    }
+
     (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
 
     if(n & 1) {
@@ -1532,22 +1542,29 @@ MGAFillSolidSpansDMA(
 	ppt++; pwidth++; n--;
     }
 
-    if(!n) return;
-    if(n > 838860) n = 838860;  /* maximum number we have room for */
+    if(n) {
+	if(n > 838860) n = 838860;  /* maximum number we have room for */
 
-    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
-    while(n) {
-	base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
+	OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
+	while(n) {
+	    base[0] = DMAINDICES(MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC,
                 MGAREG_FXBNDRY, MGAREG_YDSTLEN + MGAREG_EXEC);
-	base[1] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
-	base[2] = (ppt->y << 16) | 1;
-	ppt++;
-	base[3] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
-	base[4] = (ppt->y << 16) | 1;
-	ppt++;
-	base += 5; n -= 2;
+	    base[1] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	    base[2] = (ppt->y << 16) | 1;
+	    ppt++;
+	    base[3] = ((ppt->x + *(pwidth++)) << 16) | ppt->x;
+	    base[4] = (ppt->y << 16) | 1;
+	    ppt++;
+	    base += 5; n -= 2;
+	}
+	OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);  
     }
-    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);  
+
+    if(infoRec->ClipBox) {
+	OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 
+	OUTREG(MGAREG_YTOP, 0x00000000);        /* minPixelPointer */ 
+	OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
+    }
 }
 
 

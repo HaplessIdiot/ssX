@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.18 1999/01/31 12:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.19 1999/02/07 06:18:48 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1205,6 +1205,8 @@ typedef struct _XAAInfoRec {
 
    PixmapLinkPtr OffscreenPixmaps;
    XAACacheInfoRec ScratchCacheInfoRec;
+
+   BoxPtr ClipBox;
 
    Bool NeedToSync;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.14 1999/02/07 06:18:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.15 1999/02/12 22:51:58 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -297,6 +297,7 @@
 #define PCI_CHIP_85C5513	0x5513
 #define PCI_CHIP_SIS5571	0x5571
 #define PCI_CHIP_SIS5597_2	0x5597
+#define PCI_CHIP_SIS530		0x6306
 #define PCI_CHIP_SIS6326	0x6326
 #define PCI_CHIP_SIS7001	0x7001
 
@@ -546,8 +547,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_SG86C205,	"SG86C205"},
 				{PCI_CHIP_SG86C215,	"SG86C215"},
 				{PCI_CHIP_SG86C225,	"SG86C225"},
-				{PCI_CHIP_SIS5597,	"SIS5597"},
-				{PCI_CHIP_SIS6326,	"SIS6326"},
+				{PCI_CHIP_SIS5597,	"5597"},
+				{PCI_CHIP_SIS530,	"530"},
+				{PCI_CHIP_SIS6326,	"6326"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SGS,	"SGS-Thomson",	{
 				{PCI_CHIP_STG2000,	"STG2000"},
@@ -1005,7 +1007,8 @@ pciVendorCardInfo xf86PCICardInfo[] = {
                         { 0x1001, "Productiva G100 SG", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_SIS, "SIS", {
-                        { 0x6326, "6326", NF },
+                        { 0x6306, "530 based motherboard", NF },
+                        { 0x6326, "6326 based card", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_S3, "S3", {
                         { 0x8904, "Trio3D", NF },

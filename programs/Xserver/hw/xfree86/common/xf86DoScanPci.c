@@ -1,5 +1,5 @@
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.1 1999/02/12 22:51:56 hohndel Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -35,9 +35,6 @@ void DoScanPci(int argc, char **argv, int i)
    * first we need to finish setup of the OS so that we can call other
    * functions in the server
    */
-#ifdef DEBUG
-  ErrorF("Calling OsInit\n");
-#endif
   OsInit();
 
   /*
@@ -45,9 +42,6 @@ void DoScanPci(int argc, char **argv, int i)
    * so that things like the module path can be set there
    */
   for ( j = i+1; j < argc; j++ ) {
-#ifdef DEBUG
-    ErrorF("Processing argument %d\n",j);
-#endif
     if ((skip = ddxProcessArgument(argc, argv, j)))
 	j += (skip - 1);
   } 
@@ -57,9 +51,6 @@ void DoScanPci(int argc, char **argv, int i)
    */
 #ifdef XFree86LOADER
   /* Initialise the loader */
-#ifdef DEBUG
-  ErrorF("initializing the loader\n");
-#endif
   LoaderInit();
   /* Tell the loader the default module search path */
   LoaderSetPath(xf86ModulePath);
@@ -68,9 +59,6 @@ void DoScanPci(int argc, char **argv, int i)
   /* Normalise the module name */
   name = xf86NormalizeName("scanpci");
 
-#ifdef DEBUG
-  ErrorF("loading the module \"%s\"\n",name);
-#endif
   if (!LoadModule(name, NULL, NULL, NULL, NULL, NULL,
                   &errmaj, &errmin)) {
     LoaderErrorMsg(NULL, name, errmaj, errmin);
@@ -82,9 +70,6 @@ void DoScanPci(int argc, char **argv, int i)
   }
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
-#endif
-#ifdef DEBUG
-  ErrorF("calling scanpci\n");
 #endif
   (*xf86ScanPciFunc)();
 

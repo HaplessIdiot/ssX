@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.13 1999/01/26 10:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.14 1999/01/31 12:22:00 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -129,7 +129,8 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SG86C225,	"SIS86c225" },
     { PCI_CHIP_SIS5597, 	"SIS5597" },
     { PCI_CHIP_SIS5597, 	"SIS5598" },
-    { PCI_CHIP_SIS6326,		"sis6326" },
+    { PCI_CHIP_SIS530,		"SIS530" },
+    { PCI_CHIP_SIS6326,		"SIS6326" },
     { -1,				NULL }
 };
 
@@ -139,7 +140,8 @@ static PciChipsets SISPciChipsets[] = {
     { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
     { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
     { PCI_CHIP_SIS5597,		PCI_CHIP_SIS5597,	RES_SHARED_VGA },
-    { PCI_CHIP_SIS6326,	PCI_CHIP_SIS6326,	RES_SHARED_VGA },
+    { PCI_CHIP_SIS530,		PCI_CHIP_SIS530,	RES_SHARED_VGA },
+    { PCI_CHIP_SIS6326,		PCI_CHIP_SIS6326,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -732,7 +734,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     switch (pSiS->Chipset) {
 	case PCI_CHIP_SIS6326:
-	    pSiS->TurboQueue = TRUE; /* Turn on for 6326 */
+	case PCI_CHIP_SIS530:
+	    pSiS->TurboQueue = TRUE; /* Turn on for 6326/530 */
     	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
 		pSiS->TurboQueue = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
@@ -925,6 +928,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		         pScrn->videoRam *= 2;
 		}
 	case PCI_CHIP_SIS6326:
+	case PCI_CHIP_SIS530:
 	outb(0x3C4, RAMSize); /* Get memory size */
 	videoram = (inb(0x3C5) >> 1);
 	switch (videoram & 0x0B) {

@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.12 1999/02/07 06:18:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.13 1999/02/12 22:52:04 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -319,6 +319,7 @@ Permedia2AccelInit(ScreenPtr pScreen)
 				Permedia2SetupForCPUToScreenColorExpandFill;
     infoPtr->SubsequentCPUToScreenColorExpandFill = 
 				Permedia2SubsequentCPUToScreenColorExpandFill;
+
     infoPtr->WriteBitmap = Permedia2WriteBitmap;
 
     if (pScrn->bitsPerPixel == 8)
@@ -1016,7 +1017,7 @@ Permedia2SubsequentCPUToScreenColorExpandFill(
 
     Permedia2SetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
 
-    GLINT_WAIT(6);
+    GLINT_WAIT(8);
     Permedia2LoadCoord(pScrn, x, y, w, h);
 
     if ((pGlint->ROP == GXcopy) && (pGlint->BackGroundColor != -1)) {
@@ -1148,6 +1149,7 @@ SECOND_PASS:
 
     GLINT_WAIT(1);
     GLINT_WRITE_REG(0, RasterizerMode);
+    Permedia2DisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);
 }
 
@@ -1238,17 +1240,16 @@ Permedia2WritePixmap8bpp(
   	   char align = (x & pGlint->bppalign);
 		
 
+	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
-	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
 	     Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 	     GLINT_WAIT(5);
              Permedia2LoadCoord(pScrn, x, y, w, h);
-	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
 	   }
 	   LOADROP(rop);
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
@@ -1305,6 +1306,7 @@ Permedia2WritePixmap8bpp(
 	   }
 	}
 
+    Permedia2DisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);
 }
 
@@ -1394,17 +1396,16 @@ Permedia2WritePixmap16bpp(
   	   char align = (x & pGlint->bppalign);
 		
 
+	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
              Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
-	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
 	     Permedia2SetClippingRectangle(pScrn,x+skipleft,y,x+w,y+h);
 	     GLINT_WAIT(5);
              Permedia2LoadCoord(pScrn, x, y, w, h);
-	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
 	   }
 	   LOADROP(rop);
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
@@ -1461,6 +1462,7 @@ Permedia2WritePixmap16bpp(
 	   }
 	}
 
+    Permedia2DisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);
 }
 
@@ -1484,7 +1486,7 @@ Permedia2WritePixmap24bpp(
 
     GLINT_WAIT(3);
     GLINT_WRITE_REG(0, RasterizerMode);
-    GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
+    GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
     if (rop == GXcopy) {      
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     } else {
@@ -1560,6 +1562,7 @@ Permedia2WritePixmap24bpp(
 	   }  
 	}
 
+    Permedia2DisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);
 }
 
@@ -1647,12 +1650,8 @@ Permedia2WritePixmap32bpp(
 
 	   GLINT_WAIT(6);
            Permedia2LoadCoord(pScrn, x, y, w, h);
+	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   LOADROP(rop);
-	   if (rop == GXcopy) {
-		GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-	   } else {
-		GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
-	   }
   	   GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |
 				SyncOnHostData, Render);
 
@@ -1681,5 +1680,6 @@ Permedia2WritePixmap32bpp(
 	   }  
 	}
 
+    Permedia2DisableClipping(pScrn);
     SET_SYNC_FLAG(infoRec);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.2 1998/07/25 16:58:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.3 1998/07/31 10:41:32 dawes Exp $ */
 
 /*
 
@@ -43,6 +43,18 @@ Original mi code written by Keith Packard.
 ICEILTEMPDECL
 #endif
 
+#define DRAW_POINT(pScrn, x, y) \
+  if(hardClip) (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, 1, 1); \
+  else XAAPointHelper(pScrn, x, y)
+
+#define FILL_RECT(pScrn, x, y, w, h) \
+  if(hardClip) (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h); \
+  else XAAFillRectHelper(pScrn, x, y, w, h)
+
+#define FILL_SPAN(pScrn, x, y, w) \
+  if(hardClip) (*infoRec->SubsequentSolidFillRect)(pScrn, x, y, w, 1); \
+  else XAASpanHelper(pScrn, x, y, w)
+
 
 #define CLIPSTEPEDGE(edgey,edge,edgeleft) \
     if (ybase == edgey) { \
@@ -63,21 +75,21 @@ ICEILTEMPDECL
     }
 
 static void 
-XAAPointHelper(GCPtr pGC, int x, int y)
+XAAPointHelper(ScrnInfoPtr pScrn, int x, int y)
 {
-   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-   BoxPtr extents = &pGC->pCompositeClip->extents;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+   BoxPtr extents = infoRec->ClipBox;
 
    if((x >= extents->x1) && (x < extents->x2) &&
 	(y >= extents->y1) && (y < extents->y2))
-	(*infoRec->SubsequentSolidFillRect)(infoRec->pScrn, x, y, 1, 1);
+	(*infoRec->SubsequentSolidFillRect)(pScrn, x, y, 1, 1);
 }
 
 static void 
-XAAFillRectHelper(GCPtr pGC, int x1, int y1, int dx, int dy)
+XAAFillRectHelper(ScrnInfoPtr pScrn, int x1, int y1, int dx, int dy)
 {
-   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-   BoxPtr extents = &pGC->pCompositeClip->extents;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+   BoxPtr extents = infoRec->ClipBox;
    int x2 = x1 + dx;
    int y2 = y1 + dy;
 	
@@ -88,15 +100,15 @@ XAAFillRectHelper(GCPtr pGC, int x1, int y1, int dx, int dy)
    if(y2 >= extents->y2) y2 = extents->y2 - 1;
    if((dy = y2 - y1)<1) return;
 
-   (*infoRec->SubsequentSolidFillRect)(infoRec->pScrn, x1, y1, dx, dy);
+   (*infoRec->SubsequentSolidFillRect)(pScrn, x1, y1, dx, dy);
 }
 
 
 static void 
-XAASpanHelper(GCPtr pGC, int x1, int y, int width)
+XAASpanHelper(ScrnInfoPtr pScrn, int x1, int y, int width)
 {
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    BoxPtr extents = &pGC->pCompositeClip->extents;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+   BoxPtr extents = infoRec->ClipBox;
     int x2;
 
     if((y < extents->y1) || (y >= extents->y2)) return;
@@ -107,7 +119,7 @@ XAASpanHelper(GCPtr pGC, int x1, int y, int width)
     width = x2 - x1;	
 
     if(width > 0)	
- 	(*infoRec->SubsequentSolidFillRect)(infoRec->pScrn, x1, y, width, 1);
+ 	(*infoRec->SubsequentSolidFillRect)(pScrn, x1, y, width, 1);
 
 }
 
@@ -134,16 +146,19 @@ XAAFillPolyHelper (
     int	left_count, int right_count )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    BoxPtr extents = &pGC->pCompositeClip->extents;
+    BoxPtr extents = infoRec->ClipBox;
     int left_x, left_e, left_stepx, left_signdx, left_dy, left_dx;
     int right_x, right_e, right_stepx, right_signdx, right_dy, right_dx;
     int	height;
     int	left_height = 0;
     int right_height = 0;
     int	xorg = 0;
+    Bool hardClip;
 
     if((y >= extents->y2) || ((y + overall_height) <= extents->y1))
 	return;
+
+    hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
     
     while ((left_count || left_height) && (right_count || right_height)) {
   	if (!left_height && left_count) { 
@@ -175,13 +190,19 @@ XAAFillPolyHelper (
 	right_height -= height;
 
 	if(infoRec->SubsequentSolidFillTrap && (height > 6)) {
-    	    int right_DX = (right_dx * right_signdx) + (right_stepx * right_dy);
-	    int left_DX = (left_dx * left_signdx) + (left_stepx * left_dy);
-	    int left_box = (left_DX < 0) ? (left_x + left_DX) : left_x;
-	    int right_box = (right_DX < 0) ? right_x : (right_x + right_DX);
+	    int right_DX, left_DX, left_box, right_box;
 
-	    if((left_box >= extents->x1) && (right_box < extents->x2) &&
-		(y >= extents->y1) && ((y + height) < extents->y2)){
+    	    right_DX = (right_dx * right_signdx) + (right_stepx * right_dy);
+	    left_DX = (left_dx * left_signdx) + (left_stepx * left_dy);
+	    if(!hardClip) {
+		left_box = (left_DX < 0) ? (left_x + left_DX) : left_x;
+		right_box = (right_DX < 0) ? right_x : (right_x + right_DX);
+	    }
+
+	    if(hardClip || ((left_box >= extents->x1) && 
+			    (right_box < extents->x2) &&
+			    (y >= extents->y1) && 
+			    ((y + height) < extents->y2))){
 
 	    	(*infoRec->SubsequentSolidFillTrap)(infoRec->pScrn, y, height, 
 			left_x, left_DX, left_dy, left_e, 
@@ -197,9 +218,9 @@ XAAFillPolyHelper (
 	}
 
 	while (height--) {
-	    if(right_x > left_x)
-		XAASpanHelper(pGC, left_x, y, right_x - left_x);
-
+	    if(right_x > left_x) {
+		FILL_SPAN(infoRec->pScrn, left_x, y, right_x - left_x);
+	    }
     	    y++;
     	
  	    left_x += left_stepx; 
@@ -228,6 +249,7 @@ XAAWideSegment (
     Bool projectLeft, Bool projectRight,
     LineFacePtr leftFace, LineFacePtr rightFace )
 {
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     double	l, L, r;
     double	xa, ya;
     double	projectXoff, projectYoff;
@@ -243,6 +265,7 @@ XAAWideSegment (
     PolyEdgeRec	lefts[2], rights[2];
     LineFacePtr	tface;
     int		lw = pGC->lineWidth;
+    Bool	hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
 
     /* draw top-to-bottom always */
     if (y2 < y1 || y2 == y1 && x2 < x1) {
@@ -295,7 +318,7 @@ XAAWideSegment (
 	if (projectRight)
 	    dx += ((lw + 1) >> 1);
 	dy = lw;
-	XAAFillRectHelper(pGC, x, y, dx, dy);	
+	FILL_RECT(infoRec->pScrn, x, y, dx, dy);	
     } else if (!dx) {
 	leftFace->xa =  (double) lw / 2.0;
 	leftFace->ya = 0;
@@ -311,7 +334,7 @@ XAAWideSegment (
 	if (projectRight)
 	    dy += ((lw + 1) >> 1);
 	dx = lw;
- 	XAAFillRectHelper(pGC, x, y, dx, dy);
+ 	FILL_RECT(infoRec->pScrn, x, y, dx, dy);
     } else {
     	l = ((double) lw) / 2.0;
     	L = sqrt((double)(dx*dx + dy*dy));
@@ -421,8 +444,10 @@ XAAWideSegment (
 static void
 XAALineArcI (GCPtr pGC, int xorg, int yorg)
 {
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     int x, y, e, ex;
     int slw = pGC->lineWidth;
+    Bool hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
 
     y = (slw >> 1) + 1;
     if (slw & 1)
@@ -442,10 +467,11 @@ XAALineArcI (GCPtr pGC, int xorg, int yorg)
 	if ((e == ex) && (slw > 1))
 	    slw--;
 	    
-	XAASpanHelper(pGC, xorg - x, yorg - y, slw);
+	FILL_SPAN(infoRec->pScrn, xorg - x, yorg - y, slw);
 
-	if ((y != 0) && ((slw > 1) || (e != ex)))	
-	    XAASpanHelper(pGC, xorg - x, yorg + y, slw);
+	if ((y != 0) && ((slw > 1) || (e != ex))) {	
+	    FILL_SPAN(infoRec->pScrn, xorg - x, yorg + y, slw);
+	}
     }
 }
 
@@ -462,11 +488,13 @@ XAALineArcD (
     int		    edgey2,
     Bool	    edgeleft2 )
 {
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     double radius, x0, y0, el, er, yk, xlk, xrk, k;
     int xbase, ybase, y, boty, xl, xr, xcl, xcr;
     int ymin, ymax;
     Bool edge1IsMin, edge2IsMin;
     int ymin1, ymin2;
+    Bool hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
 
 
     xbase = floor(xorg);
@@ -543,8 +571,9 @@ XAALineArcD (
 	xcr = xr + xbase;
 	CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
 	CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
-	if(xcr >= xcl) 
-	    XAASpanHelper(pGC, xcl, ybase, xcr - xcl + 1);
+	if(xcr >= xcl) {
+	    FILL_SPAN(infoRec->pScrn, xcl, ybase, xcr - xcl + 1);
+	}
     }
     er = xrk - (xr << 1) - er;
     el = (xl << 1) - xlk - el;
@@ -571,8 +600,9 @@ XAALineArcD (
 	xcr = xr + xbase;
 	CLIPSTEPEDGE(edgey1, edge1, edgeleft1);
 	CLIPSTEPEDGE(edgey2, edge2, edgeleft2);
-	if(xcr >= xcl) 
-	    XAASpanHelper(pGC, xcl, ybase, xcr - xcl + 1);
+	if(xcr >= xcl) {
+	    FILL_SPAN(infoRec->pScrn, xcl, ybase, xcr - xcl + 1);
+	}
     }
 }
 
@@ -624,9 +654,11 @@ XAALineArc (
     }
 
     if (isInt) {
-	if(pGC->lineWidth == 1)
-	    XAAPointHelper(pGC, xorgi, yorgi);
-	else
+	if(pGC->lineWidth == 1) {
+	    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+	    Bool hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
+	    DRAW_POINT(infoRec->pScrn, xorgi, yorgi);
+	} else
 	    XAALineArcI(pGC, xorgi, yorgi);
     } else
 	XAALineArcD(pGC, xorg, yorg, &edge1, edgey1, edgeleft1,
@@ -664,7 +696,9 @@ XAALineJoin (
 	    	return;	/* no join to draw */
 	}
 	if (joinStyle != JoinMiter) {
-	    XAAPointHelper(pGC, pLeft->x, pLeft->y);	
+	    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+	    Bool hardClip = (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL);
+	    DRAW_POINT(infoRec->pScrn, pLeft->x, pLeft->y);	
 	    return;
 	}
     } else {
@@ -785,11 +819,20 @@ XAAPolylinesWideSolid (
     Bool	    selfJoin = FALSE;
     int		    xorg = pDrawable->x;
     int		    yorg = pDrawable->y;
-
+    Bool	    hardClip = FALSE;
 
     if(REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
 	miWideLine(pDrawable, pGC, mode, npt, pPts);
 	return;
+    }
+
+    infoRec->ClipBox = &pGC->pCompositeClip->extents;
+
+    if(infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL) {
+	hardClip = TRUE;
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+              infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+              infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);		
     }
 
     if (mode == CoordModePrevious) {
@@ -855,9 +898,9 @@ XAAPolylinesWideSolid (
 	    	if (selfJoin)
 		    firstFace = leftFace;
 	    	else if (pGC->capStyle == CapRound) {
-		    if (pGC->lineWidth == 1) 
-			XAAPointHelper(pGC, x1, y1);
-		    else
+		    if (pGC->lineWidth == 1) {
+			DRAW_POINT(infoRec->pScrn, x1, y1);
+		    } else
 		        XAALineArc(pGC,&leftFace, (LineFacePtr) NULL,
  			       	   (double)0.0, (double)0.0,TRUE);
 		}
@@ -872,9 +915,9 @@ XAAPolylinesWideSolid (
 	    if (selfJoin)
 		XAALineJoin (pGC, &firstFace, &rightFace);
 	    else if (pGC->capStyle == CapRound) {
-		if (pGC->lineWidth == 1) 
-		    XAAPointHelper(pGC, x2, y2);
-		else
+		if (pGC->lineWidth == 1) {
+		    DRAW_POINT(infoRec->pScrn, x2, y2);
+		} else
 		    XAALineArc (pGC, (LineFacePtr) NULL, &rightFace,
 			       (double)0.0, (double)0.0,TRUE);
 	    }
@@ -893,6 +936,10 @@ XAAPolylinesWideSolid (
  		       (double)0.0, (double)0.0, TRUE);
 	}
    }
+
+   infoRec->ClipBox = NULL;
+   if(hardClip)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
 
    SET_SYNC_FLAG(infoRec);
 }

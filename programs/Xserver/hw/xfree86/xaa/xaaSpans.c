@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.8 1998/12/20 11:57:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.9 1999/01/31 12:22:12 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -116,12 +116,10 @@ XAAFillSpans(
 	fastClip = FALSE;
 
     if(fastClip) {
-	BoxPtr extents = &pGC->pCompositeClip->extents;
-	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
-		extents->x1, extents->y1, extents->x2, extents->y2);
+	infoRec->ClipBox = &pGC->pCompositeClip->extents;
 	(*function)(pGC, nInit, pptInit, pwidthInit, fSorted, 
 					pDraw->x, pDraw->y);
-	(*infoRec->DisableClipping)(infoRec->pScrn);
+	infoRec->ClipBox = NULL;
     } else
 	XAAClipAndRenderSpans(pGC, pptInit, pwidthInit, nInit, fSorted,
 					function, pDraw->x, pDraw->y);
@@ -390,12 +388,21 @@ XAAFillSolidSpans(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
 
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
+
     (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
-     while(n--) {
+    while(n--) {
         (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, *pwidth, 1);
 	ppt++; pwidth++;
-     }
-     SET_SYNC_FLAG(infoRec);
+    }
+
+    if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
+    SET_SYNC_FLAG(infoRec);
 }
 
 	/***************\
@@ -441,6 +448,10 @@ XAAFillMono8x8PatternSpansScreenOrigin(
 	}	
     }
 
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
 
     (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
 	fg, bg, rop, planemask);
@@ -450,6 +461,10 @@ XAAFillMono8x8PatternSpansScreenOrigin(
 			xorg, yorg, ppt->x, ppt->y, *pwidth, 1);
 	ppt++; pwidth++;
      }
+
+     if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
@@ -476,6 +491,10 @@ XAAFillMono8x8PatternSpans(
 	patx = pCache->x;  paty = pCache->y;
     }
 
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
 
     (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
 					fg, bg, rop, planemask);
@@ -504,6 +523,10 @@ XAAFillMono8x8PatternSpans(
 			xorg, yorg, ppt->x, ppt->y, *pwidth, 1);
 	ppt++; pwidth++;
      }
+
+     if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
@@ -539,6 +562,11 @@ XAAFillColor8x8PatternSpansScreenOrigin(
 	xorg = patx;  yorg = paty;
     }	
 
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
+
     (*infoRec->SetupForColor8x8PatternFill)(pScrn, patx, paty,
 			 rop, planemask, pCache->trans_color);
 
@@ -547,6 +575,10 @@ XAAFillColor8x8PatternSpansScreenOrigin(
 			xorg, yorg, ppt->x, ppt->y, *pwidth, 1);
 	ppt++; pwidth++;
      }
+ 
+    if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
@@ -564,6 +596,12 @@ XAAFillColor8x8PatternSpans(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int xorg, yorg, slot;
+
+
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
 
     (*infoRec->SetupForColor8x8PatternFill)(pScrn, pCache->x, pCache->y,
 			 rop, planemask, pCache->trans_color);
@@ -583,6 +621,10 @@ XAAFillColor8x8PatternSpans(
 			xorg, yorg, ppt->x, ppt->y, *pwidth, 1);
 	ppt++; pwidth++;
      }
+
+     if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
@@ -605,6 +647,11 @@ XAAFillCacheBltSpans(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int x, w, phaseX, phaseY, blit_w;  
+
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
 
     (*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, rop, planemask,
 		pCache->trans_color);
@@ -632,6 +679,10 @@ XAAFillCacheBltSpans(
 	}
 	ppt++; pwidth++;
      }
+
+     if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
@@ -662,6 +713,11 @@ XAAFillCacheExpandSpans(
     cacheWidth = (pCache->w * pScrn->bitsPerPixel) / 
 	infoRec->CacheColorExpandDensity;
 
+    if(infoRec->ClipBox)
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
+
     (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
 							planemask);
 
@@ -688,6 +744,10 @@ XAAFillCacheExpandSpans(
 	}
 	ppt++; pwidth++;
      }
+
+     if(infoRec->ClipBox)
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+
      SET_SYNC_FLAG(infoRec);
 }
 
