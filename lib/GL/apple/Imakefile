@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.9 2001/04/03 02:29:32 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.1 2003/06/30 01:45:10 torrey Exp $
 
 #include <Threads.tmpl>
 
@@ -24,7 +24,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
      DRI_OBJS = dri_glx.o dri_driver.o dri_dispatch.o x-hash.o x-list.o
      DRI_INCS = -I. -I$(GLXLIBSRC)/glx -I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
                 -I$(XINCLUDESRC) -I$(SERVERSRC)/GL/dri -I$(XPINCDIR) \
-                -I$(MESASRCDIR)/include -I$(MESASRCDIR)/src
+                -I$(MESASRCDIR)/include -I$(MESASRCDIR)/src \
+                -I$(GLXLIBSRC)/include
 #endif
 
 #if GlxBuiltInTdfx

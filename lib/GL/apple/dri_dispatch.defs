@@ -470,7 +470,6 @@
 (void MultTransposeMatrixfARB 378 "const GLfloat * m")
 (void MultTransposeMatrixdARB 377 "const GLdouble * m")
 (void SampleCoverageARB 459 "GLclampf value, GLboolean invert")
-(void SamplePassARB 460 "GLenum pass")
 (void PolygonOffsetEXT -1 "GLfloat factor, GLfloat bias" PolygonOffset)
 (void GetTexFilterFuncSGIS -1 "GLenum target, GLenum filter, GLfloat * weights")
 (void TexFilterFuncSGIS -1 "GLenum target, GLenum filter, GLsizei n, const GLfloat * weights")
