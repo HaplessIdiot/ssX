@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.3 1998/09/13 05:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.4 1998/09/13 09:10:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1289,7 +1289,8 @@ xf86FindPrimaryDevice()
 	xf86PrimaryAccess.pAccess = &AccessNULL;
 	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
     } else if (pciDevType != DEV_NONE){
-	xf86Msg(X_PROBED, "Found active PCI device\n");
+	xf86Msg(X_PROBED, "Found active PCI device (%d:%d:%d)\n",
+		primaryPciDev.bus, primaryPciDev.dev, primaryPciDev.func);
 	xf86PrimaryAccess.pAccess = primaryPciAccess;
 	switch(pciDevType){
 	case DEV_VGA:
