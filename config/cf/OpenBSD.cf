@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.81 2003/04/04 22:28:01 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.82 2003/04/14 20:35:49 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -71,10 +71,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define VarLibDir		VarDbDirectory
 
 #define InstallXloadSetGID	NO
-
-#ifndef HasLibPthread
-#define HasLibPthread		NO
-#endif
 
 #ifndef HasIssetugid
 # if (OSMajorVersion >= 2)
@@ -430,6 +426,19 @@ install:: fonts.alias							@@\
 #  define DoLoadableServer	YES
 # endif
 
+/* Direct rendering (OpenBSD 3.3 and up). */ 
+# if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
+#  ifndef BuildXF86DRI
+#   define BuildXF86DRI			YES
+#  endif 
+#  ifndef BuildXF86DRM
+#   define BuildXF86DRM			NO
+#  endif 
+#  ifndef BuildXF86OldDRMCompat
+#   define BuildXF86OldDRMCompat	NO
+#  endif
+# endif 
+
 #define HasWeakSymbols		YES
 
 /* To use the NetBSD Aperture driver */
@@ -487,8 +496,13 @@ install:: fonts.alias							@@\
 # endif
 
 /* No MMX support in OpenBSD/a.out gas */
-# if !UseElfFormat
-#   define HasMMXSupport	NO
+# ifndef HasMMXSupport
+#   define HasMMXSupport	UseElfFormat
+# endif
+
+/* for DRI */
+# ifndef HasX86Support
+#  define HasX86Support		UseElfFormat
 # endif
 
 # include <xfree86.cf>
@@ -814,25 +828,21 @@ install:: fonts.alias							@@\
  * Multi-thread safe libs 
  */	
 #if HasWeakSymbols == YES && (OSMajorVersion == 2 && OSMinorVersion >= 6 || OSMajorVersion >= 3)
-/* For now only on a.out */
-# if !UseElfFormat
 #  define HasPosixThreads		YES
 #  define ThreadedX			YES
-#  define SystemMTDefines		-D_REENTRANT
-#  define BuildThreadStubLibrary		YES 
-#  define NeedUIThrStubs			YES 
+#  define SystemMTDefines		/**/
+#  define BuildThreadStubLibrary	YES 
+#  define NeedUIThrStubs		YES
 #  define ThreadsCompileFlag		-pthread
 #  define ThreadsLibraries		-pthread
-# else
-#  define ThreadedX			NO
-# endif 
+#  define SharedX11Reqs			$(LDPRELIBS) $(XTHRSTUBLIB)
+#  define SharedXtReqs			$(LDPRELIB) $(XLIBONLY) $(SMLIB) \
+					$(ICELIB) $(XTHRSTUBLIB)
 #endif
+
 
 /* Set this to YES when getpwuid_r is added to libc_r */
 #define HasThreadSafeAPI		NO
-
-/* Set this to YES when getpwuid_r is added to libc_r */
-#define HasThreadSafeAPI	NO
 
 #ifndef ExtraLibraries
 # define ExtraLibraries		/**/
