@@ -186,7 +186,7 @@ extern Bool Must_have_memory;
 #define TAIL_SIZE		0
 #endif
 
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__ia64__)
 #define MAGIC			0x1404196414071968
 #define MAGIC_FREE              0x1506196615061966
 #define MAGIC2			0x2515207525182079
@@ -327,7 +327,7 @@ Xalloc (unsigned long amount)
     }
 
     /* alignment check */
-#if defined(__alpha__) || defined(__sparc__) || defined(__mips__) || defined(__powerpc__) || defined(__arm32__)
+#if defined(__alpha__) || defined(__sparc__) || defined(__mips__) || defined(__powerpc__) || defined(__arm32__) || defined(__ia64__)
     amount = (amount + (sizeof(long)-1)) & ~(sizeof(long)-1);
 #endif
 
