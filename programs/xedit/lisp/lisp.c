@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.17 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.18 2001/10/15 07:05:52 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -1421,7 +1421,7 @@ LispBeginBlock(LispMac *mac, LispObj *tag, int eval)
     unsigned blevel = mac->block.block_level + 1;
     LispBlock *block;
 
-    if (blevel >= mac->block.block_size) {
+    if (blevel > mac->block.block_size) {
 	LispBlock **blk = realloc(mac->block.block,
 				  sizeof(LispBlock*) * (blevel + 1));
 
@@ -2191,11 +2191,12 @@ LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list)
     ENV = old_env;
 
     /* res is not gc protected, link to FRM */
-    frm = FRM;
-    FRM = CONS(res, FRM);
-    if (type == LispMacro)
+    if (type == LispMacro) {
+	frm = FRM;
+	FRM = CONS(res, FRM);
 	res = EVAL(res);
-    FRM = frm;
+	FRM = frm;
+    }
 
     return (res);
 }
