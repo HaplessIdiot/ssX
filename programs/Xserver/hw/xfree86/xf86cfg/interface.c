@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -440,6 +440,9 @@ AskConfig(void)
 	switch (cf_state) {
 	    case CF_XF86Config:
 		str = "XF86Config";
+		XtSetArg(args[num_args], XtNvalue, XF86Config_path);
+		++num_args;
+		break;
 	    case CF_XKBConfig:
 		str = "XKB";
 		XtSetArg(args[num_args], XtNvalue, XkbConfigDir XkbConfigFile);
@@ -1139,7 +1142,7 @@ AddDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 void
 ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    int i;
+    int i, j;
 
     if (config_mode == CONFIG_LAYOUT) {
 	for (i = 0; i < computer.num_devices; i++) {
@@ -1180,6 +1183,9 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			    computer.devices[i]->config = (XtPointer)card;
 			}
 			SetTip(computer.devices[i]);
+			for (j = 0; j < computer.num_screens; j++)
+			    if (computer.screens[j]->card->widget == config)
+				SetTip((xf86cfgDevice*)computer.screens[j]);
 		    }	break;
 		    case MONITOR: {
 			XF86ConfMonitorPtr monitor =
@@ -1192,6 +1198,9 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			    computer.devices[i]->config = (XtPointer)monitor;
 			}
 			SetTip(computer.devices[i]);
+			for (j = 0; j < computer.num_screens; j++)
+			    if (computer.screens[j]->monitor->widget == config)
+				SetTip((xf86cfgDevice*)computer.screens[j]);
 		    }	break;
 		}
 		break;

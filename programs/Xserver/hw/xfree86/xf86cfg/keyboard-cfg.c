@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -335,8 +335,10 @@ InitializeKeyboard(void)
     while (timeout > 0) {
 	xkb_info->xkb =
 	    XkbGetKeyboard(DPY, XkbGBN_AllComponentsMask, XkbUseCoreKbd);
-	if (xkb_info->xkb == NULL || xkb_info->xkb->geom == NULL)
-	    sleep(timeout -= 1);
+	if (xkb_info->xkb == NULL || xkb_info->xkb->geom == NULL) {
+	    timeout -= 1;
+	    sleep(1);
+	}
 	else
 	    break;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.57 2000/04/17 16:30:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.58 2000/04/20 21:28:44 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -121,9 +121,9 @@ static int pix24bpp = 0;
  
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "1.0.0"
+#define S3VIRGE_VERSION_NAME "1.1.0"
 #define S3VIRGE_VERSION_MAJOR   1
-#define S3VIRGE_VERSION_MINOR   0
+#define S3VIRGE_VERSION_MINOR   1
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -315,12 +315,6 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-static const char *int10Symbols[] = {
-    "xf86InitInt10",
-    "xf86FreeInt10",
-    NULL
-};
-
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
@@ -329,6 +323,12 @@ static const char *vbeSymbols[] = {
 };
 
 #ifdef XFree86LOADER
+
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
 
 static const char *cfbSymbols[] = {
 #if 1
@@ -2415,6 +2415,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   }
 	
   miInitializeBackingStore(pScreen);
+  xf86SetBackingStore(pScreen);
+  xf86SetSilkenMouse(pScreen);
   						/* hardware cursor needs to wrap this layer */
   S3VDGAInit(pScreen);
 

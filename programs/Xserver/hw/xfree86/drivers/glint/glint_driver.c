@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.83 2000/05/28 16:57:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.84 2000/06/12 10:11:37 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2237,15 +2237,14 @@ GLINTRestore(ScrnInfoPtr pScrn)
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
-	Permedia2VideoReset(pScrn);
+	Permedia2VideoLeaveVT(pScrn);
 	Permedia2Restore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-	Permedia2VideoReset(pScrn);
+	Permedia2VideoLeaveVT(pScrn);
 	Permedia2VRestore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
-	Permedia2VideoReset(pScrn);
 	Permedia3Restore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -2603,7 +2602,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	    Permedia2VideoInit(pScreen);
     }
 
@@ -2730,6 +2728,13 @@ GLINTEnterVT(int scrnIndex, int flags)
     	if (!GLINTModeInit(pScrn, pScrn->currentMode))
 		return FALSE;
 
+    switch (pGlint->Chipset) {
+    case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	Permedia2VideoEnterVT(pScrn);
+    }
+
     if (!pGlint->NoAccel) {
     	switch (pGlint->Chipset) {
     	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
@@ -2812,8 +2817,7 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
-	    Permedia2VideoUninit(xf86Screens[scrnIndex]);
+	    Permedia2VideoUninit(pScrn);
     }
 
     if (pScrn->vtSema) {
