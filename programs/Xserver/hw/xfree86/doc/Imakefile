@@ -1,10 +1,10 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.0 1994/05/29 02:06:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.1 1994/06/26 13:09:55 dawes Exp $
 
 #include <Server.tmpl>
 
 /* FreeBSD's README is handled separately because of name length limits */
 #ifdef BSD386Architecture
-OSREADME = README.Bsdi
+OSREADME = /* README.Bsdi */
 #endif
 #ifdef NetBSDArchitecture
 OSREADME = README.NetBSD
@@ -16,23 +16,23 @@ OSREADME = README.Mach
 OSREADME = README.Linux
 #endif
 #ifdef MinixArchitecture
-OSREADME = README.Minix
+OSREADME = /* README.Minix */
 #endif
 #ifdef AmoebaArchitecture
-OSREADME = README.Amoeba
+OSREADME = /* README.Amoeba */
 #endif
 #ifdef SVR3Architecture
 # ifdef i386ScoArchitecture
-OSREADME = README.SCO README.SVR3
+OSREADME = README.SCO /* README.SVR3 */
 # else
-OSREADME = README.SVR3
+OSREADME = /* README.SVR3 */
 # endif
 #endif
 #ifdef SVR4Architecture
 # ifdef SunArchitecture
-OSREADME = README.SOLX86
+OSREADME = /* README.SOLX86 */
 # else
-OSREADME = README.SVR4
+OSREADME = /* README.SVR4 */
 # endif
 #endif
 
@@ -41,11 +41,11 @@ all::
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.cirrus README.Video7 README.P9000 README.agx
 
-MAINDOCS = COPYRIGHT README README.Config INSTALL
+MAINDOCS = /* COPYRIGHT README */ README.Config /* INSTALL */ ServersOnly
 
 OTHERDOCS = VideoModes.doc modeDB.txt AccelCards README.clkprog
 
-FILES = /* $(MAINDOCS) $(OSREADME) */ $(HWREADME) $(OTHERDOCS)
+FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS)
 
 InstallMultipleDestFlags(install,$(FILES),$(LIBDIR)/doc,$(INSTDATFLAGS))
 

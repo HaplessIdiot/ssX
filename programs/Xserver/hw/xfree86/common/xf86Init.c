@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.5 1994/09/08 14:27:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.6 1994/09/13 15:09:37 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -448,6 +448,7 @@ ddxProcessArgument (argc, argv, i)
     xf86coFlag = TRUE;
     return 0;
   }
+#ifndef XF86MONOVGA
   if (!strcmp(argv[i], "-bpp"))
   {
     int bpp;
@@ -500,7 +501,8 @@ ddxProcessArgument (argc, argv, i)
        else if (!strcmp(argv[i-1], "-bgamma")) xf86bGamma = 1.0 / gamma;
        return 2;
     }
- }
+  }
+#endif /* XF86MONOVGA */
   return xf86ProcessArgument(argc, argv, i);
 }
 
@@ -522,12 +524,14 @@ ddxUseMsg()
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
+#ifndef XF86MONOVGA
   ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
   ErrorF("-gamma f               set gamma value (0.1 < f < 10.0) Default: 1.0\n");
   ErrorF("-rgamma f              set gamma value for red phase\n");
   ErrorF("-ggamma f              set gamma value for green phase\n");
   ErrorF("-bgamma f              set gamma value for blue phase\n");
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
+#endif /* XF86MONOVGA */
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

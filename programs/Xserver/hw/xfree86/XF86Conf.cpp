@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.0 1994/09/08 14:24:39 dawes Exp $
 XCOMM
 XCOMM Copyright 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -56,12 +56,12 @@ XCOMM **********************************************************************
 
 Section "Keyboard"
 
-    Device	"Standard"
+    Protocol	"Standard"
 
 XCOMM when using XQUEUE, comment out the above line, and uncomment the
 XCOMM following line
 
-XCOMM    Device	"Xqueue"
+XCOMM    Protocol	"Xqueue"
 
     AutoRepeat	500 5
     ServerNumLock
@@ -103,7 +103,7 @@ XCOMM Emulate3Buttons is an option for 2-button Microsoft mice
 
 XCOMM	Emulate3Buttons
 
-XCOMM ChordMiddle is an optino for some 3-button Logitech mice
+XCOMM ChordMiddle is an option for some 3-button Logitech mice
 
 XCOMM	ChordMiddle
 
@@ -247,7 +247,7 @@ Section "Screen"
     EndSubsection
 EndSection
 
-XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX)
+XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)
 
 Section "Screen"
     Driver	"accel"

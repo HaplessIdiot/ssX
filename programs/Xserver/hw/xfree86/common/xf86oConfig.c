@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86oConfig.c,v 3.0 1994/09/03 02:51:52 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86oConfig.c,v 3.1 1994/09/04 10:52:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -69,6 +69,7 @@ extern char *rgbPath;
 extern Bool xf86fpFlag, xf86coFlag;
 
 extern int defaultColorVisualClass;
+int s3Madjust=0, s3Nadjust=0;
 
 #define DIR_FILE	"/fonts.dir"
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.12 1994/09/08 14:20:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.13 1994/09/11 00:32:11 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -140,11 +140,11 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.12 1994/09/08 14:20:18 dawes Exp $
  */
 
 /*
- * If you don't want to build DIS (the Document Imaging Subset of XIE)
- * comment out this line.  This option is only relevant when XIE is built.
+ * If you want to build only the DIS (Document Imaging Subset of XIE)
+ * uncomment this line.  This option is only relevant when XIE is built.
  *
- */
 #define BuildDIS		YES
+ */
 
 /*
  * If you are running Solaris x86, and have the aperture driver installed,

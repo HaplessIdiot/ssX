@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.0 1994/09/08 14:27:43 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -90,7 +90,7 @@ int clk;
    }
    /* now 110000 <= ffreq <= 220000 */   
 
-   ffreq /= TI_REF_FREQ;
+   ffreq /= TI_REF_FREQ * 1000;
 
    /* the remaining formula is  ffreq = (m+2)*8 / (n+2) */
    /* mf and nf are the `+2' values */
@@ -98,7 +98,7 @@ int clk;
    while (1) {
       for (nf = 3.0; nf < 28.0; nf++) {  /* to have Fref/(n+2)>0.5MHz */
          for (mf = 3.0; mf < 129.0; mf++) {      
-           float div = 8.0 * mf/nf;
+           float div = (8.0 * mf)/nf;
            
            if (div > (ffreq + max_error))   /* next n */
               break;

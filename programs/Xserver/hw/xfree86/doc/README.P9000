@@ -24,6 +24,11 @@
 2.0 Change Log
 --------------
 
+1994.09.15:
+	* Now almost always works with XF86Config changes (Erik Nygren)
+	* Cursor code looks at VTSema before writing to RAMDAC.
+	  This had been causing the x11perf server crash (Erik Nygren)
+
 1994.09.08:
 	* Fixed problem with xdm and restarting the server (Erik Nygren)
 	* Fixed and enabled ImageRead in CopyArea (Chris Mason)
@@ -76,8 +81,9 @@ in p9000blt.c should work, but the stuff in p9000im.c probably won't.
 
 For Diamond Viper PCI owners, you'll need to get the PCIDUMP.EXE
 program from the Unixware P9000 server for now.  Run it under DOS and
-use the values to fill in MemBase and IOBase in Xconfig.  These values
-will change whenever you move cards around or add cards.
+use the values to fill in MemBase and IOBase in the Device section of
+XF86Config.  These values will change whenever you move cards around
+or add cards.
 
 I've started adding in support for other cards and for acceleration.
 Due to its untested nature, much of it is disabled.  A define at the top of
@@ -94,7 +100,7 @@ All Viper VLB's should work with this server, hopefully....  :-)
 3.2 Diamond Viper PCI
 ---------------------
 This should now work, thanks to help from Bob Hollinger and Matt Thomas.
-You'll want to specify the chipset "viperpci" in your Xconfig file.
+You may to specify the chipset "viperpci" in your XF86Config file.
 You'll also need to specify an IOBase and a MemBase.  You can
 obtain these values with PCIDUMP.EXE.  This program may be obtained
 by sending email to xserver@summit.novell.com with the two lines:
@@ -111,17 +117,19 @@ but this doesn't yet work.
 ----------------------------------
 The Orchid P9000 and other cards based on the Weitek board design
 (such as the STAR 2000) should now work.  Talk to harry@brain.jpl.nasa.gov
-if you have problems with this.
+if you have problems with this.  Specify the chipset "orchidp9000" in
+the Device section of XF86Config
 
 3.4 Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!)
 --------------------------------------------------------------
 These are NOT supported yet.  We don't have the hardware to write and
-or test drivers for them on.  We may add limited support depending
-on how close they are to the P9000.  If you need support for one
-of these cards, you should look into XInside's AcceleratedX.
-It's a commercial product that costs about $199.  Send email to
-info@xinside.com for more information.  Their P9000 server is
-also much faster than this one at present (but then this one is free :-)
+or test drivers for them on.  The docs I have says the P9100 has a
+different interface.  As a result, they may need an entirely new
+server.  If you need support for one of these cards, you should look
+into XInside's AcceleratedX.  It's a commercial product that costs
+about $199.  Send email to info@xinside.com for more information.
+Their P9000 server is also much faster than ours at present (but then
+this server is free :-)
 
 4.0 Acceleration
 ----------------
@@ -198,14 +206,15 @@ the README contained therein.
 
 8.0 XF86Config
 --------------
-The modes line in the Xconfig file is now handled differently.
+The modes line in the XF86Config file is now handled differently.
 The virtual line is now ignored entirely.  Each mode on the mode
 line is looked at and the first usable mode is selected (ie the first
 one which works with available memory, etc).  Any other modes which
 are valid and have the same dimensions are also used.  And other modes
 are ignored.
 
-Here are the current supported options and their possible values:
+The current supported keywords in the Device section
+of the XF86Config file are:
 
 	VideoRAM	1024 or 2048  (use 2048 for "3MB" Orchid P9000's)
 	ChipSet		"vipervlb" or "viperpci" or "orchidp9000"
@@ -227,35 +236,54 @@ Here are the current supported options and their possible values:
 	Modes		almost any valid mode (there are constraints on
 				the horiz res so not all values are possible)
 
-Here's a portion of a sample Xconfig file:
+The current supported keywords in the Display section
+of the XF86Config file are:
+
+	Depth		8 : use 8 bits per pixel for 256 colors [default]
+			15 or 16 : use 16 bits per pixel for up to 65K colors
+			24 or 32 : use 32 bits per pixel (sparse 24 bpp)
+				for up to 16 million colors
+	Weight		555 or 565 if Depth is 15 or 16.  Otherwise this
+				is ignored.  These are the Red, Green,
+				and Blue bits per pixel [default=565]
+
+Here's a portion of a sample XF86Config file for the Viper VLB:
 
 --------------------------------------------------------------------
 
-ACCEL
-  Viewport      0 0
-  Modes         "640x480"
-  VideoRAM      2048
-  ChipSet       "vipervlb"
-  Clocks        81 50 31 87 115 25
-  MemBase       0x80000000
-#  Option        "sw_cursor" "sync_on_green" "noaccel"
+Section "Device"
+    Identifier "ViperVLB"
+    VendorName "Diamond"
+    BoardName "Viper VLB"
+    Clocks 81 50 31 87 115 25 25.175 60  # These only need to match to modes
+    Videoram 2048                        # This is manditory
+    Membase 0x80000000                   # This is manditory on non-ViperVLB's
+EndSection
 
-# DO NOT USE THESE VALUES!!!  THEY ARE PROVIDED AS AN EXAMPLE ONLY.
-# DO NOT BLINDLY USE VIDEO MODES WITHOUT UNDERSTANDING WHAT YOU ARE
-# DOING.  IT IS POSSIBLE TO DAMAGE THE MONITOR.  THE XFree86 CORE TEAM
-# DISCLAIMS ALL LIABILITY FOR MONITOR DAMAGE.
-
-ModeDB
- "640x480"     25.175  640  664  760  800    480  491  493  525
+Section "Screen"
+    Driver "accel"
+    Device "ViperVLB"
+    Monitor "NEC4FGe"
+    Subsection "Display"
+	Depth 8
+        Modes "1024x768" "800x600"
+    EndSubsection
+EndSection
 
 --------------------------------------------------------------------
 
 9.0 Known Bugs
 --------------
 There are currently problems with the server when used in conjunction
-with xdm, olvwm, and VT switching under Linux.  Some people have reported
-that x11perf -all crashes the server, but I haven't been able to duplicate
-this.
+with xdm, olvwm, and VT switching under Linux.  
+
+If the cursor changes while you're in a VT, the cursor won't look
+right when you return from the VT until it is moved between windows
+(and changes color and shape).
+
+If there are no valid mode entries, the screen will switch to black
+rather than restoring text.  I don't know where this is happening.
+Switching back to your VT will save you.
 
 10.0 Credits
 ------------
@@ -279,4 +307,4 @@ acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 --------------------------------------------------------------------
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.4 1994/09/07 15:52:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.5 1994/09/08 14:28:01 dawes Exp $

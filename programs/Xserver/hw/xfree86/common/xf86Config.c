@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.14 1994/09/11 11:14:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.15 1994/09/13 15:09:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1616,6 +1616,8 @@ configMonitorSection()
   monp = &(monitor_list[n_monitors]); /* Point to the new monitor */
   monp->Modes = 0;
   monp->Last = 0;
+  monp->n_hsync = 0;
+  monp->n_vrefresh = 0;
   n_monitors++; 
   
   while ((token = getToken(MonitorTab)) != ENDSECTION) {
@@ -1790,7 +1792,7 @@ configMonitorSection()
           configError("Sorry. Too many vertical refresh intervals.");
 
         if ((token = getToken(NULL)) != NUMBER)
-          configError("Vetical refresh value expected");
+          configError("Vertical refresh value expected");
         monp->vrefresh[monp->n_vrefresh].lo = val.realnum;
         if ((token = getToken(NULL)) == DASH) {
           if ((token = getToken(NULL)) != NUMBER)
@@ -1812,7 +1814,7 @@ configMonitorSection()
       case MHZ: multiplier = 1.0e6; break;
       default: multiplier = 1.0; pushToken = token;
       }
-      for ( i = 0 ; i < monp->n_hsync ; i++ ) {
+      for ( i = 0 ; i < monp->n_vrefresh ; i++ ) {
          monp->vrefresh[i].hi *= multiplier;
          monp->vrefresh[i].lo *= multiplier;
       }
@@ -2655,7 +2657,7 @@ char *scrname;
 #endif
 
 	hsyncfreq = (float)(dispmp->Clock) / (float)(dispmp->HTotal);
-	for ( i = 0 ; i < monp->n_hsync ; monp++ ) {
+	for ( i = 0 ; i < monp->n_hsync ; i++ ) {
 		if ( monp->hsync[i].hi == monp->hsync[i].lo ) {
 			if ( (hsyncfreq > 0.999 * monp->hsync[i].hi) &&
 			     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
@@ -2682,7 +2684,7 @@ char *scrname;
 				((float)(dispmp->HTotal) *
 					(float)(dispmp->VTotal)) ;
 	if ( dispmp->Flags & V_INTERLACE ) vrefreshrate *= 2.0;
-	for ( i = 0 ; i < monp->n_vrefresh ; monp++ ) {
+	for ( i = 0 ; i < monp->n_vrefresh ; i++ ) {
 		if ( monp->vrefresh[i].hi == monp->vrefresh[i].lo ) {
 			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].hi) &&
 			     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )

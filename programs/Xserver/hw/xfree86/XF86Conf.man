@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.0 1994/09/13 15:07:29 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.1 1994/09/14 10:37:41 dawes Exp $
 .\" XF86Conf.man
 .TH XF86Config 4/5 "Version 3.1"  "XFree86"
 .SH NAME
@@ -19,7 +19,7 @@ places:
 .LP
 where <XRoot> refers to the root of the X11 install tree.
 .PP
-This file is composed of a number of section.  Each section has
+This file is composed of a number of sections.  Each section has
 the form:
 .sp
 .in 8
@@ -67,7 +67,7 @@ for connections on TCP port number 7100.
 .B RGBPath \fI"path"\fP
 sets the path name for the RGB color database.
 .PP
-The \fBServerFlags\fP section is used to specify some miscelaneous
+The \fBServerFlags\fP section is used to specify some miscellaneous
 X server options.  The entries available for this section are:
 .TP 8
 .B NoTrapSignals
@@ -253,7 +253,7 @@ monitor.  \fIhorizsync-range\fP may be a comma separated list of
 either discrete values or ranges of values.  A range of values is
 two values separated by a dash.  By default the values are in units
 of kHz.  They may be specified in MHz or Hz if \fBMHz\fP or \fBHz\fP
-is appended to the numbers.  The data given here is used by the X
+is added to the end of the line.  The data given here is used by the X
 server to determine if video modes are within the specifications
 of the monitor.  This information should be available in the
 monitor's handbook.
@@ -264,7 +264,7 @@ the monitor.  \fIvertrefresh-range\fP may be a comma separated list
 of either discrete values or ranges of values.  A range of values
 is two values separated by a dash.  By default the values are in
 units of Hz.  They may be specified in MHz or kHz if \fBMHz\fP or
-\fBkHz\fP is appended to the numbers.  The data given here is used
+\fBkHz\fP is added to the end of the line.  The data given here is used
 by the X server to determine if video modes are within the
 specifications of the monitor.  This information should be available
 in the monitor's handbook.
@@ -272,7 +272,7 @@ in the monitor's handbook.
 .B Gamma \fIgamma-value(s)\fP
 This is an optional entry that can be used to specify the gamma
 correction for the monitor.  It may be specified as either a single
-value or as three separate RGB values.  Not all X servers a capable
+value or as three separate RGB values.  Not all X servers are capable
 of using this information.
 .TP 8
 .B Mode \fI"name"\fP
@@ -552,7 +552,7 @@ for details.
 This optional entry sets the upper left corner of the initial
 display.  This is only relevant when the virtual screen resolution
 is different from the resolution of the initial video mode.  If
-this entry is not given, the the initial display will be centred
+this entry is not given, then the initial display will be centered
 in the virtual display area.
 .TP 4
 .B Modes \fI"modename" ...\fP

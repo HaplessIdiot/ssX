@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.27 1994/09/13 15:08:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.28 1994/09/14 10:40:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -203,6 +203,7 @@ Bool s3UsingPixMux = FALSE;
 Bool s3Bt485PixMux = FALSE;
 Bool s3ATT498PixMux = FALSE;
 static int maxRawClock = 0;
+static Bool clockDoublingPossible = FALSE;
 
 /*
  * s3PrintIdent -- print identification message
@@ -628,41 +629,11 @@ s3Probe()
     * For chipsets other than 928, 805i or 864/964, there is only one RAMDAC
     * type possible.  Only probe for 928, 805i and 864/964.
     */
-   if ((S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
-       || S3_805_I_SERIES(s3ChipId))
-   && s3RamdacType == UNKNOWN_DAC) {
 
-      /*
-       * Bt485/AT&T20C505 first
-       *
-       * Probe for the bloody thing.  Set 0x3C6 to a bogus value, then
-       * try to get the Bt485 status register.  If it's there, then we will
-       * get something else back from this port.
-       */
+   /* XXXX The "Detected an ....." messages should probably go */
 
-      /*
-       * XXXX The "Detected an ....." messages should probably go
-       */
-      unsigned char tmp2;
-      tmp = inb(0x3C6);
-      outb(0x3C6, 0x0F);
-      if (((tmp2 = s3InBtStatReg()) & 0x80) == 0x80) {
-	 /*
-	  * Found either a BrookTree Bt485 or AT&T 20C505.
-	  */
-	 if ((tmp2 & 0xF0) == 0xD0) {
-	    s3RamdacType = ATT20C505_DAC;
-	    ErrorF("%s %s: Detected an AT&T 20C505 RAMDAC\n",
-	           XCONFIG_PROBED, s3InfoRec.name);
-	 } else {
-	    s3RamdacType = BT485_DAC;
-	    ErrorF("%s %s: Detected a BrookTree Bt485 RAMDAC\n",
-	           XCONFIG_PROBED, s3InfoRec.name);
-	 }
-      }
-      outb(0x3C6, tmp);
-
-      /* If it wasn't a Bt485 or AT&T 20C505, probe for the Ti3020 */
+   if (S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
+       || S3_805_I_SERIES(s3ChipId)) {
       if (s3RamdacType == UNKNOWN_DAC) {
 	 unsigned char saveCR55, saveCR5C, saveTIndx, saveTIdata;
 
@@ -714,7 +685,36 @@ s3Probe()
 	 outb(vgaCRReg, saveCR55);
       }
 
-      /* If it wasn't a Ti3020, probe for the ATT 20C498 */
+      /*
+       * Bt485/AT&T20C505 next
+       *
+       * Probe for the bloody thing.  Set 0x3C6 to a bogus value, then
+       * try to get the Bt485 status register.  If it's there, then we will
+       * get something else back from this port.
+       */
+
+      if (s3RamdacType == UNKNOWN_DAC) {
+         unsigned char tmp2;
+         tmp = inb(0x3C6);
+         outb(0x3C6, 0x0F);
+         if (((tmp2 = s3InBtStatReg()) & 0x80) == 0x80) {
+          /*
+           * Found either a BrookTree Bt485 or AT&T 20C505.
+           */
+          if ((tmp2 & 0xF0) == 0xD0) {
+             s3RamdacType = ATT20C505_DAC;
+             ErrorF("%s %s: Detected an AT&T 20C505 RAMDAC\n",
+                    XCONFIG_PROBED, s3InfoRec.name);
+          } else {
+             s3RamdacType = BT485_DAC;
+             ErrorF("%s %s: Detected a BrookTree Bt485 RAMDAC\n",
+                    XCONFIG_PROBED, s3InfoRec.name);
+          }
+         }
+         outb(0x3C6, tmp);
+      }
+
+      /* If it wasn't a Bt485, probe for the ATT 20C498 */
       if (s3RamdacType == UNKNOWN_DAC) {
 	 int dir, mir;
 	 xf86dactopel();
@@ -849,7 +849,12 @@ s3Probe()
       if (S3_801_SERIES(s3ChipId)) {
 	 if (s3Bpp > 2)
 	    reason = "801 and 805 chips";
-      } else {
+      }
+      else if (S3_911_SERIES(s3ChipId)) {
+	 if (s3Bpp > 2)
+	    reason = "911 and 924 chips";
+      }
+      {
 	 switch (s3RamdacType) {
 	 case NORMAL_DAC:
 	    if (s3Bpp > 1)
@@ -861,7 +866,8 @@ s3Probe()
 	       reason = "an ATT20C490 RAMDAC";
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
-	    /* XXXX Is full support included for these?? (including for 964?) */
+	    if (s3Bpp > 1)
+	       reason = "Bt485 and ATT20C505 RAMDACs";
 	    break;
 	 case ATT20C498_DAC:
 	 case STG1700_DAC:
@@ -871,6 +877,8 @@ s3Probe()
 	    break;
 	 case TI3020_DAC:
 	 case TI3025_DAC:
+	    if (s3Bpp > 1)
+	       reason = "TI3020 and TI3025 RAMDACs";
 	    break;
 	 default:
 	    /* Should never get here */
@@ -1070,16 +1078,20 @@ s3Probe()
       if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 120000;
       } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
-	 switch (s3RamdacType) {
-	 case BT485_DAC:
-	    maxRawClock = 67500;
-	    break;
-	 case ATT20C505_DAC:
-	    maxRawClock = 90000;
-	    break;
-	 default:
+	 if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+	    switch (s3RamdacType) {
+	    case BT485_DAC:
+	       maxRawClock = 67500;
+	       break;
+	    case ATT20C505_DAC:
+	       maxRawClock = 90000;
+	       break;
+	    default:
+	       maxRawClock = 100000;
+	       break;
+	    }
+	 } else {
 	    maxRawClock = 100000;
-	    break;
 	 }
       } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 110000;
@@ -1101,7 +1113,16 @@ s3Probe()
 
    switch (s3RamdacType) {
    case BT485_DAC:
+      if (maxRawClock > 67500 && s3Bpp == 1)  /* XXXX is the s3Bpp bit right? */
+	 clockDoublingPossible = TRUE;
+      if (s3Bt485PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else
+	 s3InfoRec.maxClock = 85000;
+      break;
    case ATT20C505_DAC:
+      if (maxRawClock > 90000 && s3Bpp == 1)  /* XXXX is the s3Bpp bit right? */
+	 clockDoublingPossible = TRUE;
       if (s3Bt485PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       else
@@ -1114,19 +1135,24 @@ s3Probe()
    case S3_SDAC_DAC:
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	 if (s3Bpp == 1)	/* XXXX is this right?? */
+	    clockDoublingPossible = TRUE;
       else {
 	 if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
 	    s3InfoRec.maxClock = 110000;
 	 else				   /* 20C498 -11 */
 	    s3InfoRec.maxClock = 80000;
 	 /* Halve it for 32bpp */
-	 if (s3Bpp == 4)
+	 if (s3Bpp == 4) {
 	    s3InfoRec.maxClock /= 2;
 	    maxRawClock /= 2;
+	 }
       }
       break;
    case TI3020_DAC:
    case TI3025_DAC:
+      if (s3Bpp == 1)	/* XXXX is this right?? */
+	 clockDoublingPossible = TRUE;
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       break;
       /* XXXX What happens for 16bpp and 32bpp?? */
@@ -1171,6 +1197,8 @@ s3Probe()
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
 
    /* Check if this exceeds the clock chip's limit */
+   if (clockDoublingPossible)
+      maxRawClock *= 2;
    if (maxRawClock > 0 && s3InfoRec.maxClock > maxRawClock)
       s3InfoRec.maxClock = maxRawClock;
 

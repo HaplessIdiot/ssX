@@ -1,7 +1,7 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.12 1994/09/11 11:15:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.13 1994/09/13 15:11:10 dawes Exp $ */
 /*
- * cir_driver.c,v 1.8 1994/09/11 05:51:04 scooper Exp
+ * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
  *
@@ -1017,9 +1017,11 @@ cirrusProbe()
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
 	       {
-	       ErrorF("Too many Clocks specified in Xconfig.\n");
-	       ErrorF("At most %d clocks may be specified\n",
-		      cirrusClockNo);
+		 ErrorF("%s %s: %s: Too many Clocks specified in configuration file.\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+			vga256InfoRec.chipset);
+		 ErrorF("\t\tAt most %d clocks may be specified\n",
+			cirrusClockNo);
 	       }
 
      vga256InfoRec.bankedMono = TRUE;
@@ -1073,6 +1075,8 @@ cirrusProbe()
 static void
 cirrusFbInit()
 {
+  int size;
+
 #ifndef MONOVGA
   int useSpeedUp;
 
@@ -1228,9 +1232,55 @@ nolinear:
         CIRRUS.ChipUseLinearAddressing = TRUE;
 #endif
 
+  CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
+  size = CirrusInitializeAllocator(CirrusMemTop);
+
+  if (xf86Verbose)
+    ErrorF("%s %s: %s: %d bytes off-screen memory available\n",
+	   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, size);
+    
+  if (Has_HWCursor(cirrusChip) &&
+      !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+    {
+#if 0
+      if (HasLargeHWCursor(cirrusChip))
+	{
+	  cirrusCur.cur_size = 1;
+	  cirrusCur.width = 64;
+	  cirrusCur.height = 64;
+	}
+      else
+#endif
+	{
+	  cirrusCur.cur_size = 0;
+	  cirrusCur.width = 32;
+	  cirrusCur.height = 32;
+	}
+
+      if (!CirrusCursorAllocate(&cirrusCur))
+	{	
+	  vgaHWCursor.Initialized = TRUE;
+	  vgaHWCursor.Init = cirrusCursorInit;
+	  vgaHWCursor.Restore = cirrusRestoreCursor;
+	  vgaHWCursor.Warp = cirrusWarpCursor;  
+	  vgaHWCursor.QueryBestSize = cirrusQueryBestSize;
+
+	  if (xf86Verbose)
+	    {
+	      ErrorF( "%s %s: %s: Using hardware cursor\n",
+		     XCONFIG_PROBED, vga256InfoRec.name,
+		     vga256InfoRec.chipset);
+	    }
+	}
+      else
+	{
+	  ErrorF( "%s %s: %s: Failed to allocate hardware cursor in offscreen ram,\n\ttry reducing the virtual screen size\n",
+		 XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+	}
+    }	  
+
   if (vgaBitsPerPixel == 8 &&
       !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
-    int size;
     if (xf86Verbose)
       {
         ErrorF ("%s %s: %s: Using accelerator functions\n",
@@ -1279,66 +1329,14 @@ nolinear:
 
     CirrusInvalidateShadowVariables();
 
-    CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
-    size = CirrusInitializeAllocator(CirrusMemTop);
-    if (xf86Verbose)
-      ErrorF("%s %s: %s: %d bytes off-screen memory available\n",
-             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, size);
-    
-    if (Has_HWCursor(cirrusChip) &&
-	!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
-      {
-#if 0
-	if (HasLargeHWCursor(cirrusChip))
-	  {
-	    cirrusCur.cur_size = 1;
-	    cirrusCur.width = 64;
-	    cirrusCur.height = 64;
-	  }
-	else
-#endif
-	  {
-	    cirrusCur.cur_size = 0;
-	    cirrusCur.width = 32;
-	    cirrusCur.height = 32;
-	  }
-
-	if (!CirrusCursorAllocate(&cirrusCur))
-	  {	
-	    vgaHWCursor.Initialized = TRUE;
-	    vgaHWCursor.Init = cirrusCursorInit;
-	    vgaHWCursor.Restore = cirrusRestoreCursor;
-	    vgaHWCursor.Warp = cirrusWarpCursor;  
-	    vgaHWCursor.QueryBestSize = cirrusQueryBestSize;
-
-	    if (xf86Verbose)
-	      {
-	        ErrorF( "%s %s: %s: Using hardware cursor\n",
-		       XCONFIG_PROBED, vga256InfoRec.name,
-		       vga256InfoRec.chipset);
-#if 0
-	        ErrorF( "\tcirrusFbInit: size=0x%01x sel=0x%02x addr=0x%08x\n",
-		       cirrusCur.cur_size, cirrusCur.cur_select,
-		       cirrusCur.cur_addr);
-#endif
-	      }
-	  }
-	else
-	  {
-	    ErrorF( "%s %s: %s: Failed to allocate HW cursor in offscreen ram,\n\ttry reducing the screen size\n",
-		   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
-
-	  }
-      }	  
-
     if (HAVEBITBLTENGINE()) {
     	/* Need 256 bytes for BitBLT fills. */
         cirrusBLTPatternAddress = CirrusAllocate(256);
         if (cirrusBLTPatternAddress == -1) {
             cirrusUseBLTEngine = FALSE;
             ErrorF("%s %s: %s: Too little space: cannot use BitBLT engine\n",
-	        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
-		size);
+	        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+
 	}
 	else {
 	    if (xf86Verbose)
@@ -1354,7 +1352,7 @@ nolinear:
     }
     if (vga256InfoRec.virtualX & 31 != 0)
         ErrorF("%s %s: %s: Warning: virtual screen width not multiple of 32\n",
-            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset, size);
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
 
 #ifdef CIRRUS_SUPPORT_MMIO
     /* Optional Memory-Mapped I/O. */

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.7 1994/09/07 15:46:07 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.8 1994/09/08 14:24:41 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -416,8 +416,10 @@ the board.  Acceleration is being added in slowly.  At the present,
 only CopyArea and MoveWindow are implemented.  Other accelerated
 features are being tested and may be available in the next release.
 There seems to be a problem with olvwm when used with xdm and VT
-switching.  Some people have reported x11perf -all crashing the
-server, but this has not been confirmed or localized.
+switching.  The cursor will be messed up when you return to a VT
+if the cursor changed while you were in the VT.  If there are n
+valid modes, the screen will go blank when the server is started.
+If this happens, just switch back to a VT.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to

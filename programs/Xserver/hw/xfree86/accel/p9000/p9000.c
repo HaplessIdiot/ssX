@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.13 1994/09/08 14:26:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.14 1994/09/11 00:50:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -209,11 +209,7 @@ Bool
 p9000Probe()
 {
     int            memavail, rounding;
-    DisplayModePtr pMode, pEnd,
-                   pLastAddedMode = NULL,
-                   pNextMode,
-                   pNewModeRing = NULL,  /* The start of a new ring of modes */
-                   pmaxX = NULL, pmaxY = NULL;
+    DisplayModePtr pMode, pEnd = NULL;
     int            numValidModes = 0;
     int            maxX, maxY;
     int            curvendor;
@@ -368,7 +364,7 @@ p9000Probe()
     /* All modes must have the same width and height as the first valid mode.
      * Any invalid modes are removed from the mode ring.
      */
-    pMode = pEnd = p9000InfoRec.modes;
+    pMode = p9000InfoRec.modes;
     if (pMode == NULL)
       {
 	ErrorF("No modes supplied in XF86Config\n");
@@ -376,89 +372,105 @@ p9000Probe()
       }
     do
       {
-	xf86LookupMode(pMode, &p9000InfoRec);
-	pNextMode = pMode->next;
-	
-	if (p9000InfoRec.clock[pMode->Clock] > 110000)
+	DisplayModePtr pModeSv;
+	/* xf86LookupMode returns FALSE if it ran into an invalid
+	 * parameter */
+	if(xf86LookupMode(pMode, &p9000InfoRec) == FALSE)
 	  {
-	    ErrorF("**********************************************************\n");
-	    ErrorF("WARNING: The use of clocks over 110 MHz is not\n");
-	    ErrorF("  recommended or supported and may damage your video card!\n");
-	    ErrorF("**********************************************************\n");
+	    pModeSv=pMode->next;
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv; 
 	  }
-
 	/* Now for a bunch of tests to see if the mode is possible and/or
 	 * safe.  It it fails, the mode is removed.
 	 */
-        if (pMode->HDisplay * pMode->VDisplay * (p9000InfoRec.bitsPerPixel / 8)
-	    > memavail)
-	  ErrorF("%s %s: Too little memory for mode %s\n", XCONFIG_PROBED,
-		 p9000InfoRec.name, pMode->name);
-	else if ((pNewModeRing) && (pNewModeRing->VDisplay != pMode->VDisplay)
-		 && (pNewModeRing->HDisplay != pMode->HDisplay))
-          ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n", XCONFIG_PROBED,
-		 p9000InfoRec.name, pMode->name, pNewModeRing->name);
+        else if (pMode->HDisplay * pMode->VDisplay * (p9000InfoRec.bitsPerPixel / 8)
+		 > memavail)
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: Too little memory for mode %s.  Deleted...\n", XCONFIG_PROBED,
+		   p9000InfoRec.name, pMode->name);
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
+	else if ((pEnd) && (pEnd->VDisplay != pMode->VDisplay)
+		 && (pEnd->HDisplay != pMode->HDisplay))
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s).  Deleted...\n", XCONFIG_PROBED,
+		   p9000InfoRec.name, pMode->name, pEnd->name);
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
 	/* We should do a better test than this...  *TO*DO* */
 	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
 	else if ((pMode->HDisplay > 1344) && (p9000InfoRec.bitsPerPixel==8)
 		 || (pMode->HDisplay > 1152) && (p9000InfoRec.bitsPerPixel==16)
 		 || (pMode->HDisplay > 832) && (p9000InfoRec.bitsPerPixel==32))
-          ErrorF("%s %s: The width of mode %s is too large for %dbpp\n",
-		 XCONFIG_PROBED, p9000InfoRec.name, 
-		 pMode->name,p9000InfoRec.bitsPerPixel);
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: The width of mode %s is too large for %dbpp.  Deleted...\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, 
+		   pMode->name,p9000InfoRec.bitsPerPixel);
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
         else if ((pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel==8)
 		 || (pMode->VDisplay > 910) && (p9000InfoRec.bitsPerPixel==16)
 		 || (pMode->VDisplay > 632) && (p9000InfoRec.bitsPerPixel==32))
-          ErrorF("%s %s: The height of mode %s is too large for %dbpp\n",
-		 XCONFIG_PROBED, 
-		 p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: The height of mode %s is too large for %dbpp.  Deleted...\n",
+		   XCONFIG_PROBED, 
+		   p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
 	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
-	  ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz)\n",
-		 XCONFIG_PROBED, p9000InfoRec.name, 
-		 pMode->name, p9000MaxClock/1000);	  
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz).  Deleted...\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, 
+		   pMode->name, p9000MaxClock/1000);	  
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
 	/* See if the horizontal resolution is valid.  This is constrained
 	 * by possible values for sysconfig */
 	else if (!p9000CalcSysconfigHres(pMode->HDisplay, 
 					 p9000InfoRec.bitsPerPixel/8,
 					 &tmpsysconfig))
-	  ErrorF("%s %s: The width of mode %s is not valid\n",
-		 XCONFIG_PROBED, p9000InfoRec.name, pMode->name);
+	  {
+	    pModeSv=pMode->next;
+	    ErrorF("%s %s: The width of mode %s is not valid.  Deleted...\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, pMode->name);
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv;
+	  }
 	else   /* The mode has passed and is valid */
 	  {
-	    /* Link in the mode */
-	    if (pNewModeRing == NULL)
+	    /*** Print warnings here ***/
+	    if (p9000InfoRec.clock[pMode->Clock] > 110000)
 	      {
-		pNewModeRing = pLastAddedMode = pMode;
+		ErrorF("**********************************************************\n");
+		ErrorF("WARNING: The use of clocks over 110 MHz is not\n");
+		ErrorF("  recommended or supported and may damage your video card!\n");
+		ErrorF("**********************************************************\n");
 	      }
-	    else
+
+	    /*
+	     * Successfully looked up this mode.  If pEnd isn't 
+	     * initialized, set it to this mode.
+	     */
+	    if (pEnd == (DisplayModePtr) NULL)
 	      {
-		pLastAddedMode->next = pMode;
-		pLastAddedMode = pMode;
+		pEnd = pMode;
+		p9000InfoRec.virtualX = pEnd->HDisplay;
+		p9000InfoRec.virtualY = pEnd->VDisplay;
 	      }
+	    pMode = pMode->next;
 	  }
-        pMode = pNextMode;
       } while (pMode != pEnd);
-    
-    if (pLastAddedMode == NULL)
-      {
-	ErrorF("%s %s: No valid modes were found!\n",
-	       XCONFIG_PROBED, p9000InfoRec.name);
-	return(FALSE);
-      }
-
-    /* Finish and install the new mode ring */
-    pLastAddedMode->next = pNewModeRing;
-    p9000InfoRec.modes = pNewModeRing;
-    /* Now link the ring the other way around. */
-    pMode = pEnd = p9000InfoRec.modes;
-    do
-      {
-	pMode->next->prev = pMode;
-	pMode = pMode->next;
-      } while (pMode != pEnd);
-
-    p9000InfoRec.virtualX = pNewModeRing->HDisplay;
-    p9000InfoRec.virtualY = pNewModeRing->VDisplay;
     
     if (xf86Verbose)
       ErrorF("%s %s: Virtual resolution set to %dx%d\n",

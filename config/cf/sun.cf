@@ -1,12 +1,12 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.133 94/07/08 12:23:12 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.5 1994/06/28 12:58:43 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.6 1994/08/20 07:26:53 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
-#define OSName            SunOS 5.1 x86
+#define OSName            SunOS 5.4 x86
 XCOMM operating system:  OSName
 #define OSMajorVersion    5
-#define OSMinorVersion    1
+#define OSMinorVersion    4
 #define OSTeenyVersion    0
 #else
 #define OSName            SunOS 5.3
@@ -134,7 +134,7 @@ XCOMM operating system:  OSName
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 #ifdef i386Architecture
-#define StandardDefines	  -Dsun -Di386 -DSVR4
+#define StandardDefines	  -Dsun -Di386 -D__i386 -DSVR4
 #else
 #define StandardDefines	  -Dsun -DSVR4
 #endif

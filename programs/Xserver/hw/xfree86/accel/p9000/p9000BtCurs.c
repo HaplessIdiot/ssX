@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.1 1994/08/01 12:11:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000BtCurs.c,v 3.2 1994/08/31 04:23:02 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -161,8 +161,9 @@ void
 p9000BtCursorOff()
 {
    /* Disable cursor */
-   p9000OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
-   return;
+  if (xf86VTSema)
+    p9000OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x00);
+  return;
 }
 
 void
@@ -171,6 +172,8 @@ p9000BtMoveCursor(pScr, x, y)
      int   x, y;
 {
    extern int p9000hotX, p9000hotY;
+
+  if (!xf86VTSema) return;
 
    if (p9000BlockCursor)
       return;
@@ -202,6 +205,8 @@ p9000BtRecolorCursor(pScr, pCurs)
      CursorPtr pCurs;
 {
    extern Bool p9000DAC8Bit;
+
+   if (!xf86VTSema) return;
 
    /* Start writing at address 1 (0 is overscan color) */
    p9000StartBtData(BT_CURS_WR_ADDR, 0x01, BT_CURS_DATA);

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.18 1994/09/11 11:15:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.19 1994/09/14 10:41:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -328,7 +328,6 @@ vgaProbe()
       if (vgaBitsPerPixel != 16 && vgaBitsPerPixel != 32) {
           ErrorF("\n%s %s: Unsupported bpp for SVGA server (%d)\n",
               XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
-	  Drivers[i]->ChipEnterLeave(LEAVE);
 	  return(FALSE);
       }
       /*

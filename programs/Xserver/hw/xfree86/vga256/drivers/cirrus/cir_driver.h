@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.5 1994/08/31 04:44:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.6 1994/09/11 11:15:33 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -25,7 +25,7 @@
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  * Modified: Harm Hanemaayer, <hhanemaa@cs.ruu.nl>
  *
- * cir_driver.h,v 1.6 1994/09/11 05:27:13 scooper Exp
+ * cir_driver.h,v 1.8 1994/09/14 13:58:59 scooper Exp
  */
 
 #define CIRRUS_INCLUDE_COPYPLANE1TO8
@@ -239,6 +239,7 @@ typedef struct
   int shiftX;
   int shiftY;
   CursorPtr pCurs;
+  int skewed;
 } cirrusCurRec, *cirrusCurRecPtr;
 
 _XFUNCPROTOBEGIN
