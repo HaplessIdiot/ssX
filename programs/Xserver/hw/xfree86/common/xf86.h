@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.62 1997/06/29 07:54:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.63 1997/06/30 05:49:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -407,7 +407,7 @@ typedef struct _MouseDevRec {
     
 #ifndef CSRG_BASED
     /* xque part */
-    int           xqueFd;
+    int           xquePending;		/* was xqueFd, but nothing uses that */
     int           xqueSema;
 #endif
 #ifdef XINPUT

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.44 1997/05/12 13:27:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.45 1997/06/15 07:12:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -150,6 +150,14 @@ extern fd_set EnabledDevices;
 
 #if defined(CODRV_SUPPORT)
 extern unsigned char xf86CodrvMap[];
+#endif
+
+#if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
+extern void xf86XqueRequest(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
 #endif
 
 static void xf86VTSwitch(
@@ -1273,6 +1281,12 @@ xf86Wakeup(blockData, err, pReadmask)
 	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
 
 #endif  /* __EMX__ */
+
+#if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
+  /* This could be done more cleanly */
+  if (xf86Info.mouseDev->xqueSema && xf86Info.mouseDev->xquePending)
+    xf86XqueRequest();
+#endif
 
   if (xf86VTSwitchPending()) xf86VTSwitch();
 
