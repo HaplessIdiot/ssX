@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.7 1997/06/06 06:07:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.8 1997/07/29 12:07:58 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -162,6 +162,11 @@ void _ctAccelInit() {
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
 	CTNAME(SubsequentScreenToScreenCopy);
 
+#ifdef CHIPS_HIQV
+    /* At 32bpp we can't use the other acceleration */
+    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
+#endif
+
     /*
      * Install the low-level functions for drawing solid filled rectangles.
      */
@@ -208,11 +213,6 @@ void _ctAccelInit() {
         break;
 #endif
     }
-
-#ifdef CHIPS_HIQV
-    /* At 32bpp we can't use the other acceleration */
-    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
-#endif
 
     /*
      * Setup the functions that perform monochrome colour expansion

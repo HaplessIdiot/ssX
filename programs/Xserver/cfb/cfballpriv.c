@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -45,7 +46,7 @@ in this Software without prior written authorization from the X Consortium.
 int cfbWindowPrivateIndex;
 int cfbGCPrivateIndex;
 #ifdef CFB_NEED_SCREEN_PRIVATE
-int cfbScreenPrivateIndex;
+int cfbScreenPrivateIndex = -1;
 #endif
 
 extern RegionPtr (*cfbPuntCopyPlane)();
@@ -77,7 +78,8 @@ cfbAllocatePrivates(pScreen, window_index, gc_index)
 	return FALSE;
     cfbPuntCopyPlane = miCopyPlane;
 #ifdef CFB_NEED_SCREEN_PRIVATE
-    cfbScreenPrivateIndex = AllocateScreenPrivateIndex ();
+    if (cfbScreenPrivateIndex == -1)
+      cfbScreenPrivateIndex = AllocateScreenPrivateIndex ();
     if (cfbScreenPrivateIndex == -1)
 	return FALSE;
 #endif

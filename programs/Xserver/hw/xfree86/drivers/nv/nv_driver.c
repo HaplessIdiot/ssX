@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.4 1997/06/03 14:12:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.5 1997/06/15 23:35:18 dawes Exp $ */
 
 #include <math.h>
 
@@ -31,8 +31,8 @@
 
 #include "compiler.h"
 #include "xf86.h"
-#include "xf86Version.h"
 #include "xf86Priv.h"
+#include "xf86Version.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
@@ -69,8 +69,10 @@
 
 #include "nvreg.h"
 
+#if 0
 #ifdef XFree86LOADER
 #include "xf86_libc.h"
+#endif
 #endif
 
 volatile unsigned  *nvPDACPort;   /* Points to the DAC */

@@ -1,3 +1,14 @@
+XFree86 3.9l (31 July 1997)
+1168. Xterm support for compound text cut and paste (#836, Kaleb Keithley).
+1166. Fix some I128 problems reported with PPro CPUs (#834, Robin Cutshaw).
+1165. Disable C&T fill at 32bpp (#831, David Bateman).
+1164. Update VideoBoard98 file (#830, Takaaki Nomura).
+1163. Prevent re-allocation of cfb ScreenPrivateIndex for multi-head
+      server (#829, Stuart Anderson).
+1162. Fix unintended changes in PCI code.
+1161. Fix handling of PS/2 protocol mice with OpenBSD (it doesn't translate
+      to BusMouse protocol like NetBSD does) (#820, Matthieu Herrb).
+
 XFree86 3.9k (29 July 1997)
 1160. Several fixes to xterm. Correct  an indexing error in the doublesize
       character logic. Correct the logic of ShowCursor when it is painting in

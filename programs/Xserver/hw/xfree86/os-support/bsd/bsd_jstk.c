@@ -23,7 +23,7 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.3 1997/06/25 08:25:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.4 1997/07/29 12:08:06 hohndel Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -37,6 +37,7 @@
 #include "xf86_libc.h"
 #endif
 #include "xf86.h"
+#include "xf86Priv.h"
 
 #define JS_RETURN sizeof(struct joystick)
 

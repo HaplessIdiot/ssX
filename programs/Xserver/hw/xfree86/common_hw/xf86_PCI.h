@@ -38,12 +38,12 @@ typedef struct pci_config_reg {
 	CARD32 device_vendor;
 	struct {
 	    CARD16 vendor;
-	    CARD16 deviceid;
+	    CARD16 device;
 	} dv;
     } dv_id;
 #define _device_vendor dv_id.device_vendor
 #define _vendor dv_id.dv.vendor
-#define _deviceid dv_id.dv.deviceid
+#define _device dv_id.dv.device
     union {
         CARD32 status_command;
 	struct {
@@ -166,7 +166,7 @@ typedef struct pci_config_reg {
     CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
 #endif
     CARD32 _bus;
-    CARD32 _device;       /* config type 2 - private card number */
+    CARD32 _cardnum;      /* config type 2 - private card number */
     CARD32 _func;         /* function number */
 } pciConfigRec, *pciConfigPtr;
 #else
@@ -178,13 +178,13 @@ typedef struct pci_config_reg {
     union {
 	CARD32 device_vendor;
 	struct {
-	    CARD16 deviceid;
+	    CARD16 device;
 	    CARD16 vendor;
 	} dv;
     } dv_id;
 #define _device_vendor dv_id.device_vendor
 #define _vendor dv_id.dv.vendor
-#define _deviceid dv_id.dv.deviceid
+#define _device dv_id.dv.device
     union {
         CARD32 status_command;
 	struct {
@@ -311,7 +311,7 @@ typedef struct pci_config_reg {
     CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
 #endif
     CARD32 _bus;
-    CARD32 _device;       /* config type 2 - private card number */
+    CARD32 _cardnum;      /* config type 2 - private card number */
     CARD32 _func;         /* function number */
 } pciConfigRec, *pciConfigPtr;
 #endif

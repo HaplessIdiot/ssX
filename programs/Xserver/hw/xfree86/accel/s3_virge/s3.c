@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.31 1997/06/11 12:24:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.32 1997/07/29 12:07:47 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -476,7 +476,7 @@ s3GetPCIInfo()
 	 info.ChipRev = pcrp->_rev_id;
 	 info.MemBase = pcrp->_base0 & 0xFF800000;
 #ifdef PC98_GA968
-	 xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_device,
+	 xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
 			pcrp->_func,
 			PCI_CMD_STAT_REG, PCI_CMD_MASK,
 			PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
@@ -538,7 +538,7 @@ s3GetPCIInfo()
 		probed, s3InfoRec.name);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
 		base0, info.MemBase);
-         xf86writepci(s3InfoRec.scrnIndex, pcrpp[i]->_bus, pcrpp[i]->_device,
+         xf86writepci(s3InfoRec.scrnIndex, pcrpp[i]->_bus, pcrpp[i]->_cardnum,
 		    pcrpp[i]->_func, PCI_MAP_REG_START, ~0L,
 		    info.MemBase | PCI_MAP_MEMORY | PCI_MAP_MEMORY_TYPE_32BIT);
       }
@@ -1929,7 +1929,7 @@ s3ConnectPCI(vendor, device)
     {
 	if (pcrp->_vendor == vendor && pcrp->_device == device)
 	{
-	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_device,
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
 		pcrp->_func,
 		PCI_CMD_STAT_REG, PCI_CMD_MASK,
 		PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
@@ -1962,7 +1962,7 @@ s3DisconnectPCI(vendor, device)
     {
 	if (pcrp->_vendor == vendor && pcrp->_device == device)
 	{
-	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_device,
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
 		pcrp->_func,
 		PCI_CMD_STAT_REG, PCI_CMD_MASK,
 		0);

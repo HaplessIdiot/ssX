@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.7 1997/07/19 05:43:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.8 1997/07/26 12:59:05 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -111,7 +111,7 @@ i128EngineDone()
 
 	do {
 		flow = eng_a[FLOW];
-	} while (flow & (FLOW_DEB | FLOW_MCB));
+	} while (flow & (FLOW_DEB | FLOW_MCB | FLOW_PRV));
 
 #if 0
 	do {

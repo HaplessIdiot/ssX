@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.81 1997/06/15 07:12:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.82 1997/07/29 12:07:35 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -778,10 +778,10 @@ GetATIPCIInformation()
 		if ((pcrp->_user_config_0 & 0x04) != 0x04) {
 #ifdef DEBUG
 		    ErrorF("Setting bit 0x04 in PCI userconfig for card %d\n",
-			   pcrp->_device);
+			   pcrp->_cardnum);
 #endif
 		    xf86writepci(mach64InfoRec.scrnIndex, pcrp->_bus,
-			pcrp->_device, pcrp->_func,
+			pcrp->_cardnum, pcrp->_func,
 			PCI_REG_USERCONFIG, 0x04, 0x04);
 		}
 	    } else {
