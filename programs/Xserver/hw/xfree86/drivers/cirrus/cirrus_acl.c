@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.5 1997/04/13 13:57:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.6 1997/04/14 07:05:18 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -70,7 +70,7 @@
 
 #define DO_FILL_RECT   1
 #define DO_COPY        1
-#define DO_PATTERNS    1
+#define DO_PATTERNS    0
 #define DO_COLEXP      1
 
 #define CHIPHAS(feature) (cirrusChipFeatures & feature)
@@ -367,11 +367,10 @@ void CirrusAccelInit() {
          * of the DWORD source alignment requirement.
          */
 
-	if (1) {
+	if (CHIPHAS(DWORDCOLOREXPANSIONSCANLINEPAD)) {
 	    /*
 	     * A modern chip with 32-bit scanline alignment is compatible
 	     * with optimized XAA CPU-to-screen color expansion.
-	     * BYTE-padding is also supported.
 	     */
             if (CHIPHAS(WRITEMASK))
                 xf86AccelInfoRec.ColorExpandFlags |=
@@ -382,7 +381,6 @@ void CirrusAccelInit() {
             xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
                 CirrusSubsequentCPUToScreenColorExpand;
         }
-#if 0
         else {
             /*
              * XAA CPU-to-screen color expansion with BYTE padding doesn't
@@ -408,6 +406,7 @@ void CirrusAccelInit() {
 #endif
             xf86GCInfoRec.ImageGlyphBltTEFlags = NO_PLANEMASK;
             xf86GCInfoRec.PolyGlyphBltTEFlags = NO_PLANEMASK;
+#if 0
             /*
              * Set up indirect color expansion primitives. These will
              * only be used when linear addressing is enabled.
@@ -419,8 +418,8 @@ void CirrusAccelInit() {
 
 	    xf86AccelInfoRec.ScratchBufferAddr = cirrusBufferSpaceAddr;
 	    xf86AccelInfoRec.ScratchBufferSize = cirrusBufferSpaceSize;
-        }
 #endif
+        }
 
         xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
             CirrusSetupForScreenToScreenColorExpand;

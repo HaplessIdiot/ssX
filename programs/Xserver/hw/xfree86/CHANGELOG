@@ -1,4 +1,30 @@
 XFree86 3.9c (xx May 1997)
+ 818. Enable building support for the NetBSD/OpenBSD/Solaris aperture
+      drivers by default.
+ 817. Have postinst.sh optionally install a link in /usr/bin to rstartd.
+ 816. Change the name of the saved ids feature test macro in xterm to
+      be more accurate.
+ 815. Enable colour in the default XTerm app-defaults file, and include
+      the colour-related resources there.
+ 814. Update SOLX86 docs (#477, Matthieu Herrb).
+ 813. Update the Xservers to check for /dev/xsvc before /dev/fbs/aperture
+      on Solaris (#477, Matthieu Herrb).
+ 812. Fix XAA stipple ScreenToScreen colour expansion, and fix a problem
+      with stipples when ONLY_TRANSPARENCY is flagged (#476, David Bateman).
+ 811. Fix Xlib ctstowcs parser mishandling charset escape sequences in
+      COMPOUND_TEXT (#470, Kaleb Keithley).
+ 810. Fix the -ar1 and -ar2 Xserver flags breaking XKB auto-repeat (#469,
+      Kaleb Keithley).
+ 809. Add a backward-compatibility option to disable the recent XtMalloc
+      changes (#468, Kaleb Keithley).
+ 808. Bump the revision number of SuperProbe (#462, Koen Gadeyne).
+ 807. Add ICS5341 and ISC5301 SDAC/Gendac detection to SuperProbe (#462,
+      Koen Gadeyne).
+ 806. Fix negative offsets in pixmap during stipple fill (#460,
+      Radoslaw Kapitan).
+ 805. Fix the layout of the mouse protocol buttons in XF86Setup.  XF86Setup
+      now requires Tk version 4.1 or later (#459, Matthieu Herrb).
+ 804. Install rstartd in /usr/X11R6/bin rather than in /usr/bin.
  803. Fix a DGA addressing problem in the S3 server (#457, Mark Vojkovich).
  802. Remove the part of the PCI config-type detection that seems to switch
       some Neptune-based machines from type 1 to type 2.
@@ -4585,4 +4611,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.472 1997/05/18 13:58:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.473 1997/05/19 10:04:33 dawes Exp $

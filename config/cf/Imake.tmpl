@@ -1,7 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.37 1997/05/03 09:14:28 dawes Exp $
+XCOMM $TOG: Imake.tmpl /main/244 1997/02/26 18:15:45 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.38 1997/05/12 13:27:49 hohndel Exp $
 XCOMM
 
 /*
@@ -818,6 +822,11 @@ TCLIBDIR = TclLibDir
 #define Malloc0ReturnsNull YES
 #else
 #define Malloc0ReturnsNull NO
+#endif
+#if Malloc0ReturnsNull
+#ifndef Malloc0ReturnsNullDefines
+#define Malloc0ReturnsNullDefines -DMALLOC_0_RETURNS_NULL
+#endif
 #endif
 #endif
 #ifndef ToolkitStringsABIOptions

@@ -1,4 +1,4 @@
-/* $TOG: Alloc.c /main/46 1997/05/15 17:28:02 kaleb $ */
+/* $TOG: Alloc.c /main/47 1997/05/20 10:06:27 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -119,6 +119,11 @@ char *XtMalloc(size)
     unsigned size;
 {
     char *ptr;
+
+#if defined (MALLOC_0_RETURNS_NULL) && defined(XTMALLOC_BC)
+    /* preserve this (broken) behavior until everyone fixes their apps */
+    if (!size) size = 1;
+#endif
     if ((ptr = Xmalloc(size)) == NULL)
         _XtAllocError("malloc");
 
@@ -149,6 +154,10 @@ char *XtCalloc(num, size)
 {
     char *ptr;
 
+#if defined (MALLOC_0_RETURNS_NULL) && defined(XTMALLOC_BC)
+    /* preserve this (broken) behavior until everyone fixes their apps */
+    if (!size) num = size = 1;
+#endif
     if ((ptr = Xcalloc(num, size)) == NULL)
 	_XtAllocError("calloc");
 

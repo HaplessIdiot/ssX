@@ -1,5 +1,9 @@
-XCOMM $XConsortium: Imakefile /main/118 1996/09/28 16:46:04 rws $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.7 1996/08/26 06:28:50 dawes Exp $
+XCOMM $TOG: Imakefile /main/119 1997/05/20 10:06:20 kaleb $
+
+
+
+
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.8 1996/12/23 06:01:15 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -54,7 +58,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 
    SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
 #if Malloc0ReturnsNull
-  ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+  ALLOC_DEFINES = XtMalloc0ReturnsNullDefines
 #endif
 #if MotifBC
      BC_DEFINES = -DMOTIFBC

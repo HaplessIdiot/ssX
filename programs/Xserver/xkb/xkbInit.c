@@ -1,5 +1,4 @@
-/* $XConsortium: xkbInit.c /main/23 1996/09/28 17:16:19 rws $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.11 1996/12/23 07:10:13 dawes Exp $ */
+/* $TOG: xkbInit.c /main/24 1997/05/20 11:42:06 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.12 1996/12/31 04:18:36 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -973,16 +973,12 @@ XkbProcessArguments(argc,argv,i)
     }
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatDelay = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatDelay > 1000000)
-	    XkbDfltRepeatDelay =  999000;
+	XkbDfltRepeatDelay = (long)atoi(argv[i]);
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatInterval = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatInterval > 1000000)
-	    XkbDfltRepeatInterval =  999000;
+	XkbDfltRepeatInterval = (long)atoi(argv[i]);
 	return 2;
     }
     return 0;

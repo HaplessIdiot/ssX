@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.5 1997/05/03 09:14:31 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.6 1997/05/12 13:27:50 hohndel Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -169,7 +169,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #if defined(i386Architecture)
 #ifndef HasNetBSDApertureDrv
-#define HasNetBSDApertureDrv	NO
+#define HasNetBSDApertureDrv	YES
 #endif
 #endif
 
