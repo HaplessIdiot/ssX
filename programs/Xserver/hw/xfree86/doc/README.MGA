@@ -7,11 +7,11 @@
 
 
 
-		    Information for Matrox Millennium Users
+	       Information for Matrox Millennium/Mystique Users
 
 			   The XFree86 Project Inc.
 
-				19 January 1997
+				  16 May 1997
 
 
 
@@ -19,7 +19,8 @@
 
 The current MGA driver in the SVGA server supports the Matrox Millennium
 (MGA2064W) with Ti3026 RAMDAC. It has been tested with 175, 220MHz, and 250MHz
-cards with 2MB, 4MB and 8MB WRAM.
+cards with 2MB, 4MB and 8MB WRAM.  It also supports, for the first time, Matrox
+Mystique (MGA1064SG) board tested up to 135 MHz for 2 and 4 MB configs.
 
 NOTE: This driver is pretty new, and not everything works like you expect it
 to. It shouldn't crash your machine, but you may have video artifacts or miss-
@@ -31,44 +32,74 @@ appropriate bug report sheet.
 
    o Basic support for the Matrox Millennium video adapter
 
-   o uses linear frame buffer
 
-   o it should be possible to reach resolutions up to 1920x1024
+	o uses linear frame buffer
 
-   o it should be possible to use pixel depths of 8, 16, 24, and 32 bits per
-     pixel (256 pseudo colour, "high colour", "packed true colour", "true
-     colour").
+	o it should be possible to reach resolutions up to 1920x1024
 
-   o supports VESA Display Power Management Signaling (DPMS)
+	o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+	  per pixel (256 pseudo colour, "high colour", "packed true colour",
+	  "true colour").
 
-   o supports RGB Sync-on-Green
+	o supports VESA Display Power Management Signaling (DPMS)
 
-   o supports DGA
+	o supports RGB Sync-on-Green
 
-   o has the following accelerations:
+	o supports DGA
 
-	o lines
+	o has the following accelerations:
 
-	o most bitblts
+	     o lines
 
-	o filled rectangles
+	     o most bitblts
 
-	o cached pixmaps
+	     o filled rectangles
 
-	o many more...
+	     o cached pixmaps
 
-The server is fairly well accelerated, and is one of the fastest XFree86 3.2A
-Xservers. Future work will concentrate on fixing remaining bugs.
+	     o many more...
 
 
-Information for Matrox Millennium Users
 
+Information for Matrox Millennium/Mystique Users
 
 
 
 
-Information for Matrox Millennium Users
 
+Information for Matrox Millennium/Mystique Users
+
+
+
+	  The Millenium server is fairly well accelerated, and is one of the
+	  fastest XFree86 3.3 Xservers. Future work will concentrate on fixing
+	  remaining bugs.
+
+
+   o Basic support for the Matrox Mystique video adapter
+
+	o uses linear frame buffer
+
+	o it should be possible to reach resolutions up to 1280x1024
+
+	o for this release, it is only possible to use only pixel depths of 8
+	  bits per pixel (256 pseudo colour).
+
+	o supports VESA Display Power Management Signaling (DPMS)
+
+	o has the following accelerations (may be with some bugs):
+
+	     o lines
+
+	     o most bitblts
+
+	     o filled rectangles
+
+	     o cached pixmaps
+
+	     o NOTE: If acceleration do not work properly, you had rather to
+	       insert: Option "noaccel" line in the Device section of XF86Con-
+	       fig file. It will be slower but will work better.
 
 
 3.  Future Features (in order from highest to lowest priority)
@@ -79,26 +110,44 @@ Information for Matrox Millennium Users
 
    o 3D acceleration using Mesa
 
+   o other depths and full acceleration for Mystique board
+
 
 4.  Technical Note:
 
-This driver only supports the MGA Storm (MGA2064W) chipset with the TI (TVP)
-3026 RAMDAC. Matrox have only so far made 175, 220 and 250 MHz boards with
-these two components, although a 135 MHz RAMDAC part exists.
+This driver only supports:
 
-We will eventually provide support for the other Matrox chipsets (once the Mil-
-lennium driver is at a far enough stage and more people with other cards join
-the effort), including the Impression, Atlas, Genesis, Mystique, etc.
+   o the MGA Storm (MGA2064W) chipset with the TI (TVP) 3026 RAMDAC. Matrox
+     have only so far made 175, 220 and 250 MHz boards with these two compo-
+     nents, although a 135 MHz RAMDAC part exists.
 
-At the moment, however, only the Millennium is supported.
+   o the MGA Storm (MGA1064SG) chipset with integrated 135 MHz RAMDAC
+
+   o We will eventually provide support for the other Matrox chipsets (once the
+     Millennium driver is at a far enough stage and more people with other
+
+
+
+
+
+
+
+
+Information for Matrox Millennium/Mystique Users
+
+
+
+     cards join the effort), including the Impression, Atlas, Genesis etc.
+
+     At the moment, however, only the Millennium and Mystique are supported.
 
 
 5.  Configuration:
 
 The server auto-detects WRAM size and RAMDAC speed. Do not bother putting these
-in your "Device" section, as they will be overridden. The TVP3026 has a pro-
-grammable clock generator, so probing and setting clocks is unnecessary as
-well.
+in your "Device" section, as they will be overridden. The TVP3026 and MGA1064SG
+have a programmable clock generator, so probing and setting clocks is unneces-
+sary as well.
 
 The "nolinear" option is currently unsupported - do not use this
 
@@ -124,30 +173,19 @@ and:
 
    o Dirk Hohndel, hohndel@XFree86.Org
 
-
-
-
-
-
-
-
-
-
-Information for Matrox Millennium Users
-
-
-
    o Leonard N. Zubkoff, lnz@dandelion.com
 
    o Mark Vojkovich, mvojkovi@sdcc10.ucsd.edu
 
    o Harm Hanemaayer, H.Hanemaayer@inter.nl.net
 
+   o Guy Desbief, g.desbief@aix.pacwan.net
+
 Visit the Matrox Millennium XServer for XFree86 Home Page
 <URL:http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html> to keep up to date with
 the latest news, new sources, etc.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.4 1997/01/25 03:21:58 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.6 1997/05/17 12:07:03 dawes Exp $
 
 
 
@@ -161,45 +199,7 @@ the latest news, new sources, etc.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Information for Matrox Millennium Users
+Information for Matrox Millennium/Mystique Users
 
 
 
@@ -281,9 +281,9 @@ Information for Matrox Millennium Users
 
 4. Technical Note: .......................................................... 2
 
-5. Configuration: ........................................................... 2
+5. Configuration: ........................................................... 3
 
-6. Authors .................................................................. 2
+6. Authors .................................................................. 3
 
 
 

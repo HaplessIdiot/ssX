@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.5 1997/02/11 10:01:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.6 1997/05/03 09:16:03 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -22,7 +22,7 @@
  */
 
 
-#define fbdev_PATCHLEVEL "6"
+#define fbdev_PATCHLEVEL "7"
 
 
 #include "X.h"
@@ -135,12 +135,12 @@ ScrnInfoRec fbdevInfoRec = {
     -1,				/* int scrnIndex */
     fbdevProbe,			/* Bool (*Probe)() */
     fbdevScreenInit,		/* Bool (*Init)() */
-    (Bool (*)())NoopDDA,	/* Bool (*ValidMode)() */
+    (int (*)())NoopDDA,	/* int (*ValidMode)() */
     fbdevEnterLeaveVT,		/* void (*EnterLeaveVT)() */
     (void (*)())NoopDDA,	/* void (*EnterLeaveMonitor)() */
     (void (*)())NoopDDA,	/* void (*EnterLeaveCursor)() */
     (void (*)())NoopDDA,	/* void (*AdjustFrame)() */
-    (Bool (*)())NoopDDA,	/* void (*SwitchMode)() */
+    (Bool (*)())NoopDDA,	/* Bool (*SwitchMode)() */
     (void (*)())NoopDDA,	/* void (*DPMSSet)() */
     fbdevPrintIdent,		/* void (*PrintIdent)() */
     8,				/* int depth */
@@ -155,7 +155,8 @@ ScrnInfoRec fbdevInfoRec = {
     {0, },			/* OFlagSet xconfigFlag */
     NULL,			/* char *chipset */
     NULL,			/* char *ramdac */
-    0,				/* int dacSpeed */
+    {0, },			/* int dacSpeeds[MAXDACSPEEDS] */
+    0,				/* int dacSpeedBpp */
     0,				/* int clocks */
     {0, },			/* int clock[MAXCLOCKS] */
     0,				/* int maxClock */
@@ -170,8 +171,8 @@ ScrnInfoRec fbdevInfoRec = {
     -1,				/* int textclock */
     FALSE,			/* Bool bankedMono */
     "FBDev",			/* char *name */
-    {0, },			/* RgbRec blackColour */
-    {0, },			/* RgbRec whiteColour */
+    {0, },			/* xrgb blackColour */
+    {0, },			/* xrgb whiteColour */
     fbdevValidTokens,		/* int *validTokens */
     fbdev_PATCHLEVEL,		/* char *patchLevel */
     0,				/* unsigned int IObase */
@@ -655,10 +656,13 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
     if (ioctl(fb_fd, FBIOGET_FSCREENINFO, &fb_fix))
 	FatalError("ioctl(fd, FBIOGET_FSCREENINFO, ...)");
 
+    fbdevInfoRec.chipset = fb_fix.id;
     fbdevInfoRec.videoRam = fb_fix.smem_len>>10;
 
     if (xf86Verbose) {
-	ErrorF("%s %s: Video memory: %dk\n", XCONFIG_PROBED, fbdevInfoRec.name,
+	ErrorF("%s %s: Frame buffer device: %s\n", XCONFIG_PROBED,
+	       fbdevInfoRec.name, fbdevInfoRec.chipset);
+	ErrorF("%s %s: Video memory: %dK\n", XCONFIG_PROBED, fbdevInfoRec.name,
 	       fbdevInfoRec.videoRam);
 	ErrorF("%s %s: Type %d type_aux %d bits_per_pixel %d\n", XCONFIG_PROBED,
 	       fbdevInfoRec.name, fb_fix.type, fb_fix.type_aux,

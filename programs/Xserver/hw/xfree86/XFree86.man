@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.35 1996/12/23 06:30:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.36 1997/01/20 12:34:18 dawes Exp geert $ 
 .TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -528,6 +528,17 @@ Hercules driver.
 Pascal Haible,     \fIhaible@izfm.uni-stuttgart.de\fP
 Banked monochrome VGA support, Hercules support, and mono frame buffer
 support for dumb monochrome devices
+.TP 8
+Martin Schaller,
+.TP 8
+Geert Uytterhoeven,\fIGeert.Uytterhoeven@cs.kuleuven.ac.be\fP
+Linux/m68k Frame Buffer Device driver
+.TP 8
+Andreas Schwab,    \fIschwab@issan.informatik.uni-dortmund.de\fP
+Linux/m68k Frame Buffer Device driver
+.TP 8
+Guenther Kelleter, \fIguenther@Pool.Informatik.RWTH-Aachen.de\fP
+Linux/m68k Frame Buffer Device driver
 .PP
  ... and many more people out there on the net who helped with beta-testing
 this enhancement.

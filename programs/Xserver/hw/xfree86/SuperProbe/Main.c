@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.20 1997/03/07 09:18:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.21 1997/03/27 08:29:45 hohndel Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -379,7 +379,7 @@ char *argv[];
     else
     	p++;
     (void)strncpy(MyName, p, sizeof(MyName) - 1);
-    MyName[sizeof(MyName)] = '\0';
+    MyName[sizeof(MyName)-1] = '\0';
 
     for (i=1; i < argc; i++)
     {

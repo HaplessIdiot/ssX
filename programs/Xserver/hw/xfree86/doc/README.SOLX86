@@ -244,18 +244,18 @@ Information for Solaris for x86 Users
       You also need to set HasSolx86apertureDrv to YES in ~xc/con-
       fig/cf/xf86site.def.
 
+  6.  If you don't have c++filt or if you have troubles in making World with
+      c++filt, you need to set UseExportLists to NO in ~xc/config/cf/host.def.
+
+      If you use c++filt, you need to check the definition of PATH in ~xc/con-
+      fig/util/elistgen.sun.
+
 
 5.  Notes for running XFree86 on Solaris x86
 
   1.  If you have not made the Virtual Terminal devices, you will need to spec-
       ify the terminal device to run the Xserver on.  The correct device is
       vt00 so your xinit command would look like so:
-
-		     xinit -- vt00
-
-
-      If you have made the virtual terminal devices you do not need to specify
-      the VT to run the Xserver on.
 
 
 
@@ -268,6 +268,12 @@ Information for Solaris for x86 Users
 Information for Solaris for x86 Users
 
 
+
+		     xinit -- vt00
+
+
+      If you have made the virtual terminal devices you do not need to specify
+      the VT to run the Xserver on.
 
       To be able to run XF86Setup, you must at least create /dev/vt01. Other-
       wise XF86Setup won't start.
@@ -316,13 +322,73 @@ Bug reports need to be sent to XFree86@XFree86.org, or posted to the comp.win-
 dows.x.i386unix newsgroup.  Questions or comments about the Solaris support, or
 the Solaris distribution need to be made to davidh@use.com, or danson@lgc.com.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.12 1997/01/25 03:22:13 dawes Exp $
+
+
+
+
+
+
+
+
+
+Information for Solaris for x86 Users
+
+
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.13 1997/05/17 12:02:32 dawes Exp $
 
 
 
 
 
      $XConsortium: SOLX86.sgml /main/7 1996/10/28 05:43:28 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.16 1996/12/23 06:44:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.17 1997/03/07 00:29:31 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -24,7 +24,7 @@
  */
 /* $XConsortium: xf86_PCI.c /main/14 1996/10/27 11:47:50 kaleb $ */
 
-/*#define DEBUGPCI  1 */
+/* #define DEBUGPCI  1 */
 
 #include <stdio.h>
 #include "os.h"
@@ -524,39 +524,125 @@ pcibusSetup()
 #if !defined(__alpha__)
     oldVal1 = inl(PCI_MODE1_ADDRESS_REG);
 
+    if (xf86Verbose > 2) {
+	ErrorF("Checking config type 1:\n"
+		"\tinitial value of MODE1_ADDR_REG is 0x%08x\n", oldVal1);
+	ErrorF("\tChecking that all bits in mask 0x7ff00000 are clear\n");
+    }
+
     /* Assuming config type 1 to start with */
     if ((oldVal1 & 0x7ff00000) == 0) {
+
+	if (xf86Verbose > 2) {
+	    ErrorF("\tValue indicates possibly config type 1\n");
+	    ErrorF("\tWriting 32-bit value 0x%08x to MODE1_ADDR_REG\n", PCI_EN);
+	    ErrorF("\tWriting 8-bit value 0x00 to MODE1_ADDR_REG + 3\n");
+	}
+
 	pciConfigType = 1;
 	pciMaxDevice = PCI_CONFIG1_MAXDEV;
 
 	outl(PCI_MODE1_ADDRESS_REG, PCI_EN);
 	outb(PCI_MODE1_ADDRESS_REG + 3, 0);
 	mode1Res = inl(PCI_MODE1_ADDRESS_REG);
+	if (xf86Verbose > 2) {
+	    ErrorF("\tValue read back from MODE1_ADDR_REG is 0x%08x\n",
+			mode1Res);
+	    ErrorF("\tRestoring original contents of MODE1_ADDR_REG\n");
+	}
 	outl(PCI_MODE1_ADDRESS_REG, oldVal1);
 
 	if (mode1Res) {
+	    if (xf86Verbose > 2) {
+		ErrorF("\tValue read back is non-zero, and indicates possible"
+			" config type 1\n");
+	    }
 	    if (pcibusCheck()) {
+		if (xf86Verbose > 2)
+		    ErrorF("\tBus check Confirms this: ");
 		if (xf86Verbose > 1) {
 		    ErrorF("PCI: Config type is 1\n");
 		}
 		return;
 	    }
+	    if (xf86Verbose > 2) {
+		ErrorF("\tBus check fails to confirm this, continuing type 1"
+			" check ...\n");
+	    }
 	}
 
+	if (xf86Verbose > 2) {
+	    ErrorF("\tWriting 0xff000001 to MODE1_ADDR_REG\n");
+	}
 	outl(PCI_MODE1_ADDRESS_REG, 0xff000001);
 	mode1Res = inl(PCI_MODE1_ADDRESS_REG);
+	if (xf86Verbose > 2) {
+	    ErrorF("\tValue read back from MODE1_ADDR_REG is 0x%08x\n",
+			mode1Res);
+	    ErrorF("\tRestoring original contents of MODE1_ADDR_REG\n");
+	}
 	outl(PCI_MODE1_ADDRESS_REG, oldVal1);
 
 	if ((mode1Res & 0x80000001) == 0x80000000) {
+	    if (xf86Verbose > 2) {
+		ErrorF("\tValue read back has only the msb set\n"
+			"\tThis indicates possible config type 1\n");
+	    }
 	    if (pcibusCheck()) {
+		if (xf86Verbose > 2)
+		    ErrorF("\tBus check Confirms this: ");
 		if (xf86Verbose > 1) {
 		    ErrorF("PCI: Config type is 1\n");
 		}
 		return;
+	    }
+	    if (xf86Verbose > 2) {
+		ErrorF("\tBus check fails to confirm this.\n");
 	    }
 	}
     }
 
+    if (xf86Verbose > 2) {
+	ErrorF("Conclusion: config type is not 1 based on standard probe\n");
+    }
+
+    /* Now try the scanpci-style config type 1 detection method */
+
+    if (xf86Verbose > 2) {
+	ErrorF("Trying the scanpci method for detecting config type 1\n");
+    }
+
+    oldVal1 = inl(PCI_MODE1_ADDRESS_REG);
+    if (xf86Verbose > 2) {
+	ErrorF("\tinitial value of MODE1_ADDR_REG is 0x%08x\n", oldVal1);
+	ErrorF("\tWriting 32-bit value 0x%08x to MODE1_ADDR_REG\n", PCI_EN);
+    }
+    outl(PCI_MODE1_ADDRESS_REG, PCI_EN);
+    mode1Res = inl(PCI_MODE1_ADDRESS_REG);
+    if (xf86Verbose > 2) {
+	ErrorF("\tValue read back from MODE1_ADDR_REG is 0x%08x\n",
+			mode1Res);
+	ErrorF("\tRestoring original contents of MODE1_ADDR_REG\n");
+    }
+    outl(PCI_MODE1_ADDRESS_REG, oldVal1);
+    if (mode1Res == PCI_EN) {
+	if (xf86Verbose > 2) {
+	    ErrorF("\tValue read back is equal to the value written\n"
+			"\tThis indicates configuration type 1.  The scanpci\n"
+			"\tprobe does nothing further to confirm this\n");
+	    ErrorF("PCI: Config type is 1\n");
+	}
+	pciConfigType = 1;
+	pciMaxDevice = PCI_CONFIG1_MAXDEV;
+	return;
+    }
+
+    if (xf86Verbose > 2) {
+	ErrorF("Conclusion: config type is still not 1 based on the"
+		"scanpci probe method\n");
+    }
+
+	
     /* Try config type 2 */
     oldVal2 = inb(PCI_MODE2_ENABLE_REG);
     if ((oldVal2 & 0xf0) == 0) {

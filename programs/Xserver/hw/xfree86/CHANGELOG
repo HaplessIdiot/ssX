@@ -1,4 +1,25 @@
 XFree86 3.9c (xx May 1997)
+ 790. Add debugging messages to the PCI probe code.  These are enabled
+      when xf86Verbose > 2.  Also, try scanpci's method of detecting PCI
+      config type 1 when the other method fails.
+ 789. Fix DeviceButtonMotion (#437, George Sachs).
+ 788. Fix for SuperProbe dumping core on NetBSD (#433, Matthieu Herrb).
+ 787. Fix fbdev.c and update documentation (#428, Geert Uytterhoeven).
+ 786. mga/README updates (#419, Radoslaw Kapitan, #431, Guy Desbief).
+ 785. xtest fixes, and updates for Linux (Harald Koenig).
+ 784. MGA doc updates (#447, Guy Desbief).
+ 783. Fix the Xt TopLevelShell's XtNiconic resource (Sekhar Makkapati).
+ 782. Tseng doc updates (#445, Koen Gadeyne).
+ 781. Tseng doc updates (#421, Harald Nordgard Hansen).
+ 780. Change the behaviour of XtMalloc, XtCalloc and XtRealloc when
+      Malloc0ReturnsNull is set to YES so that they conform to the
+      Xt spec (#444, Kaleb Keithley).
+ 779. Fix for buffer overflows in libX11's GetDatabase().  This can be
+      used to exploit setuid programs linked against libX11
+      (#442, Harald Nordgard Hansen).
+ 778. Doc updates (#441, Takaaki Nomura).
+ 777. Doc updates (#440, Thomas Mueller).
+ 776. Modify some messages in the svga/s3v driver (#443, Harald Koenig).
  775. Undo change 623; the post dividers were incorrect (#435, Marc Aurele
       La France).
  774. Move the Tk/Tcl include dirs after all the others in the XF86Setup
@@ -4539,4 +4560,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.468 1997/05/14 08:40:56 dawes Exp $
