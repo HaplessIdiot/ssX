@@ -102,9 +102,6 @@
 #include "shadowfb.h"
 #include "fbdevhw.h"
 
-#include "xf86xv.h"
-#include "Xv.h"
-
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -2378,17 +2375,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pMga->FbAddress;
     pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
 
-#ifdef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int n;
-	
-	n = xf86XVListGenericAdaptors(&ptr);
-	if (n) { 
-	    xf86XVScreenInit(pScreen, ptr, n);
-	}
-    }
-#endif
+    MGAInitVideo(pScreen);
 
     pScreen->SaveScreen = MGASaveScreen;
 
@@ -2546,10 +2533,16 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pMga->ShadowPtr);
     if (pMga->DGAModes)
 	xfree(pMga->DGAModes);
+    if (pMga->adaptor)
+	xfree(pMga->adaptor);
+
     pScrn->vtSema = FALSE;
 
     if (xf86IsPc98())
 	outb(0xfac, 0x00);
+
+    if(pMga->BlockHandler)
+	pScreen->BlockHandler = pMga->BlockHandler;
 
     pScreen->CloseScreen = pMga->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);

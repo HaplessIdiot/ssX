@@ -20,6 +20,7 @@
 #include "vgaHW.h"
 #include "colormapst.h"
 #include "xf86DDC.h"
+#include "xf86xv.h"
 
 #if !defined(EXTRADEBUG)
 #define INREG8(addr) MMIO_IN8(pMga->IOBase, addr)
@@ -175,6 +176,7 @@ typedef struct {
     Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
     void		(*PointerMoved)(int index, int x, int y);
     CloseScreenProcPtr	CloseScreen;
+    ScreenBlockHandlerProcPtr BlockHandler;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
     Bool		(*i2cInit)(ScrnInfoPtr);
@@ -186,6 +188,9 @@ typedef struct {
     MGAFBLayout		CurrentLayout;
     Bool		DrawTransparent;
     int			MaxBlitDWORDS;
+    Bool		timerIsOn;
+    Time		offTime;
+    XF86VideoAdaptorPtr adaptor;
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];
@@ -257,5 +262,8 @@ void Mga32SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 				unsigned int planemask);
 
 void MGAPointerMoved(int index, int x, int y);
+
+void MGAInitVideo(ScreenPtr pScreen);
+void MGAResetVideo(ScrnInfoPtr pScrn); 
 
 #endif
