@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.81 2000/12/02 01:16:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.82 2000/12/04 18:49:52 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -479,6 +479,7 @@
 #define PCI_CHIP_QUADRO         0x0103
 #define PCI_CHIP_GEFORCE2MX     0x0110
 #define PCI_CHIP_GEFORCE2MXDDR  0x0111
+#define PCI_CHIP_GEFORCE2GO	0x0112
 #define PCI_CHIP_QUADRO2MXR     0x0113
 #define PCI_CHIP_GEFORCE2GTS    0x0150
 #define PCI_CHIP_GEFORCE2GTS_1  0x0151
