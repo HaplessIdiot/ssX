@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 467. Ignore (with messages) any HorizSync and VertRefresh specifications for
+      panels when using ATI LT, LTPro, XL and Mobility M1 (Marc La France).
  466. Fix a build failure when BuildServersOnly is defined and XnestServer
       is not defined, and when /usr/X11R6 is not installed. (#A.1145,
       Valeriy E. Ushakov).
@@ -15472,4 +15474,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2379 2002/11/07 22:11:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2380 2002/11/08 00:46:24 alanh Exp $
