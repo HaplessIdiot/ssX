@@ -46,6 +46,9 @@ XCOMM $XConsortium: $
 #ifndef BuildPseudo8
 #define BuildPseudo8	NO
 #endif
+#ifndef BuildRender
+#define BuildRender	YES
+#endif
 
 /*
  * By default, build all of the fonts.

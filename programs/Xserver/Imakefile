@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.187 2000/08/24 22:20:08 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.189 2000/08/29 17:23:34 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -183,7 +183,9 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
 
+#if BuildRender
      RENDERLIB = $(RENDER)/librender.a
+#endif
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) $(RENDELRIB)
    LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
@@ -664,7 +666,9 @@ XCOMM Tiny X server section
 XCOMM
 
         KDRIVE = hw/kdrive
+#if BuildRender
 	RENDER = render
+#endif
 #ifdef LinuxArchitecture
        KDOSDIR = $(KDRIVE)/linux
           KDOS = $(KDOSDIR)/LibraryTargetName(linux)
