@@ -9,7 +9,7 @@
 The information in this document is intended to be complete and accurate only
 for formal XFree86 releases.  It may not be complete or accurate for develop-
 ment code obtained directly from the CVS repository or from development,
-experimental, release candidate, or other snapshots.  For licensing infoma-
+experimental, release candidate, or other snapshots.  For licensing informa-
 tion about development code, contact the relevant authors, contributors and
 copyright holders.
 
@@ -49,17 +49,17 @@ XFree86 licensing policy, please contact us.
 
 3.1  Open Source
 
-We believe that all of the code in this release (4.4.99.21) of XFree86 meet
+We believe that all of the code in this release (4.4.99.901) of XFree86 meet
 the requirements of the Open Source Definition <URL:http://open-
 source.org/docs/definition.php>, as maintained by the Open Source Initiative
 (OSI) <URL:http://opensource.org/>.
 
 3.2  Free Software
 
-We believe that most of the code in this release (4.4.99.21) of XFree86 meets
-the requirements of the Free Software definition <URL:http://www.fsf.org/phi-
-losophy/free-sw.html> as defined by the Free Software Foundation (FSF)
-<URL:http://www.fsf.org/>.
+We believe that most of the code in this release (4.4.99.901) of XFree86
+meets the requirements of the Free Software definition
+<URL:http://www.fsf.org/philosophy/free-sw.html> as defined by the Free Soft-
+ware Foundation (FSF) <URL:http://www.fsf.org/>.
 
 Exceptions to this include the GLX extension and CID font code that are cov-
 ered by the SGI Free Software License B, version 1.1 (section 9., page 1).
@@ -1636,7 +1636,7 @@ the sale, use or other dealings in this Font Software without prior written
 authorization from the Gnome Foundation or Bitstream Inc., respectively. For
 further information, contact: fonts at gnome dot org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.39 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.40 dawes Exp $
 
 
 $XFree86$

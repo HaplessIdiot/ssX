@@ -1,4 +1,4 @@
-                  README for XFree86® 4.4.99.21 on OpenBSD
+                  README for XFree86® 4.4.99.901 on OpenBSD
 
                                Matthieu Herrb
 
@@ -23,7 +23,8 @@ or suggestions about this file.
 
 3.  New OS dependent features
 
-See the Release Notes for non-OS dependent new features in XFree86 4.4.99.21.
+See the Release Notes for non-OS dependent new features in XFree86
+4.4.99.901.
 
 3.1  New OS related features in 4.4
 
@@ -136,10 +137,10 @@ the xvidtune utility.
 
 5.1  About mouse configuration
 
-XFree86 4.4.99.21 has support for the mouse driver included in the new wscons
-console driver introduced by OpenBSD-2.9.  Specify ``wsmouse'' as the proto-
-col and ``/dev/wsmouse0'' as the  device in /etc/X11/XF86Config if you're
-using OpenBSD-2.9 or later with a PS/2 or USB mouse.
+XFree86 4.4.99.901 has support for the mouse driver included in the new
+wscons console driver introduced by OpenBSD-2.9.  Specify ``wsmouse'' as the
+protocol and ``/dev/wsmouse0'' as the  device in /etc/X11/XF86Config if
+you're using OpenBSD-2.9 or later with a PS/2 or USB mouse.
 
 See README.mouse  for general instruction on mouse configuration in XFree86.
 

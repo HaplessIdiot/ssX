@@ -593,7 +593,7 @@ backends to share their encoding data, and allows simple configuration of new
 locales independently of font type.
 
 Please note: the X-TrueType (X-TT) backend does not use the fontenc layer,
-but instead uses its own method for font reencoding.  If you are only inter-
+but instead uses its own method for font re-encoding.  If you are only inter-
 ested in X-TT you may want to skip to Using Symbol Fonts (section 4.1.5, page
 1), as the intervening information does not apply to X-TT.  X-TT itself is
 described in more detail in X-TrueType (section 4.2.2, page 1).
@@ -1181,7 +1181,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; see
 for example RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.24 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.25 dawes Exp $
 
 
-$XFree86: $
+$XFree86$

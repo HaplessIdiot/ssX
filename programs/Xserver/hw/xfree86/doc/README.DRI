@@ -367,7 +367,7 @@ If you see that indirect rendering is being used when direct rendering was
 expected, proceed to the troubleshooting section.
 
 glxinfo also lists all of the GLX-enhanced visuals available so you can
-determine which visuals are double-bufferd, have depth (Z) buffers, stencil
+determine which visuals are double-buffered, have depth (Z) buffers, stencil
 buffers, accumulation buffers, etc.
 
 8.6  Environment Variables
@@ -690,7 +690,7 @@ A software-based accumulation buffer is available in both 16 and 32bpp modes.
      trol this as well.
 
    o The glTexEnv mode GL_BLEND is not directly supported by the Voodoo3
-     hardware.  It can be accomplished with a multipass algorithm but it's
+     hardware.  It can be accomplished with a multi-pass algorithm but it's
      not implemented at this time.  Applications which use that mode, such as
      the Performer Town demo, may become sluggish when falling back to soft-
      ware rendering to render in that mode.
@@ -1251,7 +1251,7 @@ demo programs is available from http://dri.sourceforge.net/res.phtml
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.30 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.31 dawes Exp $
 
 
 $XFree86$

@@ -2,7 +2,7 @@
 
                          David Dawes, Matthieu Herrb
 
-                              23 February 2004
+                               6 February 2005
 
                                   Abstract
 
@@ -17,19 +17,19 @@
 We highly recommend using gcc to build XFree86, but XFree86 also generally
 builds with the native compiler for each OS platform;
 
-1.  How to get the XFree86 4.4.99.21 source
+1.  How to get the XFree86 4.4.99.901 source
 
-The recommended way of getting the XFree86 4.4.99.21 source is to obtain it
+The recommended way of getting the XFree86 4.4.99.901 source is to obtain it
 directly from the XFree86 CVS repository.  There are several ways of doing
 that, and they are described at our CVS web page
 <URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
-"xf-4_4_99_21".
+"xf-4_4_99_901".
 
-Alternatively you can download the source for the XFree86 4.4.99.21 snapshot
+Alternatively you can download the source for the XFree86 4.4.99.901 snapshot
 as a tarball from ftp://ftp.xfree86.org/pub/XFree86/devel-
-snaps/XFree86-4.4.99.21.tar.bz2.  This can be extracted by running:
+snaps/XFree86-4.4.99.901.tar.bz2.  This can be extracted by running:
 
-     bzip2 -d < XFree86-4.4.99.21.tar.bz2 | tar vxf -
+     bzip2 -d < XFree86-4.4.99.901.tar.bz2 | tar vxf -
 
 All methods will produce one main source directory called xc.
 
@@ -128,23 +128,22 @@ You can follow the progress of the build by running:
 
 When the build is finished, you should check the World.Log file to see if
 there were any problems.  If there weren't any then you can install the bina-
-ries.  By default the "make World" process will ignore errors and build as
-much as possible.  If there were problems and they are not corrected at this
-stage, the installation process will fail.  To restart the build process
-after correcting the problems, just run 'make'.  If Imakefiles or part of the
-build configuration was changed as part of correcting the problem, either re-
-run "make World", or run "make Everything".
+ries.  By default the "make World" process will stop when the first error is
+found.  To restart the build process after correcting the problems, just run
+'make'.  If Imakefiles or part of the build configuration was changed as part
+of correcting the problem, either re-run "make World", or run "make Every-
+thing".
 
-If you would prefer "make World" to exit at the first error, run it in the
-following way instead of the way described above:
+If you would prefer "make World" to continue as best it can past errors, then
+run it in the following way instead of the way described above:
 
 for Bourne-like shells:
 
-     make WORLDOPTS= World > World.log 2>&1
+     make WORLDOPTS=-k World > World.log 2>&1
 
 for C-shell variants:
 
-     make WORLDOPTS= World >& World.log
+     make WORLDOPTS=-k World >& World.log
 
 To do the install, run "make install" and "make install.man".  Make sure you
 have enough space in /usr/X11R6 for the install to succeed.  If you want to
@@ -209,7 +208,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.16 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.17 dawes Exp $
 
 
 $XFree86$
