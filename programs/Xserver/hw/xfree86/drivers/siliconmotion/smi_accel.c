@@ -1096,7 +1096,14 @@ SMI_Polylines(DrawablePtr pDraw, GCPtr pGC, int mode, int npt,
 		if (box)
 		{
 			/* Refresh all polyline segments now. */
-			SMI_RefreshArea(pScrn, box, pBox);
+			if (pSmi->Chipset == SMI_COUGAR3DR)
+			{
+				SMI_RefreshArea730(pScrn, box, pBox);
+			}
+			else
+			{
+				SMI_RefreshArea(pScrn, box, pBox);
+			}
 		}
 
 		/* Free the temporary buffer. */

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.31 2002/10/31 23:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.34 2003/10/02 13:30:09 eich Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -53,9 +53,10 @@ HWND		g_hDlgDepthChange = NULL;
 HWND		g_hDlgExit = NULL;
 Bool		g_fCalledSetLocale = FALSE;
 Bool		g_fCalledXInitThreads = FALSE;
-int         g_iLogVerbose = 4;
-char *      g_pszLogFile = WIN_LOG_FNAME;
-Bool        g_fLogInited = FALSE;
+int		g_iLogVerbose = 4;
+char *		g_pszLogFile = WIN_LOG_FNAME;
+Bool		g_fLogInited = FALSE;
+const char *	g_pszQueryHost = NULL;
 
 
 /*
@@ -1186,6 +1187,16 @@ ddxProcessArgument (int argc, char *argv[], int i)
     {
       CHECK_ARGS (1);
       g_cmdline.rgbPath = argv[++i];
+      return 0; /* Let DIX parse this again */
+    }
+
+  /*
+   * Look for the '-query' argument
+   */
+  if (IS_OPTION ("-query"))
+    {
+      CHECK_ARGS (1);
+      g_pszQueryHost = argv[++i];
       return 0; /* Let DIX parse this again */
     }
 
