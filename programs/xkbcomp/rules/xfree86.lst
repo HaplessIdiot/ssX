@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.23 2001/02/12 18:26:00 paulo Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.24 2001/03/01 01:24:00 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -47,7 +47,7 @@
   fr_CH		Swiss French
   de		German
   de_CH		Swiss German
-  gr		Greek
+  el		Greek
   hu		Hungarian
   is		Icelandic
   il		Israeli
