@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.78 2005/02/18 02:55:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.79 2005/02/26 01:07:12 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -823,7 +823,7 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 #endif
 
     if (monitor->DDC) {
-	xf86MonPtr DDC = (xf86MonPtr)(monitor->DDC);
+	xf86MonPtr DDC = monitor->DDC;
 	struct detailed_monitor_section* detMon;
 	struct monitor_ranges *mon_range;
 	int i;
@@ -1302,7 +1302,7 @@ xf86SetMonitorParameters(ScrnInfoPtr pScrn, MonPtr monitor,
      * are shown as supported via standard and detailed timings.
      */
     if (monitor->DDC) {
-	xf86MonPtr DDC = (xf86MonPtr)(monitor->DDC);
+	xf86MonPtr DDC = monitor->DDC;
 	int i, j;
 	float hmin = 1e6, hmax = 0.0, vmin = 1e6, vmax = 0.0;
 	float h;
@@ -1557,6 +1557,85 @@ xf86SetMonitorParameters(ScrnInfoPtr pScrn, MonPtr monitor,
     return TRUE;
 }
 
+Bool
+xf86AddEDIDModes(ScrnInfoPtr pScrn, MonPtr monitor, int flags)
+{
+    xf86MonPtr DDC;
+    int i;
+    struct detailed_timings *dt;
+    Bool firstPreferred, firstDetailed;
+    DisplayModePtr p, new;
+
+    /*
+     * Add detailed EDID modes to the monitor's mode list.
+     */
+    if (!monitor->DDC)
+	return TRUE;
+
+    DDC = monitor->DDC;
+
+    /*
+     * Check if the monitor's mode list already includes any
+     * EDID-derived modes.  If so, there's nothing for us to do here.
+     */
+    for (p = monitor->Modes; p; p = p->next)
+	if (p->type & M_T_EDID)
+	    return TRUE;
+
+    firstPreferred = PREFERRED_TIMING_MODE(DDC->features.msc);
+    firstDetailed = TRUE;
+
+    for (i = 0; i < DET_TIMINGS; i++) {
+	switch (DDC->det_mon[i].type) {
+	case DS_RANGES:
+		break;
+
+	case DS_STD_TIMINGS:
+		break;
+
+	case DT:
+	    dt = &DDC->det_mon[i].section.d_timings;
+	    if (dt->clock > 15000000) { /* sanity check */
+		char *newName = NULL;
+
+		xasprintf(&newName, "%dx%d", dt->h_active, dt->v_active);
+		if (newName && !xf86ModeIsPresent(newName, monitor->Modes,
+						  0, M_T_DEFAULT)) {
+		    new = xcalloc(1, sizeof(DisplayModeRec));
+		    if (new) {
+			new->type = M_T_DEFAULT | M_T_EDID;
+			new->Clock = dt->clock / 1000;
+			new->HDisplay = dt->h_active;
+			new->HSyncStart = new->HDisplay + dt->h_sync_off;
+			new->HSyncEnd = new->HSyncStart + dt->h_sync_width;
+			new->HTotal = new->HDisplay + dt->h_blanking;
+			new->VDisplay = dt->v_active;
+			new->VSyncStart = new->VDisplay + dt->v_sync_off;
+			new->VSyncEnd = new->VSyncStart + dt->v_sync_width;
+			new->VTotal = new->VDisplay + dt->v_blanking;
+			new->name = newName;
+			newName = NULL;
+			if (firstPreferred && firstDetailed) {
+			    new->type |= M_T_PREFER;
+			}
+			xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+			    "Adding detailed EDID mode %s to monitor "
+			    "(preferred: %s).\n",
+			    new->name, new->type & M_T_PREFER ? "yes" : "no");
+			xf86AddModeToMonitor(monitor, new);
+		    }
+		}
+		if (newName)
+		    xfree(newName);
+	    }
+	    firstDetailed = FALSE;
+	    break;
+	}
+    }
+
+    return TRUE;
+}
+
 /*
  * xf86ValidateModes
  *
@@ -1667,25 +1746,18 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
      * Probe monitor for preferred DDC/EDID modes.
      */
     if (scrp->monitor->DDC) {
-	MonPtr monitor = scrp->monitor;
-	xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC);
+	xf86MonPtr DDC = scrp->monitor->DDC;
 	int i, j;
 	struct std_timings *t;
 	struct detailed_timings *dt;
 	Bool digital, firstPreferred, firstDetailed = TRUE;
-	Bool haveEDIDModes = FALSE;
 	int est_mask;
 
 	/*
 	 * Check if the monitor's mode list already includes any
 	 * EDID-derived modes.
 	 */
-	for (p = monitor->Modes; p != NULL; p = p->next) {
-	    if (p->type & M_T_EDID) {
-		haveEDIDModes = TRUE;
-		break;
-	    }
-	}
+	xf86AddEDIDModes(scrp, scrp->monitor, 0);
 
 	digital = DIGITAL(DDC->features.input_type);
 	firstPreferred = PREFERRED_TIMING_MODE(DDC->features.msc);
@@ -1730,48 +1802,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    case DT:
 		dt = &DDC->det_mon[i].section.d_timings;
 		if (dt->clock > 15000000) { /* sanity check */
-		    if (!haveEDIDModes) {
-			char *newName = NULL;
-
-			xasprintf(&newName, "%dx%d",
-				  dt->h_active, dt->v_active);
-			if (newName && !xf86ModeIsPresent(newName,
-							  monitor->Modes,
-							  0, M_T_DEFAULT)) {
-			    new = xcalloc(1, sizeof(DisplayModeRec));
-			    if (new) {
-				new->type = M_T_DEFAULT | M_T_EDID;
-				new->Clock = dt->clock / 1000;
-				new->HDisplay = dt->h_active;
-				new->HSyncStart = new->HDisplay +
-							dt->h_sync_off;
-				new->HSyncEnd = new->HSyncStart +
-							dt->h_sync_width;
-				new->HTotal = new->HDisplay + dt->h_blanking;
-				new->VDisplay = dt->v_active;
-				new->VSyncStart = new->VDisplay +
-							dt->v_sync_off;
-				new->VSyncEnd = new->VSyncStart +
-							dt->v_sync_width;
-				new->VTotal = new->VDisplay + dt->v_blanking;
-				new->name = newName;
-				newName = NULL;
-				if (firstPreferred && firstDetailed) {
-				    new->type |= M_T_PREFER;
-				    preferredName = new->name;
-				}
-				xf86DrvMsgVerb(scrp->scrnIndex, X_INFO, 4,
-				    "Adding detailed EDID mode %s to monitor "
-				    "(preferred: %s).\n",
-				    new->name,
-				    new->type & M_T_PREFER ? "yes" : "no");
-				xf86AddModeToMonitor(monitor, new);
-			    }
-			}
-			if (newName)
-			    xfree(newName);
-		    }
-
 		    if (digital || (firstPreferred && firstDetailed)) {
 			if (dt->h_active > preferredH ||
 			    dt->v_active > preferredV) {

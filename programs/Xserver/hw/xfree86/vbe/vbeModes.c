@@ -1,6 +1,6 @@
 #define DEBUG_VERB 2
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.5 2004/12/11 20:38:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.6 2005/02/26 01:07:13 dawes Exp $ */
 
 /*
  * Copyright © 2002 David Dawes
@@ -351,6 +351,7 @@ VBEGetModePool(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe,
     int i = 0;
 
     xf86SetMonitorParameters(pScrn, pScrn->monitor, 0, 0, 0);
+    xf86AddEDIDModes(pScrn, pScrn->monitor, 0);
     if (modeTypes & V_MODETYPE_VBE) {
 	while (vbe->VideoModePtr[i] != 0xffff) {
 	    int id = vbe->VideoModePtr[i++];
