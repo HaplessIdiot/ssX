@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.4 2001/05/18 20:22:31 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.5 2001/07/06 02:04:10 paulo Exp $
  */
 #ifdef USE_MODULES
 #include "config.h"
@@ -70,6 +70,42 @@ void LoaderGetOS(const char **name, int *major, int *minor, int *teeny);
 
 typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);
+
+/*
+ * Some common module classes.  The moduleclass can be used to identify
+ * that modules loaded are of the correct type.  This is a finer
+ * classification than the ABI classes even though the default set of
+ * classes have the same names.  For example, not all modules that require
+ * the video driver ABI are themselves video drivers.
+ */
+#define MOD_CLASS_NONE		NULL
+#define MOD_CLASS_VIDEODRV	"XFree86 Video Driver"
+#define MOD_CLASS_XINPUT	"XFree86 XInput Driver"
+#define MOD_CLASS_FONT		"XFree86 Font Renderer"
+#define MOD_CLASS_EXTENSION	"XFree86 Server Extension"
+
+/* This structure is expected to be returned by the initfunc */
+typedef struct {
+    const char * modname;	/* name of module, e.g. "foo" */
+    const char * vendor;	/* vendor specific string */
+    CARD32	 _modinfo1_;	/* constant MODINFOSTRING1/2 to find */
+    CARD32	 _modinfo2_;	/* infoarea with a binary editor or sign tool */
+    CARD32	 xf86version;	/* contains XF86_VERSION_CURRENT */
+    CARD8	 majorversion;	/* module-specific major version */
+    CARD8	 minorversion;	/* module-specific minor version */
+    CARD16	 patchlevel;	/* module-specific patch level */
+    const char * abiclass;	/* ABI class that the module uses */
+    CARD32	 abiversion;	/* ABI version */
+    const char * moduleclass;	/* module class description */
+    CARD32	 checksum[4];	/* contains a digital signature of the */
+				/* version info structure */
+} XF86ModuleVersionInfo;
+
+typedef struct {
+    XF86ModuleVersionInfo *	vers;
+    ModuleSetupProc		setup;
+    ModuleTearDownProc		teardown;
+} XF86ModuleData;
 
 /* loader/loader.h */
 void LoaderDefaultFunc(void);
@@ -142,6 +178,17 @@ typedef struct {
     ValueUnion          value;
     Bool                found;
 } OptionInfoRec, *OptionInfoPtr;
+
+/* fontmod.h */
+typedef void (*InitFont)(void);
+
+typedef struct {
+    InitFont	initFunc;
+    char *	name;
+    void	*module;
+} FontModule;
+
+extern FontModule *FontModuleList;
 
 #ifdef LOADER_PRIVATE
 #define PROBE_DETECT	0x01
@@ -285,7 +332,8 @@ typedef enum {
     NullModule = 0,
     VideoModule,
     InputModule,
-    GenericModule
+    GenericModule,
+    FontRendererModule
 } ModuleType;
 
 typedef struct _xf86cfgModuleOptions {

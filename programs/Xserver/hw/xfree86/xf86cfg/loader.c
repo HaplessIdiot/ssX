@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.7 2001/07/06 02:04:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.8 2001/07/06 07:37:10 paulo Exp $
  */
 
 #include "config.h"
@@ -54,12 +54,16 @@ static Bool EnumDatabase(XrmDatabase, XrmBindingList, XrmQuarkList,
 extern void CheckChipsets(xf86cfgModuleOptions*, int*);
 
 static jmp_buf jmp;
-static int signal_caught, error_level;
+int signal_caught;
+int error_level;
 char *loaderPath, **loaderList, **ploaderList;
 extern XrmDatabase options_xrm;
 extern int noverify;
 extern ModuleType module_type;
 static OptionInfoPtr option;
+
+extern FontModule *font_module;
+extern int numFontModules;
 
 #ifndef SIGNALRETURNSINT
 void
@@ -135,7 +139,12 @@ LoaderInitializeOptions(void)
     XrmQuark names[2];
     XrmQuark classes[2];
     int i;
-    static ModuleType module_types[] = {GenericModule, InputModule, VideoModule, NullModule};
+    static ModuleType module_types[] = {
+	GenericModule, FontRendererModule, InputModule, VideoModule, NullModule
+    };
+    static char *module_strs[] = {
+	"Generic Module", "Font Module", "Input Module", "Video Module", NULL
+    };
 
     if (first) {
 	xf86cfgLoaderInit();
@@ -162,15 +171,15 @@ LoaderInitializeOptions(void)
 	xf86cfgLoaderInitList(module_types[i]);
 	if (!noverify)
 	    printf("================= Checking modules of type \"%s\" =================\n",
-		   module_types[i] == VideoModule ? "Video Driver" :
-		   module_types[i] == InputModule ? "Input Driver" : "Generic Module");
+		   module_strs[i]);
 
 	if (loaderList) {
 	    for (ploaderList = loaderList; *ploaderList; ploaderList++) {
 		if (!noverify) {
 		    if (setjmp(jmp) == 0) {
-			int ok;
+			int ok, nfont_modules;
 
+			nfont_modules = numFontModules;
 			error_level = 0;
 			signal_caught = 0;
 			signal(SIGTRAP, sig_handler);
@@ -185,8 +194,7 @@ LoaderInitializeOptions(void)
 			}
 			else if (module_type != module_types[i]) {
 			    printf("  WARNING %s recognized as a \"%s\"\n", *ploaderList,
-				   module_type == VideoModule ? "Video Driver" :
-				   module_type == InputModule ? "Input Driver" : "Generic Module");
+				   module_strs[module_type]);
 			    ++error_level;
 			}
 			signal(SIGTRAP, SIG_DFL);
@@ -245,6 +253,27 @@ LoaderInitializeOptions(void)
 				    printf("  CHECK CHIPSETS\n");
 				    CheckChipsets(module_options, &error_level);
 				}
+			    }
+
+			    /* font modules check */
+			    if (module_type == FontRendererModule) {
+				if (strcmp(*ploaderList, font_module->name)) {
+				    /* not an error */
+				    printf("  NOTICE name/FontModule->name specification mismatch: \"%s\" \"%s\"\n",
+					   *ploaderList, font_module->name);
+				    ++error_level;
+				}
+				if (nfont_modules + 1 != numFontModules) {
+				    /* not an error */
+				    printf("  NOTICE font module \"%s\" loaded more than one font renderer.\n",
+					   *ploaderList);
+				    ++error_level;
+				}
+			    }
+			    else if (nfont_modules != numFontModules) {
+				printf("  WARNING number of font modules changed from %d to %d.\n",
+				       nfont_modules, numFontModules);
+				++error_level;
 			    }
 			}
 		    }
