@@ -34,7 +34,7 @@
 ** $Date$ $Revision$
 ** $Header$
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/mipmap.c,v 1.2 2001/01/21 21:19:07 tsi Exp $ */
 
 #include "gluos.h"
 #include <assert.h>
@@ -156,7 +156,6 @@ static void scale_internal_float(GLint components, GLint widthin,
 
 static int checkMipmapArgs(GLenum, GLenum, GLenum);
 static GLboolean legalFormat(GLenum);
-static GLboolean isLegalInternalFormat(GLenum);
 static GLboolean legalType(GLenum);
 static GLboolean isTypePackedPixel(GLenum);
 static GLboolean isLegalFormatForPackedPixelType(GLenum, GLenum);
@@ -3232,9 +3231,6 @@ static void scale_internal_float(GLint components, GLint widthin,
 
 static int checkMipmapArgs(GLenum internalFormat, GLenum format, GLenum type)
 {
-    if (!isLegalInternalFormat(internalFormat)) {
-       return GLU_INVALID_ENUM;   
-    }
     if (!legalFormat(format) || !legalType(type)) {
 	return GLU_INVALID_ENUM;
     }
@@ -3270,76 +3266,6 @@ static GLboolean legalFormat(GLenum format)
 	return GL_FALSE;
     }
 }
-
-/* */
-static GLboolean isLegalInternalFormat(GLenum internalFormat)
-{
-   switch (internalFormat) {
-      /* internal formats [1..4] are always valid */
-      case 1: case 2: case 3: case 4:
-         return GL_TRUE;
-
-      case GL_ALPHA:
-      case GL_ALPHA4:
-      case GL_ALPHA8:
-      case GL_ALPHA12:
-      case GL_ALPHA16:
-
-      case GL_LUMINANCE: 
-      case GL_LUMINANCE4: 
-      case GL_LUMINANCE8: 
-      case GL_LUMINANCE12: 
-      case GL_LUMINANCE16:
-
-      case GL_LUMINANCE_ALPHA:
-      case GL_LUMINANCE4_ALPHA4:
-      case GL_LUMINANCE6_ALPHA2:
-      case GL_LUMINANCE8_ALPHA8:
-      case GL_LUMINANCE12_ALPHA4:
-      case GL_LUMINANCE12_ALPHA12:
-      case GL_LUMINANCE16_ALPHA16:
-
-      case GL_INTENSITY:
-      case GL_INTENSITY4:	
-      case GL_INTENSITY8:
-      case GL_INTENSITY12:
-      case GL_INTENSITY16:
-
-      case GL_RGB:
-#ifdef GL_EXT_texture
-      case GL_RGB2_EXT:
-#endif
-      case GL_R3_G3_B2:
-      case GL_RGB4:
-      case GL_RGB5:
-      case GL_RGB8:
-      case GL_RGB10:
-      case GL_RGB12:
-      case GL_RGB16:
-
-      case GL_RGBA:
-      case GL_RGBA2:
-      case GL_RGBA4:
-      case GL_RGB5_A1:
-      case GL_RGBA8:
-      case GL_RGB10_A2:
-      case GL_RGBA12:
-      case GL_RGBA16:
-	 /* if OGL 1.1+, the new internal formats are legal 
-	  * if OGL <= 1.0, the new internal formats are legal iff texture
-	  * extension is supported, otherwise they are not legal.
-          */ 
-         if (strtod((const char *)glGetString(GL_VERSION),NULL) >= 1.1)
- 	    return GL_TRUE;	/* OGL 1.1+ */
-	 else if (gluCheckExtension((GLubyte *)"GL_EXT_texture",
-				      glGetString(GL_EXTENSIONS))) 
-	    return GL_TRUE;	/* OGL 1.0 & texture extension supported */
-	 else return GL_FALSE;	/* OGL 1.0 & texture extension not supported */
-      default:
-	 return GL_FALSE;
-   }
-
-} /* isLegalInternalFormat() */
 
 static GLboolean legalType(GLenum type)
 {
@@ -3470,8 +3396,21 @@ static void closestFit(GLenum target, GLint width, GLint height,
 	    glTexImage2D(proxyTarget, 1, /* must be non-zero */
 			 internalFormat,
 			 widthAtLevelOne,heightAtLevelOne,0,format,type,NULL);
-	 }
-	 else {
+	 } else
+#if defined(GL_ARB_texture_cube_map)
+         if ((target == GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB) ||
+             (target == GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB) ||
+             (target == GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB) ||
+             (target == GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB) ||
+             (target == GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB) ||
+             (target == GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB)) {
+             proxyTarget = GL_PROXY_TEXTURE_CUBE_MAP_ARB;
+             glTexImage2D(proxyTarget, 1, /* must be non-zero */
+                          internalFormat,
+                          widthAtLevelOne,heightAtLevelOne,0,format,type,NULL);
+         } else
+#endif /* GL_ARB_texture_cube_map */
+         {
 	    assert(target == GL_TEXTURE_1D || target == GL_PROXY_TEXTURE_1D);
 	    proxyTarget = GL_PROXY_TEXTURE_1D;
 	    glTexImage1D(proxyTarget, 1, /* must be non-zero */
