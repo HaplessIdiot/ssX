@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.36 2000/10/28 01:42:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.38 2000/11/16 19:45:03 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1080,7 +1080,7 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	} else
 	    romaddr = 0;
     }
-#define DEBUG
+#ifdef DEBUG
     ErrorF("ValidBIOSBase: %x\n",newbase);
 #endif
     if (romaddr == 0) {
