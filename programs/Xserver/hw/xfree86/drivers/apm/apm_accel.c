@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.18 2001/10/28 03:33:21 tsi Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.19 2002/01/25 21:55:54 tsi Exp $ */
 
 #include "apm.h"
 #include "miline.h"

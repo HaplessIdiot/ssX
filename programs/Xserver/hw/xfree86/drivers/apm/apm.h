@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.17 2001/05/04 19:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.18 2002/01/25 21:55:54 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -185,6 +185,7 @@ typedef struct {
     int			timerIsOn;
     Time		offTime;
     OptionInfoPtr	Options;
+    char		DPMSMask[4];
 } ApmRec, *ApmPtr;
 
 #define curr		((unsigned char *)pApm->regcurr)
