@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.26 2003/11/14 22:44:26 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.27 2003/11/17 03:10:42 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -246,8 +246,8 @@ GetDRIDrawable( Display *dpy, GLXDrawable drawable, int * const scrn_num )
 
 	for ( i = 0 ; i < screen_count ; i++ ) {
 	    __DRIscreen * const psc = &priv->screenConfigs[i].driScreen;
-	    __DRIdrawable * const pdraw = (*psc->getDrawable)(dpy, drawable,
-							      psc->private);
+	    __DRIdrawable * const pdraw = (psc->private != NULL)
+	       ? (*psc->getDrawable)(dpy, drawable, psc->private) : NULL;
 
 	    if ( pdraw != NULL ) {
 		if ( scrn_num != NULL ) {
