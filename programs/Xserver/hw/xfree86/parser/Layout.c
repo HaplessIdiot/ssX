@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.18 2001/08/06 20:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.19 2002/03/04 16:11:06 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -471,12 +471,12 @@ xf86validateLayout (XF86ConfigPtr p)
 XF86ConfLayoutPtr
 xf86findLayout (const char *name, XF86ConfLayoutPtr list)
 {
-    while (list)
-    {
-        if (xf86nameCompare (list->lay_identifier, name) == 0)
-            return (list);
-        list = list->list.next;
-    }
-    return (NULL);
+	while (list)
+	{
+		if (xf86nameCompare (list->lay_identifier, name) == 0)
+			return (list);
+		list = list->list.next;
+	}
+	return (NULL);
 }
 
