@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.9 2002/11/10 23:22:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.10 2002/11/12 06:05:08 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -384,7 +384,6 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     }
     COD = _cod;
     LispPopInput(&execute_stream);
-    lisp__data.running = 0;
 
     XeditPrint(output, result);
     if (RETURN_COUNT) {

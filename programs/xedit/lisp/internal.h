@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.36 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.37 2002/11/10 23:21:59 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -196,7 +196,7 @@ typedef struct _LispMac LispMac;
     (POINTERP(object) ? INT_VALUE(object) : FIXNUM_VALUE(object))
 #define CHECK_LONGINT(object)						\
     if (!LONGINTP(object))						\
-	LispDestroy("%s: %s is not a integer",				\
+	LispDestroy("%s: %s is not an integer",				\
 		    STRFUN(builtin), STROBJ(object))
 
 
@@ -666,7 +666,6 @@ LispObj *LispNewAtom(char*, int);
 LispObj *LispNewStaticAtom(char*);
 LispObj *LispNewDFloat(double);
 LispObj *LispNewString(char*, long, int);
-LispObj *LispNewSmallInt(long);
 LispObj *LispNewInteger(long);
 LispObj *LispNewRatio(long, long);
 LispObj *LispNewVector(LispObj*);
