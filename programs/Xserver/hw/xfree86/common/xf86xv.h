@@ -137,6 +137,7 @@ typedef struct {
 
 typedef struct {
   XF86ImagePtr image;
+  int flags;
   int (*allocate)(ScrnInfoPtr pScrn,
 		  int id,
 		  unsigned short width, 	
