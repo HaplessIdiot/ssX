@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.38 2004/02/16 19:38:24 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.39tsi Exp $ */
 /*
  * 2D Acceleration for SiS 315 and 330 series
  *
@@ -1693,7 +1693,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
    			int height, int	flags)
 {
     	SISPtr pSiS = SISPTR(pScrn);
-    	int x, y, pitch, sizeNeeded, offset;
+    	int x, pitch, sizeNeeded, offset;
 	CARD8  myalpha;
 	CARD32 *dstPtr;
 	unsigned char *renderaccelarray;
