@@ -38,6 +38,7 @@ extern LexRec val;
 static
 xf86ConfigSymTabRec InputTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{OPTION, "option"},
@@ -57,6 +58,11 @@ parseInputSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->inp_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -116,6 +122,8 @@ printInputSection (FILE * cf, XF86ConfInputPtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"InputDevice\"\n");
+		if (ptr->inp_comment)
+			fprintf (cf, "\t###         \"%s\"\n", ptr->inp_comment);
 		if (ptr->inp_identifier)
 			fprintf (cf, "\tIdentifier  \"%s\"\n", ptr->inp_identifier);
 		if (ptr->inp_driver)

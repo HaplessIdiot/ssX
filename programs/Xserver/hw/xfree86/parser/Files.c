@@ -38,6 +38,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec FilesTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{FONTPATH, "fontpath"},
 	{RGBPATH, "rgbpath"},
@@ -71,6 +72,11 @@ parseFilesSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->file_comment = val.str;
+			break;
 		case FONTPATH:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "FontPath");
@@ -162,6 +168,8 @@ printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 	if (ptr == NULL)
 		return;
 
+	if (ptr->file_comment)
+		fprintf (cf, "\t###          \"%s\"\n", ptr->file_comment);
 	if (ptr->file_logfile)
 		fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
 	if (ptr->file_rgbpath)

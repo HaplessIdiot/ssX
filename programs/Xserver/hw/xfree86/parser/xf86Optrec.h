@@ -53,6 +53,7 @@ typedef struct
 	char *opt_name;
 	char *opt_val;
 	int opt_used;
+	char *opt_comment;
 }
 XF86OptionRec, *XF86OptionPtr;
 
