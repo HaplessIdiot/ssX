@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.13 2002/08/22 08:03:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.15 2002/11/05 05:41:57 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -116,15 +116,15 @@ typedef struct _Picture		*PicturePtr;
 #define PICT_g1		PICT_FORMAT(1,PICT_TYPE_GRAY,0,0,0,0)
 
 /*
- * When the default visual is writable and not Direct, these control the 
+ * For dynamic indexed visuals (GrayScale and PseudoColor), these control the 
  * selection of colors allocated for drawing to Pictures.  The default
  * policy depends on the size of the colormap:
  *
- * Size		Defualt Policy
+ * Size		Default Policy
  * ----------------------------
  *  < 64	PolicyMono
  *  < 256	PolicyGray
- *  256		PolicyColor
+ *  256		PolicyColor (only on PseudoColor)
  *
  * The actual allocation code lives in miindex.c, and so is
  * austensibly server dependent, but that code does:

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.5 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.6 2002/11/05 05:34:40 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -63,7 +63,7 @@ miBuildRenderColormap (ColormapPtr  pColormap,
 
     if (policy == PictureCmapPolicyDefault)
     {
-	if (num >= 256)
+	if (num >= 256 && (pColormap->pVisual->class|DynamicClass) == PseudoColor)
 	    policy = PictureCmapPolicyColor;
 	else if (num >= 64)
 	    policy = PictureCmapPolicyGray;
