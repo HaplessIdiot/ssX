@@ -28,7 +28,7 @@
  * Modified version of tx_accel.c to support dual MX chips by
  *   Jens Owen, <jens@precisioninsight.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.13 1999/02/12 22:52:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.3 2000/01/18 18:40:12 alanh Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.15 1999/06/09 20:05:12 jens Exp $ */
 
 #include "xf86.h"
@@ -995,7 +995,7 @@ DualMXSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
 	return;
     }
 
-    fbBres(pGlint->CurrentDrawable, pGlint->CurrentGC, 0,
+    fbBresSolid(pGlint->CurrentDrawable, pGlint->CurrentGC, 0,
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,
