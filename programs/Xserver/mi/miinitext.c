@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.35 1998/10/06 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.36 1998/11/15 04:30:43 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -329,7 +329,7 @@ ExtensionModule extension[] =
 #else
     { NULL, "NOXINERAMA", NULL, NULL },
 #endif
-    { NULL, "XAnti", NULL, NULL };
+    { NULL, "XAnti", NULL, NULL },
     { NULL, NULL, NULL, NULL }
 };
 
