@@ -390,12 +390,12 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #undef outw
 #undef outl
  
-#define inb(a)		_inb(a)
-#define inw(a)		_inw(a)
-#define inl(a)		_inl(a)
-#define outb(a,b)	_outb(b,a)
-#define outw(a,b)	_outw(b,a)
-#define outl(a,b)	_outl(b,a) 
+#define inb(a)		__inb(a)
+#define inw(a)		__inw(a)
+#define inl(a)		__inl(a)
+#define outb(a,b)	__outb(b,a)
+#define outw(a,b)	__outw(b,a)
+#define outl(a,b)	__outl(b,a) 
 
 #elif (defined(linux) || defined(Lynx)) && defined(__sparc__)
 

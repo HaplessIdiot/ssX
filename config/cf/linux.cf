@@ -161,6 +161,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef XF86INT10_BUILD
 # ifdef i386Architecture
 #  define XF86INT10_BUILD X86VM
+# elif defined(ia64Architecture)
+#  define UseX86Emu NO
+#  define XF86INT10_BUILD XF86INT10_STUB
 # elif defined(X86EMU_LIBPATH)
 #  define XF86INT10_BUILD X86EMU_GENERIC
 # endif

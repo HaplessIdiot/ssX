@@ -206,7 +206,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* int10 module */
 # ifndef XF86Int10
-#  define XF86Int10		NO
+#  define XF86Int10		YES
 # endif
 
 /*
