@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaa.c,v 1.2 1999/02/28 11:19:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaa.c,v 1.2 2000/02/08 13:13:14 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -109,6 +109,7 @@ AlpSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 						unsigned int planemask)
 {
 	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
 	int pitch = pCir->pitch;
 
 #ifdef ALP_DEBUG
@@ -117,12 +118,35 @@ AlpSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 #endif
 	WAIT;
 
-	outb(0x3CE, 0x32); outb(0x3CF, 0x0d);
+	/* GR32 = 0x0D => verbatim source copy (no logical op) */
+	outw(0x3CE, 0x0D32);
 
-	outb(0x3CE, 0x33);
-	outb(0x3CF, 0x04);
-	outb(0x3CE, 0x30);
-	outb(0x3CF, 0xC0|((pScrn->bitsPerPixel - 8) << 1));
+	switch (pCir -> Chipset)
+	{
+	case PCI_CHIP_GD7548:
+	  /* The GD7548 does not (apparently) support solid filling
+	     directly, it always need an actual source.
+	     We therefore use it as a pattern fill with a solid
+	     pattern */
+	  {
+	    int source = pAlp->monoPattern8x8;
+	    /* source = 8x8 solid mono pattern */
+	    outw(0x3CE, ((source << 8) & 0xff00) | 0x2C);
+	    outw(0x3CE, ((source) & 0xff00) | 0x2D);
+	    outw(0x3CE, ((source >> 8) & 0x3f00) | 0x2E);
+	    /* memset() may not be the fastest */
+	    memset(pCir->FbBase + pAlp->monoPattern8x8, 0xFF, 8);
+	    write_mem_barrier();
+	    break;
+	  }
+        default:
+          /* GR33 = 0x04 => does not exist on GD7548 */
+	  outw(0x3CE, 0x0433);
+	}
+
+        /* GR30 = color expansion, pattern copy */
+	/* Choses 8bpp / 16bpp color expansion */
+	outw(0x3CE, 0xC030 |((pScrn->bitsPerPixel - 8) << 9));
 
 	outw(0x3CE, ((color << 8) & 0xff00) | 0x01);
 	outw(0x3CE, ((color) & 0xff00) | 0x11);
@@ -169,12 +193,361 @@ AlpSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
 }
 
+static void
+AlpSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
+			      int patx, int paty,
+			      int fg, int bg,
+			      int rop, unsigned int planemask)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
+	int pitch = pCir->pitch;
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSetupFor8x8PatternFill pattern=%8x%8x"
+	       "fg=%x bg=%x rop=%x planemask=%x\n",
+			patx, paty, fg, bg, rop, planemask);
+#endif
+	WAIT;
+
+	/* GR32 = 0x0D => verbatim source copy (no logical op) */
+	outw(0x3CE, 0x0D32);
+
+	{
+	  int source = pAlp->monoPattern8x8;
+	  /* source = 8x8 solid mono pattern */
+	  outw(0x3CE, ((source << 8) & 0xff00) | 0x2C);
+	  outw(0x3CE, ((source) & 0xff00) | 0x2D);
+	  outw(0x3CE, ((source >> 8) & 0x3f00) | 0x2E);
+	}
+
+        /* GR30 = color expansion, pattern copy */
+	/* Choses 8bpp / 16bpp color expansion */
+	if (bg == -1)
+	{ /* transparency requested */
+	  outw(0x3CE, 0xC830 |((pScrn->bitsPerPixel - 8) << 9));
+
+	  bg = ~fg;
+	  /* transparent color compare */
+	  outw(0x3CE, ((bg << 8) & 0xff00) | 0x34);
+	  outw(0x3CE, ((bg) & 0xff00) | 0x35);
+
+	  /* transparent color mask = 0 (all bits matters) */
+	  outw(0x3CE, 0x38);
+	  outw(0x3CE, 0x39);
+	}
+	else
+	{
+	  outw(0x3CE, 0xC030 |((pScrn->bitsPerPixel - 8) << 9));
+	}
+
+	outw(0x3CE, ((fg << 8) & 0xff00) | 0x01);
+	outw(0x3CE, ((fg) & 0xff00) | 0x11);
+
+	outw(0x3CE, ((bg << 8) & 0xff00) | 0x00);
+	outw(0x3CE, ((bg) & 0xff00) | 0x10);
+
+	/* Set dest pitch */
+	outw(0x3CE, ((pitch << 8) & 0xff00) | 0x24);
+	outw(0x3CE, ((pitch) & 0x1f00) | 0x25);
+}
+
+static void
+AlpSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
+			   int x, int y, int w, int h)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
+	int dest;
+	int hh, ww;
+	int pitch = pCir->pitch;
+
+	ww = (w * pScrn->bitsPerPixel / 8) - 1;
+	hh = h - 1;
+	dest = y * pitch + x * pScrn->bitsPerPixel / 8;
+
+	WAIT;
+	/* memcpy() may not be the fastest */
+	memcpy(pCir->FbBase + pAlp->monoPattern8x8, &patx, 4);
+	memcpy(pCir->FbBase + pAlp->monoPattern8x8 + 4, &paty, 4);
+	write_mem_barrier();
+
+	/* Width */
+	outw(0x3CE, ((ww << 8) & 0xff00) | 0x20);
+	outw(0x3CE, ((ww) & 0x1f00) | 0x21);
+	/* Height */
+	outw(0x3CE, ((hh << 8) & 0xff00) | 0x22);
+	outw(0x3CE, ((hh) & 0x0700) | 0x23);
+
+	/* dest */
+	outw(0x3CE, ((dest << 8) & 0xff00) | 0x28);
+	outw(0x3CE, ((dest) & 0xff00) | 0x29);
+	outw(0x3CE, ((dest >> 8) & 0x3f00) | 0x2A);
+	if (!pCir->chip.alp->autoStart)
+	  outw(0x3CE,0x0231);
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequent8x8PatternFill x=%d y=%d w=%d h=%d\n",
+			x, y, w, h);
+#endif
+
+}
+
+#if 0
+/* XF86 does not support byte-padded scanlines */
+
+static void
+AlpSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                        int fg, int bg,
+                        int rop,
+                        unsigned int planemask)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
+	int pitch = pCir->pitch;
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSetupForCPUToScreenColorExpandFill "
+	       "fg=%x bg=%x rop=%x planemask=%x\n",
+			fg, bg, rop, planemask);
+#endif
+	WAIT;
+
+	/* GR32 = 0x0D => verbatim source copy (no logical op) */
+	outw(0x3CE, 0x0D32);
+
+        /* GR30 = color expansion, CPU->display copy */
+	/* Choses 8bpp / 16bpp color expansion */
+	if (bg == -1)
+	{ /* transparency requested */
+	  outw(0x3CE, 0x8C30 |((pScrn->bitsPerPixel - 8) << 9));
+
+	  bg = ~fg;
+	  /* transparent color compare */
+	  outw(0x3CE, ((bg << 8) & 0xff00) | 0x34);
+	  outw(0x3CE, ((bg) & 0xff00) | 0x35);
+
+	  /* transparent color mask = 0 (all bits matters) */
+	  outw(0x3CE, 0x38);
+	  outw(0x3CE, 0x39);
+	}
+	else
+	{
+	  outw(0x3CE, 0x8430 |((pScrn->bitsPerPixel - 8) << 9));
+	}
+
+	outw(0x3CE, ((bg << 8) & 0xff00) | 0x00);
+	outw(0x3CE, ((bg) & 0xff00) | 0x10);
+
+	outw(0x3CE, ((fg << 8) & 0xff00) | 0x01);
+	outw(0x3CE, ((fg) & 0xff00) | 0x11);
+
+	/* Set dest pitch */
+	outw(0x3CE, ((pitch << 8) & 0xff00) | 0x24);
+	outw(0x3CE, ((pitch) & 0x1f00) | 0x25);  
+}
+
+static void
+AlpSubsequentCPUToScreenColorExpandFill(
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h,
+	int skipleft)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	int dest;
+	int hh, ww;
+	int pitch = pCir->pitch;
+
+	ww = (((w+7) & ~7) * pScrn->bitsPerPixel / 8) - 1;
+	hh = h - 1;
+	dest = y * pitch + x * pScrn->bitsPerPixel / 8;
+
+	WAIT;
+
+	/* Width */
+	outw(0x3CE, ((ww << 8) & 0xff00) | 0x20);
+	outw(0x3CE, ((ww) & 0x1f00) | 0x21);
+	/* Height */
+	outw(0x3CE, ((hh << 8) & 0xff00) | 0x22);
+	outw(0x3CE, ((hh) & 0x0700) | 0x23);
+
+	/* source = CPU ; description of bit 2 of GR30 in the 7548 manual
+	   says that if we do color expansion we must zero the source
+	   adress registers (GR2C, GR2D, GR2E) */
+	outw(0x3CE, 0x2C);
+	outw(0x3CE, 0x2D);
+	outw(0x3CE, 0x2E);
+
+	/* dest */
+	outw(0x3CE, ((dest << 8) & 0xff00) | 0x28);
+	outw(0x3CE, ((dest) & 0xff00) | 0x29);
+	outw(0x3CE, ((dest >> 8) & 0x3f00) | 0x2A);
+	if (!pCir->chip.alp->autoStart)
+	  outw(0x3CE,0x0231);
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequentCPUToScreenColorExpandFill x=%d y=%d w=%d h=%d\n",
+			x, y, w, h);
+#endif
+}
+#endif
+
+#if 1
+static void
+AlpSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                        int fg, int bg,
+                        int rop,
+                        unsigned int planemask)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	int pitch = pCir->pitch;
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSetupForCPUToScreenColorExpandFill "
+	       "fg=%x bg=%x rop=%x planemask=%x, bpp=%d\n",
+			fg, bg, rop, planemask, pScrn->bitsPerPixel);
+#endif
+	WAIT;
+
+	/* GR32 = 0x0D => verbatim source copy (no logical op) */
+	outw(0x3CE, 0x0D32);
+
+        /* GR30 = color expansion, CPU->display copy */
+	/* Choses 8bpp / 16bpp color expansion */
+	if (bg == -1)
+	{ /* transparency requested */
+	  if (pScrn->bitsPerPixel > 8) /* 16 bpp */
+	  {
+	    outw(0x3CE, 0x9C30);
+
+	    bg = ~fg;
+	    /* transparent color compare */
+	    outw(0x3CE, ((bg << 8) & 0xff00) | 0x34);
+	    outw(0x3CE, ((bg) & 0xff00) | 0x35);
+	  } else /* 8 bpp */
+	  {
+	    outw(0x3CE, 0x8C30);
+
+	    bg = ~fg;
+	    /* transparent color compare */
+	    outw(0x3CE, ((bg << 8) & 0xff00) | 0x34);
+	    outw(0x3CE, ((bg << 8) & 0xff00) | 0x35);
+	  }
+
+	  /* transparent color mask = 0 (all bits matters) */
+	  outw(0x3CE, 0x38);
+	  outw(0x3CE, 0x39);
+	}
+	else
+	{
+	  outw(0x3CE, 0x8430 |((pScrn->bitsPerPixel - 8) << 9));
+	}
+
+	outw(0x3CE, ((bg << 8) & 0xff00) | 0x00);
+	outw(0x3CE, ((bg) & 0xff00) | 0x10);
+
+	outw(0x3CE, ((fg << 8) & 0xff00) | 0x01);
+	outw(0x3CE, ((fg) & 0xff00) | 0x11);
+
+	/* Set dest pitch */
+	outw(0x3CE, ((pitch << 8) & 0xff00) | 0x24);
+	outw(0x3CE, ((pitch) & 0x1f00) | 0x25);  
+}
+
+static void
+AlpSubsequentScanlineCPUToScreenColorExpandFill(
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h,
+	int skipleft)
+{
+	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
+
+	int pitch = pCir->pitch;
+
+	pAlp->SubsequentColorExpandScanlineByteWidth =
+	  (w * pScrn->bitsPerPixel / 8) - 1;
+	pAlp->SubsequentColorExpandScanlineDWordWidth =
+	  (w + 31) >> 5;
+	pAlp->SubsequentColorExpandScanlineDest =
+	  y * pitch + x * pScrn->bitsPerPixel / 8;
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequentScanlineCPUToScreenColorExpandFill x=%d y=%d w=%d h=%d skipleft=%d\n",
+			x, y, w, h, skipleft);
+#endif
+}
+
+static void 
+AlpSubsequentColorExpandScanline(
+	ScrnInfoPtr pScrn,
+	int bufno)
+{
+        CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
+	int dest=pAlp->SubsequentColorExpandScanlineDest;
+	int ww=pAlp->SubsequentColorExpandScanlineByteWidth;
+	int width=pAlp->SubsequentColorExpandScanlineDWordWidth;
+	CARD32* from;
+	volatile CARD32 *to;
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequentColorExpandScanline\n");
+#endif
+
+	pAlp->SubsequentColorExpandScanlineDest += pCir->pitch;
+
+	to   = (CARD32*) pCir->FbBase;
+	from = (CARD32*) (pCir->ScanlineColorExpandBuffers[bufno]);
+	WAIT_1;
+
+	/* Width */
+	outw(0x3CE, ((ww << 8) & 0xff00) | 0x20);
+	outw(0x3CE, ((ww) & 0x1f00) | 0x21);
+
+	/* Height = 1 */
+	outw(0x3CE, 0x22);
+	outw(0x3CE, 0x23);
+
+	/* source = CPU ; description of bit 2 of GR30 in the 7548 manual
+	   says that if we do color expansion we must zero the source
+	   adress registers (GR2C, GR2D, GR2E) */
+	outw(0x3CE, 0x2C);
+	outw(0x3CE, 0x2D);
+	outw(0x3CE, 0x2E);
+
+	/* dest */
+	outw(0x3CE, ((dest << 8) & 0xff00) | 0x28);
+	outw(0x3CE, ((dest) & 0xff00) | 0x29);
+	write_mem_barrier();
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequentColorExpandScanline (2)\n");
+#endif
+
+	outw(0x3CE, ((dest >> 8) & 0x3f00) | 0x2A);
+	if (!pCir->chip.alp->autoStart)
+	  outw(0x3CE,0x0231);
+
+	{
+	  int i;
+	  for (i=0; i<width; i++)
+	    *to=*(from++);
+	  write_mem_barrier();
+	}
+
+#ifdef ALP_DEBUG
+	ErrorF("AlpSubsequentColorExpandScanline (3)\n");
+#endif
+}
+#endif
 
 Bool
 AlpXAAInit(ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	CirPtr pCir = CIRPTR(pScrn);
+	AlpPtr pAlp = ALPPTR(pCir);
 	XAAInfoRecPtr XAAPtr;
 
 #ifdef ALP_DEBUG
@@ -188,18 +561,90 @@ AlpXAAInit(ScreenPtr pScreen)
 	XAAPtr->SubsequentScreenToScreenCopy = AlpSubsequentScreenToScreenCopy;
 	XAAPtr->ScreenToScreenCopyFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
 
-	if (pCir->Chipset == PCI_CHIP_GD5446 ||
-		pCir->Chipset == PCI_CHIP_GD5480) {
+        switch (pCir->Chipset)
+	{
+	case PCI_CHIP_GD7548:
+	  if (!pAlp->monoPattern8x8) break;
+	  XAAPtr->SetupForSolidFill = AlpSetupForSolidFill;
+	  XAAPtr->SubsequentSolidFillRect = AlpSubsequentSolidFillRect;
+	  XAAPtr->SubsequentSolidFillTrap = NULL;
+	  XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_PLANEMASK;
 
-		XAAPtr->SetupForSolidFill = AlpSetupForSolidFill;
-		XAAPtr->SubsequentSolidFillRect = AlpSubsequentSolidFillRect;
-		XAAPtr->SubsequentSolidFillTrap = NULL;
-		XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+	  XAAPtr->SetupForMono8x8PatternFill = AlpSetupForMono8x8PatternFill;
+	  XAAPtr->SubsequentMono8x8PatternFillRect =
+	    AlpSubsequentMono8x8PatternFillRect;
+	  XAAPtr->SubsequentMono8x8PatternFillTrap = NULL;
+	  XAAPtr->Mono8x8PatternFillFlags =
+	    GXCOPY_ONLY|NO_PLANEMASK|
+	    HARDWARE_PATTERN_PROGRAMMED_BITS|BIT_ORDER_IN_BYTE_MSBFIRST;
+
+#if 0
+	  /* Currently disabled: XF86 sends DWORD-padded data,
+	     not byte-padded */
+	  XAAPtr->SetupForCPUToScreenColorExpandFill =
+	    AlpSetupForCPUToScreenColorExpandFill;
+	  XAAPtr->SubsequentCPUToScreenColorExpandFill =
+	    AlpSubsequentCPUToScreenColorExpandFill;
+	  XAAPtr->ColorExpandBase = pCir->FbBase + 4;
+	  XAAPtr->CPUToScreenColorExpandFillFlags =
+	    GXCOPY_ONLY|NO_PLANEMASK|BIT_ORDER_IN_BYTE_MSBFIRST|
+	    SCANLINE_PAD_DWORD|
+	    CPU_TRANSFER_PAD_DWORD|CPU_TRANSFER_BASE_FIXED;
+#endif
+#if 1
+	  /* kludge: since XF86 does not support byte-padded
+	     mono bitmaps (only dword-padded), use the
+	     scanline version */
+	  XAAPtr->SetupForScanlineCPUToScreenColorExpandFill =
+	    AlpSetupForScanlineCPUToScreenColorExpandFill;
+	  XAAPtr->SubsequentScanlineCPUToScreenColorExpandFill =
+	    AlpSubsequentScanlineCPUToScreenColorExpandFill;
+	  XAAPtr->SubsequentColorExpandScanline =
+	    AlpSubsequentColorExpandScanline;
+	  {
+	    const int NumScanlineColorExpandBuffers = 2;
+	    int i;
+	    int buffer_size = (pCir->pScrn->virtualX + 31) & ~31;
+#ifdef ALP_DEBUG
+	    ErrorF("Computing buffers for %d pixel lines\n",
+		   pCir->pScrn->virtualX);
+#endif
+	    XAAPtr->NumScanlineColorExpandBuffers =
+	      NumScanlineColorExpandBuffers;
+	    XAAPtr->ScanlineColorExpandBuffers =
+	      pCir->ScanlineColorExpandBuffers = (unsigned char **)
+	      (malloc(sizeof(unsigned char *) *
+		      NumScanlineColorExpandBuffers));
+	    /* TODO: are those mallocs to be freed ? */
+
+	    for(i=0; i<NumScanlineColorExpandBuffers; i++)
+	      pCir->ScanlineColorExpandBuffers[i] = (unsigned char *)
+		malloc(buffer_size);
+	  }
+	  XAAPtr->ScanlineCPUToScreenColorExpandFillFlags =
+	    GXCOPY_ONLY|NO_PLANEMASK|BIT_ORDER_IN_BYTE_MSBFIRST|
+	    SCANLINE_PAD_DWORD;
+#endif
+	  break;
+  
+	case PCI_CHIP_GD5446:
+	case PCI_CHIP_GD5480:
+	  XAAPtr->SetupForSolidFill = AlpSetupForSolidFill;
+	  XAAPtr->SubsequentSolidFillRect = AlpSubsequentSolidFillRect;
+	  XAAPtr->SubsequentSolidFillTrap = NULL;
+	  XAAPtr->SolidFillFlags = GXCOPY_ONLY|NO_TRANSPARENCY|NO_PLANEMASK;
+	  outw(0x3CE, 0x200E); /* enable writes to gr33 */
+	  break;
 	}
+
+	/* TODO: probably too limited */
 
 	XAAPtr->Sync = AlpSync;
 
-	outw(0x3CE, 0x200E); /* enable writes to gr33 */
+	/* Pixmap cache */
+	XAAPtr -> Flags |= LINEAR_FRAMEBUFFER;
+
+	/* Setup things for autostart */
 	if (pCir->properties & ACCEL_AUTOSTART) {
 	  outw(0x3CE, 0x8031); /* enable autostart */
 	  pCir->chip.alp->waitMsk = 0x10;

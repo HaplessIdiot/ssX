@@ -1,11 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.12 1999/12/03 19:17:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.2 2000/02/08 13:13:13 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
 #ifndef ALP_H
 #define ALP_H
-
-#undef ALP_DEBUG
 
 /* Saved registers that are not part of the core VGA */
 /* CRTC >= 0x19; Sequencer >= 0x05; Graphics >= 0x09; Attribute >= 0x15 */
@@ -20,7 +18,10 @@ enum {
 	SR0E,
 	SR12,
 	SR13,
+	SR17,
 	SR1E,
+	SR21,
+	SR2D,
 	/* GR regs */
 	GR17,
 	GR18,
@@ -52,6 +53,17 @@ typedef struct alpRec {
         int                 CursorWidth;
         int                 CursorHeight;
         int                 waitMsk;
+        int                 scanlineDest;
+        int                 scanlineCount;
+        int                 scanlineWidth;
+
+        int                 SubsequentColorExpandScanlineDest;
+        int                 SubsequentColorExpandScanlineByteWidth;
+        int                 SubsequentColorExpandScanlineDWordWidth;
+
+        /* Offset into framebuffer of a 8-byte scratch area for fills */
+        CARD32 monoPattern8x8;
+
         Bool                autoStart;
 /* XXX For XF86Config based mem configuration */
 	CARD32			sr0f, sr17;

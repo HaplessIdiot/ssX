@@ -2,6 +2,8 @@
  * Driver for CL-GD5480.
  * Itai Nahshon.
  *
+ * Support for the CL-GD7548: David Monniaux
+ *
  * This is mainly a cut & paste from the MGA driver.
  * Original autors and contributors list include:
  *	Radoslaw Kapitan, Andrew Vanderstock, Dirk Hohndel,
@@ -9,7 +11,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.55 2000/03/31 22:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.58 2000/04/27 16:26:47 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -87,6 +89,7 @@ SymTabRec CIRChipsets[] = {
 	{ PCI_CHIP_GD5464,		"CL-GD5464" },
 	{ PCI_CHIP_GD5464BD,	"CL-GD5464BD" },
 	{ PCI_CHIP_GD5465,		"CL-GD5465" },
+	{ PCI_CHIP_GD7548,              "CL-GD7548" },
 	{-1,					NULL }
 };
 
@@ -103,6 +106,7 @@ PciChipsets CIRPciChipsets[] = {
 	{ PCI_CHIP_GD5464,	PCI_CHIP_GD5464,	RES_SHARED_VGA },
 	{ PCI_CHIP_GD5464BD,PCI_CHIP_GD5464BD,	RES_SHARED_VGA },
 	{ PCI_CHIP_GD5465,	PCI_CHIP_GD5465,	RES_SHARED_VGA },
+        { PCI_CHIP_GD7548,      PCI_CHIP_GD7548,        RES_SHARED_VGA },
 	{ -1,				-1,					RES_UNDEFINED}
 };
 
@@ -182,15 +186,18 @@ CIRAvailableOptions(int chipid, int busid)
 {
 	int chip = chipid & 0xffff;
 
-	if (chip == PCI_CHIP_GD5462 ||
-	    chip == PCI_CHIP_GD5464 ||
-	    chip == PCI_CHIP_GD5464BD ||
-	    chip == PCI_CHIP_GD5465) {
+        switch (chip)
+	{
+	case PCI_CHIP_GD5462:
+	case PCI_CHIP_GD5464:
+	case PCI_CHIP_GD5464BD:
+	case PCI_CHIP_GD5465:
 		if (lg_loaded)
 			return LgAvailableOptions(chipid);
 		else
 			return NULL;
-	} else {
+
+	default:
 		if (alp_loaded)
 			return AlpAvailableOptions(chipid);
 		else
@@ -345,14 +352,18 @@ CirMapMem(CirPtr pCir, int scrnIndex)
 		 * byte/short access.  Common-level will automatically use
 		 * sparse mapping for MMIO.
 		 */
-		pCir->IOBase = xf86MapPciMem(scrnIndex, mmioFlags, pCir->PciTag,
-										pCir->IOAddress, pCir->IoMapSize);
+		pCir->IOBase =
+		  xf86MapPciMem(scrnIndex, mmioFlags, pCir->PciTag,
+		       	        pCir->IOAddress, pCir->IoMapSize);
 		if (pCir->IOBase == NULL)
 			return FALSE;
 	}
 
 #ifdef CIR_DEBUG
-	ErrorF("CirMapMem pCir->IOBase=0x%08x\n", pCir->IOBase);
+	ErrorF("CirMapMem pCir->IOBase=0x%08x [length=%08x] from PCI=%08x\n",
+	       pCir->IOBase, pCir->IoMapSize, pCir->IOAddress);
+	ErrorF("MMIO[GR31] = %2X\n", (int)
+	       ((volatile unsigned char*) pCir->IOBase)[0x40]);
 #endif
 
 	return TRUE;

@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.2 1999/12/03 19:17:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.2 2000/02/08 13:13:14 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -15,16 +15,22 @@
 #include "cir.h"
 #include "alp.h"
 
-#define minb(p) MMIO_IN8(hwp->MMIOBase, hwp->MMIOOffset + (p))
+#define minb(p) \
+        ErrorF("minb(%X)\n", p),\
+        MMIO_IN8(pCir->IOBase, (p))
 #define moutb(p,v) \
-	MMIO_OUT8(hwp->MMIOBase, hwp->MMIOOffset + (p),(v))
-#define minl(p) MMIO_IN32(pCir->IOBase, (p))
+        ErrorF("moutb(%X)\n", p),\
+	MMIO_OUT8(pCir->IOBase, (p),(v))
+#define minl(p) \
+        ErrorF("minl(%X)\n", p),\
+        MMIO_IN32(pCir->IOBase, (p))
 #define moutl(p,v) \
+        ErrorF("moutl(%X)\n", p),\
 	MMIO_OUT32(pCir->IOBase, (p),(v))
 
 
-#define WAIT   while(minl(0x140) & pCir->chip.alp->waitMsk){};
-#define WAIT_1 while(minl(0x140) & 0x100){};
+#define WAIT while(minb(0x40) & pCir->chip.alp->waitMsk){};
+#define WAIT_1 while(minb(0x40) & 0x1){};
 
 static void AlpSync(ScrnInfoPtr pScrn)
 {
@@ -49,7 +55,7 @@ AlpSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 	ErrorF("AlpSetupForScreenToScreenCopy xdir=%d ydir=%d rop=%x planemask=%x trans_color=%x\n",
 			xdir, ydir, rop, planemask, trans_color);
 #endif
-	moutl(0x10C, (pitch << 16) | pitch); 
+	moutl(0x0C, (pitch << 16) | pitch); 
 
 }
 
@@ -76,14 +82,14 @@ AlpSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 	WAIT;
 
 	/* Width / Height */
-	moutl(0x108, (hh << 16) | ww);
+	moutl(0x08, (hh << 16) | ww);
 	/* source */
-	moutl(0x114, source & 0x3fffff);
-	moutl(0x118, 0x0d0000 | decrement);
+	moutl(0x14, source & 0x3fffff);
+	moutl(0x18, 0x0d0000 | decrement);
 
 	/* dest */
 	write_mem_barrier();
-	moutl(0x110, dest & 0x3fffff);
+	moutl(0x10, dest & 0x3fffff);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSubsequentScreenToScreenCopy x1=%d y1=%d x2=%d y2=%d w=%d h=%d\n",
@@ -92,7 +98,7 @@ AlpSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 			source, dest, ww, hh);
 #endif
 	if (!pCir->chip.alp->autoStart)
-	  moutl(0x140,0x02);
+	  moutb(0x40,0x02);
 	write_mem_barrier();
 }
 
@@ -111,11 +117,11 @@ AlpSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 			color, rop, planemask);
 #endif
 
-	moutl(0x104, color & 0xffffff);
+	moutl(0x04, color & 0xffffff);
 
 	/* Set dest pitch */
-	moutl(0x10C, pitch & 0x1fff);
-	moutl(0x118, (0xC0|((pScrn->bitsPerPixel - 8) << 1)) | 0x040d0000);
+	moutl(0x0C, pitch & 0x1fff);
+	moutl(0x18, (0xC0|((pScrn->bitsPerPixel - 8) << 1)) | 0x040d0000);
 }
 
 static void
@@ -134,17 +140,17 @@ AlpSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
 	/* Width / Height */
 	write_mem_barrier();
-	moutl(0x108, (hh << 16) | ww);
+	moutl(0x08, (hh << 16) | ww);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSubsequentSolidFillRect x=%d y=%d w=%d h=%d\n",
 			x, y, w, h);
 #endif
 	/* dest */
-	moutl(0x110, (dest & 0x3fffff));
+	moutl(0x10, (dest & 0x3fffff));
 
 	if (!pCir->chip.alp->autoStart)
-	  moutl(0x140,0x02);
+	  moutb(0x40,0x02);
 	write_mem_barrier();
 }
 
@@ -157,7 +163,7 @@ AlpXAAInitMMIO(ScreenPtr pScreen)
 	XAAInfoRecPtr XAAPtr;
 
 #ifdef ALP_DEBUG
-	ErrorF("AlpXAAInit\n");
+	ErrorF("AlpXAAInit mm\n");
 #endif
 
 	XAAPtr = XAACreateInfoRec();
@@ -174,14 +180,18 @@ AlpXAAInitMMIO(ScreenPtr pScreen)
 
 	XAAPtr->Sync = AlpSync;
 
-	moutb(0x3CE, 0x0E); /* enable writes to gr33 */
-	moutb(0x3CF, 0x20); /* enable writes to gr33 */
+	if (pCir->Chipset != PCI_CHIP_GD7548)
+	{
+	  moutb(0x3CE, 0x0E); /* enable writes to gr33 */
+	  moutb(0x3CF, 0x20); /* enable writes to gr33 */
+        }
+
 	if (pCir->properties & ACCEL_AUTOSTART) {
-	  moutl(0x140, 0x80); /* enable autostart */
-	  pCir->chip.alp->waitMsk = 0x1000;
+	  moutb(0x40, 0x80); /* enable autostart */
+	  pCir->chip.alp->waitMsk = 0x10;
 	  pCir->chip.alp->autoStart = TRUE;
 	} else {
-	  pCir->chip.alp->waitMsk = 0x100;
+	  pCir->chip.alp->waitMsk = 0x1;
 	  pCir->chip.alp->autoStart = FALSE;
 	}
 
