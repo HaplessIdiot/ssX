@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.105 2001/09/25 14:58:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.107 2001/10/01 13:44:01 eich Exp $ */
 /*
  * PCI Probe
  *
@@ -495,8 +495,6 @@
 #define PCI_CHIP_UTNT2		0x0029
 #define PCI_CHIP_VTNT2		0x002C
 #define PCI_CHIP_UVTNT2		0x002D
-#define PCI_CHIP_TNT2_A		0x002E
-#define PCI_CHIP_TNT2_B		0x002F
 #define PCI_CHIP_ITNT2		0x00A0
 #define PCI_CHIP_GEFORCE256     0x0100
 #define PCI_CHIP_GEFORCEDDR     0x0101
@@ -1268,29 +1266,27 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_NVIDIA,	{
 				{PCI_CHIP_NV1,		"NV1",0},
 				{PCI_CHIP_DAC64,	"DAC64",0},
-				{PCI_CHIP_TNT,		"Riva TNT",0},
-				{PCI_CHIP_TNT2,		"Riva TNT2",0},
-				{PCI_CHIP_UTNT2,	"Riva Ultra TNT2",0},
-				{PCI_CHIP_VTNT2,	"Riva Vanta",0},
-				{PCI_CHIP_UVTNT2,	"Riva Ultra 64",0},
-				{PCI_CHIP_TNT2_A,	"Riva TNT2 (A)",0},
-				{PCI_CHIP_TNT2_B,	"Riva TNT2 (B)",0},
-				{PCI_CHIP_ITNT2,	"Riva Integrated",0},
+				{PCI_CHIP_TNT,		"RIVA TNT",0},
+				{PCI_CHIP_TNT2,		"RIVA TNT2/TNT2 Pro",0},
+				{PCI_CHIP_UTNT2,	"RIVA TNT2 Ultra",0},
+				{PCI_CHIP_VTNT2,	"Vanta",0},
+				{PCI_CHIP_UVTNT2,	"Riva TNT2 M64",0},
+				{PCI_CHIP_ITNT2,	"Aladdin TNT2",0},
 				{PCI_CHIP_GEFORCE256,	"GeForce 256",0},
 				{PCI_CHIP_GEFORCEDDR,	"GeForce DDR",0},
 				{PCI_CHIP_QUADRO,	"Quadro",0},
-				{PCI_CHIP_GEFORCE2MX,	"GeForce2 MX",0},
-				{PCI_CHIP_GEFORCE2MXDDR,"GeForce2 MX DDR",0},
+				{PCI_CHIP_GEFORCE2MX,	"GeForce2 MX/MX 400",0},
+				{PCI_CHIP_GEFORCE2MXDDR,"GeForce2 MX 100/200",0},
 				{PCI_CHIP_GEFORCE2GO,   "GeForce2 Go", 0},
-				{PCI_CHIP_QUADRO2MXR,	"GeForce2 MXR",0},
-				{PCI_CHIP_GEFORCE2GTS,	"GeForce2 GTS",0},
-				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)",0},
+				{PCI_CHIP_QUADRO2MXR,	"Quadro2 MXR",0},
+				{PCI_CHIP_GEFORCE2GTS,	"GeForce2 GTS/Pro",0},
+				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 Ti",0},
 				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra",0},
-				{PCI_CHIP_QUADRO2PRO,	"Quadro 2 Pro",0},
+				{PCI_CHIP_QUADRO2PRO,	"Quadro2 Pro",0},
 				{PCI_CHIP_IGEFORCE2,	"GeForce2 Integrated",0},
 				{PCI_CHIP_GEFORCE3,	"GeForce3",0},
-				{PCI_CHIP_GEFORCE3_1,	"GeForce3 (rev 1)",0},
-				{PCI_CHIP_GEFORCE3_2,	"GeForce3 (rev 2)",0},
+				{PCI_CHIP_GEFORCE3_1,	"GeForce3 Ti 200",0},
+				{PCI_CHIP_GEFORCE3_2,	"GeForce3 Ti 500",0},
 				{PCI_CHIP_QUADRO_DDC,	"Quadro DDC",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_IMS, {
