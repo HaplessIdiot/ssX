@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.9 1999/03/14 03:21:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.10 1999/03/28 15:32:28 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1235,10 +1235,10 @@ xf86MouseAllocate()
     LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
     MouseDevPtr		mouse = xalloc(sizeof(MouseDevRec));
     int			i;
-    
+
     local->name = "MOUSE";
-    local->type = XI_MOUSE;
-    local->flags = XI86_SEND_DRAG_EVENTS;
+    local->type_name = XI_MOUSE;
+    local->flags = XI86_NO_OPEN_ON_INIT|XI86_SEND_DRAG_EVENTS;
     local->device_control = xf86MouseProc;
     local->read_input = xf86MouseReadInput;
     local->motion_history_proc = xf86GetMotionEvents;
@@ -1247,6 +1247,7 @@ xf86MouseAllocate()
     local->close_proc = 0;
     local->switch_mode = 0;
     local->conversion_proc = xf86MouseConvert;
+    local->reverse_conversion_proc = 0;
     local->fd = -1;
     local->dev = NULL;
     local->private = mouse;
