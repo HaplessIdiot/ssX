@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.19 1999/03/07 14:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.20 1999/09/25 14:36:59 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -88,7 +88,7 @@
 #ifdef __STDC__
 int sysi86(int, ...);
 int syscall(int, ...);
-#ifndef SCO
+#if !defined(SCO) && !defined(SVR4)
 int munmap(caddr_t, size_t);
 #endif
 #else
