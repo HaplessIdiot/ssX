@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.15 1995/07/15 15:15:54 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.16 1995/07/16 14:57:22 dawes Exp $ */
 
 /*
 
@@ -401,11 +401,28 @@ static void RestoreCB (w, client, call)
     XtPointer client, call;
 {
     fields i;
+    Boolean state;
+
     for (i = HDisplay; i < fields_num; i++) {
 	AppRes.field[i].val = AppRes.orig[i];
 	SetLabel(i);
     }
     SetScrollbars ();
+    XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+    if (state)
+	 ApplyCB (w, client, call);
+}
+
+
+static void ApplyIfAutoCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+   Boolean state;
+
+   XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+   if (state)
+       ApplyCB (w, client, call);
 }
 
 
@@ -517,6 +534,38 @@ static void ShowCB(w, client, call)
     printf("%s\n", modebuf);
     time = XtLastTimestampProcessed(XtDisplay(w));
     XtOwnSelection(w, XA_PRIMARY, time, ConvertSelection, NULL, NULL);
+    if (S3Specials) {
+	int i;
+	Boolean state;
+	char *string;
+
+	XtVaGetValues(AppRes.field[InvertVclk].textwidget,
+			XtNstate, &state, NULL);
+	AppRes.field[InvertVclk].val = state ? 1 : 0;
+	XtVaGetValues (AppRes.field[BlankDelay1].textwidget,
+			XtNstring, &string, NULL);
+	(void) sscanf (string, "%x", &i);
+	AppRes.field[BlankDelay1].val = i;
+	XtVaGetValues (AppRes.field[BlankDelay2].textwidget,
+			XtNstring, &string, NULL);
+	(void) sscanf (string, "%x", &i);
+	AppRes.field[BlankDelay2].val = i;
+	XtVaGetValues(AppRes.field[EarlySc].textwidget,
+			XtNstate, &state, NULL);
+	AppRes.field[EarlySc].val = state ? 1 : 0;
+	if (AppRes.field[InvertVclk].val != AppRes.orig[InvertVclk])
+	    printf("InvertVCLK\t\"%dx%d\" %d\n", AppRes.field[HDisplay].val,
+		AppRes.field[VDisplay].val, AppRes.field[InvertVclk].val);
+	if (AppRes.field[EarlySc].val != AppRes.orig[EarlySc])
+	    printf("EarlySC\t\t\"%dx%d\" %d\n", AppRes.field[HDisplay].val,
+		AppRes.field[VDisplay].val, AppRes.field[EarlySc].val);
+	if (AppRes.field[BlankDelay1].val != AppRes.orig[BlankDelay1]
+	    || AppRes.field[BlankDelay2].val != AppRes.orig[BlankDelay2])
+	    printf("BlankDelay\t\"%dx%d\" %d %d\n", AppRes.field[HDisplay].val,
+		AppRes.field[VDisplay].val, AppRes.field[BlankDelay1].val,
+		AppRes.field[BlankDelay2].val);
+    }
+    printf("\n");
 }
 
 static void AdjustCB(w, client, call)
@@ -679,6 +728,7 @@ static void FlagsEditCB (w, client, call)
     int i, len;
     char* string;
     fields findex = (fields) client;
+    ScrollData* sdp = &AppRes.field[findex];
 
     XtVaGetValues (w, XtNstring, &string, NULL);
     len = strlen (string);
@@ -688,8 +738,8 @@ static void FlagsEditCB (w, client, call)
 	XBell (XtDisplay(XtParent(w)), 100);
 	(void) strncpy (buf, string, 4);
 	buf[4] = '\0';
-	XtVaSetValues (w, XtNstring, buf, NULL);
-	XawTextSetInsertionPoint (w, 4);
+	XtVaSetValues (sdp->textwidget, XtNstring, buf, NULL);
+	XawTextSetInsertionPoint (sdp->textwidget, 4);
     }
 
     for (i = 0; i < len; i++) {
@@ -707,24 +757,80 @@ static void BlankEditCB (w, client, call)
     char* string;
     fields findex = (fields) client;
     ScrollData* sdp = &AppRes.field[findex];
+    char buf[2], old;
+    Boolean state;
+    Boolean noAuto = False;
 
     XtVaGetValues (w, XtNstring, &string, NULL);
     len = strlen (string);
-    if (len > 1) {
-	char buf[2];
-
+    if (len == 0) {
 	XBell (XtDisplay(XtParent(w)), 100);
-	(void) strncpy (buf, string, 1);
-	buf[1] = 0;
-	XtVaSetValues (w, XtNstring, buf, NULL);
-	XawTextSetInsertionPoint (w, 1);
+	strcpy(buf, "0");
+	XtVaSetValues (sdp->textwidget, XtNstring, buf, NULL);
+	XawTextSetInsertionPoint (sdp->textwidget, 1);
+        return;
+    }
+    if (len > 1) {
+	if (XawTextGetInsertionPoint(sdp->textwidget) < 1) {
+	    buf[0] = string[0];
+	    old = string[1];
+	} else {
+	    buf[0] = string[1];
+	    old = string[0];
+	}
+	if (!isdigit(buf[0]) || buf[0] > '7') {
+	    XBell (XtDisplay(XtParent(w)), 100);
+	    buf[0] = old;
+	    if (!isdigit(buf[0]) || buf[0] > '7')
+		buf[0] = '0';
+	    noAuto = True;
+	}
+	buf[1] = '\0';
+	XtVaSetValues (sdp->textwidget, XtNstring, buf, NULL);
+	XawTextSetInsertionPoint (sdp->textwidget, 1);
+    }
+    XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+    if (state && !noAuto)
+	ApplyCB (sdp->textwidget, client, call);
+}
+
+static void ChangeBlankCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+    char* string;
+    char buf[2];
+    fields findex;
+    ScrollData* sdp;
+    Boolean state;
+    int what = (int)client;
+
+
+    if (what < 0)
+	findex = (fields)-what;
+    else
+	findex = (fields)what;
+    sdp = &AppRes.field[findex];
+
+    XtVaGetValues (sdp->textwidget, XtNstring, &string, NULL);
+    if (what > 0)
+	string[0]++;
+    else
+	string[0]--;
+
+    if (string[0] < '0' || string[0] > '7') {
+	XBell (XtDisplay(XtParent(w)), 100);
+	return;
     }
 
-    for (i = 0; i < len; i++) {
-	if (!isxdigit (string[i])) {
-	    XBell (XtDisplay(XtParent(w)), 100);
-	}
-    }
+    buf[0] = string[0];
+    buf[1] = '\0';
+    XtVaSetValues (sdp->textwidget, XtNstring, buf, NULL);
+    XawTextSetInsertionPoint (sdp->textwidget, 1);
+
+    XtVaGetValues(auto_apply_toggle, XtNstate, &state, NULL);
+    if (state)
+	ApplyCB (sdp->textwidget, client, call);
 }
 
 static int isValid(val, field)
@@ -963,7 +1069,7 @@ static void CreateHierarchy(top)
 {
     char buf[5];
     Widget form, forms[14], s3form;
-    Widget wids[8];
+    Widget wids[10];
     Widget boxW,messageW, popdownW, w;   
     int i;
     int x, y;
@@ -1119,26 +1225,44 @@ static void CreateHierarchy(top)
 		form, NULL, 0);
 	wids[0] = XtVaCreateWidget("InvertVclk-toggle", toggleWidgetClass,
 			s3form, XtNstate, AppRes.field[InvertVclk].val, NULL);
+	XtAddCallback (wids[0], XtNcallback, ApplyIfAutoCB, NULL);
 	AppRes.field[InvertVclk].textwidget = wids[0];
 	wids[1] = XtVaCreateWidget("EarlySc-toggle", toggleWidgetClass,
 			s3form, XtNstate, AppRes.field[EarlySc].val, NULL);
+	XtAddCallback (wids[1], XtNcallback, ApplyIfAutoCB, NULL);
 	AppRes.field[EarlySc].textwidget = wids[1];
 	wids[2] = XtCreateWidget("Blank1-label", labelWidgetClass, s3form,
 			NULL, 0);
+	wids[3] = XtVaCreateWidget("Blank1Dec-button", commandWidgetClass,
+				   s3form, NULL);
+	XtAddCallback (wids[3], XtNcallback, ChangeBlankCB,
+			(XtPointer)-BlankDelay1);
 	(void) sprintf (buf, "%d", AppRes.field[BlankDelay1].val);
-	wids[3] = XtVaCreateWidget("Blank1-text", asciiTextWidgetClass,
+	wids[4] = XtVaCreateWidget("Blank1-text", asciiTextWidgetClass,
 			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
-	AddCallback(wids[3], XtNcallback, BlankEditCB, BlankDelay1);
-	AppRes.field[BlankDelay1].textwidget = wids[3];
+	AddCallback(wids[4], XtNcallback, BlankEditCB, BlankDelay1);
+	AppRes.field[BlankDelay1].textwidget = wids[4];
+	wids[5] = XtVaCreateWidget("Blank1Inc-button", commandWidgetClass,
+				   s3form, NULL);
+	XtAddCallback (wids[5], XtNcallback, ChangeBlankCB,
+			(XtPointer)BlankDelay1);
 
-	wids[4] = XtCreateWidget("Blank2-label", labelWidgetClass, s3form,
+	wids[6] = XtCreateWidget("Blank2-label", labelWidgetClass, s3form,
 			NULL, 0);
+	wids[7] = XtVaCreateWidget("Blank2Dec-button", commandWidgetClass,
+				   s3form, NULL);
+	XtAddCallback (wids[7], XtNcallback, ChangeBlankCB,
+			(XtPointer)-BlankDelay2);
 	(void) sprintf (buf, "%d", AppRes.field[BlankDelay2].val);
-	wids[5] = XtVaCreateWidget("Blank2-text", asciiTextWidgetClass,
+	wids[8] = XtVaCreateWidget("Blank2-text", asciiTextWidgetClass,
 			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
-	AddCallback(wids[5], XtNcallback, BlankEditCB, BlankDelay2);
-	AppRes.field[BlankDelay2].textwidget = wids[5];
-	XtManageChildren (wids, 6);
+	AddCallback(wids[8], XtNcallback, BlankEditCB, BlankDelay2);
+	AppRes.field[BlankDelay2].textwidget = wids[8];
+	wids[9] = XtVaCreateWidget("Blank2Inc-button", commandWidgetClass,
+				   s3form, NULL);
+	XtAddCallback (wids[9], XtNcallback, ChangeBlankCB,
+			(XtPointer)BlankDelay2);
+	XtManageChildren (wids, 10);
 	XtManageChild(s3form);
     }
 

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.7 1995/06/17 12:21:58 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.8 1995/07/15 15:15:50 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -140,9 +140,9 @@ DEALINGS IN THE SOFTWARE.\n\n
 *S3-form.fromVert: Buttons2-form
 *EarlySc-toggle.fromHoriz: InvertVclk-toggle
 *Blank1-label.fromHoriz: EarlySc-toggle
-*Blank1-text.fromHoriz: Blank1-label
-*Blank2-label.fromHoriz: Blank1-text
-*Blank2-text.fromHoriz: Blank2-label
+!*Blank1-text.fromHoriz: Blank1-label
+!*Blank2-label.fromHoriz: Blank1-text
+!*Blank2-text.fromHoriz: Blank2-label
 *InvertVclk-toggle.borderWidth: 1
 *EarlySc-toggle.borderWidth: 1
 *Blank1-text.borderWidth: 1
@@ -155,3 +155,15 @@ DEALINGS IN THE SOFTWARE.\n\n
 *EarlySc-toggle.label:EarlySC
 *Blank1-label.label: Blank Delay 1
 *Blank2-label.label: Blank Delay 2
+
+*Blank1Dec-button.fromHoriz: Blank1-label
+*Blank1-text.fromHoriz: Blank1Dec-button
+*Blank1Inc-button.fromHoriz: Blank1-text
+*Blank2-label.fromHoriz: Blank1Inc-button
+*Blank2Dec-button.fromHoriz: Blank2-label
+*Blank2-text.fromHoriz: Blank2Dec-button
+*Blank2Inc-button.fromHoriz: Blank2-text
+*Blank1Inc-button.label: +
+*Blank1Dec-button.label: -
+*Blank2Inc-button.label: +
+*Blank2Dec-button.label: -
