@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514init.c,v 1.1 94/03/28 21:05:21 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
