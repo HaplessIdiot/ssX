@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               22 August 1999
+                               29 August 1999
 
                                   Abstract
 
@@ -15,11 +15,20 @@ This section contains a brief summary of what has changed since the previous
 snapshot.  More detailed information can be found in the sections that fol-
 low.
 
-   o The ``apm'' driver has been updated.  See the APM section (section
-     2.11.1, page 1) below.
+   o The "apm" driver has been updated.  See the APM section (section 2.11.1,
+     page 1) below.
 
    o A driver for NVIDIA chipsets is now included.  The driver is called
-     ``nv''.  Some very basic information can be found in the nv(4) man page.
+     "nv".  Some very basic information can be found in the nv(4) man page.
+
+   o The default xdm config file now has a line to disable listening for
+     XDMCP requests.  This is fine when xdm is only managing a local X
+     server.  The line must be commented out when xdm is used to manage
+     external X servers (e.g., X terminals).
+
+   o New driver for Intel i740.  The driver is called "i740".
+
+   o New driver for 3Dfx Banshee and Voodoo 3.  The driver is called "tdfx".
 
 2.  X server
 
@@ -485,12 +494,14 @@ XFree86 3.9.16 includes the following drivers:
                     |fbdev       | Linux fbdev          |
                     |glide       | Glide2x (3Dfx)       |
                     |glint       | 3Dlabs               |
+                    |i740        | Intel i740           |
                     |mga         | Matrox               |
                     |neomagic    | NeoMagic             |
                     |nv          | NVIDIA               |
                     |rendition   | Rendition            |
                     |s3virge     | S3 ViRGE             |
                     |sis         | SiS                  |
+                    |tdfx        | 3Dfx                 |
                     |tga         | DEC TGA              |
                     |trident     | Trident              |
                     |tseng       | Tseng Labs           |
@@ -816,7 +827,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 2.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.14 1999/08/28 09:00:55 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.16 1999/08/29 12:53:39 dawes Exp $
 
 
 $XFree86$
