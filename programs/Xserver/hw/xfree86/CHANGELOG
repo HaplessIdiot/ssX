@@ -4,14 +4,14 @@ XFree86 4.3.99.16 (xx November 2003)
 XFree86 4.3.99.15 ( 1 November 2003)
  548. Update libfreetype-xtt2 to version 1.1:
        - Improved the very lazy method.  To prevent displaying chipped bitmap
-         when having italic angle, the lsb and rsb are adjusted by using in
-         post table.
+         when having italic angle, the lsb and rsb are adjusted by using
+         italicAngle in post table.
        - Added automatic correction of bitmap position for preventing
          displaying chipped bitmap when using charcell or very lazy method.
        - Set DEFAULT_VERY_LAZY macro.  If post table is available, the very
          lazy method is used as default when handling multi-bytes fonts.
        - Added additional glyphs(0x2d21-0x2d7c) to jisx0208.1990-0.enc.
-      (Chisato Yamauchi, After-XTT Project).
+      (Chisato Yamauchi, After X-TT Project).
  547. Set the pixel clock limit above which hzoom is enabled for the video
       overlay for G450 and G550 cards to 234MHz.  This fixes a problem with
       the Xv support having half horizontal resolution (Michel Lespinasse).
@@ -57,7 +57,7 @@ XFree86 4.3.99.15 ( 1 November 2003)
          does not exist.
        - Some fixes for minor bugs when handling errors.
        - Some minor cleanups.
-      (Chisato Yamauchi, After-XTT Project).
+      (Chisato Yamauchi, After X-TT Project).
  524. Export strl{cat,cpy} functions to the server modules and provide 
       an implementation for the systems that don't have them. (Matthieu 
       Herrb).
@@ -70,7 +70,7 @@ XFree86 4.3.99.15 ( 1 November 2003)
  522. Fix generic rootless code bug which tests CopyWindow instead of CopyBytes
       (Kensuke Matsuzaki).
  521. Update libfreetype-xtt2 to version 1.0c.  This consists of some minor
-      fixes and cleanups (Chisato Yamauchi, After-XTT Project).
+      fixes and cleanups (Chisato Yamauchi, After X-TT Project).
  520. Add accelerated rootless drawing support and fix bug in rootless
       FillSpans (Torrey T. Lyons and John Harper).
  519. Update SiS driver:
@@ -18096,7 +18096,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2928 2003/11/02 04:47:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2929 2003/11/02 20:25:46 mvojkovi Exp $
 
 
 
