@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.55 2004/04/03 22:26:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.56 2004/06/02 22:43:05 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -580,10 +580,16 @@ extern void ErrorF(const char *f, ...) _printf_attribute(1,2);
 extern void Error(char *str);
 extern void LogPrintMarkers(void);
 
-#if defined(NEED_SNPRINTF) && !defined(IN_MODULE)
+#ifndef IN_MODULE
+#if defined(NEED_SNPRINTF)
 extern int snprintf(char *str, size_t size, const char *format, ...)
 	_printf_attribute(3,4);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#endif
+#if defined(NEED_STRLCAT)
+extern size_t strlcat(char *dst, const char *src, size_t size);
+extern size_t strlcpy(char *dst, const char *src, size_t size);
+#endif
 #endif
 
 #ifdef printf_defined

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.24 2002/12/14 04:41:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.25 2004/03/31 18:07:05 tsi Exp $
 #include <Server.tmpl>
 
 #if !defined(PpcArchitecture)
@@ -33,11 +33,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 
 RESDEFINES = -DUSESTDRES
 
-#if !HasStrlcat
-STRLCAT_DEFS = -DNEED_STRLCAT
-#endif
-
-DEFINES = $(RESDEFINES) $(MTRRDEFINES) $(STRLCAT_DEFS)
+DEFINES = $(RESDEFINES) $(MTRRDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
