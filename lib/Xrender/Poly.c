@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Poly.c,v 1.2 2002/05/13 07:21:54 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.3 2002/05/15 06:39:52 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -220,7 +220,7 @@ XRenderCompositeDoublePoly (Display		    *dpy,
     XTrapezoid	    *traps;
     int		    i, nedges, ntraps;
     XFixed	    x, y, prevx = 0, prevy = 0, firstx = 0, firsty = 0;
-    XFixed	    top, bottom;
+    XFixed	    top = 0, bottom = 0;	/* GCCism */
 
     edges = (Edge *) Xmalloc (npoints * sizeof (Edge) +
 			      (npoints * 2 * sizeof (XTrapezoid)));
