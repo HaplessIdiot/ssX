@@ -1,33 +1,20 @@
 .\" Copyright (c) 2000 Peter Kunzmann <support@@citron.de>
 .\"
-.\" This is free documentation; you can redistribute it and/or
-.\" modify it under the terms of the GNU General Public License as
-.\" published by the Free Software Foundation; either version 2 of
-.\" the License, or (at your option) any later version.
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.cpp,v 1.2 2000/12/11 20:18:47 dawes Exp $
 .\"
-.\" The GNU General Public License's references to "object code"
-.\" and "executables" are to be interpreted as the output of any
-.\" document formatting or typesetting system, including
-.\" intermediate and printed output.
-.\"
-.\" This manual is distributed in the hope that it will be useful,
-.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
-.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.\" GNU General Public License for more details.
-.\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.cpp,v 1.1 2000/11/02 02:51:21 dawes Exp $
-.\"
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH CITRON __drivermansuffix__ "Version 4.0.2" "XFREE86"
 .SH NAME
 citron \- Citron Infrared Touch Driver (CiTouch)
 .SH SYNOPSIS
-.B "Section ""InputDevice"""
+.B "Section \*qInputDevice\*q"
 .br
-.BI "  Identifier """ idevname """"
+.BI "  Identifier \*q" idevname \*q
 .br
-.B  "  Driver ""citron"""
+.B  "  Driver \*qcitron\*q"
 .br
-.BI "  Option ""Device""   """ devpath """"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
 .br
 \ \ ...
 .br
@@ -61,7 +48,7 @@ touches.
  15.1 inch Infrared Touch
 
 .SH CONFIGURATION DETAILS
-Please refer to XF86Config(5x) for general configuration
+Please refer to XF86Config(__filemansuffix__) for general configuration
 details and for options that can be used with all input drivers.  This
 section only covers configuration details specific to this driver.
 For better understanding please read also the 
@@ -78,24 +65,24 @@ The following driver
 .B Options
 are supported:
 .TP 7
-.BI "Option ""Device"" """ devpath """
+.BI "Option \*qDevice\*q \*q" devpath \*q
 Specify the device path for the citron touch.  Valid devices are:
 .PP
 .RS 12
-/dev/ttyS0, /dev/ttyS1, ....
-This option is mandatory.
+/dev/ttyS0, /dev/ttyS1, ...
 .RE
-.PP
 .RS 7
-It's important to specify the right device Note: com1 -> /dev/ttyS0, com2 -> /dev/ttyS1 ....
+This option is mandatory.
+.PP
+It's important to specify the right device Note: com1 -> /dev/ttyS0, com2 -> /dev/ttyS1, ...
 
 .RE
 .TP 7
-.BI "Option ""ScreenNumber"" """ "screennumber" """
+.BI "Option \*qScreenNumber\*q \*q" screennumber \*q
 sets the
 .I screennumber
 for the 
-.I citron
+.B citron
 InputDevice.
 .PP
 .RS 7
@@ -104,9 +91,11 @@ ScreenNumber: "0"
 
 .RE
 .TP 7
-.BI "Option ""MinX, MinY"" """ value """
+.BI "Option \*qMinX\*q \*q" value \*q
+.TP 7
+.BI "Option \*qMinY\*q \*q" value \*q
 These are the minimum X and Y values for the 
-.I citron
+.B citron
 input device.
 .PP
 .RS 7
@@ -121,9 +110,11 @@ MinX: "0"  MinY: "0"
 
 .RE
 .TP 7
-.BI "Option ""MaxX, MaxY"" """ value """
+.BI "Option \*qMaxX\*q \*q" value \*q
+.TP 7
+.BI "Option \*qMaxY\*q \*q" value \*q
 These are the maximum X and Y values for the 
-.I citron
+.B citron
 input device.
 .PP
 .RS 7
@@ -138,7 +129,7 @@ MaxX: "65535"  MaxY: "65535"
 
 .RE
 .TP 7
-.BI "Option ""ButtonNumber"" """ value """
+.BI "Option \*qButtonNumber\*q \*q" value \*q
 This value is responsible for the 
 .I button number
 that is returned within the xf86PostButton event message 
@@ -152,7 +143,7 @@ that is returned within the xf86PostButton event message
 
 .RE
 .TP 7
-.BI "Option ""ButtonThreshold"" """ value """
+.BI "Option \*qButtonThreshold\*q \*q" value \*q
 This value is responsible for the 
 .I button threshold.
 It changes the pressure sensitivity of the touch. A higher number
@@ -196,7 +187,7 @@ the
 .PP
 .RE
 .TP 7
-.BI "Option ""SleepMode"" """ mode """
+.BI "Option \*qSleepMode\*q \*q" mode \*q
 This value is responsible for the 
 .I sleep-mode
 of the touch. 
@@ -226,7 +217,7 @@ GP_OUT output set according to the Sleep-Mode status
 
 .RE
 .TP 7
-.BI "Option ""SleepTime"" """ time """
+.BI "Option \*qSleepTime\*q \*q" time \*q
 This value is responsible for the 
 .I sleep-time
 of the touch. It is the activation time in seconds 
@@ -241,7 +232,7 @@ of the touch. It is the activation time in seconds
 
 .RE
 .TP 7
-.BI "Option ""SleepScan"" """ scan """
+.BI "Option \*qSleepScan\*q \*q" scan \*q
 This value is responsible for the 
 .I scan-time
 of the touch. This is the time interval between two scan operations
@@ -257,7 +248,7 @@ of milliseconds.
 
 .RE
 .TP 7
-.BI "Option ""PWMActive"" """ value """
+.BI "Option \*qPWMActive\*q \*q" value \*q
 This value determines the mark-to-space ratio of the 
 .I PWM
 output while in normal operation (sleep-mode not active).
@@ -276,7 +267,7 @@ to do backlight-dimming via the touch.
 
 .RE
 .TP 7
-.BI "Option ""PWMSleep"" """ value """
+.BI "Option \*qPWMSleep\*q \*q" value \*q
 This value determines the mark-to-space ratio of the 
 .I PWM
 output while in sleep-mode (->
@@ -293,24 +284,27 @@ Higher values result in longer pulse widths.
 
 .RE
 .TP 7
-.BI "Option ""ClickMode"" """ mode """
+.BI "Option \*qClickMode\*q \*q" mode \*q
 With mode one can select between 5 
 .I ClickModes
 
-.I """1"" = ClickMode Enter
+.B \*q1\*q
+= ClickMode Enter
 
 With this mode every interruption of the infrared beams will
 activate a ButtonPress event and after the interruption a
 ButtonRelease event will be sent.
 
-.I """2"" = ClickMode Dual
+.B \*q2\*q
+= ClickMode Dual
 
 With this mode every interruption will sent a Proximity event and
 every second interruption a ButtonPress event. With the release of
 the interruption (while one interruption is still active) a
 ButtonRelease event will be sent.
 
-.I """3"" = ClickMode Dual Exit
+.B \*q3\*q
+= ClickMode Dual Exit
 
 With this mode every interruption will sent a ProximityIn event and
 every second interruption a ButtonPress event. With the release of
@@ -318,16 +312,18 @@ the interruption (while one interruption is still active) no
 ButtonRelease event will be sent. Only if all interruptions are released
 a ButtonRelease followed by a ProximityOut event will be sent.
 
-.I """4"" = ClickMode ZPress
+.B \*q4\*q
+= ClickMode ZPress
 
 With this mode every interruption will sent a ProximityIn event. Only if
 a certain pressure is exceeded a ButtonPress event will occur. If the
 pressure falls below a certain limit a ButtonRelease event will be sent.
 After also the interruption is released a ProximityOut event is generated.
 
-.I """5"" = ClickMode ZPress Exit
+.B \*q5\*q
+= ClickMode ZPress Exit
 
-This mode is similat to "Clickmode Dual Exit". 
+This mode is similar to "Clickmode Dual Exit". 
 The first interruption of the beams will sent a ProximityIn event. Only if
 a certain pressure is exceeded a ButtonPress event will occur. If the
 pressure falls below a certain limit no ButtonRelease event will be sent.
@@ -343,7 +339,7 @@ a ProximityOut event is generated.
 
 .RE
 .TP 7
-.BI "Option ""Origin"" """ value """
+.BI "Option \*qOrigin\*q \*q" value \*q
 This value sets the coordinates origin to one of the four corners of 
 the screen.
 The following values are accepted:
@@ -372,7 +368,7 @@ the maximum speed.
 
 .RE
 .TP 7
-.BI "Option ""DozeMode"" """ mode """
+.BI "Option \*qDozeMode\*q \*q" mode \*q
 This value is responsible for the 
 .I doze-mode
 of the touch. 
@@ -380,15 +376,20 @@ of the touch.
 .PP
 Determines the behaviour of the Doze-Mode.
 .PP
-0x00 No message at either activation or deactivation
+.B 0x00
+No message at either activation or deactivation
 
-0x01 Message at activation
+.B 0x01
+Message at activation
 
-0x02 Message at deactivation
+.B 0x02
+Message at deactivation
 
-0x03 Message at activation and deactivation
+.B 0x03
+Message at activation and deactivation
 
-0x10 GP_OUT output set according to the Doze-Mode status
+.B 0x10
+GP_OUT output set according to the Doze-Mode status
 
 If the GP_OUT output is already controlled by the 
 .I Sleep-Mode
@@ -404,7 +405,7 @@ it is no longer available as an output port anymore.
 
 .RE
 .TP 7
-.BI "Option ""DozeTime"" """ time """
+.BI "Option \*qDozeTime\*q \*q" time \*q
 This value is responsible for the 
 .I doze-time
 of the touch. It is the activation time in seconds 
@@ -420,7 +421,7 @@ of the touch. It is the activation time in seconds
 
 .RE
 .TP 7
-.BI "Option ""DozeScan"" """ scan """
+.BI "Option \*qDozeScan\*q \*q" scan \*q
 This value is responsible for the 
 .I scan-time
 of the touch. This is the time interval between two scan operations
@@ -436,7 +437,7 @@ of milliseconds.
 
 .RE
 .TP 7
-.BI "Option ""DeltaX"" """ value """
+.BI "Option \*qDeltaX\*q \*q" value \*q
 This value determines a virtual area at the left and right
 side of the current cursor position where the cursor didn't move.
 Within this area no "MotionNotify" event will be sent.
@@ -451,7 +452,7 @@ Within this area no "MotionNotify" event will be sent.
 
 .RE
 .TP 7
-.BI "Option ""DeltaY"" """ value """
+.BI "Option \*qDeltaY\*q \*q" value \*q
 This value determines a virtual area at the top and bottom
 of the current cursor position where the cursor didn't move.
 Within this area no "MotionNotify" event will be sent.
@@ -465,7 +466,7 @@ Within this area no "MotionNotify" event will be sent.
 
 .RE
 .TP 7
-.BI "Option ""Beep"" """ value """
+.BI "Option \*qBeep\*q \*q" value \*q
 This value determines if a "ButtonPress" and/or a "ButtonRelease"
 event should sound the buzzer. "0" deactivates the buzzer while
 every other value will activate it.
@@ -479,7 +480,7 @@ every other value will activate it.
 
 .RE
 .TP 7
-.BI "Option ""PressVol"" """ value """
+.BI "Option \*qPressVol\*q \*q" value \*q
 This value determines the volume of the buzzer (0-100%)
 when a "ButtonPress" event is sent.
 .RS 7
@@ -493,7 +494,7 @@ when a "ButtonPress" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""PressPitch"" """ value """
+.BI "Option \*qPressPitch\*q \*q" value \*q
 This value determines the pitch of the tone
 when a "ButtonPress" event is sent.
 .RS 7
@@ -508,7 +509,7 @@ when a "ButtonPress" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""PressDur"" """ value """
+.BI "Option \*qPressDur\*q \*q" value \*q
 This value determines the duration of the tone in ms
 when a "ButtonPress" event is sent.
 .RS 7
@@ -521,7 +522,7 @@ when a "ButtonPress" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""ReleaseVol"" """ value """
+.BI "Option \*qReleaseVol\*q \*q" value \*q
 This value determines the volume of the buzzer (0-100%)
 when a "ButtonRelease" event is sent.
 .RS 7
@@ -535,7 +536,7 @@ when a "ButtonRelease" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""ReleasePitch"" """ value """
+.BI "Option \*qReleasePitch\*q \*q" value \*q
 This value determines the pitch of the tone when
 when a "ButtonRelease" event is sent.
 .RS 7
@@ -550,7 +551,7 @@ when a "ButtonRelease" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""ReleseDur"" """ value """
+.BI "Option \*qReleseDur\*q \*q" value \*q
 This value determines the duration of the tone in ms when
 when a "ButtonRelease" event is sent.
 .RS 7
@@ -565,7 +566,7 @@ when a "ButtonRelease" event is sent.
 
 .RE
 .TP 7
-.BI "Option ""BeamTimeout"" """ value """
+.BI "Option \*qBeamTimeout\*q \*q" value \*q
 Determines the time span in seconds, that has to elapse before a beam is 
 considered defective, blanked-out and excluded from the coordinates 
 evaluation.
@@ -582,7 +583,7 @@ evaluation.
 
 .RE
 .TP 7
-.BI "Option ""TouchTime"" """ value """
+.BI "Option \*qTouchTime\*q \*q" value \*q
 Determines the minimum time span in steps of 10ms for a valid 
 interruption. In order for an interruption to be
 reported to the host computer as valid, it needs to remain at 
@@ -598,7 +599,7 @@ the same spot for at least the time span declared here.
 
 .RE
 .TP 7
-.BI "Option ""EnterCount"" """ count """
+.BI "Option \*qEnterCount\*q \*q" count \*q
 Number of skipped "enter reports". Reports are sent approx. 
 every 20ms.
 .RS 7
@@ -612,7 +613,7 @@ every 20ms.
 
 .RE
 .TP 7
-.BI "Option ""DualCount"" """ count """
+.BI "Option \*qDualCount\*q \*q" count \*q
 Number of skipped "dual touch error". Reports are sent approx. 
 every 20ms. This option is only available for "ZPress" and 
 "ZPress Exit" modes.
