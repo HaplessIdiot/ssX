@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.33 2001/04/16 20:33:08 tsi Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.34 2001/07/23 13:15:40 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -129,7 +129,7 @@ extern int sys_nerr;
 /*
  * Get open(2) constants
  */
-#if defined(X_NOT_POSIX) && !defined(__CYGWIN__)
+#if defined(X_NOT_POSIX)
 #include <fcntl.h>
 #if defined(USL) || defined(CRAY) || defined(MOTOROLA) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || defined(__sxg__)
 #include <unistd.h>
@@ -264,8 +264,7 @@ typedef unsigned long fd_mask;
 
 #if defined(ISC) || \
     (defined(linux) && !defined(__GLIBC__)) || \
-    (defined(__QNX__) && !defined(UNIXCONN)) || \
-    defined(__CYGWIN__)
+    (defined(__QNX__) && !defined(UNIXCONN))
 /*
  *	Some OS's may not have this
  */
