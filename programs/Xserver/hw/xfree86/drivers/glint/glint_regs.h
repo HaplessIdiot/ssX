@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.23 2001/01/30 10:06:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.24 2001/01/31 16:14:57 alanh Exp $ */
 
 /*
  * glint register file 
@@ -1190,20 +1190,17 @@
 	GLINT_VERB_READ_REG(pGlint,r,__FILE__,__LINE__)
 #else
 
-#define GLINT_WRITE_REG(v,r) MMIO_OUT32(pGlint->IOBase + pGlint->IOOffset,(unsigned long)r, v)
-#define GLINT_READ_REG(r) MMIO_IN32(pGlint->IOBase + pGlint->IOOffset,(unsigned long)r)
+#define GLINT_WRITE_REG(v,r) \
+	MMIO_OUT32(pGlint->IOBase + pGlint->IOOffset,(unsigned long)(r), (v))
+#define GLINT_READ_REG(r) \
+	MMIO_IN32(pGlint->IOBase + pGlint->IOOffset,(unsigned long)(r))
 
 #endif /* DEBUG */
 
 #define GLINT_WAIT(n)						\
 do{								\
-	while(GLINT_READ_REG(InFIFOSpace)<(n)){			\
-		mem_barrier();					\
-	}							\
+	while(GLINT_READ_REG(InFIFOSpace)<(n));			\
 }while(0)
-
-#define GLINT_MASK_WRITE_REG(v,m,r)				\
-	GLINT_WRITE_REG((GLINT_READ_REG(r)&(m))|(v),r)
 
 #define GLINTDACDelay(x) do {                                   \
         int delay = x;                                          \
@@ -1211,6 +1208,9 @@ do{								\
 	while(delay--){tmp = GLINT_READ_REG(InFIFOSpace);};     \
 	} while(0)
         
+#define GLINT_MASK_WRITE_REG(v,m,r)				\
+	GLINT_WRITE_REG((GLINT_READ_REG(r)&(m))|(v),r)
+
 #define GLINT_SLOW_WRITE_REG(v,r)				\
 do{								\
 	mem_barrier();						\

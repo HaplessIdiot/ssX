@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.78 2000/10/27 18:31:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.81 2000/12/14 16:33:09 eich Exp $ */
 
 
 /* All drivers should typically include these */
@@ -36,6 +36,12 @@
 #ifdef XF86DRI
 #include "mga_dri.h"
 #endif
+
+#define MGAMoveDWORDS(d,s,c) \
+do { \
+  write_mem_barrier(); \
+  XAAMoveDWORDS((d),(s),(c)); \
+} while (0)
 
 static void MGANAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
 				int srcX, int srcY, int dstX, int dstY,
@@ -1596,7 +1602,12 @@ MGANAME(SubsequentScanlineCPUToScreenColorExpandFill)(
     OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | (x & 0xFFFF));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 
-    if(pMga->expandDWORDs > pMga->FifoSize) {
+#ifndef __alpha__
+    if(1)
+#else
+    if(pMga->expandDWORDs > pMga->FifoSize)
+#endif
+    {
         pMga->AccelInfoRec->SubsequentColorExpandScanline =
                 MGANAME(SubsequentColorExpandScanlineIndirect);
         pMga->AccelInfoRec->ScanlineColorExpandBuffers =
@@ -1621,13 +1632,13 @@ MGANAME(SubsequentColorExpandScanlineIndirect)(
    
     while(dwords > pMga->FifoSize) {
 	WAITFIFO(pMga->FifoSize);
-	XAAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, pMga->FifoSize);
+	MGAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, pMga->FifoSize);
 	src += pMga->FifoSize;
 	dwords -= pMga->FifoSize;
     }
     
     WAITFIFO(dwords);
-    XAAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, dwords);
+    MGAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, dwords);
 
     if(!(--pMga->expandRows)) {
 	if(pMga->expandRemaining) {
@@ -1723,13 +1734,13 @@ static void MGANAME(SubsequentImageWriteScanline)(
 
     while(dwords > pMga->FifoSize) {
 	WAITFIFO(pMga->FifoSize);
-        XAAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, pMga->FifoSize);
+        MGAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, pMga->FifoSize);
         src += pMga->FifoSize;
         dwords -= pMga->FifoSize;
     }
 
     WAITFIFO(dwords);
-    XAAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, dwords);
+    MGAMoveDWORDS((CARD32*)(pMga->ColorExpandBase), src, dwords);
 
     if(!(--pMga->expandRows)) {
 	DISABLE_CLIP();

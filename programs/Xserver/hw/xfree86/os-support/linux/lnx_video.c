@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.43 2000/12/06 15:35:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.44 2000/12/06 18:08:55 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -661,6 +661,7 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int b = Value & 0xffU;
 
+    mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
       msb = Offset & hae_mask;
@@ -671,7 +672,6 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
       }
     }
     *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
-    mem_barrier();
 }
 
 static void
@@ -680,6 +680,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     register unsigned long msb;
     register unsigned int w = Value & 0xffffU;
 
+    mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
       msb = Offset & hae_mask;
@@ -691,15 +692,13 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     }
     *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
-    mem_barrier();
-
 }
 
 static void
 writeSparse32(int Value, pointer Base, register unsigned long Offset)
 {
-    *(vuip)((unsigned long)Base + (Offset)) = Value;
     mem_barrier();
+    *(vuip)((unsigned long)Base + (Offset)) = Value;
     return;
 }
 
@@ -847,6 +846,7 @@ readSparseJensen8(pointer Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
+    mem_barrier();
     shift = (Offset & 0x3) << 3;
 
     result = *(vuip) ((unsigned long)Base + (Offset << SPARSE));
@@ -860,6 +860,7 @@ readSparseJensen16(pointer Base, register unsigned long Offset)
 {
     register unsigned long result, shift;
 
+    mem_barrier();
     shift = (Offset & 0x2) << 3;
 
     result = *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(1<<(SPARSE-2)));
@@ -873,6 +874,7 @@ readSparseJensen32(pointer Base, register unsigned long Offset)
 {
     register unsigned long result;
 
+    mem_barrier();
     result = *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2)));
 
     return result;
@@ -883,9 +885,8 @@ writeSparseJensen8(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int b = Value & 0xffU;
 
+    write_mem_barrier();
     *(vuip) ((unsigned long)Base + (Offset << SPARSE)) = b * 0x01010101;
-
-    mem_barrier();
 }
 
 static void
@@ -893,18 +894,16 @@ writeSparseJensen16(int Value, pointer Base, register unsigned long Offset)
 {
     register unsigned int w = Value & 0xffffU;
 
+    write_mem_barrier();
     *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(1<<(SPARSE-2))) =
       w * 0x00010001;
-
-    mem_barrier();
 }
 
 static void
 writeSparseJensen32(int Value, pointer Base, register unsigned long Offset)
 {
+    write_mem_barrier();
     *(vuip)((unsigned long)Base+(Offset<<SPARSE)+(3<<(SPARSE-2))) = Value;
-
-    mem_barrier();
 }
 
 static void

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.50 2000/12/27 04:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.51 2001/01/21 21:19:33 tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -944,6 +944,15 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set the current mode to the first in the list */
     pScrn->currentMode = pScrn->modes;
+
+    /*
+     This is a bit of a hack; we seem to have to init
+     the TGA2 chipset knowing what the mode is, so we
+     do this now as soon as we know it...
+    */
+    if (pTga->Chipset == PCI_CHIP_TGA2) {
+      TGA2SetupMode(pScrn);
+    }
 
     /* Print the list of modes being used */
     xf86PrintModes(pScrn);

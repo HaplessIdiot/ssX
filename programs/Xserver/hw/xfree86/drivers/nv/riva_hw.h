@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.7 2000/11/03 18:46:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.8 2001/01/22 21:32:36 dawes Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -430,6 +430,11 @@ int RivaGetConfig(RIVA_HW_INST *);
 	(hwinst).FifoFreeCount = (hwinst).hwptr->FifoFree >> 2;        \
    } \
    (hwinst).FifoFreeCount -= (cnt);                                \
+}
+#define RIVA_BUSY(hwinst) \
+{ \
+   mem_barrier(); \
+   while ((hwinst).Busy(&(hwinst))); \
 }
 #endif /* __RIVA_HW_H__ */
 
