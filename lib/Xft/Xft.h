@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.6 2000/11/30 10:42:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.7 2000/12/01 03:27:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -235,7 +235,7 @@ XftDrawString32 (XftDraw	*draw,
 		 XftFont	*font,
 		 int		x,
 		 int		y,
-		 unsigned long	*string,
+		 unsigned int	*string,
 		 int		len);
 void
 XftDrawRect (XftDraw	    *d,
@@ -265,7 +265,7 @@ XftTextExtents16 (Display	    *dpy,
 void
 XftTextExtents32 (Display	*dpy,
 		  XftFont	*font,
-		  unsigned long *string, 
+		  unsigned int	*string, 
 		  int		len,
 		  XGlyphInfo	*extents);
     

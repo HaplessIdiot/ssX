@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.5 2000/11/30 23:30:00 dawes Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.6 2000/12/01 03:27:57 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -153,7 +153,7 @@ XftCoreConvert16 (unsigned short    *string,
 		  XChar2b	    xcloc[XFT_CORE_N16LOCAL]);
 
 XChar2b *
-XftCoreConvert32 (unsigned long	    *string,
+XftCoreConvert32 (unsigned int	    *string,
 		  int		    len,
 		  XChar2b	    xcloc[XFT_CORE_N16LOCAL]);
 
@@ -174,7 +174,7 @@ XftCoreExtents16 (Display	    *dpy,
 void
 XftCoreExtents32 (Display	    *dpy,
 		  XFontStruct	    *fs,
-		  unsigned long	    *string, 
+		  unsigned int	    *string, 
 		  int		    len,
 		  XGlyphInfo	    *extents);
 

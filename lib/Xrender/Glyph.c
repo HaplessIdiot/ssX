@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.2 2000/08/28 02:43:13 tsi Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.3 2000/11/29 08:25:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -37,7 +37,7 @@ XRenderCreateGlyphSet (Display *dpy, XRenderPictFormat *format)
     GetReq(RenderCreateGlyphSet, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCreateGlyphSet;
-    req->gsid = gsid = _XAllocID(dpy);
+    req->gsid = gsid = XAllocID(dpy);
     req->format = format->id;
     UnlockDisplay(dpy);
     SyncHandle();
@@ -56,7 +56,7 @@ XRenderReferenceGlyphSet (Display *dpy, GlyphSet existing)
     GetReq(RenderReferenceGlyphSet, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderReferenceGlyphSet;
-    req->gsid = gsid = _XAllocID(dpy);
+    req->gsid = gsid = XAllocID(dpy);
     req->existing = existing;
     UnlockDisplay(dpy);
     SyncHandle();
@@ -151,10 +151,15 @@ XRenderCompositeString8 (Display	    *dpy,
     xRenderCompositeGlyphs8Req	*req;
     long			len;
     xGlyphElt			*elt;
+    int				nbytes;
 
+    if (!nchar)
+	return;
+    
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
-    GetReqExtra(RenderCompositeGlyphs8, SIZEOF (xGlyphElt), req);
+
+    GetReq(RenderCompositeGlyphs8, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCompositeGlyphs8;
     req->op = op;
@@ -164,13 +169,51 @@ XRenderCompositeString8 (Display	    *dpy,
     req->glyphset = glyphset;
     req->xSrc = xSrc;
     req->ySrc = ySrc;    
-    elt = (xGlyphElt *) (req + 1);
-    elt->len = nchar;
-    elt->deltax = xDst;
-    elt->deltay = yDst;
-    len = (nchar + 3) >> 2;
-    SetReqLen(req, len, len);
-    Data(dpy, string, nchar);
+
+    /*
+     * xGlyphElt must be aligned on a 32-bit boundary; this is
+     * easily done by filling no more than 252 glyphs in each
+     * bucket
+     */
+    
+#define MAX_8 252
+
+    len = SIZEOF(xGlyphElt) * ((nchar + MAX_8-1) / MAX_8) + nchar;
+    
+    req->length += (len + 3)>>2;  /* convert to number of 32-bit words */
+    
+    /* 
+     * If the entire request does not fit into the remaining space in the
+     * buffer, flush the buffer first.
+     */
+
+    if (dpy->bufptr + len > dpy->bufmax)
+    	_XFlush (dpy);
+
+    while(nchar > MAX_8)
+    {
+	nbytes = MAX_8 + SIZEOF(xGlyphElt);
+	BufAlloc (xGlyphElt *, elt, nbytes);
+	elt->len = MAX_8;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	xDst = 0;
+	yDst = 0;
+	memcpy ((char *) (elt + 1), string, MAX_8);
+	nchar = nchar - MAX_8;
+	string += MAX_8;
+    }
+	
+    if (nchar)
+    {
+	nbytes = (nchar + SIZEOF(xGlyphElt) + 3) & ~3;
+	BufAlloc (xGlyphElt *, elt, nbytes); 
+	elt->len = nchar;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	memcpy ((char *) (elt + 1), string, nchar);
+    }
+    
     UnlockDisplay(dpy);
     SyncHandle();
 }
@@ -192,10 +235,15 @@ XRenderCompositeString16 (Display	    *dpy,
     xRenderCompositeGlyphs8Req	*req;
     long			len;
     xGlyphElt			*elt;
+    int				nbytes;
 
+    if (!nchar)
+	return;
+    
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
-    GetReqExtra(RenderCompositeGlyphs8, SIZEOF (xGlyphElt), req);
+    
+    GetReq(RenderCompositeGlyphs8, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCompositeGlyphs8;
     req->op = op;
@@ -205,14 +253,45 @@ XRenderCompositeString16 (Display	    *dpy,
     req->glyphset = glyphset;
     req->xSrc = xSrc;
     req->ySrc = ySrc;    
-    elt = (xGlyphElt *) (req + 1);
-    elt->len = nchar;
-    elt->deltax = xDst;
-    elt->deltay = yDst;
-    len = (nchar + 1) >> 1;
-    SetReqLen(req, len, len);
-    nchar <<= 1;
-    Data16(dpy, string, nchar);
+
+#define MAX_16	254
+
+    len = SIZEOF(xGlyphElt) * ((nchar + MAX_8-1) / MAX_8) + nchar * 2;
+    
+    req->length += (len + 3)>>2;  /* convert to number of 32-bit words */
+    
+    /* 
+     * If the entire request does not fit into the remaining space in the
+     * buffer, flush the buffer first.
+     */
+
+    if (dpy->bufptr + len > dpy->bufmax)
+    	_XFlush (dpy);
+
+    while(nchar > MAX_16)
+    {
+	nbytes = MAX_16 * 2 + SIZEOF(xGlyphElt);
+	BufAlloc (xGlyphElt *, elt, nbytes);
+	elt->len = MAX_16;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	xDst = 0;
+	yDst = 0;
+	memcpy ((char *) (elt + 1), (char *) string, MAX_16 * 2);
+	nchar = nchar - MAX_16;
+	string += MAX_16;
+    }
+	
+    if (nchar)
+    {
+	nbytes = (nchar * 2 + SIZEOF(xGlyphElt) + 3) & ~3;
+	BufAlloc (xGlyphElt *, elt, nbytes); 
+	elt->len = nchar;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	memcpy ((char *) (elt + 1), (char *) string, nchar * 2);
+    }
+    
     UnlockDisplay(dpy);
     SyncHandle();
 }
@@ -228,17 +307,22 @@ XRenderCompositeString32 (Display	    *dpy,
 			  int		    ySrc,
 			  int		    xDst,
 			  int		    yDst,
-			  unsigned long	    *string,
+			  unsigned int	    *string,
 			  int		    nchar)
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     xRenderCompositeGlyphs8Req	*req;
     long			len;
     xGlyphElt			*elt;
+    int				nbytes;
 
+    if (!nchar)
+	return;
+    
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
-    GetReqExtra(RenderCompositeGlyphs32, SIZEOF (xGlyphElt), req);
+    
+    GetReq(RenderCompositeGlyphs8, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCompositeGlyphs8;
     req->op = op;
@@ -248,14 +332,45 @@ XRenderCompositeString32 (Display	    *dpy,
     req->glyphset = glyphset;
     req->xSrc = xSrc;
     req->ySrc = ySrc;    
-    elt = (xGlyphElt *) (req + 1);
-    elt->len = nchar;
-    elt->deltax = xDst;
-    elt->deltay = yDst;
-    len = nchar;
-    SetReqLen(req, len, len);
-    nchar <<= 2;
-    Data32(dpy, string, nchar);
+
+#define MAX_32	254
+
+    len = SIZEOF(xGlyphElt) * ((nchar + MAX_8-1) / MAX_8) + nchar * 4;
+    
+    req->length += (len + 3)>>2;  /* convert to number of 32-bit words */
+    
+    /* 
+     * If the entire request does not fit into the remaining space in the
+     * buffer, flush the buffer first.
+     */
+
+    if (dpy->bufptr + len > dpy->bufmax)
+    	_XFlush (dpy);
+
+    while(nchar > MAX_32)
+    {
+	nbytes = MAX_32 * 4 + SIZEOF(xGlyphElt);
+	BufAlloc (xGlyphElt *, elt, nbytes);
+	elt->len = MAX_32;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	xDst = 0;
+	yDst = 0;
+	memcpy ((char *) (elt + 1), (char *) string, MAX_32 * 4);
+	nchar = nchar - MAX_32;
+	string += MAX_32;
+    }
+	
+    if (nchar)
+    {
+	nbytes = nchar * 4 + SIZEOF(xGlyphElt);
+	BufAlloc (xGlyphElt *, elt, nbytes); 
+	elt->len = nchar;
+	elt->deltax = xDst;
+	elt->deltay = yDst;
+	memcpy ((char *) (elt + 1), (char *) string, nchar * 4);
+    }
+    
     UnlockDisplay(dpy);
     SyncHandle();
 }
