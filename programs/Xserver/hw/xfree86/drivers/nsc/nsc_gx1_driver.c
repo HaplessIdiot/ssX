@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.2 2002/12/11 22:50:59 dawes Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.2 $
- * $Author: dawes $
+ * $Revision: 1.3 $
+ * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -693,15 +693,6 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
       }
 
       if (pGeode->TVSupport == TRUE) {
-	 unsigned int status = 0;
-
-	 GFX(get_tv_enable(&status));
-	 DEBUGMSG(1, (0, X_PROBED, "status %d \n", status));
-	 if (status == 0) {
-	    pGeode->TVSupport = FALSE;
-	    DEBUGMSG(1, (0, X_NONE, "Not a TV Supported Platform\n"));
-	 }
-
 	 pGeode->TvParam.wOutput = TV_OUTPUT_S_VIDEO;	/* default */
 
 	 /* Now find the output */

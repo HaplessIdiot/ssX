@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_cursor.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_cursor.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * File Contents: Xfree cursor implementation routines
@@ -240,9 +240,6 @@ static void
 GX2SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 {
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
-
-   x = (x < 0) ? 0 : x;
-   y = (y < 0) ? 0 : y;
 
    GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, 0, 0));
    GFX(set_cursor_enable(1));

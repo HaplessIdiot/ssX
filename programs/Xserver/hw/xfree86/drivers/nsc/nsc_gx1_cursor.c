@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_cursor.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_cursor.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: alanh $
  *
  * File Contents: Xfree cursor implementation routines
@@ -241,8 +241,6 @@ GX1SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 {
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
-   x = (x < 0) ? 0 : x;
-   y = (y < 0) ? 0 : y;
    if (pGeode->TV_Overscan_On) {
       x += pGeode->TVOx;
       y += pGeode->TVOy;
