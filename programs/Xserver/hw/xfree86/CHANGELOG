@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+  72. Disable PCI resource conflict checking for Linux/Alpha (Jay Estabrook).
   71. Fix Linux xf86GetPciSizeFromOS() parsing when the kernel is 64 bit
       and any base or size is larger than 32 bits in magnitude (#4732,
       David S. Miller).
@@ -13440,4 +13441,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1822 2001/06/01 17:09:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1823 2001/06/01 20:03:02 dawes Exp $
