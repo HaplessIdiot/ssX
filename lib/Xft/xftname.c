@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.4 2000/12/03 00:45:44 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.5 2000/12/14 23:03:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -53,6 +53,9 @@ const XftObjectType _XftObjectTypes[] = {
     { XFT_RGBA,		XftTypeInteger, },
     { XFT_SCALE,	XftTypeDouble, },
     { XFT_RENDER,	XftTypeBool, },
+    { XFT_MINSPACE,	XftTypeBool, },
+    { XFT_CHAR_WIDTH,	XftTypeInteger },
+    { XFT_CHAR_HEIGHT,	XftTypeInteger },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _XftObjectTypes / sizeof _XftObjectTypes[0])

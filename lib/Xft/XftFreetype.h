@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.6 2000/12/08 07:51:27 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.7 2000/12/15 17:12:52 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -38,15 +38,15 @@ struct _XftFontStruct {
     GlyphSet		glyphset;
     int			min_char;
     int			max_char;
-    int			size;
+    FT_F26Dot6		size;
     int			ascent;
     int			descent;
     int			height;
     int			max_advance_width;
-    Bool		monospace;
+    int			spacing;
     int			rgba;
     Bool		antialias;
-    Bool		encoded;    /* use charmap */
+    int			charmap;    /* -1 for unencoded */
     XRenderPictFormat	*format;
     XGlyphInfo		**realized;
     int			nrealized;
