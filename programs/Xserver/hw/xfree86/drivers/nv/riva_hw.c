@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.28 2002/03/15 05:16:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.29 2002/04/18 20:14:03 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1982,8 +1982,8 @@ static void nv10GetConfig
             chip->RamBandwidthKBytesPerSec = 1000000;
             break;
     }
-    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x0000/4] & (1 << 6))  ? 14318 : 
-                             (chip->PEXTDEV[0x0000/4] & (1 << 22)) ? 27000 :
+    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x0000/4] & (1 << 22)) ? 27000 :
+                             (chip->PEXTDEV[0x0000/4] & (1 << 6))  ? 14318 :
                                                                      13500;
     chip->CursorStart      = (chip->RamAmountKBytes - 128) * 1024;
     chip->CURSOR           = NULL;  /* can't set this here */
