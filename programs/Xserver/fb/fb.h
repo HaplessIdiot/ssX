@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.22 2000/11/02 16:33:26 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.23 2001/01/17 07:40:01 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -40,6 +40,8 @@
 #include "mibstore.h"
 #ifdef RENDER
 #include "picturestr.h"
+#else
+#include "picture.h"
 #endif
 
 /*
@@ -1548,9 +1550,12 @@ fbComposite (CARD8      op,
 	     CARD16     width,
 	     CARD16     height);
 
-Bool
-fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 #endif
+
+Bool
+fbPictureInit (ScreenPtr pScreen,
+	       PictFormatPtr formats,
+	       int nformats);
 
 /*
  * fbpixmap.c

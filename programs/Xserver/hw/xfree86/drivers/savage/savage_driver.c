@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.6 2000/12/12 16:50:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.7 2001/01/02 21:26:50 keithp Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -15,11 +15,9 @@
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif /* DPMSExtension */
 
 #include "savage_driver.h"
 #include "savage_bci.h"
@@ -64,9 +62,7 @@ static void SavageCalcClock(long freq, int min_m, int min_n1, int max_n1,
 			   unsigned int *ndiv, unsigned int *r);
 void SavageGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file);
 void SavagePrintRegs(ScrnInfoPtr pScrn);
-#ifdef DPMSExtension
 static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags);
-#endif
 
 static int pix24bpp = 0;
 
@@ -1981,10 +1977,8 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
     pScreen->SaveScreen = SavageSaveScreen;
     pScreen->CloseScreen = SavageCloseScreen;
 
-#ifdef DPMSExtension
     if (xf86DPMSInit(pScreen, SavageDPMS, 0) == FALSE)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed\n");
-#endif
 
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
@@ -2662,7 +2656,6 @@ SavagePrintRegs(ScrnInfoPtr pScrn)
 }
 
 
-#ifdef DPMSExtension
 static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags)
 {
     SavagePtr psav = SAVPTR(pScrn);
@@ -2700,4 +2693,3 @@ static void SavageDPMS(ScrnInfoPtr pScrn, int mode, int flags)
 
     return;
 }
-#endif /* DPMSExtension */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.36 2000/09/19 16:52:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.38 2000/12/14 16:33:10 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1115,7 +1115,6 @@ renditionCloseScreen(int scrnIndex, ScreenPtr pScreen)
 }
 
 
-#ifdef DPMSExtension
 static void
 renditionDPMSSet(ScrnInfoPtr pScreen, int mode, int flags)
 {
@@ -1125,7 +1124,6 @@ renditionDPMSSet(ScrnInfoPtr pScreen, int mode, int flags)
 
     vgaHWDPMSSet(pScreen, mode, flags);
 }
-#endif
 
 
 static Bool
@@ -1331,11 +1329,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         return FALSE;
       }
 
-
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, renditionDPMSSet, 0);
-#endif
-
 
     if (xf86ReturnOptValBool(renditionOptions, OPTION_OVERCLOCK_MEM,0)) {
       RENDITIONPTR(pScreenInfo)->board.overclock_mem=TRUE;

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.106 2000/12/22 10:39:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.107 2000/12/27 04:57:11 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -58,16 +58,12 @@
 #include "TI.h"
 #include "glint.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #define DEBUG 0
 
@@ -252,9 +248,7 @@ static const char *xaaSymbols[] = {
 
 static const char *fbSymbols[] = {
     "cfb8_32ScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     "fbScreenInit",
     "fbBres",
     NULL
@@ -480,7 +474,6 @@ int partprodPermedia[] = {
 	             -1,              -1,              -1,              -1,
 		     0};
 
-#ifdef DPMSExtension
 static void
 GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 					int flags)
@@ -531,7 +524,6 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     	GLINT_SLOW_WRITE_REG(videocontrol, PMVideoControl);
     }
 }
-#endif
 
 static Bool
 GLINTGetRec(ScrnInfoPtr pScrn)
@@ -2510,10 +2502,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
 	if (ret)
 	    fbPictureInit(pScreen, 0, 0);
-#endif
 	break;
     case 32:
 	if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
@@ -2526,10 +2516,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
 	    if (ret)
 	    	fbPictureInit(pScreen, 0, 0);
-#endif
 	}
 	break;
     default:
@@ -2661,9 +2649,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(pGlint->ShadowFB)
 	ShadowFBInit(pScreen, GLINTRefreshArea);
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);
-#endif
 
 #ifdef XF86DRI
     if (pGlint->directRenderingEnabled) {

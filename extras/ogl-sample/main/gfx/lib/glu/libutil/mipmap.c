@@ -34,6 +34,7 @@
 ** $Date$ $Revision$
 ** $Header$
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <assert.h>
@@ -3330,7 +3331,7 @@ static GLboolean isLegalInternalFormat(GLenum internalFormat)
           */ 
          if (strtod((const char *)glGetString(GL_VERSION),NULL) >= 1.1)
  	    return GL_TRUE;	/* OGL 1.1+ */
-	 else if (gluCheckExtension("GL_EXT_texture",
+	 else if (gluCheckExtension((GLubyte *)"GL_EXT_texture",
 				      glGetString(GL_EXTENSIONS))) 
 	    return GL_TRUE;	/* OGL 1.0 & texture extension supported */
 	 else return GL_FALSE;	/* OGL 1.0 & texture extension not supported */

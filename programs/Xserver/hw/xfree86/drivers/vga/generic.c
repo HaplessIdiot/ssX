@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.48 2000/12/02 15:31:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.49 2001/01/06 20:58:11 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -829,13 +829,11 @@ GenericCloseScreen(int scrnIndex, ScreenPtr pScreen)
 }
 
 
-#ifdef DPMSExtension
 static void
 GenericDPMSSet(ScrnInfoPtr pScreen, int mode, int flags)
 {
     vgaHWDPMSSet(pScreen, mode, flags);
 }
-#endif
 
 
 static void
@@ -1152,9 +1150,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScreenInfo->depth > 1)
         vgaHWHandleColormaps(pScreen);
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, GenericDPMSSet, 0);
-#endif
 
     /* Wrap the screen's CloseScreen vector and set its SaveScreen vector */
     pGenericPriv->CloseScreen = pScreen->CloseScreen;

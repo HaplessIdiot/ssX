@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.103 2000/12/06 15:35:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.104 2000/12/27 04:57:09 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -125,10 +125,6 @@
 
 /* Needed for replacement LoadPalette function for Gamma Correction */
 #include "xf86cmap.h"
-
-#ifdef RENDER
-#include "picturestr.h"
-#endif
 
 /* Driver specific headers */
 #include "ct_driver.h"
@@ -1208,10 +1204,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
-	xf86LoaderReqSymbols("fbScreenInit", NULL);
-#ifdef RENDER
-	xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+	xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 	break;
     }
     
@@ -3570,10 +3563,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth,pScrn->bitsPerPixel);
-#ifdef RENDER
 	if (ret) 
 	    fbPictureInit (pScreen, 0, 0);
-#endif
 	break;
     }
 
@@ -3877,12 +3868,10 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     pScreen->SaveScreen = CHIPSSaveScreen;
 
-#ifdef DPMSExtension
     /* Setup DPMS mode */
     if (cPtr->Flags & ChipsDPMSSupport)
 	xf86DPMSInit(pScreen, (DPMSSetProcPtr)chipsDisplayPowerManagementSet,
 		     0);
-#endif
 
     /* Wrap the current CloseScreen function */
     cPtr->CloseScreen = pScreen->CloseScreen;
@@ -4028,7 +4017,6 @@ CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     return MODE_OK;
 }
 
-#ifdef DPMSExtension
 /*
  * DPMS Control registers
  *
@@ -4119,7 +4107,6 @@ chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	}
     }
 }
-#endif
 
 static Bool
 CHIPSSaveScreen(ScreenPtr pScreen, int mode)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.7 2001/01/08 01:07:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.8 2001/01/11 03:36:58 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -253,7 +253,7 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
 				   RADEON_SOFT_RESET_RB |
 				   RADEON_SOFT_RESET_HDP);
     INREG(RADEON_RBBM_SOFT_RESET);
-    OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset &
+    OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset & (CARD32)
 				 ~(RADEON_SOFT_RESET_CP |
 				   RADEON_SOFT_RESET_HI |
 				   RADEON_SOFT_RESET_SE |

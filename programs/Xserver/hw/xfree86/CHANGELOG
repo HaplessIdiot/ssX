@@ -1,4 +1,19 @@
 XFree86 4.X.Ya (?? January 2001)
+1279. Disable RENDER extension support in the ATI(misc) driver when mibank
+      and/or shadowfb is used (Marc La France).
+1278. Remove cfb & friends from the ATI driver (Marc La France).
+1277. Some additional ATI PCI IDs (Marc La France).
+1276. Make compilation of drivers produce the same object whether or not
+      DPMS and DGA extensions are being built.  Partial changes to do the same
+      for RENDER (Marc La France).
+1275. Ensure `make depend` goes through the same set of subdirectories as
+      `make all` does.  Allows MakefileAdditions to contain depend rule(s)
+      (Marc La France).
+1274. Move $(EXTRA_DEFINES) to the end of ALLDEFINES.  Ditto for
+      $(CXXEXTRA_DEFINES) and CXXDEFINES.  Allows easier overrides at the
+      subdirectory level (Marc La France).
+1273. Add a pre-clean phase to `make World` if xc/xmakefile already exists
+      (Marc La France).
 1272. Import X.Org's X11R6.5.1 (David Dawes)
 1271. Change identification of Trident 8400(CyberBlade/i7) so that it is not
       a Cyber chipset (integrated Desktop version) (Alan Hourihane).
@@ -12259,4 +12274,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1527 2001/01/17 11:17:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1528 2001/01/19 08:13:29 dawes Exp $

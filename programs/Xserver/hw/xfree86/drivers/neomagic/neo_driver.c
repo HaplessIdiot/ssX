@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.46 2000/12/06 18:08:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.47 2000/12/27 04:57:14 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -87,10 +87,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Needed for Device Data Channel (DDC) support */
 #include "xf86DDC.h"
 
-#ifdef RENDER
-#include "picturestr.h"
-#endif
-
 /*
  * Driver data structures.
  */
@@ -99,14 +95,12 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "neo_macros.h"
 
 /* These need to be checked */
-#ifdef XFreeXDGA 
 #include "X.h"
 #include "Xproto.h"
 #include "scrnintstr.h"
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
 /* Mandatory functions */
 static OptionInfoPtr	NEOAvailableOptions(int chipid, int busid);
@@ -1183,10 +1177,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	RETURN;
     }
 
-    xf86LoaderReqSymbols("fbScreenInit", NULL);
-#ifdef RENDER
-    xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 
     if (!nPtr->noLinear) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) 
@@ -1363,12 +1354,10 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			    width, height,
 			    pScrn->xDpi, pScrn->yDpi,
 			    displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
-	if (ret) 
-	    fbPictureInit (pScreen, 0, 0);
-#endif
     if (!ret)
 	return FALSE;
+
+    fbPictureInit(pScreen, 0, 0);
 
     if (pScrn->depth > 8) {
         /* Fixup RGB ordering */
@@ -1554,12 +1543,10 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     pScreen->SaveScreen = vgaHWSaveScreen;
 
-#ifdef DPMSExtension
     /* Setup DPMS mode */
     if (nPtr->NeoChipset != NM2070)
 	xf86DPMSInit(pScreen, (DPMSSetProcPtr)NeoDisplayPowerManagementSet,
 		     0);
-#endif
 
     /* Wrap the current CloseScreen function */
     nPtr->CloseScreen = pScreen->CloseScreen;
@@ -2585,7 +2572,6 @@ neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -2643,7 +2629,6 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     LogicPowerMgmt |= VGArGR(0x01) & ~0xF0;
     VGAwGR(0x01,LogicPowerMgmt);
 }
-#endif
 
 static unsigned int
 neo_ddc1Read(ScrnInfoPtr pScrn)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.10 2000/12/05 03:13:33 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.11 2001/01/03 02:54:17 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -26,9 +26,8 @@
 #ifndef _PICTURESTR_H_
 #define _PICTURESTR_H_
 
-#include "renderproto.h"
-#include "picture.h"
 #include "glyphstr.h"
+#include "scrnintstr.h"
 #include "resource.h"
 
 typedef struct _DirectFormat {

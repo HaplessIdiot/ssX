@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.31 2000/08/04 16:13:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.33 2000/12/06 15:35:16 eich Exp $ */
 
 #define EXPERIMENTAL
 
@@ -94,10 +94,8 @@ static int LgFindLineData(int displayWidth, int bpp);
 static CARD16 LgSetClock(CirPtr pCir, vgaHWPtr hwp, int freq);
 static void lg_vgaHWSetMmioFunc(vgaHWPtr hwp, CARD8 *base);
 
-#ifdef DPMSExtension
-static void	LgDisplayPowerManagementSet(ScrnInfoPtr pScrn,
-										int PowerManagementMode, int flags);
-#endif
+static void LgDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+				        int PowerManagementMode, int flags);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -863,10 +861,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	         LgFreeRec(pScrn);
 		 return FALSE;
 	    }
-	    xf86LoaderReqSymbols("fbScreenInit",NULL);
-#ifdef RENDER
-	    xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+	    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 	    break;
 	}
 
@@ -1475,9 +1470,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (pScrn->bitsPerPixel > 1 && pScrn->bitsPerPixel <= 8)
 		vgaHWHandleColormaps(pScreen);
 
-#ifdef DPMSExtension
 	xf86DPMSInit(pScreen, LgDisplayPowerManagementSet, 0);
-#endif
 
 	pScrn->memPhysBase = pCir->FbAddress;
 	pScrn->fbOffset = 0;
@@ -1799,7 +1792,6 @@ LgSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 LgDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 							int flags)
@@ -1843,7 +1835,6 @@ LgDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	cr1a |= hwp->readCrtc(hwp, 0x1A) & ~0x0C;
 	hwp->writeCrtc(hwp, 0x1A, cr1a);
 }
-#endif
 
 #define minb(p) MMIO_IN8(hwp->MMIOBase, (p))
 #define moutb(p,v) MMIO_OUT8(hwp->MMIOBase, (p),(v))

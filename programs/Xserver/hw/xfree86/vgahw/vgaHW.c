@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.42 2000/11/14 18:20:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.43 2001/01/11 03:37:00 tsi Exp $ */
 
 /*
  *
@@ -644,7 +644,6 @@ vgaHWSaveScreen(ScreenPtr pScreen, int mode)
 void
 vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
-#ifdef DPMSExtension
   unsigned char seq1 = 0, crtc17 = 0;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
 
@@ -679,7 +678,6 @@ vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
   usleep(10000);
   hwp->writeCrtc(hwp, 0x17, crtc17);
   hwp->writeSeq(hwp, 0x00, 0x03);		/* End Reset */
-#endif
 }
 
 

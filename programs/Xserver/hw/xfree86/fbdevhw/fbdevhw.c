@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.20 2000/10/20 14:59:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.21 2000/10/24 22:45:09 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -16,11 +16,9 @@
 
 #include "asm/page.h"	/* #define for PAGE_* */
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #define DEBUG 0
 
@@ -790,7 +788,6 @@ fbdevHWLeaveVT(int scrnIndex, int flags)
 void
 fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 {
-#ifdef DPMSExtension
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
 	unsigned long fbmode;
 
@@ -814,5 +811,4 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 
 	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)fbmode))
 		perror("ioctl FBIOBLANK");
-#endif    /* DPMSExtension */
 }

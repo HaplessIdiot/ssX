@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.185 2000/12/07 20:26:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.186 2000/12/27 04:57:12 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -96,11 +96,6 @@
 #include "dri.h"
 #endif
 
-
-#ifdef RENDER
-#include "picturestr.h"
-#endif
-
 /*
  * Forward definitions for the functions that make up the driver.
  */
@@ -129,11 +124,9 @@ static void     VgaIORestore(int i, void *arg);
 static void	MGAFreeScreen(int scrnIndex, int flags);
 static int	MGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
-#ifdef DPMSExtension
 static void	MGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
-#endif
 
 /* Internally used functions */
 static Bool	MGAMapMem(ScrnInfoPtr pScrn);
@@ -2266,9 +2259,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 	reqSym = "fbScreenInit";
-#ifdef RENDER
 	xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
     }
     xf86LoaderReqSymbols(reqSym, NULL);
 
@@ -2984,10 +2975,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width, height,
 			   pScrn->xDpi, pScrn->yDpi,
 			   displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
 	if (ret)
 	    fbPictureInit (pScreen, 0, 0);
-#endif
     }
 
     if (!ret)
@@ -3075,9 +3064,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ShadowFBInit(pScreen, refreshArea);
     }
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
-#endif
    
     pScrn->memPhysBase = pMga->FbAddress;
     pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
@@ -3503,7 +3490,6 @@ MGASaveScreen(ScreenPtr pScreen, int mode)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -3542,7 +3528,6 @@ MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	crtcext1 |= INREG8(0x1FDF) & ~0x30;
 	OUTREG8(0x1FDF, crtcext1);
 }
-#endif
 
 
 static void

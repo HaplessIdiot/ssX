@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.25 2000/10/20 14:59:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.27 2000/12/06 15:35:18 eich Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -767,9 +767,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if(!xf86HandleColormaps(pScreen, 256, 8, fbdevHWLoadPalette, NULL, flags))
 		return FALSE;
 
-#ifdef DPMSExtension
 	xf86DPMSInit(pScreen, FBDevDPMSSet, 0);
-#endif
 
 	pScreen->SaveScreen = FBDevSaveScreen;
 
@@ -811,10 +809,8 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 }
 
 
-#ifdef DPMSExtension
 static void
 FBDevDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 {
 	fbdevHWDPMSSet(pScrn, mode, flags);
 }
-#endif

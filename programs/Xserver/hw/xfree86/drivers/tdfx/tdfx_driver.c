@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.61 2000/12/27 04:57:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.62 2001/01/18 20:41:27 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -78,10 +78,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* !!! These need to be checked !!! */
 #if 0
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 #endif
 
 /* The driver's own header file: */
@@ -96,10 +94,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef XF86DRI
 #include "dri.h"
-#endif
-
-#ifdef RENDER
-#include "picturestr.h"
 #endif
 
 /* Required Functions: */
@@ -138,11 +132,9 @@ static int TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool
 
 static void TDFXBlockHandler(int, pointer, pointer, pointer);
 
-#ifdef DPMSExtension
 /* Switch to various Display Power Management System levels */
 static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, 
 					int PowerManagermentMode, int flags);
-#endif
 
 #define PCI_SUBDEVICE_ID_VOODOO3_2000 0x0036
 #define PCI_SUBDEVICE_ID_VOODOO3_3000 0x003a
@@ -227,9 +219,7 @@ static const char *ddcSymbols[] = {
 #ifdef XFree86LOADER
 static const char *fbSymbols[] = {
     "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     NULL
 };
 
@@ -928,10 +918,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymbols("fbScreenInit", NULL);
-#ifdef RENDER
-  xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+  xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 
   pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
   if (!pTDFX->NoAccel) {
@@ -1818,9 +1805,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 		       pScrn->xDpi, pScrn->yDpi,
 		       pScrn->displayWidth, pScrn->bitsPerPixel))
       return FALSE;
-#ifdef RENDER
     fbPictureInit (pScreen, 0, 0);
-#endif
     break;
   default:
     xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1883,9 +1868,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   TDFXAdjustFrame(scrnIndex, 0, 0, 0);
 
-#ifdef DPMSExtension
   xf86DPMSInit(pScreen, TDFXDisplayPowerManagementSet, 0);
-#endif
 
 #ifdef XF86DRI
   if (!pTDFX->NoAccel) {
@@ -2128,7 +2111,6 @@ TDFXBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
     }
 }
 
-#ifdef DPMSExtension
 static void
 TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, 
 			      int flags) {
@@ -2160,5 +2142,3 @@ TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   dacmode|=state;
   pTDFX->writeLong(pTDFX, DACMODE, dacmode);
 }
-#endif
-

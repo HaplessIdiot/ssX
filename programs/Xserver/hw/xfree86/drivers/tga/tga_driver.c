@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.49 2000/12/02 15:30:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.50 2000/12/27 04:57:17 dawes Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -67,16 +67,12 @@
 #include "BT.h"
 #include "tga.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #ifdef XvExtension
 #include "xf86xv.h"
@@ -113,11 +109,9 @@ static Bool	TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 static void     TGARestoreHWCursor(ScrnInfoPtr pScrn);
 
-#ifdef DPMSExtension
 static void TGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
-#endif
 
 void TGASync(ScrnInfoPtr pScrn);
 
@@ -1364,10 +1358,8 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScreen->CloseScreen = TGACloseScreen;
     pScreen->SaveScreen = TGASaveScreen;
 
-#ifdef DPMSExtension
     if(xf86DPMSInit(pScreen, TGADisplayPowerManagementSet, 0) == FALSE)
       ErrorF("DPMS initialization failed!\n");
-#endif /* DPMSExtension */
 
 #ifdef XvExtension
     {
@@ -1553,7 +1545,6 @@ TGASaveScreen(ScreenPtr pScreen, int mode)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 TGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -1587,8 +1578,6 @@ TGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   TGA_WRITE_REG(valid_reg, TGA_VALID_REG);
   return;
 }
-
-#endif /* DPMSExtension */
 
 static void
 TGARestoreHWCursor(ScrnInfoPtr pScrn)

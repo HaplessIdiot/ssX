@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.5 2000/12/01 19:56:01 paulo Exp $
  */
 
 #ifndef _VESA_H_
@@ -65,10 +65,6 @@
 
 /* Dga definitions */
 #include "dgaproc.h"
-
-#ifdef RENDER
-#include "picturestr.h"
-#endif
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"

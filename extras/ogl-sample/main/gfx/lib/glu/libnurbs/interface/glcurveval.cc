@@ -31,6 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * glcurveval.c++
@@ -149,8 +150,8 @@ OpenGLCurveEvaluator::mapgrid1f(long nu, REAL u0, REAL u1)
 {
   if(output_triangles)
     {
-      global_grid_u0 = u0;
-      global_grid_u1 = u1;
+      global_grid_u0 = (int)u0;
+      global_grid_u1 = (int)u1;
       global_grid_nu = nu;
     }
   else

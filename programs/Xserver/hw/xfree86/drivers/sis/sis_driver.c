@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.56 2000/12/27 04:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.57 2001/01/06 20:19:12 tsi Exp $ */
 
 
 #include "fb.h"
@@ -52,16 +52,12 @@
 #include "sis_regs.h"
 #include "sis_vb.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #ifdef XvExtension
 #include "xf86xv.h"
@@ -325,7 +321,6 @@ SISFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-#ifdef DPMSExtension
 static void 
 SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
@@ -376,8 +371,6 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
         outb(VGA_SEQ_DATA, extDDC_PCR);
         outw(VGA_SEQ_INDEX, 0x0300);    /* End Reset */
 }
-#endif
-
 
 /* Mandatory */
 static void
@@ -1402,9 +1395,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                         CMAP_RELOAD_ON_MODE_SWITCH))
         return FALSE; 
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)SISDisplayPowerManagementSet, 0);
-#endif
 
 #ifdef XvExtension
    {

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.2 2000/09/08 21:46:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.4 2000/12/08 21:42:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -34,9 +34,6 @@
 #include    "globals.h"
 #include    "gcstruct.h"
 #include    "shadow.h"
-#ifdef RENDER
-#include    "picturestr.h"
-#endif
 
 typedef struct _shadowGCPriv {
     GCOps   *ops;

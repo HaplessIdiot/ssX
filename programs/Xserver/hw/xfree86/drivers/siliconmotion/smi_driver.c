@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.5 2000/12/05 21:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.6 2000/12/14 01:05:43 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -37,11 +37,9 @@ authorization from The XFree86 Project or Silicon Motion.
 
 #include "smi.h"
 
-#ifdef DPMSExtension
-	#include "globals.h"
-	#define DPMS_SERVER
-	#include "extensions/dpms.h"
-#endif
+#include "globals.h"
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 
 /*
  * Internals
@@ -74,10 +72,8 @@ static Bool SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool SMI_SaveScreen(ScreenPtr pScreen, int mode);
 static void SMI_LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
 							LOCO *colors, VisualPtr pVisual);
-#ifdef DPMSExtension
 static void SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 										  int PowerManagementMode, int flags);
-#endif
 static Bool SMI_ddc1(int scrnIndex);
 static unsigned int SMI_ddc1Read(ScrnInfoPtr pScrn);
 static void SMI_FreeScreen(int ScrnIndex, int flags);
@@ -2018,12 +2014,10 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pSmi->CloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = SMI_CloseScreen;
 
-#ifdef DPMSExtension
 	if (!xf86DPMSInit(pScreen, SMI_DisplayPowerManagementSet, 0))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
 	}
-#endif
 
 	SMI_InitVideo(pScreen);
 
@@ -2825,7 +2819,6 @@ SMI_PrintRegs(ScrnInfoPtr pScrn)
  * SMI_DisplayPowerManagementSet -- Sets VESA Display Power Management
  * Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 							  int flags)
@@ -2980,7 +2973,6 @@ SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 
 	LEAVE_PROC("SMI_DisplayPowerManagementSet");
 }
-#endif
 
 static void
 SMI_ProbeDDC(ScrnInfoPtr pScrn, int index)

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.2 2000/03/31 20:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.3 2000/11/09 11:32:22 alanh Exp $ */
 
 
 #include "fb.h"
@@ -51,16 +51,12 @@
 #include "sis_regs.h"
 #include "sis.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 static	char	*dramTypeStr[] = {
 		"Fast Page DRAM",

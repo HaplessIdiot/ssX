@@ -36,6 +36,7 @@
 /*
 ** $Header$
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <GL/gl.h>
@@ -45,7 +46,7 @@
 #include "glrenderer.h"
 #include "nurbsconsts.h"
 
-//#define DOWN_LOAD_NURBS
+/*#define DOWN_LOAD_NURBS*/
 #ifdef DOWN_LOAD_NURBS
 
 #include "oglTrimNurbs.h"
