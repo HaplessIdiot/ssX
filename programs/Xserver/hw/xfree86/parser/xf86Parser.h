@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.10 1999/04/25 10:02:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.11 1999/04/27 12:05:21 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -66,31 +66,13 @@ typedef struct
 }
 XF86ConfModuleRec, *XF86ConfModulePtr;
 
-/* Indexes for the specialKeyMap array */
-#define CONF_K_INDEX_LEFTALT		0
-#define CONF_K_INDEX_RIGHTALT		1
-#define CONF_K_INDEX_SCROLLLOCK		2
-#define CONF_K_INDEX_RIGHTCTL		3
-
-/* Values for the specialKeyMap array */
-#define CONF_KM_META		0
-#define CONF_KM_COMPOSE		1
-#define CONF_KM_MODESHIFT	2
-#define CONF_KM_MODELOCK	3
-#define CONF_KM_SCROLLLOCK	4
-#define CONF_KM_CONTROL		5
-
 /* Device tokens */
 typedef struct
 {
 	char *keyb_protocol;
 	int keyb_kbdDelay;
 	int keyb_kbdRate;
-	int keyb_serverNumLock;
 	long keyb_xleds;
-	int keyb_specialKeyMap[4];
-	char *keyb_vtinit;
-	int keyb_vtSysreq;
 	int keyb_xkbDisable;
 	char *keyb_xkbkeymap;
 	char *keyb_xkbcompat;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.8 1999/04/05 07:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.9 1999/04/27 12:05:21 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -70,7 +70,7 @@ typedef enum {
     MODULEPATH,
     LOGFILEPATH,
 
-    /* Server Flag tokens */
+    /* Server Flag tokens.  These are deprecated in favour of generic Options */
     NOTRAPSIGNALS,
     DONTZAP,
     DONTZOOM,
@@ -156,14 +156,7 @@ typedef enum {
 
     /* Keyboard tokens */
     AUTOREPEAT,
-    SERVERNUM,
     XLEDS,
-    VTINIT,
-    LEFTALT,
-    RIGHTALT,
-    SCROLLLOCK_TOK,
-    RIGHTCTL,
-    VTSYSREQ,
     KPROTOCOL,
     XKBKEYMAP,
     XKBCOMPAT,
@@ -178,6 +171,22 @@ typedef enum {
     XKBLAYOUT,
     XKBVARIANT,
     XKBOPTIONS,
+    /* The next two have become ServerFlags options */
+    VTINIT,
+    VTSYSREQ,
+    /* Obsolete keyboard tokens */
+    SERVERNUM,
+    LEFTALT,
+    RIGHTALT,
+    SCROLLLOCK_TOK,
+    RIGHTCTL,
+    /* arguments for the above obsolete tokens */
+    CONF_KM_META,
+    CONF_KM_COMPOSE,
+    CONF_KM_MODESHIFT,
+    CONF_KM_MODELOCK,
+    CONF_KM_SCROLLLOCK,
+    CONF_KM_CONTROL,
 
     /* Pointer tokens */
     EMULATE3,
