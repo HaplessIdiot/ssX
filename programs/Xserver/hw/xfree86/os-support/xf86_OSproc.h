@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.2 1997/02/18 10:54:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.3 1997/02/18 17:51:47 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -406,15 +406,29 @@ extern size_t xf86strlen(const char *);
 
 extern void xf86getsecs(INT32 *, INT32 *);
 
-double xf86exp(double x);
+double xf86exp(double);
 
-double xf86log(double x);
+double xf86log(double);
 
-double xf86pow(double x, double y);
+double xf86pow(double, double);
 
-double xf86sqrt(double x);
+double xf86sqrt(double);
 
-double xf86cos(double x);
+double xf86cos(double);
+
+void xf86bzero(void *, unsigned int);
+
+int xf86getbitsperpixel(int);
+
+int xf86sprintf();
+
+char * xf86strerror(int);
+
+void xf86usleep(unsigned long);
+
+Bool xf86setexternclock(char *, int, int);
+
+int xf86execl();
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

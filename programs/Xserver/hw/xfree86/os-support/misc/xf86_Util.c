@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.3 1996/09/03 04:14:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.4 1996/12/23 06:50:25 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -30,6 +30,8 @@
  */
 
 #include <ctype.h>
+#define NO_OSLIB_PROTOTYPES
+#include "xf86Procs.h"
 
 /*
  * A portable hack at implementing strcasecmp()
@@ -124,3 +126,11 @@ double RInt(double x)
 	return (t - s);
 }
 #endif
+
+int
+xf86getbitsperpixel(myNum)
+    int myNum;
+{
+    return xf86Screens[myNum]->bitsPerPixel;
+}
+

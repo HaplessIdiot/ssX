@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.3 1997/02/18 17:51:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.4 1997/02/18 22:26:23 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -171,13 +171,6 @@ xf86bzero(s, n)
     unsigned int n;
 {
     bzero(s, n);
-}
-
-int
-xf86getbitsperpixel(myNum)
-    int myNum;
-{
-    return xf86Screens[myNum]->bitsPerPixel;
 }
 
 int
