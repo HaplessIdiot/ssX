@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.64 1995/07/15 14:53:11 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.65 1995/07/19 12:36:55 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -205,20 +205,20 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.64 1995/07/15 14:53:11 dawes Exp $
 /*
  * By default, build all of the fonts.
  */
-/*
- * These four don't do anything (yet)
- */
-#ifndef Build75Dpi
-#define Build75Dpi	YES
+#ifndef Build75DpiFonts
+#define Build75DpiFonts		YES
 #endif
-#ifndef Build100Dpi
-#define Build100Dpi	YES
+#ifndef Build100DpiFonts
+#define Build100DpiFonts	YES
 #endif
-#ifndef BuildSpeedo
-#define BuildSpeedo	YES
+#ifndef BuildSpeedoFonts
+#define BuildSpeedoFonts	YES
 #endif
-#ifndef BuildType1
-#define BuildType1	YES
+#ifndef BuildType1Fonts
+#define BuildType1Fonts		YES
+#endif
+#ifndef BuildCyrillicFonts
+#define BuildCyrillicFonts	YES
 #endif
 
 /*

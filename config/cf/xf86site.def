@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.46 1995/06/27 14:33:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.47 1995/07/07 15:30:46 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -218,6 +218,36 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.46 1995/06/27 14:33:46 dawes Exp $
  * fonts)
  *
 #define BuildFonts		NO
+ */
+
+/*
+ * To not build/install the 75dpi fonts, uncomment the following
+ *
+#define Build75DpiFonts		NO
+ */
+
+/*
+ * To not build/install the 100dpi fonts, uncomment the following
+ *
+#define Build100DpiFonts	NO
+ */
+
+/*
+ * To not build/install the Speedo fonts, uncomment the following
+ *
+#define BuildSpeedoFonts	NO
+ */
+
+/*
+ * To not build/install the Type1 fonts, uncomment the following
+ *
+#define BuildType1Fonts		NO
+ */
+
+/*
+ * To not build/install the Cyrillic fonts, uncomment the following
+ *
+#define BuildCyrillicFonts	NO
  */
 
 /*

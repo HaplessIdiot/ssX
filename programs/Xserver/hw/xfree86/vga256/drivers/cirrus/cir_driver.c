@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.38 1995/07/07 15:44:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.39 1995/07/19 13:34:54 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -775,7 +775,8 @@ cirrusProbe()
 	       break;
 	       }
 	  
-	  if (cirrusChip == CLGD5430 || cirrusChip == CLGD5434) {
+	  if (cirrusChip == CLGD5430 || cirrusChip == CLGD5434 ||
+	      cirrusChip == CLGD5436) {
 	      /* Write sane value to Display Compression Control */
 	      /* Register, which may be corrupted by pvga1 driver */
 	      /* probe. */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.5 1994/11/30 20:26:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.6 1994/12/11 10:48:18 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -195,7 +195,7 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.5 1994/11/30 20:26:19 dawes Exp $
 #endif
 
 #ifndef ConnectionFlags
-# define ConnectionFlags	-DUNIXCONN -DLOCALCONN -DTCPCONN
+# define ConnectionFlags	-DLOCALCONN -DTCPCONN
 #endif
 
 #ifndef FormattedManPages

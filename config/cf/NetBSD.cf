@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.5 95/04/07 19:42:55 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.18 1995/07/08 10:21:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.19 1995/07/12 15:27:27 dawes Exp $
 
 #define OSName		NetBSD 1.0
 #define	OSVendor	/**/
@@ -218,6 +218,12 @@ install.man:: 								@@\
 #ifndef XsunMonoServer
 #define XsunMonoServer	YES
 #endif
+/*
+ * XFree86 uses its own (more portable) database routines to speed up 
+ * the RGB database lookups
+ * However, if you want to use ndbm anyway, you can set that to NO in 
+ * site.def
+ */
 #ifndef UseRgbTxt
 #define UseRgbTxt	YES
 #endif

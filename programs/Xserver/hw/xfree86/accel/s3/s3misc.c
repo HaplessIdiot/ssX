@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.29 1995/07/12 15:36:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -706,6 +706,7 @@ s3SwitchMode(mode)
       s3Restore(vgaNewVideoState);
 #endif
       s3ImageInit(); /* mode switching changes the memory bank */
+      s3RestoreCursor(s3savepScreen);
       return (TRUE);
    } else {
       ErrorF("Mode switch failed because of hardware initialisation error\n");

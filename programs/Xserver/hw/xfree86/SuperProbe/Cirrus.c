@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Cirrus.c,v 1.4 95/01/12 19:11:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.3 1994/12/02 05:46:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.4 1995/01/28 15:46:58 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -205,10 +205,30 @@ int Class;
 					case 0x2A:
 						*Chipset = CHIP_CL5434;
 						break;
+					case 0x2B:
+						*Chipset = CHIP_CL5436;
+						break;
 					default:
 						Chip_data = Ver;
 						*Chipset = CHIP_CL_UNKNOWN;
 						break;
+					}
+					if (*Chipset == CHIP_CL5430 ||
+					    *Chipset == CHIP_CL5434 ||
+					    *Chipset == CHIP_CL5436)
+					{
+						/*
+						 * Make sure that there is
+						 * a sane value in the
+						 * Display Compression
+						 * Control register, which
+						 * may be corrupted by other
+						 * probes.
+						 */
+						unsigned char tmp;
+						tmp = rdinx(GRC_IDX, 0x0F);
+						wrinx(GRC_IDX, 0x0F,
+						      tmp & 0xc0);
 					}
 				}
 				else if (testinx(SEQ_IDX, 0x19))

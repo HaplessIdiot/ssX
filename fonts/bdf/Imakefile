@@ -1,8 +1,19 @@
 XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:03:51 gildea Exp $
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags /* as nothing */
 
-        SUBDIRS = misc 75dpi 100dpi
+#if Build75DpiFonts
+DPI75DIR = 75dpi
+#endif
+#if Build100DpiFonts
+DPI100DIR = 100dpi
+#endif
+#if BuildCyrillicFonts
+CYRILLICDIR = cyrillic
+#endif
+
+        SUBDIRS = misc $(DPI75DIR) $(DPI100DIR) $(CYRILLICDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
