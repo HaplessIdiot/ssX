@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 647. Update XDarwin's IOKit mode to work with new event handling code
+      (Torrey T. Lyons).
  646. Add some more aliases for some German locales (#A.1263, Thomas Koeller).
  645. Update kio8-r encoded Cyrillic BDF fonts (#A.1267, Andrey A. Chernov).
  644. Fix Xtrans TLI code to handle a port scan and not fill the log file
@@ -15817,4 +15819,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2447 2002/12/14 04:52:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2448 2002/12/15 01:53:56 dawes Exp $

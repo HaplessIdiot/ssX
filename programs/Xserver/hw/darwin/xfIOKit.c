@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.15 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.16 2002/12/10 00:00:39 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -78,7 +78,7 @@ static mach_port_t              masterPort;
 static mach_port_t              notificationPort;
 static IONotificationPortRef    NotificationPortRef;
 static mach_port_t              pmNotificationPort;
-static io_iterator_t            iter;
+static io_iterator_t            fbIter;
 
 
 /*
@@ -117,6 +117,7 @@ static void XFIOKitStoreColors(
     xfree( newColors );
 }
 
+
 /*
  * XFIOKitBell
  *  FIXME
@@ -128,6 +129,7 @@ void XFIOKitBell(
     int             fbclass)
 {
 }
+
 
 /*
  * XFIOKitGiveUp
@@ -148,6 +150,7 @@ void XFIOKitGiveUp( void )
     }
 }
 
+
 /*
  * ClearEvent
  *  Clear an event from the HID System event queue
@@ -161,16 +164,17 @@ static void ClearEvent(NXEvent * ep)
                                 ep->data.compound.misc.L[1] = 0;
 }
 
+
 /*
  * XFIOKitHIDThread
- *  Read the HID System event queue and pass to pipe
+ *  Read the HID System event queue, translate it to an X event,
+ *  and queue it for processing.
  */
 static void *XFIOKitHIDThread(void *arg)
 {
     int iokitEventWriteFD = (int)arg;
 
     for (;;) {
-        NXEvent                 ev;
         NXEQElement             *oldHead;
         mach_msg_return_t       kr;
         mach_msg_empty_rcv_t    msg;
@@ -180,6 +184,11 @@ static void *XFIOKitHIDThread(void *arg)
         kern_assert(kr);
 
         while (evg->LLEHead != evg->LLETail) {
+            NXEvent ev;
+            xEvent xe;
+            char byte = 0;
+
+            // Extract the next event from the kernel queue
             oldHead = (NXEQElement*)&evg->lleq[evg->LLEHead];
             ev_lock(&oldHead->sema);
             ev = oldHead->event;
@@ -187,11 +196,90 @@ static void *XFIOKitHIDThread(void *arg)
             evg->LLEHead = oldHead->next;
             ev_unlock(&oldHead->sema);
 
-            write(iokitEventWriteFD, &ev, sizeof(ev));
+            memset(&xe, 0, sizeof(xe));
+
+            // These fields should be filled in for every event
+            xe.u.keyButtonPointer.rootX = ev.location.x;
+            xe.u.keyButtonPointer.rootY = ev.location.y;
+            xe.u.keyButtonPointer.time = GetTimeInMillis();
+
+            switch( ev.type ) {
+                case NX_MOUSEMOVED:
+                    xe.u.u.type = MotionNotify;
+                    break;
+
+                case NX_LMOUSEDOWN:
+                    xe.u.u.type = ButtonPress;
+                    xe.u.u.detail = 1;
+                    break;
+
+                case NX_LMOUSEUP:
+                    xe.u.u.type = ButtonRelease;
+                    xe.u.u.detail = 1;
+                    break;
+
+                // A newer kernel generates multi-button events with
+                // NX_SYSDEFINED. Button 2 isn't handled correctly by
+                // older kernels anyway. Just let NX_SYSDEFINED events
+                // handle these.
+#if 0
+                case NX_RMOUSEDOWN:
+                    xe.u.u.type = ButtonPress;
+                    xe.u.u.detail = 2;
+                    break;
+
+                case NX_RMOUSEUP:
+                    xe.u.u.type = ButtonRelease;
+                    xe.u.u.detail = 2;
+                    break;
+#endif
+
+                case NX_KEYDOWN:
+                    xe.u.u.type = KeyPress;
+                    xe.u.u.detail = ev.data.key.keyCode;
+                    break;
+
+                case NX_KEYUP:
+                    xe.u.u.type = KeyRelease;
+                    xe.u.u.detail = ev.data.key.keyCode;
+                    break;
+
+                case NX_FLAGSCHANGED:
+                    xe.u.u.type = kXDarwinUpdateModifiers;
+                    xe.u.clientMessage.u.l.longs0 = ev.flags;
+                    break;
+
+                case NX_SYSDEFINED:
+                    if (ev.data.compound.subType == 7) {
+                        xe.u.u.type = kXDarwinUpdateButtons;
+                        xe.u.clientMessage.u.l.longs0 =
+                                        ev.data.compound.misc.L[0];
+                        xe.u.clientMessage.u.l.longs1 =
+                                        ev.data.compound.misc.L[1];
+                    } else {
+                        continue;
+                    }
+                    break;
+
+                case NX_SCROLLWHEELMOVED:
+                    xe.u.u.type = kXDarwinScrollWheel;
+                    xe.u.clientMessage.u.s.shorts0 =
+                                    ev.data.scrollWheel.deltaAxis1;
+                    break;
+
+                default:
+                    continue;
+            }
+
+            DarwinEQEnqueue(&xe);
+            // signal there is an event ready to handle
+            write(iokitEventWriteFD, &byte, 1);
         }
     }
+
     return NULL;
 }
+
 
 /*
  * XFIOKitPMThread
@@ -223,6 +311,7 @@ static void *XFIOKitPMThread(void *arg)
     return NULL;
 }
 
+
 /*
  * SetupFBandHID
  *  Setup an IOFramebuffer service and connect the HID system to it.
@@ -247,7 +336,7 @@ static Bool SetupFBandHID(
     StdFBShmem_t            *cshmem;
 
     // find and open the IOFrameBuffer service
-    service = IOIteratorNext(iter);
+    service = IOIteratorNext(fbIter);
     if (service == 0)
         return FALSE;
 
@@ -451,6 +540,7 @@ static Bool SetupFBandHID(
     return TRUE;
 }
 
+
 /*
  * XFIOKitAddScreen
  *  IOKit specific initialization for each screen.
@@ -460,7 +550,11 @@ Bool XFIOKitAddScreen(
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
-    XFIOKitScreenPtr iokitScreen = XFIOKIT_SCREEN_PRIV(pScreen);
+    XFIOKitScreenPtr iokitScreen;
+
+    // allocate space for private per screen storage
+    iokitScreen = xalloc(sizeof(XFIOKitScreenRec));
+    XFIOKIT_SCREEN_PRIV(pScreen) = iokitScreen;
 
     // setup hardware framebuffer
     iokitScreen->fbService = 0;
@@ -473,6 +567,7 @@ Bool XFIOKitAddScreen(
 
     return TRUE;
 }
+
 
 /*
  * XFIOKitSetupScreen
@@ -502,9 +597,10 @@ Bool XFIOKitSetupScreen(
     return TRUE;
 }
 
+
 /*
  * XFIOKitInitOutput
- *  One-time initialization of IOKit support.
+ *  One-time initialization of IOKit output support.
  */
 void XFIOKitInitOutput(
     int argc,
@@ -512,10 +608,10 @@ void XFIOKitInitOutput(
 {
     static unsigned long    generation = 0;
     kern_return_t           kr;
+    io_iterator_t           iter;
     io_service_t            service;
     vm_address_t            shmem;
     vm_size_t               shmemSize;
-    int                     fd[2];
 
     ErrorF("Display mode: IOKit\n");
 
@@ -528,7 +624,8 @@ void XFIOKitInitOutput(
     kr = IOMasterPort(bootstrap_port, &masterPort);
     kern_assert( kr );
 
-    // find and open the HID System Service
+    // Find and open the HID System Service
+    // Do this now to be sure the Mac OS X window server is not running.
     kr = IOServiceGetMatchingServices( masterPort,
                                        IOServiceMatching( kIOHIDSystemClass ),
                                        &iter );
@@ -550,11 +647,9 @@ void XFIOKitInitOutput(
     IOObjectRelease( service );
     IOObjectRelease( iter );
 
+    // Setup the event queue in memory shared by the kernel and X server
     kr = IOHIDCreateSharedMemory( xfIOKitInputConnect,
                                   kIOHIDCurrentShmemVersion );
-    kern_assert( kr );
-
-    kr = IOHIDSetEventsEnable(xfIOKitInputConnect, TRUE);
     kern_assert( kr );
 
     kr = IOConnectMapMemory( xfIOKitInputConnect, kIOHIDGlobalMemory,
@@ -580,19 +675,37 @@ void XFIOKitInitOutput(
     // find number of framebuffers
     kr = IOServiceGetMatchingServices( masterPort,
                         IOServiceMatching( IOFRAMEBUFFER_CONFORMSTO ),
-                        &iter );
+                        &fbIter );
     kern_assert( kr );
 
     darwinScreensFound = 0;
-    while ((service = IOIteratorNext(iter))) {
+    while ((service = IOIteratorNext(fbIter))) {
         IOObjectRelease( service );
         darwinScreensFound++;
     }
-    IOIteratorReset(iter);
+    IOIteratorReset(fbIter);
+}
 
+
+/*
+ * XFIOKitInitInput
+ *  One-time initialization of IOKit input support.
+ */
+void XFIOKitInitInput(
+    int argc,
+    char **argv)
+{
+    kern_return_t           kr;
+    int                     fd[2];
+
+    kr = IOHIDSetEventsEnable(xfIOKitInputConnect, TRUE);
+    kern_assert( kr );
+
+    // Start event passing thread
     assert( pipe(fd) == 0 );
     darwinEventFD = fd[0];
     fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
     pthread_create(&inputThread, NULL,
                    XFIOKitHIDThread, (void *) fd[1]);
+
 }
