@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/13 1998/03/24 13:27:03 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.19 1999/03/21 12:46:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.20 1999/06/14 07:31:45 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -27,12 +27,6 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
 
 
-#if BuildXinerama
-PAN_DEFINES =	-DNO_PANORAMIX
-SRCSB =	panoramiXstubs.c
-OBJSB =	panoramiXstubs.o
-#endif
-
 #if BuildDPMS
 SRCSC =	dpmsstubs.c
 OBJSC =	dpmsstubs.o
@@ -54,11 +48,6 @@ SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
 
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_HW_ONLY_EXTS -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) -UXFree86LOADER)
-
-#if BuildXinerama
-LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
-SpecialCObjectRule(panoramiXstubs,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES))
-#endif
 
 #if BuildDPMS
 LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)
