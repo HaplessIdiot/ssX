@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.92 2000/05/31 09:39:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.93 2000/06/07 22:03:07 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -28,6 +28,7 @@
 #include "xf86InPriv.h"
 #include "mivalidate.h"
 #include "xf86RAC.h"
+#include "xf86Bus.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -1585,7 +1586,8 @@ struct Inst {
     GDevPtr		dev;
     Bool		foundHW;  /* PCIid in list of supported chipsets */
     Bool		claimed;  /* BusID matches with a device section */
-    int             chip;
+    int 		chip;
+    int 		screen;
 };
 
 int
@@ -1603,6 +1605,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	Bool		foundHW;  /* PCIid in list of supported chipsets */
 	Bool		claimed;  /* BusID matches with a device section */
         int             chip;
+        int		screen;
     } *instances = NULL;
     int numClaimedInstances = 0;
     int allocatedInstances = 0;
@@ -1628,6 +1631,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	            instances[allocatedInstances - 1].claimed = FALSE;
 	            instances[allocatedInstances - 1].foundHW = TRUE;
 		    instances[allocatedInstances - 1].chip = id->numChipset;
+		    instances[allocatedInstances - 1].screen = 0;
 		    numFound++;
 	        }
 	    }
@@ -1644,6 +1648,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    instances[allocatedInstances - 1].claimed = FALSE;
 		    instances[allocatedInstances - 1].foundHW = TRUE;
 		    instances[allocatedInstances - 1].chip = id->numChipset;
+		    instances[allocatedInstances - 1].screen = 0;
 		    numFound++;
 		}
 	    }
@@ -1659,6 +1664,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		instances[allocatedInstances - 1].dev = NULL;
 		instances[allocatedInstances - 1].claimed = FALSE;
 		instances[allocatedInstances - 1].foundHW = FALSE;
+	        instances[allocatedInstances - 1].screen = 0;
 
 		/* Check if the chip type is listed in the chipsets table */
 		for (id = PCIchipsets; id->PCIid != -1; id++) {
@@ -1713,6 +1719,36 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     ErrorF("%s instances found: %d\n", driverName, allocatedInstances);
 #endif
 
+   /*
+    * Check for devices that need duplicated instances.  This is required
+    * when there is more than one screen per entity.
+    *
+    * XXX This currently doesn't work for cases where the BusID isn't
+    * specified explicitly in the config file.
+    */
+
+    for (j = 0; j < numDevs; j++) {
+        if (devList[j]->screen > 0 && devList[j]->busID 
+	    && *devList[j]->busID) {
+	    for (i = 0; i < allocatedInstances; i++) {
+	        pPci = instances[i].pci;
+	        if (xf86ComparePciBusString(devList[j]->busID, pPci->bus,
+					    pPci->device,
+					    pPci->func)) {
+		    allocatedInstances++;
+		    instances = xnfrealloc(instances,
+					   allocatedInstances * 
+					   sizeof(struct Inst));
+		    instances[allocatedInstances - 1] = instances[i];
+		    instances[allocatedInstances - 1].screen =
+		      				devList[j]->screen;
+		    numFound++;
+		    break;
+		}
+	    }
+	}
+    }
+
     for (i = 0; i < allocatedInstances; i++) {
 	pPci = instances[i].pci;
 	devBus = NULL;
@@ -1721,13 +1757,15 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    if (devList[j]->busID && *devList[j]->busID) {
 		if (xf86ComparePciBusString(devList[j]->busID, pPci->bus,
 					   pPci->device,
-					   pPci->func)) {
+					   pPci->func) &&
+		    devList[j]->screen == instances[i].screen) {
+		   
 		    if (devBus)
-			xf86MsgVerb(X_WARNING,0,
+                        xf86MsgVerb(X_WARNING,0,
 			    "%s: More than one matching Device section for "
-			    "instance (BusID: %s) found: %s\n",
-			    driverName,devList[j]->identifier,
-			    devList[j]->busID);
+			    "instances\n\t(BusID: %s) found: %s\n",
+			    driverName, devList[j]->busID,
+			    devList[j]->identifier);
 		    else
 			devBus = devList[j];
 		} 
@@ -1851,7 +1889,18 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	if (!instances[i].claimed)
 	    continue;
 	pPci = instances[i].pci;
-	if (!xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func))
+
+
+        /*
+	 * Allow the same entity to be used more than once for devices with
+	 * multiple screens per entity.  This assumes implicitly that there
+	 * will be a screen == 0 instance.
+	 *
+	 * XXX Need to make sure that two different drivers don't claim
+	 * the same screen > 0 instance.
+	 */
+        if (instances[i].screen == 0 &&
+	    !xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func))
 	    continue;
 
 #ifdef DEBUG
@@ -1867,6 +1916,20 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 			       pPci->func,drvp,	instances[i].chip,
 			       instances[i].dev,instances[i].dev->active ?
 			       TRUE : FALSE);
+        if (retEntities[numFound - 1] == -1 && instances[i].screen > 0) {
+	    for (j = 0; j < xf86NumEntities; j++) {
+	        EntityPtr pEnt = xf86Entities[j];
+	        if (pEnt->busType != BUS_PCI)
+		    continue;
+	        if (pEnt->pciBusId.bus == pPci->bus &&
+		    pEnt->pciBusId.device == pPci->device &&
+		    pEnt->pciBusId.func == pPci->func) {
+		    retEntities[numFound - 1] = j;
+		    xf86AddDevToEntity(j, instances[i].dev);
+		    break;
+		}
+	    }
+	}
     }
     xfree(instances);
     if (numFound > 0) {
@@ -2543,9 +2606,14 @@ xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
     }
 
     if (!pScrn)
-	pScrn = xf86AllocateScreen(pEnt->driver,scrnFlag); 
+	pScrn = xf86AllocateScreen(pEnt->driver,scrnFlag);
+    if (xf86IsEntitySharable(entityIndex)) {
+        xf86SetEntityShared(entityIndex);
+    }
     xf86AddEntityToScreen(pScrn,entityIndex);
-    
+    if (xf86IsEntityShared(entityIndex)) {
+        return pScrn;
+    }
     if (p_chip) {
 	for (p_id = p_chip; p_id->numChipset != -1; p_id++) {
 	    if (pEnt->chipset == p_id->numChipset) break;

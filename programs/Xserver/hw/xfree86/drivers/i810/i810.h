@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.6 2000/05/11 18:14:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.7 2000/06/17 00:03:18 martin Exp $ */
 
 /*
  * Authors:
@@ -336,6 +336,25 @@ extern int I810_DEBUG;
 /* Size of the mmio region.
  */
 #define I810_REG_SIZE 0x80000
+
+
+#ifndef PCI_CHIP_I810
+#define PCI_CHIP_I810              0x7121
+#define PCI_CHIP_I810_DC100        0x7123
+#define PCI_CHIP_I810_E            0x7125 
+#define PCI_CHIP_I815              0x1132 
+#define PCI_CHIP_I810_BRIDGE       0x7120
+#define PCI_CHIP_I810_DC100_BRIDGE 0x7122
+#define PCI_CHIP_I810_E_BRIDGE     0x7124
+#define PCI_CHIP_I815_BRIDGE       0x1130
+#endif
+
+
+#define IS_I810(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I810 ||	\
+			pI810->PciInfo->chipType == PCI_CHIP_I810_DC100 || \
+			pI810->PciInfo->chipType == PCI_CHIP_I810_E)
+#define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
+
 
 #endif
   

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.13 2000/01/30 00:55:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.14 2000/03/01 16:01:30 tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -60,6 +60,7 @@ xf86ConfigSymTabRec DeviceTab[] =
 	{BUSID, "busid"},
 	{TEXTCLOCKFRQ, "textclockfreq"},
 	{IRQ, "irq"},
+	{SCREEN, "screen"},
 	{-1, ""},
 };
 
@@ -224,6 +225,11 @@ parseDeviceSection (void)
 				Error (QUOTE_MSG, "IRQ");
 			ptr->dev_irq = val.num;
 			break;
+		case SCREEN:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (NUMBER_MSG, "Screen");
+			ptr->dev_screen = val.num;
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -311,6 +317,8 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		}
 		if (ptr->dev_busid)
 			fprintf (cf, "\tBusID       \"%s\"\n", ptr->dev_busid);
+		if (ptr->dev_screen > 0)
+			fprintf (cf, "\tScreen      \"%d\"\n", ptr->dev_screen);
 		if (ptr->dev_irq >= 0)
 			fprintf (cf, "\tIRQ         %d\n", ptr->dev_irq);
 		fprintf (cf, "EndSection\n\n");

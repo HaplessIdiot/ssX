@@ -439,7 +439,23 @@ static void i810DDLightModelfv(GLcontext *ctx, GLenum pname,
    }
 }
 
+/* The 815 has it...
+ */
+static void i810DDLightModelfv_i815(GLcontext *ctx, GLenum pname, 
+			      const GLfloat *param)
+{
+   if (pname == GL_LIGHT_MODEL_COLOR_CONTROL) 
+   {            
+      i810ContextPtr imesa = I810_CONTEXT( ctx );
+      FLUSH_BATCH(imesa);
+      
+      imesa->Setup[I810_CTXREG_B1] &= ~B1_SPEC_ENABLE;
 
+      if (ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
+	 imesa->Setup[I810_CTXREG_B1] |= B1_SPEC_ENABLE;
+   }
+}
+  
 
 /* =============================================================
  * Fog
@@ -973,7 +989,6 @@ void i810DDInitStateFuncs(GLcontext *ctx)
 {
    ctx->Driver.UpdateState = i810DDUpdateState;
    ctx->Driver.Enable = i810DDEnable;
-   ctx->Driver.LightModelfv = i810DDLightModelfv;
    ctx->Driver.AlphaFunc = i810DDAlphaFunc;
    ctx->Driver.BlendEquation = i810DDBlendEquation;
    ctx->Driver.BlendFunc = i810DDBlendFunc;
@@ -988,19 +1003,20 @@ void i810DDInitStateFuncs(GLcontext *ctx)
    ctx->Driver.ReducedPrimitiveChange = i810DDReducedPrimitiveChange;
    ctx->Driver.RenderStart = i810DDUpdateHwState; 
    ctx->Driver.RenderFinish = 0; 
-   
    ctx->Driver.PolygonStipple = i810DDPolygonStipple;
    ctx->Driver.LineStipple = 0;
-
    ctx->Driver.SetReadBuffer = i810DDSetReadBuffer;
    ctx->Driver.SetDrawBuffer = i810DDSetDrawBuffer;
-
    ctx->Driver.Color = i810DDSetColor;
    ctx->Driver.ClearColor = i810DDClearColor;
    ctx->Driver.Dither = i810DDDither;
-
    ctx->Driver.Index = 0;
    ctx->Driver.ClearIndex = 0;
    ctx->Driver.IndexMask = 0;
-}
 
+   if (IS_I815(I810_CONTEXT(ctx))) {
+      ctx->Driver.LightModelfv = i810DDLightModelfv_i815;
+   } else {
+      ctx->Driver.LightModelfv = i810DDLightModelfv;
+   }
+}

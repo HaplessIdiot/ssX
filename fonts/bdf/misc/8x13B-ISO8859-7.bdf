@@ -2,9 +2,9 @@ STARTFONT 2.1
 COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT Generated with 'ucs2any.pl ../8x13B.bdf ../map-ISO8859-7 ISO8859-7'
 COMMENT from an ISO10646-1 encoded source BDF font.
-COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 1999.
-COMMENT "Id: 8x13B.bdf,v 1.23 1999-12-13 10:50:31+00 mgk25 Exp mgk25 $"
-COMMENT "Send bug reports to Markus Kuhn <mkuhn@acm.org>"
+COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 2000.
+COMMENT Id: 8x13B.bdf,v 1.23 1999-12-13 10:50:31+00 mgk25 Rel mgk25 $
+COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Bold-R-Normal--13-120-75-75-C-80-ISO8859-7
 SIZE 13 78 78
 FONTBOUNDINGBOX 8 13 0 -2
@@ -32,7 +32,7 @@ CAP_HEIGHT 10
 X_HEIGHT 7
 ENDPROPERTIES
 CHARS 213
-STARTCHAR defaultchar
+STARTCHAR char0
 ENCODING 0
 SWIDTH 568 0
 DWIDTH 8 0

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86isaBus.c,v 3.3 2000/02/08 13:13:06 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -43,9 +43,9 @@ xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active)
     p->driver = drvp;
     p->chipset = chipset;
     p->busType = BUS_ISA;
-    p->device = dev;
     p->active = active;
     p->inUse = FALSE;
+    xf86AddDevToEntity(num, dev);
     p->access = xnfcalloc(1,sizeof(EntityAccessRec));
     p->access->fallback = &AccessNULL;
     p->access->pAccess = &AccessNULL;

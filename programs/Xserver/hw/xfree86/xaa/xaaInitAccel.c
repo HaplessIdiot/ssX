@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.22 2000/05/03 00:44:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.23 2000/05/03 14:54:58 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -107,6 +107,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
     OptionInfoRec options[nXAAOptions];
+    int is_shared = 0;
+    int i;
 
     (void)memcpy(options, XAAOptions, sizeof(XAAOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
@@ -116,7 +118,19 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /* must have a Sync function */
     if(!infoRec->Sync) return FALSE;
+    for(i = 0; i < pScrn->numEntities; i++) {
+        if(xf86IsEntityShared(pScrn->entityList[i])) is_shared = 1;
+    }
+   
+    /* If this PCI entity has IS_SHARED_ACCEL set in entityProp
+     * then a RestoreAccelState function is required
+     */
+    if(!infoRec->RestoreAccelState && is_shared) return FALSE;
 
+    if(infoRec->RestoreAccelState) {
+        if(!XAAInitStateWrap(pScreen, infoRec)) return FALSE;
+    }
+   
     if(!infoRec->FullPlanemask)
 	infoRec->FullPlanemask =  (1 << pScrn->depth) - 1;
 

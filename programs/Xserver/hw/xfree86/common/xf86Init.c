@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.159 2000/04/01 01:28:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.160 2000/04/04 15:54:17 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -459,16 +459,16 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	   layout++) {
 	  Bool found = FALSE;
 	  for (j = 0; j < xf86Screens[i]->numEntities; j++) {
-	      EntityInfoPtr pEnt =
-		  xf86GetEntityInfo(xf86Screens[i]->entityList[j]);
-	      if (pEnt->device == layout->screen->device) {
+	
+	      GDevPtr dev =
+		xf86GetDevFromEntity(j, xf86Screens[i]->entityInstanceList[j]);
+
+	      if (dev == layout->screen->device) {
 		  /* A match has been found */
 		  xf86Screens[i]->confScreen = layout->screen;
 		  found = TRUE;
-		  xfree(pEnt);
 		  break;
 	      }
-	      xfree(pEnt);
 	  }
 	  if (found) break;
       }

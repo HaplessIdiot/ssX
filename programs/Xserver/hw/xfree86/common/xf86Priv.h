@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.65 2000/03/08 05:38:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.66 2000/04/23 19:26:57 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -123,6 +123,7 @@ void xf86FindPrimaryDevice(void);
 void xf86ResourceBrokerInit(void);
 void xf86PostProbe(void);
 void xf86ClearEntityListForScreen(int scrnIndex);
+void xf86AddDevToEntity(int entityIndex, GDevPtr dev);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
 extern memType getValidBIOSBase(PCITAG tag, int num);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.13 1999/06/05 15:55:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.14 1999/06/12 07:18:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -42,22 +42,22 @@ xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts)
 {
     XF86OptionPtr tmp;
     XF86OptionPtr extras = (XF86OptionPtr)extraOpts;
-    EntityInfoPtr pEnt;
+    GDevPtr device;
     
     int i;
 
     pScrn->options = NULL;
 
     for (i=pScrn->numEntities - 1; i >= 0; i--) {
-	pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
-	if (pEnt->device && pEnt->device->options) {
-	    tmp = OptionListDup(pEnt->device->options);
+	device = xf86GetDevFromEntity(pScrn->entityList[i],
+					pScrn->entityInstanceList[i]);
+	if (device && device->options) {
+	    tmp = OptionListDup(device->options);
 	    if (pScrn->options)
 		OptionListMerge(pScrn->options,tmp);
 	    else
 		pScrn->options = tmp;
 	}
-	xfree(pEnt);
     }
     if (pScrn->monitor->options) {
 	tmp = OptionListDup(pScrn->monitor->options);

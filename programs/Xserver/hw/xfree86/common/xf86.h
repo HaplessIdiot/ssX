@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.138 2000/05/11 18:14:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.139 2000/05/23 04:47:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -91,6 +91,10 @@ void xf86FreeResList(resPtr rlist);
 void xf86ClaimFixedResources(resList list, int entityIndex);
 Bool xf86DriverHasEntities(DriverPtr drvp);
 void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);
+void xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex,
+				    int instance);
+int xf86GetNumEntityInstances(int entityIndex);
+GDevPtr xf86GetDevFromEntity(int entityIndex, int instance);
 void xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex);
 EntityInfoPtr xf86GetEntityInfo(int entityIndex);
 pciVideoPtr xf86GetPciInfoForEntity(int entityIndex);
@@ -128,7 +132,19 @@ Bool xf86DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCa
 #ifdef async
 Bool xf86QueueAsyncEvent(void (*func)(pointer),pointer arg);
 #endif
- 
+
+int xf86GetLastScrnFlag(int entityIndex);
+void xf86SetLastScrnFlag(int entityIndex, int scrnIndex);
+Bool xf86IsEntityShared(int entityIndex);
+void xf86SetEntityShared(int entityIndex);
+Bool xf86IsEntitySharable(int entityIndex);
+void xf86SetEntitySharable(int entityIndex);
+Bool xf86IsPrimInitDone(int entityIndex);
+void xf86SetPrimInitDone(int entityIndex);
+void xf86ClearPrimInitDone(int entityIndex);
+int xf86AllocateEntityPrivateIndex(void);
+DevUnion *xf86GetEntityPrivate(int entityIndex, int privIndex);
+
 /* xf86Configure.c */
 GDevPtr xf86AddBusDeviceToConfigure(const char *driver, BusType bus,
 				    void *busData, int chipset);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.27 2000/03/05 23:47:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.31 2000/05/14 20:04:21 alanh Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -125,6 +125,12 @@ xf86ModeStatusToString(ModeStatus status)
 	return "exceeds panel dimensions";
     case MODE_INTERLACE_WIDTH:
 	return "width too large for interlaced mode";
+    case MODE_ONE_WIDTH:
+        return "all modes must have the same width";
+    case MODE_ONE_HEIGHT:
+        return "all modes must have the same height";
+    case MODE_ONE_SIZE:
+        return "all modes must have the same resolution";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:
@@ -1468,8 +1474,18 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    scrp->displayWidth = newLinePitch;
 	    p->status = (scrp->ValidMode)(scrp->scrnIndex, p, FALSE,
 					  MODECHECK_FINAL);
-	    if (p->status != MODE_OK)
-		goto lookupNext;
+
+	   if (p->status != MODE_OK) {
+	        if (p->type & M_T_BUILTIN)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(p->status));
+	        else
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(p->status));
+	        goto lookupNext;
+	    }
 	}
 
 	/* Mode has passed all the tests */

@@ -400,6 +400,7 @@
 #define MF_MIP_NONE             (0x0<<6)
 #define MF_MIP_NEAREST          (0x1<<6)
 #define MF_MIP_DITHER           (0x2<<6)
+#define MF_MIP_LINEAR           (0x3<<6)
 #define MF_UPDATE_MAG_FILTER    (1<<5)
 #define MF_MAG_MASK             (1<<3)
 #define MF_MAG_LINEAR           (1<<3)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.3 2000/05/11 18:14:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.4 2000/06/17 00:03:18 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -229,13 +229,11 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    if (pScrn->bitsPerPixel != 16)
       return FALSE;
 
-#if XFree86LOADER
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for known symbols in each module. */
-   if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
-   if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
-   if (!LoaderSymbol("drmAvailable"))        return FALSE;
-#endif     
+   if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
+   if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
+   if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    
    /* Check the DRI version */
    {
@@ -443,7 +441,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    if (dcacheHandle != 0) {
       /* The Z buffer is always aligned to the 48 mb mark in the aperture */
       if(drmAgpBind(pI810->drmSubFD, dcacheHandle, 48*1024*1024) == 0) {
-	 xf86memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
+	 memset (&pI810->DcacheMem, 0, sizeof(I810MemRange));
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: Found 4096K Z buffer memory\n");
 	 pI810->DcacheMem.Start = 48*1024*1024;

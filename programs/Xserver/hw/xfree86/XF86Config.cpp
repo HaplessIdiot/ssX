@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.8 2000/06/14 02:13:07 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.9 2000/06/14 18:17:51 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0.1"  "XFree86"
@@ -736,6 +736,19 @@ the device section and the hardware it is representing.  This information
 can usually be found by running the X server with the
 .B \-scanpci
 command line option.
+.TP 7
+.BI "Screen  " number
+This option is mandatory for cards where a single PCI entity can drive more
+than one display (i.e., multiple CRTCs sharing a single graphics accelerator
+and video memory).  One
+.B Device
+section is required for each head, and this
+parameter determines which head each of the
+.B Device
+sections applies to.  The legal values of
+.I number
+range from 0 to one less than the total number of heads per entity.
+Most drivers require that the primary screen (0) be present.
 .TP 7
 .BI "Chipset  \*q" chipset \*q
 This usually optional entry specifies the chipset used on the graphics

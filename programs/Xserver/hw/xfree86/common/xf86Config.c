@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.224 2000/05/31 09:39:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.225 2000/06/07 22:03:06 tsi Exp $ */
 
 
 /*
@@ -1850,6 +1850,7 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
     devicep->chipRev = conf_device->dev_chiprev;
     devicep->options = conf_device->dev_option_lst;
     devicep->irq = conf_device->dev_irq;
+    devicep->screen = conf_device->dev_screen;
 
     for (i = 0; i < MAXDACSPEEDS; i++) {
 	if (i < CONF_MAXDACSPEEDS)

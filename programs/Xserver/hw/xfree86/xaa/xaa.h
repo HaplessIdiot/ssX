@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.27 1999/07/10 12:17:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.29 2000/04/01 22:42:04 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -237,6 +237,17 @@ typedef struct _XAAInfoRec {
    int Flags;
 
    void (*Sync)(
+	ScrnInfoPtr pScrn
+   );
+   
+   /* Restore Accel State is a driver callback that is used
+    * when another screen on the same device has been active.
+    * This allows multihead on a single device to work.
+    * If The entityProp has IS_SHARED_ACCEL defined then this
+    * function is required.
+    */
+   
+   void (*RestoreAccelState)(
 	ScrnInfoPtr pScrn
    );
 

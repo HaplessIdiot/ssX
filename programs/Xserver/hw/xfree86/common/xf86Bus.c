@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.48 2000/05/18 23:21:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.49 2000/06/13 02:28:31 dawes Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -29,6 +29,7 @@
 /* Entity data */
 EntityPtr *xf86Entities = NULL;	/* Bus slots claimed by drivers */
 int xf86NumEntities = 0;
+static int xf86EntityPrivateCount = 0;
 BusAccPtr xf86BusAccInfo = NULL;
 
 xf86AccessRec AccessNULL = {NULL,NULL,NULL};
@@ -169,6 +170,8 @@ xf86AllocateEntity(void)
     xf86Entities = xnfrealloc(xf86Entities,
 			      sizeof(EntityPtr) * xf86NumEntities);
     xf86Entities[xf86NumEntities - 1] = xnfcalloc(1,sizeof(EntityRec));
+    xf86Entities[xf86NumEntities - 1]->entityPrivates =
+               xnfcalloc(sizeof(DevUnion) * xf86EntityPrivateCount, 1);
     return (xf86NumEntities - 1);
 }
 
@@ -261,7 +264,8 @@ xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex)
 {
     if (entityIndex == -1)
 	return;
-    if (xf86Entities[entityIndex]->inUse)
+    if (xf86Entities[entityIndex]->inUse &&
+	!(xf86Entities[entityIndex]->entityProp & IS_SHARED_ACCEL))
 	FatalError("Requested Entity already in use!\n");
 
     pScrn->numEntities++;
@@ -271,8 +275,31 @@ xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex)
     xf86Entities[entityIndex]->access->next = pScrn->access;
     pScrn->access = xf86Entities[entityIndex]->access;
     xf86Entities[entityIndex]->inUse = TRUE;
+    pScrn->entityInstanceList = xnfrealloc(pScrn->entityInstanceList,
+				    pScrn->numEntities * sizeof(int));
+    pScrn->entityInstanceList[pScrn->numEntities - 1] = 0;
 }
 
+void
+xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex, int instance)
+{
+    int i;
+
+    if (entityIndex == -1 || entityIndex >= xf86NumEntities)
+	return;
+
+    for (i = 0; i < pScrn->numEntities; i++) {
+	if (pScrn->entityList[i] == entityIndex) {
+	    pScrn->entityInstanceList[i] = instance;
+	    break;
+	}
+    }
+}
+
+/*
+ * XXX  This needs to be updated for the case where a single entity may have
+ * instances associated with more than one screen.
+ */
 ScrnInfoPtr
 xf86FindScreenForEntity(int entityIndex)
 {
@@ -344,6 +371,8 @@ xf86ClearEntityListForScreen(int scrnIndex)
 	xf86DeallocateResourcesForEntity(i, ResShared);
     }
     xfree(xf86Screens[scrnIndex]->entityList);
+    if (xf86Screens[scrnIndex]->entityInstanceList)
+       xfree(xf86Screens[scrnIndex]->entityInstanceList);
     if (xf86Screens[scrnIndex]->CurrentAccess->pIoAccess
 	== (EntityAccessPtr) xf86Screens[scrnIndex]->access)
 	xf86Screens[scrnIndex]->CurrentAccess->pIoAccess = NULL;
@@ -351,6 +380,7 @@ xf86ClearEntityListForScreen(int scrnIndex)
 	== (EntityAccessPtr) xf86Screens[scrnIndex]->access)
 	xf86Screens[scrnIndex]->CurrentAccess->pMemAccess = NULL;
     xf86Screens[scrnIndex]->entityList = NULL;
+    xf86Screens[scrnIndex]->entityInstanceList = NULL;
 }
 
 void
@@ -372,6 +402,25 @@ xf86DeallocateResourcesForEntity(int entityIndex, long type)
 }
 
 /*
+ * Add an extra device section (GDevPtr) to an entity.
+ */
+
+void
+xf86AddDevToEntity(int entityIndex, GDevPtr dev)
+{
+    EntityPtr pEnt;
+    
+    if (entityIndex >= xf86NumEntities)
+	return;
+    
+    pEnt = xf86Entities[entityIndex];
+    pEnt->numInstances++;
+    pEnt->devices = xnfrealloc(pEnt->devices,
+				pEnt->numInstances * sizeof(GDevPtr));
+    pEnt->devices[pEnt->numInstances - 1] = dev;
+}
+
+/*
  * xf86GetEntityInfo() -- This function hands information from the
  * EntityRec struct to the drivers. The EntityRec structure itself
  * remains invisible to the driver.
@@ -380,6 +429,7 @@ EntityInfoPtr
 xf86GetEntityInfo(int entityIndex)
 {
     EntityInfoPtr pEnt;
+    int i;
     
     if (entityIndex >= xf86NumEntities)
 	return NULL;
@@ -390,10 +440,37 @@ xf86GetEntityInfo(int entityIndex)
     pEnt->active = xf86Entities[entityIndex]->active;
     pEnt->chipset = xf86Entities[entityIndex]->chipset;
     pEnt->resources = xf86Entities[entityIndex]->resources;
-    pEnt->device = xf86Entities[entityIndex]->device;
     pEnt->driver = xf86Entities[entityIndex]->driver;
+    for (i = 0; i < xf86Entities[entityIndex]->numInstances; i++)
+	if (xf86Entities[entityIndex]->devices[i]->screen == 0)
+	    break;
+    pEnt->device = xf86Entities[entityIndex]->devices[i];
     
     return pEnt;
+}
+
+int
+xf86GetNumEntityInstances(int entityIndex)
+{
+    if (entityIndex >= xf86NumEntities)
+	return -1;
+    
+    return xf86Entities[entityIndex]->numInstances;
+}
+
+GDevPtr
+xf86GetDevFromEntity(int entityIndex, int instance)
+{
+    int i;
+
+    if (entityIndex >= xf86NumEntities ||
+	instance >= xf86Entities[entityIndex]->numInstances)
+	return NULL;
+    
+    for (i = 0; i < xf86Entities[entityIndex]->numInstances; i++)
+	if (xf86Entities[entityIndex]->devices[i]->screen == instance)
+	    break;
+    return xf86Entities[entityIndex]->devices[i];
 }
 
 /*
@@ -2957,3 +3034,122 @@ xf86QueueAsyncEvent(void (*func)(pointer),pointer arg)
     return TRUE;
 }
 #endif
+
+/* Multihead accel sharing accessor functions and entity Private handling */
+
+int
+xf86GetLastScrnFlag(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        return(xf86Entities[entityIndex]->lastScrnFlag);
+    } else {
+        return -1;
+    }
+}
+
+void
+xf86SetLastScrnFlag(int entityIndex, int scrnIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        xf86Entities[entityIndex]->lastScrnFlag = scrnIndex;
+    }
+}
+
+Bool
+xf86IsEntityShared(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        if(xf86Entities[entityIndex]->entityProp & IS_SHARED_ACCEL) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+void
+xf86SetEntityShared(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        xf86Entities[entityIndex]->entityProp |= IS_SHARED_ACCEL;
+    }
+}
+
+Bool
+xf86IsEntitySharable(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        if(xf86Entities[entityIndex]->entityProp & ACCEL_IS_SHARABLE) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+void
+xf86SetEntitySharable(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        xf86Entities[entityIndex]->entityProp |= ACCEL_IS_SHARABLE;
+    }
+}
+
+Bool
+xf86IsPrimInitDone(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        if(xf86Entities[entityIndex]->entityProp & SA_PRIM_INIT_DONE) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+void
+xf86SetPrimInitDone(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        xf86Entities[entityIndex]->entityProp |= SA_PRIM_INIT_DONE;
+    }
+}
+
+void
+xf86ClearPrimInitDone(int entityIndex)
+{
+    if(entityIndex < xf86NumEntities) {
+        xf86Entities[entityIndex]->entityProp &= ~SA_PRIM_INIT_DONE;
+    }
+}
+
+
+/*
+ * Allocate a private in the entities.
+ */
+
+int
+xf86AllocateEntityPrivateIndex(void)
+{
+    int idx, i;
+    EntityPtr pEnt;
+    DevUnion *nprivs;
+
+    idx = xf86EntityPrivateCount++;
+    for (i = 0; i < xf86NumEntities; i++) {
+	pEnt = xf86Entities[i];
+	nprivs = xnfrealloc(pEnt->entityPrivates,
+			    xf86EntityPrivateCount * sizeof(DevUnion));
+	/* Zero the new private */
+	bzero(&nprivs[idx], sizeof(DevUnion));
+	pEnt->entityPrivates = nprivs;
+    }
+    return idx;
+}
+
+DevUnion *
+xf86GetEntityPrivate(int entityIndex, int privIndex)
+{
+    if (entityIndex >= xf86NumEntities || privIndex >= xf86EntityPrivateCount)
+	return NULL;
+
+    return &(xf86Entities[entityIndex]->entityPrivates[privIndex]);
+}
+

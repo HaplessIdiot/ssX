@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.14 2000/04/17 16:29:52 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.15 2000/05/18 23:21:33 dawes Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -33,7 +33,6 @@ typedef struct {
     EntityProc                  entityEnter;
     EntityProc                  entityLeave;
     pointer                     private;
-    GDevPtr                     device;
     resPtr                      resources;
     Bool                        active;
     Bool                        inUse;
@@ -41,6 +40,10 @@ typedef struct {
     EntityAccessPtr             access;
     AccessFuncPtr               rac;
     pointer                     busAcc;
+    int                         lastScrnFlag;
+    DevUnion *                  entityPrivates;
+    int                         numInstances;
+    GDevPtr *                   devices;   
 } EntityRec, *EntityPtr;
 
 /* asynchronous event handling */
@@ -60,6 +63,9 @@ typedef struct _AsyncQRec {
 #define NEED_IO  0x0020
 #define NEED_MEM_SHARED 0x0040
 #define NEED_IO_SHARED 0x0080
+#define ACCEL_IS_SHARABLE 0x0100
+#define IS_SHARED_ACCEL 0x0200
+#define SA_PRIM_INIT_DONE 0x0400
 
 #define NEED_SHARED (NEED_MEM_SHARED | NEED_IO_SHARED)
 

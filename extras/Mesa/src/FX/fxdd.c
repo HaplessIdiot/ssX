@@ -183,10 +183,10 @@ static GLbitfield fxDDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
 
 
   /* disable stencil ops if enabled (it screws up clearing) */
-  if (ctx->Stencil.Enabled)
-    FX_grDisable(GR_STENCIL_MODE_EXT);
-
   if (fxMesa->haveHwStencil) {
+    if (ctx->Stencil.Enabled)
+      FX_grDisable(GR_STENCIL_MODE_EXT);
+
     if (mask & DD_STENCIL_BIT) {
       FX_grStencilMask(0xff);
       /* set stencil ref value = desired clear value */
@@ -313,7 +313,7 @@ static GLbitfield fxDDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
       ;
   }
 
-  if (ctx->Stencil.Enabled) {
+  if (fxMesa->haveHwStencil && ctx->Stencil.Enabled) {
     /* restore stencil state to as it was before the clear */
     FX_grEnable(GR_STENCIL_MODE_EXT);
     FX_grStencilMask(ctx->Stencil.WriteMask);
@@ -971,7 +971,7 @@ static const GLubyte *fxDDGetString(GLcontext *ctx, GLenum name)
           }
         }
         /* now make the GL_RENDERER string */
-        sprintf(buffer, "Mesa DRI %s 20000608", hardware);
+        sprintf(buffer, "Mesa DRI %s 20000616", hardware);
         return buffer;
       }
     case GL_VENDOR:

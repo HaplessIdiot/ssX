@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.58 2000/06/17 00:03:17 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.59 2000/06/17 00:27:31 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -543,7 +543,15 @@
 #define PCI_CHIP_NM2360		0x0006
 
 /* Intel */
-#define PCI_CHIP_I740_AGP	0x7800
+#define PCI_CHIP_I815_BRIDGE		0x1130
+#define PCI_CHIP_I815			0x1132
+#define PCI_CHIP_I810_BRIDGE		0x7120
+#define PCI_CHIP_I810			0x7121
+#define PCI_CHIP_I810_DC100_BRIDGE	0x7122
+#define PCI_CHIP_I810_DC100		0x7123
+#define PCI_CHIP_I810_E_BRIDGE		0x7124
+#define PCI_CHIP_I810_E			0x7125
+#define PCI_CHIP_I740_AGP		0x7800
 
 /*
  * first the VendorId - VendorName mapping
@@ -1372,6 +1380,14 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x84C4, "P6",0},
 				{0x84C5, "82450GX20",0},
 				{PCI_CHIP_I740_AGP,	"i740 (AGP)",0},
+				{PCI_CHIP_I815_BRIDGE,	"i815 Bridge",0},
+				{PCI_CHIP_I815,		"i815",0},
+				{PCI_CHIP_I810_BRIDGE,	"i810 Bridge",0},
+				{PCI_CHIP_I810,		"i810",0},
+				{PCI_CHIP_I810_DC100_BRIDGE,	"i810-dc100 Bridge",0},
+				{PCI_CHIP_I810_DC100,	"i810-dc100",0},
+				{PCI_CHIP_I810_E_BRIDGE,"i810e Bridge",0},
+				{PCI_CHIP_I810_E,	"i810e",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_ADAPTEC, {
 				{0x0010, "2940U2",0 },

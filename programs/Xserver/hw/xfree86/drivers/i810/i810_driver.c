@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.10 2000/06/01 23:05:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.11 2000/06/17 00:03:18 martin Exp $ */
 
 /*
  * Authors:
@@ -65,10 +65,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfb24_32.h"
-#include "i810.h"
 #include "miscstruct.h"
 #include "xf86xv.h"
 #include "Xv.h"
+
+#include "i810.h"
 
 #ifdef XF86DRI
 #include "dri.h"
@@ -105,20 +106,12 @@ DriverRec I810 = {
    0
 };
 
-#ifndef PCI_CHIP_I810
-#define PCI_CHIP_I810              0x7121
-#define PCI_CHIP_I810_DC100        0x7123
-#define PCI_CHIP_I810_E            0x7125 
-#define PCI_CHIP_I810_BRIDGE       0x7120
-#define PCI_CHIP_I810_DC100_BRIDGE 0x7122
-#define PCI_CHIP_I810_E_BRIDGE     0x7124
-#endif
-
 /* Chipsets */
 static SymTabRec I810Chipsets[] = {
    { PCI_CHIP_I810,       "i810"},
    { PCI_CHIP_I810_DC100, "i810-dc100"},
    { PCI_CHIP_I810_E,     "i810e"},
+   { PCI_CHIP_I815,	  "i815"},
    { -1, NULL }
 };
 
@@ -126,6 +119,7 @@ static PciChipsets I810PciChipsets[] = {
    { PCI_CHIP_I810,       PCI_CHIP_I810,       RES_SHARED_VGA },
    { PCI_CHIP_I810_DC100, PCI_CHIP_I810_DC100, RES_SHARED_VGA },
    { PCI_CHIP_I810_E,     PCI_CHIP_I810_E,     RES_SHARED_VGA },
+   { PCI_CHIP_I815,	  PCI_CHIP_I815,       RES_SHARED_VGA },
    { -1, -1, RES_UNDEFINED }
 };
 
@@ -1873,10 +1867,7 @@ static void
 I810LeaveVT(int scrnIndex, int flags) {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    vgaHWPtr hwp = VGAHWPTR(pScrn);
-#ifdef XF86DRI
    I810Ptr pI810 = I810PTR(pScrn);
-#endif
-
 
    if (I810_DEBUG & DEBUG_VERBOSE_DRI)
       ErrorF("\n\n\nLeave VT\n");

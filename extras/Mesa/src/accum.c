@@ -187,7 +187,7 @@ _mesa_Accum( GLenum op, GLfloat value )
 
    switch (op) {
       case GL_ADD:
-         {
+         if (value != 0.0F) {
 	    const GLaccum intVal = (GLaccum) (value * acc_scale);
 	    GLuint j;
             /* Leave optimized accum buffer mode */
@@ -205,7 +205,7 @@ _mesa_Accum( GLenum op, GLfloat value )
 	 break;
 
       case GL_MULT:
-	 {
+         if (value != 1.0F) {
 	    GLuint j;
             /* Leave optimized accum buffer mode */
             if (ctx->IntegerAccumMode)
@@ -222,6 +222,9 @@ _mesa_Accum( GLenum op, GLfloat value )
 	 break;
 
       case GL_ACCUM:
+         if (value == 0.0F)
+            return;
+
          (*ctx->Driver.SetReadBuffer)( ctx, ctx->ReadBuffer,
                                        ctx->Pixel.DriverReadBuffer );
 

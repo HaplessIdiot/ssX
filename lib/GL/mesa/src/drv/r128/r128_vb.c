@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.1 2000/06/17 00:03:09 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -262,8 +262,10 @@ void r128ChooseRasterSetupFunc(GLcontext *ctx)
     r128ctx->multitex = 0;
 
     if (ctx->Texture.Enabled & ENABLE_TEX0) {
+        /* This doesn't work for non-RGBA textures
 	if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	    funcIndex &= ~R128_RGBA_BIT;
+        */
 	funcIndex |= R128_TEX0_BIT;
     }
 

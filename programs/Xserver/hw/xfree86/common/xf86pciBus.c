@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.14 2000/03/27 05:10:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.17 2000/04/19 16:57:43 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2158,12 +2158,12 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	p->driver = drvp;
 	p->chipset = chipset;
 	p->busType = BUS_PCI;
- 	p->device = dev;
 	p->pciBusId.bus = bus;
 	p->pciBusId.device = device;
 	p->pciBusId.func = func;
 	p->active = active;
 	p->inUse = FALSE;
+        xf86AddDevToEntity(num, dev);
 	/* Here we initialize the access structure */
 	p->access = xnfcalloc(1,sizeof(EntityAccessRec));
 	while (ppaccp && *ppaccp) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.23 2000/04/01 22:42:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.25 2000/06/13 02:51:25 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1518,6 +1518,7 @@ void XAAMoveInOffscreenPixmaps(ScreenPtr pScreen);
 void XAAMoveOutOffscreenPixmaps(ScreenPtr pScreen);
 void XAARemoveAreaCallback(FBAreaPtr area);
 void XAAMoveOutOffscreenPixmap(PixmapPtr pPix); 
+Bool XAAInitStateWrap(ScreenPtr pScreen, XAAInfoRecPtr infoRec);
 
 extern GCOps XAAFallbackOps;
 extern GCFuncs XAAGCFuncs;

@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.36 2000/06/13 02:28:40 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.37 2000/06/14 00:16:19 dawes Exp $ */
 
 /***********************************************************
 
@@ -833,7 +833,6 @@ main (int argc, char **argv, char **envp)
 	Widget form_top, menu_top;
 	register TScreen *screen;
 	int mode;
-	char *app_name = "XTerm";
 
 	/* Do these first, since we may not be able to open the display */
 	ProgramName = argv[0];
@@ -843,11 +842,6 @@ main (int argc, char **argv, char **envp)
 			Version();
 		if (abbrev(argv[1], "-help"))
 			Help();
-		for (n = 1; n < argc - 1; n++) {
-			if (abbrev(argv[n], "-name")) {
-				app_name = argv[n+1];
-			}
-		}
 	}
 
 	/* XXX: for some obscure reason EMX seems to lose the value of

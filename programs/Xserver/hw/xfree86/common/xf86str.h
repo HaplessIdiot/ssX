@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.69 2000/05/11 18:14:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.70 2000/05/18 23:21:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -86,6 +86,9 @@ typedef enum {
     MODE_VBLANK_WIDE,	/* vertical blanking too wide */
     MODE_PANEL,         /* exceeds panel dimensions */
     MODE_INTERLACE_WIDTH, /* width too large for interlaced mode */
+    MODE_ONE_WIDTH,    /* only one width is supported */
+    MODE_ONE_HEIGHT,   /* only one height is supported */
+    MODE_ONE_SIZE,     /* only one resolution is supported */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
@@ -289,6 +292,7 @@ typedef struct {
    int				chipRev;
    pointer			options;
    int                          irq;
+   int                          screen;         /* For multi-CRTC cards */
 } GDevRec, *GDevPtr;
 
 typedef int (*FindIsaDevProc)(GDevPtr dev);
@@ -418,7 +422,7 @@ typedef struct _confdrirec {
     
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
-#define NUM_RESERVED_POINTERS		16
+#define NUM_RESERVED_POINTERS		15
 #define NUM_RESERVED_FUNCS		16
 
 typedef pointer (*funcPointer)(void);
@@ -811,6 +815,8 @@ typedef struct _ScrnInfoRec {
      * structure size and alignment unchanged.
      */
     int			reservedInt[NUM_RESERVED_INTS];
+
+    int *              entityInstanceList;
     pointer		reservedPtr[NUM_RESERVED_POINTERS];
 
     /*

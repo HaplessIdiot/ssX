@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.2 2000/05/23 04:47:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,6 +63,12 @@ static int	FFBValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 
 /* ffb_dga.c */
 extern void FFB_InitDGA(ScreenPtr pScreen);
+
+#ifdef XF86DRI
+/* ffb_dri.c */
+extern Bool FFBDRIScreenInit(ScreenPtr);
+extern Bool FFBDRIFinishScreenInit(ScreenPtr);
+#endif
 
 void FFBSync(ScrnInfoPtr pScrn);
 
@@ -435,6 +441,18 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
+#ifdef XF86DRI
+    if (xf86LoadSubModule(pScrn, "drm") == NULL) {
+	FFBFreeRec(pScrn);
+	return FALSE;
+    }
+
+    if (xf86LoadSubModule(pScrn, "dri") == NULL) {
+	FFBFreeRec(pScrn);
+	return FALSE;
+    }
+#endif
+
     /*********************
     set up clock and mode stuff
     *********************/
@@ -791,13 +809,22 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miClearVisualTypes();
 
     /* Setup the visuals we support. */
-
     if (!miSetVisualTypes(24, TrueColorMask | DirectColorMask,
 			  pScrn->rgbBits, TrueColor))
 	    return FALSE;
     if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask | StaticGrayMask,
 			  pScrn->rgbBits, PseudoColor))
 	    return FALSE;
+
+#ifdef XF86DRI
+    pFfb->dri_enabled = FFBDRIScreenInit(pScreen);
+    if (pFfb->dri_enabled == TRUE)
+	    xf86Msg(X_INFO, "%s: DRM initialized\n",
+		    pFfb->psdp->device);
+    else
+	    xf86Msg(X_INFO, "%s: DRM setup failed\n",
+		    pFfb->psdp->device);
+#endif
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -885,6 +912,21 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup DGA support. */
     FFB_InitDGA(pScreen);
+
+#ifdef XF86DRI
+    if (pFfb->dri_enabled) {
+	    /* Now that mi, cfb, drm and others have done their thing, 
+	     * complete the DRI setup.
+	     */
+	    pFfb->dri_enabled = FFBDRIFinishScreenInit(pScreen);
+	    if (pFfb->dri_enabled)
+		    xf86Msg(X_INFO, "%s: DRM finish setup complete\n",
+			    pFfb->psdp->device);
+	    else
+		    xf86Msg(X_INFO, "%s: DRM finish setup failed\n",
+			    pFfb->psdp->device);
+    }
+#endif
 
     pFfb->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = FFBCloseScreen;

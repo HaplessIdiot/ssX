@@ -26,7 +26,7 @@
  * 
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.7 2000/02/23 04:47:21 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.8 2000/06/17 00:03:26 martin Exp $
  * 
  */
 
@@ -201,6 +201,28 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 			: "2" (old),                                   \
 			  "r" (new));                                  \
 	} while (0)
+#endif
+
+#ifdef __sparc__
+#define DRM_CAS(lock,old,new,__ret)				\
+do {	register unsigned int __old __asm("o0");		\
+	register unsigned int __new __asm("o1");		\
+	register volatile unsigned int *__lock __asm("o2");	\
+	__old = old;						\
+	__new = new;						\
+	__lock = (volatile unsigned int *)lock;			\
+	__asm__ __volatile__(					\
+		/*"cas [%2], %3, %0"*/				\
+		".word 0xd3e29008\n\t"				\
+		/*"membar #StoreStore | #StoreLoad"*/		\
+		".word 0x8143e00a"				\
+		: "=&r" (__new)					\
+		: "0" (__new),					\
+		  "r" (__lock),					\
+		  "r" (__old)					\
+		: "memory");					\
+	__ret = (__new != __old);				\
+} while(0)
 #endif
 
 #ifndef DRM_CAS
