@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.39 2003/11/17 22:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.40 2003/11/21 05:09:39 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1699,15 +1699,16 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
     { int _b=bit, _v=value; ds->buttons = (((_v) != 0) ? (ds->buttons | _b) : (ds->buttons & ~ _b)); }
 	
     SYSCALL(len = read(local->fd, eventbuf, sizeof(eventbuf)));
+    nevents = len / sizeof(eventbuf);
 
-    DBG(10, ErrorF("xf86WcmReadUSBInput read %d events\n", (int)len));
+    DBG(10, ErrorF("xf86WcmReadUSBInput read %d bytes (%d events)\n",
+	(int)len, nevents));
     
     if (len <= 0) {
 	ErrorF("Error reading wacom device : %s\n", strerror(errno));
 	return;
     }
 
-    nevents = len / sizeof(eventbuf);
     for (event=eventbuf, i=0; i<nevents; event++, i++) {
 	DBG(11, ErrorF("xf86WcmReadUSBInput event->type=%d code=%d value=%d\n",
 		       event->type, event->code, event->value));
