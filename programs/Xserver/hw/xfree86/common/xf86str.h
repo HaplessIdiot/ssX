@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.72 2000/09/19 12:46:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.73 2000/10/24 22:45:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -691,6 +691,26 @@ typedef struct {
 #define PROBE_TRYHARD	  0x02
 
 /*
+ * Driver entry point types
+ */
+typedef struct _ScrnInfoRec *ScrnInfoPtr;
+
+typedef Bool xf86ProbeProc                (DriverPtr, int);
+typedef Bool xf86PreInitProc              (ScrnInfoPtr, int);
+typedef Bool xf86ScreenInitProc           (int, ScreenPtr, int, char**);
+typedef Bool xf86SwitchModeProc           (int, DisplayModePtr, int);
+typedef void xf86AdjustFrameProc          (int, int, int, int);
+typedef Bool xf86EnterVTProc              (int, int);
+typedef void xf86LeaveVTProc              (int, int);
+typedef void xf86FreeScreenProc           (int, int);
+typedef int  xf86ValidModeProc            (int, DisplayModePtr, Bool, int);
+typedef void xf86EnableDisableFBAccessProc(int, Bool);
+typedef int  xf86SetDGAModeProc           (int, int, DGADevicePtr);
+typedef int  xf86ChangeGammaProc          (int, Gamma);
+typedef void xf86PointerMovedProc         (int, int, int);
+typedef Bool xf86PMEventProc              (int, pmEvent);
+
+/*
  * ScrnInfoRec
  *
  * There is one of these for each screen, and it holds all the screen-specific
@@ -817,7 +837,7 @@ typedef struct _ScrnInfoRec {
      */
     int			reservedInt[NUM_RESERVED_INTS];
 
-    int *              entityInstanceList;
+    int *		entityInstanceList;
     pointer		reservedPtr[NUM_RESERVED_POINTERS];
 
     /*
@@ -825,24 +845,20 @@ typedef struct _ScrnInfoRec {
      *
      */
 
-    Bool		(*Probe)(DriverPtr drv, int flags);
-    Bool		(*PreInit)(struct _ScrnInfoRec *pScrn, int flags);
-    Bool		(*ScreenInit)(int scrnIndex, ScreenPtr pScreen,
-				      int argc, char **argv);
-    Bool		(*SwitchMode)(int scrnIndex, DisplayModePtr mode,
-				      int flags);
-    void		(*AdjustFrame)(int scrnIndex, int x, int y, int flags);
-    Bool		(*EnterVT)(int scrnIndex, int flags);
-    void		(*LeaveVT)(int scrnIndex, int flags);
-    void		(*FreeScreen)(int scrnIndex, int flags);
-    int			(*ValidMode)(int scrnIndex, DisplayModePtr mode,
-				     Bool verbose, int flags);
-    void		(*EnableDisableFBAccess)(int scrnIndex, Bool enable);
-    int			(*SetDGAMode)(int scrnIndex, int num, 
-					DGADevicePtr devRet);
-    int			(*ChangeGamma)(int scrnIndex, Gamma newGamma);
-    void		(*PointerMoved)(int scrnIndex, int x, int y);
-    Bool                (*PMEvent)(int scrnIndex, pmEvent event);
+    xf86ProbeProc			*Probe;
+    xf86PreInitProc			*PreInit;
+    xf86ScreenInitProc			*ScreenInit;
+    xf86SwitchModeProc			*SwitchMode;
+    xf86AdjustFrameProc			*AdjustFrame;
+    xf86EnterVTProc			*EnterVT;
+    xf86LeaveVTProc			*LeaveVT;
+    xf86FreeScreenProc			*FreeScreen;
+    xf86ValidModeProc			*ValidMode;
+    xf86EnableDisableFBAccessProc	*EnableDisableFBAccess;
+    xf86SetDGAModeProc			*SetDGAMode;
+    xf86ChangeGammaProc			*ChangeGamma;
+    xf86PointerMovedProc		*PointerMoved;
+    xf86PMEventProc			*PMEvent;
     
     /*
      * This can be used when the minor ABI version is incremented.
@@ -851,7 +867,7 @@ typedef struct _ScrnInfoRec {
      */
     funcPointer		reservedFuncs[NUM_RESERVED_FUNCS];
 
-} ScrnInfoRec, *ScrnInfoPtr;
+} ScrnInfoRec;
 
 
 typedef struct {

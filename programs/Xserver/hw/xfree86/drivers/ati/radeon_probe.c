@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.3 2000/11/18 19:37:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.4 2000/12/02 15:30:34 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -157,6 +157,25 @@ RADEONProbe(DriverPtr drv, int flags)
 	    }
 
 	    xf86LoaderReqSymLists(RADEONSymbols, NULL);
+
+	    /* Workaround for possible loader bug */
+#	    define RADEONPreInit     \
+		(xf86PreInitProc*)    LoaderSymbol("RADEONPreInit")
+#	    define RADEONScreenInit  \
+		(xf86ScreenInitProc*) LoaderSymbol("RADEONScreenInit")
+#	    define RADEONSwitchMode  \
+		(xf86SwitchModeProc*) LoaderSymbol("RADEONSwitchMode")
+#	    define RADEONAdjustFrame \
+		(xf86AdjustFrameProc*)LoaderSymbol("RADEONAdjustFrame")
+#	    define RADEONEnterVT     \
+		(xf86EnterVTProc*)    LoaderSymbol("RADEONEnterVT")
+#	    define RADEONLeaveVT     \
+		(xf86LeaveVTProc*)    LoaderSymbol("RADEONLeaveVT")
+#	    define RADEONFreeScreen  \
+		(xf86FreeScreenProc*) LoaderSymbol("RADEONFreeScreen")
+#	    define RADEONValidMode   \
+		(xf86ValidModeProc*)  LoaderSymbol("RADEONValidMode")
+
 #endif
 
 	    pScrn->driverVersion = RADEON_VERSION_CURRENT;
