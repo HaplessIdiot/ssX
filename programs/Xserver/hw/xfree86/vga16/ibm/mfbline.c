@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.1 1995/01/28 16:08:28 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,8 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbline.c,v 1.1 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.0 1994/05/04 15:03:13 dawes Exp $ */
+/* $XConsortium: mfbline.c /main/3 1995/11/13 07:04:30 kaleb $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -168,6 +168,8 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
 
 				/* a bunch of temporaries */
     register int y1, y2;
@@ -344,8 +346,8 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 	}
 	else	/* sloped line */
 	{
-	    AbsDeltaAndSign(x2, x1, adx, signdx);
-	    AbsDeltaAndSign(y2, y1, ady, signdy);
+	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy,
+			   1, 1, octant);
 
 	    if (adx > ady)
 	    {
@@ -353,7 +355,6 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
 	    }
 	    else
 	    {
@@ -361,8 +362,10 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+		SetYMajorOctant(octant);
 	    }
+
+	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -403,8 +406,8 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
 				       pbox->y2-1,
 				       &new_x1, &new_y1, &new_x2, &new_y2,
-				       adx, ady, &clip1, &clip2, axis,
-				       (signdx == signdy), oc1, oc2) == -1)
+				       adx, ady, &clip1, &clip2,
+				       octant, bias, oc1, oc2) == -1)
 		    {
 			pbox++;
 			continue;
@@ -562,6 +565,8 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
+    int octant;
+    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     int x1, x2, y1, y2;
     RegionPtr cclip;
     int		    fgink, bgink; /* GJA */
@@ -630,8 +635,7 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
 	y2 = ppt->y + yorg;
 #endif
 
-	AbsDeltaAndSign(x2, x1, adx, signdx);
-	AbsDeltaAndSign(y2, y1, ady, signdy);
+	CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
 
 	if (adx > ady)
 	{
@@ -640,7 +644,6 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (adx << 1);
 	    e = e1 - adx;
 	    unclippedlen = adx;
-	    FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
 	}
 	else
 	{
@@ -649,8 +652,10 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (ady << 1);
 	    e = e1 - ady;
 	    unclippedlen = ady;
-	    FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+	    SetYMajorOctant(octant);
 	}
+
+	FIXUP_ERROR(e, octant, bias);
 
 	/* we have bresenham parameters and two points.
 	   all we have to do now is clip and draw.
@@ -699,8 +704,8 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
 		
 		if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1, pbox->y2-1,
 				   &new_x1, &new_y1, &new_x2, &new_y2,
-				   adx, ady, &clip1, &clip2, axis,
-				   (signdx == signdy), oc1, oc2) == -1)
+				   adx, ady, &clip1, &clip2,
+				   octant, bias, oc1, oc2) == -1)
 		{
 		    pbox++;
 		    continue;
