@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.18 2001/05/16 08:32:33 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.19 2001/08/13 21:46:47 dawes Exp $ */
 
 #ifndef FONT_MODULE
 #include <string.h>
@@ -1004,7 +1004,7 @@ FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font)
   /* Only pass the default glyph if there is no first index */
   if(idx==0 &&
      (code != 0 ||
-      (font->mapping.mapping->encoding &&
+      (font->mapping.mapping &&
        (font->mapping.mapping->encoding->first != 0 || 
         font->mapping.mapping->encoding->first_col != 0)))) {
     *g=0;
@@ -1042,7 +1042,7 @@ FreeTypeFontGetGlyphMetrics(unsigned code, xCharInfo **metrics, TTFFont *font)
 
   if(idx==0 && 
      (code!=0 ||
-      (font->mapping.mapping->encoding &&
+      (font->mapping.mapping &&
        (font->mapping.mapping->encoding->first != 0 || 
         font->mapping.mapping->encoding->first_col != 0)))) {
     *metrics=0;
@@ -1056,7 +1056,7 @@ static int
 FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font)
 {
   /* Disable default glyph generation if there is a first index */
-  if(font->mapping.mapping->encoding && 
+  if(font->mapping.mapping && 
      (font->mapping.mapping->encoding->first || 
       font->mapping.mapping->encoding->first_col)) {
     *g=0;
@@ -1362,7 +1362,7 @@ FreeTypeLoadXFont(char *fileName,
       }
     }
 
-    if(!font->mapping.mapping->encoding || 
+    if(!font->mapping.mapping || 
        font->mapping.mapping->encoding->row_size == 0) {
       /* linear indexing */
       lastCode=MIN(lastCode,
