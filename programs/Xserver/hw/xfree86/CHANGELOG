@@ -1,6 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
- 120. By default, don't build MagicTouch until a common layer interface is
-      coded for it (Marc La france).
+ 120. By default, don't build the MagicTouch input driver until a common layer
+      interface is coded for it (Marc La France).
  119. Fix Offscreen Image support for Xv/v4l in tdfx driver (Alan Hourihane).
  118. Add MagicTouch driver (A.482, Mauro Ziliani)
  117. Fix side effect in XFree86 of the recent changes to libxf86config
@@ -13525,4 +13525,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1865 2001/07/04 12:18:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1866 2001/07/04 13:38:06 tsi Exp $
