@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.8 2001/02/15 17:28:35 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.9 2001/03/01 20:37:25 paulo Exp $
  */
 
 #include <stdio.h>
@@ -338,6 +338,9 @@ static char *protocols[] = {
     "MouseSystems",
     "SysMouse",
     "ThinkingMouse",
+#ifdef WSCONS_SUPPORT
+    "wsmouse",
+#endif
 };
 
 static int
@@ -496,7 +499,11 @@ MouseConfig(void)
     if (option)
 	str = option->opt_val;
     if (str == NULL)
+#ifdef WSCONS_SUPPORT
+	str = "/dev/wsmouse";
+#else
 	str = "/dev/mouse";
+#endif
 
     ClearScreen();
     refresh();

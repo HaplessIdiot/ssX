@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.5 2000/10/20 14:59:06 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.6 2001/03/24 01:17:21 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -52,6 +52,9 @@ static Bool MouseConfigCheck(void);
  * Initialization
  */
 static char *protocols[] = {
+#ifdef WSCONS_SUPPORT
+    "wsmouse",
+#endif
     "Auto",
     "BusMouse",
     "GlidePoint",
@@ -302,6 +305,9 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
     static Widget mouse_dp, listD, listP, emul3, apply;
     static char **devices;
     static char *patterns[] = {
+#ifdef WSCONS_SUPPORT
+	"wsmouse",
+#endif
 	"cua",
 	"mouse",
 	"ps",
