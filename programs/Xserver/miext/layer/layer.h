@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layer.h,v 1.1 2001/05/29 04:54:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layer.h,v 1.2 2001/06/04 09:45:41 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -56,6 +56,7 @@ typedef struct _Layer {
     RegionRec		region;	    /* valid set of pPixmap for drawing */
     ShadowUpdateProc	update;	    /* for shadow layers, update/window/closure values */
     ShadowWindowProc	window;
+    int			rotate;
     void		*closure;
 } LayerRec;
 
@@ -95,6 +96,7 @@ LayerCreate (ScreenPtr		pScreen,
 	     PixmapPtr		pPixmap,
 	     ShadowUpdateProc	update,
 	     ShadowWindowProc	window,
+	     int		rotate,
 	     void		*closure);
 
 /*

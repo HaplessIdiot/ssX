@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.h,v 1.2 2000/09/08 21:46:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.h,v 1.4 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -52,6 +52,7 @@ typedef struct _shadowBuf {
     RegionRec		damage;
     PixmapPtr		pPixmap;
     void		*closure;
+    int			rotate;
 } shadowBufRec;
 
 typedef struct _shadowScrPriv {
@@ -81,6 +82,7 @@ shadowAdd (ScreenPtr	    pScreen,
 	   PixmapPtr	    pPixmap,
 	   ShadowUpdateProc update,
 	   ShadowWindowProc window,
+	   int		    rotate,
 	   void		    *closure);
 
 void
@@ -106,6 +108,10 @@ shadowUpdatePlanar4 (ScreenPtr	    pScreen,
 void
 shadowUpdatePlanar4x8 (ScreenPtr    pScreen,
 		       shadowBufPtr pBuf);
+
+void
+shadowUpdateRotatePacked (ScreenPtr    pScreen,
+			  shadowBufPtr pBuf);
 
 void
 shadowUpdateRotate8_90 (ScreenPtr    pScreen,

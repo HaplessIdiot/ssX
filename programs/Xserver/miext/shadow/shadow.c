@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.6 2001/05/29 04:54:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.7 2001/05/30 16:00:46 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -100,7 +100,6 @@ shadowDamageRegion (WindowPtr pWindow, RegionPtr pRegion)
 	abort ();
     
     REGION_UNION (pScreen, &pBuf->damage, &pBuf->damage, pRegion);
-#define ALWAYS_DISPLAY
 #ifdef ALWAYS_DISPLAY
     shadowRedisplay (pScreen);
 #endif
@@ -1400,6 +1399,7 @@ shadowAdd (ScreenPtr	    pScreen,
 	   PixmapPtr	    pPixmap,
 	   ShadowUpdateProc update,
 	   ShadowWindowProc window,
+	   int		    rotate,
 	   void		    *closure)
 {
     shadowScrPriv(pScreen);
@@ -1413,6 +1413,7 @@ shadowAdd (ScreenPtr	    pScreen,
     pBuf->window = window;
     REGION_INIT (pScreen, &pBuf->damage, NullBox, 0);
     pBuf->pNext = pScrPriv->pBuf;
+    pBuf->rotate = rotate;
     pBuf->closure = 0;
     pScrPriv->pBuf = pBuf;
     return TRUE;
@@ -1469,7 +1470,7 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     if (!shadowSetup (pScreen))
 	return FALSE;
     
-    if (!shadowAdd (pScreen, 0, update, window, 0))
+    if (!shadowAdd (pScreen, 0, update, window, 0, 0))
 	return FALSE;
 
     return TRUE;
