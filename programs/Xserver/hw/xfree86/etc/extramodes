@@ -1,8 +1,11 @@
 //
 // Extra modes to include as default modes in the X server.
 //
-// $XFree86: xc/programs/Xserver/hw/xfree86/etc/extramodes,v 1.2 2001/08/18 17:04:27 alanh Exp $
+// $XFree86: xc/programs/Xserver/hw/xfree86/etc/extramodes,v 1.3 2001/08/19 18:47:45 alanh Exp $
 //
+
+# 832x624 @ 75Hz (74.55Hz) (fix if the official/Apple spec is different) hsync: 49.725kHz
+ModeLine "832x624" 57.284 832  864  928 1152  624  625  628  667 -Hsync -Vsync
 
 # 1400x1050 @ 60Hz (VESA GTF) hsync: 65.5kHz
 ModeLine "1400x1050" 122.0 1400 1488 1640 1880   1050 1052 1064 1082 +hsync +vsync

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.41 2001/08/28 12:20:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.42 2001/11/02 23:29:33 dawes Exp $ */
 
 
 /*
@@ -291,6 +291,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AttendClient)
   SYMFUNC(AddEnabledDevice)
   SYMFUNC(RemoveEnabledDevice)
+  SYMFUNC(MakeClientGrabPervious)
+  SYMFUNC(MakeClientGrabImpervious)
   SYMVAR(GrabInProgress)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)

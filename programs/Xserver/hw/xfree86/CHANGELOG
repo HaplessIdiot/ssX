@@ -1,4 +1,8 @@
-XFree86 4.1.99.2 (xx October 2001)
+XFree86 4.1.99.2 (xx November 2001)
+ 476. Add a quick check to not use as the default mode any internal modes
+      with horizontal timing parameters that aren't CRT-friendly (David Dawes).
+ 475. Add an 832x624 @ 75Hz mode line to the default mode set (#4960,
+      Andrew C. Aitchison).
  474. Fix Radeon LCD Panel detection and Power Delay (ATI Technologies).
  473. Ignore XDarwin full screen switch key combination when in rootless mode
       (Torrey T. Lyons).
@@ -14148,4 +14152,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2039 2001/11/14 07:18:54 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2040 2001/11/14 16:50:39 alanh Exp $

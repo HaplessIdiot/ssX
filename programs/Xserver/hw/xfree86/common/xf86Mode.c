@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.42 2001/11/03 21:59:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.43 2001/11/04 17:57:06 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1506,9 +1506,20 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
 		    if (p != NULL)
 			q->prev = p;
-		    else if (modeSize < (q->HDisplay * q->VDisplay)) {
-			r = q;
-			modeSize = q->HDisplay * q->VDisplay;
+		    else {
+			/*
+			 * A quick check to not allow default modes with
+			 * horizontal timing parameters that CRTs may have
+			 * problems with.
+			 */
+			if ((q->type & M_T_DEFAULT) &&
+			    ((double)q->HTotal / (double)q->HDisplay) < 1.15)
+			    continue;
+
+			if (modeSize < (q->HDisplay * q->VDisplay)) {
+			    r = q;
+			    modeSize = q->HDisplay * q->VDisplay;
+			}
 		    }
 		}
 	    }
