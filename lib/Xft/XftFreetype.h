@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.10 2000/12/22 02:25:41 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.11 2000/12/22 05:05:16 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -56,7 +56,10 @@ _XFUNCPROTOBEGIN
 
 /* xftdir.c */
 Bool
-XftDirScan (XftFontSet *set, const char *dir);
+XftDirScan (XftFontSet *set, const char *dir, Bool force);
+
+Bool
+XftDirSave (XftFontSet *set, const char *dir);
 
 /* xftfreetype.c */
 XftPattern *

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.7 2000/12/22 02:25:41 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.8 2000/12/22 05:05:16 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,6 +36,7 @@ typedef struct _XftFtEncoding {
 static XftFtEncoding xftFtEncoding[] = {
     { "iso10646-1",	    ft_encoding_unicode, },
     { "iso8859-1",	    ft_encoding_unicode, },
+    { "apple-roman",	    ft_encoding_apple_roman },
     { "adobe-fontspecific", ft_encoding_symbol,  },
     { "glyphs-fontspecific",ft_encoding_none,	 },
 };
@@ -75,7 +76,7 @@ XftFreeTypeQuery (const char *file, int id, int *count)
 
     slant = XFT_SLANT_ROMAN;
     if (face->style_flags & FT_STYLE_FLAG_ITALIC)
-	slant = (XFT_SLANT_ITALIC + XFT_SLANT_OBLIQUE) / 2;
+	slant = XFT_SLANT_ITALIC;
 
     if (!XftPatternAddInteger (pat, XFT_SLANT, slant))
 	goto bail1;
@@ -597,6 +598,7 @@ Bool
 XftInitFtLibrary (void)
 {
     char    **d;
+    char    *cache;
     
     if (_XftFTlibrary)
 	return True;
@@ -605,16 +607,21 @@ XftInitFtLibrary (void)
     _XftFontSet = XftFontSetCreate ();
     if (!_XftFontSet)
 	return False;
+    cache = XftConfigGetCache ();
+    if (cache)
+	XftFileCacheLoad (cache);
     for (d = XftConfigDirs; d && *d; d++)
     {
 #ifdef XFT_DEBUG_FONTSET
 	printf ("scan dir %s\n", *d);
 #endif
-	XftDirScan (_XftFontSet, *d);
+	XftDirScan (_XftFontSet, *d, False);
     }
 #ifdef XFT_DEBUG_FONTSET
     XftPrintFontSet (_XftFontSet);
 #endif
+    if (cache)
+	XftFileCacheSave (cache);
+    XftFileCacheDispose ();
     return True;
 }
-
