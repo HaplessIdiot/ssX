@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.32 2001/10/06 01:20:46 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.33 2001/10/09 21:40:20 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -13,7 +13,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.32 2001/10/06 01:20:46 tor
 #define OSMinorVersion          3
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		3
+#define OSTeenyVersion		6
 #endif
 
 #define ProjectRoot 		/usr/X11R6
