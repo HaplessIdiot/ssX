@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.71 2001/10/10 19:06:35 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.72 2001/10/10 19:08:56 herrb Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -770,6 +770,12 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  undef MIPSEL
 #  undef _MIPSEL
 # endif
+# ifdef __hppa__
+#  ifndef HPArchitecture
+#   define HPArchitecture
+#  endif
+#  undef __hppa__
+# endif /* __hppa__ */
 # ifdef __sh__
 #  ifndef SuperHArchitecture
 #   define SuperHArchitecture

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.47 2001/07/25 09:29:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.49 2001/10/01 13:44:15 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -148,6 +148,20 @@ SOFTWARE.
 #define AVOID_MEMORY_READ
 
 #endif /* __arm32__ */
+
+#if defined (__hppa__)
+
+#define IMAGE_BYTE_ORDER	MSBFirst
+#define BITMAP_BIT_ORDER	MSBFirst
+#define GLYPHPADBYTES		4	/* to make fb work */
+#define GETLEFTBITS_ALIGNMENT	1	/* PA forces longs to 4 */
+					/* byte boundries */
+#define AVOID_MEMORY_READ
+#define FAST_CONSTANT_OFFSET_MODE
+#define LARGE_INSTRUCTION_CACHE
+#define PLENTIFUL_REGISTERS
+
+#endif /* __hppa__ */
 
 #if defined(__powerpc__)
 

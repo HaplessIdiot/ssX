@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.381 2001/10/28 03:32:01 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.382 2001/10/30 16:55:40 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -570,8 +570,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /*
  * For Motorola 68k and PPC (currently Linux, LynxOS and Net/OpenBSD)
+ * and Intel StrongARM (currently Linux, maybe NetBSD)
  */
-#if defined(PpcArchitecture) || defined(Mc68020Architecture)
+#if defined(PpcArchitecture) || defined(Mc68020Architecture) || \
+    defined(Arm32Architecture) || defined(HPArchitecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif
@@ -960,18 +962,14 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #  if defined(SparcArchitecture)  || defined(ia64Architecture) || defined(s390xArchitecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
-#  else
-#    if defined(AlphaArchitecture)
+#  elif defined(AlphaArchitecture)
 /* On the Alpha we need to ensure floating point accuracy for 3D */
-#      define GlxArchDefines -mieee
-#    else
-#      if defined(DarwinArchitecture)
+#    define GlxArchDefines -D__GLX_ALIGN64 -mieee
+#  elif defined(DarwinArchitecture)
 /* GLX contains lots of uninitalized globals, which can upset Darwin */
-#        define GlxArchDefines -fno-common
-#      else
-#        define GlxArchDefines /**/
-#      endif
-#    endif
+#    define GlxArchDefines -fno-common
+#  else
+#    define GlxArchDefines /**/
 #  endif
 
 #  ifndef GlxExtraDefines

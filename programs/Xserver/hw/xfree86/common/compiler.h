@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.84 2001/07/25 15:05:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.85 2001/08/06 20:51:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -840,6 +840,67 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 	return r1;
 }
 
+#ifdef linux	/* don't mess with other OSs */
+
+/*
+ * EGCS 1.1 knows about arbitrary unaligned loads (and we don't support older
+ * versions anyway. Define some packed structures to talk about such things
+ * with.
+ */
+
+struct __una_u32 { unsigned int   x __attribute__((packed)); };
+struct __una_u16 { unsigned short x __attribute__((packed)); };
+
+static __inline__ void stw_u(unsigned long val, unsigned short *p)
+{
+	struct __una_u16 *ptr = (struct __una_u16 *) p;
+	ptr->x = val;
+}
+
+static __inline__ void stl_u(unsigned long val, unsigned int *p)
+{
+	struct __una_u32 *ptr = (struct __una_u32 *) p;
+	ptr->x = val;
+}
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+static __inline__ unsigned int
+xf86ReadMmio32Be(__volatile__ void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned int ret;
+
+	__asm__ __volatile__("lw %0, 0(%1)"
+			     : "=r" (ret)
+			     : "r" (addr));
+	return ret;
+}
+
+static __inline__ void
+xf86WriteMmio32Be(__volatile__ void *base, const unsigned long offset,
+		  const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("sw %0, 0(%1)"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr));
+}
+#endif
+
+#define mem_barrier() \
+__asm__ __volatile__(					\
+	"# prevent instructions being moved around\n\t"	\
+	".set\tnoreorder\n\t"				\
+	"# 8 nops to fool the R4400 pipeline\n\t"	\
+	"nop;nop;nop;nop;nop;nop;nop;nop\n\t"		\
+	".set\treorder"					\
+	: /* no output */				\
+	: /* no input */				\
+	: "memory")
+#define write_mem_barrier() mem_barrier()
+
+#else  /* !linux */
 #define stq_u(v,p)	stl_u(v,p)
 #define stl_u(v,p)	(*(unsigned char *)(p)) = (v); \
 			(*(unsigned char *)(p)+1) = ((v) >> 8);  \
@@ -850,6 +911,7 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 			(*(unsigned char *)(p)+1) = ((v) >> 8)
 
 #define mem_barrier()   /* NOP */
+#endif /* !linux */
 #endif /* __mips__ */
 
 #if defined(__arm32__)
@@ -1101,7 +1163,7 @@ inl(unsigned short port)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 
-#if !defined(FAKEIT) && !defined(__mc68000__) && !defined(__sh__)
+#if !defined(FAKEIT) && !defined(__mc68000__) && !defined(__arm__) && !defined(__sh__) && !defined(__hppa__)
 #ifdef GCCUSESGAS
 
 /*
@@ -1210,7 +1272,7 @@ inl(unsigned short port)
 
 #endif /* GCCUSESGAS */
 
-#else /* !defined(FAKEIT) && !defined(__mc68000__) && !defined(__sh__) */
+#else /* !defined(FAKEIT) && !defined(__mc68000__) && !defined(__arm__) && !defined(__sh__) && !defined(__hppa__) */
 
 static __inline__ void
 outb(unsigned short port, unsigned char val)

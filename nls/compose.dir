@@ -4,7 +4,7 @@ XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM $XFree86: xc/nls/compose.dir,v 1.16 2001/04/06 18:16:27 dawes Exp $
+XCOMM $XFree86: xc/nls/compose.dir,v 1.17 2001/08/17 13:27:51 dawes Exp $
 XCOMM
 iso8859-1/Compose:		C
 iso8859-1/Compose:		af_ZA.ISO8859-1
@@ -205,8 +205,8 @@ vi_VN.viscii/Compose:		vi_VN.VISCII
 vi_VN.tcvn/Compose:		vi_VN.TCVN
 iso8859-1/Compose:		wa_BE.ISO8859-1
 microsoft-cp1255/Compose:	yi_US.CP1256
-zh/Compose:			zh_CN.eucCN
-zh/Compose:			zh_CN.GB2312
+zh_CN/Compose:			zh_CN.eucCN
+zh_CN/Compose:			zh_CN.GB2312
 zh_CN.gbk/Compose:		zh_CN.GBK
 zh_TW.big5/Compose:		zh_TW.big5
 zh_TW.big5/Compose:		zh_TW.Big5
