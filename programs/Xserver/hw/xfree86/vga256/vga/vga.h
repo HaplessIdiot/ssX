@@ -1,5 +1,5 @@
 /* $XConsortium: vga.h,v 1.4 95/01/16 13:18:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.9 1995/05/27 03:17:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.10 1995/11/30 13:05:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -28,9 +28,9 @@
 #ifndef _XF86_VGA_H_
 #define _XF86_VGA_H_
 
-#define VGA2_PATCHLEVEL "1"
-#define VGA16_PATCHLEVEL "1"
-#define SVGA_PATCHLEVEL "1"
+#define VGA2_PATCHLEVEL "0"
+#define VGA16_PATCHLEVEL "0"
+#define SVGA_PATCHLEVEL "0"
 
 #include "X.h"
 #include "misc.h"
