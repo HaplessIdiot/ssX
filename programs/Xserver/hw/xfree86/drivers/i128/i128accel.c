@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.3 2000/10/23 14:11:39 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.4 2000/10/24 02:00:06 robin Exp $ */
 
 /*
  * Copyright 1997-2000 by Robin Cutshaw <robin@XFree86.Org>
@@ -104,7 +104,7 @@ I128BitBlit(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w, int h)
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BB %d,%d %d,%d %d,%d\n", x1, y1, x2, y2, w, h);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BB %d,%d %d,%d %d,%d 0x%x/0x%x\n", x1, y1, x2, y2, w, h, pI128->cmd);
 #endif
 
 	ENG_PIPELINE_READY();
@@ -424,6 +424,8 @@ I128AccelInit(ScreenPtr pScreen)
 	infoPtr->Flags = 	PIXMAP_CACHE |
 				OFFSCREEN_PIXMAPS |
 				LINEAR_FRAMEBUFFER ;
+
+	infoPtr->PixmapCacheFlags = DO_NOT_BLIT_STIPPLES;
 
 	infoPtr->Sync = I128EngineDone;
 
