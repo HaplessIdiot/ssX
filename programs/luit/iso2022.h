@@ -49,6 +49,7 @@ THE SOFTWARE.
 #define IF_SS 1
 #define IF_LS 2
 #define IF_EIGHTBIT 4
+#define IF_SSGR 8
 
 #define OF_SS 1
 #define OF_LS 2

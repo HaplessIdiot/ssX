@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.3 2001/11/22 16:16:35 tsi Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.4 2002/01/09 16:14:19 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +91,7 @@ help(void)
             "  [ -kgl gn ] [-kgr gk] "
             "[ -kg0 set ] [ -kg1 set ] "
             "[ -kg2 set ] [ -kg3 set ]\n"
-            "  [ -k7 ] [ +kss ] [ -kls ]\n"
+            "  [ -k7 ] [ +kss ] [ +kssgr ] [ -kls ]\n"
             "  [ -c ] [ -ilog filename ] [ -olog filename ] [ -- ]\n"
             "  [ program [ args ] ]\n");
 
@@ -134,6 +134,9 @@ parseOptions(int argc, char **argv)
             i++;
         } else if(!strcmp(argv[i], "+kss")) {
             inputState->inputFlags &= ~IF_SS;
+            i++;
+        } else if(!strcmp(argv[1], "+kssgr")) {
+            inputState->inputFlags &= ~IF_SSGR;
             i++;
         } else if(!strcmp(argv[i], "-kls")) {
             inputState->inputFlags |= IF_LS;
@@ -359,12 +362,16 @@ main(int argc, char **argv)
         locale_name = setlocale(LC_CTYPE, NULL);
     } else {
         locale_name = getenv("LC_ALL");
-        if(locale_name == NULL)
+        if(locale_name == NULL) {
             locale_name = getenv("LC_CTYPE");
+            if(locale_name == NULL) {
+                locale_name = getenv("LANG");
+            }
+        }
     }
 
     if(locale_name == NULL) {
-        ErrorF("Couln't get locale name -- using C");
+        ErrorF("Couldn't get locale name -- using C\n");
         locale_name = "C";
     }
 
