@@ -1,4 +1,10 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 295. Bindist installer script improvements:
+       - Log the installation.
+       - Make backup copies of config files before overwriting them.
+       - Add notes about config files that need to be installed and those
+         that may cause problems if installed.
+      (David Dawes).
  294. Back out CHANGELOG #273 (Marc La France).
  293. Fix a bug introduced into the i810 driver in 4.4.99.7 that resulted in
       a SEGV (David Dawes).
@@ -19320,7 +19326,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3405 2005/01/29 03:42:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3406 2005/01/29 23:22:34 tsi Exp $
 
 
 
