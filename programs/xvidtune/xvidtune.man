@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.3 1995/06/08 06:56:05 dawes Exp $
+.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.4 1995/06/17 12:22:02 dawes Exp $
 .\"
 .\" Copyright (c) 1995  Kaleb S. KEITHLEY
 .\"
@@ -31,7 +31,7 @@
 xvidtune \- video mode tuner for XFree86
 .SH SYNOPSIS
 .B xvidtune
-[-prev] [-next] [-unlock]
+[-prev] [-next] [-unlock] [-query] [-saver suspendtime [offtime]]
 [
 .I \-toolkitoption
 \&.\|.\|. ]
@@ -107,6 +107,13 @@ via hot-keys while it is running.  If for some reason the program
 did not exit cleanly and they are still disabled, the program can
 be re-run with this option to re-enable the mode switching key
 combinations.
+.TP 10
+.B \-saver \fIsuspendtime\fR [\fIofftime\fR]
+Set the ``suspend'' and ``off'' screensaver inactivity timeouts.
+The values are in seconds.
+.TP 10
+.B \-query
+Display the monitor parameters and extended screensaver timeouts.
 .SH SEE ALSO
 XF86Config(4/5)
 .SH AUTHORS
