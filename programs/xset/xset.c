@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.6 1997/01/18 07:03:17 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.7 1997/01/27 07:01:25 dawes Exp $ 
  */
 
 /*
@@ -410,7 +410,7 @@ for (i = 1; i < argc; ) {
 #define usleep(us) sleep((us / 1000000 > 0) ? us / 1000000 : 1)
 #endif
 #ifdef __EMX__
-#define usleep(us) _sleep(us/1000)
+#define usleep(us) _sleep2(us/1000)
 #endif
 
 	      if (strcmp(arg, "on") == 0) {

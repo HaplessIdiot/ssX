@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.62 1997/01/22 11:16:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.63 1997/01/23 11:03:46 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -684,7 +684,6 @@ TVGA8900Probe()
 		tridentIsTGUI = TRUE;		/* Reports of this works */
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
-		TVGA8900.ChipUse2Banks = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		tridentHasAcceleration = TRUE;
 		break;
@@ -694,7 +693,6 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9430DGi:
 		tridentHWCursorType = 2;		/* HW cursor */
@@ -706,7 +704,6 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9440AGi:
 		tridentIsTGUI = TRUE;
@@ -770,7 +767,6 @@ TVGA8900Probe()
 			tridentHasAcceleration = TRUE;
 		}
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipUse2Banks = TRUE;
 		if (IsCyber)
 		{
 			/* Allow stretch mode on LCD */
