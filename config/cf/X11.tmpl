@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.193 2003/02/05 00:26:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.194 2003/02/13 03:27:09 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3217,13 +3217,6 @@ SharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),SOFONTCONFIGREV,Sh
 ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLibDir)
 #endif
 
-#ifndef FontconfigClientDepLibs
-#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) ExpatClientDepLibs
-#endif
-#ifndef FontconfigClientLibs
-#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) ExpatClientLibs
-#endif
-
 #ifdef UseInstalled
 FONTCONFIGINCDIR=$(INCDIR)
 #else
@@ -3302,6 +3295,13 @@ FCCACHE = $(FONTCONFIGBINDIR)/fc-cache
 
 #if BuildFontconfigLibrary || HasFontconfig
 FONTCONFIGDEFINES = -DFONTCONFIG
+#endif
+
+#ifndef FontconfigClientDepLibs
+#define FontconfigClientDepLibs $(DEPFONTCONFIGLIB) $(DEPFREETYPE2LIB) ExpatClientDepLibs
+#endif
+#ifndef FontconfigClientLibs
+#define FontconfigClientLibs $(FONTCONFIGLIB) $(FREETYPE2LIB) ExpatClientLibs
 #endif
 
 #endif /* UseFontconfig */
