@@ -1,4 +1,5 @@
 XFree86 4.0.1d (8 September 2000)
+ 581. Add I420 and UYVY image formats to the I810 driver (#4135, Jonathan Bian).
  580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
  579. Set $(SHELL) to '/bin/sh -e' on Linux to allow builds/installs stop
       immediately on errors as on other platforms (Brandon Robinson).
@@ -11107,4 +11108,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1297 2000/09/05 17:48:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1298 2000/09/05 19:58:39 mvojkovi Exp $
