@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.s,v 1.3.2.1 1998/07/03 13:43:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.s,v 1.4 1998/07/25 16:55:39 dawes Exp $ */
 
 /*	
  * WARNING!!!!!!!
- * This code has been obsoleted in XFree 4.0 for portabilty reasons. Also
+ * This code has been obsoleted in XFree86 4.0 for portabilty reasons. Also
  * I have no idea how to pass the ScreenInfoPtr to assembly banking functions.
  * The code is left here for reference only.
  */

@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.4 1997/08/26 10:01:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.5 1998/01/24 16:58:09 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -102,7 +102,7 @@
 /* #define DEBUG 1 */
 
 /* Following is defined if linear 128kB Mode is used for 16bpp-modes.
- * Currently (XFree 3.1.1) in 16bpp no paged-mode is possible :-(
+ * Currently (XFree86 3.1.1) in 16bpp no paged-mode is possible :-(
  */								 
 /* #define USE_LINEAR_16BPP_MODE 1 */ /* Does *not* work -- crashes computer */
 

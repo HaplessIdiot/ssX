@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.77 1998/07/25 16:55:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.78 1998/07/26 09:56:13 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -51,10 +51,6 @@ extern int atoi();
 #include "atKeynames.h"
 extern int xtest_command_key;
 #endif /* XTESTEXT1 */
-
-#ifdef PC98
-#include "pc98_vers.h"
-#endif
 
 
 /* forward declarations */

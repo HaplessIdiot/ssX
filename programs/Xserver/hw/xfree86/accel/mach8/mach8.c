@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.44 1998/06/27 12:54:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.45 1998/06/28 03:53:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -664,7 +664,7 @@ mach8Initialize (scr_index, pScreen, argc, argv)
     extern int monitorResolution;
 
     /*
-     *  Convert from XFree mode definitions to Mach8 register values.
+     *  Convert from XFree86 mode definitions to Mach8 register values.
      */
     mach8calcvmode(&mach8ScreenMode,mach8InfoRec.modes);
 

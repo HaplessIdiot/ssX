@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.21 1998/07/25 16:55:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.22 1998/08/02 05:16:57 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -1038,7 +1038,7 @@ CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
 /* The code below comes from the idea supplied by the people at DEC, like
  * the copyright above says. But its had to go through a large evolution
- * to fit it into the new design for XFree 4.0
+ * to fit it into the new design for XFree86 4.0
  */
 
 static void

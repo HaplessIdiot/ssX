@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.2.2.2 1998/05/22 13:47:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.4 1998/07/25 16:56:14 dawes Exp $ */
 
 
 typedef unsigned long	Elf32_Addr;
@@ -445,8 +445,8 @@ typedef struct
 #define	ELFMAG		"\177ELF"
 #define	SELFMAG		4
 
-#define ELFDLMAG	3
-#define ELFDLOFF	16
+#define	ELFDLMAG	3
+#define	ELFDLOFF	16
 
 #define	ELFCLASSNONE	0		/* EI_CLASS */
 #define	ELFCLASS32	1
