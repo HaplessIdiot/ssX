@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.6 2002/05/31 16:48:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.7 2002/08/12 04:03:21 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -43,6 +43,9 @@ miCreateAlphaPicture (ScreenPtr	    pScreen,
     GCPtr	    pGC;
     int		    error;
     xRectangle	    rect;
+
+    if (width > 32767 || height > 32767)
+	return 0;
 
     if (!pPictFormat)
     {
