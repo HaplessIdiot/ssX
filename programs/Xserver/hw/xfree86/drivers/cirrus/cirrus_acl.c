@@ -1,25 +1,30 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.1 1997/03/06 23:15:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.2 1997/04/08 10:12:32 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
  *
  *					DWORD
- *				Solid	Align	Left		Transp.	Vert.
+ *				Solid	Align	Left		Transp.	
  *			Auto	Fill /	Color	Edge	32bpp	Color   Pattern
- *		MMIO	Start	24bpp	Exp	Clip	Support	Compare Alignm.
+ *		MMIO	Start	24bpp	Exp	Clip	Support	Compare Offset
  * CL-GD5426							Yes
  * CL-GD5428							Yes
  * CL-GD5429	Yes				Yes			Yes
- * CL-GD5430/40	Yes				Yes			Yes
+ * CL-GD5430/40	Yes				Yes			Yes (3)
  * CL-GD5434	Yes					Yes (1)
- * CL-GD5436	Yes	Yes	Yes	Yes	Yes	Yes	?	Yes
- * CL-GD5446	Yes	Yes	Yes	Yes	Yes	Yes	Yes (2)	Yes
+ * CL-GD5436	Yes	Yes	Yes	Yes	Yes	Yes	?	Yes (3)
+ * CL-GD5446	Yes	Yes	Yes	Yes	Yes	Yes (6)	Yes (2)	Yes
  * CL-GD7543							Yes
  * CL-GD7548	Yes	Yes					Yes
- * CL-GD7555	Yes	Yes	?	?	?	?	?	?
+ * CL-GD7555	Yes (4)	Yes	Yes	Yes	Yes	No	? (5)	?
  *
  * (1) 8x8 non-color expand pattern fill not supported at 32bpp.
- * (2) Not supported at 24/32bpp.
+ * (2) Not supported at 24/32bpp, and GXcopy only.
+ * (3) Left-edge clipping is used for horizontal offset.
+ * (4) MMIO space only at end of linear framebuffer.
+ * (5) Mentioned in features in databook, but register description is missing.
+ * (6) 5446 doesn't work at 32bpp with the current driver. Not sure whether
+ *     it is really supported.
  *
  * In the case of the 7548, I wonder if it shares some of the other newer
  * BitBLT features such as clipping for color expansion. The databook doesn't
@@ -61,56 +66,7 @@
 #include "cirBlitter.h"
 #endif
 
-
-#define CHIPHASPACKED24FILL() \
-    (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
-
-#ifdef MMIO
-#define CHIPHASAUTOSTART() \
-    (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 || \
-    cirrusChip == CLGD7548)
-#else
-#define CHIPHASAUTOSTART() (0)
-#endif
-
-#define CHIPHASPCIRETRYSUPPORT() \
-    (cirrusChip == CLGD5446)
-
-#ifdef MMIO
-#define CHIPHASSOLIDCOLORFILL() \
-    (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
-#else
-#define CHIPHASSOLIDCOLORFILL() (0)
-#endif
-
-#define CHIPHASTRANSPARENCYCOMPARE() \
-    (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || \
-    cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || \
-    cirrusChip == CLGD5446)
-
-#define CHIPONLYSUPPORTSGXCOPYTRANSPARENCYCOMPARE() \
-    (cirrusChip == CLGD5446)
-
-#define CHIPHASTRANSPARENCYCOMPAREMASK() \
-    (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || \
-    cirrusChip == CLGD7543 || cirrusChip == CLGD7548)
-
-/* "Write Mask" is used for left-edge clipping. */
-#define CHIPHASWRITEMASK() \
-    (cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
-    cirrusChip == CLGD5446)
-
-#define CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD() \
-    (cirrusChip == CLGD5436 || cirrusChip == CLGD5446)
-
-#define CHIPHASCPUFRAMEBUFFERCONCURRENCY() \
-    (cirrusChip == CLGD5446)
-
-#define CHIPHASFGCOLORREGISTERSIDEEFFECT() \
-    (cirrusChip <= CLGD5429 || HAVE754X())	/* At least the 5426/28. */
-
-#define CHIPHASPATTERNOFFSET() \
-    (cirrusChip == CLGD5446)
+#define CHIPHAS(feature) (cirrusChipFeatures & feature)
 
 #define BPPADJUST(x) \
     vga256InfoRec.bitsPerPixel == 8 ? x : \
@@ -120,6 +76,31 @@
 #define WAITEMPTY() { \
     if (!cirrusPCIRetrySupport) \
         CirrusBLTWaitEmpty(); }
+
+/*
+ * Must be careful not to confuse SOLIDCOLORFILL register bit flag
+ * with SOLIDCOLORFILLMODE feature flag.
+ */
+
+enum {
+    PACKED24FILL			= 0x1,
+    AUTOSTART				= 0x2,
+    PCIRETRYSUPPORT			= 0x4,
+    SOLIDCOLORFILLFEATURE		= 0x8,
+    TRANSPARENCYCOLORCOMPARE		= 0x10,
+    ONLYGXCOPYTRANSPARENCYCOLORCOMPARE	= 0x20,
+    TRANSPARENCYCOLORCOMPAREMASK	= 0x40,
+    WRITEMASK				= 0x80,
+    DWORDCOLOREXPANSIONSCANLINEPAD	= 0x100,
+    CPUFRAMEBUFFERCONCURRENCY		= 0x200,
+    FGCOLORREGISTERSIDEEFFECT		= 0x400,
+    NEWSTYLEPATTERNOFFSET		= 0x800,
+    OLDSTYLEPATTERNOFFSET		= 0x1000,
+    BROKEN32BPPPATTERNFILL		= 0x2000,
+    TRANSPARENCYNEEDSBGCOLOR		= 0x4000
+};
+
+
 
 #ifndef MMIO    
 
@@ -131,6 +112,7 @@ int cirrusChipFeatures = 0;
 #else
 
 extern int cirrusUseAutoStart, cirrusUseSolidColorFill, cirrusPCIRetrySupport;
+extern int cirrusChipFeatures;
 
 #define MMIONAME(x) x##MMIO
 
@@ -181,29 +163,89 @@ void CirrusSetupFor8x8PatternFill();
 void CirrusSubsequent8x8PatternFill();
 void CirrusSetupFor8x8PatternColorExpand();
 void CirrusSubsequent8x8PatternColorExpand();
+  
+
+/* Initialize the cirrusChipFeatures variable. */
+
+static void InitializeChipFeatures() {
+    cirrusChipFeatures = 0;
+
+    if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446
+    || cirrusChip == CLGD7555) {
+        cirrusChipFeatures |= PACKED24FILL;
+        cirrusChipFeatures |= DWORDCOLOREXPANSIONSCANLINEPAD;
+#ifdef MMIO
+        cirrusChipFeatures |= SOLIDCOLORFILLFEATURE;
+#endif
+    }
+
+#ifdef MMIO
+    if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
+    cirrusChip == CLGD7548 || cirrusChip == CLGD7555)
+        cirrusChipFeatures |= AUTOSTART;
+#endif
+
+    if (cirrusChip == CLGD5446)	/* Non conclusive data on 7555. */
+        cirrusChipFeatures |= PCIRETRYSUPPORT;
+
+    if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
+    cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || cirrusChip == CLGD5446)
+	/* No conclusive data on 7555. */
+        cirrusChipFeatures |= TRANSPARENCYCOLORCOMPARE;
+
+    if (cirrusChip == CLGD5446)
+        cirrusChipFeatures |= ONLYGXCOPYTRANSPARENCYCOLORCOMPARE;
+
+    if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
+    cirrusChip == CLGD7543 || cirrusChip == CLGD7548)
+        cirrusChipFeatures |= TRANSPARENCYCOLORCOMPAREMASK;
+
+    if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
+    cirrusChip == CLGD7543 || cirrusChip == CLGD7548 || cirrusChip == CLGD5434)
+        cirrusChipFeatures |= TRANSPARENCYNEEDSBGCOLOR;
+
+    /* "Write Mask" is used for left-edge clipping. */
+    if (cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
+    cirrusChip == CLGD5446 || cirrusChip == CLGD7555)
+        cirrusChipFeatures |= WRITEMASK;
+
+    if (cirrusChip == CLGD5446)
+        cirrusChipFeatures |= CPUFRAMEBUFFERCONCURRENCY;
+
+    if (cirrusChip <= CLGD5429 || HAVE754X())
+        /* At least the 5426/28 and 7543. */
+        cirrusChipFeatures |= FGCOLORREGISTERSIDEEFFECT;
+
+    if (cirrusChip == CLGD5430 || cirrusChip == CLGD5436)
+    	/* No conclusive data on 7555. */
+        cirrusChipFeatures |= OLDSTYLEPATTERNOFFSET;
+
+    if (cirrusChip == CLGD5446)
+        cirrusChipFeatures |= NEWSTYLEPATTERNOFFSET;
+
+    if (cirrusChip == CLGD5434)
+        cirrusChipFeatures |= BROKEN32BPPPATTERNFILL;
+}
 
 void CirrusAccelInit() {
-    /* Initialization for chips with MMIO. */
+
+    /* Collect the chip features flags (nothing to do with XAA). */
+    InitializeChipFeatures();
+
+    /* Set up XAA flags. */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
         | ONLY_TWO_BITBLT_DIRECTIONS;
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64;
-
-    if (CHIPHASCPUFRAMEBUFFERCONCURRENCY())
+    if (CHIPHAS(CPUFRAMEBUFFERCONCURRENCY))
         xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* 5446 */
     xf86AccelInfoRec.Sync = CirrusSync;
 
-
-    /* If the chip has honest-to-goodness solid color fill, great.  Else,
-       we'll try to use color expansion pattern fill in place of solid
-       color fill.  To do this pattern fill, we'll need some extra space
-       laying around.  Probably about 8 bytes (for an 8x8 monochrome 
-       pattern) should be enough. */
-      xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
-      if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHASPACKED24FILL())
-        xf86GCInfoRec.PolyFillRectSolidFlags |= RGB_EQUAL;
-
-      xf86AccelInfoRec.SetupForFillRectSolid = CirrusSetupForFillRectSolid;
-      switch (vga256InfoRec.bitsPerPixel) {
+    xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
+    if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHAS(PACKED24FILL))
+          xf86GCInfoRec.PolyFillRectSolidFlags |= RGB_EQUAL;
+  
+    xf86AccelInfoRec.SetupForFillRectSolid = CirrusSetupForFillRectSolid;
+    switch (vga256InfoRec.bitsPerPixel) {
       case 8 :
         xf86AccelInfoRec.SubsequentFillRectSolid = 
 	  Cirrus8SubsequentFillRectSolid;
@@ -223,13 +265,13 @@ void CirrusAccelInit() {
       }
 
     xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
-    if (!CHIPHASTRANSPARENCYCOMPARE() || vga256InfoRec.bitsPerPixel > 16)
+    if (!CHIPHAS(TRANSPARENCYCOLORCOMPARE) || vga256InfoRec.bitsPerPixel > 16)
         /*
          * There are currently no chips supporting transparency color
          * compare at bpp > 16.
          */
         xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
-    if (CHIPONLYSUPPORTSGXCOPYTRANSPARENCYCOMPARE())
+    if (CHIPHAS(ONLYGXCOPYTRANSPARENCYCOLORCOMPARE))
         xf86GCInfoRec.CopyAreaFlags |= TRANSPARENCY_GXCOPY;
     xf86AccelInfoRec.SetupForScreenToScreenCopy = CirrusSetupForScreenToScreenCopy;
     switch (vgaBitsPerPixel) {
@@ -247,48 +289,79 @@ void CirrusAccelInit() {
         break;
     }
 
-    if (vga256InfoRec.bitsPerPixel != 24) {
-        xf86AccelInfoRec.SetupForFill8x8Pattern = CirrusSetupFor8x8PatternFill;
-        xf86AccelInfoRec.SubsequentFill8x8Pattern = CirrusSubsequent8x8PatternFill;
+    /* Pattern fills. */
+    if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET))
+        xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+    if (vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL)) {
+#if 0
+        if (vga256InfoRec.bitsPerPixel == 24)
+            /* 8 "filler byte" at the end of each pattern scanline. */
+            xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_PAD_24BPP;
+            /*
+             * However, don't use the regular 8x8 pattern fill at 24bpp
+             * at the moment because the 5446 needs special pattern offset
+             * handling (offset in terms of 32bpp pixels) that hasn't
+             * been implemented yet.
+             */
+#endif
+        if (vga256InfoRec.bitsPerPixel != 24 &&
+        (vga256InfoRec.bitsPerPixel != 32 ||
+        !CHIPHAS(BROKEN32BPPPATTERNFILL))) {
+            xf86AccelInfoRec.SetupForFill8x8Pattern =
+                CirrusSetupFor8x8PatternFill;
+            xf86AccelInfoRec.SubsequentFill8x8Pattern =
+                CirrusSubsequent8x8PatternFill;
+        }
+        xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
+            CirrusSetupFor8x8PatternColorExpand;
+        xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
+            CirrusSubsequent8x8PatternColorExpand;
     }
 
     /* Color expansion. */
-    if (vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL()) {
+    if (vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL)) {
 
         xf86AccelInfoRec.ColorExpandFlags =
             CPU_TRANSFER_PAD_DWORD |
             BIT_ORDER_IN_BYTE_MSBFIRST | VIDEO_SOURCE_GRANULARITY_DWORD;
 
-        if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD())
+        if (CHIPHAS(DWORDCOLOREXPANSIONSCANLINEPAD))
             xf86AccelInfoRec.ColorExpandFlags |= SCANLINE_PAD_DWORD;
         else
             xf86AccelInfoRec.ColorExpandFlags |= SCANLINE_PAD_BYTE;
 
         if (vga256InfoRec.bitsPerPixel == 24)
             /*
-             * The 5436 (and 46?), which support 24bpp color expansion,
+             * The 5436 and 5446, which support 24bpp color expansion,
              * only support it with transparency.
              */
             xf86AccelInfoRec.ColorExpandFlags |= ONLY_TRANSPARENCY_SUPPORTED;
-#if 0
-        xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
-            CirrusSetupFor8x8PatternColorExpand;
-        xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
-            CirrusSubsequent8x8PatternColorExpand;
-#endif
 
-	if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD()) {
+        /*
+         * The following change is now in place (post 3.2A):
+         * No longer use the "legacy" color expansion text function
+         * for chips that require BYTE padding. XAA supports BYTE
+         * padding (not optimally though).
+         *
+         * The "indirect" color expansion was pretty useless anyway, because
+         * of the DWORD source alignment requirement.
+         */
+	if (1) {
 	    /*
-	     * Modern chip with 32-bit scanline alignment. Compatible
-	     * with XAA CPU-to-screen color expansion.
+	     * A modern chip with 32-bit scanline alignment is compatible
+	     * with optimized XAA CPU-to-screen color expansion.
+	     * BYTE-padding is also supported.
 	     */
-            if (CHIPHASWRITEMASK())
-                xf86AccelInfoRec.ColorExpandFlags |= LEFT_EDGE_CLIPPING;
+            if (CHIPHAS(WRITEMASK))
+                xf86AccelInfoRec.ColorExpandFlags |=
+                    LEFT_EDGE_CLIPPING |
+                    LEFT_EDGE_CLIPPING_NEGATIVE_X;
             xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
                 CirrusSetupForCPUToScreenColorExpand;
             xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
                 CirrusSubsequentCPUToScreenColorExpand;
         }
+#if 0
         else {
             /*
              * XAA CPU-to-screen color expansion with BYTE padding doesn't
@@ -302,7 +375,8 @@ void CirrusAccelInit() {
              */
 #ifdef MMIO
             xf86GCInfoRec.ImageGlyphBltTE = CirrusMMIOImageGlyphBlt;
-            xf86GCInfoRec.PolyGlyphBltTE = CirrusMMIOPolyGlyphBlt;
+	    if (vga256InfoRec.bitsPerPixel == 8)
+                xf86GCInfoRec.PolyGlyphBltTE = CirrusMMIOPolyGlyphBlt;
 #else
 	    xf86GCInfoRec.ImageGlyphBltTE = CirrusImageGlyphBlt;
 	    /* I think that the PolyGlyphBltTE function works only
@@ -325,6 +399,7 @@ void CirrusAccelInit() {
 	    xf86AccelInfoRec.ScratchBufferAddr = cirrusBufferSpaceAddr;
 	    xf86AccelInfoRec.ScratchBufferSize = cirrusBufferSpaceSize;
         }
+#endif
 
         xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
             CirrusSetupForScreenToScreenColorExpand;
@@ -334,12 +409,12 @@ void CirrusAccelInit() {
     /* end of colexp functions */
 
 
-    if (CHIPHASAUTOSTART()) {
+    if (CHIPHAS(AUTOSTART)) {
         cirrusUseAutoStart = TRUE;
-        if (CHIPHASPCIRETRYSUPPORT())
+        if (CHIPHAS(PCIRETRYSUPPORT))
             cirrusPCIRetrySupport = TRUE;
     }
-    if (CHIPHASSOLIDCOLORFILL())
+    if (CHIPHAS(SOLIDCOLORFILLFEATURE))
         cirrusUseSolidColorFill = TRUE;
 
     /* Initialize the PixMap cache.  We're free to tell XAA the region
@@ -347,7 +422,9 @@ void CirrusAccelInit() {
        */
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
-        vga256InfoRec.videoRam * 1024 - 1024 - cirrusBufferSpaceSize);
+        vga256InfoRec.videoRam * 1024 - 1024
+        /* - cirrusBufferSpaceSize */
+        );
 }
 
 void CirrusInitializeBitBLTEngine() {
@@ -355,9 +432,9 @@ void CirrusInitializeBitBLTEngine() {
    bytewidth = vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8;
    SETSRCPITCH(bytewidth);
    SETDESTPITCH(bytewidth);
-   if (CHIPHASTRANSPARENCYCOMPAREMASK())
+   if (CHIPHAS(TRANSPARENCYCOLORCOMPAREMASK))
        SETTRANSPARENCYCOLORMASK16(0);
-   if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD())
+   if (CHIPHAS(DWORDCOLOREXPANSIONSCANLINEPAD))
        SETBLTMODEEXT(SOURCEDWORDGRANULARITY);
    if (cirrusUseAutoStart)
        SETBLTSTATUS(0x80);
@@ -366,7 +443,7 @@ void CirrusInitializeBitBLTEngine() {
 void CirrusSync() {
     WAITUNTILFINISHED();
 #ifndef MMIO
-    if (CHIPHASFGCOLORREGISTERSIDEEFFECT())
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT))
         SETFOREGROUNDCOLOR(0);
 #endif
 #if 0
@@ -386,8 +463,15 @@ void CirrusSetupForFillRectSolid(color, rop, planemask)
 {
     int bltmode;
 
+    if (NeedToSync) {
+        if (cirrusUseAutoStart)
+            WAITEMPTY()
+        else
+            WAITUNTILFINISHED();
+    }
+
     if (vga256InfoRec.bitsPerPixel >= 24 &&
-	(vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL())) {
+	(vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL))) {
       if (!cirrusUseSolidColorFill) {
 	SETBACKGROUNDCOLOR32(color);
       }
@@ -412,7 +496,7 @@ void CirrusSetupForFillRectSolid(color, rop, planemask)
         bltmode = COLOREXPAND | PATTERNCOPY | PIXELWIDTH16;
         break;
     case 24 :
-        if (CHIPHASPACKED24FILL()) {
+        if (CHIPHAS(PACKED24FILL)) {
             bltmode = COLOREXPAND | PATTERNCOPY | PIXELWIDTH24;
         }
         else {
@@ -536,6 +620,15 @@ transparency_color)
 {
     int bltmode;
     bltmode = 0;
+
+    if (NeedToSync) {
+        if (cirrusUseAutoStart)
+            WAITEMPTY()
+        else
+            WAITUNTILFINISHED();
+        NeedToSync = FALSE;
+    }
+
     /* Set up optional transparency compare. */
     if (transparency_color != -1) {
         /*
@@ -549,22 +642,6 @@ transparency_color)
         SETTRANSPARENCYCOLOR16(transparency_color);
         bltmode |= TRANSPARENCYCOMPARE;
     }
-#if 0
-    switch (vga256InfoRec.bitsPerPixel) {
-    case 8 :
-        SETSRCPITCH(vga256InfoRec.displayWidth);
-        break;
-    case 16 :
-        SETSRCPITCH(vga256InfoRec.displayWidth * 2);
-        break;
-    case 24 :
-        SETSRCPITCH(vga256InfoRec.displayWidth * 3);
-        break;
-    default : /* case 32 */
-        SETSRCPITCH(vga256InfoRec.displayWidth * 4);
-        break;
-    }
-#endif
     /* Set up the blit direction. */
     blitxdir = xdir;
     blitydir = ydir;
@@ -625,6 +702,19 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 {
     int bltmode, loadbg;
     bltmode = 0;
+
+    if (NeedToSync) {
+        if (cirrusUseAutoStart) {
+            WAITEMPTY()
+            if (CHIPHAS(PCIRETRYSUPPORT))
+            	/* Dummy write to MMIO register below index 0x10. */
+                SETWIDTH(0);
+        }
+        else
+            WAITUNTILFINISHED();
+        NeedToSync = FALSE;
+    }
+
     if (bg == -1)
         bltmode = TRANSPARENCYCOMPARE;
     /*
@@ -637,15 +727,11 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
      * - The CL-GD5434. It requires the 32-bit background color
      *   to be set to the logical inverse of the foreground color, with both
      *   loaded with 32 bits worth of pixels for 8bpp and 16bpp.
-     * - The CL-GD5429/30/40, which do not require any additional
+     * - The CL-GD5429/30/40/36/46, which do not require any additional
      *   colors to be loaded.
-     * - I have no up-to-date data for the CL-GD5436/46. I assume they
-     *   are compatible with the 5430 (at least the Jan 1995 databook
-     *   implies this for the 5436). I suspect they do have a
-     *   transparency color though.
      */
     loadbg = (bg != -1);
-    if (bg == -1 && (cirrusChip == CLGD5434 || CHIPHASTRANSPARENCYCOMPARE())) {
+    if (bg == -1 && CHIPHAS(TRANSPARENCYNEEDSBGCOLOR)) {
         switch (vga256InfoRec.bitsPerPixel) {
         case 8 :
             bg = (~fg) & 0xFF;
@@ -665,13 +751,13 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
             bg = ~fg;
             break;
         }
-        if (CHIPHASTRANSPARENCYCOMPARE()) {
+        if (CHIPHAS(TRANSPARENCYCOLORCOMPARE)) {
             SETTRANSPARENCYCOLOR16(bg);
         }
         loadbg = TRUE;
     }
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
-    (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
+    (vga256InfoRec.bitsPerPixel == 24 || CHIPHAS(PACKED24FILL))) {
         if (loadbg) {
             SETBACKGROUNDCOLOR32(bg);
         }
@@ -691,7 +777,7 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
         bltmode |= COLOREXPAND | SYSTEMSRC | PIXELWIDTH16;
         break;
     case 24 :
-        if (CHIPHASPACKED24FILL()) {
+        if (CHIPHAS(PACKED24FILL)) {
             bltmode |= COLOREXPAND | SYSTEMSRC | PIXELWIDTH24;
         }
         else {
@@ -702,7 +788,7 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
         bltmode |= COLOREXPAND | SYSTEMSRC | PIXELWIDTH32;
         break;
     }
-    if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD()) {
+    if (CHIPHAS(DWORDCOLOREXPANSIONSCANLINEPAD)) {
         SETBLTMODEANDROP(bltmode, SOURCEDWORDGRANULARITY, cirrus_rop[rop]);
     }
     else {
@@ -720,7 +806,7 @@ void CirrusSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
      */
     w = BPPADJUST(w);
     SETWIDTHANDHEIGHT(w, h);
-    if (CHIPHASWRITEMASK()) {
+    if (CHIPHAS(WRITEMASK)) {
         /*
          * Apart from setting the write mask, this also satisfies the
          * requirement of writing to GR2C for the 5430/40.
@@ -741,11 +827,24 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
     unsigned int planemask;
 {
     int bltmode, loadbg;
+
+    if (NeedToSync) {
+        if (cirrusUseAutoStart) {
+            WAITEMPTY()
+            if (CHIPHAS(PCIRETRYSUPPORT))
+            	/* Dummy write to MMIO register below index 0x10. */
+                SETWIDTH(0);
+        }
+        else
+            WAITUNTILFINISHED();
+        NeedToSync = FALSE;
+    }
+
     bltmode = 0;
     if (bg == -1)
         bltmode = TRANSPARENCYCOMPARE;
     loadbg = (bg != -1);
-    if (bg == -1 && (cirrusChip == CLGD5434 || CHIPHASTRANSPARENCYCOMPARE())) {
+    if (bg == -1 && CHIPHAS(TRANSPARENCYNEEDSBGCOLOR)) {
         switch (vga256InfoRec.bitsPerPixel) {
         case 8 :
             bg = (~fg) & 0xFF;
@@ -765,14 +864,14 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
             bg = ~fg;
             break;
         }
-        if (CHIPHASTRANSPARENCYCOMPARE()) {
+        if (CHIPHAS(TRANSPARENCYCOMPARE)) {
             SETTRANSPARENCYCOLOR16(bg);
         }
         loadbg = TRUE;
     }
 
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
-    (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
+    (vga256InfoRec.bitsPerPixel == 24 || CHIPHAS(PACKED24FILL))) {
         if (loadbg) {
             SETBACKGROUNDCOLOR32(bg);
         }
@@ -793,7 +892,7 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
         bltmode |= COLOREXPAND | PIXELWIDTH16;
         break;
     case 24 :
-        if (CHIPHASPACKED24FILL()) {
+        if (CHIPHAS(PACKED24FILL)) {
             bltmode |= COLOREXPAND | PIXELWIDTH24;
         }
         else {
@@ -834,6 +933,10 @@ void CirrusSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
 
 /* Scanline-by-scanline screen-to-screen color expansion. */
 
+/* These are currently unused. */
+
+#if 0
+
 static int scanline_destaddr;
 static int scanline_width;
 
@@ -848,7 +951,7 @@ rop, planemask)
     if (bg == -1)
         bltmode = TRANSPARENCYCOMPARE;
     loadbg = (bg != -1);
-    if (bg == -1 && (cirrusChip == CLGD5434 || CHIPHASTRANSPARENCYCOMPARE())) {
+    if (bg == -1 && CHIPHAS(TRANSPARENCYNEEDSBGCOLOR)) {
         switch (vga256InfoRec.bitsPerPixel) {
         case 8 :
             bg = (~fg) & 0xFF;
@@ -868,14 +971,14 @@ rop, planemask)
             bg = ~fg;
             break;
         }
-        if (CHIPHASTRANSPARENCYCOMPARE()) {
+        if (CHIPHAS(TRANSPARENCYCOMPARE)) {
             SETTRANSPARENCYCOLOR16(bg);
         }
         loadbg = TRUE;
     }
 
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
-    (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
+    (vga256InfoRec.bitsPerPixel == 24 || CHIPHAS(PACKED24FILL))) {
         if (loadbg) {
             SETBACKGROUNDCOLOR32(bg);
         }
@@ -896,7 +999,7 @@ rop, planemask)
         bltmode |= COLOREXPAND | PIXELWIDTH16;
         break;
     case 24 :
-        if (CHIPHASPACKED24FILL()) {
+        if (CHIPHAS(PACKED24FILL)) {
             bltmode |= COLOREXPAND | PIXELWIDTH24;
         }
         else {
@@ -931,6 +1034,8 @@ void CirrusSubsequentScanlineScreenToScreenColorExpand(srcaddr)
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8;
 }
 
+#endif 	/* not used */
+
 static int pattern_address;
 
 void CirrusSetupFor8x8PatternFill(patternx, patterny, rop, planemask,
@@ -938,6 +1043,19 @@ transparency_color)
     int patternx, patterny, rop, planemask, transparency_color;
 {
     int bltmode;
+
+    if (NeedToSync) {
+        if (cirrusUseAutoStart) {
+            WAITEMPTY()
+            if (CHIPHAS(PCIRETRYSUPPORT))
+            	/* Dummy write to MMIO register below index 0x10. */
+                SETWIDTH(0);
+        }
+        else
+            WAITUNTILFINISHED();
+        NeedToSync = FALSE;
+    }
+
     bltmode = 0;
     /* Set up optional transparency compare. */
     if (transparency_color != -1) {
@@ -953,7 +1071,7 @@ transparency_color)
         bltmode |= TRANSPARENCYCOMPARE;
     }
     SETBLTMODEANDROP(PATTERNCOPY | bltmode, 0, cirrus_rop[rop]);
-    if (CHIPHASPATTERNOFFSET()) {
+    if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET)) {
         pattern_address = patterny * vga256InfoRec.displayWidth + patternx;
     }
 }
@@ -962,13 +1080,34 @@ void CirrusSubsequent8x8PatternFill(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
     int srcaddr, destaddr;
-    if (CHIPHASPATTERNOFFSET())
-        srcaddr = pattern_address + patterny * 8 + patternx;
+    if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET))
+        if (CHIPHAS(NEWSTYLEPATTERNOFFSET))
+            /* 5446, full pattern offset. */
+            srcaddr = pattern_address + patterny * 8 + patternx;
+        else {
+            /* 5430/40, 5436 */
+            srcaddr = pattern_address;
+            /* Adjust destination area for left-edge clipping. */
+            x -= patternx;
+            w += patternx;
+        }
     else
         srcaddr = patterny * vga256InfoRec.displayWidth + patternx;
     destaddr = y * vga256InfoRec.displayWidth + x;
     srcaddr = BPPADJUST(srcaddr);
     destaddr = BPPADJUST(destaddr);
+    if (CHIPHAS(OLDSTYLEPATTERNOFFSET)) {
+        /*
+         * 5430/40, 5436 have vertical preset, and horizontal offset
+         * can be programmed using left edge clipping.
+         */
+        srcaddr += patterny;
+        if (vga256InfoRec.bitsPerPixel == 24)
+            /* 24bpp is a special case, GR2F is in terms of bytes. */
+            srcaddr |= (patternx * 3) << 24;
+        else
+            srcaddr |= patternx << 24;
+    }
     w = BPPADJUST(w);
     if (cirrusUseAutoStart)
         WAITEMPTY()
@@ -986,12 +1125,21 @@ planemask)
     int patternx, patterny, bg, fg, rop, planemask;
 {
     int bltmode, loadbg;
+
+    if (NeedToSync) {
+        if (cirrusUseAutoStart)
+            WAITEMPTY()
+        else
+            WAITUNTILFINISHED();
+        NeedToSync = FALSE;
+    }
+
     /* Ignore patternx and patterny. */
     bltmode = 0;
     if (bg == -1)
         bltmode = TRANSPARENCYCOMPARE;
     loadbg = (bg != -1);
-    if (bg == -1 && (cirrusChip == CLGD5434 || CHIPHASTRANSPARENCYCOMPARE())) {
+    if (bg == -1 && CHIPHAS(TRANSPARENCYNEEDSBGCOLOR)) {
         switch (vga256InfoRec.bitsPerPixel) {
         case 8 :
             bg = (~fg) & 0xFF;
@@ -1011,13 +1159,13 @@ planemask)
             bg = ~fg;
             break;
         }
-        if (CHIPHASTRANSPARENCYCOMPARE()) {
+        if (CHIPHAS(TRANSPARENCYCOMPARE)) {
             SETTRANSPARENCYCOLOR16(bg);
         }
         loadbg = TRUE;
     }
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
-    (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
+    (vga256InfoRec.bitsPerPixel == 24 || CHIPHAS(PACKED24FILL))) {
         if (loadbg) {
             SETBACKGROUNDCOLOR32(bg);
         }
@@ -1037,7 +1185,7 @@ planemask)
         bltmode |= COLOREXPAND | PIXELWIDTH16 | PATTERNCOPY;
         break;
     case 24 :
-        if (CHIPHASPACKED24FILL()) {
+        if (CHIPHAS(PACKED24FILL)) {
             bltmode |= COLOREXPAND | PIXELWIDTH24 | PATTERNCOPY;
         }
         else {
@@ -1049,19 +1197,45 @@ planemask)
         break;
     }
     SETBLTMODEANDROP(bltmode, 0, cirrus_rop[rop]);
+    if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET)) {
+        pattern_address = BPPADJUST(patterny * vga256InfoRec.displayWidth)
+            + patternx / 8;
+    }
 }
 
 void CirrusSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
     int srcaddr, destaddr;
-    srcaddr = patterny * vga256InfoRec.displayWidth;
+    if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET)) {
+        /*
+         * Origin offset is passed in (patternx, patterny). Pattern storage
+         * address was passed in Setup function and stored in
+         * pattern_address.
+         * The vertical offset is defined by bits 0-2 of the source address.
+         * For the horizontal offset, left-edge clipping value is used,
+         * which resides at the highest byte of the source address
+         * DWORD.
+         */
+        srcaddr = pattern_address + patterny;
+        if (vga256InfoRec.bitsPerPixel == 24)
+            /* 24bpp is a special case, GR2F is in terms of bytes. */
+            srcaddr |= (patternx * 3) << 24;
+        else
+            srcaddr |= patternx << 24;
+        /* Adjust destination area for left-edge clipping. */
+        x -= patternx;
+        w += patternx;
+    }
+    else {
+        srcaddr = patterny * vga256InfoRec.displayWidth;
+        srcaddr = BPPADJUST(srcaddr);
+        /* The pattern x-coordinate is in "bit" units. */
+        srcaddr += patternx / 8;
+    }
     destaddr = y * vga256InfoRec.displayWidth + x;
-    srcaddr = BPPADJUST(srcaddr);
     destaddr = BPPADJUST(destaddr);
     w = BPPADJUST(w);
-    /* The pattern x-coordinate is in "bit" units. */
-    srcaddr += patternx / 8;
     if (cirrusUseAutoStart)
         WAITEMPTY()
     else
