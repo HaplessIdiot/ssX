@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 288. Improvements to the Linux mouse auto-detection fallbacks, and
+      a development option to disable PnP probing (David Dawes).
  287. NLS build fix for IRIX;  Change default to build and install
       backward-compatible NLS configurations (Marc La France).
  286. Document the maximum number of buttons currently supported by the
@@ -19308,7 +19310,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3400 2005/01/27 15:58:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3401 2005/01/27 16:01:37 tsi Exp $
 
 
 
