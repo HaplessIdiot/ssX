@@ -60,10 +60,13 @@ extern pointer vgaBase;
  * This is the mid-level BitBlt function that calls the appropriate
  * low level function, depending on size, specific chipset, etc.
  *
+ * Only called if alu == GXcopy && (planemask & 0xff) == 0xff.
+ *
  * We could also use the BitBLT engine for non-GXcopy blits; do they
  * ever happen?
  */
 
+#if 0
 
 void
 CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
@@ -74,31 +77,43 @@ CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
      int xdir, ydir;
      int alu;
      unsigned long planemask;
+#endif
+
+void
+CirrusPolyBitBlt(pdstBase, psrcBase, widthSrc, widthDst, nbox, pptSrc,
+		 pbox, xdir, ydir)
+	pointer pdstBase, psrcBase;
+	int widthSrc, widthDst;
+	int nbox;
+	DDXPointPtr pptSrc;
+	BoxPtr pbox;
+	int xdir, ydir;
 {
   unsigned int psrc, pdst;
   int i;
 
-#if 0
-  ErrorF("x = %d, y = %d, x1 = %d, y1 = %d, w = %d, h = %d, xdir = %d, ydir = %d\n",
-      x, y, x1, y1, w, h, xdir, ydir);
-#endif      
-
-  if (alu == GXcopy && (planemask & 0xFF) == 0xFF)
-    {
+  for (; nbox; pbox++, pptSrc++, nbox--) {
+      int x, y, x1, y1, w, h;
+      int bltWidthSrc, bltWidthDst, bltxdir;
+      x = pptSrc->x;
+      y = pptSrc->y;
+      x1 = pbox->x1;
+      y1 = pbox->y1;
+      w = pbox->x2 - x1;
+      h = pbox->y2 - y1;
 
       if (!HAVEBITBLTENGINE()) {
           if (xdir == 1 && ydir == 1) {
               /* Special case for extended write mode bitblt (scroll up). */
               if (w >= 32 && (x & 7) == (x1 & 7)) {
                   CirrusLatchedBitBlt(x, y, x1, y1, w, h, widthDst);
-                  return;
+                  continue;
               }
-#if 1
+
               /* Call Cirrus framebuffer memcpy routine for remaining */
               /* forward blits. */
               CirrusSimpleBitBlt(x, y, x1, y1, w, h, widthDst);
-              return;
-#endif              
+              continue;
           }
 
 	  if (xdir == 1 && ydir == -1) {
@@ -106,56 +121,58 @@ CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
               /* (scroll down). */
               if (w >= 32 && (x & 7) == (x1 & 7)) {
                   CirrusLatchedBitBltReversed(x, y, x1, y1, w, h, -widthDst);
-                  return;
+                  continue;
               }
           }
 
           /* Let cfb do remaining (non-forward) blits. */
           vgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
-	      x1, y1, w, h, xdir, ydir, alu, planemask);
-	  return;
+	      x1, y1, w, h, xdir, ydir, GXcopy, 0xff);
+	  continue;
       }
 
       /* We have a hardware BitBLT engine. */
       /* For small areas, use the Cirrus framebuffer memcpy routine. */
-      if (w * h < 200) {
-#if 1
+      if (w * h < 100) {
+
+	  if (cirrusBLTisBusy)
+              /* We can't access video memory during a blit. */
+	      CirrusBLTWaitUntilFinished();
+
           if (xdir == 1 && ydir == 1) {
               CirrusSimpleBitBlt(x, y, x1, y1, w, h, widthDst);
-              return;
+              continue;
           }
-#endif          
           vgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
-              x1, y1, w, h, xdir, ydir, alu, planemask);
-          return;
+              x1, y1, w, h, xdir, ydir, GXcopy, 0xff);
+          continue;
       }
 
       /* Use the hardware blit. */
       /* The line-by-line blits can probably be largely avoided similar to */
       /* the paradise/wd driver. -- HH */
 
-      if (widthSrc < 0)
-          widthSrc = -widthSrc;
-      if (widthDst < 0)
-          widthDst = -widthDst;
+      bltWidthSrc = widthSrc < 0 ? -widthSrc : widthSrc;
+      bltWidthDst = widthDst < 0 ? -widthDst : widthDst;
 
+      bltxdir = xdir;
       if (xdir == 1 && ydir == -1 && y != y1) {
           /* Tranform to xdir = -1 blit. */
-          xdir = -1;
+          bltxdir = -1;
       }
 
-      if (xdir == 1)		/* left to right */
+      if (bltxdir == 1)		/* left to right */
 	{
 	  if (ydir == 1)	/* top to bottom */
 	    {
-	      psrc = (y * widthSrc) + x;
-	      pdst = (y1 * widthDst) + x1;
+	      psrc = (y * bltWidthSrc) + x;
+	      pdst = (y1 * bltWidthDst) + x1;
 	    }
 	  else
 	    /* bottom to top */
 	    {
-	      psrc = ((y + h - 1) * widthSrc) + x;
-	      pdst = ((y1 + h - 1) * widthDst) + x1;
+	      psrc = ((y + h - 1) * bltWidthSrc) + x;
+	      pdst = ((y1 + h - 1) * bltWidthDst) + x1;
 	    }
 	}
       else
@@ -163,14 +180,14 @@ CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 	{
 	  if (ydir == 1)	/* top to bottom */
 	    {
-	      psrc = (y * widthSrc) + x + w - 1;
-	      pdst = (y1 * widthDst) + x1 + w - 1;
+	      psrc = (y * bltWidthSrc) + x + w - 1;
+	      pdst = (y1 * bltWidthDst) + x1 + w - 1;
 	    }
 	  else
 	    /* bottom to top */
 	    {
-	      psrc = ((y + h - 1) * widthSrc) + x + w - 1;
-	      pdst = ((y1 + h - 1) * widthDst) + x1 + w - 1;
+	      psrc = ((y + h - 1) * bltWidthSrc) + x + w - 1;
+	      pdst = ((y1 + h - 1) * bltWidthDst) + x1 + w - 1;
 	    }
 	}
 
@@ -185,21 +202,32 @@ CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
       
       /* HH: Hmm, it is very noticable; moving up while editing is */
       /* significantly slower (this is now fixed). */
-     
-      if (xdir == 1)
+
+      cirrusDoBackgroundBLT = TRUE;
+
+      if (bltxdir == 1)
 	{
 	  if (ydir == 1)
 	    {			/* Nothing special, straight blit */
-	      CirrusBLTBitBlt(pdst, psrc, widthDst, widthSrc, w, h, 1);
+	      if (cirrusUseMMIO)
+	          CirrusMMIOBLTBitBlt(pdst, psrc, bltWidthDst, bltWidthSrc, w, h, 1);
+	      else
+	          CirrusBLTBitBlt(pdst, psrc, bltWidthDst, bltWidthSrc, w, h, 1);
 	    }
 	  else
 	    /* Line by line, going up. */
 	    {
+	      int bltpsrc, bltpdst;
+	      bltpsrc = psrc;
+	      bltpdst = pdst;
 	      for (i = 0; i < h; i++)
 		{
-		  CirrusBLTBitBlt(pdst, psrc, widthDst, widthSrc, w, 1, 1);
-		  psrc -= widthSrc;
-		  pdst -= widthDst;
+		  if (cirrusUseMMIO)
+		      CirrusMMIOBLTBitBlt(bltpdst, bltpsrc, bltWidthDst, bltWidthSrc, w, 1, 1);
+		  else
+		      CirrusBLTBitBlt(bltpdst, bltpsrc, bltWidthDst, bltWidthSrc, w, 1, 1);
+		  bltpsrc -= bltWidthSrc;
+		  bltpdst -= bltWidthDst;
 		}
 	    }
 	}
@@ -208,23 +236,34 @@ CirrusBitBlt (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 
 	  if (ydir == 1)	/* Line by line, going down and to the left */
 	    {
+	      int bltpsrc, bltpdst;
+	      bltpsrc = psrc;
+	      bltpdst = pdst;
 	      for (i = 0; i < h; i++)
 		{
-		  CirrusBLTBitBlt(pdst, psrc, widthDst, widthSrc, w, 1, -1);
-		  psrc += widthSrc;
-		  pdst += widthDst;
+		  if (cirrusUseMMIO)
+		      CirrusMMIOBLTBitBlt(bltpdst, bltpsrc, bltWidthDst, bltWidthSrc, w, 1, -1);
+		  else
+		      CirrusBLTBitBlt(bltpdst, bltpsrc, bltWidthDst, bltWidthSrc, w, 1, -1);
+		  bltpsrc += bltWidthSrc;
+		  bltpdst += bltWidthDst;
 		}
 	    }
 	  else
 	    /* Another stock blit, albeit backwards */
 	    {
-	      CirrusBLTBitBlt(pdst, psrc, widthDst, widthSrc, w, h, -1);
+	      if (cirrusUseMMIO)
+	          CirrusMMIOBLTBitBlt(pdst, psrc, bltWidthDst, bltWidthSrc, w, h, -1);
+	      else
+	          CirrusBLTBitBlt(pdst, psrc, bltWidthDst, bltWidthSrc, w, h, -1);
 	    }
 	}
-    }
-  else
-    /* Non GXcopy, or planemask != 0xff. */
-    vgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
-        x1, y1, w, h, xdir, ydir, alu, planemask);
-}
 
+      /* Next region. */
+  }
+
+  /* Make sure any background blits are finished. */
+  if (cirrusBLTisBusy)
+      CirrusBLTWaitUntilFinished();
+  cirrusDoBackgroundBLT = FALSE;
+}

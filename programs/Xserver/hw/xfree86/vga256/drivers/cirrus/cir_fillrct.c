@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.1 1994/07/24 11:56:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.2 1994/08/01 12:15:31 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -120,7 +120,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		/* BoxFill = cfbFillRectTile32Copy; */
 		BoxFill = CirrusFillRectTile;
 	    else
-		BoxFill = cfbFillRectTileOdd;
+		BoxFill = vga256FillRectTileOdd;
 	}
 	break;
 #if (PPW == 4)
@@ -129,7 +129,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 							pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
-	    BoxFill = vga2568FillRectTransparentStippled32;
+	    BoxFill = CirrusFillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->

@@ -1,5 +1,5 @@
 /* $XConsortium: s3fs.c,v 1.3 94/04/17 20:31:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.1 1994/08/01 13:19:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.2 1994/08/03 13:27:56 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -79,6 +79,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "misc.h"
 #include  "xf86.h"
 #include "s3.h"
@@ -103,8 +105,20 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbSolidSpansGeneral(pDrawable, pGC,
-			   nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSolidSpansGeneral(pDrawable, pGC,
+			      nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16SolidSpansGeneral(pDrawable, pGC,
+				nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32SolidSpansGeneral(pDrawable, pGC,
+				nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
@@ -115,6 +129,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
         case 16:
+        case 32:
 	   ErrorF("should call cfbSolidFillSpans\n");
 	   break;
 	default:
@@ -142,18 +157,10 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		   ppt, pwidth, fSorted);
 
    BLOCK_CURSOR;
-   WaitQueue(3);
-   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel));
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+   WaitQueue16_32(3,5);
+   S3_OUTW32(FRGD_COLOR, (pGC->fgPixel));
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+   S3_OUTW32(WRT_MASK, pGC->planemask);
 
    while (n--) {
       WaitQueue(5);
@@ -195,7 +202,17 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
@@ -206,6 +223,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
 	case 16:
+	case 32:
 	   ErrorF("should call cfbTiledFillSpans\n");
 	   break;
 	default:
@@ -275,8 +293,20 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalStippleFS(pDrawable, pGC,
-			    nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalStippleFS(pDrawable, pGC,
+			       nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 
@@ -357,8 +387,20 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    if (!xf86VTSema)
    {
-      cfbUnnaturalStippleFS(pDrawable, pGC,
-			    nInit, pptInit, pwidthInit, fSorted);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbUnnaturalStippleFS(pDrawable, pGC,
+			       nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+	 cfb16UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+	 cfb32UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
       return;
    }
 

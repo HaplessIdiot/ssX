@@ -1,5 +1,5 @@
 /* $XConsortium: s3gtimg.c,v 1.1 94/03/28 21:15:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.2 1994/08/11 06:55:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.3 1994/08/12 14:01:38 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -30,6 +30,7 @@
 #include "pixmapstr.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "s3.h"
 
@@ -60,6 +61,10 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	 break;
       case 16:
          cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 32:
+         cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
       }
       return;
    }

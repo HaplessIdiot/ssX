@@ -1,5 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.1 1994/08/03 13:30:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.2 1994/08/11 06:55:39 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -56,6 +56,7 @@ Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 #include "colormapst.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb32.h"
 #include "mi.h"
 #include "mistruct.h"
 #include "dix.h"
@@ -65,10 +66,6 @@ Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 #include "regs3.h"
 
 extern RegionPtr mfbPixmapToRegion();
-extern Bool cfbAllocatePrivates();
-extern Bool cfb16AllocatePrivates();
-extern Bool cfbInitVisuals();
-extern Bool miScreenInit();
 extern Bool mfbRegisterCopyPlaneProc();
 
 extern int defaultColorVisualClass;
@@ -115,11 +112,13 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	if (s3DAC8Bit)
 	    bitsPerRGB = 8;
 	break;
-    case 15:
     case 16:
 	if (xf86weight.red == 5 && xf86weight.green == 5
 	    && xf86weight.blue == 5)
 	    bitsPerRGB = 5;
+	break;
+    case 32:
+	bitsPerRGB = 8;
 	break;
     }
 	
@@ -130,9 +129,9 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	cfbGeneration = serverGeneration;
     }
 
-    if (rootdepth == 15 || rootdepth == 16) {
+    if (rootdepth == 15 || rootdepth == 16 || rootdepth == 24 || rootdepth == 32) {
     /*
-     * There are several possible color weightings at 16bpp.
+     * There are several possible color weightings at 16/24bpp.
      * Set them up here.
      */
         for (i = 0, visual = visuals; i < nvisuals; i++, visual++)
@@ -193,7 +192,23 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->DestroyPixmap = cfb16DestroyPixmap;
 	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);	
 	break;
-	default:
+     case 24:
+     case 32:
+	pScreen->CreateGC = s3CreateGC32;
+        if (!cfb32AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
+	    &cfbGCPrivateIndex))
+	    return FALSE;
+	pScreen->CreateWindow = cfb32CreateWindow;
+	pScreen->DestroyWindow = cfb32DestroyWindow;
+	pScreen->PositionWindow = cfb32PositionWindow;
+	pScreen->ChangeWindowAttributes = cfb32ChangeWindowAttributes;
+	pScreen->RealizeWindow = cfb32MapWindow;
+	pScreen->UnrealizeWindow = cfb32UnmapWindow;
+	pScreen->CreatePixmap = cfb32CreatePixmap;
+	pScreen->DestroyPixmap = cfb32DestroyPixmap;
+	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);	
+	break;
+     default:
 	    FatalError("root depth %d not (yet?) supported\n", rootdepth);
     }
     pScreen->CreateColormap = cfbInitializeColormap;
@@ -209,7 +224,12 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
 			&s3BSFuncRec);
-    if (rootdepth != 8) {
+    if (rootdepth > 16) {
+	pScreen->CreateScreenResources = cfb32CreateScreenResources;
+	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+    }
+    else if (rootdepth > 8) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.3 1994/07/24 11:56:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.4 1994/08/01 12:15:33 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -75,19 +75,11 @@ void CirrusFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
 
 	for (;nBox; nBox--, pBox++) {
 		int w = pBox->x2 - pBox->x1;
-		/* Small stipples are slightly broken. Disabled until fixed. */
-		if (cfb8StippleRRop == GXcopy && w >= 64) {
-			if (w >= 64)
-				CirrusColorExpand32bitFill(pBox->x1, pBox->y1,
-					w, pBox->y2 - pBox->y1, src,
-					stippleHeight, 0, 0, pGC->bgPixel,
-					pGC->fgPixel, destPitch);
-			else
-				Cirrus32bitFillSmall(pBox->x1,
-					pBox->y1, w, pBox->y2 - pBox->y1, src,
-					stippleHeight, 0, 0, pGC->bgPixel,
-					pGC->fgPixel, destPitch);
-		}
+		int h = pBox->y2 - pBox->y1;
+		if (cfb8StippleRRop == GXcopy && w >= 32 && h >= 10)
+			CirrusColorExpandOpaqueStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight,
+				0, 0, pGC->bgPixel, pGC->fgPixel, destPitch);
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
@@ -127,12 +119,11 @@ void CirrusFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
 
 	for (;nBox; nBox--, pBox++) {
 		int w = pBox->x2 - pBox->x1;
-		if (cfb8StippleRRop == GXcopy && w >= 64)
-			/* Background pixel -1 means transparent. */
-			CirrusColorExpand32bitFill(pBox->x1, pBox->y1, w,
-				pBox->y2 - pBox->y1, src, stippleHeight,
-				0, 0, -1, pGC->fgPixel,
-				destPitch);
+		int h = pBox->y2 - pBox->y1;
+		if (cfb8StippleRRop == GXcopy && w >= 32 && h >= 10)
+			CirrusColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight,
+				0, 0, pGC->fgPixel, destPitch);
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
@@ -147,7 +138,7 @@ void CirrusFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
  * Cirrus Tile fill.
  * There's no clear way to do tiling efficiently. There are lots of
  * different ways.
- * Uses a specific latched-write function for 32 pixels wide tiles.
+ * Uses a specific latched-write function for multiple-of-8 pixels wide tiles.
  * For 8x8 and 16x16 tiles, the BitBLT engine fill is used. For larger
  * tiles, we use repeated BitBlt.
  *
@@ -197,6 +188,7 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 	int pixWidth;
 	int xrot, yrot;
 	void *pattern;
+	int vidpattern;
 
 	pPix = pGC->tile.pixmap;
 	width = pPix->drawable.width;
@@ -213,8 +205,13 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 	if (HAVEBITBLTENGINE()) {
 		if (width == 8 && height == 8)
 			goto tile8x8;
-		if (width == 16 && height == 16 && (vga256InfoRec.virtualX
-		< 2048 || (HAVE543X() && vga256InfoRec.virtualX < 4096)))
+		/* For 16x16 tile, prefer the extended write mode function
+		 * to the 5426 BitBLT engine, except for small sizes.
+		 * Always use BitBLT on the 543x.
+		 */
+		if (width == 16 && height == 16 && ((!HAVE543X() &&
+		vga256InfoRec.virtualX < 2048) ||
+		(HAVE543X() && vga256InfoRec.virtualX < 4096)))
 			goto tile16x16;
 #ifdef CIRRUS_INTERLEAVED32x32FILL_543X
 		if (width == 32 && height == 32 && HAVE543X() &&
@@ -227,11 +224,10 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 			goto tileblit;
 #endif			
 	}
-	/* On local bus (but not on the 543x), or if there's no blit engine,
-	 * use the extended write mode function for 32x32 tiles. 
+	/* Use the extended write mode function for (?*8)xH tiles. 
 	 */
-	if (width == 32 && height <= 32)
-		goto tile32;
+	if (width == 8 || width == 16 || width == 32 || width == 64)
+		goto tile8mx;
 
 	vga256FillRectTileOdd(pDrawable, pGC, nBox, pBox);
 	return;
@@ -239,42 +235,63 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 tile8x8:
 	/* 8x8 BitBLT tile fill. */
 	pattern = ALLOCATE_LOCAL(8 * 8);
+	cirrusDoBackgroundBLT = TRUE;
 	/* This could be speeded up by avoiding the pattern being copied
 	 * to video memory each time. */
 	for (;nBox; nBox--, pBox++) {
 		int w, h;
-		rotatepattern(pattern, (unsigned char *)src, pixWidth, 8, 8,
-			(pBox->x1 - xrot) & 7, (pBox->y1 - yrot) & 7);
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w * h < 500)
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
-			CirrusBLT8x8PatternFill(pBox->y1 * destPitch +
-				pBox->x1, w, h,	pattern, destPitch,
-				CROP_SRC);
+			rotatepattern(pattern, (unsigned char *)src, pixWidth,
+				8, 8, (pBox->x1 - xrot) & 7,
+				(pBox->y1 - yrot) & 7);
+			if (cirrusUseMMIO)
+				CirrusMMIOBLT8x8PatternFill(pBox->y1 *
+					destPitch + pBox->x1, w, h, pattern,
+					destPitch, CROP_SRC);
+			else
+				CirrusBLT8x8PatternFill(pBox->y1 * destPitch +
+					pBox->x1, w, h,	pattern, destPitch,
+					CROP_SRC);
 		}
 	}
+	if (cirrusBLTisBusy)
+		CirrusBLTWaitUntilFinished();
+	cirrusDoBackgroundBLT = FALSE;
 	DEALLOCATE_LOCAL(pattern);
 	return;
 
 tile16x16:
 	/* 16x16 BitBLT tile fill. */
 	pattern = ALLOCATE_LOCAL(16 * 16);
+	cirrusDoBackgroundBLT = TRUE;
 	for (;nBox; nBox--, pBox++) {
 		int w, h;
-		rotatepattern(pattern, (unsigned char *)src, pixWidth, 16, 16,
-			(pBox->x1 - xrot) & 15, (pBox->y1 - yrot) & 15);
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
 		if (w * h < 250)
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
+			rotatepattern(pattern, (unsigned char *)src, pixWidth,
+				16, 16,	(pBox->x1 - xrot) & 15,
+				(pBox->y1 - yrot) & 15);
 			/* Low level function uses vertical interleaving. */
-			CirrusBLT16x16PatternFill(pBox->y1 * destPitch +
-				pBox->x1, w, h, pattern, destPitch, CROP_SRC);
+			if (cirrusUseMMIO)
+				CirrusMMIOBLT16x16PatternFill(pBox->y1 *
+					destPitch + pBox->x1, w, h, pattern,
+					destPitch, CROP_SRC);
+			else
+				CirrusBLT16x16PatternFill(pBox->y1 *
+					destPitch + pBox->x1, w, h, pattern,
+					destPitch, CROP_SRC);
 		}
 	}
+	if (cirrusBLTisBusy)
+		CirrusBLTWaitUntilFinished();
+	cirrusDoBackgroundBLT = FALSE;
 	DEALLOCATE_LOCAL(pattern);
 	return;
 
@@ -292,8 +309,14 @@ tile32x32:
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
 			/* Low level function uses vertical interleaving. */
-			CirrusBLT32x32PatternFill(pBox->y1 * destPitch +
-				pBox->x1, w, h, pattern, destPitch, CROP_SRC);
+			if (cirrusUseMMIO)
+				CirrusMMIOBLT32x32PatternFill(pBox->y1 *
+					destPitch + pBox->x1, w, h, pattern,
+					destPitch, CROP_SRC);
+			else
+				CirrusBLT32x32PatternFill(pBox->y1 *
+					destPitch + pBox->x1, w, h, pattern,
+					destPitch, CROP_SRC);
 		}
 	}
 	DEALLOCATE_LOCAL(pattern);
@@ -352,58 +375,52 @@ tileblit:
 	return;
 #endif	
 
-tile32:
-	/* The accel routine will only write on 32-aligned x-coords. */
-	pattern = ALLOCATE_LOCAL(32 * 32);
-	rotatepattern(pattern, (unsigned char *)src, pixWidth, 32, 32,
-		      (0 - xrot) & 31, 0);
+tile8mx:
+	/* For width == multiple of 8, max. 64. */
+
+	/* Only rotate the pattern and allocate it in video memory when */
+	/* we actually start to use the accelerated routine. */
+	vidpattern = -1;
+
 	for (;nBox; nBox--, pBox++) {
 		int w, h, x, y;
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
-		if (w < 32 || w * h < 80000)
+		if (w * h < 10000)
 			vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
 		else {
-			int nx, nw;
-			int left, right;
+			/* Check if we have not already uploaded the pattern
+			 * to video memory. */
+			if (vidpattern == -1) {
+				/* Allocate space for the pattern in video
+				 * memory. */
+				vidpattern = CirrusAllocate(width * height);
+				if (vidpattern == -1) {
+					/* Do the rest with vga256. */
+					vga256FillRectTileOdd(pDrawable, pGC,
+						nBox, pBox);
+					return;
+				}
+
+				/* Do the work. */
+				pattern = ALLOCATE_LOCAL(width * height);
+				/* Align to start of screen. */
+				rotatepattern(pattern, (unsigned char *)src,
+					pixWidth, width, height,
+					(0 - xrot) & (width - 1), 0);
+
+				CirrusUploadPattern(pattern, width, height,
+					vidpattern, width);
+			}
+
 			x = pBox->x1;
 			y = pBox->y1;
-			/* Determine 32-pixel aligned part of area. */
-			if (x & 31 == 0)
-				left = 0;
-			else
-				left = 32 - (x & 31);
-			nx = x + left;
-			/* Width must be multiple of 8 (or better 32). */
-			nw = (w - left) & ~31;
-			right = w - left - nw;
-			if (nw == 0)
-				vga256FillRectTileOdd(pDrawable, pGC, 1, pBox);
-			else {
-				BoxRec box[2];
-				/* Do main part. */
-				CirrusColorExpandFillTile32(nx, y, nw, h,
-					pattern, 32, width, height, yrot,
-					destPitch);
-				/* Left edge. */
-				box[0].x1 = x;
-				box[0].y1 = y;
-				box[0].x2 = x + left;
-				box[0].y2 = y + h;
-				/* Right edge. */
-				if (right == 0)
-					vga256FillRectTileOdd(pDrawable, pGC,
-						1, (BoxPtr)&box);
-				else {
-					box[1].x1 = x + left + nw;
-					box[1].y1 = y;
-					box[1].x2 = box[1].x1 + right;
-					box[1].y2 = y + h;
-					vga256FillRectTileOdd(pDrawable, pGC, 2,
-						(BoxPtr)&box);
-				}
-			}
+			CirrusColorExpandFillTile8(x, y, w, h, vidpattern,
+				width, width / 8, height, yrot, destPitch);
 		}
 	}
-	DEALLOCATE_LOCAL(pattern);
+	if (vidpattern != -1) {
+		CirrusFree(vidpattern);
+		DEALLOCATE_LOCAL(pattern);
+	}
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_im.c,v 1.1 94/03/28 21:49:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.1 1994/05/15 03:02:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.2 1994/06/05 06:00:29 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -38,6 +38,10 @@
  * cases. The databook can be misleading in places.
  */
 
+/*
+ * This file is compiled twice, once with CIRRUS_MMIO defined.
+ */
+
 
 #include "misc.h"
 #include "xf86.h"
@@ -60,7 +64,11 @@
 #include "vga.h"	/* For vgaBase. */
 
 #include "cir_driver.h"
+#ifdef CIRRUS_MMIO
+#include "cir_blitmm.h"
+#else
 #include "cir_blitter.h"
+#endif
 
 
 #if 0	/* Replaced by assembler routine in cir_im.s */
@@ -102,9 +110,17 @@ static void transferdwords( unsigned char *base, unsigned char *srcp, int count 
 
 
 
-void
-CirrusImageWrite (pdstBase, psrcBase, widthSrc, widthDst, x, y,
-		  x1, y1, w, h, xdir, ydir, alu, planemask)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLTImageWrite CirrusMMIOBLTImageWrite
+#else
+#define _CirrusBLTImageWrite CirrusBLTImageWrite
+#endif 
+
+/* This is actually currently disabled for the 543x (hence MMIO version is */
+/* not used currently). */
+
+void _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
+     x1, y1, w, h, xdir, ydir, alu, planemask)
      pointer pdstBase, psrcBase;	/* start of src bitmap */
      int widthSrc, widthDst;
      int x, y, x1, y1, w, h;	/* Src x,y; Dst x1,y1; Dst (w)idth,(h)eight */
@@ -121,9 +137,9 @@ CirrusImageWrite (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 
       if (!HAVE543X() && h > 1024) {
           /* Split into two. */
-          CirrusImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
+          _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
               x1, y1, w, 1024, xdir, ydir, alu, planemask);
-          CirrusImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y +
+          _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y +
               1024, x1, y1 + 1024, w, h - 1024, xdir, ydir, alu, planemask);
           return;
       }
@@ -151,6 +167,10 @@ CirrusImageWrite (pdstBase, psrcBase, widthSrc, widthDst, x, y,
       CirrusImageWriteTransfer(w, h, psrc, widthSrc, vgaBase);
 
       WAITUNTILFINISHED();
+
+      #ifdef CIRRUS_MMIO
+	  cirrusMMIOFlag = TRUE;
+      #endif
     }
   else
     {
@@ -162,10 +182,12 @@ CirrusImageWrite (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 
 
 /* The following function is not used on the 543x; it doesn't support */
-/* video-to-system-memory BLTs */
+/* video-to-system-memory BLTs. We assume having MMIO implies no ImageRead. */
+
+#ifndef CIRRUS_MMIO
 
 void
-CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
+CirrusBLTImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 		 x1, y1, w, h, xdir, ydir, alu, planemask)
      pointer pdstBase, psrcBase;	/* start of src bitmap */
      int widthSrc, widthDst;
@@ -183,9 +205,9 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 
       if (!HAVE543X() && h > 1024) {
           /* Split into two. */
-          CirrusImageRead(pdstBase, psrcBase, widthSrc, widthDst, x, y,
+          CirrusBLTImageRead(pdstBase, psrcBase, widthSrc, widthDst, x, y,
               x1, y1, w, 1024, xdir, ydir, alu, planemask);
-          CirrusImageRead(pdstBase, psrcBase, widthSrc, widthDst, x, y +
+          CirrusBLTImageRead(pdstBase, psrcBase, widthSrc, widthDst, x, y +
               1024, x1, y1 + 1024, w, h - 1024, xdir, ydir, alu, planemask);
           return;
       }
@@ -223,6 +245,9 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
       CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
 
       WAITUNTILFINISHED();
+      #ifdef CIRRUS_MMIO
+	  cirrusMMIOFlag = TRUE;
+      #endif
     }
   else
     {
@@ -230,6 +255,8 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
 		   x1, y1, w, h, xdir, ydir, alu, planemask);
     }
 }
+
+#endif	/* not defined(CIRRUS_MMIO) */
 
 
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
@@ -253,6 +280,7 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
  * Auxilliary function for the left edge; width is contained within one
  * byte of the source bitmap.
  * Assumes that some of the BLT registers are already initialized.
+ * Static function, no need for seperate MMIO version name.
  */
 
 static __inline__ void CirrusBLTWriteBitmapLeftEdge(x, y, w, h, src, bwidth,
@@ -304,8 +332,14 @@ srcx, srcy, bg, fg, destpitch)
 	WAITUNTILFINISHED();
 }
 
-void CirrusBLTWriteBitmap(x, y, w, h, src, bwidth, srcx, srcy, bg,
-fg, destpitch)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLTWriteBitmap CirrusMMIOBLTWriteBitmap
+#else
+#define _CirrusBLTWriteBitmap CirrusBLTWriteBitmap
+#endif
+
+void _CirrusBLTWriteBitmap(x, y, w, h, src, bwidth, srcx, srcy, bg, fg, 
+destpitch)
 	int x, y, w, h;
 	unsigned char *src;
 	int bwidth, srcx, srcy, bg, fg, destpitch;
@@ -317,12 +351,18 @@ fg, destpitch)
 
 	if (!HAVE543X() && h > 1024) {
 		/* Split into two. */
-		CirrusBLTWriteBitmap(x, y, w, 1024, src, bwidth, srcx,
+		_CirrusBLTWriteBitmap(x, y, w, 1024, src, bwidth, srcx,
 			srcy, bg, fg, destpitch);
-		CirrusBLTWriteBitmap(x, y + 1024, w, h - 1024, src, bwidth,
+		_CirrusBLTWriteBitmap(x, y + 1024, w, h - 1024, src, bwidth,
 			srcx, srcy + 1024, bg, fg, destpitch);
 		return;
 	}
+
+	/* Indicate that registers are changed via MMIO. */
+	/* (This has no effect within this function). */
+#ifdef CIRRUS_MMIO
+	cirrusMMIOFlag = TRUE;
+#endif
 
 	SETROP(CROP_SRC);
 	SETBACKGROUNDCOLOR(bg);

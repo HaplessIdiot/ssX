@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.7 1994/08/01 12:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.8 1994/08/12 13:56:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -767,7 +767,7 @@ adjusting to %d\n",
 	     agxInfoRec.videoRam );
    }
 
-   if (((agxMaxX+1)*(agxMaxY+1)) > (agxInfoRec.videoRam*1024)) {
+   if (((agxVirtX)*(agxVirtY)) > (agxInfoRec.videoRam<<10)) {
       ErrorF("%s %s: Not enough memory for requested virtual resolution (%dx%d)\n",
              XCONFIG_PROBED, agxInfoRec.name,
              agxVirtX, agxVirtY);
@@ -775,30 +775,30 @@ adjusting to %d\n",
    }
 
    {
-     unsigned int end;
+     unsigned int end = agxVirtX * agxVirtY;
      unsigned int avail;
+     unsigned int total = agxInfoRec.videoRam << 10;
  
-     end = agxVirtX * agxVirtY;
-     agxFontCacheOffset = (end + 0xFFFF) & 0xFFFF0000;
-     avail = (agxInfoRec.videoRam<<10) - end;
-     if( avail < 0x00010000 ) {     /*  64K */
-        agxFontCacheSize = 0;
-     }
-     else if( avail < 0x00020000 ) {   /* 128K */
-        agxFontCacheSize = 0x10000;
-     }
-     else {   
-        agxFontCacheSize = (avail >> 1) & 0xFFFF0000;
-     }
-     agxScratchOffset = (agxFontCacheOffset + agxFontCacheSize + 0x7FFF) 
-                        & 0xFFFF8000;
-     agxScratchSize   = (avail - agxFontCacheSize) & 0xFFFF8000;
+     /* align to 64K */
+     agxScratchOffset = (end + 0xFFFF) & 0xFFFF0000;
+     avail = total - agxScratchOffset;
+     if( avail < 0x10000 )
+        agxScratchSize = 0;
+     else if( avail < 0x50000 )
+        agxScratchSize = 0x10000;
+     else 
+        agxScratchSize = 0x20000; 
 
-     if( agxScratchSize < 0x8000 ) {
-         ErrorF("%s %s 32K video memory minimum required for scratchpad, reduce number of lines\n",
+     /* align to 64K */
+     agxFontCacheOffset = (agxScratchOffset + agxScratchSize + 0xFFFF) 
+                              & 0xFFFF0000;
+     agxFontCacheSize  = total - agxFontCacheOffset;
+
+     if( agxScratchSize < 0x10000 ) {
+         ErrorF("%s %s: 64K video memory required for scratchpad, reduce the number of lines\n",
              XCONFIG_PROBED, agxInfoRec.name );
+         xf86ProbeFailed = TRUE; 
      }
-
      
      if (xf86Verbose) 
        ErrorF( "%s %s: ScratchPad: %dk @ offset 0x%x\n",

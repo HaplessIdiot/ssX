@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.5 1994/07/24 11:56:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.6 1994/08/01 12:15:29 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -63,6 +63,11 @@
 
 /* #define ALLOW_8BPP_MULTIPLEXING */
 
+/* Allow optional Memory-Mapped I/O on 543x. */
+
+#define CIRRUS_SUPPORT_MMIO
+
+
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
@@ -96,6 +101,9 @@
 int cirrusChip;
 int cirrusBusType;
 Bool cirrusUseBLTEngine = FALSE;
+Bool cirrusUseMMIO = FALSE;
+Bool cirrusMMIOFlag = FALSE;
+unsigned char *cirrusMMIOBase = NULL;
 
 #define CLGD5420_ID 0x22
 #define CLGD5422_ID 0x23
@@ -124,6 +132,7 @@ typedef struct {
   unsigned char SRE;		/* VCLK Numerator */
   unsigned char SRF;		/* DRAM Control */
   unsigned char SR16;		/* Performance Tuning Register */
+  unsigned char SR17;		/* Configuration/Extended Control Register */
   unsigned char SR1E;		/* VCLK Denominator */
   unsigned char CR19;		/* Interlace End */
   unsigned char CR1A;		/* Miscellaneous Control */
@@ -171,7 +180,11 @@ vgaVideoChipRec CIRRUS = {
   cirrusSetRead,		/* ChipSetRead() */
   cirrusSetWrite,		/* ChipSetWrite() */
   cirrusSetReadWrite,	        /* ChipSetReadWrite() */
+#ifndef CIRRUS_SUPPORT_MMIO  
   0x10000,			/* ChipMapSize */
+#else
+  0x20000,
+#endif
   0x08000,			/* ChipSegmentSize, 32k*/
   15,				/* ChipSegmentShift */
   0x7FFF,			/* ChipSegmentMask */
@@ -589,8 +602,12 @@ cirrusProbe()
 	       cirrusChip = CLGD5430;
 	       break;
 
+	     case CLGD5434_OLD_ID:
+
 	     default:
 	       ErrorF("Unknown Cirrus chipset: type 0x%02x, rev %d\n", id, rev);
+	       if (id == CLGD5434_OLD_ID)
+	          ErrorF("Old pre-production ID for clgd5434 -- please report\n");
 	       cirrusEnterLeave(LEAVE);
 	       return(FALSE);
 	       break;
@@ -733,6 +750,19 @@ cirrusProbe()
 		    vga256InfoRec.videoRam = 2048;
 		    break;
 		    }
+
+	       if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429 &&
+	       vga256InfoRec.videoRam < 512) {
+	       		/* Invalid amount for 542x -- scratch register may */
+	       		/* not be set by some BIOSes. */
+		  	unsigned char SRF;
+		  	vga256InfoRec.videoRam = 512;
+	  		outb(0x3c4, 0x0f);
+		  	SRF = inb(0x3c5);
+		  	if (SRF & 0x10)
+		  		/* 32-bit DRAM bus. */
+		  		vga256InfoRec.videoRam *= 2;
+		  	}
 	       }
 	  }
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
@@ -868,6 +898,7 @@ cirrusFbInit()
 
 #if !defined(MONOVGA) && !defined(XF86SVGA16BPP)
   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+    int size;
     if (xf86Verbose)
       {
         ErrorF ("%s %s: Using accelerator functions\n",
@@ -889,13 +920,9 @@ cirrusFbInit()
 
     vga256TEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
     vga256TEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
-    /* Disable accelerated text blit functions for the 543x chips, */
-    /* which require exclusively 32-bit transfers. */
-    if (!HAVE543X()) {
-	vga256LowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
-	vga256TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-	vga256TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
-    }
+    vga256LowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
+    vga256TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+    vga256TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
 
 #if 0
     /* Cirrus line drawing acceleration. */
@@ -918,16 +945,46 @@ cirrusFbInit()
     vga256TEOps.FillSpans = CirrusFillSpans;
 #endif    
 
-    if (HAVEBITBLTENGINE()) {
-        ErrorF ("%s %s: Using BitBLT engine\n",
-	    XCONFIG_PROBED, cirrusIdent (cirrusChip) );
-#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
-	vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
-#endif	
-    }
-  }
+    CirrusInvalidateShadowVariables();
 
-  CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
+    CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY;
+    size = CirrusInitializeAllocator(CirrusMemTop);
+    ErrorF("%s %s: %d bytes off-screen memory available\n",
+        XCONFIG_PROBED, cirrusIdent(cirrusChip), size);
+
+    if (HAVEBITBLTENGINE()) {
+    	/* Need 256 bytes for BitBLT fills. */
+        cirrusBLTPatternAddress = CirrusAllocate(256);
+        if (cirrusBLTPatternAddress == -1) {
+            cirrusUseBLTEngine = FALSE;
+            ErrorF("%s %s: Too little space: cannot use BitBLT engine\n",
+	        XCONFIG_PROBED, cirrusIdent(cirrusChip), size);
+	}
+	else {
+            ErrorF("%s %s: Using BitBLT engine\n",
+	        XCONFIG_PROBED, cirrusIdent(cirrusChip));
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
+	    vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
+#endif	
+	}
+    if (vga256InfoRec.virtualX & 31 != 0)
+        ErrorF("%s %s: Warning: virtual screen width not multiple of 32\n",
+            XCONFIG_GIVEN, cirrusIdent(cirrusChip), size);
+    }
+
+#ifdef CIRRUS_SUPPORT_MMIO
+    /* Optional Memory-Mapped I/O. */
+    /* Register is set in init function. */
+    if (HAVE543X() && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
+        cirrusUseMMIO = TRUE;
+        /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
+        /* mapped yet. For now we do that in the init function. */
+        ErrorF("%s %s: Using Memory-Mapped I/O\n",
+            XCONFIG_GIVEN, cirrusIdent(cirrusChip));
+    }
+#endif
+
+  }
 
 #endif	/* not MONOVGA and not XF86SVGA16BPP */
 }
@@ -1001,6 +1058,7 @@ cirrusRestore(restore)
 /*  unsigned char SRE;		 VCLK Numerator */
 /*  unsigned char SRF;		 DRAM Control */
 /*  unsigned char SR16;		 Performance Tuning Register */
+/*  unsigned char SR17;		 Configuration/Extended Control */
 /*  unsigned char SR1E;		 VCLK Denominator */
 /*  unsigned char CR19;		 Interlace End */
 /*  unsigned char CR1A;		 Miscellaneous Control */
@@ -1036,6 +1094,11 @@ cirrusRestore(restore)
        outb(0x3C4,0x16);
        outb(0x3C5,restore->SR16);
        }
+
+  if (HAVE543X()) {
+       outb(0x3c4, 0x17);
+       outb(0x3c5, restore->SR17);
+  }
 
   if (restore->std.NoClock >= 0)
        {
@@ -1089,6 +1152,8 @@ cirrusRestore(restore)
        i = inb(vgaIOBase + 5);
        outb(vgaIOBase + 5, (i & 0x7f));
        }
+
+  CirrusInvalidateShadowVariables();
 }
 
 /*
@@ -1150,6 +1215,12 @@ cirrusSave(save)
        /* Save the Performance Tuning Register on these chips only. */
         outb(0x3C4,0x16);
         save->SR16 = inb(0x3C5);
+       }
+
+  if (HAVE543X())
+       {
+       outb(0x3c4,0x17);
+       save->SR17 = inb(0x3c5);
        }
 
   outb(0x3C4,0x1E);
@@ -1243,6 +1314,7 @@ cirrusInit(mode)
 /*  unsigned char SRE;		 VCLK Numerator */
 /*  unsigned char SRF;		 DRAM Control */
 /*  unsigned char SR16;		 Performance Tuning Register */
+/*  unsigned char SR17;		 Configuration/Extended Control */
 /*  unsigned char SR1E;		 VCLK Denominator */
 /*  unsigned char CR19;		 Interlace End */
 /*  unsigned char CR1A;		 Miscellaneous Control */
@@ -1470,6 +1542,17 @@ VirtX = %x\n",
           new->CR1D = inb(vgaIOBase + 5) & 0x7f;
      }
 
+     if (HAVE543X()) {
+          outb(0x3c4, 0x17);
+          new->SR17 = inb(0x3c5);
+#ifdef CIRRUS_SUPPORT_MMIO
+          /* Optionally enable Memory-Mapped I/O. */
+          if (HAVE543X() && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
+     	       /* Set SR17 bit 2. */
+               new->SR17 |= 0x04;
+#endif
+     }
+
      new->HIDDENDAC = 0;
 #ifdef XF86SVGA16BPP
      new->HIDDENDAC = 0xc0;	/* 5-5-5 RGB mode */
@@ -1501,6 +1584,16 @@ VirtX = %x\n",
 	  new->RAX = 12;
           }
 
+#ifdef CIRRUS_SUPPORT_MMIO
+	/*
+	 * Ugly hack to get MMIO base address.
+         * Registers are mapped at 0xb8000; that is at an offset of
+         * 0x18000 from vgaBase (0xa0000).
+         */
+	if (cirrusUseMMIO && cirrusMMIOBase == NULL)
+		cirrusMMIOBase = (unsigned char *)vgaBase + 0x18000;
+#endif
+
   return(TRUE);
 }
 
@@ -1512,11 +1605,15 @@ static void
 cirrusAdjust(x, y)
      int x, y;
 {
-     unsigned char CR1B, CR1D;
+     unsigned char CR1B, CR1D, tmp;
 #ifdef MONOVGA
-     int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 3;
+     int Base = (y * vga256InfoRec.displayWidth + x);
+     unsigned char lsb = Base & 7;
+     Base >>= 3;
 #else
-     int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
+     int Base = (y * vga256InfoRec.displayWidth + x);
+     unsigned char lsb = Base & 3;
+     Base >>= 2;
 #endif
      outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
      outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
@@ -1528,4 +1625,12 @@ cirrusAdjust(x, y)
          outb(vgaIOBase + 4, 0x1d); CR1D = inb(vgaIOBase + 5);
          outb(vgaIOBase + 5, (CR1D & 0x7f) | ((Base & 0x080000) >> 12));
      }
+
+#if 0
+	/* Set the lowest two bits. */
+	inb(vgaIOBase + 0xA);		/* Set ATC to addressing mode */
+	outb(0x3C0, 0x13 + 0x20);	/* Select ATC reg 0x13 */
+	tmp = inb(0x3C1) & 0xF0;
+	outb(0x3C0, tmp | lsb);
+#endif
 }

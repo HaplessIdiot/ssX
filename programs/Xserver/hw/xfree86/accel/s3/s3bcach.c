@@ -1,5 +1,5 @@
 /* $XConsortium: s3bcach.c,v 1.1 94/03/28 21:14:19 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.2 1994/08/01 12:12:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.3 1994/08/11 06:55:16 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -48,7 +48,7 @@ int srcx, srcy, dstx, dsty, h, w;
 unsigned int id;
 {
    BLOCK_CURSOR;
-   WaitQueue(8);
+   WaitQueue(7);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth - 1));
@@ -56,28 +56,23 @@ unsigned int id;
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX);  
    S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BITBLT | MIX_SRC);
-   S3_OUTW(WRT_MASK, 1 << id);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(1 << id));
-#endif
 
-   WaitQueue(8);		/* now shift the cache */
-   S3_OUTW(RD_MASK, 1 << id);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(RD_MASK, (short)(1 << id));
-#endif
+   WaitQueue16_32(6,8);		/* now shift the cache */
+   S3_OUTW32(WRT_MASK, 1 << id);
+   S3_OUTW32(RD_MASK, 1 << id);
    S3_OUTW(CUR_Y, srcy);
    S3_OUTW(CUR_X, srcx);
    S3_OUTW(DESTX_DIASTP, dstx);
    S3_OUTW(DESTY_AXSTP, dsty);
+
+   WaitQueue(3);
    S3_OUTW(MAJ_AXIS_PCNT, w - 1);
    S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
-   WaitQueue(4);		/* sanity returns */
-   S3_OUTW(RD_MASK, ~0);
+   /* sanity returns */
+   WaitQueue16_32(4,5);
+   S3_OUTW32(RD_MASK, ~0);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.1 1994/05/15 03:02:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.2 1994/06/05 06:00:19 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -18,25 +18,44 @@
 
 /* Address: the 5426 adresses 2MBytes, the 5434 can address 4MB. */
 
-#define SETDESTADDR(dstAddr) \
-  outw (0x3CE, (((dstAddr) & 0x000000FF) << 8) | 0x28); \
-  outw (0x3CE, (((dstAddr) & 0x0000FF00)) | 0x29); \
-  outw (0x3CE, (((dstAddr) & 0x003F0000) >> 8) | 0x2A);
-
+/* Set BLT source address; source address is modified by blit.
+ * Shadow variable is invalidated. */
 #define SETSRCADDR(srcAddr) \
-  outw (0x3CE, (((srcAddr) & 0x000000FF) << 8) | 0x2C); \
-  outw (0x3CE, (((srcAddr) & 0x0000FF00)) | 0x2D); \
-  outw (0x3CE, (((srcAddr) & 0x003F0000) >> 8) | 0x2E);
+    outw (0x3CE, (((srcAddr) & 0x000000FF) << 8) | 0x2C); \
+    outw (0x3CE, (((srcAddr) & 0x0000FF00)) | 0x2D); \
+    outw (0x3CE, (((srcAddr) & 0x003F0000) >> 8) | 0x2E); \
+    cirrusBltSrcAddrShadow = -1;
+
+/* Set BLT source address; source address is preserved by blit.
+ * Usually dummy source address that needs to set to 0. */
+#define SETSRCADDRUNMODIFIED(srcAddr) \
+  if (srcAddr != cirrusBltSrcAddrShadow) { \
+    cirrusBltSrcAddrShadow = srcAddr; \
+    outw (0x3CE, (((srcAddr) & 0x000000FF) << 8) | 0x2C); \
+    outw (0x3CE, (((srcAddr) & 0x0000FF00)) | 0x2D); \
+    outw (0x3CE, (((srcAddr) & 0x003F0000) >> 8) | 0x2E); \
+  }
+
+#define SETDESTADDR(dstAddr) \
+    outw (0x3CE, (((dstAddr) & 0x000000FF) << 8) | 0x28); \
+    outw (0x3CE, (((dstAddr) & 0x0000FF00)) | 0x29); \
+    outw (0x3CE, (((dstAddr) & 0x003F0000) >> 8) | 0x2A);
 
 /* Pitch: the 5426 goes up to 4095, the 5434 can do 8191. */
 
 #define SETDESTPITCH(dstPitch) \
-  outw (0x3CE, (((dstPitch) & 0x000000FF) << 8) | 0x24); \
-  outw (0x3CE, (((dstPitch) & 0x00001F00)) | 0x25);
+  if (dstPitch != cirrusBltDestPitchShadow) { \
+    cirrusBltDestPitchShadow = dstPitch; \
+    outw (0x3CE, (((dstPitch) & 0x000000FF) << 8) | 0x24); \
+    outw (0x3CE, (((dstPitch) & 0x00001F00)) | 0x25); \
+  }
 
 #define SETSRCPITCH(srcPitch) \
-  outw (0x3CE, (((srcPitch) & 0x000000FF) << 8) | 0x26); \
-  outw (0x3CE, (((srcPitch) & 0x00001F00)) | 0x27);
+  if (srcPitch != cirrusBltSrcPitchShadow) { \
+    cirrusBltSrcPitchShadow = srcPitch; \
+    outw (0x3CE, (((srcPitch) & 0x000000FF) << 8) | 0x26); \
+    outw (0x3CE, (((srcPitch) & 0x00001F00)) | 0x27); \
+  }
 
 /* Width: the 5426 goes up to 2048, the 5434 can do 8192. */
 
@@ -46,20 +65,72 @@
 
 /* Height: the 5426 goes up to 1024, the 5434 can do 2048. */
 
+/* The height is preserved by a blit only on the 543x. */
+#define SETHEIGHT543X(fillHeight) \
+  if (fillHeight != cirrusBltHeightShadow) { \
+    cirrusBltHeightShadow = fillHeight; \
+    outw (0x3CE, ((((fillHeight) - 1) & 0x000000FF) << 8) | 0x22); \
+    outw (0x3CE, (((fillHeight) - 1) & 0x00000700) | 0x23); \
+  }
+
 #define SETHEIGHT(fillHeight) \
   outw (0x3CE, ((((fillHeight) - 1) & 0x000000FF) << 8) | 0x22); \
   outw (0x3CE, (((fillHeight) - 1) & 0x00000700) | 0x23);
 
-#define SETBLTMODE(m) outw(0x3CE, ((m) << 8) | 0x30);
+#define SETBLTMODE(m) \
+  if (m != cirrusBltModeShadow) { \
+    cirrusBltModeShadow = m; \
+    outw(0x3CE, ((m) << 8) | 0x30); \
+  }
 
 #define SETBLTWRITEMASK(m) outw(0x3ce, ((m) << 8) | 0x2f);
 
 #define SETTRANSPARENCYCOLOR(c) outw(0x3ce, ((c) << 8) | 0x34);
 
 #define SETROP(rop) \
-  outw (0x3CE, ((rop) << 8) | 0x32);
+  if (rop != cirrusBltRopShadow) { \
+    cirrusBltRopShadow = rop; \
+    outw (0x3CE, ((rop) << 8) | 0x32); \
+  }
 
-#define STARTBLT() \
-  outw (0x3CE, (0x02 << 8) | 0x31);
+/* 32-bit colors are specific to the BitBLT engine, so define macros here. */
 
-#define WAITUNTILFINISHED() CirrusBLTWaitUntilFinished()  
+#define SETFOREGROUNDCOLOR32(c) \
+  if (c != cirrusForegroundColorShadow) { \
+    cirrusForegroundColorShadow = c; \
+    outw(0x3ce, 0x01 + ((c) << 8)); \
+    outw(0x3ce, 0x11 + ((c) & 0xff00)); \
+    outw(0x3ce, 0x13 + (((c) & 0xff0000) >> 8)); \
+    outw(0x3ce, 0x15 + (((unsigned int)(c) & 0xff000000) >> 16)); \
+  }
+
+#define SETBACKGROUNDCOLOR32(c) \
+  if (c != cirrusBackgroundColorShadow) { \
+    cirrusBackgroundColorShadow = c; \
+    outw(0x3ce, 0x00 + ((c) << 8)); \
+    outw(0x3ce, 0x10 + ((c) & 0xff00)); \
+    outw(0x3ce, 0x12 + (((c) & 0xff0000) >> 8)); \
+    outw(0x3ce, 0x14 + (((unsigned int)(c) & 0xff000000) >> 16)); \
+  }
+
+#define STARTBLT() { \
+  unsigned char tmp; \
+  outb(0x3ce, 0x31); \
+  tmp = inb(0x3cf); \
+  outb(0x3cf, tmp | 0x02); \
+  }
+  
+#define BLTBUSY(s) { \
+  outb(0x3ce, 0x31); \
+  s = inb(0x3cf) & 1; \
+  }
+
+#define BLTRESET() { \
+  unsigned char tmp; \
+  outb(0x3ce, 0x31); \
+  tmp = inb(0x3cf); \
+  outb(0x3cf, tmp | 0x04); \
+  outb(0x3cf, tmp); \
+  }
+
+#define WAITUNTILFINISHED() CirrusBLTWaitUntilFinished()

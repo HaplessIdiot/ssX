@@ -1,5 +1,5 @@
 /* $XConsortium: s3plypt.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.1 1994/08/03 13:30:46 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -53,6 +53,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "regionstr.h"
 #include "scrnintstr.h"
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -84,7 +86,17 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 
    if (!xf86VTSema)
    {
-      cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 16:
+	 cfb16PolyPoint(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 32:
+	 cfb32PolyPoint(pDrawable, pGC, mode, npt, pptInit);
+	 break;
+      }
       return;
    }
 
@@ -102,16 +114,10 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    off -= (off & 0x8000) << 1;
 
    BLOCK_CURSOR;
-   WaitQueue(4);
+   WaitQueue16_32(4,6);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
-   S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
-   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+   S3_OUTW32(WRT_MASK, pGC->planemask);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW(MAJ_AXIS_PCNT, 0);
 
    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);

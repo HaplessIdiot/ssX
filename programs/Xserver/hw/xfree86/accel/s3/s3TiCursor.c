@@ -312,7 +312,7 @@ s3TiLoadCursor(pScr, pCurs, x, y)
 {
    extern int s3hotX, s3hotY;
    int   index = pScr->myNum;
-   register int   i, j;
+   register int   i;
    unsigned char *ram, *p, tmp, tmp1, tmpcurs;
    extern int s3InitCursorFlag;
 

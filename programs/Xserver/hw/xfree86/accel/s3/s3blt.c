@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.5 1994/08/11 06:55:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.6 1994/08/12 14:01:36 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -59,6 +59,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"mi.h"
 #include	"cfb.h"
 #include	"cfb16.h"
+#include	"cfb32.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
@@ -111,6 +112,9 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 			       srcx, srcy, width, height, dstx, dsty);
 	case 16:
 	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	case 32:
+	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
 				 srcx, srcy, width, height, dstx, dsty);
 	} 
 
@@ -292,14 +296,11 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    direction |= INC_Y;
 
 	 BLOCK_CURSOR;
-	 WaitQueue(3); PCI_HACK();
+	 WaitQueue16_32(3,4);
+	 PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_BITBLT | s3alu[pGC->alu]);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+	 S3_OUTW32(WRT_MASK, pGC->planemask);
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
@@ -354,14 +355,10 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(3); PCI_HACK();
+	 WaitQueue16_32(3,4); PCI_HACK();
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
 	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW(WRT_MASK, 0xffff);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(WRT_MASK, 0xffff);
-#endif
+	 S3_OUTW32(WRT_MASK, ~0);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
@@ -527,6 +524,9 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	case 16:
 	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 32:
+	    return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	}
    } 
 #if 0
@@ -584,7 +584,8 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 pSrcDrawable = (DrawablePtr)pBitmap;
       }
       else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
-	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
+	       (pDstDrawable->type != DRAWABLE_WINDOW) &&
+	       (pSrcDrawable->bitsPerPixel == 8)) {
 	 /*
 	  * Shortcut - we can do Window->Pixmap by copying the window to
 	  * a pixmap, then we have a Pixmap->Pixmap operation
@@ -802,29 +803,14 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    direction |= INC_Y;
 
 	 BLOCK_CURSOR;
-	 WaitQueue(6);
+	 WaitQueue16_32(3,5);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	 S3_OUTW(RD_MASK, (short)bitPlane);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(RD_MASK, (short)(bitPlane>>16));
-#endif
-	 S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
-	 S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
-	 S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(BKGD_COLOR, (short)(pGC->bgPixel)>>16));
-#endif
+	 S3_OUTW32(RD_MASK, bitPlane);
+	 S3_OUTW32(WRT_MASK, pGC->planemask);
 
+	 WaitQueue16_32(3,5);
+	 S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
+	 S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL|MIXSEL_EXPBLT);
 
 	 if (direction == (INC_X | INC_Y)) {
@@ -885,18 +871,10 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(4);
+	 WaitQueue16_32(4,6);
 	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-	 S3_OUTW(RD_MASK, 0xffff);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(RD_MASK, 0xffff);
-#endif
-	 S3_OUTW(WRT_MASK, 0xffff);
-#ifdef S3_32BPP
- 	 if (s3InfoRec.bitsPerPixel == 32)
-	    S3_OUTW(WRT_MASK, 0xffff);
-#endif
+	 S3_OUTW32(RD_MASK, ~0);
+	 S3_OUTW32(WRT_MASK, ~0);
 	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);

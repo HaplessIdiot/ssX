@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.1 1994/05/14 07:01:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.2 1994/06/05 06:00:18 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -30,18 +30,28 @@
 /*
  * This file contains all low-level functions that use the BitBLT engine
  * on the 5426/5428/5429/5434 (except for those that involve system memory,
- * they are in cir_im.c).
+ * they are in cir_im.c, and the text functions in cir_teblt8.c).
  */
  
+/*
+ * This file is compiled twice, once with CIRRUS_MMIO defined.
+ */
+
 
 #include "xf86.h"	/* For vgaBase. */
 #include "vga.h"	/* For vgaBase. */
 #include "compiler.h"
 
 #include "cir_driver.h"
+#ifdef CIRRUS_MMIO
+#include "cir_blitmm.h"
+#else
 #include "cir_blitter.h"
+#endif
 #include "cir_inline.h"
 
+
+#ifndef CIRRUS_MMIO	/* Define these only once. */
 
 /* Cirrus raster operations. */
 
@@ -64,6 +74,78 @@ int cirrus_rop[16] = {
 	CROP_1			/* GXset */
 };
 
+/*
+ * The BLT functions defined in this file support exiting without waiting
+ * for the BLT to finish. The calling function must set
+ * cirrusDoBackgroundBLT, call any BLT functions defined in this file,
+ * and when the operations are done check whether a BLT is still in
+ * progress (cirrusBLTisBusy) and if so call WAITUNTILFINISHED().
+ * If the function does any other video memory access or BLT functions
+ * not defined in this file, it must make sure no BLT is in progress
+ * before drawing.
+ *
+ */
+
+int cirrusBLTisBusy = FALSE;
+int cirrusDoBackgroundBLT = FALSE;
+
+int cirrusBLTPatternAddress;	/* Address for BitBLT filling pattern. */
+
+
+/*
+ * CirrusInvalidateShadowVariables
+ * Invalidate values of shadow variables for I/O registers.
+ * This helps very slightly on a VLB system. May be unoptimal on the fast
+ * host bus interface the 543x (but it can use MMIO).
+ * Should be a win for ISA bus.
+ */
+
+int cirrusWriteModeShadow,
+    cirrusPixelMaskShadow,
+    cirrusModeExtensionsShadow,
+    cirrusBltSrcAddrShadow,
+    cirrusBltDestPitchShadow,
+    cirrusBltSrcPitchShadow,
+    cirrusBltHeightShadow,
+    cirrusBltModeShadow,
+    cirrusBltRopShadow;
+unsigned int
+    cirrusForegroundColorShadow,
+    cirrusBackgroundColorShadow;
+
+void CirrusInvalidateShadowVariables() {
+    cirrusWriteModeShadow = -1;
+    cirrusPixelMaskShadow = -1;
+    cirrusModeExtensionsShadow = -1;
+    cirrusBltSrcAddrShadow = -1;
+    cirrusBltDestPitchShadow = -1;
+    cirrusBltSrcPitchShadow = -1;
+    cirrusBltHeightShadow = -1;
+    cirrusBltModeShadow = -1;
+    cirrusBltRopShadow = -1;
+    /* For the lower byte of the 32-bit color registers, there is no safe
+     * invalid value. We just set them to a specific value (making sure
+     * we don't write to non-existant color registers).
+     * 
+    cirrusBackgroundColorShadow = 0xffffffff;	/* Defeat the macros. */
+    cirrusForegroundColorShadow = 0xffffffff;
+    if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5430) {
+	SETBACKGROUNDCOLOR16(0x0000);
+	SETFOREGROUNDCOLOR16(0x0000);
+    }
+    else
+    if (cirrusChip == CLGD5434) {
+    	SETBACKGROUNDCOLOR32(0x00000000);
+    	SETFOREGROUNDCOLOR32(0x00000000);
+    }
+    else {
+    	SETBACKGROUNDCOLOR(0x00);
+    	SETFOREGROUNDCOLOR(0x00);
+    }
+ }
+
+#endif	/* !defined(CIRRUS_MMIO) */
+
 
 /*
  * 8x8 pattern fill with color expanded pattern.
@@ -71,8 +153,14 @@ int cirrus_rop[16] = {
  * patternword1 contains the first 32 pixels (first pixel in LSByte, MSBit),
  * patternword2 the second. 
  */
+
+#ifdef CIRRUS_MMIO
+#define _CirrusBLTColorExpand8x8PatternFill CirrusMMIOBLTColorExpand8x8PatternFill
+#else
+#define _CirrusBLTColorExpand8x8PatternFill CirrusBLTColorExpand8x8PatternFill
+#endif
  
-void CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
+void _CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
 fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
      unsigned int dstAddr;
      int fgcolor, bgcolor;
@@ -83,17 +171,19 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   unsigned int srcAddr;
   int i;
   pointer pDst;
-  extern int CirrusMemTop;
 
   if (!HAVE543X() && fillHeight > 1024) {
       /* Split into two for 5426, 5428 & 5429. */
-      CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
+      _CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
           fillWidth, 1024, dstPitch, rop, patternword1, patternword2);
-      CirrusBLTColorExpand8x8PatternFill(dstAddr + dstPitch * 1024,
+      _CirrusBLTColorExpand8x8PatternFill(dstAddr + dstPitch * 1024,
           fgcolor, bgcolor, fillWidth, fillHeight - 1024, dstPitch, rop,
           patternword1, patternword2);
       return;
   }
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   /* NOTE:
    * I tried System memory source pattern fill, it's not explicitly
@@ -105,8 +195,8 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   /* Write 8 byte monochrome pattern. */
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
-  srcAddr = CirrusMemTop;
-  setwritebank(CirrusMemTop >> 14);
+  srcAddr = cirrusBLTPatternAddress;
+  setwritebank(cirrusBLTPatternAddress >> 14);
   *(unsigned long *)(((unsigned char *)vgaBase) + 0x8000 + (srcAddr & 0x3fff)) =
   	patternword1;
   *(unsigned long *)(((unsigned char *)vgaBase) + 0x8000 + ((srcAddr & 0x3fff) + 4)) =
@@ -127,9 +217,23 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   /* Do it. */
   STARTBLT();
 
-  WAITUNTILFINISHED();
+  if (cirrusDoBackgroundBLT)
+    cirrusBLTisBusy = TRUE;
+  else {
+    WAITUNTILFINISHED();
+    SETFOREGROUNDCOLOR(0);
+  }
 
-  SETFOREGROUNDCOLOR(0);
+  /*
+   * Serious problem: leaving the foreground color register at non-zero is
+   * not a good idea for normal framebuffer access (Set/Reset enable).
+   * Because of this, a calling function that uses background BLTs must
+   * set it to zero when it is finished.
+   */
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 
@@ -140,7 +244,13 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
  * 
  */
 
-void CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT8x8PatternFill CirrusMMIOBLT8x8PatternFill
+#else
+#define _CirrusBLT8x8PatternFill CirrusBLT8x8PatternFill
+#endif
+
+void _CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
      unsigned int dstAddr;
      int w, h, destpitch;
      int rop;
@@ -149,22 +259,24 @@ void CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   unsigned int srcAddr;
   int i;
   pointer pDst;
-  extern int CirrusMemTop;
 
   if (!HAVE543X() && h > 1024) {
       /* Split into two for 5426, 5428, & 5429. */
-      CirrusBLT8x8PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
-      CirrusBLT8x8PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
+      _CirrusBLT8x8PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
+      _CirrusBLT8x8PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
           pattern, destpitch, rop);
       return;
   }
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   /* Pattern fill with video memory source. */
 
   /* Write 64 byte pattern. */
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
-  srcAddr = CirrusMemTop;
+  srcAddr = cirrusBLTPatternAddress;
   setwritebank(srcAddr >> 14);
   memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff), pattern, 64);
 
@@ -181,7 +293,14 @@ void CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   /* Do it. */
   STARTBLT();
 
-  WAITUNTILFINISHED();
+  if (cirrusDoBackgroundBLT)
+    cirrusBLTisBusy = TRUE;
+  else
+    WAITUNTILFINISHED();
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 
@@ -193,7 +312,13 @@ void CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
  * 
  */
 
-void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT16x16PatternFill CirrusMMIOBLT16x16PatternFill
+#else
+#define _CirrusBLT16x16PatternFill CirrusBLT16x16PatternFill
+#endif
+
+void _CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
      unsigned int dstAddr;
      int w, h, destpitch;
      int rop;
@@ -203,22 +328,24 @@ void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   int i;
   pointer pDst;
   int blith, blitpitch;
-  extern int CirrusMemTop;
 
   if (!HAVE543X() && h > 1024) {
       /* Split into two for 5426, 5428 & 5429. */
-      CirrusBLT16x16PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
-      CirrusBLT16x16PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
+      _CirrusBLT16x16PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
+      _CirrusBLT16x16PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
           pattern, destpitch, rop);
       return;
   }
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   /* Pattern fill with video memory source. */
 
   /* Write 128 byte pattern (even lines). */
   /* Because of 16K bank granularity and 32K window, we don't have to */
   /* check for bank boundaries. */
-  srcAddr = CirrusMemTop;
+  srcAddr = cirrusBLTPatternAddress;
   setwritebank(srcAddr >> 14);
   for (i = 0; i < 8; i++)
       memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff) + i * 16,
@@ -264,7 +391,14 @@ void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
 
   STARTBLT();
 
-  WAITUNTILFINISHED();
+  if (cirrusDoBackgroundBLT)
+    cirrusBLTisBusy = TRUE;
+  else
+    WAITUNTILFINISHED();
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 /*
@@ -279,7 +413,13 @@ void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
  * less than 1024 (i.e. rarely).
  */
 
-void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLT32x32PatternFill CirrusMMIOBLT32x32PatternFill
+#else
+#define _CirrusBLT32x32PatternFill CirrusBLT32x32PatternFill
+#endif
+
+void _CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
      unsigned int dstAddr;
      int w, h, destpitch;
      int rop;
@@ -288,14 +428,16 @@ void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   unsigned int srcAddr;
   int i, k;
   int blith, blitpitch;
-  extern int CirrusMemTop;
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   /* No need to split into two for 5434 (handles heights up to 2048). */
 
   /* Pattern fill with video memory source. */
 
   /* Set up write bank for writing pattern. */
-  srcAddr = CirrusMemTop;
+  srcAddr = cirrusBLTPatternAddress;
   setwritebank(srcAddr >> 14);
 
   /* Set up BLT parameters that remain constant. */
@@ -319,10 +461,17 @@ void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
       SETWIDTH(w);
       SETHEIGHT(blith);
       STARTBLT();
-      WAITUNTILFINISHED();
+      if (k != 3 || !cirrusDoBackgroundBLT)
+          WAITUNTILFINISHED();
+      else
+          cirrusBLTisBusy = TRUE;
 
       dstAddr += destpitch;
   }
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 
@@ -331,7 +480,13 @@ void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
  * support special rops.
  */
 
-void CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
+#ifdef CIRRUS_MMIO
+#define _CirrusBLTBitBlt CirrusMMIOBLTBitBlt
+#else
+#define _CirrusBLTBitBlt CirrusBLTBitBlt
+#endif
+
+void _CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
      unsigned int dstAddr, srcAddr;
      int dstPitch, srcPitch;
      int w, h;
@@ -340,17 +495,20 @@ void CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
   if ((!HAVE543X()) && h > 1024) {
      /* Split into two. */
      if (dir > 0) {
-         CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, 1024, dir);
-         CirrusBLTBitBlt(dstAddr + dstPitch * 1024, srcAddr + srcPitch * 1024,
+         _CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, 1024, dir);
+         _CirrusBLTBitBlt(dstAddr + dstPitch * 1024, srcAddr + srcPitch * 1024,
              dstPitch, srcPitch, w, h - 1024, dir);
      }
      else {
-         CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, 1024, dir);
-         CirrusBLTBitBlt(dstAddr - dstPitch * 1024, srcAddr - srcPitch * 1024,
+         _CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, 1024, dir);
+         _CirrusBLTBitBlt(dstAddr - dstPitch * 1024, srcAddr - srcPitch * 1024,
              dstPitch, srcPitch, w, h - 1024, dir);
      }
      return;
   }
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   SETSRCADDR(srcAddr);
   SETSRCPITCH(srcPitch);
@@ -369,7 +527,14 @@ void CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
   SETROP(CROP_SRC);
 
   STARTBLT();
-  WAITUNTILFINISHED();
+  if (cirrusDoBackgroundBLT)
+    cirrusBLTisBusy = TRUE;
+  else
+    WAITUNTILFINISHED();
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 
@@ -391,6 +556,9 @@ fillHeight, dstPitch)
           fillWidth, fillHeight - 1024, dstPitch);
       return;
   }
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED();
 
   /* System-to-video memory blit with color expansion. */
 
@@ -415,25 +583,48 @@ fillHeight, dstPitch)
   WAITUNTILFINISHED();
 
   SETFOREGROUNDCOLOR(0);
+
+#ifdef CIRRUS_MMIO
+  cirrusMMIOFlag = TRUE;
+#endif
 }
 
 #endif
 
+#ifdef CIRRUS_MMIO
+#define _CirrusBLTWaitUntilFinished CirrusMMIOBLTWaitUntilFinished
+#else
+#define _CirrusBLTWaitUntilFinished CirrusBLTWaitUntilFinished
+#endif
 
-void CirrusBLTWaitUntilFinished() {
+void _CirrusBLTWaitUntilFinished() {
   int count, timeout;
+#ifndef CIRRUS_MMIO  
+  if (cirrusUseMMIO) {
+  	/* If we have MMIO, better use it. */
+  	CirrusMMIOBLTWaitUntilFinished();
+  	return;
+  }
+#endif
   count = 0;
   timeout = 0;
-  outb(0x3CE, 0x31);
-  while (inb(0x3CF) & 1) {
+  cirrusBLTisBusy = FALSE;	/* That will be the case on exit. */
+  for (;;) {
+    int busy;
+    BLTBUSY(busy);
+    if (!busy)
+    	return;
     count++;
     if (count == 10000000) {
     	ErrorF("Cirrus: BitBLT engine time-out.\n");
     	*(unsigned long *)vgaBase = 0;
     	count = 9990000;
     	timeout++;
-    	if (timeout == 8)
+    	if (timeout == 8) {
+    		/* Reset BitBLT engine. */
+    		BLTRESET();
     		return;
+    	}
     }
   }
 }

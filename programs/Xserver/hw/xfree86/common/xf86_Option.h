@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.7 1994/07/15 07:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.8 1994/08/01 12:14:08 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -106,6 +106,8 @@ typedef struct {
 #define OPTION_ELSA_W1000PRO	49 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	50 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
 #define OPTION_STEALTH64	51 /* Enable pixmux for the D-word Stealth 64 (S3) */
+#define OPTION_MIRO_CRYSTAL20SV	52 /* Enable pixmux for miroCRYSTAL 20SV (S3) */
+#define OPTION_MMIO		53 /* Use MMIO for Cirrus 543x */
 
 /* More RAMDAC options */
 #define OPTION_BT481            55 /* Has BrookTree Bt481 RAMDAC */
@@ -204,6 +206,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
   { "stealth64",	OPTION_STEALTH64 },
+  { "miro_crystal20sv",	OPTION_MIRO_CRYSTAL20SV },
+  { "mmio",		OPTION_MMIO },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },

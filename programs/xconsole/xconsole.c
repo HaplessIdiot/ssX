@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.0 1994/05/22 00:00:08 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.1 1994/06/28 12:31:54 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -166,9 +166,11 @@ OpenConsole ()
 	{
 	    struct stat sbuf;
 	    /* must be owner and have read/write permission */
+#ifndef __NetBSD__
 	    if (!stat("/dev/console", &sbuf) &&
 		(sbuf.st_uid == getuid()) &&
 		!access("/dev/console", R_OK|W_OK))
+#endif
 	    {
 #ifdef USE_FILE
 	    	input = fopen (FILE_NAME, "r");

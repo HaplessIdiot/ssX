@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.0 1994/08/01 12:08:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.1 1994/08/12 13:56:45 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -78,6 +78,12 @@ agxPaintWindow(pWin, pRegion, what)
 {
     register cfbPrivWin	*pPrivWin;
     void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
+
+    if (!xf86VTSema)
+    {
+       miPaintWindow( pWin, pRegion, what );
+       return;
+    }
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 

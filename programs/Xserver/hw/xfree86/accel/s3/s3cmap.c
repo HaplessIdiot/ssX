@@ -1,5 +1,5 @@
 /* $XConsortium: s3cmap.c,v 1.1 94/03/28 21:14:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.0 1994/08/11 06:55:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -44,9 +44,7 @@
 #include "s3.h"
 #include "regs3.h"
 
-extern double xf86rGamma, xf86gGamma, xf86bGamma;
-extern double pow();
-#define GAMMA(v,max,gamma) (((gamma)==1.0)?(v):((int)(pow((double)(v)/(max),(gamma))*(max)+0.5)))
+extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -54,7 +52,7 @@ static ColormapPtr InstalledMaps[MAXSCREENS];
 
 /* current colormap for each screen */
 
-static LUTENTRY currents3dac[256];
+LUTENTRY currents3dac[256];
 
 int
 s3ListInstalledColormaps(pScreen, pmaps)
@@ -122,18 +120,18 @@ s3StoreColors(pmap, ndef, pdefs)
 
       if (s3DAC8Bit) {
          r = currents3dac[pdefs[i].pixel].r =
-	     GAMMA(pdefs[i].red >> 8, 255, xf86rGamma);
+	    xf86rGammaMap[pdefs[i].red   >> 8];
          g = currents3dac[pdefs[i].pixel].g =
-	     GAMMA(pdefs[i].green >> 8, 255, xf86gGamma);
+	    xf86gGammaMap[pdefs[i].green >> 8];
          b = currents3dac[pdefs[i].pixel].b =
-	     GAMMA(pdefs[i].blue >> 8, 255, xf86bGamma);
+	    xf86bGammaMap[pdefs[i].blue  >> 8];
       } else {
          r = currents3dac[pdefs[i].pixel].r =
-	     GAMMA(pdefs[i].red >> 10, 63, xf86rGamma);
+	    xf86rGammaMap[pdefs[i].red   >> 10];
          g = currents3dac[pdefs[i].pixel].g =
-	     GAMMA(pdefs[i].green >> 10, 63, xf86gGamma);
+	    xf86gGammaMap[pdefs[i].green >> 10];
          b = currents3dac[pdefs[i].pixel].b =
-	     GAMMA(pdefs[i].blue >> 10, 63, xf86bGamma);
+	    xf86bGammaMap[pdefs[i].blue  >> 10];
       }
       if (xf86VTSema) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
@@ -232,13 +230,13 @@ s3RestoreColor0(pScreen)
    BLOCK_CURSOR;
    outb(DAC_W_INDEX, 0);
    if (s3DAC8Bit) {
-      outb(DAC_DATA, GAMMA(rgb.red >> 8, 255, xf86rGamma));
-      outb(DAC_DATA, GAMMA(rgb.green >> 8, 255, xf86gGamma));
-      outb(DAC_DATA, GAMMA(rgb.blue >> 8, 255, xf86bGamma));
+      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 8]);
+      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 8]);
+      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 8]);
    } else {
-      outb(DAC_DATA, GAMMA(rgb.red >> 10, 63, xf86rGamma));
-      outb(DAC_DATA, GAMMA(rgb.green >> 10, 63, xf86gGamma));
-      outb(DAC_DATA, GAMMA(rgb.blue >> 10, 63, xf86bGamma));
+      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 10]);
+      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 10]);
+      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 10]);
    }
    UNBLOCK_CURSOR;
 }

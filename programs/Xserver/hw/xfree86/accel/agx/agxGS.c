@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gs.c,v 1.2 94/04/17 20:30:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGS.c,v 3.0 1994/06/15 15:35:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGS.c,v 3.1 1994/08/01 12:08:52 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -92,6 +92,11 @@ agxGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     int			j;
     char		*pdst; /* where to put the bits */
     int			pixmapStride;
+
+    if (!xf86VTSema) {
+       cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+       return;
+    }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {

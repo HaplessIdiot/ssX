@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.2 1994/08/03 13:28:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.3 1994/08/11 06:55:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -226,12 +226,12 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue (5);
-   S3_OUTW (WRT_MASK, pGC->planemask);   
+   WaitQueue16_32(5,7);
+   S3_OUTW32 (WRT_MASK, pGC->planemask);   
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (FRGD_COLOR, (short) pGC->fgPixel);
+   S3_OUTW32 (FRGD_COLOR,  pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
@@ -363,20 +363,12 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue (5);
-   S3_OUTW (WRT_MASK, pGC->planemask);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+   WaitQueue16_32(5,7);
+   S3_OUTW32 (WRT_MASK, pGC->planemask);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-   S3_OUTW (FRGD_COLOR, (short) pGC->fgPixel);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+   S3_OUTW32 (FRGD_COLOR,  pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);

@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.2 1994/08/03 13:27:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.3 1994/08/11 06:55:24 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -157,16 +157,12 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * Reset the GE context to a known state before calling
 		   * the xf86loadfontblock function.
 		   */
-		  WaitQueue(8);
+		  WaitQueue16_32(5,6);
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-		  S3_OUTW(RD_MASK, 0xFFFF);
-#ifdef S3_32BPP
-		  if (s3InfoRec.bitsPerPixel == 32)
-		     S3_OUTW(RD_MASK, 0xFFFF);
-#endif
+		  S3_OUTW32(RD_MASK, ~0);
 
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];		  
@@ -179,24 +175,16 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
 		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
-		  WaitQueue(5);
-		  S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
-		  if (s3InfoRec.bitsPerPixel == 32)
-		     S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+		  WaitQueue16_32(5,7);
+		  S3_OUTW32(FRGD_COLOR, (short)pGC->fgPixel);
 		  S3_OUTW(MULTIFUNC_CNTL, 
 			PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
 		  S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-		  S3_OUTW(WRT_MASK, pGC->planemask);
-#ifdef S3_32BPP
-		  if (s3InfoRec.bitsPerPixel == 32)
-		     S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+		  S3_OUTW32(WRT_MASK, pGC->planemask);
 		  height = width = pmsk = 0;
 	       }
-	       WaitQueue(2);
+	       WaitQueue16_32(2,3);
 	       S3_OUTW(CUR_Y, block->y);	       
 
 	       /*
@@ -204,11 +192,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		*/
 	       if (!pmsk || pmsk != (1 << block->id)) {
 		  pmsk = 1 << block->id;
-	       	  S3_OUTW(RD_MASK, (unsigned short)pmsk);		  	       
-#ifdef S3_32BPP
-		  if (s3InfoRec.bitsPerPixel == 32)
-		     S3_OUTW(RD_MASK, (unsigned short)(pmsk>>16));
-#endif
+	       	  S3_OUTW32(RD_MASK, pmsk);
 	       }
 	       xoff = block->x;
 	       block->lru = NEXT_FONT_AGE;
@@ -251,20 +235,12 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
      BoxPtr pBox;
 {
    BLOCK_CURSOR;
-   WaitQueue(5);
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif        
+   WaitQueue16_32(5,7);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW(WRT_MASK, pGC->planemask);
-#ifdef S3_32BPP 
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+   S3_OUTW32(WRT_MASK, pGC->planemask);
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
@@ -276,16 +252,14 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
       Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox);
    }
 
-   WaitQueue(8);
+   WaitQueue(4);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(RD_MASK, 0xFFFF);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(RD_MASK, 0xFFFF);
-#endif
+
+   WaitQueue16_32(4,5);
+   S3_OUTW32(RD_MASK, ~0);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

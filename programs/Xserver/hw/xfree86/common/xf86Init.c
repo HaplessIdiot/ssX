@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.0 1994/05/08 05:20:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.1 1994/08/11 06:56:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,12 +52,14 @@ Bool xf86coFlag = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = 8;
 xrgb xf86weight = { 5, 6, 5 } ;	/* RGB weighting at 16 bpp */
-double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
+static double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
+unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 
 static void xf86PrintConfig();
 
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
+extern double pow();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -121,6 +123,12 @@ InitOutput(pScreenInfo, argc, argv)
 
     /* Do this after Xconfig is read (it's normally in OsInit()) */
     OsInitColors();
+
+    for (i=0; i<256; i++) {
+       xf86rGammaMap[i] = (int)(pow(i/255.0,xf86rGamma)*255.0+0.5);
+       xf86gGammaMap[i] = (int)(pow(i/255.0,xf86gGamma)*255.0+0.5);
+       xf86bGammaMap[i] = (int)(pow(i/255.0,xf86bGamma)*255.0+0.5);
+    }
 
     xf86Config(TRUE); /* Probe displays, and resolve modes */
 

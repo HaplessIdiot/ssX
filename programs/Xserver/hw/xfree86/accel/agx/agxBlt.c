@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.4 1994/08/01 12:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.5 1994/08/12 13:56:33 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -624,7 +624,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
         FreeScratchGC(pGC1);
         pSrcDrawable = (DrawablePtr)pBitmap;
 #else
-        return cfbCopyPlane(pSrcDrawable, pDstDrawable,
+        return vga256CopyPlane(pSrcDrawable, pDstDrawable,
                pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
 #endif
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&

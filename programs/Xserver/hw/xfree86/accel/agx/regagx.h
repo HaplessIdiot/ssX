@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.2 1994/07/15 06:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.3 1994/08/01 12:09:05 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -538,6 +538,8 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M1_PRESERVE_MASK			0x03
 #define IR_M1_MASK				0x37
 #define IR_M1_WRITE_MASK			0x37
+#define IR_M1_EXT_ENG_REQ			0x80
+#define IR_M1_PCLK_DIV_2			0x40
 #define IR_M1_CS3_MASK				0x30
 #define IR_M1_CS3_SHIFT				0x04
 #define IR_M1_CRTC_DELAY			0x08
@@ -560,6 +562,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M3_B1F00_GE_ADDRESS		0x01
 #define IR_M3_256_SRC_ADJUST			0x04
 #define IR_M3_256_DST_ADJUST 			0x08
+#define IR_M3_PCLK_EDGE_TRIGGERED		0x40
 #define IR_M3_SCREEN_REFRESH_25			0x20
 
 #define IR_M4_MODE_REG_4		0x6E
@@ -682,19 +685,13 @@ typedef struct {
 #define GE_WAIT_IDLE()         { int i = 500000, j; \
                                  if(GE_BUSY()) { \
                                     if (XGA_2_ONLY(agxChipId))  \
-                                       while(GE_XGA2_BUSY()) { \
-                                          j = 5; \
-                                          while(j--); \
-                                          if(GE_XGA2_BUSY()) sleep(0); \
-                                       } \
-                                    while(GE_BUSY()&&i--) { \
-                                      j = 5; \
-                                      while(j--); \
-                                       if(GE_BUSY()) sleep(0); \
-                                    } \
+                                       while(GE_XGA2_BUSY()); \
+                                    while(GE_BUSY()&&i--);\
                                  } \
-                                 if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE Timed Out.\n"); \
+                                 if(GE_BUSY()) { \
+                                   ErrorF("GE_WAIT_IDLE Timed Out - %s:%d\n",\
+                                           __FILE__,__LINE__); \
+                                 } \
                                }
 
 #define GE_WAIT_IDLE_SHORT()   { int i = 500000, j; \
@@ -703,8 +700,11 @@ typedef struct {
                                        while(GE_XGA2_BUSY());  \
                                     while(GE_BUSY()&&i--); \
                                  } \
-                                 if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE_SHORT Timed Out.\n"); \
+                                 if(GE_BUSY()) { \
+                                    ErrorF("GE_WAIT_IDLE_SHORT Timed Out \
+- %s:%d\n", \
+                                           __FILE__,__LINE__); \
+                                 } \
                                }
 
 #define GE_START_CMD( cmd )    GE_OUT_D(0x7C, (cmd))
@@ -713,8 +713,10 @@ typedef struct {
 #define GE_RESET()             { int i = 5000000; \
                                  GE_OUT_B(0x11,0x20); \
                                  while(GE_BUSY()&&i--) ; \
-                                 if(GE_BUSY()) \
-                                   ErrorF("GE_RESET Timed Out.\n"); \
+                                 if(GE_BUSY()) {\
+                                    ErrorF("GE_RESET Timed Out - %s:%d\n",\
+                                           __FILE__,__LINE__); \
+                                 } \
                                  GE_OUT_B(0x11,0x00); \
                                }
                                      

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_imblt.s,v 1.2 94/03/29 11:07:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.0 1994/06/05 06:00:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.1 1994/06/05 13:48:13 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -414,7 +414,7 @@ GLNAME(CirrusAlignedBitmapTransfer):
 	JMP	(.unrolled_loop3)
 
 .word_loop_check3:
-	AND_L	(ECX,ECX)
+	TEST_L	(ECX,ECX)
 	JZ	(.end3)
 
 .word_loop3:
@@ -548,7 +548,7 @@ GLNAME(CirrusBitmapTransfer):
 	JMP	(.unrolled_loop4)
 
 .word_loop_check4:
-	AND_B	(CL,CL)
+	TEST_B	(CL,CL)
 	JZ	(.zero_bytes_remaining4)
 	CMP_B	(CONST(4),CL)
 	JL	(.handle_remainder4)
@@ -571,7 +571,7 @@ GLNAME(CirrusBitmapTransfer):
 	JGE	(.word_loop4)
 
 .handle_remainder4:
-	AND_B	(CL,CL)
+	TEST_B	(CL,CL)
 	JZ	(.zero_bytes_remaining4)
 	CMP_B	(CONST(2),CL)
 	JE	(.two_bytes_remaining4)
@@ -736,7 +736,7 @@ GLNAME(CirrusWordTransfer):
 	JMP	(.unrolled_loop5)
 
 .word_loop_check5:
-	AND_L	(ECX,ECX)
+	TEST_L	(ECX,ECX)
 	JZ	(.end5)
 
 .word_loop5:
@@ -750,4 +750,3 @@ GLNAME(CirrusWordTransfer):
 	POP_L	(ECX)
 	POP_L	(EBP)
 	RET
-

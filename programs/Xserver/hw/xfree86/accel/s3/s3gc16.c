@@ -1,5 +1,5 @@
 /* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc16.c,v 3.0 1994/08/03 13:27:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc16.c,v 3.1 1994/08/11 06:55:26 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -138,7 +138,7 @@ static GCOps cfbTEOps1Rect =
    miPolyRectangle,
    cfb16ZeroPolyArcSSCopy,
    cfb16FillPoly1RectCopy,
-   cfbPolyFillRect,
+   cfb16PolyFillRect,
    cfb16PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
@@ -163,7 +163,7 @@ static GCOps cfbTEOps =
    miPolyRectangle,
    cfb16ZeroPolyArcSSCopy,
    miFillPolygon,
-   cfbPolyFillRect,
+   cfb16PolyFillRect,
    cfb16PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
@@ -175,6 +175,7 @@ static GCOps cfbTEOps =
    NULL,
 };
 
+#if 0 /* XXX defined but not used */
 static GCOps cfbNonTEOps1Rect =
 {
    cfb16SolidSpansCopy,
@@ -188,7 +189,7 @@ static GCOps cfbNonTEOps1Rect =
    miPolyRectangle,
    cfb16ZeroPolyArcSSCopy,
    cfb16FillPoly1RectCopy,
-   cfbPolyFillRect,
+   cfb16PolyFillRect,
    cfb16PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
@@ -199,6 +200,7 @@ static GCOps cfbNonTEOps1Rect =
    mfbPushPixels,
    NULL,
 };
+#endif
 
 static GCOps cfbNonTEOps =
 {
@@ -213,7 +215,7 @@ static GCOps cfbNonTEOps =
    miPolyRectangle,
    cfb16ZeroPolyArcSSCopy,
    miFillPolygon,
-   cfbPolyFillRect,
+   cfb16PolyFillRect,
    cfb16PolyFillArcSolidCopy,
    miPolyText8,
    miPolyText16,
@@ -292,6 +294,7 @@ s3CreateGC16(pGC)
  * create a private op array for a gc
  */
 
+#if 0 /* XXX defined but not used */
 static GCOps *
 cfbCreateOps(prototype)
      GCOps *prototype;
@@ -308,7 +311,7 @@ cfbCreateOps(prototype)
    ret->devPrivate.val = 1;
    return ret;
 }
-
+#endif
 
 /*
  * Clipping conventions if the drawable is a window CT_REGION ==>
@@ -806,15 +809,9 @@ s3ValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfb16UnnaturalTileFS;
 	    break;
 	case FillStippled:
-	    if (s3InfoRec.bitsPerPixel == 8 && devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfb8Stipple32FS;
-	    else
 		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-	    if (s3InfoRec.bitsPerPixel == 8 && devPriv->pRotatedPixmap)
-		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
-	    else
 		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
 	    break;
 	default:

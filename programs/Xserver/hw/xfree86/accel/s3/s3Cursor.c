@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.4 1994/08/11 06:55:14 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.5 1994/08/12 14:01:34 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -276,7 +276,7 @@ s3LoadCursor(pScr, pCurs, x, y)
    WaitIdle();
 
 #ifdef DONT_USE_IMAGE_WRITE
-   WaitQueue(7);
+   WaitQueue16_32(7,8);
 #else
    WaitQueue(4);
 #endif
@@ -285,7 +285,7 @@ s3LoadCursor(pScr, pCurs, x, y)
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
 #ifdef DONT_USE_IMAGE_WRITE
-   S3_OUTW(WRT_MASK, 0xffff);
+   S3_OUTW32(WRT_MASK, ~0);
    S3_OUTW(FRGD_MIX, FSS_PCDATA | MIX_SRC);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | 0);
 #endif
@@ -430,9 +430,16 @@ s3MoveCursor(pScr, x, y)
 
    if (!S3_x64_SERIES(s3ChipId)) 
       x *= s3Bpp;
+   else if (s3Bpp > 2)
+      x *= 2;
 
    x -= s3hotX;
    y -= s3hotY;
+
+   if (!S3_x64_SERIES(s3ChipId))
+      x -= x % s3Bpp;
+   else
+      x &= ~1;
 
    UNLOCK_SYS_REGS;
 
@@ -520,7 +527,7 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	outb(vgaCRIndex, 0x0F);
 	outb(vgaCRReg, maskColor.pixel);
 	break;
-     case 16: /*XXX: can we use the rgb values like this? */
+     case 16:
         if (s3InfoRec.depth == 15) {
 	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1) 
 	               | ((pCurs->foreGreen & 0xf800) >>  6)
@@ -546,6 +553,21 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	outb(vgaCRIndex, 0x4B);
 	outb(vgaCRReg, packedcolbg);
 	outb(vgaCRReg, packedcolbg>>8);
+     break;
+     case 32:
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4A);
+	outb(vgaCRReg, pCurs->foreBlue >>8);
+	outb(vgaCRReg, pCurs->foreGreen>>8);
+	outb(vgaCRReg, pCurs->foreRed  >>8);
+
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4B);
+	outb(vgaCRReg, pCurs->backBlue >>8);
+	outb(vgaCRReg, pCurs->backGreen>>8);
+	outb(vgaCRReg, pCurs->backRed  >>8);
      break;
    }
 }

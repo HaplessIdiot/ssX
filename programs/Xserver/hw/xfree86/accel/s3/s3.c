@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.17 1994/08/11 06:55:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.18 1994/08/12 14:01:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -52,7 +52,7 @@ extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
 extern int s3MaxTi3020Clock, s3MaxTi3020Clock175, s3MaxTi3020ClockFast;
 extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
-int s3Weight = -1;
+int s3Weight = RGB8_PSEUDO;
 
 extern s3VideoChipPtr s3Drivers[];
 
@@ -136,7 +136,7 @@ static unsigned S3_IOPorts[] = { DISP_STAT, H_TOTAL, H_DISP, H_SYNC_STRT,
   ADVFUNC_CNTL, SUBSYS_STAT, SUBSYS_CNTL, ROM_PAGE_SEL, CUR_Y, CUR_X,
   DESTY_AXSTP, DESTX_DIASTP, ERR_TERM, MAJ_AXIS_PCNT, GP_STAT, CMD,
   SHORT_STROKE, BKGD_COLOR, FRGD_COLOR, WRT_MASK, RD_MASK, COLOR_CMP,
-  BKGD_MIX, FRGD_MIX, MULTIFUNC_CNTL, PIX_TRANS,
+  BKGD_MIX, FRGD_MIX, MULTIFUNC_CNTL, PIX_TRANS, PIX_TRANS_EXT,
 };
 
 
@@ -376,6 +376,7 @@ s3Probe()
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
    OFLG_SET(OPTION_STEALTH64, &validOptions);
+   OFLG_SET(OPTION_MIRO_CRYSTAL20SV, &validOptions);
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
@@ -523,10 +524,8 @@ s3Probe()
       s3Weight = RGB16_555;
       xf86weight.red = xf86weight.green = xf86weight.blue = 5;
       s3InfoRec.bitsPerPixel = 16;
-#if 0
       s3InfoRec.defaultVisual = TrueColor;
       defaultColorVisualClass = TrueColor;
-#endif
       break;
    case 16:
       if (xf86weight.red==5 && xf86weight.green==5 && xf86weight.blue==5) {
@@ -542,20 +541,19 @@ s3Probe()
 	 return(FALSE);
       }
       s3InfoRec.bitsPerPixel = 16;
-#if 0
       s3InfoRec.defaultVisual = TrueColor;
       defaultColorVisualClass = TrueColor;
-#endif
       break;
    case 24:
    case 32:
       xf86bpp = 32;
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use sparse 24 bpp (RGBX) */
-      s3InfoRec.defaultVisual = TrueColor;
-      defaultColorVisualClass = TrueColor;
+      s3Weight = RGB32_888;
       /* s3MaxClock = S3_MAX_32BPP_CLOCK; */
       xf86weight.red =  xf86weight.green = xf86weight.blue = 8;
+      s3InfoRec.defaultVisual = TrueColor;
+      defaultColorVisualClass = TrueColor;
       break;
    default:
       ErrorF("Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
@@ -626,7 +624,7 @@ s3Probe()
 
       /* If it wasn't a Ti3020, probe for the ATT 20C498 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 int i,dir, mir;
+	 int dir, mir;
 	 xf86dactopel();
 	 xf86dactocomm();
 	 (void)inb(0x3C6);
@@ -801,10 +799,11 @@ s3Probe()
 
    if (DAC_IS_BT485_SERIES &&
        (
-        OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
-        OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
-        OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
-	OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)))
+	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
 
    if ((DAC_IS_ATT498 || DAC_IS_STG1700) && 
@@ -890,6 +889,11 @@ s3Probe()
 	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = TRUE;
 	 pixMuxMinWidth = 800;
+      } else if (OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)) {
+         nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
+         pixMuxMinWidth = 0;  /* working in enhanced mode */  
+	 pixMuxLimitedWidths = FALSE;
+	 /* These should probably be used for the STEALTH64 too */
       } else {
 	 nonMuxMaxClock = 85000;
       }
@@ -1331,7 +1335,6 @@ static Bool
 icd2061ClockSelect(no)
      int   no;
 {
-   long  clockNo;
    long  freq;
    Bool result = TRUE;
 
@@ -1347,9 +1350,15 @@ icd2061ClockSelect(no)
       result = s3ClockSelect(no);
       break;
    default:
-      if (no < 2 && (s3Bpp == 8 || !DAC_IS_SC15025)) {
+#if 0
+      if (no < 2 
+	  && !(s3Bpp > 1 && DAC_IS_SC15025)
+	  && !(s3Bpp > 2 && DAC_IS_ATT498)	  
+	  ) {
          result = s3ClockSelect(no);
-      } else {
+      } else 
+#endif
+      {
 	 if (no >= s3InfoRec.clocks) {
 	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
 	    result = FALSE;
@@ -1401,6 +1410,18 @@ icd2061ClockSelect(no)
 	       s3ClockDouble = FALSE;
 	       /* No doubler */
 	    }
+	 } else if (DAC_IS_ATT498) {
+	    if (s3Bpp > 2) {
+	    int maxfreq = 65000;
+	    
+	    if (freq > maxfreq) {
+	       ErrorF("%s %s: Specified dot clock (%.2f) too high for ICD2061A/ATT498 in %dbpp mode",
+		      XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0, 8*s3Bpp);
+	       ErrorF("\tUsing %.2fMHz\n", maxfreq / 1000.0);
+	       freq = maxfreq;
+	    }
+	    freq *= 2;
+}
 	 } else if (DAC_IS_SC15025 && s3Bpp > 1) {
 	    int maxfreq;
 	    if (s3Bpp == 2) 

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.2 1994/06/05 06:00:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.3 1994/06/22 04:38:21 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -37,7 +37,7 @@ _XFUNCPROTOBEGIN
 extern void CirrusFillRectSolidCopy();		/* GXcopy fill. */
 extern void CirrusFillRectSolidGeneral();	/* Non-GXcopy fill. */
 /* In cir_blt.c: */
-extern void CirrusBitBlt();
+extern void CirrusPolyBitBlt();
 
 /* LowlevelFuncs: */
 
@@ -112,25 +112,42 @@ extern void CirrusColorExpandFillTile32();
 extern void CirrusBLTColorExpand8x8PatternFill( unsigned destaddr, int fg,
 	int bg,	int w, int h, int destpitch, int rop, unsigned long pword1,
 	unsigned long pword2 );
+extern void CirrusMMIOBLTColorExpand8x8PatternFill( unsigned destaddr, int fg,
+	int bg,	int w, int h, int destpitch, int rop, unsigned long pword1,
+	unsigned long pword2 );
 extern void CirrusBLT8x8PatternFill( unsigned destaddr, int w, int h,
+	void *pattern, int destpitch, int rop );
+extern void CirrusMMIOBLT8x8PatternFill( unsigned destaddr, int w, int h,
 	void *pattern, int destpitch, int rop );
 extern void CirrusBLT16x16PatternFill( unsigned destaddr, int w, int h,
 	unsigned char *pattern, int destpitch, int rop );
+extern void CirrusMMIOBLT16x16PatternFill( unsigned destaddr, int w, int h,
+	unsigned char *pattern, int destpitch, int rop );
 extern void CirrusBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
 	int dstPitch, int srcPitch, int w, int h, int dir );
+extern void CirrusMMIOBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
+	int dstPitch, int srcPitch, int w, int h, int dir );
 extern void CirrusBLTWaitUntilFinished(void);	
+extern void CirrusMMIOBLTWaitUntilFinished(void);	
 #else
 extern void CirrusBLTColorExpand8x8PatternFill();
 extern void CirrusBLT8x8PatternFill();
 extern void CirrusBLT16x16PatternFill();
 extern void CirrusBLTBitBlt();
 extern void CirrusBLTWaitUntilFinished();
+extern void CirrusMMIOBLTColorExpand8x8PatternFill();
+extern void CirrusMMIOBLT8x8PatternFill();
+extern void CirrusMMIOBLT16x16PatternFill();
+extern void CirrusMMIOBLTBitBlt();
+extern void CirrusMMIOBLTWaitUntilFinished();
 #endif
+extern void CirrusInvalidateShadowVariables();
 /* In cir_im.c: */
-extern void CirrusImageWrite();
-extern void CirrusImageRead();
-extern void CirrusColorExpandWriteBitmap();
+extern void CirrusBLTImageWrite();
+extern void CirrusMMIOBLTImageWrite();
+extern void CirrusBLTImageRead();
 extern void CirrusBLTWriteBitmap();
+extern void CirrusMMIOBLTWriteBitmap();
 
 _XFUNCPROTOEND
 
@@ -139,9 +156,28 @@ _XFUNCPROTOEND
 extern int cirrusChip;
 extern int cirrusBusType;
 extern Bool cirrusUseBLTEngine;
+extern Bool cirrusUseMMIO;
+
+extern Bool cirrusMMIOFlag;
+extern Bool cirrusDoBackgroundBLT;
+extern Bool cirrusBLTisBusy;
+extern int cirrusBLTPatternAddress;
 
 extern int CirrusMemTop;
 extern int cirrusBankShift;
+
+extern int cirrusWriteModeShadow,	/* I/O register shadow variables */
+    cirrusPixelMaskShadow,
+    cirrusModeExtensionsShadow,
+    cirrusBltSrcAddrShadow,
+    cirrusBltDestPitchShadow,
+    cirrusBltSrcPitchShadow,
+    cirrusBltHeightShadow,
+    cirrusBltModeShadow,
+    cirrusBltRopShadow;
+extern unsigned int cirrusForegroundColorShadow,
+    cirrusBackgroundColorShadow;
+
 
 #define CLGD5420    0
 #define CLGD5422    1
@@ -194,21 +230,54 @@ extern unsigned char byte_reversed[];
 #define HAVEBLTWRITEMASK() (cirrusChip == CLGD5429 || cirrusChip == CLGD5430)
 
 #define SETWRITEMODE(n) \
-	{ \
+	if (n != cirrusWriteModeShadow) { \
 		unsigned char tmp; \
+		cirrusWriteModeShadow = n; \
 		outb(0x3ce, 0x05); \
 		tmp = inb(0x3cf) & 0xf8; \
 		outb(0x3cf, tmp | (n)); \
 	}
 
 #define SETFOREGROUNDCOLOR(c) \
-	outw(0x3ce, 0x01 + ((c) << 8));
+	if ((unsigned char)c != (unsigned char)cirrusForegroundColorShadow) { \
+		*(unsigned char *)(&cirrusForegroundColorShadow) = c; \
+		outw(0x3ce, 0x01 + ((c) << 8)); \
+	}
 
 #define SETBACKGROUNDCOLOR(c) \
-	outw(0x3ce, 0x00 + ((c) << 8));
+	if ((unsigned char)c != (unsigned char)cirrusBackgroundColorShadow) { \
+		*(unsigned char *)(&cirrusBackgroundColorShadow) = c; \
+		outw(0x3ce, 0x00 + ((c) << 8)); \
+	}
 
+#define SETFOREGROUNDCOLOR16(c) \
+	if ((unsigned short)c != (unsigned short)cirrusForegroundColorShadow) { \
+		*(unsigned short *)(&cirrusForegroundColorShadow) = c; \
+		outw(0x3ce, 0x01 + ((c) << 8)); \
+		outw(0x3ce, 0x11 + ((c) & 0xff00)); \
+	}
+
+#define SETBACKGROUNDCOLOR16(c) \
+	if ((unsigned short)c != (unsigned short)cirrusBackgroundColorShadow) { \
+		*(unsigned short *)(&cirrusBackgroundColorShadow) = c; \
+		outw(0x3ce, 0x00 + ((c) << 8)); \
+		outw(0x3ce, 0x10 + ((c) & 0xff00)); \
+	}
+
+#if 0	/* Seems to cause problems. */
+#define SETPIXELMASK(m) \
+{ \
+	int __pixmask; \
+	__pixmask = m; \
+	if (__pixmask != cirrusPixelMaskShadow) { \
+		cirrusPixelMaskShadow = __pixmask; \
+		outw(0x3c4, 0x02 + ((__pixmask) << 8)); \
+	} \
+}
+#else
 #define SETPIXELMASK(m) \
 	outw(0x3c4, 0x02 + ((m) << 8));
+#endif
 
 #define EIGHTDATALATCHES	0x08
 #define EXTENDEDWRITEMODES	0x04
@@ -217,8 +286,9 @@ extern unsigned char byte_reversed[];
 #define SINGLEBANKED		0x00
 
 #define SETMODEEXTENSIONS(m) \
-	{ \
+	if (m != cirrusModeExtensionsShadow) { \
 		unsigned char tmp; \
+		cirrusModeExtensionsShadow = m; \
 		outb(0x3ce, 0x0b); \
 		tmp = inb(0x3cf) & 0xe0; \
 		outb(0x3cf, tmp | (m)); \

@@ -11,7 +11,7 @@
      chance that this driver might also work with true XGA clones, 
      but has had no testing on such boards (see the notes at the end 
      of this document). This version should be considered an early
-     beta level server and very much a work-in-progress .
+     beta level server and very much a work-in-progress.
 
      While Hercules uses Brooktree and AT&T RAMDACS, most other
      AGX based vendors use Sierra RAMDAC's (15025 and 15021).
@@ -36,21 +36,17 @@
 
 3) Known Problems
 
-     a) When switching in and out of the server VC, sometimes it
-        hangs. This seems to primarily happen if switching 
-        rapidily many times.
-
-     b) The accelerated line routines don't match lines written
+     a) The accelerated line routines don't match lines written
         by the mi/cfb routines. This is noticable when switching between
         virtual consoles while running routines that draw and erase 
         lines. 
 
-     c) The AGX-016 adds support for additional virtual width's,
+     b) The AGX-016 adds support for additional virtual width's,
         the current server does not support these.
 
-     d) The video memory probe often doesn't work.
+     c) The video memory probe often doesn't work.
 
-     e) Needs more testing.
+     d) Needs more testing.
 
 4) ToDo
 
@@ -113,11 +109,12 @@
                                  BT482's HW cursor (not yet supported).
                                  The BT481/2 are limited to 85Mhz.
             "bt485"           -  bt485 RAMDAC  (supports 8-bit DAC)
+                                 Not yet supported on the Grapite Pro's.
             "20c505"          -  AT&T 20c505 RAMDAC  (supports 8-bit DAC)
                                  The Bt485 and 20c505 aren't fully 
                                  supported yet and are limited to 85Mhz.
                                  Not yet supported on the Grapite Pro's.
-            "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
+(tested)    "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
                                  (supports 8-bit DAC). The SC15025 is
                                  limited to 110Mhz, and the SC150021
                                  135Mhz. Check RAMDAC's actual rating. 
@@ -200,7 +197,7 @@
                                unchanged from POST setting.
            "refresh_20"      - Number of clock cycles between screen 
            "refresh_25"        refreshes. Default is to leave this bit
-                               unchange from POST setting.
+                               unchanged from POST setting.
            "screen_refresh"  - Disable screen refresh during non-blanked
                                intervals, AGX-016. Default is leave them
                                enabled.
@@ -225,9 +222,7 @@
            little makes it disappear. The Hercules manual indicates 
            this also happens with the MS-Windows drivers.
 
-           The server requires at least a 32KB scratchpad. Future
-           versions of the server may require a minimum of 64KB for the
-           scratchpad to support some acceleration features. Additional
+           The server requires at least a 64KB scratchpad. Additional
            memory is useful for font caching and a larger scratchpad.
 
 
@@ -272,7 +267,8 @@
          need to test some more). Interlaced and +/-sync flags are
          supported but have had a little testing.
  
-       This is the accel entry from my Xconfig for a Hercules Graphite Pro:
+       This is the accel entry from my Xconfig for a 
+       Hercules Graphite VL Pro (note your clocks may differ):
 
           
           accel
@@ -341,4 +337,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.3 1994/07/15 07:03:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.4 1994/08/01 12:14:14 dawes Exp $

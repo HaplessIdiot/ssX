@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.0 1994/04/29 14:10:03 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -29,8 +29,18 @@
 
 /*
  * This file contains the low level accelerated functions that use color
- * expansion/extended write mode and some more framebuffer functions that
- * take advantage of the 16K bank granularity.
+ * expansion/extended write modes, which are supported on all chipsets.
+ * Most functions divide the area into banking regions, taking advantage
+ * of the 16K bank granularity, and have efficient inner loops without
+ * bank checks. Tile and stipple fill draw in scanline interleaved order.
+ *
+ * Operations performed with these functions:
+ * - Solid fill
+ * - Transparent/Opaque 32 bits-wide stipple fill
+ * - Multiple-of-8 wide tile fill
+ * - Special case BitBlt (scrolling) for the 5420/2/4
+ * - Small size plain framebuffer fill/BitBlt.
+ *
  */
  
 
@@ -64,6 +74,7 @@ extern pointer vgaBase;
 
 #include "cir_driver.h"
 #include "cir_inline.h"
+#include "cir_span.h"
 
 
 #if __GNUC__ > 1 && defined(GCCUSESGAS)
@@ -92,20 +103,6 @@ static __inline__ void latchedcopy8( unsigned char *srcp, unsigned char *destp )
 	);
 }
 
-static __inline__ void latchedwrite8step4( unsigned char *destp ) {
-	__asm__ __volatile__(
-	"movb $0,(%0)\n\t"
-	"movb $0,4(%0)\n\t"
-	"movb $0,8(%0)\n\t"
-	"movb $0,12(%0)\n\t"
-	"movb $0,16(%0)\n\t"
-	"movb $0,20(%0)\n\t"
-	"movb $0,24(%0)\n\t"
-	"movb $0,28(%0)\n\t"
-	: : "r" (destp) : "ax"
-	);
-}
-
 #else /* !defined(__GNUC__) */
 
 static void latchedcopy8( unsigned char *srcp, unsigned char *destp ) {
@@ -119,19 +116,6 @@ static void latchedcopy8( unsigned char *srcp, unsigned char *destp ) {
 	*(destp + 5) = *(srcp + 5);
 	*(destp + 6) = *(srcp + 6);
 	*(destp + 7) = *(srcp + 7);
-}
-
-static void latchedwrite8step4( unsigned char *destp ) {
-/* This produces somewhat horrible code because of lack of registers when
- * inlined. */
-	*destp = 0;	/* Latch write. */
-	*(destp + 4) = 0;
-	*(destp + 8) = 0;
-	*(destp + 12) = 0;
-	*(destp + 16) = 0;
-	*(destp + 20) = 0;
-	*(destp + 24) = 0;
-	*(destp + 28) = 0;
 }
 
 #endif
@@ -182,258 +166,9 @@ static unsigned char leftbitmask[8] = {
 
 /* Bit masks for right edge (indexed with number of pixels left). */
 
-static unsigned char rightbitmask[8] = {
-	0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
+static unsigned char rightbitmask[9] = {
+	0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff
 };
-
-
-/*
- * This low-level function fills an area with a 32 bits wide monochrome
- * pattern of given height. The pattern scanlines are stored as 32-bit
- * integers, with the lowest-order bit corresponding to the leftmost pixel.
- * It has to reverse the per-byte bit ordering because the Cirrus color
- * expansion works that way.
- *
- * This function should work on all chipsets, i.e. 5420 up to 5429.
- * On local bus and fast processor, it can be significantly faster than the
- * 5426 bitblt engine for large solid fills.
- *
- * Arguments:
- * x, y		Coordinates of fill area.
- * w, h		Size of fill area.
- * bits_in	Pointer to array of 32-bit monochrome scanlines.
- * sh		Height of the fill pattern (size of array).
- * sox, soy	Coordinates of the origin of the pattern.
- * fg		Foreground color (bit 1 in bitmap data).
- * bg		Background color (bit 0 in bitmap data).
- * destpitch	Scanline width of screen; must be a multiple of 8.
- *
- * The function assumes vgaBase to be the address of the frame buffer window,
- * with a 32K write window at offset 0x8000. The width must be greater or
- * equal to 32.
- *
- * There's some optimization potential left; the color expansion itself
- * can be very fast (bandwidth up to 100Mpix/s) so overhead is costly.
- */
-
-/* For solid fills, on a 486 VLB at 40 MHz, is it optimal at about
- * width >= 200) (that is, better than the 5426 blit engine).
- * It appears it can also be faster on the ISA bus.
- */
-
-#ifdef __STDC__
-void CirrusColorExpand32bitFill( int x, int y, int w, int h,
-unsigned long *bits_in, int sh, int sox, int soy, int bg, int fg,
-int destpitch )
-#else
-void CirrusColorExpand32bitFill( x, y, w, h, bits_in, sh, sox, soy, bg,
-fg, destpitch )
-	int x, y, w, h;
-	unsigned long *bits_in;
-	int sh, sox, soy, bg, fg, destpitch;
-#endif
-{
-	unsigned long *new_bits;
-	int i, j;
-	int destaddr;
-	unsigned char *destp;
-	int bitoffset;
-	int syindex;
-	int bank;
-	unsigned char *base;	/* Video window base address. */
-	char filltype;		/* Opaque, solid or transparent. */
-
-#define OPAQUE 0
-#define SOLID 1
-#define TRANSPARENT 2
-
-	/* Reverse per-byte bit order. */
-	new_bits = (unsigned long *)ALLOCATE_LOCAL(sh * 4);
-	filltype = SOLID;
-	for (i = 0; i < sh; i++) {
-		unsigned long bits;
-		if (bits_in[i] == 0xffffffff)
-			new_bits[i] = 0xffffffff;
-		else {
-			filltype = OPAQUE;
-			/* Rotate so that data is correctly aligned to */
-			/* origin for writing dwords to framebuffer. */
-			bits = rotateleft(32 - (sox & 31), bits_in[i]);
-			/* Reverse each of the four bytes. */
-			((unsigned char *)new_bits)[i * 4] =
-				byte_reversed[(unsigned char)bits];
-			((unsigned char *)new_bits)[i * 4 + 1] =
-				byte_reversed[(unsigned char)(bits >> 8)];
-			((unsigned char *)new_bits)[i * 4 + 2] =
-				byte_reversed[(unsigned char)(bits >> 16)];
-			((unsigned char *)new_bits)[i * 4 + 3] =
-				byte_reversed[(unsigned char)(bits >> 24)];
-		}
-	}
-	if (bg == -1)
-		filltype = TRANSPARENT;
-
-	base = (unsigned char *)vgaBase + 0x8000;	/* Write window. */
-	destaddr = y * destpitch + x;
-
-	/* Enable extended write modes and BY8 addressing. */
-	/* Every addressing byte corresponds to 8 pixels. */
-	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | DOUBLEBANKED);
-
-	if (filltype == OPAQUE) {
-		/* Set extended write mode 5, which writes both foreground */
-		/* and background color, and will use the pixel mask */
-		/* for edges. */
-		SETWRITEMODE(5);
-		SETBACKGROUNDCOLOR(bg);
-	}
-	else {
-		/* Set extended write mode 4, which writes the foreground */
-		/* at the pixels indicates by the CPU data. */
-		/* This will avoid costly OUTs at the edges for solid fills*/
-		/* and transparent stipples. */
-		SETWRITEMODE(4);
-	}
-
-	SETPIXELMASK(0xff);
-	SETFOREGROUNDCOLOR(fg);
-
-	/* Bit offset of leftmost pixel of area to be filled. */
-	bitoffset = destaddr & 7;
-
-	destaddr >>= 3;			/* Divide address by 8. */
-
-	bank = destaddr >> 14;		/* 16K units. */
-	setwritebank(bank);
-	destaddr &= 0x3fff;
-
-	syindex = (y - soy) % sh;	/* y index into source bitmap. */
-
-	for (j = 0; j < h; j++) {
-		union {
-			unsigned long dword;
-			unsigned char byte[4];
-		} bits;
-		int count;
-
-		if (destaddr >= 0x4000) {
-			/* 16K granularity is very helpful here. */
-			/* Because of the 32K window, we completely avoid */
-			/* page breaks within scanlines. */
-			bank++;
-			setwritebank(bank);
-			destaddr -= 0x4000;
-		}
-		destp = base + destaddr;
-
-		/* Rotate stipple bits so that is correctly aligned for */
-		/* writing aligned dwords in this scanline. It is a bit */
-		/* tricky because scanlines don't necessarily start on */
-		/* a dword boundary because of BY8 addressing. */
-		if (filltype == SOLID)
-			bits.dword = 0xffffffff;
-		else
-			bits.dword = rotateleft(((destaddr - (x >> 3)) & 3) << 3,
-				new_bits[syindex]);
-
-		count = w;		/* Number of pixels left. */
-
-		/* Do first byte (left edge). */
-		if (bitoffset != 0) {
-			if (filltype == SOLID) {
-				*destp = leftbitmask[bitoffset];
-			}
-			else
-			if (filltype == TRANSPARENT) {
-				*destp = bits.byte[(unsigned)destp & 3]
-					& leftbitmask[bitoffset];
-			}
-			else {
-				SETPIXELMASK(leftbitmask[bitoffset]);
-				*destp = bits.byte[(unsigned)destp & 3];
-				SETPIXELMASK(0xff);
-			}
-			destp++;
-			count -= 8 - bitoffset;
-		}
-
-		/* Fill to dword boundary. */
-		switch ((unsigned)destp & 3) {
-		case 1 :
-			*destp = bits.byte[1];
-			*(unsigned short *)(destp + 1) =
-				*(unsigned short *)(&bits.byte[2]);
-			destp += 3;
-			count -= 24;
-			break;
-		case 2 :
-			*(unsigned short *)destp =
-				*(unsigned short *)(&bits.byte[2]);
-			destp += 2;
-			count -= 16;
-			break;
-		case 3 :
-			*destp = bits.byte[3];
-			destp++;
-			count -= 8;
-		}
-
-		/* Fill dwords (32 pixels). */
-		__memsetlong((unsigned long *)destp, bits.dword, count / 32);
-		destp += (count / 32) * 4;
-		count &= 31;
-
-		/* Fill remaining bytes (8 pixels). */
-		switch (count >> 3) {
-		case 1 :
-			*destp = bits.byte[0];
-			destp++;
-			count -= 8;
-			break;
-		case 2 :
-			*(unsigned short *)destp =
-				*(unsigned short *)(&bits.byte[0]);
-			destp += 2;
-			count -= 16;
-			break;
-		case 3 :
-			*(unsigned short *)destp =
-				*(unsigned short *)(&bits.byte[0]);
-			*(destp + 2) = bits.byte[2];
-			destp += 3;
-			count -= 24;
-		}
-
-		/* Do last byte (right edge). */
-		if (count != 0)
-			if (filltype == SOLID)
-				*destp = rightbitmask[count];
-			else
-			if (filltype == TRANSPARENT)
-				*destp = bits.byte[(unsigned)destp & 3]
-					& rightbitmask[count];
-			else {
-				SETPIXELMASK(rightbitmask[count]);
-				*destp = bits.byte[(unsigned)destp & 3];
-				SETPIXELMASK(0xff);
-			}
-
-		destaddr += (destpitch >> 3);
-
-		syindex++;
-		if (syindex == sh)
-			syindex = 0;	/* Wrap pattern vertically. */
-	}
-
-	/* Disable extended write modes and BY8 addressing. */
-	SETMODEEXTENSIONS(DOUBLEBANKED);
-
-	SETWRITEMODE(0);
-
-	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
-
-	DEALLOCATE_LOCAL(new_bits);
-}
 
 
 /*
@@ -855,64 +590,521 @@ void CirrusSimpleBitBlt( x1, y1, x2, y2, w, h, destpitch )
 
 
 /*
- * This function uses the 8 data latches for fast 32 pixel wide tile fill.
+ * Optimized solid fill.
+ * Divides area in regions within banks.
+ * Uses the full 64K window in BY8 addressing mode, giving effective
+ * bank regions of 512K.
+ * w >= 32.
+ */
+
+void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
+	int x, y, w, h, fg, destpitch;
+{
+	int destaddr;
+	int bank;
+	unsigned char *base;	/* Video window base address. */
+	int nspans, bitoffset;
+	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
+
+	base = (unsigned char *)vgaBase;	/* Write window. */
+	destaddr = y * destpitch + x;
+
+	/* Enable extended write modes and BY8 addressing. */
+	/* Every addressing byte corresponds to 8 pixels. */
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+
+	SETWRITEMODE(4);
+
+	SETPIXELMASK(0xff);
+	SETFOREGROUNDCOLOR(fg);
+
+	/* Calculate masks and counts. */
+	/* Bit offset of leftmost pixel of area to be filled. */
+	bitoffset = destaddr & 7;
+	destaddr >>= 3;			/* Divide address by 8. */
+	leftmask = leftbitmask[bitoffset];
+	w -= 8 - bitoffset;
+	if (w < 0) {
+		/* Just one byte. */
+		leftmask &= rightbitmask[w + 8];
+		leftbcount = 1;
+		midlcount = 0;
+		rightbcount = 0;
+		goto masksdone;
+	}
+	leftbcount = 4 - (destaddr & 3);
+	if ((leftbcount - 1) * 8 > w)
+		leftbcount = w / 8 + 1;
+	w -= (leftbcount - 1) * 8;
+	midlcount = w / 32;
+	w &= 31;
+	rightbcount = (w + 7) / 8;
+	if (rightbcount > 0)
+		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
+masksdone:
+
+	bank = destaddr >> 14;		/* 16K units. */
+	setbank(bank);
+	destaddr &= 0x3fff;
+
+	nspans = h;	/* Number of spans to go. */
+	for (;;) {
+		int n;
+		/* Calculate how many scanlines fit in this banking region. */
+		n = (0x10000 - destaddr) / (destpitch >> 3);
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
+
+		CirrusColorExpandWriteSpans(base + destaddr,
+			leftmask, leftbcount, midlcount, rightbcount,
+			rightmask, n, destpitch >> 3);
+
+		if (nspans == 0)
+			break;
+		destaddr += n * (destpitch >> 3);
+		destaddr -= 0xc000;
+		bank += 3;
+		if (bank > 252) {
+			destaddr += (bank - 252) * 0x4000;
+			bank = 252;
+		}
+		setbank(bank);
+	}
+
+	/* Disable extended write modes and BY8 addressing. */
+	SETMODEEXTENSIONS(DOUBLEBANKED);
+	SETWRITEMODE(0);
+	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
+}
+
+
+/*
+ * Optimized stipple, dividing into unbanked regions.
+ * Scanlines are written interleaved, maximizing consecutive writes of the
+ * same stipple bits word. Assumes a virtual screen width that is a multiple
+ * 32 (otherwise video memory access will be largely unaligned).
+ */
+
+void CirrusColorExpandStippleFill(x, y, w, h, bits_in, sh, sox, soy, fg,
+destpitch)
+	int x, y, w, h;
+	unsigned long *bits_in;
+	int sh, sox, soy, fg, destpitch;
+{
+	int destaddr;
+	int bank;
+	unsigned char *base;	/* Video window base address. */
+	int nspans, bitoffset;
+	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
+	int bytealignment;
+
+	unsigned long *new_bits;
+	int i, syindex;
+
+	/* Reverse per-byte bit order of the stipple. */
+	new_bits = (unsigned long *)ALLOCATE_LOCAL(sh * 4);
+	for (i = 0; i < sh; i++) {
+		if (bits_in[i] == 0xffffffff)
+			new_bits[i] = 0xffffffff;
+		else {
+			unsigned long bits;
+			/* Rotate so that data is correctly aligned to */
+			/* origin for writing dwords to framebuffer. */
+			bits = rotateleft(32 - (sox & 31), bits_in[i]);
+			/* Reverse each of the four bytes. */
+			((unsigned char *)new_bits)[i * 4] =
+				byte_reversed[(unsigned char)bits];
+			((unsigned char *)new_bits)[i * 4 + 1] =
+				byte_reversed[(unsigned char)(bits >> 8)];
+			((unsigned char *)new_bits)[i * 4 + 2] =
+				byte_reversed[(unsigned char)(bits >> 16)];
+			((unsigned char *)new_bits)[i * 4 + 3] =
+				byte_reversed[(unsigned char)(bits >> 24)];
+		}
+	}
+
+	base = (unsigned char *)vgaBase;	/* Write window. */
+	destaddr = y * destpitch + x;
+
+	/* Enable extended write modes and BY8 addressing. */
+	/* Every addressing byte corresponds to 8 pixels. */
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+
+	SETWRITEMODE(4);
+
+	SETPIXELMASK(0xff);
+	SETFOREGROUNDCOLOR(fg);
+
+	/* Calculate masks and counts. */
+	/* Bit offset of leftmost pixel of area to be filled. */
+	bitoffset = destaddr & 7;
+	destaddr >>= 3;			/* Divide address by 8. */
+	leftmask = leftbitmask[bitoffset];
+	w -= 8 - bitoffset;
+	bytealignment = (x >> 3) & 3;
+	if (w < 0) {
+		/* Just one byte. */
+		leftmask &= rightbitmask[w + 8];
+		leftbcount = 1;
+		midlcount = 0;
+		rightbcount = 0;
+		goto masksdone;
+	}
+	leftbcount = 4 - bytealignment;
+	if ((leftbcount - 1) * 8 > w)
+		/* If the area falls within a 32-bit word, leftbcount does */
+		/* not indicate the byte alignment. */
+		leftbcount = w / 8 + 1;
+	w -= (leftbcount - 1) * 8;
+	midlcount = w / 32;
+	w &= 31;
+	rightbcount = (w + 7) / 8;
+	if (rightbcount > 0)
+		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
+masksdone:
+
+	bank = destaddr >> 14;		/* 16K units. */
+	setbank(bank);
+	destaddr &= 0x3fff;
+
+	syindex = (y - soy) % sh;	/* y index into source bitmap. */
+
+	nspans = h;	/* Number of spans to go. */
+
+	for (;;) {
+		int n, minlines, oneextralimit, startsyindex;
+		unsigned char *destp;
+
+		/* Calculate how many scanlines fit in this banking region. */
+		n = (0x10000 - destaddr) / (destpitch >> 3);
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
+
+		destp = base + destaddr;
+		startsyindex = syindex;
+		minlines = n / sh;
+		oneextralimit = n % sh;
+		for (i = 0; i < sh && i < n; i++) {
+			int linecount;
+			int stippleleftmask, stipplerightmask;
+			union {
+				unsigned long dword;
+				unsigned char byte[4];
+			} stipplebits;
+			stipplebits.dword = new_bits[syindex];
+
+			if (leftbcount > 0)
+				stippleleftmask = leftmask &
+					stipplebits.byte[bytealignment];
+			if (rightbcount > 0)
+				stipplerightmask = rightmask &
+					stipplebits.byte[
+						(bytealignment + leftbcount +
+						rightbcount - 1) & 3];
+			linecount = minlines;
+			if (i < oneextralimit)
+				linecount++;
+
+			CirrusColorExpandWriteStippleSpans(destp,
+				stippleleftmask, leftbcount, midlcount,
+				rightbcount, stipplerightmask, linecount,
+				(destpitch >> 3) * sh, stipplebits.dword);
+
+			destp += (destpitch >> 3);
+			syindex++;
+			if (syindex >= sh)
+				syindex = 0;
+		}
+		syindex = startsyindex + oneextralimit;
+		if (syindex >= sh)
+			syindex -= sh;
+
+		if (nspans == 0)
+			break;
+		destaddr += n * (destpitch >> 3);
+		bank += 3;
+		destaddr -= 0xc000;
+		if (bank > 252) {
+			destaddr += (bank - 252) * 0x4000;
+			bank = 252;
+		}
+		setbank(bank);
+	}
+
+	/* Disable extended write modes and BY8 addressing. */
+	SETMODEEXTENSIONS(DOUBLEBANKED);
+	SETWRITEMODE(0);
+	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
+
+	DEALLOCATE_LOCAL(new_bits);
+}
+
+
+/*
+ * Optimized opaque stipple.
+ * Within unbanked regions, first draws left edge, then middle, then right
+ * edge.
+ */
+
+void CirrusColorExpandOpaqueStippleFill(x, y, w, h, bits_in, sh, sox, soy,
+bg, fg, destpitch)
+	int x, y, w, h;
+	unsigned long *bits_in;
+	int sh, sox, soy, fg, destpitch;
+{
+	int destaddr;
+	int bank;
+	unsigned char *base;	/* Video window base address. */
+	int nspans, bitoffset;
+	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
+	int bytealignment;
+
+	unsigned long *new_bits;
+	int i, syindex;
+	int startsyindex;
+
+	/* Reverse per-byte bit order of the stipple. */
+	new_bits = (unsigned long *)ALLOCATE_LOCAL(sh * 4);
+	for (i = 0; i < sh; i++) {
+		if (bits_in[i] == 0xffffffff)
+			new_bits[i] = 0xffffffff;
+		else {
+			unsigned long bits;
+			/* Rotate so that data is correctly aligned to */
+			/* origin for writing dwords to framebuffer. */
+			bits = rotateleft(32 - (sox & 31), bits_in[i]);
+			/* Reverse each of the four bytes. */
+			((unsigned char *)new_bits)[i * 4] =
+				byte_reversed[(unsigned char)bits];
+			((unsigned char *)new_bits)[i * 4 + 1] =
+				byte_reversed[(unsigned char)(bits >> 8)];
+			((unsigned char *)new_bits)[i * 4 + 2] =
+				byte_reversed[(unsigned char)(bits >> 16)];
+			((unsigned char *)new_bits)[i * 4 + 3] =
+				byte_reversed[(unsigned char)(bits >> 24)];
+		}
+	}
+
+	base = (unsigned char *)vgaBase;	/* Write window. */
+	destaddr = y * destpitch + x;
+
+	/* Enable extended write modes and BY8 addressing. */
+	/* Every addressing byte corresponds to 8 pixels. */
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+
+	SETWRITEMODE(5);	/* Opaque. */
+
+	SETPIXELMASK(0xff);
+	SETFOREGROUNDCOLOR(fg);
+	SETBACKGROUNDCOLOR(bg);
+
+	/* Calculate masks and counts. */
+	/* Bit offset of leftmost pixel of area to be filled. */
+	bitoffset = destaddr & 7;
+	destaddr >>= 3;			/* Divide address by 8. */
+	leftmask = leftbitmask[bitoffset];
+	w -= 8 - bitoffset;
+	bytealignment = (x >> 3) & 3;
+	if (w < 0) {
+		/* Just one byte. */
+		leftmask &= rightbitmask[w + 8];
+		leftbcount = 1;
+		midlcount = 0;
+		rightbcount = 0;
+		goto masksdone;
+	}
+	leftbcount = 4 - bytealignment;
+	if ((leftbcount - 1) * 8 > w)
+		/* If the area falls within a 32-bit word, leftbcount does */
+		/* not indicate the byte alignment. */
+		leftbcount = w / 8 + 1;
+	w -= (leftbcount - 1) * 8;
+	midlcount = w / 32;
+	w &= 31;
+	rightbcount = (w + 7) / 8;
+	if (rightbcount > 0)
+		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
+masksdone:
+
+	bank = destaddr >> 14;		/* 16K units. */
+	setbank(bank);
+	destaddr &= 0x3fff;
+
+	syindex = (y - soy) % sh;	/* y index into source bitmap. */
+
+	nspans = h;	/* Number of spans to go. */
+
+	for (;;) {
+		int n, minlines, oneextralimit;
+		unsigned char *destp;
+
+		/* Calculate how many scanlines fit in this banking region. */
+		n = (0x10000 - destaddr) / (destpitch >> 3);
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
+
+		minlines = n / sh;
+		oneextralimit = n % sh;
+
+/* Left edge. */ 
+		SETPIXELMASK(leftmask);
+		destp = base + destaddr;
+		startsyindex = syindex;
+
+		for (i = 0; i < n; i++) {
+			int linecount;
+			union {
+				unsigned long dword;
+				unsigned char byte[4];
+			} stipplebits;
+			stipplebits.dword = new_bits[syindex];
+
+			*destp = stipplebits.byte[bytealignment];
+
+			destp += (destpitch >> 3);
+			syindex++;
+			if (syindex >= sh)
+				syindex = 0;
+		}
+
+/* Middle part */
+		if (midlcount == 0 && leftbcount <= 1 && rightbcount <= 1)
+			goto skipmiddlepart;
+		SETPIXELMASK(0xff);
+		destp = base + destaddr + 1;
+		syindex = startsyindex;
+
+		for (i = 0; i < sh && i < n; i++) {
+			int linecount;
+			union {
+				unsigned long dword;
+				unsigned char byte[4];
+			} stipplebits;
+			stipplebits.dword = new_bits[syindex];
+
+			linecount = minlines;
+			if (i < oneextralimit)
+				linecount++;
+
+			CirrusColorExpandWriteStippleSpans(destp,
+				stipplebits.byte[(bytealignment + 1) & 3],
+				leftbcount - 1, midlcount,
+				(rightbcount == 0 ? 0 : rightbcount - 1),
+				stipplebits.byte[(bytealignment + leftbcount
+					+ rightbcount - 2) & 3],
+				linecount, (destpitch >> 3) * sh,
+				stipplebits.dword);
+
+			destp += (destpitch >> 3);
+			syindex++;
+			if (syindex >= sh)
+				syindex = 0;
+		}
+skipmiddlepart:
+
+/* Right edge */
+		if (rightbcount == 0)
+			goto skiprightpart;
+		SETPIXELMASK(rightmask);
+		destp = base + destaddr + leftbcount + midlcount * 4 +
+			rightbcount - 1;
+		syindex = startsyindex;
+		for (i = 0; i < n; i++) {
+			int linecount;
+			union {
+				unsigned long dword;
+				unsigned char byte[4];
+			} stipplebits;
+			stipplebits.dword = new_bits[syindex];
+
+			*destp = stipplebits.byte[(bytealignment + leftbcount
+				+ rightbcount - 1) & 3];
+			destp += (destpitch >> 3);
+			syindex++;
+			if (syindex >= sh)
+				syindex = 0;
+		}
+skiprightpart:
+
+		syindex = startsyindex + oneextralimit;
+		if (syindex >= sh)
+			syindex -= sh;
+
+		if (nspans == 0)
+			break;
+		destaddr += n * (destpitch >> 3);
+		destaddr -= 0xc000;
+		bank += 3;
+		if (bank > 252) {
+			destaddr += (bank - 252) * 0x4000;
+			bank = 252;
+		}
+		setbank(bank);
+	}
+
+	/* Disable extended write modes and BY8 addressing. */
+	SETMODEEXTENSIONS(DOUBLEBANKED);
+	SETWRITEMODE(0);
+	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
+	SETPIXELMASK(0xff);
+
+	DEALLOCATE_LOCAL(new_bits);
+}
+
+
+/*
+ * This function uses the 8 data latches for fast multiple-of-8 pixel wide
+ * tile fill. Divides into banking regions.
+ * Supports tilewidths of 8, 16, 24, 32, 40, 48, 56 and 64.
  *
  * Arguments:
  * x, y		Coordinates of the destination area.
  * w, h		Size of the area.
- * src		Pointer to tile.
+ * vtileaddr	Offset in video memory of tile.
  * tpitch	Width of a tile line in bytes.
- * twidth	Width of tile (should be 32).
+ * tbytes	Width of tile / 8.
  * theight	Height of tile.
  * toy		Tile y-origin.
- * [tox]	Tile x-origin. [currently excluded]
  *
- * This functions is limited.
- * It only works for x coordinates that are a multiple of 8, and
- * width also a multiple of 8.
- * The width must be >= 32.
- * x-origin must correspond with the x coordinate.
+ * w must be >= 32.
+ * Tile must be aligned to start of scanline.
  */
 
-#ifdef __STDC__
-extern void CirrusColorExpandFillTile32( int x, int y, int w, int h,
-unsigned char *src, int tpitch, int twidth, int theight, int toy, int destpitch )
-#else
-extern void CirrusColorExpandFillTile32( x, y, w, h, src, tpitch, twidth,
-theight, toy, destpitch )
+void CirrusColorExpandFillTile8(x, y, w, h, vtileaddr, tpitch, tbytes, theight,
+toy, destpitch)
 	int x, y, w, h;
-	unsigned char *src;
-	int tpitch, twidth, theight, toy, destpitch;
-#endif
+	int vtileaddr;
+	int tpitch;
+	int tbytes;	/* Width of the tile in units of 8 pixels. */
+	int theight, toy, destpitch;
 {
-	int i, k;
-	int destaddr;
-	register unsigned char *destp;
+	int i;
+	int destlineaddr;
 	int writebank;
 	int tyindex;
-	unsigned char *vtilep, *vtilelinep;
+	unsigned char *vtilep;
 	unsigned char *base;	/* Video window base address. */
-	int saveGRB;
-	int tcount, chunk8_tcount[4];
+	int tcount;
+	int *chunk8_tcount;
+	int nspans;
+	int bitoffset;
+	int wbytes;
+	int oneextracount;
+	int tbyteindexleft, tbyteindexright, tbyteindexmiddle;
 
 	base = vgaBase;			/* Read window. */
 					/* Write window is at offset 0x8000 */
 
-	/* First write the tile at the top of memory. */
-	/* We use max. 256 bytes of memory. */
-        setwritebank(CirrusMemTop >> 14);
-	for (i = 0; i < theight; i++) {
-		if (i >= h)
-			break;
-		__memcpy(base + 0x8000 + (CirrusMemTop & 0x3fff) + i * 32,
-			src + i * tpitch, twidth);
-	}
+	chunk8_tcount = ALLOCATE_LOCAL(tbytes * sizeof(int));
 
 	/* Pointer to tile in read window in BY8 addressing mode. */
-	setreadbank((CirrusMemTop >> 3) >> 14);
-	vtilep = base + ((CirrusMemTop >> 3) & 0x3fff);
+	setreadbank((vtileaddr >> 3) >> 14);
+	vtilep = base + ((vtileaddr >> 3) & 0x3fff);
 
-	destaddr = y * destpitch + x;
+	destlineaddr = y * destpitch;	/* x added later. */
 
 	/* Enable extended write modes, BY8 addressing, and 8 byte data */
 	/* latches. Every addressing byte corresponds to 8 pixels. */
@@ -924,87 +1116,173 @@ theight, toy, destpitch )
 	SETPIXELMASK(0xff);
 	SETFOREGROUNDCOLOR(0);		/* Disable set/reset. */
 
-	destaddr >>= 3;			/* Divide address by 8. */
+	destlineaddr >>= 3;			/* Divide address by 8. */
 
-	writebank = destaddr >> 14;	/* 16K units. */
+	writebank = destlineaddr >> 14;	/* 16K units. */
 	setwritebank(writebank);
+	destlineaddr &= 0x3fff;
 
 	/* Current tile line index. */
 	tyindex = (y - toy) % theight;
 
-	vtilelinep = vtilep + tyindex * 4;
-
+	bitoffset = x & 7;
+	/* Calculate the number of full 8-pixel bytes in each scanline. */
+	wbytes = (w - (bitoffset == 0 ? 0 : 8 - bitoffset)) / 8;
 	/* Number of full tile 'widths'. */
-	tcount = w / 32;
+	tcount = wbytes / tbytes;
+	oneextracount = wbytes % tbytes;
 	/* Calculate how many full 8 pixels chunks we can write per */
-	/* scanline for each of the 4 chunks in the tile line. */
-	for (i = 0; i < 4; i++) {
-		int cnt;
-		cnt = tcount;
-		if (i < ((w >> 3) & 3))
-			/* Partial tile includes this 8 pixel chunk. */
-			cnt++;
-		chunk8_tcount[i] = cnt;
+	/* scanline for each of the tbytes chunks in the tile line. */
+	for (i = 0; i < oneextracount; i++)
+		chunk8_tcount[i] = tcount + 1;
+	while (i < tbytes) {
+		chunk8_tcount[i] = tcount;
+		i++;
 	}
 
-	for (i = 0; i < h; i++) {
-		unsigned char *linep;
+	/* Precompute value used in left edge loop. */
+	if (bitoffset > 0) {
+		tbyteindexleft = (x >> 3) % tbytes;
+		tbyteindexmiddle = ((x + 7) >> 3) % tbytes;
+	}
+	else
+		tbyteindexmiddle = (x >> 3) % tbytes;
+	if ((x + w) & 7 > 0)
+		tbyteindexright = ((x + w) >> 3) % tbytes;
 
-		if (destaddr >= 0x4000) {
-			/* 16K granularity is very helpful here. */
-			/* Because of the 32K window, we completely avoid */
-			/* page breaks within scanlines. */
-			writebank++;
-			setwritebank(writebank);
-			destaddr -= 0x4000;
-		}
+	nspans = h;	/* Number of spans to go. */
+
+	for (;;) {
+		int n, minlines, oneextralimit, starttyindex;
+		unsigned char *destp, *vtilelinep, *startvtilelinep;
+
+		/* Calculate how many scanlines fit in this banking region. */
+		n = (0x8000 - destlineaddr) / (destpitch >> 3);
+		if (n > nspans)
+			n = nspans;
+		nspans -= n;
+
+		minlines = n / theight;
+		oneextralimit = n % theight;
+
+		starttyindex = tyindex;
+		startvtilelinep = vtilep + tyindex * tbytes;
+
+/* Left edge. */
+		if (bitoffset == 0)
+			goto skipleftedge;
+		SETPIXELMASK(leftbitmask[bitoffset]);
 		/* Address in write window. */
-		linep = base + 0x8000 + destaddr;
-
-		/* vtilelinep is pointer to tile line in video memory. */
-
-		for (k = 0; k < 4; k++) {
-		/* Handle tile line pixels (k * 8) to ((k + 1) * 8 - 1). */
-			unsigned char j;
+		destp = base + 0x8000 + destlineaddr + (x >> 3);
+		vtilelinep = startvtilelinep + tbyteindexleft;
+		for (i = 0; i < n; i++) {
 			__volatile__ unsigned char tmp;
-			/* Read 8 tile pixels into latches. */
-			tmp = vtilelinep[k];
-			/* Now write them at every 32th pixel offset */
-			/* in this scanline. */
-			destp = linep + k;
-			j = chunk8_tcount[k];
-			while (j >= 8) {
-				latchedwrite8step4(destp);
-				destp += 32;
-				j -= 8;
+			tmp = *vtilelinep;
+			*destp = 0;
+			destp += destpitch >> 3;
+			tyindex++;
+			vtilelinep += tbytes;
+			if (tyindex == theight) {
+				tyindex = 0;
+				vtilelinep = vtilep + tbyteindexleft;
 			}
-			switch (j) {
-			/* Fall through. */
-			case 7 : *destp = 0; destp += 4;
-			case 6 : *destp = 0; destp += 4;
-			case 5 : *destp = 0; destp += 4;
-			case 4 : *destp = 0; destp += 4;
-			case 3 : *destp = 0; destp += 4;
-			case 2 : *destp = 0; destp += 4;
-			case 1 : *destp = 0;
-			case 0 : break;
+		}
+		SETPIXELMASK(0xff);
+skipleftedge:
+
+/* Middle part. */
+		destp = base + 0x8000 + destlineaddr + (x >> 3);
+		if (bitoffset > 0)
+			destp++;
+		vtilelinep = startvtilelinep;
+		tyindex = starttyindex;
+		for (i = 0; i < theight && i < n; i++) {
+			int linecount, k, tbyteindex;
+
+			linecount = minlines;
+			if (i < oneextralimit)
+				linecount++;
+
+			tbyteindex = tbyteindexmiddle;
+
+			if (linecount > 0)
+			for (k = 0; k < tbytes; k++) {
+				/* Handle tile line pixels (k * 8) to */
+				/* ((k + 1) * 8 - 1). */
+				__volatile__ unsigned char tmp;
+				/* Read 8 tile pixels into latches. */
+				tmp = vtilelinep[tbyteindex];
+
+				/* Now write them at every tbytes-th pixel */
+				/* offset in every theight-th scanline in */
+				/* the banking region. */
+
+				if (chunk8_tcount[k] > 0)
+					CirrusLatchWriteTileSpans(
+						destp + k,
+						chunk8_tcount[k],
+						tbytes,
+						linecount,
+						(destpitch >> 3) * theight
+						);
+				tbyteindex++;
+				if (tbyteindex >= tbytes)
+					tbyteindex = 0;
+			}
+
+			destp += (destpitch >> 3);
+			tyindex++;
+			vtilelinep += tbytes;
+			if (tyindex == theight) {
+				tyindex = 0;
+				vtilelinep = vtilep;
 			}
 		}
 
-		destaddr += (destpitch >> 3);
-
-		tyindex++;
-		vtilelinep += 4;
-		if (tyindex == theight) {
-			tyindex = 0;
-			vtilelinep = vtilep;
+/* Right part. */
+		if ((x + w) & 7 == 0)
+			goto skiprightpart;
+		SETPIXELMASK(rightbitmask[(x + w) & 7]);
+		destp = base + 0x8000 + destlineaddr + ((x + w) >> 3);
+		vtilelinep = startvtilelinep + tbyteindexright;
+		tyindex = starttyindex;
+		for (i = 0; i < n; i++) {
+			__volatile__ unsigned char tmp;
+			tmp = *vtilelinep;
+			*destp = 0;
+			destp += destpitch >> 3;
+			tyindex++;
+			vtilelinep += tbytes;
+			if (tyindex == theight) {
+				tyindex = 0;
+				vtilelinep = vtilep + tbyteindexright;
+			}
 		}
+		SETPIXELMASK(0xff);
+skiprightpart:
+
+		if (nspans == 0)
+			break;
+
+		/* Calculate tile line index for next region. */
+		tyindex = starttyindex + oneextralimit;
+		if (tyindex >= theight)
+			tyindex -= theight;
+
+		destlineaddr += n * (destpitch >> 3);
+		destlineaddr -= 0x4000;
+		writebank += 1;
+		if (writebank > 254) {
+			destlineaddr += (writebank - 254) * 0x4000;
+			writebank = 254;
+		}
+		setwritebank(writebank);
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
 	SETMODEEXTENSIONS(DOUBLEBANKED);
-
 	SETWRITEMODE(0);
-
 	SETFOREGROUNDCOLOR(0x00);	/* Disable set/reset. */
+
+	DEALLOCATE_LOCAL(chunk8_tcount);
 }

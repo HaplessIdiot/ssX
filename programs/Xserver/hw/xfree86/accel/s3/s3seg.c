@@ -1,5 +1,5 @@
 /* $XConsortium: s3seg.c,v 1.2 94/04/17 20:31:15 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.1 1994/08/03 13:30:50 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,6 +70,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "miline.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -113,7 +115,17 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 
    if (!xf86VTSema)
    {
-      cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 16:
+	 cfb16SegmentSS(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 32:
+	 cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
+	 break;
+      }
       return;
    }
 
@@ -123,16 +135,10 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue(3);
+   WaitQueue16_32(3,5);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
-         S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
-   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+   S3_OUTW32(WRT_MASK, pGC->planemask);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
 
    xorg = pDrawable->x;
    yorg = pDrawable->y;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.3 1994/07/15 06:57:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.4 1994/08/01 12:08:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -212,6 +212,14 @@ agxHWSave( save, size )
    agxSaveReg *ptr;
    unsigned char newmode;
    unsigned char oldmode;
+   Bool          saveRamDac = FALSE;
+
+   /* save VGA state */
+   if (save == NULL) {
+      save = vgaHWSave( (vgaHWPtr)save, size );
+      saveRamDac = TRUE;
+   }
+   vgarestore( save );
 
    /* enable XGA registers */
    oldmode = inb(agxDAReg+DA_OP_MODE) & DA_OM_MASK;
@@ -230,16 +238,13 @@ agxHWSave( save, size )
    outb(agxDAReg+DA_OP_MODE,newmode);
    outb(agxIdxReg,0);
 
-   if (save == NULL) {
-      save = vgaHWSave( (vgaHWPtr)save, size );
-      (*xf86RamDacHWSave)(&save->agxRamDacSave);
-   }
-   vgarestore( save );
-
    if( save == NULL ) {
       save = (agxSaveBlock*)xalloc(size);
       memset( save, 0x00, size );
    }
+
+   if( saveRamDac )
+      (*xf86RamDacHWSave)(&save->agxRamDacSave);
 
    save->restoreOpMode = newmode;
    save->opMode = oldmode;
@@ -277,11 +282,16 @@ agxHWRestore( save )
       if( ptr->chip & agxChipId )
          outb(agxDAReg+ptr->reg, save->agxDA.reg[ptr->reg] | ptr->set);
 
-   (*xf86RamDacHWRestore)(&save->agxRamDacSave);
-   outb(agxIdxReg, 0);
-   vgarestore(save);
+   if( hercBigDAC ) {
+      hercSwitchToLittleDac();
+   }
 
+   (*xf86RamDacHWRestore)(&save->agxRamDacSave);
+
+   outb(agxIdxReg, 0);
    outb(agxDAReg+DA_OP_MODE,save->opMode);
+
+   vgarestore(save);
 }
 
 /*
@@ -1304,6 +1314,7 @@ agxSaveLUT(lut)
    }
 
    for (i = 0; i < 256; i++) {
+      inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
       lut[i].r = inb(palDataReg);
       inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
       lut[i].g = inb(palDataReg);

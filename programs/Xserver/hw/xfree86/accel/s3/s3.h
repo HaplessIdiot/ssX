@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.8 1994/08/06 06:08:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.9 1994/08/12 14:01:32 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -71,9 +71,37 @@
 #if defined(S3_MMIO) && (defined(__STDC__) || defined(__GNUC__))
 # define S3_OUTW(p,n) *(volatile unsigned short *)((char *)vgaBase+(p)) = \
 			(unsigned short)(n)
+# define S3_OUTL(p,n) *(volatile unsigned long *)((char *)vgaBase+(p)) = \
+			(unsigned long)(n)
 #else
 # define S3_OUTW(p,n) outw(p, n)
+# define S3_OUTL(p,n) outl(p, n)
 #endif
+
+#define outw32(p,n) \
+  if (s3InfoRec.bitsPerPixel == 32) { \
+    outw(MULTIFUNC_CNTL,MULT_MISC); \
+    outw(p,n); \
+    outw(p,(n)>>16); \
+  } \
+  else \
+    outw(p,n)
+
+#define S3_OUTW32(p,n) \
+  if (s3InfoRec.bitsPerPixel == 32) { \
+    S3_OUTW(MULTIFUNC_CNTL,MULT_MISC); \
+    S3_OUTW(p,n); \
+    S3_OUTW(p,(n)>>16); \
+  } \
+  else \
+    S3_OUTW(p,n)
+
+#define WaitQueue16_32(n16,n32) \
+  	 if (s3InfoRec.bitsPerPixel == 32) { \
+	    WaitQueue(n32); \
+	 } \
+	 else \
+	    WaitQueue(n16)
 
 #else /* !LINKKIT */
 #include "X.h"
@@ -252,6 +280,12 @@ Bool s3CreateGC(
 );
 /* s3gc16.c */
 Bool s3CreateGC16(
+#if NeedFunctionPrototypes
+    GCPtr 
+#endif
+);
+/* s3gc32.c */
+Bool s3CreateGC32(
 #if NeedFunctionPrototypes
     GCPtr 
 #endif

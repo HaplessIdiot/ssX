@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.7 1994/08/11 06:55:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.8 1994/08/12 14:01:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -36,6 +36,8 @@
 
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
 #include "s3.h"
@@ -50,7 +52,6 @@ extern char s3Mbanks;
 extern Bool s3Mmio928;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern int cfb16ScreenPrivateIndex;
 
 static Bool s3TryAddress();
 extern ScreenPtr s3savepScreen;
@@ -384,6 +385,10 @@ s3EnterLeaveVT(enter, screen_idx)
             pspix =
                   (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
             break;
+        case 32:
+            pspix =
+                  (PixmapPtr)pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
+            break;
 	}
    }
 
@@ -560,13 +565,17 @@ s3AdjustFrame(int x, int y)
       
    Base = ((y * s3DisplayWidth + x) * s3Bpp) >> 2;
 
+   /* Elsa Winner 1000 has display errors with 16bpp and (Base&0x0f) == 0x0f */
+   if (s3Bpp>1 && DAC_IS_SC15025 && S3_928_SERIES(s3ChipId))
+      if ((Base&0x0f) == 0x0f) Base--;
+
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
    s3Port51 |= ((Base & 0x0c0000) >> 18);
    outb(vgaCRIndex, 0x51);
    /* Don't override current bank selection */
-   tmp = (inb(vgaCRReg) & ~0x03) | ((Base & 0x040000) >> 18);
+   tmp = (inb(vgaCRReg) & ~0x03) | (s3Port51 & 0x03);
    outb(vgaCRReg, tmp);
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);

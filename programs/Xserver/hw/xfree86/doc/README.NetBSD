@@ -1,6 +1,6 @@
 
-           README for XFree86 3.1 on NetBSD-current
-           ----------------------------------------
+           README for XFree86 3.1 on NetBSD 1.0_BETA
+           -----------------------------------------
 
 Contents
 --------
@@ -28,12 +28,13 @@ well as binary distributions for many architectures.
 The sources for XFree86 are available by anonymous ftp from:
 
     ftp.x.org:/contrib/XFree86
-    ftp.physics.su.oz.au:/XFree86.
+    ftp.XFree86.org:/XFree86.
 
-Binaries for NetBSD-Current will be available from:
+Binaries for NetBSD 1.0_BETA will be available from:
 
     ftp.laas.fr:/pub/NetBSD/XFree86-3.1
-    sun-lamp.cs.berkeley.edu:/pub/NetBSD/ports
+    ftp.netbsd.org:/pub/NetBSD/ports
+    ftp.iastate.edu:/pub/netbsd/XFree86-3.1
 
 If you're running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
@@ -53,10 +54,9 @@ man pages, config files, and the server link kit.  The full distribution
 takes over 40MB of disk space.  The large archives are split into
 smaller chunks.
 
-    Note that many clients were from the X11R6 distribution to the
-'contrib' area. For now, they are no longer distributed with the
-XFree86 binary distribution. Removed clients include: xbiff, xedit,
-xfontsel, xload and xman
+    Note that many clients were moved from the X11R6 distribution to the
+'contrib' area. However, they are still distributed with the
+XFree86 binary distribution. 
 
     The contents of the archives are:
 
@@ -70,13 +70,15 @@ xfontsel, xload and xman
 
     Choose at least one of the following to match your hardware:
 
-    8514        - the X server for IBM 8514/A and compatible boards
-    Mach8       - the X server for ATI Mach8 graphics accelerator boards
-    Mach32      - the X server for ATI Mach32 graphics accelerator boards
-    S3          - the X server for S3 based boards
     SVGA        - the 8-bit pseudo-color X server for Super VGA cards
     VGA16       - the 4-bit pseudo-color X server for VGA & SVGA cards.
     Mono        - the Monochrome X Server
+    8514        - the X server for IBM 8514/A and compatible boards
+    AGX         - the X server for AGX boards
+    Mach8       - the X server for ATI Mach8 graphics accelerator boards
+    Mach32      - the X server for ATI Mach32 graphics accelerator boards
+    P9000	- the X server for P9000 based boards
+    S3          - the X server for S3 based boards
 
     OPTIONAL:
 
@@ -109,7 +111,7 @@ bin, fonts lib, config, and one X server.
      2. You must be logged in as root to unpack the archives and use a
 	`umask' value of 022.  Typing `umask 022' sets it.  Caution:
 	If you do not extract the files as user `root' with the
-	correct umask you may not be able to run XFree86 2.0.  The X
+	correct umask you may not be able to run XFree86 3.1.  The X
 	server needs special permissions that are only granted to the
 	root user.
 
@@ -141,8 +143,16 @@ bin, fonts lib, config, and one X server.
 		cd $XWINHOME/bin
 		rm -f X
 		ln -s XF86_SVGA X
-	
-     5. Reboot your machine to take all previous modifications into
+
+     5. Install support for the shared libraries: add the following lines at 
+        the end of /etc/rc.local:
+
+		if [ -d /usr/X11R6/lib ]; then
+			echo 'Adding X shared libraries ,
+			ldconfig /usr/X11R6/lib
+		fi
+
+     6. Reboot your machine to take all previous modifications into
 	account.
 
     If X was already installed on your machine and you have customized
@@ -150,30 +160,9 @@ your xinit or xdm runtime configuration scripts, omit the config
 archive or unpack it elsewhere and extract only that which you need.
 
 
-    NOTE: Do not uncompress the font files in lib/X11/fonts without
-    subsequently running 'mkfontdir' in the corresponding font directory;
-    otherwise, your server will abort with the message "could not open default
-    font 'fixed'".
-
-    Using shared libraries with NetBSD-current:
-
-    The binary distribution for NetBSD-current uses shared libraries.
-    In order to get it running you need to make sure that either:
-
-        o you added ${XWINHOME}/lib to the arguments of the
-          ``ldconfig'' command in /etc/rc. (See ldconfig(8) in the
-          manual for details)
-        o you have a LD_LIBRARY_PATH environment variable that
-          includes the path to your XFree86 libraries. (In this latter
-          case setuid executables won't run).
-
-    If you have an older version (2.x) with shared libraries in
-    /usr/X386, be warned that the libraries in /usr/X386/lib may take
-    precedence over the one in XWINHOME because ld has a hard-coded
-    path to /usr/X11R6/lib.
-
-    Also, the distribution only works with post 940530 -current
-    kernels and system libraries (after the off_t change). 
+    NOTE: you don't need to uncompress the fonts files in lib/X11/fonts. 
+	If you want to uncompress them anyway, don't forget to run
+	'mkfontdir'  in each directory after that.
 
 
 4 - Installing Xdm, the display manager
@@ -197,7 +186,7 @@ adding the following code to /etc/rc.local:
 To disable the console getty, change 'on' to 'off' in the console
 entry in /etc/ttys:
 
-    console	"/usr/libexec/getty Pc"	cons25	off secure
+    ttyv0	"/usr/libexec/getty Pc"	pc	off secure
 
 
 5 - Configuring X for Your Hardware
@@ -222,7 +211,10 @@ manual.
 If your mouse does not work try using kermit or tip to connect to the
 mouse serial port and verify that it does indeed generate characters.
 
- 
+If you've been running a previous version of XFree86, you can get the
+video card and monitor information from your previous XConfig
+file. Don't forget to update the font and RGB paths.
+
 
 6 - Running X
 -------------
@@ -244,25 +236,34 @@ your home directory as described in the xinit and startx man pages.
 
 7 - Kernel Support for X
 ------------------------
-  The server supports several console drivers: pccons, pcvt, syscons
+
+  To make sure X support is enabled under NetBSD, the following
+line must be in your config file in /sys/arch/i386/conf:
+
+	options XSERVER, UCONSOLE
+
+The server supports several console drivers: pccons, pcvt, syscons
 and codrv.  They are detected at runtime and no configuration of the
 server itself is required.
 
 The pccons driver is the most widely tested and is the console driver
 contained in the NetBSD binary distribution's kernels.
 
-The pcvt console driver is bundled with NetBSD-current. The pcvt X
-mode is compatible with the pccons driver X mode. VT-switching in X
-does not work in pcvt as far as I can tell.
+The pcvt console driver is bundled with NetBSD 1.0_BETA. The pcvt X
+mode is compatible with the pccons driver X mode. It offers several
+virtual consoles and international keyboard support. In order to use
+this driver, change the line:
 
-Syscons and codrv are not bundled with NetBSD-current.  In order to
-use one of these drivers, you must reconfigure, compile and install a
-new kernel from the NetBSD sources. 
+	device          pc0     at isa? port "IO_KBD" irq 1
 
-To make sure X support is enabled under NetBSD, the following
-line must be in your config file in /sys/arch/i386/conf:
+to
 
-	options XSERVER, UCONSOLE
+	device         vt0     at isa? port "IO_KBD" irq 1
+
+in your kernel config file, and rebuild and install your kernel.
+
+Syscons and codrv are not bundled with NetBSD 1.0_BETA. They are
+available by anonymous FTP from a number of sites.
 
 If using pcons you get the mesage:
 
@@ -287,10 +288,10 @@ then delete /dev/ttyv0. I don't know why 'MAKEDEV' move /dev/ttyqf to
     MIT-SHM
     =-----= 
 
-NetBSD-current supports System V shared memory. If XFree86 3.1 detects
+NetBSD 1.0_BETA supports System V shared memory. If XFree86 3.1 detects
 this support in your kernel, it will support the MIT-SHM extension.
 
-    Under NetBSD-current, use the following to add shared memory
+    Under NetBSD 1.0_BETA, use the following to add shared memory
     support to your kernel:
 
     To add support for system V shared memory to your kernel add the
@@ -338,10 +339,10 @@ before compiling.  To compile the sources, invoke
 
 in the xc directory.
 
-    Support for shared libs under NetBSD-current
-    =------------------------------------------=
+    Support for shared libs under NetBSD 1.0_BETA
+    =-------------------------------------------=
 
-    By default XFree86 3.1 builds for NetBSD-current with shared
+    By default XFree86 3.1 builds for NetBSD 1.0_BETA with shared
     libraries support. If you're building on 0.9 or don't want shared
     libraries add the following line to site.def:
 	
@@ -367,7 +368,7 @@ whatis.db by running 'makewhatis /usr/X11R6/man'.  To avoid the
 the data and stack size limits (in csh type `limit datasize 32M' and
 `limit stacksize 16M').
 
-Note: Starting with XFree86 2.1 and NetBSD-current, the symbol
+Note: Starting with XFree86 2.1 and NetBSD 0.9A, the symbol
 "__386BSD__" no longer gets defined either by the compiler or via the
 X config files for *BSD systems.  When porting clients to *BSD
 systems, make use of the symbol "BSD" for code which is truly
@@ -387,7 +388,7 @@ Another note: If you get the message:
 
 	ld.so: undefined symbol _XtCvtStringToFont 
 
-at run-time, you've stumbled on a semantic weakness of NetBSD-current
+at run-time, you've stumbled on a semantic weakness of NetBSD 1.0_BETA
 dynamic linker. Applications that use libXmu also need libXt. If the
 client uses a standard Imakefile, this dependancy will probably by
 included in the Makefile automagically -- you'll not see the
@@ -408,4 +409,4 @@ Marc  Wandschneider
 Matthieu Herrb
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.0 1994/05/31 14:22:36 dawes Exp $

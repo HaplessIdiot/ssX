@@ -1,5 +1,5 @@
 /* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.1 1994/06/22 04:38:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.2 1994/08/01 12:15:27 dawes Exp $ */
 /*
  
 
@@ -91,9 +91,9 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   void fastBitBltCopy();
   void vgaImageRead();
   void vgaImageWrite();
-  void CirrusImageWrite();
-  void CirrusImageRead();
-  void CirrusBitBlt();
+  void CirrusBLTImageWrite();
+  void CirrusBLTImageRead();
+  void CirrusPolyBitBlt();	/* Special, different args. */
   void vgaPixBitBlt();
 
   if (pSrc->type == DRAWABLE_WINDOW)
@@ -139,28 +139,41 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
        {
        if (CHECKSCREEN(pdstBase)) /* Screen -> Screen */
 	    {
-	    fnp = CirrusBitBlt;	/* This works fine */
+	    /* Forget about non-GXcopy BitBLTs. We can do them, but */
+	    /* I don't know how common they are. */
+	    if (alu == GXcopy && (planemask & 0xff) == 0xff)
+	    	/* NULL indicates potential hardware Cirrus BitBlt; we
+	    	 * let that function traverse the list of regions.
+	    	 * for efficiency. See end of function. */
+	        fnp = NULL;
+	    else
+	        fnp = vgaBitBlt;
 	    }
        else			/* Screen -> Mem */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X())
+/*	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X()) */
+	    if (1)	/* ImageRead is unreliable. */
 		 {
 		 fnp = vgaImageRead;
 		 }
 	    else 
 		 {
-		 fnp = CirrusImageRead;
+		 fnp = CirrusBLTImageRead;
 		 }
 	    }
        }
   else 
        if (CHECKSCREEN(pdstBase)) /* Mem -> Screen */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X()) 
+	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X())
+	    /* ImageWrite seems prone to pixel errors. Probably
+	     * caused by other function -- ImageWrite is used all
+	     * the time by the cursor.
+	     */
 		 {
 		 fnp = vgaImageWrite;
 		 }
-	    else fnp = CirrusImageWrite;
+	    else fnp = CirrusBLTImageWrite;
 	    }
        else fnp = vgaPixBitBlt;	/* Don't need to change: Mem -> Mem */
        
@@ -262,7 +275,14 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
       /* walk source left to right */
       xdir = 1;
     }
-  
+
+  /* Avoid the calling overhead for (potential) hardware blits. */
+  if (fnp == NULL)
+  	/* Screen-to-screen, alu == GXcopy, (planemask & 0xff) == 0xff */
+  	CirrusPolyBitBlt(pdstBase, psrcBase, widthSrc, widthDst, nbox,
+  	    pptSrc, pbox, xdir, ydir);
+
+  else
   while(nbox--) {
     (*fnp)(pdstBase, psrcBase,widthSrc,widthDst,
 	   pptSrc->x, pptSrc->y, pbox->x1, pbox->y1,
@@ -339,9 +359,14 @@ planemask, bitplane)
 	bg = cfb8StippleBg;
 
 	if (width >= 32)
-		CirrusBLTWriteBitmap(dstx, dsty, width, height,
-			psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
-			widthDst * 4);
+		if (cirrusUseMMIO)
+			CirrusMMIOBLTWriteBitmap(dstx, dsty, width, height,
+				psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
+				widthDst * 4);
+		else
+			CirrusBLTWriteBitmap(dstx, dsty, width, height,
+				psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
+				widthDst * 4);
 	else {
 		/* Create singular region. */
 		RegionRec reg;

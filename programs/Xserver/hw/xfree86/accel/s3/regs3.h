@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.5 1994/08/03 13:27:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.6 1994/08/06 06:07:56 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -124,6 +124,7 @@
 #define	FRGD_MIX	0xbae8
 #define	MULTIFUNC_CNTL	0xbee8
 #define	PIX_TRANS	0xe2e8
+#define	PIX_TRANS_EXT	0xe2ea
 #define	MIN_AXIS_PCNT	0x0000
 #define	SCISSORS_T	0x1000
 #define	SCISSORS_L	0x2000
@@ -133,6 +134,9 @@
 #define	PATTERN_L	0x8000
 #define	PATTERN_H	0x9000
 #define	PIX_CNTL	0xa000
+#define	MULT_MISC2	0xd000
+#define	MULT_MISC	0xe000
+#define	READ_SEL	0xf000
 
 
 /* Display Status Bit Fields */
@@ -342,6 +346,7 @@ LUTENTRY;
 #define NULL	0
 #endif
 
+#define RGB8_PSEUDO      (-1)
 #define RGB16_565         0
 #define RGB16_555         1
 #define RGB32_888         2

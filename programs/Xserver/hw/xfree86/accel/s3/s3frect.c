@@ -1,5 +1,5 @@
 /* $XConsortium: s3frect.c,v 1.2 94/04/17 20:31:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.1 1994/07/16 10:20:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.2 1994/08/03 13:27:54 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -60,6 +60,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "mergerop.h"
 
@@ -103,18 +105,14 @@ DoCacheExpandPixmap(pci)
    int   cur_h = pci->pix_h;
 
    BLOCK_CURSOR;
-   WaitQueue(7);
+   WaitQueue16_32(7,8);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW(WRT_MASK, 0xffff);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, 0xffff);
-#endif
+   S3_OUTW32(WRT_MASK, ~0);
 
  /* Expand in the x direction */
 
@@ -263,18 +261,14 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
    ywmid = h - (pci->h - starty + endy + 1);
 
    BLOCK_CURSOR;
-   WaitQueue(7);
+   WaitQueue16_32(7,8);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    S3_OUTW(FRGD_MIX, fgmix | fgalu);
    S3_OUTW(BKGD_MIX, bgmix | bgalu);
-   S3_OUTW(WRT_MASK, (short) planemask);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(planemask>>16));
-#endif
+   S3_OUTW32(WRT_MASK,  planemask);
 
    if (starty + h - 1 < pci->h) {
       if (startx + w - 1 < pci->w) {
@@ -512,28 +506,16 @@ s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
      Pixel planemask;
 {
    BLOCK_CURSOR;
-   WaitQueue(3);
-   S3_OUTW(FRGD_COLOR, fg);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(fg)>>16));
-#endif
+   WaitQueue16_32(3,5);
+   S3_OUTW32(FRGD_COLOR, fg);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-   S3_OUTW(RD_MASK, 0x01);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-       S3_OUTW(RD_MASK, (short)(0));
-#endif
+   S3_OUTW32(RD_MASK, 0x01);
 
    DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
 		    MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
-   WaitQueue(2);
-   S3_OUTW(RD_MASK, 0xffff);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-       S3_OUTW(RD_MASK, 0xffff);
-#endif
+   WaitQueue16_32(2,3);
+   S3_OUTW32(RD_MASK, ~0);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;
 }
@@ -553,33 +535,17 @@ s3CImageOpStipple(pci, x, y, w, h, pox, poy, fg, bg, alu, planemask)
      Pixel planemask;
 {
    BLOCK_CURSOR;
-   WaitQueue(4);
-   S3_OUTW(FRGD_COLOR, fg);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(fg)>>16));
-#endif
-   S3_OUTW(BKGD_COLOR, bg);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(BKGD_COLOR, (short)(bg)>>16));
-#endif
+   WaitQueue16_32(4,7);
+   S3_OUTW32(FRGD_COLOR, fg);
+   S3_OUTW32(BKGD_COLOR, bg);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-   S3_OUTW(RD_MASK, 0x01);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(RD_MASK, (short)(0));
-#endif
+   S3_OUTW32(RD_MASK, 0x01);
 
    DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, alu, 
 		    FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
-   WaitQueue(2);
-   S3_OUTW(RD_MASK, 0xffff);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(RD_MASK, 0xffff);
-#endif
+   WaitQueue16_32(2,3);
+   S3_OUTW32(RD_MASK, ~0);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;
 }
@@ -610,7 +576,17 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
    if (!xf86VTSema)
    {
-      cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	 break;
+      case 16:
+	 cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	 break;
+      case 32:
+	 cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	 break;
+      }
       return;
    }
 
@@ -732,18 +708,10 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       switch (pGC->fillStyle) {
 	case FillSolid:
 	   BLOCK_CURSOR;
-	   WaitQueue(3);
-	   S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel));
-#ifdef S3_32BPP
-	   if (s3InfoRec.bitsPerPixel == 32)
-	      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+	   WaitQueue16_32(3,5);
+	   S3_OUTW32(FRGD_COLOR, (pGC->fgPixel));
 	   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
- 	   if (s3InfoRec.bitsPerPixel == 32)
-	      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
+	   S3_OUTW32(WRT_MASK, pGC->planemask);
 
 	   pboxClipped = pboxClippedBase;
 	   while (n--) {

@@ -1,5 +1,5 @@
 /* $XConsortium: s3BtCursor.c,v 1.1 94/03/28 21:13:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.0 1994/04/29 14:07:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.1 1994/06/22 04:18:52 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -275,7 +275,9 @@ s3BtCursorOn()
    outb(vgaCRReg, tmp | 0x20);
 
    /* Enable Bt485 */
-   if(!OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)){
+   /* XXXX Maybe this should be !S3_x64_SERIES(s3ChipId) */
+   if(!OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options) &&
+      !OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV, &s3InfoRec.options)){
      outb(vgaCRIndex, 0x45);
      tmp = inb(vgaCRReg) & 0xDF;
      outb(vgaCRReg, tmp | 0x20);

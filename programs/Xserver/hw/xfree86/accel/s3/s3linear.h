@@ -1,5 +1,5 @@
 /* $XConsortium: s3linear.h,v 1.1 94/03/28 21:16:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.1 1994/06/11 06:11:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.2 1994/08/06 06:08:05 dawes Exp $ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -14,7 +14,6 @@
 
 
 extern Bool s3LinearAperture;
-extern short s3ChipId;
 extern unsigned char s3Port40;
 extern unsigned char s3Port54;
 extern unsigned char s3Port51;

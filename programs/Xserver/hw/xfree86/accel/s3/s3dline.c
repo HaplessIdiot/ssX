@@ -1,5 +1,5 @@
 /* $XConsortium: s3dline.c,v 1.2 94/04/17 20:31:06 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.1 1994/08/03 13:30:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -65,6 +65,8 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "miline.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -148,7 +150,17 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
 
    if (!xf86VTSema)
    {
-      cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 16:
+	 cfb16LineSD(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 32:
+	 cfb32LineSD(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      }
       return;
    }
 
@@ -158,27 +170,17 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    nboxInit = REGION_NUM_RECTS(cclip);
 
    BLOCK_CURSOR;
-   WaitQueue(6);
+   WaitQueue16_32(4,5);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
-      S3_OUTW(BKGD_COLOR, (short)pGC->bgPixel);
-#ifdef S3_32BPP
-      if (s3InfoRec.bitsPerPixel == 32)
-        S3_OUTW(BKGD_COLOR, (short)(pGC->bgPixel)>>16));
-#endif
+      S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
    } else
       S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW(WRT_MASK, (short)pGC->planemask);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(WRT_MASK, (short)(pGC->planemask>>16));
-#endif
-   S3_OUTW(FRGD_COLOR, (short)pGC->fgPixel);
-#ifdef S3_32BPP
-   if (s3InfoRec.bitsPerPixel == 32)
-      S3_OUTW(FRGD_COLOR, (short)(pGC->fgPixel)>>16));
-#endif
+
+   WaitQueue16_32(3,5);
+   S3_OUTW32(WRT_MASK, pGC->planemask);
+   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
    
    xorg = pDrawable->x;
