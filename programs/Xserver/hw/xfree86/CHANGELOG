@@ -1,3 +1,15 @@
+XFree86 3.1.2Bi (14 January 1996)
+236. Enable dynamic allocation of XInput devices to allow for muliple
+     instances of the same device type.  The Joystick2 device has been
+     removed (Frederic Lepied).
+235. Fix typo in a recent xconsole fix (Michael Rohleder).
+234. Add POSIX build config option for ISC, and change the Vendor name to IUS
+     (Interactive Unix System) (Michael Rohleder).
+233. Disable linear mode by default for non-PCI Trident cards (Alan Hourihane).
+232. Fix some compiler warnings in various parts of the source (Fred Appelman).
+231. Fix xterm compile problem with -DALLOWLOGGING (William Austin).
+230. Fix compile problem in resize for NetBSD (Matthieu Herrb).
+
 XFree86 3.1.2Bh (13 January 1996)
 229. Fix dga speed test problem when the bank size is less than 64k.
 228. Add DGA support to the Mach32 server (untested).

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.34 1996/01/08 08:55:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.35 1996/01/10 05:38:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -284,6 +284,7 @@ SymTabRec mach64RamdacTableNames[] = {
     { DAC_ATI68880, "ati68880" },
     { DAC_TVP3026_B, "tvp3026" },
     { DAC_STG1700, "stg1700" },
+    { DAC_ATT498, "att20c498" },
     { DAC_ATT498, "att498" },
     { DAC_STG1702, "stg1702" },
     { DAC_SC15021, "sc15021" },

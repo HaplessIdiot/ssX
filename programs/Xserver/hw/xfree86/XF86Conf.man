@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86Conf.man,v 1.5 95/01/16 13:16:10 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.24 1995/12/26 06:03:29 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.25 1996/01/11 13:31:06 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2B"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -702,15 +702,14 @@ must appear. The subsections names are:
 .sp
 .in 8
 .nf
-\fBJoystick\fP (first joystick)
-\fBJoystick2\fP (second joystick)
+\fBJoystick\fP (only on supported systems ie. Linux and FreeBSD)
 \fBWacomStylus\fP (stylus of a Wacom tablet)
 \fBWacomEraser\fP (eraser of a Wacom tablet)
 \fBWacomCursor\fP (cursor of a Wacom tablet)
 \fBElographics\fP (Elographics touchscreen)
 .fi
 .TP
-The \fBJoystick\fP and \fBJoystick2\fP subsections support the following entries:
+The \fBJoystick\fP subsection supports the following entries:
 .RS 8
 .TP 4
 .B Port \fI"path"\fP
@@ -758,16 +757,16 @@ support the following entries:
 .TP 4
 .B Port \fI"path"\fP
 sets the path to the special file which represents serial line where
-the tablet is plugged. This entry is shared between the three subsections.
-You have to specify it only once.
+the tablet is plugged.  You have to specify it for each subsection with
+the same value if you want to have multiple devices with the same tablet.
 .TP 4
 .B DeviceName \fI"name"\fP
 sets the name of the X device.
 .TP 4
 .B Suppress \fInumber\fP
 sets the position increment under which not to transmit coordinates.
-This entry is shared between the three subsections.
-You have to specify it only once.
+This entry must be specified only in the first Wacom subsection if you have
+multiple devices for one tablet.
 .TP 4
 .B Mode \fIRelative|Absolute\fP
 sets the mode of the device.

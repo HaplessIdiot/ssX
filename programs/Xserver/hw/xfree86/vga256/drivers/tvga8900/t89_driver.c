@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.22 1996/01/13 13:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.23 1996/01/13 14:02:45 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -891,6 +891,15 @@ TVGA8900Probe()
 		OFLG_SET(OPTION_PCI_BURST_OFF, &TVGA8900.ChipOptionFlags);
 		}
 	}
+
+	if ( (OFLG_ISSET(OPTION_NOLINEAR, &vga256InfoRec.options)) &&
+	     (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) )
+	{
+		TVGA8900EnterLeave(LEAVE);
+		FatalError("%s %s: Can't have 'nolinear' and 'linear' "
+			   "defined. Remove one !\n", XCONFIG_GIVEN,
+			   vga256InfoRec.name);
+	}
 	
 	if (tridentIsTGUI)
 	{
@@ -1029,23 +1038,22 @@ TVGA8900FbInit()
 		temp &= (0xF0 | (0x10 - (TVGA8900.ChipLinearSize/1048576)));
 		outb(vgaIOBase + 5, temp);
 
+		/* We disable Linear for boards that aren't PCI */
+		/* Unless specifically requested 		*/
 		if (tridentIsTGUI)
 		{
 		  TVGA8900.ChipLinearBase = (( (temp & 0x0F) | 
 					((temp & 0xC0)>>2) )<<20);
-		  tridentUseLinear = TRUE;
 		}
 		else
 		{
 		  /* This is for the 8900CL/D Linear Buffer */
 		  TVGA8900.ChipLinearBase = (temp & 0x0F) << 20;
-
-		  /* 8900CL/D can have linear but must be below 16MB */
-		  /* Therefore we disable linear unless requested ...*/
-		  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-		  	tridentUseLinear = TRUE;
 		}
 	}
+
+	if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+ 	 	tridentUseLinear = TRUE;
 
 	/* Use Membase when told to. */
 	if (vga256InfoRec.MemBase != 0)

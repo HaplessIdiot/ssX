@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.3 1995/01/28 16:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaline.c,v 3.4 1996/01/05 06:29:41 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -147,8 +147,8 @@ vga256LineSS (pDrawable, pGC, mode, npt, pptInit)
      * in the fXF86 functions if linear addressing is enabled.
      */
     if (vgaUseLinearAddressing && xf86VTSema)
-         (unsigned char *)addrl = (unsigned char *)vgaLinearBase +
-             (unsigned int)((unsigned char *)addrl - (unsigned int)VGABASE);
+         addrl = (unsigned long*)((unsigned char *)vgaLinearBase +
+             (unsigned int)((unsigned char *)addrl - (unsigned int)VGABASE));
 
     BANK_FLAG(addrl)
 

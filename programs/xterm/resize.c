@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.7 1996/01/10 05:44:22 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.8 1996/01/12 14:42:02 dawes Exp $
  */
 
 /*
@@ -220,7 +220,11 @@ static void readstring PROTO((FILE *fp, char *buf, char *str));
 
 #ifdef USE_TERMCAP
 static char *strindex PROTO((char *s1, char *s2));
+#ifndef __NetBSD__
 #include <termcap.h>
+#else
+#include <curses.h>
+#endif /* __NetBSD__  */
 #endif
 
 /*

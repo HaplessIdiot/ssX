@@ -1,4 +1,3 @@
-/* Id: xf86Wacom.c,v 1.3 1995/12/20 14:01:59 lepied Exp */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,13 +21,11 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.2 1996/01/10 05:39:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.3 1996/01/11 13:31:23 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
  */
-
-static const char rcs_id[] = "Id: xf86Wacom.c,v 1.3 1995/12/20 14:01:59 lepied Exp";
 
 #include "Xos.h"
 #include <signal.h>
@@ -79,10 +76,6 @@ static int      debug_level = 6;
 /******************************************************************************
  * device records
  *****************************************************************************/
-LocalDeviceRec	wacom_stylus_device;
-LocalDeviceRec	wacom_cursor_device;
-LocalDeviceRec	wacom_eraser_device;
-
 #define DEVICE_ID(flags) ((flags) - ((flags >> 3) << 3))
 
 #define STYLUS_ID		1
@@ -118,32 +111,6 @@ typedef struct
   int           wcmIndex;       /* number of bytes read */
   unsigned char wcmData[7];     /* data read on the device */
 } WacomDeviceRec, *WacomDevicePtr;
-
-static WacomDeviceRec  wacom_private = {
-  "/dev/ttya",			/* device file name */            
-  20,				/* transmit position if increment is superior */
-  -1,                           /* previous X position */         
-  -1,                           /* previous Y position */         
-  -1,                           /* previous pressure */           
-  0,				/* previous proximity */
-  0,				/* previous buttons state */      
-  -1,                           /* previous cursor X position */         
-  -1,                           /* previous cursor Y position */         
-  -1,                           /* previous cursor pressure */           
-  0,				/* previous cursor proximity */
-  0,				/* previous cursor buttons state */ 
-  22860,			/* max X value */                 
-  15240,			/* max Y value */                 
-  240,				/* max Z value */                 
-  1270,				/* X resolution in points/inch */
-  1270,				/* Y resolution in points/inch */
-  1270,				/* Z resolution in points/inch */
-  0,				/* various flags */
-  NULL,                         /* cursor device ptr */           
-  NULL,                         /* stylus device ptr */           
-  NULL,                         /* eraser device ptr */           
-  0,                            /* number of bytes read */
-};
 
 /******************************************************************************
  * configuration stuff
@@ -247,9 +214,12 @@ extern void miPointerDeltaCursor(
  *      Configure the device.
  */
 static Bool
-xf86WcmConfig(LocalDevicePtr     dev,
-	      LexPtr             val)
+xf86WcmConfig(LocalDevicePtr    *array,
+              int               index,
+              int               max,
+	      LexPtr            val)
 {
+  LocalDevicePtr        dev = array[index];
   WacomDevicePtr	priv = (WacomDevicePtr)(dev->private);
   int			token;
   int			mtoken;
@@ -272,9 +242,28 @@ xf86WcmConfig(LocalDevicePtr     dev,
       
     case PORT:
       if (xf86GetToken(NULL) != STRING) xf86ConfigError("Option string expected");
-      priv->wcmDevice = strdup(val->str);
-      if (xf86Verbose)
-	ErrorF("%s Wacom port is %s\n", XCONFIG_GIVEN, priv->wcmDevice);
+      else {
+        int     loop;
+       
+        /* try to find another wacom device which share the same port */
+        for(loop=0; loop<max; loop++) {
+          if (loop == index)
+            continue;
+          if ((array[loop]->device_config == xf86WcmConfig) &&
+              (strcmp(((WacomDevicePtr)array[loop]->private)->wcmDevice, val->str) == 0)) {
+            DBG(2, ErrorF("xf86WcmConfig wacom port share between %s and %s\n",
+                          dev->name, array[loop]->name));
+            xfree(priv);
+            dev->private = array[loop]->private;
+            break;
+          }
+        }
+        if (loop == max) {
+          priv->wcmDevice = strdup(val->str);
+          if (xf86Verbose)
+            ErrorF("%s Wacom port is %s\n", XCONFIG_GIVEN, priv->wcmDevice);
+        }
+      }
       break;
 
     case THE_MODE:
@@ -1071,61 +1060,152 @@ xf86WcmSwitchMode(ClientPtr	client,
   return Success;
 }
 
-LocalDeviceRec   wacom_stylus_device = {
-  XI_STYLUS,			/* name */
-  STYLUS_SECTION_NAME,		/* config_section_name */
-  XI86_NO_OPEN_ON_INIT,		/* flags */
+/*
+ ***************************************************************************
+ *
+ * xf86WcmAllocate --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86WcmAllocate(char *  name,
+                int     flag)
+{
+  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+  WacomDevicePtr        priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
+  
+  local->name = name;
+  local->flags = XI86_NO_OPEN_ON_INIT;
 #if !defined(sun) || defined(i386)
-  xf86WcmConfig,		/* device_config */
+  local->device_config = xf86WcmConfig;
 #endif
-  xf86WcmProc,			/* device_control_init */
-  xf86WcmReadInput,		/* read_input */
-  xf86WcmChangeControl,		/* control_proc */
-  xf86WcmClose,			/* close_proc */
-  xf86WcmSwitchMode,		/* switch_mode */
-  -1,				/* fd */
-  0,				/* atom */
-  NULL,				/* dev */
-  &wacom_private,		/* private */
-  STYLUS_ID			/* private_flags */
+  local->device_control = xf86WcmProc;
+  local->read_input = xf86WcmReadInput;
+  local->control_proc = xf86WcmChangeControl;
+  local->close_proc = xf86WcmClose;
+  local->switch_mode = xf86WcmSwitchMode;
+  local->fd = -1;
+  local->atom = 0;
+  local->dev = NULL;
+  local->private = priv;
+  local->private_flags = flag;
+
+  priv->wcmDevice = "/dev/ttya"; /* device file name */            
+  priv->wcmSuppress = 20;       /* transmit position if increment is superior */
+  priv->wcmOldX = -1;           /* previous X position */         
+  priv->wcmOldY = -1;           /* previous Y position */         
+  priv->wcmOldZ = -1;           /* previous pressure */           
+  priv->wcmOldProximity = 0;    /* previous proximity */
+  priv->wcmOldButtons = 0;      /* previous buttons state */      
+  priv->wcmOldCursorX = -1;     /* previous cursor X position */         
+  priv->wcmOldCursorY = -1;     /* previous cursor Y position */         
+  priv->wcmOldCursorZ = -1;     /* previous cursor pressure */           
+  priv->wcmOldCursorProximity = 0; /* previous cursor proximity */
+  priv->wcmOldCursorButtons = 0; /* previous cursor buttons state */ 
+  priv->wcmMaxX = 22860;        /* max X value */                 
+  priv->wcmMaxY = 15240;        /* max Y value */                 
+  priv->wcmMaxZ = 240;          /* max Z value */                 
+  priv->wcmResolX = 1270;       /* X resolution in points/inch */
+  priv->wcmResolY = 1270;       /* Y resolution in points/inch */
+  priv->wcmResolZ = 1270;       /* Z resolution in points/inch */
+  priv->flags = 0;              /* various flags */
+  priv->wcmCursor = NULL;       /* cursor device ptr */           
+  priv->wcmStylus = NULL;       /* stylus device ptr */           
+  priv->wcmEraser = NULL;       /* eraser device ptr */           
+  priv->wcmIndex = 0;           /* number of bytes read */
+
+  return local;
+}
+
+
+/*
+ ***************************************************************************
+ *
+ * xf86WcmAllocateStylus --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86WcmAllocateStylus(char *  name,
+                      int     flag)
+{
+  LocalDevicePtr        local = xf86WcmAllocate(XI_STYLUS, STYLUS_ID);
+
+  ((WacomDevicePtr)local->private)->wcmStylus = local;
+  return local;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86WcmAllocateCursor --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86WcmAllocateCursor(char *  name,
+                      int     flag)
+{
+  LocalDevicePtr        local = xf86WcmAllocate(XI_CURSOR, CURSOR_ID);
+
+  ((WacomDevicePtr)local->private)->wcmCursor = local;
+  return local;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86WcmAllocateEraser --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86WcmAllocateEraser(char *  name,
+                      int     flag)
+{
+  LocalDevicePtr        local = xf86WcmAllocate(XI_ERASER, ABSOLUTE_FLAG|ERASER_ID);
+
+  ((WacomDevicePtr)local->private)->wcmEraser = local;
+  return local;
+}
+
+/*
+ ***************************************************************************
+ *
+ * Wacom Stylus device association --
+ *
+ ***************************************************************************
+ */
+DeviceAssocRec wacom_stylus_assoc =
+{
+  STYLUS_SECTION_NAME,          /* config_section_name */
+  xf86WcmAllocateStylus         /* device_allocate */
 };
 
-LocalDeviceRec   wacom_cursor_device = {
-  XI_CURSOR,			/* name */
-  CURSOR_SECTION_NAME,		/* config_section_name */
-  XI86_NO_OPEN_ON_INIT,		/* flags */
-#if !defined(sun) || defined(i386)
-  xf86WcmConfig,		/* device_config */
-#endif
-  xf86WcmProc,			/* device_control_init */
-  xf86WcmReadInput,		/* read_input */
-  xf86WcmChangeControl,		/* control_proc */
-  xf86WcmClose,			/* close_proc */
-  xf86WcmSwitchMode,		/* switch_mode */
-  -1,				/* fd */
-  0,				/* atom */
-  NULL,				/* dev */
-  &wacom_private,		/* private */
-  CURSOR_ID			/* private_flags */
+/*
+ ***************************************************************************
+ *
+ * Wacom Cursor device association --
+ *
+ ***************************************************************************
+ */
+DeviceAssocRec wacom_cursor_assoc =
+{
+  CURSOR_SECTION_NAME,          /* config_section_name */
+  xf86WcmAllocateCursor         /* device_allocate */
 };
 
-LocalDeviceRec   wacom_eraser_device = {
-  XI_ERASER,			/* name */
-  ERASER_SECTION_NAME,		/* config_section_name */
-  XI86_NO_OPEN_ON_INIT,		/* flags */
-#if !defined(sun) || defined(i386)
-  xf86WcmConfig,		/* device_config */
-#endif
-  xf86WcmProc,			/* device_control_init */
-  xf86WcmReadInput,		/* read_input */
-  xf86WcmChangeControl,		/* control_proc */
-  xf86WcmClose,			/* close_proc */
-  xf86WcmSwitchMode,		/* switch_mode */
-  -1,				/* fd */
-  0,				/* atom */
-  NULL,				/* dev */
-  &wacom_private,		/* private */
-  ABSOLUTE_FLAG | ERASER_ID	/* private_flags */
+/*
+ ***************************************************************************
+ *
+ * Wacom Eraser device association --
+ *
+ ***************************************************************************
+ */
+DeviceAssocRec wacom_eraser_assoc =
+{
+  ERASER_SECTION_NAME,          /* config_section_name */
+  xf86WcmAllocateEraser         /* device_allocate */
 };
 
 /* end of xf86Wacom.c */

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/104 1995/12/08 17:18:13 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.4 1996/01/05 13:23:11 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.5 1996/01/10 05:44:19 dawes Exp $
  */
 
 /*
@@ -540,6 +540,7 @@ creat_as(uid, gid, pathname, mode)
  * by default.
  */ 
 
+void
 StartLog(screen)
 register TScreen *screen;
 {
@@ -646,6 +647,7 @@ register TScreen *screen;
 	update_logging();
 }
 
+void
 CloseLog(screen)
 register TScreen *screen;
 {
@@ -657,6 +659,7 @@ register TScreen *screen;
 	update_logging();
 }
 
+void
 FlushLog(screen)
 register TScreen *screen;
 {

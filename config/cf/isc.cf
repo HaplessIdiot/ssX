@@ -1,14 +1,14 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.6 1995/09/22 07:06:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.7 1995/11/30 12:48:21 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
 #endif
 
-/* INTERACTIVE UNIX Version 3.x 4.x */
+/* INTERACTIVE UNIX SYSTEM (IUS) Version 3.x 4.x */
 
 #if IscVersion == 400
 # define ISCVerDef -DISC40 -DISC30
-# define OSVendor		(ISC Version 4.0)
+# define OSVendor		(IUS Version 4.x)
 #else
 # if IscVersion == 300
 #  define ISCVerDef -DISC30
@@ -24,6 +24,11 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.6 1995/09/22 07:06:29 dawes E
 # endif
 #endif
 
+#ifdef UsePosix
+# define PosixDefines		-posix -D_SYSV3 -D_POSIX_SOURCE 
+#else
+# define PosixDefines
+#endif
 
 #define OSDefines		-DISC ISCVerDef
 
@@ -43,6 +48,10 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.6 1995/09/22 07:06:29 dawes E
 #endif
 
 #define SocketLibraries		-linet
+
+#ifndef GnuMallocLibrary
+# define GnuMallocLibrary	-L/usr/local/lib -lgmalloc
+#endif
 
 #ifndef MallocLibrary
 # if UseGnuMalloc
@@ -84,9 +93,9 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.6 1995/09/22 07:06:29 dawes E
 
 #ifndef DefaultCDebugFlags
 # if HasGcc2
-#  define DefaultCDebugFlags DefaultGcc2i386Opt
+#  define DefaultCDebugFlags DefaultGcc2i386Opt PosixDefines
 # else
-#  define DefaultCDebugFlags -O
+#  define DefaultCDebugFlags -O PosixDefines
 # endif
 #endif
 

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.0 1995/12/23 09:38:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.1 1996/01/11 13:31:20 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -60,8 +60,6 @@
  *******************************************************************************
  */
 
-static const char rcs_id[] = "Id: xf86Elo.c,v 1.1 1995/12/20 13:52:27 lecoanet Exp";
-
 #include "Xos.h"
 #include <signal.h>
 
@@ -90,20 +88,6 @@ static const char rcs_id[] = "Id: xf86Elo.c,v 1.1 1995/12/20 13:52:27 lecoanet E
 
 #include "os.h"
 #include "osdep.h"
-
-/*
- ***************************************************************************
- *
- * Externs.
- *
- ***************************************************************************
- */
-
-extern int		DeviceValuator;
-extern int              DeviceButtonPress;
-extern int              DeviceButtonRelease;
-extern int              DeviceMotionNotify;
-
 
 #if !defined(sun) || defined(i386)
 /*
@@ -223,8 +207,6 @@ static int      debug_level = 4;
  *
  ***************************************************************************
  */
-LocalDeviceRec	elographics_device;
-
 typedef struct _EloPrivateRec {
   char		*input_dev;		/* The touchscreen input tty			*/
   int		min_x;			/* Minimum x reported by calibration		*/
@@ -255,11 +237,14 @@ typedef struct _EloPrivateRec {
  ***************************************************************************
  */
 static Bool
-xf86EloConfig(LocalDevicePtr     local,
-	      LexPtr             val)
+xf86EloConfig(LocalDevicePtr    *array,
+              int               index,
+              int               max,
+	      LexPtr            val)
 {
-  EloPrivatePtr	priv = (EloPrivatePtr)(local->private);
-  int		token;
+  LocalDevicePtr        local = array[index];
+  EloPrivatePtr         priv = (EloPrivatePtr)(local->private);
+  int                   token;
 
   while ((token = xf86GetToken(EloTab)) != ENDSUBSECTION) {
     switch(token) {
@@ -1120,51 +1105,62 @@ not_success:
   }
 }
 
+/*
+ ***************************************************************************
+ *
+ * xf86EloAllocate --
+ *
+ ***************************************************************************
+ */
+static LocalDevicePtr
+xf86EloAllocate()
+{
+  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+  EloPrivatePtr         priv = (EloPrivatePtr) xalloc(sizeof(EloPrivateRec));
+  
+  priv->input_dev = ELO_PORT;
+  priv->min_x = 0;
+  priv->max_x = 0;
+  priv->min_y = 0;
+  priv->max_y = 0;
+  priv->untouch_delay = ELO_UNTOUCH_DELAY;
+  priv->report_delay = ELO_REPORT_DELAY;
+  priv->screen = 0;
+  priv->screen_width = -1;
+  priv->screen_height = -1;
+  priv->inited = 0;
+  priv->cur_x = 0;
+  priv->cur_y = 0;
+  priv->checksum = ELO_INIT_CHECKSUM;
+  priv->packet_buf_p = 0;
+
+  local->name = XI_TOUCHSCREEN;
+  local->flags = XI86_NO_OPEN_ON_INIT;
+#if !defined(sun) || defined(i386)
+  local->device_config = xf86EloConfig;
+#endif
+  local->device_control = xf86EloControl;
+  local->read_input = xf86EloReadInput;
+  local->control_proc = NULL;
+  local->close_proc = NULL;
+  local->switch_mode = NULL;
+  local->fd = -1;
+  local->atom = 0;
+  local->dev = NULL;
+  local->private = priv;
+
+  return local;
+}
 
 /*
- *****************************************************
+ ***************************************************************************
  *
- * Fill in the local device descriptor.
- * It should be noted that doing this statically, it
- * is not possible to have several of these devices
- * hooked in the system. This need be fixed later.
+ * Elographics device association --
  *
- *****************************************************
+ ***************************************************************************
  */
-static
-EloPrivateRec	elo_private = {
-  ELO_PORT,		/* input_dev		*/
-  0,			/* min_x		*/
-  0,			/* max_x		*/
-  0,			/* min_y		*/
-  0,			/* max_y		*/
-  ELO_UNTOUCH_DELAY,	/* untouch_delay	*/
-  ELO_REPORT_DELAY,	/* report_delay		*/
-  0,			/* screen		*/
-  -1,			/* screen_width		*/
-  -1,			/* screen_heigth	*/
-  0,			/* inited		*/
-  0,			/* cur_x		*/
-  0,			/* cur_y		*/
-  ELO_INIT_CHECKSUM,	/* checksum		*/
-  0			/* packet_buf_p		*/
+DeviceAssocRec elographics_assoc =
+{
+  "elographics",                /* config_section_name */
+  xf86EloAllocate               /* device_allocate */
 };
-
-LocalDeviceRec	elographics_device = {
-  XI_TOUCHSCREEN,		/* name			*/
-  "elographics",		/* config_section_name	*/
-  XI86_NO_OPEN_ON_INIT,		/* flags		*/
-#if !defined(sun) || defined(i386)
-  xf86EloConfig,		/* device_config	*/
-#endif
-  xf86EloControl,		/* device_control	*/
-  xf86EloReadInput,		/* read_input		*/
-  NULL,				/* control_proc		*/
-  NULL,				/* close_proc		*/
-  NULL,				/* switch_mode		*/
-  -1,				/* fd			*/
-  0,				/* atom			*/
-  NULL,				/* dev			*/
-  &elo_private			/* private		*/
-};
-

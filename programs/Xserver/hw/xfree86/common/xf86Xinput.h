@@ -1,4 +1,3 @@
-/* Id: xf86Xinput.h,v 1.1 1995/12/20 14:01:23 lepied Exp */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.0 1995/12/23 09:38:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.1 1995/12/26 06:08:26 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -42,12 +41,13 @@
 
 typedef struct _LocalDeviceRec {  
   char		*name;
-  char		*config_section_name;
   int           flags;
   Bool		(*device_config)(
 #if NeedNestedFunctionPrototypes
-    struct _LocalDeviceRec* /*device*/,
-    void* /*LexPtr*/ /*val*/
+    LocalDevicePtr* /*array*/,
+    int /*index*/,
+    int /*max*/,
+    void * /*LexPtr val*/
 #endif
     );
   Bool		(*device_control)(
@@ -84,6 +84,16 @@ typedef struct _LocalDeviceRec {
   pointer	private;
   int		private_flags;
 } LocalDeviceRec, *LocalDevicePtr;
+
+typedef struct _DeviceAssocRec 
+{
+  char                  *config_section_name;
+  LocalDevicePtr        (*device_allocate)(
+#if NeedNestedFunctionPrototypes
+    void
+#endif
+);
+} DeviceAssocRec, *DeviceAssocPtr;
 
 extern	int		DeviceButtonPress;
 extern	int		DeviceButtonRelease;

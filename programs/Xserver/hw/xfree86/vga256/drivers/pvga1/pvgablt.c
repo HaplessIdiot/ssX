@@ -1,5 +1,5 @@
 /* $XConsortium: pvgablt.c,v 1.6 95/01/23 15:35:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.4 1995/01/28 17:09:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.5 1995/07/07 15:45:03 dawes Exp $ */
 /*
  * cfb copy area
  */
@@ -80,6 +80,7 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int xdir;			/* 1 = left right, -1 = right left/ */
     int ydir;			/* 1 = top down, -1 = bottom up */
     int blit_dir;
+    unsigned char *src, *dst;
 
     MROP_DECLARE_REG()
 
@@ -89,9 +90,13 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 
     MROP_INITIALIZE(alu,planemask);
 
-    cfbGetByteWidthAndPointer (pSrc, widthSrc, (unsigned char *)psrcBase)
+    src = (unsigned char *)psrcBase;
+    cfbGetByteWidthAndPointer (pSrc, widthSrc, src)
+    psrcBase = (unsigned long *)src;
 
-    cfbGetByteWidthAndPointer (pDst, widthDst, (unsigned char *)pdstBase)
+    dst = (unsigned char *)pdstBase;
+    cfbGetByteWidthAndPointer (pDst, widthDst, dst)
+    pdstBase = (unsigned long *)dst;
 
     BANK_FLAG_BOTH(psrcBase,pdstBase)
 

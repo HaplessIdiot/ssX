@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.63 1996/01/10 11:45:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.64 1996/01/13 12:17:56 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -239,7 +239,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.63 1996/01/10 11:45:47 dawes Exp $
 #define BuildXInputExt		YES
 /*
 #define JoystickSupport		YES
-#define Joystick2Support	YES
 */
 #define WacomSupport		YES
 #define ElographicsSupport	YES 
@@ -296,6 +295,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.63 1996/01/10 11:45:47 dawes Exp $
  * full names
  *
 #define ExpandManNames		YES
+ */
+
+/*
+ * For a POSIXized build on Interactive uncomment this
+ * Could be used with gcc 'till Version 2.6.3
+ * Should be used with gcc 2.7.2. 
+ *
+# define UsePosix		YES
  */
 
 /*

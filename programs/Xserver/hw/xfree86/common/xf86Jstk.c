@@ -1,4 +1,3 @@
-/* Id: xf86Jstk.c,v 1.1 1995/12/20 14:02:12 lepied Exp */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,9 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.2 1996/01/11 13:31:21 dawes Exp $ */
-
-static const char rcs_id[] = "Id: xf86Jstk.c,v 1.1 1995/12/20 14:02:12 lepied Exp";
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.3 1996/01/12 14:33:41 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -62,8 +59,6 @@ static int      debug_level = 4;
 /******************************************************************************
  * device records
  *****************************************************************************/
-LocalDeviceRec   joystick_device;
-LocalDeviceRec   joystick2_device;
 
 typedef struct 
 {
@@ -82,38 +77,6 @@ typedef struct
   int           jstkCenterY;    /* Y center value */
   int           jstkDelta;      /* delta cursor */
 } JoystickDevRec, *JoystickDevPtr;
-
-JoystickDevRec  joystick_private = {
-  -1,                           /* jstkFd */
-  NULL,                         /* jstkTimer */
-  0,                            /* jstkTimeout */
-  NULL,                         /* jstkDevice */
-  -1,                           /* jstkOldX */
-  -1,                           /* jstkOldY */
-  -1,                           /* jstkOldButtons */
-  1000,				/* jstkMaxX */
-  1000,				/* jstkMaxY */
-  0,				/* jstkMinX */
-  0,				/* jstkMinY */
-  -1,                           /* jstkCenterX */
-  -1,                           /* jstkCenterY */
-  100};                         /* jstkDelta */
-
-JoystickDevRec  joystick2_private = {
-  -1,                           /* jstkFd */
-  NULL,                         /* jstkTimer */
-  0,                            /* jstkTimeout */
-  NULL,                         /* jstkDevice */
-  -1,                           /* jstkOldX */
-  -1,                           /* jstkOldY */
-  -1,                           /* jstkOldButtons */
-  1000,				/* jstkMaxX */
-  1000,				/* jstkMaxY */
-  0,				/* jstkMinX */
-  0,				/* jstkMinY */
-  -1,                           /* jstkCenterX */
-  -1,                           /* jstkCenterY */
-  100};                         /* jstkDelta */
 
 /******************************************************************************
  * configuration stuff
@@ -198,9 +161,12 @@ int * /*centerY*/
  *      Configure the device.
  */
 static Bool
-xf86JstkConfig(LocalDevicePtr     dev,
-               LexPtr             val)
+xf86JstkConfig(LocalDevicePtr    *array,
+               int               index,
+               int               max,
+               LexPtr            val)
 {
+  LocalDevicePtr        dev = array[index];
   JoystickDevPtr        priv = (JoystickDevPtr)(dev->private);
   int token;
   
@@ -481,36 +447,54 @@ xf86JstkProc(pJstk, what)
   return Success;
 }
 
-LocalDeviceRec   joystick_device ={ 
-  "JOYSTICK",			/* name */
-  "joystick",			/* config_section_name */
-  XI86_NO_OPEN_ON_INIT,		/* flags */
-  xf86JstkConfig,		/* device_config */
-  xf86JstkProc,			/* device_control_init */
-  NULL,				/* read_input */
-  NULL,				/* close_proc */
-  NULL,				/* control_proc */
-  NULL,				/* switch_mode */
-  -1,				/* fd */
-  0,				/* atom */
-  NULL,				/* dev */
-  &joystick_private		/* private */
-};
+/*
+ * xf86JstkAllocate --
+ *      Allocate Joystick device structures.
+ */
+static LocalDevicePtr
+xf86JstkAllocate()
+{
+  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+  JoystickDevPtr        priv = (JoystickDevPtr) xalloc(sizeof(JoystickDevRec));
+  
+  local->name = "JOYSTICK";
+  local->flags = XI86_NO_OPEN_ON_INIT;
+  local->device_config = xf86JstkConfig;
+  local->device_control = xf86JstkProc;
+  local->read_input = NULL;
+  local->close_proc = NULL;
+  local->control_proc = NULL;
+  local->switch_mode = NULL;
+  local->fd = -1;
+  local->atom = 0;
+  local->dev = NULL;
+  local->private = priv;
+  
+  priv->jstkFd = -1;
+  priv->jstkTimer = NULL;
+  priv->jstkTimeout = 0;
+  priv->jstkDevice = NULL;
+  priv->jstkOldX = -1;
+  priv->jstkOldY = -1;
+  priv->jstkOldButtons = -1;
+  priv->jstkMaxX = 1000;
+  priv->jstkMaxY = 1000;
+  priv->jstkMinX = 0;
+  priv->jstkMinY = 0;
+  priv->jstkCenterX = -1;
+  priv->jstkCenterY = -1;
+  priv->jstkDelta = 100;
+  
+  return local;
+}
 
-LocalDeviceRec   joystick2_device ={ 
-  "JOYSTICK2",			/* name */
-  "joystick2",			/* config_section_name */
-  XI86_NO_OPEN_ON_INIT,		/* flags */
-  xf86JstkConfig,		/* device_config */
-  xf86JstkProc,			/* device_control_init */
-  NULL,				/* read_input */
-  NULL,				/* control_proc */
-  NULL,				/* close_proc */
-  NULL,				/* switch_mode */
-  -1,				/* fd */
-  0,				/* atom */
-  NULL,				/* dev */
-  &joystick2_private		/* private */
+/*
+ * joystick association
+ */
+DeviceAssocRec joystick_assoc =
+{
+  "joystick",                   /* config_section_name */
+  xf86JstkAllocate              /* device_allocate */
 };
 
 /* end of xf86JstkLnx.c */
