@@ -1,5 +1,5 @@
-/* $XConsortium: connect.c,v 1.30 94/04/17 20:15:31 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: connect.c,v 1.31 94/12/20 17:50:13 mor Exp $ */
+/* $XFree86: xc/lib/ICE/connect.c,v 3.0 1994/06/28 12:19:28 dawes Exp $ */
 /******************************************************************************
 
 
@@ -179,6 +179,13 @@ char 	   *errorStringRet;
 	strncpy (errorStringRet, "Could not open network socket", errorLength);
 	return (NULL);
     }
+
+    /*
+     * Set close-on-exec so that programs that fork() don't get confused.
+     */
+
+    _IceTransSetOption (iceConn->trans_conn, TRANS_CLOSEONEXEC, 1);
+
 
     iceConn->connection_status = IceConnectPending;
     iceConn->io_ok = True;

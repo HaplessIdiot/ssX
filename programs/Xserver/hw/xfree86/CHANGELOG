@@ -1,3 +1,8 @@
+XFree86 3.1.0Zc (27 January 1995)
+256. Doc updates.
+255. Minor hw/xfree86 updates for fix-11 (Kaleb Keithley).
+254. Merge in XC fix-08.
+
 XFree86 3.1.0Zb (26 January 1995)
 253. Rename some files under hw/xfree86 to avoid clashes when truncated to
      8.3 type names as used on ISO9660 format CDROMs.
