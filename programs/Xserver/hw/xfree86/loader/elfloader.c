@@ -406,7 +406,7 @@ ELFModulePtr	elffile;
 LOOKUP		*pLookup;
 {
     int	numsyms=0,size=0,l=0;
-    int	offset=0;
+    int	offset=0,firstcommon=0;
     ELFCommonPtr common;
 
     if (listCOMMON == NULL)
@@ -439,6 +439,7 @@ LOOKUP		*pLookup;
 
     for (l = 0; pLookup[l].symName; l++)
 	;
+    firstcommon=l;
     
     /* Traverse the common list and create a lookup table with all the
      * common symbols.  Destroy the common list in the process.
@@ -458,9 +459,9 @@ LOOKUP		*pLookup;
 	/* Record the symbol address for gdb */
 	if (DebuggerPresent && ldrCommons)
 	{
-	     ldrCommons[l].addr = (void *)pLookup[l].offset;
-	     ldrCommons[l].name = pLookup[l].symName;
-	     ldrCommons[l].namelen = strlen(pLookup[l].symName);
+	     ldrCommons[l-firstcommon].addr = (void *)pLookup[l].offset;
+	     ldrCommons[l-firstcommon].name = pLookup[l].symName;
+	     ldrCommons[l-firstcommon].namelen = strlen(pLookup[l].symName);
 	}
 	listCOMMON=common->next;
 	offset+=common->sym->st_size;
