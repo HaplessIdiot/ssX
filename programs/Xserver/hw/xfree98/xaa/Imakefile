@@ -1,12 +1,13 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.10 1997/04/10 11:35:35 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.11 1997/06/08 15:32:00 dawes Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
 BPPSRCS = xaavga256/?*.c xaa8/?*.c xaa16/?*.c xaa24/?*.c xaa32/?*.c
 
-GENSRCS =  xf86initac.c \
+GENSRCS = xf86initac.c \
 	xf86cparea.c xf86frect.c xf86spans.c xf86text.c xf86window.c \
 	xf86defs.c xf86pcache.c xf86farc.c xf86fpoly.c \
 	xf86expblt.c xf86expblM.c xf86bitmap.c xf86plane.c \
@@ -26,7 +27,7 @@ GENOBJS = xf86initac.o \
 	xf86expblF.o xf86expbFM.o xf86tables.o xf86stip.o xf86dseg.o xf86dline.o
 
 #ifdef i386Architecture
-SRCS = $(GENSRCS) xf86txtblt.s xf86txtblM.s
+SRCS = $(GENSRCS) xf86txtblt.s xf86txtblM.s 
 OBJS = $(GENOBJS) xf86txtblt.o xf86txtblM.o
 #else
 SRCS = $(GENSRCS)
@@ -42,6 +43,11 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
+
+
+#if HasGnuMake || HasBsdMake
+$(DONES): $(SUBDIRS)
+#endif
 
 NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS))
 NormalLibraryObjectRule()

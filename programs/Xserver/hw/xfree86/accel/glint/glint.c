@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.1 1997/06/17 08:17:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.2 1997/06/20 09:24:38 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -245,7 +245,7 @@ ModuleInit(data,magic)
 
 Bool glintDoubleBufferMode = FALSE;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 ScreenPtr savepScreen = NULL;
 Bool glintReloadCursor, glintBlockCursor;
 unsigned char glintSwapBits[256];
@@ -383,97 +383,97 @@ glintProbe()
 	case PCI_CHIP_3DLABS_300SX:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+			(pcrp->_device << 11) | (pcrp->_func << 8);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_300SX;
 		if( cardnum == -1 )
-			cardnum = pcrp->_cardnum;
-		else if( cardnum != pcrp->_cardnum )
+			cardnum = pcrp->_device;
+		else if( cardnum != pcrp->_device )
 		{
 			ErrorF("found second board based on GLINT "
 			       "will use information from there\n");
 			glintdelta = 0;
 			pcrpdelta = NULL;
-			cardnum = pcrp->_cardnum;
+			cardnum = pcrp->_device;
 		}
 		if( xf86Verbose > 1 ) 
 		{
 			ErrorF("found GLINT 300SX at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
+			       "base 0x%x\n",pcrp->_device,pcrp->_func,
 			       basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_500TX:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+			(pcrp->_device << 11) | (pcrp->_func << 8);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_500TX;
 		if( cardnum == -1 )
-			cardnum = pcrp->_cardnum;
-		else if( cardnum != pcrp->_cardnum )
+			cardnum = pcrp->_device;
+		else if( cardnum != pcrp->_device )
 		{
 			ErrorF("found second board based on GLINT "
 			       "will use information from there\n");
 			glintdelta = 0;
 			pcrpdelta = NULL;
-			cardnum = pcrp->_cardnum;
+			cardnum = pcrp->_device;
 		}
 		if( xf86Verbose > 1 ) 
 		{
 			ErrorF("found GLINT 500TX at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
+			       "base 0x%x\n",pcrp->_device,pcrp->_func,
 			       basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_PERMEDIA:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+			(pcrp->_device << 11) | (pcrp->_func << 8);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
 		coprotype = PCI_CHIP_3DLABS_PERMEDIA;
 		if( cardnum == -1 )
-			cardnum = pcrp->_cardnum;
-		else if( cardnum != pcrp->_cardnum )
+			cardnum = pcrp->_device;
+		else if( cardnum != pcrp->_device )
 		{
 			ErrorF("found second board based on GLINT "
 			       "will use information from there\n");
 			glintdelta = 0;
 			pcrpdelta = NULL;
-			cardnum = pcrp->_cardnum;
+			cardnum = pcrp->_device;
 		}
 		if( xf86Verbose > 1 ) 
 		{
 			ErrorF("found GLINT PerMedia at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
+			       "base 0x%x\n",pcrp->_device,pcrp->_func,
 			       basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_DELTA:
 		glintdelta = PCI_EN |
 			(pcrp->_bus << 16) |
-			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+			(pcrp->_device << 11) | (pcrp->_func << 8);
 		basedelta = pcrp->_base0;
 		delta_pci_basep = &(pcrp->_base0);
 		pcrpdelta = pcrp;
 		if( cardnum == -1 )
-			cardnum = pcrp->_cardnum;
-		else if( cardnum != pcrp->_cardnum )
+			cardnum = pcrp->_device;
+		else if( cardnum != pcrp->_device )
 		{
 			ErrorF("found second board based on GLINT "
 			       "will use information from there\n");
 			coprotype = -1;
 			glintcopro = 0;
 			pcrpglint = NULL;
-			cardnum = pcrp->_cardnum;
+			cardnum = pcrp->_device;
 		}
 		if( xf86Verbose > 1 ) 
 		{
 			ErrorF("found GLINT Delta at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
+			       "base 0x%x\n",pcrp->_device,pcrp->_func,
 			       basedelta);
 		}
 		break;
@@ -492,11 +492,11 @@ glintProbe()
    * the BIOS didn't try to be smart and disabled that for anything except 
    * the first VGA card (which would be the ViRGE chip here)
    */
-  xf86writepci(glintInfoRec.scrnIndex, pcrpglint->_bus, pcrpglint->_cardnum,
+  xf86writepci(glintInfoRec.scrnIndex, pcrpglint->_bus, pcrpglint->_device,
   	       pcrpglint->_func, PCI_CMD_STAT_REG, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
-  xf86writepci(glintInfoRec.scrnIndex, pcrpdelta->_bus, pcrpdelta->_cardnum,
+  xf86writepci(glintInfoRec.scrnIndex, pcrpdelta->_bus, pcrpdelta->_device,
   	       pcrpdelta->_func, PCI_CMD_STAT_REG, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE, 
 	       PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
@@ -681,10 +681,12 @@ glintProbe()
   OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
   OFLG_SET(OPTION_XAA_BENCHMARK, &validOptions);
   OFLG_SET(OPTION_NOACCEL, &validOptions);
+  OFLG_SET(OPTION_PCI_RETRY, &validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &glintInfoRec.clockOptions);
   OFLG_SET(CLOCK_OPTION_IBMRGB, &glintInfoRec.clockOptions);
   OFLG_SET(OPTION_IBMRGB_CURS, &glintInfoRec.options);
+  OFLG_SET(OPTION_PCI_RETRY, &glintInfoRec.options);
 
   xf86VerifyOptions(&validOptions, &glintInfoRec);
   glintInfoRec.chipset = "glint";

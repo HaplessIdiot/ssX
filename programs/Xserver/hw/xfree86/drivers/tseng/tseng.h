@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.10 1997/07/06 05:30:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.11 1997/07/10 06:36:14 dawes Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -40,6 +40,7 @@ typedef struct {
   unsigned char ET6KMemBase;     /* ET6000 0x13 -- linear memory mapped address */
   unsigned char ET6KMMAPCtrl;    /* ET6000 0x40 -- used for linear memory mapping */
   unsigned char ET6KPerfContr;   /* ET6000 0x41 -- system performance control */
+  unsigned char ET6KRasCas;      /* ET6000 0x44 -- ram delays configuration */
   unsigned char ET6KDispFeat;    /* ET6000 0x46 -- display feature register */
   unsigned char ET6KVidCtrl1;    /* ET6000 0x58 -- used for 15/16 bpp modes */
   unsigned char ET6KMclkM, ET6KMclkN; /* ET6000 memory clock values */

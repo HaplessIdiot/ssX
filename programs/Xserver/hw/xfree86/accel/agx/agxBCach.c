@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.15 1996/02/04 08:57:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.16 1996/12/23 06:32:26 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -43,14 +43,13 @@
 #include        "agxBCach.h"
 #define XCONFIG_FLAGS_ONLY
 #include        "xf86_Config.h"
+#include	"xf86Priv.h"
 
 extern bitMapBlockPtr blockInUse;
 extern unsigned long agxFontAge;
 
 static bitMapRowPtr headBitRow = NULL;   /* top of linked list of cache rows */
 CacheFont8Ptr       agxHeadFont = NULL;  /* top of list of fonts in cache */
-
-extern int xf86Verbose;
 
 #ifdef DEBUG_FCACHE
 static void showcache();

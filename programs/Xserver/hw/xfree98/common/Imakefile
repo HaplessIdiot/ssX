@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.37 1997/06/29 07:54:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.38 1997/06/30 05:49:11 dawes Exp $
 
 
 
@@ -79,7 +79,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.37 1997/06/2
 #   ifdef LinuxArchitecture
    ARCH_JSTK = ../os-support/linux/lnx_jstk.o
 #   endif
-#   if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
+#   if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)
    ARCH_JSTK = ../os-support/bsd/bsd_jstk.o
 #   endif
 #  endif
@@ -94,8 +94,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.37 1997/06/2
 #endif
 
 #if BuildDynamicLoading
+#ifndef OS2Architecture
    XF86DL_SRC = xf86Dl.c
    XF86DL_OBJ = xf86Dl.o
+#endif
 #if HasDlsymBug
 DLSYM_DEFINES = -DDLSYM_BUG
 #endif
@@ -121,6 +123,10 @@ EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES) $(GLX_DEFINES)
 #endif
 #endif
 
+#ifndef NeedXF86Beta
+#define NeedXF86Beta NO
+#endif
+
 #if XF86ExpireServer
 EXP_FORCE_DEFINES = -DSHOW_BETA_MESSAGE -DEXPIRE_SERVER
 #endif
@@ -139,9 +145,10 @@ SERVERSRCS = \
 	XF86_LOADER.c \
 	XF86_W32.c \
 	XF86_I128.c \
-	XF86_TGA.c
+	XF86_TGA.c \
+	XF86_GLINT.c
 
-#ifndef DoLoadableServer
+#if !DoLoadableServer
 XINPUT_DEV_SRCS = \
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
@@ -300,7 +307,7 @@ SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFIN
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF98GANBWAPServer || XF98PEGCServer || XF98NKVNECServer ||\
     XF98WABSServer || XF98WABEPServer || XF98WSNAServer || XF98TGUIServer || \
-    XF98EGCServer
+    XF98MGAServer || XF98EGCServer
 SpecialObjectRule(XF86_SVGA.o,XF86_SVGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_SVGA.o
 #endif
@@ -320,7 +327,7 @@ SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
 ObjectFromSpecialSource(xf86Init_L,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DLOADER)
 SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
-SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES) -UPEXEXT -UXIE)
+SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES) -UPEXEXT -UXIE -UGLXEXT)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
@@ -342,6 +349,7 @@ LinkSourceFile(XF86_SVGA.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_VGA16.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_W32.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_I128.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_GLINT.c,$(XF86SRC)/common)
 LinkSourceFile(atKeynames.h,$(XF86SRC)/common)
 LinkSourceFile(cfb16.h,$(XF86SRC)/common)
 LinkSourceFile(cfb24.h,$(XF86SRC)/common)

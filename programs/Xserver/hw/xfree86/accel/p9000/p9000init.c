@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.14 1996/05/06 05:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.15 1996/12/23 06:40:46 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -273,7 +273,8 @@ void p9000InitAperture(screen_idx)
     int screen_idx;
 {
   /* Map standard VGA in for saving and restoration */
-  vgaBase = xf86MapVidMem(screen_idx, VGA_REGION, (pointer)0xA0000,
+  vgaBase = xf86MapVidMem(screen_idx, VGA_REGION,
+			  (pointer)p9000InfoRec.VGAbase,
 			  0x10000);  /* 64k Banks */
 
   /* Map the P9000 in */

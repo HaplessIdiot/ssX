@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.9 1997/05/09 09:19:41 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.10 1997/05/12 13:27:54 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -55,6 +55,8 @@ set MonitorDescriptions [list \
 ]
 
 array set MonitorStdModes {
+	" 640x400 @ pc98 EGC mode : 60 Hz, 24 kHz hsync"
+	    "16.442 640 649 656 663 400 407 415 440"
 	" 640x400 @ 70 Hz, 31.5 kHz hsync"
 	    "25.175 640  664  760  800   400  409  411  450"
 	" 640x480 @ 60 Hz, 31.5 kHz hsync"

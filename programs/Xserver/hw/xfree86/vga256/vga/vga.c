@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.99 1997/07/05 08:45:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.100 1997/07/10 08:17:41 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -96,7 +96,7 @@ extern void vga2568FillRectTransparentStippled32();
 #endif /* !__alpha__ */
 extern void OneBankvgaBitBlt();
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 extern char *xf86VisualNames[];
 extern Bool miDCInitialize();
 extern int vga256ValidTokens[];
@@ -166,7 +166,19 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int s3MClk */
   0,			/* int chipID */
   0,			/* int chipRev */
-  0,			/* unsigned long VGAbase */
+#if defined (PC98_WAB) || defined(PC98_WABEP)
+  0x0E0000,		/* unsigned long VGAbase */
+#else
+#if defined(PC98_GANB_WAP) || defined(PC98_WSNA) || defined(PC98_NKVNEC)
+  0xF00000,		/* unsigned long VGAbase */
+#else
+#if defined(PC98_EGC) || defined(PC98_PEGC)
+  0x0A8000,		/* unsigned long VGAbase */
+#else
+  0x0A0000,		/* unsigned long VGAbase */
+#endif /* PC98_EGC || PC98_PEGC */
+#endif /* PC98_GANB_WAP || PC98_WSNA || PC98_NKVNEC */
+#endif /* PC98_WAB || PC98_WABEP */
   0,			/* int s3RefClk */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
@@ -522,7 +534,7 @@ vgaProbe()
 
 
 
-#if !defined(PC98) || defined(PC98_TGUI)
+#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA)
   /* First do a general PCI probe (unless disabled) */
   if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
     vgaPCIInfo = vgaGetPCIInfo();
@@ -992,7 +1004,8 @@ vgaProbe()
 	      vga256InfoRec.physBase = vgaPhysLinearBase;
 	      vga256InfoRec.physSize = vga256InfoRec.videoRam * 1024;
 	  } else {
-	      vga256InfoRec.physBase = 0xA0000 + Drivers[i]->ChipWriteBottom;
+	      vga256InfoRec.physBase =
+                  vga256InfoRec.VGAbase + Drivers[i]->ChipWriteBottom;
 	      vga256InfoRec.physSize = Drivers[i]->ChipSegmentSize;
 	      vga256InfoRec.setBank = vgaSetVidPage;
 	  }
@@ -1033,7 +1046,7 @@ vgaProbe()
 #endif /* PC98 */
 	}
 
-#if !defined(PC98) || defined(PC98_TGUI)
+#if !defined(PC98) || defined(PC98_TGUI) || defined(PC98_MGA)
 	if (!OFLG_ISSET(OPTION_NO_PCI_PROBE, &vga256InfoRec.options)) {
 	  /* Free PCI information */
 	  xf86cleanpci();
@@ -1103,33 +1116,17 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   extern int monitorResolution;
 
   if (serverGeneration == 1) {
-#if defined(PC98_WAB) || defined(PC98_WABEP)
-    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xE0000,
-			    vgaMapSize);
-#else
-#if defined(PC98_GANB_WAP) || defined(PC98_WSNA) || defined(PC98_NKVNEC)
-    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xF00000,
-			    vgaMapSize);
-#else
 #if defined(PC98_TGUI)
     if(!vgaUseLinearAddressing && pc98PvramBase != NULL)
       vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
 			      pc98PvramBase, vgaMapSize);
 #else
-#if defined(PC98_EGC) || defined(PC98_PEGC)
-    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA8000,
-			    vgaMapSize);
-#else    
-    vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
-			    vgaMapSize);
-#endif /* PC98_EGC || PC98_NE480 */
+    vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+			    (pointer)vga256InfoRec.VGAbase, vgaMapSize);
 #endif /* PC98_TGUI */
-#endif /* PC98_GANB_WAP || PC98_WSNA || PC98_NKVNEC */
-#endif /* PC98_WAB || PC98_WABEP */
     if (vgaUseLinearAddressing) {
         vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,
-        			      (pointer)
-				       ((unsigned long)vgaPhysLinearBase),
+        			      (pointer)vgaPhysLinearBase,
         			      vgaLinearSize);
 
         vgaLinearOrig = vgaLinearBase; /* save copy of original base */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.5 1997/05/03 09:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.6 1997/06/03 14:12:18 hohndel Exp $ */
 
 /* Header file for ViRGE server */
 
@@ -17,7 +17,7 @@ typedef struct {
    unsigned char CR31, CR33, CR34, CR36, CR3A, CR3B, CR3C;
    unsigned char CR42, CR43;
    unsigned char CR51, CR53, CR54, CR58, CR5D, CR5E;
-   unsigned char CR63, CR65, CR66, CR67, CR68, CR69; /* Video attrib. */
+   unsigned char CR63, CR65, CR66, CR67, CR68, CR69, CR6D; /* Video attrib. */
    unsigned char CR86;
    unsigned char CR90;
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */

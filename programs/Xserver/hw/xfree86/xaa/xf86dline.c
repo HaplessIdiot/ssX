@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.4 1997/04/18 09:12:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.5 1997/06/25 08:25:09 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.4 1997/04/18 09:12:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.5 1997/06/25 08:25:09 hohndel Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -109,12 +109,13 @@ int xf86PackDashPattern(GCPtr pGC)
        
     if(xf86AccelInfoRec.Flags & LINE_PATTERN_MSBFIRST_INCREASING) {
 	register CARD32* PatPtr = 
-		(CARD32*)xf86AccelInfoRec.LinePatternBuffer;
+		(CARD32*)xf86AccelInfoRec.LinePatternBuffer + 
+		((xf86AccelInfoRec.LinePatternMaxLength - 1) >> 5);
 	register unsigned char value;
 	register int bits = 0;
 	Bool set = TRUE;
 
-	count = (EvenDash) ? PatternLength : (PatternLength >> 1); 
+	count = (EvenDash) ? PatternLength : (PatternLength >> 1);
       
 CONCATENATE:	
 
@@ -126,7 +127,7 @@ CONCATENATE:
 		while(value--) {
 		   *PatPtr = (*PatPtr << 1) | 0x01;
 		    if((++bits) & 32) {
-			PatPtr++;
+			PatPtr--;
 			bits = 0;
 		    }
 		}
@@ -136,7 +137,7 @@ CONCATENATE:
 		while(value--) {
 		    *PatPtr <<= 1;
 		    if((++bits) & 32) { 
-			PatPtr++;
+			PatPtr--;
 			bits = 0;
 		    }
 		}

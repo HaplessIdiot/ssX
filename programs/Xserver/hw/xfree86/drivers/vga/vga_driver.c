@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.7 1997/05/03 09:18:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.8 1997/06/03 14:12:25 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -116,27 +116,31 @@ static DisplayModeRec Mode320x200 = {
 	&Mode320x200,
 	&Mode320x200,
 	"320x200",
-	0,	/* Clock index */
-	320,
-	344,
-	376,
-	400,
-	200,
-	204,
-	206,
-	225,
-	0,
-	0,
-	320,
-	344,
-	376,
-	400,
-	200,
-	204,
-	206,
-	225,
-	FALSE,
-	FALSE,
+	0,		/* Clock index */
+	320,		/* HDisplay */
+	344,		/* HSyncStart */
+	376,		/* HSyncEnd */
+	400,		/* HTotal */
+	0,		/* HSkew */
+	200,		/* VDisplay */
+	204,		/* VSyncStart */
+	206,		/* VSyncEnd */
+	225,		/* VTotal */
+	V_DBLSCAN,	/* Flags */
+	0,		/* SynthClock */
+	320,		/* CrtcHDisplay */
+	344,		/* CrtcHSyncStart */
+	376,		/* CrtcHSyncEnd */
+	400,		/* CrtcVTotal */
+	0,		/* CrtcHSkew */
+	200,		/* CrtcVDisplay */
+	204,		/* CrtcVSyncStart */
+	206,		/* CrtcVSyncEnd */
+	225,		/* CrtcVTotal */
+	FALSE,		/* CrtcHAdjusted */
+	FALSE,		/* CrtcVAdjusted */
+	0,		/* PrivSize */
+	NULL		/* Private */
 };
 	
 

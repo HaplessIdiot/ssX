@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.8 1997/06/03 14:11:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.9 1997/06/11 12:24:33 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -127,7 +127,7 @@ static void fbdev2xfree(struct fb_var_screeninfo *var, DisplayModePtr mode);
 
 static struct fb_var_screeninfo initscrvar;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 
 #if defined(XFree86LOADER)
 

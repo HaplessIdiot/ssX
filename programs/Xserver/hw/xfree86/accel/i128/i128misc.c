@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.6 1997/07/10 06:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.7 1997/07/26 12:59:06 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -52,7 +52,7 @@ extern pointer vgaBase;
 extern pointer i128VideoMem;
 extern struct i128mem i128mem;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting;
 
 static Bool AlreadyInited = FALSE;
 static Bool i128ModeSwitched = FALSE;

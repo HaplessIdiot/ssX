@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.14 1997/03/24 13:08:00 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.15 1997/04/08 10:11:07 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -22,6 +22,7 @@ proc initconfig {xwinhome} {
 	global "Monitor_Primary Monitor" "Device_Primary Card"
 	global DeviceIDs MonitorIDs
 	global Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA
+	global pc98 pc98_EGC
 
 	set fontdir  "$xwinhome/lib/X11/fonts"
 	set Files(FontPath)	[list $fontdir/misc:unscaled \
@@ -29,8 +30,17 @@ proc initconfig {xwinhome} {
 		  $fontdir/Type1 $fontdir/Speedo  \
 		  $fontdir/misc $fontdir/75dpi $fontdir/100dpi ]
 	set Files(RGBPath)		$xwinhome/lib/X11/rgb
-	
-	set Module(Load)	vga
+
+
+	if !$pc98 {
+	    set Module(Load)	vga
+	} else {
+	    if !$pc98_EGC {
+		set Module(Load)	pegc
+	    } else {
+		set Module(Load)	egc
+	    }
+	}
 
 	set ServerFlags(NoTrapSignals)			""
 	set ServerFlags(DontZap)			""
@@ -48,12 +58,21 @@ proc initconfig {xwinhome} {
 			XkbSymbols XkbGeometry XkbKeymap } {
 		set Keyboard($key) ""
 	}
-	set Keyboard(XkbDisable)	""
-	set Keyboard(XkbRules)		xfree86
-	set Keyboard(XkbModel)		pc101
-	set Keyboard(XkbLayout)		us
-	set Keyboard(XkbVariant)	""
-	set Keyboard(XkbOptions)	""
+	if !$pc98 {
+		set Keyboard(XkbDisable)	""
+		set Keyboard(XkbRules)		xfree86
+		set Keyboard(XkbModel)		pc101
+		set Keyboard(XkbLayout)		us
+		set Keyboard(XkbVariant)	""
+		set Keyboard(XkbOptions)	""
+	} else {
+		set Keyboard(XkbDisable)	""
+		set Keyboard(XkbRules)		xfree98
+		set Keyboard(XkbModel)		pc98
+		set Keyboard(XkbLayout)		nec/jp
+		set Keyboard(XkbVariant)	""
+		set Keyboard(XkbOptions)	""
+	}
 
 	set Pointer(Protocol)		Microsoft
 	set Pointer(Device)		/dev/mouse
@@ -65,14 +84,23 @@ proc initconfig {xwinhome} {
 	set Pointer(ClearDTR)		""
 	set Pointer(ClearRTS)		""
 
-	set id				"Primary Monitor"
-	set Monitor_${id}(VendorName)	Unknown
-	set Monitor_${id}(ModelName)	Unknown
-	set Monitor_${id}(HorizSync)	31.5
-	set Monitor_${id}(VertRefresh)	60
-	set Monitor_${id}(Gamma)	""
-	set MonitorIDs [list $id]
-
+	if !$pc98_EGC {
+	    set id				"Primary Monitor"
+	    set Monitor_${id}(VendorName)	Unknown
+	    set Monitor_${id}(ModelName)	Unknown
+	    set Monitor_${id}(HorizSync)	31.5
+	    set Monitor_${id}(VertRefresh)	60
+	    set Monitor_${id}(Gamma)	""
+	    set MonitorIDs [list $id]
+	} else {
+	    set id				"Primary Monitor"
+	    set Monitor_${id}(VendorName)	Unknown
+	    set Monitor_${id}(ModelName)	Unknown
+	    set Monitor_${id}(HorizSync)	24.8
+	    set Monitor_${id}(VertRefresh)	56.4
+	    set Monitor_${id}(Gamma)	""
+	    set MonitorIDs [list $id]
+	}
 	set id				"Primary Card"
 	set Device_${id}(VendorName)	Unknown
 	set Device_${id}(BoardName)	Unknown
@@ -95,18 +123,24 @@ proc initconfig {xwinhome} {
 	set Scrn_Accel(OffTime)		""
 	set Scrn_Accel(DefaultColorDepth)	""
 
-	array set Scrn_Mono  [array get Scrn_Accel]
-	array set Scrn_VGA2  [array get Scrn_Accel]
+	if !$pc98 {
+		array set Scrn_Mono  [array get Scrn_Accel]
+		array set Scrn_VGA2  [array get Scrn_Accel]
+	}
 	array set Scrn_VGA16 [array get Scrn_Accel]
 	array set Scrn_SVGA  [array get Scrn_Accel]
 
-	set Scrn_Mono(Driver)		"Mono"
+	if !$pc98 {
+		set Scrn_Mono(Driver)		"Mono"
+		set Scrn_VGA2(Driver)		"VGA2"
+	}
 	set Scrn_SVGA(Driver)		"SVGA"
-	set Scrn_VGA2(Driver)		"VGA2"
 	set Scrn_VGA16(Driver)		"VGA16"
 
-	set Scrn_Mono(Depth,1)		1
-	set Scrn_VGA2(Depth,1)		1
+	if !$pc98 {
+		set Scrn_Mono(Depth,1)		1
+		set Scrn_VGA2(Depth,1)		1
+	}
 	set Scrn_VGA16(Depth,4)		4
 
 	foreach depth {4 8 15 16 24 32} {
@@ -122,6 +156,7 @@ proc writeXF86Config {filename args} {
 	global Files Module ServerFlags Keyboard Pointer UseLoader
 	global MonitorIDs DeviceIDs MonitorStdModes
 	global Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA
+	global pc98 pc98_EGC
 
 	set generic_vga [ expr {[lsearch -exact $args -generic] >= 0} ]
 	puts stderr "generic_vga = $generic_vga"
@@ -169,7 +204,15 @@ proc writeXF86Config {filename args} {
 		puts $fd ""
 		puts $fd {Section "Module"}
 		if $generic_vga {
-			puts $fd {   Load "vga"}
+			if !$pc98 {
+				puts $fd {   Load "vga"}
+			} else {
+			    if !$pc98_EGC {
+				puts $fd {   Load "pegc"}
+			    } else {
+				puts $fd {   Load "egc"}
+			    }
+			}
 		} else {
 			foreach module $Module(Load) {
 				puts $fd "   Load \"$module\""
@@ -272,7 +315,11 @@ proc writeXF86Config {filename args} {
 	    }
 	    set modepattern "None"
 	    if { [lsearch -exact $args -vgamode] >= 0 } {
-		set modepattern " 640x480*"
+		if !$pc98_EGC {
+		    set modepattern " 640x480*"
+		} else {
+		    set modepattern " 640x400*"
+		}
 	    }
 	    if { [lsearch -exact $args -defaultmodes] >= 0 } {
 		set modepattern "*"
@@ -294,6 +341,7 @@ proc writeXF86Config {filename args} {
 			set dispwin [lindex $args [expr $dispof+1]]
 			set modelist [xf86vid_getallmodelines \
 				-displayof $dispwin]
+
 		} else {
 			set modelist [xf86vid_getallmodelines]
 		}
@@ -362,6 +410,11 @@ proc writeXF86Config {filename args} {
 
 	foreach drvr {Accel Mono VGA2 VGA16 SVGA} {
 
+		if $pc98 {
+			if {![string compare $drvr "Mono"] || \
+			    ![string compare $drvr "VGA2"]} \
+				continue
+		}
 		if { [string compare $drvr [set Scrn_${drvr}(Driver)]] } \
 			continue
 		puts $fd ""
@@ -437,10 +490,20 @@ proc set_resource_defaults {} {
 
 proc create_main_window { w } {
 	toplevel $w
-	$w configure -height 480 -width 640 -highlightthickness 0
+	global pc98_EGC
+
+        if !$pc98_EGC {
+	    $w configure -height 480 -width 640 -highlightthickness 0
+	} else {
+	    $w configure -height 400 -width 640 -highlightthickness 0
+	}
 	pack propagate $w no
 	wm geometry $w +0+0
-	#wm minsize $w 640 480
+        if !$pc98_EGC {
+	    #wm minsize $w 640 480
+	} else {
+	    #wm minsize $w 640 400
+	}
 }
 
 proc set_default_arrow_bindings { } {
@@ -453,7 +516,7 @@ proc set_default_arrow_bindings { } {
 }
 
 proc start_server { server configfile outfile } {
-	global env TmpDir Xwinhome serverNumber UseLoader
+	global env TmpDir Xwinhome serverNumber UseLoader pc98
 
 	if { ![info exists serverNumber] } {
 		set serverNumber 7
@@ -462,20 +525,44 @@ proc start_server { server configfile outfile } {
 	}
 	set env(DISPLAY) [set disp :$serverNumber]
 
-	if { $UseLoader } {
-	    if { ![string compare $server VGA16] } {
-		set pid [exec $Xwinhome/bin/XF86_LOADER $disp -bpp 4 \
-		    -allowMouseOpenFail -xf86config $configfile \
-		    -bestRefresh >& $TmpDir/$outfile & ]
+	if !$pc98 {
+	    if { $UseLoader } {
+	        if { ![string compare $server VGA16] } {
+	    	    set pid [exec $Xwinhome/bin/XF86_LOADER $disp -bpp 4 \
+		        -allowMouseOpenFail -xf86config $configfile \
+		        -bestRefresh >& $TmpDir/$outfile & ]
+	        } else {
+		    set pid [exec $Xwinhome/bin/XF86_LOADER $disp \
+		        -allowMouseOpenFail -xf86config $configfile \
+		        -bestRefresh >& $TmpDir/$outfile & ]
+	        }
 	    } else {
-		set pid [exec $Xwinhome/bin/XF86_LOADER $disp \
-		    -allowMouseOpenFail -xf86config $configfile \
-		    -bestRefresh >& $TmpDir/$outfile & ]
+	        set pid [exec $Xwinhome/bin/XF86_$server $disp \
+		        -allowMouseOpenFail -xf86config $configfile \
+		        -bestRefresh >& $TmpDir/$outfile & ]
 	    }
 	} else {
-	    set pid [exec $Xwinhome/bin/XF86_$server $disp \
-		    -allowMouseOpenFail -xf86config $configfile \
-		    -bestRefresh >& $TmpDir/$outfile & ]
+	    if { $UseLoader } {
+	        if { ![string compare $server EGC] } {
+	    	    set pid [exec $Xwinhome/bin/XF98_LOADER $disp -bpp 4\
+		        -allowMouseOpenFail -xf86config $configfile \
+		        -bestRefresh >& $TmpDir/$outfile & ]
+		} else {
+	    	    set pid [exec $Xwinhome/bin/XF98_LOADER $disp\
+		        -allowMouseOpenFail -xf86config $configfile \
+		        -bestRefresh >& $TmpDir/$outfile & ]
+		}
+	    } else {
+	        if { ![string compare $server EGC] } {
+	            set pid [exec $Xwinhome/bin/XF98_$server $disp -bpp 4 \
+		            -allowMouseOpenFail -xf86config $configfile \
+		            -bestRefresh >& $TmpDir/$outfile & ]
+		} else {
+	            set pid [exec $Xwinhome/bin/XF98_$server $disp \
+		            -allowMouseOpenFail -xf86config $configfile \
+		            -bestRefresh >& $TmpDir/$outfile & ]
+		}
+	    }
 	}
 
 	sleep 9
@@ -562,6 +649,8 @@ proc save_state {} {
 	set fd [open $StateFileName w]
 
 	global Dialog Confname ConfigFile UseConfigFile UseLoader StartServer
+	global pc98
+
 	puts $fd [list set Dialog $Dialog]
 	puts $fd [list set Confname $Confname]
 	puts $fd [list set ConfigFile $ConfigFile]
@@ -574,8 +663,13 @@ proc save_state {} {
 	global DeviceIDs MonitorIDs
 	puts $fd [list set DeviceIDs $DeviceIDs]
 	puts $fd [list set MonitorIDs $MonitorIDs]
-	set arrlist [list Files Module ServerFlags Keyboard Pointer \
-		Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA]
+	if !$pc98 {
+		set arrlist [list Files Module ServerFlags Keyboard Pointer \
+			Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA]
+	} else {
+		set arrlist [list Files Module ServerFlags Keyboard Pointer \
+			Scrn_Accel Scrn_VGA16 Scrn_SVGA]
+	}
 	foreach devid $DeviceIDs {
 		lappend arrlist Device_$devid
 	}

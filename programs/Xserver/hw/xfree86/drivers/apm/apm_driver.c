@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.5 1997/06/25 08:25:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.6 1997/07/06 13:12:09 dawes Exp $ */
 
 /*
   TODO (also see apm_accel.c)
@@ -555,6 +555,8 @@ ApmProbe(void)
 
   vga256InfoRec.bankedMono = FALSE;
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+  OFLG_SET(OPTION_NOACCEL, &APM.ChipOptionFlags);
+  OFLG_SET(OPTION_SW_CURSOR, &APM.ChipOptionFlags);
   return TRUE;
 }
 
@@ -584,7 +586,7 @@ ApmFbInit(void)
            XCONFIG_PROBED, vga256InfoRec.name,
            vga256InfoRec.chipset, offscreen_available);
 
-  if (apmAccelSupported)
+  if (apmAccelSupported && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
     ApmAccelInit();
 
   if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 

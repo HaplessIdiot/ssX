@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.10 1997/07/10 06:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.11 1997/07/19 05:43:15 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -77,6 +77,9 @@ extern vgaPCIInformation *vgaPCIInfo;
 /*
  * Driver data structures.
  */
+#ifdef PC98_MGA
+pointer mmioBase = NULL;
+#endif
 MGABiosInfo MGABios;
 pciTagRec MGAPciTag;
 int MGAchipset;
@@ -255,8 +258,16 @@ ModuleInit(data,magic)
 	* data = (pointer) &MGA;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
+#ifdef PC98_MGA
+    case 2:
+	* data = (pointer)"libmga.a";
+	* magic= MAGIC_LOAD;
+	break;
+#endif
     default:
+#ifndef PC98_MGA
         xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
+#endif
         * magic= MAGIC_DONE;
 	break;
     }
@@ -465,7 +476,7 @@ MGAProbe()
 	 *	OK. It's MGA
 	 */
 	 
-	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
+	MGAPciTag = pcibusTag(pcr->_bus, pcr->_device, pcr->_func);
 
 	/* ajv changes to reflect actual values. see sdk pp 3-2. */
 	/* these masks just get rid of the crap in the lower bits */
@@ -518,6 +529,17 @@ MGAProbe()
 	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
 				mgaExtPorts);
 
+#ifdef PC98_MGA
+	MGAMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex,
+				MMIO_REGION,
+				(pointer)(MGAMMIOAddr), 0x4000);
+
+	if (!MGAMMIOBase)
+		FatalError("MGA: Can't map IO registers\n");
+
+	mmioBase = MGAMMIOBase + 0x1c00;
+#endif
+
 	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
 
@@ -532,7 +554,7 @@ MGAProbe()
 	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
 		     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
 
-
+#ifndef PC98_MGA
 	/*
 	 * Map IO registers to virtual address space
 	 */ 
@@ -546,6 +568,7 @@ MGAProbe()
 #endif /* __alpha__ */
 			    vga256InfoRec.scrnIndex, MMIO_REGION,
 			    (pointer)(MGAMMIOAddr), 0x4000);
+#endif /* PC98_MGA */
 #if defined(SVR4)
 	/*
 	 * For some SVR4 versions, a 32-bit read is done for the first
@@ -582,6 +605,7 @@ MGAProbe()
 	if (!MGAMMIOBase)
 		FatalError("MGA: Can't map IO registers\n");
 	
+#ifndef PC98_MGA
 	/*
 	 * Read the BIOS data struct
 	 */
@@ -589,6 +613,10 @@ MGAProbe()
 #ifdef DEBUG
 	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
 #endif
+#else /* PC98_MGA */
+	MGABios.ClkBase = MGABios.Clk4MB = MGABios.Clk8MB = 5000;
+	MGABios.RamdacType = MGABios.FeatFlag = 0;
+#endif /* PC98_MGA */
 	
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
@@ -1009,9 +1037,15 @@ Bool enter;
 		/* Unprotect CRTC[0-7] */
 		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 5, temp & 0x7F);
+#ifdef PC98_MGA
+		_outb(0xfac, 0x01);
+#endif
 	}
 	else
 	{
+#ifdef PC98_MGA
+		_outb(0xfac, 0x00);
+#endif
 		/* Protect CRTC[0-7] */
 		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.32 1997/05/03 09:16:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.33 1997/06/03 14:11:22 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -55,7 +55,7 @@
 #include "xf86Version.h"
 #include "xf86_Config.h"
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 
 static int ibm8514ValidMode(
 #if NeedFunctionPrototypes 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.33 1997/07/10 06:36:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.34 1997/07/26 12:59:05 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -189,7 +189,7 @@ int i128DeviceType;
 int i128MemoryTypeDram = 0;
 int i128RamdacType = UNKNOWN_DAC;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting;
 
 void (*i128ImageReadFunc)(
 #if NeedFunctionPrototypes

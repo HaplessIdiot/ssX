@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.20 1997/05/18 13:58:12 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.21 1997/05/21 15:17:07 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -19,7 +19,7 @@ set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint IntelliMouse Xqueue OSMouse }
 
 set msePatterns [list {tty[0-9A-Za-o]*} cua* *bm *mse* *mouse* \
-                      ps*x psm* m320 pms* com* gpmdata ]
+                      ps*x psm* m320 pms* com* gpmdata lms*]
 set mseDevices ""
 foreach pat $msePatterns {
 	if ![catch {glob /dev/$pat}] {
@@ -99,10 +99,16 @@ proc Mouse_proto_select { win } {
 proc Mouse_create_widgets { win } {
 	global mseType mseDevices baudRate sampleRate mseTypeList clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
+	global pc98_EGC
 
 	set w [winpathprefix $win]
-	frame $w.mouse -width 640 -height 420 \
-		-relief ridge -borderwidth 5
+        if !$pc98_EGC {
+	    frame $w.mouse -width 640 -height 420 \
+		    -relief ridge -borderwidth 5
+	} else {
+	    frame $w.mouse -width 640 -height 400 \
+		    -relief ridge -borderwidth 5
+	}
 	frame $w.mouse.top
 	frame $w.mouse.mid -relief sunken -borderwidth 3
 	frame $w.mouse.bot
@@ -212,21 +218,35 @@ proc Mouse_create_widgets { win } {
 	frame $w.mouse.mid.right
 	pack $w.mouse.mid.right -side left
 	set canv $w.mouse.mid.right.canvas
-	canvas $canv -width 2.75i -height 4i -highlightthickness 0 \
+	if !$pc98_EGC {
+	    set canvHeight 4i
+	    set canvRect4Height 3.75i
+	    set canvTextHeight 2.25i
+	} else {
+	    set canvHeight 2i
+	    set canvRect4Height 1.75i
+	    set canvTextHeight 1.50i
+	}
+	canvas $canv -width 2.75i -height $canvHeight -highlightthickness 0 \
 			-takefocus 0
-	$canv create rectangle 0.25i 1.25i 2.50i 3.75i -fill white \
-			-tag {mbut mbut4}
+	$canv create rectangle 0.25i 1.25i 2.50i $canvRect4Height \
+			-fill white -tag {mbut mbut4}
 	$canv create rectangle 0.25i 0.25i 1.00i 1.25i -fill white \
 			-tag {mbut mbut1}
 	$canv create rectangle 1.00i 0.25i 1.75i 1.25i -fill white \
 			-tag {mbut mbut2}
 	$canv create rectangle 1.75i 0.25i 2.50i 1.25i -fill white \
 			-tag {mbut mbut3}
-	$canv create text 1.375i 2.25i -tag coord
+	$canv create text 1.375i $canvTextHeight -tag coord
 
 	button $w.mouse.mid.right.apply -text "Apply" \
 		-command [list Mouse_setsettings $win]
 	pack $canv $w.mouse.mid.right.apply -side top
+	if $pc98_EGC {
+	    pack forget $w.mouse.flag
+	    pack $w.mouse.flags -in $w.mouse.mid.right -side top \
+		    -fill x -pady 3m
+	}
 
 	label $w.mouse.bot.mesg \
 		-text "Press ? or Alt-H for a list of key bindings" \
@@ -296,11 +316,36 @@ proc Mouse_deactivate { win } {
 }
 
 proc Mouse_popup_help { win } {
+        global pc98_EGC pc98
         toplevel .mousehelp -bd 5 -relief ridge
         wm title .mousehelp "Help"
-	wm geometry .mousehelp +30+30
-        text .mousehelp.text -takefocus 0 -width 90 -height 30
-        .mousehelp.text insert end \
+	if !$pc98 {
+	    wm geometry .mousehelp +30+30
+	} else {
+	    wm geometry .mousehelp +30+10
+	}
+        if !$pc98_EGC {
+	    set mousetext [text .mousehelp.text -takefocus 0 \
+		    -width 90 -height 30]
+	} else {
+	    frame .mousehelp.text
+	    scrollbar .mousehelp.text.scroll \
+		    -command ".mousehelp.text.text yview"
+	    set mousetext [text .mousehelp.text.text -takefocus 0 \
+		    -yscrollcommand ".mousehelp.text.scroll set"]
+	    pack .mousehelp.text.scroll -side right -fill y
+	    pack .mousehelp.text.text -side left
+	    bind .mousehelp <Prior> \
+		    ".mousehelp.text.text yview scroll -1 unit;break;"
+	    bind .mousehelp <Next> \
+		    ".mousehelp.text.text yview scroll 1 unit;break;"
+	    bind .mousehelp <space> {
+		if {[llength [info commands .mousehelp.ok]] != 0} {
+		    .mousehelp.ok invoke;
+		}
+	    }
+	}
+        $mousetext insert end \
 { First select the protocol for your mouse using 'p', then if needed, change the device
  name.  If applicable, also set the baud rate (1200 should work).  Avoid moving the
  mouse or pressing buttons before the correct protocol has been selected.  Press 'a'
@@ -335,7 +380,7 @@ proc Mouse_popup_help { win } {
 
         button .mousehelp.ok -text "Dismiss" -command "destroy .mousehelp"
 	focus .mousehelp.ok
-	.mousehelp.text configure -state disabled
+	$mousetext configure -state disabled
         pack .mousehelp.text .mousehelp.ok
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.17 1997/06/08 15:34:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.18 1997/06/15 07:12:21 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -219,6 +219,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define CRTC_PIX_ORDER_LSN_MSN	0x00000800
 
 #define CRTC_FIFO_LWM		0x000f0000
+#define CRTC_LOCK_REGS		0x00400000
 #define CRTC_EXT_DISP_EN	0x01000000
 #define CRTC_EXT_EN		0x02000000
 

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.9 1996/12/28 08:13:03 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.10 1997/01/23 10:59:34 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -87,10 +87,16 @@ source $XF86Setup_library/done.tcl
 
 proc Intro_create_widgets { win } {
 	global XF86Setup_library
+	global pc98_EGC pc98
 
 	set w [winpathprefix $win]
-	frame $w.intro -width 640 -height 420 \
+        if !$pc98_EGC {
+	    frame $w.intro -width 640 -height 420 \
 		-relief ridge -borderwidth 5
+	} else {
+	    frame $w.intro -width 640 -height 400 \
+		-relief ridge -borderwidth 5
+	}
 	image create bitmap XFree86-logo \
 		-foreground black -background cyan \
 		-file $XF86Setup_library/pics/XFree86.xbm \
@@ -98,13 +104,17 @@ proc Intro_create_widgets { win } {
 	label $w.intro.logo -image XFree86-logo
 	pack  $w.intro.logo
 
-	text $w.intro.text
-	$w.intro.text tag configure heading \
+	frame $w.intro.textframe
+	text $w.intro.textframe.text
+	$w.intro.textframe.text tag configure heading \
 		-justify center -foreground yellow \
 		-font -adobe-times-bold-i-normal--25-180-*-*-p-*-iso8859-1
-	$w.intro.text insert end "Introduction to Configuration\
+	$w.intro.textframe.text insert end "Introduction to Configuration\
 					with XF86Setup" heading
-	$w.intro.text insert end "\n\n\
+	if !$pc98 {
+	    $w.intro.textframe.text insert end "\n"
+	}
+	$w.intro.textframe.text insert end "\n\
 		There are five areas of configuration that need to\
 			be completed, corresponding to the buttons\n\
 		along the top:\n\n\
@@ -125,8 +135,24 @@ proc Intro_create_widgets { win } {
 			letter together with either Control or Alt.\n\
 		You can also press ? or click on the Help button at\
 			any time for additional instructions\n\n"
-	pack $w.intro.text -fill both -expand yes -padx 10 -pady 10
-	$w.intro.text configure -state disabled
+	if !$pc98_EGC {
+	    pack $w.intro.textframe.text -fill both -expand yes
+	    pack $w.intro.textframe -fill both -expand yes -padx 10 -pady 10
+	} else {
+	    scrollbar $w.intro.textframe.scroll \
+		    -command "$w.intro.textframe.text yview"
+	    bind $w.intro <Prior> \
+		    "$w.intro.textframe.text yview scroll -1 unit;break;"
+	    bind $w.intro <Next> \
+		    "$w.intro.textframe.text yview scroll  1 unit;break;"
+
+	    $w.intro.textframe.text configure \
+		    -yscrollcommand "$w.intro.textframe.scroll set"
+	    pack $w.intro.textframe.scroll -side right -fill y
+	    pack $w.intro.textframe.text -fill both -expand yes -side right
+	    pack $w.intro.textframe -fill both  -expand yes -padx 10 -pady 10
+	}
+	$w.intro.textframe.text configure -state disabled
 }
 
 proc Intro_activate { win } {

@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.22 1997/06/03 14:11:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.23 1997/06/11 12:24:42 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -141,7 +141,7 @@ ScrnInfoRec tgaInfoRec = {
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 ScreenPtr savepScreen = NULL;
 Bool tgaDAC8Bit = FALSE;
 Bool tgaBt485PixMux = FALSE;

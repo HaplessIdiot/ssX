@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.1 1997/03/06 23:15:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.2 1997/04/08 10:12:28 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -55,9 +55,6 @@ extern int ctAluConv3[];       	       /* Map Alu to Chips ROP source data with
 
 extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
 extern unsigned int ctCacheEnd;			/* Pixmap Cache End */
-extern unsigned int ctColorExpandScratchAddr;	/* Ping-pong buffer */
-extern unsigned int ctColorExpandScratchSize;
-
 
 /* Byte reversal functions */
 extern unsigned char byte_reversed[];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.28 1997/05/03 12:53:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.29 1997/06/15 07:12:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,6 +42,8 @@
 #include "opaque.h"
 #include "extensions/dpms.h"
 #endif
+
+#include "xf86.h"
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 extern void    vgaBitBlt(

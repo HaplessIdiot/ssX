@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.41 1997/03/22 09:34:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.42 1997/04/08 10:11:16 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -67,7 +67,6 @@ extern int   s3BankSize;
 extern unsigned char s3Port51;
 extern unsigned char s3Port40;
 extern unsigned char s3Port54;
-extern int xf86Verbose;
 extern Bool s3LinearAperture;
 
 static void s3ImageRead (

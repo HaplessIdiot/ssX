@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.3 1996/09/29 12:51:15 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.4 1996/12/27 06:54:14 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -18,11 +18,16 @@
 proc Other_create_widgets { win } {
 	global ServerFlags otherZap otherZoom otherTrapSignals
 	global otherXvidtune otherInpDevMods
+	global pc98_EGC
 
 	set w [winpathprefix $win]
-	frame $w.other -width 640 -height 420 \
-		-relief ridge -borderwidth 5
-
+	if !$pc98_EGC {
+	    frame $w.other -width 640 -height 420 \
+		    -relief ridge -borderwidth 5
+	} else {
+	    frame $w.other -width 640 -height 400 \
+		    -relief ridge -borderwidth 5
+	}
 	frame $w.srvflags -bd 2 -relief sunken
 	pack  $w.srvflags -in $w.other \
 		-fill both -expand yes -padx 20m -pady 20m

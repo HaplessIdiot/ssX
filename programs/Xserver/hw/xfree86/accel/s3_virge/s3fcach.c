@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.7 1997/04/08 10:11:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.8 1997/06/03 14:11:37 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -49,8 +49,6 @@
 
 static unsigned long s3FontAge;
 #define NEXT_FONT_AGE  ++s3FontAge
-
-extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define MAX_PIXMAP_WIDTH 64

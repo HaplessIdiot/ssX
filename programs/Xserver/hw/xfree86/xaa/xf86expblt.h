@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.4 1997/04/17 08:17:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.5 1997/05/03 09:19:32 dawes Exp $ */
 
 
 /*
@@ -472,3 +472,52 @@ unsigned int *xf86DrawStippleScanlineMSBFirstFixedBase(
     int w			/* Width of scanline in pixels. */
 #endif
 );
+ 
+unsigned int *xf86DrawStippleScanline3(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanline3MSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanline3FixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanline3MSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+

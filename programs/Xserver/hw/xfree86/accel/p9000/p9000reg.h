@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.9 1996/02/04 09:04:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.10 1996/12/23 06:40:51 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -55,7 +55,6 @@
 #define MISC_IN_REG         0x3cc  /* Read from this port */
 
 /* VGA-related parameters */
-#define FONT_BASE  0xA0000       /* The location of font data */
 #define FONT_SIZE  0x2000        /* The size of font data */
 
 /* BIOS parameters */

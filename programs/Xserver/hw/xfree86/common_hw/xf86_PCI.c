@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.21 1997/07/10 08:17:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.22 1997/07/26 12:59:06 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -36,8 +36,10 @@
 
 #ifdef PC98
 #define outb(port,data) _outb(port,data)
+#define outw(port,data) _outw(port,data)
 #define outl(port,data) _outl(port,data)
 #define inb(port) _inb(port)
+#define inw(port) _inw(port)
 #define inl(port) _inl(port)
 #endif
 
@@ -128,8 +130,8 @@ int scrnIndex;
     if (pcr._configtype == 1)
 #endif
     do {
-        for (pcr._cardnum = 0x0; pcr._cardnum < PCI_CONFIG1_MAXDEV; 
-			pcr._cardnum++) {
+        for (pcr._device = 0x0; pcr._device < PCI_CONFIG1_MAXDEV; 
+			pcr._device++) {
 	  int func, maxfunc=0;
 	  unsigned long config_cmd1;
 	  CARD32	device_vendor1, base1;
@@ -137,7 +139,7 @@ int scrnIndex;
 	  pcr._bus = pcr._pcibuses[pcr._pcibusidx];
 	  for (func = 0; func <= maxfunc; func++) {
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx] << 16ul) 
-				| (pcr._cardnum << 11ul) 
+				| (pcr._device << 11ul) 
 				| (func << 8ul);
 
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | PCI_ID_REG); /* ioreg 0 */
@@ -148,7 +150,7 @@ int scrnIndex;
 
 #ifdef DEBUGPCI
 	    printf("\npci bus 0x%x cardnum 0x%02x, vendor 0x%04x device 0x%04x\n",
-	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, pcr._vendor,
+	        pcr._pcibuses[pcr._pcibusidx], pcr._device, pcr._vendor,
                 pcr._device);
 #endif
 
@@ -187,7 +189,7 @@ int scrnIndex;
 		maxfunc = 7;
 	    if (func == 0) {
                config_cmd1 = PCI_EN | (pcr._pcibuses[pcr._pcibusidx] << 16ul)
-                                | (pcr._cardnum << 11ul)
+                                | (pcr._device << 11ul)
                                 | (1<< 8ul);
 
                outl(PCI_MODE1_ADDRESS_REG, config_cmd1|PCI_ID_REG); 
@@ -262,7 +264,7 @@ int scrnIndex;
 	    outb(PCI_MODE2_FORWARD_REG, pcr._pcibuses[pcr._pcibusidx]); /* bus 0 for now */
             pcr._device_vendor = inl(pcr._ioaddr);
 	    outb(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
-	    pcr._cardnum = (pcr._ioaddr >> 8) & 0x0f;
+	    pcr._device = (pcr._ioaddr >> 8) & 0x0f;
 
             if (pcr._vendor == 0xFFFF)   /* nothing there */
                 continue;
@@ -1194,16 +1196,16 @@ xf86scanpci(int scrnIndex)
     pcinumbus = 1;
 
     do {
-	for (pcr._cardnum = 0; pcr._cardnum < pciMaxDevice; pcr._cardnum++) {
+	for (pcr._device = 0; pcr._device < pciMaxDevice; pcr._device++) {
 	    int maxfunc = 0;
 	    pciTagRec tag;
 
 	    pcr._bus = pcibuses[pcibusidx];
 
-	    if (pciMfDev(pcr._bus, pcr._cardnum))
+	    if (pciMfDev(pcr._bus, pcr._device))
 		maxfunc = 7;
 
-	    tag = pcibusTag(pcr._bus, pcr._cardnum, 0);
+	    tag = pcibusTag(pcr._bus, pcr._device, 0);
 	    for (pcr._func = 0; pcr._func <= maxfunc; pcr._func++) {
 		tag = pcibusFTag(tag, pcr._func);
 		pcr._device_vendor = pcibusRead(tag, PCI_ID_REG);
@@ -1248,7 +1250,7 @@ xf86scanpci(int scrnIndex)
 		if (xf86Verbose > 1) {
 		    ErrorF("PCI: Bus 0x%x Card 0x%02x Func 0x%x ID 0x%04x,"
 			   "0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
-			   pcr._bus, pcr._cardnum, pcr._func, pcr._vendor,
+			   pcr._bus, pcr._device, pcr._func, pcr._vendor,
 			   pcr._device, pcr._rev_id, pcr._base_class,
 			   pcr._sub_class);
 		}

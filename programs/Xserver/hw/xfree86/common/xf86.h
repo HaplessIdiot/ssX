@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.63 1997/06/30 05:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.64 1997/07/12 11:32:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -105,6 +105,17 @@ typedef struct {
 
 /* Set default max allowed clock to 90MHz */
 #define DEFAULT_MAX_CLOCK	90000
+
+/*
+ * the list of clock ranges
+ */
+typedef struct x_ClockRange {
+    struct x_ClockRange	*next;
+    int			minClock;
+    int			maxClock;
+    Bool		interlaceAllowed;
+    Bool		doubleScanAllowed;
+} ClockRange, *ClockRangePtr;
 
 /*
  * the graphic device

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.14 1997/04/08 10:11:06 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.15 1997/06/17 08:17:53 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -14,7 +14,6 @@
 #
 # Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
-
 set clicks1 [clock clicks]
 
 # load the autoload stuff
@@ -193,8 +192,14 @@ set StartServer 1
 set ReConfig 0
 set UseConfigFile 0
 set UseLoader 1
-if { ![file exists $Xwinhome/bin/XF86_LOADER] } {
+if !$pc98 {
+    if { ![file exists $Xwinhome/bin/XF86_LOADER] } {
 	set UseLoader 0
+    }
+} else {
+    if { ![file exists $Xwinhome/bin/XF98_LOADER] } {
+	set UseLoader 0
+    }
 }
 if { [string length $ConfigFile] > 0 } {
 	if [info exists env(DISPLAY)] {
@@ -231,11 +236,21 @@ if { [string length $ConfigFile] > 0 } {
 			configuration with this program" okay
 		    exit 1
 		}
-		if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_VGA16] } {
-		    mesg "The XFree86 loader (XF86_LOADER) or the VGA16\n\
-		    	server is required when using\n\
-			this program to set the initial configuration" okay
-		    exit 1
+		if !$pc98 {
+		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF86_VGA16] } {
+		        mesg "The XFree86 loader (XF86_LOADER) or the VGA16\n\
+		    	    server is required when using\n\
+			    this program to set the initial configuration" okay
+		        exit 1
+		    }
+		} else {
+		    if { !$UseLoader && ![file exists $Xwinhome/bin/XF98_EGC] \
+			          && ![file exists $Xwinhome/bin/XF98_PEGC]} {
+		        mesg "The XFree86 loader (XF98_LOADER) or the EGC\n\
+		    	    or the PEGC server is required when using\n\
+			    this program to set the initial configuration" okay
+		        exit 1
+		    }
 		}
 		set UseConfigFile [mesg "Would you like to use the\
 		    existing XF86Config file for defaults?" yesno]
@@ -252,11 +267,22 @@ if { [string length $ConfigFile] > 0 } {
 	    mesg "You need to be root to run this program" okay
 	    exit 1
 	}
-	if { !$ReConfig && !$UseLoader
-		&& ![file exists $Xwinhome/bin/XF86_VGA16] } {
-	    mesg "Either the XFree86 loader (XF86_LOADER) or the\n\
-	    	VGA16 server is required to run this program" okay
-	    exit 1
+	if !$pc98 {
+	    if { !$ReConfig && !$UseLoader
+		    && ![file exists $Xwinhome/bin/XF86_VGA16] } {
+	        mesg "Either the XFree86 loader (XF86_LOADER) or the\n\
+	    	    VGA16 server is required to run this program" okay
+	        exit 1
+	    }
+	} else {
+	    if { !$ReConfig && !$UseLoader
+		    && ![file exists $Xwinhome/bin/XF98_EGC]
+		    && ![file exists $Xwinhome/bin/XF98_PEGC] } {
+	        mesg "Either the XFree86 loader (XF98_LOADER) or the\n\
+	    	    EGC server or the PEGC server is required to run\n\
+		    this program" okay
+	        exit 1
+	    }
 	}
 	# initialize the configuration variables
 	initconfig $Xwinhome
@@ -345,7 +371,20 @@ if $StartServer {
 	mesg "Ready to switch to graphics mode.\n\
 		\nIt may take a while" okay
 
-	set ServerPID [start_server VGA16 $Confname-1 ServerOut-1]
+	if !$pc98 {
+	    set ServerPID [start_server VGA16 $Confname-1 ServerOut-1]
+	} else {
+	    if !$pc98_EGC {
+		set ServerPID [start_server PEGC $Confname-1 ServerOut-1]
+#		if {$ServerPID == 0 || $ServerPID == -1} {
+#		    puts "Unable to start PEGC server!\n\
+#			    try to start EGC server.\n";
+#		    set pc98_EGC 1;
+#		}
+            } else {
+		set ServerPID [start_server EGC $Confname-1 ServerOut-1]
+	    }
+	}
 
 	if { $ServerPID == 0 } {
 		mesg "Unable to start X server!" info

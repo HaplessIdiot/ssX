@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.7 1997/06/25 08:25:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.8 1997/06/25 10:04:17 hohndel Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
@@ -36,8 +36,8 @@ static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Ex
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#ifdef XFree86LOADER
 #include "xf86.h"
+#ifdef XFree86LOADER
 #include "xf86_libc.h"
 #endif
 
@@ -56,7 +56,6 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
   int			fd;
   struct JS_DATA_TYPE   js;
-  extern int		xf86Verbose;
     
 #ifdef DEBUG
   ErrorF("xf86JoystickOn %s\n", name);

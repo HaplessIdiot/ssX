@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.8 1996/09/29 12:51:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.9 1996/12/27 06:54:04 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -17,10 +17,16 @@
 
 proc Keyboard_create_widgets { win } {
 	global XKBComponents XKBinserver XKBhandle
+	global pc98
 
 	set w [winpathprefix $win]
-	frame $w.keyboard -width 640 -height 420 \
-		-relief ridge -borderwidth 5
+        if !$pc98 {
+	    frame $w.keyboard -width 640 -height 420 \
+		    -relief ridge -borderwidth 5
+	} else {
+	    frame $w.keyboard -width 640 -height 400 \
+		    -relief ridge -borderwidth 5
+	}
 
 	frame $w.keyboard.xkb
 	label $w.keyboard.xkb.text -text \

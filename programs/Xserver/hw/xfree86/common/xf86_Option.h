@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.75 1997/06/20 09:24:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.76 1997/07/10 08:17:23 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -75,9 +75,9 @@ typedef struct {
 #define OPTION_PANEL_SIZE	22 /* (CT) Fix wrong panel size set in registers */
 
 /* Memory options */
-#define OPTION_FAST_DRAM	30 /* fast DRAM (for ET4000, S3, AGX) */
-#define OPTION_MED_DRAM		31 /* medium speed DRAM (for S3, AGX) */
-#define OPTION_SLOW_DRAM	32 /* slow DRAM (for Cirrus, S3, AGX) */
+#define OPTION_FAST_DRAM	30 /* fast DRAM (for ET4000, S3, AGX, ET6k) */
+#define OPTION_MED_DRAM		31 /* medium speed DRAM (for S3, AGX, ET6k) */
+#define OPTION_SLOW_DRAM	32 /* slow DRAM (for Cirrus, S3, AGX, ET6k) */
 #define OPTION_NO_MEM_ACCESS	33 /* Unable to access video ram directly */
 #define OPTION_NOLINEAR_MODE	34 /* chipset has broken linear access mode */
 #define OPTION_INTEL_GX		35 /* Linear fb on an Intel GX/Pro (Mach32) */

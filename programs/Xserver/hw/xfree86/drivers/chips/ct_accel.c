@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.6 1997/06/03 14:12:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.7 1997/06/06 06:07:15 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -34,6 +34,9 @@ void CTNAME(24SetupForFillRectSolid)();
 void CTNAME(SubsequentFillRectSolid)();
 #ifndef CHIPS_HIQV
 void CTNAME(24SubsequentFillRectSolid)();
+#else
+void CTNAME(32SetupForFillRectSolid)();
+void CTNAME(32SubsequentFillRectSolid)();
 #endif
 void CTNAME(SetupForScreenToScreenCopy)();
 void CTNAME(SubsequentScreenToScreenCopy)();
@@ -78,6 +81,9 @@ static unsigned int old_planemask;
 
 static unsigned int CommandFlags;
 
+/* Define CHIPS_SCREEN2SCREEN to include screen to screen color expansion */
+/* Its not working properly for me at the moment, so disable it           */
+/* #define CHIPS_SCREEN2SCREEN */
 
 #ifdef CHIPS_MMIO
 #ifdef CHIPS_HIQV
@@ -89,6 +95,29 @@ static unsigned int CommandFlags;
 #define _ctAccelInit ctAccelInit
 #endif
 void _ctAccelInit() {
+    unsigned int ctCacheStart;
+    unsigned int ctColorExpandScratchAddr;
+    unsigned int ctColorExpandScratchSize;
+
+    /* Set up the addresses for the start and end of the pixmap cache
+     * and for the ping-pong buffers
+     */
+    ctCacheStart =  vga256InfoRec.virtualY * vga256InfoRec.displayWidth * 
+	vga256InfoRec.bitsPerPixel / 8;
+    
+#ifdef CHIPS_SCREEN2SCREEN
+    /* I have trouble with these, on both a 65545 and 65550. So Disable */
+    if ((((ctCacheEnd - ctCacheStart) / (vga256InfoRec.displayWidth * 
+	  vga256InfoRec.bitsPerPixel / 8)) > 16) && 
+	  (!(vga256InfoRec.bitsPerPixel == 32))) {
+	/* Only create ping-pong buffers if there is enough space */
+	ctColorExpandScratchAddr = ctCacheEnd - 1024;
+	ctColorExpandScratchSize = 1024 ;
+    } else {
+	ctColorExpandScratchAddr = 0;
+	ctColorExpandScratchSize = 0 ;
+    }
+#endif
     /*
      * Set up the main acceleration flags.
      */
@@ -98,11 +127,6 @@ void _ctAccelInit() {
 	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
 	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
-#if 0
-    /* I believe this is possible for the HiQV architecture. Anyone want
-     * to test it? If your machine locks up it didn't work */
-    xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
-#endif
     if (ctColorTransparency)
 	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
 #endif
@@ -122,8 +146,9 @@ void _ctAccelInit() {
 	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
 #else
     xf86GCInfoRec.CopyAreaFlags = 0;
-    if (vga256InfoRec.bitsPerPixel == 24)
+    if ((vga256InfoRec.bitsPerPixel == 24) || (vga256InfoRec.bitsPerPixel == 32))
 	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
+
     /* A Chips and Technologies application notes says that some
      * 65550 have a bug that prevents 16bpp transparency. It probably
      * applies to 24 bpp as well (Someone with a 65550 care to check?).
@@ -174,7 +199,20 @@ void _ctAccelInit() {
 	xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
 #endif
         break;
+#ifdef CHIPS_HIQV
+    case 32:
+        xf86AccelInfoRec.SetupForFillRectSolid = 
+	    CTNAME(32SetupForFillRectSolid);
+        xf86AccelInfoRec.SubsequentFillRectSolid =
+	    CTNAME(32SubsequentFillRectSolid);      
+        break;
+#endif
     }
+
+#ifdef CHIPS_HIQV
+    /* At 32bpp we can't use the other acceleration */
+    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
+#endif
 
     /*
      * Setup the functions that perform monochrome colour expansion
@@ -184,11 +222,7 @@ void _ctAccelInit() {
     xf86AccelInfoRec.ColorExpandFlags =
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
-#if 0
         | LEFT_EDGE_CLIPPING_NEGATIVE_X;
-#else
-        ;
-#endif
     if (vga256InfoRec.bitsPerPixel == 24)
         xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #else
@@ -200,20 +234,19 @@ void _ctAccelInit() {
 	    RGB_EQUAL | NO_PLANEMASK;
 #endif
 
-#if 0 /* I have trouble with these, on both a 65545 and 65550. So Disable
-       * for now. Fixup scratch buffer in FbInit if re-enabled
-       */
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-	CTNAME(SetupForScanlineScreenToScreenColorExpand);
-    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-	CTNAME(SubsequentScanlineScreenToScreenColorExpand);
-    xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
-	CTNAME(SetupForScreenToScreenColorExpand);
-    xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
-	CTNAME(SubsequentScreenToScreenColorExpand);
-    xf86AccelInfoRec.ScratchBufferAddr = ctColorExpandScratchAddr;
-    xf86AccelInfoRec.ScratchBufferSize = ctColorExpandScratchSize;
-#endif
+    if (ctColorExpandScratchAddr) {
+	xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+	    CTNAME(SetupForScanlineScreenToScreenColorExpand);
+	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+	    CTNAME(SubsequentScanlineScreenToScreenColorExpand);
+	xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
+	    CTNAME(SetupForScreenToScreenColorExpand);
+	xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
+	    CTNAME(SubsequentScreenToScreenColorExpand);
+	xf86AccelInfoRec.ScratchBufferAddr = ctColorExpandScratchAddr;
+	xf86AccelInfoRec.ScratchBufferSize = ctColorExpandScratchSize;
+    }
+    
     xf86AccelInfoRec.SetupForScanlineCPUToScreenColorExpand =
 	CTNAME(SetupForScanlineCPUToScreenColorExpand);
     xf86AccelInfoRec.SubsequentScanlineCPUToScreenColorExpand =
@@ -238,11 +271,12 @@ void _ctAccelInit() {
             CTNAME(Subsequent8x8PatternColorExpand);
     }
 
+#ifndef CHIPS_HIQV
     xf86AccelInfoRec.ImageWrite = CTNAME(ImageWrite);
+#endif
 
-    xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
-        vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
-        ctCacheEnd);
+chips_pixmap:
+    xf86InitPixmapCache(&vga256InfoRec, ctCacheStart, ctCacheEnd);
 
 }
 
@@ -289,6 +323,50 @@ void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
     ctSETFGCOLOR24(color);
     ctSETBGCOLOR24(color);
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+}
+
+static unsigned int width32bpp;
+static unsigned int color32bpp;
+
+void CTNAME(32SetupForFillRectSolid)(color, rop, planemask)
+    int color, rop;
+    unsigned planemask;
+{
+    if (color32bpp != color) {
+	color32bpp = color;
+	width32bpp = 0;
+    }
+    ctBLTWAIT;
+    ctSETSRCADDR(ctBLTPatternAddress);
+    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[rop & 0xF]);
+    ctSETPITCH(vga256InfoRec.displayWidth  << 2,
+	       vga256InfoRec.displayWidth << 2);
+}
+
+void CTNAME(32SubsequentFillRectSolid)(x, y, w, h)
+    int x, y, w, h;
+{
+    int destaddr, line, i;
+    unsigned int *base;
+  
+    if (width32bpp < w) {
+	/* Use the space set aside for planemask for a scanline of the fill */
+	base = (unsigned int *)vgaLinearBase + ctBLTPatternAddress;
+	ctBLTWAIT;
+	for (i = width32bpp; i < w; i++)
+	    *(unsigned int *)(base + 4 * i) = color32bpp;
+	width32bpp = w;
+    }
+    
+    line = 0;
+    destaddr = (y * vga256InfoRec.displayWidth + x) << 2;
+    while (line < h) {
+        ctBLTWAIT;
+	ctSETDSTADDR(destaddr);
+	ctSETHEIGHTWIDTHGO(1, w);
+	destaddr += (vga256InfoRec.displayWidth << 2);
+	line++;
+    }
 }
 #else
 
@@ -482,7 +560,8 @@ transparency_color)
     ctBLTWAIT;
     if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
     (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 32))
     {
 	ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
     } else {

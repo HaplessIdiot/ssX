@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/ativga.c,v 3.5 1996/12/19 10:01:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/ativga.c,v 3.6 1996/12/23 06:38:18 dawes Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -109,8 +109,8 @@ void mach32SaveVGAInfo(screen_idx)
    unsigned char b8_save;
 
    if (!vgaBase) {
-      vgaBase = xf86MapVidMem(screen_idx, VGA_REGION, (pointer)0xa0000,
-			      64 * 1024);
+      vgaBase = xf86MapVidMem(screen_idx, VGA_REGION,
+			      (pointer)vga256InfoRec.VGAbase, 64 * 1024);
    }
 
    vgaIOBase = (inb(0x3cc) & 0x01) ? 0x3D0 : 0x3B0;

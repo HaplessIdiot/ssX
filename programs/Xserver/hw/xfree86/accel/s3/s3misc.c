@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.69 1997/05/19 10:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.70 1997/06/03 14:11:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -92,8 +92,7 @@ extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
-extern int xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting;
 
 static Bool AlreadyInited = FALSE;
 static Bool s3ModeSwitched = FALSE;
@@ -148,7 +147,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
    if (serverGeneration == 1) {
       unsigned long addr = 0;
-      unsigned long base0 = 0xa0000;   /* old default for s3Port59/s3Port5A */
+      unsigned long base0 = s3InfoRec.VGAbase;   /* old default for s3Port59/s3Port5A */
       s3BankSize = 0x10000;
       s3LinApOpt = 0x14;
 
@@ -157,15 +156,15 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
 	  s3Mmio928) {
 	vgaBaseLow = xf86MapVidMem(scr_index, VGA_REGION,
-				   (pointer)0xA0000, s3BankSize);
+				   (pointer)s3InfoRec.VGAbase, s3BankSize);
 	vgaBaseHigh = xf86MapVidMem(scr_index, EXTENDED_REGION,
 				    (pointer)0x7C0A0000, s3BankSize);
 	vgaBase = vgaBaseLow;
       } else {
 	/* First, map the vga window -- it is always required */
 #ifndef PC98
-	vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
-				s3BankSize);
+	vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+				(pointer)s3InfoRec.VGAbase, s3BankSize);
 #else
       switch(pc98BoardType & 0xf0 ){
       case PW:
@@ -192,13 +191,13 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    break;
       case PWLB:
             vgaBase = xf86MapVidMem(scr_index, LINEAR_REGION,
-                                      (pointer)((PWLB_WinAdd << 16) + 0xA0000),
-							s3BankSize);
+                  (pointer)((PWLB_WinAdd << 16) + s3InfoRec.VGAbase),
+		  s3BankSize);
             ErrorF("   PC98: PW localbus mem-access\n");
 	    break;
       default: 
             vgaBase = xf86MapVidMem(scr_index, VGA_REGION, 
-				      (pointer)0xA0000,s3BankSize);
+	          (pointer)s3InfoRec.VGAbase, s3BankSize);
       }
 #endif /* PC98 */
       }
@@ -504,7 +503,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       ErrorF(" linear access disabled\n");
 	       s3BankSize = 0x10000;
 	       s3VideoMem = NULL;
-	       addr = 0xA0000;
+	       addr = s3InfoRec.VGAbase;
 	    }
             s3DisableLinear();
          }
@@ -513,7 +512,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       /* No linear mapping */
       if (!s3VideoMem) {
 	 s3VideoMem = vgaBase;
-	 addr = 0xA0000;
+	 addr = s3InfoRec.VGAbase;
 	 if (s3NewMmio) {  /* doesn't work without linear mapping (yet?) */
 	    ErrorF("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
 		       XCONFIG_GIVEN, s3InfoRec.name);

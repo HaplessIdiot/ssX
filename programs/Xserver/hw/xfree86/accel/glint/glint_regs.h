@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.2 1997/06/25 08:24:55 hohndel Exp $ */
 /*
  * glint register file 
  *
@@ -364,7 +364,6 @@ typedef struct {
 #if DEBUG
 #define GLINT_WRITE_REG(v,r)					\
 	{							\
-	    extern int xf86Verbose;				\
 	    if( xf86Verbose > 2)				\
 	  	ErrorF("reg 0x%04x to 0x%08x\n",r,v);   	\
 		*(unsigned int *)((char*)GLINTMMIOBase+r) = v;	\
@@ -380,7 +379,10 @@ typedef struct {
 	*(unsigned int *)((char*)GLINTMMIOBase+r)
 
 #define GLINT_WAIT(n)						\
-	while( GLINT_READ_REG(InFIFOSpace) < n ) /* wait */ ;
+	{							\
+		if (!OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options))					\
+			while(GLINT_READ_REG(InFIFOSpace)<n);	\
+	}
 
 #define GLINT_SLOW_WRITE_REG(v,r) 				\
 	{							\

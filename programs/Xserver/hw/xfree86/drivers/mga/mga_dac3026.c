@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.5 1997/06/03 14:12:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.6 1997/06/15 07:12:33 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -28,6 +28,7 @@
  */
 
 
+#include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.73 1997/06/03 14:11:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.74 1997/07/10 08:17:21 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -70,7 +70,7 @@ extern int defaultColorVisualClass;
 extern int mach32MaxClock;
 extern int mach32MaxTlc34075Clock;
 extern int mach32Max16bppClock;
-extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
 extern unsigned short vgaIOBase;
@@ -189,7 +189,7 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int s3MClk */
     0,			/* int chipID */
     0,			/* int chipRev */
-    0,			/* unsigned long VGAbase */
+    0xA0000,		/* unsigned long VGAbase */
     0,			/* int s3RefClk */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */

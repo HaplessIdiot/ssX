@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.26 1997/05/16 11:11:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.27 1997/06/15 07:12:20 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -57,8 +57,6 @@
 #define XF_PAGE_MASK (PAGE_MASK)
 #endif
 #endif
-
-extern int xf86Verbose;
 
 static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
@@ -1135,7 +1133,7 @@ void mach64SetCRTCRegs(crtcRegs)
 
     WaitIdleEmpty();
     crtcGenCntl = regr(CRTC_GEN_CNTL);
-    regw(CRTC_GEN_CNTL, crtcGenCntl & ~CRTC_EXT_EN);
+    regw(CRTC_GEN_CNTL, crtcGenCntl & ~(CRTC_EXT_EN | CRTC_LOCK_REGS));
 
     /* Set the DSP registers on the VT-B and GT-B */
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
@@ -1211,7 +1209,8 @@ void mach64SetCRTCRegs(crtcRegs)
     /* Display control register -- this one turns on the display */
     regw(CRTC_GEN_CNTL,
 	 (crtcGenCntl & 0xff0000ff &
-	  ~(CRTC_PIX_BY_2_EN | CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN)) |
+	  ~(CRTC_PIX_BY_2_EN | CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |
+            CRTC_HSYNC_DIS | CRTC_VSYNC_DIS)) |
 	 depth |
 	 (crtcRegs->crtc_gen_cntl & ~CRTC_PIX_BY_2_EN) |
 	 ((crtcRegs->fifo_v1 & 0x0f) << 16) |

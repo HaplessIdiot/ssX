@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.133 1997/06/11 12:24:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.134 1997/06/30 07:13:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -514,7 +514,9 @@ xf86GetToken(tab)
           configRBuf[0] = c;
           i = 0;
 	  do {
-	    configRBuf[++i] = (c = configBuf[configPos++]);;
+	     c = configBuf[configPos++];
+	     if (c != '_')
+		configRBuf[++i] = c;
 #ifndef __EMX__
 	  } while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
 #else
@@ -3659,6 +3661,7 @@ xf86LookupMode(target, driver, flags)
     target->HSyncStart     = best_mode->HSyncStart;
     target->HSyncEnd       = best_mode->HSyncEnd;
     target->HTotal         = best_mode->HTotal;
+    target->HSkew          = best_mode->HSkew;
     target->VDisplay       = best_mode->VDisplay;
     target->VSyncStart     = best_mode->VSyncStart;
     target->VSyncEnd       = best_mode->VSyncEnd;
@@ -3668,6 +3671,7 @@ xf86LookupMode(target, driver, flags)
     target->CrtcHSyncStart = best_mode->CrtcHSyncStart;
     target->CrtcHSyncEnd   = best_mode->CrtcHSyncEnd;
     target->CrtcHTotal     = best_mode->CrtcHTotal;
+    target->CrtcHSkew      = best_mode->CrtcHSkew;
     target->CrtcVDisplay   = best_mode->CrtcVDisplay;
     target->CrtcVSyncStart = best_mode->CrtcVSyncStart;
     target->CrtcVSyncEnd   = best_mode->CrtcVSyncEnd;

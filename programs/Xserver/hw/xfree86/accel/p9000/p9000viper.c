@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.14 1997/02/18 12:04:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.15 1997/02/25 14:20:23 hohndel Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -41,8 +41,6 @@ static unsigned p9000ViperSaveMisc;       /* Stored value of misc register  */
 static unsigned p9000ViperNewClockReg;    /* misc reg setting used by server */
 static unsigned p9000ViperInited = FALSE; /* Has the Viper been initialized  */
 static unsigned MemBaseFlags = VPR_VLB_OCR_BASE_80000000;
-
-extern int xf86Verbose;
 
 /* Prototypes */
 Bool p9000ViperVlbProbe(

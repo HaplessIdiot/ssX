@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.56 1997/05/03 09:16:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.57 1997/06/03 14:11:17 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -72,7 +72,7 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
-extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 

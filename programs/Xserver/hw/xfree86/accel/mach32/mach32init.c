@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.14 1996/12/23 06:38:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.15 1997/07/10 08:17:22 hohndel Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -34,7 +34,6 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern int xf86Verbose;
 extern int  mach32MaxClock;
 
 static LUTENTRY oldlut[256];
@@ -324,10 +323,11 @@ void mach32InitAperture(screen_idx)
 	        mach32VideoMem = vgaBase;
 	    } else {
 	        mach32VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
-					       (pointer)0xa0000, 64 * 1024);
+					       (pointer)mach32InfoRec.VGAbase,
+                                               64 * 1024);
             }
 #ifdef XFreeXDGA
-	    mach32InfoRec.physBase = 0xa0000;
+	    mach32InfoRec.physBase = mach32InfoRec.VGAbase;
 	    mach32InfoRec.physSize = 64 * 1024;
 #endif
 

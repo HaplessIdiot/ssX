@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.31 1997/01/26 04:31:43 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.32 1997/03/22 09:35:28 hohndel Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -49,6 +49,7 @@
 /***************************************************************************/
 
 #include <X11/Xfuncproto.h>
+#include "xf86.h"
 
 _XFUNCPROTOBEGIN
 

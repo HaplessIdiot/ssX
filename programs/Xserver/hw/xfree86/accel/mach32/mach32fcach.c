@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.13 1996/10/10 14:01:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.14 1996/12/23 06:38:29 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -48,8 +48,6 @@
 
 static unsigned long mach32FontAge;
 #define NEXT_FONT_AGE  ++mach32FontAge
-
-extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define PIXMAP_WIDTH 64

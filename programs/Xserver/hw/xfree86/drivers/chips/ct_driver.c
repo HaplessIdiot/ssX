@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.11 1997/06/10 12:30:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.12 1997/07/19 05:43:14 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -87,10 +87,6 @@ unsigned long ctFrameBufferSize = 0;
 /* Pixmap Cache End */
 unsigned int ctCacheEnd = 0;
 
-/* Ping-pong buffer for XAA ScreenToScreen colour expansion */
-unsigned int ctColorExpandScratchAddr = 0;
-unsigned int ctColorExpandScratchSize = 0;
-
 /* MMIO related */
 Bool ctSupportMMIO = FALSE;
 Bool ctUseMMIO = FALSE;
@@ -158,9 +154,9 @@ typedef struct {
 } ctClockReg, *ctClockPtr;
 
 typedef struct {
-  int Max;
-  int ProbedClk;
-  int Clk;
+  unsigned int Max;
+  unsigned int ProbedClk;
+  unsigned int Clk;
   unsigned char M;
   unsigned char N;
   unsigned char P;
@@ -172,7 +168,8 @@ typedef struct {
 
 Bool ctForceVClk1 = FALSE;        /* Use VClk1 as prog clock on HiQV chips */
 int ctCurrentClock;
-ctMemClockPtr ctMemClk;
+ctMemClockReg ctMemClkReg;
+ctMemClockPtr ctMemClk = &ctMemClkReg;
 static unsigned char ctClockType;
 static unsigned char ctConsole_clk[3];
 
@@ -187,6 +184,8 @@ static unsigned char ctConsole_clk[3];
 #define GET_STYLE 0xF0
 #define LCD_TEXT_CLK_FREQ 25000	    /* lcd textclock if TYPE_PROGRAMMABLE */
 #define CRT_TEXT_CLK_FREQ 28000     /* crt textclock if TYPE_PROGRAMMABLE */
+#define Fref 14318180               /* The reference clock in Hertz       */
+
 
 static void ctClockSave();
 static void ctClockLoad();
@@ -852,8 +851,6 @@ ctClockLoad(Type, Clock)
 #endif
 }
    
-#define Fref 14318180
-
 /* 
  * This is Ken Raeburn's <raeburn@raeburn.org> clock
  * calculation code just modified a little bit to fit in here.
@@ -1574,11 +1571,16 @@ Bool ctProbeHiQV()
 	    if (vgaBitsPerPixel == 16) {
 		ErrorF("%s %s: CHIPS: 16 bpp.\n", XCONFIG_GIVEN,
 		    vga256InfoRec.name);
+		CHIPS.ChipHas15bpp = TRUE;
 		CHIPS.ChipHas16bpp = TRUE;
-	    } else if (vgaBitsPerPixel > 16) {
+	    } else if (vgaBitsPerPixel == 24) {
 		ErrorF("%s %s: CHIPS: 24 bpp.\n", XCONFIG_GIVEN,
 		    vga256InfoRec.name);
 		CHIPS.ChipHas24bpp = TRUE;
+	    } else if (vgaBitsPerPixel == 32) {
+		ErrorF("%s %s: CHIPS: 32 bpp.\n", XCONFIG_GIVEN,
+		    vga256InfoRec.name);
+		CHIPS.ChipHas32bpp = TRUE;
 	    }
 	}
 	/* linear video Ram size */
@@ -1645,20 +1647,21 @@ Bool ctProbeHiQV()
     /* Probe the memory clock currently in use */
     outb(0x3D6,0xCC);
     ctMemClk->xrCC = inb(0x3D7);
-    ctMemClk->M = ctMemClk->xrCC + 2;
+    ctMemClk->M = (ctMemClk->xrCC  & 0x7F) + 2;
     outb(0x3D6,0xCD);
     ctMemClk->xrCD = inb(0x3D7);
-    ctMemClk->N = ctMemClk->xrCD + 2;
+    ctMemClk->N = (ctMemClk->xrCD & 0x7F) + 2;
     outb(0x3D6,0xCE);
     ctMemClk->xrCE = inb(0x3D7);
     ctMemClk->PSN = (ctMemClk->xrCE & 0x1) ? 1 : 4;
     ctMemClk->P = ((ctMemClk->xrCE & 0x70) >> 4);
-    ctMemClk->ProbedClk = (Fref * 4 * ctMemClk->M);
-    ctMemClk->ProbedClk = ctMemClk->ProbedClk /
-      (ctMemClk->PSN * ctMemClk->N * (1 << ctMemClk->P));
+    /* Be careful with the calculation of ProbeClk as it can overflow */ 
+    ctMemClk->ProbedClk = 4 * Fref / ctMemClk->N;
+    ctMemClk->ProbedClk = ctMemClk->ProbedClk * ctMemClk->M /
+      (ctMemClk->PSN * (1 << ctMemClk->P));
     ctMemClk->ProbedClk = ctMemClk->ProbedClk / 1000;
-
     ctMemClk->Clk = ctMemClk->ProbedClk;
+
     if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options)) {
       ctMemClk->M = 0x45;
       ctMemClk->N = 0x1A;
@@ -1672,10 +1675,15 @@ Bool ctProbeHiQV()
 	     XCONFIG_GIVEN, vga256InfoRec.name, ctMemClk->Clk);
     } else if (vga256InfoRec.MemClk > 0) {
       if (vga256InfoRec.MemClk <= ctMemClk->Max) {
+	ErrorF("%s %s: CHIPS: using memory clock of %d KHz\n",
+	       XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+
+	/* Only alter the memory clock if the desired memory clock differs
+	 * by 50kHz from the one currently being used.
+	 */
 	if (abs(vga256InfoRec.MemClk - ctMemClk->ProbedClk) > 50) {
 	  unsigned char vclk[3];
-	  ErrorF("%s %s: CHIPS: using memory clock of %d KHz\n",
-	         XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+
 	  ctMemClk->Clk = vga256InfoRec.MemClk;
 	  ctCalcClock(ctMemClk->Clk, vclk);
 	  ctMemClk->M = vclk[1] + 2;
@@ -1704,7 +1712,7 @@ Bool ctProbeHiQV()
 	vga256InfoRec.maxClock = 95000;
       case CT_550:
 	outb(0x3D6, 0x04);
-	if ((inb(0x3D7) & 0xF0) == 0x80) {
+	if ((inb(0x3D7) & 0xF) < 6) {
 	  outb(0x3D0, 0x0A);
 	  if (inb(0x3D1) & 2) {
 	    /*5V Vcc */
@@ -1903,6 +1911,7 @@ Bool ctProbeWINGINE()
       if (vgaBitsPerPixel == 16) {
 	ErrorF("%s %s: CHIPS: 16 bpp.\n", XCONFIG_GIVEN,
 	       vga256InfoRec.name);
+	CHIPS.ChipHas15bpp = TRUE;
 	CHIPS.ChipHas16bpp = TRUE;
       } else if (vgaBitsPerPixel > 16) {
 	ErrorF("%s %s: CHIPS: 24 bpp.\n", XCONFIG_GIVEN,
@@ -2357,6 +2366,7 @@ Bool ctProbe()
 	    if (vgaBitsPerPixel == 16) {
 		ErrorF("%s %s: CHIPS: 16 bpp.\n", XCONFIG_GIVEN,
 		    vga256InfoRec.name);
+		CHIPS.ChipHas15bpp = TRUE;
 		CHIPS.ChipHas16bpp = TRUE;
 	    } else if (vgaBitsPerPixel > 16) {
 		ErrorF("%s %s: CHIPS: 24 bpp.\n", XCONFIG_GIVEN,
@@ -3773,6 +3783,8 @@ CHIPSInitHiQV32(mode)
 	temp <<= 1;		       /* double the width of the buffer */
     } else if (vgaBitsPerPixel == 24) {
 	temp += temp << 1;
+    } else if (vgaBitsPerPixel == 32) {
+	temp <<= 2;
     } else if (vgaBitsPerPixel < 8) {
 	temp >>= 1;
     }
@@ -3780,14 +3792,16 @@ CHIPSInitHiQV32(mode)
     new->Port_3D4[0x41] = (temp >> 8) & 0x0F;
 
     /* Set paging mode on the HiQV32 architecture, if required */
-    if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options))
+    if ((OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) ||
+       (vgaBitsPerPixel < 8))
 	new->Port_3D6[0x0A] |= 0x1;
 
     new->Port_3D6[0x09] |= 0x1;	       /* Enable extended CRT registers */
     new->Port_3D6[0x0E] = 0;           /* Single map */
-    new->Port_3D6[0x40] |= 0x3;	       /* High Resolution. XR40[1] reserved? */
+    new->Port_3D6[0x40] |= 0x2;	       /* Don't wrap at 256kb */
     new->Port_3D6[0x81] &= 0xF8;
     if (vgaBitsPerPixel >= 8) {
+        new->Port_3D6[0x40] |= 0x1;    /* High Resolution. XR40[1] reserved? */
 	new->Port_3D6[0x81] |= 0x2;    /* 256 Color Video */
     }
     new->Port_3D6[0x80] |= 0x10;       /* Enable cursor output on P0 and P1 */
@@ -3918,6 +3932,9 @@ CHIPSInitHiQV32(mode)
 	new->Port_3D6[0x81] = new->Port_3D6[0x81] & 0xF0 | 0x6;
 	/* 24bpp colour              */
 	new->Port_3D6[0x20] = 0x20;    /*BitBLT Draw Mode for 24 bpp */
+    } else if (vgaBitsPerPixel == 32) {
+	new->Port_3D6[0x81] = new->Port_3D6[0x81] & 0xF0 | 0x7;
+	/* 32bpp colour              */
     }
 
     /*CRT only */
@@ -3938,7 +3955,7 @@ CHIPSInitHiQV32(mode)
 	  new->Port_3D0[0x73] &= 0xC8;   /* TMED 33 Shades of RB and 65 G*/
 	  if (vgaBitsPerPixel == 8)
 	     new->Port_3D0[0x73] |= 0x10;/* TMED 65 Shades of RGB */
-	  else if (vgaBitsPerPixel == 24)
+	  else if ((vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32))
 	     new->Port_3D0[0x73] |= 0x30;/* TMED 256 Shades of RGB */
 	} else {
 	  new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
@@ -4013,6 +4030,8 @@ CHIPSAdjust(x, y)
 	  Base = (Base >> 2) * 3;
 	else
 	  Base = (Base >> 3) * 6;    /* 65550 seems to need 64bit alignment */
+	break;
+    case 32:
 	break;
     default:			     /* 8bpp */
 	Base >>= 2;
@@ -4134,18 +4153,6 @@ CHIPSFbInit()
 	    ctAvoidImageBLT = TRUE;
 	}
 	
-#if 0 /* Disable ping-pong buffers as no ScreenToScreenColorExpand */
-	/* Setup the ping-pong buffer for ScreenToScreen colour expansion */
-	ctColorExpandScratchAddr = ctAllocate(1024, 0x0);
-	if (ctColorExpandScratchAddr == -1) {
-	    ErrorF("%s %s: CHIPS: Too little space for ping-pong buffer.\n",
-		   XCONFIG_PROBED, vga256InfoRec.name);
-	    ctColorExpandScratchAddr = 0;
-	    ctColorExpandScratchSize = 0;
-	} else
-	    ctColorExpandScratchSize = 1024;
-#endif
-
 	/* Allocate space for the pattern that will be used as a planemask */
 	switch  (vga256InfoRec.bitsPerPixel) {
 	  case 8:
@@ -4153,6 +4160,11 @@ CHIPSFbInit()
 	    break;
 	  case 16:
 	    ctBLTPatternAddress = ctAllocate(128, 0x7F);
+	    break;
+	  case 32:
+	    /* One scanline of data used for solid fill */
+	    ctBLTPatternAddress =
+	        ctAllocate((vga256InfoRec.displayWidth << 2), 0x0);
 	    break;
 	}
 	    
@@ -4331,6 +4343,7 @@ ctVideoMode(vgaBitsPerPixel, weightGreen, displaySize)
     int videoMode = 0;
 
     switch (vgaBitsPerPixel) {
+    case 1:
     case 4:
 	videoMode = 0x20;
 	break;

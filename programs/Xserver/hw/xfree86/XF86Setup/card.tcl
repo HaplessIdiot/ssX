@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.13 1997/06/17 08:17:52 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.14 1997/06/25 08:24:53 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -19,12 +19,18 @@
 proc Card_create_widgets { win } {
 	global ServerList XF86Setup_library cardDevNum DeviceIDs
 	global cardDetail cardReadmeWasSeen UseConfigFile cardDriverReadme
+	global pc98_EGC
 
 	set cardDriverReadme "NONE"
 	set w [winpathprefix $win]
 	set cardDevNum 0
-	frame $w.card -width 640 -height 420 \
-		-relief ridge -borderwidth 5
+        if !$pc98_EGC {
+	    frame $w.card -width 640 -height 420 \
+		    -relief ridge -borderwidth 5
+	} else {
+	    frame $w.card -width 640 -height 400 \
+		    -relief ridge -borderwidth 5
+	}
 	frame $w.card.top
 	pack  $w.card.top -side top -fill x -padx 5m
 	if { [llength $DeviceIDs] > 1 } {
@@ -309,6 +315,7 @@ proc Card_cbox_setentry { cb text } {
 
 proc Card_selected { win lbox } {
 	global cardServer cardReadmeWasSeen cardDevNum cardDriverReadme
+	global pc98 Module
 
 	set w [winpathprefix $win]
 	if { ![string length [$lbox curselection]] } return
@@ -369,30 +376,69 @@ proc Card_selected { win lbox } {
 		should work in standard VGA mode"
 	}
 	Card_set_cboxlists $win cardselected
+	if $pc98 {
+	    switch $cardServer {
+		EGC	{ set Module(Load) egc }
+		PEGC	{ set Module(Load) pegc }
+		GANBWAP	{ set Module(Load) ganbwap }
+		NKVNEC	{ set Module(Load) nkvnec }
+		WABS	{ set Module(Load) wabs }
+		WABEP	{ set Module(Load) wabep }
+		WSNA	{ set Module(Load) wsna }
+		TGUI	{ set Module(Load) trident }
+		MGA	{ set Module(Load) mga }
+		NECS3	{ set Module(Load) s3nec }
+		PWSKB	{ set Module(Load) s3pwskb }
+		PWLB	{ set Module(Load) s3pwlb }
+		GA968	{ set Module(Load) s3ga968 }
+	    }
+	}
 }
 
 proc Card_set_cboxlists { win args } {
 	global CardChipSets CardRamDacs CardClockChips cardServer
 	global CardReadmes cardReadmeWasSeen CardOptions Xwinhome
+	global pc98
 
 	set w [winpathprefix $win]
-	if ![file exists $Xwinhome/bin/XF86_$cardServer] {
-	    if ![string compare $args cardselected] {
-		$w.card.bot.message configure -text \
-		    "*** The server required by your card is not\
-		    installed!  Please abort, install the\
-		    $cardServer server as\n\
-		    $Xwinhome/bin/XF86_$cardServer and\
-		    run this program again ***"
-	    } else {
-		$w.card.bot.message configure -text \
-		    "*** The selected server is not\
-		    installed!  Please abort, install the\
-		    $cardServer server as\n\
-		    $Xwinhome/bin/XF86_$cardServer and\
-		    run this program again ***"
+	if !$pc98 {
+	    if ![file exists $Xwinhome/bin/XF86_$cardServer] {
+	        if ![string compare $args cardselected] {
+		    $w.card.bot.message configure -text \
+		        "*** The server required by your card is not\
+		        installed!  Please abort, install the\
+		        $cardServer server as\n\
+		        $Xwinhome/bin/XF86_$cardServer and\
+		        run this program again ***"
+	        } else {
+		    $w.card.bot.message configure -text \
+		        "*** The selected server is not\
+		        installed!  Please abort, install the\
+		        $cardServer server as\n\
+		        $Xwinhome/bin/XF86_$cardServer and\
+		        run this program again ***"
+	        }
+	        bell
 	    }
-	    bell
+	} else {
+	    if ![file exists $Xwinhome/bin/XF98_$cardServer] {
+	        if ![string compare $args cardselected] {
+		    $w.card.bot.message configure -text \
+		        "*** The server required by your card is not\
+		        installed!  Please abort, install the\
+		        $cardServer server as\n\
+		        $Xwinhome/bin/XF98_$cardServer and\
+		        run this program again ***"
+	        } else {
+		    $w.card.bot.message configure -text \
+		        "*** The selected server is not\
+		        installed!  Please abort, install the\
+		        $cardServer server as\n\
+		        $Xwinhome/bin/XF98_$cardServer and\
+		        run this program again ***"
+	        }
+	        bell
+	    }
 	}
 	if { [llength $CardReadmes($cardServer)] > 0 } {
 		$w.card.readme configure -state normal

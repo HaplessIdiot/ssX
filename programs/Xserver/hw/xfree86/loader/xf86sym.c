@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.23 1997/07/05 08:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.24 1997/07/06 05:30:59 dawes Exp $ */
 
 
 
@@ -49,7 +49,6 @@
 #include "xf86_ansic.h"
 
 extern Bool xf86Resetting;
-extern Bool xf86ProbeFailed;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern char **xf86VisualNames;
 extern vgaVideoChipPtr videoDrivers[];

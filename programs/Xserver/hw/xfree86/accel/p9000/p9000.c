@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.51 1997/06/11 12:24:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.52 1997/06/15 12:32:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -76,7 +76,7 @@
 #include "xf86_Config.h"
 
 extern int p9000MaxClock;
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern Bool xf86Exiting, xf86Resetting;
 extern char *xf86VisualNames[];
 
 extern int defaultColorVisualClass;
@@ -145,7 +145,7 @@ ScrnInfoRec p9000InfoRec = {
     0,			/* int s3MClk */
     0,			/* int chipID */
     0,			/* int chipRev */
-    0,			/* unsigned long VGAbase */
+    0xA0000,		/* unsigned long VGAbase */
     0,			/* int s3RefClk */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */

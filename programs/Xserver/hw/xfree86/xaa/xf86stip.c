@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.3 1997/04/18 09:13:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.4 1997/05/21 15:17:12 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -41,6 +41,7 @@
 #include "xf86local.h"
 #include "xf86expblt.h"
 
+extern unsigned char byte_reversed[256];
 
 static void FillStippledCPUToScreenColorExpand(
 #if NeedFunctionPrototypes
@@ -79,6 +80,101 @@ static void FillStippledScreenToScreenColorExpand(
     unsigned int planemask
 #endif
 );
+
+
+static void xf86WriteStippleLeftEdge(x, y, w, h, src, srcwidth,
+srcx, srcy, stipplewidth, stippleheight)
+    int x, y, w, h;
+    unsigned char *src;
+    int srcwidth, srcx, srcy;
+    int stipplewidth, stippleheight;
+{
+    int destaddr, i, shift;
+    unsigned long dworddata;
+    unsigned char *srcp;
+    unsigned char *base;
+    int bytecount;
+    int srcyp;
+
+    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, 0);
+
+    base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+    /* Calculate pointer to origin in stipple. */
+    srcp = srcwidth * srcy + (srcx >> 3) + src;
+    shift = (srcx & 7);
+    srcyp = srcy;
+
+    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_BYTE) {
+        bytecount = 0;
+        for (i = 0; i < h; i++) {
+	    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+		dworddata = (dworddata << 8) || 
+		  (byte_reversed[(*srcp >> shift) & 0xFF]);
+	    else
+		dworddata = (dworddata << 8) || (*srcp >> shift);
+	    srcyp++;
+	    srcp += srcwidth;
+	    if (srcyp >= stippleheight) {
+	        srcyp = 0;
+	        srcp = src + (srcx >> 3);
+	    }
+	    bytecount++;
+	    if (bytecount == 4) {
+ 	        *(unsigned int *)base = dworddata;
+ 	        dworddata = 0;
+	        if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
+	            base += 4;
+                    if (base >= (unsigned char *)
+                    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                        base = (unsigned char *)
+                            xf86AccelInfoRec.CPUToScreenColorExpandBase;
+                }
+            }
+	}
+	if (bytecount) {
+	    *(unsigned int *)base = dworddata;
+	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED))
+	        base += 4;
+	}
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
+	    if ((unsigned long)((unsigned long)base -
+	    (unsigned long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 0x4)
+	        *(unsigned int *)base = 0;
+    }
+    else {
+        /* DWORD padding of scanlines. */
+        for (i = 0; i < h; i++) {
+            if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+                if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	            dworddata = (byte_reversed_expand3[(*srcp >> shift) & 0xFF]);
+	        else
+	            dworddata = byte_expand3[(*srcp >> shift) & 0xFF];
+	    else
+                if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	            dworddata = (byte_reversed[(*srcp >> shift) & 0xFF]);
+	        else
+	            dworddata = *srcp >> shift;
+	    srcyp++;
+	    srcp += srcwidth;
+	    if (srcyp >= stippleheight) {
+	        srcyp = 0;
+	        srcp = src + (srcx >> 3);
+	    }
+ 	    *(unsigned int *)base = dworddata;
+	    if (!(xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)) {
+	        base += 4;
+                if (base >= (unsigned char *)
+                xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                    base = (unsigned char *)
+                        xf86AccelInfoRec.CPUToScreenColorExpandBase;
+            }
+	}
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
+            if (h & 0x1)
+                *(unsigned int *)base = 0;
+    }
+}
 
 void
 xf86FillRectStippledCPUToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit)
@@ -191,7 +287,6 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     unsigned int planemask;
 {
     int skipleft;
-    int bytewidth;		       /* Area width in bytes. */
     unsigned char *srcp;
     unsigned char *base;
     unsigned int *(*DrawStippleScanlineFunc)(
@@ -221,14 +316,27 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
 	    bg, fg, rop, planemask);
 
     if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-	    DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirstFixedBase;
+	if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+		DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirstFixedBase;
+	    else
+	    	DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
 	else
-	    DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
-    else if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-	DrawStippleScanlineFunc = xf86DrawStippleScanlineFixedBase;
-    else
-	DrawStippleScanlineFunc = xf86DrawStippleScanline;
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+		DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirstFixedBase;
+	    else
+	    	DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
+     else
+	if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+		DrawStippleScanlineFunc = xf86DrawStippleScanline3FixedBase;
+	    else
+		DrawStippleScanlineFunc = xf86DrawStippleScanline3;
+	else
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+		DrawStippleScanlineFunc = xf86DrawStippleScanlineFixedBase;
+	    else
+		DrawStippleScanlineFunc = xf86DrawStippleScanline;
 
     if ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING)
     && ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X)
@@ -243,7 +351,34 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
 	w += skipleft;
     }
     else {
-	/* NOT SUPPORTED YET */
+        /* Handle the left edge (skipleft pixels wide). */ 
+        skipleft = 8 - (srcx & 7);
+        if (skipleft == 8)
+            skipleft = 0;
+        if (skipleft) {
+	    /* Draw left edge. */
+	    int done;
+	    done = 0;
+	    if (skipleft > (stipplewidth - srcx))
+	        skipleft = stipplewidth - srcx;
+	    if (skipleft >= w) {
+	        skipleft = w;
+	        done = 1;
+	    }
+	    xf86WriteStippleLeftEdge(x, y, skipleft, h, src, srcwidth,
+	        srcx, srcy, stipplewidth, stippleheight);
+	    if (done) {
+		SET_SYNC_FLAG;
+	        return;
+	    }
+	    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+	        xf86AccelInfoRec.Sync();
+	}
+        x += skipleft;
+        srcx += skipleft;
+	if (srcx == stipplewidth) srcx = 0;
+        w -= skipleft;
+        skipleft = 0;
     }
 
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, skipleft);
@@ -253,9 +388,6 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     /* Calculate pointer to scanline in bitmap. */
     srcp = srcwidth * srcy + src;
  
-    /* Number of stipple bytes to be written for each bitmap scanline. */
-    bytewidth = (w + 7) / 8;
-
     if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
 	int i;
 	for (i = 0; i < h; i++) {
@@ -345,9 +477,15 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
             x, y, w, h, bg, fg, rop, planemask);
 
     if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
+	else
+	    DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
     else
-	DrawStippleScanlineFunc = xf86DrawStippleScanline;
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    DrawStippleScanlineFunc = xf86DrawStippleScanline3;
+	else
+	    DrawStippleScanlineFunc = xf86DrawStippleScanline;
 
     /* Calculate pointer to scanline in bitmap. */
     srcp = srcwidth * srcy + src;

@@ -22,10 +22,12 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.1 1997/07/06 05:30:59 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
+
+#include "xf86_libc.h"
 
 #ifdef XFree86LOADER
 /*

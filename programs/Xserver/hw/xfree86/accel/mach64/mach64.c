@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.80 1997/06/11 12:24:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.81 1997/06/15 07:12:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -80,7 +80,7 @@
 #endif
 
 extern int defaultColorVisualClass;
-extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting;
 extern void mach64QueryBestSize();
 extern void mach64WarpCursor();
 extern void mach64RepositionCursor();
@@ -208,7 +208,7 @@ ScrnInfoRec mach64InfoRec = {
     0,                  /* int s3MClk */
     0,                  /* int chipID */
     0,                  /* int chipRev */
-    0,                  /* unsigned long VGAbase */
+    0xA0000,            /* unsigned long VGAbase */
     0,                  /* int s3RefClk */
     -1,                 /* int s3BlankDelay */
     0,			/* int textClockFreq */
@@ -778,10 +778,10 @@ GetATIPCIInformation()
 		if ((pcrp->_user_config_0 & 0x04) != 0x04) {
 #ifdef DEBUG
 		    ErrorF("Setting bit 0x04 in PCI userconfig for card %d\n",
-			   pcrp->_cardnum);
+			   pcrp->_device);
 #endif
 		    xf86writepci(mach64InfoRec.scrnIndex, pcrp->_bus,
-			pcrp->_cardnum, pcrp->_func,
+			pcrp->_device, pcrp->_func,
 			PCI_REG_USERCONFIG, 0x04, 0x04);
 		}
 	    } else {

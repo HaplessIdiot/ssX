@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.6 1996/09/29 12:51:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.7 1996/12/27 06:54:02 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -16,9 +16,15 @@
 #
 
 proc Done_create_widgets { win } {
+	global pc98_EGC
 	set w [winpathprefix $win]
-	frame $w.done -width 640 -height 420 \
-		-relief ridge -borderwidth 5
+        if !$pc98_EGC {
+	    frame $w.done -width 640 -height 420 \
+		    -relief ridge -borderwidth 5
+	} else {
+	    frame $w.done -width 640 -height 400 \
+		    -relief ridge -borderwidth 5
+	}
 	frame $w.done.pad -relief raised -bd 3
 	pack  $w.done.pad -padx 20 -pady 15 -expand yes
 	label $w.done.pad.text
