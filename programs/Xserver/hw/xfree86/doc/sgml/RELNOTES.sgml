@@ -9,7 +9,7 @@
 <date>28 January 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.105 2004/02/05 18:12:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.106 2004/02/07 04:37:36 dawes Exp $
 </ident>
 
 <abstract>
@@ -1143,6 +1143,7 @@ Matthew W. S. Bell,
 Vano Beridze,
 Hiroyuki Bessho,
 Andrew Bevitt,
+Christian Biere,
 Martin Birgmeier,
 Jakub Bogusz,
 Le Hong Boi,
@@ -1325,6 +1326,7 @@ Mike Urban,
 Simon Vallet,
 Thuraiappah Vaseeharan,
 Luc Verhaegen,
+Yann Vernier,
 Michail Vidiassov,
 Sebastiano Vigna,
 Mark Vojkovich,
