@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.22 1997/01/19 12:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.23 1997/01/20 12:37:58 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1484,6 +1484,9 @@ vgaMGAPtr restore;
 	for (i = 0; i < 6; i++)
 		outw(0x3DE, (restore->ExtVga[i] << 8) | i);
 
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
+		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
+
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
@@ -1503,9 +1506,6 @@ vgaMGAPtr restore;
 	
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
-
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
-		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
 
 	MGAWaitForBlitter();
 	MGAEngineInit();

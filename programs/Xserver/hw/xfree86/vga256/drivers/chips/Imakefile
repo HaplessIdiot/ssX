@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.13 1997/01/12 10:42:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.14 1997/01/18 06:56:19 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -62,7 +62,7 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(ct_drv,$(OBJS))
 
-#ifdef OLD_ACCEL
+#ifdef OLD_ACCL
 ObjectFromSpecialSource(ct_seg, ct_line, -DPOLYSEGMENT)
 ObjectFromSpecialSource(ct_blitmm, ct_blitter, -DCHIPS_MMIO)
 ObjectFromSpecialSource(ct_solidmm, ct_solid, -DCHIPS_MMIO)

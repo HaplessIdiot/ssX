@@ -51,9 +51,10 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	This option may be used to specify the start address of the linear
 	frame buffer. By default for VLBus/EISA cards it is at 60MB.
 	For the 8900CL/D, it is at 15MB.
-<tag>Option &dquot;mmio&dquot;</tag>
-	This option turns on Memory Mapped IO support. It increases speed,
-	but hasn't been extensively tested yet.
+<tag>Option &dquot;no_mmio&dquot;</tag>
+	This option turns off Memory Mapped IO support.  MMIO is enabled
+	by default when acceleration is enabled.  Acceleration doesn't work
+	well when MMIO is disabled.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
 	This is known to be buggy.
@@ -150,7 +151,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.20 1997/01/24 09:32:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.21 1997/01/25 03:22:24 dawes Exp $
 
 
 

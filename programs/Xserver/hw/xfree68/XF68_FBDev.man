@@ -1,6 +1,6 @@
 .\" $XConsortium: XF68_FBDev.man /main/2 1996/12/09 17:32:57 kaleb $
-.\" $XFree86: xc/programs/Xserver/hw/xfree68/XF68_FBDev.man,v 3.2 1996/12/27 06:51:53 dawes Exp $
-.TH XF68_FBDev 1 "Version 3.1.2F"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree68/XF68_FBDev.man,v 3.3 1997/01/25 04:13:45 dawes Exp $
+.TH XF68_FBDev 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF68_FBDev - X Window System servers for the Linux/m68k Frame Buffer Device
 .SH SYNOPSIS

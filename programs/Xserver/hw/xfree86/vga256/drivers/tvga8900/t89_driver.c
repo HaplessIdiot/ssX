@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.64 1997/01/27 08:24:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.65 1997/01/27 11:28:32 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -684,6 +684,9 @@ TVGA8900Probe()
 		tridentIsTGUI = TRUE;		/* Reports of this works */
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
+#ifndef MONOVGA
+		TVGA8900.ChipUse2Banks = TRUE;
+#endif
 		tridentTGUIProgrammableClocks = TRUE;
 		tridentHasAcceleration = TRUE;
 		break;
@@ -693,6 +696,9 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
+#ifndef MONOVGA
+		TVGA8900.ChipUse2Banks = TRUE;
+#endif
 		break;
 	case TGUI9430DGi:
 		tridentHWCursorType = 2;		/* HW cursor */
@@ -704,6 +710,9 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
+#ifndef MONOVGA
+		TVGA8900.ChipUse2Banks = TRUE;
+#endif
 		break;
 	case TGUI9440AGi:
 		tridentIsTGUI = TRUE;
@@ -716,6 +725,9 @@ TVGA8900Probe()
 		else
 			tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
+#ifndef MONOVGA
+		TVGA8900.ChipUse2Banks = TRUE;
+#endif
 		break;
 	case TGUI96xx:
 		/* We've found a 96xx graphics engine */
@@ -766,6 +778,9 @@ TVGA8900Probe()
 			tridentHasAcceleration = TRUE;
 		}
 		TVGA8900.ChipHas16bpp = TRUE;
+#ifndef MONOVGA
+		TVGA8900.ChipUse2Banks = TRUE;
+#endif
 		if (IsCyber)
 		{
 			/* Allow stretch mode on LCD */
@@ -1009,7 +1024,7 @@ TVGA8900Probe()
 	{
 		/* TGUI Accelerator stuff */
 		OFLG_SET(OPTION_NOACCEL, &TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_MMIO, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_NO_MMIO, &TVGA8900.ChipOptionFlags);
 		if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 			vgaSetPitchAdjustHook(TGUIPitchAdjust);
 	}
@@ -1197,7 +1212,7 @@ TVGA8900FbInit()
 	{
 	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	   {
-		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
+		if (!OFLG_ISSET(OPTION_NO_MMIO, &vga256InfoRec.options))
 			TGUIAccelInitMMIO();
 		else
 			TGUIAccelInit();
@@ -1796,7 +1811,7 @@ TVGA8900Init(mode)
 		if ((!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) &&
 			tridentHasAcceleration)
 		{
-			if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
+			if (!OFLG_ISSET(OPTION_NO_MMIO, &vga256InfoRec.options))
 			{
 #ifdef PC98_TGUI
 				new->GraphEngReg = 0x83; /* Enable MMIO, GER */
