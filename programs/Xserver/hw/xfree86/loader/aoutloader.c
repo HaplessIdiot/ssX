@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.17 2001/11/16 16:47:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.18 2003/10/15 16:29:02 dawes Exp $ */
 
 /*
  *
@@ -717,8 +717,7 @@ AOUTLoadModule(loaderPtr modrec, int aoutfd, LOOKUP ** ppLookup)
 }
 
 void
-AOUTResolveSymbols(mod)
-    void *mod;
+AOUTResolveSymbols(void *mod)
 {
     AOUTRelocPtr newlist, p, tmp;
 
@@ -742,8 +741,7 @@ AOUTResolveSymbols(mod)
 }				/* AOUTResolveSymbols */
 
 int
-AOUTCheckForUnresolved(mod)
-    void *mod;
+AOUTCheckForUnresolved(void *mod)
 {
     int symnum;
     AOUTRelocPtr crel;
