@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.3 1994/07/24 11:47:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.4 1994/08/31 04:22:59 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -36,7 +36,7 @@
 /* CODE AND MAY NOT BE      */
 /* FINISHED                 */
 #define P9000_ACCEL        /* Use acceleration */
-/* #define P9000_IM_ACCEL   */  /* Use image read from p9000im.c */
+#define P9000_IM_ACCEL     /* Use image read from p9000im.c */
 #define P9000_ORCHID_SUP   /* Support the Orchid P9000 (may not work) */
 #define P9000_VPRPCI_SUP   /* Support the Viper PCI (may not work yet) */
 /* #define DEBUG            */

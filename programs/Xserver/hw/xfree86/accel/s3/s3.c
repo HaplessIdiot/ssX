@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.22 1994/09/04 10:46:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.23 1994/09/07 15:51:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -164,6 +164,7 @@ static Bool LegendClockSelect();
 static Bool s3ClockSelect();
 static Bool icd2061ClockSelect();
 static Bool s3GendacClockSelect();
+static Bool ti3025ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
@@ -412,7 +413,7 @@ s3Probe()
       }
    }
 
-   card_id = s3DetectELSA(&card, &serno, &max_pix_clock, &max_mem_clock);
+   card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock, &max_mem_clock);
    if (card_id > 0) {
       ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
@@ -658,22 +659,51 @@ s3Probe()
 
       /* If it wasn't a Bt485 or AT&T 20C505, probe for the Ti3020 */
       if (s3RamdacType == UNKNOWN_DAC) {
+	 unsigned char saveCR55, saveCR5C, saveTIndx, saveTIdata;
+
 	 outb(vgaCRIndex, 0x55);
-	 tmp = inb(vgaCRReg);
+	 saveCR55 = inb(vgaCRReg);
 	 /* toggle to upper 4 direct registers */
-	 outb(vgaCRReg, (tmp & 0xFC) | 0x01);
-	 tmp1 = inb(TI_INDEX_REG);
+	 outb(vgaCRReg, (saveCR55 & 0xFC) | 0x01);
+	 saveTIndx = inb(TI_INDEX_REG);
 	 outb(TI_INDEX_REG, TI_ID);
-	 if (inb(TI_DATA_REG) == TI_VIEWPOINT_ID) {
+	 if (inb(TI_DATA_REG) == TI_VIEWPOINT20_ID) {
 	    /*
-	     * Found TI ViewPoint DAC
+	     * Found TI ViewPoint 3020 DAC
 	     */
 	    ErrorF("%s %s: Detected a TI ViewPoint 3020 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = TI3020_DAC;
+	 } else {
+	    outb(vgaCRIndex, 0x5C);
+	    saveCR5C = inb(vgaCRReg);
+	    /* clear 0x20 (RS4) for 3020 mode */
+	    outb(vgaCRReg, saveCR5C & 0xDF);
+	    /* already twiddled CR55 above */
+	    outb(TI_INDEX_REG, TI_CURS_CONTROL);
+	    saveTIdata = inb(TI_DATA_REG);
+	    /* clear TI_PLANAR_ACCESS bit */
+	    outb(TI_DATA_REG, saveTIdata & 0x7F);
+
+	    outb(TI_INDEX_REG, TI_ID);
+	    if (inb(TI_DATA_REG) == TI_VIEWPOINT25_ID) {
+	       /*
+	        * Found TI ViewPoint 3025 DAC
+	        */
+	       ErrorF("%s %s: Detected a TI ViewPoint 3025 RAMDAC\n",
+	              XCONFIG_PROBED, s3InfoRec.name);
+	       s3RamdacType = TI3025_DAC;
+	    }
+
+	    /* restore this mess */
+	    outb(TI_INDEX_REG, TI_CURS_CONTROL);
+	    outb(TI_DATA_REG, saveTIdata);
+	    outb(vgaCRIndex, 0x5C);
+	    outb(vgaCRReg, saveCR5C);
+	    outb(vgaCRIndex, 0x55);
 	 }
-	 outb(TI_INDEX_REG, tmp1);
-	 outb(vgaCRReg, tmp);
+	 outb(TI_INDEX_REG, saveTIndx);
+	 outb(vgaCRReg, saveCR55);
       }
 
       /* If it wasn't a Ti3020, probe for the ATT 20C498 */
@@ -773,25 +803,23 @@ s3Probe()
       switch (s3RamdacType) {
       case BT485_DAC:
       case ATT20C505_DAC:
-	 if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId)) {
-	    chips = "928 and 964";
-	 }
-	 break;
       case TI3020_DAC:
-	 if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId)) {
-	    chips = "928 and 964";
-	 }
+	 if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId))
+	    chips = "928 and 964 chips";
+	 break;
+      case TI3025_DAC:
+	 if (!S3_964_SERIES(s3ChipId))
+	    chips = "the 964 chip";
 	 break;
       case ATT20C498_DAC:
       case STG1700_DAC:
       case S3_SDAC_DAC:
-	 if (!S3_864_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) {
-	    chips = "864 and 805i";
-	 }
+	 if (!S3_864_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
+	    chips = "864 and 805i chips";
 	 break;
       }
       if (chips) {
-	 ErrorF("%s %s: Ramdac \"%s\" is only supported with %s chips\n",
+	 ErrorF("%s %s: Ramdac \"%s\" is only supported with %s\n",
 		XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac, chips);
 	 OFLG_CLR(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag);
 	 /* Treat the ramdac as a "normal" dac */
@@ -832,6 +860,9 @@ s3Probe()
 	 else
 	    s3InfoRec.dacSpeed = 135000;
 	 break;
+      case TI3025_DAC:
+	 s3InfoRec.dacSpeed = 135000;  /* push 135MHz part to 170+ ? */
+	 break;
       }
    }
    
@@ -854,21 +885,21 @@ s3Probe()
       }
    }
 
-   if (DAC_IS_TI3020) {
+   if (DAC_IS_TI3020_SERIES) {
       if (OFLG_ISSET(OPTION_NO_TI3020_CURS, &s3InfoRec.options)) {
          ErrorF("%s %s: Use of Ti3020 cursor disabled in Xconfig\n",
 	        XCONFIG_GIVEN, s3InfoRec.name);
 	 OFLG_CLR(OPTION_TI3020_CURS, &s3InfoRec.options);
       } else {
 	 /* use the ramdac cursor by default */
-	 ErrorF("%s %s: Using hardware cursor from Ti3020 RAMDAC\n",
+	 ErrorF("%s %s: Using hardware cursor from Ti3020/25 RAMDAC\n",
 	        OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) ?
 		XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name);
 	 OFLG_SET(OPTION_TI3020_CURS, &s3InfoRec.options);
       }
    } else {
       if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options)) {
-	 ErrorF("%s %s: Ti30205 cursor requires a Ti3020 RAMDAC\n",
+	 ErrorF("%s %s: Ti3020 cursor requires a Ti3020/25 RAMDAC\n",
 		XCONFIG_PROBED, s3InfoRec.name);
       }
    }
@@ -908,6 +939,7 @@ s3Probe()
       }
       break;
    case TI3020_DAC:
+   case TI3025_DAC:
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       break;
    default:
@@ -919,12 +951,13 @@ s3Probe()
       s3InfoRec.maxClock = s3InfoRec.dacSpeed;
 
    /* Set the pix-mux description based on the ramdac type */
-   if (DAC_IS_TI3020) {
+   if (DAC_IS_TI3020_SERIES) {
       pixMuxPossible = TRUE;
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
-      if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options) ||
+          (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) && DAC_IS_TI3025)) {
          nonMuxMaxClock = 0;  /* 964 kann only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
       }
@@ -973,7 +1006,13 @@ s3Probe()
     * generation ramdacs will have a built in clock (i.e. TI 3025)
     */
 
-   if (OFLG_ISSET(OPTION_LEGEND, &s3InfoRec.options)) {
+   if (DAC_IS_TI3025) {
+      s3ClockSelectFunc = ti3025ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using TI 3025 programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+	 numClocks = 3;
+   } else if (OFLG_ISSET(OPTION_LEGEND, &s3InfoRec.options)) {
       s3ClockSelectFunc = LegendClockSelect;
       numClocks = 32;
    } else if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
@@ -1231,7 +1270,7 @@ s3Probe()
       } while (pMode != pEnd);
    }
 
-   if (DAC_IS_BT485_SERIES || DAC_IS_TI3020) {
+   if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES) {
       if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
 	 s3DAC8Bit = TRUE;
       if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
@@ -1540,7 +1579,7 @@ icd2061ClockSelect(no)
 	 } else if (DAC_IS_TI3020) {
 	    if (freq > 100000) {
 	       s3ClockDouble = TRUE;
-	       /* Use Ti3020 clock doubler */
+	       /* Use Ti3020/25 clock doubler */
 	       freq /= 2;
 	    } else {
 	       s3ClockDouble = FALSE;
@@ -1642,6 +1681,62 @@ s3GendacClockSelect(no)
 	    freq = s3InfoRec.dacSpeed;
 	 }
 	 (void) S3gendacSetClock(freq, 2); /* can't fail */
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 outb(vgaCRReg, 0x02);
+	 usleep(150000);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+
+static Bool
+ti3025ClockSelect(no)
+     int   no;
+
+{
+   Bool result = TRUE;
+   int freq;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(no)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(no);
+      break;
+   default:
+      if (no < 2) {
+         result = s3ClockSelect(no);
+      } else {
+	 if (no >= s3InfoRec.clocks) {
+	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
+	    result = FALSE;
+	    break;
+	 }
+	 /* Start with freq in kHz */
+	 freq = s3InfoRec.clock[no];
+	 /* Check if clock frequency is within range */
+	 if (freq < 20000) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) too low for TI 3025",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+	 if (freq > s3InfoRec.dacSpeed) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) too high for TI 3025",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    freq = s3InfoRec.dacSpeed;
+	 }
+	 if (freq > 100000) {
+	       s3ClockDouble = TRUE;
+	       freq /= 2;
+	 } else {
+	    s3ClockDouble = FALSE;
+	 }
+	 (void) Ti3025SetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
 	 usleep(150000);

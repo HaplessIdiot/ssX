@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.0 1994/08/31 04:29:48 dawes Exp $ */
 
 #ifndef _S3ELSA_H_
 #define _S3ELSA_H_
@@ -97,6 +97,7 @@ _XFUNCPROTOBEGIN
 
 extern int s3DetectELSA(
 #if NeedFunctionPrototypes
+			int BIOSbase,
 			char **pcard, 
 			char **pserno,
 			int *max_pix_clock, 

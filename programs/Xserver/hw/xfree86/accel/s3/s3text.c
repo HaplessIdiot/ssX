@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.5 1994/08/31 04:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.6 1994/09/07 15:51:21 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -167,12 +167,13 @@ unsigned char *pb;
 {
    BLOCK_CURSOR;
 
-   WaitQueue16_32(5,8);
+   WaitQueue16_32(1, 2);
    S3_OUTW32 (WRT_MASK, id);
+   WaitQueue16_32(5, 7);
    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[GXcopy]);
    S3_OUTW (BKGD_MIX, BSS_BKGDCOL | s3alu[GXcopy]);
-   S3_OUTW32 (FRGD_COLOR,  ~0);
-   S3_OUTW32 (BKGD_COLOR,  0);
+   S3_OUTW32 (FRGD_COLOR, ~0);
+   S3_OUTW32 (BKGD_COLOR, 0);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
 
    s3SimpleStipple(x, y, width, height, pb, pwidth);

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.1 94/03/28 21:25:34 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.1 1994/07/24 11:50:08 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -98,6 +98,22 @@ extern void xf86GetClocks(
 #endif
 );
 
+/* S3gendac.c */
+extern int S3gendacSetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
+/* Ti3025clk.c */
+extern void Ti3025SetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
 /* BUSmemcpy.s */
 extern void BusToMem(
 #if NeedFunctionPrototypes
@@ -115,6 +131,7 @@ extern void MemToBus(
 #endif
 );
 
+/* SlowBcopy.s */
 extern void SlowBcopy(
 #if NeedFunctionPrototypes
 	char *,
@@ -122,6 +139,14 @@ extern void SlowBcopy(
 	int
 #endif
 );
+
+/* IODelay.s */
+extern void GlennsIODelay(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
 _XFUNCPROTOEND
 
 #endif /* _XF86_HWLIB_H */

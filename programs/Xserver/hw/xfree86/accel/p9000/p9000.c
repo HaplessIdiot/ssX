@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.11 1994/09/04 10:46:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.12 1994/09/07 15:50:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -226,7 +226,8 @@ p9000Probe()
 
     if (!xf86LinearVidMem())
       {
-	ErrorF("This operating system does not support memory mapping of linear regions.\nAs a result, it can not be used with this server\n");
+	ErrorF("%s %s: This operating system does not support memory mapping of linear regions.\nAs a result, it can not be used with this server\n",
+	       XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
 
@@ -246,8 +247,8 @@ p9000Probe()
 	  }
 	if (curvendor >= Num_p9000_Vendors)
 	  {
-	    ErrorF("Chipset specified in Xconfig (%s) is not recognized!\n",
-		   p9000InfoRec.chipset);
+	    ErrorF("%s %s: Chipset specified in Xconfig (%s) is not recognized!\n",
+		   XCONFIG_GIVEN, p9000InfoRec.name, p9000InfoRec.chipset);
 	    return(FALSE);
 	  }
       }
@@ -263,7 +264,7 @@ p9000Probe()
 	  }
 	if (curvendor >= Num_p9000_Vendors)
 	  {
-	    ErrorF("Autodetection of chipset failed.  Specify explicitly in Xconfig.\n");
+	    ErrorF("%s %s: Autodetection of chipset failed.  Specify explicitly in Xconfig.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	    return(FALSE);
 	  }
       }
@@ -280,13 +281,13 @@ p9000Probe()
     
     if (!p9000InfoRec.clocks)
       {
-	ErrorF("Autodetection of clocks is not supported.\n    Explicitly specify in Xconfig file on a Clocks line.\n");
+	ErrorF("%s %s: Autodetection of clocks is not supported.\n\tExplicitly specify in Xconfig file on a Clocks line.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
     
     if (!p9000InfoRec.videoRam)
       {
-	ErrorF("Autodetection of video RAM is not yet supported.\n    Explicitly specify VideoRAM in Xconfig file.\n");
+	ErrorF("%s %s: Autodetection of video RAM is not yet supported.\n\tExplicitly specify VideoRAM in Xconfig file.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);	
       }
     memavail = p9000InfoRec.videoRam*1024;
@@ -320,7 +321,7 @@ p9000Probe()
 	p9000MaxClock = P9000_MAX_32BPP_CLOCK;
 	break;
       default:
-	ErrorF("Invalid value for bpp.  Valid values are 8, 16, and 32.\n");
+	ErrorF("%s %s: Invalid value for bpp.  Valid values are 8, 16, and 32.\n", XCONFIG_GIVEN, p9000InfoRec.name);
 	return(FALSE);
       }
 
@@ -335,7 +336,8 @@ p9000Probe()
 	  }
 	if (i == 2) 
 	  {
-	    ErrorF("Invalid color weighting\n");
+	    ErrorF("%s %s: Invalid color weighting\n", 
+		   XCONFIG_GIVEN, p9000InfoRec.name);
 	    return(FALSE);
 	  }
 	if (i == RGB16_555)
@@ -384,34 +386,37 @@ p9000Probe()
 	 */
         if (pMode->HDisplay * pMode->VDisplay * (p9000InfoRec.bitsPerPixel / 8)
 	    > memavail)
-	  ErrorF("%s: Too little memory for mode %s\n", p9000InfoRec.name,
-		 pMode->name);
+	  ErrorF("%s %s: Too little memory for mode %s\n", XCONFIG_PROBED,
+		 p9000InfoRec.name, pMode->name);
 	else if ((pNewModeRing) && (pNewModeRing->VDisplay != pMode->VDisplay)
 		 && (pNewModeRing->HDisplay != pMode->HDisplay))
-          ErrorF("%s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n",
+          ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n", XCONFIG_PROBED,
 		 p9000InfoRec.name, pMode->name, pNewModeRing->name);
 	/* We should do a better test than this...  *TO*DO* */
 	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
-	else if ( (pMode->HDisplay > 1344 ) && (p9000InfoRec.bitsPerPixel== 8) ||
-                  (pMode->HDisplay > 1152 ) && (p9000InfoRec.bitsPerPixel==16) ||
-                  (pMode->HDisplay >  832 ) && (p9000InfoRec.bitsPerPixel==32) )
-          ErrorF("%s: The width of mode %s is too large for %dbpp\n",
-	              p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
-        else if ( (pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel== 8) ||
-                  (pMode->VDisplay >  910) && (p9000InfoRec.bitsPerPixel==16) ||
-                  (pMode->VDisplay >  632) && (p9000InfoRec.bitsPerPixel==32) )
-          ErrorF("%s: The height of mode %s is too large for %dbpp\n",
-	              p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
+	else if ((pMode->HDisplay > 1344) && (p9000InfoRec.bitsPerPixel==8)
+		 || (pMode->HDisplay > 1152) && (p9000InfoRec.bitsPerPixel==16)
+		 || (pMode->HDisplay > 832) && (p9000InfoRec.bitsPerPixel==32))
+          ErrorF("%s %s: The width of mode %s is too large for %dbpp\n",
+		 XCONFIG_PROBED, p9000InfoRec.name, 
+		 pMode->name,p9000InfoRec.bitsPerPixel);
+        else if ((pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel==8)
+		 || (pMode->VDisplay > 910) && (p9000InfoRec.bitsPerPixel==16)
+		 || (pMode->VDisplay > 632) && (p9000InfoRec.bitsPerPixel==32))
+          ErrorF("%s %s: The height of mode %s is too large for %dbpp\n",
+		 XCONFIG_PROBED, 
+		 p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
 	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
-	  ErrorF("%s: The clock speed of mode %s is too high (max %ld MHz)\n",
-		 p9000InfoRec.name, pMode->name, p9000MaxClock/1000);	  
+	  ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz)\n",
+		 XCONFIG_PROBED, p9000InfoRec.name, 
+		 pMode->name, p9000MaxClock/1000);	  
 	/* See if the horizontal resolution is valid.  This is constrained
 	 * by possible values for sysconfig */
 	else if (!p9000CalcSysconfigHres(pMode->HDisplay, 
 					 p9000InfoRec.bitsPerPixel/8,
 					 &tmpsysconfig))
-	  ErrorF("%s: The width of mode %s is not valid\n",
-		 p9000InfoRec.name, pMode->name);
+	  ErrorF("%s %s: The width of mode %s is not valid\n",
+		 XCONFIG_PROBED, p9000InfoRec.name, pMode->name);
 	else   /* The mode has passed and is valid */
 	  {
 	    /* Link in the mode */
@@ -430,7 +435,8 @@ p9000Probe()
     
     if (pLastAddedMode == NULL)
       {
-	ErrorF("No valid modes were found!\n");
+	ErrorF("%s %s: No valid modes were found!\n",
+	       XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
 
@@ -534,7 +540,8 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 
   xf86EnableIOPorts(scr_index);
 #ifdef DEBUG
-    ErrorF("Entered p9000Initialize...\n");
+  ErrorF("Entered p9000Initialize...\n");
+  ErrorF("Entering Server Generation %d\n", serverGeneration);
 #endif
 
 #ifdef P9000_ACCEL
@@ -542,20 +549,23 @@ p9000Initialize (scr_index, pScreen, argc, argv)
   p9000InitGC();
 #endif
 
-  /* Maps P9000 linear address space into video memory */
-  p9000InitAperture(scr_index);
-
-  /* Do vendor specific initialization */
-  p9000VendorPtr->Initialize(scr_index, pScreen, argc, argv);
-
-  /* Set up swap bits table */
-  for (i = 0; i < 256; i++)
+  if (serverGeneration == 1)  /* First time */
     {
-      p9000ReorderSwapBits(i, p9000SwapBits[i]);
-    }
+      /* Maps P9000 linear address space into video memory */
+      p9000InitAperture(scr_index);
 
-  /* Save the VT's colormap and such before anyone messes with it */
-  p9000SaveVT();
+      /* Do vendor specific initialization */
+      p9000VendorPtr->Initialize(scr_index, pScreen, argc, argv);
+
+      /* Set up swap bits table */
+      for (i = 0; i < 256; i++)
+	{
+	  p9000ReorderSwapBits(i, p9000SwapBits[i]);
+	}
+
+      /* Save the VT's colormap and such before anyone messes with it */
+      p9000SaveVT();
+    }
 
   /* Calculates registers for this mode */
   p9000CalcCRTCRegs(&p9000CRTCRegs, p9000InfoRec.modes);
@@ -563,8 +573,11 @@ p9000Initialize (scr_index, pScreen, argc, argv)
   /* Enables the P9000 */
   p9000VendorPtr->Enable(&p9000CRTCRegs);
 
-  /* Calculates registers specific to the P9000 and its memory size */
-  p9000CalcMiscRegs();  /* Enable must be run before this! */
+  if (serverGeneration == 1)
+  {
+    /* Calculates registers specific to the P9000 and its memory size */
+    p9000CalcMiscRegs();  /* Enable must be run before this! */
+  }
 
 #ifdef DEBUG
     ErrorF("About to enter p9000SetCRTCRegs\n");
@@ -652,9 +665,11 @@ p9000EnterLeaveVT(enter, screen_idx)
      Bool enter;
      int screen_idx;
 {
-
 #ifdef DEBUG
-  ErrorF("Entered EnterLeaveVT: ");
+  ErrorF("EnterLeave: %s with xf86Resetting=%s xf86Exiting=%s\n",
+	 enter?"Entering":"Leaving",
+	 xf86Resetting?"TRUE":"FALSE",
+	 xf86Exiting?"TRUE":"FALSE");
 #endif
   if (enter)
     {
@@ -675,6 +690,7 @@ p9000EnterLeaveVT(enter, screen_idx)
 #endif
       p9000CleanUp();     /* This does p9000RestoreVT() */
       xf86DisableIOPorts(p9000InfoRec.scrnIndex);
+      AlreadyInited = FALSE;
     }
 }
 

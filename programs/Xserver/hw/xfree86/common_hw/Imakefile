@@ -1,15 +1,15 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:10 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.0 1994/06/12 16:36:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.1 1994/07/24 11:49:35 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ICD2061Acal.c ICD2061Aset.c ICD2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
-       SC11412.c ATTDac.c S3gendac.c SlowBcopy.s
+       SC11412.c ATTDac.c S3gendac.c Ti3025clk.c SlowBcopy.s IODelay.s
 
 OBJS = ICD2061Acal.o ICD2061Aset.o ICD2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
-       SC11412.o ATTDac.o S3gendac.o SlowBcopy.o
+       SC11412.o ATTDac.o S3gendac.o Ti3025clk.o SlowBcopy.o IODelay.o
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I../../vga \
-	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I../accel/s3
 
 NormalLibraryObjectRule()
 NormalAsmObjectRule()

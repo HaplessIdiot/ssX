@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.3 1994/09/04 10:47:37 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.4 1994/09/07 15:51:53 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -406,12 +406,12 @@ ddxProcessArgument (argc, argv, i)
      char *argv[];
      int i;
 {
-  if (!strcmp(argv[i], "-xconfig"))
+  if (getuid() == 0 && !strcmp(argv[i], "-xf86config"))
   {
     if (!argv[i+1])
       return 0;
     if (strlen(argv[i+1]) >= PATH_MAX)
-      FatalError("Xconfig path name too long\n");
+      FatalError("XF86Config path name too long\n");
     strcpy(xf86ConfigFile, argv[i+1]);
     return 2;
   }
@@ -517,7 +517,8 @@ ddxUseMsg()
   ErrorF("\n");
   ErrorF("\n");
   ErrorF("Device Dependent Usage\n");
-  ErrorF("-xconfig file          specify a configuration file\n");
+  if (getuid() == 0)
+    ErrorF("-xf86config file       specify a configuration file\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");

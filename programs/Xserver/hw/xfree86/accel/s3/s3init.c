@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.17 1994/09/04 10:47:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.18 1994/09/07 15:51:17 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -51,6 +51,7 @@ typedef struct {
    unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
    unsigned char Ti3020[0x40];	/* Ti3020 Indirect Registers 0x0-0x3F */
+   unsigned char Ti3025[9];	/* Ti3025 M,N,P for PCLK, MCLK, LOOP PLL */
    unsigned char STG1700[5];    /* STG1700 index and command registers */
    unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
@@ -234,7 +235,7 @@ s3CleanUp(void)
    /*
     * Restore Ti3020 registers
     */
-   if (DAC_IS_TI3020) {
+   if (DAC_IS_TI3020_SERIES) {
       s3OutTiIndReg(TI_CURS_CONTROL, 0x00, oldS3->Ti3020[TI_CURS_CONTROL]);
       s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, oldS3->Ti3020[TI_MUX_CONTROL_1]);
       s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, oldS3->Ti3020[TI_MUX_CONTROL_2]);
@@ -249,6 +250,20 @@ s3CleanUp(void)
       s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
       s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00,
 		    oldS3->Ti3020[TI_GENERAL_IO_DATA]);
+   }
+   if (DAC_IS_TI3025) {
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[0]);  /* M */
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[1]);  /* N */
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[2]);  /* P */
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[3]);  /* M */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[4]);  /* N */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[5]);  /* P */
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[6]);  /* M */
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[7]);  /* N */
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[8]);  /* P */
    }
 
  /* restore s3 special bits */
@@ -432,7 +447,7 @@ s3Init(mode)
       /*
        * Save Ti3020 registers
        */
-      if (DAC_IS_TI3020) {
+      if (DAC_IS_TI3020_SERIES) {
           oldS3->Ti3020[TI_CURS_CONTROL] = s3InTiIndReg(TI_CURS_CONTROL);
           oldS3->Ti3020[TI_MUX_CONTROL_1] = s3InTiIndReg(TI_MUX_CONTROL_1);
           oldS3->Ti3020[TI_MUX_CONTROL_2] = s3InTiIndReg(TI_MUX_CONTROL_2);
@@ -445,6 +460,18 @@ s3Init(mode)
 		 s3InTiIndReg(TI_AUXILLARY_CONTROL);
           s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
           oldS3->Ti3020[TI_GENERAL_IO_DATA] = s3InTiIndReg(TI_GENERAL_IO_DATA);
+          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+          oldS3->Ti3025[0] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* M */
+          oldS3->Ti3025[1] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* N */
+          oldS3->Ti3025[2] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* P */
+          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+          oldS3->Ti3025[3] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* M */
+          oldS3->Ti3025[4] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* N */
+          oldS3->Ti3025[5] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* P */
+          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+          oldS3->Ti3025[6] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* M */
+          oldS3->Ti3025[7] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* N */
+          oldS3->Ti3025[8] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* P */
       }
 
       for (i = 0; i < 5; i++) {
@@ -503,6 +530,9 @@ s3Init(mode)
       pixel_multiplexing = FALSE;
 
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+      pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
+		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
+   else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
@@ -1097,7 +1127,7 @@ s3Init(mode)
    }
 
 
-   if (DAC_IS_TI3020) {
+   if (DAC_IS_TI3020_SERIES) {
       outb(0x3C4, 1);
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
@@ -1111,15 +1141,19 @@ s3Init(mode)
       if (s3DACSyncOnGreen) tmp1 |= 0x20;  /* add IOG sync              */
       s3OutTiIndReg(TI_GENERAL_CONTROL, 0x00, tmp1);
 
-      if (s3ClockDouble)
-	 s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1_DOUBLE);
-      else
-	 s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
+      if (DAC_IS_TI3020) {
+	 /* the 3025 clock programming code sets the input clock select */
+         if (s3ClockDouble)
+	    s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1_DOUBLE);
+         else
+	    s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
+      }
 
       if (pixel_multiplexing) {
 	 /* fun timing mods for pixel-multiplexing!                     */
 
-	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options) ||
+	     DAC_IS_TI3025) {
 	    /* set CR40 acording to Bernhard Bender */
 	    outb(vgaCRIndex, 0x40);
 	    outb(vgaCRReg, 0xd1);
@@ -1140,7 +1174,8 @@ s3Init(mode)
 	 s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
 		       TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL);
 
-	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options) ||
+	     DAC_IS_TI3025) {
 	    /*
 	     * The 964 needs different VCLK division depending on the 
 	     * clock frequenzy used. VCLK/1 for 0-60MHz, VCLK/2 for

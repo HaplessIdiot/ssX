@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.4 1994/08/31 04:48:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.5 1994/09/07 15:55:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -238,39 +238,49 @@ S3Probe ()
       return(FALSE);
    }
 
-      if (S3_864_SERIES ) ErrorF ("S3 chipset is in Vision864.\n");
-      else if (S3_964_SERIES ) ErrorF ("S3 chipset is in Vision964.\n");
-      else 
-      if (S3_801_928_SERIES ) {
-         ErrorF ("S3 chipset is in the 801 or 928 series.\n");
+      if (S3_864_SERIES )
+	 ErrorF ("%s %s: S3 chipset is a Vision864.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+      else if (S3_964_SERIES )
+	 ErrorF ("%s %s: S3 chipset is a Vision964.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+      else if (S3_801_928_SERIES ) {
          if (S3_801_SERIES ) {
-            ErrorF ("S3 chipset is a 801 \n");
+            ErrorF ("%s %s: S3 chipset is an 801 or 805\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else if (S3_928_SERIES ) {
-            ErrorF ("S3 chipset is a 928 \n");
+            ErrorF ("%s %s: S3 chipset is a 928\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 }
       } else if (S3_911_SERIES) {
-         ErrorF ("S3 chipset is in the 911 series.\n");
          if (S3_911_ONLY ) {
-            ErrorF ("S3 chipset is a 911 \n");
+            ErrorF ("%s %s: S3 chipset is a 911\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else if (S3_924_ONLY ) {
-            ErrorF ("S3 chipset is a 924\n");
+            ErrorF ("%s %s: S3 chipset is a 924\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
 	 } else {
-            ErrorF ("S3 chipset unknown, chip_id = %x\n", chip_id);
+            ErrorF ("%s %s: S3 chipset unknown, chip_id = 0x%02x\n",
+		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
 	 }
       } else
-         ErrorF ("Unknown chipset : chip_id is %x\n", chip_id);
+         ErrorF ("%s %s: Unknown chipset : chip_id is 0x%02x\n",
+		    XCONFIG_PROBED, vga256InfoRec.name, chip_id);
 
    outb (0x3d4, 0x36);          /* for register CR36 (CONFG_REG1), */
    config = inb (0x3d5);        /* get amount of vram installed */
 
    if ((config & 0x03) == 0) {
-      ErrorF ("This is an EISA card\n");
+      ErrorF ("%s %s: This is an EISA card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if ((config & 0x03) == 1) {
-      ErrorF ("This is a 386/486 localbus card\n");
+      ErrorF ("%s %s: This is a 386/486 localbus card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if ((config & 0x03) == 3) {
-      ErrorF ("This is an ISA card\n");
+      ErrorF ("%s %s: This is an ISA card\n",
+	      XCONFIG_PROBED, vga256InfoRec.name);
    }
    if (!vga256InfoRec.videoRam) {
       if ((config & 0x20) != 0) {       /* if bit 5 is a 1, then 512k RAM */
@@ -293,9 +303,13 @@ S3Probe ()
               break;
 	 }
       }
+#if 0
       ErrorF ("%d K of memory found\n", vga256InfoRec.videoRam);
-   } else
-      ErrorF ("%d K videoram\n", vga256InfoRec.videoRam);
+#endif
+   }
+#if 0
+   else ErrorF ("%d K videoram\n", vga256InfoRec.videoRam);
+#endif
 
 
    if (OFLG_ISSET(OPTION_LEGEND, &vga256InfoRec.options)) {

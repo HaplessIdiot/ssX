@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.9 1994/09/04 12:06:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.10 1994/09/07 15:51:49 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -549,37 +549,37 @@ findConfigFile(filename, fp)
 
   /*
    * First open if necessary the config file.
-   * If the -xconfig flag was used, use the name supplied there.
-   * If $XCONFIG is a pathname, use it as the name of the config file
+   * If the -xf86config flag was used, use the name supplied there (root only).
+   * If $XCONFIG is a pathname, use it as the name of the config file (root)
    * If $XCONFIG is set but doesn't contain a '/', append it to 'XF86Config'
-   *   and search the standard places.
+   *   and search the standard places (root only).
    * If $XCONFIG is not set, just search the standard places.
    */
   while (!configFile) {
     
     /*
-     * First check if the -xconfig option was used.
+     * First check if the -xf86config option was used.
      */
-    if (xf86ConfigFile[0]) {
+    if (getuid() == 0 && xf86ConfigFile[0]) {
       strcpy(configPath, xf86ConfigFile);
       if (configFile = fopen(configPath, "r"))
         break;
       else
         FatalError(
-             "Cannot read file \"%s\" specified by the -xconfig flag\n",
+             "Cannot read file \"%s\" specified by the -xf86config flag\n",
              configPath);
     }
     /*
-     * Check if XCONFIG is set.
+     * Check if XF86CONFIG is set.
      */
-    if (xconfig = getenv("XCONFIG")) {
+    if (getuid() == 0 && (xconfig = getenv("XF86CONFIG"))) {
       if (index(xconfig, '/')) {
         strcpy(configPath, xconfig);
         if (configFile = fopen(configPath, "r"))
           break;
         else
           FatalError(
-               "Cannot read file \"%s\" specified by XCONFIG variable\n",
+               "Cannot read file \"%s\" specified by XF86CONFIG variable\n",
                configPath);
       }
     }
@@ -587,7 +587,7 @@ findConfigFile(filename, fp)
     /*
      * ~/XF86Config ...
      */
-    if (home = getenv("HOME")) {
+    if (getuid() == 0 && (home = getenv("HOME"))) {
       strcpy(configPath,home);
       strcat(configPath,"/XF86Config");
       if (xconfig) strcat(configPath,xconfig);
@@ -605,11 +605,11 @@ findConfigFile(filename, fp)
      * $(LIBDIR)/XF86Config.<hostname>
      */
 
-    if ((xwinhome = getenv("XWINHOME")) != NULL)
+    if (getuid() == 0 && (xwinhome = getenv("XWINHOME")) != NULL)
 	sprintf(configPath, "%s/lib/X11/XF86Config", xwinhome);
     else
 	strcpy(configPath, SERVER_CONFIG_FILE);
-    if (xconfig) strcat(configPath,xconfig);
+    if (getuid() == 0 && xconfig) strcat(configPath,xconfig);
     strcat(configPath, ".");
 #ifdef AMOEBA
     {
@@ -625,14 +625,15 @@ findConfigFile(filename, fp)
     /*
      * $(LIBDIR)/XF86Config
      */
-    if (xwinhome)
+    if (getuid() == 0 && xwinhome)
 	sprintf(configPath, "%s/lib/X11/XF86Config", xwinhome);
     else
 	strcpy(configPath, SERVER_CONFIG_FILE);
-    if (xconfig) strcat(configPath,xconfig);
+    if (getuid() == 0 && xconfig) strcat(configPath,xconfig);
     if (configFile = fopen( configPath, "r" )) break;
     
-    FatalError("No config file found!\n");
+    FatalError("No config file found!\n%s", getuid() == 0 ? "" :
+               "Note, the X server no longer looks for XF86Config in $HOME");
   }
   if (xf86Verbose) {
     ErrorF("XF86Config: %s\n", configPath);
@@ -2037,10 +2038,12 @@ configScreenSection()
             ErrorF("%s %s: Monitor ID: \"%s\"\n",
                    XCONFIG_GIVEN, screen->name, monitor_list[i].id);
           }
-          monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
-                                                 monitor_list[i].Modes,
-                                                 screen->name);
-          screen->pModes = monitor_list[i].Modes;
+	  if (!dummy) {
+            monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
+                                                   monitor_list[i].Modes,
+                                                   screen->name);
+            screen->pModes = monitor_list[i].Modes;
+          }
           break;
         }
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: s3TiCursor.c,v 1.1 94/03/28 21:17:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3TiCursor.c,v 3.1 1994/08/20 07:34:25 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -52,7 +52,7 @@
 #endif
 
 /*
- * TI ViewPoint 3020 support - Robin Cutshaw
+ * TI ViewPoint 3020/3025 support - Robin Cutshaw
  *
  * The Ti3020 has 8 direct command registers and indirect registers
  * 0x00-0x3F and 0xFF.  The low-order two bits of the direct register
@@ -62,7 +62,59 @@
  * the low-order bit of CR55.  The indirect registers are accessed
  * through the direct index and data registers.  See s3Ti3020.h for
  * details.
+ *
+ * The Ti3025 is both Ti3020 and Bt485 compatable.  The mode of
+ * operation is set via RS4 using S3 register 0x5C and the 3020
+ * cursor control register.  The 3025 also has a built in PLL
+ * clock generator.
  */
+
+static Bool s3In3020mode = FALSE;             /* starts in Bt485 mode */
+
+void s3set3020mode()
+{
+   unsigned char tmp, tmp1, tmp2;
+
+   outb(vgaCRIndex, 0x5C);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & 0xDF);           /* clear RS4 - use 3020 mode */
+
+   outb(vgaCRIndex, 0x55);
+   tmp = inb(vgaCRReg) & 0xFC;
+   outb(vgaCRReg, tmp | 0x01);  /* toggle to upper 4 direct registers */
+   tmp1 = inb(TI_INDEX_REG);
+   outb(TI_INDEX_REG, TI_CURS_CONTROL);
+   tmp2 = inb(TI_DATA_REG);
+   outb(TI_DATA_REG, tmp2 & 0x7F);      /* clear TI_PLANAR_ACCESS bit */
+
+   outb(TI_INDEX_REG, tmp1);
+   outb(vgaCRIndex, 0x55);
+   outb(vgaCRReg, tmp);
+   s3In3020mode = TRUE;
+}
+
+void s3set485mode()
+{
+   unsigned char tmp, tmp1;
+
+   outb(vgaCRIndex, 0x5C);
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & 0xDF);           /* clear RS4 - use 3020 mode */
+
+   outb(vgaCRIndex, 0x55);
+   tmp = inb(vgaCRReg) & 0xFC;
+   outb(vgaCRReg, tmp | 0x01);  /* toggle to upper 4 direct registers */
+   outb(TI_INDEX_REG, TI_CURS_CONTROL);
+   tmp1 = inb(TI_DATA_REG);
+   outb(TI_DATA_REG, tmp1 | 0x80);        /* set TI_PLANAR_ACCESS bit */
+
+   outb(vgaCRIndex, 0x5C);
+   outb(vgaCRReg, tmp | 0x20);              /* set RS4 - use 485 mode */
+
+   outb(vgaCRIndex, 0x55);
+   outb(vgaCRReg, tmp);
+   s3In3020mode = FALSE;
+}
 
 /*
  * s3OutTiIndReg() and s3InTiIndReg() are used to access the indirect

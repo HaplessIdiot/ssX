@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.1 1994/08/31 04:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.2 1994/09/03 02:51:20 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -116,10 +116,10 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
     if (!xf86VTSema
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
+#ifndef P9000_IM_ACCEL
 	/* These are temporary until implemented *TO*DO* */
 	|| ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
-#ifndef P9000_IM_ACCEL
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
 	    (pDstDrawable->type == DRAWABLE_WINDOW))
 #endif /* P9000_IM_ACCEL */

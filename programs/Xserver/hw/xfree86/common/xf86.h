@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.5 1994/09/03 02:51:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.6 1994/09/04 10:47:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -48,6 +48,7 @@ typedef struct _DispM {
   int           VSyncEnd;
   int           VTotal;
   int           Flags;
+  int		SynthClock;         /* Actual clock freq to be programmed */
 } DisplayModeRec, *DisplayModePtr;
 
 #define V_PHSYNC    0x0001
@@ -58,6 +59,7 @@ typedef struct _DispM {
 #define V_DBLSCAN   0x0020
 #define V_CSYNC     0x0040
 #define V_PIXMUX    0x0100
+#define V_DBLCLK    0x0200
 
 #define MAXCLOCKS   128
 

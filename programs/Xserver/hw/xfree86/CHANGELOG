@@ -1,3 +1,14 @@
+XFree86 3.0Dj (8 September 1994)
+245. Added a sample XF86Config file that gets installed as
+     $(LIBDIR)/XF86Config.eg.
+244. Change search method for XF86Conifg file.  Only allow user-specified
+     location when real-uid == 0.  Also change -xconfig flag to -xf86config,
+     and $XCONFIG to $XF86CONFIG.
+243. Fix reconfig's problem with "ps/2" (Orest Zborowski).
+242. External changes for W32 server (Glenn Lai).
+241. Change ELSA probe to check for BIOS signature first (Harald Koenig).
+240. Preliminary support for the Ti3025 & #9GXE64pro (Robin Cutshaw).
+
 XFree86 3.0Di (7 September 1994)
 239. Fix display start address in vgawonder driver for Mach32 and Mach64
      boards (Marc Aurele La France).
