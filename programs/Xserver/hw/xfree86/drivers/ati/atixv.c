@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.c,v 1.4 2003/04/23 21:51:31 tsi Exp $ */
 /*
  * Copyright 2001 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -98,7 +98,7 @@ ATIXVPreInit
 )
 {
 
-#ifndef AVOIUD_CPIO
+#ifndef AVOID_CPIO
 
     /* Currently a linear aperture is needed ... */
     if (!pATI->LinearBase)
