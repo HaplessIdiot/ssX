@@ -1,5 +1,10 @@
+XFree86 3.1.1Ce (13 July 1995)
+206. Support for the SC1148{2,3,4} ramdacs at 15bpp, and the SC1148{5,7,9}
+     ramdacs at 15 and 16bpp in the S3 server (Joe Moss).
+205. Fix for problems with some WD90C24 TFT systems (Brad Bosch).
+
 XFree86 3.1.1Cd (12 July 1995)
-204. Allow for three verbosity levels for Xserver messages: -quite, default,
+204. Allow for three verbosity levels for Xserver messages: -quiet, default,
      and -verbose (Marc Aurele La France).
 203. Make the LinkKit self-contained.  Apart from Xnest, it no longer
      depends on the config files, headers, and utility programs being
