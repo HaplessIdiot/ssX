@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XEnumDB.man,v 1.2 2001/01/27 18:19:58 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -149,14 +149,14 @@ XrmEnumerateDatabase \- enumerate resource database entries
 .TS
 lw(.5i) lw(2i) lw(2.5i).
 T{
-#define
+\&#define
 T}	T{
 .ZN XrmEnumAllLevels
 T}	T{
 0
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN XrmEnumOneLevel
 T}	T{

@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XConfWin.man,v 1.2 2001/01/27 18:19:57 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -367,49 +367,49 @@ structure contains:
 .TS
 lw(.5i) lw(2.5i) lw(.8i).
 T{
-#define
+\&#define
 T}	T{
 .ZN CWX
 T}	T{
 (1<<0)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWY
 T}	T{
 (1<<1)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWWidth
 T}	T{
 (1<<2)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWHeight
 T}	T{
 (1<<3)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWBorderWidth
 T}	T{
 (1<<4)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWSibling
 T}	T{
 (1<<5)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN CWStackMode
 T}	T{

@@ -34,7 +34,7 @@
 .\" without express or implied warranty.
 .\" 
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xext/Xmbuf.man,v 1.2 2001/01/27 18:20:19 dawes Exp $
 .\"
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -46,7 +46,7 @@ XmbufQueryExtension, XmbufGetVersion, XmbufCreateBuffers, XmbufDestroyBuffers, X
 .SH SYNTAX
 .nf
 .LP
-#include <X11/extensions/multibuf.h>
+\&#include <X11/extensions/multibuf.h>
 .LP
 Bool XmbufQueryExtension(
     Display *dpy,

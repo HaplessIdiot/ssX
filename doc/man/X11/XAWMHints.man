@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XAWMHints.man,v 1.2 2001/01/27 18:19:56 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -230,63 +230,63 @@ structure contains:
 .TS
 lw(.5i) lw(2.5i) lw(2.5i).
 T{
-#define
+\&#define
 T}	T{
 .ZN InputHint
 T}	T{
 (1L << 0)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN StateHint
 T}	T{
 (1L << 1)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN IconPixmapHint
 T}	T{
 (1L << 2)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN IconWindowHint
 T}	T{
 (1L << 3)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN IconPositionHint
 T}	T{
 (1L << 4)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN IconMaskHint
 T}	T{
 (1L << 5)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN WindowGroupHint
 T}	T{
 (1L << 6)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN UrgencyHint
 T}	T{
 (1L << 8)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN AllHints
 T}	T{
@@ -353,7 +353,7 @@ The definitions for the initial_state flag are:
 .TS
 lw(.5i) lw(2i) lw(.2i) lw(2.8i).
 T{
-#define
+\&#define
 T}	T{
 .ZN WithdrawnState
 T}	T{
@@ -361,7 +361,7 @@ T}	T{
 T}	T{
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN NormalState
 T}	T{
@@ -370,7 +370,7 @@ T}	T{
 /* most applications start this way */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN IconicState
 T}	T{

@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XASHints.man,v 1.2 2001/01/27 18:19:56 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -357,7 +357,7 @@ structure contains:
 .TS
 lw(.5i) lw(1.1i) lw(1.5i) lw(3.1i).
 T{
-#define
+\&#define
 T}	T{
 .ZN USPosition
 T}	T{
@@ -366,7 +366,7 @@ T}	T{
 /* user specified x, y */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN USSize
 T}	T{
@@ -375,7 +375,7 @@ T}	T{
 /* user specified width, height */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PPosition
 T}	T{
@@ -384,7 +384,7 @@ T}	T{
 /* program specified position */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PSize
 T}	T{
@@ -393,7 +393,7 @@ T}	T{
 /* program specified size */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PMinSize
 T}	T{
@@ -402,7 +402,7 @@ T}	T{
 /* program specified minimum size */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PMaxSize
 T}	T{
@@ -411,7 +411,7 @@ T}	T{
 /* program specified maximum size */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PResizeInc
 T}	T{
@@ -420,7 +420,7 @@ T}	T{
 /* program specified resize increments */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PAspect
 T}	T{
@@ -429,21 +429,21 @@ T}	T{
 /* program specified min and max aspect ratios */
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PBaseSize
 T}	T{
 (1L << 8)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PWinGravity
 T}	T{
 (1L << 9)
 T}
 T{
-#define
+\&#define
 T}	T{
 .ZN PAllHints
 T}	T{

@@ -20,7 +20,7 @@
 .\" from The Open Group.
 .\" 
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/programs/xfwp/xfwp.man,v 1.6 2001/01/27 18:21:14 dawes Exp $
 .\"
 .nh
 .TH XFWP 1 __xorgversion__
@@ -347,27 +347,27 @@ EXAMPLES
 .sp
 \fC
 .nf
-# if and only if server supports one of these policies then authorize 
-# connections, but still subject to applicable rule matches
-#
+\&# if and only if server supports one of these policies then authorize 
+\&# connections, but still subject to applicable rule matches
+\&#
 require sitepolicy policy1
 require sitepolicy policy2
-#
-# deny pm connections originating on 8.7.6.5 [NOTE:  If pm service
-# is explicitly qualified, line must include destination fields as
-# shown.]
-#
+\&#
+\&# deny pm connections originating on 8.7.6.5 [NOTE:  If pm service
+\&# is explicitly qualified, line must include destination fields as
+\&# shown.]
+\&#
 deny  8.7.6.5  0.0.0.0  0.0.0.0  255.255.255.255  eq  pm
-#
-# permit xfindproxy X server connects to anywhere [NOTE:  If
-# fp service is explicitly qualified, line must include source fields
-# as shown.]
-#
+\&#
+\&# permit xfindproxy X server connects to anywhere [NOTE:  If
+\&# fp service is explicitly qualified, line must include source fields
+\&# as shown.]
+\&#
 permit  0.0.0.0  255.255.255.255   0.0.0.0  255.255.255.255  eq  fp 
-#
-# permit all connection types originating from the 192.0.0.0 
-# IP domain only 
-#
+\&#
+\&# permit all connection types originating from the 192.0.0.0 
+\&# IP domain only 
+\&#
 permit  192.0.0.0   0.255.255.255 
 .fi
 \fP
