@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.42 2001/12/22 05:28:34 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.43 2002/01/09 18:01:58 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -1162,6 +1162,12 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     if (!strcmp( argv[i], "-showconfig" ) || !strcmp( argv[i], "-version" )) {
         DarwinPrintBanner();
         exit(0);
+    }
+
+    // XDarwinStartup uses this argument to indicate the IOKit X server
+    // should be started. Ignore it here.
+    if ( !strcmp( argv[i], "-iokit" ) ) {
+        return 1;
     }
 
     return 0;

@@ -1,4 +1,9 @@
 XFree86 4.2.99.1 (XX January 2002)
+  27. XDarwinStartup improvements:
+       - Auto-detect proper mode to run XDarwin.
+       - Find XDarwin.app with Launch Services.
+       - Add XDarwinStartup man page.
+      (Torrey T. Lyons).
   26. Localize XDarwin credits in French (Olivier Verdier) and Portuguese
       (Fabr’cio L. de Castro).
   25. Turn off XFree86-Misc and VidMode extensions for XDarwin
@@ -14609,4 +14614,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2162 2002/02/01 02:59:31 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2163 2002/02/05 17:15:48 tsi Exp $
