@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.48 2003/03/12 21:27:18 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.49 2003/05/04 01:20:52 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1959,33 +1959,7 @@ static void nv10GetConfig
 
         chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
     } else {
-      switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF)
-      {
-        case 0x02:
-            chip->RamAmountKBytes = 1024 * 2;
-            break;
-        case 0x04:
-            chip->RamAmountKBytes = 1024 * 4;
-            break;
-        case 0x08:
-            chip->RamAmountKBytes = 1024 * 8;
-            break;
-        case 0x10:
-            chip->RamAmountKBytes = 1024 * 16;
-            break;
-        case 0x20:
-            chip->RamAmountKBytes = 1024 * 32;
-            break;
-        case 0x40:
-            chip->RamAmountKBytes = 1024 * 64;
-            break;
-        case 0x80:
-            chip->RamAmountKBytes = 1024 * 128;
-            break;
-        default:
-            chip->RamAmountKBytes = 1024 * 16;
-            break;
-      }
+        chip->RamAmountKBytes = (chip->PFB[0x020C/4] & 0xFFF00000) >> 10;
     }
     switch ((chip->PFB[0x00000000/4] >> 3) & 0x00000003)
     {
