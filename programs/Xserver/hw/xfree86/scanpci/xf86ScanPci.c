@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.6 1999/04/04 10:59:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.7 1999/09/27 06:30:03 dawes Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -147,7 +147,7 @@ xf86DisplayPCICardInfo(int verbosity)
 		 * it, print it out as unknown, anyway
 		 */
 		xf86MsgVerb(X_NONE,-verbosity,
-			    "unknown card (0x%04x/0x%04x) \n\t",
+			    "unknown card (0x%04x/0x%04x) ",
 			    pcrp->pci_subsys_vendor, pcrp->pci_subsys_card);
 	    }
 	    else {
@@ -157,7 +157,7 @@ xf86DisplayPCICardInfo(int verbosity)
 		 */
 		if (verbosity > 1)
 		    xf86MsgVerb(X_NONE,-verbosity,
-				"unknown card (0x%04x/0x%04x) \n\t",
+				"unknown card (0x%04x/0x%04x) ",
 				pcrp->pci_subsys_vendor, pcrp->pci_subsys_card);
 		else
 		    noCard = TRUE;
