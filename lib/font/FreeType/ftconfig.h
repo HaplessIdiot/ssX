@@ -17,7 +17,7 @@
 /*                                                                         */
 /***************************************************************************/
 
-/* $XFree86: xc/lib/font/FreeType/ftconfig.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftconfig.h,v 1.6tsi Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -61,15 +61,42 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
+#ifdef XFREE86_FT2
+
+# include "X11/Xmd.h"
+
   /* The number of bytes in an `int' type.  */
+# define FT_SIZEOF_INT 4
 
-#include "Xmd.h"
+  /* The number of bytes in a `long' type.  */
+# ifdef LONG64
+#  define FT_SIZEOF_LONG 8
+# else
+#  define FT_SIZEOF_LONG 4
+# endif
 
-#define FT_SIZEOF_INT 4
-#ifdef LONG64
-#define FT_SIZEOF_LONG 8
 #else
-#define FT_SIZEOF_LONG 4
+
+  /* The number of bytes in an `int' type.  */
+# if FT_UINT_MAX == 0xFFFFFFFFUL
+#  define FT_SIZEOF_INT  4
+# elif FT_UINT_MAX == 0xFFFFU
+#  define FT_SIZEOF_INT  2
+# elif FT_UINT_MAX > 0xFFFFFFFFU && FT_UINT_MAX == 0xFFFFFFFFFFFFFFFFU
+#  define FT_SIZEOF_INT  8
+# else
+#  error "Unsupported number of bytes in `int' type!"
+# endif
+
+  /* The number of bytes in a `long' type.  */
+# if FT_ULONG_MAX == 0xFFFFFFFFUL
+#  define FT_SIZEOF_LONG  4
+# elif FT_ULONG_MAX > 0xFFFFFFFFU && FT_ULONG_MAX == 0xFFFFFFFFFFFFFFFFU
+#  define FT_SIZEOF_LONG  8
+# else
+#  error "Unsupported number of bytes in `long' type!"
+# endif
+
 #endif
 
   /* Preferred alignment of data */
