@@ -617,14 +617,17 @@ typedef enum {
     OPERATING
 } xf86State;
 
-typedef void (*xf86StateChangeNotificationCallbackFunc)(xf86State state,Bool enter);
-/* asynchronous event handling */
-#ifdef async
-typedef struct xf86AsyncQRec {
-    void (*func)(struct xf86AsyncQRec *);
-    struct xf86AsyncQRec *next;
-} *xf86AsyncQPtr;
-#endif
+typedef enum {
+    NOTIFY_SETUP_TRANSITION,
+    NOTIFY_SETUP,
+    NOTIFY_OPERATING,
+    NOTIFY_OPERATING_TRANSITION,
+    NOTIFY_ENABLE,
+    NOTIFY_ENTER,
+    NOTIFY_LEAVE
+} xf86NotifyState;
+
+typedef void (*xf86StateChangeNotificationCallbackFunc)(xf86NotifyState state,pointer);
 
 /* DGA */
 

@@ -67,6 +67,7 @@ static Bool needRAC = FALSE;
 
 /* state change notification callback list */
 static StateChangeNotificationPtr StateChangeNotificationList;
+static void notifyStateChange(xf86NotifyState state);
 
 #undef MIN
 #define MIN(x,y) ((x<y)?x:y)
@@ -468,6 +469,7 @@ xf86AccessEnter(void)
     PciStateEnter();
     disableAccess();
     EntityEnter();
+    notifyStateChange(NOTIFY_ENTER);
     xf86EnterServerState(SETUP);
     xf86ResAccessEnter = TRUE;
 }
@@ -486,6 +488,7 @@ xf86AccessLeave(void)
 {
     if (!xf86ResAccessEnter)
 	return;
+    notifyStateChange(NOTIFY_LEAVE);
     disableAccess();
     DisablePciBusAccess();
     EntityLeave();
@@ -517,20 +520,20 @@ xf86AccessLeaveState(void)
  */
 #ifdef async
 
-xf86AsyncQPtr *xf86AsyncQ = NULL;
-xf86ScrnInfoPtr xf86CurrentScreen = NULL;
+static AsyncQPtr *AsyncQ = NULL;
+ScrnInfoPtr xf86CurrentScreen = NULL;
 
-#define SETUP_Q  org = xf86AsyncQ; \
-	         xf86AsyncQ = &new;
+#define SETUP_Q  org = AsyncQ; \
+	         AsyncQ = &new;
 
 #define PROCESS_Q xf86CurrentScreen = pScrn;
-                  if (!new) xf86AsyncQ = org; \
+                  if (!new) AsyncQ = org; \
                   else { \
-                       xf86AsyncQPtr tmp_Q; \
+                       AsyncQPtr tmp_Q; \
                        while (1) {\
-                          new->func(new);\
+                          new->func(new->arg);\
                           if (!(new->next)) {\
-			      xf86AsyncQ = org; xfree(new); break; \
+			      AsyncQ = org; xfree(new); break; \
 			   } \
 			   tmp_Q = new->next; \
 		           xfree(new); \
@@ -550,7 +553,7 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
     register xf86AccessPtr pAcc;
     EntityAccessPtr tmp;
 #ifdef async
-    xf86AsyncQPtr *org, new = NULL;
+    AsyncQPtr *org, new = NULL;
 #endif
 
 #ifdef DEBUG
@@ -1911,15 +1914,6 @@ setAccess(EntityPtr pEnt, xf86State state)
 /*
  * xf86EnterServerState() -- set state the server is in.
  */
-void
-notifyStateChange(xf86State state, Bool enter)
-{
-    StateChangeNotificationPtr ptr = StateChangeNotificationList;
-    while (ptr) {
-	ptr->func(state,enter);
-	ptr = ptr->next;
-    }
-}
 
 void
 xf86EnterServerState(xf86State state)
@@ -1935,8 +1929,6 @@ xf86EnterServerState(xf86State state)
     else
 	ErrorF("Entering OPERATING state\n");
 #endif
-    notifyStateChange(state, TRUE);
-    
     for (i=0; i<xf86NumScreens; i++) {
 	pScrn = xf86Screens[i];
 	j = pScrn->entityList[pScrn->numEntities - 1];
@@ -1956,9 +1948,15 @@ xf86EnterServerState(xf86State state)
      */
     if (!needRAC) {
 	xf86EnableAccess(xf86Screens[0]);
-	notifyStateChange(state, FALSE);
+	notifyStateChange(NOTIFY_ENABLE);
 	return;
     }
+    
+    if (state == SETUP)
+	notifyStateChange(NOTIFY_SETUP_TRANSITION);
+    else
+	notifyStateChange(NOTIFY_OPERATING_TRANSITION);
+    
 #ifdef notanymore1
     disableAccess();
 #else
@@ -2005,7 +2003,10 @@ xf86EnterServerState(xf86State state)
 	    break;
 	}
     }
-   notifyStateChange(state, FALSE);
+    if (state == SETUP)
+	notifyStateChange(NOTIFY_SETUP);
+    else
+	notifyStateChange(NOTIFY_OPERATING);
 }
 
 /*
@@ -2848,24 +2849,28 @@ xf86ConvertListToHost(int entityIndex, resPtr list)
 }
 
 void
-xf86RegisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func)
+xf86RegisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func, pointer arg)
 {
     StateChangeNotificationPtr ptr =
 	(StateChangeNotificationPtr)xnfalloc(sizeof(StateChangeNotificationRec));
 
     ptr->func = func;
+    ptr->arg = arg;
     ptr->next = StateChangeNotificationList;
     StateChangeNotificationList = ptr;
 }
 
 Bool
-DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func)
+xf86DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func)
 {
     StateChangeNotificationPtr *ptr = &StateChangeNotificationList;
-
+    StateChangeNotificationPtr tmp;
+    
     while (*ptr) {
 	if ((*ptr)->func == func) {
+	    tmp = (*ptr);
 	    (*ptr) = (*ptr)->next;
+	    xfree(tmp);
 	    return TRUE;
 	}
 	ptr = &((*ptr)->next);
@@ -2873,4 +2878,29 @@ DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFun
     return FALSE;
 }
 
+static void
+notifyStateChange(xf86NotifyState state)
+{
+    StateChangeNotificationPtr ptr = StateChangeNotificationList;
+    while (ptr) {
+	ptr->func(state,ptr->arg);
+	ptr = ptr->next;
+    }
+}
 
+#ifdef async
+Bool
+xf86QueueAsyncEvent(void (*func)(pointer),pointer arg)
+{
+    AsyncQPtr new;
+    
+    if (!AsyncQ) return FALSE;
+
+    new = (AsyncQPtr)xfnalloc(sizeof(AsyncQRec));
+    new->func = func;
+    new->arg = arg;
+    (*AsyncQPtr)->next = new;
+    AsyncQPtr = &new;
+    return TRUE;
+}
+#endif

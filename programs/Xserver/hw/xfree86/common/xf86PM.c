@@ -63,8 +63,8 @@ DoApmEvent(pmEvent event)
 		else
 		    xf86Screens[i]->LeaveVT(i, 0);
 	    }
-	    xf86AccessLeaveState(); 
 	    xf86AccessLeave();      
+	    xf86AccessLeaveState(); 
 #endif
 	    suspended = TRUE;
 	}

@@ -41,6 +41,15 @@ typedef struct {
     pointer                     busAcc;
 } EntityRec, *EntityPtr;
 
+/* asynchronous event handling */
+#ifdef async
+typedef struct _AsyncQRec {
+    void (*func)(pointer);
+    pointer arg;
+    struct _AsyncQRec *next;
+} AsyncQRec, *AsyncQPtr;
+#endif
+
 #define NO_SEPARATE_IO_FROM_MEM 0x0001
 #define NO_SEPARATE_MEM_FROM_IO 0x0002
 #define NEED_VGA_ROUTED 0x0004
@@ -85,6 +94,7 @@ typedef struct x_BusAccRec {
 /* state change notification callback */
 typedef struct _stateChange {
     xf86StateChangeNotificationCallbackFunc func;
+    pointer arg;
     struct _stateChange *next;
 } StateChangeNotificationRec, *StateChangeNotificationPtr;
 

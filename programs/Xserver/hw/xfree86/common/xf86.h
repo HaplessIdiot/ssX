@@ -33,6 +33,7 @@ extern Bool xf86ResAccessEnter;
 extern ScrnInfoPtr *xf86Screens;	/* List of pointers to ScrnInfoRecs */
 extern const unsigned char byte_reversed[256];
 extern PropertyPtr *xf86RegisteredPropertiesTable;
+extern ScrnInfoPtr xf86CurrentScreen;
 
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
@@ -116,8 +117,11 @@ pciVideoPtr xf86FindPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 				    char n, pciVideoPtr pvp_exclude);
 pciVideoPtr xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 			     char n, pciVideoPtr pvp_exclude);
-void xf86RegisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
-Bool xf86DeregisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
+void xf86RegisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func, pointer arg);
+Bool xf86DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func);
+#ifdef async
+Bool xf86QueueAsyncEvent(void (*func)(pointer),pointer arg);
+#endif
  
  
 /* xf86Cursor.c */

@@ -796,7 +796,7 @@ Bool
 xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 {
     MessageType from = X_DEFAULT;
-#if 1
+#if 0
     xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC); 
 #endif
     if (TEST_GAMMA(xf86Gamma)) {

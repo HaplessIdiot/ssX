@@ -32,9 +32,7 @@ typedef struct pci_io {
     xf86AccessRec io_memAccess;
     xf86AccessRec memAccess;
     pciSave save;
-#ifdef notanymore2
     pciSave restore;
-#endif
     Bool ctrl;
 } pciAccRec, *pciAccPtr;
 

@@ -2023,12 +2023,8 @@ PciStateEnter(void)
  	if (!paccp->ctrl)
  	    continue;
 	savePciState(paccp->arg.tag, &paccp->save);
-#ifdef notanymore2
 	restorePciState(paccp->arg.tag, &paccp->restore);
 	paccp->arg.ctrl = paccp->restore.command;
-#else
-	paccp->arg.ctrl = paccp->save.command;
-#endif
     }
 }
 
@@ -2057,9 +2053,7 @@ PciStateLeave(void)
 	i++;
 	if (!paccp->ctrl)
 	    continue;
-#ifdef notanymore2
 	savePciState(paccp->arg.tag, &paccp->restore);
-#endif
 	restorePciState(paccp->arg.tag, &paccp->save);
     }
 }
@@ -2649,9 +2643,12 @@ pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
      */
     if (pcrp->pci_header_type &0x80)
       multifunc = TRUE;
-    
+
+    ppcrp = xf86PciInfo;    
+
     while (ppcrp[j]) {
-      if (ppcrp[j]->busnum == bus && ppcrp[j]->funcnum == i) {
+      if (ppcrp[j]->busnum == bus && ppcrp[j]->funcnum == i
+	  && ppcrp[j]->devnum != pcrp->devnum) {
 	/* don't test subsys ID here. It might be set by POST 
 	   - however some cars might not have been POSTed */
 	if (ppcrp[j]->pci_device_vendor != pcrp->pci_device_vendor 

@@ -1114,8 +1114,8 @@ xf86VTSwitch()
 #endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86DisableInputHandler(ih);
-    xf86AccessLeaveState(); /* We need this here, otherwise */
-    xf86AccessLeave();      /* console won't be restored    */
+    xf86AccessLeave();      /* We need this here, otherwise */
+    xf86AccessLeaveState(); /* console won't be restored    */
 
     if (!xf86VTSwitchAway()) {
       /*
