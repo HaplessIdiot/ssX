@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.485 2005/01/21 21:22:44 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.486 2005/01/22 16:46:03 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1665,9 +1665,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef SystemV
 #define SystemV			NO
 #endif
-#ifndef SystemV4
-#define SystemV4		NO
-#endif
 #ifndef BuildScanpci
 # if SystemV || SystemV4 || \
     (defined(LinuxArchitecture) && !defined(Mc68020Architecture)) || \
@@ -1741,12 +1738,18 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef HasBsdMake
 #define HasBsdMake		NO
 #endif
+#ifndef HasGnuMake
+#define HasGnuMake		NO
+#endif
+#ifndef SystemV4
+#define SystemV4		NO
+#endif
 
 #ifndef MakeHasPosixVariableSubstitutions
-# if !HasBsdMake && !defined(SunArchitecture)
-#  define MakeHasPosixVariableSubstitutions	NO
-# else
+#if HasBsdMake || HasGnuMake || defined(SunArchitecture) || SystemV4
 #  define MakeHasPosixVariableSubstitutions	YES
+# else
+#  define MakeHasPosixVariableSubstitutions	NO
 # endif
 #endif
 
