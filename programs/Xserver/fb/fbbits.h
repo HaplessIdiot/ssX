@@ -141,27 +141,18 @@ BRESDASH (DrawablePtr	pDrawable,
     FbStride	bitsStride;
     FbStride	majorStep, minorStep;
     BITS	xorfg, xorbg;
-    unsigned char   *dash, *lastDash, *firstDash;
+    FbDashDeclare;
     int		dashlen;
     Bool	even;
     Bool	doOdd;
     
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
     doOdd = pGC->lineStyle == LineDoubleDash;
-    even = TRUE;
     xorfg = (BITS) pPriv->xor;
     xorbg = (BITS) pPriv->bgxor;
-    firstDash = pGC->dash;
-    lastDash = firstDash + pGC->numInDashList;
-    dash = firstDash;
-    while (dashOffset >= (dashlen = *dash++))
-    {
-	dashOffset -= dashlen;
-	if (dash == lastDash)
-	    dash = firstDash;
-	even ^= 1;
-    }
-    dashlen -= dashOffset;
+    
+    FbDashInit (pGC, pPriv, dashOffset, dashlen, even);
+    
     bits = ((UNIT *) (dst + (y1 * dstStride))) + x1 * MUL;
     bitsStride = dstStride * (sizeof (FbBits) / sizeof (UNIT));
     if (signdy < 0)
@@ -197,9 +188,9 @@ BRESDASH (DrawablePtr	pDrawable,
 	    }
 	    if (!len)
 		break;
-	    dashlen = *dash++;
-	    if (dash == lastDash)
-		dash = firstDash;
+	    
+	    FbDashNextEven(dashlen);
+	    
 	    if (dashlen >= len)
 		dashlen = len;
 doubleOdd:
@@ -216,8 +207,9 @@ doubleOdd:
 	    }
 	    if (!len)
 		break;
-	    dashlen = *dash++;
-	    /* numInDashList is even, no need to check here */
+	    
+	    FbDashNextOdd(dashlen);
+	    
 	    if (dashlen >= len)
 		dashlen = len;
 	}
@@ -241,9 +233,9 @@ doubleOdd:
 	    }
 	    if (!len)
 		break;
-	    dashlen = *dash++;
-	    if (dash == lastDash)
-		dash = firstDash;
+
+	    FbDashNextEven (dashlen);
+	    
 	    if (dashlen >= len)
 		dashlen = len;
 onOffOdd:
@@ -259,7 +251,9 @@ onOffOdd:
 	    }
 	    if (!len)
 		break;
-	    dashlen = *dash++;
+	    
+	    FbDashNextOdd (dashlen);
+	    
 	    if (dashlen >= len)
 		dashlen = len;
 	}
