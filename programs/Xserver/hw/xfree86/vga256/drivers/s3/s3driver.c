@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.6 1997/02/27 13:59:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.7 1997/02/28 08:22:20 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -225,19 +225,19 @@ short s3alu[16] =
  */
 void
 ModuleInit(data,magic)
-    int  * data;
-    int  * magic;
+    pointer  * data;
+    INT32    * magic;
 {
     static int cnt = 0;
 
     switch(cnt++)
     {
     case 0:
-      * data = (int) &s3InfoRec;
+      * data = (pointer) &s3InfoRec;
       * magic= MAGIC_ADD_VIDEO_CHIP_REC;
       break;
     case 1:
-      * data = (int) "libvga256.a";
+      * data = (pointer) "libvga256.a";
       * magic= MAGIC_LOAD;
       break;
     default:

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:52 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.10 1997/02/27 13:58:56 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.11 1997/03/04 11:35:43 hohndel Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -13,7 +13,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.10 1997/02/27
 MISC = misc
 #endif
 
+#if DoLoadableServer
+SUBDIRS = vga ibm mfb $(MISC)
+#else
 SUBDIRS = vga ibm mfb drivers $(MISC)
+#endif
 
 SRCS = vga/?*.c ibm/?*.c mfb/?*.c
 
@@ -34,7 +38,10 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 $(DONES): $(SUBDIRS)
 #endif
 
+#if ! DoLoadableServer
 ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),cvga16.SHsuf,$(VGA16DRIVERS))
+#endif
+
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .

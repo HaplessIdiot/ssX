@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.12 1997/02/27 13:58:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.13 1997/03/04 10:40:01 hohndel Exp $ */
 
 
 
@@ -232,6 +232,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86bGammaMap)
    SYMVAR(xf86ccdScreenPrivateIndex)
    SYMVAR(xf86xaaloaded)
+   SYMVAR(xf86issvgatype)
+   SYMVAR(xf86ismonotype)
    SYMVAR(xf86ProbeOnly)
    SYMVAR(videoDrivers)
    SYMVAR(TimingTab)
