@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_i2c.c,v 1.2 1999/08/28 09:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_i2c.c,v 1.3 2000/02/11 22:35:57 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -54,11 +54,13 @@ ApmI2CGetBits(I2CBusPtr b, int *clock, int *data)
     unsigned int	reg;
     unsigned char	lock;
     ApmPtr pApm = ((ApmPtr)b->DriverPrivate.ptr);
+    unsigned char	tmp;
 
     lock = rdinx(0x3C4, 0x10);
     wrinx(0x3C4, 0x10, 0x12);
     WaitForFifo(pApm, 2);
-    WRXB_IOP(0xD0, RDXB(0xD0) & 0x07);
+    tmp = RDXB_IOP(0xD0);
+    WRXB_IOP(0xD0, tmp & 0x07);
     reg = STATUS_IOP();
     *clock = (reg & STATUS_SCL) != 0;
     *data  = (reg & STATUS_SDA) != 0;

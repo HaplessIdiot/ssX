@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.22 2000/01/29 18:58:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.23 2000/01/31 14:40:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -101,16 +101,20 @@ _XkbHandleSpecialSym(keysym, buffer, nbytes, extra_rtrn)
 }
 
 extern int
-_XGetCharCode (
+_XimGetCharCode (
 #if NeedFunctionPrototypes
-    unsigned long, KeySym, char*, int
+    unsigned long /* locale_code */,
+    KeySym /* keysym */,
+    unsigned char* /* buf */,
+    int /* nbytes */
 #endif
 );
 
-extern unsigned long*
-_XGetLocaleCode (
+extern unsigned long Const*
+_XimGetLocaleCode (
 #if NeedFunctionPrototypes
-    char*, XPointer*
+    _Xconst char* /* encoding_name */,
+    XPointer* /* pass NULL here */
 #endif
 );
 
@@ -169,7 +173,7 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     if ((keysym&0xffffff00)==0xff00) {
 	return _XkbHandleSpecialSym(keysym, buf, nbytes, extra_rtrn);
     }
-    return _XGetCharCode (keysymSet, keysym, buf, nbytes);
+    return _XimGetCharCode (keysymSet, keysym, buf, nbytes);
 }
 
 typedef struct _XkbToKS {
@@ -259,7 +263,7 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
     if ( !cvt_rtrn ) return 0;
 
     cvt_rtrn->KSToMB = _XkbKSToKnownSet;
-    cvt_rtrn->KSToMBPriv = (XPointer) _XGetLocaleCode(encoding_name, NULL);
+    cvt_rtrn->KSToMBPriv = (XPointer) _XimGetLocaleCode(encoding_name, NULL);
     cvt_rtrn->MBToKS = _XkbKnownSetToKS;
     cvt_rtrn->MBToKSPriv = NULL;
     cvt_rtrn->KSToUpper = __XkbDefaultToUpper;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.71 1999/12/13 01:39:48 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.77 2000/02/08 13:13:11 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3738,7 +3738,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
+#ifdef ENABLE_SILKEN_MOUSE
 	xf86SetSilkenMouse(pScreen);
+#endif
 
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
@@ -3866,7 +3868,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
+#ifdef ENABLE_SILKEN_MOUSE
 	xf86SetSilkenMouse(pScreen);
+#endif
 
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());

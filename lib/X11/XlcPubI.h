@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.4 1997/11/22 12:50:07 dawes Exp $ */
 
 #ifndef _XLCPUBLICI_H_
 #define _XLCPUBLICI_H_
@@ -138,14 +138,14 @@ extern Bool _XlcParseCharSet(
 extern XlcCharSet _XlcCreateDefaultCharSet(
 #if NeedFunctionPrototypes
     _Xconst char*	/* name */,
-    char*		/* control_sequence */
+    _Xconst char*	/* control_sequence */
 #endif
 );
 
 extern XlcCharSet _XlcAddCT(
 #if NeedFunctionPrototypes
     _Xconst char*	/* name */,
-    char*		/* control_sequence */
+    _Xconst char*	/* control_sequence */
 #endif
 );
 

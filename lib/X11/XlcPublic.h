@@ -31,6 +31,10 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
+/* $XFree86$ */
+/*
+ * Most of this API is documented in i18n/Framework.PS
+ */
 
 #ifndef _XLCPUBLIC_H_
 #define _XLCPUBLIC_H_
@@ -144,6 +148,7 @@ typedef struct _XlcConvMethodsRec{
 #define XlcNWideChar 		"wideChar"
 #define XlcNCompoundText 	"compoundText"
 #define XlcNString 		"string"
+#define XlcNUtf8String 		"utf8String"
 #define XlcNCharSet 		"charSet"
 #define XlcNCTCharSet 		"CTcharSet"
 #define XlcNChar 		"char"
@@ -177,7 +182,7 @@ extern char *_XGetLCValues(
 
 extern XlcCharSet _XlcGetCharSet(
 #if NeedFunctionPrototypes
-    char*		/* name */
+    _Xconst char*	/* name */
 #endif
 );
 
