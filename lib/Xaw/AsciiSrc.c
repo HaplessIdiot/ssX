@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.32 2002/06/06 18:09:37 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.33 2002/07/04 17:04:20 paulo Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -328,6 +328,9 @@ XawAsciiSrcInitialize(Widget request, Widget cnew,
     src->text_src.changed = False;
 #endif
     src->ascii_src.allocated_string = False;
+
+    if (src->ascii_src.use_string_in_place && src->ascii_src.string == NULL)
+	src->ascii_src.use_string_in_place = False;
 
     file = InitStringOrFile(src, src->ascii_src.type == XawAsciiFile);
     LoadPieces(src, file, NULL);
@@ -1417,6 +1420,7 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 	}
 
 	if (src->ascii_src.use_string_in_place) {
+	    if (src->ascii_src.string != NULL)
 	    src->ascii_src.length = strlen(src->ascii_src.string);
 	    /* In case the length resource is incorrectly set */
 	    if (src->ascii_src.length > src->ascii_src.ascii_length)
