@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.8 1996/10/16 14:39:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.9 1996/10/19 15:14:43 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -30,7 +30,7 @@ set CardChipSets(SVGA-cirrus)	{ clgd5420 clgd5422 clgd5424 clgd5426 \
 				  clgd5428 clgd5429 clgd5430 clgd5434 \
 				  clgd5436 clgd5446 clgd6215 clgd6225 \
 				  clgd6235 clgd7541 clgd7542 clgd7543 }
-set CardChipSets(SVGA-compaq)	cpq_avga
+#set CardChipSets(SVGA-compaq)	cpq_avga
 set CardChipSets(SVGA-chips)	{ ct65520 ct65530 ct65540 ct65545 \
 				  ct65546 ct65548 ct65550 ct65554 \
 				  ct451 ct452 ct453 ct455 ct456 ct457 }
@@ -41,19 +41,20 @@ set CardChipSets(SVGA-gvga)	gvga
 set CardChipSets(SVGA-mga)	mga2064w
 set CardChipSets(SVGA-mx)	mx
 set CardChipSets(SVGA-ncr77c22)	{ ncr77c22 ncr77c22e }
+set CardChipSets(SVGA-nv)	{ nv1 stg2000 }
 set CardChipSets(SVGA-oak)	{ oti067 oti077 oti087 oti037c }
 set CardChipSets(SVGA-pvga1)	{ pvga1 \
 				  wd90c00 wd90c10 wd90c30 wd90c24 \
 				  wd90c31 wd90c31 wd90c33 wd90c20 }
 set CardChipSets(SVGA-realtek)	realtek
-set CardChipSets(SVGA-s3_svga)	s3
+#set CardChipSets(SVGA-s3_svga)	s3
 set CardChipSets(SVGA-sis)	{ sis86c201 sis86c202 sis86c205 }
 set CardChipSets(SVGA-tvga8900)	{ tvga8200lx tvga8800cs tvga8900b tvga8900c \
 				  tvga8900cl tvga8900d tvga9000 tvga9000i \
 				  tvga9100b tvga9200cxr \
 				  tgui9320lcd tgui9400cxi tgui9420 \
 				  tgui9420dgi tgui9430dgi tgui9440agi \
-				  tgui9660xgi tgui9680 }
+				  tgui9660xgi tgui9680 cyber938x }
 set CardChipSets(SVGA-video7)	video7
 set chiplist ""
 foreach idx [array names CardChipSets SVGA-*] {
@@ -101,7 +102,7 @@ set CardChipSets(Mach32)   { mach32 }
 set CardChipSets(Mach64)   { mach64 }
 set CardChipSets(P9000)	   { orchid_p9000 viperpci vipervlb }
 set CardChipSets(S3)	   { mmio_928 newmmio s3_generic }
-set CardChipSets(S3V)	   { virge }
+set CardChipSets(S3V)	   { s3_virge }
 set CardChipSets(TGA)	   { tga }
 set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32i_rev_b \
 			     et4000w32i_rev_c et4000w32p_rev_a \
@@ -158,7 +159,7 @@ set CardRamDacs(S3)	   { normal \
 			     stg1700 stg1703 \
 			     ti3020 ti3025 ti3026 ti3030 \
 			   }
-set CardRamDacs(S3V)	   { normal s3_trio64 }
+set CardRamDacs(S3V)	   {} ;# { normal s3_trio64 }
 set CardRamDacs(TGA)	   { bt485 }
 set CardRamDacs(W32)	   { normal \
 			     att20c47xa att20c490 att20c491 \
@@ -211,7 +212,7 @@ set CardClockChips(S3)	   { att20c409 att20c499 att20c408 \
 				s3_trio64 s3gendac \
 			     sc11412 stg1703 ti3025 ti3026 ti3030 \
 			   }
-set CardClockChips(S3V)	   {}
+set CardClockChips(S3V)	   {} ;# { s3_trio64 }
 set CardClockChips(TGA)	   {}
 set CardClockChips(W32)	   { dcs2824 et6000 icd2061a ics5341 stg1703 }
 
@@ -334,8 +335,9 @@ set CardOptions(S3)	   { bt485_curs clkdiv2 dac_6_bit dac_8_bit \
 			     ti3026_curs trio32_fc_bug trio64v+_bug1 \
 			     trio64v+_bug2 trio64v+_bug3 \
 			   }
-set CardOptions(S3V)	   {}
-set CardOptions(TGA)	   {}
+set CardOptions(S3V)	   { sw_cursor dac_6_bit dac_8_bit power_saver \
+	                     slow_dram_refresh slow_edodram slow_vram }
+set CardOptions(TGA)	   { sw_cursor dac_6_bit dac_8_bit power_saver }
 set CardOptions(W32)	   { clkdiv2 fast_dram hibit_high hibit_low \
 			     legend pci_burst_off pci_burst_on power_saver \
 			     w32_interleave_off w32_interleave_on }
@@ -395,7 +397,7 @@ set CardReadmes(Mach32)	   README.Mach32
 set CardReadmes(Mach64)	   README.Mach64
 set CardReadmes(P9000)	   README.P9000
 set CardReadmes(S3)	   README.S3
-set CardReadmes(S3V)	   {}
+set CardReadmes(S3V)	   README.S3V
 set CardReadmes(TGA)	   README.DECtga
 set CardReadmes(W32)	   README.W32
 

@@ -155,8 +155,8 @@ startx -- -bpp 32		8-8-8 XRGB truecolor (543X/46/6X)
 
 <sect> Basic configuration <p>
 
-It is recommended that you generate an XF86Config file using the
-`<tt>XF86Setup</tt>' or `<tt>xf86config</tt>' program, which should
+It is recommended that you generate an XF86Config file using
+the `<tt>XF86Setup</tt>' or `<tt>xf86config</tt>' program, which should
 produce a working
 high-resolution 8bpp configuration. You may want to include mode
 timings in the <tt>Monitor</tt> section that better fit your monitor
@@ -519,7 +519,7 @@ a default of 64Mb if MemBase isn't specified. A few examples for MemBase:
 </verb></tscreen>
 
 Finally, for 546X cards, you are in luck:  there are no "issues" to worry
-about.  The '6X will always use linear addressing and memmory-mapped I/O,
+about.  The '6X will always use linear addressing and memory-mapped I/O,
 and will use the memory addresses up near 4GB.  Yay for PCI!
 
 The 16bpp and 32bpp modes have limited acceleration (scroll, text, fill)
@@ -777,6 +777,8 @@ the latest information check the latest version of this document on
 	Works OK at 8bpp, 16bpp, 24bpp and 32bpp.
 
 <tag>CL-GD6440 on ISA bus</tag>
+        \ 
+
 
 </descrip>
 
@@ -820,7 +822,7 @@ New features in XFree86 3.2:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.14 1996/10/10 14:04:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.15 1996/10/13 11:19:48 dawes Exp $
 
 
 

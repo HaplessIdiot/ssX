@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.33 1996/10/06 13:17:44 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.34 1996/10/16 14:42:48 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -541,9 +541,11 @@ ET6000Probe()
   }
 
 #ifndef W32_ACCEL_SUPPORT
+#ifndef MONOVGA
   /*
    * Linear mode handling [kmg]
-   * currently only supported for non-accelerated chips.
+   * Does not seem to work out-of-the-box in accelerated mode,
+   * 16-color mode and monochrome mode.
    *
    */
 
@@ -584,6 +586,7 @@ ET6000Probe()
   ET4000.ChipHas32bpp = TRUE;
 
   OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+#endif
 #endif
 
   ClockSelect = ET6000ClockSelect;
@@ -1264,9 +1267,10 @@ ET4000Init(mode)
 #ifdef MONOVGA
   /* Don't ask me why this is needed on the ET6000 and not on the others */
   if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
+  row_offset = new->std.CRTC[19];
 #else
   new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
-  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3; /* overruled by 16/24/32 bpp code */
+  row_offset = vga256InfoRec.displayWidth >> 3; /* overruled by 16/24/32 bpp code */
 #endif
   new->std.CRTC[20] = 0x60;
   new->std.CRTC[23] = 0xAB;
@@ -1477,9 +1481,7 @@ ET4000Init(mode)
    * 16/24/32 bpp handling -- currently only for ET60000
    */
 
-   row_offset = vga256InfoRec.displayWidth >> 3;
-
-   if (et4000_type==TYPE_ET6000)
+   if ((et4000_type==TYPE_ET6000) && (vga256InfoRec.bitsPerPixel>=8))
    {
      int BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
 

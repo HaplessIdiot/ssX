@@ -1,4 +1,5 @@
-MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v1.0
+MGA Millennium (MGA2064W) with TVP3026 RAMDAC Driver v1.0
+=========================================================
 
 NOTE: This driver is pretty new, and not everything works like you expect
 it to. It shouldn't crash your machine, but you may have video artifacts
@@ -10,37 +11,46 @@ not please report it to xfree86@xfree86.org with the subject line "bug in mga
 driver" so it gets to us quickly. 
 
 To keep your driver upto date: keep applying any post XFree86 v3.2 patches
-XFree86 publish via ftp.xfree86.org, or if you feel a little daring, try to 
-use the patches from the web site below.
+XFree86 makes available on ftp.xfree86.org, or if you feel a little daring,
+try to use the patches from the Matrox Team's web site at URL:
+
+          http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
 
 Features:
+---------
 
-* Basic support for the Matrox Millennium video adapter
-* uses linear frame buffer whenever possible
-* it should be possible to reach resolutions upto 1920x1024
-* it should be possible to use pixel depths of 8, 16, 24, and 32 bits
-  per pixel (256 pseudo colour, "high colour", "packed true colour",
-  "true colour"). 
-* has the following accelerations:
+* Basic support for the Matrox Millennium video adapter.
+* Uses linear frame buffer whenever possible.
+* It should be possible to reach resolutions up to 1920x1024 or more.
+* It should be possible to use pixel depths of:
+   -  8 bits per pixel (256 pseudo colour)
+   - 16 bits per pixel (high colour)
+   - 24 bits per pixel (packed true colour)
+   - 32 bits per pixel (true colour)
+* The following are accelerated (use the graphics engine):
   - lines
   - some bitblts
   - filled rectangles
 
-Future Features (in order from highest to lowest priority)
+Planned Features
+----------------
 
-=1	more hardware acceleration (hw cursor, more primitive operations, etc)
-=1	3d acceleration (once we work out how that's done)
-2	more chipsets and RAMDACs
+In order from highest to lowest priority:
 
-Technical Note:
+* More hardware acceleration (hardware cursor, primitive operations, etc.).
+* 3D acceleration (once we work out how that's done).
+* Support for more chipsets and RAMDACs.
+
+Technical Notes:
+----------------
 
 This driver is the work of Radoslaw Kapitan for the most part, when he did
 not have the required Matrox documentation. The driver has been cleaned up
 and corrected, and should work on most Matrox Millennium boards.
 
 !!!!!!!!!!!!!!!!!
-This first release that was integrated in XFree86-3.1.2Gg contains
-several hacks to get this to work. Especially, it won't work when the
+This first release, that was first integrated in XFree86-3.1.2Gg, contains
+several hacks to get it to work. Especially, it doesn't work when the
 MMIO registers aren't mapped correctly. Most of the updated PCI
 detection and access code should at least be rethought.
 !!!!!!!!!!!!!!!!!
@@ -50,26 +60,37 @@ the base XFree86 3.2 and later source tree. If you don't like your machine
 crashing, we suggest you stick to those stable releases.
 
 Hardware Supported:
+-------------------
 
-This driver only supports the MGA Storm (MGA2064W) chipset with the TI
-(TVP) 3026 RAMDAC. Matrox have only so far made 175 and 220 MHz boards with
-these two components, although 135 and 250 MHz RAMDAC parts exist.
+This driver only supports the Matrox Storm (MGA2064W) chipset with the
+Texas Instruments TVP3026 RAMDAC. Matrox has so far only shipped boards with
+175 MHz and 220 MHz components, although 135 MHz and 250 MHz RAMDAC parts
+do exist.
 
-This driver autodetects WRAM size and RAMDAC speed, so you don't need to 
-probe for clocks, or bother putting in a video ram size. 
+This driver auto-detects the amount of installed WRAM and the RAMDAC speed,
+so you don't need to probe or specify these. Same goes for the clocks, which
+are fully progrmamable on the RAMDAC. The driver takes care of everything
+for you!
 
-We will eventually provide support for the other Matrox chipsets (once the
-Millenium driver is at a far enough stage and more people with other cards
-join the effort), including the Impression, Mystique, etc. 
-
-At the moment, however, only the Millennium is supported.
+Support for other Matrox cards is planned. This includes the Impression
+and Mystique. At the moment, however, only the Millennium is supported.
 
 Configuration:
+--------------
 
-* autodetects WRAM size and RAMDAC speed. Do not bother putting these in
-  your "Device" section, as they will be overridden.
+The driver auto-detects all device info, so use the following device
+section in your XF86Config file:
 
-Other options:
+	Section "Device"
+		Identifier	"Matrox Millennium"
+		VendorName	"Matrox"
+		BoardName	"Millennium"
+	EndSection
+
+or let xf86config do this for you.
+
+Driver Options:
+---------------
 
 *** nolinear doesn't currently work
 "nolinear"		- disables linear frame buffer and BitBlt Engine
@@ -77,6 +98,7 @@ Other options:
 "noaccel", "no_bitblt"	- turns off BitBlt Engine
 
 Virtual Widths:
+---------------
 
 *** The driver now should take care of the virtual/display width handling
 The following multiples must be honored for virtual widths to work:
@@ -99,30 +121,36 @@ For now, stick to nice virtual widths, like 640 800 1024 1152 1280 and so
 on. If you can divide your proposed virtual width by 128, you'll be safe.
 
 Main author:
+------------
 
 Radoslaw Kapitan, Tarnow, Poland
 kapitan@student.uci.agh.edu.pl
 
 Code, Additions and Testing:
+----------------------------
 
 Andrew Vanderstock, Melbourne, Australia
 vanderaj@mail2.svhm.org.au
 
-Angsar
+Angsar Hockmann
+Ansgar.Hockmann@hrz.uni-dortmund.de
 
 Michael Will
+zxmgv07@student.uni-tuebingen.de
 
-Andrew Mileski
+Andrew E. Mileski, Ottawa, Canada
+aem@ott.hookup.net
 
 Stephen Pitts
-pitts2@...
+pitts2@memphis.online.com
 
 Porting to XFree86-3.1.2Gg:
+---------------------------
 
 Dirk Hohndel
 hohndel@XFree86.Org
 
 Visit the Matrox Millennium XServer for XFree86 Home Page:
-http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
+    http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
 to keep upto date with the latest news, new sources, etc.
 

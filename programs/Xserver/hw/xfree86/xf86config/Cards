@@ -17,8 +17,8 @@
 #
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
-# 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.43 1996/10/10 14:05:10 dawes Exp $
+#
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.44 1996/10/13 11:22:42 dawes Exp $
 
 #Chips & Technologies
 
@@ -245,42 +245,48 @@ NOCLOCKPROBE
 
 # S3 801/805
 
-NAME S3-801/805 (generic)
-CHIPSET S3-801/805
+NAME S3 801/805 (generic)
+CHIPSET S3 801/805
 SERVER S3
 
+NAME S3 86C801 (generic)
+SEE S3 801/805 (generic)
+
+NAME S3 86C805 (generic)
+SEE S3 801/805 (generic)
+
 #tested
-NAME S3-801/805 with ATT20c490 RAMDAC
-CHIPSET S3-801/805
+NAME S3 801/805 with ATT20c490 RAMDAC
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20c490
 LINE     #Option "dac_8_bit"		# Not supported by some 20c490 clones
 
-NAME S3-801/805 with SC1148{2,3,4} RAMDAC
-CHIPSET S3-801/805
+NAME S3 801/805 with SC1148{2,3,4} RAMDAC
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC sc11482
 
-NAME S3-801/805 with SC1148{5,7,9} RAMDAC
-CHIPSET S3-801/805
+NAME S3 801/805 with SC1148{5,7,9} RAMDAC
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC sc11485
 
-NAME S3-801/805 with S3-GenDAC
-CHIPSET S3-801/805
+NAME S3 801/805 with S3 GenDAC
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC s3gendac
 CLOCKCHIP s3gendac
 
-NAME S3-801/805 with ATT20c490 RAMDAC and ICD2061A
-CHIPSET S3-801/805
+NAME S3 801/805 with ATT20c490 RAMDAC and ICD2061A
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20c490
 CLOCKCHIP icd2061a
 LINE     #Option "dac_8_bit"		# Not supported by some 20c490 clones
 
-NAME S3-801/805 with Chrontel 8391
-CHIPSET S3-801/805
+NAME S3 801/805 with Chrontel 8391
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20c490
 CLOCKCHIP ch8391
@@ -288,179 +294,197 @@ LINE     Option "dac_8_bit"
 
 #tested
 NAME Actix GE32+ 2MB
-CHIPSET S3-801/805
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20c490
 LINE     #Option "dac_8_bit"
 
 NAME Actix GE32i
-CHIPSET S3-805i
+CHIPSET S3 805i
 SERVER S3
 
 NAME Orchid Fahrenheit VA
-CHIPSET S3-801/805
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20c490
 
 NAME Orchid Fahrenheit 1280
-CHIPSET S3-801
+CHIPSET S3 801
 SERVER S3
 LINE     #Probable clocks:
 LINE     #Clocks 25.20 28.32 32.50 0.00 40.00 44.90 50.40 65.00
 LINE     #Clocks 78.00 56.70 63.10 75.10 80.00 89.90 100.90 31.50
 
 NAME Orchid Fahrenheit-1280+
-CHIPSET S3-801/805
+CHIPSET S3 801/805
 SERVER S3
 RAMDAC att20C490
 LINE     Dacspeed   110
 LINE     Option     "dac_8_bit"
 LINE     #Option    "nolinear" # VLB card may require this
 LINE     #Probable clocks:
-LINE     #Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
+LINE     #Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0
 LINE     #Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
 
 NAME Diamond Stealth 24
-CHIPSET S3-801/805
+CHIPSET S3 801/805
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     #Option    "nolinear"
 LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
 
 NAME Miro Crystal 8S
-SEE S3-801/805 (generic)
+SEE S3 801/805 (generic)
 
 NAME Miro Crystal 10SD with GenDAC
-SEE S3-801/805 with S3-GenDAC
+SEE S3 801/805 with S3 GenDAC
 
-NAME Dell S3-805
-SEE S3-801/805 (generic)
+NAME Dell S3 805
+SEE S3 801/805 (generic)
 
 NAME STB Powergraph X-24
-SEE S3-801/805 with ATT20c490 RAMDAC and ICD2061A
+SEE S3 801/805 with ATT20c490 RAMDAC and ICD2061A
 
 NAME JAX 8241
-SEE S3-801/805 with Chrontel 8391
+SEE S3 801/805 with Chrontel 8391
 
 NAME VL-41
-SEE S3-801/805 with Chrontel 8391
+SEE S3 801/805 with Chrontel 8391
 
 NAME SPEA Mirage
-SEE S3-801/805 with Chrontel 8391
+SEE S3 801/805 with Chrontel 8391
 
-# S3-864/Trio64/Trio32/868
+# S3 864/Trio64/Trio32/868
 
-NAME S3-864 (generic)
-CHIPSET S3-864
+NAME S3 864 (generic)
+CHIPSET S3 864
 SERVER S3
 
-NAME S3-864 with SDAC (86C716)
-CHIPSET S3-864
+NAME S3 86C864 (generic)
+SEE S3 864 (generic)
+
+NAME S3 Vision864 (generic)
+SEE S3 864 (generic)
+
+NAME S3 864 with SDAC (86C716)
+CHIPSET S3 864
 SERVER S3
 RAMDAC s3_sdac
 CLOCKCHIP s3_sdac
 NOCLOCKPROBE
 
-NAME S3-864 with ATT 20C498 or 21C498
-CHIPSET S3-864
+NAME S3 864 with ATT 20C498 or 21C498
+CHIPSET S3 864
 SERVER S3
 RAMDAC att20c498
 
-NAME S3-864 with STG1703
-CHIPSET S3-864
+NAME S3 864 with STG1703
+CHIPSET S3 864
 SERVER S3
 RAMDAC stg1703
 NOCLOCKPROBE
 
-NAME S3-868 (generic)
-CHIPSET S3-868
+NAME S3 868 (generic)
+CHIPSET S3 868
 SERVER S3
 
-NAME S3-868 with SDAC (86C716)
-CHIPSET S3-868
+NAME S3 86C868 (generic)
+SEE S3 868 (generic)
+
+NAME S3 Vision868 (generic)
+SEE S3 868 (generic)
+
+NAME S3 868 with SDAC (86C716)
+CHIPSET S3 868
 SERVER S3
 NOCLOCKPROBE
 
-NAME S3-868 with ATT 20C498 or 21C498
-CHIPSET S3-868
+NAME S3 868 with ATT 20C498 or 21C498
+CHIPSET S3 868
 SERVER S3
 RAMDAC att20c498
 
-NAME S3-868 with ATT 20C409
-CHIPSET S3-868
+NAME S3 868 with ATT 20C409
+CHIPSET S3 868
 SERVER S3
 RAMDAC att20c409
 NOCLOCKPROBE
 
 NAME Number Nine FX Motion 531
 CLOCKCHIP icd2061a
-SEE S3-868 with ATT 20C498 or 21C498
+SEE S3 868 with ATT 20C498 or 21C498
 
-NAME S3-Trio64 (generic)
-CHIPSET S3-Trio64
+NAME S3 Trio64 (generic)
+CHIPSET S3 Trio64
 SERVER S3
 NOCLOCKPROBE
 
-NAME S3-Trio64V+ (generic)
-CHIPSET S3-Trio64V+
+NAME S3 86C764 (generic)
+SEE S3 Trio64 (generic)
+
+NAME S3 Trio64V+ (generic)
+CHIPSET S3 Trio64V+
 SERVER S3
 NOCLOCKPROBE
 
-NAME S3-Trio32 (generic)
-CHIPSET S3-Trio32
+NAME S3 86C765 (generic)
+SEE S3 Trio64V+ (generic)
+
+NAME S3 Trio32 (generic)
+CHIPSET S3 Trio32
 SERVER S3
 NOCLOCKPROBE
 
-NAME Genoa Phantom 64i with S3-SDAC
+NAME Genoa Phantom 64i with S3 SDAC
 DACSPEED 135
-SEE S3-864 with SDAC (86C716)
+SEE S3 864 with SDAC (86C716)
 
 NAME Number Nine GXE64
-CHIPSET S3-864
+CHIPSET S3 864
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "number_nine"
 
-NAME Number Nine GXE64 with S3-Trio64
-SEE S3-Trio64 (generic)
+NAME Number Nine GXE64 with S3 Trio64
+SEE S3 Trio64 (generic)
 
-NAME Diamond Stealth 64 DRAM with S3-SDAC
+NAME Diamond Stealth 64 DRAM with S3 SDAC
 DACSPEED 135
-SEE S3-864 with SDAC (86C716)
+SEE S3 864 with SDAC (86C716)
 
 NAME Diamond Stealth64 Graphics 2xx0 series (864 + SDAC)
 DACSPEED 135
-SEE S3-864 with SDAC (86C716)
+SEE S3 864 with SDAC (86C716)
 
-NAME Diamond Stealth 64 DRAM with S3-Trio64
-SEE S3-Trio64 (generic)
+NAME Diamond Stealth 64 DRAM with S3 Trio64
+SEE S3 Trio64 (generic)
 
 NAME Diamond Stealth64 Graphics 2xx0 series (Trio64)
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Diamond Stealth 64 DRAM SE
-SEE S3-Trio32 (generic)
+SEE S3 Trio32 (generic)
 
 NAME Diamond Stealth64 Video 2001 series (2121/2201)
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME Actix GE64
 CLOCKCHIP icd2061a
-SEE S3-864 (generic)
+SEE S3 864 (generic)
 
-NAME ELSA Winner 1000PRO with S3-SDAC
-SEE S3-864 with SDAC (86C716)
+NAME ELSA Winner 1000PRO with S3 SDAC
+SEE S3 864 with SDAC (86C716)
 
 NAME ELSA Winner 1000PRO with STG1700 or AT&T RAMDAC
-CHIPSET S3-864
+CHIPSET S3 864
 SERVER S3
 CLOCKCHIP icd2061a
 
 NAME ELSA Winner 1000PRO/X
-SEE S3-868 with SDAC (86C716)
+SEE S3 868 with SDAC (86C716)
 
 NAME ELSA Winner 1000ISA
-CHIPSET S3-805i
+CHIPSET S3 805i
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "dac_8_bit"
@@ -469,90 +493,111 @@ LINE     # if the serial number of the ELSA card is printed correctly:
 LINE     #ClockChip "icd2061a"
 
 NAME Cardex Trio64
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Cardex Trio64Pro
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Miro Crystal 12SD
-SEE S3-Trio32 (generic)
+SEE S3 Trio32 (generic)
 
 NAME Miro Crystal 22SD
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Miro Crystal 20SD with ICS2494 (BIOS 1.xx)
-SEE S3-864 with ATT 20C498 or 21C498
+SEE S3 864 with ATT 20C498 or 21C498
 
 NAME Miro Crystal 20SD with ICD2061A (BIOS 2.xx)
 CLOCKCHIP icd2061a
-SEE S3-864 with ATT 20C498 or 21C498
+SEE S3 864 with ATT 20C498 or 21C498
 
-NAME Miro Crystal 20SD VLB with S3-SDAC (BIOS 3.xx)
-SEE S3-864 with SDAC (86C716)
+NAME Miro Crystal 20SD VLB with S3 SDAC (BIOS 3.xx)
+SEE S3 864 with SDAC (86C716)
 
-NAME Miro Crystal 20SD PCI with S3-SDAC
-SEE S3-868 with SDAC (86C716)
+NAME Miro Crystal 20SD PCI with S3 SDAC
+SEE S3 868 with SDAC (86C716)
 
 NAME ELSA Winner 1000AVI (SDAC version)
-SEE S3-868 with SDAC (86C716)
+SEE S3 868 with SDAC (86C716)
 
 NAME ELSA Winner 1000AVI (AT&T 20C409 version)
-SEE S3-868 with ATT 20C409
+SEE S3 868 with ATT 20C409
 
 NAME Diamond Stealth Video DRAM
-SEE S3-868 with SDAC (86C716)
+SEE S3 868 with SDAC (86C716)
 
 NAME Diamond Stealth64 Video 2120/2200
-SEE S3-868 with SDAC (86C716)
+SEE S3 868 with SDAC (86C716)
 
 NAME SPEA/V7 Mirage P64
 CLOCKCHIP ics2595
-SEE S3-864 (generic)
+SEE S3 864 (generic)
 
-NAME SPEA/V7 Mirage P64 with S3-Trio64
-SEE S3-Trio64 (generic)
+NAME SPEA/V7 Mirage P64 with S3 Trio64
+SEE S3 Trio64 (generic)
 
 NAME Number Nine FX Vision 330
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Number Nine FX Motion 331
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME ASUS Video Magic PCI V864
-SEE S3-864 (generic)
+SEE S3 864 (generic)
 
 NAME ASUS Video Magic PCI VT64
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME VidTech FastMax P20
-SEE S3-864 (generic)
+SEE S3 864 (generic)
 
 NAME VideoLogic GrafixStar 500
-SEE S3-868 with SDAC (86C716)
+SEE S3 868 with SDAC (86C716)
 
 NAME VideoLogic GrafixStar 400
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME VideoLogic GrafixStar 300
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME 2 the Max MAXColor S3 Trio64V+
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
-# S3-964/968
+NAME DataExpert DSV3365
+SEE S3 Trio64V+ (generic)
 
-NAME S3-964 (generic)
-CHIPSET S3-964
+NAME ExpertColor DSV3365
+SEE S3 Trio64V+ (generic)
+
+NAME DSV3326
+SEE S3 Trio64V+ (generic)
+
+# S3 964/968
+
+NAME S3 964 (generic)
+CHIPSET S3 964
 SERVER S3
 NOCLOCKPROBE
 
-NAME S3-968 (generic)
-CHIPSET S3-968
+NAME S3 86C964 (generic)
+SEE S3 964 (generic)
+
+NAME S3 Vision964 (generic)
+SEE S3 964 (generic)
+
+NAME S3 968 (generic)
+CHIPSET S3 968
 SERVER S3
 NOCLOCKPROBE
+
+NAME S3 86C968 (generic)
+SEE S3 968 (generic)
+
+NAME S3 Vision968 (generic)
+SEE S3 968 (generic)
 
 NAME Number Nine GXE64 Pro
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 RAMDAC ti3025
 LINE     Option "number_nine"
@@ -560,171 +605,174 @@ LINE     Option "number_nine"
 NAME Diamond Stealth 64 VRAM
 CLOCKCHIP icd2061a
 LINE    #Option "slow_vram"
-SEE S3-964 (generic)
+SEE S3 964 (generic)
 
 NAME Diamond Stealth64 Video 3200
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #Option "slow_vram"
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Diamond Stealth 64 Video VRAM (TI RAMDAC)
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #Option "slow_vram"
 LINE    #DacSpeed 220
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Diamond Stealth64 Video 3240/3400 (TI RAMDAC)
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #Option "slow_vram"
 LINE    #DacSpeed 220
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Diamond Stealth64 Video 3240/3400 (IBM RAMDAC)
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #Option "slow_vram"
 RAMDAC ibm_rgb526
 LINE    DacSpeed 220
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Genoa VideoBlitz III AV
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #s3RefClk  50
 LINE    #DACspeed 170
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME STB Velocity 64 Video
-CHIPSET S3-968
+CHIPSET S3 968
 LINE    #s3RefClk  24
 LINE    #DACspeed 220
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME STB Powergraph 64 Video
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME STB Powergraph 64
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME ELSA Winner 1000TRIO
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME ELSA Winner 1000TRIO/V
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME Hercules Graphite Terminator 64
 LINE     Option "slow_vram"
 LINE    #s3RefClk  50
 LINE    #DACspeed 170
-SEE S3-964 (generic)
+SEE S3 964 (generic)
 
 NAME Hercules Terminator 64/Video
-SEE S3-Trio64V+ (generic)
+SEE S3 Trio64V+ (generic)
 
 NAME Hercules Graphite Terminator 64/DRAM
-SEE S3-Trio64 (generic)
+SEE S3 Trio64 (generic)
 
 NAME Hercules Graphite Terminator Pro 64
 LINE    #s3RefClk  16
 LINE    #DACspeed 220
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Number Nine FX Motion 771
 LINE    #s3RefClk  16
-SEE S3-968 (generic)
+SEE S3 968 (generic)
 
 NAME Spider Tarantula 64
-SEE S3-964 (generic)
+SEE S3 964 (generic)
 
 NAME Miro Crystal 20SV
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 CLOCKCHIP icd2061a
 
 NAME Miro Crystal 40SV
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 CLOCKCHIP ti3025
 
 NAME Miro Video 20SV
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 RAMDAC att20c505
 LINE    #DacSpeed 150
 CLOCKCHIP ics9161a
 
 NAME SPEA Mercury 64
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 CLOCKCHIP ics9161a
 LINE     #Option "spea_mercury"
 
 NAME ELSA Winner 2000PRO-2
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 LINE     #Option "ELSA_w2000pro"
 NOCLOCKPROBE
 
 NAME ELSA Winner 2000PRO-4
-CHIPSET S3-964
+CHIPSET S3 964
 SERVER S3
 LINE     #Option "ELSA_w2000pro"
 NOCLOCKPROBE
 
 NAME ELSA Winner 2000PRO/X-2
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 NAME ELSA Winner 2000PRO/X-4
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 NAME ELSA Winner 2000AVI
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 NAME ELSA Gloria-4
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 NAME ELSA Gloria-8
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 LINE     #Option "sync_on_green"
 NOCLOCKPROBE
 
 NAME VideoLogic GrafixStar 700
-CHIPSET S3-968
+CHIPSET S3 968
 SERVER S3
 NOCLOCKPROBE
 
-# S3-928
+# S3 928
 
-NAME S3-928 (generic)
-CHIPSET S3-928
+NAME S3 928 (generic)
+CHIPSET S3 928
 SERVER S3
 
+NAME S3 86C928 (generic)
+SEE S3 928 (generic)
+
 NAME Actix Ultra
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 RAMDAC att20c490
 LINE     #Option "dac_8_bit"
 
 NAME Diamond Stealth Pro
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     #Ramdac "att20c490" # The Diamond RAMDAC is reportedly compatible for 15bpp
 LINE     #Option "no_linear" # Some VLB machines may require this
 
 NAME ELSA Winner 1000VL
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 LINE     # the following settings should be detected and set automatically by XF86_S3
 LINE     # if the serial number of the ELSA card is printed correctly:
@@ -735,19 +783,19 @@ NAME ELSA Winner 1000TwinBus
 SEE ELSA Winner 1000VL
 
 NAME ELSA Winner 2000
-SEE S3-928 (generic)
+SEE S3 928 (generic)
 
 NAME Miro Crystal 16S
-SEE S3-928 (generic)
+SEE S3 928 (generic)
 
 NAME SPEA/V7 Mercury
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 CLOCKCHIP sc11412
 LINE     Option "spea_mercury"
 
 NAME STB Pegasus
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 RAMDAC bt485
 CLOCKCHIP icd2061a
@@ -755,7 +803,7 @@ LINE     Option "stb_pegasus"
 LINE     #Option "sync_on_green"
 
 NAME Number Nine GXE Level 14/16
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 DACSPEED 200
 CLOCKCHIP icd2061a
@@ -764,38 +812,108 @@ LINE     #Option "nolinear"
 LINE     #Option "nomemaccess"
 
 NAME Number Nine GXE Level 10/11/12
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "number_nine"
 
 NAME 928Movie
-CHIPSET S3-928
+CHIPSET S3 928
 SERVER S3
 CLOCKCHIP icd2595
 RAMDAC bt485
 LINE     # pixel multiplexing not supported
 
-# S3-911/924
+# S3 911/924
 
-NAME S3-911/924 (generic)
-CHIPSET S3-911/924
+NAME S3 911/924 (generic)
+CHIPSET S3 911/924
 SERVER S3
 
+NAME S3 86C911 (generic)
+SEE S3 911/924 (generic)
+
+NAME S3 86C924 (generic)
+SEE S3 911/924 (generic)
+
 NAME Diamond Stealth VRAM
-CHIPSET S3-911/924
+CHIPSET S3 911/924
 SERVER S3
 CLOCKCHIP icd2061a
 
 NAME Orchid Fahrenheit 1280
-SEE S3-911/924 (generic)
+SEE S3 911/924 (generic)
 
-NAME S3-924 with SC1148 DAC
-CHIPSET S3-924
+NAME S3 924 with SC1148 DAC
+CHIPSET S3 924
 SERVER S3
 LINE     #Probable clocks:
-LINE     #Clocks 25.2 28.3 39.7 1.7 49.9 76.7 35.7 44 
+LINE     #Clocks 25.2 28.3 39.7 1.7 49.9 76.7 35.7 44
 LINE     #Clocks 130.2 119.5 79.4 31.2 110.0 65.2 74.9 71.3
+
+# S3 ViRGE and ViRGE/VX
+
+NAME S3 ViRGE (generic)
+CHIPSET S3 ViRGE
+SERVER S3V
+
+NAME S3 86C325 (generic)
+SEE S3 ViRGE (generic)
+
+NAME ELSA Victory 3D
+SEE S3 ViRGE (generic)
+
+NAME Number Nine Visual 9FX Reality 332
+SEE S3 ViRGE (generic)
+
+NAME Number Nine FX Motion 332
+SEE S3 ViRGE (generic)
+
+NAME Diamond Stealth 3D 2000
+SEE S3 ViRGE (generic)
+
+NAME Canopus Co. Power Window 3DV
+SEE S3 ViRGE (generic)
+
+NAME DataExpert DSV3325
+SEE S3 ViRGE (generic)
+
+NAME ExpertColor DSV3325
+SEE S3 ViRGE (generic)
+
+NAME DSV3325
+SEE S3 ViRGE (generic)
+
+NAME Diamond Multimedia Stealth 3D 2000
+SEE S3 ViRGE (generic)
+
+NAME Hercules Terminator 64/3D
+SEE S3 ViRGE (generic)
+
+NAME LeadTek WinFast 3D S600
+SEE S3 ViRGE (generic)
+
+NAME miro miroMedia 3D
+SEE S3 ViRGE (generic)
+
+NAME Orchid Technology Fahrenheit Video 3D
+SEE S3 ViRGE (generic)
+
+NAME STB Systems Powergraph 3D
+SEE S3 ViRGE (generic)
+
+
+NAME S3 ViRGE/VX (generic)
+CHIPSET S3 ViRGE/VX
+SERVER S3V
+
+NAME S3 86C988 (generic)
+SEE S3 ViRGE/VX (generic)
+
+NAME ELSA Winner 3000
+SEE S3 ViRGE/VX (generic)
+
+
 
 # ET4000/ET6000
 
@@ -887,7 +1005,7 @@ NAME ATI Graphics Ultra Pro
 CHIPSET ATI-Mach32
 SERVER Mach32
 LINE     #Probable clocks:
-LINE     #Clocks 100 126 92 36 51 57 0 44 135 32 110 80 39 
+LINE     #Clocks 100 126 92 36 51 57 0 44 135 32 110 80 39
 LINE     #Clocks 45 75 65 50 63 46 18 25 28 0 22 67 16 55 40 19 23 37 33
 LINE     #Option "dac_8_bit"
 
@@ -1085,7 +1203,7 @@ LINE     #Clocks 25.0  28.0  32.0  36.0  40.0  45.0  50.0  65.0
 LINE     #Clocks 70.0  75.0  80.0  85.0  90.0  95.0 100.0 110.0
 
 NAME XGA-2  (ISA bus)
-CHIPSET XGA-2  
+CHIPSET XGA-2
 SERVER AGX
 NOCLOCKPROBE
 LINE     #Instance  7           # XGA instance 0-7

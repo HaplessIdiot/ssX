@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/5 1996/01/28 07:49:02 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.10 1996/09/15 11:36:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.11 1996/09/29 13:47:33 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -69,19 +69,21 @@ LinuxDocReadmeTarget(SVR4)
 LinuxDocReadmeTarget(DECtga)
 LinuxDocReadmeTarget(Mach32)
 LinuxDocReadmeTarget(Mach64)
+LinuxDocReadmeTarget(MGA)
 LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
 LinuxDocReadmeTarget(Video7)
 LinuxDocReadmeTarget(S3)
+LinuxDocReadmeTarget(S3V)
 LinuxDocReadmeTarget(W32)
 LinuxDocReadmeTarget(WstDig)
+LinuxDocReadmeTarget(ark)
 LinuxDocReadmeTarget(agx)
 LinuxDocReadmeTarget(ati)
 LinuxDocReadmeTarget(chips)
 LinuxDocReadmeTarget(cirrus)
 LinuxDocReadmeTarget(trident)
 LinuxDocReadmeTarget(tseng)
-LinuxDocReadmeTarget(ark)
 
 /* Main docs */
 LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
@@ -114,6 +116,7 @@ LinkSourceFile(LynxOS.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Mach.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Mach32.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Mach64.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(MGA.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(NetBSD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(OS2.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(OS2note.sgml,$(XF86SRC)/doc/sgml)
@@ -123,6 +126,7 @@ LinkSourceFile(QStart.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(README.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(RELNOTE.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(S3.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(S3V.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SCO.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SOLX86.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SVR4.sgml,$(XF86SRC)/doc/sgml)

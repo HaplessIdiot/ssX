@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.6 1996/08/24 12:51:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.7 1996/08/25 14:06:30 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -412,7 +412,7 @@ TCL_XF86Umask(clientData, interp, argc, argv)
 
 	if (Tcl_GetInt(interp, argv[1], &mode) != TCL_OK)
 		return TCL_ERROR;
-	if (umask((mode_t) mode) == -1)
+	if (umask((mode_t) mode) == (mode_t)-1)
 		Tcl_SetResult(interp, "0", TCL_STATIC);
 	else
 		Tcl_SetResult(interp, "1", TCL_STATIC);

@@ -2,24 +2,31 @@
 
  <article>
 
- <title>Release Notes for XFree86&tm; 3.1.2G (beta version)
+ <title>Release Notes for XFree86&tm; 3.2
  <author>The XFree86 Project, Inc
- <date>3 September 1996
+ <date>20 October 1996
 
 
 <abstract>
 
+<!--
 This document describes the rationale and conditions of this beta release,
 what is new in the XFree86 beta versions 3.1.2G, 3.1.2F, 3.1.2E, 3.1.2D,
 3.1.2B and 3.1.2A
 compared with the current release version 3.1.2, and how to install this
 beta release.  Note: version 3.1.2C is included (in source form)
 in the X Consortium's X11R6.1 release.
+-->
+
+This document describes the new features in XFree86 3.2 compared with the
+previous full release, 3.1.2.  It also includes installation instructions
+for the binary distributions.
 
 </abstract>
 
 <toc>
 
+<!--
 <sect> General Information about Beta Releases
 <p>
 This is a beta release of XFree86.  XFree86 beta releases are available
@@ -104,11 +111,13 @@ following:
 	server for your work/school/etc, you shouldn't be relying on
 	this beta software.
 </itemize>
+-->
 
 <sect> XFree86 and X11R6.1
 <p>
-XFree86 3.1.2D and subsequent releases are based on the X Consortium's
-X11R6.1.  3.1.2G is distributed as a complete release.
+XFree86 releases starting with the 3.1.2D beta are based on the X Consortium's
+X11R6.1.
+
 R6.1 is an update to R6,
 and is intended to be compatible with R6 at the source and protocol
 levels.  Binaries should be upward-compatible.  X11R6.1 includes some
@@ -122,14 +131,14 @@ Beta testers should always check the OS specific README files for
 special requirements or caveats. 
 <p>
 Testers running Linux/Elf (on Intel platforms) should note that they will
-need ld.so-1.7.14 and libncurses.so.3.0 (which is ncurses-1.9.9e). Both
+need ld.so-1.7.14.  This
 can be found at <url name="tsx-11.mit.edu:pub/linux/packages/GCC"
 url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
 
-<sect> New Features in 3.1.2G
+<sect> New Features in 3.2
 <p>
-3.1.2G is primarily a bug-fix release.  It is intended to fix some serious
-problems that were discovered shortly after 3.1.2F was released.
+Note, items marked with `*' have been added since the last beta release
+(3.1.2G).
 <p>
 <sect1> General X server changes
 <p>
@@ -1230,7 +1239,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.41 1996/09/03 15:12:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.42 1996/09/14 13:10:28 dawes Exp $
 </verb>
 
 </article>

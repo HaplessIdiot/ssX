@@ -431,7 +431,7 @@ driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
 <sect1>Configuring PEX and XIE extensions
 <p>
 The PEX and XIE extensions are now supported as external modules.
-If you want to have access to these exensions, add the following
+If you want to have access to these extensions, add the following
 lines to the <bf/Module/ section of <tt/XF86Config/:
 <tscreen><verb>
    load    "pex5.so"
@@ -656,8 +656,8 @@ pccons and pcvt drivers will be supported.
 <sect1>pcvt_ioctl.h file:
 
 <p>
-XFree86 default's config includes support for the PCVT console
-driver. Unfortunatly, NetBSD doesn't install the <tt/pcvt_ioctl.h/
+XFree86's defaults config includes support for the PCVT console
+driver. Unfortunately, NetBSD doesn't install the <tt/pcvt_ioctl.h/
 file in <tt>/usr/include/machine</tt>. If you want to build XFree86
 with PCVT support, execute the following command as root before
 starting <tt/make World/:
@@ -794,7 +794,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.36 1996/10/16 14:41:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.37 1996/10/18 15:03:28 dawes Exp $
 
 
 

@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.34 1996/10/13 11:18:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.35 1996/10/16 14:38:49 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2"  "XFree86"
 .SH NAME
-XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
+XF86_SVGA - SVGA X Window System servers for UNIX on 
 x86 platforms
 .SH SYNOPSIS
 .B XF86_SVGA
@@ -13,9 +13,8 @@ Super-VGA cards.  It is derived from
 the
 .I X386
 server provided with X11R5.
-Note: 16-bit TrueColor is currently only supported for some Cirrus and ARK
-chips and the ET6000, and 24-bit TrueColor is only supported for some Cirrus
-chips and the ET6000.
+Note: 16-bit and 24-bit TrueColor are currently only supported for some
+Cirrus, ARK, Chips & Technology, and Trident chips, and the ET6000.
 .SH CONFIGURATIONS
 .PP
 The
@@ -23,11 +22,11 @@ The
 server supports the following popular SuperVGA chipsets in 256 color mode.
 Virtual resolutions up to (approximately) 1152x900 are supported, using (up
 to) 1Mb of display memory. The Western Digital WD90C33, some of the Cirrus
-chipsets, the Oak OTI087 and the ET6000 support up to 2Mb of display memory
-and virtual resolutions of 1280x1024 and higher. Some of the Cirrus chipsets
-also support 16bpp and 32bpp (truecolor) modes on certain configurations.
-Some of the ARK chipsets support 16bpp modes on certain configurations. The
-ET6000 supports all color depths. Generic VGA cards are also supported at
+chipsets, ARK, the Oak OTI087 and the ET6000 support up to 2Mb of display
+memory and virtual resolutions of 1280x1024 and higher.  Some of the Cirrus
+and ARK chipsets also support 16bpp, 24bpp and 32bpp (truecolor) modes on
+certain configurations. Some Trident chips are supported at 16bpp.
+The ET6000 supports all color depths. Generic VGA cards are also supported at
 8bpp 320x200 only.
 .RS .5i
 .TP 4
@@ -47,24 +46,28 @@ GVGA
 .TP 4
 Trident:
 TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000
+TVGA9000i, TVGA9100B, TVGA9200CXr, TGUI9320LCD, TGUI9400CXi, TGUI9420,
+TGUI9420DGi, TGUI9430DGi, TGUI9440AGi, TGUI9660XGi, TGUI9680
 .TP 4
 NCR:
 77C22, 77C22E
 .TP 4
 Cirrus Logic:
 CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-CLGD5430, CLGD5434, CLGD5436, CLGD5446, CLGD5462, CLGD5464,
-CLGD6205, CLGD6215, CLGD6225, CLGD6235,
+CLGD5430, CLGD5434, CLGD5436, CLGD5440, CLGD5446, CLGD5462,
+CLGD5464, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
 CL6410, CL6412, CL6420, CL6440
 .TP 4
 ARK:
-ARK1000PV, ARK1000VL, ARK2000PV
+ARK1000PV, ARK1000VL, ARK2000PV, ARK2000MT
 .TP 4
 RealTek:
 RTG3106
+.ig
 .TP 4
 Compaq:
 AVGA
+..
 .TP 4
 Oak:
 OTI067, OTI077, OTI087
@@ -76,17 +79,32 @@ Chips & Technology:
 .ig
 82C451, 82C452, 82C453, 82C455, 82C456, 82C457,
 ..
-65520, 65530, 65540, 65545
+65520, 65530, 65540, 65545, 65520, 65530, 65540,
+65545, 65546, 65548, 65550, 65554
+
+.TP 4
+SiS:
+SIS 86C201, 86C202, 86C205
 .TP 4
 MX:\ \ 
 MX68000, MX68010
 .TP 4
 Video7:
 HT216-32
+.TP 4
+Alliance:
+AP6422
+.TP 4
+Matrox:
+MGA2064W
+.TP 4
+NVidia:
+NV1, STG2000
 .RE
 .PP
 Accelerated support is included for most of the Cirrus chipsets,
-the Western Digital WD90C31 and WD90C33 chipsets, and the Oak OTI087 chipset.
+the Western Digital WD90C31 and WD90C33 chipsets, the Oak OTI087 chipset,
+Chips & Technology, and ARK Logic chipsets.
 Accelerated support for the
 ET4000/W32 and ET6000 acceleration is implemented in a separate server (see
 \fIXF86_W32(1)\fP). Users of boards based on ATI's Mach8, Mach32 and Mach64
@@ -133,7 +151,9 @@ Genoa:
 gvga
 .TP 4
 Trident:
-tvga8800cs, tvga8900b, tvga8900c, tvga8900cl, tvga9000 
+tvga8800cs, tvga8900b, tvga8900c, tvga8900cl, tvga9000, tvga9000i,
+tvga9100b, tvga9200cxr, tgui9320lcd, tgui9400cxi, tgui9420,
+tgui9420dgi, tgui9430dgi, tgui9440agi, tgui9660xgi, tgui9680
 .TP 4
 NCR:
 ncr77c22, ncr77c22e
@@ -148,10 +168,12 @@ RealTek:
 realtek
 .TP 4
 ARK:
-ark1000pv, ark1000vl, ark2000pv
+ark1000pv, ark1000vl, ark2000pv, ark2000mt
+.ig
 .TP 4
 Compaq:
 cpq_avga
+..
 .TP 4
 OAK:
 oti067, oti077, oti087
@@ -160,16 +182,25 @@ Avance Logic:
 al2101, ali2301, ali2302, ali2308, ali2401
 .TP 4
 Chips & Technology:
-.ig
-ct451, ct452, ct453, ct455, ct456, ct457,
-..
-ct65520, ct65530, ct65540, ct65545
+ct65520, ct65530, ct65540, ct65545, ct65546, ct65548, ct65550, ct65554
+.TP 4
+SiS:
+sis86c201, sis86c202, sis86c205
+.TP 4
+Alliance:
+AP6422
 .TP 4
 MX:\ \ 
 mx
 .TP 4
 Video7:
 video7
+.TP 4
+Matrox:
+mga2064w
+.TP 4
+NVidia:
+nv1, stg2000
 .TP 4
 Generic:
 generic
@@ -215,7 +246,7 @@ This option is for debugging purposes only.
 .sp
 \fBclkdiv2\fP - for all chipsets using a set of discrete clocks (i.e. not
 using a programmable ClockChip or a ClockProg). With this option enabled,
-the SVGA driver can also use all the clocks mentionned in the clocks line
+the SVGA driver can also use all the clocks mentioned in the clocks line
 divided by 2, presenting the server with twice as many clocks to choose
 from, especially in the low- and mid-range. This is useful for creating very
 low resolution modes like 320x200, because the lowest available clock on
@@ -229,46 +260,65 @@ Refer to the \fIXF86Config(4/5)\fP
 manual page for details of how to set the timeouts for the different levels
 of operation.  This option is experimental.
 .sp
-\fBnoaccel\fP - for Cirrus and WD chipsets.  This option disables the
-accelerated features for the clgd542X, clgd543x, clgd5446, clgd5462, wd90c24, 
-wd90c31 and wd90c33 chipsets.
+\fBnoaccel\fP - for Cirrus, WD, ARK, C&T and MGA chipsets.  This option
+disables the accelerated features for the clgd542X, clgd543x, clgd5446,
+clgd546X, wd90c24, wd90c31 and wd90c33, C&T, and ARK chipsets.
 .sp
-\fBfifo_conservative\fP - for Cirrus chipsets 542x/3x/46/6x, and oti087.  
+\fBfifo_conservative\fP - for Cirrus chipsets 542x/3x/46/6x, oti087, and
+ARK.
 This option
 sets the CRT
-FIFO threshold to a conservative value for dot clocks above 65MHz.  This
+FIFO threshold to a conservative value for higher dot clocks.  This
+slightly
 reduces performance, but may help in eliminating problems with ``streaks''
-on the screen during BitBLT operations
+on the screen caused by video memory bandwidth contention during BitBLT
+operations
 .sp
-\fBfifo_aggressive\fP - for Cirrus chipsets 542x/3x/46/6x, and oti087.  
-This option
-sets the CRT
-FIFO threshold to an aggressive value for dot clocks above 65MHz.  This
-may increase performance.
+\fBfifo_aggressive\fP - for Cirrus chipsets 542x/3x/46/6x, and oti087,
+and ARK.
+This option sets the CRT FIFO threshold to an aggressive value.
 .sp
-\fBslow_dram\fP - for Cirrus chipsets 542x/3x/46.  This option sets the 
-DRAM timings for slow DRAM chips.
+\fBslow_dram\fP - for Cirrus chipsets 542x/3x/46, and Trident.  This option
+sets the DRAM timings for slow DRAM chips.
 .sp
-\fBfast_dram\fP - for ET4000 and Cirrus chipsets 542x/3x/46.  This option 
-sets the DRAM timings for fast DRAM chips.
+\fBmed_dram\fP - for Cirrus chipsets 542x/3x/46 and Trident.  This option
+sets the DRAM timings for medium-speed DRAM chips.
+.sp
+\fBfast_dram\fP - for ET4000 and Cirrus chipsets 542x/3x/46, and Trident.
+This option sets the DRAM timings for fast DRAM chips.  Normally not
+recommended.
 .sp
 \fBno_2mb_banksel\fP - for Cirrus chipsets.  This option is required for
 Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
 (4 chips) rather than 256kx4 DRAMs (16 chips).
 .sp
-\fBno_bitblt\fP - for Cirrus chipsets.  This option disables use of
+\fBno_bitblt\fP - for Cirrus and C&T chipsets.  This option disables use of
 hardware BitBLT.
 .sp
+\fBno_imageblt\fP - for Cirrus and C&T chipsets.  This option disables use of
+CPU-assisted BitBLT functions.
+.sp
+\fBmmio\fP - for Cirrus and C&T chipsets.  This option enables memory-mapped
+I/O for BitBLT communication.
+.sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
-memory. Currently only supported for some Cirrus and oti087 configurations
+memory. Currently only supported for some Cirrus and oti087 configurations,
 and the ET6000.
 Automatically selected (and hence the option is ignored) for the clgd5462 
-and clgd5464.
+and clgd5464, C&T, NVidia, and the ARK chipsets.
 .sp
-\fBmed_dram, favour_bitblt, sw_cursor, clgd6225_lcd, mmio\fP
+\fBnolinear\fP - Disable linear mapping. Useful for C&T and ARK chipsets.
+.sp
+\fBmed_dram, favour_bitblt, clgd6225_lcd\fP
 - more Cirrus-specific options. Refer to
 /usr/X11R6/lib/X11/doc/README.cirrus for a detailed description of Cirrus
 options.
+.sp
+\fBhw_cursor\fP - for ARK chipsets.  This option enables the hardware
+cursor.
+.sp
+\fBsw_cursor\fP - for Cirrus and C&T chipsets.  This option disables the
+hardware cursor.
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)
 extern_disp (use external display for laptops -- WD90C2x)
@@ -296,15 +346,8 @@ disables the SpeedUp code.  This is equivalent to \fBspeedup "none"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the ARK driver
-currently uses this.  RAMDAC types recognised include:
-.sp
-\fBatt20c490\fP - AT&T 20C490 or compatible 8-bit RAMDAC.
-.sp
-\fBatt20c498\fP - AT&T 20C498 or compatible 16-bit RAMDAC.
-.sp
-\fBzoomdac\fP - RAMDAC used by the Hercules Stingray Pro/V and 64/V.
-.sp
-\fBstg1700\fP - STG1700 or compatible RAMDAC.
+currently uses this. Refer to the ARK-specific documentation for
+details.
 .PP
 Note that \fIXFree86\fP has some internal capabilities to determine
 what hardware
@@ -334,8 +377,14 @@ Extra documentation for the ARK driver
 <XRoot>/lib/X11/doc/README.ati
 Extra documentation for the ATI vgawonder driver
 .TP 30
+<XRoot>/lib/X11/doc/README.chips
+Extra documentation for the Chips & Technologies driver
+.TP 30
 <XRoot>/lib/X11/doc/README.cirrus
 Extra documentation for the Cirrus driver
+.TP 30
+<XRoot>/lib/X11/doc/README.MGA
+Extra documentation for the Matrox MGA driver
 .TP 30
 <XRoot>/lib/X11/doc/README.trident
 Extra documentation for the Trident driver
@@ -354,8 +403,8 @@ Extra documentation for the WD/PVGA driver
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), xvidtune(1),
-xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), XF86Setup(1),
+xvidtune(1), xdm(1), xinit(1)
 .SH BUGS
 .PP
 Bug reports are welcome, and should be emailed

@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.7 1996/10/16 14:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.8 1996/10/19 15:16:22 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -505,22 +505,29 @@ unsigned char reg;
 }
 
 /*
- * MGATi3026SetClock - Set the pixel clock PLL.
+ * MGATi3026SetClock - Set the pixel and loop clock PLLs.
  *
  * DESCRIPTION
  *   For more information, refer to the Texas Instruments
  *   "TVP3026 Data Manual" (document SLAS098B).
  *     Section 2.4.1 "Pixel Clock PLL"
+ *     Section 2.4.3 "Loop Clock PLL"
  *     Appendix A "Frequency Synthesis PLL Register Settings"
+ *     Appendix B "PLL Programming Examples"
  *
  * PARAMETERS
  *   f_pll			IN	Pixel clock PLL frequencly in kHz.
- *   bpp			IN	Bits per pixel.
+ *   bpp			IN	Bytes per pixel.
  *
  * EXTERNAL REFERENCES
  *   vga256InfoRec.maxClock	IN	Max allowed pixel clock in kHz.
+ *   vgaBitsPerPixel		IN	Bits per pixel.
  *
  * HISTORY
+ *   October 19, 1996 - [aem] Andrew E. Mileski
+ *   Commented the loop clock code (wow, I understand everything now),
+ *   and simplified it a bit. This should really be two separate functions.
+ *
  *   October 1, 1996 - [aem] Andrew E. Mileski
  *   Optimized the m & n picking algorithm. Added maxClock detection.
  *   Low speed pixel clock fix (per the docs). Documented what I understand.
@@ -547,17 +554,22 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	long	f_pll;
 	int	bpp;
 {
-	/* f_vco = 8 * TI_REF_FREQ * ( 65 - m ) / ( 65 - n ) */
+	/* Pixel clock: f_vco = 8 * TI_REF_FREQ * ( 65 - m ) / ( 65 - n ) */
 	double f_vco;
 	int n, p, m;
 
-	/* These are used to pick a value for m */
+	/* Pixel clock: These are used to pick a value for m */
 	double c, ic, m_err;
 	int best_n, best_m;
 
-	/* I have no idea what these are for [aem] */
+	/* Loop clock values */
 	int ln, lp, lm, lq;
 	long z;
+
+	/*
+	 * First we deal with setting the pixel clock PLL.
+	 * We will deal with the loop clock PLL later.
+	 */
 
 	/* Make sure that 13.75 MHz <= f_pll <= chip max */
 	if ( f_pll < ( TI_MIN_VCO_FREQ / 8 ))
@@ -572,7 +584,7 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	 * f_pll = f_vco / 2 ^ p
 	 * Choose p so that f_vco >= TI_MIN_VCO_FREQ
 	 */
-	for ( p = 0; p <= 3 && f_vco < TI_MIN_VCO_FREQ; p++ )
+	for ( p = 0; p < 3 && f_vco <= TI_MIN_VCO_FREQ; p++ )
 		f_vco *= 2.0;
 
 	/*
@@ -609,49 +621,84 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	m = 65 - best_m;
 	n = 65 - best_n;
 
-	/* from DDK3.05/SRC/BIND/CLOCK.C (ansi) */
+	/* Values for the pixel clock PLL registers */
+	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xC0;
+	newVS->DACclk[ 1 ] = ( m & 0x3f );
+	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xB0;
 
-	if (vgaBitsPerPixel == 24) {
-		if (bpp == 2)	/* 32 bit buswidth = non-interleave = 4:3 */
-			ln = 61;
-		else		/* 64 bit buswidth = interleave     = 8:3 */
-			ln = 57;
-		lm = 62;
-		z = (11000L * (65L - ln)) / ((f_pll / 1000L) * (65L - lm));
+	/*
+	 * Now that the pixel clock PLL is setup,
+	 * the loop clock PLL must be setup.
+	 */
+
+	/*
+	 * First we figure out lm, ln, and z.
+	 * Things are different in packed pixel mode (24bpp) though.
+	 */
+	 if ( vgaBitsPerPixel == 24 ) {
+
+		/* ln:lm = ln:3 */
+		lm = 65 - 3;
+
+		/* Check for interleaved mode */
+		if ( bpp == 2 )
+			/* ln:lm = 4:3 */
+			ln = 65 - 4;
+		else
+			/* ln:lm = 8:3 */
+			ln = 65 - 8;
+
+		/* Note: this is actually 100 * z for more precision */
+		z = (11000 * (65 - ln)) / ((f_pll / 1000) * (65 - lm));
 	}
-	else
-	{
-		ln = 65 - 32 / bpp;
-		lm = 61;
-		z = (2750L * (65 - ln)) / (f_pll / 1000L) ;
+	else {
+		/* ln:lm = ln:4 */
+		lm = 65 - 4;
+
+		/* Note: bpp = bytes per pixel */
+		ln = 65 - 4 * ( 64 / 8 ) / bpp;
+
+		/* Note: this is actually 100 * z for more precision */
+		z = ((11000 / 4) * (65 - ln)) / (f_pll / 1000) ;
 	}
 
+	/*
+	 * Now we choose dividers lp and lq so that the VCO frequency
+	 * is within the operating range of 110 MHz to 220 MHz.
+	 */
+
+	/* Assume no lq divider */
 	lq = 0;
-	lp = 3;
-	if (z <= 200)		lp = 0;
-	else if (z <= 400)	lp = 1;
-	else if (z <= 800)	lp = 2;
-	else if (z <=1600)	lp = 3;
-	else			lq = z/1600;
 
-	newVS->DACclk[0] = (n & 0x3f) | 0xC0;
-	newVS->DACclk[1] = (m & 0x3f);
-	newVS->DACclk[2] = (p & 0x03) | 0xB0;
-	
- 
-	if (vgaBitsPerPixel == 24) {
-		newVS->DACclk[3] = (ln & 0x3f) | 0x80;
-		newVS->DACclk[4] = (lm & 0x3f) | 0x80;
-		newVS->DACclk[5] = (lp & 0x03) | 0xF8;
- 	}
- 	else
- 	{
-		newVS->DACclk[3] = (ln & 0x3f) | 0xC0;
-		newVS->DACclk[4] = (lm & 0x3f);
-		newVS->DACclk[5] = (lp & 0x03) | 0xF0;
+	/* Note: z is actually 100 * z for more precision */
+	if ( z <= 200 )
+		lp = 0;
+	else if ( z <= 400 )
+		lp = 1;
+	else if ( z <= 800 )
+		lp = 2;
+	else if ( z <= 1600 )
+		lp = 3;
+	else {
+		lp = 3;
+		lq = z / 1600;
 	}
-  	
-	newVS->DACreg[18] = lq | 0x38;
+ 
+	/* Values for the loop clock PLL registers */
+	if ( vgaBitsPerPixel == 24 ) {
+
+		/* Packed pixel mode values */
+		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0x80;
+		newVS->DACclk[ 4 ] = ( lm & 0x3f ) | 0x80;
+		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf8;
+ 	} else {
+
+		/* Non-packed pixel mode values */
+		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0xc0;
+		newVS->DACclk[ 4 ] = ( lm & 0x3f );
+		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf0;
+	}
+	newVS->DACreg[ 18 ] = lq | 0x38;
 
 #ifdef DEBUG
 	ErrorF("bpp %d  ln %2d  lm %2d  lz %4d  lp %2d  lq %2d\n",

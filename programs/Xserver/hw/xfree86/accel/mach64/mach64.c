@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.55 1996/10/16 14:40:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.56 1996/10/18 15:00:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -838,7 +838,10 @@ mach64Probe()
 
     xf86EnableIOPorts(mach64InfoRec.scrnIndex);
 
-    info = GetATIInformationBlock(pciInfo->BlockIO);
+    if (pciInfo)
+	info = GetATIInformationBlock(pciInfo->BlockIO);
+    else
+	info = GetATIInformationBlock(FALSE);
 
     /* If probe fails when assuming block I/O, try again with sparse I/O */
     if (pciInfo && pciInfo->BlockIO && info && !info->Mach64_Present) {
