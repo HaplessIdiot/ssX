@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.96 1997/06/11 12:24:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.97 1997/06/15 07:12:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -313,7 +313,6 @@ int (* vgaLinearOffsetFunc)() = (int (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadWriteFunc)() = (void (*)())NoopDDA;
-Bool (*vgaBlankScreenFunc)()=vgaBlankScreen;
 
 int vgaMapSize;
 int vgaSegmentSize;
@@ -1775,24 +1774,6 @@ vgaCloseScreen(screen_idx, pScreen)
     ppix = NULL;
   }
   return(TRUE);
-}
-
-/*
- * vgaSaveScreen -- blank the screen.
- */
-
-Bool
-vgaSaveScreen(pScreen, on)
-     ScreenPtr pScreen;
-     Bool  on;
-{
-   if (on)
-      SetTimeSinceLastInputEvent();
-
-   if (xf86VTSema) {
-     (*vgaBlankScreenFunc)(pScreen,on);
-   }
-   return (TRUE);
 }
 
 /*

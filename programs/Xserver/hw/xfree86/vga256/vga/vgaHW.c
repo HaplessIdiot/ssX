@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.59 1997/06/08 15:31:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.60 1997/06/15 07:12:39 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -132,6 +132,8 @@ setExternClock(
 
 static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
+
+Bool (*vgaBlankScreenFunc)()=vgaBlankScreen;
 
 int vgaRamdacMask = 0x3F;
 
@@ -310,6 +312,24 @@ Bool vgaBlankScreen(ScreenPtr ptr, Bool on)
     outb(0xa2, 0xc);
 #endif    
   return TRUE;
+}
+
+/*
+ * vgaSaveScreen -- blank the screen.
+ */
+
+Bool
+vgaSaveScreen(pScreen, on)
+     ScreenPtr pScreen;
+     Bool  on;
+{
+   if (on)
+      SetTimeSinceLastInputEvent();
+
+   if (xf86VTSema) {
+     (*vgaBlankScreenFunc)(pScreen,on);
+   }
+   return (TRUE);
 }
 
 /*

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.3 1997/05/03 09:18:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.4 1997/06/03 14:12:13 hohndel Exp $ */
 
 #include <math.h>
 
@@ -387,8 +387,6 @@ static int ProbeRamdac(void)
    return 1;
 }
 
-extern Bool nv1VGABodge;
-
 static Bool NVProbe(void)
 {
   void *base;
@@ -451,7 +449,6 @@ static Bool NVProbe(void)
 
   NVEnterLeave(ENTER);
   vgaIOBase = (inb (0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-  nv1VGABodge=TRUE; /* This prevents certain VGA registers being written */
   return (TRUE);
 }
 
