@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.13 2001/08/18 17:25:48 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.14 2001/08/25 07:28:33 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
  */
 
 #define HasSharedLibraries	YES
-#define NeedLibInsideFlag	YES
+#define NeedLibInsideFlag	NO
 #define ForceNormalLib		NO
 #define SharedLibXaw		NO
 #define SharedLibXmu		NO 
@@ -81,13 +81,7 @@ CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES))
 									@@\
                                                                         @@\
 									@@\
-junk.c:									@@\
-	echo "#include <cygwin/cygwin_dll.h>"		>junk.c		@@\
-	echo "DECLARE_CYGWIN_DLL(dll_main)"		>>junk.c	@@\
-	echo "int WINAPI dll_main(HINSTANCE a, DWORD reason, void *q)" >>junk.c  @@\
-	echo "{ return 1; }"				>>junk.c	@@\
-									@@\
-Concat3(lib,libname,.dll): deplist junk.o libname.def			@@\
+Concat3(lib,libname,.dll): deplist libname.def				@@\
 	RemoveFile(LibraryTargetName(libname))				@@\
 	RemoveFile(Concat3(lib,libname,.dll))				@@\
 	MakeDLL(libname,solist)						@@\
@@ -97,9 +91,6 @@ Concat3(lib,libname,.dll): deplist junk.o libname.def			@@\
 clean::									@@\
 	RemoveFile(LibraryTargetName(libname))				@@\
 	RemoveFile(Concat3(lib,libname,.dll))				@@\
-	RemoveFile(junk.o)						@@\
-	RemoveFile(junk.c)						@@\
-	RemoveFile($(BASE_COUNTER))
 
 #endif /* SharedDepLibraryTarget */
 
@@ -143,13 +134,7 @@ clean::									@@\
  */
 
 #define MakeDLL(libname,solist)						@@\
-	if [ -f $(BASE_COUNTER) ]; then true; \				@@\
-	else echo 0x67000000 > $(BASE_COUNTER); fi			@@\
-	$(DLLWRAP) -s --def libname.def --output-lib Concat3(lib,libname,.a) -o Concat3(lib,libname,.dll) solist junk.o $(REQUIREDLIBS) -image-base `cat $(BASE_COUNTER)`	@@\
-	IMAGE_LENGTH=`$(OBJDUMP) -x Concat3(lib,libname,.dll) |awk '/SizeOfImage/ {print "0x"$$2}'`; \ @@\
-	export IMAGE_LENGTH=`expr '(' \`printf %u $$IMAGE_LENGTH\` / 65536 + 1 ')' '*' 65536` ; \ @@\
-	export IMAGE_BASE=`cat $(BASE_COUNTER)`; \			@@\
-	printf 0x%x `expr \`printf %u $$IMAGE_BASE\` + $$IMAGE_LENGTH` > $(BASE_COUNTER)
+	$(CC) -shared -Wl,--out-implib=Concat3(lib,libname,.a) -Wl,--enable-auto-image-base -Wl,--enable-auto-import --def libname.def -o Concat3(lib,libname,.dll) solist $(REQUIREDLIBS)
 
 
 /*
@@ -162,12 +147,7 @@ AllTarget(Concat3(lib,libname,.dll))                                    @@\
 CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES)) @@\
 									@@\
                                                                         @@\
-junk.c:                                                                 @@\
-	echo "#include <cygwin/cygwin_dll.h>"		>junk.c		@@\
-	echo "DECLARE_CYGWIN_DLL(dll_main)"		>>junk.c	@@\
-	echo "int WINAPI dll_main(HINSTANCE a, DWORD reason, void *q)" >>junk.c  @@\
-	echo "{ return 1; }"				>>junk.c	@@\
-Concat3(lib,libname,.dll): solist junk.o libname.def			@@\
+Concat3(lib,libname,.dll): solist libname.def				@@\
 	RemoveFile(LibraryTargetName(libname))				@@\
 	RemoveFile(Concat3(lib,libname,.dll))				@@\
 	MakeDLL(libname,solist)						@@\
@@ -176,9 +156,6 @@ Concat3(lib,libname,.dll): solist junk.o libname.def			@@\
 clean::									@@\
 	RemoveFile(LibraryTargetName(libname))				@@\
 	RemoveFile(Concat3(lib,libname,.dll))				@@\
-	RemoveFile(junk.o)						@@\
-	RemoveFile(junk.c)						@@\
-	RemoveFile($(BASE_COUNTER))
 
 
 /*
