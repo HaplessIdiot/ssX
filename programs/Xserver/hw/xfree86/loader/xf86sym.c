@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.184 2001/02/18 16:41:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.185 2001/02/22 23:13:33 dawes Exp $ */
 
 /*
  *
@@ -43,6 +43,7 @@
 #endif
 #include "xf86OSmouse.h"
 #include "xf86xv.h"
+#include "xf86xvmc.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
 #include "dgaproc.h"
@@ -515,6 +516,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86XVQueryOffscreenImages)
    SYMFUNC(xf86XVAllocateVideoAdaptorRec)
    SYMFUNC(xf86XVFreeVideoAdaptorRec)
+
+   /* xf86xvmc.c */
+   SYMFUNC(xf86XvMCScreenInit)
 
    /* xf86VidMode.c */
    SYMFUNC(VidModeExtensionInit)
