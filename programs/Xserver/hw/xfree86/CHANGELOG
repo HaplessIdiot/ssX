@@ -1,4 +1,5 @@
 XFree86 3.9h (29 June 1997)
+1064. 'xset dpms 600 0 0' complains about 600 being greater than 0.
 1063. New XInput driver for the AceCad ADVANCEDigitizer (#716, Shane Watts).
 1062. Clean up some problems with the xf86 wrappers (#715, Matthieu Herrb).
 1061. New Xinput driver for MicroTouch TouchPen touch screen (#714,
@@ -5029,4 +5030,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.497 1997/06/25 08:24:51 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.498 1997/06/29 07:54:28 dawes Exp $
