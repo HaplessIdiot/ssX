@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.143 2001/12/21 09:53:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.144 2002/01/04 21:22:30 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1420,6 +1420,21 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     }
 
+    /* Initialize the card through int10 interface if needed */
+    if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
+	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA2 &&
+	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
+	!xf86IsPrimaryPci(pGlint->PciInfo) && !pGlint->FBDev) {
+    	if ( xf86LoadSubModule(pScrn, "int10")){
+	    xf86Int10InfoPtr pInt;
+
+	    xf86LoaderReqSymLists(GLINTint10Symbols, NULL);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+	    pInt = xf86InitInt10(pGlint->pEnt->index);
+	    xf86FreeInt10(pInt);
+        }
+    }
+
     pGlint->FbMapSize = 0;
 
     {
@@ -1895,21 +1910,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     if (pGlint->FIFOSize)
     	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "FIFO Size is %d DWORDS\n",
 	       pGlint->FIFOSize);
-
-    /* Initialize the card through int10 interface if needed */
-    if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
-	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA2 &&
-	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
-	!xf86IsPrimaryPci(pGlint->PciInfo) && !pGlint->FBDev) {
-    	if ( xf86LoadSubModule(pScrn, "int10")){
-	    xf86Int10InfoPtr pInt;
-
-	    xf86LoaderReqSymLists(GLINTint10Symbols, NULL);
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
-	    pInt = xf86InitInt10(pGlint->pEnt->index);
-	    xf86FreeInt10(pInt);
-        }
-    }
 
     /* Set the min pixel clock */
     pGlint->MinClock = 16250;	/* XXX Guess, need to check this */
