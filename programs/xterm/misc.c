@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.51 2000/05/18 16:30:05 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.52 2000/06/13 02:28:40 dawes Exp $
  */
 
 /*
@@ -1214,6 +1214,8 @@ do_osc(Char *oscbuf, int len GCC_UNUSED, int final)
 		case 0:
 			if (isdigit(*cp)) {
 				mode = 10 * mode + (*cp - '0');
+				if (mode > 65535)
+					return;
 				break;
 			}
 			/* FALLTHRU */
@@ -1398,9 +1400,13 @@ do_dcs(Char *dcsbuf, size_t dcslen)
 					 && (term->flags & PROTECTED) ? 1 : 0,
 					cp);
 			} else if (!strcmp(cp, "\"p")) {	/* DECSCL */
-				sprintf(reply, "%d%s",
+				sprintf(reply, "%d%s%s",
 					(screen->ansi_level ?
 					 screen->ansi_level : 1) + 60,
+					(screen->ansi_level >= 2)
+					 ? (screen->control_eight_bits
+						? ";0" : ";1")
+					 : "",
 					cp);
 			} else if (!strcmp(cp, "r")) {		/* DECSTBM */
 				sprintf(reply, "%d;%dr",
@@ -1510,7 +1516,7 @@ do_dcs(Char *dcsbuf, size_t dcslen)
 
 		while (*cp) {
 			char *str = (char *)malloc(strlen(cp) + 2);
-			int key = 0;
+			unsigned key = 0;
 			int len = 0;
 
 			while (isdigit(*cp))

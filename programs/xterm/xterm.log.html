@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.52 2000/05/18 16:30:05 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.53 2000/06/13 02:28:41 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_135">Patch #135 - 2000/5/29 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_134">Patch #134 - 2000/5/28 - XFree86 4.0b</A>
@@ -181,12 +182,61 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A></H1>
+<ul>
+	<li>make command-line <code>-name</code> option work as documented.
+	  Apparently this was lost in X11R5 when coding to use
+	  <code>XtAppInitialize</code>.
+
+	<li>limit numeric parameters of control sequences to 65535 to
+	  simplify checks for numeric overflow.
+
+	<li>change index into UDK list to unsigned to guard against numeric
+	  overflow making the index negative (Taneli Huuskonen
+	  &lt;huuskone@cc.helsinki.fi&gt;).
+
+	<li>change <code>sun&nbsp;function-keys</code> resource name to
+	  <code>sunFunctionKeys</code> to work around redefinition of the
+	  token <code>sun</code> by xrdb on Solaris.  Similarly, renamed
+	  resource <code>sun&nbsp;keyboard</code> to <code>sunKeyboard</code>
+	  (Steve Wall).
+
+	<li>change similar resource names for HP and SCO to avoid potential
+	  conflict with xrdb symbols on other systems, as well as for
+	  consistency.
+
+	<li>reorganized the install targets in the autoconf'd Makefile, adding
+	  install-app, install-bin, install-dirs and install-man.  The
+	  app-defaults class can be overridden by setting the make variable
+	  'CLASS', simplifying customization of xterm as a Unicode terminal,
+	  e.g., CLASS=UXTerm.
+
+	<li>add limit checks to <code>ClearInLine()</code>,
+	  <code>ScrnInsertChar()</code>, <code>ScrnDeleteChar()</code> to
+	  correct potential out-of-bounds indexing (prompted by Debian bug
+	  report #64713, which reported a problem with ICH escape sequences).
+
+	<li>updates to config.sub and config.guess
+	  Kevin Buettner &lt;kev@primenet.com&gt; for elf64_ia64
+	  Bernd Kuemmerlen &lt;bkuemmer@mevis.de&gt; and MacOS X.
+
+	<li>patch from Paul Gilmartin for os390 to check for errno set to
+	  ENODEV on failure to open /dev/tty when there is no controlling
+	  terminal.
+
+	<li>patch from H Merijn Brand &lt;h.m.brand@hccnet.nl&gt; for
+	  building on Digital Unix 4.0 and AIX 4.2.
+
+	<li>modify DECRQSS reply for DECSCL to additionally report if the
+	  terminal is set for 8-bit controls.
+</ul>
+
 <H1><A NAME="xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A></H1>
 <ul>
-	<li>Add a resource (<code>limitResize</code>)
+	<li>add a resource (<code>limitResize</code>)
 	  limiting resizing via the CSI 4 t and CSI 8 t sequences.
 
-	<li>Ignore out-of-bounds resize requests, i.e., where sign-extension
+	<li>ignore out-of-bounds resize requests, i.e., where sign-extension
 	  or truncation of the parameters would occur.
 </ul>
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.67 2000/04/06 15:27:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.68 2000/06/07 02:13:01 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -773,6 +773,13 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines /**/
+#endif
+#if HasKrbIV
+#ifndef KrbIVDefines
+#define KrbIVDefines -DKERBEROS
+#endif
+#else
+#define KrbIVDefines /**/
 #endif
 #if HasKrb5
 #ifndef Krb5Defines

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.6 2000/05/31 07:15:13 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -41,6 +41,10 @@ from The Open Group.
 #include "dm_error.h"
 #include "greet.h"
 #include "Login.h"
+
+#ifdef __OpenBSD__
+#include <syslog.h>
+#endif
 
 #ifdef GREET_LIB
 /*
@@ -247,7 +251,7 @@ static int
 Greet (struct display *d, struct greet_info *greet)
 {
     XEvent		event;
-    Arg		arglist[2];
+    Arg		arglist[3];
 
     XtSetArg (arglist[0], XtNallowAccess, False);
     XtSetValues (login, arglist, 1);
@@ -273,7 +277,8 @@ Greet (struct display *d, struct greet_info *greet)
 	greet->password = password;
 	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
 	XtSetArg (arglist[1], XtNallowNullPasswd, (char *) &(greet->allow_null_passwd));
-	XtGetValues (login, arglist, 2);
+	XtSetArg (arglist[2], XtNallowRootLogin, (char *) &(greet->allow_root_login));
+	XtGetValues (login, arglist, 3);
 	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
     }
     return code;
@@ -283,6 +288,13 @@ Greet (struct display *d, struct greet_info *greet)
 static void
 FailedLogin (struct display *d, struct greet_info *greet)
 {
+#ifdef __OpenBSD__
+    syslog(LOG_NOTICE, "LOGIN FAILURE ON %s",
+	   d->name);
+    syslog(LOG_AUTHPRIV|LOG_NOTICE,
+	   "LOGIN FAILURE ON %s, %s",
+	   d->name, greet->name);
+#endif
     DrawFail (login);
     bzero (greet->name, strlen(greet->name));
     bzero (greet->password, strlen(greet->password));
@@ -349,6 +361,9 @@ greet_user_rtn GreetUser(
 	LogError ("Cannot reopen display %s for greet window\n", d->name);
 	exit (RESERVER_DISPLAY);
     }
+#ifdef __OpenBSD__
+    openlog("xdm", LOG_ODELAY, LOG_AUTH);
+#endif
     for (;;) {
 	/*
 	 * Greet user, requesting name/password

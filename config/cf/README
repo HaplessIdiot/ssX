@@ -3,7 +3,7 @@ $TOG: README /main/76 1998/05/11 14:35:10 barstow $
 
 
 
-$XFree86: xc/config/cf/README,v 1.9 1998/04/05 02:28:16 dawes Exp $
+$XFree86: xc/config/cf/README,v 1.10 1998/10/02 06:15:01 dawes Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -65,6 +65,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasGcc2			boolean for system has GNU gcc 2.x compiler
 	HasGcc2ForCplusplus	use gcc 2 for C++ programs?
 	HasGnuMake		use the GNU make program?
+	HasKrbIV		system has Kerberos version IV support?
 	HasKrb5			system has Kerberos version 5 support?
 	HasLargeTmp		boolean for system has /tmp space
 	HasLatex		system has LaTeX document preparation software
@@ -97,6 +98,8 @@ Imake.tmpl provides defaults for the following variables:
 	InstPgmFlags		install flags for normal programs
 	InstUidFlags		install flags for xterm to chown /dev/ptys
 	InstallCmd		command to install files
+	KrbIVIncludes		where to include KerberosIV header files from
+	KrbIVLibraries		where to load KerberosIV libraries from
 	Krb5Includes		where to include Kerberos header files from
 	Krb5Libraries		where to load Kerberos libraries from
 	LdCmd			command to run loader
@@ -230,6 +233,7 @@ X11.tmpl provides defaults for the following variables:
 	InstallSecurityConfig	install server security policy file over old?
 	InstallXdmConfig	install xdm config files over old?
 	InstallXinitConfig	install xinit config files over old?
+	KrbIVDefines		defines for use with KerberosIV
 	LibDir			directory in which to install X11 support files
 	LibManSuffix		man suffix for library pages
 	LibmanDir		directory in which to install library man pages

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.31 1999/12/27 00:40:07 robin Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.33 2000/05/31 07:15:10 eich Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -10,24 +10,8 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.31 1999/12/27 00:40:07 robin Exp $
 #define BuildChooser !SystemV
 #endif
 
-/*
- * We define ShareLibXdmGreet true if:
- *	SystemV4 is true
- *	AlphaArchitecture is set and NetBSDArchitecture is not
- *	AlphaArchitecture and NetBSDArchitecture are set, and
- *	    HasSharedLibraries is true.
- *
- * We'd like ShareLibXdmGreet true of SystemV4 or AlphaArchitecture,
- * but not all NetBSD/Alpha systems have shared libraries, and
- * it can't be shared on those which do not.
- */
 #ifndef SharedLibXdmGreet
-#define SharedLibXdmGreet						\
-    ((defined(AlphaArchitecture) &&					\
-      (!defined(NetBSDArchitecture) ||					\
-       !defined(LinuxArchitecture)  ||					\
-       (defined(NetBSDArchitecture) && HasSharedLibraries))) ||		\
-     SystemV4)
+#define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
 #endif
 
 #ifndef BuildBoth
@@ -51,6 +35,12 @@ RPCSRCS = rpcauth.c
 RPCLIB = -lrpcsvc
 #endif
 
+#if HasKrbIV
+KRBIV_DEFINES = KrbIVDefines
+KRBIV_INCLUDES = KrbIVIncludes
+KRBIVLIB = KrbIVLibraries
+#endif
+
 #if HasKrb5
 KRB5_DEFINES = Krb5Defines
 KRB5_INCLUDE = Krb5Includes
@@ -64,7 +54,7 @@ GREET_DIR = greeter
     DLLIBRARY = DlLibrary
 #endif
 #else
-GREET_DEFINES = -DGREET_USER_STATIC
+GREET_DEFINES = -DGREET_USER_STATIC $(KRBIV_DEFINES) $(KRBIV_INCLUDES)
 GREETSRCS = greet.c verify.c Login.c
 GREETOBJS = greet.o verify.o Login.o
 #if BuildBoth
@@ -121,8 +111,12 @@ CRYPT_LIBRARIES = -lcrypt
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(AmigaArchitecture)
 FRAGILE_DEFINES = -DFRAGILE_DEV_MEM
+#endif
+
+#ifdef OpenBSDArchitecture
+RANDOM_DEFINES = -DARC4_RANDOM
 #endif
 
 #if HasVFork
@@ -145,8 +139,9 @@ SYS_LIBRARIES1 = -lutil
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) \
-		  $(RPCLIB) $(PAM_LIBRARIES) $(DLLIBRARY) $(CRYPT_LIBRARIES)
+LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
+	$(XDMCPLIB) $(RPCLIB) $(PAM_LIBRARIES) $(DLLIBRARY) \
+	$(CRYPT_LIBRARIES) $(KRBIVLIB)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
@@ -199,7 +194,7 @@ LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB
 		$(SIGNAL_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
 		$(PWD_DEFINES) $(PAM_DEFINES) $(CONN_DEFINES) \
-		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
+		$(GREET_DEFINES) $(FRAGILE_DEFINES) $(RANDOM_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
 		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES) \
