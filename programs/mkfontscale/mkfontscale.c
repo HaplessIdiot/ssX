@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.2 2002/09/27 01:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.3 2003/01/26 02:20:41 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -299,6 +299,46 @@ strcat_reliable(char *a, char *b)
     return c;
 }
 
+static int
+unsafe(char c)
+{
+    return 
+        c < 0x20 || c > 0x7E ||
+        c == '[' || c == ']' || c == '(' || c == ')' || c == '\\' || c == '-';
+}
+
+static char *
+safe(char* s)
+{
+    int i, len, safe_flag = 1;
+    char *t;
+
+    i = 0;
+    while(s[i] != '\0') {
+        if(unsafe(s[i]))
+            safe_flag = 0;
+        i++;
+    }
+
+    if(safe_flag) return s;
+
+    len = i;
+    t = malloc(len + 1);
+    if(t == NULL) {
+        perror("Couldn't allocate string");
+        exit(1);
+    }
+
+    for(i = 0; i < len; i++) {
+        if(unsafe(s[i]))
+            t[i] = ' ';
+        else
+            t[i] = s[i];
+    }
+    t[i] = '\0';
+    return t;
+}
+
 int
 doDirectory(char *dirname_given)
 {
@@ -483,6 +523,10 @@ doDirectory(char *dirname_given)
         if(!sWidth) sWidth = "normal";
         if(!adstyle) adstyle = "";
         if(!spacing) spacing = "p";
+
+        /* Yes, it's a memory leak. */
+        foundry = safe(foundry);
+        family = safe(family);
 
         for(encoding = encodings; encoding; encoding = encoding->next)
             if(checkEncoding(face, encoding->value)) {
