@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.13 2002/02/08 02:59:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.14 2002/02/12 16:07:54 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -112,11 +112,9 @@ finish		- Executes until current form is finished.\n\
 frame		- Set environment to selected frame.\n\
 info		- Prints information about the debugger state.\n\
 n, next		- Evaluate next form.\n\
-nexti, ni	- Evaluate next form, including variables.\n\
 print		- Print value of variable name argument.\n\
 run		- Continue execution.\n\
 s, step		- Evaluate next form, stopping on any subforms.\n\
-si, stepi	- Evaluate next form including variables, stopping on subforms.\n\
 up		- Set environment to frame that called the current one.\n\
 \n\
 Commands may be abbreviated.\n";
@@ -204,6 +202,19 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 		/* update hits counter */
 		CAR(CDR(CDR(CDR(CAR(obj)))))->data.integer += 1;
 	    }
+
+	    /* If in interactive mode, in the toplevel and reading from stdin
+	     * then the ending newline was not read */
+	    if (mac->interactive && mac->debug_level == 0 &&
+		SINPUT->data.stream.type == LispStreamStandard) {
+		int ch;
+
+		/* Remove newline and optional spaces */
+		for (ch = LispFgetc(Stdin); isspace(ch); ch = LispFgetc(Stdin))
+		    if (ch == EOF || ch == '\n')
+			break;
+	    }
+
 	    break;
 	case LispDebugCallEnd:
 	    DBG = CDR(DBG);
@@ -310,8 +321,6 @@ watch_again:
     }
 
     if (call == LispDebugCallBegin) {
-	if (LispGetColumn(mac, NIL))
-	    LispFputc(Stdout, '\n');
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(mac->debug_level));
 	LispFputs(Stdout, "> (");
@@ -322,8 +331,6 @@ watch_again:
 	LispDebuggerCommand(mac, NIL);
     }
     else if (call == LispDebugCallEnd) {
-	if (LispGetColumn(mac, NIL))
-	    LispFputc(Stdout, '\n');
 	LispFputc(Stdout, '#');
 	LispFputs(Stdout, format_integer(mac->debug_level + 1));
 	LispFputs(Stdout, "= ");

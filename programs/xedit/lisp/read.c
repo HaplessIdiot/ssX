@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.8 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.9 2002/02/15 07:20:26 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -406,8 +406,10 @@ LispReadObject(LispMac *mac)
     ch = LispGet(mac);
     if (ch == '"' || ch == '|')
 	quote = ch;
-    else if (ch == '\\')
+    else if (ch == '\\') {
 	unreadable = backslash = 1;
+	string[length++] = ch;
+    }
     else if (ch == ':') {
 	collon = 1;
 	string[length++] = ch;
@@ -434,17 +436,14 @@ LispReadObject(LispMac *mac)
 	}
 
 	if (ch == '\\') {
-	    if (backslash)
-		backslash = 0;
-	    else if (quote != '|') {
-		backslash = 1;
-		if (!quote) {
-		    unreadable = 1;
-		    continue;
-		}
-		else
+	    backslash = !backslash;
+	    if (quote == '"') {
+		/* only remove backslashs from strings */
+		if (backslash)
 		    continue;
 	    }
+	    else
+		unreadable = 1;
 	}
 	else if (backslash)
 	    backslash = 0;

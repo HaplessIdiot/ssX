@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.15 2002/02/14 04:48:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.16 2002/02/15 07:20:25 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -48,6 +48,7 @@
 #define	CADR(list)		((list)->data.cons.cdr->data.cons.car)
 #define CDR(list)		((list)->data.cons.cdr)
 #define CDAR(list)		((list)->data.cons.car->data.cons.cdr)
+#define CDDR(list)		((list)->data.cons.cdr->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
 #define APPLY(fun, args)	LispApply(mac, fun, args)
@@ -184,35 +185,35 @@
 /* fetch builtin function/macro argument value
  */
 #define ARGUMENT(index)					\
-	mac->env.pairs[mac->env.base + ((index) << 1)]
+	mac->env.values[mac->env.base + (index)]
 
 /* fetch argument name for builtin functions
  */
 #define ARGUMENT_NAME(index)				\
-	mac->env.pairs[mac->env.base + ((index) << 1) + 1]
+	mac->env.names[mac->env.base + (index)]
 
 /* unbound builtin macro arguments, but keep objects gc protected,
  * avoid name clashes
 */
 #define MACRO_ARGUMENT1()				\
-	mac->env.pairs[mac->env.base + 1] = NIL
+	mac->env.names[mac->env.base] = NIL
 #define MACRO_ARGUMENT2()				\
-	mac->env.pairs[mac->env.base + 1] =		\
-	    mac->env.pairs[mac->env.base + 3] = NIL
+	mac->env.names[mac->env.base] =			\
+	    mac->env.names[mac->env.base + 1] = NIL
 #define MACRO_ARGUMENT3()				\
-	mac->env.pairs[mac->env.base + 1] =		\
-	  mac->env.pairs[mac->env.base + 3] =		\
-	    mac->env.pairs[mac->env.base + 5] = NIL
+	mac->env.names[mac->env.base] =			\
+	  mac->env.names[mac->env.base + 1] =		\
+	    mac->env.names[mac->env.base + 2] = NIL
 #define MACRO_ARGUMENT4()				\
-	mac->env.pairs[mac->env.base + 1] =		\
-	  mac->env.pairs[mac->env.base + 3] =		\
-	    mac->env.pairs[mac->env.base + 5] =		\
-		mac->env.pairs[mac->env.base + 7] = NIL
+	mac->env.names[mac->env.base] =			\
+	  mac->env.names[mac->env.base + 1] =		\
+	    mac->env.names[mac->env.base + 2] =		\
+		mac->env.names[mac->env.base + 3] = NIL
 #define MACRO_ARGUMENTS(count)				\
     {							\
-	int i = (count << 1) + mac->env.base + 1;	\
-	for (; i > mac->env.base; i -= 2)		\
-	    mac->env.pairs[i] = NIL;			\
+	int i = (count) + mac->env.base;		\
+	for (; i >= mac->env.base; i--)			\
+	    mac->env.names[i] = NIL;			\
     }
 
 /*
