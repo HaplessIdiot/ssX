@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.114 2001/11/21 22:42:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.115 2001/11/24 14:25:19 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -1756,6 +1756,7 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0127, "Permedia3 Create!",0, NF },
                         { 0x0134, "Oxygen GVX1 PCI",0, NF },
                         { 0x0136, "Oxygen GVX210 AGP",0, NF },
+			{ 0x0139, "Oxygen GVX1 Pro AGP",0, NF },
                         { 0x0140, "Oxygen VX1-16 AGP",0, NF },
                         { 0x0144, "Oxygen VX1-4X AGP",0, NF },
                         { 0x0400, "Oxygen GVX420 AGP",0, NF },
