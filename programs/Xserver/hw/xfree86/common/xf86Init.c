@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.45 1996/03/04 05:14:19 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.46 1996/03/10 12:04:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -72,8 +72,8 @@ Bool xf86VidModeAllowNonLocal = FALSE;
 #ifdef XF86MISC
 Bool xf86MiscModInDevEnabled = TRUE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
-Bool xf86AllowMouseOpenFail = FALSE;
 #endif
+Bool xf86AllowMouseOpenFail = FALSE;
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;

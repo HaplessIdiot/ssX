@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.82 1996/03/04 05:14:16 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.83 1996/03/10 12:04:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1171,10 +1171,10 @@ configServerFlagsSection()
     case MODINDEVALLOWNONLOCAL:
       xf86MiscModInDevAllowNonLocal = TRUE;
       break;
+#endif
     case ALLOWMOUSEOPENFAIL:
       xf86AllowMouseOpenFail = TRUE;
       break;
-#endif
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
