@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.126 2003/10/21 17:41:43 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.127 2003/10/25 01:21:24 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3246,12 +3246,14 @@ MakeMakeSubdirs(dirs,Makefiles)
  * Delete line numbers from the cpp output (-P is not portable, I guess).
  * Allow XCOMM to be preceded by whitespace and provide a means of generating
  * output lines with trailing backslashes.
+ * Allow XHASH to always be substituted, even in cases where XCOMM isn't.
  */
 #ifndef CppSedMagic
 #define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' \
 			-e '/^#line  *[0-9][0-9]*  *.*$$/d' \
 			-e '/^[ 	]*XCOMM$$/s/XCOMM/#/' \
 			-e '/^[ 	]*XCOMM[^a-zA-Z0-9_]/s/XCOMM/#/' \
+			-e '/^[ 	]*XHASH/s/XHASH/#/' \
 			-e '/\@\@$$/s/\@\@$$/\\/'
 #endif /* CppSedMagic */
 
