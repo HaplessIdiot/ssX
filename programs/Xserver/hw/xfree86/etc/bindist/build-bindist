@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/build-bindist,v 1.1 1997/05/27 03:47:02 dawes Exp $
 #
 
 Usage()
@@ -88,7 +88,7 @@ for d in $SUBDIRS; do
       echo No file $DIRFILE in $TODIR/$d
 #      exit 3
     else
-      PREFIX=`cat $DIRFILE`
+      DEFPREFIX=`cat $DIRFILE`
       for i in *-list; do
         name=`basename $i -list`
         tarball=$VERS$name.tgz
@@ -99,6 +99,11 @@ for d in $SUBDIRS; do
         else
           xfile=""
         fi
+	if [ -f $name-dir ]; then
+	  PREFIX=`cat $name-dir`
+	else
+	  PREFIX=$DEFPREFIX
+	fi
         (cd $FROMDIR/$PREFIX
           $TAR $TAROPTS -f $TODIR/$BINDIR/$tarball $lfile $xfile
         )
