@@ -45,11 +45,11 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -689,7 +689,7 @@ void PclLookUp(
 *******************************************************************************
 *
 * File:         xpmap.c
-* RCS:          $Header: /vol1/history/xf86/xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.1 1996/12/22 04:08:12 dawes Exp $
+* RCS:          $Header: /vol1/history/xf86/xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.2 1996/12/25 04:01:53 dawes Exp $
 * Description:  3d color mapper for Xp contributed PCL driver.
 * Author:       Andrew Fitzhugh
 * Created:      Fri Feb 16 11:41:08 1996

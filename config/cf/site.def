@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.def /main/revisionist/3 1996/10/15 09:31:04 swick $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.10 1996/01/07 09:57:49 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.11 1996/12/24 11:49:38 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -50,7 +50,7 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.10 1996/01/07 09:57:49 dawes Ex
  */
 # if defined(SunArchitecture) || defined(AIXArchitecture) \
      || defined(USLArchitecture) || defined(UXPArchitecture) \
-     || defined(SCOArchitecture)
+     || defined(SCOArchitecture) || defined(SVR4Architecture)
 #  ifndef ProjectRulesFile
 #   define ProjectRulesFile	<X11.rules>
 #  endif
