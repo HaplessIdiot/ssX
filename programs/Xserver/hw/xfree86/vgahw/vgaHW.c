@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.47 2001/05/02 14:53:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.48 2001/05/02 20:10:44 dbateman Exp $ */
 
 /*
  *
@@ -157,7 +157,6 @@ stdWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
     outb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_INDEX_OFFSET, index);
     outb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_DATA_OFFSET, value);
-ErrorF("hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n", hwp->IOBase, hwp->PIOOffset);
 }
 
 static CARD8
@@ -1817,7 +1816,6 @@ vgaHWGetIndex()
 void
 vgaHWGetIOBase(vgaHWPtr hwp)
 {
-ErrorF("vgaHWGetIOBase: hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n", hwp->IOBase, hwp->PIOOffset);
     hwp->IOBase = (hwp->readMiscOut(hwp) & 0x01) ?
 				VGA_IOBASE_COLOR : VGA_IOBASE_MONO;
 }
