@@ -1,4 +1,6 @@
-XFree86 3.9Ah (26 April 1998)
+XFree86 3.9Ah (28 April 1998)
+1670. Xterm patch 74 fix define conflicts and update print support (#1674,
+      T.E.Dickey).
 1669. Xterm patch 73 added print window facility, terminfo updates,
       conditional include cleanup, debugging trace enhancements, and
       HP-UX configure updates (#1672 T.E.Dickey).
@@ -6123,4 +6125,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.589 1998/04/26 18:35:37 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.590 1998/04/27 03:14:50 robin Exp $
