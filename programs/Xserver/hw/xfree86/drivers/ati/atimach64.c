@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.13 2000/03/22 03:08:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.14 2000/03/24 19:17:44 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -48,6 +48,7 @@
 #include "atichip.h"
 #include "atiio.h"
 #include "atimach64.h"
+#include "miline.h"
 
 #define DPMS_SERVER
 #include "extensions/dpms.h"
@@ -1008,6 +1009,98 @@ ATIMach64SubsequentSolidFillRect
 }
 
 /*
+ * ATIMach64SetupForSolidLine --
+ *
+ * This function sets up the draw engine for a series of solid lines.  It is
+ * not used for 24bpp because the engine doesn't support it.
+ */
+static void
+ATIMach64SetupForSolidLine
+(
+    ScrnInfoPtr  pScreenInfo,
+    int          colour,
+    int          rop,
+    unsigned int planemask
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    ATIMach64WaitForFIFO(4);
+    outm(DP_MIX, SetBits(ATIMach64ALU[rop], DP_FRGD_MIX));
+    outm(DP_WRITE_MASK, planemask);
+    outm(DP_SRC, DP_MONO_SRC_ALLONES |
+        SetBits(SRC_FRGD, DP_FRGD_SRC) | SetBits(SRC_BKGD, DP_BKGD_SRC));
+    outm(DP_FRGD_CLR, colour);
+}
+
+/*
+ * ATIMach64SubsequentSolidHorVertLine --
+ *
+ * This is called to draw a solid horizontal or vertical line.  This does a
+ * one-pixel wide solid fill.
+ */
+static void
+ATIMach64SubsequentSolidHorVertLine
+(
+    ScrnInfoPtr pScreenInfo,
+    int         x,
+    int         y,
+    int         len,
+    int         dir
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+
+    ATIMach64WaitForFIFO(3);
+    outm(DST_CNTL, DST_X_DIR | DST_Y_DIR);
+    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+
+    if (dir == DEGREES_0)
+        outm(DST_HEIGHT_WIDTH, SetWord(len, 1) | SetWord(1, 0));
+    else /* if (dir == DEGREES_270) */
+        outm(DST_HEIGHT_WIDTH, SetWord(1, 1) | SetWord(len, 0));
+}
+
+/*
+ * ATIMach64SubsequentSolidBresenhamLine --
+ *
+ * This function draws a line using the Bresenham line engine.
+ */
+static void
+ATIMach64SubsequentSolidBresenhamLine
+(
+    ScrnInfoPtr pScreenInfo,
+    int         x,
+    int         y,
+    int         major,
+    int         minor,
+    int         err,
+    int         len,
+    int         octant
+)
+{
+    ATIPtr pATI = ATIPTR(pScreenInfo);
+    CARD32 dst_cntl = DST_LAST_PEL;
+
+    if (octant & YMAJOR)
+        dst_cntl |= DST_Y_MAJOR;
+
+    if (!(octant & XDECREASING))
+        dst_cntl |= DST_X_DIR;
+
+    if (!(octant & YDECREASING))
+        dst_cntl |= DST_Y_DIR;
+
+    ATIMach64WaitForFIFO(6);
+    outm(DST_CNTL, dst_cntl);
+    outm(DST_Y_X, SetWord(x, 1) | SetWord(y, 0));
+    outm(DST_BRES_ERR, minor + err);
+    outm(DST_BRES_INC, minor);
+    outm(DST_BRES_DEC, minor - major);
+    outm(DST_BRES_LNTH, len);
+}
+
+/*
  * ATIMach64SetClippingRectangle --
  *
  * This function sets the draw engine's clipping rectangle.
@@ -1191,6 +1284,16 @@ ATIMach64AccelInit
     pXAAInfo->SetupForMono8x8PatternFill = ATIMach64SetupForMono8x8PatternFill;
     pXAAInfo->SubsequentMono8x8PatternFillRect =
         ATIMach64SubsequentMono8x8PatternFillRect;
+
+    /* The engine does not support the following primitives for 24bpp */
+    if (pATI->XModifier != 1)
+        return TRUE;
+
+    /* Solid lines */
+    pXAAInfo->SetupForSolidLine = ATIMach64SetupForSolidLine;
+    pXAAInfo->SubsequentSolidHorVertLine = ATIMach64SubsequentSolidHorVertLine;
+    pXAAInfo->SubsequentSolidBresenhamLine =
+        ATIMach64SubsequentSolidBresenhamLine;
 
     return TRUE;
 }
