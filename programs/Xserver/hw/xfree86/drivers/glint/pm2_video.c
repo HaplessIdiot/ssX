@@ -2145,8 +2145,10 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	} else {
 	    Bool expose = FALSE;
 
+/*
 	    xf86GetOptValBool(OutputOptions, OPTION_EXPOSE, &expose);
 	    if (expose)	VAR[1].flags = VIDEO_EXPOSE;
+*/
 
 	    VAR[1].nEncodings = sizeof(OutputVideoEncodings) / sizeof(OutputVideoEncodings[0]);
 	    VAR[1].pEncodings = OutputVideoEncodings;
