@@ -47,6 +47,8 @@ from the Kaleb S. KEITHLEY
 
 extern int xf86ScreenIndex;
 
+static int VGAHelpErrorBase;
+
 static int ProcVGAHelpDispatch(), SProcVGAHelpDispatch();
 static void VGAHelpResetProc();
 
@@ -66,6 +68,7 @@ VGAHelpExtensionInit()
 				StandardMinorOpcode)) {
 	VGAHelpReqCode = (unsigned char)extEntry->base;
     }
+    VGAHelpErrorBase = extEntry->errorBase;
 }
 
 /*ARGSUSED*/
@@ -153,6 +156,7 @@ ProcVGAHelpModModeLine(client)
     REQUEST(xVGAHelpModModeLineReq);
     ScrnInfoPtr vptr;
     DisplayModePtr mptr;
+    DisplayModeRec modetmp;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
@@ -170,6 +174,30 @@ ProcVGAHelpModModeLine(client)
 	stuff->vtotal     < stuff->vsyncend)
 	return BadValue;
 
+    memcpy(&modetmp, mptr, sizeof(DisplayModeRec));
+    modetmp.HDisplay   = stuff->hdisplay;
+    modetmp.HSyncStart = stuff->hsyncstart;
+    modetmp.HSyncEnd   = stuff->hsyncend;
+    modetmp.HTotal     = stuff->htotal;
+    modetmp.VDisplay   = stuff->vdisplay;
+    modetmp.VSyncStart = stuff->vsyncstart;
+    modetmp.VSyncEnd   = stuff->vsyncend;
+    modetmp.VTotal     = stuff->vtotal;
+    modetmp.Flags      = stuff->flags;
+
+    /* Check that the mode is consistent with the monitor specs */
+    switch (xf86CheckMode(vptr, &modetmp, vptr->monitor, FALSE)) {
+	case MODE_HSYNC:
+	    return VGAHelpErrorBase + VGAHelpBadHTimings;
+	case MODE_VSYNC:
+	    return VGAHelpErrorBase + VGAHelpBadVTimings;
+    }
+
+    /* Check that the driver is happy with the mode */
+    if (!vptr->ValidMode(&modetmp)) {
+	return VGAHelpErrorBase + VGAHelpModeUnsuitable;
+    }
+
     mptr->HDisplay   = stuff->hdisplay;
     mptr->HSyncStart = stuff->hsyncstart;
     mptr->HSyncEnd   = stuff->hsyncend;
@@ -178,9 +206,7 @@ ProcVGAHelpModModeLine(client)
     mptr->VSyncStart = stuff->vsyncstart;
     mptr->VSyncEnd   = stuff->vsyncend;
     mptr->VTotal     = stuff->vtotal;
-    switch (xf86CheckMode(mptr, vptr->monitor, NULL, FALSE)) {
-	case MODE_HSYNC:
-    /* Should call ValidMode */
+    mptr->Flags      = stuff->flags;
     mptr->CrtcHDisplay   = stuff->hdisplay;
     mptr->CrtcHSyncStart = stuff->hsyncstart;
     mptr->CrtcHSyncEnd   = stuff->hsyncend;
@@ -191,7 +217,6 @@ ProcVGAHelpModModeLine(client)
     mptr->CrtcVTotal     = stuff->vtotal;
     mptr->CrtcVAdjusted = FALSE;
     mptr->CrtcHAdjusted = FALSE;
-    mptr->Flags      = stuff->flags;
     if (mptr->Flags & V_DBLSCAN)
     {
 	mptr->CrtcVDisplay *= 2;

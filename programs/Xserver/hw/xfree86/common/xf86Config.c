@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.41 1995/03/18 10:59:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.42 1995/03/19 10:18:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -114,7 +114,7 @@ static DisplayModePtr xf86PruneModes(
 #if NeedFunctionPrototypes
     MonPtr monp,
     DisplayModePtr allmodes,
-    char *scrname
+    ScrnInfoPtr scrp
 #endif
 );
 static void readVerboseMode(
@@ -2161,7 +2161,7 @@ configScreenSection()
 	  if (!dummy) {
             monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
                                                    monitor_list[i].Modes,
-                                                   screen->name);
+                                                   screen);
             screen->monitor = &monitor_list[i];
           }
           break;
@@ -2670,10 +2670,10 @@ xf86VerifyOptions(allowedOptions, driver)
  * Initially this is just singly linked.
  */
 static DisplayModePtr
-xf86PruneModes(monp, allmodes, scrname)
+xf86PruneModes(monp, allmodes, scrp)
      MonPtr monp;		/* Monitor specification */
      DisplayModePtr allmodes;	/* List to be pruned */
-     char *scrname;		/* Screen name for use in error messages */
+     ScrnInfoPtr scrp;
 {
 	DisplayModePtr dispmp;	/* To walk the list */
 	DisplayModePtr olddispmp; /* The one being freed. */
@@ -2685,7 +2685,7 @@ xf86PruneModes(monp, allmodes, scrname)
 	 * mode list is updated. Also, they have no predecessor in the list.
 	 */
 	while (dispmp &&
-	       xf86CheckMode(dispmp, monp, scrname, xf86Verbose != MODE_OK)) {
+	       xf86CheckMode(scrp, dispmp, monp, xf86Verbose != MODE_OK)) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
 		xfree(olddispmp->name);
@@ -2697,7 +2697,7 @@ xf86PruneModes(monp, allmodes, scrname)
 	}
 	remainder = dispmp;
 	while ( dispmp->next ) {
-		if (xf86CheckMode(dispmp->next, monp, scrname, xf86Verbose) !=
+		if (xf86CheckMode(scrp, dispmp->next, monp, xf86Verbose) !=
                     MODE_OK) {
 			olddispmp = dispmp->next;
 			dispmp->next = dispmp->next->next;
@@ -2715,16 +2715,23 @@ xf86PruneModes(monp, allmodes, scrname)
  * we can make up for the monitor pointed to by monp.
  */
 int
-xf86CheckMode(dispmp, monp, scrname, verbose)
-     DisplayModePtr	dispmp;
+xf86CheckMode(scrp, dispmp, monp, verbose)
+     ScrnInfoPtr scrp;
+     DisplayModePtr dispmp;
      MonPtr monp;
-     char *scrname;
      Bool verbose;
 {
 	int i;
 	float dotclock, hsyncfreq, vrefreshrate;
+	char *scrname = scrp->name;
 
-	hsyncfreq = (float)(dispmp->Clock) / (float)(dispmp->HTotal);
+	/* Deal with the dispmp->Clock being a frequency or index */
+	if (dispmp->Clock > MAXCLOCKS) {
+		dotclock = (float)dispmp->Clock;
+	} else {
+		dotclock = (float)scrp->clock[dispmp->Clock];
+	}
+	hsyncfreq = dotclock / (float)(dispmp->HTotal);
 	for ( i = 0 ; i < monp->n_hsync ; i++ ) {
 		if ( monp->hsync[i].hi == monp->hsync[i].lo ) {
 			if ( (hsyncfreq > 0.999 * monp->hsync[i].hi) &&
@@ -2747,12 +2754,11 @@ xf86CheckMode(dispmp, monp, scrname, verbose)
 		  "%s %s: Mode \"%s\" needs hsync freq of %.2f kHz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, hsyncfreq);
 	    }
-	    return FALSE;
+	    return MODE_HSYNC;
 	}
 			
-	vrefreshrate = (float)(dispmp->Clock) * 1000.0 /
-				((float)(dispmp->HTotal) *
-					(float)(dispmp->VTotal)) ;
+	vrefreshrate = dotclock * 1000.0 /
+			((float)(dispmp->HTotal) * (float)(dispmp->VTotal)) ;
 	if ( dispmp->Flags & V_INTERLACE ) vrefreshrate *= 2.0;
 	if ( dispmp->Flags & V_DBLSCAN ) vrefreshrate /= 2.0;
 	for ( i = 0 ; i < monp->n_vrefresh ; i++ ) {
@@ -2777,7 +2783,7 @@ xf86CheckMode(dispmp, monp, scrname, verbose)
 		  "%s %s: Mode \"%s\" needs vert refresh rate of %.2f Hz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, vrefreshrate);
 	    }
-	    return FALSE;
+	    return MODE_VSYNC;
 	}
 
 	/* Passed every test. */

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.15 1995/01/28 17:03:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.16 1995/03/19 10:18:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -310,9 +310,9 @@ void xf86VerifyOptions(
 
 int xf86CheckMode(
 #if NeedFunctionPrototypes
+    ScrnInfoPtr scrp,
     DisplayModePtr dispmp,
     MonPtr monp,
-    char *scrname,
     Bool verbose
 #endif
 );
