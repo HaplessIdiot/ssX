@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.78 1998/09/26 08:33:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.79 1998/10/02 06:15:04 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -42,7 +42,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.78 1998/09/26 08:33:54 dawe
 #define LinuxDistribution	DefaultLinuxDistribution
 /*
   Add "#define LinuxDistribution Linux<mumble>" to your site.def or host.def.
-  Currently only LinuxSuSE will be figured out automatically.
+  Currently only LinuxSuSE and LinuxRedHat will be figured out automatically.
   Valid values are (from the list at www.linux.org in Oct. '97):
     LinuxUnknown    (0)
     LinuxSuSE       (1)
@@ -58,6 +58,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.78 1998/09/26 08:33:54 dawe
     LinuxWare       (11)
     LinuxYggdrasil  (12)
 */
+#endif
+#ifndef LinuxDistName
+#define LinuxDistName		DefaultLinuxDistName
 #endif
 #ifndef LinuxCLibMajorVersion
 #define LinuxCLibMajorVersion	DefaultLinuxCLibMajorVersion
@@ -183,8 +186,14 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LdCmd			ld
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++
+#ifndef TermcapLibrary
 #if UseStaticTermcapLib
 #define TermcapLibrary		StaticLibrary(/usr/lib/termcap,termcap)
+#else
+#if (LinuxDistribution == LinuxSuSE)
+#define TermcapLibrary		-lncurses
+#endif
+#endif
 #endif
 #else
 #ifdef AlphaArchitecture
