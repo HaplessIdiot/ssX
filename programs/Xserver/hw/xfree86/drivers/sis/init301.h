@@ -120,7 +120,7 @@ const UCHAR SiS_HiTVGroup3_2[] = {
     0x18, 0x1d, 0x23, 0x28, 0x4c, 0xaa, 0x01
 };
 
-/* 301C / 301LVX extended Part2 TV registers */
+/* 301C / 302ELV (?) extended Part2 TV registers */
 
 static const UCHAR SiS_Part2CLVX_1[] = {
     0x00,0x00,

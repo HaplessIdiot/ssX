@@ -26,39 +26,6 @@
  *
  */
 
-/* Mode numbers for 300/315/330 series */
-const UShort  ModeIndex_320x200[]      = {0x59, 0x41, 0x00, 0x4f};
-const UShort  ModeIndex_320x240[]      = {0x50, 0x56, 0x00, 0x53};
-const UShort  ModeIndex_320x240_FSTN[] = {0x5a, 0x5b, 0x00, 0x00};  /* FSTN */
-const UShort  ModeIndex_400x300[]      = {0x51, 0x57, 0x00, 0x54};
-const UShort  ModeIndex_512x384[]      = {0x52, 0x58, 0x00, 0x5c};
-const UShort  ModeIndex_640x400[]      = {0x2f, 0x5d, 0x00, 0x5e};
-const UShort  ModeIndex_640x480[]      = {0x2e, 0x44, 0x00, 0x62};
-const UShort  ModeIndex_720x480[]      = {0x31, 0x33, 0x00, 0x35};
-const UShort  ModeIndex_720x576[]      = {0x32, 0x34, 0x00, 0x36};
-const UShort  ModeIndex_768x576[]      = {0x5f, 0x60, 0x00, 0x61};
-const UShort  ModeIndex_800x480[]      = {0x70, 0x7a, 0x00, 0x76};
-const UShort  ModeIndex_800x600[]      = {0x30, 0x47, 0x00, 0x63};
-const UShort  ModeIndex_848x480[]      = {0x39, 0x3b, 0x00, 0x3e};
-const UShort  ModeIndex_856x480[]      = {0x3f, 0x42, 0x00, 0x45};
-const UShort  ModeIndex_1024x768[]     = {0x38, 0x4a, 0x00, 0x64};
-const UShort  ModeIndex_1024x576[]     = {0x71, 0x74, 0x00, 0x77};
-const UShort  ModeIndex_1024x600[]     = {0x20, 0x21, 0x00, 0x22};  /* 300 series only */
-const UShort  ModeIndex_1280x1024[]    = {0x3a, 0x4d, 0x00, 0x65};
-const UShort  ModeIndex_1280x960[]     = {0x7c, 0x7d, 0x00, 0x7e};
-const UShort  ModeIndex_1152x768[]     = {0x23, 0x24, 0x00, 0x25};  /* 300 series only */
-const UShort  ModeIndex_1152x864[]     = {0x29, 0x2a, 0x00, 0x2b};
-const UShort  ModeIndex_300_1280x768[] = {0x55, 0x5a, 0x00, 0x5b};
-const UShort  ModeIndex_310_1280x768[] = {0x23, 0x24, 0x00, 0x25};
-const UShort  ModeIndex_1280x720[]     = {0x79, 0x75, 0x00, 0x78};
-const UShort  ModeIndex_1360x768[]     = {0x48, 0x4b, 0x00, 0x4e};
-const UShort  ModeIndex_300_1360x1024[]= {0x67, 0x6f, 0x00, 0x72};  /* 300 series, BARCO only */
-const UShort  ModeIndex_1400x1050[]    = {0x26, 0x27, 0x00, 0x28};  /* 315 series only */
-const UShort  ModeIndex_1600x1200[]    = {0x3c, 0x3d, 0x00, 0x66};
-const UShort  ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
-const UShort  ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
-const UShort  ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
- 
 /* VESA */
 /*     The following is included because there are BIOSes out there that
  *     report incomplete mode lists. These are 630 BIOS versions <2.01.2x
@@ -1068,7 +1035,9 @@ static void    SISWaitVBRetrace(ScrnInfoPtr pScrn);
 void           SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 void           SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
 Bool           InRegion(int x, int y, region r);
+#ifdef SISMERGED
 static void    SISMergePointerMoved(int scrnIndex, int x, int y);
+#endif
 BOOLEAN        SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 USHORT 	       SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode,
 				 unsigned long VBFlags, BOOLEAN hcm);
@@ -1079,6 +1048,11 @@ unsigned char  SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned 
 static void    SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #endif
 
+extern USHORT   SiS_GetModeID(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int Depth, BOOL FSTN);
+extern USHORT   SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int Depth,
+				  BOOLEAN FSTN, USHORT CustomT, int LCDwith, int LCDheight);
+extern USHORT   SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int Depth);
+extern USHORT   SiS_GetModeID_VGA2(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int Depth);
 extern int      SiSTranslateToVESA(ScrnInfoPtr pScrn, int modenumber);
 extern BOOLEAN 	SiSBIOSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
                                ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
@@ -1087,14 +1061,12 @@ extern BOOLEAN  SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
 extern void	SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr);
 extern void     SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,USHORT ModeNo);
 extern void     SiS_GetVBType(SiS_Private *SiS_Pr, PSIS_HW_INFO);
-extern DisplayModePtr  SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes,
+extern DisplayModePtr SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes,
 					       BOOLEAN isfordvi);
-#ifdef SISDUALHEAD
 extern BOOLEAN 	SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
 				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
 extern BOOLEAN 	SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension,
 				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
-#endif
 
 /* For power management for 315 series */
 extern void SiS_Chrontel701xBLOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwDeviceExtension);

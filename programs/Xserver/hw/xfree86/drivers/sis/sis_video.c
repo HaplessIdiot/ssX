@@ -890,11 +890,13 @@ SISSetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 #ifdef SIS_CP
     SIS_CP_VIDEO_DEF
 #endif
-    if(pPriv->dualHeadMode)
+    if(pPriv->dualHeadMode) {
+#ifdef SISDUALHEAD
        pPriv->crtnum =
 	  pSiSEnt->curxvcrtnum =
 	     pSiSEnt->XvOnCRT2 ? 1 : 0;
-    else
+#endif
+    } else
        pPriv->crtnum = pSiS->XvOnCRT2 ? 1 : 0;
 
     pSiS->XvGammaRed = pSiS->XvGammaRedDef;
@@ -1820,6 +1822,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      case 0x03: port = SISPART3; break;
      case 0x04: port = SISPART4; break;
      case 0x05: port = SISCR;    break;
+     case 0x06: port = SISVID;   break;
      default:   return BadValue;
      }
      outSISIDXREG(port,((value & 0x00ff0000) >> 16), ((value & 0x0000ff00) >> 8));
@@ -3044,13 +3047,13 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    unsigned short screenwidth;
    SISOverlayRec overlay; 
    int srcOffsetX=0, srcOffsetY=0;
-   int sx=0, sy=0, watchdog;
+   int sx=0, sy=0;
    int index = 0, iscrt2 = 0;
 #ifdef SISMERGED
    unsigned char temp;
    unsigned short screen2width=0;
    int srcOffsetX2=0, srcOffsetY2=0;
-   int sx2=0, sy2=0;
+   int sx2=0, sy2=0, watchdog;
 #endif
    
    pPriv->NoOverlay = FALSE;
