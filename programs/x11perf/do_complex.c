@@ -122,6 +122,7 @@ DoComplexPoly(XParms xp, Parms p, int reps)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;
+	CheckAbort ();
     }
 }
 
@@ -198,5 +199,6 @@ DoGeneralPoly(XParms xp, Parms p, int reps)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;
+	CheckAbort ();
     }
 }

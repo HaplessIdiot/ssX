@@ -125,6 +125,11 @@ extern int NullInitProc(XParms xp, Parms p, int reps);
 
 extern Test test[];
 
+extern int abortTest;
+
+extern void AbortTest (void);
+
+#define CheckAbort()  if (abortTest) AbortTest ()
 #define ForEachTest(x) for (x = 0; test[x].option != NULL; x++)
 
 
@@ -250,6 +255,11 @@ extern void DoImageText16 ( XParms xp, Parms p, int reps );
 extern void ClearTextWin ( XParms xp, Parms p );
 extern void EndText ( XParms xp, Parms p );
 extern void EndText16 ( XParms xp, Parms p );
+#ifdef XFT
+extern int InitAAText (XParms xp, Parms p, int reps );
+extern void DoAAText (XParms xp, Parms p, int reps );
+extern void EndAAText ( XParms xp, Parms p );
+#endif
 
 /* do_traps.c */
 extern int InitTrapezoids ( XParms xp, Parms p, int reps );

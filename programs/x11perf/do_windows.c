@@ -268,6 +268,7 @@ DoPopUps(XParms xp, Parms p, int reps)
     for (i = 0; i != reps; i++) {
         XMapWindow(xp->d, popup);
 	XUnmapWindow(xp->d, popup);
+	CheckAbort ();
     }
 }
 

@@ -41,6 +41,7 @@ DoNoOp(XParms xp, Parms p, int reps)
 
     for (i = 0; i != reps; i++) {
 	XNoOp(xp->d);
+	CheckAbort ();
     }
 }
 
@@ -54,6 +55,7 @@ DoGetAtom(XParms xp, Parms p, int reps)
     for (i = 0; i != reps; i++) {
 	atom = XGetAtomName (xp->d, 1);
  	XFree(atom); /* fix XBUG 6480 */
+	CheckAbort ();
     }
 }
 
@@ -67,6 +69,7 @@ DoQueryPointer(XParms xp, Parms p, int reps)
 
     for (i = 0; i != reps; i++) {
 	XQueryPointer (xp->d, xp->w, &w, &w, &x, &x, &x, &x, &m);
+	CheckAbort ();
     }
 }
 
@@ -102,5 +105,6 @@ DoGetProperty(XParms xp, Parms p, int reps)
 		xp->d, xp->w, XA_PK_TEMP, 0, 4,
 		False, AnyPropertyType, &actual_type, &actual_format,
 		&actual_length, &bytes_remaining, &prop);
+	CheckAbort ();
     }
 }
