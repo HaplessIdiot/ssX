@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.78 2005/01/30 02:46:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.79 2005/01/30 21:26:03 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1507,7 +1507,10 @@ for i in $ETCDLINKS; do
 	else
 		DoCopy=NO
 	fi
-	if [ $DoCopy = YES -a -d $RUNDIR/lib/X11/$i ]; then
+	Existing=NO
+	if [ $DoCopy = YES -a \( -d $RUNDIR/lib/X11/$i -o -d $ETCDIR/X11/$i \) ]
+	then
+		Existing=YES
 		case $i in
 		xkb)
 			echo ""
@@ -1549,7 +1552,7 @@ for i in $ETCDLINKS; do
 		else
 			targetdir=$ETCDIR/X11
 		fi
-		if [ -d $targetdir/$i ]; then
+		if [ X$Existing = XYES -a -d $targetdir/$i ]; then
 			backupdir=$targetdir/$i.$BACKUP_SUFFIX
 			Rm -fr $backupdir
 			Mkdir $backupdir
@@ -1648,10 +1651,12 @@ for i in $ETCFONTFILES; do
 	fi
 	if [ $DoCopy = YES ]; then
 		targetdir=$ETCDIR/fonts
-		backupfile=$targetdir/$i.$BACKUP_SUFFIX
-		echo "Making a backup of $targetdir/$i to $backupfile"
-		rm -f $backupfile
-		Cp -p $targetdir/$i $backupfile
+		if [ -f $targetdir/$i ]; then
+			backupfile=$targetdir/$i.$BACKUP_SUFFIX
+			echo "Making a backup of $targetdir/$i to $backupfile"
+			rm -f $backupfile
+			Cp -p $targetdir/$i $backupfile
+		fi
 		echo "Installing the $i config file ..."
 		Cp -p .etctmp/fonts/$i $ETCDIR/fonts/$i
 	fi
