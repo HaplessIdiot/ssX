@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.82 2003/01/29 15:17:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.83 2003/01/29 18:06:06 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2236,6 +2236,7 @@ static DisplayModePtr RADEONFPNativeMode(ScrnInfoPtr pScrn)
 
 	new->Clock      = info->DotClock;
 	new->Flags      = 0;
+	new->type       = M_T_USERDEF;
 
 	new->next       = NULL;
 	new->prev       = NULL;
