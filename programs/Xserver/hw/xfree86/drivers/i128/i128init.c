@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.3 2000/10/24 00:01:45 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.4 2000/10/25 00:09:17 robin Exp $ */
 /*
  * Copyright 1995-2000 by Robin Cutshaw <robin@XFree86.Org>
  * Copyright 1998 by Number Nine Visual Technology, Inc.
@@ -39,8 +39,6 @@
 void I128SavePalette(I128Ptr pI128);
 void I128RestorePalette(I128Ptr pI128);
 
-#define VGA_SAVE_COUNT 4096*1024
-
 
 void
 I128SaveState(ScrnInfoPtr pScrn)
@@ -59,6 +57,7 @@ I128SaveState(ScrnInfoPtr pScrn)
 	}
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
+
 	if ((pI128->io.id&0x7) > 0) {
 		iR->vga_ctl = inl(iR->iobase + 0x30);
 	}
@@ -299,15 +298,10 @@ I128RestoreState(ScrnInfoPtr pScrn)
 	}
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
+
 	if (((pI128->io.id&0x7) > 0) ||
 	    (pI128->Chipset == PCI_CHIP_I128_T2R) ||
 	    (pI128->Chipset == PCI_CHIP_I128_T2R4)) {
-		int i;
-		unsigned char *vidmem = (unsigned char *)pI128->mem.mw0_ad;
-
-		if (pI128->Primary)
-			for (i=0; i<VGA_SAVE_COUNT; i++)
-				vidmem[i] = pI128->vgamem[i];
 		outl(iR->iobase + 0x30, iR->vga_ctl);
 	}
 
@@ -508,18 +502,6 @@ I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			usleep(5000);
 			outl(iR->iobase + 0x24, 0xA1089030);
 		}
-
-		if (!pI128->FontsSaved && pI128->Primary) {
-			int i;
-			unsigned char *vidmem =
-				(unsigned char *)pI128->mem.mw0_ad;
-
-			pI128->vgamem = xnfalloc(VGA_SAVE_COUNT);
-			for (i=0; i<VGA_SAVE_COUNT; i++)
-				pI128->vgamem[i] = vidmem[i];
-			pI128->FontsSaved = TRUE;
-		}
-
 	}
 
 	ret = pI128->ProgramDAC(pScrn, mode);
