@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.60 2001/02/21 00:42:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.61 2001/02/22 01:42:11 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -107,10 +107,10 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
     { NV_CHIP_QUADRO2MXR,   "Quadro 2 MXR"},
     { NV_CHIP_GEFORCE2GO,   "GeForce 2 Go"},
-    { NV_CHIP_0200,       "NV Chip 0x0200"},
-    { NV_CHIP_0201,       "NV Chip 0x0201"},
-    { NV_CHIP_0202,       "NV Chip 0x0202"},
-    { NV_CHIP_0203,       "NV Chip 0x0203"},
+    { NV_CHIP_GEFORCE3,     "GeForce3"},
+    { NV_CHIP_GEFORCE3_1,   "GeForce3 (rev 1)"},
+    { NV_CHIP_GEFORCE3_2,   "GeForce3 (rev 2)"},
+    { NV_CHIP_GEFORCE3_3,   "GeForce3 (rev 3)"},
     {-1,                        NULL }
 };
 
@@ -135,10 +135,10 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_GEFORCE2MXDDR,    NV_CHIP_GEFORCE2MXDDR,  RES_SHARED_VGA },
     { NV_CHIP_QUADRO2MXR,       NV_CHIP_QUADRO2MXR,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2GO,       NV_CHIP_GEFORCE2GO,     RES_SHARED_VGA },
-    { NV_CHIP_0200,             NV_CHIP_0200,           RES_SHARED_VGA },
-    { NV_CHIP_0201,             NV_CHIP_0201,           RES_SHARED_VGA },
-    { NV_CHIP_0202,             NV_CHIP_0202,           RES_SHARED_VGA },
-    { NV_CHIP_0203,             NV_CHIP_0203,           RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE3,         NV_CHIP_GEFORCE3,       RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE3_1,       NV_CHIP_GEFORCE3_1,     RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE3_2,       NV_CHIP_GEFORCE3_2,     RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE3_3,       NV_CHIP_GEFORCE3_3,     RES_SHARED_VGA },
     { -1,                       -1,                     RES_UNDEFINED  }
 };
 
@@ -1175,10 +1175,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	case NV_CHIP_GEFORCE2GO:
             NV10Setup(pScrn);
 	    break;
-	case NV_CHIP_0200:
-	case NV_CHIP_0201:
-	case NV_CHIP_0202:
-	case NV_CHIP_0203:
+	case NV_CHIP_GEFORCE3:
+	case NV_CHIP_GEFORCE3_1:
+	case NV_CHIP_GEFORCE3_2:
+	case NV_CHIP_GEFORCE3_3:
             NV20Setup(pScrn);
             break;
     }
