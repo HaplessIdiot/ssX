@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.30 2000/08/24 22:20:16 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -383,11 +383,11 @@ ATIPreInit
 #   define           BIOS_SIZE       0x00010000U     /* 64kB */
     CARD8            BIOS[BIOS_SIZE];
 #   define           BIOSByte(_n)    (BIOS[_n])
-#   define           BIOSWord(_n)    (BIOS[_n] ||               \
+#   define           BIOSWord(_n)    (BIOS[_n] |                \
                                       (BIOS[(_n) + 1] << 8))
-#   define           BIOSLong(_n)    (BIOS[_n] ||               \
-                                      (BIOS[(_n) + 1] << 8) ||  \
-                                      (BIOS[(_n) + 2] << 16) || \
+#   define           BIOSLong(_n)    (BIOS[_n] |                \
+                                      (BIOS[(_n) + 1] << 8) |   \
+                                      (BIOS[(_n) + 2] << 16) |  \
                                       (BIOS[(_n) + 3] << 24))
     unsigned int     BIOSSize = 0;
     unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
@@ -400,6 +400,7 @@ ATIPreInit
     resPtr           pResources;
     pciVideoPtr      pVideo;
     DisplayModePtr   pMode;
+    unsigned long    Block0Base;
     CARD32           IOValue1, IOValue2 = 0, IOValue3 = 0, IOValue4 = 0;
     int              i, j, AcceleratorVideoRAM = 0;
     int              Numerator, Denominator;
@@ -662,6 +663,7 @@ ATIPreInit
 
         case ATI_ADAPTER_MACH64:
             /* Find and mmap() MMIO area */
+            Block0Base = pATI->Block0Base;
             do
             {
                 /* Only allow auxiliary aperture if it exists */
@@ -675,18 +677,12 @@ ATIPreInit
                             pATI->Block0Base += 0x007FFC00U;
                             ATIMapMach64(pScreenInfo->scrnIndex, pATI);
                             if (pATI->pBlock[0])
-                            {
-                                pATI->Block0Base = 0;   /* Might be moved */
                                 break;
-                            }
 
                             pATI->Block0Base -= 0x00400000U;
                             ATIMapMach64(pScreenInfo->scrnIndex, pATI);
                             if (pATI->pBlock[0])
-                            {
-                                pATI->Block0Base = 0;   /* Might be moved */
                                 break;
-                            }
                         }
                     }
 
@@ -696,6 +692,7 @@ ATIPreInit
 
                 ATIMapMach64(pScreenInfo->scrnIndex, pATI);
             } while(0);
+            pATI->Block0Base = Block0Base;
 
 #ifdef AVOID_CPIO
 
