@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.68 2002/10/08 22:14:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.69 2002/10/30 12:52:12 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -2350,12 +2350,6 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
     }
-				/* Backing store setup */
-    miInitializeBackingStore(pScreen);
-    xf86SetBackingStore(pScreen);
-
-				/* Set Silken Mouse */
-    xf86SetSilkenMouse(pScreen);
 
 				/* Acceleration setup */
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
@@ -2375,6 +2369,13 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* DGA setup */
     R128DGAInit(pScreen);
+
+				/* Backing store setup */
+    miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
+
+				/* Set Silken Mouse */
+    xf86SetSilkenMouse(pScreen);
 
 				/* Cursor setup */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
