@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -321,14 +321,13 @@ read_R5G6B5_span(const GLcontext * ctx, GLuint n, GLint x, GLint y,
             ? (fxMesa->screen_width) : (info.strideInBytes / 2);
         const GLushort *data16 = (const GLushort *) info.lfbPtr
             + (winY - y) * srcStride + (winX + x);
-        const GLuint *data32 = (const GLuint *) data16;
         GLuint i, j;
         GLuint extraPixel = (n & 1);
         n -= extraPixel;
         for (i = j = 0; i < n; i += 2, j++) {
-            GLuint pixel = data32[j];
-            GLuint pixel0 = pixel & 0xffff;
-            GLuint pixel1 = pixel >> 16;
+	    /* use data16[] to keep correct alignment */
+            GLuint pixel0 = data16[i];
+            GLuint pixel1 = data16[i+1];
             rgba[i][RCOMP] = FX_PixelToR(fxMesa, pixel0);
             rgba[i][GCOMP] = FX_PixelToG(fxMesa, pixel0);
             rgba[i][BCOMP] = FX_PixelToB(fxMesa, pixel0);
