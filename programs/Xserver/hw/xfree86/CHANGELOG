@@ -1,3 +1,7 @@
+XFree86 4.0g (xx June 2000)
+ 378. Fix a DGA-related crash when using multiple input devices with the
+      DGA extension disabled (Matthieu Herrb).
+
 XFree86 4.0f (23 June 2000)
  377. Suppress the use of a temporary directory to build man pages on
       OpenBSD, which fixes problems with some external programs (#4028,
@@ -10731,4 +10735,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1209 2000/06/24 02:26:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1211 2000/06/24 17:43:44 dawes Exp $
