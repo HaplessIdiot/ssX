@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.105 2000/12/21 16:37:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.106 2000/12/22 10:39:24 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -122,9 +122,6 @@ static Bool FBDevProbed = FALSE;
 DriverRec GLINT = {
     VERSION,
     GLINT_DRIVER_NAME,
-#if 0
-    "accelerated driver for 3dlabs and derived chipsets",
-#endif
     GLINTIdentify,
     GLINTProbe,
     GLINTAvailableOptions,

@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.18 2000/11/28 17:25:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.19 2000/12/02 15:30:38 tsi Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -184,9 +184,6 @@ static int LoadGlide(void);
 DriverRec GLIDE = {
   VERSION,
   GLIDE_DRIVER_NAME,
-#if 0
-  "driver for Glide devices (Voodoo cards)",
-#endif
   GLIDEIdentify,
   GLIDEProbe,
   GLIDEAvailableOptions,

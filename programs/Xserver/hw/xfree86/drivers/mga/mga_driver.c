@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.184 2000/12/06 15:35:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.185 2000/12/07 20:26:21 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -157,9 +157,6 @@ static int MGAEntityIndex = -1;
 DriverRec MGA_C_NAME = {
     MGA_VERSION,
     MGA_DRIVER_NAME,
-#if 0
-    "accelerated driver for Matrox Millennium and Mystique cards",
-#endif
     MGAIdentify,
     MGAProbe,
     MGAAvailableOptions,

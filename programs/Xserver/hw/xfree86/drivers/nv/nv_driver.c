@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.51 2000/12/02 15:30:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.53 2000/12/14 16:33:09 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -80,10 +80,7 @@ static Bool	NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 DriverRec NV = {
         VERSION,
-	"nv",
-#if 0
-        "accelerated driver for NVIDIA RIVA 128, TNT and TNT2 cards",
-#endif
+	NV_DRIVER_NAME,
         NVIdentify,
         NVProbe,
 	NVAvailableOptions,

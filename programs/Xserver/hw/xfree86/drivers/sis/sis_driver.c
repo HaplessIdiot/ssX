@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.54 2000/12/02 01:16:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.55 2000/12/02 15:30:51 tsi Exp $ */
 
 
 #include "fb.h"
@@ -117,7 +117,7 @@ static int pix24bpp = 0;
 
 DriverRec SIS = {
     SIS_CURRENT_VERSION,
-    "accelerated driver for SiS chipsets",
+    SIS_DRIVER_NAME,
     SISIdentify,
     SISProbe,
     SISAvailableOptions,
