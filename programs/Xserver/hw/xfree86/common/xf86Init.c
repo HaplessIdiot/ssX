@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.226 2005/01/28 02:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.227 2005/02/15 03:08:27 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -2080,7 +2080,7 @@ xf86PrintBanner()
     t.tm_mon = (BUILD_DATE / 100) % 100 - 1;
     t.tm_year = BUILD_DATE / 10000 - 1900;
     if (strftime(buf, sizeof(buf), "%d %B %Y", &t))
-       ErrorF("Build Date: %s\n", buf);
+       ErrorF("Build Date: %s\n", buf[0] == '0' ? buf + 1 : buf);
   }
 #endif
 #if defined(CLOG_DATE) && (CLOG_DATE > 19000000)
@@ -2094,7 +2094,7 @@ xf86PrintBanner()
     t.tm_mon = (CLOG_DATE / 100) % 100 - 1;
     t.tm_year = CLOG_DATE / 10000 - 1900;
     if (strftime(buf, sizeof(buf), "%d %B %Y", &t))
-       ErrorF("Changelog Date: %s\n", buf);
+       ErrorF("Changelog Date: %s\n", buf[0] == '0' ? buf + 1 : buf);
   }
 #endif
 #if defined(BUILDERSTRING)
