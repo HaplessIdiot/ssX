@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 410. Xterm patch #155 (Thomas Dickey): correct change to return-type of
+      in_put(), which caused problem with UTF-8 (fixed by Bruno Haible).
  409. Some unobstrusive preparations for SunOS/Sparc (Marc La France).
  408. Remove unnecessary libxf86_os link into Xnest & Xvfb (Marc La France).
  407. Disable building of SuperProbe by default (Alan Hourihane).
@@ -13026,4 +13028,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1705 2001/04/20 16:23:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1706 2001/04/20 16:54:02 tsi Exp $
