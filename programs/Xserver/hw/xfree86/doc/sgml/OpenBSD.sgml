@@ -1,7 +1,9 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
 
 <article>
-<title>README for XFree86 3.9.17 on OpenBSD
+<title>README for XFree86 &relvers; on OpenBSD
 <author>
 Matthieu Herrb
 <Date>Last modified on: 13 November 1999
@@ -330,7 +332,7 @@ Many thanks to all people who contributed to make XFree86 work on
 <bf/Nate Williams/, <bf/Rod Grimes/, <bf/Jack Velte/ and <bf/Michael Smith/.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.1.2.10 1999/06/30 13:00:28 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.4 1999/11/19 13:54:28 hohndel Exp $
 
 
 

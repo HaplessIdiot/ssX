@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.45 1999/08/24 11:24:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.47 1999/11/19 13:54:27 hohndel Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -11,6 +11,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.45 1999/08
 SGMLDEPENDS = defs.ent
   INDEXLIST = README.sgml RELNOTES.sgml LICENSE.sgml DESIGN.sgml \
 	      mouse.sgml fonts.sgml isc.sgml \
+	      OpenBSD.sgml NetBSD.sgml \
               ati.sgml chips.sgml DECtga.sgml s3virge.sgml SiS.sgml
 
 #if 0
