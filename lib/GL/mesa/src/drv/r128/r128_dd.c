@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.5 2000/12/12 17:17:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.6 2000/12/15 22:48:38 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -73,23 +73,23 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
       /* Append any chipset-specific information.
        */
       if ( R128_IS_PRO( r128ctx ) ) {
-	 strncat( buffer, " Pro", 4 );
+	 strncat( (pointer)buffer, " Pro", 4 );
       }
       if ( R128_IS_MOBILITY( r128ctx ) ) {
-	 strncat( buffer, " M3", 3 );
+	 strncat( (pointer)buffer, " M3", 3 );
       }
 
       /* Append any AGP-specific information.
        */
       switch ( r128ctx->r128Screen->AGPMode ) {
       case 1:
-	 strncat( buffer, " AGP 1x", 7 );
+	 strncat( (pointer)buffer, " AGP 1x", 7 );
 	 break;
       case 2:
-	 strncat( buffer, " AGP 2x", 7 );
+	 strncat( (pointer)buffer, " AGP 2x", 7 );
 	 break;
       case 4:
-	 strncat( buffer, " AGP 4x", 7 );
+	 strncat( (pointer)buffer, " AGP 4x", 7 );
 	 break;
       }
 
@@ -97,7 +97,7 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
        */
 #ifdef USE_X86_ASM
       if ( gl_x86_cpu_features ) {
-	 strncat( buffer, " x86", 4 );
+	 strncat( (pointer)buffer, " x86", 4 );
       }
 #endif
 #ifdef USE_3DNOW_ASM
