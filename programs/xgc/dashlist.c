@@ -7,6 +7,7 @@
 **       functions to create more than one of these dashlist choice things
 **       will fail in a big way.
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xos.h>

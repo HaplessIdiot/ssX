@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Just_display.h: This file contains the definitions needed to use the
