@@ -39,6 +39,7 @@
 #define PMX_BUFFER_SIZE		256	/* Size of input buffer.			*/
 #define PMX_PACKET_SIZE		5	/* Maximum size of a command/reply *including*	*/
 
+#ifdef XFree86LOADER
 static const char *reqSymbols[] = {
 	"AddEnabledDevice",
 	"ErrorF",
@@ -81,6 +82,7 @@ static const char *reqSymbols[] = {
 	"xf86XInputSetSendCoreEvents",
 	NULL
 };
+#endif
 
 					/* the leading and trailing bytes.		*/
 

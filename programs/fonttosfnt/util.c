@@ -29,9 +29,7 @@ THE SOFTWARE.
 
 #include "freetype/freetype.h"
 #include "freetype/internal/ftobjs.h"
-#include "freetype/bdf.h"
-#include "freetype/bdfdrivr.h"
-#include "freetype/pcf.h"
+#include "freetype/ftbdf.h"
 #include "fonttosfnt.h"
 
 char*
@@ -128,110 +126,57 @@ macTime(int *hi, unsigned *lo)
     return 0;
 }
 
-static int
-fontType(FT_Face face, char *name)
-{
-    if(face && face->driver) {
-        FT_Module driver = (FT_Module)face->driver;
-        if(driver->clazz && driver->clazz->module_name) {
-            if(strcmp(driver->clazz->module_name, name) == 0)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-static int
-isX11Font(FT_Face face)
-{
-    return fontType(face, "pcf") || fontType(face, "bdf");
-}
-
-int
-faceProperty(FT_Face face, char *name,
-             int *type_return, FontProperty *prop_return)
-{
-    int i;
-    if(fontType(face, "pcf")) {
-        PCF_Face pf = (PCF_Face)face;
-        for(i = 0; i < pf->nprops; i++) {
-            if(strcmp(pf->properties[i].name, name) == 0) {
-                if(type_return)
-                    *type_return = 
-                        pf->properties[i].isString ? PROP_ATOM : PROP_CARDINAL;
-                *prop_return = *(FontProperty*)&pf->properties[i].value;
-                return 1;
-            }
-        }
-        return 0;
-    } else if(fontType(face, "bdf")) {
-        BDF_Face bf = (BDF_Face)face;
-        for(i = 0; i < bf->bdffont->props_used; i++) {
-            if(strcmp(bf->bdffont->props[i].name, name) == 0) {
-                if(type_return)
-                    *type_return = bf->bdffont->props[i].format;
-                *prop_return = *(FontProperty*)&bf->bdffont->props[i].value;
-                return 1;
-            }
-        }
-        return 0;
-    }
-    return -1;
-}
-
 unsigned
 faceFoundry(FT_Face face)
 {
     int rc;
-    if(isX11Font(face)) {
-        FontProperty prop;
-        rc = faceProperty(face, "FOUNDRY", NULL, &prop);
-        if(rc > 0) {
-            if(strcasecmp(prop.atom, "adobe") == 0)
-                return makeName("ADBE");
-            else if(strcasecmp(prop.atom, "agfa") == 0)
-                return makeName("AGFA");
-            else if(strcasecmp(prop.atom, "altsys") == 0)
-                return makeName("ALTS");
-            else if(strcasecmp(prop.atom, "apple") == 0)
-                return makeName("APPL");
-            else if(strcasecmp(prop.atom, "arphic") == 0)
-                return makeName("ARPH");
-            else if(strcasecmp(prop.atom, "alltype") == 0)
-                return makeName("ATEC");
-            else if(strcasecmp(prop.atom, "b&h") == 0)
-                return makeName("B&H ");
-            else if(strcasecmp(prop.atom, "bitstream") == 0)
-                return makeName("BITS");
-            else if(strcasecmp(prop.atom, "dynalab") == 0)
-                return makeName("DYNA");
-            else if(strcasecmp(prop.atom, "ibm") == 0)
-                return makeName("IBM ");
-            else if(strcasecmp(prop.atom, "itc") == 0)
-                return makeName("ITC ");
-            else if(strcasecmp(prop.atom, "interleaf") == 0)
-                return makeName("LEAF");
-            else if(strcasecmp(prop.atom, "impress") == 0)
-                return makeName("IMPR");
-            else if(strcasecmp(prop.atom, "larabiefonts") == 0)
-                return makeName("LARA");
-            else if(strcasecmp(prop.atom, "linotype") == 0)
-                return makeName("LINO");
-            else if(strcasecmp(prop.atom, "monotype") == 0)
-                return makeName("MT  ");
-            else if(strcasecmp(prop.atom, "microsoft") == 0)
-                return makeName("MS  ");
-            else if(strcasecmp(prop.atom, "urw") == 0)
-                return makeName("URW ");
-            else if(strcasecmp(prop.atom, "y&y") == 0)
-                return makeName("Y&Y ");
-            else
-                return makeName("UNKN");
-        }
-        return makeName("UNKN");
-    } else {
-        return makeName("UNKN"); /* for now */
+    BDF_PropertyRec prop;
+
+    rc = FT_Get_BDF_Property(face, "FOUNDRY", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcasecmp(prop.u.atom, "adobe") == 0)
+            return makeName("ADBE");
+        else if(strcasecmp(prop.u.atom, "agfa") == 0)
+            return makeName("AGFA");
+        else if(strcasecmp(prop.u.atom, "altsys") == 0)
+            return makeName("ALTS");
+        else if(strcasecmp(prop.u.atom, "apple") == 0)
+            return makeName("APPL");
+        else if(strcasecmp(prop.u.atom, "arphic") == 0)
+            return makeName("ARPH");
+        else if(strcasecmp(prop.u.atom, "alltype") == 0)
+            return makeName("ATEC");
+        else if(strcasecmp(prop.u.atom, "b&h") == 0)
+            return makeName("B&H ");
+        else if(strcasecmp(prop.u.atom, "bitstream") == 0)
+            return makeName("BITS");
+        else if(strcasecmp(prop.u.atom, "dynalab") == 0)
+            return makeName("DYNA");
+        else if(strcasecmp(prop.u.atom, "ibm") == 0)
+            return makeName("IBM ");
+        else if(strcasecmp(prop.u.atom, "itc") == 0)
+            return makeName("ITC ");
+        else if(strcasecmp(prop.u.atom, "interleaf") == 0)
+            return makeName("LEAF");
+        else if(strcasecmp(prop.u.atom, "impress") == 0)
+            return makeName("IMPR");
+        else if(strcasecmp(prop.u.atom, "larabiefonts") == 0)
+            return makeName("LARA");
+        else if(strcasecmp(prop.u.atom, "linotype") == 0)
+            return makeName("LINO");
+        else if(strcasecmp(prop.u.atom, "monotype") == 0)
+            return makeName("MT  ");
+        else if(strcasecmp(prop.u.atom, "microsoft") == 0)
+            return makeName("MS  ");
+        else if(strcasecmp(prop.u.atom, "urw") == 0)
+            return makeName("URW ");
+        else if(strcasecmp(prop.u.atom, "y&y") == 0)
+            return makeName("Y&Y ");
+        else
+            return makeName("UNKN");
     }
+    /* For now */
+    return makeName("UNKN");
 }
     
 
@@ -239,117 +184,119 @@ int
 faceWeight(FT_Face face)
 {
     int rc;
-    if(isX11Font(face)) {
-        FontProperty prop;
-        rc = faceProperty(face, "WEIGHT_NAME", NULL, &prop);
-        if(rc > 0) {
-            if(strcasecmp(prop.atom, "thin") == 0)
-                return 100;
-            else if(strcasecmp(prop.atom, "extralight") == 0)
-                return 200;
-            else if(strcasecmp(prop.atom, "light") == 0)
-                return 300;
-            else if(strcasecmp(prop.atom, "medium") == 0)
-                return 500;
-            else if(strcasecmp(prop.atom, "semibold") == 0)
-                return 600;
-            else if(strcasecmp(prop.atom, "bold") == 0)
-                return 700;
-            else if(strcasecmp(prop.atom, "extrabold") == 0)
-                return 800;
-            else if(strcasecmp(prop.atom, "black") == 0)
-                return 900;
-            else
-                return 500;
-        } else
+    BDF_PropertyRec prop;
+    rc = FT_Get_BDF_Property(face, "WEIGHT_NAME", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcasecmp(prop.u.atom, "thin") == 0)
+            return 100;
+        else if(strcasecmp(prop.u.atom, "extralight") == 0)
+            return 200;
+        else if(strcasecmp(prop.u.atom, "light") == 0)
+            return 300;
+        else if(strcasecmp(prop.u.atom, "medium") == 0)
             return 500;
-    } else {
+        else if(strcasecmp(prop.u.atom, "semibold") == 0)
+            return 600;
+        else if(strcasecmp(prop.u.atom, "bold") == 0)
+            return 700;
+        else if(strcasecmp(prop.u.atom, "extrabold") == 0)
+            return 800;
+        else if(strcasecmp(prop.u.atom, "black") == 0)
+            return 900;
+        else
+            return 500;
+    } else
         return 500;             /* for now */
-    }
 }
 
 int
 faceWidth(FT_Face face)
 {
     int rc;
-    if(isX11Font(face)) {
-        FontProperty prop;
-        rc = faceProperty(face, "SETWIDTH_NAME", NULL, &prop);
-        if(rc > 0) {
-            if(strcasecmp(prop.atom, "ultracondensed") == 0)
-                return 1;
-            else if(strcasecmp(prop.atom, "extracondensed") == 0)
-                return 2;
-            else if(strcasecmp(prop.atom, "condensed") == 0)
-                return 3;
-            else if(strcasecmp(prop.atom, "semicondensed") == 0)
-                return 4;
-            else if(strcasecmp(prop.atom, "normal") == 0)
-                return 5;
-            else if(strcasecmp(prop.atom, "semiexpanded") == 0)
-                return 6;
-            else if(strcasecmp(prop.atom, "expanded") == 0)
-                return 7;
-            else if(strcasecmp(prop.atom, "extraexpanded") == 0)
-                return 8;
-            else if(strcasecmp(prop.atom, "ultraexpanded") == 0)
-                return 9;
-            else
-                return 5;
-
-        } else
+    BDF_PropertyRec prop;
+    rc = FT_Get_BDF_Property(face, "SETWIDTH_NAME", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcasecmp(prop.u.atom, "ultracondensed") == 0)
+            return 1;
+        else if(strcasecmp(prop.u.atom, "extracondensed") == 0)
+            return 2;
+        else if(strcasecmp(prop.u.atom, "condensed") == 0)
+            return 3;
+        else if(strcasecmp(prop.u.atom, "semicondensed") == 0)
+            return 4;
+        else if(strcasecmp(prop.u.atom, "normal") == 0)
             return 5;
-    } else {
+        else if(strcasecmp(prop.u.atom, "semiexpanded") == 0)
+            return 6;
+        else if(strcasecmp(prop.u.atom, "expanded") == 0)
+            return 7;
+        else if(strcasecmp(prop.u.atom, "extraexpanded") == 0)
+            return 8;
+        else if(strcasecmp(prop.u.atom, "ultraexpanded") == 0)
+            return 9;
+        else
+            return 5;
+    } else
         return 5;               /* for now */
-    }
 }
 
 int
 faceItalicAngle(FT_Face face)
 {
     int rc;
-    if(isX11Font(face)) {
-        FontProperty prop;
-        rc = faceProperty(face, "ITALIC_ANGLE", NULL, &prop);
-        if(rc > 0) {
-            return (prop.int32 - 64 * 90) * (TWO_SIXTEENTH / 64);
-        }
-        rc = faceProperty(face, "SLANT", NULL, &prop);
-        if(rc > 0) {
-            if(strcasecmp(prop.atom, "i") == 0 ||
-               strcasecmp(prop.atom, "s") == 0)
-                return -30 * TWO_SIXTEENTH;
-            else
-                return 0;
-        } else
-            return 0;
-    } else {
-        return 0;               /* for now */
+    BDF_PropertyRec prop;
+
+    rc = FT_Get_BDF_Property(face, "ITALIC_ANGLE", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_INTEGER) {
+        return (prop.u.integer - 64 * 90) * (TWO_SIXTEENTH / 64);
     }
+
+    rc = FT_Get_BDF_Property(face, "SLANT", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcasecmp(prop.u.atom, "i") == 0 ||
+           strcasecmp(prop.u.atom, "s") == 0)
+            return -30 * TWO_SIXTEENTH;
+        else
+            return 0;
+    } else
+        return 0;               /* for now */
 }
 
 int
 faceFlags(FT_Face face)
 {
     int flags = 0;
+    BDF_PropertyRec prop;
     int rc;
 
-    if(isX11Font(face)) {
-        FontProperty prop;
-        if(faceWeight(face) >= 650)
-            flags |= FACE_BOLD;
-        rc = faceProperty(face, "SLANT", NULL, &prop);
-        if(rc > 0) {
-            if(strcasecmp(prop.atom, "i") == 0 ||
-               strcasecmp(prop.atom, "s") == 0)
-                flags |= FACE_ITALIC;
-        }
-    } else {
-        ;                       /* for now */
+    if(faceWeight(face) >= 650)
+        flags |= FACE_BOLD;
+    rc = FT_Get_BDF_Property(face, "SLANT", &prop);
+    if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
+        if(strcasecmp(prop.u.atom, "i") == 0 ||
+           strcasecmp(prop.u.atom, "s") == 0)
+            flags |= FACE_ITALIC;
     }
     return flags;
 }
 
+char *
+faceEncoding(FT_Face face)
+{
+    BDF_PropertyRec p1, p2;
+    char *e;
+    int rc;
+
+    rc = FT_Get_BDF_Property(face, "CHARSET_REGISTRY", &p1);
+    if(rc != 0 || p1.type != BDF_PROPERTY_TYPE_ATOM)
+        return NULL;
+    rc = FT_Get_BDF_Property(face, "CHARSET_ENCODING", &p2);
+    if(rc != 0 || p2.type != BDF_PROPERTY_TYPE_ATOM)
+        return NULL;
+
+    return sprintf_reliable("%s-%s", p1.u.atom, p2.u.atom);
+}
+    
 int
 degreesToFraction(int deg, int *num, int *den)
 {

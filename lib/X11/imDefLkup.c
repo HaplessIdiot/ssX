@@ -930,58 +930,36 @@ _Ximctsconvert(
        initial state.  */
     _XlcResetConverter(conv);
 
-    if (to && to_len) {
-	from_left = from_len;
-	to_left = to_len;
-	from_cnvlen = 0;
-	to_cnvlen = 0;
-	for (;;) {
-	    from_savelen = from_left;
-	    to_savelen = to_left;
-	    from_buf = &from[from_cnvlen];
-	    to_buf = &to[to_cnvlen];
-	    if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
-				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
-		*state = XLookupNone;
-		return 0;
-	    }
-	    from_cnvlen += (from_savelen - from_left);
-	    to_cnvlen += (to_savelen - to_left);
-	    if (from_left == 0) {
-		if (to_cnvlen > 0) {
-		    *state = XLookupChars;
-		} else {
-		    *state = XLookupNone;
-		}
-		return to_cnvlen;
-	    }
-	    if (to_left == 0)
-		break;
-	}
-    }
-
     from_left = from_len;
+    to_left = BUFSIZ;
     from_cnvlen = 0;
     to_cnvlen = 0;
     for (;;) {
-	from_savelen = from_left;
-	to_buf = scratchbuf;
-	to_left = BUFSIZ;
 	from_buf = &from[from_cnvlen];
+	from_savelen = from_left;
+	to_buf = &scratchbuf[to_cnvlen];
+	to_savelen = to_left;
 	if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
 				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
 	    *state = XLookupNone;
 	    return 0;
 	}
 	from_cnvlen += (from_savelen - from_left);
-	to_cnvlen += (BUFSIZ - to_left);
+	to_cnvlen += (to_savelen - to_left);
 	if (from_left == 0) {
-	    if (to_cnvlen > 0)
-		*state = XBufferOverflow;
-	    else
+	    if (!to_cnvlen) {
 		*state = XLookupNone;
-	    break;
+		return 0;
+           }
+	   break;
 	}
+    }
+
+    if (!to || !to_len || (to_len < to_cnvlen)) {
+       *state = XBufferOverflow;
+    } else {
+       memcpy(to, scratchbuf, to_cnvlen);
+       *state = XLookupChars;
     }
     return to_cnvlen;
 }
@@ -1032,59 +1010,37 @@ _Ximctstowcs(
     /* Reset the converter.  The CompoundText at 'from' starts in
        initial state.  */
     _XlcResetConverter(conv);
-
-    if (to && to_len) {
-	from_left = from_len;
-	to_left = to_len;
-	from_cnvlen = 0;
-	to_cnvlen = 0;
-	for (;;) {
-	    from_savelen = from_left;
-	    to_savelen = to_left;
-	    from_buf = &from[from_cnvlen];
-	    to_buf = &to[to_cnvlen];
-	    if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
-				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
-		*state = XLookupNone;
-		return 0;
-	    }
-	    from_cnvlen += (from_savelen - from_left);
-	    to_cnvlen += (to_savelen - to_left);
-	    if (from_left == 0) {
-		if (to_cnvlen > 0) {
-		    *state = XLookupChars;
-		} else {
-		    *state = XLookupNone;
-		}
-		return to_cnvlen;
-	    }
-	    if (to_left == 0)
-		break;
-	}
-    }
 		
     from_left = from_len;
+    to_left = BUFSIZ;
     from_cnvlen = 0;
     to_cnvlen = 0;
     for (;;) {
-	from_savelen = from_left;
-	to_buf = scratchbuf;
-	to_left = BUFSIZ * sizeof(wchar_t);
 	from_buf = &from[from_cnvlen];
+       from_savelen = from_left;
+       to_buf = &scratchbuf[to_cnvlen];
+       to_savelen = to_left;
 	if (_XlcConvert(conv, (XPointer *)&from_buf, &from_left,
 				 (XPointer *)&to_buf, &to_left, NULL, 0) < 0) {
 	    *state = XLookupNone;
 	    return 0;
 	}
 	from_cnvlen += (from_savelen - from_left);
-	to_cnvlen += (BUFSIZ * sizeof(wchar_t) - to_left);
+       to_cnvlen += (to_savelen - to_left);
 	if (from_left == 0) {
-	    if (to_cnvlen > 0)
-		*state = XBufferOverflow;
-	    else
+           if (!to_cnvlen){
 		*state = XLookupNone;
+               return 0;
+           }
 	    break;
 	}
+    }
+
+    if (!to || !to_len || (to_len < to_cnvlen)) {
+       *state = XBufferOverflow;
+    } else {
+       memcpy(to, scratchbuf, to_cnvlen * sizeof(wchar_t));
+       *state = XLookupChars;
     }
     return to_cnvlen;
 }
@@ -1125,15 +1081,14 @@ _XimProtoMbLookupString(
 
     if ((ev->type == KeyPress) && (ev->keycode == 0)) { /* Filter function */
 	if (!(info = ic->private.proto.commit_info)) {
-	    if (state)
-		*state = XLookupNone;
+	    *state = XLookupNone;
 	    return 0;
 	}
 
 	ret = im->methods->ctstombs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
-	    return 0;
+            return ret;
 	if (keysym && (info->keysym && *(info->keysym))) {
 	    *keysym = *(info->keysym);
 	    if (*state == XLookupChars)
@@ -1146,7 +1101,9 @@ _XimProtoMbLookupString(
     } else  if (ev->type == KeyPress) {
 	ret = _XimLookupMBText(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
-	    if (keysym && *keysym != NoSymbol)
+           if (ret > bytes)
+               *state = XBufferOverflow;
+           else if (keysym && *keysym != NoSymbol)
 		*state = XLookupBoth;
 	    else
 		*state = XLookupChars;
@@ -1187,15 +1144,14 @@ _XimProtoWcLookupString(
 
     if (ev->type == KeyPress && ev->keycode == 0) { /* Filter function */
 	if (!(info = ic->private.proto.commit_info)) {
-	    if (state)
-		*state = XLookupNone;
+           *state = XLookupNone;
 	    return 0;
 	}
 
 	ret = im->methods->ctstowcs((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
-	    return 0;
+           return ret;
 	if (keysym && (info->keysym && *(info->keysym))) {
 	    *keysym = *(info->keysym);
 	    if (*state == XLookupChars)
@@ -1208,7 +1164,9 @@ _XimProtoWcLookupString(
     } else if (ev->type == KeyPress) {
 	ret = _XimLookupWCText(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
-	    if (keysym && *keysym != NoSymbol)
+           if (ret > bytes)
+               *state = XBufferOverflow;
+           else if (keysym && *keysym != NoSymbol)
 		*state = XLookupBoth;
 	    else
 		*state = XLookupChars;
@@ -1249,15 +1207,14 @@ _XimProtoUtf8LookupString(
 
     if (ev->type == KeyPress && ev->keycode == 0) { /* Filter function */
 	if (!(info = ic->private.proto.commit_info)) {
-	    if (state)
-		*state = XLookupNone;
+           *state = XLookupNone;
 	    return 0;
 	}
 
 	ret = im->methods->ctstoutf8((XIM)im, info->string,
 			 	info->string_len, buffer, bytes, state);
 	if (*state == XBufferOverflow)
-	    return 0;
+           return ret;
 	if (keysym && (info->keysym && *(info->keysym))) {
 	    *keysym = *(info->keysym);
 	    if (*state == XLookupChars)
@@ -1270,7 +1227,9 @@ _XimProtoUtf8LookupString(
     } else if (ev->type == KeyPress) {
 	ret = _XimLookupUTF8Text(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
-	    if (keysym && *keysym != NoSymbol)
+           if (ret > bytes)
+               *state = XBufferOverflow;
+           else if (keysym && *keysym != NoSymbol)
 		*state = XLookupBoth;
 	    else
 		*state = XLookupChars;

@@ -30,12 +30,14 @@ extern int glyph_flag;
 extern int metrics_flag;
 extern int crop_flag;
 extern int bit_aligned_flag;
+extern int reencode_flag;
 
 #define FONT_SEGMENT_SIZE 128
 #define FONT_CODES 0x10000
 
 #define FACE_BOLD 1
 #define FACE_ITALIC 2
+#define FACE_SYMBOL 4
 
 #define STRIKE_BITMAP(s, i) \
   ((s)->bitmaps[(i)/FONT_SEGMENT_SIZE] ? \
@@ -155,20 +157,13 @@ int writeFile(char *filename, FontPtr);
 #define PROP_INTEGER 2
 #define PROP_CARDINAL 3
 
-typedef union _FontProperty {
-    char *atom;
-    long int32;
-    unsigned long card32;
-} FontProperty;
-
 char *sprintf_reliable(char *f, ...);
 char *vsprintf_reliable(char *f, va_list args);
 char *makeUTF16(char *);
 unsigned makeName(char*);
 int macTime(int *, unsigned *);
-int faceProperty(FT_Face face, char *name,
-                 int *type_return, FontProperty *prop_return);
 unsigned faceFoundry(FT_Face);
+char *faceEncoding(FT_Face);
 int faceFlags(FT_Face);
 int faceWeight(FT_Face);
 int faceWidth(FT_Face);

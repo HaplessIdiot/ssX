@@ -28,6 +28,10 @@ cell fonts (terminal fonts).
 .B \-b
 Write byte-aligned glyph data.  By default, bit-aligned data is
 written, which yields a smaller file size.
+.TP
+.B \-r
+Do not reencode fonts.  By default, fonts are reencoded to Unicode
+whenever possible.
 .TP 
 .BI \-g " n"
 Set the type of scalable glyphs that we write.  If
@@ -40,10 +44,10 @@ is recommended, but triggers a bug in current versions of
 .BR FreeType .
 If
 .I n
-is 2, a sufficiently high number of blank glyphs are written, which
-works with
+is 2 (the default), a sufficiently high number of blank glyphs are
+written, which works with
 .B FreeType
-but increases file size.  The default is 1.
+but increases file size.
 .TP 
 .BI \-m " n"
 Set the type of scalable metrics that we write.  If

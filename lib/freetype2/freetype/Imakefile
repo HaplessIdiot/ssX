@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.8 2002/06/20 08:26:17 keithp Exp $
+XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.9 2003/05/29 03:05:09 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -8,7 +8,6 @@ SUBDIRS=config cache internal
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src
 FREETYPEINC = $(FREETYPETOP)/include/freetype
-FREETYPESRCINC = $(FREETYPETOP)/src
 
 HEADERS= \
         freetype.h \
@@ -44,10 +43,7 @@ HEADERS= \
         t1tables.h \
         ttnameid.h \
         tttables.h \
-        tttags.h \
-	bdf.h \
-	bdfdrivr.h \
-	pcf.h
+        tttags.h
 
 BuildIncludes($(HEADERS),freetype2/freetype,../..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2/freetype,$(INSTINCFLAGS))
@@ -86,8 +82,5 @@ LinkSourceFile(t1tables.h,$(FREETYPEINC))
 LinkSourceFile(ttnameid.h,$(FREETYPEINC))
 LinkSourceFile(tttables.h,$(FREETYPEINC))
 LinkSourceFile(tttags.h,$(FREETYPEINC))
-LinkSourceFile(bdf.h,$(FREETYPESRCINC)/bdf)
-LinkSourceFile(bdfdrivr.h,$(FREETYPESRCINC)/bdf)
-LinkSourceFile(pcf.h,$(FREETYPESRCINC)/pcf)
 
 DependSubdirs($(SUBDIRS))
