@@ -74,6 +74,7 @@
 
 
 /* Forward definitions */
+static OptionInfoPtr	  GenericAvailableOptions(int chipid);
 static void       GenericIdentify(int);
 static Bool       GenericProbe(DriverPtr, int);
 static Bool       GenericPreInit(ScrnInfoPtr, int);
@@ -97,6 +98,7 @@ DriverRec VGA =
 #endif
     GenericIdentify,
     GenericProbe,
+    GenericAvailableOptions,
     NULL,
     0
 };
@@ -214,6 +216,12 @@ GenericIdentify(int flags)
         GenericChipsets);
 }
 
+static
+OptionInfoPtr
+GenericAvailableOptions(int chipid)
+{
+    return GenericOptions;
+}
 
 /*
  * This function is called once, at the start of the first server generation to
@@ -224,6 +232,7 @@ static Bool
 GenericProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
+    pciVideoPtr pPci;
     int numDevSections, numUsed;
     GDevPtr *devSections = NULL;
     int *usedChips;
