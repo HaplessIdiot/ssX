@@ -1,5 +1,6 @@
 /*
  * $XConsortium: fmalloc.c,v 1.6 94/04/17 20:59:43 kaleb Exp $
+ * $XFree86$
  *
 Copyright (c) 1992  X Consortium
 
