@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.19 2003/07/18 15:53:28 tsi Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.20 2003/07/27 12:34:25 herrb Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -337,10 +337,12 @@ struct addrlist *get_address_info (
 	    src = NULL;
 	}
 	freeaddrinfo(firstai);
+	break;
 #else
 	if (!get_inet_address (host, &hostinetaddr)) return NULL;
 	src = (char *) &hostinetaddr;
 	len = 4; /* sizeof inaddr.sin_addr, would fail on Cray */
+	break;
 #endif /* IPv6 */
 #else
 	return NULL;
