@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.0 1994/04/29 14:07:50 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -658,10 +658,12 @@ s3Init(mode)
    if (DAC_IS_BT485_SERIES) {
       s3OutBtReg(BT_COMMAND_REG_0, 0x00, 0x01 |
 		 (s3DAC8Bit ? 0x02 : 0) | (s3DACSyncOnGreen ? 0x08 : 0x00));
+#ifdef CLOCKDEBUG
       if (s3ClockDouble) {
 	 ErrorF("Setting clock doubler in s3Init(), freq = %.3f\n",
 		s3InfoRec.clock[mode->Clock] / 1000.0);
       }
+#endif
       /* Use Bt485 clock doubler - Bit 3 of Command Reg 3 */
       s3OutBtRegCom3(0xF7, (s3ClockDouble ? 0x08 : 0x00));
       s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */

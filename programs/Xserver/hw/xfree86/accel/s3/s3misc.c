@@ -1,4 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -340,7 +341,8 @@ s3EnterLeaveVT(enter, screen_idx)
    PixmapPtr pspix;
    ScreenPtr pScreen = s3savepScreen;
 
-   pspix = (PixmapPtr)pScreen->devPrivate;
+   if (!xf86Exiting && !xf86Resetting)
+      pspix = (PixmapPtr)pScreen->devPrivate;
 
    if (enter) {
       xf86MapDisplay(screen_idx, VGA_REGION);
