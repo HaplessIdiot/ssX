@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.99 2000/11/03 22:05:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.100 2000/11/14 16:54:51 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -897,7 +897,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 	}
     }
     
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
     return foundScreen;
 }
 

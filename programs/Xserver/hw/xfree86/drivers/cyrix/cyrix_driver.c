@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.11 2000/07/26 01:52:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.12 2000/10/09 23:37:13 alanh Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -299,7 +299,7 @@ static Bool
 CYRIXProbe(DriverPtr drv, int flags)
 {
     int i, numDevSections, numUsed, *usedChips;
-    GDevPtr *devSections;
+    GDevPtr *devSections = NULL;
     ScrnInfoPtr pScrn;
     Bool foundScreen = FALSE;
 
@@ -336,7 +336,8 @@ CYRIXProbe(DriverPtr drv, int flags)
     foundScreen = TRUE;
 
     /* Free it since we don't need that list after this */
-    xfree(devSections);
+    if (devSections)
+	xfree(devSections);
 
     if (!(flags & PROBE_DETECT)) {
       for (i=0; i < numUsed; i++) {
