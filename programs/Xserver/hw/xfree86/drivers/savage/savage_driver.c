@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.12 2001/03/08 17:12:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.13 2001/04/18 15:29:19 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -217,7 +217,9 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *vbeOptSymbols[] = {
+#if 0
     "vbeModeInit",
+#endif
     "VBESetVBEMode",
     NULL
 };
@@ -2379,7 +2381,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
         refresh = (mode->Clock * 1000) / (mode->HTotal * mode->VTotal);
 
-#if EXTENDED_DEBUG
+#ifdef EXTENDED_DEBUG
 	ErrorF( "Desired refresh rate = %dHz\n", refresh );
 #endif
 
