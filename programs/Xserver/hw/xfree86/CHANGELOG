@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 351. Fix XDarwin rootless crash when window resizing with complex bit
+      gravity (Greg Parker).
  350. Fix some incorrect mappings in the gbk-0.enc encodings file (#5313,
       Tomohiro KUBOTA).
  349. Fix C precedence bug in mfb (#5309, Tassia St. Germain).
@@ -15219,4 +15221,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2311 2002/09/26 08:18:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2312 2002/09/27 02:34:50 dawes Exp $
