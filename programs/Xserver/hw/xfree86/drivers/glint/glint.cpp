@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.3 2000/03/20 15:57:54 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.5 2000/05/02 17:15:32 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH GLINT __drivermansuffix__ "Version 4.0"  "XFree86"
@@ -18,6 +18,9 @@ is an XFree86 driver for 3Dlabs & Texas Instruments GLINT/Permedia based video
 cards. The driver is rather fully accelerated, and provides support for the
 following framebuffer depths: 8, 15 (may give bad results with FBDev support),
 16, 24 (32 bpp recommended, 24 bpp has problems), 30, and an 8+24 overlay mode.
+.B Glint permedia 3
+only support depth 8 (tested upto 1280x1024) and 15/16
+(ok upto 1024x768, partial screen overlap on the right at 1280x1024) and acceleration is not yet fully supported.
 .SH SUPPORTED HARDWARE
 The
 .B glint
@@ -107,6 +110,17 @@ If you have a card of the same name, turn this on.  Default: off.
 The driver will try to auto-detect the memory clock for all chips.  If it's not
 detected correctly, the actual value (in MHz) should be specified with this
 option.
+.SH Known problems with the Glint Permedia 3 chip
+The
+.B Glint Permedia 3
+chip is newly supported since the 4.0.1 release but is still work in progress.
+The driver supports already unaccelerated modes at depth 8 (tested upto
+1280x1024) and depth 15 and 16 (ok upto 1024x768)
+Depth 24 and Depth 15 and 16 with modes higher than 1024x768 are showing a
+partial overlap of the right part of the screen.
+Acceleration only support clipping pseudo acceleration.
+Dual head for the Appian J2000 board was working but got broken since 4.0b,
+since now the driver claims all chip of the board.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
