@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.13 2003/08/24 17:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.14 2003/09/09 03:20:36 dawes Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  *
@@ -61,12 +61,12 @@ void DoScanPci(int argc, char **argv, int i)
   OsInit();
 
   /*
-   * now we decrease verbosity and remember the value, in case a later
-   * -verbose on the command line increases it, because that is a 
-   * verbose flag for scanpci...
+   * The old verbosity processing that was here isn't useful anymore, but
+   * for compatibility purposes, ignore verbosity changes after the -scanpci
+   * flag.
    */
-  globalVerbose = xf86GetVerbosity();
-  xf86SetVerbosity(globalVerbose - 1);
+  globalVerbose = xf86Verbose;
+
   /*
    * next we process the arguments that are remaining on the command line,
    * so that things like the module path can be set there
@@ -75,14 +75,19 @@ void DoScanPci(int argc, char **argv, int i)
     if ((skip = ddxProcessArgument(argc, argv, j)))
 	j += (skip - 1);
   } 
+
   /*
-   * was the verbosity level increased?
+   * Was the verbosity level increased?  If so, set it back.
    */
-  if( (globalVerbose == 0) && (xf86GetVerbosity() > 0) )
-    scanpciVerbose = xf86GetVerbosity() - globalVerbose - 1;
-  else
-    scanpciVerbose = xf86GetVerbosity() - globalVerbose;
-  xf86SetVerbosity(globalVerbose);
+  if (xf86Verbose > globalVerbose)
+    xf86SetVerbosity(globalVerbose);
+
+  /*
+   * Setting scanpciVerbose to 0 will ensure that the output will go to
+   * stderr for all reasonable default stderr verbosity levels.
+   */
+  scanpciVerbose = 0;
+
   /*
    * now get the loader set up and load the scanpci module
    */
