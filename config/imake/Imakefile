@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.15 2002/05/31 16:31:20 dawes Exp $
+XCOMM $XFree86: Imakefile,v 3.16 2002/07/01 04:23:15 tsi Exp $
 
 XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
@@ -29,6 +29,7 @@ BOOTSTRAPDEFINES =
 
 DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) $(GCC_DEFINES) \
 	 $(CROSSCOMPILEDEFINES)
+EXTRAMANDEFS = -D__cpp__=CppCmd
 
 #if defined(MacIIArchitecture) || defined(SequentArchitecture) || defined(i386ScoArchitecture)
 XBSDLIB = /**/
