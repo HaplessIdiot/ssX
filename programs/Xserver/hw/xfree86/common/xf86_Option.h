@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.33 1995/10/22 01:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.34 1995/11/12 09:51:54 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -171,6 +171,7 @@ typedef struct {
 #define CLOCK_OPTION_STG1703    13 /* use STG1703 programmable clocks */
 #define CLOCK_OPTION_ICS5341    14 /* use ICS 5341 (ET4000W32p) */
 #define CLOCK_OPTION_TRIDENT    15 /* use programmable clock on TGUI */
+#define CLOCK_OPTION_ATT409     16 /* use ATT20C409 programmable clock */
 
 /*
  * Table to map option strings to tokens.
@@ -314,6 +315,8 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "stg1703",		CLOCK_OPTION_STG1703 },   /* STG1703 */
   { "ics5341",		CLOCK_OPTION_ICS5341 },   /* ET4000 W32p version of S3 SDAC/ICS5341 */
   { "tgui",		CLOCK_OPTION_TRIDENT },   /* Trident TGUI built-in */
+  { "att20c409",	CLOCK_OPTION_ATT409 },    /* ATT20C409 */
+  { "att20c499",	CLOCK_OPTION_ATT409 },    /* ATT20C499, 409 compatible */
   { "",			-1 },
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.8 1995/10/21 11:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.9 1995/11/12 09:52:14 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -159,11 +159,10 @@ unsigned char *mdiv, *ndiv;
       }
    }
    
-#if 0
+#if EXTENDED_DEBUG
    ErrorF("clk %d, setting to %1.6f MHz (m %d, n1 %d, n2 %d)\n", clk,
-	  ((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ
-	  ,best_m-2 ,best_n1-2 ,best_n2
-	  );
+	  ((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ,
+	  best_m-2, best_n1-2, best_n2);
 #endif
   
    *ndiv = (best_n1 - 2) | (best_n2 << 5);

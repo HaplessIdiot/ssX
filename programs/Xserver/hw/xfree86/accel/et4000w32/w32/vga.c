@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.18 1995/07/03 10:06:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.19 1995/10/21 11:33:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -503,7 +503,7 @@ vgaProbe()
                 /*
                  * This one depend on pixel multiplexing for 8bpp.
                  */
-                if (pMode->SynthClock >= nonMuxMaxClock) {
+                if (pMode->SynthClock > nonMuxMaxClock) {
                    pMode->SynthClock /= 2;
                    pMode->Flags |= V_DBLCLK;
                 }

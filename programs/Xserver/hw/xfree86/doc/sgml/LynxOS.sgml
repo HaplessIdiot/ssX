@@ -4,7 +4,7 @@
 
 <title> README for XFree86 3.1.2 on LynxOS
 <author>Thomas Mueller
-<date>12 July 1995
+<date>14 November 1995
 <toc>
 
 <sect>What and Where is XFree86?<p>
@@ -22,9 +22,7 @@ The sources for XFree86 are available by anonymous ftp from:
 <url url="ftp://ftp.XFree86.org/pub/XFree86/current"
 name="ftp.XFree86.org:/pub/XFree86/current">
  
-The XFree86 LynxOS port was developed using the `LynxOS AT 2.3 Beta
-4-10 1995 Integration'. There shouldn't be significant differences
-when using the final 2.3 release to build the system.
+The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'.
 
 XFree86 currently supports only LynxOS on the AT platform. The
 library and client part of XFree86 could although compile without
@@ -50,7 +48,7 @@ few little adjustments to your system:
   <descrip>
   <tag>LynxOS AT 2.3 </tag>
   <itemize>
-  <item> Use the CYGNUS GNU-C Compiler to build XFree86. With the 2.3 BETA
+  <item> Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS 2.3.0 
     you must execute the shell script <tt>/CYGNUS.bash</tt> to apply the
     necessary changes to your environment.
   <item> Create a shell script named /lib/cpp as follows:
@@ -59,7 +57,7 @@ few little adjustments to your system:
     /cygnus/94q4-lynxos-x86/lib/gcc-lib/i386-lynx/2.6-94q4/cpp \
 	      -traditional "$@"
   </verb></tscreen>
-    It is possible that the final release uses a different path for
+    It is possible that future releases use a different path for
     the CYGNUS compiler support programs. You may use
   <tscreen><verb>
 	gcc -v
@@ -120,12 +118,12 @@ few little adjustments to your system:
   match your operating system version. Change the definitions of
   OSMajorVersion, OSMinorVersion and OSTeenyVersion accordingly.
 
-  For LynxOS 2.3 the OptimizedCDebugFlags is set to `-O -m486'. Higher
-  optimization levels are not enabled by defaults since the CYGNUS
-  compiler of the BETA version had still some problems even with -O2.
-  You might try enabling -O2 for the final release 2.3 LynxOS, but if
-  the session manager xsm hangs on startup it would be a good idea to
-  switch back to -O.
+  For LynxOS 2.3.0 the OptimizedCDebugFlags is set to `-O -m486'. Higher
+  optimization levels are not enabled by default to work around a bug
+  in -O2 for GCC v2.6.x.
+  You might try enabling -O2 if your compiler does not have this bug,
+  but if the session manager xsm hangs on startup it would be a good 
+  idea to switch back to -O.
 
   You may now issue a
 
@@ -142,7 +140,7 @@ few little adjustments to your system:
 
   You must be logged in as super-user (root) when you invoke `make
   install'.  Be sure to set your environment to use the same compiler
-  (LynxOS 2.3, CYGNUS GNU-C) as you did during the `make World'. To
+  (LynxOS 2.3.0, CYGNUS GNU-C) as you did during the `make World'. To
   install the LinkKit use
 
   <tscreen><verb>
@@ -173,8 +171,8 @@ few little adjustments to your system:
   NPROC		number of tasks				 50	150
   NFILES	number of open files in system		100	250
   NINODES	number of incore inodes			(same value as NFILES)
-  QUANTUM	clock ticks until preemption		 64      10
-  CACHEBLKS	number of cache memory blocks		202	 > 4096
+  QUANTUM	clock ticks until preemption		 64      20
+  CACHEBLKS	number of cache memory blocks		202	 >= 4096
 </verb>
 
   The new values are those suggested by the LynxOS documentation for
@@ -251,7 +249,7 @@ few little adjustments to your system:
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
-  system you must first install groff-1.09. With LynxOS 2.3 it
+  system you must first install groff-1.09. With LynxOS 2.3.0 it
   compiles right out of the box (or better tar archive).
 
   XFree86 manual pages may be installed using
@@ -276,7 +274,7 @@ few little adjustments to your system:
      mv /tmp/tmpfile /usr/X11R6/man/whatis
   </verb></tscreen>
   
-  With LynxOS 2.3 you should include <tt>/usr/X11R6/man</tt> in the MANPATH
+  With LynxOS 2.3.0 you should include <tt>/usr/X11R6/man</tt> in the MANPATH
   environment variable.
 
   <tscreen>
@@ -298,7 +296,80 @@ few little adjustments to your system:
       done
   </verb></tscreen>
 
+<sect>Using XFree86 with Motif<p>
+
+  The Motif libraries shipped with LynxOS AT 2.3.0 can be used with
+  the XFree86 libraries. Follow the steps outlined below after
+  you have installed XFree86 and LynxOS Motif on your system.
+
+<sect1>Copy Motif files<p>
+
+  You must create symbolic links for the Motif libraries and 
+  utilites in the /usr/X11R6 directory tree.
+  <tscreen><verb>
+      ln -s /usr/bin/X11/uil /usr/X11R6/bin
+      ln -s /usr/lib/libUil.a /usr/X11R6/lib
+      ln -s /usr/lib/libMrm.a /usr/X11R6/lib
+      ln -s /usr/lib/X11/uid /usr/X11R6/lib/X11
+      ln -s /usr/include/Xm /usr/X11R6/include
+      ln -s /usr/include/Mrm /usr/X11R6/include
+      ln -s /usr/include/uil /usr/X11R6/include
+  </verb></tscreen>
+
+  The Motif imake-configuration files are part of the LynxOS X Window
+  package. They must be copied to the /usr/X11R6 directory tree.
+  <tscreen><verb>
+      cp /usr/lib/X11/config/Motif.* /usr/X11R6/lib/X11/config
+  </verb></tscreen>
+
+<sect1>Motif library patch<p>
+
+  The XFree86 libraries are compiled with the -mposix compiler option
+  while the Motif libraries shipped with LynxOS AT 2.3.0 are not. This
+  incompatibility will cause Motif XmFileSelection widgets to be linked 
+  with the wrong (i.e. POSIX) directory routines. To circumvent this 
+  problem apply the following patch to the library:
+  <tscreen><verb>
+      cp /usr/lib/libXm.a /usr/X11R6/lib
+      ar x /usr/X11R6/lib/libXm.a Xmos.o
+      ar x /lib/libc.a directory.s.o
+      ld -r -o x.o Xmos.o directory.s.o
+      mv x.o Xmos.o
+      ar r /usr/X11R6/lib/libXm.a Xmos.o
+  </verb></tscreen>
+  
+<sect1>X11R6 config file patch<p>
+
+  Edit <tt>/usr/X11R6/lib/X11/config/lynx.cf</tt> and change the definition
+  of <tt>HasMotif</tt>
+  <tscreen>
+    from
+  <verb>
+       #define HasMotif    NO
+  </verb>
+    to
+  <verb>
+       #define HasMotif    YES
+  </verb></tscreen>
+
+<sect1>Motif config file patch<p>
+
+  The file <tt>Motif.tmpl</tt> shipped with LynxOS Motif must be modified
+  to work with XFree86. In every reference to <tt>UnsharedLibReferences</tt>
+  the first argument must be changed
+  <tscreen>
+    from
+  <verb>
+       UnsharedLibReferences(<Something>LIB, Arg2, Arg3)
+  </verb>
+    to
+  <verb>
+       UnsharedLibReferences(<Something>, Arg2, Arg3)
+  </verb></tscreen>
+  Be sure to apply the change to the file copied to
+  <tt>/usr/X11R6/lib/X11/config</tt>.
+
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.1 1995/07/15 15:09:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.2 1995/07/15 16:06:28 dawes Exp $
 </verb>
 </article>

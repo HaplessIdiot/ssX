@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.59 1995/09/23 02:27:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.60 1995/11/12 09:51:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -209,9 +209,10 @@ static char *
 xf86ValidateFontPath(path)
      char *path;
 {
-  char *tmp_path, *out_pnt, *path_elem, *next, *p1;
+  char *tmp_path, *out_pnt, *path_elem, *next, *p1, *dir_elem;
   struct stat stat_buf;
   int flag;
+  int dirlen;
 
   tmp_path = (char *)xcalloc(1,strlen(path)+1);
   out_pnt = tmp_path;
@@ -220,18 +221,25 @@ xf86ValidateFontPath(path)
   while (next != NULL) {
     path_elem = xf86GetPathElem(&next);
     if (*path_elem == '/') {
-      flag = stat(path_elem, &stat_buf);
+      dir_elem = (char *)xcalloc(1, strlen(path_elem) + 1);
+      if (p1 = strchr(path_elem, ':'))
+	dirlen = p1 - path_elem;
+      else
+	dirlen = strlen(path_elem);
+      strncpy(dir_elem, path_elem, dirlen);
+      dir_elem[dirlen] = '\0';
+      flag = stat(dir_elem, &stat_buf);
       if (flag == 0)
 	if (!CHECK_TYPE(stat_buf.st_mode, S_IFDIR))
 	  flag = -1;
       if (flag != 0) {
-        ErrorF("Warning: The directory \"%s\" does not exist.\n", path_elem);
+        ErrorF("Warning: The directory \"%s\" does not exist.\n", dir_elem);
 	ErrorF("         Entry deleted from font path.\n");
 	continue;
       }
       else {
-	p1 = (char *)xalloc(strlen(path_elem)+strlen(DIR_FILE)+1);
-	strcpy(p1, path_elem);
+	p1 = (char *)xalloc(strlen(dir_elem)+strlen(DIR_FILE)+1);
+	strcpy(p1, dir_elem);
 	strcat(p1, DIR_FILE);
 	flag = stat(p1, &stat_buf);
 	if (flag == 0)
@@ -240,9 +248,9 @@ xf86ValidateFontPath(path)
 	xfree(p1);
 	if (flag != 0) {
 	  ErrorF("Warning: 'fonts.dir' not found (or not valid) in \"%s\".\n", 
-		 path_elem);
+		 dir_elem);
 	  ErrorF("          Entry deleted from font path.\n");
-	  ErrorF("          (Run 'mkfontdir' on \"%s\").\n", path_elem);
+	  ErrorF("          (Run 'mkfontdir' on \"%s\").\n", dir_elem);
 	  continue;
 	}
       }
@@ -256,6 +264,7 @@ xf86ValidateFontPath(path)
       *out_pnt++ = ',';
     strcat(out_pnt, path_elem);
     out_pnt += strlen(path_elem);
+    xfree(dir_elem);
   }
   return(tmp_path);
 }

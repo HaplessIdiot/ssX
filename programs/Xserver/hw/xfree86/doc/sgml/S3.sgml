@@ -397,6 +397,17 @@ chances are good it might work for you, too.
 
 	8/15/16/24 bpp
 
+<tag>S3 868, AT&amp;T 20C409 RAMDAC and Clockchip</tag>
+	<itemize>
+	<item> ELSA Winner 1000AVI
+	</itemize>
+
+	8/15/16/24 bpp
+
+	Note: pixelmultiplexing is not supported yet, therefore limited
+	maximum dot clock for 8bpp (currently 67.5MHz, should be changed
+	to 100MHz if pixmux isn't fixed prior to release)
+	
 <tag>S3 968, Ti3026 RAMDAC, Ti3026 Clockchip</tag>
 	<itemize>
 	<item> Elsa Winner 2000PRO/X
@@ -486,6 +497,9 @@ TI3026                                  ==> ClockChip "ti3026"
 IBM RGB 5xx                             ==> ClockChip "ibm_rgb5xx"
 
 Chrontel 8391                           ==> ClockChip "ch8391"
+
+AT&amp;T 20C409				==> ClockChip "att20c409"
+AT&amp;T 20C499 (untested)		==> ClockChip "att20c499"
 </verb></tscreen>
 
 <sect> Additional Notes
@@ -691,7 +705,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.27 1995/08/06 03:01:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.28 1995/08/13 09:45:10 dawes Exp $
 </verb>
 
 </article>

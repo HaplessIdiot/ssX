@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Tseng.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.2 1994/09/26 15:31:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.3 1995/01/28 15:47:37 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -85,17 +85,17 @@ int *Chipset;
 				case 0x03:
 					*Chipset = CHIP_ET4KW32I_B;
 					break;
-				case 0x04:
-					*Chipset = CHIP_ET4KW32I_C;
-					break;
 				case 0x05:
 					*Chipset = CHIP_ET4KW32P_B;
 					break;
 				case 0x06:
-					*Chipset = CHIP_ET4KW32P_C;
+					*Chipset = CHIP_ET4KW32P_D;
 					break;
 				case 0x07:
-					*Chipset = CHIP_ET4KW32P_D;
+					*Chipset = CHIP_ET4KW32P_C;
+					break;
+				case 0x0B:
+					*Chipset = CHIP_ET4KW32I_C;
 					break;
 				default:
 					Chip_data = ver >> 4;

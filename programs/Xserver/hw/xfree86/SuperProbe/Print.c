@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.21 1995/11/02 00:28:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.22 1995/11/12 09:50:59 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -200,6 +200,8 @@ struct RamDac_Name RamDac_Names[] =
 	{ "RGB528", 
 	  "IBM RGB528 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "STG1703", "STG1703 15/16/24-bit DAC w/pixel-mux,clock" },
+	{ "20C409", "AT&T 20C409 15/16/24-bit DAC" },
+	{ "20C499", "AT&T 20C499 15/16/24-bit DAC" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

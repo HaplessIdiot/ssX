@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.10 1995/06/29 13:27:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.11 1995/07/05 12:37:41 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -508,6 +508,8 @@ int *RamDac;
 
 	/*
 	 * ATT20C498 support - Harald Koenig
+	 * ATT20C409 and
+	 * ATT20C499 support - Dirk Hohndel
 	 *
 	 * The ATT498 has 4 direct registers accessed through standard
 	 * VGA registers 0x3C8, 0x3C9, 0x3C6, and 0x3C7 and 6 indirect
@@ -532,6 +534,16 @@ int *RamDac;
 	   SetComm(daccomm);
 	   Found = TRUE;
 	   *RamDac |= DAC_6_8_PROGRAM;
+	}
+	else if( (mir = 0x84) && (dir == 0x09) ) {
+	   SetComm(daccomm);
+	   *RamDac = DAC_ATT409 | DAC_6_8_PROGRAM;
+	   Found = TRUE;
+	}
+	else if( (mir = 0x84) && (dir == 0x99) ) {
+	   SetComm(daccomm);
+	   *RamDac = DAC_ATT499 | DAC_6_8_PROGRAM;
+	   Found = TRUE;
 	}
 
 	return(Found);
@@ -864,7 +876,8 @@ int *RamDac;
 		return;
 	    }
 	}
-	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
+	else if (  ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
+                 ||(SVGA_VENDOR(Chipset) == V_TSENG) ) 
 	{
 	    if (S3_GENDACCheck(RamDac))
 	    {

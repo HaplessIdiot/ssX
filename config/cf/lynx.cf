@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.2 1995/08/05 11:48:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.3 1995/11/02 00:26:40 dawes Exp $
 
 #define OSName			LynxOS AT
 #define OSVendor		(LYNX Real-Time Systems, Inc)
@@ -117,6 +117,23 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.2 1995/08/05 11:48:46 dawes 
 #endif
 #if OSMajorVersion == 2 && OSMinorVersion <= 2
 # define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#endif
+
+/* define HasMotif to YES for LynxOS AT 2.3 with Motif
+ * installed according to the notes in README.LynxOS.
+ */
+#ifndef HasMotif
+# define HasMotif 		NO
+#endif
+#if HasMotif
+# ifndef UseInstalledMotif
+#  define UseInstalledMotif	YES
+# endif
+# ifndef SaberProgramTarget
+#  define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs) /**/
+# endif
+# define LocalTmplFile		<Motif.tmpl>
+# define LocalRulesFile		<Motif.rules>
 #endif
 
 #define ManSourcePath   $(MANPATH)/cat

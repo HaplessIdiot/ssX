@@ -6,7 +6,7 @@
 <title> Information for W32 Chipset Users
 <author> Glenn G. Lai <it>&lt;glenn@cs.utexas.edu&gt;</it>,
 Dirk H. Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
-<date>October 20, 1995
+<date>November 13, 1995
 <toc>
  
 <!-- added this section name -->
@@ -76,9 +76,10 @@ the ICS5341 can produce. You can also add a
 Ramdac     "ics5341"
 </verb></tscreen>
 line, but the RAMDAC should be auto-probed correctly.  Even though the
-server currently accepts dot clocks up to 135MHz with the ICS5341 GENDAC,
-most boards won't work for clocks higher than 86MHz, where pixel multiplexing
-is required. I'm working on it. (DHH)
+server currently accepts any dot clock up to 135MHz with the ICS5341 GENDAC,
+most boards show a small band of clock values in the area between 86MHz and
+about 100MHz that don't work. This are usually is just a few MHz wide, higher
+clocks as well as lower clocks work just fine. I'm working on it. (DHH)
 
 <sect> Acknowledgments <p>
 Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me (GGL) the 1-M Mirage
@@ -92,7 +93,7 @@ Dynamite Power PCI to The XFree86 Project, that was used by DHH to extend
 the server.
 
 Koen Gadeyne (<it>kmg@barco.be</it>) wrote a patchkit for XFree86-3.1.1 that
-was partly integrated in this server.
+was partly integrated in this server and he continues to help develop it.
 
 Numerous testers have given me feedback for <tt>X_W32</tt> and later
 <tt>XF86_W32</tt>.  I
@@ -126,7 +127,7 @@ listed below:
 
 <verb>
 $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.5 1995/07/19 13:03:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.6 1995/10/21 11:43:29 dawes Exp $
 </verb>
 
 </article>

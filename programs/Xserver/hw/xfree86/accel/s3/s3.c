@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.101 1995/10/21 11:39:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.102 1995/11/12 09:51:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -53,6 +53,7 @@ extern int s3MaxClock;
 char s3Mbanks;
 int s3Weight = RGB8_PSEUDO;
 extern char *xf86VisualNames[];
+char *clockchip_probed = XCONFIG_GIVEN;
 
 extern s3VideoChipPtr s3Drivers[];
 
@@ -192,6 +193,7 @@ static SymTabRec s3DacTable[] = {
    { S3_TRIO32_DAC,	"s3_trio32" },
    { S3_TRIO64_DAC,	"s3_trio64" },
    { S3_TRIO64_DAC,	"s3_trio" },
+   { ATT20C409_DAC,	"att20c409" },
    { -1,		"" },
 };
 
@@ -206,6 +208,7 @@ static Bool ti3026ClockSelect();
 static Bool IBMRGBClockSelect();
 static void s3ProgramTi3025Clock();
 static Bool ch8391ClockSelect();
+static Bool att409ClockSelect();
 static Bool STG1703ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
@@ -464,6 +467,72 @@ s3ProbeSDAC(Bool quiet)
    return found;
 }
 
+static int
+S3ProbeATT4xx(Bool quiet)
+{
+	/*
+	 * the name might be misleading, this probes only for 409, 499, 498
+	 */
+	int dir, mir, olddaccomm;
+	int s3RamdacType = UNKNOWN_DAC;
+
+	xf86dactopel();
+	xf86dactocomm();
+	(void)inb(0x3C6);
+	mir = inb(0x3C6);
+	dir = inb(0x3C6);
+	xf86dactopel();
+
+	if ((mir == 0x84) && (dir == 0x98)) {
+		olddaccomm = xf86getdaccomm();
+		xf86setdaccomm(0x0a);
+		if (xf86getdaccomm() == 0) {
+			if( !quiet ) {
+				ErrorF("%s %s: Detected an ATT 22C498 RAMDAC\n",
+					XCONFIG_PROBED, s3InfoRec.name);
+			}
+			s3RamdacType = ATT22C498_DAC;
+		}else{
+			if( !quiet ) {
+				ErrorF("%s %s: Detected an ATT 20C498/21C498 RAMDAC\n",
+					XCONFIG_PROBED, s3InfoRec.name);
+			}
+			s3RamdacType = ATT498_DAC;
+		}
+		xf86setdaccomm(olddaccomm);
+	} else if ((mir = 0x84) && (dir == 0x09)) {
+		if( !quiet ) {
+			ErrorF("%s %s: Detected an ATT 20C409 RAMDAC\n",
+				XCONFIG_PROBED, s3InfoRec.name);
+		}
+		s3RamdacType = ATT20C409_DAC;
+		if (!OFLG_ISSET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions)) {
+			OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+			OFLG_SET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions);
+			clockchip_probed = XCONFIG_PROBED;
+		}
+	} else if ((mir = 0x84) && (dir == 0x99)) {
+		/*
+		 * according to the 21C499 data sheet it is fully compatible
+		 * with the 22C409. So we will only miss its new features
+		 * this way, but in theory things might work.
+		 */
+		if( !quiet ) {
+			ErrorF("%s %s: Detected an ATT 21C499 RAMDAC\n",
+				XCONFIG_PROBED, s3InfoRec.name);
+			ErrorF("%s %s:    support for this RAMDAC is untested. Please report to XFree86@XFree86.Org\n",
+				XCONFIG_PROBED, s3InfoRec.name);
+		}
+		s3RamdacType = ATT20C409_DAC;
+		if (!OFLG_ISSET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions)) {
+			OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+			OFLG_SET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions);
+			clockchip_probed = XCONFIG_PROBED;
+		}
+	}
+	return(s3RamdacType);
+}
+
 /*
  * s3Probe -- probe and initialize the hardware driver
  */
@@ -478,7 +547,6 @@ s3Probe()
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock;
-   char *clockchip_probed = XCONFIG_GIVEN;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -757,6 +825,10 @@ s3Probe()
 	    OFLG_SET(OPTION_ELSA_W1000PRO,  &s3InfoRec.options);
 	    if (s3ProbeSDAC(TRUE)) 
 	       continue;  /* SDAC detected, don't set ICD2061A clock */
+            S3ProbeATT4xx(TRUE);
+               /* if ATT20C498/09/99 is detected, the clockchip is 
+                * already set apropriately 
+                */
 	    break;
 	 case ELSA_WINNER_2000PRO:
 	    OFLG_SET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options);
@@ -1191,32 +1263,9 @@ s3Probe()
          outb(0x3C6, tmp);
       }
 
-      /* If it wasn't a Bt485, probe for the ATT 20C498 */
+      /* If it wasn't a Bt485, probe for the ATT 20C498/409/499 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 int dir, mir, olddaccomm;
-	 xf86dactopel();
-	 xf86dactocomm();
-	 (void)inb(0x3C6);
-	 mir = inb(0x3C6);
-	 dir = inb(0x3C6);
-	 xf86dactopel();
-
-	 if ((mir == 0x84) && (dir == 0x98)) {
-	    olddaccomm = xf86getdaccomm();
-	    xf86setdaccomm(0x0a);
-	    if (xf86getdaccomm() == 0) {
-	       ErrorF("%s %s: Detected an ATT 22C498 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = ATT22C498_DAC;
-	    }
-	    else{
-	       ErrorF("%s %s: Detected an ATT 20C498/21C498 RAMDAC\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       s3RamdacType = ATT498_DAC;
-	    }
-	    xf86setdaccomm(olddaccomm);
-	 }
-      }
+         s3RamdacType = S3ProbeATT4xx(FALSE);
 
       /* now, probe for the SC 15025/26 */
       if (s3RamdacType == UNKNOWN_DAC) {
@@ -1500,6 +1549,7 @@ s3Probe()
 	 break;
       case ATT20C498_DAC:
       case ATT22C498_DAC:
+      case ATT20C409_DAC:
       case STG1700_DAC:
       case STG1703_DAC:
       case S3_SDAC_DAC:
@@ -1593,6 +1643,7 @@ s3Probe()
 	    break;
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
+	 case ATT20C409_DAC:
 	 case STG1700_DAC:
 	 case STG1703_DAC:
 	 case S3_SDAC_DAC:
@@ -1665,6 +1716,9 @@ s3Probe()
 	 break;
       case TI3026_DAC:
 	 s3InfoRec.dacSpeed = 135000;  /* push 135MHz part to 175 ? */
+	 break;
+      case ATT20C409_DAC:
+	 s3InfoRec.dacSpeed = 135000;  /* use DacSpeed for the 170MHz part */
 	 break;
       case IBMRGB524_DAC:
       case IBMRGB525_DAC:
@@ -1762,8 +1816,9 @@ s3Probe()
 	S3_964_SERIES(s3ChipId)))
       s3Bt485PixMux = TRUE;
 
-   if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC || DAC_IS_TRIO) && 
-       (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)))
+   if (    (DAC_IS_ATT498 || DAC_IS_STG1700   || DAC_IS_SDAC || 
+            DAC_IS_TRIO   || DAC_IS_ATT20C409) 
+        && (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)))
       if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
    /* Set the pix-mux description based on the ramdac type */
@@ -1897,6 +1952,13 @@ s3Probe()
    if (DAC_IS_IBMRGB && 
        !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
       OFLG_SET(CLOCK_OPTION_IBMRGB, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      clockchip_probed = XCONFIG_PROBED;
+   }
+   }
+   if (DAC_IS_ATT20C409 && 
+       !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      OFLG_SET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions);
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
       clockchip_probed = XCONFIG_PROBED;
    }
@@ -2232,6 +2294,12 @@ s3Probe()
       else
 	 s3InfoRec.s3MClk = mclk;
       
+   } else if (OFLG_ISSET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = att409ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using ATT20C409/ATT20C499 programmable clock\n",
+		clockchip_probed, s3InfoRec.name);
+      numClocks = 3;
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -2280,6 +2348,8 @@ s3Probe()
 	 maxRawClock = 135000;
       } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
+      } else if (OFLG_ISSET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions)) {
+	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -2325,6 +2395,7 @@ s3Probe()
       break;
    case ATT20C498_DAC:
    case ATT22C498_DAC:
+   case ATT20C409_DAC:
    case STG1700_DAC:
    case STG1703_DAC:
    case S3_SDAC_DAC:
@@ -2871,6 +2942,7 @@ s3Probe()
 	    break;
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
+	 case ATT20C409_DAC:
 	 case STG1700_DAC:
 	 case STG1703_DAC:
 	 case S3_SDAC_DAC:
@@ -3080,7 +3152,7 @@ s3Probe()
       }
    }
 
-   if (DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700) {
+   if (DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_ATT20C409) {
       if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)
          s3DAC8Bit = TRUE;
    }
@@ -3354,6 +3426,8 @@ icd2061ClockSelect(freq)
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                 S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit2/3  */
                  outb(vgaCRReg, tmp | 0x06);   /* for synchronizing reasons (?) */
+	    else if (DAC_IS_TI3026) /* some Ti3026 are used with external clk*/
+		 outb(vgaCRReg, tmp | 0x00);   /* here the clk0 is used */
             else outb(vgaCRReg, tmp | 0x02); 
             usleep(150000);
 	 }
@@ -3582,6 +3656,43 @@ ch8391ClockSelect(freq)
 	    break;
 	 }
 	 (void) Chrontel8391SetClock(freq, 2); /* can't fail */
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 tmp = inb(vgaCRReg) & 0xf0;
+	 outb(vgaCRReg, tmp | 0x02);
+	 usleep(150000);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+static Bool
+att409ClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+   unsigned char tmp;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(freq);
+      break;
+   default:
+      {
+	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
+	 if (freq < 15000 || freq > 240000) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) out of range for ATT20C409",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+	 (void) Att409SetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 tmp = inb(vgaCRReg) & 0xf0;
 	 outb(vgaCRReg, tmp | 0x02);

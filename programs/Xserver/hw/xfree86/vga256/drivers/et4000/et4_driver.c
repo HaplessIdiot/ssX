@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.14 1995/10/21 11:45:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.15 1995/11/12 09:53:21 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -653,32 +653,29 @@ ET4000Restore(restore)
        pllctr = inb(0x3c9);
        ErrorF("--------  Old PLL Ctrl: 0x%2x\n",pllctr);
        pllctr = inb(0x3c6);
-       ErrorF("--------  New Cmd Reg: 0x%2x\n",pllctr);
+       ErrorF("--------  Old Cmd Reg: 0x%2x\n",pllctr);
 #endif
-       outb(0x3c8, 0x0e);                         /* index to PLL control */
-       outb(0x3c9, 0x22);     		    	  /* select f2 */
        outb(0x3c6, restore->gendac.cmd_reg);      /* Enhanced command register */
        outb(0x3c8, 2);                            /* index to f2 reg */
        outb(0x3c9, restore->gendac.PLL_f2_M);     /* f2 PLL M divider */
        outb(0x3c9, restore->gendac.PLL_f2_N);     /* f2 PLL N1/N2 divider */
-#if NOT_NEEDED
+
        outb(0x3c8, 0x0e);                         /* index to PLL control */
        outb(0x3c9, restore->gendac.PLL_ctrl);     /* PLL control */
        outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
        outb(0x3c7, restore->gendac.PLL_r_idx);    /* PLL read index */
-#endif
 
 #if EXTENDED_DEBUG
        outb(0x3c7,2);				/* clock f2 */
        m = inb(0x3c9);
        n = inb(0x3c9);
        ErrorF("--------  New Clock f2: %9d\n",
-              (14318 * m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
+              14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
        outb(0x3c7,0x0e);			/* pll ctrl */
        pllctr = inb(0x3c9);
        ErrorF("--------  New PLL Ctrl: 0x%2x\n",pllctr);
        pllctr = inb(0x3c6);
-       ErrorF("--------  New Cmd Reg: 0x%2x\n",pllctr);
+       ErrorF("--------  New Cmd Reg: 0x%2x\n\n",pllctr);
 #endif
        outb(vgaIOBase + 4, 0x31);
        outb(vgaIOBase + 5, i & ~0x40);
@@ -908,14 +905,6 @@ ET4000Init(mode)
     if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
     { 
       /* for pixmux: must use post-div of at least 4!
-       * note: maybe we could use MCLK/2 bit (hibit) 
-       * for pixmux, without changing clocks? 
-       *
-       * even though the ICS docs state that the post divide must be at 
-       * least for, the clk0 value is half the programmed value for
-       * color mode 8 (i.e., clock doubling), so we need to program the
-       * full value here which is not possible for clocks > 67.5MHz.
-       * Therefore we ignore this restriction.
        */
 
 #if EXTENDED_DEBUG
@@ -924,10 +913,10 @@ ET4000Init(mode)
        new->gendac.cmd_reg = 0;
        if (mode->Flags & V_PIXMUX)
        {
-         commonCalcClock(mode->SynthClock * 2, 1, 100000, vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock, 2, 100000, vga256InfoRec.dacSpeed*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
          new->gendac.cmd_reg = 0x10;                 /* set DAC to 16 -bit interface mode */
-         new->Misc = (new->Misc & 0xCF) | 0x30;   /* bits 5 and 4 set 8/16 bit DAC mode, 
+         new->Misc = (new->Misc & 0xCF) | 0x20;   /* bits 5 and 4 set 8/16 bit DAC mode, 
                                                      at the W32 side (DAC needs to be set, too)
                                                      here we set it to 16-bit mode */
 

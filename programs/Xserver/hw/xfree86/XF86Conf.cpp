@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.12 1995/03/18 10:52:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.13 1995/07/05 12:37:18 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -49,6 +49,8 @@ XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
     FontPath	MISCFONTPATH
+USE_75FONTS	DPI75USFONTPATH
+USE_100FONTS	DPI100USFONTPATH
 USE_T1FONTS	T1FONTPATH
 USE_SPFONTS	SPFONTPATH
 USE_75FONTS	DPI75FONTPATH
@@ -254,6 +256,9 @@ XCOMM    Clocks	 25.0  28.0  40.0   0.0  50.0  77.0  36.0  45.0
 XCOMM    Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
 XCOMM EndSection
 
+XCOMM Section "Device"
+XCOMM    Identifier	"Hercules mono"
+XCOMM EndSection
 
 XCOMM **********************************************************************
 XCOMM Screen sections
@@ -298,6 +303,16 @@ Section "Screen"
         Virtual     800 600
     EndSubsection
 EndSection
+
+XCOMM The hercules driver in the Mono and VGA16 servers
+XCOMM
+XCOMM Section "Screen"
+XCOMM     Driver	"mono"
+XCOMM     Device	"Hercules Mono"
+XCOMM     Monitor	"Generic Monitor"
+XCOMM     Subsection "Display"
+XCOMM     EndSubsection
+XCOMM EndSection
 
 XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)
 

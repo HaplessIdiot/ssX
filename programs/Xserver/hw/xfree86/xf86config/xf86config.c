@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.16 1995/08/05 11:54:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.17 1995/08/06 23:27:27 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -86,7 +86,7 @@
  * Define the following to 310 to remove references to XFree86 features that
  * have been added since XFree86 3.1 (e.g. DoubleScan modes).
  */
-#define XFREE86_VERSION 311
+#define XFREE86_VERSION 313
 
 /*
  * This is the filename of the temporary XF86Config file that is written
@@ -1491,6 +1491,8 @@ static char *XF86Config_firstchunk_text =
 "# \n"
 "\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/misc/\"\n"
+"    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled\"\n"
+"    FontPath	\"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled\"\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
@@ -1733,6 +1735,12 @@ static char *devicesection_text =
 "#    Option	\"dac_8_bit\"\n"
 "#    Clocks	 25.0  28.0  40.0   0.0  50.0  77.0  36.0  45.0\n"
 "#    Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0\n"
+"# EndSection\n"
+"\n"
+"# Sample Device for Hercules mono card:\n"
+"\n"
+"# Section \"Device\"\n"
+"#    Identifier \"Hercules mono\"\n"
 "# EndSection\n"
 "\n"
 "# Device configured by xf86config:\n"

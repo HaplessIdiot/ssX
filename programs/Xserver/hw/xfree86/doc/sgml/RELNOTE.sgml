@@ -4,12 +4,13 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2A (beta version)
  <author> The XFree86 Project, Inc
- <date>12 November 1995
+ <date>16 November 1995
 
 
 <abstract>
 
-This document describes what is new in the XFree86 beta version 3.1.2A
+This document describes the rationale and conditions of this beta
+release together with what is new in the XFree86 beta version 3.1.2A
 compared with the current release version 3.1.2.
 
 </abstract>
@@ -30,11 +31,15 @@ url="mailto:XFree86@XFree86.org">.
 
 The X servers included in beta releases have a built-in expiry date.
 The reason for this is to try to prevent them from persisting beyond the
-date of the next release.
+date of the next release.  The expiry date for 3.1.2A is 1 February 1996.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
 of this document is included with the distribution.
+
+The reasons for making this beta release publically available are to
+give it the widest possible testing, and also to make support for
+new hardware available.
 
 The XFree86 Project encourages people to test the beta releases, and to
 send us a report.  We need both success and failure reports, and we also
@@ -56,11 +61,14 @@ send these reports to our usual support address.
 	when the middle button is pressed in Microsoft-compatible mode.  If
 	you've had problems getting the middle button working on your mouse,
 	try this.
+  <item>Bitmap fontpath elements can have <tt>&dquot;:unscaled&dquot;</tt>
+	appended to prevent the fonts from being treated as scalable.  This
+	works with the fontserver (xfs) too.
 </itemize>
 <sect1> Trident driver (SVGA server)
 <p>
 <itemize>
-  <item>Support is included for the TGUI 9440.
+  <item>Preliminary support is included for the TGUI 9440.
 </itemize>
 <sect1> Cirrus driver (SVGA server)
 <p>
@@ -73,7 +81,8 @@ send these reports to our usual support address.
 <p>
 <itemize>
   <item>Preliminary support has been added for the ICS5342 RAMDAC/programmable
-	clock, which is used on the Stealth64 Graphics 2001 card.
+	clock, which is used on the Stealth64 Graphics 2001 card.  This
+	has had very little testing so far.
 	To enable this, add the following lines to the Device section of your
 	XF86Config file:
 	<tscreen><verb>
@@ -97,6 +106,9 @@ send these reports to our usual support address.
 	screen wrapping with version 3.1.2, please remove them when
 	testing this version.  If there are problems with the new
 	defaults, please report them to us.
+  <item>Prelminary support has been added for the AT&amp;T 20C409 and
+	AT&amp;T 20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
+	currently does not work.
 </itemize>
 <sect1> Mach32 server
 <p>
@@ -145,7 +157,7 @@ send these reports to our usual support address.
 <p>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.0 1995/11/12 09:52:35 dawes Exp $
 </verb>
 
 </article>

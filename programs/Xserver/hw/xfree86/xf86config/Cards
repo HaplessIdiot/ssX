@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.18 1995/09/17 06:32:14 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.19 1995/10/21 11:46:57 dawes Exp $
 
 # Cirrus Logic
 
@@ -270,6 +270,12 @@ CHIPSET S3-868
 SERVER S3
 RAMDAC att20c498
 
+NAME S3-868 with ATT 20C409
+CHIPSET S3-868
+SERVER S3
+RAMDAC att20c409
+NOCLOCKPROBE
+
 NAME Number Nine FX Motion 531
 CLOCKCHIP icd2061a
 SEE S3-868 with ATT 20C498 or 21C498
@@ -346,8 +352,11 @@ SEE S3-864 with ATT 20C498 or 21C498
 NAME Miro Crystal 20SD with S3-SDAC (BIOS 3.xx)
 SEE S3-864 with SDAC (86C716)
 
-NAME Elsa Winner 1000AVI
+NAME Elsa Winner 1000AVI (SDAC version)
 SEE S3-868 with SDAC (86C716)
+
+NAME Elsa Winner 1000AVI (AT&T 20C409 version)
+SEE S3-868 with ATT 20C409
 
 NAME Diamond Stealth Video DRAM / Stealth64 Video 2120/2200
 SEE S3-868 with SDAC (86C716)
@@ -399,10 +408,17 @@ CHIPSET S3-968
 LINE    #Option "slow_vram"
 SEE S3-968 (generic)
 
-NAME Diamond Stealth 64 Video VRAM / Stealth64 Video 3240/3400
+NAME Diamond Stealth 64 Video VRAM / Stealth64 Video 3240/3400 (with TI RAMDAC)
 CHIPSET S3-968
 LINE    #Option "slow_vram"
 LINE    #DacSpeed 220
+SEE S3-968 (generic)
+
+NAME Diamond Stealth64 Video 3240/3400 (with IBM RAMDAC)
+CHIPSET S3-968
+LINE    #Option "slow_vram"
+RAMDAC ibm_rgb524
+LINE    DacSpeed 220
 SEE S3-968 (generic)
 
 NAME Genoa VideoBlitz III AV
@@ -643,9 +659,18 @@ NAME ATI Ultra Plus
 CHIPSET ATI-Mach32
 SERVER Mach32
 
-NAME ATI Expression
+NAME ATI Xpression
 CHIPSET ATI-Mach64
 SERVER Mach64
+
+NAME ATI Mach64 with AT&T 20C408 RAMDAC
+CHIPSET ATI-Mach64
+SERVER Mach64
+LINE     Option "program_clocks"
+NOCLOCKPROBE
+
+NAME ATI Xpression with AT&T 20C408 RAMDAC
+SEE ATI Mach64 with AT&T 20C408 RAMDAC
 
 NAME ATI GUP Turbo
 CHIPSET ATI-Mach64

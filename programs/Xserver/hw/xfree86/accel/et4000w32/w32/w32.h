@@ -1,5 +1,5 @@
 /* $XConsortium: w32.h,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.5 1995/01/28 15:51:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.6 1995/10/21 11:33:52 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -190,10 +190,18 @@ void figure(char*);
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1);}
 
 
-#define WAIT_ACL \
-{while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2);}
-
-
+/* some bug can cause a hang forever for some reason on Linux 1.3.X kernels. 
+ * Wait max 30 msec, then go on anyway 
+ */
+  #define WAIT_ACL \
+{ int cnt=30; \
+  while ((*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) && (--cnt)) \
+  { \
+    usleep(1000); \
+  } \
+  if (!(cnt)) ErrorF("W32 Accelerator: WAIT_ACL timeout. Skipped.\n"); \
+}
+  
 #define WAIT_XY \
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
 

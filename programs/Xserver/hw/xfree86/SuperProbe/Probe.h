@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.20 1995/11/02 00:28:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.21 1995/11/12 09:51:00 dawes Exp $ */
 
 /*
  * Includes
@@ -311,8 +311,10 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_IBMRGB525	35	/* IBM RGB525 RAMDAC */
 #define DAC_IBMRGB528	36	/* IBM RGB528 RAMDAC */
 #define DAC_STG1703	37	/* STG 1703 15/16/24-bit DAC w/pixel-mux w/dual PLL */
+#define DAC_ATT409	38	/* AT&T 20C409 15/16/24-bit DAC */
+#define DAC_ATT499	39	/* AT&T 20C499 15/16/24-bit DAC */
 
-#define DAC_MAX		DAC_STG1703	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ATT499	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */

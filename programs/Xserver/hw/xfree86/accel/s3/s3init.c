@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.75 1995/07/19 12:42:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.76 1995/07/21 14:39:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -172,7 +172,7 @@ s3CleanUp(void)
    /*
     * Restore AT&T 20C498 command register.
     */
-   if (DAC_IS_ATT498) {
+   if (DAC_IS_ATT498 || DAC_IS_ATT20C409) {
       xf86setdaccomm(oldS3->ATT498);
    }
 
@@ -542,7 +542,7 @@ s3Init(mode)
       /*
        * Save AT&T 20C498 command register.
        */
-      if (DAC_IS_ATT498) {
+      if (DAC_IS_ATT498 || DAC_IS_ATT20C409) {
          oldS3->ATT498 = xf86getdaccomm();
       }
 
@@ -1002,9 +1002,9 @@ s3Init(mode)
    }
 
    /*
-    * Set AT&T 20C498 command register to 8-bit mode if desired.
+    * Set AT&T 20C498/409/499 command register to 8-bit mode if desired.
     */
-   if (DAC_IS_ATT498) {
+   if (DAC_IS_ATT498 || DAC_IS_ATT20C409) {
       if (s3DAC8Bit) {
          xf86setdaccommbit(0x02);
       } else {
@@ -1064,7 +1064,7 @@ s3Init(mode)
       UNLOCK_SYS_REGS;
    }
 
-   if (DAC_IS_ATT498) {
+   if (DAC_IS_ATT498 || DAC_IS_ATT20C409) {
       outb(0x3C4, 1);
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
@@ -1085,6 +1085,9 @@ s3Init(mode)
 	 }
 	 else daccomm = 0x20;
 
+#ifdef EXTENDED_DEBUG
+	 ErrorF("Putting AT&T 2xC4[09][89] RAMDAC into pixmux\n");
+#endif
 	 xf86setdaccomm( (tmp&0x02) | daccomm );  /* set mode 2,
 						  pixel multiplexing on */
 

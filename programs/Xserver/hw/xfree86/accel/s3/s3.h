@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.25 1995/07/16 09:13:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.26 1995/07/21 14:39:53 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -193,6 +193,7 @@ extern Bool s3ATT498PixMux;
 #define STG1703_DAC       19
 #define SC1148x_M2_DAC    20
 #define SC1148x_M3_DAC    21
+#define ATT20C409_DAC     22
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -220,6 +221,7 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_SC1148x_M2	(s3RamdacType == SC1148x_M2_DAC)
 #define DAC_IS_SC1148x_M3	(s3RamdacType == SC1148x_M3_DAC)
 #define DAC_IS_SC1148x_SERIES	(DAC_IS_SC1148x_M2 || DAC_IS_SC1148x_M3)
+#define DAC_IS_ATT20C409	(s3RamdacType == ATT20C409_DAC)
 
 /* Vendor BIOS types */
 
