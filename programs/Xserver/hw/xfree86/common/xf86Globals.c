@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.37 2002/09/16 18:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.38 2003/01/15 03:29:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -142,7 +142,9 @@ xf86InfoRec xf86Info = {
 	TRUE,		/* pmFlag */
 	LogNone,	/* syncLog */
 	0,		/* estimateSizesAggressively */
-	FALSE           /* kbdCustomKeycodes */
+	FALSE,		/* kbdCustomKeycodes */
+	FALSE,		/* disableRandR */
+	X_DEFAULT	/* randRFrom */
 };
 const char *xf86ConfigFile = NULL;
 const char *xf86InputDeviceList = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.34 2002/09/18 16:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.35 2003/01/15 03:29:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -139,6 +139,8 @@ typedef struct {
     Log			log;
     int			estimateSizesAggressively;
     Bool		kbdCustomKeycodes;
+    Bool		disableRandR;
+    MessageType		randRFrom;
     struct {
 	Bool		disabled;		/* enable/disable deactivating
 						 * grabs or closing the

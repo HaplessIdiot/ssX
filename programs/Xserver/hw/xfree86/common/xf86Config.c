@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.265 2002/11/20 04:04:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.266 2003/01/15 03:29:04 dawes Exp $ */
 
 
 /*
@@ -708,7 +708,8 @@ typedef enum {
     FLAG_ALLOW_CLOSEDOWN_GRABS,
     FLAG_LOG,
     FLAG_RENDER_COLORMAP_MODE,
-    FLAG_HANDLE_SPECIAL_KEYS
+    FLAG_HANDLE_SPECIAL_KEYS,
+    FLAG_RANDR
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -770,10 +771,12 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_LOG,			"Log",				OPTV_STRING,
 	{0}, FALSE },
-  { FLAG_RENDER_COLORMAP_MODE, "RenderColormapMode",            OPTV_STRING,
+  { FLAG_RENDER_COLORMAP_MODE,	"RenderColormapMode",		OPTV_STRING,
         {0}, FALSE },
-  { FLAG_HANDLE_SPECIAL_KEYS,  "HandleSpecialKeys",             OPTV_STRING,
+  { FLAG_HANDLE_SPECIAL_KEYS,	"HandleSpecialKeys",		OPTV_STRING,
         {0}, FALSE },
+  { FLAG_RANDR,			"RandR",			OPTV_BOOLEAN,
+	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE },
 };
@@ -940,6 +943,14 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	    }
         }
     }
+#ifdef RANDR
+    xf86Info.disableRandR = FALSE;
+    xf86Info.randRFrom = X_DEFAULT;
+    if (xf86GetOptValBool(FlagOptions, FLAG_RANDR, &value)) {
+	xf86Info.disableRandR = !value;
+	xf86Info.randRFrom = X_CONFIG;
+    }
+#endif
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
     if (i >= 0)

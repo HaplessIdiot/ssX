@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.165 2002/10/11 01:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.167 2002/12/12 18:29:10 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -267,6 +267,7 @@ Bool xf86GetModInDevAllowNonLocal(void);
 Bool xf86GetModInDevEnabled(void);
 Bool xf86GetAllowMouseOpenFail(void);
 Bool xf86IsPc98(void);
+void xf86DisableRandR(void);
 CARD32 xf86GetVersion(void);
 CARD32 xf86GetModuleVersion(pointer module);
 pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.123 2002/07/30 18:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.126 2002/09/29 23:54:33 keithp Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2360,6 +2360,13 @@ xf86IsPc98()
 #else
     return FALSE;
 #endif
+}
+
+void
+xf86DisableRandR()
+{
+    xf86Info.disableRandR = TRUE;
+    xf86Info.randRFrom = X_PROBED;
 }
 
 CARD32

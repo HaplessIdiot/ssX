@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.195 2003/01/28 22:41:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.196 2003/01/31 20:46:46 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -863,7 +863,10 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 #endif
 #ifdef RANDR
-    xf86RandRInit (screenInfo.screens[scr_index]);
+    if (!xf86Info.disableRandR)
+	xf86RandRInit (screenInfo.screens[scr_index]);
+    xf86Msg(xf86Info.randRFrom, "RandR %s\n",
+	    xf86Info.disableRandR ? "disabled" : "enabled");
 #endif
 #ifdef NOT_USED
       /*
