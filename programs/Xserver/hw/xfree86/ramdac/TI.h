@@ -15,7 +15,7 @@ unsigned long TIramdac3030CalculateMNPForClock(unsigned long RefClock,
     unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
     unsigned long MaxClock, unsigned long *rM, unsigned long *rN,
     unsigned long *rP);
-void TIramdac3030HWCursorInit(xf86CursorInfoPtr infoPtr);
+void TIramdacHWCursorInit(xf86CursorInfoPtr infoPtr);
 
 #define TI3030_RAMDAC		(VENDOR_TI << 16) | 0x00
 #define TI3026_RAMDAC		(VENDOR_TI << 16) | 0x01

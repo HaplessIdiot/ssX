@@ -157,6 +157,7 @@ TIramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 
     /* only restore clocks if they were valid to begin with */
 
+    if (ramdacReg->DacRegs[TIDAC_PIXEL_VALID]) {
     /* Reset pixel clock */
     (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
     (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_pixel_data, 0, 0x3c);
@@ -180,7 +181,9 @@ TIramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 			"Pixel clock setup timed out\n");
 	return;
     }
+    }
 
+    if (ramdacReg->DacRegs[TIDAC_LOOP_VALID]) {
     /* Reset loop clock */
     (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_addr, 0, 0x22);
     (*ramdacPtr->WriteDAC)(pScrn, TIDAC_pll_loop_data, 0, 0x70);
@@ -203,6 +206,7 @@ TIramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 			"Loop clock setup timed out\n");
 	    return;
+    }
     }
 
     /* restore palette */
@@ -275,7 +279,7 @@ TIramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 }
 
 RamDacHelperRecPtr
-TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRecPtr ramdacPtr*/)
+TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
     RamDacHelperRecPtr ramdacHelperPtr = NULL;
@@ -332,11 +336,11 @@ TIramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     switch (TIramdac_ID) {
 	case TI3030_RAMDAC:
  	    ramdacHelperPtr->SetBpp = TIramdac3030SetBpp;
-    	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
+    	    ramdacHelperPtr->HWCursorInit = TIramdacHWCursorInit;
 	    break;
 	case TI3026_RAMDAC:
  	    ramdacHelperPtr->SetBpp = TIramdac3026SetBpp;
-    	    ramdacHelperPtr->HWCursorInit = TIramdac3030HWCursorInit;
+    	    ramdacHelperPtr->HWCursorInit = TIramdacHWCursorInit;
 	    break;
     }
     ramdacPtr->RamDacType = TIramdac_ID;
@@ -582,7 +586,7 @@ TIramdac3030SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 }
 
 void 
-TIramdac3030ShowCursor(ScrnInfoPtr pScrn)
+TIramdacShowCursor(ScrnInfoPtr pScrn)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
@@ -591,7 +595,7 @@ TIramdac3030ShowCursor(ScrnInfoPtr pScrn)
 }
 
 void
-TIramdac3030HideCursor(ScrnInfoPtr pScrn)
+TIramdacHideCursor(ScrnInfoPtr pScrn)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
@@ -600,7 +604,7 @@ TIramdac3030HideCursor(ScrnInfoPtr pScrn)
 }
 
 void
-TIramdac3030SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+TIramdacSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
@@ -614,7 +618,7 @@ TIramdac3030SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 }
 
 void
-TIramdac3030SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+TIramdacSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
@@ -632,7 +636,7 @@ TIramdac3030SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 }
 
 void 
-TIramdac3030LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
+TIramdacLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
     int i = 1024;
@@ -649,25 +653,25 @@ TIramdac3030LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 }
 
 static Bool 
-TIramdac3030UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
+TIramdacUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
     return TRUE;
 }
 
 void
-TIramdac3030HWCursorInit(xf86CursorInfoPtr infoPtr)
+TIramdacHWCursorInit(xf86CursorInfoPtr infoPtr)
 {
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
     infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 		     HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 		     HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
-    infoPtr->SetCursorColors = TIramdac3030SetCursorColors;
-    infoPtr->SetCursorPosition = TIramdac3030SetCursorPosition;
-    infoPtr->LoadCursorImage = TIramdac3030LoadCursorImage;
-    infoPtr->HideCursor = TIramdac3030HideCursor;
-    infoPtr->ShowCursor = TIramdac3030ShowCursor;
-    infoPtr->UseHWCursor = TIramdac3030UseHWCursor;
+    infoPtr->SetCursorColors = TIramdacSetCursorColors;
+    infoPtr->SetCursorPosition = TIramdacSetCursorPosition;
+    infoPtr->LoadCursorImage = TIramdacLoadCursorImage;
+    infoPtr->HideCursor = TIramdacHideCursor;
+    infoPtr->ShowCursor = TIramdacShowCursor;
+    infoPtr->UseHWCursor = TIramdacUseHWCursor;
 }
 
 void TIramdacLoadPalette(
