@@ -28,7 +28,7 @@ Author:  Bob Scheifler, MIT X Consortium
 ********************************************************/
 
 /* $XConsortium: mifillarc.c,v 5.17 94/04/17 20:27:33 keith Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.0 1994/11/19 07:59:48 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -50,15 +50,6 @@ Author:  Bob Scheifler, MIT X Consortium
 
 #define Dsin(d)	sin((double)d*(M_PI/11520.0))
 #define Dcos(d)	cos((double)d*(M_PI/11520.0))
-
-/* could use 64-bit integers */
-typedef struct _miFillArcD {
-    int xorg, yorg;
-    int y;
-    int dx, dy;
-    double e;
-    double ym, yk, xm, xk;
-} miFillArcDRec;
 
 void
 miFillArcSetup(arc, info)
