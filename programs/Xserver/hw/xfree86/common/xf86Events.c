@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.149 2003/04/03 16:20:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.150 2003/06/09 19:59:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -487,13 +487,12 @@ xf86PostKbdEvent(unsigned key)
       case 0x73:        scanCode = KEY_RCtrl;	break;  /* not needed */
       }
     } else
-#else /* i386 && SVR4 */
+#endif /* i386 && SVR4 */
     {
       switch (scanCode) {
       case 0x5c:        scanCode = KEY_KP_Equal; break; /* Keypad Equal */
       }
     }
-#endif  /* !(i386 && SVR4) */
   }
 
   else if (
