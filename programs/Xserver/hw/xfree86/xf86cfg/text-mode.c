@@ -26,13 +26,17 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.14tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.15 2002/04/10 16:20:07 tsi Exp $
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _SCO_DS
+#include <curses.h>
+#else
 #include <ncurses.h>
+#endif
 #include <ctype.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XKBstr.h>
@@ -322,6 +326,9 @@ WriteXF86Config(void)
 }
 
 static char *protocols[] = {
+#ifdef SCO
+    "OsMouse",
+#endif
     "Auto",
     "Microsoft",
     "PS/2",
@@ -2558,7 +2565,7 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 	   int item_no, char **items, char *label1, char *label2, int choice)
 {
     int i, x, y, cur_x, cur_y, box_x, box_y, key = 0, button = 0,
-	scroll = 0, max_choice, nscroll, max_scroll, x1, x2, l1len, l2len;
+	scrlx = 0, max_choice, nscroll, max_scroll, x1, x2, l1len, l2len;
     WINDOW *dialog, *menu;
 
     max_choice = MIN(menu_height, item_no);
@@ -2595,13 +2602,13 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
     item_x = 3;
 
     if (choice > menu_height) {
-	scroll = MIN(max_scroll, choice);
-	choice -= scroll;
+	scrlx = MIN(max_scroll, choice);
+	choice -= scrlx;
     }
 
     for (i = 0; i < max_choice; i++)
-	PaintItem(menu, items[i + scroll], i, i == choice);
-    PaintScroller(menu, scroll + choice, item_no, menu_height);
+	PaintItem(menu, items[i + scrlx], i, i == choice);
+    PaintScroller(menu, scrlx + choice, item_no, menu_height);
     wnoutrefresh(menu);
 
     x = width / 2 - 11;
@@ -2617,20 +2624,20 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 
 	if (menu_height > 1 && key == KEY_PPAGE) {
 	    if (!choice) {
-		if (scroll) {
+		if (scrlx) {
 		    /* Scroll menu down */
 		    getyx(dialog, cur_y, cur_x);
 
-		    nscroll = max_choice > scroll ? -scroll : -max_choice;
+		    nscroll = max_choice > scrlx ? -scrlx : -max_choice;
 		    scrollok(menu, TRUE);
 		    wscrl(menu, nscroll);
 		    scrollok(menu, FALSE);
 
-		    PaintItem(menu, items[i = scroll + nscroll], 0, TRUE);
-		    for (++i; i <= scroll; i++)
-			PaintItem(menu, items[i], i - (scroll + nscroll), FALSE);
-		    scroll += nscroll;
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    PaintItem(menu, items[i = scrlx + nscroll], 0, TRUE);
+		    for (++i; i <= scrlx; i++)
+			PaintItem(menu, items[i], i - (scrlx + nscroll), FALSE);
+		    scrlx += nscroll;
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2640,21 +2647,21 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 	}
 	else if (menu_height > 1 && key == KEY_NPAGE) {
 	    if (choice == max_choice - 1) {
-		if (scroll < max_scroll) {
+		if (scrlx < max_scroll) {
 		    /* Scroll menu up */
 		    getyx(dialog, cur_y, cur_x);
 
-		    nscroll = (scroll + max_choice > max_scroll ?
-			       max_scroll : scroll + max_choice) - scroll;
+		    nscroll = (scrlx + max_choice > max_scroll ?
+			       max_scroll : scrlx + max_choice) - scrlx;
 		    scrollok(menu, TRUE);
 		    wscrl(menu, nscroll);
 		    scrollok(menu, FALSE);
 
-		    scroll += nscroll;
+		    scrlx += nscroll;
 		    for (i = 0; i < max_choice - 1; i++)
-			PaintItem(menu, items[i + scroll], i, FALSE);
-		    PaintItem(menu, items[i + scroll], max_choice - 1, TRUE);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+			PaintItem(menu, items[i + scrlx], i, FALSE);
+		    PaintItem(menu, items[i + scrlx], max_choice - 1, TRUE);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2664,18 +2671,18 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 	}
 	else if (key == KEY_UP) {
 	    if (!choice) {
-		if (scroll) {
+		if (scrlx) {
 		    /* Scroll menu down */
 		    getyx(dialog, cur_y, cur_x);
 		    if (menu_height > 1) {
-			PaintItem(menu, items[scroll], 0, FALSE);
+			PaintItem(menu, items[scrlx], 0, FALSE);
 			scrollok(menu, TRUE);
 			wscrl(menu, - 1);
 			scrollok(menu, FALSE);
 		    }
-		    scroll--;
-		    PaintItem(menu, items[scroll], 0, TRUE);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    scrlx--;
+		    PaintItem(menu, items[scrlx], 0, TRUE);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2686,18 +2693,18 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 	}
 	else if (key == KEY_DOWN) {
 	    if (choice == max_choice - 1) {
-		if (scroll + choice < item_no - 1) {
+		if (scrlx + choice < item_no - 1) {
 		    /* Scroll menu up */
 		    getyx(dialog, cur_y, cur_x);
 		    if (menu_height > 1) {
-			PaintItem(menu, items[scroll + max_choice - 1], max_choice - 1, FALSE);
+			PaintItem(menu, items[scrlx + max_choice - 1], max_choice - 1, FALSE);
 			scrollok(menu, TRUE);
 			scroll(menu);
 			scrollok(menu, FALSE);
 		    }
-		    scroll++;
-		    PaintItem(menu, items[scroll + max_choice - 1], max_choice - 1, TRUE);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    scrlx++;
+		    PaintItem(menu, items[scrlx + max_choice - 1], max_choice - 1, TRUE);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2709,11 +2716,11 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 
 	if (i != choice) {
 	    getyx(dialog, cur_y, cur_x);
-	    PaintItem(menu, items[scroll + choice], choice, FALSE);
+	    PaintItem(menu, items[scrlx + choice], choice, FALSE);
 
 	    choice = i;
-	    PaintItem(menu, items[scroll + choice], choice, TRUE);
-	    PaintScroller(menu, scroll + choice, item_no, menu_height);
+	    PaintItem(menu, items[scrlx + choice], choice, TRUE);
+	    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 	    wnoutrefresh(menu);
 	    wmove(dialog, cur_y, cur_x);
 	    wrefresh(dialog);
@@ -2740,32 +2747,32 @@ DialogMenu(char *title, char *prompt, int height, int width, int menu_height,
 	    case '\r':
 	    case '\n':
 		delwin(dialog);
-		return (!button ? scroll + choice : -1);
+		return (!button ? scrlx + choice : -1);
 	    default:
-		for (i = scroll + choice + 1; i < item_no; i++)
+		for (i = scrlx + choice + 1; i < item_no; i++)
 		    if (toupper(items[i][0]) == toupper(key))
 			break;
 		if (i == item_no) {
-		    for (i = 0; i < scroll + choice; i++)
+		    for (i = 0; i < scrlx + choice; i++)
 			if (toupper(items[i][0]) == toupper(key))
 			    break;
 		}
 		getyx(dialog, cur_y, cur_x);
-		if (i < item_no && i != scroll + choice) {
-		    if (i >= scroll && i < scroll + max_choice) {
+		if (i < item_no && i != scrlx + choice) {
+		    if (i >= scrlx && i < scrlx + max_choice) {
 			/* it is already visible */
-			PaintItem(menu, items[scroll + choice], choice, FALSE);
-			choice = i - scroll;
+			PaintItem(menu, items[scrlx + choice], choice, FALSE);
+			choice = i - scrlx;
 		    }
 		    else {
-			scroll = MIN(i, max_scroll);
-			choice = i - scroll;
+			scrlx = MIN(i, max_scroll);
+			choice = i - scrlx;
 			for (i = 0; i < max_choice; i++)
 			    if (i != choice)
-				PaintItem(menu, items[scroll + i], i, FALSE);
+				PaintItem(menu, items[scrlx + i], i, FALSE);
 		    }
-		    PaintItem(menu, items[scroll + choice], choice, TRUE);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    PaintItem(menu, items[scrlx + choice], choice, TRUE);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wmove(dialog, cur_y, cur_x);
 		    wrefresh(dialog);
@@ -2811,7 +2818,7 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 	       int item_no, char **items, char *label1, char *label2, char *checks)
 {
     int i, x, y, cur_x, cur_y, box_x, box_y, key = 0, button = 0, choice = 0,
-	scroll = 0, max_choice, nscroll, max_scroll, x1, x2, l1len, l2len;
+	scrlx = 0, max_choice, nscroll, max_scroll, x1, x2, l1len, l2len;
     WINDOW *dialog, *menu;
 
     max_choice = MIN(menu_height, item_no);
@@ -2848,8 +2855,8 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
     item_x = 3;
 
     for (i = 0; i < max_choice; i++)
-	PaintCheckItem(menu, items[i + scroll], i, i == 0, checks[i + scroll]);
-    PaintScroller(menu, scroll + choice, item_no, menu_height);
+	PaintCheckItem(menu, items[i + scrlx], i, i == 0, checks[i + scrlx]);
+    PaintScroller(menu, scrlx + choice, item_no, menu_height);
     wnoutrefresh(menu);
 
     x = width / 2 - 11;
@@ -2865,21 +2872,21 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 
 	if (menu_height > 1 && key == KEY_PPAGE) {
 	    if (!choice) {
-		if (scroll) {
+		if (scrlx) {
 		    /* Scroll menu down */
 		    getyx(dialog, cur_y, cur_x);
 
-		    nscroll = max_choice > scroll ? -scroll : -max_choice;
+		    nscroll = max_choice > scrlx ? -scrlx : -max_choice;
 		    scrollok(menu, TRUE);
 		    wscrl(menu, nscroll);
 		    scrollok(menu, FALSE);
 
-		    i = scroll + nscroll;
+		    i = scrlx + nscroll;
 		    PaintCheckItem(menu, items[i], 0, TRUE, checks[i]);
-		    for (++i; i <= scroll; i++)
-			PaintCheckItem(menu, items[i], i - (scroll + nscroll), FALSE, checks[i]);
-		    scroll += nscroll;
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    for (++i; i <= scrlx; i++)
+			PaintCheckItem(menu, items[i], i - (scrlx + nscroll), FALSE, checks[i]);
+		    scrlx += nscroll;
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2889,21 +2896,21 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 	}
 	else if (menu_height > 1 && key == KEY_NPAGE) {
 	    if (choice == max_choice - 1) {
-		if (scroll < max_scroll) {
+		if (scrlx < max_scroll) {
 		    /* Scroll menu up */
 		    getyx(dialog, cur_y, cur_x);
 
-		    nscroll = (scroll + max_choice > max_scroll ?
-			       max_scroll : scroll + max_choice) - scroll;
+		    nscroll = (scrlx + max_choice > max_scroll ?
+			       max_scroll : scrlx + max_choice) - scrlx;
 		    scrollok(menu, TRUE);
 		    wscrl(menu, nscroll);
 		    scrollok(menu, FALSE);
 
-		    scroll += nscroll;
+		    scrlx += nscroll;
 		    for (i = 0; i < max_choice - 1; i++)
-			PaintCheckItem(menu, items[i + scroll], i, FALSE, checks[i + scroll]);
-		    PaintCheckItem(menu, items[i + scroll], max_choice - 1, TRUE, checks[i + scroll]);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+			PaintCheckItem(menu, items[i + scrlx], i, FALSE, checks[i + scrlx]);
+		    PaintCheckItem(menu, items[i + scrlx], max_choice - 1, TRUE, checks[i + scrlx]);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2913,18 +2920,18 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 	}
 	else if (key == KEY_UP) {
 	    if (!choice) {
-		if (scroll) {
+		if (scrlx) {
 		    /* Scroll menu down */
 		    getyx(dialog, cur_y, cur_x);
 		    if (menu_height > 1) {
-			PaintCheckItem(menu, items[scroll], 0, FALSE, checks[scroll]);
+			PaintCheckItem(menu, items[scrlx], 0, FALSE, checks[scrlx]);
 			scrollok(menu, TRUE);
 			wscrl(menu, - 1);
 			scrollok(menu, FALSE);
 		    }
-		    scroll--;
-		    PaintCheckItem(menu, items[scroll], 0, TRUE, checks[scroll]);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    scrlx--;
+		    PaintCheckItem(menu, items[scrlx], 0, TRUE, checks[scrlx]);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2935,18 +2942,18 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 	}
 	else if (key == KEY_DOWN) {
 	    if (choice == max_choice - 1) {
-		if (scroll + choice < item_no - 1) {
+		if (scrlx + choice < item_no - 1) {
 		    /* Scroll menu up */
 		    getyx(dialog, cur_y, cur_x);
 		    if (menu_height > 1) {
-			PaintCheckItem(menu, items[scroll + max_choice - 1], max_choice - 1, FALSE, checks[scroll + max_choice - 1]);
+			PaintCheckItem(menu, items[scrlx + max_choice - 1], max_choice - 1, FALSE, checks[scrlx + max_choice - 1]);
 			scrollok(menu, TRUE);
 			scroll(menu);
 			scrollok(menu, FALSE);
 		    }
-		    scroll++;
-		    PaintCheckItem(menu, items[scroll + max_choice - 1], max_choice - 1, TRUE, checks[scroll + max_choice - 1]);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    scrlx++;
+		    PaintCheckItem(menu, items[scrlx + max_choice - 1], max_choice - 1, TRUE, checks[scrlx + max_choice - 1]);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wrefresh(dialog);
 		    continue;
@@ -2958,11 +2965,11 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 
 	if (i != choice) {
 	    getyx(dialog, cur_y, cur_x);
-	    PaintCheckItem(menu, items[scroll + choice], choice, FALSE, checks[scroll + choice]);
+	    PaintCheckItem(menu, items[scrlx + choice], choice, FALSE, checks[scrlx + choice]);
 
 	    choice = i;
-	    PaintCheckItem(menu, items[scroll + choice], choice, TRUE, checks[scroll + choice]);
-	    PaintScroller(menu, scroll + choice, item_no, menu_height);
+	    PaintCheckItem(menu, items[scrlx + choice], choice, TRUE, checks[scrlx + choice]);
+	    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 	    wnoutrefresh(menu);
 	    wmove(dialog, cur_y, cur_x);
 	    wrefresh(dialog);
@@ -2987,8 +2994,8 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 		break;
 	    case ' ':
 		getyx(dialog, cur_y, cur_x);
-		checks[scroll + choice] = !checks[scroll + choice];
-		PaintCheckItem(menu, items[scroll + choice], choice, TRUE, checks[scroll + choice]);
+		checks[scrlx + choice] = !checks[scrlx + choice];
+		PaintCheckItem(menu, items[scrlx + choice], choice, TRUE, checks[scrlx + choice]);
 		wmove(dialog, cur_y, cur_x);
 		wnoutrefresh(menu);
 		wrefresh(dialog);
@@ -2998,30 +3005,30 @@ DialogCheckBox(char *title, char *prompt, int height, int width, int menu_height
 		delwin(dialog);
 		return (!button ? 0 : -1);
 	    default:
-		for (i = scroll + choice + 1; i < item_no; i++)
+		for (i = scrlx + choice + 1; i < item_no; i++)
 		    if (toupper(items[i][0]) == toupper(key))
 			break;
 		if (i == item_no) {
-		    for (i = 0; i < scroll + choice; i++)
+		    for (i = 0; i < scrlx + choice; i++)
 			if (toupper(items[i][0]) == toupper(key))
 			    break;
 		}
 		getyx(dialog, cur_y, cur_x);
-		if (i < item_no && i != scroll + choice) {
-		    if (i >= scroll && i < scroll + max_choice) {
+		if (i < item_no && i != scrlx + choice) {
+		    if (i >= scrlx && i < scrlx + max_choice) {
 			/* it is already visible */
-			PaintCheckItem(menu, items[scroll + choice], choice, FALSE, checks[scroll + choice]);
-			choice = i - scroll;
+			PaintCheckItem(menu, items[scrlx + choice], choice, FALSE, checks[scrlx + choice]);
+			choice = i - scrlx;
 		    }
 		    else {
-			scroll = MIN(i, max_scroll);
-			choice = i - scroll;
+			scrlx = MIN(i, max_scroll);
+			choice = i - scrlx;
 			for (i = 0; i < max_choice; i++)
 			    if (i != choice)
-				PaintCheckItem(menu, items[scroll + i], i, FALSE, checks[scroll + i]);
+				PaintCheckItem(menu, items[scrlx + i], i, FALSE, checks[scrlx + i]);
 		    }
-		    PaintCheckItem(menu, items[scroll + choice], choice, TRUE, checks[scroll + choice]);
-		    PaintScroller(menu, scroll + choice, item_no, menu_height);
+		    PaintCheckItem(menu, items[scrlx + choice], choice, TRUE, checks[scrlx + choice]);
+		    PaintScroller(menu, scrlx + choice, item_no, menu_height);
 		    wnoutrefresh(menu);
 		    wmove(dialog, cur_y, cur_x);
 		    wrefresh(dialog);
@@ -3052,7 +3059,7 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 	    char *label1, char *label2, int def_button)
 {
     int i, x, y, box_y, box_x, box_width, len,
-	input_x = 0, scroll = 0, key = 0, button = -1, x1, x2, l1len, l2len;
+	input_x = 0, scrlx = 0, key = 0, button = -1, x1, x2, l1len, l2len;
     char instr[1024 + 1];
     WINDOW *dialog;
 
@@ -3092,10 +3099,10 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 
     input_x = len = strlen(instr);
     if (input_x >= box_width) {
-	scroll = input_x - box_width + 1;
+	scrlx = input_x - box_width + 1;
 	input_x = box_width - 1;
 	for (i = 0; i < box_width - 1; i++)
-	    waddch(dialog, instr[scroll + i]);
+	    waddch(dialog, instr[scrlx + i]);
     }
     else
 	waddstr(dialog, instr);
@@ -3113,11 +3120,11 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		case KEY_DOWN:
 		    break;
 		case KEY_LEFT:
-		    if (scroll && !input_x) {
-			--scroll;
+		    if (scrlx && !input_x) {
+			--scrlx;
 			wmove(dialog, box_y, box_x);
 			for (i = 0; i < box_width; i++)
-			    waddch(dialog, instr[scroll + input_x + i] ? instr[scroll + input_x + i] : ' ');
+			    waddch(dialog, instr[scrlx + input_x + i] ? instr[scrlx + input_x + i] : ' ');
 			wmove(dialog, box_y, input_x + box_x);
 			wrefresh(dialog);
 		    }
@@ -3127,11 +3134,11 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    }
 		    continue;
 		case KEY_RIGHT:
-		    if (input_x + scroll < len) {
+		    if (input_x + scrlx < len) {
 			if (input_x == box_width - 1) {
-			    ++scroll;
+			    ++scrlx;
 			    wmove(dialog, box_y, box_x);
-			    for (i = scroll; i < scroll + box_width; i++)
+			    for (i = scrlx; i < scrlx + box_width; i++)
 				waddch(dialog, instr[i] ? instr[i] : ' ');
 			    wmove(dialog, box_y, input_x + box_x);
 			    wrefresh(dialog);
@@ -3144,28 +3151,28 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    continue;
 		case KEY_BACKSPACE:
 		case 0177:
-		    if (input_x || scroll) {
+		    if (input_x || scrlx) {
 			wattrset(dialog, dialog_attr);
 
-			if (scroll + input_x < len)
-			    memmove(instr + scroll + input_x - 1,
-				    instr + scroll + input_x,
-				    len - (scroll + input_x));
+			if (scrlx + input_x < len)
+			    memmove(instr + scrlx + input_x - 1,
+				    instr + scrlx + input_x,
+				    len - (scrlx + input_x));
 			instr[--len] = '\0';
 
 			if (!input_x) {
-			    scroll = scroll < box_width - 1 ? 0 : scroll - (box_width - 1);
+			    scrlx = scrlx < box_width - 1 ? 0 : scrlx - (box_width - 1);
 			    wmove(dialog, box_y, box_x);
 			    for (i = 0; i < box_width; i++)
-				waddch(dialog, instr[scroll + input_x + i] ? instr[scroll + input_x + i] : ' ');
-			    input_x = len - scroll;
+				waddch(dialog, instr[scrlx + input_x + i] ? instr[scrlx + input_x + i] : ' ');
+			    input_x = len - scrlx;
 			}
 			else {
 			    wmove(dialog, box_y, --input_x + box_x);
-			    for (i = scroll + input_x; i < len &&
-				 i < scroll + box_width; i++)
+			    for (i = scrlx + input_x; i < len &&
+				 i < scrlx + box_width; i++)
 				waddch(dialog, instr[i]);
-			    if (i < scroll + box_width)
+			    if (i < scrlx + box_width)
 				waddch(dialog, ' ');
 			}
 			wmove(dialog, box_y, input_x + box_x);
@@ -3175,8 +3182,8 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		case KEY_HOME:
 		case CONTROL_A:
 		    wmove(dialog, box_y, box_x);
-		    if (scroll != 0) {
-			scroll = 0;
+		    if (scrlx != 0) {
+			scrlx = 0;
 			for (i = 0; i < box_width; i++)
 			    waddch(dialog, instr[i] ? instr[i] : ' ');
 		    }
@@ -3185,15 +3192,15 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    wrefresh(dialog);
 		    break;
 		case CONTROL_D:
-		    if (input_x + scroll < len) {
-			memmove(instr + scroll + input_x,
-				    instr + scroll + input_x + 1,
-				    len - (scroll + input_x));
+		    if (input_x + scrlx < len) {
+			memmove(instr + scrlx + input_x,
+				    instr + scrlx + input_x + 1,
+				    len - (scrlx + input_x));
 			instr[--len] = '\0';
-			for (i = scroll + input_x; i < len &&
-			     i < scroll + box_width; i++)
+			for (i = scrlx + input_x; i < len &&
+			     i < scrlx + box_width; i++)
 			    waddch(dialog, instr[i]);
-			if (i < scroll + box_width)
+			if (i < scrlx + box_width)
 			    waddch(dialog, ' ');
 			wmove(dialog, box_y, input_x + box_x);
 			wrefresh(dialog);
@@ -3201,17 +3208,17 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    break;
 		case CONTROL_E:
 		case KEY_END:
-		    if (box_width + scroll < len) {
+		    if (box_width + scrlx < len) {
 			input_x = box_width - 1;
-			scroll = len - box_width + 1;
+			scrlx = len - box_width + 1;
 			wmove(dialog, box_y, box_x);
-			for (i = scroll; i < scroll + box_width; i++)
+			for (i = scrlx; i < scrlx + box_width; i++)
 			    waddch(dialog, instr[i] ? instr[i] : ' ');
 			wmove(dialog, box_y, input_x + box_x);
 			wrefresh(dialog);
 		    }
 		    else {
-			input_x = len - scroll;
+			input_x = len - scrlx;
 			wmove(dialog, box_y, input_x + box_x);
 			wrefresh(dialog);
 		    }
@@ -3220,34 +3227,34 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    if (len) {
 			for (i = input_x; i < box_width; i++)
 			    waddch(dialog, ' ');
-			for (i = scroll + input_x; i < len; i++)
+			for (i = scrlx + input_x; i < len; i++)
 			    instr[i] = '\0';
-			len = scroll + input_x;
+			len = scrlx + input_x;
 			wmove(dialog, box_y, box_x + input_x);
 			wrefresh(dialog);
 		    }
 		    break;
 		default:
 		    if (key < 0x100 && isprint(key)) {
-			if (scroll + input_x < sizeof(instr) - 1) {
+			if (scrlx + input_x < sizeof(instr) - 1) {
 			    wattrset(dialog, dialog_attr);
-			    if (scroll + input_x < len) {
-				memmove(instr + scroll + input_x + 1,
-					instr + scroll + input_x,
-					len - (scroll + input_x));
+			    if (scrlx + input_x < len) {
+				memmove(instr + scrlx + input_x + 1,
+					instr + scrlx + input_x,
+					len - (scrlx + input_x));
 			    }
-			    instr[scroll + input_x] = key;
+			    instr[scrlx + input_x] = key;
 			    instr[++len] = '\0';
 			    if (input_x == box_width - 1) {
-				scroll++;
+				scrlx++;
 				wmove(dialog, box_y, box_x);
 				for (i = 0; i < box_width - 1; i++)
-				    waddch(dialog, instr[scroll + i]);
+				    waddch(dialog, instr[scrlx + i]);
 			    }
 			    else {
 				wmove(dialog, box_y, input_x++ + box_x);
-				for (i = scroll + input_x - 1; i < len &&
-				     i < scroll + box_width; i++)
+				for (i = scrlx + input_x - 1; i < len &&
+				     i < scrlx + box_width; i++)
 				    waddch(dialog, instr[i]);
 				wmove(dialog, box_y, input_x + box_x);
 			    }

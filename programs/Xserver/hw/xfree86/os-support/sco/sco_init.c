@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.12 2001/06/30 22:41:49 tsi Exp $ */
 /*
  * Copyright 2001 by J. Kean Johnston <jkj@sco.com>
  *
@@ -38,7 +38,7 @@ static int VTnum = -1;
 static char *vtdevice = NULL;
 static int sco_console_mode = -1;
 
-Bool mpxLock = TRUE;
+extern Bool mpxLock;
 
 void
 xf86OpenConsole()

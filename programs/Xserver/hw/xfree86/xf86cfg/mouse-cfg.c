@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.6 2001/03/24 01:17:21 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.7 2001/04/22 08:36:31 herrb Exp $
  */
 
 #include "xf86config.h"
@@ -52,6 +52,9 @@ static Bool MouseConfigCheck(void);
  * Initialization
  */
 static char *protocols[] = {
+#ifdef SCO
+    "OsMouse",
+#endif
 #ifdef WSCONS_SUPPORT
     "wsmouse",
 #endif
