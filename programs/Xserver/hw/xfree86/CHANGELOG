@@ -1,4 +1,6 @@
 XFree86 4.3.99.2 (xx March 2003)
+  29. Add missing symbols to reference list that show up when DRI is not
+      loaded (Bugzilla #84, Leif Delgass).
   28. Various build and warning fixes (#A.1703, Peter Breitenlohner).
   27. Avoid overlapping strcpy() in imake.c (Dan Nelson).
   26. Updates for building on OS/2 (#5650, Frank Giessler).
@@ -16583,4 +16585,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2604 2003/03/25 04:18:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2605 2003/03/26 20:43:53 tsi Exp $
