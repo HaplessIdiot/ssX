@@ -4,7 +4,7 @@ XCOMM $Xorg: bsdLib.rules,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.30 2004/03/18 07:06:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.31 2004/03/25 03:19:15 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -387,7 +387,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 Concat(lib,libname.so.rev):  deplist					@@\
 	$(RM) $@~							@@\
 	@SetSonameRev(rev); \						@@\
-	SONAME=Concat(lib,libname.so.$$S); 				@@\
+	SONAME=Concat(lib,libname.so.$$S); \ 				@@\
 		(set -x; cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
 		if [ $$SONAME != $@ ]; then (set -x; \			@@\
 			$(RM) $$SONAME; $(LN) $@ $$SONAME); fi; \	@@\
