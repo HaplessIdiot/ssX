@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.80 2002/06/01 00:54:50 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.81 2002/08/12 00:36:33 dickey Exp $ */
 
 /************************************************************
 
@@ -316,6 +316,8 @@ extern int errno;
 #define XtNjumpScroll		"jumpScroll"
 #define XtNkeyboardDialect	"keyboardDialect"
 #define XtNlimitResize		"limitResize"
+#define XtNlocale		"locale"
+#define XtNlocaleFilter		"localeFilter"
 #define XtNlogFile		"logFile"
 #define XtNlogInhibit		"logInhibit"
 #define XtNlogging		"logging"
@@ -412,9 +414,11 @@ extern int errno;
 #define XtCJumpScroll		"JumpScroll"
 #define XtCKeyboardDialect	"KeyboardDialect"
 #define XtCLimitResize		"LimitResize"
-#define XtCLogInhibit		"LogInhibit"
+#define XtCLocale		"Locale"
+#define XtCLocaleFilter		"LocaleFilter"
 #define XtCLogfile		"Logfile"
 #define XtCLogging		"Logging"
+#define XtCLogInhibit		"LogInhibit"
 #define XtCLoginShell		"LoginShell"
 #define XtCMarginBell		"MarginBell"
 #define XtCMenuBar		"MenuBar"
@@ -444,8 +448,8 @@ extern int errno;
 #define XtCTekInhibit		"TekInhibit"
 #define XtCTekSmall		"TekSmall"
 #define XtCTekStartup		"TekStartup"
-#define XtCTiXtraScroll		"TiXtraScroll"
 #define XtCTiteInhibit		"TiteInhibit"
+#define XtCTiXtraScroll		"TiXtraScroll"
 #define XtCTrimSelection	"TrimSelection"
 #define XtCUnderLine		"UnderLine"
 #define XtCUtf8			"Utf8"

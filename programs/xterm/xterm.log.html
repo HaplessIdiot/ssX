@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.81 2002/06/01 00:54:50 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.82 2002/08/12 00:36:33 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -214,6 +214,13 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_167">Patch #167 - development - XFree86 4.2.0</A></H1>
 <ul>
+	<li>add configure option <code>--enable-luit</code> and ifdef'd the
+	  luit-related code with OPT_LUIT_PROG.
+
+	<li>integrate patch by Tomohiro KUBOTA from
+	  http://www.xfree86.org/pipermail/i18n/2002-July/003378.html which
+	  modifies xterm to invoke luit.
+
 	<li>update wcwidth.c to match Markus Kuhn's 2002-05-18 version.
 
 	<li>correct limit-checking in <code>ComputeSelect()</code> to handle

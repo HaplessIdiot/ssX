@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.51 2002/04/28 19:04:21 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.52 2002/06/01 00:54:49 dickey Exp $ */
 
 /***********************************************************
 
@@ -987,20 +987,6 @@ main(int argc, char **argv ENVP_ARG)
 	}
 	break;
     }
-
-#if OPT_WIDE_CHARS
-    /* Test whether UTF-8 mode should be active by default */
-    {
-	char *s;
-
-	if (((s = getenv("LC_ALL")) != 0 && *s != '\0') ||
-	    ((s = getenv("LC_CTYPE")) != 0 && *s != '\0') ||
-	    ((s = getenv("LANG")) != 0 && *s != '\0')) {
-	    if (strstr(s, "UTF-8"))
-		defaultUTF8[0] = '2';
-	}
-    }
-#endif
 
     SetupMenus(toplevel, &form_top, &menu_top);
 

@@ -7,7 +7,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.44 2002/08/06 19:55:56 herrb Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.45 2002/08/12 00:36:32 dickey Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -91,7 +91,7 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 #endif
 
 #ifdef UTF8support
-    UTF8_OPTION = -DOPT_WIDE_CHARS
+    UTF8_OPTION = -DOPT_WIDE_CHARS -DOPT_LUIT_PROG
         UTF8SRC = charclass.c precompose.c wcwidth.c xutf8.c
         UTF8OBJ = charclass.o precompose.o wcwidth.o xutf8.o
 #endif
@@ -112,7 +112,8 @@ module.o: ; $(CC) -c defines $(CFLAGS) module.c
 		  -DOSMINORVERSION=$(OSMINORVERSION)
    MISC_DEFINES = /* -DALLOWLOGGING -DALLOWLOGFILEEXEC */
     XKB_DEFINES = XkbClientDefines
-        DEFINES = -I. $(XKB_DEFINES) $(TERMCAPDEFINES) $(FEATURE_DEFINES) $(SCROLLBAR_RIGHT) $(UTF8_OPTION) $(XRFDEF) $(TRACEDEF)
+   PATH_DEFINES = -DPROJECTROOT=$(PROJECTROOT)
+        DEFINES = -I. $(XKB_DEFINES) $(TERMCAPDEFINES) $(FEATURE_DEFINES) $(SCROLLBAR_RIGHT) $(UTF8_OPTION) $(XRFDEF) $(PATH_DEFINES) $(TRACEDEF)
        INCLUDES = $(XRFINCLUDES)
 
 #ifdef OS2Architecture
