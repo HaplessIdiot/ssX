@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.72 2002/11/25 14:04:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.73 2002/11/25 21:29:45 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -271,6 +271,7 @@ static const char *drmSymbols[] = {
     "drmAddMap",
     "drmAgpAcquire",
     "drmAgpAlloc",
+    "drmAgpBase",
     "drmAgpBind",
     "drmAgpDeviceId",
     "drmAgpEnable",
@@ -309,6 +310,7 @@ static const char *driSymbols[] = {
     "DRIDestroyInfoRec",
     "DRIFinishScreenInit",
     "DRIGetContext",
+    "DRIGetDeviceInfo",
     "DRIGetSAREAPrivate",
     "DRILock",
     "DRIQueryVersion",
