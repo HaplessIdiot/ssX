@@ -5,6 +5,7 @@
 <!ENTITY % threediffs 'IGNORE'> <!-- patch is split into three diff files -->
 <!ENTITY % fourdiffs 'INCLUDE'> <!-- patch is split into four diff files -->
 <!ENTITY % difftar 'INCLUDE'> <!-- patch also contains a tarball -->
+<!ENTITY % removefiles 'INCLUDE'> <!-- patching requires removing some files -->
 ]>
 
 
@@ -12,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>1 June 2001
+<date>2 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.114 2001/05/25 21:25:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.115 2001/06/01 18:26:04 dawes Exp $
 </ident>
 
 <abstract>
@@ -343,10 +344,24 @@ gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
 gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff4.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
+<![ %removefiles; [
+<tscreen><verb>
+rm -f xc/programs/xieperf/images/image.012
+rm -fr xc/fonts/bdf/latin2
+rm -fr xc/fonts/bdf/100dpi
+rm -fr xc/fonts/bdf/75dpi
+</verb></tscreen>
+]]>
 <tscreen><verb>
 gzip -d &lt; &fullrelvers;.tgz | tar vxf -
 </verb></tscreen>
 ]]>
+]]>
+
+<![ %prevrelwasupdate; [
+Patches might also be available relative to &prevrelvers;.  If so, the
+instructions for applying them are the same, except that you should start 
+with a clean &prevrelvers; source tree.
 ]]>
 
 The contrib part of the distribution was folded into the main source
