@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.18 2001/08/18 02:51:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.19 2001/10/31 22:50:29 tsi Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -15,14 +15,13 @@
 
 #include "sis.h"
 #include "sis_dri.h"
+#include "xf86drmSiS.h"
 
 #define BR(x)   (0x8200 | (x) << 2)
 #define SiSIdle \
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   MMIO_IN16(pSiS->IOBase, 0x8240);
-
-extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
 
 extern void GlxSetVisualConfigs(
     int nconfigs,
