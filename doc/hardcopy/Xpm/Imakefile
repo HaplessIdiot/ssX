@@ -1,0 +1,8 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(xpm,xpm.PS.gz)
+
+XPMDOCDIR = $(TOP)/extras/Xpm/doc
+
+LinkSourceFile(xpm.PS.gz,$(XPMDOCDIR))
+
