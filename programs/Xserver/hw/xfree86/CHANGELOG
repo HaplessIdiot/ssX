@@ -1,6 +1,7 @@
 XFree86 4.3.99.12 (xx August 2003)
  436. Added support for the Compaq Evo keyboard (Stanislav Brabec).
- 435. Fixed writes past end of array in via_bios.c (BugzillaR #662, Egbert Eich).
+ 435. Fixed writes past end of array in via_bios.c (BugzillaR #662,
+      Egbert Eich).
  434. Let luit copy the termios settings from the calling terminal (BugzillaR
       #641, Juliusz Chroboczek).
  433. Add _ADOBE_POSTSCRIPT_FONTNAME to the list of font properties xlsfonts
@@ -12,14 +13,12 @@ XFree86 4.3.99.12 (xx August 2003)
  431. Fixing X11.tmpl to set XFTINCLUDES after defining a non-standard path
       to fontconfig, adding FONTCONFIGINCLUDES to the build rules for fontconfig
       (Kevin P. Fleming).
-      Added support for the hp5181 inet keyboard (Bugzilla #648, Alan Strohm).
- 430. Added support for Apple Laptop keyboards, added level3/group switching to
+ 430. Added support for the hp5181 inet keyboard (Bugzilla #648, Alan Strohm).
+ 429. Added support for Apple Laptop keyboards, added level3/group switching to
       KP_Enter, modified layout so keyboards acts the same way as under Mac OS
       (Bugzilla #642, Frank Murphy).
- 429. Reverting 321 as this memory area should be set up only once during server 
-      lifetime (Egbert Eich).
- 428. Adding ANGKHANKHU (U+0E5A) character to level 3 of keycode <AD09> on th_tis
-      keymap (Theppitak Karoonboonyanan).
+ 428. Adding ANGKHANKHU (U+0E5A) character to level 3 of keycode <AD09> on
+      th_tis keymap (Theppitak Karoonboonyanan).
  427. Fixes and updates for XKB keyboard maps:
       - Add 'Romanian keymap for German keyboard' and 'Romanian keymap with
         access to German umlauts' (Manfred Pohler).
@@ -17706,7 +17705,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2848 2003/09/08 14:25:26 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2849 2003/09/08 14:27:44 eich Exp $
 
 
 
