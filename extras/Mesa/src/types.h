@@ -1,4 +1,4 @@
-/* -*- mode: C; tab-width:8; c-basic-offset:8 -*- */
+/* -*- mode: C; tab-width:8; c-basic-offset:3 -*- */
 
 /*
  * Mesa 3-D graphics library
@@ -171,7 +171,21 @@ typedef void (*TextureSampleFunc)( const struct gl_texture_object *tObj,
                                    const GLfloat u[], const GLfloat lambda[],
                                    GLubyte rgba[][4] );
 
+/* Texture format record */
+/* GH: This is an interim structure until 3.5 */
+struct gl_texture_format {
+   GLint IntFormat;		/* One of the MESA_FORMAT_* values */
 
+   GLubyte RedBits;		/* Bits per texel component */
+   GLubyte GreenBits;
+   GLubyte BlueBits;
+   GLubyte AlphaBits;
+   GLubyte LuminanceBits;
+   GLubyte IntensityBits;
+   GLubyte IndexBits;
+
+   GLint TexelBytes;
+};
 
 /* Texture image record */
 struct gl_texture_image {
@@ -180,13 +194,6 @@ struct gl_texture_image {
 				 * GL_COLOR_INDEX only
 				 */
    GLenum IntFormat;		/* Internal format as given by the user */
-   GLubyte RedBits;		/* Bits per texel component              */
-   GLubyte GreenBits;		/*   These are initialized by Mesa but   */
-   GLubyte BlueBits;		/*   may be reassigned by the device     */
-   GLubyte AlphaBits;		/*   driver to indicate the true texture */
-   GLubyte IntensityBits;	/*   color resolution.                   */
-   GLubyte LuminanceBits;
-   GLubyte IndexBits;
    GLuint Border;		/* 0 or 1 */
    GLuint Width;		/* = 2^WidthLog2 + 2*Border */
    GLuint Height;		/* = 2^HeightLog2 + 2*Border */
@@ -199,6 +206,8 @@ struct gl_texture_image {
    GLuint DepthLog2;		/* = log2(Depth2) */
    GLuint MaxLog2;		/* = MAX(WidthLog2, HeightLog2) */
    GLubyte *Data;		/* Image data as unsigned bytes */
+
+   const struct gl_texture_format *TexFormat;
 
    GLboolean IsCompressed;	/* GL_ARB_texture_compression */
    GLuint CompressedSize;	/* GL_ARB_texture_compression */
