@@ -31,12 +31,13 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * mysetjmp.h
  *
- * $Date: 2001/01/15 21:48:33 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mysetjmp.h,v 1.1 2001/01/15 21:48:33 dawes Exp $
+ * $Date: 2003/03/04 16:25:05 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/mysetjmp.h,v 1.2 2003/03/04 16:25:05 tsi Exp $
  */
 
 #ifndef __glumysetjmp_h_
@@ -78,13 +79,13 @@ deleteJumpbuffer(JumpBuffer *jb)
 inline void
 mylongjmp( JumpBuffer *j, int code ) 
 {
-    ::longjmp( j->buf, code );
+    longjmp( j->buf, code );
 }
 
 inline int
 mysetjmp( JumpBuffer *j )
 {
-    return ::setjmp( j->buf );
+    return setjmp( j->buf );
 }
 #endif
 

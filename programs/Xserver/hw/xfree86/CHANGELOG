@@ -1,4 +1,12 @@
 XFree86 4.3.99.1 (xx March 2003)
+ 970. Make setjmp/longjmp emulation save/restore blocked signal masks on all
+      libc5 & glibc systems (Marc La France).
+ 969. Fix setjmp/longjmp emulation for glibc 2.2.[01] systems and remove
+      HasGlibc21Sigsetjmp override (Marc La France).
+ 968. setjmp/longjmp-related compilation fixes for libc5 systems
+      (Marc La France).
+ 967. Fix minor glitch in the generation of Makefiles for libraries that don't
+      need threads support (Marc La France).
  966. Fix XDarwin build broken by #960 (Shantonu Sen).
  965. Fix StaticColor colormap on Darwin/x86 6.x (Rob Braun).
 
@@ -16540,4 +16548,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2588 2003/02/27 04:56:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2589 2003/03/04 02:53:24 torrey Exp $
