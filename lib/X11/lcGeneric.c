@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.17 2003/02/03 22:11:58 paulo Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.18 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -787,7 +787,7 @@ load_generic(
 	if (num > 0) {
 	    static struct { 
 		const char *str;
-		int type;
+		EncodingType type;
 	    } shifts[] = {
 		{"<SS>", E_SS},
 		{"<LSL>", E_LSL},
@@ -801,7 +801,7 @@ load_generic(
 	    for ( ; num-- > 0; value++) {
 		char encoding[256];
 		char *tmp = *value;
-		int type = E_SS;    /* for BC */
+		EncodingType type = E_SS;    /* for BC */
 		for (j = 0; shifts[j].str; j++) {
 		    if (!_XlcNCompareISOLatin1(tmp, shifts[j].str,
 					       strlen(shifts[j].str))) {
