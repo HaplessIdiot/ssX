@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.11 2000/12/20 00:20:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.12 2000/12/20 00:28:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -150,11 +150,13 @@ XftDrawChange (XftDraw	*draw,
 void
 XftDrawDestroy (XftDraw	*draw)
 {
+    int	n;
+    
     if (draw->render_able)
     {
 	XRenderFreePicture (draw->dpy, draw->render.pict);
-	XFreePixmap (draw->dpy, draw->render.fg_pix);
-	XRenderFreePicture (draw->dpy, draw->render.fg_pict);
+	for (n = 0; n < XFT_DRAW_N_SRC; n++)
+	    XRenderFreePicture (draw->dpy, draw->render.src[n].pict);
     }
     if (draw->core_set)
 	XFreeGC (draw->dpy, draw->core.draw_gc);
@@ -166,13 +168,16 @@ XftDrawDestroy (XftDraw	*draw)
 Bool
 XftDrawRenderPrepare (XftDraw	*draw,
 		      XftColor	*color,
-		      XftFont	*font)
+		      XftFont	*font,
+		      int	src)
 {
     if (!draw->render_set)
     {
 	XRenderPictFormat	    *format;
 	XRenderPictFormat	    *pix_format;
 	XRenderPictureAttributes    pa;
+	int			    n;
+	Pixmap			    pix;
 
 	draw->render_set = True;
 	draw->render_able = False;
@@ -184,14 +189,22 @@ XftDrawRenderPrepare (XftDraw	*draw,
 
 	    draw->render.pict = XRenderCreatePicture (draw->dpy, draw->drawable,
 						      format, 0, 0);
-	    draw->render.fg_pix = XCreatePixmap (draw->dpy, draw->drawable,
-						 1, 1, pix_format->depth);
-	    pa.repeat = True;
-	    draw->render.fg_pict = XRenderCreatePicture (draw->dpy, 
-							 draw->render.fg_pix,
-							 pix_format,
-							 CPRepeat, &pa);
-	    draw->render.fg_color.red = ~color->color.red;
+	    for (n = 0; n < XFT_DRAW_N_SRC; n++)
+	    {
+		pix = XCreatePixmap (draw->dpy, draw->drawable,
+				     1, 1, pix_format->depth);
+		pa.repeat = True;
+		draw->render.src[n].pict = XRenderCreatePicture (draw->dpy, 
+								 pix,
+								 pix_format,
+								 CPRepeat, &pa);
+		XFreePixmap (draw->dpy, pix);
+		
+		draw->render.src[n].color = color->color;
+		XRenderFillRectangle (draw->dpy, PictOpSrc, 
+				      draw->render.src[n].pict,
+				      &color->color, 0, 0, 1, 1);
+	    }
 	    if (draw->clip)
 		XRenderSetPictureClipRegion (draw->dpy, draw->render.pict,
 					     draw->clip);
@@ -199,7 +212,8 @@ XftDrawRenderPrepare (XftDraw	*draw,
     }
     if (!draw->render_able)
 	return False;
-    if (memcmp (&color->color, &draw->render.fg_color, sizeof (XRenderColor)))
+    if (memcmp (&color->color, &draw->render.src[src].color, 
+		sizeof (XRenderColor)))
     {
 	if (_XftFontDebug () & XFT_DBG_DRAW)
 	{
@@ -209,9 +223,10 @@ XftDrawRenderPrepare (XftDraw	*draw,
 		    color->color.green,
 		    color->color.blue);
 	}
-	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.fg_pict,
+	XRenderFillRectangle (draw->dpy, PictOpSrc, 
+			      draw->render.src[src].pict,
 			      &color->color, 0, 0, 1, 1);
-	draw->render.fg_color = color->color;
+	draw->render.src[src].color = color->color;
     }
     return True;
 }
@@ -275,9 +290,11 @@ XftDrawString8 (XftDraw		*draw,
 		     (char *) string, len);
     }
 #ifdef FREETYPE2
-    else if (XftDrawRenderPrepare (draw, color, font))
+    else if (XftDrawRenderPrepare (draw, color, font, XFT_DRAW_SRC_TEXT))
     {
-	XftRenderString8 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
+	XftRenderString8 (draw->dpy,
+			  draw->render.src[XFT_DRAW_SRC_TEXT].pict, 
+			  font->u.ft.font,
 			  draw->render.pict, 0, 0, x, y, string, len);
     }
 #endif
@@ -307,9 +324,11 @@ XftDrawString16 (XftDraw	*draw,
 	    free (xc);
     }
 #ifdef FREETYPE2
-    else if (XftDrawRenderPrepare (draw, color, font))
+    else if (XftDrawRenderPrepare (draw, color, font, XFT_DRAW_SRC_TEXT))
     {
-	XftRenderString16 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
+	XftRenderString16 (draw->dpy, 
+			   draw->render.src[XFT_DRAW_SRC_TEXT].pict, 
+			   font->u.ft.font,
 			   draw->render.pict, 0, 0, x, y, string, len);
     }
 #endif
@@ -337,9 +356,11 @@ XftDrawString32 (XftDraw	*draw,
 	    free (xc);
     }
 #ifdef FREETYPE2
-    else if (XftDrawRenderPrepare (draw, color, font))
+    else if (XftDrawRenderPrepare (draw, color, font, XFT_DRAW_SRC_TEXT))
     {
-	XftRenderString32 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
+	XftRenderString32 (draw->dpy, 
+			   draw->render.src[XFT_DRAW_SRC_TEXT].pict, 
+			   font->u.ft.font,
 			   draw->render.pict, 0, 0, x, y, string, len);
     }
 #endif
@@ -371,9 +392,11 @@ XftDrawStringUtf8 (XftDraw	*draw,
 	    free (xc);
     }
 #ifdef FREETYPE2
-    else if (XftDrawRenderPrepare (draw, color, font))
+    else if (XftDrawRenderPrepare (draw, color, font, XFT_DRAW_SRC_TEXT))
     {
-	XftRenderStringUtf8 (draw->dpy, draw->render.fg_pict, font->u.ft.font,
+	XftRenderStringUtf8 (draw->dpy,
+			     draw->render.src[XFT_DRAW_SRC_TEXT].pict, 
+			     font->u.ft.font,
 			     draw->render.pict, 0, 0, x, y, string, len);
     }
 #endif
@@ -388,7 +411,7 @@ XftDrawRect (XftDraw	    *draw,
 	     unsigned int   width,
 	     unsigned int   height)
 {
-    if (XftDrawRenderPrepare (draw, color, 0))
+    if (XftDrawRenderPrepare (draw, color, 0, XFT_DRAW_SRC_RECT))
     {
 	XRenderFillRectangle (draw->dpy, PictOpSrc, draw->render.pict,
 			      &color->color, x, y, width, height);

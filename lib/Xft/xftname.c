@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.8 2001/01/02 02:46:51 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.9 2001/01/26 20:51:17 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -57,6 +57,7 @@ static const XftObjectType _XftObjectTypes[] = {
     { XFT_MINSPACE,	XftTypeBool, },
     { XFT_CHAR_WIDTH,	XftTypeInteger },
     { XFT_CHAR_HEIGHT,	XftTypeInteger },
+    { XFT_MATRIX,	XftTypeMatrix },
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _XftObjectTypes / sizeof _XftObjectTypes[0])
@@ -128,7 +129,7 @@ XftNameConstant (char *string, int *result)
 }
 
 static XftValue
-_XftNameConvert (XftType type, char *string)
+_XftNameConvert (XftType type, char *string, XftMatrix *m)
 {
     XftValue	v;
 
@@ -146,6 +147,10 @@ _XftNameConvert (XftType type, char *string)
 	break;
     case XftTypeDouble:
 	v.u.d = strtod (string, 0);
+	break;
+    case XftTypeMatrix:
+	v.u.m = m;
+	sscanf (string, "%lg %lg %lg %lg", &m->xx, &m->xy, &m->yx, &m->yy);
 	break;
     default:
 	break;
@@ -187,6 +192,7 @@ XftNameParse (const char *name)
     char		*e;
     char		delim;
     XftValue		v;
+    XftMatrix		m;
     const XftObjectType	*t;
     XftConstant		*c;
 
@@ -236,7 +242,7 @@ XftNameParse (const char *name)
 		    name = _XftNameFindNext (name, ":,", save, &delim);
 		    if (save[0] && t)
 		    {
-			v = _XftNameConvert (t->type, save);
+			v = _XftNameConvert (t->type, save, &m);
 			if (!XftPatternAdd (pat, t->object, v, True))
 			    goto bail2;
 		    }
@@ -308,6 +314,10 @@ _XftNameUnparseValue (XftValue v, char *escape, char **destp, int *lenp)
 	return _XftNameUnparseString (v.u.s, escape, destp, lenp);
     case XftTypeBool:
 	return _XftNameUnparseString (v.u.b ? "True" : "False", 0, destp, lenp);
+    case XftTypeMatrix:
+	sprintf (temp, "%g %g %g %g", 
+		 v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
+	return _XftNameUnparseString (temp, 0, destp, lenp);
     }
     return False;
 }

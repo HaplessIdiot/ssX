@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.9 2001/01/02 02:46:51 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.10 2001/01/26 20:51:15 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -42,6 +42,11 @@ static XftFtEncoding xftFtEncoding[] = {
 };
 
 #define NUM_FT_ENCODINGS    (sizeof xftFtEncoding / sizeof xftFtEncoding[0])
+
+#define FT_Matrix_Equal(a,b)	((a)->xx == (b)->xx && \
+				 (a)->yy == (b)->yy && \
+				 (a)->xy == (b)->xy && \
+				 (a)->yx == (b)->yx)
 
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count)
@@ -136,7 +141,7 @@ XftFreeTypeQuery (const char *file, int id, int *count)
     if (!XftPatternAddString (pat, XFT_ENCODING, 
 			      "glyphs-fontspecific"))
 	goto bail1;
-	
+
 
     FT_Done_Face (face);
     return pat;
@@ -160,6 +165,7 @@ typedef struct _XftFtFile {
 
     FT_Face		face;
     FT_F26Dot6		size;
+    FT_Matrix		matrix;
     int			charmap;
 } XftFtFile;
 
@@ -207,7 +213,7 @@ _XftFreeTypeOpenFile (char *file, int id)
 }
 
 Bool
-XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap)
+XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap, FT_Matrix *matrix)
 {
     XftFtFile	*f, **prev;
     
@@ -238,6 +244,17 @@ XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap)
 		if (FT_Set_Charmap (face, face->charmaps[charmap]))
 		    return False;
 		f->charmap = charmap;
+	    }
+	    if (!FT_Matrix_Equal (&f->matrix, matrix))
+	    {
+		if (_XftFontDebug() & XFT_DBG_GLYPH)
+		    printf ("Set face matrix to (%g,%g,%g,%g)\n",
+			    (double) matrix->xx / 0x10000,
+			    (double) matrix->xy / 0x10000,
+			    (double) matrix->yx / 0x10000,
+			    (double) matrix->yy / 0x10000);
+		FT_Set_Transform (face, matrix, 0);
+		f->matrix = *matrix;
 	    }
 	    break;
 	}
@@ -300,6 +317,8 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     int		    j;
     FT_Encoding	    encoding;
     int		    charmap;
+    FT_Matrix	    matrix;
+    XftMatrix	    *font_matrix;
 
     int		    extra;
     int		    height, ascent, descent;
@@ -338,7 +357,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     default:
 	goto bail0;
     }
-    
+
     switch (XftPatternGetBool (pattern, XFT_ANTIALIAS, 0, &antialias)) {
     case XftResultNoMatch:
 	antialias = True;
@@ -368,6 +387,32 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     default:
 	goto bail1;
     }
+
+    if (XftPatternGetInteger (pattern, XFT_CHAR_WIDTH, 
+			      0, &char_width) != XftResultMatch)
+    {
+	char_width = 0;
+    }
+    else if (char_width)
+	spacing = XFT_MONO;
+    
+    matrix.xx = matrix.yy = 0x10000;
+    matrix.xy = matrix.yx = 0;
+    
+    switch (XftPatternGetMatrix (pattern, XFT_MATRIX, 0, &font_matrix)) {
+    case XftResultNoMatch:
+	break;
+    case XftResultMatch:
+	matrix.xx = 0x10000L * font_matrix->xx;
+	matrix.yy = 0x10000L * font_matrix->yy;
+	matrix.xy = 0x10000L * font_matrix->xy;
+	matrix.yx = 0x10000L * font_matrix->yx;
+	break;
+    default:
+	goto bail1;
+    }
+
+    
     
     if (XftPatternGetInteger (pattern, XFT_CHAR_WIDTH, 
 			      0, &char_width) != XftResultMatch)
@@ -413,7 +458,8 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 	    gs->font.spacing == spacing &&
 	    gs->font.charmap == charmap &&
 	    gs->font.rgba == rgba &&
-	    gs->font.antialias == antialias)
+	    gs->font.antialias == antialias &&
+	    FT_Matrix_Equal (&gs->font.matrix, &matrix))
 	{
 	    ++gs->ref;
 	    if (_XftFontDebug () & XFT_DBG_REF)
@@ -503,9 +549,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     if (!format)
 	goto bail2;
     
-    font->size = size;
-
-    if (!XftFreeTypeSetFace (face, size, charmap))
+    if (!XftFreeTypeSetFace (face, size, charmap, &matrix))
 	goto bail2;
 
     descent = -(face->size->metrics.descender >> 6);
@@ -540,6 +584,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     
     font->glyphset = XRenderCreateGlyphSet (dpy, format);
 
+    font->size = size;
     font->spacing = spacing;
     font->format = format;
     font->realized =0;
@@ -547,6 +592,9 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     font->rgba = rgba;
     font->antialias = antialias;
     font->charmap = charmap;
+    font->transform = (matrix.xx != 0x10000 || matrix.xy != 0 ||
+		       matrix.yx != 0 || matrix.yy != 0x10000);
+    font->matrix = matrix;
     font->face = face;
 
     return font;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.16 2001/01/02 02:46:50 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.17 2001/01/26 20:51:14 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -62,6 +62,7 @@ typedef unsigned int	XftChar32;
 /* specific to FreeType rasterizer */
 #define XFT_CHAR_WIDTH	    "charwidth"	/* Int */
 #define XFT_CHAR_HEIGHT	    "charheight"/* Int */
+#define XFT_MATRIX	    "matrix"    /* XftMatrix */
 
 #define XFT_WEIGHT_LIGHT	0
 #define XFT_WEIGHT_MEDIUM	100
@@ -88,8 +89,16 @@ typedef enum _XftType {
     XftTypeInteger, 
     XftTypeDouble, 
     XftTypeString, 
-    XftTypeBool
+    XftTypeBool,
+    XftTypeMatrix
 } XftType;
+
+typedef struct _XftMatrix {
+    double xx, xy, yx, yy;
+} XftMatrix;
+
+#define XftMatrixInit(m)	((m)->xx = (m)->yy = 1, \
+				 (m)->xy = (m)->yx = 0)
 
 typedef enum _XftResult {
     XftResultMatch, XftResultNoMatch, XftResultTypeMismatch, XftResultNoId
@@ -102,6 +111,7 @@ typedef struct _XftValue {
 	int	i;
 	Bool	b;
 	double	d;
+	XftMatrix *m;
     } u;
 } XftValue;
 
@@ -395,6 +405,22 @@ XftFontSetMatch (XftFontSet	**sets,
 		 XftPattern	*p, 
 		 XftResult	*result);
 
+/* xftmatrix.c */
+int
+XftMatrixEqual (const XftMatrix *mat1, const XftMatrix *mat2);
+
+void
+XftMatrixMultiply (XftMatrix *result, XftMatrix *a, XftMatrix *b);
+
+void
+XftMatrixRotate (XftMatrix *m, double c, double s);
+
+void
+XftMatrixScale (XftMatrix *m, double sx, double sy);
+
+void
+XftMatrixShear (XftMatrix *m, double sh, double sv);
+
 /* xftname.c */
 XftPattern *
 XftNameParse (const char *name);
@@ -440,6 +466,9 @@ Bool
 XftPatternAddString (XftPattern *p, const char *object, const char *s);
 
 Bool
+XftPatternAddMatrix (XftPattern *p, const char *object, const XftMatrix *s);
+
+Bool
 XftPatternAddBool (XftPattern *p, const char *object, Bool b);
 
 XftResult
@@ -450,6 +479,9 @@ XftPatternGetDouble (XftPattern *p, const char *object, int n, double *d);
 
 XftResult
 XftPatternGetString (XftPattern *p, const char *object, int n, char **s);
+
+XftResult
+XftPatternGetMatrix (XftPattern *p, const char *object, int n, XftMatrix **s);
 
 XftResult
 XftPatternGetBool (XftPattern *p, const char *object, int n, Bool *b);
