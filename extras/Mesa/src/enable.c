@@ -87,7 +87,7 @@ client_state( GLcontext *ctx, GLenum cap, GLboolean state )
       return;
    }
 
-   if (*var == flag)
+   if (*var == state)
       return;
 
    FLUSH_VERTICES(ctx, _NEW_ARRAY);

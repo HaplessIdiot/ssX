@@ -284,6 +284,7 @@ _mesa_LoadMatrixf( const GLfloat *m )
 {
    GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
+   if (!m) return;
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
    GET_ACTIVE_MATRIX(ctx, mat, ctx->NewState, "glLoadMatrix");
    _math_matrix_loadf( mat, m );
@@ -295,6 +296,7 @@ _mesa_LoadMatrixd( const GLdouble *m )
 {
    GLint i;
    GLfloat f[16];
+   if (!m) return;
    for (i = 0; i < 16; i++)
       f[i] = (GLfloat) m[i];
    _mesa_LoadMatrixf(f);
@@ -310,6 +312,7 @@ _mesa_MultMatrixf( const GLfloat *m )
 {
    GET_CURRENT_CONTEXT(ctx);
    GLmatrix *mat = 0;
+   if (!m) return;
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
    GET_ACTIVE_MATRIX( ctx,  mat, ctx->NewState, "glMultMatrix" );
    _math_matrix_mul_floats( mat, m );
@@ -324,6 +327,7 @@ _mesa_MultMatrixd( const GLdouble *m )
 {
    GLint i;
    GLfloat f[16];
+   if (!m) return;
    for (i = 0; i < 16; i++)
       f[i] = (GLfloat) m[i];
    _mesa_MultMatrixf( f );
@@ -400,6 +404,7 @@ void
 _mesa_LoadTransposeMatrixfARB( const GLfloat *m )
 {
    GLfloat tm[16];
+   if (!m) return;
    _math_transposef(tm, m);
    _mesa_LoadMatrixf(tm);
 }
@@ -409,6 +414,7 @@ void
 _mesa_LoadTransposeMatrixdARB( const GLdouble *m )
 {
    GLfloat tm[16];
+   if (!m) return;
    _math_transposefd(tm, m);
    _mesa_LoadMatrixf(tm);
 }
@@ -418,6 +424,7 @@ void
 _mesa_MultTransposeMatrixfARB( const GLfloat *m )
 {
    GLfloat tm[16];
+   if (!m) return;
    _math_transposef(tm, m);
    _mesa_MultMatrixf(tm);
 }
@@ -427,6 +434,7 @@ void
 _mesa_MultTransposeMatrixdARB( const GLdouble *m )
 {
    GLfloat tm[16];
+   if (!m) return;
    _math_transposefd(tm, m);
    _mesa_MultMatrixf(tm);
 }

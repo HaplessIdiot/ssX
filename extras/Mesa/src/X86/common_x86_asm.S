@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.11 2002/03/05 20:27:24 dawes Exp $ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID
@@ -202,7 +202,7 @@ GLNAME( _mesa_test_os_sse_exception_support ):
 	LDMXCSR	( REGOFF( -8, EBP ) )
 
 	XORPS	( XMM0, XMM0 )
-	MOVUPS	( GLNAME( sse_test_dummy ), XMM1 )
+	MOVUPS	( CONTENT( GLNAME( sse_test_dummy ) ), XMM1 )
 
 	DIVPS	( XMM0, XMM1 )
 

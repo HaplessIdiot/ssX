@@ -23,7 +23,7 @@
  * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/assyntax.h,v 1.10 2002/03/05 20:27:24 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/assyntax.h,v 1.11 2002/09/09 21:07:33 dawes Exp $ */
 
 /*
  * assyntax.h
@@ -991,12 +991,21 @@ SECTION _DATA public align=16 class=DATA use32 flat
 #define B_CONST(a)		a
 
 /* Indirect Mode */
+#ifdef NASM_ASSEMBLER
+#define P_CONTENT(a)		[a]
+#define X_CONTENT(a)		TBYTE_PTR [a]
+#define D_CONTENT(a)		QWORD_PTR [a]
+#define L_CONTENT(a)		DWORD_PTR [a]
+#define W_CONTENT(a)		WORD_PTR [a]
+#define B_CONTENT(a)		BYTE_PTR [a]
+#else
 #define P_CONTENT(a)		a
 #define X_CONTENT(a)		TBYTE_PTR a
 #define D_CONTENT(a)		QWORD_PTR a
 #define L_CONTENT(a)		DWORD_PTR a
 #define W_CONTENT(a)		WORD_PTR a
 #define B_CONTENT(a)		BYTE_PTR a
+#endif
 
 /* Register a indirect */
 #define P_REGIND(a)		[a]

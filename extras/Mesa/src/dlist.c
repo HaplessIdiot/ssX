@@ -4779,11 +4779,10 @@ _mesa_EndList( void )
 {
    GET_CURRENT_CONTEXT(ctx);
    FLUSH_CURRENT(ctx, 0);	/* must be called before assert */
-   ASSERT_OUTSIDE_BEGIN_END(ctx);
+   ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
+
    if (MESA_VERBOSE&VERBOSE_API)
       fprintf(stderr, "glEndList\n");
-
-   ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH( ctx ); /* ??? */
 
    /* Check that a list is under construction */
    if (!ctx->CurrentListPtr) {
@@ -4811,7 +4810,6 @@ _mesa_EndList( void )
 
    ctx->CurrentDispatch = ctx->Exec;
    _glapi_set_dispatch( ctx->CurrentDispatch );
-
 }
 
 
@@ -4824,6 +4822,10 @@ _mesa_CallList( GLuint list )
    FLUSH_CURRENT(ctx, 0);
    /* VERY IMPORTANT:  Save the CompileFlag status, turn it off, */
    /* execute the display list, and restore the CompileFlag. */
+
+
+   if (MESA_VERBOSE & VERBOSE_API)
+      fprintf(stderr, "_mesa_CallList %d\n", list); 
 
 /*     mesa_print_display_list( list ); */
 
@@ -4854,6 +4856,9 @@ _mesa_CallLists( GLsizei n, GLenum type, const GLvoid *lists )
    GLuint list;
    GLint i;
    GLboolean save_compile_flag;
+
+   if (MESA_VERBOSE & VERBOSE_API)
+      fprintf(stderr, "_mesa_CallLists %d\n", n); 
 
    /* Save the CompileFlag status, turn it off, execute display list,
     * and restore the CompileFlag.

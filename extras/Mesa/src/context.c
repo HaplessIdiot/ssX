@@ -1,8 +1,8 @@
-/* $Id: context.c,v 1.13 2002/09/09 21:07:14 dawes Exp $ */
+/* $Id: context.c,v 1.14 2002/09/09 21:29:37 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -50,6 +50,7 @@
 #include "state.h"
 #include "teximage.h"
 #include "texobj.h"
+#include "texstate.h"
 #include "mtypes.h"
 #include "varray.h"
 #include "vtxfmt.h"
@@ -71,22 +72,11 @@
 #endif
 
 #ifndef MESA_VERBOSE
-int MESA_VERBOSE = 0
-/*                 | VERBOSE_PIPELINE */
-/*                 | VERBOSE_IMMEDIATE */
-/*                 | VERBOSE_VARRAY */
-/*                 | VERBOSE_TEXTURE */
-/*                 | VERBOSE_API */
-/*                 | VERBOSE_DRIVER */
-/*                 | VERBOSE_STATE */
-/*                 | VERBOSE_DISPLAY_LIST */
-;
+int MESA_VERBOSE = 0;
 #endif
 
 #ifndef MESA_DEBUG_FLAGS
-int MESA_DEBUG_FLAGS = 0
-/*                 | DEBUG_ALWAYS_FLUSH */
-;
+int MESA_DEBUG_FLAGS = 0;
 #endif
 
 /**********************************************************************/
@@ -346,6 +336,8 @@ _mesa_initialize_framebuffer( GLframebuffer *buffer,
 {
    assert(buffer);
    assert(visual);
+
+   BZERO(buffer, sizeof(GLframebuffer));
 
    /* sanity checks */
    if (softwareDepth ) {
@@ -825,7 +817,6 @@ init_attrib_groups( GLcontext *ctx )
    ctx->Color.ColorLogicOpEnabled = GL_FALSE;
    ctx->Color.LogicOp = GL_COPY;
    ctx->Color.DitherFlag = GL_TRUE;
-   ctx->Color.MultiDrawBuffer = GL_FALSE;
 
    /* Current group */
    ASSIGN_4V( ctx->Current.Color, 1.0, 1.0, 1.0, 1.0 );
@@ -1391,6 +1382,44 @@ alloc_proxy_textures( GLcontext *ctx )
 }
 
 
+static void add_debug_flags( const char *debug )
+{
+#ifdef MESA_DEBUG
+   if (strstr(debug, "varray")) 
+      MESA_VERBOSE |= VERBOSE_VARRAY;
+
+   if (strstr(debug, "tex")) 
+      MESA_VERBOSE |= VERBOSE_TEXTURE;
+
+   if (strstr(debug, "imm")) 
+      MESA_VERBOSE |= VERBOSE_IMMEDIATE;
+
+   if (strstr(debug, "pipe")) 
+      MESA_VERBOSE |= VERBOSE_PIPELINE;
+
+   if (strstr(debug, "driver")) 
+      MESA_VERBOSE |= VERBOSE_DRIVER;
+
+   if (strstr(debug, "state")) 
+      MESA_VERBOSE |= VERBOSE_STATE;
+
+   if (strstr(debug, "api")) 
+      MESA_VERBOSE |= VERBOSE_API;
+
+   if (strstr(debug, "list")) 
+      MESA_VERBOSE |= VERBOSE_DISPLAY_LIST;
+
+   if (strstr(debug, "lighting")) 
+      MESA_VERBOSE |= VERBOSE_LIGHTING;
+   
+   /* Debug flag:
+    */
+   if (strstr(debug, "flush")) 
+      MESA_DEBUG_FLAGS |= DEBUG_ALWAYS_FLUSH;
+#endif
+}
+
+
 /*
  * Initialize a GLcontext struct.  This includes allocating all the
  * other structs and arrays which hang off of the context by pointers.
@@ -1553,6 +1582,13 @@ _mesa_initialize_context( GLcontext *ctx,
 #endif
    trInitDispatch(ctx->TraceDispatch);
 #endif
+
+
+   if (getenv("MESA_DEBUG"))
+      add_debug_flags(getenv("MESA_DEBUG"));
+
+   if (getenv("MESA_VERBOSE"))
+      add_debug_flags(getenv("MESA_VERBOSE"));
 
    return GL_TRUE;
 }
@@ -1723,72 +1759,104 @@ void
 _mesa_copy_context( const GLcontext *src, GLcontext *dst, GLuint mask )
 {
    if (mask & GL_ACCUM_BUFFER_BIT) {
-      MEMCPY( &dst->Accum, &src->Accum, sizeof(struct gl_accum_attrib) );
+      /* OK to memcpy */
+      dst->Accum = src->Accum;
    }
    if (mask & GL_COLOR_BUFFER_BIT) {
-      MEMCPY( &dst->Color, &src->Color, sizeof(struct gl_colorbuffer_attrib) );
+      /* OK to memcpy */
+      dst->Color = src->Color;
    }
    if (mask & GL_CURRENT_BIT) {
-      MEMCPY( &dst->Current, &src->Current, sizeof(struct gl_current_attrib) );
+      /* OK to memcpy */
+      dst->Current = src->Current;
    }
    if (mask & GL_DEPTH_BUFFER_BIT) {
-      MEMCPY( &dst->Depth, &src->Depth, sizeof(struct gl_depthbuffer_attrib) );
+      /* OK to memcpy */
+      dst->Depth = src->Depth;
    }
    if (mask & GL_ENABLE_BIT) {
       /* no op */
    }
    if (mask & GL_EVAL_BIT) {
-      MEMCPY( &dst->Eval, &src->Eval, sizeof(struct gl_eval_attrib) );
+      /* OK to memcpy */
+      dst->Eval = src->Eval;
    }
    if (mask & GL_FOG_BIT) {
-      MEMCPY( &dst->Fog, &src->Fog, sizeof(struct gl_fog_attrib) );
+      /* OK to memcpy */
+      dst->Fog = src->Fog;
    }
    if (mask & GL_HINT_BIT) {
-      MEMCPY( &dst->Hint, &src->Hint, sizeof(struct gl_hint_attrib) );
+      /* OK to memcpy */
+      dst->Hint = src->Hint;
    }
    if (mask & GL_LIGHTING_BIT) {
-      MEMCPY( &dst->Light, &src->Light, sizeof(struct gl_light_attrib) );
-      /*       gl_reinit_light_attrib( &dst->Light ); */
+      GLuint i;
+      /* begin with memcpy */
+      MEMCPY( &dst->Light, &src->Light, sizeof(struct gl_light) );
+      /* fixup linked lists to prevent pointer insanity */
+      make_empty_list( &(dst->Light.EnabledList) );
+      for (i = 0; i < MAX_LIGHTS; i++) {
+         if (dst->Light.Light[i].Enabled) {
+            insert_at_tail(&(dst->Light.EnabledList), &(dst->Light.Light[i]));
+         }
+      }
    }
    if (mask & GL_LINE_BIT) {
-      MEMCPY( &dst->Line, &src->Line, sizeof(struct gl_line_attrib) );
+      /* OK to memcpy */
+      dst->Line = src->Line;
    }
    if (mask & GL_LIST_BIT) {
-      MEMCPY( &dst->List, &src->List, sizeof(struct gl_list_attrib) );
+      /* OK to memcpy */
+      dst->List = src->List;
    }
    if (mask & GL_PIXEL_MODE_BIT) {
-      MEMCPY( &dst->Pixel, &src->Pixel, sizeof(struct gl_pixel_attrib) );
+      /* OK to memcpy */
+      dst->Pixel = src->Pixel;
    }
    if (mask & GL_POINT_BIT) {
-      MEMCPY( &dst->Point, &src->Point, sizeof(struct gl_point_attrib) );
+      /* OK to memcpy */
+      dst->Point = src->Point;
    }
    if (mask & GL_POLYGON_BIT) {
-      MEMCPY( &dst->Polygon, &src->Polygon, sizeof(struct gl_polygon_attrib) );
+      /* OK to memcpy */
+      dst->Polygon = src->Polygon;
    }
    if (mask & GL_POLYGON_STIPPLE_BIT) {
       /* Use loop instead of MEMCPY due to problem with Portland Group's
        * C compiler.  Reported by John Stone.
        */
-      int i;
-      for (i=0;i<32;i++) {
+      GLuint i;
+      for (i = 0; i < 32; i++) {
          dst->PolygonStipple[i] = src->PolygonStipple[i];
       }
    }
    if (mask & GL_SCISSOR_BIT) {
-      MEMCPY( &dst->Scissor, &src->Scissor, sizeof(struct gl_scissor_attrib) );
+      /* OK to memcpy */
+      dst->Scissor = src->Scissor;
    }
    if (mask & GL_STENCIL_BUFFER_BIT) {
-      MEMCPY( &dst->Stencil, &src->Stencil, sizeof(struct gl_stencil_attrib) );
+      /* OK to memcpy */
+      dst->Stencil = src->Stencil;
    }
    if (mask & GL_TEXTURE_BIT) {
-      MEMCPY( &dst->Texture, &src->Texture, sizeof(struct gl_texture_attrib) );
+      /* Cannot memcpy because of pointers */
+      _mesa_copy_texture_state(src, dst);
    }
    if (mask & GL_TRANSFORM_BIT) {
-      MEMCPY( &dst->Transform, &src->Transform, sizeof(struct gl_transform_attrib) );
+      /* OK to memcpy */
+      dst->Transform = src->Transform;
    }
    if (mask & GL_VIEWPORT_BIT) {
-      MEMCPY( &dst->Viewport, &src->Viewport, sizeof(struct gl_viewport_attrib) );
+      /* Cannot use memcpy, because of pointers in GLmatrix _WindowMap */
+      dst->Viewport.X = src->Viewport.X;
+      dst->Viewport.Y = src->Viewport.Y;
+      dst->Viewport.Width = src->Viewport.Width;
+      dst->Viewport.Height = src->Viewport.Height;
+      dst->Viewport.Near = src->Viewport.Near;
+      dst->Viewport.Far = src->Viewport.Far;
+      _math_matrix_copy(&dst->Viewport._WindowMap, &src->Viewport._WindowMap);
    }
+
    /* XXX FIXME:  Call callbacks?
     */
    dst->NewState = _NEW_ALL;
@@ -1878,7 +1946,39 @@ _mesa_make_current2( GLcontext *newCtx, GLframebuffer *drawBuffer,
 	 newCtx->DrawBuffer = drawBuffer;
 	 newCtx->ReadBuffer = readBuffer;
 	 newCtx->NewState |= _NEW_BUFFERS;
-	 /* _mesa_update_state( newCtx ); */
+
+         if (drawBuffer->Width == 0 && drawBuffer->Height == 0) {
+            /* get initial window size */
+            GLuint bufWidth, bufHeight;
+
+            /* ask device driver for size of output buffer */
+            (*newCtx->Driver.GetBufferSize)( drawBuffer, &bufWidth, &bufHeight );
+
+            if (drawBuffer->Width == bufWidth && drawBuffer->Height == bufHeight)
+               return; /* size is as expected */
+
+            drawBuffer->Width = bufWidth;
+            drawBuffer->Height = bufHeight;
+
+            newCtx->Driver.ResizeBuffers( drawBuffer );
+         }
+
+         if (readBuffer != drawBuffer &&
+             readBuffer->Width == 0 && readBuffer->Height == 0) {
+            /* get initial window size */
+            GLuint bufWidth, bufHeight;
+
+            /* ask device driver for size of output buffer */
+            (*newCtx->Driver.GetBufferSize)( readBuffer, &bufWidth, &bufHeight );
+
+            if (readBuffer->Width == bufWidth && readBuffer->Height == bufHeight)
+               return; /* size is as expected */
+
+            readBuffer->Width = bufWidth;
+            readBuffer->Height = bufHeight;
+
+            newCtx->Driver.ResizeBuffers( readBuffer );
+         }
       }
 
       if (newCtx->Driver.MakeCurrent)
