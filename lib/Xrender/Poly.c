@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Poly.c,v 1.1 2002/05/13 05:21:46 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.2 2002/05/13 07:21:54 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -48,7 +48,7 @@ XRenderComputeX (XLineFixed *line, XFixed y)
     double  ex = (double) (y - line->p1.y) * (double) dx;
     XFixed  dy = line->p2.y - line->p1.y;
 
-    return (XFixed) line->p1.x + (XFixed) ex / dy;
+    return (XFixed) line->p1.x + (XFixed) (ex / dy);
 }
 
 static double
@@ -92,54 +92,34 @@ XRenderComputeTrapezoids (Edge		*edges,
     int		inactive;
     Edge	*active;
     Edge	*e, *en, *next, *prev;
-    XFixed	y, next_y, intersect, active_bottom;
+    XFixed	y, next_y, intersect;
     
     qsort (edges, nedges, sizeof (Edge), CompareEdge);
-    /*
-     * build initial active edge list
-     */
-    active = &edges[0];
-    active->prev = 0;
-    active->next = 0;
-    y = active->edge.p1.y;
-    inactive = 1;
-    for (;;)
+    
+    y = edges[0].edge.p1.y;
+    active = 0;
+    inactive = 0;
+    while (active || inactive < nedges)
     {
-	/* delete inactive edges from list */
-	for (e = active; e; e = next)
-	{
-	    next = e->next;
-	    if (e->edge.p2.y <= y)
-	    {
-		if (e->prev)
-		    e->prev->next = e->next;
-		else
-		    active = e->next;
-		if (e->next)
-		    e->next->prev = e->prev;
-	    }
-	}
-	if (!active)
-	    break;
-	active_bottom = active->edge.p2.y;
-	/* add new edges to active list */
+	/* insert new active edges into list */
 	while (inactive < nedges)
 	{
 	    e = &edges[inactive];
-	    if (e->edge.p1.y >= active_bottom)
+	    if (e->edge.p1.y > y)
 		break;
+	    /* move this edge into the active list */
 	    inactive++;
-	    if (e->edge.p2.y < active_bottom)
-		active_bottom = e->edge.p2.y;
 	    e->next = active;
 	    e->prev = 0;
-	    active->prev = e;
+	    if (active)
+		active->prev = e;
 	    active = e;
 	}
 	/* compute x coordinates along this group */
 	for (e = active; e; e = e->next)
 	    e->current_x = XRenderComputeX (&e->edge, y);
-	/* sort the list */
+	
+	/* sort active list */
 	for (e = active; e; e = next)
 	{
 	    next = e->next;
@@ -164,23 +144,21 @@ XRenderComputeTrapezoids (Edge		*edges,
 		
 		/* insert e */
 		e->next = prev->next;
-		e->prev = prev;
 		if (prev->next)
 		    prev->next->prev = e;
+		e->prev = prev;
 		prev->next = e;
 	    }
 	}
-	/* find the next point of transition, possibly an intersection */
+	/* find next inflection point */
 	next_y = active->edge.p2.y;
-	for (e = active; e; e = e->next)
+	for (e = active; e; e = en)
 	{
 	    if (e->edge.p2.y < next_y)
 		next_y = e->edge.p2.y;
-	    if (y < e->edge.p1.y && e->edge.p1.y < next_y)
-		next_y = e->edge.p1.y;
-	    
-	    /* check for intersection */
-	    if (e->next && e->edge.p2.x > e->next->edge.p2.x)
+	    en = e->next;
+	    /* check intersect */
+	    if (en && e->edge.p2.x > en->edge.p2.x) 
 	    {
 		intersect = XRenderComputeIntersect (&e->edge, &e->next->edge);
 		/* make sure this point is below the actual intersection */
@@ -189,30 +167,37 @@ XRenderComputeTrapezoids (Edge		*edges,
 		    next_y = intersect;
 	    }
 	}
+	/* check next inactive point */
+	if (inactive < nedges && edges[inactive].edge.p1.y < next_y)
+	    next_y = edges[inactive].edge.p1.y;
 	
 	/* walk the list generating trapezoids */
-	for (e = active; e; e = en)
+	for (e = active; e && (en = e->next); e = en->next)
 	{
-	    en = e->next;
-	    if (e->edge.p1.y <= y)
+	    traps->top = y;
+	    traps->bottom = next_y;
+	    traps->left = e->edge;
+	    traps->right = en->edge;
+	    traps++;
+	    ntraps++;
+	}
+
+	y = next_y;
+	
+	/* delete inactive edges from list */
+	for (e = active; e; e = next)
+	{
+	    next = e->next;
+	    if (e->edge.p2.y <= y)
 	    {
-		for (; en; en = en->next)
-		{
-		    if (en->edge.p1.y <= y)
-		    {
-			traps->top = y;
-			traps->bottom = next_y;
-			traps->left = e->edge;
-			traps->right = en->edge;
-			traps++;
-			ntraps++;
-			en = en->next;
-			break;
-		    }
-		}
+		if (e->prev)
+		    e->prev->next = e->next;
+		else
+		    active = e->next;
+		if (e->next)
+		    e->next->prev = e->prev;
 	    }
 	}
-	y = next_y;
     }
     return ntraps;
 }
