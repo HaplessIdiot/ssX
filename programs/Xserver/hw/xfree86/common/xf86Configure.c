@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.32 2000/04/20 13:31:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.33 2000/04/20 21:28:25 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -41,10 +41,17 @@
 #include "Configint.h"
 #include "vbe.h"
 #include "xf86DDC.h"
+#ifdef __sparc__
+#include "xf86Bus.h"
+#include "xf86Sbus.h"
+#endif
 
 typedef struct _DevToConfig {
     GDevRec GDev;
     pciVideoPtr pVideo;
+#ifdef __sparc__
+    sbusDevicePtr sVideo;
+#endif
     int iDriver;
 } DevToConfigRec, *DevToConfigPtr;
 
@@ -100,21 +107,26 @@ GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
  * the caller fill in the rest and/or change it as it sees fit.
  */
 GDevPtr
-xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
+xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int chipset)
 {
-    int busType, i, j;
+    int i, j;
+    pciVideoPtr pVideo = NULL;
 
     if (xf86DoProbe || !xf86DoConfigure || !xf86DoConfigurePass1)
 	return NULL;
 
     /* Check for duplicates */
-    if (pVideo) {
+    switch (bus) {
+    case BUS_PCI:
+	pVideo = (pciVideoPtr) busData;
 	for (i = 0;  i < nDevToConfig;  i++)
-	    if ((DevToConfig[i].pVideo->bus == pVideo->bus) &&
+	    if (DevToConfig[i].pVideo &&
+		(DevToConfig[i].pVideo->bus == pVideo->bus) &&
 		(DevToConfig[i].pVideo->device == pVideo->device) &&
 		(DevToConfig[i].pVideo->func == pVideo->func))
 		return NULL;
-    } else {
+	break;
+    case BUS_ISA:
 	/*
 	 * This needs to be revisited as it doesn't allow for non-PCI
 	 * multihead.
@@ -124,6 +136,17 @@ xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
 	for (i = 0;  i < nDevToConfig;  i++)
 	    if (!DevToConfig[i].pVideo)
 		return NULL;
+	break;
+#ifdef __sparc__
+    case BUS_SBUS:
+	for (i = 0;  i < nDevToConfig;  i++)
+	    if (DevToConfig[i].sVideo &&
+		DevToConfig[i].sVideo->fbNum == ((sbusDevicePtr) busData)->fbNum)
+		return NULL;
+	break;
+#endif
+    default:
+	return NULL;
     }
 
     /* Allocate new structure occurrence */
@@ -137,15 +160,16 @@ xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
     NewDevice.GDev.chipID = NewDevice.GDev.chipRev = NewDevice.GDev.irq = -1;
 
     NewDevice.iDriver = CurrentDriver;
-    NewDevice.pVideo = pVideo;
 
     /* Fill in what we know, converting the driver name to lower case */
     NewDevice.GDev.driver = xnfalloc(strlen(driver) + 1);
     for (j = 0;  (NewDevice.GDev.driver[j] = tolower(driver[j]));  j++);
 
-    if (pVideo) {
+    switch (bus) {
+    case BUS_PCI: {
 	int vendor1, vendor2, card;
 
+	NewDevice.pVideo = pVideo;
 	GetPciCard(pVideo->vendor, pVideo->chipType,
 	    &vendor1, &vendor2, &card);
 
@@ -169,24 +193,57 @@ xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
 #	undef VendorName
 #	undef CardName
 
-	busType = BUS_PCI;
 	if (chipset < 0)
 	    chipset = (pVideo->vendor << 16) || pVideo->chipType;
-    } else {
+	}
+	break;
+    case BUS_ISA:
 	NewDevice.GDev.identifier = "ISA Adapter";
 	NewDevice.GDev.busID = "ISA";
-	busType = BUS_ISA;
+	break;
+#ifdef __sparc__
+    case BUS_SBUS: {
+	char *promPath = NULL;
+	NewDevice.sVideo = (sbusDevicePtr) busData;
+	NewDevice.GDev.identifier = NewDevice.sVideo->descr;
+	if (sparcPromInit() >= 0) {
+	    promPath = sparcPromNode2Pathname(&NewDevice.sVideo->node);
+	    sparcPromClose();
+	}
+	if (promPath) {
+	    NewDevice.GDev.busID = xnfalloc(strlen(promPath) + 6);
+	    sprintf(NewDevice.GDev.busID, "SBUS:%s", promPath);
+	    xfree(promPath);
+	} else {
+	    NewDevice.GDev.busID = xnfalloc(12);
+	    sprintf(NewDevice.GDev.busID, "SBUS:fb%d", NewDevice.sVideo->fbNum);
+	}
+	}
+	break;
+#endif
+    default:
+	break;
     }
 
     /* Get driver's available options */
     if (xf86DriverList[CurrentDriver]->AvailableOptions)
 	NewDevice.GDev.options =
 	    (*xf86DriverList[CurrentDriver]->AvailableOptions)(chipset,
-							       busType);
+							       bus);
 
     return &NewDevice.GDev;
 
 #   undef NewDevice
+}
+
+/*
+ * Backwards compatibility
+ */
+GDevPtr
+xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
+{
+    return xf86AddBusDeviceToConfigure(driver, pVideo ? BUS_PCI : BUS_ISA,
+				       pVideo, chipset);
 }
 
 static XF86ConfInputPtr

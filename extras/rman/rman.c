@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.5 2000/03/21 22:15:48 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.6 2000/03/21 23:17:21 dawes Exp $ */
 
 
 /* TO DO ****
@@ -54,6 +54,10 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifdef Lynx
+extern int optind;
+extern char *optarg;
+#endif
 
 /*** make #define's into consts? => can't because compilers not smart enough ***/
 /* maximum number of tags per line */
@@ -5333,7 +5337,7 @@ main(int argc, char *argv[]) {
 			exit(0);
 
 		   case 'v': /*case '?':*/
-			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/03/21 23:17:21 $\n");
+			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/05/23 04:47:35 $\n");
 			exit(0);
 
 		   default:

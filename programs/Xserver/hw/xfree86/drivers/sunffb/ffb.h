@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -35,8 +35,10 @@
 #include "xf86RamDac.h"
 #include "Xmd.h"
 #include "gcstruct.h"
+#include "windowstr.h"
 #include "ffb_regs.h"
 #include "xf86sbusBus.h"
+#include "ffb_dac.h"
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
 /* Note: do not mmap FFB_DFB8R_VOFF and following mappings using one mmap together
@@ -94,6 +96,15 @@ typedef struct {
 	void (*Polylines)(DrawablePtr, GCPtr, int, int, DDXPointPtr);
 } CreatorPrivGCRec, *CreatorPrivGCPtr;
 
+/* WID and framebuffer controls are a property of the
+ * window.
+ */
+typedef struct {
+	CreatorStipplePtr	Stipple;
+	unsigned int		fbc_base;
+	unsigned int		wid;
+} CreatorPrivWinRec, *CreatorPrivWinPtr;
+
 enum ffb_resolution {
 	ffb_res_standard = 0,	/* 1280 x 1024 */
 	ffb_res_high,		/* 1920 x 1360 */
@@ -128,11 +139,16 @@ typedef struct {
 	unsigned int fontw_cache;
 	unsigned int fontinc_cache;
 	unsigned int fbc_cache;
+	unsigned int wid_cache;
 	enum ffb_chip_type ffb_type;
 	CreatorStipplePtr laststipple;
 	unsigned *fb;
 	unsigned *sfb32;
+	unsigned *sfb8r;
+	unsigned *sfb8x;
 	unsigned *dfb24;
+	unsigned *dfb8r;
+	unsigned *dfb8x;
 
 	/* Slot offset 0x0200000, used to probe board type. */
 	volatile unsigned int *strapping_bits;
@@ -152,6 +168,11 @@ typedef struct {
 	/* Available on FFB2 and AFB */
 	unsigned char use_blkread_prefetch;
 
+	/* Framebuffer configuration */
+	unsigned char has_double_res;
+	unsigned char has_z_buffer;
+	unsigned char has_double_buffer;
+
 	enum ffb_resolution ffb_res;
 	BoxRec ClippedBoxBuf[64];
 	xRectangle Pf_Fixups[4];
@@ -165,7 +186,34 @@ typedef struct {
 	xf86CursorInfoPtr CursorInfoRec;
 	unsigned char CursorShiftX, CursorShiftY;
 	unsigned char *CursorData;
+
+	PixmapPtr pix32, pix8;
+
+	void *I2C;
+	struct ffb_dac_info dac_info;
 } FFBRec, *FFBPtr;
+
+/* Exported DAC layer routines. */
+extern void FFBDacLoadCursorPos(FFBPtr, int, int);
+extern void FFBDacLoadCursorColor(FFBPtr, int, int);
+extern void FFBDacCursorEnableDisable(FFBPtr, int);
+extern void FFBDacCursorLoadBitmap(FFBPtr, int, int, unsigned int *);
+extern void FFBDacLoadPalette(ScrnInfoPtr, int, int *, LOCO *, VisualPtr);
+extern Bool FFBDacInit(FFBPtr);
+extern void FFBDacFini(FFBPtr);
+extern void FFBDacEnterVT(FFBPtr);
+extern void FFBDacLeaveVT(FFBPtr);
+
+/* Exported WID layer routines. */
+extern void FFBWidPoolInit(FFBPtr);
+extern unsigned int FFBWidAlloc(FFBPtr, int, int, Bool);
+extern void FFBWidFree(FFBPtr, unsigned int);
+extern unsigned int FFBWidUnshare(FFBPtr, unsigned int);
+extern unsigned int FFBWidReshare(FFBPtr, unsigned int);
+extern void FFBWidChangeBuffer(FFBPtr, unsigned int, int);
+
+/* Accelerated double-buffering. */
+extern Bool FFBDbePreInit(ScreenPtr);
 
 /* The fastfill and pagefill buffer sizes change based upon
  * the resolution.
@@ -197,7 +245,7 @@ extern int  CreatorWindowPrivateIndex;
 ((CreatorPrivGCPtr) (g)->devPrivates [CreatorGCPrivateIndex].ptr)
 
 #define CreatorGetWindowPrivate(w)					\
-((CreatorStipplePtr) (w)->devPrivates[CreatorWindowPrivateIndex].ptr)
+((CreatorPrivWinPtr) (w)->devPrivates[CreatorWindowPrivateIndex].ptr)
                             
 #define CreatorSetWindowPrivate(w,p) 					\
 ((w)->devPrivates[CreatorWindowPrivateIndex].ptr = (pointer) p)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.137 2000/04/23 19:26:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.138 2000/05/11 18:14:27 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -130,6 +130,8 @@ Bool xf86QueueAsyncEvent(void (*func)(pointer),pointer arg);
 #endif
  
 /* xf86Configure.c */
+GDevPtr xf86AddBusDeviceToConfigure(const char *driver, BusType bus,
+				    void *busData, int chipset);
 GDevPtr xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo,
 				 int chipset);
  

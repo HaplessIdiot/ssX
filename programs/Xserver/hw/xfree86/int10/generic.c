@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.6 2000/04/19 15:48:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.7 2000/05/11 18:14:39 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -329,8 +329,8 @@ static void
 write_w(xf86Int10InfoPtr pInt, int addr, CARD16 val)
 {
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-    (V_ADDR_WB(addr,val);
-    (V_ADDR_WB(addr + 1,val >> 8);
+    V_ADDR_WB(addr,val);
+    V_ADDR_WB(addr + 1,val >> 8);
 #else
     if (OFF(addr + 1) > 0) {
 	V_ADDR_WW(addr,val);

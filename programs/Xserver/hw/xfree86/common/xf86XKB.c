@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.7 1998/07/25 16:55:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.8 1999/03/28 15:32:29 dawes Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -70,7 +70,8 @@ XkbDDXUpdateIndicators(DeviceIntPtr pXDev,CARD32 new)
     static int kbdSun = -1;
     
     if (kbdSun == -1) {
-	if (xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+	if ((xf86Info.xkbmodel && !strcmp(xf86Info.xkbmodel, "sun"))
+	    || (xf86Info.xkbrules && !strcmp(xf86Info.xkbrules, "sun")))
 	    kbdSun = 1;
 	else
 	    kbdSun = 0;

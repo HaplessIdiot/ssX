@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.1 2000/05/18 23:21:34 dawes Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -52,6 +52,7 @@ typedef struct sbus_device {
     int			width, height;
     sbusPromNode	node;
     char		*descr;
+    char		*device;
 } sbusDevice, *sbusDevicePtr;
 
 extern struct sbus_devtable {
@@ -74,5 +75,6 @@ pointer xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset,
 		       unsigned long size);
 void xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size);
 void xf86SbusHideOsHwCursor(sbusDevicePtr psdp);
+Bool xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp);
 
 #endif /* _XF86_SBUSBUS_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.61 2000/03/25 20:30:44 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.63 2000/04/17 16:30:13 eich Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -32,10 +32,6 @@
 #undef _ANSI_SOURCE
 #endif
 #include <sys/time.h>
-#if defined(__bsdi__)
-#define _POSIX_SOURCE
-#define _ANSI_SOURCE
-#endif
 #include <math.h>
 #include <stdarg.h>
 #include <fcntl.h>

@@ -22,9 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_sspans.c,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -34,30 +32,46 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-#include "cfbmskbits.h"
+#undef PSZ
+#include "cfb32.h"
 
 /* PPC does all of the planemask and ROP'ing on the written pixels,
  * and we know various other things are constant, so this is easy.
  */
 static void
 CreatorSetScanline(int y, int xOrigin, int xStart, int xEnd,
-		   unsigned int *psrc, char *sfb)
+		   unsigned int *_psrc, char *sfb, int depth)
 {
-	unsigned int *pdst = (unsigned int *)(sfb +
-					      (y << 13) +
-					      (xStart << 2));
-	int w = xEnd - xStart;
+	if (depth == 8) {
+		unsigned char *psrc = (unsigned char *)_psrc;
+		unsigned char *pdst = (unsigned char *)(sfb +
+							(y << 11) +
+							(xStart << 0));
+		int w = xEnd - xStart;
 
-	psrc += (xStart - xOrigin);
-	while(w--)
-		*pdst++ = *psrc++;
+		psrc += (xStart - xOrigin);
+		while(w--)
+			*pdst++ = *psrc++;
+	} else {
+		unsigned int *psrc = (unsigned int *)_psrc;
+		unsigned int *pdst = (unsigned int *)(sfb +
+						      (y << 13) +
+						      (xStart << 2));
+		int w = xEnd - xStart;
+
+		psrc += (xStart - xOrigin);
+		while(w--)
+			*pdst++ = *psrc++;
+	}
 }
 
 void
 CreatorSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc,
 		DDXPointPtr ppt, int *pwidth, int nspans, int fSorted)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pDrawable->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
 	unsigned int *psrc = (unsigned int *)pcharsrc;
@@ -68,8 +82,12 @@ CreatorSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc,
 	int xStart, xEnd, yMax;
 
 	if(pDrawable->type != DRAWABLE_WINDOW) {
-		cfbSetSpans(pDrawable, pGC, pcharsrc, ppt,
-			    pwidth, nspans, fSorted);
+		if (pDrawable->bitsPerPixel == 8)
+			cfbSetSpans(pDrawable, pGC, pcharsrc, ppt,
+				    pwidth, nspans, fSorted);
+		else
+			cfb32SetSpans(pDrawable, pGC, pcharsrc, ppt,
+				      pwidth, nspans, fSorted);
 		return;
 	}
 	FFBLOG(("CreatorSetSpans: ALU(%x) PMSK(%08x) nspans(%d) fsorted(%d)\n",
@@ -78,10 +96,14 @@ CreatorSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc,
 		return;
 
 	/* Get SFB ready. */
-	FFB_WRITE_ATTRIBUTES_SFB_VAR(pFfb, pGC->planemask, pGC->alu);
+	FFB_ATTR_SFB_VAR_WIN(pFfb, pGC->planemask, pGC->alu, pWin);
 	FFBWait(pFfb, ffb);
 
-	addrp = (char *) pFfb->fb;
+	if (pGC->depth == 8)
+		addrp = (char *) pFfb->sfb8r;
+	else
+		addrp = (char *) pFfb->sfb32;
+
 	yMax = (int) pDrawable->y + (int) pDrawable->height;
 	prgnDst = cfbGetCompositeClip(pGC);
 	pbox = REGION_RECTS(prgnDst);
@@ -107,7 +129,8 @@ CreatorSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc,
 				}
 				xStart = max(pbox->x1, ppt->x);
 				xEnd = min(ppt->x + *pwidth, pbox->x2);
-				CreatorSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, addrp);
+				CreatorSetScanline(ppt->y, ppt->x, xStart, xEnd,
+						   psrc, addrp, pGC->depth);
 				if(ppt->x + *pwidth <= pbox->x2)
 					break;
 				else
@@ -132,7 +155,7 @@ CreatorSetSpans(DrawablePtr pDrawable, GCPtr pGC, char *pcharsrc,
 						xEnd = min(pbox->x2, ppt->x + *pwidth);
 						CreatorSetScanline(ppt->y, ppt->x,
 								   xStart, xEnd,
-								   psrc, addrp);
+								   psrc, addrp, pGC->depth);
 					}
 				}
 			}

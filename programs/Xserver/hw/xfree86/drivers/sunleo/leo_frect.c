@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_frect.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
 
 #define PSZ 32
 
@@ -75,7 +75,7 @@ LeoPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *pre
 
 	if (REGION_NUM_RECTS(prgnClip) == 1) {
 		int x1, y1, x2, y2;
-		int x, y, w, h;
+		int x, y, xx, yy;
 
 		pextent = REGION_RECTS(prgnClip);
 		x1 = pextent->x1;
@@ -83,19 +83,21 @@ LeoPolyFillRect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle *pre
 		x2 = pextent->x2;
 		y2 = pextent->y2;
 		while (nrectFill--) {
-			if ((x = prect->x) < x1)
+			x = prect->x;
+			y = prect->y;
+			xx = x + prect->width;
+			yy = y + prect->height;
+			if (x < x1)
 				x = x1;
-			if ((y = prect->y) < y1)
+			if (y < y1)
 				y = y1;
-			w = prect->width;
-			h = prect->height;
 			prect++;
-			if (w + x > x2) w = x2 - x;
-			if (w <= 0) continue;
-			if (h + y > y2) h = y2 - y;
-			if (h <= 0) continue;
+			if (xx > x2) xx = x2;
+			if (yy > y2) yy = y2;
+			if (x >= xx) continue;
+			if (y >= yy) continue;
 
-			lc0->extent = (w - 1) | ((h - 1) << 11);
+			lc0->extent = (xx - x - 1) | ((yy - y - 1) << 11);
 			lc0->fill = x | (y << 11);
 			while (lc0->csr & LEO_CSR_BLT_BUSY);
 		}
@@ -170,7 +172,7 @@ LeoPolyFillRect1Rect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	int		n;
 	int		xorg, yorg;
 	int		x1, y1, x2, y2;
-	int		x, y, w, h;
+	int		x, y, xx, yy;
     
 	/* No garbage please. */
 	if(nrectFill <= 0)
@@ -205,19 +207,21 @@ LeoPolyFillRect1Rect(DrawablePtr pDrawable, GCPtr pGC, int nrectFill, xRectangle
 	x2 = pextent->x2;
 	y2 = pextent->y2;
 	while (nrectFill--) {
-		if ((x = prect->x) < x1)
+		x = prect->x;
+		y = prect->y;
+		xx = x + prect->width;
+		yy = y + prect->height;
+		if (x < x1)
 			x = x1;
-		if ((y = prect->y) < y1)
+		if (y < y1)
 			y = y1;
-		w = prect->width;
-		h = prect->height;
 		prect++;
-		if (w + x > x2) w = x2 - x;
-		if (w <= 0) continue;
-		if (h + y > y2) h = y2 - y;
-		if (h <= 0) continue;
+		if (xx > x2) xx = x2;
+		if (x >= xx) continue;
+		if (yy > y2) yy = y2;
+		if (y >= yy) continue;
 
-		lc0->extent = (w - 1) | ((h - 1) << 11);
+		lc0->extent = (xx - x - 1) | ((yy - y - 1) << 11);
 		lc0->fill = x | (y << 11);
 		while (lc0->csr & LEO_CSR_BLT_BUSY);
 	}

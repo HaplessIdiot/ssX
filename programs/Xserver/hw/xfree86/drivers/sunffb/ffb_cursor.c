@@ -23,9 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_cursor.c,v 1.1 2000/05/18 23:21:36 dawes Exp $ */
 
 #include "ffb.h"
+
+/* This file just performs cursor software state management.  The
+ * actual programming is done by calls into the DAC layer.
+ */
 
 static void FFBLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src);
 static void FFBShowCursor(ScrnInfoPtr pScrn);
@@ -37,32 +41,15 @@ static void
 FFBLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
-    int i, j, x, y;
     unsigned int *data = (unsigned int *)src;
+    int x, y;
 
     pFfb->CursorData = src;
     x = pFfb->CursorShiftX;
     y = pFfb->CursorShiftY;
     if (x >= 64 || y >= 64)
 	y = 64;
-    pFfb->dac->cur = 0;
-    for (j = 0; j < 2; j++) {
-	data += y * 2;
-	if (!x)
-	    for (i = y * 2; i < 128; i++)
-		pFfb->dac->curdata = *data++;
-	else if (x < 32)
-	    for (i = y; i < 64; i++, data += 2) {
-		pFfb->dac->curdata = (data[0] << x) | (data[1] >> (32 - x));
-		pFfb->dac->curdata = data[1] << x;
-	    }
-	else
-	    for (i = y; i < 64; i++, data += 2) {
-		pFfb->dac->curdata = data[1] << (x - 32); pFfb->dac->curdata = 0;
-	    }
-	for (i = 0; i < y * 2; i++)
-	    pFfb->dac->curdata = 0;
-    }
+    FFBDacCursorLoadBitmap(pFfb, x, y, data);
 }
 
 static void 
@@ -70,8 +57,7 @@ FFBShowCursor(ScrnInfoPtr pScrn)
 {
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
-    pFfb->dac->cur = 0x100;
-    pFfb->dac->curdata = 0;
+    FFBDacCursorEnableDisable(pFfb, 1);
 }
 
 static void
@@ -79,8 +65,7 @@ FFBHideCursor(ScrnInfoPtr pScrn)
 {
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
-    pFfb->dac->cur = 0x100;
-    pFfb->dac->curdata = 3;
+    FFBDacCursorEnableDisable(pFfb, 0);
     pFfb->CursorData = NULL;
 }
 
@@ -110,8 +95,7 @@ FFBSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	FFBLoadCursorImage(pScrn, pFfb->CursorData);
     }
 	
-    pFfb->dac->cur = 0x104;
-    pFfb->dac->curdata = ((y & 0xffff) << 16) | (x & 0xffff);
+    FFBDacLoadCursorPos(pFfb, x, y);
 }
 
 static void
@@ -119,9 +103,7 @@ FFBSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
-    pFfb->dac->cur = 0x102;
-    pFfb->dac->curdata = bg;
-    pFfb->dac->curdata = fg;
+    FFBDacLoadCursorColor(pFfb, fg, bg);
 }
 
 Bool 

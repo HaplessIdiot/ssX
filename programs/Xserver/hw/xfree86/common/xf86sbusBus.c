@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.c,v 3.1 2000/05/18 23:21:34 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -31,6 +31,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86Resources.h"
+#include "xf86cmap.h"
 
 #include "xf86Bus.h"
 
@@ -104,6 +105,7 @@ CheckSbusDevice(const char *device, int fbNum)
     xf86SbusInfo[xf86nSbusInfo - 1] = psdp = xnfcalloc(sizeof (sbusDevice), 1);
     psdp->devId = sbusDeviceTable[i].devId;
     psdp->fbNum = fbNum;
+    psdp->device = xnfstrdup(device);
     psdp->width = fbattr.fbtype.fb_width;
     psdp->height = fbattr.fbtype.fb_height;
     psdp->fd = -1;
@@ -400,6 +402,8 @@ xf86MatchSbusInstances(const char *driverName, int sbusDevId,
     for (psdpp = xf86SbusInfo, psdp = *psdpp; psdp; psdp = *++psdpp) {
 	if (psdp->devId != sbusDevId)
 	    continue;
+	if (psdp->fd == -2)
+	    continue;
 	++allocatedInstances;
 	instances = xnfrealloc(instances,
 			       allocatedInstances * sizeof(struct Inst));
@@ -424,15 +428,16 @@ xf86MatchSbusInstances(const char *driverName, int sbusDevId,
 	return numFound;
     }
 
-#if 0
-    /* FIXME */
+    if (sparcPromInit() >= 0)
+	useProm = 1;
+
     if (xf86DoConfigure && xf86DoConfigurePass1) {
 	GDevPtr pGDev;
 	int actualcards = 0;
 	for (i = 0; i < allocatedInstances; i++) {
 	    actualcards++;
-	    pGDev = xf86AddDeviceToConfigure(driverName,
-					     instances[i].sbus, -1);
+	    pGDev = xf86AddBusDeviceToConfigure(driverName, BUS_SBUS,
+						instances[i].sbus, -1);
 	    if (pGDev) {
 		/*
 		 * XF86Match???Instances() treat chipID and chipRev as
@@ -442,12 +447,10 @@ xf86MatchSbusInstances(const char *driverName, int sbusDevId,
 	    }
 	}
 	xfree(instances);
+	if (useProm)
+	    sparcPromClose();
 	return actualcards;
     }
-#endif
-
-    if (sparcPromInit() >= 0)
-	useProm = 1;
 
 #ifdef DEBUG
     ErrorF("%s instances found: %d\n", driverName, allocatedInstances);
@@ -585,6 +588,7 @@ void
 xf86SbusUseBuiltinMode(ScrnInfoPtr pScrn, sbusDevicePtr psdp)
 {
     DisplayModePtr mode;
+
     mode = xnfcalloc(sizeof(DisplayModeRec), 1);
     mode->name = "current";
     mode->next = mode;
@@ -613,4 +617,109 @@ xf86SbusUseBuiltinMode(ScrnInfoPtr pScrn, sbusDevicePtr psdp)
     pScrn->modes = mode;
     pScrn->virtualX = psdp->width;
     pScrn->virtualY = psdp->height;
+}
+
+static int sbusPaletteIndex = -1;
+static unsigned long sbusPaletteGeneration = 0;
+typedef struct _sbusCmap {
+    sbusDevicePtr psdp;
+    CloseScreenProcPtr CloseScreen;
+    Bool origCmapValid;
+    unsigned char origRed[16];
+    unsigned char origGreen[16];
+    unsigned char origBlue[16];
+} sbusCmapRec, *sbusCmapPtr;
+
+#define SBUSCMAPPTR(pScreen) ((sbusCmapPtr)((pScreen)->devPrivates[sbusPaletteIndex].ptr))
+
+static void
+xf86SbusCmapLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+			LOCO *colors, VisualPtr pVisual)
+{
+    int i, index;
+    sbusCmapPtr cmap;
+    struct fbcmap fbcmap;
+    unsigned char *data = ALLOCATE_LOCAL(numColors*3);
+                             
+    cmap = SBUSCMAPPTR(pScrn->pScreen);
+    if (!cmap) return;
+    fbcmap.count = 0;
+    fbcmap.index = indices[0];
+    fbcmap.red = data;
+    fbcmap.green = data + numColors;
+    fbcmap.blue = fbcmap.green + numColors;
+    for (i = 0; i < numColors; i++) {
+	index = indices[i];
+	if (fbcmap.count && index != fbcmap.index + fbcmap.count) {
+	    ioctl (cmap->psdp->fd, FBIOPUTCMAP, &fbcmap);
+	    fbcmap.count = 0;
+	    fbcmap.index = index;
+	}
+	fbcmap.red[fbcmap.count] = colors[index].red;
+	fbcmap.green[fbcmap.count] = colors[index].green;
+	fbcmap.blue[fbcmap.count++] = colors[index].blue;
+    }
+    ioctl (cmap->psdp->fd, FBIOPUTCMAP, &fbcmap);
+    DEALLOCATE_LOCAL(data);
+}
+
+static Bool
+xf86SbusCmapCloseScreen(int i, ScreenPtr pScreen)
+{
+    sbusCmapPtr cmap;
+    struct fbcmap fbcmap;
+                         
+    cmap = SBUSCMAPPTR(pScreen);
+    if (cmap->origCmapValid) {
+	fbcmap.index = 0;
+	fbcmap.count = 16;
+	fbcmap.red = cmap->origRed;
+	fbcmap.green = cmap->origGreen;
+	fbcmap.blue = cmap->origBlue;
+	ioctl (cmap->psdp->fd, FBIOPUTCMAP, &fbcmap);
+    }
+    pScreen->CloseScreen = cmap->CloseScreen;
+    xfree (cmap);
+    return (*pScreen->CloseScreen) (i, pScreen);
+}    
+
+Bool
+xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp)
+{
+    sbusCmapPtr cmap;
+    struct fbcmap fbcmap;
+    unsigned char data[2];
+
+    if(sbusPaletteGeneration != serverGeneration) {
+	if((sbusPaletteIndex = AllocateScreenPrivateIndex()) < 0)
+	    return FALSE;
+	sbusPaletteGeneration = serverGeneration;
+    }
+    cmap = xnfcalloc(1, sizeof(sbusCmapRec));
+    pScreen->devPrivates[sbusPaletteIndex].ptr = cmap;
+    cmap->psdp = psdp;
+    fbcmap.index = 0;
+    fbcmap.count = 16;
+    fbcmap.red = cmap->origRed;
+    fbcmap.green = cmap->origGreen;
+    fbcmap.blue = cmap->origBlue;
+    if (ioctl (psdp->fd, FBIOGETCMAP, &fbcmap) >= 0)
+	cmap->origCmapValid = TRUE;
+    fbcmap.index = 0;
+    fbcmap.count = 2;
+    fbcmap.red = data;
+    fbcmap.green = data;
+    fbcmap.blue = data;
+    if (pScreen->whitePixel == 0) {
+	data[0] = 255;
+	data[1] = 0;
+    } else {
+	data[0] = 0;
+	data[1] = 255;
+    }
+    ioctl (psdp->fd, FBIOPUTCMAP, &fbcmap);
+    cmap->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = xf86SbusCmapCloseScreen;
+    return xf86HandleColormaps(pScreen, 256, 8,
+			       xf86SbusCmapLoadPalette, NULL, 0);
 }

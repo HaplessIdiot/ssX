@@ -24,9 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_glyph.c,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -39,7 +37,10 @@
 #include "fontstruct.h"
 #include "dixfontstr.h"
 
+#define PSZ 8
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
 
 void
 CreatorPolyGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
@@ -77,14 +78,17 @@ CreatorPolyGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 
 	/* Ok, setup the chip. */
 	{
-		unsigned int ppc = (FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|
-				    FFB_PPC_TBE_TRANSPARENT|FFB_PPC_CS_CONST);
-		unsigned int ppc_mask = (FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|
-					 FFB_PPC_TBE_MASK|FFB_PPC_CS_MASK);
+		unsigned int ppc = (FFB_PPC_APE_DISABLE | FFB_PPC_TBE_TRANSPARENT |
+				    FFB_PPC_CS_CONST);
+		unsigned int ppc_mask = (FFB_PPC_APE_MASK | FFB_PPC_TBE_MASK |
+					 FFB_PPC_CS_MASK);
 		unsigned int pmask = pGC->planemask;
-		unsigned int rop = FFB_ROP_EDIT_BIT | pGC->alu;
+		unsigned int rop = (FFB_ROP_EDIT_BIT | pGC->alu) | (FFB_ROP_NEW << 8);
 		unsigned int fg = pGC->fgPixel;
-		unsigned int fbc = FFB_FBC_DEFAULT;
+		WindowPtr pWin = (WindowPtr) pDrawable;
+		unsigned int fbc = FFB_FBC_WIN(pWin);
+
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
 
 		if((pFfb->ppc_cache & ppc_mask) != ppc ||
 		   pFfb->fg_cache != fg ||
@@ -229,13 +233,16 @@ CreatorTEGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 
 	/* Ok, setup the chip. */
 	{
-		unsigned int ppc = FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST;
-		unsigned int ppc_mask = FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_TBE_MASK|FFB_PPC_CS_MASK;
+		unsigned int ppc = FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST;
+		unsigned int ppc_mask = FFB_PPC_APE_MASK|FFB_PPC_TBE_MASK|FFB_PPC_CS_MASK;
 		unsigned int pmask = pGC->planemask;
 		unsigned int rop;
 		unsigned int fg = pGC->fgPixel;
 		unsigned int bg = pGC->bgPixel;
-		unsigned int fbc = FFB_FBC_DEFAULT;
+		WindowPtr pWin = (WindowPtr) pDrawable;
+		unsigned int fbc = FFB_FBC_WIN(pWin);
+
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
 
 		if(pGlyphBase) {
 			ppc |= FFB_PPC_TBE_TRANSPARENT;
@@ -244,6 +251,7 @@ CreatorTEGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 			ppc |= FFB_PPC_TBE_OPAQUE;
 			rop = FFB_ROP_EDIT_BIT | GXcopy;
 		}
+		rop |= (FFB_ROP_NEW << 8);
 		if((pFfb->ppc_cache & ppc_mask) != ppc ||
 		   pFfb->fg_cache != fg ||
 		   pFfb->fbc_cache != fbc ||
@@ -290,14 +298,18 @@ CreatorTEGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 			/* Get aligned onto a character. */
 			if(skippix) {
 				unsigned int *gbits = (unsigned int *) ppci[skipglyphs++]->bits;
+				int chunk_size = (glyphWidth - skippix);
 
-				FFB_WRITE_FONTW(pFfb, ffb, (glyphWidth - skippix));
+				if (chunk_size > w)
+					chunk_size = w;
+
+				FFB_WRITE_FONTW(pFfb, ffb, chunk_size);
 				FFBFifo(pFfb, 1 + (ybot - ytop));
 				ffb->fontxy = ((ytop << 16) | LeftEdge);
 				for(h = (ytop - Top); h < (ybot - Top); h++)
 					ffb->font = gbits[h] << skippix;
-				LeftEdge += (glyphWidth - skippix);
-				w -= (glyphWidth - skippix);
+				LeftEdge += chunk_size;
+				w -= chunk_size;
 			}
 			/* And now blit the rest with unrolled loops. */
 #define 		LoopIt(chunkW, loadup, fetch) \

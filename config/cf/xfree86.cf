@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.286 2000/05/17 19:52:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.287 2000/05/18 23:21:30 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -34,7 +34,8 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* XInput drivers */
 #ifndef XInputDrivers
 #if 1
-#define XInputDrivers		mouse dynapro microtouch wacom void
+#define XInputDrivers		mouse dynapro elographics microtouch mutouch \
+				wacom void
 #else
 #define XInputDrivers		mouse dynapro elo2300 elographics magellan \
 				microtouch mutouch spaceorb wacom void
@@ -248,6 +249,26 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XF1Bpp
 #  define XF1Bpp                YES
 # endif
+/* 4bpp module */
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
+/* 8/32wid fb module */
+# ifndef XF8_32Wid
+#  define XF8_32Wid		YES
+# endif
+/* 8/32bpp overlay module */
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
+/* 8/16bpp dual fb module */
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
+# endif
+/* 24/32bpp conversion module */
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
 /* shadow fb module */
 # ifndef XFShadowFB
 #  define XFShadowFB		YES
@@ -260,18 +281,26 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XF86XAA
 #  define XF86XAA               YES
 # endif
-/* DDC module */
-# ifndef XF86DDC
-#  define XF86DDC		YES
-# endif
 /* ramdac module */
 # ifndef XF86Ramdac
 #  define XF86Ramdac		YES
 # endif
+/* I2C module */
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
+/* DDC module */
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
+/* RAC (Resource Access Control) module */
+# ifndef XF86RAC
+#  define XF86RAC		YES
+# endif
 
 /* Pure SBUS and PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	sunffb sunleo fbdev XF86OSCardDrivers XF86ExtraCardDrivers
+#  define XF86CardDrivers	sunffb sunleo suncg6 fbdev XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 
 #endif
@@ -571,8 +600,14 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxCoreLibDefines /**/
 #  endif
 
+#  ifdef SparcArchitecture
+#    define GlxArchDefines -D__GLX_ALIGN64
+#  else
+#    define GlxArchDefines /**/
+#  endif
+
 #  ifndef GlxExtraDefines
-#    define GlxExtraDefines DRIDefines GlxCoreLibDefines
+#    define GlxExtraDefines DRIDefines GlxCoreLibDefines GlxArchDefines
 #  endif
 
 #else

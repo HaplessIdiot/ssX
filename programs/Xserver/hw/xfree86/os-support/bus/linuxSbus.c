@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxSbus.c,v 1.1 2000/05/18 23:21:42 dawes Exp $ */
     
 #include <fcntl.h>
 #include <stdio.h>
@@ -38,6 +38,7 @@
 
 static int promFd = -1;
 static int promRootNode, promCurrentNode;
+static int promOpenCount = 0;
 static int promP1275 = -1;
 #define MAX_PROP	128
 #define MAX_VAL		(4096-128-4)
@@ -144,6 +145,10 @@ promIsP1275(void)
 void
 sparcPromClose(void)
 {
+    if (promOpenCount > 1) {
+	promOpenCount--;
+	return;
+    }
     if (promFd != -1) {
 	close(promFd);
 	promFd = -1;
@@ -152,11 +157,16 @@ sparcPromClose(void)
 	xfree(promOpio);
 	promOpio = NULL;
     }
+    promOpenCount = 0;
 }
 
 int
 sparcPromInit(void)
 {
+    if (promOpenCount) {
+	promOpenCount++;
+	return 0;
+    }
     promFd = open("/dev/openprom", O_RDONLY, 0);
     if (promFd == -1)
 	return -1;
@@ -171,6 +181,7 @@ sparcPromInit(void)
 	return -1;
     }
     promIsP1275();
+    promOpenCount++;
 
     return 0;
 }
@@ -496,18 +507,13 @@ sparcPromPathname2Node(const char *pathName)
     return i;
 }
 
-#define FB_DEV_PATH "/dev/fb%d"
-
 pointer
 xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset, unsigned long size)
 {
     pointer ret;
 
     if (psdp->fd == -1) {
-	char fbDevName[32];
-
-	sprintf(fbDevName, FB_DEV_PATH, psdp->fbNum);
-	psdp->fd = open(fbDevName, O_RDWR);
+	psdp->fd = open(psdp->device, O_RDWR);
 	if (psdp->fd == -1)
 	    return NULL;
     } else if (psdp->fd < 0)

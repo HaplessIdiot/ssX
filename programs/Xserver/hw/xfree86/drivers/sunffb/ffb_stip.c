@@ -23,7 +23,7 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_stip.c,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -45,7 +45,8 @@ FFBSetStipple(FFBPtr pFfb, ffb_fbcPtr ffb,
 		ppc |= FFB_PPC_APE_ENABLE|FFB_PPC_TBE_OPAQUE;
 	ppc_mask |= FFB_PPC_APE_MASK|FFB_PPC_TBE_MASK;
 	FFB_WRITE_PPC(pFfb, ffb, ppc, ppc_mask);
-	FFB_WRITE_ROP(pFfb, ffb, FFB_ROP_EDIT_BIT|stipple->alu);
+	FFB_WRITE_ROP(pFfb, ffb,
+		      (FFB_ROP_EDIT_BIT|stipple->alu)| (FFB_ROP_NEW<<8));
 
 	if (stipple->inhw && pFfb->laststipple == stipple) {
 		FFB_WRITE_FG(pFfb, ffb, stipple->fg);

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.33 2000/02/14 19:20:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.34 2000/03/21 19:56:58 dawes Exp $
 
 
 #ifndef OSName
@@ -267,7 +267,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #ifndef InstallManPageLong
 #define InstallManPageLong(file,destdir,dest)                           @@\
-BuildInstallHtmlManPage(file,dest,$(MANSUFFIX)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
 									@@\
 install.man:: file.man                                                  @@\
 	MakeDir($(DESTDIR)destdir)					@@\

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf /main/22 1996/09/28 16:09:30 rws $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.23.2.5 1998/02/09 14:33:21 robin Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.28 2000/05/18 00:33:16 dawes Exp $
 
 #ifndef OSName
 #define OSName		DefaultOSName
@@ -26,8 +26,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasUsableFileMmap	YES
 #define HasZlib			YES
 
-#if (OSMajorVersion >= 4 && OSMinorVersion >= 1)
-#define HasNCurses              NO /* XXX */
+#if (OSMajorVersion == 4 && OSMinorVersion >= 1) || (OSMajorVersion > 4)
+#define HasNCurses		YES
+#else
+#define HasNCurses		NO
+#endif
 
 #define BuildLBX		YES
 #define GzipFontCompression	NO

@@ -23,9 +23,7 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
-
-#define PSZ 32
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_seg.c,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -37,10 +35,12 @@
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 
+#define PSZ 8
 #include "cfb.h"
-#include "miline.h"
+#undef PSZ
+#include "cfb32.h"
 
-#undef DEBUG_LINES
+#include "miline.h"
 
 /* The general strategy is to do the drawing completely in hardware
  * iff:
@@ -51,60 +51,56 @@
 			   FFB_DRAWOP_BRLINEOPEN : \
 			   FFB_DRAWOP_BRLINECAP)
 static void
-ReloadSegmentAttrs(FFBPtr pFfb, CreatorPrivGCPtr gcPriv, GCPtr pGC)
+ReloadSegmentAttrs(FFBPtr pFfb, CreatorPrivGCPtr gcPriv, GCPtr pGC, WindowPtr pWin)
 {
 	if(gcPriv->stipple == NULL) {
-		FFB_WRITE_ATTRIBUTES(pFfb,
-				     (FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|
-				      FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST),
-				     (FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|
-				      FFB_PPC_APE_MASK|FFB_PPC_CS_MASK),
-				     pGC->planemask,
-				     FFB_ROP_EDIT_BIT | pGC->alu,
-				     SEG_DRAWOP(pGC),
-				     pGC->fgPixel,
-				     FFB_FBC_DEFAULT);
+		FFB_ATTR_GC(pFfb, pGC, pWin,
+			    FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+			    SEG_DRAWOP(pGC));
 	} else {
 		ffb_fbcPtr ffb = pFfb->regs;
+		unsigned int fbc;
 
 		FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-			      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-			      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+			      FFB_PPC_CS_CONST, FFB_PPC_CS_MASK);
 		FFB_WRITE_PMASK(pFfb, ffb, pGC->planemask);
-		FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
 		FFB_WRITE_DRAWOP(pFfb, ffb, SEG_DRAWOP(pGC));
+		fbc = FFB_FBC_WIN(pWin);
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
+		FFB_WRITE_FBC(pFfb, ffb, fbc);
 	}
 }
 
 void
 CreatorPolySegment (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 {
+	WindowPtr pWin = (WindowPtr) pDrawable;
 	CreatorPrivGCPtr gcPriv = CreatorGetGCPrivate (pGC);
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN (pGC->pScreen);
 	ffb_fbcPtr ffb = pFfb->regs;
 	BoxPtr extent;
 	int xorg, yorg, lpat;
 
-	if(nseg == 0)
+	if (nseg == 0)
 		return;
+
 	FFBLOG(("CreatorPolySegment: ALU(%x) PMSK(%08x) nseg(%d) lpat(%08x)\n",
 		pGC->alu, pGC->planemask, nseg, gcPriv->linepat));
-	if(gcPriv->stipple == NULL) {
-		FFB_WRITE_ATTRIBUTES(pFfb,
-				     FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
-				     FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_APE_MASK|FFB_PPC_CS_MASK,
-				     pGC->planemask,
-				     FFB_ROP_EDIT_BIT | pGC->alu,
-				     SEG_DRAWOP(pGC),
-				     pGC->fgPixel,
-				     FFB_FBC_DEFAULT);
+
+	if (gcPriv->stipple == NULL) {
+		FFB_ATTR_GC(pFfb, pGC, pWin,
+			    FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+			    SEG_DRAWOP(pGC));
 	} else {
+		unsigned int fbc;
+
 		FFBSetStipple(pFfb, ffb, gcPriv->stipple,
-			      FFB_PPC_FW_DISABLE|FFB_PPC_VCE_DISABLE|FFB_PPC_CS_CONST,
-			      FFB_PPC_FW_MASK|FFB_PPC_VCE_MASK|FFB_PPC_CS_MASK);
+			      FFB_PPC_CS_CONST, FFB_PPC_CS_MASK);
 		FFB_WRITE_PMASK(pFfb, ffb, pGC->planemask);
-		FFB_WRITE_FBC(pFfb, ffb, FFB_FBC_DEFAULT);
 		FFB_WRITE_DRAWOP(pFfb, ffb, SEG_DRAWOP(pGC));
+		fbc = FFB_FBC_WIN(pWin);
+		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_OFF;
+		FFB_WRITE_FBC(pFfb, ffb, fbc);
 	}
 
 	pFfb->rp_active = 1;
@@ -112,38 +108,68 @@ CreatorPolySegment (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 	yorg = pDrawable->y;
 	extent = REGION_RECTS(cfbGetCompositeClip(pGC));
 	lpat = gcPriv->linepat;
+
 	if (lpat == 0) {
 		FFBFifo(pFfb, 1);
 		ffb->lpat = 0;
-		while(nseg--) {
-			register int x1 = pSeg->x1 + xorg;
-			register int y1 = pSeg->y1 + yorg;
-			register int x2 = pSeg->x2 + xorg;
-			register int y2 = pSeg->y2 + yorg;
+		if (pFfb->has_brline_bug) {
+			while (nseg--) {
+				register int x1 = pSeg->x1 + xorg;
+				register int y1 = pSeg->y1 + yorg;
+				register int x2 = pSeg->x2 + xorg;
+				register int y2 = pSeg->y2 + yorg;
 
-			if (x1 >= extent->x1	&&	x2 >= extent->x1	&&
-			    x1 < extent->x2	&&	x2 < extent->x2		&&
-			    y1 >= extent->y1	&&	y2 >= extent->y1	&&
-			    y1 < extent->y2	&&	y2 < extent->y2) {
-				if (pFfb->has_brline_bug) {
+				if (x1 >= extent->x1	&&
+				    x2 >= extent->x1	&&
+				    x1 < extent->x2	&&
+				    x2 < extent->x2	&&
+				    y1 >= extent->y1	&&
+				    y2 >= extent->y1	&&
+				    y1 < extent->y2	&&
+				    y2 < extent->y2) {
 					FFBFifo(pFfb, 5);
 					ffb->ppc = 0;
 					FFB_WRITE64(&ffb->by, y1, x1);
 					FFB_WRITE64_2(&ffb->bh, y2, x2);
 				} else {
+					gcPriv->PolySegment(pDrawable, pGC, 1, pSeg);
+					ReloadSegmentAttrs(pFfb, gcPriv, pGC, pWin);
+					pFfb->rp_active = 1;
+				}
+				pSeg++;
+			}
+		} else {
+			while (nseg--) {
+				register int x1 = pSeg->x1 + xorg;
+				register int y1 = pSeg->y1 + yorg;
+				register int x2 = pSeg->x2 + xorg;
+				register int y2 = pSeg->y2 + yorg;
+
+				if (x1 >= extent->x1	&&
+				    x2 >= extent->x1	&&
+				    x1 < extent->x2	&&
+				    x2 < extent->x2	&&
+				    y1 >= extent->y1	&&
+				    y2 >= extent->y1	&&
+				    y1 < extent->y2	&&
+				    y2 < extent->y2) {
 					FFBFifo(pFfb, 4);
 					FFB_WRITE64(&ffb->by, y1, x1);
 					FFB_WRITE64_2(&ffb->bh, y2, x2);
+				} else {
+					gcPriv->PolySegment(pDrawable, pGC, 1, pSeg);
+					ReloadSegmentAttrs(pFfb, gcPriv, pGC, pWin);
+					pFfb->rp_active = 1;
 				}
-			} else {
-				gcPriv->PolySegment(pDrawable, pGC, 1, pSeg);
-				ReloadSegmentAttrs(pFfb, gcPriv, pGC);
-				pFfb->rp_active = 1;
+				pSeg++;
 			}
-			pSeg++;
 		}
 	} else {
-		while(nseg--) {
+		/* No reason to optimize the non-brline bug case since
+		 * we have to write the line pattern register each loop
+		 * anyways.
+		 */
+		while (nseg--) {
 			register int x1 = pSeg->x1 + xorg;
 			register int y1 = pSeg->y1 + yorg;
 			register int x2 = pSeg->x2 + xorg;
@@ -159,13 +185,12 @@ CreatorPolySegment (DrawablePtr pDrawable, GCPtr pGC, int nseg, xSegment *pSeg)
 				FFB_WRITE64_2(&ffb->bh, y2, x2);
 			} else {
 				gcPriv->PolySegment(pDrawable, pGC, 1, pSeg);
-				ReloadSegmentAttrs(pFfb, gcPriv, pGC);
+				ReloadSegmentAttrs(pFfb, gcPriv, pGC, pWin);
 				pFfb->rp_active = 1;
 			}
 			pSeg++;
 		}
 	}
 
-	pFfb->rp_active = 1;
 	FFBSync(pFfb, ffb);
 }

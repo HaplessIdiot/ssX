@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.9 2000/05/18 23:46:12 dawes Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.10 2000/05/19 00:44:09 dawes Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -244,7 +244,7 @@ psops.h : $(PSOPSHEADERFILES)
 	${CAT} psname.txt header.txt psifdef.txt .ttt psendif.txt > psops.h
 	RemoveFiles(.sort .ttt .attt)
 
-dpsops.h : $(DPSOPSHEADERFILES)
+dpsops.h : psops.h $(DPSOPSHEADERFILES)
 	RemoveFile($@)
 	${CAT} $(DPSOPSHEADERFILES) |\
 	    ${SED} -e '/^$$/D' -e '/#/D' -e '/^\//D'\
@@ -267,7 +267,7 @@ psops.h : $(PSOPSHEADERFILES)
 	RemoveFile($@)
 	$(CAT) psops.h.os2 >psops.h
 
-dpsops.h : $(DPSOPSHEADERFILES)
+dpsops.h : psops.h $(DPSOPSHEADERFILES)
 	.\genheader
 	RemoveFile($@)
 	$(CAT) dpsops.h.os2 >dpsops.h

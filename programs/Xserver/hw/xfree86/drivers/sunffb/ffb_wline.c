@@ -23,7 +23,7 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_wline.c,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #define PSZ 32
 
@@ -39,6 +39,8 @@
 #include "cfb.h"
 
 #include "miwideline.h"
+
+#error If we start using this again, need to fixup FFB_WRITE_ATTRIBUTES for wids -DaveM
 
 /* Wheee, wide lines... */
 extern int miPolyBuildEdge();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.58 2000/03/05 16:59:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.59 2000/05/18 23:21:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -436,43 +436,92 @@ static __inline__ unsigned int inl(unsigned long port)
 
 #endif	/* !Lynx */
 
+/*
+ * EGCS 1.1 knows about arbitrary unaligned loads.  Define some
+ * packed structures to talk about such things with.
+ */
+
+#if defined(__arch64__) || defined(__sparcv9)
+struct __una_u64 { unsigned long  x __attribute__((packed)); };
+#endif
+struct __una_u32 { unsigned int   x __attribute__((packed)); };
+struct __una_u16 { unsigned short x __attribute__((packed)); };
+
 static __inline__ unsigned long ldq_u(unsigned long *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#if defined(__arch64__) || defined(__sparcv9)
+	const struct __una_u64 *ptr = (const struct __una_u64 *) p;
+#else
+	const struct __una_u32 *ptr = (const struct __una_u32 *) p;
+#endif
+	return ptr->x;
+#else
 	unsigned long ret;
 	memmove(&ret, p, sizeof(*p));
 	return ret;
+#endif
 }
 
 static __inline__ unsigned long ldl_u(unsigned int *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	const struct __una_u32 *ptr = (const struct __una_u32 *) p;
+	return ptr->x;
+#else
 	unsigned int ret;
 	memmove(&ret, p, sizeof(*p));
 	return ret;
+#endif
 }
 
 static __inline__ unsigned long ldw_u(unsigned short *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	const struct __una_u16 *ptr = (const struct __una_u16 *) p;
+	return ptr->x;
+#else
 	unsigned short ret;
 	memmove(&ret, p, sizeof(*p));
 	return ret;
+#endif
 }
 
 static __inline__ void stq_u(unsigned long val, unsigned long *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#if defined(__arch64__) || defined(__sparcv9)
+	struct __una_u64 *ptr = (struct __una_u64 *) p;
+#else
+	struct __una_u32 *ptr = (struct __una_u32 *) p;
+#endif
+	ptr->x = val;
+#else
 	unsigned long tmp = val;
 	memmove(p, &tmp, sizeof(*p));
+#endif
 }
 
 static __inline__ void stl_u(unsigned long val, unsigned int *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	struct __una_u32 *ptr = (struct __una_u32 *) p;
+	ptr->x = val;
+#else
 	unsigned int tmp = val;
 	memmove(p, &tmp, sizeof(*p));
+#endif
 }
 
 static __inline__ void stw_u(unsigned long val, unsigned short *p)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	struct __una_u16 *ptr = (struct __una_u16 *) p;
+	ptr->x = val;
+#else
 	unsigned short tmp = val;
 	memmove(p, &tmp, sizeof(*p));
+#endif
 }
 
 #define mem_barrier()         /* XXX: nop for now */
