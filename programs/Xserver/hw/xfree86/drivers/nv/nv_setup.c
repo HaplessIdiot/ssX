@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.32 2003/05/05 20:19:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.33 2003/05/05 22:19:49 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -250,7 +250,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     CARD16 implementation = pNv->Chipset & 0x0ff0;
     xf86MonPtr monitorA, monitorB;
     Bool mobile = FALSE;
-    int FlatPanel = -1;
+    Bool tvA = FALSE;
+    Bool tvB = FALSE;
+    int FlatPanel = -1;   /* really means the CRTC is slaved */
+    Bool Television = FALSE;
     int mmioFlags;
     
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVCommonSetup\n"));
@@ -380,27 +383,34 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     NVI2CInit(pScrn);
 
+    pNv->Television = FALSE;
+
     if(!pNv->twoHeads) {
        pNv->CRTCnumber = 0;
-       if((monitorA = NVProbeDDC(pScrn, 0))) 
+       if((monitorA = NVProbeDDC(pScrn, 0))) {
            FlatPanel = monitorA->features.input_type ? 1 : 0;
-       else {
-           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
-           if(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80) 
-              FlatPanel = 1;
-           else
-              FlatPanel = 0;
-              xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                         "HW is currently programmed for %s\n",
-                          FlatPanel ? "DFP" : "CRT");
-       } 
 
-       /* NV3 and NV4 don't support FlatPanels */
-       if((pNv->Chipset & 0x0fff) <= 0x0020) 
-          FlatPanel = 0;
+           /* NV3 and NV4 don't support FlatPanels */
+           if((pNv->Chipset & 0x0fff) <= 0x0020)
+              FlatPanel = 0;
+       } else {
+           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
+           if(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80) {
+              VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
+              if(!(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01)) 
+                 Television = TRUE;
+              FlatPanel = 1;
+           } else {
+              FlatPanel = 0;
+           }
+           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                         "HW is currently programmed for %s\n",
+                          FlatPanel ? (Television ? "TV" : "DFP") : "CRT");
+       } 
 
        if(pNv->FlatPanel == -1) {
            pNv->FlatPanel = FlatPanel;
+           pNv->Television = Television;
        } else {
            xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                       "Forcing display type to %s as specified\n", 
@@ -442,6 +452,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
        VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
        slaved_on_B = VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80;
+       if(slaved_on_B) {
+           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
+           tvB = !(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01);
+       }
 
        VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
        VGA_WR08(pNv->riva.PCIO, 0x03D5, 0);
@@ -450,6 +464,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
        VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x28);
        slaved_on_A = VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x80; 
+       if(slaved_on_A) {
+           VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x33);
+           tvA = !(VGA_RD08(pNv->riva.PCIO, 0x03D5) & 0x01);
+       }
 
        oldhead = pNv->riva.PCRTC0[0x00000860/4];
        pNv->riva.PCRTC0[0x00000860/4] = oldhead | 0x00000010;
@@ -460,14 +478,18 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        if(slaved_on_A) {
           CRTCnumber = 0;
           FlatPanel = 1;
+          Television = tvA;
           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                    "CRTC 0 is currently programmed for DFP\n");
+                    "CRTC 0 is currently programmed for %s\n",
+                     Television ? "TV" : "DFP");
        } else 
        if(slaved_on_B) {
           CRTCnumber = 1;
           FlatPanel = 1;
+          Television = tvB;
           xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                    "CRTC 1 is currently programmed for DFP\n");
+                    "CRTC 1 is currently programmed for %s\n",
+                     Television ? "TV" : "DFP");
        } else
        if(analog_on_A) {
           CRTCnumber = outputAfromCRTC;
@@ -489,6 +511,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        if(pNv->FlatPanel == -1) {
           if(FlatPanel != -1) {
              pNv->FlatPanel = FlatPanel;
+             pNv->Television = Television;
           } else {
              xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                         "Unable to detect display type...\n");
@@ -560,7 +583,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
               "Using %s on CRTC %i\n",
-              pNv->FlatPanel ? "DFP" : "CRT", pNv->CRTCnumber);
+              pNv->FlatPanel ? (pNv->Television ? "TV" : "DFP") : "CRT", 
+              pNv->CRTCnumber);
 
     if(monitorA)
       xf86SetDDCproperties(pScrn, monitorA);

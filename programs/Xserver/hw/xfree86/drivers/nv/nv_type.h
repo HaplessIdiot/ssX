@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.39 2002/11/28 23:02:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.40 2003/05/04 01:20:52 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -112,6 +112,7 @@ typedef struct {
     int			videoKey;
     int			FlatPanel;
     Bool                FPDither;
+    Bool                Television;
     int			CRTCnumber;
     OptionInfoPtr	Options;
     Bool                alphaCursor;

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.107 2003/04/09 17:58:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.108 2003/05/04 01:20:52 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -141,17 +141,16 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE028C, "Quadro4 700 GoGL" },
   { 0x10DE0288, "Quadro4 980 XGL" },
   { 0x10DE0289, "Quadro4 780 XGL" },
-  { 0x10DE0300, "0x0300" },
   { 0x10DE0301, "GeForce FX 5800 Ultra" },
   { 0x10DE0302, "GeForce FX 5800" },
   { 0x10DE0308, "Quadro FX 2000" },
   { 0x10DE0309, "Quadro FX 1000" },
   { 0x10DE0311, "GeForce FX 5600 Ultra" },
   { 0x10DE0312, "GeForce FX 5600" },
+  { 0x10DE0313, "0x0313"},
+  { 0x10DE0314, "GeForce FX 5600SE" },
   { 0x10DE0316, "0x0316" },
   { 0x10DE0317, "0x0317" },
-  { 0x10DE0318, "0x0318" },
-  { 0x10DE0319, "0x0319" },
   { 0x10DE031A, "GeForce FX Go5600" },
   { 0x10DE031B, "GeForce FX Go5650" },
   { 0x10DE031C, "Quadro FX Go700" },
@@ -163,14 +162,17 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0323, "0x0323" },
   { 0x10DE0324, "GeForce FX Go5200" },
   { 0x10DE0325, "GeForce FX Go5250" },
+  { 0x10DE0323, "0x0323" },
+  { 0x10DE0328, "0x0328" },
+  { 0x10DE0329, "0x0329" },
   { 0x10DE032A, "0x032A" },
   { 0x10DE032B, "Quadro FX 500" },
   { 0x10DE032C, "0x032C" },
-  { 0x10DE032D, "0x032D" },
+  { 0x10DE032D, "GeForce FX Go5100" },
   { 0x10DE032F, "0x032F" },
-  { 0x10DE0330, "0x330" },
-  { 0x10DE0331, "0x331" },
-  { 0x10DE0338, "0x338" },
+  { 0x10DE0330, "GeForce FX 5900 Ultra" },
+  { 0x10DE0331, "GeForce FX 5900" },
+  { 0x10DE0338, "Quadro FX 3000" },
   {-1, NULL}
 };
 

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.31 2003/01/02 20:44:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.32 2003/05/04 01:20:52 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -105,6 +105,9 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pVga->CRTC[0x16] = Set8Bits(vertBlankEnd);
 
     pVga->Attribute[0x10] = 0x01;
+
+    if(pNv->Television)
+       pVga->Attribute[0x11] = 0x00;
 
     nvReg->screen = SetBitField(horizBlankEnd,6:6,4:4)
                   | SetBitField(vertBlankStart,10:10,3:3)
