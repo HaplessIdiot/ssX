@@ -8,5 +8,6 @@ XCOMM $XConsortium: Imakefile /main/10 1996/02/02 14:22:19 kaleb $
 
 all::
 
+MakeXkbDir($(LIBDIR)/xkb,geometry)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/geometry)
 DependTarget()

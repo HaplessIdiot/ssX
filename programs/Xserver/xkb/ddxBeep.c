@@ -1,5 +1,4 @@
 /* $XConsortium: ddxBeep.c /main/4 1996/02/02 14:39:20 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxBeep.c,v 3.0 1996/01/14 13:41:53 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -57,7 +56,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	HIGH_PITCH	2000
 #define CLICK_PITCH	1500
 
-static	unsigned long	atomGeneration= 0;
+static	unsigned long	atomGeneration= -1;
 static	Atom	featureOn;
 static	Atom	featureOff;
 static	Atom	featureChange;

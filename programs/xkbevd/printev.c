@@ -1,4 +1,4 @@
-/* $XConsortium: printev.c /main/2 1995/12/07 21:27:53 kaleb $ */
+/* $XConsortium: printev.c /main/5 1996/05/24 15:03:15 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -117,9 +117,6 @@ do_XkbMapNotify(file,xkbev)
     XkbMapNotifyEvent *map = &xkbev->map;
     if (map->changed&XkbKeyTypesMask) {
 	do_map_message("key type",map->first_type,map->num_types,0);
-	if (map->resized&XkbKeyTypesMask)
-	     fprintf(file," [possibly resized]\n");
-	else fprintf(file,"\n");
     }
     if (map->changed&XkbKeySymsMask) {
 	do_map_message("symbols for key",map->first_key_sym,map->num_key_syms,
@@ -339,6 +336,24 @@ do_XkbNewKeyboardNotify(file,xkbev)
     return;
 }
 
+void
+do_XkbExtensionDeviceNotify(file,xkbev)
+    FILE *	file;
+    XkbEvent	*xkbev;
+{
+    XkbExtensionDeviceNotifyEvent *edn= &xkbev->device;
+    fprintf(file,"    device= %d, class= %d, id= %d\n",edn->device,
+						edn->led_class,edn->led_id);
+    fprintf(file,"    reason= 0x%0x\n",edn->reason);
+    fprintf(file,"    supported= 0x%0x, unsupported= 0x%0x\n",edn->supported,
+							edn->unsupported);
+    fprintf(file,"    first button= %d, num buttons= %d\n",edn->first_btn,
+							edn->num_btns);
+    fprintf(file,"    leds defined= 0x%08x, led state= 0x%08x\n",
+					edn->leds_defined,edn->led_state);
+    return;
+}
+
 static	char keyState[XkbMaxLegalKeyCode];
 
 do_KeyEvent (eventp,compose,repeat)
@@ -346,7 +361,7 @@ do_KeyEvent (eventp,compose,repeat)
 {
     XKeyEvent *e = &eventp->core.xkey;
     KeySym ks;
-    char *ksname;
+    char *ksname,*kname;
     int nbytes;
     char str[256+1];
     static XComposeStatus status;
@@ -358,8 +373,14 @@ do_KeyEvent (eventp,compose,repeat)
 	ksname = "(no name)";
     printf ("    root 0x%lx, subw 0x%lx, time %lu, (%d,%d), root:(%d,%d),\n",
 	    e->root, e->subwindow, e->time, e->x, e->y, e->x_root, e->y_root);
-    printf ("    state 0x%x, group= %d, keycode %u (keysym 0x%x, %s)\n",
-	    	e->state&0x1FFF, (e->state>>13)&0x7, e->keycode, ks, ksname);
+
+    if (xkb && xkb->names && xkb->names->keys)
+	 kname= XkbKeyNameText(xkb->names->keys[e->keycode].name,XkbMessage);
+    else kname= "<????>";
+
+    printf ("    state 0x%x, group= %d, key %s (keycode %u, keysym 0x%x, %s)\n",
+	    	e->state&0x1FFF, (e->state>>13)&0x7, kname,
+		e->keycode, ks, ksname);
     printf ("    same_screen %s, autorepeat %s,\n",ynText(e->same_screen),
 			(detectableRepeat ? ynText(repeat) : "UNKNOWN"));
     if (nbytes < 0) nbytes = 0;
@@ -621,6 +642,10 @@ PrintXkbEvent(file,ev)
 	    case XkbNewKeyboardNotify:
 		xkb_prologue(file, ev, "XkbNewKeyboard" );
 		do_XkbNewKeyboardNotify(file,ev);
+		break;
+	    case XkbExtensionDeviceNotify:
+		xkb_prologue(file, ev, "XkbExtensionDeviceNotify" );
+		do_XkbExtensionDeviceNotify(file,ev);
 		break;
 	    default:
 		xkb_prologue(file, ev, "XKB_UNKNOWN!!!" );

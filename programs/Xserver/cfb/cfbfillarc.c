@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: cfbfillarc.c /main/17 1995/12/06 16:57:18 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.0 1996/06/29 09:05:29 dawes Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -41,7 +41,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "mi.h"
 
 /* gcc 1.35 is stupid */
-#if defined(__GNUC__) && defined(mc68020)
+#if defined(__GNUC__) && __GNUC__ < 2 && defined(mc68020)
 #define STUPID volatile
 #else
 #define STUPID

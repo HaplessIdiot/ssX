@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.7 1996/06/10 09:18:54 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.8 1996/08/11 13:04:55 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -57,6 +57,7 @@ menu in the 4014 window.
 .SH EMULATIONS
 The VT102 emulation is fairly complete, but does not support
 VT52 mode,
+autorepeat,
 the blinking character attribute
 nor the double-wide and double-size character sets.
 .IR Termcap (5)
@@ -739,6 +740,11 @@ The default is ``true.''
 Specifies whether or not eight-bit characters sent from the host should be
 accepted as is or stripped when printed.  The default is ``true.''
 .TP 8
+.B "eightBitControl (\fPclass\fB EightBitControl\fP)"
+Specifies whether or not control sequences sent by the
+terminal should be eight-bit characters or escape sequences.
+The default is ``false.''
+.TP 8
 .B "font (\fPclass\fB Font)"
 Specifies the name of the normal font.  The default is ``fixed.''
 .TP 8
@@ -946,6 +952,15 @@ This entry invokes the \fBredraw()\fP action.
 .B "line1 (\fPclass\fB SmeLine)"
 This is a separator.
 .TP 8
+.B "8-bit-control (\fPclass\fB SmeBSB)"
+This entry invokes the \fBset-8-bit-control(toggle)\fP action.
+.TP 8
+.B "sun-function-keys (\fPclass\fB SmeBSB)"
+This entry invokes the \fBsun-function-keys(toggle)\fP action.
+.TP 8
+.B "line2 (\fPclass\fB SmeLine)"
+This is a separator.
+.TP 8
 .B "suspend (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsend-signal(tstp)\fP action on systems that
 support job control.
@@ -966,7 +981,7 @@ This entry invokes the \fBsend-signal(term)\fP action.
 .B "kill (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsend-signal(kill)\fP action.
 .TP 8
-.B "line2 (\fPclass\fB SmeLine)"
+.B "line3 (\fPclass\fB SmeLine)"
 This is a separator.
 .TP 8
 .B "quit (\fPclass\fB SmeBSB)"
@@ -1821,4 +1836,6 @@ Edward Moy (Berkeley), Ralph R. Swick (MIT-Athena),
 Mark Vandevoorde (MIT-Athena), Bob McNamara (DEC-MAD),
 Jim Gettys (MIT-Athena), Bob Scheifler (MIT X Consortium), Doug Mink (SAO),
 Steve Pitschke (Stellar), Ron Newman (MIT-Athena), Jim Fulton (MIT X 
-Consortium), Dave Serisky (HP), Jonathan Kamens (MIT-Athena)
+Consortium), Dave Serisky (HP), Jonathan Kamens (MIT-Athena),
+David Wexelblat and
+Thomas Dickey (XFree86 Project).

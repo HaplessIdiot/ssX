@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/37 1996/02/02 16:08:31 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.9 1996/02/04 08:54:23 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.10 1996/02/22 05:09:37 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -450,7 +450,7 @@ XlibMessage.SYNC.1: Alarm in failed request:  0x%lx
 ! XKB extension
 XRequest.XKEYBOARD.0: XkbUseExtension
 XRequest.XKEYBOARD.1: XkbSelectEvents
-XRequest.XKEYBOARD.2: XkbSendEvent
+XRequest.XKEYBOARD.2: OBSOLETE
 XRequest.XKEYBOARD.3: XkbBell
 XRequest.XKEYBOARD.4: XkbGetState
 XRequest.XKEYBOARD.5: XkbLatchLockState

@@ -1,8 +1,5 @@
-/*
- * @(#)RCSfile: xkbInit.c,v  Revision: 1.1.1.6  (DEC) Date: 1996/02/09 09:44:58 
- */
-/* $XConsortium: xkbInit.c /main/14 1996/03/01 14:31:34 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbInit.c /main/18 1996/05/24 14:51:19 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.7 1996/03/16 12:47:40 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -37,8 +34,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/keysym.h>
+#include <X11/Xatom.h>
 #include "misc.h"
 #include "inputstr.h"
+#include "property.h"
 #define	XKBSRV_NEED_FILE_FUNCS
 #include "XKBsrv.h"
 #include "XKBgeom.h"
@@ -90,29 +89,213 @@ typedef struct	_SrvXkmInfo {
 #ifndef XKB_BASE_DIRECTORY
 #define	XKB_BASE_DIRECTORY	"/usr/lib/X11/xkb"
 #endif
-#ifndef XKB_DFLT_KB_LANG
-#define	XKB_DFLT_KB_LANG	"us"
+#ifndef XKB_DFLT_RULES_FILE
+#define	XKB_DFLT_RULES_FILE	"rules"
 #endif
-#ifndef XKB_DFLT_KB_TYPE
-#define	XKB_DFLT_KB_TYPE	"dflt"
+#ifndef XKB_DFLT_KB_LAYOUT
+#define	XKB_DFLT_KB_LAYOUT	"us"
+#endif
+#ifndef XKB_DFLT_KB_MODEL
+#define	XKB_DFLT_KB_MODEL	"dflt"
+#endif
+#ifndef XKB_DFLT_KB_VARIANT
+#define	XKB_DFLT_KB_VARIANT	NULL
+#endif
+#ifndef XKB_DFLT_KB_OPTIONS
+#define	XKB_DFLT_KB_OPTIONS	NULL
 #endif
 #ifndef XKB_DFLT_DISABLED
 #define	XKB_DFLT_DISABLED	True
+#endif
+#ifndef XKB_DFLT_RULES_PROP
+#define	XKB_DFLT_RULES_PROP	True
 #endif
 
 char	*		XkbBaseDirectory=	XKB_BASE_DIRECTORY;
 char	*		XkbInitialMap=		NULL;
 int	 		XkbWantAccessX=		0;	
 static XkbFileInfo *	_XkbInitFileInfo=	NULL;
-char *			XkbCompCommand=		"/usr/bin/X11/xkbcomp";
 char *			XkbDB=			NULL;
 int			XkbAutoLoad=		1;
-char *			XkbDDX_kbLangDflt=	XKB_DFLT_KB_LANG;
-char *			XkbDDX_kbTypeDflt=	XKB_DFLT_KB_TYPE;
+
+static Bool		rulesDefined=		False;
+static char *		XkbRulesFile=		NULL;
+static char *		XkbModelDflt=		NULL;
+static char *		XkbLayoutDflt=		NULL;
+static char *		XkbVariantDflt=		NULL;
+static char *		XkbOptionsDflt=		NULL;
+
+char *			XkbModelUsed=	NULL;
+char *			XkbLayoutUsed=	NULL;
+char *			XkbVariantUsed=	NULL;
+char *			XkbOptionsUsed=	NULL;
+
 int			_XkbClientMajor=	XkbMajorVersion;
 int			_XkbClientMinor=	XkbMinorVersion;
 
 Bool			noXkbExtension=		XKB_DFLT_DISABLED;
+Bool			XkbWantRulesProp=	XKB_DFLT_RULES_PROP;
+
+/***====================================================================***/
+
+char *
+#if NeedFunctionPrototypes
+XkbGetRulesDflts(XkbRF_VarDefsPtr defs)
+#else
+XkbGetRulesDflts(defs);
+	XkbRF_VarDefsPtr defs;
+#endif
+{
+    if (XkbModelDflt)	defs->model= XkbModelDflt;
+    else		defs->model= XKB_DFLT_KB_MODEL;
+    if (XkbLayoutDflt)	defs->layout= XkbLayoutDflt;
+    else		defs->layout= XKB_DFLT_KB_LAYOUT;
+    if (XkbVariantDflt)	defs->variant= XkbVariantDflt;
+    else		defs->variant= XKB_DFLT_KB_VARIANT;
+    if (XkbOptionsDflt)	defs->options= XkbOptionsDflt;
+    else		defs->options= XKB_DFLT_KB_OPTIONS;
+    return (rulesDefined?XkbRulesFile:XKB_DFLT_RULES_FILE);
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbWriteRulesProp(ClientPtr client, pointer closure)
+#else
+XkbWriteRulesProp(client, closure)
+    ClientPtr	client;
+    pointer	closure;
+#endif
+{
+int 			len,out;
+extern WindowPtr *	WindowTable;
+Atom			name;
+char *			pval;
+
+    if (rulesDefined && (!XkbRulesFile))
+	return False;
+    len= (XkbRulesFile?strlen(XkbRulesFile):strlen(XKB_DFLT_RULES_FILE));
+    len+= (XkbModelUsed?strlen(XkbModelUsed):0);
+    len+= (XkbLayoutUsed?strlen(XkbLayoutUsed):0);
+    len+= (XkbVariantUsed?strlen(XkbVariantUsed):0);
+    len+= (XkbOptionsUsed?strlen(XkbOptionsUsed):0);
+    if (len<1)
+	return True;
+
+    len+= 5; /* trailing NULs */
+
+    name= MakeAtom(_XKB_RF_NAMES_PROP_ATOM,strlen(_XKB_RF_NAMES_PROP_ATOM),1);
+    if (name==None) {
+	ErrorF("Atom error: %s not created\n",_XKB_RF_NAMES_PROP_ATOM);
+	return True;
+    }
+    pval= ALLOCATE_LOCAL(len);
+    if (!pval) {
+	ErrorF("Allocation error: %s proprerty not created\n",
+						_XKB_RF_NAMES_PROP_ATOM);
+	return True;
+    }
+    out= 0;
+    if (XkbRulesFile) {
+	strcpy(&pval[out],XkbRulesFile);
+	out+= strlen(XkbRulesFile);
+    }
+    pval[out++]= '\0';
+    if (XkbModelUsed) {
+	strcpy(&pval[out],XkbModelUsed);
+	out+= strlen(XkbModelUsed);
+    } 
+    pval[out++]= '\0';
+    if (XkbLayoutUsed) {
+	strcpy(&pval[out],XkbLayoutUsed);
+	out+= strlen(XkbLayoutUsed);
+    }
+    pval[out++]= '\0';
+    if (XkbVariantUsed) {
+	strcpy(&pval[out],XkbVariantUsed);
+	out+= strlen(XkbVariantUsed);
+    }
+    pval[out++]= '\0';
+    if (XkbOptionsUsed) {
+	strcpy(&pval[out],XkbOptionsUsed);
+	out+= strlen(XkbOptionsUsed);
+    }
+    pval[out++]= '\0';
+    if (out!=len) {
+	ErrorF("Internal Error! bad size (%d!=%d) for _XKB_RULES_NAMES\n",
+								out,len);
+    }
+    ChangeWindowProperty(WindowTable[0],name,XA_STRING,8,PropModeReplace,
+							len,pval,True);
+    DEALLOCATE_LOCAL(pval);
+    return True;
+}
+
+void
+#if NeedFunctionPrototypes
+XkbSetRulesUsed(XkbRF_VarDefsPtr defs)
+#else
+XkbSetRulesUsed(defs)
+    XkbRF_VarDefsPtr	defs;
+#endif
+{
+    if (XkbModelUsed)
+	_XkbFree(XkbModelUsed);
+    XkbModelUsed= (defs->model?_XkbDupString(defs->model):NULL);
+    if (XkbLayoutUsed)
+	_XkbFree(XkbLayoutUsed);
+    XkbLayoutUsed= (defs->layout?_XkbDupString(defs->layout):NULL);
+    if (XkbVariantUsed)
+	_XkbFree(XkbVariantUsed);
+    XkbVariantUsed= (defs->variant?_XkbDupString(defs->variant):NULL);
+    if (XkbOptionsUsed)
+	_XkbFree(XkbOptionsUsed);
+    XkbOptionsUsed= (defs->options?_XkbDupString(defs->options):NULL);
+    if (XkbWantRulesProp)
+	QueueWorkProc(XkbWriteRulesProp,NULL,NULL);
+    return;
+}
+
+void
+#if NeedFunctionPrototypes
+XkbSetRulesDflts(char *rulesFile,char *model,char *layout,
+					char *variant,char *options)
+#else
+XkbSetRulesDflts(rulesFile,model,layout,variant,options)
+    char *	rulesFile;
+    char *	model;
+    char *	layout;
+    char *	variant;
+    char *	options;
+#endif
+{
+    if (XkbRulesFile)
+	_XkbFree(XkbRulesFile);
+    XkbRulesFile= _XkbDupString(rulesFile);
+    rulesDefined= True;
+    if (model) {
+	if (XkbModelDflt)
+	    _XkbFree(XkbModelDflt);
+	XkbModelDflt= _XkbDupString(model);
+    }
+    if (layout) {
+	if (XkbLayoutDflt)
+	    _XkbFree(XkbLayoutDflt);
+	XkbLayoutDflt= _XkbDupString(layout);
+    }
+    if (variant) {
+	if (XkbVariantDflt)
+	    _XkbFree(XkbVariantDflt);
+	XkbVariantDflt= _XkbDupString(variant);
+    }
+    if (options) {
+	if (XkbOptionsDflt)
+	    _XkbFree(XkbOptionsDflt);
+	XkbOptionsDflt= _XkbDupString(options);
+    }
+    return;
+}
+
+/***====================================================================***/
 
 #if defined(luna)
 #define	XKB_DDX_PERMANENT_LOCK	1
@@ -359,6 +542,7 @@ XkbEventCauseRec	cause;
     file.dev= pXDev;
     file.file=NULL;
     bzero(&file.xkbinfo,sizeof(XkbFileInfo));
+    bzero(&changes,sizeof(XkbChangesRec));
     if (XkbAutoLoad && (XkbInitialMap!=NULL)) {
 	if ((file.file=XkbDDXOpenConfigFile(XkbInitialMap,NULL,0))!=NULL) {
 	    XkmReadFile(file.file,0,XkmKeymapLegal,&file.xkbinfo);
@@ -476,7 +660,7 @@ XkbInitKeyboardDeviceStruct(	DeviceIntPtr		dev,
 				void			(*bellProc)(),
 				void			(*ctrlProc)())
 #else
-XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
+XkbInitKeyboardDeviceStruct( dev,names,pSymsIn,pModsIn,bellProc,ctrlProc )
     DeviceIntPtr		  dev;
     XkbComponentNamesPtr	  names;
     KeySymsPtr			  pSymsIn;
@@ -485,18 +669,44 @@ XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
     void			(*ctrlProc)();
 #endif
 {
-XkbFileInfo	finfo;
-KeySymsRec	tmpSyms,*pSyms;
-CARD8		tmpMods[XkbMaxKeyCount],*pMods;
-char		name[PATH_MAX];
-Bool		ok;
-XPointer	config;
+XkbFileInfo		finfo;
+KeySymsRec		tmpSyms,*pSyms;
+CARD8			tmpMods[XkbMaxKeyCount],*pMods;
+char			name[PATH_MAX],*rules;
+Bool			ok;
+XPointer		config;
+XkbComponentNamesRec	cfgNames;
+XkbRF_VarDefsRec	defs;
 
     if ((dev->key!=NULL)||(dev->kbdfeed!=NULL))
 	return False;
     pSyms= pSymsIn;
     pMods= pModsIn;
-    config= XkbDDXPreloadConfig(names,dev);
+    bzero(&defs,sizeof(XkbRF_VarDefsRec));
+    bzero(&cfgNames,sizeof(XkbComponentNamesRec));
+    rules= XkbGetRulesDflts(&defs);
+    config= XkbDDXPreloadConfig(&rules,&defs,&cfgNames,dev);
+
+    if (defs.model && defs.layout && rules) {
+	XkbComponentNamesRec	rNames;
+	bzero(&rNames,sizeof(XkbComponentNamesRec));
+	if (XkbDDXNamesFromRules(dev,rules,&defs,&rNames)) {
+	    if (rNames.keymap)		names->keymap= rNames.keymap;
+	    if (rNames.keycodes)	names->keycodes= rNames.keycodes;
+	    if (rNames.types)		names->types= rNames.types;
+	    if (rNames.compat)		names->compat= rNames.compat;
+	    if (rNames.symbols)		names->symbols= rNames.symbols;
+	    if (rNames.geometry)	names->geometry= rNames.geometry;
+	    XkbSetRulesUsed(&defs);
+	}
+    }
+    if (cfgNames.keymap)	names->keymap= cfgNames.keymap;
+    if (cfgNames.keycodes)	names->keycodes= cfgNames.keycodes;
+    if (cfgNames.types)		names->types= cfgNames.types;
+    if (cfgNames.compat)	names->compat= cfgNames.compat;
+    if (cfgNames.symbols)	names->symbols= cfgNames.symbols;
+    if (cfgNames.geometry)	names->geometry= cfgNames.geometry;
+
     if ((XkbDDXLoadKeymapByNames(dev,names,XkmAllIndicesMask,0,
 						&finfo,name,PATH_MAX))&&
 						(finfo.xkb!=NULL)) {
@@ -528,6 +738,7 @@ XPointer	config;
 		pSyms= &tmpSyms;
 	    }
 	    if ((xkb->map!=NULL)&&(xkb->map->modmap!=NULL)) {
+		bzero(tmpMods,XkbMaxKeyCount);
 		memcpy(tmpMods,xkb->map->modmap,maxKC+1);
 		pMods= tmpMods;
 	    }
@@ -580,6 +791,7 @@ XkbDescPtr		xkb;
 int			softRepeat;
 XkbSrvLedInfoPtr	sli;
 
+    xkbi = NULL;
     if (pXDev && pXDev->key && pXDev->key->xkbInfo && pXDev->kbdfeed) {
 	xkbi= pXDev->key->xkbInfo;
 	xkb= xkbi->desc;
@@ -598,7 +810,7 @@ XkbSrvLedInfoPtr	sli;
     }
     else softRepeat= 0;
     sli= XkbFindSrvLedInfo(pXDev,XkbDfltXIClass,XkbDfltXIId,0);
-    if (sli)
+    if (sli && xkbi)
 	XkbCheckIndicatorMaps(xkbi->device,sli,XkbAllIndicatorsMask);
 #ifdef DEBUG
     else ErrorF("No indicator feedback in XkbFinishInit (shouldn't happen)!\n");
@@ -698,15 +910,6 @@ XkbProcessArguments(argc,argv,i)
     else if (strncmp(argv[i], "-xkbmap", 7) == 0) {
 	if(++i < argc) {
 	    XkbInitialMap= argv[i];
-	    return 2;
-	}
-	else {
-	    return -1;
-	}
-    }
-    else if (strncmp(argv[i], "-xkbcomp", 7) == 0) {
-	if(++i < argc) {
-	    XkbCompCommand= argv[i];
 	    return 2;
 	}
 	else {

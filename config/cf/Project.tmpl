@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.27 1996/04/15 11:13:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.28 1996/06/13 07:54:44 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -30,6 +30,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.27 1996/04/15 11:13:52 dawes Exp $
  * CompressedFontTarget		(basename)
  * FontTarget			(basename)
  * FontObj			(basename)
+ * MakeXkbDir			(basename,subdir)
  */
 
 /*
@@ -1104,6 +1105,12 @@ UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 #define	XkbClientLibs /**/
 #endif
 #endif
+#ifdef UseInstalled
+     XKBCOMPCMD = xkbcomp			/* assume BINDIR in path */
+#else
+     XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
+     XKBCOMPCMD = $(XKBCOMPSRC)/xkbcomp
+#endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs
 #define	XkbClientDepLibs 
@@ -1277,6 +1284,19 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #define FontTarget(basename) UncompressedFontTarget(basename)
 #define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
+#endif
+
+/*
+ *
+ */
+#ifndef MakeXkbDir
+#define	MakeXkbDir(basedir,subdir)					@@\
+all::	Concat(subdir,.dir)						@@\
+									@@\
+Concat(subdir,.dir):							@@\
+	$(XKBCOMPCMD) -lfhlpR -o Concat(subdir,.dir) '*'		@@\
+									@@\
+InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)
 #endif
 
 /*

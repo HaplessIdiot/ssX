@@ -216,9 +216,10 @@ AddListing(file,map)
 
 static void
 #if NeedFunctionPrototypes
-ListFile(char *fileName,XkbFile *map)
+ListFile(FILE *outFile,char *fileName,XkbFile *map)
 #else
-ListFile(fileName,map)
+ListFile(outFile,fileName,map)
+FILE *		outFile;
 char *		fileName;
 XkbFile *	map;
 #endif
@@ -232,19 +233,19 @@ char *			mapName;
     if ((flags&XkbLC_Partial)&&(!(verboseLevel&WantPartialMaps)))
 	return;
     if (verboseLevel&WantLongListing) {
-	printf((flags&XkbLC_Hidden)?"h":"-");
-	printf((flags&XkbLC_Default)?"d":"-");
-	printf((flags&XkbLC_Partial)?"p":"-");
-	printf("----- ");
+	fprintf(outFile,(flags&XkbLC_Hidden)?"h":"-");
+	fprintf(outFile,(flags&XkbLC_Default)?"d":"-");
+	fprintf(outFile,(flags&XkbLC_Partial)?"p":"-");
+	fprintf(outFile,"----- ");
 	if (map->type==XkmSymbolsIndex) {
-	    printf((flags&XkbLC_AlphanumericKeys)?"a":"-");
-	    printf((flags&XkbLC_ModifierKeys)?"m":"-");
-	    printf((flags&XkbLC_KeypadKeys)?"k":"-");
-	    printf((flags&XkbLC_FunctionKeys)?"f":"-");
-	    printf((flags&XkbLC_AlternateGroup)?"g":"-");
-	    printf("--- ");
+	    fprintf(outFile,(flags&XkbLC_AlphanumericKeys)?"a":"-");
+	    fprintf(outFile,(flags&XkbLC_ModifierKeys)?"m":"-");
+	    fprintf(outFile,(flags&XkbLC_KeypadKeys)?"k":"-");
+	    fprintf(outFile,(flags&XkbLC_FunctionKeys)?"f":"-");
+	    fprintf(outFile,(flags&XkbLC_AlternateGroup)?"g":"-");
+	    fprintf(outFile,"--- ");
 	}
-        else printf("-------- ");
+        else fprintf(outFile,"-------- ");
     }
     mapName= map->name;
     if ((!(verboseLevel&WantFullNames))&&((flags&XkbLC_Default)!=0))
@@ -261,8 +262,8 @@ char *			mapName;
 	fileName= (tmp?tmp:last);
     }
     if (mapName)
-	 printf("%s(%s)\n",fileName,mapName);
-    else printf("%s\n",fileName);
+	 fprintf(outFile,"%s(%s)\n",fileName,mapName);
+    else fprintf(outFile,"%s\n",fileName);
     return;
 }
 
@@ -429,20 +430,28 @@ int	i;
 
 int
 #if NeedFunctionPrototypes
-GenerateListing(void)
+GenerateListing(char *out_name)
 #else
-GenerateListing()
+GenerateListing(out_name)
+    char *	out_name;
 #endif
 {
 int		i;
-FILE *		inputFile;
+FILE *		inputFile,*outFile;
 XkbFile *	rtrn,*mapToUse;
 unsigned	oldWarningLevel;
 char *		mapName;
 
     if (nFilesListed<1) {
 	ERROR("Must specify at least one file or pattern to list\n");
-	return 1;
+	return 0;
+    }
+    if ((!out_name)||((out_name[0]=='-')&&(out_name[1]=='\0')))
+	outFile= stdout;
+    else if ((outFile=fopen(out_name,"w"))==NULL) {
+	ERROR1("Cannot open \"%s\" to write keyboard description\n",out_name);
+	ACTION("Exiting\n");
+	return 0;
     }
 #ifdef DEBUG
     if (warningLevel>9)
@@ -483,7 +492,7 @@ char *		mapName;
 		for (;mapToUse;mapToUse= (XkbFile *)mapToUse->common.next) {
 		    if (!MapMatches(mapToUse->name,mapName))
 			continue;
-		    ListFile(list[i].file,mapToUse);
+		    ListFile(outFile,list[i].file,mapToUse);
 		}
 	    }
 	    fclose(inputFile);

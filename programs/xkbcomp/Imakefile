@@ -1,42 +1,38 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/04/08 15:43:27 erik Exp $
-
+XCOMM $XConsortium: Imakefile /main/10 1996/02/05 05:59:55 kaleb $
 #define IHaveSubdirs
-#define PassCDebugFlags
-
-       SUBDIRS = utils xkbfile
 
           SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
-		 keymap.c keycodes.c keytypes.c compat.c action.c \
-		 symbols.c \
-		 xkbparse.c
-          OBJS = xkbcomp.o xkbscan.o expr.o vmod.o indicators.o misc.o \
+		 keymap.c keycodes.c keytypes.c compat.c action.c alias.c \
+		 symbols.c geometry.c xkbpath.c listing.c \
+		 xkbparse.c parseutils.c utils.c
+          OBJS = xkbcomp.o xkbscan.o expr.o vmod.o indicators.o misc.o alias.o \
 		 keymap.o keycodes.o keytypes.o compat.o action.o \
-		 symbols.o \
-		 xkbparse.o
-        DEPLIBS = utils/libutils.a xkbfile/libxkbfile.a $(DEPXLIBONLY)
-LOCAL_LIBRARIES = utils/libutils.a xkbfile/libxkbfile.a $(XLIB)
+		 symbols.o geometry.o xkbpath.o listing.o \
+		 xkbparse.o parseutils.o utils.o
+        DEPLIBS = $(DEPXKBFILELIB) $(DEPXLIBONLY)
+LOCAL_LIBRARIES = $(XKBFILELIB) $(XLIB)
+        SUBDIRS = compat geometry keycodes keymap semantics symbols types \
+		  compiled rules
 
 ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
-EXTRA_INCLUDES = -Iutils -Ixkbfile -I$(EXTINCSRC)
+INCLUDES = -I$(EXTINCSRC)
 
-MakeSubdirs($(SUBDIRS))
+all::
 
-depend:: xkbparse.c
+SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
-ComplexProgramTarget(xkbcomp)
+YaccFile(xkbparse,$(YFLAGS))
 
-SpecialCObjectRule(xkbio,$(ICONFIGFILES),$(ROOT_DEFINES))
+install::
+	@echo "Creating $(LIBDIR)/xkb and $(LIBDIR)/xkb/compiled"
+	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
+	MakeDir($(DESTDIR)$(LIBDIR)/xkb/compiled)
 
-xkbparse.c: xkbparse.y
-	$(YACC) xkbparse.y
-	$(MV) y.tab.c xkbparse.c
-
-clean::
-	RemoveFiles(y.tab.c xkbparse.c)
-
-DependSubdirs($(SUBDIRS))
+InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 
 clean::
 	RemoveFiles(test.h *.xkm *.xkb)
+
+ComplexProgramTarget(xkbcomp)
 

@@ -46,21 +46,6 @@ from the X Consortium.
 #include "imComp.h"
 #endif
 
-#ifdef USE_SGI_COMPOSE_SUPPORT
-#define	COMPOSE_NO_CONST_MEMBERS
-#define USE_OWN_COMPOSE
-#include "Compose.h"
-#define XimCompInitTables 	ComposeInitTables
-#define XimCompLegalStatus 	ComposeLegalStatus
-#define XimCompIsComposeKey 	IsComposeKey
-#define XimCompRtrn 		ComposeRtrn
-#define XimCompProcessSym	ComposeProcessSym
-#define	XIM_COMP_IGNORE		COMPOSE_IGNORE
-#define XIM_COMP_IN_PROGRESS	COMPOSE_IN_PROGRESS
-#define XIM_COMP_FAIL		COMPOSE_FAIL
-#define XIM_COMP_SUCCEED	COMPOSE_SUCCEED
-#endif
-
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
@@ -904,7 +889,7 @@ XLookupString (event, buffer, nbytes, keysym, status)
     if ((event->state&ControlMask)&&(nbytes>0)&&
 			((rtrnLen==0)||((rtrnLen==1)&&(buffer[0]>=' ')))&&
 			(XkbGroupForCoreState(event->state)!=XkbGroup1Index)&&
-			(dpy->xkb_info->flags&XkbLC_ControlFallback)) {
+			(dpy->xkb_info->xlib_ctrls&XkbLC_ControlFallback)) {
 	XKeyEvent	tmp_ev;
 	tmp_ev= *event;
 	tmp_ev.state= XkbBuildCoreState(event->state,XkbGroup1Index);

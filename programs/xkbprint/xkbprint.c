@@ -1,5 +1,5 @@
 /* $XConsortium: xkbprint.c /main/4 1996/03/06 21:40:22 kaleb $ */
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.1 1996/01/16 15:09:15 dawes Exp $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.2 1996/03/11 12:38:51 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -69,7 +69,7 @@ static char *fileTypeExt[] = {
 
 static	unsigned	inputFormat= INPUT_UNKNOWN;
 static	unsigned	outputFormat= WANT_DEFAULT;
-static	char *		wantLocale= NULL;
+static	char *		wantLocale= "C";
 static	char *		rootDir;
 static	char *		inputFile;
 static	char *		outputFile;
@@ -717,12 +717,14 @@ XkbFileInfo 	result;
     }
     if (ok) {
 	FILE *out;
-	if (setlocale(LC_ALL,(wantLocale?wantLocale:""))==NULL) {
+	if (setlocale(LC_ALL,wantLocale)==NULL) {
 	    if (wantLocale!=NULL) {
 		uWarning("Couldn't change to locale %s\n",wantLocale);
 		uAction("Using \"C\" locale, instead\n");
 	    }
 	}
+	/* need C numerics so decimal point doesn't get screwed up */
+	setlocale(LC_NUMERIC,"C");
 	if ((inDpy!=outDpy)&&
 	    (XkbChangeKbdDisplay(outDpy,&result)!=Success)) {
 	    uInternalError("Error converting keyboard display from %s to %s\n",

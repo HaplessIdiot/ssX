@@ -1,7 +1,7 @@
 #ifndef _XKBBELLS_H_
 #define	_XKBBELLS_H_ 1
 
-/* $XConsortium: XKBbells.h /main/1 1995/11/30 19:00:46 kaleb $ */
+/* $XConsortium: XKBbells.h /main/3 1996/01/14 16:44:13 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,6 +32,8 @@
 #define	XkbBN_Warning			"Warning"
 #define	XkbBN_MinorError		"MinorError"
 #define	XkbBN_MajorError		"MajorError"
+#define	XkbBN_BadValue			"BadValue"
+#define	XkbBN_InvalidLocation		"InvalidLocation"
 #define	XkbBN_Question			"Question"
 #define	XkbBN_Start			"Start"
 #define	XkbBN_End			"End"
@@ -55,6 +57,7 @@
 #define	XkbBN_ClockChimeHalf		"ClockChimeHalf"
 #define	XkbBN_ClockChimeQuarter		"ClockChimeQuarter"
 #define	XkbBN_RepeatingLastBell		"RepeatingLastBell"
+#define XkbBN_ComposeFail		"ComposeFail"
 #define	XkbBN_AX_FeatureOn		"AX_FeatureOn"
 #define	XkbBN_AX_FeatureOff		"AX_FeatureOff"
 #define	XkbBN_AX_FeatureChange		"AX_FeatureChange"
@@ -75,45 +78,50 @@
 #define	XkbBI_Warning			1
 #define	XkbBI_MinorError		2
 #define	XkbBI_MajorError		3
-#define	XkbBI_Question			4
-#define	XkbBI_Start			5
-#define	XkbBI_End			6
-#define	XkbBI_Success			7
-#define	XkbBI_Failure			8
-#define	XkbBI_Wait			9
-#define	XkbBI_Proceed			10
-#define	XkbBI_Ignore			11
-#define	XkbBI_Iconify			12
-#define	XkbBI_Deiconify			13
-#define	XkbBI_Open			14
-#define	XkbBI_Close			15
-#define	XkbBI_TerminalBell		16
-#define	XkbBI_MarginBell		17
-#define	XkbBI_CursorStuck		18
-#define	XkbBI_NewMail			19
-#define	XkbBI_LaunchApp			20
-#define	XkbBI_AppDeath			21
-#define	XkbBI_ImAlive			22
-#define	XkbBI_ClockChimeHour		23
-#define	XkbBI_ClockChimeHalf		24
-#define	XkbBI_ClockChimeQuarter		25
-#define	XkbBI_RepeatingLastBell		26
-#define	XkbBI_AX_FeatureOn		27
-#define	XkbBI_AX_FeatureOff		28
-#define	XkbBI_AX_FeatureChange		29
-#define	XkbBI_AX_IndicatorOn		30
-#define	XkbBI_AX_IndicatorOff		31
-#define	XkbBI_AX_IndicatorChange	32
-#define	XkbBI_AX_SlowKeysWarning	33
-#define	XkbBI_AX_SlowKeyPress		34
-#define	XkbBI_AX_SlowKeyAccept		35
-#define	XkbBI_AX_SlowKeyReject		36
-#define	XkbBI_AX_SlowKeyRelease		37
-#define	XkbBI_AX_BounceKeyReject	38
-#define	XkbBI_AX_StickyLatch		39
-#define	XkbBI_AX_StickyLock		40
-#define	XkbBI_AX_StickyUnlock		41
-#define	XkbBI_NumBells			42
+#define	XkbBI_BadValue			4
+#define	XkbBI_InvalidLocation		5
+#define	XkbBI_Question			6
+#define	XkbBI_Start			7
+#define	XkbBI_End			8
+#define	XkbBI_Success			9
+#define	XkbBI_Failure			10
+#define	XkbBI_Wait			11
+#define	XkbBI_Proceed			12
+#define	XkbBI_Ignore			13
+#define	XkbBI_Iconify			14
+#define	XkbBI_Deiconify			15
+#define	XkbBI_Open			16
+#define	XkbBI_Close			17
+#define	XkbBI_TerminalBell		18
+#define	XkbBI_MarginBell		19
+#define	XkbBI_CursorStuck		20
+#define	XkbBI_NewMail			21
+#define	XkbBI_LaunchApp			22
+#define	XkbBI_AppDeath			23
+#define	XkbBI_ImAlive			24
+#define	XkbBI_ClockChimeHour		25
+#define	XkbBI_ClockChimeHalf		26
+#define	XkbBI_ClockChimeQuarter		27
+#define	XkbBI_RepeatingLastBell		28
+#define	XkbBI_ComposeFail		29
+#define	XkbBI_AX_FeatureOn		30
+#define	XkbBI_AX_FeatureOff		31
+#define	XkbBI_AX_FeatureChange		32
+#define	XkbBI_AX_IndicatorOn		33
+#define	XkbBI_AX_IndicatorOff		34
+#define	XkbBI_AX_IndicatorChange	35
+#define	XkbBI_AX_SlowKeysWarning	36
+#define	XkbBI_AX_SlowKeyPress		37
+#define	XkbBI_AX_SlowKeyAccept		38
+#define	XkbBI_AX_SlowKeyReject		39
+#define	XkbBI_AX_SlowKeyRelease		40
+#define	XkbBI_AX_BounceKeyReject	41
+#define	XkbBI_AX_StickyLatch		42
+#define	XkbBI_AX_StickyLock		43
+#define	XkbBI_AX_StickyUnlock		44
+#define	XkbBI_NumBells			45
+
+_XFUNCPROTOBEGIN
 
 extern	Bool XkbStdBell(
 #if NeedFunctionPrototypes
@@ -132,5 +140,7 @@ extern	Bool XkbStdBellEvent(
 	int		/* bellDef */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* _XKBBELLS_H_ */

@@ -1,5 +1,5 @@
-/* $XConsortium: ddxConfig.c /main/5 1996/01/14 16:45:41 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: ddxConfig.c /main/6 1996/05/24 14:49:41 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxConfig.c,v 3.1 1996/02/19 12:39:55 dawes Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -67,10 +67,7 @@ XkbEventCauseRec	cause;
 	    info->state.locked_mods&= ~rtrn->initial_mods.mods_clear;
     }
     XkbComputeDerivedState(info);
-    cause.kc=		0;
-    cause.event=	0;
-    cause.mjr=		0;
-    cause.mnr=		0;
+    XkbSetCauseUnknown(&cause);
     XkbUpdateIndicators(info->device,XkbAllIndicatorsMask,False,NULL,&cause);
     if (info->device && info->device->kbdfeed) {
 	DeviceIntPtr	dev;
@@ -94,9 +91,14 @@ XkbEventCauseRec	cause;
 
 XPointer
 #if NeedFunctionPrototypes
-XkbDDXPreloadConfig(XkbComponentNamesPtr names,DeviceIntPtr dev)
+XkbDDXPreloadConfig(	char **			rulesRtrn,
+			XkbRF_VarDefsPtr 	defs,
+			XkbComponentNamesPtr	names,
+			DeviceIntPtr 		dev)
 #else
-XkbDDXPreloadConfig(names,dev)
+XkbDDXPreloadConfig(rulesRtrn,defs,names,dev)
+    char **			rulesRtrn;
+    XkbRF_VarDefsPtr		defs;
     XkbComponentNamesPtr	names;
     DeviceIntPtr		dev;
 #endif
@@ -109,21 +111,37 @@ extern char *		display;
 
 #if defined(MetroLink)
     if (dev && dev->name)
-	dName= dev->name;
-    else
-	/* NULL, not ""  see test below */
-	dName= NULL;
+	 dName= dev->name;
+    else dName= "";
     /* It doesn't appear that XkbBaseDirectory could ever get set to NULL */
     sprintf(buf,"%s/X%s-config%s%s",XkbBaseDirectory,display,
- 			(dName?".":""),(dName?dName:""));
+ 						(dName[0]?".":""),dName);
 #else
     if (dev && dev->name)
 	 dName= dev->name;
     else dName= "";
-    if (XkbBaseDirectory!=NULL)
-	 sprintf(buf,"%s/X%s-config%s%s",XkbBaseDirectory,display,
-						(dName?".":""),dName);
-    else sprintf(buf,"%s/X%s-config%s%s",display,(dName?".":""),dName);
+    if (XkbBaseDirectory!=NULL) {
+	if (strlen(XkbBaseDirectory)+strlen(display)
+		+strlen(dName)+10+(dName[0]?1:0) > PATH_MAX)
+	{
+#ifdef DEBUG
+	    ErrorF("path exceeds max length\n");
+#endif
+	    return NULL;
+	}
+	sprintf(buf,"%s/X%s-config%s%s",XkbBaseDirectory,display,
+						(dName[0]?".":""),dName);
+    }
+    else {
+	if (strlen(display)+strlen(dName)+10+(dName[0]?1:0) > PATH_MAX)
+	{
+#ifdef DEBUG
+	    ErrorF("path exceeds max length\n");
+#endif
+	    return NULL;
+	}
+        sprintf(buf,"X%s-config%s%s",display,(dName[0]?".":""),dName);
+    }
 #endif
 #ifdef __EMX__
     strcpy(buf,(char*)__XOS2RedirRoot(buf));
@@ -153,6 +171,28 @@ extern char *		display;
 #ifdef DEBUG
 	ErrorF("found it\n");
 #endif
+        if (rtrn->rules_file) {
+	    *rulesRtrn= rtrn->rules_file;
+	    rtrn->rules_file= NULL;
+	}
+	if (rtrn->model) {
+	    defs->model= rtrn->model;
+	    rtrn->model= NULL;
+	}
+	if (rtrn->layout) {
+	    defs->layout= rtrn->layout;
+	    rtrn->layout= NULL;
+	}
+	if (rtrn->variant) {
+	    defs->variant= rtrn->variant;
+	    rtrn->variant= NULL;
+	}
+	if (rtrn->options) {
+	    defs->options= rtrn->options;
+	    rtrn->options= NULL;
+	}
+	XkbSetRulesUsed(defs);
+
 	if (rtrn->keycodes!=NULL) {
 	    names->keycodes= rtrn->keycodes;
 	    rtrn->keycodes= NULL;

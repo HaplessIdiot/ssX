@@ -1,4 +1,4 @@
-/* $XConsortium: XKBUse.c /main/12 1996/03/01 14:30:08 kaleb $ */
+/* $XConsortium: XKBUse.c /main/13 1996/05/24 15:11:41 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -605,7 +605,8 @@ wire_to_event(dpy,re,event)
 	    break;
 	default:
 #ifdef DEBUG
-	    fprintf(stderr,"Got unknown Xkb event (%d, base=%d)\n",re->type,
+	    fprintf(stderr,"Got unknown XKEYBOARD event (%d, base=%d)\n",
+						re->type,
 						xkbi->codes->first_event);
 #endif
 	    break;
@@ -623,13 +624,13 @@ XkbIgnoreExtension(ignore)
 {
     if (getenv("XKB_FORCE")!=NULL) {
 #ifdef DEBUG
-	fprintf(stderr,"Forcing use of XKB (overriding an IgnoreExtensions)\n");
+	fprintf(stderr,"Forcing use of XKEYBOARD (overriding an IgnoreExtensions)\n");
 #endif
 	return False;
     }
 #ifdef DEBUG
     else if (getenv("XKB_DEBUG")!=NULL) {
-	fprintf(stderr,"Explicitly %signoring XKB\n",ignore?"":"not ");
+	fprintf(stderr,"Explicitly %signoring XKEYBOARD\n",ignore?"":"not ");
     }
 #endif
     _XkbIgnoreExtension = ignore;
@@ -691,7 +692,7 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
 	dpy->flags |= XlibDisplayNoXkb;
 	UnlockDisplay(dpy);
 	if (debugMsg)
-	    fprintf(stderr,"XKB extension disabled or missing\n");
+	    fprintf(stderr,"XKEYBOARD extension disabled or missing\n");
 	return False;
     }
 
@@ -705,7 +706,7 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
 	UnlockDisplay(dpy);
 	Xfree(xkbi);
 	if (debugMsg)
-	    fprintf(stderr,"XKB extension not present\n");
+	    fprintf(stderr,"XKEYBOARD extension not present\n");
 	return False;
     }
     xkbi->codes = codes;
@@ -721,7 +722,7 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
 	fail= True;
 	if (debugMsg)
 	    fprintf(stderr,
-		"XKB version mismatch (want %d.%02d, got %d.%02d)\n", 
+		"XKEYBOARD version mismatch (want %d.%02d, got %d.%02d)\n", 
 		XkbMajorVersion,XkbMinorVersion,
 		rep.serverMajor, rep.serverMinor);
 
@@ -762,13 +763,14 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
     if (major_rtrn)	*major_rtrn= rep.serverMajor;
     if (minor_rtrn)	*minor_rtrn= rep.serverMinor;
     if (debugMsg)
-	fprintf(stderr,"XKB (version %d.%02d/%d.%02d) OK!\n",
+	fprintf(stderr,"XKEYBOARD (version %d.%02d/%d.%02d) OK!\n",
 				XkbMajorVersion,XkbMinorVersion,
 				rep.serverMajor,rep.serverMinor);
     dpy->xkb_info = xkbi;
     dpy->free_funcs->xkb = _XkbFreeInfo;
     ev_base = codes->first_event;
-    xkbi->xlib_ctrls|= (XkbLC_BeepOnComposeFail|XkbLC_ComposeLED);
+    xkbi->xlib_ctrls|= 
+	(XkbLC_BeepOnComposeFail|XkbLC_ComposeLED|XkbLC_ControlFallback);
     if ((str=getenv("_XKB_OPTIONS_ENABLE"))!=NULL) {
 	if ((str=getenv("_XKB_LATIN1_LOOKUP"))!=NULL) {
 	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
@@ -815,14 +817,14 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
 #ifdef DEBUG
     if (debugMsg) {
 	register unsigned c= xkbi->xlib_ctrls;
-	fprintf(stderr,"XKB compose: beep on failure is %s, LED is %s\n",
+	fprintf(stderr,"XKEYBOARD compose: beep on failure is %s, LED is %s\n",
 		((c&XkbLC_BeepOnComposeFail)?"on":"off"),
 		((c&XkbLC_ComposeLED)?"on":"off"));
-	fprintf(stderr,"XKB XLookupString: %slatin-1, %s lookup modifiers\n",
+	fprintf(stderr,"XKEYBOARD XLookupString: %slatin-1, %s lookup modifiers\n",
 		((c&XkbLC_ForceLatin1Lookup)?"allow non-":"force "),
 		((c&XkbLC_ConsumeLookupMods)?"consume":"re-use"));
 	fprintf(stderr,
-	    "XKB XLookupString: %sconsume shift and lock, %scontrol fallback\n",
+	    "XKEYBOARD XLookupString: %sconsume shift and lock, %scontrol fallback\n",
 	    ((c&XkbLC_AlwaysConsumeShiftAndLock)?"always ":"don't "),
 	    ((c&XkbLC_ControlFallback)?"":"no "));
 

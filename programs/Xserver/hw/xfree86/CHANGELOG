@@ -1,3 +1,17 @@
+XFree86 3.1.2Ef (13 August 1996)
+647. ET6000 support for the SVGA and W32 servers.  The support in the
+     W32 server is accelerated (Koen Gadeyne).
+646. Add support to xterm for most vt220 and vt320 terminal features
+     (Thomas E. Dickey).
+645. Support for I128 series II cards (Robin Cutshaw).
+644. Wacom driver updates (Frederic Lepied).
+643. Support for core motion history management through mi (Frederic Lepied).
+642. Improved integration of mouse with XInput (Frederic Lepied).
+641. Major updates to XF86Setup (Joe Moss).
+640. Update to latest version of XKB.
+639. Fix broken 32bpp sparse support in S3 server (there are still some
+     problems though, and they are also seen with the Mach64 server).
+
 XFree86 3.1.2Ee (11 August 1996)
 638. Implement ech and ech1 terminal capabilities for xterm (Thomas E. Dickey).
 637. Add blinking cursor support for xterm (disabled for now)

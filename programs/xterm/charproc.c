@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.30 1996/08/10 13:09:49 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.31 1996/08/11 13:04:43 dawes Exp $
  */
 
 /*
@@ -113,12 +113,10 @@ extern void exit();
 
 extern jmp_buf VTend;
 extern XtermWidget term;
-extern XtAppContext app_con;
 extern Widget toplevel;
 extern char *ProgramName;
 
 static int LoadNewFont PROTO((TScreen *screen, char *nfontname, char *bfontname, Bool doresize, int fontnum));
-static int finput PROTO((void));
 static int in_put PROTO((void));
 static int set_character_class PROTO((char *s));
 static void DoSetSelectedFont PROTO_XT_SEL_CB_ARGS;
@@ -174,6 +172,7 @@ static void StopBlinking PROTO((TScreen *screen));
 #define XtNcutToBeginningOfLine "cutToBeginningOfLine"
 #define XtNeightBitInput "eightBitInput"
 #define XtNeightBitOutput "eightBitOutput"
+#define XtNeightBitControl "eightBitControl"
 #define XtNgeometry "geometry"
 #define XtNtekGeometry "tekGeometry"
 #define XtNinternalBorder "internalBorder"
@@ -246,6 +245,7 @@ static void StopBlinking PROTO((TScreen *screen));
 #define XtCCursorBlinkTime "CursorBlinkTime"
 #define XtCEightBitInput "EightBitInput"
 #define XtCEightBitOutput "EightBitOutput"
+#define XtCEightBitControl "EightBitControl"
 #define XtCGeometry "Geometry"
 #define XtCJumpScroll "JumpScroll"
 #ifdef ALLOWLOGGING
@@ -287,16 +287,6 @@ static int param[NPARAM];
 static unsigned long ctotal;
 static unsigned long ntotal;
 static jmp_buf vtjmpbuf;
-
-extern int groundtable[];
-extern int csitable[];
-extern int dectable[];
-extern int eigtable[];
-extern int esctable[];
-extern int iestable[];
-extern int igntable[];
-extern int scrtable[];
-extern int scstable[];
 
 /* event handlers */
 static void HandleBell PROTO((Widget w, XEvent *event, String *params, Cardinal *param_count));
@@ -394,6 +384,8 @@ static XtActionsRec actionsList[] = {
     { "redraw",			HandleRedraw },
     { "send-signal",		HandleSendSignal },
     { "quit",			HandleQuit },
+    { "set-8-bit-control",	Handle8BitControl },
+    { "set-sun-function-keys",	HandleSunFunctionKeys },
     { "set-scrollbar",		HandleScrollbar },
     { "set-jumpscroll",		HandleJumpscroll },
     { "set-reverse-video",	HandleReverseVideo },
@@ -467,6 +459,9 @@ static XtResource resources[] = {
 {XtNeightBitOutput, XtCEightBitOutput, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.output_eight_bits), 
 	XtRBoolean, (XtPointer) &defaultTRUE},
+{XtNeightBitControl, XtCEightBitControl, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.control_eight_bits), 
+	XtRBoolean, (XtPointer) &defaultFALSE},
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffsetOf(XtermWidgetRec, misc.geo_metry),
 	XtRString, (XtPointer) NULL},
@@ -781,20 +776,45 @@ void SGR_Background(color)
 
 static void VTparse()
 {
+	/* Buffer for processing strings (e.g., OSC ... ST) */
+	static Char *string_area;
+	static Size_t string_size, string_used;
+
 	register TScreen *screen = &term->screen;
-	register int *parsestate;
+	register Const PARSE_T *parsestate;
 	register unsigned int c;
 	register unsigned char *cp;
-	register int row, col, top, bot, scstype;
+	register int row, col, top, bot, scstype, count;
+	Bool private_function;	/* distinguish private-mode from standard */
+	int string_mode;	/* nonzero iff we're processing a string */
 
 	/* We longjmp back to this point in VTReset() */
 	(void)setjmp(vtjmpbuf);
 
 	parsestate = groundtable;
 	scstype = 0;
+	private_function = False;
+	string_mode = 0;
 
 	for( ; ; ) {
-	        switch (parsestate[c = doinput()]) {
+	    c = doinput();
+
+	    /* Accumulate string for APC, DCS, PM, OSC, SOS controls */
+	    if (parsestate == sos_table) {
+		if (string_size == 0) {
+			string_area = (Char *)malloc(string_size = 256);
+		} else if (string_used+1 >= string_size) {
+			string_size += string_size;
+			string_area = (Char *)realloc(string_area, string_size);
+		}
+		string_area[string_used++] = c;
+	    } else if (parsestate != esc_table) {
+		/* if we were accumulating, we're not any more */
+	    	string_mode = 0;
+		string_used = 0;
+	    }
+
+	    switch (parsestate[c]) {
 		 case CASE_PRINT:
 			/* printable characters */
 			top = bcnt > TEXT_BUF_SIZE ? TEXT_BUF_SIZE : bcnt;
@@ -842,9 +862,21 @@ static void VTparse()
 			/* Ignore character */
 			break;
 
+		 case CASE_ENQ:
+			for (count = 0; xterm_name[count] != 0; count++)
+				unparseputc(xterm_name[count], screen->respond);
+			break;
+
 		 case CASE_BELL:
-			/* bell */
-			Bell(XkbBI_TerminalBell,0);
+			if (string_mode == OSC) {
+				if (string_used)
+					string_area[--string_used] = '\0';
+				do_osc(string_area, string_used);
+				parsestate = groundtable;
+			} else {
+				/* bell */
+				Bell(XkbBI_TerminalBell,0);
+			}
 			break;
 
 		 case CASE_BS:
@@ -860,7 +892,7 @@ static void VTparse()
 
 		 case CASE_ESC:
 			/* escape */
-			parsestate = esctable;
+			parsestate = esc_table;
 			break;
 
 		 case CASE_VMOT:
@@ -870,17 +902,31 @@ static void VTparse()
 			Index(screen, 1);
 			if (term->flags & LINEFEED)
 				CarriageReturn(screen);
-			if (XtAppPending(app_con) ||
-			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
-			  xevents();
+			do_xevents();
+			parsestate = groundtable;
+			break;
+
+		 case CASE_CBT:
+			/* cursor backward tabulation */
+			if((count = param[0]) == DEFAULT)
+				count = 1;
+			while ((count-- > 0)
+			  &&   (TabToPrevStop()));
+			parsestate = groundtable;
+			break;
+
+		 case CASE_CHT:
+			/* cursor forward tabulation */
+			if((count = param[0]) == DEFAULT)
+				count = 1;
+			while ((count-- > 0)
+			  &&   (TabToNextStop()));
 			parsestate = groundtable;
 			break;
 
 		 case CASE_TAB:
 			/* tab */
-			screen->cur_col = TabNext(term->tabs, screen->cur_col);
-			if (screen->cur_col > screen->max_col)
-				screen->cur_col = screen->max_col;
+			TabToNextStop();
 			break;
 
 		 case CASE_SI:
@@ -940,7 +986,7 @@ static void VTparse()
 
 		 case CASE_DEC_STATE:
 			/* enter dec mode */
-			parsestate = dectable;
+			parsestate = dec_table;
 			break;
 
 		 case CASE_ICH:
@@ -1019,37 +1065,19 @@ static void VTparse()
 
 		 case CASE_ED:
 			/* ED */
-			switch (param[0]) {
-			 case DEFAULT:
-			 case 0:
-				ClearBelow(screen);
-				break;
-
-			 case 1:
-				ClearAbove(screen);
-				break;
-
-			 case 2:
-				ClearScreen(screen);
-				break;
-			}
+			do_erase_display(screen, param[0], OFF_PROTECT);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_EL:
 			/* EL */
-			switch (param[0]) {
-			 case DEFAULT:
-			 case 0:
-				ClearRight(screen);
-				break;
-			 case 1:
-				ClearLeft(screen);
-				break;
-			 case 2:
-				ClearLine(screen);
-				break;
-			}
+			do_erase_line(screen, param[0], OFF_PROTECT);
+			parsestate = groundtable;
+			break;
+
+		 case CASE_ECH:
+			/* ECH */
+			ClearRight(screen, param[0]);
 			parsestate = groundtable;
 			break;
 
@@ -1078,10 +1106,22 @@ static void VTparse()
 			break;
 
 		 case CASE_TRACK_MOUSE:
-		 	/* Track mouse as long as in window and between
-			   specified rows */
-			TrackMouse(param[0], param[2]-1, param[1]-1,
-			 param[3]-1, param[4]-2);
+			if (screen->send_mouse_pos == 3
+			 || nparam > 1) {
+				/* Track mouse as long as in window and between
+				 * specified rows
+				 */
+				TrackMouse(param[0],
+					param[2]-1, param[1]-1,
+					param[3]-1, param[4]-2);
+			} else {
+				/* SD as per DEC vt400 documentation */
+				if((count = param[0]) < 1)
+					count = 1;
+				RevScroll(screen, count);
+				do_xevents();
+				parsestate = groundtable;
+			}
 			break;
 
 		 case CASE_DECID:
@@ -1090,11 +1130,23 @@ static void VTparse()
 		 case CASE_DA1:
 			/* DA1 */
 			if (param[0] <= 0) {	/* less than means DEFAULT */
+				count = 0;
 				reply.a_type   = CSI;
 				reply.a_pintro = '?';
-				reply.a_nparam = 2;
-				reply.a_param[0] = 1;		/* VT102 */
-				reply.a_param[1] = 2;		/* VT102 */
+				if (screen->ansi_level >= 1) {
+					reply.a_param[count++] = screen->ansi_level + 60;
+					reply.a_param[count++] = 1; /* 132-columns */
+					reply.a_param[count++] = 2; /* printer */
+					if (screen->ansi_level > 1) {
+						reply.a_param[count++] = 6; /* selective-erase */
+						reply.a_param[count++] = 8; /* user-defined-keys */
+					}
+					reply.a_param[count++] = 15; /* technical characters */
+				} else {
+					reply.a_param[count++] = 1; /* STP: VT100 */
+					reply.a_param[count++] = 2; /* AVO: 132-columns */
+				}
+				reply.a_nparam = count;
 				reply.a_inters = 0;
 				reply.a_final  = 'c';
 				unparseseq(&reply, screen->respond);
@@ -1136,7 +1188,7 @@ static void VTparse()
 						SGR_Background(-1);
 					})
 					term->flags &=
-						~(INVERSE|BOLD|UNDERLINE);
+						~(INVERSE|BOLD|UNDERLINE|INVISIBLE);
 					break;
 				 case 1:
 				 case 5:	/* Blink, really.	*/
@@ -1166,6 +1218,9 @@ static void VTparse()
 				 case 7:
 					term->flags |= INVERSE;
 					break;
+				 case 8:
+					term->flags |= INVISIBLE;
+					break;
 				 case 22:
 					term->flags &= ~BOLD;
 					break;
@@ -1178,6 +1233,9 @@ static void VTparse()
 					break;
 				 case 27:
 					term->flags &= ~INVERSE;
+					break;
+				 case 28:
+					term->flags &= ~INVISIBLE;
 					break;
 				 case 30:
 				 case 31:
@@ -1230,27 +1288,56 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+			/* DSR (except for the '?') is a superset of CPR */
+		 case CASE_DSR:
+			private_function = True;
+
+			/* FALLTHRU */
 		 case CASE_CPR:
-			/* CPR */
-			if ((row = param[0]) == 5) {
-				reply.a_type = CSI;
-				reply.a_pintro = 0;
-				reply.a_nparam = 1;
-				reply.a_param[0] = 0;
-				reply.a_inters = 0;
-				reply.a_final  = 'n';
-				unparseseq(&reply, screen->respond);
-			} else if (row == 6) {
-				reply.a_type = CSI;
-				reply.a_pintro = 0;
-				reply.a_nparam = 2;
-				reply.a_param[0] = screen->cur_row+1;
-				reply.a_param[1] = screen->cur_col+1;
-				reply.a_inters = 0;
+			count = 0;
+			reply.a_type   = CSI;
+			reply.a_pintro = private_function ? '?' : 0;
+			reply.a_inters = 0;
+			reply.a_final  = 'n';
+
+			switch (param[0]) {
+			case 5:
+				/* operating status */
+				reply.a_param[count++] = 0; /* (no malfunction ;-) */
+				break;
+			case 6:
+				/* CPR */
+				/* DECXCPR (with page=0) */
+				reply.a_param[count++] = screen->cur_row + 1;
+				reply.a_param[count++] = screen->cur_col + 1;
 				reply.a_final  = 'R';
-				unparseseq(&reply, screen->respond);
+				break;
+			case 15:
+				/* printer status */
+				reply.a_param[count++] = 13; /* FIXME: implement printer */
+				break;
+			case 25:
+				/* UDK status */
+				reply.a_param[count++] = 20; /* UDK always unlocked */
+				break;
+			case 26:
+				/* keyboard status */
+				reply.a_param[count++] = 27;
+				reply.a_param[count++] = 1; /* North American */
+				reply.a_param[count++] = 0; /* ready */
+				reply.a_param[count++] = 0; /* LK201 */
+				break;
 			}
+
+			if ((reply.a_nparam = count) != 0)
+				unparseseq(&reply, screen->respond);
+
 			parsestate = groundtable;
+			private_function = False;
+			break;
+
+		 case CASE_MC:
+			/* FIXME: implement media control */
 			break;
 
 		 case CASE_HP_MEM_LOCK:
@@ -1364,12 +1451,151 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+		 case CASE_CSI_QUOTE_STATE:
+			parsestate = csi_quo_table;
+		 	break;
+
+			/* the ANSI conformance levels are noted in the
+			 * vt400 user's manual (I assume they're the non-DEC
+			 * equivalents of DECSCL - T.Dickey)
+			 */
+		 case CASE_ANSI_LEVEL_1:
+			screen->ansi_level = 1;
+			screen->control_eight_bits = False;
+			break;
+		 case CASE_ANSI_LEVEL_2:
+			screen->ansi_level = 2;
+			break;
+		 case CASE_ANSI_LEVEL_3:
+			screen->ansi_level = 3;
+			break;
+
+		 case CASE_DECSCL:
+			if (param[0] >= 61 && param[0] <= 63) {
+				screen->ansi_level = param[0] - 60;
+				if (param[0] > 61) {
+					if (param[1] == 1)
+						screen->control_eight_bits = False;
+					else if (param[1] == 0 || param[1] == 2)
+						screen->control_eight_bits = True;
+				}
+			}
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_DECSCA:
+			screen->protected_mode = DEC_PROTECT;
+			if (param[0] <= 0 || param[0] == 2)
+				term->flags &= ~PROTECTED;
+			else if (param[0] == 1)
+				term->flags |= PROTECTED;
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_DECSED:
+			/* DECSED */
+			do_erase_display(screen, param[0], DEC_PROTECT);
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_DECSEL:
+			/* DECSEL */
+			do_erase_line(screen, param[0], DEC_PROTECT);
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_ST:
+			if (!string_used)
+				break;
+			string_area[--string_used] = '\0';
+			switch (string_mode) {
+			case APC:
+				/* ignored */
+				break;
+			case DCS:
+				do_dcs(string_area, string_used);
+				break;
+			case OSC:
+				do_osc(string_area, string_used);
+				break;
+			case PM:
+				/* ignored */
+				break;
+			case SOS:
+				/* ignored */
+				break;
+			}
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_SOS:
+			/* Start of String */
+			string_mode = SOS;
+			parsestate = sos_table;
+			break;
+
+		 case CASE_PM:
+			/* Privacy Message */
+			string_mode = PM;
+			parsestate = sos_table;
+			break;
+
+		 case CASE_DCS:
+			/* Device Control String */
+			string_mode = DCS;
+			parsestate = sos_table;
+		 	break;
+
+		 case CASE_APC:
+			/* Application Program Command */
+			string_mode = APC;
+			parsestate = sos_table;
+		 	break;
+
+		 case CASE_SPA:
+			screen->protected_mode = ISO_PROTECT;
+			term->flags |= PROTECTED;
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_EPA:
+			term->flags &= ~PROTECTED;
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_SU:
+			/* SU */
+			if((count = param[0]) < 1)
+				count = 1;
+			Scroll(screen, count);
+			parsestate = groundtable;
+			break;
+
+		 case CASE_SD:
+			/* SD as per ISO 6429 */
+			if((count = param[0]) < 1)
+				count = 1;
+			RevScroll(screen, count);
+			do_xevents();
+			parsestate = groundtable;
+			break;
+
 		 case CASE_IND:
 			/* IND */
 			Index(screen, 1);
-			if (XtAppPending(app_con) ||
-			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
-			  xevents();
+			do_xevents();
+			parsestate = groundtable;
+			break;
+
+		 case CASE_CPL:
+			/* cursor prev line */
+			CursorPrevLine(screen, param[0]);
+			parsestate = groundtable;
+			break;
+
+		 case CASE_CNL:
+			/* cursor next line */
+			CursorNextLine(screen, param[0]);
 			parsestate = groundtable;
 			break;
 
@@ -1377,10 +1603,7 @@ static void VTparse()
 			/* NEL */
 			Index(screen, 1);
 			CarriageReturn(screen);
-			
-			if (XtAppPending(app_con) ||
-			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
-			  xevents();
+			do_xevents();
 			parsestate = groundtable;
 			break;
 
@@ -1412,13 +1635,28 @@ static void VTparse()
 			/* enter csi state */
 			nparam = 1;
 			param[0] = DEFAULT;
-			parsestate = csitable;
+			parsestate = csi_table;
 			break;
 
-		 case CASE_OSC:
-			/* Operating System Command: ESC ] */
-			do_osc(finput);
+		 case CASE_ESC_SP_STATE:
+			/* esc space */
+			parsestate = esc_sp_table;
+			break;
+
+		 case CASE_S7C1T:
+			screen->control_eight_bits = False;
 			parsestate = groundtable;
+		 	break;
+
+		 case CASE_S8C1T:
+			screen->control_eight_bits = True;
+			parsestate = groundtable;
+		 	break;
+
+		 case CASE_OSC:
+			/* Operating System Command */
+			parsestate = sos_table;
+			string_mode = OSC;
 			break;
 
 		 case CASE_RIS:
@@ -1467,19 +1705,13 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
-		case CASE_XTERM_WINOPS:
+		 case CASE_XTERM_WINOPS:
 			window_ops(term);
 			parsestate = groundtable;
 			break;
 		}
 	}
 }
-
-static int finput()
-{
-	return(doinput());
-}
-
 
 static char *v_buffer;		/* pointer to physical buffer */
 static char *v_bufstr = NULL;	/* beginning of area to write */
@@ -1888,7 +2120,6 @@ WriteText(screen, str, len, flags, fg, bg )
     register int	len;
     unsigned		flags, fg, bg;
 {
-	register int cx, cy;
 	register unsigned fgs = flags;
 	GC	currentGC;
  
@@ -1904,27 +2135,16 @@ WriteText(screen, str, len, flags, fg, bg )
 
 			if(screen->scroll_amt)
 				FlushScroll(screen);
-			cx = CursorX(screen, screen->cur_col);
-			cy = CursorY(screen, screen->cur_row)+screen->fnt_norm->ascent;
-			XDrawImageString(screen->display, TextWindow(screen),
-				currentGC, cx, cy, str, len);
 
-			/* Fake boldface by drawing the characters one pixel
-			 * offset, if required.
-			 */
-			if ((fgs & BOLD)
-			 && screen->enbolden
-			 && (currentGC == screen->normalGC
-			  || screen->reverseGC))
-				XDrawString(screen->display,
-					TextWindow(screen),
-					currentGC, cx + 1, cy, str, len);
+			if (fgs & INVISIBLE)
+				memset(str, ' ', len);
 
-			if((fgs & UNDERLINE) && screen->underline) 
-				XDrawLine(screen->display,
-					TextWindow(screen), currentGC,
-					cx, cy+1,
-					cx + len * FontWidth(screen), cy+1);
+			drawXtermText(screen, fgs, currentGC,
+				CursorX(screen, screen->cur_col),
+				CursorY(screen, screen->cur_row)
+					+ screen->fnt_norm->ascent,
+				str, len);
+
 			/*
 			 * The following statements compile data to compute the
 			 * average number of characters written on each call to
@@ -1952,8 +2172,16 @@ ansi_modes(termw, func)
 
 	for (i=0; i<nparam; ++i) {
 		switch (param[i]) {
+		case 2:			/* KAM (if set, keyboard locked	*/
+			/* FIXME */
+			break;
+
 		case 4:			/* IRM				*/
 			(*func)(&termw->flags, INSERT);
+			break;
+
+		case 12:		/* SRM (if set, local echo	*/
+			/* FIXME */
 			break;
 
 		case 20:		/* LNM				*/
@@ -2038,7 +2266,7 @@ dpmodes(termw, func)
 			else
 				screen->send_mouse_pos = 0;
 			break;
-		case 25:		/* Show/hide cursor like VT200	*/
+		case 25:		/* DECTCEM: Show/hide cursor (VT200) */
 		        if(func == bitset)
 			        screen->cursor_set = ON;
 			else
@@ -2097,6 +2325,9 @@ dpmodes(termw, func)
 			    else
 				FromAlternate(screen);
 			}
+			break;
+		case 67:	/* DECBKM */
+			/* FIXME: back-arrow mapped to backspace or delete(D)*/
 			break;
 		case 1000:		/* xterm bogus sequence		*/
 			if(func == bitset)
@@ -2461,6 +2692,11 @@ window_ops(termw)
 				VShellWindow,
 				&text));
 		break;
+
+	default: /* DECSLPP (24, 25, 36, 48, 72, 144) */
+		if (param[0] >= 24)
+			RequestResize(termw, param[0], -1, TRUE);
+		break;
 	}
 }
 
@@ -2485,6 +2721,20 @@ static void bitclr(p, mask)
 }
 
 void
+unparseputc1(c, fd)
+	int c;
+	int fd;
+{
+	if (c >= 0x80 && c <= 0x9F) {
+		if (!term->screen.control_eight_bits) {
+			unparseputc(ESC, fd);
+			c -= 0x40;
+		}
+	}
+	unparseputc(c, fd);
+}
+
+void
 unparseseq(ap, fd)
     register ANSI *ap;
     int fd;
@@ -2493,13 +2743,7 @@ unparseseq(ap, fd)
 	register int	i;
 	register int	inters;
 
-	c = ap->a_type;
-	if (c>=0x80 && c<=0x9F) {
-		unparseputc(ESC, fd);
-		c -= 0x40;
-	}
-	unparseputc(c, fd);
-	c = ap->a_type;
+	unparseputc1(c = ap->a_type, fd);
 	if (c==ESC || c==DCS || c==CSI || c==OSC || c==PM || c==APC) {
 		if (ap->a_pintro != 0)
 			unparseputc((char) ap->a_pintro, fd);
@@ -2836,7 +3080,9 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    XtermWidget request = (XtermWidget) wrequest;
    XtermWidget new     = (XtermWidget) wnew;
    int i;
+#if OPT_ISO_COLORS
    Boolean color_ok;
+#endif
 
    /* Zero out the entire "screen" component of "new" widget,
       then do field-by-field assigment of "screen" fields
@@ -2877,6 +3123,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.pointer_cursor = request->screen.pointer_cursor;
    new->screen.input_eight_bits = request->screen.input_eight_bits;
    new->screen.output_eight_bits = request->screen.output_eight_bits;
+   new->screen.control_eight_bits = request->screen.control_eight_bits;
    new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
    new->misc.dynamicColors = request->misc.dynamicColors;
@@ -3397,18 +3644,12 @@ ShowCursor()
 		}
 	}
 
-	x = CursorX(screen, screen->cur_col);
-	y = CursorY(screen, screen->cur_row) + 
-	  screen->fnt_norm->ascent;
-	XDrawImageString(screen->display, TextWindow(screen), currentGC,
-		x, y, (char *) &c, 1);
+	drawXtermText(screen, flags, currentGC,
+		x = CursorX(screen, screen->cur_col),
+		y = CursorY(screen, screen->cur_row) + 
+			screen->fnt_norm->ascent,
+		(char *) &c, 1);
 
-	if((flags & BOLD) && screen->enbolden) /* no bold font */
-		XDrawString(screen->display, TextWindow(screen), currentGC,
-			x + 1, y, (char *) &c, 1);
-	if((flags & UNDERLINE) && screen->underline) 
-		XDrawLine(screen->display, TextWindow(screen), currentGC,
-			x, y+1, x + FontWidth(screen), y+1);
 	if (!screen->select && !screen->always_highlight) {
 		screen->box->x = x;
 		screen->box->y = y - screen->fnt_norm->ascent;
@@ -3428,7 +3669,7 @@ HideCursor()
 {
 	register TScreen *screen = &term->screen;
 	GC	currentGC;
-	register int x, y, flags, fg = 0, bg = 0;
+	register int flags, fg = 0, bg = 0;
 	char c;
 	Boolean	in_selection;
 
@@ -3457,18 +3698,13 @@ HideCursor()
 
 	if (c == 0)
 		c = ' ';
-	x = CursorX(screen, screen->cursor_col);
-	y = (((screen->cursor_row - screen->topline) * FontHeight(screen))) +
-	 screen->border;
-	y = y+screen->fnt_norm->ascent;
-	XDrawImageString(screen->display, TextWindow(screen), currentGC,
-		x, y, &c, 1);
-	if((flags & BOLD) && screen->enbolden)
-		XDrawString(screen->display, TextWindow(screen), currentGC,
-			x + 1, y, &c, 1);
-	if((flags & UNDERLINE) && screen->underline) 
-		XDrawLine(screen->display, TextWindow(screen), currentGC,
-			x, y+1, x + FontWidth(screen), y+1);
+
+	drawXtermText(screen, flags, currentGC,
+		CursorX(screen, screen->cursor_col),
+		CursorY(screen, screen->cursor_row)
+			+ screen->fnt_norm->ascent,
+		&c, 1);
+
 	screen->cursor_state = OFF;
 	resetXtermGC(screen, flags, in_selection);
 }

@@ -1,7 +1,7 @@
 #ifndef _XKBCONFIG_H_
 #define	_XKBCONFIG_H_ 1
 
-/* $XConsortium: XKBconfig.h /main/2 1995/12/07 21:18:11 kaleb $ */
+/* $XConsortium: XKBconfig.h /main/3 1996/01/01 10:52:09 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -105,6 +105,12 @@ typedef struct _XkbConfigRtrn {
 	int			bell_duration;
 	int			repeat_delay;
 	int			repeat_interval;
+
+	char *			rules_file;
+	char *			model;
+	char *			layout;
+	char *			variant;
+	char *			options;
 
 	char *			keymap;
 	char *			keycodes;
@@ -276,6 +282,15 @@ extern Bool XkbCFParse(
 	XkbConfigFieldsPtr	/* fields */,
 	XkbDescPtr		/* xkb */,
 	XkbConfigRtrnPtr	/* rtrn */
+#endif
+);
+
+extern	void XkbCFReportError(
+#if NeedFunctionPrototypes
+	FILE *			/* file */,
+	char *			/* name */,
+	int			/* error */,
+	int			/* line */
 #endif
 );
 

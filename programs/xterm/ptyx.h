@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.12 1996/08/10 13:09:50 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.13 1996/08/11 13:04:47 dawes Exp $
  */
 
 /*
@@ -162,18 +162,24 @@ typedef Char **ScrnBuf;
  * ANSI emulation.
  */
 #define INQ	0x05
+#define BEL	0x07
 #define	FF	0x0C			/* C0, C1 control names		*/
 #define	LS1	0x0E
 #define	LS0	0x0F
+#define	NAK	0x15
 #define	CAN	0x18
 #define	SUB	0x1A
 #define	ESC	0x1B
 #define US	0x1F
 #define	DEL	0x7F
 #define HTS     ('H'+0x40)
+#define	RI	0x8D
 #define	SS2	0x8E
 #define	SS3	0x8F
 #define	DCS	0x90
+#define	SPA	0x96
+#define	EPA	0x97
+#define	SOS	0x98
 #define	OLDID	0x9A			/* ESC Z			*/
 #define	CSI	0x9B
 #define	ST	0x9C
@@ -456,8 +462,10 @@ typedef struct {
 	char		curgl;		/* Current GL setting.		*/
 	char		curgr;		/* Current GR setting.		*/
 	char		curss;		/* Current single shift.	*/
+	int		ansi_level;	/* 0=vt100, 1,2,3 = vt100 ... vt320 */
 	int		scroll_amt;	/* amount to scroll		*/
 	int		refresh_amt;	/* amount to refresh		*/
+	int		protected_mode;	/* 0=off, 1=DEC, 2=ISO		*/
 	Boolean		jumpscroll;	/* whether we should jumpscroll */
 	Boolean         always_highlight; /* whether to highlight cursor */
 	Boolean		underline;	/* whether to underline text	*/
@@ -510,6 +518,7 @@ typedef struct {
 	Cardinal	selection_count; /* how many atoms in use */
 	Boolean		input_eight_bits;/* use 8th bit instead of ESC prefix */
 	Boolean		output_eight_bits; /* honor all bits or strip */
+	Boolean		control_eight_bits; /* send CSI as 8-bits */
 	Pixmap		menu_item_bitmap;	/* mask for checking items */
 	Widget		mainMenu, vtMenu, tekMenu, fontMenu;
 	char*		menu_font_names[NMENUFONTS];
@@ -644,7 +653,7 @@ typedef struct _TekWidgetRec {
 				   empty parts of the screen when selecting */
 
 			/* mask: user-visible attributes */
-#define	ATTRIBUTES	(INVERSE|UNDERLINE|BOLD|BG_COLOR|FG_COLOR|PROTECTED)
+#define	ATTRIBUTES	(INVERSE|UNDERLINE|BOLD|BG_COLOR|FG_COLOR|INVISIBLE|PROTECTED)
 
 #define WRAPAROUND	0x400	/* true if auto wraparound mode */
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */
@@ -654,7 +663,19 @@ typedef struct _TekWidgetRec {
 #define INSERT		0x8000	/* true if in insert mode */
 #define SMOOTHSCROLL	0x10000	/* true if in smooth scroll mode */
 #define IN132COLUMNS	0x20000	/* true if in 132 column mode */
+#define INVISIBLE	0x40000	/* true if writing invisible text */
 
+/*
+ * If we've set protected attributes with the DEC-style DECSCA, then we'll have
+ * to use DECSED or DECSEL to erase preserving protected text.  (The normal ED,
+ * EL won't preserve protected-text).  If we've used SPA, then normal ED and EL
+ * will preserve protected-text.  To keep things simple, just remember the last
+ * control that was used to begin protected-text, and use that to determine how
+ * erases are performed (otherwise we'd need 2 bits per protected character).
+ */
+#define OFF_PROTECT 0
+#define DEC_PROTECT 1
+#define ISO_PROTECT 2
 
 #define VWindow(screen)		(screen->fullVwin.window)
 #define VShellWindow		term->core.parent->core.window

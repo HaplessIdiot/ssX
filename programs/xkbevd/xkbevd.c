@@ -1,5 +1,5 @@
-/* $XConsortium: xkbevd.c /main/4 1996/01/14 16:49:16 kaleb $ */
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.1 1996/01/16 15:09:11 dawes Exp $ */
+/* $XConsortium: xkbevd.c /main/5 1996/05/24 15:03:20 kaleb $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.2 1996/05/06 06:01:15 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -75,6 +75,8 @@ Bool		background=	False;
 
 char *		soundCmd=	NULL;
 char *		soundDir=	NULL;
+
+XkbDescPtr	xkb=		NULL;
 
 /***====================================================================***/
 
@@ -530,6 +532,7 @@ Bool		ok;
 	uError("Couldn't select desired XKB events\n");
 	goto BAILOUT;
     }
+    xkb= XkbGetKeyboard(dpy,XkbGBN_AllComponentsMask,XkbUseCoreKbd);
     if (eventMask&XkbBellNotifyMask) {
 	unsigned ctrls,vals;
 	if (verbose)

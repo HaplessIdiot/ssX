@@ -1,4 +1,4 @@
-/* $XConsortium: XKBExtDev.c /main/1 1996/01/01 11:06:38 kaleb $ */
+/* $XConsortium: XKBExtDev.c /main/2 1996/01/14 16:43:11 kaleb $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -90,16 +90,13 @@ XkbNoteDeviceChanges(old,new,wanted)
 		old->leds.next= found;
 	    }
 	    if ((wanted&new->reason)&XkbXI_IndicatorNamesMask)
-		found->names= new->names_present;
-	    if ((wanted&new->reason)&XkbXI_IndicatorMapsMask)
-		found->maps= new->maps_present;
+		found->defined= new->leds_defined;
 	}
 	else {
 	    old->changed|= ((wanted&new->reason)&XkbXI_IndicatorsMask);
 	    old->leds.led_class= new->led_class;
 	    old->leds.led_id= new->led_id;
-	    old->leds.names= new->names_present;
-	    old->leds.maps= new->maps_present;
+	    old->leds.defined= new->leds_defined;
 	    if (old->leds.next) {
 		XkbDeviceLedChangesPtr next;
 		for (this=old->leds.next;this;this=next) {
@@ -117,10 +114,13 @@ XkbNoteDeviceChanges(old,new,wanted)
 
 static Status
 #if NeedFunctionPrototypes
-_XkbReadDeviceLedInfo(XkbReadBufferPtr buf,XkbDeviceInfoPtr devi)
+_XkbReadDeviceLedInfo(	XkbReadBufferPtr	buf,
+			unsigned 		present,
+			XkbDeviceInfoPtr 	devi)
 #else
-_XkbReadDeviceLedInfo(buf,devi)
+_XkbReadDeviceLedInfo(buf,present,devi)
     XkbReadBufferPtr	buf;
+    unsigned		present;
     XkbDeviceInfoPtr	devi;
 #endif
 {
@@ -134,34 +134,43 @@ xkbDeviceLedsWireDesc *	wireli;
     devli= XkbAddDeviceLedInfo(devi,wireli->ledClass,wireli->ledID);
     if (!devli)
 	return BadAlloc;
-    devli->names_present= 	wireli->namesPresent;
-    devli->maps_present= 	wireli->mapsPresent;
     devli->phys_indicators= 	wireli->physIndicators;
-    if (devli->names_present) {
-	for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
-	    if (wireli->namesPresent&bit) {
-		if (!_XkbCopyFromReadBuffer(buf,(char *)&devli->names[i],4))
-		    return BadLength;
+
+    if (present&XkbXI_IndicatorStateMask)
+	devli->state= wireli->state;
+
+    if (present&XkbXI_IndicatorNamesMask) {
+	devli->names_present= 	wireli->namesPresent;
+	if (devli->names_present) {
+	    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
+		if (wireli->namesPresent&bit) {
+		    if (!_XkbCopyFromReadBuffer(buf,(char *)&devli->names[i],4))
+			return BadLength;
+		}
 	    }
 	}
     }
-    if (devli->maps_present) {
-	XkbIndicatorMapPtr	 im;
-	xkbIndicatorMapWireDesc *wireim;
-	for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
-	    if (wireli->mapsPresent&bit) {
-		wireim= _XkbGetTypedRdBufPtr(buf,1,xkbIndicatorMapWireDesc);
-		if (!wireim)
-		    return BadAlloc;
-		im= &devli->maps[i];
-		im->flags= 		wireim->flags;
-		im->which_groups= 	wireim->whichGroups;
-		im->groups= 		wireim->groups;
-		im->which_mods= 	wireim->whichMods;
-		im->mods.mask= 		wireim->mods;
-		im->mods.real_mods= 	wireim->realMods;
-		im->mods.vmods= 	wireim->virtualMods;
-		im->ctrls= 		wireim->ctrls;
+
+    if (present&XkbXI_IndicatorMapsMask) {
+	devli->maps_present= 	wireli->mapsPresent;
+	if (devli->maps_present) {
+	    XkbIndicatorMapPtr	 	im;
+	    xkbIndicatorMapWireDesc *	wireim;
+	    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
+		if (wireli->mapsPresent&bit) {
+		    wireim= _XkbGetTypedRdBufPtr(buf,1,xkbIndicatorMapWireDesc);
+		    if (!wireim)
+			return BadAlloc;
+		    im= &devli->maps[i];
+		    im->flags= 		wireim->flags;
+		    im->which_groups= 	wireim->whichGroups;
+		    im->groups= 	wireim->groups;
+		    im->which_mods= 	wireim->whichMods;
+		    im->mods.mask= 	wireim->mods;
+		    im->mods.real_mods= wireim->realMods;
+		    im->mods.vmods= 	wireim->virtualMods;
+		    im->ctrls= 		wireim->ctrls;
+		}
 	    }
 	}
     }
@@ -210,7 +219,7 @@ int			tmp;
     if (rep->nDeviceLedFBs>0) {
 	register int 		i;
 	for (i=0;i<rep->nDeviceLedFBs;i++) {
-	    if ((tmp= _XkbReadDeviceLedInfo(&buf,devi))!=Success)
+	    if ((tmp= _XkbReadDeviceLedInfo(&buf,rep->present,devi))!=Success)
 		return tmp;
 	}
     }
@@ -227,12 +236,18 @@ BAILOUT:
 
 XkbDeviceInfoPtr
 #if NeedFunctionPrototypes
-XkbGetDeviceInfo(Display *dpy,unsigned which,unsigned deviceSpec)
+XkbGetDeviceInfo(	Display *	dpy,
+			unsigned 	which,
+			unsigned 	deviceSpec,
+			unsigned 	class,
+			unsigned 	id)
 #else
-XkbGetDeviceInfo(dpy,which,deviceSpec)
+XkbGetDeviceInfo(dpy,which,deviceSpec,class,id)
     Display *	dpy;
     unsigned	which;
     unsigned	deviceSpec;
+    unsigned	class;
+    unsigned	id;
 #endif
 {
     register xkbGetDeviceInfoReq *	req;
@@ -251,28 +266,26 @@ XkbGetDeviceInfo(dpy,which,deviceSpec)
     req->wanted= which;
     req->allBtns= ((which&XkbXI_ButtonActionsMask)!=0);
     req->firstBtn= req->nBtns= 0;
-    req->ledClass= XkbAllXIClasses;
-    req->ledID= XkbAllXIIds;
+    req->ledClass= class;
+    req->ledID= id;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return NULL;
     }
-    if (rep.present!=0) {
-	devi= XkbAllocDeviceInfo(rep.deviceID,rep.totalBtns,rep.nDeviceLedFBs);
-	if (devi) {
-	    devi->supported= rep.supported;
-	    devi->unsupported= rep.unsupported;
-	    devi->type= rep.devType;
-	    status= _XkbReadGetDeviceInfoReply(dpy,&rep,devi);
-	    if (status!=Success) {
-		XkbFreeDeviceInfo(devi,XkbXI_AllDeviceFeaturesMask,True);
-		devi= NULL;
-	    }
+    devi= XkbAllocDeviceInfo(rep.deviceID,rep.totalBtns,rep.nDeviceLedFBs);
+    if (devi) {
+	devi->supported= rep.supported;
+	devi->unsupported= rep.unsupported;
+	devi->type= rep.devType;
+	devi->has_own_state= rep.hasOwnState;
+	devi->dflt_kbd_fb = rep.dfltKbdFB;
+	devi->dflt_led_fb = rep.dfltLedFB;
+	status= _XkbReadGetDeviceInfoReply(dpy,&rep,devi);
+	if (status!=Success) {
+	    XkbFreeDeviceInfo(devi,XkbXI_AllDeviceFeaturesMask,True);
+	    devi= NULL;
 	}
-    }
-    else {
-	devi= NULL;
     }
     UnlockDisplay(dpy);
     SyncHandle();
@@ -477,6 +490,7 @@ int				i;
 register XkbDeviceLedInfoPtr	devli;
 
     bzero(stuff,sizeof(SetLedStuff));
+    stuff->wanted= wanted;
     stuff->dflt_class=	XkbXINone;
     if ((devi->num_leds<1)||((wanted&XkbXI_IndicatorsMask)==0))
 	return;
@@ -580,7 +594,8 @@ Bool		match;
 	if (match) {
 	    if (!linfo->used) {
 		*sz_rtrn+= _XkbSizeLedInfo(stuff->wanted,devli);
-		*nleds_rtrn++;
+		*nleds_rtrn+= 1;
+		linfo->used= True;
 		if ((class!=XkbAllXIClasses)&&(id!=XkbAllXIIds))
 		    return True;
 	    }
@@ -597,10 +612,10 @@ Bool		match;
 static Status
 #if NeedFunctionPrototypes
 _XkbSetDeviceInfoSize(	XkbDeviceInfoPtr	devi,
-				XkbDeviceChangesPtr	changes,
-				SetLedStuff *		stuff,
-				int *			sz_rtrn,
-				int *			num_leds_rtrn)
+			XkbDeviceChangesPtr	changes,
+			SetLedStuff *		stuff,
+			int *			sz_rtrn,
+			int *			num_leds_rtrn)
 #else
 _XkbSetDeviceInfoSize(devi,changes,stuff,sz_rtrn,num_leds_rtrn)
     XkbDeviceInfoPtr	devi;
@@ -662,6 +677,7 @@ xkbDeviceLedsWireDesc *	lwire;
     lwire->namesPresent= namesNeeded;
     lwire->mapsPresent=  mapsNeeded;
     lwire->physIndicators= devli->phys_indicators;
+    lwire->state= devli->state;
     wire= (char *)&lwire[1];
     if (namesNeeded) {
 	CARD32 *awire;
@@ -772,8 +788,7 @@ XkbSetDeviceInfo(dpy,which,devi)
     changes.num_btns=		devi->num_btns;
     changes.leds.led_class=	XkbAllXIClasses;
     changes.leds.led_id=	XkbAllXIIds;
-    changes.leds.names=		0;
-    changes.leds.maps=		0;
+    changes.leds.defined=	0;
     size= nLeds= 		0;
     _InitLedStuff(&lstuff,changes.changed,devi);
     if (_XkbSetDeviceInfoSize(devi,&changes,&lstuff,&size,&nLeds)!=Success)
@@ -854,5 +869,85 @@ XkbChangeDeviceInfo(dpy,devi,changes)
     SyncHandle();
     _FreeLedStuff(&lstuff);
     /* 12/11/95 (ef) -- XXX!! should clear changes here */
+    return ok;
+}
+
+Bool 
+#if NeedFunctionPrototypes
+XkbSetDeviceLedInfo(	Display *		dpy,
+			XkbDeviceInfoPtr	devi,
+			unsigned 		ledClass,
+			unsigned		ledID,
+			unsigned		which)
+#else
+XkbSetDeviceLedInfo(dpy,devi,ledClass,ledID,which)
+    Display *		dpy;
+    XkbDeviceInfoPtr	devi;
+    unsigned 		ledClass;
+    unsigned		ledID;
+    unsigned		which;
+#endif
+{
+    return False;
+}
+
+Bool 
+#if NeedFunctionPrototypes
+XkbSetDeviceButtonActions(	Display *		dpy,
+				XkbDeviceInfoPtr 	devi,
+				unsigned int		first,
+				unsigned int		nBtns)
+#else
+XkbSetDeviceButtonActions(dpy,devi,first,nBtns)
+	Display *		dpy;
+	XkbDeviceInfoPtr	devi;
+	unsigned int		first;
+	unsigned int		nBtns;
+#endif
+{
+    register xkbSetDeviceInfoReq *req;
+    Status		     	ok;
+    int				size,nLeds;
+    XkbInfoPtr 			xkbi;
+    XkbDeviceChangesRec		changes;
+    SetLedStuff			lstuff;
+
+    if ((dpy->flags & XlibDisplayNoXkb) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
+	return False;
+    if ((!devi)||(!XkbXI_DevHasBtnActs(devi))||(first+nBtns>devi->num_btns))
+	return False;
+    if (nBtns==0)
+	return True;
+
+    bzero((char *)&changes,sizeof(XkbDeviceChangesRec));
+    changes.changed= 		XkbXI_ButtonActionsMask;
+    changes.first_btn=		first;
+    changes.num_btns=		nBtns;
+    changes.leds.led_class=	XkbXINone;
+    changes.leds.led_id=	XkbXINone;
+    changes.leds.defined=	0;
+    size= nLeds= 		0;
+    if (_XkbSetDeviceInfoSize(devi,&changes,NULL,&size,&nLeds)!=Success)
+	return False;
+    LockDisplay(dpy);
+    xkbi = dpy->xkb_info;
+    GetReq(kbSetDeviceInfo, req);
+    req->length+=	size/4;
+    req->reqType= 	xkbi->codes->major_opcode;
+    req->xkbReqType= 	X_kbSetDeviceInfo;
+    req->deviceSpec= 	devi->device_spec;
+    req->firstBtn=	changes.first_btn;
+    req->nBtns=		changes.num_btns;
+    req->change=	changes.changed;
+    req->nDeviceLedFBs=	nLeds;
+    if (size>0) {
+	char * 	wire;
+	BufAlloc(char *,wire,size);
+	ok= (wire!=NULL)&&
+		(_XkbWriteSetDeviceInfo(wire,&changes,&lstuff,devi)==size);
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
     return ok;
 }

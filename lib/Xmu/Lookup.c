@@ -1,5 +1,5 @@
 /* $XConsortium: Lookup.c,v 1.15 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/Lookup.c,v 3.1 1996/05/06 05:54:36 dawes Exp $ */
 
 /* 
  
@@ -141,7 +141,7 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     unsigned long kset;
 
     kset = keysymSet & 0xffffff;
-    count = XLookupString(event, buffer, nbytes, &symbol, status);
+    count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	/* nothing */

@@ -1,5 +1,5 @@
 /* $XConsortium: XKBCvt.c /main/22 1996/03/01 14:29:37 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.7 1996/03/04 04:20:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.8 1996/05/13 07:23:37 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -453,7 +453,7 @@ __XkbDefaultToUpper(sym)
     return upper;
 }
 
-static int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
+int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;
@@ -462,16 +462,20 @@ static int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
 {
     if ((keysym&0xffffff00)==0xff00) {
         return _XkbHandleSpecialSym(keysym, buffer, nbytes, status);
-    } else {
-        if (nbytes>0) {
-	    buffer[0] = koi8[keysym & 0x7f];
-            if (nbytes>1)
-                buffer[1]= '\0';
-            return 1;
-        }
+    }
+    else if (((keysym&0xffffff80)==0x680)||((keysym&0xffffff80)==0)) {
+	if (nbytes>0) {
+	    if ( (keysym&0x80)==0 )
+		 buffer[0] = keysym&0x7f;
+	    else buffer[0] = koi8[keysym & 0x7f];
+	    if (nbytes>1)
+		buffer[1]= '\0';
+	    return 1;
+	}
     }
     return 0;
 }
+
 static KeySym
 _XkbKoi8ToKS(priv,buffer,nbytes,status)
     XPointer priv;
@@ -484,10 +488,15 @@ _XkbKoi8ToKS(priv,buffer,nbytes,status)
     if (((buffer[0]&0x80)==0)&&(buffer[0]>=32))
         return buffer[0];
     else if ((buffer[0]&0x7f)>=32) {
-        return 0xd00|buffer[0];
+	register int i;
+	for (i=0;i<sizeof(koi8)/sizeof(unsigned char);i++) {
+	    if (koi8[i]==buffer[0])
+		return 0xd80|i;
+	}
     }
     return NoSymbol;
 }
+
 /***====================================================================***/
 
 

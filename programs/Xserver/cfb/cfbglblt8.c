@@ -1,5 +1,5 @@
 /* $XConsortium: cfbglblt8.c,v 5.31 94/04/17 20:28:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.0 1996/06/29 09:05:34 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -94,10 +94,11 @@ static void cfbPolyGlyphBlt8Clipped();
 #define USE_STIPPLE_CODE
 #endif
 
-#if defined(__GNUC__) && !defined(GLYPHROP) && (defined(mc68020) || defined(mc68000) || defined(__mc68000__)) && !defined(USE_LEFTBITS)
+#if defined(__GNUC__) && !defined(GLYPHROP) && (defined(mc68020) || defined(mc68000) || defined(__mc68000__)) && PSZ == 8 && !defined(USE_LEFTBITS)
 #ifdef USE_STIPPLE_CODE
 #undef USE_STIPPLE_CODE
 #endif
+#include "stip68kgnu.h"
 #endif
 
 #if PSZ == 24

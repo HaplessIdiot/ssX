@@ -2,7 +2,6 @@
 #define	_XKBFILEINT_H_ 1
 
 /* $XConsortium: XKBfileInt.h /main/2 1996/01/01 10:52:19 kaleb $ */
-/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -52,6 +51,14 @@
 #define	_XkbClearElems(a,f,l,t)	bzero(&(a)[f],((l)-(f)+1)*sizeof(t))
 #define	_XkbFree(p)		free(p)
 
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+
 #endif
 
 _XFUNCPROTOBEGIN
@@ -68,7 +75,7 @@ extern int	_XkbStrCaseCmp(
 	char *	/* str2 */
 #endif
 );
-#define _XkbStrCaseEqual(s1,s2) (_XkbStrCaseCmp(s1,s2)==0)
+#define _XkbStrCaseEqual(s1,s2)	(_XkbStrCaseCmp(s1,s2)==0)
 
 _XFUNCPROTOEND
 

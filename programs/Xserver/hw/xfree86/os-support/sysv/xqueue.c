@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.4 1996/05/13 06:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.5 1996/08/10 13:07:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -277,6 +277,13 @@ xf86XqueKbdProc (pKeyboard, what)
 	    names.symbols = xf86Info.xkbsymbols;
 	    names.geometry = xf86Info.xkbgeometry;
 	}
+	if ((xf86Info.xkbkeymap || xf86Info.xkbcomponents_specified)
+	   && (xf86Info.xkbmodel == NULL || xf86Info.xkblayout == NULL)) {
+		xf86Info.xkbrules = NULL;
+	}
+	XkbSetRulesDflts(xf86Info.xkbrules, xf86Info.xkbmodel,
+			 xf86Info.xkblayout, xf86Info.xkbvariant,
+			 xf86Info.xkboptions);
 	XkbInitKeyboardDeviceStruct(pKeyboard, 
 				    &names,
 				    &keySyms, 
