@@ -1,4 +1,5 @@
 XFree86 4.4.99.11 (xx July 2004)
+ 163. Xterm patch #194 (Thomas Dickey).
 
 XFree86 4.4.99.10 (27 July 2004)
  162. Install new pc/hu symbols file (#6576, Szilveszter Adam).
@@ -19061,7 +19062,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3298 2004/07/25 20:49:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3299 2004/07/27 11:02:46 dawes Exp $
 
 
 

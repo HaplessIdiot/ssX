@@ -1,4 +1,4 @@
-MANIFEST for xterm, version xterm-193
+MANIFEST for xterm, version xterm-194
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 256colres.h                     resource-definitions for 256-color mode
@@ -42,7 +42,7 @@ doublechr.c                     VT100 double-size character support
 error.h                         error-code definitions for 'xterm'
 fontutils.c                     xterm functions for (re)loading fonts
 fontutils.h                     interface of fontutils.c
-gen-pc-fkeys.sh                 script to generate extended function-key terminfo
+gen-pc-fkeys.pl                 script to generate extended function-key terminfo
 input.c                         VT100 key-symbol and function-key translation
 install.sh                      configure script: fallback install script
 keysym2ucs.c                    lookup-table for UTF-8 to keysyms
@@ -87,6 +87,7 @@ xstrings.c                      a few common string functions
 xstrings.h                      interface of xstrings.c
 xterm.dat                       application defaults for VMS port of 'xterm'
 xterm.h                         common includes, definitions and prototypes for 'xterm'
+xterm.log.html                  changelog for xterm
 xterm.man                       manual page for 'xterm'
 xterm_axp.opt                   linker options file for VMS port of 'xterm'
 xterm_io.h                      split-out definitions of termio/termios/sgtty and winsize from main.c, os2main.c, screen.c and resize.c
