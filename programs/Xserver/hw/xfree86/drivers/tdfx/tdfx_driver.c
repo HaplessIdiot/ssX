@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.29 2000/03/06 22:41:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.30 2000/03/06 23:54:13 dawes Exp $ */
 
 /*
  * Authors:
@@ -1625,8 +1625,10 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * InitGLXVisuals call back.
    */
   pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
-  /* Force the initialization of the context */
-  TDFXLostContext(pScreen);
+  if (pTDFX->directRenderingEnabled) {
+    /* Force the initialization of the context */
+    TDFXLostContext(pScreen);
+  }
 #endif
 
   switch (pScrn->bitsPerPixel) {
