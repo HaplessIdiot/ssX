@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +54,6 @@ static int LispSkipComment(LispMac*);
 static int LispSkipWhiteSpace(LispMac*);
 static char *LispIntToOpaqueType(LispMac*, int);
 
-void LispPrint(LispMac*, LispObj*);
 void LispPrintObj(LispMac*, LispObj*, int);
 void LispSnprint(LispMac*, LispObj*, char*, int);
 void LispSnprintObj(LispMac*, LispObj*, char**, int*, int);
@@ -1266,6 +1265,8 @@ LispEval(LispMac *mac, LispObj *obj)
 
     LispDestroy(mac, "the function %s is not defined", name);
     /*NOTREACHED*/
+
+    return (NIL);
 }
 
 LispObj *
@@ -1317,7 +1318,7 @@ LispSnprintObj(LispMac *mac, LispObj *obj, char **str, int *len, int paren)
 	    *str += sz;
 	    break;
 	case LispOpaque_t:
-	    sz - snprintf(*str, *len, "#0x%06x-%s", obj->data.opaque.data,
+	    sz = snprintf(*str, *len, "#0x%06x-%s", (int)obj->data.opaque.data,
 			  LispIntToOpaqueType(mac, obj->data.opaque.type));
 	    *len -= sz;
 	    *str += sz;
@@ -1569,7 +1570,7 @@ LispPrintObj(LispMac *mac, LispObj *obj, int paren)
 	    printf("t");
 	    break;
 	case LispOpaque_t:
-	    printf("#0x%06x-%s", obj->data.opaque.data,
+	    printf("#0x%06x-%s", (int)obj->data.opaque.data,
 		   LispIntToOpaqueType(mac, obj->data.opaque.type));
 	    break;
 	case LispAtom_t:
@@ -1895,17 +1896,3 @@ LispSetExitOnError(LispMac *mac, int errexit)
 {
     mac->errexit = !!errexit;
 }
-
-#ifdef DEBUG
-int
-main(int argc, char *argv[])
-{
-    LispMac *mac = LispBegin(argc, argv);
-
-    LispMachine(mac);
-
-    LispEnd(mac);
-
-    return (0);
-}
-#endif

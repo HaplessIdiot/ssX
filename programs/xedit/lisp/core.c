@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.1 2001/08/31 15:00:13 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -1401,7 +1401,7 @@ Lisp_Quote(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Reverse(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res, *obj;
+    LispObj *res;
 
     switch (CAR(list)->type) {
 	case LispNil_t:
@@ -1626,6 +1626,8 @@ Lisp_Throw(LispMac *mac, LispObj *list, char *fname)
     }
     LispDestroy(mac, "%s is not a tag to %s", LispStrObj(mac, tag), fname);
     /*NOTREACHED*/
+
+    return (NIL);
 }
 
 LispObj *

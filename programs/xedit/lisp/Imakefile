@@ -12,6 +12,10 @@
 SNPRINTF_DEFS  = -DNEED_SNPRINTF
 #endif
 
+#if !HasSnprintf
+  MISC_INCLUDES = -I$(LIBSRC)/misc
+#endif
+
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -53,6 +57,7 @@ DEFINES		= -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' -DNEED_SNPRINTF
 DEFINES		= -DLISPDIR='"$(LISPDIR)"' -DNEED_SNPRINTF
 #endif
 
+       INCLUDES = $(MISC_INCLUDES)
 LOCAL_LIBRARIES = -L. -llisp -lm $(DLLIB)
 
 GperfLispFile(lisp,table,$(GPERFFLAGS))

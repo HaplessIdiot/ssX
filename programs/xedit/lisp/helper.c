@@ -27,9 +27,10 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include "helper.h"
+#include <ctype.h>
 
 /*
  * Implementation
@@ -126,13 +127,13 @@ LispObj *
 _LispMinMax(LispMac *mac, LispObj *list, char *name, int max)
 {
     double real;
-    LispObj *res, *obj;
+    LispObj *obj;
 
     obj = EVAL(CAR(list));
     if (obj->type != LispReal_t)
 	LispDestroy(mac, ExpectingNumberAt, name);
     real = obj->data.real;
-    for (CDR(list); list != NIL; list = CDR(list)) {
+    for (list = CDR(list); list != NIL; list = CDR(list)) {
 	obj = EVAL(CAR(list));
 	if (obj->type != LispReal_t)
 	    LispDestroy(mac, ExpectingNumberAt, name);
@@ -149,7 +150,6 @@ _LispBoolCond(LispMac *mac, LispObj *list, char *name, int op)
 {
     LispObj *obj;
     double value;
-    unsigned i;
     int cond;
 
     cond = 1;
