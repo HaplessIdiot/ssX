@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.54 2001/05/16 06:48:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.55 2001/06/15 21:23:07 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -622,7 +622,6 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
     xf86ShowClocks(pScreenInfo, From);
 
-    if (pScreenInfo->display->modes && pScreenInfo->display->modes[0])
     {
         /* Set the virtual X rounding (in bits) */
         if (pScreenInfo->depth == 8)
