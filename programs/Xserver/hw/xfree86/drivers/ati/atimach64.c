@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.25 2000/08/31 19:03:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.26 2000/11/02 16:55:28 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -806,53 +806,91 @@ ATIMach64SetDPMSMode
 
     if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT)
     {
-        CARD32 lcd_index = 0, power_management;
+        CARD32 lcd_index = 0;
 
-        if (pATI->Chip == ATI_CHIP_264LT)
-            power_management = inr(POWER_MANAGEMENT);
-        else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                    (pATI->Chip == ATI_CHIP_264XL) ||
-                    (pATI->Chip == ATI_CHIP_MOBILITY)) */
+        /*
+         * ATI's BIOS simply turns the panel on and off, so do the same by
+         * default, but keep the previous behaviour around for reference.
+         */
+        if (pATI->OptionDevel)
         {
-            lcd_index = inr(LCD_INDEX);
-            power_management = ATIGetMach64LCDReg(LCD_POWER_MANAGEMENT);
+            CARD32 power_management;
+
+            if (pATI->Chip == ATI_CHIP_264LT)
+                power_management = inr(POWER_MANAGEMENT);
+            else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                        (pATI->Chip == ATI_CHIP_264XL) ||
+                        (pATI->Chip == ATI_CHIP_MOBILITY)) */
+            {
+                lcd_index = inr(LCD_INDEX);
+                power_management = ATIGetMach64LCDReg(LCD_POWER_MANAGEMENT);
+            }
+
+            power_management &= ~(STANDBY_NOW | SUSPEND_NOW);
+
+            switch (DPMSMode)
+            {
+                case DPMSModeOn:
+                    break;
+
+                case DPMSModeStandby:
+                    power_management |= STANDBY_NOW;
+                    break;
+
+                case DPMSModeSuspend:
+                    power_management |= SUSPEND_NOW;
+                    break;
+
+                case DPMSModeOff:
+                    power_management |= STANDBY_NOW | SUSPEND_NOW;  /* ? */
+                    break;
+
+                default:        /* Muffle compiler */
+                    return;
+            }
+
+            /* Panel power management seems to involve the engine */
+            if (pATI->OptionAccel)
+                ATIMach64WaitForIdle(pATI);
+
+            if (pATI->Chip == ATI_CHIP_264LT)
+                outr(POWER_MANAGEMENT, power_management);
+            else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                        (pATI->Chip == ATI_CHIP_264XL) ||
+                        (pATI->Chip == ATI_CHIP_MOBILITY)) */
+            {
+                ATIPutMach64LCDReg(LCD_POWER_MANAGEMENT, power_management);
+                outr(LCD_INDEX, lcd_index);
+            }
         }
-
-        power_management &= ~(STANDBY_NOW | SUSPEND_NOW);
-
-        switch (DPMSMode)
+        else
         {
-            case DPMSModeOn:
-                break;
+            CARD32 lcd_gen_ctrl;
 
-            case DPMSModeStandby:
-                power_management |= STANDBY_NOW;
-                break;
+            if (pATI->Chip == ATI_CHIP_264LT)
+                lcd_gen_ctrl = inr(LCD_GEN_CTRL);
+            else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                        (pATI->Chip == ATI_CHIP_264XL) ||
+                        (pATI->Chip == ATI_CHIP_MOBILITY)) */
+            {
+                lcd_index = inr(LCD_INDEX);
+                lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+            }
 
-            case DPMSModeSuspend:
-                power_management |= SUSPEND_NOW;
-                break;
+            if (DPMSMode == DPMSModeOn)
+                lcd_gen_ctrl |= LCD_ON;
+            else
+                lcd_gen_ctrl &= ~LCD_ON;
 
-            case DPMSModeOff:
-                power_management |= STANDBY_NOW | SUSPEND_NOW;  /* ? */
-                break;
-
-            default:            /* Muffle compiler */
-                return;
-        }
-
-        /* Panel power management seems to involve the engine */
-        if (pATI->OptionAccel)
-            ATIMach64WaitForIdle(pATI);
-
-        if (pATI->Chip == ATI_CHIP_264LT)
-            outr(POWER_MANAGEMENT, power_management);
-        else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                    (pATI->Chip == ATI_CHIP_264XL) ||
-                    (pATI->Chip == ATI_CHIP_MOBILITY)) */
-        {
-            ATIPutMach64LCDReg(LCD_POWER_MANAGEMENT, power_management);
-            outr(LCD_INDEX, lcd_index);
+            if (pATI->Chip == ATI_CHIP_264LT)
+                outr(LCD_GEN_CTRL, lcd_gen_ctrl);
+            else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                        (pATI->Chip == ATI_CHIP_264XL) ||
+                        (pATI->Chip == ATI_CHIP_MOBILITY)) */
+            {
+                ATIPutMach64LCDReg(LCD_GEN_CNTL, lcd_gen_ctrl);
+                outr(LCD_INDEX, lcd_index);
+            }
         }
     }
 }
