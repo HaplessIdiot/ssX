@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.66 1997/02/27 13:58:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.67 1997/02/28 08:18:42 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -156,6 +156,7 @@ int mach64ValidTokens[] =
 
 int mach64MaxClock = MAX_MACH64_CLOCK;
  */
+extern int mach64MaxClock;
 #endif
 
 ScrnInfoRec mach64InfoRec = {
