@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/g_renderswap.c,v 1.7 2003/10/28 22:50:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/g_renderswap.c,v 1.8 2004/01/28 18:11:50 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -3313,6 +3313,8 @@ void __glXDispSwap_MultiTexCoord4svARB(GLbyte *pc)
  * Extensions
  */
 
+#ifndef MISSING_GL_EXTS
+
 void __glXDispSwap_PointParameterfARB(GLbyte *pc)
 {
 	__GLX_DECLARE_SWAP_VARIABLES;
@@ -3366,6 +3368,8 @@ void __glXDispSwap_WindowPos3fARB(GLbyte *pc)
 		*(GLfloat *)(pc + 8)
 	);
 }
+
+#endif /* !MISSING_GL_EXTS */
 
 void __glXDispSwap_SampleCoverageARB(GLbyte *pc)
 {
