@@ -39,6 +39,7 @@ typedef struct {
 } LOOKUP;
 
 #define SYMFUNC( func ) { #func, (funcptr)&func },
+#define SYMFUNCALIAS( name, func ) { name, (funcptr)&func },
 #define SYMVAR( var ) { #var, (funcptr)&var },
 #define SYMVARALIAS( name, var ) { name, (funcptr)&var },
 
