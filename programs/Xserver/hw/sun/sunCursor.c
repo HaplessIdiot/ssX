@@ -1,4 +1,5 @@
 /* $XConsortium: sunCursor.c,v 5.19 94/04/17 20:29:35 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  Sun Microsystems, Inc.
@@ -156,7 +157,11 @@ sunLoadCursor (pScreen, pCursor, x, y)
     }
     fbcursor.size.x = w;
     fbcursor.size.y = h;
+#ifndef Lynx
     (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
+#else
+    (void) sunIoctl (&sunFbs[pScreen->myNum], FBIOSCURSOR, &fbcursor);
+#endif
 }
 
 static void
@@ -184,7 +189,11 @@ sunMoveCursor (pScreen, x, y)
 
     pos.x = x;
     pos.y = y;
+#ifndef Lynx
     ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURPOS, &pos);
+#else
+    sunIoctl (&sunFbs[pScreen->myNum], FBIOSCURPOS, &pos);
+#endif
 }
 
 miPointerSpriteFuncRec sunPointerSpriteFuncs = {
@@ -237,7 +246,11 @@ Bool sunCursorInitialize (pScreen)
     struct fbcurpos maxsize;
 
     pCurPriv->has_cursor = FALSE;
+#ifndef Lynx
     if (ioctl (sunFbs[pScreen->myNum].fd, FBIOGCURMAX, &maxsize) == -1)
+#else
+    if (sunIoctl (&sunFbs[pScreen->myNum], FBIOGCURMAX, &maxsize) == -1)
+#endif
 	return FALSE;
     pCurPriv->width = maxsize.x;
     pCurPriv->height= maxsize.y;
@@ -270,7 +283,11 @@ void sunDisableCursor (pScreen)
     {
     	fbcursor.set = FB_CUR_SETCUR;
     	fbcursor.enable = 0;
+#ifndef Lynx
     	(void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
+#else
+    	(void) sunIoctl (&sunFbs[pScreen->myNum], FBIOSCURSOR, &fbcursor);
+#endif
 	pCurPriv->pCursor = NULL;
     }
 #endif

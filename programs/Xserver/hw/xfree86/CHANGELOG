@@ -1,3 +1,56 @@
+XFree86 3.1.2Gh (29 September 1996)
+887. Fix virtual width/pitch checking/setting for the MGA driver.
+886. Solid line acceleration for the MGA driver (Dirk Hohndel).
+885. Improve the way scanline pitch restrictions are implemented for the
+     SVGA server.
+884. Set default W32 black/white pixel values the same as for the other
+     servers.
+883. Fix some W32 stipple problems (Glenn Lai).
+882. Allow "mclk" as a synonym for "s3mclk" (Harm Hanemaayer).
+881. Adjust mode timings in the ARK driver when required for 24bpp operation
+     and for HW cursor operation (Harm Hanemaayer).
+880. Some MGA driver cleanups.
+879. Fix selection of interleave mode for MGA (Ansgar Hockmann).
+878. Add "fifo_conservative" option for the ARK driver (Harm Hanemaayer).
+877. Possible fix for ICS5342 MCLK calculation in the Ark driver
+     (Harm Hanemaayer).
+876. Fix max clocks when ClockChip "cirrus" is used (Harm Hanemaayer).
+875. XF86Setup updates (see XF86Setup/CHANGELOG for details) (Joe Moss).
+874. LCD code for Cyber9320 in PC98_TGUI server (X98 core team).
+873. Fix typos in pc98_tgui.{c,h} (X98 core team).
+872. PC98 Imakefile updates (X98 core team).
+871. PC98 documentation updates (X98 core team).
+870. New Chips&Tech accelerations, including: multiple depth ImageGlyph
+     and PolyGlyph for 65545, 8bpp CopyPlane1to8 for 65545, 8bpp
+     FillRectTransparentStippled32 and FillRectOpaqueStippled32 for 65545,
+     modifed simple BitBlt and Solid fill for 65550, stipple and tile
+     functions for 65550 (Egbert Eich, Xavier Ducoin, David Bateman).
+869. Chips&Tech driver fixes, including: improve stability of
+     suspend/resume, fix DSTN screens with 65550, reduce the size of
+     MMIO regions, fix PCI burst mode, disable line acceleration because
+     it can cause a server crash in rare circumstances (Egbert Eich,
+     Xavier Ducoin, David Bateman).
+868. Make the Cirrus fifo options work for the 546x chips (Corin Anderson).
+867. Support for the Cirrus 5464 (Corin Anderson).
+866. Add a hook to the SVGA server to allow drivers to specify a display
+     width (pitch) which is different from the virtual width.  This
+     is required for some Cirrus chipsets (Corin Anderson).
+865. 24bpp packed pixel Cirrus support (Harm Hanemaayer and Corin Anderson).
+864. Work around a problem on NetBSD/OpenBSD where dlsym() searches for
+     the symbol in the whole executable rather than just in the modules
+     specified (Matthieu Herrb).
+863. Add an X server and config/imake support for LynxOS microSPARC 2.4.0
+     (Thomas Mueller).
+862. Remove stale fb shared memory before dying on LynxOS (Thomas Mueller).
+861. Work around a popen/pclose bug on LynxOS in the server XKB code
+     (Thomas Mueller).
+860. Work around a bash problem on LynxOS which affects rstart/Imakefile
+     (Thomas Mueller).
+859. Solid vertical and horizontal lines for the S3 ViRGE server (Berry Dijk).
+858. Fix max clock for TGA (Alah Hourihane).
+857. Fix for TGA VT switching problems (Alah Hourihane).
+856. Add code to detect the ViRGE/VX (Dirk Hohndel).
+
 XFree86 3.1.2Gg (26 September 1996)
 855. Preliminary support for the Matrox Millenium (MGA 2064W)
      (Radoslaw Kapitan, Andrew Vanderstock, Dirk Hohndel).
