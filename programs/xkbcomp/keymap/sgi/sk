@@ -3,14 +3,14 @@ default xkb_keymap "indy" {
     xkb_keycodes	{ include "sgi/indy(universal)"		};
     xkb_types		{ include "default"			};
     xkb_compatibility	{ include "default"			};
-    xkb_symbols 	{ include "us(pc_universal)+cs"		};
+    xkb_symbols 	{ include "us(pc_universal)+sk"		};
     xkb_geometry	{ include "sgi/indy(pc102)"		};
 };
 xkb_keymap "indigo" {
     xkb_keycodes	{ include "sgi/indigo(pc102)"		};
     xkb_types		{ include "default"			};
     xkb_compatibility	{ include "default"			};
-    xkb_symbols 	{ include "us(pc102)+cs"		};
+    xkb_symbols 	{ include "us(pc102)+sk"		};
     xkb_geometry	{ include "sgi/indigo(pc102)"		};
 };
 

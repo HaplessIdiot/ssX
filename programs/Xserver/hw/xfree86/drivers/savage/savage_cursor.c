@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.1 2000/12/02 01:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_cursor.c,v 1.3 2001/05/15 10:19:39 eich Exp $ */
 
 /*
  * Hardware cursor support for S3 Savage 4.0 driver. Taken with
@@ -99,10 +99,13 @@ SavageShowCursor(ScrnInfoPtr pScrn)
 void
 SavageHideCursor(ScrnInfoPtr pScrn)
 {
-   /* Turn cursor off. */
-/*    ErrorF("CursorOff\n"); */
-   waitHSync(5);
-   outCRReg( 0x45, inCRReg(0x45) & 0xfe );
+    /* Turn cursor off. */
+
+    if( S3_SAVAGE4_SERIES( SAVPTR(pScrn)->Chipset ) )
+    {
+       waitHSync(5);
+    }
+    outCRReg( 0x45, inCRReg(0x45) & 0xfe );
 }
 
 static void
@@ -136,8 +139,10 @@ SavageSetCursorPosition(
 {
     unsigned char xoff, yoff;
 
-/*      ErrorF("CurPos\n"); */
-    waitHSync(5);
+    if( S3_SAVAGE4_SERIES( SAVPTR(pScrn)->Chipset ) )
+    {
+	waitHSync(5);
+    }
     /* adjust for frame buffer base address granularity */
     if (pScrn->bitsPerPixel == 8)
 	x += ((pScrn->frameX0) & 3);

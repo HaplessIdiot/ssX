@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.174 2001/01/27 18:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.175 2001/02/08 23:36:26 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1574,6 +1574,11 @@ xf86PrintBanner()
   ErrorF(".%d", XF86_VERSION_SNAP);
 #endif
 
+#if XF86_VERSION_SNAP >= 900
+  ErrorF(" (%d.%d.0 RC %d)", XF86_VERSION_MAJOR, XF86_VERSION_MINOR + 1,
+				XF86_VERSION_SNAP - 900);
+#endif
+
 #ifdef XF86_CUSTOM_VERSION
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
 #endif
@@ -1584,7 +1589,7 @@ xf86PrintBanner()
   ErrorF("\tIf the server is older than 6-12 months, or if your card is\n"
 	 "\tnewer than the above date, look for a newer version before\n"
 	 "\treporting problems.  (See http://www.XFree86.Org/FAQ)\n");
-  ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
+  ErrorF("Build Operating System:%s%s\n", OSNAME, OSVENDOR);
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.1 2001/02/13 21:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.2 2001/04/18 15:29:19 dawes Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -22,6 +22,8 @@ void SavageInitVideo(ScreenPtr pScreen) {}
 void SavageResetVideo(ScrnInfoPtr pScrn) {}
 #else
 
+void myOUTREG( SavagePtr psav, unsigned long offset, unsigned long value );
+
 static XF86VideoAdaptorPtr SavageSetupImageVideo(ScreenPtr);
 static void SavageInitOffscreenImages(ScreenPtr);
 static void SavageStopVideo(ScrnInfoPtr, pointer, Bool);
@@ -34,6 +36,10 @@ static int SavagePutImage( ScrnInfoPtr,
 	int, unsigned char*, short, short, Bool, RegionPtr, pointer);
 static int SavageQueryImageAttributes(ScrnInfoPtr, 
 	int, unsigned short *, unsigned short *,  int *, int *);
+
+void SavageStreamsOn(ScrnInfoPtr pScrn, int id);
+void SavageStreamsOff(ScrnInfoPtr pScrn);
+void SavageResetVideo(ScrnInfoPtr pScrn); 
 
 static void SavageInitStreamsOld(ScrnInfoPtr pScrn);
 static void SavageInitStreamsNew(ScrnInfoPtr pScrn);
@@ -344,9 +350,11 @@ void SavageInitStreamsOld(ScrnInfoPtr pScrn)
 }
 
 #undef OUTREG
+#if 0
 #define OUTREG(a,v)	myOUTREG(psav,a,v)
-#undef OUTREG
+#else
 #define OUTREG(addr,val) MMIO_OUT32(psav->MapBase, addr, val)
+#endif
 
 void SavageInitStreamsNew(ScrnInfoPtr pScrn)
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.27 2001/05/04 19:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.28 2001/05/10 16:48:12 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -2420,6 +2420,9 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 			     : 0)
 			  | ((mode->Flags & V_INTERLACE)
 			     ? R128_CRTC_INTERLACE_EN
+			     : 0)
+			  | ((mode->Flags & V_CSYNC)
+			     ? R128_CRTC_CSYNC_EN
 			     : 0));
 
     save->crtc_ext_cntl = R128_VGA_ATI_LINEAR | R128_XCRT_CNT_EN;
@@ -2582,8 +2585,8 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
 }
 
 /* Define PLL registers for requested video mode. */
-static void R128InitPLLRegisters(R128SavePtr save, R128PLLPtr pll,
-				 double dot_clock)
+static void R128InitPLLRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
+				R128PLLPtr pll, double dot_clock)
 {
     unsigned long freq = dot_clock * 100;
     struct {
@@ -2762,7 +2765,7 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
     if (!R128InitCrtcRegisters(pScrn, save, mode, info)) return FALSE;
     if (info->HasPanelRegs)
 	R128InitFPRegisters(&info->SavedReg, save, mode, info);
-    R128InitPLLRegisters(save, &info->pll, dot_clock);
+    R128InitPLLRegisters(pScrn, save, &info->pll, dot_clock);
     if (!R128InitDDARegisters(pScrn, save, &info->pll, info))
 	return FALSE;
     if (!info->PaletteSavedOnVT) R128InitPalette(save);

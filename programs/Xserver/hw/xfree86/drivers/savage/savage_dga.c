@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.1 2001/02/13 21:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.2 2001/04/18 15:29:19 dawes Exp $ */
 
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
@@ -38,6 +38,7 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "dgaproc.h"
 
 
+Bool SavageDGAInit(ScreenPtr pScreen);
 static Bool Savage_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 		int *, int *, int *);
 static Bool Savage_SetMode(ScrnInfoPtr, DGAModePtr);

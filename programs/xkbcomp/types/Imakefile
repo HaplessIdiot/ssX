@@ -1,6 +1,6 @@
 XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:48 cpqbld Exp $
 
-     DATAFILES = basic cancel nocancel complete default mousekeys iso9995 pc
+     DATAFILES = basic cancel nocancel complete default mousekeys iso9995 pc extra
 
 all::
 

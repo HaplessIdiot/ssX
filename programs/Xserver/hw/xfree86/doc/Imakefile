@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.74 2001/02/07 18:52:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.75 2001/03/02 02:45:37 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -85,7 +85,7 @@ OTHERDOCS = /*VideoModes.doc*/ /*QuickStart.doc*/ /*xinput*/ \
 #endif
 
 MISCDOCS = ServersOnly /*LbxproxyOnly*/ $(REPORTFORM) ReadmeFile(DGA) \
-	   VideoBoard98
+	   VideoBoard98 ReadmeFile(rapidaccess)
 
 DATABASE = /* modeDB.txt */ /* AccelCards Monitors Devices */
 

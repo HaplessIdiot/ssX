@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.21 2001/02/16 13:24:04 eich Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.22 2001/05/15 10:19:34 eich Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -97,11 +97,7 @@ parse_line(
 	    break;
 	}
 	argv[argc++] = p;
-#if 1
-	while (!isspace(*p) && *p != ':' && *p != '\0') {
-#else
 	while (*p != ':' && *p != '\n' && *p != '\0') {
-#endif
 	    ++p;
 	}
 	if (*p == '\0') {

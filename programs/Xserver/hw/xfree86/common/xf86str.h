@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.77 2001/05/04 19:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.78 2001/05/15 18:22:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -235,7 +235,7 @@ typedef struct _ModuleInfoRec {
     pointer		module;
     int			refCount;
     const OptionInfoRec * (*AvailableOptions)(void *unused);
-    pointer		unused[2];	/* leave some space for more fields */
+    pointer		unused[8];	/* leave some space for more fields */
 } ModuleInfoRec, *ModuleInfoPtr;
 #endif
 

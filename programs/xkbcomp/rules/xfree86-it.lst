@@ -4,7 +4,7 @@
 //  Elenco dei modelli e dei lingauggi
 //  Copyright 1996 by Joseph Moss
 //
-// $XFree86: xc/programs/xkbcomp/rules/xfree86-it.lst,v 1.4 1998/11/15 04:30:46 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/rules/xfree86-it.lst,v 1.5 2001/01/17 23:45:57 dawes Exp $
 
 ! model
   microsoft       Microsoft Natural
@@ -26,7 +26,8 @@
   be              Belga
   bg              Bulgaro
   ca              Canadese
-  cs              Cecoslovacco
+  cz              Ceco
+  cz_qwerty       Ceco (qwerty)
   de              Tedesco
   de_CH           Tedesco Svizzero
   dk              Danese
@@ -43,5 +44,7 @@
   pt              Portoghese
   ru              Russo
   se              Svedese
+  sk              Slovacco
+  sk_qwerty       Slovacco (qwerty)
   th              Tailandese
   nec/jp          nec/jp(pc98)

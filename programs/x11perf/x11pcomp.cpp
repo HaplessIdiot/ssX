@@ -1,4 +1,7 @@
 XCOMM! /bin/sh
+XCOMM
+XCOMM $XFree86$
+XCOMM
 XCOMM Collects multiple outputs of x11perf.  Just feed it a list of files, each
 XCOMM containing the output from an x11perf run, and this shell will extract the
 XCOMM object/second information and show it in tabular form.  An 80-column line
@@ -22,7 +25,7 @@ PATH=LIBPATH:.:$PATH
 export PATH
 
 set -e
-tmp=/tmp/rates.$$
+tmp=`pwd`/_rates.$$
 trap "rm -rf $tmp" 0 1 2 15
 mkdir $tmp $tmp/rates
 ratio=
