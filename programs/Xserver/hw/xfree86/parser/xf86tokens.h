@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.11 1999/06/27 14:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.12 1999/09/06 11:27:39 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -83,6 +83,7 @@ typedef enum {
     STANDBYTIME,
     SUSPENDTIME,
     OFFTIME,
+    DEFAULTLAYOUT,
 
     /* Monitor tokens */
     MODEL,

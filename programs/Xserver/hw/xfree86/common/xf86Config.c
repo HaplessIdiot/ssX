@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.194 1999/10/13 04:21:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.196 1999/12/03 19:17:22 eich Exp $ */
 
 
 /*
@@ -1009,7 +1009,8 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
  * which drivers and monitors are used in these screens
  */
 static Bool
-configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
+configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
+	     char *default_layout)
 {
     XF86ConfAdjacencyPtr adjp;
     XF86ConfInactivePtr idp;
@@ -1032,7 +1033,13 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
      * If there is a -layout command line option, use that one, otherwise
      * pick the first one.
      */
-    from = X_CONFIG;
+    from = X_DEFAULT;
+    if (xf86LayoutName != NULL)
+	from = X_CMDLINE;
+    else if (default_layout) {
+	xf86LayoutName = default_layout;
+	from = X_CONFIG;
+    }
     if (xf86LayoutName != NULL) {
 	if ((l = xf86FindLayout(xf86LayoutName, conf_layout)) == NULL) {
 	    xf86Msg(X_ERROR, "No ServerLayout section called \"%s\"\n",
@@ -1040,7 +1047,6 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 	    return FALSE;
 	}
 	conf_layout = l;
-	from = X_CMDLINE;
     }
     xf86Msg(from, "ServerLayout \"%s\"\n", conf_layout->lay_identifier);
     adjp = conf_layout->lay_adjacency_lst;
@@ -1231,6 +1237,17 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     servlayoutp->inactives = gdp;
     servlayoutp->inputs = indp;
     servlayoutp->options = conf_layout->lay_option_lst;
+    from = X_DEFAULT;
+    if (!noPanoramiXExtension)
+      from = X_CMDLINE;
+    else if (xf86FindOption(conf_layout->lay_option_lst, "Xinerama")) {
+      noPanoramiXExtension =
+	  !xf86SetBoolOption(conf_layout->lay_option_lst, "Xinerama", FALSE);
+      from = X_CONFIG;
+    }
+    if (!noPanoramiXExtension)
+      xf86Msg(from, "Xinerama: enabled\n");
+
     if (!checkCoreInputDevices(servlayoutp, FALSE))
 	return FALSE;
     return TRUE;
@@ -1829,7 +1846,13 @@ xf86HandleConfigFile(void)
 	    return FALSE;
 	}
     } else {
-	if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst)) {
+	char *dfltlayout = NULL;
+	pointer optlist = xf86configptr->conf_flags->flg_option_lst;
+
+	if (optlist && xf86FindOption(optlist, "defaultserverlayout"))
+	    dfltlayout = xf86SetStrOption(optlist, "defaultserverlayout", NULL);
+	if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
+			  dfltlayout)) {
 	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
 	    return FALSE;
 	}
