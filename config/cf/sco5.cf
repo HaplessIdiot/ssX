@@ -1,10 +1,10 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.10 2002/11/20 23:00:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 
 /*
  * This is for SCO Open Server 5.0.6A or later. You must have the
- * Linkers and Libraries update (OSS646) installed on 5.0.6 (it
+ * Execution Environment update (OSS646) installed on 5.0.6 (it
  * ships standard in 5.0.7 and later), as well as the Graphics,
- * Web and X11 (gwxlibs) package installed, which also ships
+ * Web and X11 (gwxlibs) package OSS631 installed, which also ships
  * standard with 5.0.7 and later.
  *
  * It is suggested that you use the GNU Development Tools for compiling
@@ -128,6 +128,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.10 2002/11/20 23:00:34 dawes Exp $
 #define HasShm			YES
 #define HasStrcasecmp		YES
 #define HasZlib			YES
+#define HasFontconfig		YES
 
 #define SharedLibXmu            YES
 #define SystemV                 YES
