@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.17 2000/11/30 20:45:33 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.18 2001/02/21 23:37:04 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -38,7 +38,6 @@ extern LexRec val;
 static
 xf86ConfigSymTabRec DeviceTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{VENDOR, "vendorname"},
@@ -82,9 +81,7 @@ xf86parseDeviceSection (void)
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86getToken (NULL) != STRING)
-				Error (QUOTE_MSG, "###");
-			ptr->dev_comment = val.str;
+			ptr->dev_comment = xf86addComment(ptr->dev_comment, val.str);
 			break;
 		case IDENTIFIER:
 			if (xf86getToken (NULL) != STRING)
@@ -199,23 +196,7 @@ xf86parseDeviceSection (void)
 			ptr->dev_textclockfreq = (int)(val.realnum * 1000.0 + 0.5);
 			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-					Error (BAD_OPTION_MSG, NULL);
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->dev_option_lst = xf86addNewOption (ptr->dev_option_lst,
-														name, val.str);
-				}
-				else
-				{
-					ptr->dev_option_lst = xf86addNewOption (ptr->dev_option_lst,
-														name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->dev_option_lst = xf86parseOption(ptr->dev_option_lst);
 			break;
 		case BUSID:
 			if (xf86getToken (NULL) != STRING)
@@ -256,14 +237,13 @@ xf86parseDeviceSection (void)
 void
 xf86printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 {
-	XF86OptionPtr optr;
 	int i;
 
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Device\"\n");
 		if (ptr->dev_comment)
-			fprintf (cf, "\t### %s", ptr->dev_comment);
+			fprintf (cf, "%s", ptr->dev_comment);
 		if (ptr->dev_identifier)
 			fprintf (cf, "\tIdentifier  \"%s\"\n", ptr->dev_identifier);
 		if (ptr->dev_driver)
@@ -300,13 +280,7 @@ xf86printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_chiprev != -1)
 			fprintf (cf, "\tChipRev     0x%x\n", ptr->dev_chiprev);
 
-		for (optr = ptr->dev_option_lst; optr; optr = optr->list.next)
-		{
-			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
-			if (optr->opt_val)
-				fprintf (cf, " \"%s\"", optr->opt_val);
-			fprintf (cf, "\n");
-		}
+		xf86printOptionList(cf, ptr->dev_option_lst, 1);
 		if (ptr->dev_clocks > 0 ) {
 			fprintf (cf, "\tClocks      ");
 			for (i = 0; i < ptr->dev_clocks; i++ )

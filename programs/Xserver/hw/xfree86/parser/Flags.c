@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.13 2000/08/08 08:58:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.14 2000/10/20 14:59:02 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -38,7 +38,6 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec ServerFlagsTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{NOTRAPSIGNALS, "notrapsignals"},
 	{DONTZAP, "dontzap"},
@@ -72,8 +71,7 @@ xf86parseFlagsSection (void)
 		switch (token)
 		{
 		case COMMENT:
-		    if ((token = xf86getToken (NULL)) != STRING)
-				Error (QUOTE_MSG, "###");
+		    ptr->flg_comment = xf86addComment(ptr->flg_comment, val.str);
 		    break;
 			/* 
 			 * these old keywords are turned into standard generic options.
@@ -128,27 +126,7 @@ xf86parseFlagsSection (void)
 			}
 			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-				{
-					Error (BAD_OPTION_MSG, NULL);
-					break;
-				}
-
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->flg_option_lst = xf86addNewOption (ptr->flg_option_lst,
-														name, val.str);
-				}
-				else
-				{
-					ptr->flg_option_lst = xf86addNewOption (ptr->flg_option_lst,
-														name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->flg_option_lst = xf86parseOption(ptr->flg_option_lst);
 			break;
 
 		case EOF_TOKEN:
@@ -178,16 +156,9 @@ xf86printServerFlagsSection (FILE * f, XF86ConfFlagsPtr flags)
 		return;
 	p = flags->flg_option_lst;
 	fprintf (f, "Section \"ServerFlags\"\n");
-	if (p->opt_comment)
-	    fprintf (f, "\t###    \"%s\" \n", p->opt_comment);
-	while (p)
-	{
-		if (p->opt_val)
-			fprintf (f, "\tOption \"%s\" \"%s\"\n", p->opt_name, p->opt_val);
-		else
-			fprintf (f, "\tOption \"%s\"\n", p->opt_name);
-		p = p->list.next;
-	}
+	if (flags->flg_comment)
+	    fprintf (f, "%s", flags->flg_comment);
+	xf86printOptionList(f, p, 1);
 	fprintf (f, "EndSection\n\n");
 }
 
@@ -226,6 +197,7 @@ xf86freeFlags (XF86ConfFlagsPtr flags)
 	if (flags == NULL)
 		return;
 	xf86optionListFree (flags->flg_option_lst);
+	TestFree(flags->flg_comment);
 	xf86conffree (flags);
 }
 
@@ -238,6 +210,8 @@ xf86optionListDup (XF86OptionPtr opt)
 	{
 		newopt = xf86addNewOption(newopt, opt->opt_name, opt->opt_val);
 		newopt->opt_used = opt->opt_used;
+		if (opt->opt_comment)
+			newopt->opt_comment = xf86configStrdup(opt->opt_comment);
 		opt = opt->list.next;
 	}
 	return newopt;
@@ -252,6 +226,7 @@ xf86optionListFree (XF86OptionPtr opt)
 	{
 		TestFree (opt->opt_name);
 		TestFree (opt->opt_val);
+		TestFree (opt->opt_comment);
 		prev = opt;
 		opt = opt->list.next;
 		xf86conffree (prev);
@@ -458,3 +433,71 @@ xf86debugListOptions(XF86OptionPtr Options)
     }
 }
 
+XF86OptionPtr
+xf86parseOption(XF86OptionPtr head)
+{
+	XF86OptionPtr option, cnew, old;
+	char *name;
+	int token;
+
+	if ((token = xf86getToken(NULL)) != STRING) {
+		xf86parseError(BAD_OPTION_MSG, NULL);
+		return (head);
+	}
+
+	name = val.str;
+	if ((token = xf86getToken (NULL)) == STRING) {
+		option = xf86newOption(name, val.str);
+		if ((token = xf86getToken(NULL)) == COMMENT)
+			option->opt_comment = xf86addComment(option->opt_comment, val.str);
+		else
+			xf86unGetToken(token);
+	}
+	else {
+		option = xf86newOption(name, NULL);
+		if (token == COMMENT)
+			option->opt_comment = xf86addComment(option->opt_comment, val.str);
+		else
+			xf86unGetToken(token);
+	}
+
+        old = NULL;
+
+	/* Don't allow duplicates */
+	if (head != NULL && (old = xf86findOption(head, name)) != NULL) {
+		cnew = old;
+		xf86conffree(option->opt_name);
+		TestFree(option->opt_val);
+		TestFree(option->opt_comment);
+		xf86conffree(option);
+	}
+	else
+		cnew = option;
+	
+	if (old == NULL)
+		return ((XF86OptionPtr)xf86addListItem((glp)head, (glp)cnew));
+
+	return (head);
+}
+
+void
+xf86printOptionList(FILE *fp, XF86OptionPtr list, int tabs)
+{
+	int i;
+
+	if (!list)
+		return;
+	while (list) {
+		for (i = 0; i < tabs; i++)
+			fputc('\t', fp);
+		if (list->opt_val)
+			fprintf(fp, "Option	    \"%s\" \"%s\"", list->opt_name, list->opt_val);
+		else
+			fprintf(fp, "Option	    \"%s\"", list->opt_name);
+		if (list->opt_comment)
+			fprintf(fp, "%s", list->opt_comment);
+		else
+			fputc('\n', fp);
+		list = list->list.next;
+	}
+}

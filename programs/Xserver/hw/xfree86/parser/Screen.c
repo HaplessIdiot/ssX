@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.15 2000/11/30 20:45:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.17 2001/02/15 19:54:40 eich Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -37,7 +37,6 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec DisplayTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSUBSECTION, "endsubsection"},
 	{MODES, "modes"},
 	{VIEWPORT, "viewport"},
@@ -66,9 +65,7 @@ xf86parseDisplaySubSection (void)
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86getToken (NULL) != STRING)
-				Error (QUOTE_MSG, "###");
-			ptr->disp_comment = val.str;
+			ptr->disp_comment = xf86addComment(ptr->disp_comment, val.str);
 			break;
 		case VIEWPORT:
 			if (xf86getToken (NULL) != NUMBER)
@@ -150,25 +147,7 @@ xf86parseDisplaySubSection (void)
 			}
 			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-					Error (BAD_OPTION_MSG, NULL);
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->disp_option_lst =
-					    xf86addNewOption (ptr->disp_option_lst,
-							  name, val.str);
-				}
-				else
-				{
-					ptr->disp_option_lst =
-					    xf86addNewOption (ptr->disp_option_lst,
-							  name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->disp_option_lst = xf86parseOption(ptr->disp_option_lst);
 			break;
 			
 		case EOF_TOKEN:
@@ -191,7 +170,6 @@ xf86parseDisplaySubSection (void)
 
 static xf86ConfigSymTabRec ScreenTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
         {OBSDRIVER, "driver"},
@@ -222,9 +200,7 @@ xf86parseScreenSection (void)
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86getToken (NULL) != STRING)
-				Error (QUOTE_MSG, "###");
-			ptr->scrn_comment = val.str;
+			ptr->scrn_comment = xf86addComment(ptr->scrn_comment, val.str);
 			break;
 		case IDENTIFIER:
 			if (xf86getToken (NULL) != STRING)
@@ -291,25 +267,7 @@ xf86parseScreenSection (void)
 			}
 			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-					Error (BAD_OPTION_MSG, NULL);
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->scrn_option_lst =
-					    xf86addNewOption (ptr->scrn_option_lst,
-							  name, val.str);
-				}
-				else
-				{
-					ptr->scrn_option_lst =
-					    xf86addNewOption (ptr->scrn_option_lst,
-							  name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->scrn_option_lst = xf86parseOption(ptr->scrn_option_lst);
 			break;
 		case SUBSECTION:
 			if (xf86getToken (NULL) != STRING)
@@ -345,13 +303,12 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 	XF86ConfAdaptorLinkPtr aptr;
 	XF86ConfDisplayPtr dptr;
 	XF86ModePtr mptr;
-	XF86OptionPtr optr;
 
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Screen\"\n");
 		if (ptr->scrn_comment)
-			fprintf (cf, "\t###        \"%s\"\n", ptr->scrn_comment);
+			fprintf (cf, "%s", ptr->scrn_comment);
 		if (ptr->scrn_identifier)
 			fprintf (cf, "\tIdentifier \"%s\"\n", ptr->scrn_identifier);
 		if (ptr->scrn_obso_driver)
@@ -369,13 +326,7 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 		if (ptr->scrn_defaultfbbpp)
 			fprintf (cf, "\tDefaultFbBPP     %d\n",
 					 ptr->scrn_defaultfbbpp);
-		for (optr = ptr->scrn_option_lst; optr; optr = optr->list.next)
-		{
-			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
-			if (optr->opt_val)
-				fprintf (cf, " \"%s\"", optr->opt_val);
-			fprintf (cf, "\n");
-		}
+		xf86printOptionList(cf, ptr->scrn_option_lst, 1);
 		for (aptr = ptr->scrn_adaptor_lst; aptr; aptr = aptr->list.next)
 		{
 			fprintf (cf, "\tVideoAdaptor \"%s\"\n", aptr->al_adaptor_str);
@@ -384,8 +335,7 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 		{
 			fprintf (cf, "\tSubSection \"Display\"\n");
 			if (dptr->disp_comment)
-				fprintf (cf, "\t\t###        %s\n",
-						 dptr->disp_comment);
+				fprintf (cf, "%s", dptr->disp_comment);
 			if (dptr->disp_frameX0 != 0 || dptr->disp_frameY0 != 0)
 			{
 				fprintf (cf, "\t\tViewport   %d %d\n",
@@ -435,13 +385,7 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			{
 				fprintf (cf, "\n");
 			}
-			for (optr = dptr->disp_option_lst; optr; optr = optr->list.next)
-			{
-				fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
-				if (optr->opt_val)
-					fprintf (cf, " \"%s\"", optr->opt_val);
-				fprintf (cf, "\n");
-			}
+			xf86printOptionList(cf, dptr->disp_option_lst, 2);
 			fprintf (cf, "\tEndSubSection\n");
 		}
 		fprintf (cf, "EndSection\n\n");

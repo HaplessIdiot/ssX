@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.12 2000/11/14 17:33:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.13 2001/03/08 21:32:35 anderson Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -71,6 +71,9 @@ doWriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 	{
 		return 0;
 	}
+
+	if (cptr->conf_comment)
+		fprintf (cf, "%s\n", cptr->conf_comment);
 
 	xf86printLayoutSection (cf, cptr->conf_layout_lst);
 

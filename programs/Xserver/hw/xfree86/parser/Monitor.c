@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.19 2001/01/31 20:52:18 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.20 2001/02/21 23:37:04 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -37,7 +37,6 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec MonitorTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{VENDOR, "vendorname"},
@@ -384,9 +383,7 @@ xf86parseMonitorSection (void)
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86getToken (NULL) != STRING)
-				Error (QUOTE_MSG, "###");
-			ptr->mon_comment = val.str;
+			ptr->mon_comment = xf86addComment(ptr->mon_comment, val.str);
 			break;
 		case IDENTIFIER:
 			if (xf86getToken (NULL) != STRING)
@@ -439,7 +436,7 @@ xf86parseMonitorSection (void)
 						    (float)val.realnum < ptr->mon_hsync[ptr->mon_n_hsync].lo)
 							Error (HORIZSYNC_MSG, NULL);
 						ptr->mon_hsync[ptr->mon_n_hsync].hi = val.realnum;
-						if (token = xf86getToken (NULL) == COMMA)
+						if ((token = xf86getToken (NULL)) == COMMA)
 							break;
 						ptr->mon_n_hsync++;
 						goto HorizDone;
@@ -476,7 +473,7 @@ HorizDone:
 						    (float)val.realnum < ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo)
 							Error (VERTREFRESH_MSG, NULL);
 						ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi = val.realnum;
-						if (token = xf86getToken (NULL) == COMMA)
+						if ((token = xf86getToken (NULL)) == COMMA)
 							break;
 						ptr->mon_n_vrefresh++;
 						goto VertDone;
@@ -523,25 +520,7 @@ VertDone:
 			}
 			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-					Error (BAD_OPTION_MSG, NULL);
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->mon_option_lst =
-					    xf86addNewOption (ptr->mon_option_lst,
-							  name, val.str);
-				}
-				else
-				{
-					ptr->mon_option_lst =
-					    xf86addNewOption (ptr->mon_option_lst,
-							  name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->mon_option_lst = xf86parseOption(ptr->mon_option_lst);
 			break;
 		case USEMODES:
 		        {
@@ -635,14 +614,13 @@ xf86printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 	int i;
 	XF86ConfModeLinePtr mlptr;
 	XF86ConfModesLinkPtr mptr;
-	XF86OptionPtr optr;
 
 	while (ptr)
 	{
 		mptr = ptr->mon_modes_sect_lst;
 		fprintf (cf, "Section \"Monitor\"\n");
 		if (ptr->mon_comment)
-			fprintf (cf, "\t###          \"%s\"\n", ptr->mon_comment);
+			fprintf (cf, "%s", ptr->mon_comment);
 		if (ptr->mon_identifier)
 			fprintf (cf, "\tIdentifier   \"%s\"\n", ptr->mon_identifier);
 		if (ptr->mon_vendor)
@@ -715,13 +693,7 @@ xf86printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 				fprintf (cf, " bcast");
 			fprintf (cf, "\n");
 		}
-		for (optr = ptr->mon_option_lst; optr; optr = optr->list.next)
-		{
-			fprintf (cf, "\tOption       \"%s\"", optr->opt_name);
-			if (optr->opt_val)
-				fprintf (cf, " \"%s\"", optr->opt_val);
-			fprintf (cf, "\n");
-		}
+		xf86printOptionList(cf, ptr->mon_option_lst, 1);
 		fprintf (cf, "EndSection\n\n");
 		ptr = ptr->list.next;
 	}
