@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.11 2002/04/06 18:37:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.13tsi Exp $ */
 
 #if 1
 #include "misc.h"
@@ -860,4 +860,33 @@ xf86I2CFindBus(int scrnIndex, char *name)
 		    return p;
     
     return NULL;
+}
+
+/*
+ * Return an array of I2CBusPtr's related to a screen.  The caller is
+ * responsible for freeing the array.
+ */
+int
+xf86I2CGetScreenBusses(int scrnIndex, I2CBusPtr **pppI2CBus)
+{
+    I2CBusPtr pI2CBus;
+    int n = 0;
+
+    if (pppI2CBus)
+	*pppI2CBus = NULL;
+
+    for (pI2CBus = I2CBusList;  pI2CBus;  pI2CBus = pI2CBus->NextBus) {
+	if ((pI2CBus->scrnIndex >= 0) && (pI2CBus->scrnIndex != scrnIndex))
+	    continue;
+
+	n++;
+
+	if (!pppI2CBus)
+	    continue;
+
+        *pppI2CBus = xnfrealloc(*pppI2CBus, n * sizeof(I2CBusPtr));
+	*pppI2CBus[n - 1] = pI2CBus;
+    }
+
+    return n;
 }
