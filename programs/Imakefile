@@ -66,6 +66,9 @@ XFINDPROXYSRCDIR = xfindproxy
 #endif
 
    XPMCLIENTDIRS = cxpm sxpm
+#ifdef Freetype2Dir
+     XFTCACHEDIR = xftcache
+#endif
 
 #if BuildServersOnly
 SUBDIRS = $(XSSRCDIR)
@@ -89,7 +92,7 @@ SUBDIRS = \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
 	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \
-	glxinfo
+	glxinfo $(XFTCACHEDIR)
 #endif
 
 MakeSubdirs($(SUBDIRS))
