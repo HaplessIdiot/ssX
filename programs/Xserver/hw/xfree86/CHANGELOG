@@ -1,4 +1,66 @@
 XFree86 3.9.17d (8 February 2000)
+3682. Added support for saving/restoring access state during 
+      asynchronous events. Added code to make xf86EnableAccess()
+      atomic for asynchronous events. (Egbert Eich)
+3681. Modified xf86EnterServerState() to avoid any unnecessary
+      disabling of resources during state transition. (Egbert Eich)
+3680. Added function callback registration. Drivers can register
+      callback functions to be notified of the start/end of a 
+      resource transition. (Egbert Eich)
+3679. Addeded support for OS specific Pci address windows. (Egbert Eich)
+3678. Added more debug traps to xalloc.c. Added support to peek/poke
+      MMIO registers and fb addresses from a debugger. (Egbert Eich)
+3677. Changed resource registration to use CPU space addresses
+      instead of BUS space addresses. Added flag to resource type
+      to mark addresses in bus address space. (Egbert Eich)
+3676. Extended host2bus and bus2host address conversion for PCI
+      addresses to PIO. (Egbert Eich)
+3675. Improved subset and intersect handling for resources ranges.
+      (Egbert Eich)
+3674. Modified mapping of V_RAM in int10/generic.c. (Egbert Eich)
+3673. Updated INT10.HOWTO. (Egbert Eich)
+3672. Added support for VBE DDC read out to s3v driver. (Egbert Eich)
+3671. Added xf86SetDDCProperties() to glint, chips, neomagic, s3v 
+      and r128 driver. (Egbert Eich)
+3670. Fixed problems with virtual screen size != real screen size
+      when using shadow fb in mga driver. (Egbert Eich)
+3669. Fixed handling of virtual != real screen in shadowfb. (Egbert Eich)
+3668. Prevent reinitialization of pMga->PointerMoved in mga_driver.c
+      on server reset. (Egbert Eich).
+3667. Added int10 support to r128 driver. (Egbert Eich)
+3666. Attempt to make apm driver 64bit clean. (Egbert Eich)
+3665. Added options to swap x/y coordinates on mice. Useful when
+      using rotate on notebooks. (Egbert Eich)
+3664. Modified memory mapping on AXP to map entire MMIO space
+      at once. (Egbert Eich)
+3663. Fixed handling of sparsely mapped MMIO on AXP increasing
+      performance considerably. (Egbert Eich).
+3662. Added non-barrier versions of MMIO_OUTxx. (Egbert Eich).
+3661. Added support for new AXPs that don't have sparse mapping.
+      (Egbert Eich)
+3660. Separated high and low level handling in ModeInit() and
+      Restore() in cirrus driver. (Egbert Eich)
+3659. Made chipset specific record subrecord of vendor record
+      in cirrus driver. (Egbert Eich).
+3658. Made some improvements to acceleration code of Cirrus Alpine driver.
+      (Egbert Eich)
+3657. Added support for 64-bit cursor for Cirrus Alpine. (Egbert Eich)
+3656. Fixed cirrus driver to handle MMIO access using MMIO_IN/OUTxx
+      (Egbert Eich)
+3655. Fixed xf86HWCurs.c to handle 32-bit cursors on 64-bit machines
+      correctly. (Egbert Eich)
+3654. Added rotate support to neomagic, s3v, chips and cirrus 
+      driver (Egbert Eich)
+3653. Added shadow fb support to s3v and cirrus driver (Egbert Eich)
+3652. Fixed sig11 problem after server reset caused by the new
+      extension loading code. (Egbert Eich)
+3651. Attempted to fix build problems with int10 (Egbert Eich)
+3650. Added a baseclass/subclass override to xf86PciInfo.h.
+      This override is evaluated in xf86pciBus.c (Egbert Eich)
+3649. Changed memory mapping in int10 support for Linux to use SYSV
+      IPC shm instead of mapping /proc/self/mem (Egbert Eich)
+3648. Added APM support for portable systems. (Egbert Eich)
+
 3647. XFree86-Bigfont extension that provides efficient client access to
       the complete glyph metrics, using shared memory where possible/available
       or transmitting the data in a compressed format otherwise (#3626,
