@@ -22,6 +22,7 @@
 /* Development of the code in this file is support of                      */
 /* Information-technology Promotion Agency, Japan.                         */
 /***************************************************************************/
+/* $XFree86$ */
 
 
 #include <ft2build.h>
@@ -589,6 +590,8 @@
     if ( FT_READ_LONG( version_number ) )
       return error;
 
+    FT_UNUSED( version_number );
+
     /* filler */
     error = FT_Stream_Skip( stream, 16 );
     if ( error )
@@ -610,6 +613,8 @@
           continue;
         *result_offset = entry_offset;
 
+	FT_UNUSED( entry_length );
+
         return FT_Err_Ok;
       }
       else
@@ -625,14 +630,10 @@
                                              char *      file_name,
                                              FT_Long    *result_offset )
   {
-    FT_Memory     memory;
     FT_Open_Args  args2;
     FT_Stream     stream2;
     char *        nouse = NULL;
     FT_Error      error;
-
-
-    memory = library->memory;
 
     args2.flags    = FT_OPEN_PATHNAME;
     args2.pathname = file_name;
@@ -663,6 +664,8 @@
     new_length = ft_strlen( original_name ) + ft_strlen( insertion );
     if ( FT_ALLOC( new_name, new_length + 1 ) )
       return NULL;
+
+    FT_UNUSED( error );
 
     tmp = ft_strrchr( original_name, '/' );
     if ( tmp )

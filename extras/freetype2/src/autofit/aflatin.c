@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "aflatin.h"
 
  /***************************************************************************/
@@ -39,7 +41,7 @@
       scaler->x_scale     = scaler->y_scale = 0x10000L;
       scaler->x_delta     = scaler->y_delta = 0;
       scaler->face        = face;
-      scaler->render_mode = 0;
+      scaler->render_mode = FT_RENDER_MODE_NORMAL;
       scaler->flags       = 0;
 
       error = af_glyph_hints_reset( hints, scaler,
@@ -48,7 +50,7 @@
       if ( error )
         goto Exit;
 
-      for ( dim = 0; dim < AF_DIMENSION_MAX; dim++ )
+      for ( dim = AF_DIMENSION_HORZ; dim < AF_DIMENSION_MAX; dim++ )
       {
         AF_LatinAxis  axis    = & metrics->axis[ dim ];
         AF_AxisHints  axhints = & hints->axis[ dim ];
@@ -1017,7 +1019,7 @@
         edge->dir = -up_dir;
 
       else if ( ups == downs )
-        edge->dir = 0;  /* both up and down! */
+        edge->dir = AF_DIR_BOTH;  /* both up and down! */
 
       /* gets rid of serifs if link is set                */
       /* XXX: This gets rid of many unpleasant artefacts! */
@@ -1742,7 +1744,7 @@
 
     FT_UNUSED( metrics );
 
-    for ( dim = 0; dim < AF_DIMENSION_MAX; dim++ )
+    for ( dim = AF_DIMENSION_HORZ; dim < AF_DIMENSION_MAX; dim++ )
     {
       if ( (dim == AF_DIMENSION_HORZ && AF_HINTS_DO_HORIZONTAL(hints)) ||
            (dim == AF_DIMENSION_VERT && AF_HINTS_DO_VERTICAL(hints))   )
