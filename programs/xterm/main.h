@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: main.h,v 1.5 91/02/06 16:00:15 gildea Exp $
+ *	$XFree86$
  */
 
 /*

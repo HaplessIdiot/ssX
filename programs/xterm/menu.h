@@ -1,4 +1,5 @@
 /* $XConsortium: menu.h,v 1.25 94/04/17 20:23:31 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
