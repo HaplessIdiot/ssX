@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.41 2001/08/13 19:34:53 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.42 2001/08/17 13:27:51 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -543,11 +543,13 @@ sr_SP:						sr_SP.ISO8859-2
 sr:						sr_YU.ISO8859-5
 sr_YU:						sr_YU.ISO8859-5
 sr_YU.iso88592:					sr_YU.ISO8859-2
-sr_YU.ISO8859-5:				sr_YU.ISO8859-5
 sr_YU.iso88595:					sr_YU.ISO8859-5
 sr@cyrillic:					sr_YU.ISO8859-5
+sr_YU@cyrillic:					sr_YU.ISO8859-5
 sr_YU.iso88595@cyrillic:			sr_YU.ISO8859-5
+sr_YU.ISO8859-5@cyrillic:			sr_YU.ISO8859-5
 sr_YU.cp1251@cyrillic:				sr_YU.CP1251
+sr_YU.CP1251@cyrillic:				sr_YU.CP1251
 sr_YU.microsoftcp1251@cyrillic:			sr_YU.CP1251
 sr_YU.microsoft-cp1251@cyrillic:		sr_YU.CP1251
 sr_YU.MICROSOFT-CP1251@cyrillic:		sr_YU.CP1251
