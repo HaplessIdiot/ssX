@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.77 2005/01/29 03:41:21 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.78 2005/01/30 02:46:09 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -175,6 +175,8 @@ VARDIR=$ROOTDIR/var
 
 OLDFILES=" \
 	$RUNDIR/include/freetype2/ft2build.h \
+	$RUNDIR/lib/X11/fonts/misc/heb8x13.pcf.gz \
+	$RUNDIR/lib/X11/fonts/misc/7x14rk.pcf.gz \
 	"
 
 OLDDIRS=" \
