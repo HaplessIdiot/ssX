@@ -24,6 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Based on sis300_accel.c
+ * 2003/08/18: Rewritten for using VRAM command queue (TW)
  *
  * Author:  	Thomas Winischhofer <thomas@winischhofer.net>
  *
@@ -49,18 +50,26 @@
 #define HEADOFFSET 	(pSiS->dhmOffset)
 #endif
 
-#undef TRAP     	/* Use/Don't use Trapezoid Fills 
-			 * DOES NOT WORK. XAA eventually provides illegal 
-			 * trapezoid data (left and right edges cross each 
+#undef TRAP     	/* Use/Don't use Trapezoid Fills
+			 * DOES NOT WORK. XAA sometimes provides illegal
+			 * trapezoid data (left and right edges cross each
 			 * other) which causes drawing errors. Since
 			 * checking the trapezoid for such a case is very
 			 * time-intensive, it is faster to let it be done
 			 * by the generic polygon functions.
+			 * Does not work on XABRE at all, hangs the engine.
                          */
 
-#define CTSCE           /* Use/Don't use CPUToScreenColorExpand. Slower than the 
- 			 * CPU sometimes, so we disable this on SiS650/740 where
+#ifndef SISVRAMQ
+#define CTSCE           /* Use/Don't use CPUToScreenColorExpand. Slower than the */
+#endif 			/* CPU sometimes, so we disable this on SiS650/740 where
 			 * we know that we're running on a P4.
+			 * Does not work in VRAM queue mode, hangs the engine.
+			 * Does not work on Xabre (even in MMIO mode).
+			 */
+
+#undef STSCE    	/* Use/Don't use ScreenToScreenColorExpand - does not work,
+  			 * see comments below.
 			 */
 
 #undef INCL_RENDER	/* Use/Don't use RENDER extension acceleration 
@@ -123,6 +132,14 @@ static void SiSSubsequentMonoPatternFillTrap(ScrnInfoPtr pScrn,
                                 int left, int dxL, int dyL, int eL,
 	                        int right, int dxR, int dyR, int eR);
 #endif
+#ifdef STSCE
+static void SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
+                                int fg, int bg,
+                                int rop, unsigned int planemask);
+static void SiSSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
+                                int x, int y, int w, int h,
+                                int srcx, int srcy, int skipleft);
+#endif
 #ifdef CTSCE
 static void SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                 int fg, int bg, int rop,
@@ -168,12 +185,13 @@ SiSInitializeAccelerator(ScrnInfoPtr pScrn)
 	SISPtr  pSiS = SISPTR(pScrn);
 
 	pSiS->DoColorExpand = FALSE;
+#ifndef SISVRAMQ
 	if(pSiS->ChipFlags & SiSCF_Integrated) {
-        /* CmdQueLen = ((128 * 1024) / 4) - 64; - decreases system latecy dramatically */
 	   CmdQueLen = 0;
         } else {
-	   CmdQueLen = ((128 * 1024) / 4) - 64; 
+	   CmdQueLen = ((128 * 1024) / 4) - 64;
         }
+#endif
 }
 
 Bool
@@ -215,7 +233,10 @@ SiS315AccelInit(ScreenPtr pScreen)
 	infoPtr->SetupForSolidFill = SiSSetupForSolidFill;
 	infoPtr->SubsequentSolidFillRect = SiSSubsequentSolidFillRect;
 #ifdef TRAP
-	infoPtr->SubsequentSolidFillTrap = SiSSubsequentSolidFillTrap;
+	if((pSiS->Chipset != PCI_CHIP_SIS660) &&
+	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
+	   infoPtr->SubsequentSolidFillTrap = SiSSubsequentSolidFillTrap;
+	}
 #endif
 	infoPtr->SolidFillFlags = NO_PLANEMASK;
 
@@ -236,7 +257,10 @@ SiS315AccelInit(ScreenPtr pScreen)
 	infoPtr->SetupForMono8x8PatternFill = SiSSetupForMonoPatternFill;
 	infoPtr->SubsequentMono8x8PatternFillRect = SiSSubsequentMonoPatternFill;
 #ifdef TRAP
-	infoPtr->SubsequentMono8x8PatternFillTrap = SiSSubsequentMonoPatternFillTrap;
+        if((pSiS->Chipset != PCI_CHIP_SIS660) &&
+	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
+	   infoPtr->SubsequentMono8x8PatternFillTrap = SiSSubsequentMonoPatternFillTrap;
+	}
 #endif
 	infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK |
 					   HARDWARE_PATTERN_SCREEN_ORIGIN |
@@ -244,31 +268,37 @@ SiS315AccelInit(ScreenPtr pScreen)
 					   NO_TRANSPARENCY |
 					   BIT_ORDER_IN_BYTE_MSBFIRST ;
 
-#if 0
+/* #ifndef SISVRAMQ */
+#ifdef STSCE
 	/* Screen To Screen Color Expand */
-	/* TW: The hardware does not support this the way we need it */
+	/* The hardware does not support this the way we need it */
 	infoPtr->SetupForScreenToScreenColorExpandFill =
 	    			SiSSetupForScreenToScreenColorExpand;
 	infoPtr->SubsequentScreenToScreenColorExpandFill =
 	    			SiSSubsequentScreenToScreenColorExpand;
 	infoPtr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
 	                                              BIT_ORDER_IN_BYTE_MSBFIRST ;
+	/* TEST */
+	/* infoPtr->CacheColorExpandDensity = 8;
+	infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple; */
 #endif
+/* #endif */
 
-	/* per-scanline color expansion - indirect method */
-	pSiS->ColorExpandBufferNumber = 16;
-	pSiS->ColorExpandBufferCountMask = 0x0F;
-	pSiS->PerColorExpandBufferSize = ((pScrn->virtualX + 31)/32) * 4;
 #ifdef CTSCE
-        /* 650, 740, 660: We don't use this, it's much slower than doing it by the CPU.
+        /* per-scanline color expansion - indirect method
+	 *
+         * 650, 740, 660: We don't use this, it's much slower than doing it by the CPU.
 	 * On 650, 740, 660 we know that we are running on a P4; for other chipsets like
 	 * 315, we don't. On 550, this should be faster than the CPU in any case.
-	 * I now disabled this for the Xabre as well; people owning a "high speed 3D" card
-	 * have presumably CPUs fast enough.
+	 * Does not work on XABRE, hangs the engine.
+	 * Does not work in VRAM queue mode.
 	 */
         if((pSiS->Chipset != PCI_CHIP_SIS650) &&
 	   (pSiS->Chipset != PCI_CHIP_SIS660) &&
 	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
+	   pSiS->ColorExpandBufferNumber = 16;
+	   pSiS->ColorExpandBufferCountMask = 0x0F;
+	   pSiS->PerColorExpandBufferSize = ((pScrn->virtualX + 31)/32) * 4;
 	   infoPtr->NumScanlineColorExpandBuffers = pSiS->ColorExpandBufferNumber;
 	   infoPtr->ScanlineColorExpandBuffers = (unsigned char **)&pSiS->ColorExpandBufferAddr[0];
 	   infoPtr->SetupForScanlineCPUToScreenColorExpandFill = SiSSetupForScanlineCPUToScreenColorExpandFill;
@@ -280,30 +310,36 @@ SiS315AccelInit(ScreenPtr pScreen)
 	     SCANLINE_PAD_DWORD |
 	     BIT_ORDER_IN_BYTE_MSBFIRST |
 	     LEFT_EDGE_CLIPPING;
+	} else {
+	   pSiS->ColorExpandBufferNumber = 0;
+	   pSiS->PerColorExpandBufferSize = 0;
 	}
+#else
+        pSiS->ColorExpandBufferNumber = 0;
+	pSiS->PerColorExpandBufferSize = 0;
 #endif
 
 #ifdef INCL_RENDER
 #ifdef RENDER
-        /* Render - DOES NOT WORK */
+        /* Render - DOES NOT WORK AS SUCH (keep it for upcoming Transparency support) */
         if((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32)) {
            infoPtr->SetupForCPUToScreenAlphaTexture = SiSSetupForCPUToScreenAlphaTexture;
 	   infoPtr->SubsequentCPUToScreenAlphaTexture = SiSSubsequentCPUToScreenTexture;
 	   infoPtr->CPUToScreenAlphaTextureFormats = SiSAlphaTextureFormats;
 	   infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
 	   					   XAA_RENDER_NO_SRC_ALPHA;
-	   
+
            infoPtr->SetupForCPUToScreenTexture = SiSSetupForCPUToScreenTexture;
            infoPtr->SubsequentCPUToScreenTexture = SiSSubsequentCPUToScreenTexture;
            infoPtr->CPUToScreenTextureFormats = SiSTextureFormats;
 	   infoPtr->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
 	}
 #endif
-#endif	
+#endif
 
 #ifdef SISDUALHEAD
-	if (pSiS->DualHeadMode) {
-		infoPtr->RestoreAccelState = SiSRestoreAccelState;
+	if(pSiS->DualHeadMode) {
+	   infoPtr->RestoreAccelState = SiSRestoreAccelState;
 	}
 #endif
 
@@ -313,7 +349,7 @@ SiS315AccelInit(ScreenPtr pScreen)
 
 	reservedFbSize = (pSiS->ColorExpandBufferNumber
 			   * pSiS->PerColorExpandBufferSize);
-        /* TW: New for MaxXFBmem Option */
+
 	UsableFbSize = topFB - reservedFbSize;
 	/* Layout:
 	 * |--------------++++++++++++++++++++^************==========~~~~~~~~~~~~|
@@ -321,31 +357,32 @@ SiS315AccelInit(ScreenPtr pScreen)
 	 *                                 topFB
 	 */
 	AvailBufBase = pSiS->FbBase + UsableFbSize;
-	for (i = 0; i < pSiS->ColorExpandBufferNumber; i++) {
-		pSiS->ColorExpandBufferAddr[i] = AvailBufBase + 
+	if(pSiS->ColorExpandBufferNumber) {
+	   for(i = 0; i < pSiS->ColorExpandBufferNumber; i++) {
+	      pSiS->ColorExpandBufferAddr[i] = AvailBufBase +
 		    i * pSiS->PerColorExpandBufferSize;
-		pSiS->ColorExpandBufferScreenOffset[i] = UsableFbSize +
+	      pSiS->ColorExpandBufferScreenOffset[i] = UsableFbSize +
 		    i * pSiS->PerColorExpandBufferSize;
+	   }
 	}
 	Avail.x1 = 0;
 	Avail.y1 = 0;
 	Avail.x2 = pScrn->displayWidth;
-	Avail.y2 = UsableFbSize
-	    / (pScrn->displayWidth * pScrn->bitsPerPixel/8) - 1;
-	if (Avail.y2 < 0)
-		Avail.y2 = 32767;
-	if (Avail.y2 < pScrn->currentMode->VDisplay) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"Not enough video RAM for accelerator. At least "
-			"%dKB needed, %dKB available\n",
-			((((pScrn->displayWidth * pScrn->bitsPerPixel/8)   /* TW: +8 for make it sure */
-			     * pScrn->currentMode->VDisplay) + reservedFbSize) / 1024) + 8,
-			pSiS->maxxfbmem/1024);
-		pSiS->NoAccel = TRUE;
-		pSiS->NoXvideo = TRUE;
-		XAADestroyInfoRec(pSiS->AccelInfoPtr);
-		pSiS->AccelInfoPtr = NULL;
-		return FALSE;
+	Avail.y2 = UsableFbSize / (pScrn->displayWidth * pScrn->bitsPerPixel/8) - 1;
+
+	if(Avail.y2 < 0) Avail.y2 = 32767;
+	if(Avail.y2 < pScrn->currentMode->VDisplay) {
+	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Not enough video RAM for accelerator. At least "
+		"%dKB needed, %dKB available\n",
+		((((pScrn->displayWidth * pScrn->bitsPerPixel/8)   /* +8 for make it sure */
+		     * pScrn->currentMode->VDisplay) + reservedFbSize) / 1024) + 8,
+		pSiS->maxxfbmem/1024);
+	   pSiS->NoAccel = TRUE;
+	   pSiS->NoXvideo = TRUE;
+	   XAADestroyInfoRec(pSiS->AccelInfoPtr);
+	   pSiS->AccelInfoPtr = NULL;
+	   return FALSE;
 	}
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -374,7 +411,7 @@ SiSRestoreAccelState(ScrnInfoPtr pScrn)
 {
 	SISPtr pSiS = SISPTR(pScrn);
 
-	/* TW: We don't need to do anything special here */
+	/* We don't need to do anything special here */
 	pSiS->DoColorExpand = FALSE;
 	SiSIdle
 }
@@ -430,24 +467,35 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 	PDEBUG(ErrorF("Setup ScreenCopy(%d, %d, 0x%x, 0x%x, 0x%x)\n",
 			xdir, ydir, rop, planemask, trans_color));
 
-	/* "AGP base" - color depth depending value (see sis_vga.c) */
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+
+	SiSCheckQueue(16 * 2);
+
+	SiSSetupSRCPitchDSTRect(pSiS->scrnOffset, pSiS->scrnOffset, -1)
+#else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-	/* SRC pitch */
+
 	SiSSetupSRCPitch(pSiS->scrnOffset)
-	/* DST pitch and height (-1 for disabling merge-clipping) */
+
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
+#endif
+
 	/* Init CommandReg and set ROP */
-	if (trans_color != -1) {
-		SiSSetupROP(0x0A)
-		SiSSetupSRCTrans(trans_color)
-		SiSSetupCMDFlag(TRANSPARENT_BITBLT)
+	if(trans_color != -1) {
+	   SiSSetupROP(0x0A)
+	   SiSSetupSRCTrans(trans_color)
+	   SiSSetupCMDFlag(TRANSPARENT_BITBLT)
 	} else {
-	        SiSSetupROP(sisALUConv[rop])
-		/* Set command - not needed, both 0 */
-		/* SiSSetupCMDFlag(BITBLT | SRCVIDEO) */
+	   SiSSetupROP(sisALUConv[rop])
+	   /* Set command - not needed, both 0 */
+	   /* SiSSetupCMDFlag(BITBLT | SRCVIDEO) */
 	}
-	/* Set some color depth depending value (see sis_vga.c) */
+
+#ifndef SISVRAMQ
+        /* Set some color depth depending value (see sis_vga.c) */
 	SiSSetupCMDFlag(pSiS->SiS310_AccelDepth)
+#endif
 
 	/* The chip is smart enough to know the direction */
 }
@@ -485,25 +533,33 @@ static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	      dst_y -= mymin;
 	   }
 	} else { 
-	   if (src_y >= 2048) {
-		srcbase = pSiS->scrnOffset * src_y;
-		src_y = 0;
+	   if(src_y >= 2048) {
+	      srcbase = pSiS->scrnOffset * src_y;
+	      src_y = 0;
 	   }
-	   if ((dst_y >= pScrn->virtualY) || (dst_y >= 2048)) {
-		dstbase = pSiS->scrnOffset * dst_y;
-		dst_y = 0;
+	   if((dst_y >= pScrn->virtualY) || (dst_y >= 2048)) {
+	      dstbase = pSiS->scrnOffset * dst_y;
+	      dst_y = 0;
 	   }
 	}
 #ifdef SISDUALHEAD
 	srcbase += HEADOFFSET;
 	dstbase += HEADOFFSET;
 #endif
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 3);
+        SiSSetupSRCDSTBase(srcbase, dstbase)
+	SiSSetupSRCDSTXY(src_x, src_y, dst_x, dst_y)
+	SiSSetRectDoCMD(width,height)
+#else
 	SiSSetupSRCBase(srcbase);
 	SiSSetupDSTBase(dstbase);
 	SiSSetupRect(width, height)
 	SiSSetupSRCXY(src_x, src_y)
 	SiSSetupDSTXY(dst_x, dst_y)
 	SiSDoCMD
+#endif
 }
 
 static void
@@ -520,11 +576,24 @@ SiSSetupForSolidFill(ScrnInfoPtr pScrn, int color,
 	      rop = 5;  /* NOOP */
 	   }
 	}
-	SiSSetupPATFG(color)
+
+#ifdef SISVRAMQ
+	SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSCheckQueue(16 * 1);
+	SiSSetupPATFGDSTRect(color, pSiS->scrnOffset, -1)
+#else
+  	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
+#endif
+
 	SiSSetupROP(sisPatALUConv[rop])
+
+#ifdef SISVRAMQ
+        SiSSetupCMDFlag(PATFG)
+#else
 	SiSSetupCMDFlag(PATFG | pSiS->SiS310_AccelDepth)
+#endif
 }
 
 static void
@@ -537,28 +606,38 @@ SiSSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 	PDEBUG(ErrorF("Subsequent SolidFillRect(%d, %d, %d, %d)\n",
 					x, y, w, h));
 	dstbase = 0;
-	if (y >= 2048) {
-		dstbase=pSiS->scrnOffset*y;
-		y = 0;
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset * y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
-	SiSSetupDSTBase(dstbase)
-	SiSSetupDSTXY(x,y)
-	SiSSetupRect(w,h)
+
 	pSiS->CommandReg &= ~(T_XISMAJORL | T_XISMAJORR |
 	                      T_L_X_INC | T_L_Y_INC |
 	                      T_R_X_INC | T_R_Y_INC |
 			      TRAPAZOID_FILL);
-	SiSSetupCMDFlag(BITBLT)
+
+	/* SiSSetupCMDFlag(BITBLT)  - BITBLT = 0 */
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 2)
+	SiSSetupDSTXYRect(x,y,w,h)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupDSTBase(dstbase)
+	SiSSetupDSTXY(x,y)
+	SiSSetupRect(w,h)
 	SiSDoCMD
+#endif
 }
 
 /* Trapezoid */
 /* This would work better if XAA would provide us with valid trapezoids.
  * In fact, with small trapezoids the left and the right edge often cross
  * each other which causes drawing errors (filling over whole scanline).
+ * DOES NOT WORK ON XABRE, HANGS THE ENGINE.
  */
 #ifdef TRAP
 static void
@@ -568,19 +647,21 @@ SiSSubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
 {
 	SISPtr  pSiS = SISPTR(pScrn);
 	long dstbase;
-#if 0
-	float kL, kR;
-#endif
 
 	dstbase = 0;
-	if (y >= 2048) {
-		dstbase=pSiS->scrnOffset*y;
-		y = 0;
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset * y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
+
+#ifdef SISVRAMQ	/* Not optimized yet */
+	SiSCheckQueue(16 * 10)
+#else
 	SiSSetupDSTBase(dstbase)
+#endif
 
 #if 1
 	SiSSetupPATFG(0xff0000) /* FOR TESTING */
@@ -595,60 +676,41 @@ SiSSubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
         xf86DrvMsg(0, X_INFO, "Trap (%d %d %d %d) dxL %d dyL %d eL %d   dxR %d dyR %d eR %d\n",
 		left, right, y, h, dxL, dyL, eL, dxR, dyR, eR);
 
-	/* Unfortunately, we must check if the right and the left edge
-	 * cross each other...  INCOMPLETE (equation wrong)
-	 */
-#if 0
-	if (dxL == 0) kL = 0;
-	else kL = (float)dyL / (float)dxL;
-	if (dxR == 0) kR = 0;
-	else kR = (float)dyR / (float)dxR;
-	xf86DrvMsg(0, X_INFO, "kL %f kR %f!\n", kL, kR);
-	if ( (kR != kL) &&
-	     (!(kR == 0 && kL == 0)) &&
-	     (!(kR <  0 && kL >  0)) ) {
-	   xf86DrvMsg(0, X_INFO, "Inside if (%f - %d)\n", ( kL * ( ( ((float)right - (float)left) / (kL - kR) ) - left) + y), h+y);
-           if ( ( ( kL * ( ( ((float)right - (float)left) / (kL - kR) ) - (float)left) + (float)y) < (h + y) ) ) {
-	     xf86DrvMsg(0, X_INFO, "Cross detected!\n");
-	   }
-	}
-#endif
-
 	/* Determine egde angles */
-	if (dxL < 0) { dxL = -dxL; }
-	else { SiSSetupCMDFlag(T_L_X_INC) }
-	if (dxR < 0) { dxR = -dxR; }
-	else { SiSSetupCMDFlag(T_R_X_INC) }
+	if(dxL < 0) 	{ dxL = -dxL; }
+	else 		{ SiSSetupCMDFlag(T_L_X_INC) }
+	if(dxR < 0) 	{ dxR = -dxR; }
+	else 		{ SiSSetupCMDFlag(T_R_X_INC) }
 
 	/* (Y direction always positive - do this anyway) */
-	if (dyL < 0) { dyL = -dyL; }
-	else { SiSSetupCMDFlag(T_L_Y_INC) }
-	if (dyR < 0) { dyR = -dyR; }
-	else { SiSSetupCMDFlag(T_R_Y_INC) }
+	if(dyL < 0) 	{ dyL = -dyL; }
+	else 		{ SiSSetupCMDFlag(T_L_Y_INC) }
+	if(dyR < 0) 	{ dyR = -dyR; }
+	else 		{ SiSSetupCMDFlag(T_R_Y_INC) }
 
 	/* Determine major axis */
-	if (dxL >= dyL) {      /* X is major axis */
-		SiSSetupCMDFlag(T_XISMAJORL)
-	}
-	if (dxR >= dyR) {      /* X is major axis */
-		SiSSetupCMDFlag(T_XISMAJORR)
-	}
-
-	/* Set up deltas */
-	SiSSetupdL(dxL, dyL)
-	SiSSetupdR(dxR, dyR)
-
-	/* Set up y, h, left, right */
-	SiSSetupYH(y,h)
-	SiSSetupLR(left,right)
-
-	/* Set up initial error term */
-	SiSSetupEL(eL)
-	SiSSetupER(eR)
+	if(dxL >= dyL) {  SiSSetupCMDFlag(T_XISMAJORL) }
+	if(dxR >= dyR) {  SiSSetupCMDFlag(T_XISMAJORR) }
 
 	SiSSetupCMDFlag(TRAPAZOID_FILL);
 
+#ifdef SISVRAMQ
+	SiSSetupYHLR(y, h, left, right)
+	SiSSetupdLdR(dxL, dyL, dxR, dyR)
+	SiSSetupELER(eL, eR)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	/* Set up deltas */
+	SiSSetupdL(dxL, dyL)
+	SiSSetupdR(dxR, dyR)
+	/* Set up y, h, left, right */
+	SiSSetupYH(y, h)
+	SiSSetupLR(left, right)
+	/* Set up initial error term */
+	SiSSetupEL(eL)
+	SiSSetupER(eR)
 	SiSDoCMD
+#endif
 }
 #endif
 
@@ -660,13 +722,25 @@ SiSSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 
 	PDEBUG(ErrorF("Setup SolidLine(0x%x, 0x%x, 0x%x)\n",
 					color, rop, planemask));
-
+#ifdef SISVRAMQ
+	SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSCheckQueue(16 * 3);
+        SiSSetupLineCountPeriod(1, 1)
+	SiSSetupPATFGDSTRect(color, pSiS->scrnOffset, -1)
+#else
 	SiSSetupLineCount(1)
 	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
+#endif
+
 	SiSSetupROP(sisPatALUConv[rop])
+
+#ifdef SISVRAMQ
+        SiSSetupCMDFlag(PATFG | LINE)
+#else
 	SiSSetupCMDFlag(PATFG | LINE | pSiS->SiS310_AccelDepth)
+#endif
 }
 
 static void
@@ -682,24 +756,31 @@ SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
 	dstbase = 0;
 	miny = (y1 > y2) ? y2 : y1;
 	maxy = (y1 > y2) ? y1 : y2;
-	if (maxy >= 2048) {
-		dstbase = pSiS->scrnOffset*miny;
-		y1 -= miny;
-		y2 -= miny;
+	if(maxy >= 2048) {
+	   dstbase = pSiS->scrnOffset*miny;
+	   y1 -= miny;
+	   y2 -= miny;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
-	SiSSetupDSTBase(dstbase)
 
+	if(flags & OMIT_LAST) {
+	   SiSSetupCMDFlag(NO_LAST_PIXEL)
+	} else {
+	   pSiS->CommandReg &= ~(NO_LAST_PIXEL);
+	}
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 2);
+        SiSSetupX0Y0X1Y1(x1,y1,x2,y2)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupDSTBase(dstbase)
 	SiSSetupX0Y0(x1,y1)
 	SiSSetupX1Y1(x2,y2)
-	if (flags & OMIT_LAST) {
-		SiSSetupCMDFlag(NO_LAST_PIXEL)
-	} else {
-		pSiS->CommandReg &= ~(NO_LAST_PIXEL);
-	}
 	SiSDoCMD
+#endif
 }
 
 static void
@@ -714,22 +795,32 @@ SiSSubsequentSolidHorzVertLine(ScrnInfoPtr pScrn,
 
 	len--; /* starting point is included! */
 	dstbase = 0;
-	if ((y >= 2048) || ((y + len) >= 2048)) {
-		dstbase = pSiS->scrnOffset * y;
-		y = 0;
+	if((y >= 2048) || ((y + len) >= 2048)) {
+	   dstbase = pSiS->scrnOffset * y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
-	SiSSetupDSTBase(dstbase)
 
-	SiSSetupX0Y0(x,y)
-	if (dir == DEGREES_0) {
-		SiSSetupX1Y1(x + len, y);
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 2);
+    	if(dir == DEGREES_0) {
+	   SiSSetupX0Y0X1Y1(x, y, (x + len), y)
 	} else {
-		SiSSetupX1Y1(x, y + len);
+	   SiSSetupX0Y0X1Y1(x, y, x, (y + len))
+	}
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupDSTBase(dstbase)
+	SiSSetupX0Y0(x,y)
+	if(dir == DEGREES_0) {
+	   SiSSetupX1Y1(x + len, y);
+	} else {
+	   SiSSetupX1Y1(x, y + len);
 	}
 	SiSDoCMD
+#endif
 }
 
 static void
@@ -742,21 +833,34 @@ SiSSetupForDashedLine(ScrnInfoPtr pScrn,
 	PDEBUG(ErrorF("Setup DashedLine(0x%x, 0x%x, 0x%x, 0x%x, %d, 0x%x:%x)\n",
 			fg, bg, rop, planemask, length, *(pattern+4), *pattern));
 
+#ifdef SISVRAMQ
+	SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSCheckQueue(16 * 3);
+ 	SiSSetupLineCountPeriod(1, length-1)
+	SiSSetupStyle(*pattern,*(pattern+4))
+	SiSSetupPATFGDSTRect(fg, pSiS->scrnOffset, -1)
+#else
 	SiSSetupLineCount(1)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
 	SiSSetupStyleLow(*pattern)
 	SiSSetupStyleHigh(*(pattern+4))
-	SiSSetupStylePeriod(length-1);	
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupStylePeriod(length-1);
 	SiSSetupPATFG(fg)
+#endif
+
+	SiSSetupROP(sisPatALUConv[rop])
+
 	SiSSetupCMDFlag(LINE | LINE_STYLE)
-	if (bg != -1) {
-		SiSSetupPATBG(bg)
+
+	if(bg != -1) {
+	   SiSSetupPATBG(bg)
 	} else {
-		SiSSetupCMDFlag(TRANSPARENT)	
+	   SiSSetupCMDFlag(TRANSPARENT)
 	}
+#ifndef SISVRAMQ
 	SiSSetupCMDFlag(pSiS->SiS310_AccelDepth)
+#endif
 }
 
 static void
@@ -771,26 +875,33 @@ SiSSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
 			x1, y1, x2, y2, flags, phase));
 
 	dstbase = 0;
-	miny=(y1 > y2) ? y2 : y1;
-	maxy=(y1 > y2) ? y1 : y2;
-	if (maxy >= 2048) {
-		dstbase = pSiS->scrnOffset * miny;
-		y1 -= miny;
-		y2 -= miny;
+	miny = (y1 > y2) ? y2 : y1;
+	maxy = (y1 > y2) ? y1 : y2;
+	if(maxy >= 2048) {
+	   dstbase = pSiS->scrnOffset * miny;
+	   y1 -= miny;
+	   y2 -= miny;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
-	SiSSetupDSTBase(dstbase)
 
+	if(flags & OMIT_LAST) {
+	   SiSSetupCMDFlag(NO_LAST_PIXEL)
+	} else {
+	   pSiS->CommandReg &= ~(NO_LAST_PIXEL);
+	}
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 2);
+	SiSSetupX0Y0X1Y1(x1,y1,x2,y2)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupDSTBase(dstbase)
 	SiSSetupX0Y0(x1,y1)
 	SiSSetupX1Y1(x2,y2)
-	if (flags & OMIT_LAST) {
-		SiSSetupCMDFlag(NO_LAST_PIXEL)
-	} else {
-		pSiS->CommandReg &= ~(NO_LAST_PIXEL);
-	}
 	SiSDoCMD
+#endif
 }
 
 static void
@@ -802,12 +913,27 @@ SiSSetupForMonoPatternFill(ScrnInfoPtr pScrn,
 
 	PDEBUG(ErrorF("Setup MonoPatFill(0x%x,0x%x, 0x%x,0x%x, 0x%x, 0x%x)\n",
 					patx, paty, fg, bg, rop, planemask));
+
+#ifdef SISVRAMQ
+	SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+	SiSCheckQueue(16 * 3);
+	SiSSetupPATFGDSTRect(fg, pSiS->scrnOffset, -1)
+#else
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
+#endif
+
 	SiSSetupMONOPAT(patx,paty)
-	SiSSetupPATFG(fg)
+
 	SiSSetupROP(sisPatALUConv[rop])
+
+#ifdef SISVRAMQ
+        SiSSetupCMDFlag(PATMONO)
+#else
+	SiSSetupPATFG(fg)
 	SiSSetupCMDFlag(PATMONO | pSiS->SiS310_AccelDepth)
+#endif
+
 	SiSSetupPATBG(bg)
 }
 
@@ -822,25 +948,36 @@ SiSSubsequentMonoPatternFill(ScrnInfoPtr pScrn,
 	PDEBUG(ErrorF("Subsequent MonoPatFill(0x%x,0x%x, %d,%d, %d,%d)\n",
 							patx, paty, x, y, w, h));
 	dstbase = 0;
-	if (y >= 2048) {
-		dstbase = pSiS->scrnOffset * y;
-		y = 0;
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset * y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
-	SiSSetupDSTBase(dstbase)
-	SiSSetupDSTXY(x,y)
-	SiSSetupRect(w,h)
+
 	/* Clear commandReg because Setup can be used for Rect and Trap */
 	pSiS->CommandReg &= ~(T_XISMAJORL | T_XISMAJORR |
 	                      T_L_X_INC | T_L_Y_INC |
 	                      T_R_X_INC | T_R_Y_INC |
 	                      TRAPAZOID_FILL);
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 2);
+	SiSSetupDSTXYRect(x,y,w,h)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupDSTBase(dstbase)
+	SiSSetupDSTXY(x,y)
+	SiSSetupRect(w,h)
 	SiSDoCMD
+#endif
 }
 
-/* Trapezoid */
+/* --- Trapezoid --- */
+
+/* Does not work at all on Xabre */
+
 #ifdef TRAP
 static void
 SiSSubsequentMonoPatternFillTrap(ScrnInfoPtr pScrn,
@@ -856,14 +993,19 @@ SiSSubsequentMonoPatternFillTrap(ScrnInfoPtr pScrn,
 					y, h, left, right, dxL, dxR, eL, eR));
 
 	dstbase = 0;
-	if (y >= 2048) {
-		dstbase=pSiS->scrnOffset*y;
-		y = 0;
+	if(y >= 2048) {
+	   dstbase=pSiS->scrnOffset*y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 4);
+#else
 	SiSSetupDSTBase(dstbase)
+#endif
 
 	/* Clear CommandReg because SetUp can be used for Rect and Trap */
 	pSiS->CommandReg &= ~(T_XISMAJORL | T_XISMAJORR |
@@ -871,72 +1013,84 @@ SiSSubsequentMonoPatternFillTrap(ScrnInfoPtr pScrn,
 			      T_R_X_INC | T_R_Y_INC |
 			      BITBLT);
 
-	if (dxL < 0) { dxL = -dxL;  }
-	else { SiSSetupCMDFlag(T_L_X_INC) }
-	if (dxR < 0) { dxR = -dxR; }
-	else { SiSSetupCMDFlag(T_R_X_INC) }
+	if(dxL < 0) 	{ dxL = -dxL;  }
+	else 		{ SiSSetupCMDFlag(T_L_X_INC) }
+	if(dxR < 0) 	{ dxR = -dxR; }
+	else 		{ SiSSetupCMDFlag(T_R_X_INC) }
 
-	if (dyL < 0) { dyL = -dyL; }
-	else { SiSSetupCMDFlag(T_L_Y_INC) }
-	if (dyR < 0) { dyR = -dyR; }
-	else { SiSSetupCMDFlag(T_R_Y_INC) }
+	if(dyL < 0) 	{ dyL = -dyL; }
+	else 		{ SiSSetupCMDFlag(T_L_Y_INC) }
+	if(dyR < 0) 	{ dyR = -dyR; }
+	else 		{ SiSSetupCMDFlag(T_R_Y_INC) }
 
 	/* Determine major axis */
-	if (dxL >= dyL) {      /* X is major axis */
-		SiSSetupCMDFlag(T_XISMAJORL)
-	}
-	if (dxR >= dyR) {      /* X is major axis */
-		SiSSetupCMDFlag(T_XISMAJORR)
-	}
-
-	SiSSetupYH(y,h)
-	SiSSetupLR(left,right)
-
-	SiSSetupdL(dxL, dyL)
-	SiSSetupdR(dxR, dyR)
-
-	SiSSetupEL(eL)
-	SiSSetupER(eR)
+	if(dxL >= dyL)  { SiSSetupCMDFlag(T_XISMAJORL) }
+	if(dxR >= dyR)  { SiSSetupCMDFlag(T_XISMAJORR) }
 
 	SiSSetupCMDFlag(TRAPAZOID_FILL);
 
+#ifdef SISVRAMQ
+	SiSSetupYHLR(y, h, left, right)
+	SiSSetupdLdR(dxL, dyL, dxR, dyR)
+	SiSSetupELER(eL, eR)
+	SiSSetupDSTBaseDoCMD(dstbase)
+#else
+	SiSSetupYH(y, h)
+	SiSSetupLR(left, right)
+	SiSSetupdL(dxL, dyL)
+	SiSSetupdR(dxR, dyR)
+	SiSSetupEL(eL)
+	SiSSetupER(eR)
 	SiSDoCMD
+#endif
 }
 #endif
 
-/* ---- CPUToScreen Color Expand */
+/* ---- CPUToScreen Color Expand --- */
 
 #ifdef CTSCE
+
 /* We use the indirect method */
+
 static void
 SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 		int fg, int bg, int rop, unsigned int planemask)
 {
 	SISPtr pSiS=SISPTR(pScrn);
 
-	/* FIXME: How do I check the "CPU driven blit stage" on the
-	 * 315 series?
-	 * That's the 300 series method but definitely wrong for
-	 * 315 series (bit 28 is already used for idle!)
-	 */
-	/* while ((MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x1F00) != 0) {} */
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+#endif
 
-	/* TW: Do Idle instead... */
+	/* !!! DOES NOT WORK IN VRAM QUEUE MODE !!! */
+
+	/* (hence this is not optimized for VRAM mode) */
+
 	SiSIdle
-
 	SiSSetupSRCXY(0,0);
+
 	SiSSetupROP(sisALUConv[rop]);
 	SiSSetupSRCFG(fg);
 	SiSSetupDSTRect(pSiS->scrnOffset, -1);
+#ifndef SISVRAMQ
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-	if (bg == -1) {
-		SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCCPUBLITBUF 
-					| pSiS->SiS310_AccelDepth);
+#endif
+	if(bg == -1) {
+#ifdef SISVRAMQ
+	   SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCCPUBLITBUF);
+#else
+	   SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCCPUBLITBUF
+				       | pSiS->SiS310_AccelDepth);
+#endif
 	} else {
-		SiSSetupSRCBG(bg);
-		SiSSetupCMDFlag(ENCOLOREXP | SRCCPUBLITBUF 
-					| pSiS->SiS310_AccelDepth);
+	   SiSSetupSRCBG(bg);
+#ifdef SISVRAMQ
+	   SiSSetupCMDFlag(ENCOLOREXP | SRCCPUBLITBUF);
+#else
+	   SiSSetupCMDFlag(ENCOLOREXP | SRCCPUBLITBUF | pSiS->SiS310_AccelDepth);
+#endif
 	};
+
 }
 
 static void
@@ -949,35 +1103,40 @@ SiSSubsequentScanlineCPUToScreenColorExpandFill(
 	long dstbase;
 
 	dstbase = 0;
-	if (y >= 2048) {
-		dstbase = pSiS->scrnOffset*y;
-		y = 0;
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset*y;
+	   y = 0;
 	}
 #ifdef SISDUALHEAD
 	dstbase += HEADOFFSET;
 #endif
 
         if((MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {
-		SiSIdle;
+	   SiSIdle;
         }
 
 	SiSSetupDSTBase(dstbase)
 
-	if (skipleft > 0) {
-		_x0 = x+skipleft;
-		_y0 = y;
-		_x1 = x+w;
-		_y1 = y+h;
-		SiSSetupClipLT(_x0, _y0);
-		SiSSetupClipRB(_x1, _y1);
-		SiSSetupCMDFlag(CLIPENABLE);
+	if(skipleft > 0) {
+	   _x0 = x+skipleft;
+	   _y0 = y;
+	   _x1 = x+w;
+	   _y1 = y+h;
+#ifdef SISVRAMQ
+           SiSSetupClip(_x0, _y0, _x1, _y1);
+#else
+	   SiSSetupClipLT(_x0, _y0);
+	   SiSSetupClipRB(_x1, _y1);
+#endif
+	   SiSSetupCMDFlag(CLIPENABLE);
 	} else {
-		pSiS->CommandReg &= (~CLIPENABLE);
+	   pSiS->CommandReg &= (~CLIPENABLE);
 	}
 	SiSSetupRect(w, 1);
 	SiSSetupSRCPitch(((((w+7)/8)+3) >> 2) * 4);
 	pSiS->ycurrent = y;
 	pSiS->xcurrent = x;
+
 }
 
 static void
@@ -992,7 +1151,7 @@ SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 #endif
 
 	if((MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000) {
-		SiSIdle;
+	   SiSIdle;
         }
 
 	SiSSetupSRCBase(cbo);
@@ -1007,6 +1166,183 @@ SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 }
 #endif
 
+/* --- Screen To Screen Color Expand --- */
+
+#ifdef STSCE
+static void
+SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
+                                int fg, int bg,
+                                int rop, unsigned int planemask)
+{
+	SISPtr          pSiS = SISPTR(pScrn);
+
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+#else
+	SiSSetupDSTColorDepth(pSiS->DstColor)
+#endif
+	SiSSetupDSTRect(pSiS->scrnOffset, -1)
+	SiSSetupROP(sisALUConv[rop])
+	SiSSetupSRCFG(fg)
+	/* SiSSetupSRCXY(0,0) */
+
+	if(bg == -1) {
+	   SiSSetupCMDFlag(TRANSPARENT | ENCOLOREXP | SRCVIDEO);
+	} else {
+	   SiSSetupSRCBG(bg);
+	   SiSSetupCMDFlag(ENCOLOREXP | SRCVIDEO);
+	};
+}
+#endif
+
+/* TW. This method blits in a single task; this does not seem to work
+ * because the hardware does not use the source pitch as scanline
+ * offset but to calculate pattern address from source X and Y and to
+ * limit the drawing width (similar to width set by SetupRect).
+ * XAA provides the pattern bitmap with scrnOffset (displayWidth * bpp/8)
+ * offset, but this does not seem to be supported by the hardware.
+ * DOES NOT WORK ON XABRE, HANGS ENGINE.
+ */
+#ifdef STSCE
+
+/* For testing, these are the methods: (use only one at a time!) */
+
+#undef npitch 		/* Normal: Use srcx/y as srcx/y, use scrnOffset as source pitch
+			 * This would work if the hareware used the source pitch for
+			 * incrementing the source address after each scanline - but
+			 * it doesn't do this! The first line of the area is correctly
+			 * color expanded, but since the source pitch is ignored and
+			 * the source address not incremented correctly, the following
+			 * lines are color expanded with any bit pattern that is left
+			 * in the unused space of the source bitmap (which is organized
+			 * with the depth of the screen framebuffer hence with a pitch
+			 * of scrnOffset).
+			 */
+
+#undef pitchdw    	/* Use source pitch "displayWidth / 8" instead
+		   	 * of scrnOffset (=displayWidth * bpp / 8)
+			 * This can't work, because the pitch of the source
+			 * bitmap is scrnoffset!
+		   	 */
+
+#define nopitch   	/* Calculate srcbase with srcx and srcy, set the
+		   	 * pitch to scrnOffset (which IS the correct pitch
+		   	 * for the source bitmap) and set srcx and srcy both
+		   	 * to 0.
+			 * This would work if the hareware used the source pitch for
+			 * incrementing the source address after each scanline - but
+			 * it doesn't do this! Again: The first line of the area is
+			 * correctly color expanded, but since the source pitch is
+			 * ignored for scanline address incremention, the following
+			 * lines are not correctly color expanded.
+			 * WHATEVER I write to source pitch is ignored!
+		   	 */
+
+static void
+SiSSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
+                                int x, int y, int w, int h,
+                                int srcx, int srcy, int skipleft)
+{
+	SISPtr pSiS = SISPTR(pScrn);
+        long srcbase, dstbase;
+#if 0
+	int _x0, _y0, _x1, _y1;
+#endif
+#ifdef pitchdw
+	int newsrcx, newsrcy;
+
+	/* srcx and srcy are provided based on a scrnOffset pitch ( = displayWidth * bpp / 8 )
+	 * We recalulate srcx and srcy based on pitch = displayWidth / 8
+	 */
+        newsrcy = ((pSiS->scrnOffset * srcy) + (srcx * ((pScrn->bitsPerPixel+7)/8))) /
+					  (pScrn->displayWidth/8);
+        newsrcx = ((pSiS->scrnOffset * srcy) + (srcx * ((pScrn->bitsPerPixel+7)/8))) %
+					  (pScrn->displayWidth/8);
+#endif
+	xf86DrvMsg(0, X_INFO, "Sub ScreenToScreen ColorExp(%d,%d, %d,%d, %d,%d, %d)\n",
+					x, y, w, h, srcx, srcy, skipleft);
+
+	srcbase = dstbase = 0;
+
+#ifdef pitchdw
+	if(newsrcy >= 2048) {
+	   srcbase = (pScrn->displayWidth / 8) * newsrcy;
+	   newsrcy = 0;
+	}
+#endif
+#ifdef nopitch
+	srcbase = (pSiS->scrnOffset * srcy) + (srcx * ((pScrn->bitsPerPixel+7)/8));
+#endif
+#ifdef npitch
+	if(srcy >= 2048) {
+	   srcbase = pSiS->scrnOffset * srcy;
+	   srcy = 0;
+	}
+#endif
+	if(y >= 2048) {
+	   dstbase = pSiS->scrnOffset * y;
+	   y = 0;
+	}
+
+#ifdef SISDUALHEAD
+	srcbase += HEADOFFSET;
+	dstbase += HEADOFFSET;
+#endif
+
+	SiSSetupSRCBase(srcbase)
+	SiSSetupDSTBase(dstbase)
+
+	/* 315 series seem to treat the src pitch as
+	 * a "drawing limit", but still (as 300 series)
+	 * does not use it for incrementing the
+	 * address pointer for the next scanline. ARGH!
+	 */
+
+#ifdef pitchdw
+	SiSSetupSRCPitch(pScrn->displayWidth/8)
+#endif
+#ifdef nopitch
+	SiSSetupSRCPitch(pScrn->displayWidth/8)
+	/* SiSSetupSRCPitch(1024/8) */ /* For test */
+#endif
+#ifdef npitch
+	SiSSetupSRCPitch(pScrn->displayWidth/8)
+	/* SiSSetupSRCPitch(pSiS->scrnOffset) */
+#endif
+
+	SiSSetupRect(w,h)
+
+#if 0   /* How do I implement the offset? Not this way, that's for sure.. */
+	if (skipleft > 0) {
+		_x0 = x+skipleft;
+		_y0 = y;
+		_x1 = x+w;
+		_y1 = y+h;
+		SiSSetupClipLT(_x0, _y0);
+		SiSSetupClipRB(_x1, _y1);
+		SiSSetupCMDFlag(CLIPENABLE);
+	}
+#endif
+#ifdef pitchdw
+	SiSSetupSRCXY(newsrcx, newsrcy)
+#endif
+#ifdef nopitch
+	SiSSetupSRCXY(0,0)
+#endif
+#ifdef npitch
+	SiSSetupSRCXY(srcx, srcy)
+#endif
+
+	SiSSetupDSTXY(x,y)
+
+	SiSDoCMD
+#ifdef SISVRAMQ
+	/* We MUST sync here, there must not be 2 or more color expansion commands in the queue */
+	SiSIdle
+#endif	
+}
+#endif
+
 /* ---- RENDER ---- */
 
 /* DOES NOT WORK. SEE COMMENT ABOVE. */
@@ -1018,7 +1354,7 @@ SiSRemoveLinear(FBLinearPtr linear)
 {
    	SISPtr pSiS = (SISPtr)(linear->devPrivate.ptr);
 
-   	pSiS->AccelLinearScratch = NULL;  
+   	pSiS->AccelLinearScratch = NULL;
 }
 
 static Bool
@@ -1088,9 +1424,13 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 		(blue >> 8) | (green & 0xff00) | ((red & 0xff00) << 8),
 		alphaPtr, alphaPitch, (CARD32*)(pSiS->FbBase + offset),
         	pitch, width, height);
-	
+
     	/* "AGP base" - color depth depending value (see sis_vga.c) */
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+#else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
+#endif
 	/* SRC pitch */
 	SiSSetupSRCPitch((pitch << 2));
 	/* DST pitch and height (-1 for disabling merge-clipping) */
@@ -1099,14 +1439,16 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	SiSSetupROP(RENDER_OP)  
 	/* Set command  */
 	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO) 
-	
+
+#ifndef SISVRAMQ
 	/* Set some color depth depending value (see sis_vga.c) */
 	SiSSetupCMDFlag(pSiS->SiS310_AccelDepth)
+#endif
 	
 	/* THIS is the problem: The hardware does not 
 	 * support ARGB textures, but a static alpha
 	 * value only. Makes the whole thing pretty
-	 * useless.
+	 * useless for render.
 	 */
 	SiSSetupAlpha(0x99)	 
 
@@ -1145,7 +1487,7 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
     	if(pScrn->bitsPerPixel == 32)
            offset <<= 1;
 
-    	{
+	{
 	   CARD8 *dst = (CARD8*)(pSiS->FbBase + offset);
 	   i = height;
 	   while(i--) {
@@ -1154,9 +1496,12 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
 	     dst += pitch << 2;
 	   }
         }
-    
-        /* "AGP base" - color depth depending value (see sis_vga.c) */
+
+#ifdef SISVRAMQ
+        SiSSetupDSTColorDepth(pSiS->SiS310_AccelDepth);
+#else
 	SiSSetupDSTColorDepth(pSiS->DstColor);
+#endif	
 	/* SRC pitch */
 	SiSSetupSRCPitch((pitch << 4));
 	/* DST pitch and height (-1 for disabling merge-clipping) */
@@ -1164,9 +1509,12 @@ SiSSetupForCPUToScreenTexture(ScrnInfoPtr pScrn,
 	/* Init CommandReg and set ROP */
 	SiSSetupROP(RENDER_OP)  
 	/* Set command  */
-	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO) 
+#ifdef SISVRAMQ
+	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO)
+#else
 	/* Set some color depth depending value (see sis_vga.c) */
-	SiSSetupCMDFlag(pSiS->SiS310_AccelDepth)
+	SiSSetupCMDFlag(ALPHA_BLEND | SRCVIDEO | pSiS->SiS310_AccelDepth)
+#endif
 
 	return TRUE;
 }
@@ -1198,12 +1546,20 @@ SiSSubsequentCPUToScreenTexture(ScrnInfoPtr pScrn,
 	srcbase += HEADOFFSET;
 	dstbase += HEADOFFSET;
 #endif
+
+#ifdef SISVRAMQ
+	SiSCheckQueue(16 * 3)
+	SiSSetupSRCDSTBase(srcbase,dstbase);
+	SiSSetupSRCDSTXY(src_x, src_y, dst_x, dst_y)
+	SiSSetRectDoCMD(width,height)
+#else
 	SiSSetupSRCBase(srcbase);
 	SiSSetupDSTBase(dstbase);
 	SiSSetupRect(width, height)
 	SiSSetupSRCXY(src_x, src_y)
 	SiSSetupDSTXY(dst_x, dst_y)
 	SiSDoCMD
+#endif
 }
 #endif
 #endif

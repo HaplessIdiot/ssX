@@ -738,7 +738,7 @@ SiS315Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
     }
 
-    /* TW: Save command queue location */
+    /* Save command queue location */
     sisReg->sisMMIO85C0 = MMIO_IN32(pSiS->IOBase, 0x85C0);
 
     /* Save CR registers */
@@ -819,6 +819,15 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	while ( (MMIO_IN32(pSiS->IOBase, 0x85CC) & 0x80000000) != 0x80000000){};
     }
 
+    /* We reset the command queue before restoring.
+     * This might be required because we never know what
+     * console driver (like the kernel framebuffer driver)
+     * or application is running and which queue mode it
+     * uses.
+     */
+    outSISIDXREG(SISSR, 0x27, 0x1F);
+    outSISIDXREG(SISSR, 0x26, 0x01);
+
     /* Restore extended CR registers */
     for (i = 0x19; i < 0x5C; i++)  {
         outSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
@@ -831,15 +840,6 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	sisReg->sisRegs3C4[0x20] |= 0x20;
 	outSISIDXREG(SISSR, 0x20, sisReg->sisRegs3C4[0x20]);
     }
-
-    /* We reset the command queue before restoring.
-     * This might be required because we never know what
-     * console driver (like the kernel framebuffer driver)
-     * or application is running and which queue mode it
-     * uses.
-     */
-    outSISIDXREG(SISSR, 0x27, 0x1F);
-    outSISIDXREG(SISSR, 0x26, 0x01);
 
     /* Restore extended SR registers */
     for (i = 0x06; i <= 0x3F; i++) {
@@ -876,8 +876,10 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         outSISIDXREG(SISSR,0x2d,0x01);
     }
 
+#ifndef SISVRAMQ
     /* Initialize read/write pointer for command queue */
     MMIO_OUT32(pSiS->IOBase, 0x85C4, MMIO_IN32(pSiS->IOBase, 0x85C8));
+#endif
     /* Restore queue location */
     MMIO_OUT32(pSiS->IOBase, 0x85C0, sisReg->sisMMIO85C0);
 

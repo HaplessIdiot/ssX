@@ -637,6 +637,8 @@ typedef struct _SiS_Private
 
 	BOOLEAN SiS_CHPALM;
 	BOOLEAN SiS_CHPALN;
+
+	int	LVDSHL;
 	
 	BOOLEAN Backup;
 	UCHAR Backup_Mode;

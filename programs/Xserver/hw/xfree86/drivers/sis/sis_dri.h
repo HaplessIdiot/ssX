@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.5 2001/04/20 02:53:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.6 2001/05/16 13:43:17 alanh Exp $ */
 
 /* modified from tdfx_dri.h */
 
@@ -12,10 +12,21 @@
 
 typedef struct {
   int CtxOwner;
-  int QueueLength;
+  unsigned long QueueLength;
   unsigned int AGPCmdBufNext;
   unsigned int FrameCount;
+  /* For 315 series */
+  unsigned long sharedWPoffset;
+#if 0
+  unsigned char *AGPCmdBufBase;
+  unsigned long AGPCmdBufAddr;
+  unsigned long AGPCmdBufOffset;
+  unsigned int  AGPCmdBufSize;
+  unsigned long AGPCmdBufNext;
+#endif
 } SISSAREAPriv;
+
+#define AGPVtxBufNext AGPCmdBufNext
 
 #define SIS_FRONT 0
 #define SIS_BACK 1
@@ -46,6 +57,9 @@ typedef struct {
   int irqEnabled;
   unsigned int scrnX, scrnY;
 } SISDRIRec, *SISDRIPtr;
+
+#define AGPVtxBufOffset AGPCmdBufOffset
+#define AGPVtxBufSize AGPCmdBufSize
 
 typedef struct {
   /* Nothing here yet */
