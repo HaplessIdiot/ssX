@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:32:20 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 BIOS_MOD = solx86_mmap
@@ -19,6 +20,10 @@ OBJS = solx86_init.o solx86_vid.o IO_utils.o sysv_io.o $(BIOS_MOD).o \
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)
+
+#if HasSolx86ApertureDriver
+DEFINES = -DHAS_APERTURE_DRV
+#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
