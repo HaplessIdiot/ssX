@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.h,v 1.1 94/03/28 21:06:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.0 1994/05/08 05:19:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.1 1994/05/08 06:21:31 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -691,7 +691,7 @@ void mach32GetImage(
     int h,
     unsigned int format,
     unsigned long planeMask,
-    pointer pdstLine
+    char * pdstLine
 #endif
 );
 /* mach32mem.c */
