@@ -144,3 +144,40 @@ Patch 4 (#1678) 3 May 1998
   pixmaps, so that it should be easy to support more pixmap formats
   (actually, only X bitmaps).
 
+
+Patch 5 (#1686) 11 May 1998
+
+ + Patch to libXmu, so that the StringToCursor converter will understand the
+   string 'None', that means not to use a cursor. This is useful when
+   overriding resource settings, and the user wants to use the parent window
+   cursor, or the root window cursor. Any unrecognized name will generate
+   a 'None' cursor, but then with a warning message.
+ + SimpleWidget was modified to allow setting the cursor to none, when it
+   was a valid cursor.
+ + Modification in the Actions.c,
+   from:
+	typedef struct _XawActionVar {
+	  XrmQuark qname;
+	  String value;
+	} XawActionVar;
+   to:
+	typedef struct _XawActionVar {
+	  XrmQuark qname;
+	  XrmQuark qvalue;
+	} XawActionVar;
+   This does not cause any problems, since the exported interface remains
+   the same. This is required to avoid to much copies of the same string.
+ + Values of action variables can start with '$'.
+ + If a resource name clashes with a special constant name when evaluating
+   a boolean expression (in the translations code), it's enough
+   start the resource name with '\\' (it can always be used, but is
+   only useful if there is a name clash :).
+ + The only code that loads data files actually is the pixmap code. To avoid
+   security problems, the code only loads files that are group readable,
+   regular file, non suid and non sgid.
+ + If the code to load a pixmap does not find a match, and the pixmap name
+   has a extension, try without the extension.
+ + Function 'line-with' added to displayList code.
+ + Added DisplayListToString and PixmapToString converters.
+ + Bug fixes in the pixmap name interpretation.
+

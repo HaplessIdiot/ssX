@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.4 1998/06/28 08:41:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.5 1998/06/28 11:23:50 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1193,6 +1193,31 @@ int n;
 
   if (n == 0) return;
 
+  if (ctx->core.background_pixmap != XtUnspecifiedPixmap)
+    {
+      if (n > 0)
+	{
+	  if (IsValidLine(ctx, n))
+	    top = Min(lt->info[n].position, ctx->text.lastPos);
+	  else
+	    top = ctx->text.lastPos;
+	}
+      else
+	{
+	  n = -n;
+	  target = lt->top;
+	  top = SrcScan(ctx->text.source, target, XawstEOL,
+			XawsdLeft, n+1, FALSE);
+	}
+      _XawTextBuildLineTable(ctx, top, FALSE);
+      _XawTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);
+      XtSetArg (list[0], XtNinsertPosition,
+		ctx->text.lt.top + ctx->text.lt.lines);
+      _XawImSetValues ((Widget) ctx, list, 1);
+      _XawTextSetScrollBars(ctx);
+      return;
+    }
+
   if (n > 0) {
     if ( IsValidLine(ctx, n) )
       top = Min(lt->info[n].position, ctx->text.lastPos);
@@ -1280,7 +1305,16 @@ XtPointer callData;		/* #pixels */
     ctx->text.margin.left = ctx->text.r_margin.left;
     pixels = old_left - ctx->text.margin.left;
   }
-  
+
+  if (ctx->core.background_pixmap != XtUnspecifiedPixmap)
+    {
+      _XawTextBuildLineTable(ctx, ctx->text.lt.top, FALSE);
+      _XawTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);
+      _XawTextExecuteUpdate(ctx);
+      _XawTextSetScrollBars(ctx);
+      return;
+    }
+
   if (pixels > 0) {
     rect.width = (unsigned short) pixels + ctx->text.margin.right;
     rect.x = (short) ctx->core.width - (short) rect.width;

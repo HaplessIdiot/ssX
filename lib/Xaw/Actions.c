@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.3 1998/06/04 16:43:07 hohndel Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.4 1998/06/28 11:02:07 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -86,7 +86,7 @@ struct _XawActionResList {
 /* variables */
 typedef struct _XawActionVar {
   XrmQuark qname;
-  String value;
+  XrmQuark qvalue;
 } XawActionVar;
 
 struct _XawActionVarList {
@@ -106,6 +106,8 @@ static Boolean prim(XawEvalInfo*);
 /* resources */
 static String XawConvertActionRes(XawActionResList*, Widget w, String);
 
+static String _XawEscapeActionVarValue(String);
+static String _XawUnescapeActionVarValue(String);
 static XawActionResList *_XawCreateActionResList(WidgetClass);
 static XawActionResList *_XawFindActionResList(WidgetClass);
 static void _XawBindActionResList(XawActionResList*);
@@ -148,6 +150,9 @@ XawParseBoolean(Widget w, String param, XEvent *event, Boolean *succed)
   char *tmp = param;
   int value;
 
+  if (!param)
+    return (False);
+
   value = (int)strtod(param, &tmp);
   if (*tmp == '\0')
     return (value);
@@ -180,6 +185,9 @@ XawBooleanExpression(Widget w, String param, XEvent *event)
 {
   XawEvalInfo info;
   Boolean retval;
+
+  if (!param)
+    return (False);
 
   info.widget = w;
 
@@ -232,7 +240,7 @@ get_token(XawEvalInfo *info)
     }
 
   /* It's a symbol name, resolve it. */
-  if (ch == XAW_PRIV_VAR_PREFIX || isalnum(ch) || ch == '_')
+  if (ch == XAW_PRIV_VAR_PREFIX || isalnum(ch) || ch == '_' || ch == '\\')
     {
       Boolean succed = True;
 
@@ -258,7 +266,10 @@ get_token(XawEvalInfo *info)
 	  if (!succed)
 	    {
 	      String value =
-		XawConvertActionRes(info->rlist, info->widget, name);
+		XawConvertActionRes(info->rlist, info->widget,
+				    name[0] == '\\' ? &name[1] : name);
+	      /* '\\' may have been used to escape a resource name.
+	       */
 
 	      info->value = info->parse_proc(info->widget, value, info->event,
 					     &succed) & 1;
@@ -576,6 +587,12 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
       XtSetArg(arg, XrmQuarkToString(resource->qname),
                from.addr = (XPointer)&c_4);
       break;
+#ifdef LONG_64
+    case 8:
+      XtSetArg(arg, XrmQuarkToString(resource->qname),
+	       from.addr = (XPointer)&c_8);
+      break;
+#endif
     default:
       {
         char msg[256];
@@ -818,10 +835,42 @@ _XawFindActionRes(XawActionResList *list, Widget detail, String name)
 /*
  * Start of Variables Implementation Code
  */
+/* For speed, only does memory allocation when really required */
+String
+_XawEscapeActionVarValue(String value)
+{
+  String escape;
+
+  if (value[0] == '$' || value[0] == '\\')
+    {
+      escape = XtMalloc(strlen(value) + 2);
+      escape[0] = '\\';
+      strcpy(escape + 1, value);
+      return (escape);
+    }
+  return (NULL);
+}
+
+/* For speed, only does memory allocation when really required */
+String
+_XawUnescapeActionVarValue(String value)
+{
+  String unescape;
+
+  if (value[0] == '\\')
+    {
+      unescape = XtMalloc(strlen(value));
+      strcpy(unescape, value + 1);
+      return (unescape);
+    }
+  return (NULL);
+}
+
 void
 XawDeclareActionVar(XawActionVarList *list, String name, String value)
 {
   XawActionVar *variable;
+  String escape = NULL;
 
   if (name[0] != XAW_PRIV_VAR_PREFIX)
     {
@@ -830,31 +879,54 @@ XawDeclareActionVar(XawActionVarList *list, String name, String value)
       snprintf(msg, sizeof(msg), "declare(): variable name must begin with "
 	       "\'%c\', at %s = %s", XAW_PRIV_VAR_PREFIX, name, value);
       XtAppWarning(XtWidgetToApplicationContext(list->widget), msg);
+      return;
     }
   variable = _XawFindActionVar(list, name);
   if (!variable)
     variable = _XawCreateActionVar(list, name);
-  if (variable->value)
+  if (value)
+    escape = _XawEscapeActionVarValue(value);
+
+  if (variable->qvalue)
     {
-      if (strcmp(variable->value, value) == 0)
-	return;
-      XtFree(variable->value);
+      String val = escape ? escape : value;
+
+      if (strcmp(XrmQuarkToString(variable->qvalue), val) == 0)
+	{
+	  if (escape)
+	    XtFree(escape);
+	  return;
+	}
     }
-  variable->value = XtNewString(value);
+  variable->qvalue = (escape ? XrmStringToQuark(escape) :
+		      (value ? XrmStringToQuark(value) : NULLQUARK));
+  if (escape)
+    XtFree(escape);
 }
 
 String
 XawConvertActionVar(XawActionVarList *list, String name)
 {
   XawActionVar *variable;
+  String unescape;
+  XrmQuark quark;
 
   if (name[0] != XAW_PRIV_VAR_PREFIX)
     return (name);
 
   variable = _XawFindActionVar(list, name);
-  if (!variable)
+  if (!variable || variable->qvalue == NULLQUARK)
     return (name);
-  return (variable->value);
+  unescape = _XawUnescapeActionVarValue(XrmQuarkToString(variable->qvalue));
+  if (unescape)
+    {
+      quark = XrmStringToQuark(unescape);
+      XtFree(unescape);
+    }
+  else
+    quark = variable->qvalue;
+
+  return (XrmQuarkToString(quark));
 }
 
 XawActionVarList *
@@ -958,7 +1030,7 @@ _XawCreateActionVar(XawActionVarList *list, String name)
 
   variable = (XawActionVar *)XtMalloc(sizeof(XawActionVar));
   variable->qname = XrmStringToQuark(name);
-  variable->value = (String)NULL;
+  variable->qvalue = NULLQUARK;
 
   if (!list->variables)
     {
@@ -1030,9 +1102,6 @@ _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
       XtFree((char *)variable_list);
       variable_list = NULL;
     }
-
-  for (i = 0; i < list->num_variables; i++)
-    XtFree(list->variables[i]->value);
 
   XtFree((char *)list->variables);
   XtFree((char *)list);

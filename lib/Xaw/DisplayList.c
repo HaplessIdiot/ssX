@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.3 1998/06/28 11:02:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.4 1998/06/28 11:23:45 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -70,6 +70,7 @@ struct _XawDL {
   Screen *screen;
   Colormap colormap;
   int depth;
+  XrmQuark qrep;  /* for cache lookup */
 };
 
 struct _XawDLClass {
@@ -91,7 +92,6 @@ static int bcmp_dlist_class(_Xconst void*, _Xconst void*);
 static XawDLInfo *_XawFindDLInfo(XawDLClass*, String);
 static int qcmp_dlist_info(_Xconst void*, _Xconst void*);
 static int bcmp_dlist_info(_Xconst void*, _Xconst void*);
-static void _XawDestroyDisplayList(XawDisplayList*);
 static void *_Xaw_Xlib_ArgsInitProc(String, String*, Cardinal*,
 				    Screen*, Colormap, int);
 static void _Xaw_Xlib_ArgsDestructor(Display*, String, XtPointer,
@@ -225,6 +225,9 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
   dlist->screen = screen;
   dlist->colormap = colormap;
   dlist->depth = depth;
+  dlist->qrep = NULLQUARK;
+  if (!string || !string[0])
+    return (dlist);
 
   cp = string;
 
@@ -243,7 +246,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 		   "Error parsing displayList at \"%s\"", lp);
 	  XtAppWarning(XtDisplayToApplicationContext(DisplayOfScreen(screen)),
 		       msg);
-	  _XawDestroyDisplayList(dlist);
+	  XawDestroyDisplayList(dlist);
 	  return (NULL);
 	}
       fp = fname; 
@@ -267,7 +270,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 		       "Cannot find displayList class \"%s\"", cname);
 	      XtAppWarning(XtDisplayToApplicationContext
 			   (DisplayOfScreen(screen)), msg);
-	      _XawDestroyDisplayList(dlist);
+	      XawDestroyDisplayList(dlist);
 	      return (NULL);
 	    }
 	}
@@ -282,7 +285,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 		   "Cannot find displayList procedure \"%s\"", fname);
 	  XtAppWarning(XtDisplayToApplicationContext(DisplayOfScreen(screen)),
 		       msg);
-	  _XawDestroyDisplayList(dlist);
+	  XawDestroyDisplayList(dlist);
 	  return (NULL);
 	}
 
@@ -321,7 +324,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 		       "Error parsing displayList at \"%s\"", lp);
 	      XtAppWarning(XtDisplayToApplicationContext
 			   (DisplayOfScreen(screen)), msg);
-	      _XawDestroyDisplayList(dlist);
+	      XawDestroyDisplayList(dlist);
 	      return (NULL);
 	    }
 
@@ -382,15 +385,27 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
       proc->data = data;
     }
 
+  dlist->qrep = XrmStringToQuark(string);
   return (dlist);
 }
 
+String
+XawDisplayListString(XawDisplayList *dlist)
+{
+  if (!dlist || dlist->qrep == NULLQUARK)
+    return ("");
+  return (XrmQuarkToString(dlist->qrep));
+}
+
 void
-_XawDestroyDisplayList(XawDisplayList *dlist)
+XawDestroyDisplayList(XawDisplayList *dlist)
 {
   Cardinal i, j;
   XawDLProc *proc;
   XawDLData *data;
+
+  if (!dlist)
+    return;
 
   for (i = 0; i < dlist->num_procs; i++)
     {
@@ -418,11 +433,14 @@ _XawDestroyDisplayList(XawDisplayList *dlist)
 
       for (j = 0; j < proc->num_params; j++)
 	XtFree(proc->params[j]);
-      XtFree((char *)proc->params);
+      if (proc->num_params)
+	XtFree((char *)proc->params);
       XtFree((char *)proc);
     }
 
-  XtFree((char *)dlist->procs);
+  if (dlist->num_procs)
+    XtFree((char *)dlist->procs);
+
   XtFree((char *)dlist);
 }
 
@@ -830,6 +848,18 @@ DlUmask(Widget w, XtPointer args, XtPointer data,
   XSetClipMask(XtDisplayOfObject(w), xdata->gc, None);
 }
 
+/* ARGSUSED */
+static void
+DlLineWidth(Widget w, XtPointer args, XtPointer data,
+	    XEvent *event, Region region)
+{
+  XawXlibData *xdata = (XawXlibData *)data;
+
+  xdata->mask |= GCLineWidth;
+  xdata->values.line_width = (unsigned int)args;
+  XChangeGC(XtDisplayOfObject(w), xdata->gc, GCLineWidth, &xdata->values);
+}
+
 typedef struct _Dl_init Dl_init;
 struct _Dl_init {
   String name;
@@ -848,6 +878,7 @@ struct _Dl_init {
 #define DLINES 8
 #define MASK   9
 #define UMASK  10
+#define LWIDTH 11
 static Dl_init dl_init[] =
 {
   {"background",     DlBackground,     GCBG},
@@ -864,9 +895,11 @@ static Dl_init dl_init[] =
   {"foreground",     DlForeground,     GCFG},
   {"gc-background",  DlBackground,     GCBG},
   {"gc-foreground",  DlForeground,     GCFG},
+  {"gc-line-width",  DlLineWidth,      LWIDTH},
   {"gc-mask",        DlMask,           MASK},
   {"gc-umask",       DlUmask,          UMASK},
   {"line",           DlLine,           LINE},
+  {"line-width",     DlLineWidth,      LWIDTH},
 };
 
 void
@@ -924,21 +957,22 @@ static void
 read_position(char *arg, XawDLPosition *pos)
 {
   int ch;
+  char *str = arg;
 
-  ch = *arg;
+  ch = *str;
   if (ch == '-' || ch == '+')
     {
-      ++arg;
+      ++str;
       if (ch == '-')
 	pos->high = True;
-      pos->pos = read_int(arg, NULL);
+      pos->pos = read_int(str, NULL);
     }
   else if (isdigit(ch))
     {
-      pos->pos = read_int(arg, &arg);
-      ch = *arg++;
+      pos->pos = read_int(str, &str);
+      ch = *str++;
       if (ch == '/')
-	pos->denom = read_int(arg, NULL);
+	pos->denom = read_int(str, NULL);
     }
 }
 
@@ -972,7 +1006,6 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 	  read_position(params[i], &pos[i]);
 	retval = (void *)pos;
       } break;
-      break;
     case DLINES:
     case FPOLY:
       {
@@ -1020,6 +1053,9 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
       } break;
     case MASK:
     case UMASK:
+      break;
+    case LWIDTH:
+      retval = (void *)(*num_params ? read_int(params[0], NULL) : 0);
       break;
     }
 
@@ -1085,6 +1121,7 @@ _Xaw_Xlib_ArgsDestructor(Display *display, String proc_name, XtPointer args,
     case GCBG:
     case MASK:
     case UMASK:
+    case LWIDTH:
       break;
     }
 }
@@ -1116,7 +1153,11 @@ Boolean XawDeclareDisplayListProc(XawDLClass *lc, String name,
     return (False);
 
   if ((info = _XawFindDLInfo(lc, name)) != NULL)
-    return (True);
+    /* Since the data structures to the displayList classes are(should be)
+     * opaque, it is not a good idea to allow overriding a displayList
+     * procedure; it's better to choose another name or class name!
+     */
+    return (False);
 
   info = (XawDLInfo *)XtMalloc(sizeof(XawDLInfo));
   info->name = XtNewString(name);

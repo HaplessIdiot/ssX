@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.3 1998/06/28 08:41:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.4 1998/06/28 11:23:49 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -229,7 +229,7 @@ Widget w;
 {
     SimpleWidget simple = (SimpleWidget) w;
     XrmValue from, to;
-    Cursor cursor;
+    Cursor cursor = None;
    
     if (simple->simple.cursor_name == NULL)
 	return;
@@ -240,10 +240,8 @@ Widget w;
     to.size = sizeof(Cursor);
     to.addr = (XPointer) &cursor;
 
-    if (XtConvertAndStore(w, XtRString, &from, XtRColorCursor, &to)) {
-	if ( cursor !=  None) 
-	    simple->simple.cursor = cursor;
-    } 
+    if (XtConvertAndStore(w, XtRString, &from, XtRColorCursor, &to))
+      simple->simple.cursor = cursor;
     else {
 	XtAppErrorMsg(XtWidgetToApplicationContext(w),
 		      "convertFailed","ConvertCursor","XawError",
@@ -286,7 +284,12 @@ static Boolean SetValues(current, request, new, args, num_args)
     }
 
     if (new_cursor && XtIsRealized(new))
-        XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
+      {
+	if (s_new->simple.cursor != None)
+	  XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
+	else
+	  XUndefineCursor(XtDisplay(new), XtWindow(new));
+      }
 
     if (s_old->simple.display_list != s_new->simple.display_list)
       return (True);
