@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.439tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.440 2003/03/04 16:25:04 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1174,21 +1174,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 /*
- * The server-side of PEX is not 64-bit clean.
- */
-#if !defined(BuildPexExt)
-# if XF86Server \
-  && !defined(AlphaArchitecture) \
-  && !defined(ia64Architecture) \
-  && !defined(s390xArchitecture) \
-  && !defined (x86_64Architecture)
-#  define BuildPexExt		NO	/* But we turn off PEX anyway now */
-# else
-#  define BuildPexExt		NO
-# endif
-#endif
-
-/*
  * Build GLX server interface
  *   --- Doesn't work for 1-bit and 4-bit servers
  */
@@ -1424,17 +1409,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXF86RushExt
 # define BuildXF86RushExt	NO
-#endif
-
-/*
- * XIE
- */
-#ifndef BuildXIE
-# if XF86Server
-#  define BuildXIE		NO
-# else
-#  define BuildXIE		NO
-# endif
 #endif
 
 #ifndef BuildDBElib

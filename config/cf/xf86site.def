@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.181 2002/02/22 21:32:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.182 2002/10/11 01:40:22 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -558,12 +558,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.181 2002/02/22 21:32:33 dawes Exp 
 #define BuildScreenSaverExt	NO
  */
 
-/*
- * If you want to build PEX, uncomment this.
- *
-#define BuildPexExt		YES
- */
-
 /* 
  * If you don't want to build Xinerama support, uncomment this.
  *
@@ -592,19 +586,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.181 2002/02/22 21:32:33 dawes Exp 
  *
 #define GlxStaticServerLib	/full/path/name/to/glx/servGL/libServerGlx.a \
 				/full/path/name/to/glx/servGL/libMesaGlx.a
- */
-
-/*
- * If you want to build XIE, uncomment this.
- *
-#define BuildXIE		YES
- */
-
-/*
- * If you want to build only the DIS (Document Imaging Subset of XIE)
- * uncomment this line.  This option is only relevant when XIE is built.
- *
-#define BuildDIS		YES
  */
 
 /*

@@ -2,7 +2,7 @@ XCOMM $Xorg: os2Lib.tmpl,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.13 2003/03/25 04:18:04 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -23,10 +23,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 #define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedXiReqs $(LDPRELIB) $(XLIB)
 #define SharedXrenderReqs $(LDPRELIB) $(EXTENSIONLIB) $(XLIB)
-#define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
 #define SharedXtstReqs $(LDPRELIB) $(XLIB)
 #define SharedSMReqs $(LDPRELIB) $(ICELIB) 
-#define SharedXieReqs $(LDPRELIB) $(XLIB)
 #define SharedXpReqs $(LDPRELIB) $(XLIB)
 #define SharedXvReqs $(LDPRELIB) $(XLIB)
 #define SharedGLReqs $(LDPRELIB) $(XLIB)
@@ -66,9 +64,6 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 #define SharedXaw6Rev 6
 #define SharedXiRev /**/
 #define SharedXtstRev /**/
-#define SharedPexRev /**/
-#define SharedXieRev /**/
-#define SharedPhigsRev /**/
 #define SharedICERev /**/
 #define SharedSMRev /**/
 #define SharedXkeyRev /**/
@@ -102,9 +97,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 #define SDlibXaw -lXaw_s
 #define SDlibXaw6 -lXaw_s
 #define SDlibXi -lXi_s
-#define SDlibXIE -lXIE_s
 #define SDlibXtst -lXtst_s
-#define SDlibPEX5 -lPEX5_s
 #define SDlibXp -lXp_s
 #define SDlibXv -lXv_s
 #define SDlibGL -lGL_s
@@ -118,9 +111,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 #define SDlibXaw -lXaw
 #define SDlibXaw6 -lXaw
 #define SDlibXi -lXi
-#define SDlibXIE -lXIE
 #define SDlibXtst -lXtst
-#define SDlibPEX5 -lPEX5
 #define SDlibXp -lXp
 #define SDlibXv -lXv
 #define SDlibGL -lGL
@@ -170,10 +161,6 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.12 2002/05/31 16:31:19 dawes Exp $
 #if SharedLibXTest
     DEPXTESTLIB = 
        XTESTLIB = _Use(SDlibXtst,-L$(EXTENSIONSRC)/lib/xtest SDlibXtst)
-#endif
-#if SharedLibPex
-      DEPPEXLIB = 
-         PEXLIB = _Use(SDlibPEX5,-L$(PEXLIBSRC) SDlibPEX5)
 #endif
 #if SharedLibXp
        DEPXPLIB = 

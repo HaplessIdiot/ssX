@@ -1,4 +1,5 @@
 XFree86 4.3.99.3 (xx April 2003)
+  99. Remove PEX and XIE source code (Matthieu Herrb).
   98. The XKB version of XRefreshKeyboardMapping() had an UnlockDisplay()
       call without a preceding LockDisplay() call (Yoel Perl).
   97. Xlib cleanups and fixes, including:
@@ -16763,4 +16764,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2632 2003/04/13 19:27:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2633 2003/04/14 02:25:42 dawes Exp $
