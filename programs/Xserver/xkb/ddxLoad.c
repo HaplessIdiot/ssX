@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/8 1996/02/05 06:18:40 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.6 1996/02/19 09:52:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.7 1996/03/16 12:47:36 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -340,3 +340,33 @@ unsigned	missing;
     fclose(file);
     return (need|want)&(~missing);
 }
+
+void    	
+#if NeedFunctionPrototypes
+XkbDDXRemoveMapFile(XkbComponentNamesPtr names)
+#else
+XkbDDXRemoveMapFile(names)
+    XkbComponentNamesPtr names;
+#endif
+{
+char	buf[PATH_MAX],keymap[PATH_MAX],*filename=keymap,*tmpptr;
+extern char *display;
+
+    if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
+	extern char *display;
+	sprintf(keymap,"server-%s",display);
+    }
+    else {
+        strncpy(keymap,names->keymap,PATH_MAX);
+        keymap[PATH_MAX-1]= '\0';
+        if ((filename= strrchr(keymap,'/'))!=NULL)
+	     filename++;
+	else filename = keymap;
+	if ((tmpptr= strchr(filename,'('))!=NULL)
+	    *tmpptr= '\0';
+    }
+    XkbEnsureSafeMapName(filename);
+    sprintf(buf,"%s%s.xkm",XKM_OUTPUT_DIR,filename);
+    unlink(buf);
+}
+

@@ -1,3 +1,11 @@
+XFree86 3.1.2Dj (12 May 1996)
+522. Have the server remove the compiled keymap file when shutting down
+     (Joe Moss).
+521. Fix problem of XkbListComponents() not listing anything in
+     subdirectories (Joe Moss).
+520. Fix passing of button events for the Joystick (Frederic Lepied).
+519. NetBSD documentation updates (Matthieu Herrb).
+
 XFree86 3.1.2Di (11 May 1996)
 518. Modify xterm to revoke() its pty before opening it on *BSD
      (Matthieu Herrb).

@@ -1,4 +1,5 @@
 /* $XConsortium: ddxList.c /main/3 1996/03/01 14:30:52 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -149,13 +150,13 @@ int	rval;
     }
 
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhp '%s'",
+	sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhpR '%s'",
 		XkbBaseDirectory,XkbBaseDirectory,componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		file);
     }
     else {
-	sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhp '%s'",
+	sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhpR '%s'",
 		componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		file);
