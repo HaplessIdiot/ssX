@@ -22,7 +22,9 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.20 2002/10/12 16:06:42 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.21 2002/11/19 23:18:09 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH XSERVER 1 __xorgversion__
 .SH NAME
 Xserver \- X Window System display server
@@ -118,7 +120,7 @@ Not obeyed by all servers.
 .TP 8
 .B \-co \fIfilename\fP
 sets name of RGB color database.  The default is
-\fI__projectroot__/lib/X11/rgb\fP.
+.IR __projectroot__/lib/X11/rgb .
 .ig
 .TP 8
 .B \-config \fIfilename\fP
@@ -307,7 +309,7 @@ data (not that it is very private, being on the command line!).
 Yet another XDMCP specific value, this one allows the display manager to
 identify each display so that it can locate the shared key.
 .SH XKEYBOARD OPTIONS
-X servers that support the XKEYBOARD (a.k.a. \(oqXKB\(cq) extension accept the
+X servers that support the XKEYBOARD (a.k.a. \*qXKB\*q) extension accept the
 following options:
 .TP 8
 .B [+-]kb
