@@ -2,7 +2,7 @@
 
                                Torrey T. Lyons
 
-                               7 December 2000
+                              11 December 2000
 
 1.  Introduction
 
@@ -12,7 +12,26 @@ ing with running X Windows on Apple's next generation operating system.
 Please send any comments on this page to <torrey@mrcla.com>.  If you are also
 working on modifications to the Darwin X server, please let me know.
 
-2.  Getting Started
+2.  Hardware Support and Configuration
+
+The Darwin port of XFree86 uses the IOKit for device driver loading and dis-
+covery, rather than the XFree86 module loader. Because of this, the XFree86
+configuration file is not used on Darwin systems. The descriptions found
+elsewhere of devices supported by XFree86 for other operating systems also do
+not apply.
+
+XFree86 for Darwin will work with any video card that you have an IOKit
+driver for. If you are running Mac OS X, this typically means any card that
+has been shipped by Apple. If a card works for you with the Mac OS X GUI, it
+will work on the same machine with XFree86. If you have a pure Darwin instal-
+lation, your hardware support may be somewhat limited because Apple does not
+include all its hardware drivers with Darwin. IOKit drivers are typically
+found in /System/Library/Extensions/ or /Library/Extensions/.
+
+Multi-button and scroll wheel mouse support works well with all USB mice that
+I have tested. I have done no testing with serial mice.
+
+3.  Getting Started
 
 Following are instructions for building and running your own copy of XFree86.
 The procedure for getting your X server up and running on Darwin and Mac OS X
@@ -32,15 +51,15 @@ you have the developers' tools, you may have to run ranlib on all the
 libraries in /usr/X11R6/lib/* before  trying to build other X applications.
 
 If you get the precompiled binaries you can skip ahead to the section on run-
-ning X windows (section 3., page 1)
+ning X windows (section 4., page 1)
 
 On the other hand, if you want to build things yourself from scratch, follow
 the directions below.
 
 If you want to recompile the X server on Mac OS X, you will have to make the
-header files as described below (section 2.2, page 1).
+header files as described below (section 3.2, page 1).
 
-2.1  Get the Code
+3.1  Get the Code
 
 The first thing you need to do is to get the source code from the XFree86
 project.
@@ -63,7 +82,7 @@ project.
 
      Wait for all the files to complete downloading.
 
-2.2  Make Header Files for Mac OS X
+3.2  Make Header Files for Mac OS X
 
 These next steps are not necessary if you are building XFree86 on Darwin. Mac
 OS X Beta or DP4 does not include many of the 'in-progress' header files that
@@ -74,11 +93,11 @@ So if you have access to a Darwin system, I would suggest using this instead
 of Mac OS X to build XFree86. If you don't, read the appropriate page below
 for an outline of what you need to do:
 
-   o Mac OS X Public Beta (section 5.1, page 1)
+   o Mac OS X Public Beta (section 6.1, page 1)
 
-   o Mac OS X Developers' Preview 4 (section 5.2, page 1)
+   o Mac OS X Developers' Preview 4 (section 6.2, page 1)
 
-2.3  Build XFree86
+3.3  Build XFree86
 
 Once you have everything ready it is easy to build and install XFree86. From
 the command line:
@@ -92,7 +111,7 @@ the command line:
      make install >& install.log
      make install.man >& man.log
 
-3.  Run X Windows
+4.  Run X Windows
 
 You will want to add the X windows executables to your path. Your path is the
 list of directories to be searched when you type a command. You will also
@@ -105,8 +124,8 @@ yet):
      setenv MANPATH "${MANPATH}:/usr/X11R6/man:/usr/local/man"
      setenv PATH "${PATH}:/usr/X11R6/bin"
 
-Now type ``source ~/.cshrc'' to get these changes to take effect. On future
-logins, this file will be executed automatically.
+Now type ``source ~/.cshrc;rehash'' to get these changes to take effect. On
+future logins, this file will be executed automatically.
 
 You are now ready to go. On Mac OS X, you have to do a few extra steps each
 time you want to run X windows. You can't run XFree86 with CoreGraphics run-
@@ -146,7 +165,7 @@ at Stepwise's Softrak site.
 
 Good luck!
 
-4.  Outstanding Issues with the X server
+5.  Outstanding Issues with the X server
 
 There is a still a lot to be done with the X server. As always please let me
 know if you are interested in working on any of these issues.
@@ -160,9 +179,7 @@ Things that are broken:
      play. The console is accepting input however, so typing ``logout'' will
      return you to the login prompt.
 
-   o shmat() problem: The shmat() function fails in Xserver/Xext/xf86big-
-     font.c because of error EMFILE. This presumably renders the BigFont
-     extension nonfunctional.
+   o Only one display is currently supported.
 
    o Screen saver not supported.
 
@@ -170,15 +187,13 @@ Things that are broken:
 
 Things I am working on:
 
-   o  Hardware cursor support
+   o  Allowing rootless use on Mac OS X
 
-   o  More IOKit HeaderDoc documentation
+   o  Correct wake from sleep behavior
 
-   o  Darwin port in the official XFree86 distribution
+6.  Appendix
 
-5.  Appendix
-
-5.1  Installing IOKit Header files on Mac OS X Beta
+6.1  Installing IOKit Header files on Mac OS X Beta
 
 Here is what you need to do to be able to build XFree86 (or other clients of
 IOGraphics services) on Mac OS X Public Beta.
@@ -247,7 +262,7 @@ IOGraphics services) on Mac OS X Public Beta.
       finish building since the IOKitUser project relies on some stuff that
       Apple hasn't really made public yet, but it should finish populating
       the new IOKit framework with headers and start compiling. (Strangely
-      enough the headers installed in your new IOKit framework don't contain
+      enough, the headers installed in your new IOKit framework don't contain
       the real header files. They are just single line files with an #import
       of the file in your IOKitUser project. This works fine as long as you
       don't ever delete or move your IOKitUser project. I imagine that using
@@ -272,7 +287,7 @@ IOGraphics services) on Mac OS X Public Beta.
            cd BUILD/dst/System/Library/Frameworks/System.framework/Versions/B/Headers
            cp -R libkern /System/Library/Frameworks/System.framework/Headers/libkern
 
-5.2  Installing IOKit Header files on Mac OS X DP4
+6.2  Installing IOKit Header files on Mac OS X DP4
 
 Here is an outline of what you need to do to be able to build XFree86 (or
 other clients of IOGraphics services) on Mac OS X Developers' Preview 4.
@@ -326,7 +341,7 @@ other clients of IOGraphics services) on Mac OS X Developers' Preview 4.
       are CFMachPort.h and CFMessagePort.h in the RunLoop.subproj and CFStor-
       age.h in Collections.subproj.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.1 2000/12/11 07:25:59 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.3 2000/12/12 07:35:52 herrb Exp $
 
 
 $XFree86$
