@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.3 1996/10/03 08:33:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.4 1996/10/06 13:15:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -851,6 +851,7 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
+#if 0
    case 24:
 #ifdef NOT_YET
       s3InfoRec.depth = 24;
@@ -880,9 +881,12 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
+#endif
    default:
       ErrorF(
-	"Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
+	"Invalid value for bpp.  Valid values are 8, 15, 16"
+	/*", 24 and 32"*/
+	".\n");
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
    }

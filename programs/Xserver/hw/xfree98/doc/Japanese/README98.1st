@@ -1,13 +1,13 @@
   XFree86 PC98 General Information
   The XFree86 Project Inc. / X98 CORE TEAM著
-  1996年 10 月 8日
+  1996年 10 月 10日
 
   1.はじめに
 
-  XFree86は、NEC PC9801シリーズおよび互換機で動作するFreeBSD(98)、
-  NetBSD/pc98(based on NetBSD 1.2)をサポートします。PC98用サーバは
-  XFree86のソースツリーに含まれます。その開発とコードの保守は、The
-  XFree86 Project Inc とX98 CORE TEAMが行っています。
+  XFree86は、NEC PC98および互換機で動作するFreeBSD(98)、NetBSD/pc98
+  (based on NetBSD 1.2)、PANIX Ver.5.0 for 98をサポートします。PC98用
+  サーバはXFree86のソースツリーに含まれます。その開発とコードの保守は、
+  The XFree86 Project Inc とX98 CORE TEAMが行っています。
 
   PC98用ドキュメントでは、主にPC98サーバ特有の事項について説明します。そ
   の他の事については、PC-AT版との共通ドキュメントを参照してください。多
@@ -25,10 +25,10 @@
   いいたします。format は問いませんが、ドキュメントに記述がある内容につ
   いての質問等はご遠慮下さい。
 
-  fj.windows.x、fj.os.bsd.*、NIFTY-SERVE FUNIX、FEPSONX、PC-VAN JUNIX、
-  JSPUNIX、FreeBSD-users-jp ML(FreeBSD user ML)、FreeBSD kit MLで多くの
-  議論、質疑応答が行われています。PC98サーバについての情報についてはこれ
-  らの場で提供しますので、参加する事をお勧めします。
+  NetNewsのfj.windows.x、fj.os.bsd.*、NIFTY-SERVE(FUNIX,FEPSONX,FAISAP)、
+  PC-VAN(JUNIX,JSPUNIX)、FreeBSD-users-jp ML、FreeBSD kit MLで多くの議論、
+  質疑応答が行われています。PC98サーバについての情報についてはこれらの
+  場で提供しますので、参加する事をお勧めします。
 
   3.  PC98用サーバ固有のドキュメント
 

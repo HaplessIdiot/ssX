@@ -1,5 +1,5 @@
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga_clocks.h,v 3.0 1996/09/22 05:04:37 dawes Exp $ */
 /*
  * Copyright 1995,96 by Alan Hourihane, Wigan, England.
  *
@@ -33,9 +33,9 @@
 typedef struct {
 	int clock;
 	unsigned char ics_bits[7];
-} tgaClockRec;
+} ICS1562ClockRec;
 
-tgaClockRec tgaClockTab[] = {
+ICS1562ClockRec ICS1562ClockTab[] = {
 	135000,{0x80, 0x00, 0x80, 0xA4, 0x28, 0x60, 0xB0,},	/* 135.000MHz */
 	130808,{0x80, 0x00, 0x80, 0xA4, 0x04, 0xC0, 0xA8,},	/* 130.808MHz */
 	119840,{0x80, 0x00, 0x80, 0x24, 0x98, 0xC0, 0x48,},	/* 119.840MHz */

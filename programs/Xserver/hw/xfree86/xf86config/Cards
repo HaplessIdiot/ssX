@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.41 1996/09/29 13:41:43 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.42 1996/09/29 14:02:52 dawes Exp $
 
 #Chips & Technologies
 
@@ -1293,5 +1293,19 @@ SERVER I128
 NAME Number Nine Imagine I-128 Series 2 (2-4MB)
 CHIPSET I128
 SERVER I128
+
+# Matrox
+
+NAME Matrox Millennium (MGA)
+CHIPSET mga2064w
+SERVER SVGA
+NOCLOCKPROBE
+
+# NV1
+
+NAME Diamond Edge 3D
+CHIPSET nv1
+SERVER SVGA
+NOCLOCKPROBE
 
 END

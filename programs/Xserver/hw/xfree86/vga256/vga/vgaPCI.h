@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.15 1996/09/26 14:04:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.16 1996/09/29 13:41:35 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -26,8 +26,10 @@
 #define PCI_VENDOR_MATROX	0x102B
 #define PCI_VENDOR_CHIPSTECH	0x102C
 #define PCI_VENDOR_SIS		0x1039
+#define PCI_VENDOR_SGS		0x104A
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
+#define PCI_VENDOR_NVIDIA	0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_S3		0x5333
@@ -94,9 +96,17 @@
 #define PCI_CHIP_SG86C202	0x0002
 #define PCI_CHIP_SG86C205	0x0205
 
+/* SGS */
+#define PCI_CHIP_STG2000	0x0008
+#define PCI_CHIP_STG1764	0x0009
+
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
+
+/* NVIDIA */
+#define PCI_CHIP_NV1		0x0008
+#define PCI_CHIP_DAC64		0x0009
 
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6410		0x3210
@@ -225,11 +235,17 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_SG86C202,	"SG86C202"},
 				{PCI_CHIP_SG86C205,	"SG86C205"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_SGS,	"SGS-Thomson",	{
+				{PCI_CHIP_STG2000,	"STG2000"},
+				{0x0000,		NULL}}},
     {PCI_VENDOR_NUMNINE, "Number Nine", {
 				{PCI_CHIP_I128,		"Imagine 128"},
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_UMC,	"UMC",	{
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_NVIDIA,	"NVidia",	{
+				{PCI_CHIP_NV1,		"NV1"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor", {
 				{PCI_CHIP_AP6410,	"ProMotion 6410"},

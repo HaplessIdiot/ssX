@@ -24,30 +24,17 @@
  *		fixed some problems with PCI probing and mapping
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.1 1996/09/29 13:40:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.2 1996/10/06 13:18:02 dawes Exp $ */
 
 #include "vga256.h"
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
 #include "mgareg.h"
 #include "mga.h"
 
 static void (*stdDoBitbltCopy)();
 int MGAScrnWidth;
-
-extern void cfb16DoBitbltCopy(); 
-extern void cfb32DoBitbltCopy();
-extern void cfb24DoBitbltCopy();
-extern void cfb16DoBitbltGeneral();
-extern void cfb32DoBitbltGeneral();
-extern void cfb24DoBitbltGeneral();
-extern void cfb16DoBitbltXor();
-extern void cfb32DoBitbltXor();
-extern void cfb24DoBitbltXor();
-extern void cfb16DoBitbltOr();
-extern void cfb32DoBitbltOr();
-extern void cfb24DoBitbltOr();
-extern RegionPtr cfb16BitBlt();
-extern RegionPtr cfb32BitBlt();
-extern RegionPtr cfb24BitBlt();
 
 void 
 MGABlitterInit(bpp, width)
@@ -78,15 +65,14 @@ int bpp, width;
     
     MGAScrnWidth = width;
 
-    OUTREG(MGAREG_FCOL, 0x00000000);
-    OUTREG(MGAREG_SHIFT, 0x00000000);
-    OUTREG(MGAREG_OPMODE, 0x01000000);                                                        
+    MGAREG(MGAREG_FCOL) = 0x00000000;
+    MGAREG(MGAREG_SHIFT) = 0x00000000;
+    MGAREG(MGAREG_OPMODE) = 0x01000000;                                                        
     
-    OUTREG(MGAREG_MACCESS, shift);
-    OUTREG(MGAREG_YDSTORG, 0x00000000);
-    OUTREG(MGAREG_PLNWT, 0xFFFFFFFF);
-    OUTREG(MGAREG_PITCH, MGAScrnWidth);
-    	        
+    MGAREG(MGAREG_MACCESS) = shift;
+    MGAREG(MGAREG_YDSTORG) = 0x00000000;
+    MGAREG(MGAREG_PLNWT) = 0xFFFFFFFF;
+    MGAREG(MGAREG_PITCH) = MGAScrnWidth;
 }
 
 
@@ -118,20 +104,18 @@ int widthSrc, xsrc, ysrc, xdst, ydst, w, h, xdir, ydir;
         srcStart = srcStop + w - 1;
         regSGN |= 1;
     }
-       
-    if(!MGAWaitForBlitter())
-        ErrorF("MGA: BitBlt Engine timeout\n");
-
-    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);  /* (maxX << 16) | minX */
-    OUTREG(MGAREG_YTOP, 0x00000000);  /* minPixelPointer */
-    OUTREG(MGAREG_YBOT, 0x007FFFFF);  /* maxPixelPointer */
-    OUTREG(MGAREG_DWGCTL, 0x040C4008);
-    OUTREG(MGAREG_FXBNDRY, ((xdst + w - 1) << 16) | xdst);
-    OUTREG(MGAREG_AR5, widthSrc);
-    OUTREG(MGAREG_YDSTLEN, (ydst << 16) | h);
-    OUTREG(MGAREG_SGN, regSGN);
-    OUTREG(MGAREG_AR3, srcStart);
-    OUTREG(MGAREG_AR0 + MGAREG_EXEC, srcStop);	/* go for it */
+    
+    MGAWAITFIFO();
+    MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */
+    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
+    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
+    MGAREG(MGAREG_DWGCTL) = 0x040C4008;
+    MGAREG(MGAREG_FXBNDRY) = ((xdst + w - 1) << 16) | xdst;
+    MGAREG(MGAREG_AR5) = widthSrc;
+    MGAREG(MGAREG_YDSTLEN) = (ydst << 16) | h;
+    MGAREG(MGAREG_SGN) = regSGN;
+    MGAREG(MGAREG_AR3) = srcStart;
+    MGAREG(MGAREG_AR0 + MGAREG_EXEC) = srcStop;	/* go for it */
 }
 
 /*

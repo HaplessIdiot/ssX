@@ -1,12 +1,14 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.1 1996/09/29 13:40:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.2 1996/10/08 12:28:31 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
 
 #include <Server.tmpl>
 
-SRCS = mgadriver.c mgabitblt.c mgabank.s mga_line.c
-OBJS = mgadriver.o mgabitblt.o mgabank.o mga_line.o
+SRCS = mgadriver.c mgabitblt.c mgabank.s mgafillrct.c mgapntwin.c \
+       mga_line.c
+OBJS = mgadriver.o mgabitblt.o mgabank.o mgafillrct.o mgapntwin.o \
+       mga_line.o
 
 DEFINES = -DPSZ=8
 
@@ -27,10 +29,13 @@ NormalAsmObjectRule()
 NormalRelocatableTarget(mga_drv, $(OBJS))
 
 InstallLinkKitNonExecFile(mga.h,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mgabios.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabitblt.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabank.s,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mgafillrct.c,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mgapntwin.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_line.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/mga)
 

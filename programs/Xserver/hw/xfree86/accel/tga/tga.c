@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.4 1996/10/03 08:33:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.5 1996/10/06 13:15:33 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -133,6 +133,7 @@ ScreenPtr savepScreen = NULL;
 Bool tgaDAC8Bit = FALSE;
 Bool tgaBt485PixMux = FALSE;
 Bool tgaReloadCursor, tgaBlockCursor;
+Bool tgaPowerSaver = FALSE;
 unsigned char tgaSwapBits[256];
 pointer tga_reg_base;
 int tgahotX, tgahotY;
@@ -158,12 +159,12 @@ tgaPrintIdent()
 
 
 /*
- * tgaClockSelect --
+ * ICS1562ClockSelect --
  *      select one of the possible clocks ...
  */
 
 Bool
-tgaClockSelect(no)
+ICS1562ClockSelect(no)
      int no;
 {
   unsigned long temp;
@@ -185,7 +186,7 @@ tgaClockSelect(no)
     default:
       for (i = 0;i <= 6; i++) {
 	for (j = 0; j <= 7; j++) {
-	  temp = (tgaClockTab[no].ics_bits[i] >> (7-j)) & 1;
+	  temp = (ICS1562ClockTab[no].ics_bits[i] >> (7-j)) & 1;
 	  if (i == 6 && j == 7)
 	    temp |= 2;
 	  TGA_WRITE_REG(temp, TGA_CLOCK_REG);
@@ -203,7 +204,7 @@ tgaClockSelect(no)
 Bool
 tgaProbe()
 {
-  int fd, i;
+  int i;
   int tx, ty;
   Bool pModeInited = FALSE;
   pointer Base;
@@ -218,7 +219,8 @@ tgaProbe()
    */
   if (tgaInfoRec.MemBase == 0)
   {
-	FatalError("%s %s: MemBase needed for TGA support - check /proc/pci for base address.\n",
+	FatalError("%s %s: MemBase needed for TGA support - "
+		   "check /proc/pci for base address.\n",
 			XCONFIG_PROBED, tgaInfoRec.name);
   }	
 
@@ -254,10 +256,17 @@ tgaProbe()
 		break;
   }
 
-  /* Now to the VideoRam - Fixed at 2MB for now...*/
-  tgaInfoRec.videoRam = 2048;
-  ErrorF("%s %s: videoram : %dk", XCONFIG_PROBED, tgaInfoRec.name,
+  if (tgaInfoRec.videoRam == 0)
+  {
+	tgaInfoRec.videoRam = 2048;
+  	ErrorF("%s %s: videoram : %dk", XCONFIG_PROBED, tgaInfoRec.name,
 		tgaInfoRec.videoRam);
+  }
+  else
+  {
+  	ErrorF("%s %s: videoram : %dk", XCONFIG_GIVEN, tgaInfoRec.name,
+		tgaInfoRec.videoRam);
+  }
 
 #if 0
   /* There must be some algorithm for the ICS 1562 */
@@ -267,7 +276,7 @@ tgaProbe()
   tgaInfoRec.clocks = Num_TGAStaticClocks;
   for (i = 0; i < Num_TGAStaticClocks; i++)
 	tgaInfoRec.clock[i] = 
-			tgaClockTab[i].clock;
+			ICS1562ClockTab[i].clock;
   for (i = 0; i < tgaInfoRec.clocks; i++)
   {
 	if ((i % 8) == 0)
@@ -292,6 +301,7 @@ tgaProbe()
 #endif
   OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
+  OFLG_SET(OPTION_POWER_SAVER, &validOptions);
   xf86VerifyOptions(&validOptions, &tgaInfoRec);
 
   tgaInfoRec.chipset = "tga";
@@ -388,6 +398,9 @@ tgaProbe()
 
   if (OFLG_ISSET(OPTION_DAC_8_BIT, &tgaInfoRec.options))
 	tgaDAC8Bit = TRUE;
+
+  if (OFLG_ISSET(OPTION_POWER_SAVER, &tgaInfoRec.options))
+	tgaPowerSaver = TRUE;
 
 #ifdef XFreeXDGA
 #ifdef NOTYET
@@ -661,29 +674,22 @@ tgaOffMode(timer, now, arg)
 {
     Bool on = (Bool)((unsigned long)arg);
 
-#ifdef NOT_YET
-
     if (!tgaPowerSaver) return(0);
 
     if (xf86VTSema) {
-	int crtcGenCntl = regr(CRTC_GEN_CNTL);
-	if (on) {
-	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
-	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
-	} else {
-	    crtcGenCntl |= CRTC_HSYNC_DIS;
-	    crtcGenCntl |= CRTC_VSYNC_DIS;
-	}
+	int crtcGenCntl = TGA_READ_REG(TGA_VALID_REG);
+	if (on) 
+	    crtcGenCntl |= 0x0001;	/* Video Enabled */
+	else 
+	    crtcGenCntl &= 0xFFFE;	/* Video Disabled */
 
 	usleep(10000);
-	regw(CRTC_GEN_CNTL, crtcGenCntl);
+	TGA_WRITE_REG(crtcGenCntl, TGA_VALID_REG);
    }
    if (offTimer) {
       TimerFree(offTimer);
       offTimer = NULL;
    }
-
-#endif /* NOT_YET */
 
    return(0);
 }
@@ -700,21 +706,18 @@ tgaSuspendMode(timer, now, arg)
 {
     Bool on = (Bool)((unsigned long)arg);
 
-#ifdef NOT_YET
-
     if (!tgaPowerSaver) return(0);
 
     if (xf86VTSema) {
-	int crtcGenCntl = regr(CRTC_GEN_CNTL);
+	int crtcGenCntl = TGA_READ_REG(TGA_VALID_REG);
 	if (on) {
-	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
-	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
+	    crtcGenCntl |= 0x0001;
 	} else {
-	    crtcGenCntl |= CRTC_HSYNC_DIS;
+	    crtcGenCntl &= 0xFFFE;
 	}
 
 	usleep(10000);
-	regw(CRTC_GEN_CNTL, crtcGenCntl);
+	TGA_WRITE_REG(crtcGenCntl, TGA_VALID_REG);
 
 	if (!on && tgaInfoRec.offTime != 0) {
 	    if (tgaInfoRec.offTime > tgaInfoRec.suspendTime &&
@@ -740,8 +743,6 @@ tgaSuspendMode(timer, now, arg)
       suspendTimer = NULL;
    }
 
-#endif /* NOT_YET */
-
    return(0);
 }
 
@@ -757,8 +758,6 @@ tgaSaveScreen (pScreen, on)
     if (on)
 	SetTimeSinceLastInputEvent();
 
-#ifdef NOT_YET
-
     if (xf86VTSema) {
 
 	/* Turn off Off and Suspend mode */
@@ -767,6 +766,7 @@ tgaSaveScreen (pScreen, on)
 	    tgaSuspendMode(NULL, 0, (pointer)TRUE);
 	}
 
+#ifdef NOTYET
 	if (on) {
 	    if (tgaHWCursorSave != -1) {
 		tgaSetRamdac(tgaCRTCRegs.color_depth, TRUE,
@@ -792,6 +792,7 @@ tgaSaveScreen (pScreen, on)
 	    if (tgaRamdacSubType != DAC_ATI68875)
 		outb(ioDAC_REGS+2, 0x00);
 	}
+#endif
 	if (tgaPowerSaver && !on) {
 	    if (tgaInfoRec.suspendTime != 0) {
 		if (tgaInfoRec.suspendTime > ScreenSaverTime) {
@@ -814,8 +815,6 @@ tgaSaveScreen (pScreen, on)
 	}
     }
 
-#endif /* NOT_YET */
-
     return(TRUE);
 }
 
@@ -827,9 +826,7 @@ void
 tgaAdjustFrame(x, y)
     int x, y;
 {
-#if 0
-    xf86MapDisplay(tgaInfoRec.scrnIndex, LINEAR_REGION);
-#endif
+	/* TGA needs much work for this to happen */
 }
 
 /*

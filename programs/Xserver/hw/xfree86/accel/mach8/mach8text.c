@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.4 1996/02/04 09:03:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.5 1996/10/08 12:20:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -52,13 +52,14 @@ extern unsigned short mach8stipple_tab[];
  * with no tiling and starting from (0,0) in the source bitmap. - Jon.
  */
 __inline__ static void
-mach8PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+mach8PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
+    BoxPtr pBox;                /* clipping box */
 {
     int width, height;
     int nbyLine;		/* bytes per line of padded pixmap */
@@ -88,12 +89,16 @@ mach8PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     while(nglyph--)
     {
-	pci = *ppci++;
-	pglyph = FONTGLYPHBITS(pglyphBase, pci);
-	gWidth = GLYPHWIDTHPIXELS(pci);
-	gHeight = GLYPHHEIGHTPIXELS(pci);
-	if (gWidth && gHeight)
-	{
+      pci = *ppci++;
+      pglyph = FONTGLYPHBITS(pglyphBase, pci);
+      gWidth = GLYPHWIDTHPIXELS(pci);
+      gHeight = GLYPHHEIGHTPIXELS(pci);
+      if (gWidth && gHeight)
+      {
+	if ( x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	     && x + pci->metrics.leftSideBearing            <  pBox->x2
+	     && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	     && y - pci->metrics.ascent                     <  pBox->y2 ) {
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
 	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
@@ -140,11 +145,10 @@ mach8PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		     }
 		  }
 	       }
-
 	    }
 	}
-
-	x += pci->metrics.characterWidth;
+      }
+      x += pci->metrics.characterWidth;
     }
     DEALLOCATE_LOCAL(pbits);
 }
@@ -243,7 +247,7 @@ int mach8NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
        outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
        mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
-			 charinfo, FONTGLYPHS(pGC->font));
+			 charinfo, FONTGLYPHS(pGC->font), pBox);
      }
    }
 
@@ -382,7 +386,7 @@ int mach8NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
        outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
        mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
-			 charinfo, FONTGLYPHS(pGC->font));
+			 charinfo, FONTGLYPHS(pGC->font), pBox);
      }
    }
 

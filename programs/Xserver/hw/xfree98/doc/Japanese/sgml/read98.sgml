@@ -5,7 +5,7 @@
 <!-- Title information -->
 <title> XFree86 PC98 Dependent Information
 <author> The XFree86 Project Inc. and X98 CORE TEAM
-<date> 1996年 10 月  8日
+<date> 1996年 10 月  9日
 <abstract>
 このドキュメントでは、PC98サーバ固有の事項について解説します。
 PC-ATと共通の事項については、共通のドキュメントを参照してください。この
@@ -27,6 +27,7 @@ PC-ATと共通の事項については、共通のドキュメントを参照してください。この
   MELCO		WSN-A2F                                 XF98_WSNA
   IO Data	GA-98NB I/C,GA-98NB II, GA-98NB IV      XF98_GANBWAP
                 GA-968V2/PCI, GA-968V4/PCI              XF98_GA968
+                GA-DRV2/98, GA-DRV4/98                  XF98_TGUI
   NEC	  	ウィンドウアクセラレータボード A/B	XF98_NECS3
   Canopus       PowerWindow 801, 801+, 928, 928G, 801G, XF98_PWSKB
                 928II, 805i
@@ -42,6 +43,7 @@ PC-ATと共通の事項については、共通のドキュメントを参照してください。この
   NEC           PEGC(640x400x256,640x480x256)           XF98_NEC480
   NEC           S3 928(As2等), S3 864(As3等)            XF98_NECS3
   NEC           Cirrus CLGD5428/5430(B-Mate,Xe,CanBe等) XF98_NKVNEC
+  NEC           Trident TGUI9680XGi(X-Mate,ValueStar等) XF98_TGUI
   EPSON         NKV(486MR,MS,MV,586MV等)                XF98_NKVNEC
 </verb></p>
 
@@ -228,7 +230,7 @@ MELCOのWAB-EP (EPSON ローカルバス用)で動作するVGA256ベースのサーバです。
 	かわらず値をチェックします。
 	<ITEM>EPSON NOTEでは、twmなどのプルダウンメニューでカーソル位置に
 	ゴミが生じます。xrefreshなどで除去できますが、解決方法は不明です。
-        <ITEM>PANIX(98)では動作しません。
+        <ITEM>PANIX Ver.5.0 for 98では動作しません。
 </itemize>
 <sect2>その他<p>
 <itemize>
@@ -246,14 +248,15 @@ MELCOのWAB-EP (EPSON ローカルバス用)で動作するVGA256ベースのサーバです。
 <sect2>XF86Configの設定<p>
 <itemize>
 	<ITEM>Device,Modesについては、XF86Config.98のとおりにしてください。
-        <ITEM>640x400で使用する時は、Clocksを28.8にしてください。
+        <ITEM>640x400で使用する時は、Clocksを28.322にしてください。
 </itemize>
 
 <sect2> 報告されている問題<p>
 <itemize>
 	<ITEM>PC-9821Nm ではバックライトが消える障害があります。
 	<ITEM>GDCの設定を保存できない為、X終了後に同期周波数などが元に戻り
-	ません。
+	ません。FreeBSD(98)の場合は、カーネル作成時に options "LINE30"を指
+        定する事により回避できます。
 </itemize>
 <sect2>その他<p>
 <itemize>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.4 1996/10/06 13:15:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.5 1996/10/08 12:21:13 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -46,7 +46,7 @@
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
    unsigned char Trio[14];      /* Trio32/64 ext. sequenzer (PLL) registers */
-   unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
+   unsigned char s3reg[11];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
 }
@@ -190,6 +190,8 @@ s3CleanUp(void)
       outb(vgaCRIndex, 0x38 + i);
       outb(vgaCRReg, oldS3->s3reg[5 + i]);
    }
+   outb(vgaCRIndex, 0x36);
+   outb(vgaCRReg, oldS3->s3reg[10]);
 
 
    for (i = 0; i < 16; i++) {
@@ -319,6 +321,8 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x38 + i);
 	 oldS3->s3reg[5 + i] = inb(vgaCRReg);
       }
+      outb(vgaCRIndex, 0x36);
+      oldS3->s3reg[10] = inb(vgaCRReg);
 
       outb(vgaCRIndex, 0x11);	/* allow writting? */
       outb(vgaCRReg, 0x00);

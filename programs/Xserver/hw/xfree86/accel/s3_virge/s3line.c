@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.3 1996/10/06 13:15:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.4 1996/10/08 13:12:01 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -77,19 +77,42 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "xf86.h"
 #include "s3v.h"
 
+static __inline__ int double2int(double d)
+{
+#ifndef MAXINT
+#define MAXINT 0x7fffffff
+#endif
+   if (d > (double)(MAXINT))
+      return MAXINT;
+   if (d < -(double)(MAXINT))
+      return -MAXINT;
+   return (int)(d);
+}
+
+
 void
+#ifndef POLYSEGMENT
 s3Line(pDrawable, pGC, mode, npt, pptInit)
      DrawablePtr pDrawable;
      GCPtr pGC;
      int   mode;		/* Origin or Previous */
      int   npt;			/* number of points */
      DDXPointPtr pptInit;
+#else /* POLYSEGMENT */
+s3Segment(pDrawable, pGC, nseg, pSeg)
+     DrawablePtr pDrawable;
+     GCPtr pGC;
+     int   nseg;
+     register xSegment *pSeg;
+#endif /* POLYSEGMENT */
 {
    int   nboxInit;
    register int nbox;
    BoxPtr pboxInit;
    register BoxPtr pbox;
+#ifndef POLYSEGMENT
    register DDXPointPtr ppt;	/* pointer to list of translated points */
+#endif /* not POLYSEGMENT */
 
    unsigned int oc1;		/* outcode of point 1 */
    unsigned int oc2;		/* outcode of point 2 */
@@ -112,47 +135,41 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
-      {
-	 if (xf86VTSema) WaitIdleEmpty();
-	 switch (s3InfoRec.bitsPerPixel) {
-	 case 8:
-	    cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-	    break;
-	 case 16:
-	    cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
-	    break;
-	 case 24:
-	    cfb24LineSS(pDrawable, pGC, mode, npt, pptInit);
-	    break;
-	 case 32:
-	    cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
-	    break;
-	 }
-	 if (xf86VTSema) WaitIdleEmpty();
-	 return;
+   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask)) {
+      if (xf86VTSema) WaitIdleEmpty();
+#ifndef POLYSEGMENT
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+	 break;
+      case 16:
+	 cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
+	 break;
+      case 24:
+	 cfb24LineSS(pDrawable, pGC, mode, npt, pptInit);
+	 break;
+      case 32:
+	 cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
+	 break;
       }
-
-   if (0) {
-      int tmp1 = pGC->fgPixel;
-      int tmp2 = pGC->alu;
-      pGC->fgPixel = 0x1a;
-      pGC->alu = 3;
-      WaitIdleEmpty();
-      cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-      WaitIdleEmpty();
-      pGC->fgPixel = tmp1;
-      pGC->alu = tmp2;
-   } else if (pGC->alu == GXxor && (pGC->fgPixel & 0xf) == 0xf) {
-      int tmp1 = pGC->fgPixel;
-      int tmp2 = pGC->alu;
-      pGC->fgPixel = ~0x03;
-      /* pGC->alu = 3; */
-      WaitIdleEmpty();
-      cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-      WaitIdleEmpty();
-      pGC->fgPixel = 0x03;
-      pGC->alu = tmp2;
+#else /* POLYSEGMENT */
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8:
+	 cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 16:
+	 cfb16SegmentSS(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 24:
+	 cfb24SegmentSS(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 32:
+	 cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
+	 break;
+      }
+#endif /* POLYSEGMENT */
+      if (xf86VTSema) WaitIdleEmpty();
+      return;
    }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
@@ -176,15 +193,23 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 
    xorg = pDrawable->x;
    yorg = pDrawable->y;
-   ppt = pptInit;
 
+#ifndef POLYSEGMENT
+   ppt = pptInit;
    x2 = ppt->x + xorg;
    y2 = ppt->y + yorg;
+#endif /* not POLYSEGMENT */
 
+#ifndef POLYSEGMENT
    while (--npt) {
+#else /* POLYSEGMENT */
+   while (nseg--) {
+#endif /* POLYSEGMENT */
+
       nbox = nboxInit;
       pbox = pboxInit;
 
+#ifndef POLYSEGMENT
       x1 = x2;
       y1 = y2;
       ++ppt;
@@ -194,44 +219,13 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
       }
       x2 = ppt->x + xorg;
       y2 = ppt->y + yorg;
-
-      if (0) ErrorF("\ns3line %4d %4d    %4d %4d  %d %d\n", x1,y1, x2,y2,
-	     (mode == CoordModePrevious), (pGC->capStyle != CapNotLast));
-
-#if 0				/* only allow 0/45/90 degree lines */
-      if (!(   (x2-x1)==0 || (y2-y1)==0
-	    || (x2-x1)==(y2-y1) || -(x2-x1)==(y2-y1) )) {
-	 struct _xPoint pts[2];
-	 if (mode == CoordModePrevious)
-	    pts[0] = *(ppt-1);
-	 else
-	    pts[0] = *pptInit;
-	 pts[1] = *ppt;
-
-	 WaitQueue(1);
-	 SETL_CMD_SET(CMD_NOP);
-	 WaitIdleEmpty();/**/
-
-	 switch (s3InfoRec.bitsPerPixel) {
-	 case 8:
-	    cfbLineSS(pDrawable, pGC, mode, 2, pts);
-	    break;
-	 case 16:
-	    cfb16LineSS(pDrawable, pGC, mode, 2, pts);
-	    break;
-	 case 24:
-	    cfb24LineSS(pDrawable, pGC, mode, 2, pts);
-	    break;
-	 case 32:
-	    cfb32LineSS(pDrawable, pGC, mode, 2, pts);
-	    break;
-	 }
-
-	 WaitQueue(1);
-	 SETL_CMD_SET(s3_gcmd | CMD_LINE | CMD_AUTOEXEC | s3alu[pGC->alu]);
-	 continue;		/* next line */
-      }
-#endif
+#else /* POLYSEGMENT */
+      x1 = pSeg->x1 + xorg;
+      y1 = pSeg->y1 + yorg;
+      x2 = pSeg->x2 + xorg;
+      y2 = pSeg->y2 + yorg;
+      pSeg++;
+#endif /* POLYSEGMENT */
 
       if (x1 == x2) {
 
@@ -245,7 +239,14 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    tmp = y2;
 	    y2 = y1 + 1;
 	    y1 = tmp + 1;
+#ifndef POLYSEGMENT
 	 }
+#else /* POLYSEGMENT */
+	    if (pGC->capStyle != CapNotLast)
+	       y1--;
+	 } else if (pGC->capStyle != CapNotLast)
+	    y2++;
+#endif /* POLYSEGMENT */
 
 	 /* get to first band that might contain part of line */
 	 while ((nbox) && (pbox->y2 <= y1)) {
@@ -267,7 +268,7 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
                         from x2,y2 to x1,y1, where x2,y2 is skipped. */
 		     WaitQueue(5);
 		     SETL_LXEND0_END1(x1, x1);
-		     SETL_LDX(0); /* dX == 0 */
+		     SETL_LDX(0);  /* dX == 0 */
 		     SETL_LXSTART(x1 << 20);
 		     SETL_LYSTART(y2t - 1);
 		     SETL_LYCNT(y2t - y1t);
@@ -277,7 +278,10 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	       pbox++;
 	    }
 	 }
+#ifndef POLYSEGMENT
 	 y2 = ppt->y + yorg;
+#endif /* not POLYSEGMENT */
+
       } else if (y1 == y2) {
 
 	 /*
@@ -289,7 +293,15 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    tmp = x2;
 	    x2 = x1 + 1;
 	    x1 = tmp + 1;
+#ifndef POLYSEGMENT
 	 }
+#else /* POLYSEGMENT */
+	    if (pGC->capStyle != CapNotLast)
+	       x1--;
+	 } else if (pGC->capStyle != CapNotLast)
+	    x2++;
+#endif /* POLYSEGMENT */
+
 	 /* find the correct band */
 	 while ((nbox) && (pbox->y2 <= y1)) {
 	    pbox++;
@@ -329,7 +341,10 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	       pbox++;
 	    }
 	 }
+#ifndef POLYSEGMENT
 	 x2 = ppt->x + xorg;
+#endif /* not POLYSEGMENT */
+
       } else {			/* sloped line */
 	 int xdelta, xfixup, xdir;
 
@@ -348,27 +363,20 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	 xdelta = -((x2-x1) << 20) / (y2-y1);
 	 if (axis == Y_AXIS)
 	    if (xdelta >= 0)
-	       xfixup = 0x80000;
-	    else
 	       xfixup = 0x7ffff;
+	    else
+	       xfixup = 0x80000;
 	 else
 	    if (xdelta > 0)
-	       xfixup = xdelta >> 1;
-	    else
-	       xfixup = (xdelta >> 1) + ((1<<20) - 1);
+	       xfixup = (xdelta-1) >> 1;
+	    else {
+	       xdelta--;
+	       xfixup = ((xdelta+1) >> 1) + ((1<<20) - 1);
+	    }
 	 if ((x1 < x2) ^ (y1 < y2))
 	    xdir = 0x80000000;
 	 else
 	    xdir = 0;
-
-if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3d %02x\n"
-	    ,x1,y1, x2,y2, x2-x1, y2-y1
-	    ,xdir>>28
-	    ,xdelta ,xfixup
-	    ,xdelta/(double)(1<<20),xfixup/(double)(1<<20)
-	    ,pGC->alu, s3alu_sp[pGC->alu]
-	    ,pGC->fgPixel, pGC->fgPixel
-       );
 
 	 /*
 	  * we have bresenham parameters and two points. all we have to do now
@@ -376,6 +384,8 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 	  */
 
 	 while (nbox--) {
+	    int n,xss,xs,xe,ys;
+
 	    oc1 = 0;
 	    oc2 = 0;
 	    OUTCODES(oc1, x1, y1, pbox);
@@ -394,50 +404,71 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 	       ;SET_MAJ_AXIS_PCNT((short)len);
 	       ;SET_CMD(cmd2);
 
-#if 0
 	       if (y1 > y2) {
-		  if (xdir)
-		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2-1),x1, x2-1);
-		  else
-		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2+1),x1, x2+1);
-		  ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
-		  ErrorF("LXSTART %8x %8f\n",(x1 << 20) + xfixup,((x1 << 20) + xfixup)/(double)(1<<20));
-		  ErrorF("LYSTART %8x %d\n",y1,y1);
-		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
-	       } else {
+		  ys = y1;
+		  xs = x1;
+		  xss = (x1 << 20) + xfixup;
+#ifdef POLYSEGMENT
 		  if (pGC->capStyle != CapNotLast)
-		     ErrorF("LXEND0_END1 %8x\n",x2<<16|x1,x2, x1);
-		  else if (xdir)
-		     ErrorF("LXEND0_END1 %8x\n",(x2+1)<<16|x1,x2+1, x1);
+		     xe = x2;
 		  else
-		     ErrorF("LXEND0_END1 %8x\n",(x2-1)<<16|x1,x2-1, x1);
-		  ErrorF("LDX %8x\n",xdelta);
-		  ErrorF("LXSTART %8x %8f\n",(x2 << 20) + xfixup,((x2 << 20) + xfixup)/(double)(1<<20));
-		  ErrorF("LYSTART %8x %d\n",y2,y2);
-		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
-	       }
-#endif
-	       WaitQueue(5);
-	       if (y1 > y2) {
-		  if (xdir)
-		     SETL_LXEND0_END1(x1, x2-1);
-		  else
-		     SETL_LXEND0_END1(x1, x2+1);
-		  SETL_LDX(xdelta);
-		  SETL_LXSTART((x1 << 20) + xfixup);
-		  SETL_LYSTART(y1);
-		  SETL_LYCNT((len+1) | xdir);
+#endif /* POLYSEGMENT */
+		     if (xdir)
+			xe = x2 - 1;
+		     else
+			xe = x2 + 1;
 	       } else {
-		  if (xdir)
-		     SETL_LXEND0_END1(x2+1, x1);
+		  ys = y2;
+		  xe = x1;
+		  xss = (x2 << 20) + xfixup;
+#ifdef POLYSEGMENT
+		  if (pGC->capStyle != CapNotLast)
+		     xs = x2;
 		  else
-		     SETL_LXEND0_END1(x2-1, x1);
-		  SETL_LDX(xdelta);
-		  SETL_LXSTART((x2 << 20) + xfixup);
-		  SETL_LYSTART(y2);
-		  SETL_LYCNT((len+1) | xdir);
+#endif /* POLYSEGMENT */
+		     if (xdir)
+			xs = x2 + 1;
+		     else
+			xs = x2 - 1;
 	       }
 
+	       /* split long lines 
+		* 
+		* ViRGE vector generator uses DDA instead of bresenham and
+		* for long sloped lines (> 500 scanlines) rounding error can result
+		* in wrong pixels been drawn.  longer lines are splited in 
+		* multple parts and starting points fraction is set so that
+		* parts will join exactly (mostly experimental values)
+		*/
+
+#define LEN 500
+	       if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
+		  WaitQueue(5);
+		  SETL_LXEND0_END1(xs, xe);
+		  SETL_LDX(xdelta);
+		  SETL_LXSTART(xss);
+		  SETL_LYSTART(ys);
+		  SETL_LYCNT((len+1) | xdir);
+	       }
+	       else {
+		  double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+
+		  for (n=0; len>0; n++, len -= LEN) {
+		     WaitQueue(5);
+		     SETL_LXEND0_END1(n==0 ? xs :
+				      (xss + double2int((n<<20) * (LEN * xd2))) >> 20,
+				      len <= LEN ? xe : 
+				      (((xss + double2int(((n+1)<<20) * (LEN * xd2))) >> 20)
+				       + (xdir ? -1 : 1)));
+		     SETL_LDX(xdelta);
+		     SETL_LXSTART(xss + double2int((n<<20) * (LEN * xd2)) - (axis != Y_AXIS && xd2 < 0));
+		     SETL_LYSTART(ys - n * LEN);
+		     if (len > LEN)
+			SETL_LYCNT((LEN+1) | xdir);
+                     else
+			SETL_LYCNT((len+1) | xdir);
+		  }
+	       }
 	       break;
 	    } else if (oc1 & oc2) {
 	       pbox++;
@@ -448,7 +479,6 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 		* duplicating code...
 		*/
 	       int   clip1=0, clip2=0; /* clippedness of the endpoints */
-
 	       int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
 
                if (miZeroClipLine(pbox->x1, pbox->y1,
@@ -467,9 +497,16 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 		  len = abs(new_x2 - new_x1);
 	       else
 		  len = abs(new_y2 - new_y1);
-
+#ifndef POLYSEGMENT
 	       len += (clip2 != 0);
+#else /* POLYSEGMENT */
+	       if (clip2 != 0 || pGC->capStyle != CapNotLast)
+		  len++;
+#endif /* POLYSEGMENT */
+
 	       if (len) {
+		  int xofs,yofs;
+
 		  len = abs(new_y2 - new_y1);
 
 		  ;SET_CURPT((short)new_x1, (short)new_y1);
@@ -477,46 +514,81 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 		  ;SET_DESTSTP((short)e2, (short)e1);
 		  ;SET_MAJ_AXIS_PCNT((short)len);
 		  ;SET_CMD(cmd2);
-#if 0
+		  
 		  if (y1 > y2) {
-		     if (xdir)
-			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2-1),new_x1, new_x2-1);
+		     xss = (new_x1 << 20) + xfixup;
+#ifndef POLYSEGMENT
+		     if (new_x2 != x2)
+#else /* POLYSEGMENT */
+		     if (new_x2 != x2 || pGC->capStyle != CapNotLast)
+#endif /* POLYSEGMENT */
+			xe = new_x2;
+		     else if (xdir)
+			xe = new_x2 - 1;
 		     else
-			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2+1),new_x1, new_x2+1);
-		     ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
-		     ErrorF("LXSTART %8x %8f\n",(new_x1 << 20) + xfixup,((new_x1 << 20) + xfixup)/(double)(1<<20));
-		     ErrorF("LYSTART %8x %d\n",new_y1,new_y1);
-		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+			xe = new_x2 + 1;
+		     ys = new_y1;
+		     xs = new_x1;
+		     xofs = x1 - new_x1;
+		     yofs = y1 - new_y1;
 		  } else {
-		     if (xdir)
-			ErrorF("LXEND0_END1 %8x\n",(new_x2+1)<<16|new_x1,new_x2+1, new_x1);
+		     ys = new_y2;
+		     xe = new_x1;
+		     xss = (new_x2 << 20) + xfixup;
+#ifndef POLYSEGMENT
+		     if (new_x2 != x2)
+#else /* POLYSEGMENT */
+		     if (new_x2 != x2 || pGC->capStyle != CapNotLast)
+#endif /* POLYSEGMENT */
+			xs = new_x2;
+		     else if (xdir)
+			xs = new_x2 + 1;
 		     else
-			ErrorF("LXEND0_END1 %8x\n",(new_x2-1)<<16|new_x1,new_x2-1, new_x1);
-		     ErrorF("LDX %8x\n",xdelta);
-		     ErrorF("LXSTART %8x %8f\n",(new_x2 << 20) + xfixup,((new_x2 << 20) + xfixup)/(double)(1<<20));
-		     ErrorF("LYSTART %8x %d\n",new_y2,new_y2);
-		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+			xs = new_x2 - 1;
+		     xofs = x2 - new_x2;
+		     yofs = y2 - new_y2;
+		  }		  
+
+		  if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
+		     WaitQueue(5);
+		     SETL_LXEND0_END1(xs, xe);
+		     SETL_LDX(xdelta);
+		     if (0 && yofs == 0) 
+			SETL_LXSTART(xss);
+		     else {
+			double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+			if (y1 > y2)
+			   xss = (x1 << 20) + xfixup;
+			else 
+			   xss = (x2 << 20) + xfixup;
+			SETL_LXSTART(xss + double2int((yofs<<20) * xd2) - (axis != Y_AXIS && xd2 < 0));
+		     }
+		     SETL_LYSTART(ys);
+		     SETL_LYCNT((len+1) | xdir);
 		  }
-#endif
-		  WaitQueue(5);
-		  if (y1 > y2) {
-		     if (xdir)
-			SETL_LXEND0_END1(new_x1, new_x2-1);
-		     else
-			SETL_LXEND0_END1(new_x1, new_x2+1);
-		     SETL_LDX(xdelta);
-		     SETL_LXSTART((new_x1 << 20) + xfixup);
-		     SETL_LYSTART(new_y1);
-		     SETL_LYCNT((len+1) | xdir);
-		  } else {
-		     if (xdir)
-			SETL_LXEND0_END1(new_x2+1, new_x1);
-		     else
-			SETL_LXEND0_END1(new_x2-1, new_x1);
-		     SETL_LDX(xdelta);
-		     SETL_LXSTART((new_x2 << 20) + xfixup);
-		     SETL_LYSTART(new_y2);
-		     SETL_LYCNT((len+1) | xdir);
+		  else {
+		     double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+
+		     if (y1 > y2)
+			xss = (x1 << 20) + xfixup;
+		     else 
+			xss = (x2 << 20) + xfixup;
+
+		     for (n=0; len+(new_y1 ==  new_y2) > 0; n++, len -= LEN) {
+			WaitQueue(5);
+			SETL_LXEND0_END1(n==0 ? xs :
+					 (xss + double2int(((n * LEN + yofs)<<20) * xd2)) >> 20,
+					 len <= LEN ? xe : 
+					 ((xss + double2int((((n+1) * LEN + yofs)<<20) * xd2)) >> 20)
+					 + (xdir ? -1 : 1));
+			SETL_LDX(xdelta);
+			SETL_LXSTART(xss + double2int(((n * LEN + yofs)<<20) * xd2) - (axis != Y_AXIS && xd2 < 0));
+			SETL_LYSTART(ys - n * LEN);
+			if (len > LEN)
+			   SETL_LYCNT((LEN+1) | xdir);
+			else
+			   SETL_LYCNT((len+1) | xdir);
+		     }
 		  }
 	       }
 	       pbox++;
@@ -525,6 +597,7 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
       }	/* sloped line */
    } /* while (nline--) */
 
+#ifndef POLYSEGMENT
    /*
     * paint the last point if the end style isn't CapNotLast. (Assume that a
     * projecting, butt, or round cap that is one pixel wide is the same as the
@@ -554,6 +627,7 @@ if(0)ErrorF("L %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %7.3f %7.3f  %2d %02x %3
 	    pbox++;
       }
    }
+#endif /* not POLYSEGMENT */
 
 #if 0
    WaitQueue(7);

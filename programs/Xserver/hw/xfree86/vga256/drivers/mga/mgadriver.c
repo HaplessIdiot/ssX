@@ -29,10 +29,10 @@
  *
  *		Andrew E. Mileski
  *			aem@ott.hookup.net
- *		RAMDAC timing stuff
+ *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.3 1996/10/06 13:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.4 1996/10/08 12:28:32 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -53,6 +53,7 @@
 #include "vga256.h"
 #include "mipointer.h"
 
+#include "mgabios.h"
 #include "mgareg.h"
 #include "mga.h"
 
@@ -68,6 +69,7 @@ extern vgaPCIInformation *vgaPCIInfo;
  */
 unsigned long MGAMMIOAddr = 0;
 unsigned char* MGAMMIOBase = NULL;
+MGABiosInfo MGABios;
 extern int MGAScrnWidth;
 static pciTagRec MGAPciTag;
 static int MGABppShft;
@@ -268,6 +270,55 @@ static int Num_mgaExtPorts =
 	(sizeof(mgaExtPorts)/sizeof(mgaExtPorts[0]));
 
 /*
+ * MGAReadBios - Read the video BIOS info block.
+ *
+ * DESCRIPTION
+ *   Warning! This code currently does not detect a video BIOS.
+ *   In the future, support for motherboards with the mga2064w
+ *   will be added (no video BIOS) - this is not a huge concern
+ *   for me today though.
+ *
+ * EXTERNAL REFERENCES
+ *   vga256InfoRec.BIOSbase	IN	Physical address of video BIOS.
+ *   MGABios			OUT	The video BIOS info block.
+ *
+ * HISTORY
+ *   October 7, 1996 - [aem] Andrew E. Mileski
+ *   Written and tested.
+ */ 
+static void
+MGAReadBios()
+{
+	CARD8 tmp[ 64 ];
+	CARD16 offset;
+	int i;
+
+	/* Make sure the BIOS is present */
+	xf86ReadBIOS( vga256InfoRec.BIOSbase, 0, tmp, sizeof( tmp ));
+	if (
+		tmp[ 0 ] != 0x55
+		|| tmp[ 1 ] != 0xaa
+		|| strncmp(( char * )( tmp + 45 ), "MATROX", 6 )
+	) {
+		ErrorF( "%s %s: Video BIOS info block not detected!" );
+		return;
+	}
+
+	/* Get the info block offset */
+	xf86ReadBIOS( vga256InfoRec.BIOSbase, 0x7ffc,
+		( CARD8 * ) & offset, sizeof( offset ));
+
+	/* Copy the info block */
+	xf86ReadBIOS( vga256InfoRec.BIOSbase, offset,
+		( CARD8 * ) & MGABios.StructLen, sizeof( MGABios ));
+
+	/* Let the world know what we are up to */
+	ErrorF( "%s %s: Video BIOS info block at 0x%08lx\n",
+		XCONFIG_PROBED, vga256InfoRec.name,
+		vga256InfoRec.BIOSbase + offset );	
+}
+
+/*
  * Read/write to the DAC.  This includes both MMIO and PCI config space
  * methods of accessing the DAC.
  */
@@ -462,12 +513,15 @@ unsigned char reg;
  *     Appendix A "Frequency Synthesis PLL Register Settings"
  *
  * PARAMETERS
- *   f_pll		IN	Pixel clock PLL frequencly in kHz.
- *   bpp		IN	Bits per pixel.
+ *   f_pll			IN	Pixel clock PLL frequencly in kHz.
+ *   bpp			IN	Bits per pixel.
  *
- * CHANGES
+ * EXTERNAL REFERENCES
+ *   vga256InfoRec.maxClock	IN	Max allowed pixel clock in kHz.
+ *
+ * HISTORY
  *   October 1, 1996 - [aem] Andrew E. Mileski
- *   Optimized the m & n picking algorithm. Added DACSpeed line detection.
+ *   Optimized the m & n picking algorithm. Added maxClock detection.
  *   Low speed pixel clock fix (per the docs). Documented what I understand.
  *
  *   ?????, ??, ???? - [???] ????????????
@@ -485,7 +539,6 @@ unsigned char reg;
  */
 #define TI_MAX_VCO_FREQ	250000
 #define TI_MIN_VCO_FREQ	110000
-#define TI_MAX_CLOCK	135000
 #define TI_REF_FREQ	14318.18
 
 static void 
@@ -722,6 +775,19 @@ MGAProbe()
 	else
 		MGA.ChipLinearBase = 0;
 	
+	/* Allow this to be overriden in the XF86Config file */
+	if (vga256InfoRec.BIOSbase == 0) {
+		if ( pcr->_baserom )	/* details: rombase sdk pp 4-15 */
+			vga256InfoRec.BIOSbase = pcr->_baserom & 0xffff0000;
+		else
+			vga256InfoRec.BIOSbase = 0xc0000;
+	}
+
+	/*
+	 * Read the BIOS data struct
+	 */
+	MGAReadBios();
+	
 	/*
 	 * Set up I/O ports to be used by this card.
 	 */
@@ -750,15 +816,9 @@ MGAProbe()
 	 * If the user has specified ramdac speed in the XF86Config
 	 * file, we respect that setting.
 	 */
-	if (vga256InfoRec.dacSpeed)
-		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
-	else
-	{
-		/* had to do this - 220 is a figure that 220 MHz RAMDAC
-			people will have to enter by themselves */
-		vga256InfoRec.maxClock = TI_MAX_CLOCK;
-	}
-	
+	vga256InfoRec.maxClock = ( vga256InfoRec.dacSpeed ) ?
+		vga256InfoRec.dacSpeed :
+		((( MGABios.RamdacType & 0xff ) == 1 ) ?  220000 : 175000 );
 	
 	/*
 	 * Last we fill in the remaining data structures. 
@@ -1018,6 +1078,8 @@ MGAFbInit()
 						vga256InfoRec.name);
 		
 			vga256LowlevFuncs.doBitbltCopy = MGADoBitbltCopy;
+			vga256LowlevFuncs.fillRectSolidCopy = mgaFillRectSolidCopy;
+		
 			vga256TEOps1Rect.Polylines = mgaLine;
 			vga256NonTEOps1Rect.Polylines = mgaLine;
 			vga256TEOps.Polylines = mgaLine;
@@ -1038,6 +1100,21 @@ MGAFbInit()
 			cfb32TEOps1Rect.CopyArea = MGA32CopyArea;
 			cfb32NonTEOps1Rect.CopyArea = MGA32CopyArea;
 			
+			cfb16TEOps.PolyFillRect = mgaPolyFillRect;
+			cfb16NonTEOps.PolyFillRect = mgaPolyFillRect;
+			cfb16TEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			cfb16NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			
+			cfb24TEOps.PolyFillRect = mgaPolyFillRect;
+			cfb24NonTEOps.PolyFillRect = mgaPolyFillRect;
+			cfb24TEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			cfb24NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			
+			cfb32TEOps.PolyFillRect = mgaPolyFillRect;
+			cfb32NonTEOps.PolyFillRect = mgaPolyFillRect;
+			cfb32TEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			cfb32NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
+			
 			MGABlitterInit(vgaBitsPerPixel,
 					vga256InfoRec.displayWidth);
 			if (!MGAWaitForBlitter())
@@ -1056,14 +1133,6 @@ MGAFbInit()
 		}
 	}
 	
-	/*
-	 * Fill in the fields of cfbLowlevFuncs for which there are
-	 * accelerated versions.	This struct is defined in
-	 * xc/programs/Xserver/hw/xfree86/vga256/cfb.banked/cfbfuncs.h.
-	 
-	cfbLowlevFuncs.fillRectSolidCopy = MGAFillRectSolidCopy;
-	 */
-	 
 	/*
 	 * Some functions (eg, line drawing) are initialised via the
 	 * cfbTEOps, cfbTEOps1Rect, cfbNonTEOps, cfbNonTEOps1Rect

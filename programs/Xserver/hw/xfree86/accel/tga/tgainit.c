@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.3 1996/10/03 08:33:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.4 1996/10/08 12:23:07 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -40,21 +40,15 @@ static LUTENTRY oldlut[256];
 int tgaInitCursorFlag = TRUE;
 int tgaHDisplay;
 extern int tga_type;
-
 extern struct tgamem tgamem;
 extern int tgaWeight;
 extern int tgaDisplayWidth;
-
 
 void
 tgaCalcCRTCRegs(crtcRegs, mode)
 	tgaCRTCRegPtr	crtcRegs;
 	DisplayModePtr	mode;
 {
-	/* This needs better clarification. XVIDTUNE needs this....*/
-	/* Doesn't do exactly, what xvidtune tells it too, but it still */
-	/* does allow the user to muck around with the sync settings */
-	/* Trying to retain some familiarity with normal config methods */
 	crtcRegs->h_active = mode->CrtcHDisplay;
 	crtcRegs->h_fporch = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;
 	crtcRegs->h_sync   = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) / 4;
@@ -100,7 +94,7 @@ tgaSetCRTCRegs(crtcRegs)
 		(crtcRegs->v_pol << 30);
 
 	TGA_WRITE_REG(0x00, TGA_VALID_REG); /* Disable Video */
-	tgaClockSelect(crtcRegs->clock_sel);
+	ICS1562ClockSelect(crtcRegs->clock_sel);
 	TGA_WRITE_REG(virtX, TGA_HORIZ_REG);
 	TGA_WRITE_REG(virtY, TGA_VERT_REG);
 	if ( (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options)) ||
@@ -163,7 +157,7 @@ restoreTGAstate()
 	 * chosen by Jay Estabrook for Linux....
 	 * Until I can find out how to read the clock register
 	 */
-	tgaClockSelect(14);
+	ICS1562ClockSelect(14);
 
 	TGA_WRITE_REG(SR.tgaRegs[2], TGA_VALID_REG); /* Re-enable Video */
 }
@@ -290,12 +284,12 @@ tgaInitAperture()
 	tgaVideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
 					(pointer)(tgaInfoRec.MemBase |
 					fb_offset_presets[tga_type]),
-					0x200000L);	/* 2Mbytes */
+					tgaInfoRec.videoRam * 1024);
 
-	tgaVideoMemSave = (unsigned char *)xalloc(0x200000L);
+	tgaVideoMemSave = (unsigned char *)xalloc(tgaInfoRec.videoRam * 1024);
 
 #ifdef XFreeXDGA
-	tgaInfoRec.physBase = (tgaInfoRec.MemBase | 
+	tgaInfoRec.physBase = (tgaInfoRec.MemBase + 
 					fb_offset_presets[tga_type]);
 	tgaInfoRec.physSize = tgaInfoRec.videoRam * 1024;
 #endif

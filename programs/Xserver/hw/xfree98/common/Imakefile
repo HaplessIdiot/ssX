@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.22 1996/09/29 13:45:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.23 1996/10/08 12:42:09 dawes Exp $
 
 
 
@@ -236,8 +236,8 @@ SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
-SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES))
-SpecialObjectRule(xf86MIniExt.o,xf86MIniExt.c $(ICONFIGFILES),$(EXT_DEFINES) -UPEXEXT -UXIE)
+SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
+SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES) -UPEXEXT -UXIE)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))

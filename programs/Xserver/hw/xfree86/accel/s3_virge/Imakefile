@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.0tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.1 1996/10/03 08:33:07 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/6 1995/11/12 19:05:21 kaleb $
 
 #include <Server.tmpl>
@@ -36,6 +36,8 @@ MakeMutex($(SUBDIRS))
 #endif
 
 ConfigTarget(s3vConf,$(ICONFIGFILES),confS3V.SHsuf,$(S3DRIVERS))
+
+ObjectFromSpecialSource(s3seg,s3line,-DPOLYSEGMENT)
 
 NormalLibraryObjectRule()
 

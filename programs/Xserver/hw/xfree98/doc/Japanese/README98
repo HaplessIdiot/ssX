@@ -1,6 +1,6 @@
   XFree86 PC98 Dependent Information
   The XFree86 Project Inc. and X98 CORE TEAM著
-  1996年 10 月  8日
+  1996年 10 月  9日
 
   このドキュメントでは、PC98サーバ固有の事項について解説します。 PC-ATと
   共通の事項については、共通のドキュメントを参照してください。このドキュ
@@ -23,6 +23,7 @@
     MELCO         WSN-A2F                                 XF98_WSNA
     IO Data       GA-98NB I/C,GA-98NB II, GA-98NB IV      XF98_GANBWAP
                   GA-968V2/PCI, GA-968V4/PCI              XF98_GA968
+                  GA-DRV2/98, GA-DRV4/98                  XF98_TGUI
     NEC           ウィンドウアクセラレータボード A/B      XF98_NECS3
     Canopus       PowerWindow 801, 801+, 928, 928G, 801G, XF98_PWSKB
                   928II, 805i
@@ -40,6 +41,7 @@
     NEC           PEGC(640x400x256,640x480x256)           XF98_NEC480
     NEC           S3 928(As2等), S3 864(As3等)            XF98_NECS3
     NEC           Cirrus CLGD5428/5430(B-Mate,Xe,CanBe等) XF98_NKVNEC
+    NEC           Trident TGUI9680XGi(X-Mate,ValueStar等) XF98_TGUI
     EPSON         NKV(486MR,MS,MV,586MV等)                XF98_NKVNEC
 
 
@@ -289,7 +291,7 @@
   o  EPSON NOTEでは、twmなどのプルダウンメニューでカーソル位置にゴミが生
      じます。xrefreshなどで除去できますが、解決方法は不明です。
 
-  o  PANIX(98)では動作しません。
+  o  PANIX Ver.5.0 for 98では動作しません。
 
   3.6.3.その他
 
@@ -313,7 +315,7 @@
 
 
   o  Device,Modesについては、XF86Config.98のとおりにしてください。
-  o  640x400で使用する時は、Clocksを28.8にしてください。
+  o  640x400で使用する時は、Clocksを28.322にしてください。
 
 
   3.7.2.報告されている問題
@@ -322,7 +324,8 @@
   o  PC-9821Nm ではバックライトが消える障害があります。
 
   o  GDCの設定を保存できない為、X終了後に同期周波数などが元に戻りませ
-     ん。
+     ん。FreeBSD(98)の場合は、カーネル作成時に options "LINE30"を指定
+     する事により回避できます。
 
   3.7.3.その他
 

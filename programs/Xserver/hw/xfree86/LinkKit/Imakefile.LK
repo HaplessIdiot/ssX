@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile.LK /main/5 1995/09/04 19:49:48 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.29 1996/10/03 08:32:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.30 1996/10/08 12:19:09 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -665,7 +665,7 @@ XF98NECS3OBJS = XF86_S3.o s3Conf.o \
 XF98NECS3LIBS = $(XF98DRIVERSRC)/LibraryTargetName(s3nec) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3necmmio) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3necnewmmio) \
-	     $(XF86LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
+	     $(XF98LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
 XF98NECS3SYSLIBS = $(SYSLIBS)
 S3DRIVERS = XF86S3Drivers
 ConfigTargetNoDepend(s3Conf,$(ICONFIGFILES),confS3.sh,$(S3DRIVERS))
@@ -690,7 +690,7 @@ XF98PWSKBOBJS = XF86_S3.o s3Conf.o \
 XF98PWSKBLIBS = $(XF98DRIVERSRC)/LibraryTargetName(s3pwskb) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3pwskbmmio) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3pwskbnewmmio) \
-	     $(XF86LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
+	     $(XF98LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
 XF98PWSKBSYSLIBS = $(SYSLIBS)
 S3DRIVERS = XF86S3Drivers
 ConfigTargetNoDepend(s3Conf,$(ICONFIGFILES),confS3.sh,$(S3DRIVERS))
@@ -715,7 +715,7 @@ XF98PWLBOBJS = XF86_S3.o s3Conf.o \
 XF98PWLBLIBS = $(XF98DRIVERSRC)/LibraryTargetName(s3pwlb) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3pwlbmmio) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3pwlbnewmmio) \
-	     $(XF86LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
+	     $(XF98LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
 XF98PWLBSYSLIBS = $(SYSLIBS)
 S3DRIVERS = XF86S3Drivers
 ConfigTargetNoDepend(s3Conf,$(ICONFIGFILES),confS3.sh,$(S3DRIVERS))
@@ -740,7 +740,7 @@ XF98GA968OBJS = XF86_S3.o s3Conf.o \
 XF98GA968LIBS = $(XF98DRIVERSRC)/LibraryTargetName(s3ga968) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3ga968mmio) \
 	     $(XF98DRIVERSRC)/LibraryTargetName(s3ga968newmmio) \
-	     $(XF86LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
+	     $(XF98LIBS) CFBLibs lib/LibraryTargetName(xf86cache)
 XF98GA968SYSLIBS = $(SYSLIBS)
 S3DRIVERS = XF86S3Drivers
 ConfigTargetNoDepend(s3Conf,$(ICONFIGFILES),confS3.sh,$(S3DRIVERS))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.0 1996/09/29 13:40:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.1 1996/10/06 13:18:01 dawes Exp $ */
 
 /*
  * MGA Millennium (MGA2064W) functions
@@ -18,10 +18,14 @@
 #define MGAREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
 #define MGAREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
 #define MGAREG32(addr) *(volatile CARD32 *)(MGAMMIOBase + (addr))
-#define OUTREG(addr, val) MGAREG32(addr) = (val)
+#define MGAREG(addr) MGAREG32(addr)
+#define OUTREG(addr, val) MGAREG(addr) = (val)
 
 extern unsigned char *MGAMMIOBase;
 extern int MGAScrnWidth;
+
+#define MGAWAITFIFO() while(MGAREG16(MGAREG_FIFOSTATUS) & 0x100);
+#define MGAWAITFREE() while(MGAREG8(MGAREG_Status + 2) & 0x01);
 
 void
 mgaLine (
@@ -33,6 +37,45 @@ mgaLine (
 	 DDXPointPtr pptInit
 #endif
 );
+
+void
+mgaPolyFillRect(
+#ifdef NeedFunctionPrototypes
+	DrawablePtr pDrawable,
+	register GCPtr pGC,
+	int         nrectFill,
+	xRectangle  *prectInit
+#endif
+);                
+
+void
+mgaFillRectSolidCopy(
+#ifdef NeedFunctionPrototypes
+	DrawablePtr     pDrawable,
+	GCPtr           pGC,
+	int             nBox,
+	BoxPtr          pBox
+#endif
+);
+
+void
+mgaPaintWindow(
+#ifdef NeedFunctionPrototypes
+	WindowPtr   pWin,
+	RegionPtr   pRegion,
+	int         what
+#endif
+);
+
+void
+mgaFillBoxSolid(
+#ifdef NeedFunctionPrototypes
+	DrawablePtr     pDrawable,
+	int             nBox,
+	BoxPtr          pBox,
+	unsigned long   pixel
+#endif
+);                
 
 int
 MGAWaitForBlitter(

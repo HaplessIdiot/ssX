@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.8 1996/02/04 09:02:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.9 1996/10/08 12:20:45 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -48,13 +48,14 @@ extern unsigned short mach32stipple_tab[];
  * with no tiling and starting from (0,0) in the source bitmap. - Jon.
  */
 __inline__ static void
-mach32PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+mach32PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
+    BoxPtr pBox;
 {
     int width, height;
     int nbyLine;			/* bytes per line of padded pixmap */
@@ -89,6 +90,10 @@ mach32PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	gHeight = GLYPHHEIGHTPIXELS(pci);
 	if (gWidth && gHeight)
 	{
+	  if ( x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	       && x + pci->metrics.leftSideBearing            <  pBox->x2
+	       && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	       && y - pci->metrics.ascent                     <  pBox->y2 ) {
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
 	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
@@ -139,6 +144,7 @@ mach32PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		  }
 	       }
 	    }
+	  }
 	}
 	x += pci->metrics.characterWidth;
     }
@@ -240,7 +246,7 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
          outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
          mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						   FONTGLYPHS(pGC->font));
+			    FONTGLYPHS(pGC->font), pBox);
 
       }
    }
@@ -382,7 +388,7 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
          outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
          mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						  FONTGLYPHS(pGC->font));
+			    FONTGLYPHS(pGC->font), pBox);
       }
    }
 

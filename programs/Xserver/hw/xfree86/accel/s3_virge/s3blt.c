@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.2 1996/10/03 08:33:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.3 1996/10/08 13:11:54 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -108,15 +108,19 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
       case 8:
 	 ret = cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
 			   srcx, srcy, width, height, dstx, dsty);
+	 break;
       case 16:
 	 ret = cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
 			     srcx, srcy, width, height, dstx, dsty);
+	 break;
       case 24:
 	 ret = cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
 			     srcx, srcy, width, height, dstx, dsty);
+	 break;
       case 32:
 	 ret = cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
 			     srcx, srcy, width, height, dstx, dsty);
+	 break;
       }
       if (xf86VTSema) WaitIdleEmpty();
       return ret;
@@ -521,15 +525,19 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
       case 8:
 	 ret = cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
+	 break;
       case 16:
 	 ret = cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	case 24:
+	 break;
+      case 24:
 	 ret = cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	 break;
       case 32:
 	 ret = cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	 break;
       }
       if (xf86VTSema) WaitIdleEmpty();
       return ret;

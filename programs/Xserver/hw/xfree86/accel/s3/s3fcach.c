@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.23 1996/09/22 05:03:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.24 1996/10/08 12:20:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -206,7 +206,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
      GCPtr pGC;
      BoxPtr pBox;
 {
-   int   gHeight;
+   int   gHeight, gWidth;
    int   w = fentry->w;
    int blocki = 255;
    unsigned short height = 0;
@@ -223,7 +223,12 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       if (pci != NULL) {
 
 	 gHeight = GLYPHHEIGHTPIXELS(pci);
-	 if (gHeight) {
+	 gWidth = GLYPHWIDTHPIXELS(pci);
+	 if (gHeight
+	 && x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	 && x + pci->metrics.leftSideBearing            <  pBox->x2
+	 && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	 && y - pci->metrics.ascent                     <  pBox->y2 ) {
 
 	    if ((int) (*chars / 32) != blocki) {
 	       bitMapBlockPtr block;
@@ -247,7 +252,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   */
 		  WaitQueue(4);
 		  SET_SCISSORS((short)pBox->x1,(short)pBox->y1,(short)(pBox->x2 - 1), 
-							(short)(pBox->y2 - 1));
+			       (short)(pBox->y2 - 1));
 		  WaitQueue16_32(6,8);
 		  SET_FRGD_COLOR(pGC->fgPixel);
 		  SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
@@ -281,8 +286,8 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	    WaitQueue(6);
 
 	    SET_CUR_X((short) (xoff + (*chars & 0x1f) * w));
-		SET_DESTSTP((short)(x + pci->metrics.leftSideBearing),
-	    							(short)(y - pci->metrics.ascent));
+	    SET_DESTSTP((short)(x + pci->metrics.leftSideBearing),
+	    		(short)(y - pci->metrics.ascent));
 	    if (!width || (short)(GLYPHWIDTHPIXELS(pci) - 1) != width) {
 	       width = (short)(GLYPHWIDTHPIXELS(pci) - 1);
 	       SET_MAJ_AXIS_PCNT(width);
@@ -302,7 +307,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 }
 
 /*
- * Set the hardware scissors to match the clipping rectables and 
+ * Set the hardware scissors to match the clipping rectangles and 
  * call the glyph output routine.
  */
 void 
