@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.37 1999/06/12 07:18:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.38 1999/06/12 14:15:32 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -518,6 +518,14 @@ typedef struct _entityInfo {
     resPtr resources;
     GDevPtr device;
 } EntityInfoRec, *EntityInfoPtr;
+
+/* server states */
+
+typedef enum {
+    SETUP,
+    OPERATING
+} xf86State;
+
 
 /* DGA */
 

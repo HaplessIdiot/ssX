@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.46 1999/05/30 14:04:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.47 1999/06/12 07:18:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -129,7 +129,6 @@ void xf86ClearEntityListForScreen(int scrnIndex);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
-extern void xf86EnterServerState(xf86State state);
 
 /* xf86Config.c */
 

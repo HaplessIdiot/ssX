@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.36 1999/04/27 12:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/06/12 14:15:33 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -288,8 +288,8 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&GLINT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols,
-	    ddcSymbols, i2cSymbols, xaaSymbols, xf8_32bppSymbols, NULL);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, ddcSymbols, i2cSymbols,
+			  xaaSymbols, xf8_32bppSymbols, NULL);
 	return (pointer)TRUE;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.128 1999/06/12 14:15:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.129 1999/06/12 15:37:03 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -596,7 +596,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		usesCfb24 = TRUE;
 	if (usesCfb24) {
 	    FatalError("24-bit pixel size is not supported on systems with"
-			"64-bit scanlines.\n");
+			" 64-bit scanlines.\n");
 	}
     }
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.12 1999/05/09 06:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.13 1999/06/12 07:18:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -76,13 +76,6 @@ typedef struct _MouseDevRec {
 #define MSE_MAXBUTTONS	12
 #define MSE_DFLTBUTTONS	 3
 #endif
-
-/* server states */
-
-typedef enum {
-    SETUP,
-    OPERATING
-} xf86State;
 
 /* PCI probe flags */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.105 1999/05/15 12:10:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.106 1999/06/12 07:18:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -82,6 +82,7 @@ Bool xf86FixPciResource(int entityIndex, unsigned int prt, CARD32 alignment,
 			 long type);
 resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
 resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
+void xf86EnterServerState(xf86State state);
 resRange xf86GetBlock(long type, unsigned long size,
 		      unsigned long window_start, unsigned long window_end,
 		      unsigned long align_mask, resPtr avoid);
