@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.14 2000/10/11 22:52:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.15 2001/01/06 20:58:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1015,6 +1015,7 @@ ProbeClocks:
         else
 
 #endif /* AVOID_CPIO */
+
         {
             /* All others don't have crystals */
             if (pATI->Clock == ATI_CLOCK_CRYSTALS)
