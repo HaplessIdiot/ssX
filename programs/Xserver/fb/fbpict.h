@@ -535,6 +535,18 @@ CARD32
 fbFetch_x1b5g5r5 (FbCompositeOperand *op);
 
 CARD32
+fbFetch_a4r4g4b4 (FbCompositeOperand *op);
+
+CARD32
+fbFetch_x4r4g4b4 (FbCompositeOperand *op);
+
+CARD32
+fbFetch_a4b4g4r4 (FbCompositeOperand *op);
+
+CARD32
+fbFetch_x4b4g4r4 (FbCompositeOperand *op);
+
+CARD32
 fbFetch_a8 (FbCompositeOperand *op);
 
 CARD32
@@ -620,6 +632,18 @@ fbStore_a1b5g5r5 (FbCompositeOperand *op, CARD32 value);
 
 void
 fbStore_x1b5g5r5 (FbCompositeOperand *op, CARD32 value);
+
+void
+fbStore_a4r4g4b4 (FbCompositeOperand *op, CARD32 value);
+
+void
+fbStore_x4r4g4b4 (FbCompositeOperand *op, CARD32 value);
+
+void
+fbStore_a4b4g4r4 (FbCompositeOperand *op, CARD32 value);
+
+void
+fbStore_x4b4g4r4 (FbCompositeOperand *op, CARD32 value);
 
 void
 fbStore_a8 (FbCompositeOperand *op, CARD32 value);

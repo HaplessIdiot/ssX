@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.18 2001/08/10 22:25:59 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.20 2001/12/13 04:35:41 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -245,6 +245,14 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	format = 0;
 	switch (bpp) {
 	case 16:
+	    /* depth 12 formats */
+	    if (pDepth->depth >= 12)
+	    {
+		nformats = addFormat (formats, nformats,
+				      PICT_x4r4g4b4, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_x4b4g4r4, pDepth->depth);
+	    }
 	    /* depth 15 formats */
 	    if (pDepth->depth >= 15)
 	    {
@@ -264,6 +272,10 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 				      PICT_r5g6b5, pDepth->depth);
 		nformats = addFormat (formats, nformats,
 				      PICT_b5g6r5, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_a4r4g4b4, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_a4b4g4r4, pDepth->depth);
 	    }
 	    break;
 	case 24:
