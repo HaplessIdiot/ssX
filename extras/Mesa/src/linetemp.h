@@ -1,4 +1,4 @@
-/* $Id: linetemp.h,v 1.3 2000/01/18 16:48:49 tsi Exp $ */
+/* $Id: linetemp.h,v 1.4 2000/01/18 17:14:25 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -71,7 +71,7 @@
  * This code was designed for the origin to be in the lower-left corner.
  *
  */
-/* $XFree86: xc/extras/Mesa/src/linetemp.h,v 1.0tsi Exp $ */
+/* $XFree86$ */
 
 
 /*void line( GLcontext *ctx, GLuint vert0, GLuint vert1, GLuint pvert )*/
@@ -82,14 +82,14 @@
    GLint y0 = (GLint) VB->Win.data[vert0][1];
    GLint y1 = (GLint) VB->Win.data[vert1][1];
    GLint dx, dy;
-#if INTERP_XY
+#ifdef INTERP_XY
    GLint xstep, ystep;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
    GLint z0, z1, dz, zPtrXstep, zPtrYstep;
    GLdepth *zPtr;
 #endif
-#if INTERP_RGB
+#ifdef INTERP_RGB
    GLfixed r0 = IntToFixed(VB->ColorPtr->data[vert0][0]);
    GLfixed dr = IntToFixed(VB->ColorPtr->data[vert1][0]) - r0;
    GLfixed g0 = IntToFixed(VB->ColorPtr->data[vert0][1]);
@@ -97,7 +97,7 @@
    GLfixed b0 = IntToFixed(VB->ColorPtr->data[vert0][2]);
    GLfixed db = IntToFixed(VB->ColorPtr->data[vert1][2]) - b0;
 #endif
-#if INTERP_SPEC
+#ifdef INTERP_SPEC
    GLfixed sr0 = VB->Specular ? IntToFixed(VB->Specular[vert0][0]) : 0;
    GLfixed dsr = VB->Specular ? IntToFixed(VB->Specular[vert1][0]) - sr0 : 0;
    GLfixed sg0 = VB->Specular ? IntToFixed(VB->Specular[vert0][1]) : 0;
@@ -105,25 +105,25 @@
    GLfixed sb0 = VB->Specular ? IntToFixed(VB->Specular[vert0][2]) : 0;
    GLfixed dsb = VB->Specular ? IntToFixed(VB->Specular[vert1][2]) - sb0 : 0;
 #endif
-#if INTERP_ALPHA
+#ifdef INTERP_ALPHA
    GLfixed a0 = IntToFixed(VB->ColorPtr->data[vert0][3]);
    GLfixed da = IntToFixed(VB->ColorPtr->data[vert1][3]) - a0;
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
    GLint i0 = VB->IndexPtr->data[vert0] << 8;
    GLint di = (GLint) (VB->IndexPtr->data[vert1] << 8)-i0;
 #endif
-#if INTERP_ST
+#ifdef INTERP_ST
    GLfixed s0 = FloatToFixed(VB->TexCoord[vert0][0] * S_SCALE);
    GLfixed ds = FloatToFixed(VB->TexCoord[vert1][0] * S_SCALE) - s0;
    GLfixed t0 = FloatToFixed(VB->TexCoord[vert0][1] * T_SCALE);
    GLfixed dt = FloatToFixed(VB->TexCoord[vert1][1] * T_SCALE) - t0;
 #endif
-#if INTERP_STUV0 || INTERP_STUV1
+#if defined(INTERP_STUV0) || defined(INTERP_STUV1)
    GLfloat invw0 = VB->Win.data[vert0][3];
    GLfloat invw1 = VB->Win.data[vert1][3];
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
    /* h denotes hyperbolic */
    GLfloat hs0 = invw0 * VB->TexCoordPtr[0]->data[vert0][0];
    GLfloat dhs = invw1 * VB->TexCoordPtr[0]->data[vert1][0] - hs0;
@@ -132,7 +132,7 @@
    GLfloat hu0 = 0, dhu = 0;
    GLfloat hv0 = invw0, dhv = invw1 - invw0;
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
    GLfloat hs01 = invw0 * VB->TexCoordPtr[1]->data[vert0][0];
    GLfloat dhs1 = invw1 * VB->TexCoordPtr[1]->data[vert1][0] - hs01;
    GLfloat ht01 = invw0 * VB->TexCoordPtr[1]->data[vert0][1];
@@ -144,14 +144,14 @@
    PIXEL_TYPE *pixelPtr;
    GLint pixelXstep, pixelYstep;
 #endif
-#if WIDE
+#ifdef WIDE
    /* for wide lines, draw all X in [x+min, x+max] or Y in [y+min, y+max] */
    GLint width, min, max;
    width = (GLint) CLAMP( ctx->Line.Width, MIN_LINE_WIDTH, MAX_LINE_WIDTH );
    min = (width-1) / -2;
    max = min + width - 1;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
    if (VB->TexCoordPtr[0]->size > 2) {
       hu0 = invw0 * VB->TexCoordPtr[0]->data[vert0][2];
       dhu = invw1 * VB->TexCoordPtr[0]->data[vert1][2] - hu0;
@@ -161,7 +161,7 @@
       }
    }
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
    if (VB->TexCoordPtr[1]->size > 2) {
       hu01 = invw0 * VB->TexCoordPtr[1]->data[vert0][2];
       dhu1 = invw1 * VB->TexCoordPtr[1]->data[vert1][2] - hu01;
@@ -179,7 +179,7 @@
  * This quick and dirty code nudges the endpoints inside the window if
  * necessary.
  */
-#if CLIP_HACK
+#ifdef CLIP_HACK
    {
       GLint w = ctx->Buffer->Width;
       GLint h = ctx->Buffer->Height;
@@ -210,7 +210,7 @@
    SETUP_CODE
 #endif
 
-#if INTERP_Z
+#ifdef INTERP_Z
    zPtr = Z_ADDRESS(ctx,x0,y0);
 #  if DEPTH_BITS==16
       z0 = FloatToFixed(VB->Win.data[vert0][2]);
@@ -226,7 +226,7 @@
 
    if (dx<0) {
       dx = -dx;   /* make positive */
-#if INTERP_XY
+#ifdef INTERP_XY
       xstep = -1;
 #endif
 #ifdef INTERP_Z
@@ -237,10 +237,10 @@
 #endif
    }
    else {
-#if INTERP_XY
+#ifdef INTERP_XY
       xstep = 1;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
       zPtrXstep = ((GLint)sizeof(GLdepth));
 #endif
 #ifdef PIXEL_ADDRESS
@@ -250,10 +250,10 @@
 
    if (dy<0) {
       dy = -dy;   /* make positive */
-#if INTERP_XY
+#ifdef INTERP_XY
       ystep = -1;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
       zPtrYstep = -ctx->Buffer->Width * ((GLint)sizeof(GLdepth));
 #endif
 #ifdef PIXEL_ADDRESS
@@ -261,10 +261,10 @@
 #endif
    }
    else {
-#if INTERP_XY
+#ifdef INTERP_XY
       ystep = 1;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
       zPtrYstep = ctx->Buffer->Width * ((GLint)sizeof(GLdepth));
 #endif
 #ifdef PIXEL_ADDRESS
@@ -282,30 +282,30 @@
       GLint errorInc = dy+dy;
       GLint error = errorInc-dx;
       GLint errorDec = error-dx;
-#if INTERP_Z
+#ifdef INTERP_Z
       dz = (z1-z0) / dx;
 #endif
-#if INTERP_RGB
+#ifdef INTERP_RGB
       dr /= dx;   /* convert from whole line delta to per-pixel delta */
       dg /= dx;
       db /= dx;
 #endif
-#if INTERP_SPEC
+#ifdef INTERP_SPEC
       dsr /= dx;   /* convert from whole line delta to per-pixel delta */
       dsg /= dx;
       dsb /= dx;
 #endif
-#if INTERP_ALPHA
+#ifdef INTERP_ALPHA
       da /= dx;
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
       di /= dx;
 #endif
-#if INTERP_ST
+#ifdef INTERP_ST
       ds /= dx;
       dt /= dx;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
       {
          GLfloat invDx = 1.0F / (GLfloat) dx;
          dhs *= invDx;
@@ -314,7 +314,7 @@
          dhv *= invDx;
       }
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
       {
          GLfloat invDx = 1.0F / (GLfloat) dx;
          dhs1 *= invDx;
@@ -324,34 +324,34 @@
       }
 #endif
       for (i=0;i<dx;i++) {
-#if STIPPLE
+#ifdef STIPPLE
          GLushort m;
          m = 1 << ((ctx->StippleCounter/ctx->Line.StippleFactor) & 0xf);
          if (ctx->Line.StipplePattern & m) {
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
 #  if DEPTH_BITS==16
             GLdepth Z = FixedToInt(z0);
 #  else
             GLdepth Z = z0;
 #  endif
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
             GLint I = i0 >> 8;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
             GLfloat invQ = 1.0F / hv0;
             GLfloat s = hs0 * invQ;
             GLfloat t = ht0 * invQ;
             GLfloat u = hu0 * invQ;
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
             GLfloat invQ1 = 1.0F / hv01;
             GLfloat s1 = hs01 * invQ1;
             GLfloat t1 = ht01 * invQ1;
             GLfloat u1 = hu01 * invQ1;
 #endif
-#if WIDE
+#ifdef WIDE
             GLint yy;
             GLint ymin = y0 + min;
             GLint ymax = y0 + max;
@@ -365,44 +365,44 @@
             PLOT( x0, y0 );
 #  endif
 #endif /*WIDE*/
-#if STIPPLE
+#ifdef STIPPLE
         }
 	ctx->StippleCounter++;
 #endif
-#if INTERP_XY
+#ifdef INTERP_XY
          x0 += xstep;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
          zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrXstep);
          z0 += dz;
 #endif
-#if INTERP_RGB
+#ifdef INTERP_RGB
          r0 += dr;
          g0 += dg;
          b0 += db;
 #endif
-#if INTERP_SPEC
+#ifdef INTERP_SPEC
          sr0 += dsr;
          sg0 += dsg;
          sb0 += dsb;
 #endif
-#if INTERP_ALPHA
+#ifdef INTERP_ALPHA
          a0 += da;
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
          i0 += di;
 #endif
-#if INTERP_ST
+#ifdef INTERP_ST
          s0 += ds;
          t0 += dt;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
          hs0 += dhs;
          ht0 += dht;
          hu0 += dhu;
          hv0 += dhv;
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
          hs01 += dhs1;
          ht01 += dht1;
          hu01 += dhu1;
@@ -416,10 +416,10 @@
          }
          else {
             error += errorDec;
-#if INTERP_XY
+#ifdef INTERP_XY
             y0 += ystep;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
             zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrYstep);
 #endif
 #ifdef PIXEL_ADDRESS
@@ -434,30 +434,30 @@
       GLint errorInc = dx+dx;
       GLint error = errorInc-dy;
       GLint errorDec = error-dy;
-#if INTERP_Z
+#ifdef INTERP_Z
       dz = (z1-z0) / dy;
 #endif
-#if INTERP_RGB
+#ifdef INTERP_RGB
       dr /= dy;   /* convert from whole line delta to per-pixel delta */
       dg /= dy;
       db /= dy;
 #endif
-#if INTERP_SPEC
+#ifdef INTERP_SPEC
       dsr /= dy;   /* convert from whole line delta to per-pixel delta */
       dsg /= dy;
       dsb /= dy;
 #endif
-#if INTERP_ALPHA
+#ifdef INTERP_ALPHA
       da /= dy;
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
       di /= dy;
 #endif
-#if INTERP_ST
+#ifdef INTERP_ST
       ds /= dy;
       dt /= dy;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
       {
          GLfloat invDy = 1.0F / (GLfloat) dy;
          dhs *= invDy;
@@ -466,7 +466,7 @@
          dhv *= invDy;
       }
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
       {
          GLfloat invDy = 1.0F / (GLfloat) dy;
          dhs1 *= invDy;
@@ -476,34 +476,34 @@
       }
 #endif
       for (i=0;i<dy;i++) {
-#if STIPPLE
+#ifdef STIPPLE
          GLushort m;
          m = 1 << ((ctx->StippleCounter/ctx->Line.StippleFactor) & 0xf);
          if (ctx->Line.StipplePattern & m) {
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
 #  if DEPTH_BITS==16
             GLdepth Z = FixedToInt(z0);
 #  else
             GLdepth Z = z0;
 #  endif
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
             GLint I = i0 >> 8;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
             GLfloat invQ = 1.0F / hv0;
             GLfloat s = hs0 * invQ;
             GLfloat t = ht0 * invQ;
             GLfloat u = hu0 * invQ;
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
             GLfloat invQ1 = 1.0F / hv01;
             GLfloat s1 = hs01 * invQ1;
             GLfloat t1 = ht01 * invQ1;
             GLfloat u1 = hu01 * invQ1;
 #endif
-#if WIDE
+#ifdef WIDE
             GLint xx;
             GLint xmin = x0 + min;
             GLint xmax = x0 + max;
@@ -517,44 +517,44 @@
             PLOT( x0, y0 );
 #  endif
 #endif /*WIDE*/
-#if STIPPLE
+#ifdef STIPPLE
         }
 	ctx->StippleCounter++;
 #endif
-#if INTERP_XY
+#ifdef INTERP_XY
          y0 += ystep;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
          zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrYstep);
          z0 += dz;
 #endif
-#if INTERP_RGB
+#ifdef INTERP_RGB
          r0 += dr;
          g0 += dg;
          b0 += db;
 #endif
-#if INTERP_SPEC
+#ifdef INTERP_SPEC
          sr0 += dsr;
          sg0 += dsg;
          sb0 += dsb;
 #endif
-#if INTERP_ALPHA
+#ifdef INTERP_ALPHA
          a0 += da;
 #endif
-#if INTERP_INDEX
+#ifdef INTERP_INDEX
          i0 += di;
 #endif
-#if INTERP_ST
+#ifdef INTERP_ST
          s0 += ds;
          t0 += dt;
 #endif
-#if INTERP_STUV0
+#ifdef INTERP_STUV0
          hs0 += dhs;
          ht0 += dht;
          hu0 += dhu;
          hv0 += dhv;
 #endif
-#if INTERP_STUV1
+#ifdef INTERP_STUV1
          hs01 += dhs1;
          ht01 += dht1;
          hu01 += dhu1;
@@ -568,10 +568,10 @@
          }
          else {
             error += errorDec;
-#if INTERP_XY
+#ifdef INTERP_XY
             x0 += xstep;
 #endif
-#if INTERP_Z
+#ifdef INTERP_Z
             zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrXstep);
 #endif
 #ifdef PIXEL_ADDRESS
