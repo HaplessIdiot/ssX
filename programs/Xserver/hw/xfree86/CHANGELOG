@@ -1,4 +1,5 @@
 XFree86 3.9Nu (15 January 1999)
+2141. Fix some sun_path overflows in xtrans.
 2140. Some panoramix fixups (#2376, Alan Hourihane).
 2139. Don't allow arbitrarily long display number strings to be passed on
       to xtrans by _X11TransConnectDisplay().
@@ -7067,4 +7068,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.659 1999/01/12 06:24:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.660 1999/01/12 07:58:32 dawes Exp $
