@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.141 2001/11/28 21:53:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.142 2001/12/08 16:01:52 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1688,6 +1688,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_VENDOR_3DLABS_CHIP_R4:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA4:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    if (pScrn->bitsPerPixel == 24) {
+		xf86DrvMsg(pScrn->scrnIndex, from, 
+			"-depth 24 -pixmap24 not supported by this chip.\n");
+		return FALSE;
+	    }
 	    pGlint->FIFOSize = 120;
 	    maxheight = 4096;
 	    maxwidth = 4096;
