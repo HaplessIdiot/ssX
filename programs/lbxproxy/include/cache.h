@@ -1,5 +1,5 @@
 /* $TOG: cache.h /main/10 1998/02/10 18:17:09 kaleb $ */
-
+/*
 Copyright 1994, 1998  The Open Group
 
 All Rights Reserved.
