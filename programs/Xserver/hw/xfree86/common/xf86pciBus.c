@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.49 2002/01/25 20:43:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.51 2002/04/04 14:05:40 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -829,19 +829,20 @@ disablePciBios(PCITAG tag)
 
 /* ????? */
 static void
-correctPciSize(memType base, int oldsize, int newsize, long type)
+correctPciSize(memType base, memType oldsize, memType newsize,
+	       unsigned long type)
 {
     pciConfigPtr pcrp, *pcrpp;
     pciVideoPtr pvp, *pvpp;
     CARD32 *basep;
     int i;
-    int old_bits =0, new_bits = 0;
+    int old_bits = 0, new_bits = 0;
 
-    while (oldsize & 1) {
+    if (oldsize + 1) while (oldsize & 1) {
 	old_bits ++;
 	oldsize >>= 1;
     }
-    while (newsize & 1) {
+    if (newsize + 1) while (newsize & 1) {
 	new_bits ++;
 	newsize >>= 1;
     }
@@ -854,24 +855,27 @@ correctPciSize(memType base, int oldsize, int newsize, long type)
 
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
-	    int j = i;
-	    if (basep[i] && (pcrp->basesize[i] == old_bits))
-		if ((((type & ResPhysMask) == ResIo) && PCI_MAP_IS_IO(basep[i])
-		     && (B2I(pcrp->tag,PCIGETIO(basep[i])) == base)) 
-		    || (((type & ResPhysMask) == ResMem) && PCI_MAP_IS_MEM(basep[i])
-			&& (((!PCI_MAP_IS64BITMEM(basep[i])) 
-			     && (B2M(pcrp->tag,PCIGETMEMORY(basep[i])) == base))
-#if defined LONG64 || defined WORD64
-			    || (B2M(pcrp->tag,PCIGETMEMORY64(basep[i])) == base)
+	    if (basep[i] && (pcrp->basesize[i] == old_bits)) {
+		if ((((type & ResPhysMask) == ResIo) &&
+		     PCI_MAP_IS_IO(basep[i]) &&
+		     B2I(pcrp->tag,PCIGETIO(basep[i]) == base)) ||
+		    (((type & ResPhysMask) == ResMem) &&
+		     PCI_MAP_IS_MEM(basep[i]) &&
+		     (((!PCI_MAP_IS64BITMEM(basep[i])) &&
+		       (B2M(pcrp->tag,PCIGETMEMORY(basep[i])) == base))
+#if defined(LONG64) || defined(WORD64)
+		      ||
+		      (B2M(pcrp->tag,PCIGETMEMORY64(basep[i])) == base)
 #endif 
-			    ))) {
-		    pcrp->basesize[j] = new_bits;
-		    return;
+		     ))) {
+		    pcrp->basesize[i] = new_bits;
+		    break;	/* to next device */
 		}
+	    }
 	}
     }
 
-    if (xf86PciVideoInfo)
+    if (xf86PciVideoInfo) {
 	for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
 
 	    for (i = 0; i < 6; i++) {
@@ -881,11 +885,12 @@ correctPciSize(memType base, int oldsize, int newsize, long type)
 			(((type & ResPhysMask) == ResMem) && pvp->memBase[i] 
 			  && (B2M(TAG(pvp),pvp->memBase[i]) == base))) {
 			pvp->size[i] = new_bits;
-			return;
+			break;	/* to next device */
 		    }
 		}
 	    }
 	}
+    }
 }
 
 /* ????? */
@@ -896,7 +901,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
     resPtr tmp,bridgeRes = NULL;
     resRange range = target->val;
 
-    if (!ResIsEstimated(&target->val))
+    if (!ResCanOverlap(&target->val))
 	return;
     
     for (pbp=xf86PciBus; pbp; pbp = pbp->next) {
@@ -912,9 +917,13 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
     
     RemoveOverlaps(target, bridgeRes, TRUE, TRUE);
     if (range.rEnd > target->block_end) {
-	correctPciSize(range.rBegin,range.rEnd - range.rBegin,
+	correctPciSize(range.rBegin, range.rEnd - range.rBegin,
 		       target->block_end - target->block_begin,
 		       target->res_type);
+	xf86MsgVerb(X_INFO, 3,
+	    "PCI %s resource overlap reduced 0x%08x from 0x%08x to 0x%08x\n",
+	    ((target->res_type & ResPhysMask) == ResMem) ?  "Memory" : "I/O",
+	    range.rBegin, range.rEnd, target->block_end);
     }
     xf86FreeResList(bridgeRes);
 }
@@ -986,10 +995,17 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
 	resPtr *res;
+	CARD8 baseclass, subclass;
+
+	if (pcrp->listed_class & 0x0ffff) {
+	    baseclass = pcrp->listed_class >> 8;
+	    subclass = pcrp->listed_class;
+	} else {
+	    baseclass = pcrp->pci_base_class;
+	    subclass = pcrp->pci_sub_class;
+	}
 	
-	if (PCIINFOCLASSES((pcrp->listed_class & 0xffff) ?
-			   ((pcrp->listed_class >> 8) & 0x0ff) :
-			   pcrp->pci_base_class, pcrp->pci_sub_class))
+	if (PCIINFOCLASSES(baseclass, subclass))
 	    continue;
 	
 	/* Only process devices with type 0 headers */
@@ -1000,6 +1016,15 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    resMisc = ResEstimated;
 	else
 	    resMisc = 0;
+
+	/*
+	 * Allow resources allocated to host bridges to overlap.  Perhaps, this
+	 * needs to be specific to AGP-capable chipsets.  AGP "memory"
+	 * sometimes gets allocated within the range routed to the AGP bus.
+	 */
+	if ((baseclass == PCI_CLASS_BRIDGE) &&
+	    (subclass == PCI_SUBCLASS_BRIDGE_HOST))
+	    resMisc |= ResOverlap;
 	
 	if ((pcrp->pci_command & (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
 	    res = activeRes;
@@ -1064,7 +1089,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
     if (*activeRes) {
 	/* Check for overlaps */
 	for (pRes = *activeRes; pRes; pRes = pRes->next) {
-	    if (ResIsEstimated(&pRes->val)) {
+	    if (ResCanOverlap(&pRes->val)) {
 		range = pRes->val;
 
 		RemoveOverlaps(pRes, *activeRes, TRUE, TRUE);
@@ -1072,7 +1097,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		    (xf86Info.estimateSizesAggressively > 0));
 		
 		if (range.rEnd > pRes->block_end) {
-		    correctPciSize(range.rBegin,range.rEnd - range.rBegin,
+		    correctPciSize(range.rBegin, range.rEnd - range.rBegin,
 				   pRes->block_end - pRes->block_begin,
 				   pRes->res_type);
 		    xf86MsgVerb(X_INFO, 3,
@@ -1092,7 +1117,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
     if (*inactiveRes) {
 	/* Check for overlaps */
 	for (pRes = *inactiveRes; pRes; pRes = pRes->next) {
-	    if (ResIsEstimated(&pRes->val)) {
+	    if (ResCanOverlap(&pRes->val)) {
 		range = pRes->val;
 
 		RemoveOverlaps(pRes, *activeRes, TRUE,
@@ -1101,7 +1126,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		    (xf86Info.estimateSizesAggressively > 1));
 		
 		if (range.rEnd > pRes->block_end) {
-		    correctPciSize(range.rBegin,range.rEnd - range.rBegin,
+		    correctPciSize(range.rBegin, range.rEnd - range.rBegin,
 				   pRes->block_end - pRes->block_begin,
 				   pRes->res_type);
 		    xf86MsgVerb(X_INFO, 3,

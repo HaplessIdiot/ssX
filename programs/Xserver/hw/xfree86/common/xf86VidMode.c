@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.11 2001/05/06 00:49:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.12 2001/05/06 21:59:07 mvojkovi Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -329,57 +329,12 @@ VidModeGetViewPort(int scrnIndex, int *x, int *y)
 Bool
 VidModeSwitchMode(int scrnIndex, pointer mode)
 {
-    ScrnInfoPtr pScrn;
-    Bool tmp;
-    
     DEBUG_P("VidModeSwitchMode");
 
-    if ((mode == NULL) || (!VidModeAvailable(scrnIndex)))
+    if (!VidModeAvailable(scrnIndex))
 	return FALSE;
 
-    pScrn = xf86Screens[scrnIndex];
-
-    /* This is basically the xf86ZoomViewport code reproduced */
-
-    if (pScrn->SwitchMode == NULL) return FALSE;
-
-    xf86EnterServerState(SETUP);
-    tmp = pScrn->SwitchMode(scrnIndex, (DisplayModePtr)mode, 0);
-    xf86EnterServerState(OPERATING);
-    if (tmp) {
-	/* 
-	 * adjust new frame for the displaysize
-	 */
-	pScrn->currentMode = (DisplayModePtr)mode;
-	pScrn->frameX0 = (pScrn->frameX1 + pScrn->frameX0 -
-			 ((DisplayModePtr)mode)->HDisplay) / 2;
-	pScrn->frameX1 = pScrn->frameX0 + ((DisplayModePtr)mode)->HDisplay - 1;
-
-	if (pScrn->frameX0 < 0) {
-	    pScrn->frameX0 = 0;
-	    pScrn->frameX1 = pScrn->frameX0 + ((DisplayModePtr)mode)->HDisplay - 1;
-	} else if (pScrn->frameX1 >= pScrn->virtualX) {
-	    pScrn->frameX0 = pScrn->virtualX - ((DisplayModePtr)mode)->HDisplay;
-	    pScrn->frameX1 = pScrn->frameX0 + ((DisplayModePtr)mode)->HDisplay - 1;
-	}
-      
-	pScrn->frameY0 = (pScrn->frameY1 + pScrn->frameY0 -
-			  ((DisplayModePtr)mode)->VDisplay) / 2;
-	pScrn->frameY1 = pScrn->frameY0 + ((DisplayModePtr)mode)->VDisplay - 1;
-
-	if (pScrn->frameY0 < 0) {
-	    pScrn->frameY0 = 0;
-	    pScrn->frameY1 = pScrn->frameY0 + ((DisplayModePtr)mode)->VDisplay - 1;
-	} else if (pScrn->frameY1 >= pScrn->virtualY) {
-	    pScrn->frameY0 = pScrn->virtualY - ((DisplayModePtr)mode)->VDisplay;
-	    pScrn->frameY1 = pScrn->frameY0 + ((DisplayModePtr)mode)->VDisplay - 1;
-	}
-    }
-    
-    if (pScrn->AdjustFrame != NULL)
-	(pScrn->AdjustFrame)(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-
-    return TRUE;
+    return xf86SwitchMode(xf86Screens[scrnIndex]->pScreen, mode);
 }
 
 Bool

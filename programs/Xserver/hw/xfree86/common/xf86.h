@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.157 2001/12/13 18:01:50 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.158 2002/01/25 21:55:50 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -80,9 +80,7 @@ Bool xf86ParsePciBusString(const char *busID, int *bus, int *device,
 Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
 void xf86FormatPciBusNumber(int busnum, char *buffer);
 pciVideoPtr *xf86GetPciVideoInfo(void);
-#ifdef _XF86PCI_H
 pciConfigPtr *xf86GetPciConfigInfo(void);
-#endif
 void xf86SetPciVideo(pciVideoPtr, resType);
 void xf86PrintResList(int verb, resPtr list);
 resPtr xf86AddRangesToList(resPtr list, resRange *pRange, int entityIndex);
@@ -170,8 +168,8 @@ GDevPtr xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo,
 void xf86LockZoom(ScreenPtr pScreen, int lock);
 void xf86InitViewport(ScrnInfoPtr pScr);
 void xf86SetViewport(ScreenPtr pScreen, int x, int y);
-Bool xf86ZoomLocked(ScreenPtr pScreen);
 void xf86ZoomViewport(ScreenPtr pScreen, int zoom);
+Bool xf86SwitchMode(ScreenPtr pScreen, DisplayModePtr mode);
 void *xf86GetPointerScreenFuncs(void);
 void xf86InitOrigins(void);
  

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.67 2001/10/28 03:33:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.68 2002/01/25 21:55:51 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1028,6 +1028,10 @@ needCheck(resPtr pRes, unsigned long type, int entityIndex, xf86State state)
     int i;
     BusType loc = BUS_NONE;
     BusType r_loc = BUS_NONE;
+
+    /* Ignore overlapped ranges that have been nullified */
+    if ((pRes->res_type & ResOverlap) && (pRes->block_begin > pRes->block_end))
+	return FALSE;
     
     if ((pRes->res_type & ResTypeMask) != (type & ResTypeMask))
         return FALSE;
@@ -1324,6 +1328,8 @@ xf86PrintResList(int verb, resPtr list)
 		xf86ErrorFVerb(verb, "%s", s);
 		if (list->res_type & ResEstimated)
 		    xf86ErrorFVerb(verb, "E");
+		if (list->res_type & ResOverlap)
+		    xf86ErrorFVerb(verb, "O");
 		if (list->res_type & ResInit)
 		    xf86ErrorFVerb(verb, "t");
 		if (list->res_type & ResBios)
@@ -1417,17 +1423,26 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment, Bool useEstimated
 	    if (!useEstimated && (pRes->res_type & ResEstimated)) continue;
 	    /*
 	     * Target should be a larger region than pRes.  If pRes fully
-	     * contains target, don't do anything.
+	     * contains target, don't do anything unless target can overlap.
 	     */
 	    if (pRes->block_begin <= target->block_begin &&
-		pRes->block_end >= target->block_end)
+		pRes->block_end >= target->block_end) {
+		if (target->res_type & ResOverlap) {
+		    /* Nullify range but keep its ResOverlap bit on */
+		    target->block_end = target->block_begin - 1;
+		    return;
+		}
 		continue;
+	    }
 	    /*
 	     * In cases where the target and pRes have the same starting
 	     * address, reduce the size of the target (given it's an estimate).
 	     */
 	    if (pRes->block_begin == target->block_begin) {
-		target->block_end = pRes->block_end;
+		if (target->res_type & ResOverlap)
+		    target->block_end = target->block_begin - 1;
+		else
+		    target->block_end = pRes->block_end;
 	    }
 	    /* Otherwise, trim target to remove the overlap */
 	    else if (pRes->block_begin <= target->block_end) {
@@ -2120,7 +2135,7 @@ xf86EnterServerState(xf86State state)
 	ErrorF("Entering OPERATING state\n");
 #endif
 
-    /* When servicing a dump framebuffer we don't need to do anything */
+    /* When servicing a dumb framebuffer we don't need to do anything */
     if (doFramebufferMode) return;
 
     for (i=0; i<xf86NumScreens; i++) {

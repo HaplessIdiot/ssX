@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.83 2001/11/30 12:11:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.85 2002/04/04 14:05:40 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -558,12 +558,13 @@ typedef struct _CurrAccRec {
 #define ResSparse	0x0800
 #define ResExtMask	0x0C00
 
-#define ResEstimated	0x1000
-#define ResInit 	0x2000
-#define ResBios		0x4000
-#define ResMiscMask	0xF000
+#define ResEstimated	0x001000
+#define ResInit 	0x002000
+#define ResBios		0x004000
+#define ResMiscMask	0x00F000
 
-#define ResBus          0x10000
+#define ResBus		0x010000
+#define ResOverlap	0x020000
 
 #define ResDomain	0xff000000ul
 #define ResTypeMask	(ResPhysMask | ResDomain)	/* For conflict check */
@@ -598,6 +599,7 @@ typedef struct _CurrAccRec {
 #define ResIsBlock(r)		(((r)->type & ResExtMask) == ResBlock)
 #define ResIsSparse(r)		(((r)->type & ResExtMask) == ResSparse)
 #define ResIsEstimated(r)	(((r)->type & ResMiscMask) == ResEstimated)
+#define ResCanOverlap(r)	(ResIsEstimated(r) || ((r)->type & ResOverlap))
 
 typedef struct {
     unsigned long type;     /* shared, exclusive, unused etc. */
