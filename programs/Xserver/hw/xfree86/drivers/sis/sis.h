@@ -731,7 +731,7 @@ typedef struct {
     Atom		xv_QVF, xv_QVV, xv_USD, xv_SVF, xv_QDD, xv_TAF, xv_TSA, xv_TEE, xv_GSF;
     Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
     Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI, xv_TXS, xv_TYS, xv_CFI, xv_COC, xv_COF;
-    Atom		xv_YFI;
+    Atom		xv_YFI, xv_GSS;
     BOOLEAN		xv_sisdirectunlocked;
     unsigned long	xv_sd_result;
     int			CRT1isoff;

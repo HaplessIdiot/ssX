@@ -6645,6 +6645,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
        pSiS->VGAEngine != SIS_315_VGA) return FALSE;
 
     /* Mode is OK if there is no video bridge */
+    /* (Requires screen size check in app) */
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return TRUE;
 
     if(cond) {
@@ -6663,6 +6664,7 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
     }
 
     /* Mode is obviously OK if video bridge is disabled */
+    /* (Required extra check for eventual screen size problems in app) */
     if(!(vbflags & CRT2_ENABLE)) return TRUE;
 
     /* Find mode of given index */
@@ -6682,6 +6684,13 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
     } else
 #endif
         hcm = pSiS->HaveCustomModes;
+
+    /* For RandR */
+    if((mode->HDisplay > pScrn->virtualX) || (mode->VDisplay > pScrn->virtualY)) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Desired mode too large for current screen size\n");
+       return FALSE;
+    }
 
     /* Check if the desired mode is suitable for current output device */
     if(!SiS_CheckCalcModeIndex(pScrn, mode, vbflags, hcm)) {

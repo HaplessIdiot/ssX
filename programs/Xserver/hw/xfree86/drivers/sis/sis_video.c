@@ -355,10 +355,11 @@ static char sisxvsdchoverscan[]				= "XV_SD_CHOVERSCAN";
 static char sisxvsdenablegamma[]			= "XV_SD_ENABLEGAMMA";
 static char sisxvsdtvxscale[] 				= "XV_SD_TVXSCALE";
 static char sisxvsdtvyscale[] 				= "XV_SD_TVYSCALE";
+static char sisxvsdgetscreensize[] 			= "XV_SD_GETSCREENSIZE";
 
 #ifndef SIS_CP
-#define NUM_ATTRIBUTES_300 43
-#define NUM_ATTRIBUTES_315 45
+#define NUM_ATTRIBUTES_300 44
+#define NUM_ATTRIBUTES_315 46
 #endif
 
 static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
@@ -406,6 +407,7 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, 0, 3,             sisxvsdenablegamma},
    {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
    {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
+   {             XvGettable, 0, 0xffffffff,    sisxvsdgetscreensize},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -458,6 +460,7 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 0, 3,             sisxvsdenablegamma},
    {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
    {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
+   {             XvGettable, 0, 0xffffffff,    sisxvsdgetscreensize},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -1213,6 +1216,7 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_SGA	      = MAKE_ATOM(sisxvsdenablegamma);
     pSiS->xv_TXS	      = MAKE_ATOM(sisxvsdtvxscale);
     pSiS->xv_TYS	      = MAKE_ATOM(sisxvsdtvyscale);
+    pSiS->xv_GSS	      = MAKE_ATOM(sisxvsdgetscreensize);
 #ifdef SIS_CP
     SIS_CP_VIDEO_ATOMS
 #endif
@@ -1650,6 +1654,8 @@ SISGetPortAttribute(
      *value = SiS_GetTVxscale(pScrn);
   } else if(attribute == pSiS->xv_TYS) {
      *value = SiS_GetTVyscale(pScrn);
+  } else if(attribute == pSiS->xv_GSS) {
+     *value = (pScrn->virtualX << 16) | pScrn->virtualY;
 #ifdef SIS_CP
   SIS_CP_VIDEO_GETATTRIBUTE
 #endif
