@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.15 1999/01/13 08:30:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.16tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2611,7 +2611,7 @@ EventSelectForWindow(pWin, client, mask)
     if (wClient (pWin) == client)
     {
 	check = pWin->eventMask;
-#if SGIMISC
+#ifdef SGIMISC
 	pWin->eventMask =
 	    (mask & ~SGIMiscSpecialDestroyMask) | (pWin->eventMask & SGIMiscSpecialDestroyMask);
 #else
@@ -2625,7 +2625,7 @@ EventSelectForWindow(pWin, client, mask)
 	    if (SameClient(others, client))
 	    {
 		check = others->mask;
-#if SGIMISC
+#ifdef SGIMISC
 		mask = (mask & ~SGIMiscSpecialDestroyMask) | (others->mask & SGIMiscSpecialDestroyMask);
 #endif
 		if (mask == 0)

@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.3 1998/12/06 06:08:53 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.4 1999/02/28 11:20:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -37,6 +37,7 @@
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
+#include <X11/Xaw/List.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Viewport.h>
@@ -85,6 +86,7 @@ extern struct _app_resources {
 } app_resources;
 
 extern Widget topwindow, textwindow, labelwindow, filenamewindow, messwidget;
+extern Widget dirlabel, dirwindow;
 extern Boolean international;
 
 /*	externals in xedit.c 	*/
@@ -109,6 +111,8 @@ void PopupMenu(Widget, XEvent*, String*, Cardinal*);
 void OtherWindow(Widget, XEvent*, String*, Cardinal*);
 void SwitchSource(Widget, XEvent*, String*, Cardinal*);
 void XeditFocus(Widget, XEvent*, String*, Cardinal*);
+void SwitchDirWindow(Bool);
+void DirWindow(Widget, XEvent*, String*, Cardinal*);
 
 /*	externs in commands.c 	*/
 
@@ -122,3 +126,5 @@ void FindFile(Widget, XEvent*, String*, Cardinal*);
 void LoadFile(Widget, XEvent*, String*, Cardinal*);
 void FileCompletion(Widget, XEvent*, String*, Cardinal*);
 void KillFile(Widget, XEvent*, String*, Cardinal*);
+void DirWindowCB(Widget, XtPointer, XtPointer);
+Bool IsDir(char*, Bool);

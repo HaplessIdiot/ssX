@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.7 1998/08/29 05:43:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.8tsi Exp $ */
 
 
 
@@ -199,7 +199,7 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
     }
 #endif
 
-#if TSENG_CPU_TO_SCREEN_COLOREXPAND
+#ifdef TSENG_CPU_TO_SCREEN_COLOREXPAND
     /*
      * CPU-to-screen color expansion doesn't seem to be reliable yet. The
      * W32 needs the correct amount of data sent to it in this mode, or it

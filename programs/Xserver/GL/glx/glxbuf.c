@@ -17,6 +17,7 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 ** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxbuf.c,v 1.2 1999/02/23 07:49:27 martin Exp $
+** $XFree86: xc/programs/Xserver/GL/glx/glxbuf.c,v 1.0tsi Exp $
 */
 
 #include "glxserver.h"
@@ -64,7 +65,7 @@ __glXFBInitDrawable(__GLXdrawablePrivate *glxPriv, __GLcontextModes *modes)
 	}
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -133,7 +134,7 @@ __glXPixInitDrawable(__GLXdrawablePrivate *glxPriv, __GLcontextModes *modes)
 	}
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -188,7 +189,7 @@ __glXResizeBuffers(__GLdrawablePrivate *glPriv,
 	__GLX_SET_ACCEL_BUFFER_MASK(__GL_BACK_BUFFER_MASK);
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 
@@ -249,7 +250,7 @@ __glXFreeBuffers(__GLXdrawablePrivate *glxPriv)
 	(*glPriv->backBuffer.free)(&glPriv->backBuffer, glPriv);
     }
 
-#if __GL_MAX_AUXBUFFERS > 0
+#if defined(__GL_MAX_AUXBUFFERS) && (__GL_MAX_AUXBUFFERS > 0)
     if (modes->maxAuxBuffers > 0) {
 	GLint i;
 

@@ -71,7 +71,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/vbrender.c,v 1.0tsi Exp $ */
 
 /*
  * Render points, lines, and polygons.  The only entry point to this
@@ -89,7 +89,9 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdio.h>
+#endif
 #include "clip.h"
 #include "context.h"
 #include "light.h"

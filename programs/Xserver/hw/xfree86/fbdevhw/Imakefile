@@ -1,9 +1,9 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/Imakefile,v 1.1 1999/03/06 13:12:38 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
-#ifdef LinuxArchitecture
+#if LinuxFBDevSupport
 SRCS =   fbdevhw.c
 OBJS =   fbdevhw.o
 #else

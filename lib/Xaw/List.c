@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/List.c,v 1.6 1998/08/20 13:59:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/List.c,v 1.7 1998/10/03 08:42:07 dawes Exp $ */
 
 /*
  * List.c - List widget
@@ -640,7 +640,11 @@ HighlightBackground(Widget w, int x, int y, GC gc)
       height = height - (lw->list.internal_height - y);
         y = lw->list.internal_height;
     }
-  XFillRectangle(XtDisplay(w), XtWindow(w), gc, x, y, width, height);
+
+    if (gc == lw->list.revgc && lw->core.background_pixmap != XtUnspecifiedPixmap)
+	XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
+    else
+	XFillRectangle(XtDisplay(w), XtWindow(w), gc, x, y, width, height);
 }
 
 
@@ -895,8 +899,14 @@ Layout(Widget w, Bool xfree, Bool yfree, Dimension *width, Dimension *height)
   else if (xfree && yfree)
     {
         lw->list.ncols = lw->list.default_cols;
-      if (lw->list.ncols <= 0)
-	lw->list.ncols = 1;
+	if (lw->list.ncols <= 0) {
+	    int width = (int)XtWidth(lw) - (int)(lw->list.internal_width << 1)
+	      + (int)lw->list.column_space;
+
+	    if (width <= 0 || lw->list.col_width <= 0
+		|| (lw->list.ncols = width / lw->list.col_width) <= 0)
+		lw->list.ncols = 1;
+	}
         width2 = lw->list.ncols * lw->list.col_width
 	+ (lw->list.internal_width << 1);
 	height2 = (lw->list.nrows * lw->list.row_height)

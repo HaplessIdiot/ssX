@@ -65,7 +65,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/pixel.c,v 1.0tsi Exp $ */
 
 /*
  * glPixelStore, glPixelTransfer, glPixelMap, glPixelZoom, etc.
@@ -75,9 +75,11 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#endif
 #include "context.h"
 #include "macros.h"
 #include "pixel.h"

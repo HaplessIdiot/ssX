@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.9 1998/10/04 09:41:18 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.10tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -547,7 +547,7 @@ get_hostname(XHostAddress *ha)
 {
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
     static struct hostent *hp = NULL;
-#if X_NOT_STDC_ENV
+#ifdef X_NOT_STDC_ENV
     char *inet_ntoa();
 #endif
 #endif

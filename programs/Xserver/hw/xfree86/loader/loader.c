@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.31 1999/01/26 05:54:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.32tsi Exp $ */
 
 /*
  *
@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#if UseMMAP
+#ifdef UseMMAP
 #include <sys/mman.h>
 #endif
 #include <unistd.h>
@@ -330,7 +330,7 @@ static int	offsetbias=0; /* offset into archive */
 void *
 _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 {
-#if UseMMAP
+#ifdef UseMMAP
     unsigned long ret;	
 #define MMAP_PROT	(PROT_READ|PROT_WRITE|PROT_EXEC)
 
@@ -390,7 +390,7 @@ _LoaderFreeFileMem(void *addr, int size)
 #ifdef DEBUGMEM
     ErrorF("_LoaderFreeFileMem(%x,%d)\n",addr,size);
 #endif
-#if UseMMAP
+#ifdef UseMMAP
     munmap(addr,size);
 #else
     if(size == 0)

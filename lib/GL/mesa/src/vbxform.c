@@ -95,7 +95,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/vbxform.c,v 1.0tsi Exp $ */
 
 /*
  * This file implements transformation, clip testing and projection of
@@ -106,7 +106,9 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdlib.h>
+#endif
 #include "context.h"
 #include "fog.h"
 #include "light.h"

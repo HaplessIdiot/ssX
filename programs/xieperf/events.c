@@ -66,7 +66,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/events.c,v 3.3 1998/10/04 09:41:21 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/events.c,v 3.5tsi Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -532,7 +532,9 @@ InitExportAvailableEvent(XParms xp, Parms p, int reps)
         }
         else
         {
-                if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) ==
+                if ( ( XIELut = GetXIELut( xp, p,
+					   (unsigned char *)lut,
+					   lutSize, lutSize ) ) ==
                         ( XieLut ) NULL )
                 {
                         reps = 0;

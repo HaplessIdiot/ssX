@@ -68,13 +68,15 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/meas/src/api1.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdio.h>
 #include <stdlib.h>
+#endif
 #include "api.h"
 #include "bitmap.h"
 #include "context.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.5 1999/01/26 05:54:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.6tsi Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -64,74 +64,54 @@ ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #define RETRIES 4
 
 extern unsigned char *GetEDID_DDC1(
-#if NeedFunctionPrototypes
     unsigned int *
-#endif
 );
 
 extern int checksum(
-#if NeedFunctionPrototypes
     unsigned char *,
     int
-#endif
 );
 
 extern xf86MonPtr InterpretEDID(
-#if NeedFunctionPrototypes
     unsigned char *
-#endif
 );
 
 extern xf86vdifPtr InterpretVdif(
-#if NeedFunctionPrototypes
     unsigned char *
-#endif
 );
 
 static unsigned char *EDIDRead_DDC1(
-#if NeedFunctionPrototypes
     ScrnInfoPtr pScrn,
     void (*)(ScrnInfoPtr,xf86ddcSpeed), 
     unsigned int (*)(ScrnInfoPtr)
-#endif
 );
 
 static Bool TestDDC1(
-#if NeedFunctionPrototypes
     ScrnInfoPtr pScrn,
     unsigned int (*)(ScrnInfoPtr)
-#endif
 );
 
 static unsigned int *FetchEDID_DDC1(
-#if NeedFunctionPrototypes
     ScrnInfoPtr,
     register unsigned int (*)(ScrnInfoPtr)
-#endif
 );
 
 static unsigned char* EDID1Read_DDC2(
-#if NeedFunctionPrototypes
     int scrnIndex, 
     I2CBusPtr pBus
-#endif
 );
 
 static unsigned char * VDIFRead(
-#if NEEDFunctionPrototypes
     int scrnIndex, 
     I2CBusPtr pBus, 
     int start
-#endif
 );
 
 static unsigned char * DDCRead_DDC2(
-#if NEEDFunctionPrototypes
     int scrnIndex,
     I2CBusPtr pBus, 
     int start, 
     int len
-#endif
 );
 
 typedef enum {

@@ -47,7 +47,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/ddsample.c,v 1.0tsi Exp $ */
 
 
 /*
@@ -77,8 +77,9 @@
  * the core Mesa library.
  */
 
-
+#ifndef XFree86Server
 #include <stdlib.h>
+#endif
 #include "GL/FooMesa.h"
 #include "context.h"
 #include "matrix.h"

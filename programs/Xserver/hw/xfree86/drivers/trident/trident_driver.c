@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.44 1999/01/28 05:24:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.45 1999/03/07 11:40:41 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1148,7 +1148,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Found %s chip\n", chipset);
     if (ramtype)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "RAM type is %s\n", ramtype);
-    if (!Support24bpp) {
+
+    if (pScrn->bitsPerPixel == 24 && !Support24bpp) {
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "No support for 24bpp on this chipset, use 32bpp.\n");
 	return FALSE;
     }

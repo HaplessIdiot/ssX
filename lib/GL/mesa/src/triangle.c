@@ -92,7 +92,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/triangle.c,v 1.0tsi Exp $ */
 
 /*
  * Triangle rasterizers
@@ -102,9 +102,11 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#endif
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"

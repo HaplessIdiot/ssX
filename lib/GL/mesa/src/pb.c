@@ -71,14 +71,16 @@
  * maximize the number of pixels processed inside loops and to minimize
  * the number of function calls.
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/pb.c,v 1.0tsi Exp $ */
 
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "alpha.h"
 #include "alphabuf.h"
 #include "blend.h"

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.11 1998/09/05 06:36:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.12 1998/11/01 07:57:44 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -100,6 +100,7 @@ struct _XawActionVarList {
 /* expressions */
 static int get_token(XawEvalInfo*);
 static Bool expr(XawEvalInfo*);
+static Bool and(XawEvalInfo*);
 static Bool prim(XawEvalInfo*);
 
 /* resources */
@@ -302,6 +303,28 @@ get_token(XawEvalInfo *info)
 static Bool
 expr(XawEvalInfo *info)
 {
+  Bool left = and(info);
+
+  for (;;)
+    switch (info->token)
+      {
+      case OR:
+	(void)get_token(info);
+	left |= and(info);
+	break;
+      case XOR:
+	(void)get_token(info);
+	left ^= and(info);
+	break;
+      default:
+	return (left);
+      }
+  /* NOTREACHED */
+}
+
+static Bool
+and(XawEvalInfo *info)
+{
   Bool left = prim(info);
 
   for (;;)
@@ -310,14 +333,6 @@ expr(XawEvalInfo *info)
       case AND:
 	(void)get_token(info);
 	left &= prim(info);
-	break;
-      case OR:
-	(void)get_token(info);
-	left |= prim(info);
-	break;
-      case XOR:
-	(void)get_token(info);
-	left ^= prim(info);
 	break;
       default:
 	return (left);
@@ -333,8 +348,9 @@ prim(XawEvalInfo *info)
   switch (info->token)
     {
     case BOOLEAN:
+      e = info->value;
       (void)get_token(info);
-      return (info->value);
+      return (e);
     case NOT:
       (void)get_token(info);
       return (!prim(info));
@@ -351,6 +367,7 @@ prim(XawEvalInfo *info)
 	  XtAppWarning(XtWidgetToApplicationContext(info->widget), msg);
 	  return (False);
 	}
+      (void)get_token(info);
       return (e);
     case END:
       return (True);

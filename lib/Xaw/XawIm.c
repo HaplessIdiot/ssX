@@ -48,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.5 1998/08/16 10:24:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.6 1998/10/03 08:42:32 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1552,6 +1552,23 @@ _XawImWcLookupString(Widget inwidg, XKeyPressedEvent *event,
 	*buf_p++ = _Xaw_atowc(*tmp_p++);
     }
     return( ret );
+}
+
+int
+_XawLookupString(Widget w, XKeyEvent *event, char *buffer_return, int buffer_size,
+		 KeySym *keysym_return, XComposeStatus *status_return)
+{
+    XawVendorShellExtPart *ve;
+    VendorShellWidget vw;
+    XawIcTableList p;
+
+    if ((vw = SearchVendorShell(w)) && (ve = GetExtPart(vw))
+	&& ve->im.xim && (p = GetIcTableShared(w, ve)) && p->xic)
+	return (XmbLookupString(p->xic, event, buffer_return, buffer_size,
+				keysym_return, status_return));
+
+    return (XLookupString(event, buffer_return, buffer_size,
+			  keysym_return, status_return));
 }
 
 int

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.28 1998/10/04 09:40:52 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.29 1998/12/20 11:58:14 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -75,12 +75,15 @@ SHADOWLIB = -lshadow
 #endif
 #endif
 
+XPM_DEFINES = -DXPM 
+
 #if SystemV4 || HasShadowPasswd
 #if !LinuxShadowSuite
 PWD_DEFINES = -DUSESHADOW
 #else
 PWD_DEFINES = -DUSESHADOW -DSHADOWSUITE
 #endif
+
 #if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture)
 SYS_LIBRARIES3 = -lresolv
 #endif
@@ -136,7 +139,7 @@ SYS_LIBRARIES1 = -lutil
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY) $(CRYPT_LIBRARIES)
+LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY) $(CRYPT_LIBRARIES)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
@@ -158,7 +161,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
        DEPLIBS3 = XawClientDepLibs XkbClientDepLibs $(DEPXDMCPLIB)
           LIBS3 = XawClientLibs XkbClientLibs $(XDMCPLIB)
 #endif
-       
+
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
 
@@ -192,7 +195,8 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
-		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES)
+		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES) \
+		$(XPM_DEFINES)
 
 XCOMM
 XCOMM Special definitions for compiling default resources; these parameters

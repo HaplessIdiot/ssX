@@ -41,10 +41,10 @@
  * initial rev
  *
  */
+/* $XFree86: xc/lib/GL/mesa/src/glmisc.h,v 1.0tsi Exp $ */
 
-
-#ifndef MISC_H
-#define MISC_H
+#ifndef GLMISC_H
+#define GLMISC_H
 
 
 #include "types.h"

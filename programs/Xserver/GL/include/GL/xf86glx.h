@@ -31,16 +31,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
  * Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/include/GL/xf86glx.h,v 1.1 1999/02/23 07:49:29 martin Exp $
+ * $XFree86: xc/programs/Xserver/GL/include/GL/xf86glx.h,v 1.0tsi Exp $
  */
 
-#ifdef XFree86LOADER
-/*
- * This is one way to solve the misc.h vs. misc.h header problem.
- * Also required to put an #undef MISC_H in all files that include
- * misc.h in the mesa/src directory.
- */
 #include "miscstruct.h"
 
-#include <X11/Xmd.h>
+#ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif

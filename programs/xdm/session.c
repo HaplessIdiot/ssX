@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.18 1999/02/25 06:01:06 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.19tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -524,7 +524,7 @@ StartClient (
 		     verify->gid, name, errno);
 	    return (0);
 	}
-#if (BSD >= 199103)
+#if defined(BSD) && (BSD >= 199103)
 	if (setlogin(name) < 0)
 	{
 	    LogError("setlogin for \"%s\" failed, errno=%d", name, errno);

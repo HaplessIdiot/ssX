@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.16 1999/01/11 05:13:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.17 1999/02/28 11:19:20 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1900,8 +1900,8 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 				       sizeof(strbuf), &keysym,
 				       (Status*)&compose_status);
   else
-    text.length = XLookupString((XKeyEvent*)event, strbuf, sizeof(strbuf),
-				&keysym, &compose_status);
+    text.length = _XawLookupString(w, (XKeyEvent*)event, strbuf, sizeof(strbuf),
+				   &keysym, &compose_status);
 
   if (text.length == 0)
     return;

@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.3 1999/01/31 14:45:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.4tsi Exp $ */
 
 
 #include "X.h"
@@ -41,7 +41,6 @@ in this Software without prior written authorization from The Open Group.
 #include "mga_bios.h"
 #include "mga.h"
 #include "mga_reg.h"
-#include "mga_map.h"
 #include "mga_macros.h"
 
 

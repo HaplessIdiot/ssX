@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.1 1999/03/06 13:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.2 1999/03/07 08:29:48 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -280,7 +280,8 @@ fbdev_open_pci(pciVideoPtr pPci)
                           but there is no way to to this yet. */
 		for (j = 0; j < FB2PCICOUNT; j++) {
 			if (pPci->vendor   == fb2pci_map[j].vendor &&
-			    pPci->chipType == fb2pci_map[j].chip)
+			    pPci->chipType == fb2pci_map[j].chip   &&
+			    fix.accel      == fb2pci_map[j].id)
 				break;
 		}
 		if (j == FB2PCICOUNT) {

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.9 1998/12/06 06:08:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.10 1999/01/11 05:13:13 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -222,17 +222,7 @@ typedef struct _TextPart {
     int from_left;			     /* Cursor position */
 
     XawTextKillRing *kill_ring_ptr;
-
-#ifndef notyet
-    /* more resources */
-    Boolean adjust_scrollbars;
-#endif
 } TextPart;
-
-#ifndef notyet
-#define XtNadjustScrollbars "adjustScrollbars"
-#define XtCAdjust "Adjust"
-#endif
 
 #define XtRWrapMode "WrapMode"
 #ifndef notdef

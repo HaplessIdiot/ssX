@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.81 1999/03/07 11:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.82 1999/03/07 13:38:46 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1767,7 +1767,7 @@ MGAMapMemFBDev(ScrnInfoPtr pScrn)
 
     pMga->FbStart = pMga->FbBase + pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
 
-#if 0 /* TODO: look at matroxfb how to handle this... */
+#if 1 /* can't ask matroxfb for a mapping of the iload window */
 
     /* Map the ILOAD transfer window if there is one.  We only make
 	DWORD access on DWORD boundaries to this window */

@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.12 1999/01/26 10:40:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.13tsi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -3563,7 +3563,7 @@ InitProcVectors()
  *  then killed again, the client is really destroyed.
  *********************/
 
-Bool terminateAtReset = FALSE;
+char dispatchExceptionAtReset = DE_RESET;
 
 void
 CloseDownClient(client)
@@ -3639,12 +3639,8 @@ CloseDownClient(client)
     if (really_close_down)
     {
 	if (client->clientState == ClientStateRunning && nClients == 0)
-	{
-	    if (terminateAtReset)
-		dispatchException |= DE_TERMINATE;
-	    else
-		dispatchException |= DE_RESET;
-	}
+	    dispatchException |= dispatchExceptionAtReset;
+
 	client->clientState = ClientStateGone;
 	if (ClientStateCallback)
 	{

@@ -24,6 +24,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
+/* $XFree86: xc/lib/FS/FSSetCats.c,v 1.0tsi Exp $ */
 
 /*
 
@@ -55,7 +56,7 @@ FSSetCatalogues(svr, num, cats)
     int         num;
     char      **cats;
 {
-    char        nbytes;
+    int         nbytes;
     fsSetCataloguesReq *req;
     char        buf[256];
     int         i;

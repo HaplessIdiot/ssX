@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.3 1998/12/06 06:08:53 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.4 1999/02/28 11:20:15 dawes Exp $ */
 
 #include "xedit.h"
 #include <time.h>
@@ -49,6 +49,7 @@ static XtActionsRec actions[] = {
 {"popup-menu", PopupMenu},
 {"kill-file", KillFile},
 {"split-window", SplitWindow},
+{"dir-window", DirWindow},
 {"delete-window", DeleteWindow},
 {"xedit-focus", XeditFocus},
 {"other-window", OtherWindow},
@@ -64,6 +65,7 @@ static XawTextPositionInfo infos[3];
 
 Widget topwindow, textwindow, messwidget, labelwindow, filenamewindow;
 Widget scratch, hpane, vpanes[2], labels[3], texts[3], forms[3], positions[3];
+Widget dirlabel, dirwindow;
 Boolean international;
 
 extern void ResetSourceChanged(xedit_flist_item*);
@@ -150,10 +152,36 @@ main(int argc, char *argv[])
       char buf[BUFSIZ];
 
       for (i = 1; i < argc; i++) {
+	  struct stat st;
+
 	  num_args = 0;
 	  filename = ResolveName(argv[i]);
 	  if (filename == NULL || FindTextSource(NULL, filename) != NULL)
 	      continue;
+	  if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
+	      if ((st.st_mode & S_IFDIR) == S_IFDIR
+		  || ((st.st_mode) & S_IFLNK) == S_IFLNK && IsDir(filename, False)) {
+		  if (!num_loaded) {
+		      char path[BUFSIZ + 1];
+
+		      strncpy(path, filename, sizeof(path) - 2);
+		      path[sizeof(path) - 2] = '\0';
+		      if (*path) {
+			  if (path[strlen(path) - 1] != '/')
+			      strcat(path, "/");
+		      }
+		      else
+			  strcpy(path, "./");
+		      XtSetArg(args[0], XtNlabel, "");
+		      XtSetValues(dirlabel, args, 1);
+		      SwitchDirWindow(True);
+		      DirWindowCB(dirwindow, path, NULL);
+		      ++num_loaded;
+		  }
+		  continue;
+	      }
+	  }
+
 	  switch (file_access = CheckFilePermissions(filename, &exists)) {
 	  case NO_READ:
 	      if (exists)
@@ -197,12 +225,8 @@ main(int argc, char *argv[])
 	      XtSetValues(source, args, num_args);
 	      item = AddTextSource(source, argv[i], filename,
 				   flags, file_access);
-	      if (exists && file_access == WRITE_OK) {
-		  struct stat st;
-
-		  if (stat(filename, &st) == 0)
-		      item->mode = st.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
-	      }
+	      if (exists && file_access == WRITE_OK)
+		  item->mode = st.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 	      if (!num_loaded)
 		  SwitchTextSource(item);
 	      ++num_loaded;
@@ -224,7 +248,7 @@ main(int argc, char *argv[])
 static void
 makeButtonsAndBoxes(Widget parent)
 {
-    Widget outer, b_row;
+    Widget outer, b_row, viewport;
     Arg arglist[10];
     Cardinal num_args;
     xedit_flist_item *item;
@@ -319,12 +343,24 @@ makeButtonsAndBoxes(Widget parent)
     texts[1] = XtCreateWidget(editWindow, asciiTextWidgetClass,
 			      vpanes[0], arglist, num_args);
 
+    dirlabel = XtCreateWidget("dirlabel", labelWidgetClass,
+			      vpanes[1], NULL, 0);
+    num_args = 0;
+    XtSetArg(arglist[num_args], XtNheight, 1);				++num_args;
+    XtSetArg(arglist[num_args], XtNwidth, 1);				++num_args;
+    viewport = XtCreateWidget("viewport", viewportWidgetClass,
+			      vpanes[1], arglist, num_args);
+    dirwindow = XtCreateManagedWidget("dirwindow", listWidgetClass,
+				      viewport, NULL, 0);
+
     item = AddTextSource(scratch, "*scratch*", "*scratch*",
 			 0, WRITE_OK);
     ResetSourceChanged(item);
 
     for (num_args = 0; num_args < 3; num_args++)
 	XtAddCallback(texts[num_args], XtNpositionCallback, PositionChanged, NULL);
+
+    XtAddCallback(dirwindow, XtNcallback, DirWindowCB, NULL);
 }
 
 /*	Function Name: Feep

@@ -47,7 +47,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/all.h,v 1.0tsi Exp $ */
 
 /* The purpose of this file is to collect all the header files that Mesa
  * uses into a single header so that we can get new compilers that support
@@ -113,7 +113,7 @@
 #include "macros.h"
 #include "masking.h"
 #include "matrix.h"
-#include "misc.h"
+#include "glmisc.h"
 #include "mmath.h"
 #include "pb.h"
 #include "pixel.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.4 1998/07/25 16:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.5 1998/08/02 07:54:06 dawes Exp $ */
 
 
 typedef unsigned long	Elf32_Addr;
@@ -36,14 +36,21 @@ typedef long            Elf64_Sxword;
 #define ET_HIPROC 6
 
 /* These constants define the various ELF target machines */
-#define EM_NONE  0
-#define EM_M32   1
-#define EM_SPARC 2
-#define EM_386   3
-#define EM_68K   4
-#define EM_88K   5
-#define EM_486   6   /* Perhaps disused */
-#define EM_860   7
+#define EM_NONE  	0
+#define EM_M32   	1
+#define EM_SPARC 	2
+#define EM_386   	3
+#define EM_68K   	4
+#define EM_88K   	5
+#define EM_486   	6   /* Perhaps disused */
+#define EM_860   	7
+#define EM_MIPS		8
+#define EM_MIPS_RS4_BE 10
+#define EM_PARISC      15
+#define EM_SPARC32PLUS 18
+#define EM_PPC	       20
+#define EM_SPARCV9     43
+#define EM_ALPHA       0x9026
 
 /* This is the info that is needed to parse the dynamic section of the file */
 #define DT_NULL		0
@@ -130,6 +137,45 @@ extern Elf32_Dyn _DYNAMIC [];
 #define R_386_GOTOFF	9
 #define R_386_GOTPC	10
 #define R_386_NUM	11
+
+/* sparc Relocation Types */
+#define	R_SPARC_NONE		0
+#define	R_SPARC_8		1
+#define	R_SPARC_16		2
+#define	R_SPARC_32		3
+#define	R_SPARC_DISP8		4
+#define	R_SPARC_DISP16		5
+#define	R_SPARC_DISP32		6
+#define	R_SPARC_WDISP30		7
+#define	R_SPARC_WDISP22		8
+#define	R_SPARC_HI22		9
+#define	R_SPARC_22		10
+#define	R_SPARC_13		11
+#define	R_SPARC_LO10		12
+#define	R_SPARC_GOT10		13
+#define	R_SPARC_GOT13		14
+#define	R_SPARC_GOT22		15
+#define	R_SPARC_PC10		16
+#define	R_SPARC_PC22		17
+#define	R_SPARC_WPLT30		18
+#define	R_SPARC_COPY		19
+#define	R_SPARC_GLOB_DAT	20
+#define	R_SPARC_JMP_SLOT	21
+#define	R_SPARC_RELATIVE	22
+#define	R_SPARC_UA32		23
+#define R_SPARC_PLT32		24
+#define R_SPARC_HIPLT22		25
+#define R_SPARC_LOPLT10		26
+#define R_SPARC_PCPLT32		27
+#define R_SPARC_PCPLT22		28
+#define R_SPARC_PCPLT10		29
+#define R_SPARC_10		30
+#define R_SPARC_11		31
+#define R_SPARC_WDISP16		40
+#define R_SPARC_WDISP19		41
+#define R_SPARC_7		43
+#define R_SPARC_5		44
+#define R_SPARC_6		45
 
 /* m68k Relocation Types */
 #define R_68K_NONE	0		/* No reloc */

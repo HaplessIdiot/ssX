@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.3 1998/12/06 06:08:52 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.4 1999/01/11 05:13:37 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -65,6 +65,16 @@ xedit.textSource*enableUndo:		True
 *bc_label*showGrip:			False
 *bc_label.min:				18
 
+*dirlabel.showGrip:			False
+*dirlabel.min:				18
+*dirlabel.max:				18
+
+*dirwindow.defaultColumns:		0
+*dirwindow.verticalList:		True
+
+*viewport.forceBars:			True
+*viewport.allowVert:			1
+
 *insertFile*text.width:			141
 *search*searchText.width:		157
 *search*replaceText.width:		157
@@ -99,12 +109,14 @@ m<Key>I:	no-op(r)
 <Ctrl>X,:<Key>2:split-window(vertical)\n\
 <Ctrl>X,:<Key>3:split-window(horizontal)\n\
 <Ctrl>X,!<Key>b:switch-source()\n\
-<Ctrl>X,!<Key>o:other-window()\n\
+<Ctrl>X,!<Key>d:dir-window()\n\
 <Ctrl>X,!<Key>k:kill-file()\n\
+<Ctrl>X,!<Key>o:other-window()\n\
 <Ctrl>X,!<Key>u:undo()\n\
 !<Key>b:	insert-char()\n\
-!<Key>o:	insert-char()\n\
+!<Key>d:	insert-char()\n\
 !<Key>k:	insert-char()\n\
+!<Key>o:	insert-char()\n\
 !<Key>u:	insert-char()\n\
 c<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
 <Btn1Down>:	xedit-focus() select-start()
@@ -115,4 +127,5 @@ c<Key>R:	no-op(r)\n\
 m<Key>I:	no-op(r)\n\
 c<Key>G:	cancel-find-file()\n\
 <Key>Return:	load-file()\n\
-<Key>Tab:	file-completion(a)
+<Key>Tab:	file-completion(h)\n\
+<Key>Escape:	cancel-find-file()

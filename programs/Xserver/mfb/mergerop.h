@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.4 1999/01/15 02:27:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.5tsi Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -362,7 +362,7 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == 0
-#if PSZ != 24
+#if !defined(PSZ) || (PSZ != 24)
 #define MROP_DECLARE()	DeclareMergeRop()
 #define MROP_DECLARE_REG()	register DeclareMergeRop()
 #define MROP_INITIALIZE(alu,pm)	InitializeMergeRop(alu,pm)

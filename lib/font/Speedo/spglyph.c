@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spglyph.c,v 1.2 1999/01/31 12:45:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spglyph.c,v 1.3tsi Exp $ */
 
 #include	<X11/X.h>	/* for bit order #defines */
 #include	"spint.h"
@@ -360,7 +360,7 @@ sp_build_all_bitmaps(
 	int j;
 	cfv->char_index = spmf->enc[i * 2 + 1];
 	cfv->char_id = spmf->enc[i * 2];
-#if DEBUG
+#ifdef DEBUG
 fprintf(stderr, "build_all_sp_bitmaps:i = %d, Char ID = %d\n", i, cfv->char_id);
 #endif
 	if (!cfv->char_id)

@@ -1,7 +1,7 @@
 /*
  * Fill rectangles.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.3 1998/03/20 21:05:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.4tsi Exp $ */
 
 /*
 
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-
+#include "mi.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "mergerop.h"

@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.19 1999/01/11 05:13:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.20 1999/02/28 11:19:19 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -424,15 +424,6 @@ static XtResource resources[] = {
     XtRCallback,
     NULL
   },
-  {
-    XtNadjustScrollbars,
-    XtCAdjust,
-    XtRBoolean,
-    sizeof(Boolean),
-    offset(text.adjust_scrollbars),
-    XtRImmediate,
-    (XtPointer)False
-  },
 };
 #undef offset
 
@@ -621,47 +612,28 @@ XawTextClassInitialize(void)
 static void
 PositionHScrollBar(TextWidget ctx)
 {
-  Widget hbar = ctx->text.hbar, vbar = ctx->text.vbar;
-  Position x, y;
-  Dimension width, height;
+    Widget hbar = ctx->text.hbar, vbar = ctx->text.vbar;
+    Position x, y;
+    Dimension width, height;
 
-  if (ctx->text.hbar == NULL)
-    return;
+    if (ctx->text.hbar == NULL)
+	return;
 
-  if (ctx->text.adjust_scrollbars)
-    {
-      x = ctx->text.r_margin.left;
-      y = XtHeight(ctx) - ctx->text.r_margin.bottom;
-      width = XtWidth(ctx) - (XtBorderWidth(hbar)<<1)
-	- ctx->text.r_margin.left - ctx->text.r_margin.right;
-      if (vbar != NULL)
-	{
-	  x -= XtBorderWidth(hbar);
-	  width += XtBorderWidth(hbar);
-	}
-
-      if (width > XtWidth(ctx))
-	width = XtWidth(ctx);
-    }
-  else
-    {
-      if (vbar != NULL)
+    if (vbar != NULL)
 	x = XtWidth(vbar);
-      else
+    else
 	x = -XtBorderWidth(hbar);
-      y = XtHeight(ctx) - XtHeight(hbar) - XtBorderWidth(hbar);
-      if (vbar != NULL)
-	{
-	  width = XtWidth(ctx) - XtWidth(vbar) - XtBorderWidth(vbar);
-	  if (width > XtWidth(ctx))
+    y = XtHeight(ctx) - XtHeight(hbar) - XtBorderWidth(hbar);
+    if (vbar != NULL) {
+	width = XtWidth(ctx) - XtWidth(vbar) - XtBorderWidth(vbar);
+	if (width > XtWidth(ctx))
 	    width = XtWidth(ctx);
-	}
-      else
-	width = XtWidth(ctx);
     }
-  height = XtHeight(hbar);
+    else
+	width = XtWidth(ctx);
+    height = XtHeight(hbar);
 
-  XtConfigureWidget(hbar, x, y, width, height, XtBorderWidth(hbar));
+    XtConfigureWidget(hbar, x, y, width, height, XtBorderWidth(hbar));
 }
 
 /*
@@ -677,33 +649,18 @@ PositionHScrollBar(TextWidget ctx)
 static void
 PositionVScrollBar(TextWidget ctx)
 {
-  Widget vbar = ctx->text.vbar, hbar = ctx->text.hbar;
-  Position x, y;
-  Dimension width, height;
+    Widget vbar = ctx->text.vbar, hbar = ctx->text.hbar;
+    Position x, y;
+    Dimension width, height;
 
-  if (vbar == NULL)
-    return;
+    if (vbar == NULL)
+	return;
 
-  if (ctx->text.adjust_scrollbars)
-    {
-      x = ctx->text.r_margin.left - XtWidth(vbar) - (XtBorderWidth(vbar)<<1);
-      y = ctx->text.r_margin.top;
-      height = XtHeight(ctx) - (XtBorderWidth(vbar)<<1)
-	- ctx->text.r_margin.top - ctx->text.r_margin.bottom;
-      if (hbar != NULL)
-	height += XtHeight(hbar) + (XtBorderWidth(hbar)<<1);
+    x = y = -XtBorderWidth(vbar);
+    height = XtHeight(ctx);
+    width = XtWidth(vbar);
 
-      if (height > XtHeight(ctx))
-	height = XtHeight(ctx);
-    }
-  else
-    {
-      x = y = -XtBorderWidth(vbar);
-      height = XtHeight(ctx);
-    }
-  width = XtWidth(vbar);
-
-  XtConfigureWidget(vbar, x, y, width, height, XtBorderWidth(vbar));
+    XtConfigureWidget(vbar, x, y, width, height, XtBorderWidth(vbar));
 }
 
 static void
@@ -720,8 +677,6 @@ CreateVScrollBar(TextWidget ctx)
   XtAddCallback(vbar, XtNjumpProc, VJump, (XtPointer)ctx);
 
   ctx->text.r_margin.left += XtWidth(vbar) + XtBorderWidth(vbar);
-  if (ctx->text.adjust_scrollbars)
-    ctx->text.r_margin.left += XtBorderWidth(vbar);
   ctx->text.left_margin = ctx->text.margin.left = ctx->text.r_margin.left;
 
   PositionVScrollBar(ctx);
@@ -754,8 +709,6 @@ DestroyVScrollBar(TextWidget ctx)
     return;
 
   ctx->text.r_margin.left -= XtWidth(vbar) + XtBorderWidth(vbar);
-  if (ctx->text.adjust_scrollbars)
-    ctx->text.r_margin.left -= XtBorderWidth(vbar);
   ctx->text.left_margin = ctx->text.margin.left = ctx->text.r_margin.left;
 
   XtDestroyWidget(vbar);
@@ -781,8 +734,6 @@ CreateHScrollBar(TextWidget ctx)
   XtAddCallback(hbar, XtNjumpProc, HJump, (XtPointer)ctx);
 
   bottom = ctx->text.r_margin.bottom + XtHeight(hbar) + XtBorderWidth(hbar);
-  if (ctx->text.adjust_scrollbars)
-    bottom += XtBorderWidth(hbar);
 
   ctx->text.margin.bottom = ctx->text.r_margin.bottom = bottom;
 
@@ -814,8 +765,6 @@ DestroyHScrollBar(TextWidget ctx)
     return;
 
   ctx->text.r_margin.bottom -= XtHeight(hbar) + XtBorderWidth(hbar);
-  if (ctx->text.adjust_scrollbars)
-    ctx->text.r_margin.bottom -= XtBorderWidth(hbar);
   ctx->text.margin.bottom = ctx->text.r_margin.bottom;
 
   XtDestroyWidget(hbar);
@@ -3401,8 +3350,6 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
 	{
 	  newtw->text.left_margin += XtWidth(newtw->text.vbar)
 	    + XtBorderWidth(newtw->text.vbar);
-	  if (newtw->text.adjust_scrollbars)
-	    newtw->text.left_margin -= XtBorderWidth(newtw->text.vbar);
 	}
       redisplay = True;
     }

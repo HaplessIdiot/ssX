@@ -24,10 +24,11 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbui/XKBui.c,v 3.4tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #if defined(SVR4) && defined(i386) && !defined(_XOPEN_SOURCE)
 #  define _XOPEN_SOURCE
@@ -39,6 +40,7 @@
 
 #include <X11/Xfuncs.h>
 #include "XKBuiPriv.h"
+#include "XKBfileInt.h"
 #include <X11/extensions/XKBfile.h>
 
 #ifndef M_PI

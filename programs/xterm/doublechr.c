@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/doublechr.c,v 3.4 1998/10/25 07:12:43 dawes Exp $
+ * $XFree86: xc/programs/xterm/doublechr.c,v 3.5 1998/11/22 10:37:46 dawes Exp $
  */
 
 /************************************************************
@@ -174,7 +174,7 @@ xterm_DoubleGC(unsigned chrset, unsigned flags, GC old_gc)
 	gcv.foreground = screen->foreground;
 	gcv.background = term->core.background_pixel;
 
-	screen->double_gc[n] = XCreateGC (screen->display, TextWindow(screen), mask, &gcv);
+	screen->double_gc[n] = XCreateGC (screen->display, VWindow(screen), mask, &gcv);
 	XCopyGC(screen->display, old_gc, ~GCFont, screen->double_gc[n]);
 	return screen->double_gc[n];
 }

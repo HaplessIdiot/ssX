@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.7 1998/08/29 14:34:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.8tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -10,8 +10,6 @@
 #include "mga_bios.h"
 #include "mga.h"
 #include "mga_reg.h"
-#include "mga_map.h"
-#include "mga_macros.h"
 
 Bool 
 MGAHWCursorInit(ScreenPtr pScreen)

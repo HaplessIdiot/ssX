@@ -53,7 +53,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/eval.c,v 1.0tsi Exp $ */
 
 /*
  * eval.c was written by
@@ -71,9 +71,11 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "context.h"
 #include "eval.h"
 #include "macros.h"

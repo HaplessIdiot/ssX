@@ -53,13 +53,15 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/feedback.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <stdio.h>
+#endif
 #include "context.h"
 #include "feedback.h"
 #include "macros.h"

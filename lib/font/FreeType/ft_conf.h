@@ -1,12 +1,13 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.4 1999/01/24 13:32:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.5tsi Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
 #define FT_CONF_H
 
 #include <X11/Xmd.h>
+#include "servermd.h"
 #include "fontmisc.h"
 #include <X11/Xfuncproto.h>
 

@@ -1,4 +1,46 @@
 XFree86 3.9Pe (14 March 1999)
+2356. Update copyright notices in the s3virge driver (#2546, Kevin Brosius).
+2355. Xterm patch #93 (#2546, Thomas Dickey).
+2354. Fix some minor fbdev problems in fbdevhw and the mga driver (#2545,
+      Gerd Knorr).
+2353. Disable the loader for LinuxPPC because it doesn't work (#2545,
+      Gerd Knorr).
+2352. Disable the Linux fbdevhw by default for versions older than 2.2
+      (#2545, Gerd Knorr).
+2351. Xaw and xedit updates, including changes to Xaw to support latin*
+      languages in the text code when not using the "international" resource
+      (#2544, Paulo Cesar Pereira de Andrade).
+2350. Add 3D decoration and the ability to display an XPM pixmap in the xdm
+      Login widget.  A default pixmap made with the XFree86 logo is included
+      (#2543, Amit Margalit, Caolan McNamara, Ivan Griffin, Matthieu Herrb).
+2349. Improve attribute scaling in the PM2 Xv driver (#2542, Michael Schimek).
+2348. Add an "acecad" mouse protocol so that an acecad tablet can be used
+      with the standard mouse driver (#2541, Jeff Anton).
+2347. Include xf86_ansic.h in module build of xf86vmode.c (#2540,
+      Matthieu Herrb).
+2346. Fix a server crash when no mode lines are specified in the Monitor
+      section (#2539, Andreas Ehliar).
+2345. Resync SuperProbe with the 3.3.3.1 version (#2538, Marc La France).
+2344. Document -once server commad line option (#2538, Marc La France).
+2343. Add and document a -noreset server command line option to disable server
+      resets when the last client connection is closed.  This is useful for
+      xtest'ing a server that is switched out (#2538, Marc La France).
+2342. More compiler warning fixups, including a re-integration of GLX for both
+      static and loader builds (#2538, Marc La France).
+2341. On Linux, compile with _GNU_SOURCE so that declarations for snprintf &
+      friends may be #include'd with <stdio.h> (#2538, Marc La France).
+2340. Fix the glint driver's use of resource control, which fixes problems
+      using MGA/GLINT combinations in multi-head (#2537, Alan Hourihane).
+2339. Fix a problem building xrdb with SVR4.0's cc (#2536, Satoshi Kimura).
+2338. Fix a trident 24bpp bug (#2535, Alan Hourihane).
+2337. Fix Permedia 2V hardware cursor (#2534, Alan Hourihane).
+2336. Add the rest of the known EM_ machine type defines, and Sparc
+      specific relocation defines to loader/elf.h (#2533, David Miller).
+2335. Add sparse mapping of MMIO to the s3virge driver for Alpha (#2532,
+      Matt Grossman).
+2334. Disable MTRRs when unmapping memory (#2531, David Wragg).
+2333. Avoid the MTRR messages on systems with no MTRR support unless
+      the "mtrr" option is specified or -verbose is used (#2531, David Wragg).
 2332. Disable transparency for screen to screen copies for the Trident
       Image3D (Alan Hourihane).
 2331. Remove pixmaps from offscreen memory when they are used to tile
@@ -7425,4 +7467,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.701 1999/03/07 14:05:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.702 1999/03/12 02:36:22 dawes Exp $

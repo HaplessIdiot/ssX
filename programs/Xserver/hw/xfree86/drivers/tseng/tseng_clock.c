@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.10 1998/08/29 05:43:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.11tsi Exp $ */
 
 
 
@@ -494,7 +494,7 @@ TsengcommonCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2, i
 	}
     }
 
-#if EXTENDED_DEBUG
+#ifdef EXTENDED_DEBUG
     ErrorF("Clock parameters for %1.6f MHz: m=%d, n1=%d, n2=%d\n",
 	((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_FREQ,
 	best_m - 2, best_n1 - 2, best_n2);
