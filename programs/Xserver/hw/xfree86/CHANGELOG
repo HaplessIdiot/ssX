@@ -1,4 +1,8 @@
-XFree86 4.2.99.1 (XX June 2002)
+XFree86 4.2.99.1 (5 June 2002)
+ 183. Add a mkfontscale utility for creating fonts.scale files (#5213, 5214,
+      Juliusz Chroboczek).
+ 182. Add a 1152x768 mode suitable for Titanium PowerBooks to the set of
+      build-in modes (#5212, Michel Dänzer).
  181. Add support to xkbcomp and libxkbfile for composing multi-layout
       keyboard maps from partial "single layout" files.  This allows
       the XkbLayout to be specified as a comma-separated list of single
@@ -14888,4 +14892,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2242 2002/06/04 23:04:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2243 2002/06/05 00:00:34 dawes Exp $

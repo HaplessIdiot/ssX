@@ -1,0 +1,15 @@
+XCOMM $XFree86$
+
+LOCAL_LIBRARIES = $(XFONTENCLIB) $(FREETYPE2LIB)
+
+SYS_LIBRARIES = MathLibrary GzipLibrary
+
+SRCS = mkfontscale.c list.c
+
+OBJS = mkfontscale.o list.o
+
+INCLUDES = $(FREETYPE2INCLUDES)
+DEFINES = $(FREETYPE2DEFINES)
+
+ComplexProgramTarget(mkfontscale)
+
