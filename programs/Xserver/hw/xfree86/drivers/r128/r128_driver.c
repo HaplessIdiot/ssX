@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.3 2000/01/17 20:53:30 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -468,7 +468,12 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
     CARD16        pll_info_block;
     CARD8         tmp[64];
 	
-    xf86ReadPciBIOS(0, info->PciTag, 0, tmp, sizeof(tmp));
+#define R128ReadBIOS(offset, buffer, length)                                  \
+    (info->BIOSFromPCI ?                                                      \
+     xf86ReadPciBIOS(offset, info->PciTag, 0, buffer, length) :               \
+     xf86ReadBIOS(info->BIOSAddr, offset, buffer, length))
+
+    R128ReadBIOS(0, tmp, sizeof(tmp));
     if (tmp[0] != 0x55 || tmp[1] != 0xaa) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Video BIOS not detected, using default PLL parameters!\n");
@@ -482,27 +487,27 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 	pll->max_pll_freq   = 25000;
 	pll->xclk           = 10300;
     } else {
-	xf86ReadPciBIOS(0x48, info->PciTag, 0,
-			(CARD8 *)&bios_header, sizeof(bios_header));
-	xf86ReadPciBIOS(bios_header + 0x30, info->PciTag, 0,
-			(CARD8 *)&pll_info_block, sizeof(pll_info_block));
+	R128ReadBIOS(0x48,
+		     (CARD8 *)&bios_header, sizeof(bios_header));
+	R128ReadBIOS(bios_header + 0x30,
+		     (CARD8 *)&pll_info_block, sizeof(pll_info_block));
 	R128TRACE(("Header at 0x%04x; PLL Information at 0x%04x\n",
 		   bios_header, pll_info_block));
 
-	xf86ReadPciBIOS(pll_info_block + 0x0e, info->PciTag, 0,
+	R128ReadBIOS(pll_info_block + 0x0e,
 		     (CARD8 *)&pll->reference_freq,
 		     sizeof(pll->reference_freq));
-	xf86ReadPciBIOS(pll_info_block + 0x10, info->PciTag, 0,
-			(CARD8 *)&pll->reference_div,
-			sizeof(pll->reference_div));
-	xf86ReadPciBIOS(pll_info_block + 0x12, info->PciTag, 0,
-			(CARD8 *)&pll->min_pll_freq,
-			sizeof(pll->min_pll_freq));
-	xf86ReadPciBIOS(pll_info_block + 0x16, info->PciTag, 0,
-			(CARD8 *)&pll->max_pll_freq,
-			sizeof(pll->max_pll_freq));
-	xf86ReadPciBIOS(pll_info_block + 0x08, info->PciTag, 0,
-			(CARD8 *)&pll->xclk, sizeof(pll->xclk));
+	R128ReadBIOS(pll_info_block + 0x10,
+		     (CARD8 *)&pll->reference_div,
+		     sizeof(pll->reference_div));
+	R128ReadBIOS(pll_info_block + 0x12,
+		     (CARD8 *)&pll->min_pll_freq,
+		     sizeof(pll->min_pll_freq));
+	R128ReadBIOS(pll_info_block + 0x16,
+		     (CARD8 *)&pll->max_pll_freq,
+		     sizeof(pll->max_pll_freq));
+	R128ReadBIOS(pll_info_block + 0x08,
+		     (CARD8 *)&pll->xclk, sizeof(pll->xclk));
     }
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -745,8 +750,14 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	       "MMIO registers at 0x%08lx\n", info->MMIOAddr);
 
 				/* BIOS */
-    from             = X_PROBED;
-    info->BIOSAddr   = info->PciInfo->biosBase & 0xfffe0000;
+    from              = X_PROBED;
+    info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
+    info->BIOSFromPCI = TRUE;
+    if (!info->BIOSAddr) {
+	info->BIOSAddr    = 0x000c0000;
+	from              = X_DEFAULT;
+	info->BIOSFromPCI = FALSE;
+    }
     if (dev->BiosBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "BIOS address override, using 0x%08x instead of 0x%08x\n",
