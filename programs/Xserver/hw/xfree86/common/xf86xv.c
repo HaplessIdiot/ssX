@@ -996,8 +996,12 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
 {
   ScreenPtr pScreen = pWin->drawable.pScreen;
   XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
-  XF86XVWindowPtr WinPriv, pPrev;
+  XF86XVWindowPtr WinPriv = GET_XF86XV_WINDOW(pWin);
+  XF86XVWindowPtr pPrev;
   XvPortRecPrivatePtr pPriv;
+  Bool AreasExposed;
+
+  AreasExposed = (WinPriv && reg1 && REGION_NOTEMPTY(pScreen, reg1));
 
   pScreen->WindowExposures = ScreenPriv->WindowExposures;
   (*pScreen->WindowExposures)(pWin, reg1, reg2);
@@ -1006,7 +1010,6 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
   /* filter out XClearWindow/Area */
   if (!pWin->valdata) return;
    
-  WinPriv = GET_XF86XV_WINDOW(pWin);
   pPrev = NULL;
 
   while(WinPriv) {
@@ -1024,6 +1027,24 @@ xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
      default:  /* overlaid still/image*/
 	if (pPriv->AdaptorRec->ReputImage)
 	   xf86XVReputImage(pPriv);
+	else if(AreasExposed) {
+	    XF86XVWindowPtr tmp;
+
+	    (*pPriv->AdaptorRec->StopVideo)(
+			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+	    pPriv->isOn = FALSE;
+	    pPriv->pDraw = NULL;
+
+	    if(!pPrev) 
+	       pWin->devPrivates[XF86XVWindowIndex].ptr = 		
+						(pointer)(WinPriv->next);
+	    else
+	       pPrev->next = WinPriv->next;
+	    tmp = WinPriv;
+	    WinPriv = WinPriv->next;
+	    xfree(tmp);
+	    continue;
+	}
 	break;
      }
      pPrev = WinPriv;
