@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.7 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.8 2001/04/07 17:48:31 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -242,6 +242,7 @@ extern char **envpGlobal;
     if (show) {
         ev.data.compound.subType = kXDarwinShow;
         [self sendNXEvent:&ev];
+        HideMenuBar();
 
         // inform the X server of the current modifier state
         ev.flags = [[NSApp currentEvent] modifierFlags];
@@ -256,6 +257,7 @@ extern char **envpGlobal;
 
         ev.data.compound.subType = kXDarwinHide;
         [self sendNXEvent:&ev];
+        ShowMenuBar();
     }
 
     serverVisible = show;
