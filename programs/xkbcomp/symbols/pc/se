@@ -1,0 +1,41 @@
+
+// based on a keyboard map from an 'xkb/symbols/se' file
+
+partial alphanumeric_keys
+xkb_symbols "basic" {
+
+    include "pc/latin(type2)"
+
+    name[Group1]="Swedish";
+
+    key <AE11>	{ [      plus,   question,    backslash, questiondown ]	};
+    key <AE12>	{ [dead_acute, dead_grave,    plusminus,      notsign ]	};
+
+
+    key <AC10>	{ [odiaeresis, Odiaeresis,       oslash,     Ooblique ]	};
+    key <AC11>	{ [adiaeresis, Adiaeresis,           ae,           AE ]	};
+    key <TLDE>	{ [   section,    onehalf,    paragraph, threequarters]	};
+
+    key <BKSL>	{ [apostrophe,   asterisk,        acute,     multiply ]	};
+
+    key <SPCE>	{ type[Group1]="FOUR_LEVEL",
+                  [     space,      space,        space, nobreakspace ]	};
+
+    key <RALT>  { type[Group1]="TWO_LEVEL",
+                  [ ISO_Level3_Shift, Multi_key ]   };
+    modifier_map Mod5   { <RALT> };
+};
+
+partial alphanumeric_keys
+xkb_symbols "nodeadkeys" {
+
+    // Modifies the basic Swedish layout to eliminate all dead keys
+
+    include "pc/se(basic)"
+
+    key <AE12>	{ [     acute,      grave ]	};
+    key <AD12>	{ [ diaeresis, asciicircum ]	};
+    key <AB08>	{ [     comma,  semicolon,      cedilla,       ogonek ]	};
+    key <AB09>	{ [    period,      colon, periodcentered,   abovedot ]	};
+
+};

@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:42 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.44 2001/11/21 22:28:52 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.46 2002/04/04 14:05:59 eich Exp $
 
 #define IHaveSubdirs
 
@@ -31,7 +31,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.44 2001/11/21 22:28:52
 		 vn \
 		 yu
 
-       SUBDIRS = digital fujitsu hp macintosh nec sgi sony sun xfree68
+       SUBDIRS = digital fujitsu hp macintosh nec sgi sony sun xfree68 pc
 
 MakeXkbDir($(LIBDIR)/xkb,symbols)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols)

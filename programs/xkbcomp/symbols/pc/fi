@@ -1,0 +1,24 @@
+
+// based on a keyboard map from an 'xkb/symbols/fi' file
+
+partial alphanumeric_keys
+xkb_symbols "basic" {
+
+    include "pc/latin(type2)"
+
+    name[Group1]="Finnish";
+
+    key <AE11>	{ [      plus,   question,    backslash, questiondown ]	};
+    key <AE12>	{ [dead_acute, dead_grave,    plusminus,      notsign ]	};
+
+
+    key <AC10>	{ [odiaeresis, Odiaeresis,       oslash,     Ooblique ]	};
+    key <AC11>	{ [adiaeresis, Adiaeresis,           ae,           AE ]	};
+    key <TLDE>	{ [   section,    onehalf,   paragraph, threequarters ]	};
+
+    key <BKSL>	{ [apostrophe,   asterisk,        acute,     multiply ]	};
+
+    key <RALT>  { type[Group1]="TWO_LEVEL",
+                  [ ISO_Level3_Shift, Multi_key ]   };
+    modifier_map Mod5   { <RALT> };
+};

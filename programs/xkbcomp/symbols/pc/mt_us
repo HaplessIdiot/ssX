@@ -1,0 +1,30 @@
+
+// based on
+// Maltese keyboard map (for US-based keyboards)
+// by Ramon Casha (ramon.casha@linux.org.mt)
+
+partial default alphanumeric_keys
+xkb_symbols "basic" {
+
+    include "pc/latin"
+
+    name[Group1]="Maltese";
+
+    key <AE06>	{ [         6, dead_circumflex, asciicircum, fiveeighths ] };
+    key <AE12>	{ [ cabovedot,  Cabovedot,        equal,         plus ]	};
+
+    key <AD03>	{ [         e,          E,     EuroSign,     EuroSign ]	};
+    key <AD11>	{ [ gabovedot,  Gabovedot,  bracketleft,    braceleft ]	};
+    key <AD12>	{ [   hstroke,    Hstroke, bracketright,   braceright ]	};
+
+    key <AC05>	{ [         g,          G,    gabovedot,    Gabovedot ]	};
+    key <TLDE>	{ [dead_grave, asciitilde,        grave,        grave ]	};
+
+    key <BKSL>	{ [ zabovedot,  Zabovedot,    backslash,          bar ]	};
+    key <AB01>	{ [         z,          Z,    zabovedot,    Zabovedot ]	};
+    key <AB03>	{ [         c,          C,    cabovedot,    Cabovedot ]	};
+
+    key <RALT>  { type[Group1]="TWO_LEVEL",
+                  [ ISO_Level3_Shift, Multi_key ]   };
+    modifier_map Mod5   { <RALT> };
+};
