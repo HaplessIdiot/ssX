@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.82 2003/01/15 03:17:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.83 2003/02/26 21:59:44 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -142,8 +142,12 @@ SGMLMANDEFS=-D__drivermansuffix__='"$(DRIVERMANSUFFIX)"' \
 HTMLMANDEFS=-DHTML_MANPAGES
 #endif
 
+#if BuildSpecsDocs && defined(HTMLroffCmd)
+HTMLSPECDEFS=-DHTML_SPECS
+#endif
+
 AllTarget(mdefs.ent)
-CppRawFileTarget(mdefs.ent,mdefs.cpp,$(SGMLMANDEFS) $(HTMLMANDEFS),NullParameter)
+CppRawFileTarget(mdefs.ent,mdefs.cpp,$(SGMLMANDEFS) $(HTMLMANDEFS) $(HTMLSPECDEFS),NullParameter)
 
 /* Generate the documentation index */
 index.sgml: $(INDEXLIST) index.pre index.post add.sh Imakefile $(SGMLDEPENDS) $(MANSGMLDEPENDS)

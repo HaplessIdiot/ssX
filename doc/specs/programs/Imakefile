@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:50 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.16 2003/02/17 18:52:45 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.17 2003/02/18 03:01:42 dawes Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */
@@ -220,10 +220,11 @@ MANUALS = \
   $(TOP)/programs/xwininfo/xwininfo.man \
   $(TOP)/programs/xwud/xwud.man
 
-AllTarget(man.PS)
-
 XCOMM Sun's -man macros use the D and C registers
 MANUALFLAGS = -rD1 -rC1
+
+/* Don't install HTML version */
+NOHTML = y
 
 man.$(MANSRCSUFFIX): $(MANUALS)
 	RemoveFile($@)
@@ -233,8 +234,9 @@ EXTRAMANDEFS = -D__logdir__=$(LOGDIRECTORY) -D__xinitdir__=$(XINITDIR)
 
 CppManTarget(man,$(EXTRAMANDEFS))
 
-man.PS: man.$(MANNEWSUFFIX)
-	$(TROFF) $(MANMACROS) $(MANUALFLAGS) man.$(MANNEWSUFFIX) > $@
+MSMACROS = $(MANMACROS) $(MANUALFLAGS)
 
-clean::
-	$(RM) man.PS man.$(MANSRCSUFFIX) man.$(MANNEWSUFFIX)
+MakeSimpleDoc(man,man.$(MANNEWSUFFIX))
+
+InstallRoffDoc(man)
+

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.195 2003/02/17 18:57:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.196 2003/02/25 21:57:52 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1385,6 +1385,9 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef DocPsDir
 #define DocPsDir $(DOCDIR)/PostScript
 #endif
+#ifndef DocPdfDir
+#define DocPdfDir $(DOCDIR)/PDF
+#endif
 #ifndef FontDir
 #define FontDir $(LIBDIR)/fonts
 #endif
@@ -1548,6 +1551,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
            DOCDIR = DocDir
        DOCHTMLDIR = DocHtmlDir
          DOCPSDIR = DocPsDir
+        DOCPDFDIR = DocPdfDir
           FONTDIR = FontDir		/* font directories */
      ENCODINGSDIR = $(FONTDIR)/encodings /* font encodings directory */
          XINITDIR = XinitDir		/* xinit config files */
@@ -3856,21 +3860,98 @@ clean::									@@\
 #define PostProcessTroffPS(temp,real) $(MV) temp real
 #endif
 
+/*
+ * PostProcessTroffHTML - by default moves the working output into place,
+ * but can be a hook for more complicated post-processing.
+ */
+#ifndef PostProcessTroffHTML
+#define PostProcessTroffHTML(temp,real) $(MV) temp real
+#endif
+
+#ifdef HTMLroffCmd
+#define HtmlTarget(file) file.html
+#define HtmlClean(file) file.nhtml file.html
+#else
+#define HtmlTarget(file) /**/
+#define HtmlClean(file) /**/
+#endif
+
+#ifdef PsToPdfCmd
+#define PdfTarget(file) file.pdf
+#define PdfClean(file) file.pdf
+#else
+#define PdfTarget(file) /**/
+#define PdfClean(file) /**/
+#endif
+
+#ifndef ConvertPsToPdf
+#define ConvertPsToPdf(file)						@@\
+file.pdf: file.ps							@@\
+	RemoveFile(file.pdf)						@@\
+	$(PSTOPDFCMD) < file.ps > file.pdf
+#else
+#define ConvertPsToPdf(file) /**/
+#endif
+
+#ifndef MakeDepSimpleHtmlDoc
+#ifdef HTMLroffCmd
+#define MakeDepSimpleHtmlDoc(file,deps,srcs)				@@\
+HtmlTarget(file): deps							@@\
+	$(HTMLROFF) $(MSMACROS) $(XDOCMACROS) srcs \			@@\
+		2> index.raw > file.nhtml \				@@\
+	  && PostProcessTroffHTML(file.nhtml,$@)
+#else
+#define MakeDepSimpleHtmlDoc(file,deps,srcs) /**/
+#endif
+#endif
+
+#ifndef MakeTblHtmlDoc(file,srcs)
+#ifdef HTMLroffCmd
+#define MakeTblHtmlDoc(file,srcs)					@@\
+file.html: srcs								@@\
+	$(TBL) $(XDOCMACROS) srcs | $(HTMLROFF) $(MSMACROS) \		@@\
+		2> index.raw > file.nhtml \				@@\
+	  && PostProcessTroffHTML(file.nhtml,$@)
+#else
+#define MakeTblHtmlDoc(file,srcs) /**/
+#endif
+#endif
+
+#ifndef MakeEqnHtmlDoc(file,srcs)
+#ifdef HTMLroffCmd
+#define MakeEqnHtmlDoc(file,srcs)					@@\
+file.html: srcs								@@\
+	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(HTMLROFF) $(MSMACROS) \	@@\
+		2> index.raw > file.nhtml \				@@\
+	  && PostProcessTroffHTML(file.nhtml,$@)
+#else
+#define MakeEqnHtmlDoc(file,srcs) /**/
+#endif
+#endif
+
+
 #ifndef MakeDepSimpleDoc
 #define MakeDepSimpleDoc(file,deps,srcs)				@@\
-all:: file.PS file.txt							@@\
-.PRECIOUS: file.PS							@@\
+all:: file.ps file.txt HtmlTarget(file) PdfTarget(file)			@@\
+.PRECIOUS: file.ps							@@\
 									@@\
-file.PS: deps								@@\
-	-$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > file.nPS \@@\
-	&& PostProcessTroffPS(file.nPS,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? -le 1; fi @@\
+file.ps: deps								@@\
+	-$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs \			@@\
+		2> index.raw > file.nps \				@@\
+	&& PostProcessTroffPS(file.nps,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: deps								@@\
-	$(NROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw | $(COL) $(COLFLAGS) > $@ @@\
+	$(NROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw | \	@@\
+		 $(COL) $(COLFLAGS) > $@				@@\
+									@@\
+MakeDepSimpleHtmlDoc(file,deps,srcs)					@@\
+									@@\
+ConvertPsToPdf(file)							@@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.nPS file.PS file.txt
+	$(RM) index.raw file.nps file.ps file.txt HtmlClean(file) PdfClean(file)
 #endif
 
 #ifndef MakeSimpleDoc
@@ -3879,72 +3960,91 @@ clean::									@@\
 
 #ifndef MakeTblDoc
 #define MakeTblDoc(file,srcs)						@@\
-all:: file.PS file.txt							@@\
-.PRECIOUS: file.PS							@@\
+all:: file.ps file.txt HtmlTarget(file) PdfTarget(file)			@@\
+.PRECIOUS: file.ps							@@\
 									@@\
-file.PS: srcs								@@\
-	-$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
-	&& PostProcessTroffPS(file.nPS,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? -le 1; fi @@\
+file.ps: srcs								@@\
+	-$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) \		@@\
+		2> index.raw > file.nps \				@@\
+	&& PostProcessTroffPS(file.nps,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: srcs								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(NROFF) $(MSMACROS) 2> index.raw | $(COL) $(COLFLAGS) > $@	@@\
+	$(TBL) $(XDOCMACROS) srcs | $(NROFF) $(MSMACROS) 2> index.raw \	@@\
+		| $(COL) $(COLFLAGS) > $@				@@\
+									@@\
+MakeTblHtmlDoc(file,srcs)						@@\
+									@@\
+ConvertPsToPdf(file)							@@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.nPS file.PS file.txt
+	$(RM) index.raw file.nps file.ps file.txt HtmlClean(file) PdfClean(file)
 #endif
 
 #ifndef MakeEqnDoc
 #define MakeEqnDoc(file,srcs)						@@\
-all:: file.PS file.txt							@@\
-.PRECIOUS: file.PS							@@\
+all:: file.ps file.txt HtmlTarget(file) PdfTarget(file)			@@\
+.PRECIOUS: file.ps							@@\
 									@@\
-file.PS: srcs								@@\
-	-$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
-	&& PostProcessTroffPS(file.nPS,$@)				@@\
-	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? -le 1; fi @@\
+file.ps: srcs								@@\
+	-$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) \	@@\
+		2> index.raw > file.nps \				@@\
+	&& PostProcessTroffPS(file.nps,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; \			@@\
+		else test $$? -le 1; fi					@@\
 									@@\
 file.txt: srcs								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(NEQN) | $(NROFF) $(MSMACROS) 2> index.raw | $(COL) $(COLFLAGS) > $@ @@\
+	$(TBL) $(XDOCMACROS) srcs | $(NEQN) | $(NROFF) $(MSMACROS) \	@@\
+		2> index.raw | $(COL) $(COLFLAGS) > $@			@@\
+									@@\
+MakeEqnHtmlDoc(file,srcs)						@@\
+									@@\
+ConvertPsToPdf(file)							@@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.nPS file.PS file.txt
+	$(RM) index.raw file.nps file.ps file.txt HtmlClean(file) PdfClean(file)
 #endif
 
 #ifndef MakeDocIndex
 #define MakeDocIndex(file,srcs)						@@\
-all:: file.idx.PS							@@\
+all:: file.idx.ps							@@\
 									@@\
-file.idx.PS: srcs index.raw						@@\
+file.idx.ps: srcs index.raw						@@\
 	sed -n '$$p' index.raw > index.pageno				@@\
-	grep '^[1-9]' index.raw | (sort -f '-t:' -k1,1n 2>/dev/null || sort -f '-t:' +1 -3 +0n -1n) | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
-	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > file.idx.nPS \@@\
-	&& $(MV) file.idx.nPS $@					@@\
+	grep '^[1-9]' index.raw | \					@@\
+		(sort -f '-t:' -k1,1n 2>/dev/null || \			@@\
+		 sort -f '-t:' +1 -3 +0n -1n) | \			@@\
+		awk -f $(DOCUTILSRC)/fixindex.awk | \			@@\
+		awk -f $(DOCUTILSRC)/block.awk > index.troff		@@\
+	cat srcs $(XIDXMACROS) index.troff | \				@@\
+		$(TROFF) -me > file.idx.nps && \			@@\
+		$(MV) file.idx.nps $@					@@\
 	$(RM) index.troff index.pageno					@@\
 									@@\
 clean::									@@\
-	$(RM) index.troff index.pageno file.idx.nPS file.idx.PS
+	$(RM) index.troff index.pageno file.idx.nps file.idx.ps
 #endif
 
 #ifndef MakeLatexDoc
 #if HasLatex
 #define MakeLatexDoc(file,src)	 					@@\
-all:: file.PS								@@\
+all:: file.ps								@@\
 									@@\
 file.dvi: src	  							@@\
 	$(LATEX) src							@@\
 									@@\
-file.PS: file.dvi							@@\
-	$(DVIPS) -o file.nPS file && $(MV) file.nPS $@			@@\
+file.ps: file.dvi							@@\
+	$(DVIPS) -o file.nps file && $(MV) file.nps $@			@@\
 									@@\
 clean:: 								@@\
-	RemoveFiles(file.nPS file.PS file.dvi file.log)			@@\
+	RemoveFiles(file.nps file.ps file.dvi file.log)			@@\
 	RemoveFiles(file.aux file.toc file.lof file.lot)
 #else /* HasLatex */
 #define MakeLatexDoc(file,src)	 					@@\
 all::									@@\
-file.PS: src								@@\
-	@echo "cannot make file.PS: no latex on this system"; exit 1
+file.ps: src								@@\
+	@echo "cannot make file.ps: no latex on this system"; exit 1
 #endif /* HasLatex (else) */
 #endif /* MakeLatexDoc */
 
@@ -3952,22 +4052,36 @@ file.PS: src								@@\
 #define InstallDoc(name,deps)						@@\
 install:: deps								@@\
 	MakeDir($(DESTDIR)$(DOCPSDIR))					@@\
-	@if [ -f name.PS ]; then set -x; \				@@\
-	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.PS $(DESTDIR)$(DOCPSDIR); \ @@\
+	@if [ -f name.ps -a X$(NOPS) = X ]; then set -x; \		@@\
+	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.ps \		@@\
+		$(DESTDIR)$(DOCPSDIR); \				@@\
 	fi								@@\
+	RemoveOldFile(name.ps,name.PS,$(DOCPSDIR))			@@\
 	MakeDir($(DESTDIR)$(DOCDIR))					@@\
-	@if [ -f name.txt ]; then set -x; \				@@\
-	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.txt $(DESTDIR)$(DOCDIR)/name.TXT; \ @@\
+	@if [ -f name.txt -a X$(NOTXT) = X ]; then set -x; \		@@\
+	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.txt \		@@\
+		$(DESTDIR)$(DOCDIR); \					@@\
+	fi								@@\
+	RemoveOldFile(name.txt,name.TXT,$(DOCDIR))			@@\
+	MakeDir($(DESTDIR)$(DOCHTMLDIR))				@@\
+	@if [ -f name.html -a X$(NOHTML) = X ]; then set -x; \		@@\
+	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.html \	@@\
+		$(DESTDIR)$(DOCHTMLDIR); \				@@\
+	fi								@@\
+	MakeDir($(DESTDIR)$(DOCPDFDIR))					@@\
+	@if [ -f name.pdf -a X$(NOPDF) = X ]; then set -x; \		@@\
+	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.pdf \		@@\
+		$(DESTDIR)$(DOCPDFDIR); \				@@\
 	fi
 #endif
 
 #ifndef InstallRoffDoc
-#define InstallRoffDoc(name) InstallDoc(name,name.PS name.txt)
+#define InstallRoffDoc(name) InstallDoc(name,name.ps name.txt)
 #endif
 
 #ifndef InstallLatexDoc
 #if HasLatex
-#define InstallLatexDoc(name) InstallDoc(name,name.PS)
+#define InstallLatexDoc(name) InstallDoc(name,name.ps)
 #else
 #define InstallLatexDoc(name)
 #endif
@@ -3975,20 +4089,25 @@ install:: deps								@@\
 
 #ifndef InstallHardcopyDoc
 #define InstallHardcopyDoc(name,deps)					@@\
-all:: deps								@@\
+all:: name.ps PdfTarget(name)						@@\
+									@@\
+name.ps: deps								@@\
 	@if [ -f name.PS.gz ]; then set -x; \				@@\
-	  RemoveFile(name.PS); \					@@\
-	  gzip -d < name.PS.gz > name.PS; \				@@\
+	  RemoveFile(name.ps); \					@@\
+	  gzip -d < name.PS.gz > name.ps; \				@@\
+	fi								@@\
+	@if [ -f name.PS ]; then set -x; \				@@\
+	  RemoveFile(name.ps); \					@@\
+	  $(LN) name.PS name.ps; \					@@\
 	fi								@@\
 									@@\
+ConvertPsToPdf(name)							@@\
+									@@\
 clean::									@@\
-	@if [ -f name.PS.gz ]; then set -x; \				@@\
-	  RemoveFile(name.PS); \					@@\
-	fi								@@\
+	$(RM) name.ps PdfClean(name)					@@\
 									@@\
 InstallDoc(name,deps)
 #endif
-
 
 /*
  * Rule for maintainers to use to updated generated copies of fonts in the

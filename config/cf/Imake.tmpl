@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.139 2003/01/28 22:06:08 alanh Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.140 2003/03/04 01:48:40 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -118,6 +118,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef NothingOutsideProjectRoot
 #define NothingOutsideProjectRoot NO
+#endif
+
+#ifndef RemoveObsoleteFiles
+#define RemoveObsoleteFiles YES
 #endif
 
 #ifndef HasVarDirectory
@@ -1427,6 +1431,11 @@ TCLIBDIR = TclLibDir
 #ifndef NroffCmd
 #define NroffCmd nroff
 #endif
+#ifndef HTMLroffCmd
+#if HasGroff
+#define HTMLroffCmd groff -Thtml
+#endif
+#endif
 #ifndef MsMacros
 #define MsMacros -ms
 #endif
@@ -1453,6 +1462,15 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef LatexCmd
 #define LatexCmd latex
+#endif
+#ifndef GhostScriptCmd
+#define GhostScriptCmd gs
+#endif
+#ifndef HasGhostScript
+#define HasGhostScript NO
+#endif
+#if HasGhostScript
+#define PsToPdfCmd GhostScriptCmd -q -sOutputFile=- -sDEVICE=pdfwrite -dSAFER -dNOPAUSE -
 #endif
 #if HasSentinel
 #ifndef SentinelCmd
@@ -1746,6 +1764,12 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
 
             TROFF = TroffCmd
             NROFF = NroffCmd
+#ifdef HTMLroffCmd
+         HTMLROFF = HTMLroffCmd
+#endif
+#ifdef PsToPdfCmd
+       PSTOPDFCMD = PsToPdfCmd
+#endif
          MSMACROS = MsMacros
         MANMACROS = ManMacros
               TBL = TblCmd

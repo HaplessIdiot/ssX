@@ -1,31 +1,40 @@
 XFree86 4.3.99.1 (xx March 2003)
- 981. Disable cuase of SEGV's in rendition driver (Marc La France).
- 980. Limit 440EX & 440LX based systems to 32 PCI buses (Marc La France).
- 979. Fix typo that caused incorrect initialization of xkb memory
+  22. Add preliminary support for generating HTML and PDF versions of most
+      spec documents (David Dawes).
+  21. Use lower-case extensions uniformly for text and PostScript documents
+      (based on #4876, Branden Robinson).
+  20. Disable cuase of SEGV's in rendition driver (Marc La France).
+  18. Limit 440EX & 440LX based systems to 32 PCI buses (Marc La France).
+  18. Fix typo that caused incorrect initialization of xkb memory
       (John Heasley).
- 978. Fix bug in trident driver that caused old Cyber 9382/9385 chipsets
+  17. Fix bug in trident driver that caused old Cyber 9382/9385 chipsets
       to display half a jittered screen (Alan Hourihane).
- 977. Add shadowfb support to XDarwin IOKit mode (Torrey T. Lyons).
- 976. Change most of os-support/ to respect VIDMEM_READONLY (Marc La France).
- 975. Fix compatibility problem between modules generated without the recent
+  16. Add shadowfb support to XDarwin IOKit mode (Torrey T. Lyons).
+  15. Change most of os-support/ to respect VIDMEM_READONLY (Marc La France).
+  14. Fix compatibility problem between modules generated without the recent
       setjmp/longjmp work and a server generated using glibc <= 2.2.*
       (Marc La France).
- 974. setjmp/longjmp related fixes for Linux/libc5 systems (Marc La France).
- 973. Fix possible overflow in _XlcLocaleDirName. (Matthieu Herrb).
- 972. Various NetBSD fixes for non-i386 (#5662, #5666 Aymeric Vincent, 
+  13. setjmp/longjmp related fixes for Linux/libc5 systems (Marc La France).
+  12. Fix possible overflow in _XlcLocaleDirName. (Matthieu Herrb).
+  11. Various NetBSD fixes for non-i386 (#5662, #5666 Aymeric Vincent, 
       Matthew Green, Chris Gilbert, Thomas Klausner). 
- 971. Enable native thread support on NetBSD 1.6M and later (#5597, #5660, 
+  10. Enable native thread support on NetBSD 1.6M and later (#5597, #5660, 
       Matthias Scheler). 
- 970. Make setjmp/longjmp emulation save/restore blocked signal masks on all
+   9. Make setjmp/longjmp emulation save/restore blocked signal masks on all
       libc5 & glibc systems (Marc La France).
- 969. Fix setjmp/longjmp emulation for glibc 2.2.[01] systems and remove
+   8. Fix for non-PC keyboard bug introduced by changes to make SysRq
+      generate the same keycode as PrtScrn (Ivan Pascal).
+   7. Workaround for problems linking C programs against libGLU on FreeBSD 3.x
+      (David Dawes).
+   6. Make setjmp/longjmp emulation save/restore blocked signal masks on all
+   5. Fix setjmp/longjmp emulation for glibc 2.2.[01] systems and remove
       HasGlibc21Sigsetjmp override (Marc La France).
- 968. setjmp/longjmp-related compilation fixes for libc5 systems
+   4. setjmp/longjmp-related compilation fixes for libc5 systems
       (Marc La France).
- 967. Fix minor glitch in the generation of Makefiles for libraries that don't
+   3. Fix minor glitch in the generation of Makefiles for libraries that don't
       need threads support (Marc La France).
- 966. Fix XDarwin build broken by #960 (Shantonu Sen).
- 965. Fix StaticColor colormap on Darwin/x86 6.x (Rob Braun).
+   2. Fix XDarwin build broken by #960 (Shantonu Sen).
+   1. Fix StaticColor colormap on Darwin/x86 6.x (Rob Braun).
 
 XFree86 4.3.0 (27 February 2003)
  964. Add an imake option to allow the glibc21-style setjmp() behaviour
@@ -16565,4 +16574,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2597 2003/03/17 23:52:27 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2598 2003/03/18 23:08:17 tsi Exp $
