@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xclock/Clock.h,v 1.3 2000/01/21 18:41:50 dawes Exp $ */
 
 #ifndef _XawClock_h
 #define _XawClock_h
@@ -76,6 +76,7 @@ SOFTWARE.
  highlight	     Foreground		Pixel		black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
+ utime		     Boolean		Boolean		False
  update		     Interval		int		60 (seconds)
  width		     Width		Dimension	164
  x		     Position		Position	0
@@ -94,6 +95,9 @@ SOFTWARE.
 
 		/* Boolean: only hour/minute if TRUE */
 #define XtNbrief  "brief"
+
+		/* Boolean: show seconds since Epoch if TRUE */
+#define XtNutime  "utime"
 
 		/* Boolean:  */
 #define XtNchime "chime"

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.79 2000/10/24 22:45:00 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.80 2000/11/02 01:53:42 robin Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -538,6 +538,7 @@ includes:: srclist							@@\
 all:: $(BUILDBINDIR)/binary binary					@@\
 									@@\
 $(BUILDBINDIR)/binary: binary						@@\
+	MakeDir($(BUILDBINDIR))						@@\
 	RemoveFile($@)							@@\
 	cd $(BUILDBINDIR) && $(LN) $(BUILDBINTOP)/$(CURRENT_DIR)/binary .
 #endif /* LinkBuildBinary */
@@ -1585,7 +1586,7 @@ install::								@@\
 		sed -e 's:^.::' -e 's:[^/.][^/]*:..:'g`; \		@@\
 	  cd Concat($(DESTDIR),opath); \				@@\
 	  if [ -f lfile -a ! -h lfile ]; then \ 			@@\
-	    cp -p lfile Concat($(DESTDIR),npath/cfile; \		@@\
+	    cp -p lfile Concat($(DESTDIR),npath/cfile); \		@@\
 	  fi; \								@@\
 	  $(RM) -r lfile; \						@@\
 	  $(LN) Concat($${RELPATH},npath/cfile) lfile; \		@@\

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.21 1999/06/27 14:08:33 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.22 2000/04/05 18:14:08 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -126,6 +126,10 @@ char *server_names[] = {
 #ifdef XFREE86
     "XFree86     XFree86 displays",
 #endif
+#ifdef __DARWIN__
+    "Xdarwin   Apple darwin / Mac OS/X",
+#endif
+    
     NULL};
 
 #ifndef XINITRC
