@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.11 1998/10/04 12:25:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.12 1998/10/06 06:59:38 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -170,6 +170,7 @@ extern int xf86ioctl(int, unsigned long, char *);
 extern unsigned int xf86read(int, void *, INT32);
 extern unsigned int xf86write(int, const void *, INT32);
 extern int xf86errno;
+extern int xf86GetErrno(void);
 
 extern double xf86HUGE_VAL;
 

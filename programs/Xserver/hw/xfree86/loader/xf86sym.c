@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.47 1998/11/22 10:37:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.48 1998/11/28 10:43:17 dawes Exp $ */
 
 /*
  *
@@ -37,6 +37,7 @@
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #include "xf86Xinput.h"
+#include "xisb.h"
 #include "xf86xv.h"
 #include "xf86_8plus24.h"
 #include "xf86cmap.h"
@@ -166,7 +167,18 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ReadSerial)
    SYMFUNC(xf86WriteSerial)
    SYMFUNC(xf86CloseSerial)
+/* Next three merged in from Metrolink tree	(posix_tty.c) */
+   SYMFUNC(xf86GetErrno)
+   SYMFUNC(xf86WaitForInput)
+   SYMFUNC(xf86SerialSendBreak)
 
+/* XISB routines  (Merged from Metrolink tree) */
+   SYMFUNC(XisbNew)
+   SYMFUNC(XisbFree)
+   SYMFUNC(XisbRead)
+   SYMFUNC(XisbWrite)
+   SYMFUNC(XisbTrace)
+   SYMFUNC(XisbBlockDuration)
 
    /* xf86Bus.c */
    SYMFUNC(xf86CheckPciSlot)
@@ -293,6 +305,19 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86Option.c */
    SYMFUNC(xf86CollectOptions)
+   /* Merging of XInput stuff	*/
+   SYMFUNC(xf86AddNewOption)
+   SYMFUNC(xf86SetBoolOption)
+   SYMFUNC(xf86NewOption)
+   SYMFUNC(xf86NextOption)
+   SYMFUNC(xf86OptionListCreate)
+   SYMFUNC(xf86OptionListMerge)
+   SYMFUNC(xf86OptionListFree)
+   SYMFUNC(xf86OptionName)
+   SYMFUNC(xf86OptionValue)
+   SYMFUNC(xf86OptionListReport)
+   SYMFUNC(xf86SetIntOption)
+   SYMFUNC(xf86SetStrOption)
    SYMFUNC(xf86FindOption)
    SYMFUNC(xf86FindOptionValue)
    SYMFUNC(xf86MarkOptionUsed)
@@ -332,9 +357,19 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef XINPUT
    SYMFUNC(xf86AlwaysCore)
    SYMFUNC(xf86PostMotionEvent)
+   SYMFUNC(xf86PostProximityEvent)		/* Merged from Metrolink tree */
    SYMFUNC(xf86PostButtonEvent)
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
+
+/* The following segment merged from Metrolink tree */
+   SYMFUNC(xf86AddLocalDevice)
+   SYMFUNC(xf86RemoveLocalDevice)
+   SYMFUNC(xf86XInputSetScreen)
+   SYMFUNC(xf86ScaleAxis)
+   SYMFUNC(xf86XInputProcessOptions)
+   SYMFUNC(xf86XInputSetSendCoreEvents)
+/* End merged segment */
 #endif
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
@@ -462,6 +497,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ftell)
    SYMFUNC(xf86fwrite)
    SYMFUNC(xf86getenv)
+   SYMFUNC(xf86hypot)
    SYMFUNC(xf86ioctl)
    SYMFUNC(xf86isalnum)
    SYMFUNC(xf86isalpha)
@@ -477,7 +513,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86labs)
    SYMFUNC(xf86log)
    SYMFUNC(xf86log10)
-   SYMFUNC(xf86hypot)
    SYMFUNC(xf86malloc)
    SYMFUNC(xf86memchr)
    SYMFUNC(xf86memcmp)
@@ -488,7 +523,7 @@ LOOKUP xfree86LookupTab[] = {
     * This causes a problem both here and in shared libraries as there is no
     * way to map the name of the call to the correct function.
     */
-   SYMFUNC(memcpy) 
+   SYMFUNC(memcpy)
 #endif
    SYMFUNC(xf86memmove)
    SYMFUNC(xf86memset)

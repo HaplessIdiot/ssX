@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.2.2.5 1998/06/05 16:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.4 1998/07/25 16:55:15 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

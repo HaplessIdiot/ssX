@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.20.2.3 1998/06/05 16:22:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.22 1998/07/25 16:55:08 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

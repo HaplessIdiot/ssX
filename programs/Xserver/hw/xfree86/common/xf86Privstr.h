@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.2 1998/07/25 16:55:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.3 1998/07/26 09:56:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -14,7 +14,6 @@
 
 #include "Xproto.h"
 #ifdef XINPUT
-#include "xf86Xinput.h"
 #endif
 
 /* Mouse device private record */
@@ -57,14 +56,12 @@ typedef struct _MouseDevRec {
     int			xquePending;	/* was xqueFd, but nothing uses that */
     int			xqueSema;
 #ifdef XINPUT
-    LocalDevicePtr	local;
+    struct _LocalDeviceRec *local;
 #endif
 } MouseDevRec, *MouseDevPtr;
 
-#ifdef XINPUT
+#ifndef XINPUT
 #define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
-#else
-#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
 
 /* Mouse device private record */

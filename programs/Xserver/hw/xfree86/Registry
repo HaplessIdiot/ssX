@@ -28,7 +28,9 @@ xf1bpp
 xf4bpp
 xaa
 xie
-
+i2c
+rac
+ddc
 
 2. External Module Object Symbols.
 
@@ -48,7 +50,7 @@ vgahw
 xf1bpp
 xf4bpp
 XAA
-
+neo
 
 3. Chipset Names.
 
@@ -84,13 +86,18 @@ mga1064sg
 mga2164w
 mga2164wagp
 tipm2
-
+neo2070
+neo2090
+neo2093
+neo2097
+neo2160
+neo2200
 
 4. Option Names.
 
 Option names and their usage should be consistent between drivers.  Case,
 white space and underscore characters are ignored when comparing option
-ames.  All names listed here are in their preferred user-visible form.
+names.  All names listed here are in their preferred user-visible form.
 Some registered option names are:
 
 16Clocks
@@ -118,6 +125,7 @@ LCDCenter
 Linear
 MedDRAM
 MMIO
+noMMIO
 NoAccel
 NoBitBlt
 NoBlockWrite
@@ -147,6 +155,14 @@ SWcursor
 SyncOnGreen
 UseModeline
 UseVclk1
+internDisp
+externDisp
+pciBurstOn
+progLcdModeRegs
+noProgLcdModeRegs
+progLcdModeStretch
+noProgLcdModeStretch
+overrideValidateMode
 
 
 5. Ramdac Names.
@@ -168,4 +184,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.1.2.4 1998/07/18 17:53:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.2 1998/07/25 16:54:45 dawes Exp $

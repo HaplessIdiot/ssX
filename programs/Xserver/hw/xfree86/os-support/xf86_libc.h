@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.27 1998/09/06 07:32:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.28 1998/10/04 12:25:25 dawes Exp $ */
 
 
 
@@ -71,6 +71,32 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_SEEK_SET	0
 #define XF86_SEEK_CUR	1
 #define XF86_SEEK_END	2
+
+/*
+ * errno values
+ * They start at 1000 just so they don't match real errnos at all
+ */
+#define xf86_UNKNOWN		1000
+#define xf86_EACCES		1001
+#define xf86_EAGAIN		1002
+#define xf86_EBADF		1003
+#define xf86_EEXIST		1004
+#define xf86_EFAULT		1005
+#define xf86_EINTR		1006
+#define xf86_EINVAL		1007
+#define xf86_EISDIR		1008
+#define xf86_ELOOP		1009
+#define xf86_EMFILE		1010
+#define xf86_ENAMETOOLONG	1011
+#define xf86_ENFILE		1012
+#define xf86_ENOENT		1013
+#define xf86_ENOMEM		1014
+#define xf86_ENOSPC		1015
+#define xf86_ENOTDIR		1016
+#define xf86_EPIPE		1017
+#define xf86_EROFS		1018
+#define xf86_ETXTBSY		1019
+#define xf86_ENOTTY		1020
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
@@ -226,22 +252,13 @@ typedef struct _xf86dirent XF86DIRENT;
 #define DIRENT			XF86DIRENT
 
 /*
- * XXX There should be no need to #undef any of these.  If they are already
+ * There should be no need to #undef any of these.  If they are already
  * defined it is because some illegal header has been included.
  */
 
 /* some vars */
-#ifdef stdin
-#undef stdin
-#endif
 #define	stdin			xf86stdin
-#ifdef stdout
-#undef stdout
-#endif
 #define stdout			xf86stdout
-#ifdef stderr
-#undef stderr
-#endif
 #define stderr			xf86stderr
 
 #define SEEK_SET		XF86_SEEK_SET
@@ -264,8 +281,28 @@ typedef struct _xf86dirent XF86DIRENT;
 #define errno			xf86errno
 #endif
 
+#define EACCES		xf86_EACCES
+#define EAGAIN		xf86_EAGAIN
+#define EBADF		xf86_EBADF
+#define EEXIST		xf86_EEXIST
+#define EFAULT		xf86_EFAULT
+#define EINTR		xf86_EINTR
+#define EINVAL		xf86_EINVAL
+#define EISDIR		xf86_EISDIR
+#define ELOOP		xf86_ELOOP
+#define EMFILE		xf86_EMFILE
+#define ENAMETOOLONG	xf86_ENAMETOOLONG
+#define ENFILE		xf86_ENFILE
+#define ENOENT		xf86_ENOENT
+#define ENOMEM		xf86_ENOMEM
+#define ENOSPC		xf86_ENOSPC
+#define ENOTDIR		xf86_ENOTDIR
+#define EPIPE		xf86_EPIPE
+#define EROFS		xf86_EROFS
+#define ETXTBSY		xf86_ETXTBSY
+#define ENOTTY		xf86_ENOTTY
+
 /* Some ANSI macros */
-#undef FILENAME_MAX
 #define FILENAME_MAX		1024
 
 #endif /* XFree86LOADER */

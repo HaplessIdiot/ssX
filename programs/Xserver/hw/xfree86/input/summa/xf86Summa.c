@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.10.2.5 1998/06/05 16:22:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.13 1998/07/25 16:55:14 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

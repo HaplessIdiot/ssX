@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.7 1998/09/20 14:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.8 1998/09/26 08:34:21 dawes Exp $ */
 
 /*
  *
@@ -25,7 +25,6 @@
 
 #define IN_LOADER
 #include "xf86Module.h"
-#include "loaderErrors.h"
 #include "fontmod.h"
 
 typedef struct module_desc {

@@ -1,6 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.1.2.3 1998/07/19 13:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.2 1998/07/25 16:55:12 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
+
+#ifndef _XF86_OPT_H_
+#define _XF86_OPT_H_
 
 typedef union {
     unsigned long       num;
@@ -27,6 +30,18 @@ typedef struct {
     Bool                found;
 } OptionInfoRec, *OptionInfoPtr;
 
+int xf86SetIntOption(pointer optlist, const char *name, int deflt);
+char *xf86SetStrOption(pointer optlist, const char *name, char *deflt);
+int xf86SetBoolOption(pointer list, const char *name, int deflt );
+pointer xf86AddNewOption(pointer head, char *name, char *val );
+pointer xf86NewOption(char *name, char *value );
+pointer xf86NextOption(pointer list );
+pointer xf86OptionListCreate(char **options, int count);
+pointer xf86OptionListMerge(pointer head, pointer tail);
+void xf86OptionListFree(pointer opt);
+char *xf86OptionName(pointer opt);
+char *xf86OptionValue(pointer opt);
+void xf86OptionListReport(pointer parm);
 pointer xf86FindOption(pointer options, const char *name);
 char *xf86FindOptionValue(pointer options, const char *name);
 void xf86MarkOptionUsed(pointer option);
@@ -43,3 +58,4 @@ Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value);
 int xf86NameCmp(const char *s1, const char *s2);
 char *xf86NormalizeName(const char *s);
 
+#endif

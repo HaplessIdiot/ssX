@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.31 1998/10/04 12:25:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.32 1998/10/04 12:59:14 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -303,7 +303,7 @@ xf86open(const char *path, int flags, ...)
 	fd = open(path, flags);
     }
     va_end(ap);
-    xf86errno = errno;
+    xf86errno = xf86GetErrno();
     return fd;
 }
 
@@ -312,7 +312,7 @@ xf86close(int fd)
 {
     int status = close(fd);
 
-    xf86errno = errno;
+    xf86errno = xf86GetErrno();
     return status;
 }
 
@@ -321,7 +321,7 @@ xf86ioctl(int fd, unsigned long request, char *argp)
 {
     int status = ioctl(fd, request, argp);
 
-    xf86errno = errno;
+    xf86errno = xf86GetErrno();
     return status;
 }
 
@@ -330,7 +330,7 @@ xf86read(int fd, void *buf, INT32 nbytes)
 {
     unsigned int n = read(fd, buf, nbytes);
 
-    xf86errno = errno;
+    xf86errno = xf86GetErrno();
     return n;
 }
 
@@ -339,7 +339,7 @@ xf86write(int fd, const void *buf, INT32 nbytes)
 {
     unsigned int n = write(fd, buf, nbytes);
 
-    xf86errno = errno;
+    xf86errno = xf86GetErrno();
     return n;
 }
 
@@ -381,7 +381,7 @@ xf86fopen(const char* fn, const char* mode)
 {
 	XF86FILE_priv* fp;
 	FILE *f = fopen(fn,mode);
-	xf86errno = errno;
+	xf86errno = xf86GetErrno();
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
@@ -674,6 +674,7 @@ xf86fsetpos(XF86FILE* f,const XF86fpos_t* pos)
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 	fpos_t *ppos = (fpos_t*)pos;
 
+	/* XXX need to handle xf86errno here */
 	_xf86checkhndl(fp,"xf86fsetpos");
 #ifndef ISC
 	return fsetpos(fp->filehnd,ppos);
@@ -763,7 +764,7 @@ xf86freopen(const char* fname,const char* mode,XF86FILE* fold)
 
 	_xf86checkhndl(fp,"xf86freopen");
 	fnew = freopen(fname,mode,fp->filehnd);
-	xf86errno = errno;
+	xf86errno = xf86GetErrno();
 	if (!fnew) {
 		xf86fclose(fold);	/* discard old XF86FILE structure */
 		return 0;
@@ -828,7 +829,7 @@ xf86tmpfile(void)
 #else
 	XF86FILE_priv* fp;
 	FILE *f = tmpfile();
-	xf86errno = errno;
+	xf86errno = xf86GetErrno();
 	if (!f) return 0;
 
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
@@ -1406,3 +1407,40 @@ xf86realloc(void* p, INT32 n)
 {
 	return xrealloc(p,n);
 }
+
+
+#define mapnum(e) case (e): return (xf86_##e)
+
+int
+xf86GetErrno ()
+{
+	switch (errno)
+	{
+		case 0: return 0;
+		mapnum (EACCES);
+		mapnum (EAGAIN);
+		mapnum (EBADF);
+		mapnum (EEXIST);
+		mapnum (EFAULT);
+		mapnum (EINTR);
+		mapnum (EINVAL);
+		mapnum (EISDIR);
+		mapnum (ELOOP);
+		mapnum (EMFILE);
+		mapnum (ENAMETOOLONG);
+		mapnum (ENFILE);
+		mapnum (ENOENT);
+		mapnum (ENOMEM);
+		mapnum (ENOSPC);
+		mapnum (ENOTDIR);
+		mapnum (EPIPE);
+		mapnum (EROFS);
+		mapnum (ETXTBSY);
+		mapnum (ENOTTY);
+
+		default:
+			return (xf86_UNKNOWN);
+	}
+}
+
+#undef mapnum

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.192 1998/11/22 10:36:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.193 1998/11/28 10:42:48 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -32,6 +32,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /*
  * Default settings for which X Servers to build.
  */
+
+/* XInput drivers */
+#ifndef XInputDrivers
+#define XInputDrivers elo2300 magellan microtouch spaceorb
+#endif
 
 /*
  * For Intel x86 platforms, the default is to build all modules which
@@ -333,6 +338,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define BuildXInputExt		YES
 #endif
 
+#if 0
 /*
  * Include support for these XInput devices
  */
@@ -353,6 +359,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #ifndef JoystickSupport
 #define JoystickSupport		NO
+#endif
 #endif
 
 /*

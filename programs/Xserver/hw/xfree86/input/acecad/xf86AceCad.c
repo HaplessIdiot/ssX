@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.3.2.5 1998/06/05 16:22:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.6 1998/07/25 16:54:56 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

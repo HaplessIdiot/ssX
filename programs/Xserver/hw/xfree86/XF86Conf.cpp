@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.30 1997/12/05 22:01:21 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.31 1998/09/20 14:40:59 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -89,6 +89,47 @@ XCOMM This loads the Type1 and FreeType font modules
 
     Load	"type1"
     Load	"freetype"
+
+XCOMM Some examples of XInput devices
+
+XCOMM    SubSection "magellan"
+XCOMM	Option "Device" "/dev/cua0"
+XCOMM  	Option "DeviceName" "spaceball"
+XCOMM    EndSubSection
+XCOMM
+XCOMM    SubSection "spaceorb"
+XCOMM	Option "Device" "/dev/cua0"
+XCOMM  	Option "DeviceName" "spaceball"
+XCOMM    EndSubSection
+XCOMM
+XCOMM    SubSection "microtouch"
+XCOMM  	Option "Identifier" "touchscreen0"
+XCOMM  	Option "DeviceName" "touchscreen0"
+XCOMM  	Option "Device" "/dev/ttyS0"
+XCOMM  	Option "MinX" "1412"
+XCOMM  	Option "MaxX" "15184"
+XCOMM  	Option "MinY" "15372"
+XCOMM  	Option "MaxY" "1230"
+XCOMM  	Option "ScreenNumber" "0"
+XCOMM  	Option "ReportingMode" "Scaled"
+XCOMM  	Option "ButtonNumber" "1"
+XCOMM  	Option "SendCoreEvents" "True"
+XCOMM    EndSubSection
+XCOMM
+XCOMM    SubSection      "elo2300"
+XCOMM  	Option  "Identifier" "touchscreen0"
+XCOMM  	Option  "DeviceName" "touchscreen0"
+XCOMM  	Option  "Device" "/dev/ttyS0"
+XCOMM  	Option  "MinX" "231"
+XCOMM  	Option  "MaxX" "3868"
+XCOMM  	Option  "MinY" "3858"
+XCOMM  	Option  "MaxY" "272"
+XCOMM  	Option  "ScreenNumber" "0"
+XCOMM  	Option  "ReportingMode" "Scaled"
+XCOMM  	Option  "ButtonThreshold" "17"
+XCOMM  	Option  "ButtonNumber" "1"
+XCOMM  	Option  "SendCoreEvents" "True"
+XCOMM    EndSubSection
 
 EndSection
 

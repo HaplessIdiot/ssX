@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.1.2.5 1998/06/21 15:38:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -56,19 +56,19 @@ typedef struct
 }
 XF86OptionRec, *XF86OptionPtr;
 
-#if 0
-/* XXX These two belong in xf86Module.h */
-typedef void * (*ModuleSetupProc)(XF86OptionPtr, int *, int *);
-typedef void (*ModuleTearDownProc)(void *);
-#endif
 
-XF86OptionPtr OptionListCreate (char ** options, int count);
-XF86OptionPtr OptionListMerge (XF86OptionPtr head, XF86OptionPtr tail); 
-void OptionListFree (XF86OptionPtr list); 
+XF86OptionPtr addNewOption(XF86OptionPtr head, char *name, char *val);
+XF86OptionPtr OptionListDup(XF86OptionPtr opt);
+void OptionListFree(XF86OptionPtr opt);
+char *OptionName(XF86OptionPtr opt);
+char *OptionValue(XF86OptionPtr opt);
+XF86OptionPtr NewOption(char *name, char *value);
+XF86OptionPtr NextOption(XF86OptionPtr list);
 XF86OptionPtr FindOption(XF86OptionPtr list, const char *name);
 char *FindOptionValue(XF86OptionPtr list, const char *name);
-XF86OptionPtr addNewOption(XF86OptionPtr head, char *name, char *val);
-XF86OptionPtr OptionListDup (XF86OptionPtr list);
+XF86OptionPtr OptionListCreate(char **options, int count);
+XF86OptionPtr OptionListMerge(XF86OptionPtr head, XF86OptionPtr tail);
+int FindOptionBoolean(XF86OptionPtr list, char *name, int default_val);
 char * ConfigStrdup (char *s);
 int NameCompare (const char *s1, const char *s2);
 

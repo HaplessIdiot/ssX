@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.3 1998/08/19 07:49:23 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -228,6 +228,47 @@ OptionListFree (XF86OptionPtr opt)
 	}
 }
 
+char *
+OptionName(XF86OptionPtr opt)
+{
+    if (opt)
+	return opt->opt_name;
+    return 0;
+}
+
+char *
+OptionValue(XF86OptionPtr opt)
+{
+    if (opt)
+	return opt->opt_val;
+    return 0;
+}
+
+XF86OptionPtr
+NewOption(char *name, char *value)
+{
+    XF86OptionPtr opt;
+
+    opt = (XF86OptionPtr) xf86confmalloc(sizeof (XF86OptionRec));
+    if (!opt)
+	return NULL;
+
+    opt->opt_used = 0;
+    opt->list.next = 0;
+    opt->opt_name = name;
+    opt->opt_val = value;
+
+    return opt;
+}
+
+XF86OptionPtr
+NextOption(XF86OptionPtr list)
+{
+    if (!list)
+	return NULL;
+    return list->list.next;
+}
+
 /*
  * this function searches the given option list for the named option and
  * returns a pointer to the option rec if found. If not found, it returns
@@ -269,16 +310,15 @@ FindOptionValue (XF86OptionPtr list, const char *name)
 }
 
 XF86OptionPtr
-OptionListCreate (char **options, int count)
+OptionListCreate( char **options, int count )
 {
 	XF86OptionPtr p = NULL;
 	char *t1, *t2;
 	int i;
 
-	if ((count % 2) != 0)
+	if( (count % 2) != 0 )
 	{
-		fprintf (stderr,
-			"OptionListCreate: count must be an even number.\n");
+		fprintf( stderr, "OptionListCreate: count must be an even number.\n" );
 		return (NULL);
 	}
 	for (i = 0; i < count; i += 2)
@@ -296,6 +336,11 @@ OptionListCreate (char **options, int count)
 	return (p);
 }
 
+/* the 2 given lists are merged. If an option with the same name is present in
+ * both, the option from the user list is used. The end result is a single
+ * valid list of options. Duplicates are freed, and the original lists are no
+ * longer guaranteed to be complete.
+ */
 XF86OptionPtr
 OptionListMerge (XF86OptionPtr head, XF86OptionPtr tail)
 {
@@ -354,3 +399,4 @@ OptionListMerge (XF86OptionPtr head, XF86OptionPtr tail)
 	OptionListFree (f);
 	return (head);
 }
+

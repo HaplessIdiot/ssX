@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.55 1998/08/29 05:43:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.56 1998/09/13 05:23:46 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -87,6 +87,7 @@
 #undef usleep
 #define usleep(a) xf86usleep(a)
 extern void xf86usleep(unsigned long);
+extern int xf86GetErrno(void);  
 #endif
 
 #ifndef NO_COMPILER_H
@@ -247,7 +248,9 @@ extern int xf86_solx86usleep(unsigned long);
 # include <termio.h>
 
 # include <errno.h>
+#ifndef __errno_location
 extern int errno;
+#endif
 
 # include <sys/stat.h>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.3 1998/08/16 10:25:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.4 1998/08/19 13:13:10 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -61,7 +61,6 @@
 static int xf86MouseProc(DeviceIntPtr, int);
 static void xf86MouseReadInput(LocalDevicePtr);
 static LocalDevicePtr xf86MouseAllocate(void);
-static Bool xf86MouseConfig(LocalDevicePtr *, int, int, LexPtr);
 #endif /* XINPUT */
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
@@ -874,8 +873,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
       buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
 	        (pBuf[0] & 0x02) >> 1 |       /* Right */
 		(pBuf[0] & 0x01) << 2;        /* Left */
-      dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
-      dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
+      dx = (pBuf[0] & 0x10) ?    (int)pBuf[1]-256  :  (int)pBuf[1];
+      dy = (pBuf[0] & 0x20) ?  -((int)pBuf[2]-256) : -(int)pBuf[2];
       break;
 
     /* PS/2 mouse variants */
@@ -1010,12 +1009,12 @@ post_event:
      * If dz has been mapped to a button `down' event, we need to cook
      * up a corresponding button `up' event.
      */
-    if ((mouse->negativeZ > 0) 
-	&& (buttons & (mouse->negativeZ | mouse->positiveZ)))
-      {
-	buttons &= ~(mouse->negativeZ | mouse->positiveZ);
-        xf86PostMseEvent(device, buttons, 0, 0);
-      }
+    if( (mouse->negativeZ > 0) &&
+		(buttons & (mouse->negativeZ | mouse->positiveZ)))
+    {
+		buttons &= ~(mouse->negativeZ | mouse->positiveZ);
+		xf86PostMseEvent(device, buttons, 0, 0);
+    }
 
     /* 
      * We don't reset pBufP here yet, as there may be an additional data
@@ -1050,37 +1049,6 @@ xf86MouseCtrl(device, ctrl)
     mouse->num       = ctrl->num;
     mouse->den       = ctrl->den;
     mouse->threshold = ctrl->threshold;
-}
-
-/*
- ***************************************************************************
- *
- * xf86MouseConfig --
- *
- ***************************************************************************
- */
-static Bool
-xf86MouseConfig(array, inx, max, val)
-    LocalDevicePtr    *array;
-    int               inx;
-    int               max;
-    LexPtr            val;
-{
-    /* XXX This needs to be dealt with */
-#if 0
-    LocalDevicePtr	dev = array[inx];
-    MouseDevPtr		mouse = (MouseDevPtr)dev->private;
-   
-#ifdef EXTMOUSEDEBUG
-    ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);
-#endif
-    
-/*
-    configPointerSection(mouse, ENDSUBSECTION, &dev->name);
-*/
-#endif
-
-    return Success;
 }
 
 /*
@@ -1184,9 +1152,8 @@ xf86MouseAllocate()
     int			i;
     
     local->name = "MOUSE";
-    local->type_name = "Mouse";
-    local->flags = XI86_NO_OPEN_ON_INIT;
-    local->device_config = xf86MouseConfig;
+    local->type = XI_MOUSE;
+    local->flags = XI86_SEND_DRAG_EVENTS;
     local->device_control = xf86MouseProc;
     local->read_input = xf86MouseReadInput;
     local->motion_history_proc = xf86GetMotionEvents;
@@ -1196,7 +1163,6 @@ xf86MouseAllocate()
     local->switch_mode = 0;
     local->conversion_proc = xf86MouseConvert;
     local->fd = -1;
-    local->atom = 0;
     local->dev = NULL;
     local->private = mouse;
     local->always_core_feedback = 0;

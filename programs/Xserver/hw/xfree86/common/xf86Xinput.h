@@ -22,16 +22,18 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.16.2.8 1998/06/05 16:22:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.18 1998/07/25 16:55:17 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
 
+#if 0
 /*
  * THIS IS A BIG UGGLY HACK!!!
  * vvvvvvvvvvvvvvvvv */
 #define LexPtr void *
 /* ^^^^^^^^^^^^^^^^^ */
+#endif
 
 #ifndef NEED_EVENTS
 #define NEED_EVENTS
@@ -39,21 +41,36 @@
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
-#if 0
 #include "XI.h"
 #include "XIproto.h"
 #include "XIstubs.h"
-#endif
 #if 0
-#include "xf86Config.h"
+#include "xf86Opt.h"
 #endif
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
 #define XI86_ALWAYS_CORE	4 /* the device always controls the pointer */
+/* the device sends Xinput and core pointer events */
+#define XI86_SEND_CORE_EVENTS	4
+/* if the device is the core pointer or is sending core events, and
+ * SEND_DRAG_EVENTS is false, and a buttons is done, then no motion events
+ * (mouse drag action) are sent. This is mainly to allow a touch screen to be
+ * used with netscape and other browsers which do strange things if the mouse
+ * moves between button down and button up. With a touch screen, this motion
+ * is common due to the user's finger moving slightly.
+ */
+#define XI86_SEND_DRAG_EVENTS	8
+
+#ifdef DBG
+#undef DBG
+#endif
+#define DBG(lvl, f) {if ((lvl) <= xf86GetVerbosity()) f;}
 
 #define XI_PRIVATE(dev) \
 	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
+
+#define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
 
 #ifdef HAS_MOTION_HISTORY
 #undef HAS_MOTION_HISTORY
@@ -62,61 +79,31 @@
 
 typedef struct _LocalDeviceRec {  
   char		*name;
+  char		*type;
   int           flags;
-  Bool		(*device_config)(
-#if NeedNestedPrototypes
-    struct _LocalDeviceRec** /*array*/,
-    int /*index*/,
-    int /*max*/,
-    LexPtr /*val*/ 
-#endif
-    );
-  Bool		(*device_control)(
-#if NeedNestedPrototypes
-    DeviceIntPtr /*device*/,
-    int /*what*/
-#endif
-    );
-  void		(*read_input)(
-#if NeedNestedPrototypes
-    struct _LocalDeviceRec* /*local*/
-#endif
-    );
-  int           (*control_proc)(
-#if NeedNestedPrototypes
-    struct _LocalDeviceRec* /*local*/,
-    pointer	/*control*/
-#endif
-    );
-  void          (*close_proc)(
-#if NeedNestedPrototypes
-    struct _LocalDeviceRec* /*local*/
-#endif
-    );
-  int           (*switch_mode)(
-#if NeedNestedPrototypes
-    ClientPtr /*client*/,
-    DeviceIntPtr /*dev*/,
-    int /*mode*/
-#endif
-    );
-  Bool           (*conversion_proc)(
-#if NeedNestedPrototypes
-    struct _LocalDeviceRec* /*local*/,
-    int	/* first */,
-    int /* num */,
-    int /* v0 */,
-    int /* v1 */,
-    int /* v2 */,
-    int /* v3 */,
-    int /* v4 */,
-    int /* v5 */,
-    int* /* x */,
-    int* /* y */
-#endif
-    );
-    int			fd;
-    Atom		atom;
+  Bool		(*device_control)(	DeviceIntPtr,					/*device*/
+								int );							/*what*/
+  void		(*read_input)(	struct _LocalDeviceRec* );			/*local*/
+  int		(*control_proc)(	struct _LocalDeviceRec*,		/*local*/
+								xDeviceCtl*	);					/* control */
+  void		(*close_proc)(	struct _LocalDeviceRec*	);			/*local*/
+  int		(*switch_mode)(	ClientPtr,							/*client*/
+							DeviceIntPtr,						/*dev*/
+							int	);								/*mode*/
+
+  Bool		(*conversion_proc)(	struct _LocalDeviceRec*,		/*local*/
+								int,							/* first */
+								int,							/* num */
+								int,							/* v0 */
+								int,							/* v1 */
+								int,							/* v2 */
+								int,							/* v3 */
+								int,							/* v4 */
+								int,							/* v5 */
+								int*,							/* x */
+								int* );							/* y */
+    
+	int			fd;
     DeviceIntPtr	dev;
     pointer		private;
     int			private_flags;
@@ -127,175 +114,133 @@ typedef struct _LocalDeviceRec {
     unsigned int	last;
     int			old_x;
     int			old_y;
-    char		*type_name;
     IntegerFeedbackPtr	always_core_feedback;
+	struct _LocalDeviceRec *next;
 } LocalDeviceRec, *LocalDevicePtr;
 
 typedef struct _DeviceAssocRec 
 {
   char                  *config_section_name;
-  LocalDevicePtr        (*device_allocate)(
-#if NeedNestedPrototypes
-    void
-#endif
-);
+  LocalDevicePtr        (*device_allocate)( void );
 } DeviceAssocRec, *DeviceAssocPtr;
 
 extern int
-xf86IsCorePointer(
-#if NeedFunctionPrototypes
-	      DeviceIntPtr /*dev*/
-#endif
-);
+xf86IsCorePointer( DeviceIntPtr	);								/*dev*/
+
 
 extern int
-xf86IsCoreKeyboard(
-#if NeedFunctionPrototypes
-	       DeviceIntPtr /*dev*/
-#endif
-);
+xf86IsCoreKeyboard( DeviceIntPtr );								/*dev*/
+
 
 extern void
-xf86AlwaysCore(
-#if NeedFunctionPrototypes
-	       LocalDevicePtr	/*local*/,
-	       Bool		/*always*/
-#endif
-);
+xf86AlwaysCore(	LocalDevicePtr,									/*local*/
+				Bool );											/*always*/
+
 
 void
-xf86configExtendedInputSection(
-#ifdef NeedFunctionPrototypes
-		LexPtr          /* val */ 
-#endif
-);
+xf86AddDeviceAssoc(	DeviceAssocPtr );							/* assoc */
+
 
 void
-xf86AddDeviceAssoc(
-#ifdef NeedFunctionPrototypes
-		DeviceAssocPtr	/* assoc */
-#endif
-);
-
-void
-InitExtInput(
-#ifdef NeedFunctionPrototypes
-		void
-#endif
-);
+InitExtInput( void );
 
 Bool
-xf86eqInit (
-#ifdef NeedFunctionPrototypes
-		DevicePtr       /* pKbd */,
-		DevicePtr       /* pPtr */
-#endif
-);
+xf86eqInit(	DevicePtr,											/* pKbd */
+			DevicePtr );										/* pPtr */
+
 
 void
-xf86eqEnqueue (
-#ifdef NeedFunctionPrototypes
-		struct _xEvent * /*event */
-#endif
-);
+xf86eqEnqueue(	struct _xEvent*	);								/*event */
+
 
 void
-xf86eqSwitchScreen(ScreenPtr, Bool);
+xf86eqSwitchScreen(	ScreenPtr,
+					Bool );
 
 void
-xf86eqProcessInputEvents (
-#ifdef NeedFunctionPrototypes
-		void
-#endif
-);
+xf86eqProcessInputEvents( void );
 
 void
-xf86PostMotionEvent(
-#if NeedVarargsPrototypes
-		DeviceIntPtr	/*device*/,
-		int		/*is_absolute*/,
-		int		/*first_valuator*/,
-		int		/*num_valuators*/,
-		...
-#endif		
-);
+xf86PostMotionEvent(	DeviceIntPtr,						/*device*/
+						int,								/*is_absolute*/
+						int,								/*first_valuator*/
+						int,								/*num_valuators*/
+						... );
+
 
 void
-xf86PostProximityEvent(
-#if NeedVarargsPrototypes
-		   DeviceIntPtr	/*device*/,
-		   int		/*is_in*/,
-		   int		/*first_valuator*/,
-		   int		/*num_valuators*/,
-		   ...
-#endif
-);
+xf86PostProximityEvent(	DeviceIntPtr,						/*device*/
+						int,								/*is_in*/
+						int,								/*first_valuator*/
+						int,								/*num_valuators*/
+						... );
 
 void
-xf86PostButtonEvent(
-#if NeedVarargsPrototypes
-		DeviceIntPtr	/*device*/,
-		int		/*is_absolute*/,
-		int		/*button*/,
-		int		/*is_down*/,
-		int		/*first_valuator*/,
-		int		/*num_valuators*/,
-		...
-#endif
-);
+xf86PostButtonEvent(	DeviceIntPtr,						/*device*/
+						int,								/*is_absolute*/
+						int,								/*button*/
+						int,								/*is_down*/
+						int,								/*first_valuator*/
+						int,								/*num_valuators*/
+						... );
 
 void
-xf86PostKeyEvent(
-#if NeedVarargsPrototypes
-		 DeviceIntPtr	device,
-		 unsigned int	key_code,
-		 int		is_down,
-		 int		is_absolute,
-		 int		first_valuator,
-		 int		num_valuators,
-		 ...
-#endif
-);
+xf86PostKeyEvent(	DeviceIntPtr	device,
+					unsigned int	key_code,
+					int				is_down,
+					int				is_absolute,
+					int				first_valuator,
+					int				num_valuators,
+					... );
 
 void
-xf86MotionHistoryAllocate(
-#if NeedFunctionPrototypes
-		      LocalDevicePtr	local
-#endif
-);
+xf86MotionHistoryAllocate( LocalDevicePtr local );
 
 int
-xf86GetMotionEvents(
-#if NeedFunctionPrototypes
-		    DeviceIntPtr	dev,
-		    xTimecoord		*buff,
-		    unsigned long	start,
-		    unsigned long	stop,
-		    ScreenPtr		pScreen
-#endif
-);
+xf86GetMotionEvents(	DeviceIntPtr	dev,
+						xTimecoord		*buff,
+						unsigned long	start,
+						unsigned long	stop,
+						ScreenPtr		pScreen );
 
 void
-xf86XinputFinalizeInit(
-#if NeedFunctionPrototypes
-		       DeviceIntPtr	dev
-#endif
-);
+xf86XinputFinalizeInit( DeviceIntPtr dev );
 
 Bool
-xf86CheckButton(
-#if NeedFunctionPrototypes
-		int	button,
-		int	down
-#endif
-);
+xf86CheckButton(	int	button,
+					int	down );
 
 void
-xf86SwitchCoreDevice(
-#if NeedFunctionPrototypes
-		LocalDevicePtr	device,
-		DeviceIntPtr	core
-#endif
-);
+xf86SwitchCoreDevice(	LocalDevicePtr	device,
+						DeviceIntPtr	core );
+
+void
+xf86AddLocalDevice(	LocalDevicePtr	device,
+					pointer options );
+
+Bool
+xf86RemoveLocalDevice(	LocalDevicePtr	device );
+
+void
+xf86XInputSetScreen(	LocalDevicePtr	local,
+						int				screen_number,
+						int				x,
+						int				y );
+
+int
+xf86ScaleAxis(	int	Cx,
+				int	Sxhigh,
+				int	Sxlow,
+				int	Rxhigh,
+				int	Rxlow );
+
+void
+xf86XInputProcessOptions(	LocalDevicePtr	local,
+							pointer	list );
+
+void
+xf86XInputSetSendCoreEvents(	LocalDevicePtr	local,
+								int				flag );
 
 #endif /* _xf86Xinput_h */
+

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.2.2.4 1998/06/04 17:35:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.5 1998/07/25 16:55:12 dawes Exp $ */
 
 /*
  *******************************************************************************
