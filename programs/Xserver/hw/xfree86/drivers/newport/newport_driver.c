@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.22 2003/02/05 17:45:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.23 2003/02/17 23:06:11 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -113,7 +113,7 @@ static const char *ramdacSymbols[] = {
 };
 
 static const char *shadowSymbols[] = {
-	"ShadowFBInit2",
+	"ShadowFBInit",
 	NULL
 };
 
@@ -563,8 +563,8 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 	}
 
 	/* Initialise shadow frame buffer */
-	if(!ShadowFBInit2(pScreen, NULL, (pNewport->Bpp == 1) ? &NewportRefreshArea8 :
-				&NewportRefreshArea24, FALSE)) {
+	if(!ShadowFBInit(pScreen, (pNewport->Bpp == 1) ? &NewportRefreshArea8 :
+				&NewportRefreshArea24)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                    "ShadowFB initialization failed\n");
 		return FALSE;

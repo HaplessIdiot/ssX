@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadowfb.h,v 1.2 1999/09/25 14:38:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadowfb.h,v 1.3 2002/10/16 22:12:54 alanh Exp $ */
 
 #ifndef _SHADOWFB_H
 #define _SHADOWFB_H
@@ -30,9 +30,7 @@ ShadowFBInit (
  * ShadowFBInit2 is a more featureful refinement of the original shadowfb.
  * ShadowFBInit2 allows you to specify two callbacks, one to be called
  * immediately before an operation that modifies the framebuffer, and another
- * to be called immediately after.  It also allows you to specify that you
- * actually do have a real framebuffer (as opposed to just some malloc'd space
- * in memory) by passing FALSE to fbIsVirtual.
+ * to be called immediately after.  
  *
  * Returns FALSE in the event of an error
  */
@@ -40,8 +38,7 @@ Bool
 ShadowFBInit2 (
     ScreenPtr		pScreen,
     RefreshAreaFuncPtr  preRefreshArea,
-    RefreshAreaFuncPtr  postRefreshArea,
-    Bool                fbIsVirtual
+    RefreshAreaFuncPtr  postRefreshArea
 );
 
 #endif /* _SHADOWFB_H */
