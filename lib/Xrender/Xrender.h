@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.4 2000/11/29 08:25:45 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.5 2000/12/01 21:32:00 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -134,7 +134,7 @@ XRenderFindVisualFormat (Display *dpy, Visual *visual);
 XRenderPictFormat *
 XRenderFindFormat (Display		*dpy,
 		   unsigned long	mask,
-		   XRenderPictFormat	*template,
+		   XRenderPictFormat	*templ,
 		   int			count);
     
 Picture
