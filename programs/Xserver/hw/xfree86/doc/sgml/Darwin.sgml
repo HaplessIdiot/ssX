@@ -20,7 +20,7 @@ implementation of the X Window System, has been ported to <htmlurl
 url="http://www.publicsource.apple.com/projects/darwin/" name="Darwin">
 and <htmlurl url="http://www.apple.com/macosx/" name="Mac OS X">. This
 document is a collection of information for anyone
-experimenting with running X on Apple's next generation operating
+experimenting with running X11 on Apple's next generation operating
 system. Please send any comments on this page to
 <email/torrey@mrcla.com/.  If you are also 
 working on modifications to the Darwin X server, please let me know.
@@ -29,11 +29,11 @@ working on modifications to the Darwin X server, please let me know.
 <p>
 XFree86 can be run either from the console or side by side with
 Mac OS&nbsp;X's Aqua desktop in a full screen mode. In full screen mode
-with Aqua, when the X window system is active, it takes over the entire
+with Aqua, when the X Window System is active, it takes over the entire
 screen. You can switch back to the Mac OS&nbsp;X desktop by holding down
 Command-Option-A. This key combination can be changed in the user
 preferences. From the Mac OS&nbsp;X desktop, just click on the XDarwin
-icon in the floating switch window to switch back to the X window system.
+icon in the floating switch window to switch back to the X Window System.
 You can change this behavior in the user preferences so that clicking on
 the XDarwin icon in the Dock switches as well. The full screen cooperative
 mode with Aqua is known as Quartz mode, named after the Quartz 2D
@@ -84,7 +84,7 @@ support, download the optional Xquartz.tgz tarball.
 
 <p>
 If you get the precompiled binaries you can skip ahead to the section
-on <ref id="running" name="running the X window system"> On the other hand,
+on <ref id="running" name="running the X Window System"> On the other hand,
 if you want to build things yourself from scratch,
 follow the directions below.
 
@@ -133,7 +133,7 @@ sudo make install.man >& man.log
 
 <sect>Run the X Window System<label id="running">
 <p>
-You will want to add the X window executables to your path. Your path
+You will want to add the X Window System executables to your path. Your path
 is the list of directories to be searched when you type a command. You
 will also want to add the man pages from XFree86 to the list of pages
 to be searched when you are looking for documentation. The way to do
@@ -177,29 +177,29 @@ window.
 <p>
 To start XFree86 in Quartz mode you can launch the XDarwin application
 in the <tt>/Applications</tt> folder, or from the command line type
-``startx -- -quartz''. When the X window system is active, it takes over
+``startx -- -quartz''. When the X Window System is active, it takes over
 the entire screen. You can switch back to the Mac OS&nbsp;X desktop by
 holding down Command-Option-A. This key combination can be changed in
 the user preferences. From the Mac OS&nbsp;X desktop, just click on the
-XDarwin icon in the floating switch window to switch back to the X window
-system. You can change this behavior in the user preferences so that
+XDarwin icon in the floating switch window to switch back to the X Window
+System. You can change this behavior in the user preferences so that
 clicking on the XDarwin icon in the Dock switches as well.
 
 <p>
 <bf/Customize the X Window System/
 <p>
 
-The X window system is very customizable and you will certainly want to
+The X Window System is very customizable and you will certainly want to
 change some things. There is a lot you can do to control how your windows
 look, how the windows are moved, resized, etc. You will likely want to
 get a better window manager than twm, which is included with
 XFree86. The <tt>.xinitrc</tt> file in your home directory controls what
-programs are run when you start the X window system. You can find a sample
+programs are run when you start the X Window System. You can find a sample
 <tt>.xinitrc</tt> file in <tt>/etc/X11/xinit/xinitrc</tt>.  
 
 <p>
 There are several window managers that have been ported to Darwin.
-The best collection of window managers and other X window clients
+The best collection of window managers and other X Window System clients
 is at <htmlurl
 url="http://www.darwinfo.org/ports.shtml#X Windows" name="Darwinfo's ports
 page">. Another good place to look for Darwin ports in general is at
