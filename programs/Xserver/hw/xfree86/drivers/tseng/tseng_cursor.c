@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.15 2000/08/08 08:58:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.16 2000/09/19 12:46:19 eich Exp $ */
 
 
 
@@ -12,7 +12,6 @@ static void TsengSetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 static Bool TsengUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
 static void TsengSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 static void TsengLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits);
-unsigned char *TsengRealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs);
 
 Bool 
 TsengHWCursorInit(ScreenPtr pScreen)

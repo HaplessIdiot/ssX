@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.19 2000/11/02 16:33:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.20 2001/03/05 04:48:22 mvojkovi Exp $ */
 
-#ifndef _XVDIX_H_
-#define _XVDIX_H_
+#ifndef _XF86XV_H_
+#define _XF86XV_H_
 
 #include "xvdix.h"
 #include "xf86str.h"
@@ -254,5 +254,4 @@ typedef struct _XF86XVWindowRec{
    struct _XF86XVWindowRec *next;
 } XF86XVWindowRec, *XF86XVWindowPtr;
 
-#endif  /* _XVDIX_H_ */
- 
+#endif  /* _XF86XV_H_ */

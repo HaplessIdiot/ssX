@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.4 2001/04/04 00:19:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.5 2001/04/16 15:47:56 tsi Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -34,8 +34,8 @@
 Bool
 ATIInitializeAcceleration
 (
-    ScrnInfoPtr pScreenInfo,
     ScreenPtr   pScreen,
+    ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI
 )
 {

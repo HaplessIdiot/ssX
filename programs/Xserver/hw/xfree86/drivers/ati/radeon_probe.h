@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.3 2000/11/18 19:37:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.4 2001/05/04 19:05:33 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -43,33 +43,34 @@
 
 /* radeon_probe.c */
 extern const OptionInfoRec * RADEONAvailableOptions
-		     FunctionPrototype((int, int));
-extern void          RADEONIdentify
-		     FunctionPrototype((int));
-extern Bool          RADEONProbe
-		     FunctionPrototype((DriverPtr, int));
+			     FunctionPrototype((int, int));
+extern void                  RADEONIdentify
+			     FunctionPrototype((int));
+extern Bool                  RADEONProbe
+			     FunctionPrototype((DriverPtr, int));
 
-extern SymTabRec     RADEONChipsets[];
-extern PciChipsets   RADEONPciChipsets[];
+extern SymTabRec             RADEONChipsets[];
+extern PciChipsets           RADEONPciChipsets[];
 
 /* radeon_driver.c */
-extern Bool          RADEONPreInit
-		     FunctionPrototype((ScrnInfoPtr, int));
-extern Bool          RADEONScreenInit
-		     FunctionPrototype((int, ScreenPtr, int, char **));
-extern Bool          RADEONSwitchMode
-		     FunctionPrototype((int, DisplayModePtr, int));
-extern void          RADEONAdjustFrame
-		     FunctionPrototype((int, int, int, int));
-extern Bool          RADEONEnterVT
-		     FunctionPrototype((int, int));
-extern void          RADEONLeaveVT
-		     FunctionPrototype((int, int));
-extern void          RADEONFreeScreen
-		     FunctionPrototype((int, int));
-extern int           RADEONValidMode
-		     FunctionPrototype((int, DisplayModePtr, Bool, int));
+extern Bool                  RADEONPreInit
+			     FunctionPrototype((ScrnInfoPtr, int));
+extern Bool                  RADEONScreenInit
+			     FunctionPrototype((int, ScreenPtr, int, char **));
+extern Bool                  RADEONSwitchMode
+			     FunctionPrototype((int, DisplayModePtr, int));
+extern void                  RADEONAdjustFrame
+			     FunctionPrototype((int, int, int, int));
+extern Bool                  RADEONEnterVT
+			     FunctionPrototype((int, int));
+extern void                  RADEONLeaveVT
+			     FunctionPrototype((int, int));
+extern void                  RADEONFreeScreen
+			     FunctionPrototype((int, int));
+extern int                   RADEONValidMode
+			     FunctionPrototype((int, DisplayModePtr, Bool,
+						int));
 
-extern const OptionInfoRec RADEONOptions[];
+extern const OptionInfoRec   RADEONOptions[];
 
 #endif /* _RADEON_PROBE_H_ */

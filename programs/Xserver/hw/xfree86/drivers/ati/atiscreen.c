@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.18 2001/02/15 18:04:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.19 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -27,7 +27,6 @@
 #include "aticursor.h"
 #include "atidac.h"
 #include "atidga.h"
-#include "atimode.h"
 #include "atiscreen.h"
 #include "atistruct.h"
 
@@ -229,7 +228,7 @@ ATIScreenInit
     (void)ATIDGAInit(pScreenInfo, pScreen, pATI);
 
     /* Setup acceleration */
-    if (!ATIInitializeAcceleration(pScreenInfo, pScreen, pATI))
+    if (!ATIInitializeAcceleration(pScreen, pScreenInfo, pATI))
         return FALSE;
 
     /* Initialise backing store */
