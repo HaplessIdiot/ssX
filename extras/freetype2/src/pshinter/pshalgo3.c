@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-
+/* $XFree86$ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H

@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #ifndef _XtScrollByLine_h
 #define _XtScrollByLine_h
