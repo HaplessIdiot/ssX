@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.9 1997/03/04 10:39:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.10 1997/03/11 13:06:13 hohndel Exp $ */
 
 
 
@@ -34,6 +34,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "vga.h"
+#include "xf86_ldext.h"
 
 void * LOADERVAR(cfbGCPrivateIndex);
 void * LOADERVAR(endtab);
@@ -49,6 +50,7 @@ extern void (*PexExtensionInitPtr)(void);
 extern void (*XieInitPtr)(void);
 #endif
 
+extern int check_unresolved_sema;
 
 LoaderFixups()
 {
@@ -148,6 +150,25 @@ void CheckVersion(module, data, cnt)
 		}
 #endif
 	}
+}
+
+void
+LoadExtension(e)
+        ExtensionModule *e;
+{
+        int i;
+
+	if (e == NULL)
+	    return;
+	ErrorF("loading extension %s\n", e->name);
+
+	for (i = 0; extension[i].name != NULL; i++) {
+	    if (strcmp(extension[i].name, e->name) == 0) {
+		extension[i].initFunc = e->initFunc;
+		extension[i].disablePtr = e->disablePtr;
+		break;
+	    }
+	} 
 }
 
 LoadModule(module,path)
@@ -250,19 +271,16 @@ LoadModule(module,path)
 			case MAGIC_CCD_XAA_SCREEN_INIT:
 				xf86ccdXAAScreenInit = (int((*)()))data;
 				break;
-#ifdef PEXEXT
-			case MAGIC_PEX_INIT:
-				PexExtensionInitPtr = (void((*)()))data;
-				break;
-#endif
-#ifdef XIE
-			case MAGIC_XIE_INIT:
-				XieInitPtr = (void((*)()))data;
-				break;
-#endif
+			case MAGIC_LOAD_EXTENSION:
+			        LoadExtension((ExtensionModule *)data);
+			        break;
 			case MAGIC_VERSION:
 				version++;
 				CheckVersion(module,(XF86ModuleVersionInfo*)data,cnt);
+				break;
+
+			case MAGIC_DONT_CHECK_UNRESOLVED:
+				check_unresolved_sema++;
 				break;
 
 			default:

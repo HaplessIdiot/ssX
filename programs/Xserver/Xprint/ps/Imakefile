@@ -34,4 +34,6 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(ps,$(OBJS))
 NormalLintTarget($(SRCS1) $(SRCS2))
 
+InstallLinkKitLibrary(ps,$(LINKKITDIR)/lib)
+
 DependTarget()

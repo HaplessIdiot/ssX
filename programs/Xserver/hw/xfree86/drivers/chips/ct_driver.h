@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.8 1997/01/22 11:08:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.1 1997/03/06 23:15:03 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -50,6 +50,8 @@ extern unsigned char *ctBltDataWindow;
 
 extern int ctAluConv[];		       /* Map Alu to Chips ROP source data  */
 extern int ctAluConv2[];       	       /* Map Alu to Chips ROP pattern data */
+extern int ctAluConv3[];       	       /* Map Alu to Chips ROP source data with
+					  pattern as planemask */
 
 extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
 extern unsigned int ctCacheEnd;			/* Pixmap Cache End */
@@ -165,3 +167,31 @@ extern void ctHWDebug();
 #define HW_DEBUG(x)
 #endif
 
+/* A generalised blitter wait function for use in compiled once code. This
+ * might be need in the CHIPSSave, CHIPSRestore and HW cursor functions with
+ * changes to XAA introduced in 32Ar */
+#define ctBLTWAITGENERAL { \
+    if (ctUseMMIO) { \
+	if (ctisHiQV32) { \
+	    outb(0x3D6,0x20); {int timeout; \
+        	timeout = 0; \
+		for (;;) { \
+		    if (!(inb(0x3D7)&0x1)) break; \
+		    timeout++; \
+		    if (timeout == 10000000) { \
+			unsigned char tmp; \
+			ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
+			tmp = inb(0x3D7); \
+			outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
+			break; \
+		    } \
+		} \
+	    } \
+	} else { \
+	   while(*(volatile unsigned int *)(ctMMIOBase + MR(0x4)) & \
+   		0x00100000){}; \
+	} \
+    } else { \
+	while(inw(DR(0x4)+2)&0x10){}; \
+    } \
+}

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgareg.h,v 3.4 1997/01/18 06:56:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgareg.h,v 1.1 1997/03/06 23:16:04 hohndel Exp $ */
 
 /*
  * mga register file 
@@ -108,7 +108,7 @@
 
 #define MGADWG_LINE_OPEN	0x00
 #define MGADWG_AUTOLINE_OPEN	0x01
-#define MGADWG_WRITE_LAST	0x02
+#define MGADWG_LINE_CLOSE	0x02
 #define MGADWG_AUTOLINE_CLOSE	0x03
 
 /* Trapezoids */
@@ -176,7 +176,7 @@
 #define MGADWG_BU24RGB		( 0x0f << 25 )
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
-#define MGWDWG_TRANSC		( 0x01 << 30 )
+#define MGADWG_TRANSC		( 0x01 << 30 )
 
 /* MMIO VGA registers */
 #define MGAREG_CRTC_INDEX	0x1fd4

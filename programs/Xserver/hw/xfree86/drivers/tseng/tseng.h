@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.2 1997/03/11 13:05:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.3 1997/03/17 07:18:09 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -88,6 +88,7 @@ typedef enum {
     ICS5341_DAC,
     GENDAC_DAC,
     STG1700_DAC,
+    STG1702_DAC,
     STG1703_DAC,
     ET6000_DAC,
     CH8398_DAC

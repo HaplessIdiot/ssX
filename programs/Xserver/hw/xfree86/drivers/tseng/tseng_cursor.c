@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.2 1997/03/11 13:06:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.3 1997/03/17 07:18:10 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -476,6 +476,7 @@ static void TsengMoveCursor(pScr, x, y)
 		y = 0;
 	}
 
+	/* Correct cursor position in DoubleScan modes */
 	if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
 		y *= 2;
 
@@ -636,8 +637,9 @@ static void TsengRecolorCursor(pScr, pCurs, displayed)
              * -- if that is possible at this stage. If not, we should
              * remove this message, and just document the limitation.
              */
-
+#ifdef HW_CURSOR_REPORT_BAD_COLOR
             ErrorF ("-- Bad Cursor Colour tried\n");
+#endif
         }
 }
 

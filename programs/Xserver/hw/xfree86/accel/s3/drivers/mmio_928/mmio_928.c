@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.11 1997/03/23 07:58:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.12 1997/03/24 13:08:56 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -150,6 +150,9 @@ MMIO_928Probe()
    LoadModule("libs3ga968mmio.a", xf86ModulePath);
 #endif
 #endif
+
+   if (LoaderCheckUnresolved(xf86bpp, LD_RESOLV_NOW))
+      ErrorF("Warning: Some symbols couldn't be resolved!\n");
 #endif
    return(TRUE);
 

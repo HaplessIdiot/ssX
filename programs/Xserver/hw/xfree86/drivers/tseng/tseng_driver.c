@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.5 1997/03/17 07:18:11 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.6 1997/03/27 08:31:02 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -939,7 +939,7 @@ ET4000Probe()
     TSENG.ChipHas32bpp = TRUE;
   }
 
-  if ( (TsengRamdacType == CH8398_DAC) || (TsengRamdacType == STG1703_DAC) )
+  if ( (TsengRamdacType == CH8398_DAC) || (TsengRamdacType == STG1703_DAC) || (TsengRamdacType == STG1702_DAC) )
   {
     TSENG.ChipHas16bpp = TRUE;
     TSENG.ChipHas24bpp = TRUE;
@@ -1009,7 +1009,11 @@ ET4000Probe()
   }
 
       /* Hardware Cursor support */
+#ifdef W32_HW_CURSOR_FIXED
   if (et4000_type >= TYPE_ET4000W32P)
+#else
+  if (et4000_type >= TYPE_ET6000)
+#endif
   {
           /* Set HW Cursor option valid */
       OFLG_SET(OPTION_HW_CURSOR, &TSENG.ChipOptionFlags);
@@ -1017,7 +1021,11 @@ ET4000Probe()
 
   if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
   {
+#ifdef W32_HW_CURSOR_FIXED
       if (et4000_type >= TYPE_ET4000W32P)
+#else
+      if (et4000_type >= TYPE_ET6000)
+#endif
       {
           ErrorF("%s %s: Reserving 1kb of video memory for hardware cursor.\n",
                  XCONFIG_PROBED, vga256InfoRec.name);

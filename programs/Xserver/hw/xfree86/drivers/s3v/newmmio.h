@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.3 1997/03/28 09:42:48 hohndel Exp $ */
 
 /* Copied over from accel/s3_virge */
 
@@ -397,6 +397,11 @@ typedef struct {
 #define IMG_TRANS		(((mmtr)s3vMmioMem)->img)
 #define SET_PIXTRANS(a,v)	IMG_TRANS[a] = (v)
 #define COLOR_PATTERN           (((mmtr)s3vMmioMem)->colpatt_regs.regs)
+
+#define CMD_DMA_BASE(val)       (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.base_addr) = (val)
+#define CMD_DMA_WRITEP(val)     (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.write_pointer) = (val)
+#define CMD_DMA_READP(val)      (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.read_pointer) = (val)
+#define CMD_DMA_ENABLE(val)     (((mmtr)s3vMmioMem)->dma_regs.regs.cmd.dma_enable) = (val)
 
 #define SETB_SRC_BASE(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.src_base = (val)
 #define SETB_DEST_BASE(val)	((mmtr)s3vMmioMem)->bltfill_regs.regs.dest_base = (val)

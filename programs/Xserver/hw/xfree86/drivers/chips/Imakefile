@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 3.18 1997/02/25 14:21:50 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.1 1997/03/06 23:14:48 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -81,29 +81,29 @@ ObjectFromSpecialSource(ct_colexphi, ct_colexp, -DCHIPS_MMIO -DCHIPS_HIQV)
 ObjectFromSpecialSource(ct_accelmm, ct_accel, -DCHIPS_MMIO)
 ObjectFromSpecialSource(ct_accelhi, ct_accel, -DCHIPS_MMIO -DCHIPS_HIQV)
 
-InstallLinkKitNonExecFile(ct_driver.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_bank.s,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_BitBlt.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_FillRct.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_cursor.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_blt16.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_blitter.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_line.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_lline.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_solid.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_FillSt.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_alloc.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_pci.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_BltHiQV.h,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_BlitMM.h,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_Blitter.h,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_driver.h,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_lline.h,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_teblt8.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_textblt.s,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_colexp.c,$(LINKKITDIR)/drivers/chips)
-InstallLinkKitNonExecFile(ct_accel.c,$(LINKKITDIR)/drivers/chips)
+InstallLinkKitNonExecFile(ct_driver.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_bank.s,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_BitBlt.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_FillRct.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_cursor.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_blt16.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_blitter.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_line.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_lline.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_solid.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_FillSt.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_alloc.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_pci.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_BltHiQV.h,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_BlitMM.h,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_Blitter.h,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_driver.h,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_lline.h,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_teblt8.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_textblt.s,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_colexp.c,$(LINKKITDIR)/drivers/svga/chips)
+InstallLinkKitNonExecFile(ct_accel.c,$(LINKKITDIR)/drivers/svga/chips)
 
 #if DoLoadableServer
 InstallDynamicModule(ct_drv.o,$(MODULEDIR))

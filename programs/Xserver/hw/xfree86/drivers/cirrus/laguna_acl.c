@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/laguna_acl.c,v 3.4 1997/01/19 12:50:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.1 1997/03/06 23:15:37 hohndel Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -98,7 +98,8 @@ void LagunaAccelInit() {
 
   /* General flags, functions */
   xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-    | ONLY_LEFT_TO_RIGHT_BITBLT | HARDWARE_PATTERN_SCREEN_ORIGIN |
+    | ONLY_LEFT_TO_RIGHT_BITBLT;
+  xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
       HARDWARE_PATTERN_PROGRAMMED_ORIGIN | HARDWARE_PATTERN_TRANSPARENCY | 
 	HARDWARE_PATTERN_MONO_TRANSPARENCY;
   if (cirrusChip == CLGD5464 && vga256InfoRec.bitsPerPixel == 24)

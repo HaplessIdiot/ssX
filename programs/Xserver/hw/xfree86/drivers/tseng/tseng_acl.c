@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.1 1997/03/06 23:17:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.2 1997/03/11 13:05:58 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -63,6 +63,10 @@ WordP ACL_MIX_Y_OFFSET,
 /* for ET6000 only */
 ByteP ACL_POWER_CONTROL;
 
+ByteP ACL_SECONDARY_EDGE;
+WordP ACL_SECONDARY_ERROR_TERM,
+      ACL_SECONDARY_DELTA_MINOR,
+      ACL_SECONDARY_DELTA_MAJOR;
 
 ByteP W32BytePtr;
 WordP W32WordPtr;
@@ -260,6 +264,12 @@ void tseng_init_acl()
     ACL_ERROR_TERM 		= (WordP) (MMioBase + 0xAA);
     ACL_DELTA_MINOR 		= (WordP) (MMioBase + 0xAC);
     ACL_DELTA_MAJOR 		= (WordP) (MMioBase + 0xAE);
+
+    /* ET6000 only (trapezoids) */
+    ACL_SECONDARY_EDGE		= (ByteP) (MMioBase + 0x93);
+    ACL_SECONDARY_ERROR_TERM	= (WordP) (MMioBase + 0xB2);
+    ACL_SECONDARY_DELTA_MINOR	= (WordP) (MMioBase + 0xB4);
+    ACL_SECONDARY_DELTA_MAJOR	= (WordP) (MMioBase + 0xB6);
 
     /* addresses in video memory (i.e. "0" = first byte in video memory) */
     W32ForegroundPing = scratchVidBase + 0;

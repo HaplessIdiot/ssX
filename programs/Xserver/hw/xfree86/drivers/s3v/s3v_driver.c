@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.7 1997/03/28 09:42:51 hohndel Exp $ */
 
 /*
  *
@@ -11,7 +11,7 @@
  * Started 09/03/97 by S. Marineau
  *
  * What works: 
- * - Supports PCI hardware, ViRGE and ViRGE/VX
+ * - Supports PCI hardware, ViRGE and ViRGE/VX, probably ViRGE/DXGX
  * - Supports 8bpp, 16bpp and 24bpp. Has not been tested on VX.
  * - VT switching seems to work well, no corruption. 
  * - Some acceleration
@@ -24,7 +24,6 @@
  * - No hardware cursor etc.
  * - Does not recognize most of the xconfig options for memory speed etc.
  * - No VLB
- * - No support for DX/GX chipsets yet.
  *
  * 
  * What I attempt to do here:
@@ -150,7 +149,6 @@ vgaVideoChipRec S3V = {
 
 
 SymTabRec chipsets[] = {
-   { S3_UNKNOWN,   "unknown"},
    { S3_ViRGE,     "ViRGE"}, 
    { S3_ViRGE_VX,  "ViRGE/VX"},
    { S3_ViRGE_DXGX,  "ViRGE/DXGX"},
@@ -258,7 +256,10 @@ Bool enter;
       }
 
    else {
-
+      if (s3vMmioMem) {
+         WaitIdle();           /* DOn't know if these map properly ? */
+         WaitCommandEmpty();   /* We should probably do a DMAEmpty() as well */
+         }
       if (enterCalled){
 
          /* Protect CR[0-7] */
@@ -358,8 +359,18 @@ unsigned char tmp;
    outb(0x3c5, 0x06); 
 
 
-   /* Restore extended sequencer regs for DCLK */
+   /* Restore extended sequencer regs for MCLK. SR10 == 255 indicates that 
+    * we should leave the default SR10 and SR11 values there.
+    */
 
+   if (restore->SR10 != 255) {   
+       outb(0x3c4, 0x10);
+       outb(0x3c5, restore->SR10);
+       outb(0x3c4, 0x11);
+       outb(0x3c5, restore->SR11);
+       }
+
+   /* Restore extended sequencer regs for DCLK */
    outb(0x3c4, 0x12);
    outb(0x3c5, restore->SR12);
    outb(0x3c4, 0x13);
@@ -402,10 +413,15 @@ unsigned char tmp;
       outb(vgaCRReg, tmp);  /* Restore CR53 for MMIO */
       }
 
+   /* Memory controller misc. regs */
+   ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout = restore->MMPR3;
+
    /* Now, before we continue, check if this mode has the graphic engine ON 
     * If yes, then we reset it. 
     * This fixes some problems with corruption at 24bpp with STREAMS
     */
+
+
    if(s3vPriv.chip == S3_ViRGE_VX) {
       if(restore->CR63 & 0x01) S3VGEReset();
       }
@@ -484,6 +500,11 @@ int i;
 
    /* Save sequencer extended regs for DCLK PLL programming */
 
+   outb(0x3c4, 0x10);
+   save->SR10 = inb(0x3c5);
+   outb(0x3c4, 0x11);
+   save->SR11 = inb(0x3c5);
+
    outb(0x3c4, 0x12);
    save->SR12 = inb(0x3c5);
    outb(0x3c4, 0x13);
@@ -507,6 +528,8 @@ int i;
       save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
       outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
       }
+
+   save->MMPR3 = ((mmtr)s3vMmioMem)->memport_regs.regs.misc_timeout;
 
    ErrorF("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
    S3VPrintRegs();
@@ -629,8 +652,11 @@ unsigned char config1, config2;
 
    /* ViRGE built-in ramdac speeds */
 
-   if(s3vPriv.chip == S3_ViRGE_VX){
+   if (s3vPriv.chip == S3_ViRGE_VX) {
       vga256InfoRec.dacSpeed = 220000;
+      }
+   else if(s3vPriv.chip == S3_ViRGE_DXGX) {
+      vga256InfoRec.dacSpeed = 170000;
       }
    else {
       vga256InfoRec.dacSpeed = 135000;
@@ -650,6 +676,17 @@ unsigned char config1, config2;
          vga256InfoRec.maxClock=135000;
          }
       }
+   if (s3vPriv.chip == S3_ViRGE_DXGX){
+      if (vgaBitsPerPixel == 8){
+         vga256InfoRec.maxClock=170000;
+         }
+      if (vgaBitsPerPixel == 16){
+         vga256InfoRec.maxClock=110000;  /* Try these from Harald */
+         }
+      if (vgaBitsPerPixel == 24){
+         vga256InfoRec.maxClock=60000;
+         }
+      }
    else {     /* ViRGE chip */
       if (vgaBitsPerPixel == 8){
          vga256InfoRec.maxClock=135000;
@@ -661,6 +698,21 @@ unsigned char config1, config2;
          vga256InfoRec.maxClock=56600;
          }
       }
+
+   /* Now check if the user has specified "set_memclk" value in XConfig */
+   if (vga256InfoRec.MemClk > 0) {
+      if(vga256InfoRec.MemClk <= 75000) {
+         ErrorF("%s %s: Using Memory Clock value of %d KHz\n",
+              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+         s3vPriv.MCLK = vga256InfoRec.MemClk;
+         }
+      else {
+         ErrorF("%s %s: Memory Clock value of %d KHz is larger than limit of 75000 KHz\n",
+              XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
+         s3vPriv.MCLK = 0;
+         }
+      }
+   else s3vPriv.MCLK = 0;
 
    /* Set scale factors for mode timings */
    /* I really don't know what this should be for VX! */
@@ -700,6 +752,10 @@ unsigned char config1, config2;
 #endif
 
    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+   OFLG_SET(OPTION_SLOW_EDODRAM, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_FAST_DRAM, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_FPM_VRAM, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_PCI_BURST_OFF, &S3V.ChipOptionFlags);
 
    S3V.ChipLinearBase = vga256InfoRec.MemBase;
    S3V.ChipLinearSize = vga256InfoRec.videoRam * 1024;
@@ -830,8 +886,8 @@ int i, j;
    else 
       new->CR3A = (tmp & 0x7f) | 0x15; /* ENH 256, PCI burst */
 
-   new->CR53 = 0x08; /* Enables MMIO */
-   new->CR31 = 0x8c; /* Dis. 64k window, en. ENH maps */    
+   new->CR53 = 0x08;     /* Enables MMIO */
+   new->CR31 = 0x8c;     /* Dis. 64k window, en. ENH maps */    
 
    /* Enables S3D graphic engine and PCI disconnects */
    if(s3vPriv.chip == S3_ViRGE_VX){
@@ -853,17 +909,33 @@ int i, j;
       new->CR58 = 0x03 | 0x10; /* 4MB window on virge, 8MB on VX */
       } 
 
+
 /* ** On PCI bus, no need to reprogram the linear window base address */
 
 /* Now do clock PLL programming. Use the s3gendac function to get m,n */
 /* Also determine if we need doubling etc. */
 
    dclk = vga256InfoRec.clock[mode->Clock];
-   new->CR67 = 0x00;   /* Defaults */
-   new->SR15 = 0x03;
+   new->CR67 = 0x00;             /* Defaults */
+   new->SR15 = 0x03; /* | 0x80;   Temp test! */
    new->SR18 = 0x00;
    new->CR43 = 0x00;
    new->CR65 = 0x20;
+   
+   /* And setup here the new value for MCLK. We use the XConfig 
+    * option "mclk", whose value gets stored in vga256InfoRec.s3MClk.
+    * I'm not sure what the maximum "permitted" value should be, probably
+    * 75 MHz is more than enough for now.  
+    */
+
+   if(s3vPriv.MCLK> 0) {
+       commonCalcClock(s3vPriv.MCLK, 1, 1, 31, 0, 3,
+	   135000, 270000, &new->SR11, &new->SR10);
+       }
+   else {
+       new->SR10 = 255; /* This is a reserved value, so we use as flag */
+       new->SR11 = 255; 
+       }
 
    if(s3vPriv.chip == S3_ViRGE_VX){
        if (vgaBitsPerPixel == 8) {
@@ -884,11 +956,11 @@ int i, j;
 	   220000, 440000, &new->SR13, &new->SR12);
 
       }
-   else {
+   else {           /* Is this correct for DX/GX as well? */
       if (vgaBitsPerPixel == 8) {
-         if(dclk > 94500) {                     /* We need pixmux */
+         if(dclk > 80000) {                     /* We need pixmux */
             new->CR67 = 0x10;
-            new->SR15 = 0x13;                   /* Set DCLK/2 bit */
+            new->SR15 |= 0x10;                   /* Set DCLK/2 bit */
             new->SR18 = 0x80;                   /* Enable pixmux */
             }
          }
@@ -904,8 +976,13 @@ int i, j;
       commonCalcClock(dclk, 1, 1, 31, 0, 3, 
 	135000, 270000, &new->SR13, &new->SR12);
       }
-   /* If we have an interlace mode, set the interlace bit. Note that mode */
-   /* vertical timings are already adjusted by the standard VGA code */ 
+
+   /* Misc timeout memory controller register. Optimize for graphics engine? */
+   new->MMPR3 = 0x02021010;
+
+   /* If we have an interlace mode, set the interlace bit. Note that mode
+    * vertical timings are already adjusted by the standard VGA code 
+    */
    if(mode->Flags & V_INTERLACE) {
         new->CR42 = 0x20; /* Set interlace mode */
         }
@@ -956,7 +1033,8 @@ int i, j;
    new->CR65 = 0x20;
    
    /* And finally, select clock source 2 for programmable PLL */
-   new->std.MiscOutReg |= 0x0c;      /* Select clock 2 */
+   new->std.MiscOutReg |= 0x0c;      
+
 
    /* Now we handle various XConfig memory options and others */
 
@@ -1170,11 +1248,23 @@ S3VPrintRegs(void)
 {
 unsigned char tmp1, tmp2;
 
+   outb(0x3c4, 0x10);
+   tmp1 = inb(0x3c5);
+   outb(0x3c4, 0x11);
+   tmp2 = inb(0x3c5);
+   ErrorF("SR10: %d SR11: %d\n", tmp1, tmp2);
+
    outb(0x3c4, 0x12);
    tmp1 = inb(0x3c5);
    outb(0x3c4, 0x13);
    tmp2 = inb(0x3c5);
    ErrorF("SR12: %d SR13: %d\n", tmp1, tmp2);
+
+   outb(0x3c4, 0x0a);
+   tmp1 = inb(0x3c5);
+   outb(0x3c4, 0x15);
+   tmp2 = inb(0x3c5);
+   ErrorF("SR0A: %d SR15: %d\n", tmp1, tmp2);
 
    /* Now load and print a whole rnage of other regs */
 for(tmp1=0x0;tmp1<=0x0f;tmp1++){
@@ -1202,12 +1292,17 @@ for(tmp1=0x40;tmp1<=0x4f;tmp1++){
    ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
    }
    ErrorF("\n");
-for(tmp1=0x50;tmp1<=0x56;tmp1++){
+for(tmp1=0x50;tmp1<=0x59;tmp1++){
    outb(vgaCRIndex, tmp1);
    ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
    }
    ErrorF("\n");
 for(tmp1=0x5d;tmp1<=0x67;tmp1++){
+   outb(vgaCRIndex, tmp1);
+   ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
+   }
+   ErrorF("\n");
+for(tmp1=0x68;tmp1<=0x6f;tmp1++){
    outb(vgaCRIndex, tmp1);
    ErrorF("CR%02x:%d ",tmp1,inb(vgaCRReg));
    }

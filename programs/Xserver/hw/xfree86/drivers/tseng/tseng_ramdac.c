@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.1 1997/03/06 23:17:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.2 1997/03/27 08:31:03 hohndel Exp $ */
 
 /*
  *
@@ -40,6 +40,7 @@ SymTabRec TsengDacTable[] = {
    { ICS5341_DAC,        "ics5341" },
    { GENDAC_DAC,         "gendac" },
    { STG1700_DAC,        "stg1700" },
+   { STG1702_DAC,        "stg1702" },
    { STG1703_DAC,        "stg1703" },
    { ET6000_DAC,         "et6000" },
    { CH8398_DAC,         "ch8398" },
@@ -106,6 +107,10 @@ ProbeSTG1703(Bool quiet)
     if ((cid == 0x44) && (did == 0x00)) {
        Found = TRUE;
        TsengRamdacType = STG1700_DAC;
+    }
+    if ((cid == 0x44) && (did == 0x02)) {
+       Found = TRUE;
+       TsengRamdacType = STG1702_DAC;
     }
     if ((cid == 0x44) && (did == 0x03)) {
        Found = TRUE;
@@ -402,6 +407,7 @@ void Check_Tseng_Ramdac()
               dac_is_16bit = FALSE;
               break;
      case ICS5341_DAC:
+     case STG1702_DAC:
      case STG1703_DAC:
      case CH8398_DAC:
               RamdacShift = 10;
@@ -453,6 +459,7 @@ void tseng_set_dacspeed(int bytesperpixel)
           case CH8398_DAC:
           case GENDAC_DAC:
           case ICS5341_DAC:
+          case STG1702_DAC:
           case STG1703_DAC:
           case ET6000_DAC:
               vga256InfoRec.dacSpeed = 135000;
@@ -597,6 +604,7 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
             mode->Flags |= V_PIXMUX;
             switch(TsengRamdacType) {
                 case ICS5341_DAC:
+                case STG1702_DAC:
                 case STG1703_DAC:
                    if (mode->SynthClock > Tseng_nonMuxMaxClock) {
                       mode->SynthClock /= 2;
@@ -635,6 +643,7 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
     {
        /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
         switch (TsengRamdacType) {
+            case STG1702_DAC:
             case STG1703_DAC:
             case ICS5341_DAC:
             case CH8398_DAC:
@@ -717,6 +726,7 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
 
 
    switch (TsengRamdacType) {
+       case STG1702_DAC:
        case STG1703_DAC:
            tseng_regs->gendac.cmd_reg |= 8;
            cmd_array = CMD_CH8398;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.6 1997/01/18 06:56:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.1 1997/03/06 23:15:36 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -185,7 +185,9 @@ void CirrusSubsequent8x8PatternColorExpand();
 void CirrusAccelInit() {
     /* Initialization for chips with MMIO. */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-        | ONLY_TWO_BITBLT_DIRECTIONS | HARDWARE_PATTERN_ALIGN_64;
+        | ONLY_TWO_BITBLT_DIRECTIONS;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64;
+
     if (CHIPHASCPUFRAMEBUFFERCONCURRENCY())
         xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* 5446 */
     xf86AccelInfoRec.Sync = CirrusSync;

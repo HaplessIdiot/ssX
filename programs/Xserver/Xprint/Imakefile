@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.2 1997/01/05 11:52:52 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -33,7 +33,7 @@ OBJS_OS2 = os2_stubs.o
 #if XprtServer
 #if PrintOnlyServer || defined(PrintServerExtensions)
 #if PrintOnlyServer
-PO_DEFINES = -DPRINT_ONLY_SERVER
+PO_DEFINES = -DPRINT_ONLY_SERVER -UXFree86LOADER
 #endif
 #ifdef PrintServerExtensions
 XPEXT_DEFINES = PrintServerExtensions
@@ -106,6 +106,9 @@ SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT
 LinkSourceFile(os2_stubs.c,../hw/xfree86/os-support/os2)
 SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT)
 #endif
+
+InstallLinkKitLibrary(printer,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(ddxInit.o,$(LINKKITDIR)/lib)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

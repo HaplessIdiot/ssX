@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.10 1997/03/03 15:55:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.11 1997/03/07 07:44:18 hohndel Exp $ */
 
 
 
@@ -52,6 +52,8 @@
 #define DEBUGLIST
 #define DEBUGMEM
 */
+
+int check_unresolved_sema = 0;
 
 #if defined(Lynx) && defined(sun)
 /* Cross build machine doesn;t have strerror() */
@@ -372,7 +374,7 @@ int fatalsym = 0;
 	       fatalsym = 1;
 	       break;
 	  }
-     if (xf86ShowUnresolved){
+     if (xf86ShowUnresolved && !fatalsym){
           ErrorF("Symbol %s from module %s is unresolved!\n",
 	       symbol, module);
           }
@@ -628,14 +630,22 @@ LoaderResolveSymbols( )
 }
 
 int
-LoaderCheckUnresolved( color_depth )
-int color_depth;
+LoaderCheckUnresolved( color_depth, delay_flag )
+int color_depth, delay_flag;
 {
   int i,ret=0;
 
   LoaderResolveSymbols();
     
-  for(i=0;i<numloaders;i++)
+  if (delay_flag == LD_RESOLV_NOW) {
+     if (check_unresolved_sema > 0) 
+	check_unresolved_sema--;
+     else 
+	ErrorF("LoaderCheckUnresolved: not enough MAGIC_DONT_CHECK_UNRESOLVED \n");
+  }
+
+  if (!check_unresolved_sema ||  delay_flag == LD_RESOLV_FORCE)
+     for(i=0;i<numloaders;i++)
 	if( funcs[i].CheckForUnresolved( color_depth ) )
 		ret=1;
 

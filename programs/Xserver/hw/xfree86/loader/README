@@ -49,6 +49,12 @@ MAGIC_CCD_XAA_SCREEN_INIT	the XaaScreenInit function for the current
 MAGIC_PEX_INIT			
 MAGIC_XIE_INIT			init functions of extensions
 
+MAGIC_DONT_CHECK_UNRESOLVED	checking for unresolved symbols will be delayed
+				for one step until LoaderCheckUnresolved()
+				is called with LD_RESOLV_NOW the same number of 
+				times than MAGIC_DONT_CHECK_UNRESOLVED
+				has been passed before.
+
 MAGIC_DONE			nothing; side effect is to stop looping
 
 - mixed color depths

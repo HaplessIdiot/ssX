@@ -70,4 +70,6 @@ LinkSourceFile(PclText.c,LinkDirectory)
 LinkSourceFile(PclWindow.c,LinkDirectory)
 #endif
 
+InstallLinkKitLibrary(pcl,$(LINKKITDIR)/lib)
+
 DependTarget()

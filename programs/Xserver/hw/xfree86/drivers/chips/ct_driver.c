@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.1 1997/03/06 23:15:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.2 1997/03/22 09:35:33 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -68,13 +68,7 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
-#ifdef XF86VGA16
-#define MONOVGA
-#endif
-
-#if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
-#endif
 
 #ifndef  CT_OLD_ACCL_CODE
 #include "xf86xaa.h"
@@ -198,7 +192,7 @@ int ctReg32MMIO[]={0x83D0,0x87D0,0x8BD0,0x8FD0,0x93D0,0x97D0,0x9BD0,0x9FD0,
 		   0xA3D0,0xA7D0,0xABD0,0xAFD0,0xB3D0};
 int ctReg32HiQV[]={0x00,0x04,0x08,0x0C,0x10,0x14,0x18,0x1C,0x20};
 int * ctMMIO;
-#ifndef MONOVGA
+#ifdef  CT_OLD_ACCL_CODE
 extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
 extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
 #endif
@@ -242,6 +236,26 @@ int ctAluConv2[] =
     0xAF,			       /* dest |= ~src; GXorInverted, 0xD */
     0x5F,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
     0xFF,			       /* dest = 0xFF; GXset, 0xF */
+};
+/* alu to C&T conversion for use with pattern data as a planemask */
+int ctAluConv3[] =
+{
+    0x0A,			       /* dest = 0; GXclear, 0 */
+    0x8A,			       /* dest &= src; GXand, 0x1 */
+    0x4A,			       /* dest = src & ~dest; GXandReverse, 0x2 */
+    0xCA,			       /* dest = src; GXcopy, 0x3 */
+    0x2A,			       /* dest &= ~src; GXandInverted, 0x4 */
+    0xAA,			       /* dest = dest; GXnoop, 0x5 */
+    0x6A,			       /* dest = ^src; GXxor, 0x6 */
+    0xEA,			       /* dest |= src; GXor, 0x7 */
+    0x1A,			       /* dest = ~src & ~dest;GXnor, 0x8 */
+    0x9A,			       /*?? dest ^= ~src ;GXequiv, 0x9 */
+    0x5A,			       /* dest = ~dest; GXInvert, 0xA */
+    0xDA,			       /* dest = src|~dest ;GXorReverse, 0xB */
+    0x3A,			       /* dest = ~src; GXcopyInverted, 0xC */
+    0xBA,			       /* dest |= ~src; GXorInverted, 0xD */
+    0x7A,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
+    0xFA,			       /* dest = 0xFF; GXset, 0xF */
 };
 
 /* Driver data structures. */
@@ -344,8 +358,8 @@ vgaVideoChipRec CHIPS =
     FALSE,			       /* ChipUseLinearAddressing */
     0,				       /* ChipLinearBase */
     0,				       /* ChipLinearSize */
-    FALSE,	/* 1bpp */
-    FALSE,	/* 4bpp */
+    TRUE,	/* 1bpp */
+    TRUE,	/* 4bpp */
     TRUE,	/* 8bpp */
     FALSE,	/* 15bpp */
     FALSE,	/* 16bpp */
@@ -620,7 +634,7 @@ ctClockFind(Type, no, Clock)
 	Clock->xr33 = 0;
 	Clock->xr54 = Clock->msr;
 	Clock->Clock = vga256InfoRec.clock[no];
-	Clock->Clock *= vgaBytesPerPixel;
+	Clock->Clock *= ((vgaBitsPerPixel >= 8) ? vgaBytesPerPixel : 1);
       }
 	break;
       case OLD_STYLE:
@@ -646,7 +660,7 @@ ctClockFind(Type, no, Clock)
 	Clock->msr = 3 << 2;
 	Clock->xr33 = 0;
 	Clock->Clock = vga256InfoRec.clock[no];
-	Clock->Clock *= vgaBytesPerPixel;
+	Clock->Clock *= ((vgaBitsPerPixel >= 8) ? vgaBytesPerPixel : 1);
       }
 	break;
     }
@@ -1174,11 +1188,10 @@ CHIPSProbe()
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
       }
 
-#ifndef MONOVGA
 #ifdef XFreeXDGA
+    if (vgaBitsPerPixel >= 8)
     /* we support direct Video mode */
     vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
 #endif
 
     /* Test whether linear addressing is turned off */
@@ -1402,6 +1415,9 @@ Bool ctProbeHiQV()
 	  ErrorF("VL Bus\n");
 	  ctVLB = TRUE;
 	}
+
+    /* Disable linear addressing for 1 and 4bpp modes */
+    if (vgaBitsPerPixel < 8) ctLinearSupport = FALSE;
 		
     /* linear base */
     if (ctLinearSupport) {
@@ -1514,7 +1530,11 @@ Bool ctProbeHiQV()
         ctColorTransparency = FALSE;
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
-    vga256InfoRec.bankedMono = FALSE;
+    vga256InfoRec.bankedMono = TRUE;
+    if (vgaBitsPerPixel == 1)
+        CHIPS.ChipSegmentShift -= 2;
+    else if (vgaBitsPerPixel == 4)
+        CHIPS.ChipSegmentShift -= 1;
 
     /* allowed options */
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -1633,7 +1653,9 @@ Bool ctProbeWINGINE()
     ErrorF("Unknown Bus\n");
     break;
   } 
-  
+  /* Disable linear addressing for 1 and 4bpp modes */
+  if (vgaBitsPerPixel < 8) ctLinearSupport = FALSE;
+
   /* linear base */
   if (ctLinearSupport) {
       unsigned char mask = 0xF8;
@@ -1754,7 +1776,8 @@ Bool ctProbeWINGINE()
     }
   }
 
-    CHIPS.ChipClockScaleFactor = vgaBytesPerPixel;
+    CHIPS.ChipClockScaleFactor = ((vgaBitsPerPixel >= 8) ? 
+				  vgaBytesPerPixel : 1);
   
   /* maximal clock */
   switch (CHIPSchipset) {
@@ -1767,7 +1790,11 @@ Bool ctProbeWINGINE()
   }
 
   vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
-  vga256InfoRec.bankedMono = FALSE;
+  vga256InfoRec.bankedMono = TRUE;
+  if (vgaBitsPerPixel == 1)
+      CHIPS.ChipSegmentShift -= 2;
+  else if (vgaBitsPerPixel == 4)
+      CHIPS.ChipSegmentShift -= 1;
   
   /* allowed options */
   OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -2024,6 +2051,10 @@ Bool ctProbe()
 	      }
     }
 
+    /* Disable linear addressing for 1 and 4bpp modes */
+    if (vgaBitsPerPixel < 8) ctLinearSupport = FALSE;
+
+
   if(CHIPSchipset == CT_530)
     {
       /* linear mode is no longer default on ct65530 since it */
@@ -2200,7 +2231,9 @@ Bool ctProbe()
 	}
       }
     }
-    CHIPS.ChipClockScaleFactor = (ctisHiQV32 ? 1 : vgaBytesPerPixel);
+
+    CHIPS.ChipClockScaleFactor = ((vgaBitsPerPixel >= 8) ? 
+				  vgaBytesPerPixel : 1);
 
     /* maximal clock */
     switch (CHIPSchipset) {
@@ -2222,7 +2255,11 @@ Bool ctProbe()
     }
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
-    vga256InfoRec.bankedMono = FALSE;
+    vga256InfoRec.bankedMono = TRUE;
+    if (vgaBitsPerPixel == 1)
+        CHIPS.ChipSegmentShift -= 2;
+    else if (vgaBitsPerPixel == 4)
+        CHIPS.ChipSegmentShift -= 1;
 
     /* allowed options */
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -2275,7 +2312,6 @@ ctEnterLeave(enter)
     static unsigned char xr14;  /* bit 7: vsync                     */
     unsigned char temp;
 
-#ifndef MONOVGA
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
 	/* 
@@ -2297,7 +2333,6 @@ ctEnterLeave(enter)
 	}
 	return;
     }
-#endif
 #endif
     if (enter) {
       /* enable IO ports */
@@ -2421,8 +2456,6 @@ ctEnterLeaveHiQV32(enter)
 {
     unsigned char temp;
 
-
-#ifndef MONOVGA
 #ifdef XFreeXDGA
     if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
 	/* 
@@ -2438,7 +2471,6 @@ ctEnterLeaveHiQV32(enter)
 	}
 	return;
     }
-#endif
 #endif
     if (enter) {
       /* enable IO ports */
@@ -2814,8 +2846,10 @@ CHIPSInit655xx(mode)
     }
 
     /* store orig. HSyncStart needed for flat panel mode */
-    HSyncStart = mode->CrtcHSyncStart / vgaBytesPerPixel - 16;
-    HDisplay = (mode->CrtcHDisplay + 1) / vgaBytesPerPixel;
+    HSyncStart = mode->CrtcHSyncStart / (vgaBitsPerPixel >= 8 ? 
+					 vgaBytesPerPixel : 1 ) - 16;
+    HDisplay = (mode->CrtcHDisplay + 1) /  (vgaBitsPerPixel >= 8 ? 
+					 vgaBytesPerPixel : 1 );
     
     /* fix things that could be messed up by suspend/resume */
     outw(0x3D6,0x15);
@@ -2841,7 +2875,11 @@ CHIPSInit655xx(mode)
     }
 
     /* some generic settings */
-    new->std.Attribute[0x10] = 0x01;   /* mode */
+    if (vgaBitsPerPixel < 8) {
+	new->std.Attribute[0x10] = 0x03;   /* mode */
+    } else {
+	new->std.Attribute[0x10] = 0x01;   /* mode */
+    }
     new->std.Attribute[0x11] = 0x00;   /* overscan (border) color */
     new->std.Attribute[0x12] = 0x0F;   /* enable all color planes */
     new->std.Attribute[0x13] = 0x00;   /* horiz pixel panning 0 */
@@ -2849,7 +2887,11 @@ CHIPSInit655xx(mode)
     new->std.Graphics[0x05] = 0x00;    /* normal read/write mode */
 
     /* set virtual screen width */
-    new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * vgaBytesPerPixel) >> 3;
+    if (vgaBitsPerPixel >= 8)
+	new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * 
+			       vgaBytesPerPixel) >> 3;
+    else
+	new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 4;
 
     /* get  C&T Specific Registers */
     for (i = 0; i < 0x80; i++) {
@@ -2861,7 +2903,10 @@ CHIPSInit655xx(mode)
     /* set virtual screen width */
     new->Port_3D6[0x1E] = new->std.CRTC[0x13];	/* alternate offset */
     /*databook is not clear about 0x1E might be needed for 65520/30 */
-    tmp = (vga256InfoRec.displayWidth * vgaBytesPerPixel) >> 2;
+    if (vgaBitsPerPixel >= 8)
+	tmp = (vga256InfoRec.displayWidth * vgaBytesPerPixel) >> 2;
+    else
+	tmp = vga256InfoRec.displayWidth >> 3;
     new->Port_3D6[0x0D] = (tmp & 0x01) | ((tmp << 1) & 0x02)  ; 
 
     new->Port_3D6[0x04] |= 4;	       /* enable addr counter bits 16-17 */
@@ -2882,8 +2927,11 @@ CHIPSInit655xx(mode)
 
     new->Port_3D6[0x10] = 0;	       /* XR10: Single/low map */
     new->Port_3D6[0x11] = 0;	       /* XR11: High map      */
-    new->Port_3D6[0x28] |= 0x10;       /* 256-color video     */
-
+    if (vgaBitsPerPixel >= 8) {
+	new->Port_3D6[0x28] |= 0x10;       /* 256-color video     */
+    } else {
+	new->Port_3D6[0x28] &= 0xEF;       /* 16-color video      */
+    }
     /* set up extended display timings */
     if (ctCRT) {
       /* in CRTonly mode this is simple: only set overflow for CR00-CR06 */
@@ -3175,8 +3223,9 @@ CHIPSInit655xx(mode)
     if (!ctLCD) {
 	if (mode->Flags & V_INTERLACE){
 	    new->Port_3D6[0x28] |= 0x20;    /* set interlace         */
+	    /* empirical value       */
 	    tmp = ((((mode->CrtcHDisplay >> 3) - 1) >> 1) 
-		- 6 * vgaBytesPerPixel);    /* empirical value       */
+		- 6 * (vgaBitsPerPixel >= 8 ? vgaBytesPerPixel : 1 ));
 	    if(CHIPSchipset < CT_535)
 	      new->Port_3D6[0x19] = tmp;
 	    else
@@ -3287,7 +3336,11 @@ CHIPSInitWINGINE(mode)
     }
 
     /* some generic settings */
-    new->std.Attribute[0x10] = 0x01;   /* mode */
+    if (vgaBitsPerPixel < 8) {
+	new->std.Attribute[0x10] = 0x03;   /* mode */
+    } else {
+	new->std.Attribute[0x10] = 0x01;   /* mode */
+    }
     new->std.Attribute[0x11] = 0x00;   /* overscan (border) color */
     new->std.Attribute[0x12] = 0x0F;   /* enable all color planes */
     new->std.Attribute[0x13] = 0x00;   /* horiz pixel panning 0 */
@@ -3295,7 +3348,11 @@ CHIPSInitWINGINE(mode)
     new->std.Graphics[0x05] = 0x00;    /* normal read/write mode */
 
     /* set virtual screen width */
-    new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * vgaBytesPerPixel) >> 3;
+    if (vgaBitsPerPixel >= 8)
+	new->std.CRTC[0x13] = (vga256InfoRec.displayWidth * 
+			       vgaBytesPerPixel) >> 3;
+    else
+	new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 4;
 
     /* get  C&T Specific Registers */
     for (i = 0; i < 0x7D; i++) {  /* don't touch XR7D and XR7F on WINGINE */
@@ -3305,7 +3362,10 @@ CHIPSInitWINGINE(mode)
 
     /* set C&T Specific Registers */
     /* set virtual screen width */
-    tmp = (vga256InfoRec.displayWidth >> 4) * vgaBytesPerPixel;
+    if (vgaBitsPerPixel >= 8)
+	tmp = (vga256InfoRec.displayWidth >> 4) * vgaBytesPerPixel;
+    else
+	tmp = (vga256InfoRec.displayWidth >> 5);
     new->Port_3D6[0x0D] = (tmp & 0x80) >> 5; 
 
     new->Port_3D6[0x04] |= 4;	       /* enable addr counter bits 16-17 */
@@ -3327,7 +3387,11 @@ CHIPSInitWINGINE(mode)
     new->Port_3D6[0x10] = 0;	       /* XR10: Single/low map */
     new->Port_3D6[0x11] = 0;	       /* XR11: High map       */
     new->Port_3D6[0x0C] &= ~0x50;      /* MSB for XR10 & XR11  */ 
-    new->Port_3D6[0x28] |= 0x10;       /* 256-color video      */
+    if (vgaBitsPerPixel >= 8) {
+	new->Port_3D6[0x28] |= 0x10;       /* 256-color video     */
+    } else {
+	new->Port_3D6[0x28] &= 0xEF;       /* 16-color video      */
+    }
 
     /* set up extended display timings */
       /* in CRTonly mode this is simple: only set overflow for CR00-CR06 */
@@ -3411,8 +3475,9 @@ CHIPSInitWINGINE(mode)
     /* CRT only: interlaced mode */
 	if (mode->Flags & V_INTERLACE){
 	    new->Port_3D6[0x28] |= 0x20;    /* set interlace         */
+	    /* empirical value       */
 	    temp = ((((mode->CrtcHDisplay >> 3) - 1) >> 1) 
-		- 6 * vgaBytesPerPixel);    /* empirical value       */
+		- 6 * (vgaBitsPerPixel >= 8 ? vgaBytesPerPixel : 1 ));
 	    new->Port_3D6[0x19] = temp & 0xFF;
 	    new->Port_3D6[0x17] |= ((temp & 0x100) >> 1);/* overflow */
  	    new->Port_3D6[0x0F] &= ~0x40;   /* set SW-Flag           */
@@ -3482,7 +3547,11 @@ CHIPSInitHiQV32(mode)
      */
 
     /* some generic settings */
-    new->std.Attribute[0x10] = 0x01;   /* mode */
+    if (vgaBitsPerPixel < 8) {
+	new->std.Attribute[0x10] = 0x03;   /* mode */
+    } else {
+	new->std.Attribute[0x10] = 0x01;   /* mode */
+    }
     new->std.Attribute[0x11] = 0x00;   /* overscan (border) color */
     new->std.Attribute[0x12] = 0x0F;   /* enable all color planes */
     new->std.Attribute[0x13] = 0x00;   /* horiz pixel panning 0 */
@@ -3495,6 +3564,8 @@ CHIPSInitHiQV32(mode)
 	temp <<= 1;		       /* double the width of the buffer */
     } else if (vgaBitsPerPixel == 24) {
 	temp += temp << 1;
+    } else if (vgaBitsPerPixel < 8) {
+	temp >>= 1;
     }
     new->std.CRTC[0x13] = temp;
     new->Port_3D4[0x41] = (temp >> 8) & 0x0F;
@@ -3506,8 +3577,10 @@ CHIPSInitHiQV32(mode)
     new->Port_3D6[0x09] |= 0x1;	       /* Enable extended CRT registers */
     new->Port_3D6[0x0E] = 0;           /* Single map */
     new->Port_3D6[0x40] |= 0x3;	       /* High Resolution. XR40[1] reserved? */
-    new->Port_3D6[0x81] &= 0xF8;       /* 256 Color Video */
-    new->Port_3D6[0x81] |= 0x2;
+    new->Port_3D6[0x81] &= 0xF8;
+    if (vgaBitsPerPixel >= 8) {
+	new->Port_3D6[0x81] |= 0x2;    /* 256 Color Video */
+    }
     new->Port_3D6[0x80] |= 0x10;       /* Enable cursor output on P0 and P1 */
 
     if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options)) {
@@ -3710,6 +3783,10 @@ CHIPSAdjust(x, y)
 
     /* calculate base bpp dep. */
     switch (vgaBitsPerPixel) {
+    case 1:
+    case 4:
+	Base >>= 3;
+	break;
     case 16:
 	Base >>= 1;
 	break;
@@ -3771,7 +3848,8 @@ CHIPSFbInit()
 {
     int useSpeedUp, size;
 
-    if ((vga256InfoRec.displayWidth * vga256InfoRec.virtualY * vgaBytesPerPixel)
+    if ((vga256InfoRec.displayWidth * vga256InfoRec.virtualY * 
+	 (vgaBitsPerPixel >= 8 ? vgaBytesPerPixel : 1 ))
 	> ((vga256InfoRec.videoRam << 10) - ctFrameBufferSize)) {
 	ErrorF("%s %s: CHIPS: Virtual screen too large.\n",
 	       XCONFIG_PROBED, vga256InfoRec.name);
@@ -3821,8 +3899,9 @@ CHIPSFbInit()
 	}
     }
 
-#ifndef MONOVGA
-
+    /* Other acceleration is only supported at 8bpp and greater */
+    if (vgaBitsPerPixel  < 8) return;
+    
     useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
     if (useSpeedUp && !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options)) {
 
@@ -3850,6 +3929,16 @@ CHIPSFbInit()
 	    ctColorExpandScratchSize = 1024;
 #endif
 
+	/* Allocate space for the pattern that will be used as a planemask */
+	switch  (vga256InfoRec.bitsPerPixel) {
+	  case 8:
+	    ctBLTPatternAddress = ctAllocate(64, 0x3F);
+	    break;
+	  case 16:
+	    ctBLTPatternAddress = ctAllocate(128, 0x7F);
+	    break;
+	}
+	    
 	/* Use the allocation function to now get an address that
 	 * points to the top of ram. As it won't be used again in
 	 * this acceleration scheme, we really don't care of the
@@ -4267,7 +4356,6 @@ CHIPSFbInit()
 	}
 #endif /* CT_OLD_ACCL_CODE */
     }
-#endif /* MONOVGA */
 
 #ifdef DEBUG
     ErrorF("CHIPSFbInit: exit\n");

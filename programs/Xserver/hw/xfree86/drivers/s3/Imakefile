@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Imakefile,v 1.4 1997/02/25 14:22:56 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Imakefile,v 1.1 1997/03/06 23:16:25 hohndel Exp $
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -33,23 +33,27 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(s3_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(s3driver.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3probe.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3BtCursor.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3ELSA.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3ramdacs.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(Ti3026Curs.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3init.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3fbinit.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3save.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3misc.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3accel.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3cursor.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(IBMRGBCurs.c,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(s3bank.s,$(LINKKITDIR)/drivers/s3)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3)
+InstallLinkKitNonExecFile(s3driver.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3probe.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3BtCursor.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3ELSA.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3ramdacs.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(Ti3026Curs.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3init.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3fbinit.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3save.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3misc.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3accel.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3cursor.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(IBMRGBCurs.c,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3bank.s,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3Bt485.h,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3ELSA.h,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(s3reg.h,$(LINKKITDIR)/drivers/svga/s3)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/s3)
 
 #if DoLoadableServer
 InstallDynamicModule(s3_drv.o,$(MODULEDIR))

@@ -1,5 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.11 1997/03/03 10:19:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.1 1997/03/06 23:14:54 hohndel Exp $ */
 
+
+#define CT_EXTRA_WAIT
 
 #include "vga256.h"
 #include "compiler.h"
@@ -49,6 +51,32 @@ void CTNAME(SetupForFill8x8Pattern)();
 void CTNAME(SubsequentFill8x8Pattern)();
 void CTNAME(SetupFor8x8PatternColorExpand)();
 void CTNAME(Subsequent8x8PatternColorExpand)();
+void CTNAME(ImageWrite)();
+
+static unsigned int old_planemask;
+/* Define a Macro to replicate a planemask 64 times and write to address
+ * allocated for planemask pattern */
+#define ctWRITEPLANEMASK(mask,addr) { \
+    switch  (vga256InfoRec.bitsPerPixel) { \
+    case 8: \
+        if (old_planemask != mask&0xFF) { \
+            old_planemask = mask&0xFF; \
+	    xf86memset((unsigned char *)vgaLinearBase + addr, mask&0xFF, 64); \
+	} \
+	break; \
+    case 16: \
+        if (old_planemask != mask&0xFFFF) { \
+            old_planemask = mask&0xFFFF; \
+	    {   int i; \
+	        for (i = 0; i < 64; i++) { \
+		    xf86memset((unsigned char *)vgaLinearBase + addr + i * 2, \
+			   mask, 2); \
+	        } \
+	    } \
+	} \
+	break; \
+    } \
+}				   
 
 static unsigned int CommandFlags;
 
@@ -66,7 +94,8 @@ void _ctAccelInit() {
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_NO_PLANEMASK |
 	HARDWARE_PATTERN_MONO_TRANSPARENCY | HARDWARE_PATTERN_MOD_64_OFFSET |
 	HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
@@ -76,7 +105,7 @@ void _ctAccelInit() {
     xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
 #endif
     if (ctColorTransparency)
-	xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_TRANSPARENCY;
+	xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
 #endif
 
     /*
@@ -89,9 +118,13 @@ void _ctAccelInit() {
      * Setup a Screen to Screen copy (BitBLT) primitive
      */  
 #ifndef CHIPS_HIQV
-    xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK | NO_TRANSPARENCY;
+    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
+    if (vga256InfoRec.bitsPerPixel == 24)
+	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
 #else
-    xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
+    xf86GCInfoRec.CopyAreaFlags = 0;
+    if (vga256InfoRec.bitsPerPixel == 24)
+	xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
     /* A Chips and Technologies application notes says that some
      * 65550 have a bug that prevents 16bpp transparency. It probably
      * applies to 24 bpp as well (Someone with a 65550 care to check?).
@@ -149,7 +182,7 @@ void _ctAccelInit() {
      */
 
 #ifdef CHIPS_HIQV
-    xf86AccelInfoRec.ColorExpandFlags = NO_PLANEMASK |
+    xf86AccelInfoRec.ColorExpandFlags =
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
 #if 0
@@ -158,7 +191,7 @@ void _ctAccelInit() {
         ;
 #endif
 #else
-    xf86AccelInfoRec.ColorExpandFlags = NO_PLANEMASK |
+    xf86AccelInfoRec.ColorExpandFlags =
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_DWORD;
     if (vga256InfoRec.bitsPerPixel == 24)
@@ -180,7 +213,6 @@ void _ctAccelInit() {
     xf86AccelInfoRec.ScratchBufferAddr = ctColorExpandScratchAddr;
     xf86AccelInfoRec.ScratchBufferSize = ctColorExpandScratchSize;
 #endif
-
     xf86AccelInfoRec.SetupForScanlineCPUToScreenColorExpand =
 	CTNAME(SetupForScanlineCPUToScreenColorExpand);
     xf86AccelInfoRec.SubsequentScanlineCPUToScreenColorExpand =
@@ -205,6 +237,8 @@ void _ctAccelInit() {
             CTNAME(Subsequent8x8PatternColorExpand);
     }
 
+    xf86AccelInfoRec.ImageWrite = CTNAME(ImageWrite);
+
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
         ctCacheEnd);
@@ -223,26 +257,24 @@ void CTNAME(8SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
+    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
+	     | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETBGCOLOR8(color);
     ctSETFGCOLOR8(color);
-    ctSETROP(ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
-	     | ctPATMONO);
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
-    CommandFlags = 0;
 }
 
 void CTNAME(16SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
+    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
+	     | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETFGCOLOR16(color);
     ctSETBGCOLOR16(color);
-    ctSETROP(ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
-	     | ctPATMONO);
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
-    CommandFlags = 0;
 }
 
 #ifdef CHIPS_HIQV
@@ -250,11 +282,11 @@ void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
+    CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
+	     | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETFGCOLOR24(color);
     ctSETBGCOLOR24(color);
-    ctSETROP(ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
-	     | ctPATMONO);
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
 #else
@@ -391,6 +423,9 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
 	    ctSETPITCH(0, dispw);
 	  }
       }
+#ifdef CT_EXTRA_WAIT
+    ctBLTWAIT;
+#endif
 }
 #endif
 
@@ -401,8 +436,12 @@ void CTNAME(SubsequentFillRectSolid)(x, y, w, h)
 
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
+    ctSETROP(CommandFlags);
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+#ifdef CT_EXTRA_WAIT
+    ctBLTWAIT;
+#endif
 }
 
 /*
@@ -445,7 +484,16 @@ transparency_color)
     }
 #endif
     ctBLTWAIT;
-    ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
+    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    {
+	ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
+    } else {
+	ctSETROP(CommandFlags | ctAluConv3[rop & 0xF]);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
     ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
 	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
@@ -546,8 +594,18 @@ planemask)
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
-    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	ctAluConv[rop & 0xF] | CommandFlags);
+   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    {
+	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv[rop & 0xF] | CommandFlags);
+    } else {
+	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv3[rop & 0xF] | CommandFlags);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
     ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
 	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
@@ -615,8 +673,18 @@ planemask)
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
     ctSETSRCADDR(0);
-    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	ctAluConv[rop & 0xF] | CommandFlags);
+   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    {
+	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv[rop & 0xF] | CommandFlags);
+    } else {
+	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv3[rop & 0xF] | CommandFlags);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
 
@@ -676,8 +744,18 @@ void CTNAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
-    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	ctAluConv[rop & 0xF] | CommandFlags);
+   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    {
+	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv[rop & 0xF] | CommandFlags);
+    } else {
+	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv3[rop & 0xF] | CommandFlags);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
     ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
 	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
@@ -741,8 +819,18 @@ void CTNAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
         }
     }
     ctSETSRCADDR(0);
-    ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	ctAluConv[rop & 0xF] | CommandFlags);
+   if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
+    {
+	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv[rop & 0xF] | CommandFlags);
+    } else {
+	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ctAluConv3[rop & 0xF] | CommandFlags);
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
     ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
 }
 
@@ -883,4 +971,48 @@ void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     ctSETROP(CommandFlags | ((y & 0x7) << 16));
 #endif
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+}
+
+void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
+    int x, y, w, h, srcwidth, rop;
+    void *src;
+    unsigned int planemask;
+{
+    volatile unsigned long *pHOSTDATA;
+    unsigned long *pdSrc;
+    unsigned char *pbSrc;
+    int dwords, dwordTotal;
+  
+    if (h == 0 || w == 0)
+        return;
+
+    pbSrc = (unsigned char *)src;
+    dwordTotal = (w * vgaBytesPerPixel + 3) >> 2;
+
+    ctBLTWAIT;
+    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel);
+    ctSETSRCADDR(0);
+    if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
+    (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF)) 
+    {
+	ctSETROP(ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+	    ctAluConv[rop & 0xF] );
+    } else {
+	ctSETROP(ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+	    ctAluConv3[rop & 0xF] );
+	ctSETPATSRCADDR(ctBLTPatternAddress);
+	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
+    }
+    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+
+    while (h--) {
+	dwords = dwordTotal;
+	pdSrc = (unsigned long *)pbSrc;
+	pHOSTDATA = (unsigned long *)ctBltDataWindow;
+	    while (dwords--)
+		*pHOSTDATA++ = *pdSrc++;
+	pbSrc += srcwidth;
+    }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.3 1997/03/22 09:35:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.4 1997/03/27 08:30:46 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -199,8 +199,16 @@ Bool S3Probe()
       s3ChipRev = inb(vgaCRReg);
    }
 
-   /* Harald's ChipId and Revision spoofing code goes here. It
-	probably should be an SVGA server feature too. */
+   if (vga256InfoRec.chipID) {
+      ErrorF("%s %s: S3 chipset override, using chip_id = 0x%02x instead of 0x%02x\n",
+	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipID, s3ChipId);
+      s3ChipId = vga256InfoRec.chipID;
+   }
+   if (vga256InfoRec.chipRev) {
+      ErrorF("%s %s: S3 chipset override, using chip_rev = %x instead of %x\n",
+	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipRev, s3ChipRev);
+      s3ChipRev = vga256InfoRec.chipRev;
+   }
 
    /* We complain (and bail) when we have no idea what S3 chip it is */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.1 1997/03/06 23:17:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.2 1997/03/27 18:39:29 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -85,12 +85,11 @@ void TGUISubsequent8x8PatternColorExpand();
  */
 void TGUIAccelInit() {
 
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
-				HARDWARE_PATTERN_TRANSPARENCY |
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
 				HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
-				HARDWARE_PATTERN_SCREEN_ORIGIN |
-				PIXMAP_CACHE;
+				HARDWARE_PATTERN_SCREEN_ORIGIN;
 
     xf86AccelInfoRec.Sync = TGUISync;
 
@@ -188,7 +187,6 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
 	TGUI_FCOLOUR(color);
 	TGUI_BCOLOUR(color);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]);
-	TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
 }
 /*
  * This is the implementation of the SubsequentForFillRectSolid function
@@ -199,6 +197,7 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
 void TGUISubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
+	TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
 	TGUI_DIM_XY(w,h);
 	TGUI_DEST_XY(x,y);
 	TGUI_COMMAND(GE_BLT);

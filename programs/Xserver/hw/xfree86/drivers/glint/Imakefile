@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 3.10 1997/02/27 13:59:33 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 1.1 1997/03/07 00:29:34 hohndel Exp $
 XCOMM
 XCOMM This is an Imakefile for the GLINT driver.  
 XCOMM
@@ -25,9 +25,9 @@ NormalLibraryObjectRule()
 NormalAsmObjectRule()
 NormalRelocatableTarget(glint_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(glint.h,$(LINKKITDIR)/drivers/glint)
-InstallLinkKitNonExecFile(glintdriver.c,$(LINKKITDIR)/drivers/glint)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mga)
+InstallLinkKitNonExecFile(glint.h,$(LINKKITDIR)/drivers/svga/glint)
+InstallLinkKitNonExecFile(glintdriver.c,$(LINKKITDIR)/drivers/svga/glint)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/glint)
 
 #if DoLoadableServer
 InstallDynamicModule(glint_drv.o,$(MODULEDIR))

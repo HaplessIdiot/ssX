@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.1 1997/03/06 23:15:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.2 1997/03/11 11:10:15 hohndel Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  * Copyright 1997 Ming Yu <yum@itp.ac.cn>, Gerry Toll <gtoll@tc.cornell.edu>, 
@@ -96,24 +96,28 @@ vgaVideoChipRec COMPAQ = {
 	COMPAQSetRead,
 	COMPAQSetWrite,
 	COMPAQSetReadWrite,
-	0x10000,
-	0x08000,
-	15,
-	0x7FFF,
-	0x00000, 0x08000,
-	0x08000, 0x10000,
+	0x10000,                              /* Map Size */
+	0x08000,                              /* Segment Size */
+	15,                                   /* Segment Shift */
+	0x7FFF,                               /* Segment Mask */
+	0x00000, 0x08000,                     /* Read Bottom, Top */
+	0x08000, 0x10000,                     /* Write Bottom, Top */
 	TRUE,                                 /* Uses 2 banks */
-	VGA_NO_DIVIDE_VERT,
-	{0,},
-	8,
-	FALSE,
-	0,
-	0,
-	FALSE,
-	FALSE,
-	FALSE,
-	NULL,
-	1,
+	VGA_NO_DIVIDE_VERT,                   /* Interlace Type */
+	{0,},                                 /* Option Flags */
+	8,                                    /* Horiz. Res. Rounding */
+	FALSE,                                /* Doesn't Use Linear Addr */
+	0,                                    /* Linear Base */
+	0,                                    /* Linear Size */
+	FALSE,                                /* 1bpp */
+	FALSE,                                /* 4bpp */
+	TRUE,                                 /* 8bpp */
+	FALSE,                                /* 15bpp */
+	FALSE,                                /* 16bpp */
+	FALSE,                                /* 24bpp */
+	FALSE,                                /* 32bpp */
+	NULL,                                 /* Builtin Mode List */
+	1,                                    /* Clock Scale Factor */
 };
 
 #define new ((vgaCOMPAQPtr)vgaNewVideoState)

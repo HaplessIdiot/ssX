@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.1 1997/03/06 23:17:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.2 1997/03/11 13:05:56 hohndel Exp $ */
 
 
 /*
@@ -39,6 +39,8 @@ void TsengSync();
 void TsengSetupForFillRectSolid();
 void Tseng4SubsequentFillRectSolid();
 void Tseng6SubsequentFillRectSolid();
+
+void TsengSubsequentFillTrapezoidSolid();
 
 void TsengSetupForScreenToScreenCopy();
 void TsengSubsequentScreenToScreenCopy();
@@ -92,8 +94,9 @@ void TsengAccelInit() {
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
-      | HARDWARE_PATTERN_ALIGN_64 | HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64 | 
+                             HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
 
     /* we'll disable COP_FRAMEBUFFER_CONCURRENCY for the public beta
      * release, because it causes font corruption. But THIS NEEDS TO BE
@@ -103,7 +106,7 @@ void TsengAccelInit() {
       
     if (et4000_type >= TYPE_ET6000)
     {
-      xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_TRANSPARENCY;
+      xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
     }
 
     /*
@@ -119,8 +122,13 @@ void TsengAccelInit() {
     xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
 
     xf86AccelInfoRec.SetupForFillRectSolid = TsengSetupForFillRectSolid;
-    if (et4000_type >= TYPE_ET6000)
+    if (et4000_type >= TYPE_ET6000) {
       xf86AccelInfoRec.SubsequentFillRectSolid = Tseng6SubsequentFillRectSolid;
+#if 0
+      /* disabled for now: not fully compliant yet */
+      xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
+#endif
+    }
     else
       xf86AccelInfoRec.SubsequentFillRectSolid = Tseng4SubsequentFillRectSolid;
 
@@ -159,19 +167,17 @@ void TsengAccelInit() {
 
     /*
      * Setup hardware-line-drawing code.
-     * -- currently disabled because of major bugs...
      */
 
 #if 0
+    /* -- currently disabled because of major bugs... */
     xf86AccelInfoRec.SubsequentBresenhamLine =
         TsengSubsequentBresenhamLine;
     xf86AccelInfoRec.ErrorTermBits = 11;
 #endif
 
-#if 1
     xf86AccelInfoRec.SubsequentTwoPointLine =
         TsengSubsequentTwoPointLine;
-#endif
 
     xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
          NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
@@ -200,7 +206,7 @@ void TsengAccelInit() {
           BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
 
 #if 1
-      /* new and untested */
+      /* new and untested (not used by XAA yet -- needs testing) */
 
       xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
           TsengSetupForScreenToScreenColorExpand;
@@ -534,6 +540,9 @@ static __inline__ void SET_XY_RAW(int x, int y)
 #define SET_DELTA(Min, Maj) \
     *((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min)
 
+#define SET_SECONDARY_DELTA(Min, Maj) \
+    *((LongP) ACL_SECONDARY_DELTA_MINOR) = ((Maj) << 16) + (Min)
+
 
 /* Must do 0x09 (in one operation) for the W32 */
 #define START_ACL(dst) \
@@ -578,6 +587,9 @@ static int old_dir=-1;
     if ((dir) != old_dir) \
       *ACL_XY_DIRECTION = old_dir = (dir);
 #endif
+
+#define SET_SECONDARY_XYDIR(dir) \
+      *ACL_SECONDARY_EDGE = (dir);
 
 /*
  * This is the implementation of the Sync() function.
@@ -883,10 +895,9 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      *
      * Looks like some scanline data DWORDS are not written to the ping-pong
      * framebuffers, so that old data is rendered in some places. Is this
-     * caused by PCI host bridge queueing? ET6000 queueing? or is data lost
-     * when written while the accelerator is accessing the framebuffer
-     * (which would be the real reason NOT to use
-     * COP_FRAMEBUFFER_CONCURRENCY)?
+     * caused by PCI host bridge queueing? Or is data lost when written
+     * while the accelerator is accessing the framebuffer (which would be
+     * the real reason NOT to use COP_FRAMEBUFFER_CONCURRENCY)?
      *
      * Even with ping-ponging, parts of scanline three (which are supposed
      * to be written to the old, already rendered scanline 1 buffer) have
@@ -925,12 +936,10 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
     ColorExpandDst += tseng_line_width;
     
     /*
-     * We need to wait for the queued register set to be transferred to the
-     * working register set here, because otherwise the double-buffering
-     * mechanism used by XAA could overwrite the buffer that's currently
-     * being worked with with new data too soon. This will not be necessary
-     * anymore once ScanlineScreenToScreenColorExpand supports triple (or
-     * more) buffering.
+     * If not using triple-buffering, we need to wait for the queued
+     * register set to be transferred to the working register set here,
+     * because otherwise an e.g. double-buffering mechanism could overwrite
+     * the buffer that's currently being worked with with new data too soon.
      *
      * WAIT_QUEUE; // not needed with triple-buffering
      */
@@ -1117,7 +1126,10 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
  
 /*   ErrorF("L"); */
 
-   /* fix drawing "bug" when drawing right-to-left (dx<0) */
+   /*
+    * Fix drawing "bug" when drawing right-to-left (dx<0). This could also be
+    * fixed by changing the offset in the color "pattern" instead if dx < 0
+    */
    if (bytesperpixel > 1)
    {
      if (x2 < x1)
@@ -1180,3 +1192,125 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
    START_ACL(destaddr);
 }
+
+/*
+ * Trapezoid filling code.
+ *
+ * TsengSetupForFillRectSolid() is used as a setup function
+ */
+
+#undef USE_ERROR_TERM
+#undef DEBUG_TRAP
+
+void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, dyR, eR)
+        int ytop;
+        int height;
+        int left;
+        int dxL, dyL;
+        int eL;
+        int right;
+        int dxR, dyR;
+        int eR;
+{
+    int destaddr, algrthm;
+    int xcount = right - left + 1;
+#ifdef USE_ERROR_TERM
+    int dir_reg = 0x60;
+    int sec_dir_reg = 0x20;
+#else
+    int dir_reg = 0x40;
+    int sec_dir_reg = 0x00;
+#endif
+    int octant=0;
+    int bias = 0x00; /* FIXME !!! */
+
+/*    ErrorF("#");*/
+
+#ifdef DEBUG_TRAP
+    ErrorF("ytop=%d, height=%d, left=%d, dxL=%d, dyL=%d, eL=%d, right=%d, dxR=%d, dyR=%d, eR=%d ",
+            ytop, height, left, dxL, dyL, eL, right, dxR, dyR, eR);
+#endif
+
+    if ((dyL < 0) || (dyR < 0)) ErrorF("Tseng Trapezoids: Wrong assumption: dyL/R < 0\n");
+
+    destaddr = FBADDR(left,ytop);
+
+    /* left edge */
+    if (dxL<0)
+      {
+        dir_reg |= 1;
+        octant |= XDECREASING;
+        dxL = -dxL;
+      }
+
+    /* Y direction is always positive (top-to-bottom drawing) */
+
+    /* Avoid PCI-Retry's */
+    if (!Use_Pci_Retry) WAIT_QUEUE;
+
+
+    /* left edge */
+    /* compute axial direction and load registers */
+    if (dxL >= dyL)  /* X is major axis */
+    {
+      dir_reg |= 4;
+      SET_DELTA(dyL, dxL);
+      if (dir_reg & 1) {      /* edge coherency: draw left edge */
+         destaddr += bytesperpixel;
+         sec_dir_reg |= 0x80;
+         xcount--;
+      }
+    }
+    else           /* Y is major axis */
+    {
+      SetYMajorOctant(octant);
+      SET_DELTA(dxL, dyL);
+    }
+#ifdef USE_ERROR_TERM
+    *ACL_ERROR_TERM = eL-1;
+#endif
+
+    /* select "linedraw algorithm" (=bias) and load direction register */
+    /* ErrorF(" o=%d ", octant);*/
+    algrthm = ((bias >> octant) & 1) ^ 1;
+    dir_reg |= algrthm << 4;
+    SET_XYDIR(dir_reg);
+
+
+    /* right edge */
+    if (dxR<0)
+      {
+        sec_dir_reg |= 1;
+        dxR = -dxR;
+      }
+
+    /* compute axial direction and load registers */
+    if (dxR >= dyR)  /* X is major axis */
+    {
+      sec_dir_reg |= 4;
+      SET_SECONDARY_DELTA(dyR, dxR);
+      if (dir_reg & 1) {      /* edge coherency: do not draw right edge */
+        sec_dir_reg |= 0x40;
+        xcount++;
+      }
+    }
+    else           /* Y is major axis */
+    {
+      SET_SECONDARY_DELTA(dxR, dyR);
+    }
+#ifdef USE_ERROR_TERM
+    *ACL_SECONDARY_ERROR_TERM = eR;
+#endif
+
+    /* ErrorF("%02x", sec_dir_reg);*/
+    SET_SECONDARY_XYDIR(sec_dir_reg);
+
+    SET_XY_6(xcount, height);
+
+#ifdef DEBUG_TRAP
+    ErrorF("-> %d,%d\n", xcount, height);
+#endif
+
+    START_ACL_6(destaddr);
+}
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.16 1997/03/22 09:36:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.17 1997/03/24 13:09:54 hohndel Exp $ */
 
 
 
@@ -61,6 +61,7 @@ extern int vgaIOBase,vgaCRReg,vgaCRIndex;
 extern unsigned char *xf86rGammaMap,*xf86gGammaMap,*xf86bGammaMap;
 extern char *xf86ModulePath;
 extern LoadModule();
+extern int LoaderCheckUnresolved();
 
 /* XFree86 things */
 
@@ -145,6 +146,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderDefaultFunc)
    SYMFUNC(LoadModule)
    SYMFUNC(xf86ModulePath)
+   SYMFUNC(LoaderCheckUnresolved)
 
 /*
  * these here are our own interfaces to libc functions
