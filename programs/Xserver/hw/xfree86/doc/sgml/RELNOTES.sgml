@@ -9,7 +9,7 @@
 <date>23 November 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.83 2003/11/21 05:44:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.84 2003/11/24 03:43:17 dawes Exp $
 </ident>
 
 <abstract>
@@ -391,6 +391,10 @@ scroll-back(1, page-2)
 	<item>Full screen mode now uses shadowfb for much faster 2-D drawing.
 	<item>Native fonts can be used on MacOS X.
 	</itemize>
+
+<item>Various GNU/Hurd support updates.
+
+<item>Experimental support added for GNU/KFreeBSD and GNU/KNetBSD systems.
 
 <item>[OLD] Various Cygwin support updates, including an experimental rootless
 	X server for Cygwin/XFree86.
