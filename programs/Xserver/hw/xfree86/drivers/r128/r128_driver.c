@@ -1047,15 +1047,35 @@ static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+extern xf86MonPtr ConfiguredMonitor;
+
+static void
+R128ProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	pVbe = VBEInit(NULL,index);
+	ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
 /* R128PreInit is called once at server startup. */
 static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 {
     R128InfoPtr   info;
 
-    if (flags & PROBE_DETECT) return FALSE;
-
     R128TRACE(("R128PreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
+
+    info               = R128PTR(pScrn);
+
+    info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
+    if (info->pEnt->location.type != BUS_PCI) goto fail;
+
+    if (flags & PROBE_DETECT) {
+	R128ProbeDDC(pScrn, info->pEnt->index);
+	return TRUE;
+    }
 
     if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
@@ -1064,11 +1084,6 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 	vgaHWFreeHWRec(pScrn);
 	return FALSE;
     }
-
-    info               = R128PTR(pScrn);
-
-    info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
-    if (info->pEnt->location.type != BUS_PCI) goto fail;
 
     info->PciInfo      = xf86GetPciInfoForEntity(info->pEnt->index);
     info->PciTag       = pciTag(info->PciInfo->bus,
