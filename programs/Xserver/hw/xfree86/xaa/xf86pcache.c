@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.7 1997/01/18 06:57:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.8 1997/01/20 12:38:25 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1098,11 +1098,15 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	        }
 	    }
 	    else {
+#if 0
 	        ErrorF("Writing rotated mono patterns (%dx%d).\n",
 	            pci->pix_w, pci->pix_h);
+#endif
                 WriteStippleAs8x8MonoPattern(pci->x, pci->y, pix->drawable.width,
                     pix->drawable.height, pix->devPrivate.ptr, pix->devKind);
+#if 0
                 ErrorF("Finished writing mono patterns.\n");
+#endif
             }
             pci->flags = 2;
             *realpci = *pci;

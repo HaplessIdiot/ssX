@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.20 1996/12/28 08:14:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.21 1997/01/18 06:54:10 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -32,6 +32,8 @@
 #include "xf86_Config.h"
 #include "Ti302X.h"
 #include "IBMRGB.h"
+
+#include "xf86xaa.h"
 
 extern char *xf86VisualNames[];
 extern int defaultColorVisualClass;
@@ -115,26 +117,6 @@ ScrnInfoRec i128InfoRec =
 #endif
 };
 
-short i128alu[16] =
-{
-   CR_CLEAR,
-   CR_NOR,
-   CR_AND_INV,
-   CR_COPY_INV,
-   CR_AND_REV,
-   CR_INVERT,
-   CR_XOR,
-   CR_NAND,
-   CR_AND,
-   CR_EQUIV,
-   CR_NOOP,
-   CR_OR_INV,
-   CR_COPY,
-   CR_OR_REV,
-   CR_OR,
-   CR_SET
-};
-
 static SymTabRec i128DacTable[] = {
    { TI3025_DAC,	"ti3025" },
    { IBM524_DAC,	"ibm524" },
@@ -160,6 +142,7 @@ unsigned long i128io_config1_save, i128io_config2_save;
 int i128hotX, i128hotY;
 Bool i128BlockCursor, i128ReloadCursor;
 int i128CursorStartX, i128CursorStartY, i128CursorLines;
+int i128DeviceType;
 int i128RamdacType = UNKNOWN_DAC;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
@@ -186,13 +169,8 @@ void (*i128ImageFillFunc)(
 void
 i128PrintIdent()
 {
-#ifdef I128_ACCEL
-  ErrorF("  %s: accelerated server for I128 graphics adaptors (Patchlevel %s)\n",
-	 i128InfoRec.name, i128InfoRec.patchLevel);
-#else
   ErrorF("  %s: server for I128 graphics adaptors (Patchlevel %s)\n",
 	 i128InfoRec.name, i128InfoRec.patchLevel);
-#endif
 }
 
 
@@ -235,6 +213,8 @@ i128Probe()
       return(FALSE);
 
    iobase = (unsigned short )pcrp->_base5 & 0xFF00;
+
+   i128DeviceType = pcrp->_device_vendor;
 
    for (i=0; i<11; i++)  /* 11 long I/O address registers (0x00-0x28) */
       PCI_DevIOPorts[i] = iobase + (i*4);
@@ -320,6 +300,7 @@ i128Probe()
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
+   OFLG_SET(OPTION_NOACCEL, &validOptions);
    xf86VerifyOptions(&validOptions, &i128InfoRec);
 
    if (xf86Verbose)
@@ -610,6 +591,9 @@ i128Probe()
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &i128InfoRec.options) ||
        (i128InfoRec.bitsPerPixel > 8))
       i128DAC8Bit = TRUE;
+
+   if (xf86bpp == 8)
+	 xf86weight.green = (i128DAC8Bit ? 8 : 6);  /* for XAA */
 
    if (i128DAC8Bit && xf86Verbose && i128InfoRec.bitsPerPixel == 8)
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",

@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.2 1996/12/23 06:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.3 1997/01/18 06:54:11 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -41,6 +41,7 @@
 #include "xf86_HWlib.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+#include "xf86scrin.h"
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
@@ -72,6 +73,7 @@ i128Initialize(scr_index, pScreen, argc, argv)
 {
    int displayResolution = 75;	/* default to 75dpi */
    extern int monitorResolution;
+   Bool (*ScreenInitFunc)(register ScreenPtr, pointer, int, int, int, int, int);
 
  /*
   * Initialize the screen, saving the original state for Save/Restore
@@ -94,12 +96,24 @@ i128Initialize(scr_index, pScreen, argc, argv)
    if (monitorResolution)
       displayResolution = monitorResolution;
 
-   if (!i128ScreenInit(pScreen,
-		     (pointer) i128VideoMem,
-		     i128InfoRec.virtualX, i128InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     i128DisplayWidth))
-      return (FALSE);
+   if (OFLG_ISSET(OPTION_NOACCEL, &i128InfoRec.options))
+	ScreenInitFunc = &i128ScreenInit;
+   else {
+	i128AccelInit();
+        if (i128InfoRec.bitsPerPixel == 8)
+		ScreenInitFunc = &xf86XAAScreenInit8bpp;
+        else if (i128InfoRec.bitsPerPixel == 16)
+		ScreenInitFunc = &i128ScreenInit /*&xf86XAAScreenInit16bpp*/;
+	else
+		ScreenInitFunc = &i128ScreenInit /*&xf86XAAScreenInit32bpp*/;
+   }
+
+   if (!ScreenInitFunc(pScreen,
+	     (pointer) i128VideoMem,
+	     i128InfoRec.virtualX, i128InfoRec.virtualY,
+	     displayResolution, displayResolution,
+	     i128DisplayWidth))
+	return (FALSE);
 
    pScreen->CloseScreen = i128CloseScreen;
    pScreen->SaveScreen = i128SaveScreen;

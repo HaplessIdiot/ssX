@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.20 1996/12/26 01:38:56 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.21 1997/01/23 11:02:07 dawes Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -139,7 +139,7 @@ S3AuroraSetClock(freq, clk)
 long freq;
 int clk;
 {
-   if (clk != CLK_MCLK)
+   if (clk == CLK_MCLK)
       return commonSetClock(freq, clk, 1, 1, 31, 0, 3, PLL_S3TRIO, 135000, 270000);
    else
       return commonSetClock(freq, clk, 1, 1, 63, 0, 3, PLL_S3TRIO, 135000, 270000);

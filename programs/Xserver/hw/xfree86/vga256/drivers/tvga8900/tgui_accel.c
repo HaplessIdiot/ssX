@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.4 1997/01/14 22:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.5 1997/01/23 11:03:48 dawes Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -181,9 +181,8 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
     unsigned planemask;
 {
 	TGUI_FCOLOUR(color);
-	TGUI_BCOLOUR(color);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]);
-	TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
+	TGUI_DRAWFLAG(SOLIDFILL);
 }
 /*
  * This is the implementation of the SubsequentForFillRectSolid function

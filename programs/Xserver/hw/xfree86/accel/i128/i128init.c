@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.4 1996/08/13 11:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.5 1996/12/23 06:35:42 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -132,6 +132,8 @@ saveI128state()
 		iR.Ti302X[TI_GENERAL_IO_DATA] = i128mem.rbase_g_b[DATA_TI];
 		i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_DCLK_CONTROL;
 		iR.Ti302X[TI_MCLK_DCLK_CONTROL] = i128mem.rbase_g_b[DATA_TI];
+		i128mem.rbase_g_b[INDEX_TI] = TI_COLOR_KEY_CONTROL;
+		iR.Ti302X[TI_COLOR_KEY_CONTROL] = i128mem.rbase_g_b[DATA_TI];
 
 		i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
 		i128mem.rbase_g_b[DATA_TI] = 0x00;
@@ -272,6 +274,8 @@ restoreI128state()
 		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_GENERAL_IO_DATA];
 		i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_DCLK_CONTROL;
 		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_MCLK_DCLK_CONTROL];
+		i128mem.rbase_g_b[INDEX_TI] = TI_COLOR_KEY_CONTROL;
+		i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_COLOR_KEY_CONTROL];
 	} else if ((i128RamdacType == IBM526_DAC) ||
 		   (i128RamdacType == IBM528_DAC)) {
 		short i;

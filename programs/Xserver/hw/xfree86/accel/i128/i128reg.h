@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.3 1996/05/12 11:57:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.4 1996/12/23 06:35:44 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -183,8 +183,8 @@ struct i128mem {
 #define  CMD_CLP_MSK 0x00E00000
 #define  CMD_PAT_MSK 0x0F000000
 #define  CMD_HDF_MSK 0x70000000
+#define  CMD_BLIT    0x00000C01
 #define CMD_OPC   0x0050/4
-#define  CMD_OPC_MSK 0x000000FF
 #define  CO_NOOP     0x00
 #define  CO_BITBLT   0x01
 #define  CO_LINE     0x02
@@ -249,11 +249,16 @@ struct i128mem {
 #define CLPBR     0x0084/4
 #define  CLPBRY_MSK   0x0000FFFF
 #define  CLPBRX_MSK   0xFFFF0000
-#define XY0         0x0088/4
-#define XY1         0x008C/4      /* trigger */
-#define XY2         0x0090/4
-#define XY3         0x0094/4
-#define XY4         0x0098/4
+#define XY0_SRC   0x0088/4
+#define XY1_DST   0x008C/4      /* trigger */
+#define XY2_WH    0x0090/4
+#define XY3_DIR   0x0094/4
+#define  DIR_LR_TB    0x00000000
+#define  DIR_LR_BT    0x00000001
+#define  DIR_RL_TB    0x00000002
+#define  DIR_RL_BT    0x00000003
+#define XY4_ZM    0x0098/4
+#define  ZOOM_NONE    0x00000000
 #define  XY_Y_DATA    0x0000FFFF
 #define  XY_X_DATA    0xFFFF0000
 #define  XY_I_DATA1   0x0000FFFF
@@ -261,16 +266,6 @@ struct i128mem {
 
 #define I128_WAIT_READY 1
 #define I128_WAIT_DONE  2
-
-#define i128_engine_wait(forwhat) switch(forwhat) {                           \
-		case I128_WAIT_READY:                                         \
-			while (i128mem.rbase_a[BUSY] & BUSY_BUSY);            \
-			break;                                                \
-		case I128_WAIT_DONE:                                          \
-		default:                                                      \
-			while (i128mem.rbase_a[FLOW] & (FLOW_DEB | FLOW_MCB));\
-			break;                                                \
-						  }
 
 typedef struct {
 	unsigned char r, b, g;
