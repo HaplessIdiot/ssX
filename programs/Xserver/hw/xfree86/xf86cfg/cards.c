@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.2 2001/07/02 20:47:05 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.3 2001/07/06 02:04:10 paulo Exp $
  */
 
 #define CARDS_PRIVATE
@@ -151,7 +151,7 @@ ReadCardsDatabase(void)
 	int i, j;
 	char name[256];
 	_Xconst char *vendor, *device;
-	CardsEntry *entry = NULL;
+	CardsEntry *entry = NULL, *tmp;
 	xf86cfgModuleOptions *opts = module_options;
 
 	/* Only list cards that have a driver installed */
@@ -180,19 +180,27 @@ ReadCardsDatabase(void)
 			if (xf86PCIVendorInfoData[i].Device[j].DeviceName)
 			    device = xf86PCIVendorInfoData[i].Device[j].DeviceName;
 		    }
-		    entry = (CardsEntry*)XtCalloc(1, sizeof(CardsEntry));
-		    if (NumCardsEntry % 16 == 0) {
-			CardsDB = (CardsEntry**)XtRealloc((XtPointer)CardsDB,
-				sizeof(CardsEntry*) * (NumCardsEntry + 16));
-		    }
-		    CardsDB[NumCardsEntry++] = entry;
+
+		    /* Since frequently there is more than one driver for a
+		     * single vendor, it is required to avoid duplicates.
+		     */
 		    XmuSnprintf(name, sizeof(name), "%s %s", vendor, device);
-		    entry->name = XtNewString(name);
+		    tmp = LookupCard(name);
 
-		    /* XXX no private copy of strings */
-		    entry->chipset = (char*)chips->name;
-		    entry->driver = opts->name;
+		    if (tmp == NULL || strcmp(tmp->chipset, chips->name) ||
+			strcmp(tmp->driver, opts->name)) {
+			entry = (CardsEntry*)XtCalloc(1, sizeof(CardsEntry));
+			if (NumCardsEntry % 16 == 0) {
+			    CardsDB = (CardsEntry**)XtRealloc((XtPointer)CardsDB,
+				    sizeof(CardsEntry*) * (NumCardsEntry + 16));
+			}
+			CardsDB[NumCardsEntry++] = entry;
+			entry->name = XtNewString(name);
 
+			/* XXX no private copy of strings */
+			entry->chipset = (char*)chips->name;
+			entry->driver = opts->name;
+		    }
 		    ++chips;
 		}
 	    }

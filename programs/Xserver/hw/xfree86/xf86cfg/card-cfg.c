@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.8 2001/05/23 14:44:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.9 2001/07/06 02:04:10 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -265,6 +265,9 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XtSetArg(args[0], XtNstring, info->string);
     XtSetValues(filter, args, 1);
     card_entry = LookupCard(info->string);
+
+    if (card_entry == NULL)
+	return;
 
     len = XmuSnprintf(tip, sizeof(tip), "Name:      %s\n", card_entry->name);
     if (card_entry->flags & F_UNSUPPORTED)
