@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.5 2001/09/27 08:34:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.6 2001/10/28 03:33:45 tsi Exp $ */
 
 
 #include "xf86.h"
@@ -1619,7 +1619,10 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 static Bool S3EnterVT(int scrnIndex, int flags)
 {       
         ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-            
+        vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+        vgaHWUnlock(hwp);
+
         if (!S3ModeInit(pScrn, pScrn->currentMode))
                 return FALSE;
         
@@ -1703,8 +1706,10 @@ static void S3Restore(ScrnInfoPtr pScrn)
 static void S3LeaveVT(int scrnIndex, int flags)
 {
         ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+        vgaHWPtr hwp = VGAHWPTR(pScrn);
 
-	S3Restore(pScrn);
+        S3Restore(pScrn);
+        vgaHWLock(hwp);
 
         return;
 }       
