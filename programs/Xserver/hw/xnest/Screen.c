@@ -27,7 +27,6 @@ is" without express or implied warranty.
 
 #include "Display.h"
 #include "Screen.h"
-#include "Args.h"
 #include "XNGC.h"
 #include "GCOps.h"
 #include "Drawable.h"
@@ -44,6 +43,10 @@ extern Window xnestParentWindow;
 
 Window xnestDefaultWindows[MAXSCREENS];
 Window xnestScreenSaverWindows[MAXSCREENS];
+
+#ifdef PIXPRIV
+int xnestScreenGeneration = -1;
+#endif
 
 ScreenPtr xnestScreen(window)
      Window window;
@@ -144,6 +147,17 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 			    sizeof(xnestPrivGC)))) 
     return False;
 
+#ifdef PIXPRIV
+  if (xnestScreenGeneration != serverGeneration) {
+      if ((xnestPixmapPrivateIndex = AllocatePixmapPrivateIndex()) < 0)
+	  return False;
+      xnestScreenGeneration = serverGeneration;
+  }
+  
+  if (!AllocatePixmapPrivate(pScreen,xnestPixmapPrivateIndex,
+			     sizeof (xnestPrivPixmap)))
+      return False;
+#endif
   visuals = (VisualPtr)xalloc(xnestNumVisuals * sizeof(VisualRec));
   numVisuals = 0;
 

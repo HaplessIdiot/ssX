@@ -17,12 +17,21 @@ is" without express or implied warranty.
 #ifndef XNESTPIXMAP_H
 #define XNESTPIXMAP_H
 
+#ifdef PIXPRIV
+extern int xnestPixmapPrivateIndex;
+#endif
+
 typedef struct {
   Pixmap pixmap;
 } xnestPrivPixmap;
 
+#ifdef PIXPRIV
+#define xnestPixmapPriv(pPixmap) \
+  ((xnestPrivPixmap *)((pPixmap)->devPrivates[xnestPixmapPrivateIndex].ptr))
+#else
 #define xnestPixmapPriv(pPixmap) \
   ((xnestPrivPixmap *)((pPixmap)->devPrivate.ptr))
+#endif
 
 #define xnestPixmap(pPixmap) (xnestPixmapPriv(pPixmap)->pixmap)
 

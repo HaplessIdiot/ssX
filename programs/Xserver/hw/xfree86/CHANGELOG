@@ -1,4 +1,12 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 707. Copying Syriac OTF fonts to directory OTF instead of TTF.
+      The xtt font renderer cannot handle OTF fonts causing the
+      entire directory to be ignored (Egbert Eich).
+ 706. Disabling MIT-SHM extensions for Xnest, fixing pixmap private
+      code in Xnest, thus cleaning out bogus patch 137. 
+      NOTE: The MIT-SHM presently *does* *not* work with Xnest. 
+      I have code to make it work but it is not well tested therefore 
+      MIT-SHM is disabled for now! (Egbert Eich).
  705. Fix the misnaming of three of the redglass cursors (#A.1491,
       Keith Packard).
  704. Fix for two problems where the combination of xtt and XAA could result
