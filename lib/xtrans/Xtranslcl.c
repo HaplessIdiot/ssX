@@ -2495,6 +2495,21 @@ TRANS(LocalCloseForCloning)(XtransConnInfo ciptr)
  * call to SelectTransport() in Xtrans.c.
  */
 
+#ifdef TRANS_SERVER
+static char * local_aliases[] = {
+# ifndef sun
+                                  "pts",
+# endif
+				  "named",
+# ifndef sun
+#  ifndef SCO325
+				  "isc",
+#  endif
+				  "sco",
+# endif
+				  NULL };
+#endif
+
 Xtransport	TRANS(LocalFuncs) = {
 	/* Local Interface */
 	"local",
@@ -2503,6 +2518,7 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	local_aliases,
 	TRANS(LocalOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -2544,6 +2560,7 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(LocalOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -2585,6 +2602,7 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(LocalOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -2626,6 +2644,7 @@ Xtransport	TRANS(ISCFuncs) = {
 	TRANS(LocalOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(LocalOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -2665,6 +2684,7 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(LocalOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT

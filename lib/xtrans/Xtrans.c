@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.31 2003/07/20 16:12:15 tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.32 2003/07/24 13:50:18 eich Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -779,6 +779,7 @@ TRANS(NoListen) (char * protocol)
 	
 {
    Xtransport *trans;
+   int i = 0, ret = 0;
    
    if ((trans = TRANS(SelectTransport)(protocol)) == NULL) 
    {
@@ -787,9 +788,16 @@ TRANS(NoListen) (char * protocol)
 
 	return -1;
    }
-   
+   if (trans->flags & TRANS_ALIAS) {
+       if (trans->nolisten)
+	   while (trans->nolisten[i]) {
+	       ret |= TRANS(NoListen)(trans->nolisten[i]);
+	       i++;
+       }
+   }
+
    trans->flags |= TRANS_NOLISTEN;
-   return 0;
+   return ret;
 }
 
 int

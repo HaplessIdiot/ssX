@@ -1306,6 +1306,7 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLIOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(TLIOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -1337,6 +1338,9 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	TRANS(TLICloseForCloning),
 };
 
+#ifdef TRANS_SERVER
+static char * inet_aliases[] = { "tcp", NULL };
+#endif
 Xtransport	TRANS(TLIINETFuncs) = {
 	/* TLI Interface */
 	"inet",
@@ -1345,6 +1349,7 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLIOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	inet_aliases,
 	TRANS(TLIOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT
@@ -1384,6 +1389,7 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	TRANS(TLIOpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(TLIOpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT

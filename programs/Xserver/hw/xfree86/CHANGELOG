@@ -1,4 +1,16 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 370. Fixed support for 64bit PCI bus on 32bit systems (Egbert Eich).
+ 369. Added support for using aliases in the -nolisten option. '-nolisten tcp'
+      aliases to IPv4 and IPv6 (Matthieu Herrb, Egbert Eich).
+ 368. Added fallback Xlib transport layer if IPv6 socket cannot be openend
+      (Egbert Eich).
+ 367. Added missing symbol to the vbeSymbols table in i740 driver (BugzillaR
+      #583, Egbert Eich).
+ 366. Changed scripts containing 'head -1' which is not supported by 
+      POSIX 1003.1-2001 any more (Bugzilla #570, #569, Paul Eggert, 
+      Egbert Eich).
+ 365. Changed POSIX 1003.1-2001 non-conformant 'sort +2' to 'sort -k 3' with
+      backward compatibility (Bugzilla #568, Paul Eggert).
  364. Add Microsoft Pro OEM model to XKB inet map (Bugzilla #458,
       maxim@wzzrd.com)
  363. Extract the CHANGELOG's commit date and include it in the XFree86
@@ -17511,7 +17523,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2801 2003/08/10 16:39:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2802 2003/08/11 13:28:18 pascal Exp $
 
 
 
