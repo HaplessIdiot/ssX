@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.2 2002/12/01 02:11:16 tsi Exp $ */
 /*
  * Mode switching code (CRT1 section) for SiS 300/540/630/730/315/550/650/740
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -75,8 +75,11 @@ BOOLEAN SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
 #pragma alloc_text(PAGE,SiSInit)
 #endif
 
-void DelaySeconds(int seconds);
-void DebugCode(SiS_Private *SiS_Pr, UCHAR code);
+static ULONG GetDRAMSize(SiS_Private *SiS_Pr,
+			 PSIS_HW_DEVICE_INFO HwDeviceExtension);
+
+static void DelaySeconds(int seconds);
+void SiS_DebugCode(SiS_Private *SiS_Pr, UCHAR code);
 
 #ifdef LINUX_XF86
 /* TW: Mode table for X driver */
@@ -132,14 +135,14 @@ DelaySeconds(int seconds)
 }
 
 void
-DebugCode(SiS_Private *SiS_Pr, UCHAR code)
+SiS_DebugCode(SiS_Private *SiS_Pr, UCHAR code)
 {
   OutPortByte(0x80, code);
   DelaySeconds(0x3);
 }
 
 #ifdef SIS300
-void
+static void
 InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
    SiS_Pr->SiS_SModeIDTable  = (SiS_StStruct *)SiS300_SModeIDTable;
@@ -373,7 +376,7 @@ InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 #endif
 
 #ifdef SIS315H
-void
+static void
 InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
    SiS_Pr->SiS_SModeIDTable  = (SiS_StStruct *)SiS310_SModeIDTable;
@@ -2439,7 +2442,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
 }
 
 void
-SetEnableDstn(SiS_Private *SiS_Pr)	/* TW: Called from sis_main.c */
+SiS_SetEnableDstn(SiS_Private *SiS_Pr)	/* TW: Called from sis_main.c */
 {
    /* For 550 dstn */
    SiS_Pr->SiS_IF_DEF_DSTN = 1;
@@ -3576,7 +3579,7 @@ SiS_WriteDAC(SiS_Private *SiS_Pr, USHORT DACData, USHORT shiftflag,
   SiS_SetReg3(DACData,(USHORT)bl);
 }
 
-ULONG
+static ULONG
 GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
   ULONG   AdapterMemorySize = 0;

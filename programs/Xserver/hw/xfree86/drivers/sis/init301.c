@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.3 2002/22/04 01:16:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.6 2002/11/29 13:52:06 eich Exp $ */
 /*
  * Mode switching code (CRT2 section) for SiS 300/540/630/730/315/550/650/740
  * (Universal module for Linux kernel framebuffer, XFree86 4.x)
@@ -9280,7 +9280,7 @@ SiS_CheckACK(SiS_Private *SiS_Pr)
 
 #ifdef SIS315H
 
-USHORT
+static USHORT
 GetLCDPtrIndex(SiS_Private *SiS_Pr)
 {
   USHORT index;
@@ -9305,7 +9305,7 @@ GetLCDPtrIndex(SiS_Private *SiS_Pr)
                        5 : HiVision Standard TVSimuMode
 ---------------------------------------------------------
 */
-USHORT
+static USHORT
 GetTVPtrIndex(SiS_Private *SiS_Pr)
 {
   USHORT index;
@@ -9323,7 +9323,7 @@ GetTVPtrIndex(SiS_Private *SiS_Pr)
 }
 
 /* TW: Checked against 650/LVDS (1.10.07) and 650/301LVx (1.10.6s) BIOS (including data) */
-void
+static void
 SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
              UCHAR *ROMAddr,USHORT ModeNo)
 {
@@ -9368,7 +9368,7 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
 }
 
 /* TW: Checked against 650/301LVx 1.10.6s BIOS (including data) */
-void
+static void
 SetAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9389,7 +9389,7 @@ SetAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT
 }
 
 /* TW: Checked against 650/301LVx 1.10.6s BIOS (including data) */
-void
+static void
 SetEdgeEnhance(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9409,7 +9409,7 @@ SetEdgeEnhance(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT
 }
 
 /* TW: Checked against 650/301LVx 1.10.6s BIOS (incl data) */
-void
+static void
 SetYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
            UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9479,7 +9479,7 @@ SetYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Bas
 }
 
 /* TW: Checked against 650/301LVx 1.10.6s BIOS (including data) */
-void
+static void
 SetPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
              UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9676,7 +9676,7 @@ SiS_OEMLCD(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Bas
 #ifdef SIS300
 
 #if 0   /* Not used */
-USHORT
+static USHORT
 GetRevisionID(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
    ULONG temp1;
@@ -9704,7 +9704,7 @@ GetRevisionID(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 #endif
 
 /* TW: Checked against 630/301B BIOS (incl data) */
-USHORT
+static USHORT
 GetOEMLCDPtr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, UCHAR *ROMAddr, int Flag)
 {
   USHORT tempbx=0;
@@ -9760,7 +9760,7 @@ GetOEMLCDPtr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, UCHAR *
 }
 
 /* TW: Checked against 630/301B and 630/LVDS BIOS (incl data) */
-void
+static void
 SetOEMLCDDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9800,7 +9800,7 @@ SetOEMLCDDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT
   SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x13,~0x3C,temp);  /* index 0A D[6:4] */
 }
 
-void
+static void
 SetOEMLCDData(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9832,7 +9832,7 @@ SetOEMLCDData(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT 
 }
 
 /* TW: Checked against 630/301B 2.04.50 and 630/LVDS BIOS */
-USHORT
+static USHORT
 GetOEMTVPtr(SiS_Private *SiS_Pr)
 {
   USHORT index;
@@ -9851,7 +9851,7 @@ GetOEMTVPtr(SiS_Private *SiS_Pr)
 }
 
 /* TW: Checked against 630/301B 2.04.50 and 630/LVDS BIOS (incl data) */
-void
+static void
 SetOEMTVDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
               UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9876,7 +9876,7 @@ SetOEMTVDelay(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT 
 }
 
 /* TW: Checked against 630/301B 2.04.50 BIOS (incl data) */
-void
+static void
 SetOEMAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
                   USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,
 		  USHORT ModeIdIndex)
@@ -9898,7 +9898,7 @@ SetOEMAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
 }
 
 /* TW: Checked against 630/301B 2.04.50 BIOS (incl data) */
-void
+static void
 SetOEMPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                 UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
@@ -9927,7 +9927,7 @@ SetOEMPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHOR
 }
 
 /* TW: Checked against 630/301B 2.04.50 BIOS (incl data) */
-void
+static void
 SetOEMYFilter(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
               UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex)
 {
