@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.17 2002/11/15 07:01:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.18 2002/11/15 07:27:47 paulo Exp $
 ;;
 
 (require "syntax")
@@ -141,7 +141,7 @@
 (defvar *c-mode-options* *c-DEFAULT-style*)
 ; (setq *c-mode-options* *c-gnu-style*)
 
-(defsyntax *c-mode* :main nil #'c-indent *c-mode-options*
+(defsyntax *c-mode* :main nil '#'c-indent *c-mode-options*
     ;;  All recognized C keywords.
     (syntoken
 	(string-concat
