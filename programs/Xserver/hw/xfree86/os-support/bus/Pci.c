@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.87 2004/12/31 03:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.88 2005/01/04 15:26:38 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1037,7 +1037,7 @@ xf86scanpci(int flags)
 	    /* Allow master aborts to complete normally on secondary buses */
 	    if (!(devp->pci_bridge_control & PCI_PCI_BRIDGE_MASTER_ABORT_EN))
 		break;
-	    pciWriteWprd(tag, PCI_PCI_BRIDGE_CONTROL_REG,
+	    pciWriteWord(tag, PCI_PCI_BRIDGE_CONTROL_REG,
 		devp->pci_bridge_control &
 		     ~(PCI_PCI_BRIDGE_MASTER_ABORT_EN |
 		       PCI_PCI_BRIDGE_SECONDARY_RESET));
