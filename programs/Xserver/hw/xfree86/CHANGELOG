@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 388. Rewrite XDarwin's event handling to fix some bugs and to use
+      SetInputCheck() for a performance boost (Torrey T. Lyons).
  387. Add a little utility to write files through mmap() (Marc La France).
  386. Add National Semiconductor Geode driver, support for the 5530, SC1200
       and SC1400 chipsets (NSC, Alan Hourihane).
@@ -15308,4 +15310,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2335 2002/10/11 14:32:54 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2336 2002/10/11 20:23:01 tsi Exp $
