@@ -159,6 +159,7 @@ void   	SiS_Chrontel701xBLOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo);
 void   	SiS_Chrontel701xBLOff(SiS_Private *SiS_Pr);
 #endif /* 315 */
 
+USHORT   SiS_ReadDDC1Bit(SiS_Private *SiS_Pr);
 void     SiS_SetSwitchDDC2(SiS_Private *SiS_Pr);
 USHORT   SiS_SetStart(SiS_Private *SiS_Pr);
 USHORT   SiS_SetStop(SiS_Private *SiS_Pr);

@@ -64,6 +64,7 @@ extern USHORT 	SiS_GetCH70xx(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void 	SiS_SetCH70xx(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void     SiS_SetCH70xxANDOR(SiS_Private *SiS_Pr, USHORT tempax,USHORT tempbh);
 extern void     SiS_DDC2Delay(SiS_Private *SiS_Pr, USHORT delaytime);
+extern USHORT   SiS_ReadDDC1Bit(SiS_Private *SiS_Pr);
 extern USHORT   SiS_HandleDDC(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
                               USHORT adaptnum, USHORT DDCdatatype, unsigned char *buffer);
 extern void     SiS_SetChrontelGPIO(SiS_Private *SiS_Pr, USHORT myvbinfo);
