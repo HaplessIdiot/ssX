@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.57 2003/12/24 18:58:41 dickey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.58 2004/06/11 00:02:16 alanh Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -176,7 +176,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.57 2003/12/24 18:58:41 dic
  * we can remove these lines and use the default XFree86 options.
  */
 #ifndef DefaultCCOptions
-# define DefaultCCOptions	/* -ansi -pedantic */ GccWarningOptions
+# define DefaultCCOptions	/* -ansi */ GccWarningOptions
 #endif
 
 /*

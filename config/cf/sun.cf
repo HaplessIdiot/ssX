@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.76tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.77 2004/12/15 01:30:55 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -417,7 +417,7 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #   elif OSMinorVersion > 6
 #    define DefaultCCOptions -DNO_ASM GccWarningOptions
 #   elif OSMinorVersion > 3
-#    define DefaultCCOptions -DNO_ASM GccWarningOptions -ansi -pedantic
+#    define DefaultCCOptions -DNO_ASM GccWarningOptions -ansi
 #   else
 #    define DefaultCCOptions -DNO_ASM
 #   endif
