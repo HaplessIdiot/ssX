@@ -26,6 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86: xc/lib/font/Type1/objects.c,v 1.1.1.1.14.3 1998/07/05 14:35:53 dawes Exp $ */
  /* OBJECTS  CWEB         V0025 ********                             */
 /*
 :h1.OBJECTS Module - TYPE1IMAGER Objects Common Routines
@@ -53,8 +54,14 @@ system it is a pretty safe bet that these are external entry points and
 you do do not need to include these header files.
 */
  
+#ifndef FONTMODULE
 #include  <string.h>
 #include  <ctype.h>
+#else
+#include "fontmisc.h"	/* Bool declaration */
+#include "Xmd.h"	/* INT32 declaration */
+#include "xf86_ansic.h"
+#endif
  
 /*
 override incorrect system functions; for example you might define

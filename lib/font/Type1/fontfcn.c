@@ -28,13 +28,19 @@
  * SOFTWARE.
  */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
+/* $XFree86: xc/lib/font/Type1/fontfcn.c,v 1.2.2.3 1998/07/05 14:35:52 dawes Exp $ */
  
+#ifndef FONTMODULE
 #include <stdio.h>
 #include <string.h>
+#else
+#include "Xmd.h"	/* For INT32 declaration */
+#include "fontmisc.h"	/* For Bool */
+#include "xf86_ansic.h"
+#endif
 #include "t1imager.h"
 #include "util.h"
 #include "fontfcn.h"
-#include "fontmisc.h"
  
 extern xobject Type1Char();
 /***================================================================***/

@@ -1,5 +1,5 @@
 /* $XConsortium: fntfilst.h,v 1.8 94/04/17 20:17:29 gildea Exp $ */
-/* $XFree86: xc/lib/font/include/fntfilst.h,v 3.1 1998/06/27 12:53:44 hohndel Exp $ */
+/* $XFree86: xc/lib/font/include/fntfilst.h,v 3.0.6.1 1998/07/11 13:52:16 dawes Exp $ */
 
 /*
 
@@ -35,7 +35,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _FONTFILEST_H_
 #define _FONTFILEST_H_
 
+#ifndef FONTMODULE
 #include <X11/Xos.h>
+#endif
 #include "fontmisc.h"
 #include "fontstruct.h"
 #include "fntfil.h"

@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.4 1996/12/28 08:09:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.5.2.2 1998/07/05 14:35:56 dawes Exp $ */
 
 /*
 
@@ -86,6 +86,7 @@ from the X Consortium.
 
 */
  
+#ifndef FONTMODULE
 #include <string.h>
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -95,6 +96,12 @@ from the X Consortium.
 #undef _XOPEN_SOURCE
 #endif
 #include "X11/Xfuncs.h"
+#else
+#include "Xmd.h"
+#include "fontmisc.h"
+#include "xf86_ansic.h"
+#endif
+
 #include "fntfilst.h"
 #include "FSproto.h"
 #include "t1intf.h"

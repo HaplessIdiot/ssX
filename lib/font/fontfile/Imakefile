@@ -1,8 +1,14 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.4 1996/12/26 03:41:32 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.4.4.2 1998/07/05 14:36:03 dawes Exp $
 #include <Server.tmpl>
 
-   INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include -I$(TOP)/lib/zlib
+#if DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
+
+   INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include \
+	      -I$(TOP)/lib/zlib -I$(XTOP)/include
     HEADERS = 
 #ifdef FontFormatDefines
 FORMAT_DEFS = FontFormatDefines
@@ -36,6 +42,11 @@ SpecialCObjectRule(fileio,$(ICONFIGFILES),$(GZIP_DEFS))
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
+
+#if DoLoadableServer
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()
 

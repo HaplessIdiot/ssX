@@ -1,5 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.10 93/09/04 16:42:59 rws Exp $
-#include <Server.tmpl>
+XCOMM $XFree86: xc/lib/font/Speedo/Imakefile,v 1.1.1.1.14.2 1998/07/05 14:35:47 dawes Exp $
+
+#if DoLoadableServer
+#define IHaveSubdirs
+#define PassCDebugFlags
+SUBDIRS = module
+#endif
 
         INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include
          HEADERS = 
@@ -18,5 +24,10 @@ XCOMM $XConsortium: Imakefile,v 1.10 93/09/04 16:42:59 rws Exp $
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
+
+#if DoLoadableServer
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()

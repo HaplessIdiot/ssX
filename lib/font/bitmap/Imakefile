@@ -1,7 +1,13 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
-#include <Server.tmpl>
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.1.1.2.4.2 1998/07/05 14:36:01 dawes Exp $
 
-        INCLUDES = -I$(FONTINCSRC) -I../include
+#if DoLoadableServer
+#define IHaveSubdirs
+#define PassCDebugFlags
+SUBDIRS = module
+#endif
+
+        INCLUDES = -I$(FONTINCSRC) -I../include 
          HEADERS = 
 #ifdef FontFormatDefines
      FORMAT_DEFS = FontFormatDefines
@@ -12,7 +18,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
 
             SRCS = bdfread.c bdfutils.c bitmap.c bitmaputil.c bitscale.c \
 		   bitmapfunc.c pcfread.c pcfwrite.c snfread.c \
-		   fontink.c
+		   fontink.c 
 
             OBJS = bdfread.o bdfutils.o bitmap.o bitmaputil.o bitscale.o \
 		   bitmapfunc.o pcfread.o pcfwrite.o snfread.o \
@@ -24,5 +30,9 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
-DependTarget()
+#if DoLoadableServer
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
+DependTarget()

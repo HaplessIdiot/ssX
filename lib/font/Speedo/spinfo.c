@@ -51,10 +51,15 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.2.2.2 1998/07/12 13:47:43 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "spint.h"
+#ifndef FONTMODULE
 #include <math.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 /* percentage of pointsize used to specify ascent & descent */
 #define	STRETCH_FACTOR	120

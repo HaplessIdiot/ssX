@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.8 1998/06/28 03:52:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.9 1998/07/25 03:10:20 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -172,7 +172,6 @@ transfer_values_to_alias(entryname, entrynamelength, resolvedname,
 		   gotchas */
 		if (FontFileCompleteXLFD(&tmpVals2, &tmpVals2))
 		{
-		    double hypot();
 		    tempmatrix[0] =
 			matrix[0] * tmpVals2.point_matrix[0] +
 			matrix[1] * tmpVals2.point_matrix[2];

@@ -51,10 +51,13 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.1.1.1.14.2 1998/07/12 13:47:45 dawes Exp $ */
 
+#ifndef FONTMODULE
 #include <ctype.h>
-
 #include <stdio.h>
+#endif
+
 #include "fntfilst.h"
 #include "fontstruct.h"
 /* use bitmap structure */

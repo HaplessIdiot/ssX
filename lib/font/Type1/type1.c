@@ -28,6 +28,7 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86: xc/lib/font/Type1/type1.c,v 1.1.1.1.14.2 1998/07/03 14:40:59 dawes Exp $ */
  
 /*********************************************************************/
 /*                                                                   */
@@ -47,7 +48,6 @@
 /* Include Files: */
 /******************/
 #include  <stdio.h>          /* a system-dependent include, usually */
- 
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"

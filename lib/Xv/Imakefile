@@ -1,0 +1,28 @@
+#define DoNormalLib NormalLibXv
+#define DoSharedLib SharedLibXv
+#define DoDebugLib DebugLibXv
+#define DoProfileLib ProfileLibXv
+#define LibName Xv
+#define SoRev SOXVREV
+
+#include <Threads.tmpl>
+
+#ifdef SharedXvReqs
+REQUIREDLIBS = SharedXvReqs
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+         SRCS = Xv.c
+         OBJS = Xv.o
+     LINTLIBS = $(LINTXLIB)
+
+HEADERS = Xvlib.h
+
+#include <Library.tmpl>
+
+DependTarget()

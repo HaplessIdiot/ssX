@@ -84,12 +84,17 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.2.2.3 1998/07/05 14:35:56 dawes Exp $ */
 
-#include <stdio.h> 
 #include "fntfilst.h"
+#ifndef FONTMODULE
+#include <stdio.h> 
+#include <math.h>
+#else
+#include "xf86_ansic.h"
+#endif
 #include "FSproto.h"
 #include "t1intf.h"
-#include <math.h>
  
 #define DECIPOINTSPERINCH 722.7
 #define DEFAULTRES 75

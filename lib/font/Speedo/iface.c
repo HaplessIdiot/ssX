@@ -21,6 +21,7 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
+/* $XFree86: xc/lib/font/Speedo/iface.c,v 1.1.1.1.14.2 1998/07/12 13:47:42 dawes Exp $ */
 
 /***************************** I F A C E . C *********************************
  *                                                                           *
@@ -30,7 +31,11 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
  ****************************************************************************/
 
 #include "speedo.h"               /* General definitions for Speedo */
+#ifndef FONTMODULE
 #include <math.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 #define   DEBUG      0
 
