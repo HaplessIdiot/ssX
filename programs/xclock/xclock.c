@@ -29,7 +29,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.14 2002/06/14 22:34:57 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.15 2002/10/17 01:00:01 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +61,8 @@ static XrmOptionDescRec options[] = {
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
+{"-twelve",	"*clock.twentyfour",	XrmoptionNoArg,		"FALSE"},
+{"-twentyfour",	"*clock.twentyfour",	XrmoptionNoArg,		"TRUE"},
 {"-brief",	"*clock.brief",		XrmoptionNoArg,		"TRUE"},
 {"-utime",	"*clock.utime",		XrmoptionNoArg,		"TRUE"},
 {"-strftime",	"*clock.strftime",	XrmoptionSepArg,	NULL},
@@ -95,7 +97,7 @@ Syntax(char *call)
 #ifdef XRENDER
 	(void) printf ("       [-render] [-face <face name>] [-sharp]\n");
 #endif
-	(void) printf ("       [-geometry geom]\n\n");
+	(void) printf ("       [-geometry geom] [-twelve] [-twentyfour]\n\n");
 	exit(1);
 }
 

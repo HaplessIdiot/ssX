@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_io.c,v 1.3 2000/02/23 04:47:14 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_io.c,v 1.4 2002/01/25 21:56:03 tsi Exp $ */
 
 /*
  * Authors:
@@ -36,79 +36,58 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 #include "compiler.h"
+#include "vgaHW.h"
 
+#include "xf86xv.h"
 #include "i740.h"
 
-static void
-I740WriteControlPIO(I740Ptr pI740, IOADDRESS addr,
-		    unsigned char index, char val)
-{
-  addr += pI740->ioBase;
+static void I740WriteControlPIO(I740Ptr pI740, int addr, unsigned char index, char val) {
   outb(addr, index);
   outb(addr+1, val);
 }
 
-static char
-I740ReadControlPIO(I740Ptr pI740, IOADDRESS addr, unsigned char index)
-{
-  addr += pI740->ioBase;
+static char I740ReadControlPIO(I740Ptr pI740, int addr, unsigned char index) {
   outb(addr, index);
   return inb(addr+1);
 }
 
-static void
-I740WriteStandardPIO(I740Ptr pI740, IOADDRESS addr, unsigned char val)
-{
-  outb(pI740->ioBase + addr, val);
+static void I740WriteStandardPIO(I740Ptr pI740, int addr, unsigned char val) {
+  outb(addr, val);
 }
 
-static char
-I740ReadStandardPIO(I740Ptr pI740, IOADDRESS addr)
-{
-  return inb(pI740->ioBase + addr);
+static char I740ReadStandardPIO(I740Ptr pI740, int addr) {
+  return inb(addr);
 }
 
-void
-I740SetPIOAccess(I740Ptr pI740)
-{
+void I740SetPIOAccess(I740Ptr pI740) {
   pI740->writeControl=I740WriteControlPIO;
   pI740->readControl=I740ReadControlPIO;
   pI740->writeStandard=I740WriteStandardPIO;
   pI740->readStandard=I740ReadStandardPIO;
 }
 
-static void
-I740WriteControlMMIO(I740Ptr pI740, IOADDRESS addr,
-		     unsigned char index, char val)
-{
+static void I740WriteControlMMIO(I740Ptr pI740, int addr, unsigned char index, char val) {
   moutb(addr, index);
   moutb(addr+1, val);
 }
 
-static char
-I740ReadControlMMIO(I740Ptr pI740, IOADDRESS addr, unsigned char index)
-{
+static char I740ReadControlMMIO(I740Ptr pI740, int addr, unsigned char index) {
   moutb(addr, index);
   return minb(addr+1);
 }
 
-static void
-I740WriteStandardMMIO(I740Ptr pI740, IOADDRESS addr, unsigned char val)
-{
+static void I740WriteStandardMMIO(I740Ptr pI740, int addr, unsigned char val) {
   moutb(addr, val);
 }
 
-static char
-I740ReadStandardMMIO(I740Ptr pI740, IOADDRESS addr)
-{
+static char I740ReadStandardMMIO(I740Ptr pI740, int addr) {
   return minb(addr);
 }
 
-void
-I740SetMMIOAccess(I740Ptr pI740)
-{
+void I740SetMMIOAccess(I740Ptr pI740) {
   pI740->writeControl=I740WriteControlMMIO;
   pI740->readControl=I740ReadControlMMIO;
   pI740->writeStandard=I740WriteStandardMMIO;
   pI740->readStandard=I740ReadStandardMMIO;
 }
+

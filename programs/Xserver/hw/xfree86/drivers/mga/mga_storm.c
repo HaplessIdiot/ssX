@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.94 2001/10/01 13:44:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.96 2001/12/06 15:54:52 keithp Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1170,6 +1170,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     case PCI_CHIP_MGAG400:
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
+	pMga->SrcOrg = 0;
 	OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
 	OUTREG(MGAREG_DSTORG, pMga->DstOrg);
 	break;

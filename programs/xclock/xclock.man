@@ -23,7 +23,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xclock/xclock.man,v 1.11 2002/10/12 16:06:47 herrb Exp $
+.\" $XFree86: xc/programs/xclock/xclock.man,v 1.12 2002/10/17 01:00:01 dawes Exp $
 .\"
 .TH XCLOCK 1 __xorgversion__
 .SH NAME
@@ -68,6 +68,14 @@ the Epoch (in format '970012340 seconds since Epoch' instead of a standard
 .B \-strftime \fIformat\fP
 This option allows an strftime(3) format string to be specified for the
 digital clock's display.
+.TP 8
+.B \-twelve
+This option indicates that a digital clock should display the time in
+twelve hour format.
+.TP 8
+.B \-twentyfour
+This option indicates that a digital clock should display the time in
+twenty-four hour format.  This is the default when a digital clock is used.
 .TP 8
 .B \-chime
 This option indicates that the clock should chime 
@@ -131,6 +139,10 @@ the default is \fIlwhite\fP, otherwise the default is \fIblack\fP.
 .B analog (\fPclass\fB Boolean)
 Specifies whether or not an analog clock should be used instead of a digital
 one.  The default is True.
+.TP 8
+.B twentyfour (\fPclass\fB Boolean)
+Specifies whether or not a digital clock should display the time in
+twenty-four hour format.  The default is True.
 .TP 8
 .B chime (\fPclass\fB Boolean)
 Specifies whether or not a bell should be rung on the hour and half hour.

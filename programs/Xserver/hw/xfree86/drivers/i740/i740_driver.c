@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.36 2002/01/25 21:56:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.37 2002/07/24 01:47:28 tsi Exp $ */
 
 /*
  * Authors:
@@ -91,7 +91,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* The driver's own header file: */
 
-#include "i740.h"
 
 #include "miscstruct.h"
 
@@ -99,6 +98,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Xv.h"
 
 #include "vbe.h"
+#include "i740_dga.h"
+#include "i740.h"
+
 
 /* Required Functions: */
 static const OptionInfoRec * I740AvailableOptions(int chipid, int busid);
@@ -128,9 +130,8 @@ static Bool I740CloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool I740SaveScreen(ScreenPtr pScreen, int mode);
 
 /* Allow mode switching */
-static Bool I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+Bool I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 /* Allow moving the viewport */
-static void I740AdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Cleanup server private data */
 static void I740FreeScreen(int scrnIndex, int flags);
@@ -144,6 +145,10 @@ static void I740DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					int PowerManagermentMode, int flags);
 
 static void I740ProbeDDC(ScrnInfoPtr pScrn, int index);
+
+static Bool I740MapMem(ScrnInfoPtr pScrn);
+static Bool I740UnmapMem(ScrnInfoPtr pScrn);
+
 
 #define VERSION 4000
 #define I740_NAME "I740"
@@ -182,7 +187,8 @@ typedef enum {
   OPTION_SGRAM,
   OPTION_SLOW_RAM,
   OPTION_DAC_6BIT,
-  OPTION_USE_PIO
+  OPTION_USE_PIO,
+  OPTION_VGACOMPAT,
 } I740Opts;
 
 static const OptionInfoRec I740Options[] = {
@@ -193,40 +199,44 @@ static const OptionInfoRec I740Options[] = {
   { OPTION_SLOW_RAM, "SlowRam", OPTV_BOOLEAN, {0}, FALSE},
   { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
   { OPTION_USE_PIO, "UsePIO", OPTV_BOOLEAN, {0}, FALSE},
+  { OPTION_VGACOMPAT, "VGACompat", OPTV_BOOLEAN, {0}, FALSE},
   { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWFreeHWRec",
     "vgaHWGetHWRec",
-    "vgaHWGetIOBase",
-    "vgaHWGetIndex",
-    "vgaHWHBlankKGA",
-    "vgaHWInit",
-    "vgaHWLock",
-    "vgaHWMapMem",
+    "vgaHWSave", /* Added */
+    "vgaHWRestore", /* Added */
     "vgaHWProtect",
-    "vgaHWRestore",
-    "vgaHWSave",
-    "vgaHWSaveScreen",
+    "vgaHWInit",
+    "vgaHWMapMem",
     "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWLock",
     "vgaHWUnlock",
-    "vgaHWUnmapMem",
-    "vgaHWVBlankKGA",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    "vgaHWHandleColormaps",
     0
 };
 
-static const char *cfbSymbols[] = {
+static const char *fbSymbols[] = {
+#ifdef USE_FB
+    "fbScreenInit",
+    "fbPictureInit",
+#else
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
+#endif
+    "cfb8_32ScreenInit",
+    "cfb24_32ScreenInit",
     NULL
 };
 
-static const char *fbSymbols[] = {
-    "fbScreenInit",
-    "fbPictureInit",
+static const char *xf8_32bppSymbols[] = {
+    "xf86Overlay8Plus32Init",
     NULL
 };
 
@@ -234,22 +244,39 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
+    "XAAScreenIndex",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
-    "xf86InitCursor",
     NULL
 };
 
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
-    "vbeFree",
     NULL
 };
+
+static const char *ddcSymbols[] = {
+  "xf86PrintEDID",
+  "xf86DoEDID_DDC1",
+  "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+  "xf86CreateI2CBusRec",
+  "xf86I2CBusInit",
+    NULL
+};
+
 
 #ifdef XFree86LOADER
 
@@ -292,8 +319,9 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  cfbSymbols, ramdacSymbols, vbeSymbols,
-			  NULL);
+			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
+			  ddcSymbols, i2cSymbols, NULL /* shadowSymbols */,
+			  NULL /* fbdevsymbols */, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -489,6 +517,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   pI740->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
   if (pI740->pEnt->location.type != BUS_PCI) return FALSE;
 
+  /*I740ProbeDDC(pScrn, pI740->pEnt->index);*/
   if (flags & PROBE_DETECT) {
 	I740ProbeDDC(pScrn, pI740->pEnt->index);
 	return TRUE;
@@ -501,8 +530,6 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   /* Allocate a vgaHWRec */
   if (!vgaHWGetHWRec(pScrn)) return FALSE;
-  hwp = VGAHWPTR(pScrn);
-  pI740->ioBase = hwp->PIOOffset;
 
   pI740->PciInfo = xf86GetPciInfoForEntity(pI740->pEnt->index);
   pI740->PciTag = pciTag(pI740->PciInfo->bus, pI740->PciInfo->device,
@@ -518,12 +545,14 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
 
+
   flags24=Support24bppFb | Support32bppFb | SupportConvert32to24;
   if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
     return FALSE;
   } else {
     switch (pScrn->depth) {
     case 8:
+    case 15:
     case 16:
     case 24:
       break;
@@ -534,7 +563,28 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
       return FALSE;
     }
   }
-  xf86PrintDepthBpp(pScrn);
+  /*xf86PrintDepthBpp(pScrn);*/
+
+  if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
+    return FALSE;
+
+  if (!xf86SetDefaultVisual(pScrn, -1)) {
+    return FALSE;
+  } else {
+    /* We don't currently support DirectColor at > 8bpp */
+    if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+		 " (%s) is not supported at depth %d\n",
+		 xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+      return FALSE;
+    }
+  }
+
+  /* We use a programamble clock */
+  pScrn->progClock = TRUE;
+
+  hwp = VGAHWPTR(pScrn);
+  pI740->cpp = pScrn->bitsPerPixel/8;
 
   /* Process the options */
   xf86CollectOptions(pScrn, NULL);
@@ -551,29 +601,10 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     ptr->found=FALSE;
   }
 
-	    
-  pScrn->rgbBits=8;
   if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE))
+    pScrn->rgbBits=8;
+  else
     pScrn->rgbBits=6;
-  if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
-    return FALSE;
-
-  if (!xf86SetDefaultVisual(pScrn, -1)) {
-    return FALSE;
-  } else {
-    /* We don't currently support DirectColor at > 8bpp */
-    if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		 " (%s) is not supported at depth %d\n",
-		 xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-      return FALSE;
-    }
-  }
-
-  /* We use a programmable clock */
-  pScrn->progClock = TRUE;
-
-  pI740->cpp = pScrn->bitsPerPixel/8;
 
   /* We have to use PIO to probe, because we haven't mappend yet */
   I740SetPIOAccess(pI740);
@@ -674,7 +705,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
 
-  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte %s\n",
+  xf86DrvMsg(pScrn->scrnIndex, from, "Steve was here! VideoRAM: %d kByte %s\n",
 	     pScrn->videoRam, (pI740->HasSGRAM)?"SGRAM":"SDRAM");
   pI740->FbMapSize = pScrn->videoRam*1024;
 
@@ -733,8 +764,8 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   clockRanges->minClock= 12000; /* !!! What's the min clock? !!! */
   clockRanges->maxClock=pI740->MaxClock;
   clockRanges->clockIndex = -1;
-  clockRanges->interlaceAllowed = TRUE;
-  clockRanges->doubleScanAllowed = FALSE;
+  clockRanges->interlaceAllowed = FALSE; /*PL*/
+  clockRanges->doubleScanAllowed = TRUE; /*PL*/
 
   i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			pScrn->display->modes, clockRanges,
@@ -769,7 +800,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     I740FreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymLists(fbSymbols, NULL);
+  xf86LoaderReqSymbols("fbScreenInit","fbPictureInit", NULL);
 #else
   switch (pScrn->bitsPerPixel) {
   case 8:
@@ -801,7 +832,6 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
       I740FreeRec(pScrn);
       return FALSE;
     }
-    xf86LoaderReqSymLists(xaaSymbols, NULL);
   }
 
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
@@ -812,21 +842,79 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     xf86LoaderReqSymLists(ramdacSymbols, NULL);
   }
 
-  /* We won't be using the VGA access after the probe */
+  /*  We wont be using the VGA access after the probe */
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_USE_PIO, FALSE)) {
+    resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
+			 {ResShrIoBlock,0x3C0,0x3DF},
+			 _END };
+    resRange vgamem[] = {{ResShrMemBlock,0xA0000,0xAFFFF},
+			 {ResShrMemBlock,0xB8000,0xBFFFF},
+			 {ResShrMemBlock,0xB0000,0xB7FFF},
+			 _END };
+
     pI740->usePIO=FALSE;
     I740SetMMIOAccess(pI740);
-    xf86SetOperatingState(resVgaIo, pI740->pEnt->index, ResUnusedOpr);
-    xf86SetOperatingState(resVgaMem, pI740->pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(vgaio, pI740->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(vgamem, pI740->pEnt->index, ResDisableOpr);
   } else {
     pI740->usePIO=TRUE;
   }
 
+  if(xf86IsOptionSet(pI740->Options, OPTION_VGACOMPAT))
+    pI740->usevgacompat=TRUE;
+  else
+    pI740->usevgacompat=FALSE;
+
+
+#if 0 /*DDC2*/
+  { /*PL*/
+
+   if (xf86LoadSubModule(pScrn, "ddc")) {
+     xf86LoaderReqSymLists(ddcSymbols, NULL);
+     if ( xf86LoadSubModule(pScrn, "i2c") ) {
+       xf86LoaderReqSymLists(i2cSymbols,NULL);
+
+       if (I740MapMem(pScrn))
+	 {
+	   if (I740_I2CInit(pScrn))
+	     {
+	       xf86MonPtr MonInfo;
+
+	       if ((MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pI740->rc_i2c))) {
+		 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+			    MonInfo);
+		 xf86PrintEDID( MonInfo );
+		 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor "
+			    "info\n\n");
+		 xf86SetDDCproperties(pScrn,MonInfo);
+	       }
+
+	       //xf86SetDDCproperties(pScrn,xf86PrintEDID(  xf86DoEDID_DDC2(pScrn->scrnIndex,pI740->rc_i2c)));
+	     }
+	   else
+	     xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"I2C initialization failed\n");
+	   
+	   I740UnmapMem(pScrn);
+	 }
+     }
+   }
+  }
+#endif /*DDC2*/
+
+  { /* Overlay */
+    pI740->colorKey = (1 << pScrn->offset.red) | (1 << pScrn->offset.green) |
+      (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
+
+    pI740->colorKey &= ((1 << pScrn->depth) - 1);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video overlay key set to 0x%x\n", pI740->colorKey);
+  }
+
+
   return TRUE;
 }
 
-static Bool
-I740MapMem(ScrnInfoPtr pScrn)
+static Bool I740MapMem(ScrnInfoPtr pScrn)
 {
   int mmioFlags;
   I740Ptr pI740;
@@ -850,8 +938,7 @@ I740MapMem(ScrnInfoPtr pScrn)
   return TRUE;
 }
 
-static Bool
-I740UnmapMem(ScrnInfoPtr pScrn)
+static Bool I740UnmapMem(ScrnInfoPtr pScrn)
 {
   I740Ptr pI740;
 
@@ -1303,7 +1390,7 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   else
     i740Reg->PixelPipeCfg0 = DAC_8_BIT;
 
-  i740Reg->PixelPipeCfg2 = DISPLAY_GAMMA_ENABLE | OVERLAY_GAMMA_ENABLE;
+  i740Reg->PixelPipeCfg2 = DISPLAY_GAMMA_ENABLE /*| OVERLAY_GAMMA_ENABLE*/;
 
   /* Turn on Extended VGA Interpretation */
   i740Reg->IOControl = EXTENDED_CRTC_CNTL;
@@ -1360,19 +1447,35 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   /* Calculate the FIFO Watermark and Burst Length. */
   i740Reg->LMI_FIFO_Watermark = I740CalcFIFO(pScrn, dclk);
 
+  /*-Overlay-*/
+  pI740->ov_offset_x=((mode->CrtcHTotal-mode->CrtcHDisplay) & ~7)-9;
+  pI740->ov_offset_y=mode->CrtcVTotal-mode->CrtcVSyncEnd-2;
+  /*-*/
+
   return TRUE;
 }
 
 static Bool
-I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
+I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode_src)
 {
   vgaHWPtr hwp;
   I740Ptr pI740;
+  struct _DisplayModeRec mode_dst;
+  DisplayModePtr mode=&mode_dst;
+
+  *mode=*mode_src;
 
   hwp = VGAHWPTR(pScrn);
   pI740 = I740PTR(pScrn);
 
   vgaHWUnlock(hwp);
+
+
+  if(pI740->usevgacompat)
+    { /* Try to get the same visual aspect as a S3 board */
+      mode->CrtcHSyncStart+=16;
+      mode->CrtcHSyncEnd  +=16;
+    }
 
   if (!vgaHWInit(pScrn, mode)) return FALSE;
 
@@ -1385,9 +1488,38 @@ I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
   return TRUE;
 }
 
-static void
-I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		  VisualPtr pVisual) {
+static void I740LoadPalette15(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual)
+{
+  I740Ptr pI740;
+  vgaHWPtr hwp;
+  int i, index;
+  unsigned char r, g, b;
+
+  pI740 = I740PTR(pScrn);
+  hwp = VGAHWPTR(pScrn);
+
+  for (i=0; i<numColors; i++)
+    {
+      index=indices[i/2];
+      r=colors[index].red;
+      b=colors[index].blue;
+      g=colors[index].green;
+
+      hwp->writeDacWriteAddr(hwp, index<<2);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      i++;
+      hwp->writeDacWriteAddr(hwp, index<<2);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+    }
+}
+
+static void I740LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors, VisualPtr pVisual)
+{
   I740Ptr pI740;
   vgaHWPtr hwp;
   int i, index;
@@ -1444,14 +1576,13 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   vgaHWPtr hwp;
   I740Ptr pI740;
   VisualPtr visual;
-  BoxRec MemBox;
 
   pScrn = xf86Screens[pScreen->myNum];
   pI740 = I740PTR(pScrn);
   hwp = VGAHWPTR(pScrn);
 
   if (!I740MapMem(pScrn)) return FALSE;
-  pScrn->memPhysBase = (unsigned long)pI740->FbBase;
+  pScrn->memPhysBase = (unsigned long)pI740->LinearAddr;
   pScrn->fbOffset = 0;
 
   if (!pI740->usePIO)
@@ -1522,6 +1653,9 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 	       pScrn->bitsPerPixel);
     return FALSE;
   }
+#ifdef USE_FB
+  fbPictureInit(pScreen,0,0);
+#endif
 
   xf86SetBlackWhitePixels(pScreen);
 
@@ -1539,10 +1673,6 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
   }
 
-#ifdef USE_FB
-  /* must be after RGB ordering set */
-  fbPictureInit(pScreen,0,0);
-#endif
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
   xf86SetSilkenMouse(pScreen);
@@ -1551,19 +1681,28 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   if (!miCreateDefColormap(pScreen)) return FALSE;
 
-  if (pScrn->bitsPerPixel==16) {
-    if (!xf86HandleColormaps(pScreen, 256, 8, I740LoadPalette16, 0,
-			     CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
-      return FALSE;
-  } else {
-    if (!xf86HandleColormaps(pScreen, 256, 8, I740LoadPalette24, 0,
-			     CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
-      return FALSE;
-  }
+  if (pScrn->bitsPerPixel==16)
+    {
+      if (pScrn->weight.green == 5)
+	{
+	  if (!xf86HandleColormaps(pScreen, 256, 8, I740LoadPalette15, 0, CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
+	    return FALSE;
+	}
+      else
+	{
+	  if (!xf86HandleColormaps(pScreen, 256, 8, I740LoadPalette16, 0, CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
+	    return FALSE;
+	}
+    }
+  else
+    {
+      if (!xf86HandleColormaps(pScreen, 256, 8, I740LoadPalette24, 0, CMAP_PALETTED_TRUECOLOR|CMAP_RELOAD_ON_MODE_SWITCH))
+	return FALSE;
+    }
 
   xf86DPMSInit(pScreen, I740DisplayPowerManagementSet, 0);
 
-#ifdef XvExtension
+#if 0 /*def XvExtension*/
   {
     XF86VideoAdaptorPtr *ptr;
     int n;
@@ -1575,12 +1714,15 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
 #endif
 
-  MemBox.x1=0;
-  MemBox.x2=pScrn->displayWidth;
-  MemBox.y1=0;
-  MemBox.y2=pI740->FbMapSize/(pScrn->displayWidth*pI740->cpp);
+  memset(&(pI740->FbMemBox), 0, sizeof(BoxRec));
+  pI740->FbMemBox.x1=0;
+  pI740->FbMemBox.x2=pScrn->displayWidth;
+  pI740->FbMemBox.y1=0;
+  pI740->FbMemBox.y2=pI740->FbMapSize/(pScrn->displayWidth*pI740->cpp);
 
-  if (!xf86InitFBManager(pScreen, &MemBox)) {
+  I740DGAInit(pScreen);
+
+  if (!xf86InitFBManager(pScreen, &pI740->FbMemBox)) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to init memory manager\n");
     return FALSE;
   }
@@ -1606,10 +1748,16 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (serverGeneration == 1)
     xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
 
+#ifdef XvExtension
+  { /* Overlay */
+    I740InitVideo(pScreen); pI740->OverlayStart = pI740->CursorStart + 1024;
+  }
+#endif /*XvExtension*/
+
   return TRUE;
 }
 
-static Bool
+Bool
 I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags) {
   ScrnInfoPtr pScrn;
 
@@ -1617,7 +1765,7 @@ I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags) {
   return I740ModeInit(pScrn, mode);
 }
 
-static void
+void
 I740AdjustFrame(int scrnIndex, int x, int y, int flags) {
   ScrnInfoPtr pScrn;
   I740Ptr pI740;
@@ -1729,6 +1877,11 @@ I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
 static Bool
 I740SaveScreen(ScreenPtr pScreen, int mode)
 {
+#if 0
+  Bool unblack = xf86IsUnblank(mode);
+  if (unblack) outw(SRX, 0x0300);
+  else outw(SRX, 0x0100);
+#endif
   return vgaHWSaveScreen(pScreen, mode);
 }
 
