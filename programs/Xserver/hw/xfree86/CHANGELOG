@@ -1,4 +1,6 @@
 XFree86 3.2x (23 January 1997)
+ 358. Fix a problem with specifying the chipset as "et6000" with the W32
+      server (Koen Gadeyne).
  357. Fix for XAA bitmap problem which showed up with the C&T driver, and
       which appears to be related to a compiler bug.  With this fixed,
       change 339 has been backed out (David Bateman).

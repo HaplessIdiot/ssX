@@ -1,21 +1,20 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.2 on NetBSD and OpenBSD
+<title> README for XFree86 3.2A on NetBSD and OpenBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 24 October 1996
+<Date>Last modified on: 22 January 1997
 
 <toc>
 
-<!--
 <p>
 <bf>Important Notice</bf>
 <p>
-Since the XFree86 3.1.2H beta is only distributed in binary form, all
+Since the XFree86 3.2A beta is only distributed in binary form, all
 comments about rebuilding the distribution from source in this
 document are worthless. They are left there  for reference purpose
 only. 
@@ -25,16 +24,16 @@ If you absolutely need to build a server with particular options,
 please contact me (<htmlurl name="matthieu@laas.fr"
 url="mailto:matthieu@laas.fr">). I'll try to satisfy your request on
 my free time and resources. 
--->
+
 
 <sect>What and Where is XFree86?
 
 <p>
-XFree86 is a port of X11R6.1 that supports several versions of
+XFree86 3.2A is a port of X11R6.3 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
-is available as source patches against the X Consortium X11R6.1 code, as
+is available as source patches against the X Consortium X11R6.3 code, as
 well as binary distributions for many architectures.
 
 See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
@@ -75,7 +74,9 @@ XFree86 3.2 should compile cleanly under earlier versions of
 NetBSD, although this has not been tested.
 
 XFree86 3.2 also builds on NetBSD/sparc and OpenBSD/sparc. See section
-<ref id="sparc" name="Building on NetBSD/sparc"> for details.
+<ref id="sparc" name="Building on sparc"> for details.
+
+The client side of XFree86 also builds on NetBSD/alpha. 
 
 XFree86 has also been built on OpenBSD/mips. It has been tested on an
 Acer Mips system with a S3/928 board. Contact Per Fogelstrom
@@ -92,6 +93,16 @@ FTP servers.
 Send email to <em/matthieu@laas.fr/ (Matthieu Herrb) or
 <em/XFree86@XFree86.org/ if you have comments or suggestions about
 this file and we'll revise it.
+
+<sect>New features  in this release
+
+<p>
+<enum>
+<item>There are now two separate config files <tt/NetBSD.cf/ and
+<tt/OpenBSD.cf/ for the two OS.
+<item>See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
+non-OS dependant new features in XFree86 3.2A.
+</enum>
 
 <sect>Installing the Binaries
 
@@ -110,67 +121,67 @@ using <tt/pkg_add/.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X32doc/ READMEs.
-    <tag/X32bin/ all of the executable X client applications and shared libs
-    <tag/X32fnts/ the misc, 75dpi and PEX fonts
-    <tag/X32lib/ data files needed at runtime
-    <tag/X32cfg/ customizable xinit and xdm runtime configuration files.
+    <tag/X32Adoc/ READMEs.
+    <tag/X32Abin/ all of the executable X client applications and shared libs
+    <tag/X32Afnts/ the misc, 75dpi and PEX fonts
+    <tag/X32Alib/ data files needed at runtime
+    <tag/X32Acfg/ customizable xinit and xdm runtime configuration files.
     </descrip>
 
     Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/X32SVGA/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X32VG16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X32Mono/  the Monochrome X Server
-    <tag/X328514/  the X server for IBM 8514/A and compatible boards
-    <tag/X32AGX/   the X server for AGX boards
-    <tag/X32I128/  the X server for I128 boards
-    <tag/X32Ma8/ the X server for ATI Mach8 graphics boards
-    <tag/X32Ma32/ the X server for ATI Mach32 graphics boards
-    <tag/X32Ma64/ the X server for ATI Mach64 graphics boards
-    <tag/X32P9K/	the X server for P9000 based boards
-    <tag/X32S3/ 	the X server for S3 based boards
-    <tag/X32S3V/ 	the X server for S3 ViRGE boards
-    <tag/X32W32/	the X server for et4000w32 and et6000 based boards
+    <tag/X32ASVGA/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X32AVG16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X32AMono/  the Monochrome X Server
+    <tag/X32A8514/  the X server for IBM 8514/A and compatible boards
+    <tag/X32AAGX/   the X server for AGX boards
+    <tag/X32AI128/  the X server for I128 boards
+    <tag/X32AMa8/ the X server for ATI Mach8 graphics boards
+    <tag/X32AMa32/ the X server for ATI Mach32 graphics boards
+    <tag/X32AMa64/ the X server for ATI Mach64 graphics boards
+    <tag/X32AP9K/	the X server for P9000 based boards
+    <tag/X32AS3/ 	the X server for S3 based boards
+    <tag/X32AS3V/ 	the X server for S3 ViRGE boards
+    <tag/X32AW32/	the X server for et4000w32 and et6000 based boards
     </descrip>
 
     The following servers are available for PC98 hardware from the
-    directory XFree98-3.2
+    directory XFree98-3.2A
 
     <descrip>
-    <tag/X329EGC/	EGC 
-    <tag/X329GAN/	GANB-WAP(cirrus)
-    <tag/X329480/	PEGC-480 
-    <tag/X329NS3/	NEC(S3) 
-    <tag/X329NKV/	NEC(cirrus)
-    <tag/X329LPW/	PowerWindowLB(S3)
-    <tag/X329SPW/	SKB-PowerWindow(S3)
-    <tag/X329WEP/	WABEP(cirrus)
-    <tag/X329WBS/	WABS(cirrus)
-    <tag/X329WSN/	WSN-A2F(cirrus)
-    <tag/X329GA9/	GA-968V4/PCI(S3 968)
-    <tag/X329TGU/	TGUI
+    <tag/X32A9EGC/	EGC 
+    <tag/X32A9GAN/	GANB-WAP(cirrus)
+    <tag/X32A9480/	PEGC-480 
+    <tag/X32A9NS3/	NEC(S3) 
+    <tag/X32A9NKV/	NEC(cirrus)
+    <tag/X32A9LPW/	PowerWindowLB(S3)
+    <tag/X32A9SPW/	SKB-PowerWindow(S3)
+    <tag/X32A9WEP/	WABEP(cirrus)
+    <tag/X32A9WBS/	WABS(cirrus)
+    <tag/X32A9WSN/	WSN-A2F(cirrus)
+    <tag/X32A9GA9/	GA-968V4/PCI(S3 968)
+    <tag/X32A9TGU/	TGUI
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X32fsrv/ the font server with man pages.
-    <tag/X32prog/ the X11 header files and static libraries needed only 
+    <tag/X32Afsrv/ the font server with man pages.
+    <tag/X32Aprog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/X32man/ man pages
-    <tag/X32lkit/ X server reconfiguration kit
-    <tag/X32lk98/ X server reconfiguration kit for PC98 X servers
-    <tag/X32f100/ 100dpi fonts
-    <tag/X32fcyr/ Cyrillic fonts
-    <tag/X32fscl/ Scalable fonts
-    <tag/X32fnon/ Other fonts (Japanese, Chinese, etc)
-    <tag/X32set/  XF86Setup configuration utility, needs X32VG16
-    <tag/X32nest/ Nested X server
-    <tag/X32vfb/ Virtual framebuffer X server
-    <tag/X32html/ HTML format version of the documentation
-    <tag/X32ps/   PostScript format version of the documentation
+    <tag/X32Aman/ man pages
+    <tag/X32Alkit/ X server reconfiguration kit
+    <tag/X32Alk98/ X server reconfiguration kit for PC98 X servers
+    <tag/X32Af100/ 100dpi fonts
+    <tag/X32Afcyr/ Cyrillic fonts
+    <tag/X32Afscl/ Scalable fonts
+    <tag/X32Afnon/ Other fonts (Japanese, Chinese, etc)
+    <tag/X32Aset/  XF86Setup configuration utility, needs X32AVG16
+    <tag/X32Anest/ Nested X server
+    <tag/X32Avfb/ Virtual framebuffer X server
+    <tag/X32Ahtml/ HTML format version of the documentation
+    <tag/X32Aps/   PostScript format version of the documentation
     </descrip>
 </descrip>
 
@@ -221,27 +232,27 @@ below.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.2 is
+	Assuming that the destination directory for XFree86 3.2A is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
 <tscreen><verb>
  cd /usr/X11R6
 
- tar xzf X32doc.tgz
- tar xzf X32bin.tgz
- tar xzf X32lib.tgz 
- tar xzf X32fnts.tgz
- tar xzf X32man.tgz
+ tar xzf X32Adoc.tgz
+ tar xzf X32Abin.tgz
+ tar xzf X32Alib.tgz 
+ tar xzf X32Afnts.tgz
+ tar xzf X32Aman.tgz
 
- tar xzf X32prog.tgz
- tar xzf X32fsrv.tgz
- tar xzf X32cfg.tgz
+ tar xzf X32Aprog.tgz
+ tar xzf X32Afsrv.tgz
+ tar xzf X32Acfg.tgz
 
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf X32<server>.tgz
+ tar xzf X32A<server>.tgz
 </verb></tscreen>
 </enum>
 
@@ -704,7 +715,7 @@ anymore. You should get it from the syscons distribution.
 <sect1> Support for shared libs under NetBSD 1.0 and later
 
 <p>
-    By default XFree86 3.2 builds for NetBSD with shared libraries 
+    By default XFree86 3.2A builds for NetBSD with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -800,7 +811,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.41 1996/10/26 09:38:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.42 1996/12/23 06:46:06 dawes Exp $
 
 
 

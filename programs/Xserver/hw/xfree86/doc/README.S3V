@@ -1,6 +1,6 @@
   Information for S3 ViRGE and ViRGE/VX Users
   The XFree86 Project Inc.
-  19 October 1996
+  22 January 1997
 
   1.  Supported hardware
 
@@ -10,12 +10,19 @@
   DRAM and with a 220MHz ViRGE/VX card with 2MB VRAM up to 1600x1200
   with 8/15/16bpp.
 
+  For 3.2A, the server supports 24 bpp.  It is reported to lock video on
+  ViRGE/VX chipsets when run twice, and dump core with some setups.  It
+  appears stable on ViRGE chipsets.  There are known problems, but you
+  should be able to run xterms and applications that support 24 bpp or
+  Truecolor.  Known exceptions include xanim (reported patch fixes
+  this), netscape, xfig, and xfishtank.  (and others...)
+
   NOTE: This driver is pretty new, and not everything might work like
   you expect it to. It shouldn't crash your machine, but you may have
   video artifacts or missing lines. Please report any and all problems
-  to XFree86@Xfree86.org using the appropiate bug report sheet.
+  to XFree86@Xfree86.org using the appropriate bug report sheet.
 
-  There will be updated drivers in the comming XFree86 beta releases.
+  There will be updated drivers in the coming XFree86 beta releases.
 
   2.  Features:
 
@@ -24,15 +31,15 @@
 
      o  uses linear frame buffer
 
-     o  it should be possible to reach resolutions upto 2048x2048
+     o  it should be possible to reach resolutions up to 2048x2048
 
-     o  it should be possible to use pixel depths of 8, 15, and 16
-        (24/32 not yet) bits per pixel.
+     o  it should be possible to use pixel depths of 8, 15, 16, and 24
+        (32 not yet) bits per pixel.
 
   3.  Future Features (in order from highest to lowest priority)
 
 
-     o  support of 24/32bpp
+     o  improved support of 24, support of 32bpp
 
      o  some more hardware acceleration
 
@@ -42,11 +49,22 @@
 
   4.  Configuration:
 
-  The server autodetects RAM size, RAMDAC and ClockChip. Do not bother
+  The server auto-detects RAM size, RAMDAC and ClockChip. Do not bother
   putting these in your "Device" section.  The "nolinear" option is
   unsupported.
 
-  5.  Authors
+  5.  Known problems with 24 bpp:
+
+
+     o  Mode switching is bad!  You may corrupt your text console if you
+        mode switch.  Avoid use of Ctl-Alt-+ and Ctl-Alt-'-'.
+
+     o  ViRGE/VX may dump core.
+
+     o  ViRGE/VX may lock the server if run twice with a machine reset.
+
+
+  6.  Authors
 
   Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
 
@@ -62,9 +80,9 @@
      o  Dirk Vangestel gesteld@sh.bel.alcatel.be
 
 
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.1 1997/01/23 11:02:29 dawes Exp $
 
 
-  $XFree86$
 
 
 
@@ -113,20 +131,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$XFree86$

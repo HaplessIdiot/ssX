@@ -128,7 +128,7 @@
         MGA2064W
 
      Number Nine
-        I128 (not accelerated yet)
+        I128
 
   The Cirrus, Western Digital, Oak, ARK, Chips & Technologies and Matrox
   accelerators are supported in the SVGA server; the other chipsets each
@@ -386,13 +386,19 @@
 
         o  Thomas Mueller <tm@systrix.de>
 
+     OS/2 support by:
+
+        o  Holger Veit <Holger.Veit@gmd.de>
+
+        o  Sebastien Marineau <s521936@aix1.uottawa.ca>
+
+
+
      Linux shared libraries by:
 
         o  Orest Zborowski <orestz@eskimo.com>,
 
         o  Dirk Hohndel <hohndel@XFree86.org>
-
-
 
      PC98 support by:
 
@@ -452,17 +458,21 @@
 
         o  Yasushi Suzuki <suz@d2.bs1.fc.nec.co.jp>,
 
+
+
         o  Masato Yoshida (Contributor of PW805i support)
 
      Original accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
-
-
         o  Rik Faith <faith@cs.unc.edu>,
 
         o  Jon Tombs <tombs@XFree86.org>
+
+     XFree86 Acceleration Architecture (XAA) by:
+
+        o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>,
 
      S3 accelerated code by:
 
@@ -482,15 +492,17 @@
 
         o  Leonard N. Zubkoff <lnz@dandelion.com>,
 
-        o  Bernhard Bender <br@elsa.mhs.compuserve.com>
+        o  Bernhard Bender <br@elsa.mhs.compuserve.com>,
 
-        o  Dirk Hohndel <hohndel@XFree86.org>
+        o  Dirk Hohndel <hohndel@XFree86.org>,
 
         o  Joe Moss <joe@XFree86.org>
 
      S3V accelerated code by:
 
         o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
+
+        o  Kevin Brosius <Cobra@compuserve.com>
 
      Mach32 accelerated code by:
 
@@ -512,6 +524,8 @@
 
      Mach8, 8514 accelerated code by:
 
+
+
         o  Kevin Martin <martin@cs.unc.edu>,
 
         o  Rik Faith <faith@cs.unc.edu>,
@@ -523,8 +537,6 @@
         o  Scott Laird <scott@laird.com>
 
      Cirrus accelerated code by:
-
-
 
         o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
@@ -579,6 +591,7 @@
 
         o  Pascal Haible <haible@izfm.uni-stuttgart.de>
 
+
      ATI SVGA driver by:
 
         o  Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
@@ -590,8 +603,6 @@
 
      WD90C24 support by:
 
-
-
         o  Brad Bosch <brad@lachman.com>
 
      Trident SVGA driver by:
@@ -601,6 +612,8 @@
      SiS SVGA driver by:
 
         o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+
+        o  Xavier Ducoin <xavier@rd.lectra.fr>
 
      DEC 21030 (TGA) server by:
 
@@ -643,6 +656,8 @@
 
         o  Jorge Delgado <ernar@dit.upm.es>
 
+
+
      ARK Logic SVGA driver by:
 
         o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
@@ -656,7 +671,6 @@
      Avance Logic ``ali'' SVGA driver by:
 
         o  Ching-Tai Chiu <cchiu@netcom.com>
-
 
      Chips & Technologies SVGA driver by:
 
@@ -708,6 +722,8 @@
 
         o  Leonard N. Zubkoff <lnz@dandelion.com>
 
+
+
      XFree86-VidModeExtension and xvidtune client by:
 
         o  Kaleb S. Keithley <kaleb@x.org>
@@ -721,8 +737,6 @@
      XFree86-Misc extension by:
 
         o  Joe Moss <joe@XFree86.org>
-
-
 
         o  David Dawes <dawes@XFree86.org>
 
@@ -775,6 +789,7 @@
 
      o  Harald Koenig <koenig@XFree86.org>
 
+
      o  Rich Murphey <rich@XFree86.org>
 
      o  Jon Tombs <tombs@XFree86.org>
@@ -787,8 +802,6 @@
   7.  The XFree86 Project, Inc.
 
   The XFree86 Project, Inc, was founded to accomplish two major goals:
-
-
 
      1. To provide a vehicle by which XFree86 can be represented in X
         Consortium, Inc, the organization responsible for the design,
@@ -842,6 +855,7 @@
   Our bylaws have been crafted in such a way to ensure that XFree86 is
   and always will be a free software project.  There is no personal
   financial benefit to any member of the Core Team or any other XFree86
+
   participant.  All assets of the corporation remain with the
   corporation, and, in the event of the dissolution of the corporation,
   all assets will be turned over to the X Consortium, Inc.  It is hoped
@@ -855,7 +869,6 @@
   XFree86 Project, Inc gratefully acknowledges these contributions, and
   hopes that we can do justice to them by continuing to release high-
   quality free software for the betterment of the Internet community as
-
   a whole.
 
      o  UUNET Communications Services, Inc. <http://www.uu.net/>
@@ -908,6 +921,7 @@
 
      o  Hercules Computer Technology, Inc. <http://www.hercules.com/>
 
+
      o  Ralf Hockens
 
      o  Dirk Hohndel
@@ -919,8 +933,6 @@
      o  Frank & Paige McCormick
 
      o  Linux International
-
-
 
      o  Linux Support Team, Erlangen, Germany
 
@@ -975,6 +987,7 @@
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
 
+
   8.  Archive sites
 
   Binaries for many OSs are available via anonymous FTP from:
@@ -985,8 +998,6 @@
   and the following mirror sites:
 
      o  North America:
-
-
 
         +  ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
 
@@ -1043,24 +1054,13 @@
   files you need to take from the archive.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.70 1997/01/22 11:06:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.71 1997/01/23 11:02:25 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
-
-
-
-
-
-
-
-
-
-
-
 
 
 

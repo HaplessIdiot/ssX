@@ -1,20 +1,38 @@
   Information for Tseng Chipset Users
   The XFree86 Project, Inc.
-  14 October 1996
+  22 January 1997
 
   1.  Supported chipsets
 
   The Tseng chipsets supported by XFree86 are ET3000, ET4000, ET4000/W32
   and ET6000. Accelerated features of the ET4000/W32p and ET6000 are
   supported by the SVGA driver. For details about the separate
-  accelerated 8bpp ET4000/W32 and ET6000 server, refer to README.W32
-  <W32.html>.
+  accelerated 8bpp (=256 color) ET4000/W32 and ET6000 server, refer to
+  README.W32.
 
   2.  ET4000 driver features
 
   The SVGA driver for ET4000 chipsets only supports 8bpp mode (256
-  colors).  hi- and truecolor modes are not supported. This is being
-  worked on.
+  colors).  hi- and truecolor modes are not supported.
+
+  As opposed to the separate XF86_W32 server, there is no support for
+  special RAMDACs in the SVGA server yet. This means that W32 cards with
+  16-bit RAMDAC/clockchip combinations (most ET4000W32p-based cards fall
+  in that category) will not be able to use the features that allow
+  higher pixel clocks and higher color depths.
+
+  As such, those cards will be limited in a similar manner as the older
+  cards, i.e. to a maximum pixel clock of 90 MHz, whilst they actually
+  are able to go up to 135 MHz. As a result, 1280x1024 modes will only
+  be possible when using interlacing, and non-interlaced modes are
+  limited to about 1024x768 at 75 Hz refresh.
+
+  Similarly, cards with a fully programmable clockchip will not allow
+  you to use the clockchip. Only the standard set of fixed clocks is
+  available.
+
+  Most of the limitations outlined above will be addressed in a future
+  release.
 
   Linear memory mode (especially important for some DGA clients) is
   supported on the ET4000W32p rev C and D. Work is underway to support
@@ -58,12 +76,11 @@
 
   In order to be able to run at a depth of 16bpp, 24bpp, or 32bpp, and
   to improve performance at 8bpp, linear addressing must be enabled. On
-  some systems, you may have to specify MemBase in addition to telling
-  the server is has to run in "linear" mode.
+  some systems (mostly non-PCI), you may have to specify MemBase in
+  addition to telling the server is has to run in "linear" mode.
 
   Linear memory mode (as opposed to the default, banked memory layout)
   is supported. It is required for the 16/24/32 bpp modes. The server
-
   will exit with an appropriate error message when attempting to run
   16/24/32 bpp modes without linear memory mode enabled.
 
@@ -112,6 +129,7 @@
 
   This problem is indicated when the reported clocks are different when
   the server is started from the high-resolution text mode from what
+
   they are when it is started from the 80x25 text mode.  To allow the
   server to work correctly from the high-resolution text mode, there are
   some Option flags that may be set in XF86Config.  To find out which
@@ -126,8 +144,6 @@
   your XF86Config:
 
     Option "hibit_low"
-
-
 
 
   If the line:
@@ -195,7 +211,6 @@
         (streaking, stripes, garbage, ...). It may also increas those
         very same effects. Not supported on ET6000.
 
-
      videoram 1024 (or another value)   (all chips)
         This option will override the detected amount of video memory,
         and pretend the given amount of memory is present on the card.
@@ -219,10 +234,12 @@
 
      Option "linear"  (ET4000W32p, ET6000)
         This enables linear addressing, which is the mapping of the
-        entire framebuffer to a high address beyond system memory, so
-        that (slow) SVGA bank switching is not necessary. It enhances
-        performance at 256 colors, and is currently required for 16bpp,
-        24bpp, and 32bpp.
+        entire framebuffer to a high address beyond system memory,
+        making the full length of the framebuffer directly accessible.
+        In this way, slow SVGA bank switching (where only a small
+        fraction of the framebuffer is visible at one time) is not
+        necessary. It enhances performance at 256 colors, and is
+        currently required for 16bpp, 24bpp, and 32bpp.
 
      Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
         This sets the physical memory base address of the linear
@@ -244,6 +261,7 @@
   while the RAMDAC is pulling it out to display it on the screen.
 
   Higher dot-clocks (mostly related to higher resolutions) consume more
+
   bandwidth, so that less of it is left for drawing into the
   framebuffer. With a working accelerator, things become increasingly
   crammed, because modern accelerators can consume huge amounts of
@@ -261,7 +279,6 @@
   It does not make much sense performance-wise to use the highest clock
   (85 MHz) for 1024x768 at 76 Hz on a 1 MB ET4000W32; the card will very
   slow, because there is almost no bandwidth left for drawing. A 75 MHz
-
   dot clock results in 70 Hz which should be acceptable. If you have a
   monitor that supports 1024x768 at 76 Hz with a 85 MHz dot clock, an
   1MB card is a poor match anyway.
@@ -280,7 +297,27 @@
   already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB models
   have only 2 MDRAM chips (as do the 2MB models).
 
-  9.  Linear addressing and 16bpp/24bpp/32bpp modes
+  9.  Acceleration issues
+
+  The XFree Acceleration Architecture makes extensive use of the unused
+  video memory on the VGA card. If there is not enough free video
+  memory, some acceleration features will be disabled or crippled,
+  resulting in less performance.
+
+  To avoid this from happening, try to keep an absolute minimum of 16 kb
+  of free memory, in addition to the 1kb already reserved by the
+  accelerator.
+
+  In practice, this small amount of memory should not be a problem. Most
+  cards nowadays have 2 MB of video memory, and running 1280x1024 still
+  leaves plenty of memory unused. Even a 1600x1200 desktop will leave
+  over 170kb unused, which will then be used by the accelerator to
+  enhance performance.
+
+  Most 1MB cards cannot display modes larger than 1024x768 with a decent
+  refresh rate, leaving 256kb unused.
+
+  10.  Linear addressing and 16bpp/24bpp/32bpp modes
 
   Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors,
   packed pixel), and 32-bit (16M colors, sparse) pixel support in the
@@ -290,6 +327,7 @@
   linear addressing requirement presently has a lower priority than
   other features.) Option "linear" can be specified in a depth-specific
   screen section to enable linear addressing; a MemBase setting (in the
+
   device section) is probably also required on non-PCI based systems,
   and optionally on PCI systems that have trouble finding out for
   themselves where the MemBase is.
@@ -317,55 +355,45 @@
   virtual screen size. Example (2Mb of video memory):
 
 
+       Section "screen"
+           SubSection "Display"
+               Depth 8
+               Virtual 1280 1024
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 16
+               Virtual 1024 992
+               ViewPort 0 0
+               Modes "640x480" "800x600" "1024x768"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 24
+               Virtual 960 720
+               ViewPort 0 0
+               Modes "640x480" "800x600"
+               Option "linear"
+           EndSubSection
+           SubSection "Display"
+               Depth 32
+               Virtual 832 600
+               ViewPort 0 0
+               Modes "640x480" "800x600"
+               Option "linear"
+           EndSubSection
+       EndSection
 
 
 
 
-
-
-
-
-
-
-
-  Section "screen"
-      SubSection "Display"
-          Depth 8
-          Virtual 1280 1024
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 16
-          Virtual 1024 992
-          ViewPort 0 0
-          Modes "640x480" "800x600" "1024x768"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 24
-          Virtual 960 720
-          ViewPort 0 0
-          Modes "640x480" "800x600"
-          Option "linear"
-      EndSubSection
-      SubSection "Display"
-          Depth 32
-          Virtual 832 600
-          ViewPort 0 0
-          Modes "640x480" "800x600"
-          Option "linear"
-      EndSubSection
-  EndSection
-
-
-
-
-  10.  Trouble shooting with the SVGA Tseng driver
+  11.  Trouble shooting with the SVGA Tseng driver
 
   First of all, make sure that the default modes selected from your
   XF86Config is supported by your monitor, i.e. make sure the horizontal
+
   sync limit is correct. It is best to start with standard 640x480x256
   with a 25.175 MHz clock (by specifying a single horizontal sync of
   31.5) to make sure the driver works on your configuration. The default
@@ -391,8 +419,6 @@
         this, You can try the "fast_dram" option, or use a lower dot
         clock. If that is not sufficient, the "noaccel" option will
         almost always help.
-
-
 
      `Wavy' screen.
         Horizontal waving or jittering of the whole screen, continuously
@@ -433,14 +459,18 @@
         overclocked for performance, which may cause these problems.
         There is currently no fix for this.
 
+
      Textmode is not properly restored
         This has been reported on some configurations. Sometimes Chipset
         line will fix this. Normally you should be able to restore the
         textmode font using a utility that sets it (setfont, runx,
         restorefont on Linux).
 
-  For other screen drawing related problems, try the "noaccel" option
-  (if "no_bitblt" doesn't help).
+  For other screen drawing related problems, try the "noaccel" option.
+
+  As a final fallback, consider trying the separate accelerated W32
+  server. It is more mature, and has been tested more extensively as a
+  result. See README.W32.
 
   If are having driver-related problems that are not addressed by this
   document, or if you have found bugs in accelerated functions, you can
@@ -452,43 +482,13 @@
   an eye on forthcoming beta releases at www.xfree86.org.
 
 
-
-
-
-
-
-
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.11 1997/01/22 11:06:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.12 1997/01/23 11:02:32 dawes Exp $
 
 
 
 
 
   $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

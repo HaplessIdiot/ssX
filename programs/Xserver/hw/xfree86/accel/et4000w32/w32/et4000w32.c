@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.20 1996/09/22 05:02:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.21 1996/12/23 06:35:15 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -170,7 +170,9 @@ ET4000W32Probe()
     {
 	if (strcmp(save_chipset, et4000) == 0)
 	    return FALSE;
+#if 0
 	vga256InfoRec.chipset = et4000;
+#endif
     }
 
     save_videoram = vga256InfoRec.videoRam;

@@ -1,15 +1,26 @@
-  README for XFree86 3.2 on NetBSD and OpenBSD
+  README for XFree86 3.2A on NetBSD and OpenBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark
   Weaver, Matthieu Herrb
-  Last modified on: 24 October 1996
+  Last modified on: 22 January 1997
+
+  Important Notice
+
+  Since the XFree86 3.2A beta is only distributed in binary
+  form, all comments about rebuilding the distribution from
+  source in this document are worthless. They are left there
+  for reference purpose only.
+
+  If you absolutely need to build a server with particular
+  options, please contact me (matthieu@laas.fr). I'll try to
+  satisfy your request on my free time and resources.
 
   1.  What and Where is XFree86?
 
-  XFree86 is a port of X11R6.1 that supports several versions of Intel-
-  based Unix.  It is derived from X386 1.2, which was the X server
+  XFree86 3.2A is a port of X11R6.3 that supports several versions of
+  Intel-based Unix.  It is derived from X386 1.2, which was the X server
   distributed with X11R5.  This release consists of many new features
   and performance improvements as well as many bug fixes.  The release
-  is available as source patches against the X Consortium X11R6.1 code,
+  is available as source patches against the X Consortium X11R6.3 code,
   as well as binary distributions for many architectures.
 
   See the Copyright Notice.
@@ -43,13 +54,16 @@
   although this has not been tested.
 
   XFree86 3.2 also builds on NetBSD/sparc and OpenBSD/sparc. See section
-  ``Building on NetBSD/sparc'' for details.
+  ``Building on sparc'' for details.
+
+  The client side of XFree86 also builds on NetBSD/alpha.
 
   XFree86 has also been built on OpenBSD/mips. It has been tested on an
   Acer Mips system with a S3/928 board. Contact Per Fogelstrom
   (pefo@OpenBSD.org) for details.
 
   XFree86 3.2 supports NetBSD on PC98 machines. Servers for these
+
   machines are available in the NetBSD-PC98 directory on the above FTP
   servers.
 
@@ -59,11 +73,19 @@
   if you have comments or suggestions about this file and we'll revise
   it.
 
-  3.  Installing the Binaries
+  3.  New features  in this release
+
+
+     1. There are now two separate config files NetBSD.cf and OpenBSD.cf
+        for the two OS.
+
+     2. See the Release Notes for non-OS dependant new features in
+        XFree86 3.2A.
+
+  4.  Installing the Binaries
 
   The binary distribution is composed of a number of  tar archives which
   are the executables, servers, fonts, libraries, include files, man
-
   pages, config files, and the server link kit.  The full distribution
   takes over 67MB of disk space.
 
@@ -76,158 +98,157 @@
 
      REQUIRED:
 
-        X32doc
+        X32Adoc
            READMEs.
 
-        X32bin
+        X32Abin
            all of the executable X client applications and shared libs
 
-        X32fnts
+        X32Afnts
            the misc, 75dpi and PEX fonts
 
-        X32lib
+        X32Alib
            data files needed at runtime
 
-        X32cfg
+        X32Acfg
            customizable xinit and xdm runtime configuration files.
 
         Choose at least one of the following server to match your
         hardware:
 
 
-        X32SVGA
+        X32ASVGA
            the 8-bit pseudo-color X server for Super VGA cards
 
-        X32VG16
+        X32AVG16
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        X32Mono
+        X32AMono
            the Monochrome X Server
 
-        X328514
+        X32A8514
            the X server for IBM 8514/A and compatible boards
 
-        X32AGX
+
+        X32AAGX
            the X server for AGX boards
 
-        X32I128
+        X32AI128
            the X server for I128 boards
 
-        X32Ma8
+        X32AMa8
            the X server for ATI Mach8 graphics boards
 
-        X32Ma32
+        X32AMa32
            the X server for ATI Mach32 graphics boards
 
-        X32Ma64
+        X32AMa64
            the X server for ATI Mach64 graphics boards
 
-        X32P9K
+        X32AP9K
            the X server for P9000 based boards
 
-        X32S3
+        X32AS3
            the X server for S3 based boards
 
-
-
-        X32S3V
+        X32AS3V
            the X server for S3 ViRGE boards
 
-        X32W32
+        X32AW32
            the X server for et4000w32 and et6000 based boards
 
         The following servers are available for PC98 hardware from the
-        directory XFree98-3.2
+        directory XFree98-3.2A
 
 
-        X329EGC
+        X32A9EGC
            EGC
 
-        X329GAN
+        X32A9GAN
            GANB-WAP(cirrus)
 
-        X329480
+        X32A9480
            PEGC-480
 
-        X329NS3
+        X32A9NS3
            NEC(S3)
 
-        X329NKV
+        X32A9NKV
            NEC(cirrus)
 
-        X329LPW
+        X32A9LPW
            PowerWindowLB(S3)
 
-        X329SPW
+        X32A9SPW
            SKB-PowerWindow(S3)
 
-        X329WEP
+        X32A9WEP
            WABEP(cirrus)
 
-        X329WBS
+        X32A9WBS
            WABS(cirrus)
 
-        X329WSN
+        X32A9WSN
            WSN-A2F(cirrus)
 
-        X329GA9
+        X32A9GA9
            GA-968V4/PCI(S3 968)
 
-        X329TGU
+
+
+        X32A9TGU
            TGUI
 
      OPTIONAL:
 
-        X32fsrv
+        X32Afsrv
            the font server with man pages.
 
-        X32prog
+        X32Aprog
            the X11 header files and static libraries needed only for
            compiling other X applications
 
-        X32man
+        X32Aman
            man pages
 
-        X32lkit
+        X32Alkit
            X server reconfiguration kit
 
-        X32lk98
+        X32Alk98
            X server reconfiguration kit for PC98 X servers
 
-
-
-        X32f100
+        X32Af100
            100dpi fonts
 
-        X32fcyr
+        X32Afcyr
            Cyrillic fonts
 
-        X32fscl
+        X32Afscl
            Scalable fonts
 
-        X32fnon
+        X32Afnon
            Other fonts (Japanese, Chinese, etc)
 
-        X32set
-           XF86Setup configuration utility, needs X32VG16
+        X32Aset
+           XF86Setup configuration utility, needs X32AVG16
 
-        X32nest
+        X32Anest
            Nested X server
 
-        X32vfb
+        X32Avfb
            Virtual framebuffer X server
 
-        X32html
+        X32Ahtml
            HTML format version of the documentation
 
-        X32ps
+        X32Aps
            PostScript format version of the documentation
 
   If this is your first time, then you can safely install all of the
   packages.  As a minimal install, you'll need doc, bin, fonts lib,
   config, and one X server.
 
-  3.1.  Installing the packages with pkg_add
+  4.1.  Installing the packages with pkg_add
 
 
      1. Become ``root''.
@@ -240,13 +261,14 @@
 
 
 
+
      If you don't have enough room in /usr/X11R6 you can specify another
      directory by using the -p option to pkg_add. See pkg_add(8) for
      details. Then make a symbolic link /usr/X11R6 to this directory.
 
   Continue with item ``Additional Setup'' below.
 
-  3.2.  Installing the packages without pkg_add
+  4.2.  Installing the packages without pkg_add
 
   To unpack and install the archives:
 
@@ -258,13 +280,9 @@
         ie, on my machine, I do the following:
 
 
-
-
-
-
-         % cd /usr/local
-         % mkdir X11R6
-         % ln -s /usr/local/X11R6 /usr/X11R6
+              % cd /usr/local
+              % mkdir X11R6
+              % ln -s /usr/local/X11R6 /usr/X11R6
 
 
 
@@ -277,7 +295,7 @@
         needs special permissions that are only granted to the root
         user.
 
-        Assuming that the destination directory for XFree86 3.2 is
+        Assuming that the destination directory for XFree86 3.2A is
         /usr/X11R6, run the following from wherever all the archive
         files are (replace /usr/X11R6 with wherever you wish them to go
         if that isn't the place):
@@ -285,15 +303,15 @@
 
            cd /usr/X11R6
 
-           tar xzf X32doc.tgz
-           tar xzf X32bin.tgz
-           tar xzf X32lib.tgz
-           tar xzf X32fnts.tgz
-           tar xzf X32man.tgz
+           tar xzf X32Adoc.tgz
+           tar xzf X32Abin.tgz
+           tar xzf X32Alib.tgz
+           tar xzf X32Afnts.tgz
+           tar xzf X32Aman.tgz
 
-           tar xzf X32prog.tgz
-           tar xzf X32fsrv.tgz
-           tar xzf X32cfg.tgz
+           tar xzf X32Aprog.tgz
+           tar xzf X32Afsrv.tgz
+           tar xzf X32Acfg.tgz
 
 
 
@@ -301,12 +319,16 @@
      And unpack the server(s) you need:
 
 
-           tar xzf X32<server>.tgz
+           tar xzf X32A<server>.tgz
 
 
 
 
-  3.3.  Additional setup
+
+
+
+
+  4.3.  Additional setup
 
 
      1. Set the XWINHOME environment variable to the path where you
@@ -324,6 +346,7 @@
 
            XWINHOME=/usr/X11R6
            export XWINHOME
+
 
 
 
@@ -370,6 +393,7 @@
 
   If X was already installed on your machine and you have customized
   your xinit or xdm runtime configuration scripts, omit the config
+
   archive or unpack it elsewhere and extract only that which you need.
 
 
@@ -378,7 +402,7 @@
        forget to run ``mkfontdir'' in each directory after that.
 
 
-  4.  Installing Xdm, the display manager
+  5.  Installing Xdm, the display manager
 
   Since xdm is dynamically linked against -lcrypt, there's no issue on
   export restriction outside US for this binary distribution of xdm: it
@@ -392,7 +416,6 @@
 
   The file is available within the US; for details see
   ftp.x.org:/pub/R6/xdm-auth/README.
-
 
   To start the display manager, log in as root on the console and type:
   ``xdm -nodaemon''.
@@ -419,7 +442,7 @@
 
 
 
-  5.  Configuring X for Your Hardware
+  6.  Configuring X for Your Hardware
 
   The XF86Config file tells the X server what kind of monitor, video
   card and mouse you have.  You must create it to tell the server what
@@ -434,6 +457,8 @@
      o  Your mouse type, baud rate and its /dev entry.
 
      o  The video card's chipset (e.g. ET4000, S3, etc).
+
+
 
      o  Your monitor's sync frequencies.
 
@@ -458,14 +483,12 @@
      # reconfig <Xconfig >XF86Config
 
 
-
-
   and complete the rest with the help of XF86Setup.
 
   Once you've set up a XF86Config file, you can fine tune the video
   modes with the xvidtune utility.
 
-  5.1.  About mouse configuration
+  6.1.  About mouse configuration
 
   If your serial mouse does not work try using kermit or tip to connect
   to the mouse serial port and verify that it does indeed generate
@@ -482,7 +505,7 @@
   runs in "cooked" mode.  It can be switched using ioctls or by opening
   the first minor device which is /dev/psm0.
 
-  5.2.  Other input devices
+  6.2.  Other input devices
 
   XFree86 now support the dynamic loading of drivers for external input
   devices using the XInput extension. Currently supported devices are:
@@ -501,8 +524,9 @@
 
 
   in the Module section of XF86Config, where module is the name of the
-  .so file corresponding to your device.  You also need to set up a XIn-
-  put section in XF86Config.  Refer to the XF86Config(5) man page for
+  .so file corresponding to your device.  You also need to set up a
+
+  XInput section in XF86Config.  Refer to the XF86Config(5) man page for
   detailed configuration instructions.
 
   You can then change the device used to drive the X pointer with the
@@ -512,7 +536,7 @@
   driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
   joy(4) for details.
 
-  5.3.  Configuring PEX and XIE extensions
+  6.3.  Configuring PEX and XIE extensions
 
   The PEX and XIE extensions are now supported as external modules.  If
   you want to have access to these extensions, add the following lines
@@ -525,8 +549,7 @@
 
 
 
-
-  6.  Running X
+  7.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
   window manager and an xterm take about 4 Mb of memory themselves.  On
@@ -543,7 +566,7 @@
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
 
-  7.  Kernel Support for X
+  8.  Kernel Support for X
 
   To make sure X support is enabled under NetBSD, the following line
   must be in your config file in /sys/arch/i386/conf:
@@ -566,6 +589,7 @@
 
 
        device          pc0     at isa? port "IO_KBD" irq 1
+
 
 
   to
@@ -591,12 +615,11 @@
   If using pccons you get the message:
 
 
-
-  > Fatal server error:
-  > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
-  > Was expecting pccons driver with X support
-  > Check your kernel's console driver configuration and /dev entries
-  >
+       > Fatal server error:
+       > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
+       > Was expecting pccons driver with X support
+       > Check your kernel's console driver configuration and /dev entries
+       >
 
 
 
@@ -604,7 +627,7 @@
   then delete /dev/ttyv0. I don't know why ``MAKEDEV'' move /dev/ttyqf
   to /dev/ttyv0. (from Hung-Chi Chu hcchu@r350.ee.ntu.edu.tw)
 
-  7.1.  Aperture Driver
+  8.1.  Aperture Driver
 
   By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
   feature that disable access to the /dev/mem device when in multi-users
@@ -635,8 +658,6 @@
               fi
 
 
-
-
         The distributed ap.o won't work with NetBSD 1.0. In this case,
         unpack xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar and
         recompile it.
@@ -658,7 +679,9 @@
           have linear memory access.  Use 'option INSECURE' if you
           need more that one X server at a time.
 
-  7.2.  MIT-SHM
+
+
+  8.2.  MIT-SHM
 
   NetBSD 1.0 and later supports System V shared memory. If XFree86
   detects this support in your kernel, it will support the MIT-SHM
@@ -701,7 +724,7 @@
 
 
 
-  8.  Rebuilding the XFree86 Distribution
+  9.  Rebuilding the XFree86 Distribution
 
   The server link kit allow you to rebuild just the X server with a
   minimum amount of disk space.  Just unpack it, make the appropriate
@@ -715,7 +738,7 @@
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
   invoke ``make World'' in the xc directory.
 
-  8.1.  Console drivers
+  9.1.  Console drivers
 
   XFree86 3.2 has a configuration option to select the console drivers
   to use in xf86site.def:
@@ -723,8 +746,7 @@
      o  if you're using pccons put:
 
 
-
-      #define XFree86ConsoleDefines -DPCCONS_SUPPORT
+           #define XFree86ConsoleDefines -DPCCONS_SUPPORT
 
 
 
@@ -756,7 +778,7 @@
   If you don't define XFree86ConsoleDefines in xf86site.def the pccons
   and pcvt drivers will be supported.
 
-  8.2.  pcvt_ioctl.h file:
+  9.2.  pcvt_ioctl.h file:
 
   XFree86's defaults config includes support for the PCVT console
   driver. Unfortunately, NetBSD doesn't install the pcvt_ioctl.h file in
@@ -765,7 +787,6 @@
 
 
        cp /usr/src/sys/arch/i386/isa/pcvt/pcvt_ioctl.h /usr/include/machine
-
 
 
 
@@ -781,7 +802,7 @@
   This problem is documented in NetBSD PR#1391, which has not been
   handled yes. OpenBSD has pcvt_ioctl.h at the right places.
 
-  8.3.  console.h and ioctl_pc.h files:
+  9.3.  console.h and ioctl_pc.h files:
 
   If you want to build a server supporting codrv and you don't already
   have the corresponding header file ioctl_pc.h installed in
@@ -796,9 +817,9 @@
   The console.h file for syscons isn't distributed with XFree86 anymore.
   You should get it from the syscons distribution.
 
-  8.4.  Support for shared libs under NetBSD 1.0 and later
+  9.4.  Support for shared libs under NetBSD 1.0 and later
 
-  By default XFree86 3.2 builds for NetBSD with shared libraries
+  By default XFree86 3.2A builds for NetBSD with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
 
@@ -807,7 +828,7 @@
        #define BuildBsdSharedLibs      NO
 
 
-  8.5.  Building on Sparc
+  9.5.  Building on Sparc
 
   XFree86 3.2 also compiles on NetBSD/sparc and OpenBSD/sparc. The Sun
   server patches from Dennis Ferguson and Matthew Green have been
@@ -830,10 +851,11 @@
 
   Note that the SparcStation 4 TCX framebuffer is not supported for now.
 
-  9.  Building New X Clients
+  10.  Building New X Clients
 
   The easiest way to build a new client (X application) is to use xmkmf
   if an Imakefile is included in the sources.  Type ``xmkmf -a'' to
+
   create the Makefiles, check the configuration if necessary and type
   ``make''.  Whenever you install additional man pages you should update
   whatis.db by running ``makewhatis /usr/X11R6/man''.
@@ -855,7 +877,6 @@
 
 
   To ensure that this symbol is correctly defined, include <sys/param.h>
-
   in the source that requires it.  Note that the symbol CSRG_BASED is
   defined for *BSD systems in XFree86 3.1.1 and later.  This should be
   used to protect the inclusion of <sys/param.h>.
@@ -878,7 +899,7 @@
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
 
-  10.  Thanks
+  11.  Thanks
 
   Many thanks to:
 
@@ -895,13 +916,58 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.42 1996/12/23 06:46:06 dawes Exp $
+
+
+
+
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.43 1997/01/23 12:07:12 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/26 1996/10/28 05:43:20 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
