@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.10 2002/07/24 19:06:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.11 2002/07/25 05:06:16 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -636,6 +636,7 @@ static struct {
     CARD32 devid;
     int    maxpcibus;
 } host_bridges[] = {
+    { DEVID(ALI_2,	M1541),			128},
     { DEVID(VIA,	APOLLOPRO133X),		64},
     { DEVID(INTEL,	430HX_BRIDGE),		16},
     { DEVID(INTEL,	440BX_BRIDGE),		32},

@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.83 2002/01/04 22:28:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.84 2002/07/15 20:46:01 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -58,8 +58,8 @@ static void print_default_class(pciConfigPtr pcr);
 static void print_bridge_pci_class(pciConfigPtr pcr);
 static void print_mach64(pciConfigPtr pcr);
 static void print_i128(pciConfigPtr pcr);
-static void print_pcibridge(pciConfigPtr pcr);
-static void print_apb(pciConfigPtr pcr);
+static void print_dc21050(pciConfigPtr pcr);
+static void print_simba(pciConfigPtr pcr);
 
 #define MAX_DEV_PER_VENDOR 40
 
@@ -70,10 +70,6 @@ typedef struct {
 	void(*func)(pciConfigPtr);
     } Device[MAX_DEV_PER_VENDOR];
 } pciVendorDevFuncInfo;
-
-#ifndef PCI_CHIP_DC21050
-#define PCI_CHIP_DC21050 0x0001
-#endif
 
 static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
     { PCI_VENDOR_ATI, {
@@ -113,7 +109,7 @@ static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 	{ PCI_CHIP_MACH64VV, print_mach64 },
 	{ 0x0000,  NULL } } },
     { PCI_VENDOR_DIGITAL, {
-	{ PCI_CHIP_DC21050, print_pcibridge},
+	{ PCI_CHIP_DC21050, print_dc21050},
 	{ 0x0000, NULL } } },
     { PCI_VENDOR_NUMNINE, {
 	{ PCI_CHIP_I128, print_i128 },
@@ -122,7 +118,7 @@ static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 	{ PCI_CHIP_I128_T2R4, print_i128 },
 	{ 0x0000, NULL } } },
     { PCI_VENDOR_SUN, {
-	{ PCI_CHIP_SIMBA, print_apb },
+	{ PCI_CHIP_SIMBA, print_simba },
 	{ 0x0000, NULL } } },
     { 0x0000, {
 	{ 0x0000, NULL } } }
@@ -209,7 +205,6 @@ static void
 identify_card(pciConfigPtr pcr, int verbose)
 {
     int i, j; 
-    int ret;
     int foundit = 0;
     int foundvendor = 0;
     const char *vname, *dname, *svname, *sname;
@@ -226,11 +221,9 @@ identify_card(pciConfigPtr pcr, int verbose)
 	   pcr->busnum, pcr->devnum, pcr->funcnum,
 	   pcr->pci_vendor, pcr->pci_device);
 
-    ret = ScanPciFindPciNamesByDevice(pcr->pci_vendor, pcr->pci_device,
+    ScanPciFindPciNamesByDevice(pcr->pci_vendor, pcr->pci_device,
 			     pcr->pci_subsys_vendor, pcr->pci_subsys_card,
 			     &vname, &dname, &svname, &sname);
-
-    printf("xf86FindPciNamesByDevice returns %d\n", ret);
 
     if (vname) {
 	printf(" %s ", vname);
@@ -509,7 +502,7 @@ print_i128(pciConfigPtr pcr)
 }
 
 static void
-print_pcibridge(pciConfigPtr pcr)
+print_dc21050(pciConfigPtr pcr)
 {
     if (pcr->pci_status_command)
         printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
@@ -545,7 +538,7 @@ print_pcibridge(pciConfigPtr pcr)
 }
 
 static void
-print_apb(pciConfigPtr pcr)
+print_simba(pciConfigPtr pcr)
 {
     int   i;
     CARD8 io, mem;
@@ -582,7 +575,7 @@ print_apb(pciConfigPtr pcr)
 	   pciReadByte(pcr->tag, 0x00d9), pciReadByte(pcr->tag, 0x00db));
     printf("  DMA AFSR  0x%08lx%08lx    AFAR 0x%08lx%08lx\n",
 	   (long)pciReadLong(pcr->tag, 0x00cc),
-	   (long) pciReadLong(pcr->tag, 0x00c8),
+	   (long)pciReadLong(pcr->tag, 0x00c8),
 	   (long)pciReadLong(pcr->tag, 0x00d4),
 	   (long)pciReadLong(pcr->tag, 0x00d0));
     printf("  PIO AFSR  0x%08lx%08lx    AFAR 0x%08lx%08lx\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.131 2002/07/16 13:31:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.132 2002/07/25 05:06:15 tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -54,6 +54,7 @@
 #define PCI_VENDOR_SUN			0x108E
 #define PCI_VENDOR_DIAMOND		0x1092
 #define PCI_VENDOR_BROOKTREE		0x109E
+#define PCI_VENDOR_ALI_2		0x10B9
 #define PCI_VENDOR_NEOMAGIC		0x10C8
 #define PCI_VENDOR_NVIDIA		0x10DE
 #define PCI_VENDOR_IMS			0x10E0
@@ -172,6 +173,7 @@
 #define PCI_CHIP_P9100			0x9100
 
 /* Digital */
+#define PCI_CHIP_DC21050		0x0001
 #define PCI_CHIP_DEC21030		0x0004
 #define PCI_CHIP_TGA2			0x000D
 
@@ -315,6 +317,9 @@
 /* BrookTree */
 #define PCI_CHIP_BT848			0x0350
 #define PCI_CHIP_BT849			0x0351
+
+/* Acer Laboratories Inc (ALI_2) */
+#define PCI_CHIP_M1541			0x1541
 
 /* NVIDIA */
 #define PCI_CHIP_NV1			0x0008
