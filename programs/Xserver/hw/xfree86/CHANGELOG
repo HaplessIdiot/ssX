@@ -1,4 +1,6 @@
-XFree86 4.3.99.10 (xx July 2003)
+XFree86 4.3.99.11 (xx August 2003)
+
+XFree86 4.3.99.10 (10 August 2003)
  361. Fixes and updates for XKB keyboard maps:
       - Added numpad:microsoft XKB option (Bugzilla #558, Will Styles).
       - Fixed inconsistence in indicator names (Bugzilla #577, Noah Levitt).
@@ -17502,7 +17504,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2798 2003/08/08 06:27:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2799 2003/08/09 14:31:55 pascal Exp $
 
 
 
