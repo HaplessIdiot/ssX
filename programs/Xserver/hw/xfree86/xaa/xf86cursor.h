@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.h,v 3.3 1997/09/25 07:31:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.h,v 3.4 1997/09/29 08:40:34 hohndel Exp $ */
 typedef struct {
     int Flags;
     int MaxWidth;
@@ -11,7 +11,7 @@ typedef struct {
     void (*HideCursor)();
     void (*ShowCursor)();
     int  (*GetInstalledColormaps)();
-    Bool (*UseHWCursor)();
+    Bool (*UseHWCursor)(void *pScreen);
 } XAACursorInfoRecType;
 
 enum {
@@ -23,10 +23,13 @@ enum {
     HARDWARE_CURSOR_AND_SOURCE_WITH_MASK	= 0x20,
     HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK	= 0x40,
     USE_HARDWARE_CURSOR				= 0x80,
-    HARDWARE_CURSOR_LONG_BIT_FORMAT		= 0x100,
-    HARDWARE_CURSOR_SHORT_BIT_FORMAT		= 0x200,
-    HARDWARE_CURSOR_CHAR_BIT_FORMAT		= 0x400,
-    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE	= 0x800
+    HARDWARE_CURSOR_INT64_BIT_FORMAT		= 0x100,
+    HARDWARE_CURSOR_LONG_BIT_FORMAT		= 0x200,
+    HARDWARE_CURSOR_SHORT_BIT_FORMAT		= 0x400,
+    HARDWARE_CURSOR_CHAR_BIT_FORMAT		= 0x800,
+    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE	= 0x1000,
+    HARDWARE_CURSOR_SYNC_NEEDED			= 0x2000,
+    HARDWARE_CURSOR_INVERT_MASK			= 0x4000
 };
 
 extern XAACursorInfoRecType XAACursorInfoRec;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.3 1997/09/25 07:31:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.4 1997/09/29 08:40:34 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -59,12 +59,28 @@
 #include "xf86local.h"
 #include "xf86cursor.h"
 
+typedef struct {
+    pointer source;
+    pointer mask;
+} LocalCursorRec, *LocalCursorPtr;
+
+typedef struct {
+    pointer source;
+    pointer mask;
+    int type;
+} LocalTypedCursorRec, *LocalTypedCursorPtr;
+
+#define HW_CURSOR 0x1
+#define SW_CURSOR 0x2
+
+
 extern unsigned char byte_reversed[256];
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs);
 static Bool ShortRealizeCursor(ScreenPtr pScr, CursorPtr pCurs);
 static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs);
+static Bool Int64RealizeCursor(ScreenPtr pScr, CursorPtr pCurs);
 static Bool UnrealizeCursor(ScreenPtr pScr, CursorPtr pCurs);
 static void SetCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y);
 static void MoveCursor(ScreenPtr pScr, int x, int y);
@@ -88,6 +104,14 @@ static miPointerSpriteFuncRec XAAShortPointerSpriteFuncs =
 static miPointerSpriteFuncRec XAALongPointerSpriteFuncs =
 {
    LongRealizeCursor,
+   UnrealizeCursor,
+   SetCursor,
+   MoveCursor,
+};
+
+static miPointerSpriteFuncRec XAAInt64PointerSpriteFuncs =
+{
+   Int64RealizeCursor,
    UnrealizeCursor,
    SetCursor,
    MoveCursor,
@@ -121,11 +145,18 @@ Bool XAACursorInit(char *pm, ScreenPtr pScr)
     if (CursorGeneration != serverGeneration) {
 	miDCInitialize (pScr, &xf86PointerScreenFuncs);
 
-    	if (HARDWARE_CURSOR_LONG_BIT_FORMAT & XAACursorInfoRec.Flags) {
+    	if (HARDWARE_CURSOR_INT64_BIT_FORMAT & XAACursorInfoRec.Flags) {
+		if (!(miPointerInitialize(pScr, &XAAInt64PointerSpriteFuncs,
+			&xf86PointerScreenFuncs, FALSE)))
+		return FALSE;
+	} else
+
+	if (HARDWARE_CURSOR_LONG_BIT_FORMAT & XAACursorInfoRec.Flags) {
 		if (!(miPointerInitialize(pScr, &XAALongPointerSpriteFuncs,
 			&xf86PointerScreenFuncs, FALSE)))
 		return FALSE;
 	} else
+
     	if (HARDWARE_CURSOR_SHORT_BIT_FORMAT & XAACursorInfoRec.Flags) {
 		if (!(miPointerInitialize(pScr, &XAAShortPointerSpriteFuncs,
 			&xf86PointerScreenFuncs, FALSE)))
@@ -139,23 +170,75 @@ Bool XAACursorInit(char *pm, ScreenPtr pScr)
 	pScr->RecolorCursor = RecolorCursor;
 	CursorGeneration = serverGeneration;
     }
-
+    
     return TRUE;
 }
+    
 
 /*
  * This function should redisplay a cursor that has been
- * displayed earlier.
+ * displayed earlier. We have to allow for the possiblity
+ * of a switch between hardware and software cursor. This
+ * also means that we have to realize the cursor again for
+ * hardware cursors.
  */
 
 void XAARestoreCursor(ScreenPtr pScr)
 {
     int x, y;
 
-    if (tempSWCursor) return;
+    if (tempSWCursor) {
+	extern miPointerSpriteFuncRec miSpritePointerFuncs;
 
-    miPointerPosition(&x, &y);
-    LoadCursor(pScr, CurrentlyLoadedCursor, x, y);
+        if (XAACursorInfoRec.UseHWCursor != NULL)
+	    if (!XAACursorInfoRec.UseHWCursor(pScr))
+		return;
+
+	if (CurrentlyLoadedCursor->bits->height > XAACursorInfoRec.MaxHeight ||
+	     CurrentlyLoadedCursor->bits->width  > XAACursorInfoRec.MaxWidth)
+	    return;
+	
+	miPointerPosition(&x, &y);
+	(miSpritePointerFuncs.MoveCursor)(pScr, -9999, -9999);
+	(miSpritePointerFuncs.UnrealizeCursor)(pScr, CurrentlyLoadedCursor);
+	tempSWCursor = FALSE;
+
+    	if (HARDWARE_CURSOR_INT64_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    Int64RealizeCursor(pScr, CurrentlyLoadedCursor);
+	else if (HARDWARE_CURSOR_LONG_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    LongRealizeCursor(pScr, CurrentlyLoadedCursor);
+    	else if (HARDWARE_CURSOR_SHORT_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    ShortRealizeCursor(pScr, CurrentlyLoadedCursor);
+	else
+	    CharRealizeCursor(pScr, CurrentlyLoadedCursor);
+
+	XAACursorInfoRec.ShowCursor();
+	LoadCursor(pScr, CurrentlyLoadedCursor, x, y);
+    } else {
+	miPointerPosition(&x, &y);
+        if (XAACursorInfoRec.UseHWCursor != NULL) {
+	    if (!XAACursorInfoRec.UseHWCursor(pScr)) {
+	        extern miPointerSpriteFuncRec miSpritePointerFuncs;
+		LocalCursorPtr Cursor;
+		LocalTypedCursorPtr TypedCursor;
+
+		XAACursorInfoRec.HideCursor();
+		UnrealizeCursor(pScr, CurrentlyLoadedCursor);
+		tempSWCursor = TRUE;
+		(miSpritePointerFuncs.RealizeCursor)(pScr, CurrentlyLoadedCursor);
+		(miSpritePointerFuncs.SetCursor)(pScr, CurrentlyLoadedCursor, x, y);
+		Cursor = (LocalCursorPtr)(CurrentlyLoadedCursor->bits->devPriv[pScr->myNum]);
+		TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+		TypedCursor->source = Cursor->source;
+		TypedCursor->mask = Cursor->mask;
+		TypedCursor->type = SW_CURSOR;
+		CurrentlyLoadedCursor->bits->devPriv[pScr->myNum] = (pointer)TypedCursor;
+		xfree((pointer)Cursor);
+		return;
+	    }
+	}
+	LoadCursor(pScr, CurrentlyLoadedCursor, x, y);
+    }
 }
 
 /*
@@ -199,16 +282,19 @@ unsigned short *pheight, ScreenPtr pScreen)
 
 static Bool UnrealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
-    pointer priv;
+    LocalTypedCursorPtr priv;
 
-    if (pCurs->bits->height > XAACursorInfoRec.MaxHeight ||
-	pCurs->bits->width  > XAACursorInfoRec.MaxWidth) {
+    if ((pCurs->bits->height > XAACursorInfoRec.MaxHeight ||
+	 pCurs->bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
 		extern miPointerSpriteFuncRec miSpritePointerFuncs;
 		return (miSpritePointerFuncs.UnrealizeCursor)(pScr, pCurs);
     }
 
     if (pCurs->bits->refcnt <= 1 &&
     (priv = pCurs->bits->devPriv[pScr->myNum])) {
+        xfree(priv->source);
 	xfree(priv);
 	pCurs->bits->devPriv[pScr->myNum] = 0x0;
     }
@@ -251,6 +337,9 @@ static void MoveCursor(ScreenPtr pScr, int x, int y)
 	y = 0;
     }
 
+    if (HARDWARE_CURSOR_SYNC_NEEDED & XAACursorInfoRec.Flags)
+        SYNC_CHECK;
+
     /* Handle cursor hardware that does not have a programmed origin. */
     if (!(XAACursorInfoRec.Flags & HARDWARE_CURSOR_PROGRAMMED_ORIGIN)) {
         if (xorigin || yorigin) {
@@ -270,38 +359,73 @@ static void MoveCursor(ScreenPtr pScr, int x, int y)
 }
 
 /*
- * This function should display a new cursor at a new position.
+ * This function should display a new cursor at a new position. Due
+ * to switches between hardware and software cursors, the function
+ * might need to realize the cursor again.
  */
 
 static void SetCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 {
+
     if (!pCurs)
 	return;
 
-    if (XAACursorInfoRec.UseHWCursor) {
-	if (!XAACursorInfoRec.UseHWCursor()) {
-		extern miPointerSpriteFuncRec miSpritePointerFuncs;
-		if (!tempSWCursor) XAACursorInfoRec.HideCursor();
-		tempSWCursor = TRUE;
-		(miSpritePointerFuncs.SetCursor)(pScr, pCurs, x, y);
-		return;	    
-	}
-    }
+    /* XXX I have no idea if this is a safe way to determine whether a
+     * hardware or software cursor is realized 
+     */
+    if (pCurs->bits->devPriv[pScr->myNum]) {
+	if ((((LocalTypedCursorPtr)(pCurs->bits->devPriv[pScr->myNum]))->type) == SW_CURSOR)
+	    tempSWCursor = TRUE;
+	else
+	  tempSWCursor = FALSE;
+    } else
+        tempSWCursor = TRUE;
+    
+    /* Remember the cursor currently loaded into this cursor slot. */
+    CurrentlyLoadedCursor = pCurs;
 
-    if (pCurs->bits->height > XAACursorInfoRec.MaxHeight ||
-	pCurs->bits->width  > XAACursorInfoRec.MaxWidth) {
+    if (HARDWARE_CURSOR_SYNC_NEEDED & XAACursorInfoRec.Flags)
+        SYNC_CHECK;
+
+    if ((pCurs->bits->height > XAACursorInfoRec.MaxHeight ||
+	 pCurs->bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
 		extern miPointerSpriteFuncRec miSpritePointerFuncs;
-		if (!tempSWCursor) XAACursorInfoRec.HideCursor();
+		LocalCursorPtr Cursor;
+		LocalTypedCursorPtr TypedCursor;
+
+		if (!tempSWCursor) {
+		    XAACursorInfoRec.HideCursor();
+		    UnrealizeCursor(pScr, pCurs);
+		}
 		tempSWCursor = TRUE;
+		(miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
 		(miSpritePointerFuncs.SetCursor)(pScr, pCurs, x, y);
+		Cursor = (LocalCursorPtr)(pCurs->bits->devPriv[pScr->myNum]);
+		TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+		TypedCursor->source = Cursor->source;
+		TypedCursor->mask = Cursor->mask;
+		TypedCursor->type = SW_CURSOR;
+		pCurs->bits->devPriv[pScr->myNum] = (pointer)TypedCursor;
+		xfree((pointer)Cursor);
 		return;
     }
     
     if (tempSWCursor) {
 	extern miPointerSpriteFuncRec miSpritePointerFuncs;
 	(miSpritePointerFuncs.MoveCursor)(pScr, -9999, -9999);
+	(miSpritePointerFuncs.UnrealizeCursor)(pScr, pCurs);
 	tempSWCursor = FALSE;
 	XAACursorInfoRec.ShowCursor();
+	if (HARDWARE_CURSOR_INT64_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    Int64RealizeCursor(pScr, pCurs);
+	else if (HARDWARE_CURSOR_LONG_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    LongRealizeCursor(pScr, pCurs);
+	else if (HARDWARE_CURSOR_SHORT_BIT_FORMAT & XAACursorInfoRec.Flags)
+	    ShortRealizeCursor(pScr, pCurs);
+	else
+	    CharRealizeCursor(pScr, pCurs);
     }
 
     CursorHotX = pCurs->bits->xhot;
@@ -318,6 +442,136 @@ static void SetCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
  * Adapted from accel/s3/s3Cursor.c.
  */
 
+static Bool Int64RealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
+{
+    register int i, j;
+    unsigned long *pServMsk;
+    unsigned long *pServSrc;
+    int   index = pScr->myNum;
+    pointer *pPriv = &pCurs->bits->devPriv[index];
+    int   wsrc, h;
+    unsigned long *ram;
+    LocalTypedCursorPtr TypedCursor;
+    CursorBitsPtr bits = pCurs->bits;
+
+    TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+    if (!TypedCursor)
+        return FALSE;
+
+    if ((bits->height > XAACursorInfoRec.MaxHeight ||
+	 bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
+		extern miPointerSpriteFuncRec miSpritePointerFuncs;
+		return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
+    }
+
+    if (pCurs->bits->refcnt > 1)
+        return TRUE;
+
+    ram = (unsigned long *)xalloc(1024);
+    if (!ram)
+       return FALSE;
+
+    TypedCursor->source = (pointer) ram;
+    TypedCursor->type = HW_CURSOR;
+    *pPriv = (pointer) TypedCursor;
+
+    pServSrc = (unsigned long *)bits->source;
+    pServMsk = (unsigned long *)bits->mask;
+
+    h = bits->height;
+    if (h > XAACursorInfoRec.MaxHeight)
+        h = XAACursorInfoRec.MaxHeight;
+
+    wsrc = PixmapBytePad(bits->width, 1);	/* Bytes per line. */
+
+    for (i = 0; i < XAACursorInfoRec.MaxHeight; i++) {
+	for (j = 0; j < XAACursorInfoRec.MaxWidth / 64; j++) {
+	    unsigned long mask, source;
+	    unsigned long mask_low, source_low;
+	    unsigned long mask_high, source_high;
+
+	    if (i < h && j < wsrc/8) {
+	        mask_low = *pServMsk++;
+	        source_low = *pServSrc++;
+	        mask_high = *pServMsk++;
+	        source_high = *pServSrc++;
+
+                if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_BIT_ORDER_MSBFIRST) {
+	            ((char *)&mask_low)[0] = byte_reversed[((unsigned char *)&mask_low)[0]];
+	            ((char *)&mask_low)[1] = byte_reversed[((unsigned char *)&mask_low)[1]];
+	            ((char *)&mask_low)[2] = byte_reversed[((unsigned char *)&mask_low)[2]];
+	            ((char *)&mask_low)[3] = byte_reversed[((unsigned char *)&mask_low)[3]];
+	            ((char *)&mask_high)[0] = byte_reversed[((unsigned char *)&mask_high)[0]];
+	            ((char *)&mask_high)[1] = byte_reversed[((unsigned char *)&mask_high)[1]];
+	            ((char *)&mask_high)[2] = byte_reversed[((unsigned char *)&mask_high)[2]];
+	            ((char *)&mask_high)[3] = byte_reversed[((unsigned char *)&mask_high)[3]];
+	            ((char *)&source_low)[0] = byte_reversed[((unsigned char *)&source_low)[0]];
+	            ((char *)&source_low)[1] = byte_reversed[((unsigned char *)&source_low)[1]];
+	            ((char *)&source_low)[2] = byte_reversed[((unsigned char *)&source_low)[2]];
+	            ((char *)&source_low)[3] = byte_reversed[((unsigned char *)&source_low)[3]];
+	            ((char *)&source_high)[0] = byte_reversed[((unsigned char *)&source_high)[0]];
+	            ((char *)&source_high)[1] = byte_reversed[((unsigned char *)&source_high)[1]];
+	            ((char *)&source_high)[2] = byte_reversed[((unsigned char *)&source_high)[2]];
+	            ((char *)&source_high)[3] = byte_reversed[((unsigned char *)&source_high)[3]];
+		}
+	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK) {
+	            source_low &= mask_low;
+	            source_high &= mask_high;
+		}
+		
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK) {
+		    mask_low = ~mask_low;
+		    mask_high = ~mask_high;
+		}
+		
+		if (j < XAACursorInfoRec.MaxWidth / 8) {
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
+	            *ram++ = source_low;
+	            *ram++ = source_high;
+	            *ram++ = mask_low;
+	            *ram++ = mask_high;
+	    	} else {
+	            *ram++ = mask_low;
+	            *ram++ = mask_high;
+	            *ram++ = source_low;
+	            *ram++ = source_high;
+	    	}
+		}
+	    } else {
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = 0xFFFFFFFF;
+		else
+	            mask = 0x00000000;
+
+	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
+		    source = 0x00000000;
+		else
+		    source = 0xFFFFFFFF;
+	      
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
+		    *ram++ = source;
+		    *ram++ = source;
+		    *ram++ = mask;
+		    *ram++ = mask;
+		} else {
+		    *ram++ = mask;
+		    *ram++ = mask;
+		    *ram++ = source;
+		    *ram++ = source;
+		}
+	    }
+        }
+        /*
+         * if we still have more bytes on this line (j < wsrc),
+         * we have to ignore the rest of the line.
+         */
+        while (j++ < wsrc/8) pServMsk++,pServSrc++;
+    }
+    return TRUE;
+}
+
 static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
     register int i, j;
@@ -327,10 +581,17 @@ static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
     pointer *pPriv = &pCurs->bits->devPriv[index];
     int   wsrc, h;
     unsigned long *ram;
+    LocalTypedCursorPtr TypedCursor;
     CursorBitsPtr bits = pCurs->bits;
 
-    if (bits->height > XAACursorInfoRec.MaxHeight ||
-	bits->width  > XAACursorInfoRec.MaxWidth) {
+    TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+    if (!TypedCursor)
+        return FALSE;
+
+    if ((bits->height > XAACursorInfoRec.MaxHeight ||
+	 bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
 		extern miPointerSpriteFuncRec miSpritePointerFuncs;
 		return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
     }
@@ -339,10 +600,12 @@ static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
         return TRUE;
 
     ram = (unsigned long *)xalloc(1024);
-    *pPriv = (pointer) ram;
-
     if (!ram)
        return FALSE;
+
+    TypedCursor->source = (pointer) ram;
+    TypedCursor->type = HW_CURSOR;
+    *pPriv = (pointer) TypedCursor;
 
     pServSrc = (unsigned long *)bits->source;
     pServMsk = (unsigned long *)bits->mask;
@@ -373,6 +636,10 @@ static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 		}
 	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
 	            source &= mask;
+
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = ~mask;
+		
 		if (j < XAACursorInfoRec.MaxWidth / 8) {
 	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
 	            *ram++ = source;
@@ -383,8 +650,23 @@ static Bool LongRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	    	}
 		}
 	    } else {
-	        *ram++ = 0x00000000;
-	        *ram++ = 0xFFFFFFFF;
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = 0xFFFFFFFF;
+		else
+	            mask = 0x00000000;
+
+	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
+		    source = 0x00000000;
+		else
+		    source = 0xFFFFFFFF;
+	      
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
+		    *ram++ = source;
+		    *ram++ = mask;
+		} else {
+		    *ram++ = mask;
+		    *ram++ = source;
+		}
 	    }
         }
         /*
@@ -405,10 +687,17 @@ static Bool ShortRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
     pointer *pPriv = &pCurs->bits->devPriv[index];
     int   wsrc, h;
     unsigned short *ram;
+    LocalTypedCursorPtr TypedCursor;
     CursorBitsPtr bits = pCurs->bits;
 
-    if (bits->height > XAACursorInfoRec.MaxHeight ||
-	bits->width  > XAACursorInfoRec.MaxWidth) {
+    TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+    if (!TypedCursor)
+        return FALSE;
+
+    if ((bits->height > XAACursorInfoRec.MaxHeight ||
+	 bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
 		extern miPointerSpriteFuncRec miSpritePointerFuncs;
 		return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
     }
@@ -417,10 +706,12 @@ static Bool ShortRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
         return TRUE;
 
     ram = (unsigned short *)xalloc(1024);
-    *pPriv = (pointer) ram;
-
     if (!ram)
        return FALSE;
+
+    TypedCursor->source = (pointer) ram;
+    TypedCursor->type = HW_CURSOR;
+    *pPriv = (pointer) TypedCursor;
 
     pServSrc = (unsigned short *)bits->source;
     pServMsk = (unsigned short *)bits->mask;
@@ -447,6 +738,10 @@ static Bool ShortRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	        }
 	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
 	            source &= mask;
+
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = ~mask;
+		
 		if (j < XAACursorInfoRec.MaxWidth / 8) {
 	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
 	            *ram++ = source;
@@ -457,8 +752,23 @@ static Bool ShortRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	    	}
 		}
 	    } else {
-	        *ram++ = 0x0000;
-	        *ram++ = 0xFFFF;
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = 0xFFFF;
+		else
+	            mask = 0x0000;
+
+	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
+		    source = 0x0000;
+		else
+		    source = 0xFFFF;
+	      
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
+		    *ram++ = source;
+		    *ram++ = mask;
+		} else {
+		    *ram++ = mask;
+		    *ram++ = source;
+		}
 	    }
         }
         /*
@@ -479,10 +789,17 @@ static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
     pointer *pPriv = &pCurs->bits->devPriv[index];
     int   wsrc, h;
     unsigned char *ram;
+    LocalTypedCursorPtr TypedCursor;
     CursorBitsPtr bits = pCurs->bits;
 
-    if (bits->height > XAACursorInfoRec.MaxHeight ||
-	bits->width  > XAACursorInfoRec.MaxWidth) {
+    TypedCursor = (LocalTypedCursorPtr) xalloc(sizeof(LocalTypedCursorRec));
+    if (!TypedCursor)
+        return FALSE;
+
+    if ((bits->height > XAACursorInfoRec.MaxHeight ||
+	 bits->width  > XAACursorInfoRec.MaxWidth) ||
+	((XAACursorInfoRec.UseHWCursor != NULL)  &&
+	 !XAACursorInfoRec.UseHWCursor(pScr))) {
 		extern miPointerSpriteFuncRec miSpritePointerFuncs;
 		return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
     }
@@ -491,10 +808,12 @@ static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
         return TRUE;
 
     ram = (unsigned char *)xalloc(1024);
-    *pPriv = (pointer) ram;
-
     if (!ram)
        return FALSE;
+
+    TypedCursor->source = (pointer) ram;
+    TypedCursor->type = HW_CURSOR;
+    *pPriv = (pointer) TypedCursor;
 
     pServSrc = (unsigned char *)bits->source;
     pServMsk = (unsigned char *)bits->mask;
@@ -519,6 +838,10 @@ static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	        }
 	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
 	            source &= mask;
+
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = ~mask;
+		
 		if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE) {
 		    m =    ((mask&0x01) << 7) | ((source&0x01) << 6) |
                            ((mask&0x02) << 4) | ((source&0x02) << 3) |
@@ -539,13 +862,49 @@ static Bool CharRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 	            *ram++ = source;
 		}
 	    } else {
-		if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE) {
-		    *ram++ = 0x55;
-		    *ram++ = 0x55;
-		} else {
-	            *ram++ = 0x00;
-	            *ram++ = 0xFF;
+	    	if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_INVERT_MASK)
+		    mask = 0xFF;
+		else
+	            mask = 0x00;
+
+	        if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK)
+		    source = 0x00;
+		else
+		    source = 0xFF;
+
+		if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
+		    m = mask;
+		    mask = source;
+		    source = m;
 		}
+		
+		if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE) {
+		    if ((source == 0x00) && (mask == 0x00)) {
+		        source = 0x00;
+		        mask = 0x00;
+		    } else if ((source == 0xFF) && (mask == 0x00)) {
+		      if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_BIT_ORDER_MSBFIRST) {		      
+		        source = 0xAA;
+		        mask = 0xAA;
+		      } else {
+		        source = 0x55;
+		        mask = 0x55;
+		      }
+		    } else if ((source == 0x00) && (mask == 0xFF)) {
+		      if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_BIT_ORDER_MSBFIRST) {		      
+		        source = 0x55;
+		        mask = 0x55;
+		      } else {
+		        source = 0xAA;
+		        mask = 0xAA;
+		      }
+		    } else {
+		        source = 0xFF;
+		        mask = 0xFF;
+		    }
+		}
+		*ram++ = mask;
+		*ram++ = source;
 	    }
         }
         /*
@@ -574,6 +933,9 @@ static void RecolorCursor(ScreenPtr pScr, CursorPtr pCurs, Bool displayed)
 
     if (!displayed)
         return;
+
+    if (HARDWARE_CURSOR_SYNC_NEEDED & XAACursorInfoRec.Flags)
+        SYNC_CHECK;
 
     if (xf86AccelInfoRec.BitsPerPixel == 8 &&
     !(XAACursorInfoRec.Flags & HARDWARE_CURSOR_TRUECOLOR_AT_8BPP)) {
@@ -621,7 +983,10 @@ int yoffset)
     if (!xf86VTSema || tempSWCursor)
 	return;
 
-    cursor_image = (unsigned char *)pCurs->bits->devPriv[index];
+    cursor_image = (unsigned char *)(((LocalCursorPtr)pCurs->bits->devPriv[index])->source);
+
+    if (HARDWARE_CURSOR_SYNC_NEEDED & XAACursorInfoRec.Flags)
+        SYNC_CHECK;
 
     if (XAACursorInfoRec.Flags & HARDWARE_CURSOR_PROGRAMMED_BITS) {
         /*
@@ -666,8 +1031,8 @@ static void LoadCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 	if (!pCurs)
 		return;
 
-	/* Remember the cursor currently loaded into this cursor slot. */
-	CurrentlyLoadedCursor = pCurs;
+    	if (HARDWARE_CURSOR_SYNC_NEEDED & XAACursorInfoRec.Flags)
+	    SYNC_CHECK;
 
         if (!tempSWCursor) XAACursorInfoRec.HideCursor();
 
@@ -685,3 +1050,5 @@ static void LoadCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
 	/* Turn it on. */
 	if (!tempSWCursor) XAACursorInfoRec.ShowCursor();
 }
+
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.10 1996/12/23 06:43:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.11 1997/10/25 13:50:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -276,7 +276,7 @@ extern void xf86SetupMouse(
 extern void xf86MouseProtocol(
 #if NeedFunctionPrototypes
         DeviceIntPtr,		/* device */
-	signed char *,	/* rBuf */
+	unsigned char *,	/* rBuf */
 	int			/* nBytes */
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.104 1997/10/25 13:50:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.105 1997/10/25 15:52:22 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -964,7 +964,7 @@ vgaProbe()
 	     */
 	    if (useSpeedUp & SPEEDUP_TEGBLT8)
 	    {
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 	      vga256LowlevFuncs.teGlyphBlt8 = speedupvga256TEGlyphBlt8;
 	      vga256TEOps1Rect.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
 	      vga256TEOps.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
@@ -977,7 +977,7 @@ vgaProbe()
 
 	    if (useSpeedUp & SPEEDUP_RECTSTIP)
 	    {
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 	      vga256LowlevFuncs.fillRectOpaqueStippled32 = 
 	        speedupvga2568FillRectOpaqueStippled32;
 	      vga256LowlevFuncs.fillRectTransparentStippled32 = 
@@ -1251,11 +1251,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #ifdef XFree86LOADER		/* { */
 	if (vgaBitsPerPixel == 8)
 	    if (!xf86ccdXAAScreenInit(pScreen,
-		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : vgaVirtBase,
+		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
+							vgaVirtBase),
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth)))
+		     vga256InfoRec.displayWidth))
 	        return(FALSE);
 	if((vgaBitsPerPixel == 16) || 
 	   (vgaBitsPerPixel == 24) ||

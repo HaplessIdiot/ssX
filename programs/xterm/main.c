@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.59 1997/10/13 17:16:57 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.60 1997/10/26 13:25:48 dawes Exp $ */
 
 
 /* main.c */
@@ -922,8 +922,8 @@ static struct _options {
 { "-/+s",                  "turn on/off multiscroll" },
 { "-/+sb",                 "turn on/off scrollbar" },
 #ifdef SCROLLBAR_RIGHT
-{ "-useRight",             "force scrollbar right (default left)" },
-{ "-useLeft",              "force scrollbar left" },
+{ "-rightbar",             "force scrollbar right (default left)" },
+{ "-leftbar",              "force scrollbar left" },
 #endif
 { "-/+sf",                 "turn on/off Sun Function Key escape codes" },
 { "-/+si",                 "turn on/off scroll-on-tty-output inhibit" },

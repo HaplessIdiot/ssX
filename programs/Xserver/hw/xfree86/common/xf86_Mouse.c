@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.25 1997/07/31 07:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.26 1997/10/25 13:50:16 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -291,12 +291,12 @@ MouseDevPtr mouse;
 void
 xf86MouseProtocol(device, rBuf, nBytes)
     DeviceIntPtr device;
-    signed char *rBuf;
+    unsigned char *rBuf;
     int nBytes;
 {
   int                  i, buttons, dx, dy;
   static int           pBufP = 0;
-  static signed char pBuf[8];
+  static unsigned char pBuf[8];
   MouseDevPtr          mouse = MOUSE_DEV(device);
   
   static unsigned char proto[10][5] = {
@@ -341,7 +341,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
 	mouse->mseType != P_PS2 &&
 #endif
 	((rBuf[i] & proto[mouse->mseType][2]) != proto[mouse->mseType][3]
-	 || rBuf[i] == (signed char)0x80))
+	 || rBuf[i] == 0x80))
       {
 	pBufP = 0;          /* skip package */
       }
@@ -415,22 +415,22 @@ xf86MouseProtocol(device, rBuf, nBytes)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
       }
-      dx = (int)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
-      dy = (int)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
       break;
 
     case P_GLIDEPOINT:      /* ALPS GlidePoint */
        buttons =  (mouse->lastButtons & (8 + 2))
 		| ((int)(pBuf[0] & 0x20) >> 3)
 		| ((int)(pBuf[0] & 0x10) >> 4);
-      dx = (int)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
-      dy = (int)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
       break;
 
     case P_MSC:             /* Mouse Systems Corp */
       buttons = (~pBuf[0]) & 0x07;
-      dx =    (int)(pBuf[1]) + (int)(pBuf[3]);
-      dy = - ((int)(pBuf[2]) + (int)(pBuf[4]));
+      dx =    (char)(pBuf[1]) + (int)(pBuf[3]);
+      dy = - ((char)(pBuf[2]) + (int)(pBuf[4]));
       break;
       
     case P_MMHIT:           /* MM_HitTablet */
@@ -453,8 +453,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
     case P_PS2:
 #endif
       buttons = (~pBuf[0]) & 0x07;
-      dx =   (int)pBuf[1];
-      dy = - (int)pBuf[2];
+      dx =   (char)pBuf[1];
+      dy = - (char)pBuf[2];
       break;
 
 #if !defined(__NetBSD__)

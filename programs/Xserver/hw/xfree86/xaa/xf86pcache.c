@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.23 1997/06/25 08:25:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.24 1997/08/15 07:19:25 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1297,7 +1297,10 @@ static int DoCacheStipple(slot, pDrawable, pGC)
             DEALLOCATE_LOCAL(pci);
             return 1;
         }
-    } 
+    } else if(xf86AccelInfoRec.Flags & DO_NOT_BLIT_STIPPLES) {
+        DEALLOCATE_LOCAL(pci);
+        return 0;
+    }
 
     if((pix->drawable.width > MaxWidth) ||
        	     (pix->drawable.height > MaxHeight)) {

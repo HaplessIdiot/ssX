@@ -6,7 +6,7 @@
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<it>dbateman@ee.uts.edu.au</it>),
          Egbert Eich (<it>Egbert.Eich@Physik.TH-Darmstadt.DE</it>)
-<date> 1st September 1997
+<date> 28th October 1997
 
 <!-- Table of contents -->
 <toc>
@@ -174,6 +174,12 @@ Option &dquot;sw_cursor&dquot; (Chips 65545 and later)
 </tag>
         This disables use of the hardware cursor provided by the chip.
         Try this if the cursor seems to have problems. 
+<tag>
+Option &dquot;hw_cursor&dquot; (Chips 65545 and later)
+</tag>
+        This enforces the use of the hardware cursor, even for cases that
+	are known to cause problems on some machines. Note that it is
+	overridden by the "<tt>sw_cursor</tt>" option.
 <tag>
 Option &dquot;STN&dquot;
 </tag>
@@ -357,7 +363,7 @@ driver you'll needed to considered several points
 	(800x600 panel) and 157287 bytes (1024x768 panel).
 <tag> * H/W Acceleration </tag>
 		The H/W cursor will need 1kB for the 6554x and 4kb for the
-	65550. On the 64300 chips the H/W cursors is stored in registers and
+	65550. On the 64300 chips the H/W cursors are stored in registers and
 	so no allowance is needed for the H/W cursor. In addition to this
 	many graphics operations are speeded up using a
 	"<tt>pixmap cache</tt>". Leaving too little memory available for
@@ -506,11 +512,11 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 <tag> I can't get a 320x240 mode to occupy the whole 640x480 LCD</tag>
 	There is a bug in the 6554x's H/W cursor for modes that are
 	doubled vertically. The lower half of the screen is not accessible.
-	The servers solution to this problem is not to do doubling vertically.
-	Which results in the 320x240 mode only expanded to 640x360. If this
-	is a problem, a work around is to use the "<tt>sw_cursor</tt>"
-	option. The server will then allow the mode to occupy the whole
-	640x480 LCD.
+	The servers solution to this problem is not to do doubling vertically
+	when using the hardware cursor, which results in the 320x240 mode
+	only expanded to 640x360. If this is a problem, a work around is to
+	use the "<tt>sw_cursor</tt>" option. The server will then allow the
+	mode to occupy the whole 640x480 LCD.
 <tag> After a suspend/resume my screen is messed up</tag>
 	During a suspend/resume, the BIOS controls what is read and 
 	written back to the registers. If the screen is using a mode
@@ -548,8 +554,12 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	  startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
 	  startx -- -bpp 24               8-8-8 RGB truecolor
 </verb>
-	Note that there is currently no "<tt>-bpp 32</tt>" mode in the Xserver,
-	although the 65550 is capable of this.
+	or with the HiQV series of chips (6555x or 68554) you might try
+<verb>
+	  startx -- -bpp 32               8-8-8 RGB truecolor
+</verb>
+	This 32bpp mode is not highly accelerated due to limitations of
+	the hardware, but might be useful in some cases.
 </descrip>
 
 
@@ -613,7 +623,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.16 1997/07/19 05:43:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.17 1997/09/09 10:27:42 hohndel Exp $
 </verb>
 
 </article>

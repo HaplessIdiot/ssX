@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.49 1997/09/25 16:13:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.50 1997/10/25 13:50:38 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -785,6 +785,7 @@ struct pci_vendor_device {
         { 0x105D, "Number Nine", {
                             { 0x2309, "Imagine-128", print_i128 },
                             { 0x2339, "Imagine-128-II", print_i128 },
+                            { 0x493D, "Imagine-128-T2R", print_i128 },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1060, "UMC", {
                             { 0x0101, "UM8673F", NF },

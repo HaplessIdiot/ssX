@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.66 1997/08/26 10:01:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.67 1997/10/25 13:50:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -751,7 +751,7 @@ void xf86SetupMouse(
 void xf86MouseProtocol(
 #if NeedFunctionPrototypes
     DeviceIntPtr device,
-    signed char *rBuf,
+    unsigned char *rBuf,
     int nBytes
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.1 1997/06/17 08:17:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.2 1997/09/09 10:27:40 hohndel Exp $ */
 /*
  * IBM RGB526 registers
  */
@@ -303,7 +303,7 @@
 #define PERMEDIA_8MB_DEFAULT_CLOCK_SPEED    ( 60 * (1000*1000))
 #define PERMEDIA_LC_DEFAULT_CLOCK_SPEED     ( 83 * (1000*1000))
 #define MAX_PERMEDIA_CLOCK_SPEED            (100 * (1000*1000))
-#define PERMEDIA_REF_CLOCK_SPEED            14318200    
+#define PERMEDIA_REF_CLOCK_SPEED            14318200
 
 #define PERMEDIA2_DEFAULT_CLOCK_SPEED		( 80 * (1000*1000))
 

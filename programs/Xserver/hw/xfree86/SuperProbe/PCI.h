@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.25 1997/08/15 07:19:15 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.26 1997/10/25 13:50:06 hohndel Exp $ */ 
 /*
  * PCI Probe
  *
@@ -317,6 +317,7 @@ void xf86writepci(
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
+#define PCI_CHIP_I128_3		0x493D
 
 /* Alliance Semiconductor */
 #define PCI_CHIP_PM6410		0x3210

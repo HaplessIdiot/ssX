@@ -45,9 +45,15 @@ typedef struct {
 } glintRegisters;
 static glintRegisters SR;
 
+#ifndef SUSE_3D
+#define MEMSize glintInfoRec.virtualX*glintInfoRec.virtualY*glintInfoRec.bitsPerPixel/8
+#else
+#define MEMSize glintInfoRec.videoRam * 1024
+#endif
+
 /* if < graphicsmem then framebuffer is not correct !? */
 /* #define  VGASize glintInfoRec.videoRam*1024 */
-#define  VGASize glintInfoRec.virtualX*glintInfoRec.virtualY*glintInfoRec.bitsPerPixel/8
+#define VGASize MEMSize 
 
 unsigned char *glintVideoMemSave=NULL;
 unsigned char *glintVideoMemSavegr=NULL;
@@ -63,6 +69,7 @@ extern int glintDisplayWidth;
 extern Bool glintDoubleBufferMode;
 void glintDumpRegs(void);
 unsigned int glintSetLUT(int , unsigned int );
+void restorehotspot(void);
 int pprod;
 extern int coprotype;
 
@@ -147,7 +154,7 @@ Shiftbpp(int value)
 	
     if (IS_3DLABS_TX_MX_CLASS(coprotype))
 	logbytesperaccess = 3;
-    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype))
+    else if (IS_3DLABS_PM_FAMILY(coprotype))
 	logbytesperaccess = 2;
 
     switch (glintInfoRec.bitsPerPixel) {
@@ -195,20 +202,22 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 	    (((mode->Flags & V_PHSYNC) ? 0 : 2) << 2) | 
 	    ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0);
     }
-    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+    else if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	crtcRegs->vtgpolarity = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
+	if (IS_3DLABS_PM2_CLASS(coprotype) && (glintInfoRec.bitsPerPixel > 8)) {
+	    /* 64 bit pixel bus */
+	    crtcRegs->vtgpolarity |= (1 << 16);
+	}
     }
 
     crtcRegs->clock_sel = glintInfoRec.clock[mode->Clock];
-    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	crtcRegs->vclkctl = 0x03 | 
-	  (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
-    }
-    else if (IS_3DLABS_PM2_CLASS(coprotype)) {
-        crtcRegs->vclkctl = 0x02 |
-	  (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
+    if (IS_3DLABS_PM_FAMILY(coprotype)) {
+      /* crtcRegs->vclkctl = 0x03 | 
+	 (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2); */
+      /* GL 1000 none Recovery time */
+      crtcRegs->vclkctl = 0x03;
     }
     else {
 	/*
@@ -217,8 +226,19 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 	 */
 	crtcRegs->vclkctl = 0x00;
 	crtcRegs->vtgserialclk = 0x05;
-	crtcRegs->fbmodesel = 0xa07; /* 4way interleave */
-	crtcRegs->vtgmodectl = 0x44;
+	/*
+	 * Different settings for Fire GL 3000 and Elsa Gloria cards
+	 */
+	if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options))
+	  {
+	    crtcRegs->fbmodesel = 0x907; /* ?way interleave */
+	    crtcRegs->vtgmodectl = 0x00;
+	  }
+	else
+	  {
+	    crtcRegs->fbmodesel = 0xa07; /* 4way interleave */
+	    crtcRegs->vtgmodectl = 0x44;
+	  }
     }
 }
 
@@ -416,20 +436,25 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_sync_start, VTGVSyncStart);
 	GLINT_WRITE_REG(crtcRegs->v_sync_end,	VTGVSyncEnd);
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVBlankEnd);
-	GLINT_WRITE_REG(crtcRegs->h_blank_end-2,VTGHGateStart);
-	GLINT_WRITE_REG(crtcRegs->h_limit-2,	VTGHGateEnd);
-	GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
+if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options))
+  {
+    GLINT_WRITE_REG(crtcRegs->h_blank_end-1/*2*/,VTGHGateStart);
+    GLINT_WRITE_REG(crtcRegs->h_limit-1/*2*/,	VTGHGateEnd);
+  }
+else
+  {
+    GLINT_WRITE_REG(crtcRegs->h_blank_end-2,VTGHGateStart);
+    GLINT_WRITE_REG(crtcRegs->h_limit-2,	VTGHGateEnd);
+  }
+GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
     } 
-    else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+    else if (IS_3DLABS_PM_FAMILY(coprotype)) {
       GLINT_WAIT (16);
       GLINT_WRITE_REG(0x0,			TextureAddressMode);
       GLINT_WRITE_REG(0x0,			TextureReadMode);
       GLINT_WRITE_REG(1,			DFIFODis);
       GLINT_WRITE_REG(3,			FIFODis);
-/* 	GLINT_WRITE_REG(0x0,		RouterMode); */
-/* 	GLINT_WRITE_REG(0x0,		PatternRamMode); */
-
       /*
        * this is the Permedia version of crtc registers
        */
@@ -448,6 +473,15 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	PMVbEnd);
 	GLINT_WRITE_REG(crtcRegs->v_sync_start-1,	PMVsStart);
 	GLINT_WRITE_REG(crtcRegs->v_sync_end-1,	PMVsEnd);
+	if (IS_3DLABS_PM2_CLASS(coprotype)) {
+	  /* set SClk Src to MClk/2 */
+	  int cc = GLINT_READ_REG(ChipConfig);
+#ifdef DEBUG
+	  ErrorF("SClk was 0x%x\n",cc & SCLK_SEL_MASK);
+#endif
+	  cc &= ~ SCLK_SEL_MASK;
+	  GLINT_WRITE_REG(cc | SCLK_SEL_MCLK_HALF, ChipConfig);
+	}
     }
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)|| 
@@ -554,8 +588,13 @@ restoreGLINTstate(void)
 	    GLINT_WRITE_REG(SR.glintRegs[4], FIFODis);
 
 	    GLINT_WRITE_REG(SR.glintRegs[20], PMInterruptLine);
+	    
+	    /* GLINT_WRITE_REG(SR.glintRegs[21], PMMemConfig); */
+	    /* GLINT_WRITE_REG(SR.glintRegs[22], PMBootAddress); */
+	    /* GLINT_WRITE_REG(SR.glintRegs[23], PMRomControl); */
 
-	    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+	    if (IS_3DLABS_PM_FAMILY(coprotype)) {
+
 		/* restore ramdac */
 		for (i=0; i<0x100; i++) 
 		    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
@@ -567,9 +606,11 @@ restoreGLINTstate(void)
 		    GLINT_SLOW_WRITE_REG(oldlut[i].g,IBMRGB_RAMDAC_DATA);
 		    GLINT_SLOW_WRITE_REG(oldlut[i].b,IBMRGB_RAMDAC_DATA);
 		}
+
 		/* switch to VGA */
 		GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, 
 		                PERMEDIA_MMVGA_INDEX_REG);
+
 		usData = GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
 		usData |= 
 		    ((PERMEDIA_VGA_ENABLE | PERMEDIA_VGA_MEMORYACCESS) << 8) | 
@@ -580,6 +621,14 @@ restoreGLINTstate(void)
 	}
 }
 
+void restorehotspot(void)
+{
+  if (glintInitialized)
+    {
+      glintOutIBMRGBIndReg(IBMRGB_curs_hot_x, 0, SR.DacRegs[IBMRGB_curs_hot_x]);
+      glintOutIBMRGBIndReg(IBMRGB_curs_hot_y, 0, SR.DacRegs[IBMRGB_curs_hot_y]);
+    }
+}
 
 void
 glintCleanUp(void)
@@ -591,13 +640,15 @@ glintCleanUp(void)
   
       /* save for X-Console */
       xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem,
-		 glintInfoRec.virtualX * glintInfoRec.virtualY *
-		 glintInfoRec.bitsPerPixel / 8);
+		 /* glintInfoRec.virtualX * glintInfoRec.virtualY * */
+/* 		 glintInfoRec.bitsPerPixel / 8 */
+		 MEMSize
+		 );
 
 #if MEMDEBUG
     ErrorF("CleanUp: saving 0x%x bytes GRAPHICS mem\n",
-		 glintInfoRec.virtualX * glintInfoRec.virtualY *
-		 glintInfoRec.bitsPerPixel / 8);
+		 MEMSize /* glintInfoRec.virtualX * glintInfoRec.virtualY * */
+/* 		 glintInfoRec.bitsPerPixel / 8 */);
 #endif
 
     if (glintVideoMemSave && glintVideoMem)
@@ -612,6 +663,42 @@ glintCleanUp(void)
 
 void permediapreinit(void)
 {
+  /* SR.glintRegs[21]= GLINT_READ_REG(PMMemConfig); */
+  /* SR.glintRegs[22]= GLINT_READ_REG(PMBootAddress); */
+  /* SR.glintRegs[23]= GLINT_READ_REG(PMRomControl); */
+
+  GLINT_WAIT (8);
+#if 0
+  /* set the memconfig Register to found memory */
+  switch (glintInfoRec.videoRam)
+    {
+      /* MCLK = 50 Mhz and 4 Mbytes */
+    case 4069:
+      GLINT_WRITE_REG(Burst1Cycle4 | NumberBanks4 | RefreshCount4 | BankDelay4 | 
+		      DeadCycle4 | CAS3Latency4 | TimeRASMin4 | RowCharge4 | 
+		      TimeRCD4 | TimeRC4 | TimeRP4, PMMemConfig);
+      GLINT_WRITE_REG(BootAdress4, PMBootAddress);
+      GLINT_WRITE_REG(SDRAM4, PMRomControl);
+      break;
+    case 6144:
+      /* MCLK = 66 Mhz and 6 Mbytes */
+      GLINT_WRITE_REG(Burst1Cycle6 | NumberBanks6 | RefreshCount6 | BankDelay6 | 
+		      DeadCycle6 | CAS3Latency6 | TimeRASMin6 | RowCharge6 | 
+		      TimeRCD6 | TimeRC6 | TimeRP6, PMMemConfig);
+      GLINT_WRITE_REG(BootAdress6, PMBootAddress);
+      GLINT_WRITE_REG(SDRAM6, PMRomControl);
+      break;
+    case 8192:
+      /* MCLK = 66 Mhz and 8 Mbytes */
+      GLINT_WRITE_REG(Burst1Cycle8 | NumberBanks8 | RefreshCount8 | BankDelay8 | 
+		      DeadCycle8 | CAS3Latency8 | TimeRASMin8 | RowCharge8 | 
+		      TimeRCD8 | TimeRC8 | TimeRP8, PMMemConfig);
+      GLINT_WRITE_REG(BootAdress8, PMBootAddress);
+      GLINT_WRITE_REG(SDRAM8, PMRomControl);
+      break;
+    }
+#endif
+
   GLINT_WRITE_REG(0x01,       FIFODis); 
   GLINT_WRITE_REG(0x00,       Aperture0);
   GLINT_WRITE_REG(0x00,       Aperture1);
@@ -631,29 +718,24 @@ glintInit(DisplayModePtr mode)
 #ifdef COMPATIBELMODE
 	    if (glintVideoMemSave && glintVideoMem)
 		xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, 
-			   glintInfoRec.virtualX * glintInfoRec.virtualY *
-			   glintInfoRec.bitsPerPixel / 8);
+			   MEMSize/* glintInfoRec.virtualX * glintInfoRec.virtualY * */
+/* 			   glintInfoRec.bitsPerPixel / 8 */);
 	    IBMRGB52x_Init(mode);
 #endif
-    }
 
-    /*
-     * this is hardwired for setting the FB and LB memory control
-     */
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	GLINT_WRITE_REG(0xdc000017,  LBMemoryEDO);
-	GLINT_WRITE_REG(0x60400800,  FBMemoryCtl);
-	GLINT_WRITE_REG(0xFFFFFFFF,  FBWrMaskk);
-	GLINT_WRITE_REG(0x00000002,  FBTXMemCtl);
+	    /*
+	     * this is hardwired for setting the FB and LB memory control
+	     */
+	    GLINT_WRITE_REG(0xdc000017,  LBMemoryEDO);
+	    GLINT_WRITE_REG(0x60400800,  FBMemoryCtl);
+	    GLINT_WRITE_REG(0xFFFFFFFF,  FBWrMaskk);
+	    GLINT_WRITE_REG(0x00000002,  FBTXMemCtl);
     } 
 
 
     if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	  permediapreinit();
-    }
 
-    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	  
 	  /* switch to graphics Mode */
 	  GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
 	  usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
@@ -672,12 +754,12 @@ glintInit(DisplayModePtr mode)
 
 
     if (!glintInitialized)
-      xf86memset((unsigned char *)glintVideoMem, 0, glintInfoRec.virtualX *
- 		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
+      xf86memset((unsigned char *)glintVideoMem, 0, MEMSize/* glintInfoRec.virtualX * */
+/*  		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8 */);
     else
       xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSavegr,
-		 glintInfoRec.virtualX * glintInfoRec.virtualY *
-		 glintInfoRec.bitsPerPixel / 8);
+		 MEMSize/* glintInfoRec.virtualX * glintInfoRec.virtualY * */
+/* 		 glintInfoRec.bitsPerPixel / 8 */);
 #if MEMDEBUG
     ErrorF("Init: setting/restoring 0x%x bytes GRAPHICS mem\n",
 	   glintInfoRec.virtualX, glintInfoRec.virtualY, glintInfoRec.bitsPerPixel);
@@ -785,7 +867,7 @@ glintInitAperture(int screen_idx)
 {
     unsigned short usData;
   
-    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+    if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	    if (!glintInitialized)
 		{
 		    SR.glintRegs[0]  = GLINT_READ_REG(Aperture0);
@@ -814,23 +896,23 @@ glintInitAperture(int screen_idx)
       glintVideoMemSave = (unsigned char *)xalloc(VGASize);
       
       /* for graphics */
-      glintVideoMemSavegr = (unsigned char *)xalloc(glintInfoRec.virtualX*
-						    glintInfoRec.virtualY*
-						    glintInfoRec.bitsPerPixel/8);
+      glintVideoMemSavegr = (unsigned char *)xalloc(MEMSize/* glintInfoRec.virtualX* */
+/* 						    glintInfoRec.virtualY* */
+/* 						    glintInfoRec.bitsPerPixel/8 */);
       
       if (!glintVideoMemSave || !glintVideoMemSavegr)
 	FatalError("Unable to allocate save/restore buffer for %d "
 		   "bytes, aborting.....\n");
       
-      xf86memset(glintVideoMemSavegr, 0, glintInfoRec.virtualX * 
-		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
+      xf86memset(glintVideoMemSavegr, 0, MEMSize /*glintInfoRec.virtualX *  */
+/* 		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8 */);
       xf86memset(glintVideoMemSave, 0, VGASize);
     }
 
 #ifdef XFreeXDGA
     glintInfoRec.physBase = (glintInfoRec.MemBase);
-    glintInfoRec.physSize = glintInfoRec.virtualX * glintInfoRec.virtualY
-	* glintInfoRec.bitsPerPixel / 8;
+    glintInfoRec.physSize = MEMSize /*  glintInfoRec.virtualX * glintInfoRec.virtualY */
+/* 	* glintInfoRec.bitsPerPixel / 8 */;
 #endif
 }	
 

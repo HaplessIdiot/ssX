@@ -1,4 +1,43 @@
+XFree86 3.9u (1 November 1997)
+1367. Add support for I128 Revolution to scanpci and SuperProbe (#1100,
+      Robin Cutshaw).
+1366. Compile fixes for ARM32/NetBSD (#1099, Katrina Maffey).
+1365. Change mga to use bresenham lines instead of two point (#1098,
+      Radek Kapitan).
+1364. Add mga stipple code so that it is 256K pixels barrier sensible and 
+      even faster than current XAA stipple code (#1097, Mark Vojkovich, 
+      Radek Kapitan).
+1363. Move C&T hw cursor into XAA. Re-enable ImageWrite on C&T. Rewrite 32bpp
+      HiQV code (should be almost usable) (#1096, David Bateman).
+1362. Get the ch8398 work in tseng driver at every color depth and any hibit
+      setting (#1095, George Krajcsovits).
+1361. Changes to XAA hw cursor code to better support switching between hw
+      and sw cursor (#1094, David Bateman).
+1360. Fix stupid error caused by hand-aplying a patch (#1092, Mark Vojkovich).
+1359. Resync PC98 Imakefiles (#1091, Takaaki Nomura).
+1358. Build fix for PANIX (#1090, Takaaki Nomura).
+1357. Fix a duplicate inclusion of <sys/termio.h> on ISC inside xterm/screen.c 
+      and update the help text for xterm to correspond with the appropriate 
+      commandline switches (#1089, Michael Rohleder).
+1356. Fix some incorrect type modifications in change 1347 (#1087,1088
+      Alan Hourihane, Michael Rohleder).
+1355. Fix mga_xaarepl.c to compile with non-GNU cc (#1086, Robin Cutshaw).
+1354. Clean up vgaPCI.h for Trident (#1085, Alan Hourihane).
+1353. Fix a bug introduced in change 1222 (#1084, Koen Gadeyne).
+1352. Remove amiga/ataritt files from xkbcomp/symbols Imakefile (they have
+      been added via fixtrackers... are we missing files here?)
+      (#1083, Takaaki Nomura).
+1351. Update VideoBoard98 (#1081, Takaaki Nomura).
+1350. Add DO_NOT_BLIT_STIPPLES to the xf86AccelInfoRec.Flags (#1070,
+      Marc Vojkovich).
+1349. More work for Permedia 2 support. Still doesn't work (Dirk Hohndel).
+1348. Split acceleration drivers for GLINT and Permedia. Get glint server
+      to work (again) on Fire GL 1000 (Helmut Fahrion).
+1347. Get glint server to work on Fire GL 3000 (Bart van den Broek).
+
 XFree86 3.9t (26 October 1997)
+1347. Add support for ARM32 architecture and IGS CyberPro 2010 support
+      (#1052, Digital Equipment Corporation).
 1346. Multi-display support for lbxproxy (#969-971, 977, 978, Arthur Barstow).
 1345. Remove some misleading 32-bit comments in Xlib (#967, Kaleb Keithley).
 1344. Additional symbols for Japanese 109 key keyboard (#962, Kaleb Keithley).
@@ -5493,4 +5532,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.538 1997/10/14 20:30:35 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.540 1997/10/26 13:24:59 dawes Exp $

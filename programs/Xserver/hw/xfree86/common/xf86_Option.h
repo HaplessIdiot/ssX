@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.78 1997/08/12 12:02:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.79 1997/10/13 17:16:38 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -224,6 +224,11 @@ typedef struct {
 /* XAA options */
 #define OPTION_XAA_BENCHMARK	230 /* Perform start-up benchmarks */
 #define OPTION_XAA_NO_COL_EXP	231 /* Disable color expansion. */
+  
+/* options for Glint server */
+#define OPTION_FIREGL3000       232 /* Assume a Fire GL 3000 card */
+
+
 
 /*
  *  MAX flag value is 256.  If larger is needed, remember to update
@@ -427,7 +432,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "read_wait",        OPTION_READ_WAIT },
   { "all_wait",         OPTION_ALL_WAIT },
   { "enable_bitblt",    OPTION_ENABLE_BITBLT },
-
+  { "firegl_3000",      OPTION_FIREGL3000 },
   { "",			-1 },
 };
 

@@ -253,6 +253,7 @@ extern void glintIBMHideCursor();
 extern void glintIBMSetCursorPosition();
 extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
+extern void restorehotspot(void);
 
 Bool glintDoubleBufferMode = FALSE;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -531,6 +532,31 @@ glintProbe()
     {
         switch (pcrp->_device)
 	{
+	case PCI_CHIP_TI_PERMEDIA:
+		glintcopro = PCI_EN |
+			(pcrp->_bus << 16) |
+			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
+		basecopro = pcrp->_base0;
+		pcrpglint = pcrp;
+		coprotype = PCI_CHIP_3DLABS_PERMEDIA;
+		if( cardnum == -1 )
+			cardnum = pcrp->_cardnum;
+		else if( cardnum != pcrp->_cardnum )
+		{
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
+			glintdelta = 0;
+			pcrpdelta = NULL;
+			cardnum = pcrp->_cardnum;
+		}
+		if( xf86Verbose ) 
+		{
+			ErrorF("%s %s: found TI chip GLINT Permedia at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
+		}
+		break;
 	case PCI_CHIP_TI_3DLABS_PERMEDIA2:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
@@ -551,7 +577,7 @@ glintProbe()
 		}
 		if( xf86Verbose ) 
 		{
-			ErrorF("%s %s: found GLINT Permedia 2 at card #%d func #%d with "
+			ErrorF("%s %s: found TI chip GLINT Permedia 2 at card #%d func #%d with "
 			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
 			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
@@ -1203,8 +1229,8 @@ glintNewSerialNumber(WindowPtr pWin, pointer data)
 void
 glintEnterLeaveVT(Bool enter, int screen_idx)
 {
-    PixmapPtr pspix;
-    ScreenPtr pScreen = savepScreen;
+  PixmapPtr pspix;
+  ScreenPtr pScreen = savepScreen;
 
     if (!xf86Exiting && !xf86Resetting) {
         switch (glintInfoRec.bitsPerPixel) {
@@ -1232,6 +1258,7 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	    AlreadyInited = TRUE;
 	    glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	    glintSetCRTCRegs(&glintCRTCRegs);
+
 	    glintRestoreDACvalues();
 	    glintRestoreColor0(pScreen);
 #if 0
@@ -1241,6 +1268,10 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	    (void)XAACursorInit(0, pScreen);
 	    XAARestoreCursor(pScreen);
 	    glintAdjustFrame(pScr->frameX0, pScr->frameY0);
+
+	    /* after RestoreCursor, RestoreCursor save not the hot_spot from
+	     the textcursor from the mouse */
+	    restorehotspot();
 
 	    if (pspix->devPrivate.ptr != glintVideoMem && ppix) {
 		pspix->devPrivate.ptr = glintVideoMem;
@@ -1505,16 +1536,22 @@ glintValidMode(DisplayModePtr mode, Bool verbose, int flag)
 		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
 #endif
 		  if (mode->Clock > 83000) 
+		    {
 		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 83 MHz. \n",
 			   mode->Clock/1000);
+		    /* return MODE_BAD; */
+		    }
 		  break;
 		case 32:
 #ifdef DEBUG 
 		  ErrorF("Mode Clock = %d MHz.\n", mode->Clock);
 #endif
 		  if (mode->Clock > 88000) 
+		    {
 		    ErrorF("Warning: Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 88 MHz. \n",
 			   mode->Clock/1000);
+		    /* return MODE_BAD; */
+		    }
 		  break;
 		}
 	    }

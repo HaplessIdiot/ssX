@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.21 1997/09/30 04:51:02 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.22 1997/10/13 17:16:48 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1927,8 +1927,7 @@ ET4000Init(mode)
     else
     if (CH8398_programmable_clock) {
        /* Let's call common_hw/Ch8391clk.c ! */
-       Chrontel8391CalcClock((mode->SynthClock)*((tseng_save_divide & 0x40) ? 2L : 1L),
-	  &temp1,&temp2,&temp3);
+       Chrontel8391CalcClock(mode->SynthClock,&temp1,&temp2,&temp3);
        new->gendac.PLL_f2_N = (unsigned char)(temp2);
        new->gendac.PLL_f2_M = (unsigned char)(temp1 | (temp3<<6));
        if(xf86Verbose) ErrorF("CH8398 or CH8398A PLL set to %fMhz\n",
@@ -1946,7 +1945,7 @@ ET4000Init(mode)
 	  anyway */
        new->AuxillaryMode = (new->AuxillaryMode & 0xBE);
     }
-   
+    else
     if (Is_ET6K)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 06:21:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.13 1997/06/29 07:54:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.14 1997/07/29 12:08:20 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -27,6 +27,8 @@ SHARED_CFLAGS = PositionIndependentCFlags
     && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
 # if defined(ArcArchitecture)
  IOPERMDEFINES = -DUSE_ARC_MMAP
+# elif defined(Arm32Architecture)
+ IOPERMDEFINES = -DUSE_ARM32_MMAP
 # else
  IOPERMDEFINES = -DUSE_I386_IOPL
 # endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.3 1997/09/12 09:23:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.4 1997/09/25 07:31:11 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -17,14 +17,15 @@
 #include "glint.h"
 #include "glint_regs.h"
 #define GLINT_SERVER
-#include "IBMRGB.h" 
+#include "IBMRGB.h"
 
-extern Bool glintDoubleBufferMode;
-extern int coprotype;
+extern Bool     glintDoubleBufferMode;
+extern int      coprotype;
 
-int ActualDacId;
+int             ActualDacId;
 
-typedef enum _GLINT_RAMDACS {
+typedef enum _GLINT_RAMDACS
+  {
     RGB525_RAMDAC = 0,
     RGB526_RAMDAC,
     RGB526DB_RAMDAC,
@@ -36,7 +37,8 @@ typedef enum _GLINT_RAMDACS {
     RGB524_RAMDAC,
     RGB524A_RAMDAC,
     MAX_GLINT_RAMDAC
-} GLINT_RAMDACS;
+  }
+GLINT_RAMDACS;
 
 
 /*
@@ -44,25 +46,27 @@ typedef enum _GLINT_RAMDACS {
  * the indirect RGB52x registers only.
  */
 
-void glintOutIBMRGBIndReg(unsigned char reg, unsigned char mask, unsigned char data)
+void
+glintOutIBMRGBIndReg (unsigned char reg, unsigned char mask, unsigned char data)
 {
-    unsigned char tmp, tmp2 = 0x00;
+  unsigned char   tmp, tmp2 = 0x00;
 
-    GLINT_SLOW_WRITE_REG(reg, IBMRGB_INDEX_LOW);
+  GLINT_SLOW_WRITE_REG (reg, IBMRGB_INDEX_LOW);
 
-    if (mask != 0x00)
-	tmp2 = GLINT_READ_REG(IBMRGB_INDEX_DATA) & mask;
-    GLINT_SLOW_WRITE_REG(tmp2 | data, IBMRGB_INDEX_DATA);
+  if (mask != 0x00)
+    tmp2 = GLINT_READ_REG (IBMRGB_INDEX_DATA) & mask;
+  GLINT_SLOW_WRITE_REG (tmp2 | data, IBMRGB_INDEX_DATA);
 }
 
-unsigned char glintInIBMRGBIndReg(unsigned char reg)
+unsigned char
+glintInIBMRGBIndReg (unsigned char reg)
 {
-    volatile   unsigned char tmp, ret;
+  volatile unsigned char tmp, ret;
 
-    GLINT_SLOW_WRITE_REG(reg, IBMRGB_INDEX_LOW);
-    ret = GLINT_READ_REG(IBMRGB_INDEX_DATA);
+  GLINT_SLOW_WRITE_REG (reg, IBMRGB_INDEX_LOW);
+  ret = GLINT_READ_REG (IBMRGB_INDEX_DATA);
 
-    return(ret);
+  return (ret);
 }
 
 /* Standart Mode , video.c */
@@ -70,511 +74,550 @@ unsigned char glintInIBMRGBIndReg(unsigned char reg)
 #define INITIALFREQERR 100000
 
 unsigned long
-RGB526_CalculateMNPCForClock
-(
- unsigned long RefClock,		/* In 100Hz units */
- unsigned long ReqClock,		/* In 100Hz units */
- char IsPixClock, /* boolean, is this the pixel or the sys clock */
- unsigned long MinClock,		/* Min VCO rating */
- unsigned long MaxClock,		/* Max VCO rating */
- unsigned long *rM, 			/* M Out */
- unsigned long *rN, 			/* N Out */
- unsigned long *rP,			/* Min P In, P Out */
- unsigned long *rC			/* C Out */
- )
+                RGB526_CalculateMNPCForClock
+                (
+		  unsigned long RefClock,	/* In 100Hz units */
+		  unsigned long ReqClock,	/* In 100Hz units */
+		  char IsPixClock,	/* boolean, is this the pixel or the sys clock */
+		  unsigned long MinClock,	/* Min VCO rating */
+		  unsigned long MaxClock,	/* Max VCO rating */
+		  unsigned long *rM,	/* M Out */
+		  unsigned long *rN,	/* N Out */
+		  unsigned long *rP,	/* Min P In, P Out */
+		  unsigned long *rC	/* C Out */
+)
 {
-    unsigned long	M, N, P, iP = *rP;
-    unsigned long	IntRef, VCO, Clock;
-    long		freqErr, lowestFreqErr = INITIALFREQERR;
-    unsigned long  	ActualClock = 0;
+  unsigned long   M, N, P, iP = *rP;
+  unsigned long   IntRef, VCO, Clock;
+  long            freqErr, lowestFreqErr = INITIALFREQERR;
+  unsigned long   ActualClock = 0;
 
-    for (N = 0; N <= 63; N++) {
-	IntRef = RefClock / (N + 1);
-	if (IntRef < 10000)
-	    break;	/* IntRef needs to be >= 1MHz */
-	for (M = 0; M <= 63; M++) {
-	    VCO = IntRef * (M + 1);
-	    if ((VCO < MinClock) || (VCO > MaxClock))
-		continue;
-	    for (P = iP; P <= 4; P++) {
-		if (P)
-		    Clock = (RefClock * (M + 1)) / ((N + 1) * 2 * P);
-		else
-		    Clock = VCO;
+  for (N = 0; N <= 63; N++)
+    {
+      IntRef = RefClock / (N + 1);
+      if (IntRef < 10000)
+	break;			/* IntRef needs to be >= 1MHz */
+      for (M = 0; M <= 63; M++)
+	{
+	  VCO = IntRef * (M + 1);
+	  if ((VCO < MinClock) || (VCO > MaxClock))
+	    continue;
+	  for (P = iP; P <= 4; P++)
+	    {
+	      if (P)
+		Clock = (RefClock * (M + 1)) / ((N + 1) * 2 * P);
+	      else
+		Clock = VCO;
 
-		freqErr = (Clock - ReqClock);
+	      freqErr = (Clock - ReqClock);
 
-		if (freqErr < 0)
+	      if (freqErr < 0)
 		{
-		    /* PixelClock gets rounded up always so monitor reports
-		       correct frequency. */
-		    if (IsPixClock)
-			continue;
-		    freqErr = -freqErr;
+		  /* PixelClock gets rounded up always so monitor reports
+		     correct frequency. */
+		  if (IsPixClock)
+		    continue;
+		  freqErr = -freqErr;
 		}
 
-		if (freqErr < lowestFreqErr) {
-		    *rM = M;
-		    *rN = N;
-		    *rP = P;
-		    *rC = (VCO <= 1280000 ? 1 : 2);
-		    ActualClock = Clock;
+	      if (freqErr < lowestFreqErr)
+		{
+		  *rM = M;
+		  *rN = N;
+		  *rP = P;
+		  *rC = (VCO <= 1280000 ? 1 : 2);
+		  ActualClock = Clock;
 
-		    lowestFreqErr = freqErr;
-		    /* Return if we found an exact match */
-		    if (freqErr == 0)
-			return(ActualClock);
+		  lowestFreqErr = freqErr;
+		  /* Return if we found an exact match */
+		  if (freqErr == 0)
+		    return (ActualClock);
 		}
 	    }
 	}
     }
 
-    return(ActualClock);
+  return (ActualClock);
 }
 
-void CheckRGBClockInteraction(unsigned long *PixelClock,
-			      unsigned long *SystemClock)
+void
+CheckRGBClockInteraction (unsigned long *PixelClock,
+			  unsigned long *SystemClock)
 {
-    unsigned long * fLower;
-    unsigned long * fHigher;
-    long nfLower;
+  unsigned long  *fLower;
+  unsigned long  *fHigher;
+  long            nfLower;
 
-    if (*PixelClock < *SystemClock)
+  if (*PixelClock < *SystemClock)
     {
-	fLower  = PixelClock;
-	fHigher = SystemClock;
+      fLower = PixelClock;
+      fHigher = SystemClock;
     }
-    else
+  else
     {
-	fLower  = SystemClock;
-	fHigher = PixelClock;
+      fLower = SystemClock;
+      fHigher = PixelClock;
     }
 
-    while (1)
+  while (1)
     {
-	/* ErrorF("Checking for interaction between %d and %d\n", *fLower, *fHigher); */
-	nfLower = *fLower;
-	while (nfLower - 20000 <= *fHigher)
+      /* ErrorF("Checking for interaction between %d and %d\n", *fLower, *fHigher); */
+      nfLower = *fLower;
+      while (nfLower - 20000 <= *fHigher)
 	{
-	    if (*fHigher <= (nfLower + 20000))
+	  if (*fHigher <= (nfLower + 20000))
 	    {
-		/*  100KHz adjustments */
-		if (*fHigher > nfLower)
+	      /*  100KHz adjustments */
+	      if (*fHigher > nfLower)
 		{
-		    *fLower  -= 1000;
-		    *fHigher += 1000;
+		  *fLower -= 1000;
+		  *fHigher += 1000;
 		}
-		else
+	      else
 		{
-		    *fLower  += 1000;
-		    *fHigher -= 1000;
+		  *fLower += 1000;
+		  *fHigher -= 1000;
 		}
 #ifdef DEBUG
-		ErrorF("Interaction problem: adjusted to %d and %d\n", *fLower, *fHigher);
+	      ErrorF ("Interaction problem: adjusted to %d and %d\n", *fLower, *fHigher);
 #endif
-		break;
+	      break;
 	    }
-	    nfLower += *fLower;
+	  nfLower += *fLower;
 	}
-	if (nfLower - 20000 > *fHigher)
-	    break;
+      if (nfLower - 20000 > *fHigher)
+	break;
     }
 }
 
 
 static void
-glintProgramIBMRGBClock(int clk, unsigned char m, unsigned char n, 
-		     unsigned char df)
+glintProgramIBMRGBClock (int clk, unsigned char m, unsigned char n,
+			 unsigned char df)
 {
 #ifdef COMPATIBELMODE
-    int tmp;
-    tmp = 1;
-    glintOutIBMRGBIndReg(IBMRGB_misc_clock, ~1, 1);
+  int             tmp;
 
-    glintOutIBMRGBIndReg(IBMRGB_m0+2*clk, 0, (df<<6) | (m&0x3f));
-    glintOutIBMRGBIndReg(IBMRGB_n0+2*clk, 0, n);
+  tmp = 1;
+  glintOutIBMRGBIndReg (IBMRGB_misc_clock, ~1, 1);
 
-    glintOutIBMRGBIndReg(IBMRGB_pll_ctrl2, 0xf0, clk);
-    glintOutIBMRGBIndReg(IBMRGB_pll_ctrl1, 0xf8, 3);
+  glintOutIBMRGBIndReg (IBMRGB_m0 + 2 * clk, 0, (df << 6) | (m & 0x3f));
+  glintOutIBMRGBIndReg (IBMRGB_n0 + 2 * clk, 0, n);
+
+  glintOutIBMRGBIndReg (IBMRGB_pll_ctrl2, 0xf0, clk);
+  glintOutIBMRGBIndReg (IBMRGB_pll_ctrl1, 0xf8, 3);
 #endif
 }
 
-void IBMRGBGlintSetClock(long freq, int clk, long dacspeed, long fref)
+void
+IBMRGBGlintSetClock (long freq, int clk, long dacspeed, long fref)
 {
-    volatile   double ffreq,fdacspeed,ffref;
-    volatile   int df, n, m, max_n, min_df;
-    volatile   int best_m=69, best_n=17, best_df=0;
-    volatile   double  diff, mindiff;
-   
-#define FREQ_MIN   16250  /* 1000 * (0+65) / 4 */
+  volatile double ffreq, fdacspeed, ffref;
+  volatile int    df, n, m, max_n, min_df;
+  volatile int    best_m = 69, best_n = 17, best_df = 0;
+  volatile double diff, mindiff;
+
+#define FREQ_MIN   16250	/* 1000 * (0+65) / 4 */
 #define FREQ_MAX  dacspeed
 
-    if (freq < FREQ_MIN)
-	ffreq = FREQ_MIN / 1000.0;
-    else if (freq > FREQ_MAX)
-	ffreq = FREQ_MAX / 1000.0;
-    else
-	ffreq = freq / 1000.0;
-   
-    fdacspeed = dacspeed / 1e3;
-    ffref = fref / 1e3;
+  if (freq < FREQ_MIN)
+    ffreq = FREQ_MIN / 1000.0;
+  else if (freq > FREQ_MAX)
+    ffreq = FREQ_MAX / 1000.0;
+  else
+    ffreq = freq / 1000.0;
 
-    ffreq /= ffref;
-    ffreq *= 16;
-    mindiff = ffreq;
+  fdacspeed = dacspeed / 1e3;
+  ffref = fref / 1e3;
 
-    if (freq <= dacspeed/4) 
-	min_df = 0;
-    else if (freq <= dacspeed/2) 
-	min_df = 1;
-    else 
-	min_df = 2;
+  ffreq /= ffref;
+  ffreq *= 16;
+  mindiff = ffreq;
 
-    for(df=0; df<4; df++) {
-	ffreq /= 2;
-	mindiff /= 2;
-	if (df < min_df) continue;
+  if (freq <= dacspeed / 4)
+    min_df = 0;
+  else if (freq <= dacspeed / 2)
+    min_df = 1;
+  else
+    min_df = 2;
 
-	/* the remaining formula is  ffreq = (m+65) / n */
+  for (df = 0; df < 4; df++)
+    {
+      ffreq /= 2;
+      mindiff /= 2;
+      if (df < min_df)
+	continue;
 
-	if (df < 3) max_n = fref/1000/2;
-	else        max_n = fref/1000;
-	if (max_n > 31)  max_n = 31;
-      
-	for (n=2; n <= max_n; n++) {
-	    m = (int)(ffreq * n + 0.5) - 65;
-	    if (m < 0)
-		m = 0;
-	    else if (m > 63) 
-		m = 63;
-	 
-	    diff = (m+65.0) / n - ffreq;
-	    if (diff<0)
-		diff = -diff;
-	 
-	    if (diff < mindiff) {
-		mindiff = diff;
-		best_n = n;
-		best_m = m;
-		best_df = df;
+      /* the remaining formula is  ffreq = (m+65) / n */
+
+      if (df < 3)
+	max_n = fref / 1000 / 2;
+      else
+	max_n = fref / 1000;
+      if (max_n > 31)
+	max_n = 31;
+
+      for (n = 2; n <= max_n; n++)
+	{
+	  m = (int) (ffreq * n + 0.5) - 65;
+	  if (m < 0)
+	    m = 0;
+	  else if (m > 63)
+	    m = 63;
+
+	  diff = (m + 65.0) / n - ffreq;
+	  if (diff < 0)
+	    diff = -diff;
+
+	  if (diff < mindiff)
+	    {
+	      mindiff = diff;
+	      best_n = n;
+	      best_m = m;
+	      best_df = df;
 	    }
 	}
     }
 
 #ifdef DEBUG
-    ErrorF("clk %d, setting to %f, m 0x%02x %d, n 0x%02x %d, df %d\n", clk,
-	   ((best_m+65.0)/best_n) / (8>>best_df) * ffref,
-	   best_m, best_m, best_n, best_n, best_df);
+  ErrorF ("clk %d, setting to %f, m 0x%02x %d, n 0x%02x %d, df %d\n", clk,
+	  ((best_m + 65.0) / best_n) / (8 >> best_df) * ffref,
+	  best_m, best_m, best_n, best_n, best_df);
 #endif
 
-    glintProgramIBMRGBClock(clk, best_m, best_n, best_df);
+  glintProgramIBMRGBClock (clk, best_m, best_n, best_df);
 }
 
-int glintIBMRGB_Probe()
+int
+glintIBMRGB_Probe ()
 {
-    unsigned char CR43, CR55, dac[3], lut[6];
-    unsigned char ilow, ihigh, id, rev, id2, rev2;
-    int i,j;
-    int ret=0;
+  unsigned char   CR43, CR55, dac[3], lut[6];
+  unsigned char   ilow, ihigh, id, rev, id2, rev2;
+  int             i, j;
+  int             ret = 0;
 
 #if 0
-    /* save DAC and first LUT entries */
-    for (i=0; i<3; i++) 
-	dac[i] = GLINT_READ_REG(IBMRGB_PIXEL_MASK+i);
-    for (i=j=0; i<2; i++) {
-	GLINT_SLOW_WRITE_REG(i, IBMRGB_READ_ADDR);
-	lut[j++] = GLINT_READ_REG(IBMRGB_RAMDAC_DATA);
-	lut[j++] = GLINT_READ_REG(IBMRGB_RAMDAC_DATA);
-	lut[j++] = GLINT_READ_REG(IBMRGB_RAMDAC_DATA);
+  /* save DAC and first LUT entries */
+  for (i = 0; i < 3; i++)
+    dac[i] = GLINT_READ_REG (IBMRGB_PIXEL_MASK + i);
+  for (i = j = 0; i < 2; i++)
+    {
+      GLINT_SLOW_WRITE_REG (i, IBMRGB_READ_ADDR);
+      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
+      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
+      lut[j++] = GLINT_READ_REG (IBMRGB_RAMDAC_DATA);
     }
 
-    glintIBMRGB_Init();
+  glintIBMRGB_Init ();
 #endif
 
-    /* read ID and revision */
-    ilow  = GLINT_READ_REG(IBMRGB_INDEX_LOW);
-    ihigh = GLINT_READ_REG(IBMRGB_INDEX_HIGH);
-    GLINT_SLOW_WRITE_REG(0, IBMRGB_INDEX_HIGH);  /* index high */
-    GLINT_SLOW_WRITE_REG(IBMRGB_rev, IBMRGB_INDEX_LOW);
-    rev = GLINT_READ_REG(IBMRGB_INDEX_DATA);
-    GLINT_SLOW_WRITE_REG(IBMRGB_id, IBMRGB_INDEX_LOW);
-    id  = GLINT_READ_REG(IBMRGB_INDEX_DATA);
+  /* read ID and revision */
+  ilow = GLINT_READ_REG (IBMRGB_INDEX_LOW);
+  ihigh = GLINT_READ_REG (IBMRGB_INDEX_HIGH);
+  GLINT_SLOW_WRITE_REG (0, IBMRGB_INDEX_HIGH);	/* index high */
+  GLINT_SLOW_WRITE_REG (IBMRGB_rev, IBMRGB_INDEX_LOW);
+  rev = GLINT_READ_REG (IBMRGB_INDEX_DATA);
+  GLINT_SLOW_WRITE_REG (IBMRGB_id, IBMRGB_INDEX_LOW);
+  id = GLINT_READ_REG (IBMRGB_INDEX_DATA);
 
 
-    if (id == 0x30)
+  if (id == 0x30)
     {
-	if (rev == 0xc0) ActualDacId = RGB624_RAMDAC;
-	if (rev == 0x80) ActualDacId = RGB624DB_RAMDAC;
+      if (rev == 0xc0)
+	ActualDacId = RGB624_RAMDAC;
+      if (rev == 0x80)
+	ActualDacId = RGB624DB_RAMDAC;
     }
 
-    if (id == 0x12) ActualDacId = RGB640_RAMDAC;
+  if (id == 0x12)
+    ActualDacId = RGB640_RAMDAC;
 
-    /* known IDs:  
-       1 = RGB525
-       2 = RGB524, RGB528 
-    */
-      
-    if (id >= 1 && id <= 2) 
-    { 
+  /* known IDs:  
+     1 = RGB525
+     2 = RGB524, RGB528 
+   */
 
-	if (id == 1) 
-	    ActualDacId = RGB525_RAMDAC;
+  if (id >= 1 && id <= 2)
+    {
 
-	if (id == 2)
+      if (id == 1)
+	ActualDacId = RGB525_RAMDAC;
+
+      if (id == 2)
 	{
-	    switch (rev)
+	  switch (rev)
 	    {
-	    case 0xf0: ActualDacId = RGB524_RAMDAC; 
-		break;
-	    case 0xe0: ActualDacId = RGB524A_RAMDAC; 
-		break;
-	    case 0xc0: ActualDacId = RGB526_RAMDAC; 
-		break;
-	    case 0x80: ActualDacId = RGB526DB_RAMDAC; 
-		break;
+	    case 0xf0:
+	      ActualDacId = RGB524_RAMDAC;
+	      break;
+	    case 0xe0:
+	      ActualDacId = RGB524A_RAMDAC;
+	      break;
+	    case 0xc0:
+	      ActualDacId = RGB526_RAMDAC;
+	      break;
+	    case 0x80:
+	      ActualDacId = RGB526DB_RAMDAC;
+	      break;
 	    }
 	}
 
-	/* check if ID and revision are read only */
-	GLINT_SLOW_WRITE_REG(IBMRGB_rev, IBMRGB_INDEX_LOW);
-	GLINT_SLOW_WRITE_REG(~rev, IBMRGB_INDEX_DATA);
-	GLINT_SLOW_WRITE_REG(IBMRGB_id, IBMRGB_INDEX_LOW);
-	GLINT_SLOW_WRITE_REG(~id, IBMRGB_INDEX_DATA);
-	GLINT_SLOW_WRITE_REG(IBMRGB_rev, IBMRGB_INDEX_LOW);
-	rev2 = GLINT_READ_REG(IBMRGB_INDEX_DATA);
-	GLINT_SLOW_WRITE_REG(IBMRGB_id, IBMRGB_INDEX_LOW);
-	id2  = GLINT_READ_REG(IBMRGB_INDEX_DATA);
-      
-	if (id == id2 && rev == rev2) 
-	{  /* IBM RGB52x found */
-	    ret = (id<<8) | rev;
-	   
-	    /* check for 128bit VRAM -> RGB528 */
-	    GLINT_SLOW_WRITE_REG(IBMRGB_misc1, IBMRGB_INDEX_LOW);
-	   
-	    if ((GLINT_READ_REG(IBMRGB_INDEX_DATA) & 0x03) == 0x03)
-	    {
-		/* 128bit DAC found */
-		ret |= 1<<16;
-		ActualDacId = RGB528_RAMDAC;
+      /* check if ID and revision are read only */
+      GLINT_SLOW_WRITE_REG (IBMRGB_rev, IBMRGB_INDEX_LOW);
+      GLINT_SLOW_WRITE_REG (~rev, IBMRGB_INDEX_DATA);
+      GLINT_SLOW_WRITE_REG (IBMRGB_id, IBMRGB_INDEX_LOW);
+      GLINT_SLOW_WRITE_REG (~id, IBMRGB_INDEX_DATA);
+      GLINT_SLOW_WRITE_REG (IBMRGB_rev, IBMRGB_INDEX_LOW);
+      rev2 = GLINT_READ_REG (IBMRGB_INDEX_DATA);
+      GLINT_SLOW_WRITE_REG (IBMRGB_id, IBMRGB_INDEX_LOW);
+      id2 = GLINT_READ_REG (IBMRGB_INDEX_DATA);
 
-		if (rev == 0xe0)
-		    ActualDacId = RGB528A_RAMDAC;
+      if (id == id2 && rev == rev2)
+	{			/* IBM RGB52x found */
+	  ret = (id << 8) | rev;
+
+	  /* check for 128bit VRAM -> RGB528 */
+	  GLINT_SLOW_WRITE_REG (IBMRGB_misc1, IBMRGB_INDEX_LOW);
+
+	  if ((GLINT_READ_REG (IBMRGB_INDEX_DATA) & 0x03) == 0x03)
+	    {
+	      /* 128bit DAC found */
+	      ret |= 1 << 16;
+	      ActualDacId = RGB528_RAMDAC;
+
+	      if (rev == 0xe0)
+		ActualDacId = RGB528A_RAMDAC;
 	    }
 	}
-	else 
+      else
 	{
-	    GLINT_SLOW_WRITE_REG(IBMRGB_rev, IBMRGB_INDEX_LOW);
-	    GLINT_SLOW_WRITE_REG(rev, IBMRGB_INDEX_DATA);
-	    GLINT_SLOW_WRITE_REG(IBMRGB_id, IBMRGB_INDEX_LOW);
-	    GLINT_SLOW_WRITE_REG(id, IBMRGB_INDEX_DATA);
+	  GLINT_SLOW_WRITE_REG (IBMRGB_rev, IBMRGB_INDEX_LOW);
+	  GLINT_SLOW_WRITE_REG (rev, IBMRGB_INDEX_DATA);
+	  GLINT_SLOW_WRITE_REG (IBMRGB_id, IBMRGB_INDEX_LOW);
+	  GLINT_SLOW_WRITE_REG (id, IBMRGB_INDEX_DATA);
 	}
-    }   
-    GLINT_SLOW_WRITE_REG(ilow, IBMRGB_INDEX_LOW);
-    GLINT_SLOW_WRITE_REG(ihigh, IBMRGB_INDEX_HIGH);
+    }
+  GLINT_SLOW_WRITE_REG (ilow, IBMRGB_INDEX_LOW);
+  GLINT_SLOW_WRITE_REG (ihigh, IBMRGB_INDEX_HIGH);
 
 #if 0
-    /* restore DAC and first LUT entries */
-    for (i=j=0; i<2; i++) {
-	GLINT_SLOW_WRITE_REG(i, IBMRGB_WRITE_ADDR);
-	GLINT_SLOW_WRITE_REG(lut[j++], IBMRGB_RAMDAC_DATA);
-	GLINT_SLOW_WRITE_REG(lut[j++], IBMRGB_RAMDAC_DATA);
-	GLINT_SLOW_WRITE_REG(lut[j++], IBMRGB_RAMDAC_DATA);
+  /* restore DAC and first LUT entries */
+  for (i = j = 0; i < 2; i++)
+    {
+      GLINT_SLOW_WRITE_REG (i, IBMRGB_WRITE_ADDR);
+      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
+      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
+      GLINT_SLOW_WRITE_REG (lut[j++], IBMRGB_RAMDAC_DATA);
     }
-    for (i=0; i<3; i++) 
-	GLINT_SLOW_WRITE_REG(dac[i], IBMRGB_PIXEL_MASK+i);
+  for (i = 0; i < 3; i++)
+    GLINT_SLOW_WRITE_REG (dac[i], IBMRGB_PIXEL_MASK + i);
 #endif
-   
-    return ret;
+
+  return ret;
 }
 
 
-glintIBMRGB_Init()
+glintIBMRGB_Init ()
 {
-    unsigned char CR55, tmp;
+  unsigned char   CR55, tmp;
 
-    tmp = GLINT_READ_REG(IBMRGB_INDEX_CONTROL);
-    /* turn off auto-increment */
-    GLINT_SLOW_WRITE_REG(tmp & ~1, IBMRGB_INDEX_CONTROL);  
-    GLINT_SLOW_WRITE_REG(0, IBMRGB_INDEX_HIGH);        /* index high byte */
+  tmp = GLINT_READ_REG (IBMRGB_INDEX_CONTROL);
+  /* turn off auto-increment */
+  GLINT_SLOW_WRITE_REG (tmp & ~1, IBMRGB_INDEX_CONTROL);
+  GLINT_SLOW_WRITE_REG (0, IBMRGB_INDEX_HIGH);	/* index high byte */
 }
 
 #if 0
-int IBMRGB52x_Init(DisplayModePtr mode)
+int
+IBMRGB52x_Init (DisplayModePtr mode)
 {
-    unsigned char tmp, tmp2;
+  unsigned char   tmp, tmp2;
 
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	/* uses 64bit wide VRAM
-	 * set VRAM size to 128/64 bit and disable VRAM mask */
-	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, 0x31);
-	glintOutIBMRGBIndReg(IBMRGB_misc2, ~0x08, 0x47);
-    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	/* uses 32bit SDRAM
-	 * set 32bit and use LCK */
-	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, 0x30);
-	/* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, 0x07); */
-	glintOutIBMRGBIndReg(IBMRGB_misc2, ~0x08, 0x47);
-	/* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM ); */
+  if (IS_3DLABS_TX_MX_CLASS (coprotype))
+    {
+      /* uses 64bit wide VRAM
+       * set VRAM size to 128/64 bit and disable VRAM mask */
+      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, 0x31);
+      glintOutIBMRGBIndReg (IBMRGB_misc2, ~0x08, 0x47);
     }
-    if (glintInfoRec.bitsPerPixel == 32) {			/* 32 bpp */
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 6);
-	glintOutIBMRGBIndReg(IBMRGB_32bpp, 0, 3);
-    } else if (glintInfoRec.bitsPerPixel == 16) {             /* 16 bpp 555 */
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
-	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC5);
-    } else {                                        /*  8 bpp */
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 3);
-	glintOutIBMRGBIndReg(IBMRGB_8bpp, 0, 0);
+  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
+    {
+      /* uses 32bit SDRAM
+       * set 32bit and use LCK */
+      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, 0x30);
+      /* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, 0x07); */
+      glintOutIBMRGBIndReg (IBMRGB_misc2, ~0x08, 0x47);
+      /* glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM ); */
+    }
+  if (glintInfoRec.bitsPerPixel == 32)
+    {				/* 32 bpp */
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 6);
+      glintOutIBMRGBIndReg (IBMRGB_32bpp, 0, 3);
+    }
+  else if (glintInfoRec.bitsPerPixel == 16)
+    {				/* 16 bpp 555 */
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 4);
+      glintOutIBMRGBIndReg (IBMRGB_16bpp, 0, 0xC5);
+    }
+  else
+    {				/*  8 bpp */
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 3);
+      glintOutIBMRGBIndReg (IBMRGB_8bpp, 0, 0);
     }
 
-    if (glintDoubleBufferMode)
-	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 1);
-    else
-	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0);
+  if (glintDoubleBufferMode)
+    glintOutIBMRGBIndReg (IBMRGB_misc3, 0, 1);
+  else
+    glintOutIBMRGBIndReg (IBMRGB_misc3, 0, 0);
 
-    return 1;
+  return 1;
 }
 #endif
 
-int IBMRGB52x_Init_Stdmode(int clock)
+int
+IBMRGB52x_Init_Stdmode (int clock)
 {
-    unsigned char tmp, tmp2;
-    unsigned long P, M, N, C, RefClkSpeed, PixelClock, SystemClock,
-	MaxVco = 2200000;
+  unsigned char   tmp, tmp2;
+  unsigned long   P, M, N, C, RefClkSpeed, PixelClock, SystemClock, MaxVco = 2200000;
 
-    /*
-     * the GLINT uses SCLK so there's no need to set the
-     * DDOTCLK to a special value
-     * we disable the DDOTCLK
-     */
-    /* hefa, System Clock Control, 0x05 0=1 -> SYSCLK PLL enabled,
-       2 = 1 -> Standard Mode - program with N, M, P, and C registers */
-    /* glintOutIBMRGBIndReg(IBMRGB_sysclk, 0, 0x05); */
+  /*
+   * the GLINT uses SCLK so there's no need to set the
+   * DDOTCLK to a special value
+   * we disable the DDOTCLK
+   */
+  /* hefa, System Clock Control, 0x05 0=1 -> SYSCLK PLL enabled,
+     2 = 1 -> Standard Mode - program with N, M, P, and C registers */
+  /* glintOutIBMRGBIndReg(IBMRGB_sysclk, 0, 0x05); */
 
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_64);
-	glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
+  if (IS_3DLABS_TX_MX_CLASS (coprotype))
+    {
+      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_64);
+      glintOutIBMRGBIndReg (IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
 
-    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	glintOutIBMRGBIndReg(IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_32);
-	if (glintInfoRec.depth == 32)
-	  glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_LCLK);
-	else
-	  glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
+    }
+  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
+    {
+      glintOutIBMRGBIndReg (IBMRGB_misc1, 0, SENS_DSAB_DISABLE | VRAM_SIZE_32);
+      if (glintInfoRec.depth == 32)
+	glintOutIBMRGBIndReg (IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_LCLK);
+      else
+	glintOutIBMRGBIndReg (IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
     }
 
-     /* this is a hack for accelerated 16 bpp mode for 3.9o, which swaps
-        red and blue pixel components */
+  /* this is a hack for accelerated 16 bpp mode for 3.9o, which swaps
+     red and blue pixel components */
 
-    /* Swap RB for no_accel */
-    if (glintDoubleBufferMode)
-      glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 
-			   OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options) ? 0x81 : 0x01);
-    else
-      glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 
-			   OFLG_ISSET(OPTION_NOACCEL, &glintInfoRec.options) ? 0x80 : 0x00);
+  /* Swap RB for no_accel */
+  if (glintDoubleBufferMode)
+    glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
+	  OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x81 : 0x01);
+  else
+    glintOutIBMRGBIndReg (IBMRGB_misc3, 0,
+	  OFLG_ISSET (OPTION_NOACCEL, &glintInfoRec.options) ? 0x80 : 0x00);
 
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x87);
-    } else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-	glintOutIBMRGBIndReg(IBMRGB_misc_clock, 0x0, 0x1);
+  if (IS_3DLABS_TX_MX_CLASS (coprotype))
+    {
+      glintOutIBMRGBIndReg (IBMRGB_misc_clock, 0xf0, 0x87);
+    }
+  else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
+    {
+      glintOutIBMRGBIndReg (IBMRGB_misc_clock, 0x0, 0x1);
     }
 
-    glintOutIBMRGBIndReg(IBMRGB_sync, 0, 0);
-    glintOutIBMRGBIndReg(IBMRGB_hsync_pos, 0, 0);
+  glintOutIBMRGBIndReg (IBMRGB_sync, 0, 0);
+  glintOutIBMRGBIndReg (IBMRGB_hsync_pos, 0, 0);
 
-    /* glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x08); */ /* disable DDOTCLK */
-    glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x0);
-    /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); */ /* Fast DAC mode */
-    glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, 0);
+  /* glintOutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0x08); *//* disable DDOTCLK */
+  glintOutIBMRGBIndReg (IBMRGB_pwr_mgmt, 0, 0x0);
+  /* glintOutIBMRGBIndReg(IBMRGB_dac_op, 0, DPE_ENABLE | DSR_DAC_SLOW); *//* Fast DAC mode */
+  glintOutIBMRGBIndReg (IBMRGB_dac_op, 0, 0);
 
-    glintOutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
-    glintOutIBMRGBIndReg(IBMRGB_curs, 0, 0x20);
+  glintOutIBMRGBIndReg (IBMRGB_pal_ctrl, 0, 0);
+  glintOutIBMRGBIndReg (IBMRGB_curs, 0, 0x20);
 
-    switch (glintInfoRec.depth)
-      {
-      case 32: 
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 6);
-	glintOutIBMRGBIndReg(IBMRGB_32bpp, 0, 0x03);
-	break;
-	/* not supported by glint 
-      case 24:
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
-	glintOutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
-	break;*/
-      case 16:
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
- 	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC7);
-	break;
-      case 15: 
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4);
- 	glintOutIBMRGBIndReg(IBMRGB_16bpp, 0, 0xC5);
-	break;
-      case 8: 
-	glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 3);
-	glintOutIBMRGBIndReg(IBMRGB_8bpp, 0, 0x00);
-	break;
-      }
+  switch (glintInfoRec.depth)
+    {
+    case 32:
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 6);
+      glintOutIBMRGBIndReg (IBMRGB_32bpp, 0, 0x03);
+      break;
+      /* not supported by glint 
+         case 24:
+         glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 5);
+         glintOutIBMRGBIndReg(IBMRGB_24bpp, 0, 0x01);
+         break; */
+    case 16:
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 4);
+      glintOutIBMRGBIndReg (IBMRGB_16bpp, 0, 0xC7);
+      break;
+    case 15:
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 4);
+      glintOutIBMRGBIndReg (IBMRGB_16bpp, 0, 0xC5);
+      break;
+    case 8:
+      glintOutIBMRGBIndReg (IBMRGB_pix_fmt, 0xf8, 3);
+      glintOutIBMRGBIndReg (IBMRGB_8bpp, 0, 0x00);
+      break;
+    }
 
-    /* if 526 oder 624 ramdac */	
-    if ((ActualDacId == RGB526DB_RAMDAC) ||
-	(ActualDacId == RGB526_RAMDAC)   ||
-	(ActualDacId == RGB624DB_RAMDAC) ||
-	(ActualDacId == RGB624_RAMDAC))
+  /* if 526 oder 624 ramdac */
+  if ((ActualDacId == RGB526DB_RAMDAC) ||
+      (ActualDacId == RGB526_RAMDAC) ||
+      (ActualDacId == RGB624DB_RAMDAC) ||
+      (ActualDacId == RGB624_RAMDAC))
     {
 
-	RefClkSpeed = IS_3DLABS_TX_MX_CLASS(coprotype) ? 
-	    GLINT_DEFAULT_CLOCK_SPEED_DELTA : PERMEDIA_REF_CLOCK_SPEED;
+      RefClkSpeed = IS_3DLABS_TX_MX_CLASS (coprotype) ?
+	GLINT_DEFAULT_CLOCK_SPEED_DELTA : PERMEDIA_REF_CLOCK_SPEED;
 
-	PixelClock  = clock * 1000;
+      PixelClock = clock * 1000;
 
-	SystemClock = IS_3DLABS_TX_MX_CLASS(coprotype) ?
-	    GLINT_DEFAULT_CLOCK_SPEED : 
-	    (1000000000L) / ((GLINT_READ_REG(ChipConfig) >> 28) + 10);
-      
-	SystemClock /= 100;
-	RefClkSpeed /= 100;
-	PixelClock  /= 100;
-	CheckRGBClockInteraction(&PixelClock, &SystemClock);
+      SystemClock = IS_3DLABS_TX_MX_CLASS (coprotype) ?
+	GLINT_DEFAULT_CLOCK_SPEED :
+	(1000000000L) / ((GLINT_READ_REG (ChipConfig) >> 28) + 10);
 
-	P=M=N=C=0;
-	PixelClock = 
-	    RGB526_CalculateMNPCForClock(RefClkSpeed, PixelClock, 1, 650000, MaxVco,
-					 &M, &N, &P, &C);
-#ifdef DEBUG      
-	if (!PixelClock)
-	    ErrorF("Glit - RGB526_CalculateMNPCForClock == 0!\n");
-	else
-	    ErrorF("Systemclock: %d\nRefClkSpeed: %d\nPixelclock: %d\nPixelclockregister: M:0x%x N:0x%x P:0x%x C:0x%x.\n", SystemClock*100, RefClkSpeed*100, PixelClock*100, M, N, P, C);
-#endif      
-	glintOutIBMRGBIndReg(IBMRGB_pll_ctrl1, 0x00, 0x5);
-	glintOutIBMRGBIndReg(IBMRGB_pll_ctrl2, 0x00, 0x0);
-      
-	glintOutIBMRGBIndReg(IBMRGB_m0, 0x00, M);
-	glintOutIBMRGBIndReg(IBMRGB_n0, 0x00, N);
-	glintOutIBMRGBIndReg(IBMRGB_p0, 0x00, P);
-	glintOutIBMRGBIndReg(IBMRGB_c0, 0x00, C);
-      
+      SystemClock /= 100;
+      RefClkSpeed /= 100;
+      PixelClock /= 100;
+      CheckRGBClockInteraction (&PixelClock, &SystemClock);
 
-	glintOutIBMRGBIndReg(IBMRGB_sysclk, 0x00, 0x05);
+      P = M = N = C = 0;
+      PixelClock =
+	RGB526_CalculateMNPCForClock (RefClkSpeed, PixelClock, 1, 650000, MaxVco,
+				      &M, &N, &P, &C);
+#ifdef DEBUG
+      if (!PixelClock)
+	ErrorF ("Glit - RGB526_CalculateMNPCForClock == 0!\n");
+      else
+	ErrorF ("Systemclock: %d\nRefClkSpeed: %d\nPixelclock: %d\nPixelclockregister: M:0x%x N:0x%x P:0x%x C:0x%x.\n", SystemClock * 100, RefClkSpeed * 100, PixelClock * 100, M, N, P, C);
+#endif
+      glintOutIBMRGBIndReg (IBMRGB_pll_ctrl1, 0x00, 0x5);
+      glintOutIBMRGBIndReg (IBMRGB_pll_ctrl2, 0x00, 0x0);
 
-	P = 1;
-	SystemClock =
-	    RGB526_CalculateMNPCForClock(RefClkSpeed, PixelClock, 0, 650000, MaxVco, 
-					 &M, &N, &P, &C);
-#ifdef DEBUG	  
-	if (!SystemClock)
-	    ErrorF("Glit - RGB526_CalculateMNPCForClock == 0!\n");
-	else
-	    ErrorF("Systemclockregister: M:0x%x N:0x%x P:0x%x C:0x%x.\n", M, N, P, C);
+      glintOutIBMRGBIndReg (IBMRGB_m0, 0x00, M);
+      glintOutIBMRGBIndReg (IBMRGB_n0, 0x00, N);
+      glintOutIBMRGBIndReg (IBMRGB_p0, 0x00, P);
+      glintOutIBMRGBIndReg (IBMRGB_c0, 0x00, C);
+
+
+      glintOutIBMRGBIndReg (IBMRGB_sysclk, 0x00, 0x05);
+
+      P = 1;
+      SystemClock =
+	RGB526_CalculateMNPCForClock (RefClkSpeed, PixelClock, 0, 650000, MaxVco,
+				      &M, &N, &P, &C);
+#ifdef DEBUG
+      if (!SystemClock)
+	ErrorF ("Glit - RGB526_CalculateMNPCForClock == 0!\n");
+      else
+	ErrorF ("Systemclockregister: M:0x%x N:0x%x P:0x%x C:0x%x.\n", M, N, P, C);
 #endif
 
-	/* set the registers */
-	glintOutIBMRGBIndReg(IBMRGB_sysclk_m, 0x00, M);
-	glintOutIBMRGBIndReg(IBMRGB_sysclk_n, 0x00, N);
-	glintOutIBMRGBIndReg(IBMRGB_sysclk_p, 0x00, P);
-	glintOutIBMRGBIndReg(IBMRGB_sysclk_c, 0x00, C);
+      /* set the registers */
+      glintOutIBMRGBIndReg (IBMRGB_sysclk_m, 0x00, M);
+      glintOutIBMRGBIndReg (IBMRGB_sysclk_n, 0x00, N);
+      glintOutIBMRGBIndReg (IBMRGB_sysclk_p, 0x00, P);
+      glintOutIBMRGBIndReg (IBMRGB_sysclk_c, 0x00, C);
     }
-    return 1;
+  return 1;
 }

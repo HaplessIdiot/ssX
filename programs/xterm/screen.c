@@ -25,7 +25,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.20 1997/10/13 17:16:59 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.21 1997/10/26 13:25:49 dawes Exp $ */
 
 /* screen.c */
 
@@ -79,7 +79,9 @@ extern void free();
 #endif
 
 #ifdef ISC
+#ifndef SYSV
 #include <sys/termio.h>
+#endif
 #define TIOCGPGRP TCGETPGRP
 #define TIOCSPGRP TCSETPGRP
 #endif

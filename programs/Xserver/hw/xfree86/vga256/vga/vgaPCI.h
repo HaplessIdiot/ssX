@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.36 1997/10/13 17:16:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.37 1997/10/25 13:50:56 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -94,8 +94,8 @@
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
-#define PCI_CHIP_9680		0x9680
-#define PCI_CHIP_9682		0x9682
+#define PCI_CHIP_9680		0x9680 /* XXX is that right? */
+#define PCI_CHIP_9397		0x9397
 
 /* Matrox */
 #define PCI_CHIP_MGA2085	0x0518
@@ -264,14 +264,11 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},
     {PCI_VENDOR_TRIDENT, "Trident", {
-				{PCI_CHIP_9320,		"TGUI 9320"},
+				{PCI_CHIP_9320,		"Cyber 9320"},
 				{PCI_CHIP_9420,		"TGUI 9420"},
 				{PCI_CHIP_9440,		"TGUI 9440"},
-				{PCI_CHIP_9660,		"TGUI 9660/9680/9682"},
-#if 0
-				{PCI_CHIP_9680,		"TGUI 9680"},
-				{PCI_CHIP_9682,		"TGUI 9682"},
-#endif
+				{PCI_CHIP_9660,		"TGUI 96xx"},
+				{PCI_CHIP_9680,		"Cyber 9397"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_MATROX,	"Matrox", {
 				{PCI_CHIP_MGA2085,	"MGA 2085PX"},

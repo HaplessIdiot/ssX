@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/Imakefile,v 3.12 1997/05/03 09:19:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/Imakefile,v 3.13 1997/07/29 12:08:20 hohndel Exp $
 
 
 
@@ -44,6 +44,10 @@ OS_SUBDIR = bsdi
 # else
 OS_SUBDIR = bsd
 # endif
+#endif
+
+#if defined(NetBSDArchitecture) && defined(Arm32Architecture)
+OS_SUBDIR = bsd
 #endif
 
 #if defined(i386MachArchitecture) || defined(OsfArchitecture)

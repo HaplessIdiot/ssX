@@ -65,6 +65,16 @@ Flags
     long. Most chipsets here will be char, which then does not need to
     be specified.
 
+    HARDWARE_CURSOR_SYNC_NEEDED
+
+    Indicates that before loading a cursor to the framebuffer or using
+    a hardware cursor, perform a Sync() if needed
+
+    HARDWARE_CURSOR_INVERT_MASK
+
+    Indicates that the hardware requires the mask to be inverted when
+    loading. This effects how the cursors are realized.
+
 MaxWidth
 MaxHeight
 
@@ -119,11 +129,12 @@ GetInstalledColormaps()
    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP defined. Normally it should be set
    to vgaGetInstalledColormaps for vga based chipsets.
 
-UseHWCursor()
+UseHWCursor(pScreen)
 
     This optional function enables the drivers to specify other conditions
     under which the hardware cursor can not be used. For instance hardware 
     cursors might not be usuable with interlaced modes. The function should
-    return TRUE if a hardware can be used.
+    return TRUE if a hardware can be used. It also allows the driver to access
+    the screen information for the current mode, and act accordingly.
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES.cursor,v 3.2 1997/09/25 07:31:15 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES.cursor,v 3.3 1997/09/29 08:40:33 hohndel Exp $
