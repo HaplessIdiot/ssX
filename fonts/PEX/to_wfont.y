@@ -1,5 +1,5 @@
 %{
-/* $TOG: to_wfont.y /main/10 1998/02/09 11:54:22 kaleb $ */
+/* $Xorg: to_wfont.y,v 1.3 2000/08/17 19:42:52 cpqbld Exp $ */
 
 /*****************************************************************
 
@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.8 1998/10/25 07:11:10 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.9 2000/01/21 02:29:37 dawes Exp $ */
 
 
 #define YYMAXDEPTH 10000

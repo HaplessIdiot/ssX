@@ -1,5 +1,9 @@
-XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.16 2000/12/08 21:53:05 dawes Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/21 16:42:31 coskrey Exp $
+
+
+
+
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.17 2000/12/09 20:25:05 herrb Exp $
 
 
 /*
