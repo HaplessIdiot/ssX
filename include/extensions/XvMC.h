@@ -5,7 +5,7 @@
 #define XvMCNumEvents 0
 #define XvMCNumErrors 3
 #define XvMCVersion 0
-#define XvMCRevsion 1
+#define XvMCRevision 1
 
 #define XvMCBadContext          0
 #define XvMCBadSurface          1

@@ -156,8 +156,9 @@ typedef struct {
   CARD32 length B32; 
   CARD16 width_actual B16;
   CARD16 height_actual B16;
-  CARD32 padl3 B32;
-  CARD32 padl4 B32;
+  CARD16 num_palette_entries B16;
+  CARD16 entry_bytes B16;
+  CARD8  component_order[4];
   CARD32 padl5 B32;
   CARD32 padl6 B32;
   CARD32 padl7 B32;

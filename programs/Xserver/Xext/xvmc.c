@@ -102,7 +102,7 @@ ProcXvMCQueryVersion(ClientPtr client)
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
     rep.major = XvMCVersion;
-    rep.minor = XvMCRevsion;
+    rep.minor = XvMCRevision;
     WriteToClient(client, sizeof(xvmcQueryVersionReply), (char*)&rep);
     return Success;
 }
@@ -139,8 +139,8 @@ ProcXvMCListSurfaceTypes(ClientPtr client)
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.length = 0;
     rep.num = (adaptor) ? adaptor->num_surfaces : 0;
+    rep.length = rep.num * sizeof(xvmcSurfaceInfo) >> 2;
  
     WriteToClient(client, sizeof(xvmcListSurfaceTypesReply), (char*)&rep);
 
@@ -331,13 +331,15 @@ ProcXvMCDestroySurface(ClientPtr client)
 static int 
 ProcXvMCCreateSubpicture(ClientPtr client)
 {
+    Bool image_supported = FALSE;
     CARD32 *data = NULL;
-    int dwords = 0;
-    int result;
+    int i, result, dwords = 0;
     XvMCContextPtr pContext;
     XvMCSubpicturePtr pSubpicture;
     XvMCScreenPtr pScreenPriv;
     xvmcCreateSubpictureReply rep;
+    XvMCAdaptorPtr adaptor;
+    XvMCSurfaceInfoPtr surface = NULL;
     REQUEST(xvmcCreateSubpictureReq);
     REQUEST_SIZE_MATCH(xvmcCreateSubpictureReq);
 
@@ -345,6 +347,35 @@ ProcXvMCCreateSubpicture(ClientPtr client)
         return (XvMCBadContext + XvMCErrorBase);
 
     pScreenPriv = XVMC_GET_PRIVATE(pContext->pScreen);
+
+    adaptor = &(pScreenPriv->adaptors[pContext->adapt_num]); 
+
+    /* find which surface this context supports */
+    for(i = 0; i < adaptor->num_surfaces; i++) {
+	if(adaptor->surfaces[i]->surface_type_id == pContext->surface_type_id){
+	   surface = adaptor->surfaces[i];
+	   break;
+	}
+    } 
+
+    if(!surface) return BadMatch;
+
+    /* make sure this surface supports that xvimage format */
+    if(!surface->compatible_subpictures) return BadMatch;
+
+    for(i = 0; i < surface->compatible_subpictures->num_xvimages; i++) {
+      if(surface->compatible_subpictures->xvimage_ids[i] == stuff->xvimage_id) {
+	   image_supported = TRUE;
+	   break;
+      }
+    }
+
+    if(!image_supported) return BadMatch;
+
+    /* make sure the size is OK */
+    if((stuff->width > surface->subpicture_max_width) ||
+       (stuff->height > surface->subpicture_max_height))
+	return BadValue;
 
     if(!(pSubpicture = xalloc(sizeof(XvMCSubpictureRec))))
         return BadAlloc;
@@ -373,6 +404,12 @@ ProcXvMCCreateSubpicture(ClientPtr client)
     rep.sequenceNumber = client->sequence;
     rep.width_actual = pSubpicture->width;
     rep.height_actual = pSubpicture->height;
+    rep.num_palette_entries = pSubpicture->num_palette_entries;
+    rep.entry_bytes = pSubpicture->entry_bytes;
+    rep.component_order[0] = pSubpicture->component_order[0];
+    rep.component_order[1] = pSubpicture->component_order[1];
+    rep.component_order[2] = pSubpicture->component_order[2];
+    rep.component_order[3] = pSubpicture->component_order[3];
     rep.length = dwords;
 
     WriteToClient(client, sizeof(xvmcCreateSubpictureReply), (char*)&rep);
@@ -412,7 +449,9 @@ ProcXvMCListSubpictureTypes(ClientPtr client)
     ScreenPtr pScreen;
     XvMCAdaptorPtr adaptor = NULL;
     XvMCSurfaceInfoPtr surface = NULL;
-    int i;
+    xvImageFormatInfo info;
+    XvImagePtr pImage;
+    int i, j;
     REQUEST(xvmcListSubpictureTypesReq);
     REQUEST_SIZE_MATCH(xvmcListSubpictureTypesReq);
 
@@ -444,15 +483,50 @@ ProcXvMCListSubpictureTypes(ClientPtr client)
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.length = 0;
+    rep.num = 0;
     if(surface->compatible_subpictures) 
-	rep.length = surface->compatible_subpictures->num_xvimages;
+	rep.num = surface->compatible_subpictures->num_xvimages;
+
+    rep.length = rep.num * sizeof(xvImageFormatInfo) >> 2;
 
     WriteToClient(client, sizeof(xvmcListSubpictureTypesReply), (char*)&rep);
-    
-    if(rep.length)
-	WriteToClient(client, rep.length << 2, 
-			(char*)(surface->compatible_subpictures->xvimage_ids));
+
+    for(i = 0; i < rep.num; i++) {
+	pImage = NULL;
+	for(j = 0; j < adaptor->num_subpictures; j++) {
+	    if(surface->compatible_subpictures->xvimage_ids[i] ==
+	       adaptor->subpictures[j]->id)
+	    {
+		pImage = adaptor->subpictures[j];
+	        break;
+	    }
+	}
+	if(!pImage) return BadImplementation;
+
+        info.id = pImage->id;      
+	info.type = pImage->type;  
+        info.byte_order = pImage->byte_order; 
+        memcpy(&info.guid, pImage->guid, 16);      
+        info.bpp = pImage->bits_per_pixel;         
+        info.num_planes = pImage->num_planes;      
+        info.depth = pImage->depth;        
+        info.red_mask = pImage->red_mask;  
+        info.green_mask = pImage->green_mask;      
+        info.blue_mask = pImage->blue_mask;        
+        info.format = pImage->format;      
+        info.y_sample_bits = pImage->y_sample_bits;        
+        info.u_sample_bits = pImage->u_sample_bits;        
+        info.v_sample_bits = pImage->v_sample_bits;        
+        info.horz_y_period = pImage->horz_y_period;        
+        info.horz_u_period = pImage->horz_u_period;        
+        info.horz_v_period = pImage->horz_v_period;        
+        info.vert_y_period = pImage->vert_y_period;        
+        info.vert_u_period = pImage->vert_u_period;        
+        info.vert_v_period = pImage->vert_v_period;        
+        memcpy(&info.comp_order, pImage->component_order, 32);     
+        info.scanline_order = pImage->scanline_order;
+	WriteToClient(client, sizeof(xvImageFormatInfo), (char*)&info);
+    }
 
     return Success;
 }
