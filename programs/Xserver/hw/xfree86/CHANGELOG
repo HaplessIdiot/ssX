@@ -1,4 +1,4 @@
-XFree86 3.1.2Bm (24 January 1996)
+XFree86 3.1.2Bm (25 January 1996)
 273. Major updates to OS/2 support (Holger Veit).
 272. Update xdpyinfo for the latest XFree86-Misc changes, and update xset
      to allow the keyboard repeat parameters to be changed (Joe Moss).
