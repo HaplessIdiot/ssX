@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.59 2001/11/30 12:11:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.61 2002/04/04 14:05:44 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2896,7 +2896,7 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     }
 
     /* Turn the screen on/off */
-    SEQ01 |= VGArSQ(0x01) & ~0x20;
+    SEQ01 |= VGArSR(0x01) & ~0x20;
     VGAwSR(0x01, SEQ01);
 
     /* Turn the LCD on/off */
