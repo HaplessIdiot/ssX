@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.21 2000/02/13 06:15:29 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.22 2000/03/17 15:50:29 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -44,6 +44,7 @@ cs_CS						cs_CZ.ISO8859-2
 cs_CS.ISO8859-2					cs_CZ.ISO8859-2
 cs_CZ						cs_CZ.ISO8859-2
 cs_CZ.iso88592					cs_CZ.ISO8859-2
+cs_CZ.ISO_8859-2				cs_CZ.ISO8859-2
 XCOMM cz is old name for cs, should be deleted in the future:
 cz						cs_CZ.ISO8859-2
 cz_CZ						cs_CZ.ISO8859-2
@@ -546,6 +547,7 @@ cs_CS:						cs_CZ.ISO8859-2
 cs_CS.ISO8859-2:				cs_CZ.ISO8859-2
 cs_CZ:						cs_CZ.ISO8859-2
 cs_CZ.iso88592:					cs_CZ.ISO8859-2
+cs_CZ.ISO_8859-2:				cs_CZ.ISO8859-2
 XCOMM cz is old name for cs, should be deleted in the future:
 cz:						cs_CZ.ISO8859-2
 cz_CZ:						cs_CZ.ISO8859-2
