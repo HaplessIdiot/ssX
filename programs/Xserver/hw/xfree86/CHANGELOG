@@ -1,4 +1,5 @@
 XFree86 4.0.1e (3 November 2000)
+ 865. Use vgaHW module to fix font save/restore in i128 driver (Robin Cutshaw).
  864. Fixed (hopefully) a Xinerama problem with BE clients (Mark Vojkovich).
  863. Modifications to GLw to allow it to build without Motif, and
       integrate it into the regular build process (#4142,
@@ -11424,4 +11425,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1374 2000/11/02 20:39:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1375 2000/11/03 00:09:24 mvojkovi Exp $
