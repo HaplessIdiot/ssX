@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.63 2003/02/14 22:59:09 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.64 2003/02/27 05:07:39 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -181,7 +181,9 @@
   tj		Tajik
   tml		Tamil
   tel		Telugu
-  th		Thai
+  th		Thai (Kedmanee)
+  th_tis	Thai (TIS-820.2538)
+  th_pat	Thai (Pattachote)
   tr		Turkish 
   tr_f		Turkish (F)
   ua		Ukrainian 
