@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.5 2001/05/08 08:14:09 alanh Exp $ */
 
 #include "win.h"
 
@@ -44,7 +44,10 @@ winQueryScreenDIBFormat (ScreenPtr pScreen, BITMAPINFOHEADER *pbmih)
   /* Create a memory bitmap compatible with the screen */
   hbmp = CreateCompatibleBitmap (pScreenPriv->hdcScreen, 1, 1);
   if (hbmp == NULL)
-    return FALSE;
+    {
+      ErrorF ("winQueryScreenDIBFormat () - CreateCompatibleBitmap failed\n");
+      return FALSE;
+    }
   
   /* Initialize our bitmap info header */
   ZeroMemory (pbmih, sizeof (BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
@@ -133,7 +136,10 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
   pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
 				      + 256  * sizeof (RGBQUAD));
   if (pbmih == NULL)
-    return FALSE;
+    {
+      ErrorF ("winQueryRGBBitsAndMasks () - xalloc failed\n");
+      return FALSE;
+    }
 
   /* Get screen description */
   if (winQueryScreenDIBFormat (pScreen, pbmih))
@@ -195,7 +201,10 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
 				      + 256 * sizeof (RGBQUAD));
   if (pbmih == NULL)
-    return FALSE;
+    {
+      ErrorF ("winAllocateFBShadowGDI - xalloc () failed\n");
+      return FALSE;
+    }
 
   /* Query the screen format */
   fReturn = winQueryScreenDIBFormat (pScreen, pbmih);
@@ -212,7 +221,10 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
 					      NULL,
 					      0);
   if (pScreenPriv->hbmpShadow == NULL || pScreenInfo->pfb == NULL)
-    return FALSE;
+    {
+      ErrorF ("winAllocateFBShadowGDI () - CreateDIBSection failed\n");
+      return FALSE;
+    }
   else
     {
 #if CYGDEBUG
@@ -238,16 +250,23 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   ErrorF ("winAllocateFBShadowGDI () - Attempting a shadow blit\n");
 #endif
 
-  BitBlt (pScreenPriv->hdcScreen,
-	  0, 0,
-	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
-	  pScreenPriv->hdcShadow,
-	  0, 0,
-	  SRCCOPY);
-
+  fReturn = BitBlt (pScreenPriv->hdcScreen,
+		    0, 0,
+		    pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+		    pScreenPriv->hdcShadow,
+		    0, 0,
+		    SRCCOPY);
+  if (fReturn)
+    {
 #if CYGDEBUG
-  ErrorF ("winAllocateFBShadowGDI () - Shadow blit success\n");
+      ErrorF ("winAllocateFBShadowGDI () - Shadow blit success\n");
 #endif
+    }
+  else
+    {
+      ErrorF ("winAllocateFBShadowGDI () - Shadow blit failure\n");
+      return FALSE;
+    }
 
   /* Set screeninfo stride */
   pScreenInfo->dwStrideBytes = pScreenInfo->dwPaddedWidth;
@@ -462,12 +481,17 @@ winAdjustVideoModeShadowGDI (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  HDC			hdc = GetDC (NULL);
+  HDC			hdc;
   DWORD			dwDepth;
   
+  hdc = GetDC (NULL);
+
   /* We're in serious trouble if we can't get a DC */
   if (hdc == NULL)
-    return FALSE;
+    {
+      ErrorF ("winAdjustVideoModeShadowGDI () - GetDC () failed\n");
+      return FALSE;
+    }
 
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);

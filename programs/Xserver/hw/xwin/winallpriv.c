@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -49,7 +49,10 @@ winAllocatePrivates (ScreenPtr pScreen)
   /* Allocate memory for our private structure */
   pScreenPriv = (winPrivScreenPtr) xalloc (sizeof (*pScreenPriv));
   if (!pScreenPriv)
-    return FALSE;
+    {
+      ErrorF ("winAllocatePrivates () - xalloc () failed\n");
+      return FALSE;
+    }
 
   /* Initialize the memory of the private structure */
   ZeroMemory (pScreenPriv, sizeof (winPrivScreenRec));

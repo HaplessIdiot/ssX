@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -131,10 +131,14 @@ winCreateDefColormapNativeGDI (ScreenPtr pScreen)
   /* Allocate an X colormap, owned by client 0 */
   if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pcmap,
 		     AllocNone, 0) != Success)
-    return FALSE;
+    {
+      ErrorF ("winCreateDefColormapNativeGDI () - CreateColormap failed\n");
+      return FALSE;
+    }
   if (pcmap == NULL)
     {
-      FatalError ("winCreateDefColormap () - Colormap could not be created\n");
+      ErrorF ("winCreateDefColormap () - Colormap could not be created\n");
+      return FALSE;
     }
   ErrorF ("winCreateDefColormap () - Created a colormap\n");
 
