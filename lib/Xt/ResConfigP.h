@@ -52,6 +52,7 @@ dealings in this Software without prior written authorization from the IBM
 Corporation.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _RESCONFIGP_H
 #define _RESCONFIGP_H
