@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.62 2000/12/28 00:51:52 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.63 2000/12/30 19:15:48 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_151">Patch #151 - 2001/3/10 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A>
 <LI><A HREF="#xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A>
@@ -194,6 +195,84 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_151">Patch #151 - 2001/3/10 - XFree86 4.0.2</A></H1>
+<ul>
+	<li>patch from Juliusz Chroboczek &lt;jch@pps.jussieu.fr&gt; which
+	  alters the behaviour of selections in XTerm.
+	  It is believed to follow the ICCCM + UTF8_STRING to the letter, both
+	  in UTF-8 and in eight-bit mode.  From his description:
+	  <ul>
+	  <li>When compiled against XFree86 4.0.2, the patched XTerm will make
+	    the selection available as COMPOUND_TEXT, STRING or UTF8_STRING in
+	    both modes.  It will request selections in the following order:
+	    <p>
+	      UTF-8 mode: UTF8_STRING, TEXT, COMPOUND_TEXT, STRING.<br>
+	      eight-bit mode: TEXT, COMPOUND_TEXT, UTF8_STRING, STRING.
+
+	  <li>When compiled against an earlier version of XFree86 (or compiled with
+	    OPT_UTF8_API=0), it will still obey the ICCCM, but will neither
+	    request nor provide UTF8_STRING in eight-bit mode, and neither TEXT
+	    nor COMPOUND_TEXT in UTF-8 mode.
+	  <li>For compatibility with previous versions of XTerm, a resource
+	    <code>i18nSelections</code> is provided, please see the manpage for
+	    details.  However, due to an unexpected combination of ICCCM
+	    extensions by various bits and pieces of the libraries, interacting
+	    with previous versions of XTerm will work in many locales even
+	    without this flag.  (Please do not set this resource to true by
+	    default, as this would violate the ICCCM.)
+	  </ul>
+
+	<li>improved error checking/reporting in VTInitI18N(), ensuring that
+	  lack of input method styles is treated distinctly from a mismatch.
+
+	<li>remove an incorrect ifdef from patch #141 which suppressed
+	  overstriking to simulate bold font when xterm was compiled to support
+	  wide characters (report/analysis by Adam M Costello
+	  &lt;amc@cs.berkeley.edu&gt;, fixes Debian bugs #76404, #77575).
+
+	<li>modify <code>RequestResize()</code> function to save/restore window
+	  manager hints.  Its call to <code>XtMakeResizeRequest()</code> had
+	  the undesirable side-effect of clearing window manager hints, e.g.,
+	  when switching to 132-columns via DECCOLM escape sequence.  Window
+	  manager hints make it simple to resize xterm in terms of character
+	  cells rather than pixels (reported by Christian Weisgerber as well
+	  as Debian bug #79939).
+	  <p>
+	  This applies to the normal configuration.  When built with toolbar
+	  support, the hints are applied to a different widget level (more
+	  work will be needed to make hints work with the toolbar).
+
+	<li>fix a redefinition warning for resize.c on OpenBSD (patch by
+	  Christian Weisgerber).
+
+	<li>change resource corresponding to <code>-T</code> option to match
+	  Xt library's <code>-title</code>, i.e.,  <code>.title</code>
+	  rather than <code>*title</code> so the command-line options are
+	  interchangeable as documented (Debian bug report #68843).
+
+	<li>add script used from autoconf'd makefile for installing manpages,
+	  since recent XFree86 changing the way section numbers are represented
+	  makes the install dependent on extra scripts.
+
+	<li>add configure check for freetype libraries and configure option
+	  --disable-freetype to override this feature.
+
+	<li>modify some configure script macros to avoid using changequote(),
+	  which has been rendered useless in the latest autoconf alpha 2.49c
+
+	<li>update config.guess, config.sub to 2001-2-13
+
+	<li>remove redundant/contradictory __CYGWIN__ definitions from resize.c
+
+	<li>correct manpage typo introduced by X11R6.5 resync.
+</ul>
+	Changes from XFree86 4.0.2:
+<ul>
+	<li>add definition of <code>_POSIX_C_SOURCE</code> for Solaris to
+	  make this compile with <code>gcc -ansi -pedantic</code> (report
+	  by &lt;mark@zang.com&gt;.
+</ul>
 
 <H1><A NAME="xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A></H1>
 <ul>

@@ -2,7 +2,7 @@
 .\"
 .\" updated by Thomas E. Dickey for XFree86, Februrary 1998.
 .\"
-.\" $XFree86: xc/programs/xterm/resize.man,v 1.7 2001/01/24 00:06:50 dawes Exp $
+.\" $XFree86: xc/programs/xterm/resize.man,v 1.8 2001/01/27 18:21:24 dawes Exp $
 .TH RESIZE 1 __vendorversion__
 .SH NAME
 resize \- set TERMCAP and terminal settings to current xterm window size
