@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.10 2002/01/25 21:56:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.11 2002/01/29 01:04:06 dawes Exp $
  */
 
 #ifndef _VESA_H_
@@ -52,6 +52,7 @@
 
 /* VBE/DDC support */
 #include "vbe.h"
+#include "vbeModes.h"
 #include "xf86DDC.h"
 
 /* ShadowFB support */
@@ -115,12 +116,6 @@ typedef struct _VESARec
     OptionInfoPtr Options;
     IOADDRESS ioBase;
 } VESARec, *VESAPtr;
-
-typedef struct _ModeInfoData {
-    int mode;
-    VbeModeInfoBlock *data;
-    VbeCRTCInfoBlock *block;
-} ModeInfoData;
 
 
 #endif /* _VESA_H_ */

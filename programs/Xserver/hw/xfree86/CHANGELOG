@@ -1,9 +1,14 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 220. Add some mode collection/handling interfaces to the vbe module,
+      which makes it easier for drivers to set modes via the video BIOS
+      (David Dawes).
+ 219. I830/845 Workaround for BIOSes which force 1MB stolen memory, and
+      agpgart related fix (#5300, Abraham vd Merwe).
  218. Add NetBSD specific PCI access functions for powerpc and alpha 
       platforms (Charles Hannum). 
  217. Split bsd_video.c into architecture specific files, and merge NetBSD
       alpha and powerpc support there. (Matthieu Herrb, Simon Burge, 
-      Charles Hannum & other NetBSD developpers). 
+      Charles Hannum & other NetBSD developers). 
  216. Define CSRG_BASED for Darwin and fix xman so it works on Darwin
       (Torrey T. Lyons).
  215. On Darwin, fix imake to find Gcc and correct config for RawCppCmd
@@ -14973,4 +14978,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2275 2002/08/06 13:08:36 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2276 2002/08/06 13:13:11 herrb Exp $

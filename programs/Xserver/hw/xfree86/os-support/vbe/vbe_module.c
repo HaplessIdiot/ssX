@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe_module.c,v 1.2 1999/12/06 03:57:06 robin Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -16,7 +16,7 @@ static XF86ModuleVersionInfo vbeVersRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    1, 0, 0,
+    1, 1, 0,
     ABI_CLASS_VIDEODRV,		/* needs the video driver ABI */
     ABI_VIDEODRV_VERSION,
     MOD_CLASS_NONE,

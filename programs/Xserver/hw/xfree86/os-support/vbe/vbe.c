@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.18 2001/10/01 13:44:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.20 2002/04/04 14:05:55 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -14,6 +14,8 @@
 #include "xf86_ansic.h"
 #include "vbe.h"
 #include "Xarch.h"
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 
 #define VERSION(x) VBE_VERSION_MAJOR(x),VBE_VERSION_MINOR(x)
 
@@ -101,6 +103,13 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
 	goto error;
     }
     
+    xf86DrvMsgVerb(screen, X_INFO, 4,
+		"VbeVersion is %d, OemStringPtr is 0x%08x,\n"
+		"\tOemVendorNamePtr is 0x%08x, OemProductNamePtr is 0x%08x,\n"
+		"\tOemProductRevPtr is 0x%08x\n",
+		vbe->VbeVersion, vbe->OemStringPtr, vbe->OemVendorNamePtr,
+		vbe->OemProductNamePtr, vbe->OemProductRevPtr);
+
     xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE Version %i.%i\n",
 		   VERSION(vbe->VbeVersion));
     xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE Total Mem: %i kB\n",
@@ -111,11 +120,14 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     if (B_O16(vbe->VbeVersion) >= 0x200) {
 	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Software Rev: %i.%i\n",
 		    VERSION(vbe->OemSoftwareRev));
-	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Vendor: %s\n",
+	if (vbe->OemVendorNamePtr)
+	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Vendor: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemVendorNamePtr)));
-	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product: %s\n",
+	if (vbe->OemProductNamePtr)
+	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemProductNamePtr)));
-	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product Rev: %s\n",
+	if (vbe->OemProductRevPtr)
+	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product Rev: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemProductRevPtr)));
     }
     vip = (vbeInfoPtr)xnfalloc(sizeof(vbeInfoRec));
@@ -905,6 +917,7 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
     return (pmi);
 }
 
+#if 0
 vbeModeInfoPtr
 VBEBuildVbeModeList(vbeInfoPtr pVbe, VbeInfoBlock *vbe)
 {
@@ -952,7 +965,7 @@ VBECalcVbeModeIndex(vbeModeInfoPtr m, DisplayModePtr mode, int bpp)
     }
     return 0;
 }
-
+#endif
 
 void
 VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
@@ -989,3 +1002,65 @@ VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
 	    VBESetVBEMode(pVbe, vbe_sr->stateMode, NULL);
 
 }
+
+int
+VBEGetPixelClock(vbeInfoPtr pVbe, int mode, int clock)
+{
+    /*
+    Input:
+	AX := 4F0Bh VBE Get Pixel Clock
+	BL := 01h Get Pixel Clock
+	ECX := pixel clock in units of Hz
+        DX := mode number
+     
+    Output:
+	AX := VBE Return Status
+	ECX := Closest pixel clock
+     */
+
+    pVbe->pInt10->num = 0x10;
+    pVbe->pInt10->ax = 0x4f0b;
+    pVbe->pInt10->bx = 0x01;
+    pVbe->pInt10->cx = clock;
+    pVbe->pInt10->dx = mode;
+    xf86ExecX86int10(pVbe->pInt10);
+
+    if (pVbe->pInt10->ax != 0x4f)
+	return (0);
+
+    return (pVbe->pInt10->cx);
+}
+
+Bool
+VBEDPMSSet(vbeInfoPtr pVbe, int mode)
+{
+    /*
+    Input:
+	AX := 4F10h DPMS
+	BL := 01h Set Display Power State
+	BH := requested power state
+     
+    Output:
+	AX := VBE Return Status
+     */
+
+    pVbe->pInt10->num = 0x10;
+    pVbe->pInt10->ax = 0x4f10;
+    pVbe->pInt10->bx = 0x01;
+    switch (mode) {
+    case DPMSModeOn:
+	break;
+    case DPMSModeStandby:
+	pVbe->pInt10->bx |= 0x100;
+	break;
+    case DPMSModeSuspend:
+	pVbe->pInt10->bx |= 0x200;
+	break;
+    case DPMSModeOff:
+	pVbe->pInt10->bx |= 0x400;
+	break;
+    }
+    xf86ExecX86int10(pVbe->pInt10);
+    return (pVbe->pInt10->ax == 0x4f);
+}
+

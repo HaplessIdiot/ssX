@@ -1,4 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.9 2001/08/13 19:35:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.10 2001/08/17 22:08:15 tsi Exp $
+
+
+/*
+ * This directory should probably be moved up one level -- to xfree86/vbe.
+ */
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -8,10 +13,10 @@ MODSRC = vbe_module.c
 MODOBJ = vbe_module.o
 #endif
 
-SRCS = vbe.c $(MODSRC)
-OBJS = vbe.o $(MODOBJ)
+SRCS = vbe.c vbeModes.c $(MODSRC)
+OBJS = vbe.o vbeModes.o $(MODOBJ)
 
-INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+INCLUDES = -I. -I$(XF86COMSRC) -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/int10 -I$(XF86SRC)/ddc \
 	   -I$(XF86SRC)/i2c
