@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.30 2003/12/16 17:35:07 twini Exp $ */
 /*
  * Global data and definitions
  *
@@ -1069,7 +1069,6 @@ unsigned char  SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void    SISWaitVBRetrace(ScrnInfoPtr pScrn);
 void           SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 void           SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
-Bool           InRegion(int x, int y, region r);
 #ifdef SISMERGED
 static void    SISMergePointerMoved(int scrnIndex, int x, int y);
 #endif
