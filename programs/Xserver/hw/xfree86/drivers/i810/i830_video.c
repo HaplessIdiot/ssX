@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.13 2004/03/29 16:25:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.14 2004/04/27 16:18:46 tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1412,10 +1412,6 @@ I830PutImage(ScrnInfoPtr pScrn,
    }
 
    /* update cliplist */
-   /*
-    * XXX Always draw the key.  LinDVD seems to fill the window background
-    * with a colour different from the key.  This works around that.
-    */
    if (!REGION_EQUAL(pScreen, &pPriv->clip, clipBoxes)) {
       REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
       xf86XVFillKeyHelper(pScreen, pPriv->colorKey, clipBoxes);
