@@ -25,9 +25,9 @@
  * dealings in this Software without prior written authorization from
  * Conectiva Linux.
  *
- * Authors: Paulo CÅÈsar Pereira de Andrade <pcpa@conectiva.com.br>
+ * Authors: Paulo CÈsar Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.16 2001/05/04 19:05:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.17 2001/05/25 21:43:16 paulo Exp $
  */
 
 #include "vesa.h"
@@ -366,7 +366,7 @@ VESAFreeRec(ScrnInfoPtr pScrn)
 {
     VESAPtr pVesa = VESAGetRec(pScrn);
     DisplayModePtr mode = pScrn->modes;
-
+#if 0
     /* I am not sure if the modes will ever get freed.
      * Anyway, the data unknown to other modules is being freed here.
      */
@@ -385,6 +385,7 @@ VESAFreeRec(ScrnInfoPtr pScrn)
 	    mode = mode->next;
 	} while (mode && mode != pScrn->modes);
     }
+#endif
     xfree(pVesa->monitor);
     xfree(pVesa->vbeInfo);
     xfree(pVesa->pal);
@@ -1110,17 +1111,20 @@ VESACloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     VESAPtr pVesa = VESAGetRec(pScrn);
 
-    VESASaveRestore(xf86Screens[scrnIndex], MODE_RESTORE);
-    VBESetGetPaletteData(pVesa->pVbe, TRUE, 0, 256,
-			  pVesa->savedPal, FALSE, TRUE);
-
-    VESAUnmapVidMem(pScrn);
+    if (pScrn->vtSema) {
+	VESASaveRestore(xf86Screens[scrnIndex], MODE_RESTORE);
+	VBESetGetPaletteData(pVesa->pVbe, TRUE, 0, 256,
+			     pVesa->savedPal, FALSE, TRUE);
+	VESAUnmapVidMem(pScrn);
+    }
     if (pVesa->shadowPtr) {
 	xfree(pVesa->shadowPtr);
 	pVesa->shadowPtr = NULL;
     }
-    if (pVesa->pDGAMode)
+    if (pVesa->pDGAMode) {
 	xfree(pVesa->pDGAMode);
+	pVesa->pDGAMode = NULL;
+    }
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pVesa->CloseScreen;
