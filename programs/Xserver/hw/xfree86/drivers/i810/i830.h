@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.8 2003/06/18 13:14:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.10 2003/10/08 15:48:40 eich Exp $ */
 
 /*
  * Authors:
@@ -183,6 +183,7 @@ typedef struct _I830Rec {
 
    Bool NeedRingBufferLow;
    Bool allowPageFlip;
+   Bool disableTiling;
 
    int auxPitch;
    int auxPitchBits;

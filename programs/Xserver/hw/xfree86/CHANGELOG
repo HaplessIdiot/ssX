@@ -1,4 +1,6 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 515. When the i830 driver's checks for sufficient memory for tiled mode
+      fail, don't later try to allocate with tiling enabled (David Dawes).
  514. Enable I845G_VBE_WORKAROUND in the i830 driver for all platforms, since
       this reportedly fixes VT switching problems on hardware other than the
       845G.
@@ -18008,7 +18010,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2894 2003/10/19 18:53:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2895 2003/10/21 01:45:46 dawes Exp $
 
 
 
