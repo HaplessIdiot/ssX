@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.16 2001/02/02 14:12:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.17 2001/02/02 14:15:42 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -169,6 +169,9 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
     	unsigned char m,n,p;
     	unsigned long clockused;
 
+	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+	    GLINT_SLOW_WRITE_REG(GCSRSecondaryGLINTMapEn, GCSRAperture);
+
 	/* Memory timings for the Appian J2000 board.
 	 * This is needed for the second head which is left un-initialized
 	 * by the bios, thus freezing the machine. */
@@ -212,7 +215,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CARD32 temp1, temp2, temp3, temp4;
 
-    if (pGlint->numMultiDevices == 2) {
+    if ((pGlint->numMultiDevices == 2) || (IS_J2000)) {
 	STOREREG(GCSRAperture, GCSRSecondaryGLINTMapEn);
     }
 
@@ -363,7 +366,7 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
      * so we memcpy the information */
     memcpy((CARD8*)pGlint->VGAdata,(CARD8*)pGlint->FbBase, 65536); 
 
-    if (pGlint->numMultiDevices == 2) {
+    if ((pGlint->numMultiDevices == 2) || (IS_J2000)) {
 	SAVEREG(GCSRAperture);
     }
 
@@ -429,9 +432,10 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     /* We can't rely on the vgahw layer copying the font information
      * back properly, due to problems with MMIO access to VGA space
      * so we memcpy the information */
-    memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
+    if (pGlint->STATE)
+    	memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
 
-    if (pGlint->numMultiDevices == 2) {
+    if ((pGlint->numMultiDevices == 2) || (IS_J2000)) {
 	RESTOREREG(GCSRAperture);
     }
 

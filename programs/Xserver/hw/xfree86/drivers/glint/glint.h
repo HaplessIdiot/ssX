@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.41 2001/02/01 10:04:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.42 2001/02/01 12:26:01 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -107,7 +107,6 @@ typedef struct {
     int                 irq;
     unsigned char *     IOBase;
     unsigned char *     IOBaseVGA;
-    CARD8		VGAdata[65536];
     unsigned char *	FbBase;
     long		FbMapSize;
     long		IOOffset;
@@ -126,7 +125,9 @@ typedef struct {
     Bool		ClippingOn;
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
+    CARD8		VGAdata[65536];
     Bool		VGAcore;
+    Bool		STATE;
     Bool		ScanlineDirect;
     int			MXFbSize;
     CARD32		rasterizerMode;

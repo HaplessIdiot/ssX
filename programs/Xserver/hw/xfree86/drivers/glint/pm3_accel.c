@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.18 2001/02/02 16:17:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.19 2001/02/02 16:28:28 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -353,7 +353,8 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(0, StartXSub);
     GLINT_SLOW_WRITE_REG(0, StartY);
     GLINT_SLOW_WRITE_REG(0, GLINTCount);
-    (*pGlint->AccelInfoRec->Sync)(pScrn);
+    if (*pGlint->AccelInfoRec->Sync)
+    	(*pGlint->AccelInfoRec->Sync)(pScrn);
     TRACE_EXIT("Permedia3InitializeEngine");
 }
 
