@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.10 1997/06/29 11:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.11 1997/07/06 05:30:57 dawes Exp $ */
 
 /*
  *
@@ -772,7 +772,7 @@ static unsigned char CMD_ICS5341[] = { 0x00, 0x20, 0x60, 0x40, 0xFF,
                                        0x10, 0x30, 0x50, 0x90, 0x70 };
 
 static unsigned char CMD_STG1703[] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
-                                       0x05, 0x02, 0x03, 0x04, 0xFF };
+                                       0x05, 0x02, 0x03, 0x09, 0x04 };
 
 static unsigned char CMD_CH8398[]  = { 0x04, 0xC4, 0x64, 0x74, 0xFF,
                                        0x24, 0x14, 0x34, 0xB4, 0xFF };

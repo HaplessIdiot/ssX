@@ -1,5 +1,5 @@
 /*
- * $TOG: cfb8line.c /main/32 1997/02/28 18:12:53 kaleb $
+ * $TOG: cfb8line.c /main/33 1997/07/17 19:33:47 kaleb $
  *
 Copyright (c) 1990  X Consortium
 
@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  *
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.3 1997/02/16 10:26:48 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.4 1997/07/05 15:16:26 dawes Exp $
  * Jeff Anton'x fixes: cfb8line.c   97/02/07
  */
 

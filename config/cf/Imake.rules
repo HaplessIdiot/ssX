@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $TOG: Imake.rules /main/221 1997/07/02 13:42:46 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.42 1997/07/06 05:30:31 dawes Exp $
+XCOMM rules:  $TOG: Imake.rules /main/222 1997/07/17 20:04:40 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.43 1997/07/10 06:36:06 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2464,22 +2464,16 @@ target::								@@\
 		*) curdir=$(CURRENT_DIR)/ ;; \				@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
-		itmp="$$i" \						@@\
+		itmp=`echo $$i | sed -e 's;^\./;;g' -e 's;/\./;/;g'`; \	@@\
 		curtmp="$(CURRENT_DIR)" \				@@\
 		toptmp=""; \						@@\
 		case "$$itmp" in \					@@\
 		    ../?*) \ 						@@\
-			while echo "$$itmp" | grep '^../' > /dev/null;\	@@\
+			while echo "$$itmp" | grep '^\.\./' > /dev/null;\	@@\
 			  do \						@@\
 			     toptmp="/`basename $$curtmp`$$toptmp"; \	@@\
 			     curtmp="`dirname $$curtmp`"; \		@@\
-			     itmp="`echo $$itmp | sed 's;../;;'`"; \	@@\
-			  done \					@@\
-		    ;; \						@@\
-		    ./?*) \						@@\
-			while echo "$$itmp" | grep '^./' > /dev/null;\	@@\
-			  do \						@@\
-			    itmp="`echo $$itmp | sed 's;./;;'`"; \	@@\
+			     itmp="`echo $$itmp | sed 's;\.\./;;'`"; \	@@\
 			  done \					@@\
 		    ;; \						@@\
 		esac; \							@@\

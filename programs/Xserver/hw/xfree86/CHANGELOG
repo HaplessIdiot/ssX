@@ -1,3 +1,26 @@
+XFree86 3.9k (14 July 1997)
+1125. Don't use EXTRA_DEFINES in Xserver/xkb/Imamkefile (#786, Kaleb Keithley).
+1124. Alternate way of fixing the "./" problem in Imake.rules 
+      (#785, Kaleb Keithley).
+1123. Install full path in dynamic libraries for SCO (#782, J. Kean Johnston).
+1122. Fix remaining problems with SCO OpenServer 5 support (#772,
+      J. Kean Johnston).
+1121. Fix support for older I128 cards (#771, Robin Cutshaw).
+1120. Add detection for C&T 68554, and fix detection of the 65550 revision
+      numbers (#770, David Bateman).
+1119. Fix STG170x support in tseng driver (#766, Koen Gadeyne).
+1118. Fix linkkit install problem in apm driver (#767, Holger Veit).
+1117. Add more resolutions to xf86config (#767, Holger Veit).
+1116. Add OS/2 diagnostic on network config (#767, Holger Veit).
+1115. Fix EditRes problems that show up on OS/2 (#767, Holger Veit).
+1114. Fix a problem in OS/2's imakesvc.cmd (#767, Holger Veit).
+1113. Fix lockup when the SVGA server dumps core with the MGA driver
+      on some OSs.
+1112. Fix a bug in cfb24GetSpans which can cause a server crash
+      (StarOffice will provoke this).
+1111. Fix the use of a C++ reserved word in xf86vmode.h.
+1110. Reset the DPMS state to ON when re-entering the server's VT.
+
 XFree86 3.9j (12 July 1997)
 1109. Process Xqueue events synchronously to avoid problems with
       accelerated servers.
@@ -13,7 +36,7 @@ XFree86 3.9j (12 July 1997)
 1102. Add cross compile definitions for LynxOS and add static vga server for
       LynxOS PowerPC (#757, Thomas Mueller).
 1101. Add bindist files for LynxOS (#756, Thomas Mueller).
-1100. Fix 24bpp on W32+STB170x cards (#755, David Bateman).
+1100.
 1099. Add handling for AST onboard Mach32 card (#754, Bryan Feir).
 1098. Fix a problem in Imake.rules that shows up when using Motif.rules.
 1097. Fix MGA lockup on SVR4.0.
@@ -5112,4 +5135,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.509 1997/07/12 11:00:29 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.510 1997/07/12 11:32:28 dawes Exp $

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.18 1997/01/18 06:52:40 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.19 1997/07/06 05:30:38 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -75,11 +75,7 @@ from the X Consortium.
  */
 
 #ifndef __EMX__
-#ifdef JKJ
-#  define XTRANSDEBUG 5
-#else
 #  define XTRANSDEBUG 1
-#endif
 #else
 #define XTRANSDEBUG 1
 #endif

@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.9 1997/07/06 05:30:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.10 1997/07/10 06:36:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1021,6 +1021,18 @@ Bool enter;
  			MGAStormSync();
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
+			if (xf86Exiting && xf86Info.caughtSignal)
+			{
+				/*
+				 * Without this a core dump can cause a
+				 * lockup on some platforms.
+				 */
+				xf86UnMapVidMem(vga256InfoRec.scrnIndex,
+						MMIO_REGION, MGAMMIOBase,
+						0x4000);
+				MGAMMIOBase = 0;
+			}
+			
 		}
 		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
