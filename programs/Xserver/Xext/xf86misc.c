@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.10 1996/02/19 09:50:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.11 1996/02/22 05:10:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -246,6 +246,14 @@ ProcXF86MiscSetMouseSettings(client)
 
     REQUEST_SIZE_MATCH(xXF86MiscSetMouseSettingsReq);
 
+    if (xf86Verbose) {
+	ErrorF("SetMouseSettings - type: %d brate: %d srate: %d chdmid: %d",
+		stuff->mousetype, stuff->baudrate,
+		stuff->samplerate, stuff->chordmiddle);
+	ErrorF("                   em3but: %d em3tim: %d flags: %d",
+		stuff->emulate3buttons, stuff->emulate3timeout,
+		stuff->flags);
+    }
     if (stuff->mousetype > MTYPE_OSMOUSE
             || stuff->mousetype < MTYPE_MICROSOFT)
 	return miscErrorBase + XF86MiscBadMouseProtocol;
@@ -377,6 +385,8 @@ ProcXF86MiscSetMouseSettings(client)
         (xf86Info.mseProc)(xf86Info.pPointer, DEVICE_ON);
     }
 
+    if (xf86Verbose)
+	ErrorF("SetMouseSettings - Succeeded");
     return (client->noClientException);
 }
 
@@ -388,6 +398,10 @@ ProcXF86MiscSetKbdSettings(client)
 
     REQUEST_SIZE_MATCH(xXF86MiscSetKbdSettingsReq);
 
+    if (xf86Verbose)
+	ErrorF("SetKbdSettings - type: %d rate: %d delay: %d snumlk: %d",
+		stuff->kbdtype, stuff->rate,
+		stuff->delay, stuff->servnumlock);
     if (stuff->rate < 0)
 	return BadValue;
     if (stuff->delay < 0)
@@ -416,6 +430,8 @@ ProcXF86MiscSetKbdSettings(client)
     xf86Info.serverNumLock = stuff->servnumlock!=0;
 #endif
 
+    if (xf86Verbose)
+	ErrorF("SetKbdSettings - Succeeded");
     return (client->noClientException);
 }
 

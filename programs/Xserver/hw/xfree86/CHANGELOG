@@ -1,3 +1,21 @@
+XFree86 3.1.2Db (4 March 1996)
+423. Add a Japanese version of the FreeBSD README (Takefumi Tsukada).
+422. Fix for problems with XF86_WSNA server (X98 core team).
+421. Add a mapping for Pointer_EnableKeys to the XKB symbols/us map (Joe Moss).
+420. XC patch for XKB.
+419. Add code to the vidmode and misc extensions to print details of mode
+     keyboard and mouse setting changes (Joe Moss).
+418. Add code to recognise extra keys on Digital LK201 PC keyboards
+     (Basil Duval).
+417. Don't include Multibuffer support in xdpyinfo when it isn't included
+     in the X servers (Joe Moss).
+416. Fix core dump when XInput debugging is enabled (Frederic Lepied).
+415. Fix implicit grab problem with Wacom input device (Frederic Lepied).
+414. Add an "allowMouseOpenFail" XF86Config and command-line option to allow
+     the server to be started when no mouse can be initialised (Joe Moss).
+413. Updates for parallel make (Robin Cutshaw).
+412. Update xf86config for the I128 server (Robin Cutshaw).
+
 XFree86 3.1.2Da (3 March 1996)
 411. Add a preinst.sh script.
 410. Documentation updates.

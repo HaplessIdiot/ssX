@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.34 1996/02/20 14:33:18 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.35 1996/02/22 05:10:55 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2D"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -124,7 +124,7 @@ This allows a client to connect from another host and change keyboard
 and mouse settings in the running server.  By default
 non-local connections are not allowed.
 .TP 8
-.B DisableVidMode
+.B DisableModInDev
 This disables the parts of the Misc extension that can be used to
 modify the input device settings dynamically.
 .PP
@@ -620,7 +620,7 @@ changed at run-time with \fIxset(1)\fP.
 .B SuspendTime \fItime\fP
 sets the inactivity timeout for the ``suspend'' phase of the screensaver.
 \fItime\fP is in minutes, the default is 15, and it can be changed
-at run-time with \fIxvidtune(1)\fP.
+at run-time with \fIxset(1)\fP.
 This is only suitable for VESA DPMS compatible monitors, and is only
 supported currently by some Xservers.  The "power_saver"
 Option must be set for this to be enabled.
@@ -628,7 +628,7 @@ Option must be set for this to be enabled.
 .B OffTime \fItime\fP
 sets the inactivity timeout for the ``off'' phase of the screensaver.
 \fItime\fP is in minutes, the default is 30, and it can be changed
-at run-time with \fIxvidtune(1)\fP.
+at run-time with \fIxset(1)\fP.
 This is only suitable for VESA DPMS compatible monitors, and is only
 supported currently by some Xservers.  The "power_saver"
 Option must be set for this to be enabled.
