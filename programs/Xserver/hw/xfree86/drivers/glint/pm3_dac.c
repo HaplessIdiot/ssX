@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.17 2001/02/02 14:15:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.18 2001/02/05 10:44:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -315,7 +315,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     if (mode->Flags & V_PHSYNC) temp1 |= 0x01; /* invert hsync */
     if (mode->Flags & V_PVSYNC) temp1 |= 0x08; /* invert vsync */
 
-    STOREDAC(PM2VDACRDIndexControl, 0x00);
+    STOREREG(PM2VDACRDIndexControl, 0x00);
     STOREDAC(PM2VDACRDSyncControl, temp1);
     STOREDAC(PM2VDACRDDACControl, 0x00);
 
@@ -410,7 +410,7 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
 	pReg->cmap[i] = Permedia2ReadData(pScrn);
     }
 
-    P2VIN(PM2VDACRDIndexControl);
+    SAVEREG(PM2VDACRDIndexControl);
     P2VIN(PM2VDACRDOverlayKey);
     P2VIN(PM2VDACRDSyncControl);
     P2VIN(PM2VDACRDMiscControl);
@@ -474,7 +474,7 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(VSBBase);
 #endif
 
-    P2VOUT(PM2VDACRDIndexControl);
+    RESTOREREG(PM2VDACRDIndexControl);
     P2VOUT(PM2VDACRDOverlayKey);
     P2VOUT(PM2VDACRDSyncControl);
     P2VOUT(PM2VDACRDMiscControl);
