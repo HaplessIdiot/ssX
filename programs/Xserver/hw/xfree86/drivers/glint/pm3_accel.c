@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.10 2000/12/22 11:49:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.11 2001/01/30 10:06:35 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -726,7 +726,7 @@ Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
  
     pGlint->cpucount = h;
 
-    GLINT_WAIT(4);
+    GLINT_WAIT(5);
     GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
     GLINT_WRITE_REG(
@@ -783,7 +783,7 @@ static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
     pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
  
     pGlint->cpucount = h;
-    GLINT_WAIT(4);
+    GLINT_WAIT(5);
     GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
     GLINT_WRITE_REG(
