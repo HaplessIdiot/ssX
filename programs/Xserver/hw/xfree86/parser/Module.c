@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.16 2005/01/10 17:30:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.17 2005/01/26 05:31:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -252,7 +252,7 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 
 	while (ptr)
 	{
-		fprintf(cf, "Section \"Modules\"\n");
+		fprintf(cf, "Section \"Module\"\n");
 
 		if (ptr->mod_comment)
 			fprintf(cf, "%s", ptr->mod_comment);
