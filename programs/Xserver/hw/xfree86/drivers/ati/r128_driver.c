@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.29 2001/05/18 23:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.30 2001/05/24 19:43:04 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -919,25 +919,25 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
        config file setting.  BIOS_5_SCRATCH holds the display device on flat
        panel systems only. */
     if (info->HasPanelRegs) {
-        char *display = xf86GetOptValString(info->Options, OPTION_DISPLAY);
+        char *Display = xf86GetOptValString(info->Options, OPTION_DISPLAY);
 
 	if (info->FBDev)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		     "Option \"Display\" ignored "
 		     "(framebuffer device determines display type)\n");
-	else if (!display || !xf86NameCmp(display, "FP"))
+	else if (!Display || !xf86NameCmp(Display, "FP"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
-	else if (!xf86NameCmp(display, "BIOS"))
+	else if (!xf86NameCmp(Display, "BIOS"))
 	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
-	else if (!xf86NameCmp(display, "Mirror"))
+	else if (!xf86NameCmp(Display, "Mirror"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP_CRT;
-	else if (!xf86NameCmp(display, "CRT"))
+	else if (!xf86NameCmp(Display, "CRT"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_CRT;
 	else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Unsupported type \"%s\" specified for Option \"Display\".\n"
 		"\tSupported types are: "
-		"\"BIOS\", \"Mirror\", \"CRT\" and \"FP\"\n", display);
+		"\"BIOS\", \"Mirror\", \"CRT\" and \"FP\"\n", Display);
 	    return FALSE;
 	}
     } else {
