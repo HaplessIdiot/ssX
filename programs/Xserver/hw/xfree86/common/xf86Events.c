@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.8 1995/01/11 03:50:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.10 1995/01/28 17:03:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -238,6 +238,7 @@ void
 ProcessInputEvents ()
 {
   int x, y;
+  static int generation = 0;
 
 #ifdef AMOEBA
 #define MAXEVENTS	    32
@@ -251,7 +252,38 @@ ProcessInputEvents ()
     register IOPEvent  *e, *elast;
     IOPEvent		events[MAXEVENTS];
     int			dx, dy, nevents;
-  
+#endif
+
+    if (generation != serverGeneration) {
+      xEvent kevent;
+      DevicePtr pKeyboard = xf86Info.pKeyboard;
+      extern unsigned int xf86InitialCaps, xf86InitialNum, xf86InitialScroll;
+
+      generation = serverGeneration;
+      kevent.u.keyButtonPointer.time = GetTimeInMillis();
+      kevent.u.keyButtonPointer.rootX = 0;
+      kevent.u.keyButtonPointer.rootY = 0;
+      kevent.u.u.type = KeyPress;
+
+
+      if (xf86InitialCaps) {
+        kevent.u.u.detail = xf86InitialCaps;
+        (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        xf86InitialCaps = 0;
+      }
+      if (xf86InitialNum) {
+        kevent.u.u.detail = xf86InitialNum;
+        (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        xf86InitialNum = 0;
+      }
+      if (xf86InitialScroll) {
+        kevent.u.u.detail = xf86InitialScroll;
+        (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        xf86InitialScroll = 0;
+      }
+    }
+
+#ifdef AMOEBA
     /*
      * Get all events from the IOP server
      */

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.6 95/01/16 20:07:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.3 1994/12/17 10:06:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.5 1995/01/28 17:03:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -37,6 +37,9 @@
 
 extern KeybdCtrl defaultKeyboardControl;
 
+unsigned int xf86InitialCaps = 0;
+unsigned int xf86InitialNum = 0;
+unsigned int xf86InitialScroll = 0;
 
 #include "atKeynames.h"
 
@@ -198,10 +201,7 @@ Bool init;
         case XK_Shift_Lock:
           if (leds & LED_CAP) 
 	    {
-	      kevent.u.u.detail = i;
-	      kevent.u.u.type = KeyPress;
-	      (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard,
-					      1);
+	      xf86InitialCaps = i;
 	      xf86Info.capsLock = TRUE;
 	    }
           break;
@@ -209,10 +209,7 @@ Bool init;
         case XK_Num_Lock:
           if (leds & LED_NUM)
 	    {
-	      kevent.u.u.detail = i;
-	      kevent.u.u.type = KeyPress;
-	      (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard,
-					      1);
+	      xf86InitialNum = i;
 	      xf86Info.numLock = TRUE;
 	    }
           break;
@@ -221,10 +218,7 @@ Bool init;
         case XK_Kana_Lock:
           if (leds & LED_SCR)
 	    {
-	      kevent.u.u.detail = i;
-	      kevent.u.u.type = KeyPress;
-	      (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard,
-					      1);
+	      xf86InitialScroll = i;
 	      xf86Info.scrollLock = TRUE;
 	    }
           break;

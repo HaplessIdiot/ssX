@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: events.c,v 5.76 94/08/16 13:45:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.0 1994/06/22 05:12:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.1 1994/09/17 13:45:18 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1997,8 +1997,7 @@ ProcessKeyboardEvent (xE, keybd, count)
     if (grab)
 	DeliverGrabbedEvent(xE, keybd, deactivateGrab, count);
     else
-	if (sprite.win)
-	    DeliverFocusedEvent(keybd, xE, sprite.win, count);
+	DeliverFocusedEvent(keybd, xE, sprite.win, count);
     if (deactivateGrab)
         (*keybd->DeactivateGrab)(keybd);
 }
