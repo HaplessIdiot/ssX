@@ -1,7 +1,7 @@
 /*
  * GNU/Hurd shared library rules
  *
- * $XFree86: xc/config/cf/gnuLib.rules,v 1.6 2003/05/25 01:27:37 dawes Exp $
+ * $XFree86: xc/config/cf/gnuLib.rules,v 1.7 2003/10/09 22:06:36 herrb Exp $
  */
 
 /*
@@ -88,6 +88,13 @@ install:: Concat(lib,libname.so.rev) 					@@\
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
+#ifdef UseInstalled  
+#define LinkBuildSonameLibrary(lib) true
+#else
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
@@ -116,6 +123,17 @@ clean::									@@\
  * SharedDepLibraryTarget - generate rules to create a shared library.
  */
 #ifndef SharedDepLibraryTarget
+#ifdef UseInstalled
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib) true
+#endif
+#else
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+#endif
+
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\

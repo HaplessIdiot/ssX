@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/nto.rules,v 1.5 2003/05/25 01:27:37 dawes Exp $ 
+XCOMM $XFree86: xc/config/cf/nto.rules,v 1.6 2003/10/09 22:06:36 herrb Exp $ 
 XCOMM Rules for QNX/Neutrino
 XCOMM Note that some of these will disappear when we stop cross-compiling
 
@@ -109,6 +109,13 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifndef SharedLibraryTarget
+#ifdef UseInstalled
+#define LinkBuildSonameLibrary(lib) true
+#else
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
@@ -198,6 +205,17 @@ clean::									@@\
  * SharedDepLibraryTarget - generate rules to create a shared library.
  */
 #ifndef SharedDepLibraryTarget
+#ifdef UseInstalled
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib) true
+#endif
+#else
+#ifndef LinkBuildSonameLibrary
+#define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#endif
+#endif
+
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
