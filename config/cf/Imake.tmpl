@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.218 94/03/31 20:11:26 matt Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imake.tmpl,v 1.219 94/05/13 15:58:31 matt Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.0 1994/05/08 05:13:01 dawes Exp $
 XCOMM
 
 /*
@@ -817,6 +817,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 
               CXX = CplusplusCmd
     CXXDEBUGFLAGS = DefaultCplusplusDebugFlags
+ CXXEXTRA_DEFINES = CplusplusExtraDefines
 CXXEXTRA_INCLUDES = CplusplusExtraIncludes
   CXXIDL_INCLUDES = -I$(TOP)/include
    CXXSTD_DEFINES = CplusplusStandardDefines
@@ -983,7 +984,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          LDPRELIB = LdPreLib
         LDPOSTLIB = LdPostLib
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS)  $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
-     CXXLDOPTIONS = $(CDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_CXXLDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+     CXXLDOPTIONS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_CXXLDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
 
            LDLIBS = $(LDPOSTLIB) $(THREADS_LIBS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
