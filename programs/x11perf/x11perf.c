@@ -48,6 +48,8 @@ extern Time_t time ();
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
 static Pixmap   tileToQuery     = None;
+static char *displayName;
+int	abortTest;
 
 typedef struct _RopNames { char	*name; int  rop; } RopNameRec, *RopNamePtr;
 
@@ -404,14 +406,19 @@ static void
 #endif
 Cleanup(int sig)
 {
+    abortTest = sig;
+}
+
+void
+AbortTest(void)
+{
     fflush(stdout);
-    /* This will screw up if Xlib is in the middle of something */
+    
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
     XFlush(xparms.d);
-    exit(sig);
+    exit (abortTest);
 }
-
 
 /************************************************
 *		Performance stuff		*
@@ -509,6 +516,7 @@ DoHardwareSync(XParms xp, Parms p, int reps)
     
     for (i = 0; i != reps; i++) {
 	HardwareSync(xp);
+	CheckAbort ();
     }
 }
 
@@ -594,6 +602,7 @@ DoTest(XParms xp, Test *test, int reps)
     HardwareSync(xp);
 
     time = ElapsedTime(syncTime);
+    CheckAbort ();
     if (drawToFakeServer)
         XQueryBestSize(xp->d, TileShape, tileToQuery,
 		       32, 32, &ret_width, &ret_height);
@@ -628,6 +637,7 @@ CalibrateTest(XParms xp, Test *test, int seconds, double *usecperobj)
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
 	didreps = (*test->init) (xp, &test->parms, reps);
+	CheckAbort ();
 	if (didreps == 0) {
 	    return 0;
 	}
@@ -642,6 +652,7 @@ CalibrateTest(XParms xp, Test *test, int seconds, double *usecperobj)
 	usecs = ElapsedTime(syncTime);
 	(*test->cleanup) (xp, &test->parms);
 	DestroyClipWindows(xp, test->clips);
+	CheckAbort ();
 
 	if (didreps != reps) {
 	    /* The test can't do the number of reps as we asked for.  
@@ -791,6 +802,8 @@ ProcessTest(XParms xp, Test *test, int func, unsigned long pm, char *label)
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
 	reps = (*test->init) (xp, &test->parms, reps);
+	if (abortTest)
+	    AbortTest ();
 	/*
 	 * if using fixedReps then will not have done CalibrateTest so must
 	 * check result of init for 0 here
@@ -852,12 +865,12 @@ main(int argc, char *argv[])
     int		i, j, n, skip;
     int		numTests;       /* Even though the linker knows, we don't. */
     char	hostname[100];
-    char	*displayName;
     Bool	foundOne = False;
     Bool	synchronous = False;
     XGCValues	tgcv;
     int		screen;
     int		rop, pm;
+    int		window_y, window_x;
     XVisualInfo *vinfolist, vinfotempl;
     unsigned long vmask;
 
@@ -1214,14 +1227,20 @@ main(int argc, char *argv[])
 	AllocateColor(xparms.d, background, WhitePixel(xparms.d, screen));
     xparms.ddbackground =
 	AllocateColor(xparms.d, ddbackground, WhitePixel(xparms.d, screen));
-    xparms.w = CreatePerfWindow(&xparms, 2, 2, WIDTH, HEIGHT);
+    window_x = 2;
+    if (DisplayWidth(xparms.d, screen) < WIDTH + window_x + 1)
+	window_x = -1;
+    window_y = 2;
+    if (DisplayHeight(xparms.d, screen) < HEIGHT + window_y + 1)
+	window_y = -1;
+    xparms.w = CreatePerfWindow(&xparms, window_x, window_y, WIDTH, HEIGHT);
     HSx = WIDTH-1;
-    if (3 + WIDTH > DisplayWidth(xparms.d, screen))
-	HSx = DisplayWidth(xparms.d, screen) - 4;
+    if (window_x + 1 + WIDTH > DisplayWidth(xparms.d, screen))
+	HSx = DisplayWidth(xparms.d, screen) - (1 + window_x + 1);
     HSy = HEIGHT-1;
-    if (3 + HEIGHT > DisplayHeight(xparms.d, screen))
-	HSy = DisplayHeight(xparms.d, screen) - 4;
-    status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
+    if (window_y + 1 + HEIGHT > DisplayHeight(xparms.d, screen))
+	HSy = DisplayHeight(xparms.d, screen) - (1 + window_y + 1);
+    status = CreatePerfWindow(&xparms, window_x, HEIGHT+5, WIDTH, 20);
     tgcv.foreground = 
 	AllocateColor(xparms.d, "black", BlackPixel(xparms.d, screen));
     tgcv.background = 
@@ -1237,7 +1256,7 @@ main(int argc, char *argv[])
        software cursor machines it will slow graphics performance.  On
        all current MIT-derived servers it will slow window 
        creation/configuration performance. */
-    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH+10, 20+10);
+    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH+32, 20+32);
 
     /* Figure out how long to call HardwareSync, so we can adjust for that
        in our total elapsed time */

@@ -96,6 +96,7 @@ DoRectangles(XParms xp, Parms p, int reps)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;
+	CheckAbort ();
     }
 }
 
@@ -110,6 +111,7 @@ DoOutlineRectangles(XParms xp, Parms  p, int reps)
             pgc = xp->fggc;
         else
             pgc = xp->bggc;
+	CheckAbort ();
     }
 }
 

@@ -108,6 +108,7 @@ DoScroll(XParms xp, Parms p, int reps)
 		x = xorg;
 	    }
 	}
+	CheckAbort ();
     }
 }
 
@@ -245,6 +246,7 @@ CopyArea(XParms xp, Parms p, int reps, Drawable src, Drawable dst)
 	    sb->x2, sb->y2, size, size, sb->x1, sb->y1);
 	XCopyArea(xp->d, src, dst, xp->fggc,
 	    sb->x1, sb->y1, size, size, sb->x2, sb->y2);
+	CheckAbort ();
     }
 }
 
@@ -311,6 +313,7 @@ rectangle.
 	(void) XGetSubImage(xp->d, xp->w, sb->x1, sb->y1, size, size,
 	    xp->planemask, ZPixmap, image, sb->x2, sb->y2);
 */
+	CheckAbort ();
     }
 }
 
@@ -330,6 +333,7 @@ DoPutImage(XParms xp, Parms p, int reps)
 	    sb->x2, sb->y2, sb->x2, sb->y2, size, size);
 	XPutImage(xp->d, xp->w, xp->fggc, image,
 	    sb->x1, sb->y1, sb->x2, sb->y2, size, size);
+	CheckAbort ();
     }
 }
 
@@ -428,6 +432,7 @@ DoShmPutImage(XParms xp, Parms p, int reps)
 	    sb->x2, sb->y2, sb->x2, sb->y2, size, size, False);
 	XShmPutImage(xp->d, xp->w, xp->fggc, &shm_image,
 	    sb->x1, sb->y1, sb->x2, sb->y2, size, size, False);
+	CheckAbort ();
     }
 }
 
@@ -522,6 +527,7 @@ DoCopyPlane(XParms xp, Parms p, int reps)
 	    sb->x2, sb->y2, size, size, sb->x1, sb->y1, 1);
 	XCopyPlane(xp->d, pix, xp->w, xp->fggc,
 	    sb->x1, sb->y1, size, size, sb->x2, sb->y2, 1);
+	CheckAbort ();
     }
 }
 

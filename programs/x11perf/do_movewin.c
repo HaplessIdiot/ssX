@@ -80,6 +80,7 @@ DoMoveWindows(XParms xp, Parms p, int reps)
 	    XMoveWindow(xp->d, children[j],
 	    positions[j].x + x_offset, positions[j].y + y_offset);
 	}
+	CheckAbort ();
     }
 }
 
@@ -103,6 +104,7 @@ DoResizeWindows(XParms xp, Parms p, int reps)
 	    XResizeWindow(xp->d, children[j],
 		CHILDSIZE+delta2, CHILDSIZE-delta2);
 	}
+	CheckAbort ();
     }
 }
 
@@ -132,8 +134,11 @@ DoCircWindows(XParms xp, Parms p, int reps)
     int     i, j;
 
     for (i = 0; i != reps; i++)
+    {
 	for (j = 0; j != p->objects; j++)
 	    XCirculateSubwindows (xp->d, xp->w, RaiseLowest);
+	CheckAbort ();
+    }
 }
 
 void 
@@ -189,6 +194,7 @@ DoMoveTree(XParms xp, Parms p, int reps)
 	if (x_offset + xmax > WIDTH)
 	    x_offset = 0;
 	XMoveWindow(xp->d, cover, x_offset, y_offset);
+	CheckAbort ();
     }
 }
 

@@ -237,6 +237,7 @@ DoText(XParms xp, Parms p, int reps)
 	    startLine = (startLine + 1) % totalLines;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -258,6 +259,7 @@ DoText16(XParms xp, Parms p, int reps)
 	    startLine = (startLine + 1) % totalLines;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -279,6 +281,7 @@ DoPolyText(XParms xp, Parms p, int reps)
 	    startLine = (startLine + 1) % totalLines;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -300,6 +303,7 @@ DoPolyText16(XParms xp, Parms p, int reps)
 	    startLine = (startLine + 1) % totalLines;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -321,6 +325,7 @@ DoImageText(XParms xp, Parms p, int reps)
 	    line = startLine;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -342,6 +347,7 @@ DoImageText16(XParms xp, Parms p, int reps)
 	    line = startLine;
 	}
 	line = (line + 1) % totalLines;
+	CheckAbort ();
     }
 }
 
@@ -392,3 +398,103 @@ EndText16(XParms xp, Parms p)
     }
 }
 
+#ifdef XFT
+#include <X11/extensions/Xrender.h>
+#include <X11/Xft/Xft.h>
+
+static XftFont	    *aafont;
+static XftDraw	    *aadraw;
+static XRenderColor aacolor = { 0, 0, 0, 0xffff };
+
+int 
+InitAAText(XParms xp, Parms p, int reps)
+{
+    int			i, j;
+    char		ch;
+
+    aafont = XftFontOpenName (xp->d, DefaultScreen (xp->d), p->font);
+    
+    if (aafont == NULL) 
+    {
+	printf("Could not load font '%s', benchmark omitted\n", 
+	       p->font);
+	return 0;
+    }
+
+    if (aafont->core)
+    {
+	printf ("FreeType font '%s' not available, benchmark omitted\n",
+		p->font);
+	XftFontClose (xp->d, aafont);
+    }
+    
+    aadraw = XftDrawCreate (xp->d, xp->w, 
+			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
+			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
+
+    if (!aadraw) 
+    {
+	printf ("Render extension not supported in window\n");
+	XftFontClose (xp->d, aafont);
+	return 0;
+    }
+    
+    ypos = XPOS;
+    height = aafont->height;
+    
+    charsPerLine = p->objects;
+    charsPerLine = (charsPerLine + 3) & ~3;
+    p->objects = charsPerLine;
+
+    totalLines = '\177' - ' ' + 1;
+    if (totalLines > reps) totalLines = reps;
+
+    charBuf = (char **) malloc(totalLines*sizeof (char *));
+
+    for (i = 0; i != totalLines; i++) {
+	charBuf[i] = (char *) malloc (sizeof (char)*charsPerLine);
+	ch = i + ' ';
+	for (j = 0; j != charsPerLine; j++) {
+	    charBuf[i][j] = ch;
+	    if (ch == '\177') ch = ' '; else ch++;
+	}
+    }
+    return reps;
+}
+
+void 
+DoAAText(XParms xp, Parms p, int reps)
+{
+    int     i, line, startLine;
+
+    startLine = 0;
+    line = 0;
+    for (i = 0; i != reps; i++) {
+	XftDrawString8 (aadraw, &aacolor, aafont, 
+		       XPOS, ypos, (unsigned char *) charBuf[line], charsPerLine);
+	ypos += height;
+	if (ypos > HEIGHT - height) {
+	    /* Wraparound to top of window */
+	    ypos = XPOS;
+	    line = startLine;
+	    startLine = (startLine + 1) % totalLines;
+	}
+	line = (line + 1) % totalLines;
+	CheckAbort ();
+    }
+}
+
+void 
+EndAAText(XParms xp, Parms p)
+{
+    int i;
+
+    if(!aadraw)return;
+    for (i = 0; i != totalLines; i++)
+	free(charBuf[i]);
+    free(charBuf);
+    XftDrawDestroy (aadraw);
+    XftFontClose (xp->d, aafont);
+}
+
+#endif

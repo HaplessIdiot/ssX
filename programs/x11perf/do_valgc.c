@@ -65,6 +65,7 @@ DoChangeGC(XParms xp, Parms p, int reps)
         gcv.foreground = xp->foreground;
         XChangeGC(xp->d, xp->fggc, GCForeground , &gcv);
         XDrawPoint(xp->d, win[1], xp->fggc, 5, 5);       
+	CheckAbort ();
     }
 }
 
