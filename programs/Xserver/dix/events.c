@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.46 2002/09/17 01:15:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.47 2003/04/05 18:15:47 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2130,6 +2130,9 @@ DefineInitialRootWindow(win)
 	sprite.hotLimits.y2 = PanoramiXPixHeight - panoramiXdataPtr[0].y;
 	sprite.physLimits = sprite.hotLimits;
 	sprite.confineWin = NullWindow;
+#ifdef SHAPE
+        sprite.hotShape = NullRegion;
+#endif
 	sprite.screen = pScreen;
 	/* gotta UNINIT these someplace */
 	REGION_INIT(pScreen, &sprite.Reg1, NullBox, 1);
