@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix.cpp,v 1.1 2000/03/03 01:05:36 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix.cpp,v 1.2 2000/03/20 15:57:53 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CYRIX __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 cyrix \- Cyrix video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qcyrix\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B cyrix 
 is an XFree86 driver for Cyrix video chips.
@@ -27,6 +25,6 @@ Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
 driver.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: ...

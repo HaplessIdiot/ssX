@@ -1,4 +1,10 @@
 XFree86 4.0a (xx March 2000)
+  28. Add support for building and installing HTML versions of the man
+      pages (David Dawes).
+  27. Fix some limitation in rman so that it will handle our man pages
+      correctly (David Dawes).
+  26. Import rman-3.0.8, for generating HTML versions of the man pages
+      (David Dawes).
   25. ATI fixes to Cards database (Marc La France).
   24. Fix some man page formatting problems that show up on some platforms
       (David Dawes).
@@ -10074,4 +10080,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1093 2000/03/20 15:57:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1094 2000/03/20 16:38:24 tsi Exp $

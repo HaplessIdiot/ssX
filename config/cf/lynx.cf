@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.32 2000/01/25 18:37:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.33 2000/02/14 19:20:18 dawes Exp $
 
 
 #ifndef OSName
@@ -267,6 +267,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #ifndef InstallManPageLong
 #define InstallManPageLong(file,destdir,dest)                           @@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX)				@@\
+									@@\
 install.man:: file.man                                                  @@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
@@ -282,6 +284,8 @@ install.man:: file.man                                                  @@\
 
 #ifndef InstallManPageAliases
 #define InstallManPageAliases(file,destdir,aliases)                     @@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
 install.man::                                                           @@\
 	@(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f2,3 -d.`; \	@@\
 	for i in aliases; do (set -x; \ 				@@\
@@ -294,6 +298,8 @@ install.man::                                                           @@\
 
 #ifndef InstallGenManPageLong
 #define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
 install.man:: file.man                                                  @@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\

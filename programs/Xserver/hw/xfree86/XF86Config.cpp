@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.4 2000/03/18 20:04:34 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.5 2000/03/20 15:57:48 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0"  "XFree86"
@@ -1533,7 +1533,7 @@ For an example of an XF86Config file, see the file installed as
 __projectroot__/lib/X11/XF86Config.eg.
 .fi
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1),
+X(__miscmansuffix__), Xserver(1), XFree86(1),
 apm(__drivermansuffix__),
 ati(__drivermansuffix__),
 chips(__drivermansuffix__),

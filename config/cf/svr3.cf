@@ -2,7 +2,7 @@ XCOMM $XConsortium: svr3.cf /main/1 1996/10/31 14:47:37 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.11 2000/01/25 18:37:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.12 2000/02/29 03:08:56 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -255,6 +255,8 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.11 2000/01/25 18:37:30 dawes Exp $
 
 #ifndef InstallManPageLong
 #define InstallManPageLong(file,destdir,dest)                           @@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
 install.man:: file.man                                                  @@\
         MakeDir($(DESTDIR)destdir)                                      @@\
         $(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*                      @@\
@@ -266,6 +268,8 @@ install.man:: file.man                                                  @@\
 
 #ifndef InstallGenManPageLong
 #define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
 install.man:: file.man                                                  @@\
         MakeDir($(DESTDIR)destdir)                                      @@\
         $(RM) $(DESTDIR)destdir/dest.suffix*                            @@\
@@ -295,8 +299,9 @@ install.man:: list                                                      @@\
  * InstallManPageAliases - generate rules to install manual page aliases.
  * (Make hard links on SVR3.)
  */
-#ifndef InstallManPageAliases
-#define InstallManPageAliases(file,destdir,aliases)                     @@\
+#ifndef InstallManPageAliasesBase
+#define InstallManPageAliasesBase(file,destdir,aliases)			@@\
+
 install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f2,3 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
@@ -306,9 +311,18 @@ install.man::                                                           @@\
         done)
 #endif
 
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)			@@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
+#endif
+
 #ifndef InstallGenManPageAliases
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
-	InstallManPageAliases(file,destdir,aliases)
+InstallHtmlManPageAliases(file,aliases,suffix)				@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
 #endif
 
 #endif /* FormattedManPages */

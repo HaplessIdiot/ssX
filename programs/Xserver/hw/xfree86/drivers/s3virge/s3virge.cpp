@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.6 2000/03/05 16:59:16 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.7 2000/03/20 15:57:57 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
@@ -204,7 +204,7 @@ Enable or disable viewing offscreen cache memory.  A
 development debug option.  Default: off.
 
 .SH SEE ALSO
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 
 .SH SUPPORT
 For assistance with this driver, or XFree86 in general, check the XFree86 web

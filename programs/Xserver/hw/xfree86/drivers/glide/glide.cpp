@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.7 2000/03/03 01:05:37 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.8 2000/03/20 15:57:54 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH GLIDE __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 glide \- Glide video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qglide\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH READ THIS IF NOTHING ELSE
 This driver has a special requirement that needs to be fulfilled
 before it will work: You need Glide installed and you need to make a link for the libglide2x.so
@@ -295,6 +293,6 @@ Xinerama extension can be done for example like this:
 .PP
 $ xinit -- +xinerama
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Author: Henrik Harmsen.

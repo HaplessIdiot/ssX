@@ -1,21 +1,18 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.cpp,v 1.1 2000/03/03 01:05:49 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.cpp,v 1.2 2000/03/20 15:58:02 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MICROTOUCH __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 microtouch \- MicroTouch input driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qInputDevice\*q"
-.br
 .BI "  Identifier \*q" idevname \*q
-.br
 .B  "  Driver \*qmicrotouch\*q"
-.br
 .BI "  Option \*qDevice\*q   \*q" devpath \*q
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B microtouch 
 is an XFree86 input driver for MicroTouch devices...
@@ -34,6 +31,6 @@ section only covers configuration details specific to this driver.
 .PP
 Config details...
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1).
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
 Authors include...

@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.6 2000/03/03 01:05:40 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.7 2000/03/20 15:57:56 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NV __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 nv \-NVIDIA video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qnv\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B nv 
 is an XFree86 driver for NVIDIA video cards.  The driver is fully
@@ -71,7 +69,7 @@ Default: no rotation.
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: David McKay, Jarno Paananen, Chas Inman, Dave Schmenk, 
 Mark Vojkovich

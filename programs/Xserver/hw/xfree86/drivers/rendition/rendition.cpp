@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.2 2000/03/05 16:59:14 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.cpp,v 1.3 2000/03/20 15:57:57 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH RENDITION __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 rendition \- Rendition video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qrendition\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B rendition 
 is an XFree86 driver for Rendition/Micron based video cards.  The driver
@@ -109,6 +107,6 @@ as there has been indications of problems with it. Use
 .B "Option \*qMTRR\*q"
 to let the driver request write-combining of memory access on the videoboard.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: Marc Langenbach, Dejan Ilic

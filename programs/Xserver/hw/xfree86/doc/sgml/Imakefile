@@ -3,12 +3,13 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.60 2000/03/07 01:52:18 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.61 2000/03/08 05:38:42 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
 SGMLDEPENDS = defs.ent
+MANSGMLDEPENDS = mdefs.ent
   INDEXLIST = README.sgml RELNOTES.sgml Status.sgml LICENSE.sgml Install.sgml \
 	      DESIGN.sgml \
 	      mouse.sgml fonts.sgml DRI.sgml \
@@ -109,8 +110,19 @@ LinuxDocTarget(xinput)
 #endif
 LinuxDocReadmeTarget(DRI)
 
+SGMLMANDEFS=-D__drivermansuffix__='"$(DRIVERMANSUFFIX)"' \
+	    -D__filemansuffix__='"$(FILEMANSUFFIX)"' \
+	    -D__miscmansuffix__='"$(MISCMANSUFFIX)"'
+
+#if BuildHtmlManPages
+HTMLMANDEFS=-DHTML_MANPAGES
+#endif
+
+AllTarget(mdefs.ent)
+CppRawFileTarget(mdefs.ent,mdefs.cpp,$(SGMLMANDEFS) $(HTMLMANDEFS),NullParameter)
+
 /* Generate the documentation index */
-index.sgml: $(INDEXLIST) index.pre index.post add.sh Imakefile $(SGMLDEPENDS)
+index.sgml: $(INDEXLIST) index.pre index.post add.sh Imakefile $(SGMLDEPENDS) $(MANSGMLDEPENDS)
 	RemoveFile(index.sgml)
 	cat index.pre > index.sgml
 	echo "<!-- This file is auto-generated.  Do not edit! -->" >> index.sgml
