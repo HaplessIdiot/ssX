@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.1 2000/09/20 00:09:13 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -26,25 +26,7 @@
 #include "fb.h"
 #include "picturestr.h"
 #include "mipict.h"
-
-typedef void	(*CompositeFunc) (CARD8      op,
-				  PicturePtr pSrc,
-				  PicturePtr pMask,
-				  PicturePtr pDst,
-				  INT16      xSrc,
-				  INT16      ySrc,
-				  INT16      xMask,
-				  INT16      yMask,
-				  INT16      xDst,
-				  INT16      yDst,
-				  CARD16     width,
-				  CARD16     height);
-
-#define INT_MULT(a,b,t) ( (t) = (a) * (b) + 0x80, ( ( ( (t)>>8 ) + (t) )>>8 ) )
-#define GET8(v,i)   ((CARD16) (CARD8) ((v) >> i))
-#define OVER(x,y,i,a,t) ((t) = INT_MULT(GET8(y,i),(a),(t)) + GET8(x,i),\
-			 (CARD32) ((CARD8) ((t) | (0 - ((t) >> 8)))) << (i))
-#define IN(x,i,a,t) ((CARD32) INT_MULT(GET8(x,i),(a),(t)) << (i))
+#include "fbpict.h"
 
 #define cvt8888to0565(s)    ((((s) >> 3) & 0x001f) | \
 			     (((s) >> 5) & 0x07e0) | \
@@ -73,31 +55,31 @@ typedef void	(*CompositeFunc) (CARD8      op,
 		       (*((a)+2) = (CARD8) ((v) >> 16))))
 #endif
 		      
-static CARD32
+CARD32
 fbOver (CARD32 x, CARD32 y)
 {
     CARD16  a = ~x >> 24;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    m = OVER(x,y,0,a,t);
-    n = OVER(x,y,8,a,t);
-    o = OVER(x,y,16,a,t);
-    p = OVER(x,y,24,a,t);
+    m = FbOver(x,y,0,a,t);
+    n = FbOver(x,y,8,a,t);
+    o = FbOver(x,y,16,a,t);
+    p = FbOver(x,y,24,a,t);
     return m|n|o|p;
 }
 
-static CARD32
+CARD32
 fbIn (CARD32 x, CARD8 y)
 {
     CARD16  a = y;
     CARD16  t;
     CARD32  m,n,o,p;
 
-    m = IN(x,0,a,t);
-    n = IN(x,8,a,t);
-    o = IN(x,16,a,t);
-    p = IN(x,24,a,t);
+    m = FbIn(x,0,a,t);
+    n = FbIn(x,8,a,t);
+    o = FbIn(x,16,a,t);
+    p = FbIn(x,24,a,t);
     return m|n|o|p;
 }
 
@@ -107,19 +89,19 @@ fbIn (CARD32 x, CARD8 y)
  *  opSRCxMASKxDST
  */
 
-static void
+void
 fbCompositeSolidMask_nx8x8888 (CARD8      op,
-				  PicturePtr pSrc,
-				  PicturePtr pMask,
-				  PicturePtr pDst,
-				  INT16      xSrc,
-				  INT16      ySrc,
-				  INT16      xMask,
-				  INT16      yMask,
-				  INT16      xDst,
-				  INT16      yDst,
-				  CARD16     width,
-				  CARD16     height)
+			       PicturePtr pSrc,
+			       PicturePtr pMask,
+			       PicturePtr pDst,
+			       INT16      xSrc,
+			       INT16      ySrc,
+			       INT16      xMask,
+			       INT16      yMask,
+			       INT16      xDst,
+			       INT16      yDst,
+			       CARD16     width,
+			       CARD16     height)
 {
     CARD32	src, srca;
     CARD32	*dstLine, *dst, d, dstMask;
@@ -188,7 +170,7 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSolidMask_nx8x0888 (CARD8      op,
 			       PicturePtr pSrc,
 			       PicturePtr pMask,
@@ -273,7 +255,7 @@ fbCompositeSolidMask_nx8x0888 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSolidMask_nx8x0565 (CARD8      op,
 				  PicturePtr pSrc,
 				  PicturePtr pMask,
@@ -359,7 +341,7 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSrc_8888x8888 (CARD8      op,
 			 PicturePtr pSrc,
 			 PicturePtr pMask,
@@ -413,7 +395,7 @@ fbCompositeSrc_8888x8888 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSrc_8888x0888 (CARD8      op,
 			 PicturePtr pSrc,
 			 PicturePtr pMask,
@@ -471,7 +453,7 @@ fbCompositeSrc_8888x0888 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSrc_8888x0565 (CARD8      op,
 			 PicturePtr pSrc,
 			 PicturePtr pMask,
@@ -532,7 +514,7 @@ fbCompositeSrc_8888x0565 (CARD8      op,
     }
 }
 
-static void
+void
 fbCompositeSrc_0565x0565 (CARD8      op,
 			  PicturePtr pSrc,
 			  PicturePtr pMask,
@@ -576,6 +558,8 @@ fbCompositeSrc_0565x0565 (CARD8      op,
     }
 }
 
+# define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
+
 void
 fbComposite (CARD8      op,
 	     PicturePtr pSrc,
@@ -594,6 +578,10 @@ fbComposite (CARD8      op,
     int		    n;
     BoxPtr	    pbox;
     CompositeFunc   func;
+    Bool	    srcRepeat = pSrc->repeat;
+    Bool	    maskRepeat = FALSE;
+    int		    x_msk, y_msk, x_src, y_src, x_dst, y_dst;
+    int		    w, h, w_this, h_this;
     
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
@@ -603,6 +591,7 @@ fbComposite (CARD8      op,
     {
 	xMask += pMask->pDrawable->x;
 	yMask += pMask->pDrawable->y;
+	maskRepeat = pMask->repeat;
     }
     
     if (!miComputeCompositeRegion (&region,
@@ -619,110 +608,143 @@ fbComposite (CARD8      op,
 				   height))
 	return;
 				   
-    func = 0;
+    func = fbCompositeGeneral;
     if (pMask)
     {
-	if (pMask->repeat)
+	if (srcRepeat && 
+	    pSrc->pDrawable->width == 1 &&
+	    pSrc->pDrawable->height == 1)
 	{
-	    ;
-	}
-	else
-	{
-	    if (pSrc->repeat)
-	    {
-		if (pSrc->pDrawable->width == 1 &&
-		    pSrc->pDrawable->height == 1)
-		{
-		    switch (pSrc->pDrawable->bitsPerPixel) {
-		    case 32:
-		    case 24:
-		    case 16:
-			switch (pMask->pDrawable->bitsPerPixel) {
-			case 8:
-			    switch (pDst->pDrawable->bitsPerPixel) {
-			    case 16:
-				func = fbCompositeSolidMask_nx8x0565;
-				break;
-			    case 24:
-				func = fbCompositeSolidMask_nx8x0888;
-				break;
-			    case 32:
-				func = fbCompositeSolidMask_nx8x8888;
-				break;
-			    }
-			    break;
-			}
+	    srcRepeat = FALSE;
+	    if (PICT_FORMAT_COLOR(pSrc->format)) {
+		switch (pMask->format) {
+		case PICT_a8:
+		    switch (pDst->format) {
+		    case PICT_r5g6b5:
+		    case PICT_b5g6r5:
+			func = fbCompositeSolidMask_nx8x0565;
+			break;
+		    case PICT_r8g8b8:
+		    case PICT_b8g8r8:
+			func = fbCompositeSolidMask_nx8x0888;
+			break;
+		    case PICT_a8r8g8b8:
+		    case PICT_x8r8g8b8:
+		    case PICT_a8b8g8r8:
+		    case PICT_x8b8g8r8:
+			func = fbCompositeSolidMask_nx8x8888;
 			break;
 		    }
+		    break;
 		}
-		else
-		{
-		    ;
-		}
-	    }
-	    else
-	    {
-		;
 	    }
 	}
     }
     else
     {
-	if (pSrc->repeat)
-	{
-	    if (pSrc->pDrawable->width == 1 &&
-		pSrc->pDrawable->height == 1)
-	    {
-		;
-	    }
-	    else
-	    {
-		;
-	    }
-	}
-	else
-	{
-	    switch (pSrc->pDrawable->bitsPerPixel) {
-	    case 32:
-		switch (pDst->pDrawable->bitsPerPixel) {
-		case 32:
-		    func = fbCompositeSrc_8888x8888;
-		    break;
-		case 24:
-		    func = fbCompositeSrc_8888x0888;
-		    break;
-		case 16:
-		    func = fbCompositeSrc_8888x0565;
-		    break;
-		}
+	switch (pSrc->format) {
+	case PICT_a8r8g8b8:
+	case PICT_x8r8g8b8:
+	    switch (pDst->format) {
+	    case PICT_a8r8g8b8:
+	    case PICT_x8r8g8b8:
+		func = fbCompositeSrc_8888x8888;
 		break;
-	    case 16:
-		switch (pDst->pDrawable->bitsPerPixel) {
-		case 16:
-		    func = fbCompositeSrc_0565x0565;
-		    break;
-		}
+	    case PICT_r8g8b8:
+		func = fbCompositeSrc_8888x0888;
+		break;
+	    case PICT_r5g6b5:
+		func = fbCompositeSrc_8888x0565;
 		break;
 	    }
+	    break;
+	case PICT_a8b8g8r8:
+	case PICT_x8b8g8r8:
+	    switch (pDst->format) {
+	    case PICT_a8b8g8r8:
+	    case PICT_x8b8g8r8:
+		func = fbCompositeSrc_8888x8888;
+		break;
+	    case PICT_b8g8r8:
+		func = fbCompositeSrc_8888x0888;
+		break;
+	    case PICT_b5g6r5:
+		func = fbCompositeSrc_8888x0565;
+		break;
+	    }
+	    break;
+	case PICT_r5g6b5:
+	    switch (pDst->format) {
+	    case PICT_r5g6b5:
+		func = fbCompositeSrc_0565x0565;
+		break;
+	    }
+	    break;
+	case PICT_b5g6r5:
+	    switch (pDst->format) {
+	    case PICT_b5g6r5:
+		func = fbCompositeSrc_0565x0565;
+		break;
+	    }
+	    break;
 	}
     }
-    if (func)
+    n = REGION_NUM_RECTS (&region);
+    pbox = REGION_RECTS (&region);
+    while (n--)
     {
-	n = REGION_NUM_RECTS (&region);
-	pbox = REGION_RECTS (&region);
-	while (n--)
+	h = pbox->y2 - pbox->y1;
+	y_src = pbox->y1 - yDst + ySrc;
+	y_msk = pbox->y1 - yDst + yMask;
+	y_dst = pbox->y1;
+	while (h)
 	{
-	    (*func) (op, pSrc, pMask, pDst,
-		     pbox->x1 - xDst + xSrc,
-		     pbox->y1 - yDst + ySrc,
-		     pbox->x1 - xDst + xMask,
-		     pbox->y1 - yDst + yMask,
-		     pbox->x1,
-		     pbox->y1,
-		     pbox->x2 - pbox->x1,
-		     pbox->y2 - pbox->y1);
-	    pbox++;
+	    h_this = h;
+	    w = pbox->x2 - pbox->x1;
+	    x_src = pbox->x1 - xDst + xSrc;
+	    x_msk = pbox->x1 - xDst + xMask;
+	    x_dst = pbox->x1;
+	    if (maskRepeat)
+	    {
+		y_msk = mod (y_msk, pMask->pDrawable->height);
+		if (h_this > pMask->pDrawable->height - y_msk)
+		    h_this = pMask->pDrawable->height - y_msk;
+	    }
+	    if (srcRepeat)
+	    {
+		y_src = mod (y_src, pSrc->pDrawable->height);
+		if (h_this > pSrc->pDrawable->height - y_src)
+		    h_this = pSrc->pDrawable->height - y_src;
+	    }
+	    while (w)
+	    {
+		w_this = w;
+		if (maskRepeat)
+		{
+		    x_msk = mod (x_msk, pMask->pDrawable->width);
+		    if (w_this > pMask->pDrawable->width - x_msk)
+			w_this = pMask->pDrawable->width - x_msk;
+		}
+		if (srcRepeat)
+		{
+		    x_src = mod (x_src, pSrc->pDrawable->width);
+		    if (w_this > pSrc->pDrawable->width - x_src)
+			w_this = pSrc->pDrawable->width - x_src;
+		}
+		(*func) (op, pSrc, pMask, pDst,
+			 x_src, y_src, x_msk, y_msk, x_dst, y_dst, 
+			 w_this, h_this);
+		w -= w_this;
+		x_src += w_this;
+		x_msk += w_this;
+		x_dst += w_this;
+	    }
+	    h -= h_this;
+	    y_src += h_this;
+	    y_msk += h_this;
+	    y_dst += h_this;
 	}
+	pbox++;
     }
     REGION_UNINIT (pDst->pDrawable->pScreen, &region);
 }

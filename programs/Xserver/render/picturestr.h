@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.3 2000/09/20 00:09:17 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -39,7 +39,7 @@ typedef struct _DirectFormat {
 } DirectFormatRec;
 
 typedef struct _PictFormat {
-    unsigned long   id;
+    CARD32	    id;
     unsigned char   type;
     unsigned char   depth;
     DirectFormatRec direct;
@@ -49,6 +49,7 @@ typedef struct _PictFormat {
 typedef struct _Picture {
     DrawablePtr	    pDrawable;
     PictFormatPtr   pFormat;
+    CARD32	    format;	    /* PICT_FORMAT */
     int		    refcnt;
     CARD32	    id;
     PicturePtr	    pNext;	    /* chain on same drawable */

@@ -364,6 +364,7 @@ CreatePicture (Picture		pid,
 {
     PicturePtr		pPicture;
     PictureScreenPtr	ps = GetPictureScreen(pDrawable->pScreen);
+    CARD32		bpp, type, a, r, g, b;
 
     pPicture = AllocatePicture (pDrawable->pScreen);
     if (!pPicture)
@@ -375,6 +376,31 @@ CreatePicture (Picture		pid,
     pPicture->id = pid;
     pPicture->pDrawable = pDrawable;
     pPicture->pFormat = pFormat;
+    /*
+     * Compute format constant
+     */
+    bpp = pDrawable->bitsPerPixel;
+    if (pFormat->type == PictTypeIndexed)
+    {
+	type = PICT_TYPE_INDEX;
+	a = r = g = b = 0;
+    }
+    else
+    {
+	if ((pFormat->direct.redMask|
+	     pFormat->direct.blueMask|
+	     pFormat->direct.greenMask) == 0)
+	    type = PICT_TYPE_A;
+	else if (pFormat->direct.red > pFormat->direct.blue)
+	    type = PICT_TYPE_ARGB;
+	else
+	    type = PICT_TYPE_ABGR;
+	a = Ones (pFormat->direct.alphaMask);
+	r = Ones (pFormat->direct.redMask);
+	g = Ones (pFormat->direct.greenMask);
+	b = Ones (pFormat->direct.blueMask);
+    }
+    pPicture->format = PICT_FORMAT(bpp,type,a,r,g,b);
     if (pDrawable->type == DRAWABLE_PIXMAP)
     {
 	++((PixmapPtr)pDrawable)->refcnt;
