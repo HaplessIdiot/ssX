@@ -23,7 +23,7 @@
  * 
  * BladeXP accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -478,6 +478,7 @@ static void MoveDWORDS(
 }
 #endif
 
+#if 0
 static void MoveDWORDS_FixedBase(
    register CARD32* dest,
    register CARD32* src,
@@ -499,6 +500,7 @@ static void MoveDWORDS_FixedBase(
      if(dwords == 2) return;
      *dest = *(src + 2);
 }
+#endif
 
 
 static void 

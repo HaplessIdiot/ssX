@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.12 2002/10/09 00:01:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.13tsi Exp $ */
 
 /*
 **++ 
@@ -83,6 +83,12 @@ extern int _Xlcmbstowcs(
     XLCd	lcd,
     wchar_t	*wstr,
     char	*str,
+    int		len
+);
+extern int _Xlcwcstombs(
+    XLCd	lcd,
+    char	*str,
+    wchar_t	*wstr,
     int		len
 );
 extern int _Xlcmbstoutf8(

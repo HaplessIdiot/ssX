@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.24tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -605,6 +605,7 @@ TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
 }
 #endif
 
+#if 0
 static void
 TridentSetupForScanlineCPUToScreenColorExpandFill(
 	ScrnInfoPtr pScrn,
@@ -667,3 +668,4 @@ TridentSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     	TGUI_COMMAND(GE_BLT);
     }
 }
+#endif

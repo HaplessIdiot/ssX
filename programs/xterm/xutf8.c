@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xutf8.c,v 1.1 2001/06/18 19:09:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xutf8.c,v 1.2tsi Exp $ */
 /*
 Copyright (c) 2001 by Juliusz Chroboczek
 
@@ -30,11 +30,13 @@ THE SOFTWARE.
 
 #include <xutf8.h>
 
+#ifndef X_HAVE_UTF8_STRING
+
+#undef XA_UTF8_STRING
 #define KEYSYM2UCS_INCLUDED
+
 #include "keysym2ucs.c"
 
-#ifndef X_HAVE_UTF8_STRING
-#undef XA_UTF8_STRING
 Atom
 _xa_utf8_string(Display * dpy)
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128dga.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -18,8 +18,10 @@ static int  I128_GetViewport(ScrnInfoPtr);
 static void I128_SetViewport(ScrnInfoPtr, int, int, int);
 static void I128_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void I128_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+#if 0
 static void I128_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
+#endif
 
 static
 DGAFunctionRec I128_DGAFuncs = {

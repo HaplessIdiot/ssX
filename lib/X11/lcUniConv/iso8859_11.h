@@ -1,5 +1,4 @@
-/* Id: xf-cvs20020709-iso8859_11locale.patch,v 1.1 2002/07/09 12:24:01 thep Exp $ /
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcUniConv/iso8859_11.h,v 1.1tsi Exp $ */
 
 /*
  * ISO8859-11
