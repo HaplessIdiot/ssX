@@ -31,6 +31,7 @@
 
 Notice===
 */
+/* $XFree86$ */
 
 #include "xttversion.h"
 

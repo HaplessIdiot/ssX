@@ -23,6 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_EVENTS   /* so xEvent will get pulled in */
 #include "XIElibint.h"
