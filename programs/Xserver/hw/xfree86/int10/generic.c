@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.15 2001/02/15 19:37:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.16 2001/02/16 14:43:19 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -60,6 +60,9 @@ xf86InitInt10(int entityIndex)
     void* base = 0;
     void* vbiosMem = 0;
     legacyVGARec vga;
+#ifdef _PC
+    CARD32 cs;
+#endif
 
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
 
