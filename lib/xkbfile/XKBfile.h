@@ -535,7 +535,7 @@ extern	Bool	XkbWriteXKBKeymapForNames(
 
 extern	Status	XkbMergeFile(
     XkbDescPtr			/* xkb */,
-    XkbFileInfo *		/* finfo */
+    XkbFileInfo			/* finfo */
 );
 
 /***====================================================================***/
