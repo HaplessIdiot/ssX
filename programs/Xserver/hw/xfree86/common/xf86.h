@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.143 2000/10/30 23:02:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.145 2000/12/06 15:35:07 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -38,10 +38,9 @@ extern PropertyPtr *xf86RegisteredPropertiesTable;
 extern ScrnInfoPtr xf86CurrentScreen;
 extern Bool pciSlotClaimed;
 extern Bool isaSlotClaimed;
-extern Bool sbusSlotClaimed;
 extern Bool fbSlotClaimed;
 #ifdef __sparc__
-extern Bool fbSlotClaimed;
+extern Bool sbusSlotClaimed;
 #endif
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
