@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.32 2000/05/18 23:46:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.33 2000/05/25 23:24:30 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -553,6 +553,8 @@ extern int Pclose(pointer);
 #define Popen(a,b) popen(a,b)
 #define Pclose(a) pclose(a)
 #endif
+
+extern void CheckUserParameters(int argc, char **argv, char **envp);
 
 extern int AddHost(
 #if NeedFunctionPrototypes

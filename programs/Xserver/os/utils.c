@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.56 2000/02/23 20:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.57 2000/05/05 17:53:51 keithp Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1664,7 +1664,9 @@ System(command)
     char *command;
 {
     int pid, p;
-    void (*csig)();
+#ifdef SIGCHLD
+    void (*csig)(int);
+#endif
     int status;
 
     if (!command)
@@ -1712,7 +1714,6 @@ Popen(command, type)
     struct pid *cur;
     FILE *iop;
     int pdes[2], pid;
-    void (*csig)();
 
     if (command == NULL || type == NULL)
 	return NULL;
@@ -1782,7 +1783,6 @@ Pclose(iop)
     pointer iop;
 {
     struct pid *cur, *last;
-    int omask;
     int pstat;
     int pid;
 
@@ -1811,3 +1811,190 @@ Pclose(iop)
     return pid == -1 ? -1 : pstat;
 }
 #endif /* !WIN32 && !__EMX__ */
+
+
+/*
+ * CheckUserParameters: check for long command line arguments and long
+ * environment variables.  By default, these checks are only done when
+ * the server's euid != ruid.  In 3.3.x, these checks were done in an
+ * external wrapper utility.
+ */
+
+/* Consider LD* variables insecure? */
+#ifndef REMOVE_ENV_LD
+#define REMOVE_ENV_LD 1
+#endif
+
+/* Remove long environment variables? */
+#ifndef REMOVE_LONG_ENV
+#define REMOVE_LONG_ENV 1
+#endif
+
+/* Check args and env only if running setuid (euid == 0 && euid != uid) ? */
+#ifndef CHECK_EUID
+#define CHECK_EUID 1
+#endif
+
+/*
+ * Maybe the locale can be faked to make isprint(3) report that everything
+ * is printable?  Avoid it by default.
+ */
+#ifndef USE_ISPRINT
+#define USE_ISPRINT 0
+#endif
+
+#define MAX_ARG_LENGTH          128
+#define MAX_ENV_LENGTH          256
+#define MAX_ENV_PATH_LENGTH     2048	/* Limit for *PATH and TERMCAP */
+
+#if USE_ISPRINT
+#include <ctype.h>
+#define checkPrintable(c) isprint(c)
+#else
+#define checkPrintable(c) (((c) & 0x7f) >= 0x20 && ((c) & 0x7f) != 0x7f)
+#endif
+
+enum BadCode {
+    NotBad = 0,
+    UnsafeArg,
+    ArgTooLong,
+    UnprintableArg,
+    EnvTooLong,
+    InternalError
+};
+
+#define ARGMSG \
+    "\nIf the arguments used are valid, and have been rejected incorrectly\n" \
+      "please send details of the arguments and why they are valid to\n" \
+      "XFree86@XFree86.org.  In the meantime, you can start the Xserver as\n" \
+      "the \"super user\" (root).\n"   
+
+#define ENVMSG \
+    "\nIf the environment is valid, and have been rejected incorrectly\n" \
+      "please send details of the environment and why it is valid to\n" \
+      "XFree86@XFree86.org.  In the meantime, you can start the Xserver as\n" \
+      "the \"super user\" (root).\n"
+
+void
+CheckUserParameters(int argc, char **argv, char **envp)
+{
+    enum BadCode bad = NotBad;
+    int i = 0, j;
+    char *a, *e = NULL;
+#if defined(__QNX__) && !defined(__QNXNTO__)
+    char cmd_name[64];
+#endif
+
+#if CHECK_EUID
+    if (geteuid() == 0 && getuid() != geteuid())
+#endif
+    {
+	/* Check each argv[] */
+	for (i = 1; i < argc; i++) {
+	    if (strlen(argv[i]) > MAX_ARG_LENGTH) {
+		bad = ArgTooLong;
+		break;
+	    }
+	    a = argv[i];
+	    while (*a) {
+		if (checkPrintable(*a) == 0) {
+		    bad = UnprintableArg;
+		    break;
+		}
+		a++;
+	    }
+	    if (bad)
+		break;
+	}
+	if (!bad) {
+	    /* Check each envp[] */
+	    for (i = 0; envp[i]; i++) {
+
+		/* Check for bad environment variables and values */
+#if REMOVE_ENV_LD
+		while (envp[i] && (strncmp(envp[i], "LD", 2) == 0)) {
+#ifdef ENVDEBUG
+		    ErrorF("CheckUserParameters: removing %s from the "
+			   "environment\n", strtok(envp[i], "="));
+#endif
+		    for (j = i; envp[j]; j++) {
+			envp[j] = envp[j+1];
+		    }
+		}
+#endif   
+		if (envp[i] && (strlen(envp[i]) > MAX_ENV_LENGTH)) {
+#if REMOVE_LONG_ENV
+#ifdef ENVDEBUG
+		    ErrorF("CheckUserParameters: removing %s from the "
+			   "environment\n", strtok(envp[i], "="));
+#endif
+		    for (j = i; envp[j]; j++) {
+			envp[j] = envp[j+1];
+		    }
+		    i--;
+#else
+		    char *eq;
+		    int len;
+
+		    eq = strchr(envp[i], '=');
+		    if (!eq)
+			continue;
+		    len = eq - envp[i];
+		    e = malloc(len + 1);
+		    if (!e) {
+			bad = InternalError;
+			break;
+		    }
+		    strncpy(e, envp[i], len);
+		    e[len] = 0;
+		    if (len >= 4 &&
+			(strcmp(e + len - 4, "PATH") == 0 ||
+			 strcmp(e, "TERMCAP") == 0)) {
+			if (strlen(envp[i]) > MAX_ENV_PATH_LENGTH) {
+			    bad = EnvTooLong;
+			    break;
+			} else {
+			    free(e);
+			}
+		    } else {
+			bad = EnvTooLong;
+			break;
+		    }
+#endif
+		}
+	    }
+	}
+    }
+    switch (bad) {
+    case NotBad:
+	return;
+    case UnsafeArg:
+	ErrorF("Command line argument number %d is unsafe\n", i);
+	ErrorF(ARGMSG);
+	break;
+    case ArgTooLong:
+	ErrorF("Command line argument number %d is too long\n", i);
+	ErrorF(ARGMSG);
+	break;
+    case UnprintableArg:
+	ErrorF("Command line argument number %d contains unprintable"
+		" characters\n", i);
+	ErrorF(ARGMSG);
+	break;
+    case EnvTooLong:
+	ErrorF("Environment variable `%s' is too long\n", e);
+	ErrorF(ENVMSG);
+	break;
+    case InternalError:
+	ErrorF("Internal Error\n");
+	break;
+    default:
+	ErrorF("Unknown error\n");
+	ErrorF(ARGMSG);
+	ErrorF(ENVMSG);
+	break;
+    }
+    FatalError("X server aborted because of unsafe environment\n");
+}
+
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.27 2000/01/22 01:59:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.28 2000/02/12 03:39:41 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -250,9 +250,10 @@ static int indexForScanlinePad[ 65 ] = {
 #endif
 
 int
-main(argc, argv)
+main(argc, argv, envp)
     int		argc;
     char	*argv[];
+    char	*envp[];
 {
     int		i, j, k, error;
     HWEventQueueType	alwaysCheckForInput[2];
@@ -263,6 +264,8 @@ main(argc, argv)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else
 	restart = 1;
+
+    CheckUserParameters(argc, argv, envp);
 
 #ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
     ExpandCommandLine(&argc, &argv);

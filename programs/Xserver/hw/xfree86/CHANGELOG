@@ -1,4 +1,13 @@
 XFree86 4.0d (15 June 2000)
+ 299. Add a function to the X server that performs the same checks on
+      command line arguments and environment variables as the Xwrapper
+      from 3.3.x.  This function is called very early from main()
+      (David Dawes).
+ 298. Fix for some Xlib problems that can show up when connecting to
+      a rogue server (Keith Packard, with analysis by Chris Evans).
+ 297. Increase MAXVISUALSPERDEPTH to 64 for Xnest so that it can handle
+      GLX's visuals.
+ 296. Add a Macedonian xkb symbols file (#A.96, Zlatko Trajceski).
  295. Fix a buffer overflow with the -xkbmap X server flag (#A.91,
       Trevor Johnson).
  294. Fix a rectangle fill problem that shows up with an AGP SiS 6326
@@ -10589,4 +10598,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1184 2000/06/15 01:26:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1185 2000/06/15 20:50:00 dawes Exp $

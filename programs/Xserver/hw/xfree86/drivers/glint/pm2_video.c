@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.13 1999/09/27 06:29:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.15 2000/06/14 21:57:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -3074,7 +3074,8 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	xf86InitFBManager(pScreen, &AvailFBArea);
     }
 
-    if (LoaderSymbol("xf86InitLinearFBManagerRegion")) {
+#ifdef XFree86LOADER
+    if (xf86LoaderCheckSymbol("xf86InitLinearFBManagerRegion")) {
 	int last = pGlint->FbMapSize / (pScrn->bitsPerPixel / 8) - 1;
 	BoxRec AvailFBArea;
 	RegionPtr Region;
@@ -3094,6 +3095,7 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	xf86InitLinearFBManagerRegion(pScreen, Region);
 	REGION_DESTROY(pScreen, Region);
     }
+#endif
 
     memset(VAR, 0, sizeof(VAR));
 
@@ -3179,14 +3181,14 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	if (VideoIO) {
 	    if ((s = xf86GetOptValString(InputOptions, OPTION_ENCODING)))
 	        for (i = 0; i < ENTRIES(InputVideoEncodings); i++)
-		    if (!xf86strncmp(s, InputVideoEncodings[i].name, xf86strlen(s))) {
+		    if (!strncmp(s, InputVideoEncodings[i].name, strlen(s))) {
 			Permedia2SetPortAttribute(pScrn, xvEncoding, i, (pointer) &pAPriv->Port[0]);
 			break;
 		    }
 
 	    if ((s = xf86GetOptValString(OutputOptions, OPTION_ENCODING)))
 		for (i = 0; i < ENTRIES(OutputVideoEncodings); i++)
-		    if (!xf86strncmp(s, OutputVideoEncodings[i].name, xf86strlen(s))) {
+		    if (!strncmp(s, OutputVideoEncodings[i].name, strlen(s))) {
 			Permedia2SetPortAttribute(pScrn, xvEncoding, i, (pointer) &pAPriv->Port[1]);
 			break;
 		    }
