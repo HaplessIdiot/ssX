@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/radeon_driver.c,v 1.1 2000/10/18 17:20:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/radeon_driver.c,v 1.2 2000/10/19 10:06:25 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,
@@ -2861,8 +2861,8 @@ static Bool RADEONCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (info->accel)             XAADestroyInfoRec(info->accel);
     info->accel                  = NULL;
 
-    if (info->scratch_buffer[0]) xfree(info->scratch_buffer[0]);
-    info->scratch_buffer[0]      = NULL;
+    if (info->scratch_save)      xfree(info->scratch_save);
+    info->scratch_save           = NULL;
 
     if (info->cursor)            xf86DestroyCursorInfoRec(info->cursor);
     info->cursor                 = NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.52 2000/10/13 05:23:29 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.53 2000/10/18 17:20:00 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -2753,8 +2753,8 @@ static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (info->accel)             XAADestroyInfoRec(info->accel);
     info->accel                  = NULL;
 
-    if (info->scratch_buffer[0]) xfree(info->scratch_buffer[0]);
-    info->scratch_buffer[0]      = NULL;
+    if (info->scratch_save)      xfree(info->scratch_save);
+    info->scratch_save           = NULL;
 
     if (info->cursor)            xf86DestroyCursorInfoRec(info->cursor);
     info->cursor                 = NULL;
