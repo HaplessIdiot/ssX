@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.226 2004/07/06 16:41:34 tom Exp $ */
+/* $XTermId: misc.c,v 1.228 2004/07/18 20:46:28 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.89 2004/06/06 22:15:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.90 2004/07/13 00:41:29 dickey Exp $ */
 
 /*
  *
@@ -396,14 +396,20 @@ HandleFocusChange(Widget w GCC_UNUSED,
     register XFocusChangeEvent *event = (XFocusChangeEvent *) ev;
     register TScreen *screen = &term->screen;
 
-    if (event->type == FocusIn)
+    if (event->type == FocusIn) {
 	selectwindow(screen,
 		     (event->detail == NotifyPointer) ? INWINDOW :
 		     FOCUS);
-    else {
-	unselectwindow(screen,
-		       (event->detail == NotifyPointer) ? INWINDOW :
-		       FOCUS);
+    } else {
+	/*
+	 * XGrabKeyboard() will generate FocusOut/NotifyGrab event that we want
+	 * to ignore.
+	 */
+	if (event->mode != NotifyGrab) {
+	    unselectwindow(screen,
+			   (event->detail == NotifyPointer) ? INWINDOW :
+			   FOCUS);
+	}
 	if (screen->grabbedKbd && (event->mode == NotifyUngrab)) {
 	    Bell(XkbBI_Info, 100);
 	    ReverseVideo(term);
