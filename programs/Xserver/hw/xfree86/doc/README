@@ -760,6 +760,24 @@
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
 
+     Matrox SVGA driver by:
+
+        o  Radoslaw Kapitan <kapitan@student.uci.agh.edu.pl>
+
+        o  Andrew Vanderstock <vanderaj@mail2.svhm.org.au>
+
+        o  Angsar Hockmann <Ansgar.Hockmann@hrz.uni-dortmund.de>
+
+        o  Michael Will <Michael.Will@student.uni-tuebingen.de>
+
+        o  Andrew Mileski <aem@ott.hookup.net>
+
+        o  Stephen Pitts <pitts2@memphisonline.com>
+
+        o  Dirk Hohndel <hohndel@XFree86.Org>
+
+        o  Leonard N. Zubkoff <lnz@dandelion.com>
+
      XFree86-VidModeExtension and xvidtune client by:
 
         o  Kaleb S. Keithley <kaleb@x.org>
@@ -769,6 +787,8 @@
         o  Jon Tombs <tombs@XFree86.org>
 
         o  Joe Moss <joe@XFree86.org>
+
+
 
      XFree86-Misc extension by:
 
@@ -787,8 +807,6 @@
         o  David Dawes <dawes@XFree86.org>
 
      XInput integration, devices and clients by:
-
-
 
         o  Frederic Lepied <lepied@XFree86.Org> (XInput integration,
            Wacom tablet, Joystick and extended mouse devices,
@@ -833,6 +851,10 @@
 
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
+
+
+
+
 
   7.  The XFree86 Project, Inc.
 
@@ -899,6 +921,7 @@
   new.
 
   Here is a list of the organizations and individuals who have provided
+
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
   XFree86 Project, Inc gratefully acknowledges these contributions, and
@@ -919,7 +942,6 @@
   Also deserving of special mention are the organizers and attendees of
   the 1st German Linux Congress in Heidelberg.  Significant funding to
   The XFree86 Project has been provided from its proceeds.
-
 
 
      o  AIB Software Corporation <http://www.aib.com/>, Herndon, VA
@@ -965,6 +987,7 @@
 
      o  Daniel Kraemer
 
+
      o  Frank & Paige McCormick
 
      o  Linux International
@@ -986,7 +1009,6 @@
      o  Kazuyuki Okamoto, Japan
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
-
 
      o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
@@ -1030,6 +1052,8 @@
   available via anonymous FTP from:
 
 
+
+
      o  ftp://ftp.XFree86.org/pub/XFree86
 
   and the following mirror sites:
@@ -1051,8 +1075,6 @@
 
 
      o  Europe:
-
-
 
         +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
@@ -1096,13 +1118,57 @@
   files you need to take from the archive.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.67 1997/01/12 10:41:52 dawes Exp $
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.68 1997/01/19 12:50:45 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

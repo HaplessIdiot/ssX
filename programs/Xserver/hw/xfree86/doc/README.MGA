@@ -1,19 +1,17 @@
-  Information for Matrox Millenium Users
+  Information for Matrox Millennium Users
   The XFree86 Project Inc.
-  19 October 1996
+  19 January 1997
 
   1.  Supported hardware
 
   The current MGA driver in the SVGA server supports the Matrox
-  Millennium (MGA2064W) with Ti3026 RAMDAC. It has been tested with 175
-  and 220MHz cards with 2 and 4MB WRAM.
+  Millennium (MGA2064W) with Ti3026 RAMDAC. It has been tested with 175,
+  220MHz, and 250MHz cards with 2MB, 4MB and 8MB WRAM.
 
   NOTE: This driver is pretty new, and not everything works like you
   expect it to. It shouldn't crash your machine, but you may have video
   artifacts or missing lines. Please report any and all problems to
-  XFree86@Xfree86.org using the appropiate bug report sheet.
-
-  There will be updated drivers in the comming XFree86 beta releases.
+  XFree86@Xfree86.org using the appropriate bug report sheet.
 
   2.  Features:
 
@@ -22,11 +20,15 @@
 
      o  uses linear frame buffer
 
-     o  it should be possible to reach resolutions upto 1920x1024
+     o  it should be possible to reach resolutions up to 1920x1024
 
      o  it should be possible to use pixel depths of 8, 16, 24, and 32
         bits per pixel (256 pseudo colour, "high colour", "packed true
         colour", "true colour").
+
+     o  supports VESA Display Power Management Signaling (DPMS)
+
+     o  supports RGB Sync-on-Green
 
      o  has the following accelerations:
 
@@ -60,19 +62,20 @@
   most Matrox Millennium boards.
 
   This driver only supports the MGA Storm (MGA2064W) chipset with the TI
-  (TVP) 3026 RAMDAC. Matrox have only so far made 175 and 220 MHz boards
-  with these two components, although 135 and 250 MHz RAMDAC parts
-  exist.
+  (TVP) 3026 RAMDAC. Matrox have only so far made 175, 220 and 250 MHz
+
+  boards with these two components, although a 135 MHz RAMDAC part
+  exists.
 
   We will eventually provide support for the other Matrox chipsets (once
-  the Millenium driver is at a far enough stage and more people with
+  the Millennium driver is at a far enough stage and more people with
   other cards join the effort), including the Impression, Mystique, etc.
 
   At the moment, however, only the Millennium is supported.
 
   5.  Configuration:
 
-  The server autodetects WRAM size and RAMDAC speed. Do not bother
+  The server auto-detects WRAM size and RAMDAC speed. Do not bother
   putting these in your "Device" section, as they will be overridden.
   The TVP3026 has a programmable clock generator, so probing and setting
   clocks is unnecessary as well.
@@ -101,12 +104,14 @@
 
      o  Dirk Hohndel, hohndel@XFree86.Org
 
+     o  Leonard N. Zubkoff, lnz@dandelion.com
+
   Visit the Matrox Millennium XServer for XFree86 Home Page
   <http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html> to keep up to date
   with the latest news, new sources, etc.
 
 
-  $XFree86$
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.2 1997/01/19 12:50:43 dawes Exp $
 
 
 
@@ -126,7 +131,4 @@
 
 
 
-
-
-
-
+$XFree86$
