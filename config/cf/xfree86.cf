@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.416tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.417 2002/11/14 21:01:14 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1857,10 +1857,10 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # endif
 #endif
 
-/* Make imake noisier */
+/* Make imake noisier.  Note that this is ineffective for 3.0 <= GCC <= 3.2 */
 #ifndef ImakeWarningFlags
 # ifdef Gcc28Warnings
-#  define ImakeWarningFlags /* Gcc28Warnings */ /* Temporarily disabled */
+#  define ImakeWarningFlags Gcc28Warnings
 # else
 #  define ImakeWarningFlags /* */
 # endif
