@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.85 2003/02/07 18:08:59 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.86 2003/02/07 20:41:15 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -300,6 +300,7 @@ static const char *drmSymbols[] = {
     "drmRadeonStartCP",
     "drmRadeonStopCP",
     "drmRadeonWaitForIdleCP",
+    "drmScatterGatherAlloc",
     "drmScatterGatherFree",
     "drmUnmap",
     "drmUnmapBufs",
