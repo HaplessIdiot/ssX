@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.6 2000/09/24 13:51:10 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.7 2000/10/20 12:57:23 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -30,7 +30,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(XF86OSSRC) \
 		-I$(XF86COMSRC) \
 		-I$(SERVERSRC)/GL/dri \
-		-I$(XF86DRIVERSRC)/r128 \
+		-I$(XF86DRIVERSRC)/ati \
 		-I../../../include \
 		-I../.. \
 		-I../../X \
