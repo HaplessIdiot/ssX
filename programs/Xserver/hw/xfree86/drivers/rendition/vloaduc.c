@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/rendition/vloaduc.c,v 1.1.2.2 1998/08/07 06:40:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.4 1999/11/19 13:54:46 hohndel Exp $ */
 /*
  * includes
  */
@@ -7,7 +7,7 @@
 #include "v1kregs.h"
 #include "vloaduc.h"
 #include "vos.h"
-#include <elf.h>
+#include "elf.h"
 
 /*
  * defines 
