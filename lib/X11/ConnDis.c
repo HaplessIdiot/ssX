@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.13 1997/01/18 06:51:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.14 1998/10/03 08:41:16 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -294,10 +294,10 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	if (olen > sizeof addrbuf) address = Xmalloc (olen);
     }
 
-    sprintf(address,"%s/%s:%s",
+    sprintf(address,"%s/%s:%d",
 	pprotocol ? pprotocol : "",
 	phostname ? phostname : "",
-	pdpynum );
+	idisplay );
 
     /*
      * Make the connection, also need to get the auth address info for

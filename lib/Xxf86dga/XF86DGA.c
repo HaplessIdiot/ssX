@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.10 1996/12/09 11:50:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.11 1997/01/18 06:52:20 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -508,6 +508,8 @@ int *width, *bank, *ram;
    {
         fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mmap (%s)\n",
                            strerror(errno));
+	exit(-1)
+   }
 #else
 #ifdef __EMX__
    /* Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
@@ -521,15 +523,17 @@ int *width, *bank, *ram;
 	fprintf(stderr, 
 		"XF86DGAGetVideo: failed to open /dev/pmap$ (rc=%d)\n",
 		rc);
+	exit(-1);
+   }
 #else
    if ((fd = open(DEV_MEM, O_RDWR)) < 0)
    {
         fprintf(stderr, "XF86DGAGetVideo: failed to open %s (%s)\n",
                            DEV_MEM, strerror(errno));
-#endif
-#endif
         exit (-1);
    }
+#endif
+#endif
 #endif
 
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
@@ -555,12 +559,16 @@ int *width, *bank, *ram;
      DEBUG_MMAP("after MMAP");
      fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mmap (%s)\n",
                            strerror(errno));
+     exit (-2);
+   }
 #else /* !ISC */
 #ifdef Lynx
    *addr = (void *)smem_create("XF86DGA", (char *)offset, *bank, SM_READ|SM_WRITE);
    if (*addr == NULL) {
         fprintf(stderr, "XF86DGAGetVideo: smem_create() failed (%s)\n",
                            strerror(errno));
+        exit (-2);
+   }
 #else /* !Lynx */
 #ifdef __EMX__
    {
@@ -588,6 +596,8 @@ int *width, *bank, *ram;
         fprintf(stderr, 
 		"XF86DGAGetVideo: failed to mmap /dev/pmap$ (rc=%d)\n",
                 rc);
+        exit (-2);
+   }
 #else /* !__EMX__ */
 #ifndef MAP_FILE
 #define MAP_FILE 0
@@ -602,11 +612,11 @@ int *width, *bank, *ram;
    if (*addr == (char *) -1) {
         fprintf(stderr, "XF86DGAGetVideo: failed to mmap %s (%s)\n",
                            DEV_MEM, strerror(errno));
+        exit (-2);
+   }
 #endif /* !__EMX__*/
 #endif /* !Lynx */
 #endif /* !ISC && !HAS_SVR3_MMAP */
-        exit (-2);
-   }
    _XFree86size = *bank;
    _XFree86addr = *addr;
 

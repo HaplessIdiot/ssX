@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.15 1999/01/03 03:58:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.16 1999/01/03 04:16:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -47,9 +47,9 @@ xf86AddDriver(DriverPtr driver, pointer module, int flags)
 	xf86NumDrivers = 0;
 
     xf86NumDrivers++;
-    xf86DriverList = (DriverPtr *)xnfrealloc(xf86DriverList,
-					xf86NumDrivers * sizeof(DriverPtr));
-    xf86DriverList[xf86NumDrivers - 1] = (DriverPtr)xnfalloc(sizeof(DriverRec));
+    xf86DriverList = xnfrealloc(xf86DriverList,
+				xf86NumDrivers * sizeof(DriverPtr));
+    xf86DriverList[xf86NumDrivers - 1] = xnfalloc(sizeof(DriverRec));
     *xf86DriverList[xf86NumDrivers - 1] = *driver;
     xf86DriverList[xf86NumDrivers - 1]->module = module;
     xf86DriverList[xf86NumDrivers - 1]->refCount = 0;
@@ -76,13 +76,12 @@ xf86AllocateScreen(DriverPtr drv, int flags)
 	xf86NumScreens = 0;
 
     i = xf86NumScreens++;
-    xf86Screens = (ScrnInfoPtr *)xnfrealloc(xf86Screens,
-				     xf86NumScreens * sizeof(ScrnInfoPtr));
-    xf86Screens[i] = (ScrnInfoPtr)xnfcalloc(sizeof(ScrnInfoRec), 1);
+    xf86Screens = xnfrealloc(xf86Screens, xf86NumScreens * sizeof(ScrnInfoPtr));
+    xf86Screens[i] = xnfcalloc(sizeof(ScrnInfoRec), 1);
     xf86Screens[i]->scrnIndex = i;	/* Changes when a screen is removed */
     xf86Screens[i]->origIndex = i;	/* This never changes */
-    xf86Screens[i]->privates =
-	(DevUnion *)xnfcalloc(sizeof(DevUnion), xf86ScrnInfoPrivateCount);
+    xf86Screens[i]->privates = xnfcalloc(sizeof(DevUnion),
+					 xf86ScrnInfoPrivateCount);
     xf86Screens[i]->drv = drv;
     drv->refCount++;
 #ifdef XFree86LOADER
@@ -158,8 +157,8 @@ xf86AllocateScrnInfoPrivateIndex(void)
     idx = xf86ScrnInfoPrivateCount++;
     for (i = 0; i < xf86NumScreens; i++) {
 	pScr = xf86Screens[i];
-	nprivs = (DevUnion *)xnfrealloc(pScr->privates,
-				xf86ScrnInfoPrivateCount * sizeof(DevUnion));
+	nprivs = xnfrealloc(pScr->privates,
+			    xf86ScrnInfoPrivateCount * sizeof(DevUnion));
 	/* Zero the new private */
 	bzero(&nprivs[idx], sizeof(DevUnion));
 	pScr->privates = nprivs;
@@ -817,7 +816,7 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 	
 	/* allocate new data */
 	devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ? */
-        devPrivate = (pointer)xalloc(devKind * height);
+        devPrivate = xalloc(devKind * height);
 
         if(devPrivate) {
 	    pPix = GetScratchPixmapHeader(pScreen, width, height, 
@@ -1147,8 +1146,8 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
      * first we need to loop over all the Screens sections to get to all
      * 'active' device sections
      */
-    for (j=0; xf86ConfigLayout[j].screen != NULL; j++) {
-        screensecptr = xf86ConfigLayout[j].screen;
+    for (j=0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
+        screensecptr = xf86ConfigLayout.screens[j].screen;
         if ((screensecptr->device->driver != NULL)
             && (xf86NameCmp( screensecptr->device->driver,drivername) == 0)
             && (! screensecptr->device->claimed)) {
@@ -1156,8 +1155,8 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
              * we have a matching driver that wasn't claimed, yet
              */
             screensecptr->device->claimed = TRUE;
-            devices[i] = (GDevPtr *) xnfrealloc(devices[i],
-                                            (count[i] + 2) * sizeof(GDevPtr));
+            devices[i] = xnfrealloc(devices[i],
+                                    (count[i] + 2) * sizeof(GDevPtr));
             devices[i][count[i]++] = screensecptr->device;
         }
     }
@@ -1166,16 +1165,16 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
          * we haven't found a single one, let's try to find one that
          * wasn't claimed and has no driver given
          */
-        for (j=0; xf86ConfigLayout[j].screen != NULL; j++) {
-            screensecptr = xf86ConfigLayout[j].screen;
+        for (j=0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
+            screensecptr = xf86ConfigLayout.screens[j].screen;
             if ((screensecptr->device->driver == NULL)
                 && (! screensecptr->device->claimed)) {
                 /*
                  * we have a device section without driver that wasn't claimed
                  */
                 screensecptr->device->claimed = TRUE;
-                devices[i] = (GDevPtr *) xnfrealloc(devices[i],
-                                             (count[i] + 2) * sizeof(GDevPtr));
+                devices[i] = xnfrealloc(devices[i],
+                                        (count[i] + 2) * sizeof(GDevPtr));
                 devices[i][count[i]++] = screensecptr->device;
             }
         }
@@ -1229,7 +1228,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	        if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor) && 
 		     ((id->PCIid & 0x0000FFFF)        == (*ppPci)->chipType)){
 	            numClaimedInstances = ++allocatedInstances;
-	            instances = (struct Inst *)xnfrealloc(instances,
+	            instances = xnfrealloc(instances,
 				  allocatedInstances * sizeof(struct Inst));
 	            instances[allocatedInstances - 1].inuse = TRUE;
 	            instances[allocatedInstances - 1].pci = *ppPci;
@@ -1245,7 +1244,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
 		if (id->PCIid == xf86CheckPciGAType(*ppPci)) {
 		    numClaimedInstances = ++allocatedInstances;
-		    instances = (struct Inst *)xnfrealloc(instances,
+		    instances = xnfrealloc(instances,
 				  allocatedInstances * sizeof(struct Inst));
 		    instances[allocatedInstances - 1].inuse = TRUE;
 		    instances[allocatedInstances - 1].pci = *ppPci;
@@ -1262,7 +1261,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    if ((*ppPci)->vendor == vendorID) {
 		numClaimedInstances = ++allocatedInstances;
-		instances = (struct Inst *)xnfrealloc(instances,
+		instances = xnfrealloc(instances,
 			      allocatedInstances * sizeof(struct Inst));
 		instances[allocatedInstances - 1].inuse = TRUE;
 		instances[allocatedInstances - 1].pci = *ppPci;
@@ -1450,10 +1449,9 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 
 	/* Allocate an entry in the lists to be returned */
 	numFound++;
-	retDevs = (GDevPtr *)xnfrealloc(retDevs, numFound * sizeof(GDevPtr));
-	retPCI = (pciVideoPtr *)xnfrealloc(retPCI,
-					   numFound * sizeof(pciVideoPtr));
-	retChips = (int *)xnfrealloc(retChips, numFound * sizeof(int));
+	retDevs = xnfrealloc(retDevs, numFound * sizeof(GDevPtr));
+	retPCI = xnfrealloc(retPCI, numFound * sizeof(pciVideoPtr));
+	retChips = xnfrealloc(retChips, numFound * sizeof(int));
 	retDevs[numFound - 1] = instances[i].dev;
 	retPCI[numFound - 1] = instances[i].pci;
 	retChips[numFound -1] = instances[i].chip;

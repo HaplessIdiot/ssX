@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.84 1999/01/03 03:58:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.85 1999/01/11 05:13:29 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -276,7 +276,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     for (i = 0; i < xf86NumScreens; i++) {
-      for (layout = xf86ConfigLayout; layout->screen != NULL; layout++) {
+      for (layout = xf86ConfigLayout.screens; layout->screen != NULL;
+	   layout++) {
 	if (xf86Screens[i]->device == layout->screen->device) {
 	  /* A match has been found */
 	  xf86Screens[i]->confScreen = layout->screen;

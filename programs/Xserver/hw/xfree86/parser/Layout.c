@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.1.2.4 1998/06/02 14:49:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -39,6 +39,8 @@ static xf86ConfigSymTabRec LayoutTab[] =
 	{ENDSECTION, "endsection"},
 	{SCREEN, "screen"},
 	{IDENTIFIER, "identifier"},
+	{INACTIVE, "inactive"},
+	{OPTION, "option"},
 	{-1, ""},
 };
 
@@ -59,6 +61,20 @@ parseLayoutSection (void)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->lay_identifier = val.str;
 			has_ident = TRUE;
+			break;
+		case INACTIVE:
+			{
+				XF86ConfInactivePtr iptr;
+
+				iptr = (XF86ConfInactivePtr) xf86confmalloc
+					(sizeof (XF86ConfInactiveRec));
+				iptr->list.next = NULL;
+				if (xf86GetToken (NULL) != STRING)
+					Error (INACTIVE_MSG, NULL);
+				iptr->inactive_device_str = val.str;
+				ptr->lay_inactive_lst = (XF86ConfInactivePtr)
+					addListItem ((glp) ptr->lay_inactive_lst, (glp) iptr);
+			}
 			break;
 		case SCREEN:
 			{
@@ -108,6 +124,27 @@ parseLayoutSection (void)
 					addListItem ((glp) ptr->lay_adjacency_lst, (glp) aptr);
 			}
 			break;
+		case OPTION:
+			{
+				char *name;
+				if ((token = xf86GetToken (NULL)) != STRING)
+					Error (BAD_OPTION_MSG, NULL);
+				name = val.str;
+				if ((token = xf86GetToken (NULL)) == STRING)
+				{
+					ptr->lay_option_lst =
+					    addNewOption (ptr->lay_option_lst,
+							  name, val.str);
+				}
+				else
+				{
+					ptr->lay_option_lst =
+					    addNewOption (ptr->lay_option_lst,
+							  name, NULL);
+					xf86UnGetToken (token);
+				}
+			}
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -133,6 +170,8 @@ void
 printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 {
 	XF86ConfAdjacencyPtr aptr;
+	XF86ConfInactivePtr iptr;
+	XF86OptionPtr optr;
 
 	while (ptr)
 	{
@@ -147,6 +186,15 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 			fprintf (cf, " \"%s\"", aptr->adj_bottom_str);
 			fprintf (cf, " \"%s\"", aptr->adj_right_str);
 			fprintf (cf, " \"%s\"\n", aptr->adj_left_str);
+		}
+		for (iptr = ptr->lay_inactive_lst; iptr; iptr = iptr->list.next)
+			fprintf (cf, "\tInactive       \"%s\"\n", iptr->inactive_device_str);
+		for (optr = ptr->lay_option_lst; optr; optr = optr->list.next)
+		{
+			fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
+			if (optr->opt_val)
+				fprintf (cf, " \"%s\"", optr->opt_val);
+			fprintf (cf, "\n");
 		}
 		fprintf (cf, "EndSection\n\n");
 		ptr = ptr->list.next;
@@ -207,7 +255,9 @@ validateLayout (XF86ConfigPtr p)
 {
 	XF86ConfLayoutPtr layout = p->conf_layout_lst;
 	XF86ConfAdjacencyPtr adj;
+	XF86ConfInactivePtr iptr;
 	XF86ConfScreenPtr screen;
+    XF86ConfDevicePtr device;
 
 	while (layout)
 	{
@@ -231,6 +281,21 @@ validateLayout (XF86ConfigPtr p)
 			CheckScreen (adj->adj_right_str, adj->adj_right);
 
 			adj = adj->list.next;
+		}
+		iptr = layout->lay_inactive_lst;
+		while (iptr)
+		{
+			device = xf86FindDevice (iptr->inactive_device_str,
+									p->conf_device_lst);
+			if (!device)
+			{
+				xf86ValidationError (UNDEFINED_DEVICE_LAY_MSG,
+						iptr->inactive_device_str, layout->lay_identifier);
+				return (FALSE);
+			}
+			else
+				iptr->inactive_device = device;
+			iptr = iptr->list.next;
 		}
 		layout = layout->list.next;
 	}

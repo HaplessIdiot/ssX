@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.11 1998/11/28 10:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.12 1998/12/20 13:16:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -281,6 +281,13 @@ typedef struct _screenlayoutrec {
     confScreenPtr	right;
 } screenLayoutRec, *screenLayoutPtr;
 
+typedef struct _serverlayoutrec {
+    char *		id;
+    screenLayoutPtr	screens;
+    GDevPtr		inactives;
+    pointer		options;
+} serverLayoutRec, *serverLayoutPtr;
+    
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
 #define NUM_RESERVED_POINTERS		16

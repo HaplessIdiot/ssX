@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.29 1998/10/05 13:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.30 1999/01/03 03:58:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -50,7 +50,7 @@ extern Bool xf86ShowUnresolved;
 
 extern xf86InfoRec xf86Info;
 extern char *xf86ModulePath;
-extern screenLayoutPtr xf86ConfigLayout;
+extern serverLayoutRec xf86ConfigLayout;
 
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.3 1998/11/22 10:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.4 1999/01/03 03:58:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -130,7 +130,7 @@ xf86InfoRec xf86Info = {
 	PCIProbe1	/* pciFlags */
 };
 char *xf86ModulePath = NULL;
-screenLayoutPtr xf86ConfigLayout = NULL;
+serverLayoutRec xf86ConfigLayout = {NULL, };
 XF86ConfigPtr xf86configptr = NULL;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
