@@ -409,11 +409,12 @@ points required during the early phase of InitOutput().  xf86AddDriver() adds
 it to the global xf86DriverList[] array.
 
 The DriverRec contains the driver's version, a short descriptive message, the
-Identify() and Probe() function entry points as well as a pointer to the
-driver's module (as returned from the loader when the driver was loaded) and
-a reference count which keeps track of how many screens are using the driver.
-The entry driver entry points are those required prior to the driver allocat-
-ing and filling in its ScrnInfoRec.
+Identify(), Probe() and AvailableOptions() function entry points as well as a
+pointer to the driver's module (as returned from the loader when the driver
+was loaded) and a reference count which keeps track of how many screens are
+using the driver.  The entry driver entry points are those required prior to
+the driver allocating and filling in its ScrnInfoRec.
+
 
 For a static server, the xf86DriverList[] array is initialised at build time,
 and the loading of modules is not done.
@@ -465,12 +466,15 @@ Probe() function of each registered video driver is called.
 
           The purpose of this is to identify all instances of hard-
           ware supported by the driver.  The flags value is cur-
-          rently not used, and should be ignored by the driver.
+          rently either PROBE_DEFAULT or PROBE_DETECT.  PROBE_DETECT
+	  is used if "-configure" or "-probe" command line argurments
+	  are given and indicates to the Probe() function that it
+	  should not configure the PCI entities.
 
           The probe must find the active device sections that match
           the driver by calling xf86MatchDevice().  The number of
           matches found limits the maximum number of instances for
-          this driver.  If no matches are found, the problem should
+          this driver.  If no matches are found, the function should
           return FALSE immediately.
 
           Devices that cannot be identified by using device-inde-
@@ -6305,4 +6309,4 @@ eScreen() function.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.32 2000/08/28 18:24:14 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.28 2000/08/28 18:29:05 dawes Exp $
