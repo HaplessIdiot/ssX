@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.18tsi Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.20 2002/05/31 04:45:12 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -79,6 +79,27 @@ _XftGetFile (const FcChar8 *file, int id)
     
     f->lock = 0;
     f->face = 0;
+    f->size = 0;
+    return f;
+}
+
+static XftFtFile *
+_XftGetFaceFile (FT_Face face)
+{
+    XftFtFile	*f;
+
+    f = malloc (sizeof (XftFtFile));
+    if (!f)
+	return 0;
+    XftMemAlloc (XFT_MEM_FILE, sizeof(XftFtFile));
+    f->next = 0;
+    
+    f->ref = 1;
+    
+    f->file = 0;
+    f->id = 0;
+    f->lock = 0;
+    f->face = face;
     f->size = 0;
     return f;
 }
@@ -190,19 +211,22 @@ _XftReleaseFile (XftFtFile *f)
     XftFtFile	**prev;
     
     if (--f->ref != 0)
-	return;
+        return;
     if (f->lock)
 	_XftLockError ("Attempt to close locked file");
-    for (prev = &_XftFtFiles; *prev; prev = &(*prev)->next)
+    if (f->file)
     {
-	if (*prev == f)
+	for (prev = &_XftFtFiles; *prev; prev = &(*prev)->next)
 	{
-	    *prev = f->next;
-	    break;
+	    if (*prev == f)
+	    {
+		*prev = f->next;
+		break;
+	    }
 	}
+	if (f->face)
+	    FT_Done_Face (f->face);
     }
-    if (f->face)
-	FT_Done_Face (f->face);
     XftMemFree (XFT_MEM_FILE, sizeof (XftFtFile) + strlen (f->file) + 1);
     free (f);
 }
@@ -283,10 +307,10 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     FcChar8	    *filename;
     int		    id;
     double	    dsize;
-    FT_Face	    face;
     FcMatrix	    *font_matrix;
     FcBool	    hinting, vertical_layout, autohint, global_advance;
     FcChar32	    hash, *hashp;
+    FT_Face	    face;
     int		    nhash;
 
     if (!info)
@@ -295,45 +319,56 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     /*
      * Find the associated file
      */
-    if (FcPatternGetString (pattern, FC_FILE, 0, &filename) != FcResultMatch)
+    switch (FcPatternGetString (pattern, FC_FILE, 0, &filename)) {
+    case FcResultNoMatch:
+	filename = 0;
+	break;
+    case FcResultMatch:
+	break;
+    default:
 	goto bail0;
+    }
     
-    if (FcPatternGetInteger (pattern, FC_INDEX, 0, &id) != FcResultMatch)
+    switch (FcPatternGetInteger (pattern, FC_INDEX, 0, &id)) {
+    case FcResultNoMatch:
+	id = 0;
+	break;
+    case FcResultMatch:
+	break;
+    default:
 	goto bail0;
+    }
     
-    fi->file = _XftGetFile (filename, id);
+    if (filename)
+	fi->file = _XftGetFile (filename, id);
+    else if (FcPatternGetFTFace (pattern, FC_FT_FACE, 0, &face) == FcResultMatch
+	     && face)
+	fi->file = _XftGetFaceFile (face);
+    else
+	fi->file = 0;
     if (!fi->file)
-	goto bail0;
-
-    face = _XftLockFile (fi->file);
-    if (!face)
-	goto bail1;
+        goto bail0;
 
     /*
      * Compute pixel size
      */
     if (FcPatternGetDouble (pattern, FC_PIXEL_SIZE, 0, &dsize) != FcResultMatch)
-	goto bail2;
+	goto bail1;
 
     fi->size = (FT_F26Dot6) (dsize * 64.0);
 
     /*
      * Get antialias value
      */
-    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
-    {
-	switch (FcPatternGetBool (pattern, FC_ANTIALIAS, 0, &fi->antialias)) {
-	case FcResultNoMatch:
-	    fi->antialias = True;
-	    break;
-	case FcResultMatch:
-	    break;
-	default:
-	    goto bail2;
-	}
+    switch (FcPatternGetBool (pattern, FC_ANTIALIAS, 0, &fi->antialias)) {
+    case FcResultNoMatch:
+	fi->antialias = True;
+	break;
+    case FcResultMatch:
+	break;
+    default:
+	goto bail1;
     }
-    else
-	fi->antialias = False;
     
     /*
      * Get rgba value
@@ -345,7 +380,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
     
     /*
@@ -363,7 +398,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 	fi->matrix.yx = 0x10000L * font_matrix->yx;
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     fi->transform = (fi->matrix.xx != 0x10000 || fi->matrix.xy != 0 ||
@@ -381,7 +416,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 	case FcResultMatch:
 	    break;
 	default:
-	    goto bail2;
+	    goto bail1;
 	}
     }
     else
@@ -404,7 +439,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     if (!hinting)
@@ -418,7 +453,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     if (vertical_layout)
@@ -432,7 +467,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     if (autohint)
@@ -446,7 +481,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     if (!global_advance)
@@ -462,7 +497,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
     
     /*
@@ -476,7 +511,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     case FcResultMatch:
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
     /*
      * Check for fixed pixel spacing 
@@ -490,7 +525,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 	    fi->spacing = FC_MONO;
 	break;
     default:
-	goto bail2;
+	goto bail1;
     }
 
     /*
@@ -507,13 +542,11 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     /*
      * All done
      */
-    _XftUnlockFile (fi->file);
     return FcTrue;
     
-bail2:
-    _XftUnlockFile (fi->file);
 bail1:
     _XftReleaseFile (fi->file);
+    fi->file = 0;
 bail0:
     return FcFalse;
 }
@@ -521,7 +554,8 @@ bail0:
 static void
 XftFontInfoEmpty (Display *dpy, XftFontInfo *fi)
 {
-    _XftReleaseFile (fi->file);
+    if (fi->file)
+	_XftReleaseFile (fi->file);
 }
 
 XftFontInfo *
@@ -573,6 +607,7 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     FcChar32		num_unicode;
     FcChar32		hash_value;
     FcChar32		rehash_value;
+    FcBool		antialias;
     int			max_glyph_memory;
     int			alloc_size;
     int			ascent, descent, height;
@@ -604,12 +639,23 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 			     &max_glyph_memory) != FcResultMatch)
 	max_glyph_memory = XFT_FONT_MAX_GLYPH_MEMORY;
 
+    face = _XftLockFile (fi->file);
+    if (!face)
+	goto bail0;
+
+    if (!_XftSetFace (fi->file, fi->size, &fi->matrix))
+	goto bail1;
+
+    antialias = fi->antialias;
+    if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
+	antialias = FcFalse;
+    
     /*
      * Find the appropriate picture format
      */
     if (fi->render)
     {
-	if (fi->antialias)
+	if (antialias)
 	{
 	    if (fi->rgba)
 	    {
@@ -670,13 +716,6 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     else
 	format = 0;
     
-    face = _XftLockFile (fi->file);
-    if (!face)
-	goto bail0;
-
-    if (!_XftSetFace (fi->file, fi->size, &fi->matrix))
-	goto bail0;
-
     if (charset)
     {
 	num_unicode = FcCharSetCount (charset);
@@ -696,7 +735,7 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     font = malloc (alloc_size);
     
     if (!font)
-	goto bail0;
+	goto bail1;
 
     XftMemAlloc (XFT_MEM_FONT, alloc_size);
 
@@ -740,6 +779,12 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
      */
     font->info = *fi;
     /*
+     * reset the antialias field.  It can't
+     * be set correctly until the font is opened,
+     * which doesn't happen in XftFontInfoFill
+     */
+    font->info.antialias = antialias;
+    /*
      * bump XftFile reference count
      */
     font->info.file->ref++;
@@ -778,8 +823,9 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
 
     return &font->public;
     
-bail0:
+bail1:
     _XftUnlockFile (fi->file);
+bail0:
     return 0;
 }
 
