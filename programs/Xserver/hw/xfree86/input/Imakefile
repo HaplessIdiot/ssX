@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.12 1999/09/04 13:04:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/Imakefile,v 1.13 2000/03/03 01:05:47 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -28,7 +28,7 @@ MakeSubdirs($(SUBDIRS))
 #endif
 
 #if MakeHasPosixVariableSubstitutions
-DONES = $(SUBDIRS:%=%/DONE)
+DONES = $(DRIVERS:%=%/DONE)
 #if HasGnuMake || HasBsdMake
 $(DONES): $(SUBDIRS)
 #endif
