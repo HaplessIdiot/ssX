@@ -28,7 +28,7 @@
  * Modified version of tx_accel.c to support dual MX chips by
  *   Jens Owen, <jens@precisioninsight.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.8 2000/05/10 18:55:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.9 2000/06/21 13:35:51 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -360,7 +360,7 @@ DualMXSync(
     while (GLINT_READ_REG(DMACount) != 0);
     GLINT_WAIT(3);
     GLINT_WRITE_REG(3, BroadcastMask); /* hack! this shouldn't need to be reloaded */
-    GLINT_WRITE_REG(1<<10, FilterMode);
+    GLINT_WRITE_REG(0x400, FilterMode);
     GLINT_WRITE_REG(0, GlintSync);
 
     /* Read 1st MX until Sync Tag shows */

@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.18 2000/03/31 22:55:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.19 2000/06/21 13:35:52 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -139,7 +139,7 @@ PermediaInitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	DepthMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	StatisticMode);
-    GLINT_SLOW_WRITE_REG(0xc00,		FilterMode);
+    GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
     GLINT_SLOW_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE,	RasterizerMode);
@@ -399,7 +399,8 @@ PermediaSync(ScrnInfoPtr pScrn)
 	CHECKCLIPPING;
 
 	while (GLINT_READ_REG(DMACount) != 0);
-	GLINT_WAIT(1);
+	GLINT_WAIT(2);
+    	GLINT_WRITE_REG(0x400, FilterMode);
 	GLINT_WRITE_REG(0, GlintSync);
 	do {
     		while(GLINT_READ_REG(OutFIFOWords) == 0);
