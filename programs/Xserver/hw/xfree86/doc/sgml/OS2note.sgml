@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 <article>
 
 <title>Notes on Rebuilding XFree86/OS2 from Scratch
@@ -169,7 +169,7 @@ Well, you see, this was quite easy :-)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.1 1996/02/24 10:19:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.2 1996/12/27 07:04:16 dawes Exp $
 
 
 

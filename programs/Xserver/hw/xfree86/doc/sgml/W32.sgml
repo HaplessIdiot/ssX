@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
  
 <article>
  
@@ -201,7 +201,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.13 1997/01/18 09:10:47 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.14 1997/01/20 12:36:36 dawes Exp $ 
 
 
 

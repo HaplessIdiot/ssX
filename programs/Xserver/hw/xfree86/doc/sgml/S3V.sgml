@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
 <title> Information for S3 ViRGE and ViRGE/VX Users
@@ -84,7 +84,7 @@ and:
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.0 1996/10/20 13:33:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.1 1997/01/23 11:02:29 dawes Exp $
 </verb>
 
 </article>

@@ -1,11 +1,11 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 <article>
 
 <!-- Title information -->
 
 <title>Mach64 X Server Release Notes
 <author>Kevin E. Martin (martin@cs.unc.edu)
-<date>23 October 1996
+<date>23 January 1997
 
 <!-- Table of contents -->
 <toc>
@@ -44,6 +44,10 @@ AT&amp;T20C408       135MHz       8      1280x1024             2Mb
 AT&amp;T20C408        80MHz      16       1024x768             2Mb
 AT&amp;T20C408        40MHz      32        800x600             2Mb
     
+3D Rage II (Int) 170MHz       8      1600x1200             4Mb
+3D Rage II (Int) 170MHz      16      1600x1200             4Mb
+3D Rage II (Int) 135MHz      32       1024x768             4Mb
+
 Internal         135MHz       8      1280x1024             2Mb
 Internal          80MHz      16       1024x768             2Mb
 Internal          40MHz      32        800x600             2Mb
@@ -90,6 +94,12 @@ properly.  This means that ISA Mach64 cards in systems with more than
 12Mb of main memory will not work.  If you have a PCI based Mach64
 card or a VLB based Mach64 card, then the Mach64 X server will work
 with any amount of main memory.
+
+Accelerated doublescan modes are supported on VT, GT and 3D Rage II
+based Mach64 cards.  Mach64 cards with other chips cannot handle
+accelerated double scan modes due to a hardware limitation.
+Non-accelerated doublescan modes should work with the ATI driver in
+the SVGA X server for all Mach64 cards.
 
 <sect>Optimizing the speed of the Mach64 X server<p>
 To maximize the speed of the Mach64 X server, I suggest that you use
@@ -268,7 +278,7 @@ Mach64 X server.  They include:
 <item> In doublescan modes, only the top half of the hardware cursor
        is displayed.  The hardware cursor works fine in all other
        modes.
-<item> 3D Rage II based Mach64 cards are not initialized properly.
+<item> Text may not be displayed correctly in certain programs.
 <item> Some RAMDACs are incorrectly reported by the BIOS.  This can be
        handled by explicitly specifying the RAMDAC in the XF86Config
        file.  This should no longer be a problem.
@@ -300,7 +310,7 @@ enhancements to the X server.  Thanks!
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.12 1996/10/24 12:30:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.13 1996/12/23 06:46:02 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 <article>
 
 <!-- Titles information -->
@@ -419,7 +419,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.10 1996/10/16 14:41:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.11 1996/12/23 06:46:14 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
 
@@ -611,7 +611,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.11 1996/12/23 06:46:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.12 1997/01/23 11:02:24 dawes Exp $
 
 
 

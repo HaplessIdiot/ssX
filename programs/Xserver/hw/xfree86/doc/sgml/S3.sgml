@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
 <title> Information for S3 Chipset Users
@@ -829,7 +829,7 @@ exit
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.34 1996/12/23 06:46:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.35 1997/01/23 11:02:28 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
  
 <article>
 
@@ -192,7 +192,7 @@ downwards. ISA card owners should not use these options.
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.9 1996/05/12 12:36:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.10 1996/12/23 06:46:07 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
 
@@ -25,6 +25,12 @@ the chip.
 	feature. If you want to change resolutions, you will have
 	to modify your config file. Comment out all but the mode you wish
 	to use.
+  <item>The generic VGA16 server will not work with the NV1.  For this reason
+	<tt>XF86Setup</tt> cannot be used to configure the server.  Use
+	<tt>xf86config</tt> instead.  Select `Diamond Edge 3D' as your board,
+	and select only <bf>ONE</bf> mode for each of 8bpp and 16bpp.  Do
+	not select a virtual desktop.  Also, make sure you don't select
+	a RAMDAC or clock chip.
   <item>The NV1 only supports a 555 RGB Weight in 16 bpp, the hardware does
 	not do 565. You must put a Weight 555 in the Display section.
   <item>24/32 bpp mode is not yet supported.
@@ -38,7 +44,7 @@ the chip.
 </itemize>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.1 1996/10/26 09:38:50 dawes Exp $
 </verb>
 
 </article>

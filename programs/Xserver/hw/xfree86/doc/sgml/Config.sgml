@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <!-- Id: README.Config.sgml,v 1.1 1994/10/05 23:31:42 klemme Exp  -->
 
@@ -519,7 +519,7 @@ installation.
 </code>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.8 1996/08/13 11:30:51 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.9 1996/12/23 06:45:52 dawes Exp $ 
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
  
 <article>
  
@@ -261,7 +261,7 @@ Bug reports should be sent to <it>XFree86@XFree86.org</it> or posted
 to the <it>comp.windows.x.i386unix</it> newsgroup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.9 1996/10/20 13:33:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.10 1996/12/23 06:45:59 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 <article>
 
 <!-- Title information -->
@@ -250,7 +250,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.13 1996/12/23 06:46:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.14 1996/12/28 08:15:35 dawes Exp $
 
 
 
