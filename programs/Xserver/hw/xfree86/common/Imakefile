@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.145 2002/09/29 23:54:33 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.146 2003/01/28 22:41:38 dawes Exp $
 
 
 
@@ -189,7 +189,6 @@ CUSTOMVERSION = XFree86CustomVersion
 #endif
 #if defined(BuildDate)
     BUILD_DATE = BuildDate
-BUILD_DATE_DEF = -DBUILD_DATE=$(BUILD_DATE)
 #endif
        XORGREL = XOrgReleaseString
    XORGREL_DEF = -DXORG_RELEASE='"$(XORGREL)"'
@@ -209,7 +208,7 @@ XCONFIGUREDEFINES = -DXF86CONFIGFILE='"$(XF86CONFIGFILE)"'
 AllTarget($(OFILES))
 
 SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
-SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(XORGREL_DEF) $(BUILD_DATE_DEF) $(EXT_DEFINES) $(BETADEFS) $(MDEBUGDEFS))
+SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(XORGREL_DEF) $(EXT_DEFINES) $(BETADEFS) $(MDEBUGDEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(MDEBUGDEFS))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES) $(LOGDEFINES))
 SpecialCObjectRule(xf86Config,$(ICONFIGFILES),$(XCONFIGDEFINES))
@@ -251,6 +250,23 @@ clean::
 	RemoveFile(xf86DefModeSet.c)
 #else
 LinkFile(xf86DefModeSet.c,xf86DefModes.c)
+#endif
+
+includes:: xf86Build.h
+
+clean::
+	RemoveFile(xf86Build.h)
+
+#if defined(BuildDate)
+xf86Build.h: FRC
+	RemoveFile($@)
+	echo "#define BUILD_DATE $(BUILD_DATE)" > $@
+
+FRC:
+#else
+xf86Build.h:
+	RemoveFile($@)
+	echo "" > $@
 #endif
 
 DependTarget()
