@@ -908,17 +908,26 @@ MGACountRam(ScrnInfoPtr pScrn)
 	MGAMapMem(pScrn);
 	base = pMga->FbBase;
 	
+	/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
+	OUTREG8(0x1FDE, 3);
+	tmp = INREG8(0x1FDF);
+	OUTREG8(0x1FDF, tmp | 0x80);
+
 	/* write, read and compare method */
 	for(i = ProbeSize; i > 2048; i -= 2048) {
 	    base[(i * 1024) - 1] = 0xAA;
 	    OUTREG8(MGAREG_CRTC_INDEX, 0);  /* flush the cache */
-	    usleep(0);  /* twart write combination */
+	    usleep(1);  /* twart write combination */
 	    if(base[(i * 1024) - 1] == 0xAA) {
 		SizeFound = i;
 		break;
 	    }
 	}
 		
+	/* restore CRTCEXT3 state */
+	OUTREG8(0x1FDE, 3);
+	OUTREG8(0x1FDF, tmp);
+
 	MGAUnmapMem(pScrn);
    }
    return SizeFound;

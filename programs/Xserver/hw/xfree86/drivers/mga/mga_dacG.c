@@ -46,6 +46,8 @@
 #define OPTION2_MASK	0xFFFFFFFF
 #define OPTION3_MASK	0xFFFFFFFF
 
+#define OPTION1_MASK_PRIMARY	0xFFFC0FF
+
 /*
  * Read/write to the DAC via MMIO 
  */
@@ -588,6 +590,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	       Bool restoreFonts)
 {
 	int i;
+	CARD32 optionMask;
 	MGAPtr pMga = MGAPTR(pScrn);
 
 	/*
@@ -610,8 +613,12 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	    outMGAdac(i, mgaReg->DacRegs[i]);
 	}
 
+	/* Do not set the memory config for primary cards as it
+	   should be correct already */
+	optionMask = (pMga->Primary) ? OPTION1_MASK_PRIMARY : OPTION1_MASK; 
+
 	/* restore pci_option register */
-	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, OPTION1_MASK,
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
 		       mgaReg->Option);
 	if (pMga->Chipset != PCI_CHIP_MGA1064)
 		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
