@@ -1,6 +1,7 @@
 XCOMM
 XCOMM This is an Imakefile for the Rendition driver.  
 XCOMM
+XCOMM $XFree86$
 
 #include <Server.tmpl>
 

@@ -1,4 +1,5 @@
 .TH XvQueryExtension 3X
+.\" $XFree86$
 .SH Name
 XvQueryExtension \- return version and release of extension
 .\"

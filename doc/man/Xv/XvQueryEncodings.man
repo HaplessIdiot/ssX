@@ -1,4 +1,5 @@
 .TH XvQueryEncodings
+.\" $XFree86$
 .SH Name
 XvQueryEncodings \- return list of encodings for an adaptor
 .\"

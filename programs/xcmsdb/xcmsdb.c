@@ -29,6 +29,7 @@
  *		Characterization Data from the root window of the screen.
  *
  */
+/* $XFree86$ */
 
 /*
  *      INCLUDES

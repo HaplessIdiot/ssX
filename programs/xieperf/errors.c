@@ -66,6 +66,8 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>

@@ -1,4 +1,5 @@
 .TH XvGetVideo 3X 
+.\" $XFree86$
 .SH Name
 XvGetVideo \- capture video from a drawable
 .\"

@@ -1,4 +1,5 @@
 .TH XvGrabPort 3X
+.\" $XFree86$
 .SH Name
 XvGrabPort \- lock port for exclusive use by client
 .\"

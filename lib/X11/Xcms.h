@@ -27,6 +27,7 @@
  *	DESCRIPTION
  *		Public include file for X Color Management System
  */
+/* $XFree86$ */
 #ifndef _XCMS_H_
 #define _XCMS_H_
 

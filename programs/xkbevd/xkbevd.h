@@ -24,6 +24,8 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
+
 #ifndef XKBEVD_H
 #define	XKBEVD_H 1
 

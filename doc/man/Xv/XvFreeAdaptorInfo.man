@@ -1,4 +1,5 @@
 .TH XvFreeAdaptorInfo 3X
+.\" $XFree86$
 .SH Name
 XvFreeAdaptorInfo \- free adaptor information 
 .\"

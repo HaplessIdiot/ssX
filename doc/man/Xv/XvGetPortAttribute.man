@@ -1,4 +1,5 @@
 .TH XvGetPortAttribute 3X
+.\" $XFree86$
 .SH Name
 XvGetPortAttribute \- return current port attribute value
 .\"

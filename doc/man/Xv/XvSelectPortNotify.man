@@ -1,4 +1,5 @@
 .TH XvSelectPortNotify 3X
+.\" $XFree86$
 .SH Name
 XvSelectPortNotify \- enable or disable XvPortNotify(3X) events
 .\"

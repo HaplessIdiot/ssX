@@ -1,4 +1,5 @@
 .TH XvQueryBestSize 3X
+.\" $XFree86$
 .SH Name
 XvQueryBestSize \- determine the optimum drawable region size
 .\"

@@ -1,4 +1,5 @@
 .TH XvSelectVideoNotify 3X
+.\" $XFree86$
 .SH Name
 XvSelectVideoNotify \- enable or disable VideoNotify events
 .\"

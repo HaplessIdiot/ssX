@@ -1,4 +1,5 @@
 .TH XvStopVideo 3X
+.\" $XFree86$
 .SH Name
 XvStopVideo \- stop active video 
 .\"

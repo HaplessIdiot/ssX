@@ -1,4 +1,5 @@
 .TH XvPortNotify 3X 
+.\" $XFree86$
 .SH Name
 XvPortNotify \- event generated when port attributes change
 .\"

@@ -21,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
+/* $XFree86$ */
 
 /* Set fill style (if any) to a bitmap or tile */
 

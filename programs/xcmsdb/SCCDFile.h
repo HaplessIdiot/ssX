@@ -28,6 +28,7 @@
  *		X Device Color Characterization Convention (XDCCC).
  *
  */
+/* $XFree86$ */
 #ifndef SCCDFILE_H
 #define SCCDFILE_H
 

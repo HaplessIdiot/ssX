@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #define COMPMACROS3X
 #include "s3v.h"
 #undef COMPMACROS3X

@@ -22,6 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xproto.h"
