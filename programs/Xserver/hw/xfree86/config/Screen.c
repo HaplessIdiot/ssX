@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.1.2.3 1997/07/22 08:40:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Screen.c,v 1.1 1998/01/24 16:57:45 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -114,6 +114,30 @@ parseDisplaySubSection (void)
 				xf86UnGetToken (token);
 			}
 			break;
+		case OPTION:
+			{
+				char *name;
+				if ((token = xf86GetToken (NULL)) != STRING)
+					Error (BAD_OPTION_MSG, NULL);
+				name = val.str;
+				if ((token = xf86GetToken (NULL)) == STRING)
+				{
+					ptr->disp_option_lst = addNewOption (ptr->disp_option_lst,
+														name, val.str);
+				}
+				else
+				{
+					ptr->disp_option_lst = addNewOption (ptr->disp_option_lst,
+														name, NULL);
+					xf86UnGetToken (token);
+				}
+			}
+			break;
+#if 0
+		case INVERTVCLK:
+		case BLANKDELAY:
+		case EARLYSC:
+#endif
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -157,6 +181,8 @@ parseScreenSection (void)
         int has_driver= FALSE;
 
 	parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
+
+	ptr->scrn_screenno = -1;
 
 		while ((token = xf86GetToken (ScreenTab)) != ENDSECTION)
 	{
@@ -221,6 +247,11 @@ parseScreenSection (void)
 							 XF86ConfDisplayPtr);
 			}
 			break;
+		case SCREENNO:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (NUMBER_MSG, "ScreenNo");
+			ptr->scrn_screenno = val.num;
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -245,6 +276,7 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 {
 	XF86ConfDisplayPtr dptr;
 	XF86ModePtr mptr;
+	XF86OptionPtr optr;
 
 	while (ptr)
 	{
@@ -302,6 +334,13 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			{
 				fprintf (cf, "\n");
 			}
+			for (optr = dptr->disp_option_lst; optr; optr = optr->list.next)
+			{
+				fprintf (cf, "\tOption      \"%s\"", optr->opt_name);
+				if (optr->opt_val)
+					fprintf (cf, " \"%s\"", optr->opt_val);
+				fprintf (cf, "\n");
+			}
 			fprintf (cf, "\tEndSubSection\n");
 		}
 		fprintf (cf, "EndSection\n\n");
@@ -335,6 +374,7 @@ freeDisplayList (XF86ConfDisplayPtr ptr)
 	while (ptr)
 	{
 		freeModeList (ptr->disp_mode_lst);
+		xf86OptionListFree (ptr->disp_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);

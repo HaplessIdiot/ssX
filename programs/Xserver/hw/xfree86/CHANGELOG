@@ -1,4 +1,6 @@
 XFree86 3.9Ag (05 April 1998)
+1648. xfree98/XF86Setup sync with 3.3.2 (#1632, Takaaki Nomura).
+1647. xfree86/XF86Setup sync with 3.3.2 (#1629,1634 Kazutaka Yokota).
 1646. Back out the following R6.4-related changes:
          #1169, 1170, 1342 -- version numbering changes,
          #1167 -- CUP extension,
@@ -6083,4 +6085,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.579 1998/04/05 00:45:45 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.580 1998/04/05 02:28:33 dawes Exp $

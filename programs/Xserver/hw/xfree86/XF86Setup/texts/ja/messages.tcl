@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/ja/messages.tcl,v 1.1.2.4 1998/02/26 20:11:23 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/texts/ja/messages.tcl,v 1.2 1998/04/05 15:30:34 robin Exp $
 #
 # messages in done.tcl :
 set messages(done.1)	"\n\
@@ -98,9 +98,6 @@ set messages(phase4.8) "設定を保存するファイル名"
 set messages(phase4.9) "xvidtune を使用する"
 set messages(phase4.10) "設定をファイルに保存して、終了する"
 set messages(phase4.11) "中断 … 設定を保存しないで終了する"
-set messages(phase4.12) "設定を中断しました。"
-set messages(phase4.13) "おめでとうございます、\
-	サーバーの設定が完了しました\n\n"
 
 # messages in card.tcl :
 set messages(card.1) "選択されたグラフィックカード :"
@@ -222,3 +219,184 @@ set messages(mouse.20) "高"
 set messages(mouse.21) "中"
 set messages(mouse.22) "低"
 set messages(mouse.23) "ボタン数"
+
+# These messages are viewd by 'mesg' command.
+# Most of users probably do not use kon , so these are English.
+if $pc98 {
+	set messages(done.3) "しばらくお待ち下さい。"
+	set messages(phase1.1) ""
+	set messages(phase1.2) "に、インストールされてないものがあります。\n"
+	set messages(phase1.3) "というファイルがありません。"
+	set messages(phase1.4) \
+		"警告： README ファイルで、インストールされてないものが\
+		あります。グラフィックカードのセットアップの時に、もしか\
+		すると README ファイルが見れないかもしれません。ただし、\
+		それ以外の動作に問題はおきません。"
+	set messages(phase1.5) "現在の設定ファイルの読み込み時にエラーが\
+		発生しました。"
+	set messages(phase1.6) \
+		"X11 の起動下でプログラムを実行したようです。\
+		現在の設定を変更するために、意識的にそうしたの\
+		ならば、以下の質問にyes と答えて下さい。"
+	set messages(phase1.7) \
+		"もし、間違ってそうしてしまった、あるいは、\
+		すべての設定を始めからやりたいのならば、\
+		no と答えて下さい。"
+	set messages(phase1.8) "再設定を行ないますか？ "
+	set messages(phase1.9) \
+		" root 以外からプログラムが実行されました。\n\
+		マウスデバイスの変更、設定の保存などには通常、\n\
+		Superuser 特権が必要とされます。\n\n\
+		それでも続行しますか？ "
+	set messages(phase1.10) \
+		" 始めての設定の時には、このプログラムを root から\
+		実行しなければなりません。"
+	set messages(phase1.11) \
+		"始めての設定の時には、XFree86 loader (XF86_LOADER) 、\n\
+		または SVGA server が必要です。"
+	set messages(phase1.12) \
+		"始めての設定の時には、XFree86 loader (XF86_LOADER) 、\n\
+		または EGC/PEGC server が必要です。"
+	set messages(phase1.13) \
+		"すでに存在する XF86Config ファイルをデフォルトとして\n\
+		使用しますか？"
+	set messages(phase1.14) \
+		"このプログラムは root から実行されなければなりません。"
+	set messages(phase1.15) \
+		"XFree86 loader (XF86_LOADER) 、または SVGA server が\n\
+		必要です。"
+	set messages(phase1.16) \
+		"XFree86 loader (XF86_LOADER) 、または EGC/PEGC server が\n\
+		必要です。"
+	set messages(phase1.17) \
+		"マウスとキーボードの入力に、Xqueue ドライバーを\n\
+		しようしますか？"
+	set messages(phase1.18) \
+		"マウス入力に対して、systen event queue を使用しますか？"
+	set messages(phase1.19) "テンポラリファイルを格納するための"
+	set messages(phase1.20) "\nというディレクトリを作成できません。"
+	set messages(phase1.23) "グラフィックモードに切り替わります。\n\
+		しばらくお待ち下さい。"
+	set messages(phase1.24) "X server と通信できません。"
+	set messages(phase1.25) "X server を起動できません。"
+	set messages(phase1.26) "しばらくお待ち下さい。"
+	set messages(phase2.14) "このプログラムは別の仮想端末上で\
+		実行されています。\n\nただしい仮想端末に切替えて下さい。"
+	set messages(phase3.1) "サーバーを起動しています。"
+	set messages(phase3.2) "X server と通信できません。"
+	set messages(phase3.3) "X server を起動できません。"
+	set messages(phase3.4) \
+		"\n\n設定を続行するには、\[Enter\] キーを押して下さい。"
+	set messages(phase3.5) \
+		"VGA16 サーバーを再起動することができません。"
+	set messages(phase4.12) "設定を中断しました。"
+	set messages(phase4.13) "おめでとうございます、\
+		サーバーの設定が完了しました\n\n"
+	set messages(phase4.14) "しばらくお待ち下さい。"
+	set messages(phase4.15) "このプログラムは別の仮想端末上で\
+		実行されています。\n\nただしい仮想端末に切替えて下さい。"
+	set messages(phase5.1) ""
+	set messages(phase5.2) \
+		" サーバーに対して X という名前のリンクを作りますか？\n\n\
+		(リンクは、"
+	set messages(phase5.3) "というディレクトリに作られます)"
+	set messages(phase5.4) "リンクが作れませんでした。リンクは手動で\n\
+		作って下さい。"
+	set messages(phase5.5) "リンクの作成が完了しました。"
+	set messages(phase5.6) "\n\n設定は終了しました。"
+	set messages(setuplib.1) "\n\n続行するには、\[Enter\] キーを\
+		押して下さい。"
+	set messages(setuplib.2) "テンポラリーファイルのディレクトリ、"
+	set messages(setuplib.3) ")\nは、安全でありません。"
+} else {
+	set messages(done.3) "Just a moment..."
+	set messages(phase1.1) "Not all of the"
+	set messages(phase1.2) "are installed. The file"
+	set messages(phase1.3) "is missing"
+	set messages(phase1.4) \
+		"Warning! Not all of the READMEs are\
+		installed. You may not be able to view some of\
+		the instructions regarding setting up your card,\
+		but otherwise, everything should work correctly"
+	set messages(phase1.5) "Error encountered reading existing\
+		configuration file"
+	set messages(phase1.6) \
+		"It appears that you are currently \
+		running under X11. If this is correct \
+		and you are interested in making some \
+		adjustments to your current setup, \
+		answer yes to the following question."
+	set messages(phase1.7) \
+		"If this is incorrect or you \
+		would like to go through the full \
+		configuration process, then answer no."
+	set messages(phase1.8) "Is this a reconfiguration?"
+	set messages(phase1.9) \
+	    "You are not running as root.\n\n\
+	    Superuser privileges are usually required to save any changes\n\
+	    you make in a directory that is searched by the server and\n\
+	    are required to change the mouse device.\n\n\
+	    Would you like to continue anyway?"
+	set messages(phase1.10) \
+		"You need to be root to set the initial\
+		configuration with this program"
+	set messages(phase1.11) \
+		"The XFree86 loader (XF86_LOADER) or the SVGA\n\
+		server is required when using\n\
+		this program to set the initial configuration"
+	set messages(phase1.12) \
+		"The XFree86 loader (XF98_LOADER) or the EGC\n\
+		or the PEGC server is required when using\n\
+		this program to set the initial configuration"
+	set messages(phase1.13) \
+		"Would you like to use the\
+		existing XF86Config file for defaults?"
+	set messages(phase1.14) "You need to be root to run this program"
+	set messages(phase1.15) \
+		"Either the XFree86 loader (XF86_LOADER) or the\n\
+		SVGA server is required to run this program"
+	set messages(phase1.16) \
+		"Either the XFree86 loader (XF98_LOADER) or the\n\
+		EGC server or the PEGC server is required to run\n\
+		this program" 
+	set messages(phase1.17) \
+		"Would you like to use the Xqueue driver\n\
+		for mouse and keyboard input?"
+	set messages(phase1.18) \
+		"Would you like to use the system event\
+		queue for mouse input?" 
+	set messages(phase1.19) "Unable to make directory "
+	set messages(phase1.20) "\nfor storing temporary files"
+	set messages(phase1.23) "Ready to switch to graphics mode.\n\
+		\nIt may take a while"
+	set messages(phase1.24) "Unable to start X server!" 
+	set messages(phase1.25) "Unable to communicate with X server!"
+	set messages(phase1.26) "Please wait\n\nThis may take a while..."
+	set messages(phase2.14) "The program is running on a different\
+				virtual terminal\n\n\
+				Please switch to the correct virtual terminal"
+	set messages(phase3.1) "Attempting to start server..."
+	set messages(phase3.2) "Unable to communicate with X server"
+	set messages(phase3.3) "Unable to start X server"
+	set messages(phase3.4) "\n\nPress \[Enter\] to try configuration again"
+	set messages(phase3.5) \
+		"Ack! Unable to get the VGA16 server going again!"
+	set messages(phase4.12) "Aborted."
+	set messages(phase4.13) "Congratulations, \
+		you've got a running server!\n\n"
+	set messages(phase4.14) "Just a moment..."
+	set messages(phase4.15) "The program is running on a different\
+				virtual terminal\n\n\
+				Please switch to the correct virtual terminal"
+	set messages(phase5.1) "Do you want to create an 'X' link to the "
+	set messages(phase5.2) \
+		" server?\n\n(the link will be created in the directory:"
+	set messages(phase5.3) ") Okay?"
+	set messages(phase5.4) "Link creation failed!\n\
+			You'll have to do it yourself"
+	set messages(phase5.5) "Link created successfully."
+	set messages(phase5.6) "\n\nConfiguration complete."
+	set messages(setuplib.1) "\n\nPress \[Enter\] to continue..."
+	set messages(setuplib.2) "The temporary files directory ("
+	set messages(setuplib.3) ")\nis no longer secure!"
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Device.c,v 1.1 1998/01/24 16:57:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Device.c,v 1.2 1998/03/27 23:23:35 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -207,6 +207,11 @@ parseDeviceSection (void)
 				Error (NUMBER_MSG, "POSBase");
 			ptr->dev_pos_base = val.num;
 			break;
+		case VGABASEADDR:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (NUMBER_MSG, "VGABase");
+			ptr->dev_vga_base = val.num;
+			break;
 		case INSTANCE:
 			if (xf86GetToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Instance");
@@ -252,6 +257,12 @@ parseDeviceSection (void)
 				}
 			}
 			break;
+#if 0
+		case S3MNADJUST:
+		case S3MCLK:
+		case S3REFCLK:
+		case S3BLANKDELAY:
+#endif
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;

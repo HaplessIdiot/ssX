@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/config/xf86Parser.h,v 1.1 1998/01/24 16:57:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/xf86Parser.h,v 1.2 1998/03/27 23:23:35 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -71,12 +71,12 @@ XF86ConfModuleRec, *XF86ConfModulePtr;
 #define CONF_K_INDEX_RIGHTCTL		3
 
 /* Values for the specialKeyMap array */
-#define CONF_KM_META		0
-#define CONF_KM_COMPOSE		1
-#define CONF_KM_MODESHIFT	2
-#define CONF_KM_MODELOCK	3
-#define CONF_KM_SCROLLLOCK	4
-#define CONF_KM_CONTROL		5
+#define CONF_KM_META		1
+#define CONF_KM_COMPOSE		2
+#define CONF_KM_MODESHIFT	3
+#define CONF_KM_MODELOCK	4
+#define CONF_KM_SCROLLLOCK	5
+#define CONF_KM_CONTROL		6
 
 /* Device tokens */
 typedef struct
@@ -212,6 +212,7 @@ typedef struct
 	int dev_dac_base;
 	int dev_cop_base;
 	int dev_pos_base;
+	int dev_vga_base;
 	int dev_instance;
         unsigned long dev_pci_tag;
 	char *dev_clockchip;
@@ -239,6 +240,7 @@ typedef struct
 	char *disp_visual;
 	parser_rgb disp_weight;
 	XF86ModePtr disp_mode_lst;
+	XF86OptionPtr disp_option_lst;
 }
 XF86ConfDisplayRec, *XF86ConfDisplayPtr;
 
@@ -258,6 +260,7 @@ typedef struct
 	int scrn_standbytime;
 	int scrn_suspendtime;
 	int scrn_offtime;
+	int scrn_screenno;
 	char *scrn_monitor_str;
 	XF86ConfMonitorPtr scrn_monitor;
 	char *scrn_device_str;
