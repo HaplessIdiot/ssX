@@ -25,7 +25,7 @@
  *
  * Author: Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.1 2000/06/17 00:03:26 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.2 2000/11/18 19:37:21 tsi Exp $
  *
  */
 
@@ -39,45 +39,72 @@
  * the kernel include file as well (r128_drm.h)
  */
 
-typedef struct _drmR128Init {
-    int sarea_priv_offset;
-    int is_pci;
-    int cce_mode;
-    int cce_fifo_size;
-    int cce_secure;
-    int ring_size;
-    int usec_timeout;
+#define DRM_R128_FRONT		0x1
+#define DRM_R128_BACK		0x2
+#define DRM_R128_DEPTH		0x4
 
-    int fb_offset;
-    int agp_ring_offset;
-    int agp_read_ptr_offset;
-    int agp_vertbufs_offset;
-    int agp_indbufs_offset;
-    int agp_textures_offset;
-    int mmio_offset;
+typedef struct {
+   int sarea_priv_offset;
+   int is_pci;
+   int cce_mode;
+   int cce_secure;
+   int ring_size;
+   int usec_timeout;
+
+   unsigned int fb_bpp;
+   unsigned int front_offset, front_pitch;
+   unsigned int back_offset, back_pitch;
+   unsigned int depth_bpp;
+   unsigned int depth_offset, depth_pitch;
+   unsigned int span_offset;
+
+   unsigned int fb_offset;
+   unsigned int mmio_offset;
+   unsigned int ring_offset;
+   unsigned int ring_rptr_offset;
+   unsigned int buffers_offset;
+   unsigned int agp_textures_offset;
 } drmR128Init;
 
-typedef enum {
-    DRM_R128_PRIM_NONE		= 0x0001,
-    DRM_R128_PRIM_POINT		= 0x0002,
-    DRM_R128_PRIM_LINE		= 0x0004,
-    DRM_R128_PRIM_POLY_LINE	= 0x0008,
-    DRM_R128_PRIM_TRI_LIST	= 0x0010,
-    DRM_R128_PRIM_TRI_FAN	= 0x0020,
-    DRM_R128_PRIM_TRI_STRIP	= 0x0040,
-    DRM_R128_PRIM_TRI_TYPE2	= 0x0080
-} drmR128PrimType;
+extern int drmR128InitCCE( int fd, drmR128Init *info );
+extern int drmR128CleanupCCE( int fd );
 
+extern int drmR128StartCCE( int fd );
+extern int drmR128StopCCE( int fd );
+extern int drmR128ResetCCE( int fd );
+extern int drmR128WaitForIdleCCE( int fd );
 
-extern int drmR128InitCCE(int fd, drmR128Init *info);
-extern int drmR128CleanupCCE(int fd);
-extern int drmR128EngineReset(int fd);
-extern int drmR128EngineFlush(int fd);
-extern int drmR128WaitForIdle(int fd);
-extern int drmR128SubmitPacket(int fd, CARD32 *buffer, int *count, int flags);
-extern int drmR128GetVertexBuffers(int fd, int count, int *indices,
-				   int *sizes);
-extern int drmR128FlushVertexBuffers(int fd, int count, int *indices,
-				     int *sizes, drmR128PrimType prim);
+extern int drmR128EngineReset( int fd );
+
+extern int drmR128SwapBuffers( int fd );
+extern int drmR128Clear( int fd, unsigned int flags,
+			 int x, int y, int w, int h,
+			 unsigned int clear_color, unsigned int clear_depth,
+			 unsigned int color_mask, unsigned int depth_mask );
+
+extern int drmR128FlushVertexBuffer( int fd, int prim, int index,
+				     int count, int discard );
+extern int drmR128FlushIndices( int fd, int prim, int index,
+				int start, int end, int discard );
+
+extern int drmR128TextureBlit( int fd, int index,
+			       int offset, int pitch, int format,
+			       int x, int y, int width, int height );
+
+extern int drmR128WriteDepthSpan( int fd, int n, int x, int y,
+				  const unsigned int depth[],
+				  const unsigned char mask[] );
+extern int drmR128WriteDepthPixels( int fd, int n,
+				    const int x[], const int y[],
+				    const unsigned int depth[],
+				    const unsigned char mask[] );
+extern int drmR128ReadDepthSpan( int fd, int n, int x, int y );
+extern int drmR128ReadDepthPixels( int fd, int n,
+				   const int x[], const int y[] );
+
+extern int drmR128PolygonStipple( int fd, unsigned int *mask );
+
+extern int drmR128SubmitPacket( int fd, void *buffer,
+				int *count, int flags );
 
 #endif
