@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.1 2002/11/21 07:25:17 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.2 2002/11/23 08:26:53 paulo Exp $
 ;;
 
 ;; basic lisp function tests
@@ -47,7 +47,7 @@
  o NIL and T should be always treated as symbols, actually it is
    legal to say (defun nil (...) ...)
  o There aren't true uninterned symbols, there are only symbols that
-   did not yet establish a home package, but once one is created, an
+   did not yet establish the home package, but once one is created, an
    interned symbol is always returned.
 |#
 
@@ -140,6 +140,12 @@
 (equal-test '((+ 2 3) . 4) #'apply 'cons '((+ 2 3) 4))
 (eql-test -1 #'apply #'- '(1 2))
 (eql-test 7 #'apply #'max 3 5 '(2 7 3))
+(error-test #'apply #'+ 1)
+(error-test #'apply #'+ 1 2)
+(error-test #'apply #'+ 1 . 2)
+(error-test #'apply #'+ 1 2 3)
+(error-test #'apply #'+ 1 2 . 3)
+(eql-test 6 #'apply #'+ 1 2 3 ())
 
 ;; eq					- function
 (eq-eval t '(let* ((a #\a) (b a)) (eq a b)))
@@ -241,6 +247,17 @@
 (eq-test t #'alphanumericp #\Z)
 (eq-test t #'alphanumericp #\8)
 (eq-test nil #'alphanumericp #\#)
+
+;; and					- macro
+(eql-eval 1 '(setq temp1 1 temp2 1 temp3 1))
+(eql-eval 2 '(and (incf temp1) (incf temp2) (incf temp3)))
+(eq-eval t '(and (eql 2 temp1) (eql 2 temp2) (eql 2 temp3)))
+(eql-eval 1 '(decf temp3))
+(eq-eval nil '(and (decf temp1) (decf temp2) (eq temp3 'nil) (decf temp3)))
+(eq-eval t '(and (eql temp1 temp2) (eql temp2 temp3)))
+(eq-eval t '(and))
+(equal-eval '(1 2 3) '(multiple-value-list (and (values 'a) (values 1 2 3))))
+(equal-eval nil '(and (values) t))
 
 ;; append				- function
 (equal-test '(a b c d e f g) #'append '(a b c) '(d e f) '() '(g))
@@ -650,6 +667,12 @@
 (eql-test nil #'endp '(1 . 2))
 (error-test #'endp #(1 2))
 
+;; every				- function
+(eql-test t #'every 'not-used ())
+(eql-test t #'every #'characterp "abc")
+(eql-test nil #'every #'< '(1 2 3) '(4 5 6) #(7 8 -1))
+(eql-test t #'every #'< '(1 2 3) '(4 5 6) #(7 8))
+
 ;; fboundp and fmakunbound		- function
 (eq-test t #'fboundp 'car)
 (eq-eval 'test '(defun test ()))
@@ -688,7 +711,7 @@
 
 
 
-;; TODO properly implement function
+;; TODO properly implement ``function''
 
 
 
@@ -704,10 +727,6 @@
 ;; gensym				- function
 (setq sym1 (gensym))
 (eq-test nil #'symbol-package sym1)
-;; XXX this will fail, uninterned symbols with the same printed
-;; representation are currently eq in the interpreter, that is,
-;; they are in a NULL package, just waiting to be claimed by a
-;; real package.
 (setq sym1 (gensym 100))
 (setq sym2 (gensym 100))
 (eq-test nil #'eq sym1 sym2)
@@ -739,6 +758,19 @@
 (setq n 1)
 (eql-eval 3/2 '(incf n 1/2))
 (eql-eval 3/2 'n)
+
+;; intersection				- function
+(setq list1 (list 1 1 2 3 4 'a 'b 'c "A" "B" "C" "d")
+      list2 (list 1 4 5 'b 'c 'd "a" "B" "c" "D")) 
+(equal-test '(1 1 4 b c) #'intersection list1 list2)
+(equal-test '(1 1 4 b c "B") #'intersection list1 list2 :test 'equal)
+(equal-test '(1 1 4 b c "A" "B" "C" "d")
+    #'intersection list1 list2 :test #'equalp)
+(setq list1 (nintersection list1 list2))
+(equal-eval '(1 1 4 b c) 'list1)
+(setq list1 (copy-list '((1 . 2) (2 . 3) (3 . 4) (4 . 5))))
+(setq list2 (copy-list '((1 . 3) (2 . 4) (3 . 6) (4 . 8))))
+(equal-test '((2 . 3) (3 . 4)) #'nintersection list1 list2 :key #'cdr)
 
 ;; keywordp				- function (predicate)
 (eq-test t #'keywordp :test)
@@ -866,12 +898,25 @@
    '(x y z))
 (equal-eval '(1 a x 2 b y 3 c z) 'dummy)
 
+;; mapcan				- function
+(equal-test '(d 4 e 5)
+    #'mapcan #'(lambda (x y) (if (null x) nil (list x y)))
+    '(nil nil nil d e)
+    '(1 2 3 4 5 6))
+(equal-test '(1 3 4 5)
+    #'mapcan #'(lambda (x) (and (numberp x) (list x)))
+    '(a 1 b c 3 4 d 5))
+
 ;; mapcar				- function
 (equal-test '(1 2 3) #'mapcar #'car '((1 a) (2 b) (3 c)))
 (equal-test '(3 4 2 5 6) #'mapcar #'abs '(3 -4 2 -5 -6))
 (equal-test '((a . 1) (b . 2) (c . 3)) #'mapcar #'cons '(a b c) '(1 2 3))
 (equal-test '((1 3 5)) #'mapcar #'list* '(1 2) '(3 4) '((5)))
 (equal-test '((1 3 5) (2 4 6)) #'mapcar #'list* '(1 2) '(3 4) '((5) (6)))
+
+;; mapcon				- function
+(equal-test '(1 a 2 b (3) c) #'mapcon #'car '((1 a) (2 b) ((3) c)))
+(equal-test '((1 2 3 4) (2 3 4) (3 4) (4)) #'mapcon #'list '(1 2 3 4))
 
 ;; mapl					- function
 (setq dummy nil)
@@ -885,3 +930,189 @@
     #'maplist #'(lambda (x) (cons 'foo x)) '(a b c d))
 (equal-test '(0 0 1 0 1 1 1)
     #'maplist #'(lambda (x) (if (member (car x) (cdr x)) 0 1)) '(a b a c d b c))
+
+;; member				- function
+(setq a '(1 2 3))
+(eq-test (cdr a) #'member 2 a)
+(setq a '((1 . 2) (3 . 4)))
+(eq-test (cdr a) #'member 2 a :test-not #'= :key #'cdr)
+(eq-test nil #'member 'e '(a b c d))
+(eq-test nil #'member 1 nil)
+(error-test #'member 2 '(1 . 2))
+(setq a '(a b nil c d))
+(eq-test (cddr a) #'member-if #'listp a)
+(setq a '(a #\Space 5/3 foo))
+(eq-test (cddr a) #'member-if #'numberp a)
+(setq a '(3 6 9 11 . 12))
+(eq-test (cdddr a) #'member-if-not #'zerop a :key #'(lambda (x) (mod x 3)))
+
+;; multiple-value-bind			- macro
+(equal-eval '(11 9) '(multiple-value-bind (f r) (floor 130 11) (list f r)))
+
+;; multiple-value-call			- special operator
+(equal-eval '(1 / 2 3 / / 2 0.5)
+    '(multiple-value-call #'list 1 '/ (values 2 3) '/ (values) '/ (floor 2.5)))
+(eql-eval 10 '(multiple-value-call #'+ (floor 5 3) (floor 19 4)))
+
+;; multiple-value-list			- macro
+(equal-eval '(-1 1) '(multiple-value-list (floor -3 4)))
+(eql-eval nil '(multiple-value-list (values)))
+(equal-eval '(nil) '(multiple-value-list (values nil)))
+
+;; multiple-value-prog1			- special operator
+(setq temp '(1 2 3))
+(equal-eval temp
+    '(multiple-value-list
+	(multiple-value-prog1
+	    (values-list temp)
+	    (setq temp nil)
+	    (values-list temp))))
+
+;; multiple-value-setq			- macro
+(eql-eval 1 '(multiple-value-setq (quotient remainder) (truncate 3.5d0 2)))
+(eql-eval 1 quotient)
+(eql-eval 1.5d0 'remainder)
+(eql-eval 1 '(multiple-value-setq (a b c) (values 1 2)))
+(eql-eval 1 'a)
+(eql-eval 2 'b)
+(eq-eval nil 'c)
+(eql-eval 4 '(multiple-value-setq (a b) (values 4 5 6)))
+(eql-eval 4 'a)
+(eql-eval 5 'b)
+(setq a 1)
+(eql-eval nil '(multiple-value-setq (a) (values)))
+(eql-eval nil 'a)
+
+;; nconc				- function
+(eq-test nil #'nconc)
+(setq x '(a b c))
+(setq y '(d e f))
+(equal-test '(a b c d e f) #'nconc x y)
+(equal-eval '(a b c d e f) 'x)
+(eq-test y #'cdddr x)
+(equal-test '(1 . 2) #'nconc (list 1) 2)
+(error-test #'nconc 1 2 3)
+(equal-eval '(k l m)
+   '(setq foo (list 'a 'b 'c 'd 'e)
+	  bar (list 'f 'g 'h 'i 'j)
+	  baz (list 'k 'l 'm)))
+(equal-test '(a b c d e f g h i j k l m) #'nconc foo bar baz)
+(equal-eval '(a b c d e f g h i j k l m) 'foo)
+(equal-eval (nthcdr 5 foo) 'bar)
+(equal-eval (nthcdr 10 foo) 'baz)
+(setq foo (list 'a 'b 'c 'd 'e)
+      bar (list 'f 'g 'h 'i 'j)
+      baz (list 'k 'l 'm))
+(equal-eval '(a b c d e f g h i j k l m) '(setq foo (nconc nil foo bar nil baz)))
+(equal-eval '(a b c d e f g h i j k l m) 'foo)
+(equal-eval (nthcdr 5 foo) 'bar)
+(equal-eval (nthcdr 10 foo) 'baz)
+
+;; notany				- function
+(eql-test t #'notany #'> '(1 2 3 4) '(5 6 7 8) '(9 10 11 12))
+(eql-test t #'notany 'not-used ())
+(eql-test nil #'notany #'characterp #(1 2 3 4 5 #\6 7 8))
+
+;; notevery				- function
+(eql-test nil #'notevery #'< '(1 2 3 4) '(5 6 7 8) '(9 10 11 12))
+(eql-test nil #'notevery 'not-used ())
+(eql-test t #'notevery #'numberp #(1 2 3 4 5 #\6 7 8))
+
+;; nth					- accessor (function)
+(eql-test 'foo #'nth 0 '(foo bar baz))
+(eql-test 'bar #'nth 1 '(foo bar baz))
+(eq-test nil #'nth 3 '(foo bar baz))
+(error-test #'nth 0 #c(1 2))
+(error-test #'nth 0 #(1 2))
+(error-test #'nth 0 "test")
+
+;; nth-value				- macro
+(equal-eval 'a '(nth-value 0 (values 'a 'b)))
+(equal-eval 'b '(nth-value 1 (values 'a 'b)))
+(eq-eval nil '(nth-value 2 (values 'a 'b)))
+(equal-eval '(3332987528 3332987528 t)
+    '(multiple-value-list
+	(let* ((x 83927472397238947423879243432432432)
+	       (y 32423489732)
+	       (a (nth-value 1 (floor x y)))
+	       (b (mod x y)))
+	  (values a b (= a b)))))
+
+;; nthcdr				- function
+(eq-test nil #'nthcdr 0 '())
+(eq-test nil #'nthcdr 3 '())
+(equal-test '(a b c) #'nthcdr 0 '(a b c))
+(equal-test '(c) #'nthcdr 2 '(a b c))
+(eq-test () #'nthcdr 4 '(a b c))
+(eql-test 1 #'nthcdr 1 '(0 . 1))
+(error-test #'nthcdr -1 '(1 2))
+(error-test #'nthcdr #\Null '(1 2))
+(error-test #'nthcdr 1 t)
+(error-test #'nthcdr 1 #(1 2 3))
+
+;; or					- macro
+(eq-eval nil '(or))
+(setq temp0 nil temp1 10 temp2 20 temp3 30)
+(eql-eval 10 '(or temp0 temp1 (setq temp2 37)))
+(eql-eval 20 'temp2)
+(eql-eval 11 '(or (incf temp1) (incf temp2) (incf temp3)))
+(eql-eval 11 'temp1)
+(eql-eval 20 temp2)
+(eql-eval 30 'temp3)
+(eql-eval 11 '(or (values) temp1))
+(eql-eval 11 '(or (values temp1 temp2) temp3))
+(equal-eval '(11 20) '(multiple-value-list (or temp0 (values temp1 temp2))))
+(equal-eval '(20 30)
+    '(multiple-value-list (or (values temp0 temp1) (values temp2 temp3))))
+
+;; packagep				- function (predicate)
+(eq-test t #'packagep *package*)
+(eq-test nil #'packagep 10)
+(eq-test t #'packagep (make-package "TEST-PACKAGE"))
+(eq-test nil #'packagep 'keyword)
+(eq-test t #'packagep (find-package 'keyword))
+
+;; pairlis				- function
+#+xedit	;; order of result may vary
+(progn
+    (equal-test '((one . 1) (two . 2) (three . 3) (four . 19))
+	#'pairlis '(one two) '(1 2) '((three . 3) (four . 19)))
+    (setq keys '(1 2 3)
+	  data '("one" "two" "three")
+	  alist '((4 . "four")))
+    (equal-test '((1 . "one") (2 . "two") (3 . "three"))
+	#'pairlis keys data)
+    (equal-test '((1 . "one") (2 . "two") (3 . "three") (4 . "four"))
+	#'pairlis keys data alist)
+    (equal-eval '(1 2 3) 'keys)
+    (equal-eval '("one" "two" "three") 'data)
+    (equal-eval '((4 . "four")) 'alist)
+    (eq-test nil #'pairlis 1 2)
+    (error-test #'pairlis '(1 2 3) '(4 5))
+)
+
+;; pop					- macro
+(setq stack '(a b c) test stack)
+(eq-eval 'a '(pop stack))
+(eq-eval (cdr test) 'stack)
+(setq llst '((1 2 3 4)) test (car llst))
+(eq-eval 1 '(pop (car llst)))
+(eq-eval (cdr test) '(car llst))
+(error-eval '(pop 1))
+(error-eval '(pop nil))
+;; dotted list
+(setq stack (cons 1 2))
+(eq-eval 1 '(pop stack))
+(error-eval '(pop stack))
+;; circular list
+(setq stack '#1=(1 . #1#) *print-circle* t)
+(eql-eval 1 '(pop stack))
+(eql-eval 1 '(pop stack))
+(eql-eval 1 '(pop (cdr stack)))
+
+;; position				- function
+(eql-test 4 #'position #\a "baobab" :from-end t)
+(eql-test 2 #'position-if #'oddp '((1) (2) (3) (4)) :start 1 :key #'car)
+(eq-test nil #'position 595 '())
+(eq-test 4 #'position-if-not #'integerp '(1 2 3 4 5.0))
+(eql-test 1 #'position (char-int #\1) "0123" :key #'char-int)

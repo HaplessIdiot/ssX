@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.20 2002/11/21 07:25:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.21 2002/11/23 08:26:49 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -715,7 +715,9 @@ Lisp_Float(LispBuiltin *builtin)
     other = ARGUMENT(1);
     number = ARGUMENT(0);
 
-    CHECK_DFLOAT(other);
+    if (other != UNSPEC) {
+	CHECK_DFLOAT(other);
+    }
 
     return (LispFloatCoerce(builtin, number));
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.16 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.17 2002/11/23 08:26:49 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -683,6 +683,19 @@ Lisp_MakePackage(LispBuiltin *builtin)
     PACKAGE = savepackage;
 
     return (package);
+}
+
+LispObj *
+Lisp_Packagep(LispBuiltin *builtin)
+/*
+ packagep object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (PACKAGEP(object) ? T : NIL);
 }
 
 LispObj *

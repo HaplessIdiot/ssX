@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.7 2002/11/21 07:25:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.8 2002/11/23 08:26:48 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1634,7 +1634,7 @@ rest_label:
 	     CONSP(list);
 	     list = CDR(list), count++) {
 	    car = CAR(list);
-	    if (constantp && !ComConstantp(com, car))
+	    if (!ComConstantp(com, car))
 		constantp = 0;
 	}
 
@@ -1647,7 +1647,7 @@ rest_label:
 	    strcmp(string, "APPLY") &&	/* XXX depends on function argument */
 	    strcmp(string, "VECTOR") &&
 	    /* Append does not copy the last/single list */
-	    (!strcmp(string, "APPEND") || !CONSP(car))) {
+	    (strcmp(string, "APPEND") || !CONSP(car))) {
 	    if (constantp) {
 		/* If the builtin function changes the &REST parameters, must
 		 * define a Com_XXX function for it. */
