@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.10 2003/01/03 18:54:11 torrey Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.11 2003/06/09 15:10:59 dawes Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -75,6 +75,14 @@ FONTDIRS=$(FONTDIR)
 FONTDIRS=/usr/share/fonts $(FONTDIR) $(MACFONTDIRS)
 #endif
 
+SUBSTVARS=prefix=$(PROJECTROOT) \
+          exec_prefix=$(BINDIR) \
+          libdir=$(USRLIBDIR) \
+          includedir=$(INCROOT) \
+          PACKAGE_VERSION=$(SOFONTCONFIGREV).$(FONTCONFIG_REVISION)
+
+CONFIG_SUBST_PROG=sh $(FONTCONFIGSRC)/config/config-subst
+
 #ifndef InstallNamedTargetBackup
 #define InstallNamedTargetBackup(step,srcname,flags,dest,dstname)	@@\
 step:: srcname								@@\
@@ -100,11 +108,23 @@ fonts.conf: fonts.conf.in setfontdirs findfonts
 clean::
 	RemoveFile(fonts.conf)
 
+all:: fontconfig.pc
+
+fontconfig.pc: fontconfig.pc.in
+	RemoveFile($@)
+	$(CONFIG_SUBST_PROG) $(SUBSTVARS) < fontconfig.pc.in > $@
+
+InstallNonExecFile(fontconfig.pc,$(USRLIBDIR)/pkgconfig)
+
+clean::
+	RemoveFile(fontconfig.pc)
+
 /* config stuff */
+LinkSourceFile(findfonts,$(FONTCONFIGSRC))
+LinkSourceFile(fontconfig.pc.in,$(FONTCONFIGSRC))
 LinkSourceFile(fonts.conf.in,$(FONTCONFIGSRC))
 LinkSourceFile(fonts.dtd,$(FONTCONFIGSRC))
 LinkSourceFile(setfontdirs,$(FONTCONFIGSRC))
-LinkSourceFile(findfonts,$(FONTCONFIGSRC))
 
 /* Source */
 LinkSourceFile(fcatomic.c,$(FONTCONFIGSRC)/src)
