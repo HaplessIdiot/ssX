@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.41 1999/06/20 08:41:23 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.42 1999/07/04 06:38:30 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1053,7 +1053,6 @@ TRANS(SocketUNIXResetListener) (XtransConnInfo ciptr)
 	{
 	    close (ciptr->fd);
 	    TRANS(FreeConnInfo) (ciptr);
-	    (void) umask (oldUmask);
 	    (void) umask (oldUmask);
 	    return TRANS_RESET_FAILURE;
 	}
