@@ -1,5 +1,4 @@
 XFree86 3.9Ah (XX April 1998)
-1668. AXP module loader fixes (#1667,1668 Alan Hourihane).
 1667. Add ELF support for AXP platform (#1666 Stuart Anderson).
 1666. PCI function fixes for AXP platform (#1665 Alan Hourihane).
 1665. SiS updates (#1664 Mike Chapman, Mitani Hiroshi).
@@ -6119,4 +6118,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.587 1998/04/26 17:03:33 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.588 1998/04/26 18:31:53 robin Exp $
