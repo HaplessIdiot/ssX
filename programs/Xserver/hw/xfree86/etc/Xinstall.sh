@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.13 2000/06/30 21:44:37 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.14 2000/07/06 23:39:04 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
 #
-# This script should be used to install XFree86 4.0.1.
+# This script should be used to install XFree86 4.0.2.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -17,7 +17,7 @@
 # Authors:	David Dawes <dawes@xfree86.org>
 #
 
-VERSION=4.0.1
+VERSION=4.0.2
 
 RUNDIR=/usr/X11R6
 ETCDIR=/etc/X11
@@ -456,13 +456,13 @@ FindDistName()
 		case "$OsArch" in
 		i386)
 			case "$OsVersion" in
-			1.[3-9]*)	# Check this
+			1.[4-9]*)	# Check this
 				case "$OsObjFormat" in
 				a.out)
 					DistName="NetBSD-1.4.1"
 					;;
 				*)
-					DistName="NetBSD-current-ELF"
+					DistName="NetBSD-1.5"
 					;;
 				esac
 				;;
@@ -480,8 +480,8 @@ FindDistName()
 		case "$OsArch" in
 		i386)
 			case "$OsVersion" in
-			2.[6-9]*)	# Check this
-				DistName="OpenBSD-2.6"
+			2.[89]*)	# Check this
+				DistName="OpenBSD-2.8"
 				;;
 			*)
 				Message="No OpenBSD/i386 binaries available for this version"
@@ -1159,3 +1159,6 @@ echo ""
 echo "Installation complete."
 
 exit 0
+### Local Variables: 	***
+### tab-width: 4 		***
+### End:				***
