@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.6 2000/11/30 20:55:16 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.7 2000/12/27 23:37:36 paulo Exp $
 !!
 
 *Form.background:			gray85
@@ -324,28 +324,34 @@ lines		-1,0,0,0,0,-1
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! keyboardML widget
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*keyboardML.labelL.vertDistance:	16
-*keyboardML.layout.vertDistance:	16
-*keyboardML.keyboard.vertDistance:	16
+*keyboardML.Label.vertDistance:		12
+*keyboardML.MenuButton.vertDistance:	12
+*keyboardML.keyboard.vertDistance:	14
 *keyboardML.Label.borderWidth:		0
 *keyboardML.Label.width:		115
+*keyboardML.MenuButton.width:		185
+*keyboardML.MenuButton.justify:		left
 *keyboardML.Label.internalWidth:	0
 *keyboardML.Label.justify:		right
-*keyboardML.model.width:		185
 *keyboardML.model.left:			chainRight
 *keyboardML.model.right:		chainRight
-*keyboardML.model.justify:		left
 *keyboardML.model.fromHoriz:		labelM
 *keyboardML.labelM.label:		Keyboard model:
-*keyboardML.layout.width:		185
 *keyboardML.layout.left:		chainRight
 *keyboardML.layout.right:		chainRight
-*keyboardML.layout.justify:		left
 *keyboardML.layout.fromVert:		model
 *keyboardML.labelL.fromVert:		model
 *keyboardML.layout.fromHoriz:		labelL
 *keyboardML.labelL.label:		Keyboard layout:
-*keyboardML.keyboard.fromVert:		labelL
+*keyboardML.variant.fromVert:		labelL
+*keyboardML.variant.fromHoriz:		labelV
+*keyboardML.labelV.fromVert:		labelL
+*keyboardML.labelV.label:		Xkb variant:
+*keyboardML.options.fromVert:		labelV
+*keyboardML.options.fromHoriz:		labelO
+*keyboardML.labelO.fromVert:		labelV
+*keyboardML.labelO.label:		Xkb options:
+*keyboardML.keyboard.fromVert:		labelO
 *keyboardML.keyboard.borderWidth:	0
 *keyboardML.keyboard.width:		305
 *keyboardML.keyboard.height:		121

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.9 2000/12/08 21:51:06 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.10 2000/12/11 18:47:46 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -43,6 +43,8 @@
  */
 static void KeyboardModelCallback(Widget, XtPointer, XtPointer);
 static void KeyboardLayoutCallback(Widget, XtPointer, XtPointer);
+static void KeyboardVariantCallback(Widget, XtPointer, XtPointer);
+static void KeyboardOptionsCallback(Widget, XtPointer, XtPointer);
 static void KeyboardApplyCallback(Widget, XtPointer, XtPointer);
 static Bool KeyboardConfigCheck(void);
 static void XkbUIEventHandler(Widget, XtPointer, XEvent*, Boolean*);
@@ -61,8 +63,8 @@ static char *XkbRulesFile = "lib/X11/xkb/rules/xfree86";
 #endif
 static XF86ConfInputPtr current_input;
 
-static char *model, *layout;
-static Widget kbd, modelb, layoutb;
+static char *model, *layout, *variant, *options;
+static Widget kbd, modelb, layoutb, variantb, optionsb;
 static XkbInfo **xkb_infos;
 static int num_xkb_infos;
 XkbInfo *xkb_info;
@@ -79,9 +81,14 @@ KeyboardConfig(XtPointer config)
     XF86ConfInputPtr keyboard = (XF86ConfInputPtr)config;
     XF86OptionPtr option;
     Arg args[1];
-    static char *XkbModel = "XkbModel", *XkbLayout = "XkbLayout";
+    static char *XkbModel = "XkbModel", *XkbLayout = "XkbLayout",
+		*XkbVariant = "XkbVariant", *XkbOptions = "XkbOptions";
 
     InitializeKeyboard();
+
+    if (options)
+	XtFree(options);
+    options = NULL;
 
     if (xkb_info->conf == NULL)
 	xkb_info->conf = keyboard;
@@ -156,6 +163,15 @@ KeyboardConfig(XtPointer config)
 	    xkb_info->defs.layout = layout = option->opt_val;
 	else
 	    xkb_info->defs.layout = layout = xkb_layout.name[0];
+	if ((option = xf86findOption(keyboard->inp_option_lst, XkbVariant)) != NULL)
+	    xkb_info->defs.variant = variant = option->opt_val;
+	else
+	    xkb_info->defs.variant = variant = NULL;
+
+	if ((option = xf86findOption(keyboard->inp_option_lst, XkbOptions)) != NULL)
+	    xkb_info->defs.options = options = XtNewString(option->opt_val);
+	else
+	    xkb_info->defs.options = options = NULL;
 
 	XtSetArg(args[0], XtNstring, keyboard->inp_identifier);
 	XtSetValues(ident_widget, args, 1);
@@ -181,6 +197,8 @@ KeyboardConfig(XtPointer config)
 
 	model = xkb_model.name[0];
 	layout = xkb_layout.name[0];
+	variant = "";
+	options = XtNewString("");
 	XtSetArg(args[0], XtNstring, keyboard_name);
 	XtSetValues(ident_widget, args, 1);
     }
@@ -202,6 +220,14 @@ KeyboardConfig(XtPointer config)
 						     XtNewString(model));
 	    xf86addNewOption(keyboard->inp_option_lst,
 			     XtNewString(XkbLayout), XtNewString(layout));
+	    if (variant && *variant)
+		xf86addNewOption(keyboard->inp_option_lst,
+			    	 XtNewString(XkbVariant), XtNewString(variant));
+	    if (options && *options) {
+		xf86addNewOption(keyboard->inp_option_lst,
+			    	 XtNewString(XkbOptions), options);
+		options = NULL;
+	    }
 	    keyboard->inp_comment = NULL;
 	}
 	else {
@@ -245,13 +271,47 @@ KeyboardConfig(XtPointer config)
 		!= NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(layout);
-		XtFree(option->opt_comment);
 	    }
 	    else
 		xf86addNewOption(keyboard->inp_option_lst,
 				 XtNewString(XkbLayout), XtNewString(layout));
 	    XtFree(xkb_info->config.layout);
 	    xkb_info->config.layout = XtNewString(layout);
+
+	    if ((option = xf86findOption(keyboard->inp_option_lst, XkbVariant))
+		!= NULL) {
+		if (variant && *variant) {
+		    XtFree(option->opt_val);
+		    option->opt_val = XtNewString(variant);
+		}
+		else
+		    xf86removeOption(&keyboard->inp_option_lst, XkbVariant);
+	    }
+	    else if (variant && *variant)
+		xf86addNewOption(keyboard->inp_option_lst,
+				 XtNewString(XkbVariant), XtNewString(variant));
+	    XtFree(xkb_info->config.variant);
+	    xkb_info->config.variant = variant && *variant ?
+		XtNewString(variant) : NULL;
+
+	    XtFree(xkb_info->config.options);
+	    xkb_info->config.options = options && *options ?
+		XtNewString(options) : NULL;
+	    if ((option = xf86findOption(keyboard->inp_option_lst, XkbOptions))
+		!= NULL) {
+		if (options && *options) {
+		    XtFree(option->opt_val);
+		    option->opt_val = options;
+		    options = NULL;
+		}
+		else
+		    xf86removeOption(&keyboard->inp_option_lst, XkbOptions);
+	    }
+	    else if (options && *options) {
+		xf86addNewOption(keyboard->inp_option_lst,
+				 XtNewString(XkbOptions), options);
+		options = NULL;
+	    }
 	}
 	if (strcasecmp(keyboard->inp_identifier, ident_string))
 	    xf86renameInput(XF86Config, keyboard, ident_string);
@@ -451,6 +511,22 @@ InitializeKeyboard(void)
 	xkb_info->defs.layout = option->opt_val;
     else
 	xkb_info->defs.layout = xkb_layout.name[0];
+
+    if (xkb_info->config.variant != NULL)
+	xkb_info->defs.variant = xkb_info->config.variant;
+    else if ((option = xf86findOption(keyboard->inp_option_lst, "XkbVariant"))
+	!= NULL)
+	xkb_info->defs.variant = option->opt_val;
+    else
+	xkb_info->defs.variant = NULL;
+
+    if (xkb_info->config.options != NULL)
+	xkb_info->defs.options = xkb_info->config.options;
+    else if ((option = xf86findOption(keyboard->inp_option_lst, "XkbOptions"))
+	!= NULL)
+	xkb_info->defs.options = option->opt_val;
+    else
+	xkb_info->defs.options = NULL;
 }
 
 static xf86ConfigSymTabRec ax_controls[] =
@@ -508,10 +584,10 @@ WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
 	fprintf(fp, "Layout			 =	\"%s\"\n",
 		conf->layout);
     if (conf->variant != NULL)
-	fprintf(fp, "Variant			 =	%s\n",
+	fprintf(fp, "Variant			 =	\"%s\"\n",
 		conf->variant);
     if (conf->options != NULL)
-	fprintf(fp, "Options			 =	%s\n",
+	fprintf(fp, "Options			 =	\"%s\"\n",
 		conf->options);
     if (conf->keymap != NULL)
 	fprintf(fp, "Keymap			 =	%s\n",
@@ -732,6 +808,84 @@ KeyboardLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
     layout = xkb_info->defs.layout = xkb_layout.name[i];
 }
 
+static void
+KeyboardVariantCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Arg args[1];
+    int i;
+    char *label;
+
+    for (i = 0; i < xkb_variant.nelem; i++)
+	if (strcmp(XtName(w), xkb_variant.name[i]) == 0)
+	    break;
+    variant = i < xkb_variant.nelem ? xkb_variant.name[i] : "";
+    label = i < xkb_variant.nelem ? xkb_variant.desc[i] : "";
+    XtSetArg(args[0], XtNlabel, label);
+    XtSetValues(variantb, args, 1);
+
+    xkb_info->defs.variant = variant && *variant ? variant : NULL;
+}
+
+static void
+KeyboardOptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Arg args[1];
+    int i;
+
+    for (i = 0; i < xkb_option.nelem; i++)
+	if (strcmp(XtName(w), xkb_option.name[i]) == 0)
+	    break;
+
+    if (i < xkb_option.nelem) {
+	char *delim, *ptr, str[256];
+
+	/* remove old string, don't check if the same */
+	if ((delim = strchr(XtName(w), ':')) != NULL) {
+	    if (delim - XtName(w) >= sizeof(str) - 2)
+		return;
+	    strncpy(str, XtName(w), delim - XtName(w) + 1);
+	    str[delim - XtName(w) + 1] = '\0';
+	}
+	else
+	    XmuSnprintf(str, sizeof(str), "%s:", XtName(w));
+	if (options && (delim = strstr(options, str)) != NULL) {
+	    if ((ptr = strchr(delim, ',')) != NULL) {
+		*delim = *ptr = '\0';
+		XmuSnprintf(str, sizeof(str), "%s%s", options, ptr + 1);
+		XtFree(options);
+		options = XtNewString(str);
+	    }
+	    else {
+		if (delim > options)
+		    delim[-1] = '\0';
+		else
+		    delim[0] = '\0';
+	    }
+	}
+
+	/* update string, if required */
+	if ((delim = strchr(XtName(w), ':')) != NULL) {
+	    if (options && *options)
+		XmuSnprintf(str, sizeof(str), "%s,%s", options, XtName(w));
+	    else
+		XmuSnprintf(str, sizeof(str), "%s", XtName(w));
+	    XtFree(options);
+	    options = XtNewString(str);
+	}
+    }
+    else {
+	XtFree(options);
+	options = XtNewString("");
+    }
+
+    XtSetArg(args[0], XtNlabel, options);
+    XtSetValues(optionsb, args, 1);
+    XtSetArg(args[0], XtNtip, options);
+    XtSetValues(optionsb, args, 1);
+
+    xkb_info->defs.options = *options ? options : NULL;
+}
+
 /*ARGSUSED*/
 static void
 KeyboardApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
@@ -748,7 +902,8 @@ KeyboardModelAndLayout(XF86SetupInfo *info)
     int i;
 
     if (first) {
-	Widget label, popup, sme;
+	char *optname;
+	Widget label, popup, sme, optpopup, optparent;
 
 	first = 0;
 
@@ -788,6 +943,71 @@ KeyboardModelAndLayout(XF86SetupInfo *info)
 	    XtAddCallback(sme, XtNcallback,  KeyboardLayoutCallback, NULL);
 	}
 
+	/* VARIANT */
+	label = XtCreateManagedWidget("labelV", labelWidgetClass,
+				      kbdml, NULL, 0);
+	variantb = XtVaCreateManagedWidget("variant", menuButtonWidgetClass, kbdml,
+					  XtNmenuName, "variantP",
+					  XtNlabel, "",
+					  NULL, 0);
+	popup = XtCreatePopupShell("variantP", simpleMenuWidgetClass,
+				   variantb, NULL, 0);
+	sme = XtVaCreateManagedWidget("None", smeBSBObjectClass,
+				      popup,
+				      XtNlabel, "None",
+				      NULL, 0);
+	XtAddCallback(sme, XtNcallback,  KeyboardVariantCallback, NULL);
+	for (i = 0; i < xkb_variant.nelem; i++) {
+	    sme = XtVaCreateManagedWidget(xkb_variant.name[i], smeBSBObjectClass,
+					  popup,
+					  XtNlabel, xkb_variant.desc[i],
+					  NULL, 0);
+	    XtAddCallback(sme, XtNcallback,  KeyboardVariantCallback, NULL);
+	}
+
+	/* OPTIONS */
+	label = XtCreateManagedWidget("labelO", labelWidgetClass,
+				      kbdml, NULL, 0);
+	optionsb = XtVaCreateManagedWidget("options", menuButtonWidgetClass, kbdml,
+					   XtNmenuName, "optionsP",
+					   XtNlabel, "",
+					   NULL, 0);
+	popup = XtCreatePopupShell("optionsP", simpleMenuWidgetClass,
+				   optionsb, NULL, 0);
+	sme = XtVaCreateManagedWidget("None", smeBSBObjectClass,
+				      popup,
+				      XtNlabel, "None",
+				      NULL, 0);
+	XtAddCallback(sme, XtNcallback,  KeyboardOptionsCallback, NULL);
+	optparent = popup;
+	optname = NULL;
+	for (i = 0; i < xkb_option.nelem; i++) {
+	    if (!strchr(xkb_option.name[i], ':')) {
+		optpopup =
+		    XtCreatePopupShell(optname = xkb_option.desc[i],
+				       simpleMenuWidgetClass,
+				       optparent = popup, NULL, 0);
+		sme = XtVaCreateManagedWidget(xkb_option.name[i],
+					      smeBSBObjectClass,
+					      optpopup,
+					      XtNlabel, "None",
+					      NULL, 0);
+		XtAddCallback(sme, XtNcallback,  KeyboardOptionsCallback, NULL);
+	    }
+	    else {
+		optparent = optpopup;
+		optname = NULL;
+	    }
+	    sme = XtVaCreateManagedWidget(xkb_option.name[i], smeBSBObjectClass,
+					  optparent,
+					  XtNlabel, xkb_option.desc[i],
+					  XtNmenuName, optname,
+					  NULL, 0);
+	    if (optparent != popup)
+		XtAddCallback(sme, XtNcallback,  KeyboardOptionsCallback, NULL);
+	}
+
+
 	kbd = XtCreateManagedWidget("keyboard", coreWidgetClass,
 				    kbdml, NULL, 0);
 
@@ -815,6 +1035,19 @@ KeyboardModelAndLayout(XF86SetupInfo *info)
 	    XtSetValues(layoutb, args, 1);
 	    break;
 	}
+
+    if (variant)
+	for (i = 0; i < xkb_variant.nelem; i++)
+	    if (strcmp(variant, xkb_variant.name[i]) == 0) {
+		XtSetArg(args[0], XtNlabel, xkb_variant.desc[i]);
+		XtSetValues(variantb, args, 1);
+		break;
+	    }
+
+    if (options) {
+	XtSetArg(args[0], XtNlabel, options);
+	XtSetValues(optionsb, args, 1);
+    }
 
     XtChangeManagedSet(&current, 1, NULL, NULL, &kbdml, 1);
     current = kbdml;
