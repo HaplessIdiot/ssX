@@ -68,13 +68,15 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/clip.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/clip.c,v 1.2 1999/03/14 03:20:41 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
 #ifndef XFree86Server
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "clip.h"
 #include "context.h"
@@ -83,9 +85,6 @@
 #include "types.h"
 #include "vb.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

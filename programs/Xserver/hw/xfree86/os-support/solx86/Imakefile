@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.7 1998/07/25 16:57:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.8 1999/02/01 11:56:02 dawes Exp $
 
 
 
@@ -18,14 +18,18 @@ PROWORKS_INOUT_OBJ = solx86_iout.o
 
 SRCS = solx86_init.c solx86_vid.c sysv_io.c $(BIOS_MOD).c \
 	VTsw_usl.c sysv_kbd.c std_kbdEv.c posix_tty.c std_mouse.c \
-	libc_wrapper.c std_mseEv.c $(PROWORKS_INOUT_SRC)
+	libc_wrapper.c std_mseEv.c $(PROWORKS_INOUT_SRC) stdResource.c
 
 OBJS = solx86_init.o solx86_vid.o sysv_io.o $(BIOS_MOD).o \
 	VTsw_usl.o sysv_kbd.o std_kbdEv.o posix_tty.o std_mouse.o \
-	libc_wrapper.o std_mseEv.o $(PROWORKS_INOUT_OBJ)
+	libc_wrapper.o std_mseEv.o $(PROWORKS_INOUT_OBJ) stdResource.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -39,5 +43,6 @@ LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(sysv_io.c,../sysv)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 DependTarget()

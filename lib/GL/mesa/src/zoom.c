@@ -56,21 +56,20 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/zoom.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/zoom.c,v 1.2 1999/03/14 03:20:56 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
 #ifndef XFree86Server
 #include <assert.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "macros.h"
 #include "span.h"
 #include "stencil.h"
 #include "zoom.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

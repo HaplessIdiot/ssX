@@ -143,7 +143,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/context.c,v 1.2 1999/03/14 03:20:41 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/context.c,v 1.3 1999/03/14 05:50:54 dawes Exp $ */
 
 /*
  * If multi-threading is enabled (-DTHREADS) then each thread has it's
@@ -159,11 +159,13 @@
 #else
 #ifndef XFree86Server
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
-#include <math.h>
 #include "accum.h"
 #include "alphabuf.h"
 #include "clip.h"
@@ -191,9 +193,6 @@
 #include "vb.h"
 #include "vbfill.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.14 1998/09/13 05:23:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.15 1999/02/28 11:19:47 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -27,16 +27,18 @@ MTRRDEFINES = -DHAS_MTRR_SUPPORT
 
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
        mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c \
-       $(JOYSTICK_SRC)
+       stdResource.c $(JOYSTICK_SRC)
 
 OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
        mapVT_noop.o VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o \
-       $(JOYSTICK_OBJ)
+       stdResource.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
 
-DEFINES = $(MTRRDEFINES)
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(MTRRDEFINES) $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -58,5 +60,6 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 DependTarget()

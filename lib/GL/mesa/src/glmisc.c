@@ -113,7 +113,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/glmisc.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/glmisc.c,v 1.1 1999/03/14 03:20:45 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -121,19 +121,18 @@
 #ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "accum.h"
 #include "alphabuf.h"
 #include "context.h"
 #include "depth.h"
+#include "glmisc.h"
 #include "macros.h"
 #include "masking.h"
-#include "glmisc.h"
 #include "stencil.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

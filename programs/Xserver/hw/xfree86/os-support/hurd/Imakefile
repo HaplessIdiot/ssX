@@ -1,18 +1,24 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.2 1998/10/25 07:12:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.3 1999/03/07 14:05:09 dawes Exp $
 
 #include <Server.tmpl>
 
 BIOS_MOD = bios_mmap
 
-SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c mapVT_noop.c \
-       VTsw_noop.c posix_tty.c std_kbdEv.c std_mouse.c std_mseEv.c
+SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c \
+       mapVT_noop.c VTsw_noop.c posix_tty.c std_kbdEv.c std_mouse.c \
+       std_mseEv.c stdResource.c
 
-OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o mapVT_noop.o \
-       VTsw_noop.o posix_tty.o std_kbdEv.o std_mouse.o std_mseEv.o
+OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o \
+       mapVT_noop.o VTsw_noop.o posix_tty.o std_kbdEv.o std_mouse.o \
+       std_mseEv.o stdResource.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/mi
+
+RESDEFINES = -DUSESTDRES
+
+DEFINES = $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -25,6 +31,7 @@ LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
+LinkSourceFile(stdResource.c,../shared)
 
 DependTarget()
 

@@ -47,7 +47,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/masking.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/masking.c,v 1.2 1999/03/14 03:20:48 dawes Exp $ */
 
 /*
  * Implement the effect of glColorMask and glIndexMask in software.
@@ -59,6 +59,8 @@
 #else
 #ifndef XFree86Server
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "alphabuf.h"
 #include "context.h"
@@ -67,9 +69,6 @@
 #include "pb.h"
 #include "span.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

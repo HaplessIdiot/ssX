@@ -56,7 +56,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/polygon.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/polygon.c,v 1.2 1999/03/14 03:20:50 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -65,15 +65,14 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "context.h"
 #include "image.h"
 #include "macros.h"
 #include "polygon.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

@@ -80,7 +80,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/span.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/span.c,v 1.2 1999/03/14 03:20:51 dawes Exp $ */
 
 /*
  * pixel span rasterization:
@@ -94,6 +94,8 @@
 #ifndef XFree86Server
 #include <assert.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
 #include "alpha.h"
 #include "alphabuf.h"
@@ -108,9 +110,6 @@
 #include "stencil.h"
 #include "texture.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

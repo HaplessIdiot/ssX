@@ -74,7 +74,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/matrix.c,v 1.3 1999/03/14 03:20:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/matrix.c,v 1.4 1999/03/14 05:50:55 dawes Exp $ */
 
 /*
  * Matrix operations
@@ -92,19 +92,18 @@
 #include "all.h"
 #else
 #ifndef XFree86Server
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#else
+#include "GL/xf86glx.h"
 #endif
-#include <math.h>
 #include "context.h"
 #include "macros.h"
 #include "matrix.h"
 #include "mmath.h"
 #include "types.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

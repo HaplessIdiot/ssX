@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/points.c,v 1.3 1999/03/14 14:39:38 dawes Exp $ */
 
 
 /*
@@ -74,18 +74,20 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
-#include "mmath.h"
+#ifndef XFree86Server
+#include <math.h>
+#else
+#include "GL/xf86glx.h"
+#endif
 #include "context.h"
 #include "feedback.h"
 #include "macros.h"
+#include "mmath.h"
 #include "pb.h"
 #include "span.h"
 #include "texstate.h"
 #include "types.h"
 #include "vb.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 

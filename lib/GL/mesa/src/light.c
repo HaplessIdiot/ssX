@@ -77,28 +77,27 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/light.c,v 1.2 1999/03/14 03:20:46 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/light.c,v 1.3 1999/03/14 05:50:55 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#include <float.h>
 #ifndef XFree86Server
 #include <assert.h>
-#include <stdlib.h>
-#endif
-#include <float.h>
 #include <math.h>
+#include <stdlib.h>
+#else
+#include "GL/xf86glx.h"
+#endif
 #include "context.h"
 #include "light.h"
-#include "matrix.h"
 #include "macros.h"
+#include "matrix.h"
 #include "mmath.h"
 #include "types.h"
 #include "vb.h"
 #include "xform.h"
-#ifdef XFree86Server
-#include "GL/xf86glx.h"
-#endif
 #endif
 
 
