@@ -1,8 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.3 1996/09/29 14:01:45 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
  */
+#include <math.h>
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
@@ -80,7 +81,7 @@ static char *   ApmIdent();
 static Bool     ApmClockSelect();
 static void     ApmEnterLeave();
 static Bool     ApmInit();
-static Bool	ApmValidMode();
+static int	ApmValidMode();
 static void *   ApmSave();
 static void     ApmRestore();
 static void     ApmAdjust();
@@ -229,14 +230,14 @@ static int apmDacPathWidth, apmMultiplexingThreshold;
 static int apmUse8bitColorComponents;
 static int apmDisplayableMemory;
 
-#define AT24    0
-#define AP6422  1
+#define AP6422  0
+#define AT24    1
 
 static SymTabRec chipsets[] = {
+	{ AP6422,  "AP6422"},
 #if 0
 	{ AT24,    "AT24" },
 #endif
-	{ AP6422,  "AP6422"},
 	{ -1,		"" },
 };
 
@@ -305,7 +306,6 @@ unsigned long val;
 	outl(apm_xbase, val);
 }
 
-#include <math.h>
 #define WITHIN(v,c1,c2) (((v) > (c1)) && ((v) < (c2)))
 static unsigned
 comp_lmn(clock)
@@ -595,7 +595,8 @@ ApmFbInit()
 			vga256InfoRec.chipset, APM.ChipLinearBase,
 			apmBus == PCI ? "PCI bus" : "VL bus");
 
-	apmDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+	apmDisplayableMemory = vga256InfoRec.displayWidth
+		* vga256InfoRec.virtualY
 		* (vgaBitsPerPixel / 8);
 	offscreen_available = vga256InfoRec.videoRam * 1024 -
 		apmDisplayableMemory;
@@ -852,7 +853,7 @@ DisplayModePtr mode;
 	 */
 	{
 		int offset;
-		offset = (vga256InfoRec.virtualX *
+		offset = (vga256InfoRec.displayWidth *
 			vga256InfoRec.bitsPerPixel / 8)	>> 3;
 		new->std.CRTC[0x13] = offset;
 		/* Bit 8 resides at CR1C bits 7:4. */
@@ -989,17 +990,19 @@ int x, y;
  * ApmValidMode --
  *
  */
-static Bool
-ApmValidMode(mode)
+static int
+ApmValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->VTotal > 2047) {
+	    if (verbose)
 		ErrorF("%s %s: %s: Vertical mode timing overflow (%d)\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.chipset, mode->VTotal);
-		return FALSE;
+	    return MODE_BAD;
 	}
 
-	return TRUE;
+	return MODE_OK;
 }

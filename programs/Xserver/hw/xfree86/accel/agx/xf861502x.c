@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.7 1996/02/04 08:58:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.8 1996/12/23 06:33:07 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -36,8 +36,8 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
-#include "xf86_Config.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
 #include "xf86RamDac.h"
 #include "xf861502x.h"
 

@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.2 1996/12/24 08:47:41 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -181,8 +181,8 @@ InitInput(argc, argv)
 {
     DeviceIntPtr ptr, kbd;
 
-    ptr = AddInputDevice(PointerProc, TRUE);
-    kbd = AddInputDevice(KeyboardProc, TRUE);
+    ptr = AddInputDevice((DeviceProc)PointerProc, TRUE);
+    kbd = AddInputDevice((DeviceProc)KeyboardProc, TRUE);
     RegisterPointerDevice(ptr);
     RegisterKeyboardDevice(kbd);
     return;

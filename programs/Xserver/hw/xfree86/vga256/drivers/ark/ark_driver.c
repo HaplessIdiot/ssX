@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.21 1996/11/18 13:15:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.22 1996/12/23 06:56:02 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -1446,8 +1446,8 @@ vgaArkPtr restore;
 		    SETTRANSPARENCYCOLORMASK(0xFFFF);
 		}
 		else {
-		    SETWRITEPLANEMASK(0xFFFFFFFF);
-		    SETTRANSPARENCYCOLORMASK(0xFFFFFFFF);
+		    SETWRITEPLANEMASK32(0xFFFFFFFF);
+		    SETTRANSPARENCYCOLORMASK32(0xFFFFFFFF);
 		}
 		if (vgaBitsPerPixel == 24) {
 			SETSTENCILPITCH(vga256InfoRec.displayWidth * 3);

@@ -28,6 +28,12 @@ from the X Consortium.
 
 /* $XConsortium: XAppgroup.c /main/3 1996/11/13 14:44:26 lehors $ */
 
+
+
+
+
+/* $XFree86$ */
+
 #ifdef WIN32
 #define BOOL wBOOL
 #undef Status
@@ -310,7 +316,7 @@ XagGetApplicationGroupAttributes(dpy, app_group, va_alist)
 	return False;
     }
     Va_start (var, app_group);
-    for (attr = va_arg(var, int); attr != NULL; attr = va_arg(var, int)) {
+    for (attr = va_arg(var, int); attr != 0; attr = va_arg(var, int)) {
 	void* ptr;
 
 	switch (attr) {

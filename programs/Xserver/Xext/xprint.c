@@ -64,6 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1669,7 +1670,7 @@ DoStartDoc(client, c)
 	if(!c->slept)
 	{
 	    c->slept = TRUE;
-	    ClientSleep(client, DoStartDoc, (pointer) c);
+	    ClientSleep(client, (ClientSleepProcPtr)DoStartDoc, (pointer) c);
 	    c->pContext->clientSlept = client;
 	}
 	return TRUE;
@@ -1815,7 +1816,7 @@ DoStartPage(client, c)
 	if(!c->slept)
 	{
 	    c->slept = TRUE;
-	    ClientSleep(client, DoStartPage, (pointer) c);
+	    ClientSleep(client, (ClientSleepProcPtr)DoStartPage, (pointer) c);
 	    c->pContext->clientSlept = client;
 	}
 	return TRUE;

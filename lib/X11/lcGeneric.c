@@ -28,6 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -672,7 +673,7 @@ int num;
         }
         strcpy(ret->name,value[0]);
         ptr = strchr(ret->name,':');
-        *ptr = NULL;
+        *ptr = '\0';
         ptr++;
         if( !_XlcNCompareISOLatin1(ptr, "none", 4) ){
             ret->side =  XlcNONE ;

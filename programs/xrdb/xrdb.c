@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.5 1996/09/03 15:13:49 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.6 1996/11/18 13:25:27 dawes Exp $
  */
 
 /*
@@ -1054,7 +1054,8 @@ void FormatEntries(buffer, entries)
     if (!entries->used)
 	return;
     if (oper == OPMERGE)
-	qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
+	qsort(entries->entry, entries->used, sizeof(Entry),
+	      (int (*)())CompareEntries);
     for (i = 0; i < entries->used; i++) {
 	if (entries->entry[i].usable)
 	    AppendEntryToBuffer(buffer, &entries->entry[i]);

@@ -30,6 +30,13 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
+
+/* To get the tempnam() prototype in <stdio.h> */
+#if defined(linux) && defined(__STRICT_ANSI__)
+#undef __STRICT_ANSI__
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/wait.h>

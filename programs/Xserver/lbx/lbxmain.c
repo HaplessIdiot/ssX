@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c /main/69 1996/12/19 19:10:51 rws $ */
+/* $XConsortium: lbxmain.c /main/71 1996/12/22 12:36:03 rws $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -21,6 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -497,7 +498,7 @@ LbxReplyCallback(pcbl, nulldata, calldata)
 /* ARGSUSED */
 static Bool
 LbxCheckCompressInput (dummy1, dummy2)
-    pointer dummy1;
+    ClientPtr dummy1;
     pointer dummy2;
 {
     LbxProxyPtr	    proxy;
@@ -514,14 +515,13 @@ LbxCheckCompressInput (dummy1, dummy2)
 }
 
 static Bool
-LbxIsClientBlocked (client)
-    ClientPtr	client;
+LbxIsClientBlocked (lbxClient)
+    LbxClientPtr	lbxClient;
 {
-    LbxClientPtr	lbxClient = LbxClient(client);
     LbxProxyPtr		proxy = lbxClient->proxy;
     
     return (lbxClient->ignored ||
-	    (GrabInProgress && client->index != GrabInProgress &&
+	    (GrabInProgress && lbxClient->client->index != GrabInProgress &&
 	     lbxClient != proxy->lbxClients[0]));
 }
 
@@ -562,7 +562,7 @@ LbxWaitForUnblocked (client, closure)
     if (!lbxClient)
 	return TRUE;
     proxy = lbxClient->proxy;
-    if (LbxIsClientBlocked (client) ||
+    if (LbxIsClientBlocked (lbxClient) ||
 	((lbxClient != proxy->curDix) && proxy->curDix->reqs_pending &&
 	 !LbxIsClientBlocked(proxy->curDix)))
 	return FALSE;
@@ -713,7 +713,7 @@ LbxReadRequestFromClient (client)
 
     if (GrabInProgress && (proxy->grabClient != GrabInProgress))
 	LbxServerGrab(proxy);
-    isblocked = LbxIsClientBlocked(client);
+    isblocked = LbxIsClientBlocked(lbxClient);
 
     if (lbxClient->reqs_pending && !isblocked) {
 	if (!--lbxClient->reqs_pending && (lbxClient != proxy->curRecv))
@@ -1377,8 +1377,7 @@ ProcLbxNewClient(client)
     newClient = AllocLbxClientConnection (client, proxy);
     if (!newClient)
 	return BadAlloc;
-    if (proxy->useTags)
-	newClient->requestVector = LbxInitialVector;
+    newClient->requestVector = LbxInitialVector;
     lbxClient = LbxInitClient (proxy, newClient, id);
     if (!lbxClient)
     {
