@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.6 1997/05/03 09:18:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.7 1997/06/03 14:12:24 hohndel Exp $ */
 
 /*
  *
@@ -422,6 +422,7 @@ void Check_Tseng_Ramdac()
               dac_is_16bit = TRUE;
               break;
      case STG1702_DAC:
+     case STG1700_DAC:
               dac_is_16bit = TRUE;
               break;
      case STG1703_DAC:
@@ -447,7 +448,7 @@ void Check_Tseng_Ramdac()
 void tseng_init_clockscale(int bytesperpixel)
 {
     /* nothing to do for 1:1 modes */
-    if (bytesperpixel == 1) return;
+    if (bytesperpixel <= 1) return;
     if (et4000_type >= TYPE_ET6000) return;
 
     /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
@@ -490,6 +491,8 @@ void tseng_set_dacspeed(int bytesperpixel)
 #ifndef USE_OFFICIAL_TSENG_LIMITS
     unsigned char bw_reg;
 #endif
+
+    if (bytesperpixel < 1) bytesperpixel = 1;  /* for 1 and 4bpp */
 
     /*
      * First, determine if we can use pixel multiplexing. This will have
@@ -781,6 +784,8 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
    unsigned char* cmd_dest = NULL;
    int index;
    
+   if (bytesperpixel < 1) bytesperpixel = 1;  /* for 1 and 4bpp */
+
    rgb555 = (xf86weight.red == 5 && xf86weight.green == 5 && xf86weight.blue == 5);
    rgb565 = (xf86weight.red == 5 && xf86weight.green == 6 && xf86weight.blue == 5);
    

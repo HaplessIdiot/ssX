@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.4 1997/04/14 07:05:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.5 1997/06/03 14:12:21 hohndel Exp $ */
 
 
 /*
@@ -126,7 +126,7 @@ void TsengAccelInit() {
     xf86AccelInfoRec.SetupForFillRectSolid = TsengSetupForFillRectSolid;
     if (et4000_type >= TYPE_ET6000) {
       xf86AccelInfoRec.SubsequentFillRectSolid = Tseng6SubsequentFillRectSolid;
-#if 0
+#if TRAPEZOIDS_FIXED
       /* disabled for now: not fully compliant yet */
       xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
 #endif

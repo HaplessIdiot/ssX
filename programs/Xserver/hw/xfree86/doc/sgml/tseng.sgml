@@ -142,8 +142,8 @@ There is a problem with the hardware cursor at high dotclocks (above
 approx. 110MHz) at which point the cursor does strange things when partly off
 the left-hand side of the screen.
 
-Doublescan modes currently don't work with the hardware cursor: only the top
-half of the cursor is visible. If you want to use DoubleSCan modes (320x200
+DoubleScan modes currently don't work with the hardware cursor: only the top
+half of the cursor is visible. If you want to use DoubleScan modes (320x200
 is a popular one), then do not enable the hardware cursor.
 
 
@@ -497,7 +497,7 @@ on it with the following markings:
 
 	MDRAM
 	MD9xy     ("xy" is a two-digit number)
-	SJ-5-100  (this may differ, but it will hava the same layout)
+	SJ-5-100  (this may differ, but it will have the same layout)
 
 and a nice logo next to all that with 4 diamonds and the name "MoSys"
 underneath.
@@ -520,7 +520,7 @@ MD920.
 <sect> ET6000 memory bandwidth hype and the impact on video modes <p>
 
 Tseng has always had wet dreams about memory bandwidth, and their press
-anouncements about the ET6000 memory bandwidth are no exception.
+announcements about the ET6000 memory bandwidth are no exception.
 
 They claim the ET6000 using MDRAM is capable of reaching an incredible 1.2
 Gbytes/sec of bandwidth. That would surpass just about everything on the
@@ -544,7 +544,7 @@ Memory bandwidth limits the maximum resolution you can use at a given color
 depth. The ET6000 RAMDAC can cope with 135 MHz in any situation. But the RAM
 cannot. At 32bpp (sparse 16M color mode), using a 135 MHz pixel clock would
 require a memory bandwidth of 135*4 = 540 MB/sec, which the current ET6000
-baords simply cannot cope with. And then you still need some spare bandwidth
+boards simply cannot cope with. And then you still need some spare bandwidth
 for the PCI bus and the accelerator.
 
 That is why some modes will be refused, depending on your MDRAM memory
@@ -731,7 +731,7 @@ Problems with DMA hardware (floppy, tape)
 	the large bus delays) by removing the <tt>"pci_retry"</tt> option.
 	This will cause a very small slowdown of accelerated operations.
 	
-	The <tt>"pci_retry"</tt> option apllies not only to the PCI bus
+	The <tt>"pci_retry"</tt> option applies not only to the PCI bus
         systems, but has a similar effect on other busses.
 
 </descrip>
@@ -755,7 +755,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.24 1997/05/19 10:04:38 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.25 1997/06/03 14:11:56 hohndel Exp $ 
 
 
 

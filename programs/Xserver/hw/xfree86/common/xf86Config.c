@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.129 1997/05/18 12:12:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.130 1997/06/03 14:11:47 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3076,6 +3076,7 @@ configScreenSection()
 #endif
           dispIndex = 0;
         } else {
+          xf86bpp = screen->depth;
           /* Look for a section which matches the driver's default depth */
           for (dispIndex = 0; dispIndex < numDisps; dispIndex++) {
             if (dispList[dispIndex].depth == screen->depth)
@@ -3140,7 +3141,10 @@ configScreenSection()
       else if (dispp->depth > 0) screen->depth = dispp->depth;
       if (xf86weight.red || xf86weight.green || xf86weight.blue)
 	 screen->weight = xf86weight;
-      else if (dispp->weight.red > 0) screen->weight = dispp->weight;
+      else if (dispp->weight.red > 0) {
+	 screen->weight = dispp->weight;
+	 xf86weight = dispp->weight;
+      }
       screen->frameX0 = dispp->frameX0;
       screen->frameY0 = dispp->frameY0;
       screen->virtualX = dispp->virtualX;

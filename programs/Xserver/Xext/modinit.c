@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/modinit.c,v 3.1 1997/05/06 09:45:07 dawes Exp $ */
 
 /*
  *
@@ -180,7 +180,7 @@ ExtensionModule extensionModules[] = {
 	NULL
     },
 #endif
-#ifdef XFree86DGA
+#ifdef XFreeXDGA
     {
 	XFree86DGAExtensionInit,
 	XF86DGANAME,

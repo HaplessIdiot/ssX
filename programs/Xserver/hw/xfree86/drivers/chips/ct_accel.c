@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.5 1997/05/03 09:17:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.6 1997/06/03 14:12:02 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -1001,7 +1001,7 @@ void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
 	ctSETPATSRCADDR(ctBLTPatternAddress);
 	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
     }
-    ctSETPITCH(srcwidth, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(4 * dwordTotal, vga256InfoRec.displayWidth * vgaBytesPerPixel);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 
     line = 0;
