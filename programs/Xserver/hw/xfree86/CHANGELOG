@@ -1,3 +1,7 @@
+XFree86 4.0.1Zb (?? December 2000)
+1175. Fix ATI DPMS support on panels by mimicking BIOS behaviour more closely
+      (Marc La France).
+
 XFree86 4.0.1Za (12 December 2000)
 1174. Set defaults for Mesa's x86 CPU-specific asm options, and make it
       possible to build with MMX disabled for systems with older assemblers
@@ -12045,4 +12049,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1468 2000/12/12 17:18:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1469 2000/12/12 23:24:29 dawes Exp $
