@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.253 2001/12/30 22:27:22 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.254 2002/01/07 20:38:21 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -654,7 +654,7 @@ MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 #endif
 #if ForceServerRemake
 $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS):: $(XF86SERVERSUBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS), \
 	$(XF86SERVERLIBS),$(XF86SERVERSYSLIBS))
@@ -716,7 +716,7 @@ MakeMutex($(FBDEVDIRS) $(FBDEVOBJS) $(FBDEVLIBS) $(FBDEVSYSLIBS))
 #endif
 #if ForceServerRemake
 $(FBDEVOBJS) $(XFBDEV) $(FBDEVLIBS) $(FBDEVSYSLIBS):: $(FBDEVDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xfbdev,$(FBDEVDIRS),$(FBDEVOBJS), \
 	$(FBDEVLIBS),$(FBDEVSYSLIBS))
@@ -742,7 +742,7 @@ MakeMutex($(SAVAGEDIRS) $(SAVAGEOBJS) $(SAVAGELIBS) $(SAVAGESYSLIBS))
 #endif
 #if ForceServerRemake
 $(SAVAGEOBJS) $(XSAVAGE) $(SAVAGELIBS) $(SAVAGESYSLIBS):: $(SAVAGEDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xsavage,$(SAVAGEDIRS),$(SAVAGEOBJS), \
 	$(SAVAGELIBS),$(SAVAGESYSLIBS))
@@ -768,7 +768,7 @@ MakeMutex($(IGSDIRS) $(IGSOBJS) $(IGSLIBS) $(IGSSYSLIBS))
 #endif
 #if ForceServerRemake
 $(IGSOBJS) $(XIGS) $(IGSLIBS) $(IGSSYSLIBS):: $(IGSDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xigs,$(IGSDIRS),$(IGSOBJS), \
 	$(IGSLIBS),$(IGSSYSLIBS))
@@ -799,7 +799,7 @@ MakeMutex($(TRIDENTDIRS) $(TRIDENTLIBS) $(TRIDENTSYSLIBS))
 #endif
 #if ForceServerRemake
 $(TRIDENTOBJS) $(TRIDENTLIBS) $(TRIDENTSYSLIBS):: $(TRIDENTDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xtrident,$(TRIDENTDIRS),$(TRIDENTOBJS), \
 	$(TRIDENTLIBS),$(TRIDENTSYSLIBS))
@@ -828,7 +828,7 @@ MakeMutex($(CHIPSDIRS) $(CHIPSLIBS) $(CHIPSSYSLIBS))
 #endif
 #if ForceServerRemake
 $(CHIPSOBJS) $(CHIPSLIBS) $(CHIPSSYSLIBS):: $(CHIPSDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xchips,$(CHIPSDIRS),$(CHIPSOBJS), \
 	$(CHIPSLIBS),$(CHIPSSYSLIBS))
@@ -857,7 +857,7 @@ MakeMutex($(MACH64DIRS) $(MACH64LIBS) $(MACH64SYSLIBS))
 #endif
 #if ForceServerRemake
 $(MACH64OBJS) $(MACH64LIBS) $(MACH64SYSLIBS):: $(MACH64DIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xmach64,$(MACH64DIRS),$(MACH64OBJS), \
 	$(MACH64LIBS),$(MACH64SYSLIBS))
@@ -887,7 +887,7 @@ MakeMutex($(I810DIRS) $(I810LIBS) $(I810SYSLIBS))
 #endif
 #if ForceServerRemake
 $(I810OBJS) $(I810LIBS) $(I810SYSLIBS):: $(I810DIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xi810,$(I810DIRS),$(I810OBJS), \
 	$(I810LIBS),$(I810SYSLIBS))
@@ -914,7 +914,7 @@ MakeMutex($(SIS530DIRS) $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS))
 #endif
 #if ForceServerRemake
 $(SIS530OBJS) $(SIS530LIBS) $(SIS530SYSLIBS):: $(SIS530DIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xsis530,$(SIS530DIRS),$(SIS530OBJS), \
 	$(SIS530LIBS),$(SIS530SYSLIBS))
@@ -940,7 +940,7 @@ MakeMutex($(TRIODIRS) $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS))
 #endif
 #if ForceServerRemake
 $(TRIOOBJS) $(TRIOLIBS) $(TRIOSYSLIBS):: $(TRIODIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xtrio,$(TRIODIRS),$(TRIOOBJS), \
 	$(TRIOLIBS),$(TRIOSYSLIBS))
@@ -974,7 +974,7 @@ MakeMutex($(IPAQDIRS) $(IPAQOBJS) $(IPAQLIBS) $(IPAQSYSLIBS))
 #endif
 #if ForceServerRemake
 $(IPAQOBJS) $(IPAQLIBS) $(IPAQSYSLIBS):: $(IPAQDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xipaq,$(IPAQDIRS),$(IPAQOBJS), \
 	$(IPAQLIBS),$(IPAQSYSLIBS))
@@ -1006,7 +1006,7 @@ MakeMutex($(TS300DIRS) $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS))
 #endif
 #if ForceServerRemake
 $(TS300OBJS) $(TS300LIBS) $(TS300SYSLIBS):: $(TS300DIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xts300,$(TS300DIRS),$(TS300OBJS), \
 	$(TS300LIBS),$(TS300SYSLIBS))
@@ -1031,7 +1031,7 @@ MakeMutex($(ITSYDIRS) $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS))
 #endif
 #if ForceServerRemake
 $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS):: $(ITSYDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS), \
 	$(ITSYLIBS),$(ITSYSYSLIBS))
@@ -1057,7 +1057,7 @@ MakeMutex($(VESADIRS) $(VESAOBJS) $(VESALIBS) $(VESASYSLIBS))
 #endif
 #if ForceServerRemake
 $(VESAOBJS) $(XVESA) $(VESALIBS) $(VESASYSLIBS):: $(VESADIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS), \
 	$(VESALIBS),$(VESASYSLIBS))
@@ -1097,7 +1097,7 @@ MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
 #endif
 #if ForceServerRemake
 $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS), \
 	$(XPLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XPSYSLIBS))
@@ -1128,7 +1128,7 @@ MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
 #endif
 #if ForceServerRemake
 $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS), \
 	$(XNESTLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XNESTSYSLIBS))
@@ -1178,7 +1178,7 @@ MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 #endif
 #if ForceServerRemake
 $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
 	$(XVFBLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XVFBSYSLIBS))
@@ -1216,7 +1216,7 @@ MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWINLIB) $(XWINLIBS) $(XWINSYSLIBS))
 
 #if ForceServerRemake
 $(XWINOBJS) $(XWINLIB) $(XWINLIBS) $(XWINSYSLIBS):: $(XWINDIRS)
-	@if [ -f $@ ]; then touch $@; fi
+	@if [ -f $@ ]; then touch $@ >/dev/null 2>&1 || exit 0; fi
 #endif
 
 ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \

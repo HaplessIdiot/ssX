@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.16 2001/10/02 11:44:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.17 2001/10/02 19:44:01 herrb Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -263,8 +263,16 @@ typedef struct {
     unsigned char     *scratch_save;
     int               scanline_x;
     int               scanline_y;
+    int               scanline_w;
     int               scanline_h;
-    int               scanline_h_w;
+#ifdef XF86DRI
+    int               scanline_hpass;
+    int               scanline_x1clip;
+    int               scanline_x2clip;
+    int               scanline_rop;
+    int               scanline_fg;
+    int               scanline_bg;
+#endif /* XF86DRI */
     int               scanline_words;
     int               scanline_direct;
     int               scanline_bpp; /* Only used for ImageWrite */
@@ -445,10 +453,8 @@ do {									\
 
 #endif
 
-#ifdef XF86DRI
 extern drmBufPtr   R128CCEGetBuffer(ScrnInfoPtr pScrn);
-#endif
-extern void        R128CCEFlushIndirect(ScrnInfoPtr pScrn);
+extern void        R128CCEFlushIndirect(ScrnInfoPtr pScrn, int discard);
 extern void        R128CCEReleaseIndirect(ScrnInfoPtr pScrn);
 extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
 
@@ -466,7 +472,6 @@ extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
 #define R128_VERBOSE	0
 
 #define RING_LOCALS	CARD32 *__head; int __count;
-#define RING_THRESHOLD	256
 
 #define R128CCE_REFRESH(pScrn, info)					\
 do {									\
@@ -491,11 +496,11 @@ do {									\
 		  "BEGIN_RING( %d ) in %s\n", n, __FUNCTION__ );	\
    }									\
    if ( !info->indirectBuffer ) {					\
-      info->indirectBuffer = R128CCEGetBuffer( pScrn );		\
+      info->indirectBuffer = R128CCEGetBuffer( pScrn );			\
       info->indirectStart = 0;						\
-   } else if ( info->indirectBuffer->used - info->indirectStart +	\
-	       (n) * (int)sizeof(CARD32) > RING_THRESHOLD ) {		\
-      R128CCEFlushIndirect( pScrn );					\
+   } else if ( (info->indirectBuffer->used + 4*(n)) >			\
+                info->indirectBuffer->total ) {				\
+      R128CCEFlushIndirect( pScrn, 1 );					\
    }									\
    __head = (pointer)((char *)info->indirectBuffer->address +		\
 		       info->indirectBuffer->used);			\
@@ -510,7 +515,7 @@ do {									\
 		  __count * sizeof(CARD32),				\
 		  info->indirectBuffer->used - info->indirectStart +	\
 		  __count * sizeof(CARD32),				\
-		  RING_THRESHOLD );					\
+		  info->indirectBuffer->total - info->indirectStart );	\
    }									\
    info->indirectBuffer->used += __count * (int)sizeof(CARD32);		\
 } while (0)
@@ -535,7 +540,7 @@ do {									\
       xf86DrvMsg( pScrn->scrnIndex, X_INFO,				\
 		  "FLUSH_RING in %s\n", __FUNCTION__ );			\
    if ( info->indirectBuffer ) {					\
-      R128CCEFlushIndirect( pScrn );					\
+      R128CCEFlushIndirect( pScrn, 0 );					\
    }									\
 } while (0)
 

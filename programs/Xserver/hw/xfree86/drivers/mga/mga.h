@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.78 2001/12/10 23:02:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.79 2002/01/11 15:42:57 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -350,6 +350,7 @@ typedef struct {
     void		(*GetQuiescence)(ScrnInfoPtr pScrn);
 
     int 		agpMode;
+    int		agpSize;
 
 #endif
     XF86VideoAdaptorPtr adaptor;

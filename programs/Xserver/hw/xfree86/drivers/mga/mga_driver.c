@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.214 2002/01/07 21:50:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.215 2002/01/25 21:56:04 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -213,6 +213,7 @@ typedef enum {
     OPTION_CRTC2RAM,
     OPTION_INT10,
     OPTION_AGP_MODE,
+    OPTION_AGP_SIZE,
     OPTION_DIGITAL,
     OPTION_TV,
     OPTION_TVSTANDARD,
@@ -244,6 +245,7 @@ static const OptionInfoRec MGAOptions[] = {
     { OPTION_CRTC2RAM,		"Crtc2Ram",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_AGP_MODE,		"AGPMode",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_AGP_SIZE,		"AGPSize",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_DIGITAL,		"DigitalScreen",OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TV,		"TV",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
@@ -1495,6 +1497,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  pMga->agpMode = MGA_MAX_AGP_MODE;
        }
        from = X_CONFIG;
+    }
+    if (xf86GetOptValInteger(pMga->Options,
+                             OPTION_AGP_SIZE, &(pMga->agpSize))) {
+                             /* check later */
+       xf86DrvMsg(pScrn->scrnIndex, from, "Using %d MB of AGP memory\n",
+	          pMga->agpSize);
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Using AGP %dx mode\n",
