@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.9 2000/04/17 16:30:11 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.11 2000/09/29 08:59:47 eich Exp $
 
 /* An OS-independent INT10 module/library */
 
@@ -37,7 +37,7 @@ X86EMUDEFINES = -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
 
 # if defined(i386Architecture)
 ARCHDEFINES = -D_PC
-#else if  defined(ia64Architecture)
+# elif  defined(ia64Architecture)
 ARCHDEFINES = -D_PC_IO -DPC_PCI
 # endif
 
