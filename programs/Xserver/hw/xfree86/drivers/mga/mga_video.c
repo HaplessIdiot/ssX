@@ -86,7 +86,7 @@ void MGAInitVideo(ScreenPtr pScreen)
 }
 
 /* client libraries expect an encoding */
-XF86VideoEncodingRec DummyEncoding[1] =
+static XF86VideoEncodingRec DummyEncoding[1] =
 {
    0,
    "XV_IMAGE",
