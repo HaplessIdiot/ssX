@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.2 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.3 2002/01/30 21:00:58 paulo Exp $ */
 
 #include "time.h"
 
@@ -48,7 +48,6 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
     LispObj *form;
 
     form = ARGUMENT(0);
-    MACRO_ARGUMENT1();
 
     real.it_value.tv_sec =
 	virt.it_value.tv_sec =

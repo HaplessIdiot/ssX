@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.9 2002/07/22 07:26:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.10 2002/07/28 21:34:04 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -190,7 +190,7 @@ static LispObj *
 LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 		    int only_externs, int all_symbols)
 {
-    int i;
+    int i, head = mac->env.length;
     LispPackage *pack = NULL;
     LispAtom *atom, *next_atom;
     LispObj *variable, *package = NULL, *list, *code, *result_form;
@@ -199,7 +199,6 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
-    MACRO_ARGUMENT2();
 
     /* Prepare for loop */
     ERROR_CHECK_LIST(init);
@@ -264,6 +263,8 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
     /* Variable is still bound */
     for (code = result_form; CONS_P(code); code = CDR(code))
 	EVAL(CAR(code));
+
+    mac->env.head = mac->env.length = head;
 
     return (NIL);
 }

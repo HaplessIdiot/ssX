@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.6 2002/07/08 03:54:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.7 2002/07/16 05:19:39 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -41,17 +41,12 @@ static void check_stream(LispMac*, LispObj*, LispFile**, LispString**, int);
 static void parse_double(char*, int*, double, int);
 static void format_integer(char*, long, int);
 static int LispWriteCPointer(LispMac*, LispObj*, void*);
-static int LispWriteCString(LispMac*, LispObj*, char*);
+static int LispWriteCString(LispMac*, LispObj*, char*, long);
 static int LispDoWriteList(LispMac*, LispObj*, LispObj*, int);
 static int LispDoFormatExponentialFloat(LispMac*, LispObj*, LispObj*,
 					int, int, int*, int, int,
 					int, int, int, int);
 
-
-/*
- * Initialization
- */
-extern char *LispCharNames[];
 
 /*
  * Implementation
@@ -171,40 +166,33 @@ LispWriteCPointer(LispMac *mac, LispObj *stream, void *data)
     char stk[32];
 
     sprintf(stk, "0x%08lx", (long)data);
-    return (LispWriteStr(mac, stream, stk));
+    return (LispWriteStr(mac, stream, stk, strlen(stk)));
 }
 
 static int
-LispWriteCString(LispMac *mac, LispObj *stream, char *string)
+LispWriteCString(LispMac *mac, LispObj *stream, char *string, long length)
 {
-    int length, ch;
-    char *prt, *ptr, *pquote, *pslash;
+    int result;
 
     if (!LispGetEscape(mac, stream)) {
-	length = LispWriteChar(mac, stream, '"');
-	for (prt = string, pquote = strchr(prt, '"'),
-	     pslash = strchr(prt, '\\');  pquote || pslash;
-	     prt = ptr, pquote = pquote ? strchr(prt, '"') : NULL,
-			pslash = pslash ? strchr(prt, '\\') : NULL) {
-	    if (pquote && pslash)
-		ptr = pquote < pslash ? pquote : pslash;
-	    else
-		ptr = pquote ? pquote : pslash;
-	    ch = ptr == pquote ? '"' : '\\';
-	    *ptr = '\0';
-	    length += LispWriteStr(mac, stream, prt);
-	    length += LispWriteChar(mac, stream, '\\');
-	    length += LispWriteChar(mac, stream, ch);
-	    *ptr = ch;
-	    ++ptr;
+	char *base, *ptr, *end;
+
+	result = LispWriteChar(mac, stream, '"');
+	for (base = ptr = string, end = string + length; ptr < end; ptr++) {
+	    if (*ptr == '\\' || *ptr == '"') {
+		result += LispWriteStr(mac, stream, base, ptr - base);
+		result += LispWriteChar(mac, stream, '\\');
+		result += LispWriteChar(mac, stream, *ptr);
+		base = ptr + 1;
+	    }
 	}
-	length += LispWriteStr(mac, stream, prt);
-	length += LispWriteChar(mac, stream, '"');
+	result += LispWriteStr(mac, stream, base, end - base);
+	result += LispWriteChar(mac, stream, '"');
     }
     else
-	length = LispWriteStr(mac, stream, string);
+	result = LispWriteStr(mac, stream, string, length);
 
-    return (length);
+    return (result);
 }
 
 static int
@@ -227,7 +215,7 @@ LispDoWriteList(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 	    length += LispWriteChar(mac, stream, '(');
 	length += LispDoWriteObject(mac, stream, car, car->type == LispCons_t);
 	if (!CONS_P(cdr)) {
-	    length += LispWriteStr(mac, stream, " . ");
+	    length += LispWriteStr(mac, stream, " . ", 3);
 	    length += LispDoWriteObject(mac, stream, cdr, 0);
 	}
 	else {
@@ -251,17 +239,18 @@ LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 write_again:
     switch (object->type) {
 	case LispNil_t:
-	    length += LispWriteStr(mac, stream, Snil);
+	    length += LispWriteStr(mac, stream, Snil, 3);
 	    break;
 	case LispTrue_t:
 	    length += LispWriteChar(mac, stream, 'T');
 	    break;
-	case LispOpaque_t:
+	case LispOpaque_t: {
+	    char *desc = LispIntToOpaqueType(mac, object->data.opaque.type);
+
 	    length += LispWriteChar(mac, stream, '#');
 	    length += LispWriteCPointer(mac, stream, object->data.opaque.data);
-	    length += LispWriteStr(mac, stream,
-			        LispIntToOpaqueType(mac, object->data.opaque.type));
-	    break;
+	    length += LispWriteStr(mac, stream, desc, strlen(desc));
+	}   break;
 	case LispAtom_t:
 	    length += LispWriteAtom(mac, stream, object);
 	    break;
@@ -280,10 +269,10 @@ write_again:
 	    break;
 	case LispRatio_t:
 	    format_integer(stk, object->data.ratio.numerator, 10);
-	    length += LispWriteStr(mac, stream, stk);
+	    length += LispWriteStr(mac, stream, stk, strlen(stk));
 	    length += LispWriteChar(mac, stream, '/');
 	    format_integer(stk, object->data.ratio.denominator, 10);
-	    length += LispWriteStr(mac, stream, stk);
+	    length += LispWriteStr(mac, stream, stk, strlen(stk));
 	    break;
 	case LispBigRatio_t: {
 	    int sz;
@@ -291,17 +280,17 @@ write_again:
 
 	    sz = mpi_getsize(mpr_num(object->data.mp.ratio), 10) + 1 +
 		 mpi_getsize(mpr_den(object->data.mp.ratio), 10) + 1;
-	    if (sz + 2 > sizeof(stk))
-		ptr = LispMalloc(mac, sz + 2);
+	    if (sz > sizeof(stk))
+		ptr = LispMalloc(mac, sz);
 	    else
 		ptr = stk;
 	    mpr_getstr(ptr, object->data.mp.ratio, 10);
-	    length += LispWriteStr(mac, stream, ptr);
+	    length += LispWriteStr(mac, stream, ptr, sz - 1);
 	    if (ptr != stk)
 		LispFree(mac, ptr);
 	}   break;
 	case LispComplex_t:
-	    length += LispWriteStr(mac, stream, "#C(");
+	    length += LispWriteStr(mac, stream, "#C(", 3);
 	    length += LispDoWriteObject(mac, stream,
 					object->data.complex.real, 0);
 	    length += LispWriteChar(mac, stream, ' ');
@@ -324,7 +313,7 @@ write_again:
 	    goto write_again;
 	case LispComma_t:
 	    if (object->data.comma.atlist)
-		length += LispWriteStr(mac, stream, ",@");
+		length += LispWriteStr(mac, stream, ",@", 2);
 	    else
 		length += LispWriteChar(mac, stream, ',');
 	    paren = 1;
@@ -340,52 +329,56 @@ write_again:
 	case LispLambda_t:
 	    switch (object->data.lambda.type) {
 		case LispLambda:
-		    length += LispWriteStr(mac, stream, "#<LAMBDA ");
+		    length += LispWriteStr(mac, stream, "#<LAMBDA ", 9);
 		    break;
 		case LispFunction:
-		    length += LispWriteStr(mac, stream, "#<FUNCTION ");
+		    length += LispWriteStr(mac, stream, "#<FUNCTION ", 11);
 		    break;
 		case LispMacro:
-		    length += LispWriteStr(mac, stream, "#<MACRO ");
+		    length += LispWriteStr(mac, stream, "#<MACRO ", 8);
 		    break;
 		case LispSetf:
-		    length += LispWriteStr(mac, stream, "#<SETF ");
+		    length += LispWriteStr(mac, stream, "#<SETF ", 7);
 		    break;
 	    }
 	    if (object->data.lambda.type != LispLambda) {
-		length += LispWriteStr(mac, stream,
-				       STRPTR(object->data.lambda.name));
+		char *desc = STRPTR(object->data.lambda.name);
+
+		length += LispWriteStr(mac, stream, desc, strlen(desc));
 		length += LispWriteChar(mac, stream, ' ');
 	    }
 	    length += LispDoWriteObject(mac, stream, object->data.lambda.code, 0);
 	    length += LispWriteChar(mac, stream, '>');
 	    break;
 	case LispStream_t:
-	    length += LispWriteStr(mac, stream, "#<");
+	    length += LispWriteStr(mac, stream, "#<", 2);
 	    if (object->data.stream.type == LispStreamFile)
-		length += LispWriteStr(mac, stream, "FILE-STREAM ");
+		length += LispWriteStr(mac, stream, "FILE-STREAM ", 12);
 	    else if (object->data.stream.type == LispStreamString)
-		length += LispWriteStr(mac, stream, "STRING-STREAM ");
+		length += LispWriteStr(mac, stream, "STRING-STREAM ", 14);
 	    else if (object->data.stream.type == LispStreamStandard)
-		length += LispWriteStr(mac, stream, "STANDARD-STREAM ");
+		length += LispWriteStr(mac, stream, "STANDARD-STREAM ", 16);
 	    else if (object->data.stream.type == LispStreamPipe)
-		length += LispWriteStr(mac, stream, "PIPE-STREAM ");
+		length += LispWriteStr(mac, stream, "PIPE-STREAM ", 12);
 
 	    if (!object->data.stream.readable && !object->data.stream.writable)
-		length += LispWriteStr(mac, stream, "CLOSED");
+		length += LispWriteStr(mac, stream, "CLOSED", 6);
 	    else {
 		if (object->data.stream.readable)
-		    length += LispWriteStr(mac, stream, "READ");
+		    length += LispWriteStr(mac, stream, "READ", 4);
 		if (object->data.stream.writable) {
 		    if (object->data.stream.readable)
 			length += LispWriteChar(mac, stream, '-');
-		    length += LispWriteStr(mac, stream, "WRITE");
+		    length += LispWriteStr(mac, stream, "WRITE", 5);
 		}
 	    }
 	    length += LispWriteChar(mac, stream, ' ');
-	    if (object->data.stream.type == LispStreamString)
-		length += LispWriteCString(mac, stream,
-					   LispGetSstring(SSTREAMP(object)));
+	    if (object->data.stream.type == LispStreamString) {
+		int size;
+		char *string = LispGetSstring(SSTREAMP(object), &size);
+
+		length += LispWriteCString(mac, stream, string, size);
+	    }
 	    else {
 		length += LispDoWriteObject(mac, stream,
 					    object->data.stream.pathname, 1);
@@ -397,40 +390,42 @@ write_again:
 	    length += LispWriteChar(mac, stream, '>');
 	    break;
 	case LispPathname_t:
-	    length += LispWriteStr(mac, stream, "#P");
+	    length += LispWriteStr(mac, stream, "#P", 2);
 	    paren = 1;
 	    object = CAR(object->data.quote);
 	    goto write_again;
 	case LispPackage_t:
-	    length += LispWriteStr(mac, stream, "#<PACKAGE ");
-	    length += LispWriteStr(mac, stream, THESTR(object->data.package.name));
-	    length += LispWriteStr(mac, stream, ">");
+	    length += LispWriteStr(mac, stream, "#<PACKAGE ", 10);
+	    length += LispWriteStr(mac, stream,
+				   THESTR(object->data.package.name),
+				   STRLEN(object->data.package.name));
+	    length += LispWriteChar(mac, stream, '>');
 	    break;
 	case LispRegex_t:
-	    length += LispWriteStr(mac, stream, "#<REGEX ");
+	    length += LispWriteStr(mac, stream, "#<REGEX ", 8);
 	    length += LispDoWriteObject(mac, stream,
 					object->data.regex.pattern, 1);
 #ifdef REG_EXTENDED
 	    if (object->data.regex.options & REG_EXTENDED)
-		length += LispWriteStr(mac, stream, " :EXTENDED");
+		length += LispWriteStr(mac, stream, " :EXTENDED", 10);
 #endif
 #ifdef REG_NOSPEC
 	    if (object->data.regex.options & REG_NOSPEC)
-		length += LispWriteStr(mac, stream, " :NOSPEC");
+		length += LispWriteStr(mac, stream, " :NOSPEC", 8);
 #endif
 #ifdef REG_ICASE
 	    if (object->data.regex.options & REG_ICASE)
-		length += LispWriteStr(mac, stream, " :ICASE");
+		length += LispWriteStr(mac, stream, " :ICASE", 7);
 #endif
 #ifdef REG_NOSUB
 	    if (object->data.regex.options & REG_NOSUB)
-		length += LispWriteStr(mac, stream, " :NOSUB");
+		length += LispWriteStr(mac, stream, " :NOSUB", 7);
 #endif
 #ifdef REG_NEWLINE
 	    if (object->data.regex.options & REG_NEWLINE)
-		length += LispWriteStr(mac, stream, " :NEWLINE");
+		length += LispWriteStr(mac, stream, " :NEWLINE", 9);
 #endif
-	    length += LispWriteStr(mac, stream, ">");
+	    length += LispWriteChar(mac, stream, '>');
 	    break;
     }
 
@@ -526,15 +521,15 @@ LispWriteChars(LispMac *mac, LispObj *stream, int character, int count)
 
 /* write a string to stream */
 int
-LispWriteStr(LispMac *mac, LispObj *stream, char *buffer)
+LispWriteStr(LispMac *mac, LispObj *stream, char *buffer, long length)
 {
     LispFile *file;
     LispString *string;
 
     check_stream(mac, stream, &file, &string, 1);
     if (file != NULL)
-	return (LispFputs(file, buffer));
-    return (LispSputs(string, buffer));
+	return (LispFwrite(file, buffer, length));
+    return (LispSwrite(string, buffer, length));
 }
 
 int
@@ -542,6 +537,7 @@ LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
 {
     int length = 0;
     LispAtom *atom = object->data.atom;
+    Atom_id id = atom->string;
 
     if (atom->package != PACKAGE) {
 	if (atom->package == mac->keyword)
@@ -561,7 +557,8 @@ LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
 
 	    if (!visible) {
 		length += LispWriteStr(mac, stream,
-				       THESTR(atom->package->data.package.name));
+				       THESTR(atom->package->data.package.name),
+				       STRLEN(atom->package->data.package.name));
 		length += LispWriteChar(mac, stream, ':');
 		if (!atom->ext)
 		    length += LispWriteChar(mac, stream, ':');
@@ -570,7 +567,7 @@ LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
     }
     if (atom->unreadable)
 	length += LispWriteChar(mac, stream, '|');
-    length += LispWriteStr(mac, stream, STRPTR(object));
+    length += LispWriteStr(mac, stream, id, strlen(id));
     if (atom->unreadable)
 	length += LispWriteChar(mac, stream, '|');
 
@@ -593,7 +590,7 @@ LispWriteCharacter(LispMac *mac, LispObj *stream, LispObj *object)
 int
 LispWriteString(LispMac *mac, LispObj *stream, LispObj *object)
 {
-    return (LispWriteCString(mac, stream, THESTR(object)));
+    return (LispWriteCString(mac, stream, THESTR(object), STRLEN(object)));
 }
 
 int
@@ -620,20 +617,20 @@ LispWriteArray(LispMac *mac, LispObj *stream, LispObj *object)
     int length;
 
     if (object->data.array.rank == 0) {
-	length = LispWriteStr(mac, stream, "#0A");
+	length = LispWriteStr(mac, stream, "#0A", 3);
 	length += LispDoWriteObject(mac, stream, object->data.array.list, 1);
 	return (length);
     }
 
     if (object->data.array.rank == 1)
-	length = LispWriteStr(mac, stream, "#(");
+	length = LispWriteStr(mac, stream, "#(", 2);
     else {
 	char stk[32];
 
 	format_integer(stk, object->data.array.rank, 10);
 	length = LispWriteChar(mac, stream, '#');
-	length += LispWriteStr(mac, stream, stk);
-	length += LispWriteStr(mac, stream, "A(");
+	length += LispWriteStr(mac, stream, stk, strlen(stk));
+	length += LispWriteStr(mac, stream, "A(", 2);
     }
 
     if (!object->data.array.zero) {
@@ -701,19 +698,19 @@ LispWriteArray(LispMac *mac, LispObj *stream, LispObj *object)
 int
 LispWriteStruct(LispMac *mac, LispObj *stream, LispObj *object)
 {
+    Atom_id id;
     int length;
     LispObj *def = object->data.struc.def;
     LispObj *field = object->data.struc.fields;
 
-    length = LispWriteStr(mac, stream, "S#(");
-    length += LispWriteStr(mac, stream, STRPTR(CAR(def)));
+    length = LispWriteStr(mac, stream, "S#(", 3);
+    id = STRPTR(CAR(def));
+    length += LispWriteStr(mac, stream, id, strlen(id));
     def = CDR(def);
     for (; def != NIL; def = CDR(def), field = CDR(field)) {
-	length += LispWriteStr(mac, stream, " :");
-	length += LispWriteStr(mac, stream,
-			       SYMBOL_P(CAR(def)) ?
-					STRPTR(CAR(def)) :
-					STRPTR(CAR(CAR(def))));
+	length += LispWriteStr(mac, stream, " :", 2);
+	id = SYMBOL_P(CAR(def)) ? STRPTR(CAR(def)) : STRPTR(CAAR(def));
+	length += LispWriteStr(mac, stream, id, strlen(id));
 	length += LispWriteChar(mac, stream, ' ');
 	length += LispDoWriteObject(mac, stream, CAR(field), 1);
     }
@@ -790,7 +787,7 @@ LispFormatInteger(LispMac *mac, LispObj *stream, LispObj *object, int radix,
     }
     /* else, just print the string */
     else
-	LispWriteStr(mac, stream, str + sign);
+	LispWriteStr(mac, stream, str + sign, length);
 
     /* if number required more than sizeof(stk) bytes */
     if (str != stk)
@@ -873,7 +870,7 @@ LispFormatRomanInteger(LispMac *mac, LispObj *stream, long value, int new_roman)
 
     stk[length] = '\0';
 
-    return (LispWriteStr(mac, stream, stk));
+    return (LispWriteStr(mac, stream, stk, length));
 }
 
 int
@@ -1024,7 +1021,7 @@ LispFormatEnglishInteger(LispMac *mac, LispObj *stream, long number, int ordinal
 	    break;
     }
 
-    return (LispWriteStr(mac, stream, stk));
+    return (LispWriteStr(mac, stream, stk, length));
 }
 
 int
@@ -1035,10 +1032,12 @@ LispFormatCharacter(LispMac *mac, LispObj *stream, LispObj *object,
     int ch = object->data.integer;
 
     if (atsign && !collon)
-	length += LispWriteStr(mac, stream, "#\\");
-    if ((atsign || collon) && (ch <= ' ' || ch == 0177))
-	length += LispWriteStr(mac, stream,
-			       ch == 0177 ? "Rubout" : LispCharNames[ch]);
+	length += LispWriteStr(mac, stream, "#\\", 2);
+    if ((atsign || collon) && (ch <= ' ' || ch == 0177)) {
+	char *name = LispChars[ch].names[0];
+
+	length += LispWriteStr(mac, stream, name, strlen(name));
+    }
     else
 	length += LispWriteChar(mac, stream, ch);
 
@@ -1205,7 +1204,7 @@ fixed_float_check_again:
 	length += LispWriteChars(mac, stream, padchar, w - offset);
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer) + length);
+    return (LispWriteStr(mac, stream, buffer, offset) + length);
 
 fixed_float_overflow:
     return (LispWriteChars(mac, stream, overflowchar, w));
@@ -1418,7 +1417,7 @@ LispDoFormatExponentialFloat(LispMac *mac, LispObj *stream, LispObj *object,
 	length += LispWriteChars(mac, stream, padchar, w - offset);
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer) + length);
+    return (LispWriteStr(mac, stream, buffer, offset) + length);
 
 exponential_float_overflow:
     return (LispWriteChars(mac, stream, overflowchar, w));
@@ -1607,5 +1606,5 @@ LispFormatDollarFloat(LispMac *mac, LispObj *stream, LispObj *object,
 	length += LispWriteChar(mac, stream, value >= 0.0 ? '+' : '-');
 
     /* print float number representation */
-    return (LispWriteStr(mac, stream, buffer) + length);
+    return (LispWriteStr(mac, stream, buffer, offset) + length);
 }

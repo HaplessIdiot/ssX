@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.25 2002/04/16 17:12:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.26 2002/07/22 07:26:28 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -41,7 +41,9 @@
 #include "internal.h"
 
 #include "core.h"
+#ifdef DEBUGGER
 #include "debugger.h"
+#endif
 #include "helper.h"
 #include "string.h"
 #include "struct.h"
@@ -85,6 +87,9 @@ typedef struct _LispModule LispModule;
 typedef struct _LispProperty LispProperty;
 typedef struct _LispObjList LispObjList;
 typedef struct _LispStringHash LispStringHash;
+typedef struct _LispBuiltinInline LispBuiltinInline;
+typedef struct _LispCharInfo LispCharInfo;
+
 
 /* Normal function/macro arguments */
 typedef struct _LispNormalArgs {
@@ -133,6 +138,38 @@ typedef struct _LispArgList {
     char *description;
 } LispArgList;
 
+typedef enum _LispInline {
+    LispICar,
+    LispICdr,
+    LispIC_r,		/* C[AD]{2,4}R */
+    LispICons,
+    LispIList,
+    LispIRplaca,
+    LispIRplacd,
+    LispIAtom,
+    LispIConsp,
+    LispIListp,
+    LispINull,
+    LispIStringp,
+    LispICharacterp,
+    LispIKeywordp,
+    LispIComplexp,
+    LispIPathnamep,
+    LispIStreamp,
+    LispIAnd,
+    LispIOr,
+    LispIEval,
+    LispIEq,
+    LispIEql,
+    LispIEqual,
+    LispIEqualp,
+    LispILength,
+    LispIIf,
+    LispIWhen,
+    LispIUnless,
+    LispIProgn
+} LispInline;
+
 struct _LispProperty {
     /* may be used by multiple packages */
     unsigned int refcount;
@@ -148,6 +185,8 @@ struct _LispProperty {
 	LispObj *function;
 	/* builtin function attached to symbol*/
 	LispBuiltin *builtin;
+	/* very simple builtin functions */
+	LispBuiltinInline *code;
     } fun;
     /* function/macro argument list description */
     LispArgList *alist;
@@ -180,6 +219,8 @@ struct _LispAtom {
     unsigned int a_function : 1;
     /* Property has useful data in fun.builtin field */
     unsigned int a_builtin : 1;
+    /* Property has useful data in fun.code field */
+    unsigned int a_inline : 1;
     /* Property has useful data in properties field */
     unsigned int a_property : 1;
     /* Property has useful data in setf field */
@@ -201,6 +242,7 @@ struct _LispAtom {
 
     char *string;
     LispObj *object;		/* backpointer to object ATOM */
+    int offset;			/* in the environment list */
     LispObj *package;		/* package home of symbol */
     LispProperty *property;
     struct _LispAtom *next;
@@ -214,7 +256,6 @@ struct _LispObjList {
 
 struct _LispPackage {
     LispObjList glb;		/* global symbols in package */
-    LispObjList spc;		/* global special symbols in package */
     LispObjList use;		/* inherited packages */
     LispAtom *atoms[STRTBLSZ];	/* atoms in this package */
 };
@@ -242,12 +283,15 @@ typedef enum _LispBlockType {
 
 struct _LispBlock {
     LispBlockType type;
-    LispObj tag;
+    LispObj *tag;
     jmp_buf jmp;
+    int stack;
     int protect;
     int block_level;
+#ifdef DEBUGGER
     int debug_level;
     int debug_step;
+#endif
 };
 
 struct _LispModule {
@@ -262,24 +306,23 @@ typedef struct _LispUngetInfo {
 } LispUngetInfo;
 
 struct _LispMac {
+    /* stack for builtin function arguments */
+    struct {
+	LispObj **values;
+	int base;		/* base of arguments to function */
+	int length;
+	int space;
+    } stack;
+
     /* environment */
     struct {
 	LispObj **values;
 	Atom_id *names;
 	int lex;		/* until where variables are visible */
 	int head;		/* top of environment */
-	int base;		/* base of arguments to function */
 	int length;		/* number of used pairs */
 	int space;		/* number of objects in pairs */
     } env;
-
-    /* rebound special variables, dynamic variables */
-    struct {
-	LispObj **values;
-	Atom_id *names;
-	int length;		/* number of dynamics * 2 */
-	int space;		/* number of objects in pairs */
-    } dyn;
 
     struct {
 	LispObj **values;
@@ -339,8 +382,9 @@ struct _LispMac {
     int errexit;
 
     struct {
-	unsigned mem_level;
-	unsigned mem_size;
+	unsigned index;
+	unsigned level;
+	unsigned space;
 	void **mem;
     } mem;		/* memory from Lisp*Alloc, to be release in error */
     LispModule *module;
@@ -355,8 +399,10 @@ struct _LispMac {
     LispObj *frmlist;		/* input data */
     LispObj *runlist[3];	/* +, ++, and +++ */
     LispObj *reslist[3];	/* *, **, and *** */
+#ifdef DEBUGGER
     LispObj *dbglist;		/* debug information */
     LispObj *brklist;		/* breakpoints information */
+#endif
     LispObj *prolist;		/* protect objects list */
     LispObj *doclist;		/* variables documentation */
 
@@ -374,22 +420,45 @@ struct _LispMac {
     int running;		/* there is somewhere to siglongjmp */
 
     int debugging;		/* debugger enabled? */
+#ifdef DEBUGGER
     int debug_level;		/* almost always the same as mac->level */
     int debug_step;		/* control for stoping and printing output */
     int debug_break;		/* next breakpoint number */
     LispDebugState debug;
+#endif
 };
+
+struct _LispBuiltinInline {
+    /* these fields must be set */
+    LispFunType type;
+    LispInline code;
+    char *name;
+    int num_arguments;
+
+    /* optional field, if 0, fixed number of arguments */
+    int max_arguments;
+};
+
+struct _LispCharInfo {
+    LispObj character;
+    char **names;
+};
+
 
 /*
  * Prototypes
  */
+void LispAddBuiltinInlineFunction(LispMac*, LispBuiltinInline*);
+
 void LispUseArgList(LispMac*, LispArgList*);
 void LispFreeArgList(LispMac*, LispArgList*);
 LispArgList *LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
 
 LispObj *LispGetDoc(LispMac*, LispObj*);
 LispObj *LispGetVar(LispMac*, LispObj*);
+#ifdef DEBUGGER
 void *LispGetVarAddr(LispMac*, LispObj*);	/* used by debugger */
+#endif
 LispObj *LispAddVar(LispMac*, LispObj*, LispObj*);
 LispObj *LispSetVar(LispMac*, LispObj*, LispObj*);
 void LispUnsetVar(LispMac*, LispObj*);
@@ -419,6 +488,7 @@ void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
 LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
 #define BLOCKJUMP(block)			\
+    mac->stack.length = (block)->stack;		\
     mac->protect.length = (block)->protect;	\
     longjmp((block)->jmp, 1)
 void LispEndBlock(LispMac*, LispBlock*);
@@ -474,5 +544,6 @@ void LispMoreProtects(LispMac*);
 
 /* Initialization */
 extern int LispArgList_t;
+extern LispCharInfo LispChars[256];
 
 #endif /* Lisp_private_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.2 2002/02/12 16:07:55 paulo Exp $ */
 
 #ifndef Lisp_stream_h
 #define Lisp_stream_h
@@ -37,7 +37,6 @@
 
 void LispStreamInit(LispMac*);
 
-LispObj *Lisp_Streamp(LispMac*, LispBuiltin*);			/* streamp */
 LispObj *Lisp_InputStreamP(LispMac*, LispBuiltin*);		/* input-stream-p */
 LispObj *Lisp_OpenStreamP(LispMac*, LispBuiltin*);		/* open-stream-p */
 LispObj *Lisp_OutputStreamP(LispMac*, LispBuiltin*);		/* output-stream-p */
