@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.87 2000/02/08 17:19:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.88 2000/02/09 13:30:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1171,7 +1171,9 @@ xf86VTSwitch()
     ErrorF("xf86VTSwitch: Entering\n");
 #endif
     if (!xf86VTSwitchTo()) return;
+#ifdef __linux__ /* XXX */
     xf86OSPMClose = xf86OSPMOpen();
+#endif
 
     xf86EnableIO();
     xf86AccessEnter();
