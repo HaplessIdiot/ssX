@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.81 2002/12/10 03:54:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.82 2003/10/18 13:31:12 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -65,7 +65,7 @@ OTHERDOCS = \
 	ReadmeFile(XKB-Enhancing)
 #endif
 
-MISCDOCS = ServersOnly $(REPORTFORM) \
+MISCDOCS = $(REPORTFORM) \
 	   VideoBoard98 ReadmeFile(rapidaccess)
 
 DATABASE =
