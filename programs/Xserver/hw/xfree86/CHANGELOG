@@ -1,4 +1,5 @@
 XFree86 4.4.99.5 (xx April 2004)
+ 102. Remove some more stale amoeba bits (Matthieu Herrb).
  101. Fix some typos in OS/2-specific code (Bugzilla #1358, Frank Giessler).
  100. Avoid wrapping a screen with RAC if it doesn't need it (Marc La France).
   99. Decouple a screen's need for RAC from the server's running state
@@ -18903,7 +18904,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3250 2004/05/06 00:50:54 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3251 2004/05/06 00:54:35 dawes Exp $
 
 
 

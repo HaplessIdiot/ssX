@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.29 2003/12/19 02:05:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.30 2004/04/10 13:57:35 herrb Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -289,12 +289,6 @@ _X11TransConnectDisplay (
 #endif
 	    pprotocol = copystring ("tcp", 3);
     }
-#else
-#if defined(AMRPCCONN)
-    if (!pprotocol) {
-            pprotocol = copystring ("amcon", 5);
-    }
-#endif
 #endif
 
 #if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
