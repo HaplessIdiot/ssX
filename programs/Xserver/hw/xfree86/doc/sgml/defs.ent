@@ -1,4 +1,4 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.44 2005/02/21 01:11:00 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.45 2005/03/05 17:59:52 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
@@ -18,7 +18,7 @@
 <!ENTITY whichupdaterel CDATA "none">
 <!ENTITY reltag CDATA "xf-4_4_99_903">
 <!ENTITY relbranchtag CDATA "xf-4_5-branch">
-<!ENTITY rcnum CDATA "1">
+<!ENTITY rcnum CDATA "3">
 
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
