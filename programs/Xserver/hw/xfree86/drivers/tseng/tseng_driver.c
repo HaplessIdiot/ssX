@@ -49,6 +49,11 @@
 #include "xf86Resources.h"
 #include "xf86int10.h"
 
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
+#endif
+
 /*** Chip-specific includes ***/
 
 /* #include "tseng_acl.h" */
@@ -238,7 +243,6 @@ static const char* fbSymbols[] = {
   "xf1bppScreenInit",
   "xf4bppScreenInit",
   "fbScreenInit",
-  "fbScreenInit", 
   "fbPictureInit",
   NULL
 };
@@ -1684,10 +1688,19 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set weight/mask/offset for depth > 8 */
     if (pScrn->depth > 8) {
 	/* The defaults are OK for us */
-	rgb zeros =
-	{0, 0, 0};
+	rgb zeros = {0, 0, 0};
+	rgb mask;
+	
+	/* 
+	 * Initialize mask here. 
+	 * Currently we only treat the ICS5341 RAMDAC special
+	 */
+	if ((pScrn->depth == 24) && (pScrn->bitsPerPixel == 24))
+	    mask = pTseng->DacInfo.rgb24packed;
+	else
+	    mask = zeros;
 
-	if (!xf86SetWeight(pScrn, zeros, zeros)) {
+	if (!xf86SetWeight(pScrn, zeros, mask)) {
 	    return FALSE;
 	} else {
 	    /* XXX check that weight returned is supported */
@@ -2020,8 +2033,8 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * support TrueColor and not DirectColor.  To deal with this, call
      * miSetVisualTypes for each visual supported.
      */
-    if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			  pScrn->defaultVisual))
+    if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth), 
+			  pScrn->rgbBits, pScrn->defaultVisual))
       return FALSE;
 
     miSetPixmapDepths ();
@@ -2183,16 +2196,6 @@ TsengLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TsengPtr pTseng = TsengPTR(pScrn);
-
-#ifdef TODO
-    if (pScrn->bitsPerPixel >= 8) {
-	if (pScrn->directMode & XF86DGADirectGraphics) {
-	    if (vgaHWCursor.Initialized == TRUE)
-		TsengHideCursor();
-	    return;
-	}
-    }
-#endif
 
     PDEBUG("	TsengLeaveVT\n");
     TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg),
@@ -2727,13 +2730,6 @@ TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
     outw(iobase + 4, ((Base & 0x00FF) << 8) | 0x0D);
     outw(iobase + 4, ((Base & 0x0F0000) >> 8) | 0x33);
 
-#ifdef TODO
-    if (pScrn->directMode & XF86DGADirectGraphics) {
-	/* Wait until vertical retrace is in progress. */
-	while (inb(iobase + 0xA) & 0x08) ;
-	while (!(inb(iobase + 0xA) & 0x08)) ;
-    }
-#endif
 }
 
 ModeStatus
@@ -3255,8 +3251,6 @@ ET4000Probe()
 	...
 	
     vga256InfoRec.bankedMono = TRUE;
-    if (pScrn->bitsPerPixel >= 8)
-	vga256InfoRec.directMode = XF86DGADirectPresent;
 
   ...
 
