@@ -24,18 +24,20 @@ HEADERS=DOCBparser.h HTMLparser.h HTMLtree.h SAX.h catalog.h debugXML.h \
        xinclude.h xlink.h xmlIO.h xmlerror.h xmlmemory.h xmlversion.h \
        xmlwin32version.h xpath.h xpathInternals.h xpointer.h
         
+#TRIO_SRCS =  triostr.c trio.c
+#TRIO_OBJS =  triostr.o trio.o
+
 SRCS = SAX.c entities.c encoding.c error.c parserInternals.c  \
        parser.c tree.c hash.c list.c xmlIO.c xmlmemory.c uri.c  \
        valid.c xlink.c HTMLparser.c HTMLtree.c debugXML.c xpath.c  \
        xpointer.c xinclude.c nanohttp.c nanoftp.c DOCBparser.c \
-       catalog.c globals.c threads.c triostr.c trio.c
-
+       catalog.c globals.c threads.c $(TRIO_SRCS)
 
 OBJS = SAX.o entities.o encoding.o error.o parserInternals.o  \
        parser.o tree.o hash.o list.o xmlIO.o xmlmemory.o uri.o  \
        valid.o xlink.o HTMLparser.o HTMLtree.o debugXML.o xpath.o  \
        xpointer.o xinclude.o nanohttp.o nanoftp.o DOCBparser.o \
-       catalog.o globals.o threads.o triostr.o trio.o
+       catalog.o globals.o threads.o $(TRIO_OBJS)
 
 #include <Library.tmpl>
 
