@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.8 1999/01/26 05:53:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.9 1999/01/31 12:21:40 dawes Exp $ */
 
 /*
  *
@@ -28,6 +28,8 @@
 
 #include "xf86Module.h"
 #include "xf86Opt.h"
+
+#include "Xproto.h"
 
 static MODULESETUPPROTO(extmodSetup);
 
