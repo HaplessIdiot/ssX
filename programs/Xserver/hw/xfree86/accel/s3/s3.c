@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.98 1995/08/05 11:52:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.99 1995/08/13 09:43:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1795,11 +1795,12 @@ s3Probe()
 	    pixMuxMinClock = 67500;
 	 }
 	 else if (S3_864_SERIES(s3ChipId)) {
-	    nonMuxMaxClock = 100000;
+	    nonMuxMaxClock =  80000; /* was 100000, but that is too high for
+					some cards */
 	    pixMuxMinClock =  67500;
 	 }
 	 else if (S3_805_I_SERIES(s3ChipId)) {
-	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
+	    nonMuxMaxClock = 80000;  /* XXXX just a guess, who has 805i docs? */
 	    pixMuxMinClock = 67500;
 	 }
 	 else {

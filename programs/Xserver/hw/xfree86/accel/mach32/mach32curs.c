@@ -1,6 +1,6 @@
 /*
  * $XConsortium: mach32curs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.4 1995/04/09 13:45:09 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.5 1995/07/07 15:38:46 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -216,8 +216,12 @@ mach32RealizeCursor(pScr, pCurs)
 
   for(i = 0; i < h; i++) {
       *ram++ = 0xaaaa;
-      for(j = 1; j < w; j++)
-	  *ram++ = cursor_mask[*pServMsk++] | cursor_lookup[*pServSrc++];
+      for(j = 1; j < w; j++) {
+	  *ram++ = cursor_mask[*pServMsk] |
+		   cursor_lookup[*pServSrc & *pServMsk];
+	  pServMsk++;
+	  pServSrc++;
+      }
       for(; j < MACH32_CURSMAX / 8; j++)
 	  *ram++ = 0xaaaa;
   }

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.2 1995/01/21 07:21:05 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.3 1995/05/07 12:28:07 dawes Exp $
  */
 
 /*
@@ -207,6 +207,62 @@ typedef struct {
 #define	SAVELINES		64      /* default # lines to save      */
 #define SCROLLLINES 1			/* default # lines to scroll    */
 
+/***====================================================================***/
+
+#define	TEXT_FG		0
+#define	TEXT_BG		1
+#define	TEXT_CURSOR	2
+#define	MOUSE_FG	3
+#define	MOUSE_BG	4
+#define	TEK_FG		5
+#define	TEK_BG		6
+#define	NCOLORS		7
+
+#define	COLOR_DEFINED(s,w)	((s)->which&(1<<(w)))
+#define	COLOR_VALUE(s,w)	((s)->colors[w])
+#define	SET_COLOR_VALUE(s,w,v)	(((s)->colors[w]=(v)),((s)->which|=(1<<(w))))
+
+#define	COLOR_NAME(s,w)		((s)->names[w])
+#define	SET_COLOR_NAME(s,w,v)	(((s)->names[w]=(v)),((s)->which|=(1<<(w))))
+
+#define	UNDEFINE_COLOR(s,w)	((s)->which&=(~((w)<<1)))
+#define	OPPOSITE_COLOR(n)	(((n)==TEXT_FG?TEXT_BG:\
+				 ((n)==TEXT_BG?TEXT_FG:\
+				 ((n)==MOUSE_FG?MOUSE_BG:\
+				 ((n)==MOUSE_BG?MOUSE_FG:\
+				 ((n)==TEK_FG?TEK_BG:\
+				 ((n)==TEXT_BG?TEK_FG:(n))))))))
+
+typedef struct {
+	unsigned	which;
+	Pixel		colors[NCOLORS];
+	char		*names[NCOLORS];
+} ScrnColors;
+
+/***====================================================================***/
+
+#define MAXCOLORS 18
+#define COLOR_0		0
+#define COLOR_1		1
+#define COLOR_2		2
+#define COLOR_3		3
+#define COLOR_4		4
+#define COLOR_5		5
+#define COLOR_6		6
+#define COLOR_7		7
+#define COLOR_8		8
+#define COLOR_9		9
+#define COLOR_10	10
+#define COLOR_11	11
+#define COLOR_12	12
+#define COLOR_13	13
+#define COLOR_14	14
+#define COLOR_15	15
+#define COLOR_BD	16
+#define COLOR_UL	17
+
+
+
 typedef struct {
 /* These parameters apply to both windows */
 	Display		*display;	/* X display for screen		*/
@@ -231,6 +287,10 @@ typedef struct {
 	Pixel		cursorcolor;	/* Cursor color			*/
 	Pixel		mousecolor;	/* Mouse color			*/
 	Pixel		mousecolorback;	/* Mouse color background	*/
+	Pixel		colors[MAXCOLORS]; /* ANSI color emulation	*/
+	Boolean		colorMode;	/* are we using color mode?	*/
+	Boolean		colorULMode;	/* use color for underline?	*/
+	Boolean		colorBDMode;	/* use color for bold?		*/
 	int		border;		/* inner border			*/
 	Cursor		arrow;		/* arrow cursor			*/
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
@@ -324,6 +384,7 @@ typedef struct {
 	int		refresh_amt;	/* amount to refresh		*/
 	Boolean		jumpscroll;	/* whether we should jumpscroll */
 	Boolean         always_highlight; /* whether to highlight cursor */
+	Boolean		underline;	/* whether to underline text	*/
 
 /* Tektronix window parameters */
 	GC		TnormalGC;	/* normal painting		*/
@@ -429,6 +490,7 @@ typedef struct _Misc {
     Boolean open_im;
     Boolean shared_ic;
 #endif
+    Boolean dynamicColors;
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;
@@ -460,6 +522,8 @@ typedef struct _XtermWidgetRec {
     TKeyboard	keyboard;	/* terminal keyboard		*/
     TScreen	screen;		/* terminal screen		*/
     unsigned	flags;		/* mode flags			*/
+    unsigned    cur_foreground;	/* current foreground color	*/
+    unsigned    cur_background;	/* current background color	*/
     unsigned	initflags;	/* initial mode flags		*/
     Tabs	tabs;		/* tabstops of the terminal	*/
     Misc	misc;		/* miscellaneous parameters	*/
@@ -481,7 +545,7 @@ typedef struct _TekWidgetRec {
  * term->flags and screen->save_modes.  This need only fit in an unsigned.
  */
 
-#define	ATTRIBUTES	0x07	/* mask: user-visible attributes */
+#define	ATTRIBUTES	0x67	/* mask: user-visible attributes */
 /* global flags and character flags (visible character attributes) */
 #define INVERSE		0x01	/* invert the characters to be output */
 #define UNDERLINE	0x02	/* true if underlining */
@@ -499,6 +563,9 @@ typedef struct _TekWidgetRec {
 				   screen.  Used to distinguish blanks from
 				   empty parts of the screen when selecting */
 /* global flags */
+#define BG_COLOR	0x20  /* true if background set */
+#define FG_COLOR	0x40  /* true if foreground set */
+
 #define WRAPAROUND	0x400	/* true if auto wraparound mode */
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */
 #define REVERSE_VIDEO	0x1000	/* true if screen white on black */

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.6 1995/07/07 15:47:23 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.7 1995/07/15 15:15:30 dawes Exp $
  */
 
 /*
@@ -101,6 +101,7 @@ in this Software without prior written authorization from the X Consortium.
 
 extern jmp_buf VTend;
 
+extern XtAppContext app_con;
 extern Widget toplevel;
 extern void exit();
 extern char *malloc();
@@ -169,6 +170,29 @@ static void bitset(), bitclr();
 #define XtNtiteInhibit "titeInhibit"
 #define XtNvisualBell "visualBell"
 #define XtNallowSendEvents "allowSendEvents"
+#define XtNcolor0 "color0"
+#define XtNcolor1 "color1"
+#define XtNcolor2 "color2"
+#define XtNcolor3 "color3"
+#define XtNcolor4 "color4"
+#define XtNcolor5 "color5"
+#define XtNcolor6 "color6"
+#define XtNcolor7 "color7"
+#define XtNcolor8 "color8"
+#define XtNcolor9 "color9"
+#define XtNcolor10 "color10"
+#define XtNcolor11 "color11"
+#define XtNcolor12 "color12"
+#define XtNcolor13 "color13"
+#define XtNcolor14 "color14"
+#define XtNcolor15 "color15"
+#define XtNcolorBD "colorBD"
+#define XtNcolorUL "colorUL"
+#define XtNcolorMode "colorMode"
+#define XtNcolorULMode "colorULMode"
+#define XtNcolorBDMode "colorBDMode"
+#define XtNdynamicColors "dynamicColors"
+#define XtNunderLine "underLine"
 
 #define XtCAlwaysHighlight "AlwaysHighlight"
 #define XtCAppcursorDefault "AppcursorDefault"
@@ -210,6 +234,9 @@ static void bitset(), bitclr();
 #define XtCTiteInhibit "TiteInhibit"
 #define XtCVisualBell "VisualBell"
 #define XtCAllowSendEvents "AllowSendEvents"
+#define XtCColorMode "ColorMode"
+#define XtCDynamicColors "DynamicColors"
+#define XtCUnderLine "UnderLine"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
@@ -254,6 +281,7 @@ extern void HandleScrollBack();
 extern void HandleCreateMenu(), HandlePopupMenu();
 extern void HandleSetFont();
 extern void SetVTFont();
+extern void ViButton(), DiredButton();
 
 extern Boolean SendMousePosition();
 extern void ScrnSetAttributes();
@@ -368,6 +396,8 @@ static XtActionsRec actionsList[] = {
     { "tek-reset",		HandleTekReset },
     { "tek-copy",		HandleTekCopy },
     { "visual-bell",		HandleVisualBell },
+    { "dired-button",		DiredButton },
+    { "vi-button",		ViButton },
 };
 
 static XtResource resources[] = {
@@ -546,6 +576,75 @@ static XtResource resources[] = {
                 XtOffsetOf(XtermWidgetRec, misc.open_im),
                 XtRImmediate, (XtPointer)TRUE},
 #endif
+{XtNcolor0, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_0]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor1, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_1]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor2, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_2]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor3, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_3]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor4, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_4]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor5, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_5]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor6, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_6]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor7, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_7]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor8, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_8]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor9, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_9]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor10, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_10]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor11, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_11]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor12, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_12]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor13, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_13]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor14, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_14]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolor15, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_15]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolorBD, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_BD]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolorUL, XtCForeground, XtRPixel, sizeof(Pixel),
+	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_UL]),
+	XtRString, "XtDefaultForeground"},
+{XtNcolorMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.colorMode),
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNcolorULMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.colorULMode),
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNcolorBDMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.colorBDMode),
+	XtRBoolean, (XtPointer) &defaultFALSE},
+{XtNdynamicColors, XtCDynamicColors, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, misc.dynamicColors),
+	XtRBoolean, (XtPointer) &defaultTRUE},
+{XtNunderLine, XtCUnderLine, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, screen.underline),
+	XtRBoolean, (XtPointer) &defaultTRUE},
 };
 
 static void VTClassInit();
@@ -624,13 +723,17 @@ static void VTparse()
 			}
 			if(screen->curss) {
 				dotext(screen, term->flags,
-				 screen->gsets[screen->curss], bptr, bptr + 1);
+				 screen->gsets[screen->curss], bptr, bptr + 1,
+					term->cur_foreground,
+					term->cur_background );
 				screen->curss = 0;
 				bptr++;
 			}
 			if(bptr < cp)
 				dotext(screen, term->flags,
-				 screen->gsets[screen->curgl], bptr, cp);
+				 screen->gsets[screen->curgl], bptr, cp,
+					term->cur_foreground,
+					term->cur_background );
 			bptr = cp;
 			break;
 
@@ -681,7 +784,7 @@ static void VTparse()
 			Index(screen, 1);
 			if (term->flags & LINEFEED)
 				CarriageReturn(screen);
-			if (QLength(screen->display) > 0 ||
+			if (QLength(screen->display) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -924,17 +1027,71 @@ static void VTparse()
 				switch (param[row]) {
 				 case DEFAULT:
 				 case 0:
-					term->flags &= ~(INVERSE|BOLD|UNDERLINE);
+					term->flags &=
+						~(INVERSE|BOLD|UNDERLINE|FG_COLOR|BG_COLOR);
 					break;
 				 case 1:
 				 case 5:	/* Blink, really.	*/
 					term->flags |= BOLD;
+					if( screen->colorMode && 
+					    screen->colorBDMode) {
+					  if (!(term->flags & FG_COLOR) ||
+				              (term->cur_foreground==COLOR_UL)){
+					    term->flags |= FG_COLOR;
+					    term->cur_foreground = COLOR_BD;
+					  }
+					  else   /* Set highlight bit */
+                                            if (term->cur_foreground < 8)
+                                              term->cur_foreground |= 8;
+					}
 					break;
 				 case 4:	/* Underscore		*/
 					term->flags |= UNDERLINE;
+					if( screen->colorMode && 
+					    screen->colorULMode) {
+                                          if (!(term->flags & FG_COLOR)) {
+                                            term->flags |= FG_COLOR;
+                                            term->cur_foreground = COLOR_UL;
+					  }
+                                        }
 					break;
 				 case 7:
 					term->flags |= INVERSE;
+					break;
+				 case 30:
+				 case 31:
+				 case 32:
+				 case 33:
+				 case 34:
+				 case 35:
+				 case 36:
+				 case 37:
+					if( screen->colorMode ) {
+					  term->flags |= FG_COLOR;
+					  term->cur_foreground = param[row]-30;
+			                  /* Set highlight bit if bold on */
+					  if (term->flags & BOLD)
+       					    term->cur_foreground |= 8;
+					}
+					break;
+				 case 40:
+				 case 41:
+				 case 42:
+				 case 43:
+				 case 44:
+				 case 45:
+				 case 46:
+				 case 47:
+					if( screen->colorMode ) {
+					  term->flags |= BG_COLOR;
+					  term->cur_background = param[row]-40;
+					}
+					break;
+				 case 100:
+					if( screen->colorMode ) {
+					  term->flags &= ~(FG_COLOR|BG_COLOR);
+					}
+					break;
 				}
 			}
 			parsestate = groundtable;
@@ -1033,9 +1190,9 @@ static void VTparse()
 			if(screen->cursor_state)
 				HideCursor();
 			for(row = screen->max_row ; row >= 0 ; row--) {
-				bzero(screen->buf[2 * row + 1],
+				bzero(screen->buf[4 * row + 1],
 				 col = screen->max_col + 1);
-				for(cp = (unsigned char *)screen->buf[2 * row] ; col > 0 ; col--)
+				for(cp = (unsigned char *)screen->buf[4 * row] ; col > 0 ; col--)
 					*cp++ = (unsigned char) 'E';
 			}
 			ScrnRefresh(screen, 0, 0, screen->max_row + 1,
@@ -1077,7 +1234,7 @@ static void VTparse()
 		 case CASE_IND:
 			/* IND */
 			Index(screen, 1);
-			if (QLength(screen->display) > 0 ||
+			if (QLength(screen->display) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -1088,7 +1245,7 @@ static void VTparse()
 			Index(screen, 1);
 			CarriageReturn(screen);
 			
-			if (QLength(screen->display) > 0 ||
+			if (QLength(screen->display) ||
 			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
@@ -1492,9 +1649,9 @@ in_put()
  * by charset.  worry about end of line conditions (wraparound if selected).
  */
 static void
-dotext(screen, flags, charset, buf, ptr)
+dotext(screen, flags, charset, buf, ptr, fg, bg )
     register TScreen	*screen;
-    unsigned	flags;
+    unsigned	flags, fg, bg;
     char	charset;
     char	*buf;		/* start of characters to process */
     char	*ptr;		/* end */
@@ -1543,7 +1700,7 @@ dotext(screen, flags, charset, buf, ptr)
 		if (len < n)
 			n = len;
 		next_col = screen->cur_col + n;
-		WriteText(screen, ptr, n, flags);
+		WriteText(screen, ptr, n, flags, fg, bg );
 		/*
 		 * the call to WriteText updates screen->cur_col.
 		 * If screen->cur_col != next_col, we must have
@@ -1560,16 +1717,21 @@ dotext(screen, flags, charset, buf, ptr)
  * the current cursor position.  update cursor position.
  */
 static void
-WriteText(screen, str, len, flags)
+WriteText(screen, str, len, flags, fg, bg )
     register TScreen	*screen;
     register char	*str;
     register int	len;
-    unsigned		flags;
+    unsigned		flags, fg, bg;
 {
 	register int cx, cy;
 	register unsigned fgs = flags;
+	register Pixel fg_pix, bg_pix;
 	GC	currentGC;
  
+	fg_pix = (fgs&FG_COLOR) ? screen->colors[fg] : screen->foreground;
+	bg_pix = (fgs&BG_COLOR) ? screen->colors[bg] :
+		term->core.background_pixel;
+
    if(screen->cur_row - screen->topline <= screen->max_row) {
 	/*
 	if(screen->cur_row == screen->cursor_row && screen->cur_col <=
@@ -1583,14 +1745,23 @@ WriteText(screen, str, len, flags)
 	 *	make sure that the correct GC is current
 	 */
 
-	if (fgs & BOLD)
-		if (fgs & INVERSE)
+	if (fgs & INVERSE)
+	{
+		if (fgs & BOLD)
 			currentGC = screen->reverseboldGC;
-		else	currentGC = screen->normalboldGC;
-	else  /* not bold */
-		if (fgs & INVERSE)
-			currentGC = screen->reverseGC;
-		else	currentGC = screen->normalGC;
+		else	currentGC = screen->reverseGC;
+
+		XSetForeground(screen->display, currentGC, bg_pix);
+		XSetBackground(screen->display, currentGC, fg_pix);
+	} else {
+		if (fgs & BOLD)
+			currentGC = screen->normalboldGC;
+		else  /* not bold */
+			currentGC = screen->normalGC;
+
+		XSetForeground(screen->display, currentGC, fg_pix);
+		XSetBackground(screen->display, currentGC, bg_pix);
+	}
 
 	if (fgs & INSERT)
 		InsertChar(screen, len);
@@ -1607,7 +1778,7 @@ WriteText(screen, str, len, flags)
 			XDrawString(screen->display, TextWindow(screen),
 			      	currentGC,cx + 1, cy, str, len);
 
-	if(fgs & UNDERLINE) 
+	if((fgs & UNDERLINE) && screen->underline) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			cx, cy+1,
 			cx + len * FontWidth(screen), cy+1);
@@ -1620,7 +1791,7 @@ WriteText(screen, str, len, flags)
 	++ntotal;
       }
     }
-	ScreenWrite(screen, str, flags, len);
+	ScreenWrite(screen, str, flags,  fg, bg, len);
 	CursorForward(screen, len);
 }
  
@@ -2164,12 +2335,12 @@ SwitchBufPtrs(screen)
     register TScreen *screen;
 {
     register int rows = screen->max_row + 1;
-    char *save [2 * MAX_ROWS];
+    char *save [4 * MAX_ROWS];
 
-    memmove( (char *)save, (char *)screen->buf, 2 * sizeof(char *) * rows);
+    memmove( (char *)save, (char *)screen->buf, 4 * sizeof(char *) * rows);
     memmove( (char *)screen->buf, (char *)screen->altbuf, 
-	  2 * sizeof(char *) * rows);
-    memmove( (char *)screen->altbuf, (char *)save, 2 * sizeof(char *) * rows);
+	  4 * sizeof(char *) * rows);
+    memmove( (char *)screen->altbuf, (char *)save, 4 * sizeof(char *) * rows);
 }
 
 VTRun()
@@ -2303,7 +2474,7 @@ static void VTallocbuf ()
     screen->allbuf = Allocate (nrows, screen->max_col + 1,
      &screen->sbuf_address);
     if (screen->scrollWidget)
-      screen->buf = &screen->allbuf[2 * screen->savelines];
+      screen->buf = &screen->allbuf[4 * screen->savelines];
     else
       screen->buf = screen->allbuf;
     return;
@@ -2364,6 +2535,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.output_eight_bits = request->screen.output_eight_bits;
    new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
+   new->misc.dynamicColors = request->misc.dynamicColors;
    for (i = fontMenu_font1; i <= fontMenu_lastBuiltin; i++) {
        new->screen.menu_font_names[i] = request->screen.menu_font_names[i];
    }
@@ -2372,6 +2544,14 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.menu_font_names[fontMenu_fontescape] = NULL;
    new->screen.menu_font_names[fontMenu_fontsel] = NULL;
    new->screen.menu_font_number = fontMenu_fontdefault;
+
+   new->screen.colorMode = request->screen.colorMode;
+   new->screen.colorULMode = request->screen.colorULMode;
+   new->screen.colorBDMode = request->screen.colorBDMode;
+   new->screen.underline = request->screen.underline;
+   for (i = 0; i < MAXCOLORS; i++) {
+       new->screen.colors[i] = request->screen.colors[i];
+   }
 
     /*
      * The definition of -rv now is that it changes the definition of 
@@ -2410,7 +2590,6 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    /* make sure that the resize gravity acceptable */
    if ( new->misc.resizeGravity != NorthWestGravity &&
         new->misc.resizeGravity != SouthWestGravity) {
-       extern XtAppContext app_con;
        Cardinal nparams = 1;
 
        XtAppWarningMsg(app_con, "rangeError", "resizeGravity", "XTermError",
@@ -2567,7 +2746,7 @@ static void VTRealize (w, valuemask, values)
 	/* Reset variables used by ANSI emulation. */
 
 	screen->gsets[0] = 'B';			/* ASCII_G		*/
-	screen->gsets[1] = 'B';
+	screen->gsets[1] = '0';			/* line drawing		*/
 	screen->gsets[2] = 'B';			/* DEC supplemental.	*/
 	screen->gsets[3] = 'B';
 	screen->curgl = 0;			/* G0 => GL.		*/
@@ -2801,7 +2980,7 @@ ShowCursor()
 
 	if (screen->cur_row - screen->topline > screen->max_row)
 		return;
-	c = screen->buf[y = 2 * (screen->cursor_row = screen->cur_row)]
+	c = screen->buf[y = 4 * (screen->cursor_row = screen->cur_row)]
 	 [x = screen->cursor_col = screen->cur_col];
 	flags = screen->buf[y + 1][x];
 	if (c == 0)
@@ -2841,6 +3020,26 @@ ShowCursor()
 			}
 		    }
 		}
+#if 0
+ /*RFB*/
+ if ( flags & BG_COLOR )
+ 	XSetForeground( screen->display, currentGC,
+ 		screen->colors[ term->cur_background ]);
+ if ( flags & FG_COLOR )
+ 	XSetBackground( screen->display, currentGC,
+ 		screen->colors[ term->cur_foreground ]);
+ /**********************************************************/
+ /*                                                        */
+ /*  we test "flags and background" before calling         */
+ /*  XSetForeground;                                       */
+ /*                                                        */
+ /*  it looks funny, but we're in reverse video and the    */
+ /*  color we're setting it to is the current background   */
+ /*  color!                                                */
+ /*                                                        */
+ /**********************************************************/
+ /*RFB*/
+#endif
 	} else { /* not selected */
 		if (( (flags & INVERSE) && !in_selection) ||
 		    (!(flags & INVERSE) &&  in_selection)) {
@@ -2849,7 +3048,16 @@ ShowCursor()
 		} else { /* normal video */
 			currentGC = screen->normalGC;
 		}
-	    
+#if 0
+ /*RFB*/
+ if ( flags & FG_COLOR )
+ 	XSetForeground( screen->display, currentGC,
+ 		screen->colors[ term->cur_foreground ]);
+ if ( flags & BG_COLOR )
+ 	XSetBackground( screen->display, currentGC,
+ 		screen->colors[ term->cur_background ]);
+ /*RFB*/
+#endif
 	}
 
 	x = CursorX (screen, screen->cur_col);
@@ -2861,7 +3069,7 @@ ShowCursor()
 	if((flags & BOLD) && screen->enbolden) /* no bold font */
 		XDrawString(screen->display, TextWindow(screen), currentGC,
 			x + 1, y, (char *) &c, 1);
-	if(flags & UNDERLINE) 
+	if((flags & UNDERLINE) && screen->underline) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
 	if (!screen->select && !screen->always_highlight) {
@@ -2882,14 +3090,22 @@ HideCursor()
 {
 	register TScreen *screen = &term->screen;
 	GC	currentGC;
-	register int x, y, flags;
+	register int x, y, flags, fg, bg;
+		register Pixel fg_pix, bg_pix;
 	char c;
 	Boolean	in_selection;
 
 	if(screen->cursor_row - screen->topline > screen->max_row)
 		return;
-	c = screen->buf[y = 2 * screen->cursor_row][x = screen->cursor_col];
+	c = screen->buf[y = 4 * screen->cursor_row][x = screen->cursor_col];
 	flags = screen->buf[y + 1][x];
+	fg = screen->buf[y + 2][x];
+	bg = screen->buf[y + 3][x];
+
+        fg_pix = (flags&FG_COLOR) ?
+                  screen->colors[fg] : screen->foreground;
+        bg_pix = (flags&BG_COLOR) ?
+                  screen->colors[bg] : term->core.background_pixel;
 
 	if (screen->cursor_row > screen->endHRow ||
 	    (screen->cursor_row == screen->endHRow &&
@@ -2908,12 +3124,20 @@ HideCursor()
 		} else {
 			currentGC = screen->reverseGC;
 		}
+
+		XSetForeground(screen->display, currentGC, bg_pix);
+		XSetBackground(screen->display, currentGC, fg_pix);
+
 	} else {
 		if(flags & BOLD) {
 			currentGC = screen->normalboldGC;
 		} else {
 			currentGC = screen->normalGC;
 		}
+
+		XSetForeground(screen->display, currentGC, fg_pix);
+		XSetBackground(screen->display, currentGC, bg_pix);
+
 	}
 
 	if (c == 0)
@@ -2927,7 +3151,7 @@ HideCursor()
 	if((flags & BOLD) && screen->enbolden)
 		XDrawString(screen->display, TextWindow(screen), currentGC,
 			x + 1, y, &c, 1);
-	if(flags & UNDERLINE) 
+	if((flags & UNDERLINE) && screen->underline) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
 	screen->cursor_state = OFF;
@@ -2948,7 +3172,7 @@ VTReset(full)
 		update_appcursor();
 		update_appkeypad();
 		screen->gsets[0] = 'B';
-		screen->gsets[1] = 'B';
+		screen->gsets[1] = '0';
 		screen->gsets[2] = 'B';
 		screen->gsets[3] = 'B';
 		screen->curgl = 0;
@@ -2977,7 +3201,7 @@ VTReset(full)
 			        * (screen->max_row + 1) + 2 * screen->border,
 			    &junk, &junk);
 			XSync(screen->display, FALSE);	/* synchronize */
-			if(QLength(screen->display) > 0)
+			if(QLength(screen->display))
 				xevents();
 		}
 		CursorSet(screen, 0, 0, term->flags);

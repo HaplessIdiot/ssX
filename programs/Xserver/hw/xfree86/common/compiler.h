@@ -1,5 +1,5 @@
 /* $XConsortium: compiler.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.1 1994/07/24 11:49:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.3 1995/01/28 17:03:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -261,6 +261,12 @@ inl(port)
 #  endif
 # endif
 # include <sys/inline.h>
+# pragma asm partial_optimization outl
+# pragma asm partial_optimization outw
+# pragma asm partial_optimization outb
+# pragma asm partial_optimization inl
+# pragma asm partial_optimization inw
+# pragma asm partial_optimization inb
 #endif
 #endif
 

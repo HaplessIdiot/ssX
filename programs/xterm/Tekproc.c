@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.2 1995/06/29 13:34:35 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.3 1995/07/07 15:47:20 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1529,6 +1529,53 @@ void TekSetFontSize (newitem)
     screen->cur.fontsize = newsize;
     set_tekfont_menu_item (newsize, TRUE);
     if (!Ttoggled) TCursorToggle(TOGGLE);
+}
+
+void
+ChangeTekColors(screen,pNew)
+register TScreen *screen;
+ScrnColors *pNew;
+{
+	register int i;
+	XGCValues gcv;
+
+
+	if (COLOR_DEFINED(pNew,TEK_FG)) {
+	    screen->Tforeground=	COLOR_VALUE(pNew,TEK_FG);
+	    XSetForeground(screen->display,screen->TnormalGC,
+					   screen->Tforeground);
+	}
+	if (COLOR_DEFINED(pNew,TEK_BG)) {
+	    screen->Tbackground=	COLOR_VALUE(pNew,TEK_BG);
+	    XSetBackground(screen->display,screen->TnormalGC,
+					   screen->Tbackground);
+	}
+
+
+	if (tekWidget) {
+	    if (tekWidget->core.border_pixel == screen->Tbackground) {
+		tekWidget->core.border_pixel = screen->Tforeground;
+		tekWidget->core.parent->core.border_pixel =
+		  screen->Tforeground;
+		if (tekWidget->core.parent->core.window)
+		  XSetWindowBorder (screen->display,
+				    tekWidget->core.parent->core.window,
+				    tekWidget->core.border_pixel);
+	    }
+	}
+
+	for(i = 0 ; i < TEKNUMLINES ; i++) {
+		XSetForeground(screen->display, screen->linepat[i],
+		 screen->Tforeground);
+	}
+
+	screen->Tcursorcolor = screen->Tforeground;
+
+	gcv.plane_mask = screen->xorplane = (screen->Tbackground ^
+					     screen->Tcursorcolor);
+	XChangeGC (screen->display, screen->TcursorGC, GCPlaneMask, &gcv);
+	TekBackground(screen);
+	return;
 }
 
 TekReverseVideo(screen)

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.3 1995/04/09 13:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.4 1995/07/07 15:39:02 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -209,8 +209,12 @@ mach64RealizeCursor(pScr, pCurs)
       w = MACH64_CURSMAX / 8;
 
   for(i = 0; i < h; i++) {
-      for(j = 0; j < w; j++)
-	  *ram++ = cursor_mask[*pServMsk++] | cursor_lookup[*pServSrc++];
+      for(j = 0; j < w; j++) {
+	  *ram++ = cursor_mask[*pServMsk] |
+		   cursor_lookup[*pServSrc & *pServMsk];
+	  pServMsk++;
+	  pServSrc++;
+      }
       for(; j < MACH64_CURSMAX / 8; j++)
 	  *ram++ = 0xaaaa;
   }

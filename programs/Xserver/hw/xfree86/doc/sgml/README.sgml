@@ -751,8 +751,10 @@ XFree86 Project has been provided from its proceeds.
   <item>  STB Systems
   <item>  Clifford M Stein
   <item>  Joel Storm 
-  <item>  S.u.S.E, GmbH, Fuerth, Germany
-  <item>  Tekelec Airtronic GmbH, Muenchen, Germany
+  <item>  <url url="http://www.suse.de"
+	name="S.u.S.E. GmbH">, Fuerth, Germany
+  <item>  <url url="http://www.tekelec.com"
+	name="Tekelec Airtronic GmbH">, Muenchen, Germany
   <item>  Jim Tsillas
   <item>  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
   <item>  Unifix Software GmbH, Braunschweig, Germany
@@ -918,7 +920,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.31 1995/08/05 11:53:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.32 1995/08/06 03:01:35 dawes Exp $
 </verb>
 
 </article>

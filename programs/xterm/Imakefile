@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.62 94/04/10 16:02:56 rws Exp $
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.1 1994/06/05 06:02:03 dawes Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.2 1995/01/21 07:20:51 dawes Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -112,6 +112,7 @@ NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,$(TERMCAPLIB))
 InstallProgramWithFlags(resize,$(BINDIR),NullParameter)
 
 InstallAppDefaults(XTerm)
+InstallAppDefaultsLong(XTerm-col,XTerm-color)
 InstallManPage(xterm,$(MANDIR))
 InstallManPage(resize,$(MANDIR))
 DependTarget()
