@@ -1,4 +1,6 @@
-XFree86 4.3.99.14 (xx October 2003)
+XFree86 4.3.99.15 (xx October 2003)
+
+XFree86 4.3.99.14 (10 October 2003)
  497. Add an xf86InitFBManagerLinear() function and implement the Linear
       allocation routines. These still fallback to XY area allocation if
       no (or the lack of) linear space is available. It assumes the driver
@@ -17934,7 +17936,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2878 2003/10/09 12:40:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2879 2003/10/09 12:44:36 alanh Exp $
 
 
 
