@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/difsutils.c,v 1.3 1998/10/25 12:47:59 dawes Exp $ */
 
 #define	XK_LATIN1
 
@@ -614,6 +614,17 @@ void
 Xfree(unsigned long *n)
 {
     fsfree(n);
+}
+
+pointer
+Xcalloc(unsigned long n)
+{
+    pointer ret;
+
+    ret = fsalloc(n);
+    if (ret && n)
+	bzero(ret, n);
+    return ret;
 }
 
 int
