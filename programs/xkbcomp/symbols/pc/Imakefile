@@ -1,11 +1,11 @@
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.13 2003/10/04 10:25:14 pascal Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/pc/Imakefile,v 1.14 2003/12/09 00:10:39 dawes Exp $
 XCOMM
 
      DATAFILES = al am ar \
 		be ben bg br by \
 		cz cz_qwerty \
-		de dev dk dvorak \
+		de dev dk dvorak dz \
 		ee el en_US es \
 		fi fr fr-latin9 \
 		gb ge_la ge_ru guj gur \
