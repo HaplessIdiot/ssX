@@ -1,5 +1,5 @@
 /* $XConsortium: window.c /main/199 1995/09/22 10:22:27 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.1 1996/05/06 05:56:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.2 1996/06/10 09:11:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -3559,14 +3559,14 @@ DrawLogo(pWin)
     fore[1] = FillSolid;
     fmask = GCForeground|GCFillStyle;
     if (pWin->backgroundState == BackgroundPixel) {
-	back[0] = pWin->background.pixel;
+	back[0] = (pointer)pWin->background.pixel;
 	back[1] = FillSolid;
 	bmask = GCForeground|GCFillStyle;
     } else {
 	back[0] = 0;
 	back[1] = 0;
-	(void)DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, back, 0);
-	back[0] = FillTiled;
+	(void)DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, (XID *)back, 0);
+	back[0] = (pointer)FillTiled;
 	back[1] = pWin->background.pixmap;
 	bmask = GCFillStyle|GCTile;
     }
