@@ -26,7 +26,7 @@
  *           David Thomas <davtom@dream.org.uk>. 
  *           Xavier Ducoin <x.ducoin@lectra.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.3 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.4 2002/01/10 19:05:43 eich Exp $ */
 
 
 /* Definitions for the SIS engine communication. */
@@ -83,7 +83,7 @@
 
 /* TW: BR(16)+2 = 0x8242 */
 
-int     CmdQueLen;
+static int     CmdQueLen;
 
 #define SiSIdle \
   { \
