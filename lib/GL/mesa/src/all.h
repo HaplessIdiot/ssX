@@ -69,6 +69,7 @@
 #endif
 
 
+#ifndef XFree86LOADER
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -76,6 +77,7 @@
 #include <string.h>
 #include <float.h>
 #include <math.h>
+#endif
 #include "GL/gl.h"
 #ifdef XFree86Server
 #include "GL/osmesa.h"
