@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.19 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.20 2002/07/05 09:19:27 alanh Exp $ */
 
 #include "win.h"
 
@@ -86,7 +86,7 @@ winQueryScreenDIBFormat (ScreenPtr pScreen, BITMAPINFOHEADER *pbmih)
 		  (BITMAPINFO*)pbmih,
 		  DIB_RGB_COLORS))
     {
-      ErrorF ("winQueryScreenDIBFormat - Second call to GetDIBits "\
+      ErrorF ("winQueryScreenDIBFormat - Second call to GetDIBits "
 	      "failed\n");
       DeleteObject (hbmp);
       return FALSE;
@@ -146,11 +146,11 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
     }
 
   /* Allocate a bitmap header and color table */
-  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+  pbmih = (BITMAPINFOHEADER*) malloc (sizeof (BITMAPINFOHEADER)
 				      + 256  * sizeof (RGBQUAD));
   if (pbmih == NULL)
     {
-      ErrorF ("winQueryRGBBitsAndMasks - xalloc failed\n");
+      ErrorF ("winQueryRGBBitsAndMasks - malloc failed\n");
       return FALSE;
     }
 
@@ -186,12 +186,12 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
   else
     {
       ErrorF ("winQueryRGBBitsAndMasks - winQueryScreenDIBFormat failed\n");
-      xfree (pbmih);
+      free (pbmih);
       fReturn = FALSE;
     }
 
   /* Free memory */
-  xfree (pbmih);
+  free (pbmih);
 
   return fReturn;
 }
@@ -217,11 +217,11 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   pScreenPriv->hdcShadow = CreateCompatibleDC (pScreenPriv->hdcScreen);
 
   /* Allocate bitmap info header */
-  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+  pbmih = (BITMAPINFOHEADER*) malloc (sizeof (BITMAPINFOHEADER)
 				      + 256 * sizeof (RGBQUAD));
   if (pbmih == NULL)
     {
-      ErrorF ("winAllocateFBShadowGDI - xalloc () failed\n");
+      ErrorF ("winAllocateFBShadowGDI - malloc () failed\n");
       return FALSE;
     }
 
@@ -336,8 +336,12 @@ winShadowUpdateGDI (ScreenPtr pScreen,
   static DWORD		s_dwTotalBoxes = 0;
 #endif
 
-  /* Return immediately if the app is not active and we are fullscreen */
-  if (!pScreenPriv->fActive && pScreenInfo->fFullScreen) return;
+  /*
+   * Return immediately if the app is not active
+   * and we are fullscreen, or if we have a bad display depth
+   */
+  if ((!pScreenPriv->fActive && pScreenInfo->fFullScreen)
+      || pScreenPriv->fBadDepth) return;
 
 #if WIN_UPDATE_STATS
   ++s_dwTotalUpdates;
@@ -478,7 +482,7 @@ winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
   pScreenInfo->pfb = NULL;
 
   /* Free the screen privates for this screen */
-  xfree ((pointer) pScreenPriv);
+  free ((pointer) pScreenPriv);
 
   return fReturn;
 }
@@ -966,7 +970,7 @@ winCreateColormapShadowGDI (ColormapPtr pColormap)
   dwEntriesMax = pVisual->ColormapEntries;
 
   /* Allocate a Windows logical color palette with max entries */
-  lpPaletteNew = xalloc (sizeof (LOGPALETTE)
+  lpPaletteNew = malloc (sizeof (LOGPALETTE)
 			 + (dwEntriesMax - 1) * sizeof (PALETTEENTRY));
   if (lpPaletteNew == NULL)
     {
@@ -997,7 +1001,7 @@ winCreateColormapShadowGDI (ColormapPtr pColormap)
   pCmapPriv->hPalette = hpalNew;
 
   /* Free the palette initialization memory */
-  xfree (lpPaletteNew);
+  free (lpPaletteNew);
 
   return TRUE;
 }
@@ -1086,7 +1090,11 @@ winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsShadowGDI;
   pScreenPriv->pwinCreateColormap = winCreateColormapShadowGDI;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowGDI;
-  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinCreatePrimarySurface
+    = (winCreatePrimarySurfaceProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinReleasePrimarySurface
+    = (winReleasePrimarySurfaceProcPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }

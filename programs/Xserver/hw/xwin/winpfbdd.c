@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.15 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.16 2002/07/05 09:19:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -86,7 +86,7 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 						 DDSCL_FULLSCREEN
 						 | DDSCL_EXCLUSIVE);
       if (FAILED (ddrval))
-	FatalError ("winAllocateFBPrimaryDD - Could not set "\
+	FatalError ("winAllocateFBPrimaryDD - Could not set "
 		    "cooperative level\n");
 
       /* Change the video mode to the mode requested */
@@ -97,7 +97,7 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 					    pScreenInfo->dwRefreshRate,
 					    0);
        if (FAILED (ddrval))
-	FatalError ("winAllocateFBPrimaryDD - Could not set "\
+	FatalError ("winAllocateFBPrimaryDD - Could not set "
 		    "full screen display mode\n");
     }
   else
@@ -107,7 +107,7 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 						 pScreenPriv->hwndScreen,
 						 DDSCL_NORMAL);
       if (FAILED (ddrval))
-	FatalError ("winAllocateFBPrimaryDD - Could not set "\
+	FatalError ("winAllocateFBPrimaryDD - Could not set "
 		    "cooperative level\n");
     }
 
@@ -123,16 +123,16 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 				       &pScreenPriv->pddsPrimary,
 				       NULL);
   if (FAILED (ddrval))
-       FatalError ("winAllocateFBPrimaryDD - Could not create primary "\
+       FatalError ("winAllocateFBPrimaryDD - Could not create primary "
 		  "surface %08x\n", ddrval);
 
   ErrorF ("winAllocateFBPrimaryDD - Created primary\n");
 
   /* Allocate a DD surface description for our screen privates */
   pddsdPrimary = pScreenPriv->pddsdPrimary
-    = xalloc (sizeof (DDSURFACEDESC));
+    = malloc (sizeof (DDSURFACEDESC));
   if (pddsdPrimary == NULL)
-    FatalError ("winAllocateFBPrimaryDD - Could not allocate surface "\
+    FatalError ("winAllocateFBPrimaryDD - Could not allocate surface "
 		"description memory\n");
   ZeroMemory (pddsdPrimary, sizeof (*pddsdPrimary));
   pddsdPrimary->dwSize = sizeof (*pddsdPrimary);
@@ -159,16 +159,16 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 				       &pScreenPriv->pddsOffscreen,
 				       NULL);
   if (ddrval != DD_OK)
-    FatalError ("winAllocateFBPrimaryDD - Could not create shadow "\
+    FatalError ("winAllocateFBPrimaryDD - Could not create shadow "
 		"surface\n");
   
   ErrorF ("winAllocateFBPrimaryDD - Created offscreen\n");
 
   /* Allocate a DD surface description for our screen privates */
   pddsdOffscreen = pScreenPriv->pddsdOffscreen
-    = xalloc (sizeof (DDSURFACEDESC));
+    = malloc (sizeof (DDSURFACEDESC));
   if (pddsdOffscreen == NULL)
-    FatalError ("winAllocateFBPrimaryDD - Could not allocate surface "\
+    FatalError ("winAllocateFBPrimaryDD - Could not allocate surface "
 		"description memory\n");
   ZeroMemory (pddsdOffscreen, sizeof (*pddsdOffscreen));
   pddsdOffscreen->dwSize = sizeof (*pddsdOffscreen);
@@ -182,7 +182,7 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 				    DDLOCK_WAIT,
 				    NULL);
   if (ddrval != DD_OK || pddsdPrimary->lpSurface == NULL)
-    FatalError ("winAllocateFBPrimaryDD - Could not lock "\
+    FatalError ("winAllocateFBPrimaryDD - Could not lock "
 		"primary surface\n");
 
   ErrorF ("winAllocateFBPrimaryDD - Locked primary\n");
@@ -273,7 +273,7 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
   pScreenInfo->pfb = NULL;
 
   /* Free the screen privates for this screen */
-  xfree ((pointer) pScreenPriv);
+  free ((pointer) pScreenPriv);
 
   return fReturn;
 }
@@ -327,7 +327,7 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  ErrorF ("winInitVisualsPrimaryDD - " \
+	  ErrorF ("winInitVisualsPrimaryDD - " 
 		  "miSetVisualTypesAndMasks failed\n");
 	  return FALSE;
 	}
@@ -345,12 +345,12 @@ winInitVisualsPrimaryDD (ScreenPtr pScreen)
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
 	{
-	  ErrorF ("winInitVisualsPrimaryDD - "\
+	  ErrorF ("winInitVisualsPrimaryDD - "
 		  "miSetVisualTypesAndMasks failed\n");
 	  return FALSE;
 	}
 #if CYGDEBUG
-      ErrorF ("winInitVisualsPrimaryDD - Returned from "\
+      ErrorF ("winInitVisualsPrimaryDD - Returned from "
 	      "miSetVisualTypesAndMasks\n");
 #endif /* CYGDEBUG */
       break;
@@ -523,7 +523,7 @@ winHotKeyAltTabPrimaryDD (ScreenPtr pScreen)
   RECT			rcClient, rcSrc;
   HRESULT		ddrval = DD_OK;
 
-  ErrorF ("\nwinHotKeyAltTabPrimaryDD ()\n\n");
+  ErrorF ("\nwinHotKeyAltTabPrimaryDD\n\n");
 
   /* Alt+Tab was pressed, we will lose focus very soon */
   pScreenPriv->fActive = FALSE;
@@ -546,7 +546,7 @@ winHotKeyAltTabPrimaryDD (ScreenPtr pScreen)
       ddrval = IDirectDrawSurface2_Unlock (pScreenPriv->pddsPrimary,
 					   NULL);
       if (FAILED (ddrval))
-	FatalError ("winHotKeyAltTabPrimaryDD () - Failed unlocking primary "\
+	FatalError ("winHotKeyAltTabPrimaryDD - Failed unlocking primary "
 		    "surface\n");
     }
 
@@ -576,13 +576,13 @@ winHotKeyAltTabPrimaryDD (ScreenPtr pScreen)
 					DDBLT_WAIT,
 					NULL);
       if (FAILED (ddrval))
-	FatalError ("winHotKeyAltTabPrimaryDD () - Failed blitting primary "
+	FatalError ("winHotKeyAltTabPrimaryDD - Failed blitting primary "
 		    "surface to offscreen surface: %08x\n",
 		    ddrval);
     }
   else
     {
-      FatalError ("winHotKeyAltTabPrimaryDD() - Unknown error from "
+      FatalError ("winHotKeyAltTabPrimaryDD - Unknown error from "
 		  "Blt: %08dx\n", ddrval);
     }
 
@@ -594,7 +594,7 @@ winHotKeyAltTabPrimaryDD (ScreenPtr pScreen)
 				     NULL);
   if (ddrval != DD_OK
       || pScreenPriv->pddsdPrimary->lpSurface == NULL)
-    FatalError ("winHotKeyAltTabPrimaryDD () - Could not lock "\
+    FatalError ("winHotKeyAltTabPrimaryDD - Could not lock "
 		"offscreen surface\n");
 
   /* Notify FB of the new memory pointer */

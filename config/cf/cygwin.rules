@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.20 2002/10/01 14:31:36 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.21 2002/10/02 10:47:47 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -463,3 +463,19 @@ $(IMAKE) $(IMAKE).Osuf:							@@\
 	echo "okay, continuing in $(CURRENT_DIR)")
 #endif /* UseInstalled */
 #endif /* ImakeDependency */
+
+
+/*
+ * ResourceObjectRule - Build a Windows resouce file (.res) into
+ * an object file (.o) that can be linked in with the executable
+ * or library being built.
+ */
+
+#ifndef ResourceObjectRule
+#define ResourceObjectRule(basename,depends,options) 			@@\
+AllTarget(basename.RESsuf)						@@\
+basename.RESsuf: basename.RCsuf depends					@@\
+	RemoveFile($@)							@@\
+	ClearmakeOSName \
+	WindresCmd basename.RCsuf options -O coff -o basename.RESsuf
+#endif /* ResourceObjectRule */

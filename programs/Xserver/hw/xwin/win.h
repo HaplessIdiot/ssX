@@ -29,8 +29,9 @@
  *		Suhaib M Siddiqi
  *		Peter Busch
  *		Harold L Hunt II
+ *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.28 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.30 2002/07/05 09:19:25 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -64,8 +65,6 @@
 
 #define NEED_EVENTS
 
-#define WIN_DEFAULT_WIDTH			640
-#define WIN_DEFAULT_HEIGHT			480
 #define WIN_DEFAULT_BPP				0
 #define WIN_DEFAULT_WHITEPIXEL			255
 #define WIN_DEFAULT_BLACKPIXEL			0
@@ -77,6 +76,7 @@
 #define WIN_DEFAULT_UNIX_KILL			FALSE
 #define WIN_DEFAULT_CLIP_UPDATES_NBOXES		0
 #define WIN_DEFAULT_EMULATE_PSEUDO		FALSE
+#define WIN_DEFAULT_USER_GAVE_HEIGHT_AND_WIDTH	FALSE
 
 #define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
@@ -209,13 +209,13 @@ if (fDebugProcMsg) \
   \
   iLength = sprintf (NULL, str, ##__VA_ARGS__); \
   \
-  pszTemp = xalloc (iLength + 1); \
+  pszTemp = malloc (iLength + 1); \
   \
   sprintf (pszTemp, str, ##__VA_ARGS__); \
   \
   MessageBox (NULL, pszTemp, szFunctionName, MB_OK); \
   \
-  xfree (pszTemp); \
+  free (pszTemp); \
 }
 #else
 #define DEBUG_MSG(str,...)
@@ -278,7 +278,11 @@ typedef Bool (*winCreateColormapProcPtr)(ColormapPtr pColormap);
 
 typedef Bool (*winDestroyColormapProcPtr)(ColormapPtr pColormap);
 
-typedef Bool (*winHotKeyAltTabPtr)(ScreenPtr); 
+typedef Bool (*winHotKeyAltTabProcPtr)(ScreenPtr);
+
+typedef Bool (*winCreatePrimarySurfaceProcPtr)(ScreenPtr);
+
+typedef Bool (*winReleasePrimarySurfaceProcPtr)(ScreenPtr);
 
 
 /*
@@ -342,7 +346,6 @@ typedef struct
 
 #endif /* WIN_NEW_KEYBOARD_SUPPORT */
 
-
 /*
  * Screen information structure that we need before privates are available
  * in the server startup sequence.
@@ -351,9 +354,14 @@ typedef struct
 typedef struct
 {
   ScreenPtr		pScreen;
+  
+  /* Did the user specify a height and width? */
+  Bool			fUserGaveHeightAndWidth;
+
   DWORD			dwScreen;
   DWORD			dwWidth;
   DWORD			dwPaddedWidth;
+
   /*
    * dwStride is the number of whole pixels that occupy a scanline,
    * including those pixels that are not displayed.  This is basically
@@ -363,6 +371,11 @@ typedef struct
   DWORD			dwHeight;
   DWORD			dwWidth_mm;
   DWORD			dwHeight_mm;
+
+  /* Offset of the screen in the window when using scrollbars */
+  DWORD			dwXOffset;
+  DWORD			dwYOffset;
+
   DWORD			dwBPP;
   DWORD			dwDepth;
   DWORD			dwRefreshRate;
@@ -375,12 +388,17 @@ typedef struct
   Bool			fEmulatePseudo;
   Bool			fFullScreen;
   Bool			fDecoration;
+  Bool			fRootless;
   Bool			fLessPointer;
+  Bool			fScrollbars;
   int			iE3BTimeout;
   /* Windows (Alt+F4) and Unix (Ctrl+Alt+Backspace) Killkey */
   Bool                  fUseWinKillKey;
   Bool                  fUseUnixKillKey;
   Bool			fIgnoreInput;
+
+  /* Did the user explicitly set this screen? */
+  Bool			fExplicitScreen;
 } winScreenInfo, *winScreenInfoPtr;
 
 
@@ -395,6 +413,7 @@ typedef struct
   Bool			fEnabled;
   Bool			fClosed;
   Bool			fActive;
+  Bool			fBadDepth;
     
   int			iDeltaZ;
 
@@ -411,6 +430,11 @@ typedef struct
   HWND			hwndNextViewer;
   void			*display;
   int			window;
+
+  /* Last width, height, and depth of the Windows display */
+  DWORD			dwLastWindowsWidth;
+  DWORD			dwLastWindowsHeight;
+  DWORD			dwLastWindowsBitsPixel;
 
   /* Layer support */
 #if WIN_LAYER_SUPPORT
@@ -472,7 +496,26 @@ typedef struct
   winStoreColorsProcPtr			pwinStoreColors;
   winCreateColormapProcPtr		pwinCreateColormap;
   winDestroyColormapProcPtr		pwinDestroyColormap;
-  winHotKeyAltTabPtr			pwinHotKeyAltTab;
+  winHotKeyAltTabProcPtr		pwinHotKeyAltTab;
+  winCreatePrimarySurfaceProcPtr	pwinCreatePrimarySurface;
+  winReleasePrimarySurfaceProcPtr	pwinReleasePrimarySurface;
+
+  /* Window Procedures for Rootless mode */
+  CreateWindowProcPtr			CreateWindow;
+  DestroyWindowProcPtr			DestroyWindow;
+  PositionWindowProcPtr			PositionWindow;
+  ChangeWindowAttributesProcPtr		ChangeWindowAttributes;
+  RealizeWindowProcPtr			RealizeWindow;
+  UnrealizeWindowProcPtr		UnrealizeWindow;
+  ValidateTreeProcPtr			ValidateTree;
+  PostValidateTreeProcPtr		PostValidateTree;
+  WindowExposuresProcPtr		WindowExposures;
+  PaintWindowBackgroundProcPtr		PaintWindowBackground;
+  PaintWindowBorderProcPtr		PaintWindowBorder;
+  CopyWindowProcPtr			CopyWindow;
+  ClearToBackgroundProcPtr		ClearToBackground;
+  ClipNotifyProcPtr			ClipNotify;
+  RestackWindowProcPtr			RestackWindow;
 } winPrivScreenRec, *winPrivScreenPtr;
 
 
@@ -491,6 +534,8 @@ extern int			g_iPixmapPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
 extern DWORD			g_dwEnginesSupported;
+extern HINSTANCE		g_hInstance;
+extern HWND			g_hDlgDepthChange;
 
 /*
  * Extern declares for dynamically loaded libraries and function pointers
@@ -1130,6 +1175,12 @@ winCreateColormapShadowDD (ColormapPtr pColormap);
 Bool
 winDestroyColormapShadowDD (ColormapPtr pColormap);
 
+Bool
+winCreatePrimarySurfaceShadowDD (ScreenPtr pScreen);
+
+Bool
+winReleasePrimarySurfaceShadowDD (ScreenPtr pScreen);
+
 
 /*
  * winshadddnl.c
@@ -1179,6 +1230,12 @@ winCreateColormapShadowDDNL (ColormapPtr pColormap);
 
 Bool
 winDestroyColormapShadowDDNL (ColormapPtr pColormap);
+
+Bool
+winCreatePrimarySurfaceShadowDDNL (ScreenPtr pScreen);
+
+Bool
+winReleasePrimarySurfaceShadowDDNL (ScreenPtr pScreen);
 
 
 /*
@@ -1265,6 +1322,24 @@ winUnmapWindowNativeGDI (WindowPtr pWindow);
 
 Bool
 winMapWindowNativeGDI (WindowPtr pWindow);
+
+Bool
+winCreateWindowPRootless (WindowPtr pWindow);
+
+Bool
+winDestroyWindowPRootless (WindowPtr pWindow);
+
+Bool
+winPositionWindowPRootless (WindowPtr pWindow, int x, int y);
+
+Bool
+winChangeWindowAttributesPRootless (WindowPtr pWindow, unsigned long mask);
+
+Bool
+winUnmapWindowPRootless (WindowPtr pWindow);
+
+Bool
+winMapWindowPRootless (WindowPtr pWindow);
 
 
 /*

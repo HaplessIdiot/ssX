@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.21 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.22 2002/07/05 09:19:27 alanh Exp $ */
 
 #include "win.h"
 
@@ -53,6 +53,99 @@ DEFINE_GUID( IID_IDirectDraw4, 0x9c59509a,0x39bd,0x11d1,0x8c,0x4a,0x00,0xc0,0x4f
 
 
 /*
+ * Create the primary surface and attach the clipper.
+ * Used for both the initial surface creation and during
+ * WM_DISPLAYCHANGE messages.
+ */
+
+Bool
+winCreatePrimarySurfaceShadowDDNL (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  HRESULT		ddrval = DD_OK;
+  DDSURFACEDESC2	ddsd;
+
+  ErrorF ("winCreatePrimarySurfaceShadowDDNL - Creating primary surface\n");
+
+  /* Describe the primary surface */
+  ZeroMemory (&ddsd, sizeof (ddsd));
+  ddsd.dwSize = sizeof (ddsd);
+  ddsd.dwFlags = DDSD_CAPS;
+  ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+  
+  /* Create the primary surface */
+  ddrval = IDirectDraw4_CreateSurface (pScreenPriv->pdd4,
+				       &ddsd,
+				       &pScreenPriv->pddsPrimary4,
+				       NULL);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winCreatePrimarySurfaceShadowDDNL - Could not create primary "
+	      "surface: %08x\n",
+	      ddrval);
+      return FALSE;
+    }
+  
+#if 1
+  ErrorF ("winCreatePrimarySurfaceShadowDDNL - Created primary surface\n");
+#endif
+
+  /* Attach our clipper to our primary surface handle */
+  ddrval = IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
+					   pScreenPriv->pddcPrimary);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winCreatePrimarySurfaceShadowDDNL - Primary attach clipper "
+	      "failed: %08x\n",
+	      ddrval);
+      return FALSE;
+    }
+
+#if 1
+  ErrorF ("winCreatePrimarySurfaceShadowDDNL - Attached clipper to primary "
+	  "surface\n");
+#endif
+
+  /* Everything was correct */
+  return TRUE;
+}
+
+
+/*
+ * Detach the clipper and release the primary surface.
+ * Called from WM_DISPLAYCHANGE.
+ */
+
+Bool
+winReleasePrimarySurfaceShadowDDNL (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+
+  ErrorF ("winReleasePrimarySurfaceShadowDDNL - Hello\n");
+
+  /*
+   * Detach the clipper from the primary surface.
+   * NOTE: We do this explicity for clarity.  The Clipper is not released.
+   */
+  IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
+				  NULL);
+  
+  ErrorF ("winReleasePrimarySurfaceShadowDDNL - Detached clipper\n");
+
+  /* Release the primary surface, if there is one */
+  if (pScreenPriv->pddsPrimary4)
+    {
+      IDirectDrawSurface4_Release (pScreenPriv->pddsPrimary4);
+      pScreenPriv->pddsPrimary4 = NULL;
+    }
+
+  ErrorF ("winReleasePrimarySurfaceShadowDDNL - Released primary surface\n");
+  
+  return TRUE;
+}
+
+
+/*
  * Create a DirectDraw surface for the shadow framebuffer; also create
  * a primary surface object so we can blit to the display.
  * 
@@ -66,7 +159,6 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;  
   HRESULT		ddrval = DD_OK;
-  DDSURFACEDESC2	ddsdPrimary;
   DDSURFACEDESC2	ddsdShadow;
   char			*lpSurface = NULL;
   DDPIXELFORMAT		ddpfPrimary;
@@ -77,7 +169,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 #endif
 
   /* Allocate memory for our shadow surface */
-  lpSurface = xalloc (pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
+  lpSurface = malloc (pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
   if (lpSurface == NULL)
     {
       ErrorF ("winAllocateFBShadowDDNL - Could not allocate bits\n");
@@ -152,7 +244,6 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
     }
 
   /* Are we full screen? */
-  /* FIXME: If we are full screen we don't need the clipper */
   if (pScreenInfo->fFullScreen)
     {
       DDSURFACEDESC2	ddsdCurrent;
@@ -262,28 +353,13 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 	}
     }
 
-  /* Describe the primary surface */
-  ZeroMemory (&ddsdPrimary, sizeof (ddsdPrimary));
-  ddsdPrimary.dwSize = sizeof (ddsdPrimary);
-  ddsdPrimary.dwFlags = DDSD_CAPS;
-  ddsdPrimary.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-  
   /* Create the primary surface */
-  ddrval = IDirectDraw4_CreateSurface (pScreenPriv->pdd4,
-				       &ddsdPrimary,
-				       &pScreenPriv->pddsPrimary4,
-				       NULL);
-  if (FAILED (ddrval))
+  if (!winCreatePrimarySurfaceShadowDDNL (pScreen))
     {
-      ErrorF ("winAllocateFBShadowDDNL - Could not create primary "
-	      "surface: %08x\n",
-	      ddrval);
+      ErrorF ("winAllocateFBShadowDDNL - winCreatePrimarySurfaceShadowDDNL "
+	      "failed\n");
       return FALSE;
     }
-  
-#if CYGDEBUG
-  ErrorF ("winAllocateFBShadowDDNL - Created primary\n");
-#endif
 
   /* Get primary surface's pixel format */
   ZeroMemory (&ddpfPrimary, sizeof (ddpfPrimary));
@@ -305,22 +381,6 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 	  ddpfPrimary.u3.dwGBitMask,
 	  ddpfPrimary.u4.dwBBitMask,
 	  ddpfPrimary.u1.dwRGBBitCount);
-#endif
-
-  /* Attach our clipper to our primary surface handle */
-  ddrval = IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
-					   pScreenPriv->pddcPrimary);
-  if (FAILED (ddrval))
-    {
-      ErrorF ("winAllocateFBShadowDDNL - Primary attach clipper "
-	      "failed: %08x\n",
-	      ddrval);
-      return FALSE;
-    }
-
-#if CYGDEBUG
-  ErrorF ("winAllocateFBShadowDDNL - Attached clipper to primary "
-	  "surface\n");
 #endif
 
   /* Describe the shadow surface to be created */
@@ -395,19 +455,25 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   RegionPtr		damage = &pBuf->damage;
   HRESULT		ddrval = DD_OK;
-  RECT			rcClient, rcDest, rcSrc;
+  RECT			rcDest, rcSrc;
+  POINT			ptOrigin;
   DWORD			dwBox = REGION_NUM_RECTS (damage);
   BoxPtr		pBox = REGION_RECTS (damage);
   HRGN			hrgnTemp = NULL, hrgnCombined = NULL;
 
-  /* Return immediately if the app is not active and we are fullscreen */
-  if (!pScreenPriv->fActive && pScreenInfo->fFullScreen) return;
+  /*
+   * Return immediately if the app is not active
+   * and we are fullscreen, or if we have a bad display depth
+   */
+  if ((!pScreenPriv->fActive && pScreenInfo->fFullScreen)
+      || pScreenPriv->fBadDepth) return;
 
-  /* Get location of display window's client area, in screen coords */
-  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  /* Get the origin of the window in the screen coords */
+  ptOrigin.x = pScreenInfo->dwXOffset;
+  ptOrigin.y = pScreenInfo->dwYOffset;
   MapWindowPoints (pScreenPriv->hwndScreen,
 		   HWND_DESKTOP,
-		   (LPPOINT)&rcClient, 2);
+		   (LPPOINT)&ptOrigin, 1);
 
   /*
    * Handle small regions with multiple blits,
@@ -427,10 +493,10 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
 	  rcSrc.bottom = pBox->y2;
 	  
 	  /* Calculate destination rectangle */
-	  rcDest.left = rcClient.left + rcSrc.left;
-	  rcDest.top = rcClient.top + rcSrc.top;
-	  rcDest.right = rcClient.left + rcSrc.right;
-	  rcDest.bottom = rcClient.top + rcSrc.bottom;
+	  rcDest.left = ptOrigin.x + rcSrc.left;
+	  rcDest.top = ptOrigin.y + rcSrc.top;
+	  rcDest.right = ptOrigin.x + rcSrc.right;
+	  rcDest.bottom = ptOrigin.y + rcSrc.bottom;
 	  
 	  /* Blit the damaged areas */
 	  ddrval = IDirectDrawSurface4_Blt (pScreenPriv->pddsPrimary4,
@@ -487,10 +553,10 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
       rcSrc.bottom = pBoxExtents->y2;
 
       /* Calculating a bounding box for the destination is trickier */
-      rcDest.left = rcClient.left + rcSrc.left;
-      rcDest.top = rcClient.top + rcSrc.top;
-      rcDest.right = rcClient.left + rcSrc.right;
-      rcDest.bottom = rcClient.top + rcSrc.bottom;
+      rcDest.left = ptOrigin.x + rcSrc.left;
+      rcDest.top = ptOrigin.y + rcSrc.top;
+      rcDest.right = ptOrigin.x + rcSrc.right;
+      rcDest.bottom = ptOrigin.y + rcSrc.bottom;
 
       /* Our Blt should be clipped to the invalidated region */
       ddrval = IDirectDrawSurface4_Blt (pScreenPriv->pddsPrimary4,
@@ -541,9 +607,21 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
   if (pScreenPriv->pddsShadow4)
     {
       IDirectDrawSurface4_Release (pScreenPriv->pddsShadow4);
-      xfree (pScreenInfo->pfb);
+      free (pScreenInfo->pfb);
       pScreenInfo->pfb = NULL;
       pScreenPriv->pddsShadow4 = NULL;
+    }
+
+  /* Detach the clipper from the primary surface and release the clipper. */
+  if (pScreenPriv->pddcPrimary)
+    {
+      /* Detach the clipper */
+      IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
+				      NULL);
+
+      /* Release the clipper object */
+      IDirectDrawClipper_Release (pScreenPriv->pddcPrimary);
+      pScreenPriv->pddcPrimary = NULL;
     }
 
   /* Release the primary surface, if there is one */
@@ -579,7 +657,7 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
   pScreenInfo->pScreen = NULL;
 
   /* Free the screen privates for this screen */
-  xfree ((pointer) pScreenPriv);
+  free ((pointer) pScreenPriv);
 
   return fReturn;
 }
@@ -821,7 +899,8 @@ winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  RECT			rcClient, rcSrc;
+  RECT			rcSrc, rcDest;
+  POINT			ptOrigin;
   HDC			hdcUpdate;
   PAINTSTRUCT		ps;
   HRESULT		ddrval = DD_OK;
@@ -838,20 +917,17 @@ winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
       goto winBltExposedRegionsShadowDDNL_Exit;
     }
 
-  /* Get client area in screen coords */
-  fReturn = GetClientRect (pScreenPriv->hwndScreen, &rcClient);
-  if (!fReturn)
-    {
-      fReturn = FALSE;
-      ErrorF ("winBltExposedRegionsShadowDDNL - GetClientRect () failed\n");
-      goto winBltExposedRegionsShadowDDNL_Exit;
-    }
+  /* Get the origin of the window in the screen coords */
+  ptOrigin.x = pScreenInfo->dwXOffset;
+  ptOrigin.y = pScreenInfo->dwYOffset;
 
-  /* Map the client coords to screen coords */
   MapWindowPoints (pScreenPriv->hwndScreen,
 		   HWND_DESKTOP,
-		   (LPPOINT)&rcClient,
-		   2);
+		   (LPPOINT)&ptOrigin, 1);
+  rcDest.left = ptOrigin.x;
+  rcDest.right = ptOrigin.x + pScreenInfo->dwWidth;
+  rcDest.top = ptOrigin.y;
+  rcDest.bottom = ptOrigin.y + pScreenInfo->dwHeight;
 
   /* Source can be entire shadow surface, as Blt should clip for us */
   rcSrc.left = 0;
@@ -864,7 +940,7 @@ winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
     {
       /* Our Blt should be clipped to the invalidated region */
       ddrval = IDirectDrawSurface4_Blt (pScreenPriv->pddsPrimary4,
-					&rcClient,
+					&rcDest,
 					pScreenPriv->pddsShadow4,
 					&rcSrc,
 					DDBLT_WAIT,
@@ -874,10 +950,27 @@ winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
 	  /* Surface was lost */
 	  ErrorF ("winBltExposedRegionsShadowDDNL - IDirectDrawSurface4_Blt "
 		  "reported that the primary surface was lost, "
-		  "trying to restore, retry: %d", i + 1);
+		  "trying to restore, retry: %d\n", i + 1);
 
 	  /* Try to restore the surface, once */
-	  IDirectDrawSurface4_Restore (pScreenPriv->pddsPrimary4);
+	  
+	  ddrval = IDirectDrawSurface4_Restore (pScreenPriv->pddsPrimary4);
+	  ErrorF ("winBltExposedRegionsShadowDDNL - "
+		  "IDirectDrawSurface4_Restore returned: ");
+	  if (ddrval == DD_OK)
+	    continue;
+	  else if (ddrval == DDERR_WRONGMODE)
+	    ErrorF ("DDERR_WRONGMODE\n");
+	  else if (ddrval == DDERR_INCOMPATIBLEPRIMARY)
+	    ErrorF ("DDERR_INCOMPATIBLEPRIMARY\n");
+	  else if (ddrval == DDERR_UNSUPPORTED)
+	    ErrorF ("DDERR_UNSUPPORTED\n");
+	  else if (ddrval == DDERR_INVALIDPARAMS)
+	    ErrorF ("DDERR_INVALIDPARAMS\n");
+	  else if (ddrval == DDERR_INVALIDOBJECT)
+	    ErrorF ("DDERR_INVALIDOBJECT\n");
+	  else
+	    ErrorF ("unknown error: %08x\n", ddrval);
 	  
 	  /* Loop around to try the blit one more time */
 	  continue;
@@ -940,13 +1033,19 @@ winRedrawScreenShadowDDNL (ScreenPtr pScreen)
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   HRESULT		ddrval = DD_OK;
-  RECT			rcClient, rcSrc;
+  RECT			rcSrc, rcDest;
+  POINT			ptOrigin;
 
-  /* Get location of display window's client area, in screen coords */
-  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  /* Get the origin of the window in the screen coords */
+  ptOrigin.x = pScreenInfo->dwXOffset;
+  ptOrigin.y = pScreenInfo->dwYOffset;
   MapWindowPoints (pScreenPriv->hwndScreen,
 		   HWND_DESKTOP,
-		   (LPPOINT)&rcClient, 2);
+		   (LPPOINT)&ptOrigin, 1);
+  rcDest.left = ptOrigin.x;
+  rcDest.right = ptOrigin.x + pScreenInfo->dwWidth;
+  rcDest.top = ptOrigin.y;
+  rcDest.bottom = ptOrigin.y + pScreenInfo->dwHeight;
 
   /* Source can be entire shadow surface, as Blt should clip for us */
   rcSrc.left = 0;
@@ -956,7 +1055,7 @@ winRedrawScreenShadowDDNL (ScreenPtr pScreen)
 
   /* Redraw the whole window, to take account for the new colors */
   ddrval = IDirectDrawSurface4_Blt (pScreenPriv->pddsPrimary4,
-				    &rcClient,
+				    &rcDest,
 				    pScreenPriv->pddsShadow4,
 				    &rcSrc,
 				    DDBLT_WAIT,
@@ -1169,7 +1268,9 @@ winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsShadowDDNL;
   pScreenPriv->pwinCreateColormap = winCreateColormapShadowDDNL;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowDDNL;
-  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabProcPtr) (void (*)())NoopDDA;
+  pScreenPriv->pwinCreatePrimarySurface = winCreatePrimarySurfaceShadowDDNL;
+  pScreenPriv->pwinReleasePrimarySurface = winReleasePrimarySurfaceShadowDDNL;
 
   return TRUE;
 }
