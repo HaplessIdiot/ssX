@@ -1,4 +1,8 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 125. Added changes to il (Hebrew) xkb keyboard map (#4459, Tzafrir Cohen).
+      Added new by (Belarusian) xkb keyboard map (#4460, Alexander Mikhailian).
+      Small additions to fixes A.272 to allow autorepeat control of MouseKeys
+      also in 'non-accelerated mode' (#4461, Ivan Pascal).
  124. Add ATI Rage 128 PD support (#4455, ISHIKAWA Mutsumi).
  123. Make modeline2c.pl script case-insensitive (#4453, Mike Harris).
  122. Change ATI driver to detect panel dimensions of non-PC systems using an
@@ -12400,4 +12404,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1573 2001/02/12 04:19:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1574 2001/02/12 04:24:20 tsi Exp $
