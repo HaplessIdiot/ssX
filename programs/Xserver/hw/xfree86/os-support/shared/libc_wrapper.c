@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.78 2001/08/15 08:49:50 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.79 2001/08/17 22:08:14 tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -77,11 +77,6 @@ extern int mmapFd;
 #endif
 #if !defined(ISC)
 #include <stdlib.h>
-#endif
-
-#ifdef __CYGWIN__
-#define vsscanf sscanf
-#define vfscanf fscanf
 #endif
 
 #define NEED_XF86_TYPES

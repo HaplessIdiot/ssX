@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.83 2001/07/23 13:15:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.84 2001/07/25 15:05:07 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -680,49 +680,6 @@ extern char* __XOS2RedirRoot(char*);
 #define USE_OSMOUSE
 
 #endif /* __GNU__ */
-
-/**************************************************************************/
-/* Cygwin                                                                 */
-/**************************************************************************/
-#if defined(__CYGWIN__)
-#include <signal.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <sys/param.h>
-
-/* Warning: by default, the fd_set size is 32 in QNX!  */
-#define FD_SETSIZE 256
-#include <sys/select.h>
-
-  /* keyboard types */
-# define KB_84                   1
-# define KB_101                  2
-# define KB_OTHER                3
-
-  /* LEDs */
-#  define LED_CAP 0x04
-#  define LED_NUM 0x02
-#  define LED_SCR 0x01
-
-# define POSIX_TTY
-# define OSMOUSE_ONLY
-# define MOUSE_PROTOCOL_IN_KERNEL
-
-#define TIOCM_DTR       0x0001            /* data terminal ready */
-#define TIOCM_RTS       0x0002            /* request to send */
-#define TIOCM_CTS       0x1000            /* clear to send */
-#define TIOCM_DSR       0x2000            /* data set ready */
-#define TIOCM_RI        0x4000            /* ring */
-#define TIOCM_RNG       TIOCM_RI
-#define TIOCM_CD        0x8000            /* carrier detect */
-#define TIOCM_CAR       TIOCM_CD
-#define TIOCM_LE        0x0100            /* line enable */
-#define TIOCM_ST        0x0200            /* secondary transmit */
-#define TIOCM_SR        0x0400            /* secondary receive */
-#endif /* __CYGWIN__ */
-
 
 /**************************************************************************/
 /* Generic                                                                */

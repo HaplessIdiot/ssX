@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.117 2001/08/25 00:09:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.118 2001/08/28 17:00:47 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -268,8 +268,7 @@ extern u_char SpecialServerMap[];
 
 #if !defined(__EMX__) && \
     !defined(__SOL8__) && \
-    (!defined(sun) || defined(i386)) && \
-    !defined(__CYGWIN__)
+    (!defined(sun) || defined(i386)) 
 void
 xf86PostKbdEvent(unsigned key)
 {
@@ -876,7 +875,6 @@ special:
     if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
 #if !defined(CSRG_BASED) && \
     !defined(__GNU__) && \
-    !defined(__CYGWIN__) && \
      defined(KB_84)
       /*
        * magic ALT_L key on AT84 keyboards for multilingual support
@@ -942,7 +940,7 @@ special:
 void
 xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
-#if !defined(__EMX__) && !defined(__QNX__) && !defined(__CYGWIN__)
+#if !defined(__EMX__) && !defined(__QNX__)
     fd_set* LastSelectMask = (fd_set*)pReadmask;
     fd_set devicesWithInput;
     InputInfoPtr pInfo;
@@ -1125,7 +1123,7 @@ xf86VTSwitch()
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->LeaveVT(i, 0);
     }
-#if !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(__EMX__)
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
@@ -1161,7 +1159,7 @@ xf86VTSwitch()
       }
       SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
-#if !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(__EMX__)
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
       pInfo = xf86InputDevs;
       while (pInfo) {
@@ -1212,7 +1210,7 @@ xf86VTSwitch()
     /* Turn screen saver off when switching back */
     SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
 
-#if !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(__EMX__)
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
