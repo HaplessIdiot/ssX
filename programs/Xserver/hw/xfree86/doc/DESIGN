@@ -993,14 +993,15 @@ This function may also modify the effective timings and clock of the passed
 mode.  These have been stored in the mode's Crtc* and SynthClock elements,
 and have already been adjusted for interlacing, doublescanning, multiscanning
 and clock multipliers and dividers.  The function should not modify any other
-mode field.
+mode field, unless it wants to modify the mode timings reported to the user
+by xf86PrintModes().
 
 The function is called once for every mode in the XF86Config Monitor section
 assigned to the screen, with flags set to MODECHECK_INITIAL.  It is subse-
 quently called for every mode in the XF86Config Display subsection assigned
-to the screen, with flags set to MODECHECK_FINAL.  In the second case, each
+to the screen, with flags set to MODECHECK_FINAL.  In the second case, the
 mode will have successfully passed all other tests.  In addition, the ScrnIn-
-foRec's virtualX, virtualY and displayWidthi fields will have been set as if
+foRec's virtualX, virtualY and displayWidth fields will have been set as if
 the mode to be validated were to be the last mode accepted.
 
 In effect, calls with MODECHECK_INITIAL are intended for checks that do not
@@ -5996,6 +5997,6 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.14 1999/11/02 16:16:33 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.15 1999/11/19 00:39:57 tsi Exp $
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.10 1999/11/02 16:36:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.11 1999/11/02 16:51:47 tsi Exp $
