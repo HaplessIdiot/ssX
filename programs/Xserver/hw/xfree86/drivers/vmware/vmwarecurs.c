@@ -6,7 +6,7 @@
 char rcsId_vmwarecurs[] =
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.7 2002/11/07 12:25:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.8 2002/12/10 04:17:20 dawes Exp $ */
 
 #include "vmware.h"
 #include "bits2pixels.h"
@@ -48,7 +48,7 @@ RedefineCursor(VMWAREPtr pVMWARE)
      * arange for 'image' & 1 ^ 'source' = 'image' below when we clip
      * 'source' below.
      */
-    Raster_BitsToPixels((uint8 *) pVMWARE->hwcur.mask,
+    vmwareRaster_BitsToPixels((uint8 *) pVMWARE->hwcur.mask,
                         SVGA_BITMAP_INCREMENT(pVMWARE->CursorInfoRec->MaxWidth),
                         (uint8 *) pVMWARE->hwcur.maskPixmap,
                         SVGA_PIXMAP_INCREMENT(pVMWARE->CursorInfoRec->MaxWidth,
@@ -61,7 +61,7 @@ RedefineCursor(VMWAREPtr pVMWARE)
         vmwareWriteWordToFIFO(pVMWARE, ~pVMWARE->hwcur.mask[i]);
     }
     
-    Raster_BitsToPixels((uint8 *) pVMWARE->hwcur.source,
+    vmwareRaster_BitsToPixels((uint8 *) pVMWARE->hwcur.source,
                         SVGA_BITMAP_INCREMENT(pVMWARE->CursorInfoRec->MaxWidth),
                         (uint8 *) pVMWARE->hwcur.sourcePixmap,
                         SVGA_PIXMAP_INCREMENT(pVMWARE->CursorInfoRec->MaxWidth,

@@ -2,7 +2,7 @@
  * Copyright (C) 1998-2002 VMware, Inc.
  * All Rights Reserved
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/ 1.13 2002/10/16 22:12:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/offscreen_manager.c,v 1.1 2002/12/10 04:17:19 dawes Exp $ */
 
 #include "vmware.h"
 
@@ -22,7 +22,7 @@ static SVGASurface* FillInSurface(Heap* heap, SVGASurface* surface,
                                   CARD32 sizeUsed);
 
 Heap*
-Heap_Create(CARD8* ptr, CARD32 size, CARD32 maxSlots, CARD32 startOffset,
+vmwareHeap_Create(CARD8* ptr, CARD32 size, CARD32 maxSlots, CARD32 startOffset,
             CARD32 sWidth, CARD32 sHeight, CARD32 sBPP, CARD32 sPitch,
             CARD32 sFbOffset)
 {
@@ -43,19 +43,19 @@ Heap_Create(CARD8* ptr, CARD32 size, CARD32 maxSlots, CARD32 startOffset,
     newHeap->slotsStart = (SVGASurface*)(newHeap->ptr + newHeap->size) - 
                                           newHeap->maxSlots;
     newHeap->clear = FALSE;
-    Heap_Clear(newHeap);
+    vmwareHeap_Clear(newHeap);
 
     return newHeap;
 }
 
 void
-Heap_Destroy(Heap* heap)
+vmwareHeap_Destroy(Heap* heap)
 {
     free(heap);
 }
 
 void
-Heap_Clear(Heap* heap)
+vmwareHeap_Clear(Heap* heap)
 {
     if (!heap->clear) {
         memset(heap->slotsStart, 0, heap->maxSlots * sizeof (SVGASurface));
@@ -86,13 +86,13 @@ FillInSurface(Heap* heap, SVGASurface* surface, CARD32 width, CARD32 height,
 }
 
 SVGASurface*
-Heap_GetFrontBuffer(Heap* heap)
+vmwareHeap_GetFrontBuffer(Heap* heap)
 {
    return heap->frontBuffer;
 }
 
 SVGASurface*
-Heap_AllocSurface(Heap* heap, CARD32 width, CARD32 height,
+vmwareHeap_AllocSurface(Heap* heap, CARD32 width, CARD32 height,
                   CARD32 pitch, CARD32 bpp)
 {
     CARD32 size = pitch * height;
