@@ -35,13 +35,12 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/psw.c,v 1.3 2000/05/18 23:46:08 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/psw.c,v 1.4 2000/05/19 00:25:42 dawes Exp $ */
 
 /***********/
 /* Imports */
 /***********/
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -366,6 +365,7 @@ static char *TypeToDefault(int type)
   char *result = TypeToText(type);
   switch (type) {
     case T_FLOAT: result = "double"; break;
+    case T_USHORTINT: result = "unsigned"; break;
     case T_SHORTINT: result = "int"; break;
   }
   return result;
