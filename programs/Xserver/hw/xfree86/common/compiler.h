@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.28 1997/10/25 13:50:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.29 1998/01/24 16:57:20 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -688,7 +688,7 @@ _inw(port)
 unsigned short int port;
 #endif /* NeedFunctionPrototypes */
 {
-     unsigned char ret;
+     unsigned short ret;
      __asm__ __volatile__("inw %1,%0" :
                           "=a" (ret) :
                           "d" (port));
