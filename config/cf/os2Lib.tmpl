@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2Lib.tmpl /main/1 1996/10/31 14:47:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.6 1999/04/29 09:13:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -14,7 +14,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.6 1999/04/29 09:13:21 dawes Exp $
 /* note these are special because of linking with link386 */
 #ifdef NOT_EMX
 #define SharedXtReqs $(LDPRELIB) $(XLIBONLY)
-#define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXaw6Reqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedSMReqs $(LDPRELIB) $(ICELIB)
 #define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
@@ -30,7 +31,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.6 1999/04/29 09:13:21 dawes Exp $
 #define SharedXpmReqs $(LDPRELIBS) $(XLIB)
 #else
 #define SharedXtReqs ..\\..\\exports\\lib\\ ICE SM X11
-#define SharedXawReqs ..\\..\\exports\\lib\\ Xmu Xt X11 Xext
+#define SharedXawReqs ..\\..\\exports\\lib\\ Xmu Xt Xpm X11 Xext
 #define SharedXmuReqs ..\\..\\exports\\lib\\ Xt X11 Xext
 #define SharedSMReqs ..\\..\\exports\\lib\\ ICE
 #define SharedXextReqs ..\\..\\exports\\lib\\ X11
@@ -98,7 +99,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.6 1999/04/29 09:13:21 dawes Exp $
        DEPXMULIB = 
           XMULIB = _Use(SDlibXmu,-L$(XMUSRC) SDlibXmu) $(XLIB)
 #ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
 #endif
 #if SharedOldX

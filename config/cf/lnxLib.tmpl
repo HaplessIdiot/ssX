@@ -1,5 +1,5 @@
 XCOMM $TOG: lnxLib.tmpl /main/7 1998/03/20 14:26:41 mgreess $
-XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.9 1996/02/24 04:32:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.10 1998/10/02 06:15:05 dawes Exp $
 
 /*
  * Linux shared library template
@@ -14,7 +14,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
+#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
 
 #define CplusplusLibC
@@ -22,7 +22,8 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedX11Reqs
 #define SharedOldXReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedXtReqs	$(LDPRELIB) $(XLIBONLY) $(SMLIB) $(ICELIB)
-#define SharedXawReqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXaw6Reqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXawReqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #define SharedXmuReqs	$(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedXiReqs	$(LDPRELIB) $(XLIB)
