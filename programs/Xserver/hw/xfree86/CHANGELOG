@@ -1,6 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
-  48. Don't abuse the priviledges of the X server to access 
-      shared memory segements in MIT-SHM (Roberto Zunino, Matthieu Herrb).
+  48. MIT-SHM updates (Roberto Zunino, Matthieu Herrb).
   47. Import Mesa-4.0.1, and resync with the DRI trunk which is now based
       on this (Keith Whitwell, Brian Paul, Alan Hourihane, David Dawes).
   46. Mga driver updates:
@@ -14660,7 +14659,7 @@ XFree86 3.0 (26 April 1994)
 
 
 <<<<<<< CHANGELOG
-$XFree86: CHANGELOG,v 3.2175 2002/02/17 03:15:16 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2179 2002/02/24 20:37:18 herrb Exp $
 =======
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2178 2002/02/22 21:45:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2179 2002/02/24 20:37:18 herrb Exp $
 >>>>>>> 3.2178
