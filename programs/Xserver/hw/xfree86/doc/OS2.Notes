@@ -11,7 +11,7 @@
 
 				  Holger Veit
 
-			   Last modified 22 Feb 1996
+			   Last modified 26 Jan 1997
 
 
 
@@ -27,6 +27,15 @@ intend to rebuild the system from scratch under OS/2.
 Please also read README.OS2 for end-user information, and set at least the
 environment variables described there.
 
+At the current time, the most recent version available is XFree86-3.2A.  This
+is a beta version for which principally no source code is released.  The last
+available source code is XFree86-3.2.  If you want to join the XFree86 devel­
+oper team, e.g. to add support for certain hardware, please send a request to
+XFree86@XFree86.org. Please think about such a step carefully before, though,
+since much work is involved. Please use the XFree86-3.2 source code as a test
+example how to compile the system. The ability to manage that is a basic
+requirement for becoming a developer.
+
 
 2.  Tools required
 
@@ -37,7 +46,7 @@ required.  Most of this software is available from hobbes.nmsu.edu or
 ftp.leo.org via anonymous FTP. The following shopping list shows what you will
 need:
 
-   o gcc  EMX/gcc emx 0.9B fix 1 or later
+   o gcc  EMX/gcc emx 0.9C or later
 
    o gzip GNU zip/unzip
 
@@ -50,6 +59,18 @@ need:
 
    o rm,mv,cp  GNU file utilities
 
+
+
+Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
+
+
+Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
    o tee,..    GNU shell utilities
 
    o groff     GNU nroff/troff
@@ -58,22 +79,9 @@ need:
 
    o grep GNU grep
 
-
-
-
-Notes on Rebuilding XFree86/OS2 from Scratch
-
-
-
-
-
-Notes on Rebuilding XFree86/OS2 from Scratch
-
-
-
    o gawk GNU awk
 
-   o make GNU make 3.71/3.72
+   o make GNU make 3.71/3.72 (use the one coming with XFree86!)
 
    o flex GNU flex
 
@@ -85,13 +93,9 @@ If there is no version number given, any new version will do. Particularly
 critical is only EMX/gcc and GNU make. Note that the second GCC implementation
 which might still be available from some archives is NOT compatible.
 
-Furthermore, you need the X11R6.1 and XFree86 sources.	At this moment, I can­
-not say anything about the file names to obtain, because things are currently
-in the flow. The X Consortium is about to publish an update to X11R6, named
-X11R6.1 (cynics call this "X11'95" :-) ); I don't know whether a patch or an
-entirely new version will be issued. The public XFree86 sources will likely be
-called XFree86-3.2.tar.gz; for sources for the alpha version XFree86/OS2 3.1.2D
-you must become a member of XFree86.
+Furthermore, you need the XFree86 sources. These are available from the common
+XFree86 repositories. Look into a directory which is often named
+/pub/XFree86/3.2/source.
 
 
 3.  Compiling and Installing
@@ -122,10 +126,6 @@ installed them. Nor did I install the test subtree.
   4.  After that, is is likely necessary to apply some patches, either from the
       XConsortium or from the XFree86 project. Before you do this, enter
 
-		 chmod -R a+rw \x11\xc
-
-
-
 
 
 
@@ -134,6 +134,10 @@ installed them. Nor did I install the test subtree.
 
 
 Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
+		 chmod -R a+rw \x11\xc
 
 
 
@@ -178,7 +182,7 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 
       to find any rejects and unapplied patches (attention: yet another OS/2
       program with wrong functionality). Normally there shouldn't be any prob­
-      lems of this kind, else you have made a mistake. finally remove the orig­
+      lems of this kind, else you have made a mistake. Finally remove the orig­
       inal files with
 
 		 find \x11 -name *.orig -print -exec rm {} ;
@@ -187,10 +191,6 @@ Notes on Rebuilding XFree86/OS2 from Scratch
   7.  Go to the xc/config/cf directory and edit the xf86site.def file to match
       your requirements (you probably don't want to compile all X servers).
       Certain changes must be set to the following values:
-
-	 o Disable if not already done any PC98 server; PC98 (Japanese XFree86)
-	   does not work yet. Porters from Japan are welcome!
-
 
 
 
@@ -203,11 +203,17 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 
 
 
+	 o Disable if not already done any PC98 server; PC98 (Japanese XFree86)
+	   does not work yet. Porters from Japan are welcome!
+
 	 o #define WacomSupport 	   NO #define ElographicsSupport
 	   NO Both options are not yet supported.
 
-	 o #define ForceNormalLib NO There is no support for static libraries
-	   yet; why would you need them anyway.
+	 o Tcl* and Tk* don't need to be set explicitly. Reasonable defaults
+	   are in the other config files, provided you have a complete
+	   XFree86/OS2 binary tree with the tcl/tk runtime support installed.
+
+	 o #define BuildDynamicLoading	 NO This does not work.
 
   8.  Go to the directory xc\util\compress and make compress.exe there. Install
       the program produced there in your path. I stumbled more than once on
@@ -221,12 +227,16 @@ Notes on Rebuilding XFree86/OS2 from Scratch
       XFree86/OS2 installation. If you have not set this variable, go back to
       the prefix section of this document: you have forgotten something.
 
- 10.  Copy the file xc/config/util/buildos2.cmd into the xc directory.
+ 10.  Copy the file xc/config/util/buildos2.cmd into the xc directory. If this
+      is a second or later attempt, you might need to copy the saved toplevel
+      Makefile.os2 back to Makefile.
 
  11.  Execute this buildos2.cmd command in the xc directory; it will produce a
       logfile buildxc.log in this directory.
 
- 12.  Go have a bucket of coffee. The compile will need between 2 and 20 hours.
+ 12.  Go have a bucket of coffee, or better, buy new coffee - in Colombia!  The
+      compile will need between 2 and 20 hours, depending on your selections,
+      and the horse power of your hardware.
 
  13.  When finished, view the logfile for errors, and fix the problems if there
       are some. I have managed to compile the whole system flawlessly, so there
@@ -240,23 +250,13 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 
 Well, you see, this was quite easy :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.3 1997/01/24 09:32:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.4 1997/01/27 06:57:50 dawes Exp $
 
 
 
 
 
      $XConsortium: OS2note.sgml /main/1 1996/02/24 10:08:59 kaleb $
-
-
-
-
-
-
-
-
-
-
 
 
 

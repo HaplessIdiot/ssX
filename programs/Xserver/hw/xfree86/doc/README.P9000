@@ -482,7 +482,8 @@ XFree86 3.2 P9000 Server Release Notes
 		  Others:
 			unused
 
-      Clocksany values between 25 and 135 corresponding to the clocks for the
+      Clocks
+	    any values between 25 and 135 corresponding to the clocks for the
 	    mode entries being used.  This line may now be omitted and clocks
 	    will be matched automatically.
 
@@ -502,7 +503,8 @@ XFree86 3.2 P9000 Server Release Notes
 			do not do hardware acceleration if it's causing prob­
 			lems for you
 
-      Modes almost any valid mode (there are constraints on the horiz res so
+      Modes
+	    almost any valid mode (there are constraints on the horiz res so
 	    not all values are possible)
 
 The current supported keywords in the Display section of the XF86Config file
@@ -527,13 +529,12 @@ are:
 
 
 
-
-
 XFree86 3.2 P9000 Server Release Notes
 
 
 
-      Weight555 or 565 if Depth is 15 or 16.  Otherwise this is ignored.  These
+      Weight
+	    555 or 565 if Depth is 15 or 16.  Otherwise this is ignored.  These
 	    are the Red, Green, and Blue bits per pixel (default=565)
 
 Here's a portion of a sample XF86Config file for the Viper VLB:
@@ -585,8 +586,7 @@ Major contributors to P9000 code:
 
    o Henrik Harmsen (harmsen@eritel.se)
 
-Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger (bob@interac­
-cess.com) for helping to get the Viper PCI server working.
+Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
 
 
 
@@ -598,6 +598,8 @@ cess.com) for helping to get the Viper PCI server working.
 XFree86 3.2 P9000 Server Release Notes
 
 
+
+(bob@interaccess.com) for helping to get the Viper PCI server working.
 
 Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose banking
 patch could unfortunately not be included.
@@ -615,8 +617,6 @@ tion, etc.  Please send any patches to me (nygren@mit.edu).
 
 
      $XConsortium: P9000.sgml /main/9 1996/05/12 20:58:05 kaleb $
-
-
 
 
 

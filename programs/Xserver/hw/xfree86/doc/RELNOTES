@@ -294,8 +294,8 @@ Release Notes for XFree86[tm] 3.2A
 
 5.13  I128 server
 
-   o Some preliminary acceleration (at 8bpp for bitblts) is included.  This
-     code is very new, and hasn't been extensively tested yet.
+   o Some preliminary acceleration (for bitblts) is included.  This code is
+     very new, and hasn't been extensively tested yet.
 
 5.14  TGA server
 
@@ -611,7 +611,7 @@ Release Notes for XFree86[tm] 3.2A
 	  X32Aps.tgz	 PostScript version of the documentation
 	  X32Ahtml.tgz	 HTML version of the documentation
 	  X32Ajdoc.tgz	 Documentation in Japanese (for version 3.2)
-	  X32Ajhtm.tgz	 HTML version of the documentation in Japenese (3.2)
+	  X32Ajhtm.tgz	 HTML version of the documentation in Japanese (3.2)
 
 
 If you already have a version of XFree86 installed, MAKE A BACKUP OF /usr/X11R6
@@ -688,7 +688,7 @@ ldconfig supports the -m option, you can run:
 Otherwise for these OSs, check /etc/rc to see how ldconfig gets run at boot
 time.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.57 1997/01/26 04:46:01 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.59 1997/01/27 07:47:32 dawes Exp $
 
 
 

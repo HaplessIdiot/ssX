@@ -100,7 +100,8 @@ structure for the Link Kit is presented below.
 		  xf86site.def
 			XFree86 local configuration customization
 
-      xc/programs/Xserver/hw/xfrThe6server source
+      xc/programs/Xserver/hw/xfree86/
+	    The server source
 
 		  common/
 			Files common to all of the server (XF86Config parser,
@@ -116,15 +117,14 @@ structure for the Link Kit is presented below.
 				    Contains in-line assembler macros and util­
 				    ity functions
 
-		  os-supOS-support layer
+		  os-support/
+			OS-support layer
 
 			      assyntax.h
 				    Contains macro-ized assembler mnemonics
 
 			      xf86_OSlib.h
-				    OS-support includes, defines, and proto­
-				    types
-
+				    OS-support includes, defines, and
 
 
 
@@ -137,12 +137,15 @@ structure for the Link Kit is presented below.
 
 
 
+				    prototypes
+
 		  LinkKit/
 
 			      site.def.LK
 				    Template for Link Kit site.def
 
-		  vga256256-color VGA server directories
+		  vga256/
+			256-color VGA server directories
 
 			      vga/
 				    The generic VGA handling code
@@ -157,12 +160,14 @@ structure for the Link Kit is presented below.
 						WInit(), vgaHWSave() and vgaH­
 						WRestore().
 
-			      driverContains the SVGA driver subdirectories.
+			      drivers/
+				    Contains the SVGA driver subdirectories.
 				    Each contains an Imakefile, a .c file for
 				    the driver, and a .s file for the bank-
 				    switching functions.
 
-		  vga2/ The monochrome vga server directories.	Most of the
+		  vga2/
+			The monochrome vga server directories.	Most of the
 			files are linked from vga256, and the differences han­
 			dled by conditional compilation.
 
@@ -170,27 +175,22 @@ structure for the Link Kit is presented below.
 				    The SVGA driver subdirectories.  The
 				    `generic' VGA driver is also located here.
 
-		  vga16/The 16-color vga server directories.  Most of the files
+		  vga16/
+			The 16-color vga server directories.  Most of the files
 			are linked from vga256, and the differences handled by
 			conditional compilation.
 
 			      drivers/
 				    The SVGA driver subdirectories.
 
-		  VGADriveThis/documentation and the stub driver.
+		  VGADriverDoc/
+			This documentation and the stub driver.
 
 The Link Kit is usually installed in /usr/X11R6/lib/Server.  The Link Kit con­
 tains everything that is needed to relink the server.  It is possible to write
 a new driver and build a new server without having even the server source
 installed.
 
-      Server/
-
-		  site.def
-			Local configuration customization
-
-		  include/
-			All of the include files listed under the `common'
 
 
 
@@ -203,6 +203,13 @@ installed.
 
 
 
+      Server/
+
+		  site.def
+			Local configuration customization
+
+		  include/
+			All of the include files listed under the `common'
 			directory above
 
 		  drivers/
@@ -217,7 +224,8 @@ installed.
 			      vga256/
 				    The SVGA driver subdirectories.
 
-		  VGADriveThecdirectory with this documentation and the stub
+		  VGADriverDoc/
+			The directory with this documentation and the stub
 			driver.  `vgaHW.c' is also copied here, for reference
 			(it is not built as part of the Link Kit).
 
@@ -249,14 +257,6 @@ lowed:
       steps for the color server listed should be performed for the monochrome
       server, and the monochrome steps ignored.  Most of the existing drivers
       support only the color or both servers; the ``generic'' driver is the
-      only driver (currently) that supports just the monochrome server.
-
-  3.	    Create your driver directories:
-
-
-	 o If you are working in the source tree, create the following directo­
-	   ries:
-
 
 
 
@@ -267,6 +267,15 @@ lowed:
 
  How to add an (S)VGA driver to XFree86
 
+
+
+      only driver (currently) that supports just the monochrome server.
+
+  3.	    Create your driver directories:
+
+
+	 o If you are working in the source tree, create the following directo­
+	   ries:
 
 
 		   xc/programs/Xserver/hw/xfree86/vga256/drivers/sdc
@@ -284,7 +293,7 @@ lowed:
 
 
 
-  4.	    Set up the Imakefile parameters to cause your driver to be built:
+      Set up the Imakefile parameters to cause your driver to be built:
 
 
 	 o If you are working in the source tree:
@@ -307,21 +316,12 @@ lowed:
 
 
 
-	 o If you are working in the Link Kit, edit the file
+	2. If you are working in the Link Kit, edit the file
 	   /usr/X11R6/lib/Server/site.def, and add `sdc' to the
 	   `XF86Vga256Drivers', `XF86Vga16Drivers' and `XF86Vga2Drivers' defi­
 	   nitions as described in (a) above.
 
   5.	    Now copy the prototype files into your new directories:
-
-	 o If you are working in the source tree, copy the `stub' files as fol­
-	   lows (directories are below xc/programs/Xserver):
-
-		 Imakefile.stub =>
-		       hw/xfree86/vga256/drivers/sdc/Imakefile
-
-		 stub_driver.c =>
-		       hw/xfree86/vga256/drivers/sdc/sdc_driver.c
 
 
 
@@ -334,6 +334,15 @@ lowed:
  How to add an (S)VGA driver to XFree86
 
 
+
+	 o If you are working in the source tree, copy the `stub' files as fol­
+	   lows (directories are below xc/programs/Xserver):
+
+		 Imakefile.stub =>
+		       hw/xfree86/vga256/drivers/sdc/Imakefile
+
+		 stub_driver.c =>
+		       hw/xfree86/vga256/drivers/sdc/sdc_driver.c
 
 		 stub_bank.s =>
 		       hw/xfree86/vga256/drivers/sdc/sdc_bank.s
@@ -348,7 +357,8 @@ lowed:
 		       Imakefile and make the changes described in the com­
 		       ments).
 
-	 o If you are working in the Link Kit, copy the `stub' files as fol­
+	 o
+	   If you are working in the Link Kit, copy the `stub' files as fol­
 	   lows:
 
 		 Imakefile.stub =>
@@ -370,10 +380,25 @@ lowed:
 		       edit this Imakefile and make the changes described in
 		       the comments).
 
-  6.	    Edit each of the files you've just copied, and replace `stub' with
+
+	    Edit each of the files you've just copied, and replace `stub' with
       `sdc' and `STUB' with `SDC' wherever they appear.
 
 That's all the prep work needed.  Now it's time to work on the actual driver.
+
+
+
+
+
+
+
+
+
+
+
+
+ How to add an (S)VGA driver to XFree86
+
 
 
 5.  The Bank-Switching Functions
@@ -389,18 +414,6 @@ and hence is not a concern.
 Note that some of the newer chipsets (e.g. Trident 8900CL, Cirrus) allow for a
 linear mapping of the video memory.  While using such a scheme would improve
 the performance of the server, it is not currently supported.  Hence there is
-
-
-
-
-
-
-
-
- How to add an (S)VGA driver to XFree86
-
-
-
 no way to use such features for a new chipset.
 
 Most SVGA chipsets have two bank registers.  This is the most desirable struc­
@@ -442,6 +455,18 @@ correct assembler code will be generated, regardless of OS.  This macroized
 format currently supports USL, GNU, and Intel assembler formats.
 
 That's all there is to the banking functions.  Usually the chipset reference
+
+
+
+
+
+
+
+
+ How to add an (S)VGA driver to XFree86
+
+
+
 will give examples of this code; if not, it is not difficult to figure out,
 especially using the other drivers as examples.
 
@@ -455,17 +480,6 @@ the driver are:
   1.	      Provide a chipset-descriptor data structure to the server.  This
       data structure contains pointers to the driver functions and some data-
       structure initialization as well.
-
-
-
-
-
-
-
-
- How to add an (S)VGA driver to XFree86
-
-
 
   2.	      Provide a driver-local data structure to hold the contents of the
       chipset registers.  This data structure will contain a generic part and a
@@ -509,6 +523,16 @@ issues:
 
 
 
+
+
+
+
+
+
+ How to add an (S)VGA driver to XFree86
+
+
+
   2.	      The color server uses the SVGA's 8-bit packed-pixel mode.  The
       monochrome and vga16 servers uses the VGA's 16-color mode (4 bit-planes).
       Only one plane is enabled for the monochrome server.
@@ -520,18 +544,6 @@ issues:
 Keeping these things in mind, you need to find the registers from your SVGA
 chipset that control the desired features.  In particular, registers that con­
 trol:
-
-
-
-
-
-
-
-
-
- How to add an (S)VGA driver to XFree86
-
-
 
   1.	      Clock select bits.  The two low-order bits are part of the stan­
       dard Miscellaneous Output Register; most SVGA chipsets will include 1 or
@@ -575,18 +587,6 @@ It is possible, and in fact desirable, to have a single driver support multiple
 chipsets from the same vendor.	If there are multiple supported chipsets, then
 you would have a series of #define's for them, and a variable `SDCchipset',
 which would be used throughout the driver when distinctions must be made.  See
-the Trident and PVGA1/WD drivers for examples (the Tseng ET3000 and ET4000 are
-counter-examples - these were implemented before the driver interface allowed
-for multiple chipsets, so this example should NOT be followed).  Note that you
-should only distinguish versions when your driver needs to do things differ­
-ently for them.  For example, suppose the SDC driver supports the SDC-1a,
-SDC-1b, and SDC-2 chipsets.  The -1a and -1b are essentially the same, but dif­
-ferent from the -2 chipset.  Your driver should support the -1 and -2 chipsets,
-and not distinguish between the -1a and -1b.  This will simplify things for the
-end user.
-
-In cases where you want to give the user control of driver behavior, or there
-are things that cannot be determined without user intervention, you should use
 
 
 
@@ -599,6 +599,18 @@ are things that cannot be determined without user intervention, you should use
 
 
 
+the Trident and PVGA1/WD drivers for examples (the Tseng ET3000 and ET4000 are
+counter-examples - these were implemented before the driver interface allowed
+for multiple chipsets, so this example should NOT be followed).  Note that you
+should only distinguish versions when your driver needs to do things differ­
+ently for them.  For example, suppose the SDC driver supports the SDC-1a,
+SDC-1b, and SDC-2 chipsets.  The -1a and -1b are essentially the same, but dif­
+ferent from the -2 chipset.  Your driver should support the -1 and -2 chipsets,
+and not distinguish between the -1a and -1b.  This will simplify things for the
+end user.
+
+In cases where you want to give the user control of driver behavior, or there
+are things that cannot be determined without user intervention, you should use
 ``option'' flags.  Say that board vendors that use the SDC chipsets have the
 option of providing 8 or 16 clocks.  There's no way you can determine this from
 the chipset probe, so you provide an option flag to let the user select the
@@ -642,6 +654,17 @@ switching.  The following fields must be filled in:
       mapped window into a read portion and a write portion (for example the
       PVGA1/Western Digital chipsets).
 
+
+
+
+
+
+
+
+ How to add an (S)VGA driver to XFree86
+
+
+
   3.	      ChipSegmentShift - the number of bits by which an address will be
       shifted right to mask of the bank number.  This is log-base-2 of ChipSeg­
       mentSize.
@@ -653,17 +676,6 @@ switching.  The following fields must be filled in:
       dow in which read operations can be done.  Usually 0, and 64k, respec­
       tively, except for those chipset that have separate read and write win­
       dows.
-
-
-
-
-
-
-
-
- How to add an (S)VGA driver to XFree86
-
-
 
   6.	      ChipWriteBottom,ChipWriteTop - same as above, for write opera­
       tions.
@@ -708,18 +720,6 @@ ified during clock selection.  When CLK_REG_RESTORE is passed, the function
 should restore these registers.  This ensure that the clock-probing cannot cor­
 rupt registers.
 
-This function should return FALSE if the passed-in index value is invalid or if
-the clock can't be set for some reason.
-
-6.5  The Probe() function
-
-The Probe() function is perhaps the most important, and perhaps the least intu­
-itive function in the driver.  The Probe function is required to identify the
-chipset independent of all other chipsets.  If the user has specified a
-`Chipset' line in the XF86Config file, this is a simple string comparison
-check.	Otherwise, you must use some other technique to figure out what chipset
-is installed.  If you are lucky, the chipset will have an identification
-
 
 
 
@@ -731,9 +731,20 @@ is installed.  If you are lucky, the chipset will have an identification
 
 
 
-mechanism (ident/version registers, etc), and this will be documented in the
-databook.  Otherwise, you will have to determine some scheme, using the refer­
-ence materials listed below.
+This function should return FALSE if the passed-in index value is invalid or if
+the clock can't be set for some reason.
+
+6.5  The Probe() function
+
+The Probe() function is perhaps the most important, and perhaps the least intu­
+itive function in the driver.  The Probe function is required to identify the
+chipset independent of all other chipsets.  If the user has specified a
+`Chipset' line in the XF86Config file, this is a simple string comparison
+check.	Otherwise, you must use some other technique to figure out what chipset
+is installed.  If you are lucky, the chipset will have an identification mecha­
+nism (ident/version registers, etc), and this will be documented in the data­
+book.  Otherwise, you will have to determine some scheme, using the reference
+materials listed below.
 
 The identification is often done by looking for particular patterns in regis­
 ter, or for the existence of certain extended registers.  Or with some
@@ -774,17 +785,6 @@ other initializations:
 6.6  The EnterLeave() function
 
 The EnterLeave() function is called whenever the virtual console on which the
-server runs is entered or left (for OSs without virtual consoles, the function
-is called when the server starts and again when it exits).  The purpose of this
-function is to enable and disable I/O permissions (for OSs where such is
-required), and to unlock and relock access to ``protected'' registers that the
-driver must manipulate.  It is a fairly trivial function, and can be imple­
-mented by following the comments in the stub driver.
-
-6.7  The Restore() function
-
-The Restore() function is used for restoring a saved video state.  Note that
-`restore' is a bit of a misnomer - this function is used to both restore a
 
 
 
@@ -797,6 +797,17 @@ The Restore() function is used for restoring a saved video state.  Note that
 
 
 
+server runs is entered or left (for OSs without virtual consoles, the function
+is called when the server starts and again when it exits).  The purpose of this
+function is to enable and disable I/O permissions (for OSs where such is
+required), and to unlock and relock access to ``protected'' registers that the
+driver must manipulate.  It is a fairly trivial function, and can be imple­
+mented by following the comments in the stub driver.
+
+6.7  The Restore() function
+
+The Restore() function is used for restoring a saved video state.  Note that
+`restore' is a bit of a misnomer - this function is used to both restore a
 saved state and to install a new one created by the server.  The Restore()
 function must complete the following actions:
 
@@ -840,17 +851,6 @@ ticular mode being initialized is passed in the `mode' parameter, a pointer to
 a `DisplayModeRec' structure.  This can be dereferenced to determine the needed
 parameters.
 
-If you only know how to initialize certain bits of the register, do that here,
-and make sure that the Restore() function does a read/modify/write to only
-manipulate those bits.	Again, refer to the existing drivers for examples of
-what happens in this function.
-
-6.10  The Adjust() function
-
-The Adjust() function is another fairly basic function.  It is called whenever
-the server needs to adjust the start of the displayed part of the video memory,
-due to scrolling of the virtual screen or when changing the displayed resolu­
-tion.  All it does is set the starting address on the chipset to match the
 
 
 
@@ -863,6 +863,17 @@ tion.  All it does is set the starting address on the chipset to match the
 
 
 
+If you only know how to initialize certain bits of the register, do that here,
+and make sure that the Restore() function does a read/modify/write to only
+manipulate those bits.	Again, refer to the existing drivers for examples of
+what happens in this function.
+
+6.10  The Adjust() function
+
+The Adjust() function is another fairly basic function.  It is called whenever
+the server needs to adjust the start of the displayed part of the video memory,
+due to scrolling of the virtual screen or when changing the displayed resolu­
+tion.  All it does is set the starting address on the chipset to match the
 specified coordinate.  Follow the comments in the stub driver for details on
 how to implement it.
 
@@ -906,17 +917,6 @@ chip-specific versions.  vga256LowlevFuncs is a struct containing a list of
 functions which can be replaced.  This struct defined in vga256.h.  Examples of
 FbInit() functions can be found in the et4000, pvga1 and cirrus drivers.
 
-If you do NOT need this function, simply don't define it, and put `NoopDDA' in
-its place in the vgaVideoChipRec structure initialization.
-
-
-7.  Building The New Server
-
-As in the setup work, the steps for building the server depend whether you are
-working in the source tree or in the Link Kit.	Here are the steps for the ini­
-tial build after installing your new driver files:
-
-
 
 
 
@@ -928,6 +928,16 @@ tial build after installing your new driver files:
  How to add an (S)VGA driver to XFree86
 
 
+
+If you do NOT need this function, simply don't define it, and put `NoopDDA' in
+its place in the vgaVideoChipRec structure initialization.
+
+
+7.  Building The New Server
+
+As in the setup work, the steps for building the server depend whether you are
+working in the source tree or in the Link Kit.	Here are the steps for the ini­
+tial build after installing your new driver files:
 
    o If you are working in the source tree, follow these steps:
 
@@ -954,7 +964,7 @@ your driver):
 	   server) or `make loadXF86_Mono' (to link the mono server).
 
 
-   o	  If you are working in the Link Kit, follow these steps:
+  2.	  If you are working in the Link Kit, follow these steps:
 
 
        1.	Go to the appropriate driver directory, and enter `make'.
@@ -974,16 +984,6 @@ attached terminal or a network login.  This is the only rational way in which a
 debugger can be used on the server.  Attempting to use multiple VTs for debug­
 ging is basically a waste of time.
 
-Because of the potential for locking up the machine, it is a VERY good idea to
-remember to do a `sync' or two before starting the server.  In addition, any
-unnecessary filesystems should be unmounted while the debugging session is
-going on (to avoid having to run unnecessary fsck's).
-
-By default the server is built without debugging symbols.  The server can grow
-VERY large with debugging enabled.  It is very simple to rebuild your driver
-for debugging, though.	Do the following:
-
-
 
 
 
@@ -994,6 +994,15 @@ for debugging, though.	Do the following:
  How to add an (S)VGA driver to XFree86
 
 
+
+Because of the potential for locking up the machine, it is a VERY good idea to
+remember to do a `sync' or two before starting the server.  In addition, any
+unnecessary filesystems should be unmounted while the debugging session is
+going on (to avoid having to run unnecessary fsck's).
+
+By default the server is built without debugging symbols.  The server can grow
+VERY large with debugging enabled.  It is very simple to rebuild your driver
+for debugging, though.	Do the following:
 
   1.  Go to the driver directory.
 
@@ -1038,15 +1047,6 @@ two.  For someone just learning about this kind of programming, a week is more
 reasonable.
 
 
-10.  Advanced Topics
-
-Newer chipsets are getting into two advanced areas: programmable clock genera­
-tors, and accelerated capabilities (BitBlt, line drawing, HW cursor).  These
-are new areas, and the formal interfaces to them are not yet defined.  It is
-advised that you contact the XFree86 team and get involved with the develop­
-ment/beta-testing team if you need to be working in these areas.
-
-
 
 
 
@@ -1059,6 +1059,15 @@ ment/beta-testing team if you need to be working in these areas.
 
  How to add an (S)VGA driver to XFree86
 
+
+
+10.  Advanced Topics
+
+Newer chipsets are getting into two advanced areas: programmable clock genera­
+tors, and accelerated capabilities (BitBlt, line drawing, HW cursor).  These
+are new areas, and the formal interfaces to them are not yet defined.  It is
+advised that you contact the XFree86 team and get involved with the develop­
+ment/beta-testing team if you need to be working in these areas.
 
 
 11.  References
@@ -1107,15 +1116,6 @@ ment/beta-testing team if you need to be working in these areas.
 
 	    Fremont, CA  94538
 
-	    (510) 623-8300 (N. CA, USA)
-
-	    (49) 8152-40084 (Germany)
-
-	    (44) 0727-872424 (UK)
-
-      Genoa Systems (GVGA)
-	    75 E. Trimble Road
-
 
 
 
@@ -1126,6 +1126,15 @@ ment/beta-testing team if you need to be working in these areas.
  How to add an (S)VGA driver to XFree86
 
 
+
+	    (510) 623-8300 (N. CA, USA)
+
+	    (49) 8152-40084 (Germany)
+
+	    (44) 0727-872424 (UK)
+
+      Genoa Systems (GVGA)
+	    75 E. Trimble Road
 
 	    San Jose, CA 95131
 
@@ -1173,15 +1182,6 @@ ment/beta-testing team if you need to be working in these areas.
 
 	    (408) 738-5765
 
-      Western Digital
-	    (714) 932-4900
-
-
-
-
-
-
-
 
 
 
@@ -1193,6 +1193,9 @@ ment/beta-testing team if you need to be working in these areas.
 
 
 
+      Western Digital
+	    (714) 932-4900
+
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.13 1997/01/25 03:22:16 dawes Exp $
 
 
@@ -1200,9 +1203,6 @@ ment/beta-testing team if you need to be working in these areas.
 
 
      $XConsortium: VGADriv.sgml /main/9 1996/10/28 05:13:22 kaleb $
-
-
-
 
 
 
@@ -1337,31 +1337,31 @@ ment/beta-testing team if you need to be working in these areas.
 
 4.  Setting Up The Build Information  ....................................... 4
 
-5.  The Bank-Switching Functions  ........................................... 6
+5.  The Bank-Switching Functions  ........................................... 7
 
-6.  The Driver Itself  ...................................................... 7
+6.  The Driver Itself  ...................................................... 8
     6.1  Multiple Chipsets And Options	..................................... 9
     6.2  Data Structures  .................................................. 10
     6.3  The Ident() function  ............................................. 11
     6.4  The ClockSelect() function  ....................................... 11
-    6.5  The Probe() function  ............................................. 11
+    6.5  The Probe() function  ............................................. 12
     6.6  The EnterLeave() function  ........................................ 12
-    6.7  The Restore() function  ........................................... 12
+    6.7  The Restore() function  ........................................... 13
     6.8  The Save() function  .............................................. 13
     6.9  The Init() function  .............................................. 13
-    6.10 The Adjust() function	............................................ 13
+    6.10 The Adjust() function	............................................ 14
     6.11 The ValidMode() function  ......................................... 14
     6.12 The SaveScreen() function  ........................................ 14
     6.13 The GetMode() function  ........................................... 14
     6.14 The FbInit() function	............................................ 14
 
-7.  Building The New Server  ............................................... 14
+7.  Building The New Server  ............................................... 15
 
 8.  Debugging  ............................................................. 15
 
 9.  Advice  ................................................................ 16
 
-10. Advanced Topics  ....................................................... 16
+10. Advanced Topics  ....................................................... 17
 
 11. References	............................................................ 17
 

@@ -533,6 +533,18 @@ horizontal timing parameters).
 
 
 
+      Problems with DMA hardware (floppy, tape)
+	    On some systems, the accelerated server will interfere with other
+	    hardware that uses ISA DMA. Most notably is the PC floppy con­
+	    troller. The floppy interface cannot cope with inordinately long
+	    bus-holds, which may occur during large accelerated operations. The
+	    Linux-ftape module for example (a floppy-tape driver) will generate
+	    lots of "write error" messages when running a backup or restore
+	    operation while the X-server is in use. These errors should not be
+	    fatal, but that all depends on how well the operating system han­
+	    dles these conditions. Linux seems to cope. There is only one solu­
+	    tion: disable acceleration using the "noaccel" option.
+
 For other screen drawing related problems, try the "noaccel" option.
 
 As a final fallback, consider trying the separate accelerated W32 server. It is
@@ -547,25 +559,13 @@ rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
 beta releases at www.xfree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.14 1997/01/25 03:22:25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.15 1997/01/27 06:57:53 dawes Exp $
 
 
 
 
 
      $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

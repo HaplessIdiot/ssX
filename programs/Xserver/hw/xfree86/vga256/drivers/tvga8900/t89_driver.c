@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.63 1997/01/23 11:03:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.64 1997/01/27 08:24:24 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -716,7 +716,6 @@ TVGA8900Probe()
 		else
 			tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI96xx:
 		/* We've found a 96xx graphics engine */

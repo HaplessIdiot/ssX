@@ -309,7 +309,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
  <item>Orest Zborowski <it>&lt;orestz@eskimo.com&gt;</it>
 </itemize>
 
-<DESCRIP>
+<descrip>
 <tag/386BSD, FreeBSD, NetBSD  support by: /
 <itemize>
        <item>Rich Murphey <it>&lt;Rich@XFree86.org&gt;</it>
@@ -1017,7 +1017,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.72 1997/01/24 09:32:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.73 1997/01/25 03:22:05 dawes Exp $
 
 
 

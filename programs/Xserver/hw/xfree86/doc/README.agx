@@ -234,7 +234,8 @@ Notes on the AGX Server
 			doubtful.
 
 
-      ChipseMust be specified, possible values: "AGX-016", "AGX-015",
+      Chipset:
+	    Must be specified, possible values: "AGX-016", "AGX-015",
 	    "AGX-014", "AGX-010", "XGA-2", or "XGA-1". Some AGX vendors place
 	    stickers over the chip, in general, if it's a VLB board it's proba­
 	    bly an AGX-015 and if it's an ISA board it may be an AGX-014. The
@@ -264,12 +265,12 @@ Notes on the AGX Server
 
 
 
-
 Notes on the AGX Server
 
 
 
-      VideoRWill be probed if not specified. The startup will be a little
+      VideoRam:
+	    Will be probed if not specified. The startup will be a little
 	    faster if specified.
 
       Tuning Option flags:
@@ -303,7 +304,8 @@ Notes on the AGX Server
 				    have been reported that worked correctly
 				    with the buffers enabled.
 
-		  Memory TiPOST:defaults should be ok.
+		  Memory Timing:
+			POST defaults should be ok.
 
 			      "vram_delay_latch",      "vram delay_ras",      "vram_extend_ras"
 				    Vram timing options.
@@ -320,8 +322,6 @@ Notes on the AGX Server
 				    if directly specifying VRAM options in
 				    order to clear POST settings.
 
-		  DebuggThese shouldn't generally be required:
-
 
 
 
@@ -334,6 +334,9 @@ Notes on the AGX Server
 Notes on the AGX Server
 
 
+
+		  Debugging:
+			These shouldn't generally be required:
 
 			      "noaccel"
 				    (AGX,XGA) Disable Font Cache.
@@ -386,9 +389,6 @@ Notes on the AGX Server
 	    little makes it disappear. The Hercules manual indicates this also
 	    happens with the MS-Windows drivers.
 
-	    The server requires at least a 64KB scratchpad (16KB for XGA's).
-	    Additional memory is useful for font cache and a larger scratchpad.
-
 
 
 
@@ -400,6 +400,9 @@ Notes on the AGX Server
 Notes on the AGX Server
 
 
+
+	    The server requires at least a 64KB scratchpad (16KB for XGA's).
+	    Additional memory is useful for font cache and a larger scratchpad.
 
       AGX Clocks:
 	    Probing is supported, but of course the usual warnings and dis­
@@ -452,9 +455,6 @@ Notes on the AGX Server
 
 	    For the AGX-010, the first 8 clocks use the standard XGA internal
 	    clock selects and the second 8 are based on AGX extensions. For the
-	    XGA-1 only 8 clocks are available.	The XGA-2 uses a programmable
-	    clock and no clocks or clockchip line is required.
-
 
 
 
@@ -466,6 +466,9 @@ Notes on the AGX Server
 Notes on the AGX Server
 
 
+
+	    XGA-1 only 8 clocks are available.	The XGA-2 uses a programmable
+	    clock and no clocks or clockchip line is required.
 
 	    The maximum pixel clock generally allowed is 85MHz, but some RAM­
 	    DACs support higher values. In any case you, should check your RAM­
@@ -510,9 +513,6 @@ Notes on the AGX Server
 
 	    For the Spider Black Widow Plus (2MB VLB AGX-016, with Sierra
 	    SC15021 RAMDAC):
-
-
-
 
 
 
