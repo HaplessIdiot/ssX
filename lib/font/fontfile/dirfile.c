@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.14 2001/12/14 19:56:50 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.16 2003/04/07 16:23:31 eich Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -291,6 +291,10 @@ ReadFontAlias(char *directory, Bool isFile, FontDirectoryPtr *pdir)
 	    status = AllocError;
 	    break;
 	case NAME:
+	    if (strlen(lexToken) >= sizeof(alias)) {
+		status = BadFontPath;
+		break;
+	    }
 	    strcpy(alias, lexToken);
 	    token = lexAlias(file, &lexToken);
 	    switch (token) {
