@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.11 2001/11/01 23:56:29 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.12 2001/11/04 08:09:08 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -90,7 +90,7 @@
 
 #define UK(a)           NoSymbol	// unknown symbol
 
-static KeySym const ascii_to_x[256] = {
+static KeySym const next_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	XK_KP_Enter,
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 	XK_BackSpace,	XK_Tab,		XK_Linefeed,	NoSymbol,
@@ -107,7 +107,7 @@ static KeySym const ascii_to_x[256] = {
 	XK_4,		XK_5,		XK_6,		XK_7,
 	XK_8,		XK_9,		XK_colon,	XK_semicolon,
 	XK_less,	XK_equal,	XK_greater,	XK_question,
-	XK_notsign,	XK_A,		XK_B,		XK_C,
+	XK_at,		XK_A,		XK_B,		XK_C,
 	XK_D,		XK_E,		XK_F,		XK_G,
 	XK_H,		XK_I,		XK_J,		XK_K,
 	XK_L,		XK_M,		XK_N,		XK_O,
@@ -149,7 +149,7 @@ static KeySym const ascii_to_x[256] = {
 			XK_doublelowquotemark,
 					XK_rightdoublequotemark,
 							XK_guillemotright,
-	XK_ellipsis,	UK(permille),	XK_at,		XK_questiondown,
+	XK_ellipsis,	UK(permille),	XK_notsign,	XK_questiondown,
 // 192
 	XK_onesuperior,	XK_dead_grave,	XK_dead_acute,	XK_dead_circumflex,
 	XK_dead_tilde,	XK_dead_macron,	XK_dead_breve,	XK_dead_abovedot,
@@ -298,7 +298,7 @@ static int get_number( DataStream* s )
 
 /*
  * bits_set
- * Calculate number of bits set in the modifier mask.
+ *      Calculate number of bits set in the modifier mask.
  */
 static short bits_set( short mask )
 {
@@ -312,8 +312,8 @@ static short bits_set( short mask )
 
 /*
  * parse_next_char_code
- * Read the next character code from the Darwin keymapping
- * and write it to the X keymap.
+ *      Read the next character code from the Darwin keymapping
+ *      and write it to the X keymap.
  */
 static void parse_next_char_code(
     DataStream  *s,
@@ -324,7 +324,7 @@ static void parse_next_char_code(
 
     if (charSet == 0) {                 // ascii character
         if (charCode >= 0 && charCode < 256)
-            *k = ascii_to_x[charCode];
+            *k = next_to_x[charCode];
     } else if (charSet == 0x01) {       // symbol character
         if (charCode >= MIN_SYMBOL &&
             charCode <= MIN_SYMBOL + NUM_SYMBOL)
