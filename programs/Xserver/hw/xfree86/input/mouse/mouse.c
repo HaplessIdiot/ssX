@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.57 2002/10/08 22:14:12 tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1060,6 +1060,7 @@ MouseReadInput(InputInfoPtr pInfo)
 	    pMse->inSync = 0;
 	    continue;
 	}
+
 	/* Tell auto probe that we were successful */
 	if (pMse->autoProbeMouse && pMse->autoProbe) 
 	    pMse->autoProbeMouse(pInfo, TRUE, FALSE);
@@ -1069,6 +1070,23 @@ MouseReadInput(InputInfoPtr pInfo)
 	    ErrorF("mouse driver back in sync\n");
 #endif
 	    pMse->inSync = 1;
+	}
+
+	/*
+	 * This is a sanity check.  External devices like KVM's will reset
+	 * mice without telling the OS about it.  In the case of wheel mice
+	 * this causes the wheel mouse to send 3 bytes instead of 4 bytes.
+	 * If this is the case reset the mouse back to 4 bytes.
+	 * Logic: if wheel mouse "(pMse->class & MSE_XPS2)" and
+	 * bad first byte "((pBuf[0] & 0xC8) != 8)"
+	 * then reset.
+	 */
+	if ((pMse->class & MSE_XPS2) && ((pBuf[0] & 0xC8) != 8)) {
+	  initPs2(pInfo, TRUE);
+#ifdef EXTMOUSEDEBUG
+	  ErrorF("External mouse reset(KVM?)\n");
+#endif
+	  continue;
 	}
 
   	if (!pMse->dataGood(pMse))
