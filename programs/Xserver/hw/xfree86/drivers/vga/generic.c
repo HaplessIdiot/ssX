@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.12 1998/10/06 04:39:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.13 1998/10/06 07:26:36 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -51,6 +51,7 @@
 #include "xf1bpp.h"
 
 #include "mipointer.h"
+#include "micmap.h"
 
 #include "xf86RAC.h"
 
@@ -76,7 +77,7 @@ static void       GenericAdjustFrame(int, int, int, int);
 static Bool       GenericEnterVT(int, int);
 static void       GenericLeaveVT(int, int);
 static void       GenericFreeScreen(int, int);
-static int        VGAFindIsaDevice();
+static int        VGAFindIsaDevice(void);
 
 static ModeStatus GenericValidMode(int, DisplayModePtr, Bool, int);
 
@@ -91,6 +92,31 @@ DriverRec VGA =
     0
 };
 
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    NULL
+};
+
+static const char *fbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfbScreenInit",
+    NULL
+};
+
+static const char *racSymbols[] = {
+    "xf86RACInit",
+    NULL
+};
 
 #ifdef XFree86LOADER
 
@@ -134,6 +160,7 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
         Initialised = TRUE;
         xf86AddDriver(&VGA, Module, 0);
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -414,6 +441,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     MessageType       From;
     int               i, videoRam, Rounding, nModes = 0;
     char             *Module;
+    const char	     *Sym;
     vgaHWPtr          pvgaHW;
 
     xf86AddControlledResource(pScreenInfo,IO);
@@ -437,9 +465,9 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     switch (pScreenInfo->depth)
     {
-        case 1:  Module = "xf1bpp";  break;
-        case 4:  Module = "xf4bpp";  break;
-        case 8:  Module = "cfb";     break;
+        case 1:  Module = "xf1bpp"; Sym = "xf1bppScreenInit";  break;
+        case 4:  Module = "xf4bpp"; Sym = "xf4bppScreenInit";  break;
+        case 8:  Module = "cfb";    Sym = "cfbScreenInit";     break;
 
         default:
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
@@ -499,14 +527,20 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86LoadSubModule(pScreenInfo, "vgahw"))
         return FALSE;
 
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
     /* Ensure depth-specific entry points are available */
     if (!xf86LoadSubModule(pScreenInfo, Module))
         return FALSE;
+
+    xf86LoaderReqSymbols(Sym, NULL);
 
     if (!xf86LoadSubModule(pScreenInfo, "rac")){
         GenericFreeRec(pScreenInfo);
 	return FALSE;
     }
+
+    xf86LoaderReqSymLists(racSymbols, NULL);
 
     /* Allocate driver private structure */
     if (!GenericGetRec(pScreenInfo))
@@ -752,7 +786,6 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     vgaHWPtr pvgaHW;
     GenericPtr pGenericPriv;
-    int savedDefaultVisualClass;
     Bool Inited = FALSE;
 
     xf86EnableAccess(&pScreenInfo->Access);
@@ -768,9 +801,12 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Get vgahw private */
     pvgaHW = VGAHWPTR(pScreenInfo);
 
-    /* Temporarily set the global defaultColorVisualClass */
-    savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-    xf86SetDefaultColorVisualClass(pScreenInfo->defaultVisual);
+    miClearVisualTypes();
+
+    if (!miSetVisualTypes(pScreenInfo->depth,
+			  miGetDefaultVisualMask(pScreenInfo->depth),
+			  pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
+	return FALSE;
 
     /* Initialise the framebuffer */
     switch (pScreenInfo->depth)
@@ -790,17 +826,12 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             break;
 
         case 8:
-            miClearVisualTypes();
-
             Inited = cfbScreenInit(pScreen, pvgaHW->Base,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi,
                 pScreenInfo->displayWidth);
             break;
     }
-
-    /* Restore defaultColorVisualClass */
-    xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
 
     if (!Inited)
         return FALSE;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.39 1998/09/20 06:01:27 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.40 1998/09/26 08:34:19 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1879,7 +1879,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TsengPtr pTseng;
     int ret;
     VisualPtr visual;
-    int savedDefaultVisualClass;
 
     PDEBUG("	TsengScreenInit\n");
 
@@ -1914,12 +1913,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * XXX NOTE: cfbScreenInit() will not result in the default visual
-     * being set correctly when there is a screen-specific value given
-     * in the config file as opposed to a global value given on the
-     * command line.  Saving and restoring 'defaultColorVisualClass'
-     * around the fb's ScreenInit() solves this problem.
-     *
      * For most PC hardware at depths >= 8, the defaults that cfb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
@@ -1947,13 +1940,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
-
-    /*
-     * Temporarily set the global defaultColorVisualClass to make
-     * cfbInitVisuals do what we want.
-     */
-    savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-    xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -2000,7 +1986,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = FALSE;
 	break;
     }
-    xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
     if (!ret)
 	return FALSE;
 

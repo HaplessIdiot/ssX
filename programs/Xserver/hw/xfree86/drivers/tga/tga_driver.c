@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.5 1998/08/29 05:43:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.6 1998/09/13 09:10:22 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1079,7 +1079,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TGAPtr pTga;
     int ret;
     VisualPtr visual;
-    int savedDefaultVisualClass;
 
     /* 
      * First get the ScrnInfoRec
@@ -1114,18 +1113,12 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * XXX NOTE: cfbScreenInit() will not result in the default visual
-     * being set correctly when there is a screen-specific value given
-     * in the config file as opposed to a global value given on the
-     * command line.  Saving and restoring 'defaultColorVisualClass'
-     * around the fb's ScreenInit() solves this problem.
-     *
      * For most PC hardware at depths >= 8, the defaults that cfb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
     /*
-     * Reset cfb's visual list.
+     * Reset visual list.
      */
     miClearVisualTypes();
 
@@ -1147,13 +1140,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
-
-    /*
-     * Temporarily set the global defaultColorVisualClass to make
-     * miInitVisuals do what we want.
-     */
-    savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-    xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1178,7 +1164,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    ret = FALSE;
 	break;
     }
-    xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
     if (!ret)
 	return FALSE;
 

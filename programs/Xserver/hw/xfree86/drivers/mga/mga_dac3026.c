@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.28 1998/09/20 06:01:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.30 1998/09/26 13:24:17 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -108,6 +108,11 @@ const static unsigned char MGADACbpp24[DACREGSIZE] = {
 const static unsigned char MGADACbpp32[DACREGSIZE] = {
 	0x07, 0x46, 0x58, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x10,    0, 0x00,
+	0x00
+};
+const static unsigned char MGADACbpp8plus24[DACREGSIZE] = {
+	0x07, 0x06, 0x58, 0x05, 0x00,   0x00, 0x3C, 0x00, 0x1E, TRANSPARENCY_KEY,
+	TRANSPARENCY_KEY, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x01,    0, 0x00,
 	0x00
 };
     
@@ -485,7 +490,10 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		initDAC = MGADACbpp24;
 		break;
 	case 32:
-		initDAC = MGADACbpp32;
+		if(pMga->Overlay8Plus24)
+		    initDAC = MGADACbpp8plus24;
+		else
+		    initDAC = MGADACbpp32;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");

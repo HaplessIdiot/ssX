@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.29 1998/09/20 08:39:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.30 1998/10/05 13:23:12 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -137,15 +137,17 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 			   TWO_PASS_COLOR_EXPAND;
         break;
     case PCI_CHIP_MGA1064:
+	pMga->AccelFlags = 0;
+        break;
     case PCI_CHIP_MGAG100:
     default:
-	pMga->AccelFlags = 0;
+	pMga->AccelFlags = MGA_NO_PLANEMASK;
         break;
     }
 
     if(pMga->HasSDRAM) {
-	pMga->AccelFlags |= MGA_NO_PLANEMASK;
 	pMga->Atype = pMga->AtypeNoBLK = MGAAtypeNoBLK;
+	pMga->AccelFlags &= ~TWO_PASS_COLOR_EXPAND;
     } else {
 	pMga->Atype = MGAAtype;
 	pMga->AtypeNoBLK = MGAAtypeNoBLK;
@@ -1332,8 +1334,8 @@ MGAFillSolidRectsDMA(
     int		nBox, 		/* number of rectangles to fill */
     BoxPtr	pBox  		/* Pointer to first rectangle to fill */
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
+    XAAInfoRecPtr infoRec = pMga->AccelInfoRec;
     CARD32 *base = (CARD32*)pMga->ILOADBase;
 
     SET_SYNC_FLAG(infoRec);
@@ -1372,8 +1374,8 @@ MGAFillSolidSpansDMA(
    DDXPointPtr ppt,
    int *pwidth, int fSorted 
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
+    XAAInfoRecPtr infoRec = pMga->AccelInfoRec;
     CARD32 *base = (CARD32*)pMga->ILOADBase;
 
     SET_SYNC_FLAG(infoRec);
@@ -1414,8 +1416,8 @@ MGAFillMono8x8PatternRectsTwoPass(
     int pattern0, int pattern1,
     int xorg, int yorg
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
+    XAAInfoRecPtr infoRec = pMga->AccelInfoRec;
     int	nBox, SecondPassColor;
     BoxPtr pBox;
 
@@ -1462,8 +1464,8 @@ void MGANonTEGlyphRenderer(
    int fg, int rop,
    unsigned int planemask
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
+    XAAInfoRecPtr infoRec = pMga->AccelInfoRec;
     int x1, x2, y1, y2, i, h, skiptop, dwords, maxlines;
     unsigned char *src;
 
