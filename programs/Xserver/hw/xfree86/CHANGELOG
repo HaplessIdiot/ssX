@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx September 2000)
+ 723. Fix locale parsing code in Xlib and Xt (Matthieu Herrb)
+ 722. Fix X Test Suite to work on 800x600 screens (Keith Packard)
  721. PCI chip ID updates to ATI driver (Marc La France).
  720. Fix i810 driver for -probe and -configure (Marc La France).
  719. Change message when default modes are deleted (Marc La France).
