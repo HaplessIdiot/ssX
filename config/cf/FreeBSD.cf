@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.114 2002/04/03 19:51:11 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.115 2002/06/04 21:55:41 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -144,7 +144,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  *    ld: warning: libXThrStub.so.6, needed by libX11.so, not found
  */
-#if BuildThreadStubLibrary && !UseInstalled
+#if BuildThreadStubLibrary && !UseInstalledX11
 # define CcCmd			$(CLIENTENVSETUP) cc
 # define CplusplusCmd		$(CLIENTENVSETUP) c++
 #else
