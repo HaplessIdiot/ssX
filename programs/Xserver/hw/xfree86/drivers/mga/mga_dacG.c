@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.46 2001/04/06 16:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.48 2001/10/01 13:44:06 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -212,7 +212,7 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	double f_pll;
 
 	if(MGAISGx50(pMga)) {
-		G450SetPLLFreq(pScrn, f_out);
+		MGAG450SetPLLFreq(pScrn, f_out);
 		return;
 	}
 
@@ -545,9 +545,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         /* Writing values to crtc2[] array */
         if (pMga->SecondCrtc)
         {
-            CRTC2Get(pScrn, &ModeInfo); 
-            CRTC2GetPitch(pScrn, &ModeInfo); 
-            CRTC2GetDisplayStart(pScrn, &ModeInfo,0,0,0);
+            MGACRTC2Get(pScrn, &ModeInfo); 
+            MGACRTC2GetPitch(pScrn, &ModeInfo); 
+            MGACRTC2GetDisplayStart(pScrn, &ModeInfo,0,0,0);
         }
 	return(TRUE);
 }
@@ -718,10 +718,10 @@ MGA_NOT_HAL(
 
 MGA_NOT_HAL(
 	   /* Enable Dual Head */
-	   CRTC2Set(pScrn, &ModeInfo); 
-	   EnableSecondOutPut(pScrn, &ModeInfo); 
-	   CRTC2SetPitch(pScrn, &ModeInfo); 
-	   CRTC2SetDisplayStart(pScrn, &ModeInfo,0,0,0);
+	   MGACRTC2Set(pScrn, &ModeInfo); 
+	   MGAEnableSecondOutPut(pScrn, &ModeInfo); 
+	   MGACRTC2SetPitch(pScrn, &ModeInfo); 
+	   MGACRTC2SetDisplayStart(pScrn, &ModeInfo,0,0,0);
             
 	   for (i = 0x80; i <= 0xa0; i ++) {
                 if (i== 0x8d) {
