@@ -82,7 +82,7 @@ typedef struct _Iso2022 {
 
 Iso2022Ptr allocIso2022(void);
 void destroyIso2022(Iso2022Ptr);
-int initIso2022(char *locale, Iso2022Ptr);
+int initIso2022(char *, char *, Iso2022Ptr);
 int mergeIso2022(Iso2022Ptr, Iso2022Ptr);
 void reportIso2022(Iso2022Ptr);
 void terminate(Iso2022Ptr, int);

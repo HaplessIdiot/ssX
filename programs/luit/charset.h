@@ -57,7 +57,7 @@ CharsetPtr getUnknownCharset(int);
 CharsetPtr getCharset(unsigned char, int);
 CharsetPtr getCharsetByName(char*);
 void reportCharsets(void);
-int getLocaleState(char *locale, 
+int getLocaleState(char *locale, char *charset,
                    int *gl_return, int *gr_return,
                    CharsetPtr *g0_return, CharsetPtr *g1_return,
                    CharsetPtr *g2_return, CharsetPtr *g3_return);
