@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.30 2004/06/05 18:17:03 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.31 2004/07/21 20:27:58 herrb Exp $ */
 
 /*
- * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -482,6 +482,7 @@ wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pMse);
+	    pInfo->private = NULL;
 	    return FALSE;
 	}
     }
@@ -557,6 +558,7 @@ usbMouseProc(DeviceIntPtr pPointer, int what)
 	    pMse->buffer = XisbNew(pInfo->fd, pUsbMse->packetSize);
 	    if (!pMse->buffer) {
 		xfree(pMse);
+		pInfo->private = NULL;
 		xf86CloseSerial(pInfo->fd);
 		pInfo->fd = -1;
 	    } else {
@@ -655,6 +657,7 @@ usbPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     if (pUsbMse == NULL) {
 	xf86Msg(X_ERROR, "%s: cannot allocate UsbMouseRec\n", pInfo->name);
 	xfree(pMse);
+	pInfo->private = NULL;
 	return FALSE;
     }
 
@@ -674,6 +677,7 @@ usbPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pUsbMse);
 	    xfree(pMse);
+	    pInfo->private = NULL;
 	    return FALSE;
 	}
     }
@@ -702,6 +706,7 @@ usbPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 	xf86Msg(X_ERROR, "%s: cannot allocate buffer\n", pInfo->name);
 	xfree(pUsbMse);
 	xfree(pMse);
+	pInfo->private = NULL;
 	xf86CloseSerial(pInfo->fd);
 	return FALSE;
     }
