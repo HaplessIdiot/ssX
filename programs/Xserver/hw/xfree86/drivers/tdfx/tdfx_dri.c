@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.14 2000/12/07 20:26:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.15 2000/12/20 01:30:46 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -527,12 +527,6 @@ TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
   pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }
 
-/*
-  This routine is a modified form of XAADoBitBlt with the calls to
-  ScreenToScreenBitBlt built in. My routine has the prgnSrc as source
-  instead of destination. My origin is upside down so the ydir cases
-  are reversed.
-*/
 static void
 TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 		   RegionPtr prgnSrc, CARD32 index)
@@ -540,140 +534,36 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   ScreenPtr pScreen = pParent->drawable.pScreen;
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
-  int nbox;
-  BoxPtr pbox, pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
-  DDXPointPtr pptTmp, pptNew1, pptNew2;
-  int xdir, ydir;
-  int dx, dy, x, y, w, h;
-  DDXPointPtr pptSrc;
-
-  pbox = REGION_RECTS(prgnSrc);
-  nbox = REGION_NUM_RECTS(prgnSrc);
-  pboxNew1 = 0;
-  pptNew1 = 0;
-  pboxNew2 = 0;
-  pboxNew2 = 0;
-  pptSrc = &ptOldOrg;
+  int dx, dy, xdir, ydir, i, x, y, nbox;
+  BoxPtr pbox;
 
   dx = pParent->drawable.x - ptOldOrg.x;
   dy = pParent->drawable.y - ptOldOrg.y;
 
-  /* If the copy will overlap in Y, reverse the order */
-  if (dy>0) {
-    ydir = -1;
+  DRIMoveBuffersHelper(pScreen, dx, dy, &xdir, &ydir, prgnSrc);
 
-    if (nbox>1) {
-      /* Keep ordering in each band, reverse order of bands */
-      pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
-      if (!pboxNew1) return;
-      pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
-      if (!pptNew1) {
-	DEALLOCATE_LOCAL(pboxNew1);
-	return;
-      }
-      pboxBase = pboxNext = pbox+nbox-1;
-      while (pboxBase >= pbox) {
-	while ((pboxNext >= pbox) && (pboxBase->y1 == pboxNext->y1))
-	  pboxNext--;
-	pboxTmp = pboxNext+1;
-	pptTmp = pptSrc + (pboxTmp - pbox);
-	while (pboxTmp <= pboxBase) {
-	  *pboxNew1++ = *pboxTmp++;
-	  *pptNew1++ = *pptTmp++;
-	}
-	pboxBase = pboxNext;
-      }
-      pboxNew1 -= nbox;
-      pbox = pboxNew1;
-      pptNew1 -= nbox;
-      pptSrc = pptNew1;
-    }
-  } else {
-    /* No changes required */
-    ydir = 1;
+  pbox = REGION_RECTS(prgnSrc);
+  nbox = REGION_NUM_RECTS(prgnSrc);
+
+  TDFXSetupForScreenToScreenCopy(pScrn, xdir, ydir, GXcopy, ~0, -1);
+
+  TDFXSelectBuffer(pTDFX, TDFX_BACK);
+  for(i = 0; i < nbox; i++) {
+     x = pbox[i].x1;
+     y = pbox[i].y1;
+     TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, 
+                                      pbox[i].x2 - x, pbox[i].y2 - y);
   }
 
-  /* If the regions will overlap in X, reverse the order */
-  if (dx>0) {
-    xdir = -1;
-
-    if (nbox > 1) {
-      /*reverse orderof rects in each band */
-      pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
-      pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
-      if (!pboxNew2 || !pptNew2) {
-	if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
-	if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
-	if (pboxNew1) {
-	  DEALLOCATE_LOCAL(pptNew1);
-	  DEALLOCATE_LOCAL(pboxNew1);
-	}
-	return;
-      }
-      pboxBase = pboxNext = pbox;
-      while (pboxBase < pbox+nbox) {
-	while ((pboxNext < pbox+nbox) && (pboxNext->y1 == pboxBase->y1))
-	  pboxNext++;
-	pboxTmp = pboxNext;
-	pptTmp = pptSrc + (pboxTmp - pbox);
-	while (pboxTmp != pboxBase) {
-	  *pboxNew2++ = *--pboxTmp;
-	  *pptNew2++ = *--pptTmp;
-	}
-	pboxBase = pboxNext;
-      }
-      pboxNew2 -= nbox;
-      pbox = pboxNew2;
-      pptNew2 -= nbox;
-      pptSrc = pptNew2;
-    }
-  } else {
-    /* No changes are needed */
-    xdir = 1;
+  TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
+  for(i = 0; i < nbox; i++) {
+     x = pbox[i].x1;
+     y = pbox[i].y1;
+     TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, 
+                                      pbox[i].x2 - x, pbox[i].y2 - y);
   }
 
-  TDFXSetupForScreenToScreenCopy(pScrn, xdir, ydir, GXcopy, -1, -1);
-  while (nbox--) {
-    w=pbox->x2-pbox->x1+1;
-    h=pbox->y2-pbox->y1+1;
-
-    /* Unlike XAA, we don't get handed clipped values */
-    if (pbox->x1+dx<0) {
-      x=-dx;
-      w-=x-pbox->x1;
-    } else {
-      if (pbox->x1+dx+w>pScrn->virtualX) {
-        x=pScrn->virtualX-dx-w-1;
-        w-=pbox->x1-x;
-      } else x=pbox->x1;
-    }
-    if (pbox->y1+dy<0) {
-      y=-dy;
-      h-=y-pbox->y1;
-    } else {
-      if (pbox->y1+dy+h>pScrn->virtualY) {
-        y=pScrn->virtualY-dy-h-1;
-        h-=pbox->y1-y;
-      } else y=pbox->y1;
-    }
-    if (w<0 || h<0 || x>pScrn->virtualX || y>pScrn->virtualY) continue;
-
-    TDFXSelectBuffer(pTDFX, TDFX_BACK);
-    TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, w, h);
-    TDFXSelectBuffer(pTDFX, TDFX_DEPTH);
-    TDFXSubsequentScreenToScreenCopy(pScrn, x, y, x+dx, y+dy, w, h);
-    pbox++;
-  }
   TDFXSelectBuffer(pTDFX, TDFX_FRONT);
-
-  if (pboxNew2) {
-    DEALLOCATE_LOCAL(pptNew2);
-    DEALLOCATE_LOCAL(pboxNew2);
-  }
-  if (pboxNew1) {
-    DEALLOCATE_LOCAL(pptNew1);
-    DEALLOCATE_LOCAL(pboxNew1);
-  }
 
   pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }
