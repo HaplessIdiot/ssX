@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.6 2001/12/14 01:20:44 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.7 2002/04/18 22:47:21 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -980,6 +980,7 @@ NVAllocSurface (
     surface->pitches = &pPriv->pitch; 
     surface->offsets = &pPriv->offset;
     surface->devPrivate.ptr = (pointer)pPriv;
+    surface->id = id;
 
     /* grab the video */
     NVStopOverlay(pScrnInfo);
