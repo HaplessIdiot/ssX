@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.7 2002/09/16 18:05:19 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.8 2002/10/30 12:51:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -1040,12 +1040,12 @@ void radeonWaitForVBlank( radeonContextPtr rmesa )
 
     if ( getenv("LIBGL_SYNC_REFRESH") ) {
 	/* Wait for at least one vertical blank since the last call */
-	vbl.type = DRM_VBLANK_RELATIVE;
-	vbl.sequence = 1;
+	vbl.request.type = DRM_VBLANK_RELATIVE;
+	vbl.request.sequence = 1;
     } else if ( getenv("LIBGL_THROTTLE_REFRESH") ) {
 	/* Wait for at least one vertical blank since the last call */
-	vbl.type = DRM_VBLANK_ABSOLUTE;
-	vbl.sequence = rmesa->vbl_seq + 1;
+	vbl.request.type = DRM_VBLANK_ABSOLUTE;
+	vbl.request.sequence = rmesa->vbl_seq + 1;
     } else {
 	return;
     }
@@ -1060,7 +1060,7 @@ void radeonWaitForVBlank( radeonContextPtr rmesa )
     } else if (RADEON_DEBUG & DEBUG_IOCTL)
 	fprintf(stderr, "%s: drmWaitVBlank returned %d\n", __FUNCTION__, ret);
 
-    rmesa->vbl_seq = vbl.sequence;
+    rmesa->vbl_seq = vbl.reply.sequence;
 
     LOCK_HARDWARE( rmesa );
 }
