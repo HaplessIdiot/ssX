@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.11 2002/05/13 05:21:32 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.12 2002/05/15 06:42:49 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -431,6 +431,11 @@ XRenderCompositeDoublePoly (Display		    *dpy,
 			    _Xconst XPointDouble    *fpoints,
 			    int			    npoints,
 			    int			    winding);
+Status
+XRenderParseColor(Display	*dpy, 
+		  char		*spec,
+		  XRenderColor	*def);
+
 _XFUNCPROTOEND
 
 #endif /* _XRENDER_H_ */
