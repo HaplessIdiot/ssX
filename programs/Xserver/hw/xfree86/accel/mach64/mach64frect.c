@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64frect.c,v 3.0 1994/11/26 12:42:47 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -333,8 +333,13 @@ mach64TileFillRect(pDrawable, pGC, nRectInit, pRectInit)
      */
     if (slot) 
     {
-	pci = &mach64CacheInfo[pPixmap->slot];
-	mach64IncrementCacheLRU(pPixmap->slot);
+#ifdef PIXPRIV
+	pci = &mach64CacheInfo[((mach64PixPrivPtr)(pPixmap->devPrivates[mach64PixmapIndex].ptr))->slot];
+	mach64IncrementCacheLRU(((mach64PixPrivPtr)(pPixmap->devPrivates[mach64PixmapIndex].ptr))->slot);
+#else
+	pci = &mach64CacheInfo[0];
+	mach64IncrementCacheLRU(0);
+#endif
 
         if (pci->flags)
 	{

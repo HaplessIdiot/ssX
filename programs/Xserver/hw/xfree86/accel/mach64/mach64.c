@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.0 1994/11/26 12:42:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -52,6 +52,9 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "mach64.h"
+#ifdef PIXPRIV
+#include "mach64im.h"
+#endif
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -67,6 +70,10 @@ extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 unsigned int mach64MemorySize = 0;
 extern char *xf86VisualNames[];
+
+#ifdef PIXPRIV
+int mach64PixmapIndex;
+#endif
 
 ScrnInfoRec mach64InfoRec = {
     FALSE,		/* Bool configured */
@@ -825,6 +832,13 @@ mach64Initialize (scr_index, pScreen, argc, argv)
         xf86PointerScreenFuncs.WarpCursor = mach64WarpCursor;
         (void)mach64CursorInit(0, pScreen);
     }
+
+#ifdef PIXPRIV
+    mach64PixmapIndex = AllocatePixmapPrivateIndex();
+    if (!AllocatePixmapPrivate(pScreen, mach64PixmapIndex,
+			       sizeof(mach64PixPrivRec)))
+	return FALSE;
+#endif
 
     return (cfbCreateDefColormap(pScreen));
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.2 1994/05/08 05:25:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.3 1994/05/21 23:59:02 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -234,7 +234,7 @@ AccessUsingXdmcp ()
 }
 
 
-#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
+#if ((defined(SVR4) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 

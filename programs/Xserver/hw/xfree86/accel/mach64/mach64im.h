@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64im.h,v 3.0 1994/11/26 12:42:52 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -43,5 +43,12 @@ typedef struct _CacheInfo {
     int pattern1;       /* if fixed pattern, pattern 1 register contents */
     unsigned int lru;   /* lru counter */
 } CacheInfo, *CacheInfoPtr;
+
+#ifdef PIXPRIV
+typedef struct _mach64PixPriv {
+    int slot;		/* Offscreen cache slot number */
+    int cacheId;	/* Pixmap id number */
+} mach64PixPrivRec, *mach64PixPrivPtr;
+#endif
 
 #endif

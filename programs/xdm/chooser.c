@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c,v 1.20 94/06/03 16:34:39 mor Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.2 1994/06/09 10:56:14 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.3 1994/06/28 12:32:30 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -194,7 +194,7 @@ static int  pingTry;
 static XdmcpBuffer	directBuffer, broadcastBuffer;
 static XdmcpBuffer	buffer;
 
-#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
+#if ((defined(SVR4) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
@@ -246,7 +246,7 @@ ifioctl (fd, cmd, arg)
 #endif
     return(ret);
 }
-#else /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+#else /* ((SVR4 && !sun && !NCR) || ISC) && SIOCGIFCONF */
 #define ifioctl ioctl
 #endif /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
 

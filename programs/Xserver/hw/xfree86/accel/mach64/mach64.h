@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.0 1994/11/26 12:42:38 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -60,6 +60,10 @@ extern Bool xf86VTSema;
 extern int mach64MaxX, mach64MaxY;
 extern int mach64VirtX, mach64VirtY;
 extern Bool mach64DAC8Bit;
+
+#ifdef PIXPRIV
+extern int mach64PixmapIndex;
+#endif
 
 extern int mach64Ramdac;
 extern int mach64RamdacSubType;

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.22 1994/09/28 16:25:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.23 1994/11/26 12:37:38 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -617,7 +617,7 @@ XCOMM
 XCOMM XFree86 AGX Server
 XCOMM
 MFBDIR   = mfb
-CFB8DIR = cfb
+CFB8DIR  = cfb
 DDXDIR1  = hw/xfree86
 XF86AGXSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
 XF86AGXOBJS = $(XF86COMSRC)/XF86_AGX.o

@@ -26,7 +26,6 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: cfbpolypnt.c,v 5.17 94/04/17 20:28:57 dpw Exp $ */
-/* $XFree86$ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -36,7 +35,6 @@ in this Software without prior written authorization from the X Consortium.
 #include "scrnintstr.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "w32.h"
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
@@ -110,36 +108,44 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     }
     off = *((int *) &pDrawable->x);
     off -= (off & 0x8000) << 1;
+#ifdef PIXEL_ADDR
     cfbGetPixelWidthAndPointer(pDrawable, npwidth, addrp);
-    TEST_SET_FB(addrp)
     addrp = addrp + pDrawable->y * npwidth + pDrawable->x;
     if (rop == GXcopy)
     {
 	if (!(npwidth & (npwidth - 1)))
 	{
 	    npwidth = ffs(npwidth) - 1;
-	    if (FrameBuffer)
-		PointLoop(W32_PIXEL(addrp + (intToY(pt) << npwidth) + intToX(pt), xor))
-	    else
-		PointLoop(*(addrp + (intToY(pt) << npwidth) + intToX(pt)) = xor;)
+	    PointLoop(*(addrp + (intToY(pt) << npwidth) + intToX(pt)) = xor;)
 	}
+#ifdef sun
+	else if (npwidth == 1152)
+	{
+	    register int    y;
+	    PointLoop(y = intToY(pt); *(addrp + (y << 10) + (y << 7) + intToX(pt)) = xor;)
+	}
+#endif
 	else
 	{
-	    if (FrameBuffer)
-		PointLoop(W32_PIXEL(addrp + intToY(pt) * npwidth + intToX(pt), xor))
-	    else
-		PointLoop(*(addrp + intToY(pt) * npwidth + intToX(pt)) = xor;)
+	    PointLoop(*(addrp + intToY(pt) * npwidth + intToX(pt)) = xor;)
 	}
     }
     else
     {
 	and = devPriv->and;
-	if (FrameBuffer)
-	    PointLoop(addrpt = addrp + intToY(pt) * npwidth + intToX(pt);
-		      W32_SET_SELF(addrpt)
-		      *addrpt = DoRRop (*addrpt, and, xor);)
-	else
-	    PointLoop(addrpt = addrp + intToY(pt) * npwidth + intToX(pt);
-		      *addrpt = DoRRop (*addrpt, and, xor);)
+	PointLoop(  addrpt = addrp + intToY(pt) * npwidth + intToX(pt);
+		    *addrpt = DoRRop (*addrpt, and, xor);)
     }
+#else /* !PIXEL_ADDR */
+    cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl);
+    addrl = addrl + pDrawable->y * nlwidth + (pDrawable->x >> PWSH);
+    xoffset = pDrawable->x & PIM;
+    and = devPriv->and;
+    PointLoop(   addrlt = addrl + intToY(pt) * nlwidth
+ 	                   + ((intToX(pt) + xoffset) >> PWSH);
+ 		   *addrlt = DoRRop (*addrlt,
+ 			   and | ~cfbmask[(intToX(pt) + xoffset) & PIM],
+ 			   xor & cfbmask[(intToX(pt) + xoffset) & PIM]);
+	     )
+#endif /* PIXEL_ADDR */
 }

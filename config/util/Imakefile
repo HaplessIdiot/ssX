@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.0 1994/10/20 06:00:59 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.1 1994/11/22 02:34:16 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -48,3 +48,4 @@ InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
 #endif
 InstallNamedProg(mergelib,mergelib,$(BINDIR))
+InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.1 1994/09/13 15:08:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.2 1994/11/19 07:50:47 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -70,10 +70,7 @@ OBJS =	 cfbgc.o cfbwindow.o \
 	
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
-#ifdef XFree86Version
-COLORDEFINES = -DSTATIC_COLOR
-#endif
-    DEFINES = -DPSZ=PixelSize $(COLORDEFINES)
+    DEFINES = -DPSZ=PixelSize
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))
