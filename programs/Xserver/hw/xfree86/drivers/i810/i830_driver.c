@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.11 2002/05/10 12:57:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.12 2002/07/24 01:47:29 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -479,33 +479,32 @@ I830DetectDisplayDevice(ScrnInfoPtr pScrn)
 
 static int I830DetectMemory (ScrnInfoPtr pScrn)
 {
-   I810Ptr pI810;
-   VESAPtr pVesa;
-   PCITAG bridge;
-   CARD16 gmch_ctrl;
-   int memsize;
+	I810Ptr pI810;
+	VESAPtr pVesa;
+	PCITAG bridge;
+	CARD16 gmch_ctrl;
+	int memsize;
 
-   pI810 = I810PTR (pScrn);
-   pVesa = pI810->vesa;
+	pI810 = I810PTR (pScrn);
+	pVesa = pI810->vesa;
 
-   bridge = pciTag (0,0,0);	/* This is always the host bridge */
-   gmch_ctrl = pciReadWord (bridge,I830_GMCH_CTRL);
+	bridge = pciTag (0,0,0);	/* This is always the host bridge */
+	gmch_ctrl = pciReadWord (bridge,I830_GMCH_CTRL);
 
-   switch (gmch_ctrl & I830_GMCH_GMS_MASK)
-	 {
-	  case I830_GMCH_GMS_STOLEN_512:
-		memsize = KB (512);
+	switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
+	case I830_GMCH_GMS_STOLEN_512:
+		memsize = KB (512) - KB (132);
 		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"detected %dK stolen memory.\n",memsize / 1024);
 		break;
-	  case I830_GMCH_GMS_STOLEN_1024:
-		memsize = MB (1);
+	case I830_GMCH_GMS_STOLEN_1024:
+		memsize = MB (1) - KB (132);
 		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"detected %dK stolen memory.\n",memsize / 1024);
 		break;
-	  case I830_GMCH_GMS_STOLEN_8192:
-		memsize = MB (8);
+	case I830_GMCH_GMS_STOLEN_8192:
+		memsize = MB (8) - KB (132);
 		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"detected %dK stolen memory.\n",memsize / 1024);
 		break;
-	  case I830_GMCH_GMS_LOCAL:
+	case I830_GMCH_GMS_LOCAL:
 		/* I'd like to use the VGA controller registers here, but MMIOBase isn't
 		 * yet, so for now, we'll just use the BIOS instead... */
 		pVesa->pInt->num = 0x10;
@@ -514,13 +513,13 @@ static int I830DetectMemory (ScrnInfoPtr pScrn)
 		memsize = pVesa->pInt->cx * KB (1);
 		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"detected %dK local memory.\n",memsize / 1024);
 		break;
-	  default:
+	default:
 		/* not that this is possible, but anyway (: */
 		memsize = 0;
 		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"no video memory detected.\n");
-	 }
+	}
 
-   return (memsize);
+	return (memsize);
 }
 
 Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
@@ -1411,13 +1410,22 @@ I830VESAGetVBEMode(ScrnInfoPtr pScrn, int *mode)
 
 /* At the moment some of the BIOS vesa mode sets doesn't seem to work, so
  * we set those modes using the legacy BIOS calls */
-Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block)
-{
-   I810Ptr pI810;
-   VESAPtr pVesa;
+Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block) {
+	I810Ptr pI810;
+	VESAPtr pVesa;
 
-   pI810 = I810PTR (pScrn);
-   pVesa = pI810->vesa;
+	pI810 = I810PTR (pScrn);
+	pVesa = pI810->vesa;
+
+	/* workaround for BIOSes with 1MB stolen memory limit */
+	if (pI810->StolenSize < MB (8)) {
+		unsigned long swf1 = INREG (0x71414);
+		DPRINTF(PFX,"SWF1[before] == 0x%.8x\n",swf1);
+		swf1 &= ~0xf;
+		swf1 |= 8;
+		OUTREG(0x71414,swf1);
+		DPRINTF(PFX,"SWF1[after ] == 0x%.8x\n",swf1);
+	}
 
    DPRINTF(PFX,"Setting mode 0x%.8x\n",mode);
 
@@ -1440,7 +1448,6 @@ Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block)
 	  default:
 		pVesa->pInt->ax = 0x4f02;
 		pVesa->pInt->bx = mode & ~(1 << 11);
-/* This doesn't work. The BIOS is f**cked */
 #if 0
 		if (block != NULL)
 		  {
