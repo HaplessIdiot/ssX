@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.60 2001/08/15 11:54:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.61 2001/08/17 13:27:54 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -471,7 +471,7 @@ configureDeviceSection (int screennum)
 		    break;
 		sprintf(optname, "\"%s\"", p->name);
 
-		len += min(20, strlen(optname));
+		len += max(20, strlen(optname));
 		len += strlen(opttype);
 
 		ptr->dev_comment = xrealloc(ptr->dev_comment, len);
