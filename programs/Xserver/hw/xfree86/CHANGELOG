@@ -1,4 +1,5 @@
 XFree86 3.9Nd (5 September 1998)
+1810. Allow the FreeType code to be build as an X server font module.
 1809. Add Latin2 support to the Speedo and Type1 font code (#1792,
       Robert Wilhelm).
 1808. Updates to XFree86 specific parts of FreeType (#1792, 1933,
@@ -6451,4 +6452,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.618 1998/09/05 06:36:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.619 1998/09/06 04:46:58 dawes Exp $

@@ -21,10 +21,9 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.5 1998/09/06 04:30:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.6 1998/09/06 05:05:30 dawes Exp $ */
 
-#include <string.h>
-
+#include "ttconfig.h"
 #include "freetype.h"
 #include "ft.h"
 

@@ -20,7 +20,7 @@
  *   of the high-level interface.  See also 'freetype.h'.
  *
  ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/tttypes.h,v 1.2 1998/09/06 04:29:54 dawes Exp $ */
 
 #ifndef TTTYPES_H
 #define TTTYPES_H
@@ -70,8 +70,11 @@
   typedef unsigned char*  PTouchTable;
 
 
+/* Xserver-specific change */
+#if 0
 #ifndef Bool
   typedef int  Bool;        /* No boolean type in C */
+#endif
 #endif
 
 #ifndef TRUE

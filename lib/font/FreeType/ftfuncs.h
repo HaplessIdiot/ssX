@@ -1,12 +1,6 @@
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.2 1998/04/28 13:48:43 robin Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.3 1998/09/06 05:05:31 dawes Exp $ */
 
 /* Types */
-
-/* Those are defined in miscutil.c but don't seem to have protos anywhere */
-unsigned long *Xalloc(int);
-unsigned long *Xrealloc(unsigned long, int);
-/* The definition says long*, but this leads to too many warnings. */
-int Xfree(void*);
 
 /* defined in atom.c */
 Atom MakeAtom(char *, unsigned, int);

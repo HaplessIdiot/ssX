@@ -1,10 +1,14 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.5 1998/09/06 04:30:55 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.6 1998/09/06 04:46:54 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
 XCOMM Juliusz Chroboczek <jec@dcs.ed.ac.uk>
 
-#include <Server.tmpl>
+#if DoLoadableServer
+#define IHaveSubdirs
+#define PassCDebugFlags
+SUBDIRS = module
+#endif
 
 /*
  * The variable `HasUsableFileMmap' should be set to YES if mmap(2) can
@@ -23,8 +27,9 @@ DEFINES = -DTT_MAKE_OPTION_SINGLE_OBJECT=1 $(MMAPDEFINES)
 FTSOURCEDIR = $(TOP)/extras/FreeType
 
 /* Much of the source is simply #included by freetype.c */
-INCLUDES = -I. -I$(FONTINCSRC) -I../include \
-           -I$(FTSOURCEDIR)/lib -I$(FTSOURCEDIR)/lib/arch/unix
+INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include \
+           -I$(FTSOURCEDIR)/lib -I$(FTSOURCEDIR)/lib/extend \
+           -I$(FTSOURCEDIR)/lib/arch/unix
 
 SRCS = ftfuncs.c ftenc.c ftutil.c freetype.c ftxcmap.c
 
@@ -35,10 +40,12 @@ NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 LinkSourceFile(freetype.c,$(FTSOURCEDIR)/lib/arch/unix)
-LinkSourceFile(freetype.h,$(FTSOURCEDIR)/lib)
 LinkSourceFile(ftxcmap.c,$(FTSOURCEDIR)/lib/extend)
-LinkSourceFile(ftxcmap.h,$(FTSOURCEDIR)/lib/extend)
-LinkSourceFile(ttconfig.h,$(FTSOURCEDIR)/lib)
+
+#if DoLoadableServer
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 DependTarget()
 

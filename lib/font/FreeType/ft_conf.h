@@ -1,10 +1,29 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.1 1998/09/06 04:30:55 dawes Exp $ */
 
 #include <X11/Xmd.h>
-#include <X11/Xos.h>
+#include "fontmisc.h"
 #include <X11/Xfuncproto.h>
+
+#ifndef FONTMODULE
+
+#include <X11/Xos.h>
+#include <string.h>
+#include <stdio.h>
+#ifdef _XOPEN_SOURCE
+#include <math.h>
+#else
+#define _XOPEN_SOURCE   /* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
+
+#else
+
+#include "xf86_ansic.h"
+
+#endif /* FONTMODULE */
 
 /* Define to empty if the keyword does not work.  */
 #define const _Xconst           /* defined in Xfuncproto.h */
