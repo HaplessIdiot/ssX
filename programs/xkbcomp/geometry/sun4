@@ -1,0 +1,135 @@
+// $XConsortium: sun4 /main/1 1996/01/15 18:48:11 kaleb $
+default xkb_geometry "sun4"
+
+// This is an approximate layout for a (US/ASCII) Sun Type5
+// keyboard.  I just took a similar layout (101 key PC keyboard)
+// and adjusted the sizes of a few keys by eye.  I didn't actually
+// *measure* a real keyboard.
+
+description= "Sun Type4 keyboard";
+
+width= 452;
+height= 185;
+
+shape "EDGE" { cornerRadius= 2, { [ 452, 185 ] } };
+shape.cornerRadius= 1;
+shape "NORM" { { [ 18,18] }, { [2,1], [16,17] } };
+shape "BKSP" { { [ 37,18] }, { [2,1], [35,17] } };
+shape "TABK" { { [ 27,18] }, { [2,1], [25,17] } };
+shape "DELE" { { [ 37,18] }, { [2,1], [35,17] } };
+shape "RTRN" { 
+	approx = { [ 0, 0], [28,37] },
+	{ [ 0, 0], [28, 0], [28,37],
+	  [ 5,37], [ 5,19], [ 0,19] },
+	{ [ 1, 1], [26, 1], [26,36],
+	  [ 7,36], [ 7,18], [ 1,18] }
+
+};
+shape "CAPS" { { [ 32,18] }, { [2,1], [30,17] } };
+shape "LFSH" { { [ 41,18] }, { [2,1], [39,17] } };
+shape "RTSH" { { [ 33,18] }, { [2,1], [31,17] } };
+shape "LCTL" { { [ 32,18] }, { [2,1], [30,17] } };
+shape "MODK" { { [ 28,18] }, { [2,1], [26,17] } };
+shape "SPCE" { { [170,18] }, { [2,1], [168,17] } };
+shape "KP0"  { { [ 37,18] }, { [2,1], [35,17] } };
+shape "KPAD" { { [ 18,37] }, { [2,1], [16,36] } };
+shape "HELP" { { [ 37,18] }, { [2,1], [35,17] } };
+
+outline "Edges" {
+    top= 0;
+    left= 0;
+    shape= "EDGE";
+};
+
+section.left= 17;
+row.left= 1;
+key.shape= "NORM";
+key.gap=  1;
+
+section "Alpha" {
+    top= 58;
+    row {
+	top= 1;
+	keys {  <FK11>, <FK12>,
+		{ <FK01>, 9 }, <FK02>, <FK03>, <FK04>,
+		<FK05>, <FK06>, <FK07>, <FK08>,
+		<FK09>, <FK10>, <FK11>, <FK12>,
+		<BKSL>, { <DELE>, "DELE" },
+		{ <PAUS>, 9 }, <PRSC>, <SCLK>, <NMLK>
+	};
+    };
+    row {
+	top= 20;
+	keys {	
+		<FK13>, <FK14>,
+		{ <ESC>, 9 }, 
+		<AE01>, <AE02>, <AE03>, <AE04>, <AE05>, 
+		<AE06>, <AE07>, <AE08>, <AE09>, <AE10>, 
+		<AE11>, <AE12>,
+		{ <BKSP>, "BKSP" },
+		{ <KPEQ>, 9 }, <KPDV>, <KPMU>, <KPSU> 
+
+	};
+    };
+    row {
+	top= 39;
+	keys {	<FK15>, <FK16>, 
+		{ <TAB>, 9, shape="TABK" },
+		<AD01>, <AD02>, <AD03>, <AD04>, <AD05>, 
+		<AD06>, <AD07>, <AD08>, <AD09>, <AD10>, 
+		<AD11>, <AD12>, { <RTRN>, "RTRN" },
+		{ <KP7>, 9 }, <KP8>, <KP9>, { <KPAD>, "KPAD" } 
+	};
+    };
+    row {
+	top= 58;
+	keys {  <FK17>, <FK18>, 
+		{ <LCTL>, 9, shape="LCTL" },
+		<AC01>, <AC02>, <AC03>, <AC04>, <AC05>, 
+		<AC06>, <AC07>, <AC08>, <AC09>, <AC10>, 
+		<AC11>, <TLDE>,
+		{ <KP4>, 33 }, <KP5>, <KP6>
+	};
+    };
+    row {
+	top= 77;
+	keys {	<FK19>, <FK20>, 
+		{ <LFSH>, 9 , shape="LFSH" }, 
+		<AB01>, <AB02>, <AB03>, <AB04>, <AB05>, 
+		<AB06>, <AB07>, <AB08>, <AB09>, <AB10>, 
+		{ <RTSH>, "RTSH" }, <LNFD>,
+		{ <KP1>, 9} , <KP2>, <KP3>, { <KPEN>, "KPAD" }
+	};
+    };
+    row {
+	top= 96;
+	keys {	{ <HELP>, "HELP" }, { <CAPS>, 9 },
+		<LALT>, <LMTA>, { <SPCE>, "SPCE" },
+		<RMTA>, <COMP>, <ALGR>,
+		{ <KP0>, 9, shape="KP0" }, <KPDL>
+	};
+    };
+}; // End of "Alpha" section
+
+shape "LEDS" { cornerRadius= 0, { [ 78 ,21 ] } };
+shape "LED"  { cornerRadius= 0, { [  7,  4 ] } };
+solid "LedPanel" {
+    shape= "LEDS";
+    top=  28;
+    left= 358;
+};
+indicator.onColor= "green";
+indicator.offColor= "green30";
+indicator.top= 43;
+indicator.shape= "LED";
+indicator "CapsLock"	{ left= 364; };
+indicator "Compose"	{ left= 383; };
+indicator "ScrollLock"	{ left= 402; };
+indicator "NumLock"	{ left= 421; };
+text.top= 34;
+text.color= "black";
+text "CapsLockLabel"	{ left= 364; text="Caps\nLock"; };
+text "ComposeLabel"	{ left= 380; text="Compose"; };
+text "ScrollLockLabel"	{ left= 402; text="Scroll\nLock"; };
+text "NumLockLabel"	{ left= 421; text="Num\nLock"; };
+
