@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.2 2000/06/26 05:41:29 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.3 2000/08/25 13:42:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -149,7 +149,7 @@ static r128TexObjPtr r128CreateTexObj(r128ContextPtr r128ctx,
     t->tObj         = tObj;
 
     t->memBlock     = NULL;
-    t->bufAddr      = NULL;
+    t->bufAddr      = 0;
 
     t->regs.tex_cntl         = t->textureFormat;
     t->regs.size_pitch       = ((log2Pitch   << R128_TEX_PITCH_SHIFT)  |
@@ -702,7 +702,7 @@ static void r128UploadSubImage(r128ContextPtr r128ctx,
     }
 
     dwords = width * height / texelsPerDword;
-    offset = (CARD32)(t->bufAddr + t->image[level].offset);
+    offset = t->bufAddr + t->image[level].offset;
 
 #if ENABLE_PERF_BOXES
     /* Bump the performace counter */
@@ -868,8 +868,7 @@ int r128UploadTexImages(r128ContextPtr r128ctx, r128TexObjPtr t)
 	}
 
 	/* Set the base offset of the texture image */
-	t->bufAddr = (unsigned char *)r128ctx->r128Screen->texOffset[heap];
-	t->bufAddr += t->memBlock->ofs;
+	t->bufAddr = r128ctx->r128Screen->texOffset[heap] + t->memBlock->ofs;
 
 	maxLevel = ((t->regs.size_pitch & R128_TEX_SIZE_MASK) >>
 		    R128_TEX_SIZE_SHIFT);
@@ -882,11 +881,11 @@ int r128UploadTexImages(r128ContextPtr r128ctx, r128TexObjPtr t)
 	    /* Set texture offsets */
 	    if (t->regs.tex_cntl & R128_MIP_MAP_DISABLE) {
 		for (i = 0; i < R128_TEX_MAXLEVELS; i++)
-		    r128ctx->regs.prim_tex_offset[i] = (CARD32)t->bufAddr;
+		    r128ctx->regs.prim_tex_offset[i] = t->bufAddr;
 	    } else {
 		for (i = maxLevel; i >= minLevel; i--)
 		    r128ctx->regs.prim_tex_offset[i] =
-			t->image[maxLevel-i].offset + (CARD32)t->bufAddr;
+			t->image[maxLevel-i].offset + t->bufAddr;
 	    }
 	    /* Fix AGP texture offsets */
 	    if (heap == R128_AGP_TEX_HEAP)
@@ -903,11 +902,11 @@ int r128UploadTexImages(r128ContextPtr r128ctx, r128TexObjPtr t)
 	    /* Set texture offsets */
 	    if (t->regs.tex_cntl & R128_MIP_MAP_DISABLE) {
 		for (i = 0; i < R128_TEX_MAXLEVELS; i++)
-		    r128ctx->regs.sec_tex_offset[i] = (CARD32)t->bufAddr;
+		    r128ctx->regs.sec_tex_offset[i] = t->bufAddr;
 	    } else {
 		for (i = maxLevel; i >= minLevel; i--)
 		    r128ctx->regs.sec_tex_offset[i] =
-			t->image[maxLevel-i].offset + (CARD32)t->bufAddr;
+			t->image[maxLevel-i].offset + t->bufAddr;
 	    }
 	    /* Fix AGP texture offsets */
 	    if (heap == R128_AGP_TEX_HEAP)
@@ -1258,7 +1257,7 @@ static void r128UpdateTex0State(r128ContextPtr r128ctx)
     /* Set texture offsets */
     if (t->regs.tex_cntl & R128_MIP_MAP_DISABLE) {
 	for (i = 0; i < R128_TEX_MAXLEVELS; i++)
-	    r128ctx->regs.prim_tex_offset[i] = (CARD32)t->bufAddr;
+	    r128ctx->regs.prim_tex_offset[i] = t->bufAddr;
     } else {
 	int maxLevel = ((t->regs.size_pitch & R128_TEX_SIZE_MASK) >>
 			R128_TEX_SIZE_SHIFT);
@@ -1266,7 +1265,7 @@ static void r128UpdateTex0State(r128ContextPtr r128ctx)
 			R128_TEX_MIN_SIZE_SHIFT);
 	for (i = maxLevel; i >= minLevel; i--)
 	    r128ctx->regs.prim_tex_offset[i] =
-		t->image[maxLevel-i].offset + (CARD32)t->bufAddr;
+		t->image[maxLevel-i].offset + t->bufAddr;
     }
     /* Fix AGP texture offsets */
     if (t->heap == R128_AGP_TEX_HEAP)
@@ -1575,7 +1574,7 @@ static void r128UpdateTex1State(r128ContextPtr r128ctx)
     /* Set texture offsets */
     if (t->regs.tex_cntl & R128_MIP_MAP_DISABLE) {
 	for (i = 0; i < R128_TEX_MAXLEVELS; i++)
-	    r128ctx->regs.sec_tex_offset[i] = (CARD32)t->bufAddr;
+	    r128ctx->regs.sec_tex_offset[i] = t->bufAddr;
     } else {
 	int maxLevel = ((t->regs.size_pitch & R128_TEX_SIZE_MASK) >>
 			R128_TEX_SIZE_SHIFT);
@@ -1583,7 +1582,7 @@ static void r128UpdateTex1State(r128ContextPtr r128ctx)
 			R128_TEX_MIN_SIZE_SHIFT);
 	for (i = maxLevel; i >= minLevel; i--)
 	    r128ctx->regs.sec_tex_offset[i] =
-		t->image[maxLevel-i].offset + (CARD32)t->bufAddr;
+		t->image[maxLevel-i].offset + t->bufAddr;
     }
     /* Fix AGP texture offsets */
     if (t->heap == R128_AGP_TEX_HEAP)

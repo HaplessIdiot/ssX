@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_texobj.h,v 1.1 2000/06/17 00:03:08 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -64,7 +64,7 @@ struct r128_tex_obj {
     struct gl_texture_object *tObj;	/* Mesa texture object */
 
     PMemBlock        memBlock;		/* Memory block containing texture */
-    unsigned char   *bufAddr;		/* Offset to start of locally
+    CARD32           bufAddr;		/* Offset to start of locally
 					   shared texture block */
 
     CARD32           dirty_images;	/* Flags for whether or not
