@@ -1,4 +1,6 @@
 XFree86 3.1.2Ae (23 December 1995)
+160. A new document called QuickStart.doc which is a quick-start guide
+     to XFree86 setup (Joe Moss).
 159. Add a PCI probe to the S3 server, and use the membase value reported
      when it is non-zero.  This should help for some TrioV64+ cards.
 158. Move the DGA client-side helper functions into libXExExt.
