@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.1 2000/11/30 23:30:10 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -127,7 +127,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__CYGWIN__)
 #ifdef MINIX
 #if 0
     /* Use setsid() to get rid of our controlling tty, this requires an extra

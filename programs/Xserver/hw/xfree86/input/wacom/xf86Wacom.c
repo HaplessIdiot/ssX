@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.23 2000/12/06 20:39:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.24 2000/12/07 20:26:24 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1177,8 +1177,8 @@ xf86WcmConvert(LocalDevicePtr	local,
 	/ (priv->bottomY - priv->topY);
 #endif
     
-    *x = v0 * priv->factorX;
-    *y = v1 * priv->factorY;
+    *x = v0 * priv->factorX + 0.5;
+    *y = v1 * priv->factorY + 0.5;
 
     DBG(6, ErrorF("Wacom converted v0=%d v1=%d to x=%d y=%d\n",
 		  v0, v1, *x, *y));
@@ -1209,8 +1209,8 @@ xf86WcmReverseConvert(LocalDevicePtr	local,
 	/ (priv->bottomY - priv->topY);
 #endif
     
-    valuators[0] = x / priv->factorX;
-    valuators[1] = y / priv->factorY;
+    valuators[0] = x / priv->factorX + 0.5;
+    valuators[1] = y / priv->factorY + 0.5;
 
     DBG(6, ErrorF("Wacom converted x=%d y=%d to v0=%d v1=%d\n", x, y,
 		  valuators[0], valuators[1]));

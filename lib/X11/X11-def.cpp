@@ -840,5 +840,7 @@ EXPORTS
  XkbUpdateKeyTypeVirtualMods
  XkbUpdateMapFromCore
  XkbXlibControlsImplemented
+ Xutf8TextPropertyToTextList
+
 /* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
-/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.6 2000/08/09 23:40:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.7 2001/01/17 19:41:47 dawes Exp $ */

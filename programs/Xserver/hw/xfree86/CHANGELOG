@@ -1,4 +1,21 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 135. Updates for Cygwin support (#4433, Suhaib M. Siddiqi).
+ 134. Fix a bug in the fonts.sgml doc (#4432, Juliusz Chroboczek).
+ 133. Fix the xdpyinfo so that it will build when the XKB extension isn't
+      defined (#4422, Jim Gettys).
+ 132. Fix the xdm greeter so that it will build when the XKB extension isn't
+      defined (#4421, Jim Gettys).
+ 131. Only build setxkbmap when building the XKB lib support (based on #4420,
+      Jim Gettys).
+ 130. Improve the mga driver messages when the HAL module isn't available
+      (#4451, David Woodhouse).
+ 129. Add G450 support to the mga driver (#4416, Luugi Marsan (Matrox),
+      4449, David Woodhouse).
+ 128. Mga driver updates, including HAL cleanups, add a Crtc2Ram option,
+      and merge with Matrox beta4 source (#4415, Antii Tapaninen, #4423,
+      Simon Hosie).
+ 127. Fix a rounding problem in the wacom driver that was causing some
+      position instability (#4417, Hannes Eriksson).
  126. Change Freetype2 compilation to pacify makedepend (Marc La France).
  125. Added changes to il (Hebrew) xkb keyboard map (#4459, Tzafrir Cohen).
       Added new by (Belarusian) xkb keyboard map (#4460, Alexander Mikhailian).
@@ -103,7 +120,7 @@ XFree86 4.0.99.1 (?? February 2001)
   77. Nv driver update to fix the cursor for double scan modes, and to
       improve double scan mode handling in general (#4408, Csaba Halasz,
       Jarno Paananen).
-  76. Fix a twm segfault if it gets events for buttons > 5 (#4407,
+  76. Fix a twm segfault if it gets events for buttons > 5 (#4407, 4425,
       Nathan Hand).
   75. Update the module subdirectory search list to include "multimedia/"
       (#4405, Vladimir Dergachev).
@@ -12405,4 +12422,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1575 2001/02/12 18:35:26 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1576 2001/02/13 17:20:10 tsi Exp $

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.40 2000/10/24 22:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.42 2000/12/06 15:35:20 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -237,6 +237,11 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	/* The actual frequency output by the clock */
 	double f_pll;
 
+	if(MGAISG450(pMga)) {
+		G450SetPLLFreq(pScrn, f_out);
+		return;
+	}
+
 	/* Do the calculations for m, n, p and s */
 	f_pll = MGAGCalcClock( pScrn, f_out, &m, &n, &p, &s );
 
@@ -338,6 +343,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifdef USEMGAHAL
 	       MGA_HAL(break;);
 #endif
+	       if (MGAISG450(pMga))
+		       break;
+
 	       if(pMga->Dac.maxPixelClock == 360000) {  /* G400 MAX */
 	           if(pMga->OverclockMem) {
 			/* 150/200  */
@@ -379,7 +387,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case PCI_CHIP_MGAG200_PCI:
 	default:
 #ifdef USEMGAHAL
-	       MGA_HAL(break;);
+		MGA_HAL(break;);
 #endif
 		if(pMga->OverclockMem) {
                      /* 143 Mhz */
@@ -528,6 +536,10 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
 
+	if(MGAISG450(pMga)) {
+		OUTREG(MGAREG_ZORG, 0);
+	}
+
 	MGAGSetPCLK(pScrn, mode->Clock);
 	);	/* MGA_NOT_HAL */
 
@@ -656,7 +668,10 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	    	(i == 0x1b) ||
 	    	(i == 0x1c) ||
 	       ((i >= 0x1f) && (i <= 0x29)) ||
-	       ((i >= 0x30) && (i <= 0x37)) )
+	       ((i >= 0x30) && (i <= 0x37)) ||
+	        (MGAISG450(pMga) &&
+			 ((i == 0x2c) || (i == 0x2d) || (i == 0x2e) ||
+			  (i == 0x4c) || (i == 0x4d) || (i == 0x4e))))
 	       		continue; 
 	    outMGAdac(i, mgaReg->DacRegs[i]);
 	}
@@ -665,15 +680,17 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	   should be correct already */
 	optionMask = (pMga->Primary) ? OPTION1_MASK_PRIMARY : OPTION1_MASK; 
 
-	/* restore pci_option register */
-	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
-		       mgaReg->Option);
-	if (pMga->Chipset != PCI_CHIP_MGA1064)
-		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
-			       mgaReg->Option2);
-	if (pMga->Chipset == PCI_CHIP_MGAG400)
-		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
-			       mgaReg->Option3);
+	if (!MGAISG450(pMga)) {
+		/* restore pci_option register */
+		pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
+			       mgaReg->Option);
+		if (pMga->Chipset != PCI_CHIP_MGA1064)
+			pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
+				       mgaReg->Option2);
+		if (pMga->Chipset == PCI_CHIP_MGAG400)
+			pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
+				       mgaReg->Option3);
+	}
 	);	/* MGA_NOT_HAL */
 
 	/* restore CRTCEXT regs */

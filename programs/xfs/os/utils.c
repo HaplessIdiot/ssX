@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.11 2000/11/30 23:30:11 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.12 2001/01/17 23:45:33 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -474,10 +474,12 @@ SetUserId(void)
 		ErrorF("fatal: couldn't set groupid to xfs user's group\n");
 		exit(1);
 	    }
+#ifndef __CYGWIN__
 	    if (setgroups(0, NULL)) {
 		ErrorF("fatal: couldn't drop supplementary groups\n");
 		exit(1);
 	    }
+#endif
 	    if (initgroups(user, pwent->pw_gid)) {
 		ErrorF("fatal: couldn't init supplementary groups\n");
 		exit(1);

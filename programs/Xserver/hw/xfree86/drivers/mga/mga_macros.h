@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.16 2000/10/24 22:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.18 2000/12/06 15:35:21 eich Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -106,5 +106,7 @@ while(INREG(MGAREG_DWGSYNC) != MGA_SYNC_XTAG) ; \
 #else
 #define MGA_NOT_HAL(x) { x; }
 #endif
+
+#define MGAISG450(x) ( ((x)->Chipset == PCI_CHIP_MGAG400) && ((x)->ChipRev >= 0x80) )
 
 #endif /* _MGA_MACROS_H_ */
