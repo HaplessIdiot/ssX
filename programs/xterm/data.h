@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.3 1996/12/23 07:14:27 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.4 1997/07/29 13:26:04 hohndel Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -32,6 +32,11 @@
 #define XFD_COPYSET(src,dst) bcopy((src)->fds_bits, (dst)->fds_bits, sizeof(fd_set))
 #endif
 
+#if USE_SYS_SELECT_H
+#include <sys/types.h>
+#include <sys/select.h>
+#endif
+
 extern XtAppContext app_con;
 
 extern TekLink *TekRefresh;
@@ -52,6 +57,9 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Boolean sunFunctionKeys;
+#if OPT_SUNPC_KBD
+extern Boolean sunKeyboard;
+#endif
 extern Char buffer[];
 extern int T_lastx;
 extern int T_lasty;

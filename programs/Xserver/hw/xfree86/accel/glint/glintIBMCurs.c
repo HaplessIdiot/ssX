@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.2 1997/09/09 10:27:40 hohndel Exp $ */
 /*
  * Copyright 1996 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -118,7 +118,7 @@ glintIBMRealizeCursor(ScreenPtr pScr, CursorPtr pCurs)
 }
 
 void 
-glintIBMCursorOn()
+glintIBMShowCursor()
 {
    unsigned char tmp;
 
@@ -128,12 +128,10 @@ glintIBMCursorOn()
    GLINT_SLOW_WRITE_REG(0x27, IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-
-   return;
 }
 
 void
-glintIBMCursorOff()
+glintIBMHideCursor()
 {
    unsigned char tmp, tmp1;
 
@@ -143,31 +141,19 @@ glintIBMCursorOff()
    GLINT_SLOW_WRITE_REG(tmp1, IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-   return;
 }
 
 void
-glintIBMMoveCursor(ScreenPtr pScr, int x, int y)
+glintIBMSetCursorPosition(x, y, xorigin, yorigin)
 {
    unsigned char tmp;
-   extern int glintAdjustCursorXPos, glinthotX, glinthotY;
-
-   if (glintBlockCursor)
-      return;
-   
-   x -= glintInfoRec.frameX0 - glintAdjustCursorXPos;
-   if (x < 0)
-      return;
-
-   y -= glintInfoRec.frameY0;
-   if (y < 0)
-      return;
 
    tmp = GLINT_READ_REG(IBMRGB_INDEX_LOW);
+   
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_hot_x, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(glinthotX & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG(xorigin & 0xFF, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_hot_y, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(glinthotY & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG(yorigin & 0xFF, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_xl, IBMRGB_INDEX_LOW);
    GLINT_SLOW_WRITE_REG(x & 0xFF, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_xh, IBMRGB_INDEX_LOW);
@@ -178,82 +164,54 @@ glintIBMMoveCursor(ScreenPtr pScr, int x, int y)
    GLINT_SLOW_WRITE_REG((y >> 8) & 0x0F, IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-   return;
 }
 
 void
-glintIBMRecolorCursor(ScreenPtr pScr, CursorPtr pCurs, Bool displayed)
+glintIBMSetCursorColors(bg, fg)
+	int bg, fg;
 {
    unsigned char tmp;
-
-   if (!xf86VTSema) {
-      miRecolorCursor(pScr, pCurs, displayed);
-      return;
-   }
 
    tmp = GLINT_READ_REG(IBMRGB_INDEX_LOW);
 
    /* Background color */
-   GLINT_SLOW_WRITE_REG(IBMRGB_curs_col1_r, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->backRed >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG(IBMRGB_curs_col1_r , IBMRGB_INDEX_LOW);
+   GLINT_SLOW_WRITE_REG((bg & 0x00FF0000) >> 16, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_col1_g, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->backGreen >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG((bg & 0x0000FF00) >> 8, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_col1_b, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->backBlue >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG((bg & 0x000000FF), IBMRGB_INDEX_DATA);
 
    /* Foreground color */
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_col2_r, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->foreRed >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG((fg & 0x00FF0000) >> 16, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_col2_g, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->foreGreen >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG((fg & 0x0000FF00) >> 8, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_col2_b, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG((pCurs->foreBlue >> 8) & 0xFF, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG((fg & 0x000000FF), IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-   return;
 }
 
 void 
-glintIBMLoadCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
+glintIBMLoadCursorImage(bits, xorigin, yorigin)
+	unsigned char *bits;
+	int xorigin, yorigin;
 {
-   extern int glinthotX, glinthotY;
-   int   index = pScr->myNum;
-   register int   i;
-   unsigned char *ram, *p, tmp, tmp1, tmpcurs;
-   extern int glintInitCursorFlag;
-
-   if (!xf86VTSema)
-      return;
-
-   if (!pCurs)
-      return;
+   unsigned char tmp, tmp1, tmpcurs;
+   int i;
 
    tmp = GLINT_READ_REG(IBMRGB_INDEX_LOW);
 
    /* turn the cursor off */
    GLINT_SLOW_WRITE_REG(IBMRGB_curs, IBMRGB_INDEX_LOW);
    if ((tmpcurs = GLINT_READ_REG(IBMRGB_INDEX_DATA) & 0x03))
-      glintIBMCursorOff();
-
-   /* load colormap */
-   glintIBMRecolorCursor(pScr, pCurs, TRUE);
-
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
-
-   glintBlockCursor = TRUE;
+      glintIBMHideCursor();
 
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_hot_x, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0x00, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG(xorigin & 0xFF, IBMRGB_INDEX_DATA);
    GLINT_SLOW_WRITE_REG(IBMRGB_curs_hot_y, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0x00, IBMRGB_INDEX_DATA);
-   GLINT_SLOW_WRITE_REG(IBMRGB_curs_xl, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0xFF, IBMRGB_INDEX_DATA);
-   GLINT_SLOW_WRITE_REG(IBMRGB_curs_xh, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0x7F, IBMRGB_INDEX_DATA);
-   GLINT_SLOW_WRITE_REG(IBMRGB_curs_yl, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0xFF, IBMRGB_INDEX_DATA);
-   GLINT_SLOW_WRITE_REG(IBMRGB_curs_yh, IBMRGB_INDEX_LOW);
-   GLINT_SLOW_WRITE_REG(0x7F, IBMRGB_INDEX_DATA);
+   GLINT_SLOW_WRITE_REG(yorigin & 0xFF, IBMRGB_INDEX_DATA);
 
    tmp1 = GLINT_READ_REG(IBMRGB_INDEX_CONTROL) & 0xFE;
    GLINT_SLOW_WRITE_REG(tmp1 | 1, IBMRGB_INDEX_CONTROL); /* enable auto-inc */
@@ -265,35 +223,15 @@ glintIBMLoadCursor(ScreenPtr pScr, CursorPtr pCurs, int x, int y)
     * Output the cursor data.  The realize function has put the planes into
     * their correct order, so we can just blast this out.
     */
-   p = ram;
-   for (i = 0; i < 1024; i++,p++) {
-      GLINT_SLOW_WRITE_REG(*p, IBMRGB_INDEX_DATA);
+   for (i = 0; i < 1024; i++) {
+      GLINT_SLOW_WRITE_REG(*bits++, IBMRGB_INDEX_DATA);
    }
-
-   if (glinthotX >= MAX_CURS_WIDTH)
-      glinthotX = MAX_CURS_WIDTH - 1;
-   else if (glinthotX < 0)
-      glinthotX = 0;
-   if (glinthotY >= MAX_CURS_HEIGHT)
-      glinthotY = MAX_CURS_HEIGHT - 1;
-   else if (glinthotY < 0)
-      glinthotY = 0;
 
    GLINT_SLOW_WRITE_REG(0, IBMRGB_INDEX_HIGH);
    GLINT_SLOW_WRITE_REG(tmp1, IBMRGB_INDEX_CONTROL);
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
 
-   glintBlockCursor = FALSE;
-
-   /* position cursor */
-   glintIBMMoveCursor(0, x, y);
-
    /* turn the cursor on */
-   if ((tmpcurs & 0x03) || glintInitCursorFlag)
-      glintIBMCursorOn();
-
-   if (glintInitCursorFlag)
-      glintInitCursorFlag = FALSE;
-
-   return;
+   if (tmpcurs & 0x03)
+      glintIBMShowCursor();
 }

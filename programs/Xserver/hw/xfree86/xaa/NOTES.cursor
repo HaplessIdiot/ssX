@@ -1,0 +1,116 @@
+
+Fields of the XAACursorInfo structure:
+
+Flags
+
+    This is a set of flags that defines a number configuration parameters
+    of hardware cursor.
+
+    USE_HARDWARE_CURSOR
+
+    Indicates whether to use the generic hardware cursor interface at
+    all.
+
+    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
+
+    Indicates that at 8bpp, the background and foreground pixel values
+    passed in SetCursorColors will be in 8-8-8 truecolor format, as
+    opposed to an 8-bit palette index.
+
+    HARDWARE_CURSOR_PROGRAMMED_BITS
+
+    Indicates that a special function (LoadCursorImage) is provided to
+    upload the cursor image to the card. This is useful if the cursor
+    image must be uploaded with programmed I/O, or when the video memory
+    format required is not supported by XAA.
+
+    HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
+
+    Indicates that the bit order within each byte of cursor bitmap data
+    must be reversed.
+
+    HARDWARE_CURSOR_PROGRAMMED_ORIGIN
+
+    Indicates that there is support for a programmed origin into the
+    cursor bitmap in the SetCursorPosition function. This is useful
+    when the cursor is partially visible at the left or top of the
+    screen. If this is not defined, "skewed" cursor bitmap data must
+    be transferred explicitly in this kind of situation. XAA currently
+    does not do this automatically.
+
+    HARDWARE_CURSOR_AND_SOURCE_WITH_MASK
+
+    Indicates that the source data must be ANDed with the mask data to
+    arrive at cursor bitmap data compatible with the chip. This is
+    required when the hardware cursor data is in Windows format.
+
+    HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK
+
+    Indicates that the source and mask data bytes must be swapped. Some
+    cirrus chips need this flag in combination with the one above.
+
+    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE
+
+    For the HARDWARE_CURSOR_CHAR_BIT_FORMAT we interleave the mask and
+    the source bit by bit so that ABCDEFGH and 12345678 (represent a byte
+    for the mask then source) becomes H8G7F6E5 D4C3B2A1.
+
+    HARDWARE_CURSOR_LONG_BIT_FORMAT
+    HARDWARE_CURSOR_SHORT_BIT_FORMAT
+    HARDWARE_CURSOR_CHAR_BIT_FORMAT
+
+    Indicates that each source/mask written is either a char, short or
+    long. Most chipsets here will be char, which then does not need to
+    be specified.
+
+MaxWidth
+MaxHeight
+
+    The maximum supported hardware cursor width and height, which must
+    be a multiple of 8.
+
+CursorDataX
+CursorDataY
+
+    The video memory location where the cursor data must be stored
+    (only relevant if PROGRAMMED_BITS is not set).
+
+SetCursorColors(bg, fg)
+
+    This function must set the background (mask) and foreground colors
+    of the cursor. The color values passed are in 8-8-8 RGB format
+    (blue byte first), except at 8bpp, provided that the
+    TRUECOLOR_AT_8BPP flag is not set.
+
+SetCursorPosition(x, y, xorigin, yorigin)
+
+    This function must set the hardware cursor position to (x, y). The
+    optional xorigin and yorigin paramaters, when the
+    PROGRAMMABLE_ORIGIN flag set, define the offset into the cursor
+    bitmap (which is used when the cursor is partially visible at the
+    top or left sides of the screen).
+
+LoadCursorImage(bits, xorigin, yorigin)
+
+    This function must be defined if PROGRAMMABLE_BITS is set. It
+    should upload the cursor bitmap data to the card (using programmed
+    I/O, or to video memory if the format is not supported). The cursor
+    bitmap data is stored with mask and source bytes interleaved; each
+    mask is followed by a source byte. However, the data is affected
+    the optional flags indicating MSB-first bit order, and swapping and
+    ANDing of the source and mask data. The size corresponds to the
+    maximum supported size.
+
+HideCursor()
+
+    This function must disable the hardware cursor (make it invisible).
+
+ShowCursor()
+
+    This function must make the hardware cursor visible again.
+    Some chipsets have the option of using a Windows or X11 based cursor.
+    Enabling of the appropriate one should be done here too.
+
+
+
+$XFree86: $

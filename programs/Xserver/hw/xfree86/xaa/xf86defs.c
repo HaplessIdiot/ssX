@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.10 1997/05/03 09:19:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.11 1997/08/15 07:19:23 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -7,6 +7,7 @@
 
 #include "xf86.h"
 #include "xf86xaa.h"
+#include "xf86cursor.h"
 
 Bool NeedToSync = FALSE;
 
@@ -131,4 +132,17 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* ImageWriteBase */
     0,		/* ImageWriteRange */
     0		/* ImageWriteFlags */
+};
+
+XAACursorInfoRecType XAACursorInfoRec = {
+    0,		/* Flags */
+    0,		/* MaxWidth */
+    0,		/* MaxHeight */
+    0,		/* CursorDataX */
+    0,		/* CursorDataY */
+    NULL,	/* SetCursorColors */
+    NULL,	/* SetCursorPosition */
+    NULL,	/* LoadCursorImage */
+    NULL,	/* HideCursor */
+    NULL	/* ShowCursor */
 };

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.29 1997/06/29 07:54:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.30 1997/07/06 05:30:51 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -980,8 +980,8 @@ xf86eqProcessInputEvents ()
        {							\
 	    if (!is_absolute) {					\
 		(VALUATOR) += axisvals[(IDX)];			\
-		if ((VALUATOR) < axes[(IDX)].min_value) {	\
-		    (VALUATOR) = axes[(IDX)].min_value;		\
+                if ((VALUATOR) < axes[(IDX)].min_value-1) {     \
+                    (VALUATOR) = axes[(IDX)].min_value-1;       \
 		}						\
 		else if ((VALUATOR) > axes[(IDX)].max_value) {	\
 		    (VALUATOR) = axes[(IDX)].max_value;		\

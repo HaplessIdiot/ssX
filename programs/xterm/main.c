@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.55 1997/08/26 10:01:55 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.56 1997/09/09 10:28:03 hohndel Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -710,6 +710,9 @@ static struct _resource {
     char *tty_modes;
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
+#if OPT_SUNPC_KBD
+    Boolean sunKeyboard;
+#endif
     Boolean wait_for_map;
     Boolean useInsertMode;
 } resource;
@@ -735,6 +738,10 @@ static XtResource application_resources[] = {
 	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
 	offset(sunFunctionKeys), XtRString, "false"},
+#if OPT_SUNPC_KBD
+    {"sunKeyboard", "SunKeyboard", XtRBoolean, sizeof (Boolean),
+	offset(sunKeyboard), XtRString, "false"},
+#endif
     {"waitForMap", "WaitForMap", XtRBoolean, sizeof (Boolean),
         offset(wait_for_map), XtRString, "false"},
     {"useInsertMode", "UseInsertMode", XtRBoolean, sizeof (Boolean),
@@ -817,6 +824,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"-sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
+#if OPT_SUNPC_KBD
+{"-sp",		"*sunKeyboard", XrmoptionNoArg,	(caddr_t) "on"},
+{"+sp",		"*sunKeyboard", XrmoptionNoArg,	(caddr_t) "off"},
+#endif
 {"-t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-tm",		"*ttyModes",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -900,6 +911,7 @@ static struct _options {
 { "-/+si",                 "turn on/off scroll-on-tty-output inhibit" },
 { "-/+sk",                 "turn on/off scroll-on-keypress" },
 { "-sl number",            "number of scrolled lines to save" },
+{ "-/+sp",                 "turn on/off Sun/PC Function/Keypad mapping" },
 { "-/+t",                  "turn on/off Tek emulation window" },
 { "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
@@ -1386,6 +1398,9 @@ char **argv;
 
 	xterm_name = resource.xterm_name;
 	sunFunctionKeys = resource.sunFunctionKeys;
+#if OPT_SUNPC_KBD
+	sunKeyboard = resource.sunKeyboard;
+#endif
 	if (strcmp(xterm_name, "-") == 0) xterm_name = "xterm";
 	if (resource.icon_geometry != NULL) {
 	    int scr, junk;

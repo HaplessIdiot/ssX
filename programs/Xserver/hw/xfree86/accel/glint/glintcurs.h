@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcurs.h,v 1.1 1997/06/17 08:17:56 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -25,11 +25,12 @@
 
 extern Bool glintBlockCursor;
 extern Bool glintReloadCursor;
+extern void XAARestoreCursor();
 
 #define BLOCK_CURSOR    glintBlockCursor = TRUE;
 
 #define UNBLOCK_CURSOR  { mem_barrier(); \
 			    if (glintReloadCursor) \
-			       glintRestoreCursor(savepScreen); \
+			       XAARestoreCursor(savepScreen); \
 			    glintBlockCursor = FALSE; \
                         }

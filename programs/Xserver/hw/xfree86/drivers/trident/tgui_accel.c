@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.8 1997/08/26 10:53:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.9 1997/09/12 09:23:15 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -168,8 +168,7 @@ void TGUIAccelInit() {
 		(vga256InfoRec.virtualY *
 		vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8);
 
-    xf86AccelInfoRec.PixmapCacheMemoryEnd = vga256InfoRec.videoRam * 1024 -
-						(IsCyber ? 4096 : 1024);
+    xf86AccelInfoRec.PixmapCacheMemoryEnd = vga256InfoRec.videoRam * 1024 - 4096;
 }
 
 /*

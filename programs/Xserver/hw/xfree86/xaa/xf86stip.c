@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.7 1997/09/12 09:23:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.8 1997/09/15 07:18:52 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -246,6 +246,7 @@ xf86FillRectStippledCPUToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit)
 	  (pGC->bgPixel != -1) ) {
 	xf86AccelInfoRec.FillRectOpaqueStippledFallBack(pDrawable, pGC,
 						nBoxInit, pBoxInit);
+	return;
       }
     }
 
@@ -303,6 +304,7 @@ xf86FillRectStippledScreenToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit
 	  (pGC->bgPixel != -1)) {
 	xf86AccelInfoRec.FillRectOpaqueStippledFallBack(pDrawable, pGC,
 						nBoxInit, pBoxInit);
+	return;
       }
     }
 

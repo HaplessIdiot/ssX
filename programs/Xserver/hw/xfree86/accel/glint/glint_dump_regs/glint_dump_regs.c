@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_dump_regs/glint_dump_regs.c,v 1.1 1997/06/17 08:17:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_dump_regs/glint_dump_regs.c,v 1.2 1997/08/15 07:19:17 hohndel Exp $ */
 #include <stdio.h>
 #include <X11/Xmd.h>
 
@@ -39,34 +39,11 @@ int xf86PCIFlags = 1;
 
 extern pointer xf86MapVidMem(int, int, pointer, unsigned);
 
-extern void xf86ClearIOPortList(int);
-extern void xf86AddIOPorts(int, int, unsigned *);
 extern void xf86EnableIOPorts(int);
 extern void xf86DisableIOPorts(int);
 
 extern void outl(unsigned, unsigned long);
 extern unsigned long inl(unsigned);
-
-static void
-glintEnableIO(int scrnIndex)
-{
-    /* This is enough to ensure that full I/O is enabled */
-    unsigned pciIOPorts[] = { PCI_MODE1_ADDRESS_REG };
-    int numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
-
-    xf86ClearIOPortList(scrnIndex);
-    xf86AddIOPorts(scrnIndex, numPciIOPorts, pciIOPorts);
-    xf86EnableIOPorts(scrnIndex);
-}
-
-static void
-glintDisableIO(int scrnIndex)
-{
-    xf86DisableIOPorts(scrnIndex);
-    xf86ClearIOPortList(scrnIndex);
-}
-
-
 
 void pix(unsigned int addr, unsigned int value)
 {
@@ -245,7 +222,7 @@ int main(void)
 	   *
 	   * to be able to do that we need to enable IO
 	   */
-	  glintEnableIO(scrnIndex);
+	  xf86EnableIOPorts(scrnIndex);
 	  outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1c); /* base3 */
 	  base3copro  = inl(PCI_MODE1_DATA_REG);
 	  if( (basecopro & 0x20000) ^ (base3copro & 0x20000) )
@@ -258,7 +235,7 @@ int main(void)
 	    }
 	  outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
 	  outl(PCI_MODE1_DATA_REG,base3copro);
-	  glintDisableIO(scrnIndex);
+	  xf86DisableIOPorts(scrnIndex);
 	  /*
 	   * now update our internal structure accordingly
 	   */

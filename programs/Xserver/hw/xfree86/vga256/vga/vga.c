@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.100 1997/07/10 08:17:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.101 1997/07/29 12:08:07 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1291,8 +1291,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif /* XFree86LOADER */	/* } */
     }
 
-  pScreen->CloseScreen = vgaCloseScreen;
-  pScreen->SaveScreen = vgaSaveScreen;
   pScreen->whitePixel = 1;
   pScreen->blackPixel = 0;
   XF86FLIP_PIXELS();
@@ -1325,6 +1323,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   {
     miDCInitialize (pScreen, &xf86PointerScreenFuncs);
   }
+
+  pScreen->CloseScreen = vgaCloseScreen;
+  pScreen->SaveScreen = vgaSaveScreen;
 
   switch (xf86bpp) {
     case 1:
