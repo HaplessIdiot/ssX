@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.0 1996/12/17 21:00:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.1 1996/12/28 08:17:30 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -199,7 +199,7 @@ void tseng_init_acl()
       CPU2ACLBase = (LongP)((long)vgaBase + 0x1C000L); /* MMU aperture 2 */
     }
 
-    ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", MMioBase, scratchMemBase);      
+    /* ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", MMioBase, scratchMemBase);*/
 
     MMU_CONTROL			= (ByteP) (MMioBase + 0x13);
 
@@ -294,7 +294,7 @@ void tseng_init_acl()
     tseng_terminate_acl();
     
     *ACL_INTERRUPT_STATUS = 0xe;   /* clear interrupts */
-    *ACL_INTERRUPT_MASK = 0x0;     /* disable interrupts */
+    *ACL_INTERRUPT_MASK = 0x04;    /* disable interrupts, but enable deadlock exit */
     *ACL_INTERRUPT_STATUS = 0x0;
     *ACL_ACCELERATOR_STATUS = 0x0;
 

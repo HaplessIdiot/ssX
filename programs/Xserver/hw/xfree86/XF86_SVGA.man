@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.37 1996/10/23 13:09:14 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.38 1996/12/23 06:30:35 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -102,11 +102,10 @@ NVidia:
 NV1, STG2000
 .RE
 .PP
-Accelerated support is included for most of the Cirrus chipsets,
-the Western Digital WD90C31 and WD90C33 chipsets, the Oak OTI087 chipset,
-Chips & Technologies, and ARK Logic chipsets.
-Accelerated support for the
-ET4000/W32 and ET6000 acceleration is implemented in a separate server (see
+Accelerated support is included for most of the Cirrus chipsets, the Western
+Digital WD90C31 and WD90C33 chipsets, the Oak OTI087 chipset, Chips &
+Technologies, ARK Logic chipsets, and the ET6000. Accelerated 8bpp support
+for the ET4000/W32 and ET6000 is implemented in a separate server (see
 \fIXF86_W32(1)\fP). Users of boards based on ATI's Mach8, Mach32 and Mach64
 chipsets should refer to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and
 \fIXF86_Mach64(1)\fP manual pages, respectively.
@@ -256,7 +255,8 @@ divided by 2, presenting the server with twice as many clocks to choose
 from, especially in the low- and mid-range. This is useful for creating very
 low resolution modes like 320x200, because the lowest available clock on
 many cards (25.175 MHz) is too high to create a standard 320x200 mode. A few
-SVGA chips don't support this option, causing a distorted screen.
+SVGA chips (S3, WD90cxx) don't support this option, causing a distorted
+screen.
 .sp
 \fBpower_saver\fP - This option enables the server
 to use the power saving features of VESA DPMS compatible monitors.
@@ -265,9 +265,9 @@ Refer to the \fIXF86Config(4/5)\fP
 manual page for details of how to set the timeouts for the different levels
 of operation.  This option is experimental.
 .sp
-\fBnoaccel\fP - for Cirrus, WD, ARK, C&T and MGA chipsets.  This option
+\fBnoaccel\fP - for Cirrus, WD, ARK, C&T, MGA and Tseng chipsets.  This option
 disables the accelerated features for the clgd542X, clgd543x, clgd5446,
-clgd546X, wd90c24, wd90c31 and wd90c33, C&T, and ARK chipsets.
+clgd546X, wd90c24, wd90c31 and wd90c33, C&T, ARK, MGA and Tseng chipsets.
 .sp
 \fBfifo_conservative\fP - for Cirrus chipsets 542x/3x/46/6x, oti087, and
 ARK.
@@ -289,8 +289,8 @@ sets the DRAM timings for slow DRAM chips.
 \fBmed_dram\fP - for Cirrus chipsets 542x/3x/46 and Trident.  This option
 sets the DRAM timings for medium-speed DRAM chips.
 .sp
-\fBfast_dram\fP - for ET4000 and Cirrus chipsets 542x/3x/46, and Trident.
-This option sets the DRAM timings for fast DRAM chips.  Normally not
+\fBfast_dram\fP - for ET4000, ET6000 and Cirrus chipsets 542x/3x/46, and
+Trident. This option sets the DRAM timings for fast DRAM chips. Normally not
 recommended.
 .sp
 \fBno_2mb_banksel\fP - for Cirrus chipsets.  This option is required for
@@ -308,7 +308,7 @@ I/O for BitBLT communication.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
 memory. Currently only supported for some Cirrus and oti087 configurations,
-and the ET6000.
+the ET6000, and the ET4000W32p rev C and D.
 Automatically selected (and hence the option is ignored) for the clgd5462 
 and clgd5464, C&T, NVidia, and the ARK chipsets.
 .sp

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.0 1996/12/17 21:00:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.1 1996/12/28 08:17:27 dawes Exp $ */
 
 #include "vga256.h"
 #include "xf86.h"
@@ -38,6 +38,12 @@ void TsengSubsequentTwoPointLine();
 
 void TsengSetupForCPUToScreenColorExpand();
 void TsengSubsequentCPUToScreenColorExpand();
+
+void TsengSetupFor8x8PatternColorExpand();
+void TsengSubsequent8x8PatternColorExpand();
+
+void TsengSetupForFill8x8Pattern();
+void TsengSubsequentFill8x8Pattern();
 
 
 int bytesperpixel;
@@ -72,8 +78,9 @@ void TsengAccelInit() {
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | 
-       PIXMAP_CACHE | COP_FRAMEBUFFER_CONCURRENCY;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
+      | HARDWARE_PATTERN_SCREEN_ORIGIN | HARDWARE_PATTERN_MOD_64_OFFSET
+      | COP_FRAMEBUFFER_CONCURRENCY;
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -98,12 +105,32 @@ void TsengAccelInit() {
      * another. First we set up the restrictions. In this case, we
      * don't handle transparency color compare nor planemasks.
      */
-    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK;
+#if 1
+    xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
+
+    if (et4000_type < TYPE_ET6000)
+      xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
     
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
         TsengSetupForScreenToScreenCopy;
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         TsengSubsequentScreenToScreenCopy;
+#endif
+
+    /*
+     * 8x8 pattern tiling not possible on W32 chips in 24bpp mode.
+     */
+#ifdef BPP24_BUG
+    if ( !(vga256InfoRec.bitsPerPixel == 24) )
+#else
+    if ( !((et4000_type < TYPE_ET6000) && (vga256InfoRec.bitsPerPixel == 24)) )
+#endif
+    {
+      xf86AccelInfoRec.SetupForFill8x8Pattern =
+          TsengSetupForFill8x8Pattern;
+      xf86AccelInfoRec.SubsequentFill8x8Pattern =
+          TsengSubsequentFill8x8Pattern;
+    }
 
     /*
      * Setup hardware-line-drawing code.
@@ -131,27 +158,53 @@ void TsengAccelInit() {
      * This is a less performant solution.
      */
 
-#if 0
+#if 1
+    /*
+     * ScanlineScreenToScreenColorExpand needs a linear ScratchBufferAddr,
+     * so there's no point in providing this function when banked adressing
+     * is used, although it is feasible (through an MMU aperture). XAA needs
+     * to be modified to accomodate this. Currently it tries to write to
+     * FrameBufferBase+ScratchBufferAddr, which is only valid in linear mode.
+     *
+     * It might work if we set xf86AccelInfoRec.ScratchBufferAddr to 0x18000
+     * in banked mode for example, which would use aperture 0 in banked
+     * mode...
+     */
     if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
     {
       xf86AccelInfoRec.ColorExpandFlags =
-          VIDEO_SOURCE_GRANULARITY_PIXEL | BIT_ORDER_IN_BYTE_LSBFIRST |
-          NO_TRANSPARENCY | NO_PLANEMASK;
+          BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL |
+          NO_PLANEMASK;
+
       xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
           TsengSetupForScanlineScreenToScreenColorExpand;
       xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
           TsengSubsequentScanlineScreenToScreenColorExpand;
+
+#if 0
+      xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
+          TsengSetupFor8x8PatternColorExpand;
+      xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
+          TsengSubsequent8x8PatternColorExpand;
+#endif
+
       xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
       xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
-      ErrorF("ColorExpand ScratchBuf: Base = %d ; Size = %d\n",
-             xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferSize);
+      /* ErrorF("ColorExpand ScratchBuf: Base = %d ; Size = %d\n",
+             xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferSize);*/
      }
 
     if (et4000_type < TYPE_ET6000)
     {
+      /*
+       * CPU_TRANSFER_PAD_DWORD  is needed to make XAA _use_ this code, but
+       * it also causes problems, because the W32 tries to expand the
+       * padding data. W32 needs NO_PAD, but then XAA doesn't use it... Oh
+       * well.
+       */
       xf86AccelInfoRec.ColorExpandFlags =
-          BIT_ORDER_IN_BYTE_LSBFIRST | CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD | 
-          ONLY_TRANSPARENCY_SUPPORTED;
+          BIT_ORDER_IN_BYTE_LSBFIRST | SCANLINE_NO_PAD |
+          NO_PLANEMASK;
       xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
           TsengSetupForCPUToScreenColorExpand;
       xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
@@ -159,13 +212,13 @@ void TsengAccelInit() {
       
       /* we'll be using MMU aperture 2 */
       xf86AccelInfoRec.CPUToScreenColorExpandBase = CPU2ACLBase;
-      ErrorF("CPU2ACLBase = 0x%x\n", CPU2ACLBase);
+      /* ErrorF("CPU2ACLBase = 0x%x\n", CPU2ACLBase);*/
       /* aperture size is 8kb in banked mode. Larger in linear mode, but 8kb is enough */
       xf86AccelInfoRec.CPUToScreenColorExpandRange = 8192;
     }
 
 #endif
-    
+
     /*
      * Finally, we set up the video memory space available to the pixmap
      * cache. In this case, all memory from the end of the virtual screen
@@ -183,6 +236,12 @@ void TsengAccelInit() {
      */
      bytesperpixel = (vga256InfoRec.bitsPerPixel/8);
      tseng_line_width = vga256InfoRec.displayWidth*bytesperpixel;
+  
+    /*
+     * We'll set some registers that never change here.
+     */
+
+     *ACL_DESTINATION_Y_OFFSET = tseng_line_width-1;
      
      /*
       * Init ping-pong registers.
@@ -195,6 +254,71 @@ void TsengAccelInit() {
      MemPat = MemW32PatternPing;
      Pat = W32PatternPing;
 }
+
+/*
+ * Some commonly used macro's
+ */
+
+#define COLOR_REPLICATE_DWORD(color) \
+    switch (bytesperpixel) \
+    { \
+      case 1: \
+        (color) &= 0xFF; \
+        (color) = ((color) << 24) | ((color) << 16) | ((color) << 8) | (color); \
+        break; \
+      case 2: \
+        (color) &= 0xFFFF; \
+        (color) = ((color) << 16) | (color); \
+        break; \
+    }
+
+#define SET_FG_COLOR(color) \
+    COLOR_REPLICATE_DWORD(color) \
+    *ACL_SOURCE_WRAP	 = 0x02; \
+    *ACL_SOURCE_Y_OFFSET = 3; \
+    *ACL_SOURCE_ADDRESS  = Fg; \
+    *MemFg               = (color);
+
+#define SET_BG_COLOR(color) \
+    COLOR_REPLICATE_DWORD(color) \
+    *ACL_PATTERN_WRAP	  = 0x02; \
+    *ACL_PATTERN_Y_OFFSET = 3; \
+    *ACL_PATTERN_ADDRESS  = Pat; \
+    *MemPat		  = (color);
+
+#define SET_FUNCTION_BLT \
+    if (et4000_type>=TYPE_ET6000) \
+        *ACL_MIX_CONTROL     = 0x33; \
+    else \
+        *ACL_ROUTING_CONTROL = 0x00;
+
+#define SET_FUNCTION_BLT_TR \
+        *ACL_MIX_CONTROL     = 0x13;
+
+#define SET_FUNCTION_COLOREXPAND \
+    if (et4000_type >= TYPE_ET6000) \
+      *ACL_MIX_CONTROL     = 0x32; \
+    else \
+      *ACL_ROUTING_CONTROL = 0x08;
+
+#define SET_FUNCTION_COLOREXPAND_CPU \
+    *ACL_ROUTING_CONTROL = 0x02;
+
+#define FBADDR(x,y) ((y) * tseng_line_width + (x) * bytesperpixel)
+
+#define SET_FG_ROP(rop) \
+    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
+
+#define SET_BG_ROP(rop) \
+    *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
+
+#define SET_BG_ROP_TR(rop, bg_color) \
+  if ((bg_color) == -1)    /* transparent color expansion */ \
+    *ACL_BACKGROUND_RASTER_OPERATION = 0xaa; \
+  else \
+    *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
+
+
 
 /*
  * This is the implementation of the Sync() function.
@@ -224,54 +348,16 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
      * accelerator when we want to write to these.
      */
      
-/*    ErrorF("S:0x%x 0x%x ", rop, color);*/
+/*    ErrorF("S");*/
 
     if (planemask != -1) ErrorF("S:planemask = 0x%x\n", planemask);
 
     PINGPONG;
 
-    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
-    *ACL_DESTINATION_Y_OFFSET        = tseng_line_width-1;
-    *ACL_SOURCE_ADDRESS              = Fg;
-
-    switch (bytesperpixel)
-    {
-      case 1:
-        color &= 0xFF;
-        color = (color << 24) | (color << 16) | (color << 8) | color;
-        break;
-      case 2:
-        color &= 0xFFFF;
-        color = (color << 16) | color;
-        break;
-    }
-    *MemFg = color;
-
-    if (et4000_type <= TYPE_ET4000W32I)
-    {
-        /* The W32i only supports 8bpp acceleration */
-        *(LongP)(MemFg + 4)             = color;
-        *ACL_SOURCE_WRAP                = 0x12;
-        *ACL_SOURCE_Y_OFFSET            = 0x3;
-    }
-    else /* w32p */
-    {
-      /*
-       * only the ET6000 has 24bpp capabilities, and the init code
-       * should make sure 3 bytes per pixel can never happen at this point.
-       */
-
-      if (bytesperpixel == 3)
-        *ACL_SOURCE_WRAP                = 0x0A;  /* 3x1 wrap for 24bpp */
-      else
-        *ACL_SOURCE_WRAP                = 0x02;  /* 4x1 wrap */
-    }
-
-    if (et4000_type>=TYPE_ET6000)
-        *ACL_MIX_CONTROL                = 0x33;
-    else
-        *ACL_ROUTING_CONTROL            = 0x00;
-
+    SET_FG_ROP(rop);
+    SET_FG_COLOR(color);
+    
+    SET_FUNCTION_BLT;
 }
 
 /*
@@ -283,22 +369,16 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
 void TsengSubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
-    int destaddr;
-    destaddr = y * tseng_line_width + x * bytesperpixel;
+    int destaddr = FBADDR(x,y);
 
-    /*
-     * On Tseng chips, all "queued registers" are blocking until the current
-     * accelerated operation has finished. Thus, we don't need a WAIT here,
-     * since the chip will block the writing (with hardware-wait-states)
-     * until the accelerator has finished.
-     */
+    *ACL_XY_DIRECTION = 0;
+     /* if this is not reset here, drawing a line in between blitting, with
+      * the same ROP, color, etc will not cause a call to SetupFor...
+      * (because linedrawing uses SetupForSolidFill() as its Setup()
+      * function), and thus the direction register will have been changed by
+      * the last LineDraw operation.
+      */
 
-    *ACL_XY_DIRECTION = 0; /* if this is not reset here, drawing a line
-                            * in between blitting, with the same ROP, color, etc
-                            * will not cause a call to SetupFor..., and thus
-                            * the direction register will have been changed by
-                            * the last LineDraw operation.
-                            */
     SET_XY(w, h);
     START_ACL(destaddr);
 }
@@ -323,26 +403,30 @@ transparency_color)
      * ydir can be either 1 (top-to-bottom) or -1 (bottom-to-top).
      */
 
-    int i;
+    int blit_dir=0;
+
+/*    ErrorF("C%d ", transparency_color);*/
 
     blitxdir = xdir;
     blitydir = ydir;
     
-/*    ErrorF("C"); */
-
-    *ACL_SOURCE_WRAP    = 0x77;
-    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
-
-    i = 0;
-    if (xdir == -1) i |= 0x1;
-    if (ydir == -1) i |= 0x2;
-    *ACL_XY_DIRECTION                   = i;
-    *ACL_DESTINATION_Y_OFFSET           = tseng_line_width-1;
-    *ACL_SOURCE_Y_OFFSET                = tseng_line_width-1;
-    if (et4000_type >= TYPE_ET6000)
-        *ACL_MIX_CONTROL                = 0x33;
+    if (xdir == -1) blit_dir |= 0x1;
+    if (ydir == -1) blit_dir |= 0x2;
+    
+    if ((et4000_type >= TYPE_ET6000) && (transparency_color != -1))
+    {
+      SET_BG_COLOR(transparency_color);
+      SET_FUNCTION_BLT_TR;
+    }
     else
-        *ACL_ROUTING_CONTROL            = 0x00;
+      SET_FUNCTION_BLT;
+
+    SET_FG_ROP(rop);
+    *ACL_XY_DIRECTION = blit_dir;
+
+    *ACL_SOURCE_WRAP = 0x77; /* no wrap */
+    *ACL_SOURCE_Y_OFFSET = tseng_line_width-1;
+    
 }
 
 /*
@@ -385,12 +469,54 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
 	srcaddr += x1;
 	destaddr += x2;
     }
-
+  
     SET_XY(w, h);
-    *(ACL_SOURCE_ADDRESS) = srcaddr;
+    *ACL_SOURCE_ADDRESS = srcaddr;
     START_ACL(destaddr);
-
 }
+
+
+void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
+{
+  int srcaddr = FBADDR(patternx, patterny);
+  
+/*  ErrorF("P");*/
+
+  SET_FG_ROP(rop);
+
+  switch(bytesperpixel)
+  {
+    case 1: *ACL_SOURCE_WRAP      = 0x33;   /* 8x8 wrap */
+            *ACL_SOURCE_Y_OFFSET  = 8 - 1;
+            break;
+    case 2: *ACL_SOURCE_WRAP      = 0x34;   /* 16x8 wrap */
+            *ACL_SOURCE_Y_OFFSET  = 16 - 1;
+            break;
+    case 3: *ACL_SOURCE_WRAP      = 0x3D;   /* 24x8 wrap --- only for ET6000 !!! */
+            *ACL_SOURCE_Y_OFFSET  = 32 - 1; /* this is no error -- see databook */
+            break;
+    case 4: *ACL_SOURCE_WRAP      = 0x35;   /* 32x8 wrap */
+            *ACL_SOURCE_Y_OFFSET  = 32 - 1;
+  }
+  
+  *ACL_SOURCE_ADDRESS = srcaddr;
+
+  *ACL_XY_DIRECTION = 0;
+
+  SET_FUNCTION_BLT;
+}
+
+void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
+{
+  int destaddr = FBADDR(x,y);
+  int srcaddr = FBADDR(patternx, patterny);
+
+  *ACL_SOURCE_ADDRESS = srcaddr;
+
+  SET_XY(w, h);
+  START_ACL(destaddr);
+}
+
 
 static int ColorExpandDst;
 
@@ -398,64 +524,80 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
     int x, y, w, h, bg, fg, rop, planemask;
 {
 
-/*    ErrorF("C");*/
+/*    ErrorF("X");*/
 
     PINGPONG;
 
-    ColorExpandDst = y * tseng_line_width + x * bytesperpixel;
+    ColorExpandDst = FBADDR(x,y);
 
-    *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[rop];
-    *ACL_BACKGROUND_RASTER_OPERATION	= W32PatternOpTable[rop];
-    if (et4000_type >= TYPE_ET6000)
-      *ACL_MIX_CONTROL			= 0x32;
-    else
-      *ACL_ROUTING_CONTROL		= 0x08;
+    SET_FG_ROP(rop);
+    SET_BG_ROP_TR(rop, bg);
+      
+    SET_FG_COLOR(fg);
+    SET_BG_COLOR(bg);
 
-    *ACL_XY_DIRECTION			= 0;
+    SET_FUNCTION_COLOREXPAND;
 
-    *ACL_DESTINATION_Y_OFFSET		= tseng_line_width-1;
+    *ACL_MIX_Y_OFFSET = 0x0FFF; /* see remark below */
 
-    switch (bytesperpixel)
-    {
-      case 1:
-        fg &= 0xFF;
-        fg = (fg << 24) | (fg << 16) | (fg << 8) | fg;
-        bg &= 0xFF;
-        bg = (bg << 24) | (bg << 16) | (bg << 8) | bg;
-        break;
-      case 2:
-        fg &= 0xFFFF;
-        fg = (fg << 16) | fg;
-        bg &= 0xFFFF;
-        bg = (bg << 16) | bg;
-        break;
-    }
-
-    *ACL_SOURCE_WRAP			= 0x02;
-    *ACL_SOURCE_Y_OFFSET		= 0x3;
-    *ACL_SOURCE_ADDRESS                 = Fg;
-    *MemFg                              = fg;
-
-    *ACL_PATTERN_WRAP			= 0x02;
-    *ACL_PATTERN_Y_OFFSET		= 0x3;
-    *ACL_PATTERN_ADDRESS		= Pat;
-    *MemPat		 		= bg;
-
-    *ACL_MIX_Y_OFFSET 			= 31;
-
-    *ACL_XY_DIRECTION                   = 0;
+    *ACL_XY_DIRECTION = 0;
 
     SET_XY(w, 1);
 }
 
+
+
 void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
     int srcaddr;
 {
-/*    WAIT_XY;*/  /* this should not be needed -- but it is */
+    /* COP_FRAMEBUFFER_CONCURRENCY can cause text corruption !!!
+     *
+     * Looks like some scanline data DWORDS are not written to the ping-pong
+     * framebuffers, so that old data is rendered in some places. Is this
+     * caused by PCI host bridge queueing? ET6000 queueing? or is data lost
+     * when written while the accelerator is accessing the framebuffer
+     * (which would be the real reason NOT to use
+     * COP_FRAMEBUFFER_CONCURRENCY)?
+     *
+     * Even with ping-ponging, parts of scanline three (which are supposed
+     * to be written to the old, already rendered scanline 1 buffer) have
+     * not yet arrived in the framebuffer, and thus some parts of the new
+     * scanline are rendered with data from two lines above it.
+     *
+     * Extra problem: ET6000 queueing really needs triple buffering for
+     * this, because XAA can still overwrite scanline 1 when writing data
+     * for scanline three. Right _after_ that, the accelerator blocks on
+     * queueing in TsengSubsequentScanlineScreenToScreenColorExpand(), but
+     * then it's too late: the scanline data is already overwritten.
+     *
+     * "x11perf -fitext" is about 530k chars/sec now, but with
+     * COP_FRAMEBUFFER_CONCURRENCY, this goes up to >700k (which is similar
+     * to what Xinside can do).
+     *
+     * Needs to be investigated!
+     *
+     * Update: this seems to depend upon ACL_MIX_Y_OFFSET, although that
+     * register should not do anything at all here (only one line done at a
+     * time, so no Y_OFFSET needed). Setting the offset to 0x0FFF seems to
+     * remedy this situation most of the time (still an occasional error
+     * here and there). This _could_ be a bug in the ET6000.
+     */
+
     *ACL_MIX_ADDRESS = srcaddr;
     START_ACL(ColorExpandDst);
     ColorExpandDst += tseng_line_width;
+    
+    /*
+     * We need to wait for the queued register set to be transferred to the
+     * working register set here, because otherwise the double-buffering
+     * mechanism used by XAA could overwrite the buffer that's currently
+     * being worked with with new data too soon. This will not be necessary
+     * anymore once ScanlineScreenToScreenColorExpand supports triple (or
+     * more) buffering.
+     */
+    WAIT_QUEUE;
 }
+
 
 /*
  * W32p/ET6000 hardware linedraw code. 
@@ -471,14 +613,13 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
  * TsengSetupForFillRectSolid() is used as a setup function
  */
 
-
 void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    int x1, y1, octant, err, e1, e2, length;
 {
    int algrthm=0, direction=0;
    int destaddr;
 
-   destaddr = y1 * tseng_line_width + x1 * bytesperpixel;
+   destaddr = FBADDR(x1,y1);
    
    direction = W32BresTable[octant];
 
@@ -513,7 +654,7 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 {
    int dx, dy, xdir, ydir, adir, destaddr;
 
-   ErrorF("L");
+/*   ErrorF("L");*/
    dx = x2-x1;
    if (dx==0) ErrorF("%d,%d-%d ", x1, y1, y2);
    if (dx<0)
@@ -552,7 +693,7 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
    *ACL_XY_DIRECTION = 0x80 | (((!ydir) & 1) << 4) | (adir << 2) | (ydir << 1) | xdir;
 
-   destaddr = y1 * tseng_line_width + x1 * bytesperpixel;
+   destaddr = FBADDR(x1, y1);
    if (xdir == 1)
    {
      /* destaddr must point to highest addressed byte in the pixel when drawing
@@ -572,45 +713,71 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
 void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 {
+/*  ErrorF("X");*/
+
   PINGPONG;
 
-  *ACL_FOREGROUND_RASTER_OPERATION    = W32OpTable[rop];
-  *ACL_BACKGROUND_RASTER_OPERATION    = W32PatternOpTable[rop];
-  *ACL_ROUTING_CONTROL                = 0x02;
-  *ACL_XY_DIRECTION                   = 0;
-  *ACL_DESTINATION_Y_OFFSET           = tseng_line_width-1;
+  SET_FG_ROP(rop);
+  SET_BG_ROP_TR(rop, bg);
+      
+  *ACL_XY_DIRECTION = 0;
 
-  switch (bytesperpixel)
-  {
-    case 1:
-      fg &= 0xFF;
-      fg = (fg << 24) | (fg << 16) | (fg << 8) | fg;
-      bg &= 0xFF;
-      bg = (bg << 24) | (bg << 16) | (bg << 8) | bg;
-      break;
-    case 2:
-      fg &= 0xFFFF;
-      fg = (fg << 16) | fg;
-      bg &= 0xFFFF;
-      bg = (bg << 16) | bg;
-      break;
-  }
+  SET_FG_COLOR(fg);
+  SET_BG_COLOR(bg);
 
-  *ACL_SOURCE_ADDRESS                 = Fg;
-  *MemFg                              = fg;
-
-  *ACL_SOURCE_WRAP                    = 0x02;
-  *ACL_PATTERN_WRAP                   = 0x02;
-  *ACL_PATTERN_ADDRESS                = Pat;
-  *MemPat                             = bg;
-
-  *ACL_MIX_ADDRESS                    = 0;
-  *ACL_MIX_Y_OFFSET                   = 31;
+  SET_FUNCTION_COLOREXPAND_CPU;
+  *ACL_MIX_ADDRESS  = 0;
+  *ACL_MIX_Y_OFFSET = 31;
 }
+
+
+/*
+ * TsengSubsequentCPUToScreenColorExpand() is potentially dangerous:
+ *   Not writing enough data to the MMU aperture for CPU-to-screen color
+ *   expansion will eventually cause a system deadlock!
+ */
 
 void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
 {
-  int destaddr = y * tseng_line_width + x * bytesperpixel;
+  int destaddr = FBADDR(x,y);
+  TsengSync();
+/*  ErrorF("%d ", w);*/
   SET_XY(w, h);
-  *ACL_DESTINATION_ADDRESS = destaddr;
+  START_ACL(destaddr);
 }
+
+
+void TsengSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
+{
+  int mixaddr = FBADDR(patternx, patterny * 8);
+
+  ErrorF("8:%d,%d ", patternx, patterny);
+
+  PINGPONG;
+
+  SET_FG_ROP(rop);
+  SET_BG_ROP_TR(rop, bg);
+      
+  SET_FUNCTION_COLOREXPAND;
+
+  SET_FG_COLOR(fg);
+  SET_BG_COLOR(bg);
+
+  *ACL_MIX_ADDRESS  = mixaddr;
+  *ACL_MIX_Y_OFFSET = 0x0FFF; /* 0 */
+
+  *ACL_XY_DIRECTION = 0;
+}
+
+void TsengSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
+{
+  int destaddr = FBADDR(x,y);
+  int mixaddr = FBADDR(patternx, patterny * 8);
+  
+  ErrorF("9:%d,%d %d,%d %d,%d\n", patternx, patterny, x, y, w, h);
+
+  SET_XY(w, h);
+  *ACL_MIX_ADDRESS 		= mixaddr;
+  START_ACL(destaddr);
+}
+

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.37 1996/12/23 06:57:26 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.38 1996/12/28 08:17:28 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -98,6 +98,7 @@ typedef struct {
   unsigned char ET6KVidCtrl1;    /* ET6000 -- used for 15/16 bpp modes */
   unsigned char ET6KMemBase;     /* ET6000 -- linear memory mapped address */
   unsigned char ET6KPerfContr;   /* ET6000 -- system performance control */
+  unsigned char ET6KMclkM, ET6KMclkN; /* memory clock values */
 #ifdef W32_SUPPORT
   unsigned char SegMapComp;     /* CRTC 0x30 */
   unsigned char VSConf1;        /* CRTC 0x36 */
@@ -157,6 +158,7 @@ static unsigned char    initialIMAPortCtrl = 0x20;
 static unsigned char    initialET6KMemBase = 0xF0;
 #endif
 #endif
+static unsigned char    initialET6KMclkM = 0x56, initialET6KMclkN = 0x25;
 static unsigned char    initialET6KPerfContr = 0x3a;
 
 static unsigned char    save_VSConf1=0x03;
@@ -884,19 +886,17 @@ ET4000Probe()
    * Linear mode and >8bpp mode handling
    */
 
+  if (et4000_type >= TYPE_ET6000)  /* currently only ET6000 has >8bpp */
+  {
+    ET4000.ChipHas16bpp = TRUE;
+    ET4000.ChipHas24bpp = TRUE;
+    ET4000.ChipHas32bpp = TRUE;
+  }
+
   /* Use banked addressing by default. */
   if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
   {
-    if (ET4000LinMem())
-    {
-      if (et4000_type >= TYPE_ET6000)  /* currently only ET6000 has >8bpp */
-      {
-        ET4000.ChipHas16bpp = TRUE;
-        ET4000.ChipHas24bpp = TRUE;
-        ET4000.ChipHas32bpp = TRUE;
-      }
-    }
-    else
+    if (!ET4000LinMem())
       ErrorF("%s %s: Linear memory mode not supported on this device.\n",
              XCONFIG_PROBED, vga256InfoRec.name);
   }
@@ -928,7 +928,18 @@ ET4000Probe()
          vga256InfoRec.videoRam = 4096-8;
       }
     }
+
+    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+    {
+      ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+      vga256InfoRec.videoRam -= 1; /* 1kb reserved for accelerator code */
+    }
   }
+#endif
+
+#ifndef MONOVGA
+    OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
 #endif
 
   if (et4000_type < TYPE_ET6000)
@@ -942,7 +953,6 @@ ET4000Probe()
     OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
-    OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
 #endif
 
 #ifdef W32_ACCEL_SUPPORT
@@ -1030,8 +1040,13 @@ ET4000Probe()
 #endif
     if (et4000_type == TYPE_ET6000)
     {
+      int tmp = inb(ET6Kbase+0x67);
       initialET6KMemBase   = inb(ET6Kbase+0x13);
       initialET6KPerfContr = inb(ET6Kbase+0x41);
+      outb(ET6Kbase+0x67, 10);
+      initialET6KMclkM = inb(ET6Kbase+0x69);
+      initialET6KMclkN = inb(ET6Kbase+0x69);
+      outb(ET6Kbase+0x67, tmp);
     }
 #endif
 
@@ -1221,7 +1236,13 @@ ET4000Restore(restore)
        outb(ET6Kbase+0x67, 2);
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_M);
        outb(ET6Kbase+0x69, restore->gendac.PLL_f2_N);
-
+       /* set MClk values if needed, but don't touch them if not needed */
+       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+       {
+         outb(ET6Kbase+0x67, 10);
+         outb(ET6Kbase+0x69, restore->ET6KMclkM);
+         outb(ET6Kbase+0x69, restore->ET6KMclkN);
+       }
        /* restore old index register */
        outb(ET6Kbase+0x67, i);
     }
@@ -1406,7 +1427,10 @@ ET4000Save(save)
        outb(ET6Kbase+0x67, 2);
        save->gendac.PLL_f2_M = inb(ET6Kbase+0x69);
        save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
-       
+       /* save MClk values */
+       outb(ET6Kbase+0x67, 10);
+       save->ET6KMclkM = inb(ET6Kbase+0x69);
+       save->ET6KMclkN = inb(ET6Kbase+0x69);
        /* restore old index register */
        outb(ET6Kbase+0x67, i);
     }
@@ -1668,14 +1692,14 @@ ET4000Init(mode)
     else
 #endif
 
-    if (et4000_type==TYPE_ET6000)
+    if (et4000_type>=TYPE_ET6000)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
        commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,1,3,
                  100000,vga256InfoRec.dacSpeed*2, 
        		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
 
-       ErrorF("M=0x%x ; N=0x%x\n",new->gendac.PLL_f2_M, new->gendac.PLL_f2_N);
+       /* ErrorF("M=0x%x ; N=0x%x\n",new->gendac.PLL_f2_M, new->gendac.PLL_f2_N);*/
        /* above 100MB/sec, we enable the "LOW FIFO threshold" */
        if (vga256InfoRec.clock[new->std.NoClock] * BytesPerPix > 100000)
        {
@@ -1684,6 +1708,30 @@ ET4000Init(mode)
        else
        {
          new->ET6KPerfContr = initialET6KPerfContr & ~0x10;
+       }
+
+       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+       {
+         /*
+          * FAST_DRAM sets the memory clock to 100 MHz instead of the
+          * standard 90 MHz. The lowest speed-grade of the MDRAMs is 100 MHz
+          * anyway, and the ET6000 core is designed to run at 135 MHz.
+          *
+          * For the tweakers: every step increment of ET6KMclkM with 1
+          * increases the memory clock with about 2.5 MHz: Memory clock =
+          * (ET6KMclkM+2)*14.31818/(2*3).
+          *
+          * 0x28 = 100 MHz ; 0x2C = 110 MHz; 0x30 = 120 MHz.
+          *   120 MHz causes permanent mayhem on my system 
+          *    -- don't try this at home!
+          */
+         new->ET6KMclkM = 0x28;
+         new->ET6KMclkN = 0x21;
+       }
+       else
+       {
+         new->ET6KMclkM = initialET6KMclkM;
+         new->ET6KMclkN = initialET6KMclkN;
        }
 
        /* force clock #2 */
@@ -1782,7 +1830,10 @@ ET4000Init(mode)
   {
     if (et4000_type==TYPE_ET6000)
     {
-      new->ET6KMMAPCtrl |= 0x02;
+      if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+        new->ET6KMMAPCtrl |= 0x02; /* MMU can't be used here (causes system hang...) */
+      else
+        new->ET6KMMAPCtrl |= 0x06; /* MMU is needed in banked accelerated mode */
     }
     else
     {

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.0 1996/12/17 21:00:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.1 1996/12/28 08:17:33 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -120,6 +120,9 @@ extern LongP CPU2ACLBase;
 #define WAIT_QUEUE \
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1);}
 
+#define WAIT_QUEUE_VERBOSE \
+{ int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x1) cnt++; ErrorF("Q%d ",cnt);}
+
 
 #define WAIT_ACL_VERBOSE \
   { int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) cnt++; ErrorF("W%d ",cnt);}
@@ -139,7 +142,12 @@ extern LongP CPU2ACLBase;
 
 
 #define SET_XY(X, Y) \
-    {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) * bytesperpixel - 1);}
+    { \
+      if (et4000_type >= TYPE_ET6000) \
+        *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) * bytesperpixel - 1); \
+      else \
+        *((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X-1) * bytesperpixel); \
+    }
 
 #define SET_XY_RAW(X, Y) \
     {*((LongP) ACL_X_COUNT) = ((Y) << 16) + (X);}
