@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.48 2001/05/02 20:10:44 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.49 2001/05/03 17:38:36 dawes Exp $ */
 
 /*
  *
@@ -1544,7 +1544,7 @@ vgaHWAllocRegs(vgaRegPtr regp)
 }
 
 
-static Bool
+Bool
 vgaHWAllocDefaultRegs(vgaRegPtr regp)
 {
     regp->numCRTC = VGA_NUM_CRTC;
