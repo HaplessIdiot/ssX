@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 360. Fix Darwin build problems with libXrandr and the new FreeType2 backend
+      (Torrey T. Lyons).
  359. Savage driver updates.
       - Support for ProSavage DDR (PCI ID 0x8D04)
       - TV output fixes
@@ -15238,4 +15240,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2321 2002/10/01 14:31:42 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2322 2002/10/02 20:39:52 alanh Exp $

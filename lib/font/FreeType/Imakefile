@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.21 2002/10/01 00:02:09 alanh Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -10,8 +10,11 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 SUBDIRS = module
 #endif
 
+#ifdef DarwinArchitecture
+DEFINES = -DDARWIN_NO_CARBON ServerExtraDefines StrcasecmpDefines
+#else
 DEFINES = ServerExtraDefines StrcasecmpDefines
-	  
+#endif
 
 INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/include \
