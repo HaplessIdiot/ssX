@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.4 2003/11/13 04:01:04 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,9 +38,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#if !defined(linux) || defined(__GLIBC__)
-#include <inttypes.h>
-#endif
 #include "dri_util.h"
 #include "radeon_common.h"
 #include "texmem.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.10 2003/11/13 04:01:03 tsi Exp $ */
 /**
  * \file dri_util.c
  * DRI utility functions.
@@ -18,9 +18,6 @@
 
 #ifdef GLX_DIRECT_RENDERING
 
-#if !defined(linux) || defined(__GLIBC__)
-#include <inttypes.h>
-#endif
 #include <assert.h>
 #include <stdarg.h>
 #include <unistd.h>
