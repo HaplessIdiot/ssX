@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.141 2003/03/19 01:49:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.142tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -501,6 +501,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define ByteOrder		X_BIG_ENDIAN
 #endif
 #endif /* ByteOrder */
+X_BYTE_ORDER = ByteOrder
+
 #ifndef HasFortran
 #define HasFortran		NO
 #endif
