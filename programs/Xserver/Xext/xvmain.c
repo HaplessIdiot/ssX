@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.9 2000/03/30 18:20:36 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.10 2000/09/04 00:22:54 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -1125,9 +1125,12 @@ XvdiMatchPort(
 
   while (nf--)
     {
-      if ((pf->depth == pDraw->depth) &&
-	  ((pDraw->type == DRAWABLE_PIXMAP) || 
-	   (wVisual(((WindowPtr)pDraw)) == pf->visual)))
+      if ((pf->depth == pDraw->depth) 
+#if 0
+         && ((pDraw->type == DRAWABLE_PIXMAP) || 
+	   (wVisual(((WindowPtr)pDraw)) == pf->visual))
+#endif
+	)
 	return Success;
       pf++;
     }
