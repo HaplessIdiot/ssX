@@ -25,7 +25,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.8 2000/10/26 13:41:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.9 2000/12/20 11:13:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -382,7 +382,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
-	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x10;
+	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x18;
 	    pReg->DacRegs[PM2VDACRDOverlayKey] = pScrn->colorKey;
 	}
     	break;

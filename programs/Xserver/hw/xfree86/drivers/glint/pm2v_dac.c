@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.17 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.18 2000/12/20 11:13:02 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -252,7 +252,7 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
-	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x10;
+	    pReg->DacRegs[PM2VDACRDMiscControl] |= 0x18;
 	    pReg->DacRegs[PM2VDACRDOverlayKey] = pScrn->colorKey;
 	}
     	break;
