@@ -23,7 +23,9 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.c,v 1.3 2000/06/27 21:26:33 tsi Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/reqstats.c,v 1.4 2001/01/17 19:43:36 dawes Exp $ */
+
+#include "reqstats.h"
 
 #ifdef LBXREQSTATS
 
@@ -32,7 +34,6 @@ from The Open Group.
 #define _XLBX_SERVER_
 #include "XLbx.h"
 #include "lbx_zlib.h"
-#include "reqstats.h"
 #include <signal.h>
 #include <stdio.h>
 
@@ -491,6 +492,8 @@ do_decompress_with_stats (struct compress_private *priv)
 
 #else
 
-static char ANSICCanBeSoBloatingAtTimes = 1;
+void
+InitLbxReqStats()
+{}
 
 #endif /* LBXREQSTATS */
