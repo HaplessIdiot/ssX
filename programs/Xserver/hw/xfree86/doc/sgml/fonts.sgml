@@ -9,7 +9,7 @@
 <date>17 November 2003</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.20 2003/01/20 03:43:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.21 2003/11/18 00:14:03 dawes Exp $
 </ident>
 
 <toc>
@@ -1062,7 +1062,7 @@ option=value:
 and should be specified before the filename.  The new <it/FreeType/
 almost perfectly supports TTCap options that are compatible with X-TT
 1.4.  The Automatic Italic (`<tt/ai/'), Double Strike (`<tt/ds/') and
-Bounding box Width (`<tt/bw/') options are are indispensable in CJKV.
+Bounding box Width (`<tt/bw/') options are indispensable in CJKV.
 For example,
 
 <tscreen><verb>
@@ -1115,11 +1115,13 @@ backend -- its `very lazy' method is super-fast.
 The maximum error of bitmap position using `very lazy' method is 1 pixel,
 and is the same as that of a character-cell spacing.  When the X-TT
 backend is used with the `<tt/vl=y/' option, a chipped bitmap is displayed
-with certain fonts.  However, the new FreeType backend has minimal
-problem with this, since it uses `italicAngle' in the TrueType/OpenType
-post table, and does automatic correction of bitmap positions.
-Nevertheless if you don't want to use the `very lazy' method when using
-multi-bytes fonts, set `<tt/vl=n/' in the TTCap option to disable it:
+with certain fonts.  However, the new FreeType backend has minimal problem
+with this, since it corrects left- and right-side bearings using
+`italicAngle' in the TrueType/OpenType post table, and does automatic
+correction of bitmap positions when rasterisation so that chipped bitmaps
+are not displayed.  Nevertheless if you don't want to use the `very lazy'
+method when using multi-bytes fonts, set `<tt/vl=n/' in the TTCap option to
+disable it:
 
 <tscreen><verb>
 vl=n:luxirr.ttf -b&amp;h-Luxi Serif-medium-r-normal--0-0-0-0-p-0-iso10646-1

@@ -963,7 +963,7 @@ by X-TrueType with a number of options, collectively known as `TTCap'.  A
 and should be specified before the filename.  The new FreeType almost per-
 fectly supports TTCap options that are compatible with X-TT 1.4.  The Auto-
 matic Italic (`ai'), Double Strike (`ds') and Bounding box Width (`bw')
-options are are indispensable in CJKV.  For example,
+options are indispensable in CJKV.  For example,
 
      mincho.ttc -misc-mincho-medium-r-normal--0-0-0-0-c-0-jisx0208.1990-0
      ds=y:mincho.ttc -misc-mincho-bold-r-normal--0-0-0-0-c-0-jisx0208.1990-0
@@ -1009,10 +1009,11 @@ The maximum error of bitmap position using `very lazy' method is 1 pixel, and
 is the same as that of a character-cell spacing.  When the X-TT backend is
 used with the `vl=y' option, a chipped bitmap is displayed with certain
 fonts.  However, the new FreeType backend has minimal problem with this,
-since it uses `italicAngle' in the TrueType/OpenType post table, and does
-automatic correction of bitmap positions.  Nevertheless if you don't want to
-use the `very lazy' method when using multi-bytes fonts, set `vl=n' in the
-TTCap option to disable it:
+since it corrects left- and right-side bearings using `italicAngle' in the
+TrueType/OpenType post table, and does automatic correction of bitmap posi-
+tions when rasterisation so that chipped bitmaps are not displayed.  Never-
+theless if you don't want to use the `very lazy' method when using multi-
+bytes fonts, set `vl=n' in the TTCap option to disable it:
 
      vl=n:luxirr.ttf -b&h-Luxi Serif-medium-r-normal--0-0-0-0-p-0-iso10646-1
 
@@ -1175,7 +1176,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; see
 for example RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.21 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.22 dawes Exp $
 
 
 $XFree86: $
