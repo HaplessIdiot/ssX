@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.107 2003/09/28 20:15:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.108 2003/10/07 22:47:12 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1969,7 +1969,9 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     GDevPtr        dev    = pEnt->device;
     MessageType    from;
     unsigned char *RADEONMMIO = info->MMIO;
+#ifdef XF86DRI
     const char *s;
+#endif
 
 				/* Chipset */
     from = X_PROBED;
@@ -5724,9 +5726,11 @@ static void RADEONInitDispBandwidth(ScrnInfoPtr pScrn)
 	/* DDR64 SCLK_EFF = SCLK for analysis */
 	sclk_eff = info->sclk;
     } else {
+#ifdef XF86DRI
 	if (info->directRenderingEnabled)
 	    sclk_eff = info->sclk - (info->agpMode * 50.0 / 3.0);
 	else
+#endif
 	    sclk_eff = info->sclk;
     }
 
