@@ -1,7 +1,7 @@
 XCOMM $TOG: X11.rules /main/4 1997/04/30 15:23:24 kaleb $
 
 
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/config/cf/X11.rules,v 1.4 1997/09/09 11:56:20 hohndel Exp $
 
 /* Note whether we are the top level project. */
 #ifndef SeenTopLevelProject
@@ -67,14 +67,18 @@ XCOMM $XFree86: $
 #endif
 #define LdPostLibs	LdPostLib XLdPostLibs
 
-#if ImportX11
-# define TopXInclude	-I$(TOP)/imports/x11/include
-#elif !UseInstalledX11
-# define TopXInclude	-I$(TOP)/exports/include
-#elif defined(X11ProjectRoot)
-# define TopXInclude	-I$(XPROJECTROOT)/include
+#ifndef TopXInclude
+# if ImportX11 
+#  define TopXInclude	-I$(TOP)/imports/x11/include
+# elif !UseInstalledX11
+#  define TopXInclude	-I$(TOP)/exports/include
 #else
-# define TopXInclude	/**/
+#  ifdef X11ProjectRoot
+#   define TopXInclude	-I$(XPROJECTROOT)/include
+#  else
+#   define TopXInclude	/**/
+#  endif
+# endif
 #endif
 #ifdef TopIncludes
 # undef TopIncludes

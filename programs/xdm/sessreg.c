@@ -26,7 +26,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.11 1998/10/10 15:25:39 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.13 2000/05/31 07:15:12 eich Exp $ */
 
 /*
  * sessreg
@@ -75,8 +75,10 @@
 #endif
 
 #ifdef CSRG_BASED
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
 /* *BSD doesn't like a ':0' type entry in utmp */
 #define NO_UTMP
+#endif
 #endif
 
 #ifndef WTMP_FILE

@@ -1,52 +1,59 @@
-// $XConsortium: basic,v 1.3 94/04/08 15:54:51 erik Exp $
-xkb_compatibility "basic" 
+// $XConsortium: basic /main/5 1995/12/07 21:32:21 kaleb $
 
-// Minimal set of symbol interpretations to provide reasonable
-// default behavior (Num lock, shift and caps lock and mode switch).
-// Shift does *not* cancel lock with this version
+// Minimal set of symbol interpretations to provide 
+// reasonable default behavior (Num lock, shift and 
+// caps lock and mode switch) and set up the 
+// automatic updating of common keyboard LEDs.
 
-virtual_modifiers NumLock,AltGr;
+// $XFree86$
 
-interpret.repeat= False;
-setMods.clearLocks= True;
-latchMods.clearLocks= True;
-latchMods.latchToLock= True;
+default xkb_compatibility "basic"  {
+    virtual_modifiers NumLock,AltGr;
 
-interpret Shift_Lock+AnyOf(Shift+Lock) {
+    interpret.repeat= False;
+    setMods.clearLocks= True;
+    latchMods.clearLocks= True;
+    latchMods.latchToLock= True;
+
+    interpret Shift_Lock+AnyOf(Shift+Lock) {
 	action= LockMods(modifiers=Shift);
-};
+    };
 
-interpret Any+Lock {
+    interpret Any+Lock {
 	action= LockMods(modifiers=Lock);
-};
+    };
 
-interpret Num_Lock+Any {
+    interpret Num_Lock+Any {
 	virtualModifier= NumLock;
 	action= LockMods(modifiers=NumLock);
-};
+    };
 
-interpret Mode_switch {
+    interpret Mode_switch {
 	useModMapMods= level1;
 	virtualModifier= AltGr;
-	action= SetGroup(group=2);
-};
+	action= SetGroup(group=+1);
+    };
 
-interpret Any + Any {
+    interpret Any + Any {
 	action= SetMods(modifiers=modMapMods);
-};
+    };
 
-modifier AltGr { groups= All-Group1; };
-modifier NumLock { modifiers= Mod2; };
+    group 2 = AltGr;
+    group 3 = AltGr;
+    group 4 = AltGr;
 
-indicator.allowExplicit= False;
-indicator "Caps Lock" { 
-    modifiers= Lock;
+    indicator.allowExplicit= False;
+    indicator "Caps Lock" { 
+	whichModState= Locked;
+	modifiers= Lock;
+    };
+    indicator "Num Lock" {
+	whichModState= Locked;
+	modifiers= NumLock;
+    };
+    indicator "Shift Lock" {
+	whichModState= Locked;
+	modifiers= Shift;
+    };
+    indicator.allowExplicit= True;
 };
-indicator "Num Lock" {
-    modifiers= NumLock;
-};
-indicator "Shift Lock" {
-    whichModState= Locked;
-    modifiers= Shift;
-};
-indicator.allowExplicit= True;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.1 2000/02/12 20:45:42 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -79,6 +79,7 @@ pciBusInfo_t freebsdPci0 = {
 /* pciBusPriv  */	  NULL
 };
 
+#if !defined(__OpenBSD__)
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #ifdef __sparc__
 #ifndef ASI_PL
@@ -96,6 +97,11 @@ __ret;											\
 			 ((val << 24) & 0xff000000))
 #endif
 #else
+#define PCI_CPU(val)	(val)
+#endif
+#else /* ! OpenBSD */
+/* OpenBSD has already the bytes in the right order 
+   for all architectures */
 #define PCI_CPU(val)	(val)
 #endif
 

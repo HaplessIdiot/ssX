@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.3 2000/03/05 23:47:50 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -28,7 +28,7 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
     int  i, ret;
 
 #ifdef DEBUG
-    ErrorF("xf86SetXDDCprop(%p, %p)\n", pScrnInfo, DDC);
+    ErrorF("xf86SetDDCproperties(%p, %p)\n", pScrnInfo, DDC);
 #endif
 
     if (pScrnInfo==NULL || pScrnInfo->monitor==NULL || DDC==NULL) {
@@ -60,19 +60,13 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
       ErrorF("xf86RegisterRootWindowProperty %p(%d,%d,%d,%d,%d,%p)\n",
 	     xf86RegisterRootWindowProperty,
 	     pScrnInfo->scrnIndex,
-	     EDID1Atom, XA_STRING, 8,
+	     EDID1Atom, XA_INTEGER, 8,
 	     128, (unsigned char *)EDID1rawdata  );
 #endif
 
       ret = xf86RegisterRootWindowProperty(pScrnInfo->scrnIndex,
 					   EDID1Atom, XA_INTEGER, 8, 
-#if 1
 					   128, (unsigned char *)EDID1rawdata
-#else
-#define EDID1_DUMMY_STRING "Dummy EDID1 property - please insert correct values"
-					   strlen(EDID1_DUMMY_STRING),
-					   EDID1_DUMMY_STRING 
-#endif
 					   );
 #ifdef DEBUG
       ErrorF("xf86RegisterRootWindowProperty returns %d\n", ret );
@@ -80,15 +74,35 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 
     } else if (DDC->ver.version == 2) {
       if ( (EDID2rawdata = xalloc(256*sizeof(CARD8)))==NULL ) {
-	xfree(EDID1rawdata);
+	xfree(EDID2rawdata);
 	return FALSE;
+      }
+      for (i=0; i<256; i++) {
+	EDID2rawdata[i] = DDC->rawData[i];
       }
 
       EDID2Atom = MakeAtom(EDID2_ATOM_NAME, sizeof(EDID2_ATOM_NAME), TRUE);
 
-      xf86DrvMsg(pScrnInfo->scrnIndex, X_PROBED,
-		 "ignoring property %s for now - please fix\n",
-		 EDID2_ATOM_NAME);
+#ifdef DEBUG
+      ErrorF("xf86RegisterRootWindowProperty %p(%d,%d,%d,%d,%d,%p)\n",
+	     xf86RegisterRootWindowProperty,
+	     pScrnInfo->scrnIndex,
+	     EDID2Atom, XA_INTEGER, 8,
+	     256, (unsigned char *)EDID2rawdata  );
+#endif
+      ret = xf86RegisterRootWindowProperty(pScrnInfo->scrnIndex,
+					   EDID2Atom, XA_INTEGER, 8, 
+#if 1
+					   256, (unsigned char *)EDID1rawdata
+#else
+#define EDID2_DUMMY_STRING "Dummy EDID2 property - please insert correct values"
+					   strlen(EDID2_DUMMY_STRING),
+					   EDID2_DUMMY_STRING 
+#endif
+					   );
+#ifdef DEBUG
+      ErrorF("xf86RegisterRootWindowProperty returns %d\n", ret );
+#endif
     } else {
      xf86DrvMsg(pScrnInfo->scrnIndex, X_PROBED,
 		"unexpected EDID version %d revision %d\n",

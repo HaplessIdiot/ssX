@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.44 2000/08/15 16:05:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.45 2000/08/16 01:45:29 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -29,6 +29,9 @@ SHARED_CFLAGS = PositionIndependentCFlags
  IOPERMDEFINES = -DUSE_ARC_MMAP
 # elif defined(Arm32Architecture)
  IOPERMDEFINES = -DUSE_ARM32_MMAP
+# elif defined(PpcArchitecture)
+  IOPERM_SRC = ioperm_noop.c
+  IOPERM_OBJ = ioperm_noop.o
 # else
  IOPERMDEFINES = -DUSE_I386_IOPL
 # endif
@@ -65,7 +68,8 @@ SUBDIRS = libusb
 #endif
 
 
-#if defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)
+#if (defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)) \
+	&& defined(i386Architecture)
 APMSRC = bsd_apm.c
 APMOBJ = bsd_apm.o
 #else
@@ -113,7 +117,7 @@ OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        $(AXP_OBJ) $(KMODOBJ) $(AGP_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES) \
+           -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi $(APINCLUDES) \
 	    $(LIBUSBINCLUDES)
 
 CONSDEFINES = XFree86ConsoleDefines
@@ -122,7 +126,7 @@ RESDEFINES = -DUSESTDRES
 #if HasNetBSDApertureDriver
 APDIR = NetBSDApertureDir
 APDEFINES = -DHAS_APERTURE_DRV
-APINCLUDES = $(APDIR)/include
+APINCLUDES = -I$(APDIR)/include
 #endif
 
 DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES) $(RESDEFINES) \
@@ -154,7 +158,8 @@ InstallDynamicModule(bsd_jstk.o,$(MODULEDIR),input)
 # endif
 #endif
 
-#if !defined(NetBSDArchitecture) && !defined(OpenBSDArchitecture)
+#if !defined(NetBSDArchitecture) && !defined(OpenBSDArchitecture) || \
+	!defined(i386Architecture)
 LinkSourceFile(pm_noop.c,../shared)
 #endif
 LinkSourceFile(ioperm_noop.c,../shared)
