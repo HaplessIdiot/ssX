@@ -81,6 +81,9 @@ NOTES:
      is present in the binaries sub-directory for your platform, then it is
      required.
 
+   o The Darwin/Mac OS X distribution doesn't have or require the Xmod.tgz
+     tarball.
+
    o Some distributions may have additional mandatory tarballs.  While rare,
      the installer script will tell you if any are missing.
 
@@ -232,6 +235,10 @@ xf86config utility.  Another is to use the new -configure X server option:
 
      XFree86 -configure
 
+Note that if you are running Darwin/Mac OS X, there is no step 3 :-).  You
+should skip this step, as configuration is not required or possible.  The X
+server configuration file is not used on Darwin/Mac OS X.
+
 The X server config file (XF86Config) format has changed compared to 3.3.x.
 Also, its default location is now /etc/X11.  Finally, there is now only one X
 server for driving video hardware, and it is called "XFree86".  Once you're
@@ -344,7 +351,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.7 2000/07/03 16:51:11 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.8 2000/12/14 01:06:01 dawes Exp $
 
 
 $XFree86$

@@ -50,6 +50,8 @@ enough space to cover it all here.
 
 2.1  X server
 
+   o Darwin/Mac OS X is now supported and the X server runs on PowerPC.
+
    o New DRI drivers for Intel i810, Matrox G400 and G200 (AGP only) and the
      ATI Rage 128, and updates to the 3Dfx DRI driver, including Voodoo5 sup-
      port.
@@ -241,8 +243,9 @@ modules that are needed.
 
 XFree86 4.0.2 has X server support for most UNIX(R) and UNIX-like operating
 systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC and
-Sparc platforms.  Work on support for additional architectures and operating
-systems is in progress, and is planned for future releases.
+Sparc platforms, and for Darwin on PowerPC.  Work on support for additional
+architectures and operating systems is in progress, and is planned for future
+releases.
 
 3.1  Loader and Modules
 
@@ -711,6 +714,9 @@ Drivers marked with (*) are present in a preliminary form in this release,
 but are not complete and/or stable yet.
 
 Drivers marked with (+) are for Linux/Sparc only.
+
+Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
+listed above. Further information can be found in README.Darwin.
 
 3.12.1  APM
 
@@ -1215,7 +1221,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.45 2000/12/11 19:42:02 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.46 2000/12/14 01:06:01 dawes Exp $
 
 
 $XFree86$
