@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa4.c,v 1.9 2001/10/31 22:50:23 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -36,6 +36,7 @@
 #include "glxheader.h"
 #include "depth.h"
 #include "macros.h"
+#include "mmath.h"
 #include "vb.h"
 #include "types.h"
 #include "xmesaP.h"

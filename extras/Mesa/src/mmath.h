@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.10 2001/10/28 03:32:06 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -285,6 +285,28 @@ do {						\
 
 #endif
 
+#ifdef USE_IEEE
+/* LITTLE_ENDIAN - add other architectures here */
+#if defined(__i386__) || defined(__alpha__)
+#define IEEE_INF 0x7fc00000 
+#define IEEE_NAN 0x7f800000
+/* BIG_ENDIAN - add other architectures here */
+#elif defined(__mc68000__) || defined(__ppc__) || defined(__sparc__)
+#define IEEE_INF 0x7fffffff
+#define IEEE_NAN 0x7f800000
+#else
+#error "Need to define IEEE_INF and IEEE_NAN for your architecture"
+#endif
+/* Returns TRUE for x == Inf or x == NaN. */
+static INLINE int IS_INF_OR_NAN( float x )
+{
+   union {float f; int i;} tmp;
+   tmp.f = x;
+   return tmp.i == IEEE_INF || tmp.i == IEEE_NAN;
+}
+#else
+#define IS_INF_OR_NAN(x)        (!finite(x)) 
+#endif
 
 extern float gl_ubyte_to_float_color_tab[256];
 extern float gl_ubyte_to_float_255_color_tab[256];

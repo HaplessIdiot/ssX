@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4.1
@@ -150,7 +150,7 @@
       if (area * bf < 0.0)
 	 return;
 
-      if (area == 0.0F)
+      if (area == 0.0F || IS_INF_OR_NAN(area) )
          return;
 
       /* check for very tiny triangle */

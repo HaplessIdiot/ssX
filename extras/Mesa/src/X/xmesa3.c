@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa3.c,v 1.10 2001/10/31 22:50:23 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -36,6 +36,7 @@
 #include "glxheader.h"
 #include "depth.h"
 #include "macros.h"
+#include "mmath.h"
 #include "vb.h"
 #include "types.h"
 #include "xmesaP.h"
@@ -67,9 +68,14 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
 	    const GLubyte *color = VB->ColorPtr->data[i];
             unsigned long pixel = xmesa_color_to_pixel( xmesa,
                           color[0], color[1], color[2], color[3], xmesa->pixelformat);
+	    GLfloat *win = VB->Win.data[i];
+
+	    if (IS_INF_OR_NAN(win[0] + win[1]))
+		    continue;
+
             XMesaSetForeground( dpy, gc, pixel );
-            x =                         (GLint) VB->Win.data[i][0];
-            y = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[i][1] );
+            x =                         (GLint) win[0];
+            y = FLIP( xmesa->xm_buffer, (GLint) win[1] );
             XMesaDrawPoint( dpy, buffer, gc, x, y);
          }
       }
@@ -79,9 +85,14 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
       for (i=first;i<=last;i++) {
          if (VB->ClipMask[i]==0) {
             register int x, y;
+	    GLfloat *win = VB->Win.data[i];
+
+	    if (IS_INF_OR_NAN(win[0] + win[1]))
+		    continue;
+
             XMesaSetForeground( dpy, gc, VB->IndexPtr->data[i] );
-            x =                         (GLint) VB->Win.data[i][0];
-            y = FLIP( xmesa->xm_buffer, (GLint) VB->Win.data[i][1] );
+            x =                         (GLint) win[0];
+            y = FLIP( xmesa->xm_buffer, (GLint) win[1] );
             XMesaDrawPoint( dpy, buffer, gc, x, y);
          }
       }

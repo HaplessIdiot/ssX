@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.13 2001/10/31 22:50:22 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -95,6 +95,17 @@
    GLfloat hu01 = 0, dhu1 = 0;
    GLfloat hv01 = invw0, dhv1 = invw1 - invw0;
 #endif
+
+   /* Cull primitives with malformed coordinates.
+    */
+   {
+      float tmp = VB->Win.data[vert0][0] + 
+	          VB->Win.data[vert0][1] + 
+		  VB->Win.data[vert1][0] + 
+		  VB->Win.data[vert1][1];
+      if (IS_INF_OR_NAN(tmp))
+	 return;
+   }
 
    if (dx == 0 && dy == 0)
       return;
