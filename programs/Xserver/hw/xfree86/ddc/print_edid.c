@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.12 2000/06/07 22:03:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.13 2000/07/11 01:46:35 tsi Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -96,15 +96,15 @@ print_input_features(int scrnIndex, struct disp_features *c)
 	}
 	if (SIG_SETUP(c->input_setup))
 	    xf86DrvMsg(scrnIndex,X_INFO,"Signal levels configurable\n");
-	xf86DrvMsg(scrnIndex,X_INFO,"Sync:   ");
+	xf86DrvMsg(scrnIndex,X_INFO,"Sync:");
 	if (SEP_SYNC(c->input_sync))
-	    xf86ErrorF("Separate   ");
+	    xf86ErrorF("  Separate");
 	if (COMP_SYNC(c->input_sync))
-	    xf86ErrorF("Composite   ");
+	    xf86ErrorF("  Composite");
 	if (SYNC_O_GREEN(c->input_sync))
-	    xf86ErrorF("SyncOnGreen   ");
+	    xf86ErrorF("  SyncOnGreen");
 	if (SYNC_SERR(c->input_sync)) 
-	    xf86ErrorF("\n           Serration on"
+	    xf86ErrorF("Serration on. "
 		       "V.Sync Pulse req. if CompSync or SyncOnGreen\n");
 	else xf86ErrorF("\n");
     }

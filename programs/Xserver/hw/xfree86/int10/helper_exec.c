@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.2 2000/02/08 13:13:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.4 2000/05/31 07:15:06 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -577,17 +577,6 @@ pciCfg1out(CARD16 addr, CARD32 val)
     return 0;
 }
 #endif
-
-CARD8
-bios_checksum(CARD8 *start, int size)
-{
-    int i;
-    CARD8 val = 0;
-    
-    for (i = 0; i < size; i++)
-	val += *start++;
-    return val;
-}
 
 /*
  * Lock/Unlock legacy VGA. Some Bioses try to be very clever and make

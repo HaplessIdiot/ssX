@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.5 1999/12/03 19:17:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.7 2000/04/17 16:29:55 eich Exp $ */
 
 /* interpret_edid.c: interpret a primary EDID block
  * 
@@ -158,9 +158,10 @@ copy_string(Uchar *c, Uchar *s)
 {
   int i;
   c = c + 5;
-  for (i = 0; (i < 13 && *s != 0x0A); i++) 
+  for (i = 0; (i < 13 && *c != 0x0A); i++) 
     *(s++) = *(c++);
   *s = 0;
+  while (i-- && (*--s == 0x20)) *s = 0;
 }
 
 static void

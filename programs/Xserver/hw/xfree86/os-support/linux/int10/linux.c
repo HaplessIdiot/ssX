@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.11 2000/05/31 07:15:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.12 2000/07/11 01:46:37 tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -113,7 +113,7 @@ xf86InitInt10(int entityIndex)
     pInt->private = (pointer)xnfcalloc(1,sizeof(linuxInt10Priv));
     ((linuxInt10Priv*)pInt->private)->screen = screen;
     ((linuxInt10Priv*)pInt->private)->alloc = 
-	(pointer)xnfcalloc(1,sizeof(ALLOC_ENTRIES(pagesize)));
+	(pointer)xnfcalloc(1,ALLOC_ENTRIES(pagesize));
 
 #ifdef DEBUG
     ErrorF("Mapping high memory area\n");
