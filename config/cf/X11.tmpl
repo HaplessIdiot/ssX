@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.197 2003/03/19 01:49:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.198 2003/03/25 04:18:03 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2185,14 +2185,14 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define GLwUseXmStubs		NO	/* create stub (weak) Motif symbols */
 #endif
 #else
-#undef  SharedLibGlw
-#define SharedLibGlw		NO
-#undef  NormalLibGlw
-#define NormalLibGlw		NO
-#undef  DebugLibGlw
-#define DebugLibGlw		NO
-#undef  ProfileLibGlw
-#define ProfileLibGlw		NO
+#undef  SharedLibGLw
+#define SharedLibGLw		NO
+#undef  NormalLibGLw
+#define NormalLibGLw		NO
+#undef  DebugLibGLw
+#define DebugLibGLw		NO
+#undef  ProfileLibGLw
+#define ProfileLibGLw		NO
 #endif
 
 #ifndef SharedLibXext
