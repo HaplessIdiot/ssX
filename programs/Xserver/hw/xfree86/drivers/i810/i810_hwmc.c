@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_hwmc.c,v 1.1 2001/09/27 08:25:04 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -93,7 +93,7 @@ static XF86MCImageIDList yv12_subpicture_list =
   yv12_subpicture_index_list
 };
  
-static XF86MCSurfaceInfoRec i810_YV12_surface =
+static XF86MCSurfaceInfoRec i810_YV12_mpg2_surface =
 {
     FOURCC_YV12,  
     XVMC_CHROMA_FORMAT_420,
@@ -102,14 +102,31 @@ static XF86MCSurfaceInfoRec i810_YV12_surface =
     576,
     720,
     576,
-    XVMC_MPEG_2 | XVMC_MPEG_1,
-    XVMC_OVERLAID_SURFACE | XVMC_SUBPICTURE_INDEPENDENT_SCALING,
+    XVMC_MPEG_2,
+    XVMC_OVERLAID_SURFACE | XVMC_SUBPICTURE_INDEPENDENT_SCALING |
+    XVMC_INTRA_UNSIGNED,
     &yv12_subpicture_list
 };
 
-static XF86MCSurfaceInfoPtr ppSI[1] = 
+static XF86MCSurfaceInfoRec i810_YV12_mpg1_surface =
 {
-    (XF86MCSurfaceInfoPtr)&i810_YV12_surface
+    FOURCC_YV12,  
+    XVMC_CHROMA_FORMAT_420,
+    0,
+    720,
+    576,
+    720,
+    576,
+    XVMC_MPEG_1,
+    XVMC_OVERLAID_SURFACE | XVMC_SUBPICTURE_INDEPENDENT_SCALING |
+    XVMC_INTRA_UNSIGNED,
+    &yv12_subpicture_list
+};
+
+static XF86MCSurfaceInfoPtr ppSI[2] = 
+{
+    (XF86MCSurfaceInfoPtr)&i810_YV12_mpg2_surface,
+    (XF86MCSurfaceInfoPtr)&i810_YV12_mpg1_surface
 };
 
 /* List of subpicture types that we support */

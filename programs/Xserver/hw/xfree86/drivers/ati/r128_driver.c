@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.44 2001/10/28 03:33:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.45 2001/11/03 21:59:18 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -3413,7 +3413,7 @@ Bool R128EnterVT(int scrnIndex, int flags)
 	R128EngineInit(pScrn);
 
     info->PaletteSavedOnVT = FALSE;
-    R128AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     return TRUE;
 }
