@@ -305,7 +305,7 @@
   ProjectRoot.
 
   The defaults are set such that you should only require minimal changes
-  to the site.def or the xf85site.def file.  The BOOTSTRAPCFLAGS do most
+  to the site.def or the xf86site.def file.  The BOOTSTRAPCFLAGS do most
   of the work for you. The defaults will use gcc 2 or above and they
   also compile for shared libraries and setup formatted man pages using
   compression. The most likely Parameters you will be interested in
@@ -747,8 +747,8 @@
 
 
           All SCO unix installations appear to have the Streams
-          pseudo tty driver installed its just not all the devices
-          are present.
+          pseudo tty driver installed, but not all the devices are
+          present.
 
 
              1. there should be a /etc/conf/pack.d/sp directory,
@@ -817,7 +817,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.9 1996/02/04 09:08:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.10 1996/02/24 05:59:11 dawes Exp $
 
 
 

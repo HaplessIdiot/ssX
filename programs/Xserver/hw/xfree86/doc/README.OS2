@@ -50,7 +50,7 @@
   critical aspects from any Unix implementation of XFree86.
 
   If you are afraid to try out this code, simply don't use it and wait
-  for a future, hopefully more bugfree version.
+  for a future, hopefully more bug-free version.
 
   2.  What and Where is XFree86?
 
@@ -132,7 +132,7 @@
 
         2. Warp comes with the Internet Access Kit (IAK), which is
            sufficient. Warp Connect and Warp Server come with a full
-           version of TCP/IP (3.0). Use of this software is prefered
+           version of TCP/IP (3.0). Use of this software is preferred
            over IAK then.
 
         Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's
@@ -232,7 +232,7 @@
      OPTIONAL:
 
         312Dman
-           preformatted man pages for the X11 interface and clients
+           pre-formatted man pages for the X11 interface and clients
 
         312Df100
            100dpi fonts
@@ -250,7 +250,7 @@
            the font server with man pages.
 
         312prog
-           the X11 header files and progrmmer's utilities for compiling
+           the X11 header files and programmer's utilities for compiling
            other X applications
 
         312Dpex
@@ -273,7 +273,7 @@
 
   6.  Checking Compatibility of Video Hardware
 
-  In the following, we assume that you want to install Xfree86/OS2 on a
+  In the following, we assume that you want to install XFree86/OS2 on a
   disk drive with the letter Y: (which you probably don't have). Change
   the letter in all commands accordingly.
 
@@ -310,7 +310,7 @@
         must reboot to install the driver. XFree86/OS2 will not work
         without this driver.
 
-     5. Start a fullscreen OS/2 CMD session and enter the following
+     5. Start a full screen OS/2 CMD session and enter the following
         command:
 
 
@@ -369,7 +369,7 @@
 
 
      TERM
-        Set the prefered terminal type for the xterm or editor to be
+        Set the preferred terminal type for the xterm or editor to be
         used.  Some programs need this setting. I have my type set to
 
 
@@ -607,7 +607,7 @@
 
   After you have added the required settings and setup a working
   network, run the xf86config program to create a standard configuration
-  file in Y:\XFree86\lib\X11\XConfig from a windowed or fullscreen OS/2
+  file in Y:\XFree86\lib\X11\XConfig from a windowed or full screen OS/2
   text session:
 
 
@@ -618,7 +618,7 @@
 
   This program will ask a number of questions. You will need the
   information obtained from the SuperProbe program here. The program
-  should be selfexplanatory; if you have problems to understand
+  should be self explanatory; if you have problems to understand
   something though, seek assistance in the newsgroups.
 
   Alternatively, but not recommended for the non-expert, you can edit
@@ -632,7 +632,7 @@
   platform, you will encounter a few differences:
 
      o  There is no configuration for the mouse type or device. The
-        mouse devicename is fixed to OSMOUSE, and this cannot be
+        mouse device name is fixed to OSMOUSE, and this cannot be
         changed.  If you have a three-button-mouse, install the correct
         OS/2 driver for it, such as
 
@@ -643,12 +643,12 @@
 
 
 
-     for a Mousesystems compatible mouse, for instance.
+     for a MouseSystems compatible mouse, for instance.
 
      o  Currently, the X server does not read the native OS/2 keyboard
         map, so you need a xmodmap file for a non-us keyboard.
         Fortunately, it is the same you use for Linux. The server is
-        compiled with the XEYBOARD option, so this might be an
+        compiled with the XKEYBOARD option, so this might be an
         alternative. At the time of this documentation, unfortunately,
         some subtle bug in the OS/2 implementation is still waiting for
         a fix, so this might not yet work. Read the LATEST.OS2 file with
@@ -737,7 +737,7 @@
      o  ME - no, no, forget this: I won't praise myself :-)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.1 1996/02/22 05:12:05 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.3 1996/02/24 10:19:18 dawes Exp $
 
 
 

@@ -386,7 +386,7 @@
 
   You'll need info on your hardware:
 
-     o  Your mouse type, baud rate and it's /dev entry.
+     o  Your mouse type, baud rate and its /dev entry.
 
      o  The video card's chipset (e.g. ET4000, S3, etc).
 
@@ -424,7 +424,7 @@
   mouse serial port and verify that it does indeed generate characters.
 
   XFree86 3.1.2D now support the dynamic loading of drivers for external
-  input devices using the XInput extention. Currently supported devices
+  input devices using the XInput extension. Currently supported devices
   are:
 
      o  Joystick
@@ -790,7 +790,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.21 1996/02/19 09:50:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.22 1996/02/24 05:59:07 dawes Exp $
 
 
 

@@ -238,7 +238,7 @@
            XServer.
 
 
-                      !!! You could workaround this !!!
+                      !!! You could work around this !!!
 
 
 
@@ -251,7 +251,7 @@
 
 
         This bug seems to be fixed since 3.1.2, and therefore the
-        workaraound is not needed anymore.
+        workaround is not needed anymore.
 
   6.  XKeyboard Extension
 
@@ -331,7 +331,7 @@
         default partial xkb_symbols "basic" {
 
             // Describes the differences between a very simple US/ASCII
-            // keyboard and a very simple German keybaord
+            // keyboard and a very simple German keyboard
 
             // Alphanumeric section
             name[Group1]= "German";
@@ -609,7 +609,7 @@
   to all who contribute to this excellent piece of free software.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.10 1996/02/19 09:50:44 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.11 1996/02/24 05:59:14 dawes Exp $
 
 
 

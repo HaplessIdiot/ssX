@@ -258,7 +258,7 @@
 
   There is some controversy over whether or not clocks higher than
   135MHz should be allowed on CT & ET adapters.  For now, clocks will be
-  limited to 135MHz by default.  This limit can only be increased (upto
+  limited to 135MHz by default.  This limit can only be increased (up to
   a driver-calculated absolute maximum) through the DACSpeed option in
   XF86Config.  Be aware however that doing this is untested and might
 
@@ -271,7 +271,7 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.8 1996/02/22 05:12:06 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.9 1996/02/24 10:19:22 dawes Exp $
 
 
 

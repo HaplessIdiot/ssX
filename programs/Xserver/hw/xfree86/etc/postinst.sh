@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.3 1996/01/14 13:38:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.4 1996/02/24 10:20:25 dawes Exp $
 #
 # postinst.sh
 #
@@ -22,11 +22,6 @@ SAVEDIR=/usr/XFree86-$ORIGVERSION
 
 if [ ! -d $NEWDIR/. ]; then
 	echo $NEWDIR does not exist
-	echo ""
-	echo "Only run this script if you've chosen to install the beta"
-	echo "version in $NEWDIR rather than installing it"
-	echo "on top of your previous version."
-	echo ""
 	exit 1
 fi
 if [ ! -d $RUNDIR/. ]; then
