@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.3 2003/09/16 00:36:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crScreen.m,v 1.4 2003/11/11 23:48:41 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -50,6 +50,8 @@
 
 // Name of GLX bundle using AGL framework
 static const char *crOpenGLBundle = "glxAGL.bundle";
+
+static Class classXView = nil;
 
 
 /*
@@ -265,6 +267,25 @@ CRInitInput(int argc, char **argv)
 
 
 /*
+ * CRIsX11Window
+ *  Returns TRUE if cr is displaying this window.
+ */
+static Bool
+CRIsX11Window(void *nsWindow, int windowNumber)
+{
+    NSWindow *theWindow = nsWindow;
+
+    if (!theWindow)
+        return FALSE;
+
+    if ([[theWindow contentView] isKindOfClass:classXView])
+        return TRUE;
+    else
+        return FALSE;
+}
+
+
+/*
  * Quartz display mode function list.
  */
 static QuartzModeProcsRec crModeProcs = {
@@ -278,6 +299,7 @@ static QuartzModeProcsRec crModeProcs = {
     QuartzResumeXCursor,
     NULL,               // No capture or release in rootless mode
     NULL,
+    CRIsX11Window,
     RootlessFrameForWindow,
     TopLevelParent,
     NULL,		// No support for DRI surfaces
@@ -294,5 +316,6 @@ QuartzModeBundleInit(void)
 {
     quartzProcs = &crModeProcs;
     quartzOpenGLBundle = crOpenGLBundle;
+    classXView = [XView class];
     return TRUE;
 }

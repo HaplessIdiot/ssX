@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.14 2003/11/11 01:22:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.15 2003/11/12 01:16:14 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -266,10 +266,10 @@ static io_connect_t root_port;
         case NSLeftMouseDown:
             [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless) {
-                NSWindow *theWindow = [anEvent window];
-                if ((quartzUsesNSWindow && !theWindow) ||
-                    (!quartzUsesNSWindow && theWindow)) {
-                    // Click in non X window - ignore
+                // Check that event is in X11 window
+                if (!quartzProcs->IsX11Window([anEvent window],
+                                              [anEvent windowNumber]))
+                {
                     return NO;
                 }
             }

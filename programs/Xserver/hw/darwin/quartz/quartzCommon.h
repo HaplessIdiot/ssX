@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.12 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.13 2003/10/16 23:50:10 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -74,7 +74,6 @@ extern int              quartzUseAGL;
 extern int              quartzServerVisible;
 extern int              quartzServerQuitting;
 extern int              quartzScreenIndex;
-extern int              quartzUsesNSWindow;
 extern int              aquaMenuBarHeight;
 
 // Name of GLX bundle for native OpenGL

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.3 2003/10/18 00:00:34 torrey Exp $ */
 
 #include "xpr.h"
 #include "rootless.h"
@@ -47,8 +47,8 @@ static Atom func (void) {					\
     static int generation;					\
     static Atom atom;						\
     if (generation != serverGeneration) {			\
-	generation = serverGeneration;				\
-	atom = MakeAtom (atom_name, strlen (atom_name), TRUE);	\
+        generation = serverGeneration;				\
+        atom = MakeAtom (atom_name, strlen (atom_name), TRUE);	\
     }								\
     return atom;						\
 }
@@ -67,9 +67,9 @@ xprConfigureWindow(xp_window_id id, unsigned int mask,
                    const xp_window_changes *values)
 {
     if (!no_configure_window)
-	return xp_configure_window(id, mask, values);
+        return xp_configure_window(id, mask, values);
     else
-	return XP_Success;
+        return XP_Success;
 }
 
 
@@ -83,10 +83,10 @@ xprSetNativeProperty(RootlessWindowPtr pFrame)
     err = xp_get_native_window((xp_window_id) pFrame->wid, &native_id);
     if (err == Success)
     {
-	/* FIXME: move this to an extension? */
+        /* FIXME: move this to AppleWM extension */
 
-	data = native_id;
-	ChangeWindowProperty(pFrame->win, xa_native_window_id(),
+        data = native_id;
+        ChangeWindowProperty(pFrame->win, xa_native_window_id(),
                              XA_INTEGER, 32, PropModeReplace, 1, &data, TRUE);
     }
 }
@@ -113,27 +113,27 @@ xprCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
 
     if (pWin->drawable.depth == 8)
     {
-	wc.depth = XP_DEPTH_INDEX8;
+        wc.depth = XP_DEPTH_INDEX8;
 #if 0
-	wc.colormap = xprColormapCallback;
-	wc.colormap_data = pScreen;
-	mask |= XP_COLORMAP;
+        wc.colormap = xprColormapCallback;
+        wc.colormap_data = pScreen;
+        mask |= XP_COLORMAP;
 #endif
     }
     else if (pWin->drawable.depth == 15)
-	wc.depth = XP_DEPTH_RGB555;
+        wc.depth = XP_DEPTH_RGB555;
     else if (pWin->drawable.depth == 24)
-	wc.depth = XP_DEPTH_ARGB8888;
+        wc.depth = XP_DEPTH_ARGB8888;
     else
-	wc.depth = XP_DEPTH_NIL;
+        wc.depth = XP_DEPTH_NIL;
     mask |= XP_DEPTH;
 
     if (pShape != NULL)
     {
-	wc.shape_nrects = REGION_NUM_RECTS(pShape);
-	wc.shape_rects = REGION_RECTS(pShape);
-	wc.shape_tx = wc.shape_ty = 0;
-	mask |= XP_SHAPE;
+        wc.shape_nrects = REGION_NUM_RECTS(pShape);
+        wc.shape_rects = REGION_RECTS(pShape);
+        wc.shape_tx = wc.shape_ty = 0;
+        mask |= XP_SHAPE;
     }
 
     err = xp_create_window(mask, &wc, (xp_window_id *) &pFrame->wid);
@@ -145,8 +145,8 @@ xprCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
 
     if (window_hash == NULL)
     {
-	window_hash = x_hash_table_new(NULL, NULL, NULL, NULL);
-	pthread_mutex_init(&window_hash_mutex, NULL);
+        window_hash = x_hash_table_new(NULL, NULL, NULL, NULL);
+        pthread_mutex_init(&window_hash_mutex, NULL);
     }
 
     pthread_mutex_lock(&window_hash_mutex);
@@ -165,9 +165,9 @@ xprCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
 void
 xprDestroyFrame(RootlessFrameID wid)
 {
-    pthread_mutex_lock (&window_hash_mutex);
-    x_hash_table_remove (window_hash, wid);
-    pthread_mutex_unlock (&window_hash_mutex);
+    pthread_mutex_lock(&window_hash_mutex);
+    x_hash_table_remove(window_hash, wid);
+    pthread_mutex_unlock(&window_hash_mutex);
 
     xp_destroy_window((xp_window_id) wid);
 }
@@ -247,13 +247,13 @@ xprReshapeFrame(RootlessFrameID wid, RegionPtr pShape)
 
     if (pShape != NULL)
     {
-	wc.shape_nrects = REGION_NUM_RECTS(pShape);
-	wc.shape_rects = REGION_RECTS(pShape);
+        wc.shape_nrects = REGION_NUM_RECTS(pShape);
+        wc.shape_rects = REGION_RECTS(pShape);
     }
     else
     {
-	wc.shape_nrects = -1;
-	wc.shape_rects = NULL;
+        wc.shape_nrects = -1;
+        wc.shape_rects = NULL;
     }
 
     wc.shape_tx = wc.shape_ty = 0;
@@ -390,4 +390,50 @@ xprInit(ScreenPtr pScreen)
     no_configure_window = FALSE;
 
     return TRUE;
+}
+
+
+/*
+ * Given the id of a physical window, try to find the top-level (or root)
+ * X window that it represents.
+ */
+static WindowPtr
+xprGetXWindow(xp_window_id wid)
+{
+    RootlessWindowRec *winRec;
+
+    if (window_hash == NULL)
+        return NULL;
+
+    winRec = x_hash_table_lookup(window_hash, (void *) wid, NULL);
+
+    return winRec != NULL ? winRec->win : NULL;
+}
+
+
+/*
+ * The windowNumber is an AppKit window number. Returns TRUE if xpr is
+ * displaying a window with that number.
+ */
+Bool
+xprIsX11Window(void *nsWindow, int windowNumber)
+{
+    Bool ret;
+    xp_window_id wid;
+
+    if (window_hash == NULL)
+        return FALSE;
+
+    /* need to lock, since this function can be called by any thread */
+
+    pthread_mutex_lock(&window_hash_mutex);
+
+    if (xp_lookup_native_window(windowNumber, &wid))
+        ret = xprGetXWindow(wid) != NULL;
+    else
+        ret = FALSE;
+
+    pthread_mutex_unlock(&window_hash_mutex);
+
+    return ret;
 }

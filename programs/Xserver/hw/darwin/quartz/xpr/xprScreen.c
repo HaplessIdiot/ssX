@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.6 2003/11/11 23:48:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.7 2003/11/12 00:08:13 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -318,8 +318,6 @@ xprSetupScreen(int index, ScreenPtr pScreen)
     }
 #endif /* RENDER */
 
-    quartzUsesNSWindow = FALSE;
-
     // Initialize generic rootless code
     if (!xprInit(pScreen))
         return FALSE;
@@ -359,6 +357,7 @@ static QuartzModeProcsRec xprModeProcs = {
     QuartzResumeXCursor,
     NULL,               // No capture or release in rootless mode
     NULL,
+    xprIsX11Window,
     RootlessFrameForWindow,
     TopLevelParent,
     DRICreateSurface,
