@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.19 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.21 2001/11/30 12:12:00 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -471,7 +471,7 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     /*sisReg->sisRegs3C2 = inb(0x3CC);*/
     sisReg->sisRegs3C2 = inb(pSiS->RelIO+0x4c);
 
-    if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD))
+    if ((pSiS->VBFlags & (VB_LVDS|VB_301B)) && (pSiS->VBFlags & CRT2_LCD))
         (*pSiS->SiSSaveLVDS)(pScrn, sisReg);
     if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
 	(*pSiS->SiSSaveChrontel)(pScrn,sisReg);
@@ -496,10 +496,14 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     outw(VGA_SEQ_INDEX, 0x8605);
+
+    /* TW: Wait for accelerator to finish on-going drawing operations. */
     inSISIDXREG(VGA_SEQ_INDEX, 0x1E, temp);
     if (temp & 0x42)  {
         while ( (MMIO_IN16(pSiS->IOBase, 0x8242) & 0xE000) != 0xE000){};
+	while ( (MMIO_IN16(pSiS->IOBase, 0x8242) & 0xE000) != 0xE000){};	/* TW do it twice as in sis300_accel.h */
     }
+
     max=0x3D;
     for (i = 0x19; i < 0x40; i++)  {
         outSISIDXREG(pSiS->RelIO+CROFFSET, i, sisReg->sisRegs3D4[i]);
@@ -514,10 +518,17 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
            outSISIDXREG(pSiS->RelIO+CROFFSET, 0x19, sisReg->sisRegs3D4[0x1A]);
     }
 
-    if ((pSiS->Chipset == PCI_CHIP_SIS630) && (sisReg->sisRegs3C4[0x1e] & 0x40))
-        outw(VGA_SEQ_INDEX, sisReg->sisRegs3C4[0x20] << 8 | 0x20);
+    if ((pSiS->Chipset == PCI_CHIP_SIS630) && (sisReg->sisRegs3C4[0x1e] & 0x40)) {
+	sisReg->sisRegs3C4[0x20] |= 0x20;  /* TW: This is a guess of what could me meant by line below */
+	outb(VGA_SEQ_INDEX, 0x20);
+	outb(VGA_SEQ_DATA, sisReg->sisRegs3C4[0x20]);
+        /* outw(VGA_SEQ_INDEX, sisReg->sisRegs3C4[0x20] << 8 | 0x20); */
+	/* TW: That CAN'T be right - write to register _before_ restoring registers?!
+	 *     (where we get overwritten again! But anyway, do it so.... )
+	 */
+    }
 
-	for (i = 0x06; i <= max; i++) {
+    for (i = 0x06; i <= max; i++) {
         outb(VGA_SEQ_INDEX,i);	
 
         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,4,
@@ -528,10 +539,10 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
                         "Restore to - %02X Read after - %02X\n",
                         sisReg->sisRegs3C4[i], inb(VGA_SEQ_DATA));
     }
-    if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD))
+    if ((pSiS->VBFlags & (VB_LVDS|VB_301B)) && (pSiS->VBFlags & CRT2_LCD))
         (*pSiS->SiSRestoreLVDS)(pScrn, sisReg);
     if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
-    (*pSiS->SiSRestoreChrontel)(pScrn,sisReg);
+        (*pSiS->SiSRestoreChrontel)(pScrn,sisReg);
     if ((pSiS->VBFlags & (VB_301|VB_302|VB_303)) && (pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA)))
         (*pSiS->SiSRestore2)(pScrn, sisReg);
 
@@ -658,7 +669,7 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
         SISPtr  pSiS = SISPTR(pScrn);
 
-        DisableBridge(pSiS->RelIO+0x30); 
+        DisableBridgeLVDS(pSiS->RelIO+0x30);
         UnLockCRT2(pSiS->RelIO+0x30);  
 
         /* SetCRT2ModeRegs() */
@@ -678,8 +689,8 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         orSISIDXREG(pSiS->RelIO+SROFFSET, 0x1E, 0x20);
         andSISIDXREG(pSiS->RelIO+SROFFSET, 1, ~0x20);   /* DisplayOn */
 
-        EnableBridge(pSiS->RelIO+0x30);  
-        LockCRT2(pSiS->RelIO+0x30);  
+        EnableBridgeLVDS(pSiS->RelIO+0x30);
+        LockCRT2(pSiS->RelIO+0x30);
 }
 
 static void

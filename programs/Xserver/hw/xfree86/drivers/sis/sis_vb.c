@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.c,v 1.1 2000/08/01 20:52:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.c,v 1.4 2001/11/30 12:12:01 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -15,7 +15,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     int temp;
 
     
-    if (!(pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))) 
+    if (!(pSiS->VBFlags & (VB_301|VB_301B|VB_302|VB_303|VB_LVDS|VB_CHRONTEL)))
         return;
 
     inSISIDXREG(pSiS->RelIO+CROFFSET, 0x32, temp);
@@ -36,7 +36,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     int temp;
 
-    if (!(pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))) 
+    if (!(pSiS->VBFlags & (VB_301|VB_301B|VB_302|VB_303|VB_LVDS|VB_CHRONTEL)))
         return;
 
     inSISIDXREG(pSiS->RelIO+CROFFSET, 0x32, temp);
@@ -62,7 +62,7 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     int temp;
 
-    if (!(pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))) 
+    if (!(pSiS->VBFlags & (VB_301|VB_301B|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))) 
         return;
 
     inSISIDXREG(pSiS->RelIO+CROFFSET, 0x32, temp);

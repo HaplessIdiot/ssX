@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.h,v 1.5 2001/11/30 12:12:00 eich Exp $ */
 
 typedef unsigned long ULong;
 typedef unsigned short UShort;
@@ -198,13 +198,15 @@ typedef unsigned char UChar;
 #define PanelType0E             0x70
 #define PanelType0F             0x78
 
-Bool SiSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool SiSBIOSSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode);
 UShort CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
 void SetReg1(UShort port, UShort index, UShort  data);
 void DisableBridge(UShort  BaseAddr);
+void DisableBridgeLVDS(UShort  BaseAddr);
 void UnLockCRT2(UShort BaseAddr);
 void LockCRT2(UShort BaseAddr);
 void EnableBridge(UShort BaseAddr);
+void EnableBridgeLVDS(UShort BaseAddr);
 void SetCH7005(UShort tempbx);
 UShort GetCH7005(UShort tempbx);
 unsigned char SiSGetSetModeID(ScrnInfoPtr pScrn, unsigned char id);

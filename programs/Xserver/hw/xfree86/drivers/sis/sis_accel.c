@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.21 2001/10/01 13:44:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.22 2001/10/28 03:33:48 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -55,7 +55,7 @@ SiSAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr pSiS = SISPTR(pScrn);
     BoxRec AvailFBArea;
-    int offset;
+    int offset, topFB;
 
     pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
     if (!infoPtr) 
@@ -132,11 +132,14 @@ SiSAccelInit(ScreenPtr pScreen)
         offset = 262144;
     else 
         offset = 0;
-    AvailFBArea.y2 = (pSiS->FbMapSize - offset) / (pScrn->displayWidth *
+    
+    topFB = (pSiS->maxxfbmem >= (pSiS->FbMapSize - offset)) ?
+	pSiS->maxxfbmem : pSiS->FbMapSize - offset;
+    AvailFBArea.y2 = (topFB) / (pScrn->displayWidth *
                       pScrn->bitsPerPixel / 8);
 
-	if (AvailFBArea.y2 < 0)
-		AvailFBArea.y2 = 32767;
+    if (AvailFBArea.y2 < 0)
+	AvailFBArea.y2 = 32767;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 

@@ -24,8 +24,10 @@
  *           Juanjo Santamarta <santamarta@ctv.es>, 
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
+ *
+ *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.72 2002/01/04 20:56:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -96,9 +98,14 @@ static Bool SISMapMem(ScrnInfoPtr pScrn);
 static Bool SISUnmapMem(ScrnInfoPtr pScrn);
 static void SISSave(ScrnInfoPtr pScrn);
 static void SISRestore(ScrnInfoPtr pScrn);
+static void SISVESARestore(ScrnInfoPtr pScrn);
 static Bool SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void SISModifyModeInfo(DisplayModePtr mode);
-static void SiSPreSetMode(ScrnInfoPtr pScrn);
+static void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards);
+static Bool SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
+static void SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe);
+UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function);
 
 void SiSOptions(ScrnInfoPtr pScrn);
 const OptionInfoRec * SISAvailableOptions(int chipid, int busid);
@@ -181,6 +188,22 @@ int sisReg32MMIO[]={0x8280,0x8284,0x8288,0x828C,0x8290,0x8294,0x8298,0x829C,
 int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
             0x8220,0x8224,0x8228,0x822C,0x8230,0x8234,0x8238,0x823C,
              0x8240, 0x8300};
+
+/* TW: The following was re-included because there are BIOSes out there that
+ *     report incomplete mode lists.
+ */
+				/*     8      16     24    32   */
+/* TW: VBE 3.0 on SiS630 does not support 24 fpp modes (only 32fpp when depth = 24);
+ */
+UShort  VESAModeIndex_640x480[]   = {0x100, 0x111, 0x112, 0x13a};
+UShort  VESAModeIndex_720x480[]   = {0x000, 0x000, 0x000, 0x000};
+UShort  VESAModeIndex_720x576[]   = {0x000, 0x000, 0x000, 0x000};
+UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x115, 0x13b};
+UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x118, 0x13c};
+UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x11b, 0x000};
+UShort  VESAModeIndex_1600x1200[] = {0x11c, 0x11e, 0x000, 0x000};
+
+sisModeInfoPtr SISVesaModeList = NULL;
 
 static const char *xaaSymbols[] = {
     "XAACopyROP",
@@ -348,6 +371,12 @@ SISGetRec(ScrnInfoPtr pScrn)
 static void
 SISFreeRec(ScrnInfoPtr pScrn)
 {
+    SISPtr pSiS = SISPTR(pScrn);
+    
+    if (pSiS->pstate) xfree(pSiS->pstate);
+    pSiS->pstate = NULL;
+    if (pSiS->pVbe) vbeFree(pSiS->pVbe);
+    pSiS->pVbe = NULL;
     if (pScrn->driverPrivate == NULL)
         return;
     xfree(pScrn->driverPrivate);
@@ -571,14 +600,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISPtr pSiS;
     MessageType from;
     int vgaIOBase;
-    int i;
     unsigned char unlock;
+    unsigned long int i;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym = NULL;
     int pix24flags;
 
     vbeInfoPtr pVbe;
+    VbeInfoBlock *vbe;
 
     if (flags & PROBE_DETECT) {
         if (xf86LoadSubModule(pScrn, "vbe")) {
@@ -720,19 +750,23 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
     switch (pSiS->Chipset) {
+    case PCI_CHIP_SIS530:
+    	pix24flags = Support32bppFb | Support24bppFb |
+                SupportConvert24to32 | SupportConvert32to24;
+        break;
     case PCI_CHIP_SIS300:
     case PCI_CHIP_SIS630:
     case PCI_CHIP_SIS540:
-    case PCI_CHIP_SIS530:
-    pix24flags = Support32bppFb | Support24bppFb |
-                SupportConvert24to32 | SupportConvert32to24;
+    	pix24flags = Support32bppFb | SupportConvert24to32;
+	break;
     default:
-            pix24flags = Support24bppFb |
+        pix24flags = Support24bppFb |
 		SupportConvert32to24 | PreferConvert32to24;
+	break;
     }
-    
+
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags))
-    return FALSE;
+    	return FALSE;
 
     /* Check that the returned depth is one we support */
     switch (pScrn->depth) {
@@ -795,7 +829,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    /* We use a programmable clock */
+    /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
     /* Set the bits per RGB for 8bpp mode */
@@ -839,7 +873,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
            (unsigned long)pSiS->FbAddress);
 
-    from = X_PROBED;
     if (pSiS->pEnt->device->IOBase != 0) {
         /*
          * XXX Should check that the config file value matches one of the
@@ -877,47 +910,70 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         pScrn->videoRam = 4096;
         xf86DrvMsg(pScrn->scrnIndex, from, "Limiting VideoRAM to %d KB\n",
                pScrn->videoRam);
-    } else 
+    } else
         xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d KB\n",
                pScrn->videoRam);
 
+    /*
+     *  TW: New option: limit size of framebuffer memory for avoiding
+     *  clash with DRI:
+     *  Kernel framebuffer driver (sisfb) starts its memory heap
+     *  at 8MB if it detects more VideoRAM than that(otherwise at 4MB).
+     *  Therefore a setting of 8192 is recommended if DRI is
+     *  to be used when there's more than 8MB video RAM available.
+     *  This option can be left out if DRI is not to be used.
+     *  Attention: TurboQueue and HWCursor should use videoRam value,
+     *  not FbMapSize; these two are always located at the very top
+     *  of the videoRAM. Both are already initialized by framebuffer
+     *  driver, so they should not wander around while starting X.
+     */
+
     pSiS->FbMapSize = pScrn->videoRam * 1024;
+    /* TW: Touching FbMapSize doesn't work; now use maxxfbmem in accel*.c */
+
+    if (pSiS->maxxfbmem) {
+    	if (pSiS->maxxfbmem > pSiS->FbMapSize) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+            "Invalid MaxXFBMem setting. Using all VideoRAM for framebuffer\n");
+	    pSiS->maxxfbmem = pSiS->FbMapSize;
+	}
+    } else pSiS->maxxfbmem = pSiS->FbMapSize;
 
     SISVGAPreInit(pScrn);
     SISLCDPreInit(pScrn);
     SISTVPreInit(pScrn);
-    SISCRT2PreInit(pScrn); 
+    SISCRT2PreInit(pScrn);
     if (pSiS->ForceCRT2Type == CRT2_DEFAULT)
-    {   if (pSiS->VBFlags & CRT2_VGA) 
+    {   if (pSiS->VBFlags & CRT2_VGA)
         pSiS->ForceCRT2Type = CRT2_VGA;
     else if (pSiS->VBFlags & CRT2_LCD)
         pSiS->ForceCRT2Type = CRT2_LCD;
     else if (pSiS->VBFlags & CRT2_TV)
-        pSiS->ForceCRT2Type = CRT2_TV;          
-    }   
+        pSiS->ForceCRT2Type = CRT2_TV;
+    }
     switch (pSiS->ForceCRT2Type)
     {    case CRT2_TV:
-        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD | CRT2_VGA); 
+        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD | CRT2_VGA);
         if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
-            pSiS->VBFlags = pSiS->VBFlags | CRT2_TV;    
+            pSiS->VBFlags = pSiS->VBFlags | CRT2_TV;
         else
-            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV); 
+            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV);
         break;
      case CRT2_LCD:
-        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_VGA);  
+        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_VGA);
         if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
-            pSiS->VBFlags = pSiS->VBFlags | CRT2_LCD;   
+            pSiS->VBFlags = pSiS->VBFlags | CRT2_LCD;
         else
-            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD);    
+            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD);
         break;
      case CRT2_VGA:
-        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_LCD);  
+        pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_LCD);
         if (pSiS->VBFlags & (VB_301|VB_302|VB_303|VB_LVDS|VB_CHRONTEL))
-            pSiS->VBFlags = pSiS->VBFlags | CRT2_VGA;   
+            pSiS->VBFlags = pSiS->VBFlags | CRT2_VGA;
         else
-            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_VGA);    
+            pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_VGA);
         break;
-     }  
+     }
 
     SISDACPreInit(pScrn);
 
@@ -955,7 +1011,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         else
             pSiS->MaxClock = speed;
         from = X_CONFIG;
-    } 
+    }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
                 pSiS->MaxClock / 1000);
 
@@ -989,7 +1045,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
                       pScrn->bitsPerPixel * 8, 128, 4096,
                       pScrn->display->virtualX,
                       pScrn->display->virtualY,
-                      pSiS->FbMapSize,
+                      pSiS->maxxfbmem,
                       LOOKUP_BEST_REFRESH);
 
     if (i == -1) {
@@ -1084,17 +1140,32 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     {
-    Bool ret;
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-	xf86LoaderReqSymLists(vbeSymbols, NULL);
-        if ((pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
-            ret = xf86SetDDCproperties(pScrn,
-                      xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
-        vbeFree(pVbe);
-        }
-    }
+	Bool ret;
+	pSiS->UseVESA=0;
+	if (xf86LoadSubModule(pScrn, "vbe")) {
+	    xf86LoaderReqSymLists(vbeSymbols, NULL);
+	    if ((pSiS->pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
+		ret = xf86SetDDCproperties(pScrn,
+				   xf86PrintEDID(vbeDoEDID(pSiS->pVbe,NULL)));
+		if ( (pSiS->VESA == 1)
+		    || (   (pSiS->VESA != 0)
+			&& (pSiS->Chipset == PCI_CHIP_SIS630)
+			&& (pSiS->VBFlags & (VB_LVDS|VB_CHRONTEL))) ) {
+		    vbe = VBEGetVBEInfo(pSiS->pVbe);
+		    pSiS->vesamajor = (unsigned)(vbe->VESAVersion >> 8);
+		    pSiS->vesaminor = vbe->VESAVersion & 0xff;
+		    pSiS->vbeInfo = vbe;
+		    SiSBuildVesaModeList(pScrn, pSiS->pVbe, vbe);
+		    VBEFreeVBEInfo(vbe);
+		    pSiS->UseVESA = 1;
+		/* TW: from now, use VESA functions for mode switching */
+		}
+	    }
 	}
-
+	vbeFree(pSiS->pVbe);
+	pSiS->pVbe = NULL;
+    }
+    
 #if 0
     if (!ret && pSiS->ddc1Read)
         xf86SetDDCProperties(xf86PrintEDID(xf86DoEDID_DDC1(
@@ -1119,7 +1190,7 @@ SISMapMem(ScrnInfoPtr pScrn)
 
     /*
      * Map IO registers to virtual address space
-     */ 
+     */
 #if !defined(__alpha__)
     mmioFlags = VIDMEM_MMIO;
 #else
@@ -1202,6 +1273,40 @@ SISSave(ScrnInfoPtr pScrn)
     vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
 
     (*pSiS->SiSSave)(pScrn, sisReg);
+    if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_SAVE);
+}
+
+static void
+SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
+{
+    SISPtr pSiS;
+
+    pSiS = SISPTR(pScrn);
+
+    if (pSiS->vesamajor > 1
+	&& (function == MODE_SAVE || pSiS->pstate)) {
+	if (function == MODE_RESTORE)
+	    memcpy(pSiS->state, pSiS->pstate, pSiS->stateSize);
+	ErrorF("VBESaveResore\n");
+	if ((VBESaveRestore(pSiS->pVbe,function,
+				     (pointer)&pSiS->state,
+			    &pSiS->stateSize,&pSiS->statePage))) {
+	    if (function == MODE_SAVE) {
+		/* don't rely on the memory not being touched */
+		if (pSiS->pstate == NULL)
+		    pSiS->pstate = xalloc(pSiS->stateSize);
+		memcpy(pSiS->pstate, pSiS->state, pSiS->stateSize);
+	    }
+	    	ErrorF("VBESaveResore done with success\n");
+	    return;
+	}
+	ErrorF("VBESaveResore done\n");
+    } else {
+	if (function == MODE_SAVE)
+	    (void)VBEGetVBEMode(pSiS->pVbe, &pSiS->stateMode);
+	else
+	    VBESetVBEMode(pSiS->pVbe, pSiS->stateMode, NULL);
+    }
 }
 
 /*
@@ -1219,43 +1324,78 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     SISRegPtr sisReg;
 
     vgaHWUnlock(hwp);
-
+	
     SISModifyModeInfo(mode);
 
-    /* Initialise the ModeReg values */
-    if (!vgaHWInit(pScrn, mode))
-        return FALSE;
-    pScrn->vtSema = TRUE;
+    if (pSiS->UseVESA) {
 
-    if (!(*pSiS->ModeInit)(pScrn, mode))
-        return FALSE;
-    
-
-    PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-                "HDisplay: %d, VDisplay: %d  \n",
-                mode->HDisplay, mode->VDisplay));
-
-    /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    vgaReg = &hwp->ModeReg;
-    sisReg = &pSiS->ModeReg;
-
-    vgaReg->Attribute[0x10] = 0x01;
-    if (pScrn->bitsPerPixel > 8) 
-        vgaReg->Graphics[0x05] = 0x00;
-
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
-
-    if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
-            (pSiS->Chipset == PCI_CHIP_SIS630) ||
-            (pSiS->Chipset == PCI_CHIP_SIS540)) {
-        SiSPreSetMode(pScrn);
-        if (!SiSSetMode(pScrn, pScrn->currentMode))
+	/* 
+	 * This order is required:
+	 * The video bridges need to be adjusted before the
+	 * BIOS is run as the configuration depends on this.
+	 * After the BIOS is run the bridges need to be readjusted
+	 * as the BIOS may have messed them up.
+	 */
+	SiSPreSetMode(pScrn, 1);
+        /* TW: mode was pScrn->currentMode - VidModeExt did not work! */
+ 	if (!SiSSetVESAMode(pScrn, mode))
 	    return FALSE;
-    } else
-        (*pSiS->SiSRestore)(pScrn, sisReg);
+	SiSPreSetMode(pScrn, 1);
 
-    vgaHWProtect(pScrn, FALSE);
+	if (!(*pSiS->ModeInit)(pScrn, mode))
+	    return FALSE;
+
+	pScrn->vtSema = TRUE;
+
+	PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			  "HDisplay: %d, VDisplay: %d  \n",
+			  mode->HDisplay, mode->VDisplay));
+
+        /* 
+	 * TW: must not do vga initialization when using VESA
+	 * - resets refresh rate 
+	 */
+	/* Program the registers */
+	vgaHWProtect(pScrn, TRUE);
+	(*pSiS->SiSRestore)(pScrn, &pSiS->ModeReg);
+	vgaHWProtect(pScrn, FALSE);
+
+    } else {
+    	/* Initialise the ModeReg values */
+    	if (!vgaHWInit(pScrn, mode))
+	        return FALSE;
+
+	if (!(*pSiS->ModeInit)(pScrn, mode))
+	    return FALSE;
+
+	pScrn->vtSema = TRUE;
+
+	PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			  "HDisplay: %d, VDisplay: %d  \n",
+			  mode->HDisplay, mode->VDisplay));
+
+	/* Program the registers */
+	vgaHWProtect(pScrn, TRUE);
+	vgaReg = &hwp->ModeReg;
+	sisReg = &pSiS->ModeReg;
+
+    	vgaReg->Attribute[0x10] = 0x01;
+    	if (pScrn->bitsPerPixel > 8)
+	    vgaReg->Graphics[0x05] = 0x00;
+
+    	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE); 
+
+	if ( (pSiS->Chipset == PCI_CHIP_SIS300) ||
+	     (pSiS->Chipset == PCI_CHIP_SIS630) ||
+	     (pSiS->Chipset == PCI_CHIP_SIS540) ) {
+	    SiSPreSetMode(pScrn, 0);
+	    if (!SiSBIOSSetMode(pScrn, mode))
+		return FALSE;
+	}
+	else (*pSiS->SiSRestore)(pScrn, sisReg);
+	
+	vgaHWProtect(pScrn, FALSE);
+    }
 
 /* Reserved for debug
  *
@@ -1265,11 +1405,39 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return TRUE;
 }
 
+static Bool
+SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
+{
+    SISPtr pSiS;
+    int mode;
+
+    pSiS = SISPTR(pScrn);
+
+    if (!(mode = CalcVESAModeIndex(pScrn, pMode))) return FALSE;
+    ErrorF("mode: %x\n",mode);
+    mode |= 1 << 15;			/* TW: Don't clear framebuffer */
+    mode |= 1 << 14;   			/* TW: always use linear adressing */
+
+    if (VBESetVBEMode(pSiS->pVbe, mode, NULL) == FALSE) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Set VBE Mode 0x%x failed\n",
+	             mode & 0x3fff);
+	    return (FALSE);
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Setting mode 0x%x succeeded\n",
+	       mode & 0x0fff);
+
+    if (pMode->HDisplay != pScrn->virtualX)
+	VBESetLogicalScanline(pSiS->pVbe, pScrn->virtualX);
+
+    return (TRUE);
+}
+
 
 /*
  * Restore the initial (text) mode.
  */
-static void 
+static void
 SISRestore(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp;
@@ -1291,8 +1459,16 @@ SISRestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, FALSE);
 }
 
+static void
+SISVESARestore(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS;
 
-/* Mandatory 
+   pSiS = SISPTR(pScrn);
+   if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_RESTORE);
+}
+
+/* Mandatory
  * This gets called at the start of each server generation */
 static Bool
 SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
@@ -1308,8 +1484,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int height, width, displayWidth;
     unsigned char *FBStart;
 
-
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -1319,6 +1494,9 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     hwp->MapSize = 0x10000;         /* Standard 64k VGA window */
 
     pSiS = SISPTR(pScrn);
+
+    if (pSiS->UseVESA)
+	pSiS->pVbe = VBEInit(NULL,pSiS->pEnt->index);
 
     /* Map the VGA memory and get the VGA IO base */
     if (!vgaHWMapMem(pScrn))
@@ -1335,7 +1513,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise the first mode */
     if (!SISModeInit(pScrn, pScrn->currentMode))
         return FALSE;
-    
+
     /* Clear frame buffer */
     OnScreenSize = pScrn->displayWidth * pScrn->currentMode->VDisplay * (pScrn->bitsPerPixel / 8);
     memset(pSiS->FbBase, 0, OnScreenSize);
@@ -1590,16 +1768,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 Bool
 SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-#if 0
-    SISPtr pSiS = SISPTR(pScrn);
-    if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
-        (pSiS->Chipset == PCI_CHIP_SIS630) ||
-        (pSiS->Chipset == PCI_CHIP_SIS540))
-        return SiSSetMode(pScrn, mode);
-    else
-#endif
-        return SISModeInit(pScrn, mode);
+    return SISModeInit(xf86Screens[scrnIndex], mode);
 }
 
 /*
@@ -1607,7 +1776,7 @@ SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-void 
+void
 SISAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -1620,6 +1789,11 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     hwp = VGAHWPTR(pScrn);
     pSiS = SISPTR(pScrn);
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+
+    if (pSiS->UseVESA) {
+	VBESetDisplayStart(pSiS->pVbe, x, y, TRUE);
+    }
+    else {
 
     outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
     SR5State = inb(VGA_SEQ_DATA);
@@ -1677,6 +1851,9 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
 
     outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
+
+  } /* if not VESA */
+
 }
 
 /*
@@ -1691,34 +1868,20 @@ static Bool
 SISEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-#if defined(XF86DRI) || 0
     SISPtr pSiS = SISPTR(pScrn);
+
+    if (!SISModeInit(pScrn, pScrn->currentMode))
+	return FALSE;
+
+    SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+
+#ifdef XF86DRI	/* TW: this is to be done AFTER switching the mode */
+    if (pSiS->directRenderingEnabled)
+        DRIUnlock(screenInfo.screens[scrnIndex]);
 #endif
 
-#ifdef XF86DRI
-    if (pSiS->directRenderingEnabled) {
-        DRIUnlock(screenInfo.screens[scrnIndex]);
-    }
-#endif
-#if 0
-    /* Should we re-save the text mode on each VT enter? */
-    if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
-        (pSiS->Chipset == PCI_CHIP_SIS630) ||
-        (pSiS->Chipset == PCI_CHIP_SIS540)) {
-        SiSPreSetMode(pScrn);
-        if (!SiSSetMode(pScrn, pScrn->currentMode))
-           return FALSE;
-    } 
-    else
-#endif
-        if (!SISModeInit(pScrn, pScrn->currentMode))
-            return FALSE;
-    
-    SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    
     return TRUE;
 }
-
 
 /*
  * This is called when VT switching away from the X server.  Its job is
@@ -1733,22 +1896,26 @@ SISLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    SISPtr pSiS;
 
 #ifdef XF86DRI
     ScreenPtr pScreen;
-    SISPtr pSiS;
 #endif
 
-    SISRestore(pScrn);
-    vgaHWLock(hwp);
-
-#ifdef XF86DRI
     pSiS = SISPTR(pScrn);
+
+#ifdef XF86DRI		/* TW: to be done before mode change */
     if (pSiS->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRILock(pScreen, 0);
     }
 #endif
+
+    if (pSiS->UseVESA) SISVESARestore(pScrn);
+
+    SISRestore(pScrn);
+
+    vgaHWLock(hwp);
 }
 
 
@@ -1776,7 +1943,8 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pScrn->vtSema) {
        if (pCursorInfo)
            pCursorInfo->HideCursor(pScrn);
-        SISRestore(pScrn);
+	if (pSiS->UseVESA) SISVESARestore(pScrn);
+	SISRestore(pScrn);
         vgaHWLock(hwp);
         SISUnmapMem(pScrn);
     }
@@ -1812,6 +1980,12 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     SISPtr pSiS = SISPTR(pScrn);
 
+    if (pSiS->UseVESA) {
+	if (CalcVESAModeIndex(pScrn, mode))
+	    return (MODE_OK);
+	else 
+	    return (MODE_BAD);
+    }
     if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
             (pSiS->Chipset == PCI_CHIP_SIS630) ||
             (pSiS->Chipset == PCI_CHIP_SIS540)) {
@@ -1829,9 +2003,9 @@ static Bool
 SISSaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    if ((pScrn != NULL) && pScrn->vtSema) {
 
-    if ((pScrn != NULL) && pScrn->vtSema) { 
-	SISPtr pSiS = SISPTR(pScrn);
+    	SISPtr pSiS = SISPTR(pScrn);
 	/* enable access to extended sequencer registers */
 	outw(VGA_SEQ_INDEX, 0x8605);
 	outb(VGA_SEQ_INDEX, 0x11);
@@ -1921,52 +2095,172 @@ SISModifyModeInfo(DisplayModePtr mode)
         mode->CrtcVBlankEnd--;
 }
 
-void SiSPreSetMode(ScrnInfoPtr pScrn)
+void SiSPreSetMode(ScrnInfoPtr pScrn, int LockAfterwards)
 {
-     SISPtr pSiS = SISPTR(pScrn);
-     unsigned char  usScratchCR30, usScratchCR31;
-     unsigned short SR26, SR27;
-     unsigned long  temp;
-     int vbflag;    
-        
-    usScratchCR30 = usScratchCR31 = 0;
+    SISPtr pSiS = SISPTR(pScrn);
+    unsigned char  usScratchCR30, usScratchCR31;
+    unsigned char  usScratchCR32, usScratchCR33;
+    unsigned short SR26, SR27;
+    unsigned char SR5State;
+    unsigned long  temp;
+    int vbflag;
+    
+    outb(VGA_SEQ_INDEX, 0x05);           /* Unlock Registers */
+    SR5State = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
+
+    usScratchCR30 = usScratchCR31 = usScratchCR33 = 0;
     outb(SISCR, 0x31);
-    usScratchCR31 = inb(SISCR+1) & 0x06;
-        vbflag=pSiS->VBFlags;   
+    usScratchCR31 = inb(SISCR+1); /* & 0x06; */ /* TW: clear all except slavemode and notsimumode*/
+    outb(SISCR, 0x33);		/* TW: CRT1 refresh rate */
+    usScratchCR33 = inb(SISCR+1);
+    outb(SISCR, 0x32);		/* TW: Bridge connection info */
+    usScratchCR32 = inb(SISCR+1);
+        outb(SISCR, 0x30);
+        usScratchCR30 = inb(SISCR+1);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	   "Bridge registers were 30=0x%02x, 31=0x%02x, 32=0x%02x, 33=0x%02x (VBFlags = 0x%x)\n",
+              usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, pSiS->VBFlags);
+	usScratchCR30 = 0;
+    usScratchCR31 &= ~0x60;  /* TW: clear Drivermode & VB_OutputDisable */
+
+    vbflag=pSiS->VBFlags;
     switch (vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA))
     { case CRT2_TV:
-        if (vbflag & TV_HIVISION) usScratchCR30 |= 0x80;    
-        else if (vbflag & TV_PAL) usScratchCR31 |= 0x01;
+        	if (vbflag & TV_HIVISION) usScratchCR30 |= 0x80;
+        	else if (vbflag & TV_PAL) usScratchCR31 |= 0x01;
 
-        if (vbflag & TV_AVIDEO) usScratchCR30 |= 0x04;
-        else if (vbflag & TV_SVIDEO) usScratchCR30 |= 0x08;
-        else if (vbflag & TV_SCART) usScratchCR30 |= 0x10;
-        usScratchCR30 |= 0x01;
-        usScratchCR31 |= 0x40;
-        break;
+        	if (vbflag & TV_AVIDEO) usScratchCR30 |= 0x04;
+        	else if (vbflag & TV_SVIDEO) usScratchCR30 |= 0x08;
+        	else if (vbflag & TV_SCART) usScratchCR30 |= 0x10;
+        	usScratchCR30 |= 0x01;
+		usScratchCR31 &= ~0x04;
+            break;
       case CRT2_LCD:
                 usScratchCR30 |= 0x21;
-                usScratchCR31 |= 0x40;
+		usScratchCR31 |= 0x02;
             break;
       case CRT2_VGA:
                 usScratchCR30 |= 0x41;
-                usScratchCR31 |= 0x40; 
-        break;  
+            break;
       default:
-            usScratchCR30 |= 0x00;
-            usScratchCR31 |= 0x60;
+            	usScratchCR30 |= 0x00;
+            	usScratchCR31 |= 0x20; /* TW: VB_OUTPUT_DISABLE */
     }
+    /*
+     * TW: for VESA: no DRIVERMODE,
+     * otherwise CRT2 will not be initialized correctly
+     */
+     if (pSiS->UseVESA) usScratchCR31 &= ~0x40;
+     else usScratchCR31 |= 0x40;   /* 40=drivermode */
+
      SetReg1(SISCR, 0x30, usScratchCR30);
      SetReg1(SISCR, 0x31, usScratchCR31);
-      
+
+     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"Bridge registers set to 30=0x%02x, 31=0x%02x\n",
+		usScratchCR30, usScratchCR31);
+
      /* Set Turbo Queue as 512K */
+     /* TW: This done here _and_ in ModeInit() because ModeInit() is
+      * not called on SiS630, 300, 540.
+      */
      if (!pSiS->NoAccel) {
         if (pSiS->TurboQueue) {
-           temp = (pScrn->videoRam/64) - 8;  
-           SR26 = temp & 0xFF; 
-           SR27 = ((temp >> 8) & 3) | 0xF0;  
+           temp = (pScrn->videoRam/64) - 8;
+           SR26 = temp & 0xFF;
+           SR27 = ((temp >> 8) & 3) | 0xF0;
            SetReg1(SISSR, 0x26, SR26);
            SetReg1(SISSR, 0x27, SR27);
         }
-     } 
+     }
+     if (LockAfterwards)
+        outw(VGA_SEQ_INDEX, (SR5State << 8) | 0x05); /* Relock Registers */
+}
+
+
+static void
+SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
+{
+    int i = 0;
+    while (vbe->VideoModePtr[i] != 0xffff) {
+	sisModeInfoPtr m;
+	VbeModeInfoBlock *mode;
+	int id = vbe->VideoModePtr[i++];
+	int bpp;
+
+	if ((mode = VBEGetModeInfo(pVbe, id)) == NULL)
+	    continue;
+
+	bpp = mode->BitsPerPixel;
+	/* TW: Doesn't work on SiS630 VBE 3.0: */
+	/* mode->GreenMaskSize + mode->BlueMaskSize
+	    + mode->RedMaskSize;  */
+
+	m = xnfcalloc(sizeof(sisModeInfoRec),1);
+	m->width = mode->XResolution;
+	m->height = mode->YResolution;
+	m->bpp = bpp;
+	m->n = id;
+	m->next = SISVesaModeList;
+
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	      "BIOS reported VESA mode 0x%x: x:%i y:%i bpp:%i\n",
+	       m->n, m->width, m->height, m->bpp);
+
+	SISVesaModeList = m;
+
+	VBEFreeModeInfo(mode);
+    }
+}
+
+UShort CalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
+{
+    sisModeInfoPtr m = SISVesaModeList;
+    UShort i = (pScrn->bitsPerPixel+7)/8 - 1;	/* bitsperpixel was depth */
+    UShort ModeIndex = 0;
+    
+    while (m) {
+	if (pScrn->bitsPerPixel == m->bpp 
+	    && mode->HDisplay == m->width 
+	    && mode->VDisplay == m->height)
+	    return m->n;
+	m = m->next;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+             "No valid BIOS VESA mode found for %dx%dx%d; searching built-in table.\n",
+             mode->HDisplay, mode->VDisplay, pScrn->bitsPerPixel);
+
+    switch(mode->HDisplay)
+   {
+     case 640:
+          ModeIndex = VESAModeIndex_640x480[i];
+          break;
+     case 720:
+          if(mode->VDisplay == 480)
+            ModeIndex = VESAModeIndex_720x480[i];
+          else
+            ModeIndex = VESAModeIndex_720x576[i];
+          break;
+     case 800:
+          ModeIndex = VESAModeIndex_800x600[i];
+          break;
+     case 1024:
+          ModeIndex = VESAModeIndex_1024x768[i];
+          break;
+     case 1280:
+          ModeIndex = VESAModeIndex_1280x1024[i];
+          break;
+     case 1600:
+          ModeIndex = VESAModeIndex_1600x1200[i];
+          break;
+   }
+
+   if (!ModeIndex) xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+        "No valid mode found for %dx%dx%d in built-in table either.",
+	mode->HDisplay, mode->VDisplay, pScrn->bitsPerPixel);
+
+   return(ModeIndex);
 }
