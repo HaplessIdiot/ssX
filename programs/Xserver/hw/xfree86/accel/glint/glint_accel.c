@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.9 1997/09/29 08:40:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.10 1997/09/30 04:51:01 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -172,19 +172,16 @@ void GLINTAccelInit()
     xf86AccelInfoRec.Flags = PIXMAP_CACHE |
       ONLY_LEFT_TO_RIGHT_BITBLT |
       COP_FRAMEBUFFER_CONCURRENCY |
-#if 0
       HORIZONTAL_TWOPOINTLINE |
       HARDWARE_CLIP_LINE |
       USE_TWO_POINT_LINE |
       TWO_POINT_LINE_NOT_LAST |
-#endif
       BACKGROUND_OPERATIONS |
       NO_CAP_NOT_LAST |
       DELAYED_SYNC;
   
 #if 0
     xf86AccelInfoRec.PatternFlags =
-      HARDWARE_PATTERN_NOT_LINEAR |
       HARDWARE_PATTERN_SCREEN_ORIGIN |
       HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
       HARDWARE_PATTERN_MONO_TRANSPARENCY | 
@@ -233,12 +230,14 @@ void GLINTAccelInit()
     xf86AccelInfoRec.SetupForFill8x8Pattern = GLINTSetupForFill8x8Pattern;
     xf86AccelInfoRec.SubsequentFill8x8Pattern = GLINTSubsequentFill8x8Pattern;
 #endif
-    /*
+
+#if 0
       xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
-      GLINTSetupFor8x8PatternColorExpand;
+      PermediaSetupFor8x8PatternColorExpand;
       xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
-      GLINTSubsequent8x8PatternColorExpand;
-    */
+      PermediaSubsequent8x8PatternColorExpand;
+#endif
+
     xf86AccelInfoRec.PixmapCacheMemoryEnd = 
       glintInfoRec.videoRam * 1024 - 1024 - 16384;
 
@@ -1078,12 +1077,12 @@ void PermediaSubsequent8x8PatternColorExpand(int patternx, int patterny, int x, 
       if (!a)
 	{
 	  GLINT_WRITE_REG(gbg, GLINTColor);
-	  GLINT_WRITE_REG(UNIT_ENABLE | ASM_InvertPattern, AreaStippleMode);
+	  GLINT_WRITE_REG(2 << 1 | 2 << 4 | patternx << 7 | patterny << 12 | UNIT_ENABLE | ASM_InvertPattern, AreaStippleMode);
 	}
       else
 	{
 	  GLINT_WRITE_REG(gcolor, GLINTColor);
-	  GLINT_WRITE_REG(UNIT_ENABLE, AreaStippleMode);
+	  GLINT_WRITE_REG(2 << 1 | 2 << 4 | patternx << 7 | patterny << 12 | UNIT_ENABLE, AreaStippleMode);
 	}
 
       GLINT_WRITE_REG(mode, Render);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.5 1997/06/15 07:12:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.6 1997/07/29 12:08:00 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -136,6 +136,8 @@ void MGANAME(AccelInit)()
     				MGANAME(SubsequentFillTrapezoidSolid);
 #endif
 
+    if( MGAchipset != PCI_CHIP_MGA2164_AGP ) 
+    {
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
      * copying a rectangular area from one location on the screen to
@@ -155,7 +157,7 @@ void MGANAME(AccelInit)()
         			MGANAME(SetupForScreenToScreenCopy);
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         			MGANAME(SubsequentScreenToScreenCopy);
-
+    }
     /*
      * color expansion
      */
@@ -576,7 +578,8 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
      */
         /* alignment constraints (SDK 5-30)
         */
-    if(
+    if( (MGAchipset != PCI_CHIP_MGA2164_AGP) &&
+
 #if PSZ == 32
         !((xsrc ^ xdst) & 31)
 #elif PSZ == 16
@@ -643,6 +646,8 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
     OUTREG(MGAREG_YDSTLEN, (ydst << 16) | h);
     OUTREG(MGAREG_AR3, srcStart);
     OUTREG(MGAREG_AR0 + MGAREG_EXEC, srcStop);
+    if( MGAchipset == PCI_CHIP_MGA2164_AGP )
+    	MGAStormSync();
 }
 
 /*
