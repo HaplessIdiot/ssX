@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xt/InitialI.h,v 3.8 2001/08/22 22:52:18 dawes Exp $ */
 
 #ifndef _XtinitialI_h
 #define _XtinitialI_h
@@ -77,6 +77,7 @@ SOFTWARE.
 #endif
 #endif
 
+#include <X11/Xos.h>
 #include <X11/Xpoll.h>
 
 typedef struct _TimerEventRec {
