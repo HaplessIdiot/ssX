@@ -1,4 +1,11 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 359. More work on the NativeGDI server for Cygwin/XFree86. The span routines
+      are nearing completion (albeit they run slowly until the higher
+      level X primitive functions are implemented). The obvious issue with
+      the current code is the problems surrounding 1-bit DIBsections which
+      have msb/lsb issues compared to the other types of DIBsections.
+      This work was done quite some time ago in the Cygwin/XFree86 CVS.
+      (Alan Hourihane).
  358. SiS driver update:
       - Added pseudo-Xinerama extension for MergedFB mode
       - Fixes for Clevo L285/L287 (1024x768)
@@ -17490,7 +17497,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2795 2003/08/06 14:04:02 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2796 2003/08/07 12:49:13 twini Exp $
 
 
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.14 2002/10/17 08:18:18 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.16 2003/07/29 21:25:15 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -59,7 +59,9 @@ SRCS =	InitInput.c \
 	winclipboardxevents.c \
 	winvideo.c \
 	wintrayicon.c \
-	windialogs.c
+	windialogs.c \
+	winrop.c \
+	winpushpxl.c
 
 /*
  * NOTE: The XWin.rc file is compiled into XWin.res.
@@ -119,7 +121,9 @@ OBJS =	InitInput.o \
 	winclipboardxevents.o \
 	winvideo.o \
 	wintrayicon.o \
-	windialogs.o
+	windialogs.o \
+	winrop.o \
+	winpushpxl.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \

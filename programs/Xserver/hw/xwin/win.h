@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.33 2002/11/07 10:31:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.35 2003/07/29 21:25:15 dawes Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -578,6 +578,8 @@ extern DWORD			g_dwEnginesSupported;
 extern HINSTANCE		g_hInstance;
 extern HWND			g_hDlgDepthChange;
 extern HWND			g_hDlgExit;
+extern int			g_copyROP[];
+extern int			g_patternROP[];
 
 
 /*
