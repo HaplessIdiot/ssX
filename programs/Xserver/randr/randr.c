@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.7 2001/06/07 17:54:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.8 2001/06/08 20:41:05 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -822,7 +822,7 @@ ProcRRSetScreenConfig (ClientPtr client)
 	client->errorValue = stuff->rotation;
 	return BadValue;
     }
-    if (!pScrPriv->rotations & rotation)
+    if (!(pScrPriv->rotations & rotation))
     {
 	/*
 	 * requested rotation not supported by screen
