@@ -66,7 +66,7 @@ XFree86 3.9Pf (21 March 1999)
       NetBSD and OpenBSD (#2558 (2557), Matthieu Herrb).
 2378. Add Cards entry for Number Nine FX Reality 772 (#2556, Harald Koenig).
 2377. Make XF86Setup build again (not fully functional yet) (#2555, Joe Moss).
-2376. Update the apm (Alliance Promotion) to the 4.0 interface (#2554,
+2376. Update the apm (Alliance Promotion) driver to the 4.0 interface (#2554,
       Loic Grenie, Henrik Harmsen).
 2375. Add some rules for driver/module man pages, and add a sample driver
       man page for the mga driver (David Dawes).

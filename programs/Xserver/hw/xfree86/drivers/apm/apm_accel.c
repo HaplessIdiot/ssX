@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.5 1999/03/21 07:35:03 dawes Exp $ */
 
 
 #include "compiler.h"
@@ -74,7 +74,7 @@ ApmAccelInit(ScreenPtr pScreen)
 
     if (pScrn->depth != 24) {
 	if (!pApm->noLinear) {
-#define	XAA(s)		pXAAinfo->##s = Apm##s
+#define	XAA(s)		pXAAinfo->s = Apm##s
 	    XAA(Sync);
 
 	    /* Setup current register values */
@@ -138,7 +138,7 @@ ApmAccelInit(ScreenPtr pScreen)
 #undef XAA
 	}
 	else {
-#define	XAA(s)		pXAAinfo->##s = Apm##s##_IOP
+#define	XAA(s)		pXAAinfo->s = Apm##s##_IOP
 	    XAA(Sync);
 
 	    /* Setup current register values */
@@ -203,7 +203,7 @@ ApmAccelInit(ScreenPtr pScreen)
     }
     else {
 	if (!pApm->noLinear) {
-#define	XAA(s)		pXAAinfo->##s = Apm##s##24
+#define	XAA(s)		pXAAinfo->s = Apm##s##24
 	    XAA(Sync);
 
 	    /* Setup current register values */
@@ -265,7 +265,7 @@ ApmAccelInit(ScreenPtr pScreen)
 #undef XAA
 	}
 	else {
-#define	XAA(s)		pXAAinfo->##s = Apm##s##24##_IOP
+#define	XAA(s)		pXAAinfo->s = Apm##s##24##_IOP
 	    XAA(Sync);
 
 	    /* Setup current register values */
@@ -355,4 +355,8 @@ Dump(void* start, u32 len)
   ErrorF("\n");
 }
 
+#ifdef __GNUC__
 void apm_stopit(void){__asm__ __volatile__("": : : "memory");}
+#else
+void apm_stopit(void){}
+#endif
