@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mizerline.c,v 5.7 94/04/17 20:28:05 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 
 #include "misc.h"
@@ -66,8 +67,8 @@ SOFTWARE.
 
 /* round, but maps x/y == z.5 to z.0 instead of (z+1).0 */
 /* note that "ceiling" breaks for numerator < 1, so special-case it */
-#define round_down(x, y)   ((int)(2*(x)-(y)) <= 0 ? 0 :\
-			                (ceiling((2*(x)-(y)), (2*(y)))))
+#define round_down(x, y)   ((int)((x)-(y)/2) <= 0 ? 0 :\
+			                (ceiling(((x)-(y)/2), ((y)))))
 
 /* miZeroClipLine
  *
