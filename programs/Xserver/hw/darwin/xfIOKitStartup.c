@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.8 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.9 2002/10/12 00:32:44 torrey Exp $ */
 
 #include "quartz/quartz.h"
 
@@ -73,6 +73,10 @@ Bool QuartzSetupScreen(int index, ScreenPtr pScreen) {
 
 void QuartzInitOutput(int argc, char **argv) {
     FatalError("QuartzInitOutput called without Quartz support.\n");
+}
+
+void QuartzInitInput(int argc, char **argv) {
+    FatalError("QuartzInitInput called without Quartz support.\n");
 }
 
 void QuartzGiveUp(void) {

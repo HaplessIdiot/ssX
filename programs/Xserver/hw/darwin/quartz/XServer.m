@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.3 2002/07/15 18:57:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -109,11 +109,13 @@ static NSRect aquaMenuBarBox;
     self = [super init];
     oneXServer = self;
 
+    serverState = server_NotStarted;
     serverLock = [[NSRecursiveLock alloc] init];
     clientPID = 0;
     sendServerEvents = NO;
     serverVisible = NO;
     rootlessMenuBarVisible = YES;
+    queueShowServer = YES;
     appQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
@@ -141,17 +143,18 @@ static NSRect aquaMenuBarBox;
     // Quit if the X server is not running
     if ([serverLock tryLock]) {
         appQuitting = YES;
+        serverState = server_Done;
         if (clientPID != 0)
             kill(clientPID, SIGINT);
         return NSTerminateNow;
     }
 
+    // Hide the X server and stop sending it events
+    [self showServer:NO];
+    sendServerEvents = NO;
+
     if (clientPID != 0 || !quartzStartClients) {
         int but;
-
-        // Hide the X server and stop sending it events
-        [self hide];
-        sendServerEvents = NO;
 
         but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
                               NSLocalizedString(@"Quitting the X server will terminate any running X Window System programs.",@""),
@@ -163,7 +166,8 @@ static NSRect aquaMenuBarBox;
             case NSAlertDefaultReturn:		// quit
                 break;
             case NSAlertAlternateReturn:	// cancel
-                sendServerEvents = YES;
+                if (serverState == server_Running)
+                    sendServerEvents = YES;
                 return NSTerminateCancel;
         }
     }
@@ -171,7 +175,15 @@ static NSRect aquaMenuBarBox;
     appQuitting = YES;
     if (clientPID != 0)
         kill(clientPID, SIGINT);
-    [self killServer];
+
+    // At this point the X server is either running or starting.
+    if (serverState == server_Starting) {
+        // Quit will be queued later when server is running
+        return NSTerminateLater;
+    } else if (serverState == server_Running) {
+        [self quitServer];
+    }
+
     return NSTerminateNow;
 }
 
@@ -415,9 +427,9 @@ static NSRect aquaMenuBarBox;
         NSLog(@"No version");
 
     // Start the X server thread
+    serverState = server_Starting;
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self
               withObject:nil];
-    sendServerEvents = YES;
 
     // Start the X clients if started from GUI
     if (quartzStartClients) {
@@ -428,10 +440,6 @@ static NSRect aquaMenuBarBox;
         // There is no help window for rootless; just start
         [helpWindow close];
         helpWindow = nil;
-        if ([NSApp isActive])
-            [self sendShowHide:YES];
-        else
-            [self sendShowHide:NO];
     } else {
         // Show the X switch window if not using dock icon switching
         if (![Preferences dockSwitch])
@@ -439,13 +447,33 @@ static NSRect aquaMenuBarBox;
 
         if ([Preferences startupHelp]) {
             // display the full screen mode help
-            [self sendShowHide:NO];
             [helpWindow makeKeyAndOrderFront:nil];
+            queueShowServer = NO;
         } else {
             // start running full screen and make sure X is visible
             ShowMenuBar();
             [self closeHelpAndShow:nil];
         }
+    }
+}
+
+// Finish starting the X server thread
+// This includes anything that must be done after the X server is
+// ready to process events.
+- (void)finishStartX
+{
+    sendServerEvents = YES;
+    serverState = server_Running;
+
+    if (quartzRootless) {
+        [self forceShowServer:[NSApp isActive]];
+    } else {
+        [self forceShowServer:queueShowServer];
+    }
+
+    if (appQuitting) {
+        [self quitServer];
+        [NSApp replyToApplicationShouldTerminate:YES];
     }
 }
 
@@ -637,16 +665,14 @@ static NSRect aquaMenuBarBox;
     [helpWindow close];
     helpWindow = nil;
 
-    serverVisible = YES;
-    [self sendShowHide:YES];
+    [self forceShowServer:YES];
     [NSApp activateIgnoringOtherApps:YES];
 }
 
 // Show the X server when sent message from GUI
 - (IBAction)showAction:(id)sender
 {
-    if (sendServerEvents)
-        [self sendShowHide:YES];
+    [self forceShowServer:YES];
 }
 
 // Show or hide the X server or menu bar in rootless mode
@@ -662,39 +688,29 @@ static NSRect aquaMenuBarBox;
         rootlessMenuBarVisible = !rootlessMenuBarVisible;
 #endif
     } else {
-        if (serverVisible)
-            [self hide];
-        else
-            [self show];
+        [self showServer:!serverVisible];
     }
 }
 
-// Show the X server on screen
-- (void)show
+// Show or hide the X server on screen
+- (void)showServer:(BOOL)show
 {
-    if (!serverVisible && sendServerEvents) {
-        [self sendShowHide:YES];
+    // Do not show or hide multiple times in a row
+    if (serverVisible == show)
+        return;
+
+    if (sendServerEvents) {
+        [self sendShowHide:show];
+    } else if (serverState == server_Starting) {
+        queueShowServer = show;
     }
 }
 
-// Hide the X server from the screen
-- (void)hide
+// Show or hide the X server irregardless of the current state
+- (void)forceShowServer:(BOOL)show
 {
-    if (serverVisible && sendServerEvents) {
-        [self sendShowHide:NO];
-    }
-}
-
-// Kill the X server thread
-- (void)killServer
-{
-    xEvent xe;
-
-    if (serverVisible)
-        [self hide];
-
-    xe.u.u.type = kXDarwinQuit;
-    [self sendXEvent:&xe];
+    serverVisible = !show;
+    [self showServer:show];
 }
 
 // Tell the X server to show or hide itself.
@@ -774,6 +790,16 @@ static NSRect aquaMenuBarBox;
     [self sendXEvent:&xe];
 }
 
+- (void)quitServer
+{
+    xEvent xe;
+
+    xe.u.u.type = kXDarwinQuit;
+    [self sendXEvent:&xe];
+
+    serverState = server_Quitting;
+}
+
 - (void)sendXEvent:(xEvent *)xe
 {
     // This field should be filled in for every event
@@ -810,14 +836,15 @@ static NSRect aquaMenuBarBox;
                 QuartzFSRelease();
                 ShowMenuBar();
             }
+            break;
 
-            // FIXME: This hack is necessary (but not completely effective)
-            // since Mac OS X 10.0.2
-            [NSCursor unhide];
+        case kQuartzServerStarted:
+            [self finishStartX];
             break;
 
         case kQuartzServerDied:
             sendServerEvents = NO;
+            serverState = server_Done;
             if (!appQuitting) {
                 [NSApp terminate:nil];	// quit if we aren't already
             }
@@ -858,20 +885,20 @@ static NSRect aquaMenuBarBox;
             hasVisibleWindows:(BOOL)flag
 {
     if ([Preferences dockSwitch] && !quartzRootless) {
-        [self show];
+        [self showServer:YES];
     }
     return NO;
 }
 
 - (void)applicationWillResignActive:(NSNotification *)aNotification
 {
-    [self hide];
+    [self showServer:NO];
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification
 {
     if (quartzRootless)
-        [self show];
+        [self showServer:YES];
 }
 
 @end

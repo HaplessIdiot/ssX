@@ -6,7 +6,7 @@
  * This file should be included before any X11 or IOKit headers
  * so that it can avoid symbol conflicts.
  *
- * Copyright (c) 2001 Torrey T. Lyons and Greg Parker.
+ * Copyright (c) 2001-2002 Torrey T. Lyons and Greg Parker.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.3 2002/07/22 00:27:25 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -85,6 +85,7 @@ int QuartzFSUseQDCursor(int depth);
 // Messages that can be sent to the main thread.
 enum {
     kQuartzServerHidden,
+    kQuartzServerStarted,
     kQuartzServerDied,
     kQuartzPostEvent
 };
