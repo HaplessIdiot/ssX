@@ -52,6 +52,8 @@
 
 #include "miline.h"
 
+#define DOLINES
+
 /*
  * Macro to define valid rectangle.
  */
@@ -69,6 +71,12 @@ NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     pNv->riva.Clip->WidthHeight = (height << 16) | width;
 }
 
+
+static void
+NVDisableClipping(ScrnInfoPtr pScrn)
+{
+    NVSetClippingRectangle(pScrn, 0, 0, 0x7fff, 0x7fff);
+}
 
 /*
  * Set pattern. Internal routine. The upper bits of the colors
@@ -442,9 +450,7 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 }
 
 
-#if 0
-
-/* Broken at the moment */
+#ifdef DOLINES
 
 static void
 NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
@@ -453,7 +459,7 @@ NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
 
     NVSetRopSolid(pNv, rop);
     RIVA_FIFO_FREE(pNv->riva, Line, 1);
-    pNv->riva.Line->Color = color;
+    pNv->FgColor = color;
 }
 
 static void 
@@ -461,12 +467,13 @@ NVSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len, int dir)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    RIVA_FIFO_FREE(pNv->riva, Line, 2);
-    pNv->riva.Line->Lin[0].point0 = (y << 16) | ( x & 0xffff);
+    RIVA_FIFO_FREE(pNv->riva, Line, 3);
+    pNv->riva.Line->Color = pNv->FgColor;
+    pNv->riva.Line->Lin[0].point0 = ((y << 16) | ( x & 0xffff));
     if ( dir ==DEGREES_0 )
-        pNv->riva.Line->Lin[0].point1 = (y << 16) | (( x + len ) & 0xffff);
+        pNv->riva.Line->Lin[0].point1 = ((y << 16) | (( x + len ) & 0xffff));
     else
-        pNv->riva.Line->Lin[0].point1 = ((y + len) << 16) | ( x & 0xffff);
+        pNv->riva.Line->Lin[0].point1 = (((y + len) << 16) | ( x & 0xffff));
 }
 
 static void 
@@ -474,17 +481,16 @@ NVSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
                               int x2, int y2, int flags)
 {
     NVPtr pNv = NVPTR(pScrn);
+    Bool  lastPoint = !(flags & OMIT_LAST);
 
-    RIVA_FIFO_FREE(pNv->riva, Line, 2);
-    if ( flags & OMIT_LAST )
+    RIVA_FIFO_FREE(pNv->riva, Line, lastPoint ? 5 : 3);
+    pNv->riva.Line->Color = pNv->FgColor;
+    pNv->riva.Line->Lin[0].point0 = ((y1 << 16) | (x1 & 0xffff));
+    pNv->riva.Line->Lin[0].point1 = ((y2 << 16) | (x2 & 0xffff));
+    if (lastPoint)
     {
-        pNv->riva.Line->Lin[0].point1 = (y1 << 16) | ( x1 & 0xffff);
-        pNv->riva.Line->PolyLin[0] = (y2 << 16) | ( x2 & 0xffff);
-    }
-    else
-    {
-        pNv->riva.Line->Lin[0].point0 = (y1 << 16) | ( x1 & 0xffff);
-        pNv->riva.Line->Lin[0].point1 = (y2 << 16) | ( x2 & 0xffff);
+        pNv->riva.Line->Lin[1].point0 = ((y2 << 16) | (x2 & 0xffff));
+        pNv->riva.Line->Lin[1].point1 = (((y2 + 1) << 16) | (x2 & 0xffff));
     }
 }
 
@@ -720,23 +726,26 @@ NVAccelInit(ScreenPtr pScreen)
         infoPtr->ScanlineImageWriteBuffers = &pNv->expandBuffer;
     }
 
-#if 0
-    /* Solid lines, don't work yet */
+#ifdef DOLINES
     infoPtr->SolidLineFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidLine = NVSetupForSolidLine;
     infoPtr->SubsequentSolidHorVertLine =
 		NVSubsequentSolidHorVertLine;
     infoPtr->SubsequentSolidTwoPointLine = 
 		NVSubsequentSolidTwoPointLine;
+    infoPtr->SetClippingRectangle = NVSetClippingRectangle;
+    infoPtr->DisableClipping = NVDisableClipping;
+    infoPtr->ClippingFlags = HARDWARE_CLIP_SOLID_LINE;
+    miSetZeroLineBias(pScreen, OCTANT1 | OCTANT3 | OCTANT4 | OCTANT6);
 #else
     infoPtr->SolidLineFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidLine = NVSetupForSolidLine;
+    infoPtr->PolySegmentThinSolidFlags = NO_PLANEMASK;
+    infoPtr->PolylinesThinSolidFlags = NO_PLANEMASK;
     infoPtr->SubsequentSolidHorVertLine =
 		NVSubsequentSolidHorVertLine;
     infoPtr->SubsequentSolidBresenhamLine = 
 		NVSubsequentSolidBresenhamLine;
-    infoPtr->PolySegmentThinSolidFlags = NO_PLANEMASK;
-    infoPtr->PolylinesThinSolidFlags = NO_PLANEMASK;
     infoPtr->PolySegmentThinSolid =
 		NVPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = 
@@ -747,8 +756,8 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask;
     infoPtr->ValidatePolyPoint = NVValidatePolyPoint;
     infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
-
-    NVSetClippingRectangle(pScrn, 0, 0, 0x7fff, 0x7fff);
+   
+    NVDisableClipping(pScrn);
     return(XAAInit(pScreen, infoPtr));
 }
 
