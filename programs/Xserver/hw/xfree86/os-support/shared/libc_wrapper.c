@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.100tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.101 2003/10/28 18:36:37 tsi Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1883,13 +1883,13 @@ xf86GetErrno ()
 int
 xf86shmget(xf86key_t key, int size, int xf86shmflg)
 {
-    int shmflg = xf86shmflg & 0777;
+    int shmflg;
+
+    /* This copies the permissions (SHM_R, SHM_W for u, g, o). */
+    shmflg = xf86shmflg & 0777;
 
     if (key == XF86IPC_PRIVATE) key = IPC_PRIVATE;
-    
 
-    if (xf86shmflg & XF86SHM_R) shmflg |= SHM_R;
-    if (xf86shmflg & XF86SHM_W) shmflg |= SHM_W;
     if (xf86shmflg & XF86IPC_CREAT) shmflg |= IPC_CREAT;
     if (xf86shmflg & XF86IPC_EXCL) shmflg |= IPC_EXCL;
     if (xf86shmflg & XF86IPC_NOWAIT) shmflg |= IPC_NOWAIT;
