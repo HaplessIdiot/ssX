@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.24 2001/08/07 02:56:55 keithp Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.25 2001/12/14 20:01:30 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -69,6 +69,9 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #ifdef XRENDER
 #include <X11/extensions/Xrender.h>
+#endif
+#ifdef PANORAMIX
+#include <X11/extensions/Xinerama.h>
 #endif
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -1007,6 +1010,40 @@ print_xrender_info(Display *dpy, char *extname)
 }
 #endif /* XRENDER */
 
+
+#ifdef PANORAMIX
+
+static int
+print_xinerama_info(Display *dpy, char *extname)
+{
+  int              majorrev, minorrev;
+
+  if (!XineramaQueryVersion (dpy, &majorrev, &minorrev))
+    return 0;
+  
+  print_standard_extension_info(dpy, extname, majorrev, minorrev);
+
+  if (!XineramaIsActive(dpy)) {
+    printf("  Xinerama is inactive.\n");
+  } else {
+    int i, count = 0; 
+    XineramaScreenInfo *xineramaScreens = XineramaQueryScreens(dpy, &count);
+    
+    for (i = 0; i < count; i++) {
+      XineramaScreenInfo *xs = &xineramaScreens[i];
+      printf("  head #%d: %dx%d @ %d,%d\n", xs->screen_number, 
+             xs->width, xs->height, xs->x_org, xs->y_org);
+    }
+    
+    XFree(xineramaScreens);
+  }
+  
+  return 1;
+}
+
+#endif /* PANORAMIX */
+
+
 /* utilities to manage the list of recognized extensions */
 
 
@@ -1055,6 +1092,9 @@ ExtensionPrintInfo known_extensions[] =
 #endif
 #ifdef XRENDER
     {RENDER_NAME, print_xrender_info, False},
+#endif
+#ifdef PANORAMIX
+    {"XINERAMA", print_xinerama_info, False},
 #endif
     /* add new extensions here */
     /* wish list: PEX */
