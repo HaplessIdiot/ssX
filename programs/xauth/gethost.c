@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.15 2001/07/25 15:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.16 2001/12/14 20:01:14 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -106,12 +106,13 @@ char *
 get_hostname (auth)
     Xauth *auth;
 {
-    static struct hostent *hp = NULL;
+    static struct hostent *hp;
 #ifdef DNETCONN
     struct nodeent *np;
     static char nodeaddr[4 + 2 * DN_MAXADDL];
 #endif /* DNETCONN */
 
+    hp = NULL;
     if (auth->address_length == 0)
 	return "Illegal Address";
 #ifdef TCPCONN
