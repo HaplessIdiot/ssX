@@ -195,7 +195,6 @@ miCreateAlphaPicture (ScreenPtr	    pScreen,
 
 Bool
 miBuildRenderColormap (ColormapPtr  pColormap,
-		       int	    num,
 		       Pixel	    *first,
 		       Pixel	    *last);
 
