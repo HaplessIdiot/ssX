@@ -2015,7 +2015,32 @@
         <description xml:lang="bg">тамилска</description>
         <description xml:lang="ru">Тамильская</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>TSCII</name>
+            <description>A Tamil typewrite-style keymap; TSCII encoding</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>TAB</name>
+            <description>A Tamil typewrite-style keymap; TAB encoding</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>UNI</name>
+            <description>A Tamil typewrite-style keymap; Unicode encoding</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>INSCRIPT</name>
+            <description>INSCRIPT layout</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
