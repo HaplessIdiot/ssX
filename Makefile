@@ -1,5 +1,5 @@
 # $TOG: Makefile /main/37 1998/02/17 14:30:04 kaleb $
-# $XFree86: xc/Makefile,v 3.14 1999/04/15 01:29:11 dawes Exp $
+# $XFree86: xc/Makefile,v 3.15 1999/08/14 10:48:56 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -91,7 +91,7 @@ depend.bootstrap: $(DEPENDSRC)/Makefile.proto
 	cd $(DEPENDSRC) && $(MAKE) -f Makefile.proto bootstrap
 
 $(IMAKESRC)/Makefile.proto: depend.bootstrap
-	$(IMAKE_CMD) -s $(IMAKESRC)/Makefile.proto -f $(IMAKESRC)/Imakefile -DTOPDIR=$(IMAKETOP) -DCURDIR=$(IMAKESRC)
+	$(IMAKE_CMD) -s $(IMAKESRC)/Makefile.proto -f $(IMAKESRC)/Imakefile -DTOPDIR=$(IMAKETOP) -DCURDIR=$(IMAKESRC) -DBootStrap
 
 imake.bootstrap: $(IMAKESRC)/Makefile.proto
 	cd $(IMAKESRC) && $(MAKE) -f Makefile.proto bootstrapdepend

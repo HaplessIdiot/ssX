@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.63 2000/03/21 19:56:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.64 2000/03/21 21:08:08 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1141,25 +1141,15 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(BINDIR)/rgb
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
-#if BuildRman
-             RMAN = $(BINDIR)/rman
-#endif
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
 #else
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(XBUILDBINDIR)/mkfontdir
-#if BuildRman
-             RMAN = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rman
-#endif
       MKHTMLINDEX = $(SHELL) $(CONFIGSRC)/util/mkhtmlindex.sh
 #endif
 
      HTMLINDEXCMD = HtmlIndexCmd
-
-#ifdef RmanCmd
-          RMANCMD = RmanCmd
-#endif
 
        DOCUTILSRC = $(XTOP)/doc/util
         CLIENTSRC = $(TOP)/clients
