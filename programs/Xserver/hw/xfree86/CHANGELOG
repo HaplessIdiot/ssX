@@ -1,4 +1,4 @@
-XFree86 3.1.0c (5 November 1994)
+XFree86 3.1.0c (6 November 1994)
  70. Modify S3 linear fb probe to handle the non-standard CR5A[6:7] address
      mapping used by some Diamond boards (including the Diamond Stealth Pro).
      Also, the 10 most significant bits of a specified MemBase value are
@@ -11,10 +11,10 @@ XFree86 3.1.0c (5 November 1994)
      and 1152 width at 16bpp (Norbert Dislter).
  66. Change MCLK from 46MHz to 49MHz in the SC11412 clock code (Norbert
      Distler).
- 65. S3 code to detect 866/868/966/968/Trio32/Trio64 and treat them as
+ 65. S3 code to detect 866/868/968/Trio32/Trio64 and treat them as
      an 864 (Harald Koenig).
  64. Update SuperProbe to detect  STG1700, S3 GENDAC and SDAC, ATT22C498,
-     S3 Vision866, 868, Trio32 and Trio64 (Harald Koenig).
+     S3 Vision866, 868, 968, Trio32 and Trio64 (Harald Koenig).
  63. Enforce 95MHz limit for 864 when no pixmux (eg, 16bpp) (Harald Koenig).
  62. Increase pixmux cut-in point for ATT20C498 to 95MHz (Harald Koenig).
  61. ATT22C498 detection and (untested) support (Harald Koenig).
