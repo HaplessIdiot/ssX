@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.106 2000/12/06 15:35:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.107 2000/12/08 20:13:33 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1602,7 +1602,8 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	}
     } else {
 	/* Find PCI devices that match the given vendor ID */
-	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+	for (ppPci = xf86PciVideoInfo; (ppPci != NULL)
+	       && (*ppPci != NULL); ppPci++) {
 	    if ((*ppPci)->vendor == vendorID) {
 		++allocatedInstances;
 		instances = xnfrealloc(instances,

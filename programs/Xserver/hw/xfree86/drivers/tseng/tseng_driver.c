@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.76 2000/11/16 19:45:01 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.78 2000/12/06 15:35:25 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1267,7 +1267,8 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pTseng->HWCursor ? "HW" : "SW");
 
     if (pScrn->bitsPerPixel >= 8) {
-	pTseng->UseAccel = TRUE;
+        if (pTseng->ChipType != TYPE_ET4000)
+	    pTseng->UseAccel = TRUE;
 	if (xf86ReturnOptValBool(TsengOptions, OPTION_NOACCEL, FALSE)) {
 	    pTseng->UseAccel = FALSE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
@@ -1841,12 +1842,13 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load XAA if needed */
-    if (pTseng->UseAccel)
+    if (pTseng->UseAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
-    xf86LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
     /* Load ramdac if needed */
     if (pTseng->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
@@ -1999,7 +2001,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn = xf86Screens[pScreen->myNum];
 
     pTseng = TsengPTR(pScrn);
-
     /* Map the Tseng memory areas */
     if (!TsengMapMem(pScrn))
 	return FALSE;
@@ -2028,7 +2029,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * support TrueColor and not DirectColor.  To deal with this, call
      * miSetVisualTypes for each visual supported.
      */
-
     if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
 			  pScrn->defaultVisual))
       return FALSE;
@@ -2064,6 +2064,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 	break;
     }
+
     if (!ret)
 	return FALSE;
 
@@ -2118,7 +2119,7 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     TsengSetupAccelMemory(scrnIndex, pScreen);
     if (pTseng->UseAccel) {
-	tseng_init_acl(pScreen);	/* set up accelerator */
+	tseng_init_acl(pScrn);	/* set up accelerator */
 	if (!TsengXAAInit(pScreen)) {	/* set up XAA interface */
 	    return FALSE;
 	}
@@ -2175,13 +2176,19 @@ static Bool
 TsengEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengEnterVT\n");
 
     vgaHWUnlock(VGAHWPTR(pScrn));
     TsengUnlock();
 
-    return TsengModeInit(pScrn, pScrn->currentMode);
+    if (!TsengModeInit(pScrn, pScrn->currentMode))
+        return FALSE;
+    if (pTseng->UseAccel) {
+	tseng_init_acl(pScrn);	/* set up accelerator */
+    }
+    return TRUE;
 }
 
 static void
@@ -2317,8 +2324,8 @@ TsengMapMem(ScrnInfoPtr pScrn)
 	}
     } else {
         vgaHWPtr hwp = VGAHWPTR(pScrn);
+	pTseng->FbBase = hwp->Base;
 	if (pTseng->UseAccel) {
-	    pTseng->FbBase = hwp->Base;
 	    pTseng->MMioBase = xf86MapPciMem(pScrn->scrnIndex, 
 					     VIDMEM_MMIO,
 					     pTseng->PciTag,
