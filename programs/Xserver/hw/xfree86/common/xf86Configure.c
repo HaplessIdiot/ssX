@@ -274,15 +274,18 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
     ptr->dev_chiprev = -1;
     ptr->dev_irq = -1;
 
-    /* Fill in the available driver options for people to use */
-    ptr->dev_comment = xalloc(32 + 1);
-    strcpy(ptr->dev_comment, "Available Driver options are:-\n");
-    for (p = devoptions; p->name != NULL; p++) {
-    	ptr->dev_comment = xrealloc(ptr->dev_comment, 
+    /* Make sure older drivers don't segv */
+    if (!devoptions == NULL) {
+    	/* Fill in the available driver options for people to use */
+    	ptr->dev_comment = xalloc(32 + 1);
+    	strcpy(ptr->dev_comment, "Available Driver options are:-\n");
+    	for (p = devoptions; p->name != NULL; p++) {
+    	    ptr->dev_comment = xrealloc(ptr->dev_comment, 
 			strlen(ptr->dev_comment) + strlen(p->name) + 24 + 1);
-	strcat(ptr->dev_comment, "        #Option     \"");
-	strcat(ptr->dev_comment, p->name);
-	strcat(ptr->dev_comment, "\"\n");
+	    strcat(ptr->dev_comment, "        #Option     \"");
+	    strcat(ptr->dev_comment, p->name);
+	    strcat(ptr->dev_comment, "\"\n");
+    	}
     }
 
     xf86PciCard = ConfiguredPciCard;
