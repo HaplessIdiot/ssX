@@ -171,6 +171,102 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
 }
 
 void
+fbCompositeSolidMask_nx8888x8888C (CARD8      op,
+				   PicturePtr pSrc,
+				   PicturePtr pMask,
+				   PicturePtr pDst,
+				   INT16      xSrc,
+				   INT16      ySrc,
+				   INT16      xMask,
+				   INT16      yMask,
+				   INT16      xDst,
+				   INT16      yDst,
+				   CARD16     width,
+				   CARD16     height)
+{
+    CARD32	src, srca;
+    CARD32	*dstLine, *dst, d, dstMask;
+    CARD32	*maskLine, *mask, ma;
+    FbBits	*dstBits, *maskBits, *srcBits;
+    FbStride	dstStride, maskStride, srcStride;
+    int		dstBpp, maskBpp, srcBpp;
+    CARD16	w;
+    CARD32	m, n, o, p;
+
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
+    switch (srcBpp) {
+    case 32:
+	src = *(CARD32 *) srcBits;
+	break;
+    case 24:
+	src = Fetch24 ((CARD8 *) srcBits);
+	break;
+    case 16:
+	src = *(CARD16 *) srcBits;
+	src = cvt0565to8888(src);
+	break;
+    }
+    /* manage missing src alpha */
+    if (pSrc->pFormat->direct.alphaMask == 0)
+	src |= 0xff000000;
+    dstMask = FbFullMask (pDst->pDrawable->depth);
+    srca = src >> 24;
+    if (srca == 0)
+	return;
+    
+    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
+    dstLine = (CARD32 *) dstBits;
+    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD32);
+    dstLine += dstStride * yDst + xDst;
+    
+    fbGetDrawable(pMask->pDrawable, maskBits, maskStride, maskBpp);
+    maskLine = (CARD32 *) maskBits;
+    maskStride = maskStride * sizeof (FbBits) / sizeof (CARD32);
+    maskLine += maskStride * yMask + xMask;
+    
+    while (height--)
+    {
+	dst = dstLine;
+	dstLine += dstStride;
+	mask = maskLine;
+	maskLine += maskStride;
+	w = width;
+
+	while (w--)
+	{
+	    ma = *mask++;
+	    if (ma == 0xffffffff)
+	    {
+		if (srca == 0xff)
+		    *dst = src & dstMask;
+		else
+		    *dst = fbOver (src, *dst) & dstMask;
+	    }
+	    else if (ma)
+	    {
+		d = *dst;
+#define FbInOverC(src,srca,msk,dst,i,result) { \
+    CARD16  __a = FbGet8(msk,i); \
+    CARD32  __t, __ta; \
+    CARD32  __i; \
+    __t = FbIntMult (FbGet8(src,i), __a,__i); \
+    __ta = (CARD8) ~FbIntMult (srca, __a,__i); \
+    __t = __t + FbIntMult(FbGet8(dst,i),__ta,__i); \
+    __t = (CARD32) (CARD8) (__t | (-(__t >> 8))); \
+    result = __t << (i); \
+}
+		FbInOverC (src, srca, ma, d, 0, m);
+		FbInOverC (src, srca, ma, d, 8, n);
+		FbInOverC (src, srca, ma, d, 16, o);
+		FbInOverC (src, srca, ma, d, 24, p);
+		*dst = m|n|o|p;
+	    }
+	    dst++;
+	}
+    }
+}
+
+void
 fbCompositeSolidMask_nx8x0888 (CARD8      op,
 			       PicturePtr pSrc,
 			       PicturePtr pMask,
@@ -670,8 +766,7 @@ fbComposite (CARD8      op,
 	{
 	    if (srcRepeat && 
 		pSrc->pDrawable->width == 1 &&
-		pSrc->pDrawable->height == 1 &&
-		!pMask->componentAlpha)
+		pSrc->pDrawable->height == 1)
 	    {
 		srcRepeat = FALSE;
 		if (PICT_FORMAT_COLOR(pSrc->format)) {
@@ -692,6 +787,26 @@ fbComposite (CARD8      op,
 			case PICT_x8b8g8r8:
 			    func = fbCompositeSolidMask_nx8x8888;
 			    break;
+			}
+			break;
+		    case PICT_a8r8g8b8:
+			if (pMask->componentAlpha) {
+			    switch (pDst->format) {
+			    case PICT_a8r8g8b8:
+			    case PICT_x8r8g8b8:
+				func = fbCompositeSolidMask_nx8888x8888C;
+				break;
+			    }
+			}
+			break;
+		    case PICT_a8b8g8r8:
+			if (pMask->componentAlpha) {
+			    switch (pDst->format) {
+			    case PICT_a8b8g8r8:
+			    case PICT_x8b8g8r8:
+				func = fbCompositeSolidMask_nx8888x8888C;
+				break;
+			    }
 			}
 			break;
 		    }
