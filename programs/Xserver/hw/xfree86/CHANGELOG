@@ -1,4 +1,6 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 832. Fix a hang in multi-thread mode caused by a missing UnlockDisplay() in
+      XkbGetMapChanges() (Jose Luu).
  831. Resync with DRI mesa-4-0-4 branch:
        - Don't inflate relative vblank sequence numbers on repeated calls
          (e.g., when interrupted by a signal) (Michel Dänzer).
@@ -16226,4 +16228,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2513 2003/01/31 00:01:42 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2514 2003/02/04 03:06:59 dawes Exp $
