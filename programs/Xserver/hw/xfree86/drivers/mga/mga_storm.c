@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.75 2000/10/11 14:52:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.76 2000/10/11 16:50:36 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -135,229 +135,311 @@ extern void MGAFillCacheBltRects(ScrnInfoPtr, int, unsigned int, int, BoxPtr,
 				int, int, XAACacheInfoPtr);
 
 #ifdef RENDER
+
 extern Bool 
-MGAComposite (CARD8      op,
-              PicturePtr pSrc,
-              PicturePtr pMask,
-              PicturePtr pDst,
-              INT16      xSrc,
-              INT16      ySrc,
-              INT16      xMask,
-              INT16      yMask,
-              INT16      xDst,
-              INT16      yDst,
-              CARD16     width,
-              CARD16     height);
+MGASetupForCPUToScreenAlphaTexture (
+	ScrnInfoPtr	pScrn,
+	int		op,
+	CARD16		red,
+	CARD16		green,
+	CARD16		blue,
+	CARD16		alpha,
+	int		alphaType,
+	CARD8		*alphaPtr,
+	int		alphaPitch,
+	int		width,
+	int		height,
+	int		flags
+);
+
+extern Bool 
+MGASetupForCPUToScreenTexture (
+	ScrnInfoPtr	pScrn,
+	int		op,
+	int		texType,
+	CARD8		*texPtr,
+	int		texPitch,
+	int		width,
+	int		height,
+	int		flags
+);
+
+extern void 
+MGASubsequentCPUToScreenTexture (
+	ScrnInfoPtr	pScrn,
+	int		dstx,
+	int		dsty,
+	int		srcx,
+	int		srcy,
+	int		width,
+	int		height
+);
+
+extern CARD32 MGAAlphaTextureFormats[2];
+extern CARD32 MGATextureFormats[2];
 
 #if PSZ == 8
 #include "mipict.h"
+#include "dixstruct.h"
 
-/* kludge */
-static FBLinearPtr linear_scratch = (FBLinearPtr)NULL;
-static int linear_size = 0;
+CARD32 MGAAlphaTextureFormats[2] = {PICT_a8, 0};
+CARD32 MGATextureFormats[2] = {PICT_a8r8g8b8, 0};
 
-Bool 
-MGAComposite (CARD8      op,
-              PicturePtr pSrc,
-              PicturePtr pMask,
-              PicturePtr pDst,
-              INT16      xSrc,
-              INT16      ySrc,
-              INT16      xMask,
-              INT16      yMask,
-              INT16      xDst,
-              INT16      yDst,
-              CARD16     width,
-              CARD16     height)
+static void 
+RemoveLinear (FBLinearPtr linear)
 {
-    ScreenPtr pScreen = pSrc->pDrawable->pScreen;
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    RegionRec region;
-    BoxPtr pbox;
-    int nbox;
+   MGAPtr pMga = (MGAPtr)(linear->devPrivate.ptr);
+
+   pMga->LinearScratch = NULL;  /* just lost our scratch */
+}
+
+static void
+RenderCallback (ScrnInfoPtr pScrn)
+{
     MGAPtr pMga = MGAPTR(pScrn);
-    PixmapPtr pix;
-    int log2w, log2h, i, w, h, pitch, padw, padh, incx, incy;
-    int offset, sizeNeeded, x, y;
-    CARD32 solid_color;
 
-    if(!pScrn->vtSema || 
-      ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
-	!IS_OFFSCREEN_PIXMAP(pDst->pDrawable)))
-	return FALSE;
-
-    if(pMask) {
-       solid_color =
-           *((CARD32*)(((PixmapPtr)(pSrc->pDrawable))->devPrivate.ptr));
-
-       if(PICT_FORMAT_A(pSrc->format) && ((solid_color >> 24) != 0xff))
-	  return FALSE;
-
-       pix = (PixmapPtr)(pMask->pDrawable);
-
-       solid_color &= 0x00ffffff;
-    } else
-       pix = (PixmapPtr)(pSrc->pDrawable);
-	
-    w = pix->drawable.width;
-    h = pix->drawable.height;
-
-    if((w > 2048) || (h > 2048))
-	return FALSE;
-
-    xDst  += pDst->pDrawable->x;
-    yDst  += pDst->pDrawable->y;
-    xSrc  += pSrc->pDrawable->x;
-    ySrc  += pSrc->pDrawable->y;
-    if(pMask) {
-       xMask += pMask->pDrawable->x;
-       yMask += pMask->pDrawable->y;
+    if((currentTime.milliseconds > pMga->RenderTime) && pMga->LinearScratch) {
+	xf86FreeOffscreenLinear(pMga->LinearScratch);
+	pMga->LinearScratch = NULL;
     }
 
+    if(!pMga->LinearScratch)
+	pMga->RenderCallback = NULL;
+}
 
-    if (!miComputeCompositeRegion (&region,
-                                   pSrc,
-                                   pMask,
-                                   pDst,
-                                   xSrc,
-                                   ySrc,
-                                   xMask,
-                                   yMask,
-                                   xDst,
-                                   yDst,
-                                   width,
-                                   height))
-	return TRUE;
+#define RENDER_DELAY	15000
 
-    nbox = REGION_NUM_RECTS(&region);
-    pbox = REGION_RECTS(&region);   
+static Bool
+AllocateLinear (
+   ScrnInfoPtr pScrn,
+   int sizeNeeded
+){
+   MGAPtr pMga = MGAPTR(pScrn);
 
-    if(!nbox)
-	return TRUE;
+   pMga->RenderTime = currentTime.milliseconds + RENDER_DELAY;
+   pMga->RenderCallback = RenderCallback;
 
-    i = 12;
+   if(pMga->LinearScratch) {
+	if(pMga->LinearScratch->size >= sizeNeeded) 
+	   return TRUE;
+	else {
+	   if(xf86ResizeOffscreenLinear(pMga->LinearScratch, sizeNeeded))
+		return TRUE;
+		
+	   xf86FreeOffscreenLinear(pMga->LinearScratch);
+	   pMga->LinearScratch = NULL;
+	}
+   }
+
+   pMga->LinearScratch = xf86AllocateOffscreenLinear(
+				pScrn->pScreen, sizeNeeded, 32, 
+				NULL, RemoveLinear, pMga);
+
+   return (pMga->LinearScratch != NULL);
+}
+
+static int
+GetPowerOfTwo(int w)
+{
+    int Pof2;
+    int i = 12;
+
     while(--i) {
         if(w & (1 << i)) {
-            log2w = i;
+            Pof2 = i;
             if(w & ((1 << i) - 1)) 
-                log2w++;
+                Pof2++;
             break;              
         }
     }
+    return Pof2;
+}
 
-    i = 12;
-    while(--i) {
-        if(h & (1 << i)) {
-            log2h = i;
-            if(h & ((1 << i) - 1)) 
-                log2h++;                
-            break;              
-        }
-    }
 
-    padw = 1 << log2w;
-    padh = 1 << log2h;
-    incx = (width << 20)/(width * padw);
-    incy = (height << 20)/(height * padh);
-   
+static int tex_padw, tex_padh;
+
+Bool 
+MGASetupForCPUToScreenAlphaTexture (
+   ScrnInfoPtr	pScrn,
+   int		op,
+   CARD16	red,
+   CARD16	green,
+   CARD16	blue,
+   CARD16	alpha,
+   int		alphaType,
+   CARD8	*alphaPtr,
+   int		alphaPitch,
+   int		width,
+   int		height,
+   int		flags
+){
+    int log2w, log2h, i, pitch, sizeNeeded, offset;
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    if(op != PictOpOver)  /* only one tested */
+	return FALSE;
+
+    if((width > 2048) || (height > 2048))
+	return FALSE;
+
+    log2w = GetPowerOfTwo(width);
+    log2h = GetPowerOfTwo(height);
+
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
-#if 0
     if(pMga->Overlay8Plus24) {
         i = 0x00ffffff;
         WAITFIFO(1);
         SET_PLANEMASK(i);
     }
-#endif
 
-    pitch = (w + 15) & ~15;
-    sizeNeeded = pitch * h;
+    pitch = (width + 15) & ~15;
+    sizeNeeded = pitch * height;
     if(pScrn->bitsPerPixel == 16) 
 	sizeNeeded <<= 1;
 
-    if(!linear_scratch) {
-	linear_scratch = xf86AllocateOffscreenLinear(pScreen, sizeNeeded,
-	                                             32, NULL, NULL, NULL);
-	if(!linear_scratch)
-	   return FALSE;
-    } else {
-        if(linear_size < sizeNeeded) {
-    	    if(xf86ResizeOffscreenLinear(linear_scratch, sizeNeeded))
-	       linear_size = sizeNeeded;
-	    else
-		return FALSE;
-	}
-    }
+    if(!AllocateLinear(pScrn, sizeNeeded))
+	return FALSE;
 
-    offset = linear_scratch->offset << 1;
+    offset = pMga->LinearScratch->offset << 1;
     if(pScrn->bitsPerPixel == 32)
         offset <<= 1;
 
     if(pMga->AccelInfoRec->NeedToSync) 
 	MGAStormSync(pScrn);
 
-    /* copy offscreen */
-    if(pMask) {
-	CARD32 *dst = (CARD32*)(pMga->FbStart + offset);
-        CARD8 *src = (CARD8*)(pix->devPrivate.ptr);
+    XAA_888_plus_PICT_a8_to_8888(
+	(blue >> 8) | (green & 0xff00) | ((red & 0xff00) << 8), 
+	alphaPtr, alphaPitch, (CARD32*)(pMga->FbStart + offset), 
+        pitch, width, height);
 
-        for(y = 0; y < h; y++) {
-	   for(x = 0; x < w; x++) {
-	       dst[x] = solid_color | (src[x] << 24);
-	    }
-	    dst += pitch;
-	    src += pix->devKind;
-        } 
-    } else {
-       CARD8 *src = (CARD8*)(pix->devPrivate.ptr);
-       CARD8 *dst = (CARD8*)(pMga->FbStart + offset);
-
-       for(y = 0; y < h; y++) {
-	    memcpy(dst, src, w << 2);
-            dst += pitch << 2;
-            src += pix->devKind;
-   	}	
-    }
+    tex_padw = 1 << log2w;
+    tex_padh = 1 << log2h;
 
     WAITFIFO(15);
-    OUTREG(MGAREG_TMR0, incx);  /* sx inc */
+    OUTREG(MGAREG_TMR0, (1 << 20) / tex_padw);  /* sx inc */
     OUTREG(MGAREG_TMR1, 0);  /* sy inc */
     OUTREG(MGAREG_TMR2, 0);  /* tx inc */
-    OUTREG(MGAREG_TMR3, incy);  /* ty inc */
+    OUTREG(MGAREG_TMR3, (1 << 20) / tex_padh);  /* ty inc */
     OUTREG(MGAREG_TMR4, 0x00000000); 
     OUTREG(MGAREG_TMR5, 0x00000000);
     OUTREG(MGAREG_TMR8, 0x00010000);
     OUTREG(MGAREG_TEXORG, offset); 
     OUTREG(MGAREG_TEXWIDTH,  log2w | (((8 - log2w) & 63) << 9) | 
-                                ((w - 1) << 18));
+                                ((width - 1) << 18));
     OUTREG(MGAREG_TEXHEIGHT, log2h | (((8 - log2h) & 63) << 9) | 
-                                ((h - 1) << 18));
+                                ((height - 1) << 18));
     OUTREG(MGAREG_TEXCTL, 0x1A000106 | ((pitch & 0x07FF) << 9));
     OUTREG(MGAREG_TEXCTL2, 0x00000014);
     OUTREG(MGAREG_DWGCTL, 0x000c7076);   
     OUTREG(MGAREG_TEXFILTER, 0x01e00020);
-    if(pMask)
-       OUTREG(MGAREG_ALPHACTRL, 0x00000154);
-    else
-       OUTREG(MGAREG_ALPHACTRL, 0x00000151);
-
-    padw = (xMask << 20)/padw;
-    padh = (yMask << 20)/padh;
-
-    while(nbox--) {
-        WAITFIFO(4);
-        OUTREG(MGAREG_TMR6, (incx * (pbox->x1 - xDst)) + padw);
-        OUTREG(MGAREG_TMR7, (incy * (pbox->y1 - yDst)) + padh);
-        OUTREG(MGAREG_FXBNDRY, (pbox->x2 << 16) | (pbox->x1 & 0xffff));
-        OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, 
-                                (pbox->y1 << 16) | (pbox->y2 - pbox->y1));
-        pbox++;
-    }
-
-    pMga->AccelInfoRec->NeedToSync = TRUE;
+    OUTREG(MGAREG_ALPHACTRL, 0x00000154);
 
     return TRUE;
 }
+
+Bool 
+MGASetupForCPUToScreenTexture (
+   ScrnInfoPtr	pScrn,
+   int		op,
+   int		texType,
+   CARD8	*texPtr,
+   int		texPitch,
+   int		width,
+   int		height,
+   int		flags
+){
+    int log2w, log2h, i, pitch, sizeNeeded, offset;
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    if(op != PictOpOver)  /* only one tested */
+	return FALSE;
+
+    if((width > 2048) || (height > 2048))
+	return FALSE;
+
+    log2w = GetPowerOfTwo(width);
+    log2h = GetPowerOfTwo(height);
+
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
+
+    if(pMga->Overlay8Plus24) {
+        i = 0x00ffffff;
+        WAITFIFO(1);
+        SET_PLANEMASK(i);
+    }
+
+    pitch = (width + 15) & ~15;
+    sizeNeeded = pitch * height;
+    if(pScrn->bitsPerPixel == 16) 
+	sizeNeeded <<= 1;
+
+    if(!AllocateLinear(pScrn, sizeNeeded))
+	return FALSE;
+
+    offset = pMga->LinearScratch->offset << 1;
+    if(pScrn->bitsPerPixel == 32)
+        offset <<= 1;
+
+    if(pMga->AccelInfoRec->NeedToSync) 
+	MGAStormSync(pScrn);
+
+    {
+	CARD8 *dst = (CARD8*)(pMga->FbStart + offset);
+	i = height;
+	while(i--) {
+            memcpy(dst, texPtr, width << 2);
+	    texPtr += texPitch;
+	    dst += pitch << 2;
+	}
+    }
+
+    tex_padw = 1 << log2w;
+    tex_padh = 1 << log2h;
+
+    WAITFIFO(15);
+    OUTREG(MGAREG_TMR0, (1 << 20) / tex_padw);  /* sx inc */
+    OUTREG(MGAREG_TMR1, 0);  /* sy inc */
+    OUTREG(MGAREG_TMR2, 0);  /* tx inc */
+    OUTREG(MGAREG_TMR3, (1 << 20) / tex_padh);  /* ty inc */
+    OUTREG(MGAREG_TMR4, 0x00000000); 
+    OUTREG(MGAREG_TMR5, 0x00000000);
+    OUTREG(MGAREG_TMR8, 0x00010000);
+    OUTREG(MGAREG_TEXORG, offset); 
+    OUTREG(MGAREG_TEXWIDTH,  log2w | (((8 - log2w) & 63) << 9) | 
+                                ((width - 1) << 18));
+    OUTREG(MGAREG_TEXHEIGHT, log2h | (((8 - log2h) & 63) << 9) | 
+                                ((height - 1) << 18));
+    OUTREG(MGAREG_TEXCTL, 0x1A000106 | ((pitch & 0x07FF) << 9));
+    OUTREG(MGAREG_TEXCTL2, 0x00000014);
+    OUTREG(MGAREG_DWGCTL, 0x000c7076);   
+    OUTREG(MGAREG_TEXFILTER, 0x01e00020);
+    OUTREG(MGAREG_ALPHACTRL, 0x00000151);
+
+    return TRUE;
+}
+void 
+MGASubsequentCPUToScreenTexture (
+    ScrnInfoPtr	pScrn,
+    int		dstx,
+    int		dsty,
+    int		srcx,
+    int		srcy,
+    int		width,
+    int		height
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    WAITFIFO(4);
+    OUTREG(MGAREG_TMR6, (srcx << 20) / tex_padw);
+    OUTREG(MGAREG_TMR7, (srcy << 20) / tex_padh);
+    OUTREG(MGAREG_FXBNDRY, ((dstx + width) << 16) | (dstx & 0xffff));
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dsty << 16) | height);
+
+    pMga->AccelInfoRec->NeedToSync = TRUE;
+}
+
+
 #endif
 #endif
 
@@ -648,7 +730,20 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
 #ifdef RENDER
    if(doRender && ((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16)))
-       infoPtr->Composite = MGAComposite;
+   {
+       infoPtr->SetupForCPUToScreenAlphaTexture = 
+				MGASetupForCPUToScreenAlphaTexture;
+       infoPtr->SubsequentCPUToScreenAlphaTexture = 
+				MGASubsequentCPUToScreenTexture;
+       infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
+					       XAA_RENDER_NO_SRC_ALPHA;
+       infoPtr->CPUToScreenAlphaTextureFormats = MGAAlphaTextureFormats;
+
+       infoPtr->SetupForCPUToScreenTexture = MGASetupForCPUToScreenTexture;
+       infoPtr->SubsequentCPUToScreenTexture = MGASubsequentCPUToScreenTexture;
+       infoPtr->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
+       infoPtr->CPUToScreenTextureFormats = MGATextureFormats;
+    }
 #endif
 
     return(XAAInit(pScreen, infoPtr));

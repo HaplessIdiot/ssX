@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.62 2000/09/24 13:51:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.63 2000/09/26 15:57:12 tsi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -292,10 +292,13 @@ typedef struct {
     void		(*SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
 					     int x, int y, int w, int h);
     void		(*RestoreAccelState)(ScrnInfoPtr pScrn);
-    int		allowedWidth;
+    int			allowedWidth;
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     void		(*PaletteLoadCallback)(ScrnInfoPtr);
+    void		(*RenderCallback)(ScrnInfoPtr);
+    Time		RenderTime;
     MGAPaletteInfo	palinfo[256];  /* G400 hardware bug workaround */
+    FBLinearPtr		LinearScratch;
 } MGARec, *MGAPtr;
 
 #ifdef XF86DRI

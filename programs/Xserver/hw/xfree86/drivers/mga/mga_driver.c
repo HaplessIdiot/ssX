@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.170 2000/10/06 17:32:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.171 2000/10/09 22:56:06 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -3419,6 +3419,9 @@ MGABlockHandler (
 	UpdateCurrentTime();
 	(*pMga->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
+
+    if(pMga->RenderCallback) 
+	(*pMga->RenderCallback)(pScrn);
 }
 
 #if defined (DEBUG)
