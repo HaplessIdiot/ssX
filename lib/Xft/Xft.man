@@ -172,10 +172,11 @@ Where ASSIGN is "=", the matching value in the pattern will be replaced by
 the given expression.  "+="/"=+" will prepend/append a new value to the list
 of values for the indicated field.
 
-.SH RESTRICTIONS
+.SH COMPATIBILITY
+As of version 2, 
 .B Xft
-will probably change radically in the future; weak attempts will be made to
-retain some level of source-file compatibility.
+has become relatively stable and is expected to retain source and binary
+compatibility in future releases.
 
 .SH AUTHOR
 Keith Packard, member of the XFree86 Project, Inc.
