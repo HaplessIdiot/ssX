@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.20 2002/05/31 04:45:12 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.21 2002/05/31 23:21:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -742,15 +742,38 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     /*
      * Public fields
      */
-    descent = -(face->size->metrics.descender >> 6);
-    ascent = face->size->metrics.ascender >> 6;
-    if (fi->minspace)
+    if (fi->transform)
     {
-	height = ascent + descent;
+	FT_Vector	vector;
+	
+	vector.x = 0;
+	vector.y = face->size->metrics.descender;
+	FT_Vector_Transform (&vector, &fi->matrix);
+	descent = -(vector.y >> 6);
+	
+	vector.x = 0;
+	vector.y = face->size->metrics.ascender;
+	FT_Vector_Transform (&vector, &fi->matrix);
+	ascent = vector.y >> 6;
+
+	if (fi->minspace)
+	    height = ascent + descent;
+	else
+	{
+	    vector.x = 0;
+	    vector.y = face->size->metrics.height;
+	    FT_Vector_Transform (&vector, &fi->matrix);
+	    height = vector.y >> 6;
+	}
     }
     else
     {
-	height = face->size->metrics.height >> 6;
+	descent = -(face->size->metrics.descender >> 6);
+	ascent = face->size->metrics.ascender >> 6;
+	if (fi->minspace)
+	    height = ascent + descent;
+	else
+	    height = face->size->metrics.height >> 6;
     }
     font->public.ascent = ascent;
     font->public.descent = descent;
@@ -759,7 +782,18 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (fi->char_width)
 	font->public.max_advance_width = fi->char_width;
     else
-	font->public.max_advance_width = face->size->metrics.max_advance >> 6;
+    {
+	if (fi->transform)
+	{
+	    FT_Vector	vector;
+	    vector.x = face->size->metrics.max_advance;
+	    vector.y = 0;
+	    FT_Vector_Transform (&vector, &fi->matrix);
+	    font->public.max_advance_width = vector.x >> 6;
+	}
+	else
+	    font->public.max_advance_width = face->size->metrics.max_advance >> 6;
+    }
     font->public.charset = charset;
     font->public.pattern = pattern;
     
