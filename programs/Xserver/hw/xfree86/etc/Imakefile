@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.0 1994/06/05 05:56:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.1 1994/06/05 13:44:38 dawes Exp $
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
@@ -42,9 +42,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.0 1994/06/05 05
 #endif
 
        FILES = $(CONFIGFILES) $(TERMFILES) \
-               $(PATCHFILES) $(XDMCONF) ati.test.c \
+               $(PATCHFILES) $(XDMCONF) ati.test.c regati.h \
                et4000clock.c xmodmap.std $(MISCFILES)
-    INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
+    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/include \
 	       -I$(INCLUDESRC)
 
 all:: $(FILES)
@@ -79,6 +79,8 @@ LinkFile(xterm.termcap,$(PROGRAMSRC)/xterm/termcap)
 LinkFile(xterm.terminfo,$(PROGRAMSRC)/xterm/terminfo)
 #endif
 #endif
+
+LinkSourceFile(regati.h,$(VGADRIVERSRC)/ati)
 
 NormalLibraryObjectRule()
 DependTarget()

@@ -1,4 +1,4 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.3 1994/09/21 10:52:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.4 1994/09/24 15:13:50 dawes Exp $
 
 This is the README for the XFree86 ATI VGA Wonder driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -138,20 +138,22 @@ ATI 18811-1 and ATI 18811-2 clock generators:
           33.750   8.000  27.500  20.000  25.000  31.500  23.100   9.000
            9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
+Mach32 and Mach64 owners should only specify up to the first 32 frequencies.
+
 The possibilities for Mach64 boards also include the newer ATI 18818 clock
 generator chip.  At bootup, video BIOS initialization can set up the 18818 to
 generate two slightly different sets of dot clocks.  A way to duplicate this
 behaviour in the driver has not yet been found.  In the meantime, one of the
 following clocks specification can be used:
 
-ATI 18818 clock generator (possibility 1):
+ATI 18818 clock generator (primary BIOS setting):
 
   Clocks   0.000 110.000 126.000 135.000  50.350  56.644  63.000  72.000
            0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
            0.000  55.000  63.000  67.500  25.175  28.322  31.500  36.000
            0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
-ATI 18818 clock generator (possibility 2):
+ATI 18818 clock generator (alternate BIOS setting):
 
   Clocks   0.000 110.000 126.000 135.000  25.175  28.322  31.500  36.000
            0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
@@ -166,10 +168,15 @@ The order of the clocks *is* very important.  Mach32 owners should note that
 this order is different than what they would use for the accelerated servers.
 
 A clock probe, done with the command "X -probeonly", will help you decide which
-of the above to use for your particular board.  The probed clocks are
-approximate and should not be used on a regular basis.  Instead, use the clocks
-line above that is closest to the probed values.  If your probe shows a large
-discrepancy from the above, please e-mail me the stderr output.
+of the above to use for your particular board.  If the server consistently
+reports that it has detected an unknown clock generator, please e-mail me the
+stderr output.
+
+Modes can be derived from the information in XFree86's doc directory.  If you
+do not specify a "modes" line in the display section of the appropriate screen
+section of your XF86Config, the driver will generate a default mode and attempt
+to use it.  The timings for the default mode are derived from the timings of
+the mode (usually a text mode) in effect when the server is started.
 
 
 Upgrading from other releases
@@ -180,8 +187,8 @@ alpha Mach64 server, you will need to change it to use it for this version.
 Specifically, you should run the server with the -probeonly flag and the
 the XF86Config derived from the Xconfig you used with the older XFree86.  This
 will cause the clocks to be probed.  You should replace the XF86Config clocks
-with the set above that is closest to the clocks reported by the probe.  You
-should then change the chipset specification to "vgawonder".
+with the clocks reported by the probe.  You should then change the chipset
+specification to "vgawonder".
 
 You should not need to change your mode definitions except for those that are
 already driving your monitor close to its tolerance limits.  You might need to
@@ -236,4 +243,4 @@ Support for the ATI 18818 clock generator needs to be cleaned up.
 Support for modes that use more than 1M of video memory is still incomplete.
 
 Please e-mail any bug reports, comments, etc. to Marc Aurele La France,
-tsi@gpu.srv.ualberta.ca
+tsi@ualberta.ca

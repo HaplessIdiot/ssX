@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.8 1994/09/23 10:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.9 1994/10/23 12:58:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,8 +58,10 @@ typedef struct _DispM {
 #define V_INTERLACE 0x0010
 #define V_DBLSCAN   0x0020
 #define V_CSYNC     0x0040
-#define V_PIXMUX    0x0100
-#define V_DBLCLK    0x0200
+#define V_PCSYNC    0x0080
+#define V_NCSYNC    0x0100
+#define V_PIXMUX    0x1000
+#define V_DBLCLK    0x2000
 
 #define MAXCLOCKS   128
 

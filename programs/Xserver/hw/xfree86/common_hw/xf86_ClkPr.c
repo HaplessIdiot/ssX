@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_ClkPr.c,v 1.1 94/03/28 21:25:28 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.0 1994/07/16 09:39:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.1 Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -104,8 +104,12 @@ ScrnInfoRec *InfoRec;
 	}
 	while ((inb(status) & maskval) == 0x00) 
 	    if (sync-- == 0) goto finish;
+	/* Something appears to be happening, so reset sync count */
+	sync = 200000;
 	while ((inb(status) & maskval) == maskval) 
 	    if (sync-- == 0) goto finish;
+	/* Something appears to be happening, so reset sync count */
+	sync = 200000;
 	while ((inb(status) & maskval) == 0x00) 
 	    if (sync-- == 0) goto finish;
     

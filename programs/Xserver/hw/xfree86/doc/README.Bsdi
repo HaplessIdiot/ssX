@@ -12,6 +12,7 @@ Contents
     6) Running X
     7) Rebuilding the XFree86 Distribution
     8) Building New X Clients
+    9) Linear access to the frame buffer.
 
 
 1 - What and Where is XFree86?
@@ -266,5 +267,43 @@ __FreeBSD__ for FreeBSD, __NetBSD__ for NetBSD, __386BSD__ for 386BSD,
 and __bsdi__ for BSD/386.
 
 
+9 - Linear access to the frame buffer
+-------------------------------------
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.1 1994/09/24 15:13:45 dawes Exp $
+The stock BSD/386 1.1 kernel has problems when trying to mmap the frame
+buffer as a linear ( unbanked ) memory area in high memory. This patch
+removes the check in /sys/i386/isa/vga.c that disables mmapping the frame
+buffer in linear mode. Please consult the BSD/386 1.1 release notes for
+instructions on how to build a new kernel.
+
+  1. save the patch below in a separate file.
+  2. cd to /sys/i386/isa.
+  3. apply the patch with "patch -p <the_separate_patch_file"
+  4. rebuild and install the new kernel.
+  5. reboot.
+
+vga.c patch :
+-------------
+
+*** vga.c.orig	Sun Dec 19 09:35:01 1993
+--- vga.c	Mon Oct 24 01:38:44 1994
+***************
+*** 159,165 ****
+  #if 0
+  	if (off + NBPG > vgap->vga_mem_size)
+  		return (-1);
+! #else
+  	if (off + NBPG > IOM_END)
+  		return (-1);
+  #endif
+--- 159,165 ----
+  #if 0
+  	if (off + NBPG > vgap->vga_mem_size)
+  		return (-1);
+! /*#else*/
+  	if (off + NBPG > IOM_END)
+  		return (-1);
+  #endif
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.2 1994/09/27 10:30:33 dawes Exp $

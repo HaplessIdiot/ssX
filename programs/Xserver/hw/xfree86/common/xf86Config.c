@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.25 1994/10/20 06:09:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.26 1994/10/23 12:58:41 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -51,8 +51,6 @@ static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
 
 static int screenno = -100;      /* some little number ... */
-
-#define TOLERANCE	2000	/* 2MHz */
 
 extern char *getenv();
 extern char *defaultFontPath;
@@ -1704,20 +1702,23 @@ configMonitorSection()
       else configError("Vertical total expected");
 
       token = getToken(TimingTab);
-      while ( (token == INTERLACE) || (token == PHSYNC) ||
-              (token == NHSYNC) || (token == PVSYNC) ||
-              (token == NVSYNC) || (token == CSYNC) ||
-              (token == DBLSCAN) )
+      while ( (token == TT_INTERLACE) || (token == TT_PHSYNC) ||
+              (token == TT_NHSYNC) || (token == TT_PVSYNC) ||
+              (token == TT_NVSYNC) || (token == TT_CSYNC) ||
+              (token == TT_PCSYNC) || (token == TT_NCSYNC) ||
+              (token == TT_DBLSCAN) )
       {
         switch(token) {
               
-        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
-        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
-        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
-        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
-        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
-        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
-        case DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
+        case TT_INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case TT_PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case TT_NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case TT_PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case TT_NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case TT_CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_PCSYNC:    pNew->Flags |= V_PCSYNC;     break;
+        case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
+        case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
           configError("bug found in config reader"); break;
         }
@@ -1937,15 +1938,17 @@ MonPtr monp;
       while ( token == STRING ) {
         token2 = getStringToken(TimingTab);
         switch(token2) {
-        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
-        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
-        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
-        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
-        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
-        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
-        case DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
+        case TT_INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case TT_PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case TT_NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case TT_PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case TT_NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case TT_CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_PCSYNC:    pNew->Flags |= V_PCSYNC;     break;
+        case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
+        case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
-          configError("Unknown flag string"); break;
+          configError("bug found in config reader"); break;
         }
         token = getToken(NULL);
       }
@@ -2259,7 +2262,7 @@ configScreenSection()
     {
       driver->textclock = xf86GetNearestClock(driver, textClockValue);
       if (abs(textClockValue - driver->clock[driver->textclock]) >
-          TOLERANCE)
+          CLOCK_TOLERANCE)
         FatalError(
           "There is no defined dot-clock matching the text clock\n");
       if (xf86Verbose)
@@ -2466,7 +2469,7 @@ xf86LookupMode(target, driver)
   DisplayModePtr p;
   DisplayModePtr best_mode = NULL;
   int            i, Gap;
-  int            Minimum_Gap = TOLERANCE + 1;
+  int            Minimum_Gap = CLOCK_TOLERANCE + 1;
   Bool           found_mode = FALSE;
   Bool           clock_too_high = FALSE;
   static Bool	 first_time = TRUE;

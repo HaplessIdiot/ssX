@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.0 1994/06/18 16:28:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.1 1994/07/24 11:55:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -36,7 +36,7 @@
  * ALL DISCLAIMERS APPLY TO MY ADDITIONS AS WELL.
  *
  * Changes to enhance support for V3, Mach32 and Mach64 boards
- * by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
+ * by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  * ALL DISCLAIMERS APPLY TO THESE CHANGES ALSO.
  *
  * V3 boards use a 18800 chip and are single-banked.  Bank selection is done

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.0tsi 1994.09.16 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.1 1994/09/21 10:57:58 dawes Exp $ */
 /*
- * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
+ * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -30,13 +30,67 @@
  *    Rickard E. Faith, faith@cs.unc.edu
  *    Scott Laird, lair@kimbark.uchicago.edu
  *
- * The intent here is to list all I/O ports for the 8514/A, ATI Mach8,
- * ATI Mach32 and ATI Mach64 video adapters, not just the ones in use by
- * the VGA Wonder driver.
+ * The intent here is to list all I/O ports for VGA (and its predecessors),
+ * ATI VGA Wonder, 8514/A, ATI Mach8, ATI Mach32 and ATI Mach64 video adapters,
+ * not just the ones in use by the VGA Wonder driver.
  */
 
 #ifndef _REGATI_H_
 #define _REGATI_H_
+
+/* MDA/CGA/EGA/VGA I/O ports */
+#define GENVS			0x0102
+
+#define R_GENLPS		0x03b9		/* Read */
+
+#define GENHP			0x03bf
+
+#define ATTRX			0x03c0
+#define ATTRD			0x03c1
+#define GENS0			0x03c2		/* Read */
+#define GENMO			0x03c2		/* Write */
+#define GENENB			0x03c3		/* Read */
+#define SEQX			0x03c4
+#define SEQD			0x03c5
+#define VGA_DAC_MASK		0x03c6
+#define VGA_DAC_R_I		0x03c7
+#define VGA_DAC_W_I		0x03c8
+#define VGA_DAC_DATA		0x03c9
+#define R_GENFC			0x03ca		/* Read */
+/*	?			0x03cb */
+#define R_GENMO			0x03cc		/* Read */
+/*	?			0x03cd */
+#define GRAX			0x03ce
+#define GRAD			0x03cf
+
+#define GENB			0x03d9
+
+#define GENLPS			0x03dc		/* Write */
+
+#define GENENA			0x46e8
+
+/* I/O port base numbers */
+#define MonochromeIOBase	0x03b0
+#define ColourIOBase		0x03d0
+
+/* Other EGA/CGA/VGA I/O ports */
+/*	?(IOBase)		(IOBase + 0x00) */
+/*	?(IOBase)		(IOBase + 0x01) */
+/*	?(IOBase)		(IOBase + 0x02) */
+/*	?(IOBase)		(IOBase + 0x03) */
+#define CRTX(IOBase)		(IOBase + 0x04)
+#define CRTD(IOBase)		(IOBase + 0x05)
+/*	?(IOBase)		(IOBase + 0x06) */
+/*	?(IOBase)		(IOBase + 0x07) */
+#define GENMC(IOBase)		(IOBase + 0x08)
+/*	?(IOBase)		(IOBase + 0x09) */
+#define GENS1(IOBase)		(IOBase + 0x0a)	/* Read */
+#define GENFC(IOBase)		(IOBase + 0x0a)	/* Write */
+#define GENLPC(IOBase)		(IOBase + 0x0b)
+/*	?(IOBase)		(IOBase + 0x0c) */
+/*	?(IOBase)		(IOBase + 0x0d) */
+/*	?(IOBase)		(IOBase + 0x0e) */
+/*	?(IOBase)		(IOBase + 0x0f) */
 
 /* 8514/A VESA approved register definitions */
 #define DISP_STAT		0x02e8		/* Read */
@@ -70,7 +124,7 @@
 #define MEMCFG_6			0x0004
 #define MEMCFG_8			0x0006
 #define DBLSCAN				0x0008
-#define INTERLACE			0x0010
+#define INTERLAC			0x0010
 #define DISPEN_NC			0x0000
 #define DISPEN_ENAB			0x0020
 #define DISPEN_DISAB			0x0040
@@ -87,8 +141,11 @@
 #define INVALIDIO			0x0004
 #define GPIDLE				0x0008
 #define MONITORID_MASK			0x0070
+/*	MONITORID_?				0x0000 */
 #define MONITORID_8507				0x0010
 #define MONITORID_8514				0x0020
+/*	MONITORID_?				0x0030 */
+/*	MONITORID_?				0x0040 */
 #define MONITORID_8503				0x0050
 #define MONITORID_8512				0x0060
 #define MONITORID_8513				0x0060
@@ -292,7 +349,7 @@
 #define CURSOR_COLOR_1		0x1aef		/* Write */	/* Mach32 */
 #define HORZ_CURSOR_OFFSET	0x1eee		/* Write */	/* Mach32 */
 #define VERT_CURSOR_OFFSET	0x1eef		/* Write */	/* Mach32 */
-#define DAC_CNTL		0x22ee				/* Mach32-PCI */
+#define PCI_CNTL		0x22ee				/* Mach32-PCI */
 #define CRT_PITCH		0x26ee		/* Write */
 #define CRT_OFFSET_LO		0x2aee		/* Write */
 #define CRT_OFFSET_HI		0x2eee		/* Write */
@@ -357,6 +414,17 @@
 #define GE_PITCH		0x76ee		/* Write */
 #define BOUNDS_RIGHT		0x7aee		/* Read */
 #define EXT_GE_CONFIG		0x7aee		/* Write */	/* Mach32 */
+#define MONITOR_ALIAS			0x0007			/* Mach32 */
+/*	MONITOR_?				0x0000 */	/* Mach32 */
+#define MONITOR_8507				0x0001		/* Mach32 */
+#define MONITOR_8514				0x0002		/* Mach32 */
+/*	MONITOR_?				0x0003 */	/* Mach32 */
+/*	MONITOR_?				0x0004 */	/* Mach32 */
+#define MONITOR_8503				0x0005		/* Mach32 */
+#define MONITOR_8512				0x0006		/* Mach32 */
+#define MONITOR_8513				0x0006		/* Mach32 */
+#define MONITOR_NONE				0x0007		/* Mach32 */
+#define ALIAS_ENA			0x0008			/* Mach32 */
 #define PIXEL_WIDTH_4			0x0000			/* Mach32 */
 #define PIXEL_WIDTH_8			0x0010			/* Mach32 */
 #define PIXEL_WIDTH_16			0x0020			/* Mach32 */
@@ -428,24 +496,113 @@
 #define DEST_COLOR_CMP_MASK	0xf2ee		/* Write */	/* Mach32 */
 /*	?			0xf6ee */
 #define CHIP_ID			0xfaee		/* Read */	/* Mach32 */
+#define CHIP_CODE_0			0x001F			/* Mach32 */
+#define CHIP_CODE_1			0x03E0			/* Mach32 */
+#define CHIP_CLASS			0x0C00			/* Mach32 */
+#define CHIP_REV			0xF000			/* Mach32 */
 #define LINEDRAW		0xfeee		/* Write */
 
 /* ATI Mach64 register definitions */
-/*	?			0x12ec */
-/*	?			0x22ec */
-/*	?			0x32ec */
+#define CRTC_H_TOTAL_DISP	0x02ec
+#define CRTC_H_SYNC_STRT_WID	0x06ec
+#define CRTC_V_TOTAL_DISP	0x0aec
+#define CRCT_V_SYNC_STRT_WID	0x0eec
+#define CRTC_VLINE_CRNT_VLINE	0x12ec
+#define CRTC_OFF_PITCH		0x16ec
+#define CRTC_INT_CNTL		0x1aec
+#define CRTC_GEN_CNTL		0x1eec
+#define OVR_CLR			0x22ec
+#define OVR_WID_LEFT_RIGHT	0x26ec
+#define OVR_WID_TOP_BOTTOM	0x2aec
+#define CUR_CLR0		0x2eec
+#define CUR_CLR1		0x32ec
+#define CUR_OFFSET		0x36ec
+#define CUR_HORZ_VERT_POSN	0x3aec
+#define CUR_HORZ_VERT_OFF	0x3eec
 #define SCRATCH_REG0		0x42ec
-#define MEM_INFO		0x52ec
-/*	?			0x62ec */
-#define CONFIG_STATUS_0		0x72ec
+#define SCRATCH_REG1		0x46ec
+#define CLOCK_CNTL		0x4aec
+#define BUS_CNTL		0x4eec
+#define MEM_INFO		0x52ec		/* Changed from MEM_CNTL */
+#define CTL_MEM_SIZE			0x00000007
+/*	?				0x00000008 */
+#define CTL_MEM_RD_LATCH_EN		0x00000010
+#define CTL_MEM_RD_LATCH_DLY		0x00000020
+#define CTL_MEM_SD_LATCH_EN		0x00000040
+#define CTL_MEM_SD_LATCH_DLY		0x00000080
+#define CTL_MEM_FULL_PLS		0x00000100
+#define CTL_MEM_CYC_LNTH		0x00000600
+/*	?				0x0000f800 */
+#define CTL_MEM_BNDRY			0x00030000
+#define CTL_MEM_BNDRY_EN		0x00040000
+/*	?				0xfff80000 */
+#define MEM_VGA_WP_SEL		0x56ec
+#define MEM_VGA_RP_SEL		0x5aec
+#define DAC_REGS		0x5eec		/* Actually 4 separate bytes */
+#define DAC_CNTL		0x62ec
+#define GEN_TEST_CNTL		0x66ec
+#define CONFIG_CNTL		0x6aec
+#define CONFIG_CHIP_ID		0x6eec		/* Read */
+#define CFG_CHIP_TYPE0			0x000000FF
+#define CFG_CHIP_TYPE1			0x0000FF00
+#define CFG_CHIP_TYPE			0x0000FFFF
+#define CFG_CHIP_CLASS			0x00FF0000
+#define CFG_CHIP_REV			0xFF000000
+#define CONFIG_STATUS_0		0x72ec		/* Read */
+#define CFG_BUS_TYPE			0x00000007
+#define CFG_MEM_TYPE			0x00000038
+#define CFG_DUAL_CAS_EN			0x00000040
+#define CFG_LOCAL_BUS_OPTION		0x00000180
+#define CFG_INIT_DAC_TYPE		0x00000E00
+#define CFG_INIT_CARD_ID		0x00007000
+#define CFG_TRI_BUF_DIS			0x00008000
+#define CFG_EXT_RAM_ADDR		0x003F0000
+#define CFG_ROM_DIS			0x00400000
+#define CFG_VGA_EN			0x00800000
+#define CFG_LOCAL_BUS_CFG		0x01000000
+#define CFG_CHIP_EN			0x02000000
+#define CFG_LOCAL_READ_DLY_DIS		0x04000000
+#define CFG_ROM_OPTION			0x08000000
+#define CFG_BUS_OPTION			0x10000000
+#define CFG_LOCAL_DAC_WR_EN		0x20000000
+#define CFG_VLB_RDY_DIS			0x40000000
+#define CFG_AP_4GBYTE_DIS		0x80000000
+/*	CONFIG_STATUS_1		0x76ec */	/* Read */	/* Duplicate */
+#define CFG_PCI_DAC_CFG			0x00000001
+/*	?			0x7aec */
+/*	?			0x7eec */
 /*	?			0x82ec */
+/*	?			0x86ec */
+/*	?			0x8aec */
+/*	?			0x8eec */
 /*	?			0x92ec */
+/*	?			0x96ec */
+/*	?			0x9aec */
+/*	?			0x9eec */
 /*	?			0xa2ec */
+/*	?			0xa6ec */
+/*	?			0xaaec */
+/*	?			0xaeec */
 /*	?			0xb2ec */
+/*	?			0xb6ec */
+/*	?			0xbaec */
+/*	?			0xbeec */
 /*	?			0xc2ec */
+/*	?			0xc6ec */
+/*	?			0xcaec */
+/*	?			0xceec */
 /*	?			0xd2ec */
+/*	?			0xd6ec */
+/*	?			0xdaec */
+/*	?			0xdeec */
 /*	?			0xe2ec */
+/*	?			0xe6ec */
+/*	?			0xeaec */
+/*	?			0xeeec */
 /*	?			0xf2ec */
+/*	?			0xf6ec */
+/*	?			0xfaec */
+/*	?			0xfeec */
 
 /* Miscellaneous */
 

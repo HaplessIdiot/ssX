@@ -136,7 +136,7 @@ In addition, the following SVGA chipsets are supported:
 		 CLGD6225, CLGD6235, CLGD6420
     Compaq AVGA
     OAK OTI067, OTI077
-    Advance Logic AL2101
+    Avance Logic AL2101
     MX MX68000, MX680010
     Video 7/Headland Technologies HT216-32
     
@@ -349,7 +349,7 @@ ET4000/W32 accelerated code by:
 ATI SVGA driver by:
        Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans <dje@cygnus.com>
        Ported to X11R5 by Rik Faith <faith@cs.unc.edu>
-       Rewritten by Marc La France <tsi@gpu.srv.ualberta.ca>
+       Rewritten by Marc La France <tsi@ualberta.ca>
 Trident SVGA driver by:
        Alan Hourihane <alanh@fairlite.demon.co.uk>
 NCR SVGA driver by:
@@ -544,4 +544,4 @@ compile-time option selections were made when building the distribution.
 
 2 October 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.6 1994/10/03 03:14:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.7 1994/10/04 03:29:50 dawes Exp $

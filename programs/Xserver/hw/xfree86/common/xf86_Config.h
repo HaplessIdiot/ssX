@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.14 1994/10/20 06:09:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.15 1994/10/23 12:58:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -27,6 +27,8 @@
 
 
 #ifndef XCONFIG_FLAGS_ONLY
+
+#define CLOCK_TOLERANCE 2000         /* Clock matching tolerance (2MHz) */
 
 #ifdef BLACK
 #undef BLACK
@@ -279,26 +281,34 @@ static SymTabRec ScreenTab[] = {
 #endif /* INIT_CONFIG */
 
 /* Mode timing keywords */
-#define INTERLACE	1090
-#define PHSYNC		1091
-#define NHSYNC		1092
-#define PVSYNC		1093
-#define NVSYNC		1094
-#define CSYNC		1095
-#define DBLSCAN		1096
+#define TT_INTERLACE	1090
+#define TT_PHSYNC	1091
+#define TT_NHSYNC	1092
+#define TT_PVSYNC	1093
+#define TT_NVSYNC	1094
+#define TT_CSYNC	1095
+#define TT_PCSYNC	1096
+#define TT_NCSYNC	1097
+#define TT_DBLSCAN	1098
 
 #ifdef INIT_CONFIG
-static SymTabRec TimingTab[] = {
-  { INTERLACE,	"interlace"},
-  { PHSYNC,	"+hsync"},
-  { NHSYNC,	"-hsync"},
-  { PVSYNC,	"+vsync"},
-  { NVSYNC,	"-vsync"},
-  { CSYNC,	"composite"},
-  { DBLSCAN,	"doublescan"},
-  { -1,		"" },
+SymTabRec TimingTab[] = {
+  { TT_INTERLACE,	"interlace"},
+  { TT_PHSYNC,		"+hsync"},
+  { TT_NHSYNC,		"-hsync"},
+  { TT_PVSYNC,		"+vsync"},
+  { TT_NVSYNC,		"-vsync"},
+  { TT_CSYNC,		"composite"},
+  { TT_PCSYNC,		"+csync"},
+  { TT_NCSYNC,		"-csync"},
+  { TT_DBLSCAN,		"doublescan"},
+  { -1,			"" },
 };
-#endif /* INIT_CONFIG */
+#else  /* defined(INIT_CONFIG) */
+
+extern SymTabRec TimingTab[];
+
+#endif /* !defined(INIT_CONFIG) */
 
 /* Indexes for the specialKeyMap array */
 #define K_INDEX_LEFTALT		0

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.5 1994/09/18 08:48:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.6 1994/09/25 12:26:25 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -36,7 +36,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.5 1994/09
  */
 
 #define XF86SvgaDrivers        et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-                               ncr77c22 compaq oak mx al2101 cl6420 \
+                               ncr77c22 compaq oak mx al2101 ali cl6420 \
                                video7 generic
 
 #define XF86Vga16Drivers       et4000 ncr77c22 ati tvga8900 oak cl6420 generic

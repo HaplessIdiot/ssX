@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.10 1994/09/27 10:27:17 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.11 1994/10/21 11:22:33 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -61,7 +61,7 @@ AVGA
 Oak:
 OTI067, OTI077, OTI087
 .TP 4
-Advance Logic:
+Avance Logic:
 AL2101
 .TP 4
 MX:\ \ 
@@ -135,7 +135,7 @@ cpq_avga
 OAK:
 oti067, oti077, oti087
 .TP 4
-Advance Logic:
+Avance Logic:
 al2101
 .TP 4
 MX:\ \ 
