@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.49 2000/12/13 16:52:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.50 2001/01/06 21:29:18 tsi Exp $ */
 
 /*
  *
@@ -1097,6 +1097,7 @@ LoaderOpen(const char *module, const char *cname, int handle,
      * Check to see if the module is already loaded.
      * Only if we are loading it into an existing namespace.
      * If it is to be loaded into a new namespace, don't check.
+     * Note: We only have one namespace.
      */
     if (handle >= 0) {
 	tmp = listHead;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.22 2000/09/26 15:57:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.23 2000/11/13 23:09:56 dawes Exp $ */
 
 /*
  *
@@ -215,7 +215,9 @@ extern unsigned long LoaderOptions;
 void LoaderAddSymbols(int, int, LOOKUP *);
 void LoaderDefaultFunc(void);
 void LoaderDuplicateSymbol(const char *, const int);
+#if 0
 void LoaderFixups(void);
+#endif
 void LoaderResolve(void);
 int LoaderResolveSymbols(void);
 int _LoaderHandleUnresolved(char *, char *);
