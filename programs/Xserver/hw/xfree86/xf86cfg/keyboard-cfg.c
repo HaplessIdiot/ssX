@@ -145,7 +145,6 @@ KeyboardConfig(XtPointer config)
 	    }
 	    if (timeout <= 0) {
 		fprintf(stderr, "Couldn't get keyboard\n");
-		exit(1);
 	    }
 	    if (xkb_info->xkb->names->geometry == 0)
 		xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
@@ -464,7 +463,6 @@ InitializeKeyboard(void)
     }
     if (timeout <= 0) {
 	fprintf(stderr, "Couldn't get keyboard\n");
-	exit(1);
     }
     if (xkb_info->xkb->names->geometry == 0)
 	xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
