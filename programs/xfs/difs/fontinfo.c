@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.4 1999/03/07 11:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.5 1999/08/21 13:48:48 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -121,7 +121,7 @@ convert_props(
 			    + data_len);
     if (!ptr)
 	return AllocError;
-    string_base = ptr + SIZEOF(fsPropInfo) + SIZEOF(fsPropOffset) * pinfo->nprops;
+    string_base = (char *)ptr + SIZEOF(fsPropInfo) + SIZEOF(fsPropOffset) * pinfo->nprops;
   
     /*
      * copy in the header
@@ -132,21 +132,21 @@ convert_props(
     /*
      * compute the offsets and copy the string data
      */
-    off_ptr = ptr + SIZEOF(fsPropInfo);
+    off_ptr = (char *)ptr + SIZEOF(fsPropInfo);
     cur_off = 0;
     for (i = 0; i < pinfo->nprops; i++)
     {
 	local_offset.name.position = cur_off;
 	str = NameForAtom(pinfo->props[i].name);
 	local_offset.name.length = strlen(str);
-	memmove( string_base+cur_off, str, local_offset.name.length);
+	memmove( (char *)string_base+cur_off, str, local_offset.name.length);
 	cur_off += local_offset.name.length;
 	if (pinfo->isStringProp[i])
 	{
 	    local_offset.value.position = cur_off;
 	    str = NameForAtom(pinfo->props[i].value);
 	    local_offset.value.length = strlen(str);
-	    memmove( string_base+cur_off, str, local_offset.value.length);
+	    memmove( (char *)string_base+cur_off, str, local_offset.value.length);
 	    cur_off += local_offset.value.length;
 	    local_offset.type = PropTypeString;
 	} else {
@@ -155,7 +155,7 @@ convert_props(
 	    local_offset.type = PropTypeSigned;
 	}
 	memmove( off_ptr, &local_offset, SIZEOF(fsPropOffset));
-	off_ptr += SIZEOF(fsPropOffset);
+	off_ptr = (char *)off_ptr + SIZEOF(fsPropOffset);
     }
 
     assert(off_ptr == string_base);

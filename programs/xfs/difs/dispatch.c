@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.4 1999/03/07 11:40:52 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.5 1999/08/21 13:48:48 dawes Exp $ */
 
 #include	<dispatch.h>
 #include	<swapreq.h>
@@ -214,8 +214,8 @@ ProcEstablishConnection(ClientPtr client)
     fsConnClientPrefix *prefix;
     fsConnSetup csp;
     int         ret;
-    pointer     auth_data,
-                ad;
+    pointer     auth_data;
+    char       *ad;
     char       *server_auth_data;
     AuthPtr     client_auth;
     int         i,
@@ -229,7 +229,7 @@ ProcEstablishConnection(ClientPtr client)
     REQUEST(fsFakeReq);
 
     prefix = (fsConnClientPrefix *) stuff+1;
-    auth_data = (pointer) prefix + sz_fsConnClientPrefix;
+    auth_data = prefix + sz_fsConnClientPrefix;
     client_auth = (AuthPtr) ALLOCATE_LOCAL(prefix->num_auths * sizeof(AuthRec));
     if (!client_auth) {
 	SendErrToClient(client, FSBadAlloc, (pointer) 0);
@@ -393,7 +393,7 @@ SendErrToClient(
 	        SwapShorts((short *) data, 1);
 	    /* note sneaky hack */
 	    rep.pad = *(CARD16 *) data;
-	    data += 2;
+	    data = (char *)data + 2;
 	    extralen = 4;
 	}
 	break;
@@ -542,7 +542,7 @@ ProcCreateAC(ClientPtr client)
                 err,
                 index,
                 size;
-    pointer     ad;
+    char       *ad;
     char       *auth_data;
 
     REQUEST(fsCreateACReq);
@@ -565,7 +565,7 @@ ProcCreateAC(ClientPtr client)
     	}
     }
     /* build up a list of the stuff */
-    for (i = 0, ad = (pointer)stuff + SIZEOF(fsCreateACReq); i < (int)stuff->num_auths; i++) {
+    for (i = 0, ad = (char *)stuff + SIZEOF(fsCreateACReq); i < (int)stuff->num_auths; i++) {
 	/* copy carefully in case data is not aligned */
 	acp[i].namelen = (((unsigned char *)ad)[0] << 8) +
 			 ((unsigned char *)ad)[1];
@@ -871,7 +871,7 @@ ProcQueryXExtents(ClientPtr client)
     /* get the extents */
     err = QueryExtents(client, cfp, item_size,
 		       stuff->num_ranges, stuff->range,
-		       (pointer)stuff + SIZEOF(fsQueryXExtents8Req));
+		       (char *)stuff + SIZEOF(fsQueryXExtents8Req));
 
     if (err != FSSuccess) {
 	return err;
@@ -907,7 +907,7 @@ ProcQueryXBitmaps(ClientPtr client)
     /* get the glyphs */
     err = QueryBitmaps(client, cfp, item_size, stuff->format,
 		       stuff->num_ranges, stuff->range,
-		       (pointer)stuff + SIZEOF(fsQueryXBitmaps8Req));
+		       (char *)stuff + SIZEOF(fsQueryXBitmaps8Req));
 
     if (err != FSSuccess) {
 	return err;

@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.5 1998/10/25 12:47:58 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.6 1999/03/07 11:40:51 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"
@@ -254,8 +254,8 @@ packGlyphs (
     int         i;
     fsOffset32	*lengths, *l;
     unsigned long size = 0;
-    pointer     gdata,
-    gd;
+    pointer     gdata;
+    unsigned char *gd;
     int         bitorder, byteorder, scanlinepad, scanlineunit, mappad;
     int		height = 0, dstbpr = 0, charsize = 0;
     int		dst_off = 0, src_off;
