@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.16 2003/01/20 21:37:19 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.17 2003/06/30 01:45:10 torrey Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -826,6 +826,7 @@ Bool GLX_PREFIX(glXMakeCurrent)(Display *dpy, GLXDrawable draw, GLXContext gc)
 	    SyncHandle();
 	    return GL_FALSE;
 	}
+        UnlockDisplay(dpy);
 	dpy = dpyTmp;
 	oldGC->currentContextTag = 0;
     }
