@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.10 1999/01/14 13:04:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.11 1999/02/13 16:44:55 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -294,6 +294,20 @@ xf86FindPCIVideoInfo(void)
 void
 xf86BusProbe(void)
 {
+
+#ifdef XFree86LOADER
+    /* 
+     * we need to get the pointer to the pci data structures initialized
+     */
+    xf86PCIVendorInfo =
+      (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
+    xf86PCICardInfo =
+      (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
+#else
+    xf86PCIVendorInfo = xf86PCIVendorInfoData; 
+    xf86PCICardInfo = xf86PCICardInfoData;
+#endif
+
     xf86FindPCIVideoInfo();
 }
 
