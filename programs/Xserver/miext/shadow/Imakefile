@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.1 2000/09/03 05:07:23 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/shadow/Imakefile,v 1.2 2000/09/08 21:46:45 keithp Exp $
 XCOMM 
 XCOMM 
 
@@ -16,6 +16,7 @@ SRCS =  $(XFMODSRC) \
 	shadow.c \
 	shalloc.c \
 	shplanar.c \
+	shplanar8.c \
 	shpacked.c \
 	shrot8pack.c \
 	shrot16pack.c \
@@ -25,6 +26,7 @@ OBJS =  $(XFMODOBJ) \
 	shadow.o \
 	shalloc.o \
 	shplanar.o \
+	shplanar8.o \
 	shpacked.o \
 	shrot8pack.o \
 	shrot16pack.o \

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.h,v 1.1 2000/09/03 05:07:23 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.h,v 1.2 2000/09/08 21:46:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -79,6 +79,11 @@ void
 shadowUpdatePlanar4 (ScreenPtr pScreen,
 		     PixmapPtr pShadow,
 		     RegionPtr damage);
+
+void
+shadowUpdatePlanar4x8 (ScreenPtr pScreen,
+		       PixmapPtr pShadow,
+		       RegionPtr damage);
 
 void
 shadowUpdateRotate8 (ScreenPtr pScreen,
