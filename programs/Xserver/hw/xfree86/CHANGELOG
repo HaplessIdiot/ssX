@@ -1,5 +1,27 @@
- 412. Some fixed for Linux/m68k (Geert Uytterhoeven).
- 411. Add XAA S3 driver to the SVGA server (Markk Vojkovich).
+XFree86 3.2Ac (12 February 1997)
+ 428. Another attempt at left edge clipping for HiQV chips (still disabled 
+      by default) (David Bateman).
+ 427. DPMS in C&T is now enabled even when no monitor is detect (David Bateman).
+ 426. Additional fixes for 65530/35 linear addressing (untested) (Egbert Eich).
+ 425. Fix for the 16/24 bpp corruption in RIGHT2LEFT blits in the C&T driver
+      (Egbert Eich).
+ 424. Fix LinkKit and XF98_TGUI server (Takaaki Nomura).
+ 423. Reenable xsetpointer, xsetmode, xsetxkbmap in programs/Imakefile.
+ 422. Encapsulate arguments in C&T header files (Nozomi Ytow).
+ 421. Documentation updates for ET4000, mostly about 16/24/32bpp (Koen Gadeyne).
+ 420. Fix VGA2 and VGA16 that were broken in 394/395 and reenable them
+      (Koen Gadeyne).
+ 419. Improved resolution switching and 24bpp handling in S3V (Kevin Brosius).
+ 418. Matrox detection in SuperProbe (Alan Hourihane).
+ 417. Fix bug in the Type1 font code (H.J. Lu).
+ 416. Autoprobe Viper PCI and DPMI support for P9000 (Karl Anders Oygard).
+ 415. Use fill rect solid for horizontal lines on S3 (Mark Vojkovich).
+ 414. Add 8bit dac support to MGA (Mark Vojkovich).
+ 413. Add make -j support for gnu make (H.J. Lu and Craig Groeschel).
+
+XFree86 3.2Ab (11 February 1997)
+ 412. Some fixes for Linux/m68k (Geert Uytterhoeven).
+ 411. Add XAA S3 driver to the SVGA server (Mark Vojkovich).
  410. Add a flag argument to the ValidMode functions (Dirk Hohndel).
  409. Implemented (but disabled) left edge cliping for color expansion for
       HiQV chips (David Bateman).
@@ -14,13 +36,14 @@
  400. Add DPMS to W32/ET6000 driver of the SVGA server (Harald Nordgerd Hansen).
  399. Fixes and addition to the acceleration for W32 and ET6000 (Koen Gadeyne).
  398. Chrontel RAMDAC support for W32 in SVGA server (Kurt Olsen).
- 397. Improved 24bpp support for ET6000 (Koen Gadeyne).
+ 397. Hardware Linedraw support for ET6000 and ET4000W32p (Koen Gadeyne).
  396. Add memory bandwidth as a concept to the W32 RAMDAC code (Koen Gadeyne).
  395. Move W32/ET6k clock setting functions into tseng_clock.c. This together
       with change 394 breaks the W32 server and the et4000 driver in the
       VGA2 and VGA16 server (all those are disabled by default for now) 
       (Koen Gadeyne).
- 394. Move RAMDAC support from W32 server in SVGA server (Koen Gadeyne).
+ 394. Move RAMDAC support from W32 server in SVGA server and added
+      accelerated 16/24/32 bpp support for ET4000/W32p (Koen Gadeyne).
 
 XFree86 3.2Aa (10 February 1997)
  393. Much additional acceleration for the HiQV chips (David Bateman).

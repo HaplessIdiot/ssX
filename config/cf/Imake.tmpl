@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.31 1996/12/30 13:57:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.32 1996/12/31 04:14:30 dawes Exp $
 XCOMM
 
 /*
@@ -115,6 +115,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasTestCenter
 #define HasTestCenter		NO
+#endif
+#ifndef HasGnuMake
+#define HasGnuMake		NO
 #endif
 #ifndef HasParallelMake
 #define HasParallelMake		NO
@@ -552,6 +555,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef InstKmemFlags     /* put -g kmem -m 2711 in site.def... */
 #define InstKmemFlags InstUidFlags
+#endif
+#ifndef ParallelMakeFlags
+#define ParallelMakeFlags /**/
 #endif
 #ifndef ArCmdBase
 #define ArCmdBase ar
@@ -1101,6 +1107,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
 #if ConstructMAKEFLAGS
         MAKEFLAGS = $(MFLAGS)
 #endif
+   PARALLELMFLAGS = ParallelMakeFlags
 #if HasSharedLibraries
     SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef

@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.32 1997/01/05 11:49:30 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.33 1997/01/14 22:12:34 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -80,6 +80,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.32 1997/01/05 11:49:30 dawe
  * InstallNamedProg		(srcname,dstname,dest)
  * InstallNamedProgNoClobber	(srcname,dstname,dest)
  * MakeFlagsToShellFlags	(makeflags,shellcmd)
+ * MakeNamedTargetSubdir	(dir,flags,subname)
  * LinkFileList			(step,list,dir,sub)
  * InstallMultipleDestFlags	(step,list,dest,flags)
  * InstallMultipleDest		(step,list,dest)
@@ -1301,6 +1302,14 @@ InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
 	  case "$$flag" in *=*) ;; *[makeflags]*) shellcmd;; esac; done
 #endif
 
+/*
+ * MakeNamedTargetSubdir - do make in a subdir.
+ */
+#ifndef MakeNamedTargetSubdir
+#define MakeNamedTargetSubdir(dir,flags,subname)\
+		(cd dir && $(MAKE) $(MFLAGS) $(PARALLELMFLAGS) \	@@\
+			flags subname)
+#endif
 
 /*
  * LinkFileList - link a list of files from one place to another
@@ -1699,17 +1708,29 @@ LintLibReferences(varname,libname,libsource)
  * LibObjCompile - compile fragment for unshared/profiled/debugged objects
  */
 #ifndef LibObjCompile
+#if HasGcc || HasGcc2
+#define LibObjCompile(dir,options) RemoveFiles($@ dir/$@)		@@\
+	ClearmakeOSName \
+	$(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c -o dir/$@
+#else
 #define LibObjCompile(dir,options) RemoveFiles($@ dir/$@)		@@\
 	ClearmakeOSName \
 	$(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c		@@\
 	$(MV) $@ dir/$@
 #endif
+#endif
 
 #ifndef LibObjCplusplusCompile
+#if HasGcc || HasGcc2
+#define LibObjCplusplusCompile(dir,options) RemoveFiles($@ dir/$@)	@@\
+	ClearmakeOSName \
+	$(CXX) -c $(CXXOPTIONS) $(CXXDEFINES) options $*.CCsuf -o dir/$@
+#else
 #define LibObjCplusplusCompile(dir,options) RemoveFiles($@ dir/$@)	@@\
 	ClearmakeOSName \
 	$(CXX) -c $(CXXOPTIONS) $(CXXDEFINES) options $*.CCsuf		@@\
 	$(MV) $@ dir/$@
+#endif
 #endif
 
 /*
@@ -1846,6 +1867,22 @@ clean::									@@\
 #endif /* LexFile */
 
 #ifndef YaccFile
+#if HasGnuMake
+#define YaccFile(file,flags)						@@\
+depend:: file.c								@@\
+									@@\
+file.h: file.c								@@\
+									@@\
+file.c: file.y								@@\
+	ClearmakeOSName \
+	$(YACC) flags file.y						@@\
+	$(MV) y.tab.c file.c						@@\
+	@if [ -f y.tab.h ]; then set -x; $(MV) y.tab.h file.h; \	@@\
+	else exit 0; fi							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#else
 #define YaccFile(file,flags)						@@\
 depend:: file.c								@@\
 									@@\
@@ -1858,6 +1895,7 @@ file.h file.c: file.y							@@\
 									@@\
 clean::									@@\
 	RemoveFiles(y.tab.c y.tab.h file.h file.c)
+#endif
 #endif /* YaccFile */
 
 #ifndef YaccFileNoFlags
@@ -2200,7 +2238,7 @@ name::									@@\
 	for i in dirs ;\						@@\
 	do \								@@\
 		echo verb "in $(CURRENT_DIR)/$$i..."; \			@@\
-		(cd $$i &&  $(MAKE) $(MFLAGS) flags subname); \		@@\
+		MakeNamedTargetSubdir($$i,flags,subname); \		@@\
 	done
 #endif
 
@@ -2239,8 +2277,8 @@ NamedTargetSubdirs(depend,dirs,"depending",NullParameter,depend)
 #ifndef ForceSubdirs
 #define ForceSubdirs(dirs)						@@\
 dirs: FRC								@@\
-	@cd $@  && echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+	@echo "making all in $(CURRENT_DIR)/$@..."			@@\
+	@MakeNamedTargetSubdir($@,PassCDebugFlags,all)			@@\
 									@@\
 FRC:
 #endif /* ForceSubdirs */

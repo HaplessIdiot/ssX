@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.13 1996/12/23 06:48:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.14 1997/01/05 11:59:05 dawes Exp $
 
 
 
@@ -75,6 +75,10 @@ DONES = $(OS_SUBDIR)/DONE misc/DONE
 
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
+
+#if HasGnuMake
+$(DONES): $(SUBDIRS)
 #endif
 
 NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
