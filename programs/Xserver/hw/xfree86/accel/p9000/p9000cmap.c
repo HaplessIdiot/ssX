@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.0 1994/05/29 02:05:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,6 +26,11 @@
  * Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
  *
+ */
+
+/* Note that the outb's and inb's in here should be changed to use the
+ * p9000OutBtReg, etc routines.  It's not needed yet because
+ * everything in here is in the 03c[6789] range. *TO*DO*
  */
 
 #include "X.h"

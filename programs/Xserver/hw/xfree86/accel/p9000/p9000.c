@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.6 1994/07/15 06:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.7 1994/07/21 13:56:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -54,6 +54,7 @@
 #include "p9000reg.h"
 #include "p9000Bt485.h"
 #include "p9000viper.h"
+#include "p9000orchid.h"
 #include "mi.h"
 #include "cfb.h"
 
@@ -131,7 +132,13 @@ p9000VendorRec *p9000VendorPtr = NULL;  /* The probed vendor */
 
 /* A list of vendors to be probed */
 static p9000VendorRec *p9000VendorList[] = {
-  &(p9000ViperVendor),
+  &(p9000ViperVlbVendor),
+#ifdef P9000_VPRPCI_SUP
+  &(p9000ViperPciVendor),
+#endif
+#ifdef P9000_ORCHID_SUP
+  &(p9000OrchidVendor),
+#endif
 };
 
 static int Num_p9000_Vendors = (sizeof(p9000VendorList)/
@@ -143,7 +150,12 @@ static ScreenPtr savepScreen = NULL;
 volatile unsigned long *CtlBase; 
 /* P9000 linear mapped frame buffer base */
 volatile unsigned long *VidBase; 
+/* P9000 PCI extended I/O base */
+volatile unsigned long *ExtBase;  
+
 volatile pointer p9000VideoMem;
+
+unsigned p9000BytesPerPixel;  /* The number of bytes per pixel */
 
 /* Options that may be specified to Xconfig */
 Bool p9000SWCursor = FALSE;         /* Use a software cursor */
@@ -168,10 +180,12 @@ static unsigned p9000_IOPorts[] = {
   BT_CURS_X_HIGH,
 };
 
+static int Num_p9000_IOPorts = (sizeof(p9000_IOPorts)/
+				sizeof(p9000_IOPorts[0]));
+
 /* p9000WeightMasks must match p9000weights[], below */
 static short p9000WeightMasks[] = { RGB16_565, RGB16_555, RGB32_888 };
 short p9000WeightMask;
-
 
 #define p9000ReorderSwapBits(a,b)    b = \
         (a & 0x80) >> 7 | \
@@ -183,8 +197,8 @@ short p9000WeightMask;
         (a & 0x02) << 5 | \
         (a & 0x01) << 7;
 
-static int Num_p9000_IOPorts = (sizeof(p9000_IOPorts)/
-				sizeof(p9000_IOPorts[0]));
+/* Raster operation (alu) -> minterm mapping */
+unsigned long p9000alu[16];
 
 /*
  * p9000Probe --
@@ -214,23 +228,45 @@ p9000Probe()
 
     if (p9000InfoRec.chipset)
       {
-	if (StrCaseCmp(p9000InfoRec.chipset, "p9000"))
+	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
 	  {
-	    ErrorF("Chipset specified in Xconfig is not \"p9000\" (%s)!\n",
+	    if (0 == strcmp(p9000VendorList[curvendor]->Vendor,
+			    p9000InfoRec.chipset))
+	      {
+		p9000VendorPtr = p9000VendorList[curvendor];
+		break;
+	      }
+	  }
+	if (curvendor >= Num_p9000_Vendors)
+	  {
+	    ErrorF("Chipset specified in Xconfig (%s) is not recognized!\n",
 		   p9000InfoRec.chipset);
 	    return(FALSE);
 	  }
-	xf86EnableIOPorts(p9000InfoRec.scrnIndex);
-	
-#ifdef DEBUG
-    ErrorF("Enabled IO Ports...\n");
-#endif
       }
     else
       {
-	ErrorF("Autodetection of P9000 is not yet supported.\n    Explicitly specify p9000 as the ChipSet in your Xconfig file.\n");
-	return(FALSE);
+	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
+	  {
+	    if (p9000VendorList[curvendor]->Probe())
+	      {
+		p9000VendorPtr = p9000VendorList[curvendor];
+		break;
+	      }
+	  }
+	if (curvendor >= Num_p9000_Vendors)
+	  {
+	    ErrorF("Autodetection of chipset failed.  Specify explicitly in Xconfig.\n");
+	    return(FALSE);
+	  }
       }
+    if (xf86Verbose)
+      ErrorF("%s %s: Vendor/chipset is %s (%s)\n",
+	     (p9000InfoRec.chipset ? XCONFIG_GIVEN : XCONFIG_PROBED),
+	     p9000InfoRec.name, p9000VendorPtr->Vendor, p9000VendorPtr->Desc);
+    p9000InfoRec.chipset = p9000VendorPtr->Vendor;
+
+    xf86EnableIOPorts(p9000InfoRec.scrnIndex);
     
     OFLG_ZERO(&validOptions);
     xf86VerifyOptions(&validOptions, &p9000InfoRec);
@@ -248,14 +284,9 @@ p9000Probe()
       }
     memavail = p9000InfoRec.videoRam*1024;
 
-    if ((p9000InfoRec.MemBase != 0xA0000000) &&
-	(p9000InfoRec.MemBase != 0x20000000) &&
-	(p9000InfoRec.MemBase != 0x80000000))
-      {
-	p9000InfoRec.MemBase = 0x80000000;
-	ErrorF("%s: MemBase not specified.  Using 0x%lx as a default.\n",
-	       p9000InfoRec.name, p9000InfoRec.MemBase);
-      }
+    /* Validate the vendor specific things like MemBase */
+    if (!p9000VendorPtr->Validate())
+      return(FALSE);
 
     switch (xf86bpp)
       {
@@ -303,24 +334,6 @@ p9000Probe()
 	p9000WeightMask = p9000WeightMasks[RGB32_888];
       }
 
-    /* Probe for the vendor */
-    for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
-      {
-	if (p9000VendorList[curvendor]->Probe())
-	  {
-	    p9000VendorPtr = p9000VendorList[curvendor];
-
-	    break;
-	  }
-	/* There should be a way of setting this from Xconfig *TO*DO* */
-      }
-    if (p9000VendorPtr == NULL)
-      {
-	ErrorF("Unable to determine vendor of P9000 card.\n");
-	return(FALSE);
-      }
-
-    p9000InfoRec.chipset = "p9000";
     xf86ProbeFailed = FALSE;
 
     if (xf86Verbose)
@@ -331,7 +344,7 @@ p9000Probe()
                p9000InfoRec.name,
                p9000InfoRec.videoRam,
                p9000InfoRec.clocks,
-	       p9000VendorPtr->Desc,
+	       p9000VendorPtr->Vendor,
 	       p9000InfoRec.MemBase);
       }
 
@@ -460,9 +473,17 @@ p9000Probe()
 void
 p9000PrintIdent()
 {
-    ErrorF("  %s: accelerated server for ", p9000InfoRec.name);
-    ErrorF("Weitek P9000 graphics adaptors (Patchlevel %s)\n", 
-	   p9000InfoRec.patchLevel);
+  int curvendor;
+
+  ErrorF("  %s: accelerated server for ", p9000InfoRec.name);
+  ErrorF("Weitek P9000 graphics adaptors (Patchlevel %s)\n", 
+	 p9000InfoRec.patchLevel);
+  ErrorF("  Supported vendors (specify on chipset line):\n");
+  for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
+    {
+      ErrorF("\t%s\t%s\n", p9000VendorList[curvendor]->Vendor,
+	     p9000VendorList[curvendor]->Desc);
+    }
 }
 
 /*
@@ -485,9 +506,17 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 #ifdef DEBUG
     ErrorF("Entered p9000Initialize...\n");
 #endif
-    
+
+#ifdef P9000_ACCEL
+  /* Prepare GC stuff for use */
+  p9000InitGC();
+#endif
+
   /* Maps P9000 linear address space into video memory */
   p9000InitAperture(scr_index);
+
+  /* Do vendor specific initialization */
+  p9000VendorPtr->Initialize(scr_index, pScreen, argc, argv);
 
   /* Set up swap bits table */
   for (i = 0; i < 256; i++)
@@ -576,6 +605,10 @@ p9000Initialize (scr_index, pScreen, argc, argv)
     ErrorF("Leaving p9000Initialize...\n");
 #endif
 
+#ifdef P9000_IM_ACCEL
+  p9000ImageInit();
+#endif
+
   return (cfbCreateDefColormap(pScreen));
 }
 
@@ -638,6 +671,8 @@ p9000CloseScreen(screen_idx, pScreen)
 /*
  * p9000SaveScreen --
  *      blank the screen.
+ *      Only supported for 8bpp.  *TO*DO*  
+ *      For now, use the screen saver extension.
  */
 
 Bool
@@ -648,15 +683,21 @@ p9000SaveScreen (pScreen, on)
   if (on) 
     {
       SetTimeSinceLastInputEvent();
-      if (xf86VTSema && !p9000SWCursor)
-	p9000BtCursorOn();
-      p9000UnblankScreen(pScreen);
+      if (p9000InfoRec.bitsPerPixel == 8)
+	{
+	  if (xf86VTSema && !p9000SWCursor)
+	    p9000BtCursorOn();
+	  p9000UnblankScreen(pScreen);
+	}
     }
   else
     {
-      if (xf86VTSema && !p9000SWCursor)
-	p9000BtCursorOff();
-      p9000BlankScreen(pScreen);
+      if (p9000InfoRec.bitsPerPixel == 8)
+	{
+	  if (xf86VTSema && !p9000SWCursor)
+	    p9000BtCursorOff();
+	  p9000BlankScreen(pScreen);
+	}
     }
   return(TRUE);
 }

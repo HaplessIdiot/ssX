@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.1 1994/06/26 13:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.h,v 3.2 1994/07/15 06:59:43 dawes Exp $ */
 /*
  * Written by Erik Nygren
  *
@@ -24,4 +24,35 @@
 #define VPR_VLB_OCR_ENABLE_P9000      0x10
 #define VPR_VLB_OCR_ENABLE_W5186      0x80
 
-extern p9000VendorRec p9000ViperVendor;
+#define VPR_PCI_OCR_ENABLE_P9000      0x10
+#define VPR_PCI_OCR_ENABLE_W5186      0x00
+#define VPR_PCI_OCR_RESERVED_MASK     0xEF
+
+/* The location and text of the Viper VLB signature for autodetection */
+#define VPR_VLB_BIOS_OFFSET           0x37
+#define VPR_VLB_BIOS_LENGTH           56
+/* The version isn't relavant */
+#define VPR_VLB_BIOS_SIGNATURE        "VIPER VLB  Vers."  
+
+/* The location and text of the Viper PCI signature for autodetection */
+#define VPR_PCI_BIOS_OFFSET           0x37
+#define VPR_PCI_BIOS_LENGTH           56
+/* The version isn't relavant */
+#define VPR_PCI_BIOS_SIGNATURE        "VIPER PCI  Vers."  
+
+extern p9000VendorRec p9000ViperVlbVendor;
+extern p9000VendorRec p9000ViperPciVendor;
+
+/* Common (for now at least) */
+
+extern void p9000LockVGAExtRegs(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void p9000UnlockVGAExtRegs(
+#if NeedFunctionPrototypes
+    void
+#endif
+);

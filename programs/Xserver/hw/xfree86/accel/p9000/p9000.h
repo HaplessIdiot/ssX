@@ -1,6 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.1 1994/06/26 13:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.2 1994/07/15 06:59:34 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -12,21 +13,33 @@
  * representations about the suitability of this software for any purpose.
  * It is provided "as is" without express or implied warranty.
  *
- * ERIK NYGREN AND KEVIN MARTIN DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
- * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
- * IN NO EVENT SHALL ERIK NYGREN OR KEVIN MARTIN BE LIABLE FOR ANY SPECIAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * ERIK NYGREN, CHRIS MASON, AND KEVIN MARTIN DISCLAIM ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ERIK NYGREN, CHRIS
+ * MASON, OR KEVIN MARTIN BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+ * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Modified for P9000 by Erik Nygren, nygren@mit.edu
- *
- */
-
+ * Modified for P9000 by Erik Nygren <nygren@mit.edu>
+ * Additional changes by Chris Mason <mason@mail.csh.rit.edu>
+ * */
 
 #ifndef P9000_H
 #define P9000_H
+
+/****************************/
+/* Compile Time Options     */
+/* WARNING: THESE ARE ALPHA */
+/* CODE AND MAY NOT BE      */
+/* FINISHED                 */
+/* #define P9000_ACCEL      */   /* Use acceleration */
+/* #define P9000_IM_ACCEL   */   /* Use code from p9000im.c */
+/* #define P9000_ORCHID_SUP */   /* Support the Orchid P9000 */
+/* #define P9000_VPRPCI_SUP */   /* Support the Viper PCI */
+/* #define DEBUG            */
+/****************************/
 
 #define P9000_PATCHLEVEL "0"
 
@@ -80,6 +93,26 @@ typedef void (* DisableVendorProcPtr)(
 #endif
 );
 
+typedef Bool (* ValidateVendorProcPtr)(
+#if NeedNestedPrototypes
+   void
+#endif
+);
+
+typedef void (* InitializeVendorProcPtr)(
+#if NeedNestedPrototypes
+   int,         /* The index of pScreen in the ScreenInfo */
+   ScreenPtr,   /* The Screen to initialize */
+   int,         /* The number of the Server's arguments. */
+   char **      /* The arguments themselves. Don't change! */
+#endif
+);
+
+/* Vendor Labels */
+#define P9000_VENDOR_VIPERVLB 1   /* Diamond Viper VLB */
+#define P9000_VENDOR_VIPERPCI 2   /* Diamond Viper PCI */
+#define P9000_VENDOR_ORCHID   3   /* Orchid P9000 and Weitek compatables */
+
 typedef struct {
   char *Desc;                     /* Description of the vendor */
   char *Vendor;                   /* The name of the vendor */
@@ -89,6 +122,12 @@ typedef struct {
 			           * Hz and sets things to that. */
   EnableVendorProcPtr Enable;     /* Disables VGA and enables the P9000 */
   DisableVendorProcPtr Disable;   /* Disables the P9000 and enables VGA */
+  ValidateVendorProcPtr Validate; /* Validates Xconfig parameters like
+				   * memory base and returns FALSE
+				   * if failed (causes p9000Probe to fail) */
+  InitializeVendorProcPtr Initialize; /* Does first-time only initialization
+				   * (like memory mapping for RAMDAC) */
+  int Label;                      /* A numerical label for quick compares. */
 } p9000VendorRec;
 
 extern p9000MiscRegRec  p9000MiscReg;
@@ -266,6 +305,101 @@ extern Bool p9000ScreenInit(
 #endif
 );
 
+#ifdef P9000_ACCEL
+
+/*********************** p9000gc.c **************************/
+
+extern void
+p9000InitGC(
+#if NeedFunctionPrototypes
+    void  
+#endif
+);
+
+extern Bool
+p9000CreateGC(
+#if NeedFunctionPrototypes
+    register GCPtr
+#endif
+);
+
+extern void
+p9000ValidateGC(
+#if NeedFunctionPrototypes
+    register GCPtr,
+    unsigned long,
+    DrawablePtr
+#endif
+);
+
+/*********************** p9000im.c **************************/
+#ifdef P9000_IM_ACCEL
+
+extern void p9000ImageInit(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+
+extern void (*p9000ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, unsigned char *, int, int, int, short
+#endif
+);
+
+extern void (*p9000ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int,
+    unsigned char *,
+    int, int, int,
+    short, short
+#endif
+);
+
+#if 0
+extern void (*p9000ImageFillFunc)(
+#if NeedFunctionPrototypes
+void
+#endif
+);
+#endif /* if 0 */
+
+#endif /* P9000_IM_ACCEL */
+
+/*********************** p9000blt.c **************************/
+
+extern RegionPtr
+p9000CopyArea(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    DrawablePtr,
+    GC *,
+    int, int,
+    int, int,
+    int, int
+#endif
+);
+
+#if 0    /* Not Used Yet */
+extern RegionPtr p9000CopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+#endif
+ 
+/***********/
+
+#endif /* P9000_ACCEL */
 
 /*********************** p9000curs.c ****************************/
 
@@ -287,6 +421,9 @@ Bool p9000CursorInit(
 #endif
 );
 
+/****************************************************************/
+
+
 extern ScrnInfoRec p9000InfoRec;
 
 extern int p9000ValidTokens[];
@@ -295,6 +432,9 @@ extern int p9000ValidTokens[];
 extern volatile unsigned long *CtlBase;
 /* P9000 linear mapped frame buffer base */
 extern volatile unsigned long *VidBase;  
+/* P9000 PCI extended I/O base */
+extern volatile unsigned long *ExtBase;  
+
 extern volatile pointer p9000VideoMem;
 
 extern Bool p9000SWCursor;         /* Use a software cursor */
@@ -303,6 +443,11 @@ extern Bool p9000DAC8Bit;          /* Only 8 bit is supported for now
 				    * (as opposed to 6 bit) */
 
 extern ScreenPtr p9000savepScreen;
+
+extern unsigned p9000BytesPerPixel;
+
+/* Raster operation (alu) -> minterm mapping */
+extern unsigned long p9000alu[];
 
 /* Retrieve a long word from memory */
 #ifndef p9000Fetch
@@ -314,9 +459,24 @@ extern ScreenPtr p9000savepScreen;
 #define p9000Store(Off,Base,Data)  *(volatile unsigned long *)(Base + ((Off)/4L)) = (unsigned long)Data
 #endif
 
+/* Retrieve a byte from memory */
+#ifndef p9000Fetch8
+#define p9000Fetch8(Off,Base) (*(volatile unsigned char *)(Base + ((Off)/4L)))
+#endif
+
+/* Store a byte into memory */
+#ifndef p9000Store8
+#define p9000Store8(Off,Base,Data)  *(volatile unsigned char *)(Base + ((Off)/4L)) = (unsigned char)Data
+#endif
+
 /* Wait for Drawing Engine to be free */
 #ifndef p9000NotBusy
 #define p9000NotBusy()  while(p9000Fetch(STATUS,CtlBase) & SR_BUSY)
+#endif
+
+/* Wait for Blit/Quad Engine to be free */
+#ifndef p9000QBNotBusy
+#define p9000QBNotBusy() while(p9000Fetch(STATUS,CtlBase) & SR_ISSUE_QBN)
 #endif
 
 #endif /* P9000_H */

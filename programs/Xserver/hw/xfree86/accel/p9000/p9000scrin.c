@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.1 1994/06/26 13:05:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.2 1994/07/15 06:59:40 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -227,7 +227,11 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       pScreen->PaintWindowBackground = cfbPaintWindow;
       pScreen->PaintWindowBorder = cfbPaintWindow;
       pScreen->CopyWindow = cfbCopyWindow;
+#ifdef P9000_ACCEL
+      pScreen->CreateGC = p9000CreateGC;
+#else
       pScreen->CreateGC = cfbCreateGC;
+#endif
       if (!cfbAllocatePrivates(pScreen, &cfbWindowPrivateIndex,
 			       &cfbGCPrivateIndex))
 	return FALSE;

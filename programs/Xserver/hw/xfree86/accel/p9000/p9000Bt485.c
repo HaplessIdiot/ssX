@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.0 1994/05/29 02:05:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000Bt485.c,v 3.1 1994/07/15 06:59:35 dawes Exp $ */
 /*
  * Copyright 1993 By David Wexelblat <dwex@aib.com>
  *
@@ -51,6 +51,10 @@ extern xrgb xf86weight;
  * for some reason aren't in numeric order, so we remap them through 
  * an array).  The P9000 provides access by remapping to 
  * 0x03C[6789], 0x43C[6789], 0x83C[6789], and 0xC3C[6789].
+ * The Viper PCI is a special case where addresses are remapped
+ * 0x03C[6789] and then the rest are mapped into ExtBase+0x[48C][6789].
+ * How the Viper PCI is handled is a hack and should be changed!
+ * Maybe have a table of DAC functions.  *TO*DO* (ELN)
  */
 #ifdef __STDC__
 void p9000OutBtReg(unsigned short reg, unsigned char mask, unsigned char data)
@@ -61,9 +65,20 @@ unsigned char mask;
 unsigned char data;
 #endif
 {
-   unsigned char tmp = inb(reg) & mask;
-
-   outb(reg, tmp | data);
+  unsigned char tmp;
+  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
+      && (0xf000 & reg))
+    {
+      unsigned long offset;
+      offset = (unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4));
+      tmp = p9000Fetch8(offset, ExtBase) & mask;
+      p9000Store8(offset, ExtBase, tmp | data);
+    }
+  else
+    {
+      tmp = inb(reg) & mask;
+      outb(reg, tmp | data);
+    }
 }
 
 #ifdef __STDC__
@@ -73,7 +88,17 @@ unsigned char p9000InBtReg(reg)
 unsigned short reg;
 #endif
 {
-   return(inb(reg));
+  if ((p9000VendorPtr->Label == P9000_VENDOR_VIPERPCI)
+      && (0xf000 & reg))
+    {
+      unsigned long offset;
+      offset = (unsigned long)((reg & 0x00ff) | ((reg & 0xf000)>>4));
+      return(p9000Fetch8(offset, ExtBase));
+    }
+  else
+    {
+      return(inb(reg));
+    }
 }
 
 /*

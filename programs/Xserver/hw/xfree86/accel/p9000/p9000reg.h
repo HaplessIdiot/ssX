@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.1 1994/06/26 13:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.2 1994/07/15 06:59:38 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -57,14 +57,26 @@
 #define FONT_BASE  0xA0000       /* The location of font data */
 #define FONT_SIZE  0x2000        /* The size of font data */
 
+/* BIOS parameters */
+#define BIOS_BASE  0xC0000       /* The start of the BIOS */
+
 /* Sync Polarities as stored in the VGA Sequencer Control Register */
 #define SP_NEGATIVE 1     /*sync polarity is negative */
 #define SP_POSITIVE 0     /*sync polarity is positive */
 
+/* Clock related things */
 #define CLK_JITTER_TOL 2000000L /* How close the mem and pixel clock
                                  * can be before we see jitter */
 #define MEMSPEED      50000000L /* The primary value for the memory clock */
 #define MEMSPEED_ALT  55000000L /* alternate: default to 55MHz (0x65AC3DL) */
+
+#define P9000_MAX_32BPP_CLOCK 80000   /* The maximum clock at 32 bpp 
+				       * (I think it's really 90 but I'd
+				       * rather be safe given that you can't
+				       * do over 800x600 anyways.  */
+
+#define P9000_MAX_ORCHID_CLOCK 110000 /* Do they all have 135 MHz bt485's? 
+				       * Lets be safe. */
 
 /************* P9000 Registers and Contents ****************/
 /* Note: Registers relative to CtlBase */
@@ -114,6 +126,7 @@
 
 #define FGROUND         0x80200L  /* Foreground Color */
 #define BGROUND         0x80204L  /* Background Color */
+#undef PMASK
 #define PMASK           0x80208L  /* Plane Mask */
 #define DRAW_MODE       0x8020CL  /* Draw Mode */
 #define PAT_ORIGINX     0x80210L  /* Pattern Origin X */
@@ -177,13 +190,6 @@
 #define RGB16_565         0
 #define RGB16_555         1
 #define RGB32_888         2
-
-#define P9000_MAX_32BPP_CLOCK 80000  /* The maximum clock at 32 bpp 
-				      * (I think it's really 90 but I'd
-				      * rather be safe given that you can't
-				      * do over 800x600 anyways.  */
-
-
 
 /************ STRUCTURES *************/
 
