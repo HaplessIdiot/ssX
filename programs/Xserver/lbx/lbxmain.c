@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c /main/72 1996/12/27 16:19:32 kaleb $ */
+/* $XConsortium: lbxmain.c /main/73 1996/12/30 18:01:14 rws $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.2 1996/12/26 01:40:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.3 1996/12/31 07:08:36 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -716,12 +716,12 @@ LbxReadRequestFromClient (client)
     isblocked = LbxIsClientBlocked(lbxClient);
 
     if (lbxClient->reqs_pending && !isblocked) {
-	if (!--lbxClient->reqs_pending && (lbxClient != proxy->curRecv))
-	    LbxSwitchRecv (proxy, proxy->curRecv);
 	ret = StandardReadRequestFromClient(client);
 	if (ret > 0 && (MAJOROP(client) == LbxReqCode) &&
 	    (MINOROP(client) == X_LbxEndLargeRequest))
 	    ret = PrepareLargeReqBuffer(client);
+	if (!--lbxClient->reqs_pending && (lbxClient != proxy->curRecv))
+	    LbxSwitchRecv (proxy, proxy->curRecv);
 	return ret;
     }
     while (1) {

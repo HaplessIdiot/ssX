@@ -1,13 +1,19 @@
 XCOMM $XConsortium: Imakefile /main/15 1996/12/06 09:34:35 swick $
 
+
+
+
+
+XCOMM $XFree86$
+
 #include <Server.tmpl>
 #define       IHaveSubdirs
 
 LBXPROXYCONFIGDIR = LbxproxyConfigSubdir
 
 SUBDIRS = di os $(LBXPROXYCONFIGDIR)
-LBXLIBS = di/LibraryTargetName(dilbx) os/LibraryTargetName(os) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil) GzipLibrary
-OTHERLIBS = $(ICELIB) $(XLIB)
+LBXLIBS = di/LibraryTargetName(dilbx) os/LibraryTargetName(os) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil)
+OTHERLIBS = $(ICELIB) $(XLIB) GzipLibrary
 
 ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
 
