@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.14 1998/01/24 16:59:00 hohndel Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.15 1998/08/16 10:25:55 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -90,6 +90,7 @@ in this Software without prior written authorization from the X Consortium.
 #include    <socket.h>
 #endif
 #include    <netinet/in.h>
+#include    <arpa/inet.h>
 #else /* MINIX */
 #include <net/hton.h>
 #include <net/netlib.h>

@@ -27,11 +27,12 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.4 1998/06/28 13:04:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.5 1998/08/16 10:25:16 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/SysUtil.h>
 
 #include <stdio.h>
 
@@ -132,17 +133,8 @@ XmuNCopyISOLatin1Uppered(char *dst, _Xconst char *src, register int size)
     }
 }
 
-#if NeedVarargsPrototypes
 int
-XmuSnprintf(char *str, int size, char *fmt, ...)
-#else 
-/* VARARGS3 */
-int
-XmuSnprintf(str, size, fmt, va_alist)
-     char *str, *fmt;
-     int size;
-     va_dcl
-#endif
+XmuSnprintf(char *str, int size, _Xconst char *fmt, ...)
 {
   va_list ap;
   int retval;

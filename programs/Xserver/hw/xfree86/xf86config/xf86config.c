@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.43 1997/07/19 05:43:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.44 1997/10/26 13:25:06 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1367,7 +1367,7 @@ static int exists_dir(char *name) {
 		return 0;
 
 	/* is there, but is it a dir? */
-	return ((sbuf.st_mode & S_IFMT)==S_IFDIR) ? 1 : 0;
+	return S_ISDIR(sbuf.st_mode) ? 1 : 0;
 }
 
 void screen_configuration() {

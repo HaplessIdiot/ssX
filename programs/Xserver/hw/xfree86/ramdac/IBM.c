@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.5 1998/08/29 05:44:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.6 1998/08/29 14:34:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -329,20 +329,21 @@ IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
 	    break;
 	case 16:
-	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_16BPP;
-	    ramdacReg->DacRegs[IBMRGB_32bpp] = 0;
-	    ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
-	    ramdacReg->DacRegs[IBMRGB_16bpp] = B16_DCOL_DIRECT | B16_LINEAR |
-					       B16_CONTIGUOUS | B16_565;
-	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
-	    break;
-	case 15:
-	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_16BPP;
-	    ramdacReg->DacRegs[IBMRGB_32bpp] = 0;
-	    ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
-	    ramdacReg->DacRegs[IBMRGB_16bpp] = B16_DCOL_DIRECT | B16_LINEAR |
-					       B16_CONTIGUOUS | B16_555;
-	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
+	    if (pScrn->depth == 16) {
+	        ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_16BPP;
+	        ramdacReg->DacRegs[IBMRGB_32bpp] = 0;
+	        ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
+	        ramdacReg->DacRegs[IBMRGB_16bpp] = B16_DCOL_DIRECT|B16_LINEAR |
+					           B16_CONTIGUOUS | B16_565;
+	        ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
+	    } else {
+	        ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_16BPP;
+	        ramdacReg->DacRegs[IBMRGB_32bpp] = 0;
+	        ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
+	        ramdacReg->DacRegs[IBMRGB_16bpp] = B16_DCOL_DIRECT|B16_LINEAR |
+					           B16_CONTIGUOUS | B16_555;
+	        ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
+	    }
 	    break;
 	case 8:
 	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_8BPP;
@@ -427,7 +428,7 @@ IBMramdac526ShowCursor(ScrnInfoPtr pScrn)
    RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 
    /* Enable cursor - X11 mode */
-   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs, 0x00, 0x27);
+   (*ramdacPtr->WriteDAC)(pScrn, IBMRGB_curs, 0x00, 0x07);
 }
 
 void 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.7 1998/08/29 05:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.8 1998/08/29 14:34:35 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -45,8 +45,9 @@ typedef struct {
     pciVideoPtr		PciInfoDelta;
     PCITAG		PciTag;
     PCITAG		PciTagDelta;
-    int			Chipset;
     RamDacHelperRecPtr	RamDac;
+    int			MemClock;
+    int			Chipset;
     int                 ChipRev;
     int			HwBpp;
     int			BppShift;

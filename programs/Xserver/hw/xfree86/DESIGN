@@ -1946,7 +1946,8 @@ A.1  Functions for printing messages:
       field of the ScrnInfoRec) followed by the scrnIndex in parentheses
       is printed following the prefix.  This should be used by video
       drivers in most cases as it clearly indicates which driver/screen
-      the message is for.
+      the message is for.  If scrnIndex is negative, this function
+      behaves exactly like xf86Msg.
 
       NOTE: This function can only be used after the ScrnInfoRec and
       its name field have been allocated.  That means that it can not
@@ -3706,4 +3707,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.8 1998/08/29 05:42:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.9 1998/08/30 03:39:13 dawes Exp $

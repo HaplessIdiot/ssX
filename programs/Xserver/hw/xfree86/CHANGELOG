@@ -1,3 +1,33 @@
+XFree86 3.9Nd (5 September 1998)
+1806. Map the pseudo-DMA transfer window used on newer MGA chips, and use
+      it for solid rects and spans (#1953, Mark Vojkovich).
+1805. Fix C&T HiQV detection (#1952, Taketoshi Sano).
+1804. Add dashed line support to XAA, and update the mga driver to use it
+      (#1951, 1953, Mark Vojkovich).
+1803. Lots of glint driver updates, including a memclock option to set the
+      mclk, and some more XAA functions for the older Permedia chip (#1950,
+      Alan Hourihane).
+1802. Use POSIX macro S_IS* instead of (((m)&S_IFMT)==S_IF*) and replace
+      "u_long" with "unsigned long" (#1949, UCHIYAMA Yasushi).
+1801. Fix IBM hw cursor pixel ordering (#1948, Alan Hourihane).
+1800. Remove accel/tga and accel/glint directories that are no longer needed
+      (#1947, Alan Hourihane).
+1799. Build support for FreeBSD/ELF (#1946, Doug Rabson, Joachim Kuebart,
+      Ollivier Robert).
+1798. Xaw and Xmu fixes (#1945, Paulo Cesar Pereira de Andrade).
+1797. HW Bresenham line drawing support for Tseng W32p and ET6000
+      (#1944, Koen Gadeyne).
+1796. Fix depth/bpp issues at depth 16 and depth 15 with the IBM support
+      in the ramdac module (#1943, Alan Hourihane).
+1795. Change messages in xf86PruneMonitorModes() so that they appear at the
+      default verbosity level (#1942, Egbert Eich).
+1794. Print out clock ranges or fixed clocks scaled by the mul/div factors
+      (#1942, Egbert Eich).
+1793. MGA G200 support (#1941, Radislaw Kapitan).
+1792. Preliminary I2C module (#1940, Itai Nahshon).
+1791. Add config support for building XFree86 on Linux with DECnet transport
+      (#1939, Eduardo Serrat).
+
 XFree86 3.9Nc (29 August 1998)
 1790. 24bpp (high res display problems) and 32bpp (horizontal stripe) fixes
       for the mga driver (#1715, 1716, Doug Merritt).
@@ -6415,4 +6445,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.616 1998/08/29 08:56:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.617 1998/08/30 04:49:38 dawes Exp $

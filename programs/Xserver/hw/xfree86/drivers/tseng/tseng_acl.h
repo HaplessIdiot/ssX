@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.15 1998/08/13 14:45:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.16 1998/08/29 05:43:37 dawes Exp $ */
 
 
 
@@ -94,7 +94,6 @@ ByteP ACL_TRANSFER_DISABLE;
 extern int W32OpTable[16];
 extern int W32OpTable_planemask[16];
 extern int W32PatternOpTable[16];
-extern int W32BresTable[8];
 
 /*
  * The ping-pong registers. Probably too much hassle for too little gain. "TODO".
@@ -114,21 +113,7 @@ extern LongP MemW32BackgroundPong;
 extern LongP MemW32PatternPing;
 extern LongP MemW32PatternPong;
 
-/*
- * Some exported variables used by several source files. They are all
- * prepended with "tseng" to avoid name clashes with other modules.
- */
-
 extern unsigned char * tsengCPU2ACLBase;
-
-extern int tseng_powerPerPixel;
-extern int tseng_neg_x_pixel_offset;
-extern Bool tseng_need_wait_acl;
-extern Bool tseng_use_PCI_Retry;       /* Do we use PCI-retry or busy-waiting */
-
-/* for ImageWrite and WriteBitmap */
-extern CARD32 *tsengFirstLinePntr, *tsengSecondLinePntr;
-extern CARD32 tsengFirstLine, tsengSecondLine;
 
 /*
  * These will hold the ping-pong registers.

@@ -1,5 +1,5 @@
 /* $XConsortium: sm_genid.c /main/22 1996/12/04 10:22:25 lehors $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.6 1996/12/23 05:59:06 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.7 1997/01/18 06:51:43 dawes Exp $ */
 
 /*
 
@@ -60,6 +60,7 @@ extern Time_t time ();
 #include <socket.h>
 #endif
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #define XOS_USE_NO_LOCKING
 #define X_INCLUDE_NETDB_H
 #include <X11/Xos_r.h>

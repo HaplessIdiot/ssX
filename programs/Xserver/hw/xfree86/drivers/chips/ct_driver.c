@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.28 1998/08/29 05:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.29 1998/08/29 14:34:31 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1173,8 +1173,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 	     * of whether the chip is actually connected to a PCI BUS. So
 	     * probe for C&T vendor ID.
 	     */
-	    if (!found && (rdinx(0x3D6, 0x01) == 0x2C) &&
-			(rdinx(0x3D6, 0x02) == 0x10)) {
+	    if (!found && (rdinx(0x3D6, 0x00) == 0x2C) &&
+			(rdinx(0x3D6, 0x01) == 0x10)) {
 		read_xr(0x02,tmp);
 		switch (tmp) {
 		case 0xE0:		/* CT65550 */

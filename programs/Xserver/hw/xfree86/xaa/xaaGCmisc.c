@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.5 1998/08/19 07:49:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.6 1998/08/29 05:44:06 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -315,12 +315,15 @@ XAAValidatePolylines(
    DrawablePtr   pDraw )
 {
    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   XAAGCPtr   pGCPriv = (XAAGCPtr) (pGC)->devPrivates[XAAGCIndex].ptr;
+
+   if(pGC->lineStyle == LineSolid) changes &= ~GCDashList;
+   if(!changes) return;
 
    pGC->ops->PolySegment = XAAFallbackOps.PolySegment;
    pGC->ops->Polylines = XAAFallbackOps.Polylines;
    pGC->ops->PolyRectangle = XAAFallbackOps.PolyRectangle;
    pGC->ops->PolyArc = XAAFallbackOps.PolyArc;
-
 
    if((pGC->ops->FillSpans != XAAFallbackOps.FillSpans) &&
 	(pGC->lineWidth > 0)){
@@ -364,6 +367,60 @@ XAAValidatePolylines(
 
 		pGC->ops->Polylines = infoRec->PolylinesThinSolid;
 	    }
+	} else if((pGC->lineStyle == LineOnOffDash) && pGCPriv->DashPattern){
+
+	   if(infoRec->PolySegmentThinDashed &&
+		!(infoRec->PolySegmentThinDashedFlags & NO_TRANSPARENCY) &&
+		((pGC->alu == GXcopy) || !(infoRec->PolySegmentThinDashedFlags &
+					TRANSPARENCY_GXCOPY_ONLY)) &&
+		CHECK_PLANEMASK(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_ROP(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_FG(pGC,infoRec->PolySegmentThinDashedFlags)) {
+
+		pGC->ops->PolySegment = infoRec->PolySegmentThinDashed;
+	   }
+
+	   if(infoRec->PolylinesThinDashed &&
+		!(infoRec->PolylinesThinDashedFlags & NO_TRANSPARENCY) &&
+		((pGC->alu == GXcopy) || !(infoRec->PolylinesThinDashedFlags &
+					TRANSPARENCY_GXCOPY_ONLY)) &&
+		CHECK_PLANEMASK(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_ROP(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_FG(pGC,infoRec->PolylinesThinDashedFlags)) {
+
+		pGC->ops->Polylines = infoRec->PolylinesThinDashed;
+	    }
+
+	   if(pGC->ops->Polylines != XAAFallbackOps.Polylines)
+		pGC->ops->PolyRectangle = miPolyRectangle;
+
+	} else if(pGCPriv->DashPattern) { /* LineDoubleDash */
+
+	   if(infoRec->PolySegmentThinDashed &&
+		!(infoRec->PolySegmentThinDashedFlags & TRANSPARENCY_ONLY) &&
+		CHECK_PLANEMASK(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_ROP(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolySegmentThinDashedFlags) &&
+		CHECK_COLORS(pGC,infoRec->PolySegmentThinDashedFlags)) {
+
+		pGC->ops->PolySegment = infoRec->PolySegmentThinDashed;
+	   }
+
+	   if(infoRec->PolylinesThinDashed &&
+		!(infoRec->PolylinesThinDashedFlags & TRANSPARENCY_ONLY) &&
+		CHECK_PLANEMASK(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_ROP(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolylinesThinDashedFlags) &&
+		CHECK_COLORS(pGC,infoRec->PolylinesThinDashedFlags)) {
+
+		pGC->ops->Polylines = infoRec->PolylinesThinDashed;
+	    }
+
+	   if(pGC->ops->Polylines != XAAFallbackOps.Polylines)
+		pGC->ops->PolyRectangle = miPolyRectangle;
+
 	}
    }
 

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.39 1998/08/29 14:34:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.40 1998/08/30 04:49:42 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -99,9 +99,6 @@
 #include "mga.h"
 #include "xaa.h"
 
-
-/* Leave out Mystique for testing */
-#define NO_MYSTIQUE 1
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -172,6 +169,7 @@ static SymTabRec MGAChipsets[] = {
     { PCI_CHIP_MGA1064,		"mga1064sg" },
     { PCI_CHIP_MGA2164,		"mga2164w" },
     { PCI_CHIP_MGA2164_AGP,	"mga2164w AGP" },
+    { PCI_CHIP_MGAG200,		"mgag200" },
     {-1,			NULL }
 };
 
@@ -181,6 +179,7 @@ static char *MGAPciNames[] = {
     "mga1064sg",
     "mga2164w",
     "mga2164w AGP",
+    "mgag200",
     NULL
 };
 
@@ -190,6 +189,7 @@ static unsigned int MGAPciIds[] = {
     PCI_CHIP_MGA1064,
     PCI_CHIP_MGA2164,
     PCI_CHIP_MGA2164_AGP,
+    PCI_CHIP_MGAG200,
     ~0
 };
 
@@ -284,7 +284,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
  * ramdac info structure initialization
  */
 static MGARamdacRec DacInit = {
-	FALSE, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
+	FALSE, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
 	90000, /* maxPixelClock */
 	0, X_DEFAULT, X_DEFAULT, FALSE
 }; 
@@ -917,30 +917,17 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	/* details: mgabase2 sdk pp 4-12 */
-	if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
-		pMga->Chipset == PCI_CHIP_MGA2164 ||
-		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
-	    if (pMga->PciInfo->memBase[0] != 0) {
-	    	pMga->FbAddress = pMga->PciInfo->memBase[0] & 0xff800000;
-	    	from = X_PROBED;
-	     } else {
-	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "No valid FB address in PCI config space\n");
-	    	MGAFreeRec(pScrn);
-	    	return FALSE;
-	     }
+	int i = ((pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev < 3) ||
+		    pMga->Chipset == PCI_CHIP_MGA2064) ? 1 : 0;
+	if (pMga->PciInfo->memBase[i] != 0) {
+	    pMga->FbAddress = pMga->PciInfo->memBase[i] & 0xff800000;
+	    from = X_PROBED;
 	} else {
-	    if (pMga->PciInfo->memBase[1] != 0) {
-	    	pMga->FbAddress = pMga->PciInfo->memBase[1] & 0xff800000;
-	    	from = X_PROBED;
-	     } else {
-	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "No valid FB address in PCI config space\n");
-	    	MGAFreeRec(pScrn);
-	    	return FALSE;
-	     }
-        }
-
+	    MGAFreeRec(pScrn);
+	    return FALSE;
+	}
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pMga->FbAddress);
@@ -950,32 +937,35 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	/* details: mgabase1 sdk pp 4-11 */
-	if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
-		pMga->Chipset == PCI_CHIP_MGA2164 ||
-		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
-	    if (pMga->PciInfo->memBase[1] != 0) {
-	    	pMga->IOAddress = pMga->PciInfo->memBase[1] & 0xffffc000;
-	    	from = X_PROBED;
-	    } else {
-	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"No valid MMIO address in PCI config space\n");
-	    	MGAFreeRec(pScrn);
-	    	return FALSE;
-	    }
+	int i = ((pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev < 3) ||
+		    pMga->Chipset == PCI_CHIP_MGA2064) ? 0 : 1;
+	if (pMga->PciInfo->memBase[i] != 0) {
+	    pMga->IOAddress = pMga->PciInfo->memBase[i] & 0xffffc000;
+	    from = X_PROBED;
 	} else {
-	    if (pMga->PciInfo->memBase[0] != 0) {
-	    	pMga->IOAddress = pMga->PciInfo->memBase[0] & 0xffffc000;
-	    	from = X_PROBED;
-	    } else {
-	    	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"No valid MMIO address in PCI config space\n");
-	    	MGAFreeRec(pScrn);
-	    	return FALSE;
-	    }
-        }
+	    MGAFreeRec(pScrn);
+	    return FALSE;
+	}
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pMga->IOAddress);
+
+     
+    pMga->ILOADAddress = 0;
+    if ( (pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev >= 3) ||
+		pMga->Chipset == PCI_CHIP_MGA2164 ||
+		pMga->Chipset == PCI_CHIP_MGA2164_AGP) {
+	    if (pMga->PciInfo->memBase[2] != 0) {
+	    	pMga->ILOADAddress = pMga->PciInfo->memBase[2] & 0xffffc000;
+	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
+			"ILOAD transfer window at 0x%lX\n",
+	       		(unsigned long)pMga->ILOADAddress);
+
+	    } 
+    }
+
 
     /*
      * Find the BIOS base.  Get it from the PCI config if possible.  Otherwise
@@ -1042,11 +1032,10 @@ MGAMapMem(pScrn);
     case PCI_CHIP_MGA2164_AGP:
 	MGA3026RamdacInit(pScrn);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:
-	MGA1064RamdacInit(pScrn);
+    case PCI_CHIP_MGAG200:
+	MGAGRamdacInit(pScrn);
 	break;
-#endif
     }
 #if 0
 /* XXX HACK */
@@ -1101,8 +1090,8 @@ MGAUnmapMem(pScrn);
     clockRanges->minClock = pMga->MinClock;
     clockRanges->maxClock = pMga->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    clockRanges->interlaceAllowed = FALSE;	/* XXX check this */
-    clockRanges->doubleScanAllowed = FALSE;	/* XXX check this */
+    clockRanges->interlaceAllowed = TRUE;
+    clockRanges->doubleScanAllowed = TRUE;
 
     /* Only set MemClk if appropriate for the ramdac */
     if (pMga->Dac.SetMemClk) {
@@ -1117,56 +1106,39 @@ MGAUnmapMem(pScrn);
 		   pMga->MemClk / 1000.0);
     }
 
-    /* Check if interleaving can be used */
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA1064:
-	/* we can't use interleave on Mystique */
-	pMga->Interleave = FALSE;
+    /* Set the bpp shift value */
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	pMga->BppShift = 0;
 	break;
+    case 16:
+	pMga->BppShift = 1;
+	break;
+    case 24:
+	pMga->BppShift = 0;
+	break;
+    case 32:
+	pMga->BppShift = 2;
+	break;
+    }
+
+    /* Check if interleaving can be used and set the rounding value */
+    switch (pMga->Chipset) {
     case PCI_CHIP_MGA2064:
     case PCI_CHIP_MGA2164:
     case PCI_CHIP_MGA2164_AGP:
 	if (pScrn->videoRam > 2048)
 	    pMga->Interleave = TRUE;
-	else
+	else {
 	    pMga->Interleave = FALSE;
+	    pMga->BppShift++;
+	}
+	pMga->Rounding = 128 >> pMga->BppShift;
 	break;
     default:
-	/* Shouldn't get here, but choose a safe default */
 	pMga->Interleave = FALSE;
+	pMga->Rounding = 64 >> pMga->BppShift;
 	break;
-    }
-
-    /* Set the rounding and bpp shift values */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	if (pMga->Interleave)
-	    pMga->BppShift = 0;
-	else
-	    pMga->BppShift = 1;
-	break;
-    case 16:
-	if (pMga->Interleave)
-	    pMga->BppShift = 1;
-	else
-	    pMga->BppShift = 2;
-	break;
-    case 24:
-	if (pMga->Interleave)
-	    pMga->BppShift = 0;
-	else
-	    pMga->BppShift = 1;
-	break;
-    case 32:
-	if (pMga->Interleave)
-	    pMga->BppShift = 2;
-	else
-	    pMga->BppShift = 3;
-	break;
-    }
-    pMga->Rounding = 128 >> pMga->BppShift;
-    if (pMga->Chipset == PCI_CHIP_MGA1064) {
-	pMga->BppShift--;
     }
 
     /*
@@ -1286,8 +1258,22 @@ MGAUnmapMem(pScrn);
      * section.
      */
 
+    /* Allocate HW cursor buffer at the end of video ram */
+    if( pMga->HWCursor && pMga->Dac.CursorOffscreenMemSize )
+        if( pScrn->virtualY * pScrn->displayWidth * pScrn->bitsPerPixel / 8 <=
+        	pMga->FbUsableSize - pMga->Dac.CursorOffscreenMemSize ) {
+            pMga->FbUsableSize -= pMga->Dac.CursorOffscreenMemSize;
+            pMga->FbCursorOffset =
+                pMga->FbMapSize - pMga->Dac.CursorOffscreenMemSize;
+        } else {
+            pMga->HWCursor = FALSE;
+            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+                "Too less offscreen memory for HW cursor; using SW cursor\n");
+        }
+
     /* Set Fast bitblt flag */
-    if (pMga->Chipset == PCI_CHIP_MGA1064) {
+    if (pMga->Chipset == PCI_CHIP_MGA1064 ||
+    	    pMga->Chipset == PCI_CHIP_MGAG200) {
 	pMga->HasFBitBlt = FALSE;
     } else {
 	pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
@@ -1409,6 +1395,15 @@ MGAMapMem(ScrnInfoPtr pScrn)
 
     pMga->FbStart = pMga->FbBase + pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
 
+
+    /* Map the ILOAD transfer window if there is one.  We only make
+	DWORD access on DWORD boundaries to this window */
+    if(pMga->ILOADAddress)
+	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+			pMga->PciTag, (pointer)pMga->ILOADAddress, 0x800000);
+    else  pMga->ILOADBase = NULL;
+
+
     /* Re-enable I/O and memory */
     pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
 		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
@@ -1445,6 +1440,10 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->FbBase, pScrn->videoRam);
     pMga->FbBase = NULL;
     pMga->FbStart = NULL;
+
+    if(pMga->ILOADBase)
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->ILOADBase, 0x800000);
+    pMga->ILOADBase = NULL;
     return TRUE;
 }
 
@@ -1470,11 +1469,10 @@ MGASave(ScrnInfoPtr pScrn)
     case PCI_CHIP_MGA2164_AGP:
 	MGA3026Save(pScrn, vgaReg, mgaReg, TRUE);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:
-	MGA1064Save(pScrn, vgaReg, mgaReg, TRUE);
+    case PCI_CHIP_MGAG200:
+	MGAGSave(pScrn, vgaReg, mgaReg, TRUE);
 	break;
-#endif
     }
 }
 
@@ -1509,11 +1507,10 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_CHIP_MGA2164_AGP:
 	ret = MGA3026Init(pScrn, mode);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:                               
-	ret = MGA1064Init(pScrn, mode);
+    case PCI_CHIP_MGAG200:                               
+	ret = MGAGInit(pScrn, mode);
 	break;
-#endif
     }
     if (!ret)
 	return FALSE;
@@ -1528,11 +1525,10 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_CHIP_MGA2164_AGP:
 	MGA3026Restore(pScrn, vgaReg, mgaReg, FALSE);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:                               
-	MGA1064Restore(pScrn, vgaReg, mgaReg, FALSE);
+    case PCI_CHIP_MGAG200:                               
+	MGAGRestore(pScrn, vgaReg, mgaReg, FALSE);
 	break;
-#endif
     }
     MGAStormSync(pScrn);
     /* XXX Does this belong here? */
@@ -1565,11 +1561,10 @@ MGARestore(ScrnInfoPtr pScrn)
     case PCI_CHIP_MGA2164_AGP:
 	MGA3026Restore(pScrn, vgaReg, mgaReg, TRUE);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:                               
-	MGA1064Restore(pScrn, vgaReg, mgaReg, TRUE);
+    case PCI_CHIP_MGAG200:                               
+	MGAGRestore(pScrn, vgaReg, mgaReg, TRUE);
 	break;
-#endif
     }
     MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
@@ -1606,7 +1601,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     /* Map the VGA memory and get the VGA IO base */
-    hwp->Base = pMga->FbBase;
+    hwp->MapSize = 0x10000;
+    if (!vgaHWMapMem(pScrn))
+	return FALSE;
     hwp->MemBase = pMga->IOBase + PORT_OFFSET;
     vgaHWGetIOBaseMMIO(hwp);
 
@@ -1802,14 +1799,14 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 	Base *= 3;
 
     /* find start of retrace */
-    while (INREG8(PORT_OFFSET + hwp->IOBase + 0x0A) & 0x08);
-    while (!(INREG8(PORT_OFFSET + hwp->IOBase + 0xA) & 0x08)); 
+    while (INREG8(0x1FDA) & 0x08);
+    while (!(INREG8(0x1FDA) & 0x08)); 
     /* wait until we're past the start (fixseg.c in the DDK) */
     count = INREG(MGAREG_VCOUNT) + 2;
     while(INREG(MGAREG_VCOUNT) < count);
     
-    OUTREG16(PORT_OFFSET + hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
-    OUTREG16(PORT_OFFSET + hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
+    OUTREG16(0x1FD4, (Base & 0x00FF00) | 0x0C);
+    OUTREG16(0x1FD4, ((Base & 0x0000FF) << 8) | 0x0D);
     OUTREG8(0x1FDE, 0x00);
     tmp = INREG8(0x1FDF);
     OUTREG8(0x1FDF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));

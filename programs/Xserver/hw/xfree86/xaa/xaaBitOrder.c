@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitOrder.c,v 1.3 1998/08/16 10:25:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitOrder.c,v 1.4 1998/08/29 14:34:43 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -14,7 +14,7 @@
 CARD32
 XAAReverseBitOrder(CARD32 data)
 {
-#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__) || defined(__GNU__)
+#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(__ELF__) || defined(__GNU__)
 	__asm__(
 		"movl $0,%%ecx\n"
 		"movb %%al,%%cl\n"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.2.2.1 1998/05/22 13:47:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.4 1998/07/25 16:56:11 dawes Exp $ */
 
 /*
  * Borrowed from NetBSD's exec_aout.h
@@ -49,14 +49,14 @@
  * a.out  header 
  */
 typedef struct AOUT_exec {
-    u_long a_midmag;	    /* htonl(flags<<26 | mid<<16 | magic) */
-    u_long  a_text;         /* text segment size */
-    u_long  a_data;         /* initialized data size */
-    u_long  a_bss;          /* uninitialized data size */
-    u_long  a_syms;         /* symbol table size */
-    u_long  a_entry;        /* entry point */
-    u_long  a_trsize;       /* text relocation size */
-    u_long  a_drsize;       /* data relocation size */
+    unsigned long a_midmag;	    /* htonl(flags<<26 | mid<<16 | magic) */
+    unsigned long  a_text;         /* text segment size */
+    unsigned long  a_data;         /* initialized data size */
+    unsigned long  a_bss;          /* uninitialized data size */
+    unsigned long  a_syms;         /* symbol table size */
+    unsigned long  a_entry;        /* entry point */
+    unsigned long  a_trsize;       /* text relocation size */
+    unsigned long  a_drsize;       /* data relocation size */
 } AOUTHDR;
 
 /* a_magic */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.4 1998/08/13 14:45:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.5 1998/08/29 05:43:27 dawes Exp $ */
 
 /*
  * glint register file 
@@ -772,6 +772,7 @@
 #define FBBlockColorL						GLINT_TAG_ADDR(0x18,0x0e)
 #define SuspendUntilFrameBlank					GLINT_TAG_ADDR(0x18,0x0f)
 
+#define FBSourceBase						GLINT_TAG_ADDR(0x1B,0x00)
 #define FBSourceDelta						GLINT_TAG_ADDR(0x1B,0x01)
 #define Config							GLINT_TAG_ADDR(0x1B,0x02)
 #define		CFBRM_SrcEnable		1<<0
@@ -880,16 +881,16 @@
 {								\
 	if( xf86Verbose > 2)					\
 		ErrorF("reg 0x%04x to 0x%08x\n",r,v);		\
-	*(unsigned int *)((char*)pGlint->IOBase+r) = v;		\
+	*(volatile CARD32 *)((char*)pGlint->IOBase+r) = v;		\
 }
 #else
 #define GLINT_WRITE_REG(v,r)					\
-        *(unsigned int *)((char*)pGlint->IOBase+r) = v;		
+        *(volatile CARD32 *)((char*)pGlint->IOBase+r) = v;		
 #endif
 
 
 #define GLINT_READ_REG(r) \
-	*(unsigned int *)((char*)pGlint->IOBase+r)
+	*(volatile CARD32 *)((char*)pGlint->IOBase+r)
 
 #define GLINT_WAIT(n)	\
  	if (!pGlint->UsePCIRetry)  \

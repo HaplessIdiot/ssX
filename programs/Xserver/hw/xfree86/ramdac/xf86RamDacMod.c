@@ -23,9 +23,7 @@
  *
  * Generic RAMDAC module.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacMod.c,v 1.1.2.1 1998/07/03 13:44:09 dawes Exp $ */
-
-#ifdef XFree86LOADER
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacMod.c,v 1.2 1998/07/25 16:57:20 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -52,4 +50,3 @@ ramdacModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
     *teardown = NULL;
 }
 
-#endif

@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/StrToWidg.c,v 1.3 1998/08/20 13:59:41 dawes Exp $ */
 
 /*
  * XmuCvtStringToWidget
@@ -42,6 +42,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/ObjectP.h>
+#include <X11/Xmu/Converters.h>
 
 #define	done(address, type) \
 {						\

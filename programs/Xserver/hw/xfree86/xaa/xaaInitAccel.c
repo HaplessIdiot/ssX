@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.7 1998/08/29 05:44:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.8 1998/08/30 03:31:45 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -25,7 +25,6 @@ typedef enum {
     XAAOPT_SOLID_HORVERT_LINE,
     XAAOPT_DASHED_TWO_POINT_LINE,
     XAAOPT_DASHED_BRESENHAM_LINE,
-    XAAOPT_DASHED_HORVERT_LINE,
     XAAOPT_MONO_8x8_PATTERN_FILL_RECT,
     XAAOPT_MONO_8x8_PATTERN_FILL_TRAP,
     XAAOPT_COL_8x8_PATTERN_FILL_RECT,
@@ -55,8 +54,6 @@ static OptionInfoRec XAAOptions[] = {
     {XAAOPT_DASHED_TWO_POINT_LINE,	"XaaNoDashedTwoPointLine",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_DASHED_BRESENHAM_LINE,	"XaaNoDashedBresenhamLine",
-				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_DASHED_HORVERT_LINE,	"XaaNoDashedHorVertLine",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_MONO_8x8_PATTERN_FILL_RECT,	"XaaNoMono8x8PatternFillRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
@@ -103,7 +100,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveSolidHorVertLine = FALSE;
     Bool HaveDashedTwoPointLine = FALSE;
     Bool HaveDashedBresenhamLine = FALSE;
-    Bool HaveDashedHorVertLine = FALSE;
     Bool HaveClipper = FALSE;
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
@@ -235,31 +231,21 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
 
     /**** Dashed lines ****/
+
     if(infoRec->SetupForDashedLine && infoRec->DashPatternMaxLength) {
 	if(infoRec->SubsequentDashedTwoPointLine &&
 		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_TWO_POINT_LINE))
 	    HaveDashedTwoPointLine = TRUE;
 	if(infoRec->SubsequentDashedBresenhamLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_BRESENHAM_LINE))
+		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_BRESENHAM_LINE)) {
 	    HaveDashedBresenhamLine = TRUE;
 
-	if(infoRec->SubsequentDashedHorVertLine &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_DASHED_HORVERT_LINE))
-	    HaveDashedHorVertLine = TRUE;
-#if 0
-	else if(HaveDashedTwoPointLine) {
-	    infoRec->SubsequentDashedHorVertLine = 
-			XAADashedHorVertLineAsTwoPoint;
-	    HaveDashedHorVertLine = TRUE;
-	} else if(HaveDashedBresenhamLine) {
-	    infoRec->SubsequentDashedHorVertLine = 
-			XAADashedHorVertLineAsBresenham;
-	    HaveDashedHorVertLine = TRUE;
-	} 
-#endif
+	    if(infoRec->DashedBresenhamLineErrorTermBits)
+		infoRec->DashedBresenhamLineErrorTermBits = 
+			~((1 << infoRec->DashedBresenhamLineErrorTermBits) - 1);
+	}
+	if(!HaveClipper) infoRec->DashedLineFlags &= ~HARDWARE_CLIP_LINE;
     }
-
-
 
     /**** 8x8 Color Pattern Filled Rects ****/
 
@@ -394,8 +380,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(HaveDashedTwoPointLine || HaveDashedBresenhamLine)
 	xf86ErrorF("\tDashed Lines\n");
-    else if(HaveDashedHorVertLine)
-	xf86ErrorF("\tDashed Horizontal and Vertical Lines\n");
 
     if(HaveImageWriteRect)
 	xf86ErrorF("\tImage Writes\n");
@@ -1201,6 +1185,23 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
+    if(HaveDashedBresenhamLine || (HaveDashedTwoPointLine && 
+			(infoRec->DashedLineFlags & HARDWARE_CLIP_LINE))){
+	if(!infoRec->PolylinesThinDashed) {
+	   infoRec->PolylinesThinDashed = XAAPolyLinesDashed;
+	   infoRec->PolylinesThinDashedFlags = infoRec->DashedLineFlags;
+	}
+	if(!infoRec->PolySegmentThinDashed) {
+	   infoRec->PolySegmentThinDashed = XAAPolySegmentDashed;
+	   infoRec->PolySegmentThinDashedFlags = infoRec->DashedLineFlags;
+	}
+    }
+
+    if(infoRec->PolylinesThinDashed || infoRec->PolySegmentThinDashed) {
+	if(!infoRec->ComputeDash)
+	   infoRec->ComputeDash = XAAComputeDash;
+    }
+
     /************  Validation Functions **************/
 
     if(!infoRec->ValidateCopyArea && infoRec->CopyArea) {
@@ -1325,11 +1326,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	int compositeFlags = 	infoRec->PolyRectangleThinSolidFlags |
 				infoRec->PolylinesWideSolidFlags |
 				infoRec->PolylinesThinSolidFlags |
-				infoRec->PolySegmentThinSolidFlags;
+				infoRec->PolySegmentThinSolidFlags |
+				infoRec->PolySegmentThinDashedFlags |
+				infoRec->PolylinesThinDashedFlags;
 
 	infoRec->ValidatePolylines = XAAValidatePolylines;
 	infoRec->PolylinesMask = 
 		infoRec->FillSpansMask | GCLineStyle | GCLineWidth;
+
+	if(infoRec->PolySegmentThinDashed || infoRec->PolylinesThinDashed)
+	    infoRec->PolylinesMask |= GCDashList;
 
 	if(compositeFlags & NO_PLANEMASK)
 	    infoRec->PolylinesMask |= GCPlaneMask;

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.19 1998/08/19 07:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.20 1998/08/29 05:43:36 dawes Exp $ */
 
 
 
@@ -118,21 +118,6 @@ int W32PatternOpTable[] =
     0xff			       /* Xset               1 */
 };
 
-/*
- * W32BresTable[] converts XAA interface Bresenham octants to Tseng octants
- */
-int W32BresTable[] =
-{
-    0x04,
-    0x00,
-    0x06,
-    0x02,
-    0x05,
-    0x01,
-    0x07,
-    0x03
-};
-
 long W32ForegroundPing;
 long W32ForegroundPong;
 long W32BackgroundPing;
@@ -148,14 +133,6 @@ LongP MemW32PatternPing;
 LongP MemW32PatternPong;
 
 unsigned char * tsengCPU2ACLBase;
-
-int tseng_powerPerPixel, tseng_neg_x_pixel_offset;
-int tseng_line_width;
-Bool tseng_need_wait_acl = FALSE;
-
-/* scanline buffers for ImageWrite and WriteBitmap (and scanline color expansion in the future) */
-CARD32 *tsengFirstLinePntr, *tsengSecondLinePntr;
-CARD32 tsengFirstLine, tsengSecondLine;
 
 /* used for optimisation of direction-register writing */
 int tseng_old_dir = -1;
@@ -252,7 +229,7 @@ tseng_init_acl(ScreenPtr pScreen)
 	tsengCPU2ACLBase = (unsigned char*) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
 	/*      *((LongP) (MMioBase + 0x08)) = 200000; *//* TEST */
     }
-
+    
     /* ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", MMioBase, scratchMemBase); */
 
     MMU_CONTROL = (ByteP) (MMioBase + 0x13);

@@ -1,5 +1,5 @@
 /* $XConsortium: CloseHook.c,v 1.9 94/04/17 20:15:51 rws Exp $ */
-/* $XFree86: xc/lib/Xmu/CloseHook.c,v 3.0 1996/06/10 10:59:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CloseHook.c,v 3.1 1998/08/16 10:25:05 dawes Exp $ */
 
 /* 
 Copyright (c) 1989  X Consortium
@@ -252,9 +252,8 @@ _FindDisplayEntry(register Display *dpy, DisplayEntry **prevp)
  * the associated callback data (callback records and display entries).
  */
 /* ARGSUSED */
-static int _DoCallbacks (dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
+static int
+_DoCallbacks(Display *dpy, XExtCodes *codes)
 {
     register CallbackRec *h;
     DisplayEntry *prev;

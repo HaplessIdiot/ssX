@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.149 1998/07/26 09:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.150 1998/08/13 14:45:46 dawes Exp $ */
 
 
 /*
@@ -77,7 +77,7 @@ xf86GetPathElem(char **pnt)
  *	is checked.  If either check fails, an error is printed and the
  *	element is removed from the font path.
  */
-#define CHECK_TYPE(mode, type) ((S_IFMT & (mode)) == (type))
+
 #define DIR_FILE "/fonts.dir"
 static char *
 xf86ValidateFontPath(char *path)
@@ -111,7 +111,7 @@ xf86ValidateFontPath(char *path)
       dir_elem[dirlen] = '\0';
       flag = stat(dir_elem, &stat_buf);
       if (flag == 0)
-	if (!CHECK_TYPE(stat_buf.st_mode, S_IFDIR))
+	if (!S_ISDIR(stat_buf.st_mode))
 	  flag = -1;
       if (flag != 0) {
         ErrorF("Warning: The directory \"%s\" does not exist.\n", dir_elem);
@@ -124,7 +124,7 @@ xf86ValidateFontPath(char *path)
 	strcat(p1, DIR_FILE);
 	flag = stat(p1, &stat_buf);
 	if (flag == 0)
-	  if (!CHECK_TYPE(stat_buf.st_mode, S_IFREG))
+	  if (!S_ISREG(stat_buf.st_mode))
 	    flag = -1;
 #ifndef __EMX__
 	xfree(p1);

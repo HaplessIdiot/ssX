@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.6 1998/08/29 05:44:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.7 1998/08/29 14:34:43 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -56,6 +56,8 @@ typedef struct _XAAGC {
     GCFuncs 	*wrapFuncs;
     GCOps 	*XAAOps;
     Bool	isPixmap;
+    int		DashLength;
+    unsigned char* DashPattern;
 } XAAGCRec, *XAAGCPtr;
 
 #define REDUCIBILITY_CHECKED	0x00000001
@@ -1485,7 +1487,24 @@ XAAPolyLines(
     DDXPointPtr pptInit
 );
 
- 
+void
+XAAPolySegmentDashed(
+    DrawablePtr	pDrawable,
+    GCPtr	pGC,
+    int		nseg,
+    xSegment	*pSeg
+);
+
+void
+XAAPolyLinesDashed(
+    DrawablePtr pDrawable,
+    GCPtr	pGC,
+    int		mode,
+    int		npt,
+    DDXPointPtr pptInit
+);
+
+
 void 
 XAAWriteMono8x8PatternToCache(ScrnInfoPtr pScrn, XAACacheInfoPtr pCache);
 
@@ -1502,6 +1521,9 @@ XAARotateMonoPattern(
     int xoffset, int yoffset,
     Bool msbfirst
 );
+
+void XAAComputeDash(GCPtr pGC);
+
 
 void
 XAAPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);

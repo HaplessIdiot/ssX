@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/StdCmap.h,v 1.3 1998/08/20 13:59:38 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -99,6 +99,12 @@ Status XmuVisualStandardColormaps
  unsigned int		depth,
  Bool			replace,
  Bool			retain
+ );
+
+Bool XmuDistinguishableColors
+(
+ XColor			*colors,
+ int			count
  );
 
 _XFUNCPROTOEND

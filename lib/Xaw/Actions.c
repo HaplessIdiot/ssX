@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.9 1998/06/29 13:41:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.10 1998/08/16 10:24:06 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -247,7 +247,8 @@ get_token(XawEvalInfo *info)
       while ((ch = *info->cp) && (isalnum(ch) || ch == '_'))
 	++info->cp;
 
-      strncpy(name, p, XawMin((int)sizeof(name) - 1, info->cp - p));
+      strncpy(name, p, XawMin((int)sizeof(name) - 1,
+			      (unsigned)(info->cp - p)));
       name[XawMin((int)sizeof(name) -1, info->cp - p)] = '\0';
 
       if (name[0] == XAW_PRIV_VAR_PREFIX)

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.5 1998/08/29 05:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.6 1998/08/29 14:34:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -197,24 +197,38 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2DACIndexClockAP] = p|0x08;
     }
 
+    if (pGlint->MemClock) {
+	/* Get the memory clock values */
+    	unsigned char m,n,p;
+    	unsigned long clockused;
+    	unsigned long fref = 14318;
+	
+    	clockused = PM2DAC_CalculateMNPCForClock(pGlint->MemClock*1000,
+								fref,&m,&n,&p);
+	pReg->DacRegs[PM2DACIndexMemClockM] = m;
+	pReg->DacRegs[PM2DACIndexMemClockN] = n;
+	pReg->DacRegs[PM2DACIndexMemClockP] = p;
+    }
+
     if (pScrn->rgbBits == 8)
 	pReg->DacRegs[PM2DACIndexMCR] = 0x02; /* 8bit DAC */
     else
         pReg->DacRegs[PM2DACIndexMCR] = 0x00; /* 6bit DAC */
 
-    switch (pScrn->depth)
+    switch (pScrn->bitsPerPixel)
     {
     case 8:
 	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_GRAPHICS |
 					PM2DAC_CI8;
     	break;
-    case 15:
-	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
-				        PM2DAC_GRAPHICS | PM2DAC_5551;
-    	break;
     case 16:
-	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
+	if (pScrn->depth == 15) {
+	      pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
+				        PM2DAC_GRAPHICS | PM2DAC_5551;
+	} else {
+	    pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
 				 	PM2DAC_GRAPHICS | PM2DAC_565;
+	}
     	break;
     case 24:
 	pReg->DacRegs[PM2DACIndexCMR] = PM2DAC_RGB | PM2DAC_TRUECOLOR|
@@ -272,6 +286,19 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 				Permedia2InIndReg(pScrn, PM2DACIndexClockAN);
     glintReg->DacRegs[PM2DACIndexClockAP] =
 				Permedia2InIndReg(pScrn, PM2DACIndexClockAP);
+
+#if 0 /* In theory we should restore the memory clock, we can't as the register
+       * is write only. This code is here for completeness and possible
+       * restoring to a default clock */
+    if (pGlint->MemClock) {
+        glintReg->DacRegs[PM2DACIndexMemClockM] = 
+				Permedia2InIndReg(pScrn, PM2DACIndexMemClockM);
+        glintReg->DacRegs[PM2DACIndexMemClockN] = 
+				Permedia2InIndReg(pScrn, PM2DACIndexMemClockN);
+        glintReg->DacRegs[PM2DACIndexMemClockP] =
+				Permedia2InIndReg(pScrn, PM2DACIndexMemClockP);
+    }
+#endif
 }
 
 void
@@ -327,20 +354,29 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 					glintReg->DacRegs[PM2DACIndexClockAN]);
     Permedia2OutIndReg(pScrn, PM2DACIndexClockAP, 0x00, 
 					glintReg->DacRegs[PM2DACIndexClockAP]);
+
+    if (pGlint->MemClock) {
+        Permedia2OutIndReg(pScrn, PM2DACIndexMemClockM, 0x00, 
+				glintReg->DacRegs[PM2DACIndexMemClockM]);
+        Permedia2OutIndReg(pScrn, PM2DACIndexMemClockN, 0x00, 
+				glintReg->DacRegs[PM2DACIndexMemClockN]);
+        Permedia2OutIndReg(pScrn, PM2DACIndexMemClockP, 0x00, 
+				glintReg->DacRegs[PM2DACIndexMemClockP]);
+    }
 }
 
 static void
 Permedia2ShowCursor(ScrnInfoPtr pScrn)
 {
     /* Enable cursor - X11 mode */
-    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x43);
+    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xBC, 0x43);
 }
 
 static void
 Permedia2HideCursor(ScrnInfoPtr pScrn)
 {
-    /* Disable cursor - X11 mode */
-    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0x00, 0x40);
+    /* Disable cursor */
+    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xFC, 0x00);
 }
 
 static void
@@ -352,9 +388,10 @@ Permedia2LoadCursorImage(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
        
-    GLINT_SLOW_WRITE_REG(0, PM2DACIndexReg);
+    Permedia2OutIndReg(pScrn, PM2DACCursorControl, 0xB0, 0x43);
+    GLINT_SLOW_WRITE_REG(0x00, PM2DACWriteAddress);
     for (i=0; i<1024; i++) {
-	GLINT_SLOW_WRITE_REG(*(src)++, PM2DACCursorData);
+	GLINT_SLOW_WRITE_REG(*(src++), PM2DACCursorData);
     }
 }
 
@@ -384,16 +421,16 @@ Permedia2SetCursorColors(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     /* The Permedia2 cursor is always 8 bits so shift 8, not 10 */
 
-    GLINT_SLOW_WRITE_REG(2, PM2DACCursorColorAddress);
+    GLINT_SLOW_WRITE_REG(1, PM2DACCursorColorAddress);
     /* Background color */
-    GLINT_SLOW_WRITE_REG(bg >> 16, PM2DACCursorColorData);
-    GLINT_SLOW_WRITE_REG(bg >> 8, PM2DACCursorColorData);
     GLINT_SLOW_WRITE_REG(bg >> 0, PM2DACCursorColorData);
+    GLINT_SLOW_WRITE_REG(bg >> 8, PM2DACCursorColorData);
+    GLINT_SLOW_WRITE_REG(bg >> 16, PM2DACCursorColorData);
 
     /* Foreground color */
-    GLINT_SLOW_WRITE_REG(fg >> 16, PM2DACCursorColorData);
-    GLINT_SLOW_WRITE_REG(fg >> 8, PM2DACCursorColorData);
     GLINT_SLOW_WRITE_REG(fg >> 0, PM2DACCursorColorData);
+    GLINT_SLOW_WRITE_REG(fg >> 8, PM2DACCursorColorData);
+    GLINT_SLOW_WRITE_REG(fg >> 16, PM2DACCursorColorData);
 }
 
 static Bool 
@@ -416,7 +453,9 @@ Permedia2HWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
-    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED |
+		HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
     infoPtr->SetCursorColors = Permedia2SetCursorColors;
     infoPtr->SetCursorPosition = Permedia2SetCursorPosition;
     infoPtr->LoadCursorImage = Permedia2LoadCursorImage;

@@ -50,7 +50,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.3 1998/08/20 13:59:15 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -148,9 +148,6 @@ struct SearchAndReplace {
   Widget rep_all;		/* The Replace all button. */
 };
     
-/* Private Text Definitions */
-typedef int (*ActionProc)();
-
 /* New fields for the Text widget class record */
 typedef struct {
   XtPointer extension;

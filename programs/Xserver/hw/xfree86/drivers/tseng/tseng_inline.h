@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_inline.h,v 1.4.2.1 1998/07/24 11:36:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_inline.h,v 1.5 1998/07/25 16:56:03 dawes Exp $ */
 
 
 
@@ -236,37 +236,3 @@ wait_acl_queue(TsengPtr pTseng)
 	WAIT_ACL;
 }
 
-/*
- * The functions below need "MoveDWORDS()". This is an optimized C-only (no
- * assembler), but fast "memcpy()"-like function. Author: Harm Hanemaayer (?)
- */
-
-static __inline__ void
-MoveDWORDS(register CARD32 * dest, register CARD32 * src, register int dwords)
-{
-    while (dwords & ~0x03) {
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	*(dest + 2) = *(src + 2);
-	*(dest + 3) = *(src + 3);
-	src += 4;
-	dest += 4;
-	dwords -= 4;
-    }
-    switch (dwords) {
-    case 0:
-	return;
-    case 1:
-	*dest = *src;
-	return;
-    case 2:
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	return;
-    case 3:
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	*(dest + 2) = *(src + 2);
-	return;
-    }
-}

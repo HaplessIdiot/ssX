@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.6 1998/06/28 12:32:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.7 1998/08/16 10:25:16 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -54,6 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlibint.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <X11/Xmu/Drawing.h>
 
 #define MAX_SIZE 255
 
@@ -144,7 +145,7 @@ NextInt(FILE *fstream)
  */
 int
 XmuReadBitmapData(FILE *fstream, unsigned int *width, unsigned int *height,
-		  char **datap, int *x_hot, int *y_hot)
+		  unsigned char **datap, int *x_hot, int *y_hot)
 {
     unsigned char *data = NULL;		/* working variable */
     char line[MAX_SIZE];		/* input line from file */
@@ -254,7 +255,7 @@ XmuReadBitmapData(FILE *fstream, unsigned int *width, unsigned int *height,
 	RETURN (BitmapFileInvalid);
     }
 
-    *datap = (char *)data;
+    *datap = data;
     data = NULL;
     *width = ww;
     *height = hh;

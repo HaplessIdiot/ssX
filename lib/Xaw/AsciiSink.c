@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.9 1998/08/20 13:58:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -91,7 +91,7 @@ static void GetCursorBounds(Widget, XRectangle*);
  * Prototypes
  */
 static void GetGC(AsciiSinkObject);
-static int CharWidth(Widget, int, unsigned char);
+static int CharWidth(Widget, int, unsigned int);
 static unsigned int PaintText(Widget w, GC gc, int x, int y,
 			      unsigned char *buf, int len);
 
@@ -193,7 +193,7 @@ WidgetClass asciiSinkObjectClass = (WidgetClass)&asciiSinkClassRec;
  * Implementation
  */
 static int
-CharWidth(Widget w, int x, unsigned char c)
+CharWidth(Widget w, int x, unsigned int c)
 {
   int i, width, nonPrinting;
   AsciiSinkObject sink = (AsciiSinkObject)w;

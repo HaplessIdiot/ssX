@@ -26,12 +26,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/DefErrMsg.c,v 1.4 1998/08/20 13:59:33 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS
 #include <X11/Xlibint.h>
 #include <X11/Xproto.h>
+#include <X11/Xmu/Error.h>
 #include <X11/Xmu/SysUtil.h>
 
 /*

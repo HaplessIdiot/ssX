@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.2 1998/07/25 16:55:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.3 1998/08/19 07:49:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -56,7 +56,7 @@ xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
 const char *
 xf86ModeStatusToString(ModeStatus status)
 {
-    switch(status) {
+    switch (status) {
     case MODE_OK:
 	return "Mode OK";
     case MODE_HSYNC:
@@ -101,6 +101,44 @@ xf86ModeStatusToString(ModeStatus status)
 	return "internal error";
     }
     return "unknown";
+}
+
+/*
+ * xf86ShowClockRanges() -- Print the clock ranges allowed
+ * and the clock values scaled by ClockMulFactor and ClockDivFactor
+ */
+void
+xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges)
+{
+    ClockRangePtr cp;
+    int MulFactor = 1;
+    int DivFactor = 1;
+    int i, j;
+    int scaledClock;
+
+    for (cp = clockRanges; cp != NULL; cp = cp->next) {
+	DivFactor = max(1, cp->ClockDivFactor);
+	MulFactor = max(1, cp->ClockMulFactor);
+	if (scrp->progClock) {
+	    xf86DrvMsg(scrp->scrnIndex, X_INFO, "clock range: %6.2f to %6.2f MHz\n",
+		(double)cp->minClock / 1000.0, (double)cp->maxClock / 1000);
+	} else if (DivFactor > 1 || MulFactor > 1) {
+	    j = 0;
+	    for (i = 0; i < scrp->numClocks; i++) {
+		scaledClock = (scrp->clock[i] * DivFactor) / MulFactor;
+		if (scaledClock >= cp->minClock && scaledClock <= cp->maxClock) {
+		    if ((j % 8) == 0) {
+			if (j > 0)
+			    xf86ErrorF("\n");
+			xf86DrvMsg(scrp->scrnIndex, X_INFO, "scaled clocks:");
+		    }
+		    xf86ErrorF(" %6.2f", (double)scaledClock / 1000.0);
+		    j++;
+		}
+	    }
+	    xf86ErrorF("\n");
+	}
+    }
 }
 
 /*
@@ -564,7 +602,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     int newLinePitch, newVirtX, newVirtY;
     int pixelArea = scrp->videoRam * (1024 * 8);	/* in bits */
     int bitsPerPixel, pixmapPad;
-    PixmapFormatRec * BankFormat;
+    PixmapFormatRec *BankFormat;
 
     /* Some sanity checking */
     if (scrp == NULL || scrp->name == NULL ||
@@ -665,6 +703,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	virtY = virtualY;
 	scrp->virtualFrom = X_CONFIG;
     }
+    /* Print clock ranges and scaled clocks */
+    xf86ShowClockRanges(scrp, clockRanges);
 
     /*
      * If scrp->modePool hasn't been setup yet, set it up now.  This allows
@@ -891,14 +931,14 @@ xf86PruneMonitorModes(MonPtr monp)
 	if (status != MODE_OK) {
 	    if (first) {
 		first = FALSE;
-		xf86MsgVerb(X_INFO, 2, "Bad modes for monitor \"%s\"\n",
+		xf86Msg(X_INFO, "Bad modes for monitor \"%s\"\n",
 			    monp->id);
 	    }
-	    xf86MsgVerb(X_INFO, 2, "  Mode \"%s\" deleted (%s", p->name, /*)*/
+	    xf86Msg(X_INFO, "  Mode \"%s\" deleted (%s", p->name,	/*) */
 			xf86ModeStatusToString(status));
 	    switch (status) {
 	    case MODE_HSYNC:
-		xf86ErrorFVerb(2, ": %.2f kHz", (double)p->Clock / p->HTotal);
+		xf86ErrorF(": %.2f kHz", (double)p->Clock / p->HTotal);
 		break;
 	    case MODE_VSYNC:
 		refresh = p->Clock * 1000.0 / (p->HTotal * p->VTotal);
@@ -908,12 +948,12 @@ xf86PruneMonitorModes(MonPtr monp)
 		    refresh /= 2.0;
 		if (p->VScan > 1)
 		    refresh /= (float)(p->VScan);
-		xf86ErrorFVerb(2, ": %.2f Hz", refresh);
+		xf86ErrorF(": %.2f Hz", refresh);
 		break;
 	    default:
 		break;
 	    }
-	    xf86ErrorFVerb(2, /*(*/ ")\n");
+	    xf86ErrorF( /*( */ ")\n");
 	    xf86DeleteMode(&(monp->Modes), p);
 	}
 	p = n;
@@ -1006,18 +1046,17 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 	     * back, since monitors clamp just AFTER the sync pulse (or in
 	     * the sync pulse), but never before.
 	     */
-	     p->CrtcVBlankStart = p->CrtcVBlankEnd-127;
+	    p->CrtcVBlankStart = p->CrtcVBlankEnd - 127;
 	}
-	p->CrtcHBlankStart=min(p->CrtcHSyncStart, p->CrtcHDisplay);
-	p->CrtcHBlankEnd=max(p->CrtcHSyncEnd, p->CrtcHTotal);
-	if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63*8) {
+	p->CrtcHBlankStart = min(p->CrtcHSyncStart, p->CrtcHDisplay);
+	p->CrtcHBlankEnd = max(p->CrtcHSyncEnd, p->CrtcHTotal);
+	if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63 * 8) {
 	    /*
 	     * H Blanking size must be < 63*8. Same remark as above.
 	     */
-	    p->CrtcHBlankStart = p->CrtcHBlankEnd-63*8;
+	    p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
 	}
-
-ErrorF("Mode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n", p->name,
+	ErrorF("Mode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n", p->name,
 	p->CrtcHDisplay, p->CrtcHBlankStart, p->CrtcHSyncStart, p->CrtcHSyncEnd,
 	p->CrtcHBlankEnd, p->CrtcHTotal,
 	p->CrtcVDisplay, p->CrtcVBlankStart, p->CrtcVSyncStart, p->CrtcVSyncEnd,

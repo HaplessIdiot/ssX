@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.74 1997/11/22 06:50:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.75 1998/07/25 05:57:16 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -291,7 +291,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 
 #define ServerExtraSysLibs	/**/
+
+#if HasDECnet
+#define ConnectionFlags		-DUNIXCONN -DTCPCONN -DDNETCONN
+#define ExtraLibraries		-ldnet
+#else
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
+#endif
 
 /* Some of these man page defaults are overriden in the above OS sections */
 #ifndef ManSuffix

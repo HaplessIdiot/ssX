@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.16 1997/01/18 07:02:13 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.17 1997/05/25 14:41:24 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -270,7 +270,7 @@ OpenConsole ()
 		input = fopen (app_resources.file, "r");
 		if (input)
 		    if (!stat(app_resources.file, &sbuf) &&
-			(sbuf.st_mode & S_IFMT) == S_IFREG)
+			S_ISREG( sbuf.st_mode ) )
 			regularFile = TRUE;
 	    }
 	}

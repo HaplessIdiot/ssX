@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/ShapeWidg.c,v 1.4 1998/08/20 13:59:38 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/extensions/shape.h>
@@ -110,8 +110,8 @@ static void
 ShapeOval(Widget w)
 {
     Display *dpy = XtDisplay(w);
-    int width = w->core.width + (w->core.border_width << 1);
-    int height = w->core.height + (w->core.border_width << 1);
+    int width = w->core.width;
+    int height = w->core.height;
     Pixmap p;
     XGCValues values;
     GC gc;
@@ -119,6 +119,8 @@ ShapeOval(Widget w)
 
     if (width < 3 || height < 3)
       return;
+    width += w->core.border_width << 1;
+    height += w->core.border_width << 1;
 
     p = XCreatePixmap(dpy, XtWindow(w), width, height, 1);
     values.foreground = 0;
@@ -193,8 +195,8 @@ static void
 ShapeEllipseOrRoundedRectangle(Widget w, Bool ellipse, int ew, int eh)
 {
     Display *dpy = XtDisplay(w);
-  unsigned width = w->core.width + (w->core.border_width << 1);
-  unsigned height = w->core.height + (w->core.border_width << 1);
+  unsigned width = w->core.width;
+  unsigned height = w->core.height;
   Pixmap p;
     XGCValues values;
     GC gc;
@@ -202,6 +204,8 @@ ShapeEllipseOrRoundedRectangle(Widget w, Bool ellipse, int ew, int eh)
 
   if (width < 3 || width < 3)
     return;
+  width += w->core.border_width << 1;
+  height += w->core.border_width << 1;
 
   mask = GCForeground | GCLineWidth;
   p = XCreatePixmap(dpy, XtWindow(w), width, height, 1);

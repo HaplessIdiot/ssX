@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.3 1998/08/02 05:17:06 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -43,6 +43,8 @@ XAACreateGC(GCPtr pGC)
     pGCPriv->wrapFuncs = pGC->funcs;
     pGCPriv->XAAOps = &XAAFallbackOps;
     pGCPriv->isPixmap = TRUE;
+    pGCPriv->DashLength = 0;
+    pGCPriv->DashPattern = NULL;
     /* initialize any other private fields here */
 
     pGC->funcs = &XAAGCFuncs;
@@ -98,6 +100,9 @@ XAAValidateGC(
 	changes = ~0;
 	pGCPriv->isPixmap = FALSE;
     }
+
+    if((changes & GCDashList) && infoRec->ComputeDash)
+	infoRec->ComputeDash(pGC);
 
     if(changes & infoRec->FillSpansMask)
 	(*infoRec->ValidateFillSpans)(pGC, changes, pDraw); 	
@@ -170,7 +175,8 @@ XAADestroyGC(GCPtr pGC)
     if(pGCPriv->XAAOps != &XAAFallbackOps)
 	xfree(pGCPriv->XAAOps);
 
-   /* delete any other stuff here */
+    if(pGCPriv->DashPattern)
+	xfree(pGCPriv->DashPattern);    
 
     (*pGC->funcs->DestroyGC)(pGC);
     XAA_GC_FUNC_EPILOGUE (pGC);

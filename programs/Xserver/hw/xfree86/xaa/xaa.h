@@ -1,40 +1,64 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.6 1998/08/19 07:49:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.7 1998/08/29 05:44:05 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
 
 /*
 
-   *** flags ****
+   ******** OPERATION SPECIFIC FLAGS *********
 
+   **** solid/dashed line flags ****
+ 
+---------               --------
+23           LINE_PATTERN_LSBFIRST_MSBJUSTIFIED
+22           LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
+21           LINE_PATTERN_MSBFIRST_MSBJUSTIFIED
+20           LINE_PATTERN_MSBFIRST_LSBJUSTIFIED
+19           LINE_PATTERN_POWER_OF_2_ONLY
+18           HARDWARE_CLIP_LINE
+17                         .
+16                         .
 ---------               -------
-31                         .
-30                         .
-29                         .
-28                         .
-27                         .
-26                         .
-25                         .
-24                         .
+
+   **** screen to screen copy flags ****
+
 ---------               --------
 23           ONLY_LEFT_TO_RIGHT_BITBLT
 22           ONLY_TWO_BITBLT_DIRECTIONS
+21                         .
+20                         .
+19                         .
+18                         .
+17                         .
+16                         .
+---------               -------
+
+   ****  hardware pattern flags ****
+
+---------               --------
+23                         .
+22                         .
 21           HARDWARE_PATTERN_SCREEN_ORIGIN
-20           
-19           
-18           HARDWARE_CLIP_LINE
+20                         .
+19                         .
+18                         .
 17           HARDWARE_PATTERN_PROGRAMMED_ORIGIN
 16           HARDWARE_PATTERN_PROGRAMMED_BITS
 ---------               -------
+
+
+   ******** GENERIC FLAGS *********
+
+---------               -------
 15           SYNC_AFTER_COLOR_EXPAND
 14           CPU_TRANSFER_PAD_QWORD
-13           
+13                         .
 12           LEFT_EDGE_CLIPPING_NEGATIVE_X
 11	     LEFT_EDGE_CLIPPING
 10	     CPU_TRANSFER_BASE_FIXED
  9           BIT_ORDER_IN_BYTE_MSBFIRST           
  8           TRANSPARENCY_GXCOPY_ONLY
----------         ---
+---------               -------
  7           NO_TRANSPARENCY
  6           TRANSPARENCY_ONLY
  5           ROP_NEEDS_SOURCE
@@ -43,7 +67,7 @@
  2           NO_PLANEMASK
  1           NO_GXCOPY
  0           GXCOPY_ONLY
----------         ---
+---------               -------
 
 
 */
@@ -101,9 +125,12 @@
 #define ONLY_LEFT_TO_RIGHT_BITBLT	0x00800000
 
 /* line flags */
-
-/* clipping flags */
-#define HARDWARE_CLIP_LINE		0x00040000
+#define LINE_PATTERN_LSBFIRST_MSBJUSTIFIED	0x00800000
+#define LINE_PATTERN_LSBFIRST_LSBJUSTIFIED	0x00400000
+#define LINE_PATTERN_MSBFIRST_MSBJUSTIFIED	0x00200000
+#define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x00100000
+#define LINE_PATTERN_POWER_OF_2_ONLY 		0x00080000
+#define HARDWARE_CLIP_LINE			0x00040000
 
 /* pixmap cache flags */
 #define CACHE_MONO_8x8			0x00000001
@@ -237,7 +264,7 @@ typedef struct _XAAInfoRec {
 	int rop,
 	unsigned int planemask,
 	int length,
-	char *pattern
+	unsigned char *pattern
    );    
    int DashedLineFlags; 
    int DashPatternMaxLength; 
@@ -253,11 +280,6 @@ typedef struct _XAAInfoRec {
 	int phase
    );   
    int DashedBresenhamLineErrorTermBits;
-
-   void (*SubsequentDashedHorVertLine)(
-	ScrnInfoPtr pScrn,
-	int x, int y, int len, int dir, int phase
-   );   
 
 /* Clipper */
 
@@ -931,6 +953,23 @@ typedef struct _XAAInfoRec {
    );
    int PolySegmentThinSolidFlags;
 
+   void (*PolylinesThinDashed)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		mode,
+	int 		npt,
+	DDXPointPtr pPts
+   );
+   int PolylinesThinDashedFlags;
+
+   void (*PolySegmentThinDashed)(
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+	int		nseg,
+	xSegment	*pSeg
+   );
+   int PolySegmentThinDashedFlags;
+
    void (*FillPolygonSolid)(
 	DrawablePtr	pDrawable,
 	GCPtr		pGC,
@@ -1045,6 +1084,8 @@ typedef struct _XAAInfoRec {
    ValidateGCProcPtr ValidateImageGlyphBlt;
    unsigned long PushPixelsMask;
    ValidateGCProcPtr ValidatePushPixels;
+
+   void (*ComputeDash)(GCPtr pGC);
 
    /* Pixmap Cache */
 

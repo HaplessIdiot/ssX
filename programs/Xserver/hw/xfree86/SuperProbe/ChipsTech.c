@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.13 1998/03/20 21:05:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.14 1998/08/19 07:49:08 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -138,8 +138,9 @@ int *Chipset;
 	 * of whether the chip is actually connected to a PCI BUS. So
 	 * probe for C&T vendor ID.
 	 */
-	if ((rdinx(0x3D6, 0x01) == 0x2C) && (rdinx(0x3D6, 0x02) == 0x10))
+	if ((rdinx(0x3D6, 0x00) == 0x2C) && (rdinx(0x3D6, 0x01) == 0x10))
 	{
+		*Chipset = CHIP_CT_UNKNOWN;
 		if (*Chipset == CHIP_CT_UNKNOWN)
 		{
 			vers = rdinx(0x3D6, 0x02);

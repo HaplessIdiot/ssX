@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.37.2.13 1998/07/03 13:43:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.42 1998/07/25 16:54:45 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -23,6 +23,14 @@ XF4BPPDIR = xf4bpp
 # endif
 #endif
 
+#if XF86I2C
+I2CDIR = i2c
+#endif
+
+#if XF86Ramdac
+RAMDACDIR = ramdac
+#endif
+
 #if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && \
     !defined(ArcArchitecture) && !defined(Arm32Architecture) && \
     !defined(PpcArchitecture)
@@ -38,7 +46,7 @@ LOADERDIR = loader
 #endif
 
 SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
-          drivers $(LOADERDIR) doc $(VGAHWDIR) ramdac parser \
+          drivers $(LOADERDIR) doc $(VGAHWDIR) $(RAMDACDIR) $(I2CDIR) parser \
           xf86config $(XF86SETUPDIR) etc /* LinkKit */ \
           VGADriverDoc $(SUPERPROBE)
 

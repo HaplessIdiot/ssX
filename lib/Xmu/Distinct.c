@@ -1,5 +1,5 @@
 /* $XConsortium: Distinct.c,v 1.4 94/04/17 20:15:59 gildea Exp $ */
-/* $XFree86: xc/lib/Xmu/Distinct.c,v 3.0 1996/05/06 05:54:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Distinct.c,v 3.1 1998/08/16 10:25:10 dawes Exp $ */
 
 /*
 
@@ -36,6 +36,8 @@ in this Software without prior written authorization from the X Consortium.
 # ifndef X_NOT_STDC_ENV
 # include   <stdlib.h>
 # endif
+#include <X11/Xutil.h>
+#include <X11/Xmu/StdCmap.h>
 
 /*
  * Distinguishable colors routine.  Determines if two colors are
