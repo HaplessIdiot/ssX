@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.18tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.19 2003/07/09 15:27:29 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -454,12 +454,6 @@ int TRANS(ConvertAddress)(
 );
 
 #endif /* X11_t */
-
-void TRANS(FreeConnInfo) (
-#if NeedFunctionPrototypes
-    XtransConnInfo ciptr
-#endif
-);
 
 #ifdef ICE_t
 
