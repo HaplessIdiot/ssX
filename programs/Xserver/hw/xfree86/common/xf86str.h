@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.29 1999/04/17 07:06:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.30 1999/04/25 10:02:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -225,8 +225,6 @@ typedef struct {
    unsigned long		IOBase;
    int				chipID;
    int				chipRev;
-   int				MemClk;		/* General flag used for
-						   memory clocking */
    pointer			options;
 } GDevRec, *GDevPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.169 1999/04/24 07:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.170 1999/04/25 10:02:00 dawes Exp $ */
 
 
 /*
@@ -1585,7 +1585,6 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
     devicep->clockchip = conf_device->dev_clockchip;
     devicep->busID = conf_device->dev_busid;
     devicep->textClockFreq = conf_device->dev_textclockfreq;
-    devicep->MemClk = conf_device->dev_memclk;
     devicep->chipID = conf_device->dev_chipid;
     devicep->chipRev = conf_device->dev_chiprev;
     devicep->options = conf_device->dev_option_lst;

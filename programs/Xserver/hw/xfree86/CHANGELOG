@@ -1,3 +1,10 @@
+XFree86 3.9Pl (29 April 1999)
+2783. Unify the "Overlay" options and "SetMclk" options, and remove the
+      SetMClk Device section keyword (David Dawes).
+2784. Add a "frequency" option value type for use with options processed
+      by xf86ProcessOptions().  This value type consists of a floating point
+      number optionally followed by "Hz", "kHz" or "MHz" (David Dawes).
+
 XFree86 3.9Pk (25 April 1999)
 2782. Move the SVR4-specific handling of mapping memory areas which have
       read side-effects out of the drivers and into the os-support layer
@@ -7881,4 +7888,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.733 1999/04/25 10:01:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.734 1999/04/25 15:30:14 dawes Exp $

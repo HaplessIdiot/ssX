@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.92 1999/04/25 10:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.93 1999/04/25 15:30:22 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -197,11 +197,12 @@ typedef enum {
     OPTION_SYNC_ON_GREEN,
     OPTION_NOACCEL,
     OPTION_SHOWCACHE,
-    OPTION_8_PLUS_24,
+    OPTION_OVERLAY,
     OPTION_MGA_SDRAM,
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
-    OPTION_COLOR_KEY
+    OPTION_COLOR_KEY,
+    OPTION_SET_MCLK
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -212,11 +213,12 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -909,11 +911,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     MGAPtr pMga;
     MessageType from;
     int i;
+    double real;
     int bytesPerPixel;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
-    const char *c;
+    const char *s;
     int flags24;
 
     /*
@@ -950,11 +953,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
 
-    /* Prefer 24bpp fb unless the 8+24 option is set */
+    /* Prefer 24bpp fb unless the Overlay option is set */
     flags24 = Support24bppFb | Support32bppFb | SupportConvert32to24;
-    c = xf86TokenToOptName(MGAOptions, OPTION_8_PLUS_24);
-    if (!(xf86FindOption(pScrn->confScreen->options, c) ||
-	  xf86FindOption(pScrn->device->options, c))) {
+    s = xf86TokenToOptName(MGAOptions, OPTION_OVERLAY);
+    if (!(xf86FindOption(pScrn->confScreen->options, s) ||
+	  xf86FindOption(pScrn->device->options, s))) {
 	flags24 |= PreferConvert32to24;
     }
 
@@ -1074,10 +1077,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
     }
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_8_PLUS_24, FALSE)) {
+    if (xf86GetOptValFreq(MGAOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
+	pMga->MemClk = (int)(real * 1000.0);
+    }
+    if ((s = xf86GetOptValString(MGAOptions, OPTION_OVERLAY))) {
+      if (!*s || !xf86NameCmp(s, "8,24") || !xf86NameCmp(s, "24,8")) {
 	if(pMga->Chipset == PCI_CHIP_MGAG100) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"Option \"8Plus24\" is not supported by the G100\n");
+		"Option \"Overlay\" is not supported by the G100\n");
 	} else if(pScrn->bitsPerPixel == 32) {
 	    pMga->Overlay8Plus24 = TRUE;
 	    if(!xf86GetOptValInteger(
@@ -1089,8 +1096,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 				"PseudoColor overlay enabled\n");
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"Option \"8Plus24\" is not supported in this configuration\n");
+		"Option \"Overlay\" is not supported in this configuration\n");
 	}
+      } else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"\"%s\" is not a valid value for Option \"Overlay\"\n", s);
+      }
     } 
     if (xf86ReturnOptValBool(MGAOptions, OPTION_SHADOW_FB, FALSE)) {
 	pMga->ShadowFB = TRUE;
@@ -1459,13 +1470,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Only set MemClk if appropriate for the ramdac */
     if (pMga->Dac.SetMemClk) {
-	if (pScrn->device->MemClk != 0) {
-	    pMga->MemClk = pScrn->device->MemClk;
-	    from = X_CONFIG;
-	} else {
+	if (pMga->MemClk == 0) {
 	    pMga->MemClk = pMga->Dac.MemoryClock;
 	    from = pMga->Dac.MemClkFrom;
-	}
+	} else
+	    from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %.1f MHz\n",
 		   pMga->MemClk / 1000.0);
     }

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.12 1999/03/14 03:22:07 dawes Exp $ */
 
 
 
@@ -255,16 +255,16 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
     /* Only set MemClk if appropriate for the ramdac */
     if (pTseng->MClkInfo.Programmable) {
 	from = X_PROBED;
-	if (pScrn->device->MemClk > 0) {
-	    if ((pScrn->device->MemClk < pTseng->MClkInfo.min)
-		|| (pScrn->device->MemClk > pTseng->MClkInfo.max)) {
+	if (pTseng->MemClk > 0) {
+	    if ((pTseng->MemClk < pTseng->MClkInfo.min)
+		|| (pTseng->MemClk > pTseng->MClkInfo.max)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "MCLK %d MHz out of range (=%d..%d); not changed!\n",
-		    pScrn->device->MemClk / 1000,
+		    pTseng->MemClk / 1000,
 		    pTseng->MClkInfo.min / 1000,
 		    pTseng->MClkInfo.max / 1000);
 	    } else {
-		pTseng->MClkInfo.MemClk = pScrn->device->MemClk;
+		pTseng->MClkInfo.MemClk = pTseng->MemClk;
 		pTseng->MClkInfo.Set = TRUE;
 		from = X_CONFIG;
 	    }

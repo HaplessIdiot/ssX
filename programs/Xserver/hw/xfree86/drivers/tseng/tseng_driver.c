@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.49 1999/03/20 08:59:29 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.50 1999/04/18 04:08:42 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -176,7 +176,8 @@ typedef enum {
     OPTION_LINEAR,
     OPTION_SHOWCACHE,
     OPTION_LEGEND,
-    OPTION_PCI_RETRY
+    OPTION_PCI_RETRY,
+    OPTION_SET_MCLK
 } TsengOpts;
 
 static OptionInfoRec TsengOptions[] =
@@ -210,6 +211,8 @@ static OptionInfoRec TsengOptions[] =
     {OPTION_LEGEND, "Legend", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_PCI_RETRY, "PciRetry", OPTV_BOOLEAN,
+	{0}, FALSE},
+    {OPTION_SET_MCLK, "SetMClk", OPTV_FREQ,
 	{0}, FALSE},
     {-1, NULL, OPTV_NONE,
 	{0}, FALSE}
@@ -1190,6 +1193,7 @@ static Bool
 TsengProcessOptions(ScrnInfoPtr pScrn)
 {
     MessageType from;
+    double real;
     TsengPtr pTseng = TsengPTR(pScrn);
 
     PDEBUG("	TsengProcessOptions\n");
@@ -1299,6 +1303,9 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pTseng->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
+    pTseng->MemClk = 0;
+    if (xf86GetOptValFreq(TsengOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real))
+	pTseng->MemClk = (int)(real * 1000.0);
     return TRUE;
 }
 

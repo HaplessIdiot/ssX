@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.108 1999/04/05 07:13:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.109 1999/04/24 07:36:18 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -251,7 +251,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       if (xf86DriverList[i]->Identify != NULL)
 	xf86DriverList[i]->Identify(0);
       else
-        ErrorF("Warning: driver `%s' has no Identify function\n",
+        xf86Msg(X_WARNING, "driver `%s' has no Identify function\n",
 	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
 

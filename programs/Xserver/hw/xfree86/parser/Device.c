@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.6 1999/04/17 07:07:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.7 1999/04/25 10:02:39 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -52,8 +52,6 @@ xf86ConfigSymTabRec DeviceTab[] =
 	{CLOCKCHIP, "clockchip"},
 	{CHIPID, "chipid"},
 	{CHIPREV, "chiprev"},
-	{MEMCLOCK, "set_memclk"},
-	{MEMCLOCK, "set_mclk"},
 	{CARD, "card"},
 	{DRIVER, "driver"},
 	{BUSID, "busid"},
@@ -187,11 +185,6 @@ parseDeviceSection (void)
 				Error (NUMBER_MSG, "TextClockFreq");
 			ptr->dev_textclockfreq = (int)(val.realnum * 1000.0 + 0.5);
 			break;
-		case MEMCLOCK:
-			if ((token = xf86GetToken(NULL)) != NUMBER)
-				Error (NUMBER_MSG, "MemClock");
-			ptr->dev_memclk = (int)(val.realnum * 1000.0 + 0.5);
-			break;
 		case OPTION:
 			{
 				char *name;
@@ -298,10 +291,6 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_textclockfreq) {
 			fprintf (cf, "\tTextClockFreq %.1f\n",
 					 (double)ptr->dev_textclockfreq / 1000.0);
-		}
-		if (ptr->dev_memclk) {
-			fprintf (cf, "\tSetMemClock %.1f\n",
-					 (double)ptr->dev_memclk / 1000.0);
 		}
 		if (ptr->dev_busid)
 			fprintf (cf, "\tBusID       \"%s\"\n", ptr->dev_busid);

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.24 1998/08/29 14:34:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.25 1998/09/05 06:36:54 dawes Exp $ */
 
 
 
@@ -220,6 +220,7 @@ typedef struct {
     CARD32 MMIOBase;
     int MinClock;
     int MaxClock;
+    int MemClk;
     ClockRangePtr clockRange[2];
     TsengDacInfoRec DacInfo;
     TsengMClkInfoRec MClkInfo;

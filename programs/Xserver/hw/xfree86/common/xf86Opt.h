@@ -1,15 +1,21 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.4 1999/02/28 11:19:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.5 1999/03/20 08:59:10 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
 #ifndef _XF86_OPT_H_
 #define _XF86_OPT_H_
 
+typedef struct {
+    double freq;
+    int units;
+} OptFrequency;
+
 typedef union {
     unsigned long       num;
     char *              str;
     double              realnum;
     Bool		bool;
+    OptFrequency	freq;
 } ValueUnion;
     
 typedef enum {
@@ -18,8 +24,15 @@ typedef enum {
     OPTV_STRING,                /* a non-empty string */
     OPTV_ANYSTR,                /* Any string, including an empty one */
     OPTV_REAL,
-    OPTV_BOOLEAN
+    OPTV_BOOLEAN,
+    OPTV_FREQ
 } OptionValueType;
+
+typedef enum {
+    OPTUNITS_HZ = 1,
+    OPTUNITS_KHZ,
+    OPTUNITS_MHZ
+} OptFreqUnits;
 
 typedef struct {
     int                 token;
@@ -54,6 +67,8 @@ char *xf86GetOptValString(OptionInfoPtr table, int token);
 Bool xf86GetOptValInteger(OptionInfoPtr table, int token, int *value);
 Bool xf86GetOptValULong(OptionInfoPtr table, int token, unsigned long *value);
 Bool xf86GetOptValReal(OptionInfoPtr table, int token, double *value);
+Bool xf86GetOptValFreq(OptionInfoPtr table, int token,
+			OptFreqUnits expectedUnits, double *value);
 Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value);
 Bool xf86ReturnOptValBool(OptionInfoPtr table, int token, Bool def);
 int xf86NameCmp(const char *s1, const char *s2);

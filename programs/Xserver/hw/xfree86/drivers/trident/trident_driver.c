@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.53 1999/04/25 12:33:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.54 1999/04/25 15:30:24 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -177,7 +177,7 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_SETMCLK,		"SetMClk",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_SETMCLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
@@ -691,6 +691,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     Bool Support24bpp;
     int vgaIOBase;
     float mclk;
+    double real;
     int i,j;
     unsigned char revision;
     ClockRangePtr clockRanges;
@@ -1225,8 +1226,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     pTrident->MCLK = 0;
     mclk = CalculateMCLK(pScrn);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Clock is %3.2f MHz\n", mclk);
-    if (xf86GetOptValInteger(TRIDENTOptions, OPTION_SETMCLK, 
-						&pTrident->MCLK)) {
+    if (xf86GetOptValFreq(TRIDENTOptions, OPTION_SETMCLK, OPTUNITS_MHZ,
+				&real)) {
+	pTrident->MCLK = (int)(real * 1000.0);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Setting new Memory Clock to %3.2f MHz\n",
 						(float)(pTrident->MCLK / 1000));
     }

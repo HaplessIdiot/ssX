@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.2 1999/04/05 08:28:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.3 1999/04/25 10:01:57 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -468,11 +468,6 @@ putsection_device(interp, varpfx)
 		if (ptr && strlen(ptr)) {
 			Tcl_GetDouble(interp, ptr, &tmpdbl);
 			dptr->dev_textclockfreq = tmpdbl*1000.0 + 0.5;
-		}
-		ptr = Tcl_GetVar2(interp, namebuf, "Memclock", 0);
-		if (ptr && strlen(ptr)) {
-			Tcl_GetDouble(interp, ptr, &tmpdbl);
-			dptr->dev_memclk = tmpdbl*1000.0 + 0.5;
 		}
 		ptr = Tcl_GetVar2(interp, namebuf, "BIOSBase", 0);
 		dptr->dev_bios_base = strtoul(ptr, NULL, 16);

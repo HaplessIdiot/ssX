@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.2 1999/04/05 08:28:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.3 1999/04/25 10:01:56 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -514,8 +514,6 @@ getsection_device(interp, varpfx)
 			NonZeroStr(dptr->dev_videoram,10), 0);
 		sprintf(tmpbuf, "%.5g", dptr->dev_textclockfreq/1000.0);
 		Tcl_SetVar2(interp, namebuf, "TextClockFreq", tmpbuf, 0);
-		sprintf(tmpbuf, "%.5g", dptr->dev_memclk/1000.0);
-		Tcl_SetVar2(interp, namebuf, "MemClock", tmpbuf, 0);
 		Tcl_SetVar2(interp, namebuf, "BIOSBase",
 			NonZeroStr(dptr->dev_bios_base,16), 0);
 		Tcl_SetVar2(interp, namebuf, "MemBase",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.8 1999/04/11 13:10:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.9 1999/04/15 14:39:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -329,6 +329,41 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 		p->found = FALSE;
 	    }
 	    break;
+	case OPTV_FREQ:	
+	    if (*s == '\0') {
+		xf86DrvMsg(scrnIndex, X_WARNING,
+			   "Option \"%s\" requires a frequency value\n",
+			   p->name);
+		p->found = FALSE;
+	    } else {
+		p->value.freq.freq = strtod(s, &end);
+		p->value.freq.units = 0;
+		if (end != s) {
+		    p->found = TRUE;
+		    if (!xf86NameCmp(end, "Hz"))
+			p->value.freq.units = 1;
+		    else if (!xf86NameCmp(end, "kHz") ||
+			     !xf86NameCmp(end, "k"))
+			p->value.freq.units = 1000;
+		    else if (!xf86NameCmp(end, "MHz") ||
+			     !xf86NameCmp(end, "M"))
+			p->value.freq.units = 1000000;
+		    else {
+			xf86DrvMsg(scrnIndex, X_WARNING,
+			    "Option \"%s\" requires a frequency value\n",
+			    p->name);
+			p->found = FALSE;
+		    }
+		    if (p->found && p->value.freq.units > 0)
+			p->value.freq.freq *= (double)p->value.freq.units;
+		} else {
+		    xf86DrvMsg(scrnIndex, X_WARNING,
+			    "Option \"%s\" requires a frequency value\n",
+			    p->name);
+		    p->found = FALSE;
+		}
+	    }
+	    break;
 	case OPTV_NONE:
 	    /* Should never get here */
 	    p->found = FALSE;
@@ -487,6 +522,54 @@ xf86GetOptValReal(OptionInfoPtr table, int token, double *value)
     p = xf86TokenToOptinfo(table, token);
     if (p && p->found) {
 	*value = p->value.realnum;
+	return TRUE;
+    } else
+	return FALSE;
+}
+
+
+Bool
+xf86GetOptValFreq(OptionInfoPtr table, int token, OptFreqUnits expectedUnits,
+		  double *value)
+{
+    OptionInfoPtr p;
+
+    p = xf86TokenToOptinfo(table, token);
+    if (p && p->found) {
+	if (p->value.freq.units > 0) {
+	    /* Units give, so the scaling is known. */
+	    switch (expectedUnits) {
+	    case OPTUNITS_HZ:
+		*value = p->value.freq.freq;
+		break;
+	    case OPTUNITS_KHZ:
+		*value = p->value.freq.freq / 1000.0;
+		break;
+	    case OPTUNITS_MHZ:
+		*value = p->value.freq.freq / 1000000.0;
+		break;
+	    }
+	} else {
+	    /* No units given, so try to guess the scaling. */
+	    switch (expectedUnits) {
+	    case OPTUNITS_HZ:
+		*value = p->value.freq.freq;
+		break;
+	    case OPTUNITS_KHZ:
+		if (p->value.freq.freq > 1000.0)
+		    *value = p->value.freq.freq / 1000.0;
+		else
+		    *value = p->value.freq.freq;
+		break;
+	    case OPTUNITS_MHZ:
+		if (p->value.freq.freq > 1000000.0)
+		    *value = p->value.freq.freq / 1000000.0;
+		else if (p->value.freq.freq > 1000.0)
+		    *value = p->value.freq.freq / 1000.0;
+		else
+		    *value = p->value.freq.freq;
+	    }
+	}
 	return TRUE;
     } else
 	return FALSE;

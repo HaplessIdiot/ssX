@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 25 April 1999.
+Last modified: 27 April 1999.
 
 
 Preface
@@ -1417,11 +1417,17 @@ Next, the higher level functions that most drivers would use.
 
       The OptionInfoRec is defined as follows:
 
+        typedef struct {
+            double freq;
+            int units;
+        } OptFrequency;
+
         typedef union {
             unsigned long       num;
             char *              str;
             double              realnum;
             Bool                bool;
+            OptFrequency        freq;
         } ValueUnion;
 
         typedef enum {
@@ -1430,8 +1436,15 @@ Next, the higher level functions that most drivers would use.
             OPTV_STRING,           /* a non-empty string */
             OPTV_ANYSTR,           /* Any string, including an empty one */
             OPTV_REAL,
-            OPTV_BOOLEAN
+            OPTV_BOOLEAN,
+            OPTV_FREQ
         } OptionValueType;
+
+        typedef enum {
+            OPTUNITS_HZ = 1,
+            OPTUNITS_KHZ,
+            OPTUNITS_MHZ
+        } OptFreqUnits;
 
         typedef struct {
             int                 token;
@@ -1440,6 +1453,13 @@ Next, the higher level functions that most drivers would use.
             ValueUnion          value;
             Bool                found;
         } OptionInfoRec, *OptionInfoPtr;
+
+      OPTV_FREQ can be used for options values that are frequencies.
+      These values are a floating point number with an optional unit
+      name appended.  The unit name can be one of "Hz", "kHz", "k", "MHz",
+      "M".  The multiplier associated with the unit is stored in freq.units,
+      and the scaled frequency is stored in freq.freq.  When no unit is
+      specified, freq.units is set to 0, and freq.freq is unscaled.
 
       Typical usage is to setup a static array of OptionInfoRecs with
       the token, name, and type fields initialised.  The value and found
@@ -1498,6 +1518,19 @@ Next, the higher level functions that most drivers would use.
     Bool xf86GetOptValReal(OptionInfoPtr table, int token, double *value)
 
       Like xf86GetOptValInteger(), except that "value.realnum" is used.
+
+
+    Bool xf86GetOptValFreq(OptionInfoPtr table, int token,
+                           OptFreqUnits expectedUnits, double *value)
+
+      Like xf86GetOptValInteger(), except that the "value.freq" data is
+      returned.  The frequency value is scaled to the units indicated by
+      `expectedUnits'.  The scaling is exact when the units were specified
+      explicitly in the option's value.  Otherwise, the `expectedUnits'
+      field is used as a hint when doing the scaling.  In this case, values
+      larger than 1000 are assumed to have be specified in the next
+      smallest units.  For example, if the Option value is "10000" and
+      expectedUnits is OPTUNITS_MHZ, the value returned is 10.
 
 
     Bool xf86GetOptValBool(OptionInfoPtr table, int token, Bool *value)
@@ -4657,4 +4690,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.28 1999/03/28 15:32:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.29 1999/04/25 15:30:16 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.57 1999/04/17 07:06:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.58 1999/04/18 04:08:32 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -545,11 +545,12 @@ typedef enum {
     OPTION_18_BIT_BUS,
     OPTION_SHOWCACHE,
     OPTION_SHADOW_FB,
-    OPTION_8_PLUS_16,
+    OPTION_OVERLAY,
     OPTION_FP_CLOCK_8,
     OPTION_FP_CLOCK_16,
     OPTION_FP_CLOCK_24,
-    OPTION_FP_CLOCK_32
+    OPTION_FP_CLOCK_32,
+    OPTION_SET_MCLK
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -569,10 +570,10 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -604,11 +605,12 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_8_PLUS_16,		"8Plus16",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_REAL,      {0}, FALSE },
-    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,      {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1302,6 +1304,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     unsigned int Probed[3], FPclkI, CRTclkI;
     double real;
     int val;
+    const char *s;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -1497,8 +1500,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_8_PLUS_16, FALSE)) {
-	if (pScrn->bitsPerPixel == 16) {
+    if ((s = xf86GetOptValString(cPtr->Options, OPTION_OVERLAY))) {
+	if (!*s || !xf86NameCmp(s, "8,16") || !xf86NameCmp(s, "16,8")) {
+	  if (pScrn->bitsPerPixel == 16) {
 	    if (cPtr->Flags & ChipsLinearSupport) {
 		cPtr->Flags |= ChipsOverlay8plus16;
 		pScrn->colorKey = TRANSPARENCY_KEY;
@@ -1516,11 +1520,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		    cPtr->Flags &= ~ChipsShadowFB;
 		}
 	    } else {
-		xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Option \"8Plus16\" ignored. Not supported without linear addressing\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Option \"Overlay\" ignored. Not supported without linear addressing\n");
 	    }
+	  } else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"Option \"Overlay\" is not supported in this configuration\n");
+	  }
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-		"Option \"8Plus16\" is not supported in this configuration\n");
+		"\"%s\" is not a valid value for Option \"Overlay\"\n", s); 
 	}
     }
     
@@ -1870,19 +1878,20 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     MemClk->ProbedClk = MemClk->ProbedClk / 1000;
     MemClk->Clk = MemClk->ProbedClk;
 
-    if (pScrn->device->MemClk > 0) {
-	if (pScrn->device->MemClk <= MemClk->Max) {
+    if (xf86GetOptValFreq(cPtr->Options, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
+	int mclk = (int)(real * 1000.0);
+	if (mclk <= MemClk->Max) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Using memory clock of %7.3f MHz\n",
-		       (float)(pScrn->device->MemClk/1000.));
+		       (float)(mclk/1000.));
 
 	    /* Only alter the memory clock if the desired memory clock differs
 	     * by 50kHz from the one currently being used.
 	     */
-	    if (abs(pScrn->device->MemClk - MemClk->ProbedClk) > 50) {
+	    if (abs(mclk - MemClk->ProbedClk) > 50) {
 		unsigned char vclk[3];
 
-		MemClk->Clk = pScrn->device->MemClk;
+		MemClk->Clk = mclk;
 		chipsCalcClock(pScrn, MemClk->Clk, vclk);
 		MemClk->M = vclk[1] + 2;
 		MemClk->N = vclk[2] + 2;
@@ -1895,7 +1904,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	} else
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		       "Memory clock of %7.3f MHz exceeds limit of %7.3 MHz\n",
-		       (float)(pScrn->device->MemClk/1000.), 
+		       (float)(mclk/1000.), 
 		       (float)(MemClk->Max/1000.));
     } else 
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1982,22 +1991,22 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     real = 0.;
     switch(bytesPerPixel) {
     case 1:
-        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_8, &real))
+        if (xf86GetOptValFreq(cPtr->Options, OPTION_FP_CLOCK_8, OPTUNITS_MHZ, &real))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "FP clock %7.3f MHz requested\n",real);
 	break;
     case 2:
-        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_16, &real))
+        if (xf86GetOptValFreq(cPtr->Options, OPTION_FP_CLOCK_16, OPTUNITS_MHZ, &real))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "FP clock %7.3f MHz requested\n",real);
 	break;
     case 3:
-        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_24, &real))
+        if (xf86GetOptValFreq(cPtr->Options, OPTION_FP_CLOCK_24, OPTUNITS_MHZ, &real))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "FP clock %7.3f MHz requested\n",real);
 	break;
     case 4:
-        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_32, &real))
+        if (xf86GetOptValFreq(cPtr->Options, OPTION_FP_CLOCK_32, OPTUNITS_MHZ, &real))
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "FP clock %7.3f MHz requested\n",real);
 	break;
