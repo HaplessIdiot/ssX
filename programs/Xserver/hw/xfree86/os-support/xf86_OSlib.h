@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.36 1997/01/18 06:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.37 1997/02/23 09:25:20 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -529,8 +529,10 @@ double RInt(
 
 #include "xf86_OSproc.h"
 
+#ifndef NO_WRAPPERS
 /* This probably isn't the right place for these */
 #define usleep(a) xf86usleep(a)
 #define memset(a,b,c) xf86memset(a,b,c)
+#endif
 
 #endif /* _XF86_OSLIB_H */
