@@ -27,7 +27,7 @@ is marked by the start of a feature freeze .  The timing of releases and the
 length of the release cycles may vary according to the resources available to
 The XFree86 Project, an entirely volunteer organisation.
 
-XFree86 consist of full source code tarballs, plus full binary distributions
+XFree86 consists of full source code tarballs, plus full binary distributions
 for a broad range of supported platforms.  Update/bugfix releases may be made
 from time to time as required and as resource availability allows.  Such
 update releases typically consist of source code patches plus binary updates

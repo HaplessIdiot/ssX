@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                8 March 2005
+                                12 March 2005
 
                                   Abstract
 
@@ -32,8 +32,8 @@ automatic configuration support is targeted towards Linux and FreeBSD and it
 is hoped that automatic configuration will be supported on other platforms in
 future releases.
 
-If you are running either  Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try
-it out if you do not already have a working XF86Config file.  Even if you do,
+If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try it
+out if you do not already have a working XF86Config file.  Even if you do,
 you can try it out by running:
 
      XFree86 -autoconfig
@@ -43,7 +43,7 @@ matically generated configuration from the /var/log/XFree86.0.log file into
 an XF86Config file and make your customisations there.  If you want to cus-
 tomise some parts of the configuration while leaving others to be automati-
 cally detected, you can combine a static partial configuration with the auto-
-maticaly detected information by running:
+matically detected information by running:
 
      XFree86 -appendauto
 
@@ -71,15 +71,14 @@ automatic mechanism you might even find that you don't need one!
 
 If you do need to customise the configuration file, see the XF86Config manual
 page.  You can also check the driver-specific manual pages and the related
-documentation (found at tables below (section 4., page 1) also.
+documentation (found at tables below (section 4., page 1)).
 
-Before downloading  the binary distributions for this release, please have a
+Before downloading the binary distributions for this release, please have a
 quick read through the Installation Document.  It may save you some time and
 also help you figure out which of the binary releases you need.
 
-The other sections below describe some of the new features and changes
-between 3.3.x and 4.0.  There are lot's of new features, and we definitely
-don't have enough space to cover them all here.
+There are lots of new features, and we definitely don't have enough space to
+cover them all here.
 
 3.  Summary of new features in 4.5.0.
 
@@ -103,22 +102,36 @@ The following security issues have been fixed in this release:
      <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0687>,
      CAN-2004-0688 <URL:http://cve.mitre.org/cgi-bin/cve-
      name.cgi?name=CAN-2004-0688>, CAN-2004-0914
-     <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914>).
+     <URL:http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914>,
+     CAN-2005-0605 <URL:http://cve.mitre.org/cgi-bin/cve-
+     name.cgi?name=CAN-2005-0605>).
 
    o Potential security issues related to wrap-around of memory allocation
      requests in font handling and other areas.
 
 3.2  Video Driver Enhancements
 
-3.2.1  chips
+3.2.1  General
+
+   o In most drivers, fix a long-standing off-by-one error in the programming
+     of sync pulse start and end for video modes based on VGA or its exten-
+     sions.
+
+3.2.2  ati
+
+   o Fix various bugs in the Mach64-based panel support.
+
+   o Re-instate atimisc's support for DGA on UltraSPARC platforms.
+
+3.2.3  chips
 
    o Fix the stretching option and centering.
 
-3.2.2  cirrus
+3.2.4  cirrus
 
    o Add support for the NEC PC-9821 with CLGD755x.
 
-3.2.3  i810
+3.2.5  i810
 
    o Add support for memory size tweaking in the BIOS for 845G.
 
@@ -147,7 +160,7 @@ The following security issues have been fixed in this release:
      830GM and up when they are not available from another source, improving
      the default video mode selection in these cases.
 
-3.2.4  mga
+3.2.6  mga
 
    o Make the Mystique lockup workaround more selective, avoiding different
      problems on cards that do not require the workaround.
@@ -160,11 +173,11 @@ The following security issues have been fixed in this release:
    o Add i2c and Maven support, providing DDC and DPMS support for the second
      head on dual-head cards.
 
-3.2.5  nv
+3.2.7  nv
 
    o PCI-Xpress support added.
 
-   o Add support for new hardware.
+   o Add support for newer hardware.
 
    o Workaround for Toshiba M30 laptop issue.
 
@@ -175,11 +188,11 @@ The following security issues have been fixed in this release:
    o Cursor update for NV11 so that alpha blended cursors will work in con-
      junction with dithering (laptop panels).
 
-3.2.6  r128
+3.2.8  r128
 
    o Improve the handling of timeouts in R128CCEWaitForIdle()
 
-3.2.7  radeon
+3.2.9  radeon
 
    o The DAC is turned off for DPMS modes, fixing a problem that can badly
      affect some monitors.
@@ -187,11 +200,11 @@ The following security issues have been fixed in this release:
    o Add an option for avoid flickering and blank screen problems with
      iBooks.
 
-3.2.8  rendition
+3.2.10  rendition
 
    o Fix bad free() calls in the probe function.
 
-3.2.9  s3
+3.2.11  s3
 
    o Add support for interlaced video modes.
 
@@ -205,12 +218,12 @@ The following security issues have been fixed in this release:
 
    o Fix a ScreenToScreenCopy bug that shows up with xtest.
 
-3.2.10  s3virge
+3.2.12  s3virge
 
    o Fix a bug that shows up when mode restoration results in a switch
      between colour and mono operation.
 
-3.2.11  savage
+3.2.13  savage
 
    o Fix HW cursor state on VT switching.
 
@@ -220,7 +233,7 @@ The following security issues have been fixed in this release:
 
    o Allow black as an Xv colour key.
 
-3.2.12  sis
+3.2.14  sis
 
    o Fix some modes for 1400x1050 and 1600x1200 panels.
 
@@ -238,11 +251,11 @@ The following security issues have been fixed in this release:
 
    o Fix bad external symbols in this driver module.
 
-3.2.13  sunffb
+3.2.15  sunffb
 
    o Fix a segfault when acceleration is disabled.
 
-3.2.14  vesa
+3.2.16  vesa
 
    o Do not attempt to set the palette format for depths greater than 8.
      This fixes a problem on some platforms.
@@ -254,15 +267,15 @@ The following security issues have been fixed in this release:
    o Blank the screen at startup, so that the contents of the previous ses-
      sion are not initially visible.
 
-3.2.15  via
+3.2.17  via
 
    o Restructuring and acceleration cleanups.
 
    o Fix some DRM-related problems.
 
-   o Cleanup the DDC/EDID retreival.
+   o Cleanup the DDC/EDID retrieval.
 
-3.2.16  vmware
+3.2.18  vmware
 
    o Various register state save/restore fixes.
 
@@ -300,7 +313,7 @@ The following security issues have been fixed in this release:
      NetBSD, OpenBSD, and SunOS/Solaris, eliminating the need to provide any
      of this information in the config file in the majority of situations.
 
-   o Increase the maximum number of buttons supproted from 12 to 24.
+   o Increase the maximum number of buttons supported from 12 to 24.
 
    o Fix a multiple-free bug, that could lead to a crash.
 
@@ -310,7 +323,7 @@ The following security issues have been fixed in this release:
 
    o Add an "AllowNoCntl" option, which allows the driver to be used with
      some other protocols, like the SmartSet 2500s, which share the same
-     default protcol.
+     default protocol.
 
    o Fix a problem with the cursor not correctly following the touch in a
      dual-head configuration.  This fix has also been applied to other rele-
@@ -318,7 +331,7 @@ The following security issues have been fixed in this release:
 
 3.3.4  eloinput
 
-   o A new driver for ELO Graphics 2500U USB touchscreens.
+   o A new driver for ELO Graphics 2500U USB touch screens.
 
 3.3.5  fpit
 
@@ -341,7 +354,7 @@ The following security issues have been fixed in this release:
 
    o Add nodeadkeys variant to the gb map.
 
-   o Replace the comma keysm on the KPDL key in the Brazillian map with
+   o Replace the comma keysym on the KPDL key in the Brazilian map with
      KP_Separator.
 
    o Add multi-layout compatible Hungarian, Azerbaijani, Canadian, Mongolian,
@@ -351,7 +364,7 @@ The following security issues have been fixed in this release:
 
    o Add Genius KB-12e model to the inet map.
 
-   o Update ABNT2 geometry (including two variants) and change the Brazillian
+   o Update ABNT2 geometry (including two variants) and change the Brazilian
      map to avoid ABNT2 specific keycodes section.
 
    o Add Classical Latin map.
@@ -439,7 +452,7 @@ The following security issues have been fixed in this release:
 
    o Integrate the TinyX servers into the standard XFree86 build.
 
-   o Fix a problem whar a big request length of zero does not generate a
+   o Fix a problem where a big request length of zero does not generate a
      BadLength error.
 
    o Add a Distributed Multihead X server (DMX) and related extension.
@@ -492,7 +505,7 @@ The following security issues have been fixed in this release:
      the version of Perl is too old and when Perl is not available.
 
    o Extend automatic configuration and getconfig to work with SBUS video
-     devices in sparc platforms.
+     devices in SPARC platforms.
 
    o Update the ValidMode functions in most video drivers to return more spe-
      cific status values when a mode is rejected.
@@ -734,15 +747,15 @@ complete list):
 
    o Fix freetype module segfault with some Type1 fonts.
 
-   o Replace unicode keysms in the en_US.UTF-8 Compose file with "tradi-
-     tional" ones wehre such keysyms exist.
+   o Replace unicode keysyms in the en_US.UTF-8 Compose file with "tradi-
+     tional" ones where such keysyms exist.
 
    o Fix the ct_encoding sequence in the zh_CN.gbk locale.
 
    o Update the 8859-7 unicode conversion data file to the current version.
 
-   o Update the gb3212.1980-0 encoding to hande fonts that do not have a uni-
-     code table.
+   o Update the gb3212.1980-0 encoding to handle fonts that do not have a
+     unicode table.
 
    o Add encoding files for cns11643-1, cns11643-2, cns11643-3, and
      suneu_greek.
@@ -766,7 +779,7 @@ complete list):
 
 3.8  OS Support Updates
 
-   o Numerous fixes and enhancements for the Solaris/sparc platform support,
+   o Numerous fixes and enhancements for the Solaris/SPARC platform support,
      including the ability to build 64-bit shared libraries.
 
    o Support added for OpenBSD/amd64.
@@ -785,69 +798,72 @@ complete list):
    o Add support for newer UltraSPARC variants to the SunOS/Solaris and Linux
      ports.
 
+   o Understand the PCI bus naming scheme found in Linux 2.6 kernels.
+
 4.  Drivers
 
 4.1  Video Drivers
 
 XFree86 4.4.99.903 includes the following video drivers:
 
-+--------------+--------------------------+---------------------------------------------+
-|Driver Name   | Description              | Further Information                         |
-+--------------+--------------------------+---------------------------------------------+
-|apm           | Alliance Pro Motion      | README.apm                                  |
-|ark           | Ark Logic                |                                             |
-|ati           | ATI                      | README.ati, README.r128, r128(4), radeon(4) |
-|chips         | Chips & Technologies     | README.chips, chips(4)                      |
-|cirrus        | Cirrus Logic             |                                             |
-|cyrix (*)     | Cyrix MediaGX            | README.cyrix                                |
-|fbdev         | Linux framebuffer device | fbdev(4)                                    |
-|glide         | Glide2x (3Dfx)           | glide(4)                                    |
-|glint         | 3Dlabs, TI               | glint(4)                                    |
-|i128          | Number Nine              | README.I128, i128(4)                        |
-|i740          | Intel i740               | README.i740                                 |
-|i810          | Intel i8xx               | README.i810, i810(4)                        |
-|imstt         | Integrated Micro Solns   |                                             |
-|mga           | Matrox                   | mga(4)                                      |
-|neomagic      | NeoMagic                 | neomagic(4)                                 |
-|newport (-)   | SGI Newport              | README.newport, newport(4)                  |
-|nsc           | National Semiconductor   | nsc(4)                                      |
-|nv            | NVIDIA                   | nv(4)                                       |
-|rendition     | Rendition                | README.rendition, rendition(4)              |
-|s3            | S3 (not ViRGE or Savage) |                                             |
-|s3virge       | S3 ViRGE                 | README.s3virge, s3virge(4)                  |
-|savage        | S3 Savage                | savage(4)                                   |
-|siliconmotion | Silicon Motion           | siliconmotion(4)                            |
-|sis           | SiS                      | README.SiS, sis(4)                          |
-|sunbw2 (+)    | Sun bw2                  |                                             |
-|suncg14 (+)   | Sun cg14                 |                                             |
-|suncg3 (+)    | Sun cg3                  |                                             |
-|suncg6 (+)    | Sun GX and Turbo GX      |                                             |
-|sunffb (+)    | Sun Creator/3D, Elite 3D |                                             |
-|sunleo (+)    | Sun Leo (ZX)             |                                             |
-|suntcx (+)    | Sun TCX                  |                                             |
-|tdfx          | 3Dfx                     | tdfx(4)                                     |
-|tga           | DEC TGA                  | README.DECtga                               |
-|trident       | Trident                  | trident(4)                                  |
-|tseng         | Tseng Labs               |                                             |
-|via           | VIA                      | via(4)                                      |
-|vesa          | VESA                     | vesa(4)                                     |
-|vga           | Generic VGA              | vga(4)                                      |
-|vmware        | VMWare guest OS          | vmware(4)                                   |
-+--------------+--------------------------+---------------------------------------------+
+ +--------------+--------------------------+--------------------------------+
+ |Driver Name   | Description              | Further Information            |
+ +--------------+--------------------------+--------------------------------+
+ |apm           | Alliance Pro Motion      | README.apm                     |
+ |ark           | Ark Logic                |                                |
+ |ati           | ATI                      | README.ati, README.r128,       |
+ |              |                          | r128(4), radeon(4)             |
+ |chips         | Chips & Technologies     | README.chips, chips(4)         |
+ |cirrus        | Cirrus Logic             |                                |
+ |cyrix (*)     | Cyrix MediaGX            | README.cyrix                   |
+ |fbdev         | Linux framebuffer device | fbdev(4)                       |
+ |glide         | Glide2x (3Dfx)           | glide(4)                       |
+ |glint         | 3Dlabs, TI               | glint(4)                       |
+ |i128          | Number Nine              | README.I128, i128(4)           |
+ |i740          | Intel i740               | README.i740                    |
+ |i810          | Intel i8xx               | README.i810, i810(4)           |
+ |imstt         | Integrated Micro Solns   |                                |
+ |mga           | Matrox                   | mga(4)                         |
+ |neomagic      | NeoMagic                 | neomagic(4)                    |
+ |newport (-)   | SGI Newport              | README.newport, newport(4)     |
+ |nsc           | National Semiconductor   | nsc(4)                         |
+ |nv            | NVIDIA                   | nv(4)                          |
+ |rendition     | Rendition                | README.rendition, rendition(4) |
+ |s3            | S3 (not ViRGE or Savage) |                                |
+ |s3virge       | S3 ViRGE                 | README.s3virge, s3virge(4)     |
+ |savage        | S3 Savage                | savage(4)                      |
+ |siliconmotion | Silicon Motion           | siliconmotion(4)               |
+ |sis           | SiS                      | README.SiS, sis(4)             |
+ |sunbw2 (+)    | Sun bw2                  |                                |
+ |suncg14 (+)   | Sun cg14                 |                                |
+ |suncg3 (+)    | Sun cg3                  |                                |
+ |suncg6 (+)    | Sun GX and Turbo GX      |                                |
+ |sunffb (+)    | Sun Creator/3D, Elite 3D |                                |
+ |sunleo (+)    | Sun Leo (ZX)             |                                |
+ |suntcx (+)    | Sun TCX                  |                                |
+ |tdfx          | 3Dfx                     | tdfx(4)                        |
+ |tga           | DEC TGA                  | README.DECtga                  |
+ |trident       | Trident                  | trident(4)                     |
+ |tseng         | Tseng Labs               |                                |
+ |via           | VIA                      | via(4)                         |
+ |vesa          | VESA                     | vesa(4)                        |
+ |vga           | Generic VGA              | vga(4)                         |
+ |vmware        | VMWare guest OS          | vmware(4)                      |
+ +--------------+--------------------------+--------------------------------+
 
 Drivers marked with (*) are present in a preliminary form in this release,
 but are not complete and/or stable yet.
 
-Drivers marked with (+) are for Linux/Sparc only.
+Drivers marked with (+) are for Linux/SPARC only.
 
 Drivers marked with (-) are for Linux/mips only.
 
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.4.99.903 includes the following input drivers:
-
 4.2  Input Drivers
+
+XFree86 4.4.99.903 includes the following input drivers:
 
    +------------+----------------------------------+---------------------+
    |Driver Name | Description                      | Further Information |
@@ -893,7 +909,7 @@ ers, and other modules that are needed.
 
 XFree86 4.4.99.903 has X server support for most UNIX® and UNIX-like operat-
 ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
-on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
+on Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
 progress and is planned for future releases.
 
@@ -902,15 +918,10 @@ progress and is planned for future releases.
 The XFree86 X server has a built-in run-time loader, which can load normal
 object files and libraries in most of the commonly used formats.  The loader
 does not rely on an operating system's native dynamic loader support and it
-works on platforms that do not provide this feature.  This  allows  for the
+works on platforms that do not provide this feature.  This allows for the
 modules to be operating system independent (although not, of course, CPU
 architecture independent) which means that a module compiled on Linux/x86 can
 be loaded by an X server running on Solaris/x86, or FreeBSD, or even OS/2.
-
-A main benefit of this, is that when modules are updated, they do not need to
-be recompiled for every different operating system.  The loader in version
-4.4.99.903 has support for Intel (x86), Alpha and PowerPC platforms.  It also
-has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
@@ -933,7 +944,7 @@ Note about module security
      hope to have a mechanism for signing/verifying the modules that we
      provide available in a future release.
 
-6.2  Configuration File
+6.2  Configuration
 
 The XFree86 server uses a configuration file as the primary mechanism for
 providing configuration and run-time parameters.  The configuration file for-
@@ -985,7 +996,7 @@ completely rewritten for improved performance and correctness.
 
 Known problems:
 
-   o Most window managers are not Xinerama-aware, and so some operations like
+   o Not all window managers are Xinerama-aware, and so some operations like
      window placement and resizing might not behave in an ideal way.  This is
      an issue that needs to be dealt with in the individual window managers,
      and isn't specifically an XFree86 problem.
@@ -1007,10 +1018,9 @@ DDC is enabled by default, but can be disabled with a "Device" section entry:
 Option "NoDDC".  We have support for DDC versions 1 and 2; these can be dis-
 abled independently with Option "NoDDC1" and Option "NoDDC2".
 
-At startup the server prints out DDC information from the display, and can
-use this information to set the default monitor parameters, or to warn about
-monitor sync limits if those provided in the configuration file don't match
-those that are detected.
+At startup the server prints out DDC information from the display, and will
+use this information to set the default monitor parameters and video mode
+when none are provided explicitly in the configuration file.
 
 6.8.1  Changed behavior caused by DDC.
 
@@ -1023,9 +1033,10 @@ section of the config file.
 6.9  GLX and the Direct Rendering Infrastructure (DRI)
 
 Direct rendered OpenGL® support is provided for several hardware platforms by
-the Direct Rendering Infrastructure (DRI).  Further information about DRI can
-be found at the DRI Project's web site <URL:http://dri.sf.net/>.  The 3D core
-rendering component is provided by Mesa <URL:http://www.mesa3d.org>.
+the Direct Rendering Infrastructure (DRI), which is part of Mesa.  Mesa also
+provides the 3D core rendering component of GLX.  Further information can be
+found at the DRI Project's web site <URL:http://dri.sf.net/> and the Mesa web
+site <URL:http://www.mesa3d.org>.
 
 6.10  XVideo Extension (Xv)
 
@@ -1082,7 +1093,7 @@ the Xft(3) man page.
 
 6.11.2  FreeType support in Xft
 
-XFree86 4.4.99.903 includes sources for FreeType version 2.1.4, and, by
+XFree86 4.4.99.903 includes sources for FreeType version 2.1.8, and, by
 default, they are built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
@@ -1106,7 +1117,7 @@ core text.
 6.12  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
-tecture yet.  This should be completed in a future release.
+tecture yet.  This might be completed in a future release.
 
 The XFree86-VidModeExtension extension has been updated, and mostly ported to
 the new server architecture.  The area of mode validation needs further work,
@@ -1136,12 +1147,11 @@ README.fonts document.
 
 6.15  TrueType support
 
-XFree86 4.x comes with two TrueType backends, known as "FreeType" backend
-(the "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these
-backends are based on the FreeType library.  The functionality of X-TrueType
-has been merged into the FreeType backend by the After X-TT Project for
-XFree86 4.4.  Consequently, the old X-TrueType backend will be dropped as of
-XFree86 4.5.
+The XFree86 4.x server comes with a TrueType backend, known as the "FreeType"
+backend, based on the FreeType library.  The functionality of the former X-
+TrueType was merged into the FreeType backend by the After X-TT Project for
+the XFree86 4.4.0 releaes, and the old X-TrueType backend has been dropped as
+of XFree86 4.5.0.
 
 6.16  CID font support
 
@@ -1155,10 +1165,8 @@ CID Font Code Public License.
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends to
 use a common method of font re-encoding.  This re-encoding makes it possible
-to uses fonts in encodings other than their their native encoding.  This
-layer is used by the Type1 and Speedo backends and the `xfsft' version of the
-TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
-different re-encoding method based on loadable encoding modules.
+to use fonts in encodings other than their their native encoding.  This layer
+is used by the FreeType, Type1 and Speedo backends.
 
 6.18  Large font optimisation
 
@@ -1197,8 +1205,7 @@ What is included in 4.x:
    o ISO 10646/Unicode UTF-8 Level 1 support added to xterm (enabled with the
      -u8 option).
 
-   o Both the xfsft (the "freetype" module) and the X-TrueType (the "xtt"
-     module) TrueType font backends support Unicode-encoded fonts.
+   o The FreeType font backend supports Unicode-encoded fonts.
 
 6.20  Xlib Compose file support and extensions
 
@@ -1302,6 +1309,9 @@ source files.
                   Distributed Multihead X:
                         Kevin Martin, Rik Faith
 
+                  Preliminary work on SunOS/SPARC and IRIX ports:
+                        Marc La France
+
       Integration:
 
                   General Integration of Submissions:
@@ -1366,7 +1376,7 @@ source files.
 This product includes software developed by The XFree86 Project, Inc
 (http://www.xfree86.org/) and its contributors.
 
-This produce includes software that is based in part of the work of the
+This product includes software that is based in part of the work of the
 FreeType Team (http://www.freetype.org).
 
 This product includes software developed by the University of California,
@@ -1380,7 +1390,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.128 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.132 dawes Exp $
 
 
 $XFree86$
