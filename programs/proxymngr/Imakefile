@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
-XCOMM $XFree86: xc/programs/proxymngr/Imakefile,v 1.5 1999/05/03 15:31:50 dawes Exp $
+XCOMM $XFree86: xc/programs/proxymngr/Imakefile,v 1.6 2000/01/31 19:33:41 dawes Exp $
 
          DEFINES = StrcasecmpDefines
 
@@ -33,4 +33,3 @@ ComplexProgramTarget_1(proxymngr,$(LOCAL_LIBRARIES),NullParameter)
 SpecialCObjectRule(main,$(_NOOP_),'-DCONFIG_FILE="'$(PROXYMANAGERDIR)'/pmconfig"')
 
 InstallNonExecFile(pmconfig,$(PROXYMANAGERDIR))
-InstallManPage(proxymngr,$(MANDIR))
