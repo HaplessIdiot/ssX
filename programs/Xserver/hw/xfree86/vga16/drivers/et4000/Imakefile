@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/11 1996/09/28 17:25:08 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.7 1996/12/23 06:52:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.10 1997/02/19 06:04:13 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -16,7 +16,8 @@ OBJS = et4_driver.o et4_bank.o tseng_ramdac.o tseng_clock.o tseng_cursor.o
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
-           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+           -I../../../vga256/vga -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
 #endif
 
 DEFINES = -DXF86VGA16 -DW32_SUPPORT

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 10:34:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.10 1996/12/27 07:05:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.11 1997/02/20 10:01:30 hohndel Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -23,10 +23,10 @@ includes::
 #else
             SRCS = main.c tclmisc.c tclvidmode.c tclcards.c tclother.c \
 		   tclkbd.c tclxfconf.c xf86Config.c cards.c tclxkbui.c \
-		   tkother.c libc_wrapper.c
+		   tkother.c
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
 		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o \
-		   tkother.o libc_wrapper.o
+		   tkother.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
 		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
@@ -97,7 +97,6 @@ LinkSourceFile(cards.h,$(XF86SRC)/xf86config)
 LinkSourceFile(cards.c,$(XF86SRC)/xf86config)
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
-LinkSourceFile(libc_wrapper.c,$(XF86SRC)/os-support/shared)
 
 LinkSourceFile(CHANGELOG,$(XF86SRC)/XF86Setup)
 LinkSourceFile(LICENSE,$(XF86SRC)/XF86Setup)
