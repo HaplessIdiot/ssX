@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.18 1999/08/21 13:47:48 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.19 1999/08/22 05:35:44 dawes Exp $ */
 
 /*
 
@@ -201,7 +201,7 @@ CIDOpenScalable (FontPathElementPtr fpe,
                 scan,
                 image;
     int pad,wordsize;     /* scan & image in bits                         */
-    unsigned long *pool;  /* memory pool for ximager objects              */
+    long *pool;           /* memory pool for ximager objects              */
     int size;             /* for memory size calculations                 */
     struct XYspace *S;    /* coordinate space for character               */
     register int i;
@@ -340,7 +340,7 @@ CIDOpenScalable (FontPathElementPtr fpe,
     size = 200000 + 120 *
               (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
               * sizeof(short);
-    if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
+    if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
             xfree(cid);
             DestroyFontRec(pFont);
             return AllocError;
@@ -499,7 +499,7 @@ Type1OpenScalable (FontPathElementPtr fpe,
                    scan,
                    image;
        int pad,wordsize;     /* scan & image in bits                         */
-       unsigned long *pool;  /* memory pool for ximager objects              */
+       long *pool;           /* memory pool for ximager objects              */
        int size;             /* for memory size calculations                 */
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
@@ -552,7 +552,7 @@ Type1OpenScalable (FontPathElementPtr fpe,
 #endif
 	      (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
 	      * sizeof(short);
-       if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
+       if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
                xfree(type1);
                DestroyFontRec(pFont);
                return AllocError;
@@ -690,7 +690,8 @@ Type1OpenScalable (FontPathElementPtr fpe,
                }
 
                rc = 0;
-               area = (struct region *)fontfcnB(S, codename, &len, &rc);
+               area = (struct region *)fontfcnB(S, (unsigned char *)codename,
+                   &len, &rc);
                if (rc < 0) {
                        rc = Type1ReturnCodeToXReturnCode(rc);
                        break;
@@ -1521,7 +1522,7 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
                    scan,
                    image;
        int pad,wordsize;     /* scan & image in bits                         */
-       unsigned long *pool;  /* memory pool for ximager objects              */
+       long *pool;           /* memory pool for ximager objects              */
        int size;             /* for memory size calculations                 */
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
@@ -1556,7 +1557,7 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
        size = 200000 + 120 *
               (int)hypot(cid->pixel_matrix[2], cid->pixel_matrix[3])
               * sizeof(short);
-       if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
+       if (size < 0 || NULL == (pool = (long *) xalloc(size))) {
               *mode = AllocError;
               return(NULL);
        }

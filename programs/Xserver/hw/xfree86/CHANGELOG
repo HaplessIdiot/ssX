@@ -1,3 +1,17 @@
+XFree86 3.9.16a (5 September 1999)
+3135. Fix a problem with xman that prevents it form recognising the
+      XM_DELETE_WINDOW message when xman is run with the "topbox" disabled
+      (#3207, Carlos A M dos Santos).
+3134. Prevent xkbcomp from overwriting writing through symlinks (#3206,
+      Branden Robinson).
+3133. Use ncurses instead of termcap for Linux/libc6 (#3204, H.J. Lu).
+3132. Fix a build problem with the tdfx driver (#3203, Takaaki Nomura).
+3131. Add a clean rule to remove the automatically generated
+      doc/sgml/index.sgml file (#3202, Marc La France).
+3130. Fix some build warnings (#3202, Marc La France).
+3129. Add missing files for the Rush extension (#3199, Loic Grenie).
+3128. Export the xf86InitFBManagerRegion symbol.
+
 XFree86 3.9.16 (31 August 1999)
 3127. Potential fix for a server crash when connecting from a byte-swapped
       client in Xinerama mode (based on #3196, Attila Fülöp).
@@ -8692,4 +8706,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.825 1999/08/30 14:36:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.826 1999/08/31 08:39:04 dawes Exp $

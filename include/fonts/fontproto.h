@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/fonts/fontproto.h,v 1.1 1999/08/21 13:47:34 dawes Exp $ */
 
 /***********************************************************
 
@@ -52,7 +52,10 @@ extern void remove_fs_handlers ( FontPathElementPtr fpe,
 
 extern int client_auth_generation ( ClientPtr client );
 
+#ifndef ___CLIENTSIGNAL_DEFINED___
+#define ___CLIENTSIGNAL_DEFINED___
 extern Bool ClientSignal ( ClientPtr client );
+#endif /* ___CLIENTSIGNAL_DEFINED___ */
 
 extern void DeleteFontClientID ( Font id );
 extern Font GetNewFontClientID ( void );

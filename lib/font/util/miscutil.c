@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/util/miscutil.c,v 1.4 1999/08/01 12:17:39 dawes Exp $ */
 
 #include <X11/Xosdefs.h>
 #ifndef X_NOT_STDC_ENV
@@ -70,7 +70,7 @@ Xcalloc (unsigned long n)
 }
 
 void
-CopyISOLatin1Lowered (unsigned char *dst, unsigned char *src, int len)
+CopyISOLatin1Lowered (char *dst, char *src, int len)
 {
     register unsigned char *dest, *source;
 
