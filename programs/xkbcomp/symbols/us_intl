@@ -1,5 +1,5 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.6 2003/05/29 12:41:58 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/us_intl,v 1.7 2003/06/17 12:32:53 pascal Exp $
 //
 // Dead-keys definition for a very simple US/ASCII layout.
 // by Conectiva (http://www.conectiva.com.br)
@@ -62,6 +62,8 @@ xkb_symbols "basic" {
 			[ dead_abovedot,dead_circumflex	]	};
     key <AB10> {	[     slash,	question	],
 			[   dead_hook,	dead_hook	]	};
+
+    key <RALT> {	[ Mode_switch,	Multi_key	]	};
 
     // End alphanumeric section
 };
