@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __NV_PROTO_H__
 #define __NV_PROTO_H__
 
