@@ -12,7 +12,6 @@
 #include "mi.h"
 #include "mipointer.h"
 #include "scrnintstr.h"
-#include "opaque.h"     // for display variable
 
 // System headers
 #include <sys/types.h>
@@ -24,12 +23,13 @@
 #include "darwin.h"
 #include "quartz.h"
 
+// initialize quartzShared.h globals
+int gDarwinEventWriteFD = -1;
+
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
 static int darwinNumScreens = 0;
-static char darwinEventFifoName[PATH_MAX] = "";
-static BOOL xhidden = false;
-static mach_port_t pmNotificationPort;
+static BOOL xhidden = FALSE;
 
 
 /*
@@ -238,74 +238,13 @@ static void QuartzDisplayInit(void)
 }
 
 
-/* 
- * QuartzFifoInit
- *  Initialize the named pipe to which the X server listens for events.
- *  The fifo is named /tmp/.X<display>-fifo, right next to the 
- *  /tmp/.X<display> lock file.
- */
-static void QuartzFifoInit(void)
-{
-    int i;
-    int err;
-    mode_t oldmode;
-
-    // copied from os/utils.c
-    #define LOCK_DIR "/tmp"
-    #define LOCK_PREFIX "/.X"
-    #define FIFO_SUFFIX "-fifo"
-
-    sprintf(darwinEventFifoName, LOCK_DIR LOCK_PREFIX "%s" FIFO_SUFFIX, display);
-    unlink(darwinEventFifoName); // nuke it if it exists
-    oldmode = umask(0); // fifo is world-everything, ignore umask (fixme)
-    err = mkfifo(darwinEventFifoName, 0666);
-    umask(oldmode);
-    if (err) {
-        FatalError("couldn't make event fifo '%s' (errno=%d)\n", 
-                    darwinEventFifoName, errno);
-    }
-
-    for (i = 0; i < 10; i++) {
-        darwinEventFD = open( darwinEventFifoName, O_RDONLY | O_NONBLOCK, 0 );
-        if (darwinEventFD < 0) {
-            ErrorF("Could not open event fifo '%s' (errno %d)\n", 
-                    darwinEventFifoName, errno);
-        } else {
-            break;
-        }
-    }
-    if (darwinEventFD < 0) {
-        // never got fifo
-        FatalError("giving up\n");
-    }
-}
-
-
 /*
  * QuartzOsVendorInit
- * One-time Quartz initialization.
+ * Quartz display initialization.
  */
 void QuartzOsVendorInit(void)
 {
-    kern_return_t       kr;
-    io_connect_t        pwrService;
-    pthread_t           pmThread;
-
     QuartzDisplayInit();
-    QuartzFifoInit();
-
-#if 0
-    // Register for power management events from the Root Power Domain
-    kr = IOCreateReceivePort(kOSNotificationMessageID, &pmNotificationPort);
-    kern_assert(kr);
-    pwrService = IORegisterForSystemPower(pmNotificationPort, 0);
-    if (pwrService) {
-        // initialize power manager handling
-        pthread_create(&pmThread, NULL, QuartzPMThread, NULL);
-    } else {
-        ErrorF("Power management registration failed.\n");
-    }
-#endif
 }
 
 
@@ -351,14 +290,10 @@ void QuartzHide(void)
 /*
  * QuartzGiveUp
  *  Cleanup before X server shutdown
- *  release the screen, remove the event fifo
+ *  Release the screen
  */
 void QuartzGiveUp(void)
 {
-    if (darwinEventFifoName[0]) {
-        unlink(darwinEventFifoName);
-        darwinEventFifoName[0] = '\0';
-    }
     QuartzRelease();
 }
 

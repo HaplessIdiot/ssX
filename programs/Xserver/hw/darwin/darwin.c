@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.7 2001/02/02 21:47:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.8 2001/02/08 23:36:23 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -17,10 +17,12 @@
 #include "mipointer.h"
 #include "micmap.h"
 #include "site.h"
+#include "opaque.h"
 #include "xf86Version.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #define NO_CFPLUGIN
 #include <IOKit/IOKitLib.h>
@@ -31,17 +33,19 @@
 #include "quartz.h"
 #include "xfIOKit.h"
 
-// Shared global variables
+// X server shared global variables
 DarwinFramebufferRec    dfb;
-int                     darwinEventFD;
+int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
+char                    **envpGlobal;   // argcGlobal and argvGlobal
+                                        // are from dix/globals.c
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
-#define QUARTZ_SAFETY_DELAY 10
+#define QUARTZ_SAFETY_DELAY	10
 
 /* Fake button press/release for scroll wheel move. */
 #define	SCROLLWHEELUPFAKE	4
@@ -107,6 +111,60 @@ DarwinPrintBanner()
   ErrorF("Mac OS X Quartz support available.\n");
 #endif
 }
+
+/*
+ * DarwinHandleGUI
+ *  This function is called first from main(). It determines
+ *  if we are going to run in Quartz mode. If we are running in
+ *  Quartz mode, we load the Quartz bundle (not yet implemented),
+ *  and start the Mac OS X front end. The front end will call main()
+ *  again from another thread to run the X server. On the second
+ *  call or in non-Quartz mode this function is a noop.
+ */
+void DarwinHandleGUI(
+    int         argc,
+    char        *argv[],
+    char        *envp[] )
+{
+    static Bool been_here = FALSE;
+    Bool        quartzMode = FALSE;
+    int         i;
+
+    if (been_here)
+        return;
+    been_here = TRUE;
+
+    // Check if we are going to run in Quartz mode.
+    // (Displaying version info quits the X server without running.)
+    for (i = 0; i < argc; i++) {
+        if (!strcmp( argv[i], "-showconfig" ) ||
+            !strcmp( argv[i], "-version" ))
+            return;
+        if (!strcmp(argv[i], "-quartz")) {
+            quartzMode = TRUE;
+        }
+    }
+
+    if (quartzMode) {
+        int main_exit;
+        int fd[2];
+
+        // Make a pipe to pass events
+        assert( pipe(fd) == 0 );
+        darwinEventFD = fd[0];
+        gDarwinEventWriteFD = fd[1];
+        fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
+
+        // Store command line arguments to pass back to main()
+        argcGlobal = argc;
+        argvGlobal = argv;
+        envpGlobal = envp;
+
+        main_exit = NSApplicationMain(argc, argv);
+        exit(main_exit);
+    }
+}
+
 
 /*
  * DarwinSaveScreen
@@ -362,24 +420,24 @@ void DarwinSimulateMouseClick(
 
     // first fool X into forgetting about the keys
     for (i = 0; i < numKeycodes; i++) {
-    xe.u.u.type = KeyRelease;
-    xe.u.u.detail = keycodesUsed[i];
-    (darwinKeyboard->public.processInputProc)
-        ( &xe, darwinKeyboard, 1 );
+        xe.u.u.type = KeyRelease;
+        xe.u.u.detail = keycodesUsed[i];
+        (darwinKeyboard->public.processInputProc)
+            ( &xe, darwinKeyboard, 1 );
     }
 
     // push the mouse button
     xe.u.u.type = whichEvent;
     xe.u.u.detail = whichButton;
     (darwinPointer->public.processInputProc)
-	( &xe, darwinPointer, 1 );
+        ( &xe, darwinPointer, 1 );
 
     // reset the keys
     for (i = 0; i < numKeycodes; i++) {
-    xe.u.u.type = KeyPress;
-    xe.u.u.detail = keycodesUsed[i];
-    (darwinKeyboard->public.processInputProc)
-        ( &xe, darwinKeyboard, 1 );
+        xe.u.u.type = KeyPress;
+        xe.u.u.detail = keycodesUsed[i];
+        (darwinKeyboard->public.processInputProc)
+            ( &xe, darwinKeyboard, 1 );
     }
 }
 
@@ -645,7 +703,7 @@ void ProcessInputEvents(void)
 
               // Update modifier state. As opposed to NX_FLAGSCHANGED,
               // in this case any amount of modifiers may have changed.
-              case kXServerUpdateModifiers:
+              case kXDarwinUpdateModifiers:
                 xe.u.u.type = KeyRelease;
                 DarwinUpdateModifiers(xe, old_state & ~ev.flags);
                 xe.u.u.type = KeyPress;
@@ -653,21 +711,21 @@ void ProcessInputEvents(void)
                 old_state = ev.flags;
 	            break;
 
-              case kXServerShow:
+              case kXDarwinShow:
                 QuartzShow();
                 break;
 	      
-              case kXServerHide:
+              case kXDarwinHide:
                 QuartzHide();
                 break;
 	      
-              case kXServerQuit:
+              case kXDarwinQuit:
                 // FIXME: is there a better way to quit?
-                FatalError("Terminated by Xmaster.\n");
+                FatalError("Terminated.\n");
                 break;
 
               default:
-                ErrorF("Unknown event from Xmaster.\n");
+                ErrorF("Unknown application defined event.\n");
             } // switch (ev.data.compound.subType)
           } // if (quartz)
           break;
@@ -741,7 +799,7 @@ void OsVendorFatalError( void )
 
 /*
  * OsVendorInit
- *  One-time initialization of Darwin support.
+ *  Initialization of Darwin support.
  *  Initialize display and event handling.
  */
 void OsVendorInit(void)
@@ -791,7 +849,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         quartz = TRUE;
         ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
 #ifdef QUARTZ_SAFETY_DELAY
-        ErrorF( "Quitting in %d seconds if no controller application is found.\n",
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
                 QUARTZ_SAFETY_DELAY );
 #endif
         return 1;
@@ -891,6 +949,7 @@ void ddxUseMsg( void )
 void ddxGiveUp( void )
 {
     ErrorF( "   ddxGiveUp\n" ); 
+    close(darwinEventFD);
 
     if (quartz) {
         QuartzGiveUp();

@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.10 1999/12/13 02:12:51 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ddxInit.c,v 1.11 2001/01/17 22:36:28 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -205,6 +205,13 @@ void
 ProcessInputEvents(void)
 {
 }
+
+#ifdef __DARWIN__
+void
+DarwinHandleGUI(int argc, char *argv[])
+{
+}
+#endif
 
 #ifdef DDXOSINIT
 void

@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.19 2000/11/27 17:45:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.20 2001/01/17 22:36:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -123,6 +123,13 @@ void ddxGiveUp()
 {
   AbortDDX();
 }
+
+#ifdef __DARWIN__
+void
+DarwinHandleGUI(int argc, char *argv[])
+{
+}
+#endif
 
 void OsVendorInit()
 {

@@ -27,7 +27,7 @@
             SUPERCLASS = NSApplication; 
         }, 
         {
-            ACTIONS = {closeHelpAndShow = id; }; 
+            ACTIONS = {applicationWillResignActive = id; closeHelpAndShow = id; }; 
             CLASS = Xserver; 
             LANGUAGE = ObjC; 
             OUTLETS = {helpWindow = id; startupHelpButton = id; }; 

@@ -1,8 +1,8 @@
 //
 //  NSXApplication.h
-//  Xmaster-Cocoa
+//  Xmaster project
 //
-//  Created by am on Sat Jan 06 2001.
+//  Created by Andreas Monitzer on January 6, 2001.
 //
 
 #import <Cocoa/Cocoa.h>

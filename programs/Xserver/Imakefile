@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.209 2001/01/24 00:06:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.211 2001/02/16 13:24:05 eich Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1111,7 +1111,7 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
 #endif
 #endif /* XWinServer */
 
-#if XDarwinServer 
+#if XDarwinServer
 XCOMM
 XCOMM X Darwin server for Mac OS X / Darwin
 XCOMM
@@ -1122,20 +1122,28 @@ CFB32DIR = cfb32
 DDXDIR1 = hw/darwin
 DARWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 DARWINOBJS = 
-DARWINLIBS = PreFbLibs hw/darwin/libdarwin.a $(CFB16) $(CFB32) $(CFB8) PostFbLibs ../../lib/font/libXfont.a ../../lib/font/stubs/libfntstubs.a
-
-XCOMM We need extra link flags for IOKit. For Quartz support, we also need
-XCOMM CoreGraphics in ApplicationServices and HIToolbox in Carbon.
-#if DarwinQuartzSupport
-EXTRA_LOAD_FLAGS = -framework IOKit -framework ApplicationServices \
-                   -framework Carbon
-#else
-EXTRA_LOAD_FLAGS = -framework IOKit
-#endif	/* DarwinQuartzSupport */
-
-SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS),$(DARWINLIBS),$(SYSLIBS))
+DARWINLIBS = PreFbLibs $(DDXDIR1)/LibraryTargetName(darwin) $(CFB16) $(CFB32) $(CFB8) PostFbLibs
+DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 
 #define ServerToInstall Xdarwin
+
+#if DarwinQuartzSupport
+
+/* We need the IOKit framework. For Quartz support, we also need
+ * CoreGraphics in ApplicationServices, HIToolbox in Carbon, and Cocoa.
+ */
+QUARTZSYSLIBS = -framework ApplicationServices -framework Carbon -framework Cocoa -ObjC
+
+SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS), \
+	$(DARWINLIBS) $(DDXDIR1)/bundle/LibraryTargetName(XQuartz), \
+	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
+
+#else /* !DarwinQuartzSupport */
+
+SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS), \
+	$(DARWINLIBS),$(DARWINSYSLIBS))
+
+#endif /* DarwinQuartzSupport */
 
 #endif /* XDarwinServer */
 
