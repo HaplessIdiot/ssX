@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 779. Make sure the r128 driver enables the hsync and vsync signals after
+      programming a video mode (Bugzilla #935, Kevin Martin).
  778. Fix Multitexture problems with vertex arrays and indirect rendering
       (Bugzilla #1092, DRI Project).
  777. Fix SecondaryColor & FogColor when indirect rendering (Bugzilla #1091, 
@@ -18596,7 +18598,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3119 2004/01/28 16:46:44 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3120 2004/01/28 18:11:24 alanh Exp $
 
 
 
