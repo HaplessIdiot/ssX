@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.20 94/12/12 20:14:30 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.4 1994/12/11 10:50:19 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.5 1995/01/12 05:54:19 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1788,9 +1788,7 @@ TRANS(LocalGetNextTransport)()
 	
 	typetocheck=workingXLOCAL;
 	workingXLOCAL=strchr(workingXLOCAL,':');
-	if (!workingXLOCAL)
-	    return NULL;
-	if(*workingXLOCAL)
+	if(workingXLOCAL && *workingXLOCAL)
 	    *workingXLOCAL++='\0';
 	
 	for(i=0;i<NUMTRANSPORTS;i++)
