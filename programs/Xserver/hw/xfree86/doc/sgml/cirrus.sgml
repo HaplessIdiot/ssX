@@ -5,8 +5,8 @@
 <!-- Title information -->
 <title> Information for Cirrus Chipset Users
 <author> Harm Hanemaayer (<it>H.Hanemaayer@inter.nl.net</it>),
-         Randy Hendry (<it>randy@sgi.com</it>) (64xx),
-	 Corin Anderson (<it>corina@bdc.cirrus.com</it>)
+Randy Hendry (<it>randy@sgi.com</it>) (64xx),
+Corin Anderson (<it>corina@bdc.cirrus.com</it>)
 <date> 19 January 1997
 
 <!-- Table of contents -->
@@ -220,8 +220,7 @@ Device section).
 	is likely to help with problems related to bugs in acceleration
 	functions, and perhaps high dot clocks and DRAM timing, at the cost
 	of performance (which will still be reasonable on a local bus).
-<tag>Option &dquot;fast_dram&dquot; &dquot;med_dram&dquot; &dquot;slow_dram&dquot;
-(5424/6/8/9, 543x, 5446)
+<tag>Option &dquot;fast_dram&dquot; &dquot;med_dram&dquot; &dquot;slow_dram&dquot; (5424/6/8/9, 543x, 5446)
 </tag>
         These options set the internal memory clock (MCLK) register to
 	another value. The default value programmed by the BIOS is
@@ -844,7 +843,7 @@ Changes since XFree86 3.2:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.21 1997/01/24 09:32:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.22 1997/01/25 03:22:22 dawes Exp $
 
 
 
