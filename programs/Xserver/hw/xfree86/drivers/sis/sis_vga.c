@@ -1006,7 +1006,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xee;
 	}
 	testvga2_tempch = 0x0e;	testvga2_tempcl = 0x08;
-	testsvhs_tempch = 0x06;	testsvhs_tempcl = 0x04;
+	testsvhs_tempch = 0x04;	testsvhs_tempcl = 0x04;
 	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
 	
 	if(pSiS->Chipset == PCI_CHIP_SIS300) {
