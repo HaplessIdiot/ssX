@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 485. Fix unbalanced paranthesis in linuxPci.c (#5466, Ishikawa Mutsumi).
  484. Remove "Option VideoRam" from savage driver, there's no need for it,
       and utilize the entities given VideoRam size (Alan Hourihane).
  483. Fix fontconfig to obey NothingOutsideProjectRoot, so that the directory
@@ -15505,4 +15506,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2389 2002/11/15 09:29:35 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2390 2002/11/15 16:24:15 alanh Exp $

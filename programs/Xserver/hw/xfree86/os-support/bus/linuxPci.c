@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.9 2002/09/24 16:14:16 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -324,7 +324,7 @@ xf86GetPciDomain(PCITAG Tag)
     if (pPCI && (result = PCI_DOM_FROM_BUS(pPCI->busnum)))
 	return result;
 
-    if ((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0) < 0)
+    if ((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0)) < 0)
 	return 0;
 
     if ((result = ioctl(fd, PCIIOC_CONTROLLER, 0)) < 0)
@@ -347,7 +347,7 @@ linuxMapPci(int ScreenNum, int Flags, PCITAG Tag,
 
 	pPCI = xf86GetPciHostConfigFromTag(Tag);
 
-	if (((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0) < 0) ||
+	if (((fd = linuxPciOpenFile(pPCI ? pPCI->tag : 0)) < 0) ||
 	    (ioctl(fd, mmap_ioctl, 0) < 0))
 	    break;
 
