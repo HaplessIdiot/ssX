@@ -30,10 +30,9 @@
 <date>Last modified 1 July 1999
 
 
-<abstract>
-NOTE: This is a DRAFT document, and the interfaces described here
+<p>
+<bf>NOTE</bf>: This is a DRAFT document, and the interfaces described here
 are subject to change without notice.
-</abstract>
 
 
 <sect>Preface
@@ -6856,7 +6855,7 @@ ZZZFreeScreen(int scrnIndex, int flags)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.1 1999/07/01 11:25:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.2 1999/07/01 13:50:03 dawes Exp $
 </verb>
 
 </article>
