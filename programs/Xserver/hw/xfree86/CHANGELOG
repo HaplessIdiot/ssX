@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3379. Install NetBSD aperture driver in /usr/local until added to
+      the core O/S (#3466, Matthieu Herrb).
 3378. Add QNX/Neutrino support (#3464, Frank Guangxin Liu).
 3377. DRI megapatch.  This moves mesa to xc/extras, updates Mesa to
       version 3.2, adds full support and fifo code for 3dfx hardware,
@@ -9159,4 +9161,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.874 1999/12/14 01:33:42 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.875 1999/12/14 02:10:33 robin Exp $
