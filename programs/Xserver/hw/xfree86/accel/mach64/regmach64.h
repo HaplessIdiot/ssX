@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.15 1997/01/05 11:53:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.16 1997/06/08 15:31:52 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -424,6 +424,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define PCI_MACH64_VT		0x5654
 #define PCI_MACH64_GT		0x4754
 #define PCI_MACH64_GU		0x4755
+#define PCI_MACH64_GP		0x4750
 
 /* CONFIG_CHIP_ID register constants */
 #define CFG_CHIP_TYPE		0x0000FFFF
