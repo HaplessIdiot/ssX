@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.99 2001/04/18 16:13:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.100 2001/04/19 19:54:41 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1675,7 +1675,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(STD_INCLUDES)
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEPENDDEFINES) $(DEFINES) $(EXTRA_DEFINES)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEFINES) $(EXTRA_DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(MODULE_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
          LDPRELIB = LdPreLib
@@ -1703,7 +1703,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
-    DEPENDDEFINES = DependDefines
+   DEPEND_DEFINES = DependDefines
 
 XCOMM Not sure this belongs here
          TKLIBDIR = TkLibDir
