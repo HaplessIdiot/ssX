@@ -1,0 +1,72 @@
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+#include <lnxdoc.rules>
+
+#if defined(BSD386Architecture) || BuildAllDocs
+LinuxDocReadmeTarget(Bsdi)
+#endif
+#if defined(FreeBSDArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(FreeBSD)
+#endif
+#if defined(NetBSDArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(NetBSD)
+#endif
+#if defined(i386MachArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(Mach)
+#endif
+#if defined(LinuxArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(Linux)
+#endif
+#if (defined(MinixArchitecture) || BuildAllDocs) && 0
+LinuxDocReadmeTarget(Minix)
+#endif
+#if (defined(AmoebaArchitecture) || BuildAllDocs) && 0
+LinuxDocReadmeTarget(Amoeba)
+#endif
+#if defined(SVR3Architecture) || BuildAllDocs
+# if defined(i386ScoArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SCO)
+# endif
+# if defined(i386IscArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(isc)
+# endif
+# if 0
+LinuxDocReadmeTarget(SVR3)
+# endif
+#endif
+#if defined(SVR4Architecture) || BuildAllDocs
+# if defined(SunArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SOLX86)
+# endif
+# if !defined(SunArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SVR4)
+# endif
+#endif
+
+/* Hardware docs */
+#if 0
+LinuxDocReadmeTarget(P9000)
+#endif
+LinuxDocReadmeTarget(Video7)
+#if 0
+LinuxDocReadmeTarget(S3)
+#endif
+LinuxDocReadmeTarget(W32)
+LinuxDocReadmeTarget(WstDig)
+LinuxDocReadmeTarget(agx)
+LinuxDocReadmeTarget(ati)
+LinuxDocReadmeTarget(cirrus)
+LinuxDocReadmeTarget(trident)
+LinuxDocReadmeTarget(tseng)
+
+/* Main docs */
+LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
+LinuxDocReadmeTarget(Config)
+LinuxDocTarget(INSTALL)
+LinuxDocTarget(README)
+
+/* Other docs */
+LinuxDocReadmeTarget(clkprog)
+LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
+

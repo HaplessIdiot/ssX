@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.21 1994/11/27 07:01:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.22 1994/12/10 01:16:53 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -261,9 +261,20 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.21 1994/11/27 07:01:23 dawes Exp $
  */
 
 /*
+ * LinuxDoc definitions
+ *
+ */
+#define HasLinuxDoc		YES
+#define HasLatex		YES
+#define HasDvips		YES
+#define BuildLinuxDocHtml	YES
+#define BuildAllDocs		YES
+
+/*
  * Define to build only those parts of contrib supported by XFree86
  * NOTE: This should not be defined at all if you want to build all
  * of contrib.  Defining it to NO won't work.
  *
  */
 #define XF86Contrib
+

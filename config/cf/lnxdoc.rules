@@ -1,0 +1,81 @@
+XCOMM $XFree86$
+XCOMM
+XCOMM Rules for formatting Linuxdoc-SGML documentation
+XCOMM
+
+#include <lnxdoc.tmpl>
+
+#if BuildLinuxDocPS
+#define LinuxDocSgmlToPs(sgmlfile,base) 				@@\
+AllTarget(base.ps)							@@\
+									@@\
+base.ps: sgmlfile							@@\
+	RemoveFile(base.dvi)						@@\
+	$(LINUXDOCFORMAT) -T latex sgmlfile | \				@@\
+	    $(LINUXDOCLATEX) -d > base.dvi				@@\
+	RemoveFile(base.ps)						@@\
+	$(DVIPS) $(DVIPSOPTIONS) -o base.ps base.dvi			@@\
+	RemoveFile(base.dvi)						@@\
+									@@\
+InstallNonExecFile(base.ps,$(XFREE86PSDOCDIR))				@@\
+									@@\
+clean::									@@\
+	RemoveFile(base.dvi)						@@\
+	RemoveFile(base.ps)
+#else
+#define LinuxDocDviToPs(sgmlfile,base) /**/
+#endif
+
+#if BuildLinuxDocText
+#define LinuxDocSgmlToText(sgmlfile,textfile)				@@\
+AllTarget(textfile)							@@\
+									@@\
+textfile: sgmlfile							@@\
+	RemoveFile(textfile)						@@\
+	$(LINUXDOCFORMAT) -T nroff sgmlfile | \				@@\
+	    $(LINUXDOCROFF) > textfile					@@\
+									@@\
+InstallNonExecFile(textfile,$(XFREE86DOCDIR))				@@\
+									@@\
+clean::									@@\
+	RemoveFile(textfile)
+#else
+#define LinuxDocSgmlToText(sgmlfile,textfile) /**/
+#endif
+
+#if BuildLinuxDocHtml
+#define LinuxDocSgmlToHtml(sgmlfile,base)				@@\
+AllTarget(base.html)							@@\
+									@@\
+base.html: sgmlfile							@@\
+	@(TMP=/tmp/tmp.$$$$; \						@@\
+	  RemoveFile($${TMP}); \					@@\
+	  (set -x; \							@@\
+	    RemoveFiles(base*.html); \					@@\
+	    $(LINUXDOCFORMAT) -T html sgmlfile | \			@@\
+	      $(LINUXDOCPREHTML) | $(LINUXDOCFIXREF) > $${TMP}; \	@@\
+	    $(LINUXDOCFORMAT) -T html sgmlfile | \			@@\
+	      $(LINUXDOCPREHTML) >> $${TMP}; \				@@\
+	    $(LINUXDOCHTML) base < $${TMP} > base.html); \		@@\
+	  RemoveFile($${TMP}))						@@\
+									@@\
+InstallMultipleDest(install,base*.html,$(XFREE86HTMLDOCDIR))		@@\
+									@@\
+clean::									@@\
+	RemoveFiles(base*.html)
+#else
+#define LinuxDocSgmlToHtml(sgmlfile,base) /**/
+#endif
+
+
+#define LinuxDocTargetLong(sgmlfile,textfile,base)			@@\
+LinuxDocSgmlToText(sgmlfile,textfile)					@@\
+LinuxDocSgmlToHtml(sgmlfile,base)					@@\
+LinuxDocSgmlToPs(sgmlfile,base)
+
+#define LinuxDocReadmeTarget(base)					@@\
+LinuxDocTargetLong(base.sgml,README.base,base)
+
+#define LinuxDocTarget(base)						@@\
+LinuxDocTargetLong(base.sgml,base,base)
+

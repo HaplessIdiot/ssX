@@ -1,6 +1,13 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.7 1994/09/27 10:30:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.8 1994/11/30 21:55:40 dawes Exp $
 
 #include <Server.tmpl>
+#include <lnxdoc.rules>
+
+#if HasLinuxDoc
+#define IHaveSubdirs
+
+SUBDIRS = sgml
+#endif
 
 /* FreeBSD's README is handled separately because of name length limits */
 #ifdef BSD386Architecture
