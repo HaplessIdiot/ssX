@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.1 94/03/28 21:23:16 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.0 1994/05/08 05:20:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -147,12 +147,24 @@ Bool init;
    * exeplicitely unrelease all keyboard keys before the input-devices
    * are reenabled.
    */
-  for (i = keyc->curKeySyms.minKeyCode; i < keyc->curKeySyms.maxKeyCode; i++)
+  for (i = keyc->curKeySyms.minKeyCode, map = keyc->curKeySyms.map;
+       i < keyc->curKeySyms.maxKeyCode;
+       i++, map += keyc->curKeySyms.mapWidth)
     if (KeyPressed(i))
       {
-	kevent.u.u.detail = i;
-	kevent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        switch (*map) {
+	/* Don't release the lock keys */
+        case XK_Caps_Lock:
+        case XK_Shift_Lock:
+        case XK_Num_Lock:
+        case XK_Scroll_Lock:
+        case XK_Kana_Lock:
+	  break;
+        default:
+	  kevent.u.u.detail = i;
+	  kevent.u.u.type = KeyRelease;
+	  (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
+        }
       }
 #endif /* MACH386 */
   
@@ -176,7 +188,7 @@ Bool init;
 #ifdef LED_CAP
       leds = xf86Info.leds;
 
-      for (i = keyc->curKeySyms.minKeyCode;
+      for (i = keyc->curKeySyms.minKeyCode, map = keyc->curKeySyms.map;
            i < keyc->curKeySyms.maxKeyCode;
            i++, map += keyc->curKeySyms.mapWidth)
 
