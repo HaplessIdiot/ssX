@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.5 1996/08/18 09:47:32 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.6 1996/08/24 12:50:46 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -47,7 +47,11 @@ proc Keyboard_create_widgets { win } {
 	if { $XKBinserver } {
 	    bind $w.keyboard.xkb.geom.cbox.popup.list <ButtonRelease-1> \
 		"+Keyboard_loadsettings $win noload"
+	    bind $w.keyboard.xkb.geom.cbox.popup <Return> \
+		"+Keyboard_loadsettings $win noload"
 	    bind $w.keyboard.xkb.lang.cbox.popup.list <ButtonRelease-1> \
+		"+Keyboard_loadsettings $win noload"
+	    bind $w.keyboard.xkb.lang.cbox.popup <Return> \
 		"+Keyboard_loadsettings $win noload"
 	    xkbview $w.keyboard.xkb.graphic -height 100 -kbd $XKBhandle \
 		-dbl 1 -bd 6 -relief ridge
@@ -60,7 +64,7 @@ proc Keyboard_create_widgets { win } {
 		-command "Keyboard_loadsettings $win load"
 	    pack $w.keyboard.xkb.apply -side top -expand yes -fill both
 	}
-	label $w.keyboard.xkb.message -text ""
+	label $w.keyboard.xkb.message -text "" -foreground black
 	pack $w.keyboard.xkb.message  -side top -expand yes -fill x
 
 	frame $w.keyboard.options -relief groove -bd 4
@@ -176,6 +180,12 @@ proc Keyboard_initsettings { win } {
 	$w.keyboard.xkb.geom.cbox lselection set $geomidx
 	$w.keyboard.xkb.lang.cbox lselection set $langidx
 	$w.keyboard.xkb.vari.cbox lselection set $variidx
+	$w.keyboard.xkb.geom.cbox activate $geomidx
+	$w.keyboard.xkb.lang.cbox activate $langidx
+	$w.keyboard.xkb.vari.cbox activate $variidx
+	$w.keyboard.xkb.geom.cbox see $geomidx
+	$w.keyboard.xkb.lang.cbox see $langidx
+	$w.keyboard.xkb.vari.cbox see $variidx
 
 	set optlist [split $options ,]
 	set namelist $XKBComponents(options,names)
@@ -278,9 +288,14 @@ proc Keyboard_popup_help { win } {
         wm title .keyboardhelp "Help"
 	wm geometry .keyboardhelp +30+30
         text .keyboardhelp.text
-        .keyboardhelp.text insert 0.0 \
-		"Keyboard configuration settings help text"
-        button .keyboardhelp.ok -text "Okay" \
+        .keyboardhelp.text insert 0.0 "\n\n\n\
+		First select the model of keyboard that you have (or\
+		the closest equivalent).\n\
+		The small graphic will automatically be updated.\n\n\
+		Next select the layout and any variant or options desired.\n\n\
+		Pressing the 'Apply' button will cause the selected\
+		settings to take effect."
+        button .keyboardhelp.ok -text "Dismiss" \
 		-command "destroy .keyboardhelp"
         focus .keyboardhelp.ok
         pack .keyboardhelp.text .keyboardhelp.ok

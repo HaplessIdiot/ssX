@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.24 1996/08/23 11:03:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.25 1996/08/24 12:51:52 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -793,6 +793,7 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    offset0 %= s3BankSize;
 
    BLOCK_CURSOR;
+   WaitIdleEmpty();
    s3EnableLinear();
    if (bank != old_bank) {
       s3BankSelect(bank);

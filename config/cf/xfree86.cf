@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.100 1996/08/21 13:04:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.101 1996/08/23 11:01:10 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -260,7 +260,11 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 /* This doesn't do everything (yet) */
 #ifndef XF86S3Drivers
-# define XF86S3Drivers		newmmio mmio_928 s3_generic
+# ifndef AlphaArchitecture
+#  define XF86S3Drivers		newmmio mmio_928 s3_generic
+# else
+#  define XF86S3Drivers		mmio_928 s3_generic newmmio
+# endif
 #endif
 
 #ifndef XF86W32Drivers

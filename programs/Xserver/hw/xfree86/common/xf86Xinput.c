@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.15 1996/08/13 11:30:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.16 1996/08/25 14:11:07 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -792,7 +792,8 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     if (HAS_MOTION_HISTORY(local)) {
 	buff = ((char *)local->motion_history +
 		(sizeof(INT32) * local->dev->valuator->numAxes + sizeof(Time)) * local->last);
-    }
+    } else
+    	buff = 0;
     
     va_start(var, num_valuators);
 

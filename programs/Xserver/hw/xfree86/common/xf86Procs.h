@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.7 1996/04/15 11:30:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.8 1996/08/18 01:51:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -32,6 +32,13 @@
 
 _XFUNCPROTOBEGIN
 
+/* xf86Config.c */
+extern void xf86CheckBeta(
+#if NeedFunctionPrototypes
+	int			/* extraDays */,
+	char *			/* key */
+#endif 
+);
 
 /* xf86Config.c */
 

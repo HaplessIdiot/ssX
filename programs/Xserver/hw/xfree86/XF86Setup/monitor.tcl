@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.5 1996/08/20 12:26:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.6 1996/08/24 12:50:49 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -37,6 +37,8 @@ proc Monitor_create_widgets { win } {
 		Monitor_cbox_setentry $w.monitor.sync.monselect [lindex $MonitorIDs 0]
 		bind $w.monitor.sync.monselect.popup.list <ButtonRelease-1> \
 			"+Monitor_monselect $win"
+		bind $w.monitor.sync.monselect.popup.list <Return> \
+			"+Monitor_monselect $win"
 	}
 	frame $w.monitor.sync.horz
 	pack  $w.monitor.sync.horz -side left -padx 10m
@@ -66,6 +68,8 @@ proc Monitor_create_widgets { win } {
 	#pack $canv.list.sb -side left -fill y
 	eval [list $canv.list.lb insert end] $MonitorDescriptions
 	bind $canv.list.lb <ButtonRelease-1> \
+		[list Monitor_setstandard $win $canv]
+	bind $canv.list.lb <Return> \
 		[list Monitor_setstandard $win $canv]
 
 	$canv create rectangle 150  55 550 305 -fill cyan
@@ -145,6 +149,8 @@ proc Monitor_monselect { win } {
 	global monDevNum
 
 	set w [winpathprefix $win]
+	if { ![string length [$w.monitor.sync.monselect curselection]] } \
+		return
 	Monitor_set_configvars $win
 	set monDevNum [$w.monitor.sync.monselect curselection]
 	Monitor_get_configvars $win
@@ -189,6 +195,7 @@ proc Monitor_cbox_setentry { cb text } {
 		$cb see $idx
 		$cb lselection clear 0 end
 		$cb lselection set $idx
+		$cb activate $idx
 	}
 }
 
@@ -198,8 +205,19 @@ proc Monitor_popup_help { win } {
         wm title .monitorhelp "Help"
 	wm geometry .monitorhelp +30+30
         text .monitorhelp.text
-        .monitorhelp.text insert 0.0 "Monitor help text"
-        button .monitorhelp.ok -text "Okay" -command "destroy .monitorhelp"
+        .monitorhelp.text insert 0.0 "\n\n\n\
+		Enter the horizontal and vertical sync rates of your\n\
+		monitor.  These should be listed in your manual.\n\n\
+		If you can not find this information, you can pick from the\n\
+		the list of common monitor capabilities, the one that best\n\
+		describes your monitor, and the appropriate sync rates\n\
+		will be filled in for you.\n\n\
+		It is very important that these values be correct!\n\n\
+		Using video modes that require sync rates beyond the\n\
+		capabilities of your monitor may damage it.\n\
+		The server will automatically exclude any video modes\n\
+		that require sync rates beyond those you enter."
+        button .monitorhelp.ok -text "Dismiss" -command "destroy .monitorhelp"
         pack .monitorhelp.text .monitorhelp.ok
 }
 
@@ -208,6 +226,7 @@ proc Monitor_setstandard { win c } {
 
 	set w [winpathprefix $win]
 	set monidx [$c.list.lb curselection]
+	if ![string length $monidx] return
 	$w.monitor.sync.horz.entry delete 0 end 
 	$w.monitor.sync.horz.entry insert end $MonitorHsyncRanges($monidx)
 	Monitor_sync_ent $w.monitor.sync.horz.entry $c horz

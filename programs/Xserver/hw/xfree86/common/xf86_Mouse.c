@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.16 1996/08/13 11:30:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.17 1996/08/14 14:32:25 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -460,6 +460,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
       dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;
 #endif
+    default: /* There's a table error */
+	continue;
     }
 
     xf86PostMseEvent(device, buttons, dx, dy);

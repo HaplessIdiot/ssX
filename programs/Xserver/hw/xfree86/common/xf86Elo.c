@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.11 1996/06/10 09:14:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.12 1996/07/08 10:26:09 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -907,11 +907,13 @@ xf86EloPrintIdent(unsigned char	*packet)
  *
  ***************************************************************************
  */
+#if 0
 static void
 xf86EloPtrControl(DeviceIntPtr	dev,
 		  PtrCtrl	*ctrl)
 {
 }
+#endif
 
 
 /*

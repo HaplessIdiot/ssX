@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.56 1996/08/14 14:32:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.57 1996/08/18 01:51:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +22,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /* $XConsortium: xf86Init.c /main/19 1996/01/30 15:14:54 kaleb $ */
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern int atoi();
+#endif
 
 #define NEED_EVENTS
 #include "X.h"
@@ -385,9 +391,9 @@ InitInput(argc, argv)
   RegisterPointerDevice(xf86Info.pMouse); 
 
 #ifdef XINPUT
-  ((DevicePtr) xf86Info.pMouse)->devicePrivate = (pointer) xf86Info.mouseLocal;
+  (xf86Info.pMouse)->public.devicePrivate = xf86Info.mouseLocal;
 #else
-  ((DevicePtr) xf86Info.pMouse)->devicePrivate = (pointer) xf86Info.mouseDev;
+  (xf86Info.pMouse)->public.devicePrivate = (pointer) xf86Info.mouseDev;
 #endif
   
 #ifdef XINPUT

@@ -309,7 +309,7 @@
 			  is used)
 
 0.17	23 Aug 1996	Add new C&T README to list and use the
-			  Oak, WstDig, ati, etc. READMEs for the
+(3.1.2Em)		  Oak, WstDig, ati, etc. READMEs for the
 			  Mono & VGA16 servers, as well as SVGA
 			Add ProjectRoot to the list of search directories
 			Start the VGA16 server just w/ Chipset "generic"
@@ -359,3 +359,32 @@
 			  focus window
 			Add keybindings for the arrow keys
 
+0.18	25 Aug 1996	Added online help text
+			Some fixes for mouse device name handling
+			  (David Dawes)
+			Add border to and fix the autorepeat timings for
+			  the readme display box (David Dawes)
+			Improvements to mouse device name patterns
+			  and searching (David Dawes)
+			Change default XF86Config file location to
+			  /etc (David Dawes)
+			Fixed typo that caused the rmdir command to
+			  call the MkDir function (David Dawes)
+			Fixed bug where prompt for config file name
+			  wasn't being removed after saving to the
+			  file
+			Changed "Applying" message in mouse setup to
+			  use the same line as the "Press ? or Alt..."
+			  message
+			Fixed mouse device name handling (completely?)
+			Removed clock probing from card.tcl and
+			  now read clocks from startup messages of
+			  the second server.
+			Added binding to <Return> in listboxes and
+			  improve behavior of arrow keys within
+			  listboxes
+			Set the BoardName to the name selected in the
+			  Card list.
+			Fixed bug where the additional device lines
+			  were appended to instead of replaced when
+			  a new card was picked from the list

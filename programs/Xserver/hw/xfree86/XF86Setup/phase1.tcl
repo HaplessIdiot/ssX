@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.7 1996/08/24 12:50:51 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.8 1996/08/25 14:06:26 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -72,7 +72,6 @@ proc check_for_files { xwinhome } {
 proc set_xf86config_defaults {} {
     global Xwinhome ConfigFile
     global Files Server Keyboard Pointer MonitorIDs DeviceIDs
-    global Pointer_realdevice
 
     if {![catch {xf86config_readfile $Xwinhome files server \
 		keyboard mouse monitor device screen} tmp]} {
@@ -246,44 +245,39 @@ if { [string length $ConfigFile] > 0 } {
 
 set clicks2 [clock clicks]
 
-if { ![getuid] && !$UseConfigFile } {
-    # Check for the SysV Xqueue mouse driver
-    if { [file exists /etc/conf/pack.d/xque]
+if { ![getuid] } {
+    if { $UseConfigFile } {
+	if {[file exists $Pointer(Device)]
+		&& [file type $Pointer(Device)] == "link" } {
+	    set Pointer(RealDev) [readlink $Pointer(Device)]
+	    set Pointer(OldLink) $Pointer(Device)
+	} else {
+	    set Pointer(RealDev) $Pointer(Device)
+	}
+    } else {
+	# Check for the SysV Xqueue mouse driver
+	if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
-	set xque [mesg "Would you like to use the Xqueue driver\n\
+	    set xque [mesg "Would you like to use the Xqueue driver\n\
 			for mouse and keyboard input?" yesno]
-	if $xque {
+	    if $xque {
 		set Keyboard(Protocol)	Xqueue
 		set Pointer(Protocol)	Xqueue
 		set Pointer(Device)	""
-		set Pointer_realdevice	""
+	    }
 	}
-    }
 
-    # Check for the SCO OsMouse
-    if { [file exists /etc/conf/pack.d/cn/class.h]
+	# Check for the SCO OsMouse
+	if { [file exists /etc/conf/pack.d/cn/class.h]
 		&& [file exists /etc/conf/pack.d/ev] } {
-	set osmse [mesg "Would you like to use the system event\
+	    set osmse [mesg "Would you like to use the system event\
 			queue for mouse input?" yesno]
-	if $osmse {
+	    if $osmse {
 		set Pointer(Protocol)	OsMouse
 		set Pointer(Device)	""
-		set Pointer_realdevice	""
+	    }
 	}
     }
-}
-
-if { [getuid] } {
-	set Pointer(Device) ""
-}
-
-if [file exists $Pointer(Device)] {
-	if { [file type $Pointer(Device)] == "link" } {
-		set Pointer_realdevice [readlink $Pointer(Device)]
-		set Pointer(OldLink) $Pointer(Device)
-	} else {
-		set Pointer_realdevice $Pointer(Device)
-	}
 }
 
 set PID [pid]
@@ -312,10 +306,10 @@ if ![mkdir $TmpDir 0700] {
 }
 check_tmpdirs
 
-if [string length $Pointer(Device)] {
+if { ![getuid] } {
 	set Pointer(Device) $TmpDir/mouse
-	if [info exists Pointer_realdevice] {
-		link $Pointer_realdevice $Pointer(Device)
+	if [info exists Pointer(RealDev)] {
+		link $Pointer(RealDev) $Pointer(Device)
 	}
 }
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.2 1996/08/13 11:28:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.3 1996/08/24 12:50:44 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -47,8 +47,16 @@ proc Done_popup_help { win } {
 	wm title .donehelp "Help"
 	wm geometry .donehelp +30+30
 	text .donehelp.text
-	.donehelp.text insert 0.0 "Do you really need help with this?"
-	button .donehelp.ok -text "Okay" -command "destroy .donehelp"
+	.donehelp.text insert 0.0 "\n\n\
+		If you've finished configuring everything, select the\
+		'Okay' button.\n\n\
+		If there are still some configuration screens you\
+		have not completed,\n\
+		pick the appropriate button from the row across the top\
+		and then press\n\
+		'Done' again, when you've finished all of the\
+		configuration screens."
+	button .donehelp.ok -text "Dismiss" -command "destroy .donehelp"
 	focus .donehelp.ok
 	pack .donehelp.text .donehelp.ok
 }

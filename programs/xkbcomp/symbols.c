@@ -473,7 +473,7 @@ Bool		report;
 	return True;
     }
     report= ((warningLevel>9)||
-	     (into->defs.fileID==from->defs.fileID)&&(warningLevel>0));
+	     ((into->defs.fileID==from->defs.fileID)&&(warningLevel>0)));
     for (i=0;i<XkbNumKbdGroups;i++) {
 	if (from->numLevels[i]>0) {
 	    if (into->numLevels[i]==0) {
@@ -831,8 +831,8 @@ ExprResult	tmp;
 	    }
 	}
 	ERROR3("Too many groups of %s for key %s (max %d)\n",name,
-						XkbNumKbdGroups+1,
-						longText(key->name,XkbMessage));
+						longText(key->name,XkbMessage),
+						XkbNumKbdGroups+1);
 	ACTION1("Ignoring %s defined for extra groups\n",name);
 	return False;
     }
@@ -1564,7 +1564,7 @@ ParseCommon	*stmt;
     return;
 }
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 FindKeyForSymbol(XkbDescPtr xkb,KeySym sym,unsigned int *kc_rtrn)
 #else
@@ -1594,7 +1594,7 @@ register Bool	gotOne;
     return False;
 }
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 FindNamedType(XkbDescPtr xkb,Atom name,unsigned *type_rtrn)
 #else

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.5 1996/08/24 12:50:54 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase4.tcl,v 3.6 1996/08/25 14:06:28 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -43,6 +43,7 @@ proc Phase4_nextphase { win } {
 
 	set w [winpathprefix $win]
 	set saveto [$w.saveto.entry get]
+	check_tmpdirs
 	writeXF86Config $Confname-3 -displayof $w -realdevice
 	set backupmsg ""
 	if [file exists $saveto] {
@@ -68,7 +69,7 @@ proc Phase4_nextphase { win } {
 	$w.text configure -text \
 		"The configuration has been completed.\n\n\
 		$backupmsg"
-	pack forget $w.buttons $w.mesg
+	pack forget $w.buttons $w.mesg $w.saveto
 	if $StartServer {
 		set cmd {mesg "Just a moment..." info; shutdown}
 	} else {
@@ -79,7 +80,6 @@ proc Phase4_nextphase { win } {
 	focus  $w.okay
 }
 
-#writeXF86Config $Confname-3 -displayof $w -realdevice
 label  $w.text -text " $msg\
 	You can now run xvidtune to adjust your display settings,\n\
 	if you want to change the size or placement of the screen image\n\n\

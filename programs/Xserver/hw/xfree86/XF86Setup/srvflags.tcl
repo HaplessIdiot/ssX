@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.0 1996/08/13 11:28:36 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/srvflags.tcl,v 3.1 1996/08/24 12:50:57 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -86,8 +86,15 @@ proc Other_popup_help { win } {
         wm title .otherhelp "Help"
 	wm geometry .otherhelp +30+30
         text   .otherhelp.text
-        .otherhelp.text insert 0.0 "Server flags configuration help text"
-        button .otherhelp.ok -text "Okay" -command "destroy .otherhelp"
+        .otherhelp.text insert 0.0 "\n\n\
+		On this screen you can select the settings of various\
+		server options.\n\
+		These should already be set to the values most often used\n\
+		and generally you don't need to make any changes.\n\n\
+		If you would like more information regarding what each\
+		of these do,\n\
+		read the XF86Config man page."
+        button .otherhelp.ok -text "Dismiss" -command "destroy .otherhelp"
         focus  .otherhelp.ok
         pack   .otherhelp.text .otherhelp.ok
 }

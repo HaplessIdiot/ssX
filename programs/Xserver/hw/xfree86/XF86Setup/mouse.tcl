@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.8 1996/08/24 12:50:50 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.9 1996/08/25 14:06:22 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -20,14 +20,14 @@ foreach pat $msePatterns {
 		eval lappend mseDevices [glob /dev/$pat]
 	}
 }
-if [info exists Pointer_realdevice] {
-	lappend mseDevices $Pointer_realdevice
+if [info exists Pointer(RealDev)] {
+	lappend mseDevices $Pointer(RealDev)
 }
 set mseDevices [lrmdups $mseDevices]
 
 proc Mouse_proto_select { win } {
 	global mseType baudRate chordMiddle clearDTR clearRTS sampleRate
-	global Pointer_realdevice
+	global mseDeviceSelected
 
 	set w [winpathprefix $win]
 	set canv $w.mouse.mid.right.canvas
@@ -81,7 +81,7 @@ proc Mouse_proto_select { win } {
 	} else {
 		$w.mouse.chdmid configure -state normal
 	}
-	if { ![info exists Pointer_realdevice] } {
+	if { !$mseDeviceSelected } {
 		$w.mouse.device.entry delete 0 end
 		$w.mouse.device.entry insert 0 \
 			[Mouse_defaultdevice $mseType]
@@ -217,10 +217,10 @@ proc Mouse_create_widgets { win } {
 		-command [list Mouse_setsettings $win]
 	pack $canv $w.mouse.mid.right.apply -side top
 
-	label $w.mouse.bot.wait -text "Applying changes..." \
-		-foreground [$w.mouse.bot cget -background]
-	label $w.mouse.bot.keylist -text "Press ? or Alt-H for a list of key bindings"
-	pack $w.mouse.bot.wait $w.mouse.bot.keylist
+	label $w.mouse.bot.mesg \
+		-text "Press ? or Alt-H for a list of key bindings" \
+		-foreground [$w.mouse.top.title cget -foreground]
+	pack $w.mouse.bot.mesg
 
 	Mouse_getsettings $w
 }
@@ -312,7 +312,7 @@ proc Mouse_popup_help { win } {
  See the documentation for more information
 }
 
-        button .mousehelp.ok -text "Okay" -command "destroy .mousehelp"
+        button .mousehelp.ok -text "Dismiss" -command "destroy .mousehelp"
 	focus .mousehelp.ok
 	.mousehelp.text configure -state disabled
         pack .mousehelp.text .mousehelp.ok
@@ -413,15 +413,16 @@ proc Mouse_set_chdmid { win } {
 }
 
 proc Mouse_setsettings { win } {
-	global mseType baudRate sampleRate clearDTR
+	global mseType baudRate sampleRate clearDTR Pointer
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
-	global Pointer Pointer_realdevice
+	global mseDeviceSelected
 
 	set w [winpathprefix $win]
-	#grab set $w.mouse.bot.wait
-	$w.mouse.bot.wait configure -foreground black
+	$w.mouse.bot.mesg configure -foreground black \
+		-text "Applying..."
 	$win configure -cursor watch
 	update idletasks
+	set mseDeviceSelected 1
 	set msedev [$w.mouse.device.entry get]
 	set em3but off
 	set chdmid off
@@ -431,11 +432,11 @@ proc Mouse_setsettings { win } {
 	if $clearDTR {lappend flags ClearDTR}
 	if $clearRTS {lappend flags ClearRTS}
 	if { "$mseType" == "MouseSystems" } {lappend flags ReOpen}
-	if {[string length $Pointer(Device)] && [string length $msedev]} {
-		set Pointer_realdevice $msedev
+	if [string length $msedev] {
+		set Pointer(RealDev) $msedev
 		check_tmpdirs
 		unlink $Pointer(Device)
-		if [link $Pointer_realdevice $Pointer(Device)] {
+		if [link $Pointer(RealDev) $Pointer(Device)] {
 			lappend flags ReOpen
 		}
 	}
@@ -465,16 +466,16 @@ proc Mouse_setsettings { win } {
 		set Pointer(ClearDTR) [expr $clearDTR?"ON":""]
 		set Pointer(ClearRTS) [expr $clearRTS?"ON":""]
 	}
-	$w.mouse.bot.wait configure \
-		-foreground [$w.mouse.bot cget -background]
+	$w.mouse.bot.mesg configure \
+		-text "Press ? or Alt-H for a list of key bindings" \
+		-foreground [$w.mouse.top.title cget -foreground]
 	$win configure -cursor top_left_arrow
-	#grab release $w.mouse.bot.wait
 }
 
 proc Mouse_getsettings { win } {
-	global mseType mseTypeList baudRate sampleRate clearDTR
+	global mseType mseTypeList baudRate sampleRate clearDTR Pointer
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
-	global Pointer Pointer_realdevice
+	global mseDeviceSelected
 
 	set w [winpathprefix $win]
 	set initlist	[xf86misc_getmouse]
@@ -487,11 +488,19 @@ proc Mouse_getsettings { win } {
 	set initchdmid	[lindex $initlist 6]
 	set initflags	[lrange $initlist 7 end]
 
-	if { [info exists Pointer_realdevice] } {
-		$w.mouse.device.entry insert 0 $Pointer_realdevice
+	set mseDeviceSelected 0
+	if [getuid] {
+	    pack forget $w.mouse.device.title
+	    pack forget $w.mouse.device.entry
+	    pack forget $w.mouse.device.list
 	} else {
+	    if { [info exists Pointer(RealDev)] } {
+		$w.mouse.device.entry insert 0 $Pointer(RealDev)
+		set mseDeviceSelected 1
+	    } else {
 		$w.mouse.device.entry insert 0 \
 			[Mouse_defaultdevice $inittype]
+	    }
 	}
 	Mouse_setlistbox $w $w.mouse.device.list.lb
 	$w.mouse.brate.$initbrate invoke
@@ -514,16 +523,11 @@ proc Mouse_getsettings { win } {
 		$w.mouse.type.osmouse configure -state disabled
 		$w.mouse.type.xqueue  configure -state disabled
 	}
-	if ![string length $Pointer(Device)] {
-		pack forget $w.mouse.device.title
-		pack forget $w.mouse.device.entry
-		pack forget $w.mouse.device.list
-	}
 	$w.mouse.type.$mtype invoke
 }
 
 proc Mouse_setentry { win lbox } {
-	global Pointer_realdevice
+	global Pointer
 
 	set w [winpathprefix $win]
 	set idx [$lbox curselection]
@@ -533,21 +537,22 @@ proc Mouse_setentry { win lbox } {
 	$w.mouse.device.entry delete 0 end
 	set devname [$lbox get $idx]
 	$w.mouse.device.entry insert end $devname
-	set Pointer_realdevice $devname
+	set Pointer(RealDev) $devname
 }
 
 proc Mouse_setlistbox { win lbox } {
-	global Pointer_realdevice mseDevices
+	global Pointer mseDevices
 
 	set w [winpathprefix $win]
 	set devname [$w.mouse.device.entry get]
 	if ![string length $devname] {
 		return
 	}
-	set Pointer_realdevice $devname
+	set Pointer(RealDev) $devname
 	if { [set idx [lsearch $mseDevices $devname]] != -1 } {
 		$lbox selection clear 0 end
 		$lbox selection set $idx
+		$lbox activate $idx
 		$lbox see $idx
 	}
 }

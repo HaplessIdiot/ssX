@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.6 1996/08/24 12:50:56 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.7 1996/08/25 14:06:29 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -112,7 +112,7 @@ proc initconfig {xwinhome} {
 # Write a XF86Config file to the given fd
 
 proc writeXF86Config {filename args} {
-	global Files ServerFlags Keyboard Pointer Pointer_realdevice
+	global Files ServerFlags Keyboard Pointer
 	global MonitorIDs DeviceIDs MonitorStdModes
 	global Scrn_Accel Scrn_Mono Scrn_VGA2 Scrn_VGA16 Scrn_SVGA
 
@@ -171,23 +171,21 @@ proc writeXF86Config {filename args} {
 	puts $fd ""
 	puts $fd {Section "Pointer"}
 	puts $fd "   Protocol        \"$Pointer(Protocol)\""
-	if { [string length $Pointer(Device)] } {
-	    if { [lsearch -exact $args -realdevice] >= 0 
-		    && [info exists Pointer_realdevice] } {
-		set realdev $Pointer_realdevice
-	    } else {
+	if { [lsearch -exact $args -realdevice] >= 0 
+		    && [info exists Pointer(RealDev)] } {
+		set realdev $Pointer(RealDev)
+	} else {
 		set realdev ""
-	    }
-	    if { [string length $realdev ] } {
+	}
+	if { [string length $realdev] } {
 		if {[info exists Pointer(OldLink)]
 			&& ![string compare [readlink $Pointer(OldLink)] $realdev]} {
 		    puts $fd "   Device          \"$Pointer(OldLink)\""
 		} else {
 		    puts $fd "   Device          \"$realdev\""
 		}
-	    } else {
+	} else {
 		puts $fd "   Device          \"$Pointer(Device)\""
-	    }
 	}
 	foreach key {BaudRate Emulate3Timeout SampleRate} {
 		if { [string length $Pointer($key)] } {
@@ -403,7 +401,7 @@ proc start_server { server configfile outfile } {
 	global env TmpDir Xwinhome serverNumber
 
 	if { ![info exists serverNumber] } {
-		set serverNumber 1
+		set serverNumber 7
 	} else {
 		incr serverNumber
 	}
@@ -497,7 +495,6 @@ proc save_state {} {
 	set fd [open $StateFileName w]
 
 	global Dialog Confname ConfigFile UseConfigFile StartServer
-	global Pointer_realdevice
 	puts $fd [list set Dialog $Dialog]
 	puts $fd [list set Confname $Confname]
 	puts $fd [list set ConfigFile $ConfigFile]
@@ -506,7 +503,6 @@ proc save_state {} {
 	puts $fd [list set XF86SetupDir $XF86SetupDir]
 	puts $fd [list set TmpDir $TmpDir]
 	puts $fd [list set PID $PID]
-	puts $fd [list set Pointer_realdevice $Pointer_realdevice]
 	global DeviceIDs MonitorIDs
 	puts $fd [list set DeviceIDs $DeviceIDs]
 	puts $fd [list set MonitorIDs $MonitorIDs]

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.4 1996/08/18 01:47:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.5 1996/08/24 12:50:52 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -138,8 +138,28 @@ proc Intro_popup_help { win } {
 	wm title .introhelp "Help"
 	wm geometry .introhelp +30+30
 	text   .introhelp.text
-	.introhelp.text insert 0.0 "Do you really need help with this?"
-	button .introhelp.ok -text "Okay" -command "destroy .introhelp"
+	.introhelp.text insert 0.0 "\n\
+		You need to fill in the requested information on each\
+		of the five\n\
+		configuration screens.  The buttons along the top allow\
+		you to choose which\n\
+		screen you are going to work on.  You can do them in\
+		any order or go back\n\
+		to each of them as many times as you like, however,\
+		it will be very\n\
+		difficult to use some of them if your mouse is not\
+		working, so you\n\
+		should configure your mouse first.\n\n\
+		Until you get your mouse working, here are some keys you\
+		can use:\n\n\
+		\ \ Tab, Ctrl-Tab    Move to the \"next\" widget\n\
+		\ \ Shift-Tab        Move to the \"previous\" widget\n\
+		\ \ <Arrow keys>     Move in the appropriate direction\n\
+		\ \ Return           Activate the selected widget\n\n\
+		Also, you can press Alt and one of the underlined letters\
+		to activate the\n\
+		corresponding button."
+	button .introhelp.ok -text "Dismiss" -command "destroy .introhelp"
 	focus  .introhelp.ok
 	pack   .introhelp.text .introhelp.ok
 }

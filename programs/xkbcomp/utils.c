@@ -1,7 +1,7 @@
 
   /*\
    * $XConsortium: utils.c /main/3 1996/01/14 16:48:22 kaleb $
-   * $XFree86: xc/programs/xkbcomp/utils.c,v 3.1 1996/01/16 15:09:02 dawes Exp $
+   * $XFree86: xc/programs/xkbcomp/utils.c,v 3.2 1996/08/25 14:15:03 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -205,7 +205,7 @@ int	i;
     for (i=0;i<uEntryLevel;i++) {
 	putc(' ',entryFile);
     }
-    fprintf(entryFile,"---> 0x%x\n",rtVal);
+    fprintf(entryFile,"---> %p\n",rtVal);
     return;
 }
 
@@ -620,7 +620,7 @@ uStrCaseCmp(str1, str2)
     char c, *s;
     register int n;
 
-    for (n=0, s = buf1; c = *str1++; n++) {
+    for (n=0, s = buf1; (c = *str1++) != '\0'; n++) {
 	if (isupper(c))
 	    c = tolower(c);
 	if (n>510)
@@ -628,7 +628,7 @@ uStrCaseCmp(str1, str2)
 	*s++ = c;
     }
     *s = '\0';
-    for (n=0, s = buf2; c = *str2++; n++) {
+    for (n=0, s = buf2; (c = *str2++) != '\0'; n++) {
 	if (isupper(c))
 	    c = tolower(c);
 	if (n>510)
@@ -641,20 +641,20 @@ uStrCaseCmp(str1, str2)
 
 int
 #if NeedFunctionPrototypes
-uStrCasePrefix(char *prefix,char *str)
+uStrCasePrefix(char *my_prefix,char *str)
 #else
-uStrCasePrefix(prefix, str)
-    char *prefix, *str;
+uStrCasePrefix(my_prefix, str)
+    char *my_prefix, *str;
 #endif
 {
     char c1;
     char c2;
-    while (((c1=*prefix)!='\0')&&((c2=*str)!='\0')) {
+    while (((c1=*my_prefix)!='\0')&&((c2=*str)!='\0')) {
 	if (isupper(c1))	c1= tolower(c1);
 	if (isupper(c2))	c2= tolower(c2);
 	if (c1!=c2)
 	    return 0;
-	prefix++; str++;
+	my_prefix++; str++;
     }
     if (c1!='\0')
 	return 0;

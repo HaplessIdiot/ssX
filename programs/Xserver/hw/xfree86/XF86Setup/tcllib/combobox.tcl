@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tcllib/combobox.tcl,v 3.3 1996/08/20 13:09:35 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tcllib/combobox.tcl,v 3.4 1996/08/24 12:51:37 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -24,7 +24,7 @@ proc combobox {w args} {
 	toplevel $w.popup -cursor top_left_arrow
 
 	listbox $w.popup.list -yscroll "$w.popup.sb set" \
-		-selectmode single -relief sunken -bd 1m
+		-selectmode browse -relief sunken -bd 1m
 	scrollbar $w.popup.sb -command "$w.popup.list yview"
 
 	set topwin [winfo toplevel $w]

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.0 1996/07/08 10:26:10 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -211,10 +211,6 @@ extern void miPointerDeltaCursor(
     unsigned long /*time*/
 #endif
 );
-
-#if NeedFunctionPrototypes
-static LocalDevicePtr xf86SumAllocateTablet(void);
-#endif
 
 #if !defined(sun) || defined(i386)
 /*
@@ -438,8 +434,8 @@ xf86SumReadInput(LocalDevicePtr local)
 		    if (!is_core_pointer)
 			xf86PostProximityEvent(device, 1, 0, 2, x, y);
 
-		if (is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y))
-		       || !is_absolute && (x || y)) {
+		if ((is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y)))
+		       || (!is_absolute && (x || y))) {
 		    if (is_absolute || priv->sumOldProximity) {
 			xf86PostMotionEvent(device, is_absolute, 0, 2, x, y);
 		    }
@@ -575,8 +571,6 @@ xf86SumOpen(LocalDevicePtr local)
     char		buffer[256];
     int			err;
     SummaDevicePtr	priv = (SummaDevicePtr)local->private;
-    int			a, b;
-    int			loop, idx;
 
     DBG(1, ErrorF("opening %s\n", priv->sumDevice));
 
@@ -873,8 +867,6 @@ static int
 xf86SumChangeControl(LocalDevicePtr local, xDeviceCtl *control)
 {
     xDeviceResolutionCtl	*res;
-    int				*resolutions;
-    char			str[10];
 
     res = (xDeviceResolutionCtl *)control;
 	

@@ -29,6 +29,7 @@
 #include "tokens.h"
 #include "expr.h"
 
+#include <ctype.h>
 
 /***====================================================================***/
 
@@ -240,7 +241,7 @@ int		rg;
     if ((!str)||(sscanf(str,"%i",&rg)<1)||(rg<1)||(rg>XkbMaxRadioGroups))
 	return False;
     val_rtrn->uval= rg;
-    return;
+    return True;
 }
 
 int
@@ -838,11 +839,13 @@ char *		bogus= NULL;
 	    ERROR1("%s of string values not permitted\n",bogus);
 	    return False;
 	case OpNot:	 
+	    left= expr->value.child;
 	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
 		ERROR("The ! operator cannot be applied to a string\n");
 	    }
 	    return False;
 	case OpUnaryPlus:
+	    left= expr->value.child;
 	    if (ExprResolveString(left,&leftRtrn,lookup,lookupPriv)) {
 		ERROR("The + operator cannot be applied to a string\n");
 	    }

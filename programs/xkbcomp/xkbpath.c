@@ -1,5 +1,5 @@
 /* $XConsortium: xkbpath.c /main/4 1996/01/14 16:48:53 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.0 1996/02/09 08:22:57 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -320,7 +320,7 @@ XkbFindFileInPath(name,type,pathRtrn)
 #endif
 {
 register int i;
-FILE	*file;
+FILE	*file = 0;
 int	 nameLen,typeLen,pathLen;
 char	 buf[PATH_MAX],*typeDir;
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase3.tcl,v 3.1 1996/08/20 13:09:27 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase3.tcl,v 3.2 1996/08/24 12:50:53 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -42,6 +42,28 @@ if { $ServerPID < 1 } {
 	if { $ServerPID < 1 } {
 		mesg "Ack! Unable to get the VGA16 server going again!" info
 		exit 1
+	}
+}
+
+if { ![string length [set Device_${devid}(ClockChip)]] } {
+	set fd [open $TmpDir/ServerOut-2 r]
+	set clockrates ""
+	set zerocount 0
+	while {[gets $fd line] >= 0} {
+		if {[regexp {\(.*: clocks: (.*)$} $line dummy clocks]} {
+			set clocks [string trim [squash_white $clocks]]
+			foreach clock [split $clocks] {
+				lappend clockrates $clock
+				if { $clock < 0.1 } {
+					incr zerocount
+				}
+			}
+		}
+	}
+	close $fd
+	set clockcount [llength $clockrates]
+	if { $clockcount != 0 && 1.0*$zerocount/$clockcount < 0.25 } {
+		set Device_${devid}(Clocks) $clockrates
 	}
 }
 

@@ -3,7 +3,7 @@
 
   /*\
    * $XConsortium: utils.h /main/3 1996/01/14 16:48:26 kaleb $
-   * $XFree86$
+   * $XFree86: xc/programs/xkbcomp/utils.h,v 3.0 1996/08/25 14:15:05 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -75,12 +75,14 @@ typedef	int		Comparison;
 
 _XFUNCPROTOBEGIN
 
+#if 0
 typedef union {
 	int		 i;
 	unsigned	 u;
 	void		*p;
 	void		*(*fp)();
 } Union;
+#endif
 
 /***====================================================================***/
 
