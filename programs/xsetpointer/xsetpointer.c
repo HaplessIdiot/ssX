@@ -1,4 +1,27 @@
-/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.1 1995/12/23 10:12:32 dawes Exp $ */
+/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.2 1995/12/23 12:02:45 dawes Exp $ */
+
+/*
+ * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
+ *                                                                            
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is  hereby granted without fee, provided that
+ * the  above copyright   notice appear  in   all  copies and  that both  that
+ * copyright  notice   and   this  permission   notice  appear  in  supporting
+ * documentation, and that   the  name of  Frederic   Lepied not  be  used  in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific,  written      prior  permission.     Frederic  Lepied   makes  no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.                   
+ *                                                                            
+ * FREDERIC  LEPIED DISCLAIMS ALL   WARRANTIES WITH REGARD  TO  THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED   WARRANTIES OF MERCHANTABILITY  AND   FITNESS, IN NO
+ * EVENT  SHALL FREDERIC  LEPIED BE   LIABLE   FOR ANY  SPECIAL, INDIRECT   OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA  OR PROFITS, WHETHER  IN  AN ACTION OF  CONTRACT,  NEGLIGENCE OR OTHER
+ * TORTIOUS  ACTION, ARISING    OUT OF OR   IN  CONNECTION  WITH THE USE    OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
 
 #include <stdio.h>
 #include <X11/Xproto.h>
@@ -115,7 +138,7 @@ main(int argc, char * argv[])
     exit(0);
   }
   else {
-    fprintf(stderr, "No device found\n");
+    fprintf(stderr, "Extended device %s not found\n", argv[1]);
     exit(1);
   }
 }

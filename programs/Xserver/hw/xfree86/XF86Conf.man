@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86Conf.man,v 1.5 95/01/16 13:16:10 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.23 1995/11/30 13:02:46 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.24 1995/12/26 06:03:29 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2B"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -717,7 +717,7 @@ The \fBJoystick\fP and \fBJoystick2\fP subsections support the following entries
 sets the path to the special file which represents the device driver.
 .TP 4
 .B DeviceName \fI"name"\fP
-sets the name of the X device name.
+sets the name of the X device.
 .TP 4
 .B TimeOut \fItimeout\fP
 sets the time (in milliseconds) between two polls of the device driver.
@@ -762,7 +762,15 @@ the tablet is plugged. This entry is shared between the three subsections.
 You have to specify it only once.
 .TP 4
 .B DeviceName \fI"name"\fP
-sets the name of the X device name.
+sets the name of the X device.
+.TP 4
+.B Suppress \fInumber\fP
+sets the position increment under which not to transmit coordinates.
+This entry is shared between the three subsections.
+You have to specify it only once.
+.TP 4
+.B Mode \fIRelative|Absolute\fP
+sets the mode of the device.
 .RE
 .TP
 The \fBElographics\fP subsection support the following entries:
@@ -772,7 +780,7 @@ The \fBElographics\fP subsection support the following entries:
 sets the path to the special file which represents the device driver.
 .TP 4
 .B DeviceName \fI"name"\fP
-sets the name of the X device name.
+sets the name of the X device.
 .TP 4
 .B MaximumXPosition \fIposition\fP
 sets the maximum X position reported by the touchscreen.
@@ -786,7 +794,7 @@ sets the maximum Y position reported by the touchscreen.
 .B MinimumYPosition \fIposition\fP
 sets the minimum Y position reported by the touchscreen.
 .TP 4
-.B Screen \fInumber\fP
+.B ScreenNo \fInumber\fP
 sets the screen number where the touchscreen is connected.
 .TP 4
 .B UntouchDelay \fIvalue\fP

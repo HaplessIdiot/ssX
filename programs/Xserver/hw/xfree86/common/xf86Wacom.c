@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.1 1995/12/26 06:08:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.2 1996/01/10 05:39:11 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -43,6 +43,12 @@ static const char rcs_id[] = "Id: xf86Wacom.c,v 1.3 1995/12/20 14:01:59 lepied E
 #include "XIproto.h"
 
 #if defined(sun) && !defined(i386)
+#define POSIX_TTY
+#include <errno.h>
+#include <termio.h>
+#include <fcntl.h>
+#include <ctype.h>
+
 #include "extio.h"
 #else
 #include "compiler.h"
@@ -88,6 +94,7 @@ LocalDeviceRec	wacom_eraser_device;
 typedef struct 
 {
   char          *wcmDevice;     /* device file name */
+  int		wcmSuppress;	/* transmit position if increment is superior */
   int           wcmOldX;        /* previous X position */
   int           wcmOldY;        /* previous Y position */
   int           wcmOldZ;        /* previous pressure */
@@ -114,6 +121,7 @@ typedef struct
 
 static WacomDeviceRec  wacom_private = {
   "/dev/ttya",			/* device file name */            
+  20,				/* transmit position if increment is superior */
   -1,                           /* previous X position */         
   -1,                           /* previous Y position */         
   -1,                           /* previous pressure */           
@@ -145,14 +153,28 @@ static WacomDeviceRec  wacom_private = {
 #define ERASER_SECTION_NAME "wacomeraser"
 #define PORT		1
 #define DEVICENAME	2
+#define THE_MODE	3
+#define SUPPRESS	4
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
   { ENDSUBSECTION,	"endsubsection" },
   { PORT,		"port" },
   { DEVICENAME,		"devicename" },
-  { -1,			"" },
+  { THE_MODE,		"mode" },
+  { SUPPRESS,		"suppress" },
+  { -1,			"" }
 };
+
+#define RELATIVE	1
+#define ABSOLUTE	2
+
+static SymTabRec ModeTabRec[] = {
+  { RELATIVE,	"relative" },
+  { ABSOLUTE,	"absolute" },
+  { -1,		"" }
+};
+  
 #endif
 
 /******************************************************************************
@@ -163,6 +185,7 @@ static SymTabRec WcmTab[] = {
 #define XI_CURSOR "CURSOR"	/* X device name for the cursor */
 #define XI_ERASER "ERASER"	/* X device name for the eraser */
 #define MAX_VALUE 100           /* number of positions */
+#define MAXTRY 50               /* max number of try to receive magic number */
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
 #define WC_RESET_IV	"#\r"	/* reset to wacom IV command set */
@@ -172,12 +195,12 @@ static SymTabRec WcmTab[] = {
 
 #define WC_MULTI	"MU1\r"	/* multi mode input */
 #define WC_UPPER_ORIGIN	"OC1\r"	/* origin in upper left */
-#define WC_SUPPRESS	"SU20\r" /* suppress mode */
+#define WC_SUPPRESS	"SU"	/* suppress mode */
 #define WC_ALL_MACRO	"~M0\r"	/* enable all macro buttons */
-#define WC_NO_MACRO1	"~M1\r"	/* disbale macro buttons of group 1 */
-#define WC_RATE 	"IT0\r"	/* max transmit rate (unit of 5 ms) */ 
+#define WC_NO_MACRO1	"~M1\r"	/* disable macro buttons of group 1 */
+#define WC_RATE 	"IT0\r"	/* max transmit rate (unit of 5 ms) */
 
-static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN WC_SUPPRESS WC_ALL_MACRO WC_NO_MACRO1
+static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN WC_ALL_MACRO WC_NO_MACRO1
 WC_RATE;
 
 #define COMMAND_SET_MASK	0xc0
@@ -228,7 +251,8 @@ xf86WcmConfig(LocalDevicePtr     dev,
 	      LexPtr             val)
 {
   WacomDevicePtr	priv = (WacomDevicePtr)(dev->private);
-  int token;
+  int			token;
+  int			mtoken;
   
   DBG(1, ErrorF("xf86WcmConfig\n"));
       
@@ -252,7 +276,33 @@ xf86WcmConfig(LocalDevicePtr     dev,
       if (xf86Verbose)
 	ErrorF("%s Wacom port is %s\n", XCONFIG_GIVEN, priv->wcmDevice);
       break;
-      
+
+    case THE_MODE:
+      mtoken = xf86GetToken(ModeTabRec);
+      if ((mtoken == EOF) || (mtoken == STRING) || (mtoken == NUMBER)) 
+	xf86ConfigError("Mode type token expected");
+      else {
+	switch (mtoken) {
+	case ABSOLUTE:
+	  dev->private_flags = dev->private_flags | ABSOLUTE_FLAG;
+	  break;
+	case RELATIVE:
+	  dev->private_flags = dev->private_flags & ~ABSOLUTE_FLAG; 
+	  break;
+	default:
+	  xf86ConfigError("Illegal Mode type");
+	  break;
+	}
+      }
+      break;
+
+    case SUPPRESS:
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Option number expected");
+      priv->wcmSuppress = val->num;
+      if (xf86Verbose)
+	ErrorF("%s Wacom suppress value is %d\n", XCONFIG_GIVEN, priv->wcmSuppress);      
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break;
@@ -314,7 +364,8 @@ send_request(int	fd,
     struct timeval	timeout;
     int			err;
     fd_set		readfds;
-
+    int                 maxtry = MAXTRY;
+    
     FD_ZERO(&readfds);
     FD_SET(fd, &readfds);
     
@@ -333,13 +384,14 @@ send_request(int	fd,
 
     do {    
       SYSCALL(nr = read(fd, answer, 1));
-      if (nr == -1) Error("read");
+      if ((nr == -1) && (errno != EAGAIN)) Error("read");
+      maxtry--;
       
-    } while (answer[0] != request[0]);
+    } while ((answer[0] != request[0]) && maxtry);
 
     do {    
       SYSCALL(nr = read(fd, answer+1, 1));
-      if (nr == -1) Error("read");
+      if ((nr == -1) && (errno != EAGAIN)) Error("read");
 
       if (answer[1] != request[1])
 	answer[0] = answer[1];
@@ -355,8 +407,10 @@ send_request(int	fd,
   do {    
     SYSCALL(nr = read(fd, answer+len, 1));
     
-    if (nr == -1)
-      Error("read");
+    if (nr == -1) {
+      if (errno != EAGAIN)
+        Error("read");
+    }
     else
       len += nr;
   } while (answer[len-1] != '\r');
@@ -365,6 +419,7 @@ send_request(int	fd,
   
   return answer;
 }
+
 /*
  * xf86WcmReadInput --
  *      Read the new events from the device, and enqueue them.
@@ -668,12 +723,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 
   err = tcsetattr(local->fd, TCSANOW, &termios_tty);
   if (err == -1) {
-    Error("tcsetattr");
-    return !Success;
-  }
-  err = tcsendbreak(local->fd, 1);
-  if (err == -1) {
-    Error("tcsendbreak");
+    Error("tcsetattr TCSANOW");
     return !Success;
   }
 #else
@@ -701,7 +751,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     }
   
   DBG(2, ErrorF("reading model\n"));
-  if (!send_request(local->fd, WC_MODEL, buffer))
+  if (!send_request(local->fd, WC_MODEL, buffer)) 
     return !Success;
   DBG(2, ErrorF("%s\n", buffer));
 
@@ -723,24 +773,41 @@ xf86WcmOpen(LocalDevicePtr	local)
   DBG(2, ErrorF("setup is max X=%d max Y=%d resol X=%d resol Y=%d\n", priv->wcmMaxX, priv->wcmMaxY,
 		priv->wcmResolX, priv->wcmResolY));
   
-  if (xf86Verbose)
-    ErrorF("%s Wacom tablet maximum X=%d maximum Y=%d X resolution=%d Y resolution=%d\n",
-	   XCONFIG_PROBED,  priv->wcmMaxX, priv->wcmMaxY,
-	   priv->wcmResolX, priv->wcmResolY);
-  
   /* send a setup string to the tablet */
   SYSCALL(err = write(local->fd, setup_string, strlen(setup_string)));
-  if (err == -1)
-    {
+  if (err == -1) {
+    Error("write");
+    return !Success;
+  }
+  else {
+    char	buf[20];
+
+    if (priv->wcmSuppress < 0) {
+      priv->wcmSuppress = 0;
+    }
+    else {
+      if (priv->wcmSuppress > 100) {
+	priv->wcmSuppress = 99;
+      }
+    }
+    sprintf(buf, "%s%d\r",  WC_SUPPRESS, priv->wcmSuppress);
+    SYSCALL(err = write(local->fd, buf, strlen(buf)));
+
+    if (err == -1) {
       Error("write");
       return !Success;
     }
+  }
     
-  if (err <= 0)
-    {
-      SYSCALL(close(local->fd));
-      return !Success;
-    }
+  if (xf86Verbose)
+    ErrorF("%s Wacom tablet maximum X=%d maximum Y=%d X resolution=%d Y resolution=%d suppress=%d\n",
+	   XCONFIG_PROBED,  priv->wcmMaxX, priv->wcmMaxY,
+	   priv->wcmResolX, priv->wcmResolY, priv->wcmSuppress);
+  
+  if (err <= 0) {
+    SYSCALL(close(local->fd));
+    return !Success;
+  }
 
   return Success;
 }
@@ -869,6 +936,7 @@ xf86WcmProc(pWcm, what)
 	    else {
 	      if (xf86WcmOpen(local) != Success) {
 		SYSCALL(close(local->fd));
+                local->fd = -1;
 		return !Success;
 	      }
 	    }
@@ -886,6 +954,7 @@ xf86WcmProc(pWcm, what)
 	    else {
 	      if (xf86WcmOpen(local) != Success) {
 		SYSCALL(close(local->fd));
+                local->fd = -1;
 		return !Success;
 	      }
 	    }
@@ -903,6 +972,7 @@ xf86WcmProc(pWcm, what)
 	    else {
 	      if (xf86WcmOpen(local) != Success) {
 		SYSCALL(close(local->fd));
+                local->fd = -1;
 		return !Success;
 	      }
 	    }
@@ -987,7 +1057,7 @@ xf86WcmSwitchMode(ClientPtr	client,
   DBG(3, ErrorF("xf86WcmSwitchMode dev=0x%x mode=%s\n", dev, mode));
   
   if (mode == Absolute) {
-    local->private_flags = local->private_flags & ABSOLUTE_FLAG;
+    local->private_flags = local->private_flags | ABSOLUTE_FLAG;
   }
   else {
     if (mode == Relative) {

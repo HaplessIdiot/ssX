@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.0 1995/12/23 09:38:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.1 1995/12/26 06:08:22 dawes Exp $ */
 
 static const char rcs_id[] = "Id: xf86Jstk.c,v 1.1 1995/12/20 14:02:12 lepied Exp";
 
@@ -91,10 +91,10 @@ JoystickDevRec  joystick_private = {
   -1,                           /* jstkOldX */
   -1,                           /* jstkOldY */
   -1,                           /* jstkOldButtons */
-  -1,                           /* jstkMaxX */
-  -1,                           /* jstkMaxY */
-  -1,                           /* jstkMinX */
-  -1,                           /* jstkMinY */
+  1000,				/* jstkMaxX */
+  1000,				/* jstkMaxY */
+  0,				/* jstkMinX */
+  0,				/* jstkMinY */
   -1,                           /* jstkCenterX */
   -1,                           /* jstkCenterY */
   100};                         /* jstkDelta */
@@ -107,10 +107,10 @@ JoystickDevRec  joystick2_private = {
   -1,                           /* jstkOldX */
   -1,                           /* jstkOldY */
   -1,                           /* jstkOldButtons */
-  -1,                           /* jstkMaxX */
-  -1,                           /* jstkMaxY */
-  -1,                           /* jstkMinX */
-  -1,                           /* jstkMinY */
+  1000,				/* jstkMaxX */
+  1000,				/* jstkMaxY */
+  0,				/* jstkMinX */
+  0,				/* jstkMinY */
   -1,                           /* jstkCenterX */
   -1,                           /* jstkCenterY */
   100};                         /* jstkDelta */
@@ -330,8 +330,8 @@ xf86JstkEvents(OsTimerPtr        timer,
                   x, y, priv->jstkCenterX, priv->jstkCenterY,
                   v0, v1, buttons));
     
-    if ((abs(x - priv->jstkCenterX) > 10) ||
-        (abs(y - priv->jstkCenterY) > 10))
+    if ((abs(v0) > (priv->jstkDelta / 20)) ||
+        (abs(v1) > (priv->jstkDelta / 20)))
       {
 	PostMotionEvent(device, 0, 0, 2, v0, v1);
 	
@@ -458,6 +458,8 @@ xf86JstkProc(pJstk, what)
         pJstk->public.on = TRUE;
         DBG(2, ErrorF("priv->jstkTimer=0x%x\n", priv->jstkTimer));
       }
+      else
+        return !Success;
     break;
       
     case DEVICE_OFF:

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.64 1995/12/23 09:38:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.65 1996/01/05 06:28:52 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -844,7 +844,6 @@ xf86Config (vtopen)
       configScreenSection();
 #ifdef XINPUT
     } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
-      /* not really a section for the moment */
       configExtendedInputSection(&val);
 #endif
     } else {

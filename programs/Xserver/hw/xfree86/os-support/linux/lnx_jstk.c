@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.1 1995/12/26 06:09:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.2 1995/12/31 12:04:37 dawes Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
@@ -48,36 +48,53 @@ extern int errno;
 int
 xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
-  int   status;
+  int			fd;
   struct JS_DATA_TYPE   js;
-  
+  extern int		xf86Verbose;
+    
 #ifdef DEBUG
   ErrorF("xf86JoystickOn %s\n", name);
 #endif
-  
-  if ((status = open(name, O_RDWR | O_NDELAY)) < 0)
+
+  if ((fd = open(name, O_RDWR | O_NDELAY)) < 0)
     {
-      ErrorF("xf86JoystickOn: Cannot open joystick '%s' (%s)\n", name,
+      ErrorF("Cannot open joystick '%s' (%s)\n", name,
             strerror(errno));
       return -1;
     }
 
-  *timeout = 50;
-  
-  ErrorF("xf86JoystickOn: Timeout value changed to %d\n", *timeout);
+  if (*timeout == 0) {
+    if (ioctl (fd, JS_GET_TIMELIMIT, timeout) == -1) {
+      Error("joystick JS_GET_TIMELIMIT ioctl");
+    }
+    else {
+      if (xf86Verbose) {
+	ErrorF("(--) Joystick timeout value = %d\n", *timeout);
+      }
+    }
+  }
+  else {
+    if (ioctl(fd, JS_SET_TIMELIMIT, timeout) == -1) {
+      Error("joystick JS_SET_TIMELIMIT ioctl");
+    }
+  }
 
   /* Assume the joystick is centred when this is called */
-  read(status, &js, JS_RETURN);
+  read(fd, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    ErrorF("xf86JoystickOn: CenterX set to %d\n", *centerX);
+    if (xf86Verbose) {    
+      ErrorF("(--) Joystick CenterX set to %d\n", *centerX);
+    }
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    ErrorF("xf86JoystickOn: CenterY set to %d\n", *centerY);
+    if (xf86Verbose) {    
+      ErrorF("(--) Joystick CenterY set to %d\n", *centerY);
+    }
   }
   
-  return status;
+  return fd;
 }
 
 /***********************************************************************
