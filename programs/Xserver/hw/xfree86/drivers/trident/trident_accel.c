@@ -111,6 +111,7 @@ TridentAccelInit(ScreenPtr pScreen)
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
+    pTrident->InitializeAccelerator = TridentInitializeAccelerator;
     TridentInitializeAccelerator(pScrn);
 
     if (!(pTrident->Chipset == TGUI9440AGi && pScrn->bitsPerPixel > 8)) 

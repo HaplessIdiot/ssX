@@ -555,10 +555,13 @@ static Bool
 NVEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    NVPtr pNv = NVPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVEnterVT\n"));
 
-    RivaEnterLeave(pScrn, TRUE);
+    vgaHWUnlock(hwp);
+    pNv->riva.LockUnlock(&pNv->riva, 0);
     if (!NVModeInit(pScrn, pScrn->currentMode))
         return FALSE;
     NVAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -586,10 +589,14 @@ static void
 NVLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    NVPtr pNv = NVPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVLeaveVT\n"));
 
     NVRestore(pScrn);
-    RivaEnterLeave(pScrn, FALSE);
+    pNv->riva.LockUnlock(&pNv->riva, 1);
+    vgaHWLock(hwp);
 }
 
 /*
@@ -611,11 +618,12 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (pScrn->vtSema) {
         NVRestore(pScrn);
+        pNv->riva.LockUnlock(&pNv->riva, 1);
         vgaHWLock(hwp);
-        NVUnmapMem(pScrn);
-        vgaHWUnmapMem(pScrn);
     }
 
+    NVUnmapMem(pScrn);
+    vgaHWUnmapMem(pScrn);
     if (pNv->AccelInfoRec)
         XAADestroyInfoRec(pNv->AccelInfoRec);
     if (pNv->CursorInfoRec)
@@ -702,11 +710,9 @@ NVdoDDC(ScrnInfoPtr pScrn)
 	}
     } 
 #endif
-
      if (pNv->pInt)
          xf86FreeInt10(pNv->pInt);
      pNv->pInt = NULL;
-
     if (!pNv->Primary) {
         /* XXX Need to write an NV mode ddc1SetSpeed */
         if (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed) {
@@ -720,7 +726,8 @@ NVdoDDC(ScrnInfoPtr pScrn)
     NVSave(pScrn);
 
     /* Enable access to extended registers */
-    RivaEnterLeave(pScrn, TRUE);
+    vgaHWUnlock(hwp);
+    pNv->riva.LockUnlock(&pNv->riva, 0);
 
     /* It is now safe to talk to the card */
 #if NVuseI2C
@@ -755,14 +762,15 @@ NVdoDDC(ScrnInfoPtr pScrn)
 #endif /* NVuseI2C */
         /* Read and output monitor info using DDC1 */
         if (pNv->ddc1Read && pNv->DDC1SetSpeed) {
+#if 0
             MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, pNv->DDC1SetSpeed,
                                       pNv->ddc1Read );
             xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
                        MonInfo);
             xf86PrintEDID( MonInfo );
             xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+#endif
         }
-
     /* Restore previous state */
     NVRestore(pScrn);
 
@@ -823,7 +831,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
     /* Initialize the card through int10 interface if needed */
-     if ( !pNv->Primary && xf86LoadSubModule(pScrn, "int10")){
+#if 0
+     if ( !pNv->Primary &&)
+#endif
+       if (xf86LoadSubModule(pScrn, "int10")){
  
  	xf86LoaderReqSymLists(int10Symbols, NULL);
  
@@ -1565,6 +1576,8 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     } else {
 	/* Save the current state */
+        vgaHWUnlock(hwp);
+        pNv->riva.LockUnlock(&pNv->riva, 0);
 	NVSave(pScrn);
 	/* Initialise the first mode */
 	if (!NVModeInit(pScrn, pScrn->currentMode))

@@ -43,17 +43,11 @@
 /* All drivers implementing backing store need this */
 #include "mibstore.h"
 
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
-#define PSZ 8			       /* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "fb.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
+
 #include "xf86RAC.h"
 #include "xf86Resources.h"
 #include "xf86int10.h"
@@ -226,6 +220,53 @@ static OptionInfoRec TsengOptions[] =
 	{0}, FALSE}
 };
 
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
+
+static const char *vgaHWSymbols[] = {
+  "vgaHWMapMem",
+  "vgaHWUnmapMem",
+  "vgaHWGetHWRec",
+  "vgaHWGetIOBase",
+  "vgaHWHandleColormaps",
+  "vgaHWUnlock",
+  "vgaHWLock",
+  "vgaHWSaveScreen",
+  "vgaHWInit",
+  "vgaHWSave", 
+  "vgaHWRestore",
+  "vgaHWBlankScreen",
+  "vgaHWSeqReset",
+  "vgaHWProtect",
+  NULL
+};
+
+static const char* fbSymbols[] = {
+  "xf1bppScreenInit",
+  "xf4bppScreenInit",
+  "fbScreenInit",
+  "fbScreenInit", 
+  "fbPictureInit",
+  NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tsengSetup);
@@ -264,6 +305,12 @@ tsengSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Modules that this driver always requires can be loaded here
 	 * by calling LoadSubModule().
 	 */
+	/*
+	 * Tell the loader about symbols from other modules that this module
+	 * might refer to.
+	 */
+	LoaderRefSymLists(vgaHWSymbols, fbSymbols, xaaSymbols,
+			  ramdacSymbols,  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1460,7 +1507,6 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     TsengPtr pTseng;
     MessageType from;
     int i;
-    char *mod = NULL;
 
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -1497,6 +1543,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 #if 1
     if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86Int10InfoPtr pInt;
+	xf86LoaderReqSymLists(int10Symbols, NULL);
 #if 1
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(pTseng->pEnt->index);
@@ -1507,7 +1554,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
-
+    xf86LoaderReqSymLists(vgaHWSymbols, NULL);
     /*
      * Allocate a vgaHWRec
      */
@@ -1658,17 +1705,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     /* Set the default visual. */
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1)) 
 	return FALSE;
-    } else {
-	/* Tseng doesn't support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		" (%s) is not supported at depth %d\n",
-		xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     /* The gamma fields must be initialised when using the new cmap code */
     if (pScrn->depth > 1) {
@@ -1782,43 +1820,46 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
-	mod = "xf1bpp";
+	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
+	  TsengFreeRec(pScrn);
+	  return FALSE;
+	}
+	xf86LoaderReqSymbols("xf1bppScreenInit", NULL);
 	break;
     case 4:
-	mod = "xf4bpp";
+	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
+	  TsengFreeRec(pScrn);
+	  return FALSE;
+	}
+	xf86LoaderReqSymbols("xf4bppScreenInit", NULL);
 	break;
-    case 8:
-	mod = "cfb";
-	break;
-    case 16:
-	mod = "cfb16";
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    mod = "cfb24";
-	else
-	    mod = "xf24_32bpp";
-	break;
-    case 32:
-	mod = "cfb32";
-	break;
+    default:
+	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	  TsengFreeRec(pScrn);
+	  return FALSE;
+	}
+	xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+	xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
+       break;
     }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	TsengFreeRec(pScrn);
-	return FALSE;
-    }
+
     /* Load XAA if needed */
     if (pTseng->UseAccel)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
+    xf86LoaderReqSymLists(xaaSymbols, NULL);
     /* Load ramdac if needed */
-    if (pTseng->HWCursor)
+    if (pTseng->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
 /*    TsengLock(); */
 
     return TRUE;
@@ -1981,18 +2022,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* XXX Fill the screen with black */
 
     /*
-     * The next step is to setup the screen's visuals, and initialise the
-     * framebuffer code.  In cases where the framebuffer's default
-     * choices for things like visual layouts and bits per RGB are OK,
-     * this may be as simple as calling the framebuffer's ScreenInit()
-     * function.  If not, the visuals will need to be setup before calling
-     * a fb ScreenInit() function and fixed up after.
-     *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
-     * are not appropriate.  In this driver, we fixup the visuals after.
-     */
-
-    /*
      * Reset visual list.
      */
     miClearVisualTypes();
@@ -2005,16 +2034,11 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * miSetVisualTypes for each visual supported.
      */
 
-    if (pScrn->depth > 8) {
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      pScrn->defaultVisual))
-	    return FALSE;
-    } else {
-	if (!miSetVisualTypes(pScrn->depth,
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
-    }
+    if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+			  pScrn->defaultVisual))
+      return FALSE;
+
+    miSetPixmapDepths ();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -2034,36 +2058,15 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
-    case 8:
-	ret = cfbScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-				  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-				  pScrn->displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-				     pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-				     pScrn->displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
-	break;
     default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-	    "Internal error: invalid bpp (%d) in TsengScrnInit\n",
-	    pScrn->bitsPerPixel);
-	ret = FALSE;
+        ret  = fbScreenInit(pScreen, pTseng->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+	if (ret)
+	  fbPictureInit(pScreen, 0, 0);
+#endif
 	break;
     }
     if (!ret)

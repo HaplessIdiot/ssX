@@ -66,7 +66,11 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define I_S_DEFAULT_INT_VECT 0xFF065
 #define SYS_SIZE 0x100000
 #define SYS_BIOS 0xF0000
+#if 0
 #define BIOS_SIZE 0x10000
+#else /* a bug in DGUX requires this - let's try it */
+#define BIOS_SIZE (0x10000 - 1)
+#endif
 #define LOW_PAGE_SIZE 0x600
 #define V_RAM 0xA0000
 #define VRAM_SIZE 0x20000

@@ -100,6 +100,7 @@ static void	TRIDENTDisableMMIO(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTInit(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTEnable(ScrnInfoPtr pScrn);
 static void	PC98TRIDENTDisable(ScrnInfoPtr pScrn);
+
 /*
  * This is intentionally screen-independent.  It indicates the binding
  * choice made in the first PreInit.
@@ -201,6 +202,7 @@ typedef enum {
     OPTION_SETMCLK,
     OPTION_MUX_THRESHOLD,
     OPTION_SHADOW_FB,
+    OPTION_ROTATE,
     OPTION_MMIO_ONLY,
 #if 0
     /* obsolete */
@@ -218,6 +220,7 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_SETMCLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE,  	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
 #if 0
         /* obsolete */
     { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -423,7 +426,7 @@ tridentLCD LCD[] = {   /* 0    3    4    5   6    7    10   11  16 */
     { 0,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
     { 1,"800x600",40000,0x7f,0x99,0x69,0x99,0x72,0xf0,0x59,0x2d,0x5e,0x08},
     { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
-    { 3,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
+    { 3,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08}, /*0x96*/
     { 4,"1280x1024",108000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96,0x08},
     { 5,"1024x600",50500 ,0xa3,0x6,0x8f,0xa0,0xb,0x3e,0xea,0x8c,0xb,0x08},
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -432,7 +435,7 @@ tridentLCD LCD[] = {   /* 0    3    4    5   6    7    10   11  16 */
 tridentLCD LCD[] = { 
     { 1,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb,0x08},
     { 3,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
-    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x96,0x08},
+    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x0a,0x08},
     { 0,"1280x1024",108000,0xce,0x81,0xa6,0x9a,0x27,0x50,0x00,0x03,0x26,0xa8},
     { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -570,6 +573,9 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     CARD8 DPMSCont, PMCont, temp;
+
+    if (!pScrn->vtSema)
+	return;
 
     OUTB(0x3C4, 0x0E);
     temp = INB(0x3C5);
@@ -965,42 +971,6 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 }
 
 static void
-TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int width, height, Bpp, FBPitch;
-    unsigned char *src, *dst;
-   
-    Bpp = pScrn->bitsPerPixel >> 3;
-    FBPitch = BitmapBytePad(pScrn->displayWidth * pScrn->bitsPerPixel);
-
-    while(num--) {
-	width = (pbox->x2 - pbox->x1) * Bpp;
-	height = pbox->y2 - pbox->y1;
-	src = pTrident->ShadowPtr + (pbox->y1 * pTrident->ShadowPitch) + 
-						(pbox->x1 * Bpp);
-	dst = pTrident->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
-
-	while(height--) {
-	    memcpy(dst, src, width);
-	    dst += FBPitch;
-	    src += pTrident->ShadowPitch;
-	}
-	
-	pbox++;
-    }
-} 
-
-static void
-TRIDENTShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage)
-{
-    ScrnInfoPtr pScrn;
-    pScrn = xf86Screens[pScreen->myNum];
-
-    TRIDENTRefreshArea (pScrn, REGION_NUM_RECTS(damage), REGION_RECTS(damage));
-}
-
-static void
 TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -1028,7 +998,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     const char *Sym = "";
     Bool ddcLoaded = FALSE;
-    
+    char *s;
+
     /* Allocate the TRIDENTRec driverPrivate */
     if (!TRIDENTGetRec(pScrn)) {
 	return FALSE;
@@ -1235,10 +1206,50 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 						pTrident->MUXThreshold);
     }
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SHADOW_FB, FALSE)) {
-	pTrident->ShadowFB = TRUE;
-	pTrident->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
+        if (!pTrident->Linear) 
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Ignoring Option SHADOW_FB"
+		       " in non-Linear Mode\n");
+	else if (pScrn->depth < 8) 
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Tgnoring Option SHADOW_FB"
+		       " when depth < 8");
+	else {
+	    pTrident->ShadowFB = TRUE;
+	    pTrident->NoAccel = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	}
+    }
+    pTrident->Rotate = 0;
+    if ((s = xf86GetOptValString(TRIDENTOptions, OPTION_ROTATE))) {
+        if (!pTrident->Linear) 
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Ignoring Option ROTATE "
+		       "in non-Linear Mode\n");
+	else if (pScrn->depth < 8) 
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Tgnoring Option ROTATE "
+		       "when depth < 8");
+	else {
+	    if(!xf86NameCmp(s, "CW")) {
+	        /* accel is disabled below for shadowFB */
+	        pTrident->ShadowFB = TRUE;
+		pTrident->NoAccel = TRUE;
+		pTrident->HWCursor = FALSE;
+		pTrident->Rotate = 1;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		       "Rotating screen clockwise - acceleration disabled\n");
+	    } else if(!xf86NameCmp(s, "CCW")) {
+ 	        pTrident->ShadowFB = TRUE;
+		pTrident->NoAccel = TRUE;
+		pTrident->HWCursor = FALSE;
+		pTrident->Rotate = -1;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+			   "counter clockwise - acceleration disabled\n");
+	    } else {
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+			   "value for Option \"Rotate\"\n", s);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			   "Valid options are \"CW\" or \"CCW\"\n");
+	    }
+	}
     }
 
     /* FIXME ACCELERATION */
@@ -2306,6 +2317,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int ret;
     VisualPtr visual;
     unsigned char *FBStart;
+    int width, height, displayWidth;
 
     /* 
      * First get the ScrnInfoRec
@@ -2364,28 +2376,27 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup the visuals we support. */
 
-    /*
-     * For bpp > 8, the default visuals are not acceptable because we only
-     * support TrueColor and not DirectColor.
-     */
+    if (!miSetVisualTypes(pScrn->depth, 
+			  miGetDefaultVisualMask(pScrn->depth),
+			  pScrn->rgbBits, pScrn->defaultVisual))
+      return FALSE;
 
-    if (pScrn->bitsPerPixel > 8) {
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      pScrn->defaultVisual))
-	    return FALSE;
-    } else {
-	if (!miSetVisualTypes(pScrn->depth, 
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
-    }
     miSetPixmapDepths ();
 
     /* FIXME - we don't do shadowfb for < 4 */
+    displayWidth = pScrn->displayWidth;
+    if (pTrident->Rotate) {
+	height = pScrn->virtualX;
+	width = pScrn->virtualY;
+    } else {
+	width = pScrn->virtualX;
+	height = pScrn->virtualY;
+    }
+
     if(pTrident->ShadowFB) {
- 	pTrident->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * pScrn->virtualX);
-        pTrident->ShadowPtr = xalloc(pTrident->ShadowPitch * pScrn->virtualY);
-	pScrn->displayWidth = pTrident->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+ 	pTrident->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+        pTrident->ShadowPtr = xalloc(pTrident->ShadowPitch * height);
+	displayWidth = pTrident->ShadowPitch / (pScrn->bitsPerPixel >> 3);
         FBStart = pTrident->ShadowPtr;
     } else {
 	pTrident->ShadowFB = FALSE;
@@ -2400,22 +2411,22 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
+	ret = xf1bppScreenInit(pScreen, FBStart, width,
+			height, pScrn->xDpi, pScrn->yDpi, 
+			displayWidth);
 	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth);
+	ret = xf4bppScreenInit(pScreen, FBStart, width,
+			height, pScrn->xDpi, pScrn->yDpi, 
+			displayWidth);
 	break;
     case 8:
     case 16:
     case 24:
     case 32:
-	ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-			pScrn->displayWidth, pScrn->bitsPerPixel);
+	ret = fbScreenInit(pScreen, FBStart, width,
+			height, pScrn->xDpi, pScrn->yDpi, 
+			displayWidth, pScrn->bitsPerPixel);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -2520,11 +2531,35 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     if(pTrident->ShadowFB) {
+        if(pTrident->Rotate) {
+	    if (!pTrident->PointerMoved) {
+	        pTrident->PointerMoved = pScrn->PointerMoved;
+		pScrn->PointerMoved = TRIDENTPointerMoved;
+	    }
+	    switch (pScrn->bitsPerPixel) {
+#if 1	      
+	    case 8:    pTrident->RefreshArea = TRIDENTRefreshArea8; break;
+	    case 16:   pTrident->RefreshArea = TRIDENTRefreshArea16; break;
+	    case 24:   pTrident->RefreshArea = TRIDENTRefreshArea24; break;
+	    case 32:   pTrident->RefreshArea = TRIDENTRefreshArea32; break;
+#else
+	    case 8:    shadowInit (pScreen, shadowUpdateRotate8, 0); break;
+	    case 16:    shadowInit (pScreen, shadowUpdateRotate16, 0); break;
+	    case 24:    shadowInit (pScreen, shadowUpdateRotate32, 0); break;
+#endif
+	    }
+	} else {
+	  pTrident->RefreshArea = TRIDENTRefreshArea;
 #if 0
-	RefreshAreaFuncPtr refreshArea = TRIDENTRefreshArea;
-	ShadowFBInit(pScreen, refreshArea);
+	  shadowInit (pScreen, shadowUpdatePacked, 0);
+#endif
+	}
+#if 1
+#if 0
+	ShadowFBInit(pScreen, pTrident->RefreshArea);
 #else
 	shadowInit (pScreen, TRIDENTShadowUpdate, 0);
+#endif
 #endif
     }
 
@@ -2641,6 +2676,9 @@ TRIDENTEnterVT(int scrnIndex, int flags)
     /* Should we re-save the text mode on each VT enter? */
     if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
+
+    if (pTrident->InitializeAccelerator)
+        pTrident->InitializeAccelerator(pScrn);
 
     return TRUE;
 }

@@ -994,6 +994,13 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	TestFree (found);
 	TestFree (name);
 	TestFree (p);
+
+	/*
+	 * If you need to do something to keep the
+	 * instruction cache in sync with the main
+	 * memory before jumping to that code, you may
+	 * do it here.
+	 */
 #ifdef __alpha__
 	istream_mem_barrier();
 #endif

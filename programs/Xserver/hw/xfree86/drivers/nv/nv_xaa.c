@@ -69,6 +69,7 @@ NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     RIVA_FIFO_FREE(pNv->riva, Clip, 2);
     pNv->riva.Clip->TopLeft     = (y1     << 16) | (x1 & 0xffff);
     pNv->riva.Clip->WidthHeight = (height << 16) | width;
+    mem_barrier();
 }
 
 
@@ -142,6 +143,7 @@ NVSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
+    mem_barrier();
 }
 
 /*
@@ -160,10 +162,14 @@ NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 {
     NVPtr pNv = NVPTR(pScrn);
 
+/*      ErrorF("E SubseqSS\n");  */
     RIVA_FIFO_FREE(pNv->riva, Blt, 3);
     pNv->riva.Blt->TopLeftSrc  = (y1 << 16) | x1;
     pNv->riva.Blt->TopLeftDst  = (y2 << 16) | x2;
     pNv->riva.Blt->WidthHeight = (h  << 16) | w;
+    mem_barrier();
+/*        ErrorF("L SubseqSS\n");  */
+
 }
 
 
@@ -199,6 +205,7 @@ NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 	bg  = (bg == -1) ? 0 : bg | pNv->opaqueMonochrome;
     };
     NVSetPattern(pNv, bg, fg, patternx, patterny);
+    mem_barrier();
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = fg;
 }
@@ -213,6 +220,7 @@ NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y;
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
+    mem_barrier();
 }
 
 
@@ -224,8 +232,9 @@ NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 void NVSync(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
-
+/*      ErrorF("sync enter\n"); */
     while (pNv->riva.Busy(&pNv->riva));
+/*      ErrorF("sync leave\n");     */
 }
 
 /* Color expansion */
@@ -458,6 +467,8 @@ NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
     NVPtr pNv = NVPTR(pScrn);
 
     NVSetRopSolid(pNv, rop);
+    mem_barrier();
+    RIVA_FIFO_FREE(pNv->riva, Line, 1);
     pNv->FgColor = color;
 }
 
@@ -473,6 +484,7 @@ NVSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len, int dir)
         pNv->riva.Line->Lin[0].point1 = ((y << 16) | (( x + len ) & 0xffff));
     else
         pNv->riva.Line->Lin[0].point1 = (((y + len) << 16) | ( x & 0xffff));
+    mem_barrier();
 }
 
 static void 
@@ -491,6 +503,7 @@ NVSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
         pNv->riva.Line->Lin[1].point0 = ((y2 << 16) | (x2 & 0xffff));
         pNv->riva.Line->Lin[1].point1 = (((y2 + 1) << 16) | (x2 & 0xffff));
     }
+    mem_barrier();
 }
 
 #else
@@ -553,6 +566,7 @@ NVSubsequentSolidHorVertLine(
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
+    mem_barrier();
 }
 
 #ifndef NV_USE_FB
@@ -757,6 +771,7 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
    
     NVDisableClipping(pScrn);
+
     return(XAAInit(pScreen, infoPtr));
 }
 

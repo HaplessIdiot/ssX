@@ -89,6 +89,9 @@ neo_I2CInit(ScrnInfoPtr pScrn)
     I2CPtr->scrnIndex  = pScrn->scrnIndex;
     I2CPtr->I2CPutBits = neo_I2CPutBits;
     I2CPtr->I2CGetBits = neo_I2CGetBits;
+    /* increase these as the defaults are too low */
+    I2CPtr->RiseFallTime = 2;
+    I2CPtr->HoldTime = 40;
 
     if (!xf86I2CBusInit(I2CPtr))
       return FALSE;

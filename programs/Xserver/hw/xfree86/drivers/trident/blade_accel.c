@@ -146,6 +146,7 @@ BladeAccelInit(ScreenPtr pScreen)
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
+    pTrident->InitializeAccelerator = BladeInitializeAccelerator;
     BladeInitializeAccelerator(pScrn);
 
     infoPtr->Flags = PIXMAP_CACHE |

@@ -56,12 +56,14 @@ typedef unsigned int   U032;
 /*
  * HW access macros.
  */
-#define NV_WR08(p,i,d)  (((U008 *)(p))[i]=(d))
-#define NV_RD08(p,i)    (((U008 *)(p))[i])
-#define NV_WR16(p,i,d)  (((U016 *)(p))[(i)/2]=(d))
-#define NV_RD16(p,i)    (((U016 *)(p))[(i)/2])
-#define NV_WR32(p,i,d)  (((U032 *)(p))[(i)/4]=(d))
-#define NV_RD32(p,i)    (((U032 *)(p))[(i)/4])
+#include "xf86_OSproc.h"
+/* these assume memory-mapped I/O, and not normal I/O space */
+#define NV_WR08(p,i,d)  MMIO_OUT8((volatile pointer)(p), (i), (d))
+#define NV_RD08(p,i)    MMIO_IN8((volatile pointer)(p), (i))
+#define NV_WR16(p,i,d)  MMIO_OUT16((volatile pointer)(p), (i), (d))
+#define NV_RD16(p,i)    MMIO_IN16((volatile pointer)(p), (i))
+#define NV_WR32(p,i,d)  MMIO_OUT32((volatile pointer)(p), (i), (d))
+#define NV_RD32(p,i)    MMIO_IN32((volatile pointer)(p), (i))
 #if 1
 #define VGA_WR08(p,i,d) NV_WR08(p,i,d)
 #define VGA_RD08(p,i)   NV_RD08(p,i)

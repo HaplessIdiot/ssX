@@ -32,26 +32,6 @@
 #include "nvvga.h"
 
 /*
- * Lock and unlock VGA and SVGA registers.
- */
-void RivaEnterLeave(ScrnInfoPtr pScrn, Bool enter)
-{
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
-    NVPtr pNv = NVPTR(pScrn);
-     
-    if (enter)
-    {
-        vgaHWUnlock(hwp);
-        pNv->riva.LockUnlock(&pNv->riva, 0);
-    }
-    else
-    {
-        pNv->riva.LockUnlock(&pNv->riva, 1);
-        vgaHWLock(hwp);
-    }
-}
-
-/*
  * Override VGA I/O routines.
  */
 static void NVWriteCrtc(vgaHWPtr pVga, CARD8 index, CARD8 value)
@@ -279,7 +259,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     pNv->Dac.maxPixelClock = pNv->riva.MaxVClockFreqKHz;
 
-    RivaEnterLeave(pScrn, TRUE);
+    vgaHWUnlock(VGAHWPTR(pScrn));
+    pNv->riva.LockUnlock(&pNv->riva, 0);
 }
 
 void

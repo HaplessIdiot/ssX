@@ -468,6 +468,10 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 	FatalError("\n_LoaderFileToMem() read() failed: %s\n",strerror(errno));
 
 #if defined(linux) && defined(__powerpc__) 
+    /*
+     * Keep the instruction cache in sync with changes in the
+     * main memory.
+     */
     { 
 	int i; 
 	for (i = 0; i < size; i += 16) 

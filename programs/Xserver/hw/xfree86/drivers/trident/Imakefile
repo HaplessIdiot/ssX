@@ -8,10 +8,12 @@ XCOMM
 
 SRCS = trident_driver.c trident_dac.c tridenthelper.c \
        trident_accel.c trident_i2c.c trident_bank.c \
-       image_accel.c blade_accel.c tvga_dac.c trident_dga.c
+       image_accel.c blade_accel.c tvga_dac.c trident_dga.c \
+       trident_shadow.c 
 OBJS = trident_driver.o trident_dac.o tridenthelper.o \
        trident_accel.o trident_i2c.o trident_bank.o \
-       image_accel.o blade_accel.o tvga_dac.o trident_dga.o
+       image_accel.o blade_accel.o tvga_dac.o trident_dga.o \
+       trident_shadow.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -19,7 +21,7 @@ INCLUDES = -I. -I../../include
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mi -I$(XF86SRC)/xaa -I$(SERVERSRC)/fb \
 	   -I$(XF86SRC)/xf1bpp -I$(SERVERSRC)/miext/shadow \
-	   -I$(SERVERSRC)/render \
+	   -I$(SERVERSRC)/render -I$(XF86SRC)/shadowfb \
 	   -I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/mfb \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
            -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
@@ -55,6 +57,7 @@ InstallDriverSDKNonExecFile(trident_dac.c,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(trident_dga.c,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(trident_driver.c,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(trident_i2c.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_shadow.c,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(trident_regs.h,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(tridenthelper.c,$(DRIVERSDKDIR)/drivers/trident)
 InstallDriverSDKNonExecFile(tridentramdac.c,$(DRIVERSDKDIR)/drivers/trident)
