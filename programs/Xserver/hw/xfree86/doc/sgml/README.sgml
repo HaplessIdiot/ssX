@@ -5,7 +5,7 @@
 <!ENTITY % threediffs 'IGNORE'> <!-- patch is split into three diff files -->
 <!ENTITY % fourdiffs 'INCLUDE'> <!-- patch is split into four diff files -->
 <!ENTITY % difftar 'INCLUDE'> <!-- patch also contains a tarball -->
-<!ENTITY % removefiles 'IGNORE'> <!-- patching requires removing some files -->
+<!ENTITY % removefiles 'INCLUDE'> <!-- patching requires removing some files -->
 ]>
 
 
@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>15 January 2002
+<date>16 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.117 2001/06/05 20:12:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.118 2002/01/15 21:51:50 dawes Exp $
 </ident>
 
 <abstract>
@@ -346,10 +346,14 @@ gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff4.gz | patch -p0 -E
 <![ %difftar; [
 <![ %removefiles; [
 <tscreen><verb>
-rm -f xc/programs/xieperf/images/image.012
-rm -fr xc/fonts/bdf/latin2
-rm -fr xc/fonts/bdf/100dpi
-rm -fr xc/fonts/bdf/75dpi
+rm -f xc/extras/freetype2/builds/mac/ftlib.prj
+rm -fr xc/extras/freetype2/docs/design 
+rm -fr xc/extras/freetype2/docs/glyphs
+rm -fr xc/extras/freetype2/docs/image
+rm -fr xc/extras/freetype2/docs/tutorial
+rm -f xc/programs/Xserver/hw/darwin/bundle/English.lproj/MainMenu.nib/objects.nib
+rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/Localizable.strings
+rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/MainMenu.nib/objects.nib
 </verb></tscreen>
 ]]>
 <tscreen><verb>
