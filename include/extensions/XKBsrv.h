@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.19 2001/03/25 05:31:59 tsi Exp $ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.20 2001/08/01 00:44:35 tsi Exp $ */
 
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
@@ -1383,20 +1383,6 @@ extern XPointer XkbDDXPreloadConfig(
 	XkbRF_VarDefsPtr	/* defs */,
 	XkbComponentNamesPtr	/* names */,
 	DeviceIntPtr		/* dev */
-#endif
-);
-
-extern	int XkbDDXUsesSoftRepeat(
-#if NeedFunctionPrototypes
-	DeviceIntPtr 	/* pXDev */
-#endif
-);
-
-extern	void XkbDDXFakePointerMotion(
-#if NeedFunctionPrototypes
-	unsigned int		/* flags */,
-	int			/* x */,
-	int			/* y */
 #endif
 );
 
