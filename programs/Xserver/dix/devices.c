@@ -48,6 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: devices.c,v 5.46 94/08/16 13:45:06 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "misc.h"
