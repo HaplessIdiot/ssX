@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.27 2001/01/30 15:03:34 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.26 2001/01/17 19:42:35 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1572,8 +1572,6 @@ XawTextSourceAddAnchor(Widget w, XawTextPosition position)
 	if (position - panchor->position < ANCHORS_DIST)
 	    return (panchor);
 
-	anchor = XtNew(XawTextAnchor);
-
 	if (panchor->cache && panchor->position + panchor->cache->offset +
 	    panchor->cache->length < position)
 	    pentity = entity = panchor->cache;
@@ -1591,6 +1589,10 @@ XawTextSourceAddAnchor(Widget w, XawTextPosition position)
 	    if (panchor->position + entity->offset < position)
 		position = panchor->position + entity->offset;
 
+	    if (position == panchor->position)
+		return (panchor);
+
+	    anchor = XtNew(XawTextAnchor);
 	    diff = position - panchor->position;
 
 	    panchor->cache = NULL;
@@ -1604,8 +1606,10 @@ XawTextSourceAddAnchor(Widget w, XawTextPosition position)
 		entity = entity->next;
 	    }
 	}
-	else
+	else {
+	    anchor = XtNew(XawTextAnchor);
 	    anchor->entities = NULL;
+	}
     }
     else {
 	anchor = XtNew(XawTextAnchor);
@@ -1943,8 +1947,10 @@ _XawTextSourceFindAnchor(Widget w, XawTextPosition position)
 
     anchor = XawTextSourceFindAnchor(w, position);
 
+    position -= position % ANCHORS_DIST;
+
     if (position - anchor->position >= ANCHORS_DIST)
-	return (XawTextSourceAddAnchor(w, position - (position % ANCHORS_DIST)));
+	return (XawTextSourceAddAnchor(w, position));
 
     return (anchor);
 }
