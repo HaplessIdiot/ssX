@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.37 1994/11/19 07:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.38 1994/12/11 10:53:54 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -81,6 +81,10 @@ extern Bool (*s3ClockSelectFunc) ();
 extern int s3DisplayWidth;
 extern Bool s3Localbus;
 extern Bool s3Mmio928;
+extern Bool s3PixelMultiplexing;
+extern pointer vgaBase;
+extern pointer vgaBaseLow;
+extern pointer vgaBaseHigh;
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
@@ -117,6 +121,20 @@ s3CleanUp(void)
    UNLOCK_SYS_REGS;
    
    vgaProtect(TRUE);
+
+   if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+       !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
+       s3Mmio928) {
+     /*
+       Clear bit 7 of CRTC register 5C to map video memory normally.
+     */
+     int CR5C;
+     outb(vgaCRIndex, 0x5C);
+     CR5C = inb(vgaCRReg);
+     outb(vgaCRIndex, 0x5C);
+     outb(vgaCRReg, CR5C & ~0x80);
+     vgaBase = vgaBaseLow;
+   }
 
    WaitQueue(8);
    outb(vgaCRIndex, 0x35);
@@ -338,7 +356,6 @@ s3Init(mode)
 {
    short i, m;
    int   interlacedived = mode->Flags & V_INTERLACE ? 2 : 1;
-   int   pixel_multiplexing;
    unsigned char tmp, tmp1, tmp2, CR5C;
    unsigned int itmp;
    extern Bool s3DAC8Bit, s3DACSyncOnGreen;
@@ -376,7 +393,8 @@ s3Init(mode)
        */
       if (S3_964_SERIES(s3ChipId) && !DAC_IS_TI3025)
          s3SAM256 = 0x40;
-      else if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))
+      else if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
+	       OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
          s3SAM256 = 0x80; /* set 6 MCLK cycles for R/W time on Mercury */
       else
          s3SAM256 = 0x00;
@@ -578,9 +596,9 @@ s3Init(mode)
    }
 
    if (s3UsingPixMux && (mode->Flags & V_PIXMUX))
-      pixel_multiplexing = TRUE;
+      s3PixelMultiplexing = TRUE;
    else
-      pixel_multiplexing = FALSE;
+      s3PixelMultiplexing = FALSE;
 
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
@@ -599,12 +617,12 @@ s3Init(mode)
       pixMuxShift = 0;
    else if ((S3_928_SERIES(s3ChipId) && 
 	     (DAC_IS_TI3020 || DAC_IS_BT485_SERIES)) &&
-            pixel_multiplexing) {
+            s3PixelMultiplexing) {
       if (s3Bpp == 4)      pixMuxShift = 0;  /* 32 bit */
       else if (s3Bpp == 2) pixMuxShift = 1;  /* 16 bit */
       else                 pixMuxShift = 2;  /*  8 bit */
-   } else if (pixel_multiplexing)  
-      pixMuxShift = 2; /* old default for   if (pixel_multiplexing) shifting */
+   } else if (s3PixelMultiplexing)  
+      pixMuxShift = 2; /* old default for   if (s3PixelMultiplexing) shifting */
    else 
       pixMuxShift = 0;
 
@@ -647,9 +665,9 @@ s3Init(mode)
       /*
        * Make sure that parallel option is already set correctly before
        * changing the clock doubler state.
-       * XXXX maybe the !pixel_multiplexing bit is not required?
+       * XXXX maybe the !s3PixelMultiplexing bit is not required?
        */
-      if (pixel_multiplexing) {
+      if (s3PixelMultiplexing) {
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x20);
 	 outb(0x3C7, 0x21);
@@ -670,6 +688,22 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x00);
       }
+   }
+
+   if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+       !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
+       s3Mmio928) {
+     /*
+       Set bit 7 of CRTC register 5C to map video memory with
+       LAW31-26 = 011111 rather than 000000.  Note that this remaps
+       all addresses seen by the 928, including the VGA Base Address.
+     */
+     int CR5C;
+     outb(vgaCRIndex, 0x5C);
+     CR5C = inb(vgaCRReg);
+     outb(vgaCRIndex, 0x5C);
+     outb(vgaCRReg, CR5C | 0x80);
+     vgaBase = vgaBaseHigh;
    }
 
    /* Don't change the clock bits when using an external clock program */
@@ -782,7 +816,7 @@ s3Init(mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
-      if (pixel_multiplexing) { /* x64:pixmux */
+      if (s3PixelMultiplexing) { /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
 	 int daccomm;
 	 tmp = xf86getdaccomm();
@@ -819,7 +853,7 @@ s3Init(mode)
 	    /* don't know */
 	 }
       }
-      else { /* !pixel_multiplexing */
+      else { /* !s3PixelMultiplexing */
 	 outb(vgaCRIndex, 0x33);
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp &  ~0x08 );
@@ -864,7 +898,7 @@ s3Init(mode)
 	 else {
 	    /* don't know */
 	 }
-      }  /* end of pixel_multiplexing */
+      }  /* end of s3PixelMultiplexing */
 
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
@@ -878,7 +912,7 @@ s3Init(mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
-      if (pixel_multiplexing) {
+      if (s3PixelMultiplexing) {
 	 /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
          daccomm |= 0x08;           /* enable extended pixel modes */
@@ -913,7 +947,7 @@ s3Init(mode)
 	 }
       }
       else 
-      { /* !pixel_multiplexing */
+      { /* !s3PixelMultiplexing */
 	 outb(vgaCRIndex, 0x33);
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp &  ~0x08 );
@@ -980,7 +1014,7 @@ s3Init(mode)
 	 else {
 	    /* don't know */
 	 }
-      }  /* end of pixel_multiplexing */
+      }  /* end of s3PixelMultiplexing */
 
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
@@ -997,7 +1031,7 @@ s3Init(mode)
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
-      if (pixel_multiplexing)
+      if (s3PixelMultiplexing)
       {
 	 /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
@@ -1092,8 +1126,22 @@ s3Init(mode)
    }
 
    if (s3Bt485PixMux) {
-      if (pixel_multiplexing) {
+      if (s3PixelMultiplexing) {
          /* fun timing mods for pixel-multiplexing!                     */
+
+         /*
+	   Pixel Multiplexing is selected for 16bpp, 32bpp, or 8bpp
+	   with Width > 1024.  Pixel Multiplexing requires we also
+	   Select Parallel VRAM Addressing (CR53.5), and Parallel
+	   VRAM Addressing also requires a line width of 1024 or
+	   2048, external SID enabled (CR55.3), and split transfers
+	   disabled (CR51.6).
+	 */
+	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
+	   outb(vgaCRIndex, 0x53);
+	   tmp = inb(vgaCRReg);
+	   outb(vgaCRReg, tmp | 0x20);
+	 }
 
 	 if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options))	
 	 {
@@ -1148,7 +1196,13 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x65);
 	 tmp = inb(vgaCRReg);
 
-         if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+         if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+	   /*
+	     Setting this register non-zero on the Pegasus causes a wrap of
+	     the rightmost pixels back to the left of the display.
+	   */
+	   outb(vgaCRReg, 0x00);
+         else if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
 	    outb(vgaCRReg, tmp | 0x20);
  	    /* set s3 reg65 for some unknown reason                      */
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
@@ -1234,7 +1288,7 @@ s3Init(mode)
 	 else
 	    s3OutBtReg(BT_COMMAND_REG_2, 0x00, tmp);
 
-      }  /* end of pixel_multiplexing */
+      }  /* end of s3PixelMultiplexing */
    }
 
    /* Set 6/8 bit mode and sync-on-green if required */
@@ -1292,7 +1346,7 @@ s3Init(mode)
 	    outb(vgaCRReg, 0x00);
       }
 
-      if (pixel_multiplexing) {
+      if (s3PixelMultiplexing) {
 	 /* fun timing mods for pixel-multiplexing!                     */
 
 	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
@@ -1525,7 +1579,7 @@ s3Init(mode)
             s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_S3_DAC_8BIT);
          else
             s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_S3_DAC_6BIT);
-      }  /* end of pixel_multiplexing */
+      }  /* end of s3PixelMultiplexing */
 
       /* for some reason the bios doesn't set this properly          */
       s3OutTiIndReg(TI_SENSE_TEST, 0x00, 0x00);
@@ -1567,7 +1621,10 @@ s3Init(mode)
    outb(vgaCRIndex, 0x32);
    outb(vgaCRReg, 0x00);
    outb(vgaCRIndex, 0x33);
-   outb(vgaCRReg, 0x20);
+   if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+     /* Blank border comes earlier than display enable. */
+     outb(vgaCRReg, 0x00);
+   else outb(vgaCRReg, 0x20);
    outb(vgaCRIndex, 0x34);
    outb(vgaCRReg, 0x10);		/* 1024 */
    outb(vgaCRIndex, 0x35);
@@ -1584,7 +1641,7 @@ s3Init(mode)
    else
 #endif
    outb(vgaCRReg, 0xb5);		/* was 95 */
-   
+
    outb(vgaCRIndex, 0x3b);
    outb(vgaCRReg, (new->CRTC[0] + new->CRTC[4] + 1) / 2);
    outb(vgaCRIndex, 0x3c);
@@ -1599,7 +1656,10 @@ s3Init(mode)
    } else {
       if (s3Localbus) {
 	 i = (inb(vgaCRReg) & 0xf2);
-	 s3Port40 = (i | 0x05);
+	 if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+	   /* Set no wait states on STB Pegasus. */
+	   s3Port40 = (i | 0x01);
+	 else s3Port40 = (i | 0x05);
 	 outb(vgaCRReg, s3Port40);
       } else {
 	 i = (inb(vgaCRReg) & 0xf6);
@@ -1704,6 +1764,16 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x51);
       s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
+
+      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
+	if (s3PixelMultiplexing)
+	  /* In Pixel Multiplexing mode, disable split transfers. */
+	  s3Port51 |= 0x40;
+	else
+	  /* In VGA mode, enable split transfers. */
+	  s3Port51 &= ~0x40;
+      }
+
       outb(vgaCRReg, s3Port51);
 
       outb(vgaCRIndex, 0x53);
@@ -1752,7 +1822,9 @@ s3Init(mode)
 	 ErrorF("%s %s: adjusting M from %d to %d\n", XCONFIG_GIVEN,
 		s3InfoRec.name, old_m, m);
       }
-      s3Port54 = m << 3;
+      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+	s3Port54 = 0x7F;
+      else s3Port54 = m << 3;
       outb(vgaCRReg, s3Port54);
       
       outb(vgaCRIndex, 0x55);

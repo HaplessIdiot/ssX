@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.1 1994/06/05 13:44:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.2 1994/10/29 22:39:34 dawes Exp $
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
@@ -50,6 +50,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.1 1994/06/05 13
 all:: $(FILES)
 
 #if defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)
+        SRCS = kbd_mode.c
+     DEFINES = XFree86ConsoleDefines
+
 all:: kbd_mode
 
 SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:27 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.1 1994/08/01 12:18:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.2 1994/09/07 15:56:03 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -136,4 +136,6 @@ InstallLinkKitNonExecFile(vga256.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vgaFasm.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vgaHW.c,$(LINKKITDIR)/VGADriverDoc)
 
+#ifndef OS2Architecture
 DependTarget()
+#endif

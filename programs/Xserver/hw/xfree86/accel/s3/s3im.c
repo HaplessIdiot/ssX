@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.9 1994/10/20 06:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.10 1994/11/26 12:44:56 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1216,11 +1216,11 @@ s3ImageStipple (
      int   w,
      int   h,
      char *psrc,
+     int   pwidth,
      int   pw,
      int   ph,
      int   pox,
      int   poy,
-     int   pwidth,
      Pixel fgPixel,
      short alu,
      unsigned long planemask)
@@ -1231,11 +1231,11 @@ s3ImageStipple (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, alu, planem
      int   w;
      int   h;
      char *psrc;
+     int   pwidth;
      int   pw;
      int   ph;
      int   pox;
      int   poy;
-     int   pwidth;
      Pixel fgPixel;
      short alu;
      unsigned long planemask;

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 94/03/30 12:07:57 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 94/08/17 21:56:42 matt Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -11,10 +11,14 @@ XCOMM $XConsortium: Imakefile,v 1.9 94/03/30 12:07:57 gildea Exp $
 REQUIREDLIBS = SharedFrescoReqs
 #endif
 
+#if HasPoll
+POLL_DEFINES = -DUSE_POLL
+#endif
+
 
       LINTLIBS = $(LINTXLIB)
 DEPEND_DEFINES = CplusplusDependIncludes
-FRESCO_DEFINES = -DFRESCO_LIBALL='"$(XLIBDIR)/X11"' -DX_LIBDIR='"$(XLIBDIR)/X11"'
+FRESCO_DEFINES = -DX_LIBDIR='"$(LIBDIR)"'
 
 HEADERS =
 
@@ -77,6 +81,7 @@ OBJS =  \
 #include <Library.tmpl>
 
 SpecialCplusplusLibObjectRule(Xdisplay,$(ICONFIGFILES),$(FRESCO_DEFINES))
+SpecialCplusplusLibObjectRule(fresco,$(ICONFIGFILES),$(POLL_DEFINES))
 
 ALLDEFINES = $(CXXDEFINES)
 

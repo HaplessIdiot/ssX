@@ -1,5 +1,5 @@
 /* $XConsortium: s3BtCursor.c,v 1.1 94/03/28 21:13:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.2 1994/08/20 07:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.3 1994/09/04 10:46:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -312,6 +312,7 @@ s3BtMoveCursor(pScr, x, y)
      int   x, y;
 {
    extern int s3hotX, s3hotY;
+   extern Bool s3PixelMultiplexing;
 
    if (s3BlockCursor)
       return;
@@ -319,6 +320,11 @@ s3BtMoveCursor(pScr, x, y)
    x -= s3InfoRec.frameX0;
    x += 64;
    x -= s3hotX;
+   /* Compensate for using Bt485 Cursor without pixel multiplexing. */
+   if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+       !s3PixelMultiplexing)
+     x -= 2;
+
    if (x < 0)
       return;
 

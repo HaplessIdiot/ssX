@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.4 1994/09/11 00:52:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.5 1994/09/23 10:26:29 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,6 +33,7 @@
  * 
  * Specific card settings are taken from Finn Thoegersen's VGADOC package.
  *
+ * 04/12/94 bug with VC switching fixed
  */
 
 /*************************************************************************/
@@ -82,6 +83,7 @@ typedef struct {
 	unsigned char mxd;             /* register C5h */
 	unsigned char mxe;             /* register F0h */
 	unsigned char mxf;             /* register F1h */
+	unsigned char mxg;             /* register F3h */
 } vgaMXRec, *vgaMXPtr;
 
 /*
@@ -375,7 +377,6 @@ MXProbe()
 		 * and the Ferraro book.
 		 */
 		failed = FALSE;
-		save = rdinx(0x3C4,0xA7);
 		wrinx(0x3C4,0xA7,0);
 		if (testinx(0x3C4,0xC5)) {failed = TRUE;}
 		if (!failed) 
@@ -390,7 +391,6 @@ MXProbe()
 			 * Returning FALSE implies failure, and the server
 			 * will go on to the next driver.
 			 */
-			wrinx(0x3C4,0xA7,save);
 	  		MXEnterLeave(LEAVE);
 	  		return(FALSE);
 		}
@@ -469,7 +469,7 @@ static void
 MXEnterLeave(enter)
 Bool enter;
 {
-	unsigned char temp;
+	unsigned char temp, temp2;
 
   	if (enter)
     	{
@@ -492,13 +492,23 @@ Bool enter;
       		/* Unprotect CRTC[0-7] */
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, temp & 0x7F);
+
+	        /* enable access to extended registers */
+
+		outb(0x3C4,0xA7); temp2 = inb(0x3C5);
+		outb(0x3C5,0x87);
     	}
   	else
-    	{
+    	{	
+		outb(0x3C4,0xA7);
+		outb(0x3C5,temp2);
+
 		/*
 		 * Here undo what was done above.
 		 */
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+
+
     	}
 }
 
@@ -542,21 +552,21 @@ vgaMXPtr restore;
 	 *		restore clock-select bits.
 	 */
 	outb(0x3C4,0x65);
-	temp = inb(0x3C5) | restore->mxa;
-	outb(0x3C5,temp);
-	outb(0x3C4,0xA7);
-	outb(0x3C5,restore->mxb);
+	temp = (inb(0x3C5) & 0xBF) | restore->mxa;
+	outb(0x3C5,temp); 
 	outb(0x3C4,0xC3);
-	temp = (inb(0x3C5) & 0xB3) | restore->mxc;
+	temp = (inb(0x3C5) & 0x73) | restore->mxc;
 	outb(0x3C5,temp);
+	outb(0x3C4,0xC5);
+	outb(0x3C5,restore->mxd);
 	outb(0x3C4,0xF0);
 	temp = (inb(0x3C5) & 0xF4) | restore->mxe;
 	outb(0x3C5,temp);
 	outb(0x3C4,0xF1);
-	temp = inb(0x3C5) | restore->mxf;
+	temp = (inb(0x3C5) & 0xFC) | restore->mxf;
 	outb(0x3C5,temp);
-	outb(0x3C4,0xC5);
-	outb(0x3C5,restore->mxd);
+	outb(0x3C4,0xF3);
+	outb(0x3C5,restore->mxg);
 }
 
 /*
@@ -586,8 +596,6 @@ vgaMXPtr save;
 	 */
 	outb(0x3C4,0x65);
 	save->mxa = inb(0x3C5);
-	outb(0x3C4,0xA7);
-	save->mxb = inb(0x3C5);
 	outb(0x3C4,0xC3);
 	save->mxc = inb(0x3C5);
 	outb(0x3C4,0xC5);
@@ -596,8 +604,8 @@ vgaMXPtr save;
 	save->mxe = inb(0x3C5);
 	outb(0x3C4,0xF1);
 	save->mxf = inb(0x3C5);
-  	return ((void *) save);
-	
+	outb(0x3C4,0xF3);
+	save->mxg = inb(0x3C5);
 }
 
 /*
@@ -637,12 +645,11 @@ DisplayModePtr mode;
 	 *		initialize clock-select bits.
 	 */
 	new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
-	new->std.CRTC[20] = 0x40;
+	new->std.CRTC[20] = 0x40; 
 	new->mxa = 0x40;
-	new->mxb = 0x87;
 	new->mxc = 0xCC;
 	new->mxf = 0x0;
-	new->mxd = 0x00;
+	new->mxd = 0x0;
  	if (mode->Flags & V_INTERLACE) new->mxe = 0xB; else new->mxe=0x8; 
 
 	return(TRUE);

@@ -1,10 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.8 92/09/14 18:53:12 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xrdb/Imakefile,v 3.0 1994/10/20 06:15:58 dawes Exp $
 #if PatheticCpp
         CPPDEFS = -DPATHETICCPP
 #endif
+XCOMM Due to ill make parsing the cpp is passed directly in source file
 #ifdef OS2Architecture
-        DEFINES = -DCPP=\"$(CPP)\" $(CPPDEFS)
+        DEFINES = $(CPPDEFS)
 #else
         DEFINES = -DCPP="\"$(CPP)\"" $(CPPDEFS)
 #endif

@@ -1,9 +1,10 @@
 ./README.isc
 =====
-Anpassungen an das System:
+Changes to the System:
 
 /usr/local/lib/gcc-lib/i386-isc4.0/2.6.0/include/sys/limits.h
-(besser: /usr/include/sys/limits.h -- wird bei neuen gcc uebernommen)
+(better: do it also in /usr/include/sys/limits.h 
+      -- fixincludes could use it on new gcc)
 
 #ifndef OPEN_MAX
 #ifdef ISC
@@ -13,8 +14,7 @@ Anpassungen an das System:
 #endif
 #endif
 
-musste OPEN_MAX erhoehen um zu fruehe Xlib Errors 
-(max no. of clients reached) zu umgehen
+Had to increment OPEN_MAX to prevent Xlib Errors (max no. of clients reached) 
 
 -----
 
@@ -25,7 +25,7 @@ to prevend multiple includes
 
 -----
 
-BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
+BOOTSTRAPCFLAGS="-DISC [-DISC40 | -DISC30] -DSYSV"
 
 -DISC -DISC30    : these two defines are necessary to build the release
                    I don't know if the build will succeed for ISC Versions 
@@ -35,10 +35,17 @@ BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
                    set the HasSymLinks to Yes ('cause symbolic linking
                    were only supported from Version 4.x using the S5L 
                    Filesystem)
+                   A build on ISC 4.x need only -DISC40 defined in
+                   the BOOTSTRAPCFLAGS - the -DISC30 will be included
+                   automatically.
 
--DSYSV -Di386    : standard defines for SystemV Release3 on x86 Platform
+-DSYSV [-Di386]  : standard defines for SystemV Release3 on x86 Platform
+                   You don't need to explicitly define -Di386 because
+                   this is pre-defined in /lib/cpp. 
 
-GCC-Versions     : I'd tried gcc Version 2.5.8 ,2.6.0 and 2.6.2
+GCC-Versions     : I'd tried gcc Version 2.5.8 ,2.6.0 ,2.6.2 and 2.6.3
+                   2.6.2 + 2.6.3 had some problem compiling 3.1. 
+                   2.6.3 build 3.1.0A (beta) without problem
 
 Optimization     : using gcc-2.6.0 you got only 1 Problem using -O3
                    in libX11.a for building the file lcUTF.o
@@ -46,4 +53,4 @@ Optimization     : using gcc-2.6.0 you got only 1 Problem using -O3
                   
 =====
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.0 1994/11/30 21:55:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.1 1994/12/02 05:46:55 dawes Exp $

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.9 1994/09/23 10:13:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.10 1994/10/23 12:58:46 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,7 @@ static void xf86PrintConfig();
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
 extern double pow();
+extern void xf86UnlockServer();
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -179,7 +180,6 @@ InitOutput(pScreenInfo, argc, argv)
     {
       extern void AbortDDX();
       xf86VTSema = FALSE;
-      OsCleanup();
       AbortDDX();
       fflush(stderr);
       exit(0);
@@ -322,6 +322,23 @@ InitInput(argc, argv)
 }
 
 
+/*
+ * OsVendorInit --
+ *      OS/Vendor-specific initialisations.  Called from OsInit(), which
+ *      is called by dix before establishing the well known sockets.
+ */
+ 
+void
+OsVendorInit()
+{
+  extern void xf86LockServer();
+  static Bool been_here = FALSE;
+
+  if (!been_here) {
+    xf86LockServer();
+    been_here = TRUE;
+  }
+}
 
 /*
  * ddxGiveUp --
@@ -333,6 +350,8 @@ InitInput(argc, argv)
 void
 ddxGiveUp()
 {
+  xf86UnlockServer();
+
   xf86CloseConsole();
 
   /* If an unexpected signal was caught, dump a core for debugging */

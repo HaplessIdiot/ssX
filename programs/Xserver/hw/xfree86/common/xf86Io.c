@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.1 94/03/28 21:23:16 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.1 1994/06/22 05:13:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.2 1994/09/27 10:29:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -453,7 +453,3 @@ GetTimeInMillis()
 }
 #endif /* !AMOEBA && !(sun || SVR4) && !MINIX */
 
-void
-OsVendorInit()
-{
-}

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.51 1994/12/05 04:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.52 1994/12/10 02:12:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -172,6 +172,7 @@ ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
 Bool  s3Mmio928 = FALSE;
+Bool  s3PixelMultiplexing = FALSE;
 Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
 Bool  s3PCIHack = FALSE;
@@ -181,6 +182,8 @@ unsigned char s3SAM256 = 0x00;
 int s3BankSize;
 int s3DisplayWidth;
 pointer vgaBase = NULL;
+pointer vgaBaseLow = NULL;
+pointer vgaBaseHigh = NULL;
 pointer s3VideoMem = NULL;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
@@ -1304,10 +1307,17 @@ s3Probe()
 	 pixMuxLimitedWidths = TRUE;
 	 pixMuxMinWidth = 800;
       } else if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
-	 nonMuxMaxClock = 67500;
-	 allowPixMuxSwitching = TRUE;
-	 pixMuxLimitedWidths = FALSE;
-	 pixMuxMinWidth = 1024;
+	allowPixMuxSwitching = TRUE;
+	pixMuxLimitedWidths = TRUE;
+	/* For 8bpp mode, allow PIXMUX selection based on Clock and Width. */
+	if (s3Bpp == 1) {
+	  nonMuxMaxClock = 85000;
+	  pixMuxMinWidth = 1024;
+	} else {
+	  /* For 16bpp and 32bpp modes, require PIXMUX. */
+	  nonMuxMaxClock = 0;
+	  pixMuxMinWidth = 0;
+	}
       } else if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
@@ -1643,6 +1653,12 @@ s3Probe()
    if (S3_911_SERIES(s3ChipId)) {
       maxDisplayWidth = 1024;
       maxDisplayHeight = 1024 - 1; /* Cursor takes exactly 1 line for 911 */
+   } else if ((OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options) &&
+	       DAC_IS_BT485_SERIES) ||
+	      (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) &&
+	       DAC_IS_TI3020_SERIES)) {
+      maxDisplayWidth = 2048;
+      maxDisplayHeight = 4096;
    } else {
       maxDisplayWidth = 2048;
       maxDisplayHeight = 4096 - 3; /* Cursor can take up to 3 lines */
@@ -1724,6 +1740,13 @@ s3Probe()
 	    }
 	    if (s3InfoRec.videoRam > nonMuxMaxMemory)
 	       pMode->Flags |= V_PIXMUX;
+	    /* XXXX this needs some changes */
+	    if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+		s3InfoRec.virtualX * s3InfoRec.virtualY > 2*1024*1024) {
+	      /* PIXMUX must be used to access more than 2mb memory. */
+	      pMode->Flags |= V_PIXMUX;
+	      pixMuxNeeded = TRUE;
+	    }
 
 	    /*
 	     * Check if pixmux can't be used.  There are two cases:
@@ -1805,7 +1828,8 @@ s3Probe()
    }
 
    /* pixmux on Bt485 requires use of Bt's cursor */
-   if (s3Bt485PixMux && s3UsingPixMux &&
+   if (((s3Bt485PixMux && s3UsingPixMux) ||
+	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) &&
        !OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
       OFLG_SET(OPTION_BT485_CURS, &s3InfoRec.options);
       ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
@@ -1841,9 +1865,11 @@ s3Probe()
 	    /* only suports 8bpp -- nothing to do */
 	    break;
 	 case BT485_DAC:
-	    if (pMode->SynthClock > 67500) {
-	       pMode->SynthClock /= 2;
-	       pMode->Flags |= V_DBLCLK;
+	    if (pMode->SynthClock >
+		(OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)
+		 ? 85000 : 67500)) {
+	      pMode->SynthClock /= 2;
+	      pMode->Flags |= V_DBLCLK;
 	    }
 	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
@@ -1910,7 +1936,8 @@ s3Probe()
       } while (pMode != pEnd);
    }
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1)
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1 ||
+	  OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
 	 s3DAC8Bit = TRUE;
       if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
 	 s3DACSyncOnGreen = TRUE;

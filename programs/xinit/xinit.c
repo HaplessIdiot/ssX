@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.2 1994/10/20 06:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.3 1994/11/26 12:49:56 dawes Exp $ */
 
 /*
 
@@ -458,7 +458,9 @@ startServer(server)
 		 * prevent server from getting sighup from vhangup()
 		 * if client is xterm -L
 		 */
+#ifndef __EMX__
 		setpgrp(0,getpid());
+#endif
 
 		Execute (server);
 		Error ("no server \"%s\" in PATH\n", server[0]);

@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.17 1994/11/30 20:40:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.18 1994/12/10 02:12:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -61,6 +61,8 @@ extern Bool  s3LinearAperture;
 extern int s3BankSize;
 extern int s3DisplayWidth;
 extern pointer vgaBase;
+extern pointer vgaBaseLow;
+extern pointer vgaBaseHigh;
 extern pointer s3VideoMem;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
@@ -103,70 +105,22 @@ s3Initialize(scr_index, pScreen, argc, argv)
       s3BankSize = 0x10000;
       s3LinApOpt = 0x14;
 
-      /* First, map the vga window -- it is always required */
-      vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
-			      s3BankSize);
-      s3Init(s3InfoRec.modes);
-      /*
-       * The meaning of NOLINEAR_MODE has changed a little, and was
-       * used inconsistently here.  It now means don't attempt to map
-       * the framebuffer at high memory.  Some code here implied that at
-       * one stage it meant it was OK to use high memory, but only use a 64k
-       * aperture.
-       */
-#ifdef DEBUG
-      /* This is for debugging probe problem at > 8bpp (DHD) */
-      {
-	 long *poker;
-	 unsigned long pVal = 0x12345678;
-	 unsigned char reg53tmp;
-
-	 s3InitEnvironment();
-	 s3ImageWriteNoMem(0, 0, 4 / S3Bpp, 1, (char *) &pVal, 4 / S3Bpp, 0, 0,
-			   (short) s3alu[GXcopy], ~0);	 
-
-	 if (S3_801_928_SERIES (s3ChipId)) {
-	    int j;
-
-	    if (s3Mmio928) { /* Due to S3 bugs we must disable mmio */
-	       outb(vgaCRIndex, 0x53);
-	       reg53tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, reg53tmp & ~0x10); /* save parallel bit */
-	    }
-	    /* begin 801 sequence for going in to linear mode */
-	    outb (vgaCRIndex, 0x40);
-	    /* enable fast write buffer and disable 8514/a mode */
-	    j = (s3Port40 & 0xf6) | 0x0a;
-	    outb (vgaCRReg, (unsigned char) j);
-	    outb(vgaCRIndex, 0x59);
-	    outb(vgaCRReg, 0x00);
-	    outb(vgaCRIndex, 0x5a);
-	    outb(vgaCRReg, 0x0a);
-	    s3LinApOpt = 0x14;
-	    outb (vgaCRReg, s3LinApOpt | s3SAM256);
-	    /* end  801 sequence to go into linear mode */
-	 }
-	 
-	 /* bank 0 should be selected */
-
-	 poker = (long *)vgaBase;
-	 s3TryAddress(poker, pVal, 0xa0000, 0);
-
-	 if (S3_801_928_SERIES (s3ChipId)) {
-	    /* begin 801  sequence to go into enhanced mode */
-	    outb (vgaCRIndex, 0x58);
-	    outb (vgaCRReg, s3SAM256);
-	    outb (vgaCRIndex, 0x40);
-	    outb (vgaCRReg, s3Port40);
-	    /* end 801 sequence to go into enhanced mode */
-	 }
-	 if (s3Mmio928) { /* Now re-enable mmio if required */
-	    outb(vgaCRIndex, 0x53);
-	    outb(vgaCRReg, reg53tmp | 0x10);
-	 }
+      if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) &&
+	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options) &&
+	  s3Mmio928) {
+	vgaBaseLow = xf86MapVidMem(scr_index, VGA_REGION,
+				   (pointer)0xA0000, s3BankSize);
+	vgaBaseHigh = xf86MapVidMem(scr_index, EXTENDED_REGION,
+				    (pointer)0x7C0A0000, s3BankSize);
+	vgaBase = vgaBaseLow;
+      } else {
+	/* First, map the vga window -- it is always required */
+	vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
+				s3BankSize);
       }
-#endif
-      
+
+      s3Init(s3InfoRec.modes);
+
       if (xf86LinearVidMem() &&
 	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
 	 /* Now, see if we can map a high buffer */
@@ -239,21 +193,21 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  
 	    /*
 	     * If a MemBase value was given in the XF86Config, skip the LAW
-	     * probe and use the high 8 bits for the hw part of LAW.
+	     * probe and use the high 10 bits for the hw part of LAW.
 	     * Normally only 6 bits are set in hw, but the Diamond Stealth
 	     * Pro is different.
 	     */
 	    if (s3InfoRec.MemBase != 0) {
 	       unsigned long addr;
 
-	       addr = (s3InfoRec.MemBase & 0xff000000);
+	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 					  (pointer)addr, s3BankSize);
 	       outb(vgaCRIndex, 0x5a);
 	       outb(vgaCRReg, 0xc0);
 	       s3LinearAperture = TRUE;
-	       ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
-		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 16) & 0xffff);
+	       ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n", 
+		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 20));
 	    } else {
 	       if (S3_x64_SERIES(s3ChipId)) {
 		  /* So far, only tested for the PCI ELSA W2000Pro */
@@ -311,8 +265,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 3)) {
-			      ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
-				     XCONFIG_PROBED, s3InfoRec.name, i);
+			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
+				     XCONFIG_PROBED, s3InfoRec.name,
+				     (i << 4 | 0x0c));
 			      s3LinearAperture = TRUE;
 			      break;
 			   }
@@ -330,8 +285,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 						      s3BankSize);
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 4)) {
-			      ErrorF("%s %s: Local bus LAW31-24 is %X\n", 
-				     XCONFIG_PROBED, s3InfoRec.name, i | 0x24);
+			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
+				     XCONFIG_PROBED, s3InfoRec.name,
+				     (i | 0x24) << 4);
 			      s3LinearAperture = TRUE;
 			      break;
 			   }
