@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.4 2002/02/08 03:54:07 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -228,7 +228,7 @@ LispFopen(char *path, int mode)
     }
 
     /* open file */
-    descriptor = open(path, flags);
+    descriptor = open(path, flags, 0666);
     if (descriptor < 0)
 	return (NULL);
 
