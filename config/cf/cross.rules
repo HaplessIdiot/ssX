@@ -1,13 +1,17 @@
-XCOMM $XFree86: xc/config/cf/cross.rules,v 1.4 2001/10/08 17:20:11 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cross.rules,v 1.5 2001/10/10 12:56:58 alanh Exp $
 
-#define HostLinkRule(target, flags, src, libs)  cc -I$(BUILDINCDIR) -o target src libs
+#ifndef HostCcCmd
+#define HostCcCmd cc
+#endif
+
+#define HostLinkRule(target, flags, src, libs)  HostCcCmd -I$(BUILDINCDIR) -o target src libs
 
 /* ComplexHostProgramTarget - Compile a program such that we can run
  * it on this host, i.e., don't use the default cross compiler.
  */
 #ifndef ComplexHostProgramTarget
 #define	ComplexHostProgramTarget(program)				@@\
-              CC=cc							@@\
+              CC=HostCcCmd							@@\
     STD_INCLUDES=							@@\
           CFLAGS=$(TOP_INCLUDES) $(INCLUDES) $(BOOTSTRAPCFLAGS)		@@\
 EXTRA_LOAD_FLAGS=							@@\
@@ -32,7 +36,7 @@ clean::									@@\
 #define SimpleHostProgramTarget(program)				@@\
            SRCS = program.c						@@\
 									@@\
-              CC=cc							@@\
+              CC=HostCcCmd					@@\
     STD_INCLUDES=							@@\
           CFLAGS=$(TOP_INCLUDES) $(INCLUDES) $(BOOTSTRAPCFLAGS)		@@\
 EXTRA_LOAD_FLAGS=							@@\

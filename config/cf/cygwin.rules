@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.16 2001/09/20 17:04:11 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.17 2001/09/27 10:30:11 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -94,7 +94,48 @@ clean::									@@\
 
 #endif /* SharedDepLibraryTarget */
 
+/*
+ * SharedDepCplusplusLibraryTarget - generate rules to create a shared library.
+ */
 
+#ifndef SharedDepCplusplusLibraryTarget
+# ifdef UseInstalled
+#  ifndef LinkBuildSonameLibrary
+#   define LinkBuildSonameLibrary(lib)
+#  endif
+# else /* !UseInstalled */
+#  ifndef LinkBuildSonameLibrary
+#   define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); @@\
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
+#  endif
+# endif /* UseInstalled */
+
+
+/*
+ * SharedDepCplusplusLibraryTarget
+ */
+
+#define SharedDepCplusplusLibraryTarget(libname,rev,deplist,solist,down,up) @@\
+AllTarget(Concat3(lib,libname,.dll))                                        @@\
+                                                                            @@\
+CppFileTarget(libname.def,libname-def.cpp,-DLIBRARY_VERSION=rev,$(ICONFIGFILES)) @@\
+                                                                            @@\
+                                                                            @@\
+                                                                            @@\
+Concat3(lib,libname,.dll): deplist libname.def                              @@\
+	RemoveFile(LibraryTargetName(libname))                                  @@\
+	RemoveFile(Concat3(lib,libname,.dll))                                   @@\
+	MakeCplusplusDLL(libname,solist)                                        @@\
+	LinkBuildLibrary(Concat3(lib,libname,.a))                               @@\
+	LinkBuildDLL(Concat3(lib,libname,.dll))                                 @@\
+                                                                            @@\
+clean::                                                                     @@\
+	RemoveFile(LibraryTargetName(libname))                                  @@\
+	RemoveFile(Concat3(lib,libname,.dll))                                   @@\
+
+#endif /* SharedDepCplusplusLibraryTarget */
+
+    
 /*
  * SharedDepModuleTarget
  */
@@ -128,13 +169,27 @@ clean::									@@\
 #define InstallSharedLibraryData(libname,rev,dest)
 #endif /* InstallSharedLibraryData */
 
-
+/*
+ * MakeDllProg
+ */ 
+    
+#define MakeDLLProg(libname,solist,prog)			@@\
+	prog -shared -Wl,--out-implib=Concat3(lib,libname,.a) -Wl,--enable-auto-import --def libname.def -o Concat3(lib,libname,.dll) solist $(REQUIREDLIBS)
+    
 /*
  * MakeDll
  */
 
 #define MakeDLL(libname,solist)						@@\
-	$(CC) -shared -Wl,--out-implib=Concat3(lib,libname,.a) -Wl,--enable-auto-import --def libname.def -o Concat3(lib,libname,.dll) solist $(REQUIREDLIBS)
+    MakeDLLProg(libname,solist,$(CC))
+
+/*
+ * MakeCplusplusDll
+ */
+
+#define MakeCplusplusDLL(libname,solist)						@@\
+    MakeDLLProg(libname,solist,$(CXX))
+
 
 
 /*
