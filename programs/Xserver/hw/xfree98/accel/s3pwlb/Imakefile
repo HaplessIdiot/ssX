@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwlb/Imakefile,v 3.4 1996/06/29 14:11:57 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwlb/Imakefile,v 3.5 1996/08/14 14:35:28 dawes Exp $
 
 
 
@@ -36,7 +36,7 @@ INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 
 DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_PWLB
 
-S3DRIVERS = XF98S3Drivers
+S3DRIVERS = XF86S3Drivers
 
 #if HasParallelMake
 MakeMutex($(SUBDIRS))
