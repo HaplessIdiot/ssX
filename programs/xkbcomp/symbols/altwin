@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/altwin,v 1.1 2001/08/17 13:27:58 dawes Exp $
 
 partial modifier_keys 
 xkb_symbols "meta_alt" {
@@ -9,8 +9,8 @@ xkb_symbols "meta_alt" {
 
 partial modifier_keys 
 xkb_symbols "meta_win" {
-    key <LALT> {	[ 	Alt_L,			]	};
-    key <RALT> {	[ 	Alt_R,			]	};
+    key <LALT> {	[ 	Alt_L,	Alt_L		]	};
+    key <RALT> {	[ 	Alt_R,	Alt_R		]	};
     key <LWIN> {	[ 	Meta_L			]	};
     key <RWIN> {	[ 	Meta_R			]	};
     modifier_map Mod1	{ Alt_L, Alt_R };
