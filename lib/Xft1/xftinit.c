@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft1/xftinit.c,v 1.2 2002/03/01 01:00:53 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftinit.c,v 1.3 2002/03/01 20:33:33 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -27,7 +27,8 @@
 
 XftFontSet  *_XftFontSet;
 Bool	    _XftConfigInitialized;
-char	    **XftConfigDirs;
+static char *nodirs[] = { 0 };
+char	    **XftConfigDirs = nodirs;
 
 Bool
 XftInit (char *config)
@@ -37,6 +38,5 @@ XftInit (char *config)
     if (!FcInit ())
 	return False;
     _XftConfigInitialized = True;
-    XftConfigDirs = (char **) FcConfigGetDirs (0);
     return True;
 }
