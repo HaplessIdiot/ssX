@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.30 94/06/03 17:51:49 rws Exp $" */
+/* $XConsortium: LRGB.c,v 1.31 95/05/31 20:47:35 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1351,6 +1351,8 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
 		    *pShort |= c - ('a' - 10);
 		else return (XcmsFailure);
 	    }
+	    if (n == 0)
+		return (XcmsFailure);
 	    if (n < 4) {
 		*pShort = ((unsigned long)*pShort * 0xFFFF) / ((1 << n*4) - 1);
 	    }

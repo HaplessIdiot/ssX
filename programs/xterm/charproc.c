@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.3 1994/11/19 08:00:57 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.4 1995/01/21 07:20:54 dawes Exp $
  */
 
 /*
@@ -290,16 +290,13 @@ Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY, CUT_BUF
 Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta <KeyPress>:insert-seven-bit() \n\
         Meta <KeyPress>:insert-eight-bit() \n\
-       !Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
-  !Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+        Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
        ~Meta <Btn1Down>:select-start() \n\
      ~Meta <Btn1Motion>:select-extend() \n\
-       !Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
-  !Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+        Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
  ~Ctrl ~Meta <Btn2Down>:ignore() \n\
    ~Ctrl ~Meta <Btn2Up>:insert-selection(PRIMARY, CUT_BUFFER0) \n\
-       !Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
-  !Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+        Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
  ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
      ~Meta <Btn3Motion>:select-extend()	\n\
                 <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\

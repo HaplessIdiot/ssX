@@ -1,5 +1,5 @@
-/* $XConsortium: NextEvent.c,v 1.148 95/06/16 19:25:22 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.6 1995/03/11 14:09:03 dawes Exp $ */
+/* $XConsortium: NextEvent.c,v 1.149 95/06/26 20:39:12 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.7 1995/06/17 12:13:22 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -254,6 +254,26 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 	    FD_SET (ConnectionNumber(app->list[ii]), &wf->rmask);
 	}
 #else
+#ifdef POLLRDNORM
+#define XPOLL_READ POLLIN|POLLRDNORM
+#else
+#define XPOLL_READ POLLIN
+#endif
+#ifdef POLLWRNORM
+#if (POLLWRNORM == POLLOUT)
+#define XPOLL_WRITE POLLOUT
+#else
+#define XPOLL_WRITE POLLOUT|POLLWRNORM
+#endif
+#else
+#define XPOLL_WRITE POLLOUT
+#endif
+#ifdef POLLRDBAND
+#define XPOLL_EXCEPT POLLPRI|POLLRDBAND|POLLWRBAND
+#else
+#define XPOLL_EXCEPT POLLPRI
+#endif
+
     if (!ignoreEvents)
 	wf->fdlistlen = wf->num_dpys = app->count;
     else
@@ -292,9 +312,11 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 		    fdlp->events = 0;
 		    for ( ; iep; iep = iep->ie_next) {
 			if (iep->ie_condition & XtInputReadMask)
-			    fdlp->events |= POLLIN;
+			    fdlp->events |= XPOLL_READ;
 			if (iep->ie_condition & XtInputWriteMask)
-			    fdlp->events |= POLLOUT;
+			    fdlp->events |= XPOLL_WRITE;
+			if (iep->ie_condition & XtInputExceptMask)
+			    fdlp->events |= XPOLL_EXCEPT;
 		    }
 		    fdlp++;
 		}
@@ -497,23 +519,15 @@ ENDILOOP:   ;
 	for (ii = wf->num_dpys; ii < wf->fdlistlen; ii++, fdlp++) {
 	    condition = 0;
 	    if (fdlp->revents) {
-		if (fdlp->revents & (POLLIN|POLLHUP)
+		if (fdlp->revents & (XPOLL_READ|POLLHUP|POLLERR)
 #ifdef XTHREADS
 		    && !(fdlp->revents & POLLNVAL)
 #endif
 		)
 		    condition = XtInputReadMask;
-		if (fdlp->revents & POLLOUT
-#ifdef XTHREADS
-		    && !(fdlp->revents & POLLNVAL)
-#endif
-		)
+		if (fdlp->revents & XPOLL_WRITE)
 		    condition |= XtInputWriteMask;
-		if (fdlp->revents & POLLERR
-#ifdef XTHREADS
-		    && !(fdlp->revents & POLLNVAL)
-#endif
-		)
+		if (fdlp->revents & XPOLL_EXCEPT)
 		    condition |= XtInputExceptMask;
 	    }
 	    if (condition) {

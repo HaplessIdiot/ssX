@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.34 94/04/17 20:14:26 kaleb Exp $ */
+/* $XConsortium: Keyboard.c,v 1.36 95/06/15 20:32:00 converse Exp $ */
 
 /********************************************************
 
@@ -69,12 +69,23 @@ in this Software without prior written authorization from the X Consortium.
 extern void _XtFillAncestorList();
 extern void _XtSendFocusEvent();
 
-/* FindKeyDestination, ancestor list for Xt focus management */
-static Display	*pseudoTraceDisplay = NULL;
+/* InActiveSubtree cache of the current focus source and its ancestors */
+static Widget	*pathTrace = NULL;
+static int	pathTraceDepth = 0;
+static int	pathTraceMax = 0;
+
+/* FindKeyDestination cache of focus destination and ancestors up to source */
 static Widget	*pseudoTrace = NULL;
 static int	pseudoTraceDepth = 0;
 static int	pseudoTraceMax = 0;
 
+void _XtClearAncestorCache(widget)
+    Widget widget;
+{
+    /* the caller must lock the process lock */
+    if (pathTraceDepth && pathTrace[0] == widget)
+	pathTraceDepth = 0;
+}
 
 static XtServerGrabPtr CheckServerGrabs(event, trace, traceDepth)
     XEvent	*event;
@@ -330,8 +341,6 @@ static Widget 	FindKeyDestination(widget, event,
 			    XtServerGrabPtr	grab;
 
 			    if (!pseudoTraceDepth || 
-				!(pseudoTraceDisplay ==
-				 XtDisplay(widget)) ||
 				!(focusWidget == pseudoTrace[0]) ||
 				!(lca == pseudoTrace[pseudoTraceDepth]))
 			      {
@@ -345,7 +354,6 @@ static Widget 	FindKeyDestination(widget, event,
 						   &pseudoTraceDepth,
 						   focusWidget,
 						   lca);
-				  pseudoTraceDisplay = XtDisplay(widget);
 				  /* ignore lca */
 				  pseudoTraceDepth--;
 			      }
@@ -456,23 +464,16 @@ typedef enum {NotActive = 0, IsActive, IsTarget} ActiveType;
 static ActiveType InActiveSubtree(widget)
     Widget	widget;
 {
-    static Widget	*pathTrace = NULL;
-    static int		pathTraceDepth = 0;
-    static int		pathTraceMax = 0;
-    static Display	*display = NULL;
     Boolean		isTarget;
     ActiveType		retval;
 
     LOCK_PROCESS;
-    if (!pathTraceDepth || 
-	!(display == XtDisplay(widget)) ||
-	!(widget == pathTrace[0])) {
+    if (!pathTraceDepth || widget != pathTrace[0]) {
 	_XtFillAncestorList(&pathTrace, 
 			    &pathTraceMax, 
 			    &pathTraceDepth,
 			    widget,
 			    NULL);
-	display = XtDisplay(widget);
     }
     if (widget == _FindFocusWidget(widget, 
 				   pathTrace,
@@ -747,7 +748,6 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    Display* dpy;
     XtPerDisplayInput pdi;
     XtPerWidgetInput pwi;
     Widget oldDesc, oldTarget, target, hookobj;
@@ -755,8 +755,7 @@ void XtSetKeyboardFocus(widget, descendant)
 
     LOCK_APP(app);
     LOCK_PROCESS;
-    dpy = XtDisplay (widget);
-    pdi = _XtGetPerDisplayInput(dpy);
+    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     pwi = _XtGetPerWidgetInput(widget, TRUE);
     oldDesc = pwi->focusKid;
 
@@ -775,8 +774,7 @@ void XtSetKeyboardFocus(widget, descendant)
 	
 	if (oldDesc) {
 	    /* invalidate FindKeyDestination's ancestor list */
-	    if (pseudoTraceDepth && pseudoTraceDisplay == dpy &&
-		oldTarget == pseudoTrace[0])
+	    if (pseudoTraceDepth && oldTarget == pseudoTrace[0])
 		pseudoTraceDepth = 0;
 
 	    XtRemoveCallback(oldDesc, XtNdestroyCallback, 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.2 94/04/02 17:10:36 rws Exp $
+XCOMM platform:  $XConsortium: fujitsu.cf,v 1.5 95/06/19 02:56:37 gildea Exp $
 
 #ifdef SparcArchitecture
 
@@ -15,6 +15,9 @@ XCOMM operating system:    OSName
 
 #define SystemV4	   YES
 #define HasSockets         YES
+#ifndef HasLdRunPath
+#define HasLdRunPath       YES
+#endif
 #define BuildServer        NO
 
 #include <sv4Lib.rules>
@@ -40,6 +43,6 @@ XCOMM operating system:    OSName
 #define BuildServer        NO
 #define HasSymLinks        NO
 #define HasVFork           NO
-#define XawI18nDefines     -DUSE_X_WCHAR_STRING
+#define XawI18nDefines     -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #endif

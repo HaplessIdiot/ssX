@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.0 1994/04/28 12:46:19 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.1 1994/05/08 05:26:51 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -206,10 +206,8 @@ extern void HandleCreateMenu(), HandlePopupMenu();
 static char defaultTranslations[] = "\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()\n\
-      !Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
- !Lock Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
-      !Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
- !Lock Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
+       Ctrl <Btn1Down>:         popup-menu(mainMenu) \n\
+       Ctrl <Btn2Down>:         popup-menu(tekMenu) \n\
  Shift ~Meta<Btn1Down>:         gin-press(L) \n\
        ~Meta<Btn1Down>:         gin-press(l) \n\
  Shift ~Meta<Btn2Down>:         gin-press(M) \n\

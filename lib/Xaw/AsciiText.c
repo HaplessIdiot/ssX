@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiText.c,v 1.46 94/04/17 20:11:50 kaleb Exp $ */
+/* $XConsortium: AsciiText.c,v 1.47 95/06/06 20:50:30 kaleb Exp $ */
 
 /*
 
@@ -182,14 +182,16 @@ Cardinal *num_args;
   /* If we are using a MultiSink we need to tell the input method stuff. */
 
   if ( w->simple.international == True ) {
+    Arg list[4];
+    Cardinal ac = 0;
 
-      sink = (MultiSinkObject)w->text.sink;
-      _XawImRegister( new );
-      _XawImVASetValues( new, XtNfontSet, sink->multi_sink.fontset,
-		    XtNinsertPosition, w->text.insertPos,
-		    XtNforeground, sink->text_sink.foreground,
-		    XtNbackground, sink->text_sink.background,
-		    NULL );
+    sink = (MultiSinkObject)w->text.sink;
+    _XawImRegister( new );
+    XtSetArg (list[ac], XtNfontSet, sink->multi_sink.fontset); ac++;
+    XtSetArg (list[ac], XtNinsertPosition, w->text.insertPos); ac++;
+    XtSetArg (list[ac], XtNforeground, sink->text_sink.foreground); ac++;
+    XtSetArg (list[ac], XtNbackground, sink->text_sink.background); ac++;
+    _XawImSetValues(new, list, ac);
   }
 }
 

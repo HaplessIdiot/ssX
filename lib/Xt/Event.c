@@ -1329,12 +1329,14 @@ static Boolean DispatchEvent(event, widget)
 {
 
     if (event->type == EnterNotify &&
-	    widget->core.widget_class->core_class.compress_enterleave) {
+	event->xcrossing.mode == NotifyNormal &&
+	widget->core.widget_class->core_class.compress_enterleave) {
 	if (XPending(event->xcrossing.display)) {
 	    XEvent nextEvent;
 	    XPeekEvent(event->xcrossing.display, &nextEvent);
 	    if (nextEvent.type == LeaveNotify &&
-		    event->xcrossing.window == nextEvent.xcrossing.window &&
+		event->xcrossing.window == nextEvent.xcrossing.window &&
+		nextEvent.xcrossing.mode == NotifyNormal &&
 		(event->xcrossing.detail != NotifyInferior &&
 		 nextEvent.xcrossing.detail != NotifyInferior ||
 		 event->xcrossing.detail == NotifyInferior &&

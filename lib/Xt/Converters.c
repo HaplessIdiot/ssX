@@ -1514,7 +1514,6 @@ Boolean XtCvtStringToDirectoryString(dpy, args, num_args, fromVal, toVal,
     XtPointer	*closure_ret;
 {
     String str;
-    int len;
     char directory[PATH_MAX+1];
 
     if (*num_args != 0)
@@ -1524,7 +1523,7 @@ Boolean XtCvtStringToDirectoryString(dpy, args, num_args, fromVal, toVal,
            (String *)NULL, (Cardinal *)NULL);
 
     str = (String)fromVal->addr;
-    if (CompareISOLatin1(str, "XtCurrentDirectory")) {
+    if (CompareISOLatin1(str, "XtCurrentDirectory") == 0) {
 	/* uglier, but does not depend on compiler knowing return type */
 #if !defined(X_NOT_POSIX) || defined(SYSV) || defined(WIN32)
 	if (getcwd(directory, PATH_MAX + 1))
@@ -1536,10 +1535,35 @@ Boolean XtCvtStringToDirectoryString(dpy, args, num_args, fromVal, toVal,
 	if (!str) {
 	    if (errno == EACCES)
 		errno = 0;	    /* reset errno */
+	    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr,
+					     XtRDirectoryString);
 	    return False;
 	}
     }
-    done(String, str);	/* core dumps, don't use this converter yet */
+
+    /* Since memory from the resource database or from static buffers of
+     * system libraries may be freed or overwritten, allocate memory.
+     * The memory is freed when all cache references are released.
+     */
+    str = XtNewString(str);
+    done(String, str);
+}
+
+/*ARGSUSED*/
+static void FreeDirectoryString(app, toVal, closure, args, num_args)
+    XtAppContext app;
+    XrmValuePtr	toVal;
+    XtPointer	closure;	/* unused */
+    XrmValuePtr	args;
+    Cardinal	*num_args;
+{
+    if (*num_args != 0)
+	XtAppWarningMsg(app,
+		 XtNwrongParameters,"freeDirectoryString",XtCXtToolkitError,
+		 "Free Directory String requires no extra arguments",
+                 (String *) NULL, (Cardinal *) NULL);
+
+    XtFree((char *) toVal->addr);
 }
 
 /*ARGSUSED*/
@@ -1776,8 +1800,8 @@ void _XtAddDefaultConverters(table)
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
     Add(_XtQString, XtQDimension, XtCvtStringToDimension,NULL, 0, XtCacheNone);
-    Add(_XtQString, XtQDirectoryString,
-                          XtCvtStringToDirectoryString, NULL, 0, XtCacheNone);
+   Add2(_XtQString, XtQDirectoryString, XtCvtStringToDirectoryString, NULL, 0,
+	XtCacheNone | XtCacheRefCount, FreeDirectoryString);
     Add(_XtQString, XtQDisplay,   XtCvtStringToDisplay, NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQFile,      XtCvtStringToFile,    NULL, 0,
 	XtCacheAll | XtCacheRefCount, FreeFile);
