@@ -1,6 +1,6 @@
 XFree86 4.4.99.1 (XX March 2004)
    9. Fix X-Resource extension server crash when the client and server hosts
-      have different endianness (#1242, Alan Coopersmith).
+      have different endianness (Bugzilla #1242, Alan Coopersmith).
    8. Fix an off-by-one error that can lead to malloc problems (Bugzilla #512,
       Kyle Bateman).
    7. Xterm patch #185 (Thomas Dickey).
@@ -18704,7 +18704,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3164 2004/03/04 19:22:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3165 2004/03/04 19:31:37 dawes Exp $
 
 
 
