@@ -1,6 +1,4 @@
 /*
- * $Xorg: Xext.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $
- *
 Copyright 1989, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -23,7 +21,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/include/extensions/Xext.h,v 1.4 2001/12/14 19:53:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/Xext.h,v 1.5 2003/11/17 22:20:03 dawes Exp $ */
 
 #ifndef _XEXT_H_
 #define _XEXT_H_
@@ -32,16 +30,11 @@ in this Software without prior written authorization from The Open Group.
 
 _XFUNCPROTOBEGIN
 
-extern int (*XSetExtensionErrorHandler(
-    int (*handler)(
-		   Display *,
-		   char *,
-		   char *
-		   )
-))(
-		   Display *,
-		   char *,
-		   char *
+typedef int (*XExtensionErrorHandlerProcPtr)(Display *, _Xconst char *,
+					     _Xconst char *);
+
+extern XExtensionErrorHandlerProcPtr XSetExtensionErrorHandler(
+	XExtensionErrorHandlerProcPtr handler
 );
 
 extern int XMissingExtension(
