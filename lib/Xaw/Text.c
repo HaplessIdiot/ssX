@@ -74,7 +74,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.48 2001/11/06 06:43:23 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.49 2001/12/14 19:54:44 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -3877,10 +3877,10 @@ _XawTextSetSource(Widget w, Widget source,
 #endif
     ctx->text.source = source;
     ctx->text.s.left = ctx->text.s.right = 0;
-    ctx->text.insertPos = ctx->text.old_insert = startPos;
     ctx->text.lastPos = GETLASTPOS;
     top = FindGoodPosition(ctx, top);
     startPos = FindGoodPosition(ctx, startPos);
+    ctx->text.insertPos = ctx->text.old_insert = startPos;
     _XawTextPrepareToUpdate(ctx);
 
     _XawTextBuildLineTable(ctx, top, True);
