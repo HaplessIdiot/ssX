@@ -1,5 +1,5 @@
 XCOMM platform:  $Xorg: sgi.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.12tsi Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.13tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -167,9 +167,9 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #if !HasGcc
 #if !defined(OptimizedCDebugFlags)
 #if defined(MipsN32Architecture) || defined(Mips64Architecture)
-#define OptimizedCDebugFlags -O -OPT:Olimit=0
+#define OptimizedCDebugFlags -O -OPT:Olimit=4096
 #else
-#define OptimizedCDebugFlags -O -Olimit 2048
+#define OptimizedCDebugFlags -O -Olimit 4096
 #endif
 #endif
 #if !defined(RawCppCmd)
