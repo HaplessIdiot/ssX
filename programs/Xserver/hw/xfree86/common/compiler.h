@@ -1351,7 +1351,7 @@ testinx(unsigned short port, unsigned char ind)
 #define MMIO_OUT32(base, offset, val) \
     do { \
 	*(volatile CARD32 *)(void *)(((CARD8*)(base)) + (offset)) = (val); \
-	write_mem_barrier();i \
+	write_mem_barrier(); \
     } while (0)
 #define MMIO_ONB32(base, offset, val) \
 	*(volatile CARD32 *)(void *)(((CARD8*)(base)) + (offset)) = (val)
