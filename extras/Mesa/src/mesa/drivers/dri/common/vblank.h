@@ -25,7 +25,7 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/vblank.h,v 1.1.1.2 2004/06/10 14:22:40 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/vblank.h,v 1.3 2004/06/10 14:43:38 alanh Exp $ */
 
 #ifndef DRI_VBLANK_H
 #define DRI_VBLANK_H
@@ -54,10 +54,6 @@ extern int driWaitForVBlank( const __DRIdrawablePrivate *priv,
 #undef usleep
 #include <unistd.h>  /* for usleep() */
 #include <sched.h>   /* for sched_yield() */
-
-#ifdef linux
-#include <sched.h>   /* for sched_yield() */
-#endif
 
 #define DO_USLEEP(nr)							\
    do {								 	\
