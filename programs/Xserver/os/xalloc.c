@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.3 1995/10/21 11:50:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.5 1996/01/10 05:42:27 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -674,4 +674,7 @@ OsInitAllocator ()
 #endif
 }
 
+#else /* !INTERNAL_MALLOC */
+/* This is to avoid an empty .o */
+static int no_internal_xalloc;
 #endif /* INTERNAL_MALLOC */
