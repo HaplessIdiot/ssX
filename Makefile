@@ -1,5 +1,5 @@
 # $XConsortium: Makefile /main/36 1996/11/13 14:42:50 lehors $
-# $XFree86: xc/Makefile,v 3.5 1996/03/04 04:19:16 dawes Exp $
+# $XFree86: xc/Makefile,v 3.6 1996/12/23 05:49:50 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -46,6 +46,9 @@ World:
 	;; esac;
 	@date
 	@echo ""
+	@if [ ! -f $(IRULESRC)/host.def ]; then \
+		echo "" > $(IRULESRC)/host.def; \
+	fi
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS) clean
 	$(MAKE) $(MFLAGS) Makefile.boot
 	$(MAKE_CMD) $(MFLAGS) VerifyOS
@@ -101,6 +104,7 @@ World.Win32:
 	@echo Building $(RELEASE) of the X Window System.
 	@echo :
 	@echo :
+	-@if not exist $(IRULESRC)\host.def echo > $(IRULESRC)\host.def
 	cd $(IMAKESRC)
 	$(MAKE) -f Makefile.ini clean.Win32
 	$(MAKE) -f Makefile.ini imake.exe
@@ -127,6 +131,7 @@ World.OS2:
 	@echo Building $(RELEASE) of the X Window System on OS/2.
 	@echo :
 	@echo :
+	-@if not exist $(IRULESRC)\host.def echo > $(IRULESRC)\host.def
 	\indir $(IMAKESRC) $(MAKE) SHELL= -f Makefile.ini clean.os2
 	\indir $(IMAKESRC) $(MAKE) SHELL= CC=gcc -f Makefile.ini imake.os2
 	-if exist Makefile.bak del Makefile.bak
