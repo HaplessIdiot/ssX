@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.4 1994/10/20 06:00:38 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.5 1994/12/02 05:38:53 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -349,11 +349,12 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 #endif /* MOTOROLA */
 #ifdef i386
-	"-Di386",
 # ifdef SVR4
+	"-Di386",
 	"-DSVR4",
 # endif
 # ifdef ISC
+	"-Di386",
 	"-DISC",
 #  ifdef ISC40
 	"-DISC40",       /* ISC 4.0 */
@@ -370,18 +371,22 @@ char *cpp_argv[ARGUMENTS] = {
 #  endif
 # endif
 # ifdef SCO
+	"-Di386",
 	"-DSCO",
 #  ifdef SCO324
 	"-DSCO324",
 #  endif
 # endif
 # ifdef ESIX
+	"-Di386",
 	"-DESIX",
 # endif
 # ifdef ATT
+	"-Di386",
 	"-DATT",
 # endif
 # ifdef DELL
+	"-Di386",
 	"-DDELL",
 # endif
 #endif
