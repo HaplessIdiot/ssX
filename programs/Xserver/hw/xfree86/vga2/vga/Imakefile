@@ -4,8 +4,9 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/19 18:09:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.6 1996/12/09 11:53:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/Imakefile,v 3.7 1996/12/23 06:55:31 dawes Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #ifdef i386Architecture

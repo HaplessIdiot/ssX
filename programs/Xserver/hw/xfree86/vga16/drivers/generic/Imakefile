@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:25:14 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/generic/Imakefile,v 3.7 1996/12/23 06:52:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/generic/Imakefile,v 3.8 1997/03/04 11:36:35 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = gen_driver.c

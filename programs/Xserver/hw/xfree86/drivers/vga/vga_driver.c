@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.1 1997/03/06 23:17:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.2 1997/03/11 11:10:51 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -181,9 +181,15 @@ vgaVideoChipRec VGA = {
 	 * the detected configuration. It must be set in the Probe function.
 	 * It most cases it should be FALSE.
 	 */
+#ifndef PC98_EGC
 	TRUE,	/* 1bpp */
 	TRUE,	/* 4bpp */
 	TRUE,	/* 8bpp */
+#else
+	FALSE,	/* 1bpp */
+	TRUE,	/* 4bpp */
+	FALSE,	/* 8bpp */
+#endif
 	FALSE,	/* 15bpp */
 	FALSE,	/* 16bpp */
 	FALSE,	/* 24bpp */
@@ -265,6 +271,7 @@ int no;
 	static unsigned char save1, save2;
 	unsigned char temp;
 
+#ifndef PC98_EGC
 	switch(no)
 	{
 	case CLK_REG_SAVE:
@@ -277,6 +284,7 @@ int no;
 		temp = inb(0x3CC);
 		outb(0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
 	}
+#endif /* PC98_EGC */
 	return(TRUE);
 }
 
@@ -308,6 +316,7 @@ GenericProbe()
 		* Check if there is a VGA.  VGA has one more attribute register
 		* than EGA, so see if we can read/write it.
 		*/
+#ifndef PC98_EGC
 		temp = inb(vgaIOBase + 0x0A); /* reset ATC flip-flop */
 		outb(0x3C0, 0x14 | 0x20); origVal = inb(0x3C1);
 		outb(0x3C0, origVal ^ 0x0F);
@@ -318,6 +327,7 @@ GenericProbe()
 			GenericEnterLeave(LEAVE);
 			return(FALSE);
 		}
+#endif /* PC98_EGC */
 	}
 
   	if (!vga256InfoRec.videoRam)
@@ -378,18 +388,21 @@ Bool enter;
     	{
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
+#ifndef PC98_EGC
       		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
 
       		/* Unprotect CRTC[0-7] */
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, temp & 0x7F);
+#endif /* PC98_EGC */
     	}
   	else
     	{
+#ifndef PC98_EGC
       		/* Protect CRTC[0-7] */
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-
+#endif /* PC98_EGC */
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     	}
 }
@@ -457,14 +470,17 @@ int x, y;
 		outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
 		outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 	} else {
+#ifndef PC98_EGC
 		Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 		outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
 		outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 		outw(vgaIOBase + 4, ((Base & 0x030000) >> 8) | 0x33);
+#endif /* PC98_EGC */
 	}
 
 
 #ifdef XFreeXDGA
+#ifndef PC98_EGC
 	if( xf86bpp > 1 ) {
 		if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
 			/* Wait until vertical retrace is in progress. */
@@ -472,6 +488,7 @@ int x, y;
 			while (!(inb(vgaIOBase + 0xA) & 0x08));
 		}
 	}
+#endif /* PC98_EGC */
 #endif
 }
 

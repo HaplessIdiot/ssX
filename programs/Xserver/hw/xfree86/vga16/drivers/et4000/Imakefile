@@ -4,8 +4,9 @@ XCOMM $XConsortium: Imakefile /main/11 1996/09/28 17:25:08 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.12 1997/02/23 09:25:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et4000/Imakefile,v 3.13 1997/03/04 11:36:28 hohndel Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = et4_driver.c et4_bank.s tseng_ramdac.c tseng_clock.c

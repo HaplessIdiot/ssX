@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.99 1997/02/28 08:17:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.100 1997/03/11 11:08:46 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -447,9 +447,13 @@ XF68MLIBS  = $(XF68MINIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
  
 XF98INIT       = $(XF98COMSRC)/xf86Init.o $(XF98CONFIGSRC)/xf86IniExt.o
 XF98MINIT      = $(XF98COMSRC)/xf86Init_m.o $(XF98CONFIGSRC)/xf86MIniExt.o
+XF98LINIT      = $(XF98COMSRC)/xf86Init_L.o $(XF98CONFIGSRC)/xf86IniExt.o
 XF98CONFIG     = $(XF98CONFIGSRC)/xf86_Option.o
 XF98COMLIB     = $(XF98COMSRC)/LibraryTargetName(xf86)
 XF98OSLIB      = $(XF98OSSRC)/LibraryTargetName(xf86_os)
+#if DoLoadableServer
+XF98OSDOBJ     = $(XF98OSSRC)/misc/xf86dummy.o
+#endif
 XF98HWLIB      = $(XF98HWSRC)/LibraryTargetName(xf86_hw)
 XF98HWNECLIB   = $(XF98HWNECSRC)/LibraryTargetName(xf86_hw)
 XF98HWPWSKBLIB = $(XF98HWPWSKBSRC)/LibraryTargetName(xf86_hw)
@@ -466,6 +470,8 @@ XF98LIBSPWLB   = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
 XF98LIBSGA968  = $(XF98INIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWGA968LIB) $(XF98OSLIB)
 XF98MLIBS      = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
+		 $(XF98HWLIB) $(XF98OSLIB)
+XF98LLIBS      = $(XF98LINIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWLIB) $(XF98OSLIB)
 XF98MLIBSNEC   = $(XF98MINIT) $(XF98CONFIG) $(XF98COMLIB) \
 		 $(XF98HWNECLIB) $(XF98OSLIB)
@@ -530,8 +536,8 @@ XF68FBDEV = XF68_FBDev
 #if XF98GANBWAPServer
 XF98GANBWAP = XF98_GANBWAP
 #endif
-#if XF98NEC480Server
-XF98NEC480 = XF98_NEC480
+#if XF98PEGCServer
+XF98PEGC = XF98_PEGC
 #endif
 #if XF98NKVNECServer
 XF98NKVNEC = XF98_NKVNEC
@@ -570,7 +576,7 @@ XNEST = Xnest
 XVFB = Xvfb
 #endif
 #if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || \
-    defined(XF98NEC480Server) || defined(XF98NKVNECServer) || \
+    defined(XF98PEGCServer) || defined(XF98NKVNECServer) || \
     defined(XF98WABSServer) || defined(XF98WABEPServer) || \
     defined(XF98WSNAServer) || defined(XF98TGUIServer) || \
     defined(XF86VGA16Server) || defined(XF98EGCServer) || \
@@ -584,7 +590,7 @@ XVFB = Xvfb
     defined(XF86I128Server) || defined(XF86TGAServer) || \
     defined(XF68FBDevServer) || \
     defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) \
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98PEGC) $(XF98NKVNEC) $(XF98WABS) \
 	  $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF86VGA16) $(XF98EGC) \
 	  $(XF86W32) $(XF86MONO) $(XF86S3) $(XF86S3V) $(XF98NECS3) \
 	  $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) \
@@ -1069,9 +1075,9 @@ SetUIDServerTarget(XF98_GANBWAP,$(XF98GANBWAPSUBDIRS),$(XF98GANBWAPOBJS),$(XF98G
 #endif	/* XF98GANBWAPServer */
 
 
-#if XF98NEC480Server
+#if XF98PEGCServer
 XCOMM
-XCOMM XFree98 NEC480 Server
+XCOMM XFree98 PEGC Server
 XCOMM
 MFBDIR  = mfb
 CFB8DIR = cfb
@@ -1079,26 +1085,26 @@ CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98NEC480SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
-XF98NEC480OBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/nec480Conf.o\
+XF98PEGCSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98PEGCOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/pegcConf.o\
 		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
-XF98NEC480LIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernec480) \
+XF98PEGCLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverpegc) \
 		 $(XF98SRC)/xaa/LibraryTargetName(xaa) \
-		 $(XF98SRC)/vga256/LibraryTargetName(nec480) $(XF98LIBS) \
+		 $(XF98SRC)/vga256/LibraryTargetName(pegc) $(XF98LIBS) \
 		 CFBLibs
-XF98NEC480SYSLIBS = $(SYSLIBS)
+XF98PEGCSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
-MakeMutex($(XF98NEC480SUBDIRS) $(XF98NEC480OBJS) $(XF98NEC480LIBS) $(XF98NEC480SYSLIBS))
+MakeMutex($(XF98PEGCSUBDIRS) $(XF98PEGCOBJS) $(XF98PEGCLIBS) $(XF98PEGCSYSLIBS))
 #endif
 #if HasGnuMake
-$(XF98NEC480OBJS) $(XF98NEC480LIBS) $(XF98NEC480SYSLIBS):: $(XF98NEC480SUBDIRS)
+$(XF98PEGCOBJS) $(XF98PEGCLIBS) $(XF98PEGCSYSLIBS):: $(XF98PEGCSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
-SetUIDServerTarget(XF98_NEC480,$(XF98NEC480SUBDIRS),$(XF98NEC480OBJS),$(XF98NEC480LIBS),$(XF98NEC480SYSLIBS))
+SetUIDServerTarget(XF98_PEGC,$(XF98PEGCSUBDIRS),$(XF98PEGCOBJS),$(XF98PEGCLIBS),$(XF98PEGCSYSLIBS))
 #ifndef ServerToInstall
-#define ServerToInstall XF98_NEC480
+#define ServerToInstall XF98_PEGC
 #endif
-#endif	/* XF98NEC480Server */
+#endif	/* XF98PEGCServer */
 
 
 #if XF98NKVNECServer
@@ -1427,6 +1433,36 @@ SetUIDServerTarget(XF98_GA968,$(XF98GA968SUBDIRS),$(XF98GA968OBJS),$(XF98GA968LI
 #endif	/* XF98GA968Server */
 
 
+#if XF98LoaderServer
+XCOMM
+XCOMM XFree98 Loadable Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+DDXDIR1  = hw/xfree98
+XF98LOADERSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
+XF98LOADEROBJS = $(XF98COMSRC)/XF86_LOADER.o
+XF98LOADERLIB = $(XF98SRC)/loader/LibraryTargetName(loader)
+XF98LOADERLIBS = $(XF98LLIBS) $(XF98COMLIB) $(XF98LOADERLIB)  $(XF98HWLIB) \
+                 $(XF98OSLIB) PreFbLibs $(OTHEREXTS) NoMfbPostFbLibs
+XF98LOADERSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98LOADERSUBDIRS) $(XF98LOADEROBJS) $(XF98LOADERLIBS) $(XF98LOADERSYSLIBS))
+#endif
+#if HasGnuMake
+$(XF98LOADEROBJS) $(XF98LOADERLIBS) $(XF98LOADERSYSLIBS):: $(XF98LOADERSUBDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+SetUIDServerTarget(XF98_LOADER,$(XF98LOADERSUBDIRS),$(XF98LOADEROBJS),$(XF98LOADERLIBS),$(XF98LOADERSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_LOADER
+#endif
+#endif        /* XF98LoaderServer */
+
+
 #if XF86I128Server
 XCOMM
 XCOMM XFree86 I128 Server
@@ -1588,7 +1624,12 @@ $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 #if DoLoadableServer
+#if XF86LoaderServer
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(PEXXIEEXTS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
+#endif
+#if XF98LoaderServer
+ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(PEXXIEEXTS) $(XF98OSLIB) $(XF98OSDOBJ),$(XPSYSLIBS))
+#endif
 #else
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
 #endif
@@ -1620,7 +1661,12 @@ $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 #if DoLoadableServer
+#if XF86LoaderServer
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(MIINITEXTOBJ),$(XNESTLIBS) $(XF86OSLIB),$(XNESTSYSLIBS))
+#endif
+#if XF98LoaderServer
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(MIINITEXTOBJ),$(XNESTLIBS) $(XF98OSLIB),$(XNESTSYSLIBS))
+#endif
 #else
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif
@@ -1676,7 +1722,12 @@ $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 #if DoLoadableServer
+#if XF86LoaderServer
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(MIINITEXTOBJ),$(XVFBLIBS) $(XF86OSLIB),$(XVFBSYSLIBS))
+#endif
+#if XF98LoaderServer
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS) $(MIINITEXTOBJ),$(XVFBLIBS) $(XF98OSLIB),$(XVFBSYSLIBS))
+#endif
 #else
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
 #endif
