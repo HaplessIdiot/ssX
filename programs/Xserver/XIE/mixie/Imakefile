@@ -1,7 +1,6 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:34 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.10 1997/02/25 14:19:29 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.11.2.1 1998/06/03 15:49:37 dawes Exp $
 
-#define IHaveModules
 #include <Server.tmpl>
 
 #if BuildDIS
@@ -14,18 +13,16 @@ OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
 #endif
 
-#if !XieModule || DoLoadableServer
 #define	IHaveSubdirs
+
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
-control/DONE:	control
-fax/DONE:	fax
-import/DONE:	import
-#if !BuildDIS
-jpeg/DONE:	jpeg
+#if HasGnuMake || HasBsdMake
+$(DONES): $(SUBDIRS)
 #endif
-process/DONE:	process
-export/DONE:	export
 
 #ifdef OS2Architecture
 all:: DONE
@@ -36,14 +33,12 @@ NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),?*.o)
 NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),$(OBJS))
 #endif
 
-#if !XieModule || DoLoadableServer
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 
 MakeLintLibSubdirs($(SUBDIRS))
 LintSubdirs($(SUBDIRS))
-#endif
 
 InstallLinkKitLibrary(mixie,$(LINKKITDIR)/lib)
 

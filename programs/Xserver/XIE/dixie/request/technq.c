@@ -1,5 +1,5 @@
 /* $XConsortium: technq.c,v 1.6 94/04/17 20:34:00 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.0 1996/03/29 22:11:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/technq.c,v 3.1.2.2 1998/06/03 15:49:35 dawes Exp $ */
 /**** module technq.c ****/
 /****************************************************************************
 
@@ -90,7 +90,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */
@@ -116,8 +115,8 @@ terms and conditions:
 #include <memory.h>
 #include <technq.h>
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
+#ifndef XFree86LOADER
+#include <stdio.h>
 #endif
 
 /*

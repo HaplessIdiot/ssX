@@ -1,4 +1,5 @@
-/* $XConsortium: jrdjfif.c,v 1.4 94/04/17 20:35:44 rws Exp $ */
+/* $XConsortium: jrdjfif.c /main/5 1995/12/02 16:51:41 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /* Module jrdjfif.c */
 
 /****************************************************************************
@@ -68,9 +69,9 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
-	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jrdjfif.c,v 1.1.1.2.6.2 1998/06/09 15:23:09 dawes Exp $ */
 
 /*
  * jrdjfif.c
@@ -100,6 +101,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 #ifdef JFIF_SUPPORTED
 
@@ -750,6 +752,39 @@ get_app0 (decompress_info_ptr cinfo)
 #endif	/* XIE_SUPPORTED */
 }
 
+#ifdef XIE_SUPPORTED
+LOCAL int
+#if NeedFunctionPrototypes
+get_com (decompress_info_ptr cinfo)
+#else
+get_com (cinfo)
+	decompress_info_ptr cinfo;
+#endif	/* NeedFunctionPrototypes */
+#else
+LOCAL void
+get_com (decompress_info_ptr cinfo)
+#endif	/* XIE_SUPPORTED */
+/* Process a COM marker */
+/* Actually we just pass this off to an application-supplied routine */
+{
+  INT32 length;
+  
+#ifdef XIE_SUPPORTED
+  if ((length = get_2bytes(cinfo)) < 0)
+  	return(-1);
+  length -= 2;
+#else
+  length = get_2bytes(cinfo) - 2;
+  
+  TRACEMS1(cinfo->emethods, 1, "Comment, length %u", (int) length);
+#endif	/* XIE_SUPPORTED */
+  
+  (*cinfo->methods->process_comment) (cinfo, (long) length);
+  
+#ifdef XIE_SUPPORTED
+  return(0);
+#endif	/* XIE_SUPPORTED */
+}
 
 #ifdef XIE_SUPPORTED
 LOCAL int
@@ -1170,6 +1205,15 @@ process_tables (decompress_info_ptr cinfo)
 #endif	/* XIE_SUPPORTED */
       break;
 
+    case M_COM:
+#ifdef XIE_SUPPORTED
+      if ((status = get_com(cinfo)) < 0)
+        return(status);
+#else
+      get_com(cinfo);
+#endif	/* XIE_SUPPORTED */
+      break;
+
     case M_RST0:		/* these are all parameterless */
     case M_RST1:
     case M_RST2:
@@ -1450,16 +1494,16 @@ resync_to_restart (decompress_info_ptr cinfo, int marker)
 #endif	/* XIE_SUPPORTED */
   /* Outer loop handles repeated decision after scanning forward. */
   for (;;) {
-    if (marker < M_SOF0)
+    if (marker < (int) M_SOF0)
       action = 2;		/* invalid marker */
-    else if (marker < M_RST0 || marker > M_RST7)
+    else if (marker < (int) M_RST0 || marker > (int) M_RST7)
       action = 3;		/* valid non-restart marker */
     else {
-      if (marker == (M_RST0 + ((desired+1) & 7)) ||
-	  marker == (M_RST0 + ((desired+2) & 7)))
+      if (marker == ((int) M_RST0 + ((desired+1) & 7)) ||
+	  marker == ((int) M_RST0 + ((desired+2) & 7)))
 	action = 3;		/* one of the next two expected restarts */
-      else if (marker == (M_RST0 + ((desired-1) & 7)) ||
-	       marker == (M_RST0 + ((desired-2) & 7)))
+      else if (marker == ((int) M_RST0 + ((desired-1) & 7)) ||
+	       marker == ((int) M_RST0 + ((desired-2) & 7)))
 	action = 2;		/* a prior restart, so advance */
       else
 	action = 1;		/* desired restart or too far away */

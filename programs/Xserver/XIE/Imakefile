@@ -1,25 +1,19 @@
 XCOMM $XConsortium: Imakefile,v 1.3 93/11/07 10:56:36 rws Exp $
-XCOMM $XFree86: xc/programs/Xserver/XIE/Imakefile,v 3.7 1997/02/23 13:11:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/Imakefile,v 3.8.2.1 1998/06/03 15:49:31 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
+
 #if !XieModule
      SUBDIRS = dixie mixie
-
 MakeSubdirs($(SUBDIRS))
 #else
-   SUBDIRS_1 = dixie/export dixie/import dixie/process dixie/request \
+     SUBDIRS = dixie/export dixie/import dixie/process dixie/request \
 		mixie/control mixie/export mixie/fax mixie/import \
 		mixie/jpeg mixie/process
-   SUBDIRS_2 = dixie mixie
-#if DoLoadableServer
-     SUBDIRS = $(SUBDIRS_2)
-#else
-     SUBDIRS = $(SUBDIRS_1) $(SUBDIRS_2)
-#endif
 
 DONES = \
 	dixie/export/DONE \
@@ -45,34 +39,19 @@ OBJS = \
 	mixie/jpeg/?*.o \
 	mixie/process/?*.o
 
-#if HasGnuMake
-$(DONES): $(SUBDIRS_1)
 
-$(SUBDIRS_2): $(DONES)
-	@echo "making all in $(CURRENT_DIR)/$@..."
-	@MakeNamedTargetSubdir($@,PassCDebugFlags,all)
-#else
-$(DONES): $(SUBDIRS)
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
-
 
 #ifndef SCO325
 REQUIREDLIBS = -lm
 #endif
 
-#if DoLoadableServer
-NormalLibraryObjectRule()
-NormalDepLibraryTarget(xie,$(SUBDIRS) $(DONES),$(OBJS))
-InstallDynamicModule(LibraryTargetName(xie),$(MODULEDIR))
-#else
-SharedDepModuleTarget(xie.so,$(SUBDIRS) $(DONES),$(OBJS))
-InstallDynamicModule(xie.so,$(MODULEDIR))
-#endif
-#if HasGnuMake
-ForceSubdirs($(SUBDIRS_1))
-#else
+ModuleObjectRule()
+DepLibraryModuleTarget(xie,$(SUBDIRS) $(DONES),$(OBJS))
+InstallLibraryModule(xie,$(MODULEDIR))
 ForceSubdirs($(SUBDIRS))
-#endif
 #endif
 
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:55:47 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/request/Imakefile,v 3.5 1997/02/18 18:55:27 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/request/Imakefile,v 3.6.2.1 1998/06/03 15:49:34 dawes Exp $
 XCOMM build device independent request objects
 
 #define IHaveModules
@@ -16,15 +16,6 @@ DIS_DEFINES = -DXIE_DIS
 SRCS2 = colorlst.c roi.c
 OBJS2 = colorlst.o roi.o
 #endif
-#if BuildDynamicLoading && XieModule
-#if HasDlsymBug
-MODULE_DEFINES =  -DDLSYM_BUG
-#endif
-#define SharedServerLibraryDef -DDYNAMIC_MODULE
-#endif
-#if DoLoadableServer
-EXTRAINCLUDES = $(XF86COMSRC)
-#endif
 
 DEFINES = $(DIS_DEFINES) $(MODULE_DEFINES)
 
@@ -33,13 +24,13 @@ DEFINES = $(DIS_DEFINES) $(MODULE_DEFINES)
        OBJS = $(OBJS1) $(OBJS2)
 
    INCLUDES = -I../../include -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-              -I$(EXTINCSRC) -I$(EXTRAINCLUDES)
+              -I$(EXTINCSRC)
 
    LINTLIBS = ../export/llib-lexp.ln ../import/llib-limp.ln \
               ../process/llib-lproc.ln ../request/llib-lreq.ln
 
-#define DoSharedLib	BuildDynamicLoading && XieModule
-#include <ServerLib.tmpl>
+ModuleObjectRule()
+
 SubdirLibraryRule($(OBJS))
 LintLibraryTarget(req,$(SRCS))
 NormalLintTarget($(SRCS))
