@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.1 2002/10/11 20:23:07 tsi Exp $ */
 /*
  * Copyright 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -36,6 +36,10 @@
 
 #ifndef MAP_FAILED
 # define MAP_FAILED ((void *)(-1))
+#endif
+
+#if defined(_SCO_DS) && !defined(_SCO_DS_LL)
+#define strtoull (unsigned long long)strtoul
 #endif
 
 #if !defined(strtoull) && \

@@ -31,12 +31,12 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * simplemath.h
  *
- * $Date: 2001/01/15 21:48:38 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/internals/simplemath.h,v 1.1 2001/01/15 21:48:38 dawes Exp $
+ * Header: //depot/main/gfx/lib/glu/libnurbs/internals/simplemath.h#4 $
  */
 
 #ifndef __glusimplemath_h_
@@ -50,6 +50,9 @@ max( int x, int y ) { return ( x < y ) ? y : x; }
 inline REAL 
 min( REAL x, REAL y ) { return ( x > y ) ? y : x; }
 
+#ifdef _SCO_DS
+#define abs __gluabs
+#endif
 inline REAL 
 abs( REAL x ) { return ( x < 0.0 ) ? -x : x; }
 

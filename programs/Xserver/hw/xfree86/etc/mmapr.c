@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.3 2002/10/04 20:09:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.4 2002/10/04 20:13:50 tsi Exp $ */
 /*
  * Copyright 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -36,6 +36,10 @@
 
 #ifndef MAP_FAILED
 # define MAP_FAILED ((void *)(-1))
+#endif
+
+#if defined(_SCO_DS) && !defined(_SCO_DS_LL)
+#define strtoull (unsigned long long)strtoul
 #endif
 
 #if !defined(strtoull) && \
