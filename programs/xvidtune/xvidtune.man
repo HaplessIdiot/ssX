@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.8 1995/07/22 10:35:10 dawes Exp $
+.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.9 1996/01/16 15:09:56 dawes Exp $
 .\"
 .\" Copyright (c) 1995  Kaleb S. KEITHLEY
 .\"
@@ -164,12 +164,8 @@ did not exit cleanly and they are still disabled, the program can
 be re-run with this option to re-enable the mode switching key
 combinations.
 .TP 10
-.B \-saver \fIsuspendtime\fR [\fIofftime\fR]
-Set the ``suspend'' and ``off'' screensaver inactivity timeouts.
-The values are in seconds.
-.TP 10
 .B \-query
-Display the monitor parameters and extended screensaver timeouts.
+Display the monitor parameters.
 .SH SEE ALSO
 XF86Config(4/5)
 .SH AUTHORS
