@@ -1,4 +1,11 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 662. Add "Inet" key definitions for the Honeywell Euroboard keyboard (#A.810,
+      Scott Penrose).
+ 661. Add "Inet" key definitions for the Trust Direct Access keyboard (#A.897,
+      Raphaël Poss).
+ 660. Add draglock support to the mouse driver, for aiding trackball use
+      by people with low dexterity (#A.1224, Paul Elliott).
+ 659. Fix bad includes in the xkb "level3" symbols file (Göran Uddeborg).
  658. Fix atimisc panel support bug that occurs when the mode on server entry
       is a VGA mode with large horizontal and/or vertical blanking pulses
       (Marc La France).
@@ -15845,4 +15852,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2452 2002/12/17 05:09:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2453 2002/12/17 15:45:17 tsi Exp $
