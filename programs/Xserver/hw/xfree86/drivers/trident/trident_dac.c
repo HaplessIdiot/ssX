@@ -213,8 +213,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	
 #ifdef READOUT
 	if ((!((pReg->tridentRegs3CE[VertStretch] & 1) ||
-	    (pReg->tridentRegs3CE[HorStretch] & 1)))
-	    && (!LCDActive || ShadowModeActive)) {
+	       (pReg->tridentRegs3CE[HorStretch] & 1)))
+	    && (!LCDActive || ShadowModeActive)) 
+	  {
 	    unsigned char tmp;
 	    
 	    SHADOW_ENABLE(tmp);
@@ -264,28 +265,29 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	
   	/* copy over common bits from normal VGA */
   	
-  	pReg->tridentRegs3x4[0x7] &= ~0x52;
-	pReg->tridentRegs3x4[0x7] |= (vgaReg->CRTC[0x7] & 0x52);
+  	pReg->tridentRegs3x4[0x7] &= ~0x4A;
+	pReg->tridentRegs3x4[0x7] |= (vgaReg->CRTC[0x7] & 0x4A);
 	
 	/* disable stretching, enable centering */
 	pReg->tridentRegs3CE[VertStretch] &= 0xFC;
 	pReg->tridentRegs3CE[VertStretch] |= 0x80;
 	pReg->tridentRegs3CE[HorStretch] &= 0xFC;
 	pReg->tridentRegs3CE[HorStretch] |= 0x80;
-	
+#if 1
 	{
-	    int mul = pScrn->bitsPerPixel >> 3;
+  	    int mul = pScrn->bitsPerPixel >> 3; 
 	    int val;
 	    
 	    if (!mul) mul = 1;
 	    
 	    /* this is what my BIOS does */ 
 	    val = (pScrn->currentMode->HDisplay * mul / 8) + 16;
-	    
-	    pReg->tridentRegs3x4[PreEndControl] = 2 | ((val >> 8) & 1);
+
+	    pReg->tridentRegs3x4[PreEndControl] = ((val >> 8) < 2 ? 2 :0)
+	      | ((val >> 8) & 0x01);
 	    pReg->tridentRegs3x4[PreEndFetch] = val & 0xff;
 	}
-#if 0
+#else
 	OUTB(vgaIOBase + 4,PreEndControl);
 	pReg->tridentRegs3x4[PreEndControl] = INB(vgaIOBase + 5);
 	OUTB(vgaIOBase + 4,PreEndFetch);
@@ -407,8 +409,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    break;
 	case 32:
 	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
-    	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x08; /* Clock Division by 2*/
-	    clock *= 2;	/* Double the clock */
+	    if (pTrident->Chipset != CYBERBLADEE4) {
+	        /* Clock Division by 2*/
+	        pReg->tridentRegs3CE[MiscExtFunc] |= 0x08; 
+		clock *= 2;	/* Double the clock */
+	    }
     	    offset = pScrn->displayWidth >> 1;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x09;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
@@ -772,7 +777,6 @@ TridentSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-
     OUTW(vgaIOBase + 4, (fg & 0x000000FF)<<8  | 0x48);
     OUTW(vgaIOBase + 4, (fg & 0x0000FF00)     | 0x49);
     OUTW(vgaIOBase + 4, (fg & 0x00FF0000)>>8  | 0x4A);
@@ -833,7 +837,9 @@ TridentHWCursorInit(ScreenPtr pScreen)
     infoPtr->MaxHeight = 64;
     infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 		HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
-		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32;
+		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32 |
+                ((pTrident->Chipset == CYBERBLADEE4) ? 
+                HARDWARE_CURSOR_TRUECOLOR_AT_8BPP : 0);
     infoPtr->SetCursorColors = TridentSetCursorColors;
     infoPtr->SetCursorPosition = TridentSetCursorPosition;
     infoPtr->LoadCursorImage = TridentLoadCursorImage;
@@ -897,9 +903,6 @@ void TridentLoadPalette(
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int i, index;
     int sig;
-#if 0
-    sig = xf86BlockSIGIO ();
-#endif
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
     	OUTB(0x3C6, 0xFF);
@@ -913,8 +916,5 @@ void TridentLoadPalette(
         OUTB(0x3c9, colors[index].blue);
 	DACDelay(hwp);
     }
-#if 0
-    xf86UnblockSIGIO (sig);
-#endif
 }
 

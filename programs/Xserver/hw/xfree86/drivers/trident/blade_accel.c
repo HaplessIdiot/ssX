@@ -574,6 +574,7 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+    BladeSync(pScrn);
     BLADE_OUT(0x2148, XAAPatternROP[rop]);
 
     if (bg == -1) {
