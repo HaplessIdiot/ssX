@@ -8,7 +8,13 @@
   1. For systems which don't use gcc-2, you may need to install libgcc.a
      if the binary distribution you are using was built with gcc-2.
 
-  2. Edit the site.def file to define which servers you want to build,
+  2. Make sure that you have the XFree86 3.1.1 config files and
+     libraries and headers installed under /usr/X11R6.  For some OSs
+     these will be included in the `lib' and `inc' packages.  For others
+     they are included in the `prog' or `dev' package.  Older versions
+     are not compatible.
+
+  3. Edit the site.def file to define which servers you want to build,
      and the drivers and extensions you want included.
 
 
@@ -75,7 +81,7 @@
      points to).
 
 
-  3. If you are including a driver that it not part of the standard
+  4. If you are including a driver that it not part of the standard
      distribution, make a directory in drivers/vga256 (drivers/vga2 if
      it is for the VGA2 part of the Mono server, drivers/vga16 if it is
      for the 16 colour server, or drivers/mono non-VGA part of the Mono
@@ -84,35 +90,29 @@
      should be the same as the name of the driver (refer to the
      documentation in the VGADriverDoc directory for more details).
 
-  4. To build the Makefile, run
+  5. To build the Makefile, run
        ./mkmf
 
 
-  5. Run `make' to link the server(s) as configured.
+  6. Run `make' to link the server(s) as configured.
 
-  6. Run `make install' to install the new server(s).
+  7. Run `make install' to install the new server(s).
 
-  7. Run `make clean' to remove the files that were created by this
+  8. Run `make clean' to remove the files that were created by this
      procedure.
 
-  8. If you edit the site.def file and change the selection of servers
+  9. If you edit the site.def file and change the selection of servers
      being built or the drivers included in them, repeat the above
      procedure.  If changing the selection of Xserver extensions being
      included it is sufficient to run `make Makefile' instead of
      `./xmkmf'.
 
-  9. It is possible to see which drivers are included in the Xserver by
+  10.
+     It is possible to see which drivers are included in the Xserver by
      running it with the `-showconfig' flag.  To check which extensions
      are included, start the Xserver and run `xdpyinfo'.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.1 1995/01/07 05:44:34 dawes Exp $
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.2 1995/01/14 10:47:43 dawes Exp $
 
 
 
