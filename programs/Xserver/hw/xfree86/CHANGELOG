@@ -1,4 +1,6 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 915. Fix a bug in beforelight that was preventing it from being restarted 
+      and could cause random X clients to be killed. (Matthieu Herrb)
  914. Add a means by which a motherboard chipset driver can prevent the common
       layer's check for mis-configured PCI-to-PCI bridges (Marc La France).
  913. Fix bug that would sometimes cause an extra hardware cursor to re-appear
@@ -16420,4 +16422,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2562 2003/02/18 05:24:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2563 2003/02/18 15:42:04 tsi Exp $
