@@ -398,14 +398,15 @@
 
         o  Hercules Graphics Terminator 64
 
-              s3RefClk   50
-              DACspeed  170
-              Option  "slow_vram"
-
-
-
-
         8/15/16/24 bpp
+
+
+           s3RefClk   50
+           DACspeed  170
+           Option  "slow_vram"
+
+
+
 
      S3 968, IBM RGB 514/524/525/528 RAMDAC & Clockchip
 
@@ -455,10 +456,9 @@
   2.  16bpp and 32bpp
 
   On 801/805 + AT&T490 Cards (like the Fahrenheit 1280+ VLB) only 15 and
-  16bpp are supported. 32bpp isn't available on this type of chips.
+  16bpp are supported. 32bpp isn't available on this type of card.
   (There is a 24 bit mode under MS Windows, but it's not a 32bpp sparse
   mode but a real 3 bytes/pixel mode).
-
 
   3.  List of Supported Clock Chips
 
@@ -491,7 +491,7 @@
   verify that running XF86_S3 will not damage your board.
 
   If you feel adventurous you could also open up your computer and have
-  a peek at your RAMDAC. The RAMDAC is usually one the larger chips
+  a peek at your RAMDAC. The RAMDAC is usually one of the larger chips
   (second or third largest chip that is NOT an EPROM) on the board.  The
   markings on it are usually
 
@@ -516,7 +516,7 @@
 
 
 
-  This is a AT&T 20C490 with a speed grade of 110 MHz. This would then
+  This is an AT&T 20C490 with a speed grade of 110 MHz. This would then
   mean that you put a `DacSpeed 110' line in your XF86Config file.  Be
   advised that some RAMDACs have different modes that have different
   limits. The manufacturer will always mark the chip naming the higher
@@ -524,8 +524,8 @@
   the limits for most of the RAMDACs it supports providing the DacSpeed
   is specified correctly.
 
-  chips labeled -80 or -8  should use `DacSpeed 80' in the device
-  section
+  Chips labeled -80 or -8  should use `DacSpeed 80' in the device
+  section.
        S3 86C716-ME SDAC  ==>  DacSpeed 110
        SC15025-8          ==>  DacSpeed  80
        ATT20C490-80       ==>  DacSpeed  80
@@ -554,8 +554,8 @@
   Cards with IBM RGB5xx RAMDACs use several different input frequencies
   for the clock synthesizer which can't be probed without some knowledge
   of the text mode clocks (which may be a wrong assumption if you're
-  using non-standard text modes).  Here is the procedure how you should
-  find out the input frequency:
+  using non-standard text modes).  Here is the procedure you should use
+  to find out the input frequency:
 
   First run
 
@@ -575,10 +575,10 @@
 
 
   there will be a "good guessed" value which will be used and two probed
-  values in brackets based on the 25MHz and 28MHz text clocks. this
+  values in brackets based on the 25MHz and 28MHz text clocks. This
   probing can only work if you run a normal 80x25 or 80x28 text mode!
 
-  the refclock values  known so far are:
+  The refclock values known so far are:
 
           STB Velocity 64         24 Mhz
           Genoa VideoBlitz II AV  50 MHz
@@ -590,11 +590,11 @@
   depending on the quartz on your card and maybe other features like an
   additional clock chip on the Genoa card (which as a 14.3MHz quartz).
 
-  If you claim that your card has a 16MHz card but it really uses 50MHz,
-  all pixel clocks will be tripled and a 640x480 mode with 25MHz will
-  use a 75MHz pixel clock, so be very careful.
+  If you claim that your card has a 16MHz clock, but it really uses
+  50MHz, all pixel clocks will be tripled and a 640x480 mode with 25MHz
+  will use a 75MHz pixel clock, so be very careful.
 
-  if you found the right refclock, you should set it in the config file
+  If you found the right refclock, you should set it in the config file
   (device section) e.g. with
 
 
@@ -613,15 +613,17 @@
   so that that this value will be used even if you use another text mode
   and probing fails!
 
-  6.  How to to avoid ``snowing'' display while graphics operations
+  6.  How to avoid ``snowing'' display while performing graphics opera-
+  tions
 
-  For cards with S3 Vision864 chip there is a automatic correction which
-  depends on the pixel clock and the memory clock MCLK at which the S3
-  chip operates. For most clock chips this value can't be read (only the
-  S3 SDAC allows reading the MCLK value so far), so this value has to be
-  estimated and specified by the user (the default is 60 [MHz]).
+  For cards with the S3 Vision864 chip, there is an automatic correction
+  which depends on the pixel clock and the memory clock MCLK at which
+  the S3 chip operates. For most clock chips this value can't be read
+  (only the S3 SDAC allows reading the MCLK value so far), so this value
+  has to be estimated and specified by the user (the default is 60
+  [MHz]).
 
-  With the new `s3MCLK' entry for your XF86Config file now you can
+  With the new `s3MCLK' entry for your XF86Config file, now you can
   specify e.g.
 
 
@@ -653,8 +655,6 @@
   determine the MLCK value, which is printed in MHz. Up to 4 tests are
   run, so you'll get up to 4 estimates (where the first might be the
   most accurate one).
-
-
 
 
 
@@ -699,7 +699,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.25 1995/07/24 11:17:14 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.26 1995/07/30 04:15:58 dawes Exp $
 
 
 

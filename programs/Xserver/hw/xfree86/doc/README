@@ -77,7 +77,7 @@
         Workarounds for some NumLock problems.
 
      23.
-        Cyrillic fonts (using KIO8-R encoding) from Cronyx Ltd.
+        Cyrillic fonts (using KOI8-R encoding) from Cronyx Ltd.
 
 
   Plus a lots of other small items.  Refer to the CHANGELOG file in the
@@ -517,14 +517,18 @@
 
         o  Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
+     LynxOS AT support by:
+
+        o  Thomas Mueller <tm@systrix.de>
+
      Linux shared libraries by:
 
         o  Orest Zborowski <orestz@eskimo.com>,
 
+
         o  Dirk Hohndel <hohndel@XFree86.org>
 
      Original accelerated code by:
-
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
@@ -724,6 +728,7 @@
 
         o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked
            mono),
+
         o  Eric Raymond <esr@snark.thyrsus.com> (new video mode
            documentation),
 
@@ -790,6 +795,7 @@
 
   The current Board of Directors and Officers of the The XFree86
   Project, Inc, are:
+
      o  David Dawes, President and Secretary
 
      o  Dirk Hohndel, Vice-President
@@ -849,6 +855,7 @@
      o  AT&T Global Information Services <http://www.attgis.com/>
         (formerly NCR)
 
+
      o  Andrew Burgess
 
      o  Berkeley Software Design, Inc <http://www.bsdi.com/>, Falls
@@ -899,7 +906,7 @@
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
-     o  Red Hat Software, Chapel Hill, NC
+     o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
      o  Norbert Reithinger
 
@@ -921,12 +928,11 @@
 
      o  Unifix Software GmbH, Braunschweig, Germany
 
-
      o  Vixie Enterprises <http://www.vix.com/>, La Honda, CA
 
      o  Walnut Creek CDROM <http://www.cdrom.com/>, Concord, CA
 
-     o  Xtreme s.a.s., Livorno, Italy
+     o  Xtreme s.a.s. <http://www.xfree86.org/xtreme>, Livorno, Italy
 
   The XFree86 Project, Inc, welcomes the additional contribution of
   funding and/or equipment.  Such contributions should be tax-
@@ -941,19 +947,19 @@
   available via anonymous FTP from:
 
 
-     o  ftp.XFree86.org:/pub/XFree86/current
-        <ftp://ftp.XFree86.org/pub/XFree86/current>
+     o  ftp.XFree86.org:/pub/XFree86/3.1.2
+        <ftp://ftp.XFree86.org/pub/XFree86/3.1.2>
 
   and the following mirror sites:
 
      o  North America:
 
-        +  ftp.bsdi.com:/contrib/X11/XFree86
-           <ftp://ftp.bsdi.com/contrib/X11/XFree86> (source and BSD/OS
-           binaries)
-
         +  XFree86.cdrom.com:/pub/XFree86
            <ftp://XFree86.cdrom.com/pub/XFree86> (source and binaries)
+
+        +  ftp.rge.com:/pub/XFree86/XFree86/3.1.2
+           <ftp://ftp.rge.com/pub/XFree86/XFree86/3.1.2> (source and
+           binaries)
 
         +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2
            <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2> (source
@@ -970,16 +976,8 @@
            <ftp://ref.tfs.com/pub/mirrors/XFree86> (source patches and
            FreeBSD binaries)
 
-        +  ftp.eecs.umich.edu:/BSD/XFree86/current
-           <ftp://ftp.eecs.umich.edu/BSD/XFree86/current> (source and
-           binaries)
-
-        +  sunsite.unc.edu:/pub/X11/XFree86
-           <ftp://sunsite.unc.edu/pub/X11/XFree86> (source patches and
-           binaries)
-
-        +  abode.ccd.bnl.gov:/pub/XFree86
-           <ftp://abode.ccd.bnl.gov/pub/XFree86> (Solaris, SVR4, SCO
+        +  ftp.eecs.umich.edu:/BSD/XFree86/3.1.2
+           <ftp://ftp.eecs.umich.edu/BSD/XFree86/3.1.2> (source and
            binaries)
 
 
@@ -988,15 +986,13 @@
         +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.2 <ftp://fvkma.tu-
            graz.ac.at/pub/XFree86/3.1.2> (source and binaries)
 
-        +  ftp.switch.ch:/mirror/XFree86
-           <ftp://ftp.switch.ch/mirror/XFree86> (source and binaries)
-
         +  ftp.fee.vutbr.cz:/pub/XFree86/3.1.2
            <ftp://ftp.fee.vutbr.cz/pub/XFree86> (source patches and
            binaries)
 
-        +  ftp.gwdg.de:/pub/xfree86 <ftp://ftp.gwdg.de/pub/xfree86>
-           (source and binaries)
+        +  ftp.gwdg.de:/pub/xfree86/XFree86/3.1.2
+           <ftp://ftp.gwdg.de/pub/xfree86/XFree86/3.1.2> (source and
+           binaries)
 
         +  ftp.uni-erlangen.de:/pub/Linux/MIRROR.xfree86/3.1.2
            <ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.2>
@@ -1009,23 +1005,20 @@
            <ftp://ftp.funet.fi/pub/X11/XFree86/3.1.2> (source and
            binaries)
 
-        +  anasgard.calvacom.fr:/pub/unix/X/XFree86
-           <ftp://anasgard.calvacom.fr/pub/unix/X/XFree86> (source and
+        +  ftp.calvacom.fr:/pub/unix/X/XFree86
+           <ftp://ftp.calvacom.fr/pub/unix/X/XFree86> (source and
            binaries)
 
-        +  ftp.ibp.fr:/pub/X11/XFree86
-           <ftp://ftp.ibp.fr/pub/X11/XFree86> (source and binaries)
+        +  ftp.ibp.fr:/pub/X11/XFree86/XFree86-3.1.2
+           <ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2> (source and
+           binaries)
 
         +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.2
            <ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2> (NetBSD binaries
            only)
 
-        +  ftp.unipi.it:/pub/mirrors/XFree86-3.1.2
-           <ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.2> (source and
-           binaries)
-
-        +  ftp.pvv.unit.no:/pub/XFree86/current
-           <ftp://ftp.pvv.unit.no/pub/XFree86/current> (source and
+        +  ftp.pvv.unit.no:/pub/XFree86/3.1.2
+           <ftp://ftp.pvv.unit.no/pub/XFree86/3.1.2> (source and
            binaries)
 
 
@@ -1037,15 +1030,16 @@
            <ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2> (source and
            binaries)
 
-        +  ftp.hk.super.net:/mirror/XFree86
-           <ftp://ftp.hk.super.net/mirror/XFree86> (source and binaries)
+        +  ftp.iij.ad.jp:/pub/X/XFree86/XFree86/3.1.2
+           <ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86/3.1.2> (source and
+           binaries)
+
+        +  ftp.sf.co.kr:/pub/XFree86/3.1.2
+           <ftp://ftp.sf.co.kr/pub/XFree86/3.1.2> (source and binaries)
 
         +  ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2
            <ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2> (source
            patches and binaries)
-
-        +  ftp.edu.tw:/X/XFree86/3.1.2
-           <ftp://ftp.edu.tw/X/XFree86/3.1.2> (source and binaries)
 
 
   Refer to the README file under the specified directory for information
@@ -1058,7 +1052,13 @@
   building the distribution.
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.27 1995/07/24 05:56:20 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.31 1995/08/05 11:53:07 dawes Exp $
+
+
+
+
+
+
 
 
 
