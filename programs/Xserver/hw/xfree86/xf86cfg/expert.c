@@ -26,12 +26,13 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.1 2000/11/30 20:55:16 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.2 2000/11/30 21:45:20 paulo Exp $
  */
 
 #include "config.h"
 #include "xf86config.h"
 #include "options.h"
+#include "screen.h"
 #include "monitor-cfg.h"
 #include <X11/Shell.h>
 #include <X11/Xaw/AsciiText.h>
@@ -299,6 +300,7 @@ extern void RemoveDeviceCallback(Widget, XtPointer, XtPointer);
  */
 static Widget shell, expert, tree, panner;
 extern Widget work, optionsShell, config;
+extern xf86cfgDevice cpu_device;
 static TreeNode *mainNode, *monitorTree, *screenTree, *layoutTree;
 
 /*
@@ -318,8 +320,33 @@ ExpertConfigureStart(void)
 void
 ExpertConfigureEnd(void)
 {
+    int i;
+
     XtVaSetValues(optionsShell, XtNtransientFor, toplevel, NULL, 0);
     XtPopdown(shell);
+
+    for (i = 0; i < computer.num_screens; i++) {
+	XF86OptionPtr option, options;
+	int rotate;
+
+	options = computer.screens[i]->screen->scrn_option_lst;
+	if ((option = xf86findOption(options, "Rotate")) != NULL) {
+	    if (option->opt_val != NULL)
+		rotate = strcasecmp(option->opt_val, "CW") == 0 ? 1 :
+			 strcasecmp(option->opt_val, "CCW") == 0 ? -1 : 0;
+	    XtFree(option->opt_val);
+	    option->opt_val = XtNewString(rotate > 0 ? "CW" : "CCW");
+	    computer.screens[i]->rotate = rotate;
+	}
+	else
+	    computer.screens[i]->rotate = 0;
+	UpdateScreenUI();
+	AdjustScreenUI();
+	SetTip((xf86cfgDevice*)computer.screens[i]);
+    }
+    SetTip(&cpu_device);
+    for (i = 0; i < computer.num_devices; i++)
+	SetTip(computer.devices[i]);
 
     /* Need to do this to avoid all code elsewhere needing to update the
      * "expert" widget tree
@@ -2994,8 +3021,8 @@ CreateScreenDisplayField(TreeNode *node, Bool addnew)
 					XtNstring, str, NULL, 0);
 
 	XtCreateManagedWidget("weightL", labelWidgetClass, box, NULL, 0);
-	if (dsp->disp_weight.red >= 0)
-	    XmuSnprintf(buf, sizeof(buf), "0x%04x 0x%04x 0x%04x",
+	if (dsp->disp_weight.red > 0)
+	    XmuSnprintf(buf, sizeof(buf), "%d %d %d",
 			dsp->disp_weight.red, dsp->disp_weight.green, dsp->disp_weight.blue);
 	else
 	    *buf = '\0';

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.1 2000/10/20 14:59:05 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.2 2000/11/08 17:58:43 alanh Exp $
  */
 #define LOADER_PRIVATE
 #include "loader.h"
@@ -35,6 +35,7 @@
 
 #ifdef USE_MODULES
 void xf86AddDriver(DriverPtr, void*, int);
+Bool xf86ServerIsOnlyDetecting(void);
 
 xf86cfgDriverOptions *video_driver_info;
 
@@ -229,6 +230,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86longjmp)
 
     SYMFUNC(xf86AddDriver)
+    SYMFUNC(xf86ServerIsOnlyDetecting)
     {0,0}
 };
 
@@ -340,5 +342,11 @@ void
 xf86AddDriver(DriverPtr drv, void *module, int flags)
 {
     driver = drv;
+}
+
+Bool
+xf86ServerIsOnlyDetecting(void)
+{
+    return (True);
 }
 #endif

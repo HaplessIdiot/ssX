@@ -102,8 +102,10 @@ ScreenConfig(XtPointer conf)
 	default_depth = 8;
     sel_index = unsel_index = -1;
     for (i = 0; i < computer.num_screens; i++)
-	if (computer.screens[i]->screen == screen)
+	if (computer.screens[i]->screen == screen) {
+	    SetScreenRotate(computer.screens[i]);
 	    rotate = computer.screens[i]->rotate;
+    }
     oldrotate = rotate;
 
     ndefmodes = 0;
@@ -207,7 +209,6 @@ ScreenConfig(XtPointer conf)
 		computer.screens[i]->rotate = rotate;
 
 	if (oldrotate != rotate) {
-	    XF86OptionPtr option;
 	    static char *Rotate = "Rotate";
 
 	    if (screen->scrn_option_lst != NULL)
