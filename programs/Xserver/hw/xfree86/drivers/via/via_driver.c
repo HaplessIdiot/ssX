@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.1 2003/04/15 15:35:47 alanh Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -279,18 +279,17 @@ static XF86ModuleVersionInfo VIAVersRec = {
 
 XF86ModuleData viaModuleData = {&VIAVersRec, VIASetup, NULL};
 
+#if 0
 void FillGraphicInfo(ScrnInfoPtr pScrn)
 {
     VIAPtr pVia = VIAPTR(pScrn);
     VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
 
-	gVIAGraphicInfo.ScreenAddress = (unsigned long *) pVia->FBStart;
-	gVIAGraphicInfo.ScreenPhysAddr = pVia->FrameBufferBase;
 	gVIAGraphicInfo.TotalVRAM = pVia->videoRambytes;
-	gVIAGraphicInfo.VideoHeapBase = (unsigned long *) pVia->FBFreeStart;
-	gVIAGraphicInfo.VideoHeapEnd = (unsigned long *) (pVia->FBFreeEnd - 1);
-	gVIAGraphicInfo.GEAddress =  (unsigned long *) pVia->MapBase;
-	gVIAGraphicInfo.VidMMAddress = (unsigned long *) pVia->VidMapBase;
+	gVIAGraphicInfo.VideoHeapBase = pVia->FBFreeStart;
+	gVIAGraphicInfo.VideoHeapEnd = pVia->FBFreeEnd - 1;
+	gVIAGraphicInfo.GEAddress = pVia->MapBase;
+	gVIAGraphicInfo.VidMMAddress = pVia->VidMapBase;
 	gVIAGraphicInfo.dwWidth = pBIOSInfo->CrtcHDisplay;
 	gVIAGraphicInfo.dwHeight = pBIOSInfo->CrtcVDisplay;
 	gVIAGraphicInfo.dwBPP = pScrn->bitsPerPixel;
@@ -302,8 +301,8 @@ void FillGraphicInfo(ScrnInfoPtr pScrn)
 	gVIAGraphicInfo.dwExpand = pBIOSInfo->scaleY;
 	gVIAGraphicInfo.dwPanelWidth = pBIOSInfo->panelX;
 	gVIAGraphicInfo.dwPanelHeight = pBIOSInfo->panelY;
-
 }
+#endif
 
 static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
@@ -2040,7 +2039,9 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 
     if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary) {
+#if 0
 	FillGraphicInfo(pScrn);
+#endif
 	viaInitVideo(pScreen);
     }
 
@@ -2294,7 +2295,9 @@ static Bool VIAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary)
     {
+#if 0
 	FillGraphicInfo(pScrn);
+#endif
 
 		 DBG_DD(ErrorF("SWOV:  VIAVidSet2DInfo\n"));
 
@@ -2840,9 +2843,10 @@ Bool VIADeviceDispatch(ScrnInfoPtr pScrn)
 	return TRUE;
 }
 
+#if 0
 void VIADebugBreak()
 {
     /* use int3 to set breakpoint */
     __asm __volatile("int $3");
 }
-
+#endif
