@@ -1,3 +1,4 @@
+ 596. Add "xvinfo" client for querying Xv adaptors (Mark Vojkovich).
  595. Fix DGA support in the i810 driver (Mark Vojkovich).
  594. Enlarge the i810 pixmap cache and have the YUV overlay use that memory 
       rather than allocate dedicated memory for overlay data (Mark Vojkovich).
@@ -11129,4 +11130,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1311 2000/09/17 01:39:28 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1312 2000/09/17 23:20:19 mvojkovi Exp $
