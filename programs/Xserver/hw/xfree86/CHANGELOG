@@ -1,6 +1,9 @@
 XFree86 3.1.2Eb (30 June 1996)
-584. Fix twm/gram.y problems that show up when using bison-1.15
-     (Matthieu Herrb).
+586. Auto-select the ICD2061A for Diamond Stealth 64 VRAM cards (when
+     a Diamond BIOS, Bt485 and S3 964 are all detected).
+585. Fix a problem with the VGA16 server when Chipset "generic" is specified.
+584. Fix twm/gram.y and fonts/PEX/to_wfont.y problems that show up when
+     using bison-1.15 (Matthieu Herrb).
 583. Move the beta expiry check code into a separate file, and add a command
      line option to allow the expiry date to be extended when a key is
      provided.

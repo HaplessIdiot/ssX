@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.4 1995/01/28 17:04:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.5 1996/02/04 09:09:54 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -264,6 +264,20 @@ xf86OpenConsole()
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
 	case PCVT:
+	    /*
+	     * First activate the #1 VT.  This is a hack to allow a server
+	     * to be started while another one is active.  There should be
+	     * a better way.
+	     */
+	    if (initialVT != 1) {
+
+		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) != 0)
+		{
+		    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+		}
+		sleep(1);
+	    }
+	   
 	    /*
 	     * now get the VT
 	     */
