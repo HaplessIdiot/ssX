@@ -1,4 +1,4 @@
-/* $XTermId: button.c,v 1.176 2005/01/10 00:24:33 tom Exp $ */
+/* $XTermId: button.c,v 1.178 2005/02/04 21:40:20 tom Exp $ */
 
 /* $Xorg: button.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $ */
 /*
@@ -52,7 +52,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.76 2004/12/01 01:27:46 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.77 2005/01/14 01:50:02 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -2572,7 +2572,7 @@ ConvertSelection(Widget w,
 	   with no conversion into the selection.  Yes, this breaks
 	   the ICCCM in non-Latin-1 locales. */
 	*type = XA_STRING;
-	*value = screen->selection_data;
+	*value = (XtPointer) screen->selection_data;
 	*length = screen->selection_length;
 	*format = 8;
 	result = True;

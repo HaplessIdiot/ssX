@@ -1,4 +1,4 @@
-/* $XTermId: os2main.c,v 1.188 2005/01/29 22:01:45 tom Exp $ */
+/* $XTermId: os2main.c,v 1.190 2005/01/30 23:45:40 tom Exp $ */
 
 /* removed all foreign stuff to get the code more clear (hv)
  * and did some rewrite for the obscure OS/2 environment
@@ -7,7 +7,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.73 2005/01/18 00:02:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.74 2005/01/29 22:17:32 dickey Exp $ */
 
 /***********************************************************
 
@@ -60,6 +60,9 @@ SOFTWARE.
 #define INCL_DOSFILEMGR
 #define INCL_DOSDEVIOCTL
 #define INCL_DOSSEMAPHORES
+#ifdef __INNOTEK_LIBC__
+#define INCL_DOSDEVICES
+#endif
 #define I_NEED_OS2_H
 #include <os2.h>
 #define XTERM_MAIN
