@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.9 1998/09/26 08:34:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.10 1998/11/01 12:36:05 dawes Exp $ */
 
 /*
  *
@@ -23,6 +23,8 @@
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "vgaHW.h"
+
+#include "xf86cmap.h"
 
 /*
  * XXX The PC98 bits have been removed for now.  The structure of the
@@ -1471,3 +1473,39 @@ vgaHWUnlock(vgaHWPtr hwp)
 }
 
 
+static void
+vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
+		 short visualClass)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int i, index;
+
+    hwp->enablePalette(hwp);
+
+    for (i = 0; i < numColors; i++) {
+	index = indices[i];
+	hwp->writeDacWriteAddr(hwp, index);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].red);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].green);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].blue);
+	DACDelay(hwp);
+    }
+
+    hwp->disablePalette(hwp);
+}
+
+Bool
+vgaHWHandleColormaps(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+    if (pScrn->depth > 1 && pScrn->depth <= 8) {
+	return xf86HandleColormaps(pScreen, 1 << pScrn->depth,
+				   pScrn->rgbBits, vgaHWLoadPalette,
+				   CMAP_RELOAD_ON_MODE_SWITCH);
+    }
+    return TRUE;
+}

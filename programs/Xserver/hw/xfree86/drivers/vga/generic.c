@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.13 1998/10/06 07:26:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.14 1998/10/11 10:20:37 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -840,7 +840,16 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScreenInfo->depth > 1)
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScreenInfo->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScreenInfo, zeros))
+	    return FALSE;
+    }
+
+    /* XXX The new cmap code doesn't work for this case yet */
+    if (pScreenInfo->depth == 4)
         vgaHandleColormaps(pScreen, pScreenInfo);
 
     /* Initialise cursor */
@@ -848,6 +857,10 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup default colourmap */
     Inited = miCreateDefColormap(pScreen);
+
+    /* Try the new code based on the new colormap layer */
+    if (pScreenInfo->depth == 8)
+        vgaHWHandleColormaps(pScreen);
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, GenericDPMSSet, 0);
