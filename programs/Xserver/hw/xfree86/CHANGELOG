@@ -1,3 +1,5 @@
+ 219. Fix Xv DDX stop overlaid stills/images when XvStopVideo() is called
+      (Mark Vojkovich).
  218. Have the Xv DDX send clients exposure events when windows containing
       overlaid data, which isn't actually in the framebuffer, are moved
       (Mark Vojkovich).
@@ -10414,4 +10416,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1167 2000/05/29 13:45:41 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1168 2000/05/29 21:49:36 mvojkovi Exp $
