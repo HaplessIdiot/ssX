@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.63 2003/12/03 17:11:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.65tsi Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -358,6 +358,11 @@ LOOKUP dixLookupTab[] = {
     SYMFUNC(Xcalloc)
     SYMFUNC(Xfree)
     SYMFUNC(Xrealloc)
+#if !defined(LONG64) && !defined(WORD64)
+    SYMFUNC(Xllalloc)
+    SYMFUNC(Xllrealloc)
+    SYMFUNC(Xllcalloc)
+#endif
     /* WaitFor.c */
     SYMFUNC(ScreenSaverTime)
     SYMFUNC(TimerFree)
