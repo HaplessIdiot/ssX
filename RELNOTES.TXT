@@ -7,25 +7,26 @@
 
 
 
-                      XX WWiinnddooww SSyysstteemm,, VVeerrssiioonn 1111
+		      X Window System, Version 11
 
-                              RReelleeaassee 66..44
+			      Release 6.4
 
-                             RReelleeaassee NNootteess
-
-
+			     Release Notes
 
 
 
 
 
 
-                     The Open Group X Project Team
 
-                            30 January, 1998
-
+		     The Open Group X Project Team
 
 
+
+
+
+
+			    30 January, 1998
 
 
 
@@ -36,12 +37,12 @@
 Copyright (C) 1998   The Open Group
 
 Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish, dis-
-tribute, sublicense, and/or sell copies of the Software, and to permit
-persons to whom the Software is furnished to do so, subject to the fol-
-lowing conditions:
+copy of this software and associated documentation files (the "Soft-
+ware"), to deal in the Software without restriction, including without
+limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to
+whom the Software is furnished to do so, subject to the following condi-
+tions:
 
 The above copyright notice and the following permission notice shall be
 included in all copies of the Software:
@@ -59,15 +60,24 @@ be used in advertising or otherwise to promote the use or other dealings
 in this Software without prior written authorization from The Open
 Group.
 
-_X _W_i_n_d_o_w _S_y_s_t_e_m is a trademark of The Open Group.
+X Window System is a trademark of The Open Group.
 
 
 
-_1_.  _W_h_a_t _I_s _X_1_1
+1.  Introductory Note
+
+This document is the release notes that were provided with The Open
+Group's X11R6.4 release.  The XFree86-specific information in this docu-
+ment is out of date.  The XFree86-specific documentation can be found in
+the xc/programs/Xserver/hw/xfree86/doc directory, and on-line at
+http://www.xfree86.org/current/.
+
+
+2.  What Is X11
 
 
 X11, or X, is a vendor-neutral, system-architecture neutral network-
-transparent window system and user interface standard.  In other words
+transparent window system and user interface standard.	In other words
 it's windows for UNIX. But X is not just for UNIX -- X runs on a wide
 range of computing and graphics machines including Macintosh, OS/2,
 Microsoft's MS-Windows family of operating systems, and almost all of
@@ -76,11 +86,11 @@ CPU-intensive programs on high powered workstations and display the user
 interface (the windows) on inexpensive desktop machines.
 
 
-_2_.  _W_h_a_t _i_s _R_e_l_e_a_s_e _6_._4
+3.  What is Release 6.4
 
 
 Release 6.4 (R6.4) is The Open Group X Project Team's update to the X
-Consortium's Release 6.3 (R6.3) of X11 and all prior releases.  It is
+Consortium's Release 6.3 (R6.3) of X11 and all prior releases.	It is
 compatible with with all releases going back to R1 at both the source
 and protocol levels.
 
@@ -101,7 +111,7 @@ INSTALL.PS (PostScript) or INSTALL.TXT (plain text), available sepa-
 rately and also contained in the release.
 
 
-_3_.  _O_v_e_r_v_i_e_w _o_f _t_h_e _X _P_r_o_j_e_c_t _T_e_a_m _R_e_l_e_a_s_e
+4.  Overview of the X Project Team Release
 
 
 Like all the releases that preceded it, R6.4 is a source code release.
@@ -109,40 +119,40 @@ In order to use the release it is necessary to first unpack the distri-
 bution, compile it, and then install it. The source contains the follow-
 ing items:
 
-XX CCoonnssoorrttiiuumm SSttaannddaarrddss aanndd XX PPrroojjeecctt TTeeaamm SSppeecciiffiiccaattiioonnss
+X Consortium Standards and X Project Team Specifications
      The X Consortium produced standards -- documents which define net-
      work protocols, programming interfaces, and other aspects of the X
      environment. These standards continue to exists in the X Project
-     Team release. The X Project Team produces specifications.  Like X
+     Team release. The X Project Team produces specifications.	Like X
      Consortium Standards, these are documents which define network pro-
      tocols, programming interfaces, and other aspects of the X environ-
      ment. Under the aegis of The Open Group, X Consortium standards, X
      Project Team specifications, and other specifications are the basis
      for portions of The Open Group's various CAE Specifications. Some
-     of the new features in this release are not _s_t_a_n_d_a_r_d, that is,
+     of the new features in this release are not standard, that is,
      there is no accompanying specification.
 
-IImmpplleemmeennttaattiioonnss
+Implementations
      For most of X Consortium standards and X Project Team specifica-
      tions, a high-quality implementations is provided to demonstrate
      proof of concept, to give vendors a base to use, and early adopters
      a chance to begin developing using the new features. These are not
-     _r_e_f_e_r_e_n_c_e implementations -- the written specifications are the
+     reference implementations -- the written specifications are the
      authoritative definition.
 
-FFoonnttss
+Fonts
      A collection of bitmap and outline fonts are included in the dis-
      tribution, contributed by various individuals and companies.
 
-UUttiilliittyy LLiibbrraarriieess
+Utility Libraries
      A number of libraries, such as Xmu and the Athena Widget Set, are
      included. These are not standards, but are used in building the
      applications contained in the release and may be useful in building
      other applications.
 
-PPrrooggrraammss
+Programs
      We also provide a number of application programs. A few of these
-     programs, such as _x_d_m (or its equivalent), should be considered
+     programs, such as xdm (or its equivalent), should be considered
      essential in almost all environments. The rest of the applications
      carry no special status; they are simply programs that have been
      developed and/or maintained by X Consortium and X Project Team
@@ -150,44 +160,44 @@ PPrrooggrraammss
      programs contributed by others.
 
 
-_4_.  _S_u_p_p_o_r_t_e_d _O_p_e_r_a_t_i_n_g _S_y_s_t_e_m_s
+5.  Supported Operating Systems
 
 
 This release was built and tested on the following reference platforms:
 
 
-        Digital Unix 4.0A
-        Fujitsu UXP V20L10
-        HPUX 10.20
-        Solaris 2.5
+     Digital Unix 4.0A
+     Fujitsu UXP V20L10
+     HPUX 10.20
+     Solaris 2.5
 
 
 This release was also built on the following systems:
 
 
-        AIX 4.2
-        IRIX 6.2
-        FreeBSD 2.2.2
-        S.u.S.E. Linux 5.0.0 (kernel 2.0.30, libc 5.4.33)
-        SunOS 4.1.4
-        Windows NT 3.51 (NCD WinCenter)
+     AIX 4.2
+     IRIX 6.2
+     FreeBSD 2.2.2
+     S.u.S.E. Linux 5.0.0 (kernel 2.0.30, libc 5.4.33)
+     SunOS 4.1.4
+     Windows NT 3.51 (NCD WinCenter)
 
 
 In all cases except SunOS we have used the vendor's compiler. On SunOS
-we build with the GNU C compiler (_g_c_c).
+we build with the GNU C compiler (gcc).
 
 
-_5_.  _S_u_p_p_o_r_t_e_d _G_r_a_p_h_i_c_s _D_e_v_i_c_e_s
+6.  Supported Graphics Devices
 
 
 This release includes the necessary device-dependent support to build a
 native X server for the following platforms:
 
 
-        HP-UX: Xhp
-        Digital Unix: Xdec on DECstation 3000/400 (Alpha) with PMAG-B
-        SunOS/Solaris: Xsun -- see the Xsun man page for supported cards
-        XFree86: See the XF_* man pages for supported cards
+     HP-UX: Xhp
+     Digital Unix: Xdec on DECstation 3000/400 (Alpha) with PMAG-B
+     SunOS/Solaris: Xsun -- see the Xsun man page for supported cards
+     XFree86: See the XF_* man pages for supported cards
 
 In addition to the above, the Xvfb and Xnest servers can be built on all
 platforms.
@@ -196,39 +206,39 @@ Native X servers are not built on AIX, Fujitsu UXP, IRIX, or Microsoft
 Windows NT.
 
 
-_6_.  _T_h_e _S_o_u_r_c_e _T_r_e_e
+7.  The Source Tree
 
 
 The source is distributed in UNIX tar files. The source unpacks from the
-tar files into a source tree, and the name of the base directory of  the
-source  tree  is xxcc. The name xxcc as the base of the source tree has been
+tar files into a source tree, and the name of the base directory of the
+source tree is xc. The name xc as the base of the source tree has been
 retained from the X Consortium releases.
 
-The general layout under xxcc// is as follows:
+The general layout under xc/ is as follows:
 
 
-config/             imake config files, _i_m_a_k_e, _m_a_k_e_d_e_p_e_n_d, etc.
-doc/                all documentation other than per-program manual pages
-fonts/              BDF, Speedo, Type1 fonts
-include/            common include files
-lib/                libraries
-nls/                national language support files
-programs/           all programs, including the X server and _r_g_b,
-util/               _p_a_t_c_h, _c_o_m_p_r_e_s_s, other utilities
-bug-report          bug reporting template
-registry            X Registry
+config/ 	    imake config files, imake, makedepend, etc.
+doc/		    all documentation other than per-program manual pages
+fonts/		    BDF, Speedo, Type1 fonts
+include/	    common include files
+lib/		    libraries
+nls/		    national language support files
+programs/	    all programs, including the X server and rgb,
+util/		    patch, compress, other utilities
+bug-report	    bug reporting template
+registry	    X Registry
 
 
 
-_7_.  _X _R_e_g_i_s_t_r_y
+8.  X Registry
 
 
 The X Project Team maintains a registry of certain X-related items to
 aid in avoiding conflicts and to aid in sharing of such items. The reg-
-istry is in the file xxcc//rreeggiissttrryy.
+istry is in the file xc/registry.
 
 
-_8_.  _E_x_t_e_n_s_i_o_n_s _S_u_p_p_o_r_t_e_d
+9.  Extensions Supported
 
 
 Release 6.4  includes source for the following extensions: BIG-REQUESTS,
@@ -242,7 +252,7 @@ Not all of these extensions are standard; see the Standards manual page.
 Some of these extensions may not be supported on every platform.
 
 
-_9_.  _I_m_p_l_e_m_e_n_t_a_t_i_o_n _D_e_p_e_n_d_e_n_t _P_a_r_a_m_e_t_e_r_s
+10.  Implementation Dependent Parameters
 
 
 Some of the specifications define some behavior as implementation-depen-
@@ -254,21 +264,21 @@ parameters are:
 
 
 XFILESEARCHPATH default:
-     This default can be set at build time by setting the _i_m_a_k_e vari-
+     This default can be set at build time by setting the imake vari-
      ables XFileSearchPathDefault, XAppLoadDir, XFileSearchPathBase, and
-     ProjectRoot in xxcc//ccoonnffiigg//ccff//ssiittee..ddeeff. See xxcc//ccoonnffiigg//ccff//RREEAADDMMEE for
-     instructions and xxcc//ccoonnffiigg//ccff//XX1111..ttmmppll for details of how these
+     ProjectRoot in xc/config/cf/site.def. See xc/config/cf/README for
+     instructions and xc/config/cf/X11.tmpl for details of how these
      configuration variables are used.
 
-     By default the imake variable ProjectRoot is //uussrr//XX1111RR66..44 and
+     By default the imake variable ProjectRoot is /usr/X11R6.4 and
      XFILESEARCHPATH has these components:
 
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%L/%T/%N%C%S
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%l/%T/%N%C%S
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%T/%N%C%S
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%L/%T/%N%S
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%l/%T/%N%S
-             _$_P_r_o_j_e_c_t_R_o_o_t/lib/X11/%T/%N%S
+	  $ProjectRoot/lib/X11/%L/%T/%N%C%S
+	  $ProjectRoot/lib/X11/%l/%T/%N%C%S
+	  $ProjectRoot/lib/X11/%T/%N%C%S
+	  $ProjectRoot/lib/X11/%L/%T/%N%S
+	  $ProjectRoot/lib/X11/%l/%T/%N%S
+	  $ProjectRoot/lib/X11/%T/%N%S
 
 
 
@@ -276,52 +286,52 @@ XUSERFILESEARCHPATH default:
      If the environment variable XAPPLRESDIR is defined, the default
      value of XUSERFILESEARCHPATH has the following components:
 
-             $XAPPLRESDIR/%L/%N%C
-             $XAPPLRESDIR/%l/%N%C
-             $XAPPLRESDIR/%N%C
-             $HOME/%N%C
-             $XAPPLRESDIR/%L/%N
-             $XAPPLRESDIR/%l/%N
-             $XAPPLRESDIR/%N
-             $HOME/%N
+	  $XAPPLRESDIR/%L/%N%C
+	  $XAPPLRESDIR/%l/%N%C
+	  $XAPPLRESDIR/%N%C
+	  $HOME/%N%C
+	  $XAPPLRESDIR/%L/%N
+	  $XAPPLRESDIR/%l/%N
+	  $XAPPLRESDIR/%N
+	  $HOME/%N
 
      Otherwise it has these components:
 
-             $HOME/%L/%N%C
-             $HOME/%l/%N%C
-             $HOME/%N%C
-             $HOME/%L/%N
-             $HOME/%l/%N
-             $HOME/%N
+	  $HOME/%L/%N%C
+	  $HOME/%l/%N%C
+	  $HOME/%N%C
+	  $HOME/%L/%N
+	  $HOME/%l/%N
+	  $HOME/%N
 
 
 
 XKEYSYMDB default:
-     Defaults to _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//XXKKeeyyssyymmDDBB.
+     Defaults to $ProjectRoot/lib/X11/XKeysymDB.
 
 
 XCMSDB default:
-     Defaults to _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//XXccmmss..ttxxtt.
+     Defaults to $ProjectRoot/lib/X11/Xcms.txt.
 
 
 XLOCALEDIR default:
-     Defaults to the directory _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//llooccaallee.  The XLO-
+     Defaults to the directory $ProjectRoot/lib/X11/locale.  The XLO-
      CALEDIR variable can contain multiple colon-separated pathnames.
 
 
 XErrorDB location
-     The Xlib error database file is _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//XXEErrrroorrDDBB.
+     The Xlib error database file is $ProjectRoot/lib/X11/XErrorDB.
 
 
 XtErrorDB location
-     The Xt error database file is _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//XXttEErrrroorrDDBB.
+     The Xt error database file is $ProjectRoot/lib/X11/XtErrorDB.
 
 
 Supported Locales
-     Locales supported by this implementation are in xxcc//nnllss//llooccaallee..ddiirr.
+     Locales supported by this implementation are in xc/nls/locale.dir.
      The mapping between various system locale names and X locale names
-     is in xxcc//nnllss//llooccaallee..aalliiaass. Both files are installed in the default
-     XLOCALEDIR directory, i.e. _$_P_r_o_j_e_c_t_R_o_o_t//lliibb//XX1111//llooccaallee//).
+     is in xc/nls/locale.alias. Both files are installed in the default
+     XLOCALEDIR directory, i.e. $ProjectRoot/lib/X11/locale/).
 
 
 Supported Input Methods
@@ -330,13 +340,13 @@ Supported Input Methods
      supports compose processing in 8-bit locales. Compose files are
      provided for Latin-1 and Latin-2. The built-in input method can
      support other locales, given suitable compose files. See
-     xxcc//nnllss//CCoommppoossee//iissoo88885599--** for the supported compositions.
+     xc/nls/Compose/iso8859-* for the supported compositions.
 
 The Input Method Server Development Kit (IMdkit) is at
 ftp://ftp.x.org/pub/unsupported/lib/IMdkit/.
 
 
-_1_0_.  _W_h_a_t _I_s _N_e_w _i_n _R_e_l_e_a_s_e _6_._4
+11.  What Is New in Release 6.4
 
 
 This section describes changes in the X Project Team distribution since
@@ -362,63 +372,63 @@ the library in previous releases.
 The XFree86 servers are now based on XFree86 3.3.1.
 
 
-_1_1_.  _W_h_a_t _i_s _U_n_c_h_a_n_g_e_d _i_n _R_e_l_e_a_s_e _6_._4
+12.  What is Unchanged in Release 6.4
 
 
 As this is an update release, there is a great deal of stability in the
 standards, libraries, and clients. No existing standards have changed in
 a material way; although some documents have been updated with minor
-corrections. The extension library, _l_i_b_X_e_x_t, is updated to include the
+corrections. The extension library, libXext, is updated to include the
 DPMS, Extended-Visual-Information, TOG-CUP, and XINERAMA extension
 interfaces. All previous interfaces in these and all other libraries are
 unchanged.
 
 
-_1_2_.  _N_e_w _O_S _S_u_p_p_o_r_t
+13.  New OS Support
 
 
-The  following  table  shows  the versions of the operating systems that
+The following table shows the versions of the operating systems that
 were used to develop this and prior releases:
 
 
-System         R6        R6.1      R6.[23]   R6.4
+System	       R6	 R6.1	   R6.[23]   R6.4
 
-AIX            3.2.5     4.1.4     4.2       4.2
-A/UX           3.0.1     -         -         -
-BSD/386        1.0       -         -         -
-Digital Unix (OSF/1)     1.0/1.3   3.2C      4.0A4.0A
-FreeBSD        -         2.1.0     2.1.6     2.2.2
-Fujitsu UXP    -         -         -         V20L10
-HP-UX          9.1       10.01     10.01     10.20
-IRIX           5.2       5.3       6.2       6.2
+AIX	       3.2.5	 4.1.4	   4.2	     4.2
+A/UX	       3.0.1	 -	   -	     -
+BSD/386        1.0	 -	   -	     -
+Digital Unix (OSF/1)	 1.0/1.3   3.2C      4.0A4.0A
+FreeBSD        -	 2.1.0	   2.1.6     2.2.2
+Fujitsu UXP    -	 -	   -	     V20L10
+HP-UX	       9.1	 10.01	   10.01     10.20
+IRIX	       5.2	 5.3	   6.2	     6.2
 Linux (kernel)
-  Slackware 2.3          -         1.2.11    --
-  Slackware 3.1          -         -         2.0-
-  S.u.S.E. 5.0 -         -         -         2.0.30
-Mach           2.5       -         -         -
-NEWS-OS        6.0       -         -         -
-Solaris        2.3       2.4       2.5       2.5
-SunOS          4.1.3     4.1.3     4.1.4     4.1.4
-Ultrix-32      4.3       4.4       -         -
-UNICOS         8.0       -         -         -
-Unixware SVR4.2          1.0       2.02      2.02-
-Windows NT     3.1       3.5       4.0       3.51
+  Slackware 2.3 	 -	   1.2.11    --
+  Slackware 3.1 	 -	   -	     2.0-
+  S.u.S.E. 5.0 -	 -	   -	     2.0.30
+Mach	       2.5	 -	   -	     -
+NEWS-OS        6.0	 -	   -	     -
+Solaris        2.3	 2.4	   2.5	     2.5
+SunOS	       4.1.3	 4.1.3	   4.1.4     4.1.4
+Ultrix-32      4.3	 4.4	   -	     -
+UNICOS	       8.0	 -	   -	     -
+Unixware SVR4.2 	 1.0	   2.02      2.02-
+Windows NT     3.1	 3.5	   4.0	     3.51
 
 
 
-_1_3_.  _N_e_w _S_p_e_c_i_f_i_c_a_t_i_o_n_s
+14.  New Specifications
 
 
 The following are the new X Project Team specifications in Release 6.4.
 Each is described in its own section below.
 
-        Display Power Management Signalling (DPMS)
-        Extended Visual Information (EVI)
-        Colormap Utilization Policy (TOG-CUP)
+     Display Power Management Signalling (DPMS)
+     Extended Visual Information (EVI)
+     Colormap Utilization Policy (TOG-CUP)
 
 
 
-_1_3_._1_.  _D_i_s_p_l_a_y _P_o_w_e_r _M_a_n_a_g_e_m_e_n_t _S_i_g_n_a_l_i_n_g
+14.1.  Display Power Management Signaling
 
 
 This extension provides X Protocol control over the VESA Display Power
@@ -435,13 +445,13 @@ The United States' Environmental Protection Agency (EPA) Energy Star
 program requires that monitors power down after some idle time by
 default. While it is possible to simply overload the existing screen
 saver timeouts, this solution leaves the non-privileged user little to
-no control over the DPMS characteristics of his or her system.  For
+no control over the DPMS characteristics of his or her system.	For
 example, disabling DPMS would require some unintended side effect in the
 core screen saver, such as disabling the changing of a non-blanking
 screen saver.
 
 
-_1_3_._2_.  _E_x_t_e_n_d_e_d _V_i_s_u_a_l _I_n_f_o_r_m_a_t_i_o_n
+14.2.  Extended Visual Information
 
 
 The Extended Visual Information (EVI) extension allows a client to
@@ -463,7 +473,7 @@ ple, the Double Buffering Extension (DBE) provides its own mechanism for
 determining which visuals support double-buffering.
 
 
-_1_3_._3_.  _C_o_l_o_r_m_a_p _U_t_i_l_i_z_a_t_i_o_n _P_o_l_i_c_y
+14.3.  Colormap Utilization Policy
 
 
 This extension has three purposes: a) to provide mechanism for a special
@@ -495,22 +505,22 @@ private colormap at the same location as in the default colormap
 (instead of in the first available location.)
 
 
-_1_4_.  _E_a_s_y _R_e_s_o_u_r_c_e _C_o_n_f_i_g_u_r_a_t_i_o_n
+15.  Easy Resource Configuration
 
 
 Setting and changing resources in X applications can be difficult for
-both the application programmer and the end user.  RReessoouurrccee CCoonnffiigguurraa--
-ttiioonn MMaannaaggeemmeenntt ((RRCCMM)) addresses this problem by changing the XX IInnttrriinn--
-ssiiccss to immediately modify a resource for a specified widget and each
-child widget in the hierarchy.  In this context, immediate means: no
+both the application programmer and the end user.  Resource Configura-
+tion Management (RCM) addresses this problem by changing the X Intrin-
+sics to immediately modify a resource for a specified widget and each
+child widget in the hierarchy.	In this context, immediate means: no
 sourcing of a resource file is required; the application does not need
 to be restarted for the new resource values to take effect; and the
 change occurs immediately.
 
-The main difference between RRCCMM and the EEddiittrreess protocol is that the RRCCMM
-customizing hooks reside in the IInnttrriinnssiiccss and thus are linked with
+The main difference between RCM and the Editres protocol is that the RCM
+customizing hooks reside in the Intrinsics and thus are linked with
 other toolkits such as Motif and the Athena widgets. However, the
-EEddiittRReess protocol requires the application to link with the EEddiittRReess rou-
+EditRes protocol requires the application to link with the EditRes rou-
 tines in the Xmu library and Xmu is not used by all applications that
 use Motif.
 
@@ -519,7 +529,7 @@ Intrinsics (libXt). It is neither an X Consortium standard nor an X Pro-
 ject Team specification.
 
 
-_1_5_.  _X_i_n_e_r_a_m_a
+16.  Xinerama
 
 
 The Xinerama extension provides a way for a multi-headed system to func-
@@ -547,7 +557,7 @@ The Xinerama extension is not a standard. It is neither an X Consortium
 standard nor an X Project Team specification.
 
 
-_1_6_.  _A_N_S_I_f_i_c_a_t_i_o_n
+17.  ANSIfication
 
 
 R6.1 was officially the last release that supported traditional K&R C.
@@ -557,30 +567,30 @@ the release will continue to build on platforms without an ANSI C com-
 piler.
 
 
-_1_7_.  _V_S_W_5
+18.  VSW5
 
 
 We have tested this release with VSW5 version 5.0.0. This release passes
 all tests in VSW5 with the following exceptions:
 
-+o    tests for which a permanent waiver has been granted.
+o    tests for which a permanent waiver has been granted.
 
-+o    tests for which a temporary waiver have been granted.
+o    tests for which a temporary waiver have been granted.
 
-+o    tests where a defect in the test has been identified and reported.
+o    tests where a defect in the test has been identified and reported.
 
 VSW licensees may obtain a list of waivers granted from
 http://www.rdg.opengroup.org/interpretations/database/.
 
 
-_1_8_.  _Y_e_a_r _2_0_0_0 _(_Y_2_K_) _C_o_m_p_l_i_a_n_c_e
+19.  Year 2000 (Y2K) Compliance
 
 
 For a statement of compliance see http://www.camb.open-
 group.org/tech/desktop/faq/y2k.htm
 
 
-_1_9_.  _M_e_m_o_r_y _T_e_s_t_i_n_g
+20.  Memory Testing
 
 
 Beginning circa X11R5 the MIT X Consortium staff, and later the X Con-
@@ -596,7 +606,7 @@ The popular commercial memory checking tools emit lots of false or spu-
 rious warnings, most of which can be safely ignored.
 
 
-_2_0_.  _S_e_c_u_r_i_t_y _C_o_n_s_i_d_e_r_a_t_i_o_n_s
+21.  Security Considerations
 
 
 On UNIX and UNIX-like operating systems there are serious security
@@ -616,21 +626,21 @@ server. Some people, who prefer not to use xdm, often work around the
 need for the X server to run with root privileges by making their X
 server a suid-root program. While all the known (as of this writing)
 exploitable security holes in the server have been eliminated, the X
-Project Team still recommends that you nnoott make your X server suid-root.
-There are _s_a_f_e suid-root wrapper programs available (but not in this
+Project Team still recommends that you not make your X server suid-root.
+There are safe suid-root wrapper programs available (but not in this
 release) that you can use to start your server if you don't want to use
 xdm.
 
 
-_2_1_.  _F_i_l_i_n_g _B_u_g _R_e_p_o_r_t_s
+22.  Filing Bug Reports
 
 
 If you find a reproducible bug in software built from the source in this
 distribution or find bugs in its documentation, please complete a bug-
-report using the form in the file xxcc//bbuugg--rreeppoorrtt and send it to The Open
+report using the form in the file xc/bug-report and send it to The Open
 Group X Project Team at
 
-        mailto:xbugs@opengroup.org
+     mailto:xbugs@opengroup.org
 
 
 Please try to provide all of the information requested on the form if it
@@ -642,7 +652,7 @@ handled on any official basis. Consult the documentation for the indi-
 vidual software to see where (if anywhere) to report the bug.
 
 
-_2_2_.  _A_c_k_n_o_w_l_e_d_g_e_m_e_n_t_s
+23.  Acknowledgements
 
 
 Release 6.4 of X11 was brought to you by the X Project Team staff at The

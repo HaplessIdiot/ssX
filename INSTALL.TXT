@@ -7,7 +7,7 @@
 
 
 
-              Building and Installing the X Window System
+		    Building and Installing X11R6.4
 
 
 
@@ -15,18 +15,16 @@
 
 
 
-                             Stephen Gildea
+			   Kaleb S. KEITHLEY
 
-                              X Consortium
-
-
+		     The Open Group X Project Team
 
 
 
 
-                       December 22, 1995 (3:16pm)
 
-                            For Release 6.1
+
+			    30 January, 1998
 
 
 
@@ -34,60 +32,81 @@
 
 
 
-Copyright (C) 1995 X Consortium
+Copyright (C) 1998 The Open Group
 
 Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Soft-
-ware"), to deal in the Software without restriction, including without
-limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to
-whom the Software is furnished to do so, subject to the following condi-
-tions:
+copy of this software and associated documentation files (the Software),
+to use the Software without restriction, including, without limitation,
+the rights to copy, modify, merge, publish, distribute and sublicense
+the Software, to make, have made, license and distribute derivative
+works thereof, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
+The above copyright notice and the following permission notice shall be
+included in all copies of the Software:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL-
-ITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT
-SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABIL-
-ITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE WARRANTIES OF MERCHANTABIL-
+ITY, FITNESS FOR A PARTICULAR PURPOSE AND NON- INFRINGEMENT. IN NO EVENT
+SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER USEABILI-
+TIY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNNECTION WITH THE SOFTWARE OR THE USE OF OTHER DEALINGS
 IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
-not be used in advertising or otherwise to promote the sale, use or
-other dealings in this Software without prior written authorization from
-the X Consortium.
+Except as contained in this notice, the name of The Open Group shall not
+be used in advertising or otherwise to promote the use or other dealings
+in this Software without prior written authorization from The Open
+Group.
 
-X Window System is a trademark of X Consortium, Inc.
+X Window System is a trademark of The Open Group.
 
 
-1.  Easy Build Instructions
+1.  Introduction
+
+This document is the installation notes that were provided with The Open
+Group's X11R6.4 release.  If you're building XFree86, it can be used as
+a rough guide.	Be aware that most of the details are not targetted
+specifically at the current XFree86 source tree.  XFree86-specific docu-
+mentation can be found in the xc/programs/Xserver/hw/xfree86/doc direc-
+tory and on-line at http://www.xfree86.org/current/.  Some of the docu-
+mentation there is out of date, so also be aware of that.  There is cur-
+rently no up to date document specifically targetted at building XFree86
+from source.
+
+
+2.  Easy Build Instructions
 
 This quick summary is no substitute for reading the full build instruc-
 tions later in this document.
 
-Edit xc/config/cf/site.def for local preferences.  If you want to build
-with gcc uncomment the HasGcc2 line.  If you want to install somewhere
-other than /usr/X11R6.1, change ProjectRoot.  (Do not use DESTDIR.)
+Edit xc/config/cf/site.def for local preferences.  If you want to
+install somewhere other than /usr/X11R6.4, change ProjectRoot. (Do not
+use DESTDIR.)  If you want to build with gcc uncomment the HasGcc2 line.
+If you have gcc, but not cc, please read the full build instructions.
 
-If any fixes have been released by the X Consortium, stop here and fol-
-low the instructions at the top of each patch, but don't do any of the
-make commands suggested in the patches.  Then continue here.
+If some time has elapsed since the initial release of R6.4, check to see
+if any public patches have been released. The source tar files may have
+been updated -- check the patch-level line in the bug-report template.
+If the source in the tar files has not been updated then get all the
+patches and apply them, following the instructions at the top of each
+patch. Ignore the rebuild steps in the patch application instructions.
 
 Check the appropriate vendor-specific .cf file in xc/config/cf/ to make
-sure that OSMajorVersion and OSMinorVersion are set correctly for your
-system (change them if necessary).
+sure that OSMajorVersion, OSMinorVersion, and OSTeenyVersion are set
+correctly for your system. On most systems imake will figure these out
+automatically; but you may override them in your xc/config/cf/site.def
+if you want.
 
 See if there is a BootstrapCFlags mentioned in the comments in the ven-
-dor-specific .cf file.  If there isn't one, cd to the xc directory and
-type:
+dor-specific .cf file. (Most systems don't have or need one. The Boot-
+strapCFlags in sun.cf is for SunOS 4.0.x, so if you're building on SunOS
+4.1.x or SunOS 5/Solaris 2 then BootstrapCFlags doesn't apply.) If there
+isn't one, cd to the xc directory and type (in csh):
 
      % make World >& world.log
 
 
-If there is a BootstrapCFlags, take its value and type:
+If there is an applicable BootstrapCFlags, take its value and type:
 
      % make World BOOTSTRAPCFLAGS="value" >& world.log
 
@@ -108,244 +127,205 @@ installation instructions.
 
 
 
-2.  Building X
+3.  Building and Installing R6.4
 
 
-This document gives detailed instructions for building Release 6: get-
-ting it off the distribution medium, configuring, compiling, installing,
-running, and updating.
+Historically the MIT X Consortium and The X Consortium, Inc., sample
+implementation releases have always been source-code-only releases, and
+this release is no different.
 
-Release Notes are in xc/RELNOTES.* (various formats) in the distribu-
-tion.
 
-More recent information about newly-discovered problems may be found in
-the Frequently Asked Questions posting appearing monthly on the
-comp.windows.x newsgroup and xpert mailing list.  It is also available
-via anonymous FTP on ftp.x.org in the file contrib/faqs/FAQ.Z, or on
-your local X mirror site.
+3.1.  Introduction
 
 
-2.1.  Preparing the Site
+Every release of X has been progressively easier to configure, build,
+and install than the preceding releases -- and we believe this release
+is the easiest release to build yet. That not withstanding, if things do
+go amiss during the build we assume that you have the basic skills nec-
+essary, and the willingness, to debug any errors that may occur in the
+build process. When you install, if you're going to use xdm or replace
+your system's old X, we assume you have a basic understanding of your
+system's initialization process. For Remote Execution (RX, embedding) we
+assume you that you understand the fundamentals of HTTP, CGI, and HTML.
+If these assumptions are not correct then you should consider finding
+someone who has proficiency in these areas to do the build and install
+for you.
 
+After the release has been out for a while more up to date information
+about any newly-discovered problems may be found in the Frequently Asked
+Questions posting appearing monthly on the Usenet newsgroup comp.win-
+dows.x and xpert mailing list. The FAQ is also available via anonymous
+FTP from ftp://ftp.x.org/ in the file ftp://ftp.x.org/con-
+trib/faqs/FAQ.Z, or possibly on one of X mirror sites.
 
-If you are unpacking tar files, you will need about 110 Mb to hold the
-xc/ part.  To install requires 30-50 Mb assuming you have shared
-libraries (80-100 Mb without).  You will need an equivalent amount of
-extra space to build, since you also need room for all the object files.
 
-Distributed as tar files, Release 6.1 core is divided into parts as fol-
-lows:
+3.2.  Preparing Your Build System
 
 
-     xc-1.tar       contains everything in xc/ that isn't in the other tar files
-     xc-2.tar       contains xc/fonts, xc/test, xc/util
-     xc-3.tar       contains xc/doc/specs, xc/doc/hardcopy
+The source is distributed in four gzip compressed UNIX Tape ARchive
+(tar) files. You will need about 200 Mb of disk space in order to unpack
+and build the release. Installing requires an additional 30-50 Mb assum-
+ing you have shared libraries (80-100 Mb without).
 
+On non-UNIX systems you'll need a utility that can extract gzip com-
+pressed tar files to extract the sources. There are several to chose
+from, we do not make recommendations about which one you should use.
 
-If you define BuildFonts to NO, you only need to unpack xc-1.tar to
-build.  If you build fonts, then you will also need xc-2.tar to build.
+Release 6.4 sources are distributed among the tar files as follows:
 
 
-2.2.  Unpacking the Distribution
+     tog-1.tar	    contains everything in xc/ that isn't in the other tar files
+     tog-2.tar	    contains xc/fonts
+     tog-3.tar	    contains xc/doc/specs, xc/util
+     tog-4.tar	    contains xc/doc/hardcopy
 
 
-The distribution normally comes as multiple tar files, either on tape or
-across a network, or as a CD-ROM.
+If you define BuildFonts to NO in your site.def file, then you only need
+to unpack tog-1.tar to build. If you build fonts, then you will also
+need tog-2.tar to build. If you already have the fonts from prior
+releases you can use those instead of downloading them again. We presume
+that you know how to copy or move them from your old source tree to the
+R6.4 source tree.
 
 
-2.2.1.  Unpacking a Compressed FTP Distribution
+3.3.  Unpacking the Distribution
 
 
-If you have obtained compressed tar files over the network, create a
-directory to hold the sources and cd into it:
+Create a directory to hold the sources and cd into it:
 
-     mkdir sourcedir
-     cd sourcedir
+     % mkdir sourcedir
+     % cd sourcedir
 
-Then for each tar file xc-*.tar.Z, execute this:
+Then for each tar file tog-*.tar.gz, execute this:
 
-     zcat ftp-dir/xc-N.tar.Z | tar xf -
+     % gunzip -c ftp-dir/tog-N.tar.gz | tar xf -
 
 
-For each tar file contrib-*.tar.Z, execute this:
+or if you have GNU's tar (FreeBSD, NetBSD, OpenBSD, or Linux too)
 
-     zcat ftp-dir/contrib-N.tar.Z | tar xf -
+     % tar xzf ftp-dir/tog-N.tar.gz
 
 
 
-2.2.2.  Unpacking a gzipped FTP Distribution
+3.4.  Applying Patches
 
 
-If you have obtained gzipped tar files over the network, create a direc-
-tory to hold the sources and cd into it:
+If some time has elapsed since the initial release of R6.4, check to see
+if any public patches have been released. The source tar files may have
+been updated -- check the patch-level line in the bug-report template.
+If the source in the tar files has not been updated then get all the
+patches and apply them, following the instructions at the top of each
+patch. Ignore the rebuild steps in the patch application instructions.
 
-     mkdir sourcedir
-     cd sourcedir
+See the section "Public Patches" later in this document.
 
-Then for each tar file xc-*.tar.gz, execute this:
+Then continue here.
 
-     gunzip -c ftp-dir/xc-N.tar.gz | tar xf -
 
+3.5.  Configuration Parameters (Imake Variables)
 
-For each tar file contrib-*.tar.gz, execute this:
 
-     gunzip -c ftp-dir/contrib-N.tar.gz | tar xf -
-
-
-
-2.2.3.  Unpacking a Split Compressed FTP Distribution
-
-
-If you have obtained compressed and split tar files over the network,
-create a directory to hold the sources:
-
-     mkdir sourcedir
-
-Then for each directory xc-*:
-
-     cd ftp-dir/xc-N
-     cat xc-N.?? | uncompress | (cd sourcedir; tar xf -)
-
-
-For each directory contrib-*, execute this:
-
-     cd ftp-dir/contrib-N
-     cat contrib-N.?? | uncompress | (cd sourcedir; tar xf -)
-
-
-
-2.2.4.  Unpacking the Tape Distribution
-
-
-If you have obtained a tape, create a directory to hold the sources and
-untar everything into that directory:
-
-     mkdir sourcedir
-     cd sourcedir
-     tar xf tape-device
-
-
-
-2.2.5.  Using the CD-ROM
-
-
-If you have obtained a CD-ROM, you don't have to do anything to unpack
-it.  However, you will have to create a symbolic link tree to build X.
-See the next section.
-
-To mount the CD-ROM, see the mount(8) manual page on your system or the
-liner notes that came with the CD-ROM.  Some systems, e.g., Solaris 2,
-can automatically mount the CD-ROM for you.
-
-
-2.3.  Apply Patches
-
-
-If there are fixes released that are more recent than your distribution,
-apply them now.  Follow the instructions at the top of each patch, but
-don't do any make commands.  See the section "Public Patches" later in
-this document.  Then continue here.
-
-
-2.4.  Symbolic Link Trees
-
-
-If you expect to build the distribution on more than one machine using a
-shared source tree, or you are building from CD-ROM, or you just want to
-keep the source tree pure, you may want to use the program
-xc/config/util/lndir.c to create a symbolic link tree on each build
-machine.  The links may use an additional 10 megabytes, but it is
-cheaper than having multiple copies of the source tree.
-
-It may be tricky to compile lndir before the distribution is built.  If
-you have a copy from Release 5, use that.  Makefile.ini can be used for
-building lndir the first time.  You may have to specify
-OSFLAGS=-Dsomething to get it to compile.  What you would pass as BOOT-
-STRAPCFLAGS might work.  The command line looks something like this:
-
-     make -f Makefile.ini OSFLAGS=-Dflag
-
-
-To use a symbolic link tree, create a directory for the build, cd to it,
-and type this:
-
-     lndir sourcedir
-
-
-where sourcedir is the pathname of the directory where you stored the
-sources.  All of the build instructions given below should then be done
-in the build directory on each machine, rather than in the source direc-
-tory.
-
-xc/config/util/mkshadow/ contains mkshadow, an alternative program to
-lndir.
-
-
-2.5.  Configuration Parameters
-
-
-Build information for each source directory is in files called Imake-
-file.  An Imakefile, along with local configuration information in
-xc/config/cf/, is used by the program imake to generate a Makefile.
+This release, like all the releases before it, uses imake, a utility for
+creating system-specific Makefiles from system-independent Imakefiles.
+Almost every directory in the release contains an Imakefile. System-spe-
+cific configuration information is located in xc/config/cf/, which is
+used by the imake program every time a Makefile is generated in the
+source tree.
 
 Most of the configuration work prior to building the release is to set
-parameters so that imake will generate correct files.  Most of those
-parameters are set in xc/config/cf/site.def.  You will also need to
-check the appropriate vendor-specific .cf file in xc/config/cf/ to make
-sure that OSMajorVersion, OSMinorVersion, and OsTeenyVersion are set
-correctly for your system (change them if necessary).
+parameters (imake variables) so that imake will generate correct Make-
+files. If you're building on one of the supported systems almost no con-
+figuration work should be necessary.
+
+You should define your configuration parameters in xc/con-
+fig/cf/site.def. We provide an empty site.def file and a site.sample
+file. The site.sample file is a suggested site.def file -- use it at
+your own risk.
+
+Any public patches we release will never patch site.def, so you can be
+assured that applying a public-patch will not corrupt your site.def
+file. On rare occasion you may need to make the change in your vendor-
+specific .cf file; but you should avoid doing that if at all possible
+because any patch we might release could conceivably patch your vendor-
+specific .cf file and your change may be lost or garbled. You can over-
+ride most of the things in your vendor-specific .cf file in your
+site.def file.	(If you can't, it's a bug -- please file a bug-report.)
+
+On the systems we use here, imake will automatically determine the OSMa-
+jorVersion, OSMinorVersion, and OSTeenyVersion for your system. If your
+system isn't one of the systems we build on here, or you want to build
+for a different version of your operating system, then you can override
+them in the appropriate entry in your site.def file.
 
 The site.def file has two parts, one protected with "#ifdef BeforeVen-
 dorCF" and one with "#ifdef AfterVendorCF".  The file is actually pro-
-cessed twice, once before the .cf file and once after.  About the only
+cessed twice, once before the .cf file and once after. About the only
 thing you need to set in the "before" section is HasGcc2; just about
 everything else can be set in the "after" section.
 
-The sample site.def also has commented out support to include another
-file, host.def.  This scheme may be useful if you want to set most
-parameters site-wide, but some parameters vary from machine to machine.
-If you use a symbolic link tree, you can share site.def across all
-machines, and give each machine its own copy of host.def.
+The site.sample also has commented out support to include another file,
+host.def. This scheme may be useful if you want to set most parameters
+site-wide, but some parameters vary from machine to machine.  If you use
+a symbolic link tree, you can share site.def across all machines, and
+give each machine its own copy of host.def.
 
 The config parameters are listed in xc/config/cf/README, but here are
-some of the more common parameters that you may wish to set in site.def.
+some of the new or more common parameters that you may wish to set in
+your xc/config/cf/site.def.
 
 ProjectRoot
-     The destination where X will be installed.  This variable needs to
+     The destination where X will be installed. This variable needs to
      be set before you build, as some programs that read files at run-
-     time have the installation directory compiled in to them.  Assuming
-     you have set the variable to some value /path, files will be
-     installed into /path/bin, /path/include/X11, /path/lib, and
-     /path/man.
+     time have the installation directory compiled in to them.
 
-HasGcc
-     Set to YES to build with gcc version 1.
+HasVarDirectory
+     Set to NO if your system doesn't have /var or you don't want cer-
+     tain files to be installed in VarDirectory.
+
+VarDirectory
+     The location of site editable configuration and run-time files.
+     Many sites prefer to install their X binaries on read-only media --
+     either a disk slice (partition) that's mounted read-only for added
+     security, an NFS volume mounted read-only for security and/or
+     improved VM paging characteristics, or from a live filesystem on a
+     CD-ROM. In order to simplify things like installing app-default
+     files for locally built software, and allowing editing of miscella-
+     neous configuration and policy files, and to allow xdm to create
+     its master Xauthority file, some directories under $Project-
+     Root/lib/X11 are actually installed in /var/X11, and $Project-
+     Root/lib/X11 contains symlinks to the directories in /var/X11.
 
 HasGcc2
-     Set to YES to build with gcc version 2.  Both this option and Has-
-     Gcc look for a compiler named gcc, but HasGcc2 will cause the build
-     to use more features of gcc 2, such as the ability to compile
-     shared libraries.
+     Set to YES to build with gcc version 2.x instead of your system's
+     default compiler.
 
 BuildXInputExt
-     Set to YES to build the X Input Extension.  This extension requires
+     Set to YES to build the X Input Extension. This extension requires
      device-dependent support in the X server, which exists only in Xhp
-     in our implementation.
+     and XF86_* in the sample implementation.
 
 DefaultUsrBin
      This is a directory where programs will be found even if PATH is
-     not set in the environment.  It is independent of ProjectRoot and
-     defaults to /usr/bin.  It is used, for example, when connecting
-     from a remote system via rsh.  The rstart program installs its
-     server in this directory.
+     not set in the environment. It is independent of ProjectRoot and
+     defaults to /usr/bin. It is used, for example, when connecting from
+     a remote system via rsh. The rstart program installs its server in
+     this directory.
 
 InstallServerSetUID
      Some systems require the X server to run as root to access the
-     devices it needs.  If you are on such a system and will not be
-     using xdm, you can set this variable to YES to install the X server
-     setuid to root.  Note that the X server has not been analyzed by
-     the X Consortium for security in such an installation; talk to your
-     system manager before setting this variable.
+     devices it needs. If you are on such a system and will not be using
+     xdm, you may set this variable to YES to install the X server
+     setuid to root; however the X Project Team strongly recommends that
+     you not install your server suid-root, but that you use xdm
+     instead. Talk to your system manager before setting this variable
+     to YES.
+
+InstallXdmConfig
+     By default set to NO, which suppresses installing xdm config files
+     over existing ones. Leave it set to NO if your site has customized
+     the files in $ProjectRoot/lib/X11/xdm, as many sites do.  If you
+     don't install the new files, merge any changes present in the new
+     files.
 
 MotifBC
      Causes Xlib and Xt to work around some bugs in older versions of
@@ -354,9 +334,9 @@ MotifBC
 
 GetValuesBC
      Setting this variable to YES allows illegal XtGetValues requests
-     with NULL ArgVal to usually succeed, as R5 did.  Some applications
-     erroneously rely on this behavior.  Support for this will be
-     removed in a future release.
+     with NULL ArgVal to usually succeed, as R5 did. Some applications
+     erroneously rely on this behavior. Support for this will be removed
+     in a future release.
 
 The following vendor-specific .cf files are in the release but have not
 been tested recently and hence probably need changes to work: apollo.cf,
@@ -364,115 +344,99 @@ bsd.cf, convex.cf, DGUX.cf, luna.cf, macII.cf, Mips.cf, moto.cf, Oki.cf,
 pegasus.cf, x386.cf.  Amoeba.cf is known to require additional patches.
 
 The file xc/lib/Xdmcp/Wraphelp.c, for XDM-AUTHORIZATION-1, is not
-included in this release.  The file is available within the US; for
-details get /pub/R6/xdm-auth/README from ftp.x.org via anonymous FTP.
+included in this release. See ftp://ftp.x.org/pub/R6.4/xdm-auth/README.
 
 
-2.6.  System Notes
+3.6.  System Build Notes
 
 
 This section contains hints on building X with specific compilers and
 operating systems.
 
 If the build isn't finding things right, make sure you are using a com-
-piler for your operating system.  For example, a pre-compiled gcc for a
-different OS will not have right symbols defined, so imake will not work
-correctly.
+piler for your operating system. For example, a pre-compiled gcc for a
+different OS (e.g. as a cross-compiler) will not have right symbols
+defined, so imake will not work correctly.
 
 
-2.6.1.  gcc
+3.6.1.	gcc
+
+X will not compile on some systems with gcc version 2.5, 2.5.1, or 2.5.2
+because of an incorrect declaration of memmove() in a gcc fixed include
+file.
+
+If you are using a gcc version prior to 2.7 on Solaris x86, you need to
+specify BOOTSTRAPCFLAGS="-Dsun" in the "make World" command.
+
+If you're building on a system that has an unbundled compiler, e.g.
+Solaris 2.x, and you do not have the cc compiler, you need to contrive
+to have cc in your path in order to bootstrap imake.  One way to do this
+is to create a symlink cc that points to gcc.
+
+     % cd /usr/local/bin; ln -s path-to-gcc cc
+
+Once imake has been built all the Makefiles created with it will explic-
+itly use gcc and you can remove the symlink. Another way around this is
+to edit xc/config/imake/Makefile.ini to specify gcc instead of cc.
 
 
-gcc version 2 is in regular use at the X Consortium on Sparc platforms.
-Set the variable HasGcc2.  X will not compile on some systems with gcc
-version 2.5, 2.5.1, or 2.5.2 because of an incorrect declaration of mem-
-move() in a gcc include file.
+3.6.2.	Other GNU tools
+
+Use of the GNU BinUtils assembler, as, and linker, ld, is not supported
+-- period! If you have them installed on your system you must rename or
+remove them for the duration of the R6.4 build.  (You can restore them
+afterwards.)
+
+The system-supplied make works just fine for building R6.4 and that's
+what we suggest you use. If you've replaced your system's make with GNU
+make then we recommend that you restore the system make for the duration
+of your R6.4 build. After R6.4 is done building you can revert to GNU
+make. GNU make on most systems (except Linux, where it is the default
+make) is not a supported build configuration. GNU make may work for you,
+and if it does, great; but if it doesn't we do not consider it a bug in
+R6.4. If, after this admonition, you still use GNU make and your build
+fails, reread the above, and retry the build with the system's make
+before you file a bug-report.
 
 
-2.6.2.  Other GNU tools
+3.6.3.	IBM AIX 4.x
 
 
-Use of the GNU assembler, as, or linker, ld, is not supported.  GNU make
-is not supported.
+On AIX 4.x, the file lib/font/Type1/objects.c must be compiled without
+optimization (-O) or the X server and fontserver will exit when Type 1
+fonts are used.
 
 
-2.6.3.  clearmake
+3.6.4.	SunOS 4.0.x
 
 
-Atria's clearmake make program, part of their ClearCase product, is sup-
-ported as of R6.1.  You will need patches to ClearCase version 2.0.2 or
-2.0.3.  You need one of 2.0.3-61 through 2.0.3-69, as appropriate for
-your platform.  Even with these patches there is still a bug in clear-
-make that prevents it from correctly building the HP ddx.
-
-To use clearmake, set the variable HasClearmake.  Once you make Make-
-files with HasClearmake, you cannot go back and use regular make with
-the same Makefiles.  You can use clearmake without setting HasClearmake,
-but you won't be able to take advantage of clearmake's file-sharing
-abilities.
+SunOS 4.0 and earlier need BOOTSTRAPCFLAGS=-DNOSTDHDRS because it does
+not have unistd.h and stdlib.h. Do not supply a BOOTSTRAPCFLAGS when
+building any SunOS 4.1 or 5.x (Solaris 2) version.
 
 
-2.6.4.  SparcWorks 2.0
+3.6.5.	Linux
 
 
-If you have a non-threaded program and want to debug it with the old
-SparcWorks 2.0 dbx, you will need to use the thread stubs library in
-xc/util/misc/thr_stubs.c.  Compile it as follows:
+On Linux systems imake has preliminary support to automatically deter-
+mine which Linux distribution you're using. At this time it only auto-
+matically detects S.u.S.E. Linux. On other Linux systems you should set
+the LinuxDistribution parameter in your xc/config/cf/site.def -- see the
+xc/config/cf/linux.cf file for the list of valid values. On Linux sys-
+tems imake will also automatically determine which version of libc and
+binutils your system has. You may override these in your xc/con-
+fig/cf/site.def file.
 
-     cc -c thr_stubs.c
-     ar cq libthr_stubs.a thr_stubs.o
-     ranlib libthr_stubs.a
-
-Install libthr_stubs.a in the same directory with your X libraries
-(e.g., /usr/X11R6.1/lib/libthr_stubs.a).  Add the following line to
-site.def:
-
-     #define ExtraLibraries -lsocket -lnsl $(CDEBUGFLAGS:-g=-lthr_stubs)
-
-This example uses a make macro substitution; not all make implementa-
-tions support this feature.
-
-
-2.6.5.  Using xdm on AIX
+Many distributions of Linux have poor or no support for ANSI/POSIX/ISO C
+locale support. If your Linux distribution is one of these you should
+make certain that the imake variable LinuxLocaleDefines is set to
+-DX_LOCALE so that compose processing and other internationalization
+features will work correctly. To help decide if you should use
+-DX_LOCALE, look in /usr/share/locale -- if it's empty, you should prob-
+ably use the -DX_LOCALE define.
 
 
-To run Xibm from xdm, you must provide the "-force" flag on the server
-command line in the Xservers file.
-
-
-2.6.6.  CenterLine C under Solaris 2.3
-
-
-If you are using the CenterLine C compiler to compile the distribution
-under Solaris 2.3, place the following line in your site.def:
-
-     #define HasCenterLineC YES
-
-If clcc is not in your default search path, add this line to site.def:
-
-     #define CcCmd /path/to/your/clcc
-
-
-If you are using CodeCenter 4.0.4 or earlier, the following files trig-
-ger bugs in the clcc optimizer:
-
-     xc/programs/Xserver/cfb16/cfbgetsp.c
-     xc/programs/Xserver/cfb16/cfbfillsp.c
-     xc/programs/Xserver/cfb/cfbgetsp.c
-
-
-Thus to build the server, you will have to compile these files by hand
-with the -g flag:
-
-     % cd xc/programs/Xserver/cfb16
-     % make CDEBUGFLAGS="-g" cfbgetsp.o cfbfillsp.o
-     % cd ../cfb
-     % make CDEBUGFLAGS="-g" cfbgetsp.o
-
-This optimizer bug appears to be fixed in CodeCenter 4.0.6.
-
-
-2.6.7.  Microsoft Windows NT
+3.6.6.	Microsoft Windows NT
 
 
 All of the base libraries are supported, including multi-threading in
@@ -484,55 +448,87 @@ lack of support for non-socket file descriptors as Xt alternate inputs
 and not using the registry for configurable parameters like the system
 filenames and search paths.
 
+The Xnest server has been made to run on NT; although it still requires
+a real X server for output still. A real X server can not be built from
+these sources -- in order to display X applications on a MS-Windows host
+you will have to acquire a real X Server.
 
-2.6.8.  Omron Luna
-
-
-The Omron Luna platform is no longer supported.  The Luna version of the
-make program doen't define the standard macro MAKE, so you must run it
-as "make MAKE=make" at top level, e.g., "make MAKE=make World".
-
-
-2.7.  The Build
+You have several choices for imake's RmTreeCmd. Look at the possible
+definitions in the xc/config/cf/Win32.cf file, choose one that's right
+for you, and add it to your xc/config/cf/site.def file.
 
 
-On NT, type
+3.7.  The Build
 
-     nmake World.Win32 > world.log
 
-On other systems, find the BootstrapCFlags line, if any, in the vendor-
-specific .cf file.  If there isn't one, type
+For all the supported UNIX and UNIX-like systems you can simply type (in
+csh):
 
      % make World >& world.log
 
-otherwise type
+You can call the output file something other than "world.log"; but don't
+call it "make.log" because files with this name are automatically
+deleted during the initial "cleaning" stage of the build.
 
-     % make World BOOTSTRAPCFLAGS="value" >& world.log
-
-
-You can call the output file something other than "world.log", but do
-not call it "make.log" because files with this name are automatically
-deleted during the "cleaning" stage of the build.
-
-Because the build can take several hours to complete, you will probably
-want to run it in the background and keep a watch on the output.  For
-example:
+The build can take several hours on older systems, and may take as lit-
+tle as an hour on the faster systems that are available today. On UNIX
+and UNIX-like systems you may want to run it in the background and keep
+a watch on the output. For example:
 
      % make World >& world.log &
      % tail -f world.log
 
 
-If something goes wrong, the easiest thing is to just start over (typing
-"make World" again) once you have corrected the problem.
+If something goes wrong, the easiest thing is to correct the problem and
+start over again, i.e. typing "make World".
 
 
-2.8.  Installing X
+3.7.1.	UNIX and UNIX-like systems
 
 
-If everything is built successfully, you can install the software by
-typing the following as root:
+Check your vendor-specific .cf file; if it doesn't have BootstrapCFlags
+that apply to your version of the operating system then type (in csh):
+
+     % make World >& world.log
+
+
+Otherwise type (in csh):
+
+     % make World BOOTSTRAPCFLAGS="value" >& world.log
+
+
+None of the supported operating systems need to use BOOTSTRAPCFLAGS.
+
+
+3.7.2.	Microsoft Windows NT
+
+
+On NT, make certain your Path, Include, and Lib environment variables
+are set accordingly. For example here we use the command line compiler
+in VC++ 4.0 Standard Edition, which is installed in C:\MSDEVSTD. To
+setup the environment type:
+
+     > set Path=old-path;C:\MSDEVSTD\bin;C:\path-to-RmTreeCmd
+     > set Include=C:\MSDEVSTD\include
+     > set Lib=C:\MSDEVSTD\lib
+
+Then to build, at the prompt, type:
+
+     C:\> nmake World.Win32 > world.log
+
+
+
+3.8.  Installing X
+
+
+After the build has successfully completed you can install the software
+by typing the following as root:
 
      % make install >& install.log
+
+or on Microsoft Windows NT
+
+     C:\> nmake install > install.log
 
 
 Again, you might want to run this in the background and use tail to
@@ -544,83 +540,174 @@ You can install the manual pages by typing the following as root:
 
 
 
-2.9.  Shared Libraries
+3.9.  Shared Libraries
 
 
 The version number of some of the the shared libraries has been changed.
-If you want programs linked against previous versions of the libraries
-to use the R6.1 libraries, create a link from the old name to the new
-name.  This step is not necessary on SunOS 4, which supports minor ver-
-sion numbers for shared libraries.
+On SunOS 4, which supports minor version numbers for shared libraries,
+programs linked with the R6.4 libraries will use the new libraries with
+no special action required.
+
+On most other modern operating systems the version portion of the
+library name, i.e. "6.1" portion of "libX11.so.6.1" is a string. Even if
+it's only one character long, e.g. "1" (as in libX11.so.1) it's still a
+string. This string uniquely identifies and distinguishes one version of
+the library from another. Even though all the libraries in this release
+are compatible with the libraries from previous releases, and there's
+otherwise no reason to change the version string, we do it to identify
+which source release the libraries were built from.
+
+An old program that was linked with libXext.so.6.3 won't run if you
+delete libXext.so.6.3 and install libXext.so.6.4 in its place. In gen-
+eral on these systems you have the following choices:
+
+1.   Keep the old versions of the libraries around.
+
+2.   Relink all applications with the new libraries.
+
+3.   Create a symlink using the old name which points to the new name.
+
+     For example, to have programs that were linked against libX-
+     ext.so.6.3 use libXext.so.6.4, make this symlink:
+
+	  % cd $ProjectRoot/lib
+	  % ln -s libXext.so.6.4 libXext.so.6.3
 
 
-2.10.  Setting Up xterm
+On some distributions of Linux the run-time loader is broken -- requir-
+ing that the library's internal SONAME match the filename -- and the
+symlink solution won't work. We recommend that you get a new run-time
+loader which is not broken or recompile your run-time loader to not
+require that the SONAME match.
+
+
+3.10.  Setting Up xterm
 
 
 If your /etc/termcap and /usr/lib/terminfo databases do not have correct
 entries for xterm, use the sample entries provided in the directory
-xc/programs/xterm/.  System V users may need to compile and install the
+xc/programs/xterm/. System V users may need to compile and install the
 terminfo entry with the tic utility.
 
 Since each xterm will need a separate pseudoterminal, you need a reason-
-able number of them for normal execution.  You probably will want at
-least 32 on a small, multiuser system.  On most systems, each pty has
-two devices, a master and a slave, which are usually named
-/dev/tty[pqrstu][0-f] and /dev/pty[pqrstu][0-f].  If you don't have at
+able number of them for normal execution. You probably will want at
+least 32 on a small, multiuser system. On most systems, each pty has two
+devices, a master and a slave, which are usually named
+/dev/tty[pqrstu][0-f] and /dev/pty[pqrstu][0-f]. If you don't have at
 least the "p" and "q" sets configured (try typing "ls /dev/?ty??"), you
 should have your system administrator add them.  This is commonly done
 by running the MAKEDEV script in the /dev directory with appropriate
 arguments.
 
 
-2.11.  Starting Servers at System Boot
+3.11.  Starting Servers Automatically at System Boot
 
 
 The xfs and xdm programs are designed to be run automatically at system
-startup.  Please read the manual pages for details on setting up config-
-uration files; reasonable sample files are in xc/programs/xdm/config/
-and xc/programs/xfs/.
-
-If your system uses an /etc/rc file at boot time, you can usually enable
-these programs by placing the following at or near the end of the file:
-
-     if [ -f /usr/X11R6.1/bin/xfs ]; then
-             /usr/X11R6.1/bin/xfs &; echo -n ' xfs'
-     fi
-
-     if [ -f /usr/X11R6.1/bin/xdm ]; then
-             /usr/X11R6.1/bin/xdm; echo -n ' xdm'
-     fi
-
+startup. Please read the manual pages for details on setting up configu-
+ration files; reasonable sample files are in xc/programs/xdm/config/ and
+xc/programs/xfs/.
 
 Since xfs can serve fonts over the network, you do not need to run a
-font server on every machine with an X display.  You should start xfs
-before xdm, since xdm may start an X server which is a client of the
-font server.
+font server on every machine with an X display. You should start xfs
+before xdm, since xdm may start an X server which is a client of (depen-
+dent on) the font server.
 
-The examples here use /usr/X11R6.1/bin, but if you have installed into a
-different directory by setting (or unsetting) ProjectRoot then you need
-to substitute the correct directory.
+
+3.11.1.  On BSD-based systems using /etc/rc or /etc/rc.local
+
+
+If your system uses an /etc/rc or /etc/rc.local file at boot time, you
+can usually enable these programs by placing the following at or near
+the end of the file:
+
+     if [ -f $ProjectRoot/bin/xfs ]; then
+	     $ProjectRoot/bin/xfs & echo -n ' xfs'
+     fi
+
+     if [ -f $ProjectRoot/bin/xdm ]; then
+	     $ProjectRoot/bin/xdm; echo -n ' xdm'
+     fi
+
+
+On later versions of FreeBSD the preferred way of doing this is to cre-
+ate the directory $ProjectRoot/etc/rc.d. Add this directory to the
+local_startup variable defined in /etc/rc.conf, and then create short
+scripts in this directory to start xfs and xdm.
 
 If you are unsure about how system boot works, or if your system does
 not use /etc/rc, consult your system administrator for help.
 
 
-2.12.  Using OPEN LOOK applications
+3.11.2.  On Linux systems
 
 
-You can use the X11R6 Xsun server with OPEN LOOK applications, but you
-must pass the new -swapLkeys flag to the server on startup, or the OPEN
-LOOK Undo, Copy, Paste, Find, and Cut keys may not work correctly.  For
-example, to run Sun's OpenWindows 3.3 desktop environment with an X11R6
+Most Linux distributions have an /etc/inittab entry specifically for
+xdm. Depending on your distribution this may be run-level three, four,
+or five. To use xdm, edit /etc/inittab and find the line which contains
+initdefault and change it from 2 to the appropriate run-level
+
+You Linux distribution may already have a script to start xdm at a par-
+ticular run-level. For example on S.u.S.E. Linux 5.0 there is the file
+/sbin/init.d/xdm, and the symlink /sbin/init.d/rc3.d/S30xdm which points
+to /sbin/init.d/xdm. Change /sbin/init.d/xdm to use $Project-
+Root/bin/xdm. You can use the xdm script as a model write an xfs script.
+Depending on your Linux distribution you may find these files in
+/etc/init.d instead of /sbin/init.d.
+
+
+3.11.3.  On Digital Unix, HPUX 10, and SVR4 systems
+
+
+Most systems run xdm by default at some particular run-level of the sys-
+tem. There is a master init.d file and a run-level symlink rc?.d that
+points to the master init.d file:
+
+ Operating System    rc?.d symlink	      init.d file
+
+ Digital Unix 4.0    /sbin/rc3.d/S95xlogin    /sbin/init.d/xlogin
+ HPUX 10.20	     /sbin/rc3.d/S800xdm      /sbin/init.d/xdm
+ Solaris 2.[0-4]
+ Solaris 2.5	     /etc/rc3.d/S99xdm	      /etc/init.d/xdm.rc
+ Solaris 2.6	     /etc/rc2.d/S99dtlogin    /etc/init.d/dtlogin
+ IRIX 6.2	     /etc/rc2.d/S98xdm	      /etc/init.d/xdm
+ Unixware	     /etc/rc2.d/S69xdm	      /etc/init.d/xdm
+
+In general you can edit the init.d file to use $ProjectRoot/bin/xdm. You
+can use the xdm file as a model to write an /etc/rc?.d/S??xfs file to
+start xfs. Some systems may already have files to start xfs. Starting in
+Solaris 2.5 Sun uses inetd to start xfs -- you should remove the xfs
+entries from /etc/inetd.conf and /etc/services before adding xfs to the
+run-level files.
+
+
+3.11.4.  On SystemV-based systems
+
+
+On systems with a /etc/inittab file, you can edit this file to add the
+lines
+
+     xfs:3:once:$ProjectRoot/bin/xfs
+     xdm:3:once:$ProjectRoot/bin/xdm
+
+
+
+
+3.12.  Using OPEN LOOK applications
+
+
+You can use the X11R6.x Xsun server with OPEN LOOK applications; but you
+must pass the -swapLkeys flag to the server on startup, or the OPEN LOOK
+Undo, Copy, Paste, Find, and Cut keys may not work correctly. For exam-
+ple, to run Sun's OpenWindows 3.3 desktop environment with an X11R6
 server, use the command:
 
-     % openwin -server /usr/X11R6.1/bin/Xsun -swapLkeys
+     % openwin -server $ProjectRoot/bin/Xsun -swapLkeys
 
 
 The keysyms reported by keys on the numeric keypad have also changed
 since X11R5; if you find that OpenWindows applications do not respond to
-keypad keys and cursor control keys when using the R6 server, you can
+keypad keys and cursor control keys when using an R6 server, you can
 remap the keypad to generate R5 style keysyms using the following
 xmodmap commands:
 
@@ -644,29 +731,21 @@ xmodmap commands:
 
 
 
-2.13.  Rebuilding after Patches
+3.13.  Rebuilding after Patches
 
 
-You shouldn't need this right away, but eventually you are probably
-going to make changes to the sources, for example by applying X Consor-
-tium public patches.  See the section "Public Patches" later in this
-document.
+Eventually you are going to make changes to the sources, for example by
+applying any public patches that may be released or to fix any bugs you
+may have found.
 
-Each patch comes with explicit instructions at the top of it saying what
-to do.  Thus the procedure here is only an overview of the types of com-
-mands that might be necessary to rebuild X after changing it.
-
-If you are building from CD-ROM, apply the patches to the symbolic link
-tree.  The links to changed files will be replaced with local files con-
-taining the new contents.
-
-If only source files are changed, you should be able to rebuild just by
-going to the xc directory in your build tree and typing:
+If only source files are changed, rebuild by going to the base of your
+source tree xc and typing:
 
      % make >& make.log
 
 
-If configuration files are changed, the safest thing to do is type:
+If there are imake configuration file changes, the best thing to do is
+type:
 
      % make Everything >& every.log
 
@@ -676,115 +755,47 @@ but unlike "World" it does not delete the existing objects, libraries,
 and executables, and only rebuilds what is out of date.
 
 
-2.14.  Formatting the Documentation
+3.14.  Formatting the Documentation
 
 
 The PostScript files in xc/doc/hardcopy can be generated from the
-sources in xc/doc/specs.  Most of the documentation is in troff using
-the -ms macros.  The easiest way to format it is to use the Imakefiles
-provided.
+sources in xc/doc/specs. Most of the documentation is in troff using the
+-ms macros. The easiest way to format it is to use the Imakefiles pro-
+vided.
 
 Set the name of your local troff program by setting the variable Trof-
-fCmd in xc/config/cf/site.def.  Then build the Makefiles:
+fCmd in xc/config/cf/site.def. Then build the Makefiles:
 
      cd xc/doc
      make SUBDIRS=specs Makefiles
 
 
 Finally, go to the directory you are interested in and type "make"
-there.  This command will generate .PS files.  You can also generate
-text files by specifying the document name with a .txt extension as a
-make target, e.g., "make icccm.txt".
+there. This command will generate .PS files. You can also generate text
+files by specifying the document name with a .txt extension as a make
+target, e.g., "make icccm.txt".
 
 
-2.15.  Building Contributed Software
+4.  Public Patches
 
 
-The software in contrib is not set up to have everything built automati-
-cally.  It is assumed that you will build individual pieces as you find
-the desire, time, and/or disk space.  You need to have the X Consortium
-part built and installed before building the contributed software.  To
-build a program or library in contrib, look in its directory for any
-special build instructions (for example, a README file).  If there are
-none, and there is an Imakefile, cd to the directory and type:
+The Open Group X Project Team may from time to time issue public patches
+for this release to fix any serious problems that are discovered. Such
+fixes are a subset of fixes available to X Project Team members. Public
+patches are available via anonymous FTP from
+ftp://ftp.x.org/pub/R6.4/fixes, or from your local X mirror site.  Check
+the site closest to you first.
 
-     % xmkmf -a
-     % make >& make.log
+You can determine which public patches have already been applied to your
+source tree by examining the "VERSION" line of xc/bug-report. The source
+in the tar files you have may already have some patches applied; you
+only need to apply later patches. If you try to apply patches out of
+order or apply patches that are already in your tree, patch will tell
+you that you have the wrong version and not apply the patch.
 
-
-This will build a Makefile in the directory and all subdirectories, and
-then build the software.  If the build is successful, you should be able
-to install it using the same commands used for the xc software:
-
-     % make install >& install.log
-     % make install.man >& man.log
-
-
+Source for the patch program is in xc/util/patch/. The patch program
+included on some systems may not support all the options this version
+has. If you have problems applying patches, or if you're otherwise in
+doubt, use this version.
 
 
-3.  Public Fixes
-
-
-X Consortium may from time to time issue public patches to the latest
-public release to fix any serious problems that are discovered.  Such
-fixes are a subset of fixes available to Consortium members.  Public
-patches are available over the Internet in two ways: via anonymous FTP,
-and via the xstuff mail server.
-
-Fixes are available via anonymous FTP to ftp.x.org, in the directory
-/pub/R6.1/fixes/, or from your local X mirror site.  Check the site
-closest to you first.
-
-For those without FTP access, individual fixes can be obtained by elec-
-tronic mail by sending a message to
-
-     xstuff@x.org
-
-
-In the usual case, the message should have a subject line and no body,
-or a single-line body and no subject, in either case the line looking
-like:
-
-     send fixes number
-
-
-where number is a decimal number, starting from one.  Large patches are
-broken up into parts for the convenience of mailers that cannot handle
-large messages, for example "2a", "2b", "2c", "2d", and "2e".  Ask for
-each part separately, for example, use this line:
-
-     send fixes 2a
-
-to get part 2a.  Concatenate all the parts together before applying,
-e.g.,
-
-     cat 2[abcde] | patch -p -s
-
-
-To get a summary of available fixes, email this line to xstuff:
-
-     index fixes
-
-
-If you need help, make the line:
-
-     help
-
-
-Some mailers produce mail headers that are unusable for extracting
-return addresses.  If you use such a mailer, you won't get any response.
-If you happen to know an explicit return path, you can include include
-one in the body of your message, and the daemon will use it.  For exam-
-ple:
-
-     path user%host.bitnet@mitvma.mit.edu
-
-
-You can determine which public patches have been applied to your source
-tree by examining the "VERSION" line of xc/bug-report.  The distribution
-you get might already have some patches applied; you only need to apply
-later patches.  If you try to apply patches out of order or apply
-patches that are already in your tree, patch will tell you that you have
-the wrong version and not apply the patch.
-
-A copy of the patch program is in xc/util/patch/.
