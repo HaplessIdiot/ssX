@@ -2,7 +2,7 @@
  *	$Xorg: input.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/input.c,v 3.58 2002/08/24 18:54:38 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/input.c,v 3.59 2002/09/30 00:39:06 dickey Exp $ */
 
 /*
  * Copyright 1999-2001,2002 by Thomas E. Dickey
@@ -75,7 +75,6 @@
 #endif
 
 #include <X11/Xutil.h>
-#include <X11/StringDefs.h>
 #include <ctype.h>
 
 #include <xutf8.h>

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.84 2002/08/24 18:54:39 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.85 2002/09/30 00:39:07 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_169">Patch #169 - 2002/10/5 - XFree86 4.2.1</A>
 <LI><A HREF="#xterm_168">Patch #168 - 2002/9/29 - XFree86 4.2.1</A>
 <LI><A HREF="#xterm_167">Patch #167 - 2002/8/24 - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_166">Patch #166 - 2002/3/25 - XFree86 4.2.0</A>
@@ -213,6 +214,37 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_169">Patch #169 - 2002/10/5 - XFree86 4.2.1</A></H1>
+<ul>
+	<li>modify wording of some options in help message to make them use
+	  <code>-/+</code> consistently with respect to "on/off" or "off/on".
+
+	<li>sort options list which is displayed in help- and syntax-messages
+	  at runtime to simplify maintenance.
+
+	<li>remove support for Amoeba and Minix (Juliusz Chroboczek noted it
+	  was removed from XFree86 server; there have been no users since
+	  1996).
+
+	<li>add configure script option <code>--disable-session-mgt</code>
+	  to control whether the session management code should be compiled-in
+	  (request by H Merijn Brand).
+
+	<li>ifdef'd the session-management changes with
+	  <code>OPT_SESSION_MGT</code>, to accommodate X11R5 which predates
+	  the related definitions.
+
+	<li>fix <code>decode_keyvalue()</code>, which did not properly parse
+	  multiple settings as needed for the <code>ttyModes</code> resource,
+	  since it did not skip over the parsed data.
+
+	<li>fix an option-parsing conflict between <code>-class</code> and
+	  <code>-cjk_width</code> (Nam SungHyun)
+
+	<li>add a missing null in <code>XtVaSetValues()</code> call used in
+	  <code>Cleanup()</code> (Nam SungHyun)
+</ul>
 
 <H1><A NAME="xterm_168">Patch #168 - 2002/9/29 - XFree86 4.2.1</A></H1>
 <ul>
