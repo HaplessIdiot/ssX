@@ -1,4 +1,5 @@
 XFree86 3.9.17b (23 January 2000)
+3572. Rewrite the way Xinerama deals with events (Mark Vojkovich).
 3571. Fix VT switching problem in shadowfb (Marc La France).
 3570. Initialize DST_X_DIR and DST_Y_DIR for solid filled rects and for
       horizontal and vertical lines to fix line drawing problems, and
@@ -80,7 +81,7 @@ XFree86 3.9.17a (21 January 2000)
       - Change the way it deals with resources.
       - Remove broken Xinerama code from the multibuf extension.
       - Add support for shared memory pixmaps.
-      - Less Xinerama's impact on DIX.
+      - Lessen Xinerama's impact on DIX.
 3525. Point and arc acceleration improvements for the NVIDIA driver 
       (Mark Vojkovich).
 3524. MGA acceleration modifications to prevent pci retries during
