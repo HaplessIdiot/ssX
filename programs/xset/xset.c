@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.22 2001/07/25 15:05:29 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.23 2001/08/01 00:45:07 tsi Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -686,7 +686,7 @@ for (i = 1; i < argc; ) {
     }
 #if defined(XF86MISC) || defined(XKB)
     else if (strcmp(arg, "rate") == 0) {       /*  ...or this one. */
-      int delay, rate;
+      int delay = 0, rate = 0;
       int rate_set = 0;
 #ifdef XF86MISC
       if (XF86MiscQueryVersion(dpy, &major, &minor)) {
@@ -1388,9 +1388,6 @@ static void
 query_cache_status(dpy)
     Display *dpy;
 {
-    int scr = DefaultScreen (dpy);
-    int i, j;
-
     int dummy;
     FontCacheSettings cs;
     FontCacheStatistics cstats;
@@ -1407,19 +1404,19 @@ query_cache_status(dpy)
 	}
 	if (FontCacheGetCacheStatistics(dpy, &cstats)) {
 	    printf("font cache statistics:\n");
-	    printf("   cache purged: %d\n", cstats.purge_runs);
-	    printf("   cache status: %d\n", cstats.purge_stat);
-	    printf("  cache balance: %d\n", cstats.balance);
+	    printf("   cache purged: %ld\n", cstats.purge_runs);
+	    printf("   cache status: %ld\n", cstats.purge_stat);
+	    printf("  cache balance: %ld\n", cstats.balance);
 	    printf("font cache entry statistics:\n");
-	    printf("      hits: %d\n", cstats.f.hits);
-	    printf("  misshits: %d\n", cstats.f.misshits);
-	    printf("    purged: %d\n", cstats.f.purged);
-	    printf("     usage: %d\n", cstats.f.usage);
+	    printf("      hits: %ld\n", cstats.f.hits);
+	    printf("  misshits: %ld\n", cstats.f.misshits);
+	    printf("    purged: %ld\n", cstats.f.purged);
+	    printf("     usage: %ld\n", cstats.f.usage);
 	    printf("large bitmap cache entry statistics:\n");
-	    printf("      hits: %d\n", cstats.v.hits);
-	    printf("  misshits: %d\n", cstats.v.misshits);
-	    printf("    purged: %d\n", cstats.v.purged);
-	    printf("     usage: %d\n", cstats.v.usage);
+	    printf("      hits: %ld\n", cstats.v.hits);
+	    printf("  misshits: %ld\n", cstats.v.misshits);
+	    printf("    purged: %ld\n", cstats.v.purged);
+	    printf("     usage: %ld\n", cstats.v.usage);
 	}
     } else {
 	printf("Server does not have the FontCache Extension\n");
