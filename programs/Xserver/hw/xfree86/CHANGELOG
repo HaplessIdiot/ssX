@@ -1,4 +1,14 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 290. Clean up Cygwin/XFree86 keyboard files (#4949 Harold Hunt).
+ 289. Add Matrox G550 support (#4947, Luugi Marson, Matrox).
+ 288. Remove SuperProbe.man definition for manual page 
+      (#4944, Ishikawa Mutsumi).
+ 287. Ark driver updates (#4943, Ani Joshi).
+ 286. Fix xterm when XIM is disabled - caused a segfault 
+      (#4942, Tomohiro Kubota).
+ 285. Add Big Endian support (PowerPC) to radeon driver (#4934, Ani Joshi).
+ 284. Fix support for legacy Windows TrueType fonts in Big5 encoding
+      (#4938, Juliusz Chroboczek).
  283. Support Radeon 7500, 8500 and Rage128ProII (#4941, ATI Technologies).
  282. Support Trident TGUI96xx and greater with Xv (Alan Hourihane).
  281. XDarwin fixes for Xinerama in Quartz modes:
@@ -13824,4 +13834,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1952 2001/09/24 11:19:06 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1953 2001/09/25 14:58:46 alanh Exp $
