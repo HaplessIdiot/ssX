@@ -32,7 +32,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/Xpm/lib/create.c,v 1.2 2001/10/28 03:32:10 tsi Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -213,8 +213,7 @@ typedef struct {
 }      CloseColor;
 
 static int
-closeness_cmp(a, b)
-    Const void *a, *b;
+closeness_cmp(Const void *a, Const void *b)
 {
     CloseColor *x = (CloseColor *) a, *y = (CloseColor *) b;
 

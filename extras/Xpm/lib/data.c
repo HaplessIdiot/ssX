@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/Xpm/lib/data.c,v 1.3 2001/10/28 03:32:10 tsi Exp $ */
 
 #ifndef CXPMPROG
 #if 0
@@ -51,8 +51,7 @@ static char *RCS_Id = "Id: xpm.shar,v 3.71 1998/03/19 19:47:14 lehors Exp $";
 #endif
 
 static int
-ParseComment(data)
-    xpmData *data;
+ParseComment(xpmData *data)
 {
     if (data->type == XPMBUFFER) {
 	register char c;

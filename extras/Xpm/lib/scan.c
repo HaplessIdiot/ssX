@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/Xpm/lib/scan.c,v 1.2 2001/10/28 03:32:11 tsi Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -74,6 +74,9 @@ LFUNC(storePixel, int, (Pixel pixel, PixelsMap *pmap,
 LFUNC(storeMaskPixel, int, (Pixel pixel, PixelsMap *pmap,
 			    unsigned int *index_return));
 
+typedef int (*storeFuncPtr)(Pixel pixel, PixelsMap *pmap,
+			    unsigned int *index_return);
+
 #ifndef FOR_MSW
 # ifndef AMIGA
 LFUNC(GetImagePixels, int, (XImage *image, unsigned int width,
@@ -90,16 +93,16 @@ LFUNC(GetImagePixels8, int, (XImage *image, unsigned int width,
 
 LFUNC(GetImagePixels1, int, (XImage *image, unsigned int width,
 			     unsigned int height, PixelsMap *pmap,
-			     int (*storeFunc) ()));
+			     storeFuncPtr storeFunc));
 # else /* AMIGA */
 LFUNC(AGetImagePixels, int, (XImage *image, unsigned int width,
 			     unsigned int height, PixelsMap *pmap,
-			     int (*storeFunc) ()));
+			     storeFuncPtr storeFunc));
 # endif/* AMIGA */
 #else  /* ndef FOR_MSW */
 LFUNC(MSWGetImagePixels, int, (Display *d, XImage *image, unsigned int width,
 			       unsigned int height, PixelsMap *pmap,
-			       int (*storeFunc) ()));
+			       storeFuncPtr storeFunc));
 #endif
 LFUNC(ScanTransparentColor, int, (XpmColor *color, unsigned int cpp,
 				  XpmAttributes *attributes));
@@ -846,7 +849,7 @@ GetImagePixels1(image, width, height, pmap, storeFunc)
     unsigned int width;
     unsigned int height;
     PixelsMap *pmap;
-    int (*storeFunc) ();
+    storeFuncPtr storeFunc;
 {
     unsigned int *iptr;
     int x, y;
