@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 451. Keep track of whether the 830/845G HW cursor should be visible or
+      hidden so that it doesn't get turned on when it shouldn't (David Dawes).
  450. Fix for DGA offset inconsistency in the 830/845G driver (based on
       a patch from Edgar Toernig).
  449. Fix a memory leak when calling _XCloseLC and removing the loadable
@@ -15446,4 +15448,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2366 2002/11/01 13:43:29 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2367 2002/11/05 02:01:16 dawes Exp $

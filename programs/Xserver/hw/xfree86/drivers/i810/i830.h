@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.3 2002/10/08 20:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.4 2002/10/30 12:52:18 alanh Exp $ */
 
 /*
  * Authors:
@@ -222,6 +222,7 @@ typedef struct _I830Rec {
 
    Bool noAccel;
    Bool SWCursor;
+   Bool cursorOn;
    XAAInfoRecPtr AccelInfoRec;
    xf86CursorInfoPtr CursorInfoRec;
    CloseScreenProcPtr CloseScreen;
