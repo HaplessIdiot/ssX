@@ -50,7 +50,7 @@ INC		= table.c
 TBL		= table.gperf
 GPERFFLAGS	= -T -n -a -c -p -j1 -g -o -t -N LispFindBuiltin -k 1,2,4,$$
 
-AllTarget(ProgramTargetName($(PROG)))
+AllTarget(ProgramTargetName($(SAMP)))
 
 #if BuildSharedLispModules
 CCOPTIONS	= -fpic
