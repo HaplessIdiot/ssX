@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.194 2003/01/26 16:40:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.195 2003/01/28 22:41:38 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -37,6 +37,7 @@
 #include "xf86Config.h"
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
+#include "xf86Build.h"
 #include "mipointer.h"
 #ifdef XINPUT
 #include "XI.h"
