@@ -55,9 +55,6 @@ static const int windowsROPsrcMask[16] = { 0x22, 0xA2, 0x62, 0xE2,
                                            0x26, 0xA6, 0x66, 0xE6,
                                            0x2E, 0xAE, 0x6E, 0xEE };
 
-#if 0
-#endif
-
 /* Forward declaration of functions used in the driver */
 void CYRIXAccelSync(ScrnInfoPtr pScrn);
 void CYRIXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
