@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -21,7 +21,7 @@
 // Debug output, or not.
 
 #ifdef ROOTLESSDEBUG
-#define RL_DEBUG_MSG(a, ...) ErrorF(a, ...)
+#define RL_DEBUG_MSG ErrorF
 #else
 #define RL_DEBUG_MSG(a, ...)
 #endif
@@ -45,6 +45,7 @@ typedef struct RootlessWindowRec {
     RootlessFrameRec frame;
     RegionRec damage;
     unsigned int borderWidth; // needed for MoveWindow(VTOther) (%$#@!!!)
+    PixmapPtr pixmap;
 } RootlessWindowRec;
 
 
