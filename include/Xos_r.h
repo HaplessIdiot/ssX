@@ -22,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.15tsi Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.16 2002/04/10 16:20:03 tsi Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -256,7 +256,8 @@ typedef struct {
  * fields.
  */
    
-#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
+    defined(__APPLE__)
 static __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
 {
    memcpy(&(p).pws, (p).pwp, sizeof(struct passwd));
@@ -618,7 +619,8 @@ typedef struct {
 # endif
 } _Xreaddirparams;
 
-# if defined(AIXV3) || defined(AIXV4) || defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) || defined(AIXV3) || \
+     defined(AIXV4) || defined(__APPLE__)
 /* AIX defines the draft POSIX symbol, but uses the final API. */
 /* POSIX final API, returns (int)0 on success. */
 #  if defined(__osf__)

@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 222. Enable threaded libraries on Darwin (Jeff Whitaker and Torrey T. Lyons).
  221. Xaw documentation fixes (A.1218, Paul Vojta).
  220. Add some mode collection/handling interfaces to the vbe module,
       which makes it easier for drivers to set modes via the video BIOS
@@ -14979,4 +14980,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2277 2002/08/06 13:46:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2278 2002/08/14 21:52:32 paulo Exp $
