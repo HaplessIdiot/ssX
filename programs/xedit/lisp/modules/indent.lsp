@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.3 2002/11/15 07:01:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.4 2002/12/16 03:59:28 paulo Exp $
 ;;
 
 (provide "indent")
@@ -220,7 +220,7 @@
 		    )
 		)
 
-		;; indent the current one
+		;; indent the current line
 		(indent-text (offset-indentation (+ left start) :align t) offset)
 		(return)
 	    )

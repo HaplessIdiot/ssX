@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.37 2002/11/26 04:06:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.38 2002/11/30 23:13:12 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -68,7 +68,6 @@
 #define DBG	lisp__data.dbglist
 #define BRK	lisp__data.brklist
 #define PRO	lisp__data.prolist
-#define DOC	lisp__data.doclist
 
 #define SINPUT	lisp__data.input
 #define SOUTPUT	lisp__data.output
@@ -138,6 +137,14 @@ typedef struct _LispArgList {
     int num_arguments;
     char *description;
 } LispArgList;
+
+typedef enum _LispDocType_t {
+    LispDocVariable,
+    LispDocFunction,
+    LispDocStructure,
+    LispDocType,
+    LispDocSetf
+} LispDocType_t;
 
 struct _LispProperty {
     /* may be used by multiple packages */
@@ -215,6 +222,8 @@ struct _LispAtom {
     LispObj *name;		/* symbol string */
     LispProperty *property;
     struct _LispAtom *next;
+
+    LispObj *documentation[5];
 };
 
 struct _LispObjList {
@@ -376,7 +385,6 @@ struct _LispMac {
     LispObj *brklist;		/* breakpoints information */
 #endif
     LispObj *prolist;		/* protect objects list */
-    LispObj *doclist;		/* variables documentation */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);
@@ -498,14 +506,6 @@ void LispRemAtomStructProperty(LispAtom*);
 
 void LispProclaimSpecial(LispObj*, LispObj*, LispObj*);
 void LispDefconstant(LispObj*, LispObj*, LispObj*);
-
-typedef enum _LispDocType_t {
-    LispDocVariable,
-    LispDocFunction,
-    LispDocStructure,
-    LispDocType,
-    LispDocSetf
-} LispDocType_t;
 
 void LispAddDocumentation(LispObj*, LispObj*, LispDocType_t);
 void LispRemDocumentation(LispObj*, LispDocType_t);

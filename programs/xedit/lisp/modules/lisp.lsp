@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.8 2002/11/30 23:13:14 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.9 2002/12/04 05:28:01 paulo Exp $
 ;;
 (provide "lisp")
 
@@ -166,6 +166,7 @@
 (defsetf schar lisp::char-store)
 (defsetf elt lisp::elt-store)
 (defsetf svref lisp::elt-store)
+(defsetf documentation lisp::documentation-store)
 
 (defsetf symbol-value set)
 

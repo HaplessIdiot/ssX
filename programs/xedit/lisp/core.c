@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.67 2002/12/04 05:27:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.68 2002/12/16 03:59:27 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -160,6 +160,7 @@ static LispObj *LispXReverse(LispBuiltin*, int);
 static LispObj *LispCopyList(LispBuiltin*, LispObj*, int);
 static LispObj *LispValuesList(LispBuiltin*, int);
 static LispObj *LispTreeEqual(LispObj*, LispObj*, LispObj*, int);
+static LispDocType_t LispDocumentationType(LispBuiltin*, LispObj*);
 
 extern void LispSetAtomObjectProperty(LispAtom*, LispObj*);
 
@@ -1291,20 +1292,12 @@ Lisp_DoP(LispBuiltin *builtin)
     return (LispDo(builtin, 1));
 }
 
-LispObj *
-Lisp_Documentation(LispBuiltin *builtin)
-/*
- documentation symbol type
- */
+static LispDocType_t
+LispDocumentationType(LispBuiltin *builtin, LispObj *type)
 {
     Atom_id atom;
-    LispObj *symbol, *type;
     LispDocType_t doc_type = LispDocVariable;
 
-    type = ARGUMENT(1);
-    symbol = ARGUMENT(0);
-
-    CHECK_SYMBOL(symbol);
     CHECK_SYMBOL(type);
     atom = ATOMID(type);
 
@@ -1322,10 +1315,26 @@ Lisp_Documentation(LispBuiltin *builtin)
 	LispDestroy("%s: unknown documentation type %s",
 		    STRFUN(builtin), STROBJ(type));
 	/*NOTREACHED*/
-	doc_type = 0;
     }
 
-    return (LispGetDocumentation(symbol, doc_type));
+    return (doc_type);
+}
+
+LispObj *
+Lisp_Documentation(LispBuiltin *builtin)
+/*
+ documentation symbol type
+ */
+{
+    LispObj *symbol, *type;
+
+    type = ARGUMENT(1);
+    symbol = ARGUMENT(0);
+
+    CHECK_SYMBOL(symbol);
+    /* type is checked in LispDocumentationType() */
+
+    return (LispGetDocumentation(symbol, LispDocumentationType(builtin, type)));
 }
 
 LispObj *
@@ -1735,6 +1744,8 @@ Lisp_Fmakunbound(LispBuiltin *builtin)
 	LispRemAtomFunctionProperty(symbol->data.atom);
     else if (symbol->data.atom->a_builtin)
 	LispRemAtomBuiltinProperty(symbol->data.atom);
+    else if (symbol->data.atom->a_compiled)
+	LispRemAtomCompiledProperty(symbol->data.atom);
 
     return (symbol);
 }
@@ -6996,4 +7007,34 @@ Lisp_XeditVectorStore(LispBuiltin *builtin)
     RPLACA(array, value);
 
     return (value);
+}
+
+LispObj *
+Lisp_XeditDocumentationStore(LispBuiltin *builtin)
+/*
+ lisp::documentation-store symbol type string
+ */
+{
+    LispDocType_t doc_type;
+
+    LispObj *symbol, *type, *string;
+
+    string = ARGUMENT(2);
+    type = ARGUMENT(1);
+    symbol = ARGUMENT(0);
+
+    CHECK_SYMBOL(symbol);
+
+    /* type is checked in LispDocumentationType() */
+    doc_type = LispDocumentationType(builtin, type);
+
+    if (string == NIL)
+	/* allow explicitly releasing memory used for documentation */
+	LispRemDocumentation(symbol, doc_type);
+    else {
+	CHECK_STRING(string);
+	LispAddDocumentation(symbol, string, doc_type);
+    }
+
+    return (string);
 }

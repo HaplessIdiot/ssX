@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.81 2002/12/04 05:27:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.82 2002/12/06 03:25:27 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -603,6 +603,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
     {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array &rest values", 0, 1},
+    {LispFunction, Lisp_XeditDocumentationStore, "lisp::documentation-store symbol type string", 0, 1},
     {LispFunction, Lisp_Zerop, "zerop number"},
 };
 
@@ -841,7 +842,9 @@ LispTopLevel(void)
 	--lisp__data.mem.level;
 	if (lisp__data.mem.mem[lisp__data.mem.level]) {
 	    ++count;
+#if 0
 	    printf("LEAK: %p\n", lisp__data.mem.mem[lisp__data.mem.level]);
+#endif
 	}
     }
     lisp__data.mem.index = 0;
@@ -986,7 +989,6 @@ Lisp__GC(LispObj *car, LispObj *cdr)
     LispMark(BRK);
 #endif
     LispMark(PRO);
-    LispMark(DOC);
     LispMark(lisp__data.input_list);
     LispMark(lisp__data.output_list);
     LispMark(car);
@@ -3451,8 +3453,6 @@ LispUnsetVar(LispObj *atom)
 	int i;
 	LispPackage *pack = name->package->data.package.package;
 
-	LispRemDocumentation(atom, LispDocVariable);
-
 	for (i = pack->glb.length - 1; i > 0; i--)
 	    if (pack->glb.pairs[i] == atom) {
 		LispRemAtomObjectProperty(name);
@@ -3637,160 +3637,67 @@ LispDefconstant(LispObj *atom, LispObj *value, LispObj *doc)
 void
 LispAddDocumentation(LispObj *symbol, LispObj *documentation, LispDocType_t type)
 {
-    LispObj *env;
-    Atom_id atom;
+    int length;
+    char *string;
+    LispAtom *atom;
+    LispObj *object;
 
-    if (!SYMBOLP(symbol))
-	LispDestroy("ADD-DOCUMENTATION: %s is not a symbol",  STROBJ(symbol));
-    if (!STRINGP(documentation))
-	LispDestroy("ADD-DOCUMENTATION: %s is not a string",
-		    STROBJ(documentation));
+    if (!SYMBOLP(symbol) || !STRINGP(documentation))
+	LispDestroy("DOCUMENTATION: invalid argument");
 
-    atom = ATOMID(symbol);
-    for (env = DOC; env != NIL; env = CDR(env)) {
-	if (ATOMID(CAAR(env)) == atom) {
-	    LispObj *doc = CAR(env);
+    atom = symbol->data.atom;
+    if (atom->documentation[type])
+	LispRemDocumentation(symbol, type);
 
-	    switch (type) {
-		case LispDocVariable:
-		    CAR(CDR(doc)) = documentation;
-		    break;
-		case LispDocFunction:
-		    CAR(CDR(CDR(doc))) = documentation;
-		    break;
-		case LispDocStructure:
-		    CAR(CDR(CDR(CDR(doc)))) = documentation;
-		    break;
-		case LispDocType:
-		    CAR(CDR(CDR(CDR(CDR(doc))))) = documentation;
-		    break;
-		case LispDocSetf:
-		    CDR(CDR(CDR(CDR(CDR(doc))))) = documentation;
-		    break;
-		default:
-		    LispDestroy("ADD-DOCUMENTATION: bad documentation type");
-		    break;
-	    }
-	    break;
-	}
-    }
+    /* allocate documentation in atomseg */
+    if (atomseg.freeobj == NIL)
+	LispAllocSeg(&atomseg, pagesize);
+    length = STRLEN(documentation);
+    string = LispMalloc(length);
+    memcpy(string, THESTR(documentation), length);
+    string[length] = '\0';
+    object = atomseg.freeobj;
+    atomseg.freeobj = CDR(object);
+    --atomseg.nfree;
 
-    env = CONS(NIL, CONS(NIL, (CONS(NIL, (CONS(NIL, CONS(NIL, NIL)))))));
-    DOC = CONS(env, DOC);
-
-    RPLACA(env, symbol);
-
-    switch (type) {
-	case LispDocVariable:
-	    CAR(CDR(env)) = documentation;
-	    break;
-	case LispDocFunction:
-	    CAR(CDR(CDR(env))) = documentation;
-	    break;
-	case LispDocStructure:
-	    CAR(CDR(CDR(CDR(env)))) = documentation;
-	    break;
-	case LispDocType:
-	    CAR(CDR(CDR(CDR(CDR(env))))) = documentation;
-	    break;
-	case LispDocSetf:
-	    CDR(CDR(CDR(CDR(CDR(env))))) = documentation;
-	    break;
-	default:
-	    LispDestroy("ADD-DOCUMENTATION: bad documentation type");
-	    break;
-    }
+    object->type = LispString_t;
+    THESTR(object) = string;
+    STRLEN(object) = length;
+    object->data.string.writable = 0;
+    atom->documentation[type] = object;
+    LispMused(string);
 }
 
 void
 LispRemDocumentation(LispObj *symbol, LispDocType_t type)
 {
-    LispObj *prev, *env;
-    Atom_id atom;
+    LispAtom *atom;
 
     if (!SYMBOLP(symbol))
-	LispDestroy("REMOVE-DOCUMENTATION: %s is not a symbol", STROBJ(symbol));
+	LispDestroy("DOCUMENTATION: invalid argument");
 
-    atom = ATOMID(symbol);
-    for (prev = env = DOC; env != NIL; prev = env, env = CDR(env)) {
-	if (ATOMID(CAAR(env)) == atom) {
-	    LispObj *doc = CAR(env);
-
-	    switch (type) {
-		case LispDocVariable:
-		    CAR(CDR(doc)) = NIL;
-		    break;
-		case LispDocFunction:
-		    CAR(CDR(CDR(doc))) = NIL;
-		    break;
-		case LispDocStructure:
-		    CAR(CDR(CDR(CDR(doc)))) = NIL;
-		    break;
-		case LispDocType:
-		    CAR(CDR(CDR(CDR(CDR(doc))))) = NIL;
-		    break;
-		case LispDocSetf:
-		    CDR(CDR(CDR(CDR(CDR(doc))))) = NIL;
-		    break;
-		default:
-		    LispDestroy("REMOVE-DOCUMENTATION: bad documentation type");
-		    break;
-	    }
-	    if (CAR(CDR(doc)) == NIL &&
-		CAR(CDR(CDR(doc))) == NIL &&
-		CAR(CDR(CDR(CDR(doc)))) == NIL &&
-		CAR(CDR(CDR(CDR(CDR(doc))))) == NIL &&
-		CAR(CDR(CDR(CDR(CDR(doc))))) == NIL) {
-		/* no documentation remaining */
-		if (prev == DOC)
-		    doc = CDR(doc);
-		else
-		    RPLACD(prev, CDR(env));
-	    }
-	    break;
-	}
+    atom = symbol->data.atom;
+    if (atom->documentation[type]) {
+	/* reclaim object to atomseg */
+	free(THESTR(atom->documentation[type]));
+	CDR(atom->documentation[type]) = atomseg.freeobj;
+	atomseg.freeobj = atom->documentation[type];
+	atom->documentation[type] = NULL;
+	++atomseg.nfree;
     }
 }
 
 LispObj *
 LispGetDocumentation(LispObj *symbol, LispDocType_t type)
 {
-    LispObj *env, *result = NIL;
-    Atom_id atom;
+    LispAtom *atom;
 
     if (!SYMBOLP(symbol))
-	LispDestroy("GET-DOCUMENTATION: %s is not a symbol", STROBJ(symbol));
+	LispDestroy("DOCUMENTATION: invalid argument");
 
-    atom = ATOMID(symbol);
-    for (env = DOC; env != NIL; env = CDR(env)) {
-	if (ATOMID(CAAR(env)) == atom) {
-	    LispObj *doc = CAR(env);
+    atom = symbol->data.atom;
 
-	    switch (type) {
-		case LispDocVariable:
-		    result = CAR(CDR(doc));
-		    break;
-		case LispDocFunction:
-		    result = CAR(CDR(CDR(doc)));
-		    break;
-		case LispDocStructure:
-		    result = CAR(CDR(CDR(CDR(doc))));
-		    break;
-		case LispDocType:
-		    result = CAR(CDR(CDR(CDR(CDR(doc)))));
-		    break;
-		case LispDocSetf:
-		    result = CDR(CDR(CDR(CDR(CDR(doc)))));
-		    break;
-		default:
-		    LispDestroy("GET-DOCUMENTATION: bad documentation type");
-		    break;
-	    }
-	    break;
-	}
-    }
-
-    return (result);
+    return (atom->documentation[type] ? atom->documentation[type] : NIL);
 }
 
 LispObj *
@@ -5201,7 +5108,7 @@ LispBegin(void)
      */
     minfree = 1024;
 
-    MOD = COD = PRO = DOC = NIL;
+    MOD = COD = PRO = NIL;
 #ifdef DEBUGGER
     DBG = BRK = NIL;
 #endif

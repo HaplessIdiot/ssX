@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.21 2002/11/25 02:35:31 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.22 2002/12/16 03:59:28 paulo Exp $
 ;;
 
 (require "syntax")
@@ -274,8 +274,6 @@
     (indreduce :eol
 	t
 	((:end-of-line))
-	;; If a safe state was reached, reject this line and go to the
-	;;  resolve rules.
 	;; Anything after the eol offset is safe to parse now
 	(setq c-continuation nil)
     )
@@ -290,14 +288,14 @@
     ;; Preprocessor
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (indreduce nil
-	t
-	((:indent :hash :expression nil :eol))
-    )
-    (indreduce nil
 	(>= *ind-offset* *ind-start*)
 	((:indent :hash))
 	(setq *indent* 0)
 	(indent-macro-reject-left)
+    )
+    (indreduce nil
+	t
+	((:indent :hash nil :eol))
     )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
