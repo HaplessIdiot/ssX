@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86CursorPriv.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86CursorPriv.h,v 1.4tsi Exp $ */
 
 #ifndef _XF86CURSORPRIV_H
 #define _XF86CURSORPRIV_H
@@ -35,6 +35,14 @@ typedef struct {
     pointer			transparentData;
 } xf86CursorScreenRec, *xf86CursorScreenPtr;
 
+void xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y);
+void xf86SetTransparentCursor(ScreenPtr pScreen);
+void xf86MoveCursor(ScreenPtr pScreen, int x, int y);
+void xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed);
+Bool xf86InitHardwareCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr);
+
 CARD32 xf86ReverseBitOrder(CARD32 data);
+
+extern int xf86CursorScreenIndex;
 
 #endif /* _XF86CURSORPRIV_H */
