@@ -1,4 +1,14 @@
-XFree86 3.9Nb (19 August 1998)
+XFree86 3.9Nb (20 August 1998)
+1764. Fix some memory leaks in Xlib that happen on realloc failures
+      (#1914, ??)
+1763. Optimise the way C&T acceleration is handled by reorganising
+      some of the graphics primitives, including caching foreground and
+      background colours, and moving some operations from the Subsequent
+      primitives to the Setup primitives (#1915, David Bateman).
+1762. Introduce HW cursor for the Permedia2 (but p2 and p2v dont' work
+      yet), fixup pm2v_dac and pm2_dac register naming, and add reset
+      logic to reset the accelerator (but not used yet) (#1912,
+      Alan Hourihane).
 1761. Fix building in xfree86/common when XINPUT is not defined (Egbert Eich).
 1760. Fix problem compiling xf86_IlHack.c on Alpha platforms.
 1759. Add an option "ShowOverscan" to the vgahw module which makes the
@@ -28,7 +38,8 @@ XFree86 3.9Nb (19 August 1998)
       and code to make use of it for the mga driver (#1900-1902,
       Mark Vojkovich).
 1749. Introduce Helper functions for ramdac module, Save/Restore/SetBpp,
-      and update the glint and tga drivers to use them (#1899, Alan Hourihane).
+      and update the glint and tga drivers to use them (#1899, 1913,
+      Alan Hourihane).
 1748. Move IBM640 code from the glint driver intot he generic ramdac module
       (#1899, Alan Hourihane).
 1747. Add ClockMulFactor and ClockDivFactor fields to clockRanges to allow
@@ -6337,4 +6348,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.612 1998/08/19 12:48:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.613 1998/08/19 13:13:06 dawes Exp $

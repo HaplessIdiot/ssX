@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.9 1998/07/25 16:55:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.10 1998/08/19 07:49:12 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -158,6 +158,9 @@ typedef struct {
     unsigned int CacheEnd;
     /* Storage for pattern mask */
     int planemask;
+    /* Storage for foreground and background color */
+    int fgColor;
+    int bgColor;
     /* For the 8x8 pattern fills */
     int patternyrot;
     /* For cached stipple fills */

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.2 1998/07/25 16:55:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.3 1998/08/13 14:45:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -48,7 +48,7 @@ Shiftbpp(ScrnInfoPtr pScrn, int value)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int logbytesperaccess;
 
-    if (pGlint->RamDac == (IBM640_RAMDAC))
+    if (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))
     	logbytesperaccess = 4;
     else
     	logbytesperaccess = 3;
@@ -87,7 +87,6 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
-    unsigned char temp;
 
     pReg->glintRegs[0x00] = 0;
     pReg->glintRegs[0x01] = 0;
@@ -141,7 +140,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->glintRegs[0x64] = 0x44; /* VTGModeCtl */
     }
 
-    switch (pGlint->RamDac) {
+    switch (pGlint->RamDac->RamDacType) {
     case IBM526DB_RAMDAC:
     case IBM526_RAMDAC:
     {
@@ -183,7 +182,6 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[IBMRGB_dac_op] = 0;
     ramdacReg->DacRegs[IBMRGB_pal_ctrl] = 0;
 
-    IBMramdacSetBpp(pScrn, ramdacReg);
     break;
     case IBM640_RAMDAC:
     {
@@ -197,78 +195,29 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	clock = IBMramdac640CalculateMNPCForClock(refclock, mode->Clock, 1,
 			pGlint->MinClock, pGlint->MaxClock, &m, &n, &p, &c);
 
-	ramdacReg->DacRegs[0x10] = n;
-	ramdacReg->DacRegs[0x11] = m;
-	ramdacReg->DacRegs[0x12] = p<<1;
-	ramdacReg->DacRegs[0x13] = c|0x04;
-	ramdacReg->DacRegs[0x17] = 0; /* Disable AUX PLL */
+	ramdacReg->DacRegs[RGB640_PLL_N] = n;
+	ramdacReg->DacRegs[RGB640_PLL_M] = m;
+	ramdacReg->DacRegs[RGB640_PLL_P] = p<<1;
+	ramdacReg->DacRegs[RGB640_PLL_CTL] = c | IBM640_PLL_EN;
+	ramdacReg->DacRegs[RGB640_AUX_PLL_CTL] = 0; /* Disable AUX PLL */
     }
-    ramdacReg->DacRegs[0x09] = 0x00; /* Disable Pixel Interleave */
-    ramdacReg->DacRegs[0x0B] = 0x07; /* Turn on VRAM Mode & 8Bit DAC */
-    ramdacReg->DacRegs[0x0D] = 0x06; /* Enable DAC and SHUNT */
-    ramdacReg->DacRegs[0x0E] = 0x07; /* Enable Window Update & autoincrement*/ 
-    ramdacReg->DacRegs[0x0F] = 0x00; /* Disable PwrMan & Sync on Green */
-    ramdacReg->DacRegs[0xF0] = 0xFF; /* VRAM */
-    ramdacReg->DacRegs[0xF1] = 0xFF; /* VRAM */
-    ramdacReg->DacRegs[0xF2] = 0x0F; /* VRAM */
+    ramdacReg->DacRegs[RGB640_PIXEL_INTERLEAVE] = 0x00;
+    ramdacReg->DacRegs[RGB640_VGA_CONTROL] = IBM640_RDBK | IBM640_PSIZE8 | 
+								IBM640_VRAM;
+    ramdacReg->DacRegs[RGB640_DAC_CONTROL] = IBM640_SHUNT | IBM640_DACENBL;
+    ramdacReg->DacRegs[RGB640_OUTPUT_CONTROL] = IBM640_RDAI | IBM640_WDAI |
+								IBM640_WATCTL;
+    ramdacReg->DacRegs[RGB640_SYNC_CONTROL] = 0x00;
+    ramdacReg->DacRegs[RGB640_VRAM_MASK0] = 0xFF;
+    ramdacReg->DacRegs[RGB640_VRAM_MASK1] = 0xFF; 
+    ramdacReg->DacRegs[RGB640_VRAM_MASK2] = 0x0F; 
     
     pReg->glintRegs[0x64] = 0x04; /* VTGModeCtl */
-    switch (pScrn->depth) {
-	case 8:
-	    ramdacReg->DacRegs[0x02] = 0x00; 
-	    ramdacReg->DacRegs[0x03] = 0x00;
-	    ramdacReg->DacRegs[0x04] = 0x00;
-	    ramdacReg->DacRegs[0x05] = 0x00;
-    	    ramdacReg->DacRegs[0x08] = 0x03; /* 16:1 Mux */
-    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll / 8 */
-	    temp = 0x03;
-	    break;
-	case 16:
-	    ramdacReg->DacRegs[0x02] = 0x10; 
-	    ramdacReg->DacRegs[0x03] = 0x11;
-	    ramdacReg->DacRegs[0x04] = 0x00;
-	    ramdacReg->DacRegs[0x05] = 0x00;
-    	    ramdacReg->DacRegs[0x08] = 0x02; /* 8:1 Mux */
-    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll / 8 */
-	    temp = 0x05;
-	    break;
-	case 24:
-	    ramdacReg->DacRegs[0x02] = 0x30; 
-	    ramdacReg->DacRegs[0x03] = 0x31;
-	    ramdacReg->DacRegs[0x04] = 0x32;
-	    ramdacReg->DacRegs[0x05] = 0x33;
-    	    ramdacReg->DacRegs[0x08] = 0x01; /* 4:1 Mux */
-    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll /8 */
-	    temp = 0x09;
-	    break;
-	case 30: /* 10 bit dac */
-	    ramdacReg->DacRegs[0x02] = 0x30; 
-	    ramdacReg->DacRegs[0x03] = 0x31;
-	    ramdacReg->DacRegs[0x04] = 0x32;
-	    ramdacReg->DacRegs[0x05] = 0x33;
-    	    ramdacReg->DacRegs[0x08] = 0x01; /* 4:1 Mux */
-    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll /8 */
-	    temp = 0x0D;
-	    break;
     }
-	
-    { 
-	int i;
-    	for (i=0x100;i<0x140;i+=4) {
-	    /* Initialize FrameBuffer Window Attribute Table */
-	    ramdacReg->DacRegs[i+0] = temp;
-	    ramdacReg->DacRegs[i+1] = 0x00;
-	    ramdacReg->DacRegs[i+2] = 0x00;
-	    ramdacReg->DacRegs[i+3] = 0x00;
-	    /* Initialize Overlay Window Attribute Table */
-	    ramdacReg->DacRegs[i+100] = 0x00;
-	    ramdacReg->DacRegs[i+101] = 0x00;
-	    ramdacReg->DacRegs[i+102] = 0x00;
-	    ramdacReg->DacRegs[i+103] = 0x44;
-        }
-    }
-    break;
-    }
+
+    /* Now use helper routines to setup bpp for this driver */
+    (*pGlint->RamDac->SetBpp)(pScrn, ramdacReg);
+
     return(TRUE);
 }
 
@@ -306,6 +255,13 @@ void
 TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+
+#if 0
+    GLINT_SLOW_WRITE_REG(0, ResetStatus);
+    while(GLINT_READ_REG(ResetStatus) != 0) {
+	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");
+    };
+#endif
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);

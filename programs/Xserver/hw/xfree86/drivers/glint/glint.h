@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.4 1998/07/31 10:41:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.5 1998/08/13 14:45:50 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -35,8 +35,8 @@
 #include "xf86RamDac.h"
 
 typedef struct {
-	unsigned long glintRegs[0x100];
-	unsigned long DacRegs[0x300];
+	unsigned long glintRegs[0x2000];
+	unsigned long DacRegs[0x100];
 } GLINTRegRec, *GLINTRegPtr;
 
 #define GLINTPTR(p)	((GLINTPtr)((p)->driverPrivate))
@@ -47,7 +47,7 @@ typedef struct {
     PCITAG		PciTag;
     PCITAG		PciTagDelta;
     int			Chipset;
-    int			RamDac;
+    RamDacHelperRecPtr	RamDac;
     int                 ChipRev;
     int			HwBpp;
     int			BppShift;

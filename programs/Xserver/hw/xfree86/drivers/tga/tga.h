@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.2 1998/07/25 16:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.3 1998/08/13 14:45:56 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -39,7 +39,7 @@ typedef struct {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
-    int			RamDac;
+    RamDacHelperRecPtr	RamDac;
     int                 ChipRev;
     int			HwBpp;
     int			BppShift;

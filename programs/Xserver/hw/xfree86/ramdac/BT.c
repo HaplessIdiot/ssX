@@ -23,7 +23,7 @@
  *
  * BT RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.2 1998/07/25 16:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.3 1998/08/13 14:46:07 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,13 +63,14 @@ BTramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 	    ramdacReg->DacRegs[i] = (*ramdacPtr->ReadDAC)(pScrn, i);
 }
 
-int
-BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRecPtr ramdacPtr*/)
+RamDacHelperRecPtr
+BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/*, RamDacRecPtr ramdacPtr*/)
 {
 #ifdef PERSCREEN
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 #endif
     Bool RamDacIsSupported = FALSE;
+    RamDacHelperRecPtr ramdacHelperPtr = NULL;
     int BTramdac_ID = -1;
     int i, status, cmd0;
 
@@ -101,7 +102,7 @@ BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     if (BTramdac_ID == -1) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"Cannot determine BT RAMDAC type, aborting\n");
-	return -1;
+	return NULL;
     } else {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"Attached RAMDAC is %s\n", BTramdacDeviceInfo[BTramdac_ID&0xFFFF]);
@@ -115,10 +116,20 @@ BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     if (!RamDacIsSupported) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"This BT RAMDAC is NOT supported by this driver, aborting\n");
-	return -1;
+	return NULL;
     }
+
+    switch(BTramdac_ID) {
+	case BT485_RAMDAC:
+	    ramdacHelperPtr->SetBpp = BTramdacSetBpp;
+	    break;
+    }
+    ramdacPtr->RamDacType = BTramdac_ID;
+    ramdacHelperPtr->RamDacType = BTramdac_ID;
+    ramdacHelperPtr->Save = BTramdacSave;
+    ramdacHelperPtr->Restore = BTramdacRestore;
 	
-    return (ramdacPtr->RamDacType == BTramdac_ID);
+    return ramdacHelperPtr;
 }
 
 void

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.2 1998/07/25 16:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.3 1998/08/13 14:45:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -70,7 +70,7 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[BT_COMMAND_REG_0] = 0xA0 | (pScrn->rgbBits ? 2 : 0);
     ramdacReg->DacRegs[BT_COMMAND_REG_2] = 0x20;
     ramdacReg->DacRegs[BT_STATUS_REG] = 0x14;
-    BTramdacSetBpp(pScrn, ramdacReg);
+    (*pTga->RamDac->SetBpp)(pScrn, ramdacReg);
 
     pReg->tgaRegs[0x00] = mode->CrtcHDisplay;
     pReg->tgaRegs[0x01] = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.1.2.3 1998/07/18 17:53:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.2 1998/07/25 16:55:49 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -167,7 +167,7 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[IBMRGB_dac_op] = 0;
     ramdacReg->DacRegs[IBMRGB_pal_ctrl] = 0;
 
-    IBMramdacSetBpp(pScrn, ramdacReg);
+    (*pGlint->RamDac->SetBpp)(pScrn, ramdacReg);
 
     return(TRUE);
 }
@@ -204,6 +204,13 @@ void
 PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+
+#if 0
+    GLINT_SLOW_WRITE_REG(0, ResetStatus);
+    while(GLINT_READ_REG(ResetStatus) != 0) {
+	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");
+    };
+#endif
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);

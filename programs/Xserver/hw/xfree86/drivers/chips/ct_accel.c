@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.23 1998/08/02 07:54:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.24 1998/08/19 07:49:10 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -21,12 +21,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
-#define CHIPS_SCREEN2SCREEN
-#define CHIPS_SOLIDFILLRECT
-#define CHIPS_COLOREXPANDFILL
-#define CHIPS_PATTERNFILL
-#define CHIPS_WRITEPIXMAP
 
 
 /* All drivers should typically include these */
@@ -132,29 +126,6 @@ static void  CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
 #endif
 
-/* Define a Macro to replicate a planemask 64 times and write to address
- * allocated for planemask pattern */
-#define ctWRITEPLANEMASK(mask,addr) { \
-    switch  (pScrn->bitsPerPixel) { \
-    case 8: \
-        if (cAcl->planemask != (mask&0xFF)) { \
-            cAcl->planemask = (mask&0xFF); \
-	    memset((unsigned char *)cPtr->FbBase + addr, (mask&0xFF), 64); \
-	} \
-	break; \
-    case 16: \
-        if (cAcl->planemask != (mask&0xFFFF)) { \
-            cAcl->planemask = (mask&0xFFFF); \
-	    {   int i; \
-	        for (i = 0; i < 64; i++) { \
-		    memcpy((unsigned char *)cPtr->FbBase + addr \
-			   + i * 2, &mask, 2); \
-	        } \
-	    } \
-	} \
-	break; \
-    } \
-}				   
 
 Bool 
 CTNAME(AccelInit)(ScreenPtr pScreen)
@@ -207,17 +178,14 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ScreenToScreenCopyFlags |= NO_TRANSPARENCY;
 #endif
 
-#ifdef CHIPS_SCREEN2SCREEN
     infoPtr->SetupForScreenToScreenCopy = CTNAME(SetupForScreenToScreenCopy);
     infoPtr->SubsequentScreenToScreenCopy =
 		CTNAME(SubsequentScreenToScreenCopy);
-#endif
 
     /*
      * Install the low-level functions for drawing solid filled rectangles.
      */
     infoPtr->SolidFillFlags |= NO_PLANEMASK;
-#ifdef CHIPS_SOLIDFILLRECT
     switch (pScrn->bitsPerPixel) {
     case 8 :
 	infoPtr->SetupForSolidFill = CTNAME(8SetupForSolidFill);
@@ -257,7 +225,6 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
         break;
 #endif
     }
-#endif  /* CHIPS_SOLIDFILLRECT*/
 
 #ifdef CHIPS_HIQV
     /* At 32bpp we can't use the other acceleration */
@@ -290,7 +257,6 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	    RGB_EQUAL | NO_PLANEMASK;
 #endif
 
-#ifdef CHIPS_COLOREXPANDFILL
     infoPtr->SetupForCPUToScreenColorExpandFill =
 		CTNAME(SetupForCPUToScreenColorExpandFill);
     infoPtr->SubsequentCPUToScreenColorExpandFill =
@@ -307,7 +273,6 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->CacheMonoStipple = CTNAME(CacheMonoStipple);
     }
 #endif    
-#endif  /* CHIPS_COLOREXPANDFILL */
 
     infoPtr->ColorExpandBase = (unsigned char *)cAcl->BltDataWindow;
     infoPtr->ColorExpandRange = 64 * 1024;
@@ -356,7 +321,6 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 chips_imagewrite:
 #endif
 
-#ifdef CHIPS_WRITEPIXMAP
     /* Setup for the Image Write functions */
 #ifdef CHIPS_HIQV
     infoPtr->WritePixmapFlags = CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
@@ -377,7 +341,6 @@ chips_imagewrite:
     if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
         infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
-#endif  /* CHIPS_WRITEPIXMAP */
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
@@ -406,11 +369,11 @@ CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
-	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETBGCOLOR8(color);
     ctSETFGCOLOR8(color);
+    ctSETROP(ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
+	     ctPATSOLID | ctPATMONO);
     ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
@@ -421,11 +384,11 @@ CTNAME(16SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
-	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETBGCOLOR16(color);
     ctSETFGCOLOR16(color);
+    ctSETROP(ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
+	     ctPATSOLID | ctPATMONO);
     ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
@@ -437,11 +400,11 @@ CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM 
-	     | ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;
     ctBLTWAIT;
     ctSETBGCOLOR24(color);
     ctSETFGCOLOR24(color);
+    ctSETROP(ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
+	     ctPATSOLID | ctPATMONO);
     ctSETPITCH(0, cAcl->PitchInBytes);
 }
 
@@ -470,9 +433,10 @@ CTNAME(32SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
 
     unsigned int destaddr;
     destaddr = (y * pScrn->displayWidth + x) << 2;
+    w <<= 2;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, (w << 2));
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 #else
 
@@ -656,11 +620,12 @@ CTNAME(24SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
 	    }
 	    line = 0;
 	    destaddr = 3 * (y * pScrn->displayWidth + x);
+	    w *= cAcl->BytesPerPixel;
 	    while (line < h) {
 		ctBLTWAIT;
 		ctSETSRCADDR(cAcl->ScratchAddress);
 		ctSETDSTADDR(destaddr);
-		ctSETHEIGHTWIDTHGO(1, cAcl->BytesPerPixel * w);
+		ctSETHEIGHTWIDTHGO(1, w);
 		destaddr += (3 * pScrn->displayWidth);
 		line++;
 	    }
@@ -678,10 +643,10 @@ CTNAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
     int destaddr;
 
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
-    ctSETROP(cAcl->CommandFlags);
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 /*
@@ -726,16 +691,28 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
     } else
 #endif
     ctBLTWAIT;
-    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (pScrn->bitsPerPixel == 32))
-    {
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+        if ((planemask & 0xFF) == 0xFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK8(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    case 16:
+        if ((planemask & 0xFFF) == 0xFFFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    default:
 	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
-    } else {
-	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
-	ctSETPATSRCADDR(cAcl->ScratchAddress);
-	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+	break;
     }
     ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 }
@@ -779,10 +756,11 @@ CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int srcX, int srcY,
 	destaddr = ( destaddr + dstX + w ) * cAcl->BytesPerPixel - 1;
     }
 #endif
+    w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 
@@ -841,17 +819,33 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 
     ctSETSRCADDR(0);
 
-   if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
-    {
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+        if ((planemask & 0xFF) == 0xFF) {
+	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
+		    ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
+	} else {
+	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		    ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK8(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    case 16:
+        if ((planemask & 0xFFF) == 0xFFFF) {
+	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
+		    ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
+	} else {
+	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		    ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    default:
 	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
 		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
-    } else {
-	ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
-	ctSETPATSRCADDR(cAcl->ScratchAddress);
-	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+	break;
     }
     ctSETPITCH(0, cAcl->PitchInBytes);
 }
@@ -866,12 +860,13 @@ CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 
     destaddr = (y * pScrn->displayWidth + x + skipleft) * 
                cAcl->BytesPerPixel;
+    w = (w - skipleft) * cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft));
 #endif
-    ctSETHEIGHTWIDTHGO(h, (w - skipleft) * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 static void
@@ -926,20 +921,36 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN);
 #endif
-   if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF))
-    {
+
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+        if ((planemask & 0xFF) == 0xFF) {
+	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
+	} else {
+	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		    ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK8(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    case 16:
+        if ((planemask & 0xFFF) == 0xFFFF) {
+	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
+	} else {
+	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
+		    ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    default:
 	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
-    } else {
-	ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-		 ChipsAluConv3[rop & 0xF] | cAcl->CommandFlags);
-	ctSETPATSRCADDR(cAcl->ScratchAddress);
-	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+	break;
     }
-   ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
-   
+    ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 }
 
 #ifndef CHIPS_HIQV
@@ -1068,13 +1079,14 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 		+ ((skipleft & ~0x07) >> 3);
 #endif
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft & 0x3F));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 static void
@@ -1123,6 +1135,7 @@ CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, int paty,
     unsigned int destaddr;
 
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
@@ -1130,7 +1143,7 @@ CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, int paty,
 #else
     ctSETROP(cAcl->CommandFlags | (((y + cAcl->patternyrot) & 0x7) << 16));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 static void
@@ -1192,6 +1205,7 @@ CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    w *= cAcl->BytesPerPixel;
 
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -1200,7 +1214,7 @@ CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 #else
     ctSETROP(cAcl->CommandFlags | ((y & 0x7) << 16));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 #ifndef	CHIPS_HIQV
@@ -1213,17 +1227,31 @@ CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 
     cAcl->CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
     ctBLTWAIT;
-    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (pScrn->bitsPerPixel == 32))
-    {
+
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+        if ((planemask & 0xFF) == 0xFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK8(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    case 16:
+        if ((planemask & 0xFFF) == 0xFFFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    default:
 	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
-    } else {
-	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
-	ctSETPATSRCADDR(cAcl->ScratchAddress);
-	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+	break;
     }
+    ctSETSRCADDR(0);
 }
 
 static void
@@ -1232,12 +1260,12 @@ CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
-
+    int destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
-    ctSETPITCH(((w * cAcl->BytesPerPixel + 3) & ~0x3), cAcl->PitchInBytes);
-    ctSETSRCADDR(0);
-    ctSETDSTADDR((y * pScrn->displayWidth + x) * cAcl->BytesPerPixel);
-    ctSETHEIGHTWIDTHGO(h, w * cAcl->BytesPerPixel);
+    ctSETPITCH(((w + 3) & ~0x3), cAcl->PitchInBytes);
+    ctSETDSTADDR(destaddr);
+    ctSETHEIGHTWIDTHGO(h, w);
 }
 
 #else 
@@ -1340,12 +1368,15 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     unsigned int byteWidthSrc;
     int dwords; 
     int skipleft;
+    int destaddr;
 
     bytesPerLine = w * cAcl->BytesPerPixel;
-
     byteWidthSrc = ((srcwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
-
     cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
+    skipleft = (unsigned int)src & 0x7;
+    src = (unsigned char *)((unsigned int)src & ~0x7L);
+    dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
+    destaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
 
     ctBLTWAIT;
 
@@ -1365,16 +1396,28 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
         }
     }
     
-    if ((pScrn->bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
-    (pScrn->bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (pScrn->bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
-    (pScrn->bitsPerPixel == 32))
-    {
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+        if ((planemask & 0xFF) == 0xFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK8(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    case 16:
+        if ((planemask & 0xFFF) == 0xFFFF) {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
+	} else {
+	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
+	    ctSETPATSRCADDR(cAcl->ScratchAddress);
+	    ctWRITEPLANEMASK16(planemask, cAcl->ScratchAddress);
+	}
+	break;
+    default:
 	ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
-    } else {
-	ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
-	ctSETPATSRCADDR(cAcl->ScratchAddress);
-	ctWRITEPLANEMASK(planemask, cAcl->ScratchAddress);
+	break;
     }
 
     /*
@@ -1388,12 +1431,8 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
      *
      */
 
-    skipleft = (unsigned int)src & 0x7;
-    src = (unsigned char *)((unsigned int)src & ~0x7L);
-    dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
     ctSETSRCADDR(skipleft);
-    ctSETDSTADDR(y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel);
-	
+    ctSETDSTADDR(destaddr);
 
     if ((byteWidthSrc & 0x7) == 0) {  /* quad-word aligned */
 
@@ -1417,9 +1456,10 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	h = vert  >> 1;
 	src += srcwidth;
 	y++;
-	ctBLTWAIT;
+	destaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
 
-	ctSETDSTADDR((y * pScrn->displayWidth + x) * cAcl->BytesPerPixel);
+	ctBLTWAIT;
+	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
 	MoveData((unsigned char *)src, (unsigned char *)cAcl->BltDataWindow,

@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.2 1998/07/25 16:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.3 1998/08/13 14:46:07 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -213,12 +213,13 @@ IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 	    ramdacReg->DacRegs[i] = (*ramdacPtr->ReadDAC)(pScrn, i);
 }
 
-int
+RamDacHelperRecPtr
 IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRecPtr ramdacPtr*/)
 {
 #ifdef PERSCREEN
     RamDacRecPtr ramdacPtr = RAMDACSCRPTR(pScrn);
 #endif
+    RamDacHelperRecPtr ramdacHelperPtr = NULL;
     Bool RamDacIsSupported = FALSE;
     int IBMramdac_ID = -1;
     int i;
@@ -270,7 +271,7 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
     if (IBMramdac_ID == -1) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"Cannot determine IBM RAMDAC type, aborting\n");
-	return -1;
+	return NULL;
     } else {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"Attached RAMDAC is %s\n", IBMramdacDeviceInfo[IBMramdac_ID&0xFFFF]);
@@ -284,17 +285,30 @@ IBMramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRe
     if (!RamDacIsSupported) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		"This IBM RAMDAC is NOT supported by this driver, aborting\n");
-	return -1;
+	return NULL;
     }
-	
-    return (ramdacPtr->RamDacType = IBMramdac_ID);
+
+    ramdacHelperPtr = RamDacHelperCreateInfoRec();
+    switch (IBMramdac_ID) {
+	case IBM526_RAMDAC:
+	case IBM526DB_RAMDAC:
+ 	    ramdacHelperPtr->SetBpp = IBMramdac526SetBpp;
+	    break;
+	case IBM640_RAMDAC:
+ 	    ramdacHelperPtr->SetBpp = IBMramdac640SetBpp;
+	    break;
+    }
+    ramdacPtr->RamDacType = IBMramdac_ID;
+    ramdacHelperPtr->RamDacType = IBMramdac_ID;
+    ramdacHelperPtr->Save = IBMramdacSave;
+    ramdacHelperPtr->Restore = IBMramdacRestore;
+
+    return ramdacHelperPtr;
 }
 
 void
-IBMramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
+IBMramdac526SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 {
-    /* We need to deal with Direct Colour visuals for 8bpp and other
-     * good stuff for colours */
     switch (pScrn->bitsPerPixel) {
 	case 32:
 	    ramdacReg->DacRegs[IBMRGB_pix_fmt] = PIXEL_FORMAT_32BPP;
@@ -339,5 +353,66 @@ IBMramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 	    ramdacReg->DacRegs[IBMRGB_24bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_16bpp] = 0;
 	    ramdacReg->DacRegs[IBMRGB_8bpp] = 0;
+    }
+}
+
+void
+IBMramdac640SetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
+{
+    unsigned char temp = 0x00;
+
+    switch (pScrn->depth) {
+	case 8:
+	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x00; 
+	    ramdacReg->DacRegs[RGB640_SER_15_08] = 0x00;
+	    ramdacReg->DacRegs[RGB640_SER_23_16] = 0x00;
+	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x00;
+    	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_16_1; /*16:1 Mux*/
+    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
+	    temp = 0x03;
+	    break;
+	case 16:
+	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x10; 
+	    ramdacReg->DacRegs[RGB640_SER_15_08] = 0x11;
+	    ramdacReg->DacRegs[RGB640_SER_23_16] = 0x00;
+	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x00;
+    	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_8_1; /* 8:1 Mux*/
+    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
+	    temp = 0x05;
+	    break;
+	case 24:
+	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x30; 
+	    ramdacReg->DacRegs[RGB640_SER_15_08] = 0x31;
+	    ramdacReg->DacRegs[RGB640_SER_23_16] = 0x32;
+	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x33;
+    	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_4_1; /* 4:1 Mux*/
+    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
+	    temp = 0x09;
+	    break;
+	case 30: /* 10 bit dac */
+	    ramdacReg->DacRegs[RGB640_SER_07_00] = 0x30; 
+	    ramdacReg->DacRegs[RGB640_SER_15_08] = 0x31;
+	    ramdacReg->DacRegs[RGB640_SER_23_16] = 0x32;
+	    ramdacReg->DacRegs[RGB640_SER_31_24] = 0x33;
+    	    ramdacReg->DacRegs[RGB640_SER_MODE] = IBM640_SER_4_1; /* 4:1 Mux*/
+    	    ramdacReg->DacRegs[RGB640_MISC_CONF] = IBM640_PCLK_8; /* pll / 8 */
+	    temp = 0x0D;
+	    break;
+    }
+	
+    { 
+	int i;
+    	for (i=0x100;i<0x140;i+=4) {
+	    /* Initialize FrameBuffer Window Attribute Table */
+	    ramdacReg->DacRegs[i+0] = temp;
+	    ramdacReg->DacRegs[i+1] = 0x00;
+	    ramdacReg->DacRegs[i+2] = 0x00;
+	    ramdacReg->DacRegs[i+3] = 0x00;
+	    /* Initialize Overlay Window Attribute Table */
+	    ramdacReg->DacRegs[i+0x100] = 0x00;
+	    ramdacReg->DacRegs[i+0x101] = 0x00;
+	    ramdacReg->DacRegs[i+0x102] = 0x00;
+	    ramdacReg->DacRegs[i+0x103] = 0x44;
+        }
     }
 }

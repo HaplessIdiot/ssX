@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.h,v 1.1.2.1 1998/07/18 17:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.h,v 1.2 1998/07/25 16:57:17 dawes Exp $ */
 
 #include "xf86RamDac.h"
 
-int BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs);
+RamDacHelperRecPtr BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs);
 void BTramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
 void BTramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
 void BTramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);

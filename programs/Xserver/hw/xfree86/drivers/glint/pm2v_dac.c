@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.3 1998/07/31 10:41:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.4 1998/08/13 14:45:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -115,60 +115,62 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     GLINTRegPtr pReg = &pGlint->ModeReg;
+    CARD32 temp1, temp2, temp3, temp4;
 
-    pReg->glintRegs[0x00] = 0;
-    pReg->glintRegs[0x01] = 0;
-    pReg->glintRegs[0x02] = 0xFFFFFFFF;
-    pReg->glintRegs[0x03] = 0xFFFFFFFF;
+    pReg->glintRegs[Aperture0 >> 3] = 0;
+    pReg->glintRegs[Aperture1 >> 3] = 0;
+    pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
+    pReg->glintRegs[PMBypassWriteMask >> 3] = 0xFFFFFFFF;
 
     if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[0x04] = 1;
-	pReg->glintRegs[0x05] = 3;
+	pReg->glintRegs[DFIFODis >> 3] = 1;
+	pReg->glintRegs[FIFODis >> 3] = 3;
     } else {
-	pReg->glintRegs[0x04] = 0;
-	pReg->glintRegs[0x05] = 1;
+	pReg->glintRegs[DFIFODis >> 3] = 0;
+	pReg->glintRegs[FIFODis >> 3] = 1;
     }
 
     if (pGlint->UseBlockWrite)
-	pReg->glintRegs[0x06] = GLINT_READ_REG(PMMemConfig) | 1<<21;
+	pReg->glintRegs[PMMemConfig >> 3] = GLINT_READ_REG(PMMemConfig) | 1<<21;
 
-    pReg->glintRegs[0x50] = mode->CrtcHSyncStart - mode->CrtcHDisplay;
-    pReg->glintRegs[0x51] = mode->CrtcVSyncStart - mode->CrtcVDisplay;
-    pReg->glintRegs[0x52] = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
-    pReg->glintRegs[0x53] = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
+    temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
+    temp2 = mode->CrtcVSyncStart - mode->CrtcVDisplay;
+    temp3 = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
+    temp4 = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 
-    pReg->glintRegs[0x54] = Shiftbpp(pScrn,mode->CrtcHTotal);
-    pReg->glintRegs[0x55] = Shiftbpp(pScrn,pReg->glintRegs[0x50] + 
-				     		pReg->glintRegs[0x52]);
-    pReg->glintRegs[0x56] = Shiftbpp(pScrn,pReg->glintRegs[0x50]);
-    pReg->glintRegs[0x57] = Shiftbpp(pScrn,mode->CrtcHTotal-mode->CrtcHDisplay);
-    pReg->glintRegs[0x58] = Shiftbpp(pScrn,pScrn->displayWidth>>1);
+    pReg->glintRegs[PMHTotal >> 3] = Shiftbpp(pScrn,mode->CrtcHTotal);
+    pReg->glintRegs[PMHsEnd >> 3] = Shiftbpp(pScrn, temp1 + temp3);
+    pReg->glintRegs[PMHsStart >> 3] = Shiftbpp(pScrn, temp1);
+    pReg->glintRegs[PMHbEnd >> 3] = 
+			Shiftbpp(pScrn,mode->CrtcHTotal-mode->CrtcHDisplay);
+    pReg->glintRegs[PMScreenStride >> 3] = 
+					Shiftbpp(pScrn,pScrn->displayWidth>>1);
 
-    pReg->glintRegs[0x59] = mode->CrtcVTotal;
-    pReg->glintRegs[0x5A] = pReg->glintRegs[0x51] + pReg->glintRegs[0x53];
-    pReg->glintRegs[0x5B] = pReg->glintRegs[0x51];
-    pReg->glintRegs[0x5C] = mode->CrtcVTotal - mode->CrtcVDisplay;
+    pReg->glintRegs[PMVTotal >> 3] = mode->CrtcVTotal;
+    pReg->glintRegs[PMVsEnd >> 3] = temp2 + temp4;
+    pReg->glintRegs[PMVsStart >> 3] = temp2;
+    pReg->glintRegs[PMVbEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
-    pReg->glintRegs[0x5D] = 
+    pReg->glintRegs[PMVideoControl >> 3] = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
 
     /* We stick the RAMDAC into 64bit mode */
     /* And reduce the horizontal timings and clock by half */
-    pReg->glintRegs[0x5D] |= 1<<16;
-    pReg->glintRegs[0x54] >>= 1;
-    pReg->glintRegs[0x55] >>= 1;
-    pReg->glintRegs[0x56] >>= 1;
-    pReg->glintRegs[0x57] >>= 1;
+    pReg->glintRegs[PMVideoControl >> 3] |= 1<<16;
+    pReg->glintRegs[PMHTotal >> 3] >>= 1;
+    pReg->glintRegs[PMHsEnd >> 3] >>= 1;
+    pReg->glintRegs[PMHsStart >> 3] >>= 1;
+    pReg->glintRegs[PMHbEnd >> 3] >>= 1;
 
-    pReg->glintRegs[0x5E] = (GLINT_READ_REG(VClkCtl) & 0xFFFFFFFC);
-    pReg->glintRegs[0x5F] = 0; /* PMScreenBase */
-    pReg->glintRegs[0x54] -= 1; /* PMHTotal */
-    pReg->glintRegs[0x56] -= 1; /* PMHsStart */
-    pReg->glintRegs[0x59] -= 1; /* PMVTotal */
+    pReg->glintRegs[VClkCtl >> 3] = (GLINT_READ_REG(VClkCtl) & 0xFFFFFFFC);
+    pReg->glintRegs[PMScreenBase >> 3] = 0; 
+    pReg->glintRegs[PMHTotal >> 3] -= 1; 
+    pReg->glintRegs[PMHsStart >> 3] -= 1; /* PMHsStart */
+    pReg->glintRegs[PMVTotal >> 3] -= 1; /* PMVTotal */
 
-    pReg->glintRegs[0x60] = (GLINT_READ_REG(ChipConfig) & 0xFFFFFFFD);
-    pReg->glintRegs[0x80] = 0x00;
+    pReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig) & 0xFFFFFFDD;
+    pReg->DacRegs[PM2VDACRDDACControl] = 0x00;
   
     {
 	/* Get the programmable clock values */
@@ -177,40 +179,41 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	unsigned long fref = PERMEDIA2V_REF_CLOCK;
 	
     	clockused = PM2VDAC_CalculateClock(mode->Clock/2,fref,&m,&n,&p);
-	pReg->glintRegs[0x70] = m;
-	pReg->glintRegs[0x71] = n;
-	pReg->glintRegs[0x72] = p;
+	pReg->DacRegs[PM2VDACRDDClk0PreScale] = m;
+	pReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = n;
+	pReg->DacRegs[PM2VDACRDDClk0PostScale] = p;
     }
+
+    if (pScrn->rgbBits == 8)
+        pReg->DacRegs[PM2VDACRDMiscControl] = 0x01; /* 8bit DAC */
+    else
+	pReg->DacRegs[PM2VDACRDMiscControl] = 0x00; /* 6bit DAC */
 
     switch (pScrn->bitsPerPixel)
     {
     case 8:
-    	if (pScrn->rgbBits == 8)
-            pReg->glintRegs[0x61] = 0x01; /* 8bit DAC */
-    	else
-	    pReg->glintRegs[0x61] = 0x00; /* 6bit DAC */
-	pReg->glintRegs[0x81] = 0x00;
-	pReg->glintRegs[0x82] = 0x2E;
+	pReg->DacRegs[PM2VDACRDPixelSize] = 0x00;
+	pReg->DacRegs[PM2VDACRDColorFormat] = 0x2E;
     	break;
     case 15:
-        pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
-	pReg->glintRegs[0x81] = 0x01;
-	pReg->glintRegs[0x82] = 0x61;
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
+	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
+	pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
     	break;
     case 16:
-        pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
-	pReg->glintRegs[0x81] = 0x01;
-	pReg->glintRegs[0x82] = 0x70;
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
+	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
+	pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
     	break;
     case 24:
-        pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
-	pReg->glintRegs[0x81] = 0x04;
-	pReg->glintRegs[0x82] = 0x60;
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
+	pReg->DacRegs[PM2VDACRDPixelSize] = 0x04;
+	pReg->DacRegs[PM2VDACRDColorFormat] = 0x60;
     	break;
     case 32:
-        pReg->glintRegs[0x61] = 0x09; /* 8bit DAC */
-	pReg->glintRegs[0x81] = 0x02;
-	pReg->glintRegs[0x82] = 0x20;
+        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
+	pReg->DacRegs[PM2VDACRDPixelSize] = 0x02;
+	pReg->DacRegs[PM2VDACRDColorFormat] = 0x20;
     	break;
     }
 
@@ -220,47 +223,46 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 void
 Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
-    int i;
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    glintReg->glintRegs[0x60] = GLINT_READ_REG(ChipConfig);
-    glintReg->glintRegs[0x00]  = GLINT_READ_REG(Aperture0);
-    glintReg->glintRegs[0x01]  = GLINT_READ_REG(Aperture1);
-    glintReg->glintRegs[0x02]  = GLINT_READ_REG(PMFramebufferWriteMask);
-    glintReg->glintRegs[0x03]  = GLINT_READ_REG(PMBypassWriteMask);
-    glintReg->glintRegs[0x04]  = GLINT_READ_REG(DFIFODis);
-    glintReg->glintRegs[0x05]  = GLINT_READ_REG(FIFODis);
+    glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
+    glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
+    glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
+    glintReg->glintRegs[PMFramebufferWriteMask >> 3] = 
+					GLINT_READ_REG(PMFramebufferWriteMask);
+    glintReg->glintRegs[PMBypassWriteMask >> 3] = 
+					GLINT_READ_REG(PMBypassWriteMask);
+    glintReg->glintRegs[DFIFODis >> 3]  = GLINT_READ_REG(DFIFODis);
+    glintReg->glintRegs[FIFODis >> 3]  = GLINT_READ_REG(FIFODis);
     /* We only muck about with PMMemConfig, if user wants to */
     if (pGlint->UseBlockWrite)
-	glintReg->glintRegs[0x06] = GLINT_READ_REG(PMMemConfig);
-    glintReg->glintRegs[0x54] = GLINT_READ_REG(PMHTotal);
-    glintReg->glintRegs[0x57] = GLINT_READ_REG(PMHbEnd);
-    glintReg->glintRegs[0x57] = GLINT_READ_REG(PMHgEnd);
-    glintReg->glintRegs[0x58] = GLINT_READ_REG(PMScreenStride);
-    glintReg->glintRegs[0x56] = GLINT_READ_REG(PMHsStart);
-    glintReg->glintRegs[0x55] = GLINT_READ_REG(PMHsEnd);
-    glintReg->glintRegs[0x59] = GLINT_READ_REG(PMVTotal);
-    glintReg->glintRegs[0x5C] = GLINT_READ_REG(PMVbEnd);
-    glintReg->glintRegs[0x5B] = GLINT_READ_REG(PMVsStart);
-    glintReg->glintRegs[0x5A] = GLINT_READ_REG(PMVsEnd);
-    glintReg->glintRegs[0x5F] = GLINT_READ_REG(PMScreenBase);
-    glintReg->glintRegs[0x5D] = GLINT_READ_REG(PMVideoControl);
-    glintReg->glintRegs[0x5E] = GLINT_READ_REG(VClkCtl);
+	glintReg->glintRegs[PMMemConfig >> 3] = GLINT_READ_REG(PMMemConfig);
+    glintReg->glintRegs[PMHTotal >> 3] = GLINT_READ_REG(PMHTotal);
+    glintReg->glintRegs[PMHbEnd >> 3] = GLINT_READ_REG(PMHbEnd);
+    glintReg->glintRegs[PMHbEnd >> 3] = GLINT_READ_REG(PMHgEnd);
+    glintReg->glintRegs[PMScreenStride >> 3] = GLINT_READ_REG(PMScreenStride);
+    glintReg->glintRegs[PMHsStart >> 3] = GLINT_READ_REG(PMHsStart);
+    glintReg->glintRegs[PMHsEnd >> 3] = GLINT_READ_REG(PMHsEnd);
+    glintReg->glintRegs[PMVTotal >> 3] = GLINT_READ_REG(PMVTotal);
+    glintReg->glintRegs[PMVbEnd >> 3] = GLINT_READ_REG(PMVbEnd);
+    glintReg->glintRegs[PMVsStart >> 3] = GLINT_READ_REG(PMVsStart);
+    glintReg->glintRegs[PMVsEnd >> 3] = GLINT_READ_REG(PMVsEnd);
+    glintReg->glintRegs[PMScreenBase >> 3] = GLINT_READ_REG(PMScreenBase);
+    glintReg->glintRegs[PMVideoControl >> 3] = GLINT_READ_REG(PMVideoControl);
+    glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
 
-    /* save colors */
-    GLINT_SLOW_WRITE_REG(0xFF, PM2DACReadMask);
-    GLINT_SLOW_WRITE_REG(0x00, PM2DACReadAddress);
-    for (i=0; i<768; i++)
-	glintReg->DacRegs[i] = GLINT_READ_REG(PM2DACData);
+    glintReg->DacRegs[PM2VDACRDMiscControl] = 
+				Permedia2vInIndReg(pScrn, PM2VDACRDMiscControl);
+    glintReg->DacRegs[PM2VDACRDDACControl] = 
+				Permedia2vInIndReg(pScrn, PM2VDACRDDACControl);
+    glintReg->DacRegs[PM2VDACRDPixelSize] = 
+				Permedia2vInIndReg(pScrn, PM2VDACRDPixelSize);
+    glintReg->DacRegs[PM2VDACRDColorFormat] = 
+				Permedia2vInIndReg(pScrn, PM2VDACRDColorFormat);
 
-    glintReg->glintRegs[0x61] = Permedia2vInIndReg(pScrn, PM2VDACRDMiscControl);
-    glintReg->glintRegs[0x80] = Permedia2vInIndReg(pScrn, PM2VDACRDDACControl);
-    glintReg->glintRegs[0x81] = Permedia2vInIndReg(pScrn, PM2VDACRDPixelSize);
-    glintReg->glintRegs[0x82] = Permedia2vInIndReg(pScrn, PM2VDACRDColorFormat);
-
-    glintReg->glintRegs[0x70] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PreScale);
-    glintReg->glintRegs[0x71] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0FeedbackScale);
-    glintReg->glintRegs[0x72] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PostScale);
+    glintReg->DacRegs[PM2VDACRDDClk0PreScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PreScale);
+    glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0FeedbackScale);
+    glintReg->DacRegs[PM2VDACRDDClk0PostScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PostScale);
 }
 
 void
@@ -269,39 +271,57 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CARD32 temp;
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x60], ChipConfig);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x02], PMFramebufferWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x03], PMBypassWriteMask);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x04], DFIFODis);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x05], FIFODis);
+#if 0
+    GLINT_SLOW_WRITE_REG(0, ResetStatus);
+    while(GLINT_READ_REG(ResetStatus) != 0) {
+	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");
+    };
+#endif
+
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMFramebufferWriteMask >> 3], 
+							PMFramebufferWriteMask);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMBypassWriteMask >> 3], 
+							PMBypassWriteMask);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FIFODis >> 3], FIFODis);
     /* We only muck about with PMMemConfig, if user wants to */
     if (pGlint->UseBlockWrite)
-    	GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x06], PMMemConfig);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5D], PMVideoControl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x57], PMHgEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5F], PMScreenBase);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5E], VClkCtl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x58], PMScreenStride);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x54], PMHTotal);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x57], PMHbEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x56], PMHsStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x55], PMHsEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x59], PMVTotal);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5C], PMVbEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5B], PMVsStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5A], PMVsEnd);
+    	GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMMemConfig >> 3],PMMemConfig);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVideoControl >> 3], 
+								PMVideoControl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHbEnd >> 3], PMHgEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenBase >> 3], PMScreenBase);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VClkCtl >> 3], VClkCtl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMScreenStride >> 3], 
+								PMScreenStride);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHTotal >> 3], PMHTotal);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHbEnd >> 3], PMHbEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHsStart >> 3], PMHsStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMHsEnd >> 3], PMHsEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVTotal >> 3], PMVTotal);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVbEnd >> 3], PMVbEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsStart >> 3], PMVsStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[PMVsEnd >> 3], PMVsEnd);
 
-    Permedia2vOutIndReg(pScrn, PM2VDACRDMiscControl, 0x00, glintReg->glintRegs[0x61]);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDDACControl, 0x00, glintReg->glintRegs[0x80]);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDPixelSize, 0x00, glintReg->glintRegs[0x81]);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDColorFormat, 0x00, glintReg->glintRegs[0x82]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDMiscControl, 0x00, 
+				glintReg->DacRegs[PM2VDACRDMiscControl]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDACControl, 0x00, 
+				glintReg->DacRegs[PM2VDACRDDACControl]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDPixelSize, 0x00, 
+				glintReg->DacRegs[PM2VDACRDPixelSize]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDColorFormat, 0x00, 
+				glintReg->DacRegs[PM2VDACRDColorFormat]);
 
     temp = Permedia2vInIndReg(pScrn, PM2VDACIndexClockControl) & 0xFC;
-    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PreScale, 0x00, glintReg->glintRegs[0x70]);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0FeedbackScale, 0x00, glintReg->glintRegs[0x71]);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, glintReg->glintRegs[0x72]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PreScale, 0x00, 
+				glintReg->DacRegs[PM2VDACRDDClk0PreScale]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0FeedbackScale, 0x00, 
+				glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, 
+				glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
 
     Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
 }

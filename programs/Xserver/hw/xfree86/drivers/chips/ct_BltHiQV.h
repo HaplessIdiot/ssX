@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.1.2.1 1998/07/03 13:43:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_BltHiQV.h,v 1.3 1998/07/25 16:55:37 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -109,21 +109,65 @@
 #define ctSETPATSRCADDR(srcAddr)\
   *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
 
-#define ctSETBGCOLOR8(bgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFF)
+#define ctSETBGCOLOR8(c) {\
+    if (cAcl->bgColor != (c)) { \
+	cAcl->bgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFF); \
+    } \
+}
 
-#define ctSETBGCOLOR16(bgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFFFF)
+#define ctSETBGCOLOR16(c) {\
+    if (cAcl->bgColor != (c)) { \
+	cAcl->bgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFF); \
+    } \
+}
 
-#define ctSETBGCOLOR24(bgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((bgColor)&0xFFFFFF)
+#define ctSETBGCOLOR24(c) {\
+    if (cAcl->bgColor != (c)) { \
+	cAcl->bgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFFFF); \
+    } \
+}
 
-#define ctSETFGCOLOR8(fgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFF)
+#define ctSETFGCOLOR8(c) {\
+    if (cAcl->fgColor != (c)) { \
+	cAcl->fgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFF); \
+    } \
+}
 
-#define ctSETFGCOLOR16(fgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFFFF)
+#define ctSETFGCOLOR16(c) {\
+    if (cAcl->fgColor != (c)) { \
+	cAcl->fgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFF); \
+    } \
+}
 
-#define ctSETFGCOLOR24(fgColor)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((fgColor)&0xFFFFFF)
+#define ctSETFGCOLOR24(c) {\
+    if (cAcl->fgColor != (c)) { \
+	cAcl->fgColor = (c); \
+	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFFFF); \
+    } \
+}
 
+/* Define a Macro to replicate a planemask 64 times and write to address
+ * allocated for planemask pattern */
+#define ctWRITEPLANEMASK8(mask,addr) { \
+    if (cAcl->planemask != (mask&0xFF)) { \
+	cAcl->planemask = (mask&0xFF); \
+	memset((unsigned char *)cPtr->FbBase + addr, (mask&0xFF), 64); \
+    } \
+}
+
+#define ctWRITEPLANEMASK16(mask,addr) { \
+    if (cAcl->planemask != (mask&0xFFFF)) { \
+	cAcl->planemask = (mask&0xFFFF); \
+	{   int i; \
+	    for (i = 0; i < 64; i++) { \
+		memcpy((unsigned char *)cPtr->FbBase + addr \
+			+ i * 2, &mask, 2); \
+	    } \
+	} \
+    } \
+}
