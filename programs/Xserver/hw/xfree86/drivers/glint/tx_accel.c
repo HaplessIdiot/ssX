@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.24 2001/02/02 11:45:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.25 2001/02/07 13:26:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -117,12 +117,10 @@ TXInitializeEngine(ScrnInfoPtr pScrn)
     	/* Make sure the rest of the register writes go to both chip's */
     	GLINT_SLOW_WRITE_REG(3, BroadcastMask);
 
-    	GLINT_SLOW_WRITE_REG(pGlint->pprod | LBRM_ScanlineInt2,	LBReadMode);
     	pGlint->pprod |= FBRM_ScanlineInt2;
-    } else {
-    	GLINT_SLOW_WRITE_REG(pGlint->pprod, LBReadMode);
     }
 
+    GLINT_SLOW_WRITE_REG(pGlint->pprod, LBReadMode);
     GLINT_SLOW_WRITE_REG(pGlint->rasterizerMode, RasterizerMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, ScissorMode);
     GLINT_SLOW_WRITE_REG(pGlint->pprod,	FBReadMode);
@@ -694,7 +692,6 @@ TXWriteBitmap(ScrnInfoPtr pScrn,
     TXLoadCoord(pScrn, x, y, x+w, h, 0, 1);
 
     if(bg == -1) {
-	/* >>>>> set fg <<<<<<<< */
 	REPLICATE(fg);
 	GLINT_WAIT(3);
 	if (rop == GXcopy) {

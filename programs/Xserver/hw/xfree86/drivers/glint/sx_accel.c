@@ -28,7 +28,7 @@
  * 
  * GLINT 300SX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.4 2001/01/31 16:15:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/sx_accel.c,v 1.5 2001/02/02 11:45:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -595,7 +595,6 @@ SXWriteBitmap(ScrnInfoPtr pScrn,
     SXLoadCoord(pScrn, x, y, x+w, h, 0, 1);
 
     if(bg == -1) {
-	/* >>>>> set fg <<<<<<<< */
 	REPLICATE(fg);
 	GLINT_WAIT(3);
 	if (rop == GXcopy) {

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.120 2001/03/19 22:50:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.121 2001/04/10 20:33:30 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1029,8 +1029,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (flags & PROBE_DETECT) {
-	GLINTProbeDDC(pScrn, pGlint->pEnt->index);
-	return TRUE;
+	EntityInfoPtr pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+	pciVideoPtr pPci = xf86GetPciInfoForEntity(pEnt->index);
+
+        if (!(pPci->chipType == PCI_CHIP_GAMMA)) {
+	    GLINTProbeDDC(pScrn, pGlint->pEnt->index);
+	    return TRUE;
+	} else 
+	    return FALSE;
     }
 
     xf86SetOperatingState(resVgaMemShared, pGlint->pEnt->index, ResDisableOpr);
