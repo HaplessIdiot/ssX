@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.7 1995/07/15 15:15:30 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.8 1995/09/17 06:33:15 dawes Exp $
  */
 
 /*
@@ -312,32 +312,32 @@ static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
  */
 static char defaultTranslations[] =
 "\
- Shift <KeyPress> Prior:scroll-back(1,halfpage) \n\
-  Shift <KeyPress> Next:scroll-forw(1,halfpage) \n\
-Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
-Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
-       ~Meta <KeyPress>:insert-seven-bit() \n\
-        Meta <KeyPress>:insert-eight-bit() \n\
-       !Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
-  !Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
-  !Mod2 Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
-!Mod2 Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
-       ~Meta <Btn1Down>:select-start() \n\
-     ~Meta <Btn1Motion>:select-extend() \n\
-       !Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
-  !Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
-  !Mod2 Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
-!Mod2 Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
- ~Ctrl ~Meta <Btn2Down>:ignore() \n\
-   ~Ctrl ~Meta <Btn2Up>:insert-selection(PRIMARY, CUT_BUFFER0) \n\
-       !Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
-  !Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
-  !Mod2 Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
-!Mod2 Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
- ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
-     ~Meta <Btn3Motion>:select-extend()	\n\
-                <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
-	      <BtnDown>:bell(0) \
+          Shift <KeyPress> Prior:scroll-back(1,halfpage) \n\
+           Shift <KeyPress> Next:scroll-forw(1,halfpage) \n\
+         Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
+         Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
+                ~Meta <KeyPress>:insert-seven-bit() \n\
+                 Meta <KeyPress>:insert-eight-bit() \n\
+                !Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+           !Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+ !Lock Ctrl @Num_Lock <Btn1Down>:popup-menu(mainMenu) \n\
+     ! @Num_Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \n\
+                ~Meta <Btn1Down>:select-start() \n\
+              ~Meta <Btn1Motion>:select-extend() \n\
+                !Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+           !Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+ !Lock Ctrl @Num_Lock <Btn2Down>:popup-menu(vtMenu) \n\
+     ! @Num_Lock Ctrl <Btn2Down>:popup-menu(vtMenu) \n\
+          ~Ctrl ~Meta <Btn2Down>:ignore() \n\
+            ~Ctrl ~Meta <Btn2Up>:insert-selection(PRIMARY, CUT_BUFFER0) \n\
+                !Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+           !Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+ !Lock Ctrl @Num_Lock <Btn3Down>:popup-menu(fontMenu) \n\
+     ! @Num_Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
+          ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
+              ~Meta <Btn3Motion>:select-extend()	\n\
+                         <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
+	               <BtnDown>:bell(0) \
 ";
 
 static XtActionsRec actionsList[] = { 

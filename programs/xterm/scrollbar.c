@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c,v 1.44 94/04/02 12:42:01 gildea Exp $
+ *	$XFree86$
  */
 
 /*

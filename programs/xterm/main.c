@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.20 1995/07/08 13:16:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.21 1995/09/17 06:33:16 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -265,7 +265,6 @@ static Bool IsPts = False;
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
-#define USE_SYSV_ENVVARS
 #define HAS_BSD_GROUPS
 #include <sys/sysmacros.h>
 #endif /* sgi */
