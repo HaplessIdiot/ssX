@@ -1,4 +1,7 @@
 XFree86 3.9c (xx May 1997)
+ 801. xtest update for OpenBSD (#455, Matthieu Herrb).
+ 800. Only show Xinput initialisation messages once (#454, Matthieu Herrb).
+ 799. Add support for the IntelliMouse protocol to xf86config and XF86Setup.
  798. Fix a problem in the Xservers where the DPMS timer code can cause
       select() can get called with a negative timeout value (and get stuck
       in an infinite loop) (#453, Van Jacobson).
@@ -4579,4 +4582,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.470 1997/05/17 13:11:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.471 1997/05/18 12:12:04 dawes Exp $

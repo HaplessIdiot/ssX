@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.23 1997/02/23 09:25:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.24 1997/05/12 13:28:01 hohndel Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -359,8 +359,9 @@ InitExtInput()
 	    xf86XinputFinalizeInit(dev);
       
 	    RegisterOtherDevice(dev);
-	    ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
-		   localDevices[i]->name, localDevices[i]->type_name);
+	    if (serverGeneration == 1) 
+		ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
+		       localDevices[i]->name, localDevices[i]->type_name);
 	}
     }
 }

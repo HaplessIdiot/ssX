@@ -11,7 +11,7 @@
 
 				  Holger Veit
 
-			   Last modified 26 Jan 1997
+			   Last modified 17 May 1997
 
 
 
@@ -27,14 +27,18 @@ intend to rebuild the system from scratch under OS/2.
 Please also read README.OS2 for end-user information, and set at least the
 environment variables described there.
 
-At the current time, the most recent version available is XFree86-3.2A.  This
-is a beta version for which principally no source code is released.  The last
-available source code is XFree86-3.2.  If you want to join the XFree86 devel-
-oper team, e.g. to add support for certain hardware, please send a request to
-XFree86@XFree86.org. Please think about such a step carefully before, though,
-since much work is involved. Please use the XFree86-3.2 source code as a test
-example how to compile the system. The ability to manage that is a basic
-requirement for becoming a developer.
+At the current time, the most recent version available is XFree86-3.3.	This is
+a full and unrestricted version which comes with complete source code. 3.3 is
+an intermediate version which was released because the last beta version (3.2A)
+was about to expire and the new 4.0 version was not completely finished in
+time. 3.3 is the last ``classical'' version which has separate Xservers for
+different video cards.
+
+If you want to join the XFree86 developer team, e.g. to add support for certain
+hardware, please send a request to BOD@XFree86.org. Please think about such a
+step carefully before, though, since much work is involved. Please use the
+XFree86-3.3 source code as a test example how to compile the system. The abil-
+ity to manage that is a basic requirement for becoming a developer.
 
 
 2.  Tools required
@@ -46,7 +50,7 @@ required.  Most of this software is available from hobbes.nmsu.edu or
 ftp.leo.org via anonymous FTP. The following shopping list shows what you will
 need:
 
-   o gcc  EMX/gcc emx 0.9C or later
+   o gcc  EMX/gcc emx 0.9C patch2 or later
 
    o gzip GNU zip/unzip
 
@@ -55,21 +59,21 @@ need:
    o patch     Larry Wall's patch utility (attention: incompatible tool with
      same name in OS/2)
 
+
+
+Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
+
+
+Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
    o install   BSD/GNU install
 
    o rm,mv,cp  GNU file utilities
-
-
-
-Notes on Rebuilding XFree86/OS2 from Scratch
-
-
-
-
-
-Notes on Rebuilding XFree86/OS2 from Scratch
-
-
 
    o tee,..    GNU shell utilities
 
@@ -95,7 +99,7 @@ which might still be available from some archives is NOT compatible.
 
 Furthermore, you need the XFree86 sources. These are available from the common
 XFree86 repositories. Look into a directory which is often named
-/pub/XFree86/3.2/source.
+/pub/XFree86/3.3/source.
 
 
 3.  Compiling and Installing
@@ -121,10 +125,6 @@ installed them. Nor did I install the test subtree.
 
 
       in the \x11 directory. At the end you will usually see the irritating,
-      but non-fatal message "gzip: stdout Broken pipe". Ignore it.
-
-  4.  After that, is is likely necessary to apply some patches, either from the
-      XConsortium or from the XFree86 project. Before you do this, enter
 
 
 
@@ -136,6 +136,11 @@ installed them. Nor did I install the test subtree.
 Notes on Rebuilding XFree86/OS2 from Scratch
 
 
+
+      but non-fatal message "gzip: stdout Broken pipe". Ignore it.
+
+  4.  After that, is is likely necessary to apply some patches, either from the
+      XConsortium or from the XFree86 project. Before you do this, enter
 
 		 chmod -R a+rw \x11\xc
 
@@ -188,11 +193,6 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 		 find \x11 -name *.orig -print -exec rm {} ;
 
 
-  7.  Go to the xc/config/cf directory and edit the xf86site.def file to match
-      your requirements (you probably don't want to compile all X servers).
-      Certain changes must be set to the following values:
-
-
 
 
 
@@ -202,6 +202,10 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 Notes on Rebuilding XFree86/OS2 from Scratch
 
 
+
+  7.  Go to the xc/config/cf directory and edit the xf86site.def file to match
+      your requirements (you probably don't want to compile all X servers).
+      Certain changes must be set to the following values:
 
 	 o Disable if not already done any PC98 server; PC98 (Japanese XFree86)
 	   does not work yet. Porters from Japan are welcome!
@@ -250,13 +254,75 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 
 Well, you see, this was quite easy :-)
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.4 1997/01/27 06:57:50 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+Notes on Rebuilding XFree86/OS2 from Scratch
+
+
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.5 1997/05/18 12:12:10 dawes Exp $
 
 
 
 
 
      $XConsortium: OS2note.sgml /main/1 1996/02/24 10:08:59 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.18 1996/10/26 09:35:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.19 1996/12/27 06:54:08 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -16,7 +16,7 @@
 #
 
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
-		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
+		MouseMan PS/2 MMHitTab GlidePoint IntelliMouse Xqueue OSMouse }
 
 set msePatterns [list {tty[0-9A-Za-o]*} cua* *bm *mse* *mouse* \
                       ps*x psm* m320 pms* com* gpmdata ]

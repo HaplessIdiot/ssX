@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.38 1997/03/17 07:18:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.39 1997/05/12 13:28:05 hohndel Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -285,7 +285,7 @@ void getstring(s)
  * the server will enable a third button automatically if there is one
  */
 
-static char *mousetype_identifier[9] = {
+static char *mousetype_identifier[10] = {
 	"Microsoft",
 	"MouseSystems",
 	"Busmouse",
@@ -294,6 +294,7 @@ static char *mousetype_identifier[9] = {
 	"MouseMan",
 	"MMSeries",
 	"MMHitTab",
+	"IntelliMouse",
 #ifdef __EMX__
 	"OSMOUSE"
 #endif
@@ -304,7 +305,7 @@ static char *mouseintro_text =
 "First specify a mouse protocol type. Choose one from the following list:\n"
 "\n";
 
-static char *mousetype_name[8] = {
+static char *mousetype_name[10] = {
 	"Microsoft compatible (2-button protocol)",
 	"Mouse Systems (3-button protocol)",
 	"Bus Mouse",
@@ -312,7 +313,8 @@ static char *mousetype_name[8] = {
 	"Logitech Mouse (serial, old type, Logitech protocol)",
 	"Logitech MouseMan (Microsoft compatible)",
 	"MM Series",	/* XXXX These descriptions should be improved. */
-	"MM HitTablet"
+	"MM HitTablet",
+	"Microsoft IntelliMouse"
 };
 
 static char *mousedev_text =
@@ -368,7 +370,7 @@ void mouse_configuration() {
 	char s[80];
 	printf("%s", mouseintro_text);
 	
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < 9; i++)
 		printf("%2d.  %s\n", i + 1, mousetype_name[i]);
 
 	printf("\n");
@@ -430,6 +432,7 @@ void mouse_configuration() {
 			printf("%s", twobuttonmousecomment_text);
 		break;
 	case 1 : /* Mouse Systems. */
+	case 8 : /* IntelliMouse */
 		printf("%s", threebuttonmousecomment_text);
 		break;
 	default :

@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.15 1997/01/23 10:59:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.16 1997/02/25 16:04:42 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -227,6 +227,7 @@ ScrnInfoRec	monoInfoRec, vga2InfoRec, vga16InfoRec,
 Bool		xf86AllowMouseOpenFail;
 int		xf86bpp, defaultColorVisualClass, xf86Verbose = 2;
 xrgb		xf86weight;
+PciProbeType	xf86PCIFlags;
 
 /* Note that the order is important. They must be ordered numerically */
 int		xf86MaxScreens, xf86ScreenNames[] = {
@@ -510,7 +511,7 @@ static char readconfig_usage[] = "Usage: xf86config_readfile " \
 #define StrOrNull(xx)	((xx)==NULL? "": (xx))
 static char *msetypes[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 		"Logitech", "BusMouse", "Mouseman", "PS/2", "MMHitTab",
-		"GlidePoint", "Unknown", "Xqueue", "OSMouse" };
+		"GlidePoint", "IntelliMouse", "Unknown", "Xqueue", "OSMouse" };
 
 
 int
@@ -682,11 +683,11 @@ getsection_pointer(interp, varname)
 
 #ifdef XQUEUE
 	if (xf86Info.mouseDev->mseProc == xf86XqueMseProc)
-		xf86Info.mouseDev->mseType = 10;
+		xf86Info.mouseDev->mseType = 11;
 #endif
 #if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
 	if (xf86Info.mouseDev->mseProc == xf86OsMouseProc)
-		xf86Info.mouseDev->mseType = 11;
+		xf86Info.mouseDev->mseType = 12;
 #endif
 	Tcl_SetVar2(interp, "mouse", "Protocol",
 		msetypes[xf86Info.mouseDev->mseType+1], 0);

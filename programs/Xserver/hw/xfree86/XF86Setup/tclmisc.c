@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.6 1997/01/18 06:53:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.7 1997/03/24 13:08:09 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -390,8 +390,8 @@ TCL_XF86MiscSetKbdSettings(clientData, interp, argc, argv)
 
 static char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 			    "Logitech", "BusMouse", "Mouseman", "PS/2",
-			    "MMHitTab", "GlidePoint", "Unknown", "Xqueue",
-			    "OSMouse" };
+			    "MMHitTab", "GlidePoint", "IntelliMouse",
+			    "Unknown", "Xqueue", "OSMouse" };
 #define MSETABLESIZE	(sizeof(msetable)/sizeof(char *))
 
 /*
@@ -425,7 +425,7 @@ TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
 		return TCL_ERROR;
 	} else {
 		if ( mseinfo.type < 0 || mseinfo.type >= MSETABLESIZE)
-			mseinfo.type = 9;  /* Unknown */
+			mseinfo.type = 10;  /* Unknown */
 		sprintf(tmpbuf, "%s %s %d %d %s %d %s",
 			mseinfo.device==NULL? "{}": mseinfo.device,
 			msetable[mseinfo.type+1],

@@ -90,9 +90,9 @@ README for XFree86[tm] 3.2A
 
       Others:
 
-	       o NetBSD 1.0, 1.1, 1.2
+	       o NetBSD 1.0, 1.1, 1.2, 1.2.1
 
-	       o OpenBSD 2.0
+	       o OpenBSD 2.0, 2.1
 
 	       o FreeBSD 2.0.5, 2.1, 2.1.5, 2.1.6, 2.1.7, 2.1.7.1, 2.2, 2.2.1,
 		 2.2.2, 3.0-current
@@ -1292,7 +1292,7 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.80 1997/05/17 12:02:32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.81 1997/05/18 12:12:10 dawes Exp $
 
 
 
