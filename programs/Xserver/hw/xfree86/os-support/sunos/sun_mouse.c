@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.9 2005/02/03 03:32:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.10 2005/02/03 04:24:19 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -382,7 +382,9 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	return NULL;
     }
     if (S_ISLNK(sbuf.st_mode)) {
-	realdev = xnfalloc(PATH_MAX + 1);
+	realdev = xalloc(PATH_MAX + 1);
+	if (!realdev)
+	    return NULL:
 	i = readlink(dev, realdev, PATH_MAX);
 	if (i <= 0) {
 #ifdef DEBUG
@@ -392,11 +394,24 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	    return NULL;
 	}
 	realdev[i] = '\0';
+	/* If realdev doesn't contain a '/' then prepend "/dev/". */
+	if (!strchr(realdev, '/')) {
+	    char *tmp;
+	    xasprintf(&tmp, "/dev/%s", realdev);
+	    if (tmp) {
+		xfree(realdev);
+		realdev = tmp;
+	    }
+	}
+    } else {
+	realdev = xstrdup(dev);
+	if (!realdev)
+	    return NULL;
     }
-    if (realdev && strcmp(realdev, DEFAULT_MOUSE_PS2_DEV) == 0)
+
+    if (strcmp(realdev, DEFAULT_MOUSE_PS2_DEV) == 0)
 	ret = PS2_PROTOCOL_NAME;
-    if (realdev)
-	xfree(realdev);
+    xfree(realdev);
 
     return ret;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.32 2005/02/03 03:32:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.33 2005/02/03 04:24:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
@@ -89,7 +89,11 @@ static void usbSigioReadInput (int fd, void *closure);
 #endif
 
 #define DEFAULT_MOUSE_DEV		"/dev/mouse"
+#if !defined(__OpenBSD__)
 #define DEFAULT_PS2_DEV			"/dev/pms0"
+#else
+#define DEFAULT_PS2_DEV			"/dev/psm0"
+#endif
 
 #if defined(__FreeBSD__)
 /* These are for FreeBSD */
@@ -401,8 +405,16 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 #endif
 	return NULL;
     }
+    if (lstat(dev, &sbuf) != 0) {
+#ifdef DEBUG
+	ErrorF("lstat failed for %s (%s)\n", dev, strerror(errno));
+#endif
+	return NULL;
+    }
     if (S_ISLNK(sbuf.st_mode)) {
-	realdev = xnfalloc(PATH_MAX + 1);
+	realdev = xalloc(PATH_MAX + 1);
+	if (!realdev)
+	    return NULL;
 	i = readlink(dev, realdev, PATH_MAX);
 	if (i <= 0) {
 #ifdef DEBUG
@@ -412,15 +424,26 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	    return NULL;
 	}
 	realdev[i] = '\0';
-	dev = realdev;
+	/* If realdev doesn't contain a '/' then prepend "/dev/". */
+	if (!strchr(realdev, '/')) {
+	    char *tmp;
+	    xasprintf(&tmp, "/dev/%s", realdev);
+	    if (tmp) {
+		xfree(realdev);
+		realdev = tmp;
+	    }
+	}
+    } else {
+	realdev = xstrdup(dev);
+	if (!realdev)
+	    return NULL;
     }
 
-    if (strncmp(dev, DEFAULT_WSMOUSE_DEV, strlen(DEFAULT_WSMOUSE_DEV) == 0))
+    if (strncmp(realdev, DEFAULT_WSMOUSE_DEV, strlen(DEFAULT_WSMOUSE_DEV) == 0))
 	ret = "wsmouse";
-    else if (strcmp(dev, DEFAULT_PS2_DEV) == 0)
+    else if (strcmp(realdev, DEFAULT_PS2_DEV) == 0)
 	ret = "ps/2";
-    if (realdev)
-	xfree(realdev);
+    xfree(realdev);
     return ret;
 }
 

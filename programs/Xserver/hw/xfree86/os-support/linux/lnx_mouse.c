@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.4 2005/01/05 18:25:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.5 2005/01/27 22:24:08 dawes Exp $ */
 
 /*
  * Copyright 1999-2005 by The XFree86 Project, Inc.
@@ -140,7 +140,7 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 {
     int fd = -1;
     const char *dev;
-    char *realdev;
+    char *realdev = NULL;
     struct stat sbuf;
     int i;
     int proto = MOUSE_PROTO_UNKNOWN;
@@ -153,7 +153,6 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	return NULL;
     }
     /* Look at the device name to guess the protocol. */
-    realdev = NULL;
     if (strcmp(dev, DEFAULT_MOUSE_DEV) == 0) {
 	if (lstat(dev, &sbuf) != 0) {
 #ifdef DEBUG
@@ -162,7 +161,9 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	    return NULL;
 	}
 	if (S_ISLNK(sbuf.st_mode)) {
-	    realdev = xnfalloc(PATH_MAX + 1);
+	    realdev = xalloc(PATH_MAX + 1);
+	    if (!realdev)
+		return NULL;
 	    i = readlink(dev, realdev, PATH_MAX);
 	    if (i <= 0) {
 #ifdef DEBUG
@@ -174,15 +175,19 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	    realdev[i] = '\0';
 	}
     }
-    if (!realdev)
+    if (!realdev) {
 	realdev = xnfstrdup(dev);
-    else {
-	/* If realdev doesn't contain a '/' then prepend "/dev/" */
+	if (!realdev)
+	    return NULL;
+    } else {
+	/* If realdev doesn't contain a '/' then prepend "/dev/". */
 	if (!strchr(realdev, '/')) {
-	    char *tmp = xnfalloc(strlen(realdev) + 5 + 1);
-	    sprintf(tmp, "/dev/%s", realdev);
-	    xfree(realdev);
-	    realdev = tmp;
+	    char *tmp;
+	    xasprintf(&tmp, "/dev/%s", realdev);
+	    if (tmp) {
+		xfree(realdev);
+		realdev = tmp;
+	    }
 	}
     }
 
