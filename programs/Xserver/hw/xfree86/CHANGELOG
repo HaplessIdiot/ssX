@@ -1,4 +1,6 @@
 XFree86 3.1.1c (12 March 1995)
+ 34. Updates for #9 GXE64Pro required due to changes in 3.1.1b (Hans Nasten).
+ 33. Support for BSD/OS 2.0 (Hans Nasten).
  32. Updates for OS/2, including work on the X server support (Holger Veit).
  31. SVGA driver for the ARK 1000PV and 2000PV chipsets (Harm Hanemaayer).
  30. Add predefs to makedepend for FreeBSD and NetBSD.  This allows
