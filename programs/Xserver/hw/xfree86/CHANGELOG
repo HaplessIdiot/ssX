@@ -1,4 +1,6 @@
 XFree86 4.4.99.902 (xx February 2005)
+ 322. Improve the detection of a running moused on FreeBSD, and add the
+      ums0 device to the fallbacks to try (David Dawes).
  321. Support automatic configuration for SBUS video devices on sparc
       (David Dawes).
  320. Fix missing asm component in the sunffb module on Solaris/sparc build
@@ -19373,7 +19375,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3429 2005/02/09 19:49:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3430 2005/02/09 20:55:56 dawes Exp $
 
 
 
