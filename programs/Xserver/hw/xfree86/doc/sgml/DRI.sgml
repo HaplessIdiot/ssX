@@ -13,7 +13,7 @@
     <date>3 May 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.22 2001/05/18 19:59:18 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.23 2001/05/19 00:26:44 dawes Exp $
     </ident>
 
     <toc>
@@ -1325,7 +1325,7 @@
           overlays, stereo, hardware-accelerated indirect rendering.
         <p>
           OpenGL-like functionality is provided with the Mesa library.
-          XFree86 4.0.3 uses Mesa 3.4.1.
+          XFree86 4.1.0 uses Mesa 3.4.2.
           Subsequent releases of XFree86 will use newer versions of Mesa.
           When newer versions of Mesa are available, the 3D drivers can
           be updated without reinstalling XFree86 or libGL.so.
