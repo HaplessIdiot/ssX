@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.31 2001/04/08 23:19:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.32 2001/04/16 15:02:09 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1636,7 +1636,7 @@ ATIMach64SubsequentColorExpandScanline
  * This function fills in structure fields needed for acceleration on Mach64
  * variants.
  */
-Bool
+unsigned int
 ATIMach64AccelInit
 (
     ATIPtr        pATI,
@@ -1708,7 +1708,7 @@ ATIMach64AccelInit
 
     /* The engine does not support the following primitives for 24bpp */
     if (pATI->XModifier != 1)
-        return TRUE;
+        return ATIMach64MaxY;
 
     /* Solid lines */
     pXAAInfo->SetupForSolidLine = ATIMach64SetupForSolidLine;
@@ -1716,7 +1716,7 @@ ATIMach64AccelInit
     pXAAInfo->SubsequentSolidBresenhamLine =
         ATIMach64SubsequentSolidBresenhamLine;
 
-    return TRUE;
+    return ATIMach64MaxY;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.3 2001/04/03 22:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.4 2001/04/04 00:19:04 tsi Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -40,7 +40,7 @@ ATIInitializeAcceleration
 )
 {
     BoxRec       ScreenArea;
-    unsigned int scanlines;
+    unsigned int nScanlines, maxScanlines;
 
     if (!pATI->OptionAccel)
         return TRUE;
@@ -51,27 +51,27 @@ ATIInitializeAcceleration
     switch (pATI->Adapter)
     {
         case ATI_ADAPTER_MACH64:
-            if (ATIMach64AccelInit(pATI, pATI->pXAAInfo))
-                break;
-            /* Fall through */
+            maxScanlines = ATIMach64AccelInit(pATI, pATI->pXAAInfo);
+            break;
 
         default:
-            XAADestroyInfoRec(pATI->pXAAInfo);
-            pATI->pXAAInfo = NULL;
-            return FALSE;
+            maxScanlines = 0;
     }
 
-    ScreenArea.x1 = ScreenArea.y1 = 0;
-    ScreenArea.x2 = pATI->displayWidth;
-    scanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
-        pATI->bitsPerPixel;
-    if (scanlines > ATIMach64MaxY)
-        scanlines = ATIMach64MaxY;
-    ScreenArea.y2 = (short int)scanlines;
-    xf86InitFBManager(pScreen, &ScreenArea);
+    if (maxScanlines > 0)
+    {
+        ScreenArea.x1 = ScreenArea.y1 = 0;
+        ScreenArea.x2 = pATI->displayWidth;
+        nScanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
+            pATI->bitsPerPixel;
+        if (nScanlines > maxScanlines)
+            nScanlines = maxScanlines;
+        ScreenArea.y2 = (short int)nScanlines;
+        xf86InitFBManager(pScreen, &ScreenArea);
 
-    if (XAAInit(pScreen, pATI->pXAAInfo))
-        return TRUE;
+        if (XAAInit(pScreen, pATI->pXAAInfo))
+            return TRUE;
+    }
 
     XAADestroyInfoRec(pATI->pXAAInfo);
     pATI->pXAAInfo = NULL;
