@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.50 2002/05/23 01:14:32 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.51 2002/05/24 01:08:59 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -291,6 +291,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Eq, "eq left right"},
     {LispFunction, Lisp_Eql, "eql left right"},
     {LispFunction, Lisp_Equal, "equal left right"},
+    {LispFunction, Lisp_Equalp, "equalp left right"},
     {LispMacro, Lisp_Error, "error control-string &rest arguments"},
     {LispFunction, Lisp_Eval, "eval form"},
     {LispFunction, Lisp_Evenp, "evenp integer"},
@@ -1378,7 +1379,7 @@ LispDoGetAtomProperty(LispMac *mac, LispAtom *atom, LispObj *key, int add)
 
     if (atom->a_property) {
 	for (obj = atom->property->properties; obj != NIL; obj = CDR(CDR(obj))) {
-	    if (LispEqual(mac, key, CAR(obj)) == T) {
+	    if (XEQUAL(key, CAR(obj)) == T) {
 		res = CDR(obj);
 		break;
 	    }
@@ -3038,7 +3039,7 @@ LispDefconstant(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
     }
 
     if (name->constant && name->a_object &&
-	LispEqual(mac, name->property->value, value) == NIL)
+	XEQUAL(name->property->value, value) == NIL)
 	LispWarning(mac, "constant %s is being redefined", STROBJ(atom));
     else
 	name->constant = LispTrue_t;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.23 2002/04/16 17:12:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.24 2002/05/23 01:14:32 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -586,6 +586,8 @@ extern LispObj *Omake_struct, *Ostruct_access, *Ostruct_store, *Ostruct_type;
 extern Atom_id Serror, Sabsolute, Srelative, Sskip;
 extern LispObj *Oparse_namestring, *Kerror, *Kabsolute, *Krelative, *Oopen,
 	       *Oclose, *Kif_does_not_exist;
+
+extern LispObj *Oequal_;
 
 extern LispFile *Stdout, *Stdin, *Stderr;
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.15 2002/05/23 01:14:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.16 2002/05/24 01:08:58 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -67,6 +67,7 @@ LispObj *Lisp_Endp(LispMac*, LispBuiltin*);		/* endp */
 LispObj *Lisp_Eq(LispMac*, LispBuiltin*);		/* eq */
 LispObj *Lisp_Eql(LispMac*, LispBuiltin*);		/* eql */
 LispObj *Lisp_Equal(LispMac*, LispBuiltin*);		/* equal */
+LispObj *Lisp_Equalp(LispMac*, LispBuiltin*);		/* equalp */
 LispObj *Lisp_Error(LispMac*, LispBuiltin*);		/* error */
 LispObj *Lisp_Eval(LispMac*, LispBuiltin*);		/* eval */
 LispObj *Lisp_Fill(LispMac*, LispBuiltin*);		/* fill */
