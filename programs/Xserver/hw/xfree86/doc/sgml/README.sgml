@@ -1,11 +1,11 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 
- <article>
+<article>
 
- <title>README for XFree86&tm; 3.2A
- <author> The XFree86 Project, Inc
- <date>22 January 1997
+<title>README for XFree86&tm; 3.2A
+<author> The XFree86 Project, Inc
+<date>22 January 1997
 
 
 <abstract>
@@ -627,7 +627,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 
 <tag/Tseng ET4000 and ET6000 SVGA driver by:  /
 <itemize>
-       <item>[Unknown authors]
+       <item>&lsqb;Unknown authors&rsqb;
        <item>Dirk Hohndel <it>&lt;hohndel@XFree86.Org&gt;</it>
        <item>Koen Gadeyne <it>&lt;koen.gadeyne@barco.com&gt;</it>
        <item>... and others
@@ -1085,7 +1085,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.86 1997/07/06 05:30:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.87 1998/03/20 21:06:25 hohndel Exp $
 
 
 
