@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.5 1997/01/12 10:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.6 1997/11/22 06:50:26 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -981,23 +981,6 @@ InitOutput(screenInfo, argc, argv)
     }
 
 } /* end InitOutput */
-
-#ifdef DPMSExtension
-#if NeedFunctionPrototypes
-void DPMSSet(CARD16 level)
-#else
-void DPMSSet(level)
-     CARD16 level;
-#endif
-{
-    return;
-}
-
-Bool DPMSSupported()
-{
-    return FALSE;
-}
-#endif
 
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3

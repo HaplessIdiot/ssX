@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/revisionist/2 1997/11/17 14:35:40 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.122 1997/11/22 06:50:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.123 1997/11/22 10:43:53 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1797,7 +1797,7 @@ XNESTOBJS =
 XNESTOBJS = dix/main.o
 #endif
 XNEST = hw/xnest/LibraryTargetName(xnest)
-XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(XNEST)
+XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(NONLDSERVEXTS) $(XNEST)
 XNESTSYSLIBS = $(LDPRELIBS) $(XLIB) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))
@@ -1864,7 +1864,7 @@ XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBPANSTUBOBJS) $(XVFBDPMSSTUBOB
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
 XVFB = hw/vfb/LibraryTargetName(vfb)
-XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs
+XVFBLIBS = PreFbLibs $(XVFB) $(CFB) $(NONLDSERVEXTS) PostFbLibs
 XVFBSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
