@@ -275,7 +275,7 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
     ptr->dev_irq = -1;
 
     /* Make sure older drivers don't segv */
-    if (!devoptions == NULL) {
+    if (devoptions != NULL) {
     	/* Fill in the available driver options for people to use */
     	ptr->dev_comment = xalloc(32 + 1);
     	strcpy(ptr->dev_comment, "Available Driver options are:-\n");
