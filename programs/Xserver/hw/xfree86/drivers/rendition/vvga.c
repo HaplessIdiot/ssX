@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.10 2001/02/15 17:50:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.11 2001/10/28 03:33:44 tsi Exp $ */
 /*
  * file vvga.c
  *
@@ -9,7 +9,6 @@
  * includes
  */
 #include "rendition.h"
-#define VVGA_INTERNAL
 #include "vvga.h"
 #include "vtypes.h"
 #include "vos.h"
@@ -19,7 +18,7 @@
 
 #undef DEBUG
 
-void set_PLL(vu16, vu32);
+void set_PLL(IOADDRESS, vu32);
 
 /*
  * global data
@@ -36,20 +35,28 @@ void set_PLL(vu16, vu32);
  * local function prototypes
  */
 
-static vu8 getvgareg(vu16 port, vu8 index);
-static void setvgareg(vu16 port, vu8 index, vu8 value);
-static void updattr(vu8 index, vu8 value);
-
-
+#if defined(RESTOREVGA)
+#if defined(SAVEVGA) || defined(XSERVER)
+static void verite_resetvga(IOADDRESS iob);
+static void verite_loadvgafont(struct verite_board_t *board);
+static void verite_restorepalette(struct verite_board_t *board);
+static vu8 getvgareg(IOADDRESS port, vu8 index);
+static void setvgareg(IOADDRESS port, vu8 index, vu8 value);
+static void updattr(IOADDRESS iob, vu8 index, vu8 value);
+#endif
+#if defined(SAVEVGA)
+static void verite_restoretextmode(struct verite_board_t *board);
+#endif
+#endif
 
 /*
  * functions
  */
 
-#if 0
+#if defined(RESTOREVGA)
 #if defined(SAVEVGA) || defined(XSERVER)
 static void
-verite_resetvga(void)
+verite_resetvga(IOADDRESS iob)
 {
     static struct VIDEO_REGS {
         vu8 seq[8];     /* sequencer regs */
@@ -82,25 +89,26 @@ verite_resetvga(void)
 
     /* set attribute controller */
     for (c=0; c<0x15; c++)
-        updattr(c, mode3.attr[c]);
+        updattr(iob, c, mode3.attr[c]);
 
     /* set CRTC registers */
     for (c=0; c<0x19; c++)
-        setvgareg(0x3d4, c, mode3.crtc[c]);
+        setvgareg(iob+0x3d4, c, mode3.crtc[c]);
 
     /* set graphics registers */
     for (c=0x00; c<0x09; c++)
-        setvgareg(0x3ce, c, mode3.grph[c]);
+        setvgareg(iob+0x3ce, c, mode3.grph[c]);
 
     /* set sequencer registers */
-    setvgareg(0x3c4, 0x00, 0x03);        /* restart sequencer */
+    setvgareg(iob+0x3c4, 0x00, 0x03);        /* restart sequencer */
     for (c=0; c<5; c++)
-        setvgareg(0x3c4, c, mode3.seq[c]);
+        setvgareg(iob+0x3c4, c, mode3.seq[c]);
 }
 
 static void
-verite_loadvgafont(void)
+verite_loadvgafont(struct verite_board_t *board)
 {
+    IOADDRESS iob = board->vgaio_base;
     int c;
     vu8 b;
     vu8 *address;
@@ -112,27 +120,27 @@ verite_loadvgafont(void)
     ErrorF ("Rendition: Debug verite_loadvgafont called\n");
 #endif
 
-    /* Assert synchroneous reset while setting the clock mode */
-    setvgareg(0x3c4, 0, 1);               /* assert synchronous reset */
-    verite_out8(0x3c2, 0x67);                  /* select clock */
-    setvgareg(0x3c4, 0, 3);               /* de-assert synchronous reset */
+    /* Assert synchronous reset while setting the clock mode */
+    setvgareg(iob+0x3c4, 0, 1);               /* assert synchronous reset */
+    verite_out8(iob+0x3c2, 0x67);             /* select clock */
+    setvgareg(iob+0x3c4, 0, 3);               /* de-assert synchronous reset */
 
     /* load 8x16 font into plane 2 */
-    b=(getvgareg(0x3c4, 0x04)|0x04)&0x07; /* memory mode reg - */
-    setvgareg(0x3c4, 0x04, b);            /* disable odd/even and chain 4 */
+    b=(getvgareg(iob+0x3c4, 0x04)|0x04)&0x07; /* memory mode reg - */
+    setvgareg(iob+0x3c4, 0x04, b);            /* disable odd/even and chain 4 */
 
     /* disable video and enable all to cpu to enable maximum video
      * memory access */
-    b=getvgareg(0x3c4, 0x01)|0x20;        /* clocking mode register - */
-    setvgareg(0x3c4, 0x01, b);            /* enable all to cpu, disable video */
+    b=getvgareg(iob+0x3c4, 0x01)|0x20;        /* clocking mode register - */
+    setvgareg(iob+0x3c4, 0x01, b);            /* enable all to cpu, disable video */
 
-    b=getvgareg(0x3ce, 0x05)&0xef;        /* graphics controller - */
-    setvgareg(0x3ce, 0x05, b);            /* disable odd/even */
+    b=getvgareg(iob+0x3ce, 0x05)&0xef;        /* graphics controller - */
+    setvgareg(iob+0x3ce, 0x05, b);            /* disable odd/even */
 
-    setvgareg(0x3ce, 0x06, 0x05);         /* memory map - set it to A000 
-                                           * and graphics mode */
+    setvgareg(iob+0x3ce, 0x06, 0x05);         /* memory map - set it to A000
+                                               * and graphics mode */
 
-    setvgareg(0x3c4, 2, 4);               /* enable write plane 2 */
+    setvgareg(iob+0x3c4, 2, 4);               /* enable write plane 2 */
 
     /* fill plane 2 with 8x16 font */
     address=font8x16;
@@ -147,15 +155,15 @@ verite_loadvgafont(void)
 
     xf86UnMapVidMem(0, vbase, 64*1024);
     /* restore the standard vga register values */
-    verite_resetvga();
+    verite_resetvga(iob);
 }
 #endif
 #endif
 
 void
-verite_textmode(struct verite_board_t *board) 
+verite_textmode(struct verite_board_t *board)
 {
-    vu16 iob=board->io_base;
+    IOADDRESS iob=board->io_base;
     int tmp;
 
 #ifdef DEBUG
@@ -206,26 +214,25 @@ verite_textmode(struct verite_board_t *board)
     verite_out32(iob+CRTCHORZ, 0x2b0a4f);
     verite_out32(iob+CRTCVERT, 0x9301df);
     verite_out32(iob+CRTCOFFSET, 0x40);
-#if 0
+#if defined(RESTOREVGA)
 #ifdef SAVEVGA
-    verite_loadvgafont();
+    verite_loadvgafont(board);
     verite_restoretextmode(board);
-    verite_restorepalette();
+    verite_restorepalette(board);
 #else
 #ifdef XSERVER
-    verite_loadvgafont();
-    verite_restorepalette();
+    verite_loadvgafont(board);
+    verite_restorepalette(board);
 #endif
 #endif
 #endif
-
 }
 
-
-
 void
-verite_savetextmode(struct verite_board_t *board) 
+verite_savetextmode(struct verite_board_t *board)
 {
+#if defined(RESTOREVGA)
+#if defined(SAVEVGA)
     vu8 *vbase;
     int fbFlags;
 
@@ -248,12 +255,14 @@ verite_savetextmode(struct verite_board_t *board)
     vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
     verite_bustomem_cpy(board->scr_contents, vbase, 0x8000);
     xf86UnMapVidMem(0, vbase, 0x8000);
+#endif
+#endif
 }
 
-
-
+#if defined(RESTOREVGA)
+#if defined(SAVEVGA)
 static void
-verite_restoretextmode(struct verite_board_t *board) 
+verite_restoretextmode(struct verite_board_t *board)
 {
     vu8 *vbase;
     int fbFlags;
@@ -278,12 +287,13 @@ verite_restoretextmode(struct verite_board_t *board)
     xf86UnMapVidMem(0, vbase, 0x8000);
     xfree(board->scr_contents);
 }
+#endif
 
-
-
+#if defined(SAVEVGA) || defined(XSERVER)
 static void
-verite_restorepalette(void)
+verite_restorepalette(struct verite_board_t *board)
 {
+    IOADDRESS iob = board->vgaio_base;
     int c;
     vu8 *pal=vga_pal;
 
@@ -291,44 +301,38 @@ verite_restorepalette(void)
     ErrorF ("Rendition: Debug verite_restorepalette called\n");
 #endif
 
-    verite_out8(0x3c8, 0);
+    verite_out8(iob+0x3c8, 0);
     for (c=0; c<768; c++)
-        verite_out8(0x3c9, *pal++);
+        verite_out8(iob+0x3c9, *pal++);
 }
-
-
 
 /*
  * local functions
  */
 
 /*
- * static vu8 getvgareg(vu16 port, vu8 index)
+ * static vu8 getvgareg(IOADDRESS port, vu8 index)
  *
  * Reads in a vga register.
  */
 static vu8
-getvgareg(vu16 port, vu8 index)
+getvgareg(IOADDRESS port, vu8 index)
 {
     verite_out8(port, index);
     return verite_in8(port+1);
 }
 
-
-
 /*
- * static void setvgareg(vu16 port, vu8 index, vu8 value)
+ * static void setvgareg(IOADDRESS port, vu8 index, vu8 value)
  *
  * Sets a vga register.
  */
 static void
-setvgareg(vu16 port, vu8 index, vu8 value)
+setvgareg(IOADDRESS port, vu8 index, vu8 value)
 {
     verite_out8(port, index);
     verite_out8(port+1, value);
 }
-
-
 
 /*
  * static void updattr(vu8 index, vu8 value)
@@ -336,16 +340,16 @@ setvgareg(vu16 port, vu8 index, vu8 value)
  * Used to write the attribute controller registers.
  */
 static void
-updattr(vu8 index, vu8 value)
+updattr(IOADDRESS iob, vu8 index, vu8 value)
 {
-    verite_in8(0x3da);           /* points to index register for color adapter */
-    verite_in8(0x3ba);           /* points to index register for mono */
-    verite_out8(0x3c0, index);
-    verite_out8(0x3c0, value);
-    verite_out8(0x3c0, index|0x20);
+    verite_in8(iob+0x3da);           /* points to index register for color */
+    verite_in8(iob+0x3ba);           /* points to index register for mono */
+    verite_out8(iob+0x3c0, index);
+    verite_out8(iob+0x3c0, value);
+    verite_out8(iob+0x3c0, index|0x20);
 }
-
-
+#endif
+#endif
 
 /*
  * end of file vvga.c

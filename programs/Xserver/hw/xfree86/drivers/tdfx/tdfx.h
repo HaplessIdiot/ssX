@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.24 2001/05/21 21:43:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.25 2001/08/18 02:51:13 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -138,7 +138,7 @@ typedef struct _TDFXRec {
   unsigned char *MMIOBase[MAXCHIPS];
   unsigned char *FbBase;
   unsigned char *myFbBase;
-  unsigned int PIOBase[MAXCHIPS];
+  IOADDRESS PIOBase[MAXCHIPS];
   long FbMapSize;
   int pixelFormat;
   int stride;

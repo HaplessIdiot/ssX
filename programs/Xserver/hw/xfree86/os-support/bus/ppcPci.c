@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.5 2000/02/08 13:13:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.6 2001/05/11 08:16:55 alanh Exp $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *
@@ -107,8 +107,10 @@ pciBusInfo_t motoppcPci0 = {
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
 /* primary_bus */	  0,
+#ifdef PowerMAX_OS
 /* ppc_io_base */	  0x80000000,
 /* ppc_io_size */	  64 * 1024,		  
+#endif
 /* funcs       */	  {
 	                    pciCfgMech1Read,
 			    pciCfgMech1Write,

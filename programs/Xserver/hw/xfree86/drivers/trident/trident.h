@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.50 2001/12/13 18:01:50 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.51 2002/01/13 00:15:52 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -36,6 +36,7 @@
 #include "shadowfb.h"
 #include "shadow.h"
 #include "xf86xv.h"
+#include "xf86Pci.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -64,6 +65,7 @@ typedef struct {
     unsigned char *     IOBase;
     unsigned char *	FbBase;
     long		FbMapSize;
+    IOADDRESS		PIOBase;
     Bool		NoAccel;
     Bool		HWCursor;
     Bool		UsePCIRetry;

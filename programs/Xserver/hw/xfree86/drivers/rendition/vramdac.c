@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.12 2001/02/15 17:50:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.13 2001/05/16 06:48:10 keithp Exp $ */
 /*
  * includes
  */
@@ -90,10 +90,10 @@
  * local function prototypes
  */
 
-static void Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data);
-static void Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data);
-static vu8 Bt485_read_masked(vu16 port, vu8 reg, vu8 mask);
-static vu8 Bt485_read_cmd3_masked(vu16 port, vu8 mask);
+static void Bt485_write_masked(IOADDRESS port, vu8 reg, vu8 mask, vu8 data);
+static void Bt485_write_cmd3_masked(IOADDRESS port, vu8 mask, vu8 data);
+static vu8 Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask);
+static vu8 Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask);
 
 
 
@@ -121,7 +121,7 @@ int
 verite_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    IOADDRESS iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 cmd0,cmd1,cmd2;
     vu8 cmd3_data=0;
 
@@ -232,7 +232,7 @@ verite_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
                       BT485_3_COLOR_CURSOR, BT485_X_WINDOW_CURSOR };
     static vu8 csizes[]={ BT485_32_BY_32_CURSOR, BT485_64_BY_64_CURSOR };
   
-    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    IOADDRESS iob=pRendition->board.io_base+RAMDACBASEADDR;
 
 #ifdef DEBUG
     ErrorF ("Rendition: Debug verite_enablecursor called type=0x%x\n",type);
@@ -273,7 +273,7 @@ void
 verite_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    IOADDRESS iob=pRendition->board.io_base+RAMDACBASEADDR;
 
     x+=Cursor_size-xo;
     y+=Cursor_size-yo;
@@ -296,7 +296,7 @@ void
 verite_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    IOADDRESS iob=pRendition->board.io_base+RAMDACBASEADDR;
 
 #ifdef DEBUG
     ErrorF ("Rendition: Debug verite_setcursorcolor called FG=0x%x BG=0x%x\n",
@@ -339,7 +339,7 @@ verite_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
     int c, bytes, row;
     vu8 *src = cursorimage;
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
+    IOADDRESS iob=pRendition->board.io_base+RAMDACBASEADDR;
     vu8 tmp;
     vu8 memend; /* Added for byte-swap fix */
 
@@ -419,7 +419,7 @@ verite_setpalette(ScrnInfoPtr pScreenInfo, int numColors, int *indices,
 		LOCO *colors, VisualPtr pVisual)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob=pRendition->board.io_base;
+    IOADDRESS iob=pRendition->board.io_base;
     vu32 crtc_status;
     int i, index;
 
@@ -456,12 +456,12 @@ verite_setpalette(ScrnInfoPtr pScreenInfo, int numColors, int *indices,
  */
 
 /*
- * static void Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
+ * static void Bt485_write_masked(IOADDRESS port, vu8 reg, vu8 mask, vu8 data)
  *
  *
  */
 static void
-Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
+Bt485_write_masked(IOADDRESS port, vu8 reg, vu8 mask, vu8 data)
 {
     vu8 tmp;
 
@@ -472,12 +472,12 @@ Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
 
 
 /*
- * static void Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
+ * static void Bt485_write_cmd3_masked(IOADDRESS port, vu8 mask, vu8 data)
  *
  *
  */
 static void
-Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
+Bt485_write_cmd3_masked(IOADDRESS port, vu8 mask, vu8 data)
 {
 /*
     Bt485_write_masked(port, BT485_COMMAND_REG_0, 0x7f, 0x80);
@@ -492,12 +492,12 @@ Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
 
 
 /*
- * static vu8 Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
+ * static vu8 Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask)
  *
  *
  */
 static vu8
-Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
+Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask)
 {
     return verite_in8(port+reg)&mask;
 }
@@ -505,12 +505,12 @@ Bt485_read_masked(vu16 port, vu8 reg, vu8 mask)
 
 
 /*
- * static vu8 Bt485_read_cmd3_masked(vu16 port, vu8 mask)
+ * static vu8 Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask)
  *
  *
  */
 static vu8
-Bt485_read_cmd3_masked(vu16 port, vu8 mask)
+Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask)
 {
     vu8 value;
 

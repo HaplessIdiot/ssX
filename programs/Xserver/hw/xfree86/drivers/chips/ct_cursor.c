@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.23 2001/05/15 10:19:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.24 2001/10/01 13:44:03 eich Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -87,7 +87,7 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
     } else {
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0x8);
-	    outw(DR(0x8), 0x21);
+	    outw(cPtr->PIOBase+DR(0x8), 0x21);
 	} else {
 	    HW_DEBUG(DR(8));
 	    /*  Used to be: MMIOmemw(MR(8)) = 0x21; */
@@ -126,7 +126,7 @@ CHIPSHideCursor(ScrnInfoPtr pScrn)
     } else {
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0x8);
-	    outw(DR(0x8), 0x20);
+	    outw(cPtr->PIOBase+DR(0x8), 0x20);
 	} else {
 	    HW_DEBUG(DR(0x8));
 	    /* Used to be: MMIOmemw(DR(0x8)) = 0x20; */
@@ -180,7 +180,7 @@ CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	xy = (xy << 16) | x;
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0xB);
-	    outl(DR(0xB), xy);
+	    outl(cPtr->PIOBase+DR(0xB), xy);
 	} else {
 	    HW_DEBUG(MR(0xB));
 	    MMIOmeml(MR(0xB)) = xy;
@@ -270,8 +270,8 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 	    cPtr->writeMSS(cPtr, hwp, MSS);
 	}
     } else if (IS_Wingine(cPtr)) {
-	outl(DR(0xA), (bg & 0xFFFFFF));
-	outl(DR(0x9), (fg & 0xFFFFFF));
+	outl(cPtr->PIOBase+DR(0xA), (bg & 0xFFFFFF));
+	outl(cPtr->PIOBase+DR(0x9), (fg & 0xFFFFFF));
     } else {
 	packedcolfg =  ((fg & 0xF80000) >> 8) | ((fg & 0xFC00) >> 5)
 	    | ((fg & 0xF8) >> 3);
@@ -280,7 +280,7 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 	packedcolfg = (packedcolfg << 16) | packedcolbg;
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0x9);
-	    outl(DR(0x9), packedcolfg);
+	    outl(cPtr->PIOBase+DR(0x9), packedcolfg);
 	} else {
 	    MMIOmeml(MR(0x9)) = packedcolfg;
 	    HW_DEBUG(MR(0x9));
@@ -305,9 +305,9 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	int i;
 	CARD32 *tmp = (CARD32 *)src;
 	
-	outl(DR(0x8),0x20);
+	outl(cPtr->PIOBase+DR(0x8),0x20);
 	for (i=0; i<64; i++) {
-	    outl(DR(0xC),*(CARD32 *)tmp);
+	    outl(cPtr->PIOBase+DR(0xC),*(CARD32 *)tmp);
 	    tmp++;
 	}
     } else {
@@ -361,7 +361,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     } else if (!IS_Wingine(cPtr)) {
 	if (!cPtr->UseMMIO) {
 	    HW_DEBUG(0xC);
-	    outl(DR(0xC), cAcl->CursorAddress);
+	    outl(cPtr->PIOBase+DR(0xC), cAcl->CursorAddress);
 	} else {
 	    HW_DEBUG(MR(0xC));
 	    MMIOmeml(MR(0xC)) = cAcl->CursorAddress;

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.7 2001/08/01 00:44:57 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.8 2001/12/31 18:15:10 herrb Exp $
  */
 
 #ifdef USE_MODULES
@@ -64,8 +64,8 @@ int xf86MatchPciInstances(const char*, int, SymTabPtr, PciChipsets*, GDevPtr*, i
 int xf86MatchIsaInstances(const char*, SymTabPtr, pointer*, DriverPtr, pointer, GDevPtr*, int, int**);
 void *xf86LoadDrvSubModule(DriverPtr drv, const char*);
 void xf86DrvMsg(int, int, const char*, ...);
+pciConfigPtr *xf86GetPciConfigInfo(void);
 #endif
-void *xf86GetPciConfigInfo(void);
 
 extern char *loaderPath, **loaderList, **ploaderList;
 xf86cfgModuleOptions *module_options;
@@ -588,7 +588,7 @@ xf86LoadDrvSubModule(DriverPtr drv, const char *name)
     return (ret);
 }
 
-void *
+pciConfigPtr *
 xf86GetPciConfigInfo(void)
 {
     return (NULL);

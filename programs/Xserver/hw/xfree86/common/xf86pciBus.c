@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.48 2001/11/30 12:11:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.49 2002/01/25 20:43:38 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -92,9 +92,15 @@ static PciBusPtr xf86PciBus = NULL;
                         ? pciBusAddrToHostAddr(tag,PCI_MEM_SIZE,size) \
                         : pciBusAddrToHostAddr(tag,PCI_IO_SIZE,size))
 #define PCI_M_RANGE(range,tag,begin,end,type) \
-                            { RANGE(range,B2M(tag,begin),B2M(tag,end),type); }
+	{ \
+	    RANGE(range, B2M(tag, begin), B2M(tag, end), \
+		  RANGE_TYPE(type, xf86GetPciDomain(tag))); \
+	}
 #define PCI_I_RANGE(range,tag,begin,end,type) \
-                            { RANGE(range,B2I(tag,begin),B2I(tag,end),type); }
+	{ \
+	    RANGE(range, B2I(tag, begin), B2I(tag, end), \
+		  RANGE_TYPE(type, xf86GetPciDomain(tag))); \
+	}
 #define PCI_X_RANGE(range,tag,begin,end,type) \
 { if ((type & ResPhysMask) == ResMem)  PCI_M_RANGE(range,tag,begin,end,type); \
                 else PCI_I_RANGE(range,tag,begin,end,type); } 
@@ -120,6 +126,16 @@ static void
 getPciClassFlags(pciConfigPtr *pcrpp);
 static void
 pciConvertListToHost(int bus, int dev, int func, resPtr list);
+
+void
+xf86FormatPciBusNumber(int busnum, char *buffer)
+{
+    /* 'buffer' should be at least 8 characters long */
+    if (busnum < 256)
+	sprintf(buffer, "%d", busnum);
+    else
+	sprintf(buffer, "%d@%d", busnum & 0x00ff, busnum >> 8);
+}
 
 static Bool
 IsBaseUnassigned(CARD32 base)
@@ -408,10 +424,12 @@ FindPCIVideoInfo(void)
     {
 	for (k = 0; k < num; k++) {
 	    char *vendorname = NULL, *chipname = NULL;
+	    char busnum[8];
 	    Bool memdone = FALSE, iodone = FALSE;
 
 	    i = 0; 
 	    info = xf86PciVideoInfo[k];
+	    xf86FormatPciBusNumber(info->bus, busnum);
 	    while (xf86PCIVendorNameInfo[i].token) {
 		if (xf86PCIVendorNameInfo[i].token == info->vendor) 
 		    vendorname = (char *)xf86PCIVendorNameInfo[i].name;
@@ -438,10 +456,10 @@ FindPCIVideoInfo(void)
 		!PCIALWAYSPRINTCLASSES(info->class, info->subclass))
 		continue;
 	    if (xf86IsPrimaryPci(info))
-	    	xf86Msg(X_PROBED, "PCI:*(%d:%d:%d) ", info->bus, info->device,
+	    	xf86Msg(X_PROBED, "PCI:*(%s:%d:%d) ", busnum, info->device,
 		    info->func);
 	    else
-	    	xf86Msg(X_PROBED, "PCI: (%d:%d:%d) ", info->bus, info->device,
+	    	xf86Msg(X_PROBED, "PCI: (%s:%d:%d) ", busnum, info->device,
 		    info->func);
 	    if (vendorname)
 		xf86ErrorF("%s ", vendorname);
@@ -1537,12 +1555,9 @@ getValidBIOSBase(PCITAG tag, int num)
       pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
       
       if (!ret) {
-	/*
-	 * Return a possible window.  Note that this doesn't deal with 
-	 * host bridges yet.  But the fix for that belongs elsewhere.
-	 */
+	 /* Return a possible window */
 	 while (m) {
-	     range = xf86GetBlock(ResExcMemBlock,
+	     range = xf86GetBlock(RANGE_TYPE(ResExcMemBlock, xf86GetPciDomain(tag)),
 				  PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
 				  m->block_begin, m->block_end,
 				  PCI_SIZE(ResMem, TAG(pvp), alignment), 
@@ -1668,7 +1683,7 @@ getValidBIOSBase(PCITAG tag, int *num)
      * yet.  But the fix for that belongs elsewhere.
      */
     while (m) {
-	range = xf86GetBlock(ResExcMemBlock,
+	range = xf86GetBlock(RANGE_TYPE(ResExcMemBlock, xf86GetPciDomain(tag)),
 			     PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
 			     m->block_begin, m->block_end,
 			     PCI_SIZE(ResMem, TAG(pvp), alignment), avoid);
@@ -1722,24 +1737,33 @@ static void alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary);
 static void
 printBridgeInfo(PciBusPtr PciBus) 
 {
-  xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "
-	      "(%d,%d,%d), BCTRL: 0x%02x (VGA_EN is %s)\n",
-	      PciBus->secondary,PciBus->brbus, PciBus->brdev,
-	      PciBus->brfunc, PciBus->primary,
-	      PciBus->secondary, PciBus->subordinate,
-	      PciBus->brcontrol,
-	      (PciBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN)
-	      ? "set" : "cleared");
-  xf86MsgVerb(X_INFO, 3, "Bus %d I/O range:\n",
-	      PciBus->secondary);
-  xf86PrintResList(3, PciBus->preferred_io);
-  xf86MsgVerb(X_INFO, 3,
-	      "Bus %d non-prefetchable memory range:\n",
-	      PciBus->secondary);
-  xf86PrintResList(3, PciBus->preferred_mem);
-  xf86MsgVerb(X_INFO, 3, "Bus %d prefetchable memory range:"
-	      "\n",PciBus->secondary);
-  xf86PrintResList(3, PciBus->preferred_pmem);
+  char primary[8], secondary[8], subordinate[8], brbus[8];
+
+  xf86FormatPciBusNumber(PciBus->primary, primary);
+  xf86FormatPciBusNumber(PciBus->secondary, secondary);
+  xf86FormatPciBusNumber(PciBus->subordinate, subordinate);
+  xf86FormatPciBusNumber(PciBus->brbus, brbus);
+
+  xf86MsgVerb(X_INFO, 3, "Bus %s: bridge is at (%s:%d:%d), "
+	      "(%s,%s,%s), BCTRL: 0x%02x (VGA_EN is %s)\n",
+	      secondary, brbus, PciBus->brdev, PciBus->brfunc,
+	      primary, secondary, subordinate, PciBus->brcontrol,
+	      (PciBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN) ? "set" : "cleared");
+  if (PciBus->preferred_io) {
+    xf86MsgVerb(X_INFO, 3,
+		"Bus %s I/O range:\n", secondary);
+    xf86PrintResList(3, PciBus->preferred_io);
+  }
+  if (PciBus->preferred_mem) {
+    xf86MsgVerb(X_INFO, 3,
+		"Bus %s non-prefetchable memory range:\n", secondary);
+    xf86PrintResList(3, PciBus->preferred_mem);
+  }
+  if (PciBus->preferred_pmem) {
+    xf86MsgVerb(X_INFO, 3,
+		"Bus %s prefetchable memory range:\n", secondary);
+    xf86PrintResList(3, PciBus->preferred_pmem);
+  }
 }
 
 /*
@@ -1791,7 +1815,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
     PciBusPtr PciBus, PciBusBase = NULL;
     PciBusPtr *pnPciBus = &PciBusBase;
     int MaxBus = 0;
-    int i;
+    int i, domain;
     memType base, limit;
 
     resPtr pciBusAccWindows = xf86PciBusAccWindowsFromOS();
@@ -1804,9 +1828,11 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 	    MaxBus = pcrp->busnum;
 	if ((pcrp->pci_base_class == PCI_CLASS_BRIDGE) 
 	    || (((pcrp->listed_class >> 8) & 0xff) == PCI_CLASS_BRIDGE)) {
-	    int sub_class; 
+	    int sub_class;
 	    sub_class = (pcrp->listed_class & 0xffff) 
 	      ? (pcrp->listed_class & 0xff) : pcrp->pci_sub_class; 
+	    domain = xf86GetPciDomain(pcrp->tag);
+
 	    switch (sub_class) {
 	    case PCI_SUBCLASS_BRIDGE_PCI:
 		/* something fishy about the header? If so: just ignore! */
@@ -1818,9 +1844,12 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		}
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
-		PciBus->secondary = pcrp->pci_secondary_bus_number;
-		PciBus->primary = pcrp->pci_primary_bus_number;
-		PciBus->subordinate = pcrp->pci_subordinate_bus_number;
+		PciBus->secondary = (pcrp->busnum & 0x0000FF00) |
+		    pcrp->pci_secondary_bus_number;
+		PciBus->primary = (pcrp->busnum & 0x0000FF00) |
+		    pcrp->pci_primary_bus_number;
+		PciBus->subordinate = (pcrp->busnum & 0x0000FF00) |
+		    pcrp->pci_subordinate_bus_number;
 		PciBus->brbus = pcrp->busnum;
 		PciBus->brdev = pcrp->devnum;
 		PciBus->brfunc = pcrp->funcnum;
@@ -1923,12 +1952,15 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 #endif
 		PciBus->subclass = sub_class;
 		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
-		PciBus->preferred_io = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResIo);
-		PciBus->preferred_mem = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResMem);
-		PciBus->preferred_pmem = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResMem);
+		PciBus->preferred_io =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResIo, domain));
+		PciBus->preferred_mem =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResMem, domain));
+		PciBus->preferred_pmem =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResMem, domain));
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
 		break;
 	    default:
@@ -1959,17 +1991,28 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 	    if (PciBusFound)      
 		PciBusFound->secondary = i;
 	    else {  /* if nothing found it may not be visible: create new */
+		/* Find a device on this bus */
+		domain = 0;
+		for (pcrpp = pciInfo;  (pcrp = *pcrpp);  pcrpp++) {
+		    if (pcrp->busnum == i) {
+			domain = xf86GetPciDomain(pcrp->tag);
+			break;
+		    }
+		}
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
 		pnPciBus = &PciBus->next;
 		PciBus->primary = -1;
 		PciBus->secondary = i;
 		PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
-		PciBus->preferred_io = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResIo);
-		PciBus->preferred_mem = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResMem);
-		PciBus->preferred_pmem = xf86ExtractTypeFromList(
-		    pciBusAccWindows,ResMem);
+		PciBus->preferred_io =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResIo, domain));
+		PciBus->preferred_mem =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResMem, domain));
+		PciBus->preferred_pmem =
+		    xf86ExtractTypeFromList(pciBusAccWindows,
+					    RANGE_TYPE(ResMem, domain));
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
 	    }
 	}
@@ -2639,6 +2682,12 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	/* in case bios is enabled disable it */
 	disablePciBios(pciTag(bus,device,func));
 	pciSlotClaimed = TRUE;
+
+	if (active) {
+	    /* Map in this domain's I/O space */
+	   p->domainIO = xf86MapDomainIO(-1, VIDMEM_MMIO,
+					 pciTag(bus, device, func), 0, 1);
+	}
 	
  	return num;
     } else
@@ -2786,12 +2835,12 @@ Bool
 xf86ParsePciBusString(const char *busID, int *bus, int *device, int *func)
 {
     /*
-     * The format is assumed to be "bus:device:func", where bus, device
-     * and func are decimal integers.  func may be omitted and assumed to
-     * be zero, although it doing this isn't encouraged.
+     * The format is assumed to be "bus[@domain]:device[:func]", where domain,
+     * bus, device and func are decimal integers.  domain and func may be
+     * omitted and assumed to be zero, although doing this isn't encouraged.
      */
 
-    char *p, *s;
+    char *p, *s, *d;
     const char *id;
     int i;
 
@@ -2804,6 +2853,16 @@ xf86ParsePciBusString(const char *busID, int *bus, int *device, int *func)
 	xfree(s);
 	return FALSE;
     }
+    d = strpbrk(p, "@");
+    if (d != NULL) {
+	*(d++) = 0;
+	for (i = 0; d[i] != 0; i++) {
+	    if (!isdigit(d[i])) {
+		xfree(s);
+		return FALSE;
+	    }
+	}
+    }
     for (i = 0; p[i] != 0; i++) {
 	if (!isdigit(p[i])) {
 	    xfree(s);
@@ -2811,6 +2870,8 @@ xf86ParsePciBusString(const char *busID, int *bus, int *device, int *func)
 	}
     }
     *bus = atoi(p);
+    if (d != NULL && *d != 0)
+	*bus += atoi(d) << 8;
     p = strtok(NULL, ":");
     if (p == NULL || *p == 0) {
 	xfree(s);
@@ -3183,7 +3244,10 @@ pciTagConvertRange2Host(PCITAG tag, resRange *pRange)
 	}
 	break;
     }
-    pRange->type &= ~ResBus;
+
+    /* Set domain number */
+    pRange->type &= ~(ResDomain | ResBus);
+    pRange->type |= xf86GetPciDomain(tag) << 24;
 }
 
 static void

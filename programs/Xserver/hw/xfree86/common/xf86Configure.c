@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.67 2002/01/07 20:38:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.68 2002/01/07 21:39:18 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -196,6 +196,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
     switch (bus) {
     case BUS_PCI: {
 	int vendor1, vendor2, card;
+	char busnum[8];
 
 	NewDevice.pVideo = pVideo;
 	GetPciCard(pVideo->vendor, pVideo->chipType,
@@ -216,8 +217,9 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 	NewDevice.GDev.board = CardName;
 
 	NewDevice.GDev.busID = xnfalloc(16);
-	sprintf(NewDevice.GDev.busID, "PCI:%d:%d:%d",
-	    pVideo->bus, pVideo->device, pVideo->func);
+	xf86FormatPciBusNumber(pVideo->bus, busnum);
+	sprintf(NewDevice.GDev.busID, "PCI:%s:%d:%d",
+	    busnum, pVideo->device, pVideo->func);
 
 	NewDevice.GDev.chipID = pVideo->chipType;
 	NewDevice.GDev.chipRev = pVideo->chipRev;

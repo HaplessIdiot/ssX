@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.387 2002/01/03 16:33:50 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.388 2002/01/03 22:51:54 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -389,11 +389,27 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #  define XF86Int10		YES
 # endif
 
+# ifndef DevelDrivers
+#  if XFree86Devel
+   /*
+    * Some of these are compiled just for the fun of it.  Undoubtedly some
+    * require changes (or even removal) for things like endianness, etc.  Move
+    * those known to work into the main XF86CardDrivers #define.
+    */
+#   define DevelDrivers		apm ark chips cirrus i128 i740 i810 imstt \
+				neomagic newport nv rendition s3virge savage \
+				siliconmotion tga trident vmware
+#  else
+#   define DevelDrivers		/* */
+#  endif
+# endif
+
 /* Pure SBUS and PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	sunffb sunleo suncg6 suncg3 suncg14 suntcx \
-				sunbw2 ati glint fbdev \
-				XF86OSCardDrivers XF86ExtraCardDrivers
+				sunbw2 glint mga tdfx ati vesa vga fbdev \
+				XF86OSCardDrivers XF86ExtraCardDrivers \
+				DevelDrivers
 # endif
 # ifndef DriDrivers
 #  define DriDrivers		ffb

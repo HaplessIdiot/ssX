@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.9 2001/02/15 17:50:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.10 2001/05/04 19:05:42 dawes Exp $ */
 /*
  * file vmodes.c
  *
@@ -189,7 +189,7 @@ struct width_to_stride_t {
  * local function prototypes
  */
 
-void set_PLL(vu16 iob, vu32 value);
+void set_PLL(IOADDRESS iob, vu32 value);
 static double V1000CalcClock(double target, int *M, int *N, int *P);
 static double V2200CalcClock(double target, int *m, int *n, int *p);
 
@@ -461,12 +461,12 @@ verite_getstride(ScrnInfoPtr pScreenInfo, int *width, vu16 *stride0, vu16 *strid
  */
 
 /*
- * void set_PLL(vu16 iob, vu32 value)
+ * void set_PLL(IOADDRESS iob, vu32 value)
  *
  * Set PLL clock to desired frequency for the V1000.
  */
 void
-set_PLL(vu16 iob, vu32 value)
+set_PLL(IOADDRESS iob, vu32 value)
 {
     vu32 ulD;
     int b;

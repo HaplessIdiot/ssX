@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.21 2001/11/30 12:12:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.22 2002/01/11 13:06:30 alanh Exp $ */
 
 #define DEBUG 1
 
@@ -234,7 +234,7 @@
 	if (IsPciCard && UseMMIO) { \
             MMIO_OUT8(pTrident->IOBase, addr, data); \
 	} else { \
-	    outb(addr, data); \
+	    outb(pTrident->PIOBase + (addr), data); \
 	} \
 }
 #define OUTW(addr, data) \
@@ -242,10 +242,15 @@
 	if (IsPciCard && UseMMIO) { \
             MMIO_OUT16(pTrident->IOBase, addr, data); \
 	} else { \
-	    outw(addr, data); \
+	    outw(pTrident->PIOBase + (addr), data); \
 	} \
 }
-#define INB(addr) ((IsPciCard && UseMMIO) ? MMIO_IN8(pTrident->IOBase, addr) : inb(addr))
+#define INB(addr) \
+( \
+	(IsPciCard && UseMMIO) ? \
+	    MMIO_IN8(pTrident->IOBase, addr) : \
+	    inb(pTrident->PIOBase + (addr)) \
+)
 
 #define OUTW_3C4(reg) \
     	OUTW(0x3C4, (tridentReg->tridentRegs3C4[reg])<<8 | (reg))

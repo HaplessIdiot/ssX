@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.155 2001/10/01 13:44:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.157 2001/12/13 18:01:50 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -78,6 +78,7 @@ int xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 Bool xf86ParsePciBusString(const char *busID, int *bus, int *device,
 			   int *func);
 Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
+void xf86FormatPciBusNumber(int busnum, char *buffer);
 pciVideoPtr *xf86GetPciVideoInfo(void);
 #ifdef _XF86PCI_H
 pciConfigPtr *xf86GetPciConfigInfo(void);
@@ -237,8 +238,9 @@ int xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 		   Bool (*ClockFunc)(ScrnInfoPtr, int),
 		   void (*ProtectRegs)(ScrnInfoPtr, Bool),
-		   void (*BlankScreen)(ScrnInfoPtr, Bool), int vertsyncreg,
-		   int maskval, int knownclkindex, int knownclkvalue);
+		   void (*BlankScreen)(ScrnInfoPtr, Bool),
+		   IOADDRESS vertsyncreg, int maskval,
+		   int knownclkindex, int knownclkvalue);
 void xf86SetPriority(Bool up);
 const char *xf86GetVisualName(int visual);
 int xf86GetVerbosity(void);

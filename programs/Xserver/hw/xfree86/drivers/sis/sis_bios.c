@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.14 2002/01/17 09:57:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.15 2002/01/17 10:49:35 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -4936,16 +4936,18 @@ static UShort CheckACK(void)
 
 unsigned char SiSGetSetModeID(ScrnInfoPtr pScrn, unsigned char id)
 {
-    unsigned char ret;
+    SISPtr         pSiS = SISPTR(pScrn);
+    unsigned char  ret;
+    unsigned char* base;
 
-    unsigned char* base = xf86MapVidMem(pScrn->scrnIndex,
-					VIDMEM_MMIO, 0, 0x2000);
+    base = xf86MapDomainMemory(pScrn->scrnIndex, VIDMEM_MMIO, pSiS->PciTag,
+			       0, 0x2000);
     ret = *(base + MODEID_OFF);
 
     /* id != 0xff means: set mode */
     if (id != 0xff)
 	*(base + MODEID_OFF) = id;
-    xf86UnMapVidMem(pScrn->scrnIndex,base,0x2000);
+    xf86UnMapVidMem(pScrn->scrnIndex, base, 0x2000);
 
     return ret;
 }

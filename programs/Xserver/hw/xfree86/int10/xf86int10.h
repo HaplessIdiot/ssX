@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.19 2001/03/03 22:46:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.21 2001/05/15 10:19:41 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -11,6 +11,7 @@
 
 #include "Xmd.h"
 #include "Xdefs.h"
+#include "xf86Pci.h"
 
 #define SEG_ADDR(x) (((x) >> 4) & 0x00F000)
 #define SEG_OFF(x) ((x) & 0x0FFFF)
@@ -35,6 +36,8 @@ typedef struct {
     int bp;
     int flags;
     int stackseg;
+    PCITAG Tag;
+    IOADDRESS ioBase;
 } xf86Int10InfoRec, *xf86Int10InfoPtr;
 
 typedef struct _int10Mem {
@@ -132,8 +135,8 @@ void dump_registers(xf86Int10InfoPtr pInt);
 void stack_trace(xf86Int10InfoPtr pInt);
 xf86Int10InfoPtr getInt10Rec(int entityIndex);
 CARD8 bios_checksum(CARD8 *start, int size);
-void LockLegacyVGA(int screenIndex, legacyVGAPtr vga);
-void UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga);
+void LockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga);
+void UnlockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga);
 int port_rep_inb(xf86Int10InfoPtr pInt,
 		 CARD16 port, CARD32 base, int d_f, CARD32 count);
 int port_rep_inw(xf86Int10InfoPtr pInt,

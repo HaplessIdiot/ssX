@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.3 1999/03/28 15:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.4 2001/05/28 18:20:49 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -50,9 +50,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86PciInfo.h"
 #include "Pci.h"
-
-#include <asm/unistd.h>
 
 /*
  * linux platform specific PCI access functions -- using /proc/bus/pci
@@ -67,8 +66,10 @@ pciBusInfo_t linuxPci0 = {
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
 /* primary_bus */	  0,
+#ifdef PowerMAX_OS
 /* ppc_io_base */	  0,
 /* ppc_io_size */	  0,		  
+#endif
 /* funcs       */	  {
 	                    linuxPciCfgRead,
 			    linuxPciCfgWrite,
@@ -78,15 +79,6 @@ pciBusInfo_t linuxPci0 = {
 		          },
 /* pciBusPriv  */	  NULL
 };
-
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-#define PCI_CPU(val)	(((val >> 24) & 0x000000ff) |	\
-			 ((val >>  8) & 0x0000ff00) |	\
-			 ((val <<  8) & 0x00ff0000) |	\
-			 ((val << 24) & 0xff000000))
-#else
-#define PCI_CPU(val)	(val)
-#endif
 
 void  
 linuxPciInit()
@@ -167,3 +159,431 @@ linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 		write(fd,&val,4);
 	}
 }
+
+#ifndef INCLUDE_XF86_NO_DOMAIN
+
+/*
+ * Compiling the following simply requires the presence of <linux/pci.c>.
+ * Actually running this is another matter altogether...
+ *
+ * This scheme requires that the kernel allow mmap()'ing of a host bridge's I/O
+ * and memory spaces through its /proc/bus/pci/BUS/DFN entry.  Which one is
+ * determined by a prior ioctl().
+ *
+ * For the sparc64 port, this means 2.4.12 or later.  For ppc, this
+ * functionality is almost, but not quite there yet.  Alpha and other kernel
+ * ports to multi-domain architectures still need to implement this.
+ *
+ * This scheme is also predicated on the use of an IOADDRESS compatible type to
+ * designate I/O addresses.  Although IOADDRESS is defined as an unsigned
+ * integral type, it is actually the virtual address of, i.e. a pointer to, the
+ * I/O port to access.  And so, the inX/outX macros in "compiler.h" need to be
+ * #define'd appropriately (as is done on SPARC's).
+ *
+ * Another requirement to port this scheme to another multi-domain architecture
+ * is to add the appropriate entries in the pciControllerSizes array below.
+ *
+ * TO DO:  Address the deleterious reaction some host bridges have to master
+ *         aborts.  This is already done for secondary PCI buses, but not yet
+ *         for accesses to primary buses (except for the SPARC port, where
+ *         master aborts are avoided during PCI scans).
+ */
+
+#include <linux/pci.h>
+
+#ifndef PCIIOC_BASE		/* Ioctls for /proc/bus/pci/X/Y nodes. */
+#define PCIIOC_BASE		('P' << 24 | 'C' << 16 | 'I' << 8)
+
+/* Get controller for PCI device. */
+#define PCIIOC_CONTROLLER	(PCIIOC_BASE | 0x00)
+/* Set mmap state to I/O space. */
+#define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
+/* Set mmap state to MEM space. */
+#define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
+/* Enable/disable write-combining. */
+#define PCIIOC_WRITE_COMBINE	(PCIIOC_BASE | 0x03)
+
+#endif
+
+/* This probably shouldn't be Linux-specific */
+static PCITAG
+xf86GetPciControllerTag(PCITAG Tag)
+{
+    int bus = PCI_BUS_FROM_TAG(Tag);
+    pciBusInfo_t *pBusInfo;
+
+    while ((bus < pciNumBuses) && (pBusInfo = pciBusInfo[bus])) {
+	if (!pBusInfo->secondary)
+	    return pBusInfo->host_bridge;
+	bus = pBusInfo->primary_bus;
+    }
+
+    return 0;	/* Bad data */
+}
+
+static pciConfigPtr
+xf86GetPciConfigFromTag(PCITAG Tag)
+{
+    pciConfigPtr *ppPCI, pPCI;
+
+    if (!(ppPCI = xf86scanpci(0)))
+	return NULL;
+
+    for (;  ;  ppPCI++)
+	if (!(pPCI = *ppPCI) || (pPCI->tag == Tag))
+	    return pPCI;
+
+    return NULL;
+}
+
+/*
+ * This is ugly, but until I can extract this information from the kernel,
+ * it'll have to do.  The default I/O space size is 64K, and 4G for memory.
+ * Anything else needs to go in this table.  (PowerPC folk take note.)
+ *
+ * Note that Linux/SPARC userland is 32-bit, so 4G overflows to zero here.
+ *
+ * Please keep this table in ascending vendor/device order.
+ */
+static struct pciSizes {
+    unsigned short vendor, device;
+    unsigned long io_size, mem_size;
+} pciControllerSizes[] = {
+    {
+	PCI_VENDOR_SUN, PCI_CHIP_PSYCHO,
+	1U << 16, 1U << 31
+    },
+    {
+	PCI_VENDOR_SUN, PCI_CHIP_SCHIZO,
+	1U << 24, 1U << 31	/* ??? */
+    },
+    {
+	PCI_VENDOR_SUN, PCI_CHIP_SABRE,
+	1U << 24, (unsigned long)(1ULL << 32)
+    },
+    {
+	PCI_VENDOR_SUN, PCI_CHIP_HUMMINGBIRD,
+	1U << 24, (unsigned long)(1ULL << 32)
+    }
+};
+#define NUM_SIZES (sizeof(pciControllerSizes) / sizeof(pciControllerSizes[0]))
+
+static unsigned long
+linuxGetIOSize(PCITAG Tag)
+{
+    pciConfigPtr pPCI;
+    int          i;
+
+    /* Get the host bridge's tag */
+    Tag = xf86GetPciControllerTag(Tag);
+
+    /* Find host bridge */
+    if ((pPCI = xf86GetPciConfigFromTag(Tag))) {
+	/* Look up vendor/device */
+	for (i = 0;  i < NUM_SIZES;  i++) {
+	    if (pPCI->pci_vendor > pciControllerSizes[i].vendor)
+		continue;
+	    if (pPCI->pci_vendor < pciControllerSizes[i].vendor)
+		break;
+	    if (pPCI->pci_device > pciControllerSizes[i].device)
+		continue;
+	    if (pPCI->pci_device < pciControllerSizes[i].device)
+		break;
+	    return pciControllerSizes[i].io_size;
+	}
+    }
+
+    return 1U << 16;			/* Default to 64K */
+}
+
+static void
+linuxGetSizes(PCITAG Tag, unsigned long *io_size, unsigned long *mem_size)
+{
+    pciConfigPtr pPCI;
+    int          i;
+
+    *io_size  = (1U << 16);			/* Default to 64K */
+    *mem_size = (unsigned long)(1ULL << 32);	/* Default to 4G */
+
+    /* Get the host bridge's tag */
+    Tag = xf86GetPciControllerTag(Tag);
+
+    /* Find host bridge */
+    if ((pPCI = xf86GetPciConfigFromTag(Tag))) {
+	/* Look up vendor/device */
+	for (i = 0;  i < NUM_SIZES;  i++) {
+	    if (pPCI->pci_vendor > pciControllerSizes[i].vendor)
+		continue;
+	    if (pPCI->pci_vendor < pciControllerSizes[i].vendor)
+		break;
+	    if (pPCI->pci_device > pciControllerSizes[i].device)
+		continue;
+	    if (pPCI->pci_device < pciControllerSizes[i].device)
+		break;
+	    *io_size  = pciControllerSizes[i].io_size;
+	    *mem_size = pciControllerSizes[i].mem_size;
+	    break;
+	}
+    }
+}
+
+int
+xf86GetPciDomain(PCITAG Tag)
+{
+    int fd, result;
+
+    if ((fd = linuxPciOpenFile(xf86GetPciControllerTag(Tag))) < 0)
+	return 0;
+
+    if ((result = ioctl(fd, PCIIOC_CONTROLLER, 0)) < 0)
+	return 0;
+
+    return result + 1;		/* Domain 0 is reserved */
+}
+
+static pointer
+linuxMapPci(int ScreenNum, int Flags, PCITAG Tag,
+	    ADDRESS Base, unsigned long Size, int mmap_ioctl)
+{
+    do {
+	unsigned char *result;
+	ADDRESS realBase, Offset;
+	int fd, mmapflags, prot;
+
+	xf86InitVidMem();
+
+	if (((fd = linuxPciOpenFile(xf86GetPciControllerTag(Tag))) < 0) ||
+	    (ioctl(fd, mmap_ioctl, 0) < 0))
+	    break;
+
+/* Note:  IA-64 doesn't compile this yet */
+#ifdef __ia64__
+
+# ifndef  MAP_WRITECOMBINED
+#  define MAP_WRITECOMBINED 0x00010000
+# endif
+# ifndef  MAP_NONCACHED
+#  define MAP_NONCACHED     0x00020000
+# endif
+
+	if (Flags & VIDMEM_FRAMEBUFFER)
+	    mmapflags = MAP_SHARED | MAP_WRITECOMBINED;
+	else
+	    mmapflags = MAP_SHARED | MAP_NONCACHED
+
+#else /* !__ia64__ */
+
+	mmapflags = (Flags & VIDMEM_FRAMEBUFFER) / VIDMEM_FRAMEBUFFER;
+
+	if (ioctl(fd, PCIIOC_WRITE_COMBINE, mmapflags) < 0)
+	    break;
+
+	mmapflags = MAP_SHARED;
+
+#endif /* ?__ia64__ */
+
+	/* Align to page boundary */
+	realBase = Base & ~(getpagesize() - 1);
+	Offset = Base - realBase;
+
+	if (Flags & VIDMEM_READONLY)
+	    prot = PROT_READ;
+	else
+	    prot = PROT_READ | PROT_WRITE;
+
+	result = mmap(NULL, Size + Offset, prot, mmapflags, fd, realBase);
+
+	if (!result || ((pointer)result == MAP_FAILED))
+	    FatalError("linuxMapPci() mmap failure:  %s\n", strerror(errno));
+
+	xf86MakeNewMapping(ScreenNum, Flags, realBase, Size + Offset, result);
+
+	return result + Offset;
+    } while (0);
+
+    if (mmap_ioctl == PCIIOC_MMAP_IS_MEM)
+	return xf86MapVidMem(ScreenNum, Flags, Base, Size);
+
+    return NULL;
+}
+
+pointer
+xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
+		    ADDRESS Base, unsigned long Size)
+{
+    return linuxMapPci(ScreenNum, Flags, Tag, Base, Size, PCIIOC_MMAP_IS_MEM);
+}
+
+#define MAX_DOMAINS 257
+static pointer DomainMmappedIO[MAX_DOMAINS];
+
+/* This has no means of returning failure, so all errors are fatal */
+IOADDRESS
+xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
+		IOADDRESS Base, unsigned long Size)
+{
+    int domain = xf86GetPciDomain(Tag);
+
+    if ((domain <= 0) || (domain >= MAX_DOMAINS))
+	FatalError("xf86MapDomainIO():  domain out of range\n");
+
+    /* Permanently map all of I/O space */
+    if (!DomainMmappedIO[domain]) {
+	DomainMmappedIO[domain] = linuxMapPci(ScreenNum, Flags, Tag,
+					      0, linuxGetIOSize(Tag),
+					      PCIIOC_MMAP_IS_IO);
+	if (!DomainMmappedIO[domain])
+	    FatalError("xf86MapDomainIO():  mmap() failure\n");
+    }
+
+    return (IOADDRESS)DomainMmappedIO[domain] + Base;
+}
+
+int
+xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len, unsigned char *Buf)
+{
+    unsigned char *ptr, *src;
+    ADDRESS offset;
+    unsigned long size;
+    int len, pagemask = getpagesize() - 1;
+
+    /* Ensure page boundaries */
+    offset = Base & ~pagemask;
+    size = ((Base + Len + pagemask) & ~pagemask) - offset;
+
+    ptr = xf86MapDomainMemory(-1, VIDMEM_READONLY, Tag, offset, size);
+
+    if (!ptr)
+	return -1;
+
+    /* Using memcpy() here can hang the system */
+    src = ptr + (Base - offset);
+    for (len = Len;  len-- > 0;)
+	*Buf++ = *src++;
+
+    xf86UnMapVidMem(-1, ptr, size);
+
+    return Len;
+}
+
+resPtr
+xf86BusAccWindowsFromOS(void)
+{
+    pciConfigPtr  *ppPCI, pPCI;
+    resPtr        pRes = NULL;
+    resRange      range;
+    unsigned long io_size, mem_size;
+    int           domain;
+
+    if ((ppPCI = xf86scanpci(0))) {
+	for (;  (pPCI = *ppPCI);  ppPCI++) {
+	    if ((pPCI->pci_base_class != PCI_CLASS_BRIDGE) ||
+		(pPCI->pci_sub_class  != PCI_SUBCLASS_BRIDGE_HOST))
+		continue;
+
+	    domain = xf86GetPciDomain(pPCI->tag);
+	    linuxGetSizes(pPCI->tag, &io_size, &mem_size);
+
+	    RANGE(range, 0, (ADDRESS)(mem_size - 1),
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    RANGE(range, 0, (IOADDRESS)(io_size - 1),
+		  RANGE_TYPE(ResExcIoBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    if (domain <= 0)
+		break;
+	}
+    }
+
+    return pRes;
+}
+
+resPtr
+xf86PciBusAccWindowsFromOS(void)
+{
+    pciConfigPtr  *ppPCI, pPCI;
+    resPtr        pRes = NULL;
+    resRange      range;
+    unsigned long io_size, mem_size;
+    int           domain;
+
+    if ((ppPCI = xf86scanpci(0))) {
+	for (;  (pPCI = *ppPCI);  ppPCI++) {
+	    if ((pPCI->pci_base_class != PCI_CLASS_BRIDGE) ||
+		(pPCI->pci_sub_class  != PCI_SUBCLASS_BRIDGE_HOST))
+		continue;
+
+	    domain = xf86GetPciDomain(pPCI->tag);
+	    linuxGetSizes(pPCI->tag, &io_size, &mem_size);
+
+	    RANGE(range, 0, (ADDRESS)(mem_size - 1),
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    RANGE(range, 0, (IOADDRESS)(io_size - 1),
+		  RANGE_TYPE(ResExcIoBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    if (domain <= 0)
+		break;
+	}
+    }
+
+    return pRes;
+}
+
+
+resPtr
+xf86AccResFromOS(resPtr pRes)
+{
+    pciConfigPtr  *ppPCI, pPCI;
+    resRange      range;
+    unsigned long io_size, mem_size;
+    int           domain;
+
+    if ((ppPCI = xf86scanpci(0))) {
+	for (;  (pPCI = *ppPCI);  ppPCI++) {
+	    if ((pPCI->pci_base_class != PCI_CLASS_BRIDGE) ||
+		(pPCI->pci_sub_class  != PCI_SUBCLASS_BRIDGE_HOST))
+		continue;
+
+	    domain = xf86GetPciDomain(pPCI->tag);
+	    linuxGetSizes(pPCI->tag, &io_size, &mem_size);
+
+	    /*
+	     * At minimum, the top and bottom resources must be claimed, so
+	     * that resources that are (or appear to be) unallocated can be
+	     * relocated.
+	     */
+	    RANGE(range, 0x00000000u, 0x0009ffffu,
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+	    RANGE(range, 0x000c0000u, 0x000effffu,
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+	    RANGE(range, 0x000f0000u, 0x000fffffu,
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    RANGE(range, (ADDRESS)(mem_size - 1), (ADDRESS)(mem_size - 1),
+		  RANGE_TYPE(ResExcMemBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    RANGE(range, 0x00000000u, 0x00000000u,
+		  RANGE_TYPE(ResExcIoBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+	    RANGE(range, (IOADDRESS)(io_size - 1), (IOADDRESS)(io_size - 1),
+		  RANGE_TYPE(ResExcIoBlock, domain));
+	    pRes = xf86AddResToList(pRes, &range, -1);
+
+	    if (domain <= 0)
+		break;
+	}
+    }
+
+    return pRes;
+}
+
+#endif /* !INCLUDE_XF86_NO_DOMAIN */

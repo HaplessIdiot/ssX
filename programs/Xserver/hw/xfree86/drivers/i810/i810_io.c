@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_io.c,v 1.2 2000/02/23 04:47:16 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_io.c,v 1.3 2000/05/11 18:14:34 tsi Exp $ */
 
 /*
  * Authors:
@@ -40,25 +40,31 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i810.h"
 
 static void
-I810WriteControlPIO(I810Ptr pI810, int addr, CARD8 index, CARD8 val) {
+I810WriteControlPIO(I810Ptr pI810, IOADDRESS addr, CARD8 index, CARD8 val)
+{
+  addr += pI810->ioBase;
   outb(addr, index);
   outb(addr+1, val);
 }
 
 static CARD8
-I810ReadControlPIO(I810Ptr pI810, int addr, CARD8 index) {
+I810ReadControlPIO(I810Ptr pI810, IOADDRESS addr, CARD8 index)
+{
+  addr += pI810->ioBase;
   outb(addr, index);
   return inb(addr+1);
 }
 
 static void
-I810WriteStandardPIO(I810Ptr pI810, int addr, CARD8 val) {
-  outb(addr, val);
+I810WriteStandardPIO(I810Ptr pI810, IOADDRESS addr, CARD8 val)
+{
+  outb(pI810->ioBase + addr, val);
 }
 
 static CARD8
-I810ReadStandardPIO(I810Ptr pI810, int addr) {
-  return inb(addr);
+I810ReadStandardPIO(I810Ptr pI810, IOADDRESS addr)
+{
+  return inb(pI810->ioBase + addr);
 }
 
 void I810SetPIOAccess(I810Ptr pI810) {
@@ -69,24 +75,28 @@ void I810SetPIOAccess(I810Ptr pI810) {
 }
 
 static void
-I810WriteControlMMIO(I810Ptr pI810, int addr, CARD8 index, CARD8 val) {
+I810WriteControlMMIO(I810Ptr pI810, IOADDRESS addr, CARD8 index, CARD8 val)
+{
   moutb(addr, index);
   moutb(addr+1, val);
 }
 
 static CARD8
-I810ReadControlMMIO(I810Ptr pI810, int addr, CARD8 index) {
+I810ReadControlMMIO(I810Ptr pI810, IOADDRESS addr, CARD8 index)
+{
   moutb(addr, index);
   return minb(addr+1);
 }
 
 static void
-I810WriteStandardMMIO(I810Ptr pI810, int addr, CARD8 val) {
+I810WriteStandardMMIO(I810Ptr pI810, IOADDRESS addr, CARD8 val)
+{
   moutb(addr, val);
 }
 
 static CARD8
-I810ReadStandardMMIO(I810Ptr pI810, int addr) {
+I810ReadStandardMMIO(I810Ptr pI810, IOADDRESS addr)
+{
   return minb(addr);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.116 2001/10/28 03:33:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.117 2002/01/04 21:22:27 tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1426,6 +1426,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
+    cPtr->PIOBase = hwp->PIOOffset;
 
     /*
      * Must allow ensure that storage for the 2nd set of vga registers is
@@ -6658,7 +6659,7 @@ chipsRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, CHIPSRegPtr ChipsReg,
     /* set the clock */
     chipsClockLoad(pScrn, &ChipsReg->Clock);
     /* chipsClockLoad() sets this so we don't want vgaHWRestore() change it */
-    VgaReg->MiscOutReg = inb(0x3CC);
+    VgaReg->MiscOutReg = inb(cPtr->PIOBase + 0x3CC);
 	
     /* set extended regs */
     chipsRestoreExtendedRegs(pScrn, ChipsReg);
@@ -7227,7 +7228,7 @@ chipsHWCursorOn(CHIPSPtr cPtr, ScrnInfoPtr pScrn)
 	    if (cPtr->UseMMIO) {
 		MMIOmeml(DR(0x8)) = cPtr->HWCursorContents;
 	    } else {
-		outl(DR(0x8), cPtr->HWCursorContents);
+		outl(cPtr->PIOBase + DR(0x8), cPtr->HWCursorContents);
 	    }
 	}
     }
@@ -7249,8 +7250,8 @@ chipsHWCursorOff(CHIPSPtr cPtr, ScrnInfoPtr pScrn)
 		/* Also see ct_cursor.c */
 		MMIOmeml(DR(0x8)) = cPtr->HWCursorContents & 0xFFFE;
 	    } else {
-		cPtr->HWCursorContents = inl(DR(0x8));
-		outw(DR(0x8), cPtr->HWCursorContents & 0xFFFE);
+		cPtr->HWCursorContents = inl(cPtr->PIOBase + DR(0x8));
+		outw(cPtr->PIOBase + DR(0x8), cPtr->HWCursorContents & 0xFFFE);
 	    }
 	}
     }

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.87 2002/01/04 21:22:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.88 2002/01/23 18:48:08 dawes Exp $ */
 
 /*
  * Authors:
@@ -583,7 +583,8 @@ TDFXFindChips(ScrnInfoPtr pScrn, pciVideoPtr match)
       pTDFX->PciTag[pTDFX->numChips] = pciTag((*ppPci)->bus, 
 					      (*ppPci)->device,
 					      (*ppPci)->func);
-      pTDFX->PIOBase[pTDFX->numChips] = (*ppPci)->ioBase[2]&0xFFFFFFFC;
+      pTDFX->PIOBase[pTDFX->numChips] =
+	pScrn->domainIOBase + ((*ppPci)->ioBase[2] & 0xFFFFFFFCU);
       pTDFX->numChips++;
     }
   }
@@ -876,9 +877,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at addr 0x%lX\n",
 	     (unsigned long)pTDFX->MMIOAddr[0]);
 
-  if (match->ioBase[2]) {
-    pTDFX->PIOBase[0] = match->ioBase[2]&0xFFFFFFFC;
-  } else {
+  if (!match->ioBase[2]) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	       "No valid PIO address in PCI config space\n");
     TDFXFreeRec(pScrn);

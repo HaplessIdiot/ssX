@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.7 2001/11/30 12:11:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.8 2001/12/20 21:35:38 eich Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -149,6 +149,7 @@ typedef struct
 	CARD8 *			DataPortBase;	/* Base of data port */
 	int			DataPortSize;	/* Size of data port */
 	CARD8 *			IOBase;		/* Base of MMIO VGA ports */
+	IOADDRESS		PIOBase;	/* Base of I/O ports */
 	unsigned char *		FBBase;		/* Base of FB */
 	CARD32			FBOffset;	/* Current visual FB starting
 						   location */

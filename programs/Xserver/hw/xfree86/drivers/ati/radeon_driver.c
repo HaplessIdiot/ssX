@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.50 2002/01/16 02:00:43 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.51 2002/01/21 18:49:16 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -745,7 +745,7 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Attempting to read Video BIOS from legacy ISA space!\n");
 	    info->BIOSAddr = 0x000c0000;
-	    xf86ReadBIOS(info->BIOSAddr, 0, info->VBIOS, RADEON_VBIOS_SIZE);
+	    xf86ReadDomainMemory(info->PciTag, info->BIOSAddr, RADEON_VBIOS_SIZE, info->VBIOS);
 	}
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa)

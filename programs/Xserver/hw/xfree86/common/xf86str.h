@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.81 2001/10/28 03:33:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.83 2001/11/30 12:11:55 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -18,6 +18,7 @@
 #include "pixmapstr.h"
 #include "xf86Module.h"
 #include "xf86Opt.h"
+#include "xf86Pci.h"
 
 /*
  * memType is of the size of the addressable memory (machine size)
@@ -604,6 +605,7 @@ typedef struct {
     memType b;
 } resRange, *resList;
 
+#define RANGE_TYPE(type, domain) (((domain) << 24) | ((type) & ~ResBus))
 #define RANGE(r,u,v,t) {\
                        (r).a = (u);\
                        (r).b = (v);\
@@ -829,7 +831,7 @@ typedef struct _ScrnInfoRec {
     unsigned long	biosBase;		/* Base address of video BIOS */
     unsigned long	memPhysBase;		/* Physical address of FB */
     unsigned long 	fbOffset;		/* Offset of FB in the above */
-    unsigned long	ioBase;			/* I/O or MMIO base adderss */
+    IOADDRESS    	domainIOBase;		/* Domain I/O base address */
     int			memClk;			/* memory clock */
     int			textClockFreq;		/* clock of text mode */
     Bool		flipPixels;		/* swap default black/white */

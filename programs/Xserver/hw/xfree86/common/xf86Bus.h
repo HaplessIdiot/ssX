@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.17 2001/01/06 20:19:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.18 2001/02/12 01:25:23 tsi Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */
@@ -44,6 +44,7 @@ typedef struct {
     DevUnion *                  entityPrivates;
     int                         numInstances;
     GDevPtr *                   devices;   
+    IOADDRESS                   domainIO;
 } EntityRec, *EntityPtr;
 
 /* asynchronous event handling */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.87 2002/01/07 18:46:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.88 2002/01/07 20:38:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,12 +119,6 @@ extern void stl_brx(unsigned long, volatile unsigned char *, int);
 extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
 extern unsigned short ldw_brx(volatile unsigned char *, int);
-extern unsigned char rdinx(unsigned short, unsigned char);
-extern void wrinx(unsigned short, unsigned char, unsigned char);
-extern void modinx(unsigned short, unsigned char, unsigned char, unsigned char);
-extern int testrg(unsigned short, unsigned char);
-extern int testinx2(unsigned short, unsigned char, unsigned char);
-extern int testinx(unsigned short, unsigned char);
 
 #endif
 
@@ -1491,104 +1485,6 @@ extern void outl(unsigned port, unsigned val);
 #define outw(a,b) (ErrorF("outw(0x%03x, 0x%04x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutw(a,b))
 #define outl(a,b) (ErrorF("outl(0x%03x, 0x%08x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutl(a,b))
 #endif
-
-/*
- * This header sometimes gets included where is isn't needed, and on some OSs
- * this causes problems because the following functions generate references to
- * inx() and outx() which can't be resolved.  If you need the extra definitions
- * below, #define COMPILER_H_EXTRAS.
- */
-
-#ifdef COMPILER_H_EXTRAS
-/*
- *-----------------------------------------------------------------------
- * Port manipulation convenience functions
- *-----------------------------------------------------------------------
- */
-
-/*
- * rdinx - read the indexed byte port 'port', index 'ind', and return its value
- */
-static __inline__ unsigned char 
-rdinx(unsigned short port, unsigned char ind)
-{
-	if (port == 0x3C0)		/* reset attribute flip-flop */
-		(void) inb(0x3DA);
-	outb(port, ind);
-	return inb(port+1);
-}
-
-/*
- * wrinx - write 'val' to port 'port', index 'ind'
- */
-static __inline__ void 
-wrinx(unsigned short port, unsigned char ind, unsigned char val)
-{
-	outb(port, ind);
-	outb(port+1, val);
-}
-
-/*
- * modinx - in register 'port', index 'ind', set the bits in 'mask' as in 'new';
- *	    the other bits are unchanged.
- */
-static __inline__ void
-modinx(unsigned short port, unsigned char ind, 
-       unsigned char mask, unsigned char new)
-{
-	unsigned char tmp;
-
-	tmp = (rdinx(port, ind) & ~mask) | (new & mask);
-	wrinx(port, ind, tmp);
-}
-
-/*
- * tstrg - returns true iff the bits in 'mask' of register 'port' are
- *	   readable & writable.
- */
-
-static __inline__ int
-testrg(unsigned short port, unsigned char mask)
-{
-	unsigned char old, new1, new2;
-
-	old = inb(port);
-	outb(port, old & ~mask);
-	new1 = inb(port) & mask;
-	outb(port, old | mask);
-	new2 = inb(port) & mask;
-	outb(port, old);
-	return (new1 == 0) && (new2 == mask);
-}
-
-/*
- * testinx2 - returns true iff the bits in 'mask' of register 'port', index
- *	      'ind' are readable & writable.
- */
-static __inline__ int
-testinx2(unsigned short port, unsigned char ind, unsigned char mask)
-{
-	unsigned char old, new1, new2;
-
-	old = rdinx(port, ind);
-	wrinx(port, ind, old & ~mask);
-	new1 = rdinx(port, ind) & mask;
-	wrinx(port, ind, old | mask);
-	new2 = rdinx(port, ind) & mask;
-	wrinx(port, ind, old);
-	return (new1 == 0) && (new2 == mask);
-}
-
-/*
- * testinx - returns true iff all bits of register 'port', index 'ind' are 
- *     	     readable & writable.
- */
-static __inline__ int
-testinx(unsigned short port, unsigned char ind)
-{
-	return testinx2(port, ind, 0xFF);
-}
-#endif /* COMPILER_H_EXTRAS */
 
 #endif /* NO_INLINE */
 

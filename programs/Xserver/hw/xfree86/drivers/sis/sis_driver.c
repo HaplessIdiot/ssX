@@ -27,7 +27,7 @@
  *
  *  Fixes for 630 chipsets: Thomas Winischhofer.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.77 2002/01/17 09:57:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.78 2002/01/17 10:49:35 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -880,7 +880,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         ErrorF("Allocate memory fail !!\n");
         return FALSE;
     }
-    if (xf86ReadBIOS(BIOS_BASE, 0, pSiS->BIOS, BIOS_SIZE) != BIOS_SIZE)  {
+    if (xf86ReadDomainMemory(pSiS->PciTag, BIOS_BASE, BIOS_SIZE, pSiS->BIOS) != BIOS_SIZE)  {
         xfree(pSiS->BIOS);
         ErrorF("Read VBIOS image fail !!\n");
         return FALSE;

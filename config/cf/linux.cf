@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.174 2001/12/17 16:03:57 keithp Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.175 2002/01/15 21:22:31 keithp Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -265,8 +265,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #ifndef XF86INT10_BUILD
 # ifdef i386Architecture
 #  define XF86INT10_BUILD	X86VM
-# elif defined SparcArchitecture
-#  define XF86INT10_BUILD	X86INT10_STUB
 # else
 #  define XF86INT10_BUILD	X86EMU_GENERIC
 # endif

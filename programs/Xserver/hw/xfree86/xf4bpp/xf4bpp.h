@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.4 1999/06/06 08:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.6 2001/03/08 17:12:17 eich Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -732,6 +732,7 @@ void xf4bppBresS(
 /* mfbbresd.c */
 void xf4bppBresD(
 #if NeedFunctionPrototypes
+	DrawablePtr,
 	int, int,
 	int *,
 	unsigned char *,

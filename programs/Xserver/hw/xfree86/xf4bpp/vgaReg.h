@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.2 1998/07/25 16:59:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.3 1999/06/06 08:49:07 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -35,7 +35,9 @@
 	 SET_BYTE_REGISTER((RegGroup) + 1, Value))
 
 /* There is a jumper on the ega to change this to 0x200 instead !! */
+#if 0	/* This is now a stack variable, as needed */
 #define REGBASE				0x300
+#endif
 
 #define AttributeIndexRegister		REGBASE + 0xC0
 #define AttributeDataWriteRegister	REGBASE + 0xC0

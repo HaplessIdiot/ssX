@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.22 2001/03/03 23:54:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.24 2001/05/15 10:19:42 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -299,9 +299,9 @@ xf86InitInt10(int entityIndex)
 	pInt->num = 0xe6;
 	reset_int_vect(pInt);
 	set_return_trap(pInt);
-	LockLegacyVGA(screen, &vga);
+	LockLegacyVGA(pInt, &vga);
 	xf86ExecX86int10(pInt);
-	UnlockLegacyVGA(screen, &vga);
+	UnlockLegacyVGA(pInt, &vga);
     }
 #ifdef DEBUG
     dprint(0xc0000, 0x20);

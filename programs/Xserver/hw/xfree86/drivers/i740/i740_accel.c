@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_accel.c,v 1.4 2000/04/05 18:13:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_accel.c,v 1.5 2001/03/03 22:26:12 tsi Exp $ */
 
 /*
  * Authors:
@@ -192,6 +192,7 @@ I740AccelInit(ScreenPtr pScreen) {
 
 static void
 I740SyncPIO(ScrnInfoPtr pScrn) {
+  I740Ptr pI740 = I740PTR(pScrn);
   WAIT_ENGINE_IDLE_PIO();
 }
 

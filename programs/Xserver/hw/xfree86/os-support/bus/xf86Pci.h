@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.29 2001/10/01 13:44:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.30 2001/10/28 03:34:01 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -314,14 +314,6 @@
 #define PCI_SUBORDINATE_BUS_MASK        0x00ff0000
 #define PCI_SECONDARY_BUS_MASK          0x0000ff00
 #define PCI_PRIMARY_BUS_MASK            0x000000ff
-
-#define PCI_SUBORDINATE_BUS_EXTRACT(x)  (((x) >> 16) & 0xff)
-#define PCI_SECONDARY_BUS_EXTRACT(x)    (((x) >>  8) & 0xff)
-#define PCI_PRIMARY_BUS_EXTRACT(x)      (((x)      ) & 0xff)
-
-#define PCI_PRIMARY_BUS_INSERT(x, y)    (((x) & ~PCI_PRIMARY_BUS_MASK) | ((y) << 0))
-#define PCI_SECONDARY_BUS_INSERT(x, y)  (((x) & ~PCI_SECONDARY_BUS_MASK) | ((y) <<  8)) 
-#define PCI_SUBORDINATE_BUS_INSERT(x, y) (((x) & ~PCI_SUBORDINATE_BUS_MASK) | (( y) << 16))
 
 #define PCI_PCI_BRIDGE_IO_REG           0x1c
 #define PCI_PCI_BRIDGE_MEM_REG          0x20
@@ -668,6 +660,15 @@ int           xf86GetAvailablePciBIOSTypes(PCITAG Tag, int basereg,
 pciConfigPtr *xf86scanpci(int flags);
 
 extern int pciNumBuses;
+
+/* Domain access functions.  Some of these probably shouldn't be public */
+int           xf86GetPciDomain(PCITAG tag);
+pointer       xf86MapDomainMemory(int ScreenNum, int Flags, PCITAG Tag,
+				  ADDRESS Base, unsigned long Size);
+IOADDRESS     xf86MapDomainIO(int ScreenNum, int Flags, PCITAG Tag,
+			      IOADDRESS Base, unsigned long Size);
+int           xf86ReadDomainMemory(PCITAG Tag, ADDRESS Base, int Len,
+				   unsigned char *Buf);
 
 typedef enum {
   ROM_BASE_PRESET = -2,

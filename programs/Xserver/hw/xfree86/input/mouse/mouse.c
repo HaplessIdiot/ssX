@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.49 2001/12/10 23:02:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.50 2001/12/19 16:05:22 tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -597,7 +597,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     InputInfoPtr pInfo;
     MouseDevPtr pMse;
     MessageType from = X_DEFAULT;
-    const char *protocol;
+    const char *protocol, *osProt = NULL;
     MouseProtocolID protocolID;
     MouseProtocolPtr pProto;
 
@@ -650,8 +650,15 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	xf86Msg(X_ERROR, "%s: No Protocol specified\n", pInfo->name);
 	return pInfo;
     }
+  setOSProto:
     protocolID = ProtocolNameToID(protocol);
     switch (protocolID) {
+    case PROT_AUTO:
+	if (osProt || !osInfo->SetupAuto ||
+	    !(osProt = (*osInfo->SetupAuto)(pInfo, NULL))) /* XXX */
+	    break;
+	protocol = osProt;
+	goto setOSProto;
     case PROT_UNKNOWN:
 	/* Check for a builtin OS-specific protocol, and call its PreInit. */
 	if (osInfo->CheckProtocol && osInfo->CheckProtocol(protocol)) {
@@ -663,16 +670,16 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	xf86Msg(X_ERROR, "%s: Unknown protocol \"%s\"\n", pInfo->name,
 		protocol);
 	return pInfo;
-	break;
     case PROT_UNSUP:
 	xf86Msg(X_ERROR,
 		"%s: Protocol \"%s\" is not supported on this platform\n",
 		pInfo->name, protocol);
 	return pInfo;
-	break;
     default:
-	xf86Msg(from, "%s: Protocol: \"%s\"\n", pInfo->name, protocol);
+	break;
     }
+
+    xf86Msg(from, "%s: Protocol: \"%s\"\n", pInfo->name, protocol);
 
     if (!(pProto = GetProtocol(protocolID)))
 	return pInfo;
@@ -855,6 +862,7 @@ SetupMouse(InputInfoPtr pInfo)
 		    /* Check for a builtin OS-specific protocol. */
 		    if (osInfo->CheckProtocol && osInfo->CheckProtocol(name)) {
 			/* XXX need to handle auto-detected builtin protocols */
+			/* ... but doing it here is much too late */
 		    } else
 			name = NULL;
 		    break;
@@ -882,7 +890,9 @@ SetupMouse(InputInfoPtr pInfo)
 	    pMse->protocolID = protocolID;
 	}
     }
-    memcpy(pMse->protoPara, proto[pMse->protocolID], sizeof(pMse->protoPara));
+    if ((pMse->protocolID >= 0) && (pMse->protocolID < PROT_NUMPROTOS))
+	memcpy(pMse->protoPara, proto[pMse->protocolID],
+	       sizeof(pMse->protoPara));
     if (automatic) {
 	
 	if (name) {
@@ -902,7 +912,8 @@ SetupMouse(InputInfoPtr pInfo)
      */
     if (pMse->oldProtocolID != pMse->protocolID) {
 	pointer tmp = NULL;
-	if (mouseProtocols[pMse->protocolID].defaults)
+	if ((pMse->protocolID >= 0) && (pMse->protocolID < PROT_NUMPROTOS) &&
+	    mouseProtocols[pMse->protocolID].defaults)
 	    tmp = xf86OptionListCreate(
 		mouseProtocols[pMse->protocolID].defaults, -1, 0);
 	pInfo->options = xf86OptionListMerge(pInfo->options, tmp);
@@ -912,7 +923,7 @@ SetupMouse(InputInfoPtr pInfo)
 	pMse->oldProtocolID = pMse->protocolID; /* hack */
     }
     /*
-     * Write the baudrate back th the option list so that the serial
+     * Write the baudrate back into the option list so that the serial
      * interface code can access the new value.
      */
     if (pMse->baudRate)

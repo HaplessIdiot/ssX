@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.66 2001/10/01 13:44:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.67 2001/10/28 03:33:17 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -281,6 +281,7 @@ xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex)
     pScrn->entityInstanceList = xnfrealloc(pScrn->entityInstanceList,
 				    pScrn->numEntities * sizeof(int));
     pScrn->entityInstanceList[pScrn->numEntities - 1] = 0;
+    pScrn->domainIOBase = xf86Entities[entityIndex]->domainIO;
 }
 
 void
@@ -1276,14 +1277,16 @@ xf86PrintResList(int verb, resPtr list)
 	    if ((list->res_type & ResPhysMask) == type) {
 		switch (list->res_type & ResExtMask) {
 		case ResBlock:
-		    xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x (0x%x)",
-				   i, list->entityIndex, list->block_begin,
-				   list->block_end,
+		    xf86ErrorFVerb(verb, "\t[%d] %d\t%d\t0x%08x - 0x%08x (0x%x)",
+				   i, list->entityIndex,
+				   (list->res_type & ResDomain) >> 24,
+				   list->block_begin, list->block_end,
 				   list->block_end - list->block_begin + 1);
 		    break;
 		case ResSparse:
-		    xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x ",
+		    xf86ErrorFVerb(verb, "\t[%d] %d\t%d\t0x%08x - 0x%08x ",
 				   i, list->entityIndex,
+				   (list->res_type & ResDomain) >> 24,
 				   list->sparse_base,list->sparse_mask);
 		    break;
 		default:
@@ -3036,8 +3039,10 @@ xf86FindPrimaryDevice()
     
 }
 
+#if !defined(__sparc__) && !defined(__powerpc__) && !defined(__mips__)
 #include "vgaHW.h"
 #include "compiler.h"
+#endif
 
 /*
  * CheckGenericGA() - Check for presence of a VGA device.
@@ -3045,20 +3050,21 @@ xf86FindPrimaryDevice()
 static void
 CheckGenericGA()
 {
-#if !defined(__sparc__) && !defined(__powerpc__) && !defined(__mips__) /* FIXME ?? */
-    CARD16 GenericIOBase = VGAHW_GET_IOBASE();
+/* This needs to be changed for multiple domains */
+#if !defined(__sparc__) && !defined(__powerpc__) && !defined(__mips__)
+    IOADDRESS GenericIOBase = VGAHW_GET_IOBASE();
     CARD8 CurrentValue, TestValue;
 
     /* VGA CRTC registers are not used here, so don't bother unlocking them */
 
     /* VGA has one more read/write attribute register than EGA */
-    (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
-    outb(0x3C0, 0x14 | 0x20);
-    CurrentValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue ^ 0x0F);
-    outb(0x3C0, 0x14 | 0x20);
-    TestValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue);
+    (void) inb(GenericIOBase + VGA_IN_STAT_1_OFFSET);  /* Reset flip-flop */
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    CurrentValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_W, CurrentValue ^ 0x0F);
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    TestValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_W, CurrentValue);
 
     if ((CurrentValue ^ 0x0F) == TestValue) {
 	primaryBus.type = BUS_ISA;

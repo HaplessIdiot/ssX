@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.45 2001/10/01 13:44:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.46 2001/11/08 04:15:32 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -346,20 +346,22 @@ renditionProbe(DriverPtr drv, int flags)
 static Bool
 renditionClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 {
+        vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
         static CARD8 save_misc;
 
         switch (ClockNumber)
         {
             case CLK_REG_SAVE:
-                save_misc = inb(0x3CC);
+                save_misc = inb(pvgaHW->PIOOffset + VGA_MISC_OUT_R);
                 break;
 
             case CLK_REG_RESTORE:
-                outb(0x3C2, save_misc);
+                outb(pvgaHW->PIOOffset + VGA_MISC_OUT_W, save_misc);
                 break;
 
             default:
-                outb(0x3C2, (save_misc & 0xF3) | ((ClockNumber << 2) & 0x0C));
+                outb(pvgaHW->PIOOffset + VGA_MISC_OUT_W,
+		     (save_misc & 0xF3) | ((ClockNumber << 2) & 0x0C));
                 break;
         }
 
@@ -601,8 +603,20 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       renditionClockRange.clockIndex = -1;
     }
 
+    /***********************************************/
+    /* ensure vgahw private structure is allocated */
+
+    if (!vgaHWGetHWRec(pScreenInfo))
+        return FALSE;
+
+    pvgaHW = VGAHWPTR(pScreenInfo);
+    pvgaHW->MapSize = 0x00010000;       /* Standard 64kB VGA window */
+    vgaHWGetIOBase(pvgaHW);             /* Get VGA I/O base */
+
     pRendition->board.accel=0;
-    pRendition->board.io_base=pRendition->PciInfo->ioBase[1];
+    pRendition->board.vgaio_base = pvgaHW->PIOOffset;
+    pRendition->board.io_base =
+	pRendition->board.vgaio_base + pRendition->PciInfo->ioBase[1];
     pRendition->board.mmio_base=0;
     pRendition->board.vmmio_base=0;
     pRendition->board.mem_size=0;
@@ -623,8 +637,8 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
 	       "Rendition %s @ %x/%x\n",
 	       renditionChipsets[pRendition->board.chip==V1000_DEVICE ? 0:1].name,
-	       pRendition->board.io_base,
-	       pRendition->board.mem_base);
+	       pRendition->PciInfo->ioBase[1],
+	       pRendition->PciInfo->memBase[0]);
 
     /* First of all get a "clean" starting state */
     verite_resetboard(pScreenInfo);
@@ -760,16 +774,6 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
 #endif
 
-    /***********************************************/
-    /* ensure vgahw private structure is allocated */
-
-    if (!vgaHWGetHWRec(pScreenInfo))
-        return FALSE;
-
-    pvgaHW = VGAHWPTR(pScreenInfo);
-    pvgaHW->MapSize = 0x00010000;       /* Standard 64kB VGA window */
-    vgaHWGetIOBase(pvgaHW);             /* Get VGA I/O base */
-
     /*
      * Determine clocks.  Limit them to the first four because that's all that
      * can be addressed.
@@ -787,8 +791,10 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
     else
     {
-        xf86GetClocks(pScreenInfo, 4, renditionClockSelect, renditionProtect,
-            renditionBlankScreen, VGAHW_GET_IOBASE() + 0x0A, 0x08, 1, 28322);
+        xf86GetClocks(pScreenInfo, 4,
+	    renditionClockSelect, renditionProtect, renditionBlankScreen,
+	    pvgaHW->PIOOffset + pvgaHW->IOBase + VGA_IN_STAT_1_OFFSET,
+	    0x08, 1, 28322);
         From = X_PROBED;
     }
     xf86ShowClocks(pScreenInfo, From);
@@ -1457,7 +1463,7 @@ static xf86MonPtr
 renditionDDC (ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-  vu16 iob=pRendition->board.io_base;
+  IOADDRESS iob=pRendition->board.io_base;
   vu32 temp;
 
   xf86MonPtr MonInfo = NULL;
@@ -1490,7 +1496,7 @@ static unsigned int
 renditionDDC1Read (ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-  vu16 iob=pRendition->board.io_base;
+  IOADDRESS iob=pRendition->board.io_base;
   vu32 value = 0;
 
   /* wait for Vsync */

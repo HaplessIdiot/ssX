@@ -3,7 +3,7 @@
  *
  * accelerator functions for X
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.9 2001/05/16 06:48:10 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.10 2001/06/15 21:22:54 dawes Exp $ */
 
 
 
@@ -290,7 +290,7 @@ int
 RENDITIONInitUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
     if (0 == verite_getstride(pScreenInfo, NULL,
 			 &pRendition->board.mode.stride0, 
@@ -368,7 +368,7 @@ void
 RENDITIONRestoreUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
     vu8 memend;
 
@@ -411,7 +411,7 @@ void
 RENDITIONSaveUcode(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
     vu8 memend;
 
 #ifdef DEBUG
@@ -446,7 +446,7 @@ void
 RENDITIONSyncV1000(ScrnInfoPtr pScreenInfo)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
     int c;
 
@@ -556,7 +556,7 @@ RENDITIONSubsequentScreenToScreenCopy(ScrnInfoPtr pScreenInfo,
 					   int w, int h)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
 
 #ifdef DEBUG
@@ -608,7 +608,7 @@ RENDITIONSubsequentSolidFillRect(ScrnInfoPtr pScreenInfo,
 				      int x, int y, int w, int h)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
 
 #ifdef DEBUG
@@ -640,7 +640,7 @@ RENDITIONSubsequentTwoPointLine(ScrnInfoPtr pScreenInfo,
 				     int bias)
 {
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-    vu16 iob = pRendition->board.io_base;
+    IOADDRESS iob = pRendition->board.io_base;
 
 
 #ifdef DEBUG
