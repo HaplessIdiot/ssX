@@ -1414,7 +1414,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	XF86VideoAdaptorPtr *ptr;
 	int                 n;
 
-	if ((n = xf86XVListGenericAdaptors(&ptr)))
+	if ((n = xf86XVListGenericAdaptors(pScrn, &ptr)))
 	    xf86XVScreenInit(pScreen, ptr, n);
     }
 #endif

@@ -49,7 +49,7 @@ void A(InitVideo)(ScreenPtr pScreen)
     int num_adaptors;
     Bool freeAdaptors = FALSE;
 
-    num_adaptors = xf86XVListGenericAdaptors(&adaptors);
+    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
     if (pApm->Chipset >= AT24) {
 	if ((newAdaptor = A(SetupImageVideo)(pScreen))) {
