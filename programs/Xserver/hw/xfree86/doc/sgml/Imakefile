@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.39 1999/07/04 12:49:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.40 1999/08/23 06:14:18 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -13,48 +13,48 @@ SGMLDEPENDS = defs.ent
 #if 0
 LinuxDocReadmeTarget(Bsdi)
 #endif
+LinuxDocReadmeTarget(DGux)
 LinuxDocReadmeTarget(FreeBSD)
 LinuxDocReadmeTarget(NetBSD)
 LinuxDocReadmeTarget(OpenBSD)
 LinuxDocReadmeTarget(Linux)
 LinuxDocReadmeTarget(LynxOS)
-#if 0
-LinuxDocReadmeTarget(Minix)
-#endif
-#if 0
-LinuxDocReadmeTarget(Amoeba)
-#endif
 LinuxDocReadmeTarget(SCO)
 LinuxDocReadmeTarget(isc)
 LinuxDocReadmeTarget(OS2)
 LinuxDocTargetLong(OS2note.sgml,OS2.Notes,OS2Notes)
-#if 0
-LinuxDocReadmeTarget(SVR3)
-#endif
 LinuxDocReadmeTarget(SOLX86)
 LinuxDocReadmeTarget(SVR4)
 
 /* Hardware docs */
+LinuxDocReadmeTarget(3Dlabs)
 LinuxDocReadmeTarget(DECtga)
+LinuxDocReadmeTarget(I128)
 LinuxDocReadmeTarget(Mach32)
 LinuxDocReadmeTarget(Mach64)
 LinuxDocReadmeTarget(MGA)
-LinuxDocReadmeTarget(NV1)
+LinuxDocReadmeTarget(NVIDIA)
 LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
 LinuxDocReadmeTarget(Video7)
 LinuxDocReadmeTarget(S3)
 LinuxDocReadmeTarget(SiS)
 LinuxDocReadmeTarget(WstDig)
+LinuxDocReadmeTarget(apm)
 LinuxDocReadmeTarget(ark)
 LinuxDocReadmeTarget(agx)
 LinuxDocReadmeTarget(ati)
 LinuxDocReadmeTarget(chips)
 LinuxDocReadmeTarget(cirrus)
+LinuxDocReadmeTarget(cyrix)
+LinuxDocReadmeTarget(epson)
+LinuxDocReadmeTarget(fbdev)
+LinuxDocReadmeTarget(i740)
+LinuxDocReadmeTarget(neo)
+LinuxDocReadmeTarget(rendition)
 LinuxDocReadmeTarget(s3virge)
 LinuxDocReadmeTarget(trident)
 LinuxDocReadmeTarget(tseng)
-LinuxDocReadmeTarget(fbdev)
 
 /* Main docs */
 LinuxDocTarget(LICENSE)
