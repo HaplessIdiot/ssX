@@ -1,4 +1,4 @@
-/* $XConsortium: keytypes.c,v 1.4 94/04/08 15:28:14 erik Exp $ */
+/* $XConsortium: keytypes.c /main/8 1996/01/14 16:47:56 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,51 +26,50 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "action.h"
-
-#define	NAME_DEFINED	(1<<0)
-#define	MASK_DEFINED	(1<<1)
-#define	WRAP_DEFINED	(1<<2)
+#include "misc.h"
 
 typedef struct _PreserveInfo {
+    CommonInfo 		defs;
     short		matchingMapIndex;
     unsigned char	indexMods;
     unsigned char	preMods;
     unsigned short	indexVMods;
     unsigned short	preVMods;
-    struct _PreserveInfo *next;
 } PreserveInfo;
 
+#define	_KT_Name	(1<<0)
+#define	_KT_Mask	(1<<1)
+#define	_KT_Map		(1<<2)
+#define	_KT_Preserve	(1<<3)
+#define	_KT_LevelNames	(1<<4)
+
 typedef struct _KeyTypeInfo {
+    CommonInfo 		defs;
     Display *		dpy;
     Atom		name;
     int			fileID;
-    unsigned		defined;
     unsigned		mask;
     unsigned		vmask;
-    Bool		groupsWrap;
-    int			group_width;
+    Bool		groupInfo;
+    int			numLevels;
     int			nEntries;
     int			szEntries;
     XkbKTMapEntryPtr	entries;
     PreserveInfo *	preserve;
     int			szNames;
-    Atom	*	lvl_names;
+    Atom	*	lvlNames;
 } KeyTypeInfo;
-
-#define	KEYTYPE_CHUNK	8
 
 typedef struct _KeyTypesInfo {
     Display *		dpy;
-    Atom		name;
+    char *		name;
     int			errorCount;
     int			fileID;
     unsigned		stdPresent;
-    int			szTypes;
     int			nTypes;
     KeyTypeInfo *	types;
     KeyTypeInfo		dflt;
@@ -79,332 +78,468 @@ typedef struct _KeyTypesInfo {
 
 Atom	tok_ONE_LEVEL;
 Atom	tok_TWO_LEVEL;
+Atom	tok_ALPHABETIC;
 Atom	tok_KEYPAD;
 
+/***====================================================================***/
+
+#define	ReportTypeShouldBeArray(t,f) \
+	ReportShouldBeArray("key type",(f),TypeTxt(t))
+#define	ReportTypeBadType(t,f,w) \
+	ReportBadType("key type",(f),TypeTxt(t),(w))
+
+/***====================================================================***/
+
+_XFUNCPROTOBEGIN
+
+extern Bool AddMapEntry(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    KeyTypeInfo *	/* type */,
+    XkbKTMapEntryPtr	/* new */,
+    Bool		/* clobber */,
+    Bool		/* report */
+#endif
+);
+
+extern Bool AddPreserve(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    KeyTypeInfo *	/* type */,
+    PreserveInfo *	/* new */,
+    Bool		/* clobber */,
+    Bool		/* report */
+#endif
+);
+
+extern Bool AddLevelName(
+#if NeedFunctionPrototypes
+    KeyTypeInfo *	/* type */,
+    unsigned		/* level */,
+    Atom		/* name */,
+    Bool		/* clobber */,
+    Bool		/* report */
+#endif
+);
+
+_XFUNCPROTOEND
+
+#define	MapEntryTxt(t,x,e)	\
+    XkbVModMaskText((t)->dpy,(x),(e)->mods.real_mods,(e)->mods.vmods,XkbMessage)
+#define	PreserveIndexTxt(t,x,p)	\
+	XkbVModMaskText((t)->dpy,(x),(p)->indexMods,(p)->indexVMods,XkbMessage)
+#define	PreserveTxt(t,x,p)	\
+	XkbVModMaskText((t)->dpy,(x),(p)->preMods,(p)->preVMods,XkbMessage)
+#define	TypeTxt(t)	XkbAtomText((t)->dpy,(t)->name,XkbMessage)
+#define	TypeMaskTxt(t,x)	\
+	XkbVModMaskText((t)->dpy,(x),(t)->mask,(t)->vmask,XkbMessage)
+
+/***====================================================================***/
+
 static void
-InitKeyTypesInfo(info,xkb)
+#if NeedFunctionPrototypes
+InitKeyTypesInfo(KeyTypesInfo *info,XkbDescPtr xkb,KeyTypesInfo *from)
+#else
+InitKeyTypesInfo(info,xkb,from)
     KeyTypesInfo *	info;
     XkbDescPtr		xkb;
+    KeyTypesInfo *	from;
+#endif
 {
-    tok_ONE_LEVEL= stGetToken("ONE_LEVEL");
-    tok_TWO_LEVEL= stGetToken("TWO_LEVEL");
-    tok_KEYPAD= stGetToken("KEYPAD");
+    tok_ONE_LEVEL= XkbInternAtom(NULL,"ONE_LEVEL",False);
+    tok_TWO_LEVEL= XkbInternAtom(NULL,"TWO_LEVEL",False);
+    tok_ALPHABETIC= XkbInternAtom(NULL,"ALPHABETIC",False);
+    tok_KEYPAD= XkbInternAtom(NULL,"KEYPAD",False);
     info->dpy= NULL;
-    info->name= stGetToken("default");
+    info->name= uStringDup("default");
     info->errorCount= 0;
     info->stdPresent= 0;
-    info->szTypes= KEYTYPE_CHUNK;
     info->nTypes= 0;
-    info->types= uTypedCalloc(KEYTYPE_CHUNK,KeyTypeInfo);
+    info->types= NULL;
+    info->dflt.defs.defined= 0;
+    info->dflt.defs.fileID= 0;
+    info->dflt.defs.merge= MergeOverride;
+    info->dflt.defs.next= NULL;
     info->dflt.name= None;
-    info->dflt.defined= 0;
     info->dflt.mask= 0;
     info->dflt.vmask= 0;
-    info->dflt.groupsWrap= False;
-    info->dflt.group_width= 1;
+    info->dflt.groupInfo= False;
+    info->dflt.numLevels= 1;
     info->dflt.nEntries= info->dflt.szEntries= 0;
     info->dflt.entries= NULL;
     info->dflt.szNames= 0;
-    info->dflt.lvl_names= NULL;
+    info->dflt.lvlNames= NULL;
     info->dflt.preserve= NULL;
     InitVModInfo(&info->vmods,xkb);
-    return;
-}
-
-static void
-ClearKeyTypesInfo(info,xkb)
-    KeyTypesInfo *	info;
-    XkbDescPtr		xkb;
-{
-    info->dpy= NULL;
-    info->name= stGetToken("default");
-    info->nTypes= 0;
-    info->stdPresent= 0;
-    info->dflt.name= None;
-    info->dflt.defined= 0;
-    info->dflt.mask= 0;
-    info->dflt.vmask= 0;
-    info->dflt.groupsWrap= False;
-    info->dflt.group_width= 1;
-    info->dflt.nEntries= 0;
-    ClearVModInfo(&info->vmods,xkb);
-    return;
-}
-
-static void
-FreeKeyTypesInfo(info)
-    KeyTypesInfo *	info;
-{
-    info->dpy= NULL;
-    if (info->types) {
-	register int i;
-	register KeyTypeInfo *type;
-	type= info->types;
-	for (i=0,type=info->types;i<info->nTypes;i++,type++) {
-	    if (type->entries!=NULL) {
-		uFree(type->entries);
-		type->entries= NULL;
-	    }
-	    if (type->lvl_names!=NULL) {
-		uFree(type->lvl_names);
-		type->lvl_names= NULL;
-	    }
-	    if (type->preserve!=NULL) {
-		PreserveInfo *this,*next;
-		for (this=type->preserve;this!=NULL;this=next) {
-		    next= this->next;
-		    uFree(this);
-		}
+    if (from!=NULL) {
+	info->dpy= from->dpy;
+	info->dflt= from->dflt;
+	if (from->dflt.entries) {
+	    info->dflt.entries= uTypedCalloc(from->dflt.szEntries,
+							XkbKTMapEntryRec);
+	    if (info->dflt.entries) {
+		unsigned sz = from->dflt.nEntries*sizeof(XkbKTMapEntryRec);
+		memcpy(info->dflt.entries,from->dflt.entries,sz);
 	    }
 	}
-	uFree(info->types);
-	info->types= NULL;
+	if (from->dflt.lvlNames) {
+	    info->dflt.lvlNames= uTypedCalloc(from->dflt.szNames,Atom);
+	    if (info->dflt.lvlNames) {
+		register unsigned sz = from->dflt.szNames*sizeof(Atom);
+		memcpy(info->dflt.lvlNames,from->dflt.lvlNames,sz);
+	    }
+	}
+	if (from->dflt.preserve) {
+	    PreserveInfo *old,*new,*last;
+	    last= NULL;
+	    old= from->dflt.preserve;
+	    for (;old;old=(PreserveInfo *)old->defs.next) {
+		new= uTypedAlloc(PreserveInfo);
+		if (!new)
+		    return;
+		*new= *old;
+		new->defs.next= NULL;
+		if (last)	last->defs.next= 	(CommonInfo *)new;
+		else		info->dflt.preserve= 	new;
+		last= new;
+	    }
+	}
     }
-    if (info->dflt.entries!=NULL) {
-	uFree(info->dflt.entries);
-	info->dflt.entries= NULL;
+    return;
+}
+
+static void
+#if NeedFunctionPrototypes
+FreeKeyTypeInfo(KeyTypeInfo *type)
+#else
+FreeKeyTypeInfo(type)
+    KeyTypeInfo *	type;
+#endif
+{
+    if (type->entries!=NULL) {
+	uFree(type->entries);
+	type->entries= NULL;
     }
-    if (info->dflt.lvl_names!=NULL) {
-	uFree(info->dflt.lvl_names);
-	info->dflt.lvl_names= NULL;
+    if (type->lvlNames!=NULL) {
+	uFree(type->lvlNames);
+	type->lvlNames= NULL;
     }
+    if (type->preserve!=NULL)  {
+	ClearCommonInfo(&type->preserve->defs);
+	type->preserve= NULL;
+    }
+    return;
+}
+
+static void
+#if NeedFunctionPrototypes
+FreeKeyTypesInfo(KeyTypesInfo *info)
+#else
+FreeKeyTypesInfo(info)
+    KeyTypesInfo *	info;
+#endif
+{
+    info->dpy= NULL;
+    if (info->name)
+	uFree(info->name);
+    info->name= NULL;
+    if (info->types) {
+	register KeyTypeInfo *type;
+	for (type= info->types;type;type=(KeyTypeInfo *)type->defs.next) {
+	    FreeKeyTypeInfo(type);
+	}
+	info->types= (KeyTypeInfo *)ClearCommonInfo(&info->types->defs);
+    }
+    FreeKeyTypeInfo(&info->dflt);
     return;
 }
 
 static KeyTypeInfo *
+#if NeedFunctionPrototypes
+NextKeyType(KeyTypesInfo *info)
+#else
 NextKeyType(info)
     KeyTypesInfo *	info;
+#endif
 {
-    if (info->types==NULL)
-	return NULL;
-    if (info->nTypes>=info->szTypes) {
-	info->szTypes+= KEYTYPE_CHUNK;
-	info->types= uTypedRealloc(info->types,info->szTypes,KeyTypeInfo);
-	if (info->types==NULL)
-	    return NULL;
+KeyTypeInfo *		type;
+
+    type= uTypedAlloc(KeyTypeInfo);
+    if (type!=NULL) {
+	bzero(type,sizeof(KeyTypeInfo));
+	type->defs.fileID= info->fileID;
+	type->dpy= info->dpy;
+	info->types= (KeyTypeInfo *)AddCommonInfo(&info->types->defs,
+						  	(CommonInfo *)type);
+	info->nTypes++;
     }
-    bzero((char *)&info->types[info->nTypes],sizeof(KeyTypeInfo));
-    info->types[info->nTypes].dpy= info->dpy;
-    return &info->types[info->nTypes++];
+    return type;
+}
+
+static KeyTypeInfo *
+#if NeedFunctionPrototypes
+FindMatchingKeyType(KeyTypesInfo *info,KeyTypeInfo *new)
+#else
+FindMatchingKeyType(info,new)
+    KeyTypesInfo *	info;
+    KeyTypeInfo	*	new;
+#endif
+{
+KeyTypeInfo	*old;
+
+    for (old=info->types;old;old=(KeyTypeInfo *)old->defs.next) {
+	if (old->name==new->name)
+	    return old;
+    }
+    return NULL;
 }
 
 static Bool
-FindMatchingKeyType(info,ndx_rtrn,type)
-    KeyTypesInfo *	info;
-    unsigned *		ndx_rtrn;
-    KeyTypeInfo	*	type;
+#if NeedFunctionPrototypes
+ReportTypeBadWidth(char *type,int has,int needs)
+#else
+ReportTypeBadWidth(type,has,needs)
+    char *	type;
+    int		has;
+    int		needs;
+#endif
 {
-register int i;
-
-    for (i=0;i<info->nTypes;i++) {
-	if (info->types[i].name==type->name) {
-	    *ndx_rtrn= i;
-	    return  True;
-	}
-    }
+    ERROR3("Key type \"%s\" has %d levels, must have %d\n",type,has,needs);
+    ACTION("Illegal type definition ignored\n");
     return False;
 }
 
 static Bool
-DeleteKeyType(info,ndx)
+#if NeedFunctionPrototypes
+AddKeyType(XkbDescPtr xkb,KeyTypesInfo *info,KeyTypeInfo *new)
+#else
+AddKeyType(xkb,info,new)
+    XkbDescPtr		xkb;
     KeyTypesInfo *	info;
-    unsigned		ndx;
+    KeyTypeInfo	*	new;
+#endif
 {
-register int i;
-
-    if (ndx<=XkbLastRequiredType)
-	return False;
-    if (ndx<(info->nTypes-1)) {
-	if (info->types[ndx].entries!=NULL) {
-	    uFree(info->types[ndx].entries);
-	    info->types[ndx].entries= NULL;
-	}
-	if (info->types[ndx].lvl_names!=NULL) {
-	    uFree(info->types[ndx].lvl_names);
-	    info->types[ndx].lvl_names= NULL;
-	}
-	if (info->types[ndx].name==tok_ONE_LEVEL)
-	    info->stdPresent&= ~XkbOneLevelMask;
-	else if (info->types[ndx].name==tok_TWO_LEVEL)
-	    info->stdPresent&= ~XkbTwoLevelMask;
-	else if (info->types[ndx].name==tok_KEYPAD)
-	    info->stdPresent&= ~XkbKeypadMask;
-	for (i=ndx;i<(info->nTypes-1);i++) {
-	    info->types[i]= info->types[i+1];
-	}
-	info->nTypes--;
-    }
-    return True;
-}
-
-static Bool
-AddKeyType(info,type,merge,report)
-    KeyTypesInfo *	info;
-    KeyTypeInfo	*	type;
-    unsigned		merge;
-    Bool		report;
-{
-Bool			clobber,collision;
-unsigned 		ndx;
-KeyTypeInfo *		new;
-
-    if (type->name==tok_ONE_LEVEL) {
-	if (type->group_width>1) {
-	    uError("ONE_LEVEL key type has %d levels\n",type->group_width);
-	    uAction("Illegal type definition ignored\n");
-	    return False;
-	}
+KeyTypeInfo *		old;
+   
+    if (new->name==tok_ONE_LEVEL) {
+	if (new->numLevels>1)
+	    return ReportTypeBadWidth("ONE_LEVEL",new->numLevels,1);
 	info->stdPresent|= XkbOneLevelMask;
     }
-    else if (type->name==tok_TWO_LEVEL) {
-	if (type->group_width>2) {
-	    uError("TWO_LEVEL key type has %d levels\n",type->group_width);
-	    uAction("Illegal type definition ignored\n");
-	    return False;
-	}
-	else if (type->group_width<2)
-	    type->group_width= 2;
+    else if (new->name==tok_TWO_LEVEL) {
+	if (new->numLevels>2) 
+	    return ReportTypeBadWidth("TWO_LEVEL",new->numLevels,2);
+	else if (new->numLevels<2)
+	    new->numLevels= 2;
 	info->stdPresent|= XkbTwoLevelMask;
     }
-    else if (type->name==tok_KEYPAD) {
-	if (type->group_width>2) {
-	    uError("KEYPAD key type has %d levels\n",type->group_width);
-	    uAction("Illegal type definition ignored\n");
-	    return False;
-	}
-	else if (type->group_width<2)
-	    type->group_width= 2;
+    else if (new->name==tok_ALPHABETIC) {
+	if (new->numLevels>2) 
+	    return ReportTypeBadWidth("ALPHABETIC",new->numLevels,2);
+	else if (new->numLevels<2)
+	    new->numLevels= 2;
+	info->stdPresent|= XkbAlphabeticMask;
+    }
+    else if (new->name==tok_KEYPAD) {
+	if (new->numLevels>2)
+	    return ReportTypeBadWidth("KEYPAD",new->numLevels,2);
+	else if (new->numLevels<2)
+	    new->numLevels= 2;
 	info->stdPresent|= XkbKeypadMask;
     }
 
-    clobber= (merge==MergeOverride);
-    collision= FindMatchingKeyType(info,&ndx,type);
-    if (collision) {
-	if ((report)&&(info->types[ndx].fileID==info->fileID)) {
-	    uWarning("Multiple definitions of the %s key type\n",
-						stGetString(type->name));
-	    uAction("Using %s definition\n",(clobber?"last":"first"));
+    old= FindMatchingKeyType(info,new);
+    if (old!=NULL) {
+	Bool	report;
+	if ((new->defs.merge==MergeReplace)||(new->defs.merge==MergeOverride)) {
+	    KeyTypeInfo *next= (KeyTypeInfo *)old->defs.next;
+            if (((old->defs.fileID==new->defs.fileID)&&(warningLevel>0))||
+                                                        (warningLevel>9)) {
+		WARN1("Multiple definitions of the %s key type\n",
+					XkbAtomGetString(NULL,new->name));
+		ACTION("Earlier definition ignored\n");
+	    }
+	    FreeKeyTypeInfo(old);
+	    *old= *new;
+	    new->szEntries= new->nEntries= 0;
+	    new->entries= NULL;
+	    new->preserve= NULL;
+	    new->lvlNames= NULL;
+	    old->defs.next= &next->defs;
+	    return True;
 	}
-	if (clobber) {
-	    new= &info->types[ndx];
-	    if (new->entries!=NULL) {
-		uFree(new->entries);
-		new->entries= NULL;
-	    }
-	    if (new->lvl_names!=NULL) {
-		uFree(new->lvl_names);
-		new->lvl_names= NULL;
-	    }
-	    if (new->preserve!=NULL) {
-		PreserveInfo *this,*next;
-		for (this=new->preserve;(this!=NULL);this=next) {
-		    next= this->next;
-		    uFree(this);
-		}
-	    }
+	report= (old->defs.fileID==new->defs.fileID)&&(warningLevel>0);
+	if (report) {
+	    WARN1("Multiple definitions of the %s key type\n",
+					XkbAtomGetString(NULL,new->name));
+	    ACTION("Later definition ignored\n");
 	}
-	else		return True;
+	FreeKeyTypeInfo(new);
+	return True;
     }
-    else new= NextKeyType(info);
-    if (new==NULL)
+    old= NextKeyType(info);
+    if (old==NULL)
 	return False;
-
-    *new= *type;
-    type->nEntries= type->szEntries= 0;
-    type->entries= NULL;
-    type->szNames= 0;
-    type->lvl_names= NULL;
-    type->preserve= NULL;
+    *old= *new;
+    old->defs.next= NULL;
+    new->nEntries= new->szEntries= 0;
+    new->entries= NULL;
+    new->szNames= 0;
+    new->lvlNames= NULL;
+    new->preserve= NULL;
     return True;
 }
 
 /***====================================================================***/
 
-static Bool
-HandleIncludeKeyTypes(stmt,xkb,info,hndlr)
-    IncludeStmt	*	  stmt;
-    XkbDescPtr		  xkb;
-    KeyTypesInfo *	  info;
-    void		(*hndlr)();
+static void
+#if NeedFunctionPrototypes
+MergeIncludedKeyTypes(	KeyTypesInfo *	into,
+			KeyTypesInfo *	from,
+			unsigned	merge,
+			XkbDescPtr	xkb)
+#else
+MergeIncludedKeyTypes(into,from,merge,xkb)
+    KeyTypesInfo	*into;
+    KeyTypesInfo	*from;
+    unsigned		 merge;
+    XkbDescPtr		 xkb;
+#endif
 {
-unsigned 	newMerge,tmp;
-FILE	*	file;
-XkbFile	*	rtrn;
+KeyTypeInfo *	type;
 
-    if (ProcessIncludeFile(stmt,XkmTypesIndex,&rtrn,&newMerge)) {
-	KeyTypesInfo 	myInfo;
-
-	InitKeyTypesInfo(&myInfo,xkb);
-	myInfo.fileID= rtrn->id;
-	myInfo.dflt.name= info->dflt.name;
-	myInfo.dflt.defined= info->dflt.defined;
-	myInfo.dflt.mask= info->dflt.mask;
-	myInfo.dflt.vmask= info->dflt.vmask;
-	myInfo.dflt.groupsWrap= info->dflt.groupsWrap;
-	myInfo.dflt.group_width= info->dflt.group_width;
-	myInfo.dflt.nEntries= info->dflt.nEntries;
-	myInfo.dflt.szEntries= info->dflt.szEntries;
-	myInfo.dflt.entries= info->dflt.entries;
-	myInfo.dflt.szNames= info->dflt.szNames;
-	myInfo.dflt.lvl_names= info->dflt.lvl_names;
-	myInfo.dflt.preserve= info->dflt.preserve;
-	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
-	
-	if (newMerge==MergeReplace) {
-	    ClearKeyTypesInfo(info,xkb);
-	    newMerge= MergeAugment;
-	}
-	info->errorCount+= myInfo.errorCount;
-	info->dflt.nEntries= myInfo.dflt.nEntries;
-	info->dflt.szEntries= myInfo.dflt.szEntries;
-	info->dflt.entries= myInfo.dflt.entries;
-	myInfo.dflt.nEntries= myInfo.dflt.szEntries= 0;
-	myInfo.dflt.entries= NULL;
-	info->dflt.szNames= myInfo.dflt.szNames;
-	info->dflt.lvl_names= myInfo.dflt.lvl_names;
-	myInfo.dflt.szNames= 0;
-	myInfo.dflt.lvl_names= NULL;
-	info->dflt.preserve= myInfo.dflt.preserve;
-	myInfo.dflt.preserve= NULL;
-	if (myInfo.errorCount==0) {
-	    register int i;
-	    KeyTypeInfo * type;
-
-	    for (i=0,type=myInfo.types;i<myInfo.nTypes;i++,type++) {
-		if (!AddKeyType(info,type,newMerge,False))
-		    info->errorCount++;
-	    }
-	    info->stdPresent|= myInfo.stdPresent;
-	}
-/* 3/22/94 (ef) -- XXX! Should we copy the default back out? Probably.  */
-	FreeKeyTypesInfo(&myInfo);
-	return (info->errorCount==0);
+    if (from->errorCount>0) {
+	into->errorCount+= from->errorCount;
+	return;
     }
-    info->errorCount+= 10;
-    return False;
+    if (into->name==NULL) {
+	into->name= from->name;
+	from->name= NULL;
+    }
+    for (type=from->types;type;type=(KeyTypeInfo *)type->defs.next) {
+	if (merge!=MergeDefault)
+	    type->defs.merge= merge;
+	if (!AddKeyType(xkb,into,type))
+	    into->errorCount++;
+    }
+    into->stdPresent|= from->stdPresent;
+    return;
+}
+
+typedef void (*FileHandler)(
+#if NeedFunctionPrototypes
+    XkbFile *		/* file */,
+    XkbDescPtr		/* xkb */,
+    unsigned		/* merge */,
+    KeyTypesInfo *	/* included */
+#endif
+);
+
+static Bool
+#if NeedFunctionPrototypes
+HandleIncludeKeyTypes(	IncludeStmt *	stmt,
+			XkbDescPtr	xkb,
+			KeyTypesInfo *	info,
+			FileHandler	hndlr)
+#else
+HandleIncludeKeyTypes(stmt,xkb,info,hndlr)
+    IncludeStmt	*	stmt;
+    XkbDescPtr		xkb;
+    KeyTypesInfo *	info;
+    FileHandler		hndlr;
+#endif
+{
+unsigned	newMerge;
+XkbFile	*	rtrn;
+KeyTypesInfo 	included;
+Bool		haveSelf;
+
+    haveSelf= False;
+    if ((stmt->file==NULL)&&(stmt->map==NULL)) {
+	haveSelf= True;
+	included= *info;
+	bzero(info,sizeof(KeyTypesInfo));
+    }
+    else if (ProcessIncludeFile(stmt,XkmTypesIndex,&rtrn,&newMerge)) {
+	InitKeyTypesInfo(&included,xkb,info);
+	included.fileID= included.dflt.defs.fileID= rtrn->id;
+	included.dflt.defs.merge= newMerge;
+
+	(*hndlr)(rtrn,xkb,newMerge,&included);
+	if (stmt->stmt!=NULL) {
+	    if (included.name!=NULL)
+		uFree(included.name);
+	    included.name= stmt->stmt;
+	    stmt->stmt= NULL;
+	}
+    }
+    else {
+	info->errorCount+= 10;
+	return False;
+    }
+    if ((stmt->next!=NULL)&&(included.errorCount<1)) {
+	IncludeStmt *	next;
+	unsigned	op;
+	KeyTypesInfo	next_incl;
+
+        for (next=stmt->next;next!=NULL;next=next->next) {
+	    if ((next->file==NULL)&&(next->map==NULL)) {
+		haveSelf= True;
+		MergeIncludedKeyTypes(&included,info,next->merge,xkb);
+		FreeKeyTypesInfo(info);
+	    }
+	    else if (ProcessIncludeFile(next,XkmTypesIndex,&rtrn,&op)) {
+		InitKeyTypesInfo(&next_incl,xkb,&included);
+		next_incl.fileID= next_incl.dflt.defs.fileID= rtrn->id;
+		next_incl.dflt.defs.merge= op;
+		(*hndlr)(rtrn,xkb,op,&next_incl);
+		MergeIncludedKeyTypes(&included,&next_incl,op,xkb);
+		FreeKeyTypesInfo(&next_incl);
+	    }
+	    else {
+		info->errorCount+= 10;
+		return False;
+	    }
+	}
+    }
+    if (haveSelf)
+	*info= included;
+    else {
+	MergeIncludedKeyTypes(info,&included,newMerge,xkb);
+	FreeKeyTypesInfo(&included);
+    }
+    return (info->errorCount==0);
 }
 
 /***====================================================================***/
 
 static XkbKTMapEntryPtr
+#if NeedFunctionPrototypes
+FindMatchingMapEntry(KeyTypeInfo *type,unsigned mask,unsigned vmask)
+#else
 FindMatchingMapEntry(type,mask,vmask)
     KeyTypeInfo *	type;
     unsigned		mask;
     unsigned		vmask;
+#endif
 {
 register int 		i;
 XkbKTMapEntryPtr	entry;
 
     for (i=0,entry=type->entries;i<type->nEntries;i++,entry++) {
-	if ((entry->real_mods==mask)&&(entry->vmods==vmask))
+	if ((entry->mods.real_mods==mask)&&(entry->mods.vmods==vmask))
 	    return entry;
     }
     return NULL;
 }
 
 static void
+#if NeedFunctionPrototypes
+DeleteLevel1MapEntries(KeyTypeInfo *type)
+#else
 DeleteLevel1MapEntries(type)
     KeyTypeInfo *	type;
+#endif
 {
 register int i,n;
 
@@ -420,15 +555,18 @@ register int i,n;
 }
 
 static XkbKTMapEntryPtr
+#if NeedFunctionPrototypes
+NextMapEntry(KeyTypeInfo *type)
+#else
 NextMapEntry(type)
     KeyTypeInfo *	type;
+#endif
 {
     if (type->entries==NULL) {
 	type->entries= uTypedCalloc(2,XkbKTMapEntryRec);
 	if (type->entries==NULL) {
-	    uError("Couldn't allocate map entries for key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uAction("Map entries lost\n");
+	    ERROR1("Couldn't allocate map entries for %s\n",TypeTxt(type));
+	    ACTION("Map entries lost\n");
 	    return NULL;
 	}
 	type->szEntries= 2;
@@ -440,124 +578,130 @@ NextMapEntry(type)
 					type->nEntries,type->szEntries,
 					XkbKTMapEntryRec);
 	if (type->entries==NULL) {
-	    uError("Couldn't reallocate map entries for key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uAction("Map entries lost\n");
+	    ERROR1("Couldn't reallocate map entries for %s\n",TypeTxt(type));
+	    ACTION("Map entries lost\n");
 	    return NULL;
 	}
     }
     return &type->entries[type->nEntries++];
 }
 
-static Bool
-AddPreserve(xkb,type,mods,vmods,preMods,preVMods,merge,report)
+Bool
+#if NeedFunctionPrototypes
+AddPreserve(	XkbDescPtr	xkb,
+		KeyTypeInfo *	type,
+		PreserveInfo *	new,
+		Bool		clobber,
+		Bool		report)
+#else
+AddPreserve(xkb,type,new,clobber,report)
     XkbDescPtr		xkb;
     KeyTypeInfo *	type;
-    unsigned		mods;
-    unsigned		vmods;
-    unsigned		preMods;
-    unsigned		preVMods;
-    unsigned		merge;
+    PreserveInfo *	new;
+    Bool		clobber;
     Bool		report;
+#endif
 {
-PreserveInfo	*pre;
+PreserveInfo	*old;
 
-    pre= type->preserve;
-    while (pre!=NULL) {
-	if ((pre->indexMods!=mods)||(pre->indexVMods!=vmods))
+    old= type->preserve;
+    while (old!=NULL) {
+	if ((old->indexMods!=new->indexMods)||
+					(old->indexVMods!=new->indexVMods)) {
+	    old= (PreserveInfo *)old->defs.next;
 	    continue;
-	if ((pre->preMods==preMods)&&(pre->preVMods==preVMods)) {
-	    if (report) {
-		uWarning("Identical definitions for preserve[%s] in %s\n",
-			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
-			XkbAtomText(type->dpy,type->name,XkbMessage));
-		uAction("Ignored\n");
+	}
+	if ((old->preMods==new->preMods)&&(old->preVMods==new->preVMods)) {
+	    if (warningLevel>9) {
+                WARN2("Identical definitions for preserve[%s] in %s\n",
+				PreserveIndexTxt(type,xkb,old),TypeTxt(type));
+                ACTION("Ignored\n");
 	    }
 	    return True;
 	}
-	if (report) {
+	if (report && (warningLevel>0)) {
 	    char *str;
-	    uWarning("Multiple defintions for preserve[%s] in %s\n",
-			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
-			XkbAtomText(type->dpy,type->name,XkbMessage));
-	    if (merge==MergeAugment)
-		 str= XkbVModMaskText(type->dpy,xkb,pre->preMods,pre->preVMods,
-								XkbMessage);
-	    else str=XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage);
-	    uAction("Using %s, ",str);
-	    if (merge==MergeAugment)
-		 str=XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage);
-	    else str= XkbVModMaskText(type->dpy,xkb,pre->preMods,pre->preVMods,
-								XkbMessage);
-	    uInformation("ignoring %s\n",str);
-	}
-	if (merge==MergeOverride) {
-	    pre->preMods= preMods;
-	    pre->preVMods= preVMods;
-	    return True;
-	}
-	pre= pre->next;
-    }
-    pre= uTypedAlloc(PreserveInfo);
-    if (!pre) {
-	uInternalError("Couldn't allocate preserve entry in %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Definition of preserve[%s] lost\n",
-		XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage));
-	return False;
-    }
-    pre->matchingMapIndex= -1;
-    pre->indexMods= mods;
-    pre->indexVMods= vmods;
-    pre->preMods= preMods;
-    pre->preVMods= preVMods;
-    pre->next= type->preserve;
-    type->preserve= pre;
-    return True;
+	    WARN2("Multiple definitions for preserve[%s] in %s\n",
+				PreserveIndexTxt(type,xkb,old),TypeTxt(type));
 
-}
-
-static Bool
-AddMapEntry(xkb,type,mods,vmods,level,merge,report)
-    XkbDescPtr		xkb;
-    KeyTypeInfo *	type;
-    unsigned		mods;
-    unsigned		vmods;
-    unsigned		level;
-    unsigned		merge;
-    Bool		report;
-{
-XkbKTMapEntryPtr	entry;
-
-    if ((entry=FindMatchingMapEntry(type,mods,vmods))!=NULL) {
-	if ((report)&&(entry->level!=level)) {
-	    uWarning("Duplicate map entries for %s in %s\n",
-			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
-			XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uInformation("Using %d, ignoring %d\n",
-			     (merge==MergeOverride?level+1:entry->level+1));
+	    if (clobber)	str= PreserveTxt(type,xkb,new);
+	    else 		str= PreserveTxt(type,xkb,old);
+	    ACTION1("Using %s, ",str);
+	    if (clobber)	str= PreserveTxt(type,xkb,old);
+	    else 		str= PreserveTxt(type,xkb,new);
+	    INFO1("ignoring %s\n",str);
 	}
-	else if (report) {
-	    uWarning("Multiple occurences of map[%s]= %s in %s\n",
-			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
-			level+1,XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uInformation("Ignored\n");
-	    return True;
+	if (clobber) {
+	    old->preMods= new->preMods;
+	    old->preVMods= new->preVMods;
 	}
-	if (merge==MergeOverride)
-	    entry->level= level;
 	return True;
     }
-    if ((entry=NextMapEntry(type))==NULL)
+    old= uTypedAlloc(PreserveInfo);
+    if (!old) {
+	WSGO1("Couldn't allocate preserve in %s\n",TypeTxt(type));
+	ACTION1("Preserve[%s] lost\n",PreserveIndexTxt(type,xkb,old));
+	return False;
+    }
+    *old= *new;
+    old->matchingMapIndex= -1;
+    type->preserve=(PreserveInfo*)AddCommonInfo(&type->preserve->defs,&old->defs);
+    return True;
+}
+
+Bool
+#if NeedFunctionPrototypes
+AddMapEntry(	XkbDescPtr		xkb,
+		KeyTypeInfo *		type,
+		XkbKTMapEntryPtr	new,
+		Bool			clobber,
+		Bool			report)
+#else
+AddMapEntry(xkb,type,new,clobber,report)
+    XkbDescPtr		xkb;
+    KeyTypeInfo *	type;
+    XkbKTMapEntryPtr	new;
+    Bool		clobber;
+    Bool		report;
+#endif
+{
+XkbKTMapEntryPtr	old;
+
+    if ((old=FindMatchingMapEntry(type,new->mods.real_mods,new->mods.vmods))) {
+	if (report&&(old->level!=new->level)) {
+	    unsigned use,ignore;
+	    if (clobber) { 
+		use= new->level+1;
+		ignore= old->level+1;
+	    }
+	    else {
+		use= old->level+1;
+		ignore= new->level+1;
+	    }
+	    WARN2("Multiple map entries for %s in %s\n",
+				MapEntryTxt(type,xkb,new),TypeTxt(type));
+	    ACTION2("Using %d, ignoring %d\n",use,ignore);
+	}
+	else if (warningLevel>9) {
+	    WARN3("Multiple occurences of map[%s]= %d in %s\n",
+			MapEntryTxt(type,xkb,new),new->level+1,TypeTxt(type));
+	    ACTION("Ignored\n");
+	    return True;
+	}
+	if (clobber)
+	    old->level= new->level;
+	return True;
+    }
+    if ((old=NextMapEntry(type))==NULL)
 	return False;	/* allocation failure, already reported */
-    if (level>=type->group_width)
-	type->group_width= level+1;
-    if (vmods==0)	entry->active= True;
-    else		entry->active= False;
-    entry->mask= mods;
-    entry->real_mods= mods;
-    entry->vmods= vmods;
-    entry->level= level;
+    if (new->level>=type->numLevels)
+	type->numLevels= new->level+1;
+    if (new->mods.vmods==0)	old->active= True;
+    else			old->active= False;
+    old->mods.mask= new->mods.real_mods;
+    old->mods.real_mods= new->mods.real_mods;
+    old->mods.vmods= new->mods.vmods;
+    old->level= new->level;
     return True;
 }
 
@@ -574,275 +718,288 @@ static LookupEntry lnames[] = {
 };
 
 static Bool
-SetMapEntry(type,xkb,arrayNdx,value,merge,report)
+#if NeedFunctionPrototypes
+SetMapEntry(	KeyTypeInfo *	type,
+		XkbDescPtr	xkb,
+		ExprDef *	arrayNdx,
+		ExprDef *	value)
+#else
+SetMapEntry(type,xkb,arrayNdx,value)
     KeyTypeInfo *	type;
     XkbDescPtr		xkb;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		merge;
-    Bool		report;
+#endif
 {
 ExprResult		rtrn;
-unsigned		mods,vmods;
-XkbKTMapEntryPtr	entry;
+XkbKTMapEntryRec	entry;
 
-    if (arrayNdx==NULL) {
-	uError("Map entry without array subscript in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal map entry\n");
-	return False;
-    }
-    if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb)) {
-	uError("Map entry index not a modifier mask in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal map entry\n");
-	return False;
-    }
-    mods= rtrn.uval&0xff;
-    vmods= (rtrn.uval>>8)&0xffff;
-    if (((mods&(~type->mask))!=0)||((vmods&(~type->vmask))!=0)) {
-	uWarning("Map entry for modifiers that are not used by the %s type\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Using %s instead of ",XkbVModMaskText(type->dpy,xkb,
-							mods&type->mask,
-							vmods&type->vmask,
-							XkbMessage));
-	uInformation("%s\n",XkbVModMaskText(type->dpy,xkb,mods,vmods,
-							XkbMessage));
-	mods= mods&type->mask;
-	vmods= vmods&type->vmask;
+    if (arrayNdx==NULL)
+	return ReportTypeShouldBeArray(type,"map entry");
+    if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb))
+	return ReportTypeBadType(type,"map entry","modifier mask");
+    entry.mods.real_mods= rtrn.uval&0xff;
+    entry.mods.vmods= (rtrn.uval>>8)&0xffff;
+    if ((entry.mods.real_mods&(~type->mask))||
+				((entry.mods.vmods&(~type->vmask))!=0)) {
+	if (warningLevel>0) {
+	    WARN1("Map entry for unused modifiers in %s\n",TypeTxt(type));
+	    ACTION1("Using %s instead of ",XkbVModMaskText(type->dpy,xkb,
+						entry.mods.real_mods&type->mask,
+						entry.mods.vmods&type->vmask,
+						XkbMessage));
+	    INFO1("%s\n",MapEntryTxt(type,xkb,&entry));
+	}
+	entry.mods.real_mods&= type->mask;
+	entry.mods.vmods&= type->vmask;
     }
     if (!ExprResolveInteger(value,&rtrn,SimpleLookup,(XPointer)lnames)) {
-	uError("Level specifications in a key type must be integer\n");
-	uAction("Ignoring malformed level specification\n");
+	ERROR("Level specifications in a key type must be integer\n");
+	ACTION("Ignoring malformed level specification\n");
 	return False;
     }
-    if ((rtrn.ival<1)||(rtrn.ival>256)) {
-	uError("Shift level %d out of range (1..256) in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal map entry %s\n",
-				XkbVModMaskText(type->dpy,xkb,mods,vmods,
-							XkbMessage));
+    if ((rtrn.ival<1)||(rtrn.ival>XkbMaxShiftLevel+1)) {
+	ERROR3("Shift level %d out of range (1..%d) in key type %s\n",
+						XkbMaxShiftLevel+1,
+						rtrn.ival,TypeTxt(type));
+	ACTION1("Ignoring illegal definition of map[%s]\n",
+						MapEntryTxt(type,xkb,&entry));
 	return False;
     }
-    return AddMapEntry(xkb,type,mods,vmods,rtrn.ival-1,merge,report);
+    entry.level= rtrn.ival-1;
+    return AddMapEntry(xkb,type,&entry,True,True);
 }
 
 static Bool
-SetPreserve(type,xkb,arrayNdx,value,merge,report)
+#if NeedFunctionPrototypes
+SetPreserve(	KeyTypeInfo *	type,
+		XkbDescPtr	xkb,
+		ExprDef *	arrayNdx,
+		ExprDef *	value)
+#else
+SetPreserve(type,xkb,arrayNdx,value)
     KeyTypeInfo *	type;
     XkbDescPtr		xkb;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		merge;
-    Bool		report;
+#endif
 {
 ExprResult	 rtrn;
-unsigned	 mods,vmods;
-unsigned	 pmods,pvmods;
-XkbKTMapEntryPtr entry;
-PreserveInfo *	 pre;
+PreserveInfo 	 new;
 
-    if (arrayNdx==NULL) {
-	uError("Preseve entry without array subscript in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal entry\n");
-	return False;
-    }
-    if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb)) {
-	uError("Preserve entry index not a modifier mask in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal entry\n");
-	return False;
-    }
-    mods= rtrn.uval&0xff;
-    vmods= (rtrn.uval>>8)&0xffff;
-    if (((mods&(~type->mask))!=0)||((vmods&(~type->vmask))!=0)) {
-	uWarning("Preserve for modifiers that are not used by the %s type\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Using %s instead of ",XkbVModMaskText(type->dpy,xkb,
-							mods&type->mask,
-							vmods&type->vmask,
-							XkbMessage));
-	uInformation("%s\n",XkbVModMaskText(type->dpy,xkb,mods,vmods,
-							XkbMessage));
-	mods= mods&type->mask;
-	vmods= vmods&type->vmask;
+    if (arrayNdx==NULL)
+	return ReportTypeShouldBeArray(type,"preserve entry");
+    if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb))
+	return ReportTypeBadType(type,"preserve entry","modifier mask");
+    new.defs= type->defs;
+    new.defs.next= NULL;
+    new.indexMods= rtrn.uval&0xff;
+    new.indexVMods= (rtrn.uval>>8)&0xffff;
+    if ((new.indexMods&(~type->mask))||(new.indexVMods&(~type->vmask))) {
+	if (warningLevel>0) {
+	    WARN1("Preserve for modifiers not used by the %s type\n",
+							TypeTxt(type));
+	    ACTION1("Index %s converted to ",PreserveIndexTxt(type,xkb,&new));
+	}
+	new.indexMods&= type->mask;
+	new.indexVMods&= type->vmask;
+	if (warningLevel>0)
+	    INFO1("%s\n",PreserveIndexTxt(type,xkb,&new));
     }
     if (!ExprResolveModMask(value,&rtrn,LookupVModMask,(XPointer)xkb)) {
-	uError("Preserve value in a key type must be a modifier mask\n");
-	uAction("Ignoring malformed preserve result\n");
+	ERROR("Preserve value in a key type is not a modifier mask\n");
+	ACTION2("Ignoring preserve[%s] in type %s\n",
+					PreserveIndexTxt(type,xkb,&new),
+					TypeTxt(type));
 	return False;
     }
-    pmods= rtrn.uval&0xff;
-    pvmods= (rtrn.uval>>16)&0xffff;
-    if ((pmods&(~mods))||(pvmods&&(~vmods))) {
-	uError("Preserve value cannot include mods that are not in the mask\n");
-	uAction("Ignoring %s in preserve result\n",
-	     XkbVModMaskText(type->dpy,xkb,pmods&(~mods),pvmods&(~vmods),
-							XkbMessage));
-	pmods&= mods;
-	pvmods&= vmods;
+    new.preMods= rtrn.uval&0xff;
+    new.preVMods= (rtrn.uval>>16)&0xffff;
+    if ((new.preMods&(~new.indexMods))||(new.preVMods&&(~new.indexVMods))) {
+	if (warningLevel>0) {
+	    WARN2("Illegal value for preserve[%s] in type %s\n",
+					PreserveTxt(type,xkb,&new),
+					TypeTxt(type));
+	    ACTION1("Converted %s to ",PreserveIndexTxt(type,xkb,&new));
+	}
+	new.preMods&= new.indexMods;
+	new.preVMods&= new.indexVMods;
+	if (warningLevel>0) {
+	    INFO1("%s\n",PreserveIndexTxt(type,xkb,&new));
+	}
     }
-    return AddPreserve(xkb,type,mods,vmods,pmods,pvmods,merge,report);
+    return AddPreserve(xkb,type,&new,True,True);
 }
 
 /***====================================================================***/
 
-static Bool
-AddLevelName(type,level,name,merge,report)
+Bool
+#if NeedFunctionPrototypes
+AddLevelName(	KeyTypeInfo *	type,
+		unsigned 	level,
+		Atom 		name,
+		Bool 		clobber,
+		Bool 		report)
+#else
+AddLevelName(type,level,name,clobber,report)
     KeyTypeInfo *	type;
     unsigned		level;
     Atom		name;
-    unsigned		merge;
+    Bool		clobber;
     Bool		report;
+#endif
 {
-    if ((type->lvl_names==NULL)||(type->szNames<=level)) {
-	register int i;
-	type->lvl_names= uTypedRealloc(type->lvl_names,level+1,Atom);
-	if (type->lvl_names==NULL) {
-	    uError("Couldn't allocate level names for key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uAction("Level names lost\n");
+    if ((type->lvlNames==NULL)||(type->szNames<=level)) {
+	type->lvlNames= 
+		      uTypedRecalloc(type->lvlNames,type->szNames,level+1,Atom);
+	if (type->lvlNames==NULL) {
+	    ERROR1("Couldn't allocate level names for type %s\n",TypeTxt(type));
+	    ACTION("Level names lost\n");
 	    type->szNames= 0;
 	    return False;
 	}
 	type->szNames= level+1;
     }
-    else if (type->lvl_names[level]!=None) {
-	if (report) {
-	    uError("Multiple names for level %d of key type %s\n",level+1,
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    if (merge==MergeOverride)
-		 uAction("Using %s, ignoring %s\n",
-				XkbAtomText(type->dpy,name,XkbMessage),
-				XkbAtomText(type->dpy,type->lvl_names[level],
-								XkbMessage));
-	    else uAction("Using %s, ignoring %s\n",
-				 XkbAtomText(type->dpy,type->lvl_names[level],
-								XkbMessage),
-				 XkbAtomText(type->dpy,name,XkbMessage));
+    else if (type->lvlNames[level]==name) {
+	if (warningLevel>9) {
+	    WARN2("Duplicate names for level %d of key type %s\n",level+1,
+								TypeTxt(type));
+	    ACTION("Ignored\n");
 	}
-	if (merge!=MergeOverride)
+	return True;
+    }
+    else if (type->lvlNames[level]!=None) {
+	if (warningLevel>0) {
+	    char *old,*new;
+	    old= XkbAtomText(type->dpy,type->lvlNames[level],XkbMessage);
+	    new= XkbAtomText(type->dpy,name,XkbMessage);
+	    WARN2("Multiple names for level %d of key type %s\n",level+1,
+								TypeTxt(type));
+	    if (clobber)
+		 ACTION2("Using %s, ignoring %s\n",new,old);
+	    else ACTION2("Using %s, ignoring %s\n",old,new);
+	}
+	if (!clobber)
 	    return True;
     }
-    if (level>=type->group_width)
-	type->group_width= level+1;
-    type->lvl_names[level]= name;
+    if (level>=type->numLevels)
+	type->numLevels= level+1;
+    type->lvlNames[level]= name;
     return True;
 }
 
 static Bool
-SetLevelName(type,arrayNdx,value,merge,report)
+#if NeedFunctionPrototypes
+SetLevelName(KeyTypeInfo *type,ExprDef *arrayNdx,ExprDef *value)
+#else
+SetLevelName(type,arrayNdx,value)
     KeyTypeInfo *	type;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		merge;
-    Bool		report;
+#endif
 {
 ExprResult	rtrn;
 unsigned 	level;
 
-    if (arrayNdx==NULL) {
-	uError("Level name without array subscript in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal level name definition\n");
-	return False;
-    }
-    if (!ExprResolveInteger(arrayNdx,&rtrn,SimpleLookup,(XPointer)lnames)) {
-	uError("Level name index not an integer in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal level name definition\n");
-	return False;
-    }
-    if ((rtrn.ival<1)||(rtrn.ival>256)) {
-	uError("Level name %d out of range (1..256) in key type %s\n",
+    if (arrayNdx==NULL)
+	return ReportTypeShouldBeArray(type,"level name");
+    if (!ExprResolveInteger(arrayNdx,&rtrn,SimpleLookup,(XPointer)lnames))
+	return ReportTypeBadType(type,"level name","integer");
+    if ((rtrn.ival<1)||(rtrn.ival>XkbMaxShiftLevel+1)) {
+	ERROR3("Level name %d out of range (1..%d) in key type %s\n",
 				rtrn.ival,
+				XkbMaxShiftLevel+1,
 				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal level name definition\n");
+	ACTION("Ignoring illegal level name definition\n");
 	return False;
     }
     level= rtrn.ival-1;
     if (!ExprResolveString(value,&rtrn,NULL,NULL)) {
-	uError("Non-string name for level %d in key type %s\n",level+1,
+	ERROR2("Non-string name for level %d in key type %s\n",level+1,
 				XkbAtomText(type->dpy,type->name,XkbMessage));
-	uAction("Ignoring illegal level name definition\n");
+	ACTION("Ignoring illegal level name definition\n");
 	return False;
     }
-    return AddLevelName(type,level,stGetToken(rtrn.str),merge,report);
+    return 
+    	AddLevelName(type,level,XkbInternAtom(NULL,rtrn.str,False),True,True);
 }
 
 /***====================================================================***/
 
 static Bool
-SetKeyTypeField(type,xkb,field,arrayNdx,value,merge,info)
+#if NeedFunctionPrototypes
+SetKeyTypeField(	KeyTypeInfo *	type,
+			XkbDescPtr	xkb,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			KeyTypesInfo *	info)
+#else
+SetKeyTypeField(type,xkb,field,arrayNdx,value,info)
     KeyTypeInfo *	type;
     XkbDescPtr		xkb;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		merge;
     KeyTypesInfo *	info;
+#endif
 {
-int 		ok= 1;
 ExprResult	tmp;
 
     if (uStrCaseCmp(field,"modifiers")==0) {
 	unsigned mods,vmods;
 	if (arrayNdx!=NULL) {
-	    uWarning("The modifiers field of a is not an array\n");
-	    uAction("Illegal array subscript ignored\n");
+	    WARN("The modifiers field of a key type is not an array\n");
+	    ACTION("Illegal array subscript ignored\n");
 	}
 	if (!ExprResolveModMask(value,&tmp,LookupVModMask,(XPointer)xkb)) {
-	    uError("Key type mask field must be a modifier mask\n");
-	    uAction("Key type definition ignored\n");
+	    ERROR("Key type mask field must be a modifier mask\n");
+	    ACTION("Key type definition ignored\n");
 	    return False;
 	}
 	mods= tmp.uval&0xff;
 	vmods= (tmp.uval>>8)&0xffff;
-	if ((type->mask!=0)||(type->vmask!=0)) {
-	    uWarning("Multiple modifier mask definitions for key type %s\n",
+	if (type->defs.defined&_KT_Mask) {
+	    WARN1("Multiple modifier mask definitions for key type %s\n",
 				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uAction("Using %s, ",XkbVModMaskText(type->dpy,xkb,type->mask,
-								type->vmask,
-								XkbMessage));
-	    uInformation("ignoring %s\n",XkbVModMaskText(type->dpy,xkb,mods,
+	    ACTION1("Using %s, ",TypeMaskTxt(type,xkb));
+	    INFO1("ignoring %s\n",XkbVModMaskText(type->dpy,xkb,mods,
 								vmods,
 								XkbMessage));
 	    return False;
 	}
 	type->mask= mods;
 	type->vmask= vmods;
+	type->defs.defined|= _KT_Mask;
 	return True;
     }
-    else if (uStrCaseCmp(field,"map")==0)
-	return SetMapEntry(type,xkb,arrayNdx,value,merge,True);
-    else if (uStrCaseCmp(field,"preserve")==0)
-	return SetPreserve(type,xkb,arrayNdx,value,merge,True);
-    else if ((uStrCaseCmp(field,"levelname")==0)||
-	     (uStrCaseCmp(field,"level_name")==0))
-	return SetLevelName(type,arrayNdx,value,merge,True);
-    else if (uStrCaseCmp(field,"groupswrap")==0) {
-	if (!ExprResolveBoolean(value,&tmp,NULL,NULL)) {
-	    uError("Non-boolean value for groupsWrap in key type %s\n",
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-	    uInternalError("Illegal value ignored\n");
-	    return False;
-	}
-	type->groupsWrap= tmp.uval;
+    else if (uStrCaseCmp(field,"map")==0) {
+	type->defs.defined|= _KT_Map;
+	return SetMapEntry(type,xkb,arrayNdx,value);
     }
-    uError("Unknown field %s in key type %s\n",field,
-				XkbAtomText(type->dpy,type->name,XkbMessage));
-    uAction("Definition ignored\n");
+    else if (uStrCaseCmp(field,"preserve")==0) {
+	type->defs.defined|= _KT_Preserve;
+	return SetPreserve(type,xkb,arrayNdx,value);
+    }
+    else if ((uStrCaseCmp(field,"levelname")==0)||
+	     (uStrCaseCmp(field,"level_name")==0)) {
+	type->defs.defined|= _KT_LevelNames;
+	return SetLevelName(type,arrayNdx,value);
+    }
+    ERROR2("Unknown field %s in key type %s\n",field,TypeTxt(type));
+    ACTION("Definition ignored\n");
     return False;
 }
 
 static Bool
-HandleKeyTypeVar(stmt,xkb,merge,info)
+#if NeedFunctionPrototypes
+HandleKeyTypeVar(VarDef *stmt,XkbDescPtr xkb,KeyTypesInfo *info)
+#else
+HandleKeyTypeVar(stmt,xkb,info)
     VarDef *		stmt;
     XkbDescPtr		xkb;
-    unsigned 		merge;
     KeyTypesInfo *	info;
+#endif
 {
 ExprResult	elem,field;
 ExprDef *	arrayNdx;
@@ -851,25 +1008,31 @@ ExprDef *	arrayNdx;
 	return False; /* internal error, already reported */
     if (elem.str&&(uStrCaseCmp(elem.str,"type")==0))
 	return SetKeyTypeField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
-							     merge,info);	
+							     		info);	
     if (elem.str!=NULL) {
-	uError("Default for unknown element %s\n",uStringText(elem.str));
-	uAction("Value for field %s ignored\n",uStringText(field.str));
+	ERROR1("Default for unknown element %s\n",uStringText(elem.str));
+	ACTION1("Value for field %s ignored\n",uStringText(field.str));
     }
     else if (field.str!=NULL) {
-	uError("Default defined for unknown field %s\n",uStringText(field.str));
-	uAction("Ignored\n");
+	ERROR1("Default defined for unknown field %s\n",uStringText(field.str));
+	ACTION("Ignored\n");
     }
     return False;
 }
 
 static int
-HandleKeyTypeBody(def,xkb,type,merge,info)
+#if NeedFunctionPrototypes
+HandleKeyTypeBody(	VarDef *	def,
+			XkbDescPtr	xkb,
+			KeyTypeInfo *	type,
+			KeyTypesInfo *	info)
+#else
+HandleKeyTypeBody(def,xkb,type,info)
     VarDef *		def;
     XkbDescPtr		xkb;
     KeyTypeInfo *	type;
-    unsigned		merge;
     KeyTypesInfo *	info;
+#endif
 {
 int		ok= 1;
 ExprResult	tmp,field;
@@ -877,66 +1040,83 @@ ExprDef *	arrayNdx;
 
     for (;def!=NULL;def= (VarDef *)def->common.next) {
 	if ((def->name)&&(def->name->type==ExprFieldRef)) {
-	    ok= HandleKeyTypeVar(def,xkb,merge,info);
+	    ok= HandleKeyTypeVar(def,xkb,info);
 	    continue;
 	}
 	ok= ExprResolveLhs(def->name,&tmp,&field,&arrayNdx);
 	if (ok)
-	    ok= SetKeyTypeField(type,xkb,field.str,arrayNdx,def->value,
-							 merge,info);
+	    ok= SetKeyTypeField(type,xkb,field.str,arrayNdx,def->value,info);
     }
     return ok;
 }
 
 static int
-HandleKeyTypeDef(stmt,xkb,merge,info)
-    KeyTypeDef *	stmt;
+#if NeedFunctionPrototypes
+HandleKeyTypeDef(	KeyTypeDef *	def,
+			XkbDescPtr	xkb,
+			unsigned 	merge,
+			KeyTypesInfo *	info)
+#else
+HandleKeyTypeDef(def,xkb,merge,info)
+    KeyTypeDef *	def;
     XkbDescPtr		xkb;
     unsigned 		merge;
     KeyTypesInfo *	info;
+#endif
 {
 register int		i;
 KeyTypeInfo 		type;
  
-    if (stmt->merge!=MergeDefault) {
-	if (stmt->merge==MergeReplace)
-	     merge= MergeOverride;
-	else merge= stmt->merge;
-    }
+    if (def->merge!=MergeDefault)
+	merge= def->merge;
 
-    type.name= stmt->name;
-    type.fileID= info->fileID;
-    type.defined= NAME_DEFINED;
+    type.defs.defined= 	0;
+    type.defs.fileID= 	info->fileID;
+    type.defs.merge=	merge;
+    type.defs.next=	0;
+    type.dpy= 		info->dpy;
+    type.name= def->name;
     type.mask= info->dflt.mask;
     type.vmask= info->dflt.vmask;
-    type.groupsWrap= info->dflt.groupsWrap;
-    type.group_width= 1;
+    type.groupInfo= info->dflt.groupInfo;
+    type.numLevels= 1;
     type.nEntries= type.szEntries= 0;
     type.entries= NULL;
     type.szNames= 0;
-    type.lvl_names= NULL;
+    type.lvlNames= NULL;
     type.preserve= NULL;
 
-    if (!HandleKeyTypeBody(stmt->body,xkb,&type,merge,info)) {
+    if (!HandleKeyTypeBody(def->body,xkb,&type,info)) {
 	info->errorCount++;
 	return False;
     }
 
+    /* now copy any appropriate map, preserve or level names from the */
+    /* default type */
     for (i=0;i<info->dflt.nEntries;i++) {
-	XkbKTMapEntryPtr entry;
-	entry= &info->dflt.entries[i];
-	if (((entry->real_mods&type.mask)==entry->real_mods)&&
-	    ((entry->vmods&type.vmask)==entry->vmods)) {
-	    AddMapEntry(xkb,&type,entry->real_mods,entry->vmods,
-					entry->level,MergeAugment,False);
+	XkbKTMapEntryPtr dflt;
+	dflt= &info->dflt.entries[i];
+	if (((dflt->mods.real_mods&type.mask)==dflt->mods.real_mods)&&
+	    ((dflt->mods.vmods&type.vmask)==dflt->mods.vmods)) {
+	    AddMapEntry(xkb,&type,dflt,False,False);
+	}
+    }
+    if (info->dflt.preserve) {
+	PreserveInfo *dflt= info->dflt.preserve;
+	while (dflt) {
+	    if (((dflt->indexMods&type.mask)==dflt->indexMods)&&
+		((dflt->indexVMods&type.vmask)==dflt->indexVMods)) {
+		AddPreserve(xkb,&type,dflt,False,False);
+	    }
+	    dflt= (PreserveInfo *)dflt->defs.next;
 	}
     }
     for (i=0;i<info->dflt.szNames;i++) {
-	if ((i<type.group_width)&&(info->dflt.lvl_names[i]!=None)) {
-	    AddLevelName(&type,i,info->dflt.lvl_names[i],MergeAugment,False);
+	if ((i<type.numLevels)&&(info->dflt.lvlNames[i]!=None)) {
+	    AddLevelName(&type,i,info->dflt.lvlNames[i],False,False);
 	}
     }
-    if (!AddKeyType(info,&type,merge,True)) {
+    if (!AddKeyType(xkb,info,&type)) {
 	info->errorCount++;
 	return False;
     }
@@ -944,17 +1124,22 @@ KeyTypeInfo 		type;
 }
 
 static void
+#if NeedFunctionPrototypes
+HandleKeyTypesFile(	XkbFile	 *	file,
+			XkbDescPtr	xkb,
+			unsigned	merge,
+			KeyTypesInfo *	info)
+#else
 HandleKeyTypesFile(file,xkb,merge,info)
     XkbFile		*file;
     XkbDescPtr	 	 xkb;
     unsigned		 merge;
     KeyTypesInfo	*info;
+#endif
 {
 ParseCommon	*stmt;
 
-    if ((merge==MergeOverride)||(info->name==None))
-	info->name= file->name;
-
+    info->name= uStringDup(file->name);
     stmt= file->defs;
     while (stmt) {
 	switch (stmt->stmtType) {
@@ -968,33 +1153,39 @@ ParseCommon	*stmt;
 		    info->errorCount++;
 		break;
 	    case StmtVarDef:
-		if (!HandleKeyTypeVar((VarDef *)stmt,xkb,merge,info))
+		if (!HandleKeyTypeVar((VarDef *)stmt,xkb,info))
 		    info->errorCount++;
 		break;
 	    case StmtVModDef:
 		if (!HandleVModDef((VModDef *)stmt,merge,&info->vmods))
 		    info->errorCount++;
 		break;
+	    case StmtKeyAliasDef:
+		ERROR("Key type files may not include other declarations\n");
+		ACTION("Ignoring definition of key alias\n");
+		info->errorCount++;
+		break;
 	    case StmtKeycodeDef:
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring definition of key name\n");
+		ERROR("Key type files may not include other declarations\n");
+		ACTION("Ignoring definition of key name\n");
 		info->errorCount++;
 		break;
 	    case StmtInterpDef:
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring definition of symbol interpretation\n");
+		ERROR("Key type files may not include other declarations\n");
+		ACTION("Ignoring definition of symbol interpretation\n");
 		info->errorCount++;
 		break;
 	    default:
-		uInternalError(
-			"Unexpected statement type %d in HandleKeyTypesFile\n",
-			stmt->stmtType);
+		WSGO1("Unexpected statement type %d in HandleKeyTypesFile\n",
+								stmt->stmtType);
 		break;
 	}
 	stmt= stmt->next;
 	if (info->errorCount>10) {
-	    uError("Too many errors\n");
-	    uAction("Abandoning %s\n",stText(file->name));
+#ifdef NOISY
+	    ERROR("Too many errors\n");
+#endif
+	    ACTION1("Abandoning keytypes file \"%s\"\n",file->topName);
 	    break;
 	}
     }
@@ -1002,39 +1193,48 @@ ParseCommon	*stmt;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyDefToKeyType(XkbDescPtr xkb,XkbKeyTypePtr type,KeyTypeInfo *def)
+#else
 CopyDefToKeyType(xkb,type,def)
     XkbDescPtr		xkb;
     XkbKeyTypePtr	type;
     KeyTypeInfo *	def;
+#endif
 {
 register int i;
 PreserveInfo *pre;
 
-    for (pre=def->preserve;pre!=NULL;pre=pre->next) {
+    for (pre=def->preserve;pre!=NULL;pre=(PreserveInfo *)pre->defs.next) {
 	XkbKTMapEntryPtr match;
-	AddMapEntry(xkb,def,pre->indexMods,pre->indexVMods,0,MergeAugment,0);
+	XkbKTMapEntryRec tmp;
+	tmp.mods.real_mods= pre->indexMods;
+	tmp.mods.vmods= pre->indexVMods;
+	tmp.level= 0;
+	AddMapEntry(xkb,def,&tmp,False,False);
 	match= FindMatchingMapEntry(def,pre->indexMods,pre->indexVMods);
 	if (!match) {
-	    uInternalError("Couldn't find matching entry for preserve\n");
-	    uAction("Aborting\n");
+	    WSGO("Couldn't find matching entry for preserve\n");
+	    ACTION("Aborting\n");
 	    return False;
 	}
 	pre->matchingMapIndex= match-def->entries;
     }
-    type->real_mods= def->mask;
-    type->vmods= def->vmask;
-    type->group_width= def->group_width;
+    type->mods.real_mods= def->mask;
+    type->mods.vmods= def->vmask;
+    type->num_levels= def->numLevels;
     type->map_count= def->nEntries;
     type->map= def->entries;
     if (def->preserve) {
-	type->preserve= uTypedCalloc(type->map_count,XkbKTPreserveRec);
+	type->preserve= uTypedCalloc(type->map_count,XkbModsRec);
 	if (!type->preserve) {
-	    uWarning("Couldn't allocate preserve array in CopyDefToKeyType\n");
-	    uAction("Preserve setting for type %s lost\n",
+	    WARN("Couldn't allocate preserve array in CopyDefToKeyType\n");
+	    ACTION1("Preserve setting for type %s lost\n",
 				XkbAtomText(def->dpy,def->name,XkbMessage));
 	}
 	else {
-	    for (pre=def->preserve;pre!=NULL;pre=pre->next) {
+	    pre= def->preserve;
+	    for (;pre!=NULL;pre=(PreserveInfo *)pre->defs.next) {
 		int ndx= pre->matchingMapIndex;
 		type->preserve[ndx].mask= pre->preMods;
 		type->preserve[ndx].real_mods= pre->preMods;
@@ -1045,15 +1245,15 @@ PreserveInfo *pre;
     else type->preserve= NULL;
     type->name= (Atom)def->name;
     if (def->szNames>0) {
-	type->lvl_names= uTypedCalloc(def->group_width,Atom);
+	type->level_names= uTypedCalloc(def->numLevels,Atom);
 
-	/* assert def->szNames<=def->group_width */
+	/* assert def->szNames<=def->numLevels */
 	for (i=0;i<def->szNames;i++) {
-	    type->lvl_names[i]= (Atom)def->lvl_names[i];
+	    type->level_names[i]= (Atom)def->lvlNames[i];
 	}
     }
     else {
-	type->lvl_names= NULL;
+	type->level_names= NULL;
     }
 
     def->nEntries= def->szEntries= 0;
@@ -1062,17 +1262,20 @@ PreserveInfo *pre;
 }
 
 Bool
+#if NeedFunctionPrototypes
+CompileKeyTypes(XkbFile *file,XkbFileInfo *result,unsigned merge)
+#else
 CompileKeyTypes(file,result,merge)
     XkbFile *		file;
     XkbFileInfo *	result;
     unsigned	 	merge;
+#endif
 {
-int		errorCount= 0;
 KeyTypesInfo	info;
 XkbDescPtr	xkb;
 
-    xkb= &result->xkb;
-    InitKeyTypesInfo(&info,xkb);
+    xkb= result->xkb;
+    InitKeyTypesInfo(&info,xkb,NULL);
     info.fileID= file->id;
     HandleKeyTypesFile(file,xkb,merge,&info);
 
@@ -1081,6 +1284,15 @@ XkbDescPtr	xkb;
 	register KeyTypeInfo *def;
 	register XkbKeyTypePtr type,next;
 
+	if (info.name!=None) {
+	    if (XkbAllocNames(xkb,XkbTypesNameMask,0,0)==Success)
+		xkb->names->types= XkbInternAtom(xkb->dpy,info.name,False);
+	    else {
+		WSGO("Couldn't allocate space for types name\n");
+		ACTION2("Name \"%s\" (from %s) NOT assigned\n",scanFile,
+								info.name);
+	    }
+	}
 	i= info.nTypes;
 	if ((info.stdPresent&XkbOneLevelMask)==0)
 	    i++;
@@ -1088,9 +1300,11 @@ XkbDescPtr	xkb;
 	    i++;
 	if ((info.stdPresent&XkbKeypadMask)==0)
 	    i++;
-	if (!XkbAllocClientMap(xkb,XkbKeyTypesMask,i)) {
-	    uInternalError("Couldn't allocate client map\n");
-	    uAction("Exiting\n");
+	if ((info.stdPresent&XkbAlphabeticMask)==0)
+	    i++;
+	if (XkbAllocClientMap(xkb,XkbKeyTypesMask,i)!=Success) {
+	    WSGO("Couldn't allocate client map\n");
+	    ACTION("Exiting\n");
 	    return False;
 	}
 	xkb->map->num_types= i;
@@ -1099,31 +1313,35 @@ XkbDescPtr	xkb;
 
 	    missing= XkbAllRequiredTypes&(~info.stdPresent);
 	    keypadVMod= FindKeypadVMod(xkb);
-	    if (!XkbInitCanonicalKeyTypes(xkb,missing,keypadVMod)) {
-		uInternalError("Couldn't initialize canonical key types\n");
-		uAction("Exiting\n");
+	    if (XkbInitCanonicalKeyTypes(xkb,missing,keypadVMod)!=Success) {
+		WSGO("Couldn't initialize canonical key types\n");
+		ACTION("Exiting\n");
 		return False;
 	    }
 	    if (missing&XkbOneLevelMask)
-		xkb->map->types[XkbOneLevelIndex].name= (Atom)tok_ONE_LEVEL;
+		xkb->map->types[XkbOneLevelIndex].name= tok_ONE_LEVEL;
 	    if (missing&XkbTwoLevelMask)
-		xkb->map->types[XkbTwoLevelIndex].name= (Atom)tok_TWO_LEVEL;
+		xkb->map->types[XkbTwoLevelIndex].name= tok_TWO_LEVEL;
+	    if (missing&XkbAlphabeticMask)
+		xkb->map->types[XkbAlphabeticIndex].name= tok_ALPHABETIC;
 	    if (missing&XkbKeypadMask)
-		xkb->map->types[XkbKeypadIndex].name= (Atom)tok_KEYPAD;
+		xkb->map->types[XkbKeypadIndex].name= tok_KEYPAD;
 	}
 	next= &xkb->map->types[XkbLastRequiredType+1];
-	for (i=0,def=info.types;i<info.nTypes;i++,def++) {
-	    int map_count;
+	for (i=0,def=info.types;i<info.nTypes;i++) {
 	    if (def->name==tok_ONE_LEVEL)
 		 type= &xkb->map->types[XkbOneLevelIndex];
 	    else if (def->name==tok_TWO_LEVEL)
 		 type= &xkb->map->types[XkbTwoLevelIndex];
+	    else if (def->name==tok_ALPHABETIC)
+		 type= &xkb->map->types[XkbAlphabeticIndex];
 	    else if (def->name==tok_KEYPAD)
 		 type= &xkb->map->types[XkbKeypadIndex];
 	    else type= next++;
 	    DeleteLevel1MapEntries(def);
 	    if (!CopyDefToKeyType(xkb,type,def))
 		return False;
+	    def= (KeyTypeInfo *)def->defs.next;
 	}
 	return True;
     }

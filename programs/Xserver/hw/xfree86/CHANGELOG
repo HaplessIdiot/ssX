@@ -1,3 +1,6 @@
+XFree86 4.0.1e (6 November 2000)
+ 898. Fix two more bugs in xkbcomp: handling of 'keycode aliases', and
+      copying of strings when copying structures (#4208, Ivan Pascal).
  897. Added render extension support to tseng driver (Egbert Eich).
  896. Fixed clock code in neomagic driver (Egbert Eich).
  899. xf86Configure now uses the imake variable xf86ConfigFile (Egbert Eich).
@@ -41,8 +44,6 @@
        reset (Egbert Eich).
  870. Added support for newer sparse AXP systems (Egbert Eich).
  869. Added support for MGA G100 PCI (Egbert Eich).
- 
-XFree86 4.0.1e (3 November 2000)
  868. Add missing exported libXext Shm functions to loader (Alan Hourihane).
  867. Change Rage 128 DRM driver name to what the r128 kernel module
       expects (Kevin Martin).
@@ -123,8 +124,7 @@ XFree86 4.0.1d (27 October 2000)
  829. Add code to the xf86config utility to get the list of XKB selections
       from the appropriate XKB files rather than having them hard-coded.
       Also allow XkbOptions to be set (#4209, Ivan Pascal).
- 828. Fix two more bugs in xkbcomp: handling of 'keycode aliases', and
-      copying of strings when copying structures (#4208, Ivan Pascal).
+ 828. -
  827. Xterm patch #147 (#4207, Thomas Dickey).
  826. Move the initialisation of pScrn->EnableDisableFBAccess into
       InitOutput(), which fixes an infinite loop problem that can show up
@@ -11475,4 +11475,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1377 2000/11/03 01:15:45 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1379 2000/11/03 18:46:04 eich Exp $
