@@ -1,4 +1,7 @@
 XFree86 4.5.99.1 (xx March 2005)
+  18. Check the VESA BIOS scanline requirements and adjust the 
+      displayWidth accordingly. Fixes an assumption that the screen width
+      was always used as the displayWidth in the i830 driver (Alan Hourihane).
   17. Refine VGA routing emulation through Sun's Simba P2P bridges
       (Marc La France).
   16. Tentative fix for loader server on Linux/SPARC 2.6 kernels
@@ -19493,7 +19496,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3482 2005/03/29 17:43:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3483 2005/03/29 18:41:44 tsi Exp $
 
 
 
