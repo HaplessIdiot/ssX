@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.4 94/04/17 21:17:10 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.6 95/05/17 18:25:37 dpw Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -64,19 +64,16 @@ extern int errno;
 #endif
 
 #include <stdio.h>
-#include "X.h"
 #include "misc.h"
-
+#include "util.h"
 #include <sys/param.h>
 #include "osdep.h"
-#include "dixstruct.h"
-#include "opaque.h"
+#include "os.h"
 
 extern FdSet AllSockets;
 extern FdSet AllClients;
 extern FdSet LastSelectMask;
 extern FdMask WellKnownConnections;
-extern FdSet EnabledDevices;
 extern FdSet ClientsWithInput;
 extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;
@@ -87,33 +84,6 @@ extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
-
-extern void ProcessInputEvents();
-extern void BlockHandler();
-extern void WakeupHandler();
-
-#ifdef apollo
-extern FdSet apInputMask;
-
-static FdSet LastWriteMask;
-#endif
-
-#ifdef XTESTEXT1
-/*
- * defined in xtestext1dd.c
- */
-extern int playback_on;
-#endif /* XTESTEXT1 */
-
-struct _OsTimerRec {
-    OsTimerPtr		next;
-    CARD32		expires;
-    OsTimerCallback	callback;
-    pointer		arg;
-};
-
-static void DoTimer();
-static OsTimerPtr timers;
 
 /*****************
  * WaitForSomething:
@@ -130,15 +100,12 @@ WaitForSomething(pClientsReady)
     int *pClientsReady;
 {
     int i;
-    struct timeval waittime, *wt;
-    INT32 timeout;
+    struct timeval *wt;
     FdSet clientsReadable;
     FdSet clientsWritable;
     int curclient;
     int selecterr;
     int nready;
-    FdSet devicesReadable;
-    CARD32 now;
 
     CLEARBITS(clientsReadable);
 
@@ -155,36 +122,10 @@ WaitForSomething(pClientsReady)
 	    COPYBITS(ClientsWithInput, clientsReadable);
 	    break;
 	}
-	if (timers)
-	    now = GetTimeInMillis();
 	wt = NULL;
-	if (timers)
-	{
-	    while (timers && timers->expires <= now)
-		DoTimer(timers, now, &timers);
-	    if (timers)
-	    {
-		timeout = timers->expires - now;
-		waittime.tv_sec = timeout / MILLI_PER_SECOND;
-		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-		    (1000000 / MILLI_PER_SECOND);
-		wt = &waittime;
-	    }
-	}
 	COPYBITS(AllSockets, LastSelectMask);
-#ifdef apollo
-        COPYBITS(apInputMask, LastWriteMask);
-#endif
-	BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
-#ifdef XTESTEXT1
-	/* XXX how does this interact with new write block handling? */
-	if (playback_on) {
-	    wt = &waittime;
-	    XTestComputeWaitTime (&waittime);
-	}
-#endif /* XTESTEXT1 */
 	/* keep this check close to select() call to minimize race */
 	if (dispatchException)
 	    i = -1;
@@ -195,20 +136,9 @@ WaitForSomething(pClientsReady)
 			(int *)clientsWritable, (int *) NULL, wt);
 	}
 	else
-#ifdef apollo
-	    i = select (MAXSOCKS, (int *)LastSelectMask,
-			(int *)LastWriteMask, (int *) NULL, wt);
-#else
 	    i = select (MAXSOCKS, (int *)LastSelectMask,
 			(int *) NULL, (int *) NULL, wt);
-#endif
 	selecterr = errno;
-	WakeupHandler(i, (pointer)LastSelectMask);
-#ifdef XTESTEXT1
-	if (playback_on) {
-	    i = XTestProcessInputAction (i, &waittime);
-	}
-#endif /* XTESTEXT1 */
 	if (i <= 0) /* An error or timeout occurred */
 	{
 
@@ -225,12 +155,6 @@ WaitForSomething(pClientsReady)
 		else if (selecterr != EINTR)
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
-	    if (timers)
-	    {
-		now = GetTimeInMillis();
-		while (timers && timers->expires <= now)
-		    DoTimer(timers, now, &timers);
-	    }
 	}
 	else
 	{
@@ -243,12 +167,11 @@ WaitForSomething(pClientsReady)
 		    AnyClientsWriteBlocked = FALSE;
 	    }
 
-	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 	    if (LastSelectMask[0] & WellKnownConnections) 
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)LastSelectMask[0]);
-	    if (ANYSET (devicesReadable) || ANYSET (clientsReadable))
+	    if (ANYSET (clientsReadable))
 		break;
 	}
     }
@@ -289,128 +212,3 @@ ANYSET(src)
     return (FALSE);
 }
 #endif
-
-static void
-DoTimer(timer, now, prev)
-    register OsTimerPtr timer;
-    CARD32 now;
-    OsTimerPtr *prev;
-{
-    CARD32 newTime;
-
-    *prev = timer->next;
-    timer->next = NULL;
-    newTime = (*timer->callback)(timer, now, timer->arg);
-    if (newTime)
-	TimerSet(timer, 0, newTime, timer->callback, timer->arg);
-}
-
-OsTimerPtr
-TimerSet(timer, flags, millis, func, arg)
-    register OsTimerPtr timer;
-    int flags;
-    CARD32 millis;
-    OsTimerCallback func;
-    pointer arg;
-{
-    register OsTimerPtr *prev;
-    CARD32 now = GetTimeInMillis();
-
-    if (!timer)
-    {
-	timer = (OsTimerPtr)xalloc(sizeof(struct _OsTimerRec));
-	if (!timer)
-	    return NULL;
-    }
-    else
-    {
-	for (prev = &timers; *prev; prev = &(*prev)->next)
-	{
-	    if (*prev == timer)
-	    {
-		*prev = timer->next;
-		if (flags & TimerForceOld)
-		    (void)(*timer->callback)(timer, now, timer->arg);
-		break;
-	    }
-	}
-    }
-    if (!millis)
-	return timer;
-    if (!(flags & TimerAbsolute))
-	millis += now;
-    timer->expires = millis;
-    timer->callback = func;
-    timer->arg = arg;
-    if (millis <= now)
-    {
-	timer->next = NULL;
-	millis = (*timer->callback)(timer, now, timer->arg);
-	if (!millis)
-	    return timer;
-    }
-    for (prev = &timers;
-	 *prev && millis > (*prev)->expires;
-	 prev = &(*prev)->next)
-	;
-    timer->next = *prev;
-    *prev = timer;
-    return timer;
-}
-
-Bool
-TimerForce(timer)
-    register OsTimerPtr timer;
-{
-    register OsTimerPtr *prev;
-
-    for (prev = &timers; *prev; prev = &(*prev)->next)
-    {
-	if (*prev == timer)
-	{
-	    DoTimer(timer, GetTimeInMillis(), prev);
-	    return TRUE;
-	}
-    }
-    return FALSE;
-}
-
-void
-TimerFree(timer)
-    register OsTimerPtr timer;
-{
-    register OsTimerPtr *prev;
-
-    if (!timer)
-	return;
-    for (prev = &timers; *prev; prev = &(*prev)->next)
-    {
-	if (*prev == timer)
-	{
-	    *prev = timer->next;
-	    break;
-	}
-    }
-    xfree(timer);
-}
-
-void
-TimerCheck()
-{
-    register CARD32 now = GetTimeInMillis();
-
-    while (timers && timers->expires <= now)
-	DoTimer(timers, now, &timers);
-}
-
-void
-TimerInit()
-{
-    OsTimerPtr timer;
-
-    while (timer = timers)
-    {
-	timers = timer->next;
-	xfree(timer);
-    }
-}

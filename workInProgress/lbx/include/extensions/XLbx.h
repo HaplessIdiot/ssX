@@ -1,6 +1,6 @@
-/* $XConsortium: XLbx.h,v 1.5 94/03/27 11:43:37 dpw Exp $ */
+/* $XConsortium: XLbx.h,v 1.10 95/03/21 19:57:12 mor Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.17 1994/03/24 01:26:07 dct Exp $
+ * $NCDId: @(#)XLbx.h,v 1.21 1994/11/18 20:29:53 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -29,6 +29,11 @@
 
 #include <X11/Xfuncproto.h>
 
+/*
+ * NOTE:  any changes or additions to the opcodes needs to be reflected
+ * in the lbxCacheable array in Xserver/lbx/lbxmain.c
+ */
+ 
 #define X_LbxQueryVersion		0
 #define X_LbxStartProxy			1
 #define X_LbxStopProxy			2
@@ -56,8 +61,21 @@
 #define	X_LbxGetProperty		24
 #define	X_LbxTagData			25
 
+#define X_LbxCopyArea			26
+#define X_LbxCopyPlane			27
+#define X_LbxPolyText8			28
+#define X_LbxPolyText16			29
+#define X_LbxImageText8			30
+#define X_LbxImageText16		31
+
+#define X_LbxQueryExtension		32
+#define X_LbxPutImage			33
+#define X_LbxGetImage			34
+
 #define LbxEvent			0
-#define LbxNumberEvents			(LbxEvent + 1)
+#define LbxQuickMotionDeltaEvent	1
+#define LbxMotionDeltaEvent		2
+#define LbxNumberEvents			(LbxMotionDeltaEvent + 1)
 
 /* This is always the master client */
 #define LbxMasterClientIndex		0
@@ -74,6 +92,11 @@
 /* Lbx compression schemes */
 #define LbxCompressNone			0
 #define LbxCompressLZW			1
+
+/* Lbx image compression methods */
+#define LbxImageCompressNone		0
+#define LbxImageCompressPackBits	1
+#define LbxImageCompressFaxG42D		2
 
 #define BadLbxClient			0
 #define LbxNumberErrors			(BadLbxClient + 1)

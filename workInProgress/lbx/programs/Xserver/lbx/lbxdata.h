@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdata.h,v 1.3 94/03/08 20:42:32 dpw Exp $ */
+/* $XConsortium: lbxdata.h,v 1.4 95/05/02 19:37:25 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -28,6 +28,8 @@
 #define NEED_REPLIES
 #include "X.h"
 #include "Xproto.h"
+#define _XLBX_SERVER_
+#include "lbxstr.h"
 #include "dixfontstr.h"
 
 extern int  lbx_font_private;
@@ -35,7 +37,8 @@ extern int  lbx_font_private;
 typedef struct _fonttaginfo {
     FontPtr     pfont;
     unsigned long size;
-    xQueryFontReply *replydata;
+    int         compression;
+    xLbxFontInfo *fontinfo;
 }           FontTagInfoRec, *FontTagInfoPtr;
 
 #endif				/* _LBXDATA_H_ */

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: swaprep.c,v 1.3 94/12/01 20:53:19 mor Exp $
- * $XFree86$
+ * $XConsortium: swaprep.c,v 1.5 95/05/02 19:26:01 mor Exp $
+ * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/swaprep.c,v 3.0 1995/03/08 09:22:57 dawes Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -26,16 +26,10 @@
  */
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/X.h>	/* for KeymapNotify */
-#include	<X11/Xproto.h>
+#include	"misc.h"
 #include	"assert.h"
-#include	"dixstruct.h"
-#include	"lbxdata.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"	/* gets dixstruct.h */
-#include	"swap.h"	/* gets dixstruct.h */
+#include	"lbx.h"
+#include	"swap.h"
 
 extern int  (*InitialVector[3]) ();
 extern int  (*ProcVector[256]) ();
@@ -316,14 +310,14 @@ SwapKeymapReply(rep)
 }
 
 void
-SwapGetImageReply (rep)
+SwapGetImageReply(rep)
     xGetImageReply *rep;
 {
     char n;
 
-    swaps (&rep->sequenceNumber, n);
-    swapl (&rep->length, n);
-    swapl (&rep->visual, n);
+    swaps(&rep->sequenceNumber, n);
+    swapl(&rep->length, n);
+    swapl(&rep->visual, n);
 }
 
 void
@@ -334,6 +328,16 @@ SwapQueryExtensionReply(rep)
 
     swaps (&rep->sequenceNumber, n);
     swapl (&rep->length, n);
+}
+
+void
+SwapQueryExtensionReply(rep)
+    xQueryExtensionReply	*rep;
+{
+    char n;
+
+    swaps(&rep->sequenceNumber, n);
+    swapl(&rep->length, n);
 }
 
 static void
@@ -353,6 +357,23 @@ SwapCharInfo(pInfo)
 static void
 SwapFontInfo(pr)
     xQueryFontReply *pr;
+{
+    register char n;
+
+    swaps(&pr->minCharOrByte2, n);
+    swaps(&pr->maxCharOrByte2, n);
+    swaps(&pr->defaultChar, n);
+    swaps(&pr->nFontProps, n);
+    swaps(&pr->fontAscent, n);
+    swaps(&pr->fontDescent, n);
+    SwapCharInfo(&pr->minBounds);
+    SwapCharInfo(&pr->maxBounds);
+    swapl(&pr->nCharInfos, n);
+}
+
+static void
+SwapLbxFontInfo(pr)
+    xLbxFontInfo *pr;
 {
     register char n;
 
@@ -404,4 +425,39 @@ SwapFont(pr, native)
     pxci = (xCharInfo *) pby;
     for (i = 0; i < nchars; i++, pxci++)
 	SwapCharInfo(pxci);
+}
+
+void
+LbxSwapFontInfo(pr, compressed)
+    xLbxFontInfo *pr;
+    Bool	compressed;
+{
+    unsigned    i;
+    xCharInfo  *pxci;
+    unsigned    nchars,
+                nprops;
+    char       *pby;
+    register char n;
+
+    SwapLbxFontInfo(pr);
+    nchars = pr->nCharInfos;
+    nprops = pr->nFontProps;
+    pby = (char *) &pr[1];
+    /*
+     * Font properties are an atom and either an int32 or a CARD32, so they
+     * are always 2 4 byte values
+     */
+    for (i = 0; i < nprops; i++) {
+	swapl(pby, n);
+	pby += 4;
+	swapl(pby, n);
+	pby += 4;
+    }
+    pxci = (xCharInfo *) pby;
+    if (!compressed) {
+	for (i = 0; i < nchars; i++, pxci++)
+	    SwapCharInfo(pxci);
+    } else {
+	SwapLongs((CARD32 *) pxci, nchars);
+    }
 }

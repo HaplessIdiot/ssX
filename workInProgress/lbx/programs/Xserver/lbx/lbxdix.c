@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.6 94/03/27 13:10:46 dpw Exp $ */
+/* $XConsortium: lbxdix.c,v 1.9 95/05/30 19:56:33 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.23 1994/03/24 17:54:27 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.24 1994/09/23 20:51:28 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -426,12 +426,135 @@ LbxFlushKeyboardMapTag()
     }
 }
 
+/* counts number of bits needed to hold value */
+static int
+_bitsize(val)
+    int         val;
+{
+    int         bits = 1;  /* always need one for sign bit */
+
+    if (val == 0)
+	return (bits);
+
+    if (val < 0) {
+	val = -val;
+    }
+    while (val) {
+	bits++;
+	val >>= 1;
+    }
+
+    return bits;
+
+}
+
+/*
+ * squashes the font (if possible), returning the new length and
+ * a pointer to the new data (which has been allocated).  if it can't
+ * squish, it just returns a 0 and the data is sent in raw form.
+ */
+int  _lbx_fi_junklen = sizeof(BYTE) * 2 + sizeof(CARD16) + sizeof(CARD32);
+
+static int
+squish_font_info(qfr, rlen, sqrep)
+    xQueryFontReply *qfr;
+    int         rlen;
+    xLbxFontInfo **sqrep;
+{
+    int         len,
+                hlen;
+    xLbxFontInfo *new;
+    xCharInfo  *minb,
+               *maxb,
+		*ci,
+                bbox;
+    int         i;
+    char	*t;
+    xLbxCharInfo *chars;
+    int	num_chars;
+
+    num_chars = qfr->nCharInfos;
+
+    if (num_chars == 0)
+	return 0;
+
+    minb = &qfr->minBounds;
+    maxb = &qfr->maxBounds;
+    /*
+     * first do the quick check -- if the attribute fields aren't all the
+     * same, punt
+     */
+
+    if (minb->attributes != maxb->attributes)
+	return 0;
+
+#define	compute(field)	\
+    bbox.field = max(_bitsize(minb->field), _bitsize(maxb->field))
+
+    compute(characterWidth);
+    compute(leftSideBearing);
+    compute(rightSideBearing);
+    compute(ascent);
+    compute(descent);
+
+#undef compute
+
+    /* make sure it fits */
+    if (!((bbox.characterWidth <= LBX_WIDTH_BITS) &&
+	  (bbox.leftSideBearing <= LBX_LEFT_BITS) &&
+	  (bbox.rightSideBearing <= LBX_RIGHT_BITS) &&
+	  (bbox.ascent <= LBX_ASCENT_BITS) &&
+	  (bbox.descent <= LBX_DESCENT_BITS))) {
+	return 0;
+    }
+
+    hlen = sizeof(xLbxFontInfo) + qfr->nFontProps * sizeof(xFontProp);
+
+    len = hlen + (num_chars * sizeof(xLbxCharInfo));
+
+    new = (xLbxFontInfo *) xalloc(len);
+    if (!new)
+	return 0;
+
+    /* gross hack to avoid copying all the fields */
+    t = (char *) qfr;
+    t += _lbx_fi_junklen;
+
+    /* copy all but the char infos */
+    memcpy((char *) new, (char *) t, hlen);
+
+    t = (char *) new;
+    t += hlen;
+    chars = (xLbxCharInfo *) t;
+
+    t = (char *) qfr;
+    t += sizeof(xQueryFontReply) + qfr->nFontProps * sizeof(xFontProp);
+    ci = (xCharInfo *) t;
+
+    /* now copy & pack the charinfos */
+    for (i = 0; i < num_chars; i++, chars++, ci++) {
+	chars->metrics = 0;
+	chars->metrics |= (LBX_MASK_BITS(ci->characterWidth, LBX_WIDTH_BITS)
+			   << LBX_WIDTH_SHIFT);
+	chars->metrics |= (LBX_MASK_BITS(ci->leftSideBearing, LBX_LEFT_BITS)
+			   << LBX_LEFT_SHIFT);
+	chars->metrics |= (LBX_MASK_BITS(ci->rightSideBearing, LBX_RIGHT_BITS)
+			   << LBX_RIGHT_SHIFT);
+	chars->metrics |= (LBX_MASK_BITS(ci->ascent, LBX_ASCENT_BITS)
+			   << LBX_ASCENT_SHIFT);
+	chars->metrics |= (LBX_MASK_BITS(ci->descent, LBX_DESCENT_BITS)
+			   << LBX_DESCENT_SHIFT);
+    }
+
+    *sqrep = new;
+    return len;
+}
+
 int
 LbxQueryFont(client)
     ClientPtr   client;
 {
-    xQueryFontReply *reply,
-               *sreply = NULL;
+    xQueryFontReply *reply;
     xLbxQueryFontReply lbxrep;
     FontPtr     pFont;
     register GC *pGC;
@@ -441,6 +564,9 @@ LbxQueryFont(client)
     TagData     td = NULL;
     XID         tid;
     FontTagInfoPtr ftip;
+    int         sqlen = 0;
+    xLbxFontInfo *sqrep,
+               *sreply = NULL;
 
     REQUEST(xLbxQueryFontReq);
 
@@ -483,10 +609,25 @@ LbxQueryFont(client)
 	free_data = TRUE;
 	send_data = TRUE;
 	QueryFont(pFont, reply, nprotoxcistructs);
+
+	sqlen = squish_font_info(reply, rlength, &sqrep);
+	if (!sqlen) {		/* if it failed to squish, send it raw */
+	    char *t;
+
+	    lbxrep.compression = 0;
+
+	    sqlen = rlength - _lbx_fi_junklen;
+	    t = (char *) reply;
+	    sqrep = (xLbxFontInfo *) (t + _lbx_fi_junklen);
+	} else {
+	    lbxrep.compression = 1;
+	    xfree(reply);	/* no longer needed */
+	}
     } else {			/* just get data from tag */
 	ftip = (FontTagInfoPtr) td->tdata;
-	reply = ftip->replydata;
-	rlength = ftip->size;
+	sqrep = ftip->fontinfo;
+	sqlen = ftip->size;
+	lbxrep.compression = ftip->compression;
     }
 
     if (!td) {
@@ -499,14 +640,17 @@ LbxQueryFont(client)
 	    FontSetPrivate(pFont, lbx_font_private, (pointer) td);
 	    ftip = (FontTagInfoPtr) td->tdata;
 	    ftip->pfont = pFont;
-	    ftip->size = rlength;
-	    ftip->replydata = reply;
+	    ftip->size = sqlen;
+	    ftip->fontinfo = sqrep;
+	    ftip->compression = lbxrep.compression;
 	    free_data = FALSE;
 	} else {
 	    xfree(ftip);
 	}
     }
     if (td) {
+	if (!TagProxyMarked(td->tid, LbxProxyID(client)))
+	    send_data = TRUE;
 	TagMarkProxy(td->tid, LbxProxyID(client));
 	lbxrep.tag = td->tid;
     } else {
@@ -517,7 +661,7 @@ LbxQueryFont(client)
     lbxrep.type = X_Reply;
     lbxrep.sequenceNumber = client->sequence;
     if (send_data)
-	lbxrep.length = rlength >> 2;
+	lbxrep.length = sqlen >> 2;
     else
 	lbxrep.length = 0;
 
@@ -527,18 +671,18 @@ LbxQueryFont(client)
 	swaps(&lbxrep.sequenceNumber, n);
 	swapl(&lbxrep.length, n);
 	swapl(&lbxrep.tag, n);
-	sreply = (xQueryFontReply *) ALLOCATE_LOCAL(rlength);
+	sreply = (xLbxFontInfo *) ALLOCATE_LOCAL(sqlen);
 	if (!sreply)
 	    return BadAlloc;
-	bcopy((char *) reply, (char *) sreply, rlength);
-	SwapFont((xQueryFontReply *) sreply, TRUE);
-	reply = sreply;
+	memcpy((char *) sreply, (char *) sqrep, sqlen);
+	LbxSwapFontInfo(sreply, lbxrep.compression);
+	sqrep = sreply;
     }
     WriteToClient(client, sizeof(xLbxQueryFontReply), (char *) &lbxrep);
     if (send_data)
-	WriteToClient(client, rlength, reply);
+	WriteToClient(client, sqlen, sqrep);
     if (free_data)
-	xfree(reply);
+	xfree(sqrep);
     if (sreply)
 	DEALLOCATE_LOCAL(sreply);
     return (client->noClientException);
@@ -569,6 +713,7 @@ LbxQueryTag(client, tag)
     unsigned long size;
     pointer     data;
     pointer     sdata = NULL;
+    int         compression;
 
     td = TagGetTag(tag);
 
@@ -582,7 +727,8 @@ LbxQueryTag(client, tag)
 	if (td->data_type == LbxTagTypeFont) {
 	    ftip = (FontTagInfoPtr) td->tdata;
 	    size = ftip->size;
-	    data = (pointer) ftip->replydata;
+	    data = (pointer) ftip->fontinfo;
+	    compression = ftip->compression;
 	} else if (td->data_type == LbxTagTypeProperty) {
 	    size = td->size;
 	    data = td->tdata;
@@ -599,7 +745,7 @@ LbxQueryTag(client, tag)
 	sdata = (pointer) ALLOCATE_LOCAL(rep.real_length);
 	if (!sdata)
 	    return BadAlloc;
-	bcopy((char *) data, (char *) sdata, rep.real_length);
+	memcpy((char *) sdata, (char *) data, rep.real_length);
 	switch (td->data_type) {
 	case LbxTagTypeModmap:
 	    /* no swapping necessary */
@@ -608,7 +754,7 @@ LbxQueryTag(client, tag)
 	    SwapLongs((CARD32 *) sdata, rep.real_length / 4);
 	    break;
 	case LbxTagTypeFont:
-	    SwapFont((xQueryFontReply *) sdata, TRUE);
+	    LbxSwapFontInfo((xQueryFontReply *) sdata, compression);
 	    break;
 	case LbxTagTypeProperty:
 	    switch (td->data_format) {
@@ -902,7 +1048,7 @@ LbxQueryTagData(client, owner_pid, tag, tagtype, infop)
 	    /* don't do others yet (ever?) */
 	    break;
 	}
-	AttendClient(client);
+	LbxAttendClient(client);
 	return;
     }
     /* save the info and the client being stalled */
@@ -953,7 +1099,7 @@ LbxTagData(client, tag, len, data)
 			break;
 		    }
 		}
-		bcopy((char *) data, (char *) td->tdata, len);
+		memmove((char *) td->tdata, (char *) data, len);
 	    }
 	    break;
 	default:
@@ -964,7 +1110,7 @@ LbxTagData(client, tag, len, data)
 	/* wake up stalled clients */
 	cp = *stqp->stalled_clients;
 	while (stqp->num_stalled--) {
-	    AttendClient(cp);
+	    LbxAttendClient(cp);
 	    cp++;
 	}
 	LbxRemoveQTag(tag);

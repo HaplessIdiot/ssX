@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.6 94/03/27 13:17:07 dpw Exp $ */
+/* $XConsortium: lbxprop.c,v 1.8 95/05/11 17:44:13 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxprop.c,v 1.11 1994/03/24 17:54:36 lemke Exp $
+ * $NCDId: @(#)lbxprop.c,v 1.12 1994/09/23 20:51:51 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -60,14 +60,53 @@ LbxStallPropRequest(client, pProp)
     ClientPtr   client;
     PropertyPtr pProp;
 {
-    LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);
-    ResetCurrentRequest(client);
+    LbxClientPtr lbxClient = LbxClient(client);
+    xReq *req = (xReq *) client->requestBuffer;
+    int len = req->length * 4;
+
+    LbxQueryTagData(client, pProp->owner_pid,
+	pProp->tag_id, LbxTagTypeProperty, pProp);
+
+    if (lbxClient) {
+	/*
+	 * Before we reset the request, we must make sure
+	 * it is in the client's byte order.
+	 */
+
+	ClientPtr masterClient =
+	    lbxClient->proxy->lbxClients[LbxMasterClientIndex]->client;
+
+	if (client->swapped != masterClient->swapped) {
+	    if (req->reqType == X_ChangeProperty) {
+		register char n;
+		xChangePropertyReq *stuff = (xChangePropertyReq *) req;
+		swaps(&stuff->length, n);
+		swapl(&stuff->window, n);
+		swapl(&stuff->property, n);
+		swapl(&stuff->type, n);
+		swapl(&stuff->nUnits, n);
+		switch ( stuff->format ) {
+		case 8 :
+		    break;
+		case 16:
+		    SwapRestS(stuff);
+		    break;
+		case 32:
+		    SwapRestL(stuff);
+		    break;
+		}
+	    }
+	}
+    }
+
+    LbxResetCurrentRequest(client, len);
+
     client->sequence--;
 
 /* XXX this won't work too well went done to a proxy client.
  * need finer grain of control
  */
-    IgnoreClient(client);
+    LbxIgnoreClient(client);
 }
 
 int
@@ -421,7 +460,7 @@ LbxGetProperty(client)
 		    reply.length = 0;
 		reply.nItems = len / (pProp->format / 8);
 		reply.propertyType = pProp->type;
-                reply.tag = pProp->tag_id;
+		reply.tag = pProp->tag_id;
 
 		if (stuff->delete && (reply.bytesAfter == 0)) {
 		    LbxFlushPropertyTag(tid);

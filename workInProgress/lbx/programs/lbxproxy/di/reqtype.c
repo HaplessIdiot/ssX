@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.c,v 1.4 94/03/27 13:50:59 dpw Exp $ */
+/* $XConsortium: reqtype.c,v 1.6 95/05/17 18:26:41 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -7,9 +7,9 @@
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name Network Computing Devices, Inc. not be
- * used in advertising or publicity pertaining to distribution of this 
+ * used in advertising or publicity pertaining to distribution of this
  * software without specific, written prior permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
  * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
  * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -19,14 +19,15 @@
  * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * 
- * $NCDId: @(#)reqtype.c,v 1.4 1994/03/24 17:54:59 lemke Exp $
+ *
+ * $NCDId: @(#)reqtype.c,v 1.7 1994/09/24 01:07:43 lemke Exp $
  */
 
 /* decides what tupe of request it is */
-#include	<X11/Xproto.h>
-#include        "os.h"          /* in server/include */
+#include	"misc.h"
+#include        "os.h"		/* in server/include */
 #include	"reqtype.h"
+#include	"lbxext.h"
 
 static Bool cause_replies[] = {
     FALSE,			/* BadRequest */
@@ -279,28 +280,28 @@ static Bool cause_events[] = {
 
 /* ARGSUSED */
 Bool
-generates_errors(req)
-    int         req;
+GeneratesErrors(req)
+    xReq       *req;
 {
-    return TRUE;		/* eveyrthing causes an error */
+    return TRUE;		/* everything can  a least BadAlloc */
 }
 
 Bool
-generates_events(req)
-    int         req;
+GeneratesEvents(req)
+    xReq       *req;
 {
     /* don't grok extensions */
-    if (req > X_NoOperation)
-	return TRUE;
-    return cause_events[req];
+    if (req->reqType > X_NoOperation)
+	return CheckExtensionForEvents(req);
+    return cause_events[req->reqType];
 }
 
-Bool
-generates_replies(req)
-    int         req;
+int
+GeneratesReplies(req)
+    xReq       *req;
 {
     /* don't grok extensions */
-    if (req > X_NoOperation)
-	return TRUE;
-    return cause_replies[req];
+    if (req->reqType > X_NoOperation)
+	return CheckExtensionForReplies(req);
+    return (int) cause_replies[req->reqType];
 }

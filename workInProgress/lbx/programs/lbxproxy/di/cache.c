@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.6 94/04/17 21:17:16 dpw Exp $ */
+/* $XConsortium: cache.c,v 1.8 95/05/17 18:26:41 dpw Exp $ */
 /*
 Copyright (c) 1994  X Consortium
 
@@ -49,7 +49,9 @@ in this Software without prior written authorization from the X Consortium.
  * $NCDId: @(#)cache.c,v 1.5 1994/03/24 17:54:50 lemke Exp $
  *
  */
-#include	"cachestr.h"
+#include	"misc.h"
+#include	"util.h"
+#include	"cache.h"
 #include        "assert.h"
 
 #define INITBUCKETS 64
@@ -61,6 +63,26 @@ in this Software without prior written authorization from the X Consortium.
 #define CACHE_ENTRY_MASK	0x3FFFFF
 #define	CACHE_ENTRY_BITS(id)	((id) & 0x1fc00000)
 #define	CACHE_ID(id)		((int)(CACHE_ENTRY_BITS(id) >> ENTRYOFFSET))
+
+typedef struct _cache_entry {
+    pointer     data;
+    unsigned long timestamp;
+    CacheID     id;
+    unsigned long size;
+    CacheFree   free_func;
+    struct _cache_entry *next;
+}           CacheEntryRec, *CacheEntryPtr;
+
+typedef struct _cache {
+    Cache       id;
+    CacheEntryPtr *entries;
+    int         elements;
+    int         buckets;
+    int         hashsize;
+    CacheID     nextid;
+    unsigned long maxsize;
+    unsigned long cursize;
+}           CacheRec;
 
 #define	NullCacheEntry	((CacheEntryPtr) 0)
 
@@ -92,11 +114,11 @@ CacheInit(maxsize)
 	return (Cache) 0;
     cache->entries = (CacheEntryPtr *)
 	xalloc(INITBUCKETS * sizeof(CacheEntryPtr));
-    bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
     if (!cache->entries) {
 	xfree(cache);
 	return (Cache) 0;
     }
+    bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
     caches[id] = cache;
     cache->elements = 0;
     cache->buckets = INITBUCKETS;
@@ -229,6 +251,19 @@ CacheReset(cid)
     assert(cache->cursize == 0);
 }
 
+void
+CacheFreeAll()
+{
+    int         i;
+
+    for (i = 1; i < num_caches; i++) {
+	if (caches[i])
+	    CacheFreeCache(i);
+    }
+    num_caches = 1;
+}
+
+
 static void
 flush_cache(cache, needed)
     CachePtr    cache;
@@ -280,6 +315,7 @@ flush_cache(cache, needed)
 void
 CacheResize(cid, newsize)
     Cache       cid;
+    int		newsize;
 {
     CachePtr    cache = caches[cid];
 
@@ -363,7 +399,7 @@ CacheFetchMemory(cid, id, update)
     return (pointer) 0;
 }
 
-int
+void
 CacheFreeMemory(cacheid, cid, notify)
     Cache       cacheid;
     CacheID     cid;

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxtags.c,v 1.5 94/03/27 13:11:47 dpw Exp $ */
+/* $XConsortium: lbxtags.c,v 1.6 95/05/02 19:36:04 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -49,13 +49,18 @@ tag_free(data, id)
 {
     TagData     td = (TagData) data;
     FontTagInfoPtr	ftip;
+    char *t;
+    extern int	_lbx_fi_junklen;
 
     /* some types need to be freed, others are shared */
     if (td->data_type == LbxTagTypeFont) {
 	/* remove any back links */
 	ftip = (FontTagInfoPtr) td->tdata;
 	FontSetPrivate(ftip->pfont, lbx_font_private, (pointer) 0);
-	xfree(ftip->replydata);
+	t = (char *) ftip->fontinfo;
+	if (!ftip->compression)	/* points to xQueryFont, so back up to it */
+	    t -= _lbx_fi_junklen;
+	xfree(t);
 	xfree(ftip);
     }
     xfree(data);

@@ -19,11 +19,11 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxfuncs.c,v 1.40 1994/11/18 20:39:18 lemke Exp $
+ * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.7 94/12/01 20:50:00 mor Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/lbxfuncs.c,v 3.0 1994/09/20 12:53:43 dawes Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.13 95/05/24 16:14:13 mor Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/lbxfuncs.c,v 3.1 1995/01/14 10:58:57 dawes Exp $ */
 
 /*
  * top level LBX request & reply handling
@@ -38,7 +38,8 @@
  * out.
  *
  * requests copy out interesting stuff and then swap so original data
- * is left alone as much as possible
+ * is left alone as much as possible.  note that the length field
+ * is *not* swapped
  *
  * replied data is copied yet again before swapping because the data
  * may be stored as a tag result and we don't want to change that.
@@ -46,24 +47,16 @@
 
 
 #include	<stdio.h>
-#define NEED_REPLIES
-#define NEED_EVENTS
-#include	<X11/X.h>	/* for KeymapNotify */
-#include	<X11/Xproto.h>
 #include	"assert.h"
-#include	"lbxdata.h"
+#include	"lbx.h"
 #include	"atomcache.h"
 #include	"util.h"
 #include	"tags.h"
 #include	"colormap.h"
-#include	"cmapst.h"
-#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
 #include	"reqtype.h"
-#define _XLBX_SERVER_
-#include	"lbxstr.h"
 #include	"lbxext.h"
 
 #define reply_length(cp,rep) ((rep)->type==X_Reply ? \
@@ -95,6 +88,7 @@ FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
     if (client->swapped) {
 	SwapConnSetupPrefix(&reply);
     }
+    client->server_client_index = CLIENT_ID(setup_data->ridBase);
     WriteToClient(client, sizeof(xConnSetupPrefix), &reply);
     if (client->swapped) {
 	WriteSConnectionInfo(client, setup_len, (char *) setup_data);
@@ -346,25 +340,29 @@ get_atom_name_reply(client, data)
     Atom        atom;
     char       *s;
     xGetAtomNameReply *reply;
-    int         len;
+    CARD16	len;
     ReplyStuffPtr nr;
+    char	n;
 
     reply = (xGetAtomNameReply *) data;
 
-    if ((reply->length << 2) > MAX_ATOM_LENGTH)
-	return FALSE;
+    len = reply->nameLength;
 
-    len = (reply->length << 2) + sizeof(xGetAtomNameReply);
+    if (client->swapped) {
+	swaps(&len, n);
+    }
+
+    if (len > MAX_ATOM_LENGTH)
+	return FALSE;
 
     s = data + sizeof(xGetAtomNameReply);
 
-    len -= sizeof(xGetAtomNameReply);
     nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
     atom = nr->request_info.lbxatom.atom;
 
     /* make sure it gets stuffed in the DB */
-    (void) LbxMakeAtom(s, len, atom, TRUE);
+    (void) LbxMakeAtom(s, (unsigned) len, atom, TRUE);
     return TRUE;
 }
 
@@ -515,7 +513,7 @@ alloc_color_req(client, data)
 	IncrementPixel(client, cmap, pent);
 
 	/* must tell server to bump refcnt */
-	SendIncrementPixel(client, req->cmap, pent->pixel);
+	SendIncrementPixel(client, cmap, pent->pixel);
 
 	reply.type = X_Reply;
 	reply.length = 0;
@@ -812,16 +810,19 @@ free_colors_req(client, data)
     Colormap    cmap;
     Bool        freepix = FALSE;
     char        n;
+    CARD16	len;
 
     req = (xFreeColorsReq *) data;
     mask = req->planeMask;
     cmap = req->cmap;
+    len = req->length;
 
     if (client->swapped) {
 	swapl(&cmap, n);
 	swapl(&mask, n);
+	swaps(&len, n);
     }
-    num = ((req->length << 2) - sizeof(xFreeColorsReq)) >> 2;
+    num = ((len << 2) - sizeof(xFreeColorsReq)) >> 2;
 
     if (client->swapped) {
 	pixels = (Pixel *) ALLOCATE_LOCAL(num * sizeof(Pixel));
@@ -1179,6 +1180,109 @@ FinishQueryFontReply(client, seqnum, length, data)
     }
 }
 
+static INT16
+unpack_val(val, mask, sft, bts)
+    CARD32      val;
+    CARD32      mask;
+    int         sft,
+                bts;
+{
+    CARD32      tmpl;
+    CARD16      utmp;
+    INT16       sval;
+
+    /* get the proper value */
+    utmp = (val & mask) >> sft;
+    /* push the sign bit to the right spot */
+    utmp <<= (16 - bts);
+    /* cast it so sign bit takes effect */
+    sval = (INT16) utmp;
+    /* shift back down */
+    sval >>= (16 - bts);
+
+    return sval;
+}
+
+int
+UnsquishFontInfo(compression, fdata, dlen, qfr)
+    int	compression;
+    xLbxFontInfo	*fdata;
+    int		dlen;
+    pointer	*qfr;
+{
+    int         len,
+                hlen,
+                junklen = sizeof(BYTE) * 2 + sizeof(CARD16) + sizeof(CARD32);
+    char *t;
+    pointer	ndata;
+    int         nchars;
+    int         i;
+    xCharInfo  *maxb,
+               *minb;
+    xQueryFontReply *new;
+    xLbxCharInfo *lci,
+                tlci;
+    xCharInfo  *ci;
+    CARD16       attrs;
+
+    maxb = &fdata->maxBounds;
+    minb = &fdata->minBounds;
+
+    nchars = fdata->nCharInfos;
+    hlen = sizeof(xQueryFontReply) + fdata->nFontProps * sizeof(xFontProp);
+    len = hlen + nchars * sizeof(xCharInfo);
+
+    new = (xQueryFontReply *) xalloc(len);
+    *qfr = (pointer) new;
+
+    if (!new)			/* XXX bad stuff... */
+	return 0;
+
+    /* copy the header & props parts */
+    t = (char *) new;
+    t += junklen;
+    if (compression) {
+	bcopy((char *) fdata, (char *) t, hlen - junklen);
+    } else {
+	bcopy((char *) fdata, (char *) t, len - junklen);
+	return len;
+    }
+
+    attrs = maxb->attributes;
+
+    t = (char *) fdata;
+    t += hlen - junklen;
+    lci = (xLbxCharInfo *) t;
+
+    t = (char *) new;
+    t += hlen;
+    ci = (xCharInfo *) t;
+
+    /* now expand the chars */
+    for (i = 0; i < nchars; i++, lci++, ci++) {
+	if (lci->metrics == 0) {
+	    /* empty char */
+	    ci->characterWidth = ci->leftSideBearing = ci->rightSideBearing =
+		ci->ascent = ci->descent = ci->attributes = 0;
+	} else {
+	    ci->characterWidth =
+	        unpack_val(lci->metrics, LBX_WIDTH_MASK,
+		       LBX_WIDTH_SHIFT, LBX_WIDTH_BITS);
+	    ci->leftSideBearing = unpack_val(lci->metrics, LBX_LEFT_MASK,
+					 LBX_LEFT_SHIFT, LBX_LEFT_BITS);
+	    ci->rightSideBearing = unpack_val(lci->metrics, LBX_RIGHT_MASK,
+					  LBX_RIGHT_SHIFT, LBX_RIGHT_BITS);
+	    ci->ascent = unpack_val(lci->metrics, LBX_ASCENT_MASK,
+				LBX_ASCENT_SHIFT, LBX_ASCENT_BITS);
+	    ci->descent = unpack_val(lci->metrics, LBX_DESCENT_MASK,
+				 LBX_DESCENT_SHIFT, LBX_DESCENT_BITS);
+	    ci->attributes = attrs;
+	}
+    }
+
+    return len;
+}
+
 
 static Bool
 get_queryfont_reply(client, data)
@@ -1186,8 +1290,10 @@ get_queryfont_reply(client, data)
     char       *data;
 {
     xLbxQueryFontReply *rep;
-    int         len;
-    pointer     tag_data;
+    int         len,
+                sqlen;
+    pointer     tag_data,
+                sqtag_data;
     TagData     td;
     ReplyStuffPtr nr;
     QueryTagRec qt;
@@ -1210,30 +1316,43 @@ get_queryfont_reply(client, data)
 	    queryfont_full++;
 #endif
 
-	    tag_data = (pointer) &rep[1];
-	    len = rep->length << 2;
+	    sqtag_data = (pointer) &rep[1];
+	    sqlen = rep->length << 2;
 	    if (client->swapped) {
-		SwapFont((xQueryFontReply *) tag_data, FALSE);
+		LbxSwapFontInfo(sqtag_data, rep->compression);
 	    }
-	    if (!TagStoreData(global_cache, tag, len,
-			      LbxTagTypeFont, tag_data)) {
+
+	    /*
+	     * store squished version of data, since that's what comes through
+	     * through QueryTag
+	     */
+	    if (!TagStoreData(global_cache, tag, sqlen,
+				      LbxTagTypeFont, sqtag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
 	    }
+	    len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen,
+							&tag_data);
+	    if (!len)
+	    	goto fetch_tag;
 	} else {
 	    td = TagGetTag(global_cache, tag);
 	    if (!td) {
+	fetch_tag:
 		/* lost data -- ask again for tag value */
 
 		qt.tag = tag;
 		qt.tagtype = LbxTagTypeFont;
+		qt.typedata.query_font.compression = rep->compression;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
-	    len = td->size;
-	    tag_data = td->tdata;
+	    sqlen = td->size;
+	    sqtag_data = td->tdata;
+	    len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen,
+						&tag_data);
 
 #ifdef LBX_STATS
 	    queryfont_tag++;
@@ -1247,14 +1366,17 @@ get_queryfont_reply(client, data)
 #endif
 
 	/* server didn't send us a tag for some reason -- just pass on data */
-	tag_data = (pointer) &rep[1];
+	sqtag_data = (pointer) &rep[1];
 	if (client->swapped) {
-	    SwapFont((xQueryFontReply *) tag_data, FALSE);
+	    LbxSwapFontInfo(sqtag_data, FALSE);
 	}
-	len = rep->length << 2;
+	sqlen = rep->length << 2;
+	len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen, &tag_data);
     }
 
     FinishQueryFontReply(client, rep->sequenceNumber, len, tag_data);
+
+    xfree(tag_data);		/* free unsquished version */
 
     return TRUE;
 }
@@ -1544,10 +1666,8 @@ patchup_error(client, err, nr)
 				 * have an error, so eat it */
 	break;
     }
-    if (client->swapped) {
-	swaps(&minor_code, n);
-    }
-    err->minorCode = minor_code;
+    err->majorCode = minor_code;    /* err->majorCode is CARD8, don't swap */
+    err->minorCode = 0;
     return retval;
 }
 
@@ -1609,10 +1729,19 @@ DoLBXReply(client, data, len)
 		get_tagged_setup_reply(client, (char *) reply);
 		return FALSE;
 	    } else {
+		CARD16 majorVer = prefix->majorVersion,
+		       minorVer = prefix->minorVersion;
+
 		if (client->swapped) {
 		    SwapConnectionInfo((xConnSetup *) & prefix[1]);
+		    swaps (&majorVer, n);
+		    swaps (&minorVer, n);
 		}
-		GetConnectionInfo(client, (xConnSetup *) & prefix[1], NULL);
+
+		FinishSetupReply (client, reply->length << 2,
+		    (xConnSetup *)&prefix[1], NULL, majorVer, minorVer);
+
+		return FALSE;
 	    }
 	}
 	return TRUE;
@@ -1651,9 +1780,10 @@ DoLBXReply(client, data, len)
 			/* error for proxy -- eat it */
 			ret = FALSE;
 		    }
-		}
-		/* handle extension error */
+		} else {
+		    /* error in core X or other extension */
 		HandleExtensionError(client, err);
+		}
 		RemoveReply(client, nr);
 	    }
 	}
@@ -1677,7 +1807,9 @@ DoLBXReply(client, data, len)
 	if (reply->type == MotionNotify) {
 	    AllowMotion(client, 1);
 	}
-	HandleExtensionEvent(client, reply);
+	if (reply->type != X_Error) {
+	    HandleExtensionEvent(client, (xEvent *)reply);
+	}
 	if (client->swapped) {	/* put seq & length back */
 	    swaps(&reply->sequenceNumber, n);
 	    swapl(&reply->length, n);
@@ -1783,7 +1915,7 @@ DoLBXReply(client, data, len)
 	}
     } else {
 	/* XXX handle any other extensions we may know about */
-	remove_it = HandleExtensionReply(client, reply, nr);
+	remove_it = HandleExtensionReply(client, (xReply *)reply, nr);
     }
     if (remove_it)
 	RemoveReply(client, nr);

@@ -1,4 +1,4 @@
-/* $XConsortium: lock.h,v 1.1 94/12/06 14:44:18 mor Exp $ */
+/* $XConsortium: lock.h,v 1.2 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -27,5 +27,6 @@ in this Software without prior written authorization from the X Consortium.
 
 extern Status LockSession ();
 extern void UnlockSession ();
+extern char *GetLockId ();
 extern Bool CheckSessionLocked ();
 extern void UnableToLockSession ();

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxtags.h,v 1.4 94/03/27 13:13:40 dpw Exp $ */
+/* $XConsortium: lbxtags.h,v 1.5 95/04/04 21:23:52 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -25,14 +25,13 @@
 
 #ifndef _LBXTAGS_H_
 #define _LBXTAGS_H_
+#include	"lbxserve.h"
 
 #include	"os.h"
 #include	"opaque.h"
 #include	"resource.h"
 #include	"X.h"
 #include	"Xproto.h"
-
-#define	MAX_NUM_PROXIES	8	/* XXX should be elsewhere */
 
 typedef struct _tagdata {
     XID         tid;

@@ -1,5 +1,5 @@
-/* $XConsortium: xtwatch.c,v 1.7 94/04/17 21:15:22 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: xtwatch.c,v 1.8 95/05/24 20:43:29 mor Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xtwatch.c,v 3.0 1994/06/28 12:41:26 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,7 +28,11 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/ICE/ICElib.h>
 #include <X11/Intrinsic.h>
+#include "xsm.h"
 
+extern void CloseDownClient ();
+
+
 Status
 InitWatchProcs (appContext)
 
@@ -77,9 +81,47 @@ int 		*source;
 XtInputId	*id;
 
 {
-    IceConn	ice_conn = (IceConn) client_data;
+    IceConn			ice_conn = (IceConn) client_data;
+    IceProcessMessagesStatus	status;
 
-#ifdef MINIX
+    status = IceProcessMessages (ice_conn, NULL, NULL);
+
+    if (status == IceProcessMessagesIOError)
+    {
+	List *cl;
+	int found = 0;
+
+	if (verbose)
+	{
+	    printf ("IO error on connection (fd = %d)\n",
+	        IceConnectionNumber (ice_conn));
+	    printf ("\n");
+	}
+
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    ClientRec *client = (ClientRec *) cl->thing;
+
+	    if (client->ice_conn == ice_conn)
+	    {
+		CloseDownClient (client);
+		found = 1;
+		break;
+	    }
+	}
+	 
+	if (!found)
+	{
+	    /*
+	     * The client must have disconnected before it was added
+	     * to the session manager's running list (i.e. before the
+	     * NewClientProc callback was invoked).
+	     */
+
+	    IceSetShutdownNegotiation (ice_conn, False);
+	    IceCloseConnection (ice_conn);
+	}
+    }
     if (!MNX_IceMessagesAvailable(ice_conn))
     	return;
 #endif

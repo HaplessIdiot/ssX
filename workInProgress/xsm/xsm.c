@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.35 94/04/17 21:15:19 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.76 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,186 +28,646 @@ in this Software without prior written authorization from the X Consortium.
 /*
  * X Session Manager.
  *
- * Written by Ralph Mor, X Consortium.
- *        and Jordan Brown, Quarterdeck Office Systems
- *
- * This program needs a fair amount of work to make it robust.
- * As it stands now, it serves as a useful test for session management.
+ * Authors:
+ *	Ralph Mor, X Consortium
+ *      Jordan Brown, Quarterdeck Office Systems
  */
 
 #include "xsm.h"
-#include <signal.h>
+#include "globals.c"
+#include "xtwatch.h"
+#include "prop.h"
+#include "choose.h"
+#include "mainwin.h"
+#include "info.h"
+#include "log.h"
+#include "save.h"
+#include "auth.h"
+#include "restart.h"
+#include "saveutil.h"
+#include "lock.h"
 
-AppResources app_resources;
+#include <X11/Shell.h>
+#include <X11/Xatom.h>
 
-#define Offset(field) XtOffsetOf(struct _AppResources, field)
-static XtResource resources [] = {
-    {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
-	 Offset(verbose), XtRImmediate, (XtPointer) False},
-    {"debug",  "Debug",  XtRBoolean, sizeof(Boolean), 
-	 Offset(debug), XtRImmediate, (XtPointer) False}
-};
-#undef Offset
+#if defined(X_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#include <setjmp.h>
+#undef _POSIX_C_SOURCE
+#elif defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <setjmp.h>
+#else
+#define _POSIX_SOURCE
+#include <setjmp.h>
+#undef _POSIX_SOURCE
+#endif
 
-static XrmOptionDescRec options[] = {
-    {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
-    {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
-    {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
-};
+jmp_buf JumpHere;
+Atom wmStateAtom;
+Atom wmDeleteAtom;
+static char *cmd_line_display = NULL;
 
-List		*PendingList;
-ClientRec	*ClientList = NULL;
-int		numClients = 0;
-int		pingCount = 0;
-int		saveDoneCount = 0;
-int		interactCount = 0;
-Bool		shutdownInProgress = False;
-Bool		shutdownCancelled = False;
-jmp_buf		JumpHere;
+/*
+ * Forward declarations
+ */
 
-IceAuthDataEntry *authDataEntries = NULL;
-int		numTransports = 0;
+Status StartSession ();
+void NewConnectionXtProc ();
+Status NewClientProc ();
+void InstallIOErrorHandler ();
 
-int		saveTypeData[] = {SmSaveGlobal,
-			  	  SmSaveLocal,
-		  		  SmSaveBoth};
-Bool		shutdownData[] = {1, 0};
-int		interactStyleData[] = {SmInteractStyleNone,
-			       	       SmInteractStyleErrors,
-		       		       SmInteractStyleAny};
-Bool		fastData[] = {1, 0};
+/*
+ * Extern declarations
+ */
 
-XtAppContext	appContext;
-
-Widget		topLevel;
-
-Widget		    mainWindow;
-
-Widget		        listButton;
-Widget			saveButton;
-Widget			propButton;
-Widget			pingButton;
-Widget			startButton;
-
-Widget		    savePopup;
-
-Widget			saveForm;
-
-Widget			    saveTypeLabel;
-Widget			    saveTypeGlobal;
-Widget			    saveTypeLocal;
-Widget			    saveTypeBoth;
-
-Widget			    shutdownLabel;
-Widget			    shutdownYes;
-Widget			    shutdownNo;
-
-Widget			    interactStyleLabel;
-Widget			    interactStyleNone;
-Widget			    interactStyleErrors;
-Widget			    interactStyleAny;
-
-Widget			    fastLabel;
-Widget			    fastYes;
-Widget			    fastNo;
-
-Widget			    saveOkButton;
-Widget			    saveCancelButton;
-
-Widget		    shutdownPopup;
-
-Widget			shutdownDialog;
-
-Widget			    shutdownOkButton;
-Widget			    shutdownCancelButton;
-
-
-void FreeClientInfo ();
-
-extern Status InitWatchProcs ();
-extern void restart_everything ();
-extern void read_save ();
-extern void write_save ();
-extern Bool HostBasedProc ();
-extern Status set_auth ();
-extern void free_auth ();
+extern Widget clientInfoPopup;
+extern Widget clientPropPopup;
+extern Widget clientInfoButton;
+extern Widget logButton;
+extern Widget checkPointButton;
+extern Widget shutdownButton;
+extern Widget clientListWidget;
+extern Widget savePopup;
 
 
 
-print_prop(prop)
-SmProp	*prop;
-{
-    int j;
+/*
+ * Main program
+ */
 
-    printf ("   Name:	%s\n", prop->name);
-    printf ("   Type:	%s\n", prop->type);
-    printf ("   Num values:	%d\n", prop->num_vals);
-    if (strcmp(prop->type, SmCARD8) == 0) {
-	char *card8 = prop->vals->value;
-	int value = *card8;
-	printf ("   Value 1:\t%d\n", value);
-    } else {
-	for (j = 0; j < prop->num_vals; j++) {
-	    printf ("   Value %d:	%s\n", j + 1,
-		    (char *) prop->vals[j].value);
+main (argc, argv)
+
+int  argc;
+char **argv;
+
+{
+    IceListenObj *listenObjs;
+    char	*p;
+    char 	errormsg[256];
+    static	char environment_name[] = "SESSION_MANAGER";
+    int		success, found_command_line_name, i;
+
+    Argc = argc;
+    Argv = argv;
+
+    for (i = 1; i < argc; i++)
+    {
+	if (argv[i][0] == '-')
+	{
+	    switch (argv[i][1])
+	    {
+	    case 'd':					/* -display */
+		if (++i >= argc) goto usage;
+		cmd_line_display = (char *) XtNewString (argv[i]);
+		continue;
+
+	    case 's':					/* -session */
+		if (++i >= argc) goto usage;
+		session_name = XtNewString (argv[i]);
+		continue;
+
+	    case 'v':					/* -verbose */
+		verbose = 1;
+		continue;
+	    }
 	}
+
+    usage:
+	fprintf (stderr,
+	 "usage: xsm [-display display] [-session session_name] [-verbose]\n");
+	exit (1);
     }
-    printf ("\n");
+
+    topLevel = XtVaAppInitialize (&appContext, "XSm", NULL, 0,
+	&argc, argv, NULL,
+	XtNmappedWhenManaged, False,
+	XtNwindowRole, "xsm main window",
+	NULL);
+	
+    wmStateAtom = XInternAtom (
+	XtDisplay (topLevel), "WM_STATE", False);
+    wmDeleteAtom = XInternAtom (
+	XtDisplay (topLevel), "WM_DELETE_WINDOW", False);
+
+    register_signals ();
+
+
+    /*
+     * Install an IO error handler.  For an explanation,
+     * see the comments for InstallIOErrorHandler().
+     */
+
+    InstallIOErrorHandler ();
+
+
+    /*
+     * Init SM lib
+     */
+
+    if (!SmsInitialize ("SAMPLE-SM", "1.0",
+	NewClientProc, NULL,
+	HostBasedAuthProc, 256, errormsg))
+    {
+	fprintf (stderr, "%s\n", errormsg);
+	exit (1);
+    }
+
+    if (!IceListenForConnections (&numTransports, &listenObjs,
+	256, errormsg))
+    {
+	fprintf (stderr, "%s\n", errormsg);
+	exit (1);
+    }
+
+    if (!SetAuthentication (numTransports, listenObjs, &authDataEntries))
+    {
+	fprintf (stderr, "Could not set authorization\n");
+	exit (1);
+    }
+
+    InitWatchProcs (appContext);
+
+    for (i = 0; i < numTransports; i++)
+    {
+	XtAppAddInput (appContext,
+	    IceGetListenConnectionNumber (listenObjs[i]),
+	    (XtPointer) XtInputReadMask,
+	    NewConnectionXtProc, (XtPointer) listenObjs[i]);
+    }
+
+    /* the sizeof includes the \0, so we don't need to count the '=' */
+    networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
+    p = (char *) XtMalloc((sizeof environment_name) + strlen(networkIds) + 1);
+    if(!p) nomem();
+    sprintf(p, "%s=%s", environment_name, networkIds);
+    putenv(p);
+
+    if (cmd_line_display)
+    {
+	/*
+	 * If a display was passed on the command line, set the DISPLAY
+	 * environment in this process so all applications started by
+	 * the session manager will run on the specified display.
+	 */
+
+	p = (char *) XtMalloc(8 + strlen(cmd_line_display) + 1);
+	sprintf(p, "DISPLAY=%s", cmd_line_display);
+	putenv(p);
+    }
+
+    if (verbose)
+	printf ("setenv %s %s\n", environment_name, networkIds);
+
+    create_choose_session_popup ();
+    create_main_window ();
+    create_client_info_popup ();
+    create_save_popup ();
+    create_log_popup ();
+
+
+    /*
+     * Initalize all lists
+     */
+
+    RunningList = ListInit();
+    if(!RunningList) nomem();
+
+    PendingList = ListInit();
+    if(!PendingList) nomem();
+
+    RestartAnywayList = ListInit();
+    if(!RestartAnywayList) nomem();
+
+    RestartImmedList = ListInit();
+    if(!RestartImmedList) nomem();
+
+    WaitForSaveDoneList = ListInit();
+    if (!WaitForSaveDoneList) nomem();
+
+    FailedSaveList = ListInit();
+    if (!FailedSaveList) nomem();
+
+    WaitForInteractList = ListInit();
+    if (!WaitForInteractList) nomem();
+
+    WaitForPhase2List = ListInit();
+    if (!WaitForPhase2List) nomem();
+
+
+    /*
+     * Get list of session names.  If a session name was found on the
+     * command line, and it is in the list of session names we got, then
+     * use that session name.  If there were no session names found, then
+     * use the default session name.  Otherwise, present a list of session
+     * names for the user to choose from.
+     */
+
+    success = GetSessionNames (&sessionNameCount,
+	&sessionNamesShort, &sessionNamesLong, &sessionsLocked);
+
+    found_command_line_name = 0;
+    if (success && session_name)
+    {
+	for (i = 0; i < sessionNameCount; i++)
+	    if (strcmp (session_name, sessionNamesShort[i]) == 0)
+	    {
+		found_command_line_name = 1;
+
+		if (sessionsLocked[i])
+		{
+		    fprintf (stderr, "Session '%s' is locked\n", session_name);
+		    exit (1);
+		}
+
+		break;
+	    }
+    }
+
+    if (!success || found_command_line_name)
+    {
+	FreeSessionNames (sessionNameCount,
+	    sessionNamesShort, sessionNamesLong, sessionsLocked);
+
+	if (!found_command_line_name)
+	    session_name = XtNewString (DEFAULT_SESSION_NAME);
+
+    	if (!StartSession (session_name, !found_command_line_name))
+	    UnableToLockSession (session_name);
+    }
+    else
+    {
+	ChooseSession ();
+    }
+    
+
+    /*
+     * Main loop
+     */
+
+    setjmp (JumpHere);
+    XtAppMainLoop (appContext);
 }
 
 
 
-exit_sm ()
+void
+PropertyChangeXtHandler (w, closure, event, continue_to_dispatch)
+
+Widget w;
+XtPointer closure;
+XEvent *event;
+Boolean *continue_to_dispatch;
+
 {
-    if (app_resources.verbose)
+    if (w == topLevel && event->type == PropertyNotify &&
+	event->xproperty.atom == wmStateAtom)
+    {
+	XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
+	    PropertyChangeXtHandler, NULL);
+
+	/*
+	 * Restart the rest of the session aware clients.
+	 */
+
+	Restart (RESTART_REST_OF_CLIENTS);
+
+
+	/*
+	 * Start apps that aren't session aware that were specified
+	 * by the user.
+	 */
+
+	StartNonSessionAwareApps ();
+    }
+}
+
+
+
+void
+SetWM_DELETE_WINDOW (widget, delAction)
+
+Widget widget;
+String delAction;
+
+{
+    char translation[64];
+
+    sprintf (translation, "<Message>WM_PROTOCOLS: %s", delAction);
+    XtOverrideTranslations (widget, XtParseTranslationTable (translation));
+
+    XSetWMProtocols (XtDisplay(widget), XtWindow (widget),
+	&wmDeleteAtom, 1);
+}
+
+
+
+void
+GetEnvironment ()
+
+{
+    static char	envDISPLAY[]="DISPLAY";
+    static char	envSESSION_MANAGER[]="SESSION_MANAGER";
+    static char	envAUDIOSERVER[]="AUDIOSERVER";
+    char	*p, *temp;
+
+    remote_allowed = 1;
+
+    display_env = NULL;
+    if((p = cmd_line_display) || (p = (char *) getenv(envDISPLAY))) {
+	display_env = (char *) XtMalloc(strlen(envDISPLAY)+1+strlen(p)+1);
+	if(!display_env) nomem();
+	sprintf(display_env, "%s=%s", envDISPLAY, p);
+
+	/*
+	 * When we restart a remote client, we have to make sure the
+	 * display environment we give it has the SM's hostname.
+	 */
+
+	if ((temp = strchr (p, '/')) == 0)
+	    temp = p;
+	else
+	    temp++;
+
+	if (*temp != ':')
+	{
+	    /* we have a host name */
+
+	    non_local_display_env = (char *) XtMalloc (
+		strlen (display_env) + 1);
+	    if (!non_local_display_env) nomem();
+
+	    strcpy (non_local_display_env, display_env);
+	}
+	else
+	{
+	    char hostnamebuf[256];
+
+	    gethostname (hostnamebuf, sizeof hostnamebuf);
+	    non_local_display_env = (char *) XtMalloc (
+		strlen (envDISPLAY) + 1 +
+		strlen (hostnamebuf) + strlen (temp) + 1);
+	    if (!non_local_display_env) nomem();
+	    sprintf(non_local_display_env, "%s=%s%s",
+		envDISPLAY, hostnamebuf, temp);
+	}
+    }
+
+    session_env = NULL;
+    if(p = (char *) getenv(envSESSION_MANAGER)) {
+	session_env = (char *) XtMalloc(
+	    strlen(envSESSION_MANAGER)+1+strlen(p)+1);
+	if(!session_env) nomem();
+	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
+
+	/*
+	 * When we restart a remote client, we have to make sure the
+	 * session environment does not have the SM's local connection port.
+	 */
+
+	non_local_session_env = (char *) XtMalloc (strlen (session_env) + 1);
+	if (!non_local_session_env) nomem();
+	strcpy (non_local_session_env, session_env);
+
+	if ((temp = Strstr (non_local_session_env, "local/")) != NULL)
+	{
+	    char *delim = strchr (temp, ',');
+	    if (delim == NULL)
+	    {
+		if (temp == non_local_session_env +
+		    strlen (envSESSION_MANAGER) + 1)
+		{
+		    *temp = '\0';
+		    remote_allowed = 0;
+		}
+		else
+		    *(temp - 1) = '\0';
+	    }
+	    else
+	    {
+		int bytes = strlen (delim + 1);
+		memmove (temp, delim + 1, bytes);
+		*(temp + bytes) = '\0';
+	    }
+	}
+    }
+
+    audio_env = NULL;
+    if(p = (char *) getenv(envAUDIOSERVER)) {
+	audio_env = (char *) XtMalloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
+	if(!audio_env) nomem();
+	sprintf(audio_env, "%s=%s", envAUDIOSERVER, p);
+    }
+}
+
+
+
+Status
+StartSession (name, use_default)
+
+char *name;
+Bool use_default;
+
+{
+    int database_read = 0;
+    Dimension width;
+    char title[256];
+
+
+    /*
+     * If we're not using the default session, lock it.
+     * If using the default session, it will be locked as
+     * soon as the user assigns the session a name.
+     */
+
+    if (!use_default && !LockSession (name, True))
+	return (0);
+
+
+    /*
+     * Get important environment variables.
+     */
+
+    GetEnvironment ();
+
+
+    /*
+     * Set the main window's title to the session name.
+     */
+
+    sprintf (title, "xsm: %s", name);
+
+    XtVaSetValues (topLevel,
+	XtNtitle, title,		/* session name */
+	NULL);
+
+    XtRealizeWidget (topLevel);
+
+
+    /*
+     * Set WM_DELETE_WINDOW support on main window.  If the user tries
+     * to delete the main window, the shutdown prompt will come up.
+     */
+
+    SetWM_DELETE_WINDOW (topLevel, "DelMainWinAction()");
+
+
+    /*
+     * Read the session save file.  Make sure the session manager
+     * has an SM_CLIENT_ID, so that other managers (like the WM) can
+     * identify it.
+     */
+
+    set_session_save_file_name (name);
+
+    if (use_default)
+	need_to_name_session = True;
+    else
+    {
+	database_read = ReadSave (name, &sm_id);
+	need_to_name_session = !database_read;
+    }
+
+    if (!sm_id)
+	sm_id = SmsGenerateClientID (NULL);
+    XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
+	XInternAtom (XtDisplay (topLevel), "SM_CLIENT_ID", False),
+	XA_STRING, 8, PropModeReplace,
+	(unsigned char *) sm_id, strlen (sm_id));
+
+
+    /*
+     * Adjust some label widths
+     */
+
+    XtVaGetValues (clientInfoButton,
+	XtNwidth, &width,
+	NULL);
+
+    XtVaSetValues (checkPointButton,
+	XtNwidth, width,
+	NULL);
+
+    XtVaGetValues (logButton,
+	XtNwidth, &width,
+	NULL);
+
+    XtVaSetValues (shutdownButton,
+	XtNwidth, width,
+	NULL);
+    
+
+    XtMapWidget (topLevel);
+
+
+    if (!database_read)
+    {
+	/*
+	 * Start default apps (e.g. twm, smproxy)
+	 */
+
+	StartDefaultApps ();
+    }
+    else
+    {
+	/*
+	 * Restart window manager first.  When the session manager
+	 * gets a WM_STATE stored on its top level window, we know
+	 * the window manager is running.  At that time, we can start
+	 * the rest of the applications.
+	 */
+
+	XtAddEventHandler (topLevel, PropertyChangeMask, False,
+	    PropertyChangeXtHandler, NULL);
+
+	if (!Restart (RESTART_MANAGERS))
+	{
+	    XtRemoveEventHandler (topLevel, PropertyChangeMask, False,
+	        PropertyChangeXtHandler, NULL);
+
+	    /*
+	     * Restart the rest of the session aware clients.
+	     */
+
+	    Restart (RESTART_REST_OF_CLIENTS);
+
+	    /*
+	     * Start apps that aren't session aware that were specified
+	     * by the user.
+	     */
+	    
+	    StartNonSessionAwareApps ();
+	}
+    }
+
+    return (1);
+}
+
+
+
+EndSession (status)
+
+int status;
+
+{
+    if (verbose)
 	printf ("\nSESSION MANAGER GOING AWAY!\n");
-    free_auth (numTransports, authDataEntries);
-    exit (0);
+
+    FreeAuthenticationData (numTransports, authDataEntries);
+
+    if (session_name)
+    {
+	UnlockSession (session_name);
+	XtFree (session_name);
+    }
+
+    if (display_env)
+	XtFree (display_env);
+    if (session_env)
+	XtFree (session_env);
+    if (cmd_line_display)
+	XtFree (cmd_line_display);
+    if (non_local_display_env)
+	XtFree (non_local_display_env);
+    if (non_local_session_env)
+	XtFree (non_local_session_env);
+    if (audio_env)
+	XtFree (audio_env);
+    if (networkIds)
+	free (networkIds);
+
+    exit (status);
 }
 
 
 
-SetInitialProperties(client, pendclient)
-ClientRec	*client;
-PendingClient	*pendclient;
+void
+FreeClient (client, freeProps)
+
+ClientRec *client;
+Bool	  freeProps;
+
 {
-    int			idx;
-    SmProp		*prop;
-    SmPropValue		*val;
-    List		*pl;
-    List		*vl;
-    PendingProp		*pprop;
-    PendingValue	*pval;
+    if (freeProps)
+    {
+	List *pl;
 
-    if (app_resources.verbose)
-	printf("Setting initial properties for %s\n", client->clientId);
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+	    FreeProp ((Prop *) pl->thing);
 
-    idx = 0;
-    for(pl = ListFirst(pendclient->props); pl; pl = ListNext(pl)) {
-	pprop = (PendingProp *)pl->thing;
-	prop = (SmProp *)malloc(sizeof *prop);
-	client->props[idx] = prop;
-	prop->name = pprop->name;
-	prop->type = pprop->type;
-	prop->num_vals = ListCount(pprop->values);
-	prop->vals =
-	    (SmPropValue *)malloc(prop->num_vals * sizeof(SmPropValue));
-	val = prop->vals;
-	for(vl = ListFirst(pprop->values); vl; vl = ListNext(vl)) {
-	    pval = (PendingValue *)vl->thing;
-	    val->value = pval->value;
-	    val->length = pval->length;
-	    val++;
-	}
-	ListFreeAll(pprop->values);
-	free(pprop);
-	idx++;
+	ListFreeAll (client->props);
     }
-    client->numProps = idx;
 
-    ListFreeAll(pendclient->props);
-    XtFree(pendclient->clientId);
-    free(pendclient);
+    if (client->clientId)
+	free (client->clientId);		/* malloc'd by SMlib */
+    if (client->clientHostname)
+	free (client->clientHostname);		/* malloc'd by SMlib */
+
+    if (client->discardCommand)
+	XtFree (client->discardCommand);
+    if (client->saveDiscardCommand)
+	XtFree (client->saveDiscardCommand);
+
+    XtFree ((char *) client);
 }
 
 
@@ -227,8 +687,10 @@ char 		*previousId;
     ClientRec	*client = (ClientRec *) managerData;
     char 	*id;
     List	*cl;
+    int		send_save;
 
-    if (app_resources.verbose) {
+    if (verbose)
+    {
 	printf (
 	"On IceConn fd = %d, received REGISTER CLIENT [Previous Id = %s]\n",
 	IceConnectionNumber (client->ice_conn),
@@ -236,40 +698,123 @@ char 		*previousId;
 	printf ("\n");
     }
 
-    if (previousId)
+    if (!previousId)
     {
-	id = (char *)malloc (strlen (previousId) + 1);
-	strcpy (id, previousId);
+	id = SmsGenerateClientID (smsConn);
+	send_save = 1;
     }
     else
-	id = SmsGenerateClientID (smsConn);
+    {
+	int found_match = 0;
+	send_save = 1;
+
+	for (cl = ListFirst (PendingList); cl; cl = ListNext (cl))
+	{
+	    PendingClient *pendClient = (PendingClient *) cl->thing;
+
+	    if (!strcmp (pendClient->clientId, previousId))
+	    {
+		SetInitialProperties (client, pendClient->props);
+		XtFree (pendClient->clientId);
+		XtFree (pendClient->clientHostname);
+		XtFree ((char *) pendClient);
+		ListFreeOne (cl);
+		found_match = 1;
+		send_save = 0;
+		break;
+	    }
+	}
+
+	if (!found_match)
+	{
+	    for (cl = ListFirst (RestartAnywayList); cl; cl = ListNext (cl))
+	    {
+		ClientRec *rClient = (ClientRec *) cl->thing;
+
+		if (!strcmp (rClient->clientId, previousId))
+		{
+		    SetInitialProperties (client, rClient->props);
+		    FreeClient (rClient, False /* don't free props */);
+		    ListFreeOne (cl);
+		    found_match = 1;
+		    send_save = 0;
+		    break;
+		}
+	    }
+	}
+
+	if (!found_match)
+	{
+	    for (cl = ListFirst (RestartImmedList); cl; cl = ListNext (cl))
+	    {
+		ClientRec *rClient = (ClientRec *) cl->thing;
+
+		if (!strcmp (rClient->clientId, previousId))
+		{
+		    SetInitialProperties (client, rClient->props);
+		    FreeClient (rClient, False /* don't free props */);
+		    ListFreeOne (cl);
+		    found_match = 1;
+		    send_save = 0;
+		    break;
+		}
+	    }
+	}
+
+	if (!found_match)
+	{
+	    /*
+	     * previous-id was bogus: return bad status and the client
+	     * should re-register with a NULL previous-id
+	     */
+
+	    free (previousId);
+	    return (0);
+	}
+	else
+	{
+	    id = previousId;
+	}
+    }
 
     SmsRegisterClientReply (smsConn, id);
-    client->clientId = id;
-    client->clientHostname = SmsClientHostName (smsConn);
 
-    if (app_resources.verbose) {
+    if (verbose)
+    {
 	printf (
 	"On IceConn fd = %d, sent REGISTER CLIENT REPLY [Client Id = %s]\n",
 	IceConnectionNumber (client->ice_conn), id);
 	printf ("\n");
     }
 
-    if(previousId) {
-	for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
-	    if(!strcmp(((PendingClient *)cl->thing)->clientId, previousId)) {
-		SetInitialProperties(client, (PendingClient *)cl->thing);
-		ListFreeOne(cl);
-		break;
-	    }
-	}
-	free (previousId);
-    } else {
-	SmsSaveYourself(smsConn, SmSaveLocal, False, SmInteractStyleNone,
-			False);
+    client->clientId = id;
+    client->clientHostname = SmsClientHostName (smsConn);
+    client->restarted = (previousId != NULL);
+
+    if (send_save)
+    {
+	SmsSaveYourself (smsConn, SmSaveLocal,
+	    False, SmInteractStyleNone, False);
+    }
+    else if (client_info_visible)
+    {
+	/* We already have all required client info */
+
+	UpdateClientList ();
+	XawListHighlight (clientListWidget, current_client_selected);
     }
 
     return (1);
+}
+
+
+
+static Bool
+OkToEnterInteractPhase ()
+
+{
+    return ((ListCount (WaitForInteractList) +
+	ListCount (WaitForPhase2List)) == ListCount (WaitForSaveDoneList));
 }
 
 
@@ -284,7 +829,8 @@ int		dialogType;
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    if (app_resources.verbose) {
+    if (verbose)
+    {
 	printf ("Client Id = %s, received INTERACT REQUEST [Dialog Type = ",
 		client->clientId);
 	if (dialogType == SmDialogError)
@@ -295,8 +841,12 @@ int		dialogType;
 	    printf ("Error in SMlib: should have checked for bad value]\n");
     }
 
-    client->interactPending = True;
-    interactCount++;
+    ListAddLast (WaitForInteractList, (char *) client);
+
+    if (OkToEnterInteractPhase ())
+    {
+	LetClientInteract (ListFirst (WaitForInteractList));
+    }
 }
 
 
@@ -309,22 +859,63 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
 
 {
     ClientRec	*client = (ClientRec *) managerData;
+    List	*cl;
 
-    if (app_resources.verbose) {
+    if (verbose)
+    {
 	printf (
 	"Client Id = %s, received INTERACT DONE [Cancel Shutdown = %s]\n",
 	client->clientId, cancelShutdown ? "True" : "False");
     }
 
-    client->interactPending = False;
+    if (cancelShutdown)
+    {
+	ListFreeAllButHead (WaitForInteractList);
+	ListFreeAllButHead (WaitForPhase2List);
+    }
 
-    if (cancelShutdown && !shutdownCancelled) {
+    if (cancelShutdown)
+    {
+	if (shutdownCancelled)
+	{
+	    /* Shutdown was already cancelled */
+	    return;
+	}
+
 	shutdownCancelled = True;
-	for (client = ClientList; client; client = client->next) {
+
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    client = (ClientRec *) cl->thing;
+
 	    SmsShutdownCancelled (client->smsConn);
-	    if (app_resources.verbose) 
+
+	    if (verbose) 
+	    {
 		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
 			client->clientId);
+	    }
+	}
+    }
+    else
+    {
+	if ((cl = ListFirst (WaitForInteractList)) != NULL)
+	{
+	    LetClientInteract (cl);
+	}
+	else
+	{
+	    if (verbose)
+	    {
+		printf ("\n");
+		printf ("Done interacting with all clients.\n");
+		printf ("\n");
+	    }
+
+	    if (ListCount (WaitForPhase2List) > 0)
+	    {
+		StartPhase2 ();
+	    }
 	}
     }
 }
@@ -344,8 +935,59 @@ Bool        fast;
 Bool        global;
 
 {
-    if (app_resources.verbose) 
+    if (verbose) 
 	printf("SAVE YOURSELF REQUEST not supported!\n");
+}
+
+
+
+static Bool
+OkToEnterPhase2 ()
+
+{
+    return (ListCount (WaitForPhase2List) == ListCount (WaitForSaveDoneList));
+}
+
+
+
+void
+SaveYourselfPhase2ReqProc (smsConn, managerData)
+
+SmsConn     smsConn;
+SmPointer   managerData;
+
+{
+    ClientRec	*client = (ClientRec *) managerData;
+
+    if (verbose)
+    {
+	printf ("Client Id = %s, received SAVE YOURSELF PHASE 2 REQUEST\n",
+	    client->clientId);
+    }
+
+    if (!saveInProgress)
+    {
+	/*
+	 * If we are not in the middle of a checkpoint (ie. we just
+	 * started the client and sent the initial save yourself), just
+	 * send the save yourself phase2 now.
+	 */
+	 
+	SmsSaveYourselfPhase2 (client->smsConn);
+    }
+    else
+    {
+	ListAddLast (WaitForPhase2List, (char *) client);
+
+	if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
+	{
+	    LetClientInteract (ListFirst (WaitForInteractList));
+	}
+	else if (OkToEnterPhase2 ())
+	{
+	    StartPhase2 ();
+	}
+    }
 }
 
 
@@ -359,15 +1001,153 @@ SaveYourselfDoneProc (smsConn, managerData, success)
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    if (app_resources.verbose) 
+    if (verbose) 
+    {
 	printf("Client Id = %s, received SAVE YOURSELF DONE [Success = %s]\n",
 	       client->clientId, success ? "True" : "False");
+    }
 
-    if (shutdownCancelled && client->interactPending)
-	client->interactPending = False;
+    if (!ListSearchAndFreeOne (WaitForSaveDoneList, (char *) client))
+	return;
 
-    saveDoneCount++;
+    if (!success)
+    {
+	ListAddLast (FailedSaveList, (char *) client);
+    }
+
+    if (ListCount (WaitForSaveDoneList) == 0)
+    {
+	if (ListCount (FailedSaveList) > 0)
+	    PopupBadSave ();
+	else
+	    FinishUpSave ();
+    }
+    else if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
+    {
+	LetClientInteract (ListFirst (WaitForInteractList));
+    }
+    else if (ListCount (WaitForPhase2List) > 0 && OkToEnterPhase2 ())
+    {
+	StartPhase2 ();
+    }
 }
+
+
+
+void
+CloseDownClient (client)
+
+ClientRec *client;
+
+{
+    int index_deleted;
+
+    if (verbose) {
+	printf ("ICE Connection closed, IceConn fd = %d\n",
+		IceConnectionNumber (client->ice_conn));
+	printf ("\n");
+    }
+
+    SmsCleanUp (client->smsConn);
+    IceSetShutdownNegotiation (client->ice_conn, False);
+    IceCloseConnection (client->ice_conn);
+
+    client->ice_conn = NULL;
+    client->smsConn = NULL;
+
+    if (!shutdownInProgress && client_info_visible)
+    {
+	for (index_deleted = 0;
+	    index_deleted < numClientListNames; index_deleted++)
+	{
+	    if (clientListRecs[index_deleted] == client)
+		break;
+	}
+    }
+
+    ListSearchAndFreeOne (RunningList, (char *) client);
+
+    if (saveInProgress)
+    {
+	Status delStatus = ListSearchAndFreeOne (
+	    WaitForSaveDoneList, (char *) client);
+
+	if (delStatus)
+	{
+	    ListAddLast (FailedSaveList, (char *) client);
+	    client->freeAfterBadSavePopup = True;
+	}
+
+	ListSearchAndFreeOne (WaitForInteractList, (char *) client);
+	ListSearchAndFreeOne (WaitForPhase2List, (char *) client);
+
+	if (delStatus && ListCount (WaitForSaveDoneList) == 0)
+	{
+	    if (ListCount (FailedSaveList) > 0)
+		PopupBadSave ();
+	    else
+		FinishUpSave ();
+	}
+	else if (ListCount (WaitForInteractList) > 0 &&
+	    OkToEnterInteractPhase ())
+	{
+	    LetClientInteract (ListFirst (WaitForInteractList));
+	}
+	else if (!phase2InProgress &&
+	    ListCount (WaitForPhase2List) > 0 && OkToEnterPhase2 ())
+	{
+	    StartPhase2 ();
+	}
+    }
+
+    if (client->restartHint == SmRestartImmediately && !shutdownInProgress)
+    {
+	Clone (client, True /* use saved state */);
+
+	ListAddLast (RestartImmedList, (char *) client);
+    }
+    else if (client->restartHint == SmRestartAnyway)
+    {
+	ListAddLast (RestartAnywayList, (char *) client);
+    }
+    else if (!client->freeAfterBadSavePopup)
+    {
+	FreeClient (client, True /* free props */);
+    }
+
+    if (shutdownInProgress)
+    {
+	if (ListCount (RunningList) == 0)
+	    EndSession (0);
+    }
+    else if (client_info_visible)
+    {
+	UpdateClientList ();
+
+	if (current_client_selected == index_deleted)
+	{
+	    if (current_client_selected == numClientListNames)
+		current_client_selected--;
+
+	    if (current_client_selected >= 0)
+	    {
+		XawListHighlight (clientListWidget, current_client_selected);
+		ShowHint (clientListRecs[current_client_selected]);
+		if (client_prop_visible)
+		{
+		    DisplayProps (clientListRecs[current_client_selected]);
+		}
+	    }
+	}
+	else
+	{
+	    if (index_deleted < current_client_selected)
+		current_client_selected--;
+	    XawListHighlight (clientListWidget, current_client_selected);
+	}
+    }
+}
+
 
 
 
@@ -380,13 +1160,13 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    ClientRec 	*next = client->next;
-    ClientRec	*ptr;
-    int i;
 
-    if (app_resources.verbose) {
-	printf("Client Id = %s, received CONNECTION CLOSED\n",
-	       client->clientId);
+    if (verbose)
+    {
+	int i;
+
+	printf ("Client Id = %s, received CONNECTION CLOSED\n",
+	    client->clientId);
 
 	for (i = 0; i < count; i++)
 	    printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
@@ -394,193 +1174,8 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
     }
 
     SmFreeReasons (count, reasonMsgs);
-    SmsCleanUp (smsConn);
 
-    if (app_resources.verbose) {
-	printf ("ICE Connection closed, IceConn fd = %d\n",
-		IceConnectionNumber (client->ice_conn));
-	printf ("\n");
-    }
-
-    IceSetShutdownNegotiation (client->ice_conn, False);
-    IceCloseConnection (client->ice_conn);
-
-    if (client == ClientList)
-    {
-	FreeClientInfo (client);
-	ClientList = next;
-    }
-    else
-    {
-	ptr = ClientList;
-	while (ptr && ptr->next != client)
-	    ptr = ptr->next;
-
-	if (ptr->next == client)
-	{
-	    FreeClientInfo (client);
-	    ptr->next = next;
-	}
-    }
-
-    numClients--;
-
-    if (shutdownInProgress && numClients == 0)
-    {
-	exit_sm ();
-    }
-}
-
-
-
-void
-SetProperty(client, prop)
-ClientRec	*client;
-SmProp		*prop;
-{
-    int	idx, j;
-
-    for (j = 0; j < client->numProps; j++)
-	if (strcmp (prop->name, client->props[j]->name) == 0)
-	{
-	    SmFreeProperty (client->props[j]);
-	    break;
-	}
-
-    if (j < client->numProps)
-	idx = j;
-    else
-    {
-	idx = client->numProps;
-	client->numProps++;
-
-	if (client->numProps > MAX_PROPS)
-	    return;
-    }
-
-    client->props[idx] = prop;
-}
-
-
-
-void
-DeleteProperty(client, propname)
-ClientRec	*client;
-char		*propname;
-{
-    int	j;
-
-    for (j = 0; j < client->numProps; j++)
-	if (strcmp (propname, client->props[j]->name) == 0)
-	{
-	    SmFreeProperty (client->props[j]);
-
-	    if (j < client->numProps - 1)
-		client->props[j] = client->props[client->numProps - 1];
-
-	    client->numProps--;
-	    break;
-	}
-}
-
-
-
-void
-SetPropertiesProc (smsConn, managerData, numProps, props)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-SmProp 		**props;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		i;
-
-    if (app_resources.verbose) {
-	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
-	printf ("[Num props = %d]\n", numProps);
-    }
-
-    for (i = 0; i < numProps; i++) {
-	if(app_resources.verbose)
-	    print_prop(props[i]);
-	SetProperty(client, props[i]);
-    }
-    free ((char *) props);
-}
-
-
-
-void
-DeletePropertiesProc (smsConn, managerData, numProps, propNames)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-char **		propNames;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		i;
-
-    if (app_resources.verbose) {
-	printf ("Client Id = %s, received DELETE PROPERTIES ",
-	    client->clientId);
-	printf ("[Num props = %d]\n", numProps);
-    }
-
-    for (i = 0; i < numProps; i++) {
-	if(app_resources.verbose)
-	    printf ("   Name:	%s\n", propNames[i]);
-	DeleteProperty(client, propNames[i]);
-	free (propNames[i]);
-    }
-    free ((char *) propNames);
-}
-
-
-
-void
-GetPropertiesProc (smsConn, managerData)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		i;
-
-    if (app_resources.verbose) {
-	printf ("Client Id = %s, received GET PROPERTIES\n", client->clientId);
-	printf ("\n");
-
-	for (i = 0; i < client->numProps; i++) {
-	    print_prop(client->props[i]);
-	}
-	printf ("\n");
-    }
-
-    SmsReturnProperties (smsConn, client->numProps, client->props);
-
-    if (app_resources.verbose) {
-	printf ("Client Id = %s, sent PROPERTIES REPLY [Num props = %d]\n",
-		client->clientId, client->numProps);
-    }
-}
-
-
-
-void
-PingReplyProc (ice_conn, client_data)
-
-IceConn		ice_conn;
-IcePointer	client_data;
-
-{
-    ClientRec *client = (ClientRec *) client_data;
-    printf ("Client Id = %s, received PING REPLY\n", client->clientId);
-    pingCount--;
+    CloseDownClient (client);
 }
 
 
@@ -595,14 +1190,15 @@ SmsCallbacks	*callbacksRet;
 char 		**failureReasonRet;
 
 {
-    ClientRec *newClient = (ClientRec *) malloc (sizeof (ClientRec));
+    ClientRec *newClient = (ClientRec *) XtMalloc (sizeof (ClientRec));
+
     *maskRet = 0;
 
     if (!newClient)
     {
 	char *str = "Memory allocation failed";
 
-	if ((*failureReasonRet = (char *) malloc (strlen (str) + 1)) != NULL)
+	if ((*failureReasonRet = (char *) XtMalloc (strlen (str) + 1)) != NULL)
 	    strcpy (*failureReasonRet, str);
 
 	return (0);
@@ -612,14 +1208,18 @@ char 		**failureReasonRet;
     newClient->ice_conn = SmsGetIceConnection (smsConn);
     newClient->clientId = NULL;
     newClient->clientHostname = NULL;
-    newClient->interactPending = False;
-    newClient->numProps = 0;
-    newClient->next = ClientList;
+    newClient->restarted = False; /* wait till RegisterClient for true value */
+    newClient->userIssuedCheckpoint = False;
+    newClient->receivedDiscardCommand = False;
+    newClient->freeAfterBadSavePopup = False;
+    newClient->props = ListInit ();
+    newClient->discardCommand = NULL;
+    newClient->saveDiscardCommand = NULL;
+    newClient->restartHint = SmRestartIfRunning;
 
-    ClientList = newClient;
-    numClients++;
+    ListAddLast (RunningList, (char *) newClient);
 
-    if (app_resources.verbose) {
+    if (verbose) {
 	printf("On IceConn fd = %d, client set up session mngmt protocol\n\n",
 	       IceConnectionNumber (newClient->ice_conn));
     }
@@ -643,6 +1243,12 @@ char 		**failureReasonRet;
     *maskRet |= SmsSaveYourselfRequestProcMask;
     callbacksRet->save_yourself_request.callback     = SaveYourselfReqProc;
     callbacksRet->save_yourself_request.manager_data = (SmPointer) newClient;
+
+    *maskRet |= SmsSaveYourselfP2RequestProcMask;
+    callbacksRet->save_yourself_phase2_request.callback =
+	SaveYourselfPhase2ReqProc;
+    callbacksRet->save_yourself_phase2_request.manager_data =
+	(SmPointer) newClient;
 
     *maskRet |= SmsSaveYourselfDoneProcMask;
     callbacksRet->save_yourself_done.callback 	   = SaveYourselfDoneProc;
@@ -670,376 +1276,11 @@ char 		**failureReasonRet;
 
 
 /*
- * Xt callbacks
- */
-
-void
-ListClientsXtProc (w, client_data, callData)
-    Widget	w;
-    XtPointer 	client_data;
-    XtPointer 	callData;
-
-{
-    ClientRec *client = ClientList;
-
-    printf ("\n");
-    if (client == NULL) {
-	printf ("There are no clients registered with the SM\n");
-    } else {
-	printf ("The following client IDs are registered with the SM:\n");
-	printf ("\n");
-    }
-    while (client) {
-	printf ("  Host = %s, ID = %s\n",
-	    client->clientHostname, client->clientId);
-	client = client->next;
-    }
-    printf ("\n");
-}
-
-
-
-void
-SaveYourselfXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    Position	x, y, rootx, rooty;
-
-    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-
-    if (ClientList == NULL)
-    {
-	XtMoveWidget (shutdownPopup, rootx, rooty);
-	XtPopup (shutdownPopup, XtGrabNone);
-    }
-    else
-    {
-	XawToggleSetCurrent (saveTypeBoth,
-	    (XtPointer) &saveTypeData[2]);
-	XawToggleSetCurrent (shutdownNo,
-	    (XtPointer) &shutdownData[1]);
-	XawToggleSetCurrent (interactStyleAny,
-	    (XtPointer) &interactStyleData[2]);
-	XawToggleSetCurrent (fastNo,
-	    (XtPointer) &fastData[1]);
-
-	XtMoveWidget (savePopup, rootx, rooty);
-	XtPopup (savePopup, XtGrabNone);
-    }
-
-    XtSetSensitive (mainWindow, 0);
-}
-
-
-
-void
-SaveOkXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    ClientRec	*client;
-    XtPointer	ptr;
-    int		saveType;
-    Bool	shutdown;
-    int		interactStyle;
-    Bool	fast;
-    char	*_saveType;
-    char	*_shutdown;
-    char	*_interactStyle;
-    char	*_fast;
-
-    ptr = XawToggleGetCurrent (saveTypeGlobal /* just 1 of the group */);
-    saveType = *((int *) ptr);
-
-    ptr = XawToggleGetCurrent (shutdownYes /* just 1 of the group */);
-    shutdown = *((Bool *) ptr);
-
-    ptr = XawToggleGetCurrent (interactStyleNone /* just 1 of the group */);
-    interactStyle = *((int *) ptr);
-
-    ptr = XawToggleGetCurrent (fastYes /* just 1 of the group */);
-    fast = *((Bool *) ptr);
-
-    if (saveType == SmSaveGlobal)
-	_saveType = "Global";
-    else if (saveType == SmSaveLocal)
-	_saveType = "Local";
-    else
-	_saveType = "Both";
-
-    if (shutdown)
-	_shutdown = "True";
-    else
-	_shutdown = "False";
-
-    if (interactStyle == SmInteractStyleNone)
-	_interactStyle = "None";
-    else if (interactStyle == SmInteractStyleErrors)
-	_interactStyle = "Errors";
-    else
-	_interactStyle = "Any";
-
-    if (fast)
-	_fast = "True";
-    else
-	_fast = "False";
-
-    XtSetSensitive (savePopup, 0);
-
-    for (client = ClientList; client; client = client->next)
-    {
-	SmsSaveYourself (client->smsConn,
-	    saveType, shutdown, interactStyle, fast);
-
-	if (app_resources.verbose) {
-	    printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
-	    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
-	    printf ("Interact Style = %s, Fast = %s]\n",
-		    _interactStyle, _fast);
-	}
-    }
-    if (app_resources.verbose) {
-	printf ("\n");
-	printf ("Sent SAVE YOURSELF to all clients.  Waiting for\n");
-	printf ("SAVE YOURSELF DONE or INTERACT REQUEST from each client.\n");
-	printf ("\n");
-    }
-
-    saveDoneCount = 0;
-    interactCount = 0;
-
-    while (saveDoneCount + interactCount < numClients) {
-	XtAppProcessEvent (appContext, XtIMAll);
-    }
-
-    if (app_resources.verbose) {
-	printf ("\n");
-	printf ("Received %d SAVE YOURSELF DONEs, %d INTERACT REQUESTS\n",
-		saveDoneCount, interactCount);
-    }
-
-    if (interactCount == 0 && saveDoneCount != numClients) {
-	if (app_resources.verbose) {
-	    printf ("\n");
-	    printf ("INTERNAL ERROR IN PSEUDO-SM!  EXITING!\n");
-	}
-	exit (1);
-    }
-
-    if (interactCount > 0) {
-	
-	if (app_resources.verbose)
-	    printf ("\n");
-
-	client = ClientList;
-	while (client) {
-	    if (shutdownCancelled) {
-		break;
-	    }
-	    else if (client->interactPending) {
-		SmsInteract (client->smsConn);
-		if (app_resources.verbose) {
-		    printf ("Client Id = %s, sent INTERACT\n",
-			    client->clientId);
-		}
-		while (client->interactPending) {
-		    XtAppProcessEvent (appContext, XtIMAll);
-		}
-	    }
-	    client = client->next;
-	}
-
-	if (app_resources.verbose) {
-	    if (shutdownCancelled)
-		printf ("\nThe shutdown was cancelled by a user\n\n");
-	    else
-		printf ("\nDone interacting with all clients\n\n");
-	}
-    }
-
-    while (saveDoneCount < numClients) {
-	XtAppProcessEvent (appContext, XtIMAll);
-    }
-
-    if (app_resources.verbose)
-	printf ("\nAll clients issued SAVE YOURSELF DONE\n\n");
-
-    write_save();
-
-    if (shutdown && shutdownCancelled) {
-	shutdownCancelled = False;
-    } else if (shutdown) {
-	shutdownInProgress = True;
-	client = ClientList;
-	while (client) {
-	    SmsDie (client->smsConn);
-	    if (app_resources.verbose)
-		printf ("Client Id = %s, sent DIE\n", client->clientId);
-	    client = client->next;
-	}
-    } else {
-	client = ClientList;
-	while (client) {
-	    SmsSaveComplete (client->smsConn);
-	    if (app_resources.verbose)
-		printf ("Client Id = %s, sent SAVE COMPLETE\n",
-		    client->clientId);
-	    client = client->next;
-	}
-    }
-
-    if (!shutdownInProgress) {
-	XtPopdown (savePopup);
-	XtSetSensitive (savePopup, 1);
-	XtSetSensitive (mainWindow, 1);
-    }
-}
-
-
-
-void
-SaveCancelXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    XtPopdown (savePopup);
-    XtSetSensitive (mainWindow, 1);
-}
-
-
-
-void
-ShutdownOkXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    write_save();
-    exit_sm ();
-}
-
-
-
-void
-ShutdownCancelXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    XtPopdown (shutdownPopup);
-    XtSetSensitive (mainWindow, 1);
-}
-
-
-
-void
-ListPropXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    ClientRec *client = ClientList;
-
-    if (client == NULL) {
-	printf ("There are no clients registered with the SM\n");
-	return;
-    }
-
-    while (client) {
-	if (client->numProps == 0) {
-	    printf("Client Id = %s, no properties are set\n",
-		   client->clientId);
-	} else {
-	    int i;
-
-	    printf ("Client Id = %s, the following properties are set:\n",
-		    client->clientId);
-	    for (i = 0; i < client->numProps; i++)
-		print_prop(client->props[i]);
-	}
-	client = client->next;
-    }
-}
-
-
-
-void
-StartXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    switch(fork()) {
-	case -1:
-	    perror("fork");
-	    break;
-	case 0:
-	    execlp("xsmclient", "xsmclient", (char *)NULL);
-	    perror("xsmclient");
-	    _exit(255);
-	default:
-	    break;
-    }
-}
-
-
-
-void
-PingXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    ClientRec *client = ClientList;
-
-    pingCount = 0;
-    printf ("\n");
-    if (client == NULL ) {
-	printf ("There are no clients registered with the SM\n");
-	printf ("\n");
-	return;
-    }
-    while (client) {
-	IcePing (client->ice_conn, PingReplyProc, (IcePointer) client);
-	pingCount++;
-	printf ("Client Id = %s, sent PING\n", client->clientId);
-	client = client->next;
-    }
-    printf ("\n");
-    while (pingCount > 0)
-	XtAppProcessEvent(appContext, XtIMAll);
-    printf ("\n");
-}
-
-
-
-/*
  * Xt callback invoked when a client attempts to connect.
  */
 
 void
-newConnectionXtProc (client_data, source, id)
+NewConnectionXtProc (client_data, source, id)
 
 XtPointer	client_data;
 int 		*source;
@@ -1050,9 +1291,19 @@ XtInputId	*id;
     char	*connstr;
     IceAcceptStatus status;
 
+    if (shutdownInProgress)
+    {
+	/*
+	 * Don't accept new connections if we are in the middle
+	 * of a shutdown.
+	 */
+
+	return;
+    }
+
     ice_conn = IceAcceptConnection((IceListenObj) client_data, &status);
     if (! ice_conn) {
-	if (app_resources.verbose)
+	if (verbose)
 	    printf ("IceAcceptConnection failed\n");
     } else {
 	IceConnectStatus cstatus;
@@ -1062,7 +1313,7 @@ XtInputId	*id;
 	}
 
 	if (cstatus == IceConnectAccepted) {
-	    if (app_resources.verbose) {
+	    if (verbose) {
 		printf ("ICE Connection opened by client, IceConn fd = %d, ",
 			IceConnectionNumber (ice_conn));
 		connstr = IceConnectionString (ice_conn);
@@ -1071,7 +1322,7 @@ XtInputId	*id;
 		printf ("\n");
 	    }
 	} else {
-	    if (app_resources.verbose)
+	    if (verbose)
 	    {
 		if (cstatus == IceConnectIOError)
 		    printf ("IO error opening ICE Connection!\n");
@@ -1086,501 +1337,60 @@ XtInputId	*id;
 
 
 
-/*
- * Install IO error handler.  This will detect clients that break their
- * connection with the SM unexpectidly.
- */
+SetAllSensitive (on)
 
-void
-myIOErrorHandler (ice_conn)
-
-IceConn 	ice_conn;
+Bool on;
 
 {
-    if (ClientList == NULL)
-    {
-	/*
-	 * The client must have disconnected before the ICE connection
-	 * became valid.  Example: ICE authentication failed.
-	 */
+    XtSetSensitive (mainWindow, on);
+    SetSaveSensitivity (on);
+    XtSetSensitive (clientInfoPopup, on);
+    XtSetSensitive (clientPropPopup, on);
 
-	IceSetShutdownNegotiation (ice_conn, False);
-	IceCloseConnection (ice_conn);
-    }
-    else
-    {
-	ClientRec *ptr = ClientList;
-	ClientRec *prev = NULL;
-	
-	while (ptr && ptr->ice_conn != ice_conn)
-	{
-	    prev = ptr;
-	    ptr = ptr->next;
-	}
-
-	if (!ptr)
-	{
-	    fprintf (stderr, "Internal error; couldn't find ice_conn\n");
-	    exit (1);
-	}
-	else
-	{
-	    if (prev == NULL)
-		ClientList = ptr->next;
-	    else
-		prev->next = ptr->next;
-
-	    SmsCleanUp (ptr->smsConn);
-	    FreeClientInfo (ptr);
-	    
-	    if (app_resources.verbose)
-	    {
-		printf ("ICE Connection terminated (fd = %d)\n",
-			IceConnectionNumber (ice_conn));
-		printf ("\n");
-	    }
-
-	    IceSetShutdownNegotiation (ice_conn, False);
-	    IceCloseConnection (ice_conn);
-
-	    numClients--;
-
-	    if (shutdownInProgress && numClients == 0)
-	    {
-		exit_sm ();
-	    }
-	}
-    }
+    if (on && current_client_selected >= 0)
+	XawListHighlight (clientListWidget, current_client_selected);
+}
 
 
-    /*
-     * We can't return.  Must do a long jump.  Make sure any
-     * popups are uppopped.
-     */
+
+/*
+ * The real way to handle IO errors is to check the return status
+ * of IceProcessMessages.  xsm properly does this.
+ *
+ * Unfortunately, a design flaw exists in the ICE library in which
+ * a default IO error handler is invoked if no IO error handler is
+ * installed.  This default handler exits.  We must avoid this.
+ *
+ * To get around this problem, we install an IO error handler that
+ * does a little magic.  Since a previous IO handler might have been
+ * installed, when we install our IO error handler, we do a little
+ * trick to get both the previous IO error handler and the default
+ * IO error handler.  When our IO error handler is called, if the
+ * previous handler is not the default handler, we call it.  This
+ * way, everyone's IO error handler gets called except the stupid
+ * default one which does an exit!
+ */
 
-    XtPopdown (shutdownPopup);
-    XtPopdown (savePopup);
-    XtSetSensitive (shutdownPopup, 1);
-    XtSetSensitive (savePopup, 1);
-    XtSetSensitive (mainWindow, 1);
+static IceIOErrorHandler prev_handler;
 
-    longjmp (JumpHere, 1);
+void
+MyIoErrorHandler (ice_conn)
+
+IceConn ice_conn;
+
+{
+    if (prev_handler)
+	(*prev_handler) (ice_conn);
 }    
 
-
-
-/*
- * Add toggle button
- */
-
-Widget
-AddToggle (widgetName, parent, label, state, radioGroup, radioData,
-    fromHoriz, fromVert)
-
-char 		*widgetName;
-Widget 		parent;
-char 		*label;
-int 		state;
-Widget 		radioGroup;
-XtPointer 	radioData;
-Widget 		fromHoriz;
-Widget 		fromVert;
-
-{
-    Widget 		toggle;
-    XtTranslations	translations;
-
-    toggle = XtVaCreateManagedWidget (
-	widgetName, toggleWidgetClass, parent,
-	XtNlabel, label,
-        XtNstate, state,
-        XtNradioGroup, radioGroup,
-        XtNradioData, radioData,
-        XtNfromHoriz, fromHoriz,
-        XtNfromVert, fromVert,
-        NULL);
-
-    translations = XtParseTranslationTable ("<Btn1Down>,<Btn1Up>:set()\n");
-    XtOverrideTranslations (toggle, translations);
-
-    return (toggle);
-}
-
-
-
 void
-FreeClientInfo (client)
-
-ClientRec *client;
+InstallIOErrorHandler ()
 
 {
-    if (client)
-    {
-	int i;
-
-	XtFree (client->clientId);
-	XtFree (client->clientHostname);
-
-	for (i = 0; i < client->numProps; i++)
-	    SmFreeProperty (client->props[i]);
-
-	free ((char *) client);
-    }
-}
-
-
-static void Syntax(call)
-    char *call;
-{
-    (void) fprintf(stderr, "usage: %s [-verbose] [-quiet]\n", call);
-    exit(2);
-}
-
-
-
-main(argc, argv)
-    int  argc;
-    char **argv;
-{
-    IceListenObj *listenObjs;
-    char 	*networkIds;
-    int  	i;
-    char	*p;
-    char *	progName;
-    char 	errormsg[256];
-    static	char environment_name[] = "SESSION_MANAGER";
-
-    umask (0077);	/* disallow non-owner access */
-
-    p = strrchr(argv[0], '/');
-    progName = (p ? p + 1 : argv[0]);
-    topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM", options, 
-	XtNumber(options), &argc, argv, NULL,
-        XtNjoinSession, 0,	/* We are the SM */
-	NULL);
-	
-    if (argc > 1) Syntax(progName);
-    XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
-			      resources, XtNumber(resources), NULL, 0);
-    
-    /*
-     * Set my own IO error handler.
-     */
-
-    IceSetIOErrorHandler (myIOErrorHandler);
-
-
-    /*
-     * Ignore SIGPIPE
-     */
-
-    signal (SIGPIPE, SIG_IGN);
-
-
-    /*
-     * Init SM lib
-     */
-
-    /* if these are errors they should write to stderr or an error file. */
-    if (!SmsInitialize ("SAMPLE-SM", "1.0",
-	NewClientProc, NULL,
-	HostBasedProc, 256, errormsg))
-    {
-	printf ("%s\n", errormsg);
-	exit (1);
-    }
-
-    if (!IceListenForConnections (&numTransports, &listenObjs,
-	256, errormsg))
-    {
-	printf ("%s\n", errormsg);
-	exit (1);
-    }
-
-    if (!set_auth (numTransports, listenObjs, &authDataEntries))
-    {
-	printf ("Could not set authorization\n");
-	exit (1);
-    }
-
-    InitWatchProcs (appContext);
-
-    mainWindow = XtCreateManagedWidget (
-	"mainWindow", boxWidgetClass, topLevel, NULL, 0);
-
-    listButton = XtVaCreateManagedWidget (
-	"listButton", commandWidgetClass, mainWindow,
-	XtNlabel, "List all registered clients",
-	NULL);
-
-    XtAddCallback (listButton, XtNcallback, ListClientsXtProc, 0);
-
-    saveButton = XtVaCreateManagedWidget (
-	"saveButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Save Yourself with option to Shutdown",
-	NULL);
-
-    XtAddCallback (saveButton, XtNcallback, SaveYourselfXtProc, 0);
-
-    if (app_resources.debug)
-    {
-	propButton = XtVaCreateManagedWidget (
-	    "propButton", commandWidgetClass, mainWindow,
-	    XtNlabel, "List properties of each client",
-	    NULL);
-
-	XtAddCallback (propButton, XtNcallback, ListPropXtProc, 0);
-    }
-
-    pingButton = XtVaCreateManagedWidget (
-	"pingButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Ping all clients",
-	NULL);
-
-    XtAddCallback (pingButton, XtNcallback, PingXtProc, 0);
-
-    startButton = XtVaCreateManagedWidget (
-	"startButton", commandWidgetClass, mainWindow,
-	XtNlabel, "Start a new xsmclient",
-	NULL);
-
-    XtAddCallback (startButton, XtNcallback, StartXtProc, 0);
-
-
-    /*
-     * Pop up for Save Yourself button.
-     */
-
-    savePopup = XtVaCreatePopupShell (
-	"savePopup", transientShellWidgetClass, topLevel,
-	XtNtitle, "Save Yourself Parameters",
-	NULL);
-    
-    saveForm = XtCreateManagedWidget (
-	"saveForm", formWidgetClass, savePopup, NULL, 0);
-
-    saveTypeLabel = XtVaCreateManagedWidget (
-	"saveTypeLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Save Type     ",
-        XtNfromHoriz, NULL,
-        XtNfromVert, NULL,
-        XtNborderWidth, 0,
-	NULL);
-
-    saveTypeGlobal = AddToggle (
-	"saveTypeGlobal", 			/* widgetName */
-	saveForm,				/* parent */
-        "Global",				/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &saveTypeData[0],		/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        NULL					/* fromVert */
-    );
-
-    saveTypeLocal = AddToggle (
-	"saveTypeLocal", 			/* widgetName */
-	saveForm,				/* parent */
-        "Local",				/* label */
-	0,					/* state */
-        saveTypeGlobal,				/* radioGroup */
-        (XtPointer) &saveTypeData[1],		/* radioData */
-        saveTypeGlobal,				/* fromHoriz */
-        NULL					/* fromVert */
-    );
-
-    saveTypeBoth = AddToggle (
-	"saveTypeBoth", 			/* widgetName */
-	saveForm,				/* parent */
-        "Both",					/* label */
-	1,					/* state */
-        saveTypeGlobal,				/* radioGroup */
-        (XtPointer) &saveTypeData[2],		/* radioData */
-        saveTypeLocal,				/* fromHoriz */
-        NULL					/* fromVert */
-    );
-
-
-    shutdownLabel = XtVaCreateManagedWidget (
-	"shutdownLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Shutdown?",
-        XtNfromHoriz, NULL,
-        XtNfromVert, saveTypeLabel,
-        XtNborderWidth, 0,
-	NULL);
-
-    shutdownYes = AddToggle (
-	"shutdownYes", 				/* widgetName */
-	saveForm,				/* parent */
-        "Yes",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &shutdownData[0],		/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        saveTypeLabel				/* fromVert */
-    );
-
-    shutdownNo = AddToggle (
-	"shutdownNo", 				/* widgetName */
-	saveForm,				/* parent */
-        "No",					/* label */
-	1,					/* state */
-        shutdownYes,				/* radioGroup */
-        (XtPointer) &shutdownData[1],		/* radioData */
-        shutdownYes,				/* fromHoriz */
-        saveTypeLabel				/* fromVert */
-    );
-
-
-    interactStyleLabel = XtVaCreateManagedWidget (
-	"interactStyleLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Interact Style",
-        XtNfromHoriz, NULL,
-        XtNfromVert, shutdownLabel,
-        XtNborderWidth, 0,
-	NULL);
-
-    interactStyleNone = AddToggle (
-	"interactStyleNone", 			/* widgetName */
-	saveForm,				/* parent */
-        "None",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &interactStyleData[0],	/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        shutdownLabel				/* fromVert */
-    );
-
-    interactStyleErrors = AddToggle (
-	"interactStyleErrors", 			/* widgetName */
-	saveForm,				/* parent */
-        "Errors",				/* label */
-	0,					/* state */
-        interactStyleNone,			/* radioGroup */
-        (XtPointer) &interactStyleData[1],	/* radioData */
-        interactStyleNone,			/* fromHoriz */
-        shutdownLabel				/* fromVert */
-    );
-
-    interactStyleAny = AddToggle (
-	"interactStyleAny", 			/* widgetName */
-	saveForm,				/* parent */
-        "Any",					/* label */
-	1,					/* state */
-        interactStyleNone,			/* radioGroup */
-        (XtPointer) &interactStyleData[2],	/* radioData */
-        interactStyleErrors,			/* fromHoriz */
-        shutdownLabel				/* fromVert */
-    );
-
-
-    fastLabel = XtVaCreateManagedWidget (
-	"fastLabel", labelWidgetClass, saveForm,
-	XtNlabel, "Fast?",
-        XtNfromHoriz, NULL,
-        XtNfromVert, interactStyleLabel,
-        XtNborderWidth, 0,
-	NULL);
-
-    fastYes = AddToggle (
-	"fastYes", 				/* widgetName */
-	saveForm,				/* parent */
-        "Yes",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &fastData[0],		/* radioData */
-        saveTypeLabel,				/* fromHoriz */
-        interactStyleLabel			/* fromVert */
-    );
-
-    fastNo = AddToggle (
-	"fastNo", 				/* widgetName */
-	saveForm,				/* parent */
-        "No",					/* label */
-	1,					/* state */
-        fastYes,				/* radioGroup */
-        (XtPointer) &fastData[1],		/* radioData */
-        fastYes,				/* fromHoriz */
-        interactStyleLabel			/* fromVert */
-    );
-
-
-    saveOkButton = XtVaCreateManagedWidget (
-	"saveOkButton",	commandWidgetClass, saveForm,
-	XtNlabel, "OK",
-        XtNfromHoriz, NULL,
-        XtNfromVert, fastLabel,
-        XtNvertDistance, 30,
-        NULL);
-    
-    XtAddCallback (saveOkButton, XtNcallback, SaveOkXtProc, 0);
-
-    saveCancelButton = XtVaCreateManagedWidget (
-	"saveCancelButton", commandWidgetClass, saveForm,
-        XtNlabel, "Cancel",
-        XtNfromHoriz, saveOkButton,
-        XtNfromVert, fastLabel,
-        XtNvertDistance, 30,
-        NULL);
-
-    XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
-
-
-    /*
-     * Pop up Shutdown confirmation.
-     */
-
-    shutdownPopup = XtVaCreatePopupShell ("shutdownPopup",
-	transientShellWidgetClass, topLevel,
-	XtNtitle, "Shutdown Prompt", NULL);
-    
-    shutdownDialog = XtVaCreateManagedWidget ("shutdownDialog",
-	dialogWidgetClass, shutdownPopup,
-	XtNlabel, "There are no active clients.  OK to shutdown?",
-        NULL);					      
-
-    shutdownOkButton = XtVaCreateManagedWidget ("shutdownOkButton",
-	commandWidgetClass, shutdownDialog, XtNlabel, "OK", NULL);
-    
-    XtAddCallback (shutdownOkButton, XtNcallback, ShutdownOkXtProc, 0);
-
-    shutdownCancelButton = XtVaCreateManagedWidget ("shutdownCancelButton",
-	commandWidgetClass, shutdownDialog, XtNlabel, "Cancel", NULL);
-
-    XtAddCallback (shutdownCancelButton, XtNcallback, ShutdownCancelXtProc, 0);
-
-
-    /*
-     * Realize top level.
-     */
-
-    XtRealizeWidget (topLevel);
-    
-    for (i = 0; i < numTransports; i++)
-    {
-	XtAppAddInput (appContext,
-	    IceGetListenConnectionNumber (listenObjs[i]),
-	    (XtPointer) XtInputReadMask,
-	    newConnectionXtProc, (XtPointer) listenObjs[i]);
-    }
-
-    /* the sizeof includes the \0, so we don't need to count the '=' */
-    networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
-    p = (char *) malloc((sizeof environment_name) + strlen(networkIds) + 1);
-    if(!p) nomem();
-    sprintf(p, "%s=%s", environment_name, networkIds);
-    putenv(p);
-
-    if (app_resources.verbose || app_resources.debug)
-	printf ("setenv %s %s\n", environment_name, networkIds);
-
-    read_save();
-    restart_everything();
-
-    if (app_resources.verbose)
-	printf ("Waiting for connections...\n");
-
-    free (networkIds);
-    setjmp (JumpHere);
-    XtAppMainLoop (appContext);
+    IceIOErrorHandler default_handler;
+
+    prev_handler = IceSetIOErrorHandler (NULL);
+    default_handler = IceSetIOErrorHandler (MyIoErrorHandler);
+    if (prev_handler == default_handler)
+	prev_handler = NULL;
 }
