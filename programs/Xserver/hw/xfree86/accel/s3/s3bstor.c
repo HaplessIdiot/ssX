@@ -1,4 +1,5 @@
 /* $XConsortium: s3bstor.c,v 1.1 94/03/28 21:14:37 dpw Exp $ */
+/* $XFree86$ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.

@@ -1,4 +1,5 @@
 /* $XConsortium: s3dline.c,v 1.2 94/04/17 20:31:06 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium

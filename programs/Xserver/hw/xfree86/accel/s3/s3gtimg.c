@@ -1,4 +1,5 @@
 /* $XConsortium: s3gtimg.c,v 1.1 94/03/28 21:15:33 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

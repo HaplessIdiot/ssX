@@ -1,4 +1,5 @@
 /* $XConsortium: s3win.c,v 1.2 94/04/17 20:31:16 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium

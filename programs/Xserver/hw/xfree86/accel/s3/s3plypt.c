@@ -1,4 +1,5 @@
 /* $XConsortium: s3plypt.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium

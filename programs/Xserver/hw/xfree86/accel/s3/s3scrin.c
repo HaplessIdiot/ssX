@@ -1,4 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
