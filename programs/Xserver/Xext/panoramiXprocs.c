@@ -1034,8 +1034,8 @@ int PanoramiXCopyArea(ClientPtr client)
 	FOR_NSCREENS(j)
 	    VERIFY_DRAWABLE(drawables[j], src->info[j].id, client);
 
-	pitch = PixmapBytePad(stuff->width, drawables[0]->depth);
-	if(!(data = xcalloc(stuff->height, pitch)))
+	pitch = PixmapBytePad(stuff->width, drawables[0]->depth); 
+	if(!(data = xcalloc(1, stuff->height * pitch)))
 	    return BadAlloc;
 
 	XineramaGetImageData(drawables, srcx, srcy, 
@@ -1049,10 +1049,6 @@ int PanoramiXCopyArea(ClientPtr client)
 	    (*pGC->ops->PutImage) (pDst, pGC, pDst->depth, dstx, dsty, 
 				   stuff->width, stuff->height, 
 				   0, ZPixmap, data);
-
-	    if(pGC->graphicsExposures) {
-		/* Ugh */
-	    }
 
 	    if(dstShared) break;
 	}
