@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.113 2002/12/09 23:00:42 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.114 2003/03/19 01:49:23 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -327,7 +327,7 @@ XCOMM special target for clearmake					@@\
 #endif
 
 #ifndef RunPerlScript
-#define RunPerlScript(script,options) $(PERL) $(PERLOPTS) script options
+#define RunPerlScript(script,options) $(PERLENVSETUP) $(PERL) $(PERLOPTS) script options
 #endif
 
 #ifndef RemoveFile

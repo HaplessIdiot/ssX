@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.140 2003/03/04 01:48:40 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.141 2003/03/19 01:49:23 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -225,6 +225,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef PerlOptions
 #define PerlOptions		/**/
+#endif
+
+#ifndef PerlEnvSetup
+#define PerlEnvSetup		env LC_ALL=C
 #endif
 
 #ifndef BuildRman
@@ -1751,6 +1755,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
                RM = RmCmd
              PERL = PerlCmd
          PERLOPTS = PerlOptions
+     PERLENVSETUP = PerlEnvSetup
         MANSUFFIX = ManSuffix		/* suffix for command man pages */
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
     FILEMANSUFFIX = FileManSuffix	/* suffix for file format man pages */
