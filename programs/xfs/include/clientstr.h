@@ -40,7 +40,7 @@ in this Software without prior written authorization from The Open Group.
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/clientstr.h,v 1.4 1999/03/07 11:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/clientstr.h,v 1.5 2001/01/17 23:45:31 dawes Exp $ */
 
 #ifndef _CLIENTSTR_H_
 #define	_CLIENTSTR_H_
@@ -80,7 +80,15 @@ typedef struct _WorkQueue {
     pointer     closure;
 }           WorkQueueRec;
 
-
-extern void CloseDownClient(ClientPtr client);
+#ifndef CloseDownClient
+#ifdef DEBUG
+#define CloseDownClient(client)	\
+	fprintf(stderr, "CloseDownClient %s %d\n", __FILE__, __LINE__),\
+	DoCloseDownClient(client)
+#else
+#define CloseDownClient DoCloseDownClient
+#endif
+extern void DoCloseDownClient(ClientPtr client);
+#endif
 
 #endif				/* _CLIENTSTR_H_ */
