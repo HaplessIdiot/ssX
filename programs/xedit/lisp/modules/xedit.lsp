@@ -27,54 +27,148 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.3 2002/08/25 02:48:32 paulo Exp $
 ;;
 
 (provide "xedit")
 
-(make-package "XEDIT" :use '("LISP" "EXT"))
+#+debug	(make-package "XEDIT" :use '("LISP" "EXT"))
 (in-package "XEDIT")
 
 
-(export '(
-    background foreground font point point-min point-max
-    insert read-text replace-text scan search-forward search-backward
-    wrap-mode auto-fill justification left-column right-column
-    vertical-scrollbar horizontal-scrollbar
-    create-buffer remove-buffer
-    buffer-name buffer-filename
-    current-buffer other-buffer
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  TODO The user should be able to define *auto-modes* prior to the
+;; initialization here in a configuration file, since defvar only binds
+;; the variable if it is unbound or doesn't have a value defined.
+;;  *auto-modes* is a list of conses where every car is compiled
+;; to a regexp to match the name of the file being loaded. The cdr is
+;; either a string, a pathname, or a syntax-p.
+;;  When loading a file, if the regexp in the car matches, it will check
+;; the cdr value, and if it is a:
+;;	string:		executes (load "progmodes/<the-string>.lsp")
+;;	pathname:	executes (load <the-pathhame>)
+;;	syntax-p:	does nothing, already loaded
+;;
+;;  If it fails to load the file, or the returned value is not a
+;; syntax-p, the entry is removed.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *auto-modes* '(
+    ("\\.(c|cc|C|h|bm|xbm|xpm|l|y)$"		"c"	. *c*)
+    ("\\.(li?sp|scm)$"				"lisp"	. *lisp*)
+    ("Imakefile|(\\.(cf|rules|tmpl|def|cpp)$)"	"imake"	. *imake*)
+    ("[Mm]akefile.*|\\.mk$"			"make"	. *make*)
+    ("\\.sgml?$"				"sgml"	. *sgml*)
+    ("\\.html?$"				"html"	. *html*)
+    ("\\.(man|\\d)$"				"man"	. *man*)
+    ("app-defaults/\\w+|\\u[A-Za-z0-9-_]+\\.ad"	"xrdb"	. *xrdb*)
 ))
 
 
-;; Character that identifies xedit protocol commands.
-(defconstant *ESCAPE* #-debug #\Escape #+debug #\$)
-
-;; Stream to write to xedit.
-(defconstant *OUTPUT* #-debug T #+debug *STANDARD-OUTPUT*)
-
-;; Stream to read from xedit.
-(defconstant *INPUT* #-debug NIL #+debug *STANDARD-INPUT*)
-
-;; Recognized identifiers for wrap mode.
-(defconstant *WRAP-MODES* '(:NEVER :LINE :WORD))
-
-;; Recognized identifiers for justification.
-(defconstant *JUSTIFICATIONS* '(:LEFT :RIGHT :CENTER :FULL))
-
-;; XawTextScanType
-(defconstant
-    *SCAN-TYPE*
-    '(:POSITIONS :WHITE-SPACE :EOL :PARAGRAPH :ALL :ALPHA-NUMERIC)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Compile the regexps in the *auto-modes* list.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dolist (mode *auto-modes*)
+    (rplaca mode (re-comp (car mode) :nosub t))
 )
 
-;; XawTextScanDirection
-(defconstant *SCAN-DIRECTION* '(:LEFT :RIGHT))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Find the progmode associated with the given filename.
+;; Returns nil if nothing matches.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun auto-mode (filename)
+    (do*
+	(
+	(mode	*auto-modes*	(cdr mode))
+	(regex	(caar mode)	(caar mode))
+	(syntax	(cdar mode)	(cdar mode))
+	)
+	((endp mode))
+
+	;; Only wants to know if the regex match.
+	(when (listp (re-exec regex filename :count 0))
+
+	    (if (syntax-p syntax)
+		;; Already loaded earlier, return it.
+		(return syntax)
+
+		;; It must be a cons, the cdr is the symbol name.
+		(setq syntax (car syntax))
+	    )
+
+	    ;; Try to load the specified file.
+	    (if (stringp syntax)
+		(load
+		    (string-concat
+			(namestring *default-pathname-defaults*)
+			"progmodes/"
+			syntax
+			".lsp"
+		    )
+		)
+		(load syntax)
+	    )
+
+	    ;; Pointer to symbol name
+	    (setq syntax (cddar mode))
+	    (if (boundp syntax)
+		(setq syntax (symbol-value syntax))
+	    )
+
+	    (if (syntax-p syntax)
+
+		;; New syntax table was loaded
+		(progn
+		    (rplacd (car mode) syntax)
+		    (return syntax)
+		)
+
+		;; Failed to load, remove the entry from the list.
+		;; XXX This only prevents the cases where the file wasn't
+		;; found or did not return a syntax-p, if a fatal error
+		;; was generated, this code will not be executed.
+		(progn
+		    (if (cdr mode)
+			(progn
+			    (rplaca mode (cadr mode))
+			    (rplacd mode (cddr mode))
+			)
+			(rplacd (last *auto-modes* 2) nil)
+		    )
+		    (return)
+		)
+	    )
+	)
+    )
+)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data types.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  The main syntax structure, normally, only one should exist per
+;; syntax highlight module.
+;;  The structure is defined here so it is not required to load all
+;; the extra data associated with syntax-highlight at initialization
+;; time, and will never be loaded if no syntax-highlight mode is
+;; defined to the files being edited.
+(defstruct syntax
+    name		;;  A unique string to identify the syntax mode.
+			;; Should be the name of the language/file type.
+
+    ;; Field(s) defined at "compile time"
+    labels		;;  Not exactly a list of labels, but all syntax
+			;; tables for the module.
+			;; XXX When hash tables be implemented in the
+			;;     interpreter, this should be a hash table
+			;;     to speed up a bit translating labels to
+			;;     syntax tables.
+    quark		;;  A XrmQuark associated with the XawTextPropertyList
+			;; used by this syntax mode.
+    token-count		;;  Number of distinct syntoken structures in
+			;; the syntax table.
+)
+
 ;;  Xlfd description, used when combining properties.
 ;;  Field names are self descriptive.
 ;;	XXX Fields should be initialized as strings, but fields
@@ -86,7 +180,7 @@
 ;;	<b>bold<i>italic</i></b>
 ;;	would render "bold" using a bold version of the default font,
 ;;	and "italic" using a bold and italic version of the default font
-(defstruct XLFD
+(defstruct xlfd
     foundry
     family
     weight
@@ -109,7 +203,7 @@
 ;;	o foreground pixmap
 ;;	o background pixmap
 ;;   XXX This is also a TODO in Xaw.
-(defstruct SYNPROP
+(defstruct synprop
     quark	;;   XrmQuark identifier of the XawTextProperty
 		;; structure. This field is filled when "compiling"
 		;; the syntax-table.
@@ -125,7 +219,7 @@
 
     ;; Boolean properties.
     underline	;; Draw a line below the text.
-    overscript	;; Draw a line over the text.
+    overstrike	;; Draw a line over the text.
 
     ;; XXX Are these working in Xaw?
     subscript	;; Align text to the bottom of the line.
@@ -139,22 +233,22 @@
 ;;  Utility macro, to create a "special" variable holding
 ;; a synprop structure.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro DEFSYNPROP (variable name
+(defmacro defsynprop (variable name
 		      &key font foreground background xlfd underline
-			   overscript subscript superscript)
+			   overstrike subscript superscript)
     `(progn
 	(proclaim '(special ,variable))
 	(setq ,variable
 	    (make-synprop
-		:NAME		,name
-		:FONT		,font
-		:FOREGROUND	,foreground
-		:BACKGROUND	,background
-		:XLFD		,xlfd
-		:UNDERLINE	,underline
-		:OVERSCRIPT	,overscript
-		:SUBSCRIPT	,subscript
-		:SUPERSCRIPT	,superscript
+		:name		,name
+		:font		,font
+		:foreground	,foreground
+		:background	,background
+		:xlfd		,xlfd
+		:underline	,underline
+		:overstrike	,overstrike
+		:subscript	,subscript
+		:superscript	,superscript
 	    )
 	)
     )
@@ -165,7 +259,7 @@
 ;;  Convert a synprop structure  to a string in the format
 ;; expected by Xaw.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNPROP-TO-STRING (synprop &aux values booleans xlfd)
+(defun synprop-to-string (synprop &aux values booleans xlfd)
     (if (setq xlfd (synprop-xlfd synprop))
 	(dolist
 	    (element
@@ -211,7 +305,7 @@
 	(element
 	    `(
 	    ("underline"	,(synprop-underline synprop))
-	    ("overscript"	,(synprop-overscript synprop))
+	    ("overstrike"	,(synprop-overstrike synprop))
 	    ("subscript"	,(synprop-subscript synprop))
 	    ("superscript"	,(synprop-superscript synprop))
 	    )
@@ -224,7 +318,7 @@
     ;;  Play with format conditionals, list iteration, and goto, to
     ;; make resulting string.
     (format
-	NIL
+	nil
 	"~A~:[~;?~]~:[~3*~;~A=~A~{&~A=~A~}~]~:[~;&~]~:[~2*~;~A~{&~A~*~}~]"
 
 	(synprop-name synprop)				;; ~A
@@ -239,42 +333,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Remove XawTextEntity structures in a given text region.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun CLEAR-ENTITIES (left right)
-    (format *OUTPUT* "~Cclear-entities ~D ~D~%"
-	*ESCAPE*
-	left
-	right
-    )
-#-debug
-    (read *INPUT*)
-)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Add the XawTextEntity associated with the identifier
-;; to the specified text region.
-;; XXX Needs to add support for type, flags and data associated
-;;     with the entity.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ADD-ENTITY (offset length identifier)
-    (format *OUTPUT* "~Cadd-entity ~D ~D ~D~%"
-	*ESCAPE*
-	offset
-	length
-	identifier
-    )
-#-debug
-    (read *INPUT*)
-)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Use xedit protocol to create a XawTextPropertyList with the
 ;; given arguments.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun COMPILE-SYNTAX-PROPERTY-LIST (name properties
+(defun compile-syntax-property-list (name properties
 				     &aux string-properties quark)
 
     ;; Create a string representation of the properties.
@@ -293,7 +355,7 @@
 	(case (length string-properties)
 	    (0	"")
 	    (1	(car string-properties))
-	    (T	(format NIL "~A~{,~A~}"
+	    (t	(format nil "~A~{,~A~}"
 		    (car string-properties)
 		    (cdr string-properties)
 		)
@@ -301,14 +363,14 @@
 	)
     )
 
-    (format *OUTPUT* "~Cconvert-property-list ~S ~S~%"
-	*ESCAPE*
+#+debug
+    (format *output* "~Cconvert-property-list ~S ~S~%"
+	*escape*
 	name
 	string-properties
     )
-
-    ;; If nothing wen't wrong, the XrmQuark identifier can be read.
-    (setq quark #-debug (read *INPUT*) #+debug 0)
+    (setq quark #-debug (convert-property-list name string-properties)
+		#+debug 0)
 
     ;; Store the quark for properties not yet "initialized".
     ;; XXX This is just a call to Xrm{Perm,}StringToQuark, and should
@@ -316,13 +378,14 @@
     ;;     that Xlib function.
     (dolist (property properties)
 	(unless (integerp (synprop-quark property))
-	    (format *OUTPUT* "~Cxrm-string-to-quark ~S~%"
-		*ESCAPE*
+#+debug
+	    (format *output* "~Cxrm-string-to-quark ~S~%"
+		*escape*
 		(synprop-name property)
 	    )
 	    (setf
 		(synprop-quark property)
-#-debug		(read *INPUT*)
+#-debug		(xrm-string-to-quark (synprop-name property))
 #+debug		0
 	    )
 	)
@@ -332,383 +395,170 @@
 )
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Use xedit protocol to set a previously create
-;; XawTextPropertyList to the Sink object of the current text window.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SET-TEXT-PROPERTY-LIST (quark)
-    (format *OUTPUT* "~Cset-text-properties ~D~%" *ESCAPE* quark)
-#-debug
-    (read *INPUT*)
-)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Generic functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun BACKGROUND (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-background ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-background~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun FOREGROUND (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-foreground ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-foreground~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun FONT (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-font ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-font~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun POINT (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-point ~D~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-point~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun POINT-MIN ()
-    (format *OUTPUT* "~Cpoint-min~%" *ESCAPE*)
-#-debug
-    (read *INPUT*)
 #+debug
-    0
-)
+(progn
+    (defconstant *escape* #\$)
 
+    (defconstant *output* *standard-output*)
 
-(defun POINT-MAX ()
-    (format *OUTPUT* "~Cpoint-max~%" *ESCAPE*)
-#-debug
-    (read *INPUT*)
-)
+    ;; Recognized identifiers for wrap mode.
+    (defconstant *wrap-modes* '(:never :line :word))
 
+    ;; Recognized identifiers for justification.
+    (defconstant *justifications* '(:left :right :center :full))
 
-(defun INSERT (string)
-    (format *OUTPUT* "~Cinsert ~S~%" *ESCAPE* string)
-#-debug
-    (read *INPUT*)
-    string
-)
+    ;; XawTextScanType
+    (defconstant *scan-type*
+	'(:positions :white-space :eol :paragraph :all :alpha-numeric))
 
+    ;; XawTextScanDirection
+    (defconstant *scan-direction* '(:left :right))
 
-(defun READ-TEXT (offset length)
-    (format *OUTPUT* "~Cread-text ~D ~D~%"
-	*ESCAPE*
-	offset
-	length
-    )
-#-debug
-    (read *INPUT*)
-#+debug
-    (read-line)
-)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Debugging version of xedit functions.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun clear-entities (left right)
+	(format *output* "~Cclear-entities ~D ~D~%"
+	    *escape* left right))
 
+    (defun add-entity (offset length identifier)
+	(format *output* "~Cadd-entity ~D ~D ~D~%"
+	    *escape* offset length identifier))
 
-(defun REPLACE-TEXT (left right string)
-    (format *OUTPUT* "~Creplace-text ~D ~D ~S~%"
-	*ESCAPE*
-	left
-	right
-	string
-    )
-#-debug
-    (read *INPUT*)
-    string
-)
+    (defun background (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-background ~S~%" *escape* value)
+	    (format *output* "~Cget-background~%" *escape*)))
 
+    (defun foreground (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-foreground ~S~%" *escape* value)
+	    (format *output* "~Cget-foreground~%" *escape*)))
 
-(defun SCAN (offset type direction &key (count 1) include)
-    (unless (setq type (position type *SCAN-TYPE*))
-	(error
-	    "SCAN: type must be one of ~A, not ~A"
-	    *SCAN-TYPE*
-	    type
-	)
-    )
-    (unless (setq direction (position direction *SCAN-DIRECTION*))
-	(error
-	    "SCAN: direction must be one of ~A, not ~A"
-	    *SCAN-DIRECTION*
-	    direction
-	)
-    )
-    (format *OUTPUT* "~Cscan ~D ~D ~D ~D ~D~%"
-	*ESCAPE*
-	offset
-	type
-	direction
-	count
-	(if include 1 0)
-    )
-#-debug
-    (read *INPUT*)
-#+debug
-    offset
-)
+    (defun font (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-font ~S~%" *escape* value)
+	    (format *output* "~Cget-font~%" *escape*)))
 
+    (defun point (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-point ~D~%" *escape* value)
+	    (format *output* "~Cget-point~%" *escape*)))
 
-(defun SEARCH-FORWARD (string &optional case-sensitive)
-    (format *OUTPUT* "~Csearch-forward ~S ~D~%"
-	*ESCAPE* string (if case-sensitive 1 0)
-    )
-#-debug
-    (read *INPUT*)
-)
+    (defun point-min ()
+	(format *output* "~Cpoint-min~%" *escape*))
 
+    (defun point-max ()
+	(format *output* "~Cpoint-max~%" *escape*))
 
-(defun SEARCH-BACKWARD (string &optional case-sensitive)
-    (format *OUTPUT* "~Csearch-backward ~S ~D~%"
-	*ESCAPE* string (if case-sensitive 1 0)
-    )
-#-debug
-    (read *INPUT*)
-)
+    (defun property-list (&optional (quark nil specified))
+	(format *output* "~property-list ~D~%" *escape* quark))
 
+    (defun insert (string)
+	(format *output* "~Cinsert ~S~%" *escape* string))
 
-(defun WRAP-MODE (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (unless (member value *WRAP-MODES*)
-		(error
-		    "WRAP-MODE: argument must be one of ~A, not ~A"
-		    *WRAP-MODES*
-		    value
-		)
-	    )
-	    (format *OUTPUT* "~Cset-wrap-mode ~S~%"
-		*ESCAPE*
-		(string value)
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-wrap-mode~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun read-text (offset length)
+	(format *output* "~Cread-text ~D ~D~%"
+	    *escape* offset length))
 
+    (defun replace-text (left right string)
+	(format *output* "~Creplace-text ~D ~D ~S~%"
+	    *escape* left right string))
 
-(defun AUTO-FILL (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-auto-fill ~S~%"
-		*ESCAPE*
-		(if value "true" "false")
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-auto-fill~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun scan (offset type direction &key (count 1) include)
+	(unless (setq type (position type *scan-type*))
+	    (error "SCAN: type must be one of ~A, not ~A"
+		*scan-type* type))
+	(unless (setq direction (position direction *scan-direction*))
+	    (error "SCAN: direction must be one of ~A, not ~A"
+		*scan-direction* direction))
+	(format *output* "~Cscan ~D ~D ~D ~D ~D~%"
+	    *escape* offset type direction count (if include 1 0)))
 
+    (defun search-forward (string &optional case-sensitive)
+	(format *output* "~Csearch-forward ~S ~D~%"
+	    *escape* string (if case-sensitive 1 0)))
 
-(defun JUSTIFICATION (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (unless (member value *JUSTIFICATIONS*)
-		(error
-		    "JUSTIFICATION: argument must be one of ~A, not ~A"
-		    *JUSTIFICATIONS*
-		    value
-		)
-	    )
-	    (format *OUTPUT* "~Cset-justification ~S~%"
-		*ESCAPE*
-		(string value)
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-justification~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun search-backward (string &optional case-sensitive)
+	(format *output* "~Csearch-backward ~S ~D~%"
+	    *escape* string (if case-sensitive 1 0)))
 
+    (defun wrap-mode (&optional (value nil specified))
+	(if specified
+	    (progn
+		(unless (member value *wrap-modes*)
+		    (error "WRAP-MODE: argument must be one of ~A, not ~A"
+			*wrap-modes* value))
+		(format *output* "~Cset-wrap-mode ~S~%"
+		    *escape* (string value)))
+	    (format *output* "~Cget-wrap-mode~%" *escape*)))
 
-(defun LEFT-COLUMN (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-left-column ~D~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-left-column~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun auto-fill (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-auto-fill ~S~%"
+		*escape* (if value "true" "false"))
+	    (format *output* "~Cget-auto-fill~%" *escape*)))
 
+    (defun justification (&optional (value nil specified))
+	(if specified
+	    (progn
+		(unless (member value *justifications*)
+		    (error "JUSTIFICATION: argument must be one of ~A, not ~A"
+			*justifications* value))
+		(format *output* "~Cset-justification ~S~%"
+		    *escape* (string value)))
+	    (format *output* "~Cget-justification~%" *escape*)))
 
-(defun RIGHT-COLUMN (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-right-column ~D~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-right-column~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun left-column (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-left-column ~D~%" *escape* value)
+	    (format *output* "~Cget-left-column~%" *escape*)))
 
+    (defun right-column (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-right-column ~D~%" *escape* value)
+	    (format *output* "~Cget-right-column~%" *escape*)))
 
-(defun VERTICAL-SCROLLBAR (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-vert-scrollbar ~S~%"
-		*ESCAPE*
-		(if value "always" "never")
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-vert-scrollbar~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    (defun vertical-scrollbar (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-vert-scrollbar ~S~%"
+		*escape* (if value "always" "never"))
+	    (format *output* "~Cget-vert-scrollbar~%" *escape*)))
 
+    (defun horizontal-scrollbar (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-horiz-scrollbar ~S~%"
+		*escape* (if value "always" "never"))
+	    (format *output* "~Cget-horiz-scrollbar~%" *escape*)))
 
-(defun HORIZONTAL-SCROLLBAR (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-horiz-scrollbar ~S~%"
-		*ESCAPE*
-		(if value "always" "never")
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-horiz-scrollbar~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
+    #|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    (defun create-buffer (name)
+	(format *output* "~Ccreate-buffer ~S~%" *escape* name))
 
+    (defun remove-buffer (name)
+	(format *output* "~Cremove-buffer ~S~%" *escape* name))
 
-(defun CREATE-BUFFER (name)
-    (format *OUTPUT* "~Ccreate-buffer ~S~%" *ESCAPE* name)
-    (read *INPUT*)
-)
+    (defun buffer-name (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-buffer-name ~S~%" *escape* value)
+	    (format *output* "~Cget-buffer-name~%" *escape*)))
 
+    (defun buffer-filename (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-buffer-filename ~S~%"
+		*escape* (namestring value))
+	    (format *output* "~Cget-buffer-filename~%" *escape*)))
 
-(defun REMOVE-BUFFER (name)
-    (format *OUTPUT* "~Cremove-buffer ~S~%" *ESCAPE* name)
-#-debug
-    (read *INPUT*)
-)
+    (defun current-buffer (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-current-buffer ~S~%" *escape* value)
+	    (format *output* "~Cget-current-buffer~%" *escape*)))
 
-
-(defun BUFFER-NAME (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-buffer-name ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-buffer-name~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun BUFFER-FILENAME (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-buffer-filename ~S~%"
-		*ESCAPE*
-		(namestring value)
-	    )
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-buffer-filename~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    (pathname value)
-)
-
-
-(defun CURRENT-BUFFER (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-current-buffer ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-current-buffer~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
-)
-
-
-(defun OTHER-BUFFER (&optional (value NIL specified))
-    (if specified
-	(progn
-	    (format *OUTPUT* "~Cset-other-buffer ~S~%" *ESCAPE* value)
-#-debug	    (read *INPUT*)
-	)
-	(progn
-	    (format *OUTPUT* "~Cget-other-buffer~%" *ESCAPE*)
-#-debug	    (setq value (read *INPUT*))
-	)
-    )
-    value
+    (defun other-buffer (&optional (value nil specified))
+	(if specified
+	    (format *output* "~Cset-other-buffer ~S~%" *escape* value)
+	    (format *output* "~Cget-other-buffer~%" *escape*)))
+    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||#
 )

@@ -213,7 +213,7 @@ AddTextSource(Widget source, char *name, char *filename, int flags,
     XtAddCallback(item->sme, XtNcallback,
 		  SwitchSourceCallback, (XtPointer)item);
 
-    SetTextProperties(item, False);
+    SetTextProperties(item);
 
     return (item);
 }

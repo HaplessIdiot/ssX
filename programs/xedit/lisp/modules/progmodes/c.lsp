@@ -27,62 +27,27 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.5 2002/09/08 02:29:50 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.6 2002/09/15 21:32:35 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
 ;; interpreter. After uncommenting, in the shell run something like:
 ;;	$ ./lsp c.lsp < somefile.c
 ;;
-;;	(setq *FEATURES* (append *FEATURES* '(:DEBUG :DEBUG-VERBOSE)))
+;;	(setq *features* (append *features* '(:debug :debug-verbose)))
 
 
 (require "syntax")
+(in-package "XEDIT")
 
-
-;;  Uncomment this to run the command line version with other lisp.
-;;  It will not do everything, but these stubs will allow it running
-;; under clisp.
-	#|
-#-xedit
-(defun xedit::RE-COMP (pattern &key nospec icase nosub newline)
-    pattern
-)
-#-xedit
-(defun xedit::RE-EXEC (regex string &key count start end notbol noteol)
-    (list (cons 0 (length string)))
-)
-#-xedit
-(defmacro xedit::WHILE (test &rest body)
-    `(loop
-	(unless (,@test) (return))
-	,@body
-    )
-)
-#-xedit
-(defmacro xedit::UNTIL (test &rest body)
-    `(loop
-	(when (,@test) (return))
-	,@body
-    )
-)
-	|#
-
-(defsynprop *PROP-FORMAT*
+(defsynprop *prop-format*
     "format"
-    :FONT	"*lucidatypewriter-medium-r*12*"
-    :FOREGROUND	"RoyalBlue2"
-    :UNDERLINE	T
+    :font	"*lucidatypewriter-medium-r*12*"
+    :foreground	"RoyalBlue2"
+    :underline	t
 )
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Sample definition for the C language.
-;;  This definition is basically what will (or is expected to) be
-;; the contents of a syntax highlight rules definition file. Note that
-;; only one variable (named *C*) is created.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defsyntax *C* "C/C++" :MAIN NIL
+(defsyntax *c* "C/C++" :main nil
 
     ;;  All recognized C keywords.
     (syntoken
@@ -95,181 +60,212 @@
 	    "throw|try|typedef|union|unsigned|virtual|void|volatile|while"
 	    ")\\>"
 	)
-	:PROPERTY *PROP-KEYWORD*)
+	:property *prop-keyword*)
 
     ;;  Integers.
     (syntoken "\\<(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?\\>"
-	:ICASE T
-	:PROPERTY *PROP-NUMBER*)
+	:icase t
+	:property *prop-number*)
 
     ;;  Floating point numbers.
     (syntoken "\\<(\\d+\\.?\\d*|\\d*\\.\\d+)(e[+-]?\\d+)?[lf]?\\>"
-	:ICASE T
-	:PROPERTY *PROP-NUMBER*)
+	:icase t
+	:property *prop-number*)
 
 
     ;;  Parentheses start rule.
+#+debug-complex
     (syntoken "("
-	:NOSPEC T
-	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :PARENTHESES)
+	:nospec t
+	:property *prop-punctuation*
+	:begin :parentheses)
 
     ;;  Braces start rule.
+#+debug-complex
     (syntoken "{"
-	:NOSPEC T
-	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :BRACES)
+	:nospec t
+	:property *prop-punctuation*
+	:begin :braces)
 
     ;;  String start rule.
     (syntoken "\""
-	:BEGIN :STRING
-	:CONTAINED T)
+	:nospec t
+	:begin :string
+	:contained t)
 
     ;;  Character start rule.
     (syntoken "'"
-	:BEGIN :CHARACTER
-	:CONTAINED T)
+	:nospec t
+	:begin :character
+	:contained t)
 
     ;;  Brackets start rule.
+#+debug-complex
     (syntoken "["
-	:NOSPEC T
-	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :BRACKETS)
+	:nospec t
+	:property *prop-punctuation*
+	:begin :brackets)
 
     ;;  Preprocessor start rule.
     (syntoken "^\\s*#\\s*\\w+"
-	:BEGIN :PREPROCESSOR
-	:CONTAINED T)
+	:begin :preprocessor
+	:contained t)
 
     ;;  Comment start rule.
     (syntoken "/*"
-	:NOSPEC T
-	:BEGIN :COMMENT
-	:CONTAINED T)
+	:nospec t
+	:begin :comment
+	:contained t)
 
     ;;  C++ style comments.
     (syntoken "//.*"
-	:PROPERTY *PROP-COMMENT*)
+	:property *prop-comment*)
 
     ;;  Punctuation, match two at the same time if possible, but no more to
     ;; avoid matching things like /** or ///.
-    (syntoken "[/*+:;=<>,&.!%|^~?-][/*+:;=<>,&.!%|^~?-]?"
-	:PROPERTY *PROP-PUNCTUATION*)
+#+debug-complex
+    (syntoken "[/*+:;=<>,&.!%|^~?-][*+:;=<>,&.!%|^~?-]?"
+	:property *prop-punctuation*)
+#-debug-complex
+    (syntoken "[][(){}/*+:;=<>,&.!%|^~?-][][(){}*+:;=<>,&.!%|^~?-]?"
+	:property *prop-punctuation*)
 
 
     ;;  Rules for comments.
-    (syntable :COMMENT *PROP-COMMENT*
+    (syntable :comment *prop-comment*
 
 	;;  Match nested comments as an error.
 	(syntoken "/*"
-	    :NOSPEC T
-	    :PROPERTY *PROP-ERROR*)
+	    :nospec t
+	    :property *prop-error*)
 
 	(syntoken "XXX|TODO|FIXME"
-	    :PROPERTY *PROP-ANNOTATION*)
+	    :property *prop-annotation*)
 
 	;;  Rule to finish a comment.
 	(syntoken "*/"
-	    :NOSPEC T
-	    :SWITCH -1)
+	    :nospec t
+	    :switch -1)
     )
 
     ;;  Rules for strings.
-    (syntable :STRING *PROP-STRING*
+    (syntable :string *prop-string*
 
 	;;  Ignore escaped characters, this includes \".
 	(syntoken "\\\\.")
 
 	;;  Match, most, printf arguments.
 	(syntoken "%%|%([+-]?\\d+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
-	    :PROPERTY *PROP-FORMAT*)
+	    :property *prop-format*)
+
+	;;  Ignore continuation in the next line.
+	(syntoken "\\\\$")
 
 	;;  Rule to finish a string.
 	(syntoken "\""
-	    :SWITCH -1)
+	    :nospec t
+	    :switch -1)
+
+	;;  Don't allow strings continuing in the next line.
+	(syntoken ".?$"
+	    :begin :error)
     )
 
     ;;  Rules for characters.
-    (syntable :CHARACTER *PROP-CONSTANT*
+    (syntable :character *prop-constant*
 
 	;;  Ignore escaped characters, this includes \'.
 	(syntoken "\\\\.")
 
+	;;  Ignore continuation in the next line.
+	(syntoken "\\\\$")
+
 	;;  Rule to finish a character constant.
 	(syntoken "'"
-	    :SWITCH -1)
+	    :nospec t
+	    :switch -1)
+
+	;;  Don't allow constants continuing in the next line.
+	(syntoken ".?$"
+	    :begin :error)
     )
 
     ;;  Rules for preprocessor.
-    (syntable :PREPROCESSOR *PROP-PREPROCESSOR*
+    (syntable :preprocessor *prop-preprocessor*
 
 	;;  Preprocessor includes comments.
 	(syntoken "/*"
-	    :NOSPEC T
-	    :BEGIN :COMMENT
-	    :CONTAINED T)
+	    :nospec t
+	    :begin :comment
+	    :contained t)
 
 	;;  Ignore lines finishing with a backslash.
 	(syntoken "\\\\$")
 
 	;;  Return to previous state if end of line found.
-	(syntoken "$"
-	    :SWITCH -1)
+	(syntoken ".?$"
+	    :switch -1)
     )
 
     ;;  Rules for parenthesis.
-    (syntable :PARENTHESES NIL
+#+debug-complex
+    (syntable :parentheses nil
 	(syntoken ")"
-	    :NOSPEC T
-	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH -1)
+	    :nospec t
+	    :property *prop-punctuation*
+	    :switch -1)
 
 	;;  Unbalanced.
 	(syntoken "[]}]"
-	    :PROPERTY *PROP-ERROR*)
+	    :property *prop-error*)
 
 	;;  Expressions in parentheses can include everything.
-	(synaugment :MAIN)
+	(synaugment :main)
     )
 
     ;;  Rules for brackets.
-    (syntable :BRACKETS NIL
+#+debug-complex
+    (syntable :brackets nil
 	(syntoken "]"
-	    :NOSPEC T
-	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH -1)
+	    :nospec t
+	    :property *prop-punctuation*
+	    :switch -1)
 
 	;;  Unbalanced.
 	(syntoken "[)}]"
-	    :PROPERTY *PROP-ERROR*)
+	    :property *prop-error*)
 
 	;;  Expressions in brackets can include everything.
-	(synaugment :MAIN)
+	(synaugment :main)
     )
 
     ;;  Rules for braces.
-    (syntable :BRACES NIL
+#+debug-complex
+    (syntable :braces nil
 	(syntoken "}"
-	    :NOSPEC T
-	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH -1)
+	    :nospec t
+	    :property *prop-punctuation*
+	    :switch -1)
 
 	;;  Unbalanced.
 	(syntoken "[])]"
-	    :PROPERTY *PROP-ERROR*)
+	    :property *prop-error*)
 
-	;;  Expressions in keys can include everything.
-	(synaugment :MAIN)
+	;;  Expressions in braces can include everything.
+	(synaugment :main)
     )
 
+    (syntable :error *prop-error*
+	(syntoken "^.*$"
+	    :switch -2)
+    )
 
-    ;;  Unbalanced.
-    ;;  This rule should be added only for this sample, or to
-    ;; a very smart version of the parser, or used only when
-    ;; parsing the entire file.
+    ;;  This is an error when parsing the entire file, but normal
+    ;; when interactively parsing small portions of the file.
+#+debug-complex
     (syntoken "[])}]"
-	:PROPERTY *PROP-ERROR*)
-)
+	:property *prop-punctuation*)
 
-(compile 'syntax-highlight)
-#+debug (syntax-highlight *C*)
+    (syntoken "\\c"
+	:property *prop-control*)
+)

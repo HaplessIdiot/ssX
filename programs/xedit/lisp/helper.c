@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.34 2002/09/08 02:29:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.35 2002/09/15 21:32:19 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -117,7 +117,9 @@ LispObjectCompare(LispMac *mac, LispObj *left, LispObj *right, int function)
 	switch (left->type) {
 	    case LispNil_t:
 	    case LispTrue_t:
-		result = T;
+		/*  Do nothing, result already set. Some internal objects
+		 * like #<unbound> and #<dot> may be used as labels or
+		 * variables in bytecode.c */
 		break;
 	    case LispReal_t:
 		if (left->data.real == right->data.real)

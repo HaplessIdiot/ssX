@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.5 2002/09/18 17:11:56 tsi Exp $ */
 
 #include "rep.h"
 
@@ -116,9 +116,9 @@ orec_alt(orec_inf *inf, rec_alt *alt)
 			break;
 		    }
 		    if (ret == 1)
-			cstr = 0;
+			++lits;
 		    else if (ret == 2)
-			str = 0;
+			++clits;
 		}
 		else if (ptr->pat->next == NULL) {
 		    if (ptr->pat->type != Rep_String) {
@@ -154,6 +154,7 @@ orec_alt(orec_inf *inf, rec_alt *alt)
 			if (orec_pat_cse(inf, ptr->pat))
 			    return (inf->ecode);
 		    }
+		    str = 0;
 		}
 		return (orec_str_list(inf, alt, str, count));
 	    }
@@ -503,10 +504,10 @@ orec_pat_cse(orec_inf *inf, rec_pat *pat)
     rec_pat *ptr, *next;
     unsigned char *str, *tofree;
 
-    if (pat->next == NULL)
+    if (pat->next == NULL && pat->type == Rep_CaseString)
 	return (inf->ecode);
 
-    type = Rep_String;
+    type = Rep_CaseString;
 
     /* First calculate how many bytes will be required */
     for (ptr = pat, length = 1; ptr; ptr = ptr->next) {
@@ -518,11 +519,9 @@ orec_pat_cse(orec_inf *inf, rec_pat *pat)
 		length += strlen((char*)ptr->data.str) << 1;
 		break;
 	    case Rep_CaseLiteral:
-		type = Rep_CaseString;
 		length += 2;
 		break;
 	    case Rep_CaseString:
-		type = Rep_CaseString;
 		length += strlen((char*)ptr->data.str);
 		break;
 	    default:
@@ -567,6 +566,7 @@ orec_pat_cse(orec_inf *inf, rec_pat *pat)
 	if (ptr != pat)
 	    free(ptr);
     }
+    str[length] = '\0';
 
     pat->type = type;
     pat->data.str = str;
@@ -696,7 +696,7 @@ orec_str_list(orec_inf *inf, rec_alt *alt, int str, int count)
     alt->pat = pat;
     alt->next = NULL;
 
-    if (count >= LARGE_STL_COUNT) {
+    {
 	int li, lj;
 	unsigned char ci, cj, *str;
 
@@ -709,7 +709,10 @@ orec_str_list(orec_inf *inf, rec_alt *alt, int str, int count)
 	    for (j = i + 1; j < count; j++) {
 		lj = stl->lens[j];
 		cj = lj > 2 ? stl->strs[j][0] : (long)stl->strs[j] & 0xff;
-		if (cj < ci) {
+		if ((count >= LARGE_STL_COUNT && cj < ci) ||
+		    (cj == ci && lj > li)) {
+		    /* If both strings start with the same byte,
+		     * put the longer first */
 		    str = stl->strs[j];
 		    stl->strs[j] = stl->strs[i];
 		    stl->strs[i] = str;

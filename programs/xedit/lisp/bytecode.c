@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.2 2002/09/15 21:32:16 paulo Exp $ */
 
 
 /*
@@ -103,6 +103,10 @@ somethings TODO:
 				 com->level == com->tagbody)
 #define	FORM_ENTER()		++com->level
 #define	FORM_LEAVE()		--com->level
+
+#define COMPILE_FAILURE(message)			\
+    LispMessage(com->mac, "COMPILE: %s", message);	\
+    longjmp(com->jmp, 1)
 
 /*
  * Types
@@ -223,6 +227,8 @@ struct _LispCom {
 
     LispObj *form;
 
+    jmp_buf jmp;		/* Used if compilation cannot be finished */
+
     struct {
 	int cstack;	/* Current number of objects in forms evaluation */
 	int cbstack;
@@ -257,7 +263,6 @@ static void CompileFreeTree(LispMac*, CodeTree*);
 
 static void CompileIniBlock(LispCom*, LispBlockType, LispObj*);
 static void CompileFiniBlock(LispCom*);
-
 
 static void com_BytecodeChar(LispCom*, LispByteOpcode, char);
 static void com_BytecodeShort(LispCom*, LispByteOpcode, short);
@@ -378,9 +383,11 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    goto finished_compilation;
 	else if (atom->a_function) {
 	    LispCom com;
-	    int lex, base;
+	    int failed, *pfailed;
+	    int lex, base, *plex, *pbase;
 	    LispArgList *alist;
-	    LispObj *lambda, *form, *arguments;
+	    LispObj *lambda, *form, *arguments, **parguments;
+	    LispObj **presult, **pwarnings_p, **pfailure_p, **pform;
 
 	    lambda = atom->property->fun.function;
 	    if (definition != NIL || lambda->funtype != LispFunction)
@@ -414,22 +421,36 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 	    GC_PROTECT(form);
 	    com.form = form;
 
-	    /* Save interpreter state */
-	    lex = mac->env.lex;
-	    base = ComCall(&com, alist, name, arguments, 1, 0, 1);
+	    pfailed = &failed;
+	    plex = &lex;
+	    pbase = &base;
+	    pform = &form;
+	    presult = &result;
+	    pwarnings_p = &warnings_p;
+	    pfailure_p = &failure_p;
+	    parguments = &arguments;
+	    failed = 1;
+	    if (setjmp(com.jmp) == 0) {
+		/* Save interpreter state */
+		lex = mac->env.lex;
+		base = ComCall(&com, alist, name, arguments, 1, 0, 1);
 
-	    /* Generate code tree */
-	    mac->env.lex = base;
-	    ComProgn(&com, CAR(form));
+		/* Generate code tree */
+		mac->env.lex = base;
+		ComProgn(&com, CAR(form));
+		failed = 0;
+	    }
 
 	    /* Restore interpreter state */
 	    mac->env.lex = lex;
 	    mac->env.head = mac->env.length = base;
 
-	    failure_p = NIL;
-	    result = MakeBytecodeObject(mac, &com, lambda->data.lambda.data);
-	    LispSetAtomCompiledProperty(mac, atom, result);
-	    result = name;
+	    if (!failed) {
+		failure_p = NIL;
+		result = MakeBytecodeObject(mac, &com, lambda->data.lambda.data);
+		LispSetAtomCompiledProperty(mac, atom, result);
+		result = name;
+	    }
 	    if (com.warnings)
 		warnings_p = SMALLINT(com.warnings);
 	    goto finished_compilation;
@@ -754,15 +775,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 	    sprintf(buffer, "%4ld  ", (long)(stream - base));
 	    ptr = buffer + strlen(buffer);
 	    switch (*stream++) {
-#ifdef LONG64
-		case XBC_NOOP6:	strcpy(ptr, "NOOP6");	stream += 6; break;
-		case XBC_NOOP5:	strcpy(ptr, "NOOP5");	stream += 5; break;
-		case XBC_NOOP4:	strcpy(ptr, "NOOP4");	stream += 4; break;
-		case XBC_NOOP3:	strcpy(ptr, "NOOP3");	stream += 3; break;
-#endif
-		case XBC_NOOP2:	strcpy(ptr, "NOOP2");	stream += 2; break;
-		case XBC_NOOP1:	strcpy(ptr, "NOOP1");	++stream;    break;
-		case XBC_NOOP:	strcpy(ptr, "NOOP");		     break;
+		case XBC_NOOP:	strcpy(ptr, "NOOP");	break;
 		case XBC_PRED:
 		    strcpy(ptr, "PRED:");
 		    ptr += strlen(ptr);
@@ -804,12 +817,11 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 /* update sym0 */
 symbol:
 		    offsets[j++] = &sym0;
-/* update <offsets> - print [short] */
+/* update <offsets> - print [byte] */
 offset:
 		    ptr += strlen(ptr);
-		    i = *(short*)stream;
+		    i = *stream++;
 		    *(offsets[j - 1]) = i;
-		    stream += sizeof(short);
 		    sprintf(ptr, " [%d]", i);
 		    break;
 		case XBC_LETX:
@@ -823,20 +835,18 @@ offset:
 		    goto symbol;
 		case XBC_LETBIND:
 		    strcpy(ptr, "LETBIND");
-/* print short */
+/* print byte */
 value:
 		    ptr += strlen(ptr);
-		    sprintf(ptr, " %d", (int)(*(short*)stream));
-		    stream += sizeof(short);
+		    sprintf(ptr, " %d", (int)(*stream++));
 		    break;
 		case XBC_UNLET:strcpy(ptr, "UNLET");	goto value;
 		case XBC_LOAD:
 		    strcpy(ptr, "LOAD");
-/* print (short) */
+/* print (byte) */
 reference:
 		    ptr += strlen(ptr);
-		    i = *(short*)stream;
-		    stream += sizeof(short);
+		    i = *stream++;
 		    sprintf(ptr, " (%d)", i);
 		    break;
 		case XBC_LOAD_CAR:
@@ -855,8 +865,7 @@ reference:
 		    strcpy(ptr, "LOAD&LET");
 load_let:
 		    offsets[j++] = &sym0;
-		    i = *(short*)stream;
-		    stream += sizeof(short);
+		    i = *stream++;
 		    ptr += strlen(ptr);
 		    sprintf(ptr, " (%d)", i);
 		    goto offset;
@@ -867,12 +876,11 @@ load_let:
 		    strcpy(ptr, "STRUCT");
 		    offsets[j++] = &strf;
 		    offsets[j++] = &strd;
-/* update <offsets> - print [short] - update <offsets> - print [short] */
+/* update <offsets> - print [byte] - update <offsets> - print [byte] */
 offset_offset:
 		    ptr += strlen(ptr);
-		    i = *(short*)stream;
+		    i = *stream++;
 		    *(offsets[j - 2]) = i;
-		    stream += sizeof(short);
 		    sprintf(ptr, " [%d]", i);
 		    goto offset;
 		case XBC_LOAD_PUSH:
@@ -886,10 +894,9 @@ constant:
 		case XBC_LOADCON_SET:
 		    strcpy(ptr, "LOADCON&SET");
 		    offsets[j++] = &con0;
-/* update <offsets> - print [short] - print (short) */
+/* update <offsets> - print [byte] - print (byte) */
 offset_reference:
-		    i = *(short*)stream;
-		    stream += sizeof(short);
+		    i = *stream++;
 		    *(offsets[j - 1]) = i;
 		    ptr += strlen(ptr);
 		    sprintf(ptr, " [%d]", i);
@@ -927,11 +934,10 @@ loadsym_let:
 		    goto symbol;
 		case XBC_LOAD_SET:
 		    strcpy(ptr, "LOAD&SET");
-/* print (short) - print (short) */
+/* print (byte) - print (byte) */
 reference_reference:
 		    ptr += strlen(ptr);
-		    i = *(short*)stream;
-		    stream += sizeof(short);
+		    i = *stream++;
 		    sprintf(ptr, " (%d)", i);
 		    goto reference;
 		case XBC_LOAD_CAR_SET:
@@ -993,8 +999,8 @@ constant_constant:
 		    strcpy(ptr, "JUMP");
 integer:
 		    ptr += strlen(ptr);
-		    sprintf(ptr, " %d", *(int*)stream);
-		    stream += sizeof(int);
+		    sprintf(ptr, " %d", *(signed short*)stream);
+		    stream += sizeof(short);
 		    break;
 		case XBC_JUMPT:
 		    strcpy(ptr, "JUMPT");
@@ -1095,8 +1101,9 @@ predicate:
 LispObj *
 LispCompileForm(LispMac *mac, LispObj *form)
 {
+    int failed, *pfailed;
     LispCom com;
-    LispObj *code;
+    LispObj *code, **pform;
 
     if (!CONS_P(form))
 	/* Incorrect call or NIL */
@@ -1108,12 +1115,18 @@ LispCompileForm(LispMac *mac, LispObj *form)
     com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
     com.block->type = LispBlockNone;
 
-    for (code = form; CONS_P(form); form = CDR(form)) {
-	com.form = form;
-	ComEval(&com, CAR(form));
+    pfailed = &failed;
+    pform = &form;
+    failed = 1;
+    if (setjmp(com.jmp) == 0) {
+	for (code = form; CONS_P(form); form = CDR(form)) {
+	    com.form = form;
+	    ComEval(&com, CAR(form));
+	}
+	failed = 0;
     }
 
-    return (MakeBytecodeObject(mac, &com, NIL));
+    return (failed ? NIL : MakeBytecodeObject(mac, &com, NIL));
 }
 
 LispObj *
@@ -1549,14 +1562,6 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 	switch (tree->type) {
 	    case CodeTreeBytecode:
 		switch (tree->code) {
-#ifdef LONG64
-		    case XBC_NOOP6:
-		    case XBC_NOOP5:
-		    case XBC_NOOP4:
-		    case XBC_NOOP3:
-#endif
-		    case XBC_NOOP2:
-		    case XBC_NOOP1:
 		    case XBC_NOOP:
 			INTERNAL_ERROR(__LINE__);
 			break;
@@ -1598,14 +1603,10 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 			++offset;
 			break;
 
-		    /* byte + char */
+		    /* byte + byte */
 		    case XBC_PUSH_NIL_N:
 		    case XBC_PRED:
 		    case XBC_LETREC:
-			offset += 2;
-			break;
-
-		    /* byte + short */
 		    case XBC_LOAD_PUSH:
 		    case XBC_CAR_SET:
 		    case XBC_CDR_SET:
@@ -1618,69 +1619,49 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 		    case XBC_LOAD_CDR:
 		    case XBC_LOAD_CAR_STORE:
 		    case XBC_LOAD_CDR_STORE:
-			offset += sizeof(short) + 1;
-			break;
-
-		    /* byte + short + short */
-		    case XBC_LOAD_SET:
-		    case XBC_LOAD_CAR_SET:
-		    case XBC_LOAD_CDR_SET:
-			offset += (sizeof(short) << 1) + 1;
-			break;
-
-		    /* byte + int */
-		    case XBC_JUMP:
-		    case XBC_JUMPT:
-		    case XBC_JUMPNIL:
-			/* XXX this is likely a jump to random address here */
-			INTERNAL_ERROR(__LINE__);
-			offset += sizeof(int) + 1;
-			break;
-
-		    /* byte + pointer offset */
-		    case XBC_STRUCTP:
 		    case XBC_LET:
 		    case XBC_LETX:
 		    case XBC_LET_NIL:
 		    case XBC_LETX_NIL:
+		    case XBC_STRUCTP:
 		    case XBC_SETSYM:
 		    case XBC_LOADCON_PUSH:
 		    case XBC_LOADSYM_PUSH:
 		    case XBC_LOADCON:
 		    case XBC_LOADSYM:
-			offset += sizeof(short) + 1;
+			offset += 2;
 			break;
 
-		    /* byte + pointer offset + short */
-		    case XBC_LOADCON_SET:
-			offset += (sizeof(short) << 1) + 1;
-			break;
-
-		    /* byte + byte + pointer offset */
+		    /* byte + byte + byte */
 		    case XBC_CALL:
-			offset += sizeof(short) + 2;
-			break;
-
-		    /* byte + byte + pointer offset + short */
-		    case XBC_CALL_SET:
-			offset += (sizeof(short) << 1) + 2;
-			break;
-
-		    /* byte + short + pointer offset */
-		    case XBC_STRUCT:
+		    case XBC_LOAD_SET:
+		    case XBC_LOAD_CAR_SET:
+		    case XBC_LOAD_CDR_SET:
+		    case XBC_LOADCON_SET:
 		    case XBC_LOAD_LET:
 		    case XBC_LOAD_LETX:
-			offset += (sizeof(short) << 1) + 1;
-			break;
-
-		    /* byte + pointer offset + pointer offset */
+		    case XBC_STRUCT:
 		    case XBC_LOADCON_LET:
 		    case XBC_LOADCON_LETX:
 		    case XBC_LOADSYM_LET:
 		    case XBC_LOADSYM_LETX:
 		    case XBC_CCONS:
 		    case XBC_FUNCALL:
-			offset += (sizeof(short) << 1) + 1;
+			offset += 3;
+			break;
+
+		    /* byte + short */
+		    case XBC_JUMP:
+		    case XBC_JUMPT:
+		    case XBC_JUMPNIL:
+			/* XXX this is likely a jump to random address here */
+			INTERNAL_ERROR(__LINE__);
+			offset += sizeof(short) + 1;
+			break;
+
+		    /* byte + byte + byte + byte */
+		    case XBC_CALL_SET:
+			offset += 4;
 			break;
 		}
 		break;
@@ -1693,12 +1674,12 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 		/* If not the point where the conditional block finishes */
 		if (tree->code != XBC_NOOP)
 		    /* Reserve space for the jump opcode */
-		    offset += sizeof(int) + 1;
+		    offset += sizeof(short) + 1;
 		break;
 	    case CodeTreeGo:
 	    case CodeTreeReturn:
 		/* Reserve space for the jump opcode */
-		offset += sizeof(int) + 1;
+		offset += sizeof(short) + 1;
 		break;
 	    case CodeTreeBlock:
 		offset = LinkBuildOffsets(com, tree->data.block->tree, offset);
@@ -2065,17 +2046,22 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 
 	    case CodeTreeReturn:
 		/* One bytecode is guaranteed to exist in the code tree */
-		for (;;) {
-		    for (ptr = tree->data.block->parent; ptr; ptr = ptr->next)
-			if (ptr->type == CodeTreeBytecode)
+		if (tree->data.block->parent == NULL)
+		    /* Returning from the function or toplevel form */
+		    tree->data.tree = tree->data.block->tail;
+		else {
+		    for (;;) {
+			for (ptr = tree->data.block->parent; ptr; ptr = ptr->next)
+			    if (ptr->type == CodeTreeBytecode)
+				break;
+			if (ptr) {
+			    tree->data.tree = ptr;
 			    break;
-		    if (ptr) {
-			tree->data.tree = ptr;
-			break;
+			}
+			else
+			    /* Move one BLOCK up */
+			    tree->data.block = tree->data.block->prev;
 		    }
-		    else
-			/* Move one BLOCK up */
-			tree->data.block = tree->data.block->prev;
 		}
 		break;
 	}
@@ -2127,145 +2113,14 @@ LinkFixupOffsets(LispCom *com, CodeTree *tree, long adjust)
 	switch (tree->type) {
 	    case CodeTreeBytecode:
 		switch (tree->code) {
-		    /* byte */
-#ifdef LONG64
-		    case XBC_NOOP6:
-		    case XBC_NOOP5:
-		    case XBC_NOOP4:
-		    case XBC_NOOP3:
-#endif
-		    case XBC_NOOP2:
-		    case XBC_NOOP1:
-		    case XBC_NOOP:
-		    case XBC_BCONS:
-		    case XBC_BCONS1:
-		    case XBC_BCONS2:
-		    case XBC_BCONS3:
-		    case XBC_BCONS4:
-		    case XBC_BCONS5:
-		    case XBC_BCONS6:
-		    case XBC_BCONS7:
-		    case XBC_INV:
-		    case XBC_NIL:
-		    case XBC_T:
-		    case XBC_PUSH_NIL:
-		    case XBC_PUSH_T:
-		    case XBC_PUSH:
-		    case XBC_CAR_PUSH:
-		    case XBC_CDR_PUSH:
-		    case XBC_LSTAR:
-		    case XBC_LCONS:
-		    case XBC_LFINI:
-		    case XBC_RETURN:
-		    case XBC_CSTAR:
-		    case XBC_CFINI:
-		    case XBC_CAR:
-		    case XBC_CDR:
-		    case XBC_RPLACA:
-		    case XBC_RPLACD:
-		    case XBC_EQ:
-		    case XBC_EQL:
-		    case XBC_EQUAL:
-		    case XBC_EQUALP:
-		    case XBC_LENGTH:
-		    case XBC_LAST:
-		    case XBC_NTHCDR:
-			tree->offset += adjust;
-			break;
-
-		    /* byte + char */
-		    case XBC_LETREC:
-		    case XBC_PRED:
-		    case XBC_PUSH_NIL_N:
-			tree->offset += adjust;
-			break;
-
 		    /* byte + short */
-		    case XBC_CAR_SET:
-		    case XBC_CDR_SET:
-		    case XBC_SET:
-		    case XBC_SET_NIL:
-		    case XBC_LETBIND:
-		    case XBC_UNLET:
-		    case XBC_LOAD_PUSH:
-		    case XBC_LOAD:
-		    case XBC_LOAD_CAR:
-		    case XBC_LOAD_CDR:
-		    case XBC_LOAD_CAR_STORE:
-		    case XBC_LOAD_CDR_STORE:
-			adjust = LinkPad(tree->offset, adjust, 1,
-					 sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + short + short */
-		    case XBC_LOAD_SET:
-		    case XBC_LOAD_CAR_SET:
-		    case XBC_LOAD_CDR_SET:
-			adjust = LinkPad(tree->offset, adjust,
-					 sizeof(short), sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + int */
 		    case XBC_JUMP:
 		    case XBC_JUMPT:
 		    case XBC_JUMPNIL:
 			adjust = LinkPad(tree->offset, adjust, 1,
-					 sizeof(int));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + byte + pointer offset */
-		    case XBC_CALL:
-			adjust = LinkPad(tree->offset, adjust, 2,
 					 sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + byte + pointer offset + short */
-		    case XBC_CALL_SET:
-			adjust = LinkPad(tree->offset, adjust,
-					 sizeof(short), sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + short + pointer offset */
-		    case XBC_STRUCT:
-		    case XBC_LOAD_LET:
-		    case XBC_LOAD_LETX:
-			adjust = LinkPad(tree->offset, adjust,
-					 sizeof(short), sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + pointer offset */
-		    case XBC_STRUCTP:
-		    case XBC_LET:
-		    case XBC_LETX:
-		    case XBC_LET_NIL:
-		    case XBC_LETX_NIL:
-		    case XBC_SETSYM:
-		    case XBC_LOADCON_PUSH:
-		    case XBC_LOADSYM_PUSH:
-		    case XBC_LOADCON:
-		    case XBC_LOADSYM:
-			adjust = LinkPad(tree->offset, adjust, 1,
-					 sizeof(short));
-			tree->offset += adjust;
-			break;
-
-		    /* byte + pointer offset + short */
-		    case XBC_LOADCON_SET:
-		    /* byte + pointer offset + pointer offset */
-		    case XBC_CCONS:
-		    case XBC_LOADCON_LET:
-		    case XBC_LOADCON_LETX:
-		    case XBC_LOADSYM_LET:
-		    case XBC_LOADSYM_LETX:
-		    case XBC_FUNCALL:
-			adjust = LinkPad(tree->offset, adjust,
-					 sizeof(short), sizeof(short));
+			/*FALLTROUGH*/
+		    default:
 			tree->offset += adjust;
 			break;
 		}
@@ -2279,12 +2134,12 @@ LinkFixupOffsets(LispCom *com, CodeTree *tree, long adjust)
 	    case CodeTreeJumpIf:
 		/* If an opcode will be generated. */
 		if (tree->code != XBC_NOOP)
-		    adjust = LinkPad(tree->offset, adjust, 1, sizeof(int));
+		    adjust = LinkPad(tree->offset, adjust, 1, sizeof(short));
 		tree->offset += adjust;
 		break;
 	    case CodeTreeGo:
 	    case CodeTreeReturn:
-		adjust = LinkPad(tree->offset, adjust, 1, sizeof(int));
+		adjust = LinkPad(tree->offset, adjust, 1, sizeof(short));
 		tree->offset += adjust;
 		break;
 	    case CodeTreeBlock:
@@ -2356,7 +2211,7 @@ LinkSkipPadding(LispCom *com, CodeTree *tree)
 }
 
 static void
-LinkCalculateJump(CodeTree *tree, LispByteOpcode code)
+LinkCalculateJump(LispCom *com, CodeTree *tree, LispByteOpcode code)
 {
     long jumpto, offset, distance;
 
@@ -2367,6 +2222,9 @@ LinkCalculateJump(CodeTree *tree, LispByteOpcode code)
     /* Effective distance */
     distance = jumpto - offset;
     tree->code = code;
+    if (distance < -32768 || distance > 32767) {
+	COMPILE_FAILURE("jump too long");
+    }
     tree->data.signed_int = distance;
 }
 
@@ -2381,31 +2239,31 @@ LinkFixupJumps(LispCom *com, CodeTree *tree)
 	    case CodeTreeCond:
 		if (tree->code == XBC_JUMPNIL)
 		    /* Go to next test if NIL */
-		    LinkCalculateJump(tree, XBC_JUMPNIL);
+		    LinkCalculateJump(com, tree, XBC_JUMPNIL);
 		else if (tree->code == XBC_JUMPT)
 		    /* After executing T code */
-		    LinkCalculateJump(tree, XBC_JUMP);
+		    LinkCalculateJump(com, tree, XBC_JUMP);
 		break;
 	    case CodeTreeJumpIf:
 		if (tree->code != XBC_NOOP)
-		    LinkCalculateJump(tree, tree->code);
+		    LinkCalculateJump(com, tree, tree->code);
 		break;
 	    case CodeTreeGo:
 		/* Inconditional jump */
-		LinkCalculateJump(tree, XBC_JUMP);
+		LinkCalculateJump(com, tree, XBC_JUMP);
 		break;
 	    case CodeTreeReturn:
 		/* Inconditional jump */
 		if (tree->data.tree != tree)
 		    /* If need to skip something */
-		    LinkCalculateJump(tree, XBC_JUMP);
+		    LinkCalculateJump(com, tree, XBC_JUMP);
 		break;
 	    case CodeTreeBlock:
 		LinkFixupJumps(com, tree->data.block->tree);
 		break;
 	    case CodeTreeJump:
 		if (tree->code != XBC_NOOP)
-		    LinkCalculateJump(tree, tree->code);
+		    LinkCalculateJump(com, tree, tree->code);
 	}
     }
 }
@@ -2413,22 +2271,28 @@ LinkFixupJumps(LispCom *com, CodeTree *tree)
 static void
 LinkBuildTableSymbol(LispCom *com, LispAtom *symbol)
 {
-    BuildTablePointer(com->mac, symbol, (void***)&com->table.symbols,
-		      &com->table.num_symbols);
+    if (BuildTablePointer(com->mac, symbol, (void***)&com->table.symbols,
+			  &com->table.num_symbols) > 0xff) {
+	COMPILE_FAILURE("more than 256 symbols");
+    }
 }
 
 static void
 LinkBuildTableConstant(LispCom *com, LispObj *constant)
 {
-    BuildTablePointer(com->mac, constant, (void***)&com->table.constants,
-		      &com->table.num_constants);
+    if (BuildTablePointer(com->mac, constant, (void***)&com->table.constants,
+			  &com->table.num_constants) > 0xff) {
+	COMPILE_FAILURE("more than 256 constants");
+    }
 }
 
 static void
 LinkBuildTableBuiltin(LispCom *com, LispBuiltin *builtin)
 {
-    BuildTablePointer(com->mac, builtin, (void***)&com->table.builtins,
-		      &com->table.num_builtins);
+    if (BuildTablePointer(com->mac, builtin, (void***)&com->table.builtins,
+			  &com->table.num_builtins) > 0xff) {
+	COMPILE_FAILURE("more than 256 functions");
+    }
 }
 
 static void
@@ -2501,29 +2365,17 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 		  unsigned char *bytecode, long offset)
 {
     short i;
-    LispByteOpcode code;
 
     for (; tree; tree = tree->next) {
-
 	/* Fill padding */
-	code = (LispByteOpcode)(tree->offset - offset);
-
 	while (offset < tree->offset)
-	    bytecode[offset++] = --code;
+	    bytecode[offset++] = XBC_NOOP;
 
 	switch (tree->type) {
 	    case CodeTreeBytecode:
 		bytecode[offset++] = tree->code;
 		switch (tree->code) {
 		    /* Noop should not enter the CodeTree */
-#ifdef LONG64
-		    case XBC_NOOP6:
-		    case XBC_NOOP5:
-		    case XBC_NOOP4:
-		    case XBC_NOOP3:
-#endif
-		    case XBC_NOOP2:
-		    case XBC_NOOP1:
 		    case XBC_NOOP:
 			INTERNAL_ERROR(__LINE__);
 			break;
@@ -2564,16 +2416,14 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 		    case XBC_NTHCDR:
 			break;
 
-		    /* byte + char */
+		    /* byte + byte */
 		    case XBC_LETREC:
 		    case XBC_PRED:
 		    case XBC_PUSH_NIL_N:
-			*(signed char*)(bytecode + offset) =
-			    tree->data.signed_char;
-			offset++;
+			bytecode[offset++] = tree->data.signed_char;
 			break;
 
-		    /* byte + short */
+		    /* byte + byte */
 		    case XBC_CAR_SET:
 		    case XBC_CDR_SET:
 		    case XBC_SET:
@@ -2586,32 +2436,26 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 		    case XBC_LOAD_CDR:
 		    case XBC_LOAD_CAR_STORE:
 		    case XBC_LOAD_CDR_STORE:
-			*(short*)(bytecode + offset) =
-			    tree->data.signed_short;
-			offset += sizeof(short);
+			bytecode[offset++] = tree->data.signed_short;
 			break;
 
-		    /* byte + short + short */
+		    /* byte + byte + byte */
 		    case XBC_LOAD_SET:
 		    case XBC_LOAD_CAR_SET:
 		    case XBC_LOAD_CDR_SET:
-			*(short*)(bytecode + offset) =
-			    tree->data.load_set.load;
-			offset += sizeof(short);
-			*(short*)(bytecode + offset) =
-			    tree->data.load_set.set;
-			offset += sizeof(short);
+			bytecode[offset++] = tree->data.load_set.load;
+			bytecode[offset++] = tree->data.load_set.set;
 			break;
 
-		    /* byte + int */
+		    /* byte + short */
 		    case XBC_JUMP:
-		    case XBC_JUMPT:	case XBC_JUMPNIL:
-			*(int*)(bytecode + offset) =
-			    tree->data.signed_int;
-			offset += sizeof(int);
+		    case XBC_JUMPT:
+		    case XBC_JUMPNIL:
+			*(short*)(bytecode + offset) = tree->data.signed_int;
+			offset += sizeof(short);
 			break;
 
-		    /* byte + atom */
+		    /* byte + byte */
 		    case XBC_LET:
 		    case XBC_LETX:
 		    case XBC_LET_NIL:
@@ -2622,125 +2466,103 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 			i = FindIndex(tree->data.atom,
 				      (void**)com->table.symbols,
 				      com->table.num_symbols);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + object */
+		    /* byte + byte */
 		    case XBC_STRUCTP:
 		    case XBC_LOADCON:
 		    case XBC_LOADCON_PUSH:
 			i = FindIndex(tree->data.object,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + object + short */
+		    /* byte + byte + byte */
 		    case XBC_LOADCON_SET:
 			i = FindIndex(tree->data.load_con_set.object,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
-			*(short*)(bytecode + offset) =
-			    tree->data.load_con_set.offset;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
+			bytecode[offset++] = tree->data.load_con_set.offset;
 			break;
 
-		    /* byte + byte + builtin */
+		    /* byte + byte + byte */
 		    case XBC_CALL:
-			bytecode[offset++] =
-			    tree->data.builtin.num_arguments;
+			bytecode[offset++] = tree->data.builtin.num_arguments;
 			i = FindIndex(tree->data.builtin.builtin,
 				      (void**)com->table.builtins,
 				      com->table.num_builtins);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + byte + builtin + short */
+		    /* byte + byte + byte + byte */
 		    case XBC_CALL_SET:
-			bytecode[offset++] =
-			    tree->data.builtin.num_arguments;
+			bytecode[offset++] = tree->data.builtin.num_arguments;
 			i = FindIndex(tree->data.builtin.builtin,
 				      (void**)com->table.builtins,
 				      com->table.num_builtins);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
-			*(short*)(bytecode + offset) = tree->data.builtin.offset;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
+			bytecode[offset++] = tree->data.builtin.offset;
 			break;
 
-		    /* byte + short + atom */
+		    /* byte + byte + byte */
 		    case XBC_LOAD_LET:
 		    case XBC_LOAD_LETX:
-			*(short*)(bytecode + offset) =
-			    tree->data.let.offset;
-			offset += sizeof(short);
+			bytecode[offset++] = tree->data.let.offset;
 			i = FindIndex(tree->data.let.name,
 				      (void**)com->table.symbols,
 				      com->table.num_symbols);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + short + object */
+		    /* byte + byte + byte */
 		    case XBC_STRUCT:
-			*(short*)(bytecode + offset) =
-			    tree->data.struc.offset;
-			offset += sizeof(short);
+			bytecode[offset++] = tree->data.struc.offset;
 			i = FindIndex(tree->data.struc.definition,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + atom + atom */
+		    /* byte + byte + byte */
 		    case XBC_LOADSYM_LET:
 		    case XBC_LOADSYM_LETX:
 			i = FindIndex(tree->data.let_sym.symbol,
 				      (void**)com->table.symbols,
 				      com->table.num_symbols);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			i = FindIndex(tree->data.let_sym.name,
 				      (void**)com->table.symbols,
 				      com->table.num_symbols);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + object + atom */
+		    /* byte + byte + byte */
 		    case XBC_LOADCON_LET:
 		    case XBC_LOADCON_LETX:
 			i = FindIndex(tree->data.let_con.object,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			i = FindIndex(tree->data.let_con.name,
 				      (void**)com->table.symbols,
 				      com->table.num_symbols);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 
-		    /* byte + object + object */
+		    /* byte + byte + byte */
 		    case XBC_CCONS:
 		    case XBC_FUNCALL:
 			i = FindIndex(tree->data.cons.car,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			i = FindIndex(tree->data.cons.cdr,
 				      (void**)com->table.constants,
 				      com->table.num_constants);
-			*(short*)(bytecode + offset) = i;
-			offset += sizeof(short);
+			bytecode[offset++] = i;
 			break;
 		}
 		break;
@@ -2872,6 +2694,114 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     /* To control gc protected slots */
     int phead, pbase;
 
+    /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     *  If ALLOW_GOTO_ADDRESS is defined, it will generate a lot of
+     * warnings when compiling with -pedantic -ansi
+     *  Define ANSI_SOURCE or patch this file to disable the warnings.
+     *
+     *  Please don't do it in the official XFree86 version of this file.
+     *
+     *  If ALLOW_GOTO_ADDRESS is not defined it will be in average
+     * 5 to 20% slower (depending on the lisp compiled function, some
+     * stay more time in the bytecode, some functions not...). Timings
+     * tested with GCC 2.95. Maybe newer versions can understand the
+     * "code semantics", and automatically generate the equivalent
+     * code, in wich ALLOW_GOTO_ADDRESS can be undefined.
+     * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     */
+
+#if defined(__GNUC__) && !defined(ANSI_SOURCE)
+#define ALLOW_GOTO_ADDRESS
+#endif
+
+#ifdef ALLOW_GOTO_ADDRESS
+#define JUMP_ADDRESS(label)	&&label
+    static const void *opcode_labels[] = {
+	JUMP_ADDRESS(XBC_NOOP),
+	JUMP_ADDRESS(XBC_INV),
+	JUMP_ADDRESS(XBC_NIL),
+	JUMP_ADDRESS(XBC_T),
+	JUMP_ADDRESS(XBC_PRED),
+	JUMP_ADDRESS(XBC_CAR),
+	JUMP_ADDRESS(XBC_CDR),
+	JUMP_ADDRESS(XBC_CAR_SET),
+	JUMP_ADDRESS(XBC_CDR_SET),
+	JUMP_ADDRESS(XBC_RPLACA),
+	JUMP_ADDRESS(XBC_RPLACD),
+	JUMP_ADDRESS(XBC_EQ),
+	JUMP_ADDRESS(XBC_EQL),
+	JUMP_ADDRESS(XBC_EQUAL),
+	JUMP_ADDRESS(XBC_EQUALP),
+	JUMP_ADDRESS(XBC_LENGTH),
+	JUMP_ADDRESS(XBC_LAST),
+	JUMP_ADDRESS(XBC_NTHCDR),
+	JUMP_ADDRESS(XBC_CAR_PUSH),
+	JUMP_ADDRESS(XBC_CDR_PUSH),
+	JUMP_ADDRESS(XBC_PUSH),
+	JUMP_ADDRESS(XBC_PUSH_NIL),
+	JUMP_ADDRESS(XBC_PUSH_T),
+	JUMP_ADDRESS(XBC_PUSH_NIL_N),
+	JUMP_ADDRESS(XBC_LET),
+	JUMP_ADDRESS(XBC_LETX),
+	JUMP_ADDRESS(XBC_LET_NIL),
+	JUMP_ADDRESS(XBC_LETX_NIL),
+	JUMP_ADDRESS(XBC_LETBIND),
+	JUMP_ADDRESS(XBC_UNLET),
+	JUMP_ADDRESS(XBC_LOAD),
+	JUMP_ADDRESS(XBC_LOAD_LET),
+	JUMP_ADDRESS(XBC_LOAD_LETX),
+	JUMP_ADDRESS(XBC_LOAD_PUSH),
+	JUMP_ADDRESS(XBC_LOADCON),
+	JUMP_ADDRESS(XBC_LOADCON_LET),
+	JUMP_ADDRESS(XBC_LOADCON_LETX),
+	JUMP_ADDRESS(XBC_LOADCON_PUSH),
+	JUMP_ADDRESS(XBC_LOAD_CAR),
+	JUMP_ADDRESS(XBC_LOAD_CDR),
+	JUMP_ADDRESS(XBC_LOAD_CAR_STORE),
+	JUMP_ADDRESS(XBC_LOAD_CDR_STORE),
+	JUMP_ADDRESS(XBC_LOADCON_SET),
+	JUMP_ADDRESS(XBC_LOADSYM),
+	JUMP_ADDRESS(XBC_LOADSYM_LET),
+	JUMP_ADDRESS(XBC_LOADSYM_LETX),
+	JUMP_ADDRESS(XBC_LOADSYM_PUSH),
+	JUMP_ADDRESS(XBC_LOAD_SET),
+	JUMP_ADDRESS(XBC_LOAD_CAR_SET),
+	JUMP_ADDRESS(XBC_LOAD_CDR_SET),
+	JUMP_ADDRESS(XBC_SET),
+	JUMP_ADDRESS(XBC_SETSYM),
+	JUMP_ADDRESS(XBC_SET_NIL),
+	JUMP_ADDRESS(XBC_CALL),
+	JUMP_ADDRESS(XBC_CALL_SET),
+	JUMP_ADDRESS(XBC_FUNCALL),
+	JUMP_ADDRESS(XBC_LETREC),
+	JUMP_ADDRESS(XBC_BCONS),
+	JUMP_ADDRESS(XBC_BCONS1),
+	JUMP_ADDRESS(XBC_BCONS2),
+	JUMP_ADDRESS(XBC_BCONS3),
+	JUMP_ADDRESS(XBC_BCONS4),
+	JUMP_ADDRESS(XBC_BCONS5),
+	JUMP_ADDRESS(XBC_BCONS6),
+	JUMP_ADDRESS(XBC_BCONS7),
+	JUMP_ADDRESS(XBC_CCONS),
+	JUMP_ADDRESS(XBC_CSTAR),
+	JUMP_ADDRESS(XBC_CFINI),
+	JUMP_ADDRESS(XBC_LSTAR),
+	JUMP_ADDRESS(XBC_LCONS),
+	JUMP_ADDRESS(XBC_LFINI),
+	JUMP_ADDRESS(XBC_JUMP),
+	JUMP_ADDRESS(XBC_JUMPT),
+	JUMP_ADDRESS(XBC_JUMPNIL),
+	JUMP_ADDRESS(XBC_STRUCT),
+	JUMP_ADDRESS(XBC_STRUCTP),
+	JUMP_ADDRESS(XBC_RETURN)
+    };
+    static const void *predicate_opcode_labels[] = {
+	JUMP_ADDRESS(XBP_CONSP),
+	JUMP_ADDRESS(XBP_LISTP),
+	JUMP_ADDRESS(XBP_NUMBERP)
+    };
+#endif
+
     reg0 = NIL;
 
     bytecode = stream;
@@ -2921,629 +2851,651 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
     phead = pbase;
 
     for (;;) {
+#ifdef ALLOW_GOTO_ADDRESS
+#define OPCODE_LABEL(label)	label
+#define NEXT_OPCODE()		goto *opcode_labels[*stream++]
+#define GOTO_PREDICATE()	goto *predicate_opcode_labels[*stream++]
+#else
+#define OPCODE_LABEL(label)	case label
+#define NEXT_OPCODE()		goto next_opcode
+#define GOTO_PREDICATE()	goto predicate_label
+
 next_opcode:
 	switch (*stream++) {
-#ifdef LONG64
-	    case XBC_NOOP6: ++stream; case XBC_NOOP5: ++stream;
-	    case XBC_NOOP4: ++stream; case XBC_NOOP3: ++stream;
-#endif
-	    case XBC_NOOP2: ++stream; case XBC_NOOP1: ++stream;
-	    case XBC_NOOP:
-		goto next_opcode;
-	    case XBC_PRED:
-		goto predicate_label;
-	    case XBC_INV:
-		reg0 = reg0 == NIL ? T : NIL;
-		goto next_opcode;
-	    case XBC_NIL:
-		reg0 = NIL;
-		goto next_opcode;
-	    case XBC_T:
-		reg0 = T;
-		goto next_opcode;
-	    case XBC_CAR:
+#endif	/* ALLOW_GOTO_ADDRESS */
+
+OPCODE_LABEL(XBC_NOOP):
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_PRED):
+	GOTO_PREDICATE();
+
+OPCODE_LABEL(XBC_INV):
+	reg0 = reg0 == NIL ? T : NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_NIL):
+	reg0 = NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_T):
+	reg0 = T;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_CAR):
 car:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
-		    reg0 = CAR(reg0);
-		}
-		goto next_opcode;
-	    case XBC_CDR:
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+	    reg0 = CAR(reg0);
+	}
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_CDR):
 cdr:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
-		    reg0 = CDR(reg0);
-		}
-		goto next_opcode;
-	    case XBC_RPLACA:
-		reg1 = mac->stack.values[--mac->stack.length];
-		if (!CONS_P(reg1))
-		    LispDestroy(mac, "RPLACA: %s is not a cons", STROBJ(reg1));
-		RPLACA(reg1, reg0);
-		reg0 = reg1;
-		goto next_opcode;
-	    case XBC_RPLACD:
-		reg1 = mac->stack.values[--mac->stack.length];
-		if (!CONS_P(reg1))
-		    LispDestroy(mac, "RPLACD: %s is not a cons", STROBJ(reg1));
-		RPLACD(reg1, reg0);
-		reg0 = reg1;
-		goto next_opcode;
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+	    reg0 = CDR(reg0);
+	}
+	NEXT_OPCODE();
 
-	    case XBC_BCONS:
-		CAR(cons) = reg0;
-		mac->stack.values[mac->stack.length++] = cons;
-		goto next_opcode;
-	    case XBC_BCONS1:
-		offset = mac->stack.length - 1;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[offset];
-		mac->stack.values[offset] = cons1;
-		goto next_opcode;
-	    case XBC_BCONS2:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons2;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
-	    case XBC_BCONS3:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		CAR(cons3) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons3;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
-	    case XBC_BCONS4:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		CAR(cons3) = mac->stack.values[--offset];
-		CAR(cons4) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons4;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
-	    case XBC_BCONS5:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		CAR(cons3) = mac->stack.values[--offset];
-		CAR(cons4) = mac->stack.values[--offset];
-		CAR(cons5) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons5;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
-	    case XBC_BCONS6:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		CAR(cons3) = mac->stack.values[--offset];
-		CAR(cons4) = mac->stack.values[--offset];
-		CAR(cons5) = mac->stack.values[--offset];
-		CAR(cons6) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons6;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
-	    case XBC_BCONS7:
-		offset = mac->stack.length;
-		CAR(cons) = reg0;
-		CAR(cons1) = mac->stack.values[--offset];
-		CAR(cons2) = mac->stack.values[--offset];
-		CAR(cons3) = mac->stack.values[--offset];
-		CAR(cons4) = mac->stack.values[--offset];
-		CAR(cons5) = mac->stack.values[--offset];
-		CAR(cons6) = mac->stack.values[--offset];
-		CAR(cons7) = mac->stack.values[--offset];
-		mac->stack.values[offset] = cons7;
-		mac->stack.length = offset + 1;
-		goto next_opcode;
+OPCODE_LABEL(XBC_RPLACA):
+	reg1 = mac->stack.values[--mac->stack.length];
+	if (!CONS_P(reg1))
+	    LispDestroy(mac, "RPLACA: %s is not a cons", STROBJ(reg1));
+	RPLACA(reg1, reg0);
+	reg0 = reg1;
+	NEXT_OPCODE();
 
-	    case XBC_EQ:
-		reg0 = reg0 == mac->stack.values[--mac->stack.length] ? T : NIL;
-		goto next_opcode;
-	    case XBC_EQL:
-		reg1 = mac->stack.values[--mac->stack.length];
-		reg0 = XEQL(reg1, reg0);
-		goto next_opcode;
-	    case XBC_EQUAL:
-		reg1 = mac->stack.values[--mac->stack.length];
-		reg0 = XEQUAL(reg1, reg0);
-		goto next_opcode;
-	    case XBC_EQUALP:
-		reg1 = mac->stack.values[--mac->stack.length];
-		reg0 = XEQUALP(reg1, reg0);
-		goto next_opcode;
-	    case XBC_LENGTH:
-		reg0 = SMALLINT(LispLength(mac, reg0));
-		goto next_opcode;
-	    case XBC_LAST: {
-		long length, count;
+OPCODE_LABEL(XBC_RPLACD):
+	reg1 = mac->stack.values[--mac->stack.length];
+	if (!CONS_P(reg1))
+	    LispDestroy(mac, "RPLACD: %s is not a cons", STROBJ(reg1));
+	RPLACD(reg1, reg0);
+	reg0 = reg1;
+	NEXT_OPCODE();
 
-		reg1 = mac->stack.values[--mac->stack.length];
-		if (CONS_P(reg1)) {
-		    if (reg0 != NIL) {
-			if (!INT_P(reg0) || reg0->data.integer < 0)
-			    LispDestroy(mac, "LAST: %s is not a positive fixnum",
-					STROBJ(reg0));
-			count = reg0->data.integer;
-		    }
-		    else
-			count = 1;
-		    reg0 = reg1;
-		    for (reg0 = reg1, length = 0;
-			 CONS_P(reg0);
-			 reg0 = CDR(reg0), length++)
-			;
-		    for (length -= count, reg0 = reg1; length > 0; length--)
-			reg0 = CDR(reg0);
-		}
-		else
-		    reg0 = reg1;
-	    }	goto next_opcode;
-	    case XBC_NTHCDR:
-		reg1 = mac->stack.values[--mac->stack.length];
-		if (!INT_P(reg1) || reg1->data.integer < 0)
-		    LispDestroy(mac, "NTHCDR: %s is not a positive fixnum",
-				STROBJ(reg1));
-		if (reg0 != NIL) {
-		    long count = reg1->data.integer;
+OPCODE_LABEL(XBC_BCONS):
+	CAR(cons) = reg0;
+	mac->stack.values[mac->stack.length++] = cons;
+	NEXT_OPCODE();
 
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "NTHCDR: %s is not a list",
-				    STROBJ(reg0));
-		    for (; count > 0; count--) {
-			if (!CONS_P(reg0))
-			    break;
-			reg0 = CDR(reg0);
-		    }
-		}
-		goto next_opcode;
+OPCODE_LABEL(XBC_BCONS1):
+	offset = mac->stack.length - 1;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[offset];
+	mac->stack.values[offset] = cons1;
+	NEXT_OPCODE();
 
-	    /* Push to builtin stack */
-	    case XBC_CAR_PUSH:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
-		    reg0 = CAR(reg0);
-		}
-		goto push_builtin;
-	    case XBC_CDR_PUSH:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
-		    reg0 = CDR(reg0);
-		}
-		/*FALLTROUGH*/
-	    case XBC_PUSH:
+OPCODE_LABEL(XBC_BCONS2):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons2;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_BCONS3):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	CAR(cons3) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons3;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_BCONS4):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	CAR(cons3) = mac->stack.values[--offset];
+	CAR(cons4) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons4;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_BCONS5):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	CAR(cons3) = mac->stack.values[--offset];
+	CAR(cons4) = mac->stack.values[--offset];
+	CAR(cons5) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons5;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_BCONS6):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	CAR(cons3) = mac->stack.values[--offset];
+	CAR(cons4) = mac->stack.values[--offset];
+	CAR(cons5) = mac->stack.values[--offset];
+	CAR(cons6) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons6;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_BCONS7):
+	offset = mac->stack.length;
+	CAR(cons) = reg0;
+	CAR(cons1) = mac->stack.values[--offset];
+	CAR(cons2) = mac->stack.values[--offset];
+	CAR(cons3) = mac->stack.values[--offset];
+	CAR(cons4) = mac->stack.values[--offset];
+	CAR(cons5) = mac->stack.values[--offset];
+	CAR(cons6) = mac->stack.values[--offset];
+	CAR(cons7) = mac->stack.values[--offset];
+	mac->stack.values[offset] = cons7;
+	mac->stack.length = offset + 1;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_EQ):
+	reg0 = reg0 == mac->stack.values[--mac->stack.length] ? T : NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_EQL):
+	reg1 = mac->stack.values[--mac->stack.length];
+	reg0 = XEQL(reg1, reg0);
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_EQUAL):
+	reg1 = mac->stack.values[--mac->stack.length];
+	reg0 = XEQUAL(reg1, reg0);
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_EQUALP):
+	reg1 = mac->stack.values[--mac->stack.length];
+	reg0 = XEQUALP(reg1, reg0);
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LENGTH):
+	reg0 = SMALLINT(LispLength(mac, reg0));
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LAST):
+    {
+	long length, count;
+
+	reg1 = mac->stack.values[--mac->stack.length];
+	if (CONS_P(reg1)) {
+	    if (reg0 != NIL) {
+		if (!INT_P(reg0) || reg0->data.integer < 0)
+		    LispDestroy(mac, "LAST: %s is not a positive fixnum",
+				STROBJ(reg0));
+		count = reg0->data.integer;
+	    }
+	    else
+		count = 1;
+	    reg0 = reg1;
+	    for (reg0 = reg1, length = 0;
+		 CONS_P(reg0);
+		 reg0 = CDR(reg0), length++)
+		;
+	    for (length -= count, reg0 = reg1; length > 0; length--)
+		reg0 = CDR(reg0);
+	}
+	else
+	    reg0 = reg1;
+    }	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_NTHCDR):
+	reg1 = mac->stack.values[--mac->stack.length];
+	if (!INT_P(reg1) || reg1->data.integer < 0)
+	    LispDestroy(mac, "NTHCDR: %s is not a positive fixnum",
+			STROBJ(reg1));
+	if (reg0 != NIL) {
+	    long count = reg1->data.integer;
+
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "NTHCDR: %s is not a list",
+			    STROBJ(reg0));
+	    for (; count > 0; count--) {
+		if (!CONS_P(reg0))
+		    break;
+		reg0 = CDR(reg0);
+	    }
+	}
+	NEXT_OPCODE();
+
+	/* Push to builtin stack */
+OPCODE_LABEL(XBC_CAR_PUSH):
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+	    reg0 = CAR(reg0);
+	}
+	goto push_builtin;
+
+OPCODE_LABEL(XBC_CDR_PUSH):
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+	    reg0 = CDR(reg0);
+	}
+	/*FALLTROUGH*/
+
+OPCODE_LABEL(XBC_PUSH):
 push_builtin:
-		mac->stack.values[mac->stack.length++] = reg0;
-		goto next_opcode;
-	    case XBC_PUSH_NIL:
-		mac->stack.values[mac->stack.length++] = NIL;
-		goto next_opcode;
-	    case XBC_PUSH_T:
-		mac->stack.values[mac->stack.length++] = T;
-		goto next_opcode;
-	    case XBC_PUSH_NIL_N:
-		for (offset = *stream++; offset >= 0; offset--)
-		    mac->stack.values[mac->stack.length++] = NIL;
-		goto next_opcode;
+	mac->stack.values[mac->stack.length++] = reg0;
+	NEXT_OPCODE();
 
-	    case XBC_LET:
+OPCODE_LABEL(XBC_PUSH_NIL):
+	mac->stack.values[mac->stack.length++] = NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_PUSH_T):
+	mac->stack.values[mac->stack.length++] = T;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_PUSH_NIL_N):
+	for (offset = *stream++; offset >= 0; offset--)
+	    mac->stack.values[mac->stack.length++] = NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LET):
 let_argument:
-		/*  The global object value is not changed, so it does not
-		 * matter if it is a constant symbol. An error would be
-		 * generated if it was declared as constant at the time of
-		 * bytecode generation. Check can be done looking at the
-		 * atom->constant field. */
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		atom->offset = mac->env.length;
-		mac->env.names[mac->env.length] = atom->string;
-		mac->env.values[mac->env.length++] = reg0;
-		goto next_opcode;
-	    case XBC_LETX:
+	/*  The global object value is not changed, so it does not
+	 * matter if it is a constant symbol. An error would be
+	 * generated if it was declared as constant at the time of
+	 * bytecode generation. Check can be done looking at the
+	 * atom->constant field. */
+	atom = symbols[*stream++];
+	atom->offset = mac->env.length;
+	mac->env.names[mac->env.length] = atom->string;
+	mac->env.values[mac->env.length++] = reg0;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LETX):
 letx_argument:
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		atom->offset = mac->env.length;
-		mac->env.names[mac->env.length] = atom->string;
-		mac->env.values[mac->env.length++] = reg0;
-		mac->env.head++;
-		goto next_opcode;
-	    case XBC_LET_NIL:
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		atom->offset = mac->env.length;
-		mac->env.names[mac->env.length] = atom->string;
-		mac->env.values[mac->env.length++] = NIL;
-		goto next_opcode;
-	    case XBC_LETX_NIL:
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		atom->offset = mac->env.length;
-		mac->env.names[mac->env.length] = atom->string;
-		mac->env.values[mac->env.length++] = NIL;
-		mac->env.head++;
-		goto next_opcode;
+	atom = symbols[*stream++];
+	atom->offset = mac->env.length;
+	mac->env.names[mac->env.length] = atom->string;
+	mac->env.values[mac->env.length++] = reg0;
+	mac->env.head++;
+	NEXT_OPCODE();
 
-	    /* Bind locally added variables to a block */
-	    case XBC_LETBIND:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.head += offset;
-		goto next_opcode;
+OPCODE_LABEL(XBC_LET_NIL):
+	atom = symbols[*stream++];
+	atom->offset = mac->env.length;
+	mac->env.names[mac->env.length] = atom->string;
+	mac->env.values[mac->env.length++] = NIL;
+	NEXT_OPCODE();
 
-	    /* Unbind locally added variables to a block */
-	    case XBC_UNLET:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.head -= offset;
-		mac->env.length -= offset;
-		goto next_opcode;
+OPCODE_LABEL(XBC_LETX_NIL):
+	atom = symbols[*stream++];
+	atom->offset = mac->env.length;
+	mac->env.names[mac->env.length] = atom->string;
+	mac->env.values[mac->env.length++] = NIL;
+	mac->env.head++;
+	NEXT_OPCODE();
 
-	    /* Load value from stack */
-	    case XBC_LOAD:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto next_opcode;
-	    case XBC_LOAD_CAR:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto car;
-	    case XBC_LOAD_CDR:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto cdr;
-	    case XBC_LOAD_CAR_STORE:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
-		    reg0 = CAR(reg0);
-		    mac->env.values[mac->env.lex + offset] = reg0;
-		}
-		goto next_opcode;
-	    case XBC_LOAD_CDR_STORE:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
-		    reg0 = CDR(reg0);
-		    mac->env.values[mac->env.lex + offset] = reg0;
-		}
-		goto next_opcode;
-	    case XBC_LOAD_LET:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto let_argument;
-	    case XBC_LOAD_LETX:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto letx_argument;
-	    case XBC_LOAD_PUSH:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		mac->stack.values[mac->stack.length++] = reg0;
-		goto next_opcode;
+	/* Bind locally added variables to a block */
+OPCODE_LABEL(XBC_LETBIND):
+	offset = *stream++;
+	mac->env.head += offset;
+	NEXT_OPCODE();
 
-	    /* Load pointer to constant */
-	    case XBC_LOADCON:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		goto next_opcode;
-	    case XBC_LOADCON_LET:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		goto let_argument;
-	    case XBC_LOADCON_LETX:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		goto letx_argument;
-	    case XBC_LOADCON_PUSH:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		mac->stack.values[mac->stack.length++] = reg0;
-		goto next_opcode;
-	    case XBC_LOADCON_SET:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.values[mac->env.lex + offset] = reg0;
-		goto next_opcode;
+	/* Unbind locally added variables to a block */
+OPCODE_LABEL(XBC_UNLET):
+	offset = *stream++;
+	mac->env.head -= offset;
+	mac->env.length -= offset;
+	NEXT_OPCODE();
 
-	    /* Change value of local variable */
-	    case XBC_CAR_SET:
+	/* Load value from stack */
+OPCODE_LABEL(XBC_LOAD):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOAD_CAR):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto car;
+
+OPCODE_LABEL(XBC_LOAD_CDR):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto cdr;
+
+OPCODE_LABEL(XBC_LOAD_CAR_STORE):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+	    reg0 = CAR(reg0);
+	    mac->env.values[mac->env.lex + offset] = reg0;
+	}
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOAD_CDR_STORE):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+	    reg0 = CDR(reg0);
+	    mac->env.values[mac->env.lex + offset] = reg0;
+	}
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOAD_LET):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto let_argument;
+
+OPCODE_LABEL(XBC_LOAD_LETX):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto letx_argument;
+
+OPCODE_LABEL(XBC_LOAD_PUSH):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	mac->stack.values[mac->stack.length++] = reg0;
+	NEXT_OPCODE();
+
+	/* Load pointer to constant */
+OPCODE_LABEL(XBC_LOADCON):
+	reg0 = constants[*stream++];
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOADCON_LET):
+	reg0 = constants[*stream++];
+	goto let_argument;
+
+OPCODE_LABEL(XBC_LOADCON_LETX):
+	reg0 = constants[*stream++];
+	goto letx_argument;
+
+OPCODE_LABEL(XBC_LOADCON_PUSH):
+	reg0 = constants[*stream++];
+	mac->stack.values[mac->stack.length++] = reg0;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOADCON_SET):
+	reg0 = constants[*stream++];
+	offset = *stream++;
+	mac->env.values[mac->env.lex + offset] = reg0;
+	NEXT_OPCODE();
+
+	/* Change value of local variable */
+OPCODE_LABEL(XBC_CAR_SET):
 car_set:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
-		    reg0 = CAR(reg0);
-		}
-		goto set_local_variable;
-	    case XBC_CDR_SET:
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CAR: %s is not a list", STROBJ(reg0));
+	    reg0 = CAR(reg0);
+	}
+	goto set_local_variable;
+
+OPCODE_LABEL(XBC_CDR_SET):
 cdr_set:
-		if (reg0 != NIL) {
-		    if (!CONS_P(reg0))
-			LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
-		    reg0 = CDR(reg0);
-		}
-		goto set_local_variable;
-	    case XBC_LOAD_CAR_SET:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto car_set;
-	    case XBC_LOAD_CDR_SET:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		goto cdr_set;
-	    case XBC_LOAD_SET:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg0 = mac->env.values[mac->env.lex + offset];
-		/*FALLTROUGH*/
-	    case XBC_SET:
+	if (reg0 != NIL) {
+	    if (!CONS_P(reg0))
+		LispDestroy(mac, "CDR: %s is not a list", STROBJ(reg0));
+	    reg0 = CDR(reg0);
+	}
+	goto set_local_variable;
+
+OPCODE_LABEL(XBC_LOAD_CAR_SET):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto car_set;
+
+OPCODE_LABEL(XBC_LOAD_CDR_SET):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	goto cdr_set;
+
+OPCODE_LABEL(XBC_LOAD_SET):
+	offset = *stream++;
+	reg0 = mac->env.values[mac->env.lex + offset];
+	/*FALLTROUGH*/
+
+OPCODE_LABEL(XBC_SET):
 set_local_variable:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.values[mac->env.lex + offset] = reg0;
-		goto next_opcode;
+	offset = *stream++;
+	mac->env.values[mac->env.lex + offset] = reg0;
+	NEXT_OPCODE();
 
-	    case XBC_SET_NIL:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.values[mac->env.lex + offset] = NIL;
-		goto next_opcode;
+OPCODE_LABEL(XBC_SET_NIL):
+	offset = *stream++;
+	mac->env.values[mac->env.lex + offset] = NIL;
+	NEXT_OPCODE();
 
-	    /* Change value of a global/special variable */
-	    case XBC_SETSYM:
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		if (atom->dyn) {
-		    /*  atom->dyn and atom->constant are exclusive, no
-		     * need to check if variable declared as constant. */
-		    if (atom->offset < mac->env.head &&
-			mac->env.names[atom->offset] == atom->string)
-			mac->env.values[atom->offset] = reg0;
-		    else {
-			if (atom->watch)
-			    LispSetAtomObjectProperty(mac, atom, reg0);
-			else
-			    SETVALUE(atom, reg0);
-		    }
-		}
-		else if (atom->a_object) {
-		    if (atom->constant)
-			LispDestroy(mac, "EVAL: %s is a constant",
-				    STROBJ(atom->object));
-		    else if (atom->watch)
+	/* Change value of a global/special variable */
+OPCODE_LABEL(XBC_SETSYM):
+	    atom = symbols[*stream++];
+	    if (atom->dyn) {
+		/*  atom->dyn and atom->constant are exclusive, no
+		 * need to check if variable declared as constant. */
+		if (atom->offset < mac->env.head &&
+		    mac->env.names[atom->offset] == atom->string)
+		    mac->env.values[atom->offset] = reg0;
+		else {
+		    if (atom->watch)
 			LispSetAtomObjectProperty(mac, atom, reg0);
 		    else
 			SETVALUE(atom, reg0);
 		}
-		else {
-		    /* Create new global variable */
-		    LispPackage *pack;
-
-		    LispWarning(mac, "the variable %s was not declared",
-				atom->string);
+	    }
+	    else if (atom->a_object) {
+		if (atom->constant)
+		    LispDestroy(mac, "EVAL: %s is a constant",
+				STROBJ(atom->object));
+		else if (atom->watch)
 		    LispSetAtomObjectProperty(mac, atom, reg0);
-		    pack = atom->package->data.package.package;
-		    if (pack->glb.length >= pack->glb.space)
-			LispMoreGlobals(mac, pack);
-		    pack->glb.pairs[pack->glb.length++] = atom->object;
-		}
-		goto next_opcode;
+		else
+		    SETVALUE(atom, reg0);
+	    }
+	    else {
+		/* Create new global variable */
+		LispPackage *pack;
 
-#define LOADSYM		-1
-#define LOADSYM_LET	0
-#define LOADSYM_LETX	1
-#define LOADSYM_PUSH	2
-	    /* Resolve symbol value at runtime */
-	    case XBC_LOADSYM:
-		offset = LOADSYM;
-load_symbol:
-		atom = symbols[*(short*)stream];
-		stream += sizeof(short);
-		if (atom->dyn) {
-		    if (atom->offset < mac->env.head &&
-			mac->env.names[atom->offset] == atom->string)
-			reg0 = mac->env.values[atom->offset];
-		    else {
-			reg0 = atom->property->value;
-			if (reg0 == UNBOUND)
-			    LispDestroy(mac, "EVAL: the symbol %s is unbound",
-					STROBJ(atom->object));
-		    }
-		}
-		else {
-		    if (atom->a_object)
-			reg0 = atom->property->value;
-		    else
-			LispDestroy(mac, "EVAL: the symbol %s is unbound",
-				    STROBJ(atom->object));
-		}
-		if (offset == LOADSYM_LET)
-		    goto let_argument;
-		if (offset == LOADSYM_LETX)
-		    goto letx_argument;
-		else if (offset == LOADSYM_PUSH)
-		    mac->stack.values[mac->stack.length++] = reg0;
-		goto next_opcode;
-	    case XBC_LOADSYM_LET:
-		offset = LOADSYM_LET;
-		goto load_symbol;
-	    case XBC_LOADSYM_LETX:
-		offset = LOADSYM_LETX;
-		goto load_symbol;
-	    case XBC_LOADSYM_PUSH:
-		offset = LOADSYM_PUSH;
-		goto load_symbol;
-#undef LOADSYM
-#undef LOADSYM_LET
-#undef LOADSYM_LETX
-#undef LOADSYM_PUSH
+		LispWarning(mac, "the variable %s was not declared",
+			    atom->string);
+		LispSetAtomObjectProperty(mac, atom, reg0);
+		pack = atom->package->data.package.package;
+		if (pack->glb.length >= pack->glb.space)
+		    LispMoreGlobals(mac, pack);
+		pack->glb.pairs[pack->glb.length++] = atom->object;
+	    }
+	    NEXT_OPCODE();
+
+/* Resolve symbol value at runtime */
+#define LOAD_SYMBOL_VALUE()					    \
+    atom = symbols[*stream++];					    \
+    if (atom->dyn) {						    \
+	if (atom->offset < mac->env.head &&			    \
+	    mac->env.names[atom->offset] == atom->string)	    \
+	    reg0 = mac->env.values[atom->offset];		    \
+	else {							    \
+	    reg0 = atom->property->value;			    \
+	    if (reg0 == UNBOUND)				    \
+		LispDestroy(mac, "EVAL: the symbol %s is unbound",  \
+			    STROBJ(atom->object));		    \
+	}							    \
+    }								    \
+    else {							    \
+	if (atom->a_object)					    \
+	    reg0 = atom->property->value;			    \
+	else							    \
+	    LispDestroy(mac, "EVAL: the symbol %s is unbound",	    \
+			STROBJ(atom->object));			    \
+    }
+
+OPCODE_LABEL(XBC_LOADSYM):
+	LOAD_SYMBOL_VALUE();
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LOADSYM_LET):
+	LOAD_SYMBOL_VALUE();
+	goto let_argument;
+
+OPCODE_LABEL(XBC_LOADSYM_LETX):
+	LOAD_SYMBOL_VALUE();
+	goto letx_argument;
+
+OPCODE_LABEL(XBC_LOADSYM_PUSH):
+	LOAD_SYMBOL_VALUE();
+	mac->stack.values[mac->stack.length++] = reg0;
+	NEXT_OPCODE();
 
 	    /* Builtin function */
-	    case XBC_CALL:
-		offset = *stream++;
-		mac->stack.base = mac->stack.length - offset;
-		builtin = builtins[*(short*)stream];
-		stream += sizeof(short);
-		reg0 = builtin->function(mac, builtin);
-		mac->stack.length -= offset;
-		goto next_opcode;
-	    case XBC_CALL_SET:
-		offset = *stream++;
-		mac->stack.base = mac->stack.length - offset;
-		builtin = builtins[*(short*)stream];
-		stream += sizeof(short);
-		reg0 = builtin->function(mac, builtin);
-		mac->stack.length -= offset;
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		mac->env.values[mac->env.lex + offset] = reg0;
-		goto next_opcode;
+OPCODE_LABEL(XBC_CALL):
+	offset = *stream++;
+	mac->stack.base = mac->stack.length - offset;
+	builtin = builtins[*stream++];
+	reg0 = builtin->function(mac, builtin);
+	mac->stack.length -= offset;
+	NEXT_OPCODE();
 
-	    /* Unimplemented function/macro call */
-	    case XBC_FUNCALL:
-		lambda = constants[*(short*)stream];
-		stream += sizeof(short);
-		arguments = constants[*(short*)stream];
-		stream += sizeof(short);
-		reg0 = LispFuncall(mac, lambda, arguments, 1);
-		goto next_opcode;
+OPCODE_LABEL(XBC_CALL_SET):
+	offset = *stream++;
+	mac->stack.base = mac->stack.length - offset;
+	builtin = builtins[*stream++];
+	reg0 = builtin->function(mac, builtin);
+	mac->stack.length -= offset;
+	offset = *stream++;
+	mac->env.values[mac->env.lex + offset] = reg0;
+	NEXT_OPCODE();
 
-	    case XBC_JUMP:
-		stream += *(signed int*)stream;
-		goto next_opcode;
-	    case XBC_JUMPT:
-		if (reg0 != NIL)
-		    stream += *(signed int*)stream;
-		else
-		    /* skip jump relative offset */
-		    stream += sizeof(signed int);
-		goto next_opcode;
-	    case XBC_JUMPNIL:
-		if (reg0 == NIL)
-		    stream += *(signed int*)stream;
-		else
-		    /* skip jump relative offset */
-		    stream += sizeof(signed int);
-		goto next_opcode;
+	/* Unimplemented function/macro call */
+OPCODE_LABEL(XBC_FUNCALL):
+	lambda = constants[*stream++];
+	arguments = constants[*stream++];
+	reg0 = LispFuncall(mac, lambda, arguments, 1);
+	NEXT_OPCODE();
 
-	    /* Build CONS of two constant arguments */
-	    case XBC_CCONS:
-		reg0 = constants[*(short*)stream];
-		stream += sizeof(short);
-		reg1 = constants[*(short*)stream];
-		stream += sizeof(short);
-		reg0 = CONS(reg0, reg1);
-		goto next_opcode;
+OPCODE_LABEL(XBC_JUMP):
+	stream += *(signed short*)stream;
+	NEXT_OPCODE();
 
-	    /* Start CONS */
-	    case XBC_CSTAR:
-		/* This the CAR of the CONS */
-		mac->protect.objects[phead++] = reg0;
-		goto next_opcode;
-	    /* Finish CONS */
-	    case XBC_CFINI:
-		reg0 = CONS(mac->protect.objects[--phead], reg0);
-		goto next_opcode;
+OPCODE_LABEL(XBC_JUMPT):
+	if (reg0 != NIL)
+	    stream += *(signed short*)stream;
+	else
+	    /* skip jump relative offset */
+	    stream += sizeof(signed short);
+	NEXT_OPCODE();
 
-	    /* Start building list */
-	    case XBC_LSTAR:
-		reg1 = CONS(reg0, NIL);
-		/* Start of list stored here */
-		mac->protect.objects[phead++] = reg1;
-		/* Tail of list stored here */
-		mac->protect.objects[phead++] = reg1;
-		goto next_opcode;
-	    /* Add to list */
-	    case XBC_LCONS:
-		reg1 = mac->protect.objects[phead - 2];
-		RPLACD(reg1, CONS(reg0, NIL));
-		 mac->protect.objects[phead - 2] = CDR(reg1);
-		goto next_opcode;
-	    /* Finish list */
-	    case XBC_LFINI:
-		phead -= 2;
-		reg0 = mac->protect.objects[phead];
-		goto next_opcode;
+OPCODE_LABEL(XBC_JUMPNIL):
+	if (reg0 == NIL)
+	    stream += *(signed short*)stream;
+	else
+	    /* skip jump relative offset */
+	    stream += sizeof(signed short);
+	NEXT_OPCODE();
 
-	    case XBC_STRUCT:
-		offset = *(short*)stream;
-		stream += sizeof(short);
-		reg1 = constants[*(short*)stream];
-		stream += sizeof(short);
-		if (reg0->type != LispStruct_t ||
-		    reg0->data.struc.def != reg1) {
-		    char *name = STRPTR(CAR(reg1->data.struc.def));
+	/* Build CONS of two constant arguments */
+OPCODE_LABEL(XBC_CCONS):
+	reg0 = constants[*stream++];
+	reg1 = constants[*stream++];
+	reg0 = CONS(reg0, reg1);
+	NEXT_OPCODE();
 
-		    for (; offset; offset--)
-			reg1 = CDR(reg1);
-		    LispDestroy(mac, "%s-%s: %s is not a %s",
-				name, STRPTR(CAR(reg1)),
-				STROBJ(reg0), name);
-		}
-		for (reg0 = reg0->data.struc.fields; offset; offset--)
-		    reg0 = CDR(reg0);
-		reg0 = CAR(reg0);
-		goto next_opcode;
-	    case XBC_STRUCTP:
-		reg1 = constants[*(short*)stream];
-		stream += sizeof(short);
-		reg0 = reg0->type == LispStruct_t &&
-		       reg0->data.struc.def == reg1 ? T : NIL;
-		goto next_opcode;
+	/* Start CONS */
+OPCODE_LABEL(XBC_CSTAR):
+	/* This the CAR of the CONS */
+	mac->protect.objects[phead++] = reg0;
+	NEXT_OPCODE();
 
-	    case XBC_LETREC:
-		/* XXX could/should optimize, shouldn't need to parse
-		 * the bytecode header again */
-		lex = mac->env.lex;
-		mac->env.lex = mac->env.length - (*stream++);
-		reg0 = ExecuteBytecode(mac, bytecode);
-		mac->env.lex = lex;
-		goto next_opcode;
+	/* Finish CONS */
+OPCODE_LABEL(XBC_CFINI):
+	reg0 = CONS(mac->protect.objects[--phead], reg0);
+	NEXT_OPCODE();
 
-	    case XBC_RETURN:
-		mac->protect.length = pbase;
-		return (reg0);
+	/* Start building list */
+OPCODE_LABEL(XBC_LSTAR):
+	reg1 = CONS(reg0, NIL);
+	/* Start of list stored here */
+	mac->protect.objects[phead++] = reg1;
+	/* Tail of list stored here */
+	mac->protect.objects[phead++] = reg1;
+	NEXT_OPCODE();
+
+	/* Add to list */
+OPCODE_LABEL(XBC_LCONS):
+	reg1 = mac->protect.objects[phead - 2];
+	RPLACD(reg1, CONS(reg0, NIL));
+	 mac->protect.objects[phead - 2] = CDR(reg1);
+	NEXT_OPCODE();
+
+	/* Finish list */
+OPCODE_LABEL(XBC_LFINI):
+	phead -= 2;
+	reg0 = mac->protect.objects[phead];
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_STRUCT):
+	offset = *stream++;
+	reg1 = constants[*stream++];
+	if (reg0->type != LispStruct_t ||
+	    reg0->data.struc.def != reg1) {
+	    char *name = STRPTR(CAR(reg1->data.struc.def));
+
+	    for (; offset; offset--)
+		reg1 = CDR(reg1);
+	    LispDestroy(mac, "%s-%s: %s is not a %s",
+			name, STRPTR(CAR(reg1)),
+			STROBJ(reg0), name);
 	}
-	continue;
+	for (reg0 = reg0->data.struc.fields; offset; offset--)
+	    reg0 = CDR(reg0);
+	reg0 = CAR(reg0);
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_STRUCTP):
+	reg1 = constants[*stream++];
+	reg0 = reg0->type == LispStruct_t &&
+	       reg0->data.struc.def == reg1 ? T : NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_LETREC):
+	/* XXX could/should optimize, shouldn't need to parse
+	 * the bytecode header again */
+	lex = mac->env.lex;
+	mac->env.lex = mac->env.length - (*stream++);
+	reg0 = ExecuteBytecode(mac, bytecode);
+	mac->env.lex = lex;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_RETURN):
+	mac->protect.length = pbase;
+	return (reg0);
+
+#ifndef ALLOW_GOTO_ADDRESS
+	}	/* end of switch */
+
 predicate_label:
 	switch (*stream++) {
-	    case XBP_CONSP:
-		reg0 = CONS_P(reg0) ? T : NIL;
-		goto next_opcode;
-	    case XBP_LISTP:
-		reg0 = CONS_P(reg0) || reg0 == NIL ? T : NIL;
-		goto next_opcode;
-	    case XBP_NUMBERP:
-		reg0 = NUMBER_P(reg0) ? T : NIL;
-		goto next_opcode;
-	}
+#endif
+
+OPCODE_LABEL(XBP_CONSP):
+	reg0 = CONS_P(reg0) ? T : NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBP_LISTP):
+	reg0 = CONS_P(reg0) || reg0 == NIL ? T : NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBP_NUMBERP):
+	reg0 = NUMBER_P(reg0) ? T : NIL;
+	NEXT_OPCODE();
+
+#ifndef ALLOW_GOTO_ADDRESS
+	}	/* end of switch */
+#endif
     }
 
     /*NOTREACHED*/

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/re/rec.c,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
 
 #include "rep.h"
 
@@ -205,9 +205,9 @@ irec_comp(const char *pattern, const char *endp, int flags, int *ecode)
 		break;
 	    case '|':
 		    /* If first character in the pattern */
-		if (inf.ptr - 2 == (unsigned char*)pattern ||
+		if (inf.ptr - 1 == (unsigned char*)pattern ||
 		    /* If last character in the pattern */
-		    inf.ptr == inf.end ||
+		    inf.ptr >= inf.end ||
 		    /* If empty pattern */
 		    inf.ptr[0] == '|' ||
 		    inf.ptr[0] == ')')

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.10 2002/09/08 02:29:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.11 2002/09/15 21:32:23 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -541,6 +541,8 @@ LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
     if (atom->package != PACKAGE) {
 	if (atom->package == mac->keyword)
 	    length += LispWriteChar(mac, stream, ':');
+	else if (atom->package == NULL)
+	    length += LispWriteStr(mac, stream, "#:", 2);
 	else {
 	    /* Check if the symbol is visible */
 	    int i, visible = 0;

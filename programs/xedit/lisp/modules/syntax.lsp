@@ -27,35 +27,64 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.5 2002/09/08 02:29:49 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.6 2002/09/15 21:32:33 paulo Exp $
 ;;
 
 (provide "syntax")
-
 (require "xedit")
-
 (in-package "XEDIT")
-(defvar *SYNTAX-SYMBOLS*
-    '(
+
+(defvar *syntax-symbols* '(
     syntax-highlight defsyntax defsynprop synprop-p syntax-p
     syntable syntoken synaugment
-
-    *PROP-DEFAULT* *PROP-KEYWORD* *PROP-NUMBER* *PROP-STRING*
-    *PROP-CONSTANT* *PROP-COMMENT* *PROP-PREPROCESSOR*
-    *PROP-PUNCTUATION* *PROP-ERROR* *PROP-ANNOTATION*
-    )
-)
-
-(export *SYNTAX-SYMBOLS*)
-
+    *prop-default* *prop-keyword* *prop-number* *prop-string*
+    *prop-constant* *prop-comment* *prop-preprocessor*
+    *prop-punctuation* *prop-error* *prop-annotation*
+))
+(export *syntax-symbols*)
 (in-package "USER")
-(dolist (symbol xedit::*SYNTAX-SYMBOLS*)
+(dolist (symbol xedit::*syntax-symbols*)
     (import symbol)
 )
-
 (in-package "XEDIT")
-(makunbound '*SYNTAX-SYMBOLS*)
+(makunbound '*syntax-symbols*)
 
+#|
+TODO:
+o Add a command to match without increment the offset in the input, this
+  may be useful for example in a case like:
+	some-table
+	    match "<"
+		switch -1
+	match "<"	<- the table already eated this, so it won't be matched.
+  This must be carefully checked at compile time, such instruction should
+  be in a token that returns or starts a new one, and even then, may need
+  rutime check to make sure it won't enter an infinite loop.
+o Allow combining properties, this is supported in Xaw, and could allow some
+  very intereting effects for complex documents.
+o Maybe have an separated function/loop for tables that don't have tokens
+  that start/switch to another table, and/or have the contained attribute set.
+  This could allow running considerably faster.
+o Do a better handling of interactive edition for tokens that start and end
+  with the same pattern, as an example strings, if the user types '"', it
+  will parse up to the end of the file, "inverting" all strings.
+o Allow generic code to be run once a match is found, such code could handle
+  some defined variables and take decisions based on the parser state. This
+  should be detected at compile time, to maybe run a different parser for
+  such syntax tables, due to the extra time building the environment to
+  call the code. This would be useful to "really" parse documents with
+  complex syntax, for example, a man page source file.
+o Add command to change current default property without initializing a new
+  state.
+o Fix problems matching EOL. Since EOL is an empty string match, if there
+  is a rule to match only EOL, but some other rule matches up to the end
+  of the input, the match to EOL will not be recognized. Currently the only
+  way to handle this is to have a nested table that always returns once a
+  match is found, so that it will restart the match loop code even if the
+  input is at EOL.
+  One possible solution would be to add the ending newline to the input,
+  and then instead of matching "$", should match "\\n".
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Some annotations to later write documentation for the module...
@@ -91,67 +120,64 @@ is used.
 ;; highlight definitions. Use of these default properties is encouraged,
 ;; so that "tokens" will be shown identically when editing program
 ;; sources in different programming languages.
-(defsynprop *PROP-DEFAULT*
+(defsynprop *prop-default*
     "default"
-    :FONT	"*courier-medium-r*12*"
-    :FOREGROUND	"black"
-)
+    :font	"*courier-medium-r*12*"
+    :foreground	"black")
 
-(defsynprop *PROP-KEYWORD*
+(defsynprop *prop-keyword*
     "keyword"
-    :FONT	"*courier-bold-r*12*"
-    :FOREGROUND	"gray12"
-)
+    :font	"*courier-bold-r*12*"
+    :foreground	"gray12")
 
-(defsynprop *PROP-NUMBER*
+(defsynprop *prop-number*
     "number"
-    :FONT	"*courier-bold-r*12*"
-    :FOREGROUND	"OrangeRed3"
-)
+    :font	"*courier-bold-r*12*"
+    :foreground	"OrangeRed3")
 
-(defsynprop *PROP-STRING*
+(defsynprop *prop-string*
     "string"
-    :FONT	"*lucidatypewriter-medium-r*12*"
-    :FOREGROUND	"RoyalBlue2"
-)
+    :font	"*lucidatypewriter-medium-r*12*"
+    :foreground	"RoyalBlue2")
 
-(defsynprop *PROP-CONSTANT*
+(defsynprop *prop-constant*
     "constant"
-    :FONT	"*lucidatypewriter-medium-r*12*"
-    :FOREGROUND	"VioletRed3"
-)
+    :font	"*lucidatypewriter-medium-r*12*"
+    :foreground	"VioletRed3")
 
-(defsynprop *PROP-COMMENT*
+(defsynprop *prop-comment*
     "comment"
-    :FONT	"*courier-medium-o*12*"
-    :FOREGROUND	"SlateBlue3"
-)
+    :font	"*courier-medium-o*12*"
+    :foreground	"SlateBlue3")
 
-(defsynprop *PROP-PREPROCESSOR*
+(defsynprop *prop-preprocessor*
     "preprocessor"
-    :FONT	"*courier-medium-r*12*"
-    :FOREGROUND	"green4"
-)
+    :font	"*courier-medium-r*12*"
+    :foreground	"green4")
 
-(defsynprop *PROP-PUNCTUATION*
+(defsynprop *prop-punctuation*
     "punctuation"
-    :FONT	"*courier-bold-r*12*"
-    :FOREGROUND	"gray12"
-)
+    :font	"*courier-bold-r*12*"
+    :foreground	"gray12")
 
-(defsynprop *PROP-ERROR*
+;; Control characters, not always errors...
+(defsynprop *prop-control*
+    "control"
+    :font	"*courier-bold-r*12*"
+    :foreground	"yellow2"
+    :background	"red3")
+
+(defsynprop *prop-error*
     "error"
-    :FONT	"*new century schoolbook-bold*24*"
-    :FOREGROUND	"yellow"
-    :BACKGROUND	"red"
-)
+    :font	"*new century schoolbook-bold*24*"
+    :foreground	"yellow"
+    :background	"red")
 
-(defsynprop *PROP-ANNOTATION*
+(defsynprop *prop-annotation*
     "annotation"
-    :FONT	"*courier-medium-r*12*"
-    :FOREGROUND	"black"
-    :BACKGROUND	"PaleGreen"
-)
+    :font	"*courier-medium-r*12*"
+    :foreground	"black"
+    :background	"PaleGreen")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,24 +185,26 @@ is used.
 ;;  Creates a "special" variable with the given name, associating to
 ;; it an already compiled syntax table.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro DEFSYNTAX (variable name label property &rest lists)
-    `(progn
-	(proclaim '(special ,variable))
-	(setq ,variable
-	    (compile-syntax-table
-		,name
-		(syntable ,label ,property ,@lists)
+(defmacro defsyntax (variable name label property &rest lists)
+    `(if (boundp ',variable)
+	,variable
+	(progn
+	    (proclaim '(special ,variable))
+	    (setq ,variable
+		(compile-syntax-table
+		    ,name
+		    (syntable ,label ,property ,@lists)
+		)
 	    )
 	)
     )
 )
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These definitions should be "private".
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defstruct SYNTOKEN
+(defstruct syntoken
     regex		;; A compiled regexp.
     property		;; NIL for default, or a synprop structure.
     contained		;; Only used when switch/begin is not NIL. Values:
@@ -225,38 +253,38 @@ is used.
 ;; is expected/used, so there is no reason to allocate more than one
 ;; cons cell per call.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNTOKEN (pattern
-		 &key icase nospec property contained switch begin (nosub T)
+(defun syntoken (pattern
+		 &key icase nospec property contained switch begin (nosub t)
 		 &aux
 		 (regex
-		    (re-comp pattern :ICASE icase :NOSPEC nospec :NOSUB nosub)
+		    (re-comp pattern :icase icase :nospec nospec :nosub nosub)
 		 )
 		 check)
 
     ;;  Don't allow a regex that matches the null string enter the
     ;; syntax table list.
-    (if (consp (setq check (re-exec regex "" :NOTEOL T :NOTBOL T)))
+    (if (consp (setq check (re-exec regex "" :noteol t :notbol t)))
 #+xedit	(error "SYNTOKEN: regex matches empty string ~S" regex)
 #-xedit	()
     )
 
     (make-syntoken
-	:REGEX		regex
-	:PROPERTY	property
-	:CONTAINED	contained
-	:SWITCH		switch
-	:BEGIN		begin
+	:regex		regex
+	:property	property
+	:contained	contained
+	:switch		switch
+	:begin		begin
     )
 )
 
 
 ;;  This structure is defined only to do some type checking, it just
 ;; holds a list of keywords.
-(defstruct SYNAUGMENT
+(defstruct synaugment
     labels		;; List of keywords labeling syntax tables.
 )
 
-(defstruct SYNTABLE
+(defstruct syntable
     label		;; A keyword naming this syntax table.
     property		;; NIL or a default synprop structure.
     tokens		;; A list of syntoken structures.
@@ -272,37 +300,13 @@ is used.
 )
 
 
-;;  The main structure, normally, only one should exist per syntax highlight
-;; module.
-(defstruct SYNTAX
-    name		;;  A unique string to identify the syntax mode.
-			;; Should be the name of the language/file type.
-
-    ;; Field(s) defined at "compile time"
-    labels		;;  Not exactly a list of labels, but all syntax
-			;; tables for the module.
-			;; XXX When hash tables be implemented in the
-			;;     interpreter, this should be a hash table
-			;;     to speed up a bit translating labels to
-			;;     syntax tables.
-    quark		;;  A XrmQuark associated with the XawTextPropertyList
-			;; used by this syntax mode.
-    token-count		;;  Number of distinct syntoken structures in
-			;; the syntax table.
-
-    ;; Field(s) used at "run time"
-    stack		;; Stack of syntax tables for nested rules.
-    table		;; The current syntax table main syntable structure.
-)
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Just call make-syntable, but sorts the elements by type, allowing
 ;; a cleaner code when defining the syntax highlight rules.
 ;; XXX Same comments as for syntoken about the use of a constructor for
 ;; structures. TODO: when/if clos is implemented in the interpreter.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNTABLE (label default-property &rest definitions)
+(defun syntable (label default-property &rest definitions)
 
     ;; Check for possible errors in the arguments.
     (unless (keywordp label)
@@ -341,11 +345,11 @@ is used.
 
     ;; Build the syntax table.
     (make-syntable
-	:LABEL		label
-	:PROPERTY	default-property
-	:TOKENS		(remove-if-not #'syntoken-p definitions)
-	:TABLES		(remove-if-not #'syntable-p definitions)
-	:AUGMENTS	(remove-if-not #'synaugment-p definitions)
+	:label		label
+	:property	default-property
+	:tokens		(remove-if-not #'syntoken-p definitions)
+	:tables		(remove-if-not #'syntable-p definitions)
+	:augments	(remove-if-not #'synaugment-p definitions)
     )
 )
 
@@ -354,13 +358,13 @@ is used.
 ;;  Just to do a "preliminary" error checking, every element must be a
 ;; a keyword, and also check for reserved names.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNAUGMENT (&rest keywords)
+(defun synaugment (&rest keywords)
     (dolist (keyword keywords)
 	(unless (keywordp keyword)
 	    (error "SYNAUGMENT: bad syntax table label ~A" keyword)
 	)
     )
-    (make-synaugment :LABELS keywords)
+    (make-synaugment :labels keywords)
 )
 
 
@@ -371,13 +375,12 @@ is used.
 ;;			(including child tables).
 ;;	cdr	=>	List of all child syntable structures.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun LIST-SYNTABLE-ELEMENTS (table &aux result sub-result)
+(defun list-syntable-elements (table &aux result sub-result)
     (setq
 	result
 	(cons
 	    (syntable-tokens table)
-	    (syntable-tables table)
-	)
+	    (syntable-tables table))
     )
 
     ;; For every child syntax table.
@@ -386,14 +389,8 @@ is used.
 	;; Recursively call list-syntable-elements.
 	(setq sub-result (list-syntable-elements child))
 
-	(rplaca
-	    result
-	    (append (car result) (car sub-result))
-	)
-	(rplacd
-	    result
-	    (append (cdr result) (cdr sub-result))
-	)
+	(rplaca result (append (car result) (car sub-result)))
+	(rplacd result (append (cdr result) (cdr sub-result)))
     )
 
     ;; Return the pair of nested tokens and tables.
@@ -405,7 +402,7 @@ is used.
 ;;  Append tokens of the augment list to the tokens of the specified
 ;; syntax table.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun COMPILE-SYNTAX-AUGMENT-LIST (table table-list
+(defun compile-syntax-augment-list (table table-list
 				    &aux labels augment tokens)
 
     ;; Create a list of all augment tables.
@@ -419,7 +416,7 @@ is used.
 	labels
 	(remove
 	    (syntable-label table)
-	    (remove-duplicates labels :FROM-END T)
+	    (remove-duplicates labels :from-end t)
 	)
     )
 
@@ -455,26 +452,35 @@ is used.
 ;;  Just add the augmented tokens to the token list, recursing on
 ;; every child syntax table.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun LINK-SYNTAX-AUGMENT-TABLE (table)
+(defun link-syntax-augment-table (table)
     (setf
 	(syntable-tokens table)
-	(append (syntable-tokens table) (syntable-augments table))
+	;;  When augmenting a table, duplicated tokens or different tokens
+	;; that use the same regex pattern should be common.
+	(remove-duplicates
+	    (nconc (syntable-tokens table) (syntable-augments table))
+	    :key	#'syntoken-regex
+	    :test	#'equal
+	    :from-end	t
+	)
+
+	;;  Don't need to keep this list anymore.
+	(syntable-augments table)
+	()
     )
 
     ;;  Check if one of the tokens match the empty string at the
     ;; start or end of a text line. XXX The fields bol and eol
     ;; are expected to be initialized to NIL.
     (dolist (token (syntable-tokens table))
-	(when
-	    (consp (re-exec (syntoken-regex token) "" :NOTEOL T))
-	    (setf (syntable-bol table) T)
+	(when (consp (re-exec (syntoken-regex token) "" :noteol t))
+	    (setf (syntable-bol table) t)
 	    (return)
 	)
     )
     (dolist (token (syntable-tokens table))
-	(when
-	    (consp (re-exec (syntoken-regex token) "" :NOTBOL T))
-	    (setf (syntable-eol table) T)
+	(when (consp (re-exec (syntoken-regex token) "" :notbol t))
+	    (setf (syntable-eol table) t)
 	    (return)
 	)
     )
@@ -489,7 +495,7 @@ is used.
 ;; "Compile" the main structure of the syntax highlight code.
 ;; Variables "switches" and "begins" are used only for error checking.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun COMPILE-SYNTAX-TABLE (name main-table &aux syntax elements
+(defun compile-syntax-table (name main-table &aux syntax elements
 			     switches begins tables properties)
     (unless (stringp name)
 	(error "COMPILE-SYNTAX-TABLE: ~A is not a string" name)
@@ -503,14 +509,14 @@ is used.
 	(remove-if
 	    #'null
 	    (car elements)
-	    :KEY #'syntoken-switch
+	    :key #'syntoken-switch
 	)
 
 	begins
 	(remove-if-not
 	    #'keywordp
 	    (car elements)
-	    :KEY #'syntoken-begin
+	    :key #'syntoken-begin
 	)
 
 	;;  The "main-table" isn't in the list, because
@@ -556,7 +562,7 @@ is used.
 	(delete-duplicates
 
 	    ;; Remove explicitly set to "default" properties.
-	    (remove NIL
+	    (remove nil
 
 		(append
 
@@ -569,25 +575,24 @@ is used.
 		    ;; List all properties in the syntable list.
 		    (mapcar
 			#'syntable-property
-			(cdr elements)
+			tables
 		    )
 		)
 	    )
-	    :TEST #'string=
-	    :KEY  #'synprop-name
+	    :test #'string=
+	    :key  #'synprop-name
 	)
     )
-
 
     ;;  Provide a default property if none specified.
     (unless
 	(member
 	    "default"
 	    properties
-	    :TEST #'string=
-	    :KEY #'synprop-name
+	    :test #'string=
+	    :key #'synprop-name
 	)
-	(setq properties (append (list *PROP-DEFAULT*) properties))
+	(setq properties (append (list *prop-default*) properties))
     )
 
 
@@ -616,7 +621,7 @@ is used.
 		    (member
 			(syntoken-switch item)
 			tables
-			:KEY #'syntable-label
+			:key #'syntable-label
 		    )
 		)
 	    )
@@ -629,26 +634,39 @@ is used.
 		(member
 		    (syntoken-begin item)
 		    tables
-		    :KEY #'syntable-label
+		    :key #'syntable-label
 		)
 	    )
 	)
     )
 
+    ;;  Don't need to add a entity for default properties
+    (dolist (item (car elements))
+	(and
+	    (syntoken-property item)
+	    (string= (synprop-name (syntoken-property item)) "default")
+	    (setf (syntoken-property item) ())
+	)
+    )
+    (dolist (item tables)
+	(and
+	    (syntable-property item)
+	    (string= (synprop-name (syntable-property item)) "default")
+	    (setf (syntable-property item) ())
+	)
+    )
+
     (setq syntax
 	(make-syntax
-	    :NAME	name
-	    :LABELS	tables
-	    :QUARK
+	    :name	name
+	    :labels	tables
+	    :quark
 		(compile-syntax-property-list
 		    name
 		    properties
 		)
-	    :TOKEN-COUNT
-		(length (delete-duplicates (car elements)))
-
-	    ;; Stack field initialization defaults to NIL...
-	    :TABLE	main-table
+	    :token-count
+		(length (car elements))
 	)
     )
 
@@ -659,84 +677,48 @@ is used.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Loop applying the specifed syntax table to the text.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNTAX-HIGHLIGHT (*SYNTAX*
+(defun syntax-highlight (*syntax*
 			 &optional
-			 (*FROM* (point-min))
-			 (*TO* (point-max))
+			 (*from* (point-min))
+			 (*to* (point-max))
 			 &aux
-#+debug			 (*LINE-NUMBER* 0)
+#+debug			 (*line-number* 0)
 			 stream
-			 start
 			)
 
-#|
-    ;;  Make sure arguments have a sane value,
-#-debug
-    (if (integerp *FROM*)
-	(setq *FROM* (max *FROM* (point-min)))
-    )
-#-debug
-    (if (integerp *TO*)
-	(setq *TO* (min *TO* (point-max)))
-    )
-|#
 #+debug
-    (setq *FROM* 0 *TO* 0)
+    (setq *from* 0 *to* 0)
+
+#-debug
+    (and (>= *from* *to*) (return-from syntax-highlight *from*))
 
     ;;  Remove any existing properties from the text.
-    (clear-entities *FROM* *TO*)
+    (clear-entities *from* (1+ *to*))
 
     ;;  Make sure the property list is in use.
-    (set-text-property-list (syntax-quark *SYNTAX*))
+    (property-list (syntax-quark *syntax*))
 
-
-    (setq
-	start
-#+debug	0
-#-debug	(- *FROM* (scan *FROM* :EOL :LEFT))
+    (setq stream
+#-debug	(make-string-input-stream (read-text *from* (- *to* *from*)))
+#+debug	*standard-input*
     )
-
-
-#-debug
-    (let
-	(
-	text
-	list
-	(offset *FROM*)
-	)
-
-	;;  XXX May enter an inifinite loop if *TO* is invalid.
-	(while (< offset *TO*)
-	    (setq
-		text	(read-text offset (- *TO* offset))
-		list	(nconc list (list text))
-		offset	(+ offset (length text))
-	    )
-	)
-
-	;;  XXX When syntax-highlithing the entire file, all the
-	;;	file will be in the string, and also, will be
-	;;	duplicated, one splited copy in "list", one from
-	;;	string-concat, and one stored in the resulting
-	;;	string stream.
-	(setq
-	    stream
-	    (make-string-input-stream (apply #'string-concat list))
-	)
-    )
-#+debug
-    (setq stream *STANDARD-INPUT*)
 
     (prog*
 	(
+	(point-max (point-max))
+
 	;;  The current stack of states.
-	(stack (syntax-stack *SYNTAX*))
+	stack
 
 	;;  The current syntable.
-	(syntax-table (syntax-table *SYNTAX*))
+	(syntax-table (car (syntax-labels *syntax*)))
 
 	;;  The current syntable's default property.
 	(default-property (syntable-property syntax-table))
+
+	;;  Add this property to newlines as a hint to the interactive
+	;; callback, so that it knows from where to restart parsing.
+	newline-property
 
 	;;  The tokens in the current syntax table that may match,
 	;; i.e. the items in this list are not in nomatch.
@@ -751,12 +733,6 @@ is used.
 	;;  This optimizes only the processing of one line of text
 	;; as nomatch must be rebuilt when reading a new line of text.
 	token-list-stack
-
-	;;  Input line does not end in a newline?
-	noteol
-
-	;;  Offset larger than 0 in the line?
-	notbol
 
 	;;  Matches for the current list of tokens.
 	matches
@@ -778,11 +754,15 @@ is used.
 	;;  Line of text.
 	cache
 
+	;;  Used just to avoid a function call at every re-exec call.
+	notbol
+
 	match
 
+	start
+	left
 	right
 	result
-	left
 	property
 
 	;;  Beginig a new syntax table?
@@ -805,40 +785,35 @@ is used.
 	)
 
 ;-----------------------------------------------------------------------
-:READ
+:read
 #+debug-verbose
-	(format T "** Entering :READ stack length is ~D~%"
-	    (length stack)
-	)
-#+debug	(format T "~%[~D]> " (incf *LINE-NUMBER*))
-
-	(multiple-value-bind
-	    (text eos)
-	    (read-line stream NIL NIL)
-
-	    (setq
-		line	text
-		noteol	eos
-	    )
-	)
+	(format t "** Entering :READ stack length is ~D~%" (length stack))
+#+debug	(format t "~%[~D]> " (incf *line-number*))
 
 	;;  If input has finished, return.
-	(unless line
-	    ;;  XXX FIXME: This will not free the string until the garbage
-	    ;;	    collector be called on stream.
-#-debug	    (close stream)
-
-	    ;;  Remember the state if did not pop all the stack.
-	    (setf
-		(syntax-table *SYNTAX*) syntax-table
-		(syntax-stack *SYNTAX*) stack
+	(unless (setq line (read-line stream nil nil))
+	    (when
+		(and
+		    ;; If a nested syntax table wasn't finished
+		    (consp stack)
+		    (<
+			(setq *to* (scan *from* :eol :right))
+			point-max
+		    )
+		)
+		(setq line (read-text *from* (- *to* *from*)))
+		(clear-entities *from* (1+ *to*))
+		(go :again)
 	    )
-	    (return)
+#-debug	    (close stream)
+	    (return *to*)
 	)
 
+;------------------------------------------------------------------------
+:again
 	(setq
+	    start		0
 	    length		(length line)
-	    notbol		(> start 0)
 	    token-list		(syntable-tokens syntax-table)
 	    current-token-list	token-list
 	    token-list-stack	()
@@ -853,21 +828,24 @@ is used.
 	    (and
 		(= length 0)
 		(not (syntable-eol syntax-table))
-		(not (syntable-bol syntax-table))
-	    )
+		(not (syntable-bol syntax-table)))
 #+debug-verbose
-	    (format T "Empty line and table has no match to bol or eol~%")
-	    (go :UPDATE)
+	    (format t "Empty line and table has no match to bol or eol~%")
+
+	    (and newline-property
+		(add-entity *from* 1 (synprop-quark newline-property)))
+	    (go :update)
 	)
 
-
-:LOOP
+;------------------------------------------------------------------------
+:loop
 #+debug-verbose
-	(format T "** Entering :LOOP at offset ~D in table ~A, cache has ~D items~%"
+	(format t "** Entering :LOOP at offset ~D in table ~A, cache has ~D items~%"
 	    start
 	    (syntable-label syntax-table)
-	    (length cache)
-	)
+	    (length cache))
+
+	(setq notbol (> start 0))
 
 	;;  For every token that may match.
 	(dolist
@@ -875,14 +853,14 @@ is used.
 		(setq
 		    token-list
 		    (if (eq token-list current-token-list)
-			(set-difference token-list nomatch :TEST #'eq)
-			(nset-difference token-list nomatch :TEST #'eq)
+			(set-difference token-list nomatch :test #'eq)
+			(nset-difference token-list nomatch :test #'eq)
 		    )
 		)
 	    )
 
 	    ;;	Try to fetch match from cache.
-	    (if (setq match (member token cache :TEST #'eq :KEY #'car))
+	    (if (setq match (member token cache :test #'eq :key #'car))
 		;;  Match is in the cache.
 
 		(progn
@@ -890,11 +868,10 @@ is used.
 		    ;; matches list, as a match from another syntax
 		    ;; table may be also in the cache, but before
 		    ;; the match for the current token.
-#+debug-verbose	    (format T "Cached: {~A:~S} ~A~%"
+#+debug-verbose	    (format t "cached: {~A:~S} ~A~%"
 			(cdar match)
 			(subseq line (cadar match) (cddar match))
-			(syntoken-regex token)
-		    )
+			(syntoken-regex token))
 
 		    ;;	Remove the match from the cache.
 		    (if (eq match cache)
@@ -907,21 +884,18 @@ is used.
 			(progn
 			    (setq cache (cdr cache))
 			    (rplacd match matches)
-			    (setq matches match)
-			)
+			    (setq matches match))
 
 			(progn
 			    (if (= (length match) 1)
 				(progn
-				    (rplacd (last cache 2) NIL)
+				    (rplacd (last cache 2) nil)
 				    (rplacd match matches)
-				    (setq matches match)
-				)
+				    (setq matches match))
 				(progn
 				    (setq matches (cons (car match) matches))
 				    (rplaca match (cadr match))
-				    (rplacd match (cddr match))
-				)
+				    (rplacd match (cddr match)))
 			    )
 			)
 		    )
@@ -933,7 +907,7 @@ is used.
 			    (= start (cadar match))
 			    (= length (cddar match))
 			)
-#+debug-verbose 	(format T "Rest of line match~%")
+#+debug-verbose 	(format t "Rest of line match~%")
 			(return)
 		    )
 		)
@@ -946,20 +920,15 @@ is used.
 			    (re-exec
 				(syntoken-regex token)
 				line
-				:START	    start
-				:NOTBOL     notbol
-				:NOTEOL     noteol
-			    )
-			)
-		    )
+				:start	start
+				:notbol	notbol)))
 
 		    ;;	Match found.
 		    (progn
-#+debug-verbose		(format T "Adding to cache: {~A:~S} ~A~%"
+#+debug-verbose		(format t "Adding to cache: {~A:~S} ~A~%"
 			    (car match)
 			    (subseq line (caar match) (cdar match))
-			    (syntoken-regex token)
-			)
+			    (syntoken-regex token))
 
 			;; Only the first pair is used.
 			(setq match (car match))
@@ -994,15 +963,15 @@ is used.
 				)
 				(rplaca (car matches) token)
 				(rplacd (car matches) match)
-#+debug-verbose 		(format T "Replaced most recent match~%")
+#+debug-verbose 		(format t "Replaced most recent match~%")
 			    )
-			    (T
-#+debug-verbose 		(format T "Ignored~%")
+			    (t
+#+debug-verbose 		(format t "Ignored~%")
 				;; XXX The interpreter does not yet implement
 				;; implicit tagbody in dolist, just comment
 				;; the go call in that case. (Will just do
 				;; an unecessary test...)
-				(go :IGNORED)
+				(go :ignored)
 			    )
 			)
 
@@ -1011,30 +980,26 @@ is used.
 			(when
 			    (and
 				(= start (car match))
-				(= length (cdr match))
-			    )
-#+debug-verbose 	    (format T "Rest of line match~%")
-			    (return)
-			)
+				(= length (cdr match)))
+#+debug-verbose 	    (format t "Rest of line match~%")
+			    (return))
 		    )
 
 		    ;;	Match not found.
 		    (progn
-#+debug-verbose 	(format T "Adding to nomatch: ~A~%"
-			    (syntoken-regex token)
-			)
-			(setq nomatch (cons token nomatch))
-		    )
+#+debug-verbose 	(format t "Adding to nomatch: ~A~%"
+			    (syntoken-regex token))
+			(setq nomatch (cons token nomatch)))
 		)
 	    )
-:IGNORED
+:ignored
 	)
 
 	;;  Add matches to the beginning of the cache list.
 	(setq
 	    ;;	Put matches with smaller offset first.
 	    cache
-	    (stable-sort (nconc (nreverse matches) cache) #'< :KEY #'cadr)
+	    (stable-sort (nconc (nreverse matches) cache) #'< :key #'cadr)
 
 	    ;;	Make sure that when the match loop is reentered, this
 	    ;; variable is NIL.
@@ -1043,14 +1008,13 @@ is used.
 	)
 
 	;;  While the first entry in the cache is not from the current table.
-	(until (or (null cache) (member (caar cache) token-list :TEST #'eq))
+	(until (or (null cache) (member (caar cache) token-list :test #'eq))
 
 #+debug-verbose
-	    (format T "Not in the current table, removing {~A:~S} ~A~%"
+	    (format t "Not in the current table, removing {~A:~S} ~A~%"
 		(cdar cache)
 		(subseq line (cadar cache) (cddar cache))
-		(syntoken-regex (caar cache))
-	    )
+		(syntoken-regex (caar cache)))
 
 	    (setq cache (cdr cache))
 	)
@@ -1063,8 +1027,7 @@ is used.
 		    (or
 			(null result)
 			(> start (cadar result))
-			(not (eq (cddar result) default-property))
-		    )
+			(not (eq (cddar result) default-property)))
 		    (setq
 			result
 			(cons
@@ -1077,15 +1040,15 @@ is used.
 	    )
 
 #+debug-verbose
-	    (format T "No match until end of line~%")
+	    (format t "No match until end of line~%")
 
 	    ;;  Result already known, and there is no syntax table
 	    ;; change, bypass :PARSE.
-	    (go :PROCESS)
+	    (go :process)
 	)
 
 #+debug-verbose
-	(format T "Removing first candidate from cache {~A:~S} ~A~%"
+	(format t "Removing first candidate from cache {~A:~S} ~A~%"
 	    (cdar cache)
 	    (subseq line (cadar cache) (cddar cache))
 	    (syntoken-regex (caar cache))
@@ -1101,7 +1064,7 @@ is used.
 
 	;;  First element can be safely removed now.
 	;;  If there is only one, skip loop below.
-	(or cache (go :PARSE))
+	(or cache (go :parse))
 
 	;;  Remove elements of cache that must be discarded.
 	(setq
@@ -1131,7 +1094,7 @@ is used.
 		;;  And if this match is longer than the current one.
 		(> to right)
 
-		(member (car item) token-list :TEST #'eq)
+		(member (car item) token-list :test #'eq)
 
 		(setq
 		    match   item
@@ -1140,11 +1103,10 @@ is used.
 	    )
 
 #+debug-verbose
-	    (format T "Removing from cache {~A:~S} ~A~%"
+	    (format t "Removing from cache {~A:~S} ~A~%"
 		(cdar cache)
  		(subseq line from to)
-		(syntoken-regex (caar cache))
-	    )
+		(syntoken-regex (caar cache)))
 
 	    (setq
 		cache	    (cdr cache)
@@ -1156,9 +1118,9 @@ is used.
 
 
 ;-----------------------------------------------------------------------
-:PARSE
+:parse
 #+debug-verbose
-	(format T "** Entering :PARSE~%")
+	(format t "** Entering :PARSE~%")
 
 	(setq
 
@@ -1173,7 +1135,7 @@ is used.
 
 	;;  Check for unmatched leading text.
 	(when (and default-property (> left start))
-#+debug-verbose (format T "No match in {(~D . ~D):~S}~%"
+#+debug-verbose (format t "No match in {(~D . ~D):~S}~%"
 		start
 		left
 		(subseq line start left)
@@ -1182,8 +1144,7 @@ is used.
 		(or
 		    (null result)
 		    (> start (cadar result))
-		    (not (eq (cddar result) default-property))
-		)
+		    (not (eq (cddar result) default-property)))
 		(setq
 		    result
 		    (cons
@@ -1230,7 +1191,7 @@ is used.
 	    )
 
 #+debug-verbose
-	    (format T "(0)Match found for {(~D . ~D):~S}~%"
+	    (format t "(0)Match found for {(~D . ~D):~S}~%"
 		left
 		right
 		(subseq line left right)
@@ -1246,7 +1207,7 @@ is used.
 	(when change
 	    (if switch
 		(progn
-#+debug-verbose	    (format T "switching to ")
+#+debug-verbose	    (format t "switching to ")
 		    (if (numberp switch)
 
 			;;  If returning to a previous state.
@@ -1286,7 +1247,7 @@ is used.
 			;;  Return to the topmost syntax table.
 			(setq
 			    change
-			    (car (syntax-labels *SYNTAX*))
+			    (car (syntax-labels *syntax*))
 			)
 		    )
 
@@ -1297,7 +1258,7 @@ is used.
 
 		;;  Else, it is a begin.
 		(progn
-#+debug-verbose	    (format T "begining ")
+#+debug-verbose	    (format t "begining ")
 
 		    ;;	Save state for a possible
 		    ;; :SWITCH later.
@@ -1310,7 +1271,7 @@ is used.
 	    )
 
 #+debug-verbose
-	    (format T "~A offset: ~D~%"
+	    (format t "~A offset: ~D~%"
 		(syntable-label change)
 		start
 	    )
@@ -1320,6 +1281,18 @@ is used.
 		syntax-table	    change
 		default-property    (syntable-property change)
 		current-token-list  (syntable-tokens change)
+	    )
+
+	    ;;  Set newline property, to help interactive callback
+	    ;;  Only need to have a defined value, for now don't care
+	    ;; about wich value is being used, neither if there is
+	    ;; a value to be set.
+	    (if (null stack)
+		(setq newline-property nil)
+		(or newline-property
+		    (setq newline-property default-property)
+		    (setq newline-property (syntoken-property match))
+		)
 	    )
 
 	    ;; If processing of text was deferred.
@@ -1352,67 +1325,90 @@ is used.
 		    )
 		)
 
-#+debug-verbose (format T "(1)Match found for {(~D . ~D):~S}~%"
+#+debug-verbose (format t "(1)Match found for {(~D . ~D):~S}~%"
 		    left
 		    right
 		    (subseq line left right)
 		)
 	    )
 
-	    ;;	Try again if the table has a match to the empty
-	    ;; string in the end of a line.
-	    (and (= start length) (syntable-eol change) (go :LOOP))
+	    (go :loop)
 	)
 
 
 ;-----------------------------------------------------------------------
-	;;  Wait for the end of the line to process, so that 
+	;;  Wait for the end of the line to process, so that
 	;; it is possible to join sequential matches with the
 	;; same text property.
-	(and (< start length) (go :LOOP))
-:PROCESS
+	(and (or cache (< start length)) (go :loop))
+:process
 
 #+debug-verbose
-	(format T "** Entering :PROCESS~%")
+	(format t "** Entering :PROCESS~%")
 
-	;;  Result was created in reversed order.
-	(when (nreverse result)
-	    (dolist (item result)
-		(setq
-		    left	    (car item)
-		    right	    (cadr item)
-		    property	    (cddr item)
+	(if result
+	    (progn
+		;;  If the last property was at the end of the line,
+		;; there are nested syntax tables, and there is a
+		;; default property, include the newline in the property,
+		;; as a hint to the interactive callback.
+		(and
+		    newline-property
+		    (if
+			(and
+			    (eq (cddar result) newline-property)
+			    (= length (cadar result))
+			)
+			(rplaca (cdar result) (1+ length))
+			(setq
+			    result
+			    (cons
+				(cons length (cons (1+ length) newline-property))
+				result
+			    )
+			)
+		    )
 		)
 
+		;;  Result was created in reversed order.
+		(nreverse result)
+		(dolist (item result)
+		    (setq
+			left		(car item)
+			right		(cadr item)
+			property	(cddr item))
 
-		;; Use the information.
-#+debug		(format T "~A: ~S~%"
-		    (synprop-name property)
-		    (subseq line left right)
+		    ;; Use the information.
+		    (add-entity
+			(+ *from* left)
+			(- right left)
+			(synprop-quark property))
 		)
+	    )
 
+	    (and newline-property
 		(add-entity
-		    (+ *FROM* left)
-		    (- right left)
-		    (synprop-quark property)
-		)
+		    (+ *from* length)
+		    1
+		    (synprop-quark newline-property))
 	    )
 	)
 
-
-:UPDATE
+;------------------------------------------------------------------------
+:update
 	;; Prepare for new matches.
 	(setq
-	    result	NIL
-	    start	0
+	    result	nil
 
 	    ;;	Update offset to read text.
 	    ;;	Add 1 for the skipped newline.
-	    *FROM*	(+ *FROM* length 1)
+	    *from*	(+ *from* length 1)
 	)
 
-	(go :READ)
+	(go :read)
     )
 
 #+debug (terpri)
 )
+
+(compile 'syntax-highlight)
