@@ -196,6 +196,13 @@ const customttable mycustomttable[] = {
 	  0x1734, 0x101f,
 	  "Uniwill", "N243S9", CUT_UNIWILL1024, "UNIWILL1024"
 	},
+	{ SIS_740, "1.11.27a", "",
+	  0,
+	  { 0, 0, 0, 0, 0 },
+	  { 0, 0, 0, 0, 0 },
+	  0x1043, 0x1612,
+	  "Asus", "L3000D/L3500D", CUT_ASUSL3000D, "ASUSLVDS1024"
+	},
 	{ 4321, "", "",			/* This is hopefully NEVER autodetected */
 	  0,
 	  { 0, 0, 0, 0, 0 },
