@@ -1,5 +1,5 @@
 /* $XConsortium: miUtils.c,v 5.5 94/04/17 20:37:47 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -1,5 +1,5 @@
 /* $XConsortium: miTestOCs.c,v 5.2 94/04/17 20:37:19 rws Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

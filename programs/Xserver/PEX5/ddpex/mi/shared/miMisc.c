@@ -1,5 +1,5 @@
 /* $XConsortium: miMisc.c,v 5.9 94/04/17 20:37:44 mor Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

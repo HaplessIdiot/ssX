@@ -1,5 +1,5 @@
 /* $XConsortium: miLightLUT.c,v 5.3 94/04/17 20:37:43 hersh Exp $ */
-/* $XFree86 $ */
+/* $XFree86: $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium
