@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.13 2001/04/01 14:00:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.14 2001/08/17 13:27:56 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1466,7 +1466,11 @@ xf86EloControl(DeviceIntPtr	dev,
     DBG(2, ErrorF("Elographics touchscreen close...\n"));
     dev->public.on = FALSE;
     if (local->fd >= 0) {
+#ifdef XFREE86_V4
+      xf86RemoveEnabledDevice(local);
+#else
       RemoveEnabledDevice(local->fd);
+#endif
     }
     SYSCALL(close(local->fd));
     local->fd = -1;
