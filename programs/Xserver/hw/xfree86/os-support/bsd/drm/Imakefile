@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.19 2004/06/10 22:37:59 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.20 2004/06/11 08:41:40 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -60,8 +60,10 @@ MTRR_DEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
 #if defined(FreeBSDArchitecture)
+#if BuildXF86OldDRMCompat
 COMPATSRC = xf86drmCompat.c
 COMPATOBJ = xf86drmCompat.o
+#endif
 OS_SUBDIR = freebsd
 #elif defined(NetBSDArchitecture)
 OS_SUBDIR = netbsd
