@@ -2,34 +2,48 @@
 /*
  * Register settings for SiS 315/330 series
  *
- * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
- * If distributed as part of the linux kernel, the contents of this file
- * is entirely covered by the GPL.
+ * If distributed outside the scope of XFree86 (such as but only exclusively the
+ * Linux kernel), the following license terms apply:
  *
- * Otherwise, the following terms apply:
+ * * This program is free software; you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as published by
+ * * the Free Software Foundation; either version 2 of the License, or
+ * * any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public License
+ * * along with this program; if not, write to the Free Software
+ * * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the copyright holder not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The copyright holder makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * As a part of XFree86 code, the following terms apply:
  *
- * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * * Permission to use, copy, modify, distribute, and sell this software and its
+ * * documentation for any purpose is hereby granted without fee, provided that
+ * * the above copyright notice appears in all copies and that both that copyright
+ * * notice and this permission notice appear in supporting documentation, and
+ * * and that the name of the copyright holder not be used in advertising
+ * * or publicity pertaining to distribution of the software without specific,
+ * * written prior permission. The copyright holder makes no representations
+ * * about the suitability of this software for any purpose.  It is provided
+ * * "as is" without expressed or implied warranty.
+ * *
+ * * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+ * * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
  *
- * Based on code by Silicon Intergrated Systems
+ * Formerly based on code by Silicon Intergrated Systems
  *
  */
 

@@ -3,8 +3,8 @@
  * SiS hardware cursor handling
  * Definitions
  *
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright (C) 1998,1999 by Alan Hourihane, Wigan, England.
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,12 +24,14 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Author:   Thomas Winischhofer <thomas@winischhofer.net>
+ *
+ * Formerly based on code by
+ * 	     Alan Hourihane <alanh@fairlite.demon.co.uk>
  *           Mike Chapman <mike@paranoia.com>,
  *           Juanjo Santamarta <santamarta@ctv.es>,
- *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
+ *           Mitani Hiroshi <hmitani@drl.mei.co.jp>,
  *           David Thomas <davtom@dream.org.uk>.
- *	     Thomas Winischhofer <thomas@winischhofer.net>:
  */
 
 #define CS(x)   (0x8500+(x<<2))

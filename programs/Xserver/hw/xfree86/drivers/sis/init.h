@@ -4,32 +4,46 @@
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
- * If distributed as part of the linux kernel, the contents of this file
- * is entirely covered by the GPL.
+ * If distributed outside the scope of XFree86 (such as the Linux kernel), the
+ * following license terms apply:
  *
- * Otherwise, the following terms apply:
+ * * This program is free software; you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as published by
+ * * the Free Software Foundation; either version 2 of the License, or
+ * * any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public License
+ * * along with this program; if not, write to the Free Software
+ * * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the copyright holder not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The copyright holder makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * As a part of XFree86 code, the following terms apply:
  *
- * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * * Permission to use, copy, modify, distribute, and sell this software and its
+ * * documentation for any purpose is hereby granted without fee, provided that
+ * * the above copyright notice appears in all copies and that both that copyright
+ * * notice and this permission notice appear in supporting documentation, and
+ * * and that the name of the copyright holder not be used in advertising
+ * * or publicity pertaining to distribution of the software without specific,
+ * * written prior permission. The copyright holder makes no representations
+ * * about the suitability of this software for any purpose.  It is provided
+ * * "as is" without expressed or implied warranty.
+ * *
+ * * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+ * * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
  *
- * Based on code by Silicon Intergrated Systems
+ * Based on non-functional code fragments by Silicon Integrated Systems, Inc.
  *
  */
 
@@ -815,7 +829,8 @@ static const SiS_TVDataStruct  SiS_ExtPALData[] =
 /*{  36,  25,1060, 648,1316, 530, 438,   0, 438,0xeb,0x05,0x25,0x16},*//* 800x600, 400x300 */
  {   36,  25,1060, 648,1270, 530, 438,   0, 438,0xeb,0x05,0x25,0x16},  /* 800x600, 400x300 - better */
  {    3,   2,1080, 619,1270, 540, 438,   0, 438,0xf3,0x00,0x1d,0x20},  /* 720x576 */
- {    1,   1,1170, 821,1270, 520, 686,   0, 686,0xF3,0x00,0x1D,0x20}   /* 1024x768 */
+ {    1,   1,1170, 821,1270, 520, 686,   0, 686,0xF3,0x00,0x1D,0x20},  /* 1024x768 */
+ {    1,   1,1170, 821,1270, 520, 686,   0, 686,0xF3,0x00,0x1D,0x20}   /* 1024x768 (for NTSC equ) */
 };
 
 static const SiS_TVDataStruct  SiS_StNTSCData[]=
@@ -837,8 +852,9 @@ static const SiS_TVDataStruct  SiS_ExtNTSCData[]=
  {  143, 120,1056, 643,1270, 440,   0, 128,   0,0xf4,0x10,0x1c,0x00},    /* 800x600, 400x300  */
  {  143,  76, 836, 523,1270, 440,   0, 128,   0,0xee,0x0c,0x22,0x08},    /* 720x480 - BETTER (from 300 series) */
 /*{   2,   1, 858, 503,1270, 480,   0, 128,   0,0xee,0x0c,0x22,0x08},*/  /* 720x480  (old, from 650) */
- {    1,   1,1100, 811,1412, 440,   0, 128,   0,0xee,0x0c,0x22,0x08}     /* 1024x768 CORRECTED */
-/*{  65,  64,1056, 791,1270, 480, 638,   0,   0,0xEE,0x0C,0x22,0x08} */  /* 1024x768 */
+ {    1,   1,1100, 811,1412, 440,   0, 128,   0,0xee,0x0c,0x22,0x08},    /* 1024x768 (525i) CORRECTED */
+/*{  65,  64,1056, 791,1270, 480, 638,   0,   0,0xEE,0x0C,0x22,0x08} */  /* 1024x768 (525i) */
+ {   65,  64,1056, 791,1270, 480, 455,   0,   0,0x00,0x00,0x00,0x00}     /* 1024x768 (525p) */
 };
 
 static const SiS_TVDataStruct  SiS_St2HiTVData[]=
@@ -864,6 +880,36 @@ static const SiS_TVDataStruct  SiS_ExtHiTVData[]=
  {    4,   1, 0x41a,0x233,0x670,0x3c0,0x143,128, 0, 0x00,0x00,0x00,0x00},  /* 800x480   */
  {    5,   2, 0x578,0x293,0x670,0x3c0,0x032,  0, 0, 0x00,0x00,0x00,0x00},  /* 1024x576  */
  {    8,   5, 0x6d6,0x323,0x670,0x3c0,0x128,  0, 0, 0x00,0x00,0x00,0x00}   /* 1280x720  */
+};
+
+static const SiS_TVDataStruct  SiS_St525pData[]=
+{
+ {    1,   1, 0x6b4,0x20d,0x4f6,0x190,   50,  0, 0x2f8, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x6b4,0x20d,0x4f6,0x15e,   50,  0, 0x280, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x6b4,0x20d,0x4f6,0x190,   50,  0, 0x2f8, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x6b4,0x20d,0x4f6,0x15e,   50,  0, 0x280, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x6b4,0x20d,0x4f6,0x1e0,    0,  0, 0x2f8, 0x00,0x00,0x00,0x00}
+};
+
+static const SiS_TVDataStruct  SiS_St750pData[]=
+{
+ {    1,   1, 0x672,0x2ee,0x500,0x190,   50,  0, 0x2f8, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x672,0x2ee,0x500,0x15e,   50,  0, 0x280, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x672,0x2ee,0x500,0x190,    0,  0, 0x2d0, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x672,0x2ee,0x500,0x15e,    0,  0, 0x2d0, 0x00,0x00,0x00,0x00},
+ {    1,   1, 0x672,0x2ee,0x500,0x1e0,    0,  0, 0x2f8, 0x00,0x00,0x00,0x00}
+};
+
+static const SiS_TVDataStruct  SiS_Ext750pData[]=
+{
+ {    3,   1, 0x3a7,0x1d6,0x500,0x2a8,   50,  0,     0, 0x00,0x00,0x00,0x00},
+ {   24,   7, 0x3a7,0x1a4,0x500,0x2a8,   50,  0,     0, 0x00,0x00,0x00,0x00},
+ {    3,   1, 0x3a7,0x1d6,0x500,0x2a8,   50,  0,     0, 0x00,0x00,0x00,0x00},
+ {   24,   7, 0x3a7,0x1a4,0x500,0x2a8,   50,  0,     0, 0x00,0x00,0x00,0x00},
+ {   99,  32, 0x320,0x1fe,0x500,0x2d0,   50,  0,     0, 0x00,0x00,0x00,0x00},  /* 640x480   */
+ {    5,   4, 0x5d8,0x29e,0x500,0x2a8,   50,  0,     0, 0x00,0x00,0x00,0x00},  /* 800x600   */
+ {    2,   1, 0x35a,0x1f7,0x4f6,0x1e0,    0,128,     0, 0x00,0x00,0x00,0x00},  /* 720x480   */
+ {   68,  64, 0x55f,0x346,0x500,0x2a8,0x27e,  0,     0, 0x00,0x00,0x00,0x00},  /* 1024x768  */
 };
 
 static const SiS_LCDDataStruct  SiS_LCD1280x960Data[] =

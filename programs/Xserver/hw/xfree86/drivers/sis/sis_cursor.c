@@ -1,34 +1,36 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.22 2003/11/03 17:02:53 twini Exp $ */
+/* $XFree86$ */
 /*
  * SiS hardware cursor handling
  *
- * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright (C) 1998,1999 by Alan Hourihane, Wigan, England.
+ * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of the copyright holders not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  The copyright holders make no representations
+ * the above copyright notice appears in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * and that the name of the copyright holder not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. The copyright holder makes no representations
  * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * "as is" without expressed or implied warranty.
  *
- * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, alanh@fairlite.demon.co.uk
+ * Author:   Thomas Winischhofer <thomas@winischhofer.net>
+
+ * Formerly based on code by
+ *	     Alan Hourihane <alanh@fairlite.demon.co.uk>,
  *           Mike Chapman <mike@paranoia.com>,
  *           Juanjo Santamarta <santamarta@ctv.es>,
- *           Mitani Hiroshi <hmitani@drl.mei.co.jp>
+ *           Mitani Hiroshi <hmitani@drl.mei.co.jp>,
  *           David Thomas <davtom@dream.org.uk>.
- *	     Thomas Winischhofer <thomas@winischhofer.net>
  */
 
 #include "xf86.h"
@@ -799,10 +801,10 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
        sizedouble = TRUE;
     }
 
-    cursor_addr = pScrn->videoRam - pSiS->cursorOffset - (pSiS->CursorSize/1024); /* 1K boundary */
+    cursor_addr = pScrn->videoRam - pSiS->cursorOffset - (pSiS->CursorSize/1024); /* 16K boundary */
 
 #ifdef SISDUALHEAD
-    /* TW: Use the global (real) FbBase in DHM */
+    /* Use the global (real) FbBase in DHM */
     if(pSiS->DualHeadMode) dest = pSiSEnt->FbBase;
 #endif
 
@@ -891,8 +893,8 @@ SiSUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr  pSiS = SISPTR(pScrn);
-    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
-    
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode;
+
     if(pSiS->Chipset != PCI_CHIP_SIS6326) return TRUE;
     if(!(pSiS->SiS6326Flags & SIS6326_TVDETECTED)) return TRUE;
     if((strcmp(mode->name, "PAL800x600U") == 0) ||
@@ -907,7 +909,7 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr  pSiS = SISPTR(pScrn);
-    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode;
 #ifdef SISMERGED
     DisplayModePtr  mode2 = NULL;
 
@@ -934,17 +936,22 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 	}
 #endif
         break;
+      case PCI_CHIP_SIS330:
+#ifdef SISDUALHEAD
+	if((!pSiS->DualHeadMode) || (!pSiS->SecondHead))
+#endif
+	   if(pSiS->MiscFlags & MISC_TVNTSC1024) return FALSE;
+	/* fall through */
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
       case PCI_CHIP_SIS315:
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
-      case PCI_CHIP_SIS330:
       case PCI_CHIP_SIS660:
         if(mode->Flags & V_INTERLACE)
-            return FALSE;
+           return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
-	    return FALSE;
+	   return FALSE;
 #ifdef SISMERGED
         if(pSiS->MergedFB) {
 	   if(mode2->Flags & V_INTERLACE)
@@ -953,24 +960,12 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 	      return FALSE;
 	}
 #endif
-	if(pSiS->Chipset == PCI_CHIP_SIS330) {
-	   if((pSiS->VBFlags & VB_SISBRIDGE) &&
-	      (pSiS->VBFlags & CRT2_TV) &&
-	      (pSiS->VBFlags & (TV_NTSC|TV_PALM))) {
-#ifdef SISMERGED
-              if(pSiS->MergedFB) {
-	         if(mode2->HDisplay == 1024) return FALSE;
-              } else
-#endif
-	         if(mode->HDisplay == 1024) return FALSE;
-	   }
-	}
         break;
       default:
         if(mode->Flags & V_INTERLACE)
-            return FALSE;
+           return FALSE;
         if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
-	    return FALSE;
+	   return FALSE;
 	break;
     }
     return TRUE;
@@ -984,7 +979,7 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr  pSiS = SISPTR(pScrn);
-    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode; 
 #ifdef SISMERGED
     DisplayModePtr  mode2 = NULL;
 
@@ -1000,7 +995,7 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
       case PCI_CHIP_SIS540:
         if(mode->Flags & V_INTERLACE)
             return FALSE;
-	if(pCurs->bits->height > 32 || pCurs->bits->width > 32)
+	if((pCurs->bits->height > 32) || (pCurs->bits->width > 32))
 	    return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 16))
 	    return FALSE;
@@ -1013,28 +1008,26 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	}
 #endif
         break;
+      case PCI_CHIP_SIS330:
+#ifdef SISDUALHEAD
+	if((!pSiS->DualHeadMode) || (!pSiS->SecondHead))
+#endif
+	   if(pSiS->MiscFlags & MISC_TVNTSC1024) return FALSE;
+	/* fall through */
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
       case PCI_CHIP_SIS315:
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
-      case PCI_CHIP_SIS330:
       case PCI_CHIP_SIS660:
         if(mode->Flags & V_INTERLACE)
-            return FALSE;
-	if(pCurs->bits->height > 64 || pCurs->bits->width > 64)
-	    return FALSE;
-	if(mode->Flags & V_DBLSCAN) {
-	   if(pCurs->bits->height > 32)
-	      return FALSE;
-#ifdef SISDUALHEAD
-	   if((!pSiS->DualHeadMode) || (pSiS->SecondHead))
-#endif
-	      if(pSiS->VBFlags & CRT1_LCDA)
-	         return FALSE;
-	}
+           return FALSE;
+	if((pCurs->bits->height > 64) || (pCurs->bits->width > 64))
+	   return FALSE;
+	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
+	   return FALSE;
 	if((pSiS->CurrentLayout.bitsPerPixel == 8) && (pSiS->VBFlags & CRT2_ENABLE))
-	    return FALSE;
+	   return FALSE;
 #ifdef SISMERGED
         if(pSiS->MergedFB) {
 	   if(mode2->Flags & V_INTERLACE)
@@ -1043,20 +1036,8 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	      return FALSE;
 	}
 #endif
-        if(pSiS->Chipset == PCI_CHIP_SIS330) {
-	   if((pSiS->VBFlags & VB_SISBRIDGE) &&
-	      (pSiS->VBFlags & CRT2_TV) &&
-	      (pSiS->VBFlags & (TV_NTSC|TV_PALM))) {
-#ifdef SISMERGED
-              if(pSiS->MergedFB) {
-	         if(mode2->HDisplay == 1024) return FALSE;
-              } else
-#endif
-	         if(mode->HDisplay == 1024) return FALSE;
-	   }
-	}
         break;
-      default:        
+      default:
         return FALSE;
     }
     return TRUE;
