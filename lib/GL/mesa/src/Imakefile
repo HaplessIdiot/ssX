@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/12/14 01:32:25 robin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.6 2000/01/20 21:46:17 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -208,7 +208,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 
      ASM_SRCS = 
      ASM_OBJS =
-#if i386Architecture
+#ifdef i386Architecture
      ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM 
 # -DUSE_3DNOW_ASM
 #else
@@ -230,7 +230,7 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 #if GlxBuiltInMesa || GlxDriverUsesMesa || !GlxUseBuiltInDRIDriver
 # We have to go into X to make the xmesaP.h symbolic link
   MESASUBDIRS = X
-#if i386Architecture
+#ifdef i386Architecture
   ASMSUBDIRS = X86
 #else
   ASMSUBDIRS =
@@ -255,7 +255,7 @@ DependSubdirs($(SUBDIRS))
 #if !GlxUseBuiltInDRIDriver && !GlxDriverUsesMesa
 LIBNAME = mesa_dri.so
 
-#if i386Architecture
+#ifdef i386Architecture
 ALL_OBJS = $(CORE_OBJS) X/?*.o X86/?*.o
 ALL_DEPS = $(SUBDIRS) DONE X/DONE X86/DONE
 #else
