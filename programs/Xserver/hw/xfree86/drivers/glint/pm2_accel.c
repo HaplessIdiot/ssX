@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.26 2001/01/31 16:14:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.27 2001/02/07 13:26:19 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -1094,6 +1094,7 @@ Permedia2WritePixmap8bpp(
 	      count = dwords;
 	      address = ((y * pScrn->displayWidth) + x) >> 2;
 	      srcp = (CARD32*)src;
+	      GLINT_WAIT(1); /*??*/
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= pGlint->FIFOSize) {
     	    	GLINT_WAIT(pGlint->FIFOSize);
@@ -1125,6 +1126,7 @@ Permedia2WritePixmap8bpp(
   	   char align = (x & pGlint->bppalign);
 		
 
+	   GLINT_WAIT(1); /*??*/
 	   GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
@@ -1259,6 +1261,7 @@ Permedia2WritePixmap16bpp(
 	      count = dwords;
 	      address = ((y * pScrn->displayWidth) + x) >> 1;
 	      srcp = (CARD32*)src;
+	      GLINT_WAIT(1); /*??*/
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= pGlint->FIFOSize) {
     	    	GLINT_WAIT(pGlint->FIFOSize);
@@ -1418,6 +1421,7 @@ Permedia2WritePixmap32bpp(
 	      count = dwords;
 	      address = (y * pScrn->displayWidth) + x;
 	      srcp = (CARD32*)src;
+	      GLINT_WAIT(1); /*??*/
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
 	      while(count >= pGlint->FIFOSize) {
     	    	GLINT_WAIT(pGlint->FIFOSize);

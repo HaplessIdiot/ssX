@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.115 2001/02/05 15:43:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.116 2001/02/07 13:26:19 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -3334,6 +3334,9 @@ void GLINT_MoveBYTE(
    register unsigned char* src,
    register int dwords)
 {
+#ifdef __alpha__
+     write_mem_barrier();
+#endif
      while(dwords) {
 	*dest = *src;
 	src += 1;
@@ -3347,6 +3350,9 @@ void GLINT_MoveWORDS(
    register unsigned short* src,
    register int dwords)
 {
+#ifdef __alpha__
+     write_mem_barrier();
+#endif
      while(dwords & ~0x01) {
 	*dest = *src;
 	*(dest + 1) = *(src + 1);
@@ -3354,11 +3360,8 @@ void GLINT_MoveWORDS(
 	dest += 2;
 	dwords -= 2;
      }	
-     switch(dwords) {
-	case 0:	return;
-	case 1: *dest = *src;
-		return;
-    }
+     if (dwords)
+        *dest = *src;
 }
 
 void GLINT_MoveDWORDS(
@@ -3366,6 +3369,9 @@ void GLINT_MoveDWORDS(
    register CARD32* src,
    register int dwords)
 {
+#ifdef __alpha__
+     write_mem_barrier();
+#endif
      while(dwords & ~0x03) {
 	*dest = *src;
 	*(dest + 1) = *(src + 1);
@@ -3375,12 +3381,13 @@ void GLINT_MoveDWORDS(
 	dest += 4;
 	dwords -= 4;
      }	
-     if (!dwords) return;
-     *dest = *src;
-     if (dwords == 1) return;
-     *(dest + 1) = *(src + 1);
-     if (dwords == 2) return;
-     *(dest + 2) = *(src + 2);
+
+     while(dwords) {
+        *dest = *src;
+	src++;
+	dest++;
+	dwords--;
+     }
 }
 
 int

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.55 2001/01/21 21:19:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.56 2001/02/06 19:25:57 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -840,6 +840,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
+#ifndef __alpha__
     /* Initialize the card through int10 interface if needed */
 #if 0
      if ( !pNv->Primary &&)
@@ -851,6 +852,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
          pNv->pInt = xf86InitInt10(pNv->pEnt->index);
      }
+#endif
    
     {
         resRange vgaio[] =      { {ResShrIoBlock,0x3B0,0x3BB},

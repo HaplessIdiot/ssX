@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.16 2000/08/11 06:14:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.18 2000/11/03 18:46:12 eich Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -69,7 +69,7 @@ NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     RIVA_FIFO_FREE(pNv->riva, Clip, 2);
     pNv->riva.Clip->TopLeft     = (y1     << 16) | (x1 & 0xffff);
     pNv->riva.Clip->WidthHeight = (height << 16) | width;
-    mem_barrier();
+    write_mem_barrier();
 }
 
 
@@ -143,7 +143,7 @@ NVSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
-    mem_barrier();
+    write_mem_barrier();
 }
 
 /*
@@ -167,7 +167,7 @@ NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     pNv->riva.Blt->TopLeftSrc  = (y1 << 16) | x1;
     pNv->riva.Blt->TopLeftDst  = (y2 << 16) | x2;
     pNv->riva.Blt->WidthHeight = (h  << 16) | w;
-    mem_barrier();
+    write_mem_barrier();
 /*        ErrorF("L SubseqSS\n");  */
 
 }
@@ -205,7 +205,7 @@ NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 	bg  = (bg == -1) ? 0 : bg | pNv->opaqueMonochrome;
     };
     NVSetPattern(pNv, bg, fg, patternx, patterny);
-    mem_barrier();
+    write_mem_barrier();
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = fg;
 }
@@ -220,7 +220,7 @@ NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y;
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
-    mem_barrier();
+    write_mem_barrier();
 }
 
 
@@ -233,7 +233,7 @@ void NVSync(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
 /*      ErrorF("sync enter\n"); */
-    while (pNv->riva.Busy(&pNv->riva));
+    RIVA_BUSY(pNv->riva);
 /*      ErrorF("sync leave\n");     */
 }
 
@@ -301,6 +301,7 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	d[14] = pbits[14];
 	d[15] = pbits[15];
 	t -= 16; pbits += 16;
+	write_mem_barrier();
     }
     if(t) {
 	RIVA_FIFO_FREE(pNv->riva, Bitmap, t);
@@ -311,13 +312,15 @@ NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	    d[2]  = pbits[2];
 	    d[3]  = pbits[3];
 	    t -= 4; pbits += 4;
+	    write_mem_barrier();
 	}
 	while(t--) 
 	    *(d++) = *(pbits++); 
+	write_mem_barrier();
     }
 
     if (!(--pNv->expandRows))
-	while (pNv->riva.Busy(&pNv->riva));
+        RIVA_BUSY(pNv->riva);
 }
 
 static void
@@ -328,8 +331,9 @@ NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
     if ( --pNv->expandRows ) {
        RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     } else {
-	while (pNv->riva.Busy(&pNv->riva));
+	RIVA_BUSY(pNv->riva);
     }
+    write_mem_barrier();
 }
 
 static void
@@ -381,7 +385,7 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
 	RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     }
 
-    while (pNv->riva.Busy(&pNv->riva));
+    RIVA_BUSY(pNv->riva);
 }
 
 
@@ -409,7 +413,7 @@ NVSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
     pNv->riva.Pixmap->WidthHeight     = (h << 16) | w;
     pNv->riva.Pixmap->WidthHeightIn   = (h << 16) | bw;
 
-    while (pNv->riva.Busy(&pNv->riva));
+    RIVA_BUSY(pNv->riva);
 }
 
 
@@ -442,6 +446,7 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	d[14] = pbits[14];
 	d[15] = pbits[15];
 	t -= 16; pbits += 16;
+	write_mem_barrier();
     }
     if(t) {
 	RIVA_FIFO_FREE(pNv->riva, Pixmap, t);
@@ -452,9 +457,11 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	    d[2]  = pbits[2];
 	    d[3]  = pbits[3];
 	    t -= 4; pbits += 4;
+	    write_mem_barrier();
 	}
 	while(t--) 
 	    *(d++) = *(pbits++); 
+	write_mem_barrier();
     }
 }
 
@@ -467,7 +474,7 @@ NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
     NVPtr pNv = NVPTR(pScrn);
 
     NVSetRopSolid(pNv, rop);
-    mem_barrier();
+    write_mem_barrier();
     RIVA_FIFO_FREE(pNv->riva, Line, 1);
     pNv->FgColor = color;
 }
@@ -484,7 +491,7 @@ NVSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x, int y, int len, int dir)
         pNv->riva.Line->Lin[0].point1 = ((y << 16) | (( x + len ) & 0xffff));
     else
         pNv->riva.Line->Lin[0].point1 = (((y + len) << 16) | ( x & 0xffff));
-    mem_barrier();
+    write_mem_barrier();
 }
 
 static void 
@@ -503,7 +510,7 @@ NVSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
         pNv->riva.Line->Lin[1].point0 = ((y2 << 16) | (x2 & 0xffff));
         pNv->riva.Line->Lin[1].point1 = (((y2 + 1) << 16) | (x2 & 0xffff));
     }
-    mem_barrier();
+    write_mem_barrier();
 }
 
 #else
@@ -523,7 +530,7 @@ NVPolylinesThinSolidWrapper(
     pNv->CurrentDrawable = pDraw;
 #endif    
     if(infoRec->NeedToSync) 
-	while (pNv->riva.Busy(&pNv->riva));
+        RIVA_BUSY(pNv->riva);
     XAAPolyLines(pDraw, pGC, mode, npt, pPts);
 }
 
@@ -541,7 +548,7 @@ NVPolySegmentThinSolidWrapper(
     pNv->CurrentDrawable = pDraw;
 #endif    
     if(infoRec->NeedToSync) 
-	while (pNv->riva.Busy(&pNv->riva));
+        RIVA_BUSY(pNv->riva);
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
 }
 
@@ -566,7 +573,7 @@ NVSubsequentSolidHorVertLine(
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
     pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
-    mem_barrier();
+    write_mem_barrier();
 }
 
 #ifndef NV_USE_FB
