@@ -5,7 +5,7 @@
 .\"
 .\"
 .\"
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.49 2003/05/18 21:51:07 dickey Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.50 2003/10/27 01:10:31 dickey Exp $
 .\"
 .\"
 .\" Copyright 1996-2002,2003 by Thomas E. Dickey
@@ -432,13 +432,13 @@ Controls beginning with ESC (other than those where ESC is part of a 7-bit equiv
 8-bit controls (S8C1T).
 .
 .IP \\*(Es\\*(Sp\\*L
-Set ANSI conformance level 1 (VT100, 7-bit controls).
+Set ANSI conformance level 1 (dpANS X3.134.1).
 .
 .IP \\*(Es\\*(Sp\\*M
-Set ANSI conformance level 2 (VT200).
+Set ANSI conformance level 2 (dpANS X3.134.1).
 .
 .IP \\*(Es\\*(Sp\\*N
-Set ANSI conformance level 3 (VT300).
+Set ANSI conformance level 3 (dpANS X3.134.1).
 .
 .IP \\*(Es\\*#\\*3
 DEC double-height line, top half (DECDHL)
