@@ -75,6 +75,7 @@ MyBestHostname (
   struct utsname host;
   int s, rv, namelen;
   char dest_hostname[MAXHOSTNAMELEN + 1];
+  unsigned short tmp;   /* to avoid nested asm calls on SVR4.0 */
 
   *myname = '\0';
 
@@ -106,13 +107,15 @@ MyBestHostname (
       if (s != -1) {
 	do {
 	  rv = bind (s, (struct sockaddr*) &local, sizeof local);
-	  local.sin_port = htons (ntohs (local.sin_port) + 1);
+	  tmp = ntohs (local.sin_port);
+	  local.sin_port = htons (tmp + 1);
 	} while (rv != -1 && errno == EADDRINUSE);
 
 	if (rv != -1) {
 	  do {
 	    rv = connect (s, (struct sockaddr*) &remote, sizeof remote);
-	    remote.sin_port = htons (ntohs (remote.sin_port) + 1);
+	    tmp = ntohs (remote.sin_port);
+	    remote.sin_port = htons (tmp + 1);
 	  } while (rv != -1 && errno == EADDRINUSE);
 
 	  if (rv != -1) {

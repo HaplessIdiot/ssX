@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.2 1997/04/08 10:12:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.3 1997/07/29 12:07:59 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -37,6 +37,7 @@ extern Bool ctDSTN;
 extern Bool ctLCD;
 extern Bool ctCRT;
 extern Bool ctHWCursor;
+extern Bool ctHWCursorAlways;
 
 extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
 
@@ -152,6 +153,8 @@ extern void ctAccelInit();
 extern void ctMMIOAccelInit();
 extern void ctHiQVAccelInit();
 
+/* in ct_cursor.c */
+extern void  CHIPSInitCursor();
 
 #define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + (x))
 #define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + (x))

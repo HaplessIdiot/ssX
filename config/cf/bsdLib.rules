@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.5 1997/03/17 07:17:29 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.6 1997/10/25 13:49:53 hohndel Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -36,9 +36,7 @@ XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.5 1997/03/17 07:17:29 hohndel Exp 
 #define SharedLibraryLoadFlags -Bshareable
 #endif
 #ifndef PositionIndependentCFlags
-# ifndef Arm32Architecture
-#  define PositionIndependentCFlags -fpic
-# endif 
+#define PositionIndependentCFlags -fpic
 #endif
 
 /*

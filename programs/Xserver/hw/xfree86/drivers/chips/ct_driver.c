@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.16 1997/10/25 13:50:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.17 1997/10/25 15:52:21 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -162,13 +162,9 @@ unsigned int ctST01reg;
 unsigned char ctSWTmp;
 
 /* HW cursor related */
-Bool ctHWCursor = FALSE;
-extern Bool CHIPSCursorInit();
-extern void CHIPSRestoreCursor();
-extern void CHIPSWarpCursor();
-extern void CHIPSQueryBestSize();
-extern vgaHWCursorRec vgaHWCursor;
 unsigned int ctCursorAddress = 0;  /* The address in video ram of the cursor */
+Bool ctHWCursor = FALSE;
+Bool ctHWCursorAlways = FALSE;
 
 /* Clock related */
 typedef struct {
@@ -295,8 +291,7 @@ int ctAluConv3[] =
 };
 
 /* Driver data structures. */
-
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
 int ctTVMode = XMODE_RGB;
 #endif
 /*
@@ -1650,21 +1645,10 @@ Bool ctProbeHiQV()
 		ctAccelSupport = FALSE;
 	    }
 	  } else {
-#ifdef	__arm32__
-	      /* Unaligned word accesses don't do the same thing on ARM */
-	      /* as on x86!  Actually, I don't understand why 32-bit accesses */
-	      /* are being done in the x86 case; byte reads ought to work */
-	      /* just fine, shouldn't they? -JJK */
 		outb(0x3D6, 0x6);
 		CHIPS.ChipLinearBase = ((unsigned int)inb(0x3D7)) << 24;
 		outb(0x3D6, 0x5);
 		CHIPS.ChipLinearBase |= ((unsigned int)(0x80 & inb(0x3D7))) << 16;
-#else
-		outb(0x3D6, 0x6);
-		CHIPS.ChipLinearBase = ((0xFF00 & inl(0x3D6)) << 16);
-		outb(0x3D6, 0x5);
-		CHIPS.ChipLinearBase |= ((0x8000 & inl(0x3D6)) << 8);
-#endif
 	}
 	ErrorF("%s %s: CHIPS: base address is set at 0x%X.\n",
 	    XCONFIG_PROBED, vga256InfoRec.name, CHIPS.ChipLinearBase);
@@ -1878,7 +1862,7 @@ Bool ctProbeHiQV()
      {
 	 CHIPS.ChipBuiltinModes = &ctPALMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
 	 ctTVMode = XMODE_PAL;
 #endif
      }
@@ -1887,7 +1871,7 @@ Bool ctProbeHiQV()
      {
 	 CHIPS.ChipBuiltinModes = &ctNTSCMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctNTSCMode;
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
 	 ctTVMode = XMODE_NTSC;
 #endif
      }
@@ -1899,12 +1883,12 @@ Bool ctProbeHiQV()
 	  */
 	 CHIPS.ChipBuiltinModes = &ctPALMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
 	 ctTVMode = XMODE_SECAM;
 #endif
      }
   
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
      if (ctTVMode != XMODE_RGB)
      {
 	 /*
@@ -1934,6 +1918,7 @@ Bool ctProbeHiQV()
     OFLG_SET(OPTION_HW_CLKS, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NOLINEAR_MODE, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_SW_CURSOR, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_HW_CURSOR, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_STN, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_USE_MODELINE, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NO_BITBLT, &CHIPS.ChipOptionFlags);
@@ -2067,7 +2052,7 @@ Bool ctProbeWINGINE()
 	     XCONFIG_GIVEN, vga256InfoRec.name, CHIPS.ChipLinearBase);
     } else {
       outb(0x3D6, 0x9);
-      CHIPS.ChipLinearBase = (( 0xFF00 & inl(0x3D6)) << 16);
+      CHIPS.ChipLinearBase = (( 0xFF & inb(0x3D6)) << 24);
       outb(0x3D6, 0x8);
       CHIPS.ChipLinearBase |= (( mask  & inb(0x3D7)) << 16);
       ErrorF("%s %s: CHIPS: base address is set at 0x%X.\n",
@@ -2210,6 +2195,7 @@ Bool ctProbeWINGINE()
   OFLG_SET(OPTION_HW_CLKS, &CHIPS.ChipOptionFlags);
   OFLG_SET(OPTION_NOLINEAR_MODE, &CHIPS.ChipOptionFlags);
   OFLG_SET(OPTION_SW_CURSOR, &CHIPS.ChipOptionFlags);
+  OFLG_SET(OPTION_HW_CURSOR, &CHIPS.ChipOptionFlags);
   OFLG_SET(OPTION_NO_BITBLT, &CHIPS.ChipOptionFlags);
   OFLG_SET(OPTION_NO_IMAGEBLT, &CHIPS.ChipOptionFlags);
 
@@ -2686,6 +2672,7 @@ Bool ctProbe()
     OFLG_SET(OPTION_HW_CLKS, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NOLINEAR_MODE, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_SW_CURSOR, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_HW_CURSOR, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_STN, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_USE_MODELINE, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NO_BITBLT, &CHIPS.ChipOptionFlags);
@@ -3508,7 +3495,12 @@ CHIPSInit655xx(mode)
 	    new->Port_3D6[0x57] |= 0x60;   /* Enable vertical stretching     */
 	    temp = (mode->CrtcVDisplay / (ctSize.VDisplay -
 		    mode->CrtcVDisplay + 1));
-	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
+	    if (temp == 0)
+	      ctHWCursor = FALSE;
+	    else
+	      ctHWCursor = TRUE;
+	    if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options) &&
+		   !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
 	        temp = (temp == 0 ? 1 : temp);  /* HWCursorBug when doubling */
 	    new->Port_3D6[0x5A] = temp > 0x0F ? 0 : (unsigned char)temp;
 	} else {
@@ -4075,10 +4067,12 @@ CHIPSInitHiQV32(mode)
 	new->Port_3D0[0x40] &= 0xDF;    /* Disable Horizontal stretching */
 	new->Port_3D0[0x48] &= 0xFB;    /* Disable vertical stretching */
 	new->Port_3D6[0xA0] = 0x10;     /* Disable cursor stretching */
+	ctHWCursor = TRUE;
     } else {
 	new->Port_3D0[0x40] |= 0x21;    /* Enable Horizontal stretching */
 	new->Port_3D0[0x48] |= 0x05;    /* Enable vertical stretching */
 	new->Port_3D6[0xA0] = 0x70;     /* Enable cursor stretching */
+	ctHWCursor = FALSE;             /* Possible H/W bug? */
     }
   }
     if (!OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)) {
@@ -4135,6 +4129,7 @@ CHIPSInitHiQV32(mode)
     } else if (vgaBitsPerPixel == 32) {
 	new->Port_3D6[0x81] = new->Port_3D6[0x81] & 0xF0 | 0x7;
 	/* 32bpp colour              */
+	new->Port_3D6[0x20] = 0x10;    /*BitBLT Draw Mode for 16 bpp */
     }
 
     /*CRT only */
@@ -4161,7 +4156,7 @@ CHIPSInitHiQV32(mode)
 	}
     }
     
-#if WHATEVER_DEFINES_THIS
+#if defined(__arm32__) && defined(__NetBSD__)
     if(ctTVMode != XMODE_RGB)
     {
 	/*
@@ -4353,7 +4348,6 @@ CHIPSFbInit()
      * be filled in here.
      */
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-
 	/* Allocate 1kB of vram to the cursor, with 1kB alignment for
 	 * 6554x's and 4kb alignment for 65550's */
 	if (ctisHiQV32)
@@ -4370,12 +4364,10 @@ CHIPSFbInit()
 		OFLG_ISSET(XCONFIG_SPEEDUP, &vga256InfoRec.xconfigFlag) ?
 		XCONFIG_GIVEN : XCONFIG_PROBED,
 		vga256InfoRec.name);
-	    vgaHWCursor.Initialized = TRUE;
-	    vgaHWCursor.Init = CHIPSCursorInit;
-	    vgaHWCursor.Restore = CHIPSRestoreCursor;
-	    vgaHWCursor.Warp = CHIPSWarpCursor;
-	    vgaHWCursor.QueryBestSize = CHIPSQueryBestSize;
 	    ctHWCursor = TRUE;
+	    CHIPSInitCursor();
+	    if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
+	        ctHWCursorAlways = TRUE;
 	}
     }
 
@@ -4411,10 +4403,9 @@ CHIPSFbInit()
 		       ctAllocate(3 * (vga256InfoRec.displayWidth + 4), 0x3);
 	    break;
 	  case 32:
-	    /* One scanline of data used for solid fill */
+	    /* 16bpp 8x8 mono pattern fill for solid fill. QWORD aligned */
 	    if (ctisHiQV32)
-	        ctBLTPatternAddress =
-		  ctAllocate((vga256InfoRec.displayWidth << 2), 0x3);
+	        ctBLTPatternAddress = ctAllocate(8, 0x7);
 	    break;
 	}
 	    

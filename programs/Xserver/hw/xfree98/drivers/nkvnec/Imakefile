@@ -1,28 +1,44 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/nkvnec/Imakefile,v 1.2 1997/03/17 07:18:39 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/nkvnec/Imakefile,v 1.4 1997/04/08 14:55:46 hohndel Exp $
 
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
-       cir_imblt.s cir_colexp.c cirFillSt.c cir_teblt8.c \
-       cirFillRct.c cir_blitter.c cir_textblt.s cir_cursor.c \
-       cir_blitmm.c cir_immm.c cir_tebltmm.c cir_span.s cir_alloc.c \
+#if defined(i386Architecture)
+BANK_SRCS = cir_bank.s
+BANK_OBJS = cir_bank.o
+ASM_SRCS = cir_imblt.s cir_textblt.s cir_span.s
+ASM_OBJS = cir_imblt.o cir_textblt.o cir_span.o
+#else
+BANK_SRCS = cir_bankc.c
+BANK_OBJS = cir_bankc.o
+OTHER_SRCS = cir_imbltc.c cir_textbltc.c
+OTHER_OBJS = cir_imbltc.o cir_textbltc.o
+#endif
+
+SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c $(BANK_SRCS) \
+       $(ASM_SRCS) $(OTHER_SRCS) cir_colexp.c cirFillSt.c cir_teblt8.c \
+       cirFillRct.c cir_blitter.c cir_cursor.c \
+       cir_blitmm.c cir_immm.c cir_tebltmm.c cir_alloc.c \
        /* cir_blt16.c */ cir_solid.c /* cir_line.c cir_seg.c cir_orect.c */ \
        /* cir_orect16.c cir_orect32.c linearline.c cir_fillLG.c cir_blitLG.c */ \
        cirrus_acl.c cirrus_aclm.c laguna_acl.c \
        cir_pc98.c 
 
-OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
-       cir_imblt.o cir_colexp.o cirFillSt.o cir_teblt8.o \
-       cirFillRct.o cir_blitter.o cir_textblt.o cir_cursor.o \
-       cir_blitmm.o cir_immm.o cir_tebltmm.o cir_span.o cir_alloc.o \
+OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o $(BANK_OBJS) \
+       $(ASM_OBJS) $(OTHER_OBJS) cir_colexp.o cirFillSt.o cir_teblt8.o \
+       cirFillRct.o cir_blitter.o cir_cursor.o \
+       cir_blitmm.o cir_immm.o cir_tebltmm.o cir_alloc.o \
        /* cir_blt16.o */ cir_solid.o /* cir_line.o cir_seg.o cir_orect.o */ \
        /* cir_orect16.o cir_orect32.o linearline.o cir_fillLG.o cir_blitLG.o */ \
        cirrus_acl.o cirrus_aclm.o laguna_acl.o \
        cir_pc98.o
 
+#if defined(i386Architecture)
 DEFINES = -DPSZ=8 -DPC98 -DPC98_NKVNEC
+#else
+DEFINES = -DPSZ=8 -DAVOID_ASM_ROUTINES
+#endif
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -50,6 +66,7 @@ LinkSourceFile(cirFillSt.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_alloc.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_alloc.h,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_bank.s,$(XF86SRC)/drivers/cirrus)
+LinkSourceFile(cir_bankc.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_blitLG.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_blitLG.h,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_blitter.c,$(XF86SRC)/drivers/cirrus)
@@ -64,6 +81,7 @@ LinkSourceFile(cir_fill.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_fillLG.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_im.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_imblt.s,$(XF86SRC)/drivers/cirrus)
+LinkSourceFile(cir_imbltc.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_inline.h,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_line.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_orect.c,$(XF86SRC)/drivers/cirrus)
@@ -72,6 +90,7 @@ LinkSourceFile(cir_span.h,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_span.s,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_teblt8.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cir_textblt.s,$(XF86SRC)/drivers/cirrus)
+LinkSourceFile(cir_textbltc.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(cirrus_acl.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(laguna_acl.c,$(XF86SRC)/drivers/cirrus)
 LinkSourceFile(linearline.c,$(XF86SRC)/drivers/cirrus)
@@ -89,14 +108,20 @@ ObjectFromSpecialSource(cirrus_aclm, cirrus_acl, -DMMIO)
 
 InstallLinkKitNonExecFile(cir_driver.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_driver.h,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
-InstallLinkKitNonExecFile(cir_bank.s,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_fill.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_im.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_blt.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_bltC.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
+#if defined(i386Architecture)
+InstallLinkKitNonExecFile(cir_bank.s,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_imblt.s,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_textblt.s,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_span.s,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
+#else
+InstallLinkKitNonExecFile(cir_bankc.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
+InstallLinkKitNonExecFile(cir_imbltc.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
+InstallLinkKitNonExecFile(cir_textbltc.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
+#endif
 InstallLinkKitNonExecFile(cir_colexp.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cirFillSt.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)
 InstallLinkKitNonExecFile(cir_solid.c,$(XF98LINKKITDIR)/drivers98/svga/nkvnec)

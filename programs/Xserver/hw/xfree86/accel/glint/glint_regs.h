@@ -35,19 +35,23 @@
 #define PCI_CHIP_3DLABS_PERMEDIA				0x04
 #define PCI_CHIP_3DLABS_MX					0x06
 #define PCI_CHIP_3DLABS_PERMEDIA2				0x07
+#define PCI_CHIP_TI_PERMEDIA 	  				0x3d04
 #define PCI_CHIP_TI_3DLABS_PERMEDIA2			        0x3d07
 
 #define CFGRevisionId						0x08
 #define CFGClassCode						0x09
 #define CFGHeaderType						0x0E
 
-#define IS_3DLABS_TX_MX_CLASS(c) 						\
+#define IS_3DLABS_TX_MX_CLASS(c)		\
 	(((c) == PCI_CHIP_3DLABS_500TX) || ((c) == PCI_CHIP_3DLABS_MX))
 
-#define IS_3DLABS_PERMEDIA_CLASS(c)  ( (c) == PCI_CHIP_3DLABS_PERMEDIA )
-#define IS_3DLABS_PM2_CLASS(c)       ( (c) == PCI_CHIP_3DLABS_PERMEDIA2 )
+#define IS_3DLABS_PERMEDIA_CLASS(c)		\
+	(((c) == PCI_CHIP_3DLABS_PERMEDIA) || ((c) == PCI_CHIP_TI_PERMEDIA))
 
-#define IS_3DLABS_PM_FAMILY(c)							\
+#define IS_3DLABS_PM2_CLASS(c)			\
+	(((c) == PCI_CHIP_3DLABS_PERMEDIA2) || ((c) == PCI_CHIP_TI_3DLABS_PERMEDIA2))
+
+#define IS_3DLABS_PM_FAMILY(c)			\
 	(IS_3DLABS_PERMEDIA_CLASS(c) || IS_3DLABS_PM2_CLASS(c))
 
 /* Device Control/Status */
@@ -95,6 +99,8 @@
 
 /* GLINT PerMedia Region 0 additional Registers */
 #define ChipConfig							0x0070
+#define   SCLK_SEL_MASK		(3 << 10)
+#define   SCLK_SEL_MCLK_HALF	(3 << 10)
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl							0x1000
@@ -105,6 +111,48 @@
 #define PMRomControl							0x1040
 #define PMBootAddress							0x1080
 #define PMMemConfig							0x10C0
+    #define RowCharge8    1 << 10
+    #define TimeRCD8      1 <<  7
+    #define TimeRC8       0x6 << 3
+    #define TimeRP8       1
+    #define CAS3Latency8  0 << 16
+    #define BootAdress8   0x10
+    #define NumberBanks8  0x3 << 29
+    #define RefreshCount8 0x41 << 21
+    #define TimeRASMin8   1 << 13
+    #define DeadCycle8    1 << 17
+    #define BankDelay8    0 << 18
+    #define Burst1Cycle8  1 << 31
+    #define SDRAM8        0 << 4
+
+    #define RowCharge6    1 << 10
+    #define TimeRCD6      1 <<  7
+    #define TimeRC6       0x6 << 3
+    #define TimeRP6       0x2
+    #define CAS3Latency6  1 << 16
+    #define BootAdress6   0x60
+    #define NumberBanks6  0x2 << 29
+    #define RefreshCount6 0x41 << 21
+    #define TimeRASMin6   1 << 13
+    #define DeadCycle6    1 << 17
+    #define BankDelay6    0 << 18
+    #define Burst1Cycle6  1 << 31
+    #define SDRAM6        0 << 4
+
+    #define RowCharge4    0 << 10
+    #define TimeRCD4      0 <<  7
+    #define TimeRC4       0x4 << 3
+    #define TimeRP4       1 
+    #define CAS3Latency4  0 << 16
+    #define BootAdress4   0x10
+    #define NumberBanks4  1 << 29
+    #define RefreshCount4 0x30 << 21
+    #define TimeRASMin4   1 << 13
+    #define DeadCycle4    0 << 17
+    #define BankDelay4    0 << 18
+    #define Burst1Cycle4  1 << 31
+    #define SDRAM4        0 << 4
+
 #define PMBypassWriteMask						0x1100
 #define PMFramebufferWriteMask					        0x1140
 #define PMCount								0x1180
@@ -335,6 +383,9 @@
 #define TextureReadMode						GLINT_TAG_ADDR(0x09,0x00)
 #define TextureFormat						GLINT_TAG_ADDR(0x09,0x01)
 #define TextureCacheControl					GLINT_TAG_ADDR(0x09,0x02)
+  #define TextureCacheControlEnable     2
+  #define TextureCacheControlInvalidate 1
+
 #define GLINTBorderColor					GLINT_TAG_ADDR(0x09,0x05)
 
 #define TxBaseAddr						GLINT_TAG_ADDR(0x0a,0x00)
@@ -488,16 +539,53 @@
 	#define LBRM_DataLBDepth					2 << 16
 	#define LBRM_WinBottomLeft					1 << 18
 	#define LBRM_DoPatch						1 << 19
+
 	#define LBRM_ScanlineInt2					1 << 20
 	#define LBRM_ScanlineInt4					2 << 20
 	#define LBRM_ScanlineInt8					3 << 20
 
 
 #define LBReadFormat						GLINT_TAG_ADDR(0x11,0x01)
-        #define LBRF_DepthWidth15   0x03
+        #define LBRF_DepthWidth15   0x03  /* only permedia */
         #define LBRF_DepthWidth16   0x00
-        #define LBRF_StencilWidth0  0x00
-        #define LBRF_StencilWidth1  0xC0
+        #define LBRF_DepthWidth24   0x01
+        #define LBRF_DepthWidth32   0x02
+
+        #define LBRF_StencilWidth1  (4 << 2)
+        #define LBRF_StencilWidth2  (8 << 2)
+
+        #define LBRF_StencilPos0  (16 << 4)
+        #define LBRF_StencilPos1  (20 << 4)
+        #define LBRF_StencilPos2  (24 << 4)
+        #define LBRF_StencilPos3  (28 << 4)
+        #define LBRF_StencilPos4  (32 << 4)
+
+        #define LBRF_FrameCount1    (4 << 7)
+        #define LBRF_FrameCount2    (8 << 7)
+
+        #define LBRF_FrameCountPos0  (16 << 9)
+        #define LBRF_FrameCountPos1  (20 << 9)
+        #define LBRF_FrameCountPos2  (24 << 9)
+        #define LBRF_FrameCountPos3  (28 << 9)
+        #define LBRF_FrameCountPos4  (32 << 9)
+        #define LBRF_FrameCountPos5  (36 << 9)
+        #define LBRF_FrameCountPos6  (40 << 9)
+
+        #define LBRF_GIDWidth1 (4 << 12)
+
+        #define LBRF_GIDPos0  (16 << 13)
+        #define LBRF_GIDPos1  (20 << 13)
+        #define LBRF_GIDPos2  (24 << 13)
+        #define LBRF_GIDPos3  (28 << 13)
+        #define LBRF_GIDPos4  (32 << 13)
+        #define LBRF_GIDPos5  (36 << 13)
+        #define LBRF_GIDPos6  (40 << 13)
+        #define LBRF_GIDPos7  (44 << 13)
+        #define LBRF_GIDPos8  (48 << 13)
+
+        #define LBRF_Compact32  (1 << 17)
+
+
 
 #define LBSourceOffset						GLINT_TAG_ADDR(0x11,0x02)
 #define LBStencil						GLINT_TAG_ADDR(0x11,0x05)
@@ -509,18 +597,17 @@
 	#define LBWM_UpLoad_LBStencil				0x4
 
 #define LBWriteFormat						GLINT_TAG_ADDR(0x11,0x09)
-        #define LBWF_DepthWidth15   0x03
-        #define LBWF_DepthWidth16   0x00
-        #define LBWF_StencilWidth0  0x00
-        #define LBWF_StencilWidth1  0xC0
+
 
 #define TextureData						GLINT_TAG_ADDR(0x11,0x0d)
 #define TextureDownloadOffset					GLINT_TAG_ADDR(0x11,0x0e)
 
 #define GLINTWindow						GLINT_TAG_ADDR(0x13,0x00)
-        #define GWIN_ForceLBUpdate   0x08
-        #define GWIN_LBUpdateSource  0x10
-        #define GWIN_DisableLBUpdate 0x40000
+        #define GWIN_ForceLBUpdate      0x08
+        #define GWIN_LBUpdateSourceREG  0x10
+        #define GWIN_LBUpdateSourceLB   0
+        #define GWIN_DisableLBUpdate    0x40000
+        #define GWIN_EnableLBUpdate     0
 
 #define StencilMode						GLINT_TAG_ADDR(0x13,0x01)
 #define StencilData						GLINT_TAG_ADDR(0x13,0x02)
@@ -656,9 +743,15 @@
 #define VPAR_Ks		0x18
 #define VPAR_Kd		0x20
 
+/* have changed colors in ramdac !
 #define VPAR_R		0x28
 #define VPAR_G		0x30
 #define VPAR_B		0x38
+#define VPAR_A		0x40
+*/
+#define VPAR_B		0x28
+#define VPAR_G		0x30
+#define VPAR_R		0x38
 #define VPAR_A		0x40
 
 #define VPAR_f		0x48
@@ -707,12 +800,10 @@
 #define BroadcastMaskTag					GLINT_TAG_ADDR(0x26,0x0F)
 
 /*  Colorformats */
-#define CFRGB8888      0
-#define CFRGB5551      1
-#define CFRGB565Front  16
-#define CFRGB565Back   17
-#define CFRGBYUV444    18
-
+#define BGR555  1
+#define BGR565  16
+#define CI8     14
+#define CI4     15
 
 
 typedef struct {
@@ -757,9 +848,8 @@ typedef struct {
  	if (!OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options))  \
 	  while(GLINT_READ_REG(InFIFOSpace)<n)
 
-
 #define GLINT_SLOW_WRITE_REG(v,r) 		\
-      { GLINT_WAIT(1); 				\
+      { while(GLINT_READ_REG(InFIFOSpace)<1); 	\
         GLINT_WRITE_REG(v,r); }			\
 
 #define GLINT_LOAD_PAR(v,r) \
@@ -767,5 +857,19 @@ typedef struct {
 
 
 #endif
+
+
+#define REPLICATE(r)					\
+{							\
+	if (glintInfoRec.bitsPerPixel < 32)		\
+	{						\
+		r |= r << 16;				\
+		if (glintInfoRec.bitsPerPixel < 16)	\
+		{					\
+			r |= r << 8;			\
+		}					\
+	}						\
+}
+
 
 /* end of glint_regs.h *******************************************************/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.7 1997/10/01 05:51:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.8 1997/10/25 13:50:32 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -27,6 +27,7 @@ void MGAStormSync();
 void MGAStormEngineInit();
 
 void MGAWriteBitmap();
+void MGAFillRectStippled();
 
 /*
  * forward definitions for the functions in this file.
@@ -43,7 +44,7 @@ static void MGANAME(SetupForScreenToScreenColorExpand)();
 static void MGANAME(SubsequentScreenToScreenColorExpand)();
 static void MGANAME(SetupFor8x8PatternColorExpand)();
 static void MGANAME(Subsequent8x8PatternColorExpand)();
-static void MGANAME(SubsequentTwoPointLine)();
+static void MGANAME(SubsequentBresenhamLine)();
 static void MGANAME(SetupForDashedLine)();
 static void MGANAME(SubsequentDashedBresenhamLine)();
 static void MGANAME(SetClippingRectangle)();
@@ -77,9 +78,8 @@ void MGANAME(AccelInit)()
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | 
                              PIXMAP_CACHE | 
+                             DO_NOT_BLIT_STIPPLES |
                              HARDWARE_CLIP_LINE |
-                             USE_TWO_POINT_LINE |
-                             TWO_POINT_LINE_NOT_LAST |
 			     /* LINE_PATTERN_MSBFIRST_DECREASING | */
                              NO_SYNC_AFTER_CPU_COLOR_EXPAND;
     /*
@@ -100,7 +100,7 @@ void MGANAME(AccelInit)()
      * install hardware lines and clipping
      */
 
-    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
+    xf86AccelInfoRec.SubsequentBresenhamLine = MGANAME(SubsequentBresenhamLine);
     xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
 
 #if 0 /* server crashes with olvwm */
@@ -210,6 +210,8 @@ void MGANAME(AccelInit)()
      * replacements
      */
     xf86AccelInfoRec.WriteBitmap = MGAWriteBitmap;
+    xf86AccelInfoRec.FillRectStippled = MGAFillRectStippled;
+    xf86AccelInfoRec.FillRectOpaqueStippled = MGAFillRectStippled;
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -465,8 +467,8 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
     /* now, we construct mga_linecmd by masking the opcod and optimising */
     /* the use of gxcopy rop. opcod is clear so we can draw lines quickly */
 
-    mga_linecmd = MGADWG_NOZCMP | MGADWG_SOLID | MGADWG_SHIFTZERO | 
-                   MGADWG_BFCOL;
+    mga_linecmd = MGADWG_LINE_OPEN | MGADWG_NOZCMP | MGADWG_SOLID |
+    			MGADWG_SHIFTZERO | MGADWG_BFCOL;
     if ( rop == GXcopy )
 	mga_linecmd |= mga_lastcmd & 0x000F0000; /* same bop, RPL atype */
     else
@@ -828,42 +830,27 @@ void MGANAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
-/*
- * MgaSubsequentTwoPointLine ()
- * by ajv 961116
- * 
- * changelog:
- *  961116 - started
- *  961118 - merged it with 3.2a, added capstyle, added compatibility with
- *           SetupForFillRectSolid (which does the setup for lines and
- * 	     rectangles)
- *  961120 - modified it so that fewer instructions are executed per line
- *           segment, and moved some code into SetupForFillRect so that
- * 	     that code is not constantly being (unnecessarily) reevaluated
- * 	     all the time.
- *  961121 - added one time only clipping as per Harm's notes. Also worked
- *           to introduce concurrency by doing more work behind the EXEC. 
- *           Reordered code for register starved CPU's (Intel x86) plus
- * 	     it achieves better locality of code for other processors.
- */
-
+/******************************************************************
+************
+************     LINE drawing
+************
+******************************************************************/
+ 
 void
-MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
-        int x1, y1, x2, y2, bias;
+MGANAME(SubsequentBresenhamLine)(x1, y1, octant, err, e1, e2, length)
+	int x1, y1, octant, err, e1, e2, length;
 {
-    register int mga_localcmd = mga_linecmd;
+    register int oct = ((octant & YDECREASING) << 1) |
+                       ((octant & XDECREASING) >> 1) |
+                       !(octant & YMAJOR);
 
-    /* draw the last pixel? */
-    if ( bias & 0x0100 )
-        mga_localcmd |= MGADWG_AUTOLINE_OPEN; /* no */
-    else
-        mga_localcmd |= MGADWG_AUTOLINE_CLOSE; /* yep */
-
-    OUTREG(MGAREG_DWGCTL, mga_localcmd);
-    OUTREG(MGAREG_XYSTRT, ( y1 << 16 ) | (x1 & 0xffff));
-    OUTREG(MGAREG_XYEND + MGAREG_EXEC, ( y2 << 16 ) | (x2 & 0xffff));
-
-    /* do some work whilst the chipset is busy */
+    OUTREG(MGAREG_DWGCTL, mga_linecmd);
+    OUTREG(MGAREG_SGN, oct);
+    OUTREG(MGAREG_AR0, e1);
+    OUTREG(MGAREG_AR1, err);
+    OUTREG(MGAREG_AR2, e2);
+    OUTREG(MGAREG_XDST, x1);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | length);
 
     /* if clipping is on, disable it */
     if ( mga_ClipRect )
