@@ -1,5 +1,5 @@
-/* $XConsortium: Initialize.c /main/193 1995/11/10 12:07:30 kaleb $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.4 1995/06/14 07:12:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.5 1996/01/05 13:12:51 dawes Exp $ */
+/* $XConsortium: Initialize.c /main/195 1996/01/12 15:08:21 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -242,11 +242,23 @@ String _XtGetUserName(dest)
 #endif
 #endif
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS	/* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
     struct passwd pws;
     char pwbuf[LINE_MAX];
 #define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf)
 #define PwName pws.pw_name
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define CallFailed NULL
     struct passwd *pw;
 #else
@@ -296,11 +308,23 @@ static String GetRootDirName(dest, slash)
 #endif
 #endif
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
     struct passwd pws;
     char pwbuf[LINE_MAX];
 #define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf)
 #define PwDir pws.pw_dir
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define CallFailed NULL
     struct passwd *pw;
 #else

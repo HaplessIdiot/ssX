@@ -1,3 +1,16 @@
+XFree86 3.1.2Bh (13 January 1996)
+228. Add DGA support to the Mach32 server (untested).
+227. Add SVGA-based servers for PC98 (Cirrus driver) (X98 core team).
+226. Update the Cirrus driver to use the vga PCI probe data (not tested).
+225. Include XC fix-trackers to seq-4035 (mostly fixes for Solaris 2.5
+     build problems).
+224. Update xdpyinfo to print some info about XKB (Joe Moss).
+223. Fix(?) problem some people see with vertical lines / black screens
+     with the Trident driver (Alah Hourihane).
+222. Update the Trident and SiS drivers to use the vga PCI probe data
+     (Alan Hourihane).
+221. Define SetTtyGroup for Linux (Kevin Martin).
+
 XFree86 3.1.2Bg (12 January 1996)
 220. Fix cursor colour for TGUI 9660/9680 (Alan Hourihane).
 219. LynxOS fix for xterm's resize (Thomas Mueller).

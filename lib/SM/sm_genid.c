@@ -1,5 +1,5 @@
-/* $XConsortium: sm_genid.c /main/15 1995/11/10 12:16:04 kaleb $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.1 1994/10/20 06:02:35 dawes Exp $ */
+/* $XConsortium: sm_genid.c /main/17 1996/01/12 15:08:38 kaleb $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.2 1996/01/05 13:10:32 dawes Exp $ */
 
 /*
 
@@ -140,9 +140,21 @@ SmsConn smsConn;
     unsigned char decimal[4];
     int i, len;
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
 #define HostAddr hent.h_addr
     struct hostent hent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
 #define CallFailed NULL
     char hbuf[LINE_MAX];
@@ -152,7 +164,7 @@ SmsConn smsConn;
 #define CallFailed -1
     struct hostent_data hdata;
 #endif
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
     struct hostent *hostp;
 #else
     int hostp;
@@ -164,7 +176,7 @@ SmsConn smsConn;
     struct hostent *hostp;
 #endif
 
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero((char*)&hdata, sizeof hdata);
 #endif
     if ((hostp = Gethostbyname (hostname)) != CallFailed)

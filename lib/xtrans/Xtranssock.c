@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c /main/50 1995/12/05 16:53:10 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.15 1995/07/07 15:33:09 dawes Exp $ */
+/* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.16 1996/01/05 13:14:37 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -816,8 +816,20 @@ char 		*port;
     int		status;
     short	tmpport;
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
     struct	servent sent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
 #define CallFailed NULL
 #define ServPort sent.s_port
@@ -871,7 +883,7 @@ char 		*port;
 
 	if (!is_numeric (port))
 	{
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	    bzero ((char*)&sdata, sizeof sdata);
 #endif
 	    if ((servp = Getservbyname (port, "tcp")) == CallFailed)
@@ -1242,9 +1254,21 @@ char 		*port;
     struct sockaddr_in	sockname;
     int			namelen = sizeof(sockname);
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
     struct hostent	hent;
     struct servent	sent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
 #define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
 #define CallFailed NULL
@@ -1342,7 +1366,7 @@ char 		*port;
 
     if (tmpaddr == -1)
     {
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero ((char*)&hdata, sizeof hdata);
 #endif
 	if ((hostp = Gethostbyname(host)) == CallFailed)
@@ -1391,7 +1415,7 @@ else
 
     if (!is_numeric (portbuf))
     {
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero ((char*)&sdata, sizeof sdata);
 #endif
 	if ((servp = Getservbyname (portbuf,"tcp")) == CallFailed)
@@ -1498,8 +1522,20 @@ char *host;
 	 * and we know that 'host' is really a local host.
 	 */
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
 	struct hostent	hent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
 #define HostAddrList hent.h_addr_list
 #define CallFailed NULL
@@ -1522,7 +1558,7 @@ char *host;
 	char specified_local_addr_list[10][4];
 	int scount, equiv, i, j;
 
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero ((char*)&hdata, sizeof hdata);
 #endif
 	if ((hostp = Gethostbyname (host)) == CallFailed)
@@ -1542,7 +1578,7 @@ char *host;
 	    specified_local_addr_list[scount][3] = HostAddrList[scount][3];
 	    scount++;
 	}
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero ((char*)&hdata, sizeof hdata);
 #endif
 	if ((hostp = Gethostbyname (hostnamebuf)) == CallFailed)

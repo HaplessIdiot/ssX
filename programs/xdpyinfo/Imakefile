@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/7 1995/12/04 15:10:00 dpw $
-XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.2 1995/12/26 06:10:05 dawes Exp $
-        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XLIB)
+XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.3 1996/01/05 13:21:10 dawes Exp $
+        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXLIB) $(DEPXKBFILELIB)
+LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XLIB) $(XKBFILELIB)
   SYS_LIBRARIES = MathLibrary
 
 #if HasShm
@@ -16,6 +16,10 @@ LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XLIB)
         DGADEFINES = -DXFreeXDGA
 #endif
 
-        DEFINES = $(SHMDEFINES) $(VIDMODEDEFINES) $(DGADEFINES)
+#if BuildXKB
+        XKBDEFINES = -DXKB
+#endif
+
+        DEFINES = $(SHMDEFINES) $(VIDMODEDEFINES) $(DGADEFINES) $(XKBDEFINES)
 
 SimpleProgramTarget(xdpyinfo)
