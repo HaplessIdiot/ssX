@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.42 2001/08/01 00:44:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.43 2001/09/15 18:31:18 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -138,6 +138,7 @@ typedef struct {
     int                 videoKey;
     int			hsync;
     int			vsync;
+    CARD32              videoFlags;
 #endif
     OptionInfoPtr	Options;
 } TRIDENTRec, *TRIDENTPtr;
@@ -173,7 +174,6 @@ Bool TRIDENTClockSelect(ScrnInfoPtr pScrn, int no);
 Bool TRIDENTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 void TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags);
 Bool TRIDENTDGAInit(ScreenPtr pScreen);
-void TRIDENTInitVideo(ScreenPtr pScreen);
 
 unsigned int Tridentddc1Read(ScrnInfoPtr pScrn);
 void TVGARestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
@@ -295,6 +295,14 @@ typedef enum {
 
 #define TKD8001		0
 #define TGUIDAC		1
+
+/* 
+ * Video Flags
+ */
+
+#define VID_ZOOM_INV 0x1
+#define VID_ZOOM_MINI 0x2
+#define VID_OFF_SHIFT_4 0x4
 
 #endif /* _TRIDENT_H_ */
 

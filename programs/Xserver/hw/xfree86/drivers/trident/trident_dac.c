@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.47 2001/06/14 02:23:50 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.48 2001/09/15 18:31:18 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -400,6 +400,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pTrident->hsync = (HTotal - HSyncStart) + 23 + h_off;
 	pTrident->vsync = (VTotal - VSyncStart) - 2 + v_off;
 	/* a little more skew for the Blade series */
+	/* 9 seems to work well for CyberBlade/i7 and Cyber 9540 */
 	if (pTrident->Chipset >= BLADE3D) pTrident->hsync -= 6;
     }
     
@@ -588,9 +589,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Video */
-    pReg->tridentRegs3C4[SSetup] = 0x00;
+    OUTB(0x3C4,0x20);
+    pReg->tridentRegs3C4[SSetup] = INB(0x3C5) | 0x4;
     pReg->tridentRegs3C4[SKey] = 0x00;
-    pReg->tridentRegs3C4[SPKey] = 0x00;
+    pReg->tridentRegs3C4[SPKey] = 0xC0;
 
      /* restore */
     OUTB(0x3C4, 0x11);
