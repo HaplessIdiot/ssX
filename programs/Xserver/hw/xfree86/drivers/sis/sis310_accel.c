@@ -283,15 +283,19 @@ SiS315AccelInit(ScreenPtr pScreen)
 	infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK |
 					   HARDWARE_PATTERN_SCREEN_ORIGIN |
 					   HARDWARE_PATTERN_PROGRAMMED_BITS |
-					   BIT_ORDER_IN_BYTE_MSBFIRST ;
+					   BIT_ORDER_IN_BYTE_MSBFIRST;
 
 #ifdef SISVRAMQ
 	/* 8x8 color pattern fill (MMIO support not implemented) */
-	infoPtr->SetupForColor8x8PatternFill = SiSSetupForColor8x8PatternFill;
-	infoPtr->SubsequentColor8x8PatternFillRect = SiSSubsequentColor8x8PatternFillRect;
-	infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK |
-					    HARDWARE_PATTERN_SCREEN_ORIGIN |
-					    NO_TRANSPARENCY;
+	/* Does not work correctly on Xabre */
+	if((pSiS->Chipset != PCI_CHIP_SIS660) &&
+	   (pSiS->Chipset != PCI_CHIP_SIS330)) {
+	   infoPtr->SetupForColor8x8PatternFill = SiSSetupForColor8x8PatternFill;
+	   infoPtr->SubsequentColor8x8PatternFillRect = SiSSubsequentColor8x8PatternFillRect;
+	   infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK |
+	 				       HARDWARE_PATTERN_SCREEN_ORIGIN |
+					       NO_TRANSPARENCY;
+        }
 #endif
 
 #ifdef STSCE
