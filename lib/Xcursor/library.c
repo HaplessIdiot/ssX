@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/library.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/library.c,v 1.2 2003/01/26 03:22:42 eich Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -101,6 +101,9 @@ _XcursorBuildThemeDir (const char *dir, const char *theme)
 	if (!home)
 	    return 0;
 	homelen = strlen (home);
+	/* A '/' gets prepended if $HOME doesn't start with one. */
+	if (home[0] != '/')
+	    homelen++;
 	dir++;
 	dirlen--;
     }
