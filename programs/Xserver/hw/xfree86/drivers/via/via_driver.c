@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.16 2003/10/31 17:19:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.17 2003/12/17 18:57:18 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2427,12 +2427,11 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary) {
         viaFillGraphicInfo(pScrn);
-        /* There is alas not enough bandwidth to do 1600x1200x16 with video overlay */
-/*        if(pScrn->bitsPerPixel * pScrn->virtualX *pScrn->virtualY  <= 1400 * 1050 * 16)  */
+        if(!pVia->NoAccel)
         	viaInitVideo(pScreen);
-/*        else
-        	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "video overlay disabled (%dx%d@%d exceeds bandwidth)\n",
-        		pScrn->virtualX, pScrn->virtualY, pScrn->bitsPerPixel);*/
+        else
+        	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled; no Xvideo support.\n",
+        		pScrn->virtualX, pScrn->virtualY);
     }
 
     if (serverGeneration == 1)
