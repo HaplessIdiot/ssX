@@ -1,4 +1,6 @@
 XFree86 3.1.2Af (26 December 1995)
+170. Added README.DGA which gives a brief outline of the API for the DGA
+     extension.  This should be converted to man pages.
 169. Added a simple standalone program (joycal) to get the Joystick
      calibration coordinates.
 168. Modify the Joystick code to auto-detect the centre values at startup
