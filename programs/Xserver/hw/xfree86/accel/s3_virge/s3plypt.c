@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.7 1997/05/03 09:17:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.8 1997/06/03 14:11:40 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -86,16 +86,9 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
       return;
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
+   s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
 
-   if (devPriv->rop == GXcopy) {
-      /* In this case the cfb routines are faster. This is caused
-       * by the WaitQueue(1) instructions in the for-loop.
-       */
-   } else {
-      s3_rop = s3ConvertPlanemask(pGC, &s3_clr);
-   }
-
-   if (!xf86VTSema /*|| (s3_rop == -1)*/) {
+   if (!xf86VTSema || (s3_rop == -1)) {
       if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.114 1997/05/12 13:27:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.115 1997/06/03 14:11:30 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -900,6 +900,8 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x51);
       s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
+      if (OFLG_ISSET(OPTION_NO_SPLIT_XFER, &s3InfoRec.options))
+	 s3Port51 |= 0x40;
 
       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
 	  OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) {

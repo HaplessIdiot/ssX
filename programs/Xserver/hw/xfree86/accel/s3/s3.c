@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.170 1997/06/03 14:11:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.171 1997/06/11 12:24:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -734,25 +734,18 @@ s3GetPCIInfo()
       for (j=0; (pcrp = pcrpp[j]); j++) {
 	 if (i != j) {
 	    map_64m[ (pcrp->_base0 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base0+0x3ffffff) >> 26) & 0x3f] = 1;
 	    map_64m[ (pcrp->_base1 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base1+0x3ffffff) >> 26) & 0x3f] = 1;
 	    map_64m[ (pcrp->_base2 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base2+0x3ffffff) >> 26) & 0x3f] = 1;
 	    map_64m[ (pcrp->_base3 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base3+0x3ffffff) >> 26) & 0x3f] = 1;
 	    map_64m[ (pcrp->_base4 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base4+0x3ffffff) >> 26) & 0x3f] = 1;
 	    map_64m[ (pcrp->_base5 >> 26) & 0x3f] = 1;
-	    map_64m[((pcrp->_base5+0x3ffffff) >> 26) & 0x3f] = 1;
 	 }
       }
 
       /* check for 64MB alignment and free space */
       
       if ((base0 & 0x3ffffff) ||
-	  map_64m[(base0 >> 26) & 0x3f] || 
-	  map_64m[((base0+0x3ffffff) >> 26) & 0x3f]) {
+	  map_64m[(base0 >> 26) & 0x3f]) {
 	 for (j=63; j>=16 && map_64m[j]; j--);
 	 info.MemBase = ((unsigned long)j) << 26;
 	 ErrorF("%s %s: PCI: base address not correctly aligned or address conflict\n",
@@ -1182,6 +1175,7 @@ s3Probe()
    OFLG_SET(OPTION_ELSA_W2000PRO_X8, &validOptions);
    OFLG_SET(OPTION_MIRO_80SV, &validOptions);
    OFLG_SET(OPTION_NO_PCI_DISC, &validOptions);
+   OFLG_SET(OPTION_NO_SPLIT_XFER, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef __alpha__

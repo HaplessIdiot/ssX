@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.14 1997/01/05 11:59:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.15 1997/05/03 09:19:12 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -35,7 +35,9 @@
 #include "xf86_Config.h"
 
 #if defined(__NetBSD__) && !defined(MAP_FILE)
-#define MAP_FILE 0
+#define MAP_FLAGS MAP_SHARED
+#else
+#define MAP_FLAGS (MAP_FILE | MAP_SHARED)
 #endif
 
 /***************************************************************************/
@@ -89,7 +91,7 @@ Bool warn;
 	{
 	    /* Try to map a page at the VGA address */
 	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
-				 MAP_FILE, fd, (off_t)0xA0000);
+				 MAP_FLAGS, fd, (off_t)0xA0000);
 	
 	    if (base != (pointer)-1)
 	    {
@@ -123,7 +125,7 @@ Bool warn;
 	{
 	    /* Try to map a page at the VGA address */
 	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
-			     MAP_FILE, fd, (off_t)0xA0000);
+			     MAP_FLAGS, fd, (off_t)0xA0000);
 	
 	    if (base != (pointer)-1)
 	    {
@@ -179,7 +181,7 @@ unsigned long Size;
 			   DEV_MEM, strerror(errno));
 	    }
 	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FILE, devMemFd,
+				 MAP_FLAGS, devMemFd,
 				 (off_t)(unsigned long) Base);
 	    if (base == (pointer)-1)
 	    {
@@ -210,7 +212,7 @@ unsigned long Size;
 	if (!MemMapped)
 	{
 		base = (pointer)mmap(0, MAP_SIZE, PROT_READ|PROT_WRITE,
-				     MAP_FILE, xf86Info.screenFd, 0);
+				     MAP_FLAGS, xf86Info.screenFd, 0);
 		if (base == (pointer)-1)
 		{
 		    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
@@ -233,7 +235,7 @@ unsigned long Size;
 		FatalError("%s: Address 0x%x outside allowable range\n",
 			   "xf86MapVidMem", Base);
 	}
-	base = (pointer)mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FILE,
+	base = (pointer)mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FLAGS,
 			     xf86Info.screenFd,
 #ifdef __mips__
 			     (unsigned long)Base);
@@ -432,7 +434,7 @@ int ScreenNum;
 	if ((fd = open("/dev/ttyC0", O_RDWR)) >= 0) {
 		/* Try to map a page at the pccons I/O space */
 		base = (pointer)mmap((caddr_t)0, 65536, PROT_READ|PROT_WRITE,
-				MAP_FILE, fd, (off_t)0x0000);
+				MAP_FLAGS, fd, (off_t)0x0000);
 
 		if (base != (pointer)-1) {
 			IOPortBase = base;

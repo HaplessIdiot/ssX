@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.20 1997/06/06 06:07:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.21 1997/06/15 07:12:40 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -197,7 +197,7 @@ void xf86InitPixmapCacheSlots()
        disable8x8ColorExpand = FALSE;
  
      if(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR){
-       if(MaxHeight >= 16) {
+       if(MaxHeight >= 15) {
            disable8x8 = FALSE;
            disable8x8ColorExpand = FALSE;
        }
@@ -1343,36 +1343,44 @@ static void DoCacheExpandPixmap(pci)
 {
     int cur_w = pci->pix_w;
     int cur_h = pci->pix_h;
+    int width = pci->w;
+    int height = pci->h;
 
     xf86AccelInfoRec.SetupForScreenToScreenCopy(1, 1, GXcopy, 0xFFFFFFFF, -1);
 
+    if((xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR) &&
+            pci->flags == 1) {
+        width = 15;
+        height = 15;
+    }
+
     /* Expand in the x direction */
-    while (cur_w * 2 <= pci->w) 
+    while (cur_w * 2 <= width) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy(pci->x, pci->y,
             pci->x + cur_w, pci->y, cur_w, cur_h);
 	cur_w *= 2;
     }
 
-    if (cur_w != pci->w) 
+    if (cur_w != width) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
-            (pci->x + cur_w), pci->y, (pci->w - cur_w), cur_h);
-	cur_w = pci->w;
+            (pci->x + cur_w), pci->y, (width - cur_w), cur_h);
+	cur_w = width;
     }
 
     /* Expand in the y direction */
-    while (cur_h * 2 <= pci->h) 
+    while (cur_h * 2 <= height) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
             (pci->x), (pci->y + cur_h), cur_w, cur_h);
 	cur_h *= 2;
     }
 
-    if (cur_h != pci->h) 
+    if (cur_h != height) 
     {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy((pci->x), (pci->y),
-            (pci->x), (pci->y + cur_h), cur_w, (pci->h - cur_h));
+            (pci->x), (pci->y + cur_h), cur_w, (height - cur_h));
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)

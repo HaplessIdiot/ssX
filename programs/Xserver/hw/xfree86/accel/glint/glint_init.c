@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -173,9 +173,6 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 
 	crtcRegs->clock_sel = glintInfoRec.clock[mode->Clock];
 
-	/* enable FIFO disconnect for 500TX+Delta */
-	crtcRegs->fifodis = 0x01; 
-
 	/*
 	 * tell DAC to use the ICD chip clock 0 as ref clock 
 	 * and set up some more video timining generator registers
@@ -297,8 +294,15 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(0x0,			TextureReadMode);
 	GLINT_WRITE_REG(0x0,			RouterMode);
 	GLINT_WRITE_REG(0x0,			PatternRamMode);
+	/*
+	 * this sets the GLINT to do FIFO Disconnects (aka PCI retry)
+	 *
+	 * this is in general a bad idea, but we do this now to make
+	 * sure we are not losing writes to the register file
+	 */
+	GLINT_WRITE_REG(1,			DFIFODis);
+	GLINT_WRITE_REG(3,			FIFODis);
 	
-	GLINT_WRITE_REG(0x01,			FIFODis);
 	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
 
 	GLINT_WRITE_REG(pprod,			FBReadMode);
@@ -473,13 +477,6 @@ glintInit(DisplayModePtr mode)
 #endif
 	glintInitialized = 1;
 	glintInitCursorFlag = TRUE;
-	/*
-	 * this sets the GLINT to do FIFO Disconnects (aka PCI retry)
-	 *
-	 * this is in general a bad idea, but we do this now to make
-	 * sure we are not losing writes to the register file
-	 */
-	GLINT_WRITE_REG(1,DFIFODis);
 
 	return(TRUE);
 }
