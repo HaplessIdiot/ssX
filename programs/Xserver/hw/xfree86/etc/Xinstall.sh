@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.68 2004/02/15 18:38:32 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.69 2004/02/17 03:22:29 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -712,7 +712,7 @@ FindDistName()
 					DistName="NetBSD-1.4.x"
 					;;
 				*)
-					DistName="NetBSD-1.6"
+					DistName="NetBSD-1.6 or NetBSD 1.5"
 					;;
 				esac
 				;;
@@ -730,11 +730,11 @@ FindDistName()
 		case "$OsArch" in
 		i386)
 			case "$OsVersion" in
-			3.2*)	# Check this
-				DistName="OpenBSD-3.2"
+			3.4*)	# Check this
+				DistName="OpenBSD-3.4"
 				;;
 			*)
-				Message="No OpenBSD/i386 binaries available for this version"
+				Message="No OpenBSD/i386 binaries available for this version.   Try OpenBSD-3.4."
 				;;
 			esac
 			;;
