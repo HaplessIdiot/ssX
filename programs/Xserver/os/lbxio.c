@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: lbxio.c,v 1.2 94/12/02 17:33:49 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.2 1995/03/11 14:50:49 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -38,7 +38,6 @@ extern int errno;
 #endif
 #include "Xmd.h"
 #include <errno.h>
-#include <sys/param.h>
 #ifndef __EMX__
 #include <sys/uio.h>
 #endif

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.4 94/04/17 21:17:13 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/io.c,v 3.0 1995/03/11 14:27:10 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -62,7 +62,6 @@ extern int errno;
 #endif
 #include "Xmd.h"
 #include <errno.h>
-#include <sys/param.h>
 #ifndef __EMX__
 #include <sys/uio.h>
 #endif
