@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.8 2001/12/14 19:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.9 2002/02/19 11:09:21 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -504,10 +504,6 @@ TellNoMap (pwin, pmid)
 {
     xEvent 	xE;
 
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension && pwin->drawable.pScreen->myNum)
-	return WT_STOPWALKING;
-#endif
     if (wColormap(pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
@@ -516,7 +512,10 @@ TellNoMap (pwin, pmid)
 	xE.u.colormap.colormap = None;
 	xE.u.colormap.new = TRUE;
 	xE.u.colormap.state = ColormapUninstalled;
-	DeliverEvents(pwin, &xE, 1, (WindowPtr)NULL);
+#ifdef PANORAMIX
+        if(noPanoramiXExtension || !pwin->drawable.pScreen->myNum)
+#endif
+	   DeliverEvents(pwin, &xE, 1, (WindowPtr)NULL);
 	if (pwin->optional) {
 	    pwin->optional->colormap = None;
 	    CheckWindowOptionalNeed (pwin);
