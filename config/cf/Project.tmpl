@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.248 95/01/06 19:12:51 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.12 1995/01/25 10:42:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.13 1995/02/12 02:23:24 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -90,8 +90,8 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.12 1995/01/25 10:42:48 dawes Exp $
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO
 #endif
-#ifndef BuildVGAHelp
-#define BuildVGAHelp		NO
+#ifndef BuildXF86VidModeExt
+#define BuildXF86VidModeExt	NO
 #endif
 
 #ifndef InstallLibManPages
@@ -244,11 +244,11 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.12 1995/01/25 10:42:48 dawes Exp $
 #define ScreenSaverExtensionDefines /**/
 #endif
 #endif
-#ifndef VGAHelpDefines
-#if BuildVGAHelp
-#define VGAHelpDefines -DVGAHELP
+#ifndef XF86VidModeExtDefines
+#if BuildXF86VidModeExt
+#define XF86VidModeExtDefines -DXF86VIDMODE
 #else
-#define VGAHelpDefines /**/
+#define XF86VidModeExtDefines /**/
 #endif
 #endif
 #ifndef SitePervasiveExtensionDefines
@@ -261,7 +261,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.12 1995/01/25 10:42:48 dawes Exp $
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines ScreenSaverExtensionDefines VGAHelpDefines
+#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines ScreenSaverExtensionDefines XF86VidModeExtDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif

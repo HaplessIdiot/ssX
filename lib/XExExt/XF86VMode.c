@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/VGAHelp.c,v 3.1 1995/03/19 10:08:33 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.2 1995/06/04 14:39:57 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -33,15 +33,15 @@ from the Kaleb S. KEITHLEY.
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"
-#include "VGAHelpstr.h"
+#include "xf86vmstr.h"
 #include "Xext.h"
 #include "extutil.h"
 
 static XExtensionInfo _vgahelp_info_data;
 static XExtensionInfo *vgahelp_info = &_vgahelp_info_data;
-static char *vgahelp_extension_name = VGAHELPNAME;
+static char *vgahelp_extension_name = XF86VIDMODENAME;
 
-#define VGAHelpCheckExtension(dpy,i,val) \
+#define XF86VidModeCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, vgahelp_extension_name, val)
 
 /*****************************************************************************
@@ -75,11 +75,11 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, vgahelp_info)
 
 /*****************************************************************************
  *                                                                           *
- *		    public VGAHelp Extension routines                  *
+ *		    public XFree86-VidMode Extension routines                *
  *                                                                           *
  *****************************************************************************/
 
-Bool XVGAHelpQueryExtension (dpy, event_basep, error_basep)
+Bool XF86VidModeQueryExtension (dpy, event_basep, error_basep)
     Display *dpy;
     int *event_basep, *error_basep;
 {
@@ -94,7 +94,7 @@ Bool XVGAHelpQueryExtension (dpy, event_basep, error_basep)
     }
 }
 
-Bool XVGAHelpQueryVersion(dpy, majorVersion, minorVersion)
+Bool XF86VidModeQueryVersion(dpy, majorVersion, minorVersion)
     Display* dpy;
     int* majorVersion; 
     int* minorVersion;
@@ -103,7 +103,7 @@ Bool XVGAHelpQueryVersion(dpy, majorVersion, minorVersion)
     xVGAHelpQueryVersionReply rep;
     xVGAHelpQueryVersionReq *req;
 
-    VGAHelpCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
     GetReq(VGAHelpQueryVersion, req);
@@ -121,17 +121,17 @@ Bool XVGAHelpQueryVersion(dpy, majorVersion, minorVersion)
     return True;
 }
 
-Bool XVGAHelpGetModeLine(dpy, screen, dotclock, modeline)
+Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     Display* dpy;
     int screen;
     int* dotclock; 
-    XVGAHelpModeLine* modeline;
+    XF86VidModeModeLine* modeline;
 {
     XExtDisplayInfo *info = find_display (dpy);
     xVGAHelpGetModeLineReply rep;
     xVGAHelpGetModeLineReq *req;
 
-    VGAHelpCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
     GetReq(VGAHelpGetModeLine, req);
@@ -158,15 +158,15 @@ Bool XVGAHelpGetModeLine(dpy, screen, dotclock, modeline)
     return True;
 }
 
-Bool XVGAHelpModModeLine (dpy, screen, modeline)
+Bool XF86VidModeModModeLine (dpy, screen, modeline)
     Display *dpy;
     int screen;
-    XVGAHelpModeLine* modeline;
+    XF86VidModeModeLine* modeline;
 {
     XExtDisplayInfo *info = find_display (dpy);
     xVGAHelpModModeLineReq *req;
 
-    VGAHelpCheckExtension (dpy, info, 0);
+    XF86VidModeCheckExtension (dpy, info, 0);
 
     LockDisplay(dpy);
     GetReq(VGAHelpModModeLine, req);
@@ -187,7 +187,7 @@ Bool XVGAHelpModModeLine (dpy, screen, modeline)
     return True;
 }
 
-Bool XVGAHelpSwitchMode(dpy, screen, zoom)
+Bool XF86VidModeSwitchMode(dpy, screen, zoom)
     Display* dpy;
     int screen;
     int zoom;
@@ -195,7 +195,7 @@ Bool XVGAHelpSwitchMode(dpy, screen, zoom)
     XExtDisplayInfo *info = find_display (dpy);
     xVGAHelpSwitchModeReq *req;
 
-    VGAHelpCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
     GetReq(VGAHelpSwitchMode, req);
@@ -208,10 +208,10 @@ Bool XVGAHelpSwitchMode(dpy, screen, zoom)
     return True;
 }
     
-Bool XVGAHelpGetMonitor(dpy, screen, monitor)
+Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     Display* dpy;
     int screen;
-    XVGAHelpMonitor* monitor;
+    XF86VidModeMonitor* monitor;
 {
     XExtDisplayInfo *info = find_display (dpy);
     xVGAHelpGetMonitorReply rep;
@@ -219,7 +219,7 @@ Bool XVGAHelpGetMonitor(dpy, screen, monitor)
     CARD32 syncrange;
     int i;
 
-    VGAHelpCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
     GetReq(VGAHelpGetMonitor, req);
@@ -245,14 +245,14 @@ Bool XVGAHelpGetMonitor(dpy, screen, monitor)
 	Xfree(monitor->vendor);
 	return False;
     }
-    if (!(monitor->hsync = Xcalloc(rep.nhsync, sizeof(XVGAHelpSyncRange)))) {
+    if (!(monitor->hsync = Xcalloc(rep.nhsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
 		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
 	Xfree(monitor->vendor);
 	Xfree(monitor->model);
 	return False;
     }
-    if (!(monitor->vsync = Xcalloc(rep.nvsync, sizeof(XVGAHelpSyncRange)))) {
+    if (!(monitor->vsync = Xcalloc(rep.nvsync, sizeof(XF86VidModeSyncRange)))) {
 	_XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
 		  (rep.vendorLength + 3 & 3) + (rep.modelLength + 3 & 3));
 	Xfree(monitor->vendor);

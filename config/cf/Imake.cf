@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.19 95/01/05 19:24:32 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.14 1995/06/02 09:59:47 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -49,6 +49,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #define BSD386Architecture
 #define i386BsdArchitecture
 #define i386Architecture
+#undef i386
 #endif /* bsdi */
 
 #ifdef __NetBSD__
@@ -59,6 +60,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #ifdef __i386__
 #define i386BsdArchitecture
 #define i386Architecture
+#undef i386
 #endif
 #if defined(__sparc__) || defined(sparc)
 #define SparcArchitecture
@@ -74,6 +76,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #ifdef __i386__
 #define i386BsdArchitecture
 #define i386Architecture
+#undef i386
 #endif
 #endif /* __FreeBSD__ */
 
@@ -137,6 +140,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #undef SVR4
 #define SVR4Architecture
 #define i386Architecture
+#undef i386
 #endif /* USL */
 
 #ifdef NCR
@@ -146,6 +150,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #undef SVR4
 #define SVR4Architecture
 #define i386Architecture
+#undef i386
 #endif /* NCR */
 
 #ifdef apollo
@@ -291,6 +296,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #ifdef SVR4
 # ifdef i386
 #  define i386Architecture
+#  undef i386
 # endif
 # define SVR4Architecture
 # define MacroIncludeFile <svr4.cf>
@@ -300,6 +306,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 
 #ifdef SYSV
 # ifdef i386
+# undef i386
 #  ifdef SCO
 #   define i386Architecture
 #   define i386SVR3Architecture
@@ -346,6 +353,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 
 /* SYSV386 is here for backward compatibility only */
 #ifdef SYSV386
+# undef i386
 # ifdef SVR4
 #  define i386Architecture
 #  define SVR4Architecture
@@ -448,6 +456,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #undef linux
 #define LinuxArchitecture
 #define i386Architecture
+#undef i386
 #endif /* linux */
 
 #if defined(Lynx) && defined(i386)
@@ -456,6 +465,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 #undef Lynx
 #define LynxOSArchitecture
 #define i386Architecture
+#undef i386
 #endif /* LynxOS AT */
 
 #ifdef __uxp__
