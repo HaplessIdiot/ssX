@@ -284,7 +284,8 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             Support (accelerated) for the Intel i740 is provided by the
             XF86_SVGA server with the i740 driver, and for the Intel i810
             with the i810 driver.  The i810 is currently only supported on
-            Linux, and requires the agpgart.o kernel module.
+            Linux, and requires the agpgart.o kernel module in order to use
+            modes that require more than 1MB of video memory.
 
       3.9.17:
             Support (accelerated) for the Intel i740 is provided by the
@@ -581,7 +582,5 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 3.9.17.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.5 2000/01/24 19:38:29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.6 2000/01/24 22:21:48 dawes Exp $
 
-
-$XFree86$

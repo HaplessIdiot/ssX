@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.15 1999/05/15 15:36:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.16 1999/07/04 08:31:00 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -75,10 +75,34 @@ clean::									@@\
 #define LinuxDocSgmlToHtml(sgmlfile,base) /**/
 #endif
 
+/*
+ * Rule for maintainers to use to updated formatted copies of docs in the
+ * source tree.  Use with care.
+ */
+
+#ifndef UpdateFormattedDoc
+#define UpdateFormattedDoc(textfile)					@@\
+update.docs:: textfile							@@\
+	@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
+	    if [ "$(FORCEUPDATE)" = yes ]; then set -x; \		@@\
+		cp textfile $(FORMATTEDDIR)/textfile; \			@@\
+	    else \							@@\
+		$(RM) __tmp1__ __tmp2__; \				@@\
+		grep "Generated from XFree86:" textfile > __tmp1__; \	@@\
+		grep "Generated from XFree86:" $(FORMATTEDDIR)/textfile > __tmp2__; \	@@\
+		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \ @@\
+		else set -x; \						@@\
+			cp textfile $(FORMATTEDDIR)/textfile ; \
+		fi; \							@@\
+	    fi; \							@@\
+	fi
+#endif
+
 #define LinuxDocTargetLong(sgmlfile,textfile,base)			@@\
 LinuxDocSgmlToText(sgmlfile,textfile)					@@\
 LinuxDocSgmlToHtml(sgmlfile,base)					@@\
-LinuxDocSgmlToPs(sgmlfile,base)
+LinuxDocSgmlToPs(sgmlfile,base)						@@\
+UpdateFormattedDoc(textfile)
 
 #define LinuxDocReadmeTarget(base)					@@\
 LinuxDocTargetLong(base.sgml,ReadmeFile(base),base)
