@@ -2,7 +2,7 @@
  * SVR4 shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.13 2004/06/01 00:16:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.14 2005/02/05 03:46:22 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -366,19 +366,22 @@ clean::									@@\
 		$(RM) Concat(down/lib,libname.so)
 #endif /* Shared64DepLibraryTarget */
 
+#define Shared64CDebugFlags $(CDEBUGFLAGS) $(CLIBDEBUGFLAGS)
+#define Shared64CplusplusDebugFlags $(CXXDEBUGFLAGS) $(CXXLIBDEBUGFLAGS)
 #if HasGcc
-#define Shared64CDebugFlags -m64 DefaultCDebugFlags
-#define Shared64CplusplusDebugFlags -m64 DefaultCplusplusDebugFlags
+#define Shared64CArchFlags -m64
+#define Shared64CplusplusArchFlags -m64
+#define Shared64AsmOptions -m64
 #else
-#define Shared64CDebugFlags -xarch=v9 DefaultCDebugFlags
-#define Shared64CplusplusDebugFlags -xarch=v9 DefaultCplusplusDebugFlags
+#define Shared64CArchFlags -xarch=v9
+#define Shared64CplusplusArchFlags xarch=v9
+#define Shared64AsmOptions -xarch=v9
 #endif
 
-#define Shared64AsmOptions -xarch=v9
 
-#define Shared64LibObjCompile(options) LibObjCompile(Shared64Dir,Shared64CDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
+#define Shared64LibObjCompile(options) LibObjCompile(Shared64Dir,Shared64CArchFlags Shared64CDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
 #define Shared64LibObjAsm(options) LibObjAsm(Shared64Dir,options,Shared64AsmOptions)
-#define Shared64LibObjCplusplusCompile(options) LibObjCompile(Shared64Dir,Shared64CplusplusDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
+#define Shared64LibObjCplusplusCompile(options) LibObjCompile(Shared64Dir,Shared64CplusplusArchFlags Shared64CplusplusDebugFlags Shared64LibraryDef Shared64PositionIndependentCFlags options)
 
 #define ExtraSubdir Shared64Dir
 EXTRASUBDIR = ExtraSubdir

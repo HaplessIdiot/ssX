@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/sparc/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
 
 #ifndef MesaSPARCBuildDir
 #define MesaSPARCBuildDir $(GLXLIBSRC)/mesa/sparc/
@@ -8,7 +8,8 @@ MESASPARCBUILDDIR = MesaSPARCBuildDir
 
 MESA_SPARC_SRCS = $(MESASPARCBUILDDIR)sparc.c \
 		  $(MESASPARCBUILDDIR)xform.S \
-		  $(MESASPARCBUILDDIR)clip.S
+		  $(MESASPARCBUILDDIR)clip.S \
+		  $(MESASPARCBUILDDIR)norm.S
 
 #ifdef NeedToLinkMesaSrc
 /* If $(MESASRCDIR)/src/mesa/sparc isn't in the INCLUDES, it should be. */

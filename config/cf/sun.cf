@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.77 2004/12/15 01:30:55 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.78 2005/01/16 00:09:45 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -440,6 +440,10 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #   ifndef OptimizedCDebugFlags
 #    define OptimizedCDebugFlags -O2 GccAliasingArgs
 #   endif
+#  endif
+#  if defined(SparcArchitecture) && \
+	(GccMajorVersion == 3) && (GccMinorVersion == 3)
+#   define WorkaroundSparc64GccBug
 #  endif
 # else
 #  define SharedLibraryCcCmd cc

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile,v 1.1 2004/04/08 10:07:59 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/swrast/Imakefile,v 1.2 2004/12/10 16:06:58 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -90,6 +90,13 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 #include <Library.tmpl>
 
 LibraryObjectRule()
+
+#ifdef WorkaroundSparc64GccBug
+SpecialCLibObjectRule(s_copypix,s_copypix.c,-O0)
+SpecialCLibObjectRule(s_depth,s_depth.c,-O0)
+SpecialCLibObjectRule(s_fog,s_fog.c,-O0)
+SpecialCLibObjectRule(s_points,s_points.c,-O0)
+#endif
 
 AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
