@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.13 2000/09/29 08:59:46 eich Exp $ */
+/* $XFree86 $ */
 /**************************************************************************
 
-Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas.
+Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,
+                                         Sunnyvale, California.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,7 +19,7 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ATI, VA LINUX SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -28,13 +28,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Rickard E. Faith <faith@precisioninsight.com>
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Rickard E. Faith <faith@valinux.com>
  *
  */
 
-#ifndef _R128_H_
-#define _R128_H_
+#ifndef _RADEON_H_
+#define _RADEON_H_
 
 				/* Xv support */
 #include "xf86xv.h"
@@ -64,9 +64,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* DRI support */
 #ifdef XF86DRI
 #include "GL/glxint.h"
-#include "GL/glxtokens.h"
 #include "xf86drm.h"
-#include "xf86drmR128.h"
 #include "sarea.h"
 #define _XF86DRI_SERVER_
 #include "xf86dri.h"
@@ -80,32 +78,41 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "picturestr.h"
 #endif
 
-#define R128_DEBUG    0		/* Turn off debugging output                */
-#define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
-#define R128_MMIOSIZE 0x80000
+/* NOTE: Turn off DRI until it is working */
+#ifdef XF86DRI
+#undef XF86DRI
+#endif
 
-#define R128_VBIOS_SIZE 0x00010000
+#define RADEON_DEBUG    0	/* Turn off debugging output                */
+#define RADEON_TIMEOUT  2000000	/* Fall out of wait loops after this count */
+#define RADEON_MMIOSIZE 0x80000
+/* Atomic updates of PLL clock don't seem to always work and stick, thus
+ * the bit never resets. Here - we use our own check by reading back the
+ * register we've just wrote to make sure it's got the Right! value */
+#define RADEON_ATOMIC_UPDATE 0  /* Use PLL Atomic updates (seems broken) */
 
-				/* R128_NAME is used for the server-side
+#define RADEON_VBIOS_SIZE 0x00010000
+
+				/* RADEON_NAME is used for the server-side
                                    ddx driver, the client-side DRI driver,
                                    and the kernel-level DRM driver. */
-#define R128_NAME "r128"
+#define RADEON_NAME "radeon"
 
-#if R128_DEBUG
-#define R128TRACE(x)                                          \
-    do {                                                      \
-        ErrorF("(**) %s(%d): ", R128_NAME, pScrn->scrnIndex); \
-        ErrorF x;                                             \
+#if RADEON_DEBUG
+#define RADEONTRACE(x)                                          \
+    do {                                                        \
+        ErrorF("(**) %s(%d): ", RADEON_NAME, pScrn->scrnIndex); \
+        ErrorF x;                                               \
     } while (0);
 #else
-#define R128TRACE(x)
+#define RADEONTRACE(x)
 #endif
 
 
 /* Other macros */
-#define R128_ARRAY_SIZE(x)  (sizeof(x)/sizeof(x[0]))
-#define R128_ALIGN(x,bytes) (((x) + ((bytes) - 1)) & ~((bytes) - 1))
-#define R128PTR(pScrn) ((R128InfoPtr)(pScrn)->driverPrivate)
+#define RADEON_ARRAY_SIZE(x)  (sizeof(x)/sizeof(x[0]))
+#define RADEON_ALIGN(x,bytes) (((x) + ((bytes) - 1)) & ~((bytes) - 1))
+#define RADEONPTR(pScrn) ((RADEONInfoPtr)(pScrn)->driverPrivate)
 
 typedef struct {	/* All values in XCLKS    */ 
     int  ML;		/* Memory Read Latency    */
@@ -118,7 +125,7 @@ typedef struct {	/* All values in XCLKS    */
     int  Rloop;		/* Loop Latency           */
     int  Rloop_fudge;	/* Add to ML to get Rloop */
     char *name;
-} R128RAMRec, *R128RAMPtr;
+} RADEONRAMRec, *RADEONRAMPtr;
 
 typedef struct {
 				/* Common registers */
@@ -138,7 +145,7 @@ typedef struct {
 
 				/* Other registers to save for VT switches */
     CARD32     dp_datatype;
-    CARD32     gen_reset_cntl;
+    CARD32     rbbm_soft_reset;
     CARD32     clock_cntl_index;
     CARD32     amcgpio_en_reg;
     CARD32     amcgpio_mask;
@@ -188,7 +195,7 @@ typedef struct {
 				/* Pallet */
     Bool       palette_valid;
     CARD32     palette[256];
-} R128SaveRec, *R128SavePtr;
+} RADEONSaveRec, *RADEONSavePtr;
 
 typedef struct {
     CARD16        reference_freq;
@@ -196,7 +203,7 @@ typedef struct {
     CARD32        min_pll_freq;
     CARD32        max_pll_freq;
     CARD16        xclk;
-} R128PLLRec, *R128PLLPtr;
+} RADEONPLLRec, *RADEONPLLPtr;
 
 typedef struct {
     int                bitsPerPixel;
@@ -205,7 +212,7 @@ typedef struct {
     int                pixel_code;
     int                pixel_bytes;
     DisplayModePtr     mode;
-} R128FBLayout;
+} RADEONFBLayout;
 
 typedef struct {
     EntityInfoPtr     pEnt;
@@ -223,27 +230,29 @@ typedef struct {
 
     unsigned char     *MMIO;	  /* Map of MMIO region                      */
     unsigned char     *FB;	  /* Map of frame buffer                     */
+    CARD8             *VBIOS;     /* Video BIOS pointer                      */
 
     CARD32            MemCntl;
     CARD32            BusCntl;
     unsigned long     FbMapSize;  /* Size of frame buffer, in bytes          */
     int               Flags;	  /* Saved copy of mode flags                */
     
+#ifdef ENABLE_FLAT_PANEL
     Bool              HasPanelRegs; /* Current chip can connect to a FP      */
     Bool              CRTOnly;      /* Only use External CRT instead of FP   */
-    CARD8             *VBIOS;       /* Video BIOS for mode validation on FPs */
     int               FPBIOSstart;  /* Start of the flat panel info          */
 
 				/* Computed values for FPs */
     int               PanelXRes;
     int               PanelYRes;
     int               PanelPwrDly;
+#endif
 
-    R128PLLRec        pll;
-    R128RAMPtr        ram;
+    RADEONPLLRec        pll;
+    RADEONRAMPtr        ram;
 
-    R128SaveRec       SavedReg;	  /* Original (text) mode                    */
-    R128SaveRec       ModeReg;	  /* Current mode                            */
+    RADEONSaveRec       SavedReg;	  /* Original (text) mode                    */
+    RADEONSaveRec       ModeReg;	  /* Current mode                            */
     Bool              (*CloseScreen)(int, ScreenPtr);
 
     Bool              PaletteSavedOnVT; /* Palette saved on last VT switch   */
@@ -258,7 +267,7 @@ typedef struct {
     int               pix24bpp;	  /* Depth of pixmap for 24bpp framebuffer   */
     Bool              dac6bits;	  /* Use 6 bit DAC?                          */
 
-				/* Computed values for Rage 128 */
+				/* Computed values for Radeon */
     int               pitch;
     int               datatype;
     CARD32            dp_gui_master_cntl;
@@ -283,14 +292,14 @@ typedef struct {
     Bool              DGAactive;
     int               DGAViewportStatus;
 
-    R128FBLayout      CurrentLayout;
+    RADEONFBLayout      CurrentLayout;
 #ifdef XF86DRI
     Bool              directRenderingEnabled;
     DRIInfoPtr        pDRIInfo;
     int               drmFD;
     int               numVisualConfigs;
     __GLXvisualConfig *pVisualConfigs;
-    R128ConfigPrivPtr pVisualConfigsPriv;
+    RADEONConfigPrivPtr pVisualConfigsPriv;
 
     drmHandle         fbHandle;
 
@@ -305,14 +314,14 @@ typedef struct {
     unsigned char     *AGP;	        /* Map */
     int               agpMode;
 
-    Bool              CCEInUse;		/* CCE is currently active */
-    int               CCEMode;		/* CCE mode that server/clients use */
-    int               CCEFifoSize;	/* Size of the CCE command FIFO */
-    Bool              CCESecure;	/* CCE security enabled */
-    int               CCEusecTimeout;	/* CCE timeout in usecs */
-    Bool              CCE2D;            /* CCE is used for X server 2D prims */
+    Bool              CPInUse;		/* CP is currently active */
+    int               CPMode;		/* CP mode that server/clients use */
+    int               CPFifoSize;	/* Size of the CP command FIFO */
+    Bool              CPSecure;		/* CP security enabled */
+    int               CPusecTimeout;	/* CP timeout in usecs */
+    Bool              CP2D;		/* CP is used for X server 2D prims */
 
-				/* CCE ring buffer data */
+				/* CP ring buffer data */
     unsigned long     ringStart;	/* Offset into AGP space */
     drmHandle         ringHandle;	/* Handle from drmAddMap */
     drmSize           ringMapSize;	/* Size of map */
@@ -325,7 +334,7 @@ typedef struct {
     drmSize           ringReadMapSize;	/* Size of map */
     unsigned char     *ringReadPtr;	/* Map */
 
-				/* CCE vertex buffer data */
+				/* CP vertex buffer data */
     unsigned long     vbStart;		/* Offset into AGP space */
     drmHandle         vbHandle;		/* Handle from drmAddMap */
     drmSize           vbMapSize;	/* Size of map */
@@ -335,14 +344,14 @@ typedef struct {
     int               vbNumBufs;	/* Number of vert bufs */
     drmBufMapPtr      vbBufs;		/* Buffer map */
 
-				/* CCE indirect buffer data */
+				/* CP indirect buffer data */
     unsigned long     indStart;		/* Offset into AGP space */
     drmHandle         indHandle;	/* Handle from drmAddMap */
     drmSize           indMapSize;	/* Size of map */
     int               indSize;		/* Size of indirect bufs (in MB) */
     unsigned char     *ind;		/* Map */
 
-				/* CCE AGP Texture data */
+				/* CP AGP Texture data */
     unsigned long     agpTexStart;	/* Offset into AGP space */
     drmHandle         agpTexHandle;	/* Handle from drmAddMap */
     drmSize           agpTexMapSize;	/* Size of map */
@@ -363,39 +372,40 @@ typedef struct {
     int               log2TexGran;
 #endif
     XF86VideoAdaptorPtr adaptor;
-} R128InfoRec, *R128InfoPtr;
+} RADEONInfoRec, *RADEONInfoPtr;
 
-#define R128WaitForFifo(pScrn, entries)                                      \
+#define RADEONWaitForFifo(pScrn, entries)                                    \
 do {                                                                         \
-    if (info->fifo_slots < entries) R128WaitForFifoFunction(pScrn, entries); \
+    if (info->fifo_slots < entries)                                          \
+	RADEONWaitForFifoFunction(pScrn, entries);                           \
     info->fifo_slots -= entries;                                             \
 } while (0)
 
-extern void        R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries);
-extern void        R128WaitForIdle(ScrnInfoPtr pScrn);
-extern void        R128EngineReset(ScrnInfoPtr pScrn);
-extern void        R128EngineFlush(ScrnInfoPtr pScrn);
+extern void        RADEONWaitForFifoFunction(ScrnInfoPtr pScrn, int entries);
+extern void        RADEONWaitForIdle(ScrnInfoPtr pScrn);
+extern void        RADEONEngineReset(ScrnInfoPtr pScrn);
+extern void        RADEONEngineFlush(ScrnInfoPtr pScrn);
 
-extern int         R128INPLL(ScrnInfoPtr pScrn, int addr);
-extern void        R128WaitForVerticalSync(ScrnInfoPtr pScrn);
-extern void        R128AdjustFrame(int scrnIndex, int x, int y, int flags);
-extern Bool        R128SwitchMode(int ScrnIndex, DisplayModePtr mode, int flags);
+extern int         RADEONINPLL(ScrnInfoPtr pScrn, int addr);
+extern void        RADEONWaitForVerticalSync(ScrnInfoPtr pScrn);
+extern void        RADEONAdjustFrame(int scrnIndex, int x, int y, int flags);
+extern Bool        RADEONSwitchMode(int ScrnIndex, DisplayModePtr mode, int flags);
 
-extern Bool        R128AccelInit(ScreenPtr pScreen);
-extern void        R128EngineInit(ScrnInfoPtr pScrn);
-extern Bool        R128CursorInit(ScreenPtr pScreen);
-extern Bool        R128DGAInit(ScreenPtr pScreen);
+extern Bool        RADEONAccelInit(ScreenPtr pScreen);
+extern void        RADEONEngineInit(ScrnInfoPtr pScrn);
+extern Bool        RADEONCursorInit(ScreenPtr pScreen);
+extern Bool        RADEONDGAInit(ScreenPtr pScreen);
 
-extern int         R128MinBits(int val);
+extern int         RADEONMinBits(int val);
 
 #ifdef XF86DRI
-extern Bool        R128DRIScreenInit(ScreenPtr pScreen);
-extern void        R128DRICloseScreen(ScreenPtr pScreen);
-extern Bool        R128DRIFinishScreenInit(ScreenPtr pScreen);
-extern void        R128CCEStart(ScrnInfoPtr pScrn);
-extern void        R128CCEStop(ScrnInfoPtr pScrn);
-extern void        R128CCEResetRing(ScrnInfoPtr pScrn);
-extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
+extern Bool        RADEONDRIScreenInit(ScreenPtr pScreen);
+extern void        RADEONDRICloseScreen(ScreenPtr pScreen);
+extern Bool        RADEONDRIFinishScreenInit(ScreenPtr pScreen);
+extern void        RADEONCPStart(ScrnInfoPtr pScrn);
+extern void        RADEONCPStop(ScrnInfoPtr pScrn);
+extern void        RADEONCPResetRing(ScrnInfoPtr pScrn);
+extern void        RADEONCPWaitForIdle(ScrnInfoPtr pScrn);
 #endif
 
 #endif

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.10 2000/10/13 05:23:29 anderson Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
-Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas. 
+Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,
+                                         Sunnyvale, California.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,7 +19,7 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ATI, VA LINUX SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -28,11 +28,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Rickard E. Faith <faith@precisioninsight.com>
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Rickard E. Faith <faith@valinux.com>
  *
  * References:
  *
+ * !!!! FIXME !!!!
  *   RAGE 128 VR/ RAGE 128 GL Register Reference Manual (Technical
  *   Reference Manual P/N RRG-G04100-C Rev. 0.04), ATI Technologies: April
  *   1999.
@@ -49,35 +50,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86_OSproc.h"
 #include "xf86fbman.h"
 
-				/* XAA and Cursor Support */
-#include "xaa.h"
-#include "xf86Cursor.h"
-
-#include "xf86xv.h"
-
-				/* PCI support */
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* DRI support */
-#ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
-#define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
-#include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
-
 				/* Driver data structures */
-#include "r128.h"
-#include "r128_reg.h"
+#include "radeon.h"
+#include "radeon_reg.h"
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #define P_SWAP32( a , b )                 \
@@ -86,7 +61,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
        ((char *)a)[2] = ((char *)b)[1];   \
        ((char *)a)[3] = ((char *)b)[0]
 
-#define P_SWAP16( a , b )                   \
+#define P_SWAP16( a , b )                 \
         ((char *)a)[0] = ((char *)b)[1];  \
         ((char *)a)[1] = ((char *)b)[0];  \
         ((char *)a)[2] = ((char *)b)[3];  \
@@ -95,25 +70,25 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /* Set cursor foreground and background colors. */
-static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+static void RADEONSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
 
-    OUTREG(R128_CUR_CLR0, bg);
-    OUTREG(R128_CUR_CLR1, fg);
+    OUTREG(RADEON_CUR_CLR0, bg);
+    OUTREG(RADEON_CUR_CLR1, fg);
 }
 
 /* Set cursor position to (x,y) with offset into cursor bitmap at
    (xorigin,yorigin). */
-static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    R128InfoPtr           info      = R128PTR(pScrn);
-    unsigned char         *R128MMIO = info->MMIO;
-    xf86CursorInfoPtr     cursor    = info->cursor;
-    int                   xorigin   = 0;
-    int                   yorigin   = 0;
-    int                   total_y   = pScrn->frameY1 - pScrn->frameY0;
+    RADEONInfoPtr         info        = RADEONPTR(pScrn);
+    unsigned char         *RADEONMMIO = info->MMIO;
+    xf86CursorInfoPtr     cursor      = info->cursor;
+    int                   xorigin     = 0;
+    int                   yorigin     = 0;
+    int                   total_y     = pScrn->frameY1 - pScrn->frameY0;
     
     if (x < 0)                        xorigin = -x;
     if (y < 0)                        yorigin = -y;
@@ -122,26 +97,28 @@ static void R128SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     if (xorigin >= cursor->MaxWidth)  xorigin = cursor->MaxWidth - 1;
     if (yorigin >= cursor->MaxHeight) yorigin = cursor->MaxHeight - 1;
 
-    OUTREG(R128_CUR_HORZ_VERT_OFF,  R128_CUR_LOCK | (xorigin << 16) | yorigin);
-    OUTREG(R128_CUR_HORZ_VERT_POSN, (R128_CUR_LOCK
-				     | ((xorigin ? 0 : x) << 16)
-				     | (yorigin ? 0 : y)));
-    OUTREG(R128_CUR_OFFSET,         info->cursor_start + yorigin * 16);
+    OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
+				       | (xorigin << 16)
+				       | yorigin));
+    OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
+				       | ((xorigin ? 0 : x) << 16)
+				       | (yorigin ? 0 : y)));
+    OUTREG(RADEON_CUR_OFFSET,         info->cursor_start + yorigin * 16);
 }
 
-/* Copy cursor image from `image' to video memory.  R128SetCursorPosition
+/* Copy cursor image from `image' to video memory.  RADEONSetCursorPosition
    will be called after this, so we can ignore xorigin and yorigin. */
-static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
+static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    CARD32        *s        = (CARD32 *)image;
-    CARD32        *d        = (CARD32 *)(info->FB + info->cursor_start);
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    CARD32        *s          = (CARD32 *)image;
+    CARD32        *d          = (CARD32 *)(info->FB + info->cursor_start);
     int           y;
     CARD32        save;
 
-    save = INREG(R128_CRTC_GEN_CNTL);
-    OUTREG(R128_CRTC_GEN_CNTL, save & ~R128_CRTC_CUR_EN);
+    save = INREG(RADEON_CRTC_GEN_CNTL);
+    OUTREG(RADEON_CRTC_GEN_CNTL, save & ~RADEON_CRTC_CUR_EN);
  
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     switch(info->CurrentLayout.pixel_bytes) {
@@ -196,42 +173,41 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 	*d++ = 0x00000000;
     }
 
-   
-    OUTREG(R128_CRTC_GEN_CNTL, save);
+    OUTREG(RADEON_CRTC_GEN_CNTL, save);
 }
 
 /* Hide hardware cursor. */
-static void R128HideCursor(ScrnInfoPtr pScrn)
+static void RADEONHideCursor(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
     
-    OUTREGP(R128_CRTC_GEN_CNTL, 0, ~R128_CRTC_CUR_EN);
+    OUTREGP(RADEON_CRTC_GEN_CNTL, 0, ~RADEON_CRTC_CUR_EN);
 }
 
 /* Show hardware cursor. */
-static void R128ShowCursor(ScrnInfoPtr pScrn)
+static void RADEONShowCursor(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
     
-    OUTREGP(R128_CRTC_GEN_CNTL, R128_CRTC_CUR_EN, ~R128_CRTC_CUR_EN);
+    OUTREGP(RADEON_CRTC_GEN_CNTL, RADEON_CRTC_CUR_EN, ~RADEON_CRTC_CUR_EN);
 }
 
 /* Determine if hardware cursor is in use. */
-static Bool R128UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
+static Bool RADEONUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr info  = R128PTR(pScrn);
+    RADEONInfoPtr info  = RADEONPTR(pScrn);
 
     return info->cursor_start ? TRUE : FALSE;
 }
 
 /* Initialize hardware cursor support. */
-Bool R128CursorInit(ScreenPtr pScreen)
+Bool RADEONCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr           pScrn   = xf86Screens[pScreen->myNum];
-    R128InfoPtr           info    = R128PTR(pScrn);
+    RADEONInfoPtr           info    = RADEONPTR(pScrn);
     xf86CursorInfoPtr     cursor;
     FBAreaPtr             fbarea;
     int                   width;
@@ -253,12 +229,12 @@ Bool R128CursorInit(ScreenPtr pScreen)
 				 | HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64
 				 | HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK);
     
-    cursor->SetCursorColors   = R128SetCursorColors;
-    cursor->SetCursorPosition = R128SetCursorPosition;
-    cursor->LoadCursorImage   = R128LoadCursorImage;
-    cursor->HideCursor        = R128HideCursor;
-    cursor->ShowCursor        = R128ShowCursor;
-    cursor->UseHWCursor       = R128UseHWCursor;
+    cursor->SetCursorColors   = RADEONSetCursorColors;
+    cursor->SetCursorPosition = RADEONSetCursorPosition;
+    cursor->LoadCursorImage   = RADEONLoadCursorImage;
+    cursor->HideCursor        = RADEONHideCursor;
+    cursor->ShowCursor        = RADEONShowCursor;
+    cursor->UseHWCursor       = RADEONUseHWCursor;
 
     size                      = (cursor->MaxWidth/4) * cursor->MaxHeight;
     width                     = pScrn->displayWidth;
@@ -277,14 +253,15 @@ Bool R128CursorInit(ScreenPtr pScreen)
 		   "Hardware cursor disabled"
 		   " due to insufficient offscreen memory\n");
     } else {
-	info->cursor_start    = R128_ALIGN((fbarea->box.x1
-					    + width * fbarea->box.y1)
-					   * info->CurrentLayout.pixel_bytes, 16);
+	info->cursor_start    = RADEON_ALIGN((fbarea->box.x1
+					      + width * fbarea->box.y1)
+					     * info->CurrentLayout.pixel_bytes,
+					     16);
 	info->cursor_end      = info->cursor_start + size;
     }
 
-    R128TRACE(("R128CursorInit (0x%08x-0x%08x)\n",
-	       info->cursor_start, info->cursor_end));
+    RADEONTRACE(("RADEONCursorInit (0x%08x-0x%08x)\n",
+		 info->cursor_start, info->cursor_end));
     
     return xf86InitCursor(pScreen, cursor);
 }

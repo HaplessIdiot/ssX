@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dga.c,v 1.2 2000/06/17 00:03:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dga.c,v 1.3 2000/10/13 05:23:29 anderson Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -9,18 +9,6 @@
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
-
-				/* PCI support */
-#include "xf86Pci.h"
-#include "xf86PciInfo.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* XAA and Cursor Support */
-#include "xaa.h"
-#include "xaalocal.h"
-#include "xf86Cursor.h"
 
 				/* Driver data structures */
 #include "r128.h"
@@ -36,8 +24,10 @@ static int  R128_GetViewport(ScrnInfoPtr);
 static void R128_SetViewport(ScrnInfoPtr, int, int, int);
 static void R128_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void R128_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+#if 0
 static void R128_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
+#endif
 
 static
 DGAFunctionRec R128_DGAFuncs = {
@@ -331,6 +321,7 @@ R128_BlitRect(
 }
 
 
+#if 0
 static void 
 R128_BlitTransRect(
    ScrnInfoPtr pScrn, 
@@ -342,6 +333,7 @@ R128_BlitTransRect(
   /* this one should be separate since the XAA function would
      prohibit usage of ~0 as the key */
 }
+#endif
 
 
 static Bool 
