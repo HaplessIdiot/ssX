@@ -1,4 +1,10 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 627. Fix a LynxOS on PowerPC build problem (#A.746, Stuart Lissaman).
+ 626. Fix the names of the Northern Saami keyboards (#A.742,
+      Petter Reinholdtsen).
+ 625. Add Xinerama info to xdpyinfo (#A.741, Greg Parker).
+ 624. Fix an xdm problem caused by not handling an interrupted read (#A.728,
+      Darren Marshall).
  623. Add functions completing text control for Render.  Bump XRender library
       minor version (Keith Packard).
  622. Add XKB layout info for a newer Logitech iTouch keyboard (#A.727,
@@ -14427,4 +14433,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2105 2001/12/26 22:28:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2106 2001/12/27 01:15:57 keithp Exp $
