@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.93 2001/03/31 01:57:20 keithp Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.94 2001/04/26 21:27:48 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3167,7 +3167,8 @@ AllTarget(name.$(MANNEWSUFFIX))						@@\
 									@@\
 name.$(MANNEWSUFFIX): name.$(MANSRCSUFFIX)				@@\
 	RemoveFile($@)							@@\
-	$(LN) name.$(MANSRCSUFFIX) $@					@@\
+	cd `dirname name` && \						@@\
+		$(LN) `basename name.$(MANSRCSUFFIX)` `basename $@`	@@\
 									@@\
 clean::									@@\
 	RemoveFile(name.$(MANNEWSUFFIX))
