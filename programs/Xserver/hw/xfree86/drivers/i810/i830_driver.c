@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.9 2002/04/04 14:05:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.10 2002/05/10 12:50:05 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2231,7 +2231,7 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       xf86ReturnOptValBool(I810AvailableOptions(0,0), OPTION_DRI, TRUE)) {
 
       /* Disable direct rendering for 845_G - doesn't work yet */
-      if (IS_845G (pI810)) {
+      if (IS_845G (pI810))
          pI810->directRenderingEnabled = FALSE;
       else
      	 pI810->directRenderingEnabled = I830DRIScreenInit(pScreen); 
