@@ -617,6 +617,7 @@ GLINTProbe(DriverPtr drv, int flags)
      */
 
     if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;  /* SEE BELOW */
 
     if ((numDevSections = xf86MatchDevice(GLINT_DRIVER_NAME,
 					  &devSections)) <= 0) {
@@ -666,8 +667,11 @@ GLINTProbe(DriverPtr drv, int flags)
 				/* Check for pm2fb */
 		    if (strcmp(fbdevHWGetName(pScrn0),"Permedia2")) continue;
 
+#if 0 /* Need to find better way of detecting FBDEV */
+      /* Probably to use BUSID FBDEV */
 		    if (flags & PROBE_DETECTFBDEV)
 			return TRUE;
+#endif
 		    foundScreen = FBDev = TRUE;
 		    pScrn = xf86AllocateScreen(drv, 0);
 		    xf86LoadSubModule(pScrn, "fbdevhw");
