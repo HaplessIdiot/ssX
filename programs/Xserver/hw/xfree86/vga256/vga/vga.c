@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.0 1994/05/04 15:05:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.1 1994/05/31 08:21:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -760,7 +760,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     pointer    vgaVirtPtr;
     pointer    vgaPhysPtr;
 
-    for(vgaVirtPtr=vgaVirtBase;
+    for (vgaVirtPtr = vgaVirtBase;
 #if defined(MONOVGA) || defined(XF86VGA16)
         vgaVirtPtr<(pointer)((char *)vgaVirtBase+(vga256InfoRec.videoRam*256));
 #else
@@ -768,8 +768,18 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif
         vgaVirtPtr = (pointer)((char *)vgaVirtPtr + vgaSegmentSize))
         {
-            /* Set the bank, then clear it */
-            vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
+#if defined(MONOVGA)
+	    if (vgaVirtBase == vgaBase)
+            {
+                /* Not using banking mode */
+                vgaPhysPtr = vgaBase;
+            }
+            else
+#endif
+            {
+                /* Set the bank, then clear it */
+                vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
+            }
             memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);
         }
 #endif /* MONOVGA */

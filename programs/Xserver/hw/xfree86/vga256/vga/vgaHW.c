@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.1 1994/05/08 05:25:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.2 1994/05/31 08:21:51 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -865,14 +865,7 @@ vgaHWInit(mode, size)
   new->CRTC[16] = mode->VSyncStart & 0xFF;
   new->CRTC[17] = (mode->VSyncEnd & 0x0F) | 0x20;
   new->CRTC[18] = (mode->VDisplay -1) & 0xFF;
-#ifdef BANKEDMONOVGA
-  {
-    extern int vga2DisplayWidth;
-    new->CRTC[19] = vga2DisplayWidth >> 4;  /* just a guess */
-  }
-#else
-  new->CRTC[19] = vga256InfoRec.virtualX >> 4;  /* just a guess */
-#endif
+  new->CRTC[19] = vga256InfoRec.displayWidth >> 4;  /* just a guess */
   new->CRTC[20] = 0x00;
   new->CRTC[21] = mode->VSyncStart & 0xFF; 
   new->CRTC[22] = (mode->VSyncStart +1) & 0xFF;
