@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.9 2000/10/27 22:30:29 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.10 2000/11/01 23:33:05 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -40,6 +40,9 @@
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
+
+/* vgaHW module is only used to save/restore fonts by this driver */
+#include "vgaHW.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -170,6 +173,18 @@ XF86ModuleData i128ModuleData = { &i128VersRec, i128Setup, NULL };
  * unresolved symbols that are not required.  These are provided to the
  * LoaderRefSymLists() function in the module specific Setup() function.
  */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",  
+    "vgaHWLock",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWUnlock",
+    NULL
+};      
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
@@ -544,6 +559,20 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 			  pI128->PciInfo->func);
 
     pI128->Primary = xf86IsPrimaryPci(pI128->PciInfo);
+
+    /* The vgahw module should be allocated here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+        return FALSE;
+    
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+    /*
+     * Allocate a vgaHWRec
+     */
+    if (!vgaHWGetHWRec(pScrn))
+        return FALSE;
+ 
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -1323,9 +1352,7 @@ I128MapMem(ScrnInfoPtr pScrn)
 static Bool
 I128UnmapMem(ScrnInfoPtr pScrn)
 {
-    I128Ptr pI128;
-
-    pI128 = I128PTR(pScrn);
+    I128Ptr pI128 = I128PTR(pScrn);
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Unmapping memory\n");
 
@@ -1357,6 +1384,12 @@ I128UnmapMem(ScrnInfoPtr pScrn)
 static void
 I128Save(ScrnInfoPtr pScrn)
 {
+    I128Ptr pI128 = I128PTR(pScrn);
+    vgaHWPtr vgaHWP = VGAHWPTR(pScrn);
+
+    if (pI128->Primary)
+	vgaHWSave(pScrn, &vgaHWP->SavedReg, VGA_SR_ALL);
+
     I128SaveState(pScrn);
 }
 
@@ -1366,7 +1399,16 @@ I128Save(ScrnInfoPtr pScrn)
 static void 
 I128Restore(ScrnInfoPtr pScrn)
 {
+    I128Ptr pI128 = I128PTR(pScrn);
+    vgaHWPtr vgaHWP = VGAHWPTR(pScrn);
+
     I128RestoreState(pScrn);
+
+    if (pI128->Primary) {
+	vgaHWProtect(pScrn, TRUE);
+	vgaHWRestore(pScrn, &vgaHWP->SavedReg, VGA_SR_ALL);
+	vgaHWProtect(pScrn, FALSE);
+    }
 }
 
 /* Usually mandatory */
@@ -1677,6 +1719,9 @@ I128FreeScreen(int scrnIndex, int flags)
      * This only gets called when a screen is being deleted.  It does not
      * get called routinely at the end of a server generation.
      */
+    if (xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
+        vgaHWFreeHWRec(xf86Screens[scrnIndex]);
+
     I128FreeRec(xf86Screens[scrnIndex]);
 }
 
