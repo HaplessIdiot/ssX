@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.24 2001/12/14 20:01:19 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.25 2002/05/31 18:46:10 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -670,11 +670,11 @@ DefineLocal (FILE *file, Xauth *auth)
 	struct utsname name;
 
 	uname(&name);
-	strcpy(displayname, name.nodename);
+	snprintf(displayname, sizeof(displayname), "%s", name.nodename);
 	}
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
 
-	strcpy(tmp_displayname, displayname);
+	snprintf(tmp_displayname, sizeof(tmp_displayname), "%s", displayname);
 #endif
 
 #if (!defined(NEED_UTSNAME) || defined (hpux))
@@ -1084,10 +1084,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	home = getEnv (verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
-	    strcpy (home_name, home);
-	    if (home[strlen(home) - 1] != '/')
-		strcat (home_name, "/");
-	    strcat (home_name, ".Xauthority");
+	    snprintf (home_name, sizeof(home_name), "%s/.Xauthority", home);
 	    Debug ("XauLockAuth %s\n", home_name);
 	    lockStatus = XauLockAuth (home_name, 1, 2, 10);
 	    Debug ("Lock is %d\n", lockStatus);
@@ -1103,7 +1100,7 @@ SetUserAuthorization (struct display *d, struct verify_info *verify)
 	    }
 	}
 	if (lockStatus != LOCK_SUCCESS) {
-	    sprintf (backup_name, "%s/.XauthXXXXXX", d->userAuthDir);
+	    snprintf (backup_name, sizeof(backup_name), "%s/.XauthXXXXXX", d->userAuthDir);
 	    (void) mktemp (backup_name);
 	    lockStatus = XauLockAuth (backup_name, 1, 2, 10);
 	    Debug ("backup lock is %d\n", lockStatus);
@@ -1227,10 +1224,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
     if (!home)
 	return;
     Debug ("RemoveUserAuthorization\n");
-    strcpy (name, home);
-    if (home[strlen(home) - 1] != '/')
-	strcat (name, "/");
-    strcat (name, ".Xauthority");
+    snprintf(name, "%s/.Xauthority", home);
     Debug ("XauLockAuth %s\n", name);
     lockStatus = XauLockAuth (name, 1, 2, 10);
     Debug ("Lock is %d\n", lockStatus);

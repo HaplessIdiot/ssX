@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/resource.c,v 3.7 2001/12/14 20:01:23 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/resource.c,v 3.9 2002/11/25 14:05:05 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -422,8 +422,8 @@ LoadDMResources (void)
 	char	name[1024], class[1024];
 
 	for (i = 0; i < NUM_DM_RESOURCES; i++) {
-		sprintf (name, "DisplayManager.%s", DmResources[i].name);
-		sprintf (class, "DisplayManager.%s", DmResources[i].class);
+		snprintf (name, sizeof(name), "DisplayManager.%s", DmResources[i].name);
+		snprintf (class, sizeof(class), "DisplayManager.%s", DmResources[i].class);
 		GetResource (name, class, DmResources[i].type,
 			      (char **) DmResources[i].dm_value,
 			      DmResources[i].default_value);
@@ -463,9 +463,9 @@ LoadDisplayResources (
     CleanUpName (d->name, dpyName, sizeof (dpyName));
     CleanUpName (d->class ? d->class : d->name, dpyClass, sizeof (dpyClass));
     for (i = 0; i < numResources; i++) {
-	    sprintf (name, "DisplayManager.%s.%s", 
+	    snprintf (name, sizeof(name), "DisplayManager.%s.%s", 
 		    dpyName, resources[i].name);
-	    sprintf (class, "DisplayManager.%s.%s",
+	    snprintf (class, sizeof(class), "DisplayManager.%s.%s",
 		    dpyClass, resources[i].class);
 	    GetResource (name, class, resources[i].type,
 			  (char **) (((char *) d) + resources[i].offset),

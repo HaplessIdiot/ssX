@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 582. Various xdm updates from Debian and Suse (#5358, Branden Robinson, 
+      #5511, Sebastian Krahmer).
  581. Flesh out suncg6's SaveScreen() function (Moritz Bunkus).
  580. lib/Xaw/MultiSrc.c improperly checks open() return value
       (A.1415, Jaromir Dolecek), Fix provided by Hideo Saito in NetBSD.
@@ -15688,4 +15690,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2429 2002/12/06 16:19:54 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2430 2002/12/06 16:44:35 tsi Exp $
