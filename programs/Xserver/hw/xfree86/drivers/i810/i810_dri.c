@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.6 2000/06/23 23:43:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.7 2000/08/01 19:03:15 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -563,22 +563,33 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    }
 
    /* Steal some of the excess cursor space for the overlay regs,
-    * then allocate 202 pages for the overlay buffer.
+    * then allocate 202*2 pages for the overlay buffers.
     */
     pI810->OverlayPhysical = pI810->CursorPhysical + 1024;
     pI810->OverlayStart = pI810->CursorStart + 1024;
 
     /* Allocate overlay memory */
-    I810AllocHigh( &(pI810->OverlayBuf), &(pI810->SysMem),
+    I810AllocHigh( &(pI810->OverlayBuf0), &(pI810->SysMem),
                  202 * 4096);
 
-    if(pI810->OverlayBuf.Start == 0 ||
-       pI810->OverlayBuf.End - pI810->OverlayBuf.Start >
+    if(pI810->OverlayBuf0.Start == 0 ||
+       pI810->OverlayBuf0.End - pI810->OverlayBuf0.Start >
        202 * 4096) {
        ErrorF("Not enough memory for overlay buffer\n");
        DRICloseScreen(pScreen);
        return FALSE;
     }
+    I810AllocHigh( &(pI810->OverlayBuf1), &(pI810->SysMem),
+                 202 * 4096);
+
+    if(pI810->OverlayBuf1.Start == 0 ||
+       pI810->OverlayBuf1.End - pI810->OverlayBuf1.Start >
+       202 * 4096) {
+       ErrorF("Not enough memory for overlay buffer\n");
+       DRICloseScreen(pScreen);
+       return FALSE;
+    }
+
     /* drmAddMap happens later to preserve index order */
 
 
@@ -698,8 +709,15 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
     /* add the drm map for the overlay. It is added here so that the index
      * numbers of the other maps didn't have to be changed.
      */
-    if(drmAddMap(pI810->drmSubFD, (drmHandle)pI810->OverlayBuf.Start,
-               pI810->OverlayBuf.Size, DRM_AGP, 0,
+    if(drmAddMap(pI810->drmSubFD, (drmHandle)pI810->OverlayBuf0.Start,
+               pI810->OverlayBuf0.Size, DRM_AGP, 0,
+               &pI810->overlay_map) < 0) {
+       ErrorF("drmAddMap(overlay_map) failed\n");
+       DRICloseScreen(pScreen);
+       return FALSE;
+    }
+    if(drmAddMap(pI810->drmSubFD, (drmHandle)pI810->OverlayBuf1.Start,
+               pI810->OverlayBuf1.Size, DRM_AGP, 0,
                &pI810->overlay_map) < 0) {
        ErrorF("drmAddMap(overlay_map) failed\n");
        DRICloseScreen(pScreen);
