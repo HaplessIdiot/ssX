@@ -4,6 +4,8 @@
  *
  * Copyright (C) 2001-2004 by Thomas Winischhofer, Vienna, Austria
  *
+ * Licensed under the following terms:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appears in all copies and that both that copyright
@@ -22,8 +24,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors: 	Thomas Winischhofer <thomas@winischhofer.net>
- *		others, including SiS, Inc.
+ * Authors: 	Can-Ru Yeou, SiS Inc.,
+ *		Thomas Winischhofer <thomas@winischhofer.net>,
+ *		others.
  *
  * Previously taken and modified from tdfx_dri.h
  */
