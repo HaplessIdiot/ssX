@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.9 1995/07/15 16:00:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.10 1995/07/16 14:52:46 dawes Exp $ */
 
 /*
 
@@ -575,8 +575,14 @@ ProcVGAHelpGetMonitor(client)
 
     REQUEST_SIZE_MATCH(xVGAHelpGetMonitorReq);
     rep.type = X_Reply;
-    rep.vendorLength = strlen(mptr->vendor);
-    rep.modelLength = strlen(mptr->model);
+    if (mptr->vendor)
+	rep.vendorLength = strlen(mptr->vendor);
+    else
+	rep.vendorLength = 0;
+    if (mptr->model)
+	rep.modelLength = strlen(mptr->model);
+    else
+	rep.modelLength = 0;
     rep.length = (SIZEOF(xVGAHelpGetMonitorReply) - SIZEOF(xGenericReply) +
 		  (mptr->n_hsync + mptr->n_vrefresh) * sizeof(CARD32) +
 	          (rep.vendorLength + 3 & ~3) +
@@ -614,8 +620,10 @@ ProcVGAHelpGetMonitor(client)
 			     hsyncdata);
     WriteSwappedDataToClient(client, mptr->n_vrefresh * sizeof(CARD32),
 			     vsyncdata);
-    WriteToClient(client, rep.vendorLength, mptr->vendor);
-    WriteToClient(client, rep.modelLength, mptr->model);
+    if (rep.vendorLength)
+	WriteToClient(client, rep.vendorLength, mptr->vendor);
+    if (rep.modelLength)
+	WriteToClient(client, rep.modelLength, mptr->model);
     DEALLOCATE_LOCAL(hsyncdata);
     DEALLOCATE_LOCAL(vsyncdata);
     return (client->noClientException);
