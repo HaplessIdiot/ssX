@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.10 1996/05/10 06:58:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.11 1996/05/11 11:04:05 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -332,7 +332,8 @@ xf86JstkEvents(OsTimerPtr        timer,
       {
         if ((priv->jstkOldButtons & loop) != (buttons & loop))
           {
-	    xf86PostButtonEvent(device, 0, loop, ((buttons & loop) == loop), 0, 0);
+	    xf86PostButtonEvent(device, 0, loop, ((buttons & loop) == loop),
+				0, 2, v0, v1);
           }
       }
     priv->jstkOldButtons = buttons;

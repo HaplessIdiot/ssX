@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.10 1996/05/10 06:58:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.11 1996/05/11 11:04:08 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -941,10 +941,12 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	    xv->type = DeviceValuator;
 	    xv->deviceid = device->id;
 	    xv->device_state = 0;
+	    /* if the device is in the relative mode we don't have to send valuators */
 	    xv->num_valuators = is_absolute ? (loop % 6) : 0;
 	    xv->first_valuator = first_valuator + (loop / 6) * 6;
 	    xf86eqEnqueue(xE);
-	    if (is_absolute) break;
+	    /* if the device is in the relative mode only one event is needed */
+	    if (!is_absolute) break;
 	}
 	if (is_core_pointer && loop == 1) {
 	    int       cx, cy;

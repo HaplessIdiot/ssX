@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.1 1995/12/16 08:19:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.2 1996/02/04 09:01:11 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -120,24 +120,157 @@ struct i128mem {
 #define MW0_KDAT 0x0020/4
 #define MW0_MASK 0x0024/4
 
-/* raster operations */
 
-#define MIX_CLEAR          0x00
-#define MIX_NOR            0x01
-#define MIX_AND_INVERTED   0x02
-#define MIX_COPY_INVERTED  0x03
-#define MIX_AND_REVERSE    0x04
-#define MIX_INVERT         0x05
-#define MIX_XOR            0x06
-#define MIX_NAND           0x07
-#define MIX_AND            0x08
-#define MIX_EQUIV          0x09
-#define MIX_NOOP           0x0A
-#define MIX_OR_INVERTED    0x0B
-#define MIX_COPY           0x0C
-#define MIX_OR_REVERSED    0x0D
-#define MIX_OR             0x0E
-#define MIX_SET            0x0F
+/* RBASE_[AB] register offsets  (divided by four for double word indexing */
+
+#define INTP     0x0000/4
+#define  INTP_DD_INT 0x01	/* drawing op completed  */
+#define  INTP_CL_INT 0x02
+#define INTM     0x0004/4
+#define  INTM_DD_MSK 0x01
+#define  INTM_CL_MSK 0x02
+#define FLOW     0x0008/4
+#define  FLOW_DEB    0x01	/* drawing engine busy   */
+#define  FLOW_MCB    0x02	/* mem controller busy   */
+#define  FLOW_CLP    0x04
+#define  FLOW_PRV    0x08	/* prev cmd still running or cache ready */
+#define BUSY     0x000C/4
+#define  BUSY_BUSY   0x01	/* command pipeline busy */
+#define XYW_AD   0x0010/4
+#define Z_CTRL   0x0018/4
+#define BUF_CTRL 0x0020/4
+#define  BC_AMV      0x02
+#define  BC_MP       0x04
+#define  BC_AMD      0x08
+#define  BC_SEN_MSK  0x0300
+#define  BC_SEN_DB   0x0000
+#define  BC_SEN_VB   0x0100
+#define  BC_SEN_MB   0x0200
+#define  BC_SEN_CB   0x0300
+#define  BC_DEN_MSK  0x0C00
+#define  BC_DEN_DB   0x0000
+#define  BC_DEN_VB   0x0400
+#define  BC_DEN_MB   0x0800
+#define  BC_DEN_CB   0x0C00
+#define  BC_DSE      0x1000
+#define  BC_VSE      0x2000
+#define  BC_MSE      0x4000
+#define  BC_PS_MSK   0x001F0000
+#define  BC_MDM_MSK  0x00600000
+#define  BC_MDM_KEY  0x00200000
+#define  BC_MDM_PLN  0x00400000
+#define  BC_PSIZ_MSK 0x03000000
+#define  BC_PSIZ_8B  0x00000000
+#define  BC_PSIZ_16B 0x01000000
+#define  BC_PSIZ_32B 0x02000000
+#define  BC_PSIZ_NOB 0x03000000
+#define  BC_CO       0x40000000
+#define  BC_CR       0x80000000
+#define DE_PGE   0x0024/4
+#define  DP_DVP_MSK  0x0000001F
+#define  DP_MP_MSK   0x000F0000
+#define DE_SORG   0x0028/4
+#define DE_DORG   0x002C/4
+#define DE_MSRC   0x0030/4
+#define DE_WKEY   0x0038/4
+#define DE_KYDAT  0x003C/4
+#define DE_SPTCH  0x0040/4
+#define DE_DPTCH  0x0044/4
+#define CMD       0x0048/4
+#define  CMD_OPC_MSK 0x000000FF
+#define  CMD_ROP_MSK 0x0000FF00
+#define  CMD_STL_MSK 0x001F0000
+#define  CMD_CLP_MSK 0x00E00000
+#define  CMD_PAT_MSK 0x0F000000
+#define  CMD_HDF_MSK 0x70000000
+#define CMD_OPC   0x0050/4
+#define  CMD_OPC_MSK 0x000000FF
+#define  CO_NOOP     0x00
+#define  CO_BITBLT   0x01
+#define  CO_LINE     0x02
+#define  CO_ELINE    0x03
+#define  CO_TRIAN    0x04
+#define  CO_RXFER    0x06
+#define  CO_WXFER    0x07
+#define CMD_ROP   0x0054/4
+#define  CR_CLEAR    0x00
+#define  CR_NOR      0x01
+#define  CR_AND_INV  0x02
+#define  CR_COPY_INV 0x03
+#define  CR_AND_REV  0x04
+#define  CR_INVERT   0x05
+#define  CR_XOR      0x06
+#define  CR_NAND     0x07
+#define  CR_AND      0x08
+#define  CR_EQUIV    0x09
+#define  CR_NOOP     0x0A
+#define  CR_OR_INV   0x0B
+#define  CR_COPY     0x0C
+#define  CR_OR_REV   0x0D
+#define  CR_OR       0x0E
+#define  CR_SET      0x0F
+#define CMD_STYLE 0x0058/4
+#define  CS_SOLID    0x01
+#define  CS_TRNSP    0x02
+#define  CS_STP_NO   0x00
+#define  CS_STP_PL   0x04
+#define  CS_STP_PA32 0x08
+#define  CS_STP_PA8  0x0C
+#define  CS_EDI      0x10
+#define CMD_PATRN 0x005C/4
+#define  CP_APAT_NO  0x00
+#define  CP_APAT_8X  0x01
+#define  CP_APAT_32X 0x02
+#define  CP_NLST     0x04
+#define  CP_PRST     0x08
+#define CMD_CLP   0x0060/4
+#define  CC_NOCLP    0x00
+#define  CC_CLPRECI  0x02
+#define  CC_CLPRECO  0x03
+#define  CC_CLPSTOP  0x04
+#define CMD_HDF   0x0064/4
+#define  CH_BIT_SWP  0x01
+#define  CH_BYT_SWP  0x02
+#define  CH_WRD_SWP  0x04
+#define FORE      0x0068/4
+#define BACK      0x006C/4
+#define MASK      0x0070/4
+#define RMSK      0x0074/4
+#define LPAT      0x0078/4
+#define PCTRL     0x007C/4
+#define  PC_PLEN_MSK  0x0000001F
+#define  PC_PSCL_MSK  0x000000E0
+#define  PC_SPTR_MSK  0x00001F00
+#define  PC_SSCL_MSK  0x0000E000
+#define  PC_STATE_MSK 0xFFFF0000
+#define CLPTL     0x0080/4
+#define  CLPTLY_MSK   0x0000FFFF
+#define  CLPTLX_MSK   0xFFFF0000
+#define CLPBR     0x0084/4
+#define  CLPBRY_MSK   0x0000FFFF
+#define  CLPBRX_MSK   0xFFFF0000
+#define XY0         0x0088/4
+#define XY1         0x008C/4      /* trigger */
+#define XY2         0x0090/4
+#define XY3         0x0094/4
+#define XY4         0x0098/4
+#define  XY_Y_DATA    0x0000FFFF
+#define  XY_X_DATA    0xFFFF0000
+#define  XY_I_DATA1   0x0000FFFF
+#define  XY_I_DATA2   0xFFFF0000
+
+#define I128_WAIT_READY 1
+#define I128_WAIT_DONE  2
+
+#define i128_engine_wait(forwhat) switch(forwhat) {                           \
+		case I128_WAIT_READY:                                         \
+			while (i128mem.rbase_a[BUSY] & BUSY_BUSY);            \
+			break;                                                \
+		case I128_WAIT_DONE:                                          \
+		default:                                                      \
+			while (i128mem.rbase_a[FLOW] & (FLOW_DEB | FLOW_MCB));\
+			break;                                                \
+						  }
 
 typedef struct {
 	unsigned char r, b, g;

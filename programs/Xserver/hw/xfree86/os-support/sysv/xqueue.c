@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.1 1996/03/17 11:41:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.2 1996/03/29 22:17:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -291,6 +291,18 @@ xf86XqueKbdProc (pKeyboard, what)
   case DEVICE_CLOSE:
   case DEVICE_OFF:
     pKeyboard->public.on = FALSE;
+#ifdef XKB
+    if (!noXkbExtension && what == DEVICE_CLOSE) {
+	XkbComponentNamesRec names;
+	names.keymap   = xf86Info.xkbkeymap;
+	names.keycodes = NULL;
+	names.types    = NULL;
+	names.compat   = NULL;
+	names.symbols  = NULL;
+	names.geometry = NULL;
+	XkbDDXRemoveMapFile(&names);
+    }
+#endif
     return(xf86XqueDisable());
   }
   

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.9 1996/02/22 05:11:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.10 1996/04/15 11:29:45 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -110,22 +110,22 @@ ScrnInfoRec i128InfoRec =
 
 short i128alu[16] =
 {
-   MIX_CLEAR,
-   MIX_NOR,
-   MIX_AND_INVERTED,
-   MIX_COPY_INVERTED,
-   MIX_AND_REVERSE,
-   MIX_INVERT,
-   MIX_XOR,
-   MIX_NAND,
-   MIX_AND,
-   MIX_EQUIV,
-   MIX_NOOP,
-   MIX_OR_INVERTED,
-   MIX_COPY,
-   MIX_OR_REVERSED,
-   MIX_OR,
-   MIX_SET
+   CR_CLEAR,
+   CR_NOR,
+   CR_AND_INV,
+   CR_COPY_INV,
+   CR_AND_REV,
+   CR_INVERT,
+   CR_XOR,
+   CR_NAND,
+   CR_AND,
+   CR_EQUIV,
+   CR_NOOP,
+   CR_OR_INV,
+   CR_COPY,
+   CR_OR_REV,
+   CR_OR,
+   CR_SET
 };
 
 static SymTabRec i128DacTable[] = {

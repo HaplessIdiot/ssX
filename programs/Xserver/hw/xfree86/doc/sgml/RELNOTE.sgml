@@ -80,6 +80,7 @@ It is expected that it will reappear in some form in a future release.
 <itemize>
   <item>3.1.2E is based on the first publicly released form of X11R6.1
 	(i.e,. X11R6.1 public patch 1).
+  <item>Many updates have been made to the OS/2 port.
 </itemize>
 <sect1> General X server changes
 <p>
@@ -89,6 +90,26 @@ It is expected that it will reappear in some form in a future release.
 	clocks line divided by 2.  This presents the server with twice as
 	many clocks to choose from.  Add the option "clkdiv2" to the "Device"
 	section of XF86Config to enable this.
+  <item>Some bugs have been fixed in the XInput support.  Motion history
+	support has been addeded for the Wacom driver.  It is now possible
+	to use a mouse as an extended input device.
+  <item>Some cursor colouring bugs have been fixed for servers that use
+	hardware cursors.
+  <item>Autorepeating modifier keys when using XKB have been fixed.
+</itemize>
+<sect1> PC98 Support
+<p>
+<itemize>
+  <item>Bugs have been fixed in some of the PC98 servers.
+  <item>Support has been added for the PowerWindow968, Cyber9320 and
+	TGUI9680.
+  <item>Support has been added for the PANIX-PC98 SVR4.0 OS.
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8 (except
+	the GLint 300SX 3D chip) has been added.
 </itemize>
 <sect1> Mach64 server
 <p>
@@ -97,10 +118,41 @@ It is expected that it will reappear in some form in a future release.
 	been fixed.
   <item>The Mach64 server will detect the new VT and GT cards, but hasn't
 	yet been tested with them.
+  <item>A problem that caused the server to incorrrectly use block I/O
+	mode on some cards has been fixed.
+</itemize>
+<sect1> W32 server
+<p>
+<itemize>
+  <item>Support has been added for the ICD2061A clock chip (which is used
+	on the Diamond Stealth 32).
+  <item>The server's reporting of bits/RGB resolution has been fixed.
+</itemize>
+<sect1> P9000 server
+<p>
+<itemize>
+  <item>DGA support has been added to the P9000 server.
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>Support for the TGUI9320 has been fixed (it was broken in 3.1.2D).
+</itemize>
+<sect1> ATI driver (SVGA server)
+<p>
+<itemize>
+  <item>There have been a number of updates to the ati driver.
+</itemize>
+<sect1> ARK driver (SVGA server)
+<p>
+<itemize>
+  <item>A problem which caused the server to crash when no Ramdac was given
+	in the XF86Config file has been fixed.
 </itemize>
 <sect1> Client/Library changes
 <p>
 <itemize>
+  <item>Problems with the colour support in xterm have been fixed.
   <item>POSIX termios support has been added for xterm on BSD systems.
 	This removes the need for the BSD kernel to built with the
 	COMPAT_43 option.  We've noticed that 'rlogin' on FreeBSD 2.0.5
@@ -593,12 +645,99 @@ It is expected that it will reappear in some form in a future release.
 </itemize>
 <p>
 
+<sect>Installing the XFree86 3.1.2E Beta Release
+<p>
+The XFree86 3.1.2E binary beta release is distributed as a upgrade to
+3.1.2D.  If you don't already have 3.1.2D installed, first install it
+(installation details for 3.1.2D are included below) except for the X
+servers.
+
+The core part of the 3.1.2E release consists of the following files:
+<quote>
+<verb>
+BetaReport         Beta test report template form
+X312Eupd.tgz       Files which have changed since 3.1.2D
+X312Edoc.tgz       Documentation for 3.1.2E
+</verb>
+</quote>
+
+The following X servers are for PC/AT hardware.  Choose at least one which
+matches your hardware.
+<quote>
+<verb>
+X312E8514.tgz      8514/A server
+X312EAGX.tgz       AGX server
+X312EI128.tgz      I128 server
+X312EMa32.tgz      Mach 32 server
+X312EMa64.tgz      Mach 64 server
+X312EMa8.tgz       Mach 8 server
+X312EMono.tgz      Mono server
+X312EP9K.tgz       P9000 server
+X312ES3.tgz        S3 server
+X312ESVGA.tgz      SVGA server
+X312EVG16.tgz      16 colour VGA server
+X312EW32.tgz       ET4000/W32 server
+</verb>
+</quote>
+The following X servers are for PC98 hardware.  If you have a PC98 machine,
+choose one which suits your hardware.  If you don't know what a PC98 machine
+is, you don't need any of these.
+<quote>
+<verb>
+X312E9NS3.tgz      PC98 NEC(S3) server
+X312E9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
+X312E9LPW.tgz      PC98 PowerWindowLB(S3) server
+X312E9EGC.tgz      PC98 EGC(generic) server
+X312E9GAN.tgz      PC98 GANB-WAP(cirrus) server
+X312E9480.tgz      PC98 PEGC-480(generic) server
+X312E9NKV.tgz      PC98 NKV-NEC(cirrus) server
+X312E9WBS.tgz      PC98 WABS(cirrus) server
+X312E9WEP.tgz      PC98 WAB-EP(cirrus) server
+X312E9WSN.tgz      PC98 WSN-A2F(cirrus) server
+X312E9TGU.tgz      PC98 TGUI server
+</verb>
+</quote>
+The following servers are optional:
+<quote>
+<verb>
+X312Enest.tgz     Nested X server
+X312Evfb.tgz      Virtual framebuffer X server
+</verb>
+</quote>
+
+The upgrade to version 3.1.2E will overwrite some files from the 3.1.2D
+installation.  It is recommended that you <bf>MAKE A BACKUP OF</bf>
+<tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.
+
+To upgrade from 3.1.2D to 3.1.2E, first extract the X312Eupd.tgz and
+X312Edoc.tgz files as root from the <tt>/usr/X11R6</tt> directory:
+
+<tscreen><verb>
+	cd /usr/X11R6
+	gzip -d < X312Eupd.tgz | tar vxf -
+	gzip -d < X312Edoc.tgz | tar vxf -
+</verb></tscreen>
+
+Next, extract the server(s) you need from the same directory.  For example,
+to extract the S3 and SVGA and Xnest servers, run:
+
+<tscreen><verb>
+	cd /usr/X11R6
+	gzip -d < X312ES3.tgz | tar vxf -
+	gzip -d < X312ESVGA.tgz | tar vxf -
+	gzip -d < X312Enest.tgz | tar vxf -
+</verb></tscreen>
+
+Note that there is no postinst.sh script to be run for this release.
+However, if you didn't install <tt>X312Dfnon.tgz</tt> when installing
+3.1.2D (or are not sure if you installed it), you should run the following:
+
+<tscreen><verb>
+	/usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
+</verb></tscreen>
+ 
 <sect>Installing the XFree86 3.1.2D Beta Release
 <p>
-<!--
-The XFree86 3.1.2B binary beta release is distributed as a upgrade to
-3.1.2.  It consists of the following files:
--->
 The XFree86 3.1.2D binary beta release is distributed as a full release,
 not as an upgrade.  For most operating systems, it consists of the following
 files.
@@ -618,6 +757,7 @@ X312Dman.tgz       Manual pages
 </verb>
 </quote>
 
+<!--
 The following X servers are for PC/AT hardware.  Choose at least one which
 matches your hardware.
 <quote>
@@ -653,6 +793,7 @@ X312D9WEP.tgz      PC98 WAB-EP(cirrus) server
 X312D9WSN.tgz      PC98 WSN-A2F(cirrus) server
 </verb>
 </quote>
+-->
 The following are optional.
 <quote>
 <verb>
@@ -749,7 +890,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.24 1996/05/10 06:58:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.25 1996/05/11 11:04:26 dawes Exp $
 </verb>
 
 </article>

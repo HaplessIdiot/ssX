@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.21 1996/05/10 06:58:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.22 1996/05/11 11:04:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -381,6 +381,18 @@ xf86KbdProc (pKeyboard, what)
       RemoveEnabledDevice(kbdFd);
 
     pKeyboard->public.on = FALSE;
+#ifdef XKB
+    if (!noXkbExtension && what == DEVICE_CLOSE) {
+ 	XkbComponentNamesRec names;
+	names.keymap   = xf86Info.xkbkeymap;
+	names.keycodes = NULL;
+	names.types    = NULL;
+	names.compat   = NULL;
+	names.symbols  = NULL;
+	names.geometry = NULL;
+	XkbDDXRemoveMapFile(&names);
+    }
+#endif
     break;
 
   }
