@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_DRIVER_H
-#define _VIA_DRIVER_H
+#ifndef _VIA_DRIVER_H_
+#define _VIA_DRIVER_H_ 1
 
 /*#define DEBUG_PRINT*/
 #ifdef DEBUG_PRINT
@@ -345,7 +346,6 @@ typedef struct
 /* Prototypes. */
 void VIAAdjustFrame(int scrnIndex, int y, int x, int flags);
 Bool VIASwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
-void VIADebugBreak(void);
 
 /* In HwDiff.c */
 void VIAvfInitHWDiff(VIAPtr pVia );
@@ -412,5 +412,4 @@ unsigned long viaOverlayHQVCalcZoomWidth(VIAPtr pVia, unsigned long dwVideoFlag,
 void viaOverlayGetV1Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
 void viaOverlayGetV3Format(VIAPtr pVia, unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF, unsigned long * lpdwVidCtl,unsigned long * lpdwHQVCtl );
 
-#endif /* _VIA_DRIVER_H */
-
+#endif /* _VIA_DRIVER_H_ */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_MODETABLE_H
-#define _VIA_MODETABLE_H
+#ifndef _VIA_MODE_H_
+#define _VIA_MODE_H_ 1
 
 static const unsigned short BIOSVer = 0X10;
 
@@ -866,4 +867,4 @@ static const VIALCDModeFixRec modeFix = {
     { 0X1, 0X3, 0X7, 0X5, 0X2E, 0X2F, 0X52, 0X53, 0X56, 0X57, 0X5A, 0X5B, 0X67, 0X68, 0X5D, 0X5E, 0X7D, 0X7E, 0X23, 0X24, 0X26, 0X27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0X2, 0X2, 0X4, 0X30, 0X30, 0X50, 0X50, 0X54, 0X54, 0X58, 0X58, 0X66, 0X66, 0X5C, 0X5C, 0X7C, 0X7C, 0X22, 0X22, 0X25, 0X25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 22 }; 
 
 
-#endif
+#endif /* _VIA_MODE_H_ */

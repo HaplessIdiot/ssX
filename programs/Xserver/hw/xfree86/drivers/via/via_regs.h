@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -29,8 +30,8 @@
  *
  ************************************************************************/
 
-#ifndef _VIA_REGS_H
-#define _VIA_REGS_H
+#ifndef _VIA_REGS_H_
+#define _VIA_REGS_H_ 1
 
 #include "via_driver.h"
 
@@ -208,4 +209,4 @@ enum VIACHIPTAGS {
 #define VIAGETREG(addr)         *(volatile unsigned int *)(pVia->MapBase + (addr))
 
 
-#endif /* _VIA_REGS_H */
+#endif /* _VIA_REGS_H_ */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -74,8 +75,8 @@
 #define  PAL_60_SVIDEO     7
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#define  IN_FLIP     ( ((vmmtr)viaVidEng)->ramtab & 0x00000003)
-#define  IN_DISPLAY  ( ((vmmtr)viaVidEng)->interruptflag & 0x00000200)
+#define  IN_FLIP     ( viaVidEng->ramtab & 0x00000003)
+#define  IN_DISPLAY  ( viaVidEng->interruptflag & 0x00000200)
 #define  IN_VBLANK   ( !IN_DISPLAY )
 
 #ifndef XvExtension
@@ -258,18 +259,18 @@ static const MODEINFO UnSupportDDR133[DDR133UNSUPPORTMODECOUNT]=
 /*
  *  F U N C T I O N
  */
-static __inline void waitVBLANK(int viaVidEng)
+static __inline void waitVBLANK(vmmtr viaVidEng)
 {
    while (IN_DISPLAY);
 }
 
-static __inline void waitIfFlip(int viaVidEng) 
+static __inline void waitIfFlip(vmmtr viaVidEng) 
 {
   while( IN_FLIP );
 }
 
 
-static __inline void waitDISPLAYBEGIN(int viaVidEng)
+static __inline void waitDISPLAYBEGIN(vmmtr viaVidEng)
 {
     while (IN_VBLANK);
 }
@@ -329,50 +330,50 @@ static Bool DecideOverlaySupport(VIAPtr pVia)
 void viaResetVideo(ScrnInfoPtr pScrn) 
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
 
     DBG_DD(ErrorF(" via_video.c : viaResetVideo: \n"));
 
     waitVBLANK(viaVidEng);
 
-    ((vmmtr)viaVidEng)->compose    = 0;
-    ((vmmtr)viaVidEng)->video1_ctl = 0;
-    ((vmmtr)viaVidEng)->video3_ctl = 0;
+    viaVidEng->compose    = 0;
+    viaVidEng->video1_ctl = 0;
+    viaVidEng->video3_ctl = 0;
 
 }
 
 void viaSaveVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
 
     pVia->dwV1 = ((vmmtr)viaVidEng)->video1_ctl;
     pVia->dwV3 = ((vmmtr)viaVidEng)->video3_ctl;
     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = 0;
-    ((vmmtr)viaVidEng)->video3_ctl = 0;
+    viaVidEng->video1_ctl = 0;
+    viaVidEng->video3_ctl = 0;
 }
 
 void viaRestoreVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
 
     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = pVia->dwV1 ;
-    ((vmmtr)viaVidEng)->video3_ctl = pVia->dwV3 ;
+    viaVidEng->video1_ctl = pVia->dwV1 ;
+    viaVidEng->video3_ctl = pVia->dwV3 ;
 }
 
 void viaExitVideo(ScrnInfoPtr pScrn)
 {
     VIAPtr  pVia = VIAPTR(pScrn);
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
 
     DBG_DD(ErrorF(" via_video.c : viaExitVideo : \n"));
 
-     waitVBLANK(viaVidEng);
-    ((vmmtr)viaVidEng)->video1_ctl = 0;
-    ((vmmtr)viaVidEng)->video3_ctl = 0;
+    waitVBLANK(viaVidEng);
+    viaVidEng->video1_ctl = 0;
+    viaVidEng->video3_ctl = 0;
 }   
 
 XF86VideoAdaptorPtr adaptPtr[XV_PORT_NUM];
@@ -754,7 +755,7 @@ viaSetPortAttributeG(
     pointer data
 ){
     VIAPtr  pVia = VIAPTR(pScrn);
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
     struct video_channel chan;
     int attr, avalue;
@@ -771,8 +772,8 @@ viaSetPortAttributeG(
             pPriv->colorKey = value;
             /* All assume color depth is 16 */
             value &= 0x00FFFFFF;
-            ((vmmtr)viaVidEng)->color_key = value;
-            ((vmmtr)viaVidEng)->snd_color_key = value;
+            viaVidEng->color_key = value;
+            viaVidEng->snd_color_key = value;
             REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
             DBG_DD(ErrorF("  V4L Disable done  xvColorKey = %08x\n",value));
 
@@ -1084,7 +1085,7 @@ viaPutImageG(
 ){
     VIAPtr  pVia = VIAPTR(pScrn);
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
-    int     viaVidEng = (int) pVia->VidMapBase;    
+    vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
 /*    int i;
     BoxPtr pbox; */
 
@@ -1159,7 +1160,7 @@ viaPutImageG(
                 }
 
                 /* If there is bandwidth issue, block the H/W overlay */
-                if ((((vmmtr)viaVidEng)->video3_ctl & 0x00000001) && !pVia->OverlaySupported)
+                if ((viaVidEng->video3_ctl & 0x00000001) && !pVia->OverlaySupported)
                      return BadAlloc;
 
                 /* 

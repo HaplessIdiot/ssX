@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_BIOS_H
-#define _VIA_BIOS_H
+#ifndef _VIA_BIOS_H_
+#define _VIA_BIOS_H_ 1
 
 #define     VIA_CRT_SUPPORT               TRUE
 #define     VIA_LCD_SUPPORT               TRUE
@@ -709,4 +710,4 @@ void VIAEnabledPrimaryExtendedFIFO(VIABIOSInfoPtr pBIOSInfo);
 void VIAEnabledSecondaryExtendedFIFO(VIABIOSInfoPtr pBIOSInfo);
 void VIAFillExpireNumber(VIABIOSInfoPtr pBIOSInfo);
 
-#endif /* _VIA_BIOS_H */
+#endif /* _VIA_BIOS_H_ */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_REFRESH_H
-#define _VIA_REFRESH_H
+#ifndef _VIA_REFRESH_H_
+#define _VIA_REFRESH_H_ 1
 
 static const int supportRef[] = { 60, 75, 85, 100, 120 };
 static const int DDR266[3][17][5] = {
@@ -482,4 +483,4 @@ static const  int SDR100[3][17][5] = {
                               }
                           };
 
-#endif /* _VIA_REFRESH_H */
+#endif /* _VIA_REFRESH_H_ */

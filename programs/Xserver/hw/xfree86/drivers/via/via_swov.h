@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_SWOV_H
-#define _VIA_SWOV_H
+#ifndef _VIA_SWOV_H_
+#define _VIA_SWOV_H_ 1
 
 /*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
 
@@ -50,4 +51,5 @@ unsigned long Upd_MPEG(ScrnInfoPtr pScrn, unsigned long dwVideoFlag,unsigned lon
 
 unsigned long VIAVidUpdateOverlay(ScrnInfoPtr pScrn, LPDDUPDATEOVERLAY lpUpdate);
 unsigned long VIAVidAdjustFrame(ScrnInfoPtr pScr, LPADJUSTFRAME lpAdjustFrame);
-#endif /* _VIA_SWOV_H */
+
+#endif /* _VIA_SWOV_H_ */

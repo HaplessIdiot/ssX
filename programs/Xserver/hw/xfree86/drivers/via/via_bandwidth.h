@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,6 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef _VIA_BANDWIDTH_H_
+#define _VIA_BANDWIDTH_H_ 1
 
 typedef struct _VIAPanel3C522Tue
 {
@@ -50,3 +54,5 @@ static const VIAPanel3C522Tue Panel_Tuning_Lst3205[]={
     {1280, 768,32,0x04,0x9}, {1400,1050,32,0x03,0x3}, {1400,1050,32,0x04,0x9},
     {1600,1200,32,0x03,0x4}, {1600,1200,32,0x04,0xA}, {   0,   0, 0,   0,  0}
 };
+
+#endif /* _VIA_BANDWIDTH_H_ */

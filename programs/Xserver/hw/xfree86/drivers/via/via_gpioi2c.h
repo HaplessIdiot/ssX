@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,6 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef _VIA_GPIOI2C_H_
+#define _VIA_GPIOI2C_H_ 1
 
 #define GPIOPORT                (pBIOSInfo->GPIOI2CInfo.bGPIOPort)
 #define SLAVEADDR               (pBIOSInfo->GPIOI2CInfo.bSlaveAddr)
@@ -53,3 +57,5 @@
 
 #define READ_MAX_RETRIES        20
 #define WRITE_MAX_RETRIES       20
+
+#endif /* _VIA_GPIOI2C_H_ */

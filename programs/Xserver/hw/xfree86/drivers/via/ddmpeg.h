@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _LINUX_VIDEO_H
-#define _LINUX_VIDEO_H
+#ifndef _VIA_DDMPEG_H_
+#define _VIA_DDMPEG_H_ 1
 
 #include "via_capture.h"
 
@@ -462,4 +463,4 @@ unsigned long VIASUBPicture(void * lpSubp);
 unsigned long VIASetDeInterlaceMode(unsigned long dwMode);
 int PrivPutImage(unsigned char* buf);
 
-#endif
+#endif /* _VIA_DDMPEG_H_ */

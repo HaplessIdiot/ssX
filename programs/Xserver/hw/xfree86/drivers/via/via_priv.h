@@ -1,5 +1,7 @@
-#ifndef _VIA_PRIV_H
-# define _VIA_PRIV_H
+/* $XFree86$ */
+
+#ifndef _VIA_PRIV_H_
+#define _VIA_PRIV_H_ 1
 
 #include "ddmpeg.h"
 #include "via_common.h"
@@ -66,4 +68,4 @@ typedef struct  {
 
 } swovRec, *swovPtr;
 
-#endif
+#endif /* _VIA_PRIV_H_ */

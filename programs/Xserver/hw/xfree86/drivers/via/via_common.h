@@ -1,5 +1,7 @@
-#ifndef _RADEON_COMMON_H_
-#define _RADEON_COMMON_H_
+/* $XFree86$ */
+
+#ifndef _VIA_COMMON_H_
+#define _VIA_COMMON_H_ 1
 
 #include "xf86drm.h"
 
@@ -50,4 +52,4 @@ typedef struct
     unsigned long agpAddr;
 } drmViaInit;
 
-#endif
+#endif /* _VIA_COMMON_H_ */

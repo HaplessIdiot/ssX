@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
  
-#ifndef __VIA_OVERLAY
-#define __VIA_OVERLAY
+#ifndef _VIA_OVERLAY_H_
+#define _VIA_OVERLAY_H_ 1
 
 /*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
 
@@ -44,4 +45,5 @@ typedef struct _YCBCRREC  {
 unsigned long viaOverlayHQVGetFormat(LPDDPIXELFORMAT lpDPF, unsigned long dwVidCtl,unsigned long * lpdwHQVCtl );
 YCBCRREC viaOverlayGetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long dwStartAddr, unsigned long dwOffset,unsigned long dwUVoffset,unsigned long dwSrcPitch/*lpGbl->lPitch*/,unsigned long dwSrcHeight/*lpGbl->wHeight*/);
 unsigned long viaOverlayGetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long dwDstWidth,unsigned long dwOriSrcWidth,unsigned long * lpHQVsrcFetch);
-#endif /*End of  __DDOVER*/
+
+#endif /* _VIA_OVERLAY_H_ */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __REGREC
-#define __REGREC
+#ifndef _VIA_REGREC_H_
+#define _VIA_REGREC_H_ 1
 
 /*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
 
@@ -62,4 +63,5 @@ void viaMacro_VidREGFlush(VIAPtr pVia);
 void viaMacro_VidREGRec(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
 void viaMacro_VidREGFlushVPE(VIAPtr pVia);
 void viaMacro_VidREGRecVPE(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
-#endif /*end of __REGREC*/
+
+#endif /* _VIA_REGREC_H_ */

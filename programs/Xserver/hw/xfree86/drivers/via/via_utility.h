@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,6 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef _VIA_UTILITY_H_
+#define _VIA_UTILITY_H_ 1
 
 /*
  * Define for Utility functions using XvPutImage.
@@ -452,3 +456,4 @@ unsigned char VIASAA7108PostionOverTabRec[2][4][11][3] = {
 	}
 };
 
+#endif /* _VIA_UTILITY_H_ */
