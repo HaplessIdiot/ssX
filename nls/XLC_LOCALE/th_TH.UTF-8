@@ -1,15 +1,15 @@
-# $XConsortium: th_TH$
-# XLocale Database Sample for th_TH
-#
-# $XFree86:$
-#
-# Modified from origial th_TH.TACTIS
+XCOMM $XConsortium: th_TH$
+XCOMM XLocale Database Sample for th_TH
+XCOMM
+XCOMM $XFree86:$
+XCOMM
+XCOMM Modified from origial th_TH.TACTIS
 
-# 
-# 	XLC_FONTSET category
-# 
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
 XLC_FONTSET
-#	fs0 class
+XCOMM	fs0 class
 fs0	{
 	charset	{
 		name	ISO10646-1
@@ -18,23 +18,23 @@ fs0	{
 		primary	ISO10646-1
 	}
 }
-#	We leave the legacy encodings in for the moment, because we don't
-#	have that many ISO10646 fonts yet.
-# 	fs0 class (7 bit ASCII)
+XCOMM	We leave the legacy encodings in for the moment, because we don't
+XCOMM	have that many ISO10646 fonts yet.
+XCOMM 	fs0 class (7 bit ASCII)
 fs1	{
 	charset		ISO8859-1:GL
 	font            ISO8859-1:GL
 }
-# 	fs1 class (Thai) 
+XCOMM 	fs1 class (Thai) 
 fs2	{
 	charset         TIS620-0:GR
 	font            TIS620-0:GR
 }
 END XLC_FONTSET
 
-# 
-# 	XLC_XLOCALE category
-# 
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
 XLC_XLOCALE
 
 encoding_name           UTF-8
@@ -54,7 +54,7 @@ use_stdc_env            True
 force_convert_to_mb     True
 
 
-# 	cs0 class
+XCOMM 	cs0 class
 cs0	{
 	side		GL:Default
 	length		1
@@ -63,7 +63,7 @@ cs0	{
 }
 
 
-# 	cs1 class
+XCOMM 	cs1 class
 cs1	{
 	side		GR:Default
 	length		1
