@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.23 2001/08/23 00:03:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.26 2002/06/06 18:09:38 paulo Exp $ */
 
 /*
 
@@ -320,7 +320,7 @@ XawMultiSrcInitialize(Widget request, Widget cnew,
  *	This function reads the source.
  *
  * Returns:
- *	The number of characters read into the buffer
+ *	The character position following the retrieved text.
  */
 static XawTextPosition
 ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
@@ -333,7 +333,7 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
     text->firstPos = pos;
     text->ptr = (char *)(piece->text + (pos - start));
     count = piece->used - (pos - start);
-    text->length = (length > count) ? count : length;
+    text->length = Max(0, (length > count) ? count : length);
 
     return (pos + text->length);
 }

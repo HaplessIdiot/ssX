@@ -405,6 +405,9 @@ XawTextSrcSetValues(Widget current, Widget request, Widget cnew,
  *
  * Description:
  *	This function reads the source.
+ *
+ * Returns:
+ *	The character position following the retrieved text.
  */
 /*ARGSUSED*/
 static XawTextPosition

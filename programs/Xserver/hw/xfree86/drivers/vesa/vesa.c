@@ -548,9 +548,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86UnloadSubModule(pDDCModule);
     }
 
-    /* Set display resolution */
-    xf86SetDpi(pScrn, 0, 0);
-
     if ((pScrn->monitor->DDC = pVesa->monitor) != NULL)
 	xf86SetDDCproperties(pScrn, pVesa->monitor);
 
@@ -814,6 +811,9 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->displayWidth = pScrn->virtualX;
 
     xf86PrintModes(pScrn);
+
+    /* Set display resolution */
+    xf86SetDpi(pScrn, 0, 0);
 
     if (pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No modes\n");
