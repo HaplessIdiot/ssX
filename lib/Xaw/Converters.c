@@ -27,6 +27,8 @@
  * XFree86 Project.
  */
 
+/* $XFree86: $ */
+
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

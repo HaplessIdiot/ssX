@@ -27,6 +27,8 @@
  * XFree86 Project.
  */
 
+/* $XFree86: $ */
+
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>

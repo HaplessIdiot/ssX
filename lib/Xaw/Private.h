@@ -27,6 +27,8 @@
  * XFree86 Project.
  */
 
+/* $XFree86: $ */
+
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
 
