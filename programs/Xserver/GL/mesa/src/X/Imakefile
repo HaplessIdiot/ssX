@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.15tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.16 2002/11/22 22:56:01 tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -43,7 +43,7 @@ GLXSRV_DEFINES = -DXFree86Server
      INCLUDES = -I$(SERVERSRC)/GL/mesa/src/X -I$(INCLUDESRC) -I$(XINCLUDESRC) \
 		-I$(EXTINCSRC) \
 		-I$(MESASRCDIR)/src -I$(MESASRCDIR)/src/X \
-		-I$(MESASRCDIR)/include \
+		-I$(MESASRCDIR)/include -I$(LIBSRC) \
 		-I$(LIBSRC)/GL/glx -I$(LIBSRC)/GL/include \
 		-I$(SERVERSRC)/include -I$(SERVERSRC)/GL/include \
 		-I$(SERVERSRC)/GL/glx
