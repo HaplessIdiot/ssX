@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx April 2001)
+ 464. Provide more robust default preferences for XDarwin (Torrey Lyons).
  463. Remove map84 keyboard map from Cygwin/XFree86 build (#4621, Harold Hunt).
  462. Disable xload on Cygwin/XFree86 (Alan Hourihane).
  461. Remove an errorneous i++ from os/xdmcp.c with -class (Alexander Gottwald).
@@ -13127,4 +13128,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1734 2001/05/01 17:23:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1735 2001/05/01 22:31:27 alanh Exp $

@@ -3,12 +3,28 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.3 2001/04/07 17:48:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
 
 @implementation Preferences
+
++ (void)initialize {
+    // Provide user defaults if needed
+    NSDictionary *appDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                    [NSNumber numberWithInt:0], @"Display",
+                    @"YES", @"FakeButtons",
+                    @"/System/Library/Keyboards/USA.keymapping", @"KeymappingFile",
+                    @"NO", @"UseKeymappingFile",
+                    @"Cmd-Opt-a", @"SwitchString",
+                    @"YES", @"ShowStartupHelp",
+                    [NSNumber numberWithInt:0], @"SwitchKeyCode",
+                    [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
+                    @"SwitchModifiers", @"NO", @"UseSystemBeep", nil];
+
+    [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
+}
 
 // Initialize internal state info of switch key button
 - (void)initSwitchKey {
@@ -18,26 +34,10 @@
 }
 
 - (id)init {
-    self=[super init];
+    self = [super init];
 
     isGettingKeyCode=NO;
     switchString=[[NSMutableString alloc] init];
-
-    // Provide user defaults if needed
-    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"SwitchKeyCode"] == nil) {
-        [Preferences setKeyCode:0];
-        [Preferences setModifiers:(NSCommandKeyMask | NSAlternateKeyMask)];
-        [Preferences setSwitchString:@"Cmd-Opt-a"];
-        [Preferences setDisplay:0];
-        [Preferences setFakeButtons:YES];
-        [Preferences setStartupHelp:YES];
-        [Preferences setSystemBeep:NO];
-    }
-    if ([[NSUserDefaults standardUserDefaults] stringForKey:@"UseKeymappingFile"] == nil) {
-        [Preferences setUseKeymapFile:NO];
-        [Preferences setKeymapFile:@"/System/Library/Keyboards/USA.keymapping"];
-    }
-
     [self initSwitchKey];
 
     return self;
