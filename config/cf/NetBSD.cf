@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: NetBSD.cf,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.99 2001/10/10 19:06:35 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.100 2001/12/16 18:49:57 herrb Exp $
 
 
 #ifndef OSName
@@ -126,9 +126,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define DefaultCCOptions 	/**/
 #else
 #ifdef Arm32Architecture
-#define DefaultCCOptions 	-ansi -Dasm=__asm -fsigned-char -fomit-frame-pointer GccWarningOptions
+#define DefaultCCOptions 	-ansi -Dasm=__asm -fsigned-char \
+				-fomit-frame-pointer GccWarningOptions \
+				-Wno-long-long
 #else
-#define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
+#define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions \
+				-Wno-long-long
 #endif
 #endif
 #endif
