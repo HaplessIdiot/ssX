@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.9 2001/08/27 21:11:40 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.10 2001/12/02 15:57:03 herrb Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -395,7 +395,7 @@ extern void NewBitmapCursor ( Cursor *cp, char *source, char *mask );
 extern Pixmap CreateMenuIcon ( int height, unsigned int *widthp, unsigned int *heightp );
 
 extern Bool ErrorOccurred;
-extern Bool TimeToYield;
+extern volatile Bool TimeToYield;
 extern XErrorEvent LastErrorEvent;
 
 #define ResetError() (ErrorOccurred = False)
