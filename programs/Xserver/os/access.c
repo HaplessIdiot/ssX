@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: access.c,v 3.39 2002/01/07 20:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.40 2002/04/03 19:51:10 herrb Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -818,21 +818,16 @@ ResetHosts (char *display)
         validhosts = host->next;
         FreeHost (host);
     }
-#ifndef __EMX__
 #define ETC_HOST_PREFIX "/etc/X"
 #define ETC_HOST_SUFFIX ".hosts"
-#else
-#define ETC_HOST_PREFIX "/XFree86/lib/X11/X"
-#define ETC_HOST_SUFFIX ".hosts"
-#endif /* __EMX__ */
     fnamelen = strlen(ETC_HOST_PREFIX) + strlen(ETC_HOST_SUFFIX) +
 		strlen(display) + 1;
     if (fnamelen > sizeof(fname))
 	FatalError("Display name `%s' is too long\n", display);
     sprintf(fname, ETC_HOST_PREFIX "%s" ETC_HOST_SUFFIX, display);
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     strcpy(fname, (char*)__XOS2RedirRoot(fname));
-#endif /* __EMX__ */
+#endif /* __UNIXOS2__ */
 
     if ((fd = fopen (fname, "r")) != 0)
     {
@@ -842,7 +837,7 @@ ResetHosts (char *display)
 	    continue;
     	if ((ptr = strchr(ohostname, '\n')) != 0)
     	    *ptr = 0;
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     	if ((ptr = strchr(ohostname, '\r')) != 0)
     	    *ptr = 0;
 #endif

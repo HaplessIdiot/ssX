@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.31 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.32 2001/12/14 19:54:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -307,7 +307,7 @@ _XkbGetCharset()
     } else {
 	struct stat sbuf;
 	FILE *file;
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	char *cf = CHARSET_FILE;
 #else
         char *cf = __XOS2RedirRoot(CHARSET_FILE);

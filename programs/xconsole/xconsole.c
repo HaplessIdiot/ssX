@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.28 2001/12/02 18:41:29 herrb Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.29 2001/12/14 20:01:19 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -132,7 +132,7 @@ static XrmOptionDescRec options[] = {
 #define FILE_NAME   "/dev/xcons"
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define USE_FILE
 #define FILE_NAME   "/dev/console$"
 #define INCL_DOSFILEMGR
@@ -194,7 +194,7 @@ OpenConsole(void)
 	if (!strcmp (app_resources.file, "console"))
 	{
 	    /* must be owner and have read/write permission */
-#if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx) && !defined(__EMX__)
+#if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx) && !defined(__UNIXOS2__)
 	    struct stat sbuf;
 
 	    if (!stat("/dev/console", &sbuf) &&
@@ -205,7 +205,7 @@ OpenConsole(void)
 #ifdef USE_FILE
 	    	input = fopen (FILE_NAME, "r");
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 		if (input) 
 		{
 		    ULONG arg = 1,arglen;

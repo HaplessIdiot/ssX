@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxConfig.c,v 3.4 2001/01/17 22:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxConfig.c,v 3.6 2002/04/04 14:05:57 eich Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -142,7 +142,7 @@ XkbConfigRtrnPtr	rtrn;
         sprintf(buf,"X%s-config%s%s",display,(dName[0]?".":""),dName);
     }
 #endif
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     strcpy(buf,(char*)__XOS2RedirRoot(buf));
 #endif
 #ifdef DEBUG

@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.24 2001/11/16 00:52:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.25 2001/11/19 15:33:38 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,7 +41,7 @@
 #define isreadable(f)	((access((f), R_OK) != -1) ? 1 : 0)
 #endif
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #define LC_PATHDELIM ':'
 #else
 #define LC_PATHDELIM ';'
@@ -156,7 +156,7 @@ xlocaledir(
 	}
     }
     if (len < buf_len)
-#ifndef __EMX__
+#ifndef __UNIXOS2__
       strncpy(p, XLOCALEDIR, buf_len - len);
 #else
       strncpy(p,__XOS2RedirRoot(XLOCALEDIR), buf_len - len);
@@ -187,7 +187,7 @@ resolve_name(
 	char *p = buf;
 	int n;
 	char *args[2], *from, *to;
-#ifdef __EMX__  /* Take out CR under OS/2 */
+#ifdef __UNIXOS2__  /* Take out CR under OS/2 */
 	int len;
 
 	len = strlen(p);

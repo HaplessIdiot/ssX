@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.13 1999/04/29 09:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.14 2000/04/05 18:13:52 dawes Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -29,12 +29,12 @@
  */
 /* $XConsortium: os2_io.c /main/9 1996/05/13 16:38:07 kaleb $ */
 
+#define I_NEED_OS2_H
 #include "X.h"
 #include "Xpoll.h"
 #include "compiler.h"
 #include <time.h>
 
-#define I_NEED_OS2_H
 #define INCL_DOSPROCESS
 #define INCL_KBD
 #define INCL_MOU

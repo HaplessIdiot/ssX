@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.17 2001/08/28 23:53:34 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.18 2001/12/14 20:01:41 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -54,7 +54,7 @@ in this Software without prior written authorization from The Open Group.
 #include	<sys/types.h>
 #ifndef Lynx
 #include	<sys/param.h>
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #include	<sys/uio.h>
 #endif
 #else

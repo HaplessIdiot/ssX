@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.24 2001/02/07 18:53:11 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.25 2001/03/21 17:36:43 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -46,7 +46,6 @@ DependSubdirs($(SUBDIRS))
 #define IHaveSpecialMakefileTarget
 
 #ifndef Win32Architecture
-#ifndef OS2Architecture
 VerifyOS::
 	@echo ""
 	@echo Building on OSName "("OSMajorVersion"."OSMinorVersion"."OSTeenyVersion")."
@@ -65,9 +64,15 @@ VerifyOS::
 #endif
 
 #ifdef XFree86Version
+#ifndef OS2Architecture
 version.def::
 	$(RM) $(IRULESRC)/version.def
 	$(LN) ../../$(XF86SRC)/xf86Version.h $(IRULESRC)/version.def
+#else /*OS2Architecture*/
+version.def::
+	$(RM) $(IRULESRC)/version.def
+	$(CP) $(XF86SRC)/xf86Version.h $(IRULESRC)/version.def
+#endif
 #else
 version.def::
 #endif
@@ -118,53 +123,6 @@ dangerous_strip_clean::
 	find . -type l -exec rm {} \;
 	find . \( \! -type d \) -print
 
-#else /* OS2Architecture */
-VerifyOS::
-	@echo :
-	@echo Building on OSName.
-	@echo :
-
-includes::
-	MakeDir($(subst /,\,$(BUILDINCDIR)))
-
-XCOMM
-XCOMM Watch out!!!  Make sure you do make includes after removing X11....
-XCOMM
-clean::
-	$(RM) -r $(BUILDINCDIR)
-	$(RM) -r $(BUILDLIBDIR)
-
-Everything::
-	@echo :
-	@echo Building $(RELEASE) of the X Window System on OS/2
-	@echo :
-	@echo :
-	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini BOOTSTRAPCFLAGS=-Zexe
-	if exist Makefile.bak del Makefile.bak
-	if exist Makefile ren Makefile Makefile.bak
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) SHELL= VerifyOS
-	$(MAKE) $(MFLAGS) SHELL= Makefiles
-	$(MAKE) $(MFLAGS) SHELL= clean
-	$(MAKE) $(MFLAGS) SHELL= includes
-	$(MAKE) $(MFLAGS) SHELL= depend
-	$(MAKE) $(MFLAGS)
-	@echo :
-	@echo :
-	@echo Rebuild of $(RELEASE) of the X Window System complete.
-	@echo :
-
-#ifdef ProjectRoot
-install::
-	MakeDir($(subst /,\,$(PROJECTROOT)))
-#endif
-
-install::
-	MakeDir($(subst /,\,$(INCROOT)))
-	MakeDir($(subst /,\,$(USRLIBDIR)))
-	MakeDir($(subst /,\,$(LIBDIR)))
-
-#endif
 #else /* not Win32Architecture else */
 VerifyOS::
 	@echo :

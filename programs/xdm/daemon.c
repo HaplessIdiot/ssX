@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.16 2001/07/25 15:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.17 2001/12/14 20:01:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -128,7 +128,7 @@ BecomeDaemon (void)
     close (1);
     close (2);
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #if !((defined(SYSV) || defined(SVR4)) && defined(i386)) && !defined(__CYGWIN__)
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
@@ -145,7 +145,7 @@ BecomeDaemon (void)
 	(void) close (i);
     }
 #endif /* !((SYSV || SVR4) && i386) */
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
 
     /*
      * Set up the standard file descriptors.

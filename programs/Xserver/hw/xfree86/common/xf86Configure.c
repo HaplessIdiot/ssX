@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.68 2002/01/07 21:39:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.71 2002/05/22 21:38:26 herrb Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -68,7 +68,7 @@ xf86MonPtr ConfiguredMonitor;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
-#if defined(__EMX__)
+#if defined(__UNIXOS2__)
 #define DFLT_MOUSE_DEV "mouse$"
 #define DFLT_MOUSE_PROTO "OS2Mouse"
 #elif defined(SCO)
@@ -864,7 +864,7 @@ DoConfigure()
     if (!(home = getenv("HOME")))
     	home = "/";
     {
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define PATH_MAX 2048
 #endif
 #if defined(SCO) || defined(SCO325)
@@ -1000,7 +1000,7 @@ DoConfigure()
 	ErrorF("\nXFree86 is not able to detect your mouse.\n"
 		"Edit the file and correct the Device.\n");
     } else {
-#ifndef __EMX__  /* OS/2 definitely has a mouse */
+#ifndef __UNIXOS2__  /* OS/2 definitely has a mouse */
 	ErrorF("\nXFree86 detected your mouse at device %s.\n"
 		"Please check your config if the mouse is still not\n"
 		"operational, as by default XFree86 tries to autodetect\n"

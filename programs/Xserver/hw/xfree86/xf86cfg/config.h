@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.14 2001/07/25 15:05:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.15 2001/08/17 22:08:15 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -43,7 +43,7 @@
 
 #include <stdarg.h>
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define strcasecmp stricmp
 #define setenv putenv
 #define PATH_MAX 260

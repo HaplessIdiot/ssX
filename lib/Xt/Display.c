@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Display.c,v 3.12 2001/08/22 22:52:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Display.c,v 3.13 2001/12/14 19:56:11 dawes Exp $ */
 
 /*
 
@@ -275,7 +275,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 #else
 		char *ptr = strrchr(argv[0], '/');
 #endif
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 		char *dot_ptr,*ptr2;
 		ptr2 = strrchr(argv[0],'\\');
 		if (ptr2 > ptr) ptr = ptr2;

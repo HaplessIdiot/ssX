@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.30 2001/07/25 15:04:59 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.32 2002/04/04 14:05:36 eich Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -73,7 +73,7 @@ from The Open Group.
  */
 
 #ifndef XTRANSDEBUG
-# ifndef __EMX__
+# ifndef __UNIXOS2__
 #  define XTRANSDEBUG 1
 # else
 #  define XTRANSDEBUG 1
@@ -100,7 +100,7 @@ from The Open Group.
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #include <sys/ioctl.h>
 #endif
 
@@ -146,7 +146,7 @@ from The Open Group.
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
-#if !defined(__EMX__) && !defined(__QNX__)
+#if !defined(__UNIXOS2__) && !defined(__QNX__)
 #define OPEN_MAX NOFILES_MAX
 #else
 #define OPEN_MAX 256
@@ -168,7 +168,7 @@ from The Open Group.
 
 #endif /* TRANS_OPEN_MAX */
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define ESET(val)
 #else
 #define ESET(val) errno = val
@@ -375,7 +375,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
+#if defined(CRAY) || (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__UNIXOS2__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -392,7 +392,7 @@ static	int TRANS(ReadV)(
 #endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || */
 
 
-#if defined(CRAY) || (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__EMX__)
+#if defined(CRAY) || (defined(SYSV) && defined(i386) && !defined(SCO325)) || defined(WIN32) || defined(__sxg__) || defined(__UNIXOS2__)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 

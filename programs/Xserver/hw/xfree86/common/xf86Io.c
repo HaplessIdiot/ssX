@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.47 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.48 2002/05/05 18:54:01 herrb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -362,10 +362,10 @@ xf86KbdProc (pKeyboard, what)
     }
 #endif
 
-#if !defined(__EMX__) /* Under EMX, keyboard cannot be select()'ed */
+#if !defined(__UNIXOS2__) /* Under EMX, keyboard cannot be select()'ed */
     if (kbdFd != -1)
       AddEnabledDevice(kbdFd);
-#endif  /* __EMX__ */
+#endif  /* __UNIXOS2__ */
 
     pKeyboard->public.on = TRUE;
     xf86InitKBD(FALSE);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.58 2001/08/15 19:10:42 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.59 2001/10/28 03:34:09 tsi Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -87,6 +87,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/* hv: fix a few EMX problems, will disappear with real UnixOS/2 */
+#ifdef __UNIXOS2__
+#define sync() /*nothing*/
+static int getuid() { return 0; }
+#endif
+
+
 #include <X11/Xlib.h>
 #include <X11/extensions/XKBstr.h>
 #include <X11/extensions/XKBrules.h>
@@ -107,13 +114,8 @@
  * when the program is told to probe clocks (which can only happen for
  * root).
  */
-#ifndef __EMX__
 #define TEMPORARY_XF86CONFIG_DIR_PREFIX "/tmp/.xf86config"
 #define TEMPORARY_XF86CONFIG_FILENAME "XF86Config.tmp"
-#else
-/* put in root dir, would have to find TMP dir first else */
-#define TEMPORARY_XF86CONFIG_FILENAME "\\XConfig.tmp"
-#endif
 
 /*
  * Define this to have /etc/X11/XF86Config prompted for as the default
@@ -133,15 +135,12 @@
 
 #define MAX_CLOCKS_LINES 16
 
-/* (hv) make a number of filenames defines, because I want OS/2 to need just
- * 8.3 names here
- */
-#ifdef __EMX__
-#define DUMBCONFIG2 "\\dconfig.2"
-#define DUMBCONFIG3 "\\dconfig.3"
-#else
 #define DUMBCONFIG2 "dumbconfig.2"
 #define DUMBCONFIG3 "dumbconfig.3"
+#ifndef __UNIXOS2__
+#define XSERVERNAME_FOR_PROBE "X"
+#else
+#define XSERVERNAME_FOR_PROBE "/usr/X11R6/bin/XFree86"
 #endif
 
 /* some more vars to make path names in texts more flexible. OS/2 users
@@ -150,17 +149,10 @@
 #ifndef PROJECTROOT
 #define PROJECTROOT		"/usr/X11R6"
 #endif
-#ifndef __EMX__
 #define TREEROOT		PROJECTROOT
 #define TREEROOTLX		TREEROOT "/lib/X11"
 #define TREEROOTCFG		TREEROOT "/etc/X11"
 #define MODULEPATH		TREEROOT "/lib/modules"
-#else
-#define TREEROOT		"/XFree86"
-#define TREEROOTLX		TREEROOT "/lib/X11"
-#define TREEROOTCFG		TREEROOT "/lib/X11"
-#define MODULEPATH		TREEROOT "/lib/modules"
-#endif
 
 #ifndef XCONFIGFILE
 #define XCONFIGFILE		"XF86Config"
@@ -297,7 +289,6 @@ Strdup(const char *s){
 
 static void 
 createtmpdir(void) {
-#ifndef __EMX__
        /* length of prefix + 20 (digits in 2**64) + 1 (slash) + 1 */
        temp_dir = Malloc(strlen(TEMPORARY_XF86CONFIG_DIR_PREFIX) + 22);
        sprintf(temp_dir, "%s%ld", TEMPORARY_XF86CONFIG_DIR_PREFIX,
@@ -308,7 +299,6 @@ createtmpdir(void) {
        }
        /* append a slash */
        strcat(temp_dir, "/");
-#endif
 }
 
 
@@ -352,7 +342,7 @@ getstring(char *s)
 /*
  * Mouse configuration.
  *
- * (hv) OS/2 (__EMX__) only has an OS supported mouse, so user has no options
+ * (hv) OS/2 (__UNIXOS2__) only has an OS supported mouse, so user has no options
  * the server will enable a third button automatically if there is one
  * We also do the same for QNX4, since we use the OS mouse drivers.
  */
@@ -367,7 +357,7 @@ static char *mousetype_identifier[] = {
 	"MMSeries",
 	"MMHitTab",
 	"IntelliMouse",
-#if defined(__EMX__) || defined(QNX4)
+#if defined(__UNIXOS2__) || defined(QNX4)
 	"OSMOUSE",
 #endif
 #ifdef WSCONS_SUPPORT
@@ -375,7 +365,7 @@ static char *mousetype_identifier[] = {
 #endif
 };
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 static char *mouseintro_text =
 "First specify a mouse protocol type. Choose one from the following list:\n"
 "\n";
@@ -447,12 +437,12 @@ static char *mousemancomment_text =
 "You have selected a Logitech MouseMan type mouse. You might want to enable\n"
 "ChordMiddle which could cause the third button to work.\n";
 
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
 
 static void 
 mouse_configuration(void) {
 
-#if !defined(__EMX__) && !defined(QNX4)
+#if !defined(__UNIXOS2__) && !defined(QNX4)
 	int i;
 	char s[80];
 	printf("%s", mouseintro_text);
@@ -555,7 +545,7 @@ mouse_configuration(void) {
        }
        printf("\n");
 
-#else /* __EMX__ */
+#else /* __UNIXOS2__ */
        	/* set some reasonable defaults for OS/2 */
        	config_mousetype = 9;
 	config_chordmiddle = 0;       
@@ -566,7 +556,7 @@ mouse_configuration(void) {
 #else
 	config_pointerdevice = "QNXMOUSE";
 #endif
-#endif /* __EMX__ */
+#endif /* __UNIXOS2__ */
 }
 
 
@@ -2407,7 +2397,7 @@ write_XF86Config(char *filename)
 	fprintf(f, "%s", pointersection_text1);
 	fprintf(f, "    Option \"Protocol\"    \"%s\"\n",
 		mousetype_identifier[config_mousetype]);
-#if !defined(__EMX__) && !defined(QNX4)
+#if !defined(__UNIXOS2__) && !defined(QNX4)
 	fprintf(f, "    Option \"Device\"      \"%s\"\n", config_pointerdevice);
 #endif
 	fprintf(f, "%s", pointersection_text2);
@@ -2661,7 +2651,7 @@ static char *notinstalled_text =
 "libraries, configuration files and a server that you want to use.\n"
 "\n";
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 static char *oldxfree86_text =
 "The directory '/usr/X386/bin' exists. You probably have an old version of\n"
 "XFree86 installed (XFree86 3.1 installs in '" TREEROOT "' instead of\n"
@@ -2698,7 +2688,7 @@ path_check(void) {
 		printf("\n");
 	}
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	ok = exists_dir("/usr/X386/bin");
 	if (!ok)
 		return;
@@ -2716,7 +2706,6 @@ static void
 configdir_check(void)
 {
 	/* /etc/X11 may not exist on some systems */
-#ifndef __EMX__
 	if (getuid() == 0) {
 		struct stat buf;
 		if (stat("/etc/X11", &buf) == -1 && errno == ENOENT)
@@ -2724,7 +2713,6 @@ configdir_check(void)
 		if (stat(TREEROOTCFG, &buf) == -1 && errno == ENOENT)
 			mkdir(TREEROOTCFG, 0777);
 	}
-#endif
 }
 
 

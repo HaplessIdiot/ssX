@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.13 2001/11/06 16:11:36 alanh Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.14 2001/12/14 19:56:46 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -59,9 +59,6 @@ static BitmapFileFunctionsRec readers[] = {
     { pcfReadFont, pcfReadFontInfo} ,
 #ifdef X_GZIP_FONT_COMPRESSION
     { pcfReadFont, pcfReadFontInfo} ,
-#endif
-#ifdef __EMX__
-    { pcfReadFont, pcfReadFontInfo},
 #endif
 #endif
 #ifdef SNFFORMAT
@@ -96,12 +93,6 @@ static FontRendererRec	renderers[] = {
 	CAPABILITIES },
 #ifdef X_GZIP_FONT_COMPRESSION
     { ".pcf.gz", 7,
-    BitmapOpenBitmap, BitmapOpenScalable,
-	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
-	CAPABILITIES },
-#endif
-#ifdef __EMX__
-    { ".pcz", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },

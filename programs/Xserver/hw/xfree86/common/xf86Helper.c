@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.120 2001/12/04 17:28:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.121 2002/01/25 21:55:51 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1381,7 +1381,6 @@ OsVendorVErrorF(const char *f, va_list args)
 void
 xf86LogInit()
 {
-#ifndef __EMX__
     char *lf;
 
 #define LOGSUFFIX ".log"
@@ -1416,9 +1415,6 @@ xf86LogInit()
     }
 
 #undef LOGSUFFIX
-#else /* __EMX__ */
-    xf86LogFile = NULL;
-#endif /* __EMX__ */
 }
 
 void

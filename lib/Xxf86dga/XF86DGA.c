@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.18 2001/08/17 13:27:51 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.19 2001/08/18 02:41:30 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -8,7 +8,7 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-#ifdef __EMX__ /* needed here to override certain constants in X headers */
+#ifdef __UNIXOS2__ /* needed here to override certain constants in X headers */
 #define INCL_DOS
 #define INCL_DOSIOCTL
 #include <os2.h>
@@ -359,7 +359,7 @@ Bool XF86DGAViewPortChanged(
 # include <sys/mmap.h>
 #else
 # if !defined(Lynx)
-#  if !defined(__EMX__)
+#  if !defined(__UNIXOS2__)
 #   include <sys/mman.h>
 #  endif
 # else
@@ -469,7 +469,7 @@ MapPhysAddress(unsigned long address, unsigned long size)
     MapPtr mp;
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
     struct kd_memloc mloc;
-#elif defined(__EMX__)
+#elif defined(__UNIXOS2__)
     APIRET rc;
     ULONG action;
     HFILE hfd;
@@ -513,7 +513,7 @@ MapPhysAddress(unsigned long address, unsigned long size)
 
     if ((vaddr = (void *)ioctl(mapFd, MAP, &mloc)) == (void *)-1)
 	return NULL;
-#elif defined (__EMX__)
+#elif defined (__UNIXOS2__)
     /*
      * Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
      * Consecutive calling of this routine will make PMAP$ driver run out
@@ -622,14 +622,12 @@ XF86DGADirectVideo(
 	mp = sp->map;
 
     if (enable & XF86DGADirectGraphics) {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
-	&& !defined(__EMX__)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__UNIXOS2__)
 	if (mp && mp->vaddr)
 	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ | PROT_WRITE);
 #endif
     } else {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
-	&& !defined(__EMX__)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__UNIXOS2__)
 	if (mp && mp->vaddr)
 	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ);
 #elif defined(Lynx)

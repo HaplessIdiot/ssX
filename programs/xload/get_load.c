@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: get_load.c,v 1.15 2002/01/07 20:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.16 2002/03/05 21:22:11 herrb Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -53,7 +53,7 @@ from the X Consortium.
 #ifndef macII
 #ifndef apollo
 #ifndef LOADSTUB
-#if !defined(linux) && !defined(__EMX__) && !defined(__GNU__)
+#if !defined(linux) && !defined(__UNIXOS2__) && !defined(__GNU__)
 #include <nlist.h>
 #endif /* !linux && ... */
 #endif /* LOADSTUB */

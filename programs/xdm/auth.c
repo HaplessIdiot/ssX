@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.23 2001/07/25 15:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.24 2001/12/14 20:01:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -99,7 +99,7 @@ from The Open Group.
 #endif
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define link rename
 int chown(int a,int b,int c) {}
 #include <io.h>

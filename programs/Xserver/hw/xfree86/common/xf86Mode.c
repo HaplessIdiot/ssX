@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.53 2002/01/29 00:50:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.54 2002/01/29 19:25:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -329,7 +329,8 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
  *    scrp         ScrnInfoPtr
  *    modep        pointer to the returned mode, which must have the name
  *                 field filled in.
- *    clockRanges  a list of clock ranges
+ *    clockRanges  a list of clock ranges.   This is optional when all the
+ *                 modes are built-in modes.
  *    strategy     how to decide which mode to use from multiple modes with
  *                 the same name
  *
@@ -374,12 +375,6 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	ErrorF("xf86LookupMode: called with invalid modep\n");
 	return MODE_ERROR;
     }
-#if 0
-    if (clockRanges == NULL) {
-	ErrorF("xf86LookupMode: called with invalid clockRanges\n");
-	return MODE_ERROR;
-    }
-#endif
     for (cp = clockRanges; cp != NULL; cp = cp->next) {
 	/* DivFactor and MulFactor must be > 0 */
 	cp->ClockDivFactor = max(1, cp->ClockDivFactor);
@@ -976,12 +971,6 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
 	ErrorF("xf86CheckModeForDriver: called with invalid modep\n");
 	return MODE_ERROR;
     }
-#if 0
-    if (scrp->clockRanges == NULL) {
-	ErrorF("xf86CheckModeForDriver: called with invalid clockRanges\n");
-	return MODE_ERROR;
-    }
-#endif
 
     /* Check the mode size */
     if (mode->HDisplay > scrp->virtualX)
@@ -1178,12 +1167,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	ErrorF("xf86ValidateModes: called with invalid pitchInc\n");
 	return -1;
     }
-#if 0
-    if (clockRanges == NULL) {
-	ErrorF("xf86ValidateModes: called with invalid clockRanges\n");
-	return -1;
-    }
-#endif
     if ((virtualX > 0) != (virtualY > 0)) {
 	ErrorF("xf86ValidateModes: called with invalid virtual resolution\n");
 	return -1;

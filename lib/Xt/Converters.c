@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.10 2001/10/01 13:43:58 eich Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.11 2001/12/14 19:56:09 dawes Exp $ */
 
 /*
 
@@ -72,7 +72,7 @@ in this Software without prior written authorization from The Open Group.
 #include	<X11/Xlocale.h>
 #include	<errno.h>	/* for StringToDirectoryString */
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define IsNewline(str) ((str) == '\n' || (str) == '\r')
 #define IsWhitespace(str) ((str)== ' ' || (str) == '\t' || (str) == '\r')
 #else
@@ -111,7 +111,7 @@ static XrmQuark  XtQGravity;
 static XrmQuark  XtQInt;
 static XrmQuark  XtQPixel;
 static XrmQuark  XtQPosition;
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 XrmQuark  _XtQString = 0;
 #else
 XrmQuark  _XtQString;
@@ -270,7 +270,7 @@ static Boolean IsInteger(string, value)
     int val = 0;
     char ch;
     /* skip leading whitespace */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     while ((ch = *string) == ' ' || ch == '\t') string++;
 #else
     while ((ch = *string) == ' ' || ch == '\t' || ch == '\r') string++;

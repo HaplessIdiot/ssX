@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.31 2001/11/23 19:21:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.33 2002/04/04 14:05:57 eich Exp $ */
 
 #if 0
 #define DEBUG_COMMUNICATION
@@ -65,7 +65,7 @@ SOFTWARE.
 #include <X11/Xtrans.h>
 #include "Xmd.h"
 #include <errno.h>
-#if !defined(__EMX__) && !defined(WIN32)
+#if !defined(__UNIXOS2__) && !defined(WIN32)
 #ifndef Lynx
 #include <sys/uio.h>
 #else
@@ -93,7 +93,7 @@ CallbackListPtr       FlushCallback;
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
@@ -103,7 +103,7 @@ CallbackListPtr       FlushCallback;
 #define ETEST(err) (err == EWOULDBLOCK)
 #endif
 #endif
-#else /* __EMX__  Writing to full pipes may return ENOSPC */
+#else /* __UNIXOS2__  Writing to full pipes may return ENOSPC */
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK || err == ENOSPC)
 #endif
 

@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.24 2001/08/29 11:09:43 alanh Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.25 2001/12/14 20:02:22 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -556,7 +556,7 @@ for (i = 1; i < argc; ) {
 #  define Usleep(us) usleep((us))
 # endif
 #endif
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 # define Usleep(us) _sleep2((us / 1000 > 0) ? us / 1000 : 1)
 #endif
 #ifdef WIN32

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.50 2001/11/01 23:35:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.52 2002/04/04 14:05:56 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -457,7 +457,7 @@ SOFTWARE.
 #if	(defined(SVR4) && defined(i386)) || \
 	defined(__alpha__) || defined(__alpha) || \
 	defined(__i386__) || \
-	defined(__EMX__) || \
+	defined(__UNIXOS2__) || \
 	defined(__OS2ELF__) || \
 	defined(__QNX__) || \
 	defined(__s390x__) || defined(__s390__)

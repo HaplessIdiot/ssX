@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.83 2002/01/14 18:34:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.85 2002/04/04 14:05:55 eich Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -50,7 +50,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define NO_MMAP
 #include <sys/param.h>
 #endif
@@ -117,7 +117,7 @@ void xf86WrapperInit(void);
 #endif
 typedef struct dirent DIRENTRY;
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define _POSIX_SOURCE
 #endif
 #ifdef ISC202
@@ -892,7 +892,7 @@ xf86strerror(int n)
 		mapnum (ENOTDIR);
 		mapnum (EPIPE);
 		mapnum (EROFS);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		mapnum (ETXTBSY);	/* not POSIX 1 */
 #endif
 		mapnum (ENOTTY);
@@ -1179,7 +1179,7 @@ xf86bsearch(const void *key, const void *base, xf86size_t nmemb,
 int
 xf86execl(const char *pathname, const char *arg, ...)
 {
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     int i;
     pid_t pid;
     int exit_status;
@@ -1262,7 +1262,7 @@ xf86execl(const char *pathname, const char *arg, ...)
     }
 #else
     return(1);
-#endif /* __EMX__ Disable this crazy business for now */
+#endif /* __UNIXOS2__ Disable this crazy business for now */
 }
 
 void
@@ -1368,7 +1368,7 @@ xfToOsChmodMode(xf86mode_t xfmode)
 
     if (xfmode & XF86_S_ISUID) mode |= S_ISUID;
     if (xfmode & XF86_S_ISGID) mode |= S_ISGID;
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     if (xfmode & XF86_S_ISVTX) mode |= S_ISVTX;
 #endif
     if (xfmode & XF86_S_IRUSR) mode |= S_IRUSR;
@@ -1397,7 +1397,7 @@ xf86chmod(const char *path, xf86mode_t xfmode)
 int
 xf86chown(const char *path, xf86uid_t owner, xf86gid_t group)
 {
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     int rc = chown(path, owner, group);
 #else
     int rc = 0;
@@ -1431,7 +1431,7 @@ xfToOsMknodMode(xf86mode_t xfmode)
 
     if (xfmode & XF86_S_IFREG) mode |= S_IFREG;
     if (xfmode & XF86_S_IFCHR) mode |= S_IFCHR;
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     if (xfmode & XF86_S_IFBLK) mode |= S_IFBLK;
 #endif
     if (xfmode & XF86_S_IFIFO) mode |= S_IFIFO;
@@ -1442,7 +1442,7 @@ xfToOsMknodMode(xf86mode_t xfmode)
 int xf86mknod(const char *pathname, xf86mode_t xfmode, xf86dev_t dev)
 {
     mode_t mode = xfToOsMknodMode(xfmode);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     int rc      = mknod(pathname, mode, dev);
 #else
     int rc = 0;
@@ -1836,7 +1836,7 @@ xf86GetErrno ()
 		mapnum (ENOTDIR);
 		mapnum (EPIPE);
 		mapnum (EROFS);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		mapnum (ETXTBSY);	/* not POSIX 1 */
 #endif
 		mapnum (ENOTTY);

@@ -1,4 +1,4 @@
-/* $XFree86: os.h,v 3.40 2001/12/14 19:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.41 2002/04/03 19:51:11 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -570,7 +570,7 @@ void OsReleaseSignals (
 #endif		     
 		     );
 
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
 extern int System(char *);
 extern pointer Popen(char *, char *);
 extern int Pclose(pointer);

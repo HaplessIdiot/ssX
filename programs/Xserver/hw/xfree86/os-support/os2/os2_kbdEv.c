@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.14 1999/04/29 09:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.15 1999/04/29 09:30:27 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -29,6 +29,7 @@
  */
 /* $XConsortium: os2_kbdEv.c /main/10 1996/10/27 11:48:48 kaleb $ */
 
+#define I_NEED_OS2_H
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
@@ -36,7 +37,6 @@
 #include "inputstr.h"
 #include "scrnintstr.h"
 
-#define I_NEED_OS2_H
 #define INCL_KBD
 #define INCL_DOSMONITORS
 #define INCL_WINSWITCHLIST

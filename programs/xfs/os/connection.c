@@ -67,7 +67,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.22 2001/07/25 15:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.23 2001/12/14 20:01:41 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdlib.h>
@@ -78,7 +78,7 @@ in this Software without prior written authorization from The Open Group.
 #ifndef Lynx
 #include	<sys/param.h>
 #include	<sys/socket.h>
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #include	<sys/uio.h>
 #endif
 #else
@@ -98,7 +98,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"dispatch.h"
 #include	"fsevents.h"
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define _NFILE OPEN_MAX
 #define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
 #endif
@@ -187,7 +187,7 @@ CreateSockets(int old_listen_count, OldListenRec *old_listen)
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
-#if defined(hpux) || defined(__EMX__)
+#if defined(hpux) || defined(__UNIXOS2__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;

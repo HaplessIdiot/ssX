@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.129 2002/05/05 18:54:01 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.130 2002/05/07 21:38:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -266,7 +266,7 @@ xf86GrabServerCallback(CallbackListPtr *callbacks, pointer data, pointer args)
 extern u_char SpecialServerMap[];
 #endif
 
-#if !defined(__EMX__) && \
+#if !defined(__UNIXOS2__) && \
     !defined(__SOL8__) && \
     (!defined(sun) || defined(i386)) 
 void
@@ -938,7 +938,7 @@ special:
       ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
     }
 }
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
 
 
 /*
@@ -950,7 +950,7 @@ special:
 void
 xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
-#if !defined(__EMX__) && !defined(__QNX__)
+#if !defined(__UNIXOS2__) && !defined(__QNX__)
     fd_set* LastSelectMask = (fd_set*)pReadmask;
     fd_set devicesWithInput;
     InputInfoPtr pInfo;
@@ -979,7 +979,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	    }
 	}
     }
-#else   /* __EMX__ and __QNX__ */
+#else   /* __UNIXOS2__ and __QNX__ */
 
     InputInfoPtr pInfo;
 
@@ -1001,7 +1001,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 		pInfo = pInfo->next;
     }
 
-#endif  /* __EMX__ and __QNX__ */
+#endif  /* __UNIXOS2__ and __QNX__ */
 
     if (err >= 0) { /* we don't want the handlers called if select() */
 	IHPtr ih;   /* returned with an error condition, do we?      */
@@ -1143,7 +1143,7 @@ xf86VTSwitch()
 	if (xf86Screens[i]->EnableDisableFBAccess)
 	  (*xf86Screens[i]->EnableDisableFBAccess) (i, FALSE);
     }
-#if !defined(__EMX__)
+#if !defined(__UNIXOS2__)
 
     /* 
      * Keep the order: Disable Device > LeaveVT
@@ -1155,7 +1155,7 @@ xf86VTSwitch()
       DisableDevice(pInfo->dev);
       pInfo = pInfo->next;
     }
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
     xf86EnterServerState(SETUP);
     for (i = 0; i < xf86NumScreens; i++) {
       xf86Screens[i]->LeaveVT(i, 0);
@@ -1188,14 +1188,14 @@ xf86VTSwitch()
       }
       SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
-#if !defined(__EMX__)
+#if !defined(__UNIXOS2__)
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
       pInfo = xf86InputDevs;
       while (pInfo) {
 	EnableDevice(pInfo->dev);
 	pInfo = pInfo->next;
       }
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);
 
@@ -1239,14 +1239,14 @@ xf86VTSwitch()
     /* Turn screen saver off when switching back */
     SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
 
-#if !defined(__EMX__)
+#if !defined(__UNIXOS2__)
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
       EnableDevice(pInfo->dev);
       pInfo = pInfo->next;
     }
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
     
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);

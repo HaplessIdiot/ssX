@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.14 2001/01/17 23:45:45 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.15 2001/07/25 15:05:24 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -50,7 +50,7 @@
 #include "tokens.h"
 #include <X11/extensions/XKBgeom.h>
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define chdir _chdir2
 #endif
 

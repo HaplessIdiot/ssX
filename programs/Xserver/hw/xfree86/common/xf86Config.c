@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.256 2002/04/04 14:05:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.257 2002/05/05 18:54:00 herrb Exp $ */
 
 
 /*
- * Copyright 1991-1999 by The XFree86 Project, Inc.
+ * Copyright 1991-2002 by The XFree86 Project, Inc.
  * Copyright 1997 by Metro Link, Inc.
  *
  * Loosely based on code bearing the following copyright:
@@ -11,7 +11,7 @@
  *
  *  <Put copyright message here>
  *
- * Author: Dirk Hohndel <hohndel@XFree86.Org>
+ * Author: Dirk Hohndel <hohndel@XFree86.Org> and others.
  */
 
 #ifdef XF86DRI
@@ -42,16 +42,6 @@ extern DeviceAssocRec mouse_assoc;
     (defined(__FreeBSD__) || defined(__NetBSD__) || defined(linux) || \
      (defined(SVR4) && !defined(sun)) || defined(__GNU__))
 #define SUPPORT_PC98
-#endif
-
-#ifdef __EMX__
-#define ROOT_CONFIGPATH	"%A," "%R," \
-			"%E," \
-			"%D/%X," \
-			"%&/XFree86/lib/X11/%X-%M," "%&/XFree86/lib/X11/%X," "%&XFree86/lib/X11/%X," \
-			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
-			"%P/etc/X11/%X,"
-#define USER_CONFIGPATH ROOT_CONFIGPATH
 #endif
 
 /*
@@ -145,7 +135,7 @@ xf86ValidateFontPath(char *path)
   while (next != NULL) {
     path_elem = xf86GetPathElem(&next);
     if (*path_elem == '/') {
-#ifndef __EMX__
+#ifndef __UNIXOS2__
       dir_elem = xnfcalloc(1, strlen(path_elem) + 1);
       if ((p1 = strchr(path_elem, ':')) != 0)
 #else
@@ -177,7 +167,7 @@ xf86ValidateFontPath(char *path)
 	if (flag == 0)
 	  if (!S_ISREG(stat_buf.st_mode))
 	    flag = -1;
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	xfree(p1);
 #endif
 	if (flag != 0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.50 2001/04/10 16:08:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.52 2002/04/04 14:05:53 eich Exp $ */
 
 
 
@@ -570,10 +570,8 @@ typedef int xf86jmp_buf[20];
 #define X_OK                    XF86_X_OK
 #undef F_OK
 #define F_OK                    XF86_F_OK
-#ifndef __EMX__
 #undef errno
 #define errno			xf86errno
-#endif
 #undef putchar
 #define putchar(i)		xf86fputc(i, xf86stdout)
 #undef puts

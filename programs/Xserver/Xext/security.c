@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.9 2001/10/28 03:32:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.10 2001/12/14 19:58:50 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1358,7 +1358,7 @@ SecurityFreePropertyAccessList()
     }
 } /* SecurityFreePropertyAccessList */
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #define SecurityIsWhitespace(c) ( (c == ' ') || (c == '\t') || (c == '\n') )
 #else
 #define SecurityIsWhitespace(c) ( (c == ' ') || (c == '\t') || (c == '\n') || (c == '\r') )
@@ -1640,7 +1640,7 @@ SecurityLoadPropertyAccessList()
     if (!SecurityPolicyFile)
 	return;
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     f = fopen(SecurityPolicyFile, "r");
 #else
     f = fopen((char*)__XOS2RedirRoot(SecurityPolicyFile), "r");

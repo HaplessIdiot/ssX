@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.17 2001/01/13 00:04:18 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.18 2001/08/17 13:27:51 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -8,7 +8,7 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-#ifdef __EMX__ /* needed here to override certain constants in X headers */
+#ifdef __UNIXOS2__ /* needed here to override certain constants in X headers */
 #define INCL_DOS
 #define INCL_DOSIOCTL
 #include <os2.h>
@@ -727,7 +727,7 @@ void XDGAKeyEventToXKeyEvent(
 # include <sys/mmap.h>
 #else
 # if !defined(Lynx)
-#  if !defined(__EMX__)
+#  if !defined(__UNIXOS2__)
 #   include <sys/mman.h>
 #  endif
 # else
@@ -861,7 +861,7 @@ DGAMapPhysical(
 ) {
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
     struct kd_memloc mloc;
-#elif defined(__EMX__)
+#elif defined(__UNIXOS2__)
     APIRET rc;
     ULONG action;
     HFILE hfd;
@@ -883,7 +883,7 @@ DGAMapPhysical(
 
     if ((pMap->virtual = (void *)ioctl(pMap->fd, MAP, &mloc)) == (void *)-1)
 	return False;
-#elif defined (__EMX__)
+#elif defined (__UNIXOS2__)
     /*
      * Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
      * Consecutive calling of this routine will make PMAP$ driver run out
@@ -934,7 +934,7 @@ DGAMapPhysical(
 #endif
 
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
-	&& !defined(__EMX__)
+	&& !defined(__UNIXOS2__)
     mprotect(pMap->virtual, size, PROT_READ | PROT_WRITE);
 #endif
 
@@ -947,7 +947,7 @@ static void
 DGAUnmapPhysical(DGAMapPtr pMap)
 {
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
-	&& !defined(__EMX__)
+	&& !defined(__UNIXOS2__)
     mprotect(pMap->virtual,pMap->size, PROT_READ);
 #elif defined(Lynx)
 	/* XXX this doesn't allow enable after disable */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.185 2002/01/15 01:56:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.187 2002/04/04 14:05:40 eich Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -65,7 +65,7 @@ static int extraDays = 0;
 static char *expKey = NULL;
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 extern void os2ServerVideoAccess();
 #endif
 
@@ -209,7 +209,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
   
-#ifdef __EMX__
+#ifdef __UNIXOS2__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
 

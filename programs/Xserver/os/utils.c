@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.80 2002/01/15 01:33:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.81 2002/01/16 20:39:51 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -189,23 +189,19 @@ OsSignal(sig, handler)
  * server at a time.  This keeps the servers from stomping on each other
  * if the user forgets to give them different display numbers.
  */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #define LOCK_DIR "/tmp"
+#endif
 #define LOCK_TMP_PREFIX "/.tX"
 #define LOCK_PREFIX "/.X"
 #define LOCK_SUFFIX "-lock"
-#else
-#define LOCK_TMP_PREFIX "/xf86$"
-#define LOCK_PREFIX "/xf86_"
-#define LOCK_SUFFIX ".lck"
-#endif
 
 #if defined(DGUX)
 #include <limits.h>
 #include <sys/param.h>
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define link rename
 #endif
 
@@ -246,7 +242,7 @@ LockServer()
   /*
    * Path names
    */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
   tmppath = LOCK_DIR;
 #else
   /* OS/2 uses TMP directory, must also prepare for 8.3 names */
@@ -293,7 +289,7 @@ LockServer()
     FatalError("Could not create lock file in %s\n", tmp);
   (void) sprintf(pid_str, "%10ld\n", (long)getpid());
   (void) write(lfd, pid_str, 11);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 #ifndef USE_CHMOD
   (void) fchmod(lfd, 0444);
 #else
@@ -378,9 +374,9 @@ UnlockServer()
 
   if (!StillLocking){
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
   (void) chmod(LockFile,S_IREAD|S_IWRITE);
-#endif /* __EMX__ */
+#endif /* __UNIXOS2__ */
   (void) unlink(LockFile);
   }
 }
@@ -791,7 +787,7 @@ char	*argv[];
 #ifdef SERVER_LOCK
 	else if ( strcmp ( argv[i], "-nolock") == 0)
 	{
-#if !defined(WIN32) && !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__UNIXOS2__) && !defined(__CYGWIN__)
 	  if (getuid() != 0)
 	    ErrorF("Warning: the -nolock option can only be used by root\n");
 	  else
@@ -1068,7 +1064,7 @@ ExpandCommandLine(pargc, pargv)
 {
     int i;
 
-#if !defined(WIN32) && !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__UNIXOS2__) && !defined(__CYGWIN__)
     if (getuid() != geteuid())
 	return;
 #endif
@@ -1590,7 +1586,7 @@ OsReleaseSignals (void)
 #endif
 }
 
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
 /*
  * "safer" versions of system(3), popen(3) and pclose(3) which give up
  * all privs before running a command.
@@ -1760,7 +1756,7 @@ Pclose(iop)
     
     return pid == -1 ? -1 : pstat;
 }
-#endif /* !WIN32 && !__EMX__ */
+#endif /* !WIN32 && !__UNIXOS2__ */
 
 
 /*
