@@ -4529,24 +4529,32 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
 	     if(!pSiS->donttrustpdc) {
 	        if((pSiS->sisfbpdc == 0xff) && (pSiS->sisfbpdca == 0xff)) {
+		   CARD16 tempa, tempb;
+		   inSISIDXREG(SISPART1,0x2d,tmp2);
+		   tempa = (tmp2 & 0x0f) << 1;
+		   tempb = (tmp2 & 0xf0) >> 3;
+		   inSISIDXREG(SISPART1,0x20,tmp2);
+		   tempa |= ((tmp2 & 0x40) >> 6);
+		   inSISIDXREG(SISPART1,0x35,tmp2);
+		   tempb |= ((tmp2 & 0x80) >> 7);
 		   inSISIDXREG(SISPART1,0x13,tmp2);
-		   if(tmp2 & 0x04) {
-		      inSISIDXREG(SISPART1,0x2d,tmp);
-		      inSISIDXREG(SISPART1,0x20,tmp2);
-		      tmp <<= 1;
-		      tmp2 >>= 6;
-		      tmp2 &= 0x01;
-		      pSiS->SiS_Pr->PDCA = tmp | tmp2;
-		   } else if(tmp & 0x20) {
-		      inSISIDXREG(SISPART1,0x2d,tmp);
-		      inSISIDXREG(SISPART1,0x35,tmp2);
-		      tmp <<= 1;
-		      tmp2 >>= 7;
-		      tmp2 &= 0x01;
-		      pSiS->SiS_Pr->PDC = tmp | tmp2;
+		   if(!pSiS->ROM661New) {
+		      if((tmp2 & 0x04) || (tmp & 0x20)) {
+		         pSiS->SiS_Pr->PDCA = tempa;
+		         pSiS->SiS_Pr->PDC  = tempb;
+		      } else {
+		         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	      	             "Unable to detect PanelDelayCompensation, LCD is not active\n");
+		      }
 		   } else {
-		      xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	      	          "Unable to detect PanelDelayCompensation[1], LCD[via-CRT1] is not active\n");
+		      if(tmp2 & 0x04) {
+		         pSiS->SiS_Pr->PDCA = tempa;
+		      } else if(tmp & 0x20) {
+		         pSiS->SiS_Pr->PDC  = tempb;
+		      } else {
+		         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	      	             "Unable to detect PanelDelayCompensation, LCD is not active\n");
+		      }
 		   }
 		}
 	     } else {
