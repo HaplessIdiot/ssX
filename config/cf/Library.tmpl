@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.30 94/03/29 15:42:14 gildea Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.33 95/05/05 19:31:31 kaleb Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -59,7 +59,7 @@ CDEBUGFLAGS = LibraryCDebugFlags
 #define LibraryCplusplusCmd CplusplusCmd
 #endif
 #endif
-#ifndef LibraryCCOptions
+#ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
 #define LibraryCplusplusOptions SharedLibraryCplusplusOptions
 #else
@@ -204,6 +204,50 @@ SpecialLibObjectRule(basename.Osuf,basename.SRCsuf depends,options)	@@\
 CenterLoadTarget(debug_src,basename.SRCsuf,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCplusplusLibObjectRule */
 
+/*
+ * ToolkitMakeStringsRule generates a string-table, i.e. a C source
+ * file and the matching header(s), e.g. Xt's StringDefs.c, StringDefs.h,
+ * and Shell.h files; or Motif's XmStrDefs.c and XmStrDefs.h files.
+ *
+ * The 'options' argument is passed by the library's Imakefile, see the
+ * Xt Imakefile for an example. Typically this would be nothing, -intelabi,
+ * or -sparcabi; there are other choices, but these are typical.
+ *
+ * The 'files' argument is the list of files that will be produced by
+ * this rule, e.g. for Xt they would be "Shell.h StringDefs.c StringDefs.h"
+ * and for Motif they would be "XmStrDefs.c XmStrDefs.h".
+ *
+ * The 'source' argument is the string-list file to be parsed, e.g. in
+ * Xt that would be "util/string.list". For Motif 2.0 it would be
+ * "../../tools/makestr/xmstring.list", and for Motif-CDE1 it would be
+ * "util/xmstring.list".
+ *
+ * The 'dest' argument is the C source output file. For Xt this should
+ * be "StringDefs.c", and for all versions of Motif it would be "XmStrDefs.c"
+ *
+ * Headers are generated and named according to data in the 'source'
+ * file.
+ */
+
+#ifndef ToolkitMakeStringsRule
+#define ToolkitMakeStringsRule(options,files,source,dest)		@@\
+MAKESTRS = $(CONFIGSRC)/util/makestrs					@@\
+									@@\
+$(MAKESTRS): $(MAKESTRS).c						@@\
+	cd $(CONFIGSRC)/util; make makestrs				@@\
+									@@\
+files: $(MAKESTRS)							@@\
+	@RemoveFiles(files)						@@\
+	@RunProgram(MAKESTRS, options < source > dest)			@@\
+									@@\
+all:: files								@@\
+									@@\
+includes:: files							@@\
+									@@\
+depend:: files								@@\
+
+#endif /* ToolkitMakeStringsRule */
+
 #ifdef LibName
 
 LIBNAME = LibName
@@ -224,9 +268,9 @@ InstallSharedLibraryData($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #if DoNormalLib
 #if HugeLibrary
 #if DoSharedLib && SeparateSharedCompile
-UnsharedLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
+UnsharedLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
 #else
-NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
+NormalLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3))
 #endif
 #else
 #if DoSharedLib && SeparateSharedCompile
