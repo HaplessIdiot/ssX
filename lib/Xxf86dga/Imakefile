@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xxf86dga/Imakefile,v 3.5tsi Exp $
+XCOMM $XFree86: xc/lib/Xxf86dga/Imakefile,v 3.6 2003/05/05 20:42:30 tsi Exp $
 
 #define DoNormalLib NormalLibXxf86dga
 #define DoSharedLib SharedLibXxf86dga
@@ -34,5 +34,32 @@ APERTURE_DEFINES = -DHAS_APERTURE_DRV
 #define IncludeSharedObjectInNormalLib
 
 #include <Library.tmpl>
+
+MANDIR = $(LIBMANDIR)
+MANSUFFIX = $(LIBMANSUFFIX)
+
+InstallManPage(XDGA,$(MANDIR))
+#if ExpandManNames
+DGAFUNCS = XDGAQueryExtension \
+	   XDGAQueryVersion \
+	   XDGAQueryModes \
+	   XDGASetMode \
+	   XDGAOpenFramebuffer \
+	   XDGACloseFramebuffer \
+	   XDGASetViewport \
+	   XDGAInstallColormap \
+	   XDGACreateColormap \
+	   XDGASelectInput \
+	   XDGAFillRectangle \
+	   XDGACopyArea \
+	   XDGACopyTransparentArea \
+	   XDGAGetViewportStatus \
+	   XDGASync \
+	   XDGASetClientVersion \
+	   XDGAChangePixmapMode \
+	   XDGAKeyEventToXKeyEvent
+
+InstallManPageAliases(XDGA,$(MANDIR),XF86DGA XFree86-DGA $(DGAFUNCS))
+#endif
 
 DependTarget()
