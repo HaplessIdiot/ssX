@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/sk,v 1.1 2001/05/18 23:35:35 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/sk,v 1.2 2001/10/01 14:04:16 eich Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "basic" {
@@ -22,7 +22,7 @@ xkb_symbols "basic" {
     			grave,		asciitilde ] };
     key <AE01>  { [	plus,		1,
 			exclam,		dead_tilde ] };
-    key <AE02>  { [	lacute,         2, 
+    key <AE02>  { [	lcaron,         2, 
 			at,		dead_caron ] };
     key <AE03>  { [	scaron,		3,
 			numbersign,	dead_circumflex ] };
