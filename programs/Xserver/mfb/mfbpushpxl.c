@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.4 2001/01/17 22:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbpushpxl.c,v 1.5 2001/12/14 20:00:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -108,7 +108,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     register BoxPtr pbox;
     int i;
 
-    if (!pGC->planemask & 1) return;
+    if (!(pGC->planemask & 1)) return;
 
     /* compute the reduced rop function */
     alu = pGC->alu;
