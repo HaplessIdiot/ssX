@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texstate.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texstate.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -729,6 +729,8 @@ static void r200UpdateTextureEnv( GLcontext *ctx, int unit )
       const GLenum format = tObj->Image[tObj->BaseLevel]->Format;
       GLuint color_arg[3], alpha_arg[3];
       GLuint i, numColorArgs = 0, numAlphaArgs = 0;
+      GLuint RGBshift = texUnit->CombineScaleShiftRGB;
+      GLuint Ashift = texUnit->CombineScaleShiftA;
 
       switch ( texUnit->EnvMode ) {
       case GL_REPLACE:
@@ -867,6 +869,8 @@ static void r200UpdateTextureEnv( GLcontext *ctx, int unit )
 	 case GL_SUBTRACT:
 	 case GL_DOT3_RGB:
 	 case GL_DOT3_RGBA:
+	 case GL_DOT3_RGB_EXT:
+	 case GL_DOT3_RGBA_EXT:
 	    numColorArgs = 2;
 	    break;
 	 case GL_INTERPOLATE:
@@ -991,13 +995,36 @@ static void r200UpdateTextureEnv( GLcontext *ctx, int unit )
 	    R200_COLOR_ARG( 1, A );
 	    R200_COLOR_ARG( 2, C );
 	    break;
+
+	 case GL_DOT3_RGB_EXT:
+	 case GL_DOT3_RGBA_EXT:
+	    RGBshift = 0;
+	    Ashift = 0;
+	    /* FALLTHROUGH */
+
 	 case GL_DOT3_RGB:
 	 case GL_DOT3_RGBA:
+	    /* DOT3 works differently on R200 than on R100.  On R100, just
+	     * setting the DOT3 mode did everything for you.  On R200, the
+	     * driver has to enable the biasing (the -0.5 in the combine
+	     * equation), and it has add the 4x scale factor.  The hardware
+	     * only supports up to 8x in the post filter, so 2x part of it
+	     * happens on the inputs going into the combiner.
+	     */
+
+	    RGBshift++;
+	    Ashift = RGBshift;
+
 	    color_combine = (R200_TXC_ARG_C_ZERO |
-			     R200_TXC_OP_DOT3);
+			     R200_TXC_OP_DOT3 |
+			     R200_TXC_BIAS_ARG_A |
+			     R200_TXC_BIAS_ARG_B |
+			     R200_TXC_SCALE_ARG_A |
+			     R200_TXC_SCALE_ARG_B);
 	    R200_COLOR_ARG( 0, A );
 	    R200_COLOR_ARG( 1, B );
 	    break;
+
 	 default:
 	    return;
 	 }
@@ -1049,27 +1076,18 @@ static void r200UpdateTextureEnv( GLcontext *ctx, int unit )
 	 }
 
 	 if ( texUnit->CombineModeRGB == GL_DOT3_RGB ) {
-	    alpha_combine |= R200_TXA_DOT_ALPHA;
+	    alpha_scale |= R200_TXA_DOT_ALPHA;
 	 }
 
 	 /* Step 3:
-	  * Apply the scale factor.  The EXT extension has a somewhat
-	  * unnecessary restriction that the scale must be 4x.  The ARB
-	  * extension will likely drop this and we can just apply the
-	  * scale factors regardless.
+	  * Apply the scale factor.  The EXT version of the DOT3 extension does
+	  * not support the scale factor, but the ARB version (and the version in
+	  * OpenGL 1.3) does.
 	  */
 	 color_scale &= ~R200_TXC_SCALE_MASK;
 	 alpha_scale &= ~R200_TXA_SCALE_MASK;
-	 if ( texUnit->CombineModeRGB != GL_DOT3_RGB &&
-	      texUnit->CombineModeRGB != GL_DOT3_RGBA ) {
-	    color_scale |= texUnit->CombineScaleShiftRGB<< R200_TXC_SCALE_SHIFT;
-	    alpha_scale |= texUnit->CombineScaleShiftA << R200_TXA_SCALE_SHIFT;
-	 }
-	 else
-	 {
-	    color_scale |= R200_TXC_SCALE_4X;
-	    alpha_scale |= R200_TXA_SCALE_4X;
-	 }
+	 color_scale |= (RGBshift << R200_TXC_SCALE_SHIFT);
+	 alpha_scale |= (Ashift   << R200_TXA_SCALE_SHIFT);
 
 	 /* All done!
 	  */
