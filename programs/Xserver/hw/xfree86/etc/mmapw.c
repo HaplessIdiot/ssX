@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.4 2003/04/24 15:20:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.5tsi Exp $ */
 /*
  * Copyright 2002 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -60,7 +60,7 @@ usage(void)
 {
     fprintf(stderr, "\n"
         "mmapw [-{bwlqL}] <file> <offset> <value>\n\n"
-        "endianness flags:\n\n"
+        "access size flags:\n\n"
         " -b   write one byte\n"
         " -w   write two aligned bytes\n"
         " -l   write four aligned bytes (default)\n"

@@ -1,4 +1,6 @@
 XFree86 4.4.99.20 (xx December 2004)
+ 242. Change mmapr to optionally pretty-print its stdout;  Fix usage message
+      in mmapr and mmapw (Marc La France).
  241. Define the log message verbosity level in one place for cases where it
       isn't specified explicitly (David Dawes).
  240. Fix an error in bdftopcf's usage message (Bugzilla #1520,
@@ -19213,7 +19215,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3366 2004/12/16 20:26:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3367 2004/12/20 19:27:19 dawes Exp $
 
 
 
