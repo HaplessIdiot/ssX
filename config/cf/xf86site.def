@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.187 2003/09/06 23:38:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.188 2004/05/01 01:29:49 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -564,9 +564,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.187 2003/09/06 23:38:04 dawes Exp 
  */
 
 /*
- * If you want XDMAUTH support (if you have Wraphelp.c), uncomment this.
+ * If you want to disable XDMAUTH support, uncomment this.
  *
-#define HasXdmAuth		YES
+#define HasXdmAuth		NO
  */
 
 /*

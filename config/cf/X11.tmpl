@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.256 2004/06/01 00:16:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.257 2004/06/02 22:42:53 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -803,7 +803,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define HasWChar32		SystemV4
 #endif
 #ifndef HasXdmAuth
-#define HasXdmAuth		NO	/* if you can not use XDM-AUTH* */
+#define HasXdmAuth		YES
 #endif
 #ifndef PrimaryScreenResolution
 #define PrimaryScreenResolution 72		/* a common resolution */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.222 2004/04/11 20:33:26 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.223 2004/06/02 22:42:53 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -191,7 +191,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   ifndef Mc68020Architecture
 #    define HasLinuxInput		YES
 #   endif
-#   define HasXdmAuth			YES
 #   define HasLatex			YES
 /* at present, glide2 only works on i386 */
 #   ifdef i386Architecture
