@@ -1,4 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -174,6 +175,9 @@ in this Software without prior written authorization from the X Consortium.
 #define INLINE_SYNTAX
 #define MAGIC_MAKE_VARS
 #endif
+#ifdef __minix_vmd
+#define FIXUP_CPP_WHITESPACE
+#endif
 
 /*
  * Step 4:  USE_CC_E, DEFAULT_CC, DEFAULT_CPP
@@ -211,6 +215,9 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
 #define DEFAULT_CPP "/usr/libexec/cpp"
+#endif
+#ifdef __minix_vmd
+#define DEFAULT_CPP "/usr/lib/cpp"
 #endif
 
 /*
@@ -394,6 +401,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Dmc68000",
 #  endif
 # endif
+#endif
+#ifdef __minix_vmd
+        "-Dminix",
 #endif
 };
 #else /* else MAKEDEPEND */

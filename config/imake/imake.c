@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c,v 1.87 94/04/17 20:10:28 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/config/imake/imake.c,v 3.0 1994/04/29 14:03:34 dawes Exp $ */
 
 /*****************************************************************************
  *                                                                           *
@@ -189,6 +189,10 @@ extern int	errno;
 #endif
 #include "imakemdep.h"
 
+#ifdef __minix_vmd
+#define USE_FREOPEN		1
+#define USE_STRERROR		1
+#endif
 
 #define	TRUE		1
 #define	FALSE		0
@@ -510,7 +514,7 @@ void
 LogFatal(x0,x1)
 	char *x0, *x1;
 {
-#ifndef WIN32
+#if !defined(WIN32) && !defined(USE_STRERROR)
 	extern char	*sys_errlist[];
 #endif
 	static boolean	entered = FALSE;
@@ -521,7 +525,11 @@ LogFatal(x0,x1)
 
 	fprintf(stderr, "%s: ", program);
 	if (errno)
+#ifdef USE_STRERROR
+		fprintf(stderr, "%s: ", strerror(errno));
+#else
 		fprintf(stderr, "%s: ", sys_errlist[ errno ]);
+#endif
 	fprintf(stderr, x0,x1);
 	fprintf(stderr, "  Stop.\n");
 	wrapup();
@@ -870,7 +878,7 @@ char *ReadLine(tmpfd, tmpfname)
 		end = buf + total_red;
 		*end = '\0';
 		fseek(tmpfd, 0, 0);
-#if defined(SYSV) || defined(WIN32)
+#if defined(SYSV) || defined(WIN32) || defined(USE_FREOPEN)
 		freopen(tmpfname, "w+", tmpfd);
 #else	/* !SYSV */
 		ftruncate(fileno(tmpfd), (off_t)0);
