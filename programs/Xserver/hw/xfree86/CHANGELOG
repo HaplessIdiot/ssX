@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 148. Ansi prototypes cleanup in Xserver/include and Xserver/os 
+      (Matthieu Herrb).
  147. Fix shared libXp dependencies on *BSD and Darwin (Dale Rahn). 
  146. Fix infinite loop that occurs on systems whose PCI configuration space
       doesn't advertise a host bridge (Marc La France).
@@ -16900,7 +16902,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2669 2003/04/25 16:16:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2670 2003/04/26 19:25:02 herrb Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.37 2001/12/14 20:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.38 2002/05/31 18:46:05 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -134,8 +134,7 @@ static OsTimerPtr timers;
 static INT32 timeTilFrob = 0;		/* while screen saving */
 
 int
-WaitForSomething(pClientsReady)
-    int *pClientsReady;
+WaitForSomething(int *pClientsReady)
 {
     int i;
     struct timeval waittime, *wt;
@@ -511,8 +510,7 @@ WaitForSomething(pClientsReady)
 /*
  * This is not always a macro.
  */
-ANYSET(src)
-    FdMask	*src;
+ANYSET(FdMask *src)
 {
     int i;
 
@@ -537,12 +535,8 @@ DoTimer(OsTimerPtr timer, CARD32 now, OsTimerPtr *prev)
 }
 
 OsTimerPtr
-TimerSet(timer, flags, millis, func, arg)
-    register OsTimerPtr timer;
-    int flags;
-    CARD32 millis;
-    OsTimerCallback func;
-    pointer arg;
+TimerSet(OsTimerPtr timer, int flags, CARD32 millis, 
+    OsTimerCallback func, pointer arg)
 {
     register OsTimerPtr *prev;
     CARD32 now = GetTimeInMillis();
@@ -590,10 +584,9 @@ TimerSet(timer, flags, millis, func, arg)
 }
 
 Bool
-TimerForce(timer)
-    register OsTimerPtr timer;
+TimerForce(OsTimerPtr timer)
 {
-    register OsTimerPtr *prev;
+    OsTimerPtr *prev;
 
     for (prev = &timers; *prev; prev = &(*prev)->next)
     {
@@ -608,10 +601,9 @@ TimerForce(timer)
 
 
 void
-TimerCancel(timer)
-    register OsTimerPtr timer;
+TimerCancel(OsTimerPtr timer)
 {
-    register OsTimerPtr *prev;
+    OsTimerPtr *prev;
 
     if (!timer)
 	return;
@@ -626,8 +618,7 @@ TimerCancel(timer)
 }
 
 void
-TimerFree(timer)
-    register OsTimerPtr timer;
+TimerFree(OsTimerPtr timer)
 {
     if (!timer)
 	return;
@@ -636,16 +627,16 @@ TimerFree(timer)
 }
 
 void
-TimerCheck()
+TimerCheck(void)
 {
-    register CARD32 now = GetTimeInMillis();
+    CARD32 now = GetTimeInMillis();
 
     while (timers && (int) (timers->expires - now) <= 0)
 	DoTimer(timers, now, &timers);
 }
 
 void
-TimerInit()
+TimerInit(void)
 {
     OsTimerPtr timer;
 

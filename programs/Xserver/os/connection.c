@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.55 2001/12/14 20:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.56 2002/05/31 18:46:05 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -155,6 +155,7 @@ extern __const__ int _nfiles;
 #include "colormapst.h"
 #include "propertyst.h"
 #include "lbxserve.h"
+#include "osdep.h"
 #endif
 
 #ifdef X_NOT_POSIX
@@ -210,32 +211,18 @@ XtransConnInfo 	*ListenTransConns = NULL;
 int	       	*ListenTransFds = NULL;
 int		ListenTransCount;
 
-static void ErrorConnMax(
-#if NeedFunctionPrototypes
-XtransConnInfo /* trans_conn */
-#endif
-);
+static void ErrorConnMax(XtransConnInfo /* trans_conn */);
 
 #ifndef LBX
 static
-#endif
 void CloseDownFileDescriptor(
-#if NeedFunctionPrototypes
-#ifdef LBX
-    ClientPtr	client
-#else
-    register OsCommPtr /*oc*/
-#endif
-#endif
+    OsCommPtr /*oc*/
 );
+#endif
 
-#ifdef LBX
-extern int LbxFlushClient();
-#endif /* LBX */
 
 static XtransConnInfo
-lookup_trans_conn (fd)
-    int fd;
+lookup_trans_conn (int fd)
 {
     if (ListenTransFds)
     {
@@ -251,7 +238,7 @@ lookup_trans_conn (fd)
 /* Set MaxClients and lastfdesc, and allocate ConnectionTranslation */
 
 void
-InitConnectionLimits()
+InitConnectionLimits(void)
 {
     lastfdesc = -1;
 
@@ -312,7 +299,7 @@ InitConnectionLimits()
  *****************/
 
 void
-CreateWellKnownSockets()
+CreateWellKnownSockets(void)
 {
     int		i;
     int		partial;
@@ -407,7 +394,7 @@ CreateWellKnownSockets()
 }
 
 void
-ResetWellKnownSockets ()
+ResetWellKnownSockets (void)
 {
     int i;
 
@@ -468,7 +455,7 @@ ResetWellKnownSockets ()
 }
 
 void
-CloseWellKnownConnections()
+CloseWellKnownConnections(void)
 {
     int i;
 
@@ -477,14 +464,9 @@ CloseWellKnownConnections()
 }
 
 static void
-AuthAudit (client, letin, saddr, len, proto_n, auth_proto, auth_id)
-    ClientPtr client;
-    Bool letin;
-    struct sockaddr *saddr;
-    int len;
-    unsigned short proto_n;
-    char *auth_proto;
-    int auth_id;
+AuthAudit (ClientPtr client, Bool letin, 
+    struct sockaddr *saddr, int len, 
+    unsigned int proto_n, char *auth_proto, int auth_id)
 {
     char addr[128];
     char *out = addr;
@@ -539,8 +521,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto, auth_id)
 }
 
 XID
-AuthorizationIDOfClient(client)
-    ClientPtr client;
+AuthorizationIDOfClient(ClientPtr client)
 {
     if (client->osPrivate)
 	return ((OsCommPtr)client->osPrivate)->auth_id;
@@ -569,12 +550,11 @@ AuthorizationIDOfClient(client)
  *****************************************************************/
 
 char * 
-ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
-    ClientPtr client;
-    char *auth_proto, *auth_string;
-    unsigned int proto_n, string_n;
+ClientAuthorized(ClientPtr client, 
+    unsigned int proto_n, char *auth_proto, 
+    unsigned int string_n, char *auth_string)
 {
-    register OsCommPtr 	priv;
+    OsCommPtr 		priv;
     Xtransaddr		*from = NULL;
     int 		family;
     int			fromlen;
@@ -729,17 +709,10 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 
 static ClientPtr
 #ifdef LBX
-AllocNewConnection (trans_conn, fd, conn_time, Flush, Close, proxy)
+AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time, 
+    int (*Flush)(), void (*Close)(), LbxProxyPtr proxy)
 #else
-AllocNewConnection (trans_conn, fd, conn_time)
-#endif
-    XtransConnInfo trans_conn;
-    int	    fd;
-    CARD32  conn_time;
-#ifdef LBX
-    int     (*Flush)();
-    void    (*Close)();
-    LbxProxyPtr proxy;
+AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 onn_time)
 #endif
 {
     OsCommPtr	oc;
@@ -804,8 +777,7 @@ AllocNewConnection (trans_conn, fd, conn_time)
 #ifdef LBX
 
 int
-ClientConnectionNumber (client)
-    ClientPtr	client;
+ClientConnectionNumber (ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr) client->osPrivate;
 
@@ -813,9 +785,7 @@ ClientConnectionNumber (client)
 }
 
 ClientPtr
-AllocLbxClientConnection (client, proxy)
-    ClientPtr client;
-    LbxProxyPtr proxy;
+AllocLbxClientConnection (ClientPtr client, LbxProxyPtr proxy)
 {
     OsCommPtr oc = (OsCommPtr) client->osPrivate;
 
@@ -824,9 +794,7 @@ AllocLbxClientConnection (client, proxy)
 }
 
 void
-LbxProxyConnection (client, proxy)
-    ClientPtr	client;
-    LbxProxyPtr proxy;
+LbxProxyConnection (ClientPtr client, LbxProxyPtr proxy)
 {
     OsCommPtr	oc = (OsCommPtr) client->osPrivate;
 
@@ -848,9 +816,7 @@ LbxProxyConnection (client, proxy)
 
 /*ARGSUSED*/
 Bool
-EstablishNewConnections(clientUnused, closure)
-    ClientPtr clientUnused;
-    pointer closure;
+EstablishNewConnections(ClientPtr clientUnused, pointer closure)
 {
     fd_set  readyconnections;     /* set of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
@@ -940,10 +906,9 @@ EstablishNewConnections(clientUnused, closure)
  ************/
 
 static void
-ErrorConnMax(trans_conn)
-XtransConnInfo trans_conn;
+ErrorConnMax(XtransConnInfo trans_conn)
 {
-    register int fd = _XSERVTransGetConnectionNumber (trans_conn);
+    int fd = _XSERVTransGetConnectionNumber (trans_conn);
     xConnSetupPrefix csp;
     char pad[3];
     struct iovec iov[3];
@@ -992,16 +957,14 @@ XtransConnInfo trans_conn;
 
 #ifdef LBX
 void
-CloseDownFileDescriptor(client)
-    ClientPtr	client;
+CloseDownFileDescriptor(ClientPtr client)
 #else
 static void
-CloseDownFileDescriptor(oc)
-    register OsCommPtr oc;
+CloseDownFileDescriptor(OsCommPtr oc)
 #endif
 {
 #ifdef LBX
-    register OsCommPtr oc = (OsCommPtr) client->osPrivate;
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
 #endif
     int connection = oc->fd;
 
@@ -1040,13 +1003,13 @@ CloseDownFileDescriptor(oc)
  *****************/
 
 void
-CheckConnections()
+CheckConnections(void)
 {
 #ifndef WIN32
     fd_mask		mask;
 #endif
     fd_set		tmask; 
-    register int	curclient, curoff;
+    int			curclient, curoff;
     int			i;
     struct timeval	notime;
     int r;
@@ -1094,8 +1057,7 @@ CheckConnections()
  *****************/
 
 void
-CloseDownConnection(client)
-    ClientPtr client;
+CloseDownConnection(ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
@@ -1117,8 +1079,7 @@ CloseDownConnection(client)
 }
 
 void
-AddEnabledDevice(fd)
-    int fd;
+AddEnabledDevice(int fd)
 {
     FD_SET(fd, &EnabledDevices);
     FD_SET(fd, &AllSockets);
@@ -1127,8 +1088,7 @@ AddEnabledDevice(fd)
 }
 
 void
-RemoveEnabledDevice(fd)
-    int fd;
+RemoveEnabledDevice(int fd)
 {
     FD_CLR(fd, &EnabledDevices);
     FD_CLR(fd, &AllSockets);
@@ -1147,8 +1107,7 @@ RemoveEnabledDevice(fd)
  *****************/
 
 void
-OnlyListenToOneClient(client)
-    ClientPtr client;
+OnlyListenToOneClient(ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
@@ -1180,7 +1139,7 @@ OnlyListenToOneClient(client)
  ****************/
 
 void
-ListenToAllClients()
+ListenToAllClients(void)
 {
     if (GrabInProgress)
     {
@@ -1198,8 +1157,7 @@ ListenToAllClients()
  ****************/
 
 void
-IgnoreClient (client)
-    ClientPtr	client;
+IgnoreClient (ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
@@ -1243,8 +1201,7 @@ IgnoreClient (client)
  ****************/
 
 void
-AttendClient (client)
-    ClientPtr	client;
+AttendClient (ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
@@ -1277,8 +1234,7 @@ AttendClient (client)
 /* make client impervious to grabs; assume only executing client calls this */
 
 void
-MakeClientGrabImpervious(client)
-    ClientPtr client;
+MakeClientGrabImpervious(ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
@@ -1297,8 +1253,7 @@ MakeClientGrabImpervious(client)
 /* make client pervious to grabs; assume only executing client calls this */
 
 void
-MakeClientGrabPervious(client)
-    ClientPtr client;
+MakeClientGrabPervious(ClientPtr client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
@@ -1325,61 +1280,3 @@ MakeClientGrabPervious(client)
     }
 }
 
-#ifdef AIXV3
-
-static fd_set pendingActiveClients;
-static BOOL reallyGrabbed;
-
-/****************
-* DontListenToAnybody:
-*   Don't listen to requests from any clients. Continue to handle new
-*   connections, but don't take any protocol requests from anybody.
-*   We have to take care if there is already a grab in progress, though.
-*   Undone by PayAttentionToClientsAgain. We also have to be careful
-*   not to accept any more input from the currently dispatched client.
-*   we do this be telling dispatch it is time to yield.
-
-*   We call this when the server loses access to the glass
-*   (user hot-keys away).  This looks like a grab by the 
-*   server itself, but gets a little tricky if there is already
-*   a grab in progress.
-******************/
-
-void
-DontListenToAnybody()
-{
-    if (!GrabInProgress)
-    {
-	XFD_COPYSET(&ClientsWithInput, &SavedClientsWithInput);
-	XFD_COPYSET(&AllSockets, &SavedAllSockets);
-	XFD_COPYSET(&AllClients, &SavedAllClients);
-	GrabInProgress = TRUE;
-	reallyGrabbed = FALSE;
-    }
-    else
-    {
-	XFD_COPYSET(&AllClients, &pendingActiveClients);
-	reallyGrabbed = TRUE;
-    }
-    FD_ZERO(&ClientsWithInput);
-    XFD_UNSET(&AllSockets, &AllClients);
-    FD_ZERO(&AllClients);
-    isItTimeToYield = TRUE;
-}
-
-void
-PayAttentionToClientsAgain()
-{
-    if (reallyGrabbed)
-    {
-	XFD_ORSET(&AllSockets, &AllSockets, &pendingActiveClients);
-	XFD_ORSET(&AllClients, &AllClients, &pendingActiveClients);
-    }
-    else
-    {
-	ListenToAllClients();
-    }
-    reallyGrabbed = FALSE;
-}
-
-#endif

@@ -49,8 +49,8 @@ typedef char	*pointer;		/* generic pointer type */
 
 #define	NULL	0			/* null pointer constant */
 
-extern void	Xfree();
-extern pointer	Xalloc();
+extern void	Xfree(unsigned long);
+extern pointer	Xalloc(unsigned long);
 
 /*
 	Define STACK_DIRECTION if you know the direction of stack
@@ -76,7 +76,7 @@ static int	stack_dir;		/* 1 or -1 once known */
 #define	STACK_DIR	stack_dir
 
 static void
-find_stack_direction (/* void */)
+find_stack_direction (void)
 {
   static char	*addr = NULL;	/* address of first
 				   `dummy', once known */
@@ -131,12 +131,11 @@ typedef union hdr
 
 static header *last_alloca_header = NULL; /* -> last alloca header */
 
-pointer
-alloca (size)			/* returns pointer to storage */
-     unsigned	size;		/* # bytes to allocate */
+pointer				/* returns pointer to storage */
+alloca (unsigned int size)	/* # bytes to allocate */
 {
   auto char	probe;		/* probes stack depth: */
-  register char	*depth = &probe;
+  char	*depth = &probe;
 
 #if STACK_DIRECTION == 0
   if (STACK_DIR == 0)		/* unknown growth direction */
@@ -147,13 +146,13 @@ alloca (size)			/* returns pointer to storage */
 				   was allocated from deeper in the stack than currently. */
 
   {
-    register header	*hp;	/* traverses linked list */
+    header	*hp;		/* traverses linked list */
 
     for (hp = last_alloca_header; hp != NULL;)
       if (STACK_DIR > 0 && hp->h.deep > depth
 	  || STACK_DIR < 0 && hp->h.deep < depth)
 	{
-	  register header	*np = hp->h.next;
+	  header	*np = hp->h.next;
 
 	  Xfree ((pointer) hp);	/* collect garbage */
 
@@ -171,7 +170,7 @@ alloca (size)			/* returns pointer to storage */
   /* Allocate combined header + user data storage. */
 
   {
-    register pointer	new = Xalloc (sizeof (header) + size);
+    pointer	new = Xalloc (sizeof (header) + size);
     if (!new)
 	return NULL;
     /* address of header */
