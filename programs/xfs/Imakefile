@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/31 1998/06/16 15:16:14 msr $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.19 2000/01/31 19:33:44 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.20 2000/02/13 06:15:42 dawes Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -24,11 +24,12 @@ FONTCACHELIB = $(XFONTCACHELIB)
 
 
 FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
-FSLIBS = $(DIFSLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL) $(FONTCACHELIB)
+FSLIBS = $(DIFSLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
 #ifdef i386IscArchitecture
-FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(EXTRA_LIBRARIES) $(SYSLIBS) $(ZLIB) 
+FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(FONTCACHELIB) $(EXTRA_LIBRARIES) \
+	    $(SYSLIBS) $(ZLIB) 
 #else
-FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(SYSLIBS) $(ZLIB)
+FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(FONTCACHELIB) $(SYSLIBS) $(ZLIB)
 #endif
 
 SUBDIRS = $(FSDIRS)

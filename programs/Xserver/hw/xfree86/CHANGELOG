@@ -1,4 +1,4 @@
-XFree86 3.9.17Z (12 February 2000)
+XFree86 3.9.17f (12 February 2000)
 3758. Import FreeType 1.3.1 and X-TrueType 1.3, and incorporate the
       font cache extension (#3653, Akio Morita, X-TrueType team, Nozomi Ytow).
 3757. Add a stub for xf86OSPMOpen() for OS's that don't have their own
@@ -9651,4 +9651,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.999 2000/02/13 03:35:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1000 2000/02/13 06:15:33 dawes Exp $

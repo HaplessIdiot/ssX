@@ -12,7 +12,7 @@ static XF86ModReqInfo cconvSubReq = \
     _XTT_V_MAJOR, \
     _XTT_V_MINOR, \
     _XTT_V_REVISION, \
-    ABI_CLASS_ANSI, \
+    ABI_CLASS_ANSIC, \
     ABI_VERS_UNSPEC, \
     MOD_CLASS_FONT \
 };
