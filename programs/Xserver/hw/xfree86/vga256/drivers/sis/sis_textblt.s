@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_textblt.s,v 1.1 1997/01/12 10:43:13 dawes Exp $ */
 
 /*
  *
@@ -28,8 +28,6 @@
  * Modified for Sis by Xavier Ducoin (xavier@rd.lectra.fr)
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_textblt.s,v 3.1 1996/10/17 15:20:49 dawes Exp $ */
 
 #include "assyntax.h"
 

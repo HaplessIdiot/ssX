@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_FillRct.c,v 1.1 1997/01/12 10:43:04 dawes Exp $ */
 
 /*
  * 
@@ -29,8 +29,6 @@
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 /* Modified for Chips by David Bateman, <dbateman@ee.uts.edu.au> */
 /* Modified for Sis by Xavier Ducoin (xavier@rd.lectra.fr) */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillRct.c,v 3.2 1996/10/17 15:20:41 dawes Exp $ */
 
 #define TILE_ACCEL
 #define STIPPLE_ACCEL

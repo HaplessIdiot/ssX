@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_FillSt.c,v 1.1 1997/01/12 10:43:05 dawes Exp $ */
 
 /*
  *
@@ -28,8 +28,6 @@
  * Modified for Sis by Xavier Ducoin (xavier@rd.lectra.fr)
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillSt.c,v 3.1 1996/09/29 13:39:15 dawes Exp $ */
 
 /*
  * These are the functions for tiles, which call low-level functions.

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_teblt8.c,v 1.1 1997/01/12 10:43:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1989  X Consortium
@@ -25,8 +25,6 @@
  * dealings in this Software without prior written authorization from the X
  * Consortium.
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_teblt8.c,v 3.1 1996/10/17 15:20:48 dawes Exp $ */
 
 /*
  * Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
