@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.4 2001/09/29 04:46:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.5 2001/10/15 07:05:53 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -223,6 +223,7 @@ xawLoadModule(LispMac *mac)
 LispObj *
 Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispObj *list, char *fname)
 {
+    LispObj *res, *code, *frm = FRM;
     XawListReturnStruct *retlist;
 
     if (!CHECKO(CAR(list), xawListReturnStruct_t))
@@ -231,11 +232,19 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispObj *list, char *fname)
 
     retlist = (XawListReturnStruct*)(CAR(list)->data.opaque.data);
 
-    return (EVAL(CONS(ATOM("MAKE-XAW-LIST-RETURN-STRUCT"),
-		      CONS(ATOM(":STRING"),
-			   CONS(STRING(retlist->string),
-				CONS(ATOM(":INDEX"),
-				     CONS(REAL(retlist->list_index), NIL)))))));
+    GCProtect();
+    code = CONS(ATOM("MAKE-XAW-LIST-RETURN-STRUCT"),
+		CONS(ATOM(":STRING"),
+		       CONS(STRING(retlist->string),
+			    CONS(ATOM(":INDEX"),
+				 CONS(REAL(retlist->list_index), NIL)))));
+    FRM = CONS(code, FRM);
+    GCUProtect();
+
+    res = EVAL(code);
+    FRM = frm;
+
+    return (res);
 }
 
 LispObj *
