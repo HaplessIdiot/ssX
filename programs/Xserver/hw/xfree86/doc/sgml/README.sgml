@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>26 February 2003
+<date>11 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.135 2003/10/18 13:30:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.136 2003/12/03 04:51:30 dawes Exp $
 </ident>
 
 <abstract>
@@ -103,6 +103,22 @@ prohibit vendors and others redistributing binaries of this snapshot
 release, we don't recommend including them in production releases.
 ]]>
 
+<sect>Licensing
+<p>
+
+XFree86 source code is covered by many licenses.  All of these licenses
+have in common the fact that they do not impose conditions on the
+modification or redistribution or either source code or binaries other
+than requiring that the copyright and/or license notices are left intact,
+and in some cases, that attributions are included with documentation
+accompanying binaries.  Most of these licenses are based on the MIT or
+BSD licenses, and all of them are consistent with the <htmlurl name="Open
+Source definition" url="http://www.opensource.org/docs/definition.php">.
+
+Copyright and Licensing information for XFree86, including the attributions
+required by some of the licenses for binary distributions, can be found
+in the <htmlurl name="License Document" url="LICENSE.html">.
+
 <sect>Pointers to additional information
 <p>
 
@@ -117,10 +133,6 @@ is a good way of finding out the latest versions available from XFree86.
 Information about binary distributions and the attendant installation
 instructions can be found in the <htmlurl name="Installation Document"
 url="Install.html">.
-
-Copyright and Licensing information for this release and all XFree86
-releases can be found in the <htmlurl name="License Document"
-url="LICENSE.html">.
 
 The XFree86 version numbering system (including historical information)
 can be found in the <htmlurl name="Versions Document" url="Versions.html">.
