@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/28 05:13:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.13 1996/10/23 13:12:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.14 1996/12/23 07:07:07 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -76,6 +76,7 @@ LinuxDocReadmeTarget(P9000)
 LinuxDocReadmeTarget(Video7)
 LinuxDocReadmeTarget(S3)
 LinuxDocReadmeTarget(S3V)
+LinuxDocReadmeTarget(SiS)
 LinuxDocReadmeTarget(W32)
 LinuxDocReadmeTarget(WstDig)
 LinuxDocReadmeTarget(ark)
@@ -132,6 +133,7 @@ LinkSourceFile(S3V.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SCO.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SOLX86.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SVR4.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(SiS.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(VGADriv.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(VidModes.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Video7.sgml,$(XF86SRC)/doc/sgml)

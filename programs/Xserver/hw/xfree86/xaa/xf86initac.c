@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.7 1997/01/18 06:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.8 1997/01/20 12:38:22 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -62,6 +62,9 @@ xf86InitializeAcceleration(pScreen)
     int ScreenToScreenColorExpand = FALSE;
     int ScanlineScreenToScreenColorExpand = FALSE;
  
+    if (serverGeneration != 1)
+        goto do_not_touch_xf86AccelInfoRec;
+
     ErrorF("%s %s: Using XAA (XFree86 Acceleration Architecture)\n",
         XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
 
@@ -149,9 +152,6 @@ xf86InitializeAcceleration(pScreen)
     !xf86AccelInfoRec.Subsequent8x8PatternColorExpand)
         ErrorF("%s %s: XAA: No acceleration primitives defined.\n",
             XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
-
-    if (serverGeneration != 1)
-        goto do_not_touch_xf86AccelInfoRec;
 
     /*
      * Set up the higher-level accelerated functions to make use of

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.60 1997/01/14 22:21:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.61 1997/01/18 06:56:59 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -738,6 +738,7 @@ TVGA8900Probe()
 				REV = "ProVidia 9685";
 				break;
 			case 0x30:
+			case 0x33: /* Guessing */
 				REV = "9385";
 				IsCyber = TRUE;
 				break;
@@ -746,6 +747,7 @@ TVGA8900Probe()
 				IsCyber = TRUE;
 				break;
 			case 0x40:
+			case 0x42: /* Guessing */
 				REV = "9382";
 				IsCyber = TRUE;
 				break;
@@ -753,11 +755,7 @@ TVGA8900Probe()
 				REV = "ProVidia 9692";
 				break;
 			default:
-				TVGA8900EnterLeave(LEAVE);
-				FatalError("Please specify either Chipset \"tgui96xx\"\n"
-					   "or Chipset \"cyber938x\" in your XF86Config file\n"
-					   "and report this ID : %d to trident@xfree86.org",
-					   temp);
+				REV = "Unknown ID - Please report to trident@xfree86.org";
 				break;
 		}
 		ErrorF("%s %s: Detected a Trident %s.\n",
@@ -1325,7 +1323,13 @@ TVGA8900Restore(restore)
 #ifndef MONOVGA
 	if ( (tridentDACtype == TKD8001) && (TVGAchipset != TVGA8900D) )
 			outb(0x3C7, restore->TRDReg); 
+#endif
+	/*
+	 * Now restore generic VGA Registers
+	 */
+	vgaHWRestore((vgaHWPtr)restore);
 
+#ifndef MONOVGA
 	/* Do the DAC */
 	if (tridentDACtype != -1)
 	{
@@ -1335,10 +1339,6 @@ TVGA8900Restore(restore)
 		inb(0x3C8);
 	}
 #endif
-	/*
-	 * Now restore generic VGA Registers
-	 */
-	vgaHWRestore((vgaHWPtr)restore);
 
 	if (tridentTGUIProgrammableClocks)
 	{

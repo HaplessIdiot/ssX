@@ -54,13 +54,24 @@ can confirm a problem using the lastest version, please do so.
 
 - For color expansion implementation of stipples the graphics operation
   restriction of color expansion are not honoured, but instead the
-  CopyArea ones are used.
+  CopyArea ones are used. This is now sort-of fixed, but it has not been
+  tested in relevant cases.
+
+- Instead of not accelerating GXinvert operations that would normally
+  access the source, we could instead to a GXinvert FillRectSolid.
 
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
+217. Don't accelerate functions that use source bitmap data (such as text,
+     stipples, bitmaps) when the raster-op is GXinvert.
+216. Truncate pixel values to pixel depth in ValidateGC.
+
+XFree86 3.2v
+215. Rotate monochrome patterns stored in video memory in opposite
+     direction (David Bateman). I doubt whether this is correct.
 214. Add FullPlanemask field to xf86AccelInfoRec, and use it for planemask
      checks.
 213. Use GC alu instead of cfb reduced "rrop" when checking raster-op

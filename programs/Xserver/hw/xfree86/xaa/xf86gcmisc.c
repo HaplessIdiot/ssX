@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.4 1997/01/18 06:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.5 1997/01/20 12:38:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -342,12 +342,14 @@ no_new_cfb_text:
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.PolyGlyphBltNonTEFlags)
             && CHECKROP(xf86GCInfoRec.PolyGlyphBltNonTEFlags)
+            && CHECKSOURCEROP()
             && CHECKRGBEQUAL(xf86GCInfoRec.PolyGlyphBltNonTEFlags))
 	    PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltNonTE;
 	if (xf86GCInfoRec.ImageGlyphBltNonTE
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
             && CHECKROP(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
+            && CHECKSOURCEROP()
             && CHECKRGBEQUALBOTH(xf86GCInfoRec.ImageGlyphBltNonTEFlags))
 	    ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltNonTE;
     } else {	/* TERMINALFONT(pGC->font) */
@@ -355,11 +357,13 @@ no_new_cfb_text:
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.PolyGlyphBltTEFlags)
 	    && CHECKROP(xf86GCInfoRec.PolyGlyphBltTEFlags)
+            && CHECKSOURCEROP()
             && CHECKRGBEQUAL(xf86GCInfoRec.PolyGlyphBltTEFlags))
 	    PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltTE;
 	if (xf86GCInfoRec.ImageGlyphBltTE
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltTEFlags)
 	    && CHECKROP(xf86GCInfoRec.ImageGlyphBltTEFlags)
+            && CHECKSOURCEROP()
 	    && CHECKRGBEQUALBOTH(xf86GCInfoRec.ImageGlyphBltTEFlags))
 	    ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltTE;
     }
@@ -449,6 +453,8 @@ xf86GCNewFillSpans(pGC, new_cfb_spans)
 	    break;
 	if (!CHECKROP(xf86GCInfoRec.FillSpansStippledFlags))
 	    break;
+        if (!CHECKSOURCEROP())
+	    break;
 	FillSpansFunc = xf86GCInfoRec.FillSpansStippled;
 	break;
     case FillOpaqueStippled:
@@ -457,6 +463,8 @@ xf86GCNewFillSpans(pGC, new_cfb_spans)
 	if (!CHECKPLANEMASK(xf86GCInfoRec.FillSpansOpaqueStippledFlags))
 	    break;
 	if (!CHECKROP(xf86GCInfoRec.FillSpansOpaqueStippledFlags))
+	    break;
+        if (!CHECKSOURCEROP())
 	    break;
 	FillSpansFunc = xf86GCInfoRec.FillSpansOpaqueStippled;
 	break;
@@ -513,6 +521,8 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	    break;
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectTiledFlags))
 	    break;
+        if (!CHECKSOURCEROP())
+	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectTiled;
 	break;
     case FillStippled:
@@ -522,6 +532,8 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	    break;
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectStippledFlags))
 	    break;
+        if (!CHECKSOURCEROP())
+	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectStippled;
 	break;
     case FillOpaqueStippled:
@@ -530,6 +542,8 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	if (!CHECKPLANEMASK(xf86GCInfoRec.PolyFillRectOpaqueStippledFlags))
 	    break;
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectOpaqueStippledFlags))
+            break;
+        if (!CHECKSOURCEROP())
 	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectOpaqueStippled;
 	break;
@@ -581,7 +595,9 @@ xf86GCNewCopyArea(pGC)
     CopyAreaFunc = cfbCopyArea;
     if (xf86GCInfoRec.CopyArea &&
 	CHECKPLANEMASK(xf86GCInfoRec.CopyAreaFlags) &&
-	CHECKROP(xf86GCInfoRec.CopyAreaFlags))
+	CHECKROP(xf86GCInfoRec.CopyAreaFlags) &&
+	CHECKSOURCEROP()
+	)
 	CopyAreaFunc = xf86GCInfoRec.CopyArea;
     pGC->ops->CopyArea = CopyAreaFunc;
 }

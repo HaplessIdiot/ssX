@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.5 1997/01/12 10:48:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.6 1997/01/18 06:57:20 dawes Exp $ */
 
 /***********************************************************
 
@@ -323,8 +323,9 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	 * or any other pair of items that both change the same thing. 
 	 */
 	switch (index) {
-	case GCFunction:
 	case GCForeground:
+	    pGC->fgPixel &= PMSK;
+	case GCFunction:
 	    new_rrop = TRUE;
 	    break;
 	case GCPlaneMask:
@@ -332,6 +333,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	    new_text = TRUE;
 	    break;
 	case GCBackground:
+	    pGC->bgPixel &= PMSK;
 	    break;
 	case GCLineStyle:
 	case GCLineWidth:

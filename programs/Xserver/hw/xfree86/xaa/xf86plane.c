@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.2 1997/01/14 22:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.3 1997/01/18 06:57:29 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -91,6 +91,7 @@ planemask, bg, fg)
 	((1 << pDstDrawable->depth) - 1)) &&
 	(!(xf86AccelInfoRec.ColorExpandFlags & GXCOPY_ONLY) ||
 	alu == GXcopy) &&
+	(alu != GXinvert) &&
         (!(xf86AccelInfoRec.ColorExpandFlags & RGB_EQUAL) ||
         ((fg & 0xFF) == ((fg & 0xFF00) >> 8) &&
         (fg & 0xFF) == ((fg & 0xFF0000) >> 16)) &&
