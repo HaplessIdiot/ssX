@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.38 2002/11/13 04:35:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.39 2002/11/15 07:01:29 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -126,8 +126,8 @@ typedef struct _LispMac LispMac;
 #define POINTERP(object)						\
     (((unsigned long)(object) & NIL_BIT) == 0)
 
-#define MOST_POSITIVE_FIXNUM	((1 << (sizeof(long) * 8 - 5)) - 1)
-#define MOST_NEGATIVE_FIXNUM	(-1 << (sizeof(long) * 8 - 5))
+#define MOST_POSITIVE_FIXNUM	((1L << (sizeof(long) * 8 - 5)) - 1)
+#define MOST_NEGATIVE_FIXNUM	(-1L << (sizeof(long) * 8 - 5))
 
 #define SCHAR(value)							\
     ((LispObj*)(((long)(value) << BIT_COUNT) | SCHAR_MASK))
