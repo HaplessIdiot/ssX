@@ -35,6 +35,7 @@
 #include "mizerarc.h"
 #include "mifillarc.h"
 #include "micmap.h"
+#include "mioverlay.h"
 #ifdef PANORAMIX
 #include "resource.h"
 #include "panoramiX.h"
@@ -153,6 +154,11 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miHookInitVisuals)
    SYMFUNC(miPointerGetMotionEvents)
    SYMFUNC(miPointerGetMotionBufferSize)
+   SYMFUNC(miOverlayCopyUnderlay)
+   SYMFUNC(miOverlaySetTransFunction)
+   SYMFUNC(miOverlayCollectUnderlayRegions)
+   SYMFUNC(miInitOverlay)
+   SYMFUNC(miOverlayComputeCompositeClip)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
    SYMVAR(miPointerScreenIndex)
