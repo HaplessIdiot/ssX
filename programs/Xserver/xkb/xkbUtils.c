@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.12 2001/01/17 22:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.13 2001/08/23 14:33:26 alanh Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -517,14 +517,19 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    nGroups= XkbKeyNumGroups(xkb,key);
 	    tmp= 0;
 	    if (nGroups>0) {
-		if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup1Index))<2)
+		if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup1Index))<=2)
 		     tmp+= 2;
-		else tmp+= w;
+		else tmp+= w + 2;
 	    }
 	    if (nGroups>1) {
-		if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup2Index))<2)
-		     tmp+= 2;
-		else tmp+= w;
+                if (tmp <= 2) {
+		     if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup2Index))<2)
+		          tmp+= 2;
+		     else tmp+= w;
+                } else {
+                     if ((w=XkbKeyGroupWidth(xkb,key,XkbGroup2Index))>2)
+                          tmp+= w - 2;
+                }
 	    }
 	    if (nGroups>2)
 		tmp+= XkbKeyGroupWidth(xkb,key,XkbGroup3Index);
@@ -613,11 +618,16 @@ CARD8			keysPerMod[XkbNumModifiers];
 	    pXKB+= XkbKeyGroupsWidth(xkb,key);
 	    for (n=XkbGroup3Index;n<nGroups;n++) {
 		register int s;
-		groupWidth= XkbKeyGroupWidth(xkb,key,XkbGroup2Index);
+		groupWidth= XkbKeyGroupWidth(xkb,key,n);
 		for (s=0;s<groupWidth;s++) {
 		    pCore[nOut++]= pXKB[s];
 		}
 		pXKB+= XkbKeyGroupsWidth(xkb,key);
+	    }
+	    if (!pCore[2] && !pCore[3] && maxSymsPerKey >= 6 &&
+                (pCore[4] || pCore[5])) {
+                pCore[2] = pCore[4];
+                pCore[3] = pCore[5];
 	    }
 	}
 	if (keyc->modifierMap[key]!=0) {
