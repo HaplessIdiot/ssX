@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_tuner.c,v 1.1tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,10 +89,12 @@ static int ReadI2C(I2CDevPtr i2c, int sa)
 	return buf[1];
 }
 
+#ifdef UNUSED
 static int ReadTuner(ViaTunerPtr tuner, int sa)
 {
 	return ReadI2C(tuner->I2C, sa);
 }
+#endif
 
 /*
  *	I2C register tables to switch TV mode
