@@ -1,3 +1,4 @@
+# $XFree86$
 #
 # Unspecified mono-spaced font gets courier
 #
