@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:16 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.14tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.15 2002/11/14 21:01:20 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -27,7 +27,7 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	tables.o window.o initatoms.o dixfonts.o privates.o pixmap.o $(FFS_OBJ)
 
     INCLUDES = -I../include -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC) \
-	       -I$(SERVERSRC)/Xext -I$(SERVERSRC)/lbx
+	       -I$(SERVERSRC)/Xext -I$(SERVERSRC)/lbx -I$(INCLUDESRC)
     LINTLIBS = ../os/llib-los.ln
 
 /*
