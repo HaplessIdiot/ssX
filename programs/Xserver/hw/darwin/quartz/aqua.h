@@ -1,6 +1,5 @@
 /*
- * External interface to the rootless implementation
- * for the Mac OS X Aqua environment
+ * Rootless implementation for the Mac OS X Aqua environment
  */
 /*
  * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
@@ -27,8 +26,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
+/* $XFree86: $ */
+
+#ifndef _AQUA_H
+#define _AQUA_H
 
 #include "picturestr.h"
+
+void AquaPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
 
 #ifdef RENDER
 void
@@ -36,3 +41,13 @@ AquaComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask, PicturePtr pDst,
               INT16 xSrc, INT16 ySrc, INT16 xMask, INT16 yMask,
               INT16 xDst, INT16 yDst, CARD16 width, CARD16 height);
 #endif /* RENDER */
+
+
+/*
+ * AquaAlphaMask
+ *  Bit mask for alpha channel with a particular number of bits per pixel (bpp)
+ */
+#define AquaAlphaMask(bpp) ((((Pixel) 1 << (bpp >> 2))-1) << \
+                            (bpp - (bpp >> 2)))
+
+#endif /* _AQUA_H */

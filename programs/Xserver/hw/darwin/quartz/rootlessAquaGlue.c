@@ -7,7 +7,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.3 2002/07/22 00:27:25 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -227,6 +227,9 @@ Bool
 AquaSetupScreen(int index, ScreenPtr pScreen)
 {
     // Add Aqua specific replacements for fb screen functions
+    pScreen->PaintWindowBackground = AquaPaintWindow;
+    pScreen->PaintWindowBorder = AquaPaintWindow;
+
 #ifdef RENDER
     {
         PictureScreenPtr ps = GetPictureScreen(pScreen);
@@ -234,5 +237,6 @@ AquaSetupScreen(int index, ScreenPtr pScreen)
     }
 #endif /* RENDER */
 
+    // Initialize generic rootless code
     return RootlessInit(pScreen, &aquaRootlessProcs);
 }

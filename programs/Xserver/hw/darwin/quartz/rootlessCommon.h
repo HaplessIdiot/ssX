@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.4 2002/06/11 00:11:03 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.h,v 1.5 2002/07/15 19:58:31 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -196,14 +196,6 @@ extern RegionRec rootlessHugeRoot;
                             ((int)(x) * _pPix->drawable.bitsPerPixel/8 + \
                              (int)(y) * _pPix->devKind); \
 }
-
-
-/*
- * AquaAlphaMask
- *  Bit mask for alpha channel with a particular number of bits per pixel (bpp)
- */
-#define AquaAlphaMask(bpp) ((((Pixel) 1 << (bpp >> 2))-1) << \
-                            (bpp - (bpp >> 2)))
 
 
 // Returns the top-level parent of pWindow.

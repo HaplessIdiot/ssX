@@ -31,6 +31,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
+ /* $XFree86: $ */
 
 #ifdef RENDER
 
