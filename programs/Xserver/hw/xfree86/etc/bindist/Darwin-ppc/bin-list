@@ -65,8 +65,8 @@ lib/libdps.dylib
 lib/libdpstk.1.0.dylib
 lib/libdpstk.1.dylib
 lib/libdpstk.dylib
-lib/libfreetype.7.0.dylib
-lib/libfreetype.7.dylib
+lib/libfreetype.6.2.dylib
+lib/libfreetype.6.dylib
 lib/libfreetype.dylib
 lib/liboldX.6.0.dylib
 lib/liboldX.6.dylib

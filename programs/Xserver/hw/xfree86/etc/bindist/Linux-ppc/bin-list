@@ -68,8 +68,8 @@ lib/libdps.so
 lib/libdpstk.so.1.0
 lib/libdpstk.so.1
 lib/libdpstk.so
-lib/libfreetype.so.7.0
-lib/libfreetype.so.7
+lib/libfreetype.so.6.2
+lib/libfreetype.so.6
 lib/libfreetype.so
 lib/libpsres.so.1.0
 lib/libpsres.so.1

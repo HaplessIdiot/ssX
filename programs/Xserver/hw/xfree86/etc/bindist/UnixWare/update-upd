@@ -41,7 +41,7 @@ lib/libXft.so
 lib/libXft.so.1.1
 lib/libfreetype.a
 lib/libfreetype.so
-lib/libfreetype.so.7.0
+lib/libfreetype.so.6.2
 man/man1/XFree86.1x
 man/man4/XF86Config.4
 man/man7/nv.7
