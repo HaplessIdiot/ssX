@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.126 2004/08/26 22:38:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.127 2004/10/05 21:23:03 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -233,9 +233,13 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE014C, "0x014C" },
   { 0x10DE014D, "0x014D" },
   { 0x10DE014E, "Quadro FX 540" },
-  { 0x10DE014F, "0x014F" },
+  { 0x10DE014F, "GeForce 6200" },
   { 0x10DE0160, "0x0160" },
   { 0x10DE0166, "0x0166" },
+  { 0x10DE0210, "0x0210" },
+  { 0x10DE0211, "0x0211" },
+  { 0x10DE021D, "0x021D" },
+  { 0x10DE021E, "0x021E" },
   {-1, NULL}
 };
 
@@ -1679,6 +1683,8 @@ NVDPMSSetLCD(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 
   if (!pScrn->vtSema) return;
 
+  vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
+
   switch (PowerManagementMode) {
   case DPMSModeStandby:  /* HSync: Off, VSync: On */
   case DPMSModeSuspend:  /* HSync: On, VSync: Off */
@@ -1690,7 +1696,6 @@ NVDPMSSetLCD(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
   default:
     break;
   }
-  vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
 }
 
 
