@@ -13,7 +13,7 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.105 2000/06/30 22:21:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.106 2000/07/02 02:35:27 dawes Exp $
 </ident>
 
 <abstract>
@@ -270,7 +270,7 @@ The contrib part of the distribution has been folded into the main
 source tree, so a separate contrib tarball is no longer required.
 
 To format the XFree86 documentation use the latest version of our doctools
-package available as <tt>doctools-1.1.3.tgz</tt>.
+package available as <tt>doctools-1.2.tgz</tt>.
 
 <sect>Reporting Bugs
 <p>
