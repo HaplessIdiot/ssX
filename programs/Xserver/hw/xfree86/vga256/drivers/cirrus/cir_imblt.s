@@ -1,5 +1,5 @@
 /* $XConsortium: cir_imblt.s,v 1.2 94/03/29 11:07:40 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.0 1994/06/05 06:00:31 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -366,49 +366,49 @@ GLNAME(CirrusAlignedBitmapTransfer):
 
 	/* Handle four dwords. */
 	MOV_B	(REGOFF(2,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(3,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGIND(ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(6,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(7,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(4,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(5,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(10,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(11,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(8,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(9,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(14,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(15,ESI),DL)
 	SUB_L	(CONST(4),ECX)			/* Blended in from loop end. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(12,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(13,ESI),DL)
 	ADD_L	(CONST(16),ESI)			/* Blended in from loop end. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_L	(EAX,REGIND(EDI))
 
 	JMP	(.unrolled_loop3)
@@ -419,15 +419,15 @@ GLNAME(CirrusAlignedBitmapTransfer):
 
 .word_loop3:
 	MOV_B	(REGOFF(2,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(3,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGIND(ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
 	DEC_L	(ECX)			/* Blended in from loop end. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_L	(EAX,REGIND(EDI))
 
 	JNZ	(.word_loop3)
@@ -500,49 +500,49 @@ GLNAME(CirrusBitmapTransfer):
 
 	/* Handle four dwords. */
 	MOV_B	(REGOFF(2,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(3,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGIND(ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(6,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(7,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(4,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(5,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(10,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(11,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(8,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(9,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	MOV_B	(REGOFF(14,ESI),DL)
 	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(15,ESI),DL)
 	SUB_L	(CONST(16),ECX)			/* Blended in from loop end. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(12,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(13,ESI),DL)
 	ADD_L	(CONST(16),ESI)			/* Blended in from loop end. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_L	(EAX,REGIND(EDI))
 
 	JMP	(.unrolled_loop4)
@@ -555,15 +555,15 @@ GLNAME(CirrusBitmapTransfer):
 
 .word_loop4:
 	MOV_B	(REGOFF(2,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(3,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGIND(ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
 	ADD_L	(CONST(4),ESI)		/* Blended in. */
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_L	(EAX,REGIND(EDI))
 
 	SUB_B	(CONST(4),CL)
@@ -580,13 +580,13 @@ GLNAME(CirrusBitmapTransfer):
 
 	/* Three bytes remaining. */
 	MOV_B	(REGIND(ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	SHL_L	(CONST(16),EAX)
 	MOV_B	(REGOFF(2,ESI),DL)
 	ADD_L	(CONST(3),ESI)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 
 	CMP_L	(CONST(1),EBX)
 	JE	(.three_remaining_lastscanline4)
@@ -594,7 +594,7 @@ GLNAME(CirrusBitmapTransfer):
 	ADD_L	(scanline_pad_bytes4,ESI)
 
 	MOV_B	(REGIND(ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	ROL_L	(CONST(16),EAX)
 .three_remaining_lastscanline4:
 	MOV_L	(EAX,REGIND(EDI))
@@ -619,7 +619,7 @@ GLNAME(CirrusBitmapTransfer):
 .one_byte_remaining4:
 	MOV_B	(REGIND(ESI),DL)
 	INC_L	(ESI)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 
 	CMP_L	(CONST(1),EBX)
 	JE	(.one_remaining_lastscanline4)
@@ -627,12 +627,12 @@ GLNAME(CirrusBitmapTransfer):
 	ADD_L	(scanline_pad_bytes4,ESI)
 
 	MOV_B	(REGIND(ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	MOV_B	(REGOFF(1,ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(2,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	ROL_L	(CONST(16),EAX)
 .one_remaining_lastscanline4:
 	MOV_L	(EAX,REGIND(EDI))
@@ -647,10 +647,10 @@ GLNAME(CirrusBitmapTransfer):
 
 .two_bytes_remaining4:
 	MOV_B	(REGIND(ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
 	ADD_L	(CONST(2),ESI)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 
 	CMP_L	(CONST(1),EBX)
 	JE	(.two_remaining_lastscanline4)
@@ -659,9 +659,9 @@ GLNAME(CirrusBitmapTransfer):
 
 	MOV_B	(REGIND(ESI),DL)
 	SHL_L	(CONST(16),EAX)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
 	MOV_B	(REGOFF(1,ESI),DL)
-	MOV_B	(REGOFF(_byte_reversed,EDX),AH)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
 	ROL_L	(CONST(16),EAX)
 .two_remaining_lastscanline4:
 	MOV_L	(EAX,REGIND(EDI))
