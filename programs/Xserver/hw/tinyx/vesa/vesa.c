@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesa.c,v 1.22 2003/11/01 04:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vesa.c,v 1.1 2004/06/02 22:43:03 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1483,7 +1483,7 @@ vesaEnable(ScreenPtr pScreen)
 #include <sys/ioctl.h>
 #define TOSH_PROC "/proc/toshiba"
 #define TOSH_DEVICE "/dev/toshiba"
-#define TOSH_SMM _IOWR('t', 0x90, 24)
+#define TOSH_SMM _IOWR('t', 0x90, SMMRegisters)
 
 typedef struct {
 	unsigned int eax;
