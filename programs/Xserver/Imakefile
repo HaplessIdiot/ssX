@@ -183,15 +183,16 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
 
+     RENDERLIB = $(RENDER)/librender.a
 #if DoLoadableServer
-     EXTENSIONS = $(OTHEREXTS) 
+     EXTENSIONS = $(OTHEREXTS) $(RENDELRIB)
    LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT) \
                   $(GLXEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
       OTHEREXTS = Xext/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(SITEEXTS)
 #else
-     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXEXT)
+     EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXEXT) $(RENDERLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #endif
@@ -663,6 +664,7 @@ XCOMM Tiny X server section
 XCOMM
 
         KDRIVE = hw/kdrive
+	RENDER = render
 #ifdef LinuxArchitecture
        KDOSDIR = $(KDRIVE)/linux
           KDOS = $(KDOSDIR)/LibraryTargetName(linux)
@@ -681,9 +683,9 @@ XCOMM
        KDFBDEV = $(KDRIVE)/fbdev/LibraryTargetName(fbdev)
        
 
-#define StdKdDirs $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
+#define StdKdDirs $(RENDER) $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
 #define StdKdSysLibs $(FONTLIBS) $(SYSLIBS)
-#define KdLibs $(KD) $(KDOS) $(PSEUDO8)
+#define KdLibs $(KD) $(KDOS) $(PSEUDO8) $(RENDERLIB) 
 
 #if XfbdevServer
 XCOMM
@@ -767,14 +769,16 @@ XCOMM
 
       FBDEVDIR = $(KDRIVE)/fbdev
          FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
+       VESADIR = $(KDRIVE)/vesa
+          VESA = $(FBDEVDIR)/LibraryTargetName(vesa)
     TRIDENTDIR = $(KDRIVE)/trident
        TRIDENT = $(TRIDENTDIR)/LibraryTargetName(trident)
 
         KDDIRS = StdKdDirs
   
-   TRIDENTDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(TRIDENTDIR)
+   TRIDENTDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(VESADIR) $(TRIDENTDIR)
    
-   TRIDENTLIBS = PreFbLibs $(TRIDENT) $(FBDEV) KdLibs FbPostFbLibs
+   TRIDENTLIBS = PreFbLibs $(TRIDENT) $(FBDEV) $(VESA) KdLibs FbPostFbLibs
 TRIDENTSYSLIBS = StdKdSysLibs
 
 #if HasParallelMake
@@ -918,7 +922,7 @@ ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS),$(VESALIBS),$(VESASYSLIBS))
 #endif /* XvesaServer */
 
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
-	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR) $(VESADIRS)
+	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR) $(VESADIR)
 
 #if XprtServer
 XCOMM
