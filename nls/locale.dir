@@ -4,7 +4,7 @@ XCOMM	This file contains locale database file names
 XCOMM	The first word is the locale database file name and
 XCOMM	the second word is the full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.dir,v 1.38 2002/10/17 01:12:56 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.dir,v 1.39 2002/12/10 04:23:52 dawes Exp $
 XCOMM
 
 C/XLC_LOCALE:				C
@@ -228,6 +228,7 @@ zh_TW.big5/XLC_LOCALE:			zh_TW.big5
 zh_TW/XLC_LOCALE:			zh_TW.eucTW
 XCOMM Note: The UTF-8 locales don't work correctly yet. Work in progress.
 en_US.UTF-8/XLC_LOCALE:			af_ZA.UTF-8
+en_US.UTF-8/XLC_LOCALE:			am_ET.UTF-8
 en_US.UTF-8/XLC_LOCALE:			ar_AA.UTF-8
 en_US.UTF-8/XLC_LOCALE:			ar_BH.UTF-8
 en_US.UTF-8/XLC_LOCALE:			ar_DZ.UTF-8
@@ -355,6 +356,8 @@ en_US.UTF-8/XLC_LOCALE:			sv_SE.UTF-8
 en_US.UTF-8/XLC_LOCALE:			ta_IN.UTF-8
 en_US.UTF-8/XLC_LOCALE:			tg_TJ.UTF-8
 th_TH.UTF-8/XLC_LOCALE:			th_TH.UTF-8
+en_US.UTF-8/XLC_LOCALE:			ti_ER.UTF-8
+en_US.UTF-8/XLC_LOCALE:			ti_ET.UTF-8
 en_US.UTF-8/XLC_LOCALE:			tl_PH.UTF-8
 en_US.UTF-8/XLC_LOCALE:			tr_TR.UTF-8
 en_US.UTF-8/XLC_LOCALE:			tt_RU.UTF-8
