@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.1 1999/05/22 08:40:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.2 1999/05/22 09:59:53 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -102,11 +102,11 @@ OsMouseProc(DeviceIntPtr pPointer, int what)
 				miPointerGetMotionBufferSize());
 
 	/* X valuator */
-	xf86InitValuatorAxisStruct(device, 0, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 0);
+	xf86InitValuatorAxisStruct(pPointer, 0, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 0);
 	/* Y valuator */
-	xf86InitValuatorAxisStruct(device, 1, 0, -1, 1, 0, 1);
-	xf86InitValuatorDefaults(device, 1);
+	xf86InitValuatorAxisStruct(pPointer, 1, 0, -1, 1, 0, 1);
+	xf86InitValuatorDefaults(pPointer, 1);
 	xf86MotionHistoryAllocate(pInfo);
 	break;
 
@@ -128,7 +128,7 @@ OsMouseProc(DeviceIntPtr pPointer, int what)
 	}
 	pMse->lastButtons = 0;
 	pMse->emulateState = 0;
-	device->public.on = TRUE;
+	pPointer->public.on = TRUE;
 	break;
 
     case DEVICE_OFF:
@@ -142,7 +142,7 @@ OsMouseProc(DeviceIntPtr pPointer, int what)
 	    xf86CloseSerial(pInfo->fd);
 	    pInfo->fd = -1;
 	}
-	device->public.on = FALSE;
+	pPointer->public.on = FALSE;
 	usleep(300000);
 	break;
     }

@@ -1,6 +1,13 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.3 1999/05/16 06:55:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.4 1999/05/22 08:40:05 dawes Exp $ */
+
+/*
+ * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
+ */
 
 /* Public interface to OS-specific mouse support. */
+
+#ifndef _XF86OSMOUSE_H_
+#define _XF86OSMOUSE_H_
 
 /* Mouse interface classes */
 #define MSE_NONE	0x00
@@ -75,3 +82,63 @@ typedef struct {
 
 extern OSMouseInfoPtr xf86OSMouseInit(int flags);
 
+/*
+ * Mouse device record.  This is shared by the mouse driver and the OSMouse
+ * layer.
+ */
+
+typedef void (*PostMseEventProc)(InputInfoPtr pInfo, int buttons,
+			      int dx, int dy, int dz);
+typedef void (*MouseCommonOptProc)(InputInfoPtr pInfo);
+
+typedef struct _MouseDevRec {
+    PtrCtrlProcPtr	Ctrl;
+    PostMseEventProc	PostEvent;
+    MouseCommonOptProc	CommonOptions;
+    DeviceIntPtr	device;
+    int			mseFd;
+    const char *	mseDevice;
+    const char *	protocol;
+    int			protocolID;
+    int			class;
+    Bool		automatic;
+    int			mseModel;
+    int			baudRate;
+    int			oldBaudRate;
+    int			sampleRate;
+    int			lastButtons;
+    int			threshold;	/* acceleration */
+    int			num;
+    int			den;
+    int			buttons;	/* # of buttons */
+    int			emulateState;	/* automata state for 2 button mode */
+    Bool		emulate3Buttons;
+    int			emulate3Timeout;/* Timeout for 3 button emulation */
+    Bool		chordMiddle;
+    Bool		clearDTR;
+    Bool		clearRTS;
+    int			mouseFlags;	/* Flags to Clear after opening
+					 * mouse dev */
+    int			truebuttons;	/* Arg to maintain before
+					 * emulate3buttons timer callback */
+    int			resolution;
+    int			negativeZ;
+    int			positiveZ;
+    pointer		buffer;		/* usually an XISBuffer* */
+    int			protoBufTail;
+    unsigned char	protoBuf[8];
+    unsigned char	protoPara[8];
+    unsigned char	inSync;		/* driver in sync with datastream */
+    pointer		mousePriv;	/* private area */
+    InputInfoPtr	pInfo;
+} MouseDevRec, *MouseDevPtr;
+
+/* Z axis mapping */
+#define MSE_NOZMAP	0
+#define MSE_MAPTOX	-1
+#define MSE_MAPTOY	-2
+
+#define MSE_MAXBUTTONS	12
+#define MSE_DFLTBUTTONS	 3
+
+#endif /* _XF86OSMOUSE_H_ */
