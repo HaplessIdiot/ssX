@@ -1,4 +1,26 @@
 XFree86 3.1.2Aa (2 December 1995)
+ 99. Fix for xterm behaving badly when TERM is set to "vt100" (Joerg Wunsch).
+ 98. XDGA (direct graphics access) support added via the XFree86 VidMode
+     extension.  This is primarily intended for games support.  Currently
+     it is implemented only for Linux, and for the S3 and Cirrus drivers
+     (Jon Tombs).
+ 97. Fixes for Ti3026 loop clock calculation code (Dirk Hohndel).
+ 96. Detection and preliminary support for the Elsa Winner2000PRO/X-2,4 Rev.G
+     which has a S3-968, Ti3026, and ICS9161A clock chip.  Clock doubling
+     doesn't work yet (Dirk Hohndel).
+ 95. Mach64 code cleanups and documentation updates (Kevin Martin).
+ 94. Fix Mach64 pixmap cache bug which resulted in xcalloc being called
+     with a negative size (Kevin Martin).
+ 93. The state of the AT&T20C408 is now saved/restored by the Mach64 server.
+     This should fix the dim screen problem when exiting from the server
+     (Kevin Martin).
+ 92. ClockChip and Ramdac can now be specified in the XF86Config for the
+     Mach64 server (Kevin Martin).
+ 91. Mach64 server ATI 18818/ICS 2595 clock chip programming now works
+     (Kevin Martin).
+ 90. Mach64 server now automatically programs a programmable clock chip
+     when present.  This can be overriden with the "no_program_clocks"
+     Option.  The "program_clocks" option has been removed (Kevin Martin).
  89. Initial changes to allow for integration of the I128 server
      (Robin Cutshaw).
  88. Avoid defining __USLC__ for MP/RAS in compiler.h (Kaleb Keithley).

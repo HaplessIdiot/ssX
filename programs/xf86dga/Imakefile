@@ -1,0 +1,7 @@
+XCOMM $XFree86$
+
+LOCAL_LIBRARIES = $(XLIB)
+           SRCS = dga.c XF86Dga.c
+           OBJS = dga.o XF86Dga.o
+
+ComplexProgramTarget(dga)

@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.20 1995/07/12 15:34:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,6 +118,8 @@ ScrnInfoRec ibm8514InfoRec = {
     0,			/* int suspendTime */
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
+    0,			/* int directMode */
+    NULL,		/* Set Vid Page */
 };
 
 short ibm8514alu[16] = {
