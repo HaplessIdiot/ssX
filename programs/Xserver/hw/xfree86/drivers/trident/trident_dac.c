@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.35 2000/12/07 19:03:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.36 2000/12/08 09:05:16 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -327,7 +327,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEE4:
 	case BLADE3D:
 	    OUTB(vgaIOBase + 4, RAMDACTiming);
-	    pReg->tridentRegs3x4[RAMDACTiming] |= 0x0F;
+	    pReg->tridentRegs3x4[RAMDACTiming] = INB(vgaIOBase + 5) | 0x0F;
 	    /* Fall Through */
 	case CYBER9520:
 	case CYBER9525DVD:

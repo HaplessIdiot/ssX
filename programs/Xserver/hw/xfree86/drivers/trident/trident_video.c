@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.1 2000/12/07 16:48:05 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -663,8 +663,8 @@ TRIDENTDisplayVideo(
 
     tx1 = dstBox->x1 + pTrident->hsync;
     tx2 = dstBox->x2 + pTrident->hsync; 
-    ty1 = dstBox->y1 + pTrident->vsync;
-    ty2 = dstBox->y2 + pTrident->vsync;
+    ty1 = dstBox->y1 + pTrident->vsync - 2;
+    ty2 = dstBox->y2 + pTrident->vsync + 2;
 
     /* Crude way to deal with off the left edge - FIXME - doesn't work well */
     tx1 -= (x1 >> 16);
