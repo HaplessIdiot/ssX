@@ -317,7 +317,7 @@ XAAWritePixmapScanline (
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int dwords, skipleft, bufferNo = 0, Bpp = bpp >> 3; 
     Bool beCareful = FALSE;
-    CARD32* base = (CARD32*)infoRec->ScanlineImageWriteBuffers[0];
+    CARD32* base;
 
     if((skipleft = (long)src & 0x03L)) {
 	if(!(infoRec->ScanlineImageWriteFlags & LEFT_EDGE_CLIPPING)) {
@@ -363,16 +363,17 @@ BAD_ALIGNMENT:
     }
 
     while(h--) {
+	base = (CARD32*)infoRec->ScanlineImageWriteBuffers[bufferNo];
 	XAAMoveDWORDS(base, (CARD32*)src, dwords);
 	(*infoRec->SubsequentImageWriteScanline)(pScrn, bufferNo++);
 	src += srcwidth;
 	if(bufferNo >= infoRec->NumScanlineImageWriteBuffers)
 	    bufferNo = 0;
-	base = (CARD32*)infoRec->ScanlineImageWriteBuffers[bufferNo];
     }
 
     if(beCareful) {
 	int shift = ((long)src & 0x03L) << 3;
+	base = (CARD32*)infoRec->ScanlineImageWriteBuffers[bufferNo];
 	if(--dwords)
 	    XAAMoveDWORDS(base,(CARD32*)src, dwords);
 	src = (unsigned char*)((long)(src + (dwords << 2)) & ~0x03L);
