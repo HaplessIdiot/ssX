@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/04/01 12:38:46 gildea Exp $
+XCOMM $XConsortium: Imakefile /main/7 1996/09/28 17:17:38 rws $
 #define DoNormalLib NO
 #define DoSharedLib YES
 #define DoDebugLib NO
@@ -23,7 +23,7 @@ KRB5_INCLUDE = Krb5Includes
 #endif
 
 #ifdef SharedXmuReqs			/* do we support required libs? */
-REQUIREDLIBS = $(LDPRELIB) $(XTOOLLIB) $(XLIB)
+REQUIREDLIBS = SharedXmuReqs
 #endif
 
 #ifdef OSF1Architecture
@@ -42,6 +42,7 @@ SHLIBLDFLAGS = \
 	-expect_unresolved source \
 	-expect_unresolved defaultEnv \
 	-expect_unresolved setEnv \
+	-expect_unresolved putEnv \
 	-expect_unresolved parseArgs \
 	-expect_unresolved printEnv \
 	-expect_unresolved systemEnv \
@@ -53,12 +54,17 @@ SHLIBLDFLAGS = \
 PWD_DEFINES = -DUSESHADOW
 #endif
 
+#if HasPam
+PAM_DEFINES = -DUSE_PAM
+#endif
+
 #if SystemV4
   GREETER_DEFINES = -DGREET_LIB
 #endif
 
 INCLUDES = -I.. $(KRB5_INCLUDE)
- DEFINES = $(GREETER_DEFINES) $(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) $(PWD_DEFINES)
+ DEFINES = $(GREETER_DEFINES) $(XDMAUTH_DEFINES) $(RPC_DEFINES) \
+	   $(KRB5_DEFINES) $(PWD_DEFINES) $(PAM_DEFINES)
 
 SHLIBDIR = $(XDMDIR)
 

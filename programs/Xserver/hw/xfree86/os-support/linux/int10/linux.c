@@ -424,7 +424,7 @@ vm86_rep(struct vm86_struct *ptr)
 			 :"=a" (__res)
 			 :"n" ((int)113), "r" ((struct vm86_struct *)ptr));
 #else
-    __asm__ __volatile__("int $0x80"
+    __asm__ __volatile__("int $0x80\n\t"
 			 :"=a" (__res):"a" ((int)113),
 			 "b" ((struct vm86_struct *)ptr));
 #endif

@@ -962,7 +962,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *Sym = "";
-
+    Bool ddcLoaded = FALSE;
+    
     /* Allocate the TRIDENTRec driverPrivate */
     if (!TRIDENTGetRec(pScrn)) {
 	return FALSE;
@@ -990,7 +991,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     	    pTrident->Linear = FALSE;
 	}
     }
-
+    
     if (flags & PROBE_DETECT) {
 	TRIDENTProbeDDC(pScrn, pTrident->pEnt->index);
 	return TRUE;
@@ -1138,9 +1139,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
-    if (pTrident->CyberShadowSet = xf86GetOptValBool(TRIDENTOptions,
+    if ((pTrident->CyberShadowSet = xf86GetOptValBool(TRIDENTOptions,
 						     OPTION_CYBER_SHADOW,
-						     &pTrident->CyberShadow))
+						      &pTrident->CyberShadow)))
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow Registers %s\n",
 		   pTrident->CyberShadow?"enabled":"disabled");
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
@@ -1224,6 +1225,28 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "xf86RegisterResources() found resource conflicts\n");
 	return FALSE;
+    }
+
+    /* Initialize VBE if possible 
+     * Don't move this past MMIO enable!!
+     * PIO access will be blocked
+     * when MMIO is turned on!
+     */
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86MonPtr pMon;
+	pMon = vbeDoEDID(VBEInit(pTrident->Int10,
+				 pTrident->pEnt->index), NULL);
+	if (pMon) {
+	    if (!xf86LoadSubModule(pScrn, "ddc")) {
+		TRIDENTFreeRec(pScrn);
+		return FALSE;
+	    } else {
+		xf86LoaderReqSymLists(ddcSymbols, NULL);
+		xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+		ddcLoaded = TRUE;
+	    }
+	}
+	    
     }
 
     if (IsPciCard && UseMMIO) {
@@ -1897,26 +1920,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load DDC if needed */
     /* This gives us DDC1 - we should be able to get DDC2B using i2c */
-    
-    if (!xf86LoadSubModule(pScrn, "ddc")) {
-	if (IsPciCard && UseMMIO) {
-    	    TRIDENTDisableMMIO(pScrn);
- 	    TRIDENTUnmapMem(pScrn);
-	}
-	TRIDENTFreeRec(pScrn);
-	return FALSE;
-    }
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-    /* Initialize DDC1 if possible */
-    if (pTrident->ddc1Read) {
-	if (xf86LoadSubModule(pScrn, "vbe")) {
-	    xf86MonPtr pMon;
-	    pMon = vbeDoEDID(VBEInit(pTrident->Int10,pTrident->pEnt->index), NULL);
-	    if (pMon)
-		xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+    if (! ddcLoaded)
+	if (!xf86LoadSubModule(pScrn, "ddc")) {
+	    if (IsPciCard && UseMMIO) {
+		TRIDENTDisableMMIO(pScrn);
+		TRIDENTUnmapMem(pScrn);
+	    }
+	    TRIDENTFreeRec(pScrn);
+	    return FALSE;
 	}
-    }
+    
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
 
     if (IsPciCard && UseMMIO) {
         TRIDENTDisableMMIO(pScrn);
@@ -2078,6 +2093,19 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
+    /* Program the registers */
+    vgaHWProtect(pScrn, TRUE);
+    vgaReg = &hwp->ModeReg;
+    tridentReg = &pTrident->ModeReg;
+
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
+
+    /*
+     * TridentInit() has to modified registers
+     * that have already been set by vgaHWRestore().
+     * So we call it _after_ vgaHWRestore() has
+     * programmed these registers.
+     */
     if (pScrn->progClock) {
     	if (!TridentInit(pScrn, mode))
 	    return FALSE;
@@ -2085,13 +2113,6 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	if (!TVGAInit(pScrn, mode))
 	    return FALSE;
     }
-
-    /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    vgaReg = &hwp->ModeReg;
-    tridentReg = &pTrident->ModeReg;
-
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
 
     if (pScrn->progClock)
     	TridentRestore(pScrn, tridentReg);

@@ -1509,8 +1509,15 @@ MouseProc(DeviceIntPtr device, int what)
 	pMse->lastButtons = 0;
 	pMse->emulateState = 0;
 	device->public.on = TRUE;
+	/*
+	 * send button up events for sanity. If no button down is pending
+	 * xf86PostButtonEvent() will discard them. So we are on the save side.
+	 */
+	for (i = 0; i < 5; i++)
+	    xf86PostButtonEvent(device,0,i,0,0,0);
+	
 	break;
-
+	    
     case DEVICE_OFF:
     case DEVICE_CLOSE:
 	if (pInfo->fd != -1) {

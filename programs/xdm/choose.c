@@ -556,16 +556,22 @@ ProcessChooserSocket (int fd)
 	clientAddress.length = 0;
 	choice.data = 0;
 	choice.length = 0;
-	if (XdmcpReadARRAY8 (&buffer, &clientAddress) &&
-	    XdmcpReadCARD16 (&buffer, &connectionType) &&
-	    XdmcpReadARRAY8 (&buffer, &choice))
-	{
-	    Debug ("Read from chooser succesfully\n");
-	    if (!RegisterIndirectChoice (&clientAddress, connectionType, &choice))
-		Debug ("Invalid chooser reply\n");
+	if (XdmcpReadARRAY8 (&buffer, &clientAddress)) {
+	    if (XdmcpReadCARD16 (&buffer, &connectionType)) {
+		if (XdmcpReadARRAY8 (&buffer, &choice)) {
+		    Debug ("Read from chooser succesfully\n");
+		    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
+		    XdmcpDisposeARRAY8 (&choice);
+		} else {
+		    LogError ("Invalid choice response length %d\n", len);
+		}
+	    } else {
+		LogError ("Invalid choice response length %d\n", len);
+	    }
+	    XdmcpDisposeARRAY8 (&clientAddress);
+	} else {
+	    LogError ("Invalid choice response length %d\n", len);
 	}
-	XdmcpDisposeARRAY8 (&clientAddress);
-	XdmcpDisposeARRAY8 (&choice);
     }
     else
     {

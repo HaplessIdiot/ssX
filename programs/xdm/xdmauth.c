@@ -1,15 +1,9 @@
-/* $XConsortium: xdmauth.c,v 1.12 94/04/17 20:03:50 gildea Exp $ */
+/* $TOG: xdmauth.c /main/14 1998/02/09 13:56:44 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -39,12 +33,15 @@ from the X Consortium.
  */
 
 #include "dm.h"
+#include "dm_auth.h"
+#include "dm_error.h"
 
 #ifdef HASXDMAUTH
 
 static char	auth_name[256];
 static int	auth_name_len;
 
+void
 XdmPrintDataHex (s, a, l)
     char	    *s;
     char	    *a;
@@ -59,6 +56,7 @@ XdmPrintDataHex (s, a, l)
 }
 
 #ifdef notdef			/* not used */
+void
 XdmPrintKey (s, k)
     char	    *s;
     XdmAuthKeyRec   *k;
@@ -68,6 +66,7 @@ XdmPrintKey (s, k)
 #endif
 
 #ifdef XDMCP
+void
 XdmPrintArray8Hex (s, a)
     char	*s;
     ARRAY8Ptr	a;
@@ -76,6 +75,7 @@ XdmPrintArray8Hex (s, a)
 }
 #endif
 
+void
 XdmInitAuth (name_len, name)
     unsigned short  name_len;
     char	    *name;
@@ -151,6 +151,7 @@ XdmGetAuth (namelen, name)
 
 #ifdef XDMCP
 
+void
 XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     struct protoDisplay	*pdpy;
     unsigned short	authorizationNameLen;
@@ -195,7 +196,7 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
     XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
     /* encrypt the session key for its trip back to the server */
-    XdmcpWrap (xdmcpauth->data, &pdpy->key, xdmcpauth->data, 8);
+    XdmcpWrap (xdmcpauth->data, (unsigned char *)&pdpy->key, xdmcpauth->data, 8);
     pdpy->fileAuthorization = fileauth;
     pdpy->xdmcpAuthorization = xdmcpauth;
 }
@@ -204,7 +205,7 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
 		 'a' <= c && c <= 'f' ? c - 'a' + 10 : \
 		 'A' <= c && c <= 'F' ? c - 'A' + 10 : -1)
 
-static
+static int
 HexToBinary (key)
     char    *key;
 {
@@ -235,6 +236,7 @@ HexToBinary (key)
  * routine accepts either plain ascii strings for keys, or hex-encoded numbers
  */
 
+int
 XdmGetKey (pdpy, displayID)
     struct protoDisplay	*pdpy;
     ARRAY8Ptr		displayID;
@@ -251,7 +253,8 @@ XdmGetKey (pdpy, displayID)
     {
 	if (line[0] == '#' || sscanf (line, "%s %s", id, key) != 2)
 	    continue;
-	Debug ("Key entry \"%s\" \"%s\"\n", id, key);
+	bzero(line, sizeof(line));
+	Debug ("Key entry for \"%s\" %d bytes\n", id, strlen(key));
 	if (strlen (id) == displayID->length &&
 	    !strncmp (id, (char *)displayID->data, displayID->length))
 	{
@@ -263,15 +266,19 @@ XdmGetKey (pdpy, displayID)
 		key[keylen++] = '\0';
 	    pdpy->key.data[0] = '\0';
 	    memmove( pdpy->key.data + 1, key, 7);
+	    bzero(key, sizeof(key));
 	    fclose (keys);
 	    return TRUE;
 	}
     }
+    bzero(line, sizeof(line));
+    bzero(key, sizeof(key));
     fclose (keys);
     return FALSE;
 }
 
 /*ARGSUSED*/
+int
 XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
     struct protoDisplay	*pdpy;
     ARRAY8Ptr		displayID, authenticationName, authenticationData;
@@ -282,14 +289,14 @@ XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
 	return FALSE;
     if (authenticationData->length != 8)
 	return FALSE;
-    XdmcpUnwrap (authenticationData->data, &pdpy->key,
+    XdmcpUnwrap (authenticationData->data, (unsigned char *)&pdpy->key,
 		  authenticationData->data, 8);
     XdmPrintArray8Hex ("Request packet auth", authenticationData);
     if (!XdmcpCopyARRAY8(authenticationData, &pdpy->authenticationData))
 	return FALSE;
     incoming = (XdmAuthKeyPtr) authenticationData->data;
     XdmcpIncrementKey (incoming);
-    XdmcpWrap (authenticationData->data, &pdpy->key,
+    XdmcpWrap (authenticationData->data, (unsigned char *)&pdpy->key,
 		  authenticationData->data, 8);
     return TRUE;
 }

@@ -535,7 +535,7 @@ NEOProbe(DriverPtr drv, int flags)
 static int
 neoFindIsaDevice(GDevPtr dev)
 {
-    unsigned char vgaIOBase;
+    unsigned int vgaIOBase;
     unsigned char id;
     
     vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;

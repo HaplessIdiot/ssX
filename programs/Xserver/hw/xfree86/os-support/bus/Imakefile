@@ -37,7 +37,15 @@ XCOMM PowerPC PCI drivers
 PCIDRVRSRC = ppcPci.c
 PCIDRVROBJ = ppcPci.o
 
+#elif defined(LinuxArchitecture) && ( defined(i386Architecture) || defined(ia64Architecture))
+
+XCOMM ix86 PCI driver with OS fallback for Linux
+
+PCIDRVRSRC = ix86Pci.c linuxPci.c
+PCIDRVROBJ = ix86Pci.o linuxPci.o
+
 #elif defined(FreeBSDArchitecture) && defined(AlphaArchitecture)
+
 
 XCOMM generic FreeBSD PCI driver (using /dev/pci)
 

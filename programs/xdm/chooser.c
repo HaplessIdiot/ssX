@@ -373,7 +373,7 @@ AddHostname (ARRAY8Ptr hostname, ARRAY8Ptr status, struct sockaddr *addr, int wi
 	    	    if (hostent)
 	    	    {
 			XdmcpDisposeARRAY8 (hostname);
-		    	host = hostent->h_name;
+		    	host = (char *)hostent->h_name;
 			XdmcpAllocARRAY8 (hostname, strlen (host));
 			memmove( hostname->data, host, hostname->length);
 	    	    }

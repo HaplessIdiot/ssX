@@ -57,7 +57,7 @@ typedef struct auth_ks_struct { auth_cblock _; } auth_wrapper_schedule[16];
 
 extern void _XdmcpWrapperToOddParity();
 
-static
+static void
 longtochars (long l, unsigned char *c)
 {
     c[0] = (l >> 24) & 0xff;
@@ -70,7 +70,7 @@ longtochars (long l, unsigned char *c)
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
 #ifndef ARC4_RANDOM
-static
+static int
 sumFile (char *name, long sum[2])
 {
     long    buf[1024*2];
@@ -107,7 +107,7 @@ sumFile (char *name, long sum[2])
 }
 #endif
 
-static
+static void
 InitXdmcpWrapper (void)
 {
 
@@ -214,8 +214,8 @@ GenerateAuthData (char *auth, int len)
     	for (i = 0; i < len; i++) {
 	    auth[i] = 0;
 	    for (bit = 1; bit < 256; bit <<= 1) {
-	    	_XdmcpAuthDoIt (data, data, schedule, 1);
-	    	if (data[0] + data[1] & 0x4)
+		_XdmcpAuthDoIt (data, data, schedule, 1);
+		if ((data[0] + data[1]) & 0x4)
 		    auth[i] |= bit;
 	    }
     	}

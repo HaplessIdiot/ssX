@@ -682,6 +682,7 @@ typedef enum {
     FLAG_PCIPROBE2,
     FLAG_PCIFORCECONFIG1,
     FLAG_PCIFORCECONFIG2,
+    FLAG_PCIOSCONFIG,
     FLAG_SAVER_BLANKTIME,
     FLAG_DPMS_STANDBYTIME,
     FLAG_DPMS_SUSPENDTIME,
@@ -720,6 +721,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_PCIFORCECONFIG1,	"PciForceConfig1",		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIFORCECONFIG2,	"PciForceConfig2",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_PCIOSCONFIG,	        "PciOsConfig",   		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_SAVER_BLANKTIME,	"BlankTime"		,	OPTV_INTEGER,
 	{0}, FALSE },
@@ -831,6 +834,8 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pciFlags = PCIForceConfig1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
 	xf86Info.pciFlags = PCIForceConfig2;
+    if (xf86IsOptionSet(FlagOptions, FLAG_PCIOSCONFIG))
+	xf86Info.pciFlags = PCIOsConfig;
     /*
      * XXX This should be handled like a proper boolean option -- see further
      * above for examples.

@@ -7,6 +7,13 @@
  *   Part of this is based on code taken form DOSEMU
  *   (C) Copyright 1992, ..., 1999 the "DOSEMU-Development-Team"
  */   
+
+/*
+ * To debug port accesses define PRINT_PORT.
+ * Note! You also have to comment out ioperm()
+ * in xf86EnableIO(). Otherwise we won't trap
+ * on PIO.
+ */
 #include "xf86.h"
 #include "xf86str.h"
 #include "xf86_ansic.h"
@@ -30,12 +37,11 @@ setup_int(xf86Int10InfoPtr pInt)
 	MapCurrentInt10(pInt);
 	Int10Current = pInt;
     }
-    
     X86_EAX = (CARD32) pInt->ax;
     X86_EBX = (CARD32) pInt->bx;
     X86_ECX = (CARD32) pInt->cx;
     X86_EDX = (CARD32) pInt->dx;
-    X86_EDX = (CARD32) pInt->si;
+    X86_ESI = (CARD32) pInt->si;
     X86_EDI = (CARD32) pInt->di;
     X86_ES  = (CARD32) pInt->es;
     X86_EBP = 0;
@@ -46,7 +52,8 @@ setup_int(xf86Int10InfoPtr pInt)
     X86_DS = 0x40;               /* standard pc ds */  
     X86_FS = 0;
     X86_GS = 0;
-    X86_EFLAGS |= (X86_VIF_MASK | X86_VIP_MASK | X86_IF_MASK | 2);
+    X86_EFLAGS = (X86_IF_MASK | X86_IOPL_MASK);
+    
 }
 
 void
@@ -62,6 +69,8 @@ finish_int(xf86Int10InfoPtr pInt)
 }
 
 #define SEG_ADR(type, seg, reg)  type((seg << 4) \
+				      + (X86_##reg))
+#define SEG_EADR(type, seg, reg)  type((seg << 4) \
 				      + (X86_E##reg))
 #ifndef _X86EMU
 /* get the linear address */
@@ -113,7 +122,7 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 	/* NOTE: ES can't be overwritten; prefixes 66,67 should use esi,edi,ecx
 	 * but is anyone using extended regs in real mode? */
 	/* WARNING: no test for DI wrapping! */
-	X86_EDI += port_rep_inb(pInt,X86_DX,SEG_ADR((CARD32),X86_ES,DI),
+	X86_EDI += port_rep_inb(pInt,X86_DX,SEG_EADR((CARD32),X86_ES,DI),
 				X86_FLAGS & DF, (is_rep? LWECX:1));
 	if (is_rep) LWECX_ZERO;
 	X86_IP++;
@@ -224,6 +233,7 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
     return TRUE;
 }
 #endif
+
 /* general software interrupt handler */
 CARD32
 getIntVect(xf86Int10InfoPtr pInt,int num)
@@ -246,9 +256,9 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
     /* check if bios vector is initialized */
     if (MEM_RW(pInt,(num<<2)+2) == 0xF000) { /* SYS_BIOS_SEG ?*/
 #ifdef PRINT_INT
-	ErrorF("card BIOS not loaded\n");
+        ErrorF("card BIOS not loaded\n");
 #endif
-	return 0;
+        return 0;
     }
 #endif
 #ifdef PRINT_INT

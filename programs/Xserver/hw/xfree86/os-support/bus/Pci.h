@@ -149,6 +149,10 @@
 #elif defined(__alpha__) && defined(linux)
 # define ARCH_PCI_INIT axpPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
+#elif defined(__i386__) && defined(linux)
+# define ARCH_PCI_INIT ix86PciInit
+# define ARCH_PCI_OS_INIT linuxPciInit
+# define INCLUDE_XF86_MAP_PCI_MEM
 #elif defined(__alpha__) && defined(__FreeBSD__)
 # define ARCH_PCI_INIT freebsdPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
@@ -157,6 +161,9 @@
 # define INCLUDE_XF86_MAP_PCI_MEM
 #endif
 extern void ARCH_PCI_INIT(void);
+#if defined(ARCH_PCI_OS_INIT)
+extern void ARCH_PCI_OS_INIT(void);
+#endif
 
 /*
  * Table of functions used to access a specific PCI bus domain

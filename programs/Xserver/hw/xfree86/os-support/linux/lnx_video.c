@@ -387,7 +387,7 @@ xf86EnableIO(void)
 		return;
 
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
-	if (iopl(3))
+	if (ioperm(0, 1024, 1) || iopl(3))
 		FatalError("%s: Failed to set IOPL for I/O\n",
 			   "xf86EnableIOPorts");
 #endif
@@ -404,6 +404,7 @@ xf86DisableIO(void)
 
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
 	iopl(0);
+	ioperm(0, 1024, 0);
 #endif
 	ExtendedEnabled = FALSE;
 
@@ -420,7 +421,7 @@ xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
-		if (iopl(3))
+	    if (iopl(3) || ioperm(0, 1024, 1))
 			return (FALSE);
 #endif
 #if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
@@ -436,8 +437,11 @@ xf86DisableInterrupts()
 #endif
 #endif
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
-	if (!ExtendedEnabled)
-		iopl(0);
+	if (!ExtendedEnabled) {
+	    iopl(0);
+	    ioperm(0, 1024, 0);
+	}
+	
 #endif
 	return (TRUE);
 }
@@ -447,7 +451,7 @@ xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
-		if (iopl(3))
+	    if (iopl(3) || ioperm(0, 1024, 1))
 			return;
 #endif
 #if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
@@ -463,9 +467,10 @@ xf86EnableInterrupts()
 #endif
 #endif
 #if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__)
-	if (!ExtendedEnabled)
-
-		iopl(0);
+	if (!ExtendedEnabled) {
+	    iopl(0);
+	    ioperm(0, 1024, 0);
+	}
 #endif
 	return;
 }

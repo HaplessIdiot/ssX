@@ -685,6 +685,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.160 2000/03/22 23:35:47 dawes Exp 
  */
 
 /*
+ * Undefine the following if you don't want to have config files and
+ * app-defaults installed in a separate directory (i.e. /etc/X11).
+ *
+#define UseSeparateConfDir NO
+ */
+
+/*
  * If your system doesn't support vm86() mode and you have
  * libx86emu set library path here
  *

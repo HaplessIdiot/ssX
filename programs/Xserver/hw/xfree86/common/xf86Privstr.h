@@ -23,7 +23,8 @@ typedef enum {
     PCIProbe1		= 0,
     PCIProbe2,
     PCIForceConfig1,
-    PCIForceConfig2
+    PCIForceConfig2,
+    PCIOsConfig
 } PciProbeType;
 
 /*

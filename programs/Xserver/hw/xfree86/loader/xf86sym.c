@@ -55,6 +55,8 @@
 #include "vbe.h"
 #include "xf86sbusBus.h"
 
+extern xf86MonPtr ConfiguredMonitor;
+
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
 #undef inb
@@ -259,10 +261,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
    SYMFUNC(xf86PrintResList)
-   SYMFUNC(xf86AddResToList)
-   SYMFUNC(xf86JoinResLists)
-   SYMFUNC(xf86DupResList)
-   SYMFUNC(xf86FreeResList)
    SYMFUNC(xf86ClaimFixedResources)
    SYMFUNC(xf86AddEntityToScreen)
    SYMFUNC(xf86RemoveEntityFromScreen)
