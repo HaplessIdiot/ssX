@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.40 2003/11/17 22:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.41 2003/12/17 23:28:56 alanh Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -815,8 +815,6 @@ ProcShmPutImage(client)
     REQUEST_SIZE_MATCH(xShmPutImageReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     VERIFY_SHMPTR(stuff->shmseg, stuff->offset, FALSE, shmdesc, client);
-    if (stuff->srcX > 32767 || stuff->srcY > 32767)
-	return BadValue;
     if ((stuff->sendEvent != xTrue) && (stuff->sendEvent != xFalse))
 	return BadValue;
     if (stuff->format == XYBitmap)
