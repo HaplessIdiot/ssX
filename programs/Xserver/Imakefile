@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/233 1996/12/26 08:39:13 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.76 1996/12/26 02:49:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.77 1996/12/28 08:10:33 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -419,8 +419,10 @@ XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
 XF86HWLIB  = $(XF86HWSRC)/LibraryTargetName(xf86_hw)
-XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) $(XF86HWLIB)
-XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) $(XF86HWLIB)
+XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
+             $(XF86HWLIB) $(XF86OSLIB)
+XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
+             $(XF86HWLIB) $(XF86OSLIB)
  
 XF68INIT   = $(XF68COMSRC)/xf86Init.o $(XF68CONFIGSRC)/xf86IniExt.o
 XF68MINIT  = $(XF68COMSRC)/xf86Init_m.o $(XF68CONFIGSRC)/xf86MIniExt.o
