@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.10 2000/07/13 21:31:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.12 2000/08/04 16:13:41 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -60,20 +60,23 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     
     xf86ExecX86int10(pInt);
 
-    if ((pInt->ax & 0xff) != 0x4f) goto error;
+    if ((pInt->ax & 0xff) != 0x4f) {
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA BIOS not detected\n");
+	goto error;
+    }
     
     switch (pInt->ax & 0xff00) {
     case 0:
-	xf86DrvMsg(screen,X_INFO,"VESA Bios detected\n");
+	xf86DrvMsg(screen,X_INFO,"VESA BIOS detected\n");
 	break;
     case 0x100:
-	xf86DrvMsg(screen,X_INFO,"VESA Bios function failed\n");
+	xf86DrvMsg(screen,X_INFO,"VESA BIOS function failed\n");
 	goto error;
     case 0x200:
-	xf86DrvMsg(screen,X_INFO,"VESA Bios not supported\n");
+	xf86DrvMsg(screen,X_INFO,"VESA BIOS not supported\n");
 	goto error;
     case 0x300:
-	xf86DrvMsg(screen,X_INFO,"VESA Bios not supported in current mode\n");
+	xf86DrvMsg(screen,X_INFO,"VESA BIOS not supported in current mode\n");
 	goto error;
     default:
 	xf86DrvMsg(screen,X_INFO,"Invalid\n");
