@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.56 2004/06/02 22:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.57 2004/11/23 02:25:44 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -118,6 +118,14 @@ SOFTWARE.
 #endif
 #ifndef MAX_BIG_REQUEST_SIZE
 #define MAX_BIG_REQUEST_SIZE 4194303
+#endif
+
+/*
+ * Verbosity level used for log functions where the verbosity isn't
+ * specified explicitly.
+ */
+#ifndef X_LOG_DEFAULT_VERB
+#define X_LOG_DEFAULT_VERB 1
 #endif
 
 typedef pointer	FID;

@@ -50,7 +50,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.8 2004/03/31 16:37:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.9 2004/06/30 20:21:46 martin Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -108,10 +108,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "site.h"
 #include "opaque.h"
-
-#ifdef NEED_STRLCAT
-extern size_t strlcpy(char *dst, const char *src, size_t siz);
-#endif
 
 #ifdef DDXOSVERRORF
 void (*OsVendorVErrorFProc)(const char *, va_list args) = NULL;
@@ -396,14 +392,14 @@ LogMessageVerb(MessageType type, int verb, const char *format, ...)
     va_end(ap);
 }
 
-/* Log a message with the standard verbosity level of 1. */
+/* Log a message with the standard verbosity level of X_LOG_DEFAULT_VERB. */
 void
 LogMessage(MessageType type, const char *format, ...)
 {
     va_list ap;
 
     va_start(ap, format);
-    LogVMessageVerb(type, 1, format, ap);
+    LogVMessageVerb(type, X_LOG_DEFAULT_VERB, format, ap);
     va_end(ap);
 }
 

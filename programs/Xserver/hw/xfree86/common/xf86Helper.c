@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.139 2004/06/01 01:23:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.140 2004/09/29 21:19:00 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
@@ -1355,14 +1355,14 @@ xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
     va_end(ap);
 }
 
-/* Print driver messages, with verbose level of 1 (default) */
+/* Print driver messages, with verbose level of X_LOG_DEFAULT_VERB. */
 void
 xf86DrvMsg(int scrnIndex, MessageType type, const char *format, ...)
 {
     va_list ap;
 
     va_start(ap, format);
-    xf86VDrvMsgVerb(scrnIndex, type, 1, format, ap);
+    xf86VDrvMsgVerb(scrnIndex, type, X_LOG_DEFAULT_VERB, format, ap);
     va_end(ap);
 }
 
@@ -1384,7 +1384,7 @@ xf86Msg(MessageType type, const char *format, ...)
     va_list ap;
 
     va_start(ap, format);
-    xf86VDrvMsgVerb(-1, type, 1, format, ap);
+    xf86VDrvMsgVerb(-1, type, X_LOG_DEFAULT_VERB, format, ap);
     va_end(ap);
 }
 
@@ -1400,7 +1400,10 @@ xf86ErrorFVerb(int verb, const char *format, ...)
     va_end(ap);
 }
 
-/* Like xf86ErrorFVerb, but with an implied verbose level of 1 */
+/*
+ * Like xf86ErrorFVerb, but with an implied verbose level
+ * of X_LOG_DEFAULT_VERB.
+ */
 void
 xf86ErrorF(const char *format, ...)
 {
@@ -1408,7 +1411,7 @@ xf86ErrorF(const char *format, ...)
 
     va_start(ap, format);
     if (xf86Verbose >= 1 || xf86LogVerbose >= 1)
-	LogVWrite(1, format, ap);
+	LogVWrite(X_LOG_DEFAULT_VERB, format, ap);
     va_end(ap);
 }
 
