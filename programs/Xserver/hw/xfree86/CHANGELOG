@@ -1,4 +1,10 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 451. Minor int10 and VBE fixups (Marc La France).
+ 450. For frequency options, don't clobber the old value before verifying the
+      new one is valid (Marc La France).
+ 449. Ensure xf86_ansic.h is always #include'd before compiler.h in code
+      that can be compiled as a module (even for the static server).  Generate
+      an error if not (Marc La France).
  448. Make linux/int10 module complain when SystemV IPC isn't configured
       into the kernel (Marc La France).
  447. Add new offscreen frame bufffer manager functions for managing linear
@@ -16,7 +22,7 @@ XFree86 4.0.1a (XX XXXX 2000)
  437. An update to change 425 (Marc La France).
  436. More EDID formatting changes (Marc La France).
  435. Fix bug that caused the relocation of PCI I/O bases assigned to multiples
-      of 0x0200 (but not 0x0400) by the system BIOS (Marc La France).
+      of 0x0100 (but not 0x0400) by the system BIOS (Marc La France).
  434. Add ATI driver to Alpha, and experimentally, to ppc architectures.  ppc
       support is still known to be incomplete (Marc La France).
  433. For IA64, compile everything, except PEX, that is also compiled for IA32
@@ -10864,4 +10870,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1244 2000/07/14 22:40:32 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1245 2000/07/21 21:04:02 tsi Exp $

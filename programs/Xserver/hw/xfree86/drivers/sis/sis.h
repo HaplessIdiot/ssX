@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.14 2000/06/26 22:27:45 tsi Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -33,6 +33,7 @@
 
 #include "xf86Pci.h"
 #include "xf86Cursor.h"
+#include "xf86_ansic.h"
 #include "compiler.h"
 #include "xaa.h"
 #include "vgaHW.h"

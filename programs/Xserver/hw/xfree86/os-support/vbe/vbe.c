@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.9 2000/05/31 09:39:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.10 2000/07/13 21:31:40 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -38,13 +38,14 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     int screen = pScrn->scrnIndex;
 
     if (!pInt) {
-	if (xf86LoadSubModule(pScrn, "int10")) {
-	    xf86DrvMsg(screen,X_INFO,"initializing int10\n");
-	    pInt = xf86InitInt10(entityIndex);
-	    if (!pInt)
-		goto error;
-	    init_int10 = TRUE;
-	}
+	if (!xf86LoadSubModule(pScrn, "int10"))
+	    goto error;
+
+	xf86DrvMsg(screen,X_INFO,"initializing int10\n");
+	pInt = xf86InitInt10(entityIndex);
+	if (!pInt)
+	    goto error;
+	init_int10 = TRUE;
     }
     
     page = xf86Int10AllocPages(pInt,1,&RealOff);
@@ -118,6 +119,9 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
 void
 vbeFree(vbeInfoPtr pVbe)
 {
+    if (!pVbe)
+	return;
+
     xf86Int10FreePages(pVbe->pInt10,pVbe->memory,pVbe->num_pages);
     /* If we have initalized int10 we ought to free it, too */
     if (pVbe->init_int10) 

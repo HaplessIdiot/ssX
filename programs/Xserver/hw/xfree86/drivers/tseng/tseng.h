@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.26 1999/04/27 12:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.27 1999/06/12 07:18:57 dawes Exp $ */
 
 
 
@@ -8,15 +8,15 @@
 #ifndef _TSENG_H
 #define _TSENG_H
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* This is used for module versioning */
 #include "xf86Version.h"

@@ -26,9 +26,8 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.9 2000/06/21 17:28:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.10 2000/07/10 14:03:36 alanh Exp $ */
 
-#include "compiler.h"
 #include "fb.h"
 #include "mibank.h"
 #include "micmap.h"
@@ -42,6 +41,7 @@
 #include "vgaHW.h"
 #include "xf86RAC.h"
 #include "xf86Resources.h"
+#include "compiler.h"
 
 #include "cyrix.h"
 

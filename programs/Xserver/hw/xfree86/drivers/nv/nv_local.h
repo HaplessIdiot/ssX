@@ -45,6 +45,7 @@
  * Put all affected includes, typdefs, etc. here so the riva_hw.* files can stay
  * generic in nature.
  */ 
+#include "xf86_ansic.h"
 #include "compiler.h"
 /*
  * Typedefs to force certain sized values.

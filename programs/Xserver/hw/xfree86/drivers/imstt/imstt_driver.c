@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.5 2000/06/21 17:28:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.6 2000/06/22 16:59:28 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -32,7 +32,6 @@
  */
 
 
-#include "compiler.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -41,6 +40,7 @@
 #include "xf86Version.h"
 #include "xf86Resources.h"
 #include "xf86fbman.h"
+#include "compiler.h"
 #include "xaa.h"
 #include "mipointer.h"
 #include "micmap.h"

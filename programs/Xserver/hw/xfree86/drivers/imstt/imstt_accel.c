@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.1 2000/06/14 00:16:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.2 2000/06/14 02:36:07 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -25,10 +25,10 @@
  */
 
 
-#include "compiler.h"
 #include "Xarch.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
+#include "compiler.h"
 #include "xf86_OSproc.h"
 #include "xaa.h"
 #include "xf86PciInfo.h"
