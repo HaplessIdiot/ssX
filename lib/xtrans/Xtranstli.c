@@ -1,16 +1,9 @@
-/* $TOG: Xtranstli.c /main/27 1997/08/06 18:48:20 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.5 1996/09/01 04:14:14 dawes Exp $ */
+/* $TOG: Xtranstli.c /main/29 1998/04/22 16:31:16 barstow $ */
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,19 +11,20 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.6 1997/08/12 12:01:54 hohndel Exp $ */
 
-/* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
+/* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
  * All Rights Reserved
  *
@@ -108,6 +102,16 @@ static TLItrans2dev TLItrans2devtab[] = {
 #define TLINODENAME	"TLI:test"
 #endif
     
+#ifndef PORTBUFSIZE
+#ifdef TRANS_SERVER
+#define PORTBUFSIZE	64
+#else
+#ifdef TRANS_CLIENT
+#define PORTBUFSIZE	64
+#endif
+#endif
+#endif
+
 
 /*
  * These are some utility function used by the real interface function below.
@@ -254,7 +258,7 @@ int	family;
 char	*port;
 
 {
-    struct sockaddr_un	*sunaddr;
+    struct sockaddr_un	*sunaddr=NULL;
     struct t_bind	*req=NULL;
     
     PRMSG(2, "TLITLIBindLocal(%d,%d,%s)\n", fd, family, port);
@@ -305,6 +309,10 @@ char	*port;
 	PRMSG(1,
 	      "TLIBindLocal: Unable to bind TLI device to %s\n",
 	      port, 0,0 );
+	if (sunaddr)
+	    free((char *) sunaddr);
+	if (req)
+	    t_free((char *)req,T_BIND);
 	return -1;
     }
     return 0;
@@ -329,6 +337,7 @@ char	*device;
     if( (ciptr->fd=t_open( device, O_RDWR, NULL )) < 0 )
     {
 	PRMSG(1, "TLIOpen: t_open failed for %s\n", device, 0,0 );
+	free(ciptr);
 	return NULL;
     }
     
@@ -743,6 +752,7 @@ struct t_bind	*req;
     {
 	PRMSG(1, "TLICreateListener: failed to allocate a t_bind\n",
 	      0,0,0 );
+	t_free((char *)req,T_BIND);
 	return TRANS_CREATE_LISTENER_FAILED;
     }
     
@@ -794,7 +804,6 @@ XtransConnInfo	ciptr;
 char		*port;
 
 {
-#define PORTBUFSIZE     64      /* what is a real size for this? */
     char    portbuf[PORTBUFSIZE];
     struct t_bind	*req;
     struct sockaddr_in	*sinaddr;
@@ -862,6 +871,7 @@ char		*port;
 {
     struct t_bind	*req;
     struct sockaddr_un	*sunaddr;
+    int 		ret_value;
     
     PRMSG(2,"TLITLICreateListener(%x->%d,%s)\n", ciptr, ciptr->fd,
 	port ? port : "NULL");
@@ -903,7 +913,11 @@ char		*port;
     
     req->qlen=1;
     
-    return TRANS(TLICreateListener)(ciptr, req);
+    ret_value = TRANS(TLICreateListener)(ciptr, req);
+
+    free((char *) sunaddr);
+
+    return ret_value;
 }
 
 
@@ -973,8 +987,7 @@ int		*status;
 	PRMSG(1, "TLIAccept: %s\n", t_errlist[t_errno], 0,0 );
 	t_free((char *)call,T_CALL);
 	t_close(newciptr->fd);
-	xfree(newciptr->addr);
-	xfree(newciptr);
+	free(newciptr);
 	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
     }
@@ -1109,7 +1122,6 @@ char		*host;
 char		*port;
 
 {
-#define PORTBUFSIZE	64	/* what is a real size for this? */
     char	portbuf[PORTBUFSIZE];	
     struct	t_call	*sndcall;
     long	tmpport;
@@ -1162,6 +1174,7 @@ char		*port;
 {
     struct t_call	*sndcall;
     struct sockaddr_un	*sunaddr;
+    int			ret_value;
     
     PRMSG(2, "TLITLIConnect(%s,%s)\n", host, port, 0);
     
@@ -1194,7 +1207,11 @@ char		*port;
     sndcall->addr.len=sizeof(*sunaddr);
     sndcall->addr.maxlen=sizeof(*sunaddr);
     
-    return TRANS(TLIConnect)(ciptr, sndcall );
+    ret_value = TRANS(TLIConnect)(ciptr, sndcall );
+
+    free((char *) sunaddr);
+
+    return ret_value;
 }
 
 #endif /* TRANS_CLIENT */

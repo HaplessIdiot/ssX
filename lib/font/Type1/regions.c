@@ -1,5 +1,4 @@
-/* $XConsortium: regions.c,v 1.6 94/02/06 16:22:21 gildea Exp $ */
-/* $XFree86$ */
+/* $TOG: regions.c /main/8 1998/05/01 16:41:57 kaleb $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -27,6 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86: xc/lib/font/Type1/regions.c,v 3.0 1996/08/25 13:58:26 dawes Exp $ */
  /* REGIONS  CWEB         V0023 LOTS                                 */
 /*
 :h1 id=regions.REGIONS Module - Regions Operator Handler
@@ -51,7 +51,6 @@ The included files are:
 #include  "fonts.h"
 #include  "hints.h"
 #include  "strokes.h"      /* to pick up 'DoStroke'                        */
-static Unwind();
 static void newfilledge();
 static struct edgelist *splitedge();
 static void vertjoin();
@@ -59,8 +58,6 @@ static int touches();
 static int crosses();
 static void edgemin();
 static void edgemax();
-static discard();
-static edgecheck();
 static struct edgelist *NewEdge();
 static struct edgelist *swathxsort();  /* 'SortSwath' function               */
  
@@ -333,7 +330,102 @@ Allocate() makes everything it allocates be in multiples of longs.
        IfTrace1((RegionDebug),"result=%x\n", r);
        return(r);
 }
+
+/*
+:h3 id=discard.discard() - Discard All Edges Between Two Edges
  
+At first glance it would seem that we could discard an edgelist
+structure merely by unlinking it from the list and freeing it.  You are
+wrong, region-breath!  For performance, the X values associated with an
+edge are allocated contiguously with it.  So, we free the X values when
+we free a structure.  However, once an edge has been split, we are no
+longer sure which control block actually is part of the memory block
+that contains the edges.  Rather than trying to decide, we play it safe
+and never free part of a region.
+ 
+So, to mark a 'edgelist' structure as discarded, we move it to the end
+of the list and set ymin=ymax.
+*/
+ 
+static void
+discard(left, right)
+       register struct edgelist *left,*right;  /* all edges between here exclusive */
+                                       /* should be discarded */
+{
+       register struct edgelist *beg,*end,*p;
+ 
+       IfTrace2((RegionDebug > 0),"discard:  l=%x, r=%x\n", left, right);
+ 
+       beg = left->link;
+       if (beg == right)
+               return;
+ 
+       for (p = beg; p != right; p = p->link) {
+               if (p->link == NULL && right != NULL)
+                       abort("discard():  ran off end");
+               IfTrace1((RegionDebug > 0),"discarding %x\n", p);
+               p->ymin = p->ymax = 32767;
+               end = p;
+       }
+       /*
+       * now put the chain beg/end at the end of right, if it is not
+       * already there:
+       */
+       if (right != NULL) {
+               left->link = right;
+               while (right->link != NULL)
+                       right = right->link;
+               right->link = beg;
+       }
+       end->link = NULL;
+}
+ 
+/*
+:h4.Unwind() - Discards Edges That Fail the Winding Rule Test
+ 
+The winding rule says that upward going edges should be paired with
+downward going edges only, and vice versa.  So, if two upward edges
+or two downward edges are nominally left/right pairs, Unwind() should
+discard the second one.  Everything should balance; we should discard
+an even number of edges; of course, we abort if we don't.
+*/
+static void
+Unwind(area)
+       register struct edgelist *area;  /* input area modified in place      */
+{
+       register struct edgelist *last,*next;  /* struct before and after current one */
+       register int y;       /* ymin of current swath                        */
+       register int count,newcount;  /* winding count registers              */
+ 
+       IfTrace1((RegionDebug>0),"...Unwind(%z)\n", area);
+ 
+       while (VALIDEDGE(area)) {
+ 
+               count = 0;
+               y = area->ymin;
+ 
+               do {
+                       next = area->link;
+ 
+                       if (ISDOWN(area->flag))
+                               newcount = count + 1;
+                       else
+                               newcount = count - 1;
+ 
+                       if (count == 0 || newcount == 0)
+                               last = area;
+                       else
+                               discard(last, next);
+ 
+                       count = newcount;
+                       area = next;
+ 
+               } while (area != NULL && area->ymin == y);
+ 
+               if (count != 0)
+                       abort("Unwind:  uneven edges");
+       }
+}
 /*
 :h2.Building Regions
  
@@ -577,51 +669,6 @@ Finally, clean up the region's based on the user's 'fillrule' request:
        if (fillrule == WINDINGRULE)
              Unwind(R->anchor);
        return(R);
-}
-/*
-:h4.Unwind() - Discards Edges That Fail the Winding Rule Test
- 
-The winding rule says that upward going edges should be paired with
-downward going edges only, and vice versa.  So, if two upward edges
-or two downward edges are nominally left/right pairs, Unwind() should
-discard the second one.  Everything should balance; we should discard
-an even number of edges; of course, we abort if we don't.
-*/
-static Unwind(area)
-       register struct edgelist *area;  /* input area modified in place      */
-{
-       register struct edgelist *last,*next;  /* struct before and after current one */
-       register int y;       /* ymin of current swath                        */
-       register int count,newcount;  /* winding count registers              */
- 
-       IfTrace1((RegionDebug>0),"...Unwind(%z)\n", area);
- 
-       while (VALIDEDGE(area)) {
- 
-               count = 0;
-               y = area->ymin;
- 
-               do {
-                       next = area->link;
- 
-                       if (ISDOWN(area->flag))
-                               newcount = count + 1;
-                       else
-                               newcount = count - 1;
- 
-                       if (count == 0 || newcount == 0)
-                               last = area;
-                       else
-                               discard(last, next);
- 
-                       count = newcount;
-                       area = next;
- 
-               } while (area != NULL && area->ymin == y);
- 
-               if (count != 0)
-                       abort("Unwind:  uneven edges");
-       }
 }
 /*
 :h3."workedge" Array
@@ -1329,53 +1376,6 @@ static void edgemax(h, e1, e2)
                if (*e1 < *e2)
                        *e1 = *e2;
 }
-/*
-:h3 id=discard.discard() - Discard All Edges Between Two Edges
- 
-At first glance it would seem that we could discard an edgelist
-structure merely by unlinking it from the list and freeing it.  You are
-wrong, region-breath!  For performance, the X values associated with an
-edge are allocated contiguously with it.  So, we free the X values when
-we free a structure.  However, once an edge has been split, we are no
-longer sure which control block actually is part of the memory block
-that contains the edges.  Rather than trying to decide, we play it safe
-and never free part of a region.
- 
-So, to mark a 'edgelist' structure as discarded, we move it to the end
-of the list and set ymin=ymax.
-*/
- 
-static discard(left, right)
-       register struct edgelist *left,*right;  /* all edges between here exclusive */
-                                       /* should be discarded */
-{
-       register struct edgelist *beg,*end,*p;
- 
-       IfTrace2((RegionDebug > 0),"discard:  l=%x, r=%x\n", left, right);
- 
-       beg = left->link;
-       if (beg == right)
-               return;
- 
-       for (p = beg; p != right; p = p->link) {
-               if (p->link == NULL && right != NULL)
-                       abort("discard():  ran off end");
-               IfTrace1((RegionDebug > 0),"discarding %x\n", p);
-               p->ymin = p->ymax = 32767;
-               end = p;
-       }
-       /*
-       * now put the chain beg/end at the end of right, if it is not
-       * already there:
-       */
-       if (right != NULL) {
-               left->link = right;
-               while (right->link != NULL)
-                       right = right->link;
-               right->link = beg;
-       }
-       end->link = NULL;
-}
  
 /*
 :h2.Changing the Representation of Regions
@@ -1387,7 +1387,8 @@ region.
  
 */
  
-void MoveEdges(R, dx, dy)
+void
+MoveEdges(R, dx, dy)
        register struct region *R; /* region to modify                        */
        register fractpel dx,dy;  /* delta X and Y to move edge list by       */
 {
@@ -1463,7 +1464,8 @@ void UnJumble(region)
 /*
 */
  
-static OptimizeRegion(R)
+static void
+OptimizeRegion(R)
        struct region *R;     /* region to optimize                           */
 {
        register pel *xP;     /* pel pointer for inner loop                   */
@@ -1667,6 +1669,26 @@ void DumpArea(area)
 /*
 :h3.DumpEdges() - Display Run End Lists (Edge Lists)
 */
+
+/*
+:h3.edgecheck() - For Debug, Verify that an Edge Obeys the Rules
+*/
+ 
+/*ARGSUSED*/
+static void
+edgecheck(edge, oldmin, oldmax)
+       struct edgelist *edge;
+       int oldmin,oldmax;
+{
+       if (edge->type != EDGETYPE)
+               abort("EDGE ERROR: non EDGETYPE in list");
+/*
+The following check is not valid if the region is jumbled so I took it
+out:
+*/
+/*     if (edge->ymin < oldmax && edge->ymin != oldmin)
+               abort("EDGE ERROR: overlapping swaths"); */
+}
  
 static pel RegionDebugYMin = MINPEL;
 static pel RegionDebugYMax = MAXPEL;
@@ -1726,21 +1748,3 @@ void DumpEdges(edges)
        }
 }
  
-/*
-:h3.edgecheck() - For Debug, Verify that an Edge Obeys the Rules
-*/
- 
-/*ARGSUSED*/
-static edgecheck(edge, oldmin, oldmax)
-       struct edgelist *edge;
-       int oldmin,oldmax;
-{
-       if (edge->type != EDGETYPE)
-               abort("EDGE ERROR: non EDGETYPE in list");
-/*
-The following check is not valid if the region is jumbled so I took it
-out:
-*/
-/*     if (edge->ymin < oldmax && edge->ymin != oldmin)
-               abort("EDGE ERROR: overlapping swaths"); */
-}

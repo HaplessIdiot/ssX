@@ -1,15 +1,10 @@
-/* $XConsortium: LocBitmap.c,v 1.19 94/04/17 20:16:10 rws Exp $ */
+/* $TOG: LocBitmap.c /main/22 1998/06/24 10:18:20 kaleb $ */
 
 /*
  
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.3 1998/06/28 12:32:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.4 1998/08/16 10:25:15 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -98,12 +93,18 @@ XmuLocatePixmapFile(Screen *screen, _Xconst char *name,
 			    char *srcname, int srcnamelen,
 			    int *widthp, int *heightp, int *xhotp, int *yhotp)
 {
+
+#ifndef BITMAPDIR
+#define BITMAPDIR "/usr/include/X11/bitmaps"
+#endif
+
     Display *dpy = DisplayOfScreen (screen);
     Window root = RootWindowOfScreen (screen);
     Bool try_plain_name = True;
     XmuCvtCache *cache = _XmuCCLookupDisplay (dpy);
     char **file_paths = (char **) NULL;
     char filename[PATH_MAX];
+    char* bitmapdir = BITMAPDIR;
     unsigned int width, height;
     int xhot, yhot;
     int i;
@@ -136,7 +137,6 @@ XmuLocatePixmapFile(Screen *screen, _Xconst char *name,
 	file_paths = cache->string_to_bitmap.bitmapFilePath;
     }
 
-
     /*
      * Search order:
      *    1.  name if it begins with / or ./
@@ -144,10 +144,6 @@ XmuLocatePixmapFile(Screen *screen, _Xconst char *name,
      *    3.  BITMAPDIR/name
      *    4.  name if didn't begin with / or .
      */
-
-#ifndef BITMAPDIR
-#define BITMAPDIR "/usr/include/X11/bitmaps"
-#endif
 
     for (i = 1; i <= 4; i++) {
 	char *fn = filename;

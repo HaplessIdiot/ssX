@@ -1,4 +1,4 @@
-/* $TOG: Intrinsic.c /main/152 1997/12/05 15:06:38 kaleb $ */
+/* $TOG: Intrinsic.c /main/158 1998/06/17 13:26:39 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,18 +32,13 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.11 1997/11/22 06:50:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.12 1997/12/14 02:55:33 dawes Exp $ */
 
 /*
 
-Copyright (c) 1987, 1988, 1994  X Consortium
+Copyright 1987, 1988, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -51,13 +46,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -367,7 +362,10 @@ static void RealizeWidget(widget)
 #ifdef notdef
     _XtRegisterAsyncHandlers(widget);
 #endif
+    /* (re)register any grabs extant in the translations */
     _XtRegisterGrabs(widget);
+    /* reregister any grabs added with XtGrab{Button,Key} */
+    _XtRegisterPassiveGrabs(widget);
     XtRegisterDrawable (display, window, widget);
     _XtExtensionSelect(widget);
 
@@ -1206,7 +1204,7 @@ static char *ExtractLocaleName(lang)
 #define ENDCHAR ';'
 #define WHITEFILL
 #else
-#if defined(__osf__) || defined(AIXV3)
+#if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
 #define STARTCHAR ' '
 #define ENDCHAR ' '
 #else
@@ -1218,7 +1216,6 @@ static char *ExtractLocaleName(lang)
 #endif
 #endif
 #endif
-#define MAXLOCALE       64      /* buffer size of locale name */
 
     char           *start;
     char           *end;
@@ -1226,7 +1223,7 @@ static char *ExtractLocaleName(lang)
 #ifdef SKIPCOUNT
     int		    n;
 #endif
-    static char     buf[MAXLOCALE];
+    static char*    buf = NULL;
 
     start = lang;
 #ifdef SKIPCOUNT
@@ -1241,28 +1238,28 @@ static char *ExtractLocaleName(lang)
     if (start && (start = strchr (start, STARTCHAR))) {
         start++;
 #endif
-        if (end = strchr (start, ENDCHAR)) {
-            len = end - start;
-	    if (len >= MAXLOCALE)
-		len = MAXLOCALE - 1;
-            strncpy(buf, start, len);
-            *(buf + len) = '\0';
+	if (end = strchr (start, ENDCHAR)) {
+	    len = end - start;
+	    if (buf != NULL) XtFree (buf);
+	    buf = XtMalloc (len + 1);
+	    if (buf == NULL) return NULL;
+	    strncpy(buf, start, len);
+	    *(buf + len) = '\0';
 #ifdef WHITEFILL
 	    for (start = buf; start = strchr(start, ' '); )
 		*start++ = '-';
 #endif
 	    return buf;
+	}
 #ifdef STARTCHAR
-      }
-#endif
     }
+#endif
 #ifdef WHITEFILL
     if (strchr(lang, ' ')) {
-	len = strlen(lang);
-	if (len >= MAXLOCALE - 1)
-	    len = MAXLOCALE - 1;
-	strncpy(buf, lang, len);
-	*(buf + len) = '\0';
+	if (buf != NULL) XtFree (buf);
+	else buf = XtMalloc (strlen (lang) + 1);
+	if (buf == NULL) return NULL;
+	strcpy(buf, lang);
 	for (start = buf; start = strchr(start, ' '); )
 	    *start++ = '-';
 	return buf;
@@ -1285,7 +1282,8 @@ static void FillInLangSubs(subs, pd)
     char **rest;
     char *ch;
 
-    if (pd->language == NULL || pd->language[0] == '\0') {
+    if (pd->language == NULL || 
+	(pd->language != NULL && pd->language[0] == '\0')) {
 	subs[0].substitution = subs[1].substitution =
 		subs[2].substitution = subs[3].substitution = NULL;
 	return;
@@ -1293,7 +1291,8 @@ static void FillInLangSubs(subs, pd)
 
     string = ExtractLocaleName(pd->language);
 
-    if (string == NULL || string[0] == '\0') {
+    if (string == NULL || 
+	(string != NULL && string[0] == '\0')) {
 	subs[0].substitution = subs[1].substitution =
 		subs[2].substitution = subs[3].substitution = NULL;
 	return;

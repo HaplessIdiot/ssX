@@ -1,16 +1,10 @@
-/* $TOG: bitscale.c /main/31 1997/06/09 11:21:46 barstow $ */
+/* $TOG: bitscale.c /main/36 1998/05/07 15:27:04 kaleb $ */
 
 /*
 
-Copyright (c) 1991, 1994  X Consortium
+Copyright 1991, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,18 +12,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.8 1998/07/25 06:57:04 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.9 1998/08/29 05:42:55 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -127,26 +121,26 @@ FindToScale find_scale[] =
 static unsigned long fontGeneration = 0;	/* initialization flag */
 
 static fontProp fontNamePropTable[] = {
-    "FOUNDRY", 0, atom,
-    "FAMILY_NAME", 0, atom,
-    "WEIGHT_NAME", 0, atom,
-    "SLANT", 0, atom,
-    "SETWIDTH_NAME", 0, atom,
-    "ADD_STYLE_NAME", 0, atom,
-    "PIXEL_SIZE", 0, pixel_size,
-    "POINT_SIZE", 0, point_size,
-    "RESOLUTION_X", 0, resolution_x,
-    "RESOLUTION_Y", 0, resolution_y,
-    "SPACING", 0, atom,
-    "AVERAGE_WIDTH", 0, average_width,
-    "CHARSET_REGISTRY", 0, atom,
-    "CHARSET_ENCODING", 0, truncate_atom,
-    "FONT", 0, fontname,
-    "RAW_ASCENT", 0, raw_ascent,
-    "RAW_DESCENT", 0, raw_descent,
-    "RAW_PIXEL_SIZE", 0, raw_pixelsize,
-    "RAW_POINT_SIZE", 0, raw_pointsize,
-    "RAW_AVERAGE_WIDTH", 0, raw_average_width
+    { "FOUNDRY", 0, atom },
+    { "FAMILY_NAME", 0, atom },
+    { "WEIGHT_NAME", 0, atom },
+    { "SLANT", 0, atom },
+    { "SETWIDTH_NAME", 0, atom },
+    { "ADD_STYLE_NAME", 0, atom },
+    { "PIXEL_SIZE", 0, pixel_size },
+    { "POINT_SIZE", 0, point_size },
+    { "RESOLUTION_X", 0, resolution_x },
+    { "RESOLUTION_Y", 0, resolution_y },
+    { "SPACING", 0, atom },
+    { "AVERAGE_WIDTH", 0, average_width },
+    { "CHARSET_REGISTRY", 0, atom },
+    { "CHARSET_ENCODING", 0, truncate_atom },
+    { "FONT", 0, fontname },
+    { "RAW_ASCENT", 0, raw_ascent },
+    { "RAW_DESCENT", 0, raw_descent },
+    { "RAW_PIXEL_SIZE", 0, raw_pixelsize },
+    { "RAW_POINT_SIZE", 0, raw_pointsize },
+    { "RAW_AVERAGE_WIDTH", 0, raw_average_width }
 };
 
 #define TRANSFORM_POINT(matrix, x, y, dest) \
@@ -166,58 +160,61 @@ static fontProp fontNamePropTable[] = {
    is important. */
 
 static fontProp fontPropTable[] = {
-    "MIN_SPACE", 0, scaledX,
-    "NORM_SPACE", 0, scaledX,
-    "MAX_SPACE", 0, scaledX,
-    "END_SPACE", 0, scaledX,
-    "AVG_CAPITAL_WIDTH", 0, scaledX,
-    "AVG_LOWERCASE_WIDTH", 0, scaledX,
-    "QUAD_WIDTH", 0, scaledX,
-    "FIGURE_WIDTH", 0, scaledX,
-    "SUPERSCRIPT_X", 0, scaledX,
-    "SUPERSCRIPT_Y", 0, scaledY,
-    "SUBSCRIPT_X", 0, scaledX,
-    "SUBSCRIPT_Y", 0, scaledY,
-    "SUPERSCRIPT_SIZE", 0, scaledY,
-    "SUBSCRIPT_SIZE", 0, scaledY,
-    "SMALL_CAP_SIZE", 0, scaledY,
-    "UNDERLINE_POSITION", 0, scaledY,
-    "UNDERLINE_THICKNESS", 0, scaledY,
-    "STRIKEOUT_ASCENT", 0, scaledY,
-    "STRIKEOUT_DESCENT", 0, scaledY,
-    "CAP_HEIGHT", 0, scaledY,
-    "X_HEIGHT", 0, scaledY,
-    "ITALIC_ANGLE", 0, unscaled,
-    "RELATIVE_SETWIDTH", 0, unscaled,
-    "RELATIVE_WEIGHT", 0, unscaled,
-    "WEIGHT", 0, unscaled,
-    "DESTINATION", 0, unscaled,
-    "PCL_FONT_NAME", 0, unscaled,
-    "_ADOBE_POSTSCRIPT_FONTNAME", 0, unscaled
+    { "MIN_SPACE", 0, scaledX },
+    { "NORM_SPACE", 0, scaledX },
+    { "MAX_SPACE", 0, scaledX },
+    { "END_SPACE", 0, scaledX },
+    { "AVG_CAPITAL_WIDTH", 0, scaledX },
+    { "AVG_LOWERCASE_WIDTH", 0, scaledX },
+    { "QUAD_WIDTH", 0, scaledX },
+    { "FIGURE_WIDTH", 0, scaledX },
+    { "SUPERSCRIPT_X", 0, scaledX },
+    { "SUPERSCRIPT_Y", 0, scaledY },
+    { "SUBSCRIPT_X", 0, scaledX },
+    { "SUBSCRIPT_Y", 0, scaledY },
+    { "SUPERSCRIPT_SIZE", 0, scaledY },
+    { "SUBSCRIPT_SIZE", 0, scaledY },
+    { "SMALL_CAP_SIZE", 0, scaledY },
+    { "UNDERLINE_POSITION", 0, scaledY },
+    { "UNDERLINE_THICKNESS", 0, scaledY },
+    { "STRIKEOUT_ASCENT", 0, scaledY },
+    { "STRIKEOUT_DESCENT", 0, scaledY },
+    { "CAP_HEIGHT", 0, scaledY },
+    { "X_HEIGHT", 0, scaledY },
+    { "ITALIC_ANGLE", 0, unscaled },
+    { "RELATIVE_SETWIDTH", 0, unscaled },
+    { "RELATIVE_WEIGHT", 0, unscaled },
+    { "WEIGHT", 0, unscaled },
+    { "DESTINATION", 0, unscaled },
+    { "PCL_FONT_NAME", 0, unscaled },
+    { "_ADOBE_POSTSCRIPT_FONTNAME", 0, unscaled }
 };
 
+/* sleazy way to shut up the compiler */
+#define zerohack (enum scaleType)0	
+
 static fontProp rawFontPropTable[] = {
-    "RAW_MIN_SPACE", 0, 0,
-    "RAW_NORM_SPACE", 0, 0,
-    "RAW_MAX_SPACE", 0, 0,
-    "RAW_END_SPACE", 0, 0,
-    "RAW_AVG_CAPITAL_WIDTH", 0, 0,
-    "RAW_AVG_LOWERCASE_WIDTH", 0, 0,
-    "RAW_QUAD_WIDTH", 0, 0,
-    "RAW_FIGURE_WIDTH", 0, 0,
-    "RAW_SUPERSCRIPT_X", 0, 0,
-    "RAW_SUPERSCRIPT_Y", 0, 0,
-    "RAW_SUBSCRIPT_X", 0, 0,
-    "RAW_SUBSCRIPT_Y", 0, 0,
-    "RAW_SUPERSCRIPT_SIZE", 0, 0,
-    "RAW_SUBSCRIPT_SIZE", 0, 0,
-    "RAW_SMALL_CAP_SIZE", 0, 0,
-    "RAW_UNDERLINE_POSITION", 0, 0,
-    "RAW_UNDERLINE_THICKNESS", 0, 0,
-    "RAW_STRIKEOUT_ASCENT", 0, 0,
-    "RAW_STRIKEOUT_DESCENT", 0, 0,
-    "RAW_CAP_HEIGHT", 0, 0,
-    "RAW_X_HEIGHT", 0, 0,
+    { "RAW_MIN_SPACE", 0, },
+    { "RAW_NORM_SPACE", 0, },
+    { "RAW_MAX_SPACE", 0, },
+    { "RAW_END_SPACE", 0, },
+    { "RAW_AVG_CAPITAL_WIDTH", 0, },
+    { "RAW_AVG_LOWERCASE_WIDTH", 0, },
+    { "RAW_QUAD_WIDTH", 0, },
+    { "RAW_FIGURE_WIDTH", 0, },
+    { "RAW_SUPERSCRIPT_X", 0, },
+    { "RAW_SUPERSCRIPT_Y", 0, },
+    { "RAW_SUBSCRIPT_X", 0, },
+    { "RAW_SUBSCRIPT_Y", 0, },
+    { "RAW_SUPERSCRIPT_SIZE", 0, },
+    { "RAW_SUBSCRIPT_SIZE", 0, },
+    { "RAW_SMALL_CAP_SIZE", 0, },
+    { "RAW_UNDERLINE_POSITION", 0, },
+    { "RAW_UNDERLINE_THICKNESS", 0, },
+    { "RAW_STRIKEOUT_ASCENT", 0, },
+    { "RAW_STRIKEOUT_DESCENT", 0, },
+    { "RAW_CAP_HEIGHT", 0, },
+    { "RAW_X_HEIGHT", 0, }
 };
 
 static void
@@ -396,6 +393,7 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     best_score = 0;
     best_unscaled = 0;
     best_unscaled_score = -1;
+    best_dx_amount = best_dy_amount = HUGE_VAL;
     memcpy (zeroChars, entry->name.name, entry->name.length);
     zeroChars[entry->name.length] = '\0';
     zeroName.name = zeroChars;
@@ -450,7 +448,6 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 	extra = zero->u.scalable.extra;
 	for (i = 0; i < extra->numScaled; i++)
 	{
-	    FontScalableRec tmpvals;
 	    scaled = &extra->scaled[i];
 	    if (!scaled->bitmap)
 		continue;
@@ -804,7 +801,7 @@ compute_xform_matrix(vals, dx, dy, xform, inv_xform, xmult, ymult)
     double		dx, dy, *inv_xform, *xmult, *ymult;
     register double	*xform;
 {
-    double det, sintheta, costheta, tanphi;
+    double det;
     double pixel = get_matrix_vertical_component(vals->pixel_matrix);
     double pixelset = get_matrix_horizontal_component(vals->pixel_matrix);
 
@@ -882,7 +879,6 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     CharInfoPtr pci,
                 opci;
     int         nchars;		/* how many characters in the font */
-    int        *scratch;
     int         i;
     int         glyph;
     int		firstCol, lastCol, firstRow, lastRow;
@@ -1038,7 +1034,7 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     pci = bitmapFont->metrics;
     for (i = 0; i < nchars; i++)
     {
-	if (opci = obitmapFont->encoding[inkindex2 = OLDINDEX(i)])
+	if ((opci = obitmapFont->encoding[inkindex2 = OLDINDEX(i)]))
 	{
 	    double newlsb, newrsb, newdesc, newasc, point[2];
 
@@ -1138,7 +1134,6 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     pci = bitmapFont->metrics;
     for (i = 0; i < nchars; i++)
     {
-	CharInfoRec temppci;
 	if ((pci = bitmapFont->encoding[i]) &&
 	    (opci = obitmapFont->encoding[OLDINDEX(i)]))
 	{
@@ -1221,28 +1216,6 @@ bail:
 	xfree(bitmapFont->encoding);
     }
     return NULL;
-}
-
-static int
-lcm(a, b)			/* least common multiple */
-    int         a,
-                b;
-{
-    register int m;
-    register int larger,
-                smaller;
-
-    if (a > b) {
-	m = larger = a;
-	smaller = b;
-    } else {
-	m = larger = b;
-	smaller = a;
-    }
-
-    while (m % smaller)
-	m += larger;
-    return m;
 }
 
 static void
@@ -1631,7 +1604,7 @@ BitmapScaleBitmaps(pf, opf, widthMult, heightMult, vals)
     glyph = pf->glyph;
     for (i = 0; i < nchars; i++)
     {
-	if (pci = bitmapFont->encoding[i])
+	if ((pci = bitmapFont->encoding[i]))
 	    bytestoalloc += BYTES_FOR_GLYPH(pci, glyph);
     }
 
@@ -1710,7 +1683,7 @@ PrinterScaleBitmaps(pf, opf, widthMult, heightMult, vals)
     glyph = pf->glyph;
     for (i = 0; i < nchars; i++)
     {
-	if (pci = bitmapFont->encoding[i])
+	if ((pci = bitmapFont->encoding[i]))
 	    bytestoalloc = MAX(bytestoalloc,BYTES_FOR_GLYPH(pci, glyph));
     }
 
@@ -1791,6 +1764,7 @@ FontFileLoadName(dirs, ndirs, name, pfont, format, fmask)
 #endif
 
 /* ARGSUSED */
+int
 BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask,
 		    non_cachable_font)
     FontPathElementPtr	fpe;
@@ -1893,6 +1867,7 @@ BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask,
     return Successful;
 }
 
+int
 BitmapGetInfoScalable (fpe, pFontInfo, entry, fontName, fileName, vals)
     FontPathElementPtr	fpe;
     FontInfoPtr		pFontInfo;

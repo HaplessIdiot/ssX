@@ -1,16 +1,10 @@
-/* $XConsortium: pcfread.c /main/18 1996/09/28 16:48:33 rws $ */
+/* $TOG: pcfread.c /main/21 1998/05/07 15:20:43 kaleb $ */
 
 /*
 
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,18 +12,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.1.1.2.4.3 1998/07/05 14:36:01 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.4 1998/07/25 06:57:04 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -138,7 +132,7 @@ pcfReadTOC(file, countp)
  * metrics
  */
 
-static
+static void
 pcfGetMetric(file, format, metric)
     FontFilePtr file;
     CARD32      format;
@@ -152,7 +146,7 @@ pcfGetMetric(file, format, metric)
     metric->attributes = pcfGetINT16(file, format);
 }
 
-static
+static void
 pcfGetCompressedMetric(file, format, metric)
     FontFilePtr file;
     CARD32      format;
@@ -709,7 +703,6 @@ pmfReadFont(pFont, file, bit, byte, glyph, scan)
     CharInfoPtr *encoding = 0;
     int         nencoding;
     int         encodingOffset;
-    CARD32      bitmapSizes[GLYPHPADOPTIONS];
     Bool	hasBDFAccelerators;
     CharInfoPtr pci;
 

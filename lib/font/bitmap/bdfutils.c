@@ -1,4 +1,4 @@
-/* $XConsortium: bdfutils.c,v 1.11 94/04/17 20:17:10 gildea Exp $ */
+/* $TOG: bdfutils.c /main/14 1998/05/01 17:52:09 kaleb $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -24,15 +24,9 @@ SOFTWARE.
 
 /*
 
-Copyright (c) 1994  X Consortium
+Copyright 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -40,18 +34,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.1.1.1.14.2 1998/07/12 13:47:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.2 1998/07/25 06:57:03 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -63,6 +57,11 @@ from the X Consortium.
 /* use bitmap structure */
 #include "bitmap.h"
 #include "bdfint.h"
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 
 int bdfFileLineNum;
 
@@ -70,17 +69,25 @@ int bdfFileLineNum;
 
 /* VARARGS1 */
 void
-bdfError(message, a0, a1, a2, a3, a4, a5)
-    char       *message;
-    pointer     a0,
-                a1,
-                a2,
-                a3,
-                a4,
-                a5;
+#if NeedVarargsPrototypes
+bdfError(char* message, ...)
+#else
+bdfError (message, va_alist)
+    char* message;
+    va_dcl
+#endif
 {
+    va_list args;
+
+#if NeedVarargsPrototypes
+    va_start (args, message);
+#else
+    va_start (args);
+#endif
+
     fprintf(stderr, "BDF Error on line %d: ", bdfFileLineNum);
-    fprintf(stderr, message, a0, a1, a2, a3, a4, a5);
+    vfprintf(stderr, message, args);
+    va_end (args);
 }
 
 /***====================================================================***/

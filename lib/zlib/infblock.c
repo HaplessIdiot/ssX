@@ -1,7 +1,7 @@
-/* $TOG: infblock.c /main/3 1997/02/26 17:42:41 kaleb $ */
+/* $TOG: infblock.c /main/4 1998/02/04 14:33:33 kaleb $ */
 
 /* infblock.c -- interpret and process block types to last block
- * Copyright (C) 1995-1996 Mark Adler
+ * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -14,7 +14,7 @@
 struct inflate_codes_state {int dummy;}; /* for buggy compilers */
 
 /* Table for deflate from PKZIP's appnote.txt. */
-local uInt border[] = { /* Order of the bit length code lengths */
+local const uInt border[] = { /* Order of the bit length code lengths */
         16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
 /*
@@ -68,7 +68,7 @@ inflate_blocks_statef *s;
 z_streamp z;
 uLongf *c;
 {
-  if (s->checkfn != Z_NULL)
+  if (c != Z_NULL)
     *c = s->check;
   if (s->mode == BTREE || s->mode == DTREE)
     ZFREE(z, s->sub.trees.blens);
@@ -83,8 +83,8 @@ uLongf *c;
   s->bitb = 0;
   s->read = s->write = s->window;
   if (s->checkfn != Z_NULL)
-    z->adler = s->check = (*s->checkfn)(0L, Z_NULL, 0);
-  Trace((stderr, "inflate:   blocks reset\n"));
+    z->adler = s->check = (*s->checkfn)(0L, (const Bytef *)Z_NULL, 0);
+  Tracev((stderr, "inflate:   blocks reset\n"));
 }
 
 
@@ -106,8 +106,8 @@ uInt w;
   s->end = s->window + w;
   s->checkfn = c;
   s->mode = TYPE;
-  Trace((stderr, "inflate:   blocks allocated\n"));
-  inflate_blocks_reset(s, z, &s->check);
+  Tracev((stderr, "inflate:   blocks allocated\n"));
+  inflate_blocks_reset(s, z, Z_NULL);
   return s;
 }
 
@@ -141,7 +141,7 @@ int r;
       switch (t >> 1)
       {
         case 0:                         /* stored */
-          Trace((stderr, "inflate:     stored block%s\n",
+          Tracev((stderr, "inflate:     stored block%s\n",
                  s->last ? " (last)" : ""));
           DUMPBITS(3)
           t = k & 7;                    /* go to byte boundary */
@@ -149,7 +149,7 @@ int r;
           s->mode = LENS;               /* get length of stored block */
           break;
         case 1:                         /* fixed */
-          Trace((stderr, "inflate:     fixed codes block%s\n",
+          Tracev((stderr, "inflate:     fixed codes block%s\n",
                  s->last ? " (last)" : ""));
           {
             uInt bl, bd;
@@ -169,7 +169,7 @@ int r;
           s->mode = CODES;
           break;
         case 2:                         /* dynamic */
-          Trace((stderr, "inflate:     dynamic codes block%s\n",
+          Tracev((stderr, "inflate:     dynamic codes block%s\n",
                  s->last ? " (last)" : ""));
           DUMPBITS(3)
           s->mode = TABLE;
@@ -226,8 +226,6 @@ int r;
       }
 #endif
       t = 258 + (t & 0x1f) + ((t >> 5) & 0x1f);
-      if (t < 19)
-        t = 19;
       if ((s->sub.trees.blens = (uIntf*)ZALLOC(z, t, sizeof(uInt))) == Z_NULL)
       {
         r = Z_MEM_ERROR;
@@ -251,6 +249,7 @@ int r;
                              &s->sub.trees.tb, z);
       if (t != Z_OK)
       {
+        ZFREE(z, s->sub.trees.blens);
         r = t;
         if (r == Z_DATA_ERROR)
           s->mode = BAD;
@@ -289,6 +288,8 @@ int r;
           if (i + j > 258 + (t & 0x1f) + ((t >> 5) & 0x1f) ||
               (c == 16 && i < 1))
           {
+            inflate_trees_free(s->sub.trees.tb, z);
+            ZFREE(z, s->sub.trees.blens);
             s->mode = BAD;
             z->msg = (char*)"invalid bit length repeat";
             r = Z_DATA_ERROR;
@@ -316,6 +317,7 @@ int r;
 #endif
         t = inflate_trees_dynamic(257 + (t & 0x1f), 1 + ((t >> 5) & 0x1f),
                                   s->sub.trees.blens, &bl, &bd, &tl, &td, z);
+        ZFREE(z, s->sub.trees.blens);
         if (t != Z_OK)
         {
           if (t == (uInt)Z_DATA_ERROR)
@@ -332,7 +334,6 @@ int r;
           r = Z_MEM_ERROR;
           LEAVE
         }
-        ZFREE(z, s->sub.trees.blens);
         s->sub.decode.codes = c;
         s->sub.decode.tl = tl;
         s->sub.decode.td = td;
@@ -381,15 +382,14 @@ int r;
 }
 
 
-int inflate_blocks_free(s, z, c)
+int inflate_blocks_free(s, z)
 inflate_blocks_statef *s;
 z_streamp z;
-uLongf *c;
 {
-  inflate_blocks_reset(s, z, c);
+  inflate_blocks_reset(s, z, Z_NULL);
   ZFREE(z, s->window);
   ZFREE(z, s);
-  Trace((stderr, "inflate:   blocks freed\n"));
+  Tracev((stderr, "inflate:   blocks freed\n"));
   return Z_OK;
 }
 
@@ -401,4 +401,15 @@ uInt  n;
 {
   zmemcpy((charf *)s->window, d, n);
   s->read = s->write = s->window + n;
+}
+
+
+/* Returns true if inflate is currently at the end of a block generated
+ * by Z_SYNC_FLUSH or Z_FULL_FLUSH. 
+ * IN assertion: s != Z_NULL
+ */
+int inflate_blocks_sync_point(s)
+inflate_blocks_statef *s;
+{
+  return s->mode == LENS;
 }

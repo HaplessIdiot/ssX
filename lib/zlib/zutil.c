@@ -1,13 +1,9 @@
-/* $TOG: zutil.c /main/3 1997/02/26 17:44:19 kaleb $ */
+/* $TOG: zutil.c /main/4 1998/02/04 14:34:40 kaleb $ */
 
 /* zutil.c -- target dependent utility functions for the compression library
- * Copyright (C) 1995-1996 Jean-loup Gailly.
+ * Copyright (C) 1995-1998 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
-
-/* Id: zutil.c /main/3 1997/02/26 17:44:19 kaleb $ */
-
-#include <stdio.h>
 
 #include "zutil.h"
 
@@ -30,12 +26,18 @@ const char *z_errmsg[10] = {
 ""};
 
 
-const char *zlibVersion()
+const char * EXPORT zlibVersion()
 {
     return ZLIB_VERSION;
 }
 
 #ifdef DEBUG
+
+#  ifndef verbose
+#    define verbose 0
+#  endif
+int z_verbose = verbose;
+
 void z_error (m)
     char *m;
 {
@@ -43,6 +45,16 @@ void z_error (m)
     exit(1);
 }
 #endif
+
+/* exported to allow conversion of error code to string for compress() and
+ * uncompress()
+ */
+const char * EXPORT zError(err)
+    int err;
+{
+    return ERR_MSG(err);
+}
+
 
 #ifndef HAVE_MEMCPY
 

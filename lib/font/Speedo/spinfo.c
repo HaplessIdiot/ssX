@@ -1,4 +1,4 @@
-/* $TOG: spinfo.c /main/17 1997/06/09 14:19:24 barstow $ */
+/* $TOG: spinfo.c /main/20 1998/05/07 14:46:42 kaleb $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,15 +24,9 @@
 
 /*
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -40,18 +34,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.2.2.2 1998/07/12 13:47:43 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.5 1998/07/25 06:56:54 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "spint.h"
@@ -76,33 +70,33 @@ typedef struct _fontProp {
 }           fontProp;
 
 static fontProp fontNamePropTable[] = {
-    "FOUNDRY", 0, atom,
-    "FAMILY_NAME", 0, atom,
-    "WEIGHT_NAME", 0, atom,
-    "SLANT", 0, atom,
-    "SETWIDTH_NAME", 0, atom,
-    "ADD_STYLE_NAME", 0, atom,
-    "PIXEL_SIZE", 0, pixel_size,
-    "POINT_SIZE", 0, point_size,
-    "RESOLUTION_X", 0, resolution_x,
-    "RESOLUTION_Y", 0, resolution_y,
-    "SPACING", 0, atom,
-    "AVERAGE_WIDTH", 0, average_width,
-    "CHARSET_REGISTRY", 0, atom,
-    "CHARSET_ENCODING", 0, truncate_atom,
+    { "FOUNDRY", 0, atom },
+    { "FAMILY_NAME", 0, atom },
+    { "WEIGHT_NAME", 0, atom },
+    { "SLANT", 0, atom },
+    { "SETWIDTH_NAME", 0, atom },
+    { "ADD_STYLE_NAME", 0, atom },
+    { "PIXEL_SIZE", 0, pixel_size },
+    { "POINT_SIZE", 0, point_size },
+    { "RESOLUTION_X", 0, resolution_x },
+    { "RESOLUTION_Y", 0, resolution_y },
+    { "SPACING", 0, atom },
+    { "AVERAGE_WIDTH", 0, average_width },
+    { "CHARSET_REGISTRY", 0, atom },
+    { "CHARSET_ENCODING", 0, truncate_atom }
 };
 
 /* Warning: following array is closely related to the sequence of
    defines after it. */
 
 static fontProp extraProps[] = {
-    "FONT", 0, 0,
-    "COPYRIGHT", 0, 0,
-    "RAW_PIXEL_SIZE", 0, 0,
-    "RAW_POINT_SIZE", 0, 0,
-    "RAW_ASCENT", 0, 0,
-    "RAW_DESCENT", 0, 0,
-    "RAW_AVERAGE_WIDTH", 0, 0,
+    { "FONT", 0, },
+    { "COPYRIGHT", 0, },
+    { "RAW_PIXEL_SIZE", 0, },
+    { "RAW_POINT_SIZE", 0, },
+    { "RAW_ASCENT", 0, },
+    { "RAW_DESCENT", 0, },
+    { "RAW_AVERAGE_WIDTH", 0, }
 };
 
 /* this is a bit kludgy */
@@ -119,6 +113,8 @@ static fontProp extraProps[] = {
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
 
 #define	NPROPS	(NNAMEPROPS + NEXTRAPROPS)
+
+extern Atom MakeAtom();
 
 void
 sp_make_standard_props()

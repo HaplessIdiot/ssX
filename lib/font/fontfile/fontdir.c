@@ -1,15 +1,10 @@
-/* $TOG: fontdir.c /main/25 1997/08/17 22:58:01 kaleb $ */
+/* $TOG: fontdir.c /main/29 1998/06/25 16:53:52 kaleb $ */
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.9 1998/06/27 12:53:42 hohndel Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.10 1998/06/28 03:52:50 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -54,6 +49,7 @@ FontFileInitTable (table, size)
     return TRUE;
 }
 
+void
 FontFileFreeEntry (entry)
     FontEntryPtr    entry;
 {
@@ -87,6 +83,7 @@ FontFileFreeEntry (entry)
     }
 }
 
+void
 FontFileFreeTable (table)
     FontTablePtr    table;
 {
@@ -171,6 +168,7 @@ FontFileMakeDir(dirName, size)
     return dir;
 }
 
+void
 FontFileFreeDir (dir)
     FontDirectoryPtr	dir;
 {
@@ -211,9 +209,13 @@ FontFileAddEntry(table, prototype)
 }
 
 static int
+#ifdef NeedFunctionPrototypes
+FontFileNameCompare(const void* a, const void* b)
+#else
 FontFileNameCompare(a, b)
     char       *a,
                *b;
+#endif
 {
     FontEntryPtr    a_name = (FontEntryPtr) a,
 		    b_name = (FontEntryPtr) b;
@@ -221,6 +223,7 @@ FontFileNameCompare(a, b)
     return strcmp(a_name->name.name, b_name->name.name);
 }
 
+void
 FontFileSortTable (table)
     FontTablePtr    table;
 {
@@ -231,6 +234,7 @@ FontFileSortTable (table)
     }
 }
 
+void
 FontFileSortDir(dir)
     FontDirectoryPtr	dir;
 {
@@ -278,7 +282,7 @@ SetupWildMatch(table, pat, leftp, rightp, privatep)
     nDashes = pat->ndashes;
     firstWild = 0;
     t = name;
-    while (c = *t++) {
+    while ((c = *t++)) {
 	if (isWild(c)) {
 	    if (!firstWild)
 		firstWild = t - 1;
@@ -326,7 +330,7 @@ SetupWildMatch(table, pat, leftp, rightp, privatep)
     }
 }
 
-static
+static int
 PatternMatch(pat, patdashes, string, stringdashes)
     char       *pat;
     char       *string;
@@ -469,6 +473,7 @@ FontFileFindNameInDir(table, pat)
     return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
 }
 
+int
 FontFileFindNamesInScalableDir(table, pat, max, names, vals,
 			       alias_behavior, newmax)
     FontTablePtr    table;

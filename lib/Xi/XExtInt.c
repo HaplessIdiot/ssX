@@ -1,20 +1,10 @@
-/* $TOG: XExtInt.c /main/32 1997/04/04 10:06:55 barstow $ */
-
-
-
-
-/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.1 1996/08/25 13:52:33 dawes Exp $ */
+/* $TOG: XExtInt.c /main/34 1998/04/30 15:52:09 kaleb $ */
 
 /************************************************************
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,15 +12,15 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
-Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California.
+Copyright 1989 by Hewlett-Packard Company, Palo Alto, California.
 
 			All Rights Reserved
 
@@ -51,6 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.2 1997/05/03 09:15:09 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -135,7 +126,7 @@ static XExtensionVersion versions[] = {{XI_Absent,0,0},
  *
  */
 
-_xibaddevice (dpy, error)
+void _xibaddevice (dpy, error)
     Display *dpy;
     int *error;
     {
@@ -143,7 +134,7 @@ _xibaddevice (dpy, error)
     *error = info->codes->first_error + XI_BadDevice;
     }
 
-_xibadclass (dpy, error)
+void _xibadclass (dpy, error)
     Display *dpy;
     int *error;
     {
@@ -151,7 +142,7 @@ _xibadclass (dpy, error)
     *error = info->codes->first_error + XI_BadClass;
     }
 
-_xibadevent (dpy, error)
+void _xibadevent (dpy, error)
     Display *dpy;
     int *error;
     {
@@ -159,7 +150,7 @@ _xibadevent (dpy, error)
     *error = info->codes->first_error + XI_BadEvent;
     }
 
-_xibadmode (dpy, error)
+void _xibadmode (dpy, error)
     Display *dpy;
     int *error;
     {
@@ -167,7 +158,7 @@ _xibadmode (dpy, error)
     *error = info->codes->first_error + XI_BadMode;
     }
 
-_xidevicebusy (dpy, error)
+void _xidevicebusy (dpy, error)
     Display *dpy;
     int *error;
     {
@@ -304,8 +295,8 @@ XInputWireToEvent (dpy, re, event)
 	    ev->is_hint 	= ev2->detail;
 	    ev->deviceid	= ev2->deviceid & DEVICE_BITS;
     	    return (DONT_ENQUEUE);
-	    break;
 	    }
+	    break;
 	case XI_DeviceKeyPress:
 	case XI_DeviceKeyRelease:
 	    {
@@ -331,8 +322,8 @@ XInputWireToEvent (dpy, re, event)
 		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
-	    break;
 	    }
+	    break;
 	case XI_DeviceButtonPress:
 	case XI_DeviceButtonRelease:
 	    {
@@ -358,8 +349,8 @@ XInputWireToEvent (dpy, re, event)
 		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
-	    break;
 	    }
+	    break;
 	case XI_ProximityIn:
 	case XI_ProximityOut:
 	    {
@@ -385,8 +376,8 @@ XInputWireToEvent (dpy, re, event)
 		*re = *save;
 		return (ENQUEUE_EVENT);
 		}
-	    break;
 	    }
+	    break;
 	case XI_DeviceValuator:
 	    {
 	    deviceValuator *xev = (deviceValuator *) event;
@@ -493,8 +484,8 @@ XInputWireToEvent (dpy, re, event)
 		}
 	    *re = *save;
 	    return (ENQUEUE_EVENT);
-	    break;
 	    }
+	    break;
 	case XI_DeviceFocusIn:
 	case XI_DeviceFocusOut:
 	    {
@@ -509,8 +500,8 @@ XInputWireToEvent (dpy, re, event)
 	    ev->detail		= fev->detail;
 	    ev->deviceid 		= fev->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
-	    break;
 	    }
+	    break;
 	case XI_DeviceStateNotify:
 	    {
 	    XDeviceStateNotifyEvent *stev = 
@@ -566,8 +557,8 @@ XInputWireToEvent (dpy, re, event)
 	        stev = (XDeviceStateNotifyEvent *) re;
 	        return (ENQUEUE_EVENT);
 	        }
-	    break;
 	    }
+	    break;
 	case XI_DeviceKeystateNotify:
 	    {
 	    int i;
@@ -596,8 +587,8 @@ XInputWireToEvent (dpy, re, event)
 	        kstev = (XDeviceStateNotifyEvent *) re;
 	        return (ENQUEUE_EVENT);
 	        }
-	    break;
 	    }
+	    break;
 	case XI_DeviceButtonstateNotify:
 	    {
 	    int i;
@@ -627,8 +618,8 @@ XInputWireToEvent (dpy, re, event)
 	        bstev = (XDeviceStateNotifyEvent *) re;
 	        return (ENQUEUE_EVENT);
 	        }
-	    break;
 	    }
+	    break;
 	case XI_DeviceMappingNotify:
 	    {
 	    register XDeviceMappingEvent *ev = (XDeviceMappingEvent *) re;
@@ -643,6 +634,7 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
 	    }
+	    break;
 	case XI_ChangeDeviceNotify:
 	    {
 	    register XChangeDeviceNotifyEvent *ev = 
@@ -656,6 +648,7 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
 	    }
+	    break;
 	default:
 	    printf ("XInputWireToEvent: UNKNOWN WIRE EVENT! type=%d\n",type);
 	    break;

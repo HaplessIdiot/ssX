@@ -1,4 +1,4 @@
-/* $TOG: PassivGrab.c /main/29 1997/05/15 17:30:30 kaleb $ */
+/* $TOG: PassivGrab.c /main/31 1998/02/06 13:24:33 kaleb $ */
 
 /********************************************************
 
@@ -36,14 +36,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright (c) 1987, 1988, 1989, 1990, 1994  X Consortium
+Copyright 1987, 1988, 1989, 1990, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -51,13 +46,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -158,6 +153,7 @@ static XtServerGrabPtr CreateGrab(widget, ownerEvents, modifiers,
     grab->keyboardMode = keyboard_mode;
     grab->eventMask = event_mask;
     grab->hasExt = need_ext;
+    grab->confineToIsWidgetWin = (XtWindow (widget) == confine_to);
     grab->modifiers = modifiers;
     grab->keybut = keybut;
     if (need_ext) {
@@ -619,7 +615,10 @@ static void  MakeGrab(grab, passiveListPtr, isKeyboard, pdi, pwi)
 	Cursor cursor = None;
 
 	if (grab->hasExt) {
-	    confineTo = GRABEXT(grab)->confineTo;
+	    if (grab->confineToIsWidgetWin)
+		confineTo = XtWindow (grab->widget);
+	    else
+		confineTo = GRABEXT(grab)->confineTo;
 	    cursor = GRABEXT(grab)->cursor;
 	}
 	XGrabButton(pDisplay(grab),
@@ -1100,4 +1099,17 @@ void   XtUngrabPointer(widget, time)
     UNLOCK_APP(app);
 }
 
+
+void _XtRegisterPassiveGrabs (widget)
+    Widget	widget;
+{
+    XtPerWidgetInput	pwi = _XtGetPerWidgetInput (widget, FALSE);
+
+    if (pwi != NULL && !pwi->realize_handler_added) {
+	XtAddEventHandler(widget, StructureNotifyMask, FALSE,
+			  RealizeHandler,
+			  (XtPointer)pwi);
+	pwi->realize_handler_added = TRUE;
+    }
+}
 

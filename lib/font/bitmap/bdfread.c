@@ -1,4 +1,4 @@
-/* $XConsortium: bdfread.c,v 1.22 94/04/17 20:17:10 gildea Exp $ */
+/* $TOG: bdfread.c /main/26 1998/05/01 16:46:08 kaleb $ */
 
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -25,15 +25,9 @@ SOFTWARE.
 
 /*
 
-Copyright (c) 1994  X Consortium
+Copyright 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -41,18 +35,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.1.1.1.14.2 1998/07/12 13:47:44 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.2 1998/07/25 06:57:03 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -68,7 +62,6 @@ from the X Consortium.
 
 extern int  bitmapGetGlyphs(), bitmapGetMetrics();
 extern int  bitmapGetBitmaps(), bitmapGetExtents();
-void        bdfUnloadFont();
 static Bool bdfPadToTerminal();
 extern int  bdfFileLineNum;
 
@@ -224,6 +217,31 @@ bdfSkipBitmap(file, height)
 
 /***====================================================================***/
 
+static void
+bdfFreeFontBits(pFont)
+    FontPtr pFont;
+{
+    BitmapFontPtr  bitmapFont;
+    BitmapExtraPtr bitmapExtra;
+    int         i;
+
+    bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
+    bitmapExtra = (BitmapExtraPtr) bitmapFont->bitmapExtra;
+    xfree(bitmapFont->ink_metrics);
+    xfree(bitmapFont->encoding);
+    for (i = 0; i < bitmapFont->num_chars; i++)
+	xfree(bitmapFont->metrics[i].bits);
+    xfree(bitmapFont->metrics);
+    if (bitmapExtra)
+    {
+	xfree (bitmapExtra->glyphNames);
+	xfree (bitmapExtra->sWidths);
+	xfree (bitmapExtra);
+    }
+    xfree(pFont->info.props);
+    xfree(bitmapFont);
+}
+
 
 static Bool
 bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
@@ -280,6 +298,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 		 sizeof(CharInfoRec));
 	goto BAILOUT;
     }
+    bzero((char *)ci, nchars * sizeof(CharInfoRec));
     bitmapFont->metrics = ci;
 
     if (bitmapExtra) {
@@ -574,7 +593,7 @@ bdfReadProperties(file, pFont, pState)
 
     line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || !bdfIsPrefix(line, "STARTPROPERTIES")) {
-	bdfError(file, "missing 'STARTPROPERTIES'\n");
+	bdfError("missing 'STARTPROPERTIES'\n");
 	return (FALSE);
     }
     if (sscanf((char *) line, "STARTPROPERTIES %d", &nProps) != 1) {
@@ -598,6 +617,8 @@ bdfReadProperties(file, pFont, pState)
 						      sizeof(FontPropRec));
 	goto BAILOUT;
     }
+    bzero((char *)props, (nProps + BDF_GENPROPS) * sizeof(FontPropRec));
+
     nextProp = 0;
     props_left = nProps;
     while (props_left-- > 0) {
@@ -751,6 +772,15 @@ BAILOUT:
 
 /***====================================================================***/
 
+static void
+bdfUnloadFont(pFont)
+    FontPtr     pFont;
+{
+    bdfFreeFontBits (pFont);
+    xfree (pFont->devPrivates);
+    xfree(pFont);
+}
+
 int
 bdfReadFont(pFont, file, bit, byte, glyph, scan)
     FontPtr     pFont;
@@ -776,6 +806,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont = (BitmapFontPtr) xalloc(sizeof(BitmapFontRec));
     if (!bitmapFont)
 	goto BAILOUT;
+    bzero((char *)bitmapFont, sizeof(BitmapFontRec));
 
     pFont->fontPrivate = (pointer) bitmapFont;
     bitmapFont->metrics = 0;
@@ -783,7 +814,12 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont->bitmaps = 0;
     bitmapFont->encoding = 0;
     bitmapFont->pDefault = NULL;
+
     bitmapFont->bitmapExtra = (BitmapExtraPtr) xalloc(sizeof(BitmapExtraRec));
+    if (!bitmapFont->bitmapExtra)
+        goto BAILOUT;
+    bzero((char *)bitmapFont->bitmapExtra, sizeof(BitmapExtraRec));
+    
     bitmapFont->bitmapExtra->glyphNames = 0;
     bitmapFont->bitmapExtra->sWidths = 0;
 
@@ -854,30 +890,6 @@ BAILOUT:
     return AllocError;
 }
 
-bdfFreeFontBits(pFont)
-    FontPtr pFont;
-{
-    BitmapFontPtr  bitmapFont;
-    BitmapExtraPtr bitmapExtra;
-    int         i;
-
-    bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
-    bitmapExtra = (BitmapExtraPtr) bitmapFont->bitmapExtra;
-    xfree(bitmapFont->ink_metrics);
-    xfree(bitmapFont->encoding);
-    for (i = 0; i < bitmapFont->num_chars; i++)
-	xfree(bitmapFont->metrics[i].bits);
-    xfree(bitmapFont->metrics);
-    if (bitmapExtra)
-    {
-	xfree (bitmapExtra->glyphNames);
-	xfree (bitmapExtra->sWidths);
-	xfree (bitmapExtra);
-    }
-    xfree(pFont->info.props);
-    xfree(bitmapFont);
-}
-
 int
 bdfReadFontInfo(pFontInfo, file)
     FontInfoPtr pFontInfo;
@@ -885,6 +897,8 @@ bdfReadFontInfo(pFontInfo, file)
 {
     FontRec     font;
     int         ret;
+
+    bzero(&font, sizeof (FontRec));
 
     ret = bdfReadFont(&font, file, MSBFirst, LSBFirst, 1, 1);
     if (ret == Successful) {
@@ -895,15 +909,6 @@ bdfReadFontInfo(pFontInfo, file)
 	bdfFreeFontBits (&font);
     }
     return ret;
-}
-
-void
-bdfUnloadFont(pFont)
-    FontPtr     pFont;
-{
-    bdfFreeFontBits (pFont);
-    xfree (pFont->devPrivates);
-    xfree(pFont);
 }
 
 static Bool
@@ -919,12 +924,15 @@ bdfPadToTerminal(pFont)
                 h;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
+
+    bzero(&new, sizeof(CharInfoRec)); 
     new.metrics.ascent = pFont->info.fontAscent;
     new.metrics.descent = pFont->info.fontDescent;
     new.metrics.leftSideBearing = 0;
     new.metrics.rightSideBearing = pFont->info.minbounds.characterWidth;
     new.metrics.characterWidth = new.metrics.rightSideBearing;
     new_size = BYTES_FOR_GLYPH(&new, pFont->glyph);
+
     for (i = 0; i < bitmapFont->num_chars; i++) {
 	new.bits = (char *) xalloc(new_size);
 	if (!new.bits)

@@ -1,4 +1,4 @@
-/* $TOG: Resources.c /main/113 1998/01/09 16:08:41 kaleb $ */
+/* $TOG: Resources.c /main/115 1998/06/19 11:08:11 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,14 +35,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright (c) 1987, 1988, 1994  X Consortium
+Copyright 1987, 1988, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -50,17 +45,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.1.1.2.4.3 1998/05/19 14:36:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.4 1998/06/28 09:00:04 dawes Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -571,7 +566,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
  * assert: num_args == 0 if *pNumTypedArgs > 0
  */
 #define SEARCHLISTLEN 100
-#define MAXRESOURCES 400
+#define MAXRESOURCES  400
 
     XrmValue	    value;
     XrmQuark	    rawType;
@@ -596,7 +591,13 @@ static XtCacheRef *GetResources(widget, base, names, classes,
                    (String *)NULL, (Cardinal *)NULL);
 	num_args = 0;
     }
-    if (num_resources == 0 || num_resources >= MAXRESOURCES) {
+    if (num_resources == 0) {
+	return NULL;
+    } else if (num_resources >= MAXRESOURCES) {
+    	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidResourceCount","getResources",XtCXtToolkitError,
+              "too many resources",
+	      (String *)NULL, (Cardinal *)NULL);
 	return NULL;
     } else if (table == NULL) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -1061,7 +1062,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 
     if (w->core.constraints != NULL) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
-	GetResources(w, (char*)w->core.constraints, names, classes,
+	(void) GetResources(w, (char*)w->core.constraints, names, classes,
 	    (XrmResourceList *) cwc->constraint_class.resources,
 	    cwc->constraint_class.num_resources,
 	    quark_args, args, num_args, typed_args, num_typed_args, False);
