@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.7 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.8 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -56,6 +56,7 @@ static xf86ConfigSymTabRec ModuleTab[] =
 XF86LoadPtr
 xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 {
+	int token;
 	parsePrologue (XF86LoadPtr, XF86LoadRec)
 
 	ptr->load_name = name;
@@ -93,6 +94,7 @@ xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 XF86ConfModulePtr
 xf86parseModuleSection (void)
 {
+	int token;
 	parsePrologue (XF86ConfModulePtr, XF86ConfModuleRec)
 
 	while ((token = xf86getToken (ModuleTab)) != ENDSECTION)

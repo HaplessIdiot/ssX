@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.9 2001/04/12 21:15:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.10 2001/04/14 21:15:26 mvojkovi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -840,7 +840,7 @@ miOverlayHandleExposures(WindowPtr pWin)
     miOverlayScreenPtr pPriv = MIOVERLAY_GET_SCREEN_PRIVATE(pScreen);
     WindowPtr pChild;
     ValidatePtr val;
-    void (* WindowExposures)();
+    void (* WindowExposures)(WindowPtr, RegionPtr, RegionPtr);
 
     WindowExposures = pWin->drawable.pScreen->WindowExposures;
     if(pPriv->underlayMarked) {
@@ -1097,9 +1097,12 @@ miOverlayRecomputeExposures (
     WindowPtr	pWin,
     pointer	value 
 ){
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    register ScreenPtr pScreen;
     miOverlayTwoRegions	*pValid = (miOverlayTwoRegions*)value;
     miOverlayTreePtr pTree = MIOVERLAY_GET_WINDOW_TREE(pWin);
+
+    /* This prevents warning about pScreen not being used. */
+    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
 
     if (pWin->valdata) {
 	/*
@@ -1147,7 +1150,7 @@ miOverlayResizeWindow(
     int bw = wBorderWidth (pWin);
     short dw, dh;
     DDXPointRec oldpt;
-    RegionPtr oldRegion, oldRegion2;
+    RegionPtr oldRegion = NULL, oldRegion2 = NULL;
     WindowPtr pFirstChange;
     register WindowPtr pChild;
     RegionPtr	gravitate[StaticGravity + 1];
@@ -1155,9 +1158,9 @@ miOverlayResizeWindow(
     register unsigned g;
     int		nx, ny;		/* destination x,y */
     int		newx, newy;	/* new inner window position */
-    RegionPtr	pRegion;
+    RegionPtr	pRegion = NULL;
     RegionPtr	destClip, destClip2;
-    RegionPtr	oldWinClip, oldWinClip2;	
+    RegionPtr	oldWinClip = NULL, oldWinClip2 = NULL;	
     RegionPtr	borderVisible = NullRegion; 
     RegionPtr	borderVisible2 = NullRegion; 
     RegionPtr	bsExposed = NullRegion;	    /* backing store exposures */
@@ -1565,7 +1568,7 @@ miOverlaySetShape(WindowPtr pWin)
 {
     Bool	WasViewable = (Bool)(pWin->viewable);
     ScreenPtr 	pScreen = pWin->drawable.pScreen;
-    RegionPtr	pOldClip, bsExposed;
+    RegionPtr	pOldClip = NULL, bsExposed;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif

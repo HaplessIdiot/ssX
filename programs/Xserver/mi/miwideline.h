@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.h,v 1.8 2001/01/17 22:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.h,v 1.9 2001/04/05 17:42:35 dawes Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -166,7 +166,6 @@ static __inline int ICEIL(double x)
 #endif
 
 extern void miFillPolyHelper(
-#if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     unsigned long /*pixel*/,
@@ -177,18 +176,14 @@ extern void miFillPolyHelper(
     PolyEdgePtr /*right*/,
     int /*left_count*/,
     int /*right_count*/
-#endif
 );
 extern int miRoundJoinFace(
-#if NeedFunctionPrototypes
     LineFacePtr /*face*/,
     PolyEdgePtr /*edge*/,
     Bool * /*leftEdge*/
-#endif
 );
 
 extern void miRoundJoinClip(
-#if NeedFunctionPrototypes
     LineFacePtr /*pLeft*/,
     LineFacePtr /*pRight*/,
     PolyEdgePtr /*edge1*/,
@@ -197,20 +192,16 @@ extern void miRoundJoinClip(
     int * /*y2*/,
     Bool * /*left1*/,
     Bool * /*left2*/
-#endif
 );
 
 extern int miRoundCapClip(
-#if NeedFunctionPrototypes
     LineFacePtr /*face*/,
     Bool /*isInt*/,
     PolyEdgePtr /*edge*/,
     Bool * /*leftEdge*/
-#endif
 );
 
 extern void miLineProjectingCap(
-#if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     unsigned long /*pixel*/,
@@ -220,23 +211,18 @@ extern void miLineProjectingCap(
     double /*xorg*/,
     double /*yorg*/,
     Bool /*isInt*/
-#endif
 );
 
 extern SpanDataPtr miSetupSpanData(
-#if NeedFunctionPrototypes
     GCPtr /*pGC*/,
     SpanDataPtr /*spanData*/,
     int /*npt*/
-#endif
 );
 
 extern void miCleanupSpanData(
-#if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     SpanDataPtr /*spanData*/
-#endif
 );
 
 extern int miPolyBuildEdge(double x0, double y0, double k, int dx, int dy,

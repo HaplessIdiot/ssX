@@ -57,7 +57,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.17 2000/09/29 08:59:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.18 2001/04/01 14:00:07 tsi Exp $ */
 
 #if defined(__GNUC__)
 #if defined(linux) && (defined(__alpha__) || defined(__ia64__))
@@ -77,6 +77,15 @@
 #if defined(__sparc__)
 #ifndef ASI_PL
 #define ASI_PL 0x88
+#endif
+
+#if defined(linux) && defined(__sh__)
+#define inb(x) 0
+#define inw(x) 0
+#define inl(x) 0
+#define outb(p,v)
+#define outw(p,v)
+#define outl(p,v)
 #endif
 
 static __inline__ void

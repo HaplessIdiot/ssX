@@ -23,66 +23,48 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.h,v 1.5 1998/10/04 09:39:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.h,v 1.6 2001/01/17 22:37:06 dawes Exp $ */
 
 extern void miChangeGC(
-#if NeedFunctionPrototypes
     GCPtr  /*pGC*/,
     unsigned long /*mask*/
-#endif
 );
 
 extern void miDestroyGC(
-#if NeedFunctionPrototypes
     GCPtr  /*pGC*/
-#endif
 );
 
 extern GCOpsPtr miCreateGCOps(
-#if NeedFunctionPrototypes
     GCOpsPtr /*prototype*/
-#endif
 );
 
 extern void miDestroyGCOps(
-#if NeedFunctionPrototypes
     GCOpsPtr /*ops*/
-#endif
 );
 
 extern void miDestroyClip(
-#if NeedFunctionPrototypes
     GCPtr /*pGC*/
-#endif
 );
 
 extern void miChangeClip(
-#if NeedFunctionPrototypes
     GCPtr   /*pGC*/,
     int     /*type*/,
     pointer /*pvalue*/,
     int     /*nrects*/
-#endif
 );
 
 extern void miCopyClip(
-#if NeedFunctionPrototypes
     GCPtr /*pgcDst*/,
     GCPtr /*pgcSrc*/
-#endif
 );
 
 extern void miCopyGC(
-#if NeedFunctionPrototypes
     GCPtr /*pGCSrc*/,
     unsigned long /*changes*/,
     GCPtr /*pGCDst*/
-#endif
 );
 
 extern void miComputeCompositeClip(
-#if NeedFunctionPrototypes
     GCPtr       /*pGC*/,
     DrawablePtr /*pDrawable*/
-#endif
 );

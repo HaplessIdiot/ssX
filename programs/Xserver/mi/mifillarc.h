@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.3 1998/10/04 09:39:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.h,v 3.4 2001/01/17 22:37:06 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -172,34 +172,25 @@ typedef struct _miArcSlice {
 			       ((slw > 1) || (ine != inxk)))
 
 extern int miFreeArcCache(
-#if NeedFunctionPrototypes
     pointer /*data*/,
     XID /*id*/
-#endif
 );
 
 extern struct finalSpan *realAllocSpan(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 extern void miFillArcSetup(
-#if NeedFunctionPrototypes
     xArc * /*arc*/,
     miFillArcRec * /*info*/
-#endif
 );
 
 extern void miFillArcDSetup(
-#if NeedFunctionPrototypes
     xArc * /*arc*/,
     miFillArcDRec * /*info*/
-#endif
 );
 
 extern void miEllipseAngleToSlope(
-#if NeedFunctionPrototypes
     int /*angle*/,
     int /*width*/,
     int /*height*/,
@@ -207,14 +198,11 @@ extern void miEllipseAngleToSlope(
     int * /*dyp*/,
     double * /*d_dxp*/,
     double * /*d_dyp*/
-#endif
 );
 
 extern void miFillArcSliceSetup(
-#if NeedFunctionPrototypes
     xArc * /*arc*/,
     miArcSliceRec * /*slice*/,
     GCPtr /*pGC*/
-#endif
 );
 

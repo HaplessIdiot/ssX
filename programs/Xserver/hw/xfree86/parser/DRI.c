@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.10 2001/06/30 04:00:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.11 2001/07/02 15:38:34 paulo Exp $
  * 
  */
 
@@ -48,6 +48,7 @@ static xf86ConfigSymTabRec DRITab[] =
 XF86ConfBuffersPtr
 xf86parseBuffers (void)
 {
+    int token;
     parsePrologue (XF86ConfBuffersPtr, XF86ConfBuffersRec)
 
     if (xf86getSubToken (&(ptr->buf_comment)) != NUMBER)
@@ -80,6 +81,7 @@ xf86parseBuffers (void)
 XF86ConfDRIPtr
 xf86parseDRISection (void)
 {
+    int token;
     parsePrologue (XF86ConfDRIPtr, XF86ConfDRIRec);
 
     /* Zero is a valid value for this. */

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.5 2000/08/10 17:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.6 2001/01/17 22:13:16 dawes Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1973,7 +1973,7 @@ SecurityExtensionInit()
     SecurityEventBase = extEntry->eventBase;
 
     EventSwapVector[SecurityEventBase + XSecurityAuthorizationRevoked] =
-	SwapSecurityAuthorizationRevokedEvent;
+	(EventSwapPtr)SwapSecurityAuthorizationRevokedEvent;
 
     /* initialize untrusted proc vectors */
 

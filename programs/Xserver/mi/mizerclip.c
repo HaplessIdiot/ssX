@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mizerclip.c,v 1.1 1999/10/13 22:33:13 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -412,13 +412,13 @@ miZeroClipLine(xmin, ymin, xmax, ymax,
 {
     int swapped = 0;
     int clipDone = 0;
-    CARD32 utmp;
+    CARD32 utmp = 0;
     int clip1, clip2;
     int x1, y1, x2, y2;
     int x1_orig, y1_orig, x2_orig, y2_orig;
     int xmajor;
-    int negslope, anchorval;
-    unsigned int eqn;
+    int negslope = 0, anchorval = 0;
+    unsigned int eqn = 0;
 
     x1 = x1_orig = *new_x1;
     y1 = y1_orig = *new_y1;

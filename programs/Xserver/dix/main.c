@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.35 2001/04/28 20:42:17 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.36 2001/08/01 00:44:48 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -148,7 +148,7 @@ static int restart = 0;
 /*ARGSUSED*/
 void
 NotImplemented(
-#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+#if NeedFunctionPrototypes
 	xEvent * from,
 	xEvent * to
 #endif

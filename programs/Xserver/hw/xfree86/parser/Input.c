@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.8 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.9 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -51,6 +51,7 @@ XF86ConfInputPtr
 xf86parseInputSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfInputPtr, XF86ConfInputRec)
 
 	while ((token = xf86getToken (InputTab)) != ENDSECTION)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.17 2001/02/21 23:37:04 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.18 2001/07/25 15:05:07 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -66,7 +66,7 @@ LexRec, *LexPtr;
 
 #define TestFree(a) if (a) { xf86conffree (a); a = NULL; }
 
-#define parsePrologue(typeptr,typerec) int token; typeptr ptr; \
+#define parsePrologue(typeptr,typerec) typeptr ptr; \
 if( (ptr=(typeptr)xf86confcalloc(1,sizeof(typerec))) == NULL ) { return NULL; } \
 memset(ptr,0,sizeof(typerec));
 

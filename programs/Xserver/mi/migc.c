@@ -23,7 +23,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.6 1998/12/06 06:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.7 2001/01/17 22:37:06 dawes Exp $ */
 
 #include "scrnintstr.h"
 #include "gcstruct.h"
@@ -60,7 +60,6 @@ miCreateGCOps(prototype)
     GCOpsPtr        prototype;
 {
     GCOpsPtr        ret;
-    extern Bool     Must_have_memory;
 
      /* XXX */ Must_have_memory = TRUE;
     ret = (GCOpsPtr) xalloc(sizeof(GCOps));
@@ -173,7 +172,10 @@ miComputeCompositeClip(pGC, pDrawable)
     GCPtr           pGC;
     DrawablePtr     pDrawable;
 {
-    ScreenPtr       pScreen = pGC->pScreen;
+    ScreenPtr       pScreen;
+
+    /* This prevents warnings about pScreen not being used. */
+    pGC->pScreen = pScreen = pGC->pScreen;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {

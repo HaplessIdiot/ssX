@@ -26,7 +26,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.5 2000/11/16 19:45:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.6 2001/01/17 22:37:07 dawes Exp $ */
 
 # include   "X.h"
 # include   "Xproto.h"
@@ -594,7 +594,7 @@ miSpriteStoreColors (pMap, ndef, pdef)
 	{
 	    /* Direct color - match on any of the subfields */
 
-#define MaskMatch(a,b,mask) ((a) & (pVisual->mask) == (b) & (pVisual->mask))
+#define MaskMatch(a,b,mask) (((a) & (pVisual->mask)) == ((b) & (pVisual->mask)))
 
 #define UpdateDAC(plane,dac,mask) {\
     if (MaskMatch (pPriv->colors[plane].pixel,pdef[i].pixel,mask)) {\
@@ -1666,7 +1666,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
     unsigned long i;
     unsigned int  n;
     int		  w;
-    void   	  (*drawFunc)();
+    void   	  (*drawFunc)() = NULL;
 
     Bool imageblt;
 

@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.167 2001/07/24 08:32:59 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.168 2001/07/25 08:11:02 alanh Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -707,6 +707,31 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define OptimizedCDebugFlags	-O2
 # endif
 # define LinuxMachineDefines	-D__mips__
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#endif
+
+#ifdef SuperHArchitecture
+# ifndef SuperHArchOptFlags
+#  ifdef SuperH4Architecture
+#   define SuperHArchOptFlags	-m4
+#  elifdef SuperH4NOFPUArchitecture
+#   define SuperHArchOptFlags	-m4-nofpu
+#  else
+#   define SuperHArchOptFlags	-m3
+#  endif
+# endif 
+# ifndef SuperHebArchitecture
+#  ifdef SuperHebArchitecture
+#   define SuperHEndianFlags	-mb
+#  else
+#   define SuperHEndianFlags	-ml
+#  endif
+# endif
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	-O2 SuperHArchOptFlags SuperHEndianFlags
+# endif
+# define LinuxMachineDefines	-D__sh__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif

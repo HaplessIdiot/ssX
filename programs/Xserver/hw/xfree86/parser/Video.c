@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.8 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.9 2001/07/02 15:38:34 paulo Exp $ */
 
 /* View/edit this file with tab stops set to 4 */
 
@@ -49,6 +49,7 @@ XF86ConfVideoPortPtr
 xf86parseVideoPortSubSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfVideoPortPtr, XF86ConfVideoPortRec)
 
 	while ((token = xf86getToken (VideoPortTab)) != ENDSUBSECTION)
@@ -107,6 +108,7 @@ XF86ConfVideoAdaptorPtr
 xf86parseVideoAdaptorSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 
 	parsePrologue (XF86ConfVideoAdaptorPtr, XF86ConfVideoAdaptorRec)
 

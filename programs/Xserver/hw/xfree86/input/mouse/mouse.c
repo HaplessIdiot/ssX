@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.43 2001/05/18 20:22:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.44 2001/07/06 08:02:37 keithp Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
- * Copyright 1994-1999 by The XFree86 Project, Inc.
+ * Copyright 1994-2001 by The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -116,7 +116,12 @@ typedef enum {
     OPTION_PARITY,
     OPTION_FLOW_CONTROL,
     OPTION_VTIME,
-    OPTION_VMIN
+    OPTION_VMIN,
+    OPTION_EMULATE_WHEEL,
+    OPTION_EMU_WHEEL_BUTTON,
+    OPTION_EMU_WHEEL_INERTIA,
+    OPTION_X_AXIS_MAPPING,
+    OPTION_Y_AXIS_MAPPING
 } MouseOpts;
 
 static const OptionInfoRec MouseOptions[] = {
@@ -146,6 +151,11 @@ static const OptionInfoRec MouseOptions[] = {
     { OPTION_FLOW_CONTROL,	"FlowControl",	  OPTV_STRING,	{0}, FALSE },
     { OPTION_VTIME,		"VTime",	  OPTV_INTEGER,	{0}, FALSE },
     { OPTION_VMIN,		"VMin",		  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_EMULATE_WHEEL,	"EmulateWheel",	  OPTV_BOOLEAN, {0}, FALSE },
+    { OPTION_EMU_WHEEL_BUTTON,	"EmulateWheelButton", OPTV_INTEGER, {0}, FALSE },
+    { OPTION_EMU_WHEEL_INERTIA,	"EmulateWheelInertia", OPTV_INTEGER, {0}, FALSE },
+    { OPTION_X_AXIS_MAPPING,	"XAxisMapping",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_Y_AXIS_MAPPING,	"YAxisMapping",	  OPTV_STRING,	{0}, FALSE },
     { -1,			NULL,		  OPTV_NONE,	{0}, FALSE }
 };
 
@@ -401,6 +411,7 @@ MouseCommonOptions(InputInfoPtr pInfo)
     MouseDevPtr pMse;
     MessageType from = X_DEFAULT;
     char *s;
+    int origButtons;
 
     pMse = pInfo->private;
 
@@ -410,8 +421,8 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	pMse->buttons = MSE_DFLTBUTTONS;
 	from = X_DEFAULT;
     }
-    xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
-    
+    origButtons = pMse->buttons;
+
     pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
 					      "Emulate3Buttons", FALSE);
     pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
@@ -426,18 +437,18 @@ MouseCommonOptions(InputInfoPtr pInfo)
     pMse->chordMiddle = xf86SetBoolOption(pInfo->options, "ChordMiddle", FALSE);
     if (pMse->chordMiddle)
 	xf86Msg(X_CONFIG, "%s: ChordMiddle\n", pInfo->name);
-    pMse->flipXY = xf86SetBoolOption(pInfo->options,"FlipXY",FALSE);
+    pMse->flipXY = xf86SetBoolOption(pInfo->options, "FlipXY", FALSE);
     if (pMse->flipXY)
-	xf86Msg(X_CONFIG, "%s: FlipXY\n",pInfo->name);
-    if (xf86SetBoolOption(pInfo->options,"InvX",FALSE)) {
+	xf86Msg(X_CONFIG, "%s: FlipXY\n", pInfo->name);
+    if (xf86SetBoolOption(pInfo->options, "InvX", FALSE)) {
 	pMse->invX = -1;
-	xf86Msg(X_CONFIG, "%s: InfX\n",pInfo->name);
-    }    else
+	xf86Msg(X_CONFIG, "%s: InvX\n", pInfo->name);
+    } else
 	pMse->invX = 1;
-    if (xf86SetBoolOption(pInfo->options,"InvY",FALSE)) {
+    if (xf86SetBoolOption(pInfo->options, "InvY", FALSE)) {
 	pMse->invY = -1;
-	xf86Msg(X_CONFIG, "%s: InfY\n",pInfo->name);
-    }    else
+	xf86Msg(X_CONFIG, "%s: InvY\n", pInfo->name);
+    } else
 	pMse->invY = 1;
     
     s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
@@ -471,10 +482,10 @@ MouseCommonOptions(InputInfoPtr pInfo)
 		pMse->negativeW = 1 << (b3-1);
 		pMse->positiveW = 1 << (b4-1);
 	    }
-	    if ( b1 > pMse->buttons ) pMse->buttons = b1;
-	    if ( b2 > pMse->buttons ) pMse->buttons = b2;
-	    if ( b3 > pMse->buttons ) pMse->buttons = b3;
-	    if ( b4 > pMse->buttons ) pMse->buttons = b4;
+	    if (b1 > pMse->buttons) pMse->buttons = b1;
+	    if (b2 > pMse->buttons) pMse->buttons = b2;
+	    if (b3 > pMse->buttons) pMse->buttons = b3;
+	    if (b4 > pMse->buttons) pMse->buttons = b4;
 	} else {
 	    pMse->negativeZ = pMse->positiveZ = MSE_NOZMAP;
 	    pMse->negativeW = pMse->positiveW = MSE_NOZMAP;
@@ -487,6 +498,97 @@ MouseCommonOptions(InputInfoPtr pInfo)
 		    pInfo->name, s);
 	}
     }
+    if (xf86SetBoolOption(pInfo->options, "EmulateWheel", FALSE)) {
+	Bool yFromConfig = FALSE;
+	int wheelButton;
+
+	pMse->emulateWheel = TRUE;
+	wheelButton = xf86SetIntOption(pInfo->options,
+					"EmulateWheelButton", 4);
+	if (wheelButton < 0 || wheelButton > MSE_MAXBUTTONS) {
+	    xf86Msg(X_WARNING, "%s: Invalid EmulateWheelButton value: %d\n",
+			pInfo->name, wheelButton);
+	    wheelButton = 4;
+	}
+	pMse->wheelButtonMask = 1 << (wheelButton - 1);
+	
+	pMse->wheelInertia = xf86SetIntOption(pInfo->options,
+					"EmulateWheelInertia", 50);
+	if (pMse->wheelInertia <= 0) {
+	    xf86Msg(X_WARNING, "%s: Invalid EmulateWheelInertia value: %d\n",
+			pInfo->name, pMse->wheelInertia);
+	    pMse->wheelInertia = 50;
+	}
+
+	pMse->negativeX = MSE_NOAXISMAP;
+	pMse->positiveX = MSE_NOAXISMAP;
+	s = xf86SetStrOption(pInfo->options, "XAxisMapping", NULL);
+	if (s) {
+	    int b1 = 0, b2 = 0;
+	    char *msg = NULL;
+
+	    if ((sscanf(s, "%d %d", &b1, &b2) == 2) &&
+		 b1 > 0 && b1 <= MSE_MAXBUTTONS &&
+		 b2 > 0 && b2 <= MSE_MAXBUTTONS) {
+		msg = xstrdup("buttons XX and YY");
+		if (msg)
+		    sprintf(msg, "buttons %d and %d", b1, b2);
+		pMse->negativeX = b1;
+		pMse->positiveX = b2;
+		if (b1 > pMse->buttons) pMse->buttons = b1;
+		if (b2 > pMse->buttons) pMse->buttons = b2;
+	    } else {
+		xf86Msg(X_WARNING, "%s: Invalid XAxisMapping value: \"%s\"\n",
+			pInfo->name, s);
+	    }
+	    if (msg) {
+		xf86Msg(X_CONFIG, "%s: XAxisMapping: %s\n", pInfo->name, msg);
+		xfree(msg);
+	    }
+	}
+	s = xf86SetStrOption(pInfo->options, "YAxisMapping", NULL);
+	if (s) {
+	    int b1 = 0, b2 = 0;
+	    char *msg = NULL;
+
+	    if ((sscanf(s, "%d %d", &b1, &b2) == 2) &&
+		 b1 > 0 && b1 <= MSE_MAXBUTTONS &&
+		 b2 > 0 && b2 <= MSE_MAXBUTTONS) {
+		msg = xstrdup("buttons XX and YY");
+		if (msg)
+		    sprintf(msg, "buttons %d and %d", b1, b2);
+		pMse->negativeY = b1;
+		pMse->positiveY = b2;
+		if (b1 > pMse->buttons) pMse->buttons = b1;
+		if (b2 > pMse->buttons) pMse->buttons = b2;
+		yFromConfig = TRUE;
+	    } else {
+		xf86Msg(X_WARNING, "%s: Invalid YAxisMapping value: \"%s\"\n",
+			pInfo->name, s);
+	    }
+	    if (msg) {
+		xf86Msg(X_CONFIG, "%s: YAxisMapping: %s\n", pInfo->name, msg);
+		xfree(msg);
+	    }
+	}
+	if (!yFromConfig) {
+	    pMse->negativeY = 4;
+	    pMse->positiveY = 5;
+	    if (pMse->negativeY > pMse->buttons)
+		pMse->buttons = pMse->negativeY;
+	    if (pMse->positiveY > pMse->buttons)
+		pMse->buttons = pMse->positiveY;
+	    xf86Msg(X_DEFAULT, "%s: YAxisMapping: buttons %d and %d\n",
+		    pInfo->name, pMse->negativeY, pMse->positiveY);
+	}
+	xf86Msg(X_CONFIG, "%s: EmulateWheel, EmulateWheelButton: %d, "
+			  "EmulateWheelInertia: %d\n",
+		pInfo->name, wheelButton, pMse->wheelInertia);
+    }
+    if (origButtons != pMse->buttons)
+	from = X_CONFIG;
+    xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
+    
 }
 
 static InputInfoPtr
@@ -975,48 +1077,48 @@ SetupMouse(InputInfoPtr pInfo)
 
     case PROT_IMPS2:		/* IntelliMouse */
 	{
-	    static unsigned char s[] = { 243, 200, 243, 100, 243, 80, 242 };
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
 
-	    param = s;
-	    paramlen = sizeof(s);
+	    param = seq;
+	    paramlen = sizeof(seq);
 	}
 	break;
 
     case PROT_EXPPS2:		/* IntelliMouse Explorer */
 	{
-	    static unsigned char s[] = { 243, 200, 243, 200, 243, 80, 242 };
+	    static unsigned char seq[] = { 243, 200, 243, 200, 243, 80, 242 };
 
-	    param = s;
-	    paramlen = sizeof(s);
+	    param = seq;
+	    paramlen = sizeof(seq);
 	}
 	break;
 
     case PROT_NETPS2:		/* NetMouse, NetMouse Pro, Mie Mouse */
     case PROT_NETSCPS2:		/* NetScroll */
 	{
-	    static unsigned char s[] = { 232, 3, 230, 230, 230, };
+	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
 
-	    param = s;
-	    paramlen = sizeof(s);
+	    param = seq;
+	    paramlen = sizeof(seq);
 	}
 	break;
 
     case PROT_MMPS2:		/* MouseMan+, FirstMouse+ */
 	{
-	    static unsigned char s[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
+	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
 					 230, 232, 3, 232, 1, 232, 2, 232, 3, };
-	    param = s;
-	    paramlen = sizeof(s);
+	    param = seq;
+	    paramlen = sizeof(seq);
 	}
 	break;
 
     case PROT_THINKPS2:		/* ThinkingMouse */
 	{
-	    static unsigned char s[] = { 243, 10, 232,  0, 243, 20, 243, 60,
+	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
 					 243, 40, 243, 20, 243, 20, 243, 60,
 					 243, 40, 243, 20, 243, 20, };
-	    param = s;
-	    paramlen = sizeof(s);
+	    param = seq;
+	    paramlen = sizeof(seq);
 	}
 
     case PROT_SYSMOUSE:
@@ -1893,6 +1995,7 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
     MouseDevPtr pMse;
     int truebuttons, emulateButtons;
     int id, change;
+    int emuWheelDelta, emuWheelButton;
 
     pMse = pInfo->private;
 
@@ -1901,6 +2004,62 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 	buttons = reverseBits(hitachMap, buttons);
     else
 	buttons = reverseBits(reverseMap, buttons);
+
+    /* Intercept wheel emulation. */
+    if (pMse->emulateWheel && (buttons & pMse->wheelButtonMask)) {
+	/* Y axis movement */
+	if (pMse->negativeY != MSE_NOAXISMAP) {
+	    pMse->wheelYDistance += dy;
+	    if (pMse->wheelYDistance < 0) {
+		emuWheelDelta = -pMse->wheelInertia;
+		emuWheelButton = pMse->negativeY;
+	    } else {
+		emuWheelDelta = pMse->wheelInertia;
+		emuWheelButton = pMse->positiveY;
+	    }
+	    while (abs(pMse->wheelYDistance) > pMse->wheelInertia) {
+		pMse->wheelYDistance -= emuWheelDelta;
+
+		/*
+		 * Synthesize the press and release, but not when the button.
+		 * to be synthesized is already pressed "for real".
+		 */
+		if (!((1 << (emuWheelButton - 1)) & buttons)) {
+		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 1, 0, 0);
+		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 0, 0, 0);
+		}
+	    }
+	}
+
+	/* X axis movement */
+	if (pMse->negativeX != MSE_NOAXISMAP) {
+	    pMse->wheelXDistance += dx;
+	    if (pMse->wheelXDistance < 0) {
+		emuWheelDelta = -pMse->wheelInertia;
+		emuWheelButton = pMse->negativeX;
+	    } else {
+		emuWheelDelta = pMse->wheelInertia;
+		emuWheelButton = pMse->positiveX;
+	    }
+	    while (abs(pMse->wheelXDistance) > pMse->wheelInertia) {
+		pMse->wheelXDistance -= emuWheelDelta;
+
+		/*
+		 * Synthesize the press and release, but not when the button.
+		 * to be synthesized is already pressed "for real".
+		 */
+		if (!((1 << (emuWheelButton - 1)) & buttons)) {
+		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 1, 0, 0);
+		    xf86PostButtonEvent(pInfo->dev, 0, emuWheelButton, 0, 0, 0);
+		}
+	    }
+	}
+
+	/* Absorb the mouse movement and the wheel button press. */
+	dx = 0;
+	dy = 0;
+	buttons &= ~pMse->wheelButtonMask;
+    }
 
     if (dx || dy)
 	xf86PostMotionEvent(pInfo->dev, 0, 0, 2, dx, dy);

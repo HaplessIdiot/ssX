@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.3 2000/03/01 01:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerarc.c,v 1.4 2001/01/17 22:37:08 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -499,12 +499,14 @@ miZeroArcPts(arc, pts)
     }
 
 static void
-miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
-    GCPtr pGC;
-    xArc *arc;
-    DashInfo *dinfo;
-    int maxPts;
-    register DDXPointPtr points, *evenPts, *oddPts;
+miZeroArcDashPts(
+    GCPtr pGC,
+    xArc *arc,
+    DashInfo *dinfo,
+    register DDXPointPtr points,
+    int maxPts,
+    register DDXPointPtr *evenPts, 
+    register DDXPointPtr *oddPts )
 {
     miZeroArcRec info;
     register int x, y, a, b, d, mask;
@@ -707,14 +709,14 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     int maxPts = 0;
-    register int n, maxw;
+    register int n, maxw = 0;
     register xArc *arc;
     register int i;
     DDXPointPtr points, pts, oddPts;
     register DDXPointPtr pt;
     int numPts;
     Bool dospans;
-    int *widths;
+    int *widths = NULL;
     XID fgPixel = pGC->fgPixel;
     DashInfo dinfo;
 

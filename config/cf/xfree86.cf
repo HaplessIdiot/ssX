@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.368 2001/07/04 13:38:05 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.369 2001/07/24 08:32:59 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -653,6 +653,72 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # endif
 # ifndef DriDrivers
 #  define DriDrivers		gamma TdfxDriDriver mga r128 radeon
+# endif
+#endif
+
+
+/* SuperH drivers */
+
+#if defined(SuperHArchitecture)
+# ifndef XF86Server
+#  define XF86Server           YES
+# endif
+/* 1bpp module */
+# ifndef XF1Bpp
+#  define XF1Bpp               YES
+# endif
+/* 4bpp module */
+# ifndef XF4Bpp
+#  define XF4Bpp               YES
+# endif
+/* 8/32bpp overlay module */
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp            YES
+# endif
+/* 8/16bpp dual fb module */
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp            YES
+# endif
+/* 24/32bpp conversion module */
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp           YES
+# endif
+/* shadow fb module */
+# ifndef XFShadowFB
+#  define XFShadowFB           YES
+# endif
+/* fbdevhw module */
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw          YES
+# endif
+/* XAA module */
+# ifndef XF86XAA
+#  define XF86XAA              YES
+# endif
+/* ramdac module */
+# ifndef XF86Ramdac
+#  define XF86Ramdac           YES
+# endif
+/* I2C module */
+# ifndef XF86I2C
+#  define XF86I2C              YES
+# endif
+/* DDC module */
+# ifndef XF86DDC
+#  define XF86DDC              YES
+# endif
+/* RAC (Resource Access Control) module */
+# ifndef XF86RAC
+#  define XF86RAC              YES
+# endif
+
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10            YES
+# endif
+
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers              fbdev XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 

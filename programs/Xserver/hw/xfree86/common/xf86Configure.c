@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.57 2001/07/02 21:32:28 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.58 2001/08/01 00:44:51 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -40,6 +40,7 @@
 #include "xf86Config.h"
 #include "xf86Priv.h"
 #include "xf86PciInfo.h"
+#define IN_XSERVER
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "Configint.h"
@@ -333,9 +334,13 @@ configureInputSection (void)
 static XF86ConfDRIPtr
 configureDRISection (void)
 {
+#ifdef NOTYET
     parsePrologue (XF86ConfDRIPtr, XF86ConfDRIRec)
 
     return ptr;
+#else
+    return NULL;
+#endif
 }
 
 static XF86ConfVendorPtr
@@ -380,7 +385,7 @@ configureScreenSection (int screennum)
     return ptr;
 }
 
-static char* 
+static const char* 
 optionTypeToSting(OptionValueType type)
 {
     switch (type) {
@@ -409,7 +414,9 @@ configureDeviceSection (int screennum)
     char identifier[16];
     OptionInfoPtr p;
     int i = 0;
+#if DO_FBDEV_PROBE
     Bool foundFBDEV = FALSE;
+#endif
     parsePrologue (XF86ConfDevicePtr, XF86ConfDeviceRec)
 
     /* Move device info to parser structure */
@@ -440,29 +447,48 @@ configureDeviceSection (int screennum)
     /* Make sure older drivers don't segv */
     if (DevToConfig[screennum].GDev.options) {
     	/* Fill in the available driver options for people to use */
-    	ptr->dev_comment = xnfalloc(240 + 1);
-    	strcpy(ptr->dev_comment, "        ### Available Driver options are:-\n");
-    	strcat(ptr->dev_comment, "        ### Values: <i>: integer, <f>: "
-	                         "float, <bool>: \"True\"/\"False\",\n"
-                                 "        ### <string>: \"String\", "
-                                 "<freq>: \"<f> Hz/kHz/MHz\"\n");
-	strcat(ptr->dev_comment, "        ### [arg]: arg optional\n");
-    	for (p = DevToConfig[screennum].GDev.options; p->name != NULL; p++) {
-	    char *optname = xnfalloc(strlen(p->name) + 6);
-	    char *p_e; 
-    	    ptr->dev_comment = xrealloc(ptr->dev_comment, 
-			strlen(ptr->dev_comment) + 80 + 1);
-	    p_e = ptr->dev_comment + strlen(ptr->dev_comment);
-	    sprintf(optname,"\"%s\"",p->name);
-	    sprintf(p_e, "        #Option     %-20s \t# %s\n",
-                    optname, optionTypeToSting(p->type));
-	    xfree(optname);
+	const char *descrip =
+	    "        ### Available Driver options are:-\n"
+	    "        ### Values: <i>: integer, <f>: float, "
+			"<bool>: \"True\"/\"False\",\n"
+	    "        ### <string>: \"String\", <freq>: \"<f> Hz/kHz/MHz\"\n"
+	    "        ### [arg]: arg optional\n";
+	ptr->dev_comment = xstrdup(descrip);
+	if (ptr->dev_comment) {
+    	    for (p = DevToConfig[screennum].GDev.options;
+		 p->name != NULL; p++) {
+		char *p_e;
+		const char *prefix = "        #Option     ";
+		const char *middle = " \t# ";
+		const char *suffix = "\n";
+		const char *opttype = optionTypeToSting(p->type);
+		char *optname;
+		int len = strlen(ptr->dev_comment) + strlen(prefix) +
+			  strlen(middle) + strlen(suffix) + 1;
+		
+		optname = xalloc(strlen(p->name) + 2 + 1);
+		if (!optname)
+		    break;
+		sprintf(optname, "\"%s\"", p->name);
+
+		len += min(20, strlen(optname));
+		len += strlen(opttype);
+
+		ptr->dev_comment = xrealloc(ptr->dev_comment, len);
+		if (!ptr->dev_comment)
+		    break;
+		p_e = ptr->dev_comment + strlen(ptr->dev_comment);
+		sprintf(p_e, "%s%-20s%s%s%s", prefix, optname, middle,
+			opttype, suffix);
+		xfree(optname);
+	    }
     	}
     }
 
+#if DO_FBDEV_PROBE
     /* Crude mechanism to auto-detect fbdev (os dependent) */
     /* Skip it for now. Options list it anyway, and we can't
-     * determine which screen/driver this belongs too anyway.
+     * determine which screen/driver this belongs too anyway. */
     {
 	int fd;
 
@@ -483,7 +509,7 @@ configureDeviceSection (int screennum)
 	ptr->dev_option_lst = (XF86OptionPtr)xf86addListItem(
 					(glp)ptr->dev_option_lst, (glp)fbdev);
     }
-    */
+#endif
 
     return ptr;
 }
@@ -491,8 +517,6 @@ configureDeviceSection (int screennum)
 static XF86ConfLayoutPtr
 configureLayoutSection (void)
 {
-    pciVideoPtr xf86PciCard;
-    int i = 0;
     int scrnum = 0;
     parsePrologue (XF86ConfLayoutPtr, XF86ConfLayoutRec)
 
@@ -554,9 +578,13 @@ configureLayoutSection (void)
 static XF86ConfModesPtr
 configureModesSection (void)
 {
+#ifdef NOTYET
     parsePrologue (XF86ConfModesPtr, XF86ConfModesRec)
 
     return ptr;
+#else
+    return NULL;
+#endif
 }
 
 static XF86ConfVideoAdaptorPtr
@@ -763,9 +791,9 @@ DoConfigure()
     xf86config->conf_modules = configureModuleSection();
     xf86config->conf_flags = configureFlagsSection();
     xf86config->conf_videoadaptor_lst = configureVideoAdaptorSection();
-/*    xf86config->conf_modes_lst = configureModesSection(); */
+    xf86config->conf_modes_lst = configureModesSection();
     xf86config->conf_vendor_lst = configureVendorSection();
-/*    xf86config->conf_dri = configureDRISection(); */
+    xf86config->conf_dri = configureDRISection();
     xf86config->conf_input_lst = configureInputSection();
     xf86config->conf_layout_lst = configureLayoutSection();
 

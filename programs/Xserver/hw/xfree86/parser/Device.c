@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.20 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.21 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -70,6 +70,7 @@ xf86parseDeviceSection (void)
 {
 	int i;
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfDevicePtr, XF86ConfDeviceRec)
 
 	/* Zero is a valid value for these */

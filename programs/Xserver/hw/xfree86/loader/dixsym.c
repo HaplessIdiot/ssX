@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.37 2001/03/05 04:53:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.38 2001/04/05 17:42:34 dawes Exp $ */
 
 
 /*
@@ -39,7 +39,6 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "extension.h"
-#define EVENT_SWAP_PTR
 #define EXTENSION_PROC_ARGS void *
 #include "extnsionst.h"
 #include "swaprep.h"

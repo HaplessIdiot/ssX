@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.52 2001/06/30 22:41:44 tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.53 2001/07/24 08:32:49 alanh Exp $ */
 
 
 /* 
@@ -360,6 +360,21 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef __m68k__
 	"-D__m68k__",
+# endif
+# ifdef __sh__
+	"-D__sh__",
+# endif
+# ifdef __sh3__
+	"-D__sh3__",
+# endif
+# ifdef __SH3__
+	"-D__SH3__",
+# endif
+# ifdef __SH4__
+	"-D__SH4__",
+# endif
+# ifdef __SH4NOFPU__
+	"-D__SH4_NOFPU__",
 # endif
 # ifdef __GNUC__
 	"-traditional",
@@ -1122,6 +1137,21 @@ struct symtab	predefs[] = {
 # endif
 # ifdef __s390__
 	{"__s390__", "1"},
+# endif
+# ifdef __sh__
+	{"__sh__", "1"},
+# endif
+# ifdef __sh3_
+	{"__sh3__", "1"},
+# endif
+# ifdef __SH3__
+	{"__SH3__", "1"},
+# endif
+# ifdef __SH4__
+	{"__SH4__", "1"},
+# endif
+# ifdef __SH4NOFPU__
+	{"__SH4NOFPU__", "1"},
 # endif
 #if defined(__ppc__)
         {"__ppc__", "1"},

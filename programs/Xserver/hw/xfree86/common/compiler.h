@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.83 2001/07/23 13:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.84 2001/07/25 15:05:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1101,7 +1101,7 @@ inl(unsigned short port)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 
-#if !defined(FAKEIT) && !defined(__mc68000__)
+#if !defined(FAKEIT) && !defined(__mc68000__) && !defined(__sh__)
 #ifdef GCCUSESGAS
 
 /*
@@ -1210,7 +1210,7 @@ inl(unsigned short port)
 
 #endif /* GCCUSESGAS */
 
-#else /* !defined(FAKEIT) && !defined(__mc68000__) */
+#else /* !defined(FAKEIT) && !defined(__mc68000__) && !defined(__sh__) */
 
 static __inline__ void
 outb(unsigned short port, unsigned char val)

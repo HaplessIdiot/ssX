@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/extnsionst.h,v 3.4 2000/01/29 17:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/extnsionst.h,v 3.5 2001/01/17 22:36:57 dawes Exp $ */
 
 #ifndef EXTENSIONSTRUCT_H
 #define EXTENSIONSTRUCT_H 
@@ -77,14 +77,13 @@ typedef struct _ExtensionEntry {
 #endif
 } ExtensionEntry;
 
-/* any attempt to declare the types of the parameters to the functions
- * in EventSwapVector fails.  The functions take pointers to two events,
- * but the exact event types that are declared vary from one function 
- * to another.  You can't even put void *, void * (the ibm compiler
- * complains, anyway).
+/* 
+ * The arguments may be different for extension event swapping functions.
+ * Deal with this by casting when initializing the event's EventSwapVector[]
+ * entries.
  */
 typedef void (*EventSwapPtr) (
-#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+#if NeedFunctionPrototypes
 	xEvent *,
 	xEvent *
 #endif
@@ -93,7 +92,7 @@ typedef void (*EventSwapPtr) (
 extern EventSwapPtr EventSwapVector[128];
 
 extern void NotImplemented (	/* FIXME: this may move to another file... */
-#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+#if NeedFunctionPrototypes
 	xEvent *,
 	xEvent *
 #endif

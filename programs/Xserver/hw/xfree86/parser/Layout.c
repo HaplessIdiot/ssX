@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.16 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.17 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -63,6 +63,7 @@ XF86ConfLayoutPtr
 xf86parseLayoutSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfLayoutPtr, XF86ConfLayoutRec)
 
 	while ((token = xf86getToken (LayoutTab)) != ENDSECTION)

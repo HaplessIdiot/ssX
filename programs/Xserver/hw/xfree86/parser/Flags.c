@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.15 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.16 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -61,6 +61,7 @@ static xf86ConfigSymTabRec ServerFlagsTab[] =
 XF86ConfFlagsPtr
 xf86parseFlagsSection (void)
 {
+	int token;
 	parsePrologue (XF86ConfFlagsPtr, XF86ConfFlagsRec)
 
 	while ((token = xf86getToken (ServerFlagsTab)) != ENDSECTION)

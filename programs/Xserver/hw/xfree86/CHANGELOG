@@ -1,4 +1,9 @@
-XFree86 4.1.99.1 (xx July 2001)
+XFree86 4.1.99.1 (xx August 2001)
+ 178. Fix some more mi build warnings (David Dawes).
+ 177. Fix some mi build warnings (#4716-4719,4721-4724, Adam Sulmicki).
+ 176. Port for Linux/SuperH (Jornada680/690 and SEGA Dreamcast) (#4680, 4681,
+      ISHIKAWA Mutsumi).
+ 175. Support for mouse wheel emulation (#A.506, Henry T. So).
  174. Add support to Cygwin/XFree86 to use CTRL+ALT+BKSPACE as the shutdown
       signal and fix up command line options to accomodate.
       (#4838, Alexander Gottwald).
@@ -102,7 +107,7 @@ XFree86 4.1.99.1 (xx July 2001)
  114. Import of Gregory Parker's rootless code for Mac OS X. The code has
       been cleaned up, reorganized, and modified to use Cocoa and fb
       (Gregory Parker and Torrey T. Lyons).
- 113. Freshen SCO port (J. Kean Johnston).
+ 113. Freshen SCO port (#4709, J. Kean Johnston).
  112. Fix int10 build for GCC 3.0 (Marc La France).
  111. An attempt at fixing the i740 driver to not reference options before they
       are collected (Marc La France).
@@ -13616,4 +13621,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1897 2001/08/06 04:14:33 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1898 2001/08/06 11:02:28 alanh Exp $

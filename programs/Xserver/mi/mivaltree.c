@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.6 1999/10/13 22:33:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.7 2001/01/17 22:37:07 dawes Exp $ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -177,12 +177,12 @@ miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
  *-----------------------------------------------------------------------
  */
 static void
-miComputeClips (pParent, pScreen, universe, kind, exposed)
-    register WindowPtr	pParent;
-    register ScreenPtr	pScreen;
-    register RegionPtr	universe;
-    VTKind		kind;
-    RegionPtr		exposed; /* for intermediate calculations */
+miComputeClips (
+    register WindowPtr	pParent,
+    register ScreenPtr	pScreen,
+    register RegionPtr	universe,
+    VTKind		kind,
+    RegionPtr		exposed ) /* for intermediate calculations */
 {
     int			dx,
 			dy;
@@ -500,8 +500,8 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 }
 
 static void
-miTreeObscured(pParent)
-    register WindowPtr pParent;
+miTreeObscured(
+    register WindowPtr pParent )
 {
     register WindowPtr pChild;
     register int    oldVis;

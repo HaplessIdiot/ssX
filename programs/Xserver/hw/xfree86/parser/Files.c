@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.10 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.11 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -65,6 +65,7 @@ xf86parseFilesSection (void)
 	int i, j;
 	int k, l;
 	char *str;
+	int token;
 	parsePrologue (XF86ConfFilesPtr, XF86ConfFilesRec)
 
 	while ((token = xf86getToken (FilesTab)) != ENDSECTION)

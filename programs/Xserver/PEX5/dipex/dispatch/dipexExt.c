@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.18 1998/12/20 11:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.20 2001/02/16 13:24:06 eich Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -228,7 +228,7 @@ PexExtensionInit()
     PexErrorBase = PextEntry->errorBase;
     PexEventBase = PextEntry->eventBase;
     EventSwapVector[PexEventBase + PEXMaxHitsReached] = 
-						    SwapPEXMaxHitsReachedEvent;
+				    (EventSwapPtr)SwapPEXMaxHitsReachedEvent;
     
 }
 
