@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.140 2000/06/20 05:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.142 2000/09/19 12:46:12 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -235,6 +235,7 @@ const char *xf86GetServerName(void);
 Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86ServerIsInitialising(void);
+Bool xf86ServerIsOnlyDetecting(void);
 Bool xf86ServerIsOnlyProbing(void);
 Bool xf86CaughtSignal(void);
 Bool xf86GetVidModeAllowNonLocal(void);
@@ -245,6 +246,7 @@ Bool xf86GetAllowMouseOpenFail(void);
 Bool xf86IsPc98(void);
 pointer xf86LoadDrvSubModule(DriverPtr drv, const char *name);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+pointer xf86LoadOneModule(char *name, pointer optlist);
 void xf86UnloadSubModule(pointer mod);
 Bool xf86LoaderCheckSymbol(const char *name);
 void xf86LoaderReqSymLists(const char **, ...);

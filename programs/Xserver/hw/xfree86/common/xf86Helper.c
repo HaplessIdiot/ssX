@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.96 2000/09/19 12:46:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.97 2000/10/27 18:31:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2246,6 +2246,13 @@ xf86ServerIsInitialising()
 
 
 Bool
+xf86ServerIsOnlyDetecting(void)
+{
+    return xf86DoProbe || xf86DoConfigure;
+}
+
+
+Bool
 xf86ServerIsOnlyProbing(void)
 {
     return xf86ProbeOnly;
@@ -2335,6 +2342,47 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 #else
     return (pointer)1;
 #endif
+}
+
+/*
+ * xf86LoadOneModule loads a single module.
+ */             
+pointer
+xf86LoadOneModule(char *name, pointer opt)
+{
+#ifdef XFree86LOADER
+    int errmaj, errmin;
+#endif
+    char *Name;
+    pointer mod;
+    
+    if (!name)
+	return NULL;
+    
+#ifndef NORMALISE_MODULE_NAME
+    Name = xstrdup(name);
+#else
+    /* Normalise the module name */
+    Name = xf86NormalizeName(name);
+#endif
+
+    /* Skip empty names */
+    if (Name == NULL)
+	return NULL;
+    if (*Name == '\0') {
+	xfree(Name);
+	return NULL;
+    }
+
+#ifdef XFree86LOADER
+    mod = LoadModule(Name, NULL, NULL, NULL, opt, NULL, &errmaj, &errmin);
+    if (!mod)
+	LoaderErrorMsg(NULL, Name, errmaj, errmin);
+#else
+    mod = (pointer)1;
+#endif
+    xfree(Name);
+    return mod;
 }
 
 void

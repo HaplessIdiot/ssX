@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.166 2000/09/20 22:04:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.167 2000/10/27 18:31:02 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1636,39 +1636,6 @@ xf86LoadModules(char **list, pointer *optlist)
 	xfree(name);
     }
     return !failed;
-}
-
-/*
- * xf86LoadOneModule loads a single module.
- */             
-pointer
-xf86LoadOneModule(char *name, pointer opt)
-{
-    int errmaj, errmin;
-    char *Name;
-    pointer mod;
-    
-    if (!name)
-	return NULL;
-    
-#ifndef NORMALISE_MODULE_NAME
-    Name = xstrdup(name);
-#else
-    /* Normalise the module name */
-    Name = xf86NormalizeName(name);
-#endif
-
-    /* Skip empty names */
-    if (Name == NULL || *Name == '\0')
-	return NULL;
-
-    if (!(mod = LoadModule(Name, NULL, NULL, NULL, opt, NULL, &errmaj, &errmin))){
-	LoaderErrorMsg(NULL, Name, errmaj, errmin);
-	xfree(Name);
-	return FALSE;
-    }
-    xfree(Name);
-    return mod;
 }
 
 #endif

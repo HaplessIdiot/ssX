@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.66 2000/04/23 19:26:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.67 2000/06/20 05:08:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -165,7 +165,6 @@ void OsVendorVErrorF(const char *f, va_list args);
 
 /* xf86Init.c */
 Bool xf86LoadModules(char **list, pointer *optlist);
-pointer xf86LoadOneModule(char *name, pointer optlist);
 
 /* xf86Io.c */
 

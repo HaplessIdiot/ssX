@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.30 2000/10/11 22:52:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.31 2000/10/26 11:47:46 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2173,6 +2173,29 @@ NoVGAWonder:;
 
         /* Allocate screen */
         pScreenInfo = xf86AllocateScreen(pDriver, 0);
+
+#ifdef XFree86LOADER
+
+        if (!xf86LoadSubModule(pScreenInfo, "atimisc"))
+        {
+            xf86Msg(X_ERROR,
+                ATI_NAME ":  Failed to load \"atimisc\" module.\n");
+            xf86DeleteScreen(pScreenInfo->scrnIndex, 0);
+            continue;
+        }
+
+        xf86LoaderReqSymbols(
+            "ATIPreInit",
+            "ATIScreenInit",
+            "ATISwitchMode",
+            "ATIAdjustFrame",
+            "ATIEnterVT",
+            "ATILeaveVT",
+            "ATIFreeScreen",
+            "ATIValidMode",
+            NULL);
+
+#endif
 
         /* Attach device to screen */
         xf86AddEntityToScreen(pScreenInfo, pATI->iEntity);
