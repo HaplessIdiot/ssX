@@ -1,5 +1,11 @@
-XFree86 4.0.99.2 (?? April 2001)
- 353. Add XKB descriptions for the extra keys on a Chicony internet
+XFree86 4.0.99.2 (6 April 2001)
+ 358. Fix for improper setting of the maxHValue limit in the tseng driver.
+      This makes modes like 1152x864@24bpp possible (#A.355, Stanislav Brabec).
+ 357. Fix a hw cursor related lockup that shows up with some mga G400
+      16MB OEM single head cards (#A.351, Ewald Snel).
+ 356. Fix the XKB macintosh/it mapping (the accent-related keys were wrong)
+      (#A.349, Andrea Ghirardini).
+ 355. Add XKB descriptions for the extra keys on a Chicony internet
       keyboard (#A.356, John Gladkih).
  354. Add support for the internal input device interface to mice on
       Solaris 8, and make it the default protocol ("VUID") (#A.340,
@@ -12881,4 +12887,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1668 2001/04/05 21:29:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1669 2001/04/06 02:16:22 dawes Exp $
