@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XTrap/XECallBcks.c,v 1.1 2001/11/02 23:29:27 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 
@@ -43,7 +43,7 @@ SOFTWARE.
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
 
-int XEAddRequestCB(XETC *tc, CARD8 req, void_function func, BYTE *data)
+int XEAddRequestCB(XETC *tc, CARD8 req, XETrapCBProc func, BYTE *data)
 {
     if (!tc->values.req_cb)
     {   /* This is the first time for this particular TC, need to malloc */
@@ -60,7 +60,7 @@ int XEAddRequestCB(XETC *tc, CARD8 req, void_function func, BYTE *data)
     return(True);
 }
 
-int XEAddRequestCBs(XETC *tc, ReqFlags req_flags, void_function func,
+int XEAddRequestCBs(XETC *tc, ReqFlags req_flags, XETrapCBProc func,
     BYTE *data)
 {
     int i;
@@ -76,7 +76,7 @@ int XEAddRequestCBs(XETC *tc, ReqFlags req_flags, void_function func,
     return(status);
 }
 
-int XEAddEventCB(XETC *tc, CARD8 evt, void_function func, BYTE *data)
+int XEAddEventCB(XETC *tc, CARD8 evt, XETrapCBProc func, BYTE *data)
 {
     if (!tc->values.evt_cb)
     {   /* This is the first time for this particular TC, need to malloc */
@@ -93,7 +93,7 @@ int XEAddEventCB(XETC *tc, CARD8 evt, void_function func, BYTE *data)
     return(True);
 }
 
-int XEAddEventCBs(XETC *tc, EventFlags evt_flags, void_function func,
+int XEAddEventCBs(XETC *tc, EventFlags evt_flags, XETrapCBProc func,
     BYTE *data)
 {
     int i;
@@ -115,7 +115,7 @@ void XERemoveRequestCB(XETC *tc, CARD8 req)
     {   /* We gotta problem!  CB struct not allocated! */
         return;
     }
-    tc->values.req_cb[req].func = (void_function)NULL;
+    tc->values.req_cb[req].func = (XETrapCBProc)NULL;
     tc->values.req_cb[req].data = (BYTE *)NULL;
     return;
 }
@@ -147,7 +147,7 @@ void XERemoveEventCB(XETC *tc, CARD8 evt)
     {   /* We gotta problem!  CB struct not allocated! */
         return;
     }
-    tc->values.evt_cb[evt].func = (void_function)NULL;
+    tc->values.evt_cb[evt].func = (XETrapCBProc)NULL;
     tc->values.evt_cb[evt].data = (BYTE *)NULL;
     return;
 }

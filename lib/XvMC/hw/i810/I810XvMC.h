@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.h,v 1.4 2002/11/19 09:35:49 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.h,v 1.5 2004/12/10 16:06:58 alanh Exp $ */
 
 
 #ifndef I810XVMC_H
@@ -333,28 +333,6 @@ typedef struct _drm_i810_mc {
 #define GET_RSTATUS(c) drmCommandNone(c->fd, DRM_I810_RSTATUS)
 #define GET_BUFFER(c,dma) drmCommandWriteRead(c->fd, DRM_I810_GETBUF, &dma, sizeof(drmI810DMA))
 #define FLUSH(c) drmCommandNone(c->fd, DRM_I810_FLUSH)
-
-/*
-  Definitions for temporary wire protocol hooks to be replaced
-  when a HW independent libXvMC is created.
-*/
-extern Status _xvmc_create_context(Display *dpy, XvMCContext *context,
-				   int *priv_count, uint **priv_data);
-
-extern Status _xvmc_destroy_context(Display *dpy, XvMCContext *context);
-
-extern Status _xvmc_create_surface(Display *dpy, XvMCContext *context,
-				   XvMCSurface *surface, int *priv_count,
-				   uint **priv_data);
-
-extern Status _xvmc_destroy_surface(Display *dpy, XvMCSurface *surface);
-
-extern Status  _xvmc_create_subpicture(Display *dpy, XvMCContext *context,
-				       XvMCSubpicture *subpicture,
-				       int *priv_count, uint **priv_data);
-
-extern Status   _xvmc_destroy_subpicture(Display *dpy,
-					 XvMCSubpicture *subpicture);
 
 /*
   Prototypes

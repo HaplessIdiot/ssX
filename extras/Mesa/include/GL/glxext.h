@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.11 2004/12/10 15:30:08 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.12 2004/12/10 17:21:09 alanh Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -674,6 +674,54 @@ typedef int ( * PFNGLXQUERYHYPERPIPEATTRIBSGIXPROC) (Display *dpy, int timeSlice
 extern unsigned int glXGetAGPOffsetMESA (const void *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
 typedef unsigned int ( * PFNGLXGETAGPOFFSETMESAPROC) (const void *pointer);
+#endif
+
+#ifndef GLX_MESA_swap_interval
+#define GLX_MESA_swap_interval 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXSwapIntervalMESA(unsigned interval);
+#endif
+typedef int ( * PFNGLXSWAPINTERVALMESAPROC) (unsigned interval);
+#endif
+
+#ifndef GLX_MESA_get_swap_interval
+#define GLX_MESA_get_swap_interval 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXGetSwapIntervalMESA(void);
+#endif
+typedef int ( * PFNGLXGETSWAPINTERVALMESAPROC) (void);
+#endif
+
+#ifndef GLX_MESA_begin_frame_tracking
+#define GLX_MESA_begin_frame_tracking 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXBeginFrameTrackingMESA(Display *dpy, GLXDrawable drawable);
+#endif
+typedef int ( * PFNGLXBEGINFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable);
+#endif
+
+#ifndef GLX_MESA_end_frame_tracking
+#define GLX_MESA_end_frame_tracking 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXEndFrameTrackingMESA(Display *dpy, GLXDrawable drawable);
+#endif
+typedef int ( * PFNGLXENDFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable);
+#endif
+
+#ifndef GLX_MESA_get_frame_usage
+#define GLX_MESA_get_frame_usage 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXGetFrameUsageMESA(Display *dpy, GLXDrawable drawable, float *usage);
+#endif
+typedef int ( * PFNGLXGETFRAMEUSAGEMESAPROC) (Display *dpy, GLXDrawable drawable, float *usage);
+#endif
+
+#ifndef GLX_MESA_query_frame_tracking
+#define GLX_MESA_query_frame_tracking 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern int glXQueryFrameTrackingMESA(Display *dpy, GLXDrawable drawable, int64_t *sbc, int64_t *missedFrames, float *lastMissedUsage);
+#endif
+typedef int ( * PFNGLXQUERYFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable, int64_t *sbc, int64_t *missedFrames, float *lastMissedUsage);
 #endif
 
 #ifdef __cplusplus

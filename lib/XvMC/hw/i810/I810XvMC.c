@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.11 2002/11/19 09:35:49 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.12 2004/12/10 16:06:58 alanh Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -50,6 +50,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Xvlib.h>
 #include <XvMC.h>
 #include <XvMClib.h>
+#include "XvMChooks.h"
 #include "I810XvMC.h"
 
 static int error_base;
@@ -132,7 +133,7 @@ Status XvMCCreateContext(Display *display, XvPortID port,
   i810XvMCContext *pI810XvMC;
   char busIdString[10];
   int priv_count;
-  uint *priv_data;
+  CARD32 *priv_data;
   uint magic;
   Status ret;
   int major, minor;
@@ -429,7 +430,7 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
   i810XvMCContext *pI810XvMC;
   i810XvMCSurface *pI810Surface;
   int priv_count;
-  uint *priv_data;
+  CARD32 *priv_data;
   Status ret;
 
   if((surface == NULL) || (context == NULL) || (display == NULL)){
@@ -3477,7 +3478,7 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
   i810XvMCContext *pI810XvMC;
   i810XvMCSubpicture *pI810Subpicture;
   int priv_count;
-  uint *priv_data;
+  CARD32 *priv_data;
   Status ret;
 
   if((subpicture == NULL) || (context == NULL) || (display == NULL)){

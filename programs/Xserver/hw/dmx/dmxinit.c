@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.7 2005/03/07 16:39:17 tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -73,9 +73,6 @@ extern void GlxSetVisualConfigs(
     void              **configprivs
 );
 #endif /* GLXPROXY */
-
-extern void SetVendorRelease(int release); /* in dix/main.c */
-extern void SetVendorString(char *string); /* in dix/main.c */
 
 /* Global variables available to all Xserver/hw/dmx routines. */
 int             dmxNumScreens;

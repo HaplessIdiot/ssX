@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/cslibint.h,v 1.4 2001/07/25 15:04:54 dawes Exp $ */
+/* $XFree86: xc/lib/dps/cslibint.h,v 1.5 2004/04/03 22:26:21 dawes Exp $ */
  
 /*
  *	XlibInternal.h - Header definition and support file for the internal
@@ -291,12 +291,14 @@ extern void N_XSend(Display *, _Xconst char *, long);
 extern void N_XWaitForReadable(Display *);
 extern void N_XWaitForWritable(Display *);
 
+#if 0
 extern void XDPSGetDefaultColorMaps(
     Display *dpy,
     Screen *screen,
     Drawable drawable,
     XStandardColormap *colorCube,
     XStandardColormap *grayRamp);
+#endif
 
 #endif /* _CSLIBINT_H */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.36 2004/12/17 16:38:03 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1821,7 +1821,7 @@ int GLX_PREFIX(glXSwapIntervalSGI)(int interval)
 /*
 ** GLX_MESA_swap_control
 */
-GLint GLX_PREFIX(glXSwapIntervalMESA)(unsigned interval)
+int GLX_PREFIX(glXSwapIntervalMESA)(unsigned interval)
 {
 #ifdef GLX_DIRECT_RENDERING
    GLXContext gc = __glXGetCurrentContext();
@@ -1853,7 +1853,7 @@ GLint GLX_PREFIX(glXSwapIntervalMESA)(unsigned interval)
    return GLX_BAD_CONTEXT;
 }
  
-GLint GLX_PREFIX(glXGetSwapIntervalMESA)( void )
+int GLX_PREFIX(glXGetSwapIntervalMESA)( void )
 {
 #ifdef GLX_DIRECT_RENDERING
    GLXContext gc = __glXGetCurrentContext();
@@ -1883,7 +1883,7 @@ GLint GLX_PREFIX(glXGetSwapIntervalMESA)( void )
 ** GLX_MESA_swap_frame_usage
 */
 
-GLint GLX_PREFIX(glXBeginFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
+int GLX_PREFIX(glXBeginFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
 {
    int   status = GLX_BAD_CONTEXT;
 #ifdef GLX_DIRECT_RENDERING
@@ -1903,7 +1903,7 @@ GLint GLX_PREFIX(glXBeginFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
 }
 
     
-GLint GLX_PREFIX(glXEndFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
+int GLX_PREFIX(glXEndFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
 {
    int   status = GLX_BAD_CONTEXT;
 #ifdef GLX_DIRECT_RENDERING
@@ -1923,8 +1923,8 @@ GLint GLX_PREFIX(glXEndFrameTrackingMESA)(Display *dpy, GLXDrawable drawable)
 }
 
 
-GLint GLX_PREFIX(glXGetFrameUsageMESA)(Display *dpy, GLXDrawable drawable,
-				       GLfloat *usage)
+int GLX_PREFIX(glXGetFrameUsageMESA)(Display *dpy, GLXDrawable drawable,
+				       float *usage)
 {
    int   status = GLX_BAD_CONTEXT;
 #ifdef GLX_DIRECT_RENDERING
@@ -1950,9 +1950,9 @@ GLint GLX_PREFIX(glXGetFrameUsageMESA)(Display *dpy, GLXDrawable drawable,
 }
 
 
-GLint GLX_PREFIX(glXQueryFrameTrackingMESA)(Display *dpy, GLXDrawable drawable,
+int GLX_PREFIX(glXQueryFrameTrackingMESA)(Display *dpy, GLXDrawable drawable,
 					    int64_t *sbc, int64_t *missedFrames,
-					    GLfloat *lastMissedUsage)
+					    float *lastMissedUsage)
 {
    int   status = GLX_BAD_CONTEXT;
 #ifdef GLX_DIRECT_RENDERING

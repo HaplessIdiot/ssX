@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XTrap/XEDsptch.c,v 1.1 2001/11/02 23:29:27 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 
@@ -41,7 +41,7 @@ SOFTWARE.
 
 static void XETrapDispatchCB(XETC *tc, XETrapDatum *pdatum)
 {
-    void_function pfunc = NULL;
+    XETrapCBProc pfunc = NULL;
     BYTE *userp = NULL;
 
     /* Need to deal with Delta Timestamps here before calling client CB */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxtodmx.c,v 1.1 2004/06/30 20:21:39 martin Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -38,7 +38,6 @@
 #include "dmxprint.h"
 #include "dmxcompat.h"
 
-extern int                 yyparse(void);
 extern FILE                *yyin;
 
 int main(int argc, char **argv)

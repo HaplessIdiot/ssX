@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:44:11 pookie Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.20tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.21 2005/01/31 22:54:46 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -68,8 +68,9 @@ SUBDIRS = $(RASTDIR) $(PCLDIR) $(MPCLDIR) $(PSDIR)
 
 #endif
 
-   INCLUDES = -I$(XINCLUDESRC) -I. -I../mfb -I../mi -I../cfb \
-	      -I../include -I$(TOP)/include -I$(LIBSRC) \
+   INCLUDES = -I$(XINCLUDESRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/Xext \
+	      -I$(SERVERSRC)/include -I$(TOP)/include -I$(LIBSRC) \
 	      -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(XLIBSRC)
 
    LINTLIBS = $(TOP)/server/dix/llib-ldix.ln $(TOP)/server/os/llib-los.ln \

@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/18 04:05:44 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.58 2004/06/30 20:21:37 martin Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.59 2004/07/07 03:46:22 martin Exp $
 
 #if BuildScreenSaverExt || BuildScreenSaverLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
@@ -45,8 +45,8 @@ RENDERHEADERS = render.h renderproto.h
 RANDRHEADERS = randr.h randrproto.h
 #endif
 #if BuildXTrap || BuildXTrapLibrary
-XTRAPHEADERS = xtrapbits.h xtrapddmi.h xtrapdi.h xtrapemacros.h xtraplib.h \
-	xtraplibp.h xtrapproto.h
+XTRAPHEADERS = xtrapbits.h xtrapdi.h xtrapemacros.h xtraplib.h \
+	xtraplibp.h
 #endif
 #if BuildXResExt || BuildXResLibrary
 XRESHEADERS = XRes.h XResproto.h

@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/ident.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/mkfontscale/ident.c,v 1.4 2003/10/24 20:38:13 tsi Exp $ */
 
 /* The function identifyBitmap returns -1 if filename is definitively not
    a font file, 1 if it is a single-face bitmap font with a XLFD name,
@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "zlib.h"
+#include "ident.h"
 
 #define PCF_VERSION (('p'<<24)|('c'<<16)|('f'<<8)|1)
 #define PCF_PROPERTIES (1 << 0)

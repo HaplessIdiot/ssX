@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.69 2004/02/14 00:10:13 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.70 2004/04/03 22:26:22 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -537,7 +537,7 @@ static XtransConnInfo
 TRANS(SocketOpenCOTSClientBase) (char *transname, char *protocol,
 				char *host, char *port, int previndex)
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int			i = previndex;
 
     PRMSG (2, "SocketOpenCOTSClient(%s,%s,%s)\n",
@@ -586,7 +586,7 @@ TRANS(SocketOpenCOTSServer) (Xtransport *thistrans, char *protocol,
 			     char *host, char *port)
 
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int	i = -1;
 
     PRMSG (2,"SocketOpenCOTSServer(%s,%s,%s)\n", protocol, host, port);
@@ -653,7 +653,7 @@ TRANS(SocketOpenCLTSClient) (Xtransport *thistrans, char *protocol,
 			     char *host, char *port)
 
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int			i = -1;
 
     PRMSG (2,"SocketOpenCLTSClient(%s,%s,%s)\n", protocol, host, port);
@@ -692,7 +692,7 @@ TRANS(SocketOpenCLTSServer) (Xtransport *thistrans, char *protocol,
 			     char *host, char *port)
 
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int	i = -1;
 
     PRMSG (2,"SocketOpenCLTSServer(%s,%s,%s)\n", protocol, host, port);
@@ -737,7 +737,7 @@ static XtransConnInfo
 TRANS(SocketReopenCOTSServer) (Xtransport *thistrans, int fd, char *port)
 
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int			i = -1;
 
     PRMSG (2,
@@ -771,7 +771,7 @@ static XtransConnInfo
 TRANS(SocketReopenCLTSServer) (Xtransport *thistrans, int fd, char *port)
 
 {
-    XtransConnInfo	ciptr;
+    XtransConnInfo	ciptr = NULL;
     int			i = -1;
 
     PRMSG (2,

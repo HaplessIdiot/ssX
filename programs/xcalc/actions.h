@@ -1,4 +1,3 @@
-/* $XConsortium: actions.h,v 1.6 94/04/17 20:43:31 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -28,6 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /* 
  * actions.h - action table declaring externally available procedures for xcalc
@@ -35,20 +35,56 @@ from the X Consortium.
  * Author:  Donna Converse, MIT X Consortium
  */
 
-extern void
-    add(), back(), bell(), clearit(), cosine(), decimal(),
-    degree(), digit(), divide(), e(), enter(), epower(), equal(),
-    exchange(), factorial(), 
-    inverse(), leftParen(), logarithm(), multiply(), naturalLog(),
-    negate(), nop(), off(), pi(), power(), quit(), recall(),
-    reciprocal(), rightParen(), roll(), scientific(), selection(), sine(),
-    square(), squareRoot(), store(), subtract(), sum(),
-    tangent(), tenpower(), XexchangeY();
+#define CALC_PROTO(f) \
+	extern void f(Widget w, XEvent *e, String *vector, Cardinal *count)
+
+CALC_PROTO(add);
+CALC_PROTO(back);
+CALC_PROTO(bell);
+CALC_PROTO(clearit);
+CALC_PROTO(cosine);
+CALC_PROTO(decimal);
+CALC_PROTO(degree);
+CALC_PROTO(digit);
+CALC_PROTO(divide);
+CALC_PROTO(e);
+CALC_PROTO(enter);
+CALC_PROTO(epower);
+CALC_PROTO(equal);
+CALC_PROTO(exchange);
+CALC_PROTO(factorial);
+CALC_PROTO(inverse);
+CALC_PROTO(leftParen);
+CALC_PROTO(logarithm);
+CALC_PROTO(multiply);
+CALC_PROTO(naturalLog);
+CALC_PROTO(negate);
+CALC_PROTO(nop);
+CALC_PROTO(off);
+CALC_PROTO(pi);
+CALC_PROTO(power);
+CALC_PROTO(quit);
+CALC_PROTO(recall);
+CALC_PROTO(reciprocal);
+CALC_PROTO(rightParen);
+CALC_PROTO(roll);
+CALC_PROTO(scientific);
+CALC_PROTO(selection);
+CALC_PROTO(sine);
+CALC_PROTO(square);
+CALC_PROTO(squareRoot);
+CALC_PROTO(store);
+CALC_PROTO(subtract);
+CALC_PROTO(sum);
+CALC_PROTO(tangent);
+CALC_PROTO(tenpower);
+CALC_PROTO(XexchangeY);
 
 /*
  * 	calculator action table
  */
 
+#ifdef DEFINE_ACTIONS
 XtActionsRec	Actions[] = {
 {"add",		add},		/* addition */
 {"back",	back},		/* HP-specific backspace */
@@ -92,3 +128,4 @@ XtActionsRec	Actions[] = {
 {"tenpower",	tenpower},	/* 10 raised to to an arbitrary power */
 {"XexchangeY",	XexchangeY}	/* HP-specific exchange X and Y registers */
 };
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.5 2005/01/30 17:48:43 tsi Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -369,9 +369,6 @@ void dmxUpdateScreenResources(ScreenPtr pScreen, int x, int y, int w, int h)
 
 #ifdef PANORAMIX
 #include "panoramiXsrv.h"
-
-/* Defined in dix/events.c */
-extern void ReinitializeRootWindow(WindowPtr win, int xoff, int yoff);
 
 /** Change the "screen" window attributes by resizing the actual window
  *  on the back-end display (if necessary). */

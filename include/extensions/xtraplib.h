@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xtraplib.h,v 1.1 2001/11/02 23:29:26 dawes Exp $ */
 #ifndef __XTRAPLIB__
 #define __XTRAPLIB__ 
 
@@ -52,9 +52,14 @@ SOFTWARE.
 #include <X11/extensions/xtrapdi.h>
 #include <X11/extensions/xtrapemacros.h>
 
+struct _XETC;
+
+typedef void (*XETrapCBProc)(struct _XETC *tc, XETrapDatum *pdatum,
+			     char *userp);
+
 typedef struct  /* Callback structure */
 {
-    void_function func;
+    XETrapCBProc  func;
     BYTE          *data;
 } XETrapCB;
 

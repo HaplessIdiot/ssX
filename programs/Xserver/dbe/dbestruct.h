@@ -1,4 +1,3 @@
-/* $Xorg: dbestruct.h,v 1.3 2000/08/17 19:48:16 cpqbld Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -30,7 +29,7 @@
  *     Header file for DIX-related DBE
  *
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dbe/dbestruct.h,v 3.2 2003/11/17 22:20:32 dawes Exp $ */
 
 
 #ifndef DBE_STRUCT_H
@@ -156,6 +155,25 @@ typedef struct _DbeWindowPrivRec
  ******************************************************************************
  */
 
+typedef Bool (*DbeSetupBackgroundPainterProcPtr)(WindowPtr pWin, GCPtr pGC);
+typedef DbeWindowPrivPtr (*DbeAllocWinPrivProcPtr)(ScreenPtr);
+typedef int (*DbeAllocWinPrivPrivIndexProcPtr)(void);
+typedef Bool (*DbeAllocWinPrivPrivProcPtr)(ScreenPtr pScreen, int index,
+					   unsigned amount);
+
+typedef Bool (*DbeGetVisualInfoProcPtr)(ScreenPtr pScreen,
+				        XdbeScreenVisualInfo *pVisInfo);
+typedef int (*DbeAllocBackBufferNameProcPtr)(WindowPtr pWin, XID bufId,
+					     int swapAction);
+typedef int (*DbeSwapBuffersProcPtr)(ClientPtr client, int *pNumWindows,
+				     DbeSwapInfoPtr swapInfo);
+typedef void (*DbeBeginIdiomProcPtr)(ClientPtr client);
+typedef void (*DbeEndIdiomProcPtr)(ClientPtr client);
+typedef void (*DbeWinPrivDeleteProcPtr)(DbeWindowPrivPtr pDbeWindowPriv,
+					XID bufId);
+typedef void (*DbeResetProcPtr)(ScreenPtr pScreen);
+typedef void (*DbeValidateBufferProcPtr)(WindowPtr pWin, XID bufId,
+					 Bool dstbuffer);
 typedef struct _DbeScreenPrivRec
 {
     /* Info for creating window privs */
@@ -179,55 +197,20 @@ typedef struct _DbeScreenPrivRec
     DestroyWindowProcPtr  DestroyWindow;
 
     /* Per-screen DIX routines */
-    Bool	(*SetupBackgroundPainter)(
-		WindowPtr /*pWin*/,
-		GCPtr /*pGC*/
-);
-    DbeWindowPrivPtr (*AllocWinPriv)(
-		ScreenPtr /*pScreen*/
-);
-    int		(*AllocWinPrivPrivIndex)(
-		void
-);
-    Bool	(*AllocWinPrivPriv)(
-		ScreenPtr /*pScreen*/,
-		int /*index*/,
-		unsigned /*amount*/
-);
+    DbeSetupBackgroundPainterProcPtr	SetupBackgroundPainter;
+    DbeAllocWinPrivProcPtr		AllocWinPriv;
+    DbeAllocWinPrivPrivIndexProcPtr	AllocWinPrivPrivIndex;
+    DbeAllocWinPrivPrivProcPtr		AllocWinPrivPriv;
 
     /* Per-screen DDX routines */
-    Bool	(*GetVisualInfo)(
-		ScreenPtr /*pScreen*/,
-		XdbeScreenVisualInfo * /*pVisInfo*/
-);
-    int		(*AllocBackBufferName)(
-		WindowPtr /*pWin*/,
-		XID /*bufId*/,
-		int /*swapAction*/
-);
-    int		(*SwapBuffers)(
-		ClientPtr /*client*/,
-		int * /*pNumWindows*/,
-		DbeSwapInfoPtr /*swapInfo*/
-);
-    void	(*BeginIdiom)(
-		ClientPtr /*client*/
-);
-    void	(*EndIdiom)(
-		ClientPtr /*client*/
-);
-    void	(*WinPrivDelete)(
-		DbeWindowPrivPtr /*pDbeWindowPriv*/,
-		XID /*bufId*/
-);
-    void	(*ResetProc)(
-		ScreenPtr /*pScreen*/
-);
-    void	(*ValidateBuffer)(
-		WindowPtr /*pWin*/,
-		XID /*bufId*/,
-		Bool /*dstbuffer*/
-);
+    DbeGetVisualInfoProcPtr		GetVisualInfo;
+    DbeAllocBackBufferNameProcPtr	AllocBackBufferName;
+    DbeSwapBuffersProcPtr		SwapBuffers;
+    DbeBeginIdiomProcPtr		BeginIdiom;
+    DbeEndIdiomProcPtr			EndIdiom;
+    DbeWinPrivDeleteProcPtr		WinPrivDelete;
+    DbeResetProcPtr			ResetProc;
+    DbeValidateBufferProcPtr		ValidateBuffer;
 
     /* Device-specific private information.
      */

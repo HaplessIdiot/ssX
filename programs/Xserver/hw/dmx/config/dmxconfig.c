@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.2 2005/01/30 17:48:44 tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -46,7 +46,6 @@
 #include "dmxstat.h"
 #include "parser.h"
 
-extern int  yyparse(void);
 extern FILE *yyin;
 
 static char *dmxXkbRules;
@@ -70,7 +69,6 @@ typedef struct DMXConfigCmdStruct {
     DMXConfigList *xinputs;
 } DMXConfigCmd, *DMXConfigCmdPtr;
 
-extern DMXConfigEntryPtr    dmxConfigEntry;
 static DMXConfigCmd  dmxConfigCmd;
 
 static int dmxDisplaysFromCommandLine;

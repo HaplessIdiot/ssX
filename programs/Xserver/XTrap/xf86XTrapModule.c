@@ -1,10 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XTrap/xf86XTrapModule.c,v 1.1 2001/11/02 23:29:29 dawes Exp $ */
 /*  This is the xf86 module code for the DEC_XTRAP extension.
  */
 
 #include "xf86Module.h"
 
-#include <X11/extensions/xtrapdi.h>
+#include "xtrapdi.h"
 
 extern void DEC_XTRAPInit(INITARGS);
 

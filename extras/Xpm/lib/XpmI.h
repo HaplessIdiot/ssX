@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.10 2004/09/15 16:00:37 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.11 2004/11/18 21:30:51 herrb Exp $ */
 
 /*****************************************************************************\
 * XpmI.h:                                                                     *
@@ -325,5 +325,8 @@ FUNC(xpmstrcasecmp, int, (char *s1, char *s2));
 
 FUNC(xpmatoui, unsigned int,
      (char *p, unsigned int l, unsigned int *ui_return));
+
+FUNC(s_popen, FILE *, (char *cmd, const char *type));
+
 
 #endif

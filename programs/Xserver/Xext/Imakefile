@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.47tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.48 2004/08/05 20:37:42 tsi Exp $
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -276,3 +276,6 @@ LinkSourceFile(xvmain.c,LinkDirectory)
 LinkSourceFile(xvmc.c,LinkDirectory)
 #endif
 
+
+LinkSourceFile(recordproc.h,$(SERVERSRC)/record)
+LinkSourceFile(dbeproc.h,$(SERVERSRC)/dbe)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/XThrStub/UIThrStubs.c,v 3.5 2004/04/05 02:12:20 dawes Exp $
+ * $XFree86: xc/lib/XThrStub/UIThrStubs.c,v 3.6 2004/06/01 00:16:57 dawes Exp $
  *
  * Copyright (c) 1995 David E. Wexelblat.  All rights reserved
  *
@@ -188,7 +188,9 @@ _Xthr_equal_stub_()
 #endif /* SVR4 */
 #endif /* CTHREADS */
 
-static xthread_t 
+
+xthread_t _Xthr_self_stub_(void);
+xthread_t 
 _Xthr_self_stub_(void)
 {
     static xthread_t _X_no_thread_id;
@@ -196,8 +198,10 @@ _Xthr_self_stub_(void)
     return(_X_no_thread_id);	/* defined by <X11/Xthreads.h> */
 }
 
-static int 
+int _Xthr_zero_stub_(void);
+int 
 _Xthr_zero_stub_(void)
 {
     return(0);
 }
+

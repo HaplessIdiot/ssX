@@ -32,7 +32,7 @@
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
 */
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/mipmap.c,v 1.4 2001/10/28 03:32:23 tsi Exp $ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libutil/mipmap.c,v 1.5 2002/02/22 21:32:49 dawes Exp $ */
 
 #include "gluos.h"
 #include <assert.h>
@@ -7251,7 +7251,7 @@ static void emptyImage3D(const PixelStorageModes *psm,
 					psm->unpack_skip_images * imageSize] );
 } /* emptyImage3D() */
 
-int gluScaleImage3D(GLenum format, 
+static int gluScaleImage3D(GLenum format, 
 		    GLint widthIn, GLint heightIn, GLint depthIn,
 		    GLenum typeIn, const void *dataIn, 
 		    GLint widthOut, GLint heightOut, GLint depthOut,

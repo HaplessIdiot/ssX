@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
+/* $XFree86: xc/programs/xtrap/xtrapout.c,v 1.2 2001/12/12 00:43:50 dawes Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -104,7 +104,12 @@ SOFTWARE.
 
 
 /* Forward declarations */
-static void SetGlobalDone (void );
+#ifdef SIGNALRETURNSINT
+typedef int sigRetType;
+#else
+typedef void sigRetType;
+#endif
+static sigRetType SetGlobalDone (int sig);
 static void print_req_callback (XETC *tc , XETrapDatum *data , 
     char *my_buf );
 static void print_evt_callback (XETC *tc , XETrapDatum *data , 
@@ -120,11 +125,15 @@ XrmOptionDescRec optionTable [] =
     {"-v",     "*verbose",   XrmoptionSkipArg, (caddr_t) NULL},
 };
 
-static void SetGlobalDone(void)
+static sigRetType SetGlobalDone(int sig)
 {
     GlobalDone = 1L;
     fprintf(stderr,"Process Completed!\n");
+#ifdef SIGNALRETURNSINT
+    return 0;
+#else
     return;
+#endif
 }
 
 static void print_req_callback(XETC *tc, XETrapDatum *data, char *my_buf)
@@ -268,8 +277,8 @@ main(int argc, char *argv[])
     XEPrintCurrent(stderr,&ret_cur);
 
     /* Add signal handlers so that we clean up properly */
-    _InitExceptionHandling((void_function)SetGlobalDone);
-    (void)XEEnableCtrlKeys((void_function)SetGlobalDone);
+    _InitExceptionHandling(SetGlobalDone);
+    (void)XEEnableCtrlKeys(SetGlobalDone);
              
     XETrapAppWhileLoop(app,tc,&GlobalDone);
 

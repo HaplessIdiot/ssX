@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.44 2003/11/17 22:20:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.45 2004/06/30 20:21:38 martin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -491,7 +491,7 @@ main(int argc, char *argv[], char *envp[])
 }
 
 static int  VendorRelease = VENDOR_RELEASE;
-static char *VendorString = VENDOR_STRING;
+static const char *VendorString = VENDOR_STRING;
 
 void
 SetVendorRelease(int release)
@@ -500,7 +500,7 @@ SetVendorRelease(int release)
 }
 
 void
-SetVendorString(char *string)
+SetVendorString(const char *string)
 {
     VendorString = string;
 }

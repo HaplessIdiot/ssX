@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xtraplibp.h,v 1.1 2001/11/02 23:29:26 dawes Exp $ */
 #ifndef __XTRAPLIBP__
 #define __XTRAPLIBP__
 
@@ -75,11 +75,11 @@ int XEGetCurrentRequest (XETC *tc , XETrapGetCurRep *ret );
 int XEGetStatisticsRequest (XETC *tc , XETrapGetStatsRep *ret );
 
 /* XECallBcks.c */
-int XEAddRequestCB (XETC *tc , CARD8 req , void_function func , BYTE *data );
-int XEAddRequestCBs (XETC *tc , ReqFlags req_flags , void_function func , 
+int XEAddRequestCB (XETC *tc , CARD8 req , XETrapCBProc func , BYTE *data );
+int XEAddRequestCBs (XETC *tc , ReqFlags req_flags , XETrapCBProc func , 
     BYTE *data );
-int XEAddEventCB (XETC *tc , CARD8 evt , void_function func , BYTE *data );
-int XEAddEventCBs (XETC *tc , EventFlags evt_flags , void_function func , 
+int XEAddEventCB (XETC *tc , CARD8 evt , XETrapCBProc func , BYTE *data );
+int XEAddEventCBs (XETC *tc , EventFlags evt_flags , XETrapCBProc func , 
     BYTE *data );
 
 /* The following seem to never be used.  Perhaps they should be removed */
@@ -101,6 +101,8 @@ void XETrapAppMainLoop (XtAppContext app , XETC *tc );
 int XETrapAppWhileLoop (XtAppContext app , XETC *tc , Bool *done );
 int XETrapWaitForSomething (XtAppContext app );
 Boolean (*XETrapSetEventHandler(XETC *tc, CARD32 id, Boolean (*pfunc)(XETrapDataEvent *event, XETC *tc))) (XETrapDataEvent *event, XETC *tc);
+Boolean (*XETrapGetEventHandler(XETC *tc, CARD32 id))(XETrapDataEvent *event, XETC *tc);
+
 
 /* XEPrInfo.c */
 void XEPrintRelease (FILE *ofp , XETrapGetAvailRep *pavail );

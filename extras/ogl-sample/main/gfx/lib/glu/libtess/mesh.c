@@ -35,8 +35,8 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date: 2001/01/15 21:49:13 $ $Revision: 1.1 $
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/mesh.c,v 1.1 2001/01/15 21:49:13 dawes Exp $
+** $Date: 2005/03/25 02:22:51 $ $Revision: 1.2 $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/mesh.c,v 1.2 2005/03/25 02:22:51 dawes Exp $
 */
 
 #include "gluos.h"
@@ -48,12 +48,12 @@
 #define TRUE 1
 #define FALSE 0
 
-static GLUvertex *allocVertex()
+static GLUvertex *allocVertex(void)
 {
    return (GLUvertex *)memAlloc( sizeof( GLUvertex ));
 }
 
-static GLUface *allocFace()
+static GLUface *allocFace(void)
 {
    return (GLUface *)memAlloc( sizeof( GLUface ));
 }

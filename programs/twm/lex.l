@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.13 2001/08/27 21:11:39 dawes Exp $ */
+/* $XFree86: xc/programs/twm/lex.l,v 3.14 2001/12/14 20:01:08 dawes Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "twm.h"
@@ -67,8 +67,10 @@ in this Software without prior written authorization from The Open Group.
 #include "list.h"
 #include "parse.h"
 
-#ifdef FLEX_SCANNER
+#if defined(FLEX_SCANNER)
+#if !defined(YY_FLEX_LEX_COMPAT)
 int yylineno;
+#endif
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))

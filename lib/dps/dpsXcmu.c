@@ -54,7 +54,7 @@
  *
  * Author: Adobe Systems Incorporated and Donna Converse, MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/dpsXcmu.c,v 1.4 2000/09/26 15:56:59 tsi Exp $ */
+/* $XFree86: xc/lib/dps/dpsXcmu.c,v 1.5 2001/07/25 15:04:54 dawes Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -67,6 +67,7 @@
 #include <pwd.h>
 
 #include "dpsassert.h"
+#include "DPS/dpsXclient.h"
 #include "cslibint.h"
 
 /* Defines for standard colormap routines */
@@ -103,7 +104,6 @@ static Bool CheckCube(XColor *, XColor *, XStandardColormap *);
 static Bool CubicCube(XStandardColormap *);
 static Bool GetColorCubeFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
 static Bool GetGrayRampFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
-Status XDPSCreateStandardColormaps(Display *, Drawable, Visual *, int, int, int, int, XStandardColormap *, XStandardColormap *, Bool);
 static Status contiguous(unsigned long *, int, int *, unsigned long, int *, int *);
 static XVisualInfo *PickCorrectVisual(Display *, XVisualInfo *, int, Colormap);
 static int FindRampSize(XColor *, XColor *);
