@@ -28,7 +28,7 @@
 #	xf86test/Makefile
 #	xf86test/xf86test.c
 # 
-# $XFree86: $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.10 1999/11/19 13:54:53 hohndel Exp $
 #
 echo x - COPYRIGHT
 sed 's/^X//' >COPYRIGHT << 'END-of-COPYRIGHT'
@@ -76,24 +76,44 @@ X	module/xf86.4 module/xf86_mod.c module/xf86_mod.h \
 X	module/xf86_mod_install module/xf86_reg.h \
 X	xf86test/Makefile xf86test/xf86test.c
 X
-Xbuild:
+Xbuild: dirs
 X	${MAKE} ${_J} cleandir
 X	${MAKE} ${_J} includes
 X	${MAKE} ${_J} depend
 X	${MAKE} ${_J} 
 X	${MAKE} ${_J} install
 X
+Xdirs:
+X	if [ ! -d ${KMODDIR} ]; then ${INSTALL} -d ${KMODDIR} ; fi
+X	if [ ! -d ${INCSDIR} ]; then ${INSTALL} -d ${INCSDIR} ; fi
+X	if [ ! -d ${BINDIR} ]; then ${INSTALL} -d ${BINDIR} ; fi
+X	if [ ! -d ${MANDIR}/man4 ]; then ${INSTALL} -d ${MANDIR}/man4 ; fi
+X	if [ ! -d ${MANDIR}/cat4 ]; then ${INSTALL} -d ${MANDIR}/cat4 ; fi
+X	if [ ! -d ${MANDIR}/man8 ]; then ${INSTALL} -d ${MANDIR}/man8 ; fi
+X	if [ ! -d ${MANDIR}/cat8 ]; then ${INSTALL} -d ${MANDIR}/cat8 ; fi
+X
 Xshar:
-X	shar $(DISTRIB) > apNetBSD-2.shar
+X	shar $(DISTRIB) > apNetBSD.shar
 X
 Xclean:
 X	rm -f apNetBSD.shar
 X
+X.include "Makefile.inc"
 X.include <bsd.subdir.mk>
 END-of-Makefile
 echo x - Makefile.inc
 sed 's/^X//' >Makefile.inc << 'END-of-Makefile.inc'
-XBINDIR=	/usr/sbin
+X# Define the directory where to install the aperture driver
+X# If you change it from the default value, also define the 
+X# NetBSDApertureDir variable in xc/config/cf/host.def before rebuilding 
+X# the X server
+X
+XAPDIR=		/usr/local/aperture
+X
+XKMODDIR=	${APDIR}/lkm
+XBINDIR=		${APDIR}/bin
+XMANDIR= 	${APDIR}/man
+XINCSDIR=	${APDIR}/include
 END-of-Makefile.inc
 echo x - README
 sed 's/^X//' >README << 'END-of-README'
@@ -129,12 +149,18 @@ X
 XInstallation:
 X-------------
 X
+Xo Optionnally, edit Makefile.inc to set the APDIR variable to the
+X  directory where you want to install the aperture driver. If you change 
+X  this, and want to rebuild XFree86 from source, also define
+X  NetBSDApertureDir in xc/config/cf/host.def before rebuilding it. 
+X
 Xo run 'make build' as root. This will build and install the XFree86 
 X  aperture kernel module. 
 X  
-Xo add the following line to /etc/lkm.conf:
+Xo add the following line to /etc/lkm.conf (replace /usr/local/aperture 
+X  by the $APDIR directory):
 X
-X    /usr/lkm/xf86.o	    -	 -  /usr/lkm/xf86_mod_postinstall - -
+X    /usr/local/aperture/lkm/xf86.o	    -	 -  /usr/local/aperture/lkm/xf86_mod_install - -
 X
 X  and set:
 X
@@ -177,6 +203,7 @@ X# $FreeBSD: src/usr.sbin/memcontrol/Makefile,v 1.2 1999/09/29 21:43:31 chris Ex
 X
 XPROG=		memconfig
 XMAN=		memconfig.8
+XCPPFLAGS+=	-I${.CURDIR}/../module
 X
 X.include <bsd.prog.mk>
 END-of-memconfig/Makefile
@@ -340,7 +367,6 @@ X */
 X
 X#include <sys/types.h>
 X#include <sys/ioctl.h>
-X#include <sys/memrange.h>
 X
 X#include <err.h>
 X#include <fcntl.h>
@@ -348,6 +374,8 @@ X#include <stdio.h>
 X#include <stdlib.h>
 X#include <string.h>
 X#include <unistd.h>
+X
+X#include "memrange.h"
 X
 Xstruct
 X{
@@ -660,10 +688,6 @@ X#
 X# Copyright (c) 1994-1999 The XFree86 Project Inc.
 X#
 X
-X# Change KMODDIR to the directory into which you wish 
-X# to install the kernel module
-X# KMODDIR = /usr/X11R6/lib/X11/kernel
-X
 X# Add -DXF86_DEBUG to CPPFLAGS to add debugging printfs
 XCPPFLAGS+= 	$(PC98)
 XWARNS?=		1
@@ -677,8 +701,9 @@ X
 Xafterinstall:
 X	${INSTALL} -c -o root -g wheel -m 755 $(POSTINSTALL) $(KMODDIR)
 X
+X
 Xincludes: 
-X	install -c -p -o root -g wheel -m 444 ${.CURDIR}/memrange.h /usr/include/sys
+X	install -c -p -o root -g wheel -m 444 ${.CURDIR}/memrange.h $(INCSDIR)
 X
 XKMOD_LOADFLAGS= -p$(POSTINSTALL)
 X
@@ -743,12 +768,12 @@ X#include <sys/errno.h>
 X#include <sys/conf.h>
 X#include <sys/exec.h>
 X#include <sys/lkm.h>
-X#include <sys/memrange.h>
 X
 X#ifdef _LKM
 X#include "xf86_mod.h"
 X#endif
 X#include "xf86_reg.h"
+X#include "memrange.h"
 X
 X#define ISA_START 0xA0000
 X#define ISA_END   0xFFFFF
@@ -953,11 +978,11 @@ X
 X#include <sys/param.h>
 X#include <sys/systm.h>
 X#include <sys/malloc.h>
-X#include <sys/memrange.h>
 X
 X#include <machine/cpufunc.h>
 X#include <machine/specialreg.h>
 X
+X#include "memrange.h"
 X#include "xf86_reg.h"
 X
 X/*
@@ -1509,9 +1534,10 @@ X
 X#include <sys/param.h>
 X#include <sys/systm.h>
 X#include <sys/malloc.h>
-X#include <sys/memrange.h>
 X
 X#include <machine/cpufunc.h>
+X
+X#include "memrange.h"
 X#include "xf86_reg.h"
 X
 X/*
@@ -1946,7 +1972,7 @@ X
 XMOD_DEV("xf86", LM_DT_CHAR, -1, &newdev)
 X
 Xchar *xf86_major_version = "1";
-Xchar *xf86_minor_version = "99";
+Xchar *xf86_minor_version = "99b";
 X
 Xstatic int xf86action __P((struct lkm_table *lktmp, int cmd));
 X
