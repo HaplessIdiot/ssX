@@ -1,5 +1,6 @@
 /*
  * $XConsortium: choose.c,v 1.15 94/04/17 20:03:34 rws Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -43,6 +44,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <ctype.h>
+#if defined(STREAMSCONN)
+# include       <tiuser.h>
+#endif
 
 #ifdef X_NOT_STDC_ENV
 #define Time_t long
@@ -369,18 +373,68 @@ ProcessChooserSocket (fd)
     ARRAY8	clientAddress;
     CARD16	connectionType;
     ARRAY8	choice;
+#if defined(STREAMSCONN)
+    struct t_call *call;
+    int flags=0;
+#endif
 
     Debug ("Process chooser socket\n");
     len = sizeof (buf);
+#if defined(STREAMSCONN)
+    call = (struct t_call *)t_alloc( fd, T_CALL, T_ALL );
+    if( call == NULL )
+    {
+	t_error( "ProcessChooserSocket: t_alloc failed" );
+	LogError ("Cannot setup to listen on chooser connection\n");
+	return;
+    }
+    if( t_listen( fd, call ) < 0 )
+    {
+	t_error( "ProcessChooserSocket: t_listen failed" );
+	t_free( (char *)call, T_CALL );
+	LogError ("Cannot listen on chooser connection\n");
+	return;
+    }
+    client_fd = t_open ("/dev/tcp", O_RDWR, NULL);
+    if (client_fd == -1)
+    {
+	t_error( "ProcessChooserSocket: t_open failed" );
+	t_free( (char *)call, T_CALL );
+	LogError ("Cannot open new chooser connection\n");
+	return;
+    }
+    if( t_bind( client_fd, NULL, NULL ) < 0 )
+    {
+	t_error( "ProcessChooserSocket: t_bind failed" );
+	t_free( (char *)call, T_CALL );
+	LogError ("Cannot bind new chooser connection\n");
+        t_close (client_fd);
+	return;
+    }
+    if( t_accept (fd, client_fd, call) < 0 )
+    {
+	t_error( "ProcessChooserSocket: t_accept failed" );
+	LogError ("Cannot accept chooser connection\n");
+	t_free( (char *)call, T_CALL );
+        t_unbind (client_fd);
+        t_close (client_fd);
+	return;
+    }
+#else
     client_fd = accept (fd, (struct sockaddr *)buf, &len);
     if (client_fd == -1)
     {
 	LogError ("Cannot accept chooser connection\n");
 	return;
     }
+#endif
     Debug ("Accepted %d\n", client_fd);
     
+#if defined(STREAMSCONN)
+    len = t_rcv (client_fd, buf, sizeof (buf),&flags);
+#else
     len = read (client_fd, buf, sizeof (buf));
+#endif
     Debug ("Read returns %d\n", len);
     if (len > 0)
     {
@@ -407,7 +461,13 @@ ProcessChooserSocket (fd)
 	LogError ("Invalid choice response length %d\n", len);
     }
 
+#if defined(STREAMSCONN)
+    t_unbind (client_fd);
+    t_free( (char *)call, T_CALL );
+    t_close (client_fd);
+#else
     close (client_fd);
+#endif
 }
 
 RunChooser (d)

@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.0 1994/04/28 12:44:56 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -843,3 +843,11 @@ char	*user, *home;
 	    env = setEnv (env, "XAUTHORITY", d->authFile);
     return env;
 }
+
+#if defined(SCO) && !defined(SCO_USA)
+char *crypt(s1, s2)
+	char	*s1, *s2;
+{
+	return(s2);
+}
+#endif
