@@ -265,11 +265,11 @@ MGASetupImageVideoG(ScreenPtr pScreen)
     adapt->PutImage = MGAPutImageG;
     adapt->QueryImageAttributes = MGAQueryImageAttributesG;
 
+    pPriv->colorKey = pMga->videoKey;
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
-    pPriv->colorKey =  (1 << pScrn->offset.red) | (1 << pScrn->offset.green) |
-        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);     
+    
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
 

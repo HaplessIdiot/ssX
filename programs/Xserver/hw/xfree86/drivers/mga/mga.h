@@ -122,6 +122,7 @@ typedef struct {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     xf86AccessRec	Access;
+    xf86AccessPtr	oldAccess;
     int			Chipset;
     int                 ChipRev;
     Bool		Primary;
@@ -200,6 +201,7 @@ typedef struct {
     I2CBusPtr		I2C;
     Bool		FBDev;
     int			colorKey;
+    int			videoKey;
     int			fifoCount;
     int			Rotate;
     MGAFBLayout		CurrentLayout;
