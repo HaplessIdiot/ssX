@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.7 2000/10/29 14:24:13 tsi Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.8 2001/01/17 23:45:07 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -262,8 +262,6 @@ static int twmFileInput()
     {
 	if (fgets(buff, BUF_LEN, twmrc) == NULL)
 	    return 0;
-
-	yylineno++;
 
 	ptr = 0;
 	len = strlen(buff);
