@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.6 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.7 2002/04/16 17:12:05 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -177,7 +177,9 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     struct dirent *ent;
     int length, listdirs, i, ndirs, nmatches, protect = mac->protect.length;
     char name[PATH_MAX + 1], path[PATH_MAX + 2], directory[PATH_MAX + 2];
-    char *sep, *base, *ptr, **dirs, **matches;
+    char *sep, *base, *ptr, **dirs, **matches,
+	  dot[] = {'.', PATH_SEP, '\0'},
+	  dotdot[] = {'.', '.', PATH_SEP, '\0'};
     int cannot_read;
 
     LispObj *pathname, *all, *if_cannot_read,
@@ -275,6 +277,38 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 		 path, name, PATH_SEP) > PATH_MAX)
 	LispDestroy(mac, "%s: pathname too long %s",
 		    STRFUN(builtin), directory);
+
+    /* Remove ../ */
+    sep = directory;
+    for (sep = strstr(sep, dotdot); sep; sep = strstr(sep, dotdot)) {
+	if (sep <= directory + 1)
+	    strcpy(directory, sep + 2);
+	else if (sep[-1] == PATH_SEP) {
+	    for (base = sep - 2; base > directory; base--)
+		if (*base == PATH_SEP)
+		    break;
+	    strcpy(base, sep + 2);
+	    sep = base;
+	}
+	else
+	    ++sep;
+    }
+
+    /* Remove "./" */
+    sep = directory;
+    for (sep = strstr(sep, dot); sep; sep = strstr(sep, dot)) {
+	if (sep == directory || sep[-1] == PATH_SEP)
+	    strcpy(sep, sep + 2);
+	else
+	    ++sep;
+    }
+
+    /* This will happen when there are too many '../'  in the path */
+    if (directory[1] == '\0') {
+	directory[1] = PATH_SEP;
+	directory[2] = '\0';
+    }
+
     base = directory;
     sep = strchr(base + 1, PATH_SEP);
     dirs[0] = LispMalloc(mac, 2);

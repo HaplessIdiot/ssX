@@ -27,10 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.8 2002/01/30 21:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.9 2002/03/10 06:53:47 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiSink.h>
 #include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/AsciiText.h>
@@ -67,15 +68,26 @@
 #include "private.h"
 
 /*
+ * Types
+ */
+typedef struct {
+    LispMac *mac;
+    LispObj *object;
+    void *data;
+} WidgetData;
+
+/*
  * Prototypes
  */
 int xawLoadModule(LispMac*);
+void LispXawCleanupCallback(Widget, XtPointer, XtPointer);
 
 /* until a better/smarter interface be written... */
 LispObj *Lisp_XawCoerceToListReturnStruct(LispMac*, LispBuiltin*);
 LispObj *Lisp_XawScrollbarCoerceToReal(LispMac*, LispBuiltin*);
 
 LispObj *Lisp_XawFormDoLayout(LispMac*, LispBuiltin*);
+LispObj *Lisp_XawListChange(LispMac*, LispBuiltin*);
 LispObj *Lisp_XawListHighlight(LispMac*, LispBuiltin*);
 LispObj *Lisp_XawListUnhighlight(LispMac*, LispBuiltin*);
 LispObj *Lisp_XawTextGetSource(LispMac*, LispBuiltin*);
@@ -96,6 +108,7 @@ static LispBuiltin lispbuiltins[] = {
 
     {LispFunction, Lisp_XawScrollbarSetThumb, "xaw-scrollbar-set-thumb widget top &optional shown"},
     {LispFunction, Lisp_XawFormDoLayout, "xaw-form-do-layout widget force"},
+    {LispFunction, Lisp_XawListChange, "xaw-list-change widget list &optional longest resize"},
     {LispFunction, Lisp_XawListHighlight, "xaw-list-highlight widget index"},
     {LispFunction, Lisp_XawListUnhighlight, "xaw-list-unhighlight widget"},
     {LispFunction, Lisp_XawTextGetSource, "xaw-text-get-source widget"},
@@ -112,6 +125,8 @@ LispModuleData xawLispModuleData = {
 };
 
 static int xawWidget_t, xawWidgetClass_t, xawListReturnStruct_t, xawFloatp_t;
+static WidgetData **list_data;
+static int num_list_data;
 
 /*
  * Implementation
@@ -252,6 +267,17 @@ xawLoadModule(LispMac *mac)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     return (1);
+}
+
+void
+LispXawCleanupCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    WidgetData *data = (WidgetData*)user_data;
+    LispMac *mac = data->mac;
+
+    UPROTECT(CAR(data->object), data->object);
+    XtFree((XtPointer)data->data);
+    XtFree((XtPointer)data);
 }
 
 LispObj *
@@ -485,6 +511,79 @@ Lisp_XawTextSearch(LispMac *mac, LispBuiltin *builtin)
     block.format = FMT8BIT;
 
     return (INTEGER(XawTextSearch(widget, direction, &block)));
+}
+
+LispObj *
+Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
+/*
+ xaw-list-change widget list &optional longest resize
+ */
+{
+    Widget widget;
+    String *list;
+    int i, nitems;
+    int longest;
+    Boolean resize;
+    LispObj *object;
+    WidgetData *data;
+
+    LispObj *owidget, *olist, *olongest, *oresize;
+
+    oresize = ARGUMENT(3);
+    olongest = ARGUMENT(2);
+    olist = ARGUMENT(1);
+    owidget = ARGUMENT(0);
+
+    if (!CHECKO(owidget, xawWidget_t))
+	LispDestroy(mac, "%s: cannot convert %s to Widget",
+		    STRFUN(builtin), STROBJ(owidget));
+    widget = (Widget)(owidget->data.opaque.data);
+
+    ERROR_CHECK_LIST(olist);
+    for (nitems = 0, object = olist; CONS_P(object);
+	 ++nitems, object = CDR(object))
+	ERROR_CHECK_STRING(CAR(object));
+
+    if (olongest != NIL) {
+	ERROR_CHECK_INDEX(olongest);
+	longest = olongest->data.integer;
+    }
+    else
+	XtVaGetValues(widget, XtNlongest, &longest, NULL, 0);
+    resize = oresize != NIL;
+
+    /* No errors in arguments, build string list */
+    list = (String*)XtMalloc(sizeof(String) * nitems);
+    for (i = 0, object = olist; CONS_P(object); i++, object = CDR(object))
+	list[i] = THESTR(CAR(object));
+
+    /* Check if xaw-list-change was already called
+      * for this widget and free previous data */
+    for (i = 0; i < num_list_data; i++)
+	if ((Widget)CAR(list_data[i]->object)->data.opaque.data == widget) {
+	    XtRemoveCallback(widget, XtNdestroyCallback,
+			     LispXawCleanupCallback, list_data[i]);
+	    LispXawCleanupCallback(widget, list_data[i], NULL);
+	    break;
+	}
+
+    if (i >= num_list_data) {
+	++num_list_data;
+	list_data = (WidgetData**)XtRealloc((XtPointer)list_data,
+					    sizeof(WidgetData*) * num_list_data);
+    }
+
+    data = (WidgetData*)XtMalloc(sizeof(WidgetData));
+    data->mac = mac;
+    data->data = list;
+    list_data[i] = data;
+    data->object = CONS(owidget, olist);
+    PROTECT(owidget, data->object);
+    XtAddCallback(widget, XtNdestroyCallback, LispXawCleanupCallback, data);
+
+    XawListChange(widget, list, nitems, longest, resize);
+
+    return (olist);
 }
 
 LispObj *

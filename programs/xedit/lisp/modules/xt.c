@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.11 2002/01/30 21:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.12 2002/03/10 06:53:47 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -87,6 +87,7 @@ LispObj *Lisp_XtCreateWidget(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtCreateManagedWidget(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtCreatePopupShell(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtDestroyWidget(LispMac*, LispBuiltin*);
+LispObj *Lisp_XtGetKeyboardFocusWidget(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtGetValues(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtManageChild(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtUnmanageChild(LispMac*, LispBuiltin*);
@@ -107,6 +108,7 @@ LispObj *Lisp_XtDisplay(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtDisplayOfObject(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtScreen(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtScreenOfObject(LispMac*, LispBuiltin*);
+LispObj *Lisp_XtSetKeyboardFocus(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtWindow(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtWindowOfObject(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtAddGrab(LispMac*, LispBuiltin*);
@@ -152,6 +154,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XtCreateWidget, "xt-create-widget name widget-class parent &optional arguments"},
     {LispFunction, Lisp_XtCreatePopupShell, "xt-create-popup-shell name widget-class parent &optional arguments"},
     {LispFunction, Lisp_XtDestroyWidget, "xt-destroy-widget widget"},
+    {LispFunction, Lisp_XtGetKeyboardFocusWidget, "xt-get-keyboard-focus-widget widget"},
     {LispFunction, Lisp_XtGetValues, "xt-get-values widget arguments"},
     {LispFunction, Lisp_XtManageChild, "xt-manage-child widget"},
     {LispFunction, Lisp_XtName, "xt-name widget"},
@@ -166,6 +169,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XtUnrealizeWidget, "xt-unrealize-widget widget"},
     {LispFunction, Lisp_XtRemoveInput, "xt-remove-input input"},
     {LispFunction, Lisp_XtRemoveGrab, "xt-remove-grab widget"},
+    {LispFunction, Lisp_XtSetKeyboardFocus, "xt-set-keyboard-focus widget descendant"},
     {LispFunction, Lisp_XtSetSensitive, "xt-set-sensitive widget sensitive"},
     {LispFunction, Lisp_XtSetValues, "xt-set-values widget arguments"},
     {LispFunction, Lisp_XtWidgetToApplicationContext, "xt-widget-to-application-context widget"},
@@ -251,7 +255,7 @@ xtLoadModule(LispMac *mac)
     (void)LispSetVariable(mac, ATOM2("XT-IM-SIGNAL"),
 			  INTEGER(XtIMSignal), fname, 0);
     (void)LispSetVariable(mac, ATOM2("XT-IM-ALL"),
-			  INTEGER(XtIMSignal), fname, 0);
+			  INTEGER(XtIMAll), fname, 0);
 
     /* parameters for XtAppAddInput */
     (void)LispSetVariable(mac, ATOM2("XT-INPUT-READ-MASK"),
@@ -827,6 +831,23 @@ LispXtCreateWidget(LispMac *mac, LispBuiltin *builtin, int options)
 }
 
 LispObj *
+Lisp_XtGetKeyboardFocusWidget(LispMac *mac, LispBuiltin *builtin)
+/*
+ xt-get-keyboard-focus-widget widget
+ */
+{
+    LispObj *widget;
+
+    widget = ARGUMENT(0);
+
+    if (!CHECKO(widget, xtWidget_t))
+	LispDestroy(mac, "%s: cannot convert %s to Widget",
+		    STRFUN(builtin), STROBJ(widget));
+    return (OPAQUE(XtGetKeyboardFocusWidget((Widget)(widget->data.opaque.data)),
+		   xtWidget_t));
+}
+
+LispObj *
 Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 /*
  xt-get-values widget arguments
@@ -1092,6 +1113,29 @@ Lisp_XtPopdown(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(widget));
     XtPopdown((Widget)(widget->data.opaque.data));
+
+    return (widget);
+}
+
+LispObj *
+Lisp_XtSetKeyboardFocus(LispMac *mac, LispBuiltin *builtin)
+/*
+ xt-set-keyboard-focus widget descendant
+ */
+{
+    LispObj *widget, *descendant;
+
+    descendant = ARGUMENT(1);
+    widget = ARGUMENT(0);
+
+    if (!CHECKO(widget, xtWidget_t))
+	LispDestroy(mac, "%s: cannot convert %s to Widget",
+		    STRFUN(builtin), STROBJ(widget));
+    if (!CHECKO(descendant, xtWidget_t))
+	LispDestroy(mac, "%s: cannot convert %s to Widget",
+		    STRFUN(builtin), STROBJ(descendant));
+    XtSetKeyboardFocus((Widget)(widget->data.opaque.data),
+		       (Widget)(descendant->data.opaque.data));
 
     return (widget);
 }
