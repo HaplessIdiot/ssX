@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.231 2003/11/11 00:27:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.232 2003/11/12 00:10:22 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1580,7 +1580,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
       MKFONTSCALE = $(BINDIR)/mkfontscale
         MKFONTDIR = $(BINDIR)/mkfontdir
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
-          UCS2ANY = $(BINDIR)/ucs2any
+          UCS2ANY = $(BINDIR)/ProgramTargetName(ucs2any)
       BDFTRUNCATE = $(BINDIR)/bdftruncate
      UCSMAPPREFIX = $(FONTDIR)/util/map-
        XCURSORGEN = $(BINDIR)/xcursorgen
@@ -1601,7 +1601,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 # else
       MKHTMLINDEX = $(SHELL) $(CONFIGSRC)/util/mkhtmlindex.sh
 # endif
-          UCS2ANY = $(XBUILDBINDIR)/ucs2any
+          UCS2ANY = $(XBUILDBINDIR)/ProgramTargetName(ucs2any)
       BDFTRUNCATE = $(FONTSRC)/util/bdftruncate.pl
      UCSMAPPREFIX = $(FONTSRC)/util/map-
 #endif
