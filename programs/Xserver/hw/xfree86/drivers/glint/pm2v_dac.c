@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.21 2001/01/31 16:15:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.22 2001/02/02 14:12:22 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -292,7 +292,8 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     /* We can't rely on the vgahw layer copying the font information
      * back properly, due to problems with MMIO access to VGA space
      * so we memcpy the information */
-    memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
+    if (pGlint->STATE)
+    	memcpy((CARD8*)pGlint->FbBase,(CARD8*)pGlint->VGAdata, 65536); 
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[ChipConfig >> 3], ChipConfig);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);

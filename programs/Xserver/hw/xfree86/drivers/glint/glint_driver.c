@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.112 2001/02/01 12:26:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.113 2001/02/02 10:21:53 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -179,7 +179,6 @@ static PciChipsets GLINTPciChipsets[] = {
 */
     { -1,				 -1,				    RES_UNDEFINED }
 };
-
 
 typedef enum {
     OPTION_SW_CURSOR,
@@ -840,7 +839,6 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
@@ -858,9 +856,6 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     	switch (pGlint->MultiChip) {
 	case PCI_CHIP_MX:
 	    linep = &partprod500TX[0];
-	    break;
-        case PCI_CHIP_PERMEDIA3:
-	    linep = &partprodPermedia[0];
 	    break;
 	}
 	break;
@@ -1030,14 +1025,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
         }
     }
-
-#if 0 /* NOT YET */
-    if (pGlint->MultiChip == PCI_CHIP_PERMEDIA3) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"Gamma with Permedia3 chips - currently unsupported\n");
-	return FALSE;
-    }
-#endif
 
     if (flags & PROBE_DETECT) {
 	GLINTProbeDDC(pScrn, pGlint->pEnt->index);
@@ -1232,6 +1219,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->VGAcore = FALSE;
     pGlint->DoubleBuffer = FALSE;
     pGlint->RamDac = NULL;
+    pGlint->STATE = FALSE;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -1834,7 +1822,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Select valid modes from those available */
     if ((pGlint->NoAccel) ||
-	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)) {
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ||
+	((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) && 
+	 (pGlint->MultiChip == PCI_CHIP_PERMEDIA3)) ) {
 	/*
 	 * XXX Assuming min pitch 256, max <maxwidth>
 	 * XXX Assuming min height 128, max <maxheight>
@@ -1920,7 +1910,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
         (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) ||
         (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
-        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
+        ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	 (pGlint->MultiChip == PCI_CHIP_MX)) ) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 	    "This GLINT chip only supports one modeline, using first\n");
 	pScrn->modes->next = NULL;
@@ -2260,6 +2251,7 @@ GLINTSave(ScrnInfoPtr pScrn)
     glintReg2 = &pGlint->SavedReg2;
     RAMDACreg = &pRAMDAC->SavedReg;
     TRACE_ENTER("GLINTSave");
+
     if (pGlint->VGAcore) {
     	vgaRegPtr vgaReg;
     	vgaReg = &VGAHWPTR(pScrn)->SavedReg;
@@ -2406,6 +2398,8 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     glintReg2 = &pGlint->ModeReg2;
     RAMDACreg = &pRAMDAC->ModeReg;
 
+    pGlint->STATE = FALSE;
+
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
@@ -2547,6 +2541,7 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	}
     	vgaHWProtect(pScrn, FALSE);
     }
+
     TRACE_EXIT("GLINTRestore");
 }
 
@@ -2995,11 +2990,17 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	GLINT_SLOW_WRITE_REG(base, PMScreenBase);
+	break;
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+    	base = (y * pScrn->displayWidth + x) >> pGlint->BppShift;
+	GLINT_SLOW_WRITE_REG(base, PMScreenBase);
+	break;
     case PCI_VENDOR_3DLABS_CHIP_GAMMA:
-	if (pGlint->MultiChip == PCI_CHIP_PERMEDIA3)
+	if (pGlint->MultiChip == PCI_CHIP_PERMEDIA3) {
+    	    base = (y * pScrn->displayWidth + x)  >> pGlint->BppShift;
 	    GLINT_SLOW_WRITE_REG(base, PMScreenBase);
+	}
 	break;
     }
     TRACE_EXIT("GLINTAdjustFrame (normal)");
@@ -3090,6 +3091,7 @@ GLINTLeaveVT(int scrnIndex, int flags)
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
     TRACE_ENTER("GLINTLeaveVT");
+    pGlint->STATE = TRUE;
     GLINTRestore(pScrn);
     if (pGlint->VGAcore)
     	vgaHWLock(VGAHWPTR(pScrn));
@@ -3133,6 +3135,7 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	if (pGlint->FBDev)
 	    fbdevHWRestore(pScrn);
 	else {	
+	    pGlint->STATE = TRUE;
             GLINTRestore(pScrn);
 	    if (pGlint->VGAcore)
        	        vgaHWLock(VGAHWPTR(pScrn));
