@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.18 1994/08/31 03:25:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.19 1994/09/07 15:45:06 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -453,6 +453,23 @@ SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LI
 #endif
 #endif	/* XF86VGA16Server */
 
+#if XF86W32Server
+XCOMM
+XCOMM XFree86 W32 Server
+XCOMM
+INSTPGMFLAGS = $(INSTUIDFLAGS) /* server must be suid root  */
+MFBDIR  = mfb
+CFB8DIR = cfb
+DDXDIR1 = hw/xfree86
+XF86W32SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIR) $(DDXDIR1) $(DEPDIRS)
+XF86W32OBJS = $(XF86COMSRC)/XF86_W32.o $(XF86ACCELSRC)/et4000w32/w32Conf.o
+XF86W32LIBS = $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/cfb.w32/libcfb.a $(XF86ACCELSRC)/et4000w32/w32/libw32.a $(XF86ACCELSRC)/et4000w32/asm/libasm.a CFB8Libs $(XF86LIBS)
+XF86W32SYSLIBS = $(SYSLIBS)
+ServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_W32
+#endif
+#endif
 
 #if XF86MonoServer
 XCOMM

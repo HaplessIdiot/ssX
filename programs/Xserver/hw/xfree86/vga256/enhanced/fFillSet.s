@@ -191,10 +191,13 @@ GLNAME(fastFillSolidGXset):
 	MOV_L	(REGDB(.jumptab1,lp),tmp)
 	JMP	(CODEPTR(tmp))
 
-	ALIGNTEXT4
+	SEG_DATA
+	ALIGNDATA4
 .jumptab1:
 	D_LONG	.Lnoop, .L0, .L1, .L2, .L3, .L4, .L5, .L6
 
+	SEG_TEXT
+	ALIGNTEXT4
 .L6:	MOV_L	(fill1,tmp)
 	AND_L	(REGOFF(-28,pdst),tmp)
 	XOR_L	(fill2,tmp)

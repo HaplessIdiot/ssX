@@ -1,5 +1,5 @@
 /* $XConsortium: fLineBres.s,v 1.2 94/03/29 11:19:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.0 1994/07/24 11:58:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.1 1994/08/31 04:49:24 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -47,6 +47,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define Y_AXIS	CONST(1)
 
 	SEG_DATA
+	ALIGNDATA4
 e3:
 	D_LONG 0
 
