@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.39 2001/05/26 01:25:41 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.40 2001/08/06 20:51:04 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -603,7 +603,7 @@ XineramaChangeToCursor(CursorPtr cursor)
 
 #endif  /* PANORAMIX */
 
-Mask
+static Mask
 GetNextEventMask()
 {
     lastEventMask <<= 1;
@@ -812,7 +812,7 @@ CheckVirtualMotion(qe, pWin)
     ROOT = WindowTable[sprite.hot.pScreen->myNum];
 }
 
-void
+static void
 ConfineCursorToWindow(pWin, generateEvents, confineToScreen)
     WindowPtr pWin;
     Bool generateEvents;
