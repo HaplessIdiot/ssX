@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.h,v 1.6 2002/12/16 16:18:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.h,v 1.7 2003/09/28 20:15:28 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -103,14 +103,6 @@ extern void radeonWaitForIdleLocked( radeonContextPtr rmesa );
 extern void radeonWaitForVBlank( radeonContextPtr rmesa );
 extern void radeonInitIoctlFuncs( GLcontext *ctx );
 extern void radeonGetAllParams( radeonContextPtr rmesa );
-
-/* radeon_compat.c:
- */
-extern void radeonCompatEmitPrimitive( radeonContextPtr rmesa,
-				       GLuint vertex_format,
-				       GLuint hw_primitive,
-				       GLuint nrverts );
-
 
 /* ================================================================
  * Helper macros:
