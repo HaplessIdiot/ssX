@@ -1,4 +1,4 @@
-/* $XFree86:  $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128reg.h,v 1.1 2000/10/04 23:34:59 robin Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -82,6 +82,7 @@ typedef struct {
 	CARD32 vga_ctl;			/* iobase+0x30 register              */
 	CARD32 i128_base_g[0x60/4];	/* base g registers                  */
 	CARD32 i128_base_w[0x28/4];	/* base w registers                  */
+	CARD32 intm;			/* base a+0x04 register              */
 	unsigned char Ti302X[0x40];	/* Ti302[05] registers               */
 	unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
 	unsigned char IBMRGB[0x101];	/* IBMRGB registers                  */
@@ -223,6 +224,7 @@ typedef union {
 #define DE_MSRC   0x0030/4
 #define DE_WKEY   0x0038/4
 #define DE_KYDAT  0x003C/4
+#define DE_ZPTCH  0x003C/4
 #define DE_SPTCH  0x0040/4
 #define DE_DPTCH  0x0044/4
 #define CMD       0x0048/4
@@ -313,6 +315,7 @@ typedef union {
 #define  XY_I_DATA2   0xFFFF0000
 #define DL_ADR    0x00F8/4
 #define DL_CNTRL  0x00FC/4
+#define ACNTRL    0x016C/4
 
 #define I128_WAIT_READY 1
 #define I128_WAIT_DONE  2

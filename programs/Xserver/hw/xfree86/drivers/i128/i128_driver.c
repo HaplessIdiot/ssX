@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.3 2000/10/11 23:55:32 tsi Exp $ */
+/* $XFree86: $ */
 
 
 /* All drivers should typically include these */
@@ -52,6 +52,7 @@
 
 #include "xf86DDC.h"
 #include "xf86RAC.h"
+#include "vbe.h"
 
 #include "xaa.h"
 #include "xf86cmap.h"
@@ -100,6 +101,11 @@ static void	I128Restore(ScrnInfoPtr pScrn);
 static Bool	I128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static int	I128CountRam(ScrnInfoPtr pScrn);
 static void	I128SoftReset(ScrnInfoPtr pScrn);
+static Bool     I128I2CInit(ScrnInfoPtr pScrn);
+static xf86MonPtr I128getDDC(ScrnInfoPtr pScrn);
+#if 0
+static unsigned int I128DDC1Read(ScrnInfoPtr pScrn);
+#endif
 
 #define I128_VERSION 4000
 #define I128_NAME "I128"
@@ -191,6 +197,25 @@ static const char *ramdacSymbols[] = {
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
     NULL
 };
 
@@ -236,6 +261,10 @@ i128Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			  xaaSymbols, 
 			  ramdacSymbols,
 			  ddcSymbols,
+			  ddcSymbols,
+			  i2cSymbols,
+			  vbeSymbols,
+			  int10Symbols,
 			  NULL);
 
 	/*
@@ -407,6 +436,7 @@ I128Identify(int flags)
  */
 
 typedef enum {
+    OPTION_FLATPANEL,
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_SYNC_ON_GREEN,
@@ -417,6 +447,7 @@ typedef enum {
 } I128Opts;
 
 static OptionInfoRec I128Options[] = {
+    { OPTION_FLATPANEL,		"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -484,6 +515,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     CARD32 tmpl, tmph, tmp;
     unsigned char n, m, p, mdc, df;
     float mclk;
+    xf86MonPtr mon;
 
     /* Check the number of entities, and fail if it isn't one. */
     if (pScrn->numEntities != 1)
@@ -619,6 +651,10 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	pI128->Debug = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Debug enabled\n");
     } else pI128->Debug = FALSE;
+    if (xf86ReturnOptValBool(I128Options, OPTION_FLATPANEL, FALSE)) {
+	pI128->FlatPanel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "FlatPanel forced\n");
+    } else pI128->FlatPanel = FALSE;
 
     /*
      * Set the Chipset and ChipRev.
@@ -661,91 +697,8 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     pI128->io.soft_sw = inl(iobase + 0x28) & 0x0000FFFF;
     pI128->io.vga_ctl = inl(iobase + 0x30) & 0x0000FFFF;
 
-    if (pI128->Debug) {
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"  PCI Registers\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    MW0_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
-	    pI128->PciInfo->memBase[0],
-	    pI128->PciInfo->memBase[0] & 0xFFC00000,
-	    pI128->PciInfo->memBase[0] & 0x8 ? "" : "not-");
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    MW1_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
-	    pI128->PciInfo->memBase[1],
-	    pI128->PciInfo->memBase[1] & 0xFFC00000,
-	    pI128->PciInfo->memBase[1] & 0x8 ? "" : "not-");
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    XYW_AD(A) 0x%08x  addr 0x%08x\n",
-	    pI128->PciInfo->memBase[2],
-	    pI128->PciInfo->memBase[2] & 0xFFC00000);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    XYW_AD(B) 0x%08x  addr 0x%08x\n",
-	    pI128->PciInfo->memBase[3],
-	    pI128->PciInfo->memBase[3] & 0xFFC00000);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_G   0x%08x  addr 0x%08x\n",
-	    pI128->PciInfo->memBase[4],
-	    pI128->PciInfo->memBase[4] & 0xFFFF0000);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    IO        0x%08x  addr 0x%08x\n",
-	    pI128->PciInfo->ioBase[5],
-	    pI128->PciInfo->ioBase[5] & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    SSC       0x%08x  addr 0x%08x\n",
-    	    pI128->PciInfo->subsysCard,
-    	    pI128->PciInfo->subsysCard & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    SSV       0x%08x  addr 0x%08x\n",
-    	    pI128->PciInfo->subsysVendor,
-    	    pI128->PciInfo->subsysVendor & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n\n",
-    	    pI128->PciInfo->biosBase,
-	    pI128->PciInfo->biosBase & 0xFFFF8000,
-	    pI128->PciInfo->biosBase & 0x1 ? "" : "not-");
-
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    PCICMDST  0x%08x       0x%08x\n",
-   	    ((pciConfigPtr)pI128->PciInfo->thisCard)->pci_command,
-   	    ((pciConfigPtr)pI128->PciInfo->thisCard)->pci_status);
-
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"  IO Mapped Registers\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_G   0x%08x  addr 0x%08x\n",
-	    pI128->io.rbase_g, pI128->io.rbase_g & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_W   0x%08x  addr 0x%08x\n",
-	    pI128->io.rbase_w, pI128->io.rbase_w & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_A   0x%08x  addr 0x%08x\n",
-	    pI128->io.rbase_a, pI128->io.rbase_a & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_B   0x%08x  addr 0x%08x\n",
-	    pI128->io.rbase_b, pI128->io.rbase_b & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_I   0x%08x  addr 0x%08x\n",
-	    pI128->io.rbase_i, pI128->io.rbase_i & 0xFFFFFF00);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    RBASE_E   0x%08x  addr 0x%08x  size 0x%x\n\n",
-	    pI128->io.rbase_e, pI128->io.rbase_e & 0xFFFF8000,
-	    pI128->io.rbase_e & 0x7);
-
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"  Miscellaneous IO Registers\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    ID        0x%08x\n", pI128->io.id);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    CONFIG1   0x%08x\n", pI128->io.config1);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    CONFIG2   0x%08x\n", pI128->io.config2);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    SGRAM     0x%08x\n", pI128->io.sgram);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    SOFT_SW   0x%08x\n", pI128->io.soft_sw);
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	"    VGA_CTL   0x%08x\n", pI128->io.vga_ctl);
-    }
+    if (pI128->Debug)
+	I128DumpBaseRegisters(pScrn);
 
     pI128->RegRec.config1 = pI128->io.config1;
     pI128->RegRec.config2 = pI128->io.config2;
@@ -814,6 +767,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
+
 	
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
@@ -836,6 +790,55 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (!pI128->Primary)
         I128SoftReset(pScrn);
+
+    if (pI128->Chipset == PCI_CHIP_I128_T2R4) {
+	pI128->ddc1Read = NULL /*I128DDC1Read*/;
+	pI128->i2cInit = I128I2CInit;
+    }
+
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (pI128->ddc1Read || pI128->i2cInit) {
+        if (xf86LoadSubModule(pScrn, "ddc")) {
+          xf86LoaderReqSymLists(ddcSymbols, NULL);
+        } else {
+          /* ddc module not found, we can do without it */
+          pI128->ddc1Read = NULL;
+
+          /* Without DDC, we have no use for the I2C bus */
+          pI128->i2cInit = NULL;
+        }
+    }
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pI128->i2cInit) {
+      if ( xf86LoadSubModule(pScrn, "i2c") ) {
+        xf86LoaderReqSymLists(i2cSymbols,NULL);
+      } else {
+        /* i2c module not found, we can do without it */
+        pI128->i2cInit = NULL;
+        pI128->I2C = NULL;
+      }
+    }
+
+    /* Read and print the Monitor DDC info */
+    mon = I128getDDC(pScrn);
+    pScrn->monitor->DDC = mon;
+
+    /* see if we can find a flatpanel */
+    if (!pI128->FlatPanel && mon) {
+	int i;
+        for (i=0; i<4; i++)
+    	    if (mon->det_mon[i].type == DS_NAME) {
+		if (xf86strncmp((char *)mon->det_mon[i].section.name,
+			    "SGI 1600SW FP", 13) == 0) {
+			pI128->FlatPanel = TRUE;
+    			xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+				"Found FlatPanel via DDC2\n");
+		}
+		break;
+	    }
+    }
 
     pI128->maxClock = 175000;
 
@@ -1012,7 +1015,9 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
              pI128->FlatPanel = TRUE;
     	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Digital flat panel detected\n");
-          }
+          } else if (pI128->FlatPanel)
+    	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			"Digital flat panel forced\n");
 
     	  xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"Using SilverHammer programmable clock (MCLK %1.3f MHz)\n",
@@ -1141,7 +1146,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-#endif /* XFree86LOADER */
+#endif
 
     I128UnmapMem(pScrn);
 
@@ -1728,6 +1733,187 @@ I128SaveScreen(ScreenPtr pScreen, int mode)
 }
 
 
+static const int DDC_SDA_IN_SHIFT = 1;
+static const int DDC_SDA_OUT_SHIFT = 2;
+static const int DDC_SCL_IN_SHIFT = 3;
+static const int DDC_SCL_OUT_SHIFT = 0;
+
+static const int DDC_SDA_IN_MASK = 1 << 1;
+static const int DDC_SDA_OUT_MASK = 1 << 2;
+static const int DDC_SCL_IN_MASK = 1 << 3;
+static const int DDC_SCL_OUT_MASK = 1 << 0;
+
+static const int DDC_MODE_SHIFT = 8;
+static const int DDC_MODE_MASK = 3 << 8;
+static const int DDC_MODE_DIS  = 0;
+static const int DDC_MODE_DDC1 = 1 << 8;
+static const int DDC_MODE_DDC2 = 2 << 8;
+
+#if 0
+static unsigned int
+I128DDC1Read(ScrnInfoPtr pScrn)
+{
+  I128Ptr pI128 = I128PTR(pScrn);
+  unsigned char val;
+  unsigned long tmp, ddc;
+  unsigned short iobase;
+
+  iobase = pI128->RegRec.iobase;
+  ddc = inl(iobase + 0x2C);
+  if ((ddc & DDC_MODE_MASK) != DDC_MODE_DDC1) {
+      outl(iobase + 0x2C, DDC_MODE_DDC1);
+      xf86usleep(40);
+  }
+
+  /* wait for Vsync */
+  do {
+      tmp = inl(iobase + 0x2C);
+  } while (tmp & 1);
+  do {
+      tmp = inl(iobase + 0x2C);
+  } while (!(tmp & 1));
+
+  /* Get the result */
+  tmp = inl(iobase + 0x2C);
+  val = tmp & DDC_SDA_IN_MASK;
+
+  if ((ddc & DDC_MODE_MASK) != DDC_MODE_DDC1) {
+      outl(iobase + 0x2C, ~DDC_MODE_MASK & ddc);
+      xf86usleep(40);
+  }
+
+  return val;
+}
+#endif
+
+static void
+I128I2CGetBits(I2CBusPtr b, int *clock, int *data)
+{
+  I128Ptr pI128 = I128PTR(xf86Screens[b->scrnIndex]);
+  unsigned long ddc;
+  unsigned short iobase;
+#if 0
+  static int lastclock = -1, lastdata = -1;
+#endif
+
+  /* Get the result. */
+  iobase = pI128->RegRec.iobase;
+  ddc = inl(iobase + 0x2C);
+
+  *clock = (ddc & DDC_SCL_IN_MASK) != 0;
+  *data  = (ddc & DDC_SDA_IN_MASK) != 0;
+
+#if 0
+  if (pI128->Debug && ((lastclock != *clock) || (lastdata != *data))) {
+    xf86DrvMsg(b->scrnIndex, X_INFO, "i2c> c %d d %d\n", *clock, *data);
+    lastclock = *clock;
+    lastdata = *data;
+  }
+#endif
+}   
+
+static void
+I128I2CPutBits(I2CBusPtr b, int clock, int data)
+{   
+  I128Ptr pI128 = I128PTR(xf86Screens[b->scrnIndex]);
+  unsigned char drv, val;
+  unsigned long ddc;
+  unsigned long tmp;
+  unsigned short iobase;
+
+  iobase = pI128->RegRec.iobase;
+  ddc = inl(iobase + 0x2C);
+
+  val = (clock ? DDC_SCL_IN_MASK : 0) | (data ? DDC_SDA_IN_MASK : 0);
+  drv = ((clock) ? DDC_SCL_OUT_MASK : 0) | ((data) ? DDC_SDA_OUT_MASK : 0);
+
+  tmp = (DDC_MODE_MASK & ddc) | val | drv;
+  outl(iobase + 0x2C, tmp);
+#if 0
+  if (pI128->Debug)
+    xf86DrvMsg(b->scrnIndex, X_INFO, "i2c> 0x%x\n", tmp);
+#endif
+}   
+
+
+static Bool    
+I128I2CInit(ScrnInfoPtr pScrn)
+{       
+    I128Ptr pI128 = I128PTR(pScrn);
+    I2CBusPtr I2CPtr;
+    unsigned short iobase;
+    unsigned long soft_sw, ddc;
+     
+    I2CPtr = xf86CreateI2CBusRec();
+    if(!I2CPtr) return FALSE;
+ 
+    pI128->I2C = I2CPtr;
+ 
+    I2CPtr->BusName    = "DDC";
+    I2CPtr->scrnIndex  = pScrn->scrnIndex; 
+    I2CPtr->I2CPutBits = I128I2CPutBits; 
+    I2CPtr->I2CGetBits = I128I2CGetBits;
+    I2CPtr->BitTimeout = 4;
+    I2CPtr->ByteTimeout = 4;
+    I2CPtr->AcknTimeout = 4;
+    I2CPtr->StartTimeout = 4;
+
+    /* soft switch register bits 1,0 control I2C channel */
+    iobase = pI128->RegRec.iobase;
+    soft_sw = inl(iobase + 0x28);
+    soft_sw &= 0xfffffffc;
+    soft_sw |= 0x00000001;
+    outl(iobase + 0x28, soft_sw);
+    xf86usleep(1000);
+
+    /* set default as ddc2 mode */
+    ddc = inl(iobase + 0x2C);
+    ddc &= ~DDC_MODE_MASK;
+    ddc |= DDC_MODE_DDC2;
+    outl(iobase + 0x2C, ddc);
+    xf86usleep(40);
+
+    if (!xf86I2CBusInit(I2CPtr)) {
+        return FALSE;
+    }
+    return TRUE;
+} 
+
+
+static xf86MonPtr
+I128getDDC(ScrnInfoPtr pScrn)
+{
+  I128Ptr pI128 = I128PTR(pScrn);
+  xf86MonPtr MonInfo = NULL;
+
+  /* Initialize I2C bus - used by DDC if available */
+  if (pI128->i2cInit) {
+    pI128->i2cInit(pScrn);
+  }
+  /* Read and output monitor info using DDC2 over I2C bus */
+  if (pI128->I2C) {
+    MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, pI128->I2C);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+    xf86PrintEDID(MonInfo);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n");
+  }
+  if (!MonInfo) {
+    /* Read and output monitor info using DDC1 */
+    if (pI128->ddc1Read) {
+      MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, NULL, pI128->ddc1Read ) ;
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
+      xf86PrintEDID(MonInfo);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n");
+    }
+  }
+
+  if (MonInfo)
+    xf86SetDDCproperties(pScrn, MonInfo);
+
+  return MonInfo;
+}
+
+
 /*
  * I128DisplayPowerManagementSet --
  *
@@ -1773,3 +1959,369 @@ I128DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 }
 
 #endif
+
+void
+I128DumpBaseRegisters(ScrnInfoPtr pScrn)
+{
+    I128Ptr pI128 = I128PTR(pScrn);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"  PCI Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    MW0_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
+	    pI128->PciInfo->memBase[0],
+	    pI128->PciInfo->memBase[0] & 0xFFC00000,
+	    pI128->PciInfo->memBase[0] & 0x8 ? "" : "not-");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    MW1_AD    0x%08x  addr 0x%08x  %spre-fetchable\n",
+	    pI128->PciInfo->memBase[1],
+	    pI128->PciInfo->memBase[1] & 0xFFC00000,
+	    pI128->PciInfo->memBase[1] & 0x8 ? "" : "not-");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    XYW_AD(A) 0x%08x  addr 0x%08x\n",
+	    pI128->PciInfo->memBase[2],
+	    pI128->PciInfo->memBase[2] & 0xFFC00000);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    XYW_AD(B) 0x%08x  addr 0x%08x\n",
+	    pI128->PciInfo->memBase[3],
+	    pI128->PciInfo->memBase[3] & 0xFFC00000);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_G   0x%08x  addr 0x%08x\n",
+	    pI128->PciInfo->memBase[4],
+	    pI128->PciInfo->memBase[4] & 0xFFFF0000);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    IO        0x%08x  addr 0x%08x\n",
+	    pI128->PciInfo->ioBase[5],
+	    pI128->PciInfo->ioBase[5] & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    SSC       0x%08x  addr 0x%08x\n",
+    	    pI128->PciInfo->subsysCard,
+    	    pI128->PciInfo->subsysCard & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    SSV       0x%08x  addr 0x%08x\n",
+    	    pI128->PciInfo->subsysVendor,
+    	    pI128->PciInfo->subsysVendor & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n\n",
+    	    pI128->PciInfo->biosBase,
+	    pI128->PciInfo->biosBase & 0xFFFF8000,
+	    pI128->PciInfo->biosBase & 0x1 ? "" : "not-");
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    PCICMDST  0x%08x       0x%08x\n",
+   	    ((pciConfigPtr)pI128->PciInfo->thisCard)->pci_command,
+   	    ((pciConfigPtr)pI128->PciInfo->thisCard)->pci_status);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"  IO Mapped Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_G   0x%08x  addr 0x%08x\n",
+	    pI128->io.rbase_g, pI128->io.rbase_g & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_W   0x%08x  addr 0x%08x\n",
+	    pI128->io.rbase_w, pI128->io.rbase_w & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_A   0x%08x  addr 0x%08x\n",
+	    pI128->io.rbase_a, pI128->io.rbase_a & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_B   0x%08x  addr 0x%08x\n",
+	    pI128->io.rbase_b, pI128->io.rbase_b & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_I   0x%08x  addr 0x%08x\n",
+	    pI128->io.rbase_i, pI128->io.rbase_i & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    RBASE_E   0x%08x  addr 0x%08x  size 0x%x\n\n",
+	    pI128->io.rbase_e, pI128->io.rbase_e & 0xFFFF8000,
+	    pI128->io.rbase_e & 0x7);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"  Miscellaneous IO Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    ID        0x%08x\n", pI128->io.id);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    CONFIG1   0x%08x\n", pI128->io.config1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    CONFIG2   0x%08x\n", pI128->io.config2);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    SGRAM     0x%08x\n", pI128->io.sgram);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    SOFT_SW   0x%08x\n", pI128->io.soft_sw);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	"    VGA_CTL   0x%08x\n", pI128->io.vga_ctl);
+}
+
+
+void
+I128DumpActiveRegisters(ScrnInfoPtr pScrn)
+{
+    I128Ptr pI128 = I128PTR(pScrn);
+    unsigned short iobase;
+    unsigned long rbase_g, rbase_w, rbase_a, rbase_b, rbase_i, rbase_e;
+    unsigned long id, config1, config2, soft_sw, ddc, vga_ctl;
+    volatile unsigned long *vrba, *vrbg, *vrbw;
+
+    vrba = pI128->mem.rbase_a;
+    vrbg = pI128->mem.rbase_g;
+    vrbw = pI128->mem.rbase_w;
+
+    iobase = pI128->RegRec.iobase;
+    rbase_g = inl(iobase);
+    rbase_w = inl(iobase + 0x04);
+    rbase_a = inl(iobase + 0x08);
+    rbase_b = inl(iobase + 0x0C);
+    rbase_i = inl(iobase + 0x10);
+    rbase_e = inl(iobase + 0x14);
+    id = inl(iobase + 0x18);
+    config1 = inl(iobase + 0x1C);
+    config2 = inl(iobase + 0x20);
+    soft_sw = inl(iobase + 0x28);
+    ddc = inl(iobase + 0x2C);
+    vga_ctl = inl(iobase + 0x30);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "IO Mapped Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_G   0x%08x  addr 0x%08x\n",
+       		rbase_g, rbase_g & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_W   0x%08x  addr 0x%08x\n",
+       		rbase_w, rbase_w & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_A   0x%08x  addr 0x%08x\n",
+       		rbase_a, rbase_a & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_B   0x%08x  addr 0x%08x\n",
+       		rbase_b, rbase_b & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_I   0x%08x  addr 0x%08x\n",
+       		rbase_i, rbase_i & 0xFFFFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RBASE_E   0x%08x  addr 0x%08x  size 0x%x\n",
+       		rbase_e, rbase_e & 0xFFFF8000, rbase_e & 0x7);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Miscellaneous IO Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  ID        0x%08x\n", id);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    REV  %d  HBT %d  BASE0 %d  VDEN %d  VB %d  BASE1 %d  BASE2 %d  DS %d\n",
+    	id&7, (id>>3)&3, (id>>6)&3, (id>>8)&3, (id>>10)&1,
+    	(id>>11)&3, (id>>13)&3, (id>>15)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    DDEN %d  DB  %d  BASE3 %d  BASER %d  MDEN %d  TR %d  VS    %d\n",
+    	(id>>16)&3, (id>>18)&1, (id>>19)&3, (id>>21)&7, (id>>24)&3,
+	(id>>26)&1, (id>>27)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    CLASS %d  EE %d\n",
+	(id>>28)&3, (id>>30)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CONFIG1   0x%08x\n", config1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    VE %d  SFT_RST %d  ONE28 %d  VS %d\n",
+    	config1&1, (config1>>1)&1,
+    	(config1>>2)&1, (config1>>3)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    G %d  W %d  A %d  B %d  I %d  E %d  W0 %d  W1 %d  XA %d  XB %d\n",
+    	(config1>>8)&1, (config1>>9)&1,
+    	(config1>>10)&1, (config1>>11)&1,
+    	(config1>>12)&1, (config1>>13)&1,
+    	(config1>>16)&1, (config1>>17)&1,
+    	(config1>>20)&1, (config1>>21)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    HBPRI %d  VBPRI %d  DE1PRI %d  ISAPRI %d\n",
+    	(config1>>24)&3, (config1>>26)&3,
+    	(config1>>28)&3, (config1>>30)&3);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CONFIG2   0x%08x\n", config2);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    DWT %x  EWS %x  DWS %x  MC %x  FBB %d  IOB %d  FST %d  CNT %d  DEC %d\n",
+    	config2&0x3, (config2>>8)&0xF,
+    	(config2>>16)&0x7, (config2>>20)&0xF,
+    	(config2>>24)&1, (config2>>25)&1,
+    	(config2>>26)&1, (config2>>27)&1,
+    	(config2>>28)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    PRE %d  RVD %d  SDAC %d\n",
+	(config2>>29)&1, (config2>>30)&1, (config2>>31)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  SOFT_SW   0x%08x\n", soft_sw);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DDC       0x%08x\n", ddc);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  VGA_CTL   0x%08x\n", vga_ctl);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    MEMMUX %d  VGADEC %d  VIDMUX %d  ENA %d  BUFSEL %d  STR %d\n",
+    	vga_ctl&1, (vga_ctl>>1)&1,
+    	(vga_ctl>>2)&1, (vga_ctl>>3)&1,
+    	(vga_ctl>>4)&1, (vga_ctl>>5)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    3C2 %d  DACDEC %d  MSK 0x%02x\n",
+    	(vga_ctl>>6)&1,
+    	(vga_ctl>>7)&1,
+    	(vga_ctl>>8)&0xff);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  INT_VCNT 0x%08x  (%d)\n",
+    	vrbg[0x20/4]&0xFF, vrbg[0x20/4]&0xFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  INT_HCNT 0x%08x  (%d)\n",
+    	vrbg[0x24/4]&0xFFF, vrbg[0x24/4]&0xFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DB_ADR   0x%08x  (%d)\n",
+    	vrbg[0x28/4]&0x01FFFFF0, vrbg[0x28/4]&0x01FFFFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DB_PTCH  0x%08x  (%d)\n",
+    	vrbg[0x2C/4]&0xFFF0, vrbg[0x2C/4]&0xFFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_HAC  0x%08x  (%d)\n",
+    	vrbg[0x30/4]&0x3FFF, vrbg[0x30/4]&0x3FFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_HBL  0x%08x  (%d)\n",
+    	vrbg[0x34/4]&0x3FFF, vrbg[0x34/4]&0x3FFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_HFP  0x%08x  (%d)\n",
+    	vrbg[0x38/4]&0x3FFF, vrbg[0x38/4]&0x3FFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_HS   0x%08x  (%d)\n",
+    	vrbg[0x3C/4]&0x3FFF, vrbg[0x3C/4]&0x3FFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_VAC  0x%08x  (%d)\n",
+    	vrbg[0x40/4]&0xFFF, vrbg[0x40/4]&0xFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_VBL  0x%08x  (%d)\n",
+    	vrbg[0x44/4]&0xFFF, vrbg[0x44/4]&0xFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_VFP  0x%08x  (%d)\n",
+    	vrbg[0x48/4]&0xFFF, vrbg[0x48/4]&0xFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_VS   0x%08x  (%d)\n",
+    	vrbg[0x4C/4]&0xFFF, vrbg[0x4C/4]&0xFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_LCNT 0x%08x\n", vrbg[0x50/4]&0x0FFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_ZOOM 0x%08x\n", vrbg[0x54/4]&0xF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_1CON 0x%08x  PH %d  PV %d  CS %d INL %d H/VSE %d/%d VE %d BTS %d\n",
+        vrbg[0x58/4],
+    	vrbg[0x58/4]&1, (vrbg[0x58/4]>>1)&1, (vrbg[0x58/4]>>2)&1,
+    	(vrbg[0x58/4]>>3)&1, (vrbg[0x58/4]>>4)&1, (vrbg[0x58/4]>>5)&1,
+    	(vrbg[0x58/4]>>6)&1, (vrbg[0x58/4]>>8)&1);
+    
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CRT_2CON 0x%08x  MEM %d  RFR %d  TRD %d  SPL %d\n",
+        vrbg[0x5C/4],
+    	vrbg[0x5C/4]&7, (vrbg[0x5C/4]>>8)&1,
+    	(vrbg[0x5C/4]>>16)&7, (vrbg[0x5C/4]>>24)&1);
+    
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Windows Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW0_CTRL 0x%08x\n", vrbw[0x00]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    AMV %d  MP %d  AMD %d  SEN %d  BSY %d  MDM %d  DEN %d  PSZ %d\n",
+    	(vrbw[0x00]>>1)&1, (vrbw[0x00]>>2)&1, (vrbw[0x00]>>3)&1,
+    	(vrbw[0x00]>>4)&3, (vrbw[0x00]>>8)&1, (vrbw[0x00]>>21)&3,
+    	(vrbw[0x00]>>24)&3, (vrbw[0x00]>>26)&3);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "M/V/DSE %d/%d/%d\n",
+	(vrbw[0x00]>>28)&1, (vrbw[0x00]>>29)&1, (vrbw[0x00]>>30)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW0_AD    0x%08x  MW0_SZ    0x%08x  MW0_PGE   0x%08x\n",
+    	vrbw[0x04/4]&0xFFFFF000, vrbw[0x08/4]&0x0000000F,
+    	vrbw[0x0C/4]&0x000F001F);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW0_ORG10 0x%08x  MW0_ORG14 0x%08x  MW0_MSRC  0x%08x\n",
+    	vrbw[0x10/4]&0x01FFF000, vrbw[0x14/4]&0x01FFF000,
+    	vrbw[0x18/4]&0x00FFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW0_WKEY  0x%08x  MW0_KYDAT 0x%08x  MW0_MASK  0x%08x\n",
+    	vrbw[0x1C/4], vrbw[0x20/4]&0x000F000F, vrbw[0x24/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW1_CTRL 0x%08x\n", vrbw[0x28/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    AMV %d  MP %d  AMD %d  SEN %d  BSY %d  MDM %d  DEN %d  PSZ %d\n",
+    	(vrbw[0x28/4]>>1)&1, (vrbw[0x28/4]>>2)&1, (vrbw[0x28/4]>>3)&1,
+    	(vrbw[0x28/4]>>4)&3, (vrbw[0x28/4]>>8)&1, (vrbw[0x28/4]>>21)&3,
+    	(vrbw[0x28/4]>>24)&3, (vrbw[0x28/4]>>26)&3);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "M/V/DSE %d/%d/%d\n",
+	(vrbw[0x28/4]>>28)&1, (vrbw[0x28/4]>>29)&1, (vrbw[0x28/4]>>30)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW1_AD    0x%08x  MW1_SZ    0x%08x  MW1_PGE   0x%08x\n",
+    	vrbw[0x2C/4]&0xFFFFF000, vrbw[0x30/4]&0x0000000F,
+    	vrbw[0x34/4]&0x000F001F);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW1_ORG10 0x%08x  MW1_ORG14 0x%08x  MW1_MSRC  0x%08x\n",
+    	vrbw[0x38/4]&0x01FFF000, vrbw[0x3c/4]&0x01FFF000,
+    	vrbw[0x40/4]&0x00FFFF00);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MW1_WKEY  0x%08x  MW1_KYDAT 0x%08x  MW1_MASK  0x%08x\n",
+    	vrbw[0x44/4], vrbw[0x48/4]&0x000F000F, vrbw[0x4C/4]);
+    
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Engine A Registers\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  INTP      0x%08x\n", vrba[0x00/4]&0x03);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  INTM      0x%08x\n", vrba[0x04/4]&0x03);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  FLOW      0x%08x\n", vrba[0x08/4]&0x0F);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  BUSY      0x%08x\n", vrba[0x0C/4]&0x01);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XYW_AD    0x%08x  SIZE 0x%x  ADDR 0x%x\n",
+    	vrba[0x10/4]&0xFFFFFF00, (vrba[0x10/4]>>8)&0x0F,
+    	vrba[0x10/4]&0xFFFFF000);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  ZCTL      0x%08x\n", vrba[0x18/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  BUF_CTRL  0x%08x\n", vrba[0x20/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    AMV %d  MP %d  AMD %d  SEN %d  DEN %d  DSE %d  VSE %d  MSE %d\n",
+    	(vrba[0x20/4]>>1)&1, (vrba[0x20/4]>>2)&1, (vrba[0x20/4]>>3)&1,
+    	(vrba[0x20/4]>>8)&3, (vrba[0x20/4]>>10)&3, (vrba[0x20/4]>>12)&1,
+    	(vrba[0x20/4]>>13)&1, (vrba[0x20/4]>>14)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    PS %d  MDM %d  PSIZE %d  CRCO %d\n",
+	(vrba[0x20/4]>>16)&0x1F,
+    	(vrba[0x20/4]>>21)&3, (vrba[0x20/4]>>24)&3, (vrba[0x20/4]>>30)&3);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_PGE    0x%08x  DVPGE 0x%x  MPGE 0x%x\n",
+    	vrba[0x24/4]&0x000F001F, (vrba[0x24/4]>>8)&0x01F,
+    	(vrba[0x24/4]&0x000F0000)>>16);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_SORG   0x%08x\n", vrba[0x28/4]&0x0FFFFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_DORG   0x%08x\n", vrba[0x2C/4]&0x0FFFFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_MSRC   0x%08x\n", vrba[0x30/4]&0x03FFFFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_WKEY   0x%08x\n", vrba[0x38/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_ZPTCH  0x%08x\n", vrba[0x3C/4]&0x000FFFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_SPTCH  0x%08x\n", vrba[0x40/4]&0x0000FFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DE_DPTCH  0x%08x\n", vrba[0x44/4]&0x0000FFF0);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD       0x%08x\n", vrba[0x48/4]&0x7FFFFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    OPC 0x%02x  ROP 0x%02x  STYLE 0x%02x  CLP 0x%x  PATRN 0x%x  HDF %d\n",
+    	vrba[0x48/4]&0xFF, (vrba[0x48/4]>>8)&0xFF, (vrba[0x48/4]>>16)&0x1F,
+    	(vrba[0x48/4]>>21)&7, (vrba[0x48/4]>>24)&0xF, (vrba[0x48/4]>>28)&7);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_SHADE 0x%02x\n", vrba[0x4C/4]&0xFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_OPC   0x%02x\n", vrba[0x50/4]&0xFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_ROP   0x%02x\n", vrba[0x54/4]&0xFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_STYLE 0x%02x\n", vrba[0x58/4]&0x1F);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_PATRN 0x%02x\n", vrba[0x5C/4]&0x0F);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_CLP   0x%02x\n", vrba[0x60/4]&0x07);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CMD_HDF   0x%02x\n", vrba[0x64/4]&0x07);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  FORE      0x%08x\n", vrba[0x68/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  BACK      0x%08x\n", vrba[0x6C/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  MASK      0x%08x\n", vrba[0x70/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  RMSK      0x%08x\n", vrba[0x74/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  LPAT      0x%08x\n", vrba[0x78/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  PCTRL     0x%08x\n", vrba[0x7C/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    PLEN 0x%02d  PSCL 0x%02d  SPTR 0x%02d  SSCL 0x%x  STATE 0x%04x\n",
+    	vrba[0x7C/4]&0x1F, (vrba[0x7C/4]>>5)&7, (vrba[0x7C/4]>>8)&0x1F,
+    	(vrba[0x7C/4]>>13)&7, (vrba[0x7C/4]>>16)&0xFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CLPTL     0x%08x  CLPTLY 0x%04x  CLPTLX 0x%04x\n",
+    	vrba[0x80/4], vrba[0x80/4]&0xFFFF, (vrba[0x80/4]>>16)&0xFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  CLPBR     0x%08x  CLPBRY 0x%04x  CLPBRX 0x%04x\n",
+    	vrba[0x84/4], vrba[0x84/4]&0xFFFF, (vrba[0x84/4]>>16)&0xFFFF);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY0       0x%08x\n", vrba[0x88/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY1       0x%08x\n", vrba[0x8C/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY2       0x%08x\n", vrba[0x90/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY3       0x%08x\n", vrba[0x94/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY4       0x%08x\n", vrba[0x98/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY5       0x%08x\n", vrba[0x9C/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY6       0x%08x\n", vrba[0xA0/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY7       0x%08x\n", vrba[0xA4/4]);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  XY8       0x%08x\n", vrba[0xA8/4]);
+    if (pI128->RamdacType != TI3025_DAC)
+	I128DumpIBMDACRegisters(pScrn, vrbg);
+}
+
+static unsigned char ibm52Xmask[0xA0] = {
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   /* 00-07 */
+0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,   /* 08-0F */
+0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,   /* 10-17 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 18-1F */
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00,   /* 20-27 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 28-2F */
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,   /* 30-37 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 38-3F */
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   /* 40-47 */
+0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 48-4F */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 58-5F */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 58-5F */
+0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 60-67 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 68-6F */
+0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,   /* 70-77 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 78-7F */
+0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,   /* 80-87 */
+0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF,   /* 88-8F */
+0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,   /* 90-97 */
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   /* 98-9F */
+};
+
+void
+I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile unsigned long *vrbg)
+{
+	unsigned char ibmr[0x100];
+	char buf[128], tbuf[10];
+	int i;
+
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "IBM52X Registers\n");
+
+	vrbg[IDXH_I] = 0x00;
+	vrbg[IDXH_I] = 0x00;
+	vrbg[IDXCTL_I] = 0x01;
+	buf[0] = '\0';
+
+	for (i=0; i<0xA0; i++) {
+		if ((i%16 == 0) && (i != 0)) {
+			xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "%s\n", buf);
+			buf[0] = '\0';
+		}
+		if (ibm52Xmask[i] == 0x00) {
+			xf86strcat(buf, " ..");
+		} else {
+			vrbg[IDXL_I] = i;
+			ibmr[i] = vrbg[DATA_I] & 0xFF;
+			ibmr[i] &= ibm52Xmask[i];
+			xf86sprintf(tbuf, " %02x", ibmr[i]);
+			xf86strcat(buf, tbuf);
+		}
+	}
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "%s\n", buf);
+}
+

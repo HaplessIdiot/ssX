@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.2 2000/10/19 01:03:54 robin Exp $ */
 
 /*
  * Copyright 1997-2000 by Robin Cutshaw <robin@XFree86.Org>
@@ -245,7 +245,7 @@ I128SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSF color 0x%x rop 0x%x (pI128->rop 0x%x) pmask 0x%x\n", color, rop, i128alu[rop]>>8, planemask);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSF color 0x%x rop 0x%x (I128rop 0x%x) pmask 0x%x\n", color, rop, i128alu[rop]>>8, planemask);
 #endif
 
 	ENG_PIPELINE_READY();
@@ -301,7 +301,7 @@ I128SubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "STPL pI128->rop 0x%x  %d,%d %d,%d   clip %d,%d %d,%d\n", pI128->rop, x1, y1, x2, y2, pI128->clptl>>16, pI128->clptl&0xffff, (pI128->clpbr>>16)&0xffff, pI128->clpbr&0xffff);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "STPL I128rop 0x%x  %d,%d %d,%d   clip %d,%d %d,%d\n", pI128->rop, x1, y1, x2, y2, pI128->clptl>>16, pI128->clptl&0xffff, (pI128->clpbr>>16)&0xffff, pI128->clpbr&0xffff);
 #endif
 
 	ENG_PIPELINE_READY();
@@ -348,7 +348,7 @@ I128FillSolidRects(ScrnInfoPtr pScrn, int fg, int rop, unsigned int planemask,
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "FSR color 0x%x rop 0x%x (pI128->rop 0x%x) pmask 0x%x\n", fg, rop, i128alu[rop]>>8, planemask);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "FSR color 0x%x rop 0x%x (I128rop 0x%x) pmask 0x%x\n", fg, rop, i128alu[rop]>>8, planemask);
 #endif
 
 	ENG_PIPELINE_READY();
@@ -380,6 +380,11 @@ I128FillSolidRects(ScrnInfoPtr pScrn, int fg, int rop, unsigned int planemask,
 				(pBoxI->x1<<16) | pBoxI->y1;		MB;
 
 			ENG_PIPELINE_READY();
+#if 0
+			if (pI128->Debug)
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "FSR x,y %d,%d w,h %d,%d\n", pBoxI->x1, pBoxI->y1, w, h);
+#endif
+
 		}
 		pBoxI++;
 		nBox--;
@@ -472,7 +477,6 @@ I128AccelInit(ScreenPtr pScreen)
 	}
 	pI128->mem.rbase_a[BUF_CTRL] = buf_ctrl;
 
-	pI128->mem.rbase_a[INTM] = 0x03;
 	pI128->mem.rbase_a[DE_PGE] = 0x00;
 	pI128->mem.rbase_a[DE_SORG] = pI128->displayOffset;
 	pI128->mem.rbase_a[DE_DORG] = pI128->displayOffset;
@@ -480,12 +484,21 @@ I128AccelInit(ScreenPtr pScreen)
 	pI128->mem.rbase_a[DE_WKEY] = 0x00;
 	pI128->mem.rbase_a[DE_SPTCH] = pI128->mem.rbase_g[DB_PTCH];
 	pI128->mem.rbase_a[DE_DPTCH] = pI128->mem.rbase_g[DB_PTCH];
+	if (pI128->Chipset == PCI_CHIP_I128_T2R4)
+		pI128->mem.rbase_a[DE_ZPTCH] = pI128->mem.rbase_g[DB_PTCH];
 	pI128->mem.rbase_a[RMSK] = 0x00000000;
 	pI128->mem.rbase_a[XY4_ZM] = ZOOM_NONE;
 	pI128->mem.rbase_a[LPAT] = 0xffffffff;  /* for lines */
 	pI128->mem.rbase_a[PCTRL] = 0x00000000; /* for lines */
 	pI128->mem.rbase_a[CLPTL] = 0x00000000;
 	pI128->mem.rbase_a[CLPBR] = (4095<<16) | 2047 ;
+	pI128->mem.rbase_a[ACNTRL] = 0x00000000;
+	pI128->mem.rbase_a[INTM] = 0x03;
+
+	if (pI128->Debug) {
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I128AccelInit done\n");
+		I128DumpActiveRegisters(pScrn);
+	}
 
 	return(XAAInit(pScreen, infoPtr));
 }

@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx October 2000)
+ 784. Add I2C/DDC support to i128 driver (Robin Cutshaw).
  783. Add non-GXcopy raster op support to cirrus driver (#4178, David Monniaux).
  782. Use DlLibrary instead of referencing -ldl explicitly in xf86cfg
       (#4189, Matthieu Herrb).
@@ -11259,4 +11260,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1350 2000/10/21 22:29:46 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1351 2000/10/23 12:10:06 alanh Exp $
