@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.11 2001/07/21 13:50:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.12 2001/11/24 14:35:30 tsi Exp $ */
 /*
- * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

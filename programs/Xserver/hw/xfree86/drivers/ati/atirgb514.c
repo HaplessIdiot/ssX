@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atirgb514.c,v 1.1 2001/11/25 13:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atirgb514.c,v 1.2 2001/11/26 15:21:21 tsi Exp $ */
 /*
- * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2001 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -266,7 +266,6 @@ ATIRGB514Set
         out8(M64_DAC_WRITE, 0x71U);
         out8(M64_DAC_DATA, 0x00U);
         out8(M64_DAC_MASK, pATIHW->ibmrgb514[0x0071U] & ~0x41U);
-    
     }
 
 #endif /* AVOID_CPIO */

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.10 2001/03/25 05:32:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.11 2001/06/13 02:33:31 tsi Exp $ */
 /*
- * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
