@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.20 1996/05/06 05:52:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.21 1996/08/10 13:02:01 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -354,6 +354,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.20 1996/05/06 05:52:04 dawes Exp $
 #    define i386Sco324Architecture
 #    undef SCO324
 #   endif
+#   ifdef SCO325
+#    define i386Sco325Architecture
+#    undef SCO325
+#   endif
 #   undef SCO
 #  endif /* SCO */
 #  ifdef ISC
@@ -408,6 +412,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.20 1996/05/06 05:52:04 dawes Exp $
 #   ifdef SCO324
 #    define i386Sco324Architecture
 #    undef SCO324
+#   endif
+#   ifdef SCO325
+#    define i386Sco325Architecture
+#    undef SCO325
 #   endif
 #   undef SCO
 #  endif /* SCO */

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 5.43 95/04/07 19:13:59 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.4 1995/01/28 15:45:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.5 1996/01/05 13:17:24 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -221,6 +221,9 @@ stipsprcte32.o: stipsprcte32.s
 
 #if PixelSize == 32
 InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
+#endif
+#if PixelSize == 24
+InstallLinkKitNamedLibrary(cfb,cfb24,$(LINKKITDIR)/lib)
 #endif
 #if PixelSize == 16
 InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)

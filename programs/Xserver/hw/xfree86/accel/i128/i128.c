@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.10 1996/04/15 11:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.11 1996/05/12 11:57:49 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -100,6 +100,7 @@ ScrnInfoRec i128InfoRec =
    0,				/* int suspendTime */
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
+   0,				/* int textClockFreq */
 #ifdef XFreeXDGA
    0,				/* int directMode */
    0,				/* Set Vid Page */

@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.14 1996/02/20 14:31:40 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.15 1996/08/10 13:02:16 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -70,7 +70,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef imake_ccflags
 #undef imake_ccflags
 #endif
-#define imake_ccflags "-Dsco"
+#define imake_ccflags "-Dsco -DSYSV"
 #endif
 
 #ifdef sony
@@ -365,6 +365,7 @@ char *cpp_argv[ARGUMENTS] = {
 #endif /* MOTOROLA */
 #if defined(M_UNIX) || defined(sco)
 	"-Dsco",
+	"-DSYSV",
 # if defined(sco324)
 	"-Dsco324",
 # endif
@@ -396,6 +397,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSCO",
 #   ifdef SCO324
 	"-DSCO324",
+#   endif
+#   ifdef SCO325
+    "-DSCO325",
 #   endif
 #  endif
 # endif
@@ -434,6 +438,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSCO",
 #  ifdef SCO324
 	"-DSCO324",
+#  endif
+#  ifdef SCO325
+	"-DSCO325",
 #  endif
 # endif
 # ifdef ESIX

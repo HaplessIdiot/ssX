@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.10 1996/02/04 08:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.11 1996/03/03 03:56:12 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -50,6 +50,9 @@
 #ifdef SCO
 # include <sys/vtkd.h>
 # include <sys/console.h>
+#ifdef SCO325
+#undef _status
+#endif
 #else
 # include <sys/kd.h>
 # if !defined(sun)

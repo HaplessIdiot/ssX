@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.27 1996/03/29 22:15:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.28 1996/05/10 06:56:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -109,6 +109,7 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int suspendTime */
   0,			/* int offTime */
   -1,			/* int s3BlankDelay */
+  0,			/* int textClockFreq */
 #ifdef XFreeXDGA
   0,			/* int directMode */
   NULL,			/* Set Vid Page */

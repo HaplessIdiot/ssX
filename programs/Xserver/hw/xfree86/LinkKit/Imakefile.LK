@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile.LK /main/5 1995/09/04 19:49:48 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.26 1995/07/15 15:02:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.27 1996/02/04 08:56:19 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -24,6 +24,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.26 1995/
 #define CFBLibs PreFbLibs $(CFB) PostFbLibs
 #define CFB8Libs PreFbLibs $(CFB8) PostFbLibs
 #define CFB16Libs PreFbLibs $(CFB16) PostFbLibs
+#define CFB24Libs PreFbLibs $(CFB24) PostFbLibs
 #define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
 
 #if BuildPexExt
@@ -50,19 +51,26 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.26 1995/
 #if BuildLBX
       LBXEXT = lib/liblbx.a lib/liblbxutil.a
 #endif
+#if BuildRecordExt
+      LBRECORD = lib/librecord.a
+#endif
+#if BuildDBEExt
+      LBDBE = lib/libdbe.a
+#endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
 #endif
 
       OTHEREXTS = lib/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
-                  $(LBXEXT) $(SITEEXTS)
+                  $(LBXEXT) $(LBRECORD) $(LBDBE) $(RECORDEXT) $(SITEEXTS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = lib/libXau.a
        XDMCPLIB = lib/libXdmcp.a
         BSDEMUL = lib/libXbsd.a
             MFB = lib/libmfb.a
-            CFB = lib/libcfb.a lib/libcfb16.a lib/libcfb32.a
+            CFB = lib/libcfb.a lib/libcfb16.a lib/libcfb24.a lib/libcfb32.a
            CFB8 = lib/libcfb.a
+	  CFB24 = lib/libcfb.a lib/libcfb24.a
           CFB16 = lib/libcfb.a lib/libcfb16.a
           CFB32 = lib/libcfb.a lib/libcfb32.a
 #if BuildLBX
@@ -123,6 +131,7 @@ XCOMM MFBDIR = mfb
 XCOMM Similarly, its build block should have:
 XCOMM CFB8DIR  = cfb   (if the servr needs 8 bit cfb)
 XCOMM CFB16DIR = cfb16 (16 bit cfb)
+XCOMM CFB24DIR = cfb24 (24 bit cfb)
 XCOMM CFB32DIR = cfb32 (32 bit cfb)
 XCOMM 
 XCOMM If a server does not need all of the above components, simply
@@ -367,7 +376,7 @@ XNESTSYSLIBS = ClientLibDir $(XLIB) $(XNEST) $(SYSLIBS)
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
 
-CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
+CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(DDXDIR4) $(DDXDIR5) $(DDXDIR6)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(DDXDIRS)
 

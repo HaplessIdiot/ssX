@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.31 1996/04/15 11:29:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.32 1996/08/10 13:04:32 dawes Exp $ */
 
 /*
  * Includes
@@ -434,6 +434,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CTF65540	SVGA_TYPE(V_CT,11)	/* C&T F65540		*/
 #define CHIP_CTF65545	SVGA_TYPE(V_CT,12)	/* C&T F65545		*/
 #define CHIP_CTF65548	SVGA_TYPE(V_CT,13)	/* C&T F65548		*/
+#define CHIP_CTF65546	SVGA_TYPE(V_CT,14)	/* C&T F65546		*/
+#define CHIP_CTF65550	SVGA_TYPE(V_CT,15)	/* C&T F65550		*/
+#define CHIP_CTF65554	SVGA_TYPE(V_CT,16)	/* C&T F65554		*/
 #define CHIP_CL_UNKNOWN	SVGA_TYPE(V_CIRRUS,0)	/* Cirrus unknown	*/
 #define CHIP_CL510	SVGA_TYPE(V_CIRRUS,1)	/* Cirrus CL-GD 510/520	*/
 #define CHIP_CL610	SVGA_TYPE(V_CIRRUS,2)	/* Cirrus CL-GD 610/620	*/
@@ -517,6 +520,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_Trio32	SVGA_TYPE(V_S3,19)	/* S3 Trio32		*/
 #define CHIP_S3_Trio64	SVGA_TYPE(V_S3,20)	/* S3 Trio64		*/
 #define CHIP_S3_Trio64V SVGA_TYPE(V_S3,21)	/* S3 Trio64V+		*/
+#define CHIP_S3_ViRGE   SVGA_TYPE(V_S3,22)	/* S3 ViRGE		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/

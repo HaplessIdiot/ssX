@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.8 1996/02/04 08:57:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.9 1996/04/15 11:29:13 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -50,7 +50,66 @@ Bool Probe_S3(Chipset)
 int *Chipset;
 {
 	Bool result = FALSE;
-	Byte old, tmp, rev;
+	Byte chip, old, tmp, rev;
+	int i = 0;
+
+	if (!NoPCI)
+	{
+	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+		if (pcrp->_vendor == PCI_VENDOR_S3)
+		{
+			switch (pcrp->_device)
+			{
+			case PCI_CHIP_TRIO:
+#if 1  /* can only be distinguished using port probing... */
+			        PCIProbed = FALSE;
+#else
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_Trio32; 
+				*Chipset = CHIP_S3_Trio64V; 
+				*Chipset = CHIP_S3_Trio64; 
+#endif
+				break;
+			case PCI_CHIP_868:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_868;
+				break;
+			case PCI_CHIP_928:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_928P;
+				break;
+			case PCI_CHIP_864_0:
+			case PCI_CHIP_864_1:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_864;
+				break;
+			case PCI_CHIP_964_0:
+			case PCI_CHIP_964_1:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_964;
+				break;
+			case PCI_CHIP_968:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_968;
+				break;
+			case PCI_CHIP_ViRGE:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_ViRGE;
+				break;
+#if 0  /* use port probing then... */
+			default:
+			        PCIProbed = TRUE;
+				Chip_data = chip;
+				*Chipset = CHIP_S3_UNKNOWN;
+				break;
+#endif
+			}
+			if (PCIProbed)
+			   return(TRUE);
+		}
+		i++;
+	    }
+	}
 
 	/* Add CRTC to enabled ports */
 	Ports[0] = CRTC_IDX;
@@ -205,6 +264,8 @@ int *Chipset;
 				 *Chipset = CHIP_S3_Trio64;
 			   else if (chip_id_low==0xf0) 
 			      *Chipset = CHIP_S3_968;
+			   else if (chip_id_low==0x31) 
+			      *Chipset = CHIP_S3_ViRGE;
 			   else {
 			      Chip_data = rev;
 			      Chip_data = (Chip_data << 8) | chip_id_high;
