@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.5 1996/12/23 06:30:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/kbd_mode.c,v 3.6 1998/10/04 09:38:33 dawes Exp $ */
 
 #ifndef lint
 static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
@@ -42,7 +42,7 @@ static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
-#if defined(SVR4) || defined(__bsdi_)
+#if defined(SVR4) || defined(__bsdi__)
 #include <fcntl.h>
 #ifndef __bsdi__
 #include <sys/kbio.h>

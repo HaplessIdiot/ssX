@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.29 2000/04/20 21:28:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.30 2000/05/06 21:09:38 keithp Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -2089,10 +2089,14 @@ static void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
 static Bool R128EnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr info = R128PTR(pScrn);
+    R128SavePtr restore = &info->SavedReg;
 
     R128TRACE(("R128EnterVT\n"));
     if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
     R128AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    R128RestorePalette(pScrn,restore); 
+
     return TRUE;
 }
 
@@ -2122,8 +2126,12 @@ static void R128LeaveVTFBDev(int scrnIndex, int flags)
 static void R128LeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr   info = R128PTR(pScrn);
+    R128SavePtr save = &info->SavedReg;
 
     R128TRACE(("R128LeaveVT\n"));
+    R128SavePalette(pScrn,save); 
+
     R128Restore(pScrn);
 }
 

@@ -1,4 +1,7 @@
-XFree86 4.0b (?? May 2000)
+XFree86 4.0b (18 May 2000)
+ 171. Fix some BSDI typos in hw/sun (#3862, Kurt Lidl).
+ 170. Fix r128 palette save/restore when VT switching (#3861, Ani Joshi).
+ 169. Disable the X server's internal malloc by default (#3860, Keith Packard).
  168. Make xdpyinfo and xf86dga fail gracefully when DGA is not enabled
       in the driver, but the extension is enabled (#3870, Andrew Aitchison).
  167. Fix too many xfree calls in lbxproxy (#3907, Matthieu Herrb).
@@ -10331,4 +10334,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1148 2000/05/10 20:01:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1154 2000/05/14 20:44:00 alanh Exp $

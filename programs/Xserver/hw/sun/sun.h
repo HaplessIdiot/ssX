@@ -13,7 +13,7 @@
  * express or implied warranty.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.7 1998/06/27 12:53:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.8 2000/03/31 22:55:22 dawes Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
@@ -53,7 +53,7 @@ extern char *getenv();
 
 #include <fcntl.h>
 
-#ifndef __bsdi_
+#ifndef __bsdi__
 # ifndef CSRG_BASED
 #  ifndef i386
 #   include <poll.h>
