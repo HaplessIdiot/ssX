@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.225 2003/10/15 21:23:37 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.226 2003/10/18 02:14:21 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3940,7 +3940,7 @@ clean::									@@\
 
 #ifdef HTMLroffCmd
 #define HtmlTarget(file) file.html
-#define HtmlClean(file) file.nhtml file.html
+#define HtmlClean(file) file.nhtml file.html file*.png
 #else
 #define HtmlTarget(file) /**/
 #define HtmlClean(file) /**/
@@ -3965,11 +3965,31 @@ file.pdf: file.ps							@@\
 #endif
 #endif
 
+#if HasPdfLatex
+#define PdfLatexTarget(file) file.pdf
+#define PdfLatexClean(file) file.pdf
+#else
+#define PdfLatexTarget(file) /**/
+#define PdfLatexClean(file) /**/
+#endif
+
+#ifndef LatexToPdf
+#if HasPdfLatex && defined(PdfLatexCmd)
+#define LatexToPdf(file)						@@\
+file.pdf: file.tex							@@\
+	RemoveFile(file.pdf)						@@\
+	$(PDFLATEXCMD) file.tex
+#else
+#define LatexToPdf(file) /**/
+#endif
+#endif
+
+
 #ifndef MakeDepSimpleHtmlDoc
 #ifdef HTMLroffCmd
 #define MakeDepSimpleHtmlDoc(file,deps,srcs)				@@\
 HtmlTarget(file): deps							@@\
-	$(HTMLROFF) $(MSMACROS) $(XDOCMACROS) srcs \			@@\
+	$(HTMLROFF) $(MSMACROS) $(XDOCMACROS) Concat(-P-I,file) srcs \		@@\
 		2> index.raw > file.nhtml \				@@\
 	  && PostProcessTroffHTML(file.nhtml,$@)
 #else
@@ -3981,7 +4001,7 @@ HtmlTarget(file): deps							@@\
 #ifdef HTMLroffCmd
 #define MakeTblHtmlDoc(file,srcs)					@@\
 file.html: srcs								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(HTMLROFF) $(MSMACROS) \		@@\
+	$(TBL) $(XDOCMACROS) srcs | $(HTMLROFF) $(MSMACROS) Concat(-P-I,file) \	@@\
 		2> index.raw > file.nhtml \				@@\
 	  && PostProcessTroffHTML(file.nhtml,$@)
 #else
@@ -3993,7 +4013,7 @@ file.html: srcs								@@\
 #ifdef HTMLroffCmd
 #define MakeEqnHtmlDoc(file,srcs)					@@\
 file.html: srcs								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(HTMLROFF) $(MSMACROS) \	@@\
+	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(HTMLROFF) $(MSMACROS) Concat(-P-I,file) \ @@\
 		2> index.raw > file.nhtml \				@@\
 	  && PostProcessTroffHTML(file.nhtml,$@)
 #else
@@ -4101,7 +4121,7 @@ clean::									@@\
 #ifndef MakeLatexDoc
 #if HasLatex
 #define MakeLatexDoc(file,src)	 					@@\
-all:: file.ps								@@\
+all:: file.ps PdfLatexTarget(file)					@@\
 									@@\
 file.dvi: src	  							@@\
 	$(LATEX) src							@@\
@@ -4109,9 +4129,12 @@ file.dvi: src	  							@@\
 file.ps: file.dvi							@@\
 	$(DVIPS) -o file.nps file && $(MV) file.nps $@			@@\
 									@@\
+LatexToPdf(file)							@@\
+									@@\
 clean:: 								@@\
 	RemoveFiles(file.nps file.ps file.dvi file.log)			@@\
-	RemoveFiles(file.aux file.toc file.lof file.lot)
+	RemoveFiles(file.aux file.toc file.lof file.lot)		@@\
+	$(RM) PdfLatexClean(file)
 #else /* HasLatex */
 #define MakeLatexDoc(file,src)	 					@@\
 all::									@@\
@@ -4136,9 +4159,15 @@ install:: deps								@@\
 	fi								@@\
 	RemoveOldFile(name.txt,name.TXT,$(DOCDIR))			@@\
 	MakeDir($(DESTDIR)$(DOCHTMLDIR))				@@\
-	@if [ -f name.html -a X$(NOHTML) = X ]; then set -x; \		@@\
+	@if [ -f name.html -a X$(NOHTML) = X ]; then (set -x; \		@@\
 	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.html \	@@\
-		$(DESTDIR)$(DOCHTMLDIR); \				@@\
+		$(DESTDIR)$(DOCHTMLDIR)); \				@@\
+	  for i in name*.png; do \					@@\
+	    if [ -f $$i ]; then (set -x; \				@@\
+	      $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $$i \		@@\
+		$(DESTDIR)$(DOCHTMLDIR)); \				@@\
+	    fi; \							@@\
+	  done; \							@@\
 	fi								@@\
 	MakeDir($(DESTDIR)$(DOCPDFDIR))					@@\
 	@if [ -f name.pdf -a X$(NOPDF) = X ]; then set -x; \		@@\

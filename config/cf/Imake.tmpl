@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.146 2003/09/21 10:54:13 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.147 2003/10/19 01:02:18 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1480,6 +1480,12 @@ TCLIBDIR = TclLibDir
 #ifndef LatexCmd
 #define LatexCmd latex
 #endif
+#ifndef HasPdfLatex
+#define HasPdfLatex NO
+#endif
+#ifndef PdfLatexCmd
+#define PdfLatexCmd pdflatex
+#endif
 #ifndef GhostScriptCmd
 #define GhostScriptCmd gs
 #endif
@@ -1823,6 +1829,9 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #if HasLatex
             DVIPS = DvipsCmd
             LATEX = LatexCmd
+#endif
+#if HasPdfLatex
+      PDFLATEXCMD = PdfLatexCmd
 #endif
 #if HasSentinel
          SENTINEL = SentinelCmd
