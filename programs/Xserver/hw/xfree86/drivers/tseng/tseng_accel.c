@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.6 1997/06/06 06:07:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.7 1997/06/29 11:40:34 dawes Exp $ */
 
 
 /*
@@ -63,6 +63,7 @@ void TsengSubsequentFill8x8Pattern();
 
 static int bytesperpixel, powerPerPixel;
 static int tseng_line_width;
+static Bool need_wait_acl = FALSE;
 
 /* These will hold the ping-pong registers.
  * Note that ping-pong registers might not be needed when using
@@ -96,16 +97,16 @@ void TsengAccelInit() {
     /*
      * Set up the main acceleration flags.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
-    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64 | 
-                             HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
-
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | DELAYED_SYNC | PIXMAP_CACHE;
     /* we'll disable COP_FRAMEBUFFER_CONCURRENCY for the public beta
      * release, because it causes font corruption. But THIS NEEDS TO BE
      * INVESTIGATED.
      */
 /*      | COP_FRAMEBUFFER_CONCURRENCY;*/
       
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64 | 
+                             HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+
     if (et4000_type >= TYPE_ET6000)
     {
       xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
@@ -116,6 +117,9 @@ void TsengAccelInit() {
      * all coprocessor operations to complete.
      */
     xf86AccelInfoRec.Sync = TsengSync;
+    
+    /* W32 and W32i must wait for ACL before changing registers */
+    need_wait_acl = (et4000_type < TYPE_ET4000W32P);
 
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
@@ -191,21 +195,26 @@ void TsengAccelInit() {
 
     /*
      * Color expansion primitives.
-     * Since the ET6000 doesn't support CPU-to-screen color expansion,
-     * we revert to scanline-screen-to-screen color expansion instead.
-     * This is a less performant solution.
+     *
+     *     Color expansion capabilities of the Tseng chip families:
+     *
+     *     Chip     screen-to-screen   CPU-to-screen   Supported depths
+     *
+     *   ET4000W32        ???              ???             ???
+     *   ET4000W32i       No               Yes             8bpp only
+     *   ET4000W32p       Yes              Yes             8bpp only
+     *   ET6000           Yes              No              8/16/24/32 bpp
      */
 
     /*
-     * ScanlineScreenToScreenColorExpand needs a linear ScratchBufferAddr,
-     * so there's no point in providing this function when banked adressing
-     * is used, although it is feasible (through an MMU aperture). XAA needs
-     * to be modified to accomodate this. Currently it tries to write to
-     * FrameBufferBase+ScratchBufferAddr, which is only valid in linear mode.
+     * Screen-to-screen color expansion.
      *
+     * Scanline-screen-to-screen color expansion is slower than
+     * CPU-to-screen color expansion.
      */
 
-    if ( (et4000_type >= TYPE_ET6000) || (vgaBitsPerPixel == 8) )
+    if ( ((et4000_type >= TYPE_ET4000W32P) && (vgaBitsPerPixel == 8))
+       || (et4000_type >= TYPE_ET6000) )
     {
       xf86AccelInfoRec.ColorExpandFlags =
           BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
@@ -226,7 +235,7 @@ void TsengAccelInit() {
           
       /* triple-buffering is needed to account for double-buffering of Tseng
        * acceleration registers. Increasing this number doesn't help solve the
-       * problems with both ET4000 and ET6000 with text rendering.
+       * problems with both ET4000W32 and ET6000 with text rendering.
        */
       xf86AccelInfoRec.PingPongBuffers = 3;
 
@@ -257,6 +266,9 @@ void TsengAccelInit() {
      * occasionally we get accelerator timeouts, and after a few, complete
      * system hangs.
      *
+     * The W32 engine requires SCANLINE_NO_PAD, but that doesn't seem to
+     * work very well (accelerator hangs).
+     *
      * What works is this: tell XAA that we have SCANLINE_PAD_DWORD, and then
      * add the following code in TsengSubsequentCPUToScreenColorExpand():
      *     w = (w + 31) & ~31; this code rounds the width up to the nearest
@@ -265,16 +277,18 @@ void TsengAccelInit() {
      * correct (4 chars are "blanked out" when only one is written, for
      * example). But this shows that the principle works. But the code
      * doesn't...
+     *
+     * The same thing goes for PAD_BYTE: this also works (with the same
+     * problems as SCANLINE_PAD_DWORD, although less prominent)
      */
-    if (et4000_type < TYPE_ET6000)
+    if ( (et4000_type < TYPE_ET6000) && (vgaBitsPerPixel == 8) )
     {
       /*
        * CPU_TRANSFER_PAD_DWORD is implied by XAA, and I'm not sure this is
        * OK, because the W32 might be trying to expand the padding data.
        */
       xf86AccelInfoRec.ColorExpandFlags |=
-          SCANLINE_NO_PAD | CPU_TRANSFER_BASE_FIXED;
-        /* "| CPU_TRANSFER_PAD_DWORD" is implied, but should not be needed/allowed */
+          SCANLINE_PAD_BYTE | CPU_TRANSFER_BASE_FIXED | CPU_TRANSFER_PAD_DWORD;
    
       xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
           TsengSetupForCPUToScreenColorExpand;
@@ -362,16 +376,15 @@ static __inline__ void SET_FG_COLOR(int color)
     *ACL_SOURCE_ADDRESS  = Fg;
     *ACL_SOURCE_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
+    *MemFg               = color;
     if (et4000_type >= TYPE_ET4000W32P)
     {
       *ACL_SOURCE_WRAP   = 0x02;
-      *MemFg             = color;
     }
     else
     {
-      *ACL_SOURCE_WRAP    = 0x12;
-      *MemFg             = color;
       *(MemFg + 1)       = color;
+      *ACL_SOURCE_WRAP   = 0x12;
     }
 }
 
@@ -380,16 +393,15 @@ static __inline__ void SET_BG_COLOR(int color)
     *ACL_PATTERN_ADDRESS  = Pat;
     *ACL_PATTERN_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
+    *MemPat               = color;
     if (et4000_type >= TYPE_ET4000W32P)
     {
       *ACL_PATTERN_WRAP   = 0x02;
-      *MemPat             = color;
     }
     else
     {
-      *ACL_PATTERN_WRAP   = 0x12;
-      *MemPat             = color;
       *(MemPat + 1)       = color;
+      *ACL_PATTERN_WRAP   = 0x12;
     }
 }
 
@@ -406,21 +418,17 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
     *((LongP) ACL_PATTERN_Y_OFFSET) = 0x00030003;
     fgcolor = COLOR_REPLICATE_DWORD(fgcolor);
     bgcolor = COLOR_REPLICATE_DWORD(bgcolor);
+    *MemFg                = fgcolor;
+    *MemPat               = bgcolor;
     if (et4000_type >= TYPE_ET4000W32P)
     {
-      *ACL_SOURCE_WRAP    = 0x02;
-      *ACL_PATTERN_WRAP   = 0x02;
-      *MemFg              = fgcolor;
-      *MemPat             = bgcolor;
+      *((LongP) ACL_PATTERN_WRAP) = 0x00020002;
     }
     else
     {
-      *ACL_SOURCE_WRAP    = 0x12;
-      *ACL_PATTERN_WRAP   = 0x12;
-      *MemFg              = fgcolor;
       *(MemFg+1)          = fgcolor;
-      *MemPat             = bgcolor;
       *(MemPat+1)         = bgcolor;
+      *((LongP) ACL_PATTERN_WRAP) = 0x00120012;
     }
 }
 
@@ -467,11 +475,6 @@ static __inline__ int MULBPP(int x)
 
 #define SET_BG_ROP(rop) \
     *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
-
-/* faster than separate functions */
-#define SET_FG_BG_ROP(fgrop, bgrop) \
-    *((WordP) ACL_BACKGROUND_RASTER_OPERATION) = \
-        W32PatternOpTable[bgrop] | W32OpTable[fgrop];
 
 #define SET_BG_ROP_TR(rop, bg_color) \
   if ((bg_color) == -1)    /* transparent color expansion */ \
@@ -626,8 +629,8 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
 
     PINGPONG();
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     SET_FG_ROP(rop);
     SET_FG_COLOR(color);
@@ -649,8 +652,8 @@ void Tseng4SubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     SET_XYDIR(0);
 
@@ -663,8 +666,8 @@ void Tseng6SubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
    /* if XYDIR is not reset here, drawing a hardware line in between
     * blitting, with the same ROP, color, etc will not cause a call to
@@ -709,8 +712,8 @@ transparency_color)
     if (xdir == -1) blit_dir |= 0x1;
     if (ydir == -1) blit_dir |= 0x2;
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     SET_XYDIR(blit_dir);
     
@@ -784,8 +787,8 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
         destaddr += x2;
     }
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     SET_XY(w, h);
     *ACL_SOURCE_ADDRESS = srcaddr;
@@ -804,8 +807,8 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
   
 /*  ErrorF("P");*/
 
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
   SET_FG_ROP(rop);
 
@@ -843,8 +846,8 @@ void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
   int destaddr = FBADDR(x,y);
   int srcaddr = pat_src_addr + MULBPP(patterny * 8 + patternx);
 
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
   *ACL_SOURCE_ADDRESS = srcaddr;
 
@@ -869,8 +872,8 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
 
     ColorExpandDst = FBADDR(x,y);
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     SET_FG_ROP(rop);
     SET_BG_ROP_TR(rop, bg);
@@ -926,8 +929,8 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * less font corruption we get. But nothing really solves it.
      */
     
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
     *ACL_MIX_ADDRESS = srcaddr;
     START_ACL(ColorExpandDst);
@@ -958,8 +961,8 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
   PINGPONG();
 
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
@@ -987,11 +990,14 @@ void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
 {
   int destaddr = FBADDR(x,y);
 
-  /* ErrorF("\n %dx%d",w,h); */
+  /* ErrorF("  %dx%d|%d",w,h,skipleft);*/
+  if (skipleft) ErrorF("Can't do: Skipleft = %d\n", skipleft);
   
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
+  w = (w + 7) & ~7; /* HACK -- FIXME */
+  
   *ACL_MIX_Y_OFFSET = w-1;
   SET_XY(w, h);
   START_ACL_CPU(destaddr);
@@ -1007,8 +1013,8 @@ void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 
   PINGPONG();
 
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
@@ -1029,8 +1035,8 @@ void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
 
   int mixaddr = FBADDR(srcx, srcy * 8);
   
-  /* Avoid PCI-Retry's */
   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+  if (need_wait_acl) WAIT_ACL;
 
   SET_XY(w, h);
   *ACL_MIX_ADDRESS = mixaddr;
@@ -1071,8 +1077,8 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    if (!(octant & YDECREASING))
      algrthm = 16;
 
-   /* Avoid PCI-Retry's */
    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+   if (need_wait_acl) WAIT_ACL;
    
    if (!(octant & YMAJOR))
    {
@@ -1165,8 +1171,8 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
        dy = -dy;
      }
 
-   /* Avoid PCI-Retry's */
    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+   if (need_wait_acl) WAIT_ACL;
 
    /* compute axial direction and load registers */
    if (dx >= dy)  /* X is major axis */
@@ -1243,9 +1249,8 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
 
     /* Y direction is always positive (top-to-bottom drawing) */
 
-    /* Avoid PCI-Retry's */
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-
+    if (need_wait_acl) WAIT_ACL;
 
     /* left edge */
     /* compute axial direction and load registers */

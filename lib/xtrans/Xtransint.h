@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.17 1996/12/09 11:50:26 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.18 1997/01/18 06:52:40 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -112,6 +112,18 @@ extern int  errno;		/* Internal system error number. */
 #endif
 
 /*
+ * Moved the setting of NEED_UTSNAME to this header file from Xtrans.c,
+ * to avoid a race condition. JKJ (6/5/97)
+ */
+
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || defined(SCO)
+#ifndef NEED_UTSNAME
+#define NEED_UTSNAME
+#endif
+#include <sys/utsname.h>
+#endif
+
+/*
  * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
  */
 
@@ -149,12 +161,8 @@ extern int  errno;		/* Internal system error number. */
 #endif
 #endif
 
-#if !defined(SCO325)
 #if OPEN_MAX > 256
 #define TRANS_OPEN_MAX 256
-#else
-#define TRANS_OPEN_MAX OPEN_MAX
-#endif
 #else
 #define TRANS_OPEN_MAX OPEN_MAX
 #endif

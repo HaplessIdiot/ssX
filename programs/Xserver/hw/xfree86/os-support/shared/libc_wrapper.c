@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.15 1997/06/25 08:25:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.16 1997/06/29 07:54:36 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -25,7 +25,6 @@
 
 #include <X.h>
 #include <Xmd.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <math.h>
@@ -51,6 +50,7 @@ int xf86execl(char *, ...);
 #else
 int xf86execl();
 #endif
+extern char* xf86tmpnam();
 
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_libc.h"
@@ -75,7 +75,7 @@ typedef struct dirent DIRENTRY;
 
 #ifndef XFree86LOADER
 typedef pointer XF86FILE;	/* opaque FILE* replacement */
-typedef pointer XF86FPOS_T;	/* opaque fpos_t* replacement */
+typedef pointer XF86fpos_t;	/* opaque fpos_t* replacement */
 
 #define _XF86NAMELEN	263	/* enough for a larger filename */
 				/* (divisble by 8) */
@@ -87,7 +87,7 @@ typedef pointer XF86DIR;	/* opaque DIR* replacement */
 struct _xf86dirent {		/* types in struct dirent/direct: */
 	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
 };
-typedef struct _xf86dirent *XF86DIRENT;
+typedef struct _xf86dirent XF86DIRENT;
 #endif
 
 #ifdef __EMX__
@@ -118,130 +118,84 @@ typedef struct _xf86dirent *XF86DIRENT;
  * This file contains the XFree86 wrappers for libc functions that can be
  * called by loadable modules
  */
-void *
-xf86memmove(void * dest, const void * src, INT32 n)
-{
-	return(memmove(dest,src,n));
-}
 
-void *
-xf86memset(void * s, int c, INT32 n)
-{
-	return(memset(s,c,n));
-}
+/* string functions */
 
-void *
-xf86memcpy(void * dest, const void * src, INT32 n)
-{
-	return(memcpy(dest,src,n));
-}
-
-int
-xf86memcmp(const void * s1, const void * s2, INT32 n)
-{
-	return(memcmp(s1,s2,n));
-}
-
-char *
-xf86strcat(char * dest, const char * src)
+char* xf86strcat(char* dest, const char* src)
 {
 	return(strcat(dest,src));
 }
 
-char *
-xf86strcpy(char * dest, const char * src)
+char* xf86strchr(const char* s, int c)
 {
-	return(strcpy(dest,src));
+	return strchr(s,c);
 }
 
-char *
-xf86strncpy(char * dest, const char * src, INT32 n)
+int xf86strcmp(const char* s1, const char* s2)
 {
-      return(strncpy(dest,src,n));
+	return strcmp(s1,s2);
 }
 
-int
-xf86strcmp(const char * s1, const char * s2)
+char* xf86strcpy(char* dest, const char* src)
 {
-	return(strcmp(s1,s2));
+	return strcpy(dest,src);
 }
 
-int
-xf86strncmp(const char * s1, const char * s2, INT32 n)
+INT32 xf86strcspn(const char* s1, const char* s2)
 {
-	return(strncmp(s1,s2,n));
+	return (INT32)strcspn(s1,s2);
 }
 
-size_t
-xf86strlen(const char * s)
+INT32 xf86strlen(const char* s)
 {
-	return(strlen(s));
+	return (INT32)strlen(s);
 }
 
+char* xf86strncat(char* dest, const char* src, INT32 n)
+{
+	return strncat(dest,src,n);
+}
 
-char* 
-xf86strdup(const char * s)
+int xf86strncmp(const char* s1, const char* s2, INT32 n)
+{
+	return strncmp(s1,s2,n);
+}
+
+char* xf86strncpy(char* dest, const char* src, INT32 n)
+{
+	return strncpy(dest,src,n);
+}
+
+char* xf86strpbrk(const char* s1, const char* s2)
+{
+	return strpbrk(s1,s2);
+}
+
+char* xf86strrchr(const char* s, int c)
+{
+	return strrchr(s,c);
+}
+
+INT32 xf86strspn(const char* s1, const char* s2)
+{
+	return strspn(s1,s2);
+}
+
+char* xf86strstr(const char* s1, const char* s2)
+{
+	return strstr(s1,s2);
+}
+
+char* xf86strtok(char* s1, const char* s2)
+{
+	return strtok(s1,s2);
+}
+
+char* xf86strdup(const char* s)
 {
 	char *sd = (char*)xalloc(strlen(s)+1);
 	strcpy(sd,s);
 	return sd;
-}
-
-
-void
-xf86getsecs(INT32 * secs, INT32 * usecs)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-	*secs = tv.tv_sec;
-	*usecs= tv.tv_usec;
-
-	return;
-}
-
-double 
-xf86exp(double x)
-{
-	return(exp(x));
-}
-
-double 
-xf86log(double x)
-{
-	return(log(x));
-}
-
-double 
-xf86pow(double x, double y)
-{
-	return(pow(x,y));
-}
-
-double 
-xf86sqrt(double x)
-{
-	return(sqrt(x));
-}
-
-double 
-xf86cos(double x)
-{
-	return(cos(x));
-}
-
-double
-xf86fabs(double x)
-{
-        return(fabs(x));
-}
-
-void
-xf86bzero(s, n)
-    void *s;
-    unsigned int n;
-{
-    bzero(s, n);
 }
 
 int
@@ -267,30 +221,35 @@ s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 #endif
 }
 
-char *
-xf86strerror(n)
-    int n;
+void xf86bzero(void* s, unsigned int n)
 {
-    return strerror(n);
+  bzero(s, n);
 }
-
-
-void
-xf86usleep(usec)
-    unsigned long usec;
+  
+int
+xf86sscanf(
+#ifdef HAVE_VSSCANF
+char *s, const char *format, ...)
+#else
+s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
+    char *s;
+    const char *format;
+    char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
+#endif
 {
-#if defined(SYSV) || defined(SVR4)
-#if defined (sun) && defined (i386) && defined (SVR4)
-    extern int xf86_solx86usleep(unsigned long);
-    xf86_solx86usleep(usec);
+#ifdef HAVE_VSSCANF
+	int ret;
+	va_list args;
+	va_start(args, format);
+
+	ret = vsscanf(s,format,args);
+	va_end(args);
+	return ret;
 #else
-    syscall(3112, (usec) / 1000 + 1);
-#endif
-#else
-    usleep(usec);
+	return sscanf(s, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
 #endif
 }
-
+  
 /* Basic I/O */
 
 int xf86errno;
@@ -366,9 +325,9 @@ XF86FILE_priv stdhnd[3] = {
 	{ 0, XF86FILE_magic, NULL, "$stderr$" }
 };
 
-XF86FILE xf86stdin = (XF86FILE)&stdhnd[0];
-XF86FILE xf86stdout = (XF86FILE)&stdhnd[1];
-XF86FILE xf86stderr = (XF86FILE)&stdhnd[2];
+XF86FILE* xf86stdin = (XF86FILE*)&stdhnd[0];
+XF86FILE* xf86stdout = (XF86FILE*)&stdhnd[1];
+XF86FILE* xf86stderr = (XF86FILE*)&stdhnd[2];
 
 void xf86WrapperInit()
 {
@@ -380,7 +339,7 @@ void xf86WrapperInit()
 	stdhnd[2].filehnd = stderr;
 }
 
-XF86FILE xf86fopen(const char* fn, const char* mode)
+XF86FILE* xf86fopen(const char* fn, const char* mode)
 {
 	XF86FILE_priv* fp;
 	FILE *f = fopen(fn,mode);
@@ -395,7 +354,7 @@ XF86FILE xf86fopen(const char* fn, const char* mode)
 	ErrorF("xf86fopen(%s,%s) yields FILE %p XF86FILE %p\n",
 		fn,mode,f,fp);
 #endif
-	return (XF86FILE)fp;
+	return (XF86FILE*)fp;
 }
 
 static void _xf86checkhndl(XF86FILE_priv* f,const char *func)
@@ -408,7 +367,7 @@ static void _xf86checkhndl(XF86FILE_priv* f,const char *func)
 	}
 }
 
-int xf86fclose(XF86FILE f) 
+int xf86fclose(XF86FILE* f) 
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 	int ret;
@@ -431,10 +390,10 @@ int xf86fclose(XF86FILE f)
 int
 xf86fprintf(
 #if NeedVarargsPrototypes
-XF86FILE f, const char *format, ...)
+XF86FILE* f, const char *format, ...)
 #else
 f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    XF86FILE f;
+    XF86FILE* f;
     const char *format;
     char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
 #endif
@@ -463,8 +422,36 @@ f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 #endif
 }
 
+int xf86vfprintf(XF86FILE* f, const char *format,...)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+	int ret;
+	va_list args;
+	va_start(args, format);
+
+#ifdef DEBUG
+	ErrorF("xf86vfprintf for XF86FILE %p\n", fp);
+#endif
+	_xf86checkhndl(fp,"xf86vfprintf");
+
+	ret = vfprintf(fp->filehnd,format,args);
+	va_end(args);
+	return ret;
+}
+
+int xf86vsprintf(char *s, const char *format, ...)
+{
+	int ret;
+	va_list args;
+	va_start(args, format);
+
+	ret = vsprintf(s,format,args);
+	va_end(args);
+	return ret;
+}
+
 #if NeedVarargsPrototypes
-#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx)
+#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(SCO)
 #define HAVE_VFSCANF
 #endif
 #endif
@@ -472,10 +459,10 @@ f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 int
 xf86fscanf(
 #ifdef HAVE_VFSCANF
-XF86FILE f, const char *format, ...)
+XF86FILE* f, const char *format, ...)
 #else
 f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
-    XF86FILE f;
+    XF86FILE* f;
     const char *format;
     char *a0, *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8, *a9;
 #endif
@@ -498,7 +485,7 @@ f, format, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) /* limit of ten args */
 #endif
 }
 
-char *xf86fgets(char *buf, INT32 n, XF86FILE f)
+char *xf86fgets(char *buf, INT32 n, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -506,7 +493,7 @@ char *xf86fgets(char *buf, INT32 n, XF86FILE f)
 	return fgets(buf,(int)n,fp->filehnd);
 }
 
-int xf86fputs(char *buf, XF86FILE f)
+int xf86fputs(char *buf, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -514,7 +501,7 @@ int xf86fputs(char *buf, XF86FILE f)
 	return fputs(buf,fp->filehnd);
 }
 
-int xf86fgetc(XF86FILE f)
+int xf86fgetc(XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -522,7 +509,7 @@ int xf86fgetc(XF86FILE f)
 	return fgetc(fp->filehnd);
 }
 
-int xf86fputc(int c,XF86FILE f)
+int xf86fputc(int c,XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -530,7 +517,7 @@ int xf86fputc(int c,XF86FILE f)
 	return fputc(c,fp->filehnd);
 }
 
-int xf86fflush(XF86FILE f)
+int xf86fflush(XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -538,7 +525,7 @@ int xf86fflush(XF86FILE f)
 	return fflush(fp->filehnd);
 }
 
-size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f)
+size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -549,7 +536,7 @@ size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f)
 	return fread(buf,sz,cnt,fp->filehnd);
 }
 
-size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE f)
+size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -557,7 +544,7 @@ size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE f)
 	return fwrite(buf,sz,cnt,fp->filehnd);
 }
 
-int xf86fseek(XF86FILE f, long pos, int loc)
+int xf86fseek(XF86FILE* f, long pos, int loc)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -565,7 +552,7 @@ int xf86fseek(XF86FILE f, long pos, int loc)
 	return fseek(fp->filehnd,pos,loc);
 }
 
-long xf86ftell(XF86FILE f)
+long xf86ftell(XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -573,16 +560,21 @@ long xf86ftell(XF86FILE f)
 	return ftell(fp->filehnd);
 }
 
+char* xf86strerror(int n)
+{
+	return strerror(n);
+}
+
 /* required for portable fgetpos/fsetpos,
  * use as
- *	XF86FPOS_T pos = (XF86FPOS_T)xalloc(xf86fpossize());
+ *	XF86fpos_t* pos = (XF86fpos_t*)xalloc(xf86fpossize());
  */
 long xf86fpossize()
 {
 	return sizeof(fpos_t);
 }
 
-int xf86fgetpos(XF86FILE f,XF86FPOS_T pos)
+int xf86fgetpos(XF86FILE* f,XF86fpos_t* pos)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 	fpos_t *ppos = (fpos_t*)pos;
@@ -598,7 +590,7 @@ int xf86fgetpos(XF86FILE f,XF86FPOS_T pos)
 #endif
 }
 
-int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos)
+int xf86fsetpos(XF86FILE* f,const XF86fpos_t* pos)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 	fpos_t *ppos = (fpos_t*)pos;
@@ -645,12 +637,142 @@ int xf86rename(const char *old, const char *new)
 #endif
 }
 
-void xf86rewind(XF86FILE f)
+void xf86rewind(XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
 	_xf86checkhndl(fp,"xf86fsetpos");
 	rewind(fp->filehnd);
+}
+
+void xf86clearerr(XF86FILE* f)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86clearerr");
+	clearerr(fp->filehnd);
+}
+
+int xf86feof(XF86FILE* f)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86feof");
+	return feof(fp->filehnd);
+}
+
+int xf86ferror(XF86FILE* f)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86ferror");
+	return ferror(fp->filehnd);
+}
+
+XF86FILE* xf86freopen(const char* fname,const char* mode,XF86FILE* fold)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)fold;
+	FILE *fnew;
+
+	_xf86checkhndl(fp,"xf86freopen");
+	fnew = freopen(fname,mode,fp->filehnd);
+	if (!fnew) {
+		xf86fclose(fold);	/* discard old XF86FILE structure */
+		return 0;
+	}
+	/* recycle the old XF86FILE structure */
+	fp->magic = XF86FILE_magic;
+	fp->filehnd = fnew;
+	fp->fileno = fileno(fnew);
+	fp->fname = xf86strdup(fname);
+#ifdef DEBUG
+	ErrorF("xf86freopen(%s,%s,%p) yields FILE %p XF86FILE %p\n",
+		fn,mode,fold,f,fp);
+#endif
+	return (XF86FILE*)fp;
+}
+
+int xf86setbuf(XF86FILE* f, char *buf)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86fsetbuf");
+#ifdef SETBUF_RETURNS_VOID
+	return 0;
+#else
+	return setbuf(fp->filehnd, buf);
+#endif
+}
+
+int xf86setvbuf(XF86FILE* f, char *buf, int mode, INT32 size)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+	int vbufmode;
+
+	_xf86checkhndl(fp,"xf86fsetvbuf");
+
+	switch (mode) {
+	case XF86_IONBF:
+		vbufmode = _IONBF;
+		break;
+	case XF86_IOLBF:
+		vbufmode = _IOFBF;
+		break;
+	case XF86_IOFBF:
+		vbufmode = _IOLBF;
+		break;
+	default:
+		FatalError("libc_wrapper error: mode in setvbuf incorrect\n");
+		exit(42);
+	}
+
+	return setvbuf(fp->filehnd,buf,vbufmode,(size_t)size);
+}
+
+XF86FILE* xf86tmpfile(void)
+{
+	return xf86fopen(xf86tmpnam((char*)0),"w+");
+}
+
+char* xf86tmpnam(char* name)
+{
+	return tmpnam(name);
+}
+
+int xf86ungetc(int c,XF86FILE* f)
+{
+	XF86FILE_priv* fp = (XF86FILE_priv*)f;
+
+	_xf86checkhndl(fp,"xf86ungetc");
+	return ungetc(c,fp->filehnd);
+}
+
+/* misc functions */
+
+void xf86usleep(usec)
+    unsigned long usec;
+{
+#if defined(SYSV) || defined(SVR4)
+#if defined (sun) && defined (i386) && defined (SVR4)
+    extern int xf86_solx86usleep(unsigned long);
+    xf86_solx86usleep(usec);
+#else
+    syscall(3112, (usec) / 1000 + 1);
+#endif
+#else
+    usleep(usec);
+#endif
+}
+
+void xf86getsecs(INT32 * secs, INT32 * usecs)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	*secs = tv.tv_sec;
+	*usecs= tv.tv_usec;
+
+	return;
 }
 
 int xf86ffs(int mask)
@@ -812,13 +934,25 @@ pathname, a0, a1, a2, a3) /* limit of four args */
 #endif /* __EMX__ Disable this crazy business for now */
 }
 
+void xf86abort(void)
+{
+	ErrorF("Module called abort() function\n");
+	abort();
+}
+
+void xf86exit(int ex)
+{
+	ErrorF("Module called exit() function with value=%d\n",ex);
+	exit(ex);
+}
+
 /* directory handling functions */
 #define XF86DIR_magic	0x78666876	/* "xfhv" */
 
 typedef struct _xf86_dir_ {
 	DIR		*dir;
 	INT32		magic;
-	XF86DIRENT	dirent;
+	XF86DIRENT	*dirent;
 } XF86DIR_priv;
 
 static void _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
@@ -830,35 +964,35 @@ static void _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
 	}
 }
 
-XF86DIR	xf86opendir(const char *name)
+XF86DIR*	xf86opendir(const char *name)
 {
 	XF86DIR_priv *dp;
 	DIR *dirp;
 
 	dirp = opendir(name);
 	if (!dirp)
-		return (XF86DIR)0;
+		return (XF86DIR*)0;
 
 	dp = (XF86DIR_priv*)xalloc(sizeof(XF86DIR_priv));
 	dp->magic = XF86DIR_magic; /* This time I have this, Dirk! :-) */
 	dp->dir = dirp;
-	dp->dirent = (XF86DIRENT)xalloc(sizeof(struct _xf86dirent));
+	dp->dirent = (XF86DIRENT*)xalloc(sizeof(struct _xf86dirent));
 
-	return (XF86DIR)dp;
+	return (XF86DIR*)dp;
 }
 
-XF86DIRENT xf86readdir(XF86DIR dirp)
+XF86DIRENT* xf86readdir(XF86DIR* dirp)
 {
 	XF86DIR_priv* dp = (XF86DIR_priv*)dirp;
 	DIRENTRY *de;
-	XF86DIRENT xde;
+	XF86DIRENT* xde;
 	int sz;
 
 	_xf86checkdirhndl(dp,"xf86readdir");
 
 	de = readdir(dp->dir);
 	if (!de)
-		return (XF86DIRENT)0;
+		return (XF86DIRENT*)0;
 	xde = dp->dirent;
 	sz = strlen(de->d_name);
 	strncpy(xde->d_name,de->d_name, sz>_XF86NAMELEN ? (_XF86NAMELEN+1) : (sz+1));
@@ -866,7 +1000,7 @@ XF86DIRENT xf86readdir(XF86DIR dirp)
 	return xde;
 }
 
-void xf86rewinddir(XF86DIR dirp)
+void xf86rewinddir(XF86DIR* dirp)
 {
 	XF86DIR_priv* dp = (XF86DIR_priv*)dirp;
 
@@ -874,7 +1008,7 @@ void xf86rewinddir(XF86DIR dirp)
 	rewinddir(dp->dir);
 }
 
-int xf86closedir(XF86DIR dir)
+int xf86closedir(XF86DIR* dir)
 {
 	XF86DIR_priv* dp = (XF86DIR_priv*)dir;
 	int n;
@@ -890,3 +1024,243 @@ int xf86closedir(XF86DIR dir)
 	return n;
 }
 
+/* Several math functions */
+
+int xf86abs(int x)
+{
+	return abs(x);
+}
+
+double xf86acos(double x)
+{
+	return acos(x);
+}
+
+double xf86asin(double x)
+{
+	return asin(x);
+}
+
+double xf86atan(double x)
+{
+	return atan(x);
+}
+
+double xf86atan2(double x,double y)
+{
+	return atan2(x,y);
+}
+
+double xf86atof(const char* s)
+{
+	return atof(s);
+}
+
+int xf86atoi(const char* s)
+{
+	return atoi(s);
+}
+
+long xf86atol(const char* s)
+{
+	return atol(s);
+}
+
+double xf86ceil(double x)
+{
+	return ceil(x);
+}
+
+double xf86cos(double x)
+{
+	return(cos(x));
+}
+
+double xf86exp(double x)
+{
+	return(exp(x));
+}
+
+double xf86fabs(double x)
+{
+        return(fabs(x));
+}
+
+double xf86floor(double x)
+{
+	return floor(x);
+}
+
+double xf86fmod(double x,double y)
+{
+	return fmod(x,y);
+}
+
+long xf86labs(long x)
+{
+	return labs(x);
+}
+
+double xf86log(double x)
+{
+	return(log(x));
+}
+
+double xf86log10(double x)
+{
+	return(log10(x));
+}
+
+double xf86modf(double x,double* y)
+{
+	return modf(x,y);
+}
+
+double xf86pow(double x, double y)
+{
+	return(pow(x,y));
+}
+
+double xf86sin(double x)
+{
+	return sin(x);
+}
+
+double xf86sqrt(double x)
+{
+	return(sqrt(x));
+}
+
+double xf86strtod(const char *s, char **end)
+{
+	return strtod(s,end);
+}
+
+long xf86strtol(const char *s, char **end, int radix)
+{
+	return strtol(s,end,radix);
+}
+
+unsigned long xf86strtoul(const char *s, char **end,int radix)
+{
+	return strtoul(s,end,radix);
+}
+
+double xf86tan(double x)
+{
+	return tan(x);
+}
+
+/* memory functions */
+void* xf86memchr(const void* s, int c, INT32 n)
+{
+	return memchr(s,c,n);
+}
+
+int xf86memcmp(const void* s1, const void* s2, INT32 n)
+{
+	return(memcmp(s1,s2,n));
+}
+
+void* xf86memcpy(void* dest, const void* src, INT32 n)
+{
+	return(memcpy(dest,src,n));
+}
+
+void* xf86memmove(void* dest, const void* src, INT32 n)
+{
+	return(memmove(dest,src,n));
+}
+
+void* xf86memset(void* s, int c, INT32 n)
+{
+	return(memset(s,c,n));
+}
+
+/* ctype functions */
+
+int xf86isalnum(int c)
+{
+	return isalnum(c) ? 1 : 0;
+}
+
+int xf86isalpha(int c)
+{
+	return isalpha(c) ? 1 : 0;
+}
+
+int xf86iscntrl(int c)
+{
+	return iscntrl(c) ? 1 : 0;
+}
+
+int xf86isdigit(int c)
+{
+	return isdigit(c) ? 1 : 0;
+}
+
+int xf86isgraph(int c)
+{
+	return isgraph(c) ? 1 : 0;
+}
+
+int xf86islower(int c)
+{
+	return islower(c) ? 1 : 0;
+}
+
+int xf86isprint(int c)
+{
+	return isprint(c) ? 1 : 0;
+}
+
+int xf86ispunct(int c)
+{
+	return ispunct(c) ? 1 : 0;
+}
+
+int xf86isspace(int c)
+{
+	return isspace(c) ? 1 : 0;
+}
+
+int xf86isupper(int c)
+{
+	return isupper(c) ? 1 : 0;
+}
+
+int xf86isxdigit(int c)
+{
+	return isxdigit(c) ? 1 : 0;
+}
+
+int xf86tolower(int c)
+{
+	return tolower(c);
+}
+
+int xf86toupper(int c)
+{
+	return toupper(c);
+}
+
+/* memory allocation functions */
+void* xf86calloc(INT32 sz,INT32 n)
+{
+	return xalloc(sz*n);
+}
+
+void xf86free(void* p)
+{
+	xfree(p);
+}
+
+void* xf86malloc(INT32 n)
+{
+	return xalloc(n);
+}
+
+void* xf86realloc(void* p, INT32 n)
+{
+	return xrealloc(p,n);
+}

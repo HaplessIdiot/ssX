@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c /main/35 1996/12/01 23:47:05 swick $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.13 1997/05/23 09:19:54 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.14 1997/06/29 07:54:43 dawes Exp $
  */
 
 /*
@@ -258,6 +258,10 @@ register int length;		/* length of string */
 
 	if (wrappedbit)
 	    *attrs |= LINEWRAPPED;
+
+	if_OPT_XMC_GLITCH(screen,{
+		Resolve_XMC(screen);
+	})
 }
 
 static void
