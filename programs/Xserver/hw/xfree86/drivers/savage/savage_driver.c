@@ -218,7 +218,7 @@ static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
-    "vbeModeInit",
+    "VBESetVBEMode",
     NULL
 };
 
