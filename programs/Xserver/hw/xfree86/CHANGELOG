@@ -1,4 +1,11 @@
 XFree86 3.9.16f (xx December 1999)
+3362. Sync v4l and glint drivers with the new Xv changes (Mark Vojkovich). 
+3361. Add XvImage support to the MGA driver - G200/400 only (Mark Vojkovich).
+3360. Xv changes/additions (Mark Vojkovich)
+      - XvImage support in the Xv DDX, DIX, client libs and header files.
+      - Add min and max fields to the XvAttributes.
+      - Reved Xv minor version.
+      - Rewrote some of the way clipping is dealt with in the Xv DDX.
 3359. Fix nv driver rendering bugs (Mark Vojkovich).
 3358. Add MTRR support for LynxOS (#3419, Thomas Mueller).
 3357. Fix bad return in GLINTAdjustFrame (#3418, David Holland).
