@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.6 1999/09/27 06:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.7 1999/11/02 16:16:38 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -539,14 +539,22 @@ ATIPrintMode
     double          mClock, hSync, vRefresh;
 
     mClock = (double)pMode->SynthClock;
-    hSync = mClock / pMode->HTotal;
-    vRefresh = (hSync * 1000.0) / pMode->VTotal;
-    if (flags & V_INTERLACE)
-        vRefresh *= 2.0;
-    if (flags & V_DBLSCAN)
-        vRefresh /= 2.0;
-    if (pMode->VScan > 1)
-        vRefresh /= pMode->VScan;
+    if (pMode->HSync > 0.0)
+        hSync = pMode->HSync;
+    else
+        hSync = mClock / pMode->HTotal;
+    if (pMode->VRefresh > 0.0)
+        vRefresh = pMode->VRefresh;
+    else
+    {
+        vRefresh = (hSync * 1000.0) / pMode->VTotal;
+        if (flags & V_INTERLACE)
+            vRefresh *= 2.0;
+        if (flags & V_DBLSCAN)
+            vRefresh /= 2.0;
+        if (pMode->VScan > 1)
+            vRefresh /= pMode->VScan;
+    }
 
     xf86ErrorFVerb(4, " Dot clock:           %7.3f MHz\n", mClock / 1000.0);
     xf86ErrorFVerb(4, " Horizontal sync:     %7.3f kHz\n", hSync);
