@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.69 2003/08/23 15:03:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.70 2003/09/24 02:43:24 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2148,7 +2148,7 @@ neoSave(ScrnInfoPtr pScrn)
         save->reg = (regSavePtr)xnfcalloc(sizeof(regSaveRec), 1);
     else
         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Non-NULL reg in NeoSave: reg=%p\n", save->reg);
+		   "Non-NULL reg in NeoSave: reg=%p\n", (void *)save->reg);
 
     save->reg->CR[0x23] = VGArCR(0x23);
     save->reg->CR[0x25] = VGArCR(0x25);
@@ -2914,7 +2914,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     if (NeoNew->reg) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Non-NULL reg in NeoInit: reg=%p\n", NeoNew->reg);
+		   "Non-NULL reg in NeoInit: reg=%p\n", (void *)NeoNew->reg);
 	xfree(NeoNew->reg);
 	NeoNew->reg = NULL;
     }

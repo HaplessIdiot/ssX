@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.45 2003/08/23 15:02:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.46 2003/09/24 02:43:21 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -383,7 +383,8 @@ LgDoDDC(ScrnInfoPtr pScrn)
 
 	/* Read and output monitor info using DDC2 over I2C bus */
 	MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, pCir->I2CPtr1);
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n",
+		   (void *)MonInfo);
 	xf86PrintEDID(MonInfo);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
 #endif /* LGuseI2C */
@@ -1282,7 +1283,7 @@ LgRestore(ScrnInfoPtr pScrn)
 	LgRegPtr lgReg;
 
 #ifdef LG_DEBUG
-	ErrorF("LgRestore  pScrn = %p\n", pScrn);
+	ErrorF("LgRestore  pScrn = %p\n", (void *)pScrn);
 #endif
 
 	pCir = CIRPTR(pScrn);

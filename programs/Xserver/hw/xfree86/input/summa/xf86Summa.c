@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.13 2003/01/12 03:55:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.14 2003/09/24 02:43:32 dawes Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -691,7 +691,7 @@ xf86SumReadInput(LocalDevicePtr local)
 	}
     }
     DBG(7, ErrorF("xf86SumReadInput END   device=%p priv=%p\n",
-	   local->dev, priv));
+	   (void *)local->dev, (void *)priv));
 }
 
 /*
@@ -1135,11 +1135,11 @@ xf86SumProc(DeviceIntPtr pSum, int what)
     LocalDevicePtr	local = (LocalDevicePtr)pSum->public.devicePrivate;
     SummaDevicePtr	priv = (SummaDevicePtr)PRIVATE(pSum);
 
-    DBG(2, ErrorF("BEGIN xf86SumProc dev=%p priv=%p what=%d\n", pSum, priv, what));
+    DBG(2, ErrorF("BEGIN xf86SumProc dev=%p priv=%p what=%d\n", (void *)pSum, (void *)priv, what));
 
     switch (what) {
 	case DEVICE_INIT:
-	    DBG(2, ErrorF("xf86SumProc pSum=%p fd = %d, what=INIT\n", pSum,
+	    DBG(2, ErrorF("xf86SumProc pSum=%p fd = %d, what=INIT\n", (void *)pSum,
 		local->fd));
 	    if (priv->flags & INITIALIZED) break;	/* already done */
 
@@ -1191,7 +1191,7 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    break;
 
 	case DEVICE_ON:
-	    DBG(2, ErrorF("xf86SumProc pSum=%p fd = %d, what=ON\n", pSum,
+	    DBG(2, ErrorF("xf86SumProc pSum=%p fd = %d, what=ON\n", (void *)pSum,
 		local->fd));
 	    if (pSum->public.on) break;		/* already on */
 
@@ -1220,7 +1220,7 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    break;
 
 	case DEVICE_OFF:
-	    DBG(2, ErrorF("xf86SumProc  pSum=%p fd = %d, what=OFF\n", pSum,
+	    DBG(2, ErrorF("xf86SumProc  pSum=%p fd = %d, what=OFF\n", (void *)pSum,
 		   local->fd));
 	    if (! pSum->public.on) break;		/* already off */
 	    if (local->fd >= 0)
@@ -1237,7 +1237,7 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    break;
 
 	case DEVICE_CLOSE:
-	    DBG(2, ErrorF("xf86SumProc  pSum=%p fd = %d, what=CLOSE\n", pSum,
+	    DBG(2, ErrorF("xf86SumProc  pSum=%p fd = %d, what=CLOSE\n", (void *)pSum,
 		   local->fd));
 	    if (local->fd != -1) {
 	      SYSCALL(close(local->fd));
@@ -1251,7 +1251,7 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    break;
     }
     DBG(2, ErrorF("END   xf86SumProc Success what=%d dev=%p priv=%p\n",
-	   what, pSum, priv));
+	   what, (void *)pSum, (void *)priv));
     return Success;
 }
 
@@ -1262,7 +1262,7 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 static void
 xf86SumClose(LocalDevicePtr local)
 {
-    DBG(2, ErrorF("xf86SumClose local = %p, ->fd = %d\n", local, local->fd));
+    DBG(2, ErrorF("xf86SumClose local = %p, ->fd = %d\n", (void *)local, local->fd));
     if (local->fd >= 0) {
 #ifdef XFREE86_V4
 	xf86CloseSerial(local->fd);
@@ -1304,7 +1304,7 @@ xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
     SummaDevicePtr	priv = (SummaDevicePtr)(local->private);
     char		newmode;
 
-    DBG(3, ErrorF("xf86SumSwitchMode dev=%p mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86SumSwitchMode dev=%p mode=%d\n", (void *)dev, mode));
 
     switch(mode) {
 	case Absolute:
@@ -1319,7 +1319,7 @@ xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 
 	default:
 	    DBG(2, ErrorF("xf86SumSwitchMode dev=%p invalid mode=%d\n",
-		   dev, mode));
+		   (void *)dev, mode));
 	    return BadMatch;
     }
     SYSCALL(write(local->fd, &newmode, 1));

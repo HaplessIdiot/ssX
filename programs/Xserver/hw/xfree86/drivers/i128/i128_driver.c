@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.30 2003/08/23 15:02:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.31 2003/09/24 02:43:23 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1949,7 +1949,8 @@ I128getDDC(ScrnInfoPtr pScrn)
   /* Read and output monitor info using DDC2 over I2C bus */
   if (pI128->I2C) {
     MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, pI128->I2C);
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n",
+	       (void *)MonInfo);
     xf86PrintEDID(MonInfo);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n");
   }
@@ -1957,7 +1958,8 @@ I128getDDC(ScrnInfoPtr pScrn)
     /* Read and output monitor info using DDC1 */
     if (pI128->ddc1Read) {
       MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, NULL, pI128->ddc1Read ) ;
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+		 (void *)MonInfo);
       xf86PrintEDID(MonInfo);
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n");
     }

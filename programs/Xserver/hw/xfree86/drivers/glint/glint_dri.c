@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.34 2003/07/09 01:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.35 2003/09/24 02:43:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -761,7 +761,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	    return FALSE;
     	}
     	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] buffers mapped with %p\n",
-	       pGlint->drmBufs);
+	       (void *)pGlint->drmBufs);
     	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] %d DMA buffers mapped\n",
 	       pGlint->drmBufs->count);
     } /* PCIMODE */
@@ -966,7 +966,7 @@ GLINTDRIFinishScreenInit(ScreenPtr pScreen)
 		return FALSE;
     	}
     	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[agp] buffers mapped with %p\n",
-	       pGlint->drmBufs);
+	       (void *)pGlint->drmBufs);
     	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[agp] %d DMA buffers mapped\n",
 	       pGlint->drmBufs->count);
     }

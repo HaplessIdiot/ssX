@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.7 2003/06/18 13:14:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.8 2003/09/24 02:43:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1052,7 +1052,7 @@ FixOffset(ScrnInfoPtr pScrn, I830MemRange *mem)
    }
 #endif
    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	      "%p: Memory at offset 0x%08lx, size %ld kBytes\n", mem,
+	      "%p: Memory at offset 0x%08lx, size %ld kBytes\n", (void *)mem,
 	      mem->Start, mem->Size / 1024);
    return TRUE;
 }

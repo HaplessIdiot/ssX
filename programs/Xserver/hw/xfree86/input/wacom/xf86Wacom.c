@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.34 2003/04/28 16:27:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.35 2003/09/24 02:43:32 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -1648,7 +1648,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	} /* protocol 5 */
     } /* next data */
     DBG(7, ErrorF("xf86WcmReadInput END   local=%p priv=%p index=%d\n",
-		  local, priv, common->wcmIndex));
+		  (void *)local, (void *)priv, common->wcmIndex));
 }
 
 #ifdef LINUX_INPUT
@@ -2076,7 +2076,7 @@ xf86WcmReadISDV4Input(LocalDevicePtr         local)
 	} /* full packet */
     } /* next data */
     DBG(7, ErrorF("xf86WcmReadInput END   local=%p priv=%p index=%d\n",
-		  local, priv, common->wcmIndex));
+		  (void *)local, (void *)priv, common->wcmIndex));
 }
 
 /*
@@ -2879,14 +2879,15 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     WacomDevicePtr        priv = (WacomDevicePtr)PRIVATE(pWcm);
   
     DBG(2, ErrorF("BEGIN xf86WcmProc dev=%p priv=%p type=%s flags=%d what=%d\n",
-		  pWcm, priv, (DEVICE_ID(priv->flags) == STYLUS_ID) ? "stylus" :
+		  (void *)pWcm, (void *)priv,
+		  (DEVICE_ID(priv->flags) == STYLUS_ID) ? "stylus" :
 		  (DEVICE_ID(priv->flags) == CURSOR_ID) ? "cursor" : "eraser",
 		  priv->flags, what));
 
     switch (what)
 	{
 	case DEVICE_INIT: 
-	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT\n", pWcm));
+	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT\n", (void *)pWcm));
       
 	    nbaxes = 6;		/* X, Y, Pressure, Tilt-X, Tilt-Y, Wheel */
 	    
@@ -2952,16 +2953,16 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    if (!xf86WcmOpenDevice(pWcm))
 	    {
 		/* PL tablet sometime can not open successfully the first time */
-                DBG(1, ErrorF("xf86WcmProc try to open pWcm=%p again\n", pWcm));
+                DBG(1, ErrorF("xf86WcmProc try to open pWcm=%p again\n", (void *)pWcm));
 		if (!xf86WcmOpenDevice(pWcm)) {
-                    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT FALSE\n", pWcm));
+                    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT FALSE\n", (void *)pWcm));
 		    return !Success;
 		}
 	    }
 	    break; 
       
 	case DEVICE_ON:
-	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=ON\n", pWcm));
+	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=ON\n", (void *)pWcm));
 
 	    if ((local->fd < 0) && (!xf86WcmOpenDevice(pWcm))) {
 		pWcm->inited = FALSE;
@@ -2973,7 +2974,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
       
 	case DEVICE_OFF:
 	case DEVICE_CLOSE:
-	    DBG(1, ErrorF("xf86WcmProc  pWcm=%p what=%s\n", pWcm,
+	    DBG(1, ErrorF("xf86WcmProc  pWcm=%p what=%s\n", (void *)pWcm,
 			  (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0) {
 		xf86RemoveEnabledDevice(local);
@@ -2988,7 +2989,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    break;
 	}
     DBG(2, ErrorF("END   xf86WcmProc Success what=%d dev=%p priv=%p\n",
-		  what, pWcm, priv));
+		  what, (void *)pWcm, (void *)priv));
     return Success;
 }
 
@@ -3039,7 +3040,7 @@ xf86WcmSwitchMode(ClientPtr	client,
     LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
     WacomDevicePtr        priv = (WacomDevicePtr)local->private;
 
-    DBG(3, ErrorF("xf86WcmSwitchMode dev=%p mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86WcmSwitchMode dev=%p mode=%d\n", (void *)dev, mode));
   
     if (mode == Absolute) {
 	priv->flags = priv->flags | ABSOLUTE_FLAG;
@@ -3049,8 +3050,8 @@ xf86WcmSwitchMode(ClientPtr	client,
 	    priv->flags = priv->flags & ~ABSOLUTE_FLAG; 
 	}
 	else {
-	    DBG(1, ErrorF("xf86WcmSwitchMode dev=%p invalid mode=%d\n", dev,
-			  mode));
+	    DBG(1, ErrorF("xf86WcmSwitchMode dev=%p invalid mode=%d\n",
+			  (void *)dev, mode));
 	    return BadMatch;
 	}
     }

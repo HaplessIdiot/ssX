@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.6 2001/12/26 21:51:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.7 2003/09/24 02:43:31 dawes Exp $ */
 
 #include "xf86Version.h"
 
@@ -693,7 +693,7 @@ static void xf86SumReadInput(LocalDevicePtr local)
 	}
 		}
 		DBG(7, ErrorF("xf86Sum(priv->dedgeData[0] & BUTTON_BITS)iReadInput END   device=%p priv=%p\n",
-		  local->dev, priv));
+		  (void *)local->dev, (void *)priv));
 }
 
 /*
@@ -989,12 +989,12 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
     DigitalEdgeDevicePtr priv = (DigitalEdgeDevicePtr) PRIVATE(pSum);
 
     DBG(2,
-	ErrorF("BEGIN xf86SumProc dev=%p priv=%p what=%d\n", pSum,
-	       priv, what));
+	ErrorF("BEGIN xf86SumProc dev=%p priv=%p what=%d\n", (void *)pSum,
+	       (void *)priv, what));
 
     switch (what) {
     case DEVICE_INIT:
-	DBG(1, ErrorF("xf86SumProc pSum=%p what=INIT\n", pSum));
+	DBG(1, ErrorF("xf86SumProc pSum=%p what=INIT\n", (void *)pSum));
 
 	nbaxes = 3;		/* X, Y, pressure */
 	nbbuttons = (priv->flags & STYLUS_FLAG) ? 2 : 4;
@@ -1043,7 +1043,7 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
 	break;
 
     case DEVICE_ON:
-	DBG(1, ErrorF("xf86SumProc pSum=%p what=ON\n", pSum));
+	DBG(1, ErrorF("xf86SumProc pSum=%p what=ON\n", (void *)pSum));
 
 	if ((local->fd < 0) && (!xf86SumOpenDevice(pSum))) {
 	    return !Success;
@@ -1058,7 +1058,7 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
 	break;
 
     case DEVICE_OFF:
-	DBG(1, ErrorF("xf86SumProc  pSum=%p what=%s\n", pSum,
+	DBG(1, ErrorF("xf86SumProc  pSum=%p what=%s\n", (void *)pSum,
 		      (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	if (local->fd >= 0)
 #ifdef XFREE86_V4
@@ -1070,7 +1070,7 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
 	break;
 
     case DEVICE_CLOSE:
-	DBG(1, ErrorF("xf86SumProc  pSum=%p what=%s\n", pSum,
+	DBG(1, ErrorF("xf86SumProc  pSum=%p what=%s\n", (void *)pSum,
 		      (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	SYSCALL(close(local->fd));
 	local->fd = -1;
@@ -1082,7 +1082,7 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
 	break;
     }
     DBG(2, ErrorF("END   xf86SumProc Success what=%d dev=%p priv=%p\n",
-		  what, pSum, priv));
+		  what, (void *)pSum, (void *)priv));
     return Success;
 }
 
@@ -1125,7 +1125,7 @@ static int xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
     DigitalEdgeDevicePtr priv = (DigitalEdgeDevicePtr) (local->private);
     char newmode;
 
-    DBG(3, ErrorF("xf86SumSwitchMode dev=%p mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86SumSwitchMode dev=%p mode=%d\n", (void *)dev, mode));
 
     switch (mode) {
     case Absolute:
@@ -1140,7 +1140,7 @@ static int xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 
     default:
 	DBG(1, ErrorF("xf86SumSwitchMode dev=%p invalid mode=%d\n",
-		      dev, mode));
+		      (void *)dev, mode));
 	return BadMatch;
     }
     SYSCALL(write(local->fd, &newmode, 1));
