@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.2 1994/09/07 15:51:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.3 1995/06/14 09:44:40 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -56,7 +56,7 @@ int agxValidTokens[] =
   COPBASE,
   POSBASE,
   INSTANCE,
-  VGABASE,
+  VGABASEADDR,
   -1
 };
 
