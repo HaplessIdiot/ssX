@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state_init.c,v 1.4 2003/02/22 06:21:11 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_state_init.c,v 1.1.1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -53,6 +53,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_vtxfmt.h"
 
 #include "xmlpool.h"
+
+#ifndef IEEE_ONE
+static const float floatone = 1.0;
+#define IEEE_ONE (*((const GLuint *)(&floatone)))
+#endif
 
 /* =============================================================
  * State initialization

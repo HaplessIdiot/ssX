@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state_init.c,v 1.3 2003/02/22 06:21:11 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_state_init.c,v 1.1.1.1tsi Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -47,6 +47,11 @@
 #include "radeon_vtxfmt.h"
 
 #include "xmlpool.h"
+
+#ifndef IEEE_ONE
+static const float floatone = 1.0;
+#define IEEE_ONE (*((const GLuint *)(&floatone)))
+#endif
 
 /* =============================================================
  * State initialization
