@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.51 2001/09/24 11:19:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.52 2001/09/24 20:40:14 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -408,13 +408,17 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	        pTrident->hsync -= (mode->CrtcHTotal / 16);
 	        pTrident->vsync += 2;
 		break;
+	    case PROVIDIA9682:
+	        /* Furthur tweaking needed */
+	        pTrident->hsync += 7;
+		break;
 	    case PROVIDIA9685:
 		/* Spot on */
 		break;
 	    case CYBERBLADEXPm8:
 	    case CYBERBLADEXPm16:
 		pTrident->hsync -= 15;
-		pTrident->vsync += 2;
+		pTrident->vsync += 1;
 		break;
 	    case BLADE3D:
 		if (pScrn->depth == 24)

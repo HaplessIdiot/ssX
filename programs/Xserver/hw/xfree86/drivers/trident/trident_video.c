@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.12 2001/09/24 20:40:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.13 2001/09/24 21:12:26 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -340,10 +340,14 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     pTrident->adaptor = adapt;
 
     xvColorKey   = MAKE_ATOM("XV_COLORKEY");
-    xvBrightness = MAKE_ATOM("XV_BRIGHTNESS");
-    xvSaturation = MAKE_ATOM("XV_SATURATION");
-    xvHUE        = MAKE_ATOM("XV_HUE");
-    xvGamma      = MAKE_ATOM("XV_GAMMA");
+   
+    if (pTrident->Chipset >= CYBER9397) {
+    	xvBrightness = MAKE_ATOM("XV_BRIGHTNESS");
+    	xvSaturation = MAKE_ATOM("XV_SATURATION");
+    	xvHUE        = MAKE_ATOM("XV_HUE");
+    	xvGamma      = MAKE_ATOM("XV_GAMMA");
+    	xvContrast   = MAKE_ATOM("XV_CONTRAST");
+    }
 
     if (pTrident->Chipset >= PROVIDIA9682) 
 	pTrident->keyOffset = 0x50;
@@ -733,7 +737,7 @@ TRIDENTDisplayVideo(
 	if (pTrident->Chipset >= CYBER9397) {
     	    OUTW(vgaIOBase + 4, 0x22BF);
 	} else {
-    	    OUTW(vgaIOBase + 4, 0x198F);
+    	    OUTW(vgaIOBase + 4, 0x118F);
 	}
 	break;
     case FOURCC_YV12:		/* YV12 */
@@ -742,7 +746,7 @@ TRIDENTDisplayVideo(
 	if (pTrident->Chipset >= CYBER9397) {
     	    OUTW(vgaIOBase + 4, 0x00BF);
 	} else {
-    	    OUTW(vgaIOBase + 4, 0x188F);
+    	    OUTW(vgaIOBase + 4, 0x108F);
 	}
 	break;
     }  
