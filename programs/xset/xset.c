@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.28 2002/11/20 04:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.29 2003/02/05 00:54:30 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -1091,9 +1091,9 @@ set_repeatrate(Display *dpy, int delay, int rate)
 static void 
 xkbset_repeatrate(Display *dpy, int delay, int interval)
 {
-  XkbDescPtr xkb = XkbGetKeyboard(dpy,XkbControlsMask,XkbUseCoreKbd);
+  XkbDescPtr xkb = XkbAllocKeyboard();
   if (!xkb)
-    xkb = XkbAllocKeyboard();
+    return;
   XkbGetControls(dpy, XkbRepeatKeysMask, xkb);
   xkb->ctrls->repeat_delay = delay;
   xkb->ctrls->repeat_interval = interval;
@@ -1251,7 +1251,7 @@ printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %08lx\n",
 	values.key_click_percent, values.led_mask);
 #ifdef XKB
 if (XkbQueryExtension(dpy, &xkbopcode, &xkbevent, &xkberror, &xkbmajor, &xkbminor)
-    && (xkb = XkbGetKeyboard(dpy,XkbControlsMask,XkbUseCoreKbd)) != NULL
+    && (xkb = XkbAllocKeyboard()) != NULL
     && XkbGetControls(dpy, XkbRepeatKeysMask, xkb) == Success)
   printf ("  auto repeat delay:  %d    repeat rate:  %d\n",
           xkb->ctrls->repeat_delay,  1000/xkb->ctrls->repeat_interval);
