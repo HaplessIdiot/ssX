@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.40 2004/02/07 22:56:05 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.41 2004/03/13 22:07:06 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -389,6 +389,11 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->twoStagePLL = (implementation == 0x0310) ||
                        (implementation == 0x0340) ||
                        (pNv->Architecture >= NV_ARCH_40);
+
+    pNv->WaitVSyncPossible = (pNv->Architecture >= NV_ARCH_10) &&
+                             (implementation != 0x0100);
+
+    pNv->BlendingPossible = ((pNv->Chipset & 0xffff) != 0x0020);
 
     /* look for known laptop chips */
     switch(pNv->Chipset & 0xffff) {
