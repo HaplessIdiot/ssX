@@ -1,6 +1,6 @@
 .\" $TOG: RELNOTES.ms /main/20 1998/02/05 15:30:57 kaleb $
 .\" X11R6.4 Release Notes. Use troff -ms macros
-.\" $XFree86$
+.\" $XFree86: xc/doc/misc/RELNOTES.ms,v 1.3 2000/12/14 21:11:46 dawes Exp $
 .ds Ts 30 January, 1998\" 
 .\"
 .ie t \{
@@ -92,7 +92,8 @@ prior written authorization from The Open Group.
 This document is the release notes that were provided with The Open Group's
 X11R6.4 release.  The XFree86-specific information in this document is
 out of date.  The XFree86-specific documentation can be found
-in the \fBxc/programs/Xserver/hw/xfree86/doc\fP directory.
+in the \fBxc/programs/Xserver/hw/xfree86/doc\fP directory, and on-line
+at http://www.xfree86.org/current/.
 
 .nH 1 "What Is X11"
 
