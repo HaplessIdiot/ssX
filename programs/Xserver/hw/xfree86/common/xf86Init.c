@@ -95,7 +95,11 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 	{ 32,	32,	BITMAP_SCANLINE_PAD },
 #endif
 };
+#ifdef RENDER
 static int numFormats = 7;
+#else
+static int numFormats = 6;
+#endif
 static Bool formatsDone = FALSE;
 
 InputDriverRec xf86KEYBOARD = {
