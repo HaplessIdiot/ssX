@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.66 2003/04/13 18:22:19 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.67 2003/06/17 12:32:52 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -131,6 +131,7 @@
   nl		Dutch
   dvorak	Dvorak
   ee		Estonian
+  fo		Faroese 
   fi		Finnish
   fr		French
   fr-latin9	French (alternative)

@@ -1071,6 +1071,22 @@
     </layout>
     <layout>
       <configItem>
+        <name>fo</name>
+        <description>Faroese</description>
+      </configItem>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>nodeadkeys</name>
+            <description>Eliminate dead keys</description>
+            <description xml:lang="bg">Изключи специалните клавиши (dead keys)</description>
+            <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
+          </configItem>
+        </variant>
+      </variantList>
+    </layout>
+    <layout>
+      <configItem>
         <name>fi</name>
         <description>Finnish</description>
         <description xml:lang="bg">финландска</description>
