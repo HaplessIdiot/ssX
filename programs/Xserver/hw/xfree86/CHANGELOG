@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 702. Fix bugs caused by empty PCI buses on ZX1-based systems (Marc La France).
+ 701. Fix optional save/restore of BIOS area data in int10 module
+      (Marc La France).
  700. Update Swedish localization of XDarwin GUI (Patrik Montgomery).
  699. Fixes to build/run on cygwin (Thomas Dickey).  This includes a workaround
       for _XtInherit by Ralf Habacker, needed to run applications such as xman.
@@ -18402,7 +18405,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3049 2003/12/23 20:51:08 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3050 2003/12/23 22:21:51 dickey Exp $
 
 
 
