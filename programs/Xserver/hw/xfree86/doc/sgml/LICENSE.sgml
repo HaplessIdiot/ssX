@@ -8,14 +8,14 @@
 <date>17 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.28 2004/02/18 01:18:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.29 2004/02/18 01:19:29 dawes Exp $
 </ident>
 
 <sect>Introduction
 <p>
 XFree86&trade; code without an explicit copyright or not explicitly
 marked as being in the public domain is covered by the XFree86
-copyright/license as shown in the next section.  Portions of code are
+copyright/license as shown <ref name="below" id="xf11">.  Portions of code are
 covered by other licenses/copyrights, as shown in subsequent sections.
 In all cases, see individual source files for specific license details,
 copyright owner information, and copyright dates.
@@ -219,10 +219,7 @@ in this Software without prior written authorization from The Open Group.
 
 <sect1>XFree86 License (version 1.0)
 <p>
-XFree86 code without an explicit copyright is covered by the following
-copyright/license:
 
-<p>
 Copyright (C) 1994-2004 The XFree86 Project, Inc.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
