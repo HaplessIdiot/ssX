@@ -48,7 +48,6 @@
 
 
 #include "mipointer.h"
-
 #include "mibstore.h"
 
 #include "sis.h"
@@ -690,11 +689,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
     pix24flags = Support32bppFb | Support24bppFb |
-                SupportConvert24to32 | SupportConvert32to24 |
-                PreferConvert32to24;
+                SupportConvert24to32 | SupportConvert32to24;
+    if (pSiS->Chipset == PCI_CHIP_SIS6326)
+            pix24flags |= PreferConvert32to24;
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags))
-        return FALSE;
+    return FALSE;
 
     /* Check that the returned depth is one we support */
     switch (pScrn->depth) {
@@ -827,13 +827,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     from = X_PROBED;
-    if ((pSiS->pEnt->device->videoRam != 0) &&
-        (pSiS->pEnt->device->videoRam < pScrn->videoRam))  {
+    if (pSiS->pEnt->device->videoRam != 0)  {
         pScrn->videoRam = pSiS->pEnt->device->videoRam;
         from = X_CONFIG;
     }
 
-    if ((pSiS->Chipset == PCI_CHIP_SIS6326) && (pScrn->videoRam >= 8192)) {
+    if ((pSiS->Chipset == PCI_CHIP_SIS6326)
+			&& (pScrn->videoRam >= 8192)
+			&& (from != X_CONFIG)) {
         pScrn->videoRam = 4096;
         xf86DrvMsg(pScrn->scrnIndex, from, "Limiting VideoRAM to %d KB\n",
                pScrn->videoRam);
@@ -1350,6 +1351,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
     pSiS->directRenderingEnabled = SISDRIScreenInit(pScreen);
+    /* Force the initialization of the context */
+#if 0
+    SISLostContext(pScreen);
+#endif
+
 #endif
 
     /*
@@ -1627,10 +1633,10 @@ SISEnterVT(int scrnIndex, int flags)
 #endif
 
 #ifdef XF86DRI
-  if (pSiS->directRenderingEnabled) {
+    if (pSiS->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRIUnlock(pScreen);
-  }
+    }
 #endif
 
     /* Should we re-save the text mode on each VT enter? */
@@ -1674,11 +1680,11 @@ SISLeaveVT(int scrnIndex, int flags)
     vgaHWLock(hwp);
 
 #ifdef XF86DRI
-  pSiS = SISPTR(pScrn);
-  if (pSiS->directRenderingEnabled) {
-    pScreen = screenInfo.screens[scrnIndex];
-    DRILock(pScreen, 0);
-  }
+    pSiS = SISPTR(pScrn);
+    if (pSiS->directRenderingEnabled) {
+        pScreen = screenInfo.screens[scrnIndex];
+        DRILock(pScreen, 0);
+    }
 #endif
 }
 
