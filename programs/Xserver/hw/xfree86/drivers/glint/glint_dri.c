@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.17 2000/06/21 13:51:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.18 2000/06/23 23:43:43 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -351,9 +351,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     {
        int major, minor, patch;
        DRIQueryVersion(&major, &minor, &patch);
-       if (major != 3 || minor != 0 || patch < 0) {
+       if (major != 3 || minor != 1 || patch < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR,
-                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
                      major, minor, patch);
           return FALSE;
        }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.12 2000/09/24 13:51:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.13 2000/12/01 14:28:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -240,9 +240,9 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 3 || minor != 0 || patch < 0) {
+      if (major != 3 || minor != 1 || patch < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "I810DRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                    "I810DRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
