@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/RamDac.c,v 2.11 1994/04/15 05:09:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.0 1994/05/14 06:51:13 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -297,14 +297,14 @@ int *RamDac;
 	 * The ATT498 has 4 direct registers accessed through standard
 	 * VGA registers 0x3C8, 0x3C9, 0x3C6, and 0x3C7 and 6 indirect
 	 * registers accessed through a back door by successive reads 
-	 * on RMR (Pixel read mask register 0x3C6 ???).
+	 * on RMR (Pixel read mask register 0x3C6).
 	 */
 
-	inp(0x3C7); /* reset state machine for indirect registers to state 0 */
-	for(i=0; i<6; i++) mir = inp(0x3C6);	/* 6th read  is MIR */
-	dir = inp(0x3C6);			/* next will be DIR */
-
-	fprintf(stderr,"ATT498 MIR=0x%02x DIR=0x%02x\n",mir,dir);
+	dactocomm();
+	inp(0x3C6);		/* reading CR0 */
+	mir = inp(0x3C6);
+	dir = inp(0x3C6);
+	dactopel();
 
 	if ((mir == 0x84) && (dir == 0x98)) {
                 Found = TRUE;
