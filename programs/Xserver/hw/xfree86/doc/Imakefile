@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.65 2000/03/04 00:47:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.66 2000/03/07 01:52:16 martin Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -44,13 +44,13 @@ OSREADMES = \
 
 HWREADME = \
 	/*ReadmeFile(3Dlabs)*/	\
-	/*ReadmeFile(apm)*/	\
+	ReadmeFile(apm)		\
 	/*ReadmeFile(agx)*/	\
 	/*ReadmeFile(ark)*/	\
 	ReadmeFile(ati)		\
 	ReadmeFile(chips)	\
 	/*ReadmeFile(cirrus)*/	\
-	/*ReadmeFile(cyrix)*/	\
+	ReadmeFile(cyrix)	\
 	ReadmeFile(DECtga)	\
 	/*ReadmeFile(epson)*/	\
 	/*ReadmeFile(fbdev)*/	\

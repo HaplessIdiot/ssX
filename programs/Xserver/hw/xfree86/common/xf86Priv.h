@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.59 1999/10/13 22:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.64 2000/02/08 13:13:06 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -68,7 +68,6 @@ extern confDRIRec xf86ConfigDRI;
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
-extern int xf86EstimateSizesAggressively;
 
 #ifdef XFree86LOADER
 extern DriverPtr *xf86DriverList;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.212 2000/03/02 17:53:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.213 2000/03/05 17:04:11 dawes Exp $ */
 
 
 /*
@@ -707,6 +707,8 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_PIXMAP,		"Pixmap",			OPTV_INTEGER,
 	{0}, FALSE },
+  { FLAG_PC98,			"PC98",				OPTV_BOOLEAN,
+	{0}, FALSE },
   { FLAG_ESTIMATE_SIZES_AGGRESSIVELY,"EstimateSizesAggressively",OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_NOPM,			"NoPM",				OPTV_BOOLEAN,
@@ -805,6 +807,10 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pciFlags = PCIForceConfig1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
 	xf86Info.pciFlags = PCIForceConfig2;
+    /*
+     * XXX This should be handled like a proper boolean option -- see further
+     * above for examples.
+     */
     if (xf86IsOptionSet(FlagOptions, FLAG_NOPM))
 	xf86Info.pmFlag = FALSE;
     else
@@ -1795,9 +1801,6 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 	xf86Msg(X_CONFIG, "|-->Inactive Device \"%s\"\n",
 		conf_device->dev_identifier);
 	
-    /*
-     * some things (like clocks) are missing here
-     */
     devicep->identifier = conf_device->dev_identifier;
     devicep->vendor = conf_device->dev_vendor;
     devicep->board = conf_device->dev_board;

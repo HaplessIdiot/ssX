@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.25 1999/10/13 22:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.27 2000/01/25 00:18:28 alanh Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -133,10 +133,12 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* miscModInDevAllowNonLocal */
 	PCIProbe1,	/* pciFlags */
 	Pix24DontCare,	/* pixmap24 */
-	X_DEFAULT	/* pix24From */
+	X_DEFAULT,	/* pix24From */
 #if defined(i386) || defined(__i386__)
-	,FALSE		/* pc98 */
+	FALSE,		/* pc98 */
 #endif
+	TRUE,		/* pmFlag */
+	0		/* estimateSizesAggressively */
 };
 const char *xf86ConfigFile = NULL;
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;

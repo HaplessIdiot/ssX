@@ -1,433 +1,829 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.66 2000/02/10 18:57:24 dawes Exp $
-.TH XF86Config 4/5 "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.1 2000/03/07 01:37:42 dawes Exp $
+.TH XF86Config __filemansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
-.SH WARNING
-This man page is out of date.  It does not describe the config file format
-used in XFree86 3.9.x.
 .SH DESCRIPTION
 .I XFree86
-uses a configuration file called \fBXF86Config\fP for its initial
-setup.  This configuration file is searched for in the following
-places:
-.sp
-.in 8
+uses a configuration file called
+.B XF86Config
+for its initial setup.  This configuration file is searched for in the
+following places when the server is started as a normal user:
+.PP
+.RS 4
 .nf
-/etc/XF86Config
+.RI /etc/X11/ <cmdline>
+.RI __projectroot__/etc/X11/ <cmdline>
+.RB /etc/X11/ $XF86CONFIG
+.RB __projectroot__/etc/X11/ $XF86CONFIG
+/etc/X11/XF86Config-4
 /etc/X11/XF86Config
-/usr/X11R6/etc/XF86Config
-<XRoot>/lib/X11/XF86Config.\fIhostname\fP
-<XRoot>/lib/X11/XF86Config
+/etc/XF86Config
+.RI __projectroot__/etc/X11/XF86Config. <hostname>
+__projectroot__/etc/X11/XF86Config-4
+__projectroot__/etc/X11/XF86Config
+.RI __projectroot__/lib/X11/XF86Config. <hostname>
+__projectroot__/lib/X11/XF86Config-4
+__projectroot__/lib/X11/XF86Config
 .fi
-.in -8
-.LP
-where <XRoot> refers to the root of the X11 install tree.
-When an X server is started by a `root' user, it will first search for
-an \fBXF86Config\fP file in that user's home directory.
-.PP
-This file is composed of a number of sections.  Each section has
-the form:
-.sp
-.in 8
-.nf
-Section "\fISectionName\fP"
-   \fISectionEntry\fP
-   ...
-EndSection
-.fi
-.in -8
-.PP
-The section names are:
-.sp
-.in 8
-.nf
-\fBFiles\fP (File pathnames)
-\fBModule\fP (Dynamic module loading)
-\fBServerFlags\fP (Server flags)
-\fBKeyboard\fP (Keyboard configuration)
-\fBPointer\fP (Pointer configuration)
-\fBMonitor\fP (Monitor description)
-\fBDevice\fP (Graphics device description)
-\fBScreen\fP (Screen configuration)
-\fBXInput\fP (Extended Input devices configuration)
-.fi
-.PP
-The \fBFiles\fP section is used to specify the default font path
-and the path to the RGB database.  These paths can also be set from
-the command line (see \fIXserver(1)\fP).  The entries available
-for this section are:
-.TP 8
-.B FontPath \fI"path"\fP
-sets the search path for fonts.  This path is a comma separated
-list of directories which the X server searches for font databases.
-Multiple \fBFontPath\fP entries may be specified, and they will be
-concatenated to build up the fontpath used by the server.
-.sp
-X11R6 allows the X server to request fonts from a font server.  A
-font server is specified by placing a "<trans>/<hostname>:<port_number>"
-entry into the fontpath.  For example, the fontpath
-"/usr/X11R6/lib/X11/fonts/misc/,tcp/zok:7100" tells the X server
-to first try to locate the font in the local directory
-/usr/X11R6/lib/X11/fonts/misc.  If that fails, then request the
-font from the \fIfont server\fP running on machine zok listening
-for connections on TCP port number 7100.
-.TP 8
-.B RGBPath \fI"path"\fP
-sets the path name for the RGB color database.
-.TP 8
-.B ModulePath \fI"path"\fP
-sets the search path for dynamic modules.  This path is a comma separated
-list fo directories which the X server searches for dynamic module loading
-in the order specified.
-Multiple \fBModulePath\fP entries may be specified, and they will be
-concatenated to build the modulepath used by the server.
-.PP
-The
-.B Module
-section is used to specify which dynamic modules should be loaded.
-At present dynamic modules are only used for XInput devices, and are
-only supported on some systems (currently Linux ELF, FreeBSD 2.x and
-NetBSD 1.x).  The entry available for this section is:
-.TP 8
-.B Load \fI"module"\fP
-This instructs the server to load \fI"module"\fP.  If the module
-is not specified with a full pathname, the directories specified in
-the \fBModulePath\fP are searched.
-Modules are currently available to support extended input devices.  The
-names of these are:
-.sp
-.in 20
-.nf
-.B xf86Elo.so
-.B xf86Jstk.so
-.B xf86Wacom.so
-.B xf86Summa.so
-.fi
-.in -20
-The PEX and XIE extension are also be available as modules on some
-systems. The names for these are:
-.sp
-.in 20
-.nf
-.B pex5.so
-.B xie.so
-.fi
-.in -20
-.RS 8
-For an up-to-date listing, check in <XRoot>/lib/modules.
 .RE
 .PP
-The \fBServerFlags\fP section is used to specify some miscellaneous
-X server options.  The entries available for this section are:
-.TP 8
-.B NoTrapSignals
+where
+.I <cmdline>
+is a relative path (with no ".." components) specified with the
+.B \-xf86config
+command line option,
+.B $XF86CONFIG
+is the relative path (with no ".." components) specified by that
+environment variable, and
+.I <hostname>
+is the machines hostname as reported by gethostname(3).
+.PP
+When the X server is started by the "root" user, the config file search
+locations are as follows:
+.PP
+.RS 4
+.nf
+.I <cmdline>
+.RI /etc/X11/ <cmdline>
+.RI __projectroot__/etc/X11/ <cmdline>
+.B $XF86CONFIG
+.RB /etc/X11/ $XF86CONFIG
+.RB __projectroot__/etc/X11/ $XF86CONFIG
+.BR $HOME /XF86Config
+/etc/X11/XF86Config-4
+/etc/X11/XF86Config
+/etc/XF86Config
+.RI __projectroot__/etc/X11/XF86Config. <hostname>
+__projectroot__/etc/X11/XF86Config-4
+__projectroot__/etc/X11/XF86Config
+.RI __projectroot__/lib/X11/XF86Config. <hostname>
+__projectroot__/lib/X11/XF86Config-4
+__projectroot__/lib/X11/XF86Config
+.fi
+.RE
+.PP
+where
+.I <cmdline>
+is the path specified with the
+.B \-xf86config
+command line option (which may be absolute or relative),
+.B $XF86CONFIG
+is the path specified by that
+environment variable (absolute or relative),
+.B $HOME
+is the path specified by that environment variable (usually the home
+directory), and
+.I <hostname>
+is the machines hostname as reported by gethostname(3).
+.PP
+The
+.B XF86Config
+file is composed of a number of sections which may be present in any
+order.  Each section has
+the form:
+.PP
+.RS 4
+.nf
+.BI "Section """ SectionName """
+.I  "    SectionEntry"
+    ...
+.B EndSection
+.fi
+.RE
+.PP
+The section names are:
+.PP
+.RS 4
+.nf
+.BR "Files          " "File pathnames"
+.BR "ServerFlags    " "Server flags"
+.BR "Module         " "Dynamic module loading"
+.BR "InputDevice    " "Input device description"
+.BR "Device         " "Graphics device description"
+.BR "VideoAdapter   " "Xv video adapter description"
+.BR "Monitor        " "Monitor description"
+.BR "Modes          " "Video modes descriptions"
+.BR "Screen         " "Screen configuration"
+.BR "ServerLayout   " "Overall layout"
+.BR "DRI            " "DRI-specific configuration"
+.BR "Vendor         " "Vendor-specific configuration"
+.fi
+.RE
+.PP
+The following obsolete section names are still recognised for compatibility
+purposes.  In new config files, the
+.B InputDevice
+section should be used instead.
+.PP
+.RS 4
+.nf
+.BR "Keyboard       " "Keyboard configuration"
+.BR "Pointer        " "Pointer/mouse configuration"
+.fi
+.RE
+.PP
+The old
+.B XInput
+section is no longer recognised.
+.PP
+Config file keywords are case-insensitive, and "_" characters are
+ignored.  Most strings (including
+.B Option
+names) are also case-insensitive, and insensitive to white space and
+"_" characters.
+.PP
+Each config file entry usually take up a single line in the file.
+They consist of a keyword, which is possibly followed by one or
+more arguments, with the number and types of the arguments depending
+on the keyword.  The argument types are:
+.PP
+.RS 4
+.nf
+.BR "Integer     " "an integer number in decimal, hex or octal"
+.BR "Real        " "a floating point number"
+.BR "String      " "a string enclosed in double quote marks ("")"
+.fi
+.RE
+.PP
+A special keyword called
+.B Option
+may be used to provide free-form data to various components of the server.
+The
+.B Option
+keyword takes either one or two string arguments.  The first is the option
+name, and the optional second argument is the option value.  Some commonly
+used option value types include:
+.PP
+.RS 4
+.nf
+.BR "Integer     " "an integer number in decimal, hex or octal"
+.BR "Real        " "a floating point number"
+.BR "String      " "a sequence of characters"
+.BR "Boolean     " "a boolean value (see below)"
+.BR "Frequency   " "a frequency value (see below)"
+.fi
+.RE
+.PP
+Note that
+.I all
+.B Option
+values, not just strings, must be enclosed in quotes.
+.PP
+Boolean options may optionally have a value specified.  When no value
+is specified, the option's value is
+.BR TRUE .
+The following boolean option values are recognised as
+.BR TRUE :
+.PP
+.RS 4
+.BR 1 ,
+.BR on ,
+.BR true ,
+.B yes
+.RE
+.PP
+and the following boolean option values are recognised as
+.BR FALSE :
+.PP
+.RS 4
+.BR 0 ,
+.BR off ,
+.BR false ,
+.B no
+.RE
+.PP
+If an option name is prefixed with
+.RB """" No """",
+then the option value is negated.
+.PP
+Example: the following option entries are equivalent:
+.PP
+.RS 4
+.nf
+.B "Option ""Accel""   ""Off"""
+.B "Option ""NoAccel""
+.B "Option ""NoAccel"" ""On""
+.B "Option ""Accel""   ""false""
+.B "Option ""Accel""   ""no""
+.fi
+.RE
+.PP
+Frequency option values consist of a real number that is optionally
+followed by one of the following frequency units:
+.PP
+.RS 4
+.BR Hz ,
+.BR k ,
+.BR kHz ,
+.BR M ,
+.B MHz
+.RE
+.PP
+When the unit name is omitted, the correct units will be determined from
+the value and the expectations of the appropriate range of the value.
+It is recommended that the units always be specified when using frequency
+option values to avoid any errors in determining the value.
+.SH FILES SECTION
+The
+.B Files
+section is used to specify some path names required by the server.
+Some of these paths can also be set from the command line (see
+.I Xserver(1)
+and
+.IR XFree86(1) ).
+The command line settings override the values specified in the config
+file.
+The entries that can appear in this section are:
+.TP 7
+.BI "FontPath """ path """
+sets the search path for fonts.  This path is a comma separated
+list of font path elements which the X server searches for font databases.
+Multiple
+.B FontPath
+entries may be specified, and they will be
+concatenated to build up the fontpath used by the server.
+Font path elements may be either absolute directory paths, or the
+a font server identifier.  Font server identifiers have the form:
+.PP
+.RS 11
+.IR <trans> / <hostname> : <port-number>
+.RE
+.PP
+.RS 7
+where
+.I <trans>
+is the transport type to use to connect to the font server (e.g.,
+.B unix
+for UNIX-domain sockets or
+.B tcp
+for a TCP/IP connection),
+.I <hostname>
+is the hostname of the machine running the font server, and
+.I <port-number>
+is the port number that the font server is listening on (usually 7100).
+.PP
+When this entry is not specified in the config file, the server falls back
+to the compiled-in default font path, which contains the following
+font path elements:
+.PP
+.RS 4
+.nf
+__projectroot__/lib/X11/fonts/misc/
+__projectroot__/lib/X11/fonts/Speedo/
+__projectroot__/lib/X11/fonts/Type1/
+__projectroot__/lib/X11/fonts/CID/
+__projectroot__/lib/X11/fonts/75dpi/
+__projectroot__/lib/X11/fonts/100dpi/
+.fi
+.RE
+.PP
+The recommended font path contains the following font path elements:
+.PP
+.RS 4
+.nf
+__projectroot__/lib/X11/fonts/local/
+__projectroot__/lib/X11/fonts/misc/
+__projectroot__/lib/X11/fonts/75dpi/:unscaled
+__projectroot__/lib/X11/fonts/100dpi/:unscaled
+__projectroot__/lib/X11/fonts/Type1/
+__projectroot__/lib/X11/fonts/CID/
+__projectroot__/lib/X11/fonts/Speedo/
+__projectroot__/lib/X11/fonts/75dpi/
+__projectroot__/lib/X11/fonts/100dpi/
+.fi
+.RE
+.PP
+Font path elements that are found to be invalid are removed from the
+font path when the server starts up.
+.RE
+.TP 7
+.BI "RGBPath """ path """
+sets the path name for the RGB color database.
+When this entry is not specified in the config file, the server falls back
+to the compiled-in default RGB path, which is:
+.PP
+.RS 11
+__projectroot__/lib/X11/rgb
+.RE
+.TP 7
+.BI "ModulePath """ path """
+sets the search path for loadable X server modules.  This path is a
+comma separated list of directories which the X server searches for
+loadable modules loading in the order specified.  Multiple
+.B ModulePath
+entries may be specified, and they will be concatenated to build the
+module search path used by the server.
+.\" The LogFile keyword is not currently implemented
+.ig
+.TP 7
+.BI "LogFile """ path """
+sets the name of the X server log file.  The default log file name is
+.PP
+.RS 11
+.RI __logdir__/XFree86. <n> .log
+.RE
+.PP
+.RS 7
+where
+.I <n>
+is the display number for the X server.
+..
+.SH SERVERFLAGS SECTION
+The
+.B ServerFlags
+section is used to specify some global
+X server options.  All of the entries in this section are
+.BR Options ,
+although for compatibility purposes some of the old style entries are
+still recognised.  Those old style entries are not documented here, and
+using them is discouraged.
+.PP
+.B Options
+specified in this section may be overriden by
+.B Options
+specified in the active
+.B ServerLayout
+section.  Options with command line equivalents are overriden when their
+command line equivalent is used.  The options recognised by this section
+are:
+.TP 7
+.BI "Option ""NoTrapSignals""  """ boolean """
 This prevents the X server from trapping a range of unexpected
 fatal signals and exiting cleanly.  Instead, the X server will die
 and drop core where the fault occurred.  The default behaviour is
 for the X server exit cleanly, but still drop a core file.  In
 general you never want to use this option unless you are debugging
-an X server problem.
-.TP 8
-.B DontZap
-This disallows the use of the \fBCtrl+Alt+Backspace\fP sequence.
-This sequence allows you to terminate the X server.
-Setting \fBDontZap\fP allows this key sequence to be passed to clients.
-.TP 8
-.B DontZoom
-This disallows the use of the \fBCtrl+Alt+Keypad-Plus\fP and
-\fBCtrl+Alt+Keypad-Minus\fP sequences.  These sequences allows you to
-switch between video modes.
-Setting \fBDontZoom\fP allows these key sequences to be passed to clients.
-.TP 8
-.B AllowNonLocalXvidtune
-This allows the xvidtune client to connect from another host.  By default
-non-local connections are not allowed.
-.TP 8
-.B DisableVidMode
+an X server problem and know how to deal with the consequences.
+.TP 7
+.BI "Option ""DontZap""  """ boolean """
+This disallows the use of the
+.B Ctrl+Alt+Backspace
+sequence.  That sequence is normally used to terminate the X server.
+When this option is enabled, that key sequence has no special meaning
+and is passed to clients.  Default: off.
+.TP 7
+.BI "Option ""DontZoom""  """ boolean """
+This disallows the use of the
+.B Ctrl+Alt+Keypad-Plus
+and
+.B Ctrl+Alt+Keypad-Minus
+sequences.  These sequences allows you to switch between video modes.
+When this option is enabled, those key sequences have no special meaning
+and are passed to clients.  Default: off.
+.TP 7
+.BI "Option ""DisableVidModeExtension""  """ boolean """
 This disables the parts of the VidMode extension used by the xvidtune client
-that can be used to change the video modes.
-.TP 8
-.B AllowNonLocalModInDev
+that can be used to change the video modes.  Default: the VidMode extension
+is enabled.
+.TP 7
+.BI "Option ""AllowNonLocalXvidtune""  """ boolean """
+This allows the xvidtune client (and other clients that use the VidMode
+extension) to connect from another host.  Default: off.
+.TP 7
+.BI "Option ""DisableModInDev""  """ boolean """
+This disables the parts of the XFree86-Misc extension that can be used to
+modify the input device settings dynamically.  Default: that functionality
+is enabled.
+.TP 7
+.BI "Option ""AllowNonLocalModInDev""  """ boolean """
 This allows a client to connect from another host and change keyboard
-and mouse settings in the running server.  By default
-non-local connections are not allowed.
-.TP 8
-.B DisableModInDev
-This disables the parts of the Misc extension that can be used to
-modify the input device settings dynamically.
-.TP 8
-.B AllowMouseOpenFail
+and mouse settings in the running server.  Default: off.
+.TP 7
+.BI "Option ""AllowMouseOpenFail""  """ boolean """
 This allows the server to start up even if the mouse device can't be
-opened/initialised.
-.PP
-The \fBKeyboard\fP section is used to specify the keyboard input
-device, parameters and some default keyboard mapping options.  The
-entries available for this section are:
-.TP 8
-.B Protocol \fI"kbd-protocol"\fP
-\fIkbd-protocol\fP may be either \fBStandard\fP or \fBXqueue\fP.
-\fBXqueue\fP is specified when using the event queue driver on SVR3
-or SVR4.
-.TP
-.B AutoRepeat \fIdelay rate\fP
-changes the behavior of the autorepeat of the keyboard.  This does
-not work on all platforms.
-.TP 8
-.B ServerNumLock
-forces the X server to handle the numlock key internally.  The X
-server sends a different set of keycodes for the numpad when the
-numlock key is active.  This enables applications to make use of
-the numpad.
-.PP
-.nf
-.B LeftAlt \fImapping\fP
-.B RightAlt \fImapping\fP
-.B AltGr \fImapping\fP
-.B ScrollLock \fImapping\fP
-.B RightCtl \fImapping\fP
-.fi
-.RS 8
-Allows a default mapping to be set for the above keys (note that
-\fBAltGr\fP is a synonym for \fBRightAlt\fP).  The values that may
-be specified for \fImapping\fP are:
-.sp
-.in 20
-.nf
-Meta
-Compose
-ModeShift
-ModeLock
-ScrollLock
-Control
-.fi
-.PP
-The default mapping when none of these options are specified is:
-.sp
-.in 20
-.nf
-LeftAlt     Meta
-RightAlt    Meta
-ScrollLock  Compose
-RightCtl    Control
-.fi
-.RE
-.TP 8
-.B XLeds \fIled\fP ...
-makes \fIled\fP available for clients instead of using the traditional
-function (Scroll Lock, Caps Lock & Num Lock).  \fIled\fP is a list
-of numbers in the range 1 to 3.
-.TP 8
-.B VTSysReq
-enables the SYSV-style VT switch sequence for non-SYSV systems
-which support VT switching.  This sequence is Alt-SysRq followed
-by a function key (Fn).  This prevents the X server trapping the
-keys used for the default VT switch sequence.
-.TP 8
-.B VTInit \fI"command"\fP
-Runs \fIcommand\fP after the VT used by the server has been opened.
+opened/initialised.  Default: false.
+.TP 7
+.BI "Option ""VTInit""  """ command """
+Runs
+.I command
+after the VT used by the server has been opened.
 The command string is passed to "/bin/sh -c", and is run with the
 real user's id with stdin and stdout set to the VT.  The purpose
 of this option is to allow system dependent VT initialisation
-commands to be run.  One example is a command to disable the 2-key
-VT switching sequence which is the default on some systems.
-.TP 8
-.B XkbDisable
-Turns the XKEYBOARD extension off, equivalent to using the -kb
+commands to be run.  This option should rarely be needed.  Default: not set.
+.TP 7
+.BI "Option ""VTSysReq""  """ boolean """
+enables the SYSV-style VT switch sequence for non-SYSV systems
+which support VT switching.  This sequence is
+.B Alt-SysRq
+followed
+by a function key
+.RB ( Fn ).
+This prevents the X server trapping the
+keys used for the default VT switch sequence, which means that clients can
+access them.  Default: off.
+.\" The following four options are "undocumented".
+.ig
+.TP 7
+.BI "Option ""PciProbe1"""
+Use PCI probe method 1.  Default: set.
+.TP 7
+.BI "Option ""PciProbe2"""
+Use PCI probe method 2.  Default: not set.
+.TP 7
+.BI "Option ""PciForceConfig1"""
+Force the use PCI config type 1.  Default: not set.
+.TP 7
+.BI "Option ""PciForceConfig2"""
+Force the use PCI config type 2.  Default: not set.
+..
+.TP 7
+.BI "Option ""BlankTime""  """ time """
+sets the inactivity timeout for the blanking phase of the screensaver.
+.I time
+is in minutes.  This is equivalent to the Xserver's `-s' flag, and the
+value can be changed at run-time with \fIxset(1)\fP.  Default: 10 minutes.
+.TP 7
+.BI "Option ""StandbyTime""  """ time """
+sets the inactivity timeout for the "standby" phase of DPMS mode.
+.I time
+is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+Default: 20 minutes.
+This is only suitable for VESA DPMS compatible monitors, and may not be
+supported by all video drivers.  It is only enabled for screens that
+have the
+.B """DPMS"""
+option set. 
+.TP 7
+.BI "Option ""SuspendTime""  """ time """
+sets the inactivity timeout for the "suspend" phase of DPMS mode.
+.I time
+is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+Default: 30 minutes.
+This is only suitable for VESA DPMS compatible monitors, and may not be
+supported by all video drivers.  It is only enabled for screens that
+have the
+.B """DPMS"""
+option set. 
+.TP 7
+.BI "Option ""OffTime""  """ time """
+sets the inactivity timeout for the "off" phase of DPMS mode.
+.I time
+is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
+Default: 40 minutes.
+This is only suitable for VESA DPMS compatible monitors, and may not be
+supported by all video drivers.  It is only enabled for screens that
+have the
+.B """DPMS"""
+option set. 
+.TP 7
+.BI "Option ""Pixmap""  """ bpp """
+This sets the pixmap format to use for depth 24.  Allowed values for
+.I bpp
+are 24 and 32.  Default: 32 unless driver constraints don't allow this
+(which is rare).  Note: some clients don't behave well when
+this value is set to 24.
+.TP 7
+.BI "Option ""PC98""  """ boolean """
+Specify that the machine is a Japanese PC-98 machine.  This should not
+be enabled for anything other than the Japanese-specific PC-98
+architecture.  Default: auto-detected.
+.\" Doubt this should be documented.
+.ig
+.TP 7
+.BI "Option ""EstimateSizesAggressively""  """ value """
+This option affects the way that bus resource sizes are estimated.  Default: 0.
+..
+.TP 7
+.BI "Option ""NoPM""  """ boolean """
+Disables something to do with power management events.  Default: PM enabled
+on platforms that support it.
+.SH MODULE SECTION
+The
+.B Module
+section is used to specify which X server modules should be loaded.
+This section is ignored when the X server is built in static form.
+The types of modules normally loaded in this section are X server
+extension modules, and font rasteriser modules.  Most other module types
+are loaded automatically when they are needed via other mechanisms.
+.PP
+Entries in this section may be in two forms.   The first and most commonly
+used form is an entry that uses the
+.B Load
+keyword, as described here:
+.TP 7
+.BI "Load """ modulename """
+This instructs the server to load the module called
+.IR modulename .
+The module name given should be the module's standard name, not the
+module file name.  The standard name is case-sensitive, and does not
+include the "lib" prefix, or the ".a", ".o", or ".so" suffixes.
+.PP
+.RS 7
+Example: the Type 1 font rasteriser can be loaded with the following entry:
+.PP
+.RS 4
+.B "Load ""type1"""
+.RE
+.RE
+.PP
+The second form of entry is a
+.BR SubSection,
+with the subsection name being the module name, and the contents of the
+.B SubSection
+being
+.B Options
+that are passed to the module when it is loaded.
+.PP
+Example: the extmod module (which contains a miscellaneous group of
+server extensions) can be loaded, with the XFree86-DGA extension
+disabled by using the following entry:
+.PP
+.RS 4
+.nf
+.B "SubSection ""extmod"""
+.B "   Option  ""omit XFree86-DGA"""
+.B EndSubSection
+.fi
+.RE
+.PP
+Modules are searched for in each directory specified in the
+.B ModulePath
+search path, and in the drivers, input, extensions, fonts, and
+internal subdirectories of each of those directories.
+In addition to this, operating system specific subdirectories of all
+the above are searched first if they exist.
+.PP
+To see what font and extension modules are available, check the contents
+of the following directories:
+.PP
+.RS 4
+.nf
+__projectroot__/lib/modules/fonts
+__projectroot__/lib/modules/extensions
+.fi
+.RE
+.PP
+The "bitmap" font modules is loaded automatically.  It is recommended
+that at very least the "extmod" extension module be loaded.  If it isn't
+some commonly used server extensions (like the SHAPE extension) will not be
+available.
+.SH INPUTDEVICE SECTION
+The config file may have multiple
+.B InputDevice
+sections.  There will normally be at least two: one for the core (primary)
+keyboard, and one of the core pointer.
+.PP
+.B InputDevice
+sections have the following format:
+.PP
+.RS 4
+.nf
+.B  "Section ""InputDevice"""
+.BI "    Identifier """ name """
+.BI "    Driver     """ inputdriver """
+.I  "    options"
+.I  "    ..."
+.B  "EndSection"
+.fi
+.RE
+.PP
+The
+.B Identifier
+entry specifies the unique name for this input device.  The
+.B Driver
+entry specifies the name of the driver to use for this input device.
+When using the loadable server, the input driver module
+.RI """ inputdriver """
+will be loaded for each active
+.B InputDevice
+section.  An
+.B InputDevice
+section is considered active if it is referenced by an active
+.B ServerLayout
+section, or if it is referenced by the
+.B \-keyboard
+or
+.B \-pointer
+command line options.
+The most commonly used input drivers are "keyboard" and "mouse".
+.PP
+.B InputDevice
+sections recognise some driver-independent
+.BR Options ,
+which are described here.  See the individual input driver manual pages
+for a description of the device-specific options.
+.TP 7
+.BI "Option ""CorePointer"""
+When this is set, the input device is installed as the core (primary)
+pointer device.  There must be exactly one core pointer.  If this option
+is not set here, or in the
+.B ServerLayout
+section, or from the
+.B \-pointer
+command line option, then the first input device that is capable of
+being used as a core pointer will be selected as the core pointer.
+This option is implicitly set when the obsolete
+.B Pointer
+section is used.
+.TP 7
+.BI "Option ""CoreKeyboard"""
+When this is set, the input device is to be installed as the core
+(primary) keyboard device.  There must be exactly one core keyboard.  If
+this option is not set here, in the
+.B ServerLayout
+section, or from the
+.B \-keyboard
+command line option, then the first input device that is capable of
+being used as a core keyboard will be selected as the core keyboard.
+This option is implicitly set when the obsolete
+.B Keyboard
+section is used.
+.TP 7
+.BI "Option ""AlwaysCore""  """ boolean """
+.TP 7
+.BI "Option ""SendCoreEvents""  """ boolean """
+Both of these options are equivalent, and when enabled cause the
+input device to always report core events.  This can be used, for
+example, to allow an additional pointer device to generate core
+pointer events (like moving the cursor, etc).
+.TP 4
+.BI "Option ""HistorySize""  """ number """
+Sets the motion history size.  Default: 0.
+.TP 7
+.BI "Option ""SendDragEvents""  """ boolean """
+???
+.SH DEVICE SECTION
+The config file may have multiple
+.B Device
+sections.  There must be at least one, for the video card being used.
+.PP
+.B Device
+sections have the following format:
+.PP
+.RS 4
+.nf
+.B  "Section ""Device"""
+.BI "    Identifier """ name """
+.BI "    Driver     """ driver """
+.I  "    entries"
+.I  "    ..."
+.B  "EndSection"
+.fi
+.RE
+.PP
+The
+.B Identifier
+entry specifies the unique name for this graphics device.  The
+.B Driver
+entry specifies the name of the driver to use for this graphics device.
+When using the loadable server, the driver module
+.RI """ driver """
+will be loaded for each active
+.B Device
+section.  A
+.B Device
+section is considered active if it is referenced by an active
+.B Screen
+section.
+.PP
+.B Device
+sections recognise some driver-independent entries and
+.BR Options ,
+which are described here.  Not all drivers make use of these
+driver-independent entries, and many of those that do don't require them
+to be specified because the information is auto-detected.  See the
+individual graphics driver manual pages for further information about
+this, and for a description of the device-specific options.
+Note that most of the
+.B Options
+listed here (but not the other entries) may be specified in the
+.B Screen
+section instead of here in the
+.B Device
+section.
+.TP 7
+.BI "BusID  """ bus-id """
+This specifies the bus location of the graphics card.  For PCI/AGP cards,
+the
+.I bus-id
+string has the form
+.BI PCI: bus : device : function
+(e.g., "PCI:1:0:0" might be appropriate for an AGP card).
+This field is usually optional in single-head configurations when using
+the primary graphics card.  In multi-head configurations, or when using
+a secondary graphics card in a single-head configuration, this entry is
+mandatory.  Its main purpose is to make an unambiguous connection between
+the device section and the hardware it is representing.  This information
+can usually be found by running the X server with the
+.B \-scanpci
 command line option.
+.TP 7
+.BI "Chipset  """ chipset """
+This usually optional entry specifies the chipset used on the graphics
+board.  In most cases this entry is not required because the drivers
+will probe the hardware to determine the chipset type.  Don't
+specify it unless the driver-specific documentation recommends that you
+do.
+.TP 7
+.BI "Ramdac  """ ramdac-type """
+This optional entry specifies the type of RAMDAC used on the graphics
+board.  This is only used by a few of the drivers, and in most cases it
+is not required because the drivers will probe the hardware to determine
+the RAMDAC type where possible.  Don't specify it unless the
+driver-specific documentation recommends that you do.
+.TP 7
+.BI "DacSpeed  " speed
+.TP 7
+.BI "DacSpeed  " "speed-8 speed-16 speed-24 speed-32"
+This optional entry specifies the RAMDAC speed rating (which is usually
+printed on the RAMDAC chip).  The speed is in MHz.  When one value is
+given, it applies to all framebuffer pixel sizes.  When multiple values
+are give, they apply to the framebuffer pixel sizes 8, 16, 24 and 32
+respectively.  This is not used by many drivers, and only needs to be
+specified when the speed rating of the RAMDAC is different from the
+defaults built in to driver, or when the driver can't auto-detect the
+correct defaults.  Don't specify it unless the driver-specific
+documentation recommends that you do.
+.TP 7
+.BI "Clocks  " "clock ..."
+specifies the pixel that are on your graphics board.  The clocks are in
+MHz, and may be specified as a floating point number.  The value is
+stored internally to the nearest kHz.  The ordering of the clocks is
+important.  It must match the order in which they are selected on the
+graphics board.  Multiple
+.B Clocks
+lines may be specified, and each is concatenated to form the list.  Most
+drivers do not use this entry, and it is only required for some older
+boards with non-programmable clocks.  Don't specify this entry unless
+the driver-specific documentation explicitly recommends that you do.
+.TP
+.BI "ClockChip  """ clockchip-type """
+This optional entry is used to specify the clock chip type on
+graphics boards which have a programmable clock generator.  Only
+a few X servers support programmable clock chips.  For details,
+see the appropriate X server manual page.
+.TP 7
+.BI "VideoRam  " "mem"
+This optional entry specifies the amount of video ram that is installed
+on the graphics board. This is measured in kBytes.  In most cases this
+is not required because the X server probes the graphics board to
+determine this quantity.  The driver-specific documentation should
+indicate when it might be needed.
+.TP 7
+.BI "BiosBase  " "baseaddress"
+This optional entry specifies the base address of the video BIOS
+for the VGA board.  This address is normally auto-detected, and should
+only be specified if the driver-specific documentation recommends it.
+.TP 7
+.BI "MemBase  " "baseaddress"
+This optional entry specifies the memory base address of a graphics
+board's linear frame buffer.  This entry is not used by many drivers,
+and it should only be specified if the driver-specific documentation
+recommends it.
+.TP 7
+.BI "IOBase  " "baseaddress"
+This optional entry specifies the IO base address.  This entry is not
+used by many drivers, and it should only be specified if the
+driver-specific documentation recommends it.
+.TP 7
+.BI "ChipID  " "id"
+This optional entry specifies a numerical ID representing the chip type.
+For PCI cards, it is usually the device ID.  This can be used to override
+the auto-detection, but that should only be done when the driver-specific
+documentation recommends it.
+.TP 7
+.BI "ChipRev  " "rev"
+This optional entry specifies the chip revision number.  This can be
+used to override the auto-detection, but that should only be done when
+the driver-specific documentation recommends it.
+.TP 7
+.BI "TextClockFreq  " "freq"
+This optional entry specifies the pixel clock frequency that is used
+for the regular text mode.  The frequency is specified in MHz.  This is
+rarely used.
+.ig
+.TP 7
+This optional entry allows an IRQ number to be specified.
+..
+.TP 7
+.BI "Option ""BackingStore""  """ boolean """
+ ...
+.SH VIDEOADAPTER SECTION
+.SH MONITOR SECTION
+The config file may have multiple
+.B Monitor
+sections.  There must be at least one, for the monitor being used.
 .PP
+.B Monitor
+sections have the following format:
+.PP
+.RS 4
 .nf
-.B XkbRules \fI"rulesfile"\fP
-.B XkbModel \fI"model"\fP
-.B XkbLayout \fI"layout"\fP
-.B XkbVariant \fI"variant"\fP
-.B XkbOptions \fI"optionlist"\fP
-.fi
-.RS 8
-These specify the definitions which are used to determine which
-XKEYBOARD components to use.  The optionlist, should be a comma
-separated list of options.
-The default mappings for each these are:
-.sp
-.in 20
-.nf
-XkbRules     "xfree86"
-XkbModel     "pc101"
-XkbLayout    "us"
-XkbVariant   ""
-XkbOptions   ""
+.B  "Section ""Monitor"""
+.BI "    Identifier """ name """
+.I  "    entries"
+.I  "    ..."
+.B  "EndSection"
 .fi
 .RE
 .PP
-This is the preferred method of specifying the keyboard configuration,
-however, you can also specify the components directly with:
-.sp
-.nf
-.B XkbKeymap \fI"keymap"\fP
-.B XkbKeycodes \fI"keycodes"\fP
-.B XkbTypes \fI"types"\fP
-.B XkbCompat \fI"compat"\fP
-.B XkbSymbols \fI"symbols"\fP
-.B XkbGeometry \fI"geometry"\fP
-.fi
-.RS 8
-If you specify only some of the components, the remaining components
-will use these default values:
-.sp
-.in 20
-.nf
-XkbKeymap    none
-XkbKeycodes  "xfree86"
-XkbTypes     "default"
-XkbCompat    "default"
-XkbSymbols   "us(pc101)"
-XkbGeometry  "pc"
-.fi
-.RE
-.PP
-The \fBPointer\fP section is used to specify the pointer device
-and parameters.  The entries available for this section are:
-.TP 8
-.B Protocol \fI"protocol-type\fP"
-specifies the pointer device protocol type.  The protocol types
-available are:
-.sp
-.in 20
-.nf
-.B Auto
-.B BusMouse
-.B GlidePoint
-.B GlidePointPS/2
-.B IntelliMouse
-.B IMPS/2
-.B Logitech
-.B Microsoft
-.B MMHitTab
-.B MMSeries
-.B Mouseman
-.B MouseManPlusPS/2
-.B MouseSystems
-.B NetMousePS/2
-.B NetScrollPS/2
-.B OSMouse
-.B PS/2
-.B SysMouse
-.B ThinkingMouse
-.B ThinkingMousePS/2
-.B Xqueue
-.fi
-.in -20
-.RS 8
-.PP
-One should specify \fBBusMouse\fP for the Logitech bus mouse and
-bus or InPort mice from Microsoft and ATI.
-The \fBLogitech\fP protocol is for old serial mouse models from Logitech.
-Many newer Logitech serial mice use either the \fBMicrosoft\fP
-or \fBMouseMan\fP protocol.  \fBXqueue\fP should be specified here
-if it was used in the \fBKeyboard\fP section.  \fBOSMouse\fP refers
-to the event-driver mouse interface available on SCO's SVR3, and the
-mouse interface provided for OS/2.  This
-may optionally be followed by a number specifying the number of
-buttons the mouse has.
-\fBSysMouse\fP refers to the system mouse device, /dev/sysmouse, in
-FreeBSD.
-.PP
-The \fBPS/2\fP and other \fBXXXXPS/2\fP protocol types are for PS/2 mice.
-\fBPS/2\fP should always work with any PS/2 mouse
-regardless of the model of the PS/2 mouse.
-The other \fBXXXXPS/2\fP protocol types may or may not be supported by
-your OS.
-.PP
-The rest of the protocol types are for serial mice.
-If your serial mouse is of a relatively new model, you may specify
-\fBAuto\fP, then the X server will try to select an appropriate
-protocol type automatically.  The \fBAuto\fP protocol type may
-also work for the PS/2 and bus mice on some OSs.
-.RE
-.TP 8
-.B Device \fI"pointer-dev"\fP
-specifies the device the server should open for pointer input (eg,
-\fB/dev/tty00\fP or \fB/dev/mouse\fP).  A device should not be
-specified when using the \fBXqueue\fP or \fBOSMouse\fP protocols.
-.TP 8
-.B Port \fI"pointer-dev"\fP
-is an alternate form of the \fBDevice\fP entry.
-.TP 8
-.B BaudRate \fIrate\fP
-sets the baudrate of the serial mouse to \fIrate\fP. For mice that
-allow dynamic speed adjustments (like older Logitechs) the baudrate is
-changed in the mouse.  Otherwise the rate is simply set on the
-computer's side to allow mice with non-standard rates (the standard
-rate is 1200).  For 99% of mice you should not set this to anything
-other than the default (1200).
-.TP 8
-.B Buttons \fIN\fP
-This option tells the X server the number of buttons on the mouse.
-Currently there is no reliable way to automatically detect the correct 
-number. 
-This option is the only means for the X server to obtain it.
-The default value is three.
-Note that if you intend to assign Z axis movement to button events
-using the \fBZAxisMapping\fP option below, you need to take account
-of those buttons into \fIN\fP too.
-.TP 8
-.B Emulate3Buttons
-enables the emulation of the third mouse button for mice which only
-have two physical buttons.  The third button is emulated by pressing
-both buttons simultaneously.
-.TP 8
-.B Emulate3Timeout \fItimeout\fP
-sets the time (in milliseconds) that the server waits before deciding if
-two buttons were pressed ``simultaneously'' when 3 button emulation is
-enabled.  The default timeout is 50ms.
-.TP 8
-.B ChordMiddle
-handles mice which send left+right events when the middle button
-is used (like some Logitech Mouseman mice).
-.TP 8
-.B SampleRate \fIrate\fP
-sets the number of motion/button-events the mouse sends per second.
-This is currently only supported for some Logitech mice.
-.TP 8
-.B Resolution \fIcount\fP
-sets the resolution of the device in counts per inch.
-This is not always supported by all the mice.
-.TP 8
-.B ClearDTR
-This option clears the DTR line on the serial port used by the
-mouse.  This option is only valid for a mouse using the \fBMouseSystems\fP
-protocol.  Some dual-protocol mice require DTR to be cleared to
-operate in MouseSystems mode.  Note, in versions of XFree86 prior
-to 2.1, this option also cleared the RTS line.  A separate
-\fBClearRTS\fP option has since been added for mice which require
-this.
-.TP 8
-.B ClearRTS
-This option clears the RTS line on the serial port used by the
-mouse.  This option is only valid for a mouse using the \fBMouseSystems\fP
-protocol.  Some dual-protocol mice require both DTR and RTS to be
-cleared to operate in MouseSystems mode.  Both the \fBClearDTR\fP
-and \fBClearRTS\fP options should be used for such mice.
-.TP 8
-.B ZAxisMapping X
-.TP 8
-.B ZAxisMapping Y
-.TP 8
-.B ZAxisMapping \fIN M\fP
-Some mouse devices have a wheel or a roller. Its action is
-reported as the Z (third) axis movement in the X server. 
-The Z axis movement can be assigned to another axis (\fIX\fP or \fIY\fP)
-or a pair of buttons (the button \fIN\fP for negative movement
-and \fIM\fP for positive movement) with this option.
-.PP
-The \fBMonitor\fP sections are used to define the specifications
-of a monitor and a list of video modes suitable for use with a
-monitor.  More than one \fBMonitor\fP section may be present in an
-XF86Config file.  The entries available for this section are:
-.TP 8
-.B Identifier \fI"ID string"\fP
-This specifies a string by which the monitor can be referred to in
-a later \fBScreen\fP section.  Each \fBMonitor\fP section should
-have a unique ID string.
+The
+.B Identifier
+entry specifies the unique name for this monitor.
+The other entries that may be used in
+.B Monitor
+sections are described below.
 .TP 8
 .B VendorName \fI"vendor"\fP
 This optional entry specifies the monitor's manufacturer.
@@ -444,7 +840,8 @@ of kHz.  They may be specified in MHz or Hz if \fBMHz\fP or \fBHz\fP
 is added to the end of the line.  The data given here is used by the X
 server to determine if video modes are within the specifications
 of the monitor.  This information should be available in the
-monitor's handbook.
+monitor's handbook.  If this entry is omitted, a default
+range of 28\-33kHz is used.
 .TP 8
 .B VertRefresh \fIvertrefresh-range\fP
 gives the range(s) of vertical refresh frequencies supported by
@@ -455,13 +852,19 @@ units of Hz.  They may be specified in MHz or kHz if \fBMHz\fP or
 \fBkHz\fP is added to the end of the line.  The data given here is used
 by the X server to determine if video modes are within the
 specifications of the monitor.  This information should be available
-in the monitor's handbook.
-.TP 8
-.B Gamma \fIgamma-value(s)\fP
+in the monitor's handbook.  If this entry is omitted, a default range of
+43-72Hz is used.
+.TP 7
+.BI "Gamma  " "gamma-value"
+.TP 7
+.BI "Gamma  " "red-gamma green-gamma blue-gamma"
 This is an optional entry that can be used to specify the gamma
 correction for the monitor.  It may be specified as either a single
-value or as three separate RGB values.  Not all X servers are capable
+value or as three separate RGB values.  Not all drivers are capable
 of using this information.
+.TP 7
+.BI "UseModes  " "modesection-id"
+ ...
 .TP 8
 .B Mode \fI"name"\fP
 indicates the start of a multi-line video mode description.  The
@@ -526,166 +929,8 @@ Additionally, on some hardware,
 \fB+CSync\fP and \fB-CSync\fP may be used to select the composite
 sync polarity.  The \fBHSkew\fP and \fBVScan\fP options mentioned above can
 also be used here.
-.PP
-The \fBDevice\fP sections are used to define a graphics device
-(video board).  More than one \fBDevice\fP section may be present
-in an XF86Config file.  The entries available for this section are:
-.TP 8
-.B Identifier \fI"ID string"\fP
-This specifies a string by which the graphics device can be referred
-to in a later \fBScreen\fP section.  Each \fBDevice\fP section
-should have a unique ID string.
-.TP 8
-.B VendorName \fI"vendor"\fP
-This optional entry specifies the graphics device's manufacturer.
-.TP 8
-.B BoardName \fI"model"\fP
-This optional entry specifies the name of the graphics device.
-.TP 8
-.B Chipset \fI"chipset-type"\fP
-This optional entry specifies the chipset used on the graphics
-board.  In most cases this entry is not required because the X
-servers will probe the hardware to determine the chipset type.
-.TP 8
-.B Ramdac \fI"ramdac-type"\fP
-This optional entry specifies the type of RAMDAC used on the graphics
-board.  This is only used by a few of the X servers, and in most
-cases it is not required because the X servers will probe the
-hardware to determine the RAMDAC type where possible.
-.TP 8
-.B DacSpeed \fIspeed\fP
-This optional entry specifies the RAMDAC speed rating (which is
-usually printed on the RAMDAC chip).  The speed is in MHz.  This
-is only used by a few of the X servers, and only needs to be
-specified when the speed rating of the RAMDAC is different from
-the default built in to the X server.
-.TP 8
-.B Clocks \fIclock ...\fP
-specifies the dotclocks that are on your graphics board.  The clocks
-are in MHz, and may be specified as a floating point number.  The
-value is stored internally to the nearest kHz.  The ordering of
-the clocks is important.  It must match the order in which they
-are selected on the graphics board.  Multiple \fBClocks\fP lines
-may be specified.  For boards with programmable clock chips, the
-\fBClockChip\fP entry should be used instead of this.  A \fBClocks\fP
-entry is not mandatory for boards with non-programmable clock chips,
-but is highly recommended because it prevents the clock probing
-phase during server startup.  This clock probing phase can cause
-problems for some monitors.
-.TP 8
-.B ClockChip \fI"clockchip-type"\fP
-This optional entry is used to specify the clock chip type on
-graphics boards which have a programmable clock generator.  Only
-a few X servers support programmable clock chips.  For details,
-see the appropriate X server manual page.
-.TP 8
-.B ClockProg \fI"command"\fP [\fItextclock\fP]
-This optional entry runs \fIcommand\fP to set the clock on the
-graphics board instead of using the internal code.  The command
-string must consist of the full pathname (and no flags).  When
-using this option, and no \fBClocks\fP entry is specified,
-it is assumed that the card has a fully programmable clock 
-generator; for a card with a set of preset clocks a \fBClocks\fP 
-entry is required to specify which clock values are to be made 
-available to the server (up to 128 clocks may be specified).  
-The optional \fItextclock\fP value is used to tell the server that
-\fIcommand\fP must be run to restore the textmode clock at server 
-exit (or when VT switching).  \fItextclock\fP must match one of the 
-values in the \fBClocks\fP entry.  This parameter is required when 
-the clock used for text mode is a programmable clock.
-
-The command is run with the real user's id with stdin and stdout
-set to the graphics console device.  Two arguments are passed to
-the command.  The first is the clock frequency in MHz as a floating
-point number and the second is the index of the clock in the
-\fBClocks\fP entry.  The command should return an exit status of
-0 when successful, and something in the range 1\-254 otherwise.
-
-The command is run when the initial graphics mode is set and when
-changing screen resolution with the hot-key sequences.  If the
-program fails at initialisation the server exits.  If it fails
-during a mode switch, the mode switch is aborted but the server
-keeps running.  It is assumed that if the command fails the clock
-has not been changed.
-.TP 8
-.B Option \fI"optionstring"\fP
-This optional entry allows the user to select certain options
-provided by the drivers.  Multiple \fBOption\fP entries may be
-given.  The supported values for \fIoptionstring\fP  are given in
-the appropriate X server manual pages.
-.TP 8
-.B VideoRam \fImem\fP
-This optional entry specifies the amount of videoram that is
-installed on the graphics board. This is measured in kBytes.  In
-most cases this is not required because the X server probes the
-graphics board to determine this quantity.
-.TP 8
-.B BIOSBase \fIbaseaddress\fP
-This optional entry specifies the base address of the video BIOS
-for the VGA board.  This address is normally 0xC0000, which is the
-default the X servers will use.  Some systems, particularly those
-with on-board VGA hardware, have the BIOS located at an alternate
-address, usually 0xE0000.  If your video BIOS is at an address
-other than 0xC0000, you must specify the base address in the
-XF86Config file.  Note that some X servers don't access the BIOS
-at all, and those which do only use the BIOS when searching for
-information during the hardware probe phase.
-.TP 8
-.B MemBase \fIbaseaddress\fP
-This optional entry specifies the memory base address of a graphics
-board's linear frame buffer.  This entry is only used by a few
-X servers, and the interpretation of this base address may be different
-for different X servers.  Refer to the appropriate X server manual
-page for details.
-.TP 8
-.B IOBase \fIbaseaddress\fP
-This optional entry specifies the IO base address.  This entry is only
-used for a few X servers.  Refer to the appropriate X server manual page
-for details.
-.TP 8
-.B DACBase \fIbaseaddress\fP
-This optional entry specifies the DAC base address.  This entry is only
-used for a few X servers.  Refer to the appropriate X server manual page
-for details.
-.TP 8
-.B POSBase \fIbaseaddress\fP
-This optional entry specifies the POS base address.  This entry is only
-used for a few X servers.  Refer to the appropriate X server manual page
-for details.
-.TP 8
-.B COPBase \fIbaseaddress\fP
-This optional entry specifies the coprocessor base address.  This entry
-is only used for a few X servers.  Refer to the appropriate X server
-manual page for details.
-.TP 8
-.B VGABase \fIbaseaddress\fP
-This optional entry specifies the VGA memory base address.  This entry
-is only used for a few X servers.  Refer to the appropriate X server
-manual page for details.
-.TP 8
-.B Instance \fInumber\fP
-This optional entry specifies the instance (which indicates if the
-chip is integrated on the motherboard or on an expansion card).
-This entry is only used for a few X servers.  Refer to the appropriate
-X server manual page for details.
-.TP 8
-.B Speedup \fI"selection"\fP
-This optional entry specifies the selection of speedups to be
-enabled.  This entry is only used for a few X servers.  Refer to
-the appropriate X server manual page for details.
-.TP 8
-.B S3MNAdjust \fIM N\fP
-This optional entry is specific to the S3 X server.  For details, refer
-to the \fIXF86_S3(1)\fP manual page.
-.TP 8
-.B S3MClk \fIclock\fP
-This optional entry is specific to the S3 X server.  For details, refer
-to the \fIXF86_S3(1)\fP manual page.
-.TP 8
-.B S3RefClock \fIclock\fP
-This optional entry is specific to the S3 X server.  For details, refer
-to the \fIXF86_S3(1)\fP manual page.
-.PP
+.SH MODES SECTION
+.SH SCREEN SECTION
 The \fBScreen\fP sections are used to specify which graphics boards
 and monitors will be used with a particular X server, and the
 configuration in which they are to be used.  The entries available
@@ -727,44 +972,8 @@ specifies which monitor description is to be used.
 .B DefaultColorDepth \fIbpp-number\fP
 specifies which color depth the server should use, when no -bpp command
 line parameter was given.
-.TP 8
-.B ScreenNo \fIscrnum\fP
-This optional entry overrides the default screen numbering in a
-multi-headed configuration.  The default numbering is determined by
-the ordering of the \fBScreen\fP sections in the \fIXF86Config\fP
-file.  To override this, all relevant \fBScreen\fP sections must have
-this entry specified.
-.TP 8
-.B BlankTime \fItime\fP
-sets the inactivity timeout for the blanking phase of the screensaver.
-\fItime\fP is in minutes, and the default is 10.
-This is equivalent to the Xserver's `-s' flag, and the value can be
-changed at run-time with \fIxset(1)\fP.
-.TP 8
-.B StandbyTime \fItime\fP
-sets the inactivity timeout for the ``standby'' phase of DPMS mode.
-\fItime\fP is in minutes, the default is 20, and it can be changed
-at run-time with \fIxset(1)\fP.
-This is only suitable for VESA DPMS compatible monitors, and is only
-supported currently by some Xservers.  The "power_saver"
-Option must be set for this to be enabled.
-.TP 8
-.B SuspendTime \fItime\fP
-sets the inactivity timeout for the ``suspend'' phase of DPMS mode.
-\fItime\fP is in minutes, the default is 30, and it can be changed
-at run-time with \fIxset(1)\fP.
-This is only suitable for VESA DPMS compatible monitors, and is only
-supported currently by some Xservers.  The "power_saver"
-Option must be set for this to be enabled.
-.TP 8
-.B OffTime \fItime\fP
-sets the inactivity timeout for the ``off'' phase of DPMS mode.
-\fItime\fP is in minutes, the default is 40, and it can be changed
-at run-time with \fIxset(1)\fP.
-This is only suitable for VESA DPMS compatible monitors, and is only
-supported currently by some Xservers.  The "power_saver"
-Option must be set for this to be enabled.
 .TP
+.SH DISPLAY SUBSECTION
 .B SubSection \fB"Display"\fP
 This entry is a subsection which is used to specify some display
 specific parameters.  This subsection is terminated by an
@@ -901,319 +1110,16 @@ This optional entry allows the ``white'' colour to be specified.  This
 is only supported with the VGA2 driver in the XF86_Mono server (for
 details see \fIXF86_Mono(1)\fP).
 .RE
+.SH SERVERLAYOUT SECTION
+  ...
+.SH DRI SECTION
+ ...
+.SH VENDOR SECTION
+..
 .PP
-The optional \fBXInput\fP section is used to specify configuration options
-for the extended input devices.  For some OSs, the extended device support is
-dynamically loaded, and in this case you need to specify which Modules to
-load in the \fBModule\fP section (this is documented above).
-Each extended device has its own
-subsection. To enable an extended device the corresponding subsection
-must appear. The subsections names are:
-.sp
-.in 8
-.nf
-\fBJoystick\fP (only on supported systems ie. Linux, FreeBSD and NetBSD)
-\fBWacomStylus\fP (stylus of a Wacom tablet)
-\fBWacomEraser\fP (eraser of a Wacom tablet)
-\fBWacomCursor\fP (cursor of a Wacom tablet)
-\fBElographics\fP (Elographics touchscreen)
-\fBMicrotouchFinger\fP (Microtouch touchscreen operated with finger)
-\fBMicrotouchStylus\fP (Microtouch touchscreen operated with stylus)
-\fBSummaSketch\fP (SummaSketch tablet)
-\fBMouse\fP (Mouse)
-.fi
-.TP
-The \fBJoystick\fP subsection supports the following entries:
-.RS 8
-.TP 4
-.B Port \fI"path"\fP
-sets the path to the special file which represents the device driver.
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device.
-.TP 4
-.B TimeOut \fItimeout\fP
-sets the time (in milliseconds) between two polls of the device driver.
-The value given here may be overriden by the Operating System's joystick
-driver.
-.TP 4
-.B MaximumXPosition \fIvalue\fP
-sets the maximum X value reported by the device driver.
-.TP 4
-.B MinimumXPosition \fIvalue\fP
-sets the minimum X value reported by the device driver.
-.TP 4
-.B MaximumYPosition \fIvalue\fP
-sets the maximum Y value reported by the device driver.
-.TP 4
-.B MinimumYPosition \fIvalue\fP
-sets the minimum Y value reported by the device driver.
-.TP 4
-.B CenterX \fIvalue\fP
-sets the X center reported by the device driver when the joystick
-is idle.  If this value is omitted, it is assumed that the joystick
-is centered when it is first enabled.
-.TP 4
-.B CenterY \fIvalue\fP
-sets the Y center reported by the device driver when the joystick
-is idle.  If this value is omitted, it is assumed that the joystick
-is centered when it is first enabled.
-.TP 4
-.B Delta \fIvalue\fP
-sets the maximum value reported to the X server. i.e. coordinates will
-be incremented of \fI(+/\-)value/2\fP at maximum deflection.  This determines
-the sensitivity.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled you
-cannot put the device in extended mode (i.e. sending extended events). You
-can also use the latest integer feedback to control this feature. When the
-value of the feedback is zero, the feature is disabled. The feature
-is enabled for any other value.
-.RE
-.TP
-Multiple instances of the Wacom devices can  cohabit. It can be useful
-to define multiple  devices     with different active     zones.   The
-\fBWacomStylus\fP, \fBWacomEraser\fP and \fBWacomCursor\fP subsections
-support the following entries:
-.RS 8
-.TP 4
-.B Port \fI"path"\fP
-sets the path to the special file which represents serial line where
-the tablet is plugged.  You have to specify it for each subsection with
-the same value if you want to have multiple devices with the same tablet.
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device.
-.TP 4
-.B Suppress \fInumber\fP
-sets the position increment under which not to transmit coordinates.
-This entry must be specified only in the first Wacom subsection if you have
-multiple devices for one tablet.
-.TP 4
-.B Mode \fIRelative|Absolute\fP
-sets the mode of the device.
-.TP 4
-.B TiltMode
-enables tilt report if your tablet supports it (ROM version 1.4 and above).
-If this is enabled, multiple devices at the same time will not be reported.
-.TP 4
-.B HistorySize \fInumber\fP
-sets the motion history size. By default the value is zero.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled you
-cannot put the device in extended mode (i.e. sending extended events). You
-can also use the latest integer feedback to control this feature. When the
-value of the feedback is zero, the feature is disabled. The feature
-is enabled for any other value.
-.TP 4
-.B TopX \fInumber\fP
-X coordinate of the top corner of the active zone.
-.TP 4
-.B TopY \fInumber\fP
-Y coordinate of the top corner of the active zone.
-.TP 4
-.B BottomX \fInumber\fP
-X coordinate of the bottom corner of the active zone.
-.TP 4
-.B BottomY \fInumber\fP
-Y coordinate of the bottom corner of the active zone.
-.TP 4
-.B KeepShape
-When this option is enabled, the active zone  begins according to TopX
-and TopY.  The  bottom corner is calculated  to  keep shapes  ie.  the
-ratio width/heigth of  the active zone  is calculated to have the same
-ratio as the one of the screen.
-.RE
-.TP
-The \fBElographics\fP subsection support the following entries:
-.RS 8
-.TP 4
-.B Port \fI"path"\fP
-sets the path to the special file which represents the device driver.
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device.
-.TP 4
-.B MaximumXPosition \fIposition\fP
-sets the maximum X position reported by the touchscreen.
-.TP 4
-.B MinimumXPosition \fIposition\fP
-sets the minimum X position reported by the touchscreen.
-.TP 4
-.B MaximumYPosition \fIposition\fP
-sets the maximum Y position reported by the touchscreen.
-.TP 4
-.B MinimumYPosition \fIposition\fP
-sets the minimum Y position reported by the touchscreen.
-
-When an axis minimum is greater than its maximum the driver
-reverse the axis. This is useful to cope with ill assembled
-screens.
-
-.TP 4
-.B ScreenNo \fInumber\fP
-sets the screen number where the touchscreen is connected.
-.TP 4
-.B UntouchDelay \fIvalue\fP
-sets the delay (in tens of milliseconds) after which the device
-considers that an untouch occurs.
-.TP 4
-.B ReportDelay \fIvalue\fP
-sets the delay (in ten of milliseconds) between two reports
-of positions.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled you
-cannot put the device in extended mode (i.e. sending extended events). You
-can also use the latest integer feedback to control this feature. When the
-value of the feedback is zero, the feature is disabled. The feature
-is enabled for any other value.
-.TP 4
-.B SwapXY
-Exchange the X and Y axes at the driver level. This is useful to cope with
-defective screen assemblies.
-.TP 4
-.B PortraitMode \fIorientation\fP
-configure the orientation of the screen. "Portrait" is to be used when the
-screen has been turned 90 degrees clockwise, "PortraitCCW" is used when the
-screen has been turned 90 degrees counter clockwise and "Landscape" (or not specifying
-this option) is for a normal orientation. It is to be noted that this option
-is applied after axes swap and reversal so it is possible to cope with defective
-assembly and still change orientation.
-
-.RE
-The \fBMicrotouchFinger\fP and \fBMicrotouchStylus\fP subsections support
-the following entries:
-.RS 8
-.TP 4
-.B Port \fI"path"\fP
-sets the path to the special file which controls the serial port. The
-driver supports two X input devices, the finger and the stylus, that share
-the same port. This entry declare the port to be used and it should be
-given identically for both X devices. Doing this, the driver knows that it
-should bind both X devices to the same touchscreen. This must be the
-first entry of the subsection. The default is /dev/ttyS1.
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device. It defaults to FINGER for the MicrotouchFinger
-subsection and to STYLUS for the MicrotouchStylus subsection.
-.TP 4
-.B LinkSpeed \fI \fP
-sets the speed of the serial link connecting the touchscreen. Legal
-values are: B300, B1200, B2400, B9600, B19200. The controller must
-be configured to the corresponding speed before launching X. The
-driver will not attempt to detect and change the speed. The default is
-B9600.
-.TP 4
-.B MaximumXPosition \fIposition\fP
-sets the maximum X position reported by the touchscreen.
-.TP 4
-.B MinimumXPosition \fIposition\fP
-sets the minimum X position reported by the touchscreen.
-.TP 4
-.B MaximumYPosition \fIposition\fP
-sets the maximum Y position reported by the touchscreen.
-.TP 4
-.B MinimumYPosition \fIposition\fP
-sets the minimum Y position reported by the touchscreen.
-
-When an axis minimum is greater than its maximum the driver
-reverse the axis. This is useful to cope with ill assembled
-screens.
-
-.TP 4
-.B ScreenNo \fInumber\fP
-sets the screen number where the touchscreen is mounted.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled, the
-device will take control of the core pointer (and thus will emit core events)
-and at the same time will be able, when asked so, to report extended events.
-You can use the last available integer feedback to control this feature. When
-the value of the feedback is zero, the feature is disabled. The feature is
-enabled for any other value.
-.TP 4
-.B HistorySize \fInumber\fP
-sets the motion history size. By default the value is zero.
-.TP 4
-.B DebugLevel \fInumber \fP
-sets the level of debugging info reported. Valid values range from 0 to 5.
-A value of zero suppress all debugging reports and a value of 5 ask for the
-maximum verbosity.
-.TP 4
-.B SwapXY
-Exchange the X and Y axes at the driver level. This is useful to cope with
-defective screen assemblies.
-.TP 4
-.B PortraitMode \fIorientation\fP
-configure the orientation of the screen. "Portrait" is to be used when the
-screen has been turned 90 degrees clockwise, "PortraitCCW" is used when the
-screen has been turned 90 degrees counter clockwise and "Landscape" (or not specifying
-this option) is for a normal orientation. It is to be noted that this option
-is applied after axes swap and reversal so it is possible to cope with defective
-assembly and still change orientation.
-.TP 4
-.B Frequency \fInumber\fP
-sets the frequency parameter for a ThruGlass Microtouch panel.
-
-.RE
-.TP
-The \fBSummaSketch\fP subsection support the following entries:
-.RS 8
-.TP 4
-.B Port \fI"path"\fP
-sets the path to the special file which represents the device driver.
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device.
-.TP 4
-.B Mode \fIRelative|Absolute\fP
-sets the mode of the device.
-.TP 4
-.B Cursor \fIStylus|Puck\fP
-sets the cursor type, stylus or 4 button puck.
-.TP 4
-.B Increment \fIvalue\fP
-sets the maximum change in coordinates before new report.
-.TP 4
-.B ActiveArea \fIXValue YValue\fP
-sets the size of the active area on the tablet, in 10ths of an inch.
-.TP 4
-.B ActiveOffset \fIXValue YValue\fP
-sets the upper left of the active area on the tablet, in 10ths of an inch.
-If no value is specefied, it will center the active area.
-.TP 4
-.B HistorySize \fInumber\fP
-sets the motion history size. By default the value is zero.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled you
-cannot put the device in extended mode (i.e. sending extended events). You
-can also use the latest integer feedback to control this feature. When the
-value of the feedback is zero, the feature is disabled. The feature
-is enabled for any other value.
-.RE
-.TP
-The \fBMouse\fP subsection support the same entries as the
-standard \fBPointer\fP section, plus the following:
-.RS 8
-.TP 4
-.B DeviceName \fI"name"\fP
-sets the name of the X device.
-.TP 4
-.B AlwaysCore
-enables the sharing of the core pointer. When this feature is enabled you
-cannot put the device in extended mode (i.e. sending extended events). You
-can also use the latest integer feedback to control this feature. When the
-value of the feedback is zero, the feature is disabled. The feature
-is enabled for any other value.
-.RE
-.PP
+.SH FILES
 For an example of an XF86Config file, see the file installed as
 <XRoot>/lib/X11/XF86Config.eg.
-.SH FILES
 .PP
 .nf
 /etc/XF86Config

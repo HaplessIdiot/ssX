@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.59 2000/03/04 00:47:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.60 2000/03/07 01:52:18 martin Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -13,7 +13,8 @@ SGMLDEPENDS = defs.ent
 	      DESIGN.sgml \
 	      mouse.sgml fonts.sgml DRI.sgml \
 	      isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml \
-              ati.sgml chips.sgml DECtga.sgml i740.sgml i810.sgml \
+              apm.sgml ati.sgml chips.sgml cyrix.sgml DECtga.sgml \
+	      i740.sgml i810.sgml \
 	      r128.sgml rendition.sgml s3virge.sgml SiS.sgml
 
 #ifdef DEADDOCS
@@ -41,7 +42,9 @@ LinuxDocReadmeTarget(SVR4)
 /* Hardware docs */
 #ifdef OUTOFDATE
 LinuxDocReadmeTarget(3Dlabs)
+#endif
 LinuxDocReadmeTarget(apm)
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(ark)
 LinuxDocReadmeTarget(agx)
 #endif
@@ -49,8 +52,8 @@ LinuxDocReadmeTarget(ati)
 LinuxDocReadmeTarget(chips)
 #ifdef OUTOFDATE
 LinuxDocReadmeTarget(cirrus)
-LinuxDocReadmeTarget(cyrix)
 #endif
+LinuxDocReadmeTarget(cyrix)
 LinuxDocReadmeTarget(DECtga)
 #ifdef OUTOFDATE
 LinuxDocReadmeTarget(epson)

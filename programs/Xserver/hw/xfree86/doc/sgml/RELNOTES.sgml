@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>1 March 2000
+<date>7 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.33 2000/03/06 22:59:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.34 2000/03/07 01:37:46 dawes Exp $
 </ident>
 
 <abstract>
@@ -21,10 +21,66 @@ in XFree86 &relvers; and their status.
 
 <toc>
 
-<sect>Summary of what is new in XFree86 4.
+<sect>Introduction
+<p>
+XFree86 4.0 is the first official release of the new XFree86 4.  XFree86
+4 represents a significant redesign of the XFree86 X server.  It is very
+important to keep in mind that XFree86 4 is still very much in development,
+and it contains a lot of new work.  That means two things: there is a
+lot of new exciting stuff to try, but being new code, it hasn't had
+nearly as much of a workout as the stable 3.3.x releases.  If you're
+looking for a well-tested, stable release, and can't afford the
+inconveniences that new software can sometimes cause, then you are
+probably better off sticking with the 3.3.x releases for now.  If you
+have the resources to try out the new version and investigate its
+features, or if you just like being on the bleeding edge, then please
+try &relvers;!
 
+This release isn't quite as complete as we would have liked.  The main
+missing pieces are a nice configuration tool and support for some of
+the hardware that 3.3.x supports.  The first point means that configuring
+the server might be more painful than usual.  The second means that your
+hardware might not be supported by &relvers;, or it might be supported at a
+lesser level (conversely, some hardware is better supported in &relvers;).
+We've attempted to provide some information about the second point in
+our <htmlurl name="Driver Status document" url="Status.html">.  Please
+check there first before trying &relvers;.  Unfortunately that document is
+still fairly basic, but it should at least give you an idea of whether
+you're likely to be able to use &relvers; at all or not.
+
+On the subject of configuration, we have updated the basic text-based
+tool "<tt>xf86config</tt>" to generate config files in the format required
+by &relvers; (3.3.x config files won't really work with &relvers;).  We're also
+working on some other configuration tools, including one that is built-in
+to the X server.  An early version of this is included in the release,
+and it works well for some hardware.  To try it out, just run (as root)
+"<tt>XFree86 -configure</tt>".  Both of these configuration options will
+at worst give you a reasonable starting point for a suitable configuration
+file.  We've put some effort into documenting the &relvers; config file format,
+and you can find that information in the XF86Config manual page.  Please
+check that and the driver manual pages and related documentation for
+further information about that.
+
+Oh, another thing you might notice is that our documentation is rather
+patchy.  Most of what is present should be in reasonable shape, but
+there are gaps.  We thought it better to leave out docs that were
+very out of date rather than providing inaccurate and misleading
+information.
+
+Finally, before you download and install the binary distributions for
+this release, please have a quick read through the <htmlurl
+name="Installation Document" url="Install.html">.  It may save you some
+time.
+
+If those cautionary notes haven't turned you away (and we certainly hope
+not), please read on...  The sections below describe some of the new
+features and changes between 3.3.x and &relvers;.  There is a lot of new
+stuff, and we definitely don't have enough space to cover it all here.
+
+<!--
 <sect>Summary of new features in &relvers; compared with &prevrelvers;.
 <p>
+-->
 
 <!--
 <sect>Summary of new features in 3.9.18 compared with 3.9.17.
@@ -135,14 +191,14 @@ that are new to the pre-4.0 snapshot series.
 <p>
 Unlike XFree86 3.3.x where there are multiple X server binaries, each
 of which drive different hardware, XFree86 &relvers; has a single X server
-binary (called <tt>XFree86</tt>).  This binary can either have one or
+binary called <tt>XFree86</tt>.  This binary can either have one or
 more video drivers linked in statically, or, more usually, dynamically
 load the video drivers and other modules that are needed.
 
 XFree86 &relvers; has X server support for most UNIX(R) and UNIX-like
 operating systems on Intel/x86 platforms, plus support for Linux on
-Alpha and PowerPC platforms.  Support for additional architectures and
-operating systems is planned for future releases.
+Alpha and PowerPC platforms.  Work on support for additional architectures
+and operating systems is in progress, and is planned for future releases.
 
 <sect1>Loader and Modules
 <p>
@@ -156,21 +212,25 @@ and makes it possible for the modules to be operating system independent
 that, for example, a module compiled on Linux/x86 can be loaded by an
 X server running on Solaris/x86, or FreeBSD, or even OS/2.  One of the
 main benefits of this is that when modules are updated, they don't need
-to be recompiled for each different operating system.
+to be recompiled for each different operating system.  We're planning to
+take advantage of this to provide more frequent driver module updates in
+between major releases.
 
 The loader in version &relvers; has support for Intel (x86), Alpha and
-PowerPC platforms.  It also has preliminary support for Sparc platforms.
+PowerPC platforms.  It also has preliminary support for Sparc platforms
+but this isn't used yet.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb,
 cfb, etc), and internal components used by some drivers (like XAA),
 
-The module interfaces (API and ABI) used in the snapshot releases are
-subject to change without notice.  This means that there is no guarantee
-that modules built for one snapshot release will function with another
-snapshot release.  As of the 4.0 release we plan to make every effort
-to provide backward compatibility for the module interfaces (that means
-older modules working with newer core X server binaries).
+The module interfaces (API and ABI) used in this release is still subject
+to change without notice.  While we'll attempt to provide backward
+compatibility for the module interfaces as of the 4.0 release (meaning
+that 4.0 modules will work with future core X server binaries), we can't
+guarantee that this will be the case.  We are planning to fully document
+and stabilise the module interfaces in a future release, and at that
+point backward compatibility will be easier to achieve.
 
 <bf>Note about module security</bf>
 <quote><p>
@@ -178,8 +238,8 @@ older modules working with newer core X server binaries).
 	the X server loadable modules also run with these privileges.
 	For this reason we recommend that all users be careful to only
 	use loadable modules from reliable sources.  We hope to have a
-	mechanism for signing/verifying modules that we provide available
-	in a future release.
+	mechanism for signing/verifying the modules that we provide
+	available in a future release.
 
 </quote>
 
@@ -189,12 +249,15 @@ older modules working with newer core X server binaries).
 The X server configuration file format has been extended to handle some
 of the new functionality.  The <tt>xf86config</tt> utility can be used
 to generate a basic config file, that may require some manual editing.
+The X server also has preliminary support for generating a basic config
+file.  This is done by running (as root) "<tt>XFree86 -configure</tt>".
 Alternatively, the sample config file <tt>XF86Config.eg</tt> that is
 installed in <tt>/usr/X11R6/lib/X11</tt> may be used as a starting point.
 The <tt>XF86Setup</tt> utility is currently not usable, but work is
 continuing in this area.
 
-The main changes are:
+The main changes are covered here, but please refer to the XF86Config
+manual page for more comprehensive information:
 
 <itemize>
   <item>The Module section is used to load server extension modules and
@@ -204,7 +267,10 @@ The main changes are:
 	instead of the usual Load keyword.  The <tt>bitmap</tt> module
 	is the only font module that is loaded by default.  No server
 	extensions are loaded by default, but some are built-in to the
-	server.  The following example shows how to load all the server
+	server.  It is strongly recommended that the extension module
+	containing a range of small miscellaneous extensions (<tt>extmod</tt>)
+	be loaded because some commonly used things won't work correctly
+	without it.  The following example shows how to load all the server
 	extensions plus the Type1 and TrueType fonts support, and a
 	commented example that shows how to pass options to an extension
 	(this one is for loading the misc extensions (<tt>extmod</tt>)
@@ -259,7 +325,7 @@ EndSection
 	specified.
 
 	Note: the value must always be enclosed in double quotes
-	(<tt>"</tt>).
+	(<tt>"</tt>), even when it is numerical.
 
   <item>The ServerFlags section now accepts its parameters as Options
 	instead of as special keywords.  The older keyword format is
@@ -274,16 +340,17 @@ EndSection
     Option "blank time"    "10"
     Option "standby time"  "20"
     Option "suspend time"  "30"
-    Option "off time"      "60"
+    Option "off time"      "40"
 </verb></quote>
 
   <item>The Keyboard, Pointer and XInput sections have been replaced by a
 	more general InputDevice section.  The old Keyboard and Pointer
 	sections are still recognised for compatibility purposes, but
 	they are deprecated and support for them may be dropped in future
-	releases.  The keywords from the old sections are expressed as
-	Options in the InputDevice sections.  The following example shows
-	typical InputDevice sections for the core mouse and keyboard.
+	releases.  The old XInput sections are no longer recognised.
+	The keywords from the old sections are expressed as Options in
+	the InputDevice sections.  The following example shows typical
+	InputDevice sections for the core mouse and keyboard.
 
 <quote><verb>
 Section "InputDevice"
@@ -299,27 +366,32 @@ Section "InputDevice"
     Driver      "mouse"
     Option      "Protocol"   "PS/2"
     Option      "Device"     "/dev/mouse"
-    SampleRate  80
+    Option	"SampleRate" "80"
 EndSection
 </verb></quote>
 
+<!-- what is this doing in the middle of information about the config file??
+j
      Note: Additional sample rates have been added for some mice.
            Matching the mouse sampling rate with the vertical refresh
            rate can yield very noticeable improvements in smoothness of
            pointer event driven operations such as window moves and
            scrolling.
-
+-->
 
   <item>The Monitor section is mostly unchanged.  The main difference is
 	that a set of VESA modes is defined internally in the server,
 	and so for most monitors, it isn't necessary to specify any modes
-	explicitly in the Monitor section.  The Monitor section may also
+	explicitly in the Monitor section.  There is also a new Modes section
+	that can be used to define a set of modes separately from the
+	Monitor section, and the Monitor section may "include" them
+	with the "<tt>UseModes</tt>" keyword.  The Monitor section may also
 	include Options.  Options that are monitor-specific, like the
 	<tt>"DPMS"</tt> and <tt>"Sync on Green"</tt> options are best
 	specified in the Monitor sections.
 
   <item>The Device sections are mostly unchanged.  The main difference
-	is the new (and mandatory) Driver keyword, that specifies which
+	is the new (and mandatory) Driver keyword that specifies which
 	video driver should be loaded to drive the video card.  Another
 	difference is the BusID keyword that is used to specify which of
 	possibly multiple video cards the Device section is for.  The
@@ -359,14 +431,15 @@ Section "ServerLayout"
 EndSection
 </verb></quote>
 
-     See the document xc/programs/Xserver/hw/xfree86/doc/DESIGN for a
-     more detailed explanation of the new ServerLayout section syntax.
+See the XF86Config man page for a more detailed explanation of the format
+of the new ServerLayout section.
 
 
 </itemize>
 
 The config file search patch has been extended, with the directories
-<tt>/etc/X11</tt> and <tt>/usr/X11R6/etc</tt> being added.
+<tt>/etc/X11</tt> and <tt>/usr/X11R6/etc/X11</tt> being added.  The full
+search path details are documented in the XF86Config manual page.
 
 
 <sect1>Command Line Options
@@ -465,17 +538,15 @@ The following new X server command line options have been added:
 <tt>-logfile</tt> <it>file</it>
 <quote><p>
 	This specifies the log file name.  When specified here, it
-	overrides the value specified in the config file.  This option
-	is only available when the server is started by the <tt>root</tt>
-	user.
+	overrides the default value.  This option is only available when
+	the server is started by the <tt>root</tt> user.
 
 </quote>
 
 <tt>-scanpci</tt>
 <quote><p>
 	This specifies that the <tt>scanpci</tt> module should be loaded and
-	executed.  This does a scan of the PCI bus.  This option is only
-	available when the server is started by the <tt>root</tt> user.
+	executed.  This does a scan of the PCI bus.
 
 </quote>
 
@@ -528,17 +599,17 @@ XAA module.
 Some multi-head configurations are supported in this release, primarily
 with multiple PCI/AGP cards.  However, this is an area that is still
 being worked on, and we expect that the range of configurations for which
-it works well will increase in future snapshots.  A configuration that
+it works well will increase in future releases.  A configuration that
 is known to work well in most cases is multiple (supported) Matrox cards.
 
 One of the main problems is with drivers not sufficiently initialising
-cards that were not initialised at boot time.  Normally only the primary
-video card gets initialised at boot time.  Some combinations can be made
-to work better by changing which card is the primary card (either by
-using a different PCI slot, or by changing the system BIOS's preference for
-the primary card).  We are investigating options for ``soft-booting''
-secondary video cards to deal with this problem, and we've had some very
-encouraging results.
+cards that were not initialised at boot time.  This has been improved
+somewhat with the INT10 support that is used by most drivers (which
+allows secondary card to be "soft-booted", but in some cases there are
+other issues that still need to be resolved.  Some combinations can be
+made to work better by changing which card is the primary card (either
+by using a different PCI slot, or by changing the system BIOS's preference
+for the primary card).
 
 <sect1>Xinerama
 <p>
@@ -552,15 +623,11 @@ an 8-bit screen together with a 16-bit screen in Xinerama mode.
 Xinerama is not enabled by default, and can be enabled with the
 <tt>+xinerama</tt> command line option for the X server.
 
-Xinerama was included with X11R6.4.  The version included in this snapshot
-contains many bug fixes.  This is an area that we are still working on, and
-we expect it to be improved further in future snapshots.
+Xinerama was included with X11R6.4.  The version included in this release
+was completely rewritten for improved performance and correctness.
 
 Known problems:
 <itemize>
-  <item>It appears that there are still some bugs that cause unexpected
-	behaviour from time to time.
-
   <item>Most (all?) window managers are not Xinerama-aware, and so some
 	operations like window placement and resizing might not behave
 	in an ideal way.  This is an issue that needs to be dealt with
@@ -569,10 +636,11 @@ Known problems:
 
 </itemize>
 
-<!--
 <sect1>XVideo extension
 <p>
--->
+
+The XVideo extension is included in this release, but nobody seems
+interested in writing up some information about it.
 
 <sect1>DGA version 2
 <p>
@@ -580,16 +648,14 @@ Known problems:
 DGA 2.0 is nearly completed but still not implemented by all drivers.
 Preliminary documentation for the client libraries can be found in the
 xc/programs/Xserver/hw/xfree86/DGA document.  Some degree of backwards
-compatibility with version 1.0 is provided.
+compatibility with version 1.0 is provided.  This information is out of date.
 
 
 <sect1>DDC
 <p>
-The VESA(R) Display Data Channel (DDC&trade;) standard (related to, but
-separate from, the VESA(R) Plug and Display standard) allows the
-monitor to tell the video card (or on some cases the computer
-directly) about itself; particularly the supported screen resolutions
-and refresh rates.
+The VESA(R) Display Data Channel (DDC&trade;) standard allows the monitor
+to tell the video card (or on some cases the computer directly) about
+itself; particularly the supported screen resolutions and refresh rates.
 
 Partial or complete DDC support is available in the following hardware modules:
 <itemize>
@@ -613,6 +679,7 @@ with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC2"</tt>.
 At startup the server prints out DDC information from the display,
 but it does not yet use it the determine modelines.
 
+<!--  Is this still true?
 Changed behavior caused by DDC. Several drivers uses DDC information to
 set the monitor gamma (brightness) curve, and the screen size and
 pitch.
@@ -635,6 +702,7 @@ Gamma 1.0 1.0 1.0
 	keyword in the "Monitor" section of the config file.
 
 </itemize>
+-->
 
 <sect1>GLX and the Direct Rendering Infrastructure (DRI)
 <p>
@@ -675,7 +743,7 @@ by the Matrox G200/G400 cards at the moment.
 <p>
 
 The XFree86-Misc extension has not been fully ported to the new server
-architecture yet.  This should be completed in a future snapshot.
+architecture yet.  This should be completed in a future release.
 
 The XFree86-VidModeExtension extension has been updated, and mostly
 ported to the new server architecture.  The area of mode validation
@@ -684,7 +752,7 @@ extension has support for changing the gamma setting at run-time, for
 modes where this is possible.  The new <tt>xgamma</tt> utility makes
 use of this feature.  Compatibility with the 3.3.x version of the
 extension is provided.  The missing parts of this extension and some
-new features should be completed in a future snapshot.
+new features should be completed in a future release.
 
 
 <sect1>Drivers
@@ -727,28 +795,13 @@ but are not complete and/or stable yet.
 <sect2>APM <label id="apm">
 <p>
 
-It's the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather
+This is the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather
 complete support for the functions with acceleration at 8,15,16,24 and 32 bits
 (limited by the chip at 24bpp). There is preliminary, still buggy, support
 for the AP6422 chip, which is still supported in 3.3.x servers. The Xv driver
 is almost ok. The Rush extension for glide2x works, with some additions,
 including overlay of the result. DGA and DGA2 have been tested ok.
-
-Main useful options:
-<descrip>
-<tag>SetMclk</tag>
-	to set the memory clock (default should be OK).
-<tag>SWCursor</tag>
-	to force the software cursor.
-<tag>HWCursor</tag>
-	to force the hardware cursor.
-<tag>NoAccel</tag>
-	to disable (XAA) acceleration.
-<tag>ShadowFB</tag>
-	to enable shadow framebuffer operation (the rendering is done in
-	system memory and then copied to the framebuffer, useful when
-	acceleration is disabled).
-</descrip>
+Further information can be found in <htmlurl name="README.apm" url="apm.html">.
 
 <sect2>Chips &amp; Technologies
 <p>
@@ -785,6 +838,9 @@ Outstanding items not implemented or fully tested:
   <item>DGA support is implemented, but preliminary and untested.
 </itemize>
 
+Further information can be found in <htmlurl name="README.s3virge"
+url="s3virge.html">.
+
 <sect2>TGA
 <p>
 
@@ -803,8 +859,7 @@ support for overlays (8-bit + 24-bit).
 Option <tt>"overlay"</tt> when the server is started in 32bpp
 (<tt>-fbbpp&nbsp;32</tt>) will enable the 8+24 mode.  The current
 implementation doesn't optimize away unnecessary exposures yet so the
-performance of this option will be better in future snapshots.  The
-option is not supported on the G100 due to a missing hardware feature.
+performance of this option will be better in future release.
 By default, the color key for the overlays is 255, but this can be
 changed with the <tt>"ColorKey"</tt> option to work around problems in
 specific programs.  Valid values for the key are 2-255.
@@ -821,15 +876,13 @@ Further information can be found in the <tt>mga</tt> man page.
 
 Information about the ATI driver can be found in <url name="README.ati"
 url="ati.html">.  The current version is not accelerated.  Acceleration
-support is planned for a future snapshot.
+support is planned for a future release.
 
 <sect2>NVIDIA
 <p>
 
 The "nv" driver supports all Riva TNT accelerators as well as the  
-new GeForce and Quadro accelerators.  3.9.17 adds DGA 2.0 support
-and performance improvements as well as resolving some rendering
-correctness issues.
+new GeForce and Quadro accelerators.  DGA 2.0 support is included.
 
 Further information can be found in the nv man page.   
 
@@ -929,11 +982,13 @@ New features:
 
 	</itemize>
 
-  <item>This snapshot shows the current state of the work to add to the Xaw
+<!-- is this still true?
+  <item>This release shows the current state of the work to add to the Xaw
 	text widget WYSIWYG capabilities. The state is very initial, and
 	can be seen as a candidate to a candidate to a very early alpha
 	snapshot. There is no public interface for programming yet, because
 	the current one is very likely to change before ready to use.
+-->
 
 </itemize>
 
@@ -1203,15 +1258,17 @@ version of xedit. These include:
 	</itemize>
 
   <item>A first tentative to add programming modes was done. Currently, there
-	are two modes:
+	is one mode:
 	<itemize>
 
 	  <item><bf>C-mode:</bf> this mode is expected to be stable, and fully
 		usable.
+<!--  This was removed, right?
 
 	  <item><bf>Html-mode:</bf> a lot of work needs to be done yet. It is
 		included in this snapshot only to show what the new text widget
 		capabilities can do.
+-->
 	</itemize>
 
 </itemize>
@@ -1324,11 +1381,16 @@ url="http://www.yandy.com">.
 <p>
 
 Some changes to the installed XFree86 directory structure have been
-planned for 4.0.  Not all of these changes have been implemented in this
-snapshot, and they will appear in a future snapshot.  One important
-change that has been implemented is a modified search path for the X
+implemented for 4.0.
+One important
+change is a modified search path for the X
 server's <tt>XF86Config</tt> file.  The details of this can be found
-above in the <ref id="config" name="Configuration File"> section.
+in the XF86Config manual page.  The other main change is moving
+most of the run-time configuration files to <tt>/etc/X11</tt>, with
+symbolic links in the old <tt>/usr/X11R6/lib/X11</tt> location pointing
+to the new location.  Some run-time generated files are now located
+under the appropriate subdirectories of <tt>/var</tt>, again with the
+relevant symbolic links in the old location.
 
 
 

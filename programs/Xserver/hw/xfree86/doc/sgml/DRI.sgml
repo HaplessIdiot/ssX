@@ -13,7 +13,7 @@
       <date>6 March 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.1 2000/03/07 01:52:17 martin Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.2 2000/03/07 13:37:49 dawes Exp $
     </ident>
 
     <toc>
@@ -547,7 +547,7 @@
             <item>
               Normally, buffer swapping in double-buffered applications is
               synchronized to your monitor's refresh rate.
-              This may be overriden by setting the <tt/FX_GLIDE_SWAPINTERNVAL/
+              This may be overridden by setting the <tt/FX_GLIDE_SWAPINTERNVAL/
               environment variable.
               The value of this variable indicates the maximum number of
               swap buffer commands can be buffered.
@@ -616,7 +616,7 @@
       <sect1>Scheduling
 <p>
           When you run multiple GL applications at once you may notice poor
-          timeslicing.
+          time slicing.
           This is due to an interaction problem with the Linux scheduler
           which will be addressed in the future.
 
