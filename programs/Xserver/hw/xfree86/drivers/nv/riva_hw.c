@@ -36,12 +36,13 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.12 2001/02/21 00:42:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.13 2001/03/28 01:17:43 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
 #include "riva_tbl.h"
 #include "compiler.h"
+#include "nv_include.h"
 /*
  * This file is an OS-agnostic file used to make RIVA 128 and RIVA TNT
  * operate identically (except TNT has more memory and better 3D quality.
@@ -1915,14 +1916,21 @@ static void nv4GetConfig
 }
 static void nv10GetConfig
 (
-    RIVA_HW_INST *chip
+    NVPtr pNv
 )
 {
+    RIVA_HW_INST *chip = &pNv->riva;
+
     /*
      * Fill in chip configuration.
      */
-    switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF)
-    {
+    if(pNv->Chipset == NV_CHIP_IGEFORCE2) {
+	int amt = pciReadLong(pciTag(0, 0, 1), 0x7C);
+
+        chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+    } else {
+      switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF)
+      {
         case 0x02:
             chip->RamAmountKBytes = 1024 * 2;
             break;
@@ -1947,6 +1955,7 @@ static void nv10GetConfig
         default:
             chip->RamAmountKBytes = 1024 * 16;
             break;
+      }
     }
     switch ((chip->PFB[0x00000000/4] >> 3) & 0x00000003)
     {
@@ -1979,9 +1988,10 @@ static void nv10GetConfig
 }
 int RivaGetConfig
 (
-    RIVA_HW_INST *chip
+    NVPtr pNv
 )
 {
+    RIVA_HW_INST *chip = &pNv->riva;
     /*
      * Save this so future SW know whats it's dealing with.
      */
@@ -1999,7 +2009,7 @@ int RivaGetConfig
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            nv10GetConfig(chip);
+            nv10GetConfig(pNv);
             break;
         default:
             return (-1);
