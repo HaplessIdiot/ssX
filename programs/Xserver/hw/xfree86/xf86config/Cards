@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.56 1997/05/27 06:30:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.57 1997/05/31 13:51:36 dawes Exp $
 
 #Chips & Technologies
 
@@ -623,10 +623,10 @@ SERVER S3
 NOCLOCKPROBE
 
 NAME S3 Trio64V2/DX (generic)
-see S3 Trio64V2 (generic)
+SEE S3 Trio64V2 (generic)
 
 NAME S3 Trio64V2/GX (generic)
-see S3 Trio64V2 (generic)
+SEE S3 Trio64V2 (generic)
 
 NAME S3 86C775 (generic)
 SEE S3 Trio64V2/DX (generic)
@@ -1383,10 +1383,10 @@ NAME ATI 3D Xpression
 SEE ATI Mach64 GT (264GT), aka 3D RAGE, Internal RAMDAC
 
 NAME ATI 3D Xpression+ PC2TV
-SEE ATI Mach64 GT2 (264GT), aka 3D RAGE II, Internal RAMDAC
+SEE ATI Mach64 3D RAGE II, Internal RAMDAC
 
 NAME ATI 3D Pro Turbo
-SEE ATI Mach64 GT2 (264GT), aka 3D RAGE II, Internal RAMDAC
+SEE ATI Mach64 3D RAGE II, Internal RAMDAC
 
 NAME ATI Win Boost with STG1702 RAMDAC
 SEE ATI Mach64
