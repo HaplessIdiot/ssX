@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.17 2002/10/16 21:13:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.18 2002/11/05 02:43:59 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -987,12 +987,14 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 	    I830MapMMIO(pScrn);
 	    SaveBIOSMemSize(pScrn);
 	    swf1 = INREG(SWF1);
-	    ErrorF("Before: SWF1 is 0x%08x\n", swf1);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Before: SWF1 is 0x%08x\n", swf1);
 	    pVesa->newSWF1 = 0x08;
 	    pVesa->overrideBIOSMemSize = TRUE;
 	    SetBIOSMemSize(pScrn);
 	    swf1 = INREG(SWF1);
-	    ErrorF("After: SWF1 is 0x%08x\n", swf1);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "After: SWF1 is 0x%08x\n", swf1);
 	    VBEFreeVBEInfo(pVesa->vbeInfo);
 	    vbeFree(pVesa->pVbe);
 	    pVesa->pVbe = VBEInit(NULL, pI830->pEnt->index);
