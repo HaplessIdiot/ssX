@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c,v 1.102 94/03/28 18:27:08 gildea Exp $
- *	$XFree86$
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.0 1994/04/28 12:46:37 dawes Exp $
  */
 
 /*
@@ -47,6 +47,11 @@
 #include "data.h"
 #include "error.h"
 #include "menu.h"
+
+#ifdef AMOEBA
+#include "amoeba.h"
+#include "module/proc.h"
+#endif
 
 extern jmp_buf Tekend;
 extern jmp_buf VTend;
