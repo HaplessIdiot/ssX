@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/history.h,v 1.1 2002/12/10 15:12:26 alanh Exp $ */
 /*
  * $Workfile: history.h $
  *
@@ -133,7 +133,7 @@
  * and pp is the patch number (0 - 99)
 */
 
-#define DURANGO_VERSION 24800
+#define DURANGO_VERSION 24902
 
 #if 0
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu2.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu2.c,v 1.2 2003/01/14 09:34:34 alanh Exp $ */
 /*
  * $Workfile: disp_gu2.c $
  *
@@ -279,15 +279,15 @@ void
 gfx_delay_milliseconds(unsigned long milliseconds)
 #endif
 {
-   /* ASSUME 300 MHz, 2 CLOCKS PER INCREMENT */
+   /* ASSUME 300 MHZ 20 CLOCKS PER READ */
 
-#	define RC_READS_PER_MILLISECOND 150000L
+#	define RC_READS_PER_MILLISECOND 15000L
 
    unsigned long loop;
 
    loop = milliseconds * RC_READS_PER_MILLISECOND;
    while (loop-- > 0) {
-      ;
+      READ_REG32(MDC_UNLOCK);
    }
 }
 
@@ -301,10 +301,10 @@ gfx_delay_microseconds(unsigned long microseconds)
 {
    /* ASSUME 400 MHz, 2 CLOCKS PER INCREMENT */
 
-   unsigned long loop_count = microseconds * 200;
+   unsigned long loop_count = microseconds * 15;
 
    while (loop_count-- > 0) {
-      ;
+      READ_REG32(MDC_UNLOCK);
    }
 }
 
@@ -384,6 +384,8 @@ gu2_set_specified_mode(DISPLAYMODE * pMode, int bpp)
 
    DeltaX = 0;
    DeltaY = 0;
+   panelLeft = 0;
+   panelTop = 0;
 
    /* SET GLOBAL FLAG */
 
@@ -1839,8 +1841,7 @@ gfx_enable_panning(int x, int y)
    unsigned long startAddress = 0;
 
    modeBytesPerPixel = (gbpp + 7) / 8;
-   modeBytesPerScanline =
-	 (((ModeWidth + 1023) / 1024) * 1024) * modeBytesPerPixel;
+   modeBytesPerScanline = (READ_REG32(MDC_GFX_PITCH) & 0x0000FFFF) << 3;
 
    /* TEST FOR NO-WORK */
 

@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/release.txt,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
 Durango Release Notes
-Version 2.47.01
+Version 2.49.01
 Win98/WinXP/DOS/Linux
-December 09, 2002
+January 29, 2003
 
 -----------------------------------------------------------------------------
 PRODUCT INFORMATION
@@ -24,7 +24,35 @@ according to the needs of the application.
 REVISION HISTORY
 -----------------------------------------------------------------------------
 
-12/09/02 Version 2.47.01
+01/29/03 Version 2.49.01
+
+-----------------------------------------------------------------------------
+FUNCTIONAL CHANGES
+-----------------------------------------------------------------------------
+
+* Removed unused variable in CS5530 video code.
+* Changed max supported pixel clock for SCx2xx to 157.5 MHz.
+
+=============================================================================
+
+01/10/03 Version 2.49.00
+
+-----------------------------------------------------------------------------
+FUNCTIONAL CHANGES
+-----------------------------------------------------------------------------
+
+* Added extra wait loop when polling for CRC completion.
+* Removed code that sets the pitch offsets for 4:2:0 video within
+  gfx_set_video_size.
+* Fixed panning code to work with any display pitch.
+* Added code to clear the PLL bypass bit when setting the dot PLL.
+* Fixed panning code so cursor never disappears when panning.
+* Changed GX2 delay loops to do a volatile register read to prevent
+  the entire delay loop from being discarded by a compiler.
+
+=============================================================================
+
+11/19/02 Version 2.47.00
 
 -----------------------------------------------------------------------------
 FUNCTIONAL CHANGES

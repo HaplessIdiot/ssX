@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_accel.c,v 1.2 2003/01/14 09:34:31 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_accel.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * $Author: alanh $
  *
  * File Contents: This file is consists of main Xfree
@@ -1803,15 +1803,15 @@ GX1AccelInit(ScreenPtr pScreen)
    pGeode->AccelInfoRec = localRecPtr = XAACreateInfoRec();
 
    /* SET ACCELERATION FLAGS */
-   localRecPtr->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS | LINEAR_FRAMEBUFFER;
+   localRecPtr->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
 
    /* HOOK SYNCRONIZARION ROUTINE */
    localRecPtr->Sync = GX1AccelSync;
 
    /* HOOK FILLED RECTANGLES */
-   localRecPtr->SetupForSolidFill = OPTACCEL(GX1SetupForFillRectSolid);
+   localRecPtr->SetupForSolidFill = (GX1SetupForFillRectSolid);
    localRecPtr->SubsequentSolidFillRect =
-	 OPTACCEL(GX1SubsequentFillRectSolid);
+	 (GX1SubsequentFillRectSolid);
    localRecPtr->SolidFillFlags = 0;
 
    /* HOOK 8x8 MonoEXPAND PATTERNS */
