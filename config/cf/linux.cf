@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.125 2000/06/19 23:29:41 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.126 2000/06/20 05:08:16 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -172,18 +172,16 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 /* The DRM module requires kernel services that appeared in late 2.1.x
    kernels and are known to be present in 2.2.x kernels. */
 #ifndef BuildXF86DRI
-#  ifdef i386Architecture
+#  if defined(i386Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 #      define BuildXF86DRI            YES
 #    else
 #      define BuildXF86DRI            NO
 #    endif
+#  elif defined(SparcArchitecture)
+#    define BuildXF86DRI              YES
 #  else
-#    ifdef SparcArchitecture
-#      define BuildXF86DRI            YES
-#    else
-#      define BuildXF86DRI            NO
-#    endif
+#    define BuildXF86DRI              NO
 #  endif
 #endif
 
