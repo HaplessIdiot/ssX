@@ -1,8 +1,0 @@
-#
-# $Date: 2001/02/01 08:27:04 $ $Revision: 1.1 $
-# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/include/gl/internal/Attic/Distfile,v 1.1 2001/02/01 08:27:04 alanh Exp $
-#
-
-DISTFILES_SI = \
-	glcore.h /xc/include/GL/internal/glcore.h \
-	$(NULL)
