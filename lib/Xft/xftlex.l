@@ -1,6 +1,6 @@
 %{
 /*
- * $XFree86: xc/lib/Xft/xftlex.l,v 1.3 2000/12/15 22:48:39 dawes Exp $
+ * $XFree86: xc/lib/Xft/xftlex.l,v 1.4 2001/01/02 02:46:51 keithp Exp $
  *
  * Copyright (c) 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -124,6 +124,8 @@ all		return ALL;
 ">"		return MORE;
 "!="		return NOTEQ;
 "?"		return QUEST;
+"["		return OS;
+"]"		return CS;
 \"([^\n\"]|\\\")*\"	{
     			yytext[yyleng - 1] = '\0';
 			yylval.sval = yytext+1;

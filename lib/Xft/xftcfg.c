@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcfg.c,v 1.7 2000/12/17 09:11:37 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.8 2001/01/02 02:46:51 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -39,7 +39,7 @@ char		XftConfigDefaultCache[] = "~/.xftcache";
 char		*XftConfigCache = 0;
 
 static XftSubst	*XftSubsts;
-/* #define XFT_DEBUG_EDIT */
+/* #define  XFT_DEBUG_EDIT */
 
 Bool
 XftConfigAddDir (char *d)
@@ -154,13 +154,20 @@ typedef struct _XftSubState {
     XftValueList    *value;
 } XftSubState;
 
+static XftMatrix    XftIdentityMatrix = { 1, 0, 0, 1 };
+
 static XftValue
-_XftConfigPromote (XftValue v)
+_XftConfigPromote (XftValue v, XftValue u)
 {
     if (v.type == XftTypeInteger)
     {
 	v.type = XftTypeDouble;
 	v.u.d = (double) v.u.i;
+    }
+    if (v.type == XftTypeVoid && u.type == XftTypeMatrix)
+    {
+	v.u.m = &XftIdentityMatrix;
+	v.type = XftTypeMatrix;
     }
     return v;
 }
@@ -174,8 +181,8 @@ _XftConfigCompareValue (XftValue    m,
     
     if (m.type == XftTypeVoid)
 	return True;
-    m = _XftConfigPromote (m);
-    v = _XftConfigPromote (v);
+    m = _XftConfigPromote (m, v);
+    v = _XftConfigPromote (v, m);
     if (m.type == v.type) 
     {
 	ret = False;
@@ -286,6 +293,10 @@ _XftConfigEvaluate (XftPattern *p, XftExpr *e)
 	v.type = XftTypeString;
 	v.u.s = e->u.sval;
 	break;
+    case XftOpMatrix:
+	v.type = XftTypeMatrix;
+	v.u.m = e->u.mval;
+	break;
     case XftOpBool:
 	v.type = XftTypeBool;
 	v.u.b = e->u.bval;
@@ -321,8 +332,8 @@ _XftConfigEvaluate (XftPattern *p, XftExpr *e)
     case XftOpDivide:
 	vl = _XftConfigEvaluate (p, e->u.tree.left);
 	vr = _XftConfigEvaluate (p, e->u.tree.right);
-	vl = _XftConfigPromote (vl);
-	vr = _XftConfigPromote (vr);
+	vl = _XftConfigPromote (vl, vr);
+	vr = _XftConfigPromote (vr, vl);
 	if (vl.type == vr.type)
 	{
 	    switch (vl.type) {
@@ -427,6 +438,26 @@ _XftConfigEvaluate (XftPattern *p, XftExpr *e)
 		    v.type = XftTypeVoid;
 		    break;
 		}
+	    case XftTypeMatrix:
+		switch (e->op) {
+		case XftOpEqual:
+		    v.type = XftTypeBool;
+		    v.u.b = XftMatrixEqual (vl.u.m, vr.u.m) == 0;
+		    break;
+		case XftOpNotEqual:
+		    v.type = XftTypeBool;
+		    v.u.b = XftMatrixEqual (vl.u.m, vr.u.m) != 0;
+		    break;
+		case XftOpTimes:
+		    v.type = XftTypeMatrix;
+		    v.u.m = malloc (sizeof (XftMatrix));
+		    XftMatrixMultiply (v.u.m, vl.u.m, vr.u.m);
+		    break;
+		default:
+		    v.type = XftTypeVoid;
+		    break;
+		}
+		break;
 	    default:
 		v.type = XftTypeVoid;
 		break;

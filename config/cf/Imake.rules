@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.91 2001/01/27 11:04:24 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.92 2001/02/07 23:28:44 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2273,7 +2273,7 @@ clean::									@@\
 
 #ifndef SwitchYYPrefix
 #define SwitchYYPrefix(in,out,prefix) \
-	sed 's/yy/prefix/g' in > out && RemoveFile(in)
+	sed 's/yy/prefix/g' in | sed 's/__REALLY_YY__/yy/' > out && RemoveFile(in)
 #endif
 	
 #ifndef LexFilePrefix
