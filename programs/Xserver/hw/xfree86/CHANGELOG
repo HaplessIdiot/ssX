@@ -1,4 +1,9 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 347. Fix for i810 DRI missing lodbias functionality and related segfault
+      (David Dawes).
+ 346. Fix for radeon DRI lockup (Dave Airlie).
+ 345. Roll back the DRM kernel modules to the version from XFree86 4.4.0
+      plus some minor updates (David Dawes).
  344. Set default monitor parameters to match the display size for the i830
       when they are not available from another source (Nicolas Joly).
  343. Separate the addition of EDID modes out from mode validation
@@ -19417,7 +19422,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3452 2005/02/26 18:31:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3453 2005/02/28 17:50:46 dawes Exp $
 
 
 

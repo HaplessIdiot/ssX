@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.7 2004/12/13 22:40:53 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -179,8 +179,7 @@ void radeonEmitState( radeonContextPtr rmesa )
       rmesa->save_on_next_emit = GL_FALSE;
    }
 
-   if (!rmesa->hw.is_dirty && !rmesa->hw.all_dirty)
-      return;
+   /* this code used to return here but now it emits zbs */
 
    /* To avoid going across the entire set of states multiple times, just check
     * for enough space for the case of emitting all state, and inline the
@@ -188,6 +187,12 @@ void radeonEmitState( radeonContextPtr rmesa )
     */
    radeonEnsureCmdBufSpace(rmesa, rmesa->hw.max_state_size);
    dest = rmesa->store.cmd_buf + rmesa->store.cmd_used;
+
+   /* We always always emit zbs, this is due to a bug found by keithw in
+      the hardware and rediscovered after Erics changes by me.
+      if you ever touch this code make sure you emit zbs otherwise
+      you get tcl lockups on at least M7/7500 class of chips - airlied */
+   rmesa->hw.zbs.dirty=1;
 
    if (RADEON_DEBUG & DEBUG_STATE) {
       foreach(atom, &rmesa->hw.atomlist) {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.5 2005/02/08 16:28:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.6 2005/02/08 22:13:11 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -86,8 +86,6 @@ SRCS_DRM_LINUX = \
 	drm_auth.h \
 	drm_bufs.h \
 	drm_context.h \
-	drm_compat.h \
-	drm_core.h \
 	drm_dma.h \
 	drm_drawable.h \
 	drm_drv.h \
@@ -100,7 +98,6 @@ SRCS_DRM_LINUX = \
 	drm_memory_debug.h \
 	drm_os_linux.h \
 	drm_proc.h \
-	drm_pci.h \
 	drm_scatter.h \
 	drm_stub.h \
 	drm_vm.h
@@ -117,7 +114,6 @@ SRCS_DRM_BSD = \
 	drm_fops.h \
 	drm_ioctl.h \
 	drm_irq.h \
-	drm_linux_list.h \
 	drm_lock.h \
 	drm_memory.h \
 	drm_memory_debug.h \
@@ -154,17 +150,6 @@ SRCS_I830_LINUX = \
 	i830_drv.c \
 	i830_irq.c
 
-SRCS_I915_SHARED = \
-	i915.h \
-	i915_drm.h \
-	i915_dma.c \
-	i915_mem.c \
-	i915_drv.h \
-	i915_irq.c
-
-SRCS_I915_LINUX = \
-	i915_drv.c
-
 SRCS_R128_SHARED = \
 	r128.h \
 	r128_drm.h \
@@ -178,43 +163,6 @@ SRCS_R128_LINUX = \
 
 SRCS_R128_BSD = \
 	r128_drv.c
-
-SRCS_MACH64_SHARED = \
-	mach64_drv.h \
-	mach64_irq.c \
-	mach64.h \
-	mach64_dma.c \
-	mach64_drm.h \
-	mach64_state.c
-
-SRCS_MACH64_LINUX = \
-	mach64_drv.c
-
-SRCS_MACH64_BSD = \
-	mach64_drv.c
-
-SRCS_SAVAGE_LINUX = \
-	savage_dma.c \
-	savage_drm.h \
-	savage_drv.c \
-	savage_drv.h \
-	savage.h
-
-SRCS_VIA_SHARED = \
-	via_irq.c \
-	via_drm.h \
-	via_drv.c \
-	via_dma.c \
-	via_drv.h \
-	via_ds.c \
-	via_ds.h \
-	via.h \
-	via_map.c \
-	via_mm.c \
-	via_mm.h \
-	via_3d_reg.h \
-	via_verifier.c \
-	via_verifier.h
 
 SRCS_RADEON_SHARED = \
 	radeon.h \
@@ -272,21 +220,6 @@ SRCS_TDFX_LINUX = \
 SRCS_TDFX_BSD = \
 	tdfx_drv.c
 
-SRCS_FFB_LINUX = \
-	ffb_context.c \
-	ffb_drv.c \
-	ffb_drv.h \
-	ffb.h
-
-SRCS_BUILD_SHARED = \
-	drm_pciids.txt
-
-SRCS_SCRIPTS_LINUX = \
-	create_linux_pci_lists.sh
-
-SRCS_SCRIPTS_BSD = \
-	create_bsd_pci_lists.sh
-
 SRCS_BUILD_LINUX = \
 	Config.in \
 	Kconfig \
@@ -300,35 +233,32 @@ DRMLINUXINSTSRCDIR = $(INSTSRCDIR)/drm/linux/kernel
 DRMBSDINSTSRCDIR = $(INSTSRCDIR)/drm/bsd/kernel
 
 SRCS_SHARED = $(SRCS_DRM_SHARED) $(SRCS_GAMMA_SHARED) $(SRCS_I810_SHARED) \
-	$(SRCS_R128_SHARED) $(SRCS_MACH64_SHARED) $(SRCS_SAVAGE_SHARED) \
-	$(SRCS_VIA_SHARED) $(SRCS_RADEON_SHARED) $(SRCS_SIS_SHARED) \
-	$(SRCS_MGA_SHARED) $(SRCS_TDFX_SHARED) $(SRCS_FFB_SHARED) \
-	$(SRCS_BUILD_SHARED)
+	$(SRCS_I830_SHARED) $(SRCS_R128_SHARED) \
+	$(SRCS_RADEON_SHARED) $(SRCS_SIS_SHARED) \
+	$(SRCS_MGA_SHARED) $(SRCS_TDFX_SHARED)
 
 SRCS_LINUX = $(SRCS_DRM_LINUX) $(SRCS_GAMMA_LINUX) $(SRCS_I810_LINUX) \
-	$(SRCS_R128_LINUX) $(SRCS_MACH64_LINUX) $(SRCS_SAVAGE_LINUX) \
-	$(SRCS_VIA_LINUX) $(SRCS_RADEON_LINUX) $(SRCS_SIS_LINUX) \
-	$(SRCS_MGA_LINUX) $(SRCS_TDFX_LINUX) $(SRCS_FFB_LINUX) \
+	$(SRCS_I830_LINUX) $(SRCS_R128_LINUX) \
+	$(SRCS_RADEON_LINUX) $(SRCS_SIS_LINUX) \
+	$(SRCS_MGA_LINUX) $(SRCS_TDFX_LINUX) \
 	$(SRCS_BUILD_LINUX)
 
 SRCS_BSD = $(SRCS_DRM_BSD) $(SRCS_GAMMA_BSD) $(SRCS_I810_BSD) \
-	$(SRCS_R128_BSD) $(SRCS_MACH64_BSD) $(SRCS_SAVAGE_BSD) \
-	$(SRCS_VIA_BSD) $(SRCS_RADEON_BSD) $(SRCS_SIS_BSD) \
-	$(SRCS_MGA_BSD) $(SRCS_TDFX_BSD) $(SRCS_FFB_BSD) \
+	$(SRCS_I830_BSD) $(SRCS_R128_BSD) \
+	$(SRCS_RADEON_BSD) $(SRCS_SIS_BSD) \
+	$(SRCS_MGA_BSD) $(SRCS_TDFX_BSD) \
 	$(SRCS_BUILD_BSD)
 
 
-BSD_SUBDIRS = mga mach64 r128 radeon sis tdfx
+BSD_SUBDIRS = mga r128 radeon sis tdfx
 SRCS_BSD_SUBS = $(BSD_SUBDIRS:%=%/Makefile)
 
 INSTALL_SHARED = $(SRCS_SHARED:%=DRMCopySubdir/%)
-INSTALL_LINUX = $(SRCS_LINUX:%=DRMCopySubdir/%) \
-		$(SRCS_SCRIPTS_LINUX:%=DRMCopySubdir/%)
-INSTALL_BSD = $(SRCS_BSD:%=DRMCopySubdir/%) \
-		$(SRCS_SCRIPTS_BSD:%=DRMCopySubdir/%)
+INSTALL_LINUX = $(SRCS_LINUX:%=DRMCopySubdir/%)
+INSTALL_BSD = $(SRCS_BSD:%=DRMCopySubdir/%)
 INSTALL_BSD_SUBS = $(SRCS_BSD_SUBS:%=DRMCopySubdir/%)
 
-DRMSCRIPTSDIR = $(DRMSRCDIR)/scripts
-DRMSHAREDDIR = $(DRMSRCDIR)/shared
-DRMLINUXDIR = $(DRMSRCDIR)/linux
-DRMBSDDIR = $(DRMSRCDIR)/bsd
+DRMSHAREDDIR = $(XF86OSSRC)/shared/drm/kernel
+DRMLINUXDIR = $(XF86OSSRC)/linux/drm/kernel
+DRMBSDDIR = $(XF86OSSRC)/bsd/drm/kernel
+

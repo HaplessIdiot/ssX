@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810ioctl.c,v 1.7 2002/10/30 12:51:33 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i810/i810ioctl.c,v 1.1.1.3 2004/12/10 15:05:45 alanh Exp $ */
 
 #include <unistd.h> /* for usleep() */
 
@@ -90,8 +90,8 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       for (i = 0 ; i < imesa->numClipRects ; ) 
       { 	 
 	 int nr = MIN2(i + I810_NR_SAREA_CLIPRECTS, imesa->numClipRects);
-	 XF86DRIClipRectPtr box = imesa->pClipRects;	 
-	 XF86DRIClipRectPtr b = imesa->sarea->boxes;
+	 drm_clip_rect_t *box = imesa->pClipRects;	 
+	 drm_clip_rect_t *b = (drm_clip_rect_t *)imesa->sarea->boxes;
 	 int n = 0;
 
 	 if (!all) {
@@ -117,7 +117,7 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	    }
 	 } else {
 	    for ( ; i < nr ; i++) {
-	       *b++ = *(XF86DRIClipRectPtr)&box[i];
+	       *b++ = box[i];
 	       n++;
 	    }
 	 }
@@ -144,7 +144,7 @@ static void i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 void i810CopyBuffer( const __DRIdrawablePrivate *dPriv ) 
 {
    i810ContextPtr imesa;
-   XF86DRIClipRectPtr pbox;
+   drm_clip_rect_t *pbox;
    int nbox, i, tmp;
 
    assert(dPriv);
@@ -156,13 +156,13 @@ void i810CopyBuffer( const __DRIdrawablePrivate *dPriv )
    I810_FIREVERTICES( imesa );
    LOCK_HARDWARE( imesa );
    
-   pbox = dPriv->pClipRects;
+   pbox = (drm_clip_rect_t *)dPriv->pClipRects;
    nbox = dPriv->numClipRects;
 
    for (i = 0 ; i < nbox ; )
    {
       int nr = MIN2(i + I810_NR_SAREA_CLIPRECTS, dPriv->numClipRects);
-      XF86DRIClipRectRec *b = (XF86DRIClipRectRec *)imesa->sarea->boxes;
+      drm_clip_rect_t *b = (drm_clip_rect_t *)imesa->sarea->boxes;
 
       imesa->sarea->nbox = nr - i;
 
@@ -204,8 +204,9 @@ void i810PageFlip( const __DRIdrawablePrivate *dPriv )
   LOCK_HARDWARE( imesa );
   
   if (dPriv->pClipRects) {
-    *(XF86DRIClipRectRec *)imesa->sarea->boxes = dPriv->pClipRects[0];
-    imesa->sarea->nbox = 1;
+     memcpy(&(imesa->sarea->boxes[0]), &(dPriv->pClipRects[0]),
+            sizeof(drm_clip_rect_t));
+     imesa->sarea->nbox = 1;
   }
   ret = drmCommandNone(imesa->driFd, DRM_I810_FLIP);
   if (ret) {
@@ -293,9 +294,9 @@ void i810WaitAge( i810ContextPtr imesa, int age  )
 
 
 
-static int intersect_rect( XF86DRIClipRectPtr out,
-                           XF86DRIClipRectPtr a,
-                           XF86DRIClipRectPtr b )
+static int intersect_rect( drm_clip_rect_t *out,
+                           drm_clip_rect_t *a,
+                           drm_clip_rect_t *b )
 {
    *out = *a;
    if (b->x1 > out->x1) out->x1 = b->x1;
@@ -328,6 +329,8 @@ static void emit_state( i810ContextPtr imesa )
       memcpy(sarea->TexState[0], 
 	     imesa->CurrentTexObj[0]->Setup,
 	     sizeof(imesa->CurrentTexObj[0]->Setup));
+      sarea->TexState[0][I810_TEXREG_MLC] &= ~(MLC_LOD_BIAS_MASK);
+      sarea->TexState[0][I810_TEXREG_MLC] |= imesa->LodBias[0];
    }
 
    if (dirty & I810_UPLOAD_TEX1) {
@@ -336,6 +339,8 @@ static void emit_state( i810ContextPtr imesa )
       memcpy( setup,
 	      imesa->CurrentTexObj[1]->Setup,
 	      sizeof(imesa->CurrentTexObj[1]->Setup));
+      sarea->TexState[1][I810_TEXREG_MLC] &= ~(MLC_LOD_BIAS_MASK);
+      sarea->TexState[1][I810_TEXREG_MLC] |= imesa->LodBias[1];
 
       /* Need this for the case where both units are bound to the same
        * texobj.  
@@ -361,7 +366,7 @@ static void age_imesa( i810ContextPtr imesa, int age )
 
 void i810FlushPrimsLocked( i810ContextPtr imesa )
 {
-   XF86DRIClipRectPtr pbox = (XF86DRIClipRectPtr)imesa->pClipRects;
+   drm_clip_rect_t *pbox = imesa->pClipRects;
    int nbox = imesa->numClipRects;
    drmBufPtr buffer = imesa->vertex_buffer;
    I810SAREAPtr sarea = imesa->sarea;
@@ -403,7 +408,7 @@ void i810FlushPrimsLocked( i810ContextPtr imesa )
       for (i = 0 ; i < nbox ; )
       {
 	 int nr = MIN2(i + I810_NR_SAREA_CLIPRECTS, nbox);
-	 XF86DRIClipRectPtr b = sarea->boxes;
+	 drm_clip_rect_t *b = (drm_clip_rect_t *)sarea->boxes;
 
 	 if (imesa->scissor) {
 	    sarea->nbox = 0;
@@ -502,9 +507,9 @@ static void i810Finish( GLcontext *ctx  )
    i810DmaFinish( imesa );
 }
 
-void i810InitIoctlFuncs( GLcontext *ctx )
+void i810InitIoctlFuncs( struct dd_function_table *functions )
 {
-   ctx->Driver.Flush = i810Flush;
-   ctx->Driver.Clear = i810Clear;
-   ctx->Driver.Finish = i810Finish;
+   functions->Flush = i810Flush;
+   functions->Clear = i810Clear;
+   functions->Finish = i810Finish;
 }

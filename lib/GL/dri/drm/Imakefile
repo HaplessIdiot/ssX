@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.27 2004/06/01 00:16:56 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.28 2004/12/10 16:06:56 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -59,22 +59,18 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
       DEFINES = $(ALLOC_DEFINES)
      INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		-I$(XF86OSSRC)/$(OS_SUBDIR)/drm \
-		-I$(DRMSRCDIR)/$(OS_SUBDIR) \
-		-I$(DRMSRCDIR)/$(OS_SUBDIR2) \
-		-I$(XF86OSSRC) -I$(DRMSRCDIR)/shared
+		-I$(XF86OSSRC) -I$(DRMINCLUDESDIR)
          SRCS = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c
          OBJS = xf86drm.o xf86drmHash.o xf86drmRandom.o xf86drmSL.o
 
 #if defined(LinuxArchitecture)
 OS_SUBDIR = linux
 OS_SUBDIR2 = linux
-OS_SUBDIR3 = shared
 #endif
 #if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture) || \
     defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)
 OS_SUBDIR = bsd
 OS_SUBDIR2 = linux
-OS_SUBDIR3 = shared
 #endif
 
 LinkSourceFile(xf86drm.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
@@ -83,7 +79,7 @@ LinkSourceFile(xf86drmHash.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 LinkSourceFile(xf86drmRandom.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 LinkSourceFile(xf86drmSL.c,$(XF86OSSRC)/$(OS_SUBDIR2)/drm)
 
-LinkSourceFile(drm.h,$(DRMSRCDIR)/$(OS_SUBDIR3))
+LinkSourceFile(drm.h,$(DRMINCLUDESDIR))
 
 #include <Library.tmpl>
 
