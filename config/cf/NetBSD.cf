@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.3 1994/05/30 08:17:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.4 1994/05/31 14:19:29 dawes Exp $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -59,7 +59,7 @@ XCOMM operating system:  OSName
 # define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture
-#define ServerExtraDefines GccGasOption LinkKitDefines
+#define ServerExtraDefines GccGasOption XFree86ServerDefines
 #else
 #define ServerExtraDefines GccGasOption
 #endif

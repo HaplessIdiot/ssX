@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
-XCOMM rules:  $XFree86$
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.0 1994/05/30 08:17:40 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1823,6 +1823,16 @@ target::								@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
 		case "$$i" in \						@@\
+		../../?*/?*/?*/?*/?*/?*) newtop=../../../.. ;; \	@@\
+		../../?*/?*/?*/?*/?*)	 newtop=../../.. ;; \		@@\
+		../../?*/?*/?*/?*)	 newtop=../.. ;; \		@@\
+		../../?*/?*/?*)		 newtop=.. ;; \			@@\
+		../../?*/?*)		 newtop=. ;; \			@@\
+		../?*/?*/?*/?*/?*)	 newtop=../../../..;; \		@@\
+		../?*/?*/?*)		 newtop=../../..;; \		@@\
+		../?*/?*/?*)		 newtop=../..;; \		@@\
+		../?*/?*)		 newtop=..;; \			@@\
+		../?*)			 newtop=. ;; \			@@\
 		./?*/?*/?*/?*)	newtop=../../../..;; \			@@\
 		./?*/?*/?*)	newtop=../../..;; \			@@\
 		./?*/?*)	newtop=../..;; \			@@\
@@ -1840,7 +1850,7 @@ target::								@@\
 		*) imaketop=$$newtop/$(TOP) \				@@\
 		   imakeprefix=$$newtop/ ;; \				@@\
 		esac; \							@@\
-		cd $$i; \						@@\
+		(cd $$i; \						@@\
 		RemoveFile(Makefile.bak); \				@@\
 		if [ -f Makefile ]; then \				@@\
 			echo "	$(MV) Makefile Makefile.bak"; \		@@\
@@ -1851,8 +1861,7 @@ target::								@@\
 		if [ "$$executeit" != "no" ]; then \			@@\
 			ImakeSubCmdHelper -DTOPDIR=$$imaketop -DCURDIR=$$curdir$$i; \ @@\
 		fi; \							@@\
-		$(MAKE) $(MFLAGS) Makefiles; \				@@\
-		cd $$newtop; \						@@\
+		$(MAKE) $(MFLAGS) Makefiles;) \				@@\
 	done
 
 #ifdef UseInstalled
