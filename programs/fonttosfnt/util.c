@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.5 2003/07/07 17:06:20 tsi Exp $ */
+/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.6tsi Exp $ */
 
 #include <time.h>
 #include <string.h>
@@ -168,6 +168,7 @@ mktime_gmt(struct tm *tm)
 int
 macTime(int *hi, unsigned *lo)
 {
+    unsigned long diff;		/* Not time_t */
     time_t macEpoch, current;
     struct tm tm;
     tm.tm_sec = 0;
@@ -190,8 +191,13 @@ macTime(int *hi, unsigned *lo)
         return -1;
     }
 
-    *hi = (current - macEpoch) >> 32;
-    *lo = (current - macEpoch) & 0xFFFFFFFF;
+    diff = current - macEpoch;
+#if INT_MAX == LONG_MAX
+    *hi = 0;
+#else
+    *hi = diff >> 32;
+#endif
+    *lo = diff & 0xFFFFFFFF;
     return 0;
 }
 

@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.10 2002/05/31 18:46:13 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.11tsi Exp $
 **
 */
 
@@ -89,7 +89,7 @@ timer(int flag)
       return((long) NULL);
     }
 #else
-  static long starttime;
+  static time_t starttime;
   
   switch (flag) {
     case StartTimer:

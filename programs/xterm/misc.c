@@ -2,7 +2,7 @@
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.77 2003/03/23 02:01:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.79tsi Exp $ */
 
 /*
  *
@@ -1586,7 +1586,6 @@ do_dcs(Char * dcsbuf, size_t dcslen)
     char *cp = (char *) dcsbuf;
     Bool okay;
     Bool clear_all;
-    Bool lock_keys;
 
     TRACE(("do_dcs(%s:%d)\n", (char *) dcsbuf, dcslen));
 
@@ -1735,7 +1734,6 @@ do_dcs(Char * dcsbuf, size_t dcslen)
     default:
 	if (isdigit(CharOf(*cp))) {	/* digits are DECUDK, otherwise ignore */
 	    clear_all = True;
-	    lock_keys = True;
 
 	    if (*cp == '0') {
 		cp++;
@@ -1753,7 +1751,6 @@ do_dcs(Char * dcsbuf, size_t dcslen)
 		cp++;
 	    } else if (*cp == '1') {
 		cp++;
-		lock_keys = False;
 	    }
 
 	    if (*cp++ != '|')
@@ -2507,13 +2504,13 @@ sortedOpts(OptionHelp * options, XrmOptionDescRec * descs, Cardinal numDescs)
     static OptionHelp *opt_array = 0;
 
     if (opt_array == 0) {
-	Cardinal opt_count, j, k;
+	Cardinal opt_count, j;
 #if OPT_TRACE
+	Cardinal k;
 	XrmOptionDescRec *res_array = sortedOptDescs(descs, numDescs);
 	int code;
 	char *mesg;
 #else
-	(void) k;
 	(void) descs;
 	(void) numDescs;
 #endif

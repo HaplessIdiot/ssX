@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fonttosfnt/fonttosfnt.h,v 1.3tsi Exp $ */
 
 #ifndef _FONTTOSFNT_H_
 #define _FONTTOSFNT_H_ 1
@@ -140,7 +140,7 @@ FontPtr makeFont(void);
 StrikePtr makeStrike(FontPtr, int, int);
 BitmapPtr makeBitmap(StrikePtr, int,
                      int, int, int, int, int, int,
-                     char*, int);
+                     unsigned char*, int);
 IndexSubTablePtr makeIndexSubTables(StrikePtr, CmapPtr);
 int fontIndex(FontPtr, int);
 CmapPtr makeCmap(FontPtr);

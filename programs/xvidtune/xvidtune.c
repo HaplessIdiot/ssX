@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.34 2003/05/27 22:27:13 tsi Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.35tsi Exp $ */
 
 /*
 
@@ -747,7 +747,7 @@ FlagsEditCB (Widget w, XtPointer client, XtPointer call)
 {
     int i, len;
     char* string;
-    fields findex = (fields) client;
+    fields findex = (fields) (unsigned long) client;
     ScrollData* sdp = &AppRes.field[findex];
 
     XtVaGetValues (w, XtNstring, &string, NULL);
@@ -774,7 +774,7 @@ BlankEditCB (Widget w, XtPointer client, XtPointer call)
 {
     int len;
     char* string;
-    fields findex = (fields) client;
+    fields findex = (fields) (unsigned long) client;
     ScrollData* sdp = &AppRes.field[findex];
     char buf[2], old;
     Boolean state;

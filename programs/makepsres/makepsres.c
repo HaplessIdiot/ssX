@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.7 2002/09/18 17:11:51 tsi Exp $ */
+/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.8tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,9 +130,7 @@ static char lineBuffer[BUFFER_SIZE];
 
 Category *categories;
 
-static char *ckmalloc(size, whynot)
-    int size;
-    char *whynot;
+static char *ckmalloc(int size, char *whynot)
 {
     char *result;
 
@@ -145,10 +143,7 @@ static char *ckmalloc(size, whynot)
     return result;
 }
 
-static char *ckrealloc(ptr, size, whynot)
-    char *ptr;
-    int size;
-    char *whynot;
+static char *ckrealloc(char *ptr, int size, char *whynot)
 {
     char *result;
 
@@ -161,10 +156,7 @@ static char *ckrealloc(ptr, size, whynot)
     return result;
 }
 
-static char *ckcalloc(count, size, whynot)
-    int count;
-    int size;
-    char *whynot;
+static char *ckcalloc(int count, int size, char *whynot)
 {
     char *result;
 

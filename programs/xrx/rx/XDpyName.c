@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xrx/rx/XDpyName.c,v 1.6tsi Exp $ */
 
 #ifdef XP_UNIX
 #include "RxPlugin.h"		/* for PluginGlobal */
@@ -69,9 +69,7 @@ The Open Group.
  * Compute the number of bytes for a STRING representation
  */
 
-#define STRING_BYTES(_str) (2 + (_str ? strlen (_str) : 0) + \
-		     PAD64 (2 + (_str ? strlen (_str) : 0)))
-
+#define STRING_BYTES(_str) (2 + strlen(_str) + PAD64(2 + strlen(_str)))
 
 
 #define SKIP_STRING(_pBuf, _swap) \
@@ -95,7 +93,7 @@ The Open Group.
 
 #define STORE_STRING(_pBuf, _string) \
 { \
-    int _len = _string ? strlen (_string) : 0; \
+    int _len = strlen(_string); \
     STORE_CARD16 (_pBuf, _len); \
     if (_len) { \
         memcpy (_pBuf, _string, _len); \
@@ -183,6 +181,8 @@ typedef struct {
     char	*error;
 } GetProxyAddrReply;
 
+#if 0
+#else
 static int findproxy (proxyname, manager, server, name)
     char*			proxyname;
     char*			manager;
@@ -293,7 +293,7 @@ static int findproxy (proxyname, manager, server, name)
     }
     return 1;
 }
-
+#endif
 
 
 static void

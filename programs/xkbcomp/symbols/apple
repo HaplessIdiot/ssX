@@ -1,7 +1,7 @@
 //
 // Keyboard modification for Apple keyboards
 //
-// $Xfree86: $
+// $XFree86: $
 
 partial default modifier_keys
 xkb_symbols "extended" {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.13 2002/11/21 07:25:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.14tsi Exp $ */
 
 
 /*
@@ -2763,7 +2763,7 @@ fi_fi_mul_overflow(long op1, long op2)
 
     return (op > 2147483647.0 || op < -2147483648.0);
 #else
-    int shift, sign;
+    int shift;
     long mask;
 
     if (op1 == 0 || op1 == 1 || op2 == 0 || op2 == 1)
@@ -2771,8 +2771,6 @@ fi_fi_mul_overflow(long op1, long op2)
 
     if (op1 == MINSLONG || op2 == MINSLONG)
 	return (1);
-
-    sign = (op1 < 0) ^ (op2 < 0);
 
     if (op1 < 0)
 	op1 = -op1;
