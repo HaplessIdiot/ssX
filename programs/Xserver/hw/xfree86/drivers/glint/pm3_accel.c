@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.20 2001/02/05 10:44:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.21 2001/02/05 14:24:40 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -846,12 +846,12 @@ Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    if (pGlint->dwords < pGlint->FIFOSize) {
+    if ((pGlint->dwords*h) < pGlint->FIFOSize) {
 	/* Turn on direct for less than 120 dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;
     	GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
-    	GLINT_WAIT(pGlint->dwords);
+    	GLINT_WAIT(pGlint->dwords*h);
     } else {
 	/* Use indirect for anything else */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->ScratchBuffer;
@@ -868,11 +868,7 @@ Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     CARD32 *srcp = (CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno];
     int dwords = pGlint->dwords;
 
-    if (pGlint->ScanlineDirect) {
-    	if (pGlint->cpucount--)
-    	    GLINT_WAIT(dwords);
-	return;
-    } else {
+    if (!pGlint->ScanlineDirect) {
 	while(dwords >= pGlint->FIFOSize) {
 	    GLINT_WAIT(pGlint->FIFOSize);
             GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
