@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.2 2001/08/15 11:54:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.3 2001/11/23 19:50:46 dawes Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -418,7 +418,9 @@ ReadInput (LocalDevicePtr local)
 			if (z >= priv->button_threshold) buttons = 1; 
 #if 0
 xf86Msg(X_INFO,"Tablett pressurebutton = %d >= %d\n",z,priv->button_threshold);
+#endif
 			}
+#if 0
 xf86Msg(X_INFO,"Tablett x y prox buttons = %d %d %d %d\n",x,y,prox,buttons);
 #endif
 		    if (prox) {
