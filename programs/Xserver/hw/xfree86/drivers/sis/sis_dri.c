@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.42tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * DRI wrapper for 300 and 315 series
@@ -48,8 +48,12 @@
 #include "GL/glxtokens.h"
 
 #include "sis.h"
-#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
-#include "xf86drmCompat.h"
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
+extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
+#else
+# if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
+#  include "xf86drmCompat.h"
+# endif
 #endif
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
 #include "sis_common.h"
@@ -93,10 +97,6 @@ static void SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 static void SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
                    RegionPtr prgnSrc, CARD32 index);
-
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
-extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
-#endif
 
 static Bool
 SISInitVisualConfigs(ScreenPtr pScreen)
@@ -524,7 +524,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
        pSISDRI->AGPVtxBufOffset = pSIS->agpVtxBufAddr - pSIS->agpAddr;
        pSISDRI->AGPVtxBufSize = pSIS->agpVtxBufSize;
 
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
        drmSiSAgpInit(pSIS->drmSubFD, AGP_VTXBUF_SIZE,(pSIS->agpSize - AGP_VTXBUF_SIZE));
+#endif
 #endif
     } else {
 
@@ -536,7 +538,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
        pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
        pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
        drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(pSIS->agpSize - AGP_CMDBUF_SIZE));
+#endif
     }
   }
   while(0);

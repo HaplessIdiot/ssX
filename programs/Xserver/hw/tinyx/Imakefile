@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.9 2003/11/12 19:10:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.1tsi Exp $
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -66,7 +66,7 @@ TINY_DEFINES = TinyDIXDefines
 IPAQ_DEFINES = -DXIPAQ
 #endif
 
-DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES)
+DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES) -UXFree86LOADER
 
 SRCS = txaa.c txcmap.c txcolor.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
 	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \
@@ -85,7 +85,7 @@ SpecialCObjectRule(tinyx,,$(EXT_DEFINES) $(TINY_DEFINES))
 
 AllTarget(miinitext.o)
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) $(TINY_DEFINES) -UXFree86LOADER)
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) $(TINY_DEFINES))
 
 TINY_FONT_DEFINES =
 

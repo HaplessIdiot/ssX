@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/txaa.c,v 1.6 2003/11/10 18:21:48 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/txaa.c,v 1.1tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -523,7 +523,7 @@ static const GCOps	kaaOps = {
 };
 
 static void
-kaaValidateGC (GCPtr pGC, Mask changes, DrawablePtr pDrawable)
+kaaValidateGC (GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 {
     fbValidateGC (pGC, changes, pDrawable);
 

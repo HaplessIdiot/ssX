@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ps2.c,v 1.7 2002/08/02 16:11:35 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/linux/ps2.c,v 1.1tsi Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -165,7 +165,7 @@ static int Ps2InputType;
 static int
 Ps2Init (void)
 {
-    int	    i;
+    long    i;
     int	    ps2Port;
     int	    n;
 

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -186,7 +187,7 @@ static void i915_emit_invarient_state( intelContextPtr intel )
 #define emit( intel, state, size )			\
 do {							\
    int k;						\
-   BEGIN_BATCH( (size) / sizeof(GLuint));		\
+   BEGIN_BATCH( (int) ((size) / sizeof(GLuint)));	\
    for (k = 0 ; k < (size) / sizeof(GLuint) ; k++)	\
       OUT_BATCH((state)[k]);				\
    ADVANCE_BATCH();					\

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -86,7 +87,7 @@ void intel_dump_batchbuffer( long offset,
    int i;
    fprintf(stderr, "\n\n\nSTART BATCH (%d dwords):\n", count);
    for (i = 0; i < count/4; i += 4) 
-      fprintf(stderr, "\t0x%x: 0x%08x 0x%08x 0x%08x 0x%08x\n", 
+      fprintf(stderr, "\t0x%lx: 0x%08x 0x%08x 0x%08x 0x%08x\n", 
 	      offset + i*4, ptr[i], ptr[i+1], ptr[i+2], ptr[i+3]);
    fprintf(stderr, "END BATCH\n\n\n");
 }
@@ -225,7 +226,7 @@ void intelFlushBatchLocked( intelContextPtr intel,
 	 }
       } else {
 	 drmI830CmdBuffer cmd;
-	 cmd.buf = intel->alloc.ptr + batch.start;
+	 cmd.buf = (char *)intel->alloc.ptr + batch.start;
 	 cmd.sz = batch.used;
 	 cmd.DR1 = batch.DR1;
 	 cmd.DR4 = batch.DR4;
