@@ -9,7 +9,7 @@
 <date>14 December 2000</date>
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.9 2000/12/14 22:33:03 dawes Exp $
 </ident>
 
 <toc>
@@ -645,9 +645,9 @@ For example,
 
 <tscreen><verb>
 3
-<p>mulearabic-0 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-0.enc
-<p>mulearabic-1 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-1.enc
-<p>mulearabic-2 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-2.enc
+mulearabic-0 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-0.enc
+mulearabic-1 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-1.enc
+mulearabic-2 /usr/X11R6/lib/X11/fonts/encodings/mulearabic-2.enc
 </verb></tscreen>
 
 The name of an encoding <it/must/ be specified in the encoding file's
