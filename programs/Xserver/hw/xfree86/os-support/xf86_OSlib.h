@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.85 2001/08/29 11:55:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.86 2001/10/09 19:31:07 herrb Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -440,9 +440,6 @@ extern int errno;
 #       undef CONSOLE_X_MODE_ON
 #       undef CONSOLE_X_MODE_OFF
 #       undef CONSOLE_X_BELL
-#     endif
-#     if defined(WSCONS_SUPPORT) && !defined(PCVT_SUPPORT)
-#       include <dev/wscons/wsdisplay_usl_io.h>
 #     endif
 #   endif
 #   ifdef SYSCONS_SUPPORT
