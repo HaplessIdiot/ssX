@@ -38,7 +38,7 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.6 2001/01/17 22:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.7 2001/08/06 20:51:17 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -2595,8 +2595,7 @@ miBSFree(pWin)
     miBSWindowPtr 	pBackingStore;
     register ScreenPtr	pScreen;
 
-    /* Avoid "unused" warning for pScreen. */
-    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
+    pScreen = pWin->drawable.pScreen;
 
     pBackingStore = (miBSWindowPtr)pWin->backStorage;
     if (pBackingStore)
