@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.2 1994/12/20 22:38:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.3 1994/12/25 12:12:22 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -14,10 +14,14 @@ base.ps: sgmlfile							@@\
 	$(LINUXDOCFORMAT) -T latex sgmlfile | \				@@\
 	    $(LINUXDOCLATEX) -d > base.dvi				@@\
 	RemoveFile(base.ps)						@@\
-	$(DVIPS) $(DVIPSOPTIONS) -o base.ps base.dvi			@@\
+	$(DVIPS) $(DVIPSOPTIONS) -o base._ps base.dvi && \		@@\
+	    $(MV) base._ps $@						@@\
 	RemoveFile(base.dvi)						@@\
 									@@\
-InstallNonExecFile(base.ps,$(XFREE86PSDOCDIR))
+InstallNonExecFile(base.ps,$(XFREE86PSDOCDIR))				@@\
+									@@\
+clean::									@@\
+	RemoveFiles(base.dvi base._ps base.ps)
 #else
 #define LinuxDocSgmlToPs(sgmlfile,base) /**/
 #endif
@@ -29,12 +33,13 @@ AllTarget(textfile)							@@\
 textfile: sgmlfile							@@\
 	RemoveFile(textfile)						@@\
 	$(LINUXDOCFORMAT) -T nroff sgmlfile | \				@@\
-	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > textfile		@@\
+	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > +textfile && \	@@\
+	    $(MV) +textfile $@						@@\
 									@@\
 InstallNonExecFile(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
-	RemoveFile(textfile)
+	RemoveFiles(+textfile textfile)
 #else
 #define LinuxDocSgmlToText(sgmlfile,textfile) /**/
 #endif
@@ -60,11 +65,16 @@ base.html: sgmlfile							@@\
 	    "$(LINUXDOCPREHTML) >> $${TMP}"; \				@@\
 	  $(LINUXDOCFORMAT) -T html sgmlfile | \			@@\
 	    $(LINUXDOCPREHTML) >> $${TMP}; \				@@\
-	  echo "$(LINUXDOCHTML) base < $${TMP} > base.html"; \		@@\
-	  $(LINUXDOCHTML) base < $${TMP} > base.html; \			@@\
+	  echo "$(LINUXDOCHTML) base < $${TMP} > base.html &&" \	@@\
+	    "$(MV) base._html $@"; \					@@\
+	  $(LINUXDOCHTML) base < $${TMP} > base._html && \		@@\
+	    $(MV) base._html $@; \					@@\
 	  RemoveFile($${TMP}))						@@\
 									@@\
-InstallMultipleDest(install,base*.html,$(XFREE86HTMLDOCDIR))
+InstallMultipleDest(install,base*.html,$(XFREE86HTMLDOCDIR))		@@\
+									@@\
+clean::									@@\
+	RemoveFiles(base*.html base._html)
 #else
 #define LinuxDocSgmlToHtml(sgmlfile,base) /**/
 #endif
