@@ -48,6 +48,9 @@ Author:  Ralph Mor, X Consortium
 #endif
 #endif
 #endif /* PATH_MAX */
+#ifdef HAS_MKSTEMP
+#include <unistd.h>
+#endif
 
 #include <X11/Xlib.h>
 #include <X11/SM/SMlib.h>
@@ -723,13 +726,21 @@ Bool *height_ever_changed_by_user;
 
 
 
+#ifndef HAS_MKSTEMP
 static char *
 unique_filename (path, prefix)
-
 char *path;
 char *prefix;
+#else
+static char *
+unique_filename (path, prefix, pFd)
+char *path;
+char *prefix;
+int *pFd;
+#endif
 
 {
+#ifndef HAS_MKSTEMP
 #ifndef X_NOT_POSIX
     return ((char *) tempnam (path, prefix));
 #else
@@ -746,6 +757,19 @@ char *prefix;
     }
     else
 	return (NULL);
+#endif
+#else 
+    char tempFile[PATH_MAX];
+    char *ptr;
+
+    sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
+    ptr = (char *)malloc(strlen(tempFile) + 1);
+    if (ptr != NULL) 
+    {
+	strcpy(ptr, tempFile);
+	*pFd =  mkstemp(ptr);
+    }
+    return ptr;
 #endif
 }
 
@@ -772,6 +796,9 @@ SmPointer clientData;
     int numVals, i;
     char yes = 1;
     static int first_time = 1;
+#ifdef HAS_MKSTEMP
+    int fd;
+#endif
 
     if (first_time)
     {
@@ -816,12 +843,19 @@ SmPointer clientData;
 	if (!path)
 	    path = ".";
     }
-
+#ifndef HAS_MKSTEMP
     if ((filename = unique_filename (path, ".twm")) == NULL)
 	goto bad;
 
     if (!(configFile = fopen (filename, "wb")))
 	goto bad;
+#else
+    if ((filename = unique_filename (path, ".twm", &fd)) == NULL)
+	goto bad;
+    
+    if (!(configFile = fdopen(fd, "wb"))) 
+	goto bad;
+#endif
 
     if (!write_ushort (configFile, SAVEFILE_VERSION))
 	goto bad;

@@ -1,6 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/42 1996/01/14 16:50:01 kaleb $
-XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.5 1996/01/16 15:08:33 dawes Exp $
+XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.6 1996/01/24 22:04:31 dawes Exp $
 
+
+
+#if HasMkstemp
+  EXTRA_DEFINES = -DHAS_MKSTEMP
+#endif
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) XkbClientDepLibs $(DEPXLIB)
 #ifndef OS2Architecture

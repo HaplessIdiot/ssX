@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.4 1997/03/27 18:37:26 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.5 1997/05/03 09:14:31 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -32,6 +32,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasLibCrypt		NO
 #define HasShm          	YES
 #define HasWChar32		YES
+#define HasMkstemp		YES
 
 /*
  * Compiler Features
