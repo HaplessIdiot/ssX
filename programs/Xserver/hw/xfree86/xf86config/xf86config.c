@@ -1230,7 +1230,7 @@ static int videomemory[] = {
 };
 
 /* Is this required? */
-#if XFREE86_VERSION >= 440
+#if XFREE86_VERSION >= 400
 #define NU_MODESTRINGS 13
 #else
 #if XFREE86_VERSION >= 330
@@ -1261,7 +1261,7 @@ static char *modestring[NU_MODESTRINGS] = {
 	"\"1800x1400\"",
 	"\"512x384\""
 #endif
-#if XFREE86_VERSION >= 440
+#if XFREE86_VERSION >= 400
 	,"\"1400x1050\""
 #endif
 };
