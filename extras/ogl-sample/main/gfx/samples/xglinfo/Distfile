@@ -1,0 +1,14 @@
+#
+# $Date: 2001/02/01 08:30:22 $ $Revision: 1.1 $
+# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/samples/xglinfo/Attic/Distfile,v 1.1 2001/02/01 08:30:22 alanh Exp $
+#
+
+DISTDIR_SI = /xc/contrib/GL/xglinfo
+
+DISTFILES_SI = \
+	global.h \
+	Imakefile \
+	stringConversion.c \
+	xglinfo.c \
+	xglinfo.man \
+	$(NULL)

@@ -1,0 +1,67 @@
+#
+# $Date: 2001/02/01 08:29:54 $ $Revision: 1.1 $
+# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/samples/redbook_2ed/Attic/Distfile,v 1.1 2001/02/01 08:29:54 alanh Exp $
+#
+
+DISTDIR_SI = /xc/contrib/GL/redbook_2ed
+
+DISTFILES_SI = \
+	aaindex.c \
+	aapoly.c \
+	aargb.c \
+	accanti.c \
+	accpersp.c \
+	alpha3D.c \
+	alpha.c \
+	bezcurve.c \
+	bezmesh.c \
+	bezsurf.c \
+	checker.c \
+	clip.c \
+	colormat.c \
+	cube.c \
+	dof.c \
+	double.c \
+	drawf.c \
+	feedback.c \
+	fogindex.c \
+	fog.c \
+	font.c \
+	hello.c \
+	image.c \
+	Imakefile \
+	jitter.h \
+	light.c \
+	lines.c \
+	list.c \
+	material.c \
+	mipmap.c \
+	model.c \
+	movelight.c \
+	pickdepth.c \
+	picksquare.c \
+	planet.c \
+	polyoff.c \
+	polys.c \
+	quadric.c \
+	robot.c \
+	scene.c \
+	select.c \
+	smooth.c \
+	stencil.c \
+	stroke.c \
+	surface.c \
+	teapots.c \
+	tesswind.c \
+	tess.c \
+	texbind.c \
+	texgen.c \
+	texprox.c \
+	texsub.c \
+	texturesurf.c \
+	torus.c \
+	trim.c \
+	unproject.c \
+	varray.c \
+	wrap.c \
+	$(NULL)
