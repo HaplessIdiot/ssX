@@ -89,6 +89,7 @@ extern int string_to_parser_range(char*, parser_range*, int);
 /* string must have at least 256 bytes */
 extern int parser_range_to_string(char*, parser_range*, int);
 
+static Bool newconfig;
 
 static chtype screen_attr = A_NORMAL;
 static chtype dialog_attr = A_REVERSE;
@@ -169,8 +170,12 @@ TextMode(void)
 		       7, 50, "  Ok  ", NULL, 0);
 	    }
 	}
-	if (XF86Config == NULL)
+	if (XF86Config == NULL) {
 	    XF86Config = (XF86ConfigPtr)XtCalloc(1, sizeof(XF86ConfigRec));
+	    newconfig = True;
+	}
+	else
+	    newconfig = False;
     }
 
     ClearScreen();
@@ -279,6 +284,25 @@ WriteXF86Config(void)
 
     if (xf86config == NULL)
 	return (-1);
+
+    if (newconfig) {
+	if (XF86Config->conf_modules == NULL) {
+	    static char *modules[] = {"xie", "pex5", "glx", "dri", "dbe",
+				      "record", "extmod", "type1"};
+	    XF86LoadPtr load;
+	    int i;
+
+	    XF86Config->conf_modules = (XF86ConfModulePtr)
+		XtCalloc(1, sizeof(XF86ConfModuleRec));
+
+	    for (i = 0; i < sizeof(modules) / sizeof(modules[0]); i++) {
+		load = (XF86LoadPtr)XtCalloc(1, sizeof(XF86LoadRec));
+		load->load_name = XtNewString(modules[i]);
+		XF86Config->conf_modules->mod_load_lst =
+		    xf86addModule(XF86Config->conf_modules->mod_load_lst, load);
+	    }
+	}
+    }
 
     if (!xf86writeConfigFile(xf86config, XF86Config)) {
 	char msg[1024];
@@ -1156,6 +1180,7 @@ CardConfig(void)
 	char label[32];
 
 	device = (XF86ConfDevicePtr)XtCalloc(1, sizeof(XF86ConfDeviceRec));
+	device->dev_chipid = device->dev_chiprev = device->dev_irq = -1;
 	XmuSnprintf(label, sizeof(label), "Card%d", nlist ? nlist - 2 : 0);
 	ClearScreen();
 	refresh();
@@ -1268,7 +1293,12 @@ CardConfig(void)
     }
     if (busid) {
 	XtFree(device->dev_busid);
-	device->dev_busid = busid;
+	if (*busid)
+	    device->dev_busid = busid;
+	else {
+	    device->dev_busid = NULL;
+	    XtFree(busid);
+	}
     }
     XtFree(device->dev_driver);
     device->dev_driver = XtNewString(driver);
@@ -2118,7 +2148,7 @@ LayoutConfig(void)
 	ClearScreen();
 	refresh();
 	Dialog("Layout configuration",
-	       (nmouses > 0 && nkeyboards > 0) ?
+	       (nmouses > 1 && nkeyboards > 1) ?
 	       "As you have only one screen configured, I can now finish "
 	       "creating this Layout configuration."
 		:
