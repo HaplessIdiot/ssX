@@ -93,4 +93,12 @@ typedef struct _Picture		*PicturePtr;
 /* 1bpp formats */
 #define PICT_a1		PICT_FORMAT(1,PICT_TYPE_A,1,0,0,0)
 
+#define FixedToInt(f)	(int) ((f) >> 8)
+#define IntToFixed(i)	((Fixed) (i) << 8)
+#define FixedE		((Fixed) 1)
+#define Fixed1		(IntToFixed(1))
+#define Fixed1minusE	(Fixed1 - FixedE)
+#define FixedCeil(f)	(((f) + Fixed1minusE) & ~Fixed1MinusE)
+#define FixedFloor(f)	((f) & ~Fixed1MinusE)
+
 #endif /* _PICTURE_H_ */

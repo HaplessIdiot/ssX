@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.3 2000/09/20 00:09:17 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.4 2000/10/02 05:25:45 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -40,6 +40,7 @@ typedef struct _DirectFormat {
 
 typedef struct _PictFormat {
     CARD32	    id;
+    CARD32	    format;	    /* except bpp */
     unsigned char   type;
     unsigned char   depth;
     DirectFormatRec direct;
@@ -178,6 +179,9 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp);
 PictFormatPtr
 PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual);
 
+PictFormatPtr
+PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 format);
+    
 Bool
 PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
