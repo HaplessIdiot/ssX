@@ -377,7 +377,7 @@ typedef struct {
     int			chtvtype;
     int                 NonDefaultPAL;
     unsigned short	tvx, tvy;
-    unsigned char	p2_01, p2_02, p2_2d;
+    unsigned char	p2_01, p2_02, p2_1f;
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
     BOOLEAN		CRT1gamma, CRT2gamma;
@@ -617,7 +617,6 @@ typedef struct {
     int			tvxpos;
     int			tvypos;
     int			SiS6326Flags;		/* SiS6326 TV settings */
-    int			sis6326antiflicker;
     int			sis6326enableyfilter;
     int			sis6326yfilterstrong;
     int			sis6326tvplug;
@@ -632,7 +631,7 @@ typedef struct {
     int                 NonDefaultPAL;
     unsigned long       lockcalls;		/* Count unlock calls for debug */
     unsigned short	tvx, tvy;		/* Backup TV position registers */
-    unsigned char	p2_01, p2_02, p2_2d;    /* Backup TV position registers */
+    unsigned char	p2_01, p2_02, p2_1f;    /* Backup TV position registers */
     unsigned short      tvx1, tvx2, tvx3, tvy1; /* Backup TV position registers */
     BOOLEAN		ForceCursorOff;
     BOOLEAN		HaveCustomModes;

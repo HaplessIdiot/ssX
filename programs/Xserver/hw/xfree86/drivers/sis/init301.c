@@ -6986,7 +6986,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
   USHORT      resindex, CRT2Index;
 #endif
   USHORT      modeflag, resinfo, crt2crtc;
-  ULONG       longtemp, tempeax, tempebx, temp2, tempecx;
+  ULONG       longtemp, tempeax;
 #ifdef SIS300
   const UCHAR atable[] = {
                  0xc3,0x9e,0xc3,0x9e,0x02,0x02,0x02,
@@ -7373,7 +7373,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
      }
   }
 
-  if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {     
+  if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
      tempbx = SiS_Pr->SiS_VDE;
      if((SiS_Pr->SiS_VBInfo & SetCRT2ToTV) && (!(SiS_Pr->SiS_HiVision & 0x03))) {
         tempbx >>= 1;
@@ -7385,7 +7385,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
      SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x46,temp);
      temp = tempbx & 0x00FF;
      SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x47,temp);	/* tv gatingno */
-     if(HwDeviceExtension->jChipType >= SIS_315H) {	/* TW: 650/30xLV 1.10.6s */
+     if(HwDeviceExtension->jChipType >= SIS_315H) {
         if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
            tempax = 0;
            if(SiS_Pr->SiS_HiVision & 0x03) {
@@ -7400,8 +7400,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
 
   tempbx &= 0x00FF;
   if(!(modeflag & HalfDCLK)) {
-     tempcx = SiS_Pr->SiS_VGAHDE;
-     if(tempcx >= SiS_Pr->SiS_HDE) {
+     if(SiS_Pr->SiS_VGAHDE >= SiS_Pr->SiS_HDE) {
         tempbx |= 0x2000;
         tempax &= 0x00FF;
      }
@@ -7412,7 +7411,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
   if(SiS_Pr->SiS_VBInfo & (SetCRT2ToTV - SetCRT2ToHiVisionTV)) {
      if(!(SiS_Pr->SiS_HiVision & 0x03)) {
         if(SiS_Pr->SiS_VGAHDE >= 1024) {
-           if((!(modeflag & HalfDCLK)) || (HwDeviceExtension->jChipType < SIS_315H)) {   /* TW: This check not in 630/301B */
+           if((!(modeflag & HalfDCLK)) || (HwDeviceExtension->jChipType < SIS_315H)) {
               tempcx = 0x1920;
               if(SiS_Pr->SiS_VGAHDE >= 1280) {
                  tempcx = 0x1420;
@@ -7425,25 +7424,17 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
 
   if(!(tempbx & 0x2000)) {
      if(modeflag & HalfDCLK) {
-        tempcx = (tempcx & 0xFF00) | (((tempcx & 0x00FF) << 1) & 0xff);
+        tempcx = (tempcx & 0xFF00) | ((tempcx << 1) & 0x00FF);
      }
-     push1 = tempbx;
-     tempeax = SiS_Pr->SiS_VGAHDE;
-     tempebx = (tempcx & 0xFF00) >> 8;
-     longtemp = tempeax * tempebx;
-     tempecx = tempcx & 0x00FF;
-     longtemp /= tempecx;
-     longtemp <<= 0x0d;
+     longtemp = (SiS_Pr->SiS_VGAHDE * ((tempcx & 0xFF00) >> 8)) / (tempcx & 0x00FF);
+     longtemp <<= 13;
      if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
      	longtemp <<= 3;
      }
-     tempecx = SiS_Pr->SiS_HDE;
-     temp2 = longtemp % tempecx;
-     tempeax = longtemp / tempecx;
-     if(temp2 != 0) tempeax++;
+     tempeax = longtemp / SiS_Pr->SiS_HDE;
+     if(longtemp % SiS_Pr->SiS_HDE) tempeax++;
      tempax = (USHORT)tempeax;
-     tempbx = push1;
-     tempcx = (tempcx & 0xff00) | (((tempax & 0xFF00) >> 8) >> 5);
+     tempcx = (tempcx & 0xFF00) | ((tempax & 0xFF00) >> (8 + 5));
      tempbx |= (tempax & 0x1F00);
      tempax = ((tempax & 0x00FF) << 8) | (tempax & 0x00FF);
   }
@@ -7458,6 +7449,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
      if(tempbx & 0x2000) temp = 0;
      temp |= 0x18;
      SiS_SetRegANDOR(SiS_Pr->SiS_Part2Port,0x46,0xE0,temp);
+
      if(SiS_Pr->SiS_VBInfo & SetPALTV) {
         tempbx = 0x0382;
         tempcx = 0x007e;
@@ -7469,10 +7461,8 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
      SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x4B,temp);
      temp = (tempcx & 0x00FF) ;
      SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x4C,temp);
-     tempbx &= 0x03FF;
-     temp = (tempcx & 0xFF00) >> 8;
-     temp = (temp & 0x0003) << 2;
-     temp |= (tempbx >> 8);
+     temp = (tempcx & 0x0300) >> (8 - 2);
+     temp |= ((tempbx >> 8) & 0x03);
      if(HwDeviceExtension->jChipType < SIS_315H) {
         SiS_SetReg1(SiS_Pr->SiS_Part2Port,0x4D,temp);
      } else {
@@ -7692,7 +7682,6 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr, USHORT ModeNo
 	}
      }
 
-     /* TW: 650/30xLV 1.10.6s: */
      /* !!! This is a duplicate, done for LCDA as well - see above */
      if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
         if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) {

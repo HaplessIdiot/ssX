@@ -2886,7 +2886,7 @@ SISPutImage(
 
    /* copy data */
    if((pSiS->XvUseMemcpy) || (totalSize < 16)) {
-      memcpy(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
+      xf86memcpy(pSiS->FbBase + pPriv->bufAddr[pPriv->currentBuf], buf, totalSize);
    } else {
       unsigned long i;
       CARD32 *src = (CARD32 *)buf;
