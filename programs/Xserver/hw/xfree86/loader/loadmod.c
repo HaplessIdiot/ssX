@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.59 2001/01/06 21:29:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.60 2001/01/22 21:32:36 dawes Exp $ */
 
 /*
  *
@@ -542,7 +542,7 @@ static Bool
 CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 				const XF86ModReqInfo *req)
 {
-	int vercode[3];
+	int vercode[4];
 	char verstr[4];
 	long ver = data->xf86version;
 	int errtype = 0;
@@ -551,21 +551,35 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 			data->modname ? data->modname : "UNKNOWN!",
 			data->vendor ? data->vendor : "UNKNOWN!");
 
-	verstr[1] = verstr[3] = 0;
-	verstr[2] = (ver & 0x1f) ? (ver & 0x1f) + 'a' - 1 : 0;
-	ver >>= 5;
-	verstr[0] = (ver & 0x1f) ? (ver & 0x1f) + 'A' - 1 : 0;
-	ver >>= 5;
-	vercode[2] = ver & 0x7f;
-	ver >>= 7;
-	vercode[1] = ver & 0x7f;
-	ver >>= 7;
-	vercode[0] = ver;
-	xf86ErrorF("\tcompiled for %d.%d", vercode[0], vercode[1]);
-	if (vercode[2] != 0)
-		xf86ErrorF(".%d", vercode[2]);
-	xf86ErrorF("%s%s, module version = %d.%d.%d\n", verstr, verstr + 2,
-			data->majorversion, data->minorversion, data->patchlevel);
+	if (ver < 40000000) {
+		/* 4.0.x and earlier */
+		verstr[1] = verstr[3] = 0;
+		verstr[2] = (ver & 0x1f) ? (ver & 0x1f) + 'a' - 1 : 0;
+		ver >>= 5;
+		verstr[0] = (ver & 0x1f) ? (ver & 0x1f) + 'A' - 1 : 0;
+		ver >>= 5;
+		vercode[2] = ver & 0x7f;
+		ver >>= 7;
+		vercode[1] = ver & 0x7f;
+		ver >>= 7;
+		vercode[0] = ver;
+		xf86ErrorF("\tcompiled for %d.%d", vercode[0], vercode[1]);
+		if (vercode[2] != 0)
+			xf86ErrorF(".%d", vercode[2]);
+		xf86ErrorF("%s%s, module version = %d.%d.%d\n", verstr, verstr + 2,
+				data->majorversion, data->minorversion, data->patchlevel);
+	} else {
+		vercode[0] = ver / 10000000;
+		vercode[1] = (ver / 100000) % 100;
+		vercode[2] = (ver / 1000) % 100;
+		vercode[3] = ver % 1000;
+		xf86ErrorF("\tcompiled for %d.%d.d", vercode[0], vercode[1],
+					vercode[2]);
+		if (vercode[3] != 0)
+			xf86ErrorF(".%d", vercode[3]);
+		xf86ErrorF(", module version = %d.%d.%d\n", data->majorversion,
+					data->minorversion, data->patchlevel);
+	}
 
     if (data->moduleclass)
 		xf86ErrorFVerb(2, "\tModule class: %s\n", data->moduleclass);

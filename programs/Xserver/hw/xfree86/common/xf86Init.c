@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.173 2000/12/01 00:24:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.174 2001/01/27 18:20:45 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1554,7 +1554,7 @@ ddxUseMsg()
 #define OSVENDOR ""
 #endif
 #ifndef PRE_RELEASE
-#define PRE_RELEASE (XF86_VERSION_BETA || XF86_VERSION_ALPHA)
+#define PRE_RELEASE XF86_VERSION_SNAP
 #endif
 
 static void
@@ -1569,9 +1569,9 @@ xf86PrintBanner()
     "(http://www.XFree86.Org/cvs)\n");
 #endif
   ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
-					XF86_VERSION_SUBMINOR);
-#if XF86_VERSION_ALPHA > 0
-  ErrorF("%c", 'a' + XF86_VERSION_ALPHA - 1);
+					XF86_VERSION_PATCH);
+#if XF86_VERSION_SNAP > 0
+  ErrorF(".%d", XF86_VERSION_SNAP);
 #endif
 
 #ifdef XF86_CUSTOM_VERSION

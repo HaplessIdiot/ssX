@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.343 2001/01/20 21:08:56 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.344 2001/01/27 18:19:53 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -8,12 +8,82 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.343 2001/01/20 21:08:56 herrb Exp $
  */
 XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
+
+/* Get and set version information. */
+
+#include "version.def"
+/*
+ * As of the development trunk after 4.0.2, XFree86 versions are
+ * M.m.P.s, and XFree86Version is:
+ *
+ *    M * 10000000 + m * 100000 + P * 1000 + s
+ *
+ * See xc/programs/Xserver/hw/xfree86/doc/Versions for further details.
+ *
+ * From 3.9.15 to 4.0.x, XFree86 release versions are X.Y.Z, and
+ * XFree86Version is:
+ *
+ *    X * 1000 + Y * 100 + Z
+ *
+ * For the 3.3.x branch, the versions are X.Y.Z.W, with XFree86Version
+ * calculated as:
+ *
+ *    X * 1000 + Y * 100 + Z * 10 + W
+ *
+ */
+#ifndef XFree86Version
+#ifdef XF86_VERSION_CURRENT
+# define XFree86Version XF86_VERSION_CURRENT
+#endif
+#endif
+
+#ifndef XFree86VersionString
+#ifdef XF86_VERSION_MAJOR
+#if XF86_VERSION_SNAP == 0
+#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_PATCH
+#else
+#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_PATCH.XF86_VERSION_SNAP
+#endif
+#endif
+#endif
+
+#ifndef XFree86DateString
+#ifdef XF86_DATE
+#define XFree86DateString XF86_DATE
+#endif
+#endif
+
+/* This must be defined here for boostrapping purposes */
+#ifndef XFree86Version
+# define XFree86Version	0
+#endif
+
+#ifndef XVendorString
+# define XVendorString	"The XFree86 Project, Inc"
+#endif
+
+#ifndef XVendorRelease
+# define XVendorRelease	XFree86Version
+#endif
+
+#ifndef XVendorManVersionString
+#define XVendorManVersionString Version XFree86VersionString
+#endif
+
+#ifndef XVendorManNameString
+#define XVendorManNameString XFree86
+#endif
+
 /*
  * This enables some settings for developers.
  */
 
 #ifndef XFree86Devel
-# define XFree86Devel		NO
+# if (XFree86Version % 1000)
+#  define XFree86Devel		YES
+# else
+#  define XFree86Devel		NO
+# endif
 #endif
 
 #ifndef BuildDebug
@@ -1170,63 +1240,6 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 
 #ifndef OtherIConfigFiles
 # define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
-#endif
-
-#include "version.def"
-/*
- * As of 3.9.15, XFree86 release versions are X.Y.Z, and XFree86Version is:
- *
- *    X * 1000 + Y * 100 + Z
- *
- * For the 3.3.x branch, the versions are X.Y.Z.W, with XFree86Version
- * calculated as:
- *
- *    X * 1000 + Y * 100 + Z * 10 + W
- *
- */
-#ifndef XFree86Version
-#ifdef XF86_VERSION_NUMERIC
-# define XFree86Version \
-	((((XF86_VERSION_MAJOR * 100) + XF86_VERSION_MINOR) * 10) + \
-	    XF86_VERSION_SUBMINOR)
-#endif
-#endif
-
-#ifndef XFree86VersionString
-#ifdef XF86_VERSION_MAJOR
-#if XF86_VERSION_ALPHA == 0
-#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_SUBMINOR
-#else
-#define XFree86VersionString XF86_VERSION_MAJOR.XF86_VERSION_MINOR.XF86_VERSION_SUBMINOR.XF86_VERSION_ALPHA
-#endif
-#endif
-#endif
-
-#ifndef XFree86DateString
-#ifdef XF86_DATE
-#define XFree86DateString XF86_DATE
-#endif
-#endif
-
-/* This must be defined here for boostrapping purposes */
-#ifndef XFree86Version
-# define XFree86Version	/**/
-#endif
-
-#ifndef XVendorString
-# define XVendorString	"The XFree86 Project, Inc"
-#endif
-
-#ifndef XVendorRelease
-# define XVendorRelease	XFree86Version
-#endif
-
-#ifndef XVendorManVersionString
-#define XVendorManVersionString Version XFree86VersionString
-#endif
-
-#ifndef XVendorManNameString
-#define XVendorManNameString XFree86
 #endif
 
 #ifndef UseRgbTxt
