@@ -1,10 +1,4 @@
-XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:57:03 kaleb $
-
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/wabs/Imakefile,v 3.4 1996/02/04 09:17:11 dawes Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -21,14 +15,14 @@ OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
        cir_blt16.o cir_solid.o cir_line.o cir_seg.o cir_orect.o \
        cir_orect16.o cir_orect32.o linearline.o cir_pc98.o
 
-DEFINES = -DPSZ=8 -DPC98 -DPC98_WAB
+DEFINES = -DPSZ=8 -DPC98 -DPC98_WABEP
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-           -I$(SERVERSRC)/cfb -I../../wabs \
+           -I$(SERVERSRC)/cfb -I../../wabep \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(INCLUDESRC) \
 	   -I$(XF86SRC)/vga256/drivers/cirrus
 #endif

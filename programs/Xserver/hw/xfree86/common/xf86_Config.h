@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.42 1996/01/30 15:25:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.43 1996/02/04 09:06:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -121,11 +121,13 @@ typedef struct {
 #define VENDOR		10007
 #define DASH		10008
 #define COMMA		10009
+#define MODULE		10010
 
 #ifdef INIT_CONFIG
 static SymTabRec TopLevelTab[] = {
-  { SECTION,   "section" },
-  { -1,         "" },
+    { SECTION,   "section" },
+    { MODULE,	 "module" },
+    { -1,         "" },
 };
 #endif /* INIT_CONFIG */
 

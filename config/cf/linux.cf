@@ -1,8 +1,12 @@
 XCOMM platform:  $XConsortium: linux.cf /main/17 1996/01/22 17:36:52 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.35 1996/02/04 08:53:41 dawes Exp $
+
+#ifndef LinuxElfDefault
+#define LinuxElfDefault		NO
+#endif
 
 #ifndef UseElfFormat
-#define UseElfFormat		NO
+#define UseElfFormat		LinuxElfDefault
 #endif
 
 #ifndef OSName
@@ -23,10 +27,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawe
 #endif
 #ifndef OSTeenyVersion
 #define OSTeenyVersion		13
-#endif
-
-#ifndef LinuxElfDefault
-#define LinuxElfDefault		NO
 #endif
 
 #define HasGcc			YES
@@ -84,6 +84,11 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawe
 #define AsmDefines		-DUSE_GAS
 #endif
 #endif
+#if UseElfFormat
+#ifndef BuildDynamicLoading
+#define BuildDynamicLoading	YES
+#endif
+#endif
 #define CppCmd			/lib/cpp
 #define YaccCmd			bison -y
 #define LexCmd			flex -l
@@ -91,6 +96,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawe
 #define PreProcessCmd		CcCmd -E
 #define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
 #define LdCombineFlags		-r
+#define LdPostLib		/* Never needed */
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt -m486
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
@@ -99,7 +105,11 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.34 1996/01/28 07:27:36 dawe
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#if BuildDynamicLoading
+#define ServerExtraSysLibs	-rdynamic -ldl $(CBRT) -lm
+#else
 #define ServerExtraSysLibs	$(CBRT) -lm
+#endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 
 /* Some of these man page defaults are overriden in the above OS sections */

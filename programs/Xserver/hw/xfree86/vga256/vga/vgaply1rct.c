@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.2 1996/01/13 12:22:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.3 1996/02/04 09:15:15 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -77,7 +77,7 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     }
 #endif
     origin = *((int *) &pDrawable->x);
-#if defined(PC98_WAB)
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     origin -= (origin & 0x4000) << 1;
 #else
     origin -= (origin & 0x8000) << 1;
@@ -150,7 +150,7 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	if (x1 != dx2)
 	    yFlip++;
 	if (yFlip != 2) 
-#if defined(PC98_WAB)
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 	    clip = 0x4000;
 #else
 	    clip = 0x8000;
@@ -159,7 +159,7 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     if (y == maxy)
 	return;
 
-#if defined(PC98_WAB)
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     if (clip & 0x40004000)
 #else
     if (clip & 0x80008000)

@@ -1,50 +1,50 @@
 /* $XConsortium: bank.s,v 1.5 95/06/19 18:59:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.2 1994/10/29 22:45:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.3 1996/02/04 09:12:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Roell makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that the name of Thomas Roell not be used in advertising or publicity
+ * pertaining to distribution of the software without specific, written prior
+ * permission.  Thomas Roell makes no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without express or
+ * implied warranty.
  *
  * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT
+ * SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
- * These are here the very lowlevel VGA bankswitching routines.
- * The segment to switch to is passed via %eax. Only %eax and %edx my be used
- * without saving the original contents.
+ * These are low-level (S)VGA bank switching routines.  The segment to switch
+ * to is passed via %eax.  Only %eax and %edx may be used without saving the
+ * original contents.
  *
  * WHY ASSEMBLY LANGUAGE ???
  *
- * These routines must be callable by other assembly routines. But I don't
- * want to have the overhead of pushing and poping the normal stack-frame.
+ * These routines must be callable by other assembly routines.  But I don't
+ * want to have the overhead of pushing and poping the normal stack frame.
  *
  * Enhancements to support most VGA Wonder cards (including Plus and XL)
  * by Doug Evans, dje@sspiff.UUCP.
  * ALL DISCLAIMERS APPLY TO MY ADDITIONS AS WELL.
  *
- * Changes to enhance support for V3, Mach32 and Mach64 boards
+ * Changes to enhance support for V3, Mach32 and Mach64 adapters
  * by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  * ALL DISCLAIMERS APPLY TO THESE CHANGES ALSO.
  *
- * V3 boards use a 18800 chip and are single-banked.  Bank selection is done
+ * V3 adapters use a 18800 chip and are single-banked.  Bank selection is done
  * with bits 1-4 of extended register 1CE, index B2.
  *
- * Boards V4 and V5 have the 18800-1 chip. Boards Plus and XL have the 28800
- * chip. Page selection is done with Extended Register 1CE, Index B2.
+ * Adapters V4 and V5 have the 18800-1 chip.  Adapters Plus and XL have the
+ * 28800 chip.  Page selection is done with Extended Register 1CE, Index B2.
  * The format is:
  *
  * D7-D5 = Read page select bits 2-0
@@ -54,18 +54,23 @@
  * D0    = Reserved (18800-1)
  * D0    = Read page select bit 3 (28800)
  *
- * Also, for those boards with more than 1M of video memory (such as some
- * Mach32's and Mach64's), additional page select bits are defined in Extended
- * Register 1CE, Index AE, as follows:
+ * Also, for those adapters with more than 1M of video memory (such as some
+ * Mach32's), additional page select bits are defined in Extended Register 1CE,
+ * Index AE, as follows:
  *
  * D7-D4 = Reserved
  * D3-D2 = Read page select bits 5-4
  * D1-D0 = Page select bits 5-4
+ *
+ * This module also supplies banking functions for use with a Mach64's small
+ * dual paged apertures.  These functions are used to emulate a standard VGA
+ * aperture.
  */
 
 #include "assyntax.h"
+#include "regati.h"
 
-	FILE("atibank.s")
+	FILE("ati_bank.s")
 	AS_BEGIN
 
 /**
@@ -77,7 +82,7 @@
 /*
  * We have a mirror for the segment register because an I/O read costs so much
  * more time, that is better to keep the value of it in memory.  However, this
- * won't do for a V3 board because there are other bits in the segment select
+ * won't do for a V3 adapter because there are other bits in the segment select
  * register to worry about.  Also, the driver needs to reset this mirror during
  * mode save and restore functions.
  */
@@ -93,8 +98,8 @@ Segment:
 	SEG_TEXT
 
 /*
- * Start with the functions used with 28800+ chips.  This includes all the
- * Mach's.
+ * Start with the functions used with all controllers in the 28800 and 68800
+ * series, and some in the 88800 series.
  */
 
 	ALIGNTEXT4
@@ -248,4 +253,69 @@ GLNAME(ATIV3SetReadWrite):
 	DEC_W	(DX)
 	MOV_B	(CONST(0xB2),AL)
 	OUT_W
+	RET
+
+/*
+ * The functions used with a Mach64's small dual paged apertures.
+ */
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATIMach64SetRead)
+GLNAME(ATIMach64SetRead):
+	SHL_B	(CONST(1),AL)
+	MOV_B	(AL,AH)
+	INC_B	(AH)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		AND_B	(CONST(0x3F),AL)
+		SHL_W	(CONST(2),AX)
+#	endif
+	MOV_W	(CONST((MEM_VGA_RP_SEL)),DX)	/* For now */
+	OUT_B
+	INC_W	(DX)
+	INC_W	(DX)
+	MOV_B	(AH,AL)
+	OUT_B
+	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATIMach64SetWrite)
+GLNAME(ATIMach64SetWrite):
+	SHL_B	(CONST(1),AL)
+	MOV_B	(AL,AH)
+	INC_B	(AH)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		AND_B	(CONST(0x3F),AL)
+		SHL_W	(CONST(2),AX)
+#	endif
+	MOV_W	(CONST((MEM_VGA_WP_SEL)),DX)	/* For now */
+	OUT_B
+	INC_W	(DX)
+	INC_W	(DX)
+	MOV_B	(AH,AL)
+	OUT_B
+	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATIMach64SetReadWrite)
+GLNAME(ATIMach64SetReadWrite):
+	SHL_B	(CONST(1),AL)
+	MOV_B	(AL,AH)
+	INC_B	(AH)
+#	if defined(MONOVGA) || defined(XF86VGA16)
+		AND_B	(CONST(0x3F),AL)
+		SHL_W	(CONST(2),AX)
+#	endif
+	MOV_W	(CONST((MEM_VGA_RP_SEL)),DX)	/* For now */
+	OUT_B
+	INC_W	(DX)
+	INC_W	(DX)
+	XCHG_B	(AH,AL)
+	OUT_B
+	XCHG_B	(AH,AL)
+	MOV_W	(CONST((MEM_VGA_WP_SEL)),DX)	/* For now */
+	OUT_B
+	INC_W	(DX)
+	INC_W	(DX)
+	MOV_B	(AH,AL)
+	OUT_B
 	RET

@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c /main/181 1995/12/05 16:47:01 mor $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.5 1996/01/05 13:11:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.6 1996/01/24 21:57:32 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -3257,25 +3257,21 @@ char *__XOS2RedirRoot(char *fname)
 
     root = (char*)getenv("X11ROOT");
     if (root==0 || 
-	(fname[1]==':' && tolower(fname[0]) >= 'a' && tolower(fname[0] <= 'z') ||
-        (strlen(fname)+strlen(root)+2) > 300))
+	(fname[1]==':' && isalpha(fname[0])) ||
+        (strlen(fname)+strlen(root)+2) > 300)
 	return fname;
     sprintf(redirname,"%s%s",root,fname);
-    return access(redirname,R_OK)==0 ? redirname : fname;
+    return redirname;
 }
 
-/* (hv) something for my own debugging purposes */
-
-int __XOS2XtransDebug = 0;
-
-void __XOS2SetXtransDebugMode(int newmode)
+char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
 {
-	__XOS2XtransDebug = newmode;
-}
-
-int __XOS2GetXtransDebugMode(void)
-{
-	return __XOS2XtransDebug;
+    /* this first constructs a name from a format and up to three
+     * components, then adds a path
+     */
+    char buf[300];
+    sprintf(buf,format,arg1,arg2,arg3);
+    return __XOS2RedirRoot(buf);
 }
 
 #endif

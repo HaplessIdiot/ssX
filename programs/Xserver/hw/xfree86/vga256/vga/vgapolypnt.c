@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.2 1996/01/13 12:22:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.3 1996/02/04 09:15:17 dawes Exp $ */
 
 #include "vga256.h"
 
@@ -59,7 +59,7 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 {
     register long   pt;
     register long   c1, c2;
-#if defined(PC98_WAB)
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     register unsigned long   ClipMask = 0x40004000;
 #else
     register unsigned long   ClipMask = 0x80008000;
@@ -94,7 +94,7 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	}
     }
     off = *((int *) &pDrawable->x);
-#if defined(PC98_WAB)
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     off -= (off & 0x4000) << 1;
 #else
     off -= (off & 0x8000) << 1;

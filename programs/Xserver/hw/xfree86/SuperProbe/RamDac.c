@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.14 1996/01/26 09:09:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.15 1996/02/04 08:57:05 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -51,7 +51,8 @@ static Bool S3_TVP3020Check __STDCARGS((int *));
 static Bool S3_ATT498Check __STDCARGS((int *));
 static Bool S3_STG1700Check __STDCARGS((int *));
 static Bool S3_GENDACCheck __STDCARGS((int *));
-static void CheckMach32_64 __STDCARGS((int, int *));
+static void CheckMach32 __STDCARGS((int, int *));
+static void CheckMach64 __STDCARGS((int, int *));
 
 #ifdef __STDC__
 static void ReadPelReg(Byte Index, Byte *Pixel)
@@ -699,15 +700,11 @@ int *RamDac;
 	return(Found);
 }
 
-static void CheckMach32_64(ChipSet, RamDac)
+static void CheckMach32(ChipSet, RamDac)
 int ChipSet;
 int *RamDac;
 {
 	Word Port = CONFIG_STATUS_1;
-
-	if (ChipSet >= CHIP_ATI88800CX)
-		Port = CONFIG_STATUS_0;
-
 	EnableIOPorts(1, &Port);
 
 	switch ((inpw(Port) & 0x0E00) >> 9)
@@ -756,6 +753,86 @@ int *RamDac;
 	}
 
 	DisableIOPorts(1, &Port);
+	return;
+}
+
+static void CheckMach64(ChipSet, RamDac)
+int ChipSet;
+int *RamDac;
+{
+	Word Port[2] = {DAC_CNTL, SCRATCH_REG1};
+	EnableIOPorts(2, Port);
+
+	switch (((inpl(DAC_CNTL) & 0x00070000) |
+		 (inpl(SCRATCH_REG1) & 0x0000F000)) >> 12)
+	{
+	case 0x00:  case 0x01:  case 0x02:  case 0x03:
+	case 0x04:  case 0x05:  case 0x06:  case 0x07:
+	case 0x08:  case 0x09:  case 0x0A:  case 0x0B:
+	case 0x0C:  case 0x0D:  case 0x0E:  case 0x0F:
+		*RamDac = DAC_ATI_CT_ET;
+		break;
+	case 0x10:
+		*RamDac = DAC_IBMRGB525;
+		break;
+	case 0x20:
+		*RamDac = DAC_ATI68875;
+		break;
+	case 0x27:
+	case 0x57:
+		*RamDac = DAC_TVP3025;
+		break;
+	case 0x30:
+		*RamDac = DAC_STANDARD;
+		break;
+	case 0x40:
+		*RamDac = DAC_ATIMISC24;
+		break;
+	case 0x41:
+		*RamDac = DAC_ATT491;
+		break;
+	case 0x42:
+		*RamDac = DAC_SIERRA24;
+		break;
+	case 0x43:
+		*RamDac = DAC_MU9C1880;
+		break;
+	case 0x44:
+		*RamDac = DAC_IMSG174;
+		break;
+	case 0x50:
+	case 0x51:
+		*RamDac = DAC_ATI68860;
+		break;
+	case 0x60:
+		*RamDac = DAC_STG1700;
+		break;
+	case 0x61:
+		*RamDac = DAC_ATT498;
+		break;
+	case 0x70:
+		*RamDac = DAC_STG1702;
+		break;
+	case 0x71:
+		*RamDac = DAC_SIERRA24;
+		break;
+	case 0x72:
+		*RamDac = DAC_ATT498;
+		break;
+	case 0x73:
+		*RamDac = DAC_STG1703;
+		break;
+	case 0x74:
+		*RamDac = DAC_CH8398;
+		break;
+	case 0x75:
+		*RamDac = DAC_ATT408;
+		break;
+	default:
+		break;
+	}
+
+	DisableIOPorts(2, Port);
 	return;
 }
 
@@ -810,7 +887,10 @@ int *RamDac;
 	    }
 	    else if (!Crippled_Mach64)
 	    {
-		CheckMach32_64(Chipset, RamDac);
+		if (Chipset <= CHIP_ATI88800GXC)
+		    CheckMach32(Chipset, RamDac);
+		else
+		    CheckMach64(Chipset, RamDac);
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }

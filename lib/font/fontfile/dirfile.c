@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.0 1995/11/16 11:02:52 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.1 1996/01/05 13:14:09 dawes Exp $ */
 #ifndef lint
 static char *rid=
     "$XConsortium: dirfile.c /main/12 1995/12/08 19:02:23 gildea $";
@@ -74,7 +74,12 @@ FontFileReadDirectory (directory, pdir)
 
 #ifdef FONTDIRATTRIB
     /* Check for font directory attributes */
+#ifndef __EMX__
     if (ptr = strchr(directory, ':')) {
+#else
+    /* OS/2 path might start with a drive letter, don't clip this */
+    if (ptr = strchr(directory+2, ':')) {
+#endif
 	strncpy(dir_path, directory, ptr - directory);
 	dir_path[ptr - directory] = '\0';
     } else {
@@ -218,7 +223,7 @@ AddFileNameAliases(dir)
  * "font name \"With Double Quotes\" \\ and \\ back-slashes"
  * works just fine.
  *
- * A line beginning with a # denotes a newline-terminated comment.
+ * A line beginning with a ! denotes a newline-terminated comment.
  */
 
 /*
@@ -449,6 +454,7 @@ lexc(file)
     case '\t':
 	charClass = WHITE;
 	break;
+    case '\r':
     case '\n':
 	charClass = NL;
 	break;

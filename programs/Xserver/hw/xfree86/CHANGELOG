@@ -1,3 +1,35 @@
+XFree86 3.1.2Ca (9 February 1996)
+324. Xlib prototyping improvements/fixes (Thomas E. Dickey).
+323. OS/2 updates (Holger Veit and Sebastien Marineau).
+322. Allow the eraser button of a wacom stylus to act as a third button
+     if the WacomEraser device isn't enabled (Frederic Lepied).
+321. Allow XInput device support to be dynamically loaded.  This is for
+     Linux only so far (Frederic Lepied).
+320. Major updates to the ati driver, including support for the newer
+     Mach64 chips and clocks, preliminary support or pre- VGAWonder V3
+     adapters and generic VGA.  The default chipset name has been changed
+     back to "ati" from "vgawonder" (Marc Aurele La France).
+319. Properly implement xf86DisableIOPrivs and xf86Disable/EnableInterrupts
+     for Linux (Marc Aurele La France).
+318. ATI doc updates (Marc Aurele La France).
+317. Remove ati.test.c, and move the functionality into the ati driver
+     (Marc Aurele La France).
+316. Remove the "undoc_clocks" option (Marc Aurele La France).
+315. Make all I/O ports in compiler.h unsigned short, and all values
+     unsigned char/short/int (Marc Aurele La France).
+314. Updates Mach64 probing for SuperProbe (Marc Aurele La France).
+313. Make the Linux ELF/a.out default build the same as the system default
+     (Marc Aurele La France).
+312. Delete uneeded cmd/sh files in xfree98/vga256 (X98 core team).
+311. Fix problems with XF98_WABS (X98 core team).
+310. update xfree98/etc/Imakefile, and remove the *.sed files and their
+     related imake rules (X98 core team).
+309. XF98_WABEP server added (for Melco WAB-EP) (X98 core team).
+308. Trident driver updates including some clock probing fixes
+     (Alan Hourihane).
+307. Fix 2MB Trio64 display error problem due to incorrect parameter
+     calculation (Harald Koenig).
+
 XFree86 3.1.2Ca (5 February 1996)
 306. Improve S3 Diamond BIOS detection.
 305. XC fix-trackers to seq-4104 (mostly a new XKB snapshot).

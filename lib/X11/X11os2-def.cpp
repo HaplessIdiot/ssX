@@ -1,10 +1,10 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/X11os2-def.cpp,v 3.0 1996/01/24 21:57:27 dawes Exp $ */
 LIBRARY X11
-DESCRIPTION "X11R6 XFree86 libX11.dll for OS/2 EMX09B VERSION=6.0"
+DESCRIPTION "X11R6 XFree86 libX11.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
-	SINGLE NONSHARED
+	MULTIPLE NONSHARED
 STACKSIZE 32768
 EXPORTS
 	XSaveContext  @ 1
@@ -952,8 +952,7 @@ EXPORTS
 	_XimXTransGetConnectionNumber  @ 940
 	_XimXTransGetHostname  @ 945
 	__XOS2RedirRoot @ 950
-	__XOS2SetXtransDebugMode @ 951
-	__XOS2GetXtransDebugMode @ 952
+	__XOS2RedirRoot1 @ 951
 #if defined(XKB)
 	XkbIgnoreExtension @ 1000
 	XkbOpenDisplay @ 1001
@@ -1100,4 +1099,5 @@ EXPORTS
 	XkbAddGeomOverlay @ 1147
 	XkbComputeShapeTop @ 1148
 	XkbFindOverlayForKey @ 1149
+	XkbAllocGeomKeyAliases @ 1150
 #endif

@@ -29,7 +29,7 @@ correspond to what the card/program expects.
 In the case of a card which has a fully
 programmable clock (like the SS24) the ordering is not important, and the
 values chosen can be anything in the range supported by the card.  Up to
-32 clock values may be specified.
+128 clock values may be specified.
 
 The server calls the external program when it needs to change the clock
 frequency.  This occurs at startup and when switching modes with the
@@ -73,7 +73,7 @@ The idea of using an external clock program was suggested by
 Frank Klemm &lt;<it>pfk@rz.uni-jena.de</it>&gt;
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.2 1995/01/28 16:03:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.3 1996/02/04 09:08:36 dawes Exp $
 
 
 

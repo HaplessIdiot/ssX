@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.72 1996/01/31 11:47:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.73 1996/02/04 09:06:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -861,30 +861,45 @@ xf86Config (vtopen)
 
   
   while ((token = xf86GetToken(TopLevelTab)) != EOF) {
-    if (xf86GetToken(NULL) != STRING)
-      xf86ConfigError("section name string expected");
-
-    if ( StrCaseCmp(val.str, "files") == 0 ) {
-      configFilesSection();
-    } else if ( StrCaseCmp(val.str, "serverflags") == 0 ) {
-      configServerFlagsSection();
-    } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
-      configKeyboardSection();
-    } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
-      configPointerSection();
-    } else if ( StrCaseCmp(val.str, "device") == 0 ) {
-      configDeviceSection();
-    } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
-      configMonitorSection();
-    } else if ( StrCaseCmp(val.str, "screen") == 0 ) {
-      configScreenSection();
+      switch(token) {
+      case SECTION:
+	  if (xf86GetToken(NULL) != STRING)
+	      xf86ConfigError("section name string expected");
+	  
+	  if ( StrCaseCmp(val.str, "files") == 0 ) {
+	      configFilesSection();
+	  } else if ( StrCaseCmp(val.str, "serverflags") == 0 ) {
+	      configServerFlagsSection();
+	  } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
+	      configKeyboardSection();
+	  } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
+	      configPointerSection();
+	  } else if ( StrCaseCmp(val.str, "device") == 0 ) {
+	      configDeviceSection();
+	  } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
+	      configMonitorSection();
+	  } else if ( StrCaseCmp(val.str, "screen") == 0 ) {
+	      configScreenSection();
 #ifdef XINPUT
-    } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
-      configExtendedInputSection(&val);
+	  } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
+	      configExtendedInputSection(&val);
 #endif
-    } else {
-      xf86ConfigError("not a recognized section name");
-    }
+	  } else {
+	      xf86ConfigError("not a recognized section name");
+	  }
+	  break;
+	  
+      case MODULE:
+	  {
+	      void	*(*xf86LoadModule(const char*));
+	      
+	      if (xf86GetToken(NULL) != STRING)
+		  xf86ConfigError("module file name expected");
+	      
+	      xf86LoadModule(val.str);
+	  }
+	  break;
+      }
   }
   
   fclose(configFile);

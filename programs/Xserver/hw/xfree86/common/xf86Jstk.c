@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.5 1996/01/24 22:01:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.6 1996/02/04 09:06:14 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -519,5 +519,16 @@ DeviceAssocRec joystick_assoc =
   "joystick",                   /* config_section_name */
   xf86JstkAllocate              /* device_allocate */
 };
+
+#ifdef DYNAMIC_MODULE
+/*
+ * entry point of dynamic loading
+ */
+void
+init_module()
+{
+    AddDeviceAssoc(&joystick_assoc);
+}
+#endif
 
 /* end of xf86JstkLnx.c */

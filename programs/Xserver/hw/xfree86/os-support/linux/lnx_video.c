@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.3 1995/12/17 05:03:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.4 1996/02/04 09:10:03 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -350,7 +350,9 @@ int ScreenNum;
 
 void xf86DisableIOPrivs()
 {
-	return;		/* The OS takes care of everything */
+	if (ExtendedEnabled)
+		iopl(0);
+	return;	
 }
 
 /***************************************************************************/
@@ -359,10 +361,30 @@ void xf86DisableIOPrivs()
 
 Bool xf86DisableInterrupts()
 {
-	return(TRUE);
+	if (!ExtendedEnabled)
+		if (iopl(3))
+			return (FALSE);
+#ifdef __GNUC__
+	__asm__ __volatile__("cli");
+#else
+	asm("cli");
+#endif
+	if (!ExtendedEnabled)
+		iopl(0);
+	return (TRUE);
 }
 
 void xf86EnableInterrupts()
 {
+	if (!ExtendedEnabled)
+		if (iopl(3))
+			return;
+#ifdef __GNUC__
+	__asm__ __volatile__("sti");
+#else
+	asm("sti");
+#endif
+	if (!ExtendedEnabled)
+		iopl(0);
 	return;
 }

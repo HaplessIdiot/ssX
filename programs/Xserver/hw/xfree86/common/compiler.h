@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.6 1995/12/21 11:44:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.7 1996/02/04 09:06:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,19 +58,19 @@ extern unsigned int inb();
 extern unsigned int inw();
 extern unsigned int inl();
 #if NeedFunctionPrototypes
-extern unsigned char rdinx(unsigned short, unsigned char);
-extern void wrinx(unsigned short, unsigned char, unsigned char);
-extern void modinx(unsigned short, unsigned char, unsigned char, unsigned char);
-extern int testrg(unsigned short, unsigned char);
-extern int textinx2(unsigned short, unsigned char, unsigned char);
-extern int textinx(unsigned short, unsigned char);
+extern unsigned char rdinx(unsigned short int, unsigned char);
+extern void wrinx(unsigned short int, unsigned char, unsigned char);
+extern void modinx(unsigned short int, unsigned char, unsigned char, unsigned char);
+extern int testrg(unsigned short int, unsigned char);
+extern int testinx2(unsigned short int, unsigned char, unsigned char);
+extern int testinx(unsigned short int, unsigned char);
 #else /* NeedFunctionProtoypes */
 extern unsigned char rdinx();
 extern void wrinx();
 extern void modinx();
 extern int testrg();
-extern int textinx2();
-extern int textinx();
+extern int testinx2();
+extern int testinx();
 #endif /* NeedFunctionProtoypes */
 
 #else /* NO_INLINE */
@@ -88,8 +88,8 @@ extern int textinx();
 
 static __inline__ void
 outb(port, val)
-short port;
-char val;
+unsigned short int port;
+unsigned char val;
 {
    __asm__ __volatile__("outb %0,%1" : :"a" (val), "d" (port));
 }
@@ -97,23 +97,23 @@ char val;
 
 static __inline__ void
 outw(port, val)
-short port;
-short val;
+unsigned short int port;
+unsigned short int val;
 {
    __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
 outl(port, val)
-short port;
-int val;
+unsigned short int port;
+unsigned int val;
 {
    __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
 inb(port)
-short port;
+unsigned short int port;
 {
    unsigned char ret;
    __asm__ __volatile__("inb %1,%0" :
@@ -124,9 +124,9 @@ short port;
 
 static __inline__ unsigned int
 inw(port)
-short port;
+unsigned short int port;
 {
-   unsigned short ret;
+   unsigned short int ret;
    __asm__ __volatile__("inw %1,%0" :
        "=a" (ret) :
        "d" (port));
@@ -135,7 +135,7 @@ short port;
 
 static __inline__ unsigned int
 inl(port)
-short port;
+unsigned short int port;
 {
    unsigned int ret;
    __asm__ __volatile__("inl %1,%0" :
@@ -148,16 +148,16 @@ short port;
 
 static __inline__ void
 _outb(port, val)
-short port;
-char val;
+unsigned short int port;
+unsigned char val;
 {
      __asm__ __volatile__("outb %0,%1" ::"a" (val), "d" (port));
 }
 
 static __inline__ void
 _outw(port, val)
-short port;
-short val;
+unsigned short int port;
+unsigned short int val;
 {
      __asm__ __volatile__("outw %0,%1" ::"a" (val), "d" (port));
 }
@@ -165,7 +165,7 @@ short val;
 
 static __inline__ unsigned int
 _inb(port)
-short port;
+unsigned short int port;
 {
      unsigned char ret;
      __asm__ __volatile__("inb %1,%0" :
@@ -176,7 +176,7 @@ short port;
 
 static __inline__ unsigned int
 _inw(port)
-short port;
+unsigned short int port;
 {
      unsigned char ret;
      __asm__ __volatile__("inw %1,%0" :
@@ -185,9 +185,9 @@ short port;
      return ret;
 }
 
-#if defined(PC98_WAB)||defined(PC98_GANB_WAP)
-static __inline__ short
-port_convert(short port)
+#if defined(PC98_WAB) ||  defined(PC98_GANB_WAP)
+static __inline__ unsigned short
+port_convert(unsigned short port)
 {
      port <<= 8;
      port &= 0x7f00; /* Mask 0111 1111 0000 0000 */
@@ -196,17 +196,27 @@ port_convert(short port)
 }
 #endif /* PC98_WAB || PC98_GANB_WAP */
 
+#if defined(PC98_WABEP)
+static __inline__ unsigned short
+port_convert(unsigned short port)
+{
+     port &= 0x7f; /* Mask 0000 0000 0111 1111 */
+     port |= 0x0f00;
+     return port;
+}
+#endif /* PC98_WABEP */
+
 #ifdef PC98_NKVNEC
 #ifdef	PC98_NEC_CIRRUS2
-static __inline__ short
-port_convert(short port)
+static __inline__ unsigned short
+port_convert(unsigned short port)
 {
      port = (port & 0xf) + ((port & 0xf0) << 4) + 0x0050;
      return port;
 }
 #else
-static __inline__ short
-port_convert(short port)
+static __inline__ unsigned short
+port_convert(unsigned short port)
 {
      port = (port & 0xf) + ((port & 0xf0) << 4) + 0x00a0;
      return port;
@@ -214,7 +224,7 @@ port_convert(short port)
 #endif /* PC98_NEC_CIRRUS2 */
 #endif /* PC98_NKVNEC */
 
-#if defined(PC98_PW)||defined(PC98_XKB)||defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC) || defined(PC98_PWLB)
 #define PW_PORT 0x600
 extern short chipID;
 #if NeedFunctionPrototypes
@@ -229,10 +239,11 @@ extern unsigned short _port_tbl[];
 static __inline__ void
 outb(port, val)
 unsigned short port;
-char val;
+unsigned char val;
 {
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -248,10 +259,11 @@ char val;
 static __inline__ void
 outw(port, val)
 unsigned short port;
-short val;
+unsigned short val;
 {
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -267,10 +279,11 @@ short val;
 static __inline__ void
 outl(port, val)
 unsigned short port;
-int val;
+unsigned int val;
 {
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -289,8 +302,9 @@ unsigned short port;
 {
    unsigned char ret;
 
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -312,8 +326,9 @@ unsigned short port;
 {
    unsigned short ret;
 
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -335,8 +350,9 @@ unsigned short port;
 {
    unsigned int ret;
 
-#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
-    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WAB) || \
+    defined(PC98_WABEP) || defined(PC98_PW) || defined(PC98_XKB) || \
+    defined(PC98_NEC)
    unsigned short tmp;
    tmp=port_convert(port);
    port=tmp;
@@ -358,31 +374,31 @@ unsigned short port;
 
 static __inline__ void
 outb(port, val)
-     short port;
-     char val;
+unsigned short int port;
+unsigned char val;
 {
   __asm__ __volatile__("out%B0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
 outw(port, val)
-     short port;
-     short val;
+unsigned short int port;
+unsigned short int val;
 {
   __asm__ __volatile__("out%W0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ void
 outl(port, val)
-     short port;
-     unsigned int val;
+unsigned short int port;
+unsigned int val;
 {
   __asm__ __volatile__("out%L0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
 inb(port)
-     short port;
+unsigned short int port;
 {
   unsigned char ret;
   __asm__ __volatile__("in%B0 (%1)" :
@@ -393,9 +409,9 @@ inb(port)
 
 static __inline__ unsigned int
 inw(port)
-     short port;
+unsigned short int port;
 {
-  unsigned short ret;
+  unsigned short int ret;
   __asm__ __volatile__("in%W0 (%1)" :
 		   "=a" (ret) :
 		   "d" (port));
@@ -404,7 +420,7 @@ inw(port)
 
 static __inline__ unsigned int
 inl(port)
-     short port;
+unsigned short int port;
 {
   unsigned int ret;
   __asm__ __volatile__("in%L0 (%1)" :
@@ -419,42 +435,42 @@ inl(port)
 
 static __inline__ void
 outb(port, val)
-     short port;
-     char val;
+unsigned short int port;
+unsigned char val;
 {
 }
 
 static __inline__ void
 outw(port, val)
-     short port;
-     short val;
+unsigned short int port;
+unsigned short int val;
 {
 }
 
 static __inline__ void
 outl(port, val)
-     short port;
-     int val;
+unsigned short int port;
+unsigned int val;
 {
 }
 
 static __inline__ unsigned int
 inb(port)
-     short port;
+unsigned short int port;
 {
   return 0;
 }
 
 static __inline__ unsigned int
 inw(port)
-     short port;
+unsigned short int port;
 {
   return 0;
 }
 
 static __inline__ unsigned int
 inl(port)
-     short port;
+unsigned short int port;
 {
   return 0;
 }
@@ -503,10 +519,10 @@ inl(port)
  */
 static __inline__ unsigned char 
 #ifdef __STDC__
-rdinx(unsigned short port, unsigned char ind)
+rdinx(unsigned short int port, unsigned char ind)
 #else
 rdinx(port, ind)
-unsigned short port;
+unsigned short int port;
 unsigned char ind;
 #endif
 {
@@ -521,10 +537,10 @@ unsigned char ind;
  */
 static __inline__ void 
 #ifdef __STDC__
-wrinx(unsigned short port, unsigned char ind, unsigned char val)
+wrinx(unsigned short int port, unsigned char ind, unsigned char val)
 #else
 wrinx(port, ind, val)
-unsigned short port;
+unsigned short int port;
 unsigned char ind, val;
 #endif
 {
@@ -538,11 +554,11 @@ unsigned char ind, val;
  */
 static __inline__ void
 #ifdef __STDC__
-modinx(unsigned short port, unsigned char ind, 
+modinx(unsigned short int port, unsigned char ind, 
        unsigned char mask, unsigned char new)
 #else
 modinx(port, ind, mask, new)
-unsigned short port;
+unsigned short int port;
 unsigned char ind, mask, new;
 #endif
 {
@@ -559,10 +575,10 @@ unsigned char ind, mask, new;
 
 static __inline__ int
 #ifdef __STDC__
-testrg(unsigned short port, unsigned char mask)
+testrg(unsigned short int port, unsigned char mask)
 #else
 tstrg(port, mask)
-unsigned short port;
+unsigned short int port;
 unsigned char mask;
 #endif
 {
@@ -583,10 +599,10 @@ unsigned char mask;
  */
 static __inline__ int
 #ifdef __STDC__
-testinx2(unsigned short port, unsigned char ind, unsigned char mask)
+testinx2(unsigned short int port, unsigned char ind, unsigned char mask)
 #else
 testinx2(port, ind, mask)
-unsigned short port;
+unsigned short int port;
 unsigned char ind, mask;
 #endif
 {
@@ -607,10 +623,10 @@ unsigned char ind, mask;
  */
 static __inline__ int
 #ifdef __STDC__
-testinx(unsigned short port, unsigned char ind)
+testinx(unsigned short int port, unsigned char ind)
 #else
 testinx(port, ind, mask)
-unsigned short port;
+unsigned short int port;
 unsigned char ind;
 #endif
 {

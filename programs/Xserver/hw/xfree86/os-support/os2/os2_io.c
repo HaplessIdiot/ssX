@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.1 1995/06/17 12:18:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.3 1996/01/30 15:26:32 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -168,7 +168,6 @@ int xf86MouseOn()
 	APIRET rc;
 	USHORT nbut;
 
-
 ErrorF ("Calling MouseOn, a bad thing.... \n");
 	if (serverGeneration == 1) {
 		rc = MouOpen((PSZ)NULL,(PHMOU)&fd);
@@ -306,7 +305,7 @@ dummy_timeout.tv_usec=0;
 	     }
 
 	     /* Now we check for activity on mouse/kbd handles */
-	     if(!os2MouseQueueQuery()){
+	     if((!os2MouseQueueQuery()) || (!os2KbdQueueQuery()) || xf86Info.vtRequestsPending){
 		      /* Mouse queue not empty */
 		  time_remaining=max_time-elapsed;
 		  timeout->tv_sec=time_remaining/1000;
@@ -315,23 +314,10 @@ dummy_timeout.tv_usec=0;
 	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
 	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
 	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
-		  return(0);  /* Will this work? */
+		  return(0);  /* Not to confuse the networking with mouse/kbd */
 	     }
 		  		   
-	     /* And finally, check for keyboard events */
-
-	     if(!os2KbdQueueQuery()){
-		  /* Chars are in the queue */
-		  time_remaining=max_time-elapsed;
-		  timeout->tv_sec=time_remaining/1000;
-		  timeout->tv_usec=(time_remaining % 1000) *1000;
-		      /* Put the masks from select() into the original pointers */
-	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
-	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
-	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
-		  return(0);
-	     }
-        if(((j++)%5)==0) usleep(1000);  /* Give CPU to other apps */
+	    if(((j++)%5)==0) usleep(1000);  /* Give CPU to other apps */
 	} while((elapsed=(GetTimeInMillis()-start_time))<max_time);
 		/* Well, we have time'd out */
 

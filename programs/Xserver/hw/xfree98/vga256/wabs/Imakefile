@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:56:20 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.2 1996/01/24 22:04:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.3 1996/02/04 09:17:22 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -71,7 +71,7 @@ STARTUPDEFINES = -DDIRTY_STARTUP
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
-NormalAsmObjectRuleWABS()
+NormalAsmObjectRule()
 
 NormalLintTarget($(SRCS))
 
@@ -120,14 +120,14 @@ LinkSourceFile(vgazerarc.c,$(XF86SRC)/vga256/vga)
 
 #define EnhancedDir $(XF86SRC)/vga256/enhanced
 
-ObjectFromSpecialAsmSourceWABS(BitBlt,EnhancedDir/suBitBlt,NullParameter)
-ObjectFromSpecialAsmSourceWABS(BitBlt2,EnhancedDir/suBBlt2,NullParameter)
-ObjectFromSpecialAsmSourceWABS(Box,EnhancedDir/suBox,NullParameter)
-ObjectFromSpecialAsmSourceWABS(Line,EnhancedDir/suLine,NullParameter)
-ObjectFromSpecialAsmSourceWABS(VHLine,EnhancedDir/suVHLine,NullParameter)
-ObjectFromSpecialAsmSourceWABS(vgabres,EnhancedDir/fLineBres,NullParameter)
-ObjectFromSpecialAsmSourceWABS(vgalineH,EnhancedDir/fLineH,NullParameter)
-ObjectFromSpecialAsmSourceWABS(vgalineV,EnhancedDir/fLineV,NullParameter)
+ObjectFromSpecialAsmSource(BitBlt,EnhancedDir/suBitBlt,NullParameter)
+ObjectFromSpecialAsmSource(BitBlt2,EnhancedDir/suBBlt2,NullParameter)
+ObjectFromSpecialAsmSource(Box,EnhancedDir/suBox,NullParameter)
+ObjectFromSpecialAsmSource(Line,EnhancedDir/suLine,NullParameter)
+ObjectFromSpecialAsmSource(VHLine,EnhancedDir/suVHLine,NullParameter)
+ObjectFromSpecialAsmSource(vgabres,EnhancedDir/fLineBres,NullParameter)
+ObjectFromSpecialAsmSource(vgalineH,EnhancedDir/fLineH,NullParameter)
+ObjectFromSpecialAsmSource(vgalineV,EnhancedDir/fLineV,NullParameter)
 ObjectFromSpecialSource(vgaBanks,EnhancedDir/gBanks,NullParameter)
 LinkSourceFile(fBitBlt.s,EnhancedDir)
 LinkSourceFile(fFill.s,EnhancedDir)
@@ -174,10 +174,10 @@ ObjectFromSpecialSource(vgatileoddG,vgatileodd,-DMROP=0)
 ObjectFromSpecialSource(vgaply1rctC,vgaply1rct,-DRROP=GXcopy)
 ObjectFromSpecialSource(vgaply1rctG,vgaply1rct,-DRROP=GXset)
 
-ObjectFromSpecialAsmSourceWABS(fFillAnd,fFill,-DRROP=GXAnd)
-ObjectFromSpecialAsmSourceWABS(fFillCopy,fFill,-DRROP=GXCopy)
-ObjectFromSpecialAsmSourceWABS(fFillOr,fFill,-DRROP=GXOr)
-ObjectFromSpecialAsmSourceWABS(fFillXor,fFill,-DRROP=GXXor)
+ObjectFromSpecialAsmSource(fFillAnd,fFill,-DRROP=GXAnd)
+ObjectFromSpecialAsmSource(fFillCopy,fFill,-DRROP=GXCopy)
+ObjectFromSpecialAsmSource(fFillOr,fFill,-DRROP=GXOr)
+ObjectFromSpecialAsmSource(fFillXor,fFill,-DRROP=GXXor)
 
 InstallLinkKitNonExecFile(vga.h,$(XF98LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(vgaBank.h,$(XF98LINKKITDIR)/drivers)

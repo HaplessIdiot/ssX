@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 2.31 93/09/04 19:58:26 rws Exp $
+XCOMM $XFree86$
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -25,6 +26,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
   SYS_LIBRARIES = MathLibrary
 
+#ifndef OS2Architecture
 ComplexProgramTarget(x11perf)
 
 all:: x11perfcomp
@@ -37,3 +39,7 @@ InstallNamedProg(perfboth.sh,perfboth,$(PERFLIB))
 InstallNamedProg(perfratio.sh,perfratio,$(PERFLIB))
 InstallNamedProg(Xmark.sh,Xmark,$(BINDIR))
 InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
+#else
+all::
+
+#endif

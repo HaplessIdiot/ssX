@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.26 1996/01/26 09:09:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.27 1996/02/04 09:14:19 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -178,7 +178,6 @@ int tridentDACtype = -1;
 int tridentBusType = -1;
 Bool tridentUseLinear = FALSE;
 Bool tridentTGUIProgrammableClocks = FALSE;
-Bool tridentTGUIAlternateClocks = FALSE;
 Bool tridentIsTGUI = FALSE;
 Bool tridentLinearOK = FALSE;
 static unsigned char DRAMspeed;
@@ -292,60 +291,34 @@ TVGA8900ClockSelect(no)
 	switch(no)
 	{
 	case CLK_REG_SAVE:
-		if (tridentTGUIAlternateClocks)
-			save1 = inb(vgaIOBase + 0x0B);
-		else
-		{
 		save1 = inb(0x3CC);
 		if (TVGAchipset != TVGA8800CS)
 		{
-			outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-			outb(0x3C5, 0x00);
-			outb(0x3C4, 0x0B);
+			outw(0x3C4, 0x000B);	/* Switch to Old Mode */
 			inb(0x3C5);		/* Now to New Mode */
 			outb(0x3C4, 0x0D); save2 = inb(0x3C5);
-			if ( (numClocks == 16) &&
-			     (TVGAchipset != TVGA9000) &&
-			     (TVGAchipset != TVGA9000i) )
+			if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
 			{
-				outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-				outb(0x3C5, 0x00);
+				outw(0x3C4, 0x000B);	/* Switch to Old Mode */
 				outb(0x3C4, 0x0E); save3 = inb(0x3C5);
 			}
 		}
-		}
 		break;
 	case CLK_REG_RESTORE:
-		if (tridentTGUIAlternateClocks)
-			outb(vgaIOBase + 0x0B, save1);
-		else
-		{
 		outb(0x3C2, save1);
 		if (TVGAchipset != TVGA8800CS)
 		{
-			outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-			outb(0x3C5, 0x00);
-			outb(0x3C5, 0x0B);
+			outw(0x3C4, 0x000B);	/* Switch to Old Mode */
 			inb(0x3C5);		/* Now to New Mode */
-			outb(0x3C4, 0x0D);
-			outb(0x3C5, save2 << 8); 
-			if ( (numClocks == 16) &&
-			     (TVGAchipset != TVGA9000) &&
-			     (TVGAchipset != TVGA9000i) )
+			outw(0x3C4, (save2 << 8) | 0x0D); 
+			if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
 			{
-				outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-				outb(0x3C5, 0x00);
-				outb(0x3C4, 0x0E);
-				outb(0x3C5, save3 << 8);
+				outw(0x3C4, 0x000B);	/* Switch to Old Mode */
+				outw(0x3C4, (save3 << 8) | 0x0E);
 			}
-		}
 		}
 		break;
 	default:
-		if (tridentTGUIAlternateClocks)
-			outb(vgaIOBase + 0x0B, no);
-		else
-		{
 		/*
 	 	 * Do CS0 and CS1
 	 	 */
@@ -356,9 +329,7 @@ TVGA8900ClockSelect(no)
 			/* 
 	 	 	 * Go to New Mode for CS2 and TVGA9000 CS3.
 	 	 	 */
-			outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-			outb(0x3C5, 0x00);
-			outb(0x3C4, 0x0B);
+			outw(0x3C4, 0x000B);	/* Switch to Old Mode */
 			inb(0x3C5);		/* Now to New Mode */
 			outb(0x3C4, 0x0D);
 			/*
@@ -367,27 +338,24 @@ TVGA8900ClockSelect(no)
 			 */
 			temp = inb(0x3C5) & 0xF8;
 			temp |= (no & 0x04) >> 2;
-			if (TVGAchipset == TVGA9000)
+			if ( (TVGAchipset == TVGA9000) ||
+			     (TVGAchipset == TVGA9000i) )
 			{
 				temp &= ~0x40;
 				temp |= (no & 0x08) << 3;
 			}
 			outb(0x3C5, temp);
-			if ( (numClocks == 16) &&
-			     (TVGAchipset != TVGA9000) &&
-			     (TVGAchipset != TVGA9000i) )
+			if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
 			{
 				/* 
 				 * Go to Old Mode for CS3.
 			 	 */
-				outb(0x3C4, 0x0B);	/* Switch to Old Mode */
-				outb(0x3C5, 0x00);
+				outw(0x3C4, 0x000B);	/* Switch to Old Mode */
 				outb(0x3C4, 0x0E);
 				temp = inb(0x3C5) & 0xEF;
 				temp |= (no & 0x08) << 1;
 				outb(0x3C5, temp);
 			}
-		}
 		}
 	}
 	return(TRUE);
@@ -630,7 +598,6 @@ TVGA8900Probe()
 	case TGUI9400CXi:
 		tridentIsTGUI = TRUE;	
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
-		tridentTGUIAlternateClocks = FALSE;	/* No Alternate */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
 #if 0
@@ -643,7 +610,6 @@ TVGA8900Probe()
 	case TGUI9420:					/* CHECK ME ! */
 	case TGUI9420DGi:
 		tridentIsTGUI = TRUE;			
-		tridentTGUIAlternateClocks = FALSE;
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
@@ -1181,15 +1147,9 @@ TVGA8900Restore(restore)
 	 * Restore Old Mode Control Registers 1 & 2.
 	 * Not needed for TGUI - we have a programmable clock.
 	 */
-	if (tridentTGUIAlternateClocks)
+	if (!tridentTGUIProgrammableClocks) 
 	{
-		outb(vgaIOBase + 0x0B, restore->AltClock);
-	}
-	else
-	{
-	    if (!tridentTGUIProgrammableClocks) 
-	    {
-		if (numClocks == 16)
+		if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
 		{
 			if (restore->std.NoClock >= 0)
 			{
@@ -1199,7 +1159,6 @@ TVGA8900Restore(restore)
 			}
 		}
 		outw(0x3C4, ((restore->OldMode2) << 8) | 0x0D);
-	    }
 	}
 
 	/*
@@ -1343,18 +1302,11 @@ TVGA8900Save(save)
 	 * Save Old Mode Control Registers 1 & 2.
 	 * Not needed for TGUI - we have a programmable clock.
 	 */
-	if (tridentTGUIAlternateClocks)
+	if (!tridentTGUIProgrammableClocks)
 	{
-		save->AltClock = inb(vgaIOBase + 0x0B);
-	}
-	else
-	{
-	    if (!tridentTGUIProgrammableClocks)
-	    {
-		if (numClocks == 16)
+		if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
 			outb(0x3C4, 0x0E); save->OldMode1 = inb(0x3C5); 
 		outb(0x3C4, 0x0D); save->OldMode2 = inb(0x3C5); 
-	    }
 	}
 	
 	/*
@@ -1694,21 +1646,15 @@ TVGA8900Init(mode)
 
 	if (new->std.NoClock >= 0)
 	{
-		if (tridentTGUIAlternateClocks)
-			new->AltClock = new->std.NoClock;
-		else
 		if (tridentTGUIProgrammableClocks)
 			TGUISetClock(new->std.NoClock);
 		else
 		{
   			new->NewMode2 = (new->std.NoClock & 0x04) >> 2;
-			if (numClocks == 16)
-			{
-				if (TVGAchipset == TVGA9000)
-					new->NewMode2 |= (new->std.NoClock & 0x08) << 3;
-				else
-					new->OldMode1 = (new->std.NoClock & 0x08) << 1;
-			}
+			if (TVGAchipset == TVGA9000)
+				new->NewMode2 |= (new->std.NoClock & 0x08) << 3;
+			if (OFLG_ISSET(OPTION_16CLKS, &vga256InfoRec.options))
+				new->OldMode1 = (new->std.NoClock & 0x08) << 1;
 		}
 	}
         return(TRUE);

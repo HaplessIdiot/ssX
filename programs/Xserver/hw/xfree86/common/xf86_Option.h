@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.44 1996/01/12 14:33:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.45 1996/02/04 09:06:29 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -52,7 +52,6 @@ typedef struct {
 				       set of preset clocks is used */
 #define OPTION_HIBIT_HIGH	 5  /* Initial state of high order clock bit */
 #define OPTION_HIBIT_LOW	 6
-#define OPTION_UNDOC_CLKS	 7  /* ATI undocumented clocks */
 
 /* Laptop display options */
 #define OPTION_INTERN_DISP	10  /* Laptops - enable internal display (WD)*/
@@ -215,7 +214,6 @@ OptFlagRec xf86_OptionTab[] = {
   { "probe_clocks",	OPTION_PROBE_CLKS },
   { "hibit_high",	OPTION_HIBIT_HIGH },
   { "hibit_low",	OPTION_HIBIT_LOW },
-  { "undoc_clocks",	OPTION_UNDOC_CLKS },
 
   { "intern_disp",	OPTION_INTERN_DISP },
   { "extern_disp",	OPTION_EXTERN_DISP },

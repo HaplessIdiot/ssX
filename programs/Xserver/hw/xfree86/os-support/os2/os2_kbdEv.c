@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.1 1996/01/24 22:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.2 1996/01/30 15:26:34 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -88,7 +88,7 @@ int last_status;
 int lastShiftState;
 extern BOOL SwitchedToWPS;
 
-static void os2PostKbdEvent();
+void os2PostKbdEvent();
 
 int os2KbdQueueQuery()
 {
@@ -210,12 +210,7 @@ void xf86KbdEvents()
  *  ifdefs further (hv).
  */
 
-    
-
-    
-
-static void
-os2PostKbdEvent(scanCode, down)
+void os2PostKbdEvent(scanCode, down)
      unsigned scanCode;
      Bool down;
 {

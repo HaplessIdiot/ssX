@@ -1,5 +1,5 @@
 /* $XConsortium: fontfile.c,v 1.28 95/02/21 14:17:19 mor Exp $ */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.1 1995/06/20 14:22:11 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.2 1995/11/12 09:49:19 dawes Exp $ */
 
 /*
 
@@ -44,6 +44,13 @@ FontFileNameCheck (name)
     char    *name;
 {
 #ifndef NCD
+#ifdef __EMX__
+    /* OS/2 uses D:/... as a path name for fonts, so accept this as a valid
+     * path if it starts with a letter and a colon
+     */
+    if (isalpha(*name) && name[1]==':')
+        return TRUE;
+#endif
     return *name == '/';
 #else
     return ((strcmp(name, "built-ins") == 0) || (*name == '/'));

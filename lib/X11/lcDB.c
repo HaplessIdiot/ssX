@@ -1,5 +1,5 @@
 /* $XConsortium: lcDB.c /main/9 1995/12/01 11:53:25 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.0 1996/01/30 15:24:59 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -1139,12 +1139,7 @@ _XlcCreateLocaleDataBase(lcd)
 	return (XPointer)NULL;
     }
 #ifdef __EMX__
-    {
-	char *root = getenv("X11ROOT");
-	if (!root) root = "";
-	strcpy(pathname, root);
-	strcat(pathname, name);
-    }
+    strcpy(pathname,__XOS2RedirRoot(name));
 #else
     strcpy(pathname, name);
 #endif

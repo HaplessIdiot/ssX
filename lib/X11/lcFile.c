@@ -73,6 +73,12 @@ parse_line(line, argv, argsize)
 #define XLOCALEDIR "/usr/lib/X11/locale"
 #endif
 
+#ifndef __EMX__
+#define LC_PATHDELIM ':'
+#else
+#define LC_PATHDELIM ';'
+#endif
+
 static void
 xlocaledir(path)
     char *path;
@@ -84,10 +90,14 @@ xlocaledir(path)
     if(dir != NULL){
 	len = strlen(dir);
 	strcpy(p, dir);
-	p[len++] = ':';
+	p[len++] = LC_PATHDELIM;
 	p += len;
     }
+#ifndef __EMX__
     strcpy(p, XLOCALEDIR);
+#else
+    strcpy(p,__XOS2RedirRoot(XLOCALEDIR));
+#endif
 }
 
 static int
@@ -99,7 +109,7 @@ parse_path(path, argv, argsize)
     char *p = path;
     int i, n;
 
-    while((p = strchr(p, ':')) != NULL){
+    while((p = strchr(p, LC_PATHDELIM)) != NULL){
 	*p = ' ';	/* place space on delimter */
     }
     n = parse_line(path, argv, argsize);

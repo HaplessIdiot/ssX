@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.2 1996/01/14 13:35:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.3 1996/02/04 09:06:25 dawes Exp $ */
 
 #include "XI.h"
 #include "XIproto.h"
@@ -36,6 +36,7 @@
 
 extern InputInfo inputInfo;
 
+#ifndef DYNAMIC_MODULE
 #ifdef JOYSTICK_SUPPORT
 extern DeviceAssocRec   joystick_assoc;
 #endif
@@ -47,26 +48,15 @@ extern DeviceAssocRec   wacom_eraser_assoc;
 #ifdef ELOGRAPHICS_SUPPORT
 extern DeviceAssocRec	elographics_assoc;
 #endif
+#endif
 
 static int              num_devices;
 static LocalDevicePtr	*localDevices;
 static int              max_devices;
-static int              num_assoc;
 
-static DeviceAssocPtr   deviceAssoc[] =
-{
-#ifdef JOYSTICK_SUPPORT
-  &joystick_assoc,
-#endif
-#ifdef WACOM_SUPPORT
-  &wacom_stylus_assoc,
-  &wacom_cursor_assoc,
-  &wacom_eraser_assoc,
-#endif
-#ifdef ELOGRAPHICS_SUPPORT
-  &elographics_assoc,
-#endif
-};
+static DeviceAssocPtr   *deviceAssoc = NULL;
+static int		numAssoc = 0;
+static int		maxAssoc = 0;
 
 static SymTabRec XinputTab[] = {
   { ENDSECTION, "endsection"},
@@ -136,7 +126,20 @@ configExtendedInputSection(LexPtr       val)
   int           token;
   extern int    xf86GetToken(SymTabRec tab[]);
 
-  num_assoc = sizeof(deviceAssoc) / sizeof(DeviceAssocPtr);
+#ifdef DYNAMIC_MODULE
+# ifdef JOYSTICK_SUPPORT
+  AddDeviceAssoc(&joystick_assoc);
+# endif
+# ifdef WACOM_SUPPORT
+  AddDeviceAssoc(&wacom_stylus_assoc);
+  AddDeviceAssoc(&wacom_cursor_assoc);
+  AddDeviceAssoc(&wacom_eraser_assoc);
+# endif
+# ifdef ELOGRAPHICS_SUPPORT
+  AddDeviceAssoc(&elographics_assoc);
+# endif
+#endif
+
   num_devices = 0;
   max_devices = 3;
   localDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr)*max_devices);
@@ -150,7 +153,7 @@ configExtendedInputSection(LexPtr       val)
           if (xf86GetToken(NULL) != STRING)
             xf86ConfigError("SubSection name expected");
           
-          for(i=0; !found && i<num_assoc; i++)
+          for(i=0; !found && i<numAssoc; i++)
             {
               if (StrCaseCmp(val->str, deviceAssoc[i]->config_section_name) == 0)
                 {
@@ -179,6 +182,31 @@ configExtendedInputSection(LexPtr       val)
       else
         xf86ConfigError("Xinput keyword section expected");        
     }
+}
+
+/***********************************************************************
+ *
+ * AddDeviceAssoc --
+ * 
+ *	Add an association to the array deviceAssoc. This is needed to
+ * allow dynamic loading of devices to register themself.
+ *
+ ***********************************************************************
+ */
+void
+AddDeviceAssoc(DeviceAssocPtr	assoc)
+{
+    if (!deviceAssoc) {
+	maxAssoc = 5;
+	deviceAssoc = (DeviceAssocPtr*) xalloc(sizeof(DeviceAssocPtr)*maxAssoc);
+    } else {
+	if (maxAssoc == numAssoc) {
+	    maxAssoc *= 2;
+	    deviceAssoc = (DeviceAssocPtr*) xrealloc(deviceAssoc, sizeof(DeviceAssocPtr)*maxAssoc);
+	}
+    }
+    deviceAssoc[numAssoc] = assoc;
+    numAssoc++;
 }
 
 /***********************************************************************

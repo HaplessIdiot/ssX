@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.5 1996/01/26 10:27:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.6 1996/01/30 15:24:14 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -35,7 +35,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.5 1996/01/26 10:27:44 dawe
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) options -c  $*.c		@@\
 	$(MV) $@ dir\$@
 
-#define MakeDir(dir) if not exist dir $(MKDIRHIER) dir
+#define MakeDir(dir) $(MKDIRHIER) dir
 
 #define BuildIncludesTop(srclist)					@@\
 includes:: srclist							@@\
@@ -376,5 +376,11 @@ clean::									@@\
 /*#define CppSedMagic SedMagic*/
 #define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' -e 's/^XCOMM/#/g' -e 's/^XCOMM[^a-zA-Z0-9_]/#/g'
 
-/*#define CppSedMagic SedMagic*/
-#define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' -e 's/^XCOMM/#/g' -e 's/^XCOMM[^a-zA-Z0-9_]/#/g'
+#ifndef InstallNamedTargetNoClobber
+#define InstallNamedTargetNoClobber(step,srcname,flags,dest,dstname)	@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	if not exist $(subst /,\,$(DESTDIR)dest)\dstname $(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname
+
+#endif /* InstallNamedTargetNoClobber */
+

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.5 1995/09/22 07:06:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.6 1996/01/24 21:51:52 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -32,7 +32,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.5 1995/09/22 07:06:32 dawes E
 /* more directories */
 #define AdmDir		$(LIBDIR)/adm
 #define XAppLoadDir	$(LIBDIR)/app_defs
-
+        DESTDIR = $(X11ROOT)
 
 /* A set of standard defines: */
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \

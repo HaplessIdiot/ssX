@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.3 1996/01/13 12:22:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.4 1996/02/04 09:12:57 dawes Exp $ */
 /*
  * cir_alloc.c,v 1.2 1994/09/11 05:52:49 scooper Exp
  * 
@@ -147,7 +147,7 @@ void CirrusUploadPattern(pattern, width, height, vidaddr, srcpitch)
 	unsigned char *base;
 	/* Write the image to video memory at offset vidaddr. */
 	destaddr = vidaddr;
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 	CIRRUSSETWRITEB_WAB(destaddr, writebank);
 #else
 	CIRRUSSETWRITEB(destaddr, writebank);
@@ -160,7 +160,7 @@ void CirrusUploadPattern(pattern, width, height, vidaddr, srcpitch)
 			width
 			);
 		destaddr += width;
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 		CIRRUSCHECKWRITEB_WAB(destaddr, writebank);
 #else
 		CIRRUSCHECKWRITEB(destaddr, writebank);

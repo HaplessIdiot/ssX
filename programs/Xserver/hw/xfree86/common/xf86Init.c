@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.40 1996/01/30 15:25:55 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.41 1996/02/04 09:06:12 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -53,6 +53,11 @@ extern int xtest_command_key;
 #include "pc98_vers.h"
 #endif
 
+#ifdef __EMX__
+#define seteuid(x) /*nothing*/
+#define setruid(x) /*nothing*/
+#endif
+
 /* xf86Exiting is set while the screen is shutting down (even on a reset) */
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
@@ -84,6 +89,9 @@ extern double pow();
 #ifdef USE_XF86_SERVERLOCK
 extern void xf86UnlockServer();
 #endif
+#ifdef __EMX__
+extern void os2ServerVideoAccess();
+#endif
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -107,6 +115,9 @@ InitOutput(pScreenInfo, argc, argv)
   static unsigned long   generation = 0;
   int                    any_screens = 0;
    
+#ifdef __EMX__
+  os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
+#endif
 
   if (serverGeneration == 1) {
 
@@ -734,6 +745,10 @@ xf86CheckBeta()
   if (!(home = getenv("HOME")))
     home = "/";
   {
+    char homebuf[PATH_MAX];
+    strcpy(homebuf,home); /* getenv might return R/O memory, as with OS/2 */
+    home = homebuf;
+
     if (!(filename =
 	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(xf86ServerName) + 3)))
       showmessage = TRUE;
@@ -845,6 +860,7 @@ xf86CheckBeta()
     }
 
   if (writefile) {
+#if !defined(__EMX__)
 #if defined(SYSV) || defined(linux)
     /* Need to fork to change to ruid without loosing euid */
     if (getuid() != 0) {
@@ -877,6 +893,9 @@ xf86CheckBeta()
 #endif
     }
 #endif /* SYSV || linux */
+#else /* __EMX__ */
+    WRITE_BETA_FILE
+#endif /* __EMX__ */
   }
   if (filename) {
     DEALLOCATE_LOCAL(filename);

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.9 1996/01/06 05:22:31 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.10 1996/01/24 21:59:10 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -71,16 +71,7 @@ from the X Consortium.
 #define XTRANSDEBUG 2
  */
 
-#ifndef __EMX__
 #define XTRANSDEBUG 1
-#else
-#define XTRANSDEBUG 5
-#ifdef X11_t
-extern int __XOS2XtransDebug;
-#else
-#define __XOS2XtransDebug 1
-#endif
-#endif
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -450,31 +441,17 @@ static int is_numeric (
  */
 #if defined(XSERV_t) && defined(TRANS_SERVER)
 /* Use ErrorF() for the X server */
-#ifndef __EMX__
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
 			ErrorF(x+hack,a,b,c); \
 			errno=saveerrno; \
 			} else ((void)0)
 #else
-#define PRMSG(lvl,x,a,b,c)	if (__XOS2XtransDebug && lvl <= XTRANSDEBUG){ \
-			int hack= 0; \
-			ErrorF(x+hack,a,b,c); \
-			} else ((void)0)
-#endif /* __EMX__ */
-#else
-#ifndef __EMX__
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
 			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
 			errno=saveerrno; \
 			} else ((void)0)
-#else
-#define PRMSG(lvl,x,a,b,c)	if (__XOS2XtransDebug && lvl <= XTRANSDEBUG){ \
-			int hack= 0; \
-			fprintf(stdout, x+hack,a,b,c); fflush(stdout); \
-			} else ((void)0)
-#endif /* __EMX__ */
 #endif /* XSERV_t && TRANS_SERVER */
 #else
 #define PRMSG(lvl,x,a,b,c)	((void)0)

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: oscolor.c,v 1.23 94/04/17 20:27:04 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.0 1995/07/07 15:46:06 dawes Exp $ */
 
 #ifndef USE_RGB_TXT
 
@@ -240,7 +240,11 @@ OsInitColors()
       while(fgets(line, sizeof(line), rgb))
 	{
 	  lineno++;
+#ifndef __EMX__
 	  if (sscanf(line,"%d %d %d %[^\n]\n", &red, &green, &blue, name) == 4)
+#else
+	  if (sscanf(line,"%d %d %d %[^\n\r]\n", &red, &green, &blue, name) == 4)
+#endif
 	    {
 	      if (red >= 0   && red <= 0xff &&
 		  green >= 0 && green <= 0xff &&

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.6 1996/01/30 15:25:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.7 1996/01/31 11:46:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -307,8 +307,14 @@ ProcXF86MiscSetMouseSettings(client)
 	}
 
         xf86Info.mseType = stuff->mousetype;
-        xf86Info.mseProc = xf86MseProc;
-        xf86Info.mseEvents = xf86MseEvents;
+#if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
+	xf86Info.mseProc = xf86OsMouseProc;
+	xf86Info.mseEvents = xf86OsMouseEvents;
+#else
+	xf86Info.mseProc = xf86MseProc;
+	xf86Info.mseEvents = xf86MseEvents;
+#endif
+
 #ifdef XQUEUE
 	if (xf86Info.mseType == MTYPE_XQUEUE) {
             xf86Info.mseProc = xf86XqueMseProc;

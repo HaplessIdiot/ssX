@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.68 1996/02/04 04:14:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.69 1996/02/05 11:18:27 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -82,6 +82,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.68 1996/02/04 04:14:52 dawes Exp $
 #define XF98NEC480Server	YES
 #define XF98NKVNECServer	YES
 #define XF98WABSServer		YES
+#define XF98WABEPServer		YES
 #define XF98NECS3Server		YES
 #define XF98PWSKBServer		YES
 #define XF98PWLBServer		YES
@@ -235,6 +236,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.68 1996/02/04 04:14:52 dawes Exp $
 */
 #define WacomSupport		YES
 #define ElographicsSupport	YES 
+
+/*
+ * if your system supports dynamic loading of modules using
+ * dlopen set this to YES.
+ *
+#define BuildDynamicLoading	YES
+ */
 
 /*
  * To disable the ScreenSaver Extension, comment this line.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.83 1996/01/31 11:46:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.84 1996/02/04 09:05:14 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2490,10 +2490,10 @@ s3Init(mode)
 	    mclk = 50000;  /* 50 MHz, guess for 805i limit */
 	 else
 	    mclk = 60000;  /* 60 MHz, limit for 864 */
-	 if (s3InfoRec.videoRam < 2048 || S3_TRIOxx_SERIES(s3ChipId))
+	 if (s3InfoRec.videoRam < 2048 || S3_TRIO32_SERIES(s3ChipId))
 	    clock *= 2;
 	 m = (int)((mclk/1000.0*.72+16.867)*89.736/(clock/1000.0+39)-21.1543);
-	 if (s3InfoRec.videoRam < 2048 || S3_TRIOxx_SERIES(s3ChipId))
+	 if (s3InfoRec.videoRam < 2048 || S3_TRIO32_SERIES(s3ChipId))
 	    m /= 2;
 	 m -= s3InfoRec.s3Madjust;
 	 if (m > 31) m = 31;

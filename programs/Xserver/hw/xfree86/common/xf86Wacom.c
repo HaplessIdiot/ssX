@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.5 1996/01/24 22:01:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.6 1996/02/04 09:06:24 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -541,11 +541,15 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	py = &priv->wcmOldY;
 	pz = &priv->wcmOldZ;
 	pprox = &priv->wcmOldProximity;
-	if (buttons > 3) {
-	  local = priv->wcmEraser;
-	}
-	else {
-	  local = priv->wcmStylus; 
+	/*
+	 * eraser is reported as button 4 and 5 of the stylus.
+	 * if we haven't an independent device for the eraser
+	 * report the button as button 3 of the stylus.
+	 */
+	if ((buttons > 3) && (priv->wcmEraser)) {
+	    local = priv->wcmEraser;
+	} else {  
+	    local = priv->wcmStylus;
 	}
       }
       else {
@@ -605,16 +609,29 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	  }
 	}
 	if (*pbuttons != buttons) {
-	  int		delta = buttons - *pbuttons;
-	  int		button = (delta > 0) ? delta : ((delta == 0) ? *pbuttons : -delta);
+	    int		delta;
+	    int		button;
 
-	  if (is_stylus && (delta == 3)) {
-	    PostButtonEvent(device, 1, (delta > 0), 0, 3, x, y, z);
-	    PostButtonEvent(device, 2, (delta > 0), 0, 3, x, y, z);
-	  }
-	  else {
-	    PostButtonEvent(device, button, (delta > 0), 0, 3, x, y, z); 
-	  }
+	    /*
+	     * handle the eraser button treated as the third button
+	     */
+	    if (is_stylus && (!priv->wcmEraser) && (buttons > 3)) {
+		delta = (buttons == 5) ? 1 : 0;
+		buttons = button = 3;
+	    } else {
+		delta = buttons - *pbuttons;
+		button = (delta > 0) ? delta : ((delta == 0) ? *pbuttons : -delta);
+	    }
+
+	    DBG(6, ErrorF("xf86WcmReadInput button=%d delta=%d\n", button,
+			  delta));
+	    
+	    if (is_stylus && (delta == 3)) {
+		PostButtonEvent(device, 1, (delta > 0), 0, 3, x, y, z);
+		PostButtonEvent(device, 2, (delta > 0), 0, 3, x, y, z);
+	    } else {
+		PostButtonEvent(device, button, (delta > 0), 0, 3, x, y, z); 
+	    }
 	}
 	*pbuttons = buttons;
 	*px = x;
@@ -623,26 +640,30 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	*pprox = is_proximity;
       }
       else { /* !PROXIMITY */
-	if (*pbuttons) {
-	  if (is_stylus && (*pbuttons == 3)) {
-	    PostButtonEvent(device, 1, 0, 0, 3, *px, *py, *pz);
-	    PostButtonEvent(device, 2, 0, 0, 3, *px, *py, *pz);
+	  if (*pbuttons) {
+	      /*
+	       * the tablet reports button 3 sometimes if we press button 1
+	       * and button 2 together.
+	       */
+	      if (is_stylus && (*pbuttons == 3) && (!priv->wcmEraser)) {
+		  PostButtonEvent(device, 1, 0, 0, 3, *px, *py, *pz);
+		  PostButtonEvent(device, 2, 0, 0, 3, *px, *py, *pz);
+	      }
+	      else {
+		  PostButtonEvent(device, *pbuttons, 0, 0, 3, *px, *py, *pz);
+	      }
+	      *pbuttons = 0;
 	  }
-	  else {
-	    PostButtonEvent(device, *pbuttons, 0, 0, 3, *px, *py, *pz);
+	  if (!is_core_pointer) {
+	      if (*pprox) {
+		  PostProximityEvent(device, 0, 0, 3, *px, *py, *pz);
+	      }
+	      if (buttons) {
+		  PostButtonEvent(device, z, 1, 0, 3, *px, *py, *pz);
+		  PostButtonEvent(device, z, 0, 0, 3, *px, *py, *pz); 
+	      }
 	  }
-	  *pbuttons = 0;
-	}
-	if (!is_core_pointer) {
-	  if (*pprox) {
-	    PostProximityEvent(device, 0, 0, 3, *px, *py, *pz);
-	  }
-	  if (buttons) {
-	    PostButtonEvent(device, z, 1, 0, 3, *px, *py, *pz);
-	    PostButtonEvent(device, z, 0, 0, 3, *px, *py, *pz); 
-	  }
-	}
-	*pprox = 0;
+	  *pprox = 0;
       }
   
       DBG(7, ErrorF("xf86WcmEvents END   device=0x%x priv=0x%x",
@@ -935,62 +956,62 @@ xf86WcmProc(pWcm, what)
     case DEVICE_ON:
       DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=ON\n", pWcm));
       if (local->fd < 0) {
-	/* check if we haven't already opened with the other device */
-	switch (DEVICE_ID(local->private_flags)) {
-	case STYLUS_ID:
-	  if (priv->wcmCursor && (priv->wcmCursor->fd != -1)) {
-	    local->fd = priv->wcmCursor->fd;
-	  }
-	  else {
-	    if (priv->wcmEraser && (priv->wcmEraser->fd != -1)) {
-	      local->fd = priv->wcmEraser->fd;
-	    }
-	    else {
-	      if (xf86WcmOpen(local) != Success) {
-		SYSCALL(close(local->fd));
-                local->fd = -1;
-		return !Success;
+	  /* check if we haven't already opened with the other device */
+	  switch (DEVICE_ID(local->private_flags)) {
+	  case STYLUS_ID:
+	      if (priv->wcmCursor && (priv->wcmCursor->fd != -1)) {
+		  local->fd = priv->wcmCursor->fd;
+	      } else {
+		  if (priv->wcmEraser && (priv->wcmEraser->fd != -1)) {
+		      local->fd = priv->wcmEraser->fd;
+		  } else {
+		      if (xf86WcmOpen(local) != Success) {
+			  if (local->fd >= 0) {
+			      SYSCALL(close(local->fd));
+			  }
+			  local->fd = -1;
+			  return !Success;
+		      }
+		  }
 	      }
-	    }
-	  }
-	  break;
+	      break;
 
-	case CURSOR_ID:
-	  if (priv->wcmStylus && (priv->wcmStylus->fd != -1)) {
-	    local->fd = priv->wcmStylus->fd;
-	  }
-	  else {
-	    if (priv->wcmEraser && (priv->wcmEraser->fd != -1)) {
-	      local->fd = priv->wcmEraser->fd;
-	    }
-	    else {
-	      if (xf86WcmOpen(local) != Success) {
-		SYSCALL(close(local->fd));
-                local->fd = -1;
-		return !Success;
+	  case CURSOR_ID:
+	      if (priv->wcmStylus && (priv->wcmStylus->fd != -1)) {
+		  local->fd = priv->wcmStylus->fd;
+	      } else {
+		  if (priv->wcmEraser && (priv->wcmEraser->fd != -1)) {
+		      local->fd = priv->wcmEraser->fd;
+		  } else {
+		      if (xf86WcmOpen(local) != Success) {
+			  if (local->fd >= 0) {
+			      SYSCALL(close(local->fd));
+			  }
+			  local->fd = -1;
+			  return !Success;
+		      }
+		  }
 	      }
-	    }
-	  } 
-	  break;
+	      break;
 
-	case ERASER_ID:
-	  if (priv->wcmCursor && (priv->wcmCursor->fd != -1)) {
-	    local->fd = priv->wcmCursor->fd;
-	  }
-	  else {
-	    if (priv->wcmStylus && (priv->wcmStylus->fd != -1)) {
-	      local->fd = priv->wcmStylus->fd;
-	    }
-	    else {
-	      if (xf86WcmOpen(local) != Success) {
-		SYSCALL(close(local->fd));
-                local->fd = -1;
-		return !Success;
+	  case ERASER_ID:
+	      if (priv->wcmCursor && (priv->wcmCursor->fd != -1)) {
+		  local->fd = priv->wcmCursor->fd;
+	      } else {
+		  if (priv->wcmStylus && (priv->wcmStylus->fd != -1)) {
+		      local->fd = priv->wcmStylus->fd;
+		  } else {
+		      if (xf86WcmOpen(local) != Success) {
+			  if (local->fd >= 0) {
+			      SYSCALL(close(local->fd));
+			  }
+			  local->fd = -1;
+			  return !Success;
+		      }
+		  }
 	      }
-	    }
+	      break;    
 	  }
-	  break;    
-	}
       }
       
       if (local->fd >= 0) {                
@@ -1113,28 +1134,28 @@ xf86WcmAllocate(char *  name,
   local->private = priv;
   local->private_flags = flag;
 
-  priv->wcmDevice = "/dev/ttya"; /* device file name */            
+  priv->wcmDevice = "";         /* device file name */
   priv->wcmSuppress = 20;       /* transmit position if increment is superior */
-  priv->wcmOldX = -1;           /* previous X position */         
-  priv->wcmOldY = -1;           /* previous Y position */         
-  priv->wcmOldZ = -1;           /* previous pressure */           
+  priv->wcmOldX = -1;           /* previous X position */
+  priv->wcmOldY = -1;           /* previous Y position */
+  priv->wcmOldZ = -1;           /* previous pressure */
   priv->wcmOldProximity = 0;    /* previous proximity */
-  priv->wcmOldButtons = 0;      /* previous buttons state */      
-  priv->wcmOldCursorX = -1;     /* previous cursor X position */         
-  priv->wcmOldCursorY = -1;     /* previous cursor Y position */         
-  priv->wcmOldCursorZ = -1;     /* previous cursor pressure */           
+  priv->wcmOldButtons = 0;      /* previous buttons state */
+  priv->wcmOldCursorX = -1;     /* previous cursor X position */
+  priv->wcmOldCursorY = -1;     /* previous cursor Y position */
+  priv->wcmOldCursorZ = -1;     /* previous cursor pressure */
   priv->wcmOldCursorProximity = 0; /* previous cursor proximity */
-  priv->wcmOldCursorButtons = 0; /* previous cursor buttons state */ 
-  priv->wcmMaxX = 22860;        /* max X value */                 
-  priv->wcmMaxY = 15240;        /* max Y value */                 
-  priv->wcmMaxZ = 240;          /* max Z value */                 
+  priv->wcmOldCursorButtons = 0; /* previous cursor buttons state */
+  priv->wcmMaxX = 22860;        /* max X value */
+  priv->wcmMaxY = 15240;        /* max Y value */
+  priv->wcmMaxZ = 240;          /* max Z value */
   priv->wcmResolX = 1270;       /* X resolution in points/inch */
   priv->wcmResolY = 1270;       /* Y resolution in points/inch */
   priv->wcmResolZ = 1270;       /* Z resolution in points/inch */
   priv->flags = 0;              /* various flags */
-  priv->wcmCursor = NULL;       /* cursor device ptr */           
-  priv->wcmStylus = NULL;       /* stylus device ptr */           
-  priv->wcmEraser = NULL;       /* eraser device ptr */           
+  priv->wcmCursor = NULL;       /* cursor device ptr */
+  priv->wcmStylus = NULL;       /* stylus device ptr */
+  priv->wcmEraser = NULL;       /* eraser device ptr */
   priv->wcmIndex = 0;           /* number of bytes read */
 
   return local;
@@ -1230,5 +1251,22 @@ DeviceAssocRec wacom_eraser_assoc =
   ERASER_SECTION_NAME,          /* config_section_name */
   xf86WcmAllocateEraser         /* device_allocate */
 };
+
+#ifdef DYNAMIC_MODULE
+/*
+ ***************************************************************************
+ *
+ * entry point of dynamic loading
+ *
+ ***************************************************************************
+ */
+void
+init_module()
+{
+    AddDeviceAssoc(&wacom_stylus_assoc);
+    AddDeviceAssoc(&wacom_cursor_assoc);
+    AddDeviceAssoc(&wacom_eraser_assoc);
+}
+#endif
 
 /* end of xf86Wacom.c */

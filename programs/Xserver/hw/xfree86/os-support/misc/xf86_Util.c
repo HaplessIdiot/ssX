@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.0 1995/09/23 01:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.1 1996/02/04 09:10:14 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -36,7 +36,7 @@
  * The characters '_', ' ', and '\t' are ignored in the comparison
  */
 int StrCaseCmp(s1, s2)
-char *s1, *s2;
+const char *s1, *s2;
 {
 	char c1, c2;
 

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.24 1996/01/26 09:09:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.25 1996/02/04 08:57:04 dawes Exp $ */
 
 /*
  * Includes
@@ -266,9 +266,10 @@ extern Chip_Descriptor I128_Descriptor;
 #define GPBUSY		0x0200
 /* Mach64 */
 #define SCRATCH_REG0	0x42EC
+#define SCRATCH_REG1	0x46EC
 #define MEM_INFO	0x52EC
+#define DAC_CNTL	0x62EC
 #define CONFIG_CHIP_ID	0x6EEC
-#define CONFIG_STATUS_0	0x72EC
 
 /*
  * RAMDAC Types
@@ -315,8 +316,14 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_ATT499	39	/* AT&T 20C499 15/16/24-bit DAC */
 #define DAC_TKD8001	40	/* Trident TKD8001 15/16/24-bit DAC */
 #define DAC_TGUIDAC	41	/* Trident TGUIDAC 15/16/24-bit DAC */
+#define DAC_ATI_CT_ET   42      /* ATI Mach64CT/ET integrated DAC */
+#define DAC_MU9C1880	43	/* Music 9C1880 */
+#define DAC_IMSG174	44	/* Inmos G-174 */
+#define DAC_STG1702	45	/* STG 1703 15/16/24-bit DAC w/pixel-mux */
+#define DAC_CH8398	46	/* Chrontel 8398 */
+#define DAC_ATT408	47	/* AT&T 20C408 */
 
-#define DAC_MAX		DAC_TGUIDAC	/* UPDATE THIS! */
+#define DAC_MAX		DAC_ATT408	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -396,8 +403,13 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,8)	/* ATI 68800-6 		*/
 #define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,9)	/* ATI 68800LX		*/
 #define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,10)	/* ATI 68800AX		*/
-#define CHIP_ATI88800CX	SVGA_TYPE(V_ATI,11)	/* ATI 88800CX		*/
-#define CHIP_ATI88800GX	SVGA_TYPE(V_ATI,12)	/* ATI 88800GX		*/
+#define CHIP_ATI88800GXC SVGA_TYPE(V_ATI,11)	/* ATI 88800GX-C	*/
+#define CHIP_ATI88800GXD SVGA_TYPE(V_ATI,12)	/* ATI 88800GX-D	*/
+#define CHIP_ATI88800GXE SVGA_TYPE(V_ATI,13)	/* ATI 88800GX-E	*/
+#define CHIP_ATI88800GXF SVGA_TYPE(V_ATI,14)	/* ATI 88800GX-F	*/
+#define CHIP_ATI88800CX	SVGA_TYPE(V_ATI,15) 	/* ATI 88800CX		*/
+#define CHIP_ATI88800CT	SVGA_TYPE(V_ATI,16) 	/* ATI 88800CT		*/
+#define CHIP_ATI88800ET	SVGA_TYPE(V_ATI,17) 	/* ATI 88800ET		*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/

@@ -1,17 +1,17 @@
 /* $XConsortium: regati.h /main/4 1995/09/04 19:41:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.5 1995/05/27 03:15:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.6 1996/02/04 09:12:45 dawes Exp $ */
 /*
- * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Marc Aurele La France not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Marc Aurele La France makes no
- * representations about the suitability of this software for any purpose.  It
- * is provided "as is" without express or implied warranty.
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that the name of Marc Aurele La France not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  Marc Aurele La France makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as-is" without express or implied warranty.
  *
  * MARC AURELE LA FRANCE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.  IN NO
@@ -20,9 +20,6 @@
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- *
- * Rationale:  Scanning reg8514.h, regmach8.h and regmach32.h is just not worth
- *             the eye strain...
  *
  * Acknowledgements:
  *    Jake Richter, Panacea Inc., Londonderry, New Hampshire, U.S.A.
@@ -174,10 +171,10 @@
 #define DISABPASSTHRU			0x0001
 #define CLOKSEL				0x0004
 /*	?			0x4ee8 */
-/*	?			0x52e8 */
-/*	?			0x56e8 */
-/*	?			0x5ae8 */
-/*	?			0x5ee8 */
+#define EXT_CONFIG_0		0x52e8		/* C & T 82C480 */
+#define EXT_CONFIG_1		0x56e8		/* C & T 82C480 */
+#define EXT_CONFIG_2		0x5ae8		/* C & T 82C480 */
+#define EXT_CONFIG_3		0x5ee8		/* C & T 82C480 */
 /*	?			0x62e8 */
 /*	?			0x66e8 */
 /*	?			0x6ae8 */
@@ -401,6 +398,8 @@
 #define COMPOSITE_SYNC			0x1000
 /*	?			0x4eee */
 #define ROM_ADDR_1		0x52ee
+#define BIOS_BASE_SEGMENT		0x007f			/* Mach32 */
+/*	?				0xff80 */		/* Mach32 */
 #define ROM_ADDR_2		0x56ee		/* Sick ... */
 #define SHADOW_SET		0x5aee		/* Write */
 #define MEM_CFG			0x5eee				/* Mach32 */
@@ -500,10 +499,10 @@
 #define DEST_COLOR_CMP_MASK	0xf2ee		/* Write */	/* Mach32 */
 /*	?			0xf6ee */
 #define CHIP_ID			0xfaee		/* Read */	/* Mach32 */
-#define CHIP_CODE_0			0x001F			/* Mach32 */
-#define CHIP_CODE_1			0x03E0			/* Mach32 */
-#define CHIP_CLASS			0x0C00			/* Mach32 */
-#define CHIP_REV			0xF000			/* Mach32 */
+#define CHIP_CODE_0			0x001f			/* Mach32 */
+#define CHIP_CODE_1			0x03e0			/* Mach32 */
+#define CHIP_CLASS			0x0c00			/* Mach32 */
+#define CHIP_REV			0xf000			/* Mach32 */
 #define LINEDRAW		0xfeee		/* Write */
 
 /* ATI Mach64 register definitions */
@@ -513,6 +512,9 @@
 #define CRCT_V_SYNC_STRT_WID	0x0eec
 #define CRTC_VLINE_CRNT_VLINE	0x12ec
 #define CRTC_OFF_PITCH		0x16ec
+#define CRTC_OFFSET			0x000fffff
+/*	?				0x00300000 */
+#define CRTC_PITCH			0xffc00000
 #define CRTC_INT_CNTL		0x1aec
 #define CRTC_GEN_CNTL		0x1eec
 #define CRTC_DBL_SCAN_EN		0x00000001
@@ -521,15 +523,21 @@
 #define CRTC_VSYNC_DIS			0x00000008
 #define CRTC_CSYNC_EN			0x00000010
 #define CRTC_PIX_BY_2_EN		0x00000020
-/*	?				0x000000C0 */
+#define CRTC_DISPLAY_DIS		0x00000040
+#define CRTC_VGA_XOVERSCAN		0x00000080
 #define CRTC_PIX_WIDTH			0x00000700
 #define CRTC_BYTE_PIX_ORDER		0x00000800
-/*	?				0x0000F000 */
-#define CRTC_FIFO_LWM			0x000F0000
-/*	?				0x00F00000 */
+/*	?				0x0000f000 */
+#define CRTC_FIFO_LWM			0x000f0000
+/*	?				0x00f00000 */
 #define CRTC_EXT_DISP_EN		0x01000000
 #define CRTC_EN				0x02000000
-/*	?				0xFC000000 */
+#define CRTC_DISP_REQ_EN		0x04000000
+#define CRTC_VGA_LINEAR			0x08000000
+#define CRTC_VSYNC_FALL_EDGE		0x10000000
+#define CRTC_VGA_TEXT_132		0x20000000
+#define CRTC_CNT_EN			0x40000000
+#define CRTC_CUR_B_TEST			0x80000000
 #define OVR_CLR			0x22ec
 #define OVR_WID_LEFT_RIGHT	0x26ec
 #define OVR_WID_TOP_BOTTOM	0x2aec
@@ -540,16 +548,32 @@
 #define CUR_HORZ_VERT_OFF	0x3eec
 #define SCRATCH_REG0		0x42ec
 #define SCRATCH_REG1		0x46ec
+/*	BIOS_BASE_SEGMENT		0x0000007f */	/* As above */
+/*	?				0x00000f80 */
+#define BIOS_INIT_DAC_SUBTYPE		0x0000f000
+/*	?				0xffff0000 */
 #define CLOCK_CNTL		0x4aec
+#define CLOCK_BIT			0x00000004	/* For ICS2595 */
+#define CLOCK_PULSE			0x00000008	/* For ICS2595 */
+#define CLOCK_SELECT			0x0000000f
+#define CLOCK_DIVIDER			0x00000030
+#define CLOCK_STROBE			0x00000040
+#define CLOCK_DATA			0x00000080
+/*	?				0x00000100 */
+#define PLL_WR_EN			0x00000200	/* For internal PLL */
+#define PLL_ADDR			0x00003c00	/* For internal PLL */
+/*	?				0x0000c000 */
+#define PLL_DATA			0x00ff0000	/* For internal PLL */
+/*	?				0xff000000 */
 #define BUS_CNTL		0x4eec
-#define BUS_WS				0x0000000F
-#define BUS_ROM_WS			0x000000F0
-#define BUS_ROM_PAGE			0x00000F00
+#define BUS_WS				0x0000000f
+#define BUS_ROM_WS			0x000000f0
+#define BUS_ROM_PAGE			0x00000f00
 #define BUS_ROM_DIS			0x00001000
 #define BUS_IO_16_EN			0x00002000
 #define BUS_DAC_SNOOP_EN		0x00004000
 /*	?				0x00008000 */
-#define BUS_FIFO_WS			0x000F0000
+#define BUS_FIFO_WS			0x000f0000
 #define BUS_FIFO_ERR_INT_EN		0x00100000
 #define BUS_FIFO_ERR_INT		0x00200000
 #define BUS_HOST_ERR_INT_EN		0x00400000
@@ -558,7 +582,7 @@
 #define BUS_PCI_DAC_DLY			0x08000000
 #define BUS_PCI_MEMW_WS			0x10000000
 #define BUS_PCI_BURST_DEC		0x20000000
-#define BUS_RDY_READ_DLY		0xC0000000
+#define BUS_RDY_READ_DLY		0xc0000000
 #define MEM_INFO		0x52ec		/* Changed from MEM_CNTL */
 #define CTL_MEM_SIZE			0x00000007
 /*	?				0x00000008 */
@@ -568,114 +592,181 @@
 #define CTL_MEM_SD_LATCH_DLY		0x00000080
 #define CTL_MEM_FULL_PLS		0x00000100
 #define CTL_MEM_CYC_LNTH		0x00000600
-/*	?				0x0000f800 */
+#define CTL_MEM_REFRESH_RATE		0x00001800	/* Mach64CT/ET */
+#define CTL_MEM_WR_RDY_SEL		0x00000800	/* Mach64GX/CX */
+#define CTL_MEM_EXT_RMW_CYC_EN		0x00001000	/* Mach64GX/CX */
+/*	?				0x0000e000 */
 #define CTL_MEM_BNDRY			0x00030000
 #define CTL_MEM_BNDRY_0K			0x00000000
 #define CTL_MEM_BNDRY_256K			0x00010000
 #define CTL_MEM_BNDRY_512K			0x00020000
 #define CTL_MEM_BNDRY_1024K			0x00030000
 #define CTL_MEM_BNDRY_EN		0x00040000
-/*	?				0xfff80000 */
+/*	?				0x00f80000 */
+#define CTL_MEM_PIX_WIDTH		0x07000000
+/*	?				0xf8000000 */
 #define MEM_VGA_WP_SEL		0x56ec
 #define MEM_VGA_RP_SEL		0x5aec
 #define DAC_REGS		0x5eec		/* Actually 4 separate bytes */
 #define DAC_CNTL		0x62ec
+#define DAC_EXT_SEL			0x00000003
+#define DAC_EXT_SEL_RS2				0x000000001
+#define DAC_EXT_SEL_RS3				0x000000002
+#define DAC_BLANKING			0x00000004	/* Mach64CT/ET */
+#define DAC_CMP_DIS			0x00000008	/* Mach64CT/ET */
+/*	?				0x00000070 */
+#define DAC_CMP_OUTPUT			0x00000080	/* Mach64CT/ET */
+#define DAC_8BIT_EN			0x00000100
+#define DAC_PIX_DLY			0x00000600
+#define DAC_BLANK_ADJ			0x00001800
+#define DAC_VGA_ADR_EN			0x00002000
+#define DAC_FEA_CON_EN			0x00004000	/* Mach64CT/ET */
+#define DAC_PDMN			0x00008000	/* Mach64CT/ET */
+#define DAC_TYPE			0x00070000
+/*	?				0x00f80000 */
+#define DAC_MON_ID_STATE0		0x01000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_STATE_1			0x01000000	/* Mach64CT/ET */
+#define DAC_MON_ID_STATE1		0x02000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_STATE_0			0x02000000	/* Mach64CT/ET */
+#define DAC_MON_ID_STATE2		0x04000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_STATE_4			0x04000000	/* Mach64CT/ET */
+#define DAC_MON_ID_DIR0			0x08000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_DIR_1			0x08000000	/* Mach64CT/ET */
+#define DAC_MON_ID_DIR1			0x10000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_DIR_0			0x10000000	/* Mach64CT/ET */
+#define DAC_MON_ID_DIR2			0x20000000	/* Mach64GX-E+/CX */
+#define DAC_GIO_DIR_4			0x20000000	/* Mach64CT/ET */
+#define DAC_MAN_CMP_STATE		0x40000000	/* Mach64GX-E+ */
+/*	?				0x80000000 */
 #define GEN_TEST_CNTL		0x66ec
-#define GEN_EE_DATA_OUT			0x00000001
-#define GEN_EE_CLOCK			0x00000002
-#define GEN_EE_CHIP_SEL			0x00000004
-#define GEN_EE_DATA_IN			0x00000008
-#define GEN_EE_EN			0x00000010
-#define GEN_OVR_OUTPUT_EN		0x00000020
-#define GEN_OVR_POLARITY		0x00000040
+#define GEN_EE_DATA_OUT			0x00000001	/* Mach64GX/CX */
+#define GEN_GIO2_DATA_OUT		0x00000001	/* Mach64CT/ET */
+#define GEN_EE_CLOCK			0x00000002	/* Mach64GX/CX */
+/*	?				0x00000002 */	/* Mach64CT/ET */
+#define GEN_EE_CHIP_SEL			0x00000004	/* Mach64GX/CX */
+#define GEN_GIO3_DATA_OUT		0x00000004	/* Mach64CT/ET */
+#define GEN_EE_DATA_IN			0x00000008	/* Mach64GX/CX */
+#define GEN_GIO2_DATA_IN		0x00000008	/* Mach64CT/ET */
+#define GEN_EE_EN			0x00000010	/* Mach64GX/CX */
+#define GEN_GIO2_ENABLE			0x00000010	/* Mach64CT/ET */
+#define GEN_OVR_OUTPUT_EN		0x00000020	/* Mach64GX/CX */
+#define GEN_GIO2_WRITE			0x00000020	/* Mach64CT/ET */
+#define GEN_OVR_POLARITY		0x00000040	/* Mach64GX/CX */
+/*	?				0x00000040 */	/* Mach64CT/ET */
 #define GEN_CUR_EN			0x00000080
-#define GEN_GUI_EN			0x00000100
-#define GEN_BLOCK_WR_EN			0x00000200
-/*	?				0x0000FC00 */
-#define GEN_TEST_FIFO_EN		0x00010000
-#define GEN_TEST_GUI_REGS_EN		0x00020000
-#define GEN_TEST_VECT_EN		0x00040000
-#define GEN_TEST_CRC_STR		0x00080000
-#define GEN_TEST_MODE			0x00700000
+#define GEN_GUI_EN			0x00000100	/* Mach64GX/CX */
+#define GEN_GUI_RESETB			0x00000100	/* Mach64CT/ET */
+#define GEN_BLOCK_WR_EN			0x00000200	/* Mach64GX */
+/*	?				0x00000200 */	/* Mach64CX/CT/ET */
+/*	?				0x0000fc00 */
+#define GEN_TEST_FIFO_EN		0x00010000	/* Mach64GX/CX */
+#define GEN_TEST_GUI_REGS_EN		0x00020000	/* Mach64GX/CX */
+#define GEN_TEST_VECT_EN		0x00040000	/* Mach64GX/CX */
+#define GEN_TEST_CRC_STR		0x00080000	/* Mach64GX-C/-D */
+/*	?				0x00080000 */	/* Mach64GX-E+/CX */
+#define GEN_TEST_MODE_T			0x000f0000	/* Mach64CT/ET */
+#define GEN_TEST_MODE			0x00700000	/* Mach64GX/CX */
+#define GEN_TEST_CNT_EN			0x00100000	/* Mach64CT/ET */
+#define GEN_TEST_CRC_EN			0x00200000	/* Mach64CT/ET */
+/*	?				0x00400000 */	/* Mach64CT/ET */
 /*	?				0x00800000 */
-#define GEN_TEST_MEM_WR			0x01000000
-#define GEN_TEST_MEM_STROBE		0x02000000
-#define GEN_TEST_DST_SS_EN		0x04000000
-#define GEN_TEST_DST_SS_STROBE		0x08000000
-#define GEN_TEST_SRC_SS_EN		0x10000000
-#define GEN_TEST_SRC_SS_STROBE		0x20000000
-#define GEN_TEST_CC_EN			0x40000000
-#define GEN_TEST_CC_STROBE		0x80000000
+#define GEN_TEST_MEM_WR			0x01000000	/* Mach64GX-C/-D */
+#define GEN_TEST_MEM_STROBE		0x02000000	/* Mach64GX-C/-D */
+#define GEN_TEST_DST_SS_EN		0x04000000	/* Mach64GX/CX */
+#define GEN_TEST_DST_SS_STROBE		0x08000000	/* Mach64GX/CX */
+#define GEN_TEST_SRC_SS_EN		0x10000000	/* Mach64GX/CX */
+#define GEN_TEST_SRC_SS_STROBE		0x20000000	/* Mach64GX/CX */
+#define GEN_TEST_CNT_VALUE		0x3f000000	/* Mach64CT/ET */
+#define GEN_TEST_CC_EN			0x40000000	/* Mach64GX/CX */
+#define GEN_TEST_CC_STROBE		0x80000000	/* Mach64GX/CX */
+/*	?				0xc0000000	/* Mach64CT/ET */
 #define CONFIG_CNTL		0x6aec
 #define CFG_MEM_AP_SIZE			0x00000003
 #define CFG_MEM_VGA_AP_EN		0x00000004
 /*	?				0x00000008 */
-#define CFG_MEM_AP_LOC			0x00003FF0
-/*	?				0x0000C000 */
+#define CFG_MEM_AP_LOC			0x00003ff0
+/*	?				0x0000c000 */
 #define CFG_CARD_ID			0x00070000
 #define CFG_VGA_DIS			0x00080000
-/*	?				0xFFF00000 */
+/*	?				0xfff00000 */
 #define CONFIG_CHIP_ID		0x6eec		/* Read */
-#define CFG_CHIP_TYPE0			0x000000FF
-#define CFG_CHIP_TYPE1			0x0000FF00
-#define CFG_CHIP_TYPE			0x0000FFFF
-#define CFG_CHIP_CLASS			0x00FF0000
-#define CFG_CHIP_REV			0xFF000000
-#define CONFIG_STATUS_0		0x72ec		/* Read */
-#define CFG_BUS_TYPE			0x00000007
-#define CFG_MEM_TYPE			0x00000038
-#define CFG_DUAL_CAS_EN			0x00000040
-#define CFG_LOCAL_BUS_OPTION		0x00000180
-#define CFG_INIT_DAC_TYPE		0x00000E00
-#define CFG_INIT_CARD_ID		0x00007000
-#define CFG_TRI_BUF_DIS			0x00008000
-#define CFG_EXT_RAM_ADDR		0x003F0000
-#define CFG_ROM_DIS			0x00400000
-#define CFG_VGA_EN			0x00800000
-#define CFG_LOCAL_BUS_CFG		0x01000000
-#define CFG_CHIP_EN			0x02000000
-#define CFG_LOCAL_READ_DLY_DIS		0x04000000
-#define CFG_ROM_OPTION			0x08000000
-#define CFG_BUS_OPTION			0x10000000
-#define CFG_LOCAL_DAC_WR_EN		0x20000000
-#define CFG_VLB_RDY_DIS			0x40000000
-#define CFG_AP_4GBYTE_DIS		0x80000000
+#define CFG_CHIP_TYPE0			0x000000ff
+#define CFG_CHIP_TYPE1			0x0000ff00
+#define CFG_CHIP_TYPE			0x0000ffff
+#define CFG_CHIP_CLASS			0x00ff0000
+#define CFG_CHIP_REV			0xff000000
+#define CONFIG_STATUS_0		0x72ec		/* Read (and Write (CT/ET)) */
+#define CFG_BUS_TYPE			0x00000007	/* Mach64GX/CX */
+#define CFG_MEM_TYPE_T			0x00000007	/* Mach64CT/ET */
+#define CFG_MEM_TYPE			0x00000038	/* Mach64GX/CX */
+#define CFG_DUAL_CAS_EN_T		0x00000008	/* Mach64CT/ET */
+/*	?				0x00000010 */	/* Mach64CT/ET */
+#define CFG_CLOCK_EN			0x00000020	/* Mach64CT/ET */
+#define CFG_DUAL_CAS_EN			0x00000040	/* Mach64GX/CX */
+#define CFG_LOCAL_BUS_OPTION		0x00000180	/* Mach64GX/CX */
+#define CFG_INIT_DAC_TYPE		0x00000e00	/* Mach64GX/CX */
+#define CFG_INIT_CARD_ID		0x00007000	/* Mach64GX-C/-D */
+#define CFG_BLK_WR_SIZE			0x00001000	/* Mach64GX-E+ */
+#define CFG_INT_QSF_EN			0x00002000	/* Mach64GX-E+ */
+/*	?				0x00004000 */	/* Mach64GX-E+ */
+/*	?				0x00007000 */	/* Mach64CX */
+#define CFG_TRI_BUF_DIS			0x00008000	/* Mach64GX/CX */
+#define CFG_EXT_RAM_ADDR		0x003f0000	/* Mach64GX/CX */
+#define CFG_ROM_DIS			0x00400000	/* Mach64GX/CX */
+#define CFG_VGA_EN			0x00800000	/* Mach64GX/CX */
+#define CFG_LOCAL_BUS_CFG		0x01000000	/* Mach64GX/CX */
+#define CFG_CHIP_EN			0x02000000	/* Mach64GX/CX */
+#define CFG_LOCAL_READ_DLY_DIS		0x04000000	/* Mach64GX/CX */
+#define CFG_ROM_OPTION			0x08000000	/* Mach64GX/CX */
+#define CFG_BUS_OPTION			0x10000000	/* Mach64GX/CX */
+#define CFG_LOCAL_DAC_WR_EN		0x20000000	/* Mach64GX/CX */
+#define CFG_VLB_RDY_DIS			0x40000000	/* Mach64GX/CX */
+#define CFG_AP_4GBYTE_DIS		0x80000000	/* Mach64GX/CX */
+/*	?				0xffffffc0 */	/* Mach64CT/ET */
 /*	CONFIG_STATUS_1		0x76ec */	/* Read */	/* Duplicate */
-#define CFG_PCI_DAC_CFG			0x00000001
+#define CFG_PCI_DAC_CFG			0x00000001	/* Mach64GX/CX */
+/*	?				0x0000001e */	/* Mach64GX/CX */
+#define CFG_1C8_IO_SEL			0x00000020	/* Mach64GX/CX */
+/*	?				0xffffffc0 */	/* Mach64GX/CX */
+#define CRC_SIG				0xffffffff	/* Mach64CT/ET */
 /*	?			0x7aec */
 /*	?			0x7eec */
-/*	?			0x82ec */
-/*	?			0x86ec */
-/*	?			0x8aec */
-/*	?			0x8eec */
-/*	?			0x92ec */
-/*	?			0x96ec */
-/*	?			0x9aec */
-/*	?			0x9eec */
-/*	?			0xa2ec */
-/*	?			0xa6ec */
-/*	?			0xaaec */
-/*	?			0xaeec */
-/*	?			0xb2ec */
-/*	?			0xb6ec */
-/*	?			0xbaec */
-/*	?			0xbeec */
-/*	?			0xc2ec */
-/*	?			0xc6ec */
-/*	?			0xcaec */
-/*	?			0xceec */
-/*	?			0xd2ec */
-/*	?			0xd6ec */
-/*	?			0xdaec */
-/*	?			0xdeec */
-/*	?			0xe2ec */
-/*	?			0xe6ec */
-/*	?			0xeaec */
-/*	?			0xeeec */
-/*	?			0xf2ec */
-/*	?			0xf6ec */
-/*	?			0xfaec */
-/*	?			0xfeec */
+
+/* Definitions for internal PLL registers on a Mach64CT/ET */
+/*	?			0x00 */
+#define PLL_MACRO_CNTL		0x01
+#define PLL_PC_GAIN			0x07
+#define PLL_VC_GAIN			0x18
+#define PLL_DUTY_CYCLE			0xe0
+#define PLL_REF_DIV		0x02
+#define PLL_GEN_CNTL		0x03
+#define PLL_OVERRIDE			0x01
+#define PLL_MCLK_RESET			0x02
+#define PLL_OSC_EN			0x04
+#define PLL_EXT_CLK_EN			0x08
+#define PLL_MCLK_POST_DIV		0x10
+#define PLL_MCLK_SRC_SEL		0x60
+#define PLL_EXT_CLK_CNTL		0x80
+#define PLL_MCLK_FB_DIV		0x04
+#define PLL_VCLK_CNTL		0x05
+#define PLL_VCLK_SRC_SEL		0x03
+#define PLL_VCLK_RESET			0x04
+#define PLL_VCLK_INVERT			0x08
+/*	?				0xf0 */
+#define PLL_VCLK_POST_DIV	0x06
+#define PLL_VCLK0_POST_DIV		0x03
+#define PLL_VCLK1_POST_DIV		0x0c
+#define PLL_VCLK2_POST_DIV		0x30
+#define PLL_VCLK3_POST_DIV		0xc0
+#define PLL_VCLK0_FB_DIV	0x07
+#define PLL_VCLK1_FB_DIV	0x08
+#define PLL_VCLK2_FB_DIV	0x09
+#define PLL_VCLK3_FB_DIV	0x0a
+/*	?			0x0b */
+/*	?			0x0c */
+/*	?			0x0d */
+#define PLL_TEST_CNTL		0x0e
+#define PLL_TEST_COUNT		0x0f
 
 /* Miscellaneous */
 

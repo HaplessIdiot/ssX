@@ -1,6 +1,6 @@
 /*
  * $XConsortium: showrgb.c,v 1.11 94/04/17 20:24:46 gildea Exp $
- * $XFree86$
+ * $XFree86: xc/programs/rgb/showrgb.c,v 3.0 1994/05/21 23:59:23 dawes Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -132,10 +132,17 @@ dumprgb (filename)
     char name[BUFSIZ];
     int lineno = 0;
     int red, green, blue;
-   
+
+#ifdef __EMX__
+    char *root = (char*)getenv("X11ROOT");
+    sprintf(line,"%s%s.txt",root,filename);
+    path = (char *)malloc(strlen(line) + 1);
+    strcpy(path,line);
+#else
     path = (char *)malloc(strlen(filename) + 5);
     strcpy(path, filename);
     strcat(path, ".txt");
+#endif
 
     if (!(rgb = fopen(path, "r"))) {
 	fprintf (stderr, "%s:  unable to open rgb database \"%s\"\n",
@@ -146,7 +153,11 @@ dumprgb (filename)
 
     while(fgets(line, sizeof(line), rgb)) {
 	lineno++;
+#ifndef __EMX__
 	if (sscanf(line, "%d %d %d %[^\n]\n", &red, &green, &blue, name) == 4) {
+#else
+	if (sscanf(line, "%d %d %d %[^\n\r]\n", &red, &green, &blue, name) == 4) {
+#endif
 	    if (red >= 0 && red <= 0xff &&
 		green >= 0 && green <= 0xff &&
 		blue >= 0 && blue <= 0xff) {

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.2 1996/01/24 21:55:40 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.3 1996/01/30 15:24:25 dawes Exp $
  */
 '@echo off'
 call RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
@@ -45,7 +45,7 @@ SELECT
       d = DIRECTORY(dir)
       dirfwd=TRANSLATE(dir,'/','\')
       RC = SysFileDelete('Makefile.bak')
-      IF exists('Makefile')=0 THEN REN Makefile Makefile.bak
+      IF exists('Makefile') THEN REN Makefile Makefile.bak
       /* There is a difficulty in the Imakefiles. Some builds refer
        * to directories that are in a different subtree. We need to adjust
        * the CURDIR and TOPDIR and -I paths
@@ -103,13 +103,14 @@ SELECT
    WHEN code=5 THEN DO
       /* imakesvc 5 file */
       file = TRANSLATE(WORD(all,2),'\','/')
-      if exists(file) THEN REN file file.bak
+      RC = SysFileDelete(file'.bak')
+      if exists(file) THEN 'REN 'file file||'.bak'
    END
    WHEN code=6 THEN DO
       /* imakesvc 6 file */
       file = TRANSLATE(WORD(all,2),'\','/')
-      CALL SysFileDelete(file'.bak')
-      if exists(file) THEN REN file file.bak
+      CALL SysFileDelete(file||'.bak')
+      if exists(file) THEN 'REN 'file file||'.bak'
    END
    WHEN code=7 THEN DO
       /* imakesvc 7 from to */
@@ -147,10 +148,11 @@ DO FOREVER
 END
 RETURN pfx
 
+/* returns 1, if file exists */
 exists:
 'DIR "'arg(1)'" >nul 2>&1'
-IF rc = 0 THEN return 0
-RETURN 1
+IF rc = 0 THEN return 1
+RETURN 0
 
 discard: PROCEDURE
 arg rec files

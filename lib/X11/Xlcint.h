@@ -1,4 +1,5 @@
-/* $XConsortium: Xlcint.h,v 11.19 94/04/17 20:21:41 rws Exp $ */
+/* $XConsortium: Xlcint.h /main/24 1995/09/16 08:59:05 kaleb $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -34,7 +35,7 @@ from the X Consortium.
  *                      and Nippon Telegraph and Telephone Corporation
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
- * Copyright 1993, 1994 by the Sony Corporation
+ * Copyright 1993, 1994 by Sony Corporation
  * Copyright 1993, 1994 by the FUJITSU LIMITED
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -137,11 +138,12 @@ typedef struct {
     XFontSet            fontset;
     int	       		line_spacing;
     Cursor		cursor;
-    XIMCallback		start_callback;
-    XIMCallback		done_callback;
-    XIMCallback		draw_callback;
-    XIMCallback		caret_callback;
+    XICCallback		start_callback;
+    XICCallback		done_callback;
+    XICCallback		draw_callback;
+    XICCallback		caret_callback;
     XIMPreeditState	preedit_state;
+    XICCallback		state_notify_callback;
 } ICPreeditAttributes, *ICPreeditAttributesPtr;
 
 typedef struct {
@@ -155,9 +157,9 @@ typedef struct {
     XFontSet            fontset;
     int	       		line_spacing;
     Cursor		cursor;
-    XIMCallback		start_callback;
-    XIMCallback		done_callback;
-    XIMCallback		draw_callback;
+    XICCallback		start_callback;
+    XICCallback		done_callback;
+    XICCallback		draw_callback;
 } ICStatusAttributes, *ICStatusAttributesPtr;
 
 /*
@@ -244,27 +246,27 @@ typedef XIM (*XOpenIMProc)(
 #endif
 );
 
-typedef Bool (*XRegisterIMInstantiateCallbackProc)(
+typedef Bool (*XRegisterIMInstantiateCBProc)(
 #if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* display */,
     XrmDatabase		/* rdb */,
     char*		/* res_name */,
     char*		/* res_class */,
-    XIMProc		/* callback */,
-    XPointer*		/* client_data */
+    XIDProc		/* callback */,
+    XPointer		/* client_data */
 #endif
 );
 
-typedef Bool (*XUnregisterIMInstantiateCallbackProc)(
+typedef Bool (*XUnregisterIMInstantiateCBProc)(
 #if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* display */,
     XrmDatabase		/* rdb */,
     char*		/* res_name */,
     char*		/* res_class */,
-    XIMProc		/* callback */,
-    XPointer*		/* client_data */
+    XIDProc		/* callback */,
+    XPointer		/* client_data */
 #endif
 );
 
@@ -342,8 +344,8 @@ typedef struct {
     XwcTextListToTextPropertyProc	wc_text_list_to_prop;
     XwcFreeStringListProc		wc_free_string_list;
     XDefaultStringProc			default_string;
-    XRegisterIMInstantiateCallbackProc	register_callback;
-    XUnregisterIMInstantiateCallbackProc unregister_callback;
+    XRegisterIMInstantiateCBProc	register_callback;
+    XUnregisterIMInstantiateCBProc	unregister_callback;
 } XLCdMethodsRec, *XLCdMethods;
 
 
@@ -433,6 +435,9 @@ typedef struct _XOMCoreRec {
     int num_resources;			/* number of xom resources */
     XOMCharSetList required_charset;	/* required charset list */
     XOMOrientation orientation_list;	/* orientation list */
+    Bool directional_dependent;		/* directional-dependent */
+    Bool contextual_drawing;		/* contextual drawing */
+    Bool context_dependent;		/* context-dependent drawing */
 } XOMCoreRec, *XOMCore;
 
 typedef struct _XOM {
@@ -624,9 +629,6 @@ typedef struct {
     XOMFontInfo font_info;		/* font info */
     XFontSetExtents font_set_extents;  	/* font set extents */
     char *default_string;     		/* default string */
-    Bool context_dependent;		/* context-dependent drawing */
-    Bool directional_dependent;		/* directional-dependent */
-    Bool contextual_drawing;		/* contextual drawing */
     XOMCharSetList missing_list;	/* missing charset list */
     XOrientation orientation;		/* orientation */
     char *res_name;			/* resource name */
@@ -674,9 +676,14 @@ typedef struct {
 	XIM, XIMArg*
 #endif
 	);
-    int (*lookup_string)(
+    int (*ctstombs)(
 #if NeedFunctionPrototypes
-	XKeyEvent*, char*, int, KeySym*, XComposeStatus*
+	XIM, char*, int, char*, int, Status *
+#endif
+	);
+    int (*ctstowcs)(
+#if NeedFunctionPrototypes
+	XIM, char*, int, wchar_t*, int, Status *
 #endif
 	);
 } XIMMethodsRec, *XIMMethods;
@@ -787,16 +794,14 @@ typedef struct {
     XIMStyle		input_style;		/* IM's input style */
     Window		focus_window;		/* where key events go */
     unsigned long	filter_events;		/* event mask from IM */
-    XIMCallback		geometry_callback;	/* client callback */
+    XICCallback		geometry_callback;	/* client callback */
     char *		res_name;
     char *		res_class;
 
-    XIMCallback		destroy_callback;
-    XIMCallback		preedit_state_notify_callback;
-    XIMCallback		string_conversion_callback;
+    XICCallback		destroy_callback;
+    XICCallback		string_conversion_callback;
     XIMStringConversionText	 string_conversion;
     XIMResetState	reset_state;
-    XIMResetReturn	reset_return;
     XIMHotKeyTriggers  *hotkey;
     XIMHotKeyState	hotkey_state;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.48 1996/01/13 12:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.49 1996/02/04 09:13:08 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -247,7 +247,7 @@ extern void crtswitch();
 #endif
 
 vgaVideoChipRec CIRRUS = {
-#ifndef PC98_WAB
+#if !defined(PC98_WAB) && !defined(PC98_WABEP)
   cirrusProbe,			/* ChipProbe()*/
   cirrusIdent,			/* ChipIdent(); */
   cirrusEnterLeave,		/* ChipEnterLeave() */
@@ -1953,7 +1953,7 @@ cirrusSave(save)
   unsigned char             temp1, temp2;
 
   
-#if defined(PC98_WAB)||defined(PC98_GANB_WAP)
+#if defined(PC98_WAB)||defined(PC98_WABEP)||defined(PC98_GANB_WAP)
   vgaIOBase = 0x3D0;
 #else
   vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
@@ -2274,13 +2274,13 @@ cirrusInit(mode)
      outb(0x3C4,0x0F);
      new->SRF = inb(0x3C5);
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
      new->SRF &= 0xF7;
      new->SRF |= 0x10;
      outb(0x3C4,0x0F);
      outb(0x3C5,new->SRF);
 
-#endif /* PC98_WAB */
+#endif /* PC98_WAB || PC98_WABEP */
      /* This following bit was not set correctly. */
      /* It is vital for correct operation at high dot clocks. */
  

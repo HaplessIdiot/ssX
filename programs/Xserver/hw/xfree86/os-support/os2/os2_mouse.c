@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.1 1996/01/24 22:02:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.2 1996/01/30 15:26:35 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -182,10 +182,6 @@ void xf86OsMouseEvents()
 				  ((state & 0x60) ? 2 : 0);
 			xf86PostMseEvent(buttons, mev.col, mev.row);
 	}
-        if(SwitchedToWPS) {
-                if((GetTimeInMillis()-LastSwitchTime)>4000)  /* Do not switch back to server before 4sec */
-                xf86Info.vtRequestsPending=TRUE;
-                }
 	xf86Info.inputPending = TRUE;
 }
 

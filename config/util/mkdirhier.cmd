@@ -1,6 +1,6 @@
 /* OS/2 REXX SCRIPT */
 /* DON'T REMOVE 0x0d (^M) CHARACTERS FROM THIS FILE */
-/* $XFree86$ */
+/* $XFree86: xc/config/util/mkdirhier.cmd,v 3.0 1994/10/20 06:01:02 dawes Exp $ */
 
 CALL RxFuncAdd 'SysMkDir', 'RexxUtil', 'SysMkDir'
 
@@ -35,7 +35,8 @@ DO i=1 TO WORDS(all)
 	dirbuf.0 = direc
 	DO k=1 TO 1000
 		direc1 = STRIP(direc,"t","/")
-		dirbuf.k=STRIP(INSERT(drive,FILESPEC("path",direc1)),"t","/")
+		dpath1 = FILESPEC("path",direc1)
+		dirbuf.k=FILESPEC("drive",direc1)||STRIP(dpath1,"t","/")
 		IF POS("/",dirbuf.k) = 0 THEN LEAVE k
 		direc=dirbuf.k
 	END

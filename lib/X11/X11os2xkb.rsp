@@ -65,7 +65,7 @@ omText.obj omTextEsc.obj omTextExt.obj omTextPer.obj omXChar.obj uvY.obj+
 XKB.obj XKBAlloc.obj XKBBell.obj XKBBind.obj XKBCompat.obj XKBCtrls.obj+
 XKBCvt.obj XKBExtDev.obj XKBGAlloc.obj XKBGeom.obj XKBGetByName.obj+
 XKBGetMap.obj XKBleds.obj XKBList.obj XKBMAlloc.obj XKBNames.obj+
-XKBRdBuf.obj XKBSetMap.obj XKBUse.obj+
+XKBRdBuf.obj XKBSetMap.obj XKBUse.obj XKBMisc.obj+
 wcWrap.obj x11trans.obj ximtrans.obj xyY.obj /NOL /NOD /BAT
 X11.dll
 

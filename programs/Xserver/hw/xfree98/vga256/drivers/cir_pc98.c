@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.0 1996/01/13 12:22:58 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -37,6 +37,12 @@ static void enter_ganbwap( void );
 static void enter_wabs( void );
 #endif
 #endif
+
+#ifdef PC98_WABEP
+static void init_wabep( void );
+static void enter_wabep( void );
+#endif
+
 #ifdef PC98_NKVNEC
 static void init_nkvnec( void );
 static void enter_nkvnec( void );
@@ -186,6 +192,95 @@ enter_wabs(void)
 #endif /*PC98_WAB */
 #endif /* PC98_GANB_WAP || PC98_WAB */
 
+#ifdef PC98_WABEP
+static void
+init_wabep(void)
+{
+    static unsigned short inidt1[20]={0x0200,0x0300,0x0101,0x0f02,0x0e04,
+				      0x1206,0x0107,0x0008,0x6e0b,0x4e0c,
+				      0x750d,0x550e,0x540f,0xf016,0x0218,
+				      0x2a1b,0x3a1c,0x341d,0x361e,0x251f};
+    static unsigned short inidt2[28]={0x5f01,0x4f02,0x5003,0x8204,0x5405,
+				      0x8006,0x0b07,0x3e08,0x0009,0x400a,
+				      0x000b,0x000c,0x000d,0x000e,0x000f,
+				      0x0010,0xea11,0x0c12,0xdf13,0x5014,
+				      0x0015,0xe116,0x0a17,0xe318,0xff19,
+				      0x321a,0x901b,0x221c};
+    static unsigned char  inidt3[10]={0x10,0x41,0x11,0x00,0x12,0x0f,0x13,
+				      0x00,0x14,0x00};
+    static unsigned short inidt4[13]={0x000b,0x4005,0x0000,0x0001,0x0002,
+				      0x0003,0x0004,0x0506,0x0f07,0xff08,
+				      0x0010,0xff11,0x0431};
+    unsigned int tmp;
+    /* Init Sync.(sub_20) */
+    _outb(0x46e8, 0x18); _outb(0x0d02, 0x01);
+    _outb(0x46e8, 0x08); _outb(0x0f42, 0xe3);
+    _outb(0x0f5a, 0x00);
+    _outw(0x0f44, 0x1206);
+    _outw(0x0f44, 0x3017);
+    _outw(0x0f54, 0x0011);
+    _outb(0x0f54, 0x27);
+    _inb(0x0f55);
+
+    /* ---- step 2 ---- (sub_23) */
+    _outb(0x0f46, 0xff); 
+    _inb(0x0f46); _inb(0x0f46); _inb(0x0f46); _inb(0x0f46);
+    _outb(0x0f46, 0x20); 
+    /* ---- step 3 ---- (sub_24) */
+    for(tmp=0;tmp<20;tmp++)       _outw(0x0f44, inidt1[tmp]);
+    /* ---- step 4 ---- (sub_26) */
+    for(tmp=0;tmp<28;tmp++)       _outw(0x0f54, inidt2[tmp]);
+    /* ---- step 5 ---- (sub_27) */
+    _outb(0x0f54, 0x24);
+    if((_inb(0x0f55) & 0x80)==0x80)
+        _outb(0x0f40, _inb(0x0f41)); 
+    for(tmp=0;tmp<10;tmp++)       _outb(0x0f40, inidt3[tmp]);
+    /* ---- step 6 ---- */
+    for(tmp=0;tmp<13;tmp++)       outw(0x3ce, inidt4[tmp]);
+    /* ---- step 7 ---- (sub_28)*/
+    _inb(0x0f5a);
+    _outb(0x0f40, 0x20);
+    _inb(0x0f5a);
+    _inb(0x0f46);_inb(0x0f46);_inb(0x0f46);_inb(0x0f46);
+    _outb(0x0f46,0x20);
+    _outb(0x0f46,0xff);
+    /* ---- step 8 ---- (sub_29)*/
+    _outb(0x0f54,0x24);
+    if((_inb(0x0f55) & 0x80)==0x80)
+        _outb(0x0f40, _inb(0x0f41));
+
+    return;
+}
+
+static void
+enter_wabep(void)
+{
+    unsigned char temp;
+
+    /* Initialize WAB-S.  X_MODE_ON -> 8colors mode.*/
+    _outb(0x6A,0x00); /* Do 8 colors mode */
+    _outb(0x7C,0x00); /* GRCG OFF */
+
+    outb(0x3C4,0x06);
+    outb(0x3C5,0x12);	 /* unlock cirrus special */
+
+    _outb(0xf5c,0xFB); /* switch display. normal --> WAB */
+    _outb(0xf5d,0xFA); /* WAB -> normal */
+    _outb(0xf5c,0xFB); /* switch display. normal --> WAB */
+
+    outb(0x3C4,0x0F);
+    temp = inb(0x3C5);
+    temp = 0x17;
+    outb(0x3C4,0x0F);
+    outb(0x3C5,temp);
+
+    outb(0x3C4,0x0F);
+    temp = inb(0x3C5);
+
+    return;
+}
+#endif /* PC98_WAB */
+
 #ifdef PC98_NKVNEC
 static void
 init_nkvnec(void)
@@ -314,6 +409,9 @@ short swtch;
 #if defined(PC98_GANB_WAP) || defined(PC98_WAB)
 		init_wabs_ganbwap();
 #endif
+#ifdef PC98_WABEP
+		init_wabep();
+#endif
 #ifdef PC98_NKVNEC
 	 	enter_nkvnec();
 		init_nkvnec();
@@ -334,6 +432,9 @@ short swtch;
 #ifdef PC98_WAB
 	enter_wabs();
 #endif
+#ifdef PC98_WABEP
+	enter_wabep();
+#endif
     } else {
 	/* switch X -> normal */
 #ifdef PC98_GANB_WAP
@@ -351,6 +452,9 @@ short swtch;
 #endif
 #ifdef PC98_WAB
 	_outb(0x40E1,0xFA);
+#endif
+#ifdef PC98_WABEP
+	_outb(0xf5d,0xFA);
 #endif
     }
     return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.5 1995/05/27 03:01:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.6 1996/02/04 08:56:31 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -61,22 +61,50 @@ int chip, *Chipset;
 {
 	if (chip == CHIP_MACH64)
 	{
-		chip = inpl(CONFIG_CHIP_ID) & 0xFFFF;
-		switch (chip)
+		chip = inpl(CONFIG_CHIP_ID);
+		switch (chip & 0xFFFF)
 		{
+		case 0x00D7:
+		case 0x4758:
+			switch ((chip & 0xFF000000) >> 24)
+			{
+			case 0x00:
+				*Chipset = CHIP_ATI88800GXC;
+				break;
+			case 0x01:
+				*Chipset = CHIP_ATI88800GXD;
+				break;
+			case 0x02:
+				*Chipset = CHIP_ATI88800GXE;
+				break;
+			case 0x03:
+				*Chipset = CHIP_ATI88800GXF;
+				break;
+			default:
+				Chip_data = chip;
+				*Chipset = CHIP_ATI_UNK;
+				break;
+			}
+			break;
 		case 0x0057:
+		case 0x4358:
 			*Chipset = CHIP_ATI88800CX;
 			break;
-		case 0x00D7:
-			*Chipset = CHIP_ATI88800GX;
+		case 0x0053:
+		case 0x4354:
+			*Chipset = CHIP_ATI88800CT;
+			break;
+		case 0x0093:
+		case 0x4554:
+			*Chipset = CHIP_ATI88800ET;
 			break;
 		default:
-			Chip_data = ((chip >> 5) & 0x1F) + 0x41;
+			Chip_data = chip;
 			*Chipset = CHIP_ATI_UNK;
 			break;
 		}
 	}
-	else
+	else /* if (chip == CHIP_MACH32) */
 	{
 		chip = inpw(CHIP_ID);
 		if (chip == 0xFFFF)
@@ -96,7 +124,7 @@ int chip, *Chipset;
 			*Chipset = CHIP_ATI68800AX;
 			break;
 		default:
-			Chip_data = ((chip >> 5) & 0x1F) + 0x41;
+			Chip_data = chip;
 			*Chipset = CHIP_ATI_UNK;
 			break;
 		}
@@ -142,10 +170,11 @@ int *Chipset;
 				MyName);
 			return(FALSE);
 		}
+
+		result = TRUE;
+
 		if ((bios[0] == '3') && (bios[1] == '1'))
 		{
-			result = TRUE;
-
 			/* Set up Ports array */
 			if (ReadBIOS(0x10, bios, sizeof(Word)) != sizeof(Word))
 			{
@@ -189,7 +218,9 @@ int *Chipset;
 				Probe_ATI_ChipID(CHIP_MACH64, Chipset);
 				break;
 			default:
-				Chip_data = bios[3];
+				Chip_data = (((((bios[0] << 8) |
+						 bios[1]) << 8) |
+						 bios[2]) << 8) | bios[3];
 				*Chipset = CHIP_ATI_UNK;
 				break;
 			}
@@ -197,7 +228,8 @@ int *Chipset;
 			/*
 			 * Sometimes, the BIOS lies about the chip.
 			 */
-			if (*Chipset >= CHIP_ATI28800_4)
+			if ((*Chipset >= CHIP_ATI28800_4) &&
+			    (*Chipset <= CHIP_ATI28800_6))
 			{
 				chip = rdinx(Ports[0], 0xAA) & 0x0F;
 				if (chip < 7)
@@ -210,6 +242,12 @@ int *Chipset;
 
 			DisableIOPorts(NUMPORTS, Ports);
 		}
+		else
+		{
+			Chip_data = (((((bios[0] << 8) | bios[1]) << 8) |
+					 bios[2]) << 8) | bios[3];
+			*Chipset = CHIP_ATI_UNK;
+		}
 	}
 	return(result);
 }
@@ -219,7 +257,7 @@ int Chipset;
 {
 	int Mem = 0;
 
-	if ((Chipset >= CHIP_ATI88800CX) && !Crippled_Mach64)
+	if ((Chipset >= CHIP_ATI88800GXC) && !Crippled_Mach64)
 		return (ATIMach_Descriptor.memcheck(CHIP_MACH64));
 	if ((Chipset >= CHIP_ATI68800_3) && !Crippled_Mach32)
 		return (ATIMach_Descriptor.memcheck(CHIP_MACH32));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.10 1996/01/13 12:22:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.11 1996/02/04 09:13:00 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -197,7 +197,7 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   /* check for bank boundaries. */
   srcAddr = cirrusBLTPatternAddress;
   CIRRUSSETWRITE(srcAddr);
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
   *(unsigned long *)(CIRRUSREADBASE() + srcAddr) = patternword1;
   *(unsigned long *)(CIRRUSREADBASE() + srcAddr + 4) = patternword2;
 #else
@@ -428,7 +428,7 @@ destpitch, rop)
 
     srcaddr = cirrusBLTPatternAddress;
     CIRRUSSETWRITE(srcaddr);
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     base = CIRRUSREADBASE();
 #else
     base = CIRRUSWRITEBASE();
@@ -490,7 +490,7 @@ destpitch, rop)
 
     srcaddr = cirrusBLTPatternAddress;
     CIRRUSSETWRITE(srcaddr);
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     base = CIRRUSREADBASE();
 #else
     base = CIRRUSWRITEBASE();
@@ -575,7 +575,7 @@ destpitch, rop)
      */
     srcaddr = cirrusBLTPatternAddress;
     CIRRUSSETWRITE(srcaddr);
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
     base = CIRRUSREADBASE();
 #else
     base = CIRRUSWRITEBASE();

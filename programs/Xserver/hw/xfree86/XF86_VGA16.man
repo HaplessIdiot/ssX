@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.13 1996/01/14 14:08:05 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.14 1996/02/04 08:56:11 dawes Exp $
 .TH XF86_VGA16 1 "Version 3.1.2C"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
@@ -22,7 +22,7 @@ server supports the following popular SVGA chipsets in 16-colour mode.
 .TP 4
 ATI:
 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
-68800LX, 88800CX, 88800GX
+68800LX, 88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX, 88800CT, 88800ET
 .TP 4
 Tseng:
 ET4000
@@ -73,7 +73,7 @@ are:
 .RS 1.5i
 .TP 4
 ATI:
-vgawonder
+ati (see README.ati for additional recoginzed names)
 .TP 4
 Tseng:
 et4000, et4000w32, et4000w32i, et4000w32p

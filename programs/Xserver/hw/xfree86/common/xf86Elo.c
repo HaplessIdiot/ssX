@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.3 1996/01/24 22:01:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.4 1996/02/04 09:06:09 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1187,3 +1187,18 @@ DeviceAssocRec elographics_assoc =
   "elographics",                /* config_section_name */
   xf86EloAllocate               /* device_allocate */
 };
+
+#ifdef DYNAMIC_MODULE
+/*
+ ***************************************************************************
+ *
+ * entry point of dynamic loading
+ *
+ ***************************************************************************
+ */
+void
+init_module()
+{
+    AddDeviceAssoc(&elographics_assoc);
+}
+#endif

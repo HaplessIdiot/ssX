@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.20 1996/01/13 12:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.21 1996/02/04 09:13:09 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -366,7 +366,7 @@ typedef struct
 
 #define setbank setreadbank
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define setwritebank_pc98(n) \
 	outw(0x3ce, 0x0a + ((n) << (cirrusBankShift - 1)));
 
@@ -375,7 +375,7 @@ typedef struct
 #endif
 
 /* Set up banking at video address addr. Bank is set, addr adjusted. */
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETREAD(addr) \
 	if (!cirrusUseLinear) { \
 		setreadbank(addr >> 14); \
@@ -390,7 +390,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETWRITE(addr) \
 	if (!cirrusUseLinear) { \
 		setreadbank(addr >> 14); \
@@ -405,7 +405,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETREAD_WAB(addr) \
 	if (!cirrusUseLinear) { \
 		setreadbank_pc98(addr >> 13); \
@@ -419,7 +419,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETSINGLE(addr) \
 	if (!cirrusUseLinear) { \
 		setreadbank_pc98(addr >> 13); \
@@ -431,7 +431,7 @@ typedef struct
 #endif
 
 /* Similar, but also assigns the bank value to a variable. */
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETREADB(addr, bank) \
 	if (!cirrusUseLinear) { \
 		bank = addr >> 14; \
@@ -448,7 +448,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETWRITEB(addr, bank) \
 	if (!cirrusUseLinear) { \
 		bank = addr >> 14; \
@@ -465,7 +465,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSETREADB_WAB(addr, bank) \
 	if (!cirrusUseLinear) { \
 		bank = addr >> 13; \
@@ -485,7 +485,7 @@ typedef struct
 
 /* Adjust the banking address, and maximize the size of the banking */
 /* region for the current address/bank. */
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKREADB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
@@ -510,7 +510,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKWRITEB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
@@ -535,7 +535,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKSINGLEB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		bank += addr >> 14; \
@@ -554,7 +554,7 @@ typedef struct
 
 /* Bank adjust and maximimize size of banking region for routines that */
 /* write from bottom to top. */
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKREVERSEDREADB(addr, bank, pitch) \
 	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
@@ -579,7 +579,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKREVERSEDWRITEB(addr, bank, pitch) \
 	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
@@ -604,7 +604,7 @@ typedef struct
 	}
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSCHECKREADB_WAB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x2000) { \
 		addr -= 0x2000; \
@@ -653,7 +653,7 @@ typedef struct
 /* The pointer base address of the video read/write window. */
 #define CIRRUSREADBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
 	: (unsigned char *)vgaBase)
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSWRITEBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
 	: (unsigned char *)vgaBase + 0x4000)
 #else
@@ -665,7 +665,7 @@ typedef struct
 
 /* Number of scanlines that fit in banking region (arbitrary number */
 /* for linear addressing mode). */
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSSINGLEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
 	: (0x8000 - (addr)) / (pitch))
 #else
@@ -673,7 +673,7 @@ typedef struct
 	: (0x10000 - (addr)) / (pitch))
 #endif
 
-#ifdef PC98_WAB
+#if defined(PC98_WAB) || defined(PC98_WABEP)
 #define CIRRUSWRITEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
 	: (0x4000 - (addr)) / (pitch))
 #else

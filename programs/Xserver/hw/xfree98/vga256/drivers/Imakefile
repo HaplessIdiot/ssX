@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/26 10:59:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.1 1996/01/24 22:03:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/Imakefile,v 3.2 1996/02/04 09:17:03 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -31,13 +31,13 @@ WABSSRCS = wabs/?*.c
 WABSOBJS = wabs/cir_drv.o
 #endif
 
-#if XF98SVGAServer
-SVGA98DIR  = generic
-SVGA98SRCS = generic/?*.c
-SVGA98OBJS = generic/?*_drv.o
+#if XF98WABEPServer
+WABEPDIR  = wabep
+WABEPSRCS = wabep/?*.c
+WABEPOBJS = wabep/?*_drv.o
 #endif
 
-SUBDIRS = $(GANBWAPDIR) $(NEC480DIR) $(NKVNECDIR) $(WABSDIR) $(SVGADIR)
+SUBDIRS = $(GANBWAPDIR) $(NEC480DIR) $(NKVNECDIR) $(WABSDIR) $(WABEPDIR)
 
 #if XF98GANBWAPServer
 NormalDepLibraryTarget(driverganbwap,$(GANBWAPDIR) $(GANBWAPOBJS),$(GANBWAPOBJS))
@@ -51,8 +51,8 @@ NormalDepLibraryTarget(drivernkvnec,$(NKVNECDIR) $(NKVNECOBJS),$(NKVNECOBJS))
 #if XF98WABSServer
 NormalDepLibraryTarget(driverwabs,$(WABSDIR) $(WABSOBJS),$(WABSOBJS))
 #endif
-#if XF98SVGAServer
-NormalDepLibraryTarget(driver256,$(SVGA98DIR),$(SVGA98OBJS))
+#if XF98WABEPServer
+NormalDepLibraryTarget(driverwabep,$(WABEPDIR),$(WABEPOBJS))
 #endif
 
 NormalLibraryObjectRule()

@@ -1,5 +1,5 @@
 /* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.8 1995/06/20 14:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.9 1996/01/05 13:20:02 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -760,7 +760,7 @@ ResetHosts (display)
     register HOST	*host;
     char                lhostname[120], ohostname[120];
     char 		*hostname = ohostname;
-    char		fname[32];
+    char		fname[100];
     FILE		*fd;
     char		*ptr;
     int                 i, hostlen;
@@ -795,9 +795,14 @@ ResetHosts (display)
         validhosts = host->next;
         FreeHost (host);
     }
+#ifndef __EMX__
     strcpy (fname, "/etc/X");
     strcat (fname, display);
     strcat (fname, ".hosts");
+#else
+    sprintf (fname, "/XFree86/lib/X11/X%s.hosts",display);
+    strcpy(fname, (char*)__SrvRedirRoot(fname));
+#endif /* __EMX__ */
     if (fd = fopen (fname, "r")) 
     {
         while (fgets (ohostname, sizeof (ohostname), fd))

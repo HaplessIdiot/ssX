@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.4 1994/12/17 10:10:29 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.5 1995/01/28 16:17:13 dawes Exp $ */
 
 /*
 
@@ -52,7 +52,9 @@ char **newenviron = NULL;
 #define setpgid(a,b)
 #define setuid(a)
 #define setgid(a)
-
+#define SHELL "cmd.exe"
+#define XINITRC "xinitrc.cmd"
+#define XSERVERRC "xservrc.cmd"
 #endif
 
 #ifndef SHELL
@@ -248,7 +250,14 @@ register char **argv;
 	 */
 	if (argc == 0 ||
 	    (**argv != '/' && **argv != '.')) {
+#ifndef __EMX__
 		*sptr++ = default_server;
+#else
+		*sptr = getenv("XSERVER");
+		if (!*sptr)
+			*sptr = "X.EXE";
+		sptr++;
+#endif
 	} else {
 		server_given = 1;
 		*sptr++ = *argv++;

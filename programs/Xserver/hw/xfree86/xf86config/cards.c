@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.6 1996/01/24 22:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.7 1996/02/04 09:15:39 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -56,6 +56,15 @@ char *l;
 {
 	if (fgets(l, 128, f) == NULL)
 		return -1;
+#ifdef __EMX__
+	{
+		char *p = strchr(l,'\r');
+		if (p) {
+			*p = '\n';
+			*(p+1) = '\0';
+		}
+	}
+#endif
 	return 0;
 }
 

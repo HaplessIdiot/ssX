@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.1 1996/01/24 22:02:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.2 1996/01/30 15:26:31 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -39,11 +39,15 @@
 #define INCL_DOSFILEMGR
 #define INCL_KBD
 #define INCL_VIO
+#define INCL_DOSMISC
+#define INCL_DOSPROCESS
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
 VIOMODEINFO OriginalVideoMode;
+void os2VideoNotify();
+void os2HardErrorNotify();
 
 void xf86OpenConsole()
 {
@@ -53,12 +57,25 @@ void xf86OpenConsole()
 	ULONG dummy;
 	KBDHWID hwid;
 	APIRET rc;
+	int VioTid;
 
 	ErrorF("xf86-OS/2: Console opened\n");
 	OriginalVideoMode.cb=sizeof(VIOMODEINFO);
 	rc=VioGetMode(&OriginalVideoMode,(HVIO)0);
 	if(rc!=0) ErrorF("xf86-OS/2: Could not get original video mode. RC=%d\n",rc);
 	xf86Info.consoleFd = -1;
+
+/* Start up the VIO monitor thread */
+	VioTid=_beginthread(os2VideoNotify,NULL,0x4000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started Vio thread, Tid=%d\n",VioTid);
+
+/* Start up the hard-error VIO monitor thread */
+	VioTid=_beginthread(os2HardErrorNotify,NULL,0x4000,(void *)NULL);
+	ErrorF("xf86-OS/2: Started hard error Vio mode monitor thread, Tid=%d\n",VioTid);
+
+/* Disable hard-errors through DosError */
+	rc = DosSuppressPopUps(0x0001L,'c');     /* Disable popups */
+	ErrorF("xf86-OS/2: Harderror popups disabled, redirected to c:\\popuplog.os2. Rc=%d\n",rc);
 
 	/* grab the keyboard */
 	rc = KbdGetFocus(0,0);
@@ -106,10 +123,14 @@ void xf86OpenConsole()
 
 void xf86CloseConsole()
 {
+	APIRET rc;
+
 	if (xf86Info.consoleFd != -1) {
 		KbdClose(xf86Info.consoleFd);
 	}
 	VioSetMode(&OriginalVideoMode,(HVIO)0);
+	rc = DosSuppressPopUps(0x0000L,'c');    /* Reenable popups */
+	ErrorF("xf86-OS/2: Harderror popups enabled. Rc=%d\n",rc);
 	return;
 }
 
@@ -127,3 +148,37 @@ void xf86UseMsg()
 	return;
 }
 
+char *__SrvRedirRoot(char *fname)
+{
+    /* This adds a further redirection by allowing the ProjectRoot
+     * to be prepended by the content of the envvar X11ROOT.
+     * This is for the purpose to move the whole X11 stuff to a different
+     * disk drive.
+     * The feature was added despite various environment variables
+     * because not all file opens respect them.
+     */
+    static char redirname[300]; /* enough for long filenames */
+    char *root;
+
+    /* if name does not start with /, assume it is not root-based */
+    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
+	return fname;
+
+    root = (char*)getenv("X11ROOT");
+    if (root==0 || 
+	(fname[1]==':' && isalpha(fname[0]) ||
+        (strlen(fname)+strlen(root)+2) > 300))
+	return fname;
+    sprintf(redirname,"%s%s",root,fname);
+    return access(redirname,R_OK)==0 ? redirname : fname;
+}
+
+char *__SrvRedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
+{
+    /* this first constructs a name from a format and up to three
+     * components, then adds a path
+     */
+    char buf[300];
+    sprintf(buf,format,arg1,arg2,arg3);
+    return __SrvRedirRoot(buf);
+}

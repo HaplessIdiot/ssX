@@ -4,21 +4,21 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.2 1996/01/24 22:03:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.3 1996/02/04 09:16:19 dawes Exp $ */
 
 #ifndef _PC98_VERSION_H
 #define _PC98_VERSION_H
 
 #define ORIGINAL_VER		"3.1.2"
 #define PC98_GENERAL_VER	" "
-#define PC98_GENERAL_PL		"11"
-#define PC98_GENERAL_NAME 	"XFree86-3.1.2 PC98 Server PL.11"
+#define PC98_GENERAL_PL		"12"
+#define PC98_GENERAL_NAME 	"XFree86-3.1.2 PC98 Server PL.12"
 
-#define PC98_SVGA_PL	 "2" 
-#define PC98_SVGA_BOARDS "WAB-S WAB-1000 WAB-2000 WSR-G WSR-E WAP-2000/4000 GA-98NB2/4\n\t\tPCNKV PCNKV2 PC9821Be/Bs/Bp/Xe PEGC" 
+#define PC98_SVGA_PL	 "3"
+#define PC98_SVGA_BOARDS "WAB-S WAB-1000 WAB-2000 WAB-EP WSR-G WSR-E WAP-2000/4000 GA-98NB2/4\n\t\tPCNKV PCNKV2 PC9821Be/Bs/Bp/Xe PEGC" 
 
 #define PC98_S3_PL	 "7" 
-#define PC98_S3_BOARDS	 "PW928 PW928G PW928II PW801 PW801+ PW801G PCSKB PCSKB2 \n\tNEC_WAB-A/B,Internal_928\n\t(Under testing: PW805i PCSKB4 PW928LB NEC_Internal_864)" 
+#define PC98_S3_BOARDS	 "PW928 PW928G PW928II PW801 PW801+ PW801G PCSKB PCSKB2 \n\tNEC_WAB-A/B,Internal_928\n\t(Under testing: PW805i PCSKB4 PW928LB PW964LB NEC_Internal_864)"
 
 #define PC98_VGA16_PL	  "0" 
 #define PC98_VGA16_BOARDS "EGC(normal mode)" 
@@ -35,6 +35,8 @@ PC98 servers were included in XFree86 main tree.
 PL.9	Xfree98 directory was created.
 PL.10	PC98 initialize code was separated from cir_driver.c. (made cir_pc98.c)
 PL.11   Imakefiles were updated. XF98Conf.cpp was added.
+PL.12	WAB-EP Server was added.
+
 =======================================================================
 
 XFree86(98)-3.1.2 TEST Version

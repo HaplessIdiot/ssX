@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.3 1995/12/26 08:34:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.4 1996/01/14 13:33:19 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -30,7 +30,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.3 1995/12/26 08:34:44 dawes Exp $
 #define ElographicsSupport	NO
 #endif
 
-#if BuildXInputExt
+#if !BuildDynamicLoading && BuildXInputExt
 # if JoystickSupport
 #  define JoystickDefines -DJOYSTICK_SUPPORT
 # else
@@ -46,7 +46,4 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.3 1995/12/26 08:34:44 dawes Exp $
 # else
 #  define ElographicsDefines
 # endif
-
-    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines
-
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bank.s,v 3.0 1996/01/13 12:22:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bank.s,v 3.1 1996/02/04 09:12:59 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Bill Reynolds, Santa Fe, New Mexico
@@ -46,17 +46,26 @@
 #define cirrus1MBSHIFT CONST(10)	/* 8 + (lg(16KB) - lg(4KB))     */
 #define cirrus2MBSHIFT CONST(8)		/* 8 + (lg(16KB) - lg(16KB))    */
 #else
+#ifdef PC98_WABEP
+#define cirrus1MBSHIFT CONST(10)	/* 8 + (lg(16KB) - lg(4KB))     */
+#define cirrus2MBSHIFT CONST(9)		/* 8 + (lg(32KB) - lg(16KB))    */
+#else
 #define cirrus1MBSHIFT CONST(11)	/* 8 + (lg(32KB) - lg(4KB))     */
 #define cirrus2MBSHIFT CONST(9)		/* 8 + (lg(32KB) - lg(16KB))    */
+#endif
 #endif
 
 #if defined(PC98_WAB) || defined(PC98_GANB_WAP)
 #define GRX	CONST(0x4ee0)
 #else
+#ifdef PC98_WABEP
+#define GRX	CONST(0xf4e)
+#else
 #ifdef PC98_NKVNEC
 #define GRX	CONST(0x0cae)
 #else
 #define GRX	CONST(0x3ce)
+#endif
 #endif
 #endif
 
