@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.15 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.16 2002/03/12 23:28:54 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -535,7 +535,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    i = mac->debug_break;
 		    ++mac->debug_break;
 		    GCProtect();
-		    obj = CONS(ATOM2(arg),
+		    obj = CONS(ATOM(arg),
 			       CONS(INTEGER(i),
 				    CONS(INTEGER(LispDebugBreakFunction),
 					 CONS(INTEGER(0), NIL))));
@@ -557,7 +557,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    *ptr = toupper(*ptr);
 		    ++ptr;
 		}
-		atom = ATOM2(arg);
+		atom = ATOM(arg);
 		val = LispGetVar(mac, atom);
 		if (val == NULL) {
 		    LispFputs(Stdout, "* No variable named '");
@@ -723,7 +723,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    *ptr = toupper(*ptr);
 		    ++ptr;
 		}
-		obj = LispGetVar(mac, ATOM2(arg));
+		obj = LispGetVar(mac, ATOM(arg));
 		if (obj != NULL) {
 		    LispDoWriteObject(mac, NIL, obj, 1);
 		    LispFputc(Stdout, '\n');
