@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.15 1998/10/04 09:38:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.16 1998/12/20 11:57:54 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -129,6 +129,12 @@ void OsVendorInit()
 }
 
 void OsVendorFatalError()
+{
+    return;
+}
+
+void
+OsVendorVErrorF(const char *f, va_list args)
 {
     return;
 }

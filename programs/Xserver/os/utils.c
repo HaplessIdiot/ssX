@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.48 1999/03/20 08:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.49 1999/04/04 00:21:01 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -126,11 +126,6 @@ Bool PanoramiXOneExposeRequest = FALSE;
 #endif
 
 int auditTrailLevel = 1;
-
-void ddxUseMsg();
-#if NeedVarargsPrototypes
-void VErrorF(const char*, va_list);
-#endif
 
 Bool Must_have_memory = FALSE;
 
@@ -437,8 +432,6 @@ static void AbortServer() __attribute__((noreturn));
 static void
 AbortServer()
 {
-    extern void AbortDDX();
-
     OsCleanup();
     AbortDDX();
     fflush(stderr);
@@ -1464,6 +1457,9 @@ VErrorF(f, args)
         sync();
 #else
     vfprintf(stderr, f, args);
+#ifdef DDXOSVERRORF
+    OsVendorVErrorF(f, args);
+#endif
 #endif /* AIXV3 */
 }
 

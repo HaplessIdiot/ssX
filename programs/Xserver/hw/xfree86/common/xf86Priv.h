@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.38 1999/04/04 00:20:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.39 1999/04/24 07:36:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -54,6 +54,8 @@ extern Bool xf86ShowUnresolved;
 extern xf86InfoRec xf86Info;
 extern const char *xf86ModulePath;
 extern MessageType xf86ModPathFrom;
+extern const char *xf86LogFile;
+extern MessageType xf86LogFileFrom;
 extern serverLayoutRec xf86ConfigLayout;
 extern Pix24Flags xf86ConfigPix24;
 
@@ -76,9 +78,11 @@ extern int xf86NumScreens;
 extern pciVideoPtr *xf86PciVideoInfo;
 extern const char *xf86VisualNames[];
 extern int xf86Verbose;                 /* verbosity level */
+extern int xf86LogVerbose;		/* log file verbosity level */
 extern Bool xf86ProbeOnly;
 
 #define DEFAULT_VERBOSE		1
+#define DEFAULT_LOG_VERBOSE	3
 #define DEFAULT_UNRESOLVED	TRUE
 #define DEFAULT_BEST_REFRESH	FALSE
 #define DEFAULT_DPI		75
@@ -115,6 +119,10 @@ void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
 void xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask);
 void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
 void xf86SigHandler(int signo);
+
+/* xf86Helper.c */
+void xf86LogInit(void);
+void xf86CloseLog(void);
 
 /* xf86Init.c */
 Bool xf86LoadModules(char **list, pointer *optlist);

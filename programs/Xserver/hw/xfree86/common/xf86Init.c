@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.109 1999/04/24 07:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.110 1999/04/27 12:05:06 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -142,6 +142,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
 
     xf86PrintBanner();
+    {
+	time_t t;
+	const char *ct;
+	t = time(NULL);
+	ct = ctime(&t);
+	xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
+			xf86LogFile, ct);
+    }
 
     /* Read and parse the config file */
     if( ! xf86HandleConfigFile() ) {
@@ -718,6 +726,7 @@ OsVendorInit()
   loadableFonts = TRUE;
 #endif
 
+  xf86LogInit();
 }
 
 /*
@@ -739,6 +748,8 @@ ddxGiveUp()
 #endif
 
     xf86CloseConsole();
+
+    xf86CloseLog();
 
     /* If an unexpected signal was caught, dump a core for debugging */
     if (xf86Info.caughtSignal)
@@ -841,6 +852,19 @@ ddxProcessArgument(int argc, char **argv, int i)
       xf86ModPathFrom = X_CMDLINE;
       return 2;
     }
+    else if (!strcmp(argv[i], "-logfile"))
+    {
+      char *lf;
+      if (!argv[i + 1])
+	return 0;
+      lf = malloc(strlen(argv[i + 1]) + 1);
+      if (!lf)
+	FatalError("Can't allocate memory for LogFile\n");
+      strcpy(lf, argv[i + 1]);
+      xf86LogFile = lf;
+      xf86LogFileFrom = X_CMDLINE;
+      return 2;
+    }
   }
   if (!strcmp(argv[i],"-showunresolved"))
   {
@@ -901,8 +925,34 @@ ddxProcessArgument(int argc, char **argv, int i)
 #endif
   if (!strcmp(argv[i],"-verbose"))
   {
-    if (!xf86Verbose++)
-      xf86Verbose = 2;
+    if (++i < argc && argv[i])
+    {
+      char *end;
+      long val;
+      val = strtol(argv[i], &end, 0);
+      if (*end == '\0')
+      {
+	xf86Verbose = val;
+	return 2;
+      }
+    }
+    xf86Verbose++;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-logverbose"))
+  {
+    if (++i < argc && argv[i])
+    {
+      char *end;
+      long val;
+      val = strtol(argv[i], &end, 0);
+      if (*end == '\0')
+      {
+	xf86LogVerbose = val;
+	return 2;
+      }
+    }
+    xf86LogVerbose++;
     return 1;
   }
   if (!strcmp(argv[i],"-quiet"))
@@ -1072,10 +1122,12 @@ ddxUseMsg()
   {
     ErrorF("-xf86config file       specify a configuration file\n");
     ErrorF("-modulepath paths      specify the module search path\n");
+    ErrorF("-logfile file          specify a log file name\n");
     ErrorF("-scanpci               execute the scanpci module and exit\n");
   }
   ErrorF("-probeonly             probe for devices, then exit\n");
-  ErrorF("-verbose               verbose startup messages\n");
+  ErrorF("-verbose [n]           verbose startup messages\n");
+  ErrorF("-logverbose [n]        verbose log messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
   ErrorF("-pixmap24              use 24bpp pixmaps for depth 24\n");
   ErrorF("-pixmap32              use 32bpp pixmaps for depth 24\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.25 1999/01/31 12:22:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.26 1999/04/04 00:21:00 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -506,6 +506,8 @@ extern void OsVendorFatalError(
     void
 #endif
 );
+
+extern void OsVendorVErrorF(const char *, va_list);
 
 extern void OsVendorInit(
 #if NeedFunctionPrototypes

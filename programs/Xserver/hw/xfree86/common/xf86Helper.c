@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.36 1999/04/18 04:08:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.37 1999/04/25 10:02:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -30,6 +30,7 @@
 #endif
 
 static int xf86ScrnInfoPrivateCount = 0;
+static FILE *logfile = NULL;
 
 
 #ifdef XFree86LOADER
@@ -917,6 +918,59 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     return ret;
 }
 
+/* These functions do the actual writes */
+static void
+VWriteStderr(int verb, const char *f, va_list args)
+{
+    if (xf86Verbose >= verb)
+	vfprintf(stderr, f, args);
+}
+
+static void
+WriteStderr(int verb, const char *f, ...)
+{
+    va_list args;
+
+    va_start(args, f);
+    VWriteStderr(verb, f, args);
+    va_end(args);
+}
+
+static void
+VWriteLogFile(int verb, const char *f, va_list args)
+{
+    if (logfile && xf86LogVerbose >= verb)
+	vfprintf(logfile, f, args);
+}
+
+static void
+WriteLogFile(int verb, const char *f, ...)
+{
+    va_list args;
+
+    va_start(args, f);
+    VWriteLogFile(verb, f, args);
+    va_end(args);
+}
+
+static void
+VWrite(int verb, const char *f, va_list args)
+{
+    VWriteStderr(verb, f, args);
+    VWriteLogFile(verb, f, args);
+}
+
+static void
+Write(int verb, const char *f, ...)
+{
+    va_list args;
+
+    va_start(args, f);
+    VWriteStderr(verb, f, args);
+    VWriteLogFile(verb, f, args);
+    va_end(args);
+}
+
 /* Print driver messages in the standard format */
 
 void
@@ -925,8 +979,8 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 {
     char *s = X_UNKNOWN_STRING;
 
-    /* Ignore xf86Verbose for X_ERROR */
-    if (xf86Verbose >= verb || type == X_ERROR) {
+    /* Ignore verbosity for X_ERROR */
+    if (xf86Verbose >= verb || xf86LogVerbose >= verb || type == X_ERROR) {
 	switch (type) {
 	case X_PROBED:
 	    s = X_PROBE_STRING;
@@ -945,8 +999,8 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	    break;
 	case X_ERROR:
 	    s = X_ERROR_STRING;
-	    if (verb <= 0)
-		verb = 1;
+	    if (verb > 0)
+		verb = 0;
 	    break;
 	case X_WARNING:
 	    s = X_WARNING_STRING;
@@ -960,24 +1014,14 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	}
 
 	if (s != NULL)
-	    ErrorF("%s ", s);
+	    Write(verb, "%s ", s);
 	if (scrnIndex >= 0 && scrnIndex < xf86NumScreens)
-	    ErrorF("%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
-	VErrorF(format, args);
-	if (type == X_ERROR && xf86Verbose < verb) {
-	    ErrorF(X_ERROR_STRING " Please re-run the server with");
-	    switch(--verb) {
-	    case 0:
-		ErrorF("out the '-quiet' command line flag");
-		break;
-	    case 1:
-		ErrorF(" the '-verbose' command line flag");
-		break;
-	    default:
-		ErrorF(" %d '-verbose' command line flags", verb);
-		break;
-	    }
-	    ErrorF(" >before< reporting a problem.\n");
+	    Write(verb, "%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
+	VWrite(verb, format, args);
+	if (type == X_ERROR && xf86Verbose < xf86LogVerbose) {
+	    WriteStderr(xf86Verbose,
+			X_ERROR_STRING " Please check the log file \"%s\""
+			" >before<\n\treporting a problem.\n", xf86LogFile);
 	}
     }
 }
@@ -1034,20 +1078,63 @@ xf86ErrorFVerb(int verb, const char *format, ...)
     va_list ap;
 
     va_start(ap, format);
-    if (xf86Verbose >= verb)
-	VErrorF(format, ap);
+    if (xf86Verbose >= verb || xf86LogVerbose >= verb)
+	VWrite(verb, format, ap);
     va_end(ap);
 }
 
+/* Like xf86ErrorFVerb, but with an implied verbose level of 1 */
 void
 xf86ErrorF(const char *format, ...)
 {
     va_list ap;
 
     va_start(ap, format);
-    if (xf86Verbose >= 1)
-	VErrorF(format, ap);
+    if (xf86Verbose >= 1 || xf86LogVerbose >= 1)
+	VWrite(1, format, ap);
     va_end(ap);
+}
+
+void
+xf86LogInit()
+{
+    char *lf;
+
+#define LOGSUFFIX ".log"
+
+    /* Get the log file name */
+    if (xf86LogFileFrom == X_DEFAULT) {
+	/* Append the display number and ".log" */
+	lf = malloc(strlen(xf86LogFile) + strlen(display) +
+		    strlen(LOGSUFFIX) + 1);
+	if (!lf)
+	    FatalError("Cannot allocate space for the log file name\n");
+	sprintf(lf, "%s%s" LOGSUFFIX, xf86LogFile, display);
+	xf86LogFile = lf;
+    }
+    if ((logfile = fopen(xf86LogFile, "w")) == NULL)
+	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
+    setvbuf(logfile, NULL, _IONBF, 0);
+#if 0
+    xf86Msg(xf86LogFileFrom, "Log file is \"%s\"\n", xf86LogFile);
+#endif
+
+#undef LOGSUFFIX
+}
+
+void
+xf86CloseLog()
+{
+    if (logfile) {
+	fclose(logfile);
+	logfile = NULL;
+    }
+}
+
+void
+OsVendorVErrorF(const char *f, va_list args)
+{
+    VWriteLogFile(xf86LogVerbose, f, args);
 }
 
 

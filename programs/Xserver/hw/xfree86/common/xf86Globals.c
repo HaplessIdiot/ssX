@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.10 1999/03/14 03:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.11 1999/04/24 07:36:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -133,6 +133,8 @@ xf86InfoRec xf86Info = {
 };
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;
 MessageType xf86ModPathFrom = X_DEFAULT;
+const char *xf86LogFile = DEFAULT_LOGPREFIX;
+MessageType xf86LogFileFrom = X_DEFAULT;
 serverLayoutRec xf86ConfigLayout = {NULL, };
 XF86ConfigPtr xf86configptr = NULL;
 Bool xf86Exiting = FALSE;
@@ -165,6 +167,7 @@ char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
 Bool xf86ProbeOnly = FALSE;
 int xf86Verbose = DEFAULT_VERBOSE;
+int xf86LogVerbose = DEFAULT_LOG_VERBOSE;
 int xf86FbBpp = -1;
 Pix24Flags xf86Pix24 = Pix24DontCare;
 int xf86Depth = -1;
