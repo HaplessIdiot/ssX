@@ -2,7 +2,7 @@ STARTENCODING big5hkscs-0
 # This file is generated from  Anthony Fok's  (<anthony@thizlinux.com>)
 # http://www.thizlinux.com/~anthony/hkscs/Correct-Big5HKSCS-to-Unicode-by-b5.txt
 # by Jungshik Shin <jshin@mailaps.org>
-# $XFree86$
+# $XFree86: xc/fonts/encodings/large/big5hkscs-0.enc,v 1.1 2003/08/26 11:34:53 eich Exp $
 SIZE 0xFf 0xFF
 FIRSTINDEX 0x80 0x40
 STARTMAPPING unicode
@@ -16550,6 +16550,7 @@ UNDEFINE 0x0000 0xFEFE
 0xFEFB  0x3EA8
 0xFEFC  0x79C6
 0xFEFD  0xE30F
+0xFEFE  0x79D4
 ENDMAPPING
 # there's no EID for Big5HKSCS in Truetype. Just use the one for Big5.
 STARTMAPPING cmap 3 4
