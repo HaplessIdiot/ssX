@@ -1,5 +1,15 @@
 STARTENCODING iso8859-6.8x
+# Encoding file for the LangBox.com's Arabic encoding iso8859-6.8x
+# written by Simon Montagu <smontagu@smontagu.org> and
+# Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
+# See also:
+# - http://www.langbox.com/arabic/fontara8X.html
+# - http://www.langbox.com/arabic/FontSet_ISO8859-6-8X.html
+# - http://bugs.xfree86.org/show_bug.cgi?id=420
+# - http://bugzilla.mozilla.org/show_bug.cgi?id=78201
+# $XFree86$
 STARTMAPPING unicode
+UNDEFINE 0x0000 0xFFFF
 0x8D	0xFEEF
 0x8E	0xFE94
 0x8F	0xFEB2
