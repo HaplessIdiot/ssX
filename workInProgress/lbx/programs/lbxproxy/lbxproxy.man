@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/workInProgress/lbx/programs/lbxproxy/lbxproxy.man,v 3.0 1995/01/15 10:41:16 dawes Exp $
 .\" Copyright (c) 1984 - 1991, 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -119,7 +119,7 @@ General information: X(1)
 .PP
 Server-specific man pages: 
 Xserver(1), Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
-XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
+XF86_Accel(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
 .SH AUTHORS
 The LBX team includes Dave Lemke, Dale Tonogai, Keith Packard and
 Jim Fulton from NCD, and Chris Kanterjiev from Xerox.
