@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.1 1998/11/15 04:30:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.2 1998/11/22 10:37:16 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #ifdef _XOPEN_SOURCE
@@ -95,6 +95,8 @@ static Bool CMapAllocateColormapPrivate(ColormapPtr);
 static Bool CMapInitDefMap(ColormapPtr);
 static void CMapRefreshColors(ColormapPtr, int, int*);
 static void CMapReinstallMap(ColormapPtr);
+static void UnwrapScreen(ScreenPtr pScreen);
+
 
 
 Bool xf86HandleColormaps(
@@ -175,15 +177,10 @@ Bool xf86HandleColormaps(
     pDefMap = (ColormapPtr) LookupIDByType(pScreen->defColormap, RT_COLORMAP);
 
     if(!CMapAllocateColormapPrivate(pDefMap)) {
-	pScreen->CloseScreen = pScreenPriv->CloseScreen;
-	pScreen->CreateColormap = pScreenPriv->CreateColormap;
-	pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
-	pScreen->StoreColors = pScreenPriv->StoreColors;
-	xfree(gamma);
-	xfree(indicies);
-	xfree(pScreenPriv);
+        UnwrapScreen(pScreen);
 	return FALSE;
     }
+
     /* Force the initial map to be loaded */
     miInstalledMaps[pScreen->myNum] = NULL;
     CMapInstallColormap(pDefMap);
@@ -203,22 +200,7 @@ CMapInitDefMap(ColormapPtr cmap)
 static Bool
 CMapCloseScreen (int i, ScreenPtr pScreen)
 {
-    CMapScreenPtr pScreenPriv = 
-        (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-
-    pScreen->CloseScreen = pScreenPriv->CloseScreen;
-    pScreen->CreateColormap = pScreenPriv->CreateColormap;
-    pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
-    pScreen->InstallColormap = pScreenPriv->InstallColormap;
-    pScreen->StoreColors = pScreenPriv->StoreColors;
-
-    pScrn->EnterVT = pScreenPriv->EnterVT; 
-    pScrn->SwitchMode = pScreenPriv->SwitchMode; 
-
-    xfree(pScreenPriv->gamma);
-    xfree(pScreenPriv->PreAllocIndicies);
-    xfree(pScreenPriv);
+    UnwrapScreen(pScreen);
 
     return (*pScreen->CloseScreen) (i, pScreen);
 }
@@ -404,7 +386,6 @@ CMapInstallColormap(ColormapPtr pmap)
     int		  index = pScreen->myNum;
     CMapScreenPtr pScreenPriv = 
         (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
-    Bool	  load;
 
     if (pmap == miInstalledMaps[index])
 	return;
@@ -597,14 +578,35 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 
 }
 
+static void
+UnwrapScreen(ScreenPtr pScreen)
+{
+    CMapScreenPtr pScreenPriv = 
+        (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+    pScreen->CloseScreen = pScreenPriv->CloseScreen;
+    pScreen->CreateColormap = pScreenPriv->CreateColormap;
+    pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
+    pScreen->InstallColormap = pScreenPriv->InstallColormap;
+    pScreen->StoreColors = pScreenPriv->StoreColors;
+
+    pScrn->EnterVT = pScreenPriv->EnterVT; 
+    pScrn->SwitchMode = pScreenPriv->SwitchMode; 
+
+    xfree(pScreenPriv->gamma);
+    xfree(pScreenPriv->PreAllocIndicies);
+    xfree(pScreenPriv);
+}
+
 
 static void 
 ComputeGamma(CMapScreenPtr priv)
 {
     int elements = priv->gammaElements - 1;
-    double RedGamma = (double)priv->pScrn->gamma.red;
-    double GreenGamma = (double)priv->pScrn->gamma.green;
-    double BlueGamma = (double)priv->pScrn->gamma.blue;
+    double RedGamma = 1.0 / (double)priv->pScrn->gamma.red;
+    double GreenGamma = 1.0 / (double)priv->pScrn->gamma.green;
+    double BlueGamma = 1.0 / (double)priv->pScrn->gamma.blue;
     int i;
 
     for(i = 0; i <= elements; i++) {
@@ -612,19 +614,19 @@ ComputeGamma(CMapScreenPtr priv)
 	    priv->gamma[i].red = i;
 	else
 	    priv->gamma[i].red = (CARD16)(pow((double)i/(double)elements,
-			1.0 / RedGamma) * (double)elements + 0.5);
+			RedGamma) * (double)elements + 0.5);
 
 	if(GreenGamma == 1.0)  
 	    priv->gamma[i].green = i;
 	else
 	    priv->gamma[i].green = (CARD16)(pow((double)i/(double)elements,
-			1.0 / GreenGamma) * (double)elements + 0.5);
+			GreenGamma) * (double)elements + 0.5);
 
 	if(BlueGamma == 1.0)  
 	    priv->gamma[i].blue = i;
 	else
 	    priv->gamma[i].blue = (CARD16)(pow((double)i/(double)elements,
-			1.0 / BlueGamma) * (double)elements + 0.5);
+			BlueGamma) * (double)elements + 0.5);
     }
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.9 1998/11/01 12:36:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.10 1998/11/15 10:22:39 dawes Exp $ */
 
 
 /*
@@ -132,6 +132,7 @@ typedef struct _vgaHWRec {
     vgaHWWriteProcPtr		writeDacReadAddr;
     vgaHWWriteProcPtr		writeDacData;
     vgaHWReadProcPtr		readDacData;
+    pointer                     ddc;
 } vgaHWRec;
 
 /* Some macros that VGA drivers can use in their ChipProbe() function */
@@ -193,8 +194,8 @@ void vgaHWLock(vgaHWPtr hwp);
 void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 Bool vgaHWHandleColormaps(ScreenPtr pScreen);
-
-
+void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, int speed);
+    
 /* vgaCmap.c */
 
 int vgaListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);

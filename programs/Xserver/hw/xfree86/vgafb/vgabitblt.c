@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/vgabitblt.c,v 1.1.2.2 1998/02/14 06:31:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/vgabitblt.c,v 1.2 1998/07/25 16:58:14 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -471,7 +471,6 @@ vga256CopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask
 	    if (xoffDst)
 	    {
 	    	srcx += (PPW-xoffDst);
-	    	dstx += (PPW-xoffDst);
 	    	xoffSrc = srcx & MFB_PIM;
 	    }
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbunmap.h,v 1.2 1998/07/25 09:07:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbunmap.h,v 1.3 1998/11/22 10:37:03 dawes Exp $ */
 /*
  * Copyright (C) 1994-1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -33,8 +33,6 @@
 #undef CATNAME
 
 #undef cfbScreenPrivateIndex
-#undef cfbGCPrivateIndex
-#undef cfbWindowPrivateIndex
 #undef QuartetBitsTable
 #undef QuartetPixelMaskTable
 #undef cfbAllocatePrivates

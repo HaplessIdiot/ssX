@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbmap.h,v 3.5 1998/10/04 09:37:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmap.h,v 3.6 1998/11/22 10:37:03 dawes Exp $ */
 
 /*
  * Map names around so that multiple depths can be supported simultaneously
@@ -74,8 +74,6 @@ cfb can not hack PSZ yet
 #endif
 
 #define cfbScreenPrivateIndex NAME(ScreenPrivateIndex)
-#define cfbGCPrivateIndex NAME(GCPrivateIndex)
-#define cfbWindowPrivateIndex NAME(WindowPrivateIndex)
 #define QuartetBitsTable NAME(QuartetBitsTable)
 #define QuartetPixelMaskTable NAME(QuartetPixelMaskTable)
 #define cfbAllocatePrivates NAME(AllocatePrivates)

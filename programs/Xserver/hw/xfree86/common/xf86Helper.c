@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.10 1998/11/15 10:22:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.11 1998/11/22 10:37:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -785,6 +785,8 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     static PixmapPtr ppix[MAXSCREENS];
     static PixmapPtr pspix[MAXSCREENS];
     static pointer pspixbits[MAXSCREENS];
+    static int pspixwidth[MAXSCREENS];
+
     BoxRec pixBox;
     RegionRec pixReg;
 
@@ -813,6 +815,8 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 						WindowTable[scrnIndex]);
 	pspixbits[scrnIndex] = pspix[scrnIndex]->devPrivate.ptr;
 	pspix[scrnIndex]->devPrivate.ptr = ppix[scrnIndex]->devPrivate.ptr;
+	pspixwidth[scrnIndex] = (int)pspix[scrnIndex]->devKind;
+	pspix[scrnIndex]->devKind = pScreen->width;
 	WalkTree(xf86Screens[scrnIndex]->pScreen, xf86NewSerialNumber, 0);
 	break;
 
@@ -831,6 +835,7 @@ ErrorF("xf86SaveRestoreImage: restore, xf86Resetting is %s\n", BOOLTOSTRING(xf86
 	    }
 
 	    pspix[scrnIndex]->devPrivate.ptr = pspixbits[scrnIndex];
+	    pspix[scrnIndex]->devKind = pspixwidth[scrnIndex];
 	    (*pScreen->BackingStoreFuncs.RestoreAreas)(ppix[scrnIndex],
 						       &pixReg, 0, 0,
 						       WindowTable[scrnIndex]);

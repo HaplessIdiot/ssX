@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.82 1998/10/25 07:11:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.83 1998/11/01 12:35:39 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -99,7 +99,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #if LinuxCLibMajorVersion >= 6
 #define LinuxSourceDefines	-D_POSIX_C_SOURCE=199309L \
-				-D_POSIX_SOURCE \
+				-D_POSIX_SOURCE -D_XOPEN_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #if !defined(AlphaArchitecture)
@@ -293,6 +293,19 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define PositionIndependentCplusplusFlags -fpic
 #endif /* Mc68020Architecture */
 
+#ifdef SparcArchitecture
+#define OptimizedCDebugFlags	-O2
+#define LinuxMachineDefines	-D__sparc__
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#define PositionIndependentCFlags -fpic
+#define PositionIndependentCplusplusFlags -fpic
+#define BuildServer	NO
+#if defined(DoLoadableServer)
+#undef DoLoadableServer
+#endif
+#define DoLoadableServer NO
+#endif
 #define StandardDefines		-Dlinux LinuxMachineDefines LinuxSourceDefines
 
 #if UseElfFormat

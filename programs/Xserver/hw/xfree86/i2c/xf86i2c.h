@@ -2,7 +2,9 @@
  *  Copyright (C) 1998 Itai Nahshon, Michael Schimek
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.1 1998/09/05 06:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.2 1998/10/05 13:23:14 dawes Exp $ */
+#ifndef _XF86I2C_H
+#define _XF86I2C_H
 
 typedef unsigned char  I2CByte;
 typedef unsigned short I2CSlaveAddr;
@@ -87,3 +89,5 @@ Bool 		xf86I2CWriteByte(I2CDevPtr d, I2CByte subaddr, I2CByte byte);
 Bool 		xf86I2CWriteBytes(I2CDevPtr d, I2CByte subaddr, I2CByte *WriteBuffer, int nWrite);
 Bool 		xf86I2CWriteWord(I2CDevPtr d, I2CByte subaddr, unsigned short word);
 Bool 		xf86I2CWriteVec(I2CDevPtr d, I2CByte *vec, int nValues);
+
+#endif /*_XF86I2C_H */

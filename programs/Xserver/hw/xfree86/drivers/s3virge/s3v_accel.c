@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.2 1998/11/22 10:37:30 dawes Exp $ */
 
 /*
  *
@@ -103,8 +103,8 @@ static void S3VSetClippingRectangle(ScrnInfoPtr, int, int, int, int);
 static void S3VSetupFor8x8PatternColorExpand(int, int, int, int, int, unsigned);
 static void S3VSubsequent8x8PatternColorExpand(int, int, int, int, int, int);
 static void S3VSubsequentTwoPointLine(int, int, int, int, int);
-#endif
 static void S3VSubsequentFillTrapezoidSolid(ScrnInfoPtr, int, int, int, int, int, int, int, int, int, int);
+#endif
 static void S3VWriteImageTransferArea(void *, int, unsigned);
 static void S3VSetupForImageWrite(ScrnInfoPtr pScrn, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
 static void S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn, int x, int y, int w, int h, int skipleft);
@@ -185,10 +185,12 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillRect = 
         S3VSubsequentSolidFillRect;
     infoPtr->SolidFillFlags = 0;
+    #if 0 	/* Doesn't match cfb :( KJB */
     infoPtr->SubsequentSolidFillTrap = 
         S3VSubsequentFillTrapezoidSolid;
+    #endif
 	
- #if 0   /* Not ported to 3.9N yet. */
+ #if 0   /* Not working in 3.9N yet? */
     /*
     xf86GCInfoRec.PolyFillRectSolidFlags = 0;  
 
@@ -208,8 +210,8 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentCPUToScreenColorExpandFill =
              S3VSubsequentCPUToScreenColorExpand;
     infoPtr->ColorExpandBase = 
-             (void *) &IMG_TRANS;
-    infoPtr->ColorExpandRange = 32768;
+             (unsigned char *) &IMG_TRANS;
+    infoPtr->ColorExpandRange = S3V_MMIO_REGSIZE;
     /*
     infoPtr->CPUToScreenColorExpandBase = 
              (void *) &IMG_TRANS;
@@ -226,6 +228,7 @@ S3VAccelInit(ScreenPtr pScreen)
             S3VSubsequent8x8PatternColorExpand;  
 	    
   #endif
+  
     /* These are the 8x8 color pattern fills */
     infoPtr->Color8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN;
     infoPtr->SetupForColor8x8PatternFill = 
@@ -261,15 +264,18 @@ S3VAccelInit(ScreenPtr pScreen)
         pScrn->videoRam * 1024 -1024);
 
   #endif
-
-  #if 0
-     /* written for 3.9N, but still broken. */  				      
-     infoPtr->ImageWriteFlags = NO_TRANSPARENCY | SYNC_AFTER_IMAGE_WRITE;
+					/* Setup ImageWrites */
+					
+     infoPtr->ImageWriteFlags = LEFT_EDGE_CLIPPING | SYNC_AFTER_IMAGE_WRITE;
+     if (pScrn->bitsPerPixel == 24) {	
+     					/* The GE doesn't support the trans. */
+					/* bit in depth 24 */
+       infoPtr->ImageWriteFlags |= NO_TRANSPARENCY;
+     }
      infoPtr->ImageWriteBase = (unsigned char *) &IMG_TRANS;
      infoPtr->ImageWriteRange = S3V_MMIO_REGSIZE;
      infoPtr->SetupForImageWrite = S3VSetupForImageWrite;
      infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
-  #endif
   
      /* And these are screen parameters used to setup the GE */
 
@@ -278,6 +284,10 @@ S3VAccelInit(ScreenPtr pScreen)
      ps3v->Bpp = pScrn->bitsPerPixel / 8;
      					/* Bytes per line */
      ps3v->Bpl = ps3v->Width * ps3v->Bpp;
+     					/* ScissB is max height, minus 1k */
+					/* for hwcursor?, then limited by */
+					/* ViRGE max height register of   */
+					/* 2047 */
      ps3v->ScissB = (pScrn->videoRam * 1024 - 1024) / ps3v->Bpl;
      if (ps3v->ScissB > 2047)
          ps3v->ScissB = 2047;
@@ -285,9 +295,8 @@ S3VAccelInit(ScreenPtr pScreen)
 
      AvailFBArea.x1 = 0;
      AvailFBArea.y1 = 0;
-     AvailFBArea.x2 = pScrn->displayWidth;
-     AvailFBArea.y2 = (pScrn->videoRam * 1024) /
-	(pScrn->displayWidth * ps3v->Bpp);
+     AvailFBArea.x2 = ps3v->Width;
+     AvailFBArea.y2 = ps3v->ScissB;
 
      xf86InitFBManager(pScreen, &AvailFBArea);		       
      
@@ -464,12 +473,6 @@ S3VGEReset(ScrnInfoPtr pScrn)
 void 
 S3VSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, 
 	int rop, unsigned planemask, int transparency_color)
-    /*	
-    int xdir, ydir;
-    int rop;
-    unsigned planemask;
-    int transparency_color;
-    */
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
@@ -496,9 +499,6 @@ S3VSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 void 
 S3VSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, 
 	int x2, int y2, int w, int h)
-/*
-int x1, y1, x2, y2, w, h;
- */
 {
     int new_width;
     COMPVARS;
@@ -545,12 +545,6 @@ int x1, y1, x2, y2, w, h;
 void 
 S3VSetupForScreenToScreenCopy32(ScrnInfoPtr pScrn, int xdir, int ydir, 
 	int rop, unsigned planemask, int transparency_color)
-    /*
-    int xdir, ydir;
-    int rop;
-    unsigned planemask;
-    int transparency_color;
-     */
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
@@ -569,9 +563,6 @@ S3VSetupForScreenToScreenCopy32(ScrnInfoPtr pScrn, int xdir, int ydir,
 void 
 S3VSubsequentScreenToScreenCopy32(ScrnInfoPtr pScrn, int x1, int y1, 
 	int x2, int y2, int w, int h)
-/*
-int x1, y1, x2, y2, w, h;
- */
 {
     COMPVARS;
 
@@ -601,10 +592,6 @@ int x1, y1, x2, y2, w, h;
 void 
 S3VSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, 
 	unsigned planemask)
-/*
-int color, rop;
-unsigned planemask;
- */
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
@@ -642,9 +629,6 @@ unsigned planemask;
     
 void 
 S3VSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
-/*
-int x, y, w, h;
- */
 {
     int dwords_to_transfer, new_width;
     COMPVARS;
@@ -681,10 +665,6 @@ int x, y, w, h;
 void 
 S3VSetupForSolidFill32(ScrnInfoPtr pScrn, int color, int rop, 
 	unsigned planemask)
-/*
-int color, rop;
-unsigned planemask;
- */
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
@@ -702,9 +682,6 @@ unsigned planemask;
 
 void 
 S3VSubsequentSolidFillRect32(ScrnInfoPtr pScrn, int x, int y, int w, int h)
-/*
-int x, y, w, h;
- */
 {
     COMPVARS;
     
@@ -727,10 +704,6 @@ int x, y, w, h;
 void
 S3VSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn, int bg, 
 	int fg, int rop, unsigned planemask)
-/*
-int bg, fg, rop;
-unsigned planemask;
- */
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
@@ -780,9 +753,6 @@ unsigned planemask;
 void
 S3VSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn, int x, int y, 
 	int w, int h, int skipleft)
-/*
-int x, y, w, h, skipleft;
- */
 {
     COMPVARS;
 
@@ -922,12 +892,6 @@ int x, y, w, h;
 void 
 S3VSetupForFill8x8Pattern(ScrnInfoPtr pScrn, int patternx, int patterny, 
 	int rop, unsigned planemask, int trans_col)
-/*
-int patternx, patterny;
-int rop; 
-unsigned planemask;
-int trans_col;
- */
 {
     int *pattern_addr, *color_regs;
     int num_bytes;
@@ -983,10 +947,6 @@ int trans_col;
 
 void S3VSubsequentFill8x8Pattern(ScrnInfoPtr pScrn, 
 	int patternx, int patterny, int x, int y, int w, int h)
-/*
-int patternx, patterny;
-int x, y, w, h;
- */
 {
     int dwords_to_transfer;
     int new_width;
@@ -1113,7 +1073,7 @@ S3VSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int w, int h)
 
 
 
-
+#if 0
 /* Trapezoid solid fills. XAA passes the coordinates of the top start
  * and end points, and the slopes of the left and right vertexes. We
  * use this info to generate the bottom points. We use a mixture of
@@ -1122,6 +1082,8 @@ S3VSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int w, int h)
  * passes xtest, but I suspect that it will not match cfb for large polygons.
  *
  * Remaining bug: no planemask support, have to tell XAA somehow.
+ *
+ * This was shown not to match cfb, so is disabled in 3.9N.  KJB
  */
 
 void
@@ -1186,6 +1148,8 @@ S3VSubsequentFillTrapezoidSolid(
 
 }
 
+#endif
+
 
 /* This next function is used to write a dword to the image transfer 
  * area. This is used for pattern fills, rectangle fills etc. We
@@ -1194,10 +1158,6 @@ S3VSubsequentFillTrapezoidSolid(
 
 void
 S3VWriteImageTransferArea (void *s3vMmioMem, int dwords, unsigned value)
-/*
-int dwords;
-unsigned value;
- */
 {
     int i, j;
     int blocks, left_to_do;
@@ -1223,68 +1183,72 @@ unsigned value;
 
 
 
-/* These are the ImageWrite functions,
-/* These are the ScreenToScreen bitblt functions. We support all ROPs, all
- * directions, and a planemask by adjusting the ROP and using the mono pattern
- * registers. There is no support for transparency. 
+/* These are the ImageWrite functions, we support a planemask at all depths
+ * and transparency in depth 8 & 16.
  */
-
-    /*	
-void 
-S3VSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, 
-	int rop, unsigned planemask, int transparency_color)
-    int xdir, ydir;
-    int rop;
-    unsigned planemask;
-    int transparency_color;
-    */
     
 void
 S3VSetupForImageWrite(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
-	int transparency_color, int bpp, int depth)
+	int trans_color, int bpp, int depth)
 {
     int cmd = s3vAccelCmd;
     COMPVARS;
  
     if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {     
-        cmd |= (CMD_AUTOEXEC | s3vAlu_pat[rop] | CMD_BITBLT | 
-        	MIX_MONO_PATT | MIX_CPUDATA | CMD_ITA_DWORD | CMD_HWCLIP |
-		CMD_XP | CMD_YP );
+        cmd |= s3vAlu_pat[rop];
         }
     else {
-        cmd |= (CMD_AUTOEXEC | s3vAlu[rop] | CMD_BITBLT | MIX_CPUDATA |
-		CMD_ITA_DWORD | CMD_HWCLIP | CMD_XP | CMD_YP );
+        cmd |= s3vAlu[rop];
         }
-    /*
-    if(xdir == 1) cmd |= CMD_XP;
-    if(ydir == 1) cmd |= CMD_YP;
-    */
+    
+    cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | MIX_CPUDATA |
+		CMD_ITA_DWORD | CMD_HWCLIP | CMD_XP | CMD_YP );
+		    			/* transparency */
+    if (trans_color != -1) cmd |= MIX_MONO_TRANSP;
+    
     s3vSavedCmd = cmd;
+
+    if(S3VROPHasSrc(cmd)) {
+       ps3v->AccelInfoRec->ImageWriteBase = 
+             (unsigned char *) &IMG_TRANS;
+       ps3v->AccelInfoRec->ImageWriteFlags &= (~CPU_TRANSFER_BASE_FIXED); 
+       }
+    else {    /* Fix for XAA bug (needed in 3.9N?) */
+       ps3v->AccelInfoRec->ImageWriteBase = 
+             (unsigned char *) &s3vDummyTransferArea;
+       ps3v->AccelInfoRec->ImageWriteFlags |= CPU_TRANSFER_BASE_FIXED; 
+       }
    
-    WaitQueue(4);
-    CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
+    WaitQueue(3);
+    if(pScrn->bitsPerPixel == 8) {
+        SETB_SRC_FG_CLR(trans_color | (trans_color << 8));
+        }
+    else { 
+        SETB_SRC_FG_CLR(trans_color);
+        }
+    if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {
+      WaitQueue(4);
+      CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
+      CACHE_SETB_MONO_PAT0(~0);
+      CACHE_SETB_MONO_PAT1(~0);   
+    }
     CACHE_SETB_CMD_SET(cmd);
-    CACHE_SETB_MONO_PAT0(~0);
-    CACHE_SETB_MONO_PAT1(~0);   
     
 }
 
-
-
-/*
-void 
-S3VSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, 
-	int x2, int y2, int w, int h)
-int x1, y1, x2, y2, w, h;
+/* The SubsequentImageWriteRect function.
+ * Do we need to check for the bitblt bug here?  At the moment that is
+ * ignored.
  */
- 
+
 void
 S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn, 
 	int x, int y, int w, int h, int skipleft)
 {
     int new_width;
     COMPVARS;
-    
+    	  
+   new_width = w;
    #if 0
     if(S3VROPHasDst(s3vSavedCmd)) {
         new_width = S3VCheckBltWidth(ps3v, w);  /* Check for blit bug */
@@ -1301,28 +1265,13 @@ S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn,
         WaitQueue(4);
         CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
         }
-   #else
-    S3VSetClippingRectangle(pScrn, x, y, w, h );
-    WaitQueue(3);
    #endif
                                   
+    S3VSetClippingRectangle(pScrn, x + skipleft, y, w - skipleft, h );
+    WaitQueue(2);
     SETB_RWIDTH_HEIGHT(new_width - 1, h);
-    /*
-    SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1), 
-        (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
-	*/
     SETB_RDEST_XY( x, y );
     
-	/*
-    xf86ErrorFVerb(VERBLEV, 
-	"	S3VSubScrScrCopy width=%x, src=%x, dest=%x\n",
-		(new_width-1)<<16 | h,
-		((s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1))<< 16 |
-        	((s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1)),
-		((s3vSavedCmd & CMD_XP) ? x2 : (x2 + new_width - 1)) <<16 |
-        	((s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1))
-		 );
-	 */
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.4 1998/09/19 12:14:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.5 1998/11/01 12:36:05 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -231,6 +231,9 @@
 
 #define PCI_MAP_MEMORY                  0x00000000
 #define PCI_MAP_IO                      0x00000001  
+
+#define PCI_MAP_MEMORY_TYPE             0x00000007
+#define PCI_MAP_IO_TYPE                 0x00000003
 
 #define PCI_MAP_MEMORY_TYPE_32BIT       0x00000000
 #define PCI_MAP_MEMORY_TYPE_32BIT_1M    0x00000002

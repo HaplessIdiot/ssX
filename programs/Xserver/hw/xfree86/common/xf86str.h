@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.9 1998/11/01 12:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.10 1998/11/22 10:37:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -16,7 +16,6 @@
 #include "input.h"
 #include "scrnintstr.h"
 #include "xf86Module.h"
-#include "xf86fbman.h"
 
 
 /* Video mode flags */
@@ -438,10 +437,6 @@ typedef struct _ScrnInfoRec {
     xf86ScrnAccessRec   Access;
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
-
-    AllocateOffscreenAreaProcPtr AllocateOffscreenArea;
-    FreeOffscreenAreaProcPtr FreeOffscreenArea;
-    ResizeOffscreenAreaProcPtr ResizeOffscreenArea;
 
     /*
      * These can be used when the minor ABI version is incremented.

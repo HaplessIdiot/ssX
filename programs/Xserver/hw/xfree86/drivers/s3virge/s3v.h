@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.2 1998/11/22 10:37:29 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -24,16 +24,6 @@
 
 #include "vgaHW.h"
 
-#ifndef _S3V_VGAHWMMIO_H
-#define _S3V_VGAHWMMIO_H
-#define INREG8(addr) *(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
-#define INREG16(addr) *(volatile CARD16 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
-#define INREG(addr) *(volatile CARD32 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
-#define OUTREG8(addr, val) *(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr)) = (val)
-#define OUTREG(addr, val) *(volatile CARD32 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr)) = (val)
-/* End of copy ... {KF}*/
-#endif
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -60,6 +50,29 @@
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
+#include "xf86cmap.h"
+
+
+#ifndef _S3V_VGAHWMMIO_H
+#define _S3V_VGAHWMMIO_H
+
+#if defined(__alpha__)
+#define INREG8(addr) xf86ReadSparse8(ps3v->IOBase, (addr))
+#define INREG16(addr) xf86ReadSparse16(ps3v->IOBase, (addr))
+#define INREG(addr) xf86ReadSparse32(ps3v->IOBase, (addr))
+#define OUTREG8(addr,val) xf86WriteSparse8((val),ps3v->IOBase,(addr))
+#define OUTREG16(addr,val) xf86WriteSparse16((val),ps3v->IOBase,(addr))
+#define OUTREG(addr, val) xf86WriteSparse32((val),ps3v->IOBase,(addr))
+#else /* __alpha__ */
+#define INREG8(addr) *(volatile CARD8 *)(ps3v->IOBase + (addr))
+#define INREG16(addr) *(volatile CARD16 *)(ps3v->IOBase + (addr))
+#define INREG(addr) *(volatile CARD32 *)(ps3v->IOBase + (addr))
+#define OUTREG8(addr, val) *(volatile CARD8 *)(ps3v->IOBase + (addr)) = (val)
+#define OUTREG16(addr, val) *(volatile CARD16 *)(ps3v->IOBase + (addr)) = (val)
+#define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->IOBase + (addr)) = (val)
+#endif /* __alpha__ */
+
+#endif /*_S3V_VGAHWMMIO_H*/
 
 
 /*********************************************/
@@ -125,10 +138,6 @@ typedef struct {
     					/* XAA */
     unsigned PlaneMask;
     int bltbug_width1, bltbug_width2;
-    					/* Flag used by MapMem/UnMapMem */
-					/* to determine if matched pair */
-					/* is called */
-    /*Bool		MemMapped;*/
     					/* In units as noted, set in PreInit */
     int			videoRambytes;
     int			videoRamKbytes;
@@ -208,6 +217,7 @@ typedef struct {
     PCITAG PciTag;
     int			Chipset;
     int			ChipRev;
+  #if 0  
     int Save_Divide;
     Bool UsePCIRetry;		       /* Do we use PCI-retry or busy-waiting */
     Bool UseAccel;		       /* Do we use the XAA acceleration architecture */
@@ -224,12 +234,18 @@ typedef struct {
     Bool ShowCache;
     Bool Legend;		       /* Sigma Legend clock select method */
     Bool NoClockchip;		       /* disable clockchip programming clockchip (=use set-of-clocks) */
+  #endif  
   #if 0
     TsengRegRec SavedReg;	       /* saved Tseng registers at server start */
     TsengRegRec ModeReg;
   #endif
-    S3VRegRec SavedReg;	       	       /* saved Tseng registers at server start */
-    S3VRegRec ModeReg;
+  					/* S3V console saved mode registers */
+    S3VRegRec 		SavedReg;
+    					/* XServer video state mode registers */
+    S3VRegRec 		ModeReg;
+    					/* Flag indicating ModeReg has been */
+					/* duped from console state. */
+    Bool		ModeStructInit;
   #if 0
     unsigned long icd2061_dwv;	       /* To hold the clock data between Init and Restore */
     t_tseng_bus Bustype;	       /* W32 bus type (currently used for lin mem on W32i) */
@@ -368,87 +384,7 @@ typedef struct {
 #define MONO_TRANSPARENCY 0x02
 
 
-/* This function was taken from accel/s3v.h. It adjusts the width
- * of transfers for mono images to works around some bugs.
- */
-
-static __inline__ int S3VCheckLSPN(S3VPtr ps3v, int w, int dir)
-{
-   int lspn = (w * ps3v->Bpp) & 63;  /* scanline width in bytes modulo 64*/
-
-   if (ps3v->Bpp == 1) {
-      if (lspn <= 8*1)
-	 w += 16;
-      else if (lspn <= 16*1)
-	 w += 8;
-   } else if (ps3v->Bpp == 2) {
-      if (lspn <= 4*2)
-	 w += 8;
-      else if (lspn <= 8*2)
-	 w += 4;
-   } else {  /* ps3v->Bpp == 3 */
-      if (lspn <= 3*3) 
-	 w += 6;
-      else if (lspn <= 6*3)
-	 w += 3;
-   }
-   if (dir && w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
-      w = ps3v->bltbug_width2 + 1;
-   }
-
-   return w;
-}
-
-/* And this adjusts color bitblts widths to work around GE bugs */
-
-static __inline__ int S3VCheckBltWidth(S3VPtr ps3v, int w)
-{
-   if (w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
-      w = ps3v->bltbug_width2 + 1;
-   }
-   return w;
-}
-
-/* This next function determines if the Source operand is present in the
- * given ROP. The rule is that both the lower and upper nibble of the rop
- * have to be neither 0x00, 0x05, 0x0a or 0x0f. If a CPU-Screen blit is done
- * with a ROP which does not contain the source, the virge will hang when
- * data is written to the image transfer area. 
- */
-
-static __inline__ Bool S3VROPHasSrc(int shifted_rop)
-{
-    int rop = (shifted_rop & (0xff << 17)) >> 17;
-
-    if ((((rop & 0x0f) == 0x0a) | ((rop & 0x0f) == 0x0f) 
-        | ((rop & 0x0f) == 0x05) | ((rop & 0x0f) == 0x00)) &
-       (((rop & 0xf0) == 0xa0) | ((rop & 0xf0) == 0xf0) 
-        | ((rop & 0xf0) == 0x50) | ((rop & 0xf0) == 0x00)))
-            return FALSE;
-    else 
-            return TRUE;
-}
-
-/* This next function determines if the Destination operand is present in the
- * given ROP. The rule is that both the lower and upper nibble of the rop
- * have to be neither 0x00, 0x03, 0x0c or 0x0f. 
- */
-
-static __inline__ Bool S3VROPHasDst(int shifted_rop)
-{
-    int rop = (shifted_rop & (0xff << 17)) >> 17;
-
-    if ((((rop & 0x0f) == 0x0c) | ((rop & 0x0f) == 0x0f) 
-        | ((rop & 0x0f) == 0x03) | ((rop & 0x0f) == 0x00)) &
-       (((rop & 0xf0) == 0xc0) | ((rop & 0xf0) == 0xf0) 
-        | ((rop & 0xf0) == 0x30) | ((rop & 0xf0) == 0x00)))
-            return FALSE;
-    else 
-            return TRUE;
-}
-
-
-
-
 #endif  /*_S3V_H*/
 
+
+/*EOF*/

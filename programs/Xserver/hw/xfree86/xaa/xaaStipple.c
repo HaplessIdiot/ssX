@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.2 1998/07/25 16:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.3 1998/08/02 05:17:08 dawes Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -69,6 +69,7 @@ EXPNAME(XAAFillColorExpandRects)(
     int dwords, srcy, srcx, funcNo = 2, h;
     unsigned char *src = (unsigned char*)pPix->devPrivate.ptr;
     unsigned char *srcp;
+    int flag;
 
     if(stipplewidth <= 32) {
 	if(stipplewidth & (stipplewidth - 1))	
@@ -107,6 +108,8 @@ SECOND_PASS:
 	}
 
 	h = pBox->y2 - pBox->y1;
+	flag = (infoRec->CPUToScreenColorExpandFillFlags 
+		& CPU_TRANSFER_PAD_QWORD) && ((dwords * h) & 0x01);
 
         (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 			pScrn, pBox->x1, pBox->y1,
@@ -146,11 +149,10 @@ SECOND_PASS:
 		}
 	   }
     
-	if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) 
-			&& ((dwords * h) & 0x01)) {
-	    base = (CARD32*)infoRec->ColorExpandBase;
-	    base[0] = 0x00000000;
-    	}
+	  if (flag) {
+	      base = (CARD32*)infoRec->ColorExpandBase;
+	      base[0] = 0x00000000;
+	  }
 
 	if(TwoPass) {
 	   if(FirstPass) {

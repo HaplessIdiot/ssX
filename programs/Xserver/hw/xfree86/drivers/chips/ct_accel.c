@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.27 1998/09/19 12:14:51 dawes Exp $ */
+#define UNDOCUMENTED_FEATURE
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.28 1998/09/26 08:34:10 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -22,7 +23,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -43,6 +43,12 @@
 
 /* Our driver specific include file */
 #include "ct_driver.h"
+
+#ifdef DEBUG
+# define DEBUG_P(x) ErrorF(x"\n");
+#else
+# define DEBUG_P(x) /**/
+#endif
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
@@ -95,12 +101,14 @@ static void CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 static XAACacheInfoPtr CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn,
 				PixmapPtr pPix);
 #endif
+#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
 static void CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
 				unsigned int planemask);
 static void CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
+#endif
 static void CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
 				int patx, int paty, int fg, int bg,
 				int rop, unsigned int planemask);
@@ -136,6 +144,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     BoxRec AvailFBArea;
 
+    DEBUG_P("AccelInit");
     cPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
 
@@ -243,12 +252,15 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	ROP_NEEDS_SOURCE;
+#ifdef TESTING_UNDOCUMENTED_FEATURE
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
 	LEFT_EDGE_CLIPPING;
-        
+#endif        
     if (pScrn->bitsPerPixel == 24) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
+#ifdef TESTING_UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
+#endif
     }
 #else
     infoPtr->CPUToScreenColorExpandFillFlags =
@@ -270,10 +282,12 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 #ifndef CHIPS_HIQV 
     if (pScrn->bitsPerPixel != 24) {
 #endif
+#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
 	infoPtr->SetupForScreenToScreenColorExpandFill = 
 		CTNAME(SetupForScreenToScreenColorExpandFill);
 	infoPtr->SubsequentScreenToScreenColorExpandFill = 
 		CTNAME(SubsequentScreenToScreenColorExpandFill);
+#endif
 #ifndef CHIPS_HIQV 
 	infoPtr->CacheMonoStipple = CTNAME(CacheMonoStipple);
     }
@@ -365,6 +379,7 @@ CTNAME(Sync)(ScrnInfoPtr pScrn)
 #ifndef CHIPS_HIQV
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 #endif
+    DEBUG_P("sync");
     ctBLTWAIT;
 }
 
@@ -375,6 +390,7 @@ CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("8SetupForSolidFill");
     ctBLTWAIT;
     ctSETBGCOLOR8(color);
     ctSETFGCOLOR8(color);
@@ -390,6 +406,7 @@ CTNAME(16SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("16SetupForSolidFill");
     ctBLTWAIT;
     ctSETBGCOLOR16(color);
     ctSETFGCOLOR16(color);
@@ -406,6 +423,7 @@ CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("24SetupForSolidFill");
     ctBLTWAIT;
     ctSETBGCOLOR24(color);
     ctSETFGCOLOR24(color);
@@ -421,6 +439,7 @@ CTNAME(32SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("32SetupForSolidFill");
     ctBLTWAIT;
     memset((unsigned char *)cPtr->FbBase + cAcl->ScratchAddress, 0xAA, 8);
     ctSETFGCOLOR16((color & 0xFFFF));
@@ -440,6 +459,7 @@ CTNAME(32SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
     unsigned int destaddr;
     destaddr = (y * pScrn->displayWidth + x) << 2;
     w <<= 2;
+    DEBUG_P("32SubsequentSolidFillRect");
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w);
@@ -454,6 +474,7 @@ CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
  
+    DEBUG_P("24SetupForSolidFill");
     cAcl->rgb24equal = (((((color & 0xFF) == ((color & 0xFF00) >> 8)) && 
 		       ((color & 0xFF) == ((color & 0xFF0000) >> 16)))) ||
 		       /* Check the rop for paranoid reasons */
@@ -528,6 +549,7 @@ CTNAME(24SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("24SubsequentSolidFillRect");
     if (cAcl->rgb24equal) {
 	destaddr = y * pScrn->displayWidth + x;
 	destaddr += destaddr << 1;
@@ -651,6 +673,7 @@ CTNAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
 
+    DEBUG_P("SubsequentSolidFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
@@ -670,6 +693,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("SetupForScreenToScreenCopy");
     cAcl->CommandFlags = 0;
     
     /* Set up the blit direction. */
@@ -734,6 +758,7 @@ CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int srcX, int srcY,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int srcaddr, destaddr;
 
+    DEBUG_P("SubsequentScreenToScreenCopy");
 #ifdef CHIPS_HIQV
     if (cAcl->CommandFlags & ctBOTTOM2TOP) {
         srcaddr = (srcY + h - 1) * pScrn->displayWidth;
@@ -780,6 +805,7 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("SetupForCPUToScreenColorExpandFill");
     ctBLTWAIT;
     cAcl->CommandFlags = 0;
     if (bg == -1) {
@@ -867,6 +893,7 @@ CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
 
+    DEBUG_P("SubsequentCPUToScreenColorExpandFill");
     destaddr = (y * pScrn->displayWidth + x + skipleft) * 
                cAcl->BytesPerPixel;
     w = (w - skipleft) * cAcl->BytesPerPixel;
@@ -878,6 +905,7 @@ CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     ctSETHEIGHTWIDTHGO(h, w);
 }
 
+#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
 static void
 CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
@@ -886,6 +914,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("SetupForScreenToScreenColorExpandFill");
     cAcl->CommandFlags = 0;
     ctBLTWAIT;
     if (bg == -1) {
@@ -927,9 +956,6 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 	    break;
         }
     }
-#ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN);
-#endif
 
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -961,7 +987,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     }
     ctSETPITCH(cAcl->PitchInBytes, cAcl->PitchInBytes);
 }
-
+#endif
 #ifndef CHIPS_HIQV
 /*
  * The non-HiQV chips don't have left-edge clippling of monochrome sources.
@@ -986,7 +1012,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     StippleScanlineProcPtr StippleFunc;
     unsigned char *data, *srcPtr, *dstPtr;
 
-
+    DEBUG_P("CacheMonoStipple");
     if((h <= 128) && (w <= 128 * bpp / 8)) {
 	if(pCachePriv->Info128) {
 	    cacheRoot = pCachePriv->Info128; 
@@ -1069,7 +1095,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
     return pCache;
 }
 #endif
-
+#if !defined(CHIPS_HIQV) || defined(TESTING_UNDOCUMENTED_FEATURE)
 static void
 CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
@@ -1079,6 +1105,7 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int srcaddr, destaddr;
 
+    DEBUG_P("SubsequentScreenToScreenColorExpandFill");
 #ifdef CHIPS_HIQV
     srcaddr = (srcy * pScrn->displayWidth + srcx) * cAcl->BytesPerPixel
 		+ ((skipleft & ~0x3F) >> 3);
@@ -1093,11 +1120,15 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft & 0x3F));
+    ctSETMONOCTL(
+#ifdef TESTING_UNDOCUMENTED_FEATURE
+		 ctQWORDALIGN | 
+#endif
+		 ctCLIPLEFT(skipleft & 0x3F));
 #endif
     ctSETHEIGHTWIDTHGO(h, w);
 }
-
+#endif
 static void
 CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty, 
 				    int rop, unsigned int planemask,
@@ -1106,7 +1137,8 @@ CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int patternaddr;
-    
+
+    DEBUG_P("SetupForColor8x8PatternFill");
     cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM |
 		ctLEFT2RIGHT;
     patternaddr = (paty * pScrn->displayWidth + 
@@ -1143,6 +1175,7 @@ CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, int paty,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int destaddr;
 
+    DEBUG_P("SubsequentColor8x8PatternFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
@@ -1164,6 +1197,7 @@ CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int patternaddr;
 
+    DEBUG_P("SetupForMono8x8PatternFill");
     cAcl->CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ChipsAluConv2[rop & 0xF];
 
@@ -1213,6 +1247,7 @@ CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr;
+    DEBUG_P("SubsequentMono8x8PatternFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
     w *= cAcl->BytesPerPixel;
 
@@ -1234,6 +1269,7 @@ CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
+    DEBUG_P("SetupForImageWrite");
     cAcl->CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
     ctBLTWAIT;
 
@@ -1270,6 +1306,7 @@ CTNAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     int destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+    DEBUG_P("SubsequentImageWriteRect");
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETPITCH(((w + 3) & ~0x3), cAcl->PitchInBytes);
@@ -1379,6 +1416,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     int skipleft;
     int destaddr;
 
+    DEBUG_P("WritePixmap");
     bytesPerLine = w * cAcl->BytesPerPixel;
     byteWidthSrc = ((srcwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
     cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;

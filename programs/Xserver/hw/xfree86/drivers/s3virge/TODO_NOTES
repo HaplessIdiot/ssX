@@ -1,6 +1,7 @@
 S3 ViRGE 4.0 devel notes
 
 rev: 
+11/26/98 KJB
 10/31/98 KJB
 10/16/98 KJB
 
@@ -16,7 +17,7 @@ S3VAdjustFrame;		X
 S3VEnterVT;    		X
 S3VLeaveVT;    		X
 S3VFreeScreen; 		X
-S3VValidMode;
+S3VValidMode;		X - dummy
 -private-
 S3VSave			X
 S3VRestore		X
@@ -24,6 +25,11 @@ S3VRestore		X
 
 Status
 ------
+11/26/98 KJB
+Trap fills disabled because they don't match cfb, pixmap cache & ImageWrite
+working, fixed depth 8 color loss on VT switches, INREG & OUTREG modified to
+use a single offset value instead of adding the base and offset together.
+
 11/18/98 KJB
 Acceleration working for Bitblt, ScreenToScreenCopy, Color 8x8 Rect fills,
 and Rect/Trap fills.
@@ -107,4 +113,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.1 1998/11/01 12:35:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.2 1998/11/22 10:37:28 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.37 1998/10/11 10:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.38 1998/11/01 12:35:50 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -459,26 +459,6 @@ DriverRec CHIPS = {
 	0
 };
 
-
-/* Supported chipsets */
-typedef enum {
-    CHIPS_CT65520,
-    CHIPS_CT65525,
-    CHIPS_CT65530,
-    CHIPS_CT65535,
-    CHIPS_CT65540,
-    CHIPS_CT65545,
-    CHIPS_CT65546,
-    CHIPS_CT65548,
-    CHIPS_CT65550,
-    CHIPS_CT65554,
-    CHIPS_CT65555,
-    CHIPS_CT68554,
-    CHIPS_CT69000,
-    CHIPS_CT64200,
-    CHIPS_CT64300
-} CHIPSType;
-
 static SymTabRec CHIPSChipsets[] = {
     { CHIPS_CT65520,		"ct65520" },
     { CHIPS_CT65525,		"ct65525" },
@@ -657,6 +637,18 @@ static const char *racSymbols[] = {
     NULL
 };
 
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    NULL
+};
+
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 MODULEINITPROTO(chipsModuleInit);
@@ -707,7 +699,8 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, NULL);
+			  ramdacSymbols, racSymbols, ddcSymbols, i2cSymbols,
+			  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1061,7 +1054,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	 * a multiple of 64 pixels. This allows for alignment issues for the
 	 * 8x8 pattern fills. Try to widen the display pitch to 64 if necessary
 	 */
-        cPtr->Rounding = 64;
+      cPtr->Rounding = 64 * (pScrn->bitsPerPixel <= 8 ? 8 
+			     : pScrn->bitsPerPixel);
 	/* 16 Kb cache for each bpp */
 	apertureSize -= 16 * 1024 * (pScrn->bitsPerPixel >> 3);
     } else {
@@ -1076,7 +1070,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 			  128, 2048, pScrn->display->virtualX,
 			  pScrn->display->virtualY, apertureSize,
 			  LOOKUP_BEST_REFRESH);
-
     /*
      * If we are using accel and don't find any valid modes
      * we might not have enough memory for a 64 bit rounding
@@ -1152,7 +1145,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case 16:
 	mod = "cfb16";
-	reqSym = "cfb26ScreenInit";
+	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
 	mod = "cfb24";
@@ -1287,7 +1280,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
 
     if ((cPtr->Flags & ChipsAccelSupport) &&
-	    (xf86IsOptionSet(cPtr->Options, OPTION_NOACCEL))) {
+	(xf86IsOptionSet(cPtr->Options, OPTION_NOACCEL))) {
 	cPtr->Flags &= ~ChipsAccelSupport;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
@@ -1312,13 +1305,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	cPtr->Flags &= ~ChipsHWCursor;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	   (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
 
     if ((pScrn->bitsPerPixel < 8) && 
-	    !xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	!xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
 	cPtr->Flags &= ~ChipsLinearSupport;
     } else if ((cPtr->Flags & ChipsLinearSupport) && 
-	    xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
+	       xf86IsOptionSet(cPtr->Options, OPTION_LINEAR)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
     }
@@ -1337,7 +1330,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     if (pScrn->device->videoRam != 0) {
 	pScrn->videoRam = pScrn->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
-               pScrn->videoRam);
+		   pScrn->videoRam);
     } else {
         /* not given, probe it    */
 	switch (cPtr->Chipset) {
@@ -1395,7 +1388,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "VideoRAM: %d kByte\n",
-               pScrn->videoRam);
+		   pScrn->videoRam);
     }
     cPtr->FbMapSize = pScrn->videoRam * 1024;
 
@@ -1466,17 +1459,17 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	read_fr(0x22, tmp1);
 	tmp2 = (tmp1 & 0x1F) - (tmp & 0x3F);
 	Size->HRetraceEnd = ((((tmp2 < 0) ? (tmp2 + 0x40) : tmp2) << 3)
-			      + Size->HRetraceStart);
+			     + Size->HRetraceStart);
 	read_fr(0x23, tmp);
 	read_fr(0x26, fr26);
 	Size->HTotal = ((tmp + ((fr26 & 0x0F) << 8)) + 5) << 3;
 	ErrorF("x=%i, y=%i; xSync=%i, xSyncEnd=%i, xTotal=%i\n",
-		Size->HDisplay, Size->VDisplay,
-		Size->HRetraceStart,Size->HRetraceEnd,
-		Size->HTotal);
+	       Size->HDisplay, Size->VDisplay,
+	       Size->HRetraceStart,Size->HRetraceEnd,
+	       Size->HTotal);
 #endif
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Display Size: x=%i; y=%i\n",
-		Size->HDisplay, Size->VDisplay);
+		   Size->HDisplay, Size->VDisplay);
 	/* Warn the user if the panel size has been overridden by
 	 * the modeline values
 	 */
@@ -1500,7 +1493,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		 * acceleration is enabled the size can be halved.
 		 */
 		cPtr->FrameBufferSize = ( Size->HDisplay * 
-			Size->VDisplay / 5 ) * ((tmp & 2) ? 1 : 2);
+					  Size->VDisplay / 5 ) * ((tmp & 2) ? 1 : 2);
 	    } else
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Using external Frame Buffer used\n");
@@ -1524,7 +1517,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* disable acceleration for 1 and 4 bpp */
     if (pScrn->bitsPerPixel < 8) {
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		 "Disabling acceleration for %d bpp\n", pScrn->bitsPerPixel);
+		   "Disabling acceleration for %d bpp\n", pScrn->bitsPerPixel);
 	cPtr->Flags &= ~ChipsAccelSupport;
     }
     
@@ -1555,10 +1548,11 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Set the flags for Colour transparency. This is dependent
      * on the revision on the chip. Until exactly which chips
      * have this bug are found, only allow 8bpp Colour transparency */
-    if (pScrn->bitsPerPixel == 8) 
-	cPtr->Flags |= ChipsColorTransparency;
+    if ((pScrn->bitsPerPixel == 8) || ((cPtr->Chipset >= CHIPS_CT65555) &&
+	    (pScrn->bitsPerPixel >= 8) && (pScrn->bitsPerPixel <= 24)))
+        cPtr->Flags |= ChipsColorTransparency;
     else
-	cPtr->Flags &= ~ChipsColorTransparency;
+        cPtr->Flags &= ~ChipsColorTransparency;
 
 #if 0
 #ifdef XFreeXDGA 
@@ -1633,20 +1627,20 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Be careful with the calculation of ProbeClk as it can overflow */ 
     MemClk->ProbedClk = 4 * Fref / MemClk->N;
     MemClk->ProbedClk = MemClk->ProbedClk * MemClk->M / (MemClk->PSN * 
-	(1 << MemClk->P));
+							 (1 << MemClk->P));
     MemClk->ProbedClk = MemClk->ProbedClk / 1000;
     MemClk->Clk = MemClk->ProbedClk;
 
     if (pScrn->device->MemClk > 0) {
 	if (pScrn->device->MemClk <= MemClk->Max) {
-	   xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		      "Using memory clock of %7.3f MHz\n",
-		      (float)(pScrn->device->MemClk/1000.));
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "Using memory clock of %7.3f MHz\n",
+		       (float)(pScrn->device->MemClk/1000.));
 
 	    /* Only alter the memory clock if the desired memory clock differs
 	     * by 50kHz from the one currently being used.
 	     */
-	   if (abs(pScrn->device->MemClk - MemClk->ProbedClk) > 50) {
+	    if (abs(pScrn->device->MemClk - MemClk->ProbedClk) > 50) {
 		unsigned char vclk[3];
 
 		MemClk->Clk = pScrn->device->MemClk;
@@ -1658,12 +1652,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		MemClk->xrCC = vclk[1];
 		MemClk->xrCD = vclk[2];
 		MemClk->xrCE = 0x80 || vclk[0];
-	   }
+	    }
 	} else
-	   xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		      "Memory clock of %7.3f MHz exceeds limit of %7.3 MHz\n",
-		      (float)(pScrn->device->MemClk/1000.), 
-		      (float)(MemClk->Max/1000.));
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		       "Memory clock of %7.3f MHz exceeds limit of %7.3 MHz\n",
+		       (float)(pScrn->device->MemClk/1000.), 
+		       (float)(MemClk->Max/1000.));
     } else 
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Probed memory clock of %7.3f MHz\n",
@@ -1707,7 +1701,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* RAS/CAS. Extra byte per memory clock needed if framebuffer used */
     if (cPtr->FrameBufferSize)
 	cPtr->MaxClock = min(cPtr->MaxClock,
-			 MemClk->Clk * 4 * 0.7 / (bytesPerPixel + 1));
+			     MemClk->Clk * 4 * 0.7 / (bytesPerPixel + 1));
     else
 	cPtr->MaxClock = min(cPtr->MaxClock, 
 			     MemClk->Clk * 4 * 0.7 / bytesPerPixel);
@@ -1718,30 +1712,30 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	case 1:
 	case 4:
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
-	   break;
+	    speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	    break;
 	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
-	   break;
+	    speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	    break;
 	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
-	   break;
+	    speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	    break;
 	case 32:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
-	   break;
+	    speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	    break;
 	}
 
 	if (speed == 0)
 	    cPtr->MaxClock = pScrn->device->dacSpeeds[0];
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-	    "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
-	    (float)(cPtr->MaxClock / 1000.), (float)(speed / 1000.));
+		   "User max pixel clock of %7.3f MHz overrides %7.3f MHz limit\n",
+		   (float)(cPtr->MaxClock / 1000.), (float)(speed / 1000.));
 	cPtr->MaxClock = speed;
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		"Max pixel clock is %7.3f MHz\n",
-		(float)(cPtr->MaxClock / 1000.));
+		   "Max pixel clock is %7.3f MHz\n",
+		   (float)(cPtr->MaxClock / 1000.));
     }
 
 #if defined(__arm32__) && defined(__NetBSD__)
@@ -1749,6 +1743,18 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor->Modes = &ChipsNTSCMode;
 #endif
 
+    if (!xf86LoadSubModule(pScrn, "ddc")) 
+	return FALSE;
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+    if (!xf86LoadSubModule(pScrn, "i2c"))
+	return FALSE;
+    xf86LoaderReqSymLists(i2cSymbols,NULL);
+    if (chips_i2cInit(pScrn))
+	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,cPtr->I2C));
+    else
+	chips_ddc1(pScrn);
+    
     return TRUE;
 }
 
@@ -3283,7 +3289,7 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-
+    
     if(pScrn->vtSema){   /*§§§*/
       xf86EnableAccess(&pScrn->Access);
       chipsHWCursorOff(cPtr);
@@ -3295,7 +3301,6 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
-
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/
@@ -5302,12 +5307,15 @@ chipsUnmapMem(ScrnInfoPtr pScrn)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
-    if (IS_HiQV(cPtr)) 
-      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x20000);
-    else
-      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x10000);
-    cPtr->MMIOBase = NULL;
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, cPtr->FbMapSize);
+    if (cPtr->Flags & ChipsLinearSupport) {
+      if (IS_HiQV(cPtr)) 
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x20000);
+      else
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x10000);
+      cPtr->MMIOBase = NULL;
+      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, 
+		      cPtr->FbMapSize);
+    }
     cPtr->FbBase = NULL;
     
     return TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.5 1998/11/15 04:30:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.6 1998/11/15 05:53:24 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -9,19 +9,21 @@
 #include "xf86fbman.h"
 
 
-static FBAreaPtr xf86AllocateFBArea (
-   ScreenPtr pScreen, 
-   int w, int h,
-   int granularity,
-   MoveAreaCallbackProcPtr callback,
-   pointer privData
-);
-static void xf86FreeFBArea(FBAreaPtr area);
-static Bool xf86ResizeFBArea(ScreenPtr pScreen, int w, int h, FBAreaPtr resize);
 static Bool xf86FBCloseScreen(int i, ScreenPtr pScreen);
 static unsigned long xf86FBGeneration = 0;
 int xf86FBScreenIndex = -1;
 
+
+Bool
+xf86FBManagerRunning(ScreenPtr pScreen)
+{
+    if(xf86FBScreenIndex < 0) 
+	return FALSE;
+    if(!pScreen->devPrivates[xf86FBScreenIndex].ptr) 
+	return FALSE;
+
+    return TRUE;
+}
 
 Bool
 xf86InitFBManager(
@@ -57,16 +59,12 @@ xf86InitFBManager(
    return ret;
 }
 
-
-
-
 Bool
 xf86InitFBManagerRegion(
     ScreenPtr pScreen,  
     RegionPtr FullRegion
 )
 {
-   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    FBManagerPtr offman;
 
    if(REGION_NIL(FullRegion))
@@ -98,10 +96,6 @@ xf86InitFBManagerRegion(
    offman->pScreen = pScreen;
    offman->devPrivate.ptr = NULL;
 
-   pScrn->AllocateOffscreenArea = xf86AllocateFBArea;
-   pScrn->FreeOffscreenArea = xf86FreeFBArea;
-   pScrn->ResizeOffscreenArea = xf86ResizeFBArea;
-
    return TRUE;
 } 
 
@@ -112,9 +106,11 @@ xf86RegisterFreeBoxCallback(
     pointer devPriv
 )
 {
-   FBManagerPtr offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+   FBManagerPtr offman;
 
-   if(!offman) return;
+   if(!xf86FBManagerRunning(pScreen)) return;
+
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
    offman->FreeBoxesUpdateCallback = FreeBoxCallback;
    offman->devPrivate.ptr = devPriv;
 
@@ -125,8 +121,8 @@ xf86RegisterFreeBoxCallback(
 }
 
 
-static FBAreaPtr
-xf86AllocateFBArea(
+FBAreaPtr
+xf86AllocateOffscreenArea(
    ScreenPtr pScreen, 
    int w, int h,
    int granularity,
@@ -141,10 +137,9 @@ xf86AllocateFBArea(
    BoxPtr boxp;
    int num, i, x;
 
-   if(xf86FBScreenIndex == -1) return NULL;
-   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
-   if(!offman) return NULL;   
+   if(!xf86FBManagerRunning(pScreen)) return NULL;
 
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
    boxp = REGION_RECTS(offman->FreeBoxes);
    num = REGION_NUM_RECTS(offman->FreeBoxes);
 
@@ -199,19 +194,19 @@ xf86AllocateFBArea(
     xfree(link);}	
 			
 
-static void
-xf86FreeFBArea(FBAreaPtr area)
+void
+xf86FreeOffscreenArea(FBAreaPtr area)
 {
    FBManagerPtr offman;
    FBLinkPtr pLink, pLinkPrev;
    RegionRec FreedRegion;
    ScreenPtr pScreen;
 
+   if(!area || !xf86FBManagerRunning(area->pScreen)) 
+	return;
 
-   if(!area || (xf86FBScreenIndex == -1)) return;
    pScreen = area->pScreen;
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
-   if(!offman) return;   
        
    pLinkPrev = pLink = offman->UsedAreas;
    if(!pLink) return;  
@@ -241,8 +236,8 @@ xf86FreeFBArea(FBAreaPtr area)
    
 
 
-static Bool
-xf86ResizeFBArea(
+Bool
+xf86ResizeOffscreenArea(
    ScreenPtr pScreen, 
    int w, int h,
    FBAreaPtr resize
@@ -257,9 +252,10 @@ xf86ResizeFBArea(
    BoxPtr boxp;
    int num, i, x;
 
-   if(!resize || (xf86FBScreenIndex == -1)) return FALSE;
+   if(!xf86FBManagerRunning(pScreen) || !resize) 
+	return FALSE;
+
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
-   if(!offman) return FALSE;   
 
    /* find this link */
    pLinkPrev = pLink = offman->UsedAreas;
@@ -370,7 +366,7 @@ xf86ResizeFBArea(
 
 
 
-static Bool
+Bool
 xf86FBCloseScreen (int i, ScreenPtr pScreen)
 {
    FBLinkPtr pLink, tmp;

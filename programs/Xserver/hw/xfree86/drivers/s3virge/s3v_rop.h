@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_rop.h,v 1.1 1998/11/22 10:37:33 dawes Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -100,3 +100,87 @@ static int s3vAlu_MonoTrans[16] =
    ROP_DPan_SaDSnao,
    ROP_1_SaDSnao
 };
+
+
+
+/* This function was taken from accel/s3v.h. It adjusts the width
+ * of transfers for mono images to works around some bugs.
+ */
+
+static __inline__ int S3VCheckLSPN(S3VPtr ps3v, int w, int dir)
+{
+   int lspn = (w * ps3v->Bpp) & 63;  /* scanline width in bytes modulo 64*/
+
+   if (ps3v->Bpp == 1) {
+      if (lspn <= 8*1)
+	 w += 16;
+      else if (lspn <= 16*1)
+	 w += 8;
+   } else if (ps3v->Bpp == 2) {
+      if (lspn <= 4*2)
+	 w += 8;
+      else if (lspn <= 8*2)
+	 w += 4;
+   } else {  /* ps3v->Bpp == 3 */
+      if (lspn <= 3*3) 
+	 w += 6;
+      else if (lspn <= 6*3)
+	 w += 3;
+   }
+   if (dir && w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
+      w = ps3v->bltbug_width2 + 1;
+   }
+
+   return w;
+}
+
+/* And this adjusts color bitblts widths to work around GE bugs */
+
+static __inline__ int S3VCheckBltWidth(S3VPtr ps3v, int w)
+{
+   if (w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
+      w = ps3v->bltbug_width2 + 1;
+   }
+   return w;
+}
+
+/* This next function determines if the Source operand is present in the
+ * given ROP. The rule is that both the lower and upper nibble of the rop
+ * have to be neither 0x00, 0x05, 0x0a or 0x0f. If a CPU-Screen blit is done
+ * with a ROP which does not contain the source, the virge will hang when
+ * data is written to the image transfer area. 
+ */
+
+static __inline__ Bool S3VROPHasSrc(int shifted_rop)
+{
+    int rop = (shifted_rop & (0xff << 17)) >> 17;
+
+    if ((((rop & 0x0f) == 0x0a) | ((rop & 0x0f) == 0x0f) 
+        | ((rop & 0x0f) == 0x05) | ((rop & 0x0f) == 0x00)) &
+       (((rop & 0xf0) == 0xa0) | ((rop & 0xf0) == 0xf0) 
+        | ((rop & 0xf0) == 0x50) | ((rop & 0xf0) == 0x00)))
+            return FALSE;
+    else 
+            return TRUE;
+}
+
+/* This next function determines if the Destination operand is present in the
+ * given ROP. The rule is that both the lower and upper nibble of the rop
+ * have to be neither 0x00, 0x03, 0x0c or 0x0f. 
+ */
+
+static __inline__ Bool S3VROPHasDst(int shifted_rop)
+{
+    int rop = (shifted_rop & (0xff << 17)) >> 17;
+
+    if ((((rop & 0x0f) == 0x0c) | ((rop & 0x0f) == 0x0f) 
+        | ((rop & 0x0f) == 0x03) | ((rop & 0x0f) == 0x00)) &
+       (((rop & 0xf0) == 0xc0) | ((rop & 0xf0) == 0xf0) 
+        | ((rop & 0xf0) == 0x30) | ((rop & 0xf0) == 0x00)))
+            return FALSE;
+    else 
+            return TRUE;
+}
+
+
+

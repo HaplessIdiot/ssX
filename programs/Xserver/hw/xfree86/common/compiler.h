@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.34 1998/08/19 13:13:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.35 1998/08/29 05:43:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -149,53 +149,86 @@ inl(unsigned short port)
  * from linux/include/asm-alpha/unaligned.h
  */
 
-static __inline__ unsigned long ldq_u(unsigned long * r11)
+/*
+ * EGCS 1.1 knows about arbitrary unaligned loads.  Define some
+ * packed structures to talk about such things with.
+ */
+
+struct __una_u64 { unsigned long  x __attribute__((packed)); };
+struct __una_u32 { unsigned int   x __attribute__((packed)); };
+struct __una_u16 { unsigned short x __attribute__((packed)); };
+
+/*
+ * Elemental unaligned loads 
+ */
+
+extern __inline__ unsigned long ldq_u(const unsigned long * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	const struct __una_u64 *ptr = (const struct __una_u64 *) r11;
+	return ptr->x;
+#else
 	unsigned long r1,r2;
 	__asm__("ldq_u %0,%3\n\t"
 		"ldq_u %1,%4\n\t"
 		"extql %0,%2,%0\n\t"
-		"extqh %1,%2,%1\n\t"
-		"bis %1,%0,%0"
+		"extqh %1,%2,%1"
 		:"=&r" (r1), "=&r" (r2)
 		:"r" (r11),
 		 "m" (*r11),
-		 "m" (*(unsigned long *)(7+(char *) r11)));
-	return r1;
+		 "m" (*(const unsigned long *)(7+(char *) r11)));
+	return r1 | r2;
+#endif
 }
 
-static __inline__ unsigned long ldl_u(unsigned int * r11)
+extern __inline__ unsigned long ldl_u(const unsigned int * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	const struct __una_u32 *ptr = (const struct __una_u32 *) r11;
+	return ptr->x;
+#else
 	unsigned long r1,r2;
 	__asm__("ldq_u %0,%3\n\t"
 		"ldq_u %1,%4\n\t"
 		"extll %0,%2,%0\n\t"
-		"extlh %1,%2,%1\n\t"
-		"bis %1,%0,%0"
+		"extlh %1,%2,%1"
 		:"=&r" (r1), "=&r" (r2)
 		:"r" (r11),
 		 "m" (*r11),
-		 "m" (*(unsigned long *)(3+(char *) r11)));
-	return r1;
+		 "m" (*(const unsigned long *)(3+(char *) r11)));
+	return r1 | r2;
+#endif
 }
 
-static __inline__ unsigned long ldw_u(unsigned short * r11)
+extern __inline__ unsigned long ldw_u(const unsigned short * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	const struct __una_u16 *ptr = (const struct __una_u16 *) r11;
+	return ptr->x;
+#else
 	unsigned long r1,r2;
 	__asm__("ldq_u %0,%3\n\t"
 		"ldq_u %1,%4\n\t"
 		"extwl %0,%2,%0\n\t"
-		"extwh %1,%2,%1\n\t"
-		"bis %1,%0,%0"
+		"extwh %1,%2,%1"
 		:"=&r" (r1), "=&r" (r2)
 		:"r" (r11),
 		 "m" (*r11),
-		 "m" (*(unsigned long *)(1+(char *) r11)));
-	return r1;
+		 "m" (*(const unsigned long *)(1+(char *) r11)));
+	return r1 | r2;
+#endif
 }
 
-static __inline__ void stq_u(unsigned long r5, unsigned long * r11)
+/*
+ * Elemental unaligned stores 
+ */
+
+extern __inline__ void stq_u(unsigned long r5, unsigned long * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	struct __una_u64 *ptr = (struct __una_u64 *) r11;
+	ptr->x = r5;
+#else
 	unsigned long r1,r2,r3,r4;
 
 	__asm__("ldq_u %3,%1\n\t"
@@ -212,10 +245,15 @@ static __inline__ void stq_u(unsigned long r5, unsigned long * r11)
 		 "=m" (*(unsigned long *)(7+(char *) r11)),
 		 "=&r" (r1), "=&r" (r2), "=&r" (r3), "=&r" (r4)
 		:"r" (r5), "r" (r11));
+#endif
 }
 
-static __inline__ void stl_u(unsigned long r5, unsigned int * r11)
+extern __inline__ void stl_u(unsigned long r5, unsigned int * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	struct __una_u32 *ptr = (struct __una_u32 *) r11;
+	ptr->x = r5;
+#else
 	unsigned long r1,r2,r3,r4;
 
 	__asm__("ldq_u %3,%1\n\t"
@@ -232,10 +270,15 @@ static __inline__ void stl_u(unsigned long r5, unsigned int * r11)
 		 "=m" (*(unsigned long *)(3+(char *) r11)),
 		 "=&r" (r1), "=&r" (r2), "=&r" (r3), "=&r" (r4)
 		:"r" (r5), "r" (r11));
+#endif
 }
 
-static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
+extern __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 {
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+	struct __una_u16 *ptr = (struct __una_u16 *) r11;
+	ptr->x = r5;
+#else
 	unsigned long r1,r2,r3,r4;
 
 	__asm__("ldq_u %3,%1\n\t"
@@ -252,6 +295,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 		 "=m" (*(unsigned long *)(1+(char *) r11)),
 		 "=&r" (r1), "=&r" (r2), "=&r" (r3), "=&r" (r4)
 		:"r" (r5), "r" (r11));
+#endif
 }
 
 #define mem_barrier()        __asm__ __volatile__("mb"  : : : "memory")

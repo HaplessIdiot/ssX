@@ -1,3 +1,50 @@
+XFree86 3.9No (29 November 1998)
+2018. Remove the per-depth cfb private indices added in 3.9Nn (#2265,
+      Mark Vojkovich).
+2017. Build cfb with -DSINLGEDEPTH because we don't need the per-depth
+      cfb Screen privates.
+2016. Fix problems with the allocation of the cfbScreenPrivateIndex
+      parameters.
+2015. Remove the offscreen memory manager functions out of the ScrnInfoRec
+      (#2266, Mark Vojkovich).
+2014. Update the s3virge driver to use the new colormap layer, which fixes
+      the VT switch colormap problem (#2264, Kevin Brosius).
+2013. Disable s3virge trapezoid fills since they don't match cfb (#2264,
+      Kevin Brosius).
+2012. Add an ImageWrite function for the s3virge driver, so the pixmap
+      cache support now works (#2264, Kevin Brosius).
+2011. Turn off PCI_RETRY by default in the glint driver, and various other
+      driver updates (#2263, Alan Hourihane).
+2010. Fix a glint driver bug in WritePixmap for TX/MX chipsets (#2263,
+      Alan Hourihane).
+2009. Update the Alpha unaligned access inlines in compiler.h, based on
+      similar code in the Linux kernel (#2240, Matti Aarnio).
+2008. Fix a typo in the C&T driver (#2262, Nozomi Ytow).
+2007. Enable building libraries and clients for for sparclinux (#2261,
+      Christopher Sekiya).
+2006. Define _XOPEN_SOURCE for Linux (#2261, Christopher Sekiya).
+2005. Add the vga copy plane expansion patch to the vgafb code (#2021,
+      Jens Owen).
+2004. Add some documentation for DDC (#2259, Egbert Eich).
+2003. Fix a bug in xaaStipple.c which can cause a blitter lockup.
+2002. Fix a C&T bug that causes memory corruption when not in linear mode
+      (#2260, Egbert Eich).
+2001. Only disable C&T transparency blits for HiQV chips below 65550, and
+      fix the display pitch when acceleration is enabled (#2260,
+      David Bateman).
+2000. Conditionally enable ScreenToScreenColorExpandFills for C&T HiQV
+      chips (#2259, 2260, Nozomi Ytow, Egbert Eich).
+1999. Reduce the timeout period for C&T blitter lockups and reset the reset-bit
+      after blitter timeouts (#2260, Egbert Eich).
+1998. Add DDC1/2 support for the C&T driver (not tested) (#2260, Egbert Eich).
+1997. Add a DDC module with DDC1 and DDC2 support for EDID version 1.x,
+      and untested VDIF support (#2259, 2260, Egbert Eich).
+1996. Fix a problem switching from VT back to X when displayPitch
+      != displayWidth (#2260, Egbert Eich).
+1995. Some colormap layer optimisations (#2258, Mark Vojkovich).
+1994. Add some missing micmap symbols to the loader's export list (#2257,
+      Alan Hourihane).
+
 XFree86 3.9Nn (22 November 1998)
 1993. Set the valid gamma range as macros rather than having it hard coded
       in various places.
@@ -34,8 +81,7 @@ XFree86 3.9Nn (22 November 1998)
 1977. Fix a 64-bit alignment problem in cfb8line.c (#2242, Matti Aarnio).
 1976. Fix a typo in Pclose() (#2242, Matti Aarnio).
 1975. Update some Linux-related Imake.cf settings (#2242, Matti Aarnio).
-1974. Update the Alpha unaligned access inlines in compiler.h, based on
-      similar code in the Linux kernel (#2240, Matti Aarnio).
+1974. -
 1973. Cirrus 546x memory interleaving (#2235, Corin Anderson).
 1972. XAA and HW cursor support for the Cirrus 546x series (#2235,
       Corin Anderson).
@@ -46,7 +92,7 @@ XFree86 3.9Nn (22 November 1998)
       layers to use the micmap functions where appropriate and ensure
       that they initialise InstallColormap, UninstallColormap, StoreColors
       and ListInstalledColormaps in their ScreenInit functions.  Also move
-      the global InstalledColormaps array into micmap.c.
+      the global InstalledMaps array into micmap.c.
 
 XFree86 3.9Nm (15 November 1998)
 1969. libXv fix (#2233, Michael Schimek).
@@ -6799,4 +6845,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.643 1998/11/15 10:22:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.644 1998/11/22 10:37:05 dawes Exp $

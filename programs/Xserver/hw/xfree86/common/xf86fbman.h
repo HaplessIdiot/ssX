@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.3 1998/08/29 05:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.4 1998/11/15 04:30:19 dawes Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -49,29 +49,33 @@ xf86InitFBManager(
     BoxPtr FullBox
 );
 
+Bool 
+xf86FBManagerRunning(
+    ScreenPtr pScreen
+);
+
+FBAreaPtr 
+xf86AllocateOffscreenArea (
+   ScreenPtr pScreen, 
+   int w, int h,
+   int granularity,
+   MoveAreaCallbackProcPtr callback,
+   pointer privData
+);
+
+void xf86FreeOffscreenArea(FBAreaPtr area);
+
+Bool xf86ResizeOffscreenArea(
+   ScreenPtr pScreen, 
+   int w, int h, 
+   FBAreaPtr resize
+);
+
 void
 xf86RegisterFreeBoxCallback(
     ScreenPtr pScreen,  
     FreeBoxCallbackProcPtr FreeBoxCallback,
     pointer devPriv
 );
-
-typedef FBAreaPtr (*AllocateOffscreenAreaProcPtr) (
-   ScreenPtr pScreen, 
-   int w, int h,
-   int granularity,
-   MoveAreaCallbackProcPtr MoveAreaCallback,
-   pointer privData
-);
-
-typedef Bool (*ResizeOffscreenAreaProcPtr) (
-   ScreenPtr pScreen, 
-   int w, int h,
-   FBAreaPtr area
-);
-
-
-typedef void (*FreeOffscreenAreaProcPtr) (FBAreaPtr area);
-
 
 #endif /* _XF86FBMAN_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.5 1998/08/29 05:43:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.6 1998/09/05 06:36:47 dawes Exp $ */
 
 /*
  * glint register file 
@@ -928,7 +928,6 @@
 {								\
 	if (pGlint->ClippingOn) {				\
 		pGlint->ClippingOn = FALSE;			\
-		GLINT_WAIT(1);					\
 		GLINT_WRITE_REG(0, ScissorMode);		\
 	}							\
 }
