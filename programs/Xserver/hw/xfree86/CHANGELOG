@@ -1,4 +1,7 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 897. Fix the behaviour of XLookupString() when XKB is enabled in Xlib
+      but not the server.  This fixes an xtest XRebindKeysym() failure
+      (David Dawes).
  896. Added radeon driver options documentation to the Options file
       (#5621, Michel Dänzer).
  895. Fix the return value of SetFontPath() when a font path element is bad
@@ -16375,4 +16378,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2554 2003/02/15 03:47:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2555 2003/02/15 06:46:30 paulo Exp $
