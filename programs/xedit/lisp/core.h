@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.12 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.13 2002/03/10 04:57:46 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -108,6 +108,7 @@ LispObj *Lisp_Progv(LispMac*, LispBuiltin*);		/* progv */
 LispObj *Lisp_Provide(LispMac*, LispBuiltin*);		/* provide */
 LispObj *Lisp_Quit(LispMac*, LispBuiltin*);		/* quit */
 LispObj *Lisp_Quote(LispMac*, LispBuiltin*);		/* quote */
+LispObj *Lisp_Remove(LispMac*, LispBuiltin*);		/* remove */
 LispObj *Lisp_Replace(LispMac*, LispBuiltin*);		/* replace */
 LispObj *Lisp_Return(LispMac*, LispBuiltin*);		/* return */
 LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */

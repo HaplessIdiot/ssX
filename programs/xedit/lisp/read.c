@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.14 2002/03/16 05:53:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.15 2002/04/17 23:47:01 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -95,14 +95,11 @@ LispRead(LispMac *mac)
 	    object = LispReadList(mac);
 	    break;
 	case ')':
-	    for (;;) {
-		ch = LispGet(mac);
+	    for (ch = LispGet(mac); ch != EOF && ch != '\n'; ch = LispGet(mac)) {
 		if (!isspace(ch)) {
 		    LispUnget(mac, ch);
 		    break;
 		}
-		else if (ch == '\n')
-		    break;
 	    }
 	    return (EOLIST);
 	case EOF:
@@ -602,7 +599,7 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 
 	/* Get the object pointer */
 	if (pack == mac->key)
-	    object = KEYWORD(symbol);
+	    object = KEYWORD(LispDoGetAtom(mac, symbol, 0)->string);
 	else
 	    object = ATOM(symbol);
 	if (unreadable)

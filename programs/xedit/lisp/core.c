@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.37 2002/04/16 17:12:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.38 2002/05/16 15:32:20 tsi Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1197,36 +1197,11 @@ Lisp_Length(LispMac *mac, LispBuiltin *builtin)
  length sequence
  */
 {
-    long length = 0;
     LispObj *sequence;
 
     sequence = ARGUMENT(0);
 
-    switch (sequence->type) {
-	case LispNil_t:
-	    break;
-	case LispString_t:
-	    length = strlen(THESTR(sequence));
-	    break;
-	case LispArray_t:
-	    if (sequence->data.array.rank != 1)
-		goto not_a_sequence;
-	    sequence = sequence->data.array.list;
-	    /*FALLTROUGH*/
-	case LispCons_t:
-	    while (CONS_P(sequence)) {
-		++length;
-		sequence = CDR(sequence);
-	    }
-	    break;
-	default:
-not_a_sequence:
-	    LispDestroy(mac, "%s: %s is not a sequence",
-			STRFUN(builtin), STROBJ(sequence));
-	    /*NOTREACHED*/
-    }
-
-    return (INTEGER(length));
+    return (INTEGER(LispLength(mac, sequence)));
 }
 
 LispObj *
@@ -2444,6 +2419,222 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Remove(LispMac *mac, LispBuiltin *builtin)
+/*
+ remove item sequence &key from-end test test-not start end count key
+ */
+{
+    long start, end, count, copy, length = 0;
+    LispObj *object, *result = NIL, *cons = NIL;
+
+    LispObj *item, *sequence, *from_end, *test, *test_not,
+	    *ostart, *oend, *ocount, *key;
+
+    key = ARGUMENT(8);
+    ocount = ARGUMENT(7);
+    oend = ARGUMENT(6);
+    ostart = ARGUMENT(5);
+    test_not = ARGUMENT(4);
+    test = ARGUMENT(3);
+    from_end = ARGUMENT(2);
+    sequence = ARGUMENT(1);
+    item = ARGUMENT(0);
+
+    /* Check for fast return */
+    switch (sequence->type) {
+	case LispNil_t:
+	    return (NIL);
+	case LispString_t:
+	    if (!CHAR_P(item))			/* not an error? */
+		return (sequence);
+	    break;
+	default:
+	    break;
+    }
+
+    /* Check sequence type and calculate it's length */
+    length = LispLength(mac, sequence);
+
+    /* Check start/end arguments */
+    if (ostart == NIL)
+	start = 0;
+    else {
+	ERROR_CHECK_INDEX(ostart);
+	start = ostart->data.integer;
+    }
+    if (oend == NIL)
+	end = length;
+    else {
+	ERROR_CHECK_INDEX(oend);
+	end = oend->data.integer;
+    }
+
+    if (start > end || end > length)
+	LispDestroy(mac, "%s: bad arguments :START %d :END %d length %d",
+		    STRFUN(builtin), start, end, length);
+
+    /* Check count argument */
+    if (ocount == NIL)
+	count = length;
+    else {
+	ERROR_CHECK_INDEX(ocount);
+	count = ocount->data.integer;
+    }
+
+    if (start == end || count == 0)
+	return (sequence);
+
+    copy = count;
+
+    if (STRING_P(sequence)) {
+	int i, ch = item->data.integer;
+	char *ptr, *string = THESTR(sequence),
+	     *buffer = LispMalloc(mac, length + 1);
+
+	if (from_end == NIL) {
+	    ptr = buffer;
+	    /* copy leading bytes */
+	    for (i = 0; i < start; i++)
+		*ptr++ = string[i];
+	    /* check if needs to remove something */
+	    for (; i < end && count > 0; i++) {
+		if (string[i] != ch)
+		    *ptr++ = string[i];
+		else
+		    --count;
+	    }
+	    if (copy != count) {
+		/* copy ending bytes */
+		for (; i <= length; i++)   /* <= to also copy the ending nul */
+		    *ptr++ = string[i];
+		result = STRING(buffer);
+	    }
+	    else
+		result = sequence;
+	    LispFree(mac, buffer);
+	}
+	else {
+	    ptr = buffer + length;
+	    *ptr = '\0';
+	    /* copy ending bytes */
+	    for (i = length - 1; i >= end; i--)
+		*--ptr = string[i];
+	    /* check if needs to remove something */
+	    for (; i >= start && count > 0; i--) {
+		if (string[i] != ch)
+		    *--ptr = string[i];
+		else
+		    --count;
+	    }
+	    if (copy != count) {
+		/* copy leading bytes */
+		for (; i >= 0; i--)
+		    *--ptr = string[i];
+		result = STRING(ptr);
+	    }
+	    else
+		result = sequence;
+	    LispFree(mac, buffer);
+	}
+    }
+    else {
+	int i, protect = mac->protect.length;
+
+	if (!CONS_P(sequence))
+	    object = sequence->data.array.list;
+	else
+	    object = sequence;
+
+	if (from_end == NIL) {
+	    /* copy leading objects */
+	    for (i = 0; i < start; i++, object = CDR(object)) {
+		if (result == NIL) {
+		    result = cons = CONS(CAR(object), NIL);
+		    mac->protect.objects[mac->protect.length++] = result;
+		}
+		else {
+		    CDR(cons) = CONS(CAR(object), NIL);
+		    cons = CDR(cons);
+		}
+	    }
+	    /* check if needs to remove something */
+	    for (; i < end && count > 0; i++, object = CDR(object)) {
+		if (LispEqual(mac, CAR(object), item) == NIL) {
+		    if (result == NIL) {
+			result = cons = CONS(CAR(object), NIL);
+			mac->protect.objects[mac->protect.length++] = result;
+		    }
+		    else {
+			CDR(cons) = CONS(CAR(object), NIL);
+			cons = CDR(cons);
+		    }
+		}
+		else
+		    --count;
+	    }
+	    if (copy != count) {
+		/* copy ending objects */
+		for (; i < length; i++, object = CDR(object)) {
+		    if (result == NIL) {
+			result = cons = CONS(CAR(object), NIL);
+			mac->protect.objects[mac->protect.length++] = result;
+		    }
+		    else {
+			CDR(cons) = CONS(CAR(object), NIL);
+			cons = CDR(cons);
+		    }
+		}
+	    }
+	    else
+		result = sequence;	/* let gc cleanup current result value */
+	}
+	else {
+	    LispObj **objects = LispMalloc(mac, sizeof(LispObj*) * length);
+
+	    /* put data in a vector */
+	    for (i = 0; i < length; i++, object = CDR(object))
+		objects[i] = CAR(object);
+
+	    /* skip ending objects */
+	    for (i = length - 1; i >= end; i--)
+		;
+	    /* check if needs to remove something */
+	    for (; i >= start && count > 0; i--) {
+		if (LispEqual(mac, objects[i], item) == T) {
+		    objects[i] = NULL;
+		    --count;
+		}
+	    }
+
+	    if (copy != count) {
+		/* create result list */
+		for (i = 0; i < length; i++) {
+		    if (objects[i] != NULL) {
+			if (result == NIL) {
+			    result = cons = CONS(objects[i], NIL);
+			    mac->protect.objects[mac->protect.length++] = result;
+			}
+			else {
+			    CDR(cons) = CONS(objects[i], NIL);
+			    cons = CDR(cons);
+			}
+		    }
+		}
+	    }
+	    else
+		result = sequence;
+	    LispFree(mac, objects);
+	}
+
+	if (!CONS_P(sequence))
+	    result = VECTOR(result);
+	mac->protect.length = protect;
+    }
+
+    return (result);
+}
+
+LispObj *
 Lisp_Return(LispMac *mac, LispBuiltin *builtin)
 /*
  return &optional result
@@ -2509,16 +2700,17 @@ Lisp_ReturnFrom(LispMac *mac, LispBuiltin *builtin)
 		    jmp = 0;
 		    break;
 	    }
+	    if (jmp &&
+		(block->type == LispBlockTag || block->type == LispBlockClosure)) {
+		mac->block.block_ret = NCONSTANT_P(result) ?
+		    EVAL(result) : result;
+		LispBlockUnwind(mac, block);
+		BLOCKJUMP(block);
+	    }
+	    if (block->type == LispBlockClosure)
+		/* can use return-from only in the current function */
+		break;
 	}
-	if (jmp &&
-	    (block->type == LispBlockTag || block->type == LispBlockClosure)) {
-	    mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
-	    LispBlockUnwind(mac, block);
-	    BLOCKJUMP(block);
-	}
-	if (block->type == LispBlockClosure)
-	    /* can use return-from only in the current function */
-	    break;
     }
     LispDestroy(mac, "%s: no visible block named %s",
 		STRFUN(builtin), STROBJ(name));

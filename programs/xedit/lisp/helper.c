@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.24 2002/03/16 05:53:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.25 2002/03/19 20:03:57 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -126,6 +126,35 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
     }
 
     return (result);
+}
+
+long
+LispLength(LispMac *mac, LispObj *sequence)
+{
+    long length = 0;
+
+    switch (sequence->type) {
+	case LispNil_t:
+	    break;
+	case LispString_t:
+	    length = strlen(THESTR(sequence));
+	    break;
+	case LispArray_t:
+	    if (sequence->data.array.rank != 1)
+		goto not_a_sequence;
+	    sequence = sequence->data.array.list;
+	    /*FALLTROUGH*/
+	case LispCons_t:
+	    for (; CONS_P(sequence); sequence = CDR(sequence))
+		++length;
+	    break;
+	default:
+not_a_sequence:
+	    LispDestroy(mac, "LENGTH: %s is not a sequence", STROBJ(sequence));
+	    /*NOTREACHED*/
+    }
+
+    return (length);
 }
 
 LispObj *
